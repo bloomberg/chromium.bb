@@ -1260,8 +1260,8 @@ class RestartDeviceTest : public PlatformAppBrowserTest {
     PlatformAppBrowserTest::TearDownInProcessBrowserTestFixture();
   }
 
-  int request_restart_call_count() const {
-    return power_manager_client_->request_restart_call_count();
+  int num_request_restart_calls() const {
+    return power_manager_client_->num_request_restart_calls();
   }
 
  private:
@@ -1275,7 +1275,7 @@ class RestartDeviceTest : public PlatformAppBrowserTest {
 // Tests that chrome.runtime.restart would request device restart in
 // ChromeOS kiosk mode.
 IN_PROC_BROWSER_TEST_F(RestartDeviceTest, Restart) {
-  ASSERT_EQ(0, request_restart_call_count());
+  ASSERT_EQ(0, num_request_restart_calls());
 
   ExtensionTestMessageListener launched_listener("Launched", true);
   const Extension* extension = LoadAndLaunchPlatformApp("restart_device");
@@ -1287,7 +1287,7 @@ IN_PROC_BROWSER_TEST_F(RestartDeviceTest, Restart) {
                                                           false);
   ASSERT_TRUE(restart_requested_listener.WaitUntilSatisfied());
 
-  EXPECT_EQ(1, request_restart_call_count());
+  EXPECT_EQ(1, num_request_restart_calls());
 }
 
 #endif  // defined(OS_CHROMEOS)

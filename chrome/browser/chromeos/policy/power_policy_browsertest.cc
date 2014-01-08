@@ -290,7 +290,7 @@ void PowerPolicyInSessionBrowserTest::SetUpOnMainThread() {
 // Verifies that device policy is applied on the login screen.
 IN_PROC_BROWSER_TEST_F(PowerPolicyLoginScreenBrowserTest, SetDevicePolicy) {
   pm::PowerManagementPolicy power_management_policy =
-      power_manager_client_->get_policy();
+      power_manager_client_->policy();
   power_management_policy.mutable_ac_delays()->set_screen_dim_ms(5000);
   power_management_policy.mutable_ac_delays()->set_screen_off_ms(7000);
   power_management_policy.mutable_ac_delays()->set_idle_ms(9000);
@@ -310,26 +310,26 @@ IN_PROC_BROWSER_TEST_F(PowerPolicyLoginScreenBrowserTest, SetDevicePolicy) {
       set_login_screen_power_management(kLoginScreenPowerManagementPolicy);
   StoreAndReloadDevicePolicyAndWaitForLoginProfileChange();
   EXPECT_EQ(GetDebugString(power_management_policy),
-            GetDebugString(power_manager_client_->get_policy()));
+            GetDebugString(power_manager_client_->policy()));
 }
 
 // Verifies that device policy is ignored during a session.
 IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest, SetDevicePolicy) {
   pm::PowerManagementPolicy power_management_policy =
-      power_manager_client_->get_policy();
+      power_manager_client_->policy();
 
   em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
   proto.mutable_login_screen_power_management()->
       set_login_screen_power_management(kLoginScreenPowerManagementPolicy);
   StoreAndReloadDevicePolicyAndWaitForLoginProfileChange();
   EXPECT_EQ(GetDebugString(power_management_policy),
-            GetDebugString(power_manager_client_->get_policy()));
+            GetDebugString(power_manager_client_->policy()));
 }
 
 // Verifies that user policy is applied during a session.
 IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest, SetUserPolicy) {
   pm::PowerManagementPolicy power_management_policy =
-      power_manager_client_->get_policy();
+      power_manager_client_->policy();
   power_management_policy.mutable_ac_delays()->set_screen_dim_ms(5000);
   power_management_policy.mutable_ac_delays()->set_screen_lock_ms(6000);
   power_management_policy.mutable_ac_delays()->set_screen_off_ms(7000);
@@ -379,14 +379,14 @@ IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest, SetUserPolicy) {
   user_policy_.payload().mutable_waitforinitialuseractivity()->set_value(true);
   StoreAndReloadUserPolicy();
   EXPECT_EQ(GetDebugString(power_management_policy),
-            GetDebugString(power_manager_client_->get_policy()));
+            GetDebugString(power_manager_client_->policy()));
 }
 
 // Verifies that screen wake locks can be enabled and disabled by extensions and
 // user policy during a session.
 IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest, AllowScreenWakeLocks) {
   pm::PowerManagementPolicy baseline_policy =
-      power_manager_client_->get_policy();
+      power_manager_client_->policy();
 
   // Default settings should have delays.
   pm::PowerManagementPolicy power_management_policy = baseline_policy;
@@ -409,24 +409,23 @@ IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest, AllowScreenWakeLocks) {
   policy.mutable_battery_delays()->set_screen_dim_ms(0);
   policy.mutable_battery_delays()->set_screen_off_ms(0);
   policy.set_ac_idle_action(
-      power_manager_client_->get_policy().ac_idle_action());
+      power_manager_client_->policy().ac_idle_action());
   policy.set_battery_idle_action(
-      power_manager_client_->get_policy().battery_idle_action());
-  policy.set_reason(power_manager_client_->get_policy().reason());
+      power_manager_client_->policy().battery_idle_action());
+  policy.set_reason(power_manager_client_->policy().reason());
   EXPECT_EQ(GetDebugString(policy),
-            GetDebugString(power_manager_client_->get_policy()));
+            GetDebugString(power_manager_client_->policy()));
 
   // Engage the user policy and verify that the defaults take effect again.
   user_policy_.payload().mutable_allowscreenwakelocks()->set_value(false);
   StoreAndReloadUserPolicy();
   policy = baseline_policy;
-  policy.set_ac_idle_action(
-      power_manager_client_->get_policy().ac_idle_action());
+  policy.set_ac_idle_action(power_manager_client_->policy().ac_idle_action());
   policy.set_battery_idle_action(
-      power_manager_client_->get_policy().battery_idle_action());
-  policy.set_reason(power_manager_client_->get_policy().reason());
+      power_manager_client_->policy().battery_idle_action());
+  policy.set_reason(power_manager_client_->policy().reason());
   EXPECT_EQ(GetDebugString(policy),
-            GetDebugString(power_manager_client_->get_policy()));
+            GetDebugString(power_manager_client_->policy()));
 }
 
 }  // namespace policy

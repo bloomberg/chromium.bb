@@ -24,6 +24,14 @@ class FakePowerManagerClient : public PowerManagerClient {
   FakePowerManagerClient();
   virtual ~FakePowerManagerClient();
 
+  power_manager::PowerManagementPolicy& policy() { return policy_; }
+  int num_request_restart_calls() const {
+    return num_request_restart_calls_;
+  }
+  int num_set_policy_calls() const {
+    return num_set_policy_calls_;
+  }
+
   // PowerManagerClient overrides
   virtual void Init(dbus::Bus* bus) OVERRIDE;
   virtual void AddObserver(Observer* observer) OVERRIDE;
@@ -49,13 +57,6 @@ class FakePowerManagerClient : public PowerManagerClient {
   virtual base::Closure GetSuspendReadinessCallback() OVERRIDE;
   virtual int GetNumPendingSuspendReadinessCallbacks() OVERRIDE;
 
-  power_manager::PowerManagementPolicy& get_policy() { return policy_; }
-
-  // Returns how many times RequestRestart() was called.
-  int request_restart_call_count() const {
-    return request_restart_call_count_;
-  }
-
   // Emulates that the dbus server sends a message "SuspendImminent" to the
   // client.
   void SendSuspendImminent();
@@ -66,10 +67,19 @@ class FakePowerManagerClient : public PowerManagerClient {
       const power_manager::SuspendState& suspend_state);
 
  private:
-  power_manager::PowerManagementPolicy policy_;
-  base::Time last_suspend_wall_time_;
   ObserverList<Observer> observers_;
-  int request_restart_call_count_;
+
+  // Last policy passed to SetPolicy().
+  power_manager::PowerManagementPolicy policy_;
+
+  // Last time passed to a SUSPEND_TO_MEMORY call to SendSuspendStateChanged().
+  base::Time last_suspend_wall_time_;
+
+  // Number of times that RequestRestart() has been called.
+  int num_request_restart_calls_;
+
+  // Number of times that SetPolicy() has been called.
+  int num_set_policy_calls_;
 
   DISALLOW_COPY_AND_ASSIGN(FakePowerManagerClient);
 };
