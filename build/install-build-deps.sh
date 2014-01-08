@@ -52,8 +52,8 @@ do
   shift
 done
 
-ubuntu_versions="12\.04|12\.10|13\.04"
-ubuntu_codenames="precise|quantal|raring"
+ubuntu_versions="12\.04|12\.10|13\.04|13\.10"
+ubuntu_codenames="precise|quantal|raring|saucy"
 ubuntu_issue="Ubuntu ($ubuntu_versions|$ubuntu_codenames)"
 # GCEL is an Ubuntu-derived VM image used on Google Compute Engine; /etc/issue
 # doesn't contain a version number so just trust that the user knows what
@@ -62,7 +62,7 @@ gcel_issue="^GCEL"
 
 if [ 0 -eq "${do_unsupported-0}" ] && [ 0 -eq "${do_quick_check-0}" ] ; then
   if ! egrep -q "($ubuntu_issue|$gcel_issue)" /etc/issue; then
-    echo "ERROR: Only Ubuntu 12.04 (precise) through 13.04 (raring) are"\
+    echo "ERROR: Only Ubuntu 12.04 (precise) through 13.10 (saucy) are"\
         "currently supported" >&2
     exit 1
   fi
@@ -95,7 +95,7 @@ dev_list="apache2.2-bin bison curl dpkg-dev elfutils fakeroot flex g++ git-core
           mesa-common-dev openbox patch perl php5-cgi pkg-config python
           python-cherrypy3 python-dev python-psutil rpm ruby subversion
           ttf-dejavu-core ttf-indic-fonts ttf-kochi-gothic ttf-kochi-mincho
-          ttf-thai-tlwg wdiff xfonts-mathml $chromeos_dev_list"
+          wdiff xfonts-mathml $chromeos_dev_list"
 
 # 64-bit systems need a minimum set of 32-bit compat packages for the pre-built
 # NaCl binaries. These are always needed, regardless of whether or not we want
@@ -246,13 +246,6 @@ if file /sbin/init | grep -q 'ELF 64-bit'; then
 fi
 
 if test "$do_inst_arm" = "1" ; then
-  . /etc/lsb-release
-  if ! [ "${DISTRIB_CODENAME}" = "precise" -o \
-      1 -eq "${do_unsupported-0}" ]; then
-    echo "ERROR: Installing the ARM cross toolchain is only available on" \
-         "Ubuntu precise." >&2
-    exit 1
-  fi
   echo "Including ARM cross toolchain."
 else
   echo "Skipping ARM cross toolchain."
