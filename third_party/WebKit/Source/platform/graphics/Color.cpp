@@ -329,6 +329,11 @@ Color Color::dark() const
                  alpha());
 }
 
+Color Color::combineWithAlpha(float otherAlpha) const
+{
+    return colorWithOverrideAlpha(rgb(), (alpha() / 255.f) * otherAlpha);
+}
+
 static int blendComponent(int c, int a)
 {
     // We use white.
