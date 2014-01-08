@@ -64,9 +64,6 @@ Node* previousIncludingPseudo(const Node&, const Node* stayWithin = 0);
 Node* nextIncludingPseudo(const Node&, const Node* stayWithin = 0);
 Node* nextIncludingPseudoSkippingChildren(const Node&, const Node* stayWithin = 0);
 
-Node* nextAncestorSibling(const Node&);
-Node* nextAncestorSibling(const Node&, const Node* stayWithin);
-
 inline Node* next(const Node& current) { return traverseNext(current); }
 inline Node* next(const ContainerNode& current) { return traverseNext<Node>(current); }
 
