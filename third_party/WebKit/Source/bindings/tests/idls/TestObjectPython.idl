@@ -81,6 +81,8 @@ interface TestObjectPython {
     attribute unsigned short unsignedShortAttribute;
     // Interface type
     attribute TestInterfaceEmpty testInterfaceEmptyAttribute;
+    // Self-reference
+    attribute TestObjectPython testObjectPythonAttribute;
     // Callback function type
     attribute VoidCallbackFunction voidCallbackFunctionAttribute;
     attribute AnyCallbackFunctionOptionalAnyArg anyCallbackFunctionOptionalAnyArgAttribute;

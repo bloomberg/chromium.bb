@@ -36,7 +36,7 @@
 {% filter conditional(conditional_string) %}
 #include "{{v8_class}}.h"
 
-{% for filename in cpp_includes %}
+{% for filename in cpp_includes if filename != '%s.h' % v8_class %}
 #include "{{filename}}"
 {% endfor %}
 

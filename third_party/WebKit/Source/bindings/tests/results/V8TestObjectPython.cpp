@@ -555,6 +555,33 @@ static void testInterfaceEmptyAttributeAttributeSetterCallback(v8::Local<v8::Str
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void testObjectPythonAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    v8SetReturnValueFast(info, imp->testObjectPythonAttribute(), imp);
+}
+
+static void testObjectPythonAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestObjectPythonV8Internal::testObjectPythonAttributeAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void testObjectPythonAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    V8TRYCATCH_VOID(TestObjectPython*, cppValue, V8TestObjectPython::hasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestObjectPython::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    imp->setTestObjectPythonAttribute(WTF::getPtr(cppValue));
+}
+
+static void testObjectPythonAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    TestObjectPythonV8Internal::testObjectPythonAttributeAttributeSetter(jsValue, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 static void voidCallbackFunctionAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
@@ -6277,6 +6304,7 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectPythonAttrib
     {"unsignedLongLongAttribute", TestObjectPythonV8Internal::unsignedLongLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::unsignedLongLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"unsignedShortAttribute", TestObjectPythonV8Internal::unsignedShortAttributeAttributeGetterCallback, TestObjectPythonV8Internal::unsignedShortAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"testInterfaceEmptyAttribute", TestObjectPythonV8Internal::testInterfaceEmptyAttributeAttributeGetterCallback, TestObjectPythonV8Internal::testInterfaceEmptyAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"testObjectPythonAttribute", TestObjectPythonV8Internal::testObjectPythonAttributeAttributeGetterCallback, TestObjectPythonV8Internal::testObjectPythonAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"voidCallbackFunctionAttribute", TestObjectPythonV8Internal::voidCallbackFunctionAttributeAttributeGetterCallback, TestObjectPythonV8Internal::voidCallbackFunctionAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"anyCallbackFunctionOptionalAnyArgAttribute", TestObjectPythonV8Internal::anyCallbackFunctionOptionalAnyArgAttributeAttributeGetterCallback, TestObjectPythonV8Internal::anyCallbackFunctionOptionalAnyArgAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"cssAttribute", TestObjectPythonV8Internal::cssAttributeAttributeGetterCallback, TestObjectPythonV8Internal::cssAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
