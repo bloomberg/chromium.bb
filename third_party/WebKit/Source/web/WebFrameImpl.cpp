@@ -1031,8 +1031,7 @@ WebHistoryItem WebFrameImpl::currentHistoryItem() const
     // document state.  However, it is OK for new navigations.
     // FIXME: Can we make this a plain old getter, instead of worrying about
     // clobbering here?
-    if (!frame()->page()->historyController().inSameDocumentLoad() && (frame()->loader().loadType() == FrameLoadTypeStandard
-        || !frame()->loader().documentLoader()->isLoadingInAPISense()))
+    if (frame()->loader().loadType() == FrameLoadTypeStandard || !frame()->loader().documentLoader()->isLoadingInAPISense())
         frame()->loader().saveDocumentAndScrollState();
 
     return WebHistoryItem(frame()->page()->historyController().currentItemForExport(frame()));

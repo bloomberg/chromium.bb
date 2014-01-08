@@ -135,29 +135,27 @@ void HistoryController::updateBackForwardListForFragmentScroll(Frame* frame, His
 
 void HistoryController::goToEntry(PassOwnPtr<HistoryEntry> targetEntry, ResourceRequestCachePolicy cachePolicy)
 {
-    ASSERT(m_sameDocumentLoadsInProgress.isEmpty());
-    ASSERT(m_differentDocumentLoadsInProgress.isEmpty());
+    HistoryFrameLoadSet sameDocumentLoads;
+    HistoryFrameLoadSet differentDocumentLoads;
 
     m_provisionalEntry = targetEntry;
-    recursiveGoToEntry(m_page->mainFrame());
+    recursiveGoToEntry(m_page->mainFrame(), sameDocumentLoads, differentDocumentLoads);
 
-    if (m_sameDocumentLoadsInProgress.isEmpty() && m_differentDocumentLoadsInProgress.isEmpty())
-        m_sameDocumentLoadsInProgress.set(m_page->mainFrame(), m_provisionalEntry->root());
+    if (sameDocumentLoads.isEmpty() && differentDocumentLoads.isEmpty())
+        sameDocumentLoads.set(m_page->mainFrame(), m_provisionalEntry->root());
 
-    if (m_differentDocumentLoadsInProgress.isEmpty()) {
+    if (differentDocumentLoads.isEmpty()) {
         m_previousEntry = m_currentEntry.release();
         m_currentEntry = m_provisionalEntry.release();
     }
 
-    for (HistoryFrameLoadSet::iterator it = m_sameDocumentLoadsInProgress.begin(); it != m_sameDocumentLoadsInProgress.end(); ++it)
+    for (HistoryFrameLoadSet::iterator it = sameDocumentLoads.begin(); it != sameDocumentLoads.end(); ++it)
         it->key->loader().loadHistoryItem(it->value, HistorySameDocumentLoad, cachePolicy);
-    for (HistoryFrameLoadSet::iterator it = m_differentDocumentLoadsInProgress.begin(); it != m_differentDocumentLoadsInProgress.end(); ++it)
+    for (HistoryFrameLoadSet::iterator it = differentDocumentLoads.begin(); it != differentDocumentLoads.end(); ++it)
         it->key->loader().loadHistoryItem(it->value, HistoryDifferentDocumentLoad, cachePolicy);
-    m_sameDocumentLoadsInProgress.clear();
-    m_differentDocumentLoadsInProgress.clear();
 }
 
-void HistoryController::recursiveGoToEntry(Frame* frame)
+void HistoryController::recursiveGoToEntry(Frame* frame, HistoryFrameLoadSet& sameDocumentLoads, HistoryFrameLoadSet& differentDocumentLoads)
 {
     HistoryItem* newItem = m_provisionalEntry->itemForFrame(frame);
     HistoryItem* oldItem = m_currentEntry ? m_currentEntry->itemForFrame(frame) : 0;
@@ -166,14 +164,14 @@ void HistoryController::recursiveGoToEntry(Frame* frame)
 
     if (!oldItem || (newItem != oldItem && newItem->itemSequenceNumber() != oldItem->itemSequenceNumber())) {
         if (oldItem && newItem->documentSequenceNumber() == oldItem->documentSequenceNumber())
-            m_sameDocumentLoadsInProgress.set(frame, newItem);
+            sameDocumentLoads.set(frame, newItem);
         else
-            m_differentDocumentLoadsInProgress.set(frame, newItem);
+            differentDocumentLoads.set(frame, newItem);
         return;
     }
 
     for (Frame* child = frame->tree().firstChild(); child; child = child->tree().nextSibling())
-        recursiveGoToEntry(child);
+        recursiveGoToEntry(child, sameDocumentLoads, differentDocumentLoads);
 }
 
 void HistoryController::goToItem(HistoryItem* targetItem, ResourceRequestCachePolicy cachePolicy)

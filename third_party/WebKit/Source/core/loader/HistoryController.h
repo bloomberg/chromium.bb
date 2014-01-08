@@ -149,13 +149,12 @@ public:
     PassRefPtr<HistoryItem> provisionalItemForExport(Frame*);
     HistoryItem* itemForNewChildFrame(Frame*) const;
 
-    bool inSameDocumentLoad() const { return !m_sameDocumentLoadsInProgress.isEmpty() && m_differentDocumentLoadsInProgress.isEmpty(); }
-
     void setDefersLoading(bool);
 
 private:
     void goToEntry(PassOwnPtr<HistoryEntry>, ResourceRequestCachePolicy);
-    void recursiveGoToEntry(Frame*);
+    typedef HashMap<Frame*, HistoryItem*> HistoryFrameLoadSet;
+    void recursiveGoToEntry(Frame*, HistoryFrameLoadSet& sameDocumentLoads, HistoryFrameLoadSet& differentDocumentLoads);
 
     void updateForInitialLoadInChildFrame(Frame*, HistoryItem*);
     void createNewBackForwardItem(Frame*, HistoryItem*, bool doClip);
@@ -165,10 +164,6 @@ private:
     OwnPtr<HistoryEntry> m_currentEntry;
     OwnPtr<HistoryEntry> m_previousEntry;
     OwnPtr<HistoryEntry> m_provisionalEntry;
-
-    typedef HashMap<Frame*, HistoryItem*> HistoryFrameLoadSet;
-    HistoryFrameLoadSet m_sameDocumentLoadsInProgress;
-    HistoryFrameLoadSet m_differentDocumentLoadsInProgress;
 
     bool m_defersLoading;
     RefPtr<HistoryItem> m_deferredItem;
