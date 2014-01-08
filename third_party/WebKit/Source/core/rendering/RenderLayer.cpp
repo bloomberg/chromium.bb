@@ -1086,14 +1086,6 @@ RenderLayer* RenderLayer::enclosingPositionedAncestor() const
     return curr;
 }
 
-RenderLayer* RenderLayer::enclosingScrollableLayer() const
-{
-    if (RenderBox* enclosingScrollableBox = renderer()->enclosingScrollableBox())
-        return enclosingScrollableBox->layer();
-
-    return 0;
-}
-
 RenderLayer* RenderLayer::enclosingTransformedAncestor() const
 {
     RenderLayer* curr = parent();

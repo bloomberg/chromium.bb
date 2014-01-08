@@ -48,7 +48,6 @@
 #include "core/rendering/CompositedLayerMappingPtr.h"
 #include "core/rendering/CompositingReasons.h"
 #include "core/rendering/LayerPaintingInfo.h"
-#include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderLayerClipper.h"
 #include "core/rendering/RenderLayerFilterInfo.h"
@@ -66,16 +65,12 @@ class FilterOperations;
 class HitTestRequest;
 class HitTestResult;
 class HitTestingTransformState;
-class PlatformEvent;
 class RenderFlowThread;
 class RenderGeometryMap;
 class CompositedLayerMapping;
 class RenderLayerCompositor;
 class RenderReplica;
-class RenderScrollbarPart;
 class RenderStyle;
-class RenderView;
-class Scrollbar;
 class TransformationMatrix;
 
 enum BorderRadiusClippingRule { IncludeSelfForBorderRadius, DoNotIncludeSelfForBorderRadius };
@@ -221,9 +216,6 @@ public:
     // Gets the nearest enclosing positioned ancestor layer (also includes
     // the <html> layer and the root layer).
     RenderLayer* enclosingPositionedAncestor() const;
-
-    // Returns the nearest enclosing layer that is scrollable.
-    RenderLayer* enclosingScrollableLayer() const;
 
     // The layer relative to which clipping rects for this layer are computed.
     RenderLayer* clippingRootForPainting() const;
