@@ -5,8 +5,8 @@
 # This header file defines the "sysroot" variable which is the absolute path
 # of the sysroot. If no sysroot applies, the variable will be an empty string.
 
-# For official builds, use the sysroot checked into the internal source repo so
-# that the builds work on older versions of Linux.
+# For official linux builds, use the sysroot checked into the internal source
+# repo so that the builds work on older versions of Linux.
 if (is_linux && is_chrome_branded && is_official_build && !is_chromeos) {
   if (cpu_arch == "x64") {
     sysroot = rebase_path(
@@ -19,9 +19,9 @@ if (is_linux && is_chrome_branded && is_official_build && !is_chromeos) {
     sysroot = ""
   }
 } else if (is_mac) {
-  # Set which SDK to use.
-  # TODO(brettw) this needs to be configurable somehow.
-  sysroot = "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk"
+  import("//build/config/mac/mac_sdk.gni")
+
+  sysroot = mac_sdk_path
 } else {
   sysroot = ""
 }

@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("sysroot.gni")
+import("//build/config/sysroot.gni")
 
 # Defines a config specifying the result of running pkg-config for the given
 # packages. Put the package names you want to query in the "packages" variable
