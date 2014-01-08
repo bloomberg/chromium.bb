@@ -157,6 +157,12 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
   void set_selected_device(const content::MediaStreamDevice& device) {
     bubble_content_.media_menus[device.type].selected_device = device;
   }
+  bool setting_is_managed() {
+    return setting_is_managed_;
+  }
+  void set_setting_is_managed(bool managed) {
+    setting_is_managed_ = managed;
+  }
 
  private:
   content::WebContents* web_contents_;
@@ -165,6 +171,9 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
   BubbleContent bubble_content_;
   // A registrar for listening for WEB_CONTENTS_DESTROYED notifications.
   content::NotificationRegistrar registrar_;
+  // A flag that indicates if the content setting managed i.e. can't be
+  // controlled by the user.
+  bool setting_is_managed_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingBubbleModel);
 };

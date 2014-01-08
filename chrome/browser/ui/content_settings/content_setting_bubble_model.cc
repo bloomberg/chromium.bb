@@ -361,6 +361,8 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
     radio_group.default_item = 1;
     block_setting_ = setting;
   }
+
+  set_setting_is_managed(setting_source != SETTING_SOURCE_USER);
   if (setting_source != SETTING_SOURCE_USER) {
     set_radio_group_enabled(false);
   } else {
@@ -449,7 +451,11 @@ ContentSettingPluginBubbleModel::ContentSettingPluginBubbleModel(
     : ContentSettingSingleRadioGroup(
           delegate, web_contents, profile, content_type) {
   DCHECK_EQ(content_type, CONTENT_SETTINGS_TYPE_PLUGINS);
-  set_custom_link_enabled(web_contents &&
+  // Disable the "Run all plugins this time" link if the setting is managed and
+  // can't be controlled by the user or if the user already clicked on the link
+  // and ran all plugins.
+  set_custom_link_enabled(!setting_is_managed() &&
+                          web_contents &&
                           TabSpecificContentSettings::FromWebContents(
                               web_contents)->load_plugins_link_enabled());
 }
@@ -1263,7 +1269,8 @@ ContentSettingBubbleModel::ContentSettingBubbleModel(
     ContentSettingsType content_type)
     : web_contents_(web_contents),
       profile_(profile),
-      content_type_(content_type) {
+      content_type_(content_type),
+      setting_is_managed_(false) {
   registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
                  content::Source<WebContents>(web_contents));
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
