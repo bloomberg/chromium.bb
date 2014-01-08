@@ -27,7 +27,7 @@ class ASH_EXPORT FrameCaptionButton : public views::ImageButton {
   };
 
   enum Style {
-    // Restored tabbed browser windows.
+    // Restored browser windows.
     STYLE_TALL_RESTORED,
 
     // All other restored windows.

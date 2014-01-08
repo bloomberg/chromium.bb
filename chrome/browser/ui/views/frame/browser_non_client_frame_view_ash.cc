@@ -366,11 +366,11 @@ int BrowserNonClientFrameViewAsh::GetTabStripRightInset() const {
 }
 
 bool BrowserNonClientFrameViewAsh::UseShortHeader() const {
-  // Restored tabbed browser windows use the tall header. All other windows use
-  // the short header.
+  // Restored browser windows use the tall header. All other windows use the
+  // short header.
   return frame()->IsMaximized() ||
          frame()->IsFullscreen() ||
-         !browser_view()->IsBrowserTypeNormal();
+         browser_view()->browser()->is_app();
 }
 
 bool BrowserNonClientFrameViewAsh::UseImmersiveLightbarHeaderStyle() const {
