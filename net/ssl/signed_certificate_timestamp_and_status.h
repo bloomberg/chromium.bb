@@ -21,8 +21,8 @@ struct NET_EXPORT SignedCertificateTimestampAndStatus {
 
   ~SignedCertificateTimestampAndStatus();
 
-  scoped_refptr<ct::SignedCertificateTimestamp> sct_;
-  ct::SCTVerifyStatus status_;
+  scoped_refptr<ct::SignedCertificateTimestamp> sct;
+  ct::SCTVerifyStatus status;
 };
 
 typedef std::vector<SignedCertificateTimestampAndStatus>

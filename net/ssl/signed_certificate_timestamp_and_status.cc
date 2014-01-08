@@ -11,7 +11,7 @@ namespace net {
 SignedCertificateTimestampAndStatus::SignedCertificateTimestampAndStatus(
     const scoped_refptr<ct::SignedCertificateTimestamp>& sct,
     const ct::SCTVerifyStatus status)
-    : sct_(sct), status_(status) {}
+    : sct(sct), status(status) {}
 
 SignedCertificateTimestampAndStatus::~SignedCertificateTimestampAndStatus() {}
 

@@ -474,9 +474,9 @@ void ResourceLoader::StoreSignedCertificateTimestamps(
 
   for (net::SignedCertificateTimestampAndStatusList::const_iterator iter =
        sct_list.begin(); iter != sct_list.end(); ++iter) {
-    const int sct_id(sct_store->Store(iter->sct_, process_id));
+    const int sct_id(sct_store->Store(iter->sct, process_id));
     sct_ids->push_back(
-        SignedCertificateTimestampIDAndStatus(sct_id, iter->status_));
+        SignedCertificateTimestampIDAndStatus(sct_id, iter->status));
   }
 }
 

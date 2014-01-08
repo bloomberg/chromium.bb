@@ -340,8 +340,8 @@ void HttpResponseInfo::Persist(Pickle* pickle,
       for (SignedCertificateTimestampAndStatusList::const_iterator it =
            ssl_info.signed_certificate_timestamps.begin(); it !=
            ssl_info.signed_certificate_timestamps.end(); ++it) {
-        it->sct_->Persist(pickle);
-        pickle->WriteUInt16(it->status_);
+        it->sct->Persist(pickle);
+        pickle->WriteUInt16(it->status);
       }
     }
   }
