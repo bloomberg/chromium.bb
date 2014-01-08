@@ -40,10 +40,8 @@
 namespace WebCore {
 
 // Animated property definitions
-DEFINE_ANIMATED_BOOLEAN(SVGAnimationElement, SVGNames::externalResourcesRequiredAttr, ExternalResourcesRequired, externalResourcesRequired)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGAnimationElement)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(externalResourcesRequired)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGTests)
 END_REGISTER_ANIMATED_PROPERTIES
 
@@ -153,7 +151,6 @@ bool SVGAnimationElement::isSupportedAttribute(const QualifiedName& attrName)
     DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
     if (supportedAttributes.isEmpty()) {
         SVGTests::addSupportedAttributes(supportedAttributes);
-        SVGExternalResourcesRequired::addSupportedAttributes(supportedAttributes);
         supportedAttributes.add(SVGNames::valuesAttr);
         supportedAttributes.add(SVGNames::keyTimesAttr);
         supportedAttributes.add(SVGNames::keyPointsAttr);
@@ -221,8 +218,6 @@ void SVGAnimationElement::parseAttribute(const QualifiedName& name, const Atomic
     }
 
     if (SVGTests::parseAttribute(name, value))
-        return;
-    if (SVGExternalResourcesRequired::parseAttribute(name, value))
         return;
 
     ASSERT_NOT_REACHED();

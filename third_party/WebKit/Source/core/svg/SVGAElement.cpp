@@ -57,12 +57,10 @@ using namespace HTMLNames;
 // Animated property definitions
 DEFINE_ANIMATED_STRING(SVGAElement, SVGNames::targetAttr, SVGTarget, svgTarget)
 DEFINE_ANIMATED_STRING(SVGAElement, XLinkNames::hrefAttr, Href, href)
-DEFINE_ANIMATED_BOOLEAN(SVGAElement, SVGNames::externalResourcesRequiredAttr, ExternalResourcesRequired, externalResourcesRequired)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGAElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(svgTarget)
     REGISTER_LOCAL_ANIMATED_PROPERTY(href)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(externalResourcesRequired)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGraphicsElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
@@ -94,7 +92,6 @@ bool SVGAElement::isSupportedAttribute(const QualifiedName& attrName)
     DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
     if (supportedAttributes.isEmpty()) {
         SVGURIReference::addSupportedAttributes(supportedAttributes);
-        SVGExternalResourcesRequired::addSupportedAttributes(supportedAttributes);
         supportedAttributes.add(SVGNames::targetAttr);
     }
     return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
@@ -113,8 +110,6 @@ void SVGAElement::parseAttribute(const QualifiedName& name, const AtomicString& 
     }
 
     if (SVGURIReference::parseAttribute(name, value))
-        return;
-    if (SVGExternalResourcesRequired::parseAttribute(name, value))
         return;
 
     ASSERT_NOT_REACHED();

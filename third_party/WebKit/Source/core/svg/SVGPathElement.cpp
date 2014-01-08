@@ -67,12 +67,10 @@ const SVGPropertyInfo* SVGPathElement::dPropertyInfo()
 
 // Animated property definitions
 DEFINE_ANIMATED_NUMBER(SVGPathElement, SVGNames::pathLengthAttr, PathLength, pathLength)
-DEFINE_ANIMATED_BOOLEAN(SVGPathElement, SVGNames::externalResourcesRequiredAttr, ExternalResourcesRequired, externalResourcesRequired)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGPathElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(d)
     REGISTER_LOCAL_ANIMATED_PROPERTY(pathLength)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(externalResourcesRequired)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGraphicsElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
@@ -211,7 +209,6 @@ bool SVGPathElement::isSupportedAttribute(const QualifiedName& attrName)
 {
     DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
     if (supportedAttributes.isEmpty()) {
-        SVGExternalResourcesRequired::addSupportedAttributes(supportedAttributes);
         supportedAttributes.add(SVGNames::dAttr);
         supportedAttributes.add(SVGNames::pathLengthAttr);
     }
@@ -237,9 +234,6 @@ void SVGPathElement::parseAttribute(const QualifiedName& name, const AtomicStrin
             document().accessSVGExtensions()->reportError("A negative value for path attribute <pathLength> is not allowed");
         return;
     }
-
-    if (SVGExternalResourcesRequired::parseAttribute(name, value))
-        return;
 
     ASSERT_NOT_REACHED();
 }

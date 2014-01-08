@@ -25,7 +25,6 @@
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedLength.h"
 #include "core/svg/SVGAnimatedPreserveAspectRatio.h"
-#include "core/svg/SVGExternalResourcesRequired.h"
 #include "core/svg/SVGGraphicsElement.h"
 #include "core/svg/SVGImageLoader.h"
 #include "core/svg/SVGURIReference.h"
@@ -33,7 +32,6 @@
 namespace WebCore {
 
 class SVGImageElement FINAL : public SVGGraphicsElement,
-                              public SVGExternalResourcesRequired,
                               public SVGURIReference {
 public:
     static PassRefPtr<SVGImageElement> create(Document&);
@@ -44,6 +42,7 @@ private:
     explicit SVGImageElement(Document&);
 
     virtual bool isValid() const { return SVGTests::isValid(); }
+    virtual bool isStructurallyExternal() const { return !hrefCurrentValue().isNull(); }
     virtual bool supportsFocus() const OVERRIDE { return hasFocusEventListeners(); }
 
     bool isSupportedAttribute(const QualifiedName&);
@@ -71,7 +70,6 @@ private:
         DECLARE_ANIMATED_LENGTH(Height, height)
         DECLARE_ANIMATED_PRESERVEASPECTRATIO(PreserveAspectRatio, preserveAspectRatio)
         DECLARE_ANIMATED_STRING(Href, href)
-        DECLARE_ANIMATED_BOOLEAN(ExternalResourcesRequired, externalResourcesRequired)
     END_DECLARE_ANIMATED_PROPERTIES
 
     SVGImageLoader m_imageLoader;

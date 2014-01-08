@@ -57,11 +57,9 @@ SVGPointList& SVGPolyElement::pointsCurrentValue()
 }
 
 // Animated property definitions
-DEFINE_ANIMATED_BOOLEAN(SVGPolyElement, SVGNames::externalResourcesRequiredAttr, ExternalResourcesRequired, externalResourcesRequired)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGPolyElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(points)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(externalResourcesRequired)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGraphicsElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
@@ -75,7 +73,6 @@ bool SVGPolyElement::isSupportedAttribute(const QualifiedName& attrName)
 {
     DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
     if (supportedAttributes.isEmpty()) {
-        SVGExternalResourcesRequired::addSupportedAttributes(supportedAttributes);
         supportedAttributes.add(SVGNames::pointsAttr);
     }
     return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
@@ -100,9 +97,6 @@ void SVGPolyElement::parseAttribute(const QualifiedName& name, const AtomicStrin
         return;
     }
 
-    if (SVGExternalResourcesRequired::parseAttribute(name, value))
-        return;
-
     ASSERT_NOT_REACHED();
 }
 
@@ -121,11 +115,6 @@ void SVGPolyElement::svgAttributeChanged(const QualifiedName& attrName)
 
     if (attrName == SVGNames::pointsAttr) {
         renderer->setNeedsShapeUpdate();
-        RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer);
-        return;
-    }
-
-    if (SVGExternalResourcesRequired::isKnownAttribute(attrName)) {
         RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer);
         return;
     }

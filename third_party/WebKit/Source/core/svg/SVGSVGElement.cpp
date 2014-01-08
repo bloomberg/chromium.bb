@@ -65,7 +65,6 @@ DEFINE_ANIMATED_LENGTH(SVGSVGElement, SVGNames::xAttr, X, x)
 DEFINE_ANIMATED_LENGTH(SVGSVGElement, SVGNames::yAttr, Y, y)
 DEFINE_ANIMATED_LENGTH(SVGSVGElement, SVGNames::widthAttr, Width, width)
 DEFINE_ANIMATED_LENGTH(SVGSVGElement, SVGNames::heightAttr, Height, height)
-DEFINE_ANIMATED_BOOLEAN(SVGSVGElement, SVGNames::externalResourcesRequiredAttr, ExternalResourcesRequired, externalResourcesRequired)
 DEFINE_ANIMATED_PRESERVEASPECTRATIO(SVGSVGElement, SVGNames::preserveAspectRatioAttr, PreserveAspectRatio, preserveAspectRatio)
 DEFINE_ANIMATED_RECT(SVGSVGElement, SVGNames::viewBoxAttr, ViewBox, viewBox)
 
@@ -74,7 +73,6 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGSVGElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(y)
     REGISTER_LOCAL_ANIMATED_PROPERTY(width)
     REGISTER_LOCAL_ANIMATED_PROPERTY(height)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(externalResourcesRequired)
     REGISTER_LOCAL_ANIMATED_PROPERTY(viewBox)
     REGISTER_LOCAL_ANIMATED_PROPERTY(preserveAspectRatio)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGraphicsElement)
@@ -256,9 +254,8 @@ void SVGSVGElement::parseAttribute(const QualifiedName& name, const AtomicString
         setWidthBaseValue(SVGLength::construct(LengthModeWidth, value, parseError, ForbidNegativeLengths));
     else if (name == SVGNames::heightAttr)
         setHeightBaseValue(SVGLength::construct(LengthModeHeight, value, parseError, ForbidNegativeLengths));
-    else if (SVGExternalResourcesRequired::parseAttribute(name, value)
-               || SVGFitToViewBox::parseAttribute(this, name, value)
-               || SVGZoomAndPan::parseAttribute(this, name, value)) {
+    else if (SVGFitToViewBox::parseAttribute(this, name, value)
+             || SVGZoomAndPan::parseAttribute(this, name, value)) {
     } else
         SVGGraphicsElement::parseAttribute(name, value);
 
@@ -295,7 +292,6 @@ void SVGSVGElement::svgAttributeChanged(const QualifiedName& attrName)
     SVGElementInstance::InvalidationGuard invalidationGuard(this);
 
     if (updateRelativeLengthsOrViewBox
-        || SVGExternalResourcesRequired::isKnownAttribute(attrName)
         || SVGZoomAndPan::isKnownAttribute(attrName)) {
         if (renderer())
             RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer());

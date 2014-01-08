@@ -30,5 +30,3 @@ interface SVGEllipseElement : SVGGeometryElement {
     readonly attribute SVGAnimatedLength ry;
 };
 
-SVGEllipseElement implements SVGExternalResourcesRequired;
-

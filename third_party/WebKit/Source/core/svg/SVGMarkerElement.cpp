@@ -51,7 +51,6 @@ DEFINE_ANIMATED_LENGTH(SVGMarkerElement, SVGNames::markerWidthAttr, MarkerWidth,
 DEFINE_ANIMATED_LENGTH(SVGMarkerElement, SVGNames::markerHeightAttr, MarkerHeight, markerHeight)
 DEFINE_ANIMATED_ENUMERATION(SVGMarkerElement, SVGNames::markerUnitsAttr, MarkerUnits, markerUnits, SVGMarkerUnitsType)
 DEFINE_ANIMATED_ANGLE_AND_ENUMERATION(SVGMarkerElement, SVGNames::orientAttr, orientAngleIdentifier(), OrientAngle, orientAngle)
-DEFINE_ANIMATED_BOOLEAN(SVGMarkerElement, SVGNames::externalResourcesRequiredAttr, ExternalResourcesRequired, externalResourcesRequired)
 DEFINE_ANIMATED_RECT(SVGMarkerElement, SVGNames::viewBoxAttr, ViewBox, viewBox)
 DEFINE_ANIMATED_PRESERVEASPECTRATIO(SVGMarkerElement, SVGNames::preserveAspectRatioAttr, PreserveAspectRatio, preserveAspectRatio)
 
@@ -63,7 +62,6 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGMarkerElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(markerUnits)
     REGISTER_LOCAL_ANIMATED_PROPERTY(orientAngle)
     REGISTER_LOCAL_ANIMATED_PROPERTY(orientType)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(externalResourcesRequired)
     REGISTER_LOCAL_ANIMATED_PROPERTY(viewBox)
     REGISTER_LOCAL_ANIMATED_PROPERTY(preserveAspectRatio)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGElement)
@@ -109,7 +107,6 @@ bool SVGMarkerElement::isSupportedAttribute(const QualifiedName& attrName)
 {
     DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
     if (supportedAttributes.isEmpty()) {
-        SVGExternalResourcesRequired::addSupportedAttributes(supportedAttributes);
         SVGFitToViewBox::addSupportedAttributes(supportedAttributes);
         supportedAttributes.add(SVGNames::markerUnitsAttr);
         supportedAttributes.add(SVGNames::refXAttr);
@@ -146,8 +143,7 @@ void SVGMarkerElement::parseAttribute(const QualifiedName& name, const AtomicStr
             setOrientTypeBaseValue(orientType);
         if (orientType == SVGMarkerOrientAngle)
             setOrientAngleBaseValue(angle);
-    } else if (SVGExternalResourcesRequired::parseAttribute(name, value)
-             || SVGFitToViewBox::parseAttribute(this, name, value)) {
+    } else if (SVGFitToViewBox::parseAttribute(this, name, value)) {
     } else
         ASSERT_NOT_REACHED();
 

@@ -25,15 +25,13 @@
 #include "core/svg/SVGAnimatedEnumeration.h"
 #include "core/svg/SVGAnimatedLength.h"
 #include "core/svg/SVGElement.h"
-#include "core/svg/SVGExternalResourcesRequired.h"
 #include "core/svg/SVGTests.h"
 #include "core/svg/SVGUnitTypes.h"
 
 namespace WebCore {
 
 class SVGMaskElement FINAL : public SVGElement,
-                             public SVGTests,
-                             public SVGExternalResourcesRequired {
+                             public SVGTests {
 public:
     static PassRefPtr<SVGMaskElement> create(Document&);
 
@@ -59,7 +57,6 @@ private:
         DECLARE_ANIMATED_LENGTH(Y, y)
         DECLARE_ANIMATED_LENGTH(Width, width)
         DECLARE_ANIMATED_LENGTH(Height, height)
-        DECLARE_ANIMATED_BOOLEAN(ExternalResourcesRequired, externalResourcesRequired)
     END_DECLARE_ANIMATED_PROPERTIES
 
     // SVGTests

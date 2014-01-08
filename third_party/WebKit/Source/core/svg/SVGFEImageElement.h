@@ -26,7 +26,6 @@
 #include "core/fetch/ResourcePtr.h"
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedPreserveAspectRatio.h"
-#include "core/svg/SVGExternalResourcesRequired.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 #include "core/svg/SVGURIReference.h"
 #include "core/svg/graphics/filters/SVGFEImage.h"
@@ -36,7 +35,6 @@ namespace WebCore {
 
 class SVGFEImageElement FINAL : public SVGFilterPrimitiveStandardAttributes,
                                 public SVGURIReference,
-                                public SVGExternalResourcesRequired,
                                 public ImageResourceClient {
 public:
     static PassRefPtr<SVGFEImageElement> create(Document&);
@@ -65,7 +63,6 @@ private:
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFEImageElement)
         DECLARE_ANIMATED_PRESERVEASPECTRATIO(PreserveAspectRatio, preserveAspectRatio)
         DECLARE_ANIMATED_STRING(Href, href)
-        DECLARE_ANIMATED_BOOLEAN(ExternalResourcesRequired, externalResourcesRequired)
     END_DECLARE_ANIMATED_PROPERTIES
 
     ResourcePtr<ImageResource> m_cachedImage;

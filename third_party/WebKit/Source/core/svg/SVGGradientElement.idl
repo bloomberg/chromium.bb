@@ -37,6 +37,5 @@
     readonly attribute SVGAnimatedEnumeration   spreadMethod;
 };
 
-SVGGradientElement implements SVGExternalResourcesRequired;
 SVGGradientElement implements SVGURIReference;
 

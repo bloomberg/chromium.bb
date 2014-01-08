@@ -38,6 +38,5 @@ interface SVGFilterElement : SVGElement {
                       [Default=Undefined] optional unsigned long filterResY);
 };
 
-SVGFilterElement implements SVGExternalResourcesRequired;
 SVGFilterElement implements SVGURIReference;
 

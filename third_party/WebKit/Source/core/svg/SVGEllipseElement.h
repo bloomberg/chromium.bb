@@ -24,13 +24,11 @@
 #include "SVGNames.h"
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedLength.h"
-#include "core/svg/SVGExternalResourcesRequired.h"
 #include "core/svg/SVGGeometryElement.h"
 
 namespace WebCore {
 
-class SVGEllipseElement FINAL : public SVGGeometryElement,
-                                public SVGExternalResourcesRequired {
+class SVGEllipseElement FINAL : public SVGGeometryElement {
 public:
     static PassRefPtr<SVGEllipseElement> create(Document&);
 
@@ -53,7 +51,6 @@ private:
         DECLARE_ANIMATED_LENGTH(Cy, cy)
         DECLARE_ANIMATED_LENGTH(Rx, rx)
         DECLARE_ANIMATED_LENGTH(Ry, ry)
-        DECLARE_ANIMATED_BOOLEAN(ExternalResourcesRequired, externalResourcesRequired)
     END_DECLARE_ANIMATED_PROPERTIES
 };
 

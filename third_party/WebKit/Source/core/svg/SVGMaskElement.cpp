@@ -37,7 +37,6 @@ DEFINE_ANIMATED_LENGTH(SVGMaskElement, SVGNames::xAttr, X, x)
 DEFINE_ANIMATED_LENGTH(SVGMaskElement, SVGNames::yAttr, Y, y)
 DEFINE_ANIMATED_LENGTH(SVGMaskElement, SVGNames::widthAttr, Width, width)
 DEFINE_ANIMATED_LENGTH(SVGMaskElement, SVGNames::heightAttr, Height, height)
-DEFINE_ANIMATED_BOOLEAN(SVGMaskElement, SVGNames::externalResourcesRequiredAttr, ExternalResourcesRequired, externalResourcesRequired)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGMaskElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(maskUnits)
@@ -46,7 +45,6 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGMaskElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(y)
     REGISTER_LOCAL_ANIMATED_PROPERTY(width)
     REGISTER_LOCAL_ANIMATED_PROPERTY(height)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(externalResourcesRequired)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGElement)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGTests)
 END_REGISTER_ANIMATED_PROPERTIES
@@ -76,7 +74,6 @@ bool SVGMaskElement::isSupportedAttribute(const QualifiedName& attrName)
     DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
     if (supportedAttributes.isEmpty()) {
         SVGTests::addSupportedAttributes(supportedAttributes);
-        SVGExternalResourcesRequired::addSupportedAttributes(supportedAttributes);
         supportedAttributes.add(SVGNames::maskUnitsAttr);
         supportedAttributes.add(SVGNames::maskContentUnitsAttr);
         supportedAttributes.add(SVGNames::xAttr);
@@ -111,8 +108,7 @@ void SVGMaskElement::parseAttribute(const QualifiedName& name, const AtomicStrin
         setWidthBaseValue(SVGLength::construct(LengthModeWidth, value, parseError));
     else if (name == SVGNames::heightAttr)
         setHeightBaseValue(SVGLength::construct(LengthModeHeight, value, parseError));
-    else if (SVGTests::parseAttribute(name, value)
-             || SVGExternalResourcesRequired::parseAttribute(name, value)) {
+    else if (SVGTests::parseAttribute(name, value)) {
     } else
         ASSERT_NOT_REACHED();
 

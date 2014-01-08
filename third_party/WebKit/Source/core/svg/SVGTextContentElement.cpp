@@ -53,12 +53,10 @@ const SVGPropertyInfo* SVGTextContentElement::textLengthPropertyInfo()
 
 // Animated property definitions
 DEFINE_ANIMATED_ENUMERATION(SVGTextContentElement, SVGNames::lengthAdjustAttr, LengthAdjust, lengthAdjust, SVGLengthAdjustType)
-DEFINE_ANIMATED_BOOLEAN(SVGTextContentElement, SVGNames::externalResourcesRequiredAttr, ExternalResourcesRequired, externalResourcesRequired)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGTextContentElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(textLength)
     REGISTER_LOCAL_ANIMATED_PROPERTY(lengthAdjust)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(externalResourcesRequired)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGraphicsElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
@@ -213,7 +211,6 @@ bool SVGTextContentElement::isSupportedAttribute(const QualifiedName& attrName)
 {
     DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
     if (supportedAttributes.isEmpty()) {
-        SVGExternalResourcesRequired::addSupportedAttributes(supportedAttributes);
         supportedAttributes.add(SVGNames::lengthAdjustAttr);
         supportedAttributes.add(SVGNames::textLengthAttr);
         supportedAttributes.add(XMLNames::spaceAttr);
@@ -254,7 +251,6 @@ void SVGTextContentElement::parseAttribute(const QualifiedName& name, const Atom
             setLengthAdjustBaseValue(propertyValue);
     } else if (name == SVGNames::textLengthAttr) {
         m_textLength.value = SVGLength::construct(LengthModeOther, value, parseError, ForbidNegativeLengths);
-    } else if (SVGExternalResourcesRequired::parseAttribute(name, value)) {
     } else if (name.matches(XMLNames::spaceAttr)) {
     } else
         ASSERT_NOT_REACHED();

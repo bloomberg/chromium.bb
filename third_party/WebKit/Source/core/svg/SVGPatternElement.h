@@ -29,7 +29,6 @@
 #include "core/svg/SVGAnimatedRect.h"
 #include "core/svg/SVGAnimatedTransformList.h"
 #include "core/svg/SVGElement.h"
-#include "core/svg/SVGExternalResourcesRequired.h"
 #include "core/svg/SVGFitToViewBox.h"
 #include "core/svg/SVGTests.h"
 #include "core/svg/SVGURIReference.h"
@@ -42,7 +41,6 @@ struct PatternAttributes;
 class SVGPatternElement FINAL : public SVGElement,
                                 public SVGURIReference,
                                 public SVGTests,
-                                public SVGExternalResourcesRequired,
                                 public SVGFitToViewBox {
 public:
     static PassRefPtr<SVGPatternElement> create(Document&);
@@ -75,7 +73,6 @@ private:
         DECLARE_ANIMATED_ENUMERATION(PatternContentUnits, patternContentUnits, SVGUnitTypes::SVGUnitType)
         DECLARE_ANIMATED_TRANSFORM_LIST(PatternTransform, patternTransform)
         DECLARE_ANIMATED_STRING(Href, href)
-        DECLARE_ANIMATED_BOOLEAN(ExternalResourcesRequired, externalResourcesRequired)
         DECLARE_ANIMATED_RECT(ViewBox, viewBox)
         DECLARE_ANIMATED_PRESERVEASPECTRATIO(PreserveAspectRatio, preserveAspectRatio)
     END_DECLARE_ANIMATED_PROPERTIES

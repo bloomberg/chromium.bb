@@ -23,15 +23,13 @@
 #define SVGAElement_h
 
 #include "core/svg/SVGAnimatedBoolean.h"
-#include "core/svg/SVGExternalResourcesRequired.h"
 #include "core/svg/SVGGraphicsElement.h"
 #include "core/svg/SVGURIReference.h"
 
 namespace WebCore {
 
 class SVGAElement FINAL : public SVGGraphicsElement,
-                          public SVGURIReference,
-                          public SVGExternalResourcesRequired {
+                          public SVGURIReference {
 public:
     static PassRefPtr<SVGAElement> create(Document&);
 
@@ -66,7 +64,6 @@ private:
         // That's why it has been renamed to "svgTarget", the CodeGenerators take care of calling svgTargetAnimated() instead of targetAnimated(), see CodeGenerator.pm.
         DECLARE_ANIMATED_STRING(SVGTarget, svgTarget)
         DECLARE_ANIMATED_STRING(Href, href)
-        DECLARE_ANIMATED_BOOLEAN(ExternalResourcesRequired, externalResourcesRequired)
     END_DECLARE_ANIMATED_PROPERTIES
 };
 

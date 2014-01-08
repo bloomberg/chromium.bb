@@ -26,7 +26,6 @@
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedString.h"
 #include "core/svg/SVGElement.h"
-#include "core/svg/SVGExternalResourcesRequired.h"
 #include "core/svg/SVGURIReference.h"
 
 namespace WebCore {
@@ -36,7 +35,6 @@ class ScriptLoader;
 class SVGScriptElement FINAL
     : public SVGElement
     , public SVGURIReference
-    , public SVGExternalResourcesRequired
     , public ScriptLoaderClient {
 public:
     static PassRefPtr<SVGScriptElement> create(Document&, bool wasInsertedByParser);
@@ -57,9 +55,10 @@ private:
 
     virtual void svgAttributeChanged(const QualifiedName&);
     virtual bool isURLAttribute(const Attribute&) const OVERRIDE;
+    virtual bool isStructurallyExternal() const { return hasSourceAttribute(); }
     virtual void finishParsingChildren();
 
-    virtual bool haveLoadedRequiredResources() { return SVGExternalResourcesRequired::haveLoadedRequiredResources(); }
+    virtual bool haveLoadedRequiredResources() OVERRIDE;
 
     virtual String sourceAttributeValue() const;
     virtual String charsetAttributeValue() const;
@@ -71,20 +70,15 @@ private:
     virtual bool deferAttributeValue() const;
     virtual bool hasSourceAttribute() const;
 
-    virtual void dispatchLoadEvent() { SVGExternalResourcesRequired::dispatchLoadEvent(this); }
+    virtual void dispatchLoadEvent();
 
     virtual PassRefPtr<Element> cloneElementWithoutAttributesAndChildren();
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
 
-    // SVGExternalResourcesRequired
-    virtual void setHaveFiredLoadEvent(bool) OVERRIDE;
-    virtual bool isParserInserted() const OVERRIDE;
-    virtual bool haveFiredLoadEvent() const OVERRIDE;
-    virtual Timer<SVGElement>* svgLoadEventTimer() OVERRIDE;
+    virtual Timer<SVGElement>* svgLoadEventTimer() OVERRIDE { return &m_svgLoadEventTimer; }
 
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGScriptElement)
         DECLARE_ANIMATED_STRING(Href, href)
-        DECLARE_ANIMATED_BOOLEAN(ExternalResourcesRequired, externalResourcesRequired)
     END_DECLARE_ANIMATED_PROPERTIES
 
     String m_type;

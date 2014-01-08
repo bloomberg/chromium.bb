@@ -26,5 +26,3 @@
 interface SVGDefsElement : SVGGraphicsElement {
 };
 
-SVGDefsElement implements SVGExternalResourcesRequired;
-

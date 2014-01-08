@@ -23,14 +23,12 @@
 #include "SVGNames.h"
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedLength.h"
-#include "core/svg/SVGExternalResourcesRequired.h"
 #include "core/svg/SVGGraphicsElement.h"
 #include "core/svg/SVGURIReference.h"
 
 namespace WebCore {
 
-class SVGForeignObjectElement FINAL : public SVGGraphicsElement,
-                                      public SVGExternalResourcesRequired {
+class SVGForeignObjectElement FINAL : public SVGGraphicsElement {
 public:
     static PassRefPtr<SVGForeignObjectElement> create(Document&);
 
@@ -54,7 +52,6 @@ private:
         DECLARE_ANIMATED_LENGTH(Width, width)
         DECLARE_ANIMATED_LENGTH(Height, height)
         DECLARE_ANIMATED_STRING(Href, href)
-        DECLARE_ANIMATED_BOOLEAN(ExternalResourcesRequired, externalResourcesRequired)
     END_DECLARE_ANIMATED_PROPERTIES
 };
 

@@ -33,7 +33,6 @@ interface SVGUseElement : SVGGraphicsElement {
     readonly attribute SVGElementInstance animatedInstanceRoot;
 };
 
-SVGUseElement implements SVGExternalResourcesRequired;
 SVGUseElement implements SVGTests;
 SVGUseElement implements SVGURIReference;
 

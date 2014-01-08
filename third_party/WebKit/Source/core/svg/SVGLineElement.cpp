@@ -33,14 +33,12 @@ DEFINE_ANIMATED_LENGTH(SVGLineElement, SVGNames::x1Attr, X1, x1)
 DEFINE_ANIMATED_LENGTH(SVGLineElement, SVGNames::y1Attr, Y1, y1)
 DEFINE_ANIMATED_LENGTH(SVGLineElement, SVGNames::x2Attr, X2, x2)
 DEFINE_ANIMATED_LENGTH(SVGLineElement, SVGNames::y2Attr, Y2, y2)
-DEFINE_ANIMATED_BOOLEAN(SVGLineElement, SVGNames::externalResourcesRequiredAttr, ExternalResourcesRequired, externalResourcesRequired)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGLineElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(x1)
     REGISTER_LOCAL_ANIMATED_PROPERTY(y1)
     REGISTER_LOCAL_ANIMATED_PROPERTY(x2)
     REGISTER_LOCAL_ANIMATED_PROPERTY(y2)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(externalResourcesRequired)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGraphicsElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
@@ -64,7 +62,6 @@ bool SVGLineElement::isSupportedAttribute(const QualifiedName& attrName)
 {
     DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
     if (supportedAttributes.isEmpty()) {
-        SVGExternalResourcesRequired::addSupportedAttributes(supportedAttributes);
         supportedAttributes.add(SVGNames::x1Attr);
         supportedAttributes.add(SVGNames::x2Attr);
         supportedAttributes.add(SVGNames::y1Attr);
@@ -87,8 +84,7 @@ void SVGLineElement::parseAttribute(const QualifiedName& name, const AtomicStrin
         setX2BaseValue(SVGLength::construct(LengthModeWidth, value, parseError));
     else if (name == SVGNames::y2Attr)
         setY2BaseValue(SVGLength::construct(LengthModeHeight, value, parseError));
-    else if (SVGExternalResourcesRequired::parseAttribute(name, value)) {
-    } else
+    else
         ASSERT_NOT_REACHED();
 
     reportAttributeParsingError(parseError, name, value);
@@ -117,11 +113,6 @@ void SVGLineElement::svgAttributeChanged(const QualifiedName& attrName)
 
     if (isLengthAttribute) {
         renderer->setNeedsShapeUpdate();
-        RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer);
-        return;
-    }
-
-    if (SVGExternalResourcesRequired::isKnownAttribute(attrName)) {
         RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer);
         return;
     }

@@ -37,12 +37,10 @@ namespace WebCore {
 // Animated property definitions
 DEFINE_ANIMATED_PRESERVEASPECTRATIO(SVGFEImageElement, SVGNames::preserveAspectRatioAttr, PreserveAspectRatio, preserveAspectRatio)
 DEFINE_ANIMATED_STRING(SVGFEImageElement, XLinkNames::hrefAttr, Href, href)
-DEFINE_ANIMATED_BOOLEAN(SVGFEImageElement, SVGNames::externalResourcesRequiredAttr, ExternalResourcesRequired, externalResourcesRequired)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFEImageElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(preserveAspectRatio)
     REGISTER_LOCAL_ANIMATED_PROPERTY(href)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(externalResourcesRequired)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGFilterPrimitiveStandardAttributes)
 END_REGISTER_ANIMATED_PROPERTIES
 
@@ -119,7 +117,6 @@ bool SVGFEImageElement::isSupportedAttribute(const QualifiedName& attrName)
     DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
     if (supportedAttributes.isEmpty()) {
         SVGURIReference::addSupportedAttributes(supportedAttributes);
-        SVGExternalResourcesRequired::addSupportedAttributes(supportedAttributes);
         supportedAttributes.add(SVGNames::preserveAspectRatioAttr);
     }
     return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
@@ -140,8 +137,6 @@ void SVGFEImageElement::parseAttribute(const QualifiedName& name, const AtomicSt
     }
 
     if (SVGURIReference::parseAttribute(name, value))
-        return;
-    if (SVGExternalResourcesRequired::parseAttribute(name, value))
         return;
 
     ASSERT_NOT_REACHED();
@@ -165,9 +160,6 @@ void SVGFEImageElement::svgAttributeChanged(const QualifiedName& attrName)
         buildPendingResource();
         return;
     }
-
-    if (SVGExternalResourcesRequired::isKnownAttribute(attrName))
-        return;
 
     ASSERT_NOT_REACHED();
 }

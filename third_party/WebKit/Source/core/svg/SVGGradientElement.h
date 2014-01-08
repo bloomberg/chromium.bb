@@ -26,7 +26,6 @@
 #include "core/svg/SVGAnimatedEnumeration.h"
 #include "core/svg/SVGAnimatedTransformList.h"
 #include "core/svg/SVGElement.h"
-#include "core/svg/SVGExternalResourcesRequired.h"
 #include "core/svg/SVGURIReference.h"
 #include "core/svg/SVGUnitTypes.h"
 #include "platform/graphics/Gradient.h"
@@ -74,8 +73,7 @@ struct SVGPropertyTraits<SVGSpreadMethodType> {
 };
 
 class SVGGradientElement : public SVGElement,
-                           public SVGURIReference,
-                           public SVGExternalResourcesRequired {
+                           public SVGURIReference {
 public:
     enum {
         SVG_SPREADMETHOD_UNKNOWN = SVGSpreadMethodUnknown,
@@ -103,7 +101,6 @@ private:
         DECLARE_ANIMATED_ENUMERATION(GradientUnits, gradientUnits, SVGUnitTypes::SVGUnitType)
         DECLARE_ANIMATED_TRANSFORM_LIST(GradientTransform, gradientTransform)
         DECLARE_ANIMATED_STRING(Href, href)
-        DECLARE_ANIMATED_BOOLEAN(ExternalResourcesRequired, externalResourcesRequired)
     END_DECLARE_ANIMATED_PROPERTIES
 };
 

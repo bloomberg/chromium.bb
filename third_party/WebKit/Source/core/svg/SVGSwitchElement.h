@@ -22,13 +22,11 @@
 #define SVGSwitchElement_h
 
 #include "core/svg/SVGAnimatedBoolean.h"
-#include "core/svg/SVGExternalResourcesRequired.h"
 #include "core/svg/SVGGraphicsElement.h"
 
 namespace WebCore {
 
-class SVGSwitchElement FINAL : public SVGGraphicsElement,
-                               public SVGExternalResourcesRequired {
+class SVGSwitchElement FINAL : public SVGGraphicsElement {
 public:
     static PassRefPtr<SVGSwitchElement> create(Document&);
 
@@ -43,7 +41,6 @@ private:
     virtual RenderObject* createRenderer(RenderStyle*);
 
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGSwitchElement)
-        DECLARE_ANIMATED_BOOLEAN(ExternalResourcesRequired, externalResourcesRequired)
     END_DECLARE_ANIMATED_PROPERTIES
 };
 

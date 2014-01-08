@@ -23,14 +23,12 @@
 
 #include "SVGNames.h"
 #include "core/svg/SVGAnimatedBoolean.h"
-#include "core/svg/SVGExternalResourcesRequired.h"
 #include "core/svg/SVGGeometryElement.h"
 #include "core/svg/SVGPointList.h"
 
 namespace WebCore {
 
-class SVGPolyElement : public SVGGeometryElement
-                     , public SVGExternalResourcesRequired {
+class SVGPolyElement : public SVGGeometryElement {
 public:
     SVGListPropertyTearOff<SVGPointList>* points();
     SVGListPropertyTearOff<SVGPointList>* animatedPoints();
@@ -60,7 +58,6 @@ private:
 
 private:
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGPolyElement)
-        DECLARE_ANIMATED_BOOLEAN(ExternalResourcesRequired, externalResourcesRequired)
     END_DECLARE_ANIMATED_PROPERTIES
 };
 

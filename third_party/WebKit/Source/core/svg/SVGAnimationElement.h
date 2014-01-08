@@ -26,7 +26,6 @@
 #define SVGAnimationElement_h
 
 #include "core/svg/SVGAnimatedBoolean.h"
-#include "core/svg/SVGExternalResourcesRequired.h"
 #include "core/svg/SVGTests.h"
 #include "core/svg/animation/SVGSMILElement.h"
 #include "platform/animation/UnitBezier.h"
@@ -64,8 +63,7 @@ class TimeContainer;
 class SVGAnimatedType;
 
 class SVGAnimationElement : public SVGSMILElement,
-                            public SVGTests,
-                            public SVGExternalResourcesRequired {
+                            public SVGTests {
 public:
     // SVGAnimationElement
     float getStartTime() const;
@@ -228,7 +226,6 @@ private:
     void adjustForInheritance(SVGElement* targetElement, const QualifiedName& attributeName, String&);
 
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGAnimationElement)
-        DECLARE_ANIMATED_BOOLEAN(ExternalResourcesRequired, externalResourcesRequired)
     END_DECLARE_ANIMATED_PROPERTIES
 
     // SVGTests

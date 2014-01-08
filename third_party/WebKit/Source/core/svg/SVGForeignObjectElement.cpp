@@ -36,7 +36,6 @@ DEFINE_ANIMATED_LENGTH(SVGForeignObjectElement, SVGNames::yAttr, Y, y)
 DEFINE_ANIMATED_LENGTH(SVGForeignObjectElement, SVGNames::widthAttr, Width, width)
 DEFINE_ANIMATED_LENGTH(SVGForeignObjectElement, SVGNames::heightAttr, Height, height)
 DEFINE_ANIMATED_STRING(SVGForeignObjectElement, XLinkNames::hrefAttr, Href, href)
-DEFINE_ANIMATED_BOOLEAN(SVGForeignObjectElement, SVGNames::externalResourcesRequiredAttr, ExternalResourcesRequired, externalResourcesRequired)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGForeignObjectElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(x)
@@ -44,7 +43,6 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGForeignObjectElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(width)
     REGISTER_LOCAL_ANIMATED_PROPERTY(height)
     REGISTER_LOCAL_ANIMATED_PROPERTY(href)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(externalResourcesRequired)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGraphicsElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
@@ -68,7 +66,6 @@ bool SVGForeignObjectElement::isSupportedAttribute(const QualifiedName& attrName
 {
     DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
     if (supportedAttributes.isEmpty()) {
-        SVGExternalResourcesRequired::addSupportedAttributes(supportedAttributes);
         supportedAttributes.add(SVGNames::xAttr);
         supportedAttributes.add(SVGNames::yAttr);
         supportedAttributes.add(SVGNames::widthAttr);
@@ -91,8 +88,7 @@ void SVGForeignObjectElement::parseAttribute(const QualifiedName& name, const At
         setWidthBaseValue(SVGLength::construct(LengthModeWidth, value, parseError));
     else if (name == SVGNames::heightAttr)
         setHeightBaseValue(SVGLength::construct(LengthModeHeight, value, parseError));
-    else if (SVGExternalResourcesRequired::parseAttribute(name, value)) {
-    } else
+    else
         ASSERT_NOT_REACHED();
 
     reportAttributeParsingError(parseError, name, value);

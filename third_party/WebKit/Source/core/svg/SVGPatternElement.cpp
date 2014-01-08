@@ -40,7 +40,6 @@ DEFINE_ANIMATED_ENUMERATION(SVGPatternElement, SVGNames::patternUnitsAttr, Patte
 DEFINE_ANIMATED_ENUMERATION(SVGPatternElement, SVGNames::patternContentUnitsAttr, PatternContentUnits, patternContentUnits, SVGUnitTypes::SVGUnitType)
 DEFINE_ANIMATED_TRANSFORM_LIST(SVGPatternElement, SVGNames::patternTransformAttr, PatternTransform, patternTransform)
 DEFINE_ANIMATED_STRING(SVGPatternElement, XLinkNames::hrefAttr, Href, href)
-DEFINE_ANIMATED_BOOLEAN(SVGPatternElement, SVGNames::externalResourcesRequiredAttr, ExternalResourcesRequired, externalResourcesRequired)
 DEFINE_ANIMATED_RECT(SVGPatternElement, SVGNames::viewBoxAttr, ViewBox, viewBox)
 DEFINE_ANIMATED_PRESERVEASPECTRATIO(SVGPatternElement, SVGNames::preserveAspectRatioAttr, PreserveAspectRatio, preserveAspectRatio)
 
@@ -53,7 +52,6 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGPatternElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(patternContentUnits)
     REGISTER_LOCAL_ANIMATED_PROPERTY(patternTransform)
     REGISTER_LOCAL_ANIMATED_PROPERTY(href)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(externalResourcesRequired)
     REGISTER_LOCAL_ANIMATED_PROPERTY(viewBox)
     REGISTER_LOCAL_ANIMATED_PROPERTY(preserveAspectRatio)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGElement)
@@ -84,7 +82,6 @@ bool SVGPatternElement::isSupportedAttribute(const QualifiedName& attrName)
     if (supportedAttributes.isEmpty()) {
         SVGURIReference::addSupportedAttributes(supportedAttributes);
         SVGTests::addSupportedAttributes(supportedAttributes);
-        SVGExternalResourcesRequired::addSupportedAttributes(supportedAttributes);
         SVGFitToViewBox::addSupportedAttributes(supportedAttributes);
         supportedAttributes.add(SVGNames::patternUnitsAttr);
         supportedAttributes.add(SVGNames::patternContentUnitsAttr);
@@ -129,7 +126,6 @@ void SVGPatternElement::parseAttribute(const QualifiedName& name, const AtomicSt
         setHeightBaseValue(SVGLength::construct(LengthModeHeight, value, parseError, ForbidNegativeLengths));
     else if (SVGURIReference::parseAttribute(name, value)
              || SVGTests::parseAttribute(name, value)
-             || SVGExternalResourcesRequired::parseAttribute(name, value)
              || SVGFitToViewBox::parseAttribute(this, name, value)) {
     } else
         ASSERT_NOT_REACHED();

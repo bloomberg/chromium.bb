@@ -69,7 +69,6 @@ interface SVGSVGElement : SVGGraphicsElement {
     Element getElementById([Default=Undefined] optional DOMString elementId);
 };
 
-SVGSVGElement implements SVGExternalResourcesRequired;
 SVGSVGElement implements SVGFitToViewBox;
 SVGSVGElement implements SVGZoomAndPan;
 

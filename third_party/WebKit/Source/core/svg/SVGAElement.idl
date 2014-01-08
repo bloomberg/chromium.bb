@@ -27,6 +27,5 @@ interface SVGAElement : SVGGraphicsElement {
     [ImplementedAs=svgTarget] readonly attribute SVGAnimatedString target;
 };
 
-SVGAElement implements SVGExternalResourcesRequired;
 SVGAElement implements SVGURIReference;
 

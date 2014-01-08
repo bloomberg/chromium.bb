@@ -34,14 +34,12 @@ DEFINE_ANIMATED_LENGTH(SVGEllipseElement, SVGNames::cxAttr, Cx, cx)
 DEFINE_ANIMATED_LENGTH(SVGEllipseElement, SVGNames::cyAttr, Cy, cy)
 DEFINE_ANIMATED_LENGTH(SVGEllipseElement, SVGNames::rxAttr, Rx, rx)
 DEFINE_ANIMATED_LENGTH(SVGEllipseElement, SVGNames::ryAttr, Ry, ry)
-DEFINE_ANIMATED_BOOLEAN(SVGEllipseElement, SVGNames::externalResourcesRequiredAttr, ExternalResourcesRequired, externalResourcesRequired)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGEllipseElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(cx)
     REGISTER_LOCAL_ANIMATED_PROPERTY(cy)
     REGISTER_LOCAL_ANIMATED_PROPERTY(rx)
     REGISTER_LOCAL_ANIMATED_PROPERTY(ry)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(externalResourcesRequired)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGraphicsElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
@@ -65,7 +63,6 @@ bool SVGEllipseElement::isSupportedAttribute(const QualifiedName& attrName)
 {
     DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
     if (supportedAttributes.isEmpty()) {
-        SVGExternalResourcesRequired::addSupportedAttributes(supportedAttributes);
         supportedAttributes.add(SVGNames::cxAttr);
         supportedAttributes.add(SVGNames::cyAttr);
         supportedAttributes.add(SVGNames::rxAttr);
@@ -88,8 +85,7 @@ void SVGEllipseElement::parseAttribute(const QualifiedName& name, const AtomicSt
         setRxBaseValue(SVGLength::construct(LengthModeWidth, value, parseError, ForbidNegativeLengths));
     else if (name == SVGNames::ryAttr)
         setRyBaseValue(SVGLength::construct(LengthModeHeight, value, parseError, ForbidNegativeLengths));
-    else if (SVGExternalResourcesRequired::parseAttribute(name, value)) {
-    } else
+    else
         ASSERT_NOT_REACHED();
 
     reportAttributeParsingError(parseError, name, value);
@@ -118,11 +114,6 @@ void SVGEllipseElement::svgAttributeChanged(const QualifiedName& attrName)
 
     if (isLengthAttribute) {
         renderer->setNeedsShapeUpdate();
-        RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer);
-        return;
-    }
-
-    if (SVGExternalResourcesRequired::isKnownAttribute(attrName)) {
         RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer);
         return;
     }

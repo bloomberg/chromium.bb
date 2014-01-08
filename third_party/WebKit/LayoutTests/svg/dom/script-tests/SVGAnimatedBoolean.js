@@ -1,17 +1,17 @@
-description("This test checks the SVGAnimatedBoolean API - utilizing the externalResourcesRequired property of SVGRectElement");
+description("This test checks the SVGAnimatedBoolean API - utilizing the preserveAlpha property of SVGFEConvolveMatrixElement");
 
-var rectElement = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+var convElement = document.createElementNS("http://www.w3.org/2000/svg", "feConvolveMatrix");
 debug("");
-debug("Check initial SVGExternalResourcesRequired value");
-shouldBe("rectElement.externalResourcesRequired.baseVal", "false");
+debug("Check initial preserveAlpha value");
+shouldBe("convElement.preserveAlpha.baseVal", "false");
 
 debug("");
 debug("Set value to true");
-shouldBe("rectElement.externalResourcesRequired.baseVal = true", "true");
+shouldBe("convElement.preserveAlpha.baseVal = true", "true");
 
 debug("");
 debug("Caching baseVal in local variable");
-var baseVal = rectElement.externalResourcesRequired.baseVal;
+var baseVal = convElement.preserveAlpha.baseVal;
 shouldBe("baseVal", "true");
 
 debug("");
@@ -19,21 +19,21 @@ debug("Modify local baseVal variable to true");
 shouldBeFalse("baseVal = false");
 
 debug("");
-debug("Assure that rectElement.externalResourcesRequired has not been changed, but the local baseVal variable");
+debug("Assure that convElement.preserveAlpha has not been changed, but the local baseVal variable");
 shouldBe("baseVal", "false");
-shouldBe("rectElement.externalResourcesRequired.baseVal", "true");
+shouldBe("convElement.preserveAlpha.baseVal", "true");
 
 debug("");
 debug("Check assigning values of various types");
 // ECMA-262, 9.2, "ToBoolean"
-shouldBe("rectElement.externalResourcesRequired.baseVal = rectElement.externalResourcesRequired", "rectElement.externalResourcesRequired");
-shouldBe("rectElement.externalResourcesRequired.baseVal", "true");
-shouldBeNull("rectElement.externalResourcesRequired.baseVal = null");
-shouldBe("rectElement.externalResourcesRequired.baseVal", "false");
-shouldBe("rectElement.externalResourcesRequired.baseVal = 'aString'", "'aString'");
-shouldBe("rectElement.externalResourcesRequired.baseVal", "true");
-rectElement.externalResourcesRequired.baseVal = false;
-shouldBe("rectElement.externalResourcesRequired.baseVal = rectElement", "rectElement");
-shouldBe("rectElement.externalResourcesRequired.baseVal", "true");
+shouldBe("convElement.preserveAlpha.baseVal = convElement.preserveAlpha", "convElement.preserveAlpha");
+shouldBe("convElement.preserveAlpha.baseVal", "true");
+shouldBeNull("convElement.preserveAlpha.baseVal = null");
+shouldBe("convElement.preserveAlpha.baseVal", "false");
+shouldBe("convElement.preserveAlpha.baseVal = 'aString'", "'aString'");
+shouldBe("convElement.preserveAlpha.baseVal", "true");
+convElement.preserveAlpha.baseVal = false;
+shouldBe("convElement.preserveAlpha.baseVal = convElement", "convElement");
+shouldBe("convElement.preserveAlpha.baseVal", "true");
 
 successfullyParsed = true;

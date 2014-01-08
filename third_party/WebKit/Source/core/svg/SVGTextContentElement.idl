@@ -43,6 +43,3 @@ interface SVGTextContentElement : SVGGraphicsElement {
     [RaisesException] void selectSubString(unsigned long offset, unsigned long length);
 };
 
-// FIXME: SVGTextContentElement is not supposed to implement SVGExternalResourcesRequired.
-SVGTextContentElement implements SVGExternalResourcesRequired;
-

@@ -31,10 +31,8 @@
 namespace WebCore {
 
 // Animated property definitions
-DEFINE_ANIMATED_BOOLEAN(SVGGElement, SVGNames::externalResourcesRequiredAttr, ExternalResourcesRequired, externalResourcesRequired)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGGElement)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(externalResourcesRequired)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGraphicsElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
@@ -53,8 +51,6 @@ PassRefPtr<SVGGElement> SVGGElement::create(Document& document)
 bool SVGGElement::isSupportedAttribute(const QualifiedName& attrName)
 {
     DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
-    if (supportedAttributes.isEmpty())
-        SVGExternalResourcesRequired::addSupportedAttributes(supportedAttributes);
     return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
 }
 
@@ -62,8 +58,6 @@ void SVGGElement::parseAttribute(const QualifiedName& name, const AtomicString& 
 {
     if (!isSupportedAttribute(name)) {
         SVGGraphicsElement::parseAttribute(name, value);
-        return;
-    } else if (SVGExternalResourcesRequired::parseAttribute(name, value)) {
         return;
     }
 

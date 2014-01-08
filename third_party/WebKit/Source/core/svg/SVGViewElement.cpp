@@ -26,12 +26,10 @@
 namespace WebCore {
 
 // Animated property definitions
-DEFINE_ANIMATED_BOOLEAN(SVGViewElement, SVGNames::externalResourcesRequiredAttr, ExternalResourcesRequired, externalResourcesRequired)
 DEFINE_ANIMATED_RECT(SVGViewElement, SVGNames::viewBoxAttr, ViewBox, viewBox)
 DEFINE_ANIMATED_PRESERVEASPECTRATIO(SVGViewElement, SVGNames::preserveAspectRatioAttr, PreserveAspectRatio, preserveAspectRatio)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGViewElement)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(externalResourcesRequired)
     REGISTER_LOCAL_ANIMATED_PROPERTY(viewBox)
     REGISTER_LOCAL_ANIMATED_PROPERTY(preserveAspectRatio)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGElement)
@@ -55,7 +53,6 @@ bool SVGViewElement::isSupportedAttribute(const QualifiedName& attrName)
 {
     DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
     if (supportedAttributes.isEmpty()) {
-        SVGExternalResourcesRequired::addSupportedAttributes(supportedAttributes);
         SVGFitToViewBox::addSupportedAttributes(supportedAttributes);
         SVGZoomAndPan::addSupportedAttributes(supportedAttributes);
         supportedAttributes.add(SVGNames::viewTargetAttr);
@@ -75,8 +72,6 @@ void SVGViewElement::parseAttribute(const QualifiedName& name, const AtomicStrin
         return;
     }
 
-    if (SVGExternalResourcesRequired::parseAttribute(name, value))
-        return;
     if (SVGFitToViewBox::parseAttribute(this, name, value))
         return;
     if (SVGZoomAndPan::parseAttribute(this, name, value))

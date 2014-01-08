@@ -25,6 +25,3 @@
 
 interface SVGSwitchElement : SVGGraphicsElement {
 };
-
-SVGSwitchElement implements SVGExternalResourcesRequired;
-

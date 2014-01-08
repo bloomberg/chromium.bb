@@ -25,7 +25,6 @@
 #include "core/svg/SVGAnimatedLength.h"
 #include "core/svg/SVGAnimatedString.h"
 #include "core/svg/SVGElement.h"
-#include "core/svg/SVGExternalResourcesRequired.h"
 #include "core/svg/SVGTests.h"
 #include "core/svg/SVGURIReference.h"
 
@@ -33,7 +32,6 @@ namespace WebCore {
 
 class SVGCursorElement FINAL : public SVGElement,
                                public SVGTests,
-                               public SVGExternalResourcesRequired,
                                public SVGURIReference {
 public:
     static PassRefPtr<SVGCursorElement> create(Document&);
@@ -59,7 +57,6 @@ private:
         DECLARE_ANIMATED_LENGTH(X, x)
         DECLARE_ANIMATED_LENGTH(Y, y)
         DECLARE_ANIMATED_STRING(Href, href)
-        DECLARE_ANIMATED_BOOLEAN(ExternalResourcesRequired, externalResourcesRequired)
     END_DECLARE_ANIMATED_PROPERTIES
 
     // SVGTests

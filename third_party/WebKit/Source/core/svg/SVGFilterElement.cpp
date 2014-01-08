@@ -42,7 +42,6 @@ DEFINE_ANIMATED_LENGTH(SVGFilterElement, SVGNames::heightAttr, Height, height)
 DEFINE_ANIMATED_INTEGER_MULTIPLE_WRAPPERS(SVGFilterElement, SVGNames::filterResAttr, filterResXIdentifier(), FilterResX, filterResX)
 DEFINE_ANIMATED_INTEGER_MULTIPLE_WRAPPERS(SVGFilterElement, SVGNames::filterResAttr, filterResYIdentifier(), FilterResY, filterResY)
 DEFINE_ANIMATED_STRING(SVGFilterElement, XLinkNames::hrefAttr, Href, href)
-DEFINE_ANIMATED_BOOLEAN(SVGFilterElement, SVGNames::externalResourcesRequiredAttr, ExternalResourcesRequired, externalResourcesRequired)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFilterElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(filterUnits)
@@ -54,7 +53,6 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFilterElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(filterResX)
     REGISTER_LOCAL_ANIMATED_PROPERTY(filterResY)
     REGISTER_LOCAL_ANIMATED_PROPERTY(href)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(externalResourcesRequired)
 END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGFilterElement::SVGFilterElement(Document& document)
@@ -104,7 +102,6 @@ bool SVGFilterElement::isSupportedAttribute(const QualifiedName& attrName)
     DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
     if (supportedAttributes.isEmpty()) {
         SVGURIReference::addSupportedAttributes(supportedAttributes);
-        SVGExternalResourcesRequired::addSupportedAttributes(supportedAttributes);
         supportedAttributes.add(SVGNames::filterUnitsAttr);
         supportedAttributes.add(SVGNames::primitiveUnitsAttr);
         supportedAttributes.add(SVGNames::xAttr);
@@ -144,8 +141,7 @@ void SVGFilterElement::parseAttribute(const QualifiedName& name, const AtomicStr
             setFilterResXBaseValue(x);
             setFilterResYBaseValue(y);
         }
-    } else if (SVGURIReference::parseAttribute(name, value)
-             || SVGExternalResourcesRequired::parseAttribute(name, value)) {
+    } else if (SVGURIReference::parseAttribute(name, value)) {
     } else
         ASSERT_NOT_REACHED();
 

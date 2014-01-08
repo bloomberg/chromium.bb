@@ -57,7 +57,6 @@ DEFINE_ANIMATED_LENGTH(SVGUseElement, SVGNames::yAttr, Y, y)
 DEFINE_ANIMATED_LENGTH(SVGUseElement, SVGNames::widthAttr, Width, width)
 DEFINE_ANIMATED_LENGTH(SVGUseElement, SVGNames::heightAttr, Height, height)
 DEFINE_ANIMATED_STRING(SVGUseElement, XLinkNames::hrefAttr, Href, href)
-DEFINE_ANIMATED_BOOLEAN(SVGUseElement, SVGNames::externalResourcesRequiredAttr, ExternalResourcesRequired, externalResourcesRequired)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGUseElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(x)
@@ -65,7 +64,6 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGUseElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(width)
     REGISTER_LOCAL_ANIMATED_PROPERTY(height)
     REGISTER_LOCAL_ANIMATED_PROPERTY(href)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(externalResourcesRequired)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGraphicsElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
@@ -122,7 +120,6 @@ bool SVGUseElement::isSupportedAttribute(const QualifiedName& attrName)
 {
     DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
     if (supportedAttributes.isEmpty()) {
-        SVGExternalResourcesRequired::addSupportedAttributes(supportedAttributes);
         SVGURIReference::addSupportedAttributes(supportedAttributes);
         supportedAttributes.add(SVGNames::xAttr);
         supportedAttributes.add(SVGNames::yAttr);
@@ -146,8 +143,7 @@ void SVGUseElement::parseAttribute(const QualifiedName& name, const AtomicString
         setWidthBaseValue(SVGLength::construct(LengthModeWidth, value, parseError, ForbidNegativeLengths));
     else if (name == SVGNames::heightAttr)
         setHeightBaseValue(SVGLength::construct(LengthModeHeight, value, parseError, ForbidNegativeLengths));
-    else if (SVGExternalResourcesRequired::parseAttribute(name, value)
-             || SVGURIReference::parseAttribute(name, value)) {
+    else if (SVGURIReference::parseAttribute(name, value)) {
     } else
         ASSERT_NOT_REACHED();
 
@@ -171,9 +167,13 @@ Node::InsertionNotificationRequest SVGUseElement::insertedInto(ContainerNode* ro
         return InsertionDone;
     ASSERT(!m_targetElementInstance || !isWellFormedDocument(&document()));
     ASSERT(!hasPendingResources() || !isWellFormedDocument(&document()));
-    if (!m_wasInsertedByParser)
+    if (!m_wasInsertedByParser) {
         buildPendingResource();
-    SVGExternalResourcesRequired::insertedIntoDocument(this);
+
+        m_haveFiredLoadEvent = true;
+        sendSVGLoadEventIfPossibleAsynchronously();
+    }
+
     return InsertionDone;
 }
 
@@ -223,9 +223,6 @@ void SVGUseElement::svgAttributeChanged(const QualifiedName& attrName)
         return;
     }
 
-    if (SVGExternalResourcesRequired::handleAttributeChange(this, attrName))
-        return;
-
     if (SVGURIReference::isKnownAttribute(attrName)) {
         bool isExternalReference = isExternalURIReference(hrefCurrentValue(), document());
         if (isExternalReference) {
@@ -246,11 +243,6 @@ void SVGUseElement::svgAttributeChanged(const QualifiedName& attrName)
 
     if (!renderer)
         return;
-
-    if (SVGExternalResourcesRequired::isKnownAttribute(attrName)) {
-        invalidateShadowTree();
-        return;
-    }
 
     ASSERT_NOT_REACHED();
 }
@@ -949,8 +941,12 @@ void SVGUseElement::notifyFinished(Resource* resource)
     invalidateShadowTree();
     if (resource->errorOccurred())
         dispatchEvent(Event::create(EventTypeNames::error));
-    else if (!resource->wasCanceled())
-        SVGExternalResourcesRequired::dispatchLoadEvent(this);
+    else if (!resource->wasCanceled()) {
+        if (!m_wasInsertedByParser)
+            ASSERT(m_haveFiredLoadEvent);
+        else if (m_haveFiredLoadEvent)
+            return;
+    }
 }
 
 bool SVGUseElement::resourceIsStillLoading()
@@ -976,7 +972,7 @@ bool SVGUseElement::instanceTreeIsLoading(SVGElementInstance* targetElementInsta
 void SVGUseElement::finishParsingChildren()
 {
     SVGGraphicsElement::finishParsingChildren();
-    SVGExternalResourcesRequired::finishParsingChildren();
+    m_haveFiredLoadEvent = true;
     if (m_wasInsertedByParser) {
         buildPendingResource();
         m_wasInsertedByParser = false;

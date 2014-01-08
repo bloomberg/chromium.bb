@@ -31,11 +31,9 @@ namespace WebCore {
 
 // Animated property definitions
 DEFINE_ANIMATED_STRING(SVGMPathElement, XLinkNames::hrefAttr, Href, href)
-DEFINE_ANIMATED_BOOLEAN(SVGMPathElement, SVGNames::externalResourcesRequiredAttr, ExternalResourcesRequired, externalResourcesRequired)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGMPathElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(href)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(externalResourcesRequired)
 END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGMPathElement::SVGMPathElement(Document& document)
@@ -107,7 +105,6 @@ bool SVGMPathElement::isSupportedAttribute(const QualifiedName& attrName)
     DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
     if (supportedAttributes.isEmpty()) {
         SVGURIReference::addSupportedAttributes(supportedAttributes);
-        SVGExternalResourcesRequired::addSupportedAttributes(supportedAttributes);
     }
     return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
 }
@@ -120,8 +117,6 @@ void SVGMPathElement::parseAttribute(const QualifiedName& name, const AtomicStri
     }
 
     if (SVGURIReference::parseAttribute(name, value))
-        return;
-    if (SVGExternalResourcesRequired::parseAttribute(name, value))
         return;
 
     ASSERT_NOT_REACHED();
@@ -140,9 +135,6 @@ void SVGMPathElement::svgAttributeChanged(const QualifiedName& attrName)
         buildPendingResource();
         return;
     }
-
-    if (SVGExternalResourcesRequired::isKnownAttribute(attrName))
-        return;
 
     ASSERT_NOT_REACHED();
 }

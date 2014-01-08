@@ -25,7 +25,6 @@
 #include "core/fetch/DocumentResource.h"
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedLength.h"
-#include "core/svg/SVGExternalResourcesRequired.h"
 #include "core/svg/SVGGraphicsElement.h"
 #include "core/svg/SVGURIReference.h"
 
@@ -35,7 +34,6 @@ class DocumentResource;
 class SVGElementInstance;
 
 class SVGUseElement FINAL : public SVGGraphicsElement,
-                            public SVGExternalResourcesRequired,
                             public SVGURIReference,
                             public DocumentResourceClient {
 public:
@@ -54,6 +52,7 @@ private:
     SVGUseElement(Document&, bool wasInsertedByParser);
 
     virtual bool isValid() const { return SVGTests::isValid(); }
+    virtual bool isStructurallyExternal() const { return isExternalURIReference(hrefCurrentValue(), document()); }
     virtual bool supportsFocus() const OVERRIDE { return hasFocusEventListeners(); }
 
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
@@ -74,7 +73,7 @@ private:
     void buildShadowAndInstanceTree(SVGElement* target);
     void detachInstance();
 
-    virtual bool haveLoadedRequiredResources() { return SVGExternalResourcesRequired::haveLoadedRequiredResources(); }
+    virtual bool haveLoadedRequiredResources() { return m_haveFiredLoadEvent; }
 
     virtual void finishParsingChildren();
     virtual bool selfHasRelativeLengths() const;
@@ -102,7 +101,6 @@ private:
         DECLARE_ANIMATED_LENGTH(Width, width)
         DECLARE_ANIMATED_LENGTH(Height, height)
         DECLARE_ANIMATED_STRING(Href, href)
-        DECLARE_ANIMATED_BOOLEAN(ExternalResourcesRequired, externalResourcesRequired)
     END_DECLARE_ANIMATED_PROPERTIES
 
     bool resourceIsStillLoading();
@@ -112,10 +110,6 @@ private:
     Document* referencedDocument() const;
     void setDocumentResource(ResourcePtr<DocumentResource>);
 
-    // SVGExternalResourcesRequired
-    virtual void setHaveFiredLoadEvent(bool haveFiredLoadEvent) { m_haveFiredLoadEvent = haveFiredLoadEvent; }
-    virtual bool isParserInserted() const { return m_wasInsertedByParser; }
-    virtual bool haveFiredLoadEvent() const { return m_haveFiredLoadEvent; }
     virtual Timer<SVGElement>* svgLoadEventTimer() OVERRIDE { return &m_svgLoadEventTimer; }
 
     bool m_wasInsertedByParser;

@@ -29,15 +29,13 @@
 #include "core/svg/SVGAnimatedInteger.h"
 #include "core/svg/SVGAnimatedLength.h"
 #include "core/svg/SVGElement.h"
-#include "core/svg/SVGExternalResourcesRequired.h"
 #include "core/svg/SVGURIReference.h"
 #include "core/svg/SVGUnitTypes.h"
 
 namespace WebCore {
 
 class SVGFilterElement FINAL : public SVGElement,
-                               public SVGURIReference,
-                               public SVGExternalResourcesRequired {
+                               public SVGURIReference {
 public:
     static PassRefPtr<SVGFilterElement> create(Document&);
 
@@ -73,7 +71,6 @@ private:
         DECLARE_ANIMATED_INTEGER(FilterResX, filterResX)
         DECLARE_ANIMATED_INTEGER(FilterResY, filterResY)
         DECLARE_ANIMATED_STRING(Href, href)
-        DECLARE_ANIMATED_BOOLEAN(ExternalResourcesRequired, externalResourcesRequired)
     END_DECLARE_ANIMATED_PROPERTIES
 
     HashSet<RefPtr<Node> > m_clientsToAdd;

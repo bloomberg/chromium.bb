@@ -39,7 +39,6 @@ DEFINE_ANIMATED_LENGTH(SVGImageElement, SVGNames::widthAttr, Width, width)
 DEFINE_ANIMATED_LENGTH(SVGImageElement, SVGNames::heightAttr, Height, height)
 DEFINE_ANIMATED_PRESERVEASPECTRATIO(SVGImageElement, SVGNames::preserveAspectRatioAttr, PreserveAspectRatio, preserveAspectRatio)
 DEFINE_ANIMATED_STRING(SVGImageElement, XLinkNames::hrefAttr, Href, href)
-DEFINE_ANIMATED_BOOLEAN(SVGImageElement, SVGNames::externalResourcesRequiredAttr, ExternalResourcesRequired, externalResourcesRequired)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGImageElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(x)
@@ -48,7 +47,6 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGImageElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(height)
     REGISTER_LOCAL_ANIMATED_PROPERTY(preserveAspectRatio)
     REGISTER_LOCAL_ANIMATED_PROPERTY(href)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(externalResourcesRequired)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGraphicsElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
@@ -85,7 +83,6 @@ bool SVGImageElement::isSupportedAttribute(const QualifiedName& attrName)
 {
     DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
     if (supportedAttributes.isEmpty()) {
-        SVGExternalResourcesRequired::addSupportedAttributes(supportedAttributes);
         SVGURIReference::addSupportedAttributes(supportedAttributes);
         supportedAttributes.add(SVGNames::xAttr);
         supportedAttributes.add(SVGNames::yAttr);
@@ -131,8 +128,7 @@ void SVGImageElement::parseAttribute(const QualifiedName& name, const AtomicStri
         setWidthBaseValue(SVGLength::construct(LengthModeWidth, value, parseError, ForbidNegativeLengths));
     else if (name == SVGNames::heightAttr)
         setHeightBaseValue(SVGLength::construct(LengthModeHeight, value, parseError, ForbidNegativeLengths));
-    else if (SVGExternalResourcesRequired::parseAttribute(name, value)
-             || SVGURIReference::parseAttribute(name, value)) {
+    else if (SVGURIReference::parseAttribute(name, value)) {
     } else
         ASSERT_NOT_REACHED();
 
@@ -171,8 +167,7 @@ void SVGImageElement::svgAttributeChanged(const QualifiedName& attrName)
         return;
     }
 
-    if (attrName == SVGNames::preserveAspectRatioAttr
-        || SVGExternalResourcesRequired::isKnownAttribute(attrName)) {
+    if (attrName == SVGNames::preserveAspectRatioAttr) {
         RenderSVGResource::markForLayoutAndParentResourceInvalidation(renderer);
         return;
     }
@@ -195,7 +190,7 @@ RenderObject* SVGImageElement::createRenderer(RenderStyle*)
 
 bool SVGImageElement::haveLoadedRequiredResources()
 {
-    return !externalResourcesRequiredBaseValue() || !m_imageLoader.hasPendingActivity();
+    return !m_imageLoader.hasPendingActivity();
 }
 
 void SVGImageElement::attach(const AttachContext& context)

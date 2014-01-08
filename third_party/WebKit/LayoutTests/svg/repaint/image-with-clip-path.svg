@@ -29,7 +29,6 @@
         r.setAttribute('width', size);
         r.setAttribute('height', size);
         g.setAttribute("transform","translate(" + offset + ",50)");
-        i.setAttribute("externalResourcesRequired", "true");
         i.setAttributeNS('http://www.w3.org/1999/xlink', 'href', img);
     };
 

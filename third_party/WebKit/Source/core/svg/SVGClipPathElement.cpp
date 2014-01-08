@@ -30,11 +30,9 @@ namespace WebCore {
 
 // Animated property definitions
 DEFINE_ANIMATED_ENUMERATION(SVGClipPathElement, SVGNames::clipPathUnitsAttr, ClipPathUnits, clipPathUnits, SVGUnitTypes::SVGUnitType)
-DEFINE_ANIMATED_BOOLEAN(SVGClipPathElement, SVGNames::externalResourcesRequiredAttr, ExternalResourcesRequired, externalResourcesRequired)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGClipPathElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(clipPathUnits)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(externalResourcesRequired)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGraphicsElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
@@ -54,10 +52,9 @@ PassRefPtr<SVGClipPathElement> SVGClipPathElement::create(Document& document)
 bool SVGClipPathElement::isSupportedAttribute(const QualifiedName& attrName)
 {
     DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
-    if (supportedAttributes.isEmpty()) {
-        SVGExternalResourcesRequired::addSupportedAttributes(supportedAttributes);
+    if (supportedAttributes.isEmpty())
         supportedAttributes.add(SVGNames::clipPathUnitsAttr);
-    }
+
     return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
 }
 
@@ -74,9 +71,6 @@ void SVGClipPathElement::parseAttribute(const QualifiedName& name, const AtomicS
             setClipPathUnitsBaseValue(propertyValue);
         return;
     }
-
-    if (SVGExternalResourcesRequired::parseAttribute(name, value))
-        return;
 
     ASSERT_NOT_REACHED();
 }

@@ -25,13 +25,11 @@
 #include "core/svg/SVGAnimatedPreserveAspectRatio.h"
 #include "core/svg/SVGAnimatedRect.h"
 #include "core/svg/SVGElement.h"
-#include "core/svg/SVGExternalResourcesRequired.h"
 #include "core/svg/SVGFitToViewBox.h"
 
 namespace WebCore {
 
 class SVGSymbolElement FINAL : public SVGElement,
-                               public SVGExternalResourcesRequired,
                                public SVGFitToViewBox {
 public:
     static PassRefPtr<SVGSymbolElement> create(Document&);
@@ -50,7 +48,6 @@ private:
     virtual bool selfHasRelativeLengths() const;
 
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGSymbolElement)
-        DECLARE_ANIMATED_BOOLEAN(ExternalResourcesRequired, externalResourcesRequired)
         DECLARE_ANIMATED_RECT(ViewBox, viewBox)
         DECLARE_ANIMATED_PRESERVEASPECTRATIO(PreserveAspectRatio, preserveAspectRatio)
     END_DECLARE_ANIMATED_PROPERTIES

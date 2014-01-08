@@ -25,7 +25,6 @@
 #include "core/svg/SVGAnimatedLength.h"
 #include "core/svg/SVGAnimatedPreserveAspectRatio.h"
 #include "core/svg/SVGAnimatedRect.h"
-#include "core/svg/SVGExternalResourcesRequired.h"
 #include "core/svg/SVGFitToViewBox.h"
 #include "core/svg/SVGGraphicsElement.h"
 #include "core/svg/SVGZoomAndPan.h"
@@ -41,7 +40,6 @@ class SVGViewElement;
 class SMILTimeContainer;
 
 class SVGSVGElement FINAL : public SVGGraphicsElement,
-                            public SVGExternalResourcesRequired,
                             public SVGFitToViewBox,
                             public SVGZoomAndPan {
 public:
@@ -165,7 +163,6 @@ private:
         DECLARE_ANIMATED_LENGTH(Y, y)
         DECLARE_ANIMATED_LENGTH(Width, width)
         DECLARE_ANIMATED_LENGTH(Height, height)
-        DECLARE_ANIMATED_BOOLEAN(ExternalResourcesRequired, externalResourcesRequired)
         DECLARE_ANIMATED_RECT(ViewBox, viewBox)
         DECLARE_ANIMATED_PRESERVEASPECTRATIO(PreserveAspectRatio, preserveAspectRatio)
     END_DECLARE_ANIMATED_PROPERTIES

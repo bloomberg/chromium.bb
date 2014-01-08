@@ -37,5 +37,4 @@ interface SVGAnimationElement : SVGElement {
     void endElementAt([Default=Undefined] optional float offset);
 };
 
-SVGAnimationElement implements SVGExternalResourcesRequired;
 SVGAnimationElement implements SVGTests;

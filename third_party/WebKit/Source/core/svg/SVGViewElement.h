@@ -26,7 +26,6 @@
 #include "core/svg/SVGAnimatedPreserveAspectRatio.h"
 #include "core/svg/SVGAnimatedRect.h"
 #include "core/svg/SVGElement.h"
-#include "core/svg/SVGExternalResourcesRequired.h"
 #include "core/svg/SVGFitToViewBox.h"
 #include "core/svg/SVGStringList.h"
 #include "core/svg/SVGZoomAndPan.h"
@@ -34,7 +33,6 @@
 namespace WebCore {
 
 class SVGViewElement FINAL : public SVGElement,
-                             public SVGExternalResourcesRequired,
                              public SVGFitToViewBox,
                              public SVGZoomAndPan {
 public:
@@ -57,7 +55,6 @@ private:
     virtual bool rendererIsNeeded(const RenderStyle&) { return false; }
 
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGViewElement)
-        DECLARE_ANIMATED_BOOLEAN(ExternalResourcesRequired, externalResourcesRequired)
         DECLARE_ANIMATED_RECT(ViewBox, viewBox)
         DECLARE_ANIMATED_PRESERVEASPECTRATIO(PreserveAspectRatio, preserveAspectRatio)
     END_DECLARE_ANIMATED_PROPERTIES

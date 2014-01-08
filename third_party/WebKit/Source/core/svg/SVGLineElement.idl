@@ -30,5 +30,3 @@ interface SVGLineElement : SVGGeometryElement {
     readonly attribute SVGAnimatedLength y2;
 };
 
-SVGLineElement implements SVGExternalResourcesRequired;
-

@@ -929,7 +929,8 @@ void SVGElement::sendSVGLoadEventIfPossible(bool sendParentLoadEvents)
         RefPtr<Element> parent;
         if (sendParentLoadEvents)
             parent = currentTarget->parentOrShadowHostElement(); // save the next parent to dispatch too incase dispatching the event changes the tree
-        if (hasLoadListener(currentTarget.get()))
+        if (hasLoadListener(currentTarget.get())
+            && (currentTarget->isStructurallyExternal() || currentTarget->isSVGSVGElement()))
             currentTarget->dispatchEvent(Event::create(EventTypeNames::load));
         currentTarget = (parent && parent->isSVGElement()) ? static_pointer_cast<SVGElement>(parent) : RefPtr<SVGElement>();
         SVGElement* element = currentTarget.get();
@@ -975,7 +976,8 @@ void SVGElement::finishParsingChildren()
 
     // finishParsingChildren() is called when the close tag is reached for an element (e.g. </svg>)
     // we send SVGLoad events here if we can, otherwise they'll be sent when any required loads finish
-    sendSVGLoadEventIfPossible();
+    if (isSVGSVGElement())
+        sendSVGLoadEventIfPossible();
 }
 
 bool SVGElement::childShouldCreateRenderer(const Node& child) const
@@ -1159,7 +1161,6 @@ bool SVGElement::isAnimatableAttribute(const QualifiedName& name) const
         animatableAttributes.add(SVGNames::edgeModeAttr);
         animatableAttributes.add(SVGNames::elevationAttr);
         animatableAttributes.add(SVGNames::exponentAttr);
-        animatableAttributes.add(SVGNames::externalResourcesRequiredAttr);
         animatableAttributes.add(SVGNames::filterResAttr);
         animatableAttributes.add(SVGNames::filterUnitsAttr);
         animatableAttributes.add(SVGNames::fxAttr);

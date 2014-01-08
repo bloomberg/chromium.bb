@@ -33,5 +33,3 @@ interface SVGRectElement : SVGGeometryElement {
     readonly attribute SVGAnimatedLength ry;
 };
 
-SVGRectElement implements SVGExternalResourcesRequired;
-

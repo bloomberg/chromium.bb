@@ -22,13 +22,11 @@
 #define SVGGElement_h
 
 #include "core/svg/SVGAnimatedBoolean.h"
-#include "core/svg/SVGExternalResourcesRequired.h"
 #include "core/svg/SVGGraphicsElement.h"
 
 namespace WebCore {
 
-class SVGGElement FINAL : public SVGGraphicsElement,
-                          public SVGExternalResourcesRequired {
+class SVGGElement FINAL : public SVGGraphicsElement {
 public:
     static PassRefPtr<SVGGElement> create(Document&);
 
@@ -48,7 +46,6 @@ private:
     virtual bool rendererIsNeeded(const RenderStyle&);
 
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGGElement)
-        DECLARE_ANIMATED_BOOLEAN(ExternalResourcesRequired, externalResourcesRequired)
     END_DECLARE_ANIMATED_PROPERTIES
 };
 

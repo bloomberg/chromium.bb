@@ -922,3 +922,6 @@ crbug.com/331186 [ Debug ] css3/flexbox/position-absolute-child.html [ Slow ]
 crbug.com/331189 fast/forms/date-multiple-fields/date-multiple-fields-keyboard-events.html [ Failure ]
 crbug.com/331189 fast/forms/datetimelocal-multiple-fields/datetimelocal-multiple-fields-keyboard-events.html [ Failure ]
 crbug.com/331189 fast/forms/week-multiple-fields/week-multiple-fields-keyboard-events.html [ Failure ]
+
+crbug.com/332066 svg/W3C-SVG-1.1/interact-events-01-b.svg [ NeedsRebaseline ]
+crbug.com/332066 svg/custom/load-non-wellformed.svg [ NeedsRebaseline ]

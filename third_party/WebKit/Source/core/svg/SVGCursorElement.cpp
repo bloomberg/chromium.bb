@@ -33,13 +33,11 @@ namespace WebCore {
 DEFINE_ANIMATED_LENGTH(SVGCursorElement, SVGNames::xAttr, X, x)
 DEFINE_ANIMATED_LENGTH(SVGCursorElement, SVGNames::yAttr, Y, y)
 DEFINE_ANIMATED_STRING(SVGCursorElement, XLinkNames::hrefAttr, Href, href)
-DEFINE_ANIMATED_BOOLEAN(SVGCursorElement, SVGNames::externalResourcesRequiredAttr, ExternalResourcesRequired, externalResourcesRequired)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGCursorElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(x)
     REGISTER_LOCAL_ANIMATED_PROPERTY(y)
     REGISTER_LOCAL_ANIMATED_PROPERTY(href)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(externalResourcesRequired)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGTests)
 END_REGISTER_ANIMATED_PROPERTIES
 
@@ -69,7 +67,6 @@ bool SVGCursorElement::isSupportedAttribute(const QualifiedName& attrName)
     DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());
     if (supportedAttributes.isEmpty()) {
         SVGTests::addSupportedAttributes(supportedAttributes);
-        SVGExternalResourcesRequired::addSupportedAttributes(supportedAttributes);
         SVGURIReference::addSupportedAttributes(supportedAttributes);
         supportedAttributes.add(SVGNames::xAttr);
         supportedAttributes.add(SVGNames::yAttr);
@@ -88,7 +85,6 @@ void SVGCursorElement::parseAttribute(const QualifiedName& name, const AtomicStr
     else if (name == SVGNames::yAttr)
         setYBaseValue(SVGLength::construct(LengthModeHeight, value, parseError));
     else if (SVGTests::parseAttribute(name, value)
-             || SVGExternalResourcesRequired::parseAttribute(name, value)
              || SVGURIReference::parseAttribute(name, value)) {
     } else
         ASSERT_NOT_REACHED();

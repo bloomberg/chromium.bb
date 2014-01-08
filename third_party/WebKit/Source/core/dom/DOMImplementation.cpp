@@ -146,7 +146,6 @@ static bool isSupportedSVG11Feature(const String& feature, const String& version
         addString(svgFeatures, "Cursor");
         addString(svgFeatures, "Hyperlinking");
         addString(svgFeatures, "XlinkAttribute");
-        addString(svgFeatures, "ExternalResourcesRequired");
         addString(svgFeatures, "View");
         addString(svgFeatures, "Script");
         addString(svgFeatures, "Animation");
