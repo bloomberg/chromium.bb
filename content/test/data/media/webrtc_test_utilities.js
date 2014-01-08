@@ -70,12 +70,11 @@ function waitForVideoToStop(videoElement) {
   detectVideoStopped(videoElement, function () { eventOccured(); });
 }
 
-function waitForConnectionToStabilize(peerConnection) {
-  addExpectedEvent();
+function waitForConnectionToStabilize(peerConnection, callback) {
   var waitForStabilization = setInterval(function() {
     if (peerConnection.signalingState == 'stable') {
       clearInterval(waitForStabilization);
-      eventOccured();
+      callback();
     }
   }, 100);
 }

@@ -457,6 +457,9 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MANUAL_CanSetupCallAndSendDtmf) {
   ExpectTitle("OK");
 }
 
+// TODO(phoglund): this test fails because the peer connection state will be
+// stable in the second negotiation round rather than have-local-offer.
+// http://crbug.com/293125.
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
                        DISABLED_CanMakeEmptyCallThenAddStreamsAndRenegotiate) {
   const char* kJavascript =
@@ -707,6 +710,16 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
           << "for the fake device signal.";
 
   MakeTypicalPeerConnectionCall("callAndEnsureAudioMutingWorks();");
+}
+
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, CallAndVerifyVideoMutingWorks) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
+  NavigateToURL(shell(), url);
+
+  EXPECT_TRUE(ExecuteJavascript("callAndEnsureVideoMutingWorks();"));
+  ExpectTitle("OK");
 }
 
 #if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY))

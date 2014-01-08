@@ -92,11 +92,6 @@ class WebrtcBrowserTest : public WebRtcTestBase {
                                  tab_contents));
   }
 
-  void WaitForVideoToStopPlaying(content::WebContents* tab_contents) {
-    EXPECT_TRUE(PollingWaitUntil("isVideoPlaying()", "video-not-playing",
-                                 tab_contents));
-  }
-
   void HangUp(content::WebContents* from_tab) {
     EXPECT_EQ("ok-call-hung-up", ExecuteJavascript("hangUp()", from_tab));
   }
@@ -104,20 +99,6 @@ class WebrtcBrowserTest : public WebRtcTestBase {
   void WaitUntilHangupVerified(content::WebContents* tab_contents) {
     EXPECT_TRUE(PollingWaitUntil("getPeerConnectionReadyState()",
                                  "no-peer-connection", tab_contents));
-  }
-
-  std::string ToggleLocalVideoTrack(content::WebContents* tab_contents) {
-    // Toggle the only video track in the page (e.g. video track 0).
-    return ExecuteJavascript("toggleLocalStream("
-        "function(local) { return local.getVideoTracks()[0]; }, "
-        "'video');", tab_contents);
-  }
-
-  std::string ToggleRemoteVideoTrack(content::WebContents* tab_contents) {
-    // Toggle the only video track in the page (e.g. video track 0).
-    return ExecuteJavascript("toggleRemoteStream("
-        "function(local) { return local.getVideoTracks()[0]; }, "
-        "'video');", tab_contents);
   }
 
   void PrintProcessMetrics(base::ProcessMetrics* process_metrics,
@@ -245,44 +226,6 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MANUAL_CpuUsage15Seconds) {
   PrintProcessMetrics(renderer_process_metrics.get(), "_r");
 #endif
   PrintProcessMetrics(browser_process_metrics.get(), "_b");
-
-  ASSERT_TRUE(peerconnection_server_.Stop());
-}
-
-#if defined(OS_WIN)
-// Timing out on Windows: http://crbug.com/331045
-#define MAYBE_TestMediaStreamTrackEnableDisable DISABLED_TestMediaStreamTrackEnableDisable
-#else
-#define MAYBE_TestMediaStreamTrackEnableDisable MANUAL_TestMediaStreamTrackEnableDisable
-#endif
-
-IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
-                       MAYBE_TestMediaStreamTrackEnableDisable) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
-  ASSERT_TRUE(peerconnection_server_.Start());
-
-  content::WebContents* left_tab = OpenTestPageAndGetUserMediaInNewTab();
-  content::WebContents* right_tab = OpenTestPageAndGetUserMediaInNewTab();
-
-  EstablishCall(left_tab, right_tab);
-
-  StartDetectingVideo(left_tab, "remote-view");
-  StartDetectingVideo(right_tab, "remote-view");
-
-  WaitForVideoToPlay(left_tab);
-  WaitForVideoToPlay(right_tab);
-
-  EXPECT_EQ("ok-video-toggled-to-false", ToggleLocalVideoTrack(left_tab));
-
-  WaitForVideoToStopPlaying(right_tab);
-
-  EXPECT_EQ("ok-video-toggled-to-true", ToggleLocalVideoTrack(left_tab));
-
-  WaitForVideoToPlay(right_tab);
-
-  HangUp(left_tab);
-  WaitUntilHangupVerified(left_tab);
-  WaitUntilHangupVerified(right_tab);
 
   ASSERT_TRUE(peerconnection_server_.Stop());
 }
