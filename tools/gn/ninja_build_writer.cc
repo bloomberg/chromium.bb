@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/path_service.h"
 #include "base/process/process_handle.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -26,24 +27,8 @@
 namespace {
 
 std::string GetSelfInvocationCommand(const BuildSettings* build_settings) {
-#if defined(OS_WIN)
-  wchar_t module[MAX_PATH];
-  GetModuleFileName(NULL, module, MAX_PATH);
-  //result = "\"" + base::WideToUTF8(module) + "\"";
-  base::FilePath executable(module);
-#elif defined(OS_MACOSX)
-  // FIXME(brettw) write this on Mac!
-  base::FilePath executable("../Debug/gn");
-#else
-  base::FilePath executable =
-      base::GetProcessExecutablePath(base::GetCurrentProcessHandle());
-#endif
-
-/*
-  // Append the root path.
-  CommandLine* cmdline = CommandLine::ForCurrentProcess();
-  result += " --root=\"" + FilePathToUTF8(settings->root_path()) + "\"";
-*/
+  base::FilePath executable;
+  PathService::Get(base::FILE_EXE, &executable);
 
   CommandLine cmdline(executable);
   cmdline.AppendSwitchPath("--root", build_settings->root_path());
