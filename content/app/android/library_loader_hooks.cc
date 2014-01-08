@@ -92,6 +92,7 @@ static jint LibraryLoaded(JNIEnv* env, jclass clazz,
     base::debug::CategoryFilter category_filter(
         command_line->GetSwitchValueASCII(switches::kTraceStartup));
     base::debug::TraceLog::GetInstance()->SetEnabled(category_filter,
+        base::debug::TraceLog::RECORDING_MODE,
         base::debug::TraceLog::RECORD_UNTIL_FULL);
   }
 

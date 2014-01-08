@@ -41,10 +41,10 @@ void OnGotCategories(const WebUIDataSource::GotDataCallback& callback,
   callback.Run(res);
 }
 
-void OnRecordingEnabledAck(const WebUIDataSource::GotDataCallback& callback);
-
-bool OnBeginRecording(const std::string& data64,
-                      const WebUIDataSource::GotDataCallback& callback) {
+bool GetTracingOptions(const std::string& data64,
+                       std::string* category_filter_string,
+                       int* tracing_options)
+{
   std::string data;
   if (!base::Base64Decode(data64, &data)) {
     LOG(ERROR) << "Options were not base64 encoded.";
@@ -62,13 +62,12 @@ bool OnBeginRecording(const std::string& data64,
     return false;
   }
 
-  std::string category_filter_string;
   bool use_system_tracing;
   bool use_continuous_tracing;
   bool use_sampling;
 
   bool options_ok = true;
-  options_ok &= options->GetString("categoryFilter", &category_filter_string);
+  options_ok &= options->GetString("categoryFilter", category_filter_string);
   options_ok &= options->GetBoolean("useSystemTracing", &use_system_tracing);
   options_ok &= options->GetBoolean("useContinuousTracing",
                                     &use_continuous_tracing);
@@ -78,13 +77,24 @@ bool OnBeginRecording(const std::string& data64,
     return false;
   }
 
-  int tracing_options = 0;
+  *tracing_options = 0;
   if (use_system_tracing)
-    tracing_options |= TracingController::ENABLE_SYSTRACE;
+    *tracing_options |= TracingController::ENABLE_SYSTRACE;
   if (use_sampling)
-    tracing_options |= TracingController::ENABLE_SAMPLING;
+    *tracing_options |= TracingController::ENABLE_SAMPLING;
   if (use_continuous_tracing)
-    tracing_options |= TracingController::RECORD_CONTINUOUSLY;
+    *tracing_options |= TracingController::RECORD_CONTINUOUSLY;
+  return true;
+}
+
+void OnRecordingEnabledAck(const WebUIDataSource::GotDataCallback& callback);
+
+bool OnBeginRecording(const std::string& data64,
+                      const WebUIDataSource::GotDataCallback& callback) {
+  std::string category_filter_string;
+  int tracing_options = 0;
+  if (!GetTracingOptions(data64, &category_filter_string, &tracing_options))
+    return false;
 
   return TracingController::GetInstance()->EnableRecording(
       category_filter_string,
@@ -120,12 +130,55 @@ void BeginReadingRecordingResult(
       base::Bind(ReadRecordingResult, callback, path));
 }
 
+void OnMonitoringEnabledAck(const WebUIDataSource::GotDataCallback& callback);
+
+bool OnEnableMonitoring(const std::string& data64,
+                        const WebUIDataSource::GotDataCallback& callback) {
+  std::string category_filter_string;
+  int tracing_options = 0;
+  if (!GetTracingOptions(data64, &category_filter_string, &tracing_options))
+    return false;
+
+  return TracingController::GetInstance()->EnableMonitoring(
+      category_filter_string,
+      static_cast<TracingController::Options>(tracing_options),
+      base::Bind(OnMonitoringEnabledAck, callback));
+}
+
+void OnMonitoringEnabledAck(const WebUIDataSource::GotDataCallback& callback) {
+  base::RefCountedString* res = new base::RefCountedString();
+  callback.Run(res);
+}
+
+void OnMonitoringDisabled(const WebUIDataSource::GotDataCallback& callback) {
+  base::RefCountedString* res = new base::RefCountedString();
+  callback.Run(res);
+}
+
+void ReadMonitoringSnapshot(const WebUIDataSource::GotDataCallback& callback,
+                            const base::FilePath& path) {
+  std::string tmp;
+  if (!base::ReadFileToString(path, &tmp))
+    LOG(ERROR) << "Failed to read file " << path.value();
+  base::DeleteFile(path, false);
+  callback.Run(base::RefCountedString::TakeString(&tmp));
+}
+
+void OnMonitoringSnapshotCaptured(
+    const WebUIDataSource::GotDataCallback& callback,
+    const base::FilePath& path) {
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(ReadMonitoringSnapshot, callback, path));
+}
+
 bool OnBeginJSONRequest(const std::string& path,
                         const WebUIDataSource::GotDataCallback& callback) {
   if (path == "json/categories") {
     return TracingController::GetInstance()->GetCategories(
         base::Bind(OnGotCategories, callback));
   }
+
   const char* beginRecordingPath = "json/begin_recording?";
   if (StartsWithASCII(path, beginRecordingPath, true)) {
     std::string data = path.substr(strlen(beginRecordingPath));
@@ -139,12 +192,27 @@ bool OnBeginJSONRequest(const std::string& path,
     return TracingController::GetInstance()->DisableRecording(
         base::FilePath(), base::Bind(BeginReadingRecordingResult, callback));
   }
+
+  const char* enableMonitoringPath = "json/begin_monitoring?";
+  if (path.find(enableMonitoringPath) == 0) {
+    std::string data = path.substr(strlen(enableMonitoringPath));
+    return OnEnableMonitoring(data, callback);
+  }
+  if (path == "json/end_monitoring") {
+    return TracingController::GetInstance()->DisableMonitoring(
+        base::Bind(OnMonitoringDisabled, callback));
+  }
+  if (path == "json/capture_monitoring") {
+    TracingController::GetInstance()->CaptureMonitoringSnapshot(
+        base::FilePath(), base::Bind(OnMonitoringSnapshotCaptured, callback));
+    return true;
+  }
   LOG(ERROR) << "Unhandled request to " << path;
   return false;
 }
 
-bool OnBeginRequest(const std::string& path,
-                    const WebUIDataSource::GotDataCallback& callback) {
+bool OnTracingRequest(const std::string& path,
+                      const WebUIDataSource::GotDataCallback& callback) {
   if (StartsWithASCII(path, "json/", true)) {
     if (!OnBeginJSONRequest(path, callback)) {
       std::string error("##ERROR##");
@@ -173,7 +241,7 @@ TracingUI::TracingUI(WebUI* web_ui) : WebUIController(web_ui) {
   source->SetJsonPath("strings.js");
   source->SetDefaultResource(IDR_TRACING_HTML);
   source->AddResourcePath("tracing.js", IDR_TRACING_JS);
-  source->SetRequestFilter(base::Bind(OnBeginRequest));
+  source->SetRequestFilter(base::Bind(OnTracingRequest));
   WebUIDataSource::Add(browser_context, source);
 }
 

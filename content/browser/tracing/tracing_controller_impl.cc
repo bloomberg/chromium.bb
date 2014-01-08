@@ -80,7 +80,7 @@ void TracingControllerImpl::ResultFile::OpenTask() {
 
 void TracingControllerImpl::ResultFile::WriteTask(
     const scoped_refptr<base::RefCountedString>& events_str_ptr) {
-  if (!file_)
+  if (!file_ || !events_str_ptr->data().size())
     return;
 
   // If there is already a result in the file, then put a commma
@@ -152,12 +152,14 @@ bool TracingControllerImpl::GetCategories(
 
 void TracingControllerImpl::SetEnabledOnFileThread(
     const std::string& category_filter,
+    int mode,
     int trace_options,
     const base::Closure& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   TraceLog::GetInstance()->SetEnabled(
       base::debug::CategoryFilter(category_filter),
+      static_cast<TraceLog::Mode>(mode),
       static_cast<TraceLog::Options>(trace_options));
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback);
 }
@@ -195,11 +197,13 @@ bool TracingControllerImpl::EnableRecording(
   base::Closure on_enable_recording_done_callback =
       base::Bind(&TracingControllerImpl::OnEnableRecordingDone,
                  base::Unretained(this),
-                 category_filter, trace_options, callback);
+                 category_filter,trace_options, callback);
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       base::Bind(&TracingControllerImpl::SetEnabledOnFileThread,
                  base::Unretained(this),
-                 category_filter, trace_options,
+                 category_filter,
+                 base::debug::TraceLog::RECORDING_MODE,
+                 trace_options,
                  on_enable_recording_done_callback));
   return true;
 }
@@ -295,7 +299,7 @@ bool TracingControllerImpl::EnableMonitoring(
 
   int trace_options = 0;
   if (options & ENABLE_SAMPLING)
-    trace_options |= TraceLog::MONITOR_SAMPLING;
+    trace_options |= TraceLog::ENABLE_SAMPLING;
 
   base::Closure on_enable_monitoring_done_callback =
       base::Bind(&TracingControllerImpl::OnEnableMonitoringDone,
@@ -304,7 +308,9 @@ bool TracingControllerImpl::EnableMonitoring(
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       base::Bind(&TracingControllerImpl::SetEnabledOnFileThread,
                  base::Unretained(this),
-                 category_filter, trace_options,
+                 category_filter,
+                 base::debug::TraceLog::MONITORING_MODE,
+                 trace_options,
                  on_enable_monitoring_done_callback));
   return true;
 }
@@ -498,6 +504,11 @@ void TracingControllerImpl::AddTraceMessageFilter(
   }
   if (can_disable_recording()) {
     trace_message_filter->SendBeginTracing(
+        TraceLog::GetInstance()->GetCurrentCategoryFilter().ToString(),
+        TraceLog::GetInstance()->trace_options());
+  }
+  if (can_disable_monitoring()) {
+    trace_message_filter->SendEnableMonitoring(
         TraceLog::GetInstance()->GetCurrentCategoryFilter().ToString(),
         TraceLog::GetInstance()->trace_options());
   }

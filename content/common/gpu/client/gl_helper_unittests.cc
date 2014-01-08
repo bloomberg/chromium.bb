@@ -79,6 +79,7 @@ class GLHelperTest : public testing::Test {
   void StartTracing(const std::string& filter) {
     base::debug::TraceLog::GetInstance()->SetEnabled(
         base::debug::CategoryFilter(filter),
+        base::debug::TraceLog::RECORDING_MODE,
         base::debug::TraceLog::RECORD_UNTIL_FULL);
   }
 

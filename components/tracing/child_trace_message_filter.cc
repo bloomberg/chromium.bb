@@ -61,6 +61,7 @@ void ChildTraceMessageFilter::OnBeginTracing(
 
   TraceLog::GetInstance()->SetEnabled(
       base::debug::CategoryFilter(category_filter_str),
+      base::debug::TraceLog::RECORDING_MODE,
       static_cast<base::debug::TraceLog::Options>(options));
 }
 
@@ -81,6 +82,7 @@ void ChildTraceMessageFilter::OnEnableMonitoring(
     int options) {
   TraceLog::GetInstance()->SetEnabled(
       base::debug::CategoryFilter(category_filter_str),
+      base::debug::TraceLog::MONITORING_MODE,
       static_cast<base::debug::TraceLog::Options>(options));
 }
 

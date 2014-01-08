@@ -122,6 +122,7 @@ class TracingControllerImpl : public TracingController {
   void OnWatchEventMatched();
 
   void SetEnabledOnFileThread(const std::string& category_filter,
+                              int mode,
                               int options,
                               const base::Closure& callback);
   void SetDisabledOnFileThread(const base::Closure& callback);
