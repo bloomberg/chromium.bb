@@ -10,3 +10,4 @@ layer at (0,0) size 800x600
             text run at (16,0) width 63: "summary "
           RenderText {#text} at (78,0) size 187x18
             text run at (78,0) width 187: "shouldn't have only bold text."
+        RenderBlock {DIV} at (0,18) size 784x0

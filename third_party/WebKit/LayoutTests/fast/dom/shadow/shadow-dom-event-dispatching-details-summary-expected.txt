@@ -11,6 +11,7 @@ DIV	 id=sandbox
 		DETAILS	 id=details
 			SUMMARY	 id=summary
 				DIV	
+			DIV	 id=details-content
 
 
 Moving mouse from details to summary

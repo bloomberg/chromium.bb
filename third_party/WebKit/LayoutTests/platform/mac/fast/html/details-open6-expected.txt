@@ -8,3 +8,4 @@ layer at (0,0) size 800x600
           RenderDetailsMarker {DIV} at (0,4) size 10.55x10.55: down
           RenderText {#text} at (16,0) size 59x18
             text run at (16,0) width 59: "summary"
+        RenderBlock {DIV} at (0,18) size 784x0
