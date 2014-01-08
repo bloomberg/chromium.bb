@@ -181,8 +181,9 @@ void DesktopMediaListAsh::CaptureThumbnail(content::DesktopMediaID id,
       gfx::Rect(thumbnail_size_), window_rect.size());
 
   ++pending_window_capture_requests_;
-  ui::GrabWindowSnapshotAsync(
-      window, window_rect,
+  ui::GrabWindowSnapshotAndScaleAsync(
+      window,
+      window_rect,
       scaled_rect.size(),
       BrowserThread::GetBlockingPool(),
       base::Bind(&DesktopMediaListAsh::OnThumbnailCaptured,

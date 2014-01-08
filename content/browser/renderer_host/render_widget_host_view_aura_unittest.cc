@@ -157,7 +157,8 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     ImageTransportFactory::InitializeForUnitTests(
         scoped_ptr<ui::ContextFactory>(new ui::TestContextFactory));
     aura_test_helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
-    aura_test_helper_->SetUp();
+    bool allow_test_contexts = true;
+    aura_test_helper_->SetUp(allow_test_contexts);
 
     browser_context_.reset(new TestBrowserContext);
     process_host_ = new MockRenderProcessHost(browser_context_.get());

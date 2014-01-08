@@ -23,12 +23,20 @@ bool GrabWindowSnapshot(gfx::NativeWindow window,
   return false;
 }
 
-SNAPSHOT_EXPORT void GrabWindowSnapshotAsync(
+void GrabWindowSnapshotAndScaleAsync(
     gfx::NativeWindow window,
     const gfx::Rect& snapshot_bounds,
     const gfx::Size& target_size,
     scoped_refptr<base::TaskRunner> background_task_runner,
     GrabWindowSnapshotAsyncCallback callback) {
+  NOTIMPLEMENTED();
+}
+
+void GrabWindowSnapshotAsync(
+    gfx::NativeWindow window,
+    const gfx::Rect& source_rect,
+    scoped_refptr<base::TaskRunner> background_task_runner,
+    const GrabWindowSnapshotAsyncCallback& callback) {
   NOTIMPLEMENTED();
 }
 

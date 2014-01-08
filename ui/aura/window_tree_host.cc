@@ -73,12 +73,7 @@ class SimpleRootWindowTransformer : public RootWindowTransformer {
 // WindowTreeHost, public:
 
 WindowTreeHost::~WindowTreeHost() {
-  // TODO(beng): this represents an ordering change. In the old code, the
-  //             compositor was reset before the window hierarchy was destroyed.
-  //             verify that this has no adverse effects.
-  // Make sure to destroy the compositor before terminating so that state is
-  // cleared and we don't hit asserts.
-  compositor_.reset();
+  DCHECK(!compositor_) << "compositor must be destroyed before root window";
 }
 
 void WindowTreeHost::InitHost() {
@@ -171,6 +166,8 @@ void WindowTreeHost::ConvertPointFromHost(gfx::Point* point) const {
 WindowTreeHost::WindowTreeHost()
     : delegate_(NULL) {
 }
+
+void WindowTreeHost::DestroyCompositor() { compositor_.reset(); }
 
 void WindowTreeHost::CreateCompositor(
     gfx::AcceleratedWidget accelerated_widget) {

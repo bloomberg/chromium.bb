@@ -152,6 +152,7 @@ class AURA_EXPORT WindowTreeHost {
   friend class TestScreen;  // TODO(beng): see if we can remove/consolidate.
 
   WindowTreeHost();
+  void DestroyCompositor();
 
   void CreateCompositor(gfx::AcceleratedWidget accelerated_widget);
 

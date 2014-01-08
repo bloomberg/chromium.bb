@@ -88,6 +88,7 @@ DesktopWindowTreeHostWin::DesktopWindowTreeHostWin(
 }
 
 DesktopWindowTreeHostWin::~DesktopWindowTreeHostWin() {
+  DestroyCompositor();
   // WARNING: |content_window_| has been destroyed by the time we get here.
   desktop_native_widget_aura_->OnDesktopWindowTreeHostDestroyed(
       root_window_);

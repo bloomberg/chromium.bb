@@ -62,11 +62,10 @@ AuraTestHelper::~AuraTestHelper() {
       << "AuraTestHelper::TearDown() never called.";
 }
 
-void AuraTestHelper::SetUp() {
+void AuraTestHelper::SetUp(bool allow_test_contexts) {
   setup_called_ = true;
 
   // The ContextFactory must exist before any Compositors are created.
-  bool allow_test_contexts = true;
   ui::InitializeContextFactoryForTests(allow_test_contexts);
 
   Env::CreateInstance();

@@ -198,7 +198,8 @@ class KeyboardControllerTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     aura_test_helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
-    aura_test_helper_->SetUp();
+    bool allow_test_contexts = true;
+    aura_test_helper_->SetUp(allow_test_contexts);
     ui::SetUpInputMethodFactoryForTesting();
     focus_controller_.reset(new TestFocusController(root_window()));
     proxy_ = new TestKeyboardControllerProxy();

@@ -167,6 +167,7 @@ RemoteWindowTreeHostWin::RemoteWindowTreeHostWin(const gfx::Rect& bounds)
 }
 
 RemoteWindowTreeHostWin::~RemoteWindowTreeHostWin() {
+  DestroyCompositor();
   g_instance = NULL;
 }
 

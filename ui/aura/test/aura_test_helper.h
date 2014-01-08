@@ -41,7 +41,7 @@ class AuraTestHelper {
   ~AuraTestHelper();
 
   // Creates and initializes (shows and sizes) the RootWindow for use in tests.
-  void SetUp();
+  void SetUp(bool allow_test_contexts);
 
   // Clean up objects that are created for tests. This also deletes the Env
   // object.

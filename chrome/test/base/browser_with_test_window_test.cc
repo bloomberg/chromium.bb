@@ -59,7 +59,8 @@ void BrowserWithTestWindowTest::SetUp() {
 #elif defined(USE_AURA)
   aura_test_helper_.reset(new aura::test::AuraTestHelper(
       base::MessageLoopForUI::current()));
-  aura_test_helper_->SetUp();
+  bool allow_test_contexts = true;
+  aura_test_helper_->SetUp(allow_test_contexts);
 #endif  // USE_AURA
 #if defined(TOOLKIT_VIEWS)
   views_delegate_.reset(CreateViewsDelegate());

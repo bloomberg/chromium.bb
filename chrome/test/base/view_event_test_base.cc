@@ -141,7 +141,8 @@ void ViewEventTestBase::SetUp() {
   // the test screen.
   aura_test_helper_.reset(
       new aura::test::AuraTestHelper(base::MessageLoopForUI::current()));
-  aura_test_helper_->SetUp();
+  bool allow_test_contexts = true;
+  aura_test_helper_->SetUp(allow_test_contexts);
   context = aura_test_helper_->root_window();
 #endif  // !USE_ASH && USE_AURA
 

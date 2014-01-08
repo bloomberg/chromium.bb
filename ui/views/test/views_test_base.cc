@@ -37,7 +37,8 @@ void ViewsTestBase::SetUp() {
     views_delegate_.reset(new TestViewsDelegate());
 #if defined(USE_AURA)
   aura_test_helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
-  aura_test_helper_->SetUp();
+  bool allow_test_contexts = true;
+  aura_test_helper_->SetUp(allow_test_contexts);
   wm_state_.reset(new views::corewm::WMState);
 #endif  // USE_AURA
   ui::InitializeInputMethodForTesting();

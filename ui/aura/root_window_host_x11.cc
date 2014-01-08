@@ -389,6 +389,7 @@ WindowTreeHostX11::~WindowTreeHostX11() {
 
   UnConfineCursor();
 
+  DestroyCompositor();
   XDestroyWindow(xdisplay_, xwindow_);
 }
 

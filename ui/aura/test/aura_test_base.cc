@@ -69,7 +69,8 @@ void AuraTestBase::SetUp() {
   ui::GestureConfiguration::set_fling_velocity_cap(15000.0f);
 
   helper_.reset(new AuraTestHelper(&message_loop_));
-  helper_->SetUp();
+  bool allow_test_contexts = true;
+  helper_->SetUp(allow_test_contexts);
 }
 
 void AuraTestBase::TearDown() {

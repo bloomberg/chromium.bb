@@ -33,6 +33,7 @@ WindowTreeHostOzone::WindowTreeHostOzone(const gfx::Rect& bounds)
 
 WindowTreeHostOzone::~WindowTreeHostOzone() {
   base::MessagePumpOzone::Current()->RemoveDispatcherForRootWindow(0);
+  DestroyCompositor();
 }
 
 bool WindowTreeHostOzone::Dispatch(const base::NativeEvent& ne) {

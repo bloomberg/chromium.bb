@@ -57,7 +57,8 @@ class DesktopCaptureDeviceAuraTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
     helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
-    helper_->SetUp();
+    bool allow_test_contexts = true;
+    helper_->SetUp(allow_test_contexts);
 
     // We need a window to cover desktop area so that DesktopCaptureDeviceAura
     // can use gfx::NativeWindow::GetWindowAtScreenPoint() to locate the

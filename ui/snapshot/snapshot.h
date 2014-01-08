@@ -28,7 +28,7 @@ namespace ui {
 // intended to be used for debugging purposes where no BrowserProcess instance
 // is available (ie. tests). This function is synchronous, so it should NOT be
 // used in a result of user action. Use asynchronous GrabWindowSnapshotAsync()
-// instead.
+// instead on supported platforms.
 SNAPSHOT_EXPORT bool GrabWindowSnapshot(
     gfx::NativeWindow window,
     std::vector<unsigned char>* png_representation,
@@ -39,14 +39,19 @@ SNAPSHOT_EXPORT bool GrabViewSnapshot(
     std::vector<unsigned char>* png_representation,
     const gfx::Rect& snapshot_bounds);
 
-// GrabWindowSnapshotAsync() copies snapshot of |source_rect| from window and
-// scales it to |target_size| asynchronously.
 typedef base::Callback<void(const gfx::Image& snapshot)>
     GrabWindowSnapshotAsyncCallback;
-SNAPSHOT_EXPORT void GrabWindowSnapshotAsync(
+// GrabWindowSnapshotAndScaleAsync() copies snapshot of |source_rect| from
+// window and scales it to |target_size| asynchronously.
+SNAPSHOT_EXPORT void GrabWindowSnapshotAndScaleAsync(
     gfx::NativeWindow window,
     const gfx::Rect& source_rect,
     const gfx::Size& target_size,
+    scoped_refptr<base::TaskRunner> background_task_runner,
+    const GrabWindowSnapshotAsyncCallback& callback);
+SNAPSHOT_EXPORT void GrabWindowSnapshotAsync(
+    gfx::NativeWindow window,
+    const gfx::Rect& source_rect,
     scoped_refptr<base::TaskRunner> background_task_runner,
     const GrabWindowSnapshotAsyncCallback& callback);
 

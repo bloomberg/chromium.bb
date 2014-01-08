@@ -142,6 +142,7 @@ DesktopWindowTreeHostX11::DesktopWindowTreeHostX11(
 }
 
 DesktopWindowTreeHostX11::~DesktopWindowTreeHostX11() {
+  DestroyCompositor();
   root_window_->window()->ClearProperty(kHostForRootWindow);
   aura::client::SetWindowMoveClient(root_window_->window(), NULL);
   desktop_native_widget_aura_->OnDesktopWindowTreeHostDestroyed(root_window_);
