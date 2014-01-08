@@ -314,9 +314,11 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
         }
     }
 
+    // We must always have a ShadowRoot so children like <source> will not render
+    // as they never have an insertion point.
+    ensureUserAgentShadowRoot();
     setHasCustomStyleCallbacks();
     addElementToDocumentMap(this, &document);
-
 }
 
 HTMLMediaElement::~HTMLMediaElement()
@@ -472,11 +474,6 @@ bool HTMLMediaElement::rendererIsNeeded(const RenderStyle& style)
 RenderObject* HTMLMediaElement::createRenderer(RenderStyle*)
 {
     return new RenderMedia(this);
-}
-
-bool HTMLMediaElement::childShouldCreateRenderer(const Node& child) const
-{
-    return hasMediaControls() && HTMLElement::childShouldCreateRenderer(child);
 }
 
 Node::InsertionNotificationRequest HTMLMediaElement::insertedInto(ContainerNode* insertionPoint)
