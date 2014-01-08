@@ -66,7 +66,7 @@ class InterfaceDependencyResolver:
                 IdlReader, used for reading dependency files
         """
         with open(interfaces_info_filename, 'r') as interfaces_info_file:
-            self.interface_dependencies = pickle.load(interfaces_info_file)
+            self.interfaces_info = pickle.load(interfaces_info_file)
         self.additional_interfaces = set()
         for filename in additional_idl_filenames:
             basename = os.path.basename(filename)
@@ -119,8 +119,8 @@ class InterfaceDependencyResolver:
         - Otherwise, return None. This happens when the given IDL file is a
           dependency, for which we don't want to generate bindings.
         """
-        if target_interface_name in self.interface_dependencies:
-            return self.interface_dependencies[target_interface_name]
+        if target_interface_name in self.interfaces_info:
+            return self.interfaces_info[target_interface_name]['dependencies']
 
         # additional_interfaces is a list of interfaces that should not be
         # included in DerivedSources*.cpp, and hence are not listed in the

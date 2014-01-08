@@ -100,11 +100,19 @@ def get_file_contents(idl_filename):
 def write_file(new_lines, destination_filename, only_if_changed):
     if only_if_changed and os.path.isfile(destination_filename):
         with open(destination_filename) as destination_file:
-            old_lines = destination_file.readlines()
-        if old_lines == new_lines:
-            return
+            if destination_file.readlines() == new_lines:
+                return
     with open(destination_filename, 'w') as destination_file:
         destination_file.write(''.join(new_lines))
+
+
+def write_pickle_file(pickle_filename, data, only_if_changed):
+    if only_if_changed and os.path.isfile(pickle_filename):
+        with open(pickle_filename) as pickle_file:
+            if pickle.load(pickle_file) == data:
+                return
+    with open(pickle_filename, 'w') as pickle_file:
+        pickle.dump(data, pickle_file)
 
 
 def get_partial_interface_name_from_idl(file_contents):
@@ -219,7 +227,7 @@ def generate_global_constructors_partial_interface(interface_name, destination_f
     write_file(lines, destination_filename, only_if_changed)
 
 
-def generate_dependencies(idl_file_name, interfaces, dependencies, partial_interface_files, implements_interfaces, implemented_somewhere):
+def generate_dependencies(idl_file_name, interfaces_info, partial_interface_files):
     interface_name, _ = os.path.splitext(os.path.basename(idl_file_name))
     full_path = os.path.realpath(idl_file_name)
     idl_file_contents = get_file_contents(full_path)
@@ -227,28 +235,28 @@ def generate_dependencies(idl_file_name, interfaces, dependencies, partial_inter
     # Handle partial interfaces
     partial_interface_name = get_partial_interface_name_from_idl(idl_file_contents)
     if partial_interface_name:
-        partial_interface_files[partial_interface_name].append(full_path)
+        partial_interface_files.setdefault(partial_interface_name, []).append(full_path)
         return partial_interface_name
 
-    interfaces.add(interface_name)
-    # Non-partial interfaces default to having bindings generated
-    dependencies[full_path] = []
+    # Non-partial interfaces default to having bindings generated,
+    # but are removed later if they are implemented by another interface
+    interfaces_info[interface_name] = {
+        'full_path': full_path,
+        'implements_interfaces': get_implemented_interfaces_from_idl(idl_file_contents, interface_name),
+    }
 
-    # Parse 'identifier-A implements identifier-B;' statements
-    implemented_interfaces = get_implemented_interfaces_from_idl(idl_file_contents, interface_name)
-    implements_interfaces[interface_name] = implemented_interfaces
-    implemented_somewhere |= set(implemented_interfaces)
-
-    return partial_interface_name
+    return None
 
 
-def remove_interfaces_implemented_somewhere(dependencies, interface_name_to_idl_file, implemented_somewhere):
+def remove_interfaces_implemented_somewhere(interfaces_info):
     # Interfaces that are implemented by another interface do not have
     # their own bindings generated, as this would be redundant with the
     # actual implementation.
-    for implemented_interface in implemented_somewhere:
-        full_path = interface_name_to_idl_file[implemented_interface]
-        del dependencies[full_path]
+    implemented_somewhere = set().union(*[
+        interface_info['implements_interfaces']
+        for interface_info in interfaces_info.values()])
+    for interface in implemented_somewhere:
+        del interfaces_info[interface]
 
 
 def record_global_constructors_and_extended_attribute(idl_file_name, global_constructors, interface_extended_attribute, parent_interface):
@@ -277,86 +285,79 @@ def parse_idl_files(main_idl_files, support_idl_files, global_constructors_filen
     """Return dependencies between IDL files, constructors on global objects, and events.
 
     Returns:
-        interfaces:
-            set of all interfaces
+        interfaces_info:
+            dict of info about main interfaces
+            The keys are the interfaces for which bindings are generated.
+            This does not include interfaces implemented by another interface.
         bindings_derived_sources:
-            list of main IDL file names (except support IDL file names)
-        dependencies:
-            dict of main IDL filename (for a given interface) -> list of partial IDL filenames (for that interface)
-            The keys (main IDL files) are the files for which bindings are
-            generated. This does not include IDL files for interfaces
-            implemented by another interface.
+            list of main IDL file names (excludes support IDL file names)
         global_constructors:
             dict of global objects -> list of constructors on that object
         event_names:
             dict of interfaces that inherit from Event -> list of extended attributes for the interface
     """
-    interfaces = set()
-    dependencies = {}
+    interfaces_info = {}
     partial_interface_files = {}
-    implements_interfaces = {}
-    implemented_somewhere = set()
-
-    global_constructors = {}
-    for global_object in global_constructors_filenames.keys():
-        global_constructors[global_object] = []
+    global_constructors = dict([
+        (global_object, [])
+        for global_object in global_constructors_filenames])
 
     # Parents and extended attributes (of interfaces with parents) are
     # used in generating event names
     parent_interface = {}
     interface_extended_attribute = {}
 
-    interface_name_to_idl_file = {}
-    for idl_file_name in main_idl_files + support_idl_files:
-        full_path = os.path.realpath(idl_file_name)
-        interface_name, _ = os.path.splitext(os.path.basename(idl_file_name))
-        interface_name_to_idl_file[interface_name] = full_path
-        partial_interface_files[interface_name] = []
-
     # Generate dependencies, global_constructors and interface_extended_attributes for main IDL files
     for idl_file_name in main_idl_files:
-        if not generate_dependencies(idl_file_name, interfaces, dependencies, partial_interface_files, implements_interfaces, implemented_somewhere):
+        if not generate_dependencies(idl_file_name, interfaces_info, partial_interface_files):
             record_global_constructors_and_extended_attribute(idl_file_name, global_constructors, interface_extended_attribute, parent_interface)
 
-    bindings_derived_sources = dependencies.copy()
-    remove_interfaces_implemented_somewhere(bindings_derived_sources, interface_name_to_idl_file, implemented_somewhere)
+    # File names of all main IDL files (no support ones) for derived sources
+    bindings_derived_sources_info = interfaces_info.copy()
+    remove_interfaces_implemented_somewhere(bindings_derived_sources_info)
+    bindings_derived_sources = [interface_info['full_path']
+                                for interface_info in
+                                bindings_derived_sources_info.values()]
 
     # Add constructors on global objects to partial interfaces
     for global_object, filename in global_constructors_filenames.iteritems():
-        if global_object in interfaces:
-            partial_interface_files[global_object].append(filename)
+        if global_object in interfaces_info:
+            partial_interface_files.setdefault(global_object, []).append(filename)
 
     # Add support IDL files to the dependencies for supporting partial interface
     for idl_file_name in support_idl_files:
-        generate_dependencies(idl_file_name, interfaces, dependencies, partial_interface_files, implements_interfaces, implemented_somewhere)
-    remove_interfaces_implemented_somewhere(dependencies, interface_name_to_idl_file, implemented_somewhere)
+        generate_dependencies(idl_file_name, interfaces_info, partial_interface_files)
 
     # An IDL file's dependencies are partial interface files that extend it,
     # and files for other interfaces that this interfaces implements.
-    for idl_file_path in dependencies.iterkeys():
-        interface_name, _ = os.path.splitext(os.path.basename(idl_file_path))
-        implemented_interfaces = implements_interfaces[interface_name]
+    for interface_name, interface_info in interfaces_info.iteritems():
+        implemented_interfaces = interface_info['implements_interfaces']
         try:
-            interface_paths = map(lambda x: interface_name_to_idl_file[x], implemented_interfaces)
+            implemented_interface_paths = [
+                interfaces_info[interface]['full_path']
+                for interface in implemented_interfaces]
         except KeyError as key_name:
             raise IdlInterfaceFileNotFoundError('Could not find the IDL file where the following implemented interface is defined: %s' % key_name)
-        dependencies[idl_file_path] = sorted(partial_interface_files[interface_name] + interface_paths)
+        interface_info['dependencies'] = sorted(
+                partial_interface_files.get(interface_name, []) +
+                implemented_interface_paths)
+    remove_interfaces_implemented_somewhere(interfaces_info)
 
     # Generate event names for all interfaces that inherit from Event,
     # including Event itself.
     event_names = {}
-    if 'Event' in interfaces:
-        event_names[interface_name_to_idl_file['Event']] = interface_extended_attribute['Event']
+    if 'Event' in interfaces_info:
+        event_names[interfaces_info['Event']['full_path']] = interface_extended_attribute['Event']
     for interface, parent in parent_interface.iteritems():
         while parent in parent_interface:
             parent = parent_interface[parent]
         if parent == 'Event':
-            event_names[interface_name_to_idl_file[interface]] = interface_extended_attribute[interface]
+            event_names[interfaces_info[interface]['full_path']] = interface_extended_attribute[interface]
 
-    return interfaces, dependencies, bindings_derived_sources, global_constructors, event_names
+    return interfaces_info, bindings_derived_sources, global_constructors, event_names
 
 
-def write_dependency_file(dependencies_filename, interfaces_info_filename, dependencies, only_if_changed):
+def write_dependencies_file(dependencies_filename, interfaces_info, only_if_changed):
     """Write the interface dependencies file.
 
     The format is as follows:
@@ -375,35 +376,26 @@ def write_dependency_file(dependencies_filename, interfaces_info_filename, depen
     own line in the dependency file.
     """
     # FIXME: remove text format once Perl gone (Python uses pickle)
-    lines = ['%s %s\n' % (idl_file, ' '.join(sorted(dependency_files)))
-             for idl_file, dependency_files in sorted(dependencies.iteritems())]
+    dependencies_list = sorted(
+        (interface_info['full_path'], sorted(interface_info['dependencies']))
+        for interface_info in interfaces_info.values())
+    lines = ['%s %s\n' % (idl_file, ' '.join(dependency_files))
+             for idl_file, dependency_files in dependencies_list]
     write_file(lines, dependencies_filename, only_if_changed)
 
-    if not interfaces_info_filename:
-        return
-    interfaces = {}
-    for idl_filename, dependency_files in dependencies.iteritems():
-        idl_basename = os.path.basename(idl_filename)
-        interface_name, _ = os.path.splitext(idl_basename)
-        interfaces[interface_name] = dependency_files
 
-    if only_if_changed and os.path.isfile(interfaces_info_filename):
-        with open(interfaces_info_filename, 'r+') as pickle_file:
-            if pickle.load(pickle_file) == interfaces:
-                return
-            pickle_file.seek(0)
-            pickle.dump(interfaces, pickle_file)
-        return
-    with open(interfaces_info_filename, 'w') as pickle_file:
-        pickle.dump(interfaces, pickle_file)
+def write_bindings_derived_sources_file(bindings_derived_sources_filename, idl_filenames_list, only_if_changed):
+    lines = [idl_filename + '\n'
+             for idl_filename in sorted(idl_filenames_list)]
+    write_file(lines, bindings_derived_sources_filename, only_if_changed)
 
 
 def main():
     options = parse_options()
     with open(options.main_idl_files_list) as idl_files_list:
-        main_idl_files = [string.rstrip(line, '\n') for line in idl_files_list]
+        main_idl_files = [line.rstrip('\n') for line in idl_files_list]
     with open(options.support_idl_files_list) as idl_files_list:
-        support_idl_files = [string.rstrip(line, '\n') for line in idl_files_list]
+        support_idl_files = [line.rstrip('\n') for line in idl_files_list]
     only_if_changed = options.write_file_only_if_changed
     global_constructors_filenames = {
         'Window': options.window_constructors_file,
@@ -413,12 +405,13 @@ def main():
         'ServiceWorkerGlobalScope': options.serviceworkerglobalscope_constructors_file,
         }
 
-    interfaces, dependencies, bindings_derived_sources, global_constructors, event_names = parse_idl_files(main_idl_files, support_idl_files, global_constructors_filenames)
+    interfaces_info, bindings_derived_sources, global_constructors, event_names = parse_idl_files(main_idl_files, support_idl_files, global_constructors_filenames)
 
-    write_dependency_file(options.interface_dependencies_file, options.interfaces_info_file, dependencies, only_if_changed)
-    write_dependency_file(options.bindings_derived_sources_file, None, bindings_derived_sources, only_if_changed)
+    write_dependencies_file(options.interface_dependencies_file, interfaces_info, only_if_changed)
+    write_pickle_file(options.interfaces_info_file, interfaces_info, only_if_changed)
+    write_bindings_derived_sources_file(options.bindings_derived_sources_file, bindings_derived_sources, only_if_changed)
     for interface_name, filename in global_constructors_filenames.iteritems():
-        if interface_name in interfaces:
+        if interface_name in interfaces_info:
             generate_global_constructors_partial_interface(interface_name, filename, global_constructors[interface_name], only_if_changed)
     generate_event_names_file(options.event_names_file, event_names, only_if_changed)
 
