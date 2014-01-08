@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/dbus/dbus_thread_manager_observer.h"
 #include "chromeos/dbus/power_manager/policy.pb.h"
 #include "chromeos/dbus/power_manager_client.h"
 
@@ -21,7 +22,8 @@ class DBusThreadManager;
 // PowerPolicyController is responsible for sending Chrome's assorted power
 // management preferences to the Chrome OS power manager.
 class CHROMEOS_EXPORT PowerPolicyController
-    : public PowerManagerClient::Observer {
+    : public DBusThreadManagerObserver,
+      public PowerManagerClient::Observer {
  public:
   // Note: Do not change these values; they are used by preferences.
   enum Action {
@@ -77,6 +79,9 @@ class CHROMEOS_EXPORT PowerPolicyController
   // Updates |prefs_policy_| with |values| and sends an updated policy.
   void ApplyPrefs(const PrefValues& values);
 
+  // Resets |prefs_policy_| to its defaults and sends an updated policy.
+  void ClearPrefs();
+
   // Registers a request to temporarily prevent the screen from getting
   // dimmed or turned off or the system from suspending in response to user
   // inactivity and sends an updated policy.  |reason| is a human-readable
@@ -89,6 +94,10 @@ class CHROMEOS_EXPORT PowerPolicyController
   // AddSystemWakeLock() and sends an updated policy.
   void RemoveWakeLock(int id);
 
+  // DBusThreadManagerObserver implementation:
+  virtual void OnDBusThreadManagerDestroying(DBusThreadManager* manager)
+      OVERRIDE;
+
   // PowerManagerClient::Observer implementation:
   virtual void PowerManagerRestarted() OVERRIDE;
 
@@ -100,7 +109,11 @@ class CHROMEOS_EXPORT PowerPolicyController
   // Sends a policy based on |prefs_policy_| to the power manager.
   void SendCurrentPolicy();
 
-  PowerManagerClient* client_;  // weak
+  // Sends an empty policy to the power manager to reset its configuration.
+  void SendEmptyPolicy();
+
+  DBusThreadManager* manager_;  // not owned
+  PowerManagerClient* client_;  // not owned
 
   // Policy derived from values passed to ApplyPrefs().
   power_manager::PowerManagementPolicy prefs_policy_;

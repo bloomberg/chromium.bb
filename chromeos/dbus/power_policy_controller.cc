@@ -134,22 +134,31 @@ std::string PowerPolicyController::GetPolicyDebugString(
 }
 
 PowerPolicyController::PowerPolicyController()
-    : client_(NULL),
+    : manager_(NULL),
+      client_(NULL),
       prefs_were_set_(false),
       honor_screen_wake_locks_(true),
       next_wake_lock_id_(1) {
 }
 
 PowerPolicyController::~PowerPolicyController() {
-  if (client_) {
-    client_->RemoveObserver(this);
-    client_ = NULL;
-  }
+  DCHECK(manager_);
+  // The power manager's policy is reset before this point, in
+  // OnDBusThreadManagerDestroying().  At the time that
+  // PowerPolicyController is destroyed, PowerManagerClient's D-Bus proxy
+  // to the power manager is already gone.
+  client_->RemoveObserver(this);
+  client_ = NULL;
+  manager_->RemoveObserver(this);
+  manager_ = NULL;
 }
 
 void PowerPolicyController::Init(DBusThreadManager* manager) {
-  client_ = manager->GetPowerManagerClient();
+  manager_ = manager;
+  manager_->AddObserver(this);
+  client_ = manager_->GetPowerManagerClient();
   client_->AddObserver(this);
+  SendCurrentPolicy();
 }
 
 void PowerPolicyController::ApplyPrefs(const PrefValues& values) {
@@ -211,6 +220,13 @@ void PowerPolicyController::ApplyPrefs(const PrefValues& values) {
   SendCurrentPolicy();
 }
 
+void PowerPolicyController::ClearPrefs() {
+  prefs_policy_.Clear();
+  honor_screen_wake_locks_ = true;
+  prefs_were_set_ = false;
+  SendCurrentPolicy();
+}
+
 int PowerPolicyController::AddScreenWakeLock(const std::string& reason) {
   int id = next_wake_lock_id_++;
   screen_wake_locks_[id] = reason;
@@ -230,6 +246,12 @@ void PowerPolicyController::RemoveWakeLock(int id) {
     LOG(WARNING) << "Ignoring request to remove nonexistent wake lock " << id;
   else
     SendCurrentPolicy();
+}
+
+void PowerPolicyController::OnDBusThreadManagerDestroying(
+    DBusThreadManager* manager) {
+  DCHECK_EQ(manager, manager_);
+  SendEmptyPolicy();
 }
 
 void PowerPolicyController::PowerManagerRestarted() {
@@ -277,6 +299,10 @@ void PowerPolicyController::SendCurrentPolicy() {
   if (!reason.empty())
     policy.set_reason(reason);
   client_->SetPolicy(policy);
+}
+
+void PowerPolicyController::SendEmptyPolicy() {
+  client_->SetPolicy(power_manager::PowerManagementPolicy());
 }
 
 }  // namespace chromeos

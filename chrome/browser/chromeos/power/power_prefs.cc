@@ -237,8 +237,10 @@ void PowerPrefs::SetProfile(Profile* profile) {
   profile_ = profile;
   pref_change_registrar_.reset();
 
-  if (!profile)
+  if (!profile) {
+    power_policy_controller_->ClearPrefs();
     return;
+  }
 
   base::Closure update_callback(base::Bind(
       &PowerPrefs::UpdatePowerPolicyFromPrefs,
