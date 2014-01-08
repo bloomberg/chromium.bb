@@ -150,6 +150,10 @@ bool GetNetworkList(NetworkInterfaceList* networks,
     if (address.FromSockAddr(addr, addr_size)) {
       uint8 net_mask = 0;
       if (interface->ifa_netmask) {
+        // If not otherwise set, assume the same sa_family as ifa_addr.
+        if (interface->ifa_netmask->sa_family == 0) {
+          interface->ifa_netmask->sa_family = addr->sa_family;
+        }
         IPEndPoint netmask;
         if (netmask.FromSockAddr(interface->ifa_netmask, addr_size)) {
           net_mask = MaskPrefixLength(netmask.address());
