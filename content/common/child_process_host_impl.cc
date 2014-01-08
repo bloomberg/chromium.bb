@@ -6,7 +6,7 @@
 
 #include <limits>
 
-#include "base/atomicops.h"
+#include "base/atomic_sequence_num.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -30,9 +30,9 @@
 #include "content/common/font_cache_dispatcher_win.h"
 #endif  // OS_LINUX
 
-#if defined(OS_MACOSX)
 namespace {
 
+#if defined(OS_MACOSX)
 // Given |path| identifying a Mac-style child process executable path, adjusts
 // it to correspond to |feature|. For a child process path such as
 // ".../Chromium Helper.app/Contents/MacOS/Chromium Helper", the transformed
@@ -66,19 +66,22 @@ base::FilePath TransformPathForFeature(const base::FilePath& path,
   new_basename_app.append(kAppExtension);
 
   base::FilePath new_path = root_path.Append(new_basename_app)
-                               .Append(kContentsName)
-                               .Append(kMacOSName)
-                               .Append(new_basename);
+                                     .Append(kContentsName)
+                                     .Append(kMacOSName)
+                                     .Append(new_basename);
 
   return new_path;
 }
+#endif  // OS_MACOSX
+
+// Global atomic to generate child process unique IDs.
+base::StaticAtomicSequenceNumber g_unique_id;
 
 }  // namespace
-#endif  // OS_MACOSX
 
 namespace content {
 
-int ChildProcessHostImpl::kInvalidChildProcessId = -1;
+int ChildProcessHost::kInvalidUniqueID = -1;
 
 // static
 ChildProcessHost* ChildProcessHost::Create(ChildProcessHostDelegate* delegate) {
@@ -212,11 +215,13 @@ void ChildProcessHostImpl::AllocateSharedMemory(
 int ChildProcessHostImpl::GenerateChildProcessUniqueId() {
   // This function must be threadsafe.
   //
-  // TODO(ajwong): Why not StaticAtomicSequenceNumber?
-  static base::subtle::Atomic32 last_unique_child_id = 0;
-  int id = base::subtle::NoBarrier_AtomicIncrement(&last_unique_child_id, 1);
+  // Historically, this function returned ids started with 1, so in several
+  // places in the code a value of 0 (rather than kInvalidUniqueID) was used as
+  // an invalid value. So we retain those semantics.
+  int id = g_unique_id.GetNext() + 1;
 
-  CHECK_NE(kInvalidChildProcessId, id);
+  CHECK_NE(0, id);
+  CHECK_NE(kInvalidUniqueID, id);
 
   return id;
 }

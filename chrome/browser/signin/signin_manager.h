@@ -174,13 +174,15 @@ class SigninManager : public SigninManagerBase,
   static bool IsSigninAllowedOnIOThread(ProfileIOData* io_data);
 
   // Allows the SigninManager to track the privileged signin process
-  // identified by |process_id| so that we can later ask (via IsSigninProcess)
+  // identified by |host_id| so that we can later ask (via IsSigninProcess)
   // if it is safe to sign the user in from the current context (see
   // OneClickSigninHelper).  All of this tracking state is reset once the
   // renderer process terminates.
-  void SetSigninProcess(int process_id);
+  //
+  // N.B. This is the id returned by RenderProcessHost::GetID().
+  void SetSigninProcess(int host_id);
   void ClearSigninProcess();
-  bool IsSigninProcess(int process_id) const;
+  bool IsSigninProcess(int host_id) const;
   bool HasSigninProcess() const;
 
  protected:
@@ -274,7 +276,7 @@ class SigninManager : public SigninManagerBase,
 
   // See SetSigninProcess.  Tracks the currently active signin process
   // by ID, if there is one.
-  int signin_process_id_;
+  int signin_host_id_;
 
   // Callback invoked during signin after an OAuth token has been fetched
   // but before signin is complete.

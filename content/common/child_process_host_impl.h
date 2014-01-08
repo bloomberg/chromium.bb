@@ -37,10 +37,6 @@ class CONTENT_EXPORT ChildProcessHostImpl : public ChildProcessHost,
  public:
   virtual ~ChildProcessHostImpl();
 
-  // This value is guaranteed to never be returned by
-  // GenerateChildProcessUniqueId() below.
-  static int kInvalidChildProcessId;
-
   // Public and static for reuse by RenderMessageFilter.
   static void AllocateSharedMemory(
       size_t buffer_size, base::ProcessHandle child_process,
@@ -53,6 +49,8 @@ class CONTENT_EXPORT ChildProcessHostImpl : public ChildProcessHost,
   //
   // This function is threadsafe since RenderProcessHost is on the UI thread,
   // but normally this will be used on the IO thread.
+  //
+  // This will never return ChildProcessHost::kInvalidUniqueID.
   static int GenerateChildProcessUniqueId();
 
   // ChildProcessHost implementation

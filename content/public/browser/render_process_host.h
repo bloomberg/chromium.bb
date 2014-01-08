@@ -156,6 +156,8 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   //
   // This ID will be unique across all child process hosts, including workers,
   // plugins, etc.
+  //
+  // This will never return ChildProcessHost::kInvalidUniqueID.
   virtual int GetID() const = 0;
 
   // Returns true iff channel_ has been set to non-NULL. Use this for checking

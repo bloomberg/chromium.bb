@@ -33,6 +33,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/child_process_host.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -44,13 +45,12 @@
 using namespace signin_internals_util;
 
 using content::BrowserThread;
+using content::ChildProcessHost;
 
 namespace {
 
 const char kGetInfoDisplayEmailKey[] = "displayEmail";
 const char kGetInfoEmailKey[] = "email";
-
-const int kInvalidProcessId = -1;
 
 const char kChromiumSyncService[] = "service=chromiumsync";
 
@@ -86,16 +86,17 @@ SigninManager::SigninManager(scoped_ptr<SigninManagerDelegate> delegate)
       had_two_factor_error_(false),
       type_(SIGNIN_TYPE_NONE),
       weak_pointer_factory_(this),
-      signin_process_id_(kInvalidProcessId),
+      signin_host_id_(ChildProcessHost::kInvalidUniqueID),
       delegate_(delegate.Pass()) {
 }
 
 void SigninManager::SetSigninProcess(int process_id) {
-  if (process_id == signin_process_id_)
+  if (process_id == signin_host_id_)
     return;
-  DLOG_IF(WARNING, signin_process_id_ != kInvalidProcessId) <<
-      "Replacing in-use signin process.";
-  signin_process_id_ = process_id;
+  DLOG_IF(WARNING,
+          signin_host_id_ != ChildProcessHost::kInvalidUniqueID)
+      << "Replacing in-use signin process.";
+  signin_host_id_ = process_id;
   const content::RenderProcessHost* process =
       content::RenderProcessHost::FromID(process_id);
   DCHECK(process);
@@ -105,15 +106,15 @@ void SigninManager::SetSigninProcess(int process_id) {
 }
 
 void SigninManager::ClearSigninProcess() {
-  signin_process_id_ = kInvalidProcessId;
+  signin_host_id_ = ChildProcessHost::kInvalidUniqueID;
 }
 
 bool SigninManager::IsSigninProcess(int process_id) const {
-  return process_id == signin_process_id_;
+  return process_id == signin_host_id_;
 }
 
 bool SigninManager::HasSigninProcess() const {
-  return signin_process_id_ != kInvalidProcessId;
+  return signin_host_id_ != ChildProcessHost::kInvalidUniqueID;
 }
 
 SigninManager::~SigninManager() {
@@ -606,14 +607,14 @@ void SigninManager::Observe(int type,
 
   // It's possible we're listening to a "stale" renderer because it was
   // replaced with a new process by process-per-site. In either case,
-  // stop listening to it, but only reset signin_process_id_ tracking
+  // stop listening to it, but only reset signin_host_id_ tracking
   // if this was from the current signin process.
   registrar_.Remove(this,
                     content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                     source);
-  if (signin_process_id_ ==
+  if (signin_host_id_ ==
       content::Source<content::RenderProcessHost>(source)->GetID()) {
-    signin_process_id_ = kInvalidProcessId;
+    signin_host_id_ = ChildProcessHost::kInvalidUniqueID;
   }
 }
 

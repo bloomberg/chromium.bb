@@ -16,8 +16,8 @@
 #include "content/browser/dom_storage/dom_storage_context_impl.h"
 #include "content/browser/dom_storage/dom_storage_task_runner.h"
 #include "content/browser/dom_storage/session_storage_database.h"
-#include "content/common/child_process_host_impl.h"
 #include "content/common/dom_storage/dom_storage_types.h"
+#include "content/public/common/child_process_host.h"
 
 namespace content {
 
@@ -247,14 +247,14 @@ DOMStorageNamespace::GetAreaHolder(const GURL& origin) {
 }
 
 void DOMStorageNamespace::AddTransactionLogProcessId(int process_id) {
-  DCHECK(process_id != ChildProcessHostImpl::kInvalidChildProcessId);
+  DCHECK(process_id != ChildProcessHost::kInvalidUniqueID);
   DCHECK(transactions_.count(process_id) == 0);
   TransactionData* transaction_data = new TransactionData;
   transactions_[process_id] = transaction_data;
 }
 
 void DOMStorageNamespace::RemoveTransactionLogProcessId(int process_id) {
-  DCHECK(process_id != ChildProcessHostImpl::kInvalidChildProcessId);
+  DCHECK(process_id != ChildProcessHost::kInvalidUniqueID);
   DCHECK(transactions_.count(process_id) == 1);
   delete transactions_[process_id];
   transactions_.erase(process_id);
@@ -353,7 +353,7 @@ SessionStorageNamespace::MergeResult DOMStorageNamespace::Merge(
 }
 
 bool DOMStorageNamespace::IsLoggingRenderer(int process_id) {
-  DCHECK(process_id != ChildProcessHostImpl::kInvalidChildProcessId);
+  DCHECK(process_id != ChildProcessHost::kInvalidUniqueID);
   if (transactions_.count(process_id) < 1)
     return false;
   return !transactions_[process_id]->max_log_size_exceeded;
