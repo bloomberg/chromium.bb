@@ -473,23 +473,6 @@ PassRefPtr<SecurityOrigin> SecurityOrigin::create(const String& protocol, const 
     return create(KURL(KURL(), protocol + "://" + host + ":" + String::number(port) + "/"));
 }
 
-bool SecurityOrigin::equal(const SecurityOrigin* other) const
-{
-    if (other == this)
-        return true;
-
-    if (!isSameSchemeHostPort(other))
-        return false;
-
-    if (m_domainWasSetInDOM != other->m_domainWasSetInDOM)
-        return false;
-
-    if (m_domainWasSetInDOM && m_domain != other->m_domain)
-        return false;
-
-    return true;
-}
-
 bool SecurityOrigin::isSameSchemeHostPort(const SecurityOrigin* other) const
 {
     if (m_host != other->m_host)
