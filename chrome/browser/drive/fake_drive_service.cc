@@ -1256,6 +1256,14 @@ CancelCallback FakeDriveService::AuthorizeApp(
   return CancelCallback();
 }
 
+CancelCallback FakeDriveService::UninstallApp(
+    const std::string& app_id,
+    const google_apis::EntryActionCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+  return CancelCallback();
+}
+
 CancelCallback FakeDriveService::GetResourceListInDirectoryByWapi(
     const std::string& directory_resource_id,
     const google_apis::GetResourceListCallback& callback) {

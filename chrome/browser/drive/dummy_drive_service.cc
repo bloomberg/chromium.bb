@@ -186,6 +186,10 @@ CancelCallback DummyDriveService::AuthorizeApp(
     const std::string& app_id,
     const AuthorizeAppCallback& callback) { return CancelCallback(); }
 
+CancelCallback DummyDriveService::UninstallApp(
+    const std::string& app_id,
+    const EntryActionCallback& callback) { return CancelCallback(); }
+
 CancelCallback DummyDriveService::GetResourceListInDirectoryByWapi(
     const std::string& directory_resource_id,
     const GetResourceListCallback& callback) { return CancelCallback(); }

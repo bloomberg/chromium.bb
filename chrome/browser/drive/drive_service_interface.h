@@ -350,11 +350,16 @@ class DriveServiceInterface {
       const std::string& app_id,
       const google_apis::AuthorizeAppCallback& callback) = 0;
 
+  // Uninstalls a Drive app with the id |app_id|. |callback| must not be null.
+  virtual google_apis::CancelCallback UninstallApp(
+      const std::string& app_id,
+      const google_apis::EntryActionCallback& callback) = 0;
+
   // This is introduced as a temporary short term solution of the performance
   // regression issue on Drive API v2.
   //
-  // This fetches the resource list in a directory by usinig GData WAPI
-  // regardless of base protocol. In other words, even if we enabels Drive API
+  // This fetches the resource list in a directory by using GData WAPI
+  // regardless of base protocol. In other words, even if we enables Drive API
   // v2, this method uses GData WAPI to fetch the resource list.
   //
   // |directory_resource_id| must not be empty.

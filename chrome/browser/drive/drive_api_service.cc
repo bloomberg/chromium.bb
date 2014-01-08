@@ -792,6 +792,17 @@ CancelCallback DriveAPIService::AuthorizeApp(
   return sender_->StartRequestWithRetry(request);
 }
 
+CancelCallback DriveAPIService::UninstallApp(
+    const std::string& app_id,
+    const google_apis::EntryActionCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  // TODO(kinaba) implement.
+  NOTREACHED();
+  return CancelCallback();
+}
+
 CancelCallback DriveAPIService::GetResourceListInDirectoryByWapi(
     const std::string& directory_resource_id,
     const google_apis::GetResourceListCallback& callback) {

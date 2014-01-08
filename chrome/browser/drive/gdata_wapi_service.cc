@@ -584,6 +584,18 @@ CancelCallback GDataWapiService::AuthorizeApp(
                               app_id));
 }
 
+CancelCallback GDataWapiService::UninstallApp(
+    const std::string& app_id,
+    const EntryActionCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  // GData WAPI doesn't support app uninstallation.
+  // This method should never be called if GData WAPI is enabled.
+  NOTREACHED();
+  return CancelCallback();
+}
+
 CancelCallback GDataWapiService::GetResourceListInDirectoryByWapi(
     const std::string& directory_resource_id,
     const google_apis::GetResourceListCallback& callback) {
