@@ -1085,8 +1085,9 @@ void InternetOptionsHandler::EnableCellularCallback(
       if (locale_config) {
         std::string setup_url = locale_config->setup_url();
         if (!setup_url.empty()) {
+          // The mobile device will be managed by the primary user.
           chrome::ScopedTabbedBrowserDisplayer displayer(
-               ProfileManager::GetDefaultProfileOrOffTheRecord(),
+               ProfileManager::GetPrimaryUserProfile(),
                chrome::HOST_DESKTOP_TYPE_ASH);
           chrome::ShowSingletonTab(displayer.browser(), GURL(setup_url));
           return;

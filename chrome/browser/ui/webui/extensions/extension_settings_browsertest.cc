@@ -35,8 +35,8 @@ ExtensionSettingsUIBrowserTest::~ExtensionSettingsUIBrowserTest() {}
 
 Profile* ExtensionSettingsUIBrowserTest::GetProfile() {
   if (!profile_) {
-    profile_ =
-        browser() ? browser()->profile() : ProfileManager::GetDefaultProfile();
+    profile_ = browser() ? browser()->profile() :
+                           ProfileManager::GetActiveUserProfile();
   }
   return profile_;
 }
