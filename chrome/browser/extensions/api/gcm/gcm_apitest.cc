@@ -8,6 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/services/gcm/fake_gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
+#include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/test/base/ui_test_utils.h"
 
 namespace {
@@ -63,6 +64,8 @@ gcm::FakeGCMProfileService* GcmApiTest::service() const {
 const Extension* GcmApiTest::LoadTestExtension(
     const std::string& extension_path,
     const std::string& page_name) {
+  // TODO(jianli): Once the GCM API enters stable, remove |channel|.
+  ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_UNKNOWN);
   const Extension* extension =
       LoadExtension(test_data_dir_.AppendASCII(extension_path));
   if (extension) {
@@ -72,7 +75,7 @@ const Extension* GcmApiTest::LoadTestExtension(
   return extension;
 }
 
-// http://crbug.com/177163 and http://crbug.com/324982
+// http://crbug.com/177163
 #if defined(OS_WIN)
 #define MAYBE_RegisterValidation DISABLED_RegisterValidation
 #else
@@ -83,13 +86,7 @@ IN_PROC_BROWSER_TEST_F(GcmApiTest, MAYBE_RegisterValidation) {
                                   "register_validation.html"));
 }
 
-// http://crbug.com/177163 and http://crbug.com/324982
-#if defined(OS_WIN)
-#define MAYBE_Register DISABLED_Register
-#else
-#define MAYBE_Register Register
-#endif
-IN_PROC_BROWSER_TEST_F(GcmApiTest, MAYBE_Register) {
+IN_PROC_BROWSER_TEST_F(GcmApiTest, Register) {
   StartCollecting();
   const extensions::Extension* extension =
       LoadTestExtension(kFunctionsTestExtension, "register.html");
@@ -109,7 +106,7 @@ IN_PROC_BROWSER_TEST_F(GcmApiTest, MAYBE_Register) {
                   sender_ids.end());
 }
 
-// http://crbug.com/177163 and http://crbug.com/324982
+// http://crbug.com/177163
 #if defined(OS_WIN)
 #define MAYBE_SendValidation DISABLED_SendValidation
 #else
@@ -119,13 +116,7 @@ IN_PROC_BROWSER_TEST_F(GcmApiTest, MAYBE_SendValidation) {
   EXPECT_TRUE(RunExtensionSubtest(kFunctionsTestExtension, "send.html"));
 }
 
-// http://crbug.com/177163 and http://crbug.com/324982
-#if defined(OS_WIN)
-#define MAYBE_SendMessageData DISABLED_SendMessageData
-#else
-#define MAYBE_SendMessageData SendMessageData
-#endif
-IN_PROC_BROWSER_TEST_F(GcmApiTest, MAYBE_SendMessageData) {
+IN_PROC_BROWSER_TEST_F(GcmApiTest, SendMessageData) {
   StartCollecting();
   const extensions::Extension* extension =
       LoadTestExtension(kFunctionsTestExtension, "send_message_data.html");
@@ -145,13 +136,7 @@ IN_PROC_BROWSER_TEST_F(GcmApiTest, MAYBE_SendMessageData) {
   EXPECT_EQ("value2", iter->second);
 }
 
-// http://crbug.com/177163 and http://crbug/324982
-#if defined(OS_WIN) && !defined(NDEBUG)
-#define MAYBE_OnMessagesDeleted DISABLED_OnMessagesDeleted
-#else
-#define MAYBE_OnMessagesDeleted OnMessagesDeleted
-#endif
-IN_PROC_BROWSER_TEST_F(GcmApiTest, MAYBE_OnMessagesDeleted) {
+IN_PROC_BROWSER_TEST_F(GcmApiTest, OnMessagesDeleted) {
   ResultCatcher catcher;
   catcher.RestrictToProfile(profile());
 
@@ -164,13 +149,7 @@ IN_PROC_BROWSER_TEST_F(GcmApiTest, MAYBE_OnMessagesDeleted) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-// http://crbug.com/177163 and http://crbug/324982
-#if defined(OS_WIN) && !defined(NDEBUG)
-#define MAYBE_OnMessage DISABLED_OnMessage
-#else
-#define MAYBE_OnMessage OnMessage
-#endif
-IN_PROC_BROWSER_TEST_F(GcmApiTest, MAYBE_OnMessage) {
+IN_PROC_BROWSER_TEST_F(GcmApiTest, OnMessage) {
   ResultCatcher catcher;
   catcher.RestrictToProfile(profile());
 
@@ -188,13 +167,7 @@ IN_PROC_BROWSER_TEST_F(GcmApiTest, MAYBE_OnMessage) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-// http://crbug.com/177163 and http://crbug/324982
-#if defined(OS_WIN) && !defined(NDEBUG)
-#define MAYBE_OnSendError DISABLED_OnSendError
-#else
-#define MAYBE_OnSendError OnSendError
-#endif
-IN_PROC_BROWSER_TEST_F(GcmApiTest, MAYBE_OnSendError) {
+IN_PROC_BROWSER_TEST_F(GcmApiTest, OnSendError) {
   ResultCatcher catcher;
   catcher.RestrictToProfile(profile());
 
