@@ -152,10 +152,11 @@ void ScrollingCoordinator::updateAfterCompositingChange()
         m_touchEventTargetRectsAreDirty = false;
     }
 
-    if (frameViewIsScrollableIsDirty())
+    FrameView* frameView = m_page->mainFrame()->view();
+    bool frameIsScrollable = frameView && frameView->isScrollable();
+    if (m_wasFrameScrollable != frameIsScrollable)
         updateShouldUpdateScrollLayerPositionOnMainThread();
-
-    updateMainFrameIsScrollable();
+    m_wasFrameScrollable = frameIsScrollable;
 
     const FrameTree& tree = m_page->mainFrame()->tree();
     for (const Frame* child = tree.firstChild(); child; child = child->tree().nextSibling()) {
@@ -926,19 +927,6 @@ bool ScrollingCoordinator::frameViewIsScrollableIsDirty() const
     FrameView* frameView = m_page->mainFrame()->view();
     bool frameIsScrollable = frameView && frameView->isScrollable();
     return frameIsScrollable != m_wasFrameScrollable;
-}
-
-void ScrollingCoordinator::updateMainFrameIsScrollable()
-{
-    FrameView* frameView = m_page->mainFrame()->view();
-    bool frameIsScrollable = frameView && frameView->isScrollable();
-    m_wasFrameScrollable = frameIsScrollable;
-
-    if (!frameView)
-        return;
-
-    if (WebLayer* scrollingWebLayer = scrollingWebLayerForScrollableArea(frameView))
-        scrollingWebLayer->setScrollable(frameIsScrollable);
 }
 
 } // namespace WebCore

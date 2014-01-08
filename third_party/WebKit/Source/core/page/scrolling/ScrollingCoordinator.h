@@ -157,7 +157,6 @@ private:
     void removeWebScrollbarLayer(ScrollableArea*, ScrollbarOrientation);
 
     bool frameViewIsScrollableIsDirty() const;
-    void updateMainFrameIsScrollable();
 
     typedef HashMap<ScrollableArea*, OwnPtr<blink::WebScrollbarLayer> > ScrollbarMap;
     ScrollbarMap m_horizontalScrollbars;
