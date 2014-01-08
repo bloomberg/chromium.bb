@@ -72,7 +72,7 @@ class DiscardableMemoryAllocator::DiscardableAshmemChunk
   virtual ~DiscardableAshmemChunk();
 
   // DiscardableMemory:
-  virtual LockDiscardableMemoryStatus Lock() OVERRIDE {
+  virtual DiscardableMemoryLockStatus Lock() OVERRIDE {
     DCHECK(!locked_);
     locked_ = true;
     return internal::LockAshmemRegion(fd_, offset_, size_, address_);

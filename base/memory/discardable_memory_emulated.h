@@ -20,7 +20,7 @@ class DiscardableMemoryEmulated : public DiscardableMemory {
   bool Initialize();
 
   // Overridden from DiscardableMemory:
-  virtual LockDiscardableMemoryStatus Lock() OVERRIDE;
+  virtual DiscardableMemoryLockStatus Lock() OVERRIDE;
   virtual void Unlock() OVERRIDE;
   virtual void* Memory() const OVERRIDE;
 

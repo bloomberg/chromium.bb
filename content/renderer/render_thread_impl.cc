@@ -406,6 +406,29 @@ void RenderThreadImpl::Init() {
 
   renderer_process_id_ = base::kNullProcessId;
 
+  std::vector<base::DiscardableMemoryType> supported_types;
+  base::DiscardableMemory::GetSupportedTypes(&supported_types);
+  DCHECK(!supported_types.empty());
+
+  // The default preferred type is always the first one in list.
+  base::DiscardableMemoryType type = supported_types[0];
+
+  if (command_line.HasSwitch(switches::kUseDiscardableMemory)) {
+    std::string requested_type_name = command_line.GetSwitchValueASCII(
+        switches::kUseDiscardableMemory);
+    base::DiscardableMemoryType requested_type =
+        base::DiscardableMemory::GetNamedType(requested_type_name);
+    if (std::find(supported_types.begin(),
+                  supported_types.end(),
+                  requested_type) != supported_types.end()) {
+      type = requested_type;
+    } else {
+      LOG(ERROR) << "Requested discardable memory type is not supported.";
+    }
+  }
+
+  base::DiscardableMemory::SetPreferredType(type);
+
   // AllocateGpuMemoryBuffer must be used exclusively on one thread but
   // it doesn't have to be the same thread RenderThreadImpl is created on.
   allocate_gpu_memory_buffer_thread_checker_.DetachFromThread();

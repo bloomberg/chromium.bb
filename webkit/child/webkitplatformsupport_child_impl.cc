@@ -93,7 +93,9 @@ void WebKitPlatformSupportChildImpl::didStopWorkerRunLoop(
 
 blink::WebDiscardableMemory*
 WebKitPlatformSupportChildImpl::allocateAndLockDiscardableMemory(size_t bytes) {
-  if (!base::DiscardableMemory::SupportedNatively())
+  base::DiscardableMemoryType type =
+      base::DiscardableMemory::GetPreferredType();
+  if (type == base::DISCARDABLE_MEMORY_TYPE_EMULATED)
     return NULL;
   return WebDiscardableMemoryImpl::CreateLockedMemory(bytes).release();
 }

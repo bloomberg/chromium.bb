@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/memory/discardable_memory_emulated.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace base {
@@ -22,51 +23,64 @@ const int kDiscardableMemoryTag = VM_MAKE_TAG(252);
 
 class DiscardableMemoryMac : public DiscardableMemory {
  public:
-  DiscardableMemoryMac(void* memory, size_t size)
-      : memory_(memory),
+  explicit DiscardableMemoryMac(size_t size)
+      : buffer_(0),
         size_(size) {
-    DCHECK(memory_);
+  }
+
+  bool Initialize() {
+    kern_return_t ret = vm_allocate(mach_task_self(),
+                                    &buffer_,
+                                    size_,
+                                    VM_FLAGS_PURGABLE |
+                                    VM_FLAGS_ANYWHERE |
+                                    kDiscardableMemoryTag);
+    if (ret != KERN_SUCCESS) {
+      DLOG(ERROR) << "vm_allocate() failed";
+      return false;
+    }
+
+    return true;
   }
 
   virtual ~DiscardableMemoryMac() {
-    vm_deallocate(mach_task_self(),
-                  reinterpret_cast<vm_address_t>(memory_),
-                  size_);
+    if (buffer_)
+      vm_deallocate(mach_task_self(), buffer_, size_);
   }
 
-  virtual LockDiscardableMemoryStatus Lock() OVERRIDE {
-    DCHECK_EQ(0, mprotect(memory_, size_, PROT_READ | PROT_WRITE));
+  virtual DiscardableMemoryLockStatus Lock() OVERRIDE {
+    DCHECK_EQ(0, mprotect(reinterpret_cast<void*>(buffer_),
+                          size_,
+                          PROT_READ | PROT_WRITE));
     int state = VM_PURGABLE_NONVOLATILE;
-    kern_return_t ret = vm_purgable_control(
-        mach_task_self(),
-        reinterpret_cast<vm_address_t>(memory_),
-        VM_PURGABLE_SET_STATE,
-        &state);
+    kern_return_t ret = vm_purgable_control(mach_task_self(),
+                                            buffer_,
+                                            VM_PURGABLE_SET_STATE,
+                                            &state);
     if (ret != KERN_SUCCESS)
-      return DISCARDABLE_MEMORY_FAILED;
+      return DISCARDABLE_MEMORY_LOCK_STATUS_FAILED;
 
-    return state & VM_PURGABLE_EMPTY ? DISCARDABLE_MEMORY_PURGED
-                                     : DISCARDABLE_MEMORY_SUCCESS;
+    return state & VM_PURGABLE_EMPTY ? DISCARDABLE_MEMORY_LOCK_STATUS_PURGED
+                                     : DISCARDABLE_MEMORY_LOCK_STATUS_SUCCESS;
   }
 
   virtual void Unlock() OVERRIDE {
     int state = VM_PURGABLE_VOLATILE | VM_VOLATILE_GROUP_DEFAULT;
-    kern_return_t ret = vm_purgable_control(
-        mach_task_self(),
-        reinterpret_cast<vm_address_t>(memory_),
-        VM_PURGABLE_SET_STATE,
-        &state);
-    DCHECK_EQ(0, mprotect(memory_, size_, PROT_NONE));
+    kern_return_t ret = vm_purgable_control(mach_task_self(),
+                                            buffer_,
+                                            VM_PURGABLE_SET_STATE,
+                                            &state);
+    DCHECK_EQ(0, mprotect(reinterpret_cast<void*>(buffer_), size_, PROT_NONE));
     if (ret != KERN_SUCCESS)
       DLOG(ERROR) << "Failed to unlock memory.";
   }
 
   virtual void* Memory() const OVERRIDE {
-    return memory_;
+    return reinterpret_cast<void*>(buffer_);
   }
 
  private:
-  void* const memory_;
+  vm_address_t buffer_;
   const size_t size_;
 
   DISALLOW_COPY_AND_ASSIGN(DiscardableMemoryMac);
@@ -75,26 +89,41 @@ class DiscardableMemoryMac : public DiscardableMemory {
 }  // namespace
 
 // static
-bool DiscardableMemory::SupportedNatively() {
-  return true;
+void DiscardableMemory::GetSupportedTypes(
+    std::vector<DiscardableMemoryType>* types) {
+  const DiscardableMemoryType supported_types[] = {
+    DISCARDABLE_MEMORY_TYPE_MAC,
+    DISCARDABLE_MEMORY_TYPE_EMULATED
+  };
+  types->assign(supported_types, supported_types + arraysize(supported_types));
 }
 
 // static
-scoped_ptr<DiscardableMemory> DiscardableMemory::CreateLockedMemory(
-    size_t size) {
-  vm_address_t buffer = 0;
-  kern_return_t ret = vm_allocate(mach_task_self(),
-                                  &buffer,
-                                  size,
-                                  VM_FLAGS_PURGABLE |
-                                  VM_FLAGS_ANYWHERE |
-                                  kDiscardableMemoryTag);
-  if (ret != KERN_SUCCESS) {
-    DLOG(ERROR) << "vm_allocate() failed";
-    return scoped_ptr<DiscardableMemory>();
+scoped_ptr<DiscardableMemory> DiscardableMemory::CreateLockedMemoryWithType(
+    DiscardableMemoryType type, size_t size) {
+  switch (type) {
+    case DISCARDABLE_MEMORY_TYPE_NONE:
+    case DISCARDABLE_MEMORY_TYPE_ANDROID:
+      return scoped_ptr<DiscardableMemory>();
+    case DISCARDABLE_MEMORY_TYPE_MAC: {
+      scoped_ptr<DiscardableMemoryMac> memory(new DiscardableMemoryMac(size));
+      if (!memory->Initialize())
+        return scoped_ptr<DiscardableMemory>();
+
+      return memory.PassAs<DiscardableMemory>();
+    }
+    case DISCARDABLE_MEMORY_TYPE_EMULATED: {
+      scoped_ptr<internal::DiscardableMemoryEmulated> memory(
+          new internal::DiscardableMemoryEmulated(size));
+      if (!memory->Initialize())
+        return scoped_ptr<DiscardableMemory>();
+
+      return memory.PassAs<DiscardableMemory>();
+    }
   }
-  return scoped_ptr<DiscardableMemory>(
-      new DiscardableMemoryMac(reinterpret_cast<void*>(buffer), size));
+
+  NOTREACHED();
+  return scoped_ptr<DiscardableMemory>();
 }
 
 // static
@@ -106,6 +135,7 @@ bool DiscardableMemory::PurgeForTestingSupported() {
 void DiscardableMemory::PurgeForTesting() {
   int state = 0;
   vm_purgable_control(mach_task_self(), 0, VM_PURGABLE_PURGE_ALL, &state);
+  internal::DiscardableMemoryEmulated::PurgeForTesting();
 }
 
 }  // namespace base

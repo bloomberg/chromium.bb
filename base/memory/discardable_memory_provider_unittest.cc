@@ -31,16 +31,17 @@ class DiscardableMemoryProviderTestBase {
     }
 
     // Overridden from DiscardableMemory:
-    virtual LockDiscardableMemoryStatus Lock() OVERRIDE {
+    virtual DiscardableMemoryLockStatus Lock() OVERRIDE {
       DCHECK(!is_locked_);
 
       bool purged = false;
       memory_ = provider_->Acquire(this, &purged);
       if (!memory_)
-        return DISCARDABLE_MEMORY_FAILED;
+        return DISCARDABLE_MEMORY_LOCK_STATUS_FAILED;
 
       is_locked_ = true;
-      return purged ? DISCARDABLE_MEMORY_PURGED : DISCARDABLE_MEMORY_SUCCESS;
+      return purged ? DISCARDABLE_MEMORY_LOCK_STATUS_PURGED
+                    : DISCARDABLE_MEMORY_LOCK_STATUS_SUCCESS;
     }
     virtual void Unlock() OVERRIDE {
       DCHECK(is_locked_);
@@ -93,7 +94,7 @@ class DiscardableMemoryProviderTestBase {
   scoped_ptr<DiscardableMemory> CreateLockedMemory(size_t size) {
     scoped_ptr<TestDiscardableMemory> memory(
         new TestDiscardableMemory(provider_.get(), size));
-    if (memory->Lock() != DISCARDABLE_MEMORY_PURGED)
+    if (memory->Lock() != DISCARDABLE_MEMORY_LOCK_STATUS_PURGED)
       return scoped_ptr<DiscardableMemory>();
     return memory.PassAs<DiscardableMemory>();
   }
@@ -139,7 +140,7 @@ TEST_F(DiscardableMemoryProviderTest, LockAfterUnlock) {
   discardable->Unlock();
   EXPECT_TRUE(CanBePurged(discardable.get()));
 
-  EXPECT_EQ(DISCARDABLE_MEMORY_SUCCESS, discardable->Lock());
+  EXPECT_EQ(DISCARDABLE_MEMORY_LOCK_STATUS_SUCCESS, discardable->Lock());
   EXPECT_FALSE(CanBePurged(discardable.get()));
 }
 
@@ -162,7 +163,7 @@ TEST_F(DiscardableMemoryProviderTest, LockAfterPurge) {
   // Required because ObserverListThreadSafe notifies via PostTask.
   RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(DISCARDABLE_MEMORY_PURGED, discardable->Lock());
+  EXPECT_EQ(DISCARDABLE_MEMORY_LOCK_STATUS_PURGED, discardable->Lock());
   EXPECT_FALSE(CanBePurged(discardable.get()));
 }
 
@@ -182,7 +183,7 @@ TEST_F(DiscardableMemoryProviderTest, LockAfterPurgeAndCannotReallocate) {
   // to be purged.
   SetDiscardableMemoryLimit(1);
 
-  EXPECT_EQ(DISCARDABLE_MEMORY_PURGED, discardable->Lock());
+  EXPECT_EQ(DISCARDABLE_MEMORY_LOCK_STATUS_PURGED, discardable->Lock());
   EXPECT_FALSE(CanBePurged(discardable.get()));
 }
 
@@ -234,7 +235,8 @@ class DiscardableMemoryProviderPermutationTest
     }
     for (int i = 0; i < 3; ++i) {
       int index = GetParam().ordering()[i];
-      EXPECT_NE(DISCARDABLE_MEMORY_FAILED, discardables_[index]->Lock());
+      EXPECT_NE(DISCARDABLE_MEMORY_LOCK_STATUS_FAILED,
+                discardables_[index]->Lock());
       // Leave i == 0 locked.
       if (i > 0)
         discardables_[index]->Unlock();
@@ -259,8 +261,8 @@ TEST_P(DiscardableMemoryProviderPermutationTest, LRUDiscardedModeratePressure) {
       MemoryPressureListener::MEMORY_PRESSURE_MODERATE);
   RunLoop().RunUntilIdle();
 
-  EXPECT_NE(DISCARDABLE_MEMORY_FAILED, discardable(2)->Lock());
-  EXPECT_NE(DISCARDABLE_MEMORY_SUCCESS, discardable(1)->Lock());
+  EXPECT_NE(DISCARDABLE_MEMORY_LOCK_STATUS_FAILED, discardable(2)->Lock());
+  EXPECT_NE(DISCARDABLE_MEMORY_LOCK_STATUS_SUCCESS, discardable(1)->Lock());
   // 0 should still be locked.
   EXPECT_NE(static_cast<void*>(NULL), Memory(discardable(0)));
 }
@@ -273,8 +275,8 @@ TEST_P(DiscardableMemoryProviderPermutationTest, LRUDiscardedExceedLimit) {
   SetBytesToReclaimUnderModeratePressure(1024);
   SetDiscardableMemoryLimit(2048);
 
-  EXPECT_NE(DISCARDABLE_MEMORY_FAILED, discardable(2)->Lock());
-  EXPECT_NE(DISCARDABLE_MEMORY_SUCCESS, discardable(1)->Lock());
+  EXPECT_NE(DISCARDABLE_MEMORY_LOCK_STATUS_FAILED, discardable(2)->Lock());
+  EXPECT_NE(DISCARDABLE_MEMORY_LOCK_STATUS_SUCCESS, discardable(1)->Lock());
   // 0 should still be locked.
   EXPECT_NE(static_cast<void*>(NULL), Memory(discardable(0)));
 }
@@ -289,8 +291,8 @@ TEST_P(DiscardableMemoryProviderPermutationTest, LRUDiscardedAmount) {
 
   SetDiscardableMemoryLimit(2048);
 
-  EXPECT_EQ(DISCARDABLE_MEMORY_SUCCESS, discardable(2)->Lock());
-  EXPECT_EQ(DISCARDABLE_MEMORY_PURGED, discardable(1)->Lock());
+  EXPECT_EQ(DISCARDABLE_MEMORY_LOCK_STATUS_SUCCESS, discardable(2)->Lock());
+  EXPECT_EQ(DISCARDABLE_MEMORY_LOCK_STATUS_PURGED, discardable(1)->Lock());
   // 0 should still be locked.
   EXPECT_NE(static_cast<void*>(NULL), Memory(discardable(0)));
 }
@@ -307,7 +309,7 @@ TEST_P(DiscardableMemoryProviderPermutationTest,
     if (i == 0)
       EXPECT_NE(static_cast<void*>(NULL), Memory(discardable(i)));
     else
-      EXPECT_EQ(DISCARDABLE_MEMORY_PURGED, discardable(i)->Lock());
+      EXPECT_EQ(DISCARDABLE_MEMORY_LOCK_STATUS_PURGED, discardable(i)->Lock());
   }
 }
 

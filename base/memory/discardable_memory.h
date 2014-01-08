@@ -5,6 +5,9 @@
 #ifndef BASE_MEMORY_DISCARDABLE_MEMORY_H_
 #define BASE_MEMORY_DISCARDABLE_MEMORY_H_
 
+#include <string>
+#include <vector>
+
 #include "base/base_export.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -12,10 +15,17 @@
 
 namespace base {
 
-enum LockDiscardableMemoryStatus {
-  DISCARDABLE_MEMORY_FAILED = -1,
-  DISCARDABLE_MEMORY_PURGED = 0,
-  DISCARDABLE_MEMORY_SUCCESS = 1
+enum DiscardableMemoryType {
+  DISCARDABLE_MEMORY_TYPE_NONE,
+  DISCARDABLE_MEMORY_TYPE_ANDROID,
+  DISCARDABLE_MEMORY_TYPE_MAC,
+  DISCARDABLE_MEMORY_TYPE_EMULATED
+};
+
+enum DiscardableMemoryLockStatus {
+  DISCARDABLE_MEMORY_LOCK_STATUS_FAILED,
+  DISCARDABLE_MEMORY_LOCK_STATUS_PURGED,
+  DISCARDABLE_MEMORY_LOCK_STATUS_SUCCESS
 };
 
 // Platform abstraction for discardable memory. DiscardableMemory is used to
@@ -53,19 +63,38 @@ class BASE_EXPORT DiscardableMemory {
  public:
   virtual ~DiscardableMemory() {}
 
-  // Check whether the system supports discardable memory natively. Returns
-  // false if the support is emulated.
-  static bool SupportedNatively();
+  // Gets the discardable memory type with a given name.
+  static DiscardableMemoryType GetNamedType(const std::string& name);
 
+  // Gets the name of a discardable memory type.
+  static const char* GetTypeName(DiscardableMemoryType type);
+
+  // Gets system supported discardable memory types. Default preferred type
+  // at the front of vector.
+  static void GetSupportedTypes(std::vector<DiscardableMemoryType>* types);
+
+  // Sets the preferred discardable memory type. This overrides the default
+  // preferred type. Can only be called once prior to GetPreferredType()
+  // or CreateLockedMemory(). Caller is responsible for correct ordering.
+  static void SetPreferredType(DiscardableMemoryType type);
+
+  // Gets the preferred discardable memory type.
+  static DiscardableMemoryType GetPreferredType();
+
+  // Create a DiscardableMemory instance with specified |type| and |size|.
+  static scoped_ptr<DiscardableMemory> CreateLockedMemoryWithType(
+      DiscardableMemoryType type, size_t size);
+
+  // Create a DiscardableMemory instance with preferred type and |size|.
   static scoped_ptr<DiscardableMemory> CreateLockedMemory(size_t size);
 
   // Locks the memory so that it will not be purged by the system. Returns
-  // DISCARDABLE_MEMORY_SUCCESS on success. If the return value is
-  // DISCARDABLE_MEMORY_FAILED then this object should be discarded and
-  // a new one should be created. If the return value is
-  // DISCARDABLE_MEMORY_PURGED then the memory is present but any data that
-  // was in it is gone.
-  virtual LockDiscardableMemoryStatus Lock() WARN_UNUSED_RESULT = 0;
+  // DISCARDABLE_MEMORY_LOCK_STATUS_SUCCESS on success. If the return value is
+  // DISCARDABLE_MEMORY_LOCK_STATUS_FAILED then this object should be
+  // discarded and a new one should be created. If the return value is
+  // DISCARDABLE_MEMORY_LOCK_STATUS_PURGED then the memory is present but any
+  // data that was in it is gone.
+  virtual DiscardableMemoryLockStatus Lock() WARN_UNUSED_RESULT = 0;
 
   // Unlocks the memory so that it can be purged by the system. Must be called
   // after every successful lock call.

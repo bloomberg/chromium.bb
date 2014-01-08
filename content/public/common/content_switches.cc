@@ -909,6 +909,9 @@ const char kTraceStartupFile[]              = "trace-startup-file";
 extern const char kUIPrioritizeInGpuProcess[] =
     "ui-prioritize-in-gpu-process";
 
+// Overrides the preferred discardable memory implementation.
+const char kUseDiscardableMemory[] = "use-discardable-memory";
+
 // Use fake device for MediaStream to replace actual camera and microphone.
 const char kUseFakeDeviceForMediaStream[] = "use-fake-device-for-media-stream";
 

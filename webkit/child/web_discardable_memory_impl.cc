@@ -19,11 +19,11 @@ WebDiscardableMemoryImpl::CreateLockedMemory(size_t size) {
 }
 
 bool WebDiscardableMemoryImpl::lock() {
-  base::LockDiscardableMemoryStatus status = discardable_->Lock();
+  base::DiscardableMemoryLockStatus status = discardable_->Lock();
   switch (status) {
-    case base::DISCARDABLE_MEMORY_SUCCESS:
+    case base::DISCARDABLE_MEMORY_LOCK_STATUS_SUCCESS:
       return true;
-    case base::DISCARDABLE_MEMORY_PURGED:
+    case base::DISCARDABLE_MEMORY_LOCK_STATUS_PURGED:
       discardable_->Unlock();
       return false;
     default:

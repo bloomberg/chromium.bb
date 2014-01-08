@@ -30,19 +30,20 @@ DiscardableMemoryEmulated::~DiscardableMemoryEmulated() {
 }
 
 bool DiscardableMemoryEmulated::Initialize() {
-  return Lock() == DISCARDABLE_MEMORY_PURGED;
+  return Lock() == DISCARDABLE_MEMORY_LOCK_STATUS_PURGED;
 }
 
-LockDiscardableMemoryStatus DiscardableMemoryEmulated::Lock() {
+DiscardableMemoryLockStatus DiscardableMemoryEmulated::Lock() {
   DCHECK(!is_locked_);
 
   bool purged = false;
   memory_ = g_provider.Pointer()->Acquire(this, &purged);
   if (!memory_)
-    return DISCARDABLE_MEMORY_FAILED;
+    return DISCARDABLE_MEMORY_LOCK_STATUS_FAILED;
 
   is_locked_ = true;
-  return purged ? DISCARDABLE_MEMORY_PURGED : DISCARDABLE_MEMORY_SUCCESS;
+  return purged ? DISCARDABLE_MEMORY_LOCK_STATUS_PURGED
+                : DISCARDABLE_MEMORY_LOCK_STATUS_SUCCESS;
 }
 
 void DiscardableMemoryEmulated::Unlock() {

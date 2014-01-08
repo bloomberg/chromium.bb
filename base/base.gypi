@@ -298,6 +298,7 @@
           'md5.h',
           'memory/aligned_memory.cc',
           'memory/aligned_memory.h',
+          'memory/discardable_memory.cc',
           'memory/discardable_memory.h',
           'memory/discardable_memory_allocator_android.cc',
           'memory/discardable_memory_allocator_android.h',

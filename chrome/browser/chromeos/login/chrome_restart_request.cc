@@ -138,6 +138,7 @@ std::string DeriveCommandLine(const GURL& start_url,
 #if defined(USE_CRAS)
       ::switches::kUseCras,
 #endif
+      ::switches::kUseDiscardableMemory,
       ::switches::kUseGL,
       ::switches::kUserDataDir,
       ::switches::kV,
