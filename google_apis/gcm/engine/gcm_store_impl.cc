@@ -7,9 +7,11 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/metrics/histogram.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -141,6 +143,7 @@ void GCMStoreImpl::Backend::Load(const LoadCallback& callback) {
   leveldb::DB* db;
   leveldb::Status status =
       leveldb::DB::Open(options, path_.AsUTF8Unsafe(), &db);
+  UMA_HISTOGRAM_BOOLEAN("GCM.LoadSucceeded", status.ok());
   if (!status.ok()) {
     LOG(ERROR) << "Failed to open database " << path_.value() << ": "
                << status.ToString();
@@ -164,6 +167,21 @@ void GCMStoreImpl::Backend::Load(const LoadCallback& callback) {
     foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, result));
     return;
   }
+
+  // Only record histograms if GCM had already been set up for this device.
+  if (result.device_android_id != 0 && result.device_security_token != 0) {
+    int64 file_size = 0;
+    if (base::GetFileSize(path_, &file_size)) {
+      UMA_HISTOGRAM_COUNTS("GCM.StoreSizeKB",
+                           static_cast<int>(file_size / 1024));
+    }
+    UMA_HISTOGRAM_COUNTS("GCM.RestoredOutgoingMessages",
+                         result.outgoing_messages.size());
+    UMA_HISTOGRAM_COUNTS("GCM.RestoredIncomingMessages",
+                         result.incoming_messages.size());
+    UMA_HISTOGRAM_COUNTS("GCM.NumUsers", result.user_serial_numbers.size());
+  }
+
 
   DVLOG(1) << "Succeeded in loading " << result.incoming_messages.size()
            << " unacknowledged incoming messages and "

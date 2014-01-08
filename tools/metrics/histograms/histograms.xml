@@ -5376,6 +5376,52 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="GCM.ConnectionDisconnectErrorCode" enum="NetErrorCodes">
+  <summary>Net error results from GCM disconnect events.</summary>
+</histogram>
+
+<histogram name="GCM.ConnectionFailureErrorCode" enum="NetErrorCodes">
+  <summary>Net error results from GCM connection attempts.</summary>
+</histogram>
+
+<histogram name="GCM.NumUsers">
+  <summary>
+    Number of GCM users associated with this client at startup time.
+  </summary>
+</histogram>
+
+<histogram name="GCM.RestoredIncomingMessages">
+  <summary>
+    Number of unacknowledged incoming messages restored from the persistent
+    store at startup.
+  </summary>
+</histogram>
+
+<histogram name="GCM.RestoredOutgoingMessages">
+  <summary>
+    Number of pending outgoing messages restored from the persistent store at
+    startup.
+  </summary>
+</histogram>
+
+<histogram name="GCM.StoreLoadSucceeded" enum="BooleanSuccess">
+  <summary>
+    Success indicates successfully loading an initialized persistent GCM store
+    at startup time. Failure indicates a failure loading the store.
+  </summary>
+</histogram>
+
+<histogram name="GCM.StoreSizeKB" units="kilobytes">
+  <summary>Size of the GCM persistent store in kilobytes at startup.</summary>
+</histogram>
+
+<histogram name="GCM.StoreUpdateSucceeded" enum="BooleanSuccess">
+  <summary>
+    Success indicates successfully updating the GCM persistent store on message
+    update. Failure indicates a failure updating the persistence store.
+  </summary>
+</histogram>
+
 <histogram name="GData.AuthSuccess" enum="GDataAuthResult">
   <summary>Result of the authentication for Drive.</summary>
 </histogram>

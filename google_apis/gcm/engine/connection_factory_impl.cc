@@ -5,6 +5,8 @@
 #include "google_apis/gcm/engine/connection_factory_impl.h"
 
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "google_apis/gcm/engine/connection_handler_impl.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
 #include "net/base/net_errors.h"
@@ -211,6 +213,7 @@ void ConnectionFactoryImpl::OnConnectDone(int result) {
   if (result != net::OK) {
     LOG(ERROR) << "Failed to connect to MCS endpoint with error " << result;
     backoff_entry_->InformOfRequest(false);
+    UMA_HISTOGRAM_SPARSE_SLOWLY("GCM.ConnectionFailureErrorCode", result);
     Connect();
     return;
   }
@@ -228,6 +231,10 @@ void ConnectionFactoryImpl::ConnectionHandlerCallback(int result) {
     backoff_entry_->Reset();
     return;
   }
+
+  if (!connecting_)
+    UMA_HISTOGRAM_SPARSE_SLOWLY("GCM.ConnectionDisconnectErrorCode", result);
+
   // TODO(zea): Consider how to handle errors that may require some sort of
   // user intervention (login page, etc.).
   LOG(ERROR) << "Connection reset with error " << result;

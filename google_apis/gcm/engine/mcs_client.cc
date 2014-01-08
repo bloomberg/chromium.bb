@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
@@ -345,6 +346,7 @@ void MCSClient::SendHeartbeat() {
 
 void MCSClient::OnGCMUpdateFinished(bool success) {
   LOG_IF(ERROR, !success) << "GCM Update failed!";
+  UMA_HISTOGRAM_BOOLEAN("GCM.StoreUpdateSucceeded", success);
   // TODO(zea): Rebuild the store from scratch in case of persistence failure?
 }
 
