@@ -10,7 +10,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.Process;
 import android.provider.Settings;
-import android.util.Log;
 import android.webkit.WebSettings;
 import android.webkit.WebSettings.PluginState;
 
@@ -27,8 +26,8 @@ import org.chromium.base.ThreadUtils;
  */
 @JNINamespace("android_webview")
 public class AwSettings {
-    // Do not use! Will be removed soon. See crbug.com/332089.
-    // Use android.webkit.WebSettings.LayoutAlgorithm instead.
+    // This enum corresponds to WebSettings.LayoutAlgorithm. We use our own to be
+    // able to extend it.
     public enum LayoutAlgorithm {
         NORMAL,
         SINGLE_COLUMN,
@@ -51,8 +50,7 @@ public class AwSettings {
     // Lock to protect all settings.
     private final Object mAwSettingsLock = new Object();
 
-    private WebSettings.LayoutAlgorithm mLayoutAlgorithm =
-            WebSettings.LayoutAlgorithm.NARROW_COLUMNS;
+    private LayoutAlgorithm mLayoutAlgorithm = LayoutAlgorithm.NARROW_COLUMNS;
     private int mTextSizePercent = 100;
     private String mStandardFontFamily = "sans-serif";
     private String mFixedFontFamily = "monospace";
@@ -183,9 +181,7 @@ public class AwSettings {
                     while (mIsUpdateWebkitPrefsMessagePending) {
                         mAwSettingsLock.wait();
                     }
-                } catch (InterruptedException e) {
-                    Log.w(TAG, "updateWebkitPreferencesLocked interrupted", e);
-                }
+                } catch (InterruptedException e) {}
             }
         }
     }
@@ -1030,21 +1026,10 @@ public class AwSettings {
         return mJavaScriptCanOpenWindowsAutomatically;
     }
 
-    // A temporary adapter to avoid breaking code from Android frameworks/webview. crbug.com/332089
-    public void setLayoutAlgorithm(AwSettings.LayoutAlgorithm l) {
-        final WebSettings.LayoutAlgorithm[] webViewValues = {
-            WebSettings.LayoutAlgorithm.NORMAL,
-            WebSettings.LayoutAlgorithm.SINGLE_COLUMN,
-            WebSettings.LayoutAlgorithm.NARROW_COLUMNS,
-            WebSettings.LayoutAlgorithm.TEXT_AUTOSIZING
-        };
-        setLayoutAlgorithm(webViewValues[l.ordinal()]);
-    }
-
     /**
      * See {@link android.webkit.WebSettings#setLayoutAlgorithm}.
      */
-    public void setLayoutAlgorithm(WebSettings.LayoutAlgorithm l) {
+    public void setLayoutAlgorithm(LayoutAlgorithm l) {
         synchronized (mAwSettingsLock) {
             if (mLayoutAlgorithm != l) {
                 mLayoutAlgorithm = l;
@@ -1056,7 +1041,7 @@ public class AwSettings {
     /**
      * See {@link android.webkit.WebSettings#getLayoutAlgorithm}.
      */
-    public WebSettings.LayoutAlgorithm getLayoutAlgorithm() {
+    public LayoutAlgorithm getLayoutAlgorithm() {
         synchronized (mAwSettingsLock) {
             return mLayoutAlgorithm;
         }
@@ -1070,7 +1055,7 @@ public class AwSettings {
      */
     @CalledByNative
     private boolean getTextAutosizingEnabledLocked() {
-        return mLayoutAlgorithm == WebSettings.LayoutAlgorithm.TEXT_AUTOSIZING;
+        return mLayoutAlgorithm == LayoutAlgorithm.TEXT_AUTOSIZING;
     }
 
     /**
