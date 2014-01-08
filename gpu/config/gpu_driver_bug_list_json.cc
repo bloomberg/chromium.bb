@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "3.7",
+  "version": "3.8",
   "entries": [
     {
       "id": 1,
@@ -386,14 +386,14 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     {
       "id": 31,
       "cr_bugs": [154715, 10068, 269829, 294779, 285292],
-      "description": "The Mali T-6xx driver does not guarantee flush ordering.",
+      "description": "The Mali-Txxx driver does not guarantee flush ordering.",
       "gl_vendor": {
         "op": "beginwith",
         "value": "ARM"
       },
       "gl_renderer": {
         "op": "beginwith",
-        "value": "Mali-T6"
+        "value": "Mali-T"
       },
       "features": [
         "use_virtualized_gl_contexts"
