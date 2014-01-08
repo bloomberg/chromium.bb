@@ -151,7 +151,6 @@ void FakeDemuxerStream::DoRead() {
     buffer->set_decrypt_config(scoped_ptr<DecryptConfig>(
         new DecryptConfig(std::string(kKeyId, kKeyId + arraysize(kKeyId)),
                           std::string(kIv, kIv + arraysize(kIv)),
-                          0,
                           std::vector<SubsampleEntry>())));
   }
   buffer->set_timestamp(current_timestamp_);

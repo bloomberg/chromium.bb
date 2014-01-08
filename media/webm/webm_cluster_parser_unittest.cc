@@ -183,13 +183,11 @@ static bool VerifyTextBuffers(
   return true;
 }
 
-static bool VerifyEncryptedBuffer(
+static void VerifyEncryptedBuffer(
     scoped_refptr<StreamParserBuffer> buffer) {
   EXPECT_TRUE(buffer->decrypt_config());
   EXPECT_EQ(static_cast<unsigned long>(DecryptConfig::kDecryptionKeySize),
             buffer->decrypt_config()->iv().length());
-  const uint8* data = buffer->data();
-  return data[0] & kWebMFlagEncryptedFrame;
 }
 
 static void AppendToEnd(const WebMClusterParser::BufferQueue& src,
@@ -508,7 +506,7 @@ TEST_F(WebMClusterParserTest, ParseEncryptedBlock) {
   EXPECT_EQ(cluster->size(), result);
   ASSERT_EQ(1UL, parser_->video_buffers().size());
   scoped_refptr<StreamParserBuffer> buffer = parser_->video_buffers()[0];
-  EXPECT_TRUE(VerifyEncryptedBuffer(buffer));
+  VerifyEncryptedBuffer(buffer);
 }
 
 TEST_F(WebMClusterParserTest, ParseBadEncryptedBlock) {

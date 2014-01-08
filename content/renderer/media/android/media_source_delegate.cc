@@ -450,14 +450,8 @@ void MediaSourceDelegate::OnBufferReady(
       }
       data->access_units[index].timestamp = buffer->timestamp();
 
-      {  // No local variable in switch-case scope.
-        int data_offset = buffer->decrypt_config() ?
-            buffer->decrypt_config()->data_offset() : 0;
-        DCHECK_LT(data_offset, buffer->data_size());
-        data->access_units[index].data = std::vector<uint8>(
-            buffer->data() + data_offset,
-            buffer->data() + buffer->data_size() - data_offset);
-      }
+      data->access_units[index].data.assign(
+          buffer->data(), buffer->data() + buffer->data_size());
 #if !defined(GOOGLE_TV)
       // Vorbis needs 4 extra bytes padding on Android. Check
       // NuMediaExtractor.cpp in Android source code.

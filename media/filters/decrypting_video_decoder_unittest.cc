@@ -37,7 +37,6 @@ static scoped_refptr<DecoderBuffer> CreateFakeEncryptedBuffer() {
       std::string(reinterpret_cast<const char*>(kFakeKeyId),
                   arraysize(kFakeKeyId)),
       std::string(reinterpret_cast<const char*>(kFakeIv), arraysize(kFakeIv)),
-      0,
       std::vector<SubsampleEntry>())));
   return buffer;
 }

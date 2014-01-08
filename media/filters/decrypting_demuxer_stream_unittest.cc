@@ -38,7 +38,7 @@ static scoped_refptr<DecoderBuffer> CreateFakeEncryptedStreamBuffer(
   buffer->set_decrypt_config(scoped_ptr<DecryptConfig>(new DecryptConfig(
       std::string(reinterpret_cast<const char*>(kFakeKeyId),
                   arraysize(kFakeKeyId)),
-      iv, 0, std::vector<SubsampleEntry>())));
+      iv, std::vector<SubsampleEntry>())));
   return buffer;
 }
 

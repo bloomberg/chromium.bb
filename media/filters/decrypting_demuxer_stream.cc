@@ -211,9 +211,8 @@ void DecryptingDemuxerStream::DecryptBuffer(
   // An empty iv string signals that the frame is unencrypted.
   if (buffer->decrypt_config()->iv().empty()) {
     DVLOG(2) << "DoDecryptBuffer() - clear buffer.";
-    int data_offset = buffer->decrypt_config()->data_offset();
     scoped_refptr<DecoderBuffer> decrypted = DecoderBuffer::CopyFrom(
-        buffer->data() + data_offset, buffer->data_size() - data_offset);
+        buffer->data(), buffer->data_size());
     decrypted->set_timestamp(buffer->timestamp());
     decrypted->set_duration(buffer->duration());
     state_ = kIdle;

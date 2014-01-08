@@ -345,13 +345,30 @@ bool WebMClusterParser::OnBlock(bool is_simple_block, int track_num,
 
   scoped_refptr<StreamParserBuffer> buffer;
   if (!is_text) {
-    buffer = StreamParserBuffer::CopyFrom(data, size,
-                                          additional, additional_size,
-                                          is_keyframe);
+    // Every encrypted Block has a signal byte and IV prepended to it. Current
+    // encrypted WebM request for comments specification is here
+    // http://wiki.webmproject.org/encryption/webm-encryption-rfc
+    scoped_ptr<DecryptConfig> decrypt_config;
+    int data_offset = 0;
+    if (!encryption_key_id.empty() &&
+        !WebMCreateDecryptConfig(
+             data, size,
+             reinterpret_cast<const uint8*>(encryption_key_id.data()),
+             encryption_key_id.size(),
+             &decrypt_config, &data_offset)) {
+      return false;
+    }
+
+    buffer = StreamParserBuffer::CopyFrom(
+        data + data_offset, size - data_offset,
+        additional, additional_size,
+        is_keyframe);
+
+    if (decrypt_config)
+      buffer->set_decrypt_config(decrypt_config.Pass());
   } else {
     std::string id, settings, content;
-    WebMWebVTTParser::Parse(data, size,
-                            &id, &settings, &content);
+    WebMWebVTTParser::Parse(data, size, &id, &settings, &content);
 
     std::vector<uint8> side_data;
     MakeSideData(id.begin(), id.end(),
@@ -364,19 +381,6 @@ bool WebMClusterParser::OnBlock(bool is_simple_block, int track_num,
         &side_data[0],
         side_data.size(),
         is_keyframe);
-  }
-
-  // Every encrypted Block has a signal byte and IV prepended to it. Current
-  // encrypted WebM request for comments specification is here
-  // http://wiki.webmproject.org/encryption/webm-encryption-rfc
-  if (!encryption_key_id.empty()) {
-    scoped_ptr<DecryptConfig> config(WebMCreateDecryptConfig(
-        data, size,
-        reinterpret_cast<const uint8*>(encryption_key_id.data()),
-        encryption_key_id.size()));
-    if (!config)
-      return false;
-    buffer->set_decrypt_config(config.Pass());
   }
 
   buffer->set_timestamp(timestamp);

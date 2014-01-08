@@ -24,12 +24,13 @@ std::string GenerateWebMCounterBlock(const uint8* iv, int iv_size) {
 
 }  // namespace anonymous
 
-scoped_ptr<DecryptConfig> WebMCreateDecryptConfig(
-    const uint8* data, int data_size,
-    const uint8* key_id, int key_id_size) {
+bool WebMCreateDecryptConfig(const uint8* data, int data_size,
+                             const uint8* key_id, int key_id_size,
+                             scoped_ptr<DecryptConfig>* decrypt_config,
+                             int* data_offset) {
   if (data_size < kWebMSignalByteSize) {
     DVLOG(1) << "Got a block from an encrypted stream with no data.";
-    return scoped_ptr<DecryptConfig>();
+    return false;
   }
 
   uint8 signal_byte = data[0];
@@ -43,18 +44,19 @@ scoped_ptr<DecryptConfig> WebMCreateDecryptConfig(
   if (signal_byte & kWebMFlagEncryptedFrame) {
     if (data_size < kWebMSignalByteSize + kWebMIvSize) {
       DVLOG(1) << "Got an encrypted block with not enough data " << data_size;
-      return scoped_ptr<DecryptConfig>();
+      return false;
     }
     counter_block = GenerateWebMCounterBlock(data + frame_offset, kWebMIvSize);
     frame_offset += kWebMIvSize;
   }
 
-  scoped_ptr<DecryptConfig> config(new DecryptConfig(
+  decrypt_config->reset(new DecryptConfig(
       std::string(reinterpret_cast<const char*>(key_id), key_id_size),
       counter_block,
-      frame_offset,
       std::vector<SubsampleEntry>()));
-  return config.Pass();
+  *data_offset = frame_offset;
+
+  return true;
 }
 
 }  // namespace media

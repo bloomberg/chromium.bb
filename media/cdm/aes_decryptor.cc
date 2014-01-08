@@ -141,11 +141,8 @@ static scoped_refptr<DecoderBuffer> DecryptData(const DecoderBuffer& input,
     return NULL;
   }
 
-  const int data_offset = input.decrypt_config()->data_offset();
-  const char* sample =
-      reinterpret_cast<const char*>(input.data() + data_offset);
-  DCHECK_GT(input.data_size(), data_offset);
-  size_t sample_size = static_cast<size_t>(input.data_size() - data_offset);
+  const char* sample = reinterpret_cast<const char*>(input.data());
+  size_t sample_size = static_cast<size_t>(input.data_size());
 
   DCHECK_GT(sample_size, 0U) << "No sample data to be decrypted.";
   if (sample_size == 0)
@@ -333,9 +330,8 @@ void AesDecryptor::Decrypt(StreamType stream_type,
   scoped_refptr<DecoderBuffer> decrypted;
   // An empty iv string signals that the frame is unencrypted.
   if (encrypted->decrypt_config()->iv().empty()) {
-    int data_offset = encrypted->decrypt_config()->data_offset();
-    decrypted = DecoderBuffer::CopyFrom(encrypted->data() + data_offset,
-                                        encrypted->data_size() - data_offset);
+    decrypted = DecoderBuffer::CopyFrom(encrypted->data(),
+                                        encrypted->data_size());
   } else {
     const std::string& key_id = encrypted->decrypt_config()->key_id();
     DecryptionKey* key = GetKey(key_id);

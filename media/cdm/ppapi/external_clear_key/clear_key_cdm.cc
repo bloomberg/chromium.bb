@@ -85,7 +85,7 @@ static scoped_refptr<media::DecoderBuffer> CopyDecoderBufferFrom(
     return media::DecoderBuffer::CreateEOSBuffer();
   }
 
-  // TODO(tomfinegan): Get rid of this copy.
+  // TODO(xhwang): Get rid of this copy.
   scoped_refptr<media::DecoderBuffer> output_buffer =
       media::DecoderBuffer::CopyFrom(input_buffer.data, input_buffer.data_size);
 
@@ -97,12 +97,12 @@ static scoped_refptr<media::DecoderBuffer> CopyDecoderBufferFrom(
     subsamples.push_back(subsample);
   }
 
+  DCHECK_EQ(input_buffer.data_offset, 0u);
   scoped_ptr<media::DecryptConfig> decrypt_config(new media::DecryptConfig(
       std::string(reinterpret_cast<const char*>(input_buffer.key_id),
                   input_buffer.key_id_size),
       std::string(reinterpret_cast<const char*>(input_buffer.iv),
                   input_buffer.iv_size),
-      input_buffer.data_offset,
       subsamples));
 
   output_buffer->set_decrypt_config(decrypt_config.Pass());

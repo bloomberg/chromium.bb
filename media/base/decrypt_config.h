@@ -38,23 +38,16 @@ class MEDIA_EXPORT DecryptConfig {
   // |iv| is the initialization vector defined by the encrypted format.
   //   Currently |iv| must be 16 bytes as defined by WebM and ISO. Or must be
   //   empty which signals an unencrypted frame.
-  // |data_offset| is the amount of data that should be discarded from the
-  //   head of the sample buffer before applying subsample information. A
-  //   decrypted buffer will be shorter than an encrypted buffer by this amount.
   // |subsamples| defines the clear and encrypted portions of the sample as
   //   described above. A decrypted buffer will be equal in size to the sum
   //   of the subsample sizes.
-  //
-  // |data_offset| is applied before |subsamples|.
   DecryptConfig(const std::string& key_id,
                 const std::string& iv,
-                const int data_offset,
                 const std::vector<SubsampleEntry>& subsamples);
   ~DecryptConfig();
 
   const std::string& key_id() const { return key_id_; }
   const std::string& iv() const { return iv_; }
-  int data_offset() const { return data_offset_; }
   const std::vector<SubsampleEntry>& subsamples() const { return subsamples_; }
 
  private:
@@ -62,11 +55,6 @@ class MEDIA_EXPORT DecryptConfig {
 
   // Initialization vector.
   const std::string iv_;
-
-  // TODO(fgalligan): Remove |data_offset_| if there is no plan to use it in
-  // the future.
-  // Amount of data to be discarded before applying subsample information.
-  const int data_offset_;
 
   // Subsample information. May be empty for some formats, meaning entire frame
   // (less data ignored by data_offset_) is encrypted.

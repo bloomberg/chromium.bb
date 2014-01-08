@@ -116,6 +116,7 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
   // keep this generic so that other side_data types in the future can be
   // handled the same way as well.
   av_packet_split_side_data(packet.get());
+
   scoped_refptr<DecoderBuffer> buffer;
 
   if (type() == DemuxerStream::TEXT) {
@@ -145,14 +146,30 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
         AV_PKT_DATA_MATROSKA_BLOCKADDITIONAL,
         &side_data_size);
 
+    scoped_ptr<DecryptConfig> decrypt_config;
+    int data_offset = 0;
+    if ((type() == DemuxerStream::AUDIO && audio_config_.is_encrypted()) ||
+        (type() == DemuxerStream::VIDEO && video_config_.is_encrypted())) {
+      if (!WebMCreateDecryptConfig(
+          packet->data, packet->size,
+          reinterpret_cast<const uint8*>(encryption_key_id_.data()),
+          encryption_key_id_.size(),
+          &decrypt_config,
+          &data_offset)) {
+        LOG(ERROR) << "Creation of DecryptConfig failed.";
+      }
+    }
+
     // If a packet is returned by FFmpeg's av_parser_parse2() the packet will
     // reference inner memory of FFmpeg.  As such we should transfer the packet
     // into memory we control.
     if (side_data_size > 0) {
-      buffer = DecoderBuffer::CopyFrom(packet.get()->data, packet.get()->size,
+      buffer = DecoderBuffer::CopyFrom(packet.get()->data + data_offset,
+                                       packet.get()->size - data_offset,
                                        side_data, side_data_size);
     } else {
-      buffer = DecoderBuffer::CopyFrom(packet.get()->data, packet.get()->size);
+      buffer = DecoderBuffer::CopyFrom(packet.get()->data + data_offset,
+                                       packet.get()->size - data_offset);
     }
 
     int skip_samples_size = 0;
@@ -171,17 +188,9 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
           discard_padding_samples * 1000000.0 /
           audio_decoder_config().samples_per_second()));
     }
-  }
 
-  if ((type() == DemuxerStream::AUDIO && audio_config_.is_encrypted()) ||
-      (type() == DemuxerStream::VIDEO && video_config_.is_encrypted())) {
-    scoped_ptr<DecryptConfig> config(WebMCreateDecryptConfig(
-        packet->data, packet->size,
-        reinterpret_cast<const uint8*>(encryption_key_id_.data()),
-        encryption_key_id_.size()));
-    if (!config)
-      LOG(ERROR) << "Creation of DecryptConfig failed.";
-    buffer->set_decrypt_config(config.Pass());
+    if (decrypt_config)
+      buffer->set_decrypt_config(decrypt_config.Pass());
   }
 
   buffer->set_timestamp(ConvertStreamTimestamp(
