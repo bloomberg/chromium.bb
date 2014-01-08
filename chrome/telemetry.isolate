@@ -36,19 +36,5 @@
         ],
       },
     }],
-    ['OS=="android" or OS=="linux" or OS=="mac"', {
-      'variables': {
-        'isolate_dependency_tracked': [
-          '<(PRODUCT_DIR)/bitmaptools.so',
-        ],
-      },
-    }],
-    ['OS=="win"', {
-      'variables': {
-        'isolate_dependency_tracked': [
-          '<(PRODUCT_DIR)/bitmaptools.pyd',
-        ],
-      },
-    }],
   ]
 }
