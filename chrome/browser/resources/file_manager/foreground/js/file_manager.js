@@ -1488,7 +1488,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       }
 
       if (candidateEntry) {
-        // The entry is directry. Use it.
+        // The entry is directory. Use it.
         if (candidateEntry.isDirectory) {
           nextCurrentDirEntry = candidateEntry;
           callback();
@@ -1509,19 +1509,40 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       }
 
       // If the entry doesn't exist, most probably because the path contains a
-      // suggested name. Therefore try to open its parent.
+      // suggested name. Therefore try to open its parent. However, the parent
+      // may also not exist. In such situation, fallback.
       var pathNodes = candidateFullPath.split('/');
-      suggestedName = pathNodes.pop();
+      var baseName = pathNodes.pop();
       var parentPath = pathNodes.join('/');
       this.volumeManager_.resolveAbsolutePath(
           parentPath,
           function(parentEntry) {
             nextCurrentDirEntry = parentEntry;
+            suggestedName = baseName;
+            callback();
+          },
+          callback);  // In case of an error, continue.
+    }.bind(this));
+
+    // If the directory is not set at this stage, fallback to the default
+    // mount point.
+    queue.run(function(callback) {
+      // Cancel this sequence if the current directory has already changed,
+      // or the next current directory is already set.
+      if (tracker.hasChanged || nextCurrentDirEntry) {
+        callback();
+        return;
+      }
+      this.volumeManager_.resolveAbsolutePath(
+          PathUtil.DEFAULT_MOUNT_POINT,
+          function(fallbackEntry) {
+            nextCurrentDirEntry = fallbackEntry;
             callback();
           },
           function() {
-            error = new Error('Failed to setup an initial directory: ' +
-                nextCurrentDirPath);
+            // Fallback directory not available? Throw an error.
+            error = new Error('Unable to resolve the fallback directory: ' +
+                PathUtil.DEFAULT_MOUNT_POINT);
             callback();
           });
     }.bind(this));
