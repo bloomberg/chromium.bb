@@ -35,19 +35,19 @@
 
 namespace WebCore {
 
-WindowEventContext::WindowEventContext(Event* event, PassRefPtr<Node> node, const EventContext* topEventContext)
+WindowEventContext::WindowEventContext(Event* event, PassRefPtr<Node> node, const NodeEventContext* topNodeEventContext)
 {
     // We don't dispatch load events to the window. This quirk was originally
     // added because Mozilla doesn't propagate load events to the window object.
     if (event->type() == EventTypeNames::load)
         return;
 
-    Node* topLevelContainer = topEventContext ? topEventContext->node() : node.get();
+    Node* topLevelContainer = topNodeEventContext ? topNodeEventContext->node() : node.get();
     if (!topLevelContainer->isDocumentNode())
         return;
 
     m_window = toDocument(topLevelContainer)->domWindow();
-    m_target = topEventContext ? topEventContext->target() : node.get();
+    m_target = topNodeEventContext ? topNodeEventContext->target() : node.get();
 }
 
 bool WindowEventContext::handleLocalEvents(Event* event)

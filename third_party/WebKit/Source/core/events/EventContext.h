@@ -88,11 +88,11 @@ private:
     RefPtr<TouchEventContext> m_touchEventContext;
 };
 
-class EventContext {
+class NodeEventContext {
 public:
     // FIXME: Use ContainerNode instead of Node.
-    EventContext(PassRefPtr<Node>, PassRefPtr<EventTarget> currentTarget);
-    ~EventContext();
+    NodeEventContext(PassRefPtr<Node>, PassRefPtr<EventTarget> currentTarget);
+    ~NodeEventContext();
 
     Node* node() const { return m_node.get(); }
     EventTarget* currentTarget() const { return m_currentTarget.get(); }

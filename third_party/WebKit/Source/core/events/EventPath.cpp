@@ -125,26 +125,26 @@ void EventPath::resetWith(Node* node)
 {
     ASSERT(node);
     m_node = node;
-    m_eventContexts.clear();
+    m_nodeEventContexts.clear();
     m_treeScopeEventContexts.clear();
     calculatePath();
     calculateAdjustedTargets();
     calculateAdjustedEventPath();
 }
 
-void EventPath::addEventContext(Node* node)
+void EventPath::addNodeEventContext(Node* node)
 {
-    m_eventContexts.append(EventContext(node, eventTargetRespectingTargetRules(node)));
+    m_nodeEventContexts.append(NodeEventContext(node, eventTargetRespectingTargetRules(node)));
 }
 
 void EventPath::calculatePath()
 {
     ASSERT(m_node);
-    ASSERT(m_eventContexts.isEmpty());
+    ASSERT(m_nodeEventContexts.isEmpty());
     m_node->document().updateDistributionForNodeIfNeeded(const_cast<Node*>(m_node));
 
     Node* current = m_node;
-    addEventContext(current);
+    addNodeEventContext(current);
     if (!m_node->inDocument())
         return;
     while (current) {
@@ -159,20 +159,20 @@ void EventPath::calculatePath()
                     ShadowRoot* containingShadowRoot = insertionPoint->containingShadowRoot();
                     ASSERT(containingShadowRoot);
                     if (!containingShadowRoot->isOldest())
-                        addEventContext(containingShadowRoot->olderShadowRoot());
+                        addNodeEventContext(containingShadowRoot->olderShadowRoot());
                 }
-                addEventContext(insertionPoint);
+                addNodeEventContext(insertionPoint);
             }
             current = insertionPoints.last();
             continue;
         }
         if (current->isShadowRoot()) {
             current = current->shadowHost();
-            addEventContext(current);
+            addNodeEventContext(current);
         } else {
             current = current->parentNode();
             if (current)
-                addEventContext(current);
+                addNodeEventContext(current);
         }
     }
 }

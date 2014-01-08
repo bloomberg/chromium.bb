@@ -33,13 +33,13 @@ namespace WebCore {
 
 class DOMWindow;
 class EventTarget;
-class EventContext;
 class Event;
 class Node;
+class NodeEventContext;
 
 class WindowEventContext {
 public:
-    WindowEventContext(Event*, PassRefPtr<Node>, const EventContext*);
+    WindowEventContext(Event*, PassRefPtr<Node>, const NodeEventContext*);
 
     DOMWindow* window() const;
     EventTarget* target() const;

@@ -35,14 +35,14 @@
 
 namespace WebCore {
 
-EventContext::EventContext(PassRefPtr<Node> node, PassRefPtr<EventTarget> currentTarget)
+NodeEventContext::NodeEventContext(PassRefPtr<Node> node, PassRefPtr<EventTarget> currentTarget)
     : m_node(node)
     , m_currentTarget(currentTarget)
 {
     ASSERT(m_node);
 }
 
-EventContext::~EventContext()
+NodeEventContext::~NodeEventContext()
 {
 }
 
@@ -51,7 +51,7 @@ void TreeScopeEventContext::adoptEventPath(Vector<RefPtr<Node> >& nodes)
     m_eventPath = StaticNodeList::adopt(nodes);
 }
 
-void EventContext::handleLocalEvents(Event* event) const
+void NodeEventContext::handleLocalEvents(Event* event) const
 {
     if (touchEventContext()) {
         touchEventContext()->handleLocalEvents(event);
