@@ -4,110 +4,135 @@
   "credentials_path": "data/credentials.json",
   "user_agent_type": "mobile",
   "smoothness": { "action": "scroll" },
+  "navigate_steps" : [
+    { "action": "navigate" },
+    { "action": "wait", "seconds": 2 }
+  ],
   "pages": [
     {
       "url": "http://groupcloned.com/test/plain/list-recycle-transform.html",
       "why": "best case infinite scroll from sencha",
-      "navigate_steps" : [
-        { "action": "navigate" },
-        { "action": "wait", "seconds": 2 }
-      ],
-      "smoothness": { 
+      "smoothness": {
         "action": "scroll",
-        "scrollable_element_function": "function(callback) { callback(document.getElementById('scrollable')); }" 
+        "scrollable_element_function": "function(callback) { callback(document.getElementById('scrollable')); }"
       }
     },
     {
       "url": "http://groupcloned.com/test/plain/list-animation-simple.html",
       "why": "lots of layers all animating",
-      "navigate_steps" : [
-        { "action": "navigate" },
-        { "action": "wait", "seconds": 2 }
-      ],
-      "smoothness": { "action": "wait", "seconds": 10 }
+      "smoothness": { "action": "wait", "seconds": 2 }
     },
     {
       "url": "http://www.polymer-project.org/polymer-all/labs/list/static-scroll-display.html",
       "why": "",
-      "navigate_steps" : [
-        { "action": "navigate" },
-        { "action": "wait", "seconds": 2 }
-      ],
-      "smoothness": { 
+      "smoothness": {
         "action": "scroll",
-        "scrollable_element_function": "function(callback) { callback(document.getElementById('list')); }" 
+        "scrollable_element_function": "function(callback) { callback(document.getElementById('list')); }"
       }
     },
     {
       "url": "http://www.polymer-project.org/polymer-all/labs/list/virtual-scroll-examples.html",
       "why": "",
-      "navigate_steps" : [
-        { "action": "navigate" },
-        { "action": "wait", "seconds": 2 }
-      ],
-      "smoothness": { 
+      "smoothness": {
         "action": "scroll",
-        "scrollable_element_function": "function(callback) { callback(document.getElementById('list')); }" 
+        "scrollable_element_function": "function(callback) { callback(document.getElementById('list')); }"
       }
     },
     {
       "url": "http://groupcloned.com/test/plain/sticky-using-webkit-backface-visibility.html",
       "why": "",
-      "navigate_steps" : [
-        { "action": "navigate" },
-        { "action": "wait", "seconds": 2 }
-      ],
-      "smoothness": { 
+      "smoothness": {
         "action": "scroll",
-        "scrollable_element_function": "function(callback) { callback(document.getElementById('container')); }" 
+        "scrollable_element_function": "function(callback) { callback(document.getElementById('container')); }"
       }
     },
     {
       "url": "http://pr.gg/scroll6_even_faster.html",
       "why": "reduced version of ui toolkit static scroll case",
-      "navigate_steps" : [
-        { "action": "navigate" },
-        { "action": "wait", "seconds": 2 }
-      ],
-      "smoothness": { 
+      "smoothness": {
         "action": "scroll",
-        "scrollable_element_function": "function(callback) { callback(document.getElementsByClassName('container')[0]); }" 
+        "scrollable_element_function": "function(callback) { callback(document.getElementsByClassName('container')[0]); }"
       }
     },
     {
-      "url": "http://staff.tumblr.com/",
-      "why": "long jank at the start of every scroll gesture (due to layout?)",
-      "navigate_steps" : [
-        { "action": "navigate" },
-        { "action": "wait", "seconds": 2 }
-      ],
+      "url": "http://jsfiddle.net/mdxJ7/3/embedded/result/",
+      "why": "only the green div should repaint",
+      "smoothness": { "action": "wait", "seconds": 3 }
+    },
+    {
+      "url": "http://jsfiddle.net/3yDKh/1/embedded/result",
+      "why": "only the red div should repaint",
+      "smoothness": { "action": "wait", "seconds": 3 }
+    },
+    {
+      "url": "http://jsfiddle.net/3yDKh/3/embedded/result",
+      "why": "margin top animation",
+      "smoothness": { "action": "wait", "seconds": 3 }
+    },
+    {
+      "url": "http://jsfiddle.net/R8DX9/1/embedded/result/",
+      "smoothness": { "action": "wait", "seconds": 3 }
+    },
+    {
+      "url": "http://jsfiddle.net/rF9Gh/1/embedded/result/",
+      "smoothness": { "action": "wait", "seconds": 3 }
+    },
+    {
+      "url": "http://jsfiddle.net/uHqN9/embedded/result/",
+      "smoothness": { "action": "wait", "seconds": 4 }
+    },
+    {
+      "url": "http://jsfiddle.net/humper/yEX8u/3/embedded/result/",
+      "smoothness": { "action": "wait", "seconds": 4 }
+    },
+    {
+      "url": "http://jsfiddle.net/humper/cKB9D/3/embedded/result/",
+      "smoothness": { "action": "wait", "seconds": 4 }
+    },
+    {
+      "url": "http://jsfiddle.net/vBQHH/3/embedded/result/",
+      "smoothness": { "action": "wait", "seconds": 4 }
+    },
+    {
+      "url": "http://www.google.com/nexus/5/#/",
       "smoothness": { "action": "scroll" }
     },
     {
-      "url": "http://jsfiddle.net/mdxJ7/3/show",
-      "why": "only the green div should repaint",
-      "navigate_steps" : [
-        { "action": "navigate" },
-        { "action": "wait", "seconds": 2 }
-      ],
+      "url": "https://play.google.com/store/devices/details/Nexus_5_16GB_White?id=nexus_5_white_16gb",
+      "smoothness": {
+        "action": "toggle",
+        "repeat": 3
+      },
+      "toggle": [
+        {
+          "action": "click_element",
+          "selector": ".details-info .play-button:not(.selected)"
+        },
+        { "action": "wait", "seconds": 2}
+      ]
+    },
+    {
+      "url": "http://jsfiddle.net/426x6/2/embedded/result",
+      "smoothness": { "action": "wait", "seconds": 2 }
+    },
+    {
+      "url": "http://jsfiddle.net/FtR7p/42/embedded/result/",
       "smoothness": { "action": "wait", "seconds": 5 }
     },
     {
-      "url": "http://jsfiddle.net/3yDKh/1/show",
-      "why": "only the red div should repaint",
-      "navigate_steps" : [
-        { "action": "navigate" },
-        { "action": "wait", "seconds": 2 }
-      ],
+      "url": "http://jsfiddle.net/ugkd4/9/embedded/result/",
       "smoothness": { "action": "wait", "seconds": 5 }
     },
     {
-      "url": "http://jsfiddle.net/3yDKh/3/show",
-      "why": "margin top animation",
-      "navigate_steps" : [
-        { "action": "navigate" },
-        { "action": "wait", "seconds": 2 }
-      ],
+      "url": "file://key_silk_cases/text-mask.html",
+      "smoothness": { "action": "wait", "seconds": 4 }
+    },
+    {
+      "url": "file://key_silk_cases/rectangle_transition.html",
+      "smoothness": { "action": "wait", "seconds": 5 }
+    },
+    {
+      "url": "file://key_silk_cases/font_wipe.html",
       "smoothness": { "action": "wait", "seconds": 5 }
     }
   ]
