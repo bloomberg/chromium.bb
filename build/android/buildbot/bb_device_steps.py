@@ -402,7 +402,7 @@ def ProvisionDevices(options):
     adb.RestartAdbServer()
     RunCmd(['sleep', '1'])
 
-  if options.reboot:
+  if not options.no_reboot:
     RebootDevices()
   provision_cmd = ['build/android/provision_devices.py', '-t', options.target]
   if options.auto_reconnect:
@@ -584,8 +584,8 @@ def GetDeviceStepsOptParser():
   parser.add_option('--asan', action='store_true', help='Run tests with asan.')
   parser.add_option('--install', metavar='<apk name>',
                     help='Install an apk by name')
-  parser.add_option('--reboot', action='store_true',
-                    help='Reboot devices before running tests')
+  parser.add_option('--no-reboot', action='store_true',
+                    help='Do not reboot devices during provisioning.')
   parser.add_option('--coverage-bucket',
                     help=('Bucket name to store coverage results. Coverage is '
                           'only run if this is set.'))

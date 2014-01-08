@@ -104,7 +104,7 @@ def GetCommands(options, bot_config):
 
   test_obj = bot_config.test_obj
   if test_obj:
-    run_test_cmd = [test_obj.script, '--reboot'] + property_args
+    run_test_cmd = [test_obj.script] + property_args
     for test in test_obj.tests:
       run_test_cmd.extend(['-f', test])
     if test_obj.extra_args:
