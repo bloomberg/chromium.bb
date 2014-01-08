@@ -265,11 +265,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   static Widget* CreateWindowAsFramelessChild(WidgetDelegate* widget_delegate,
                                               gfx::NativeView parent);
 
-  // Enumerates all windows pertaining to us and notifies their
-  // view hierarchies that the locale has changed.
-  // TODO(beng): remove post-Aurafication of ChromeOS.
-  static void NotifyLocaleChanged();
-
   // Closes all Widgets that aren't identified as "secondary widgets". Called
   // during application shutdown when the last non-secondary widget is closed.
   static void CloseAllSecondaryWidgets();

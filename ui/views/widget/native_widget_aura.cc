@@ -972,11 +972,6 @@ void NativeWidgetAura::SetInitialFocus() {
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, public:
 
-// static
-void Widget::NotifyLocaleChanged() {
-  // Deliberately not implemented.
-}
-
 namespace {
 #if defined(OS_WIN) || (defined(USE_X11) && !defined(OS_CHROMEOS))
 void CloseWindow(aura::Window* window) {

@@ -885,11 +885,6 @@ void NativeWidgetWin::SetInitParams(const Widget::InitParams& params) {
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, public:
 
-// static
-void Widget::NotifyLocaleChanged() {
-  NOTIMPLEMENTED();
-}
-
 namespace {
 BOOL CALLBACK WindowCallbackProc(HWND hwnd, LPARAM lParam) {
   Widget* widget = Widget::GetWidgetForNativeView(hwnd);
