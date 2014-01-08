@@ -42,9 +42,13 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
    - en-gb-g1.utb: Fixes thanks to Paul Wood
    - Fix for the lich sign in the German tables. Thanks to Halim
      Sahin.
-   - Spaces in nemethdefs.cti were changed to unbreakable spaces. This
-     was done so that nemeth expressions would not be broken between
-     lines. Thanks to John Boyer.
+   - Nemeth improvements thanks to John Boyer.
+     - Spaces in nemethdefs.cti were changed to unbreakable spaces. This
+       was done so that nemeth expressions would not be broken between
+       lines.
+     - The number sign is now inserted between the minus sign and the
+       number at the beginning of an expression. Some problems with
+       pass2 opcodes have also been corrected.
    - The Esperanto table has additional punctuation characters and a
      test harness. Thanks to Aaron Cannon.
    - Added missing symbols to the US English BRF display table. Thanks
