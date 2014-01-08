@@ -489,14 +489,11 @@ void FrameView::updateCanHaveScrollbars()
         setCanHaveScrollbars(true);
 }
 
-bool FrameView::shouldUseCustomScrollbars(Element*& customScrollbarElement, Frame*& customScrollbarFrame)
+PassRefPtr<Scrollbar> FrameView::createScrollbar(ScrollbarOrientation orientation)
 {
-    customScrollbarElement = 0;
-    customScrollbarFrame = 0;
-
     if (Settings* settings = m_frame->settings()) {
         if (!settings->allowCustomScrollbarInMainFrame() && isMainFrame())
-            return false;
+            return ScrollView::createScrollbar(orientation);
     }
 
     // FIXME: We need to update the scrollbar dynamically as documents change (or as doc elements and bodies get discovered that have custom styles).
@@ -504,34 +501,18 @@ bool FrameView::shouldUseCustomScrollbars(Element*& customScrollbarElement, Fram
 
     // Try the <body> element first as a scrollbar source.
     Element* body = doc ? doc->body() : 0;
-    if (body && body->renderer() && body->renderer()->style()->hasPseudoStyle(SCROLLBAR)) {
-        customScrollbarElement = body;
-        return true;
-    }
+    if (body && body->renderer() && body->renderer()->style()->hasPseudoStyle(SCROLLBAR))
+        return RenderScrollbar::createCustomScrollbar(this, orientation, body);
 
     // If the <body> didn't have a custom style, then the root element might.
     Element* docElement = doc ? doc->documentElement() : 0;
-    if (docElement && docElement->renderer() && docElement->renderer()->style()->hasPseudoStyle(SCROLLBAR)) {
-        customScrollbarElement = docElement;
-        return true;
-    }
+    if (docElement && docElement->renderer() && docElement->renderer()->style()->hasPseudoStyle(SCROLLBAR))
+        return RenderScrollbar::createCustomScrollbar(this, orientation, docElement);
 
     // If we have an owning ipage/Frame element, then it can set the custom scrollbar also.
     RenderPart* frameRenderer = m_frame->ownerRenderer();
-    if (frameRenderer && frameRenderer->style()->hasPseudoStyle(SCROLLBAR)) {
-        customScrollbarFrame = m_frame.get();
-        return true;
-    }
-
-    return false;
-}
-
-PassRefPtr<Scrollbar> FrameView::createScrollbar(ScrollbarOrientation orientation)
-{
-    Element* customScrollbarElement = 0;
-    Frame* customScrollbarFrame = 0;
-    if (shouldUseCustomScrollbars(customScrollbarElement, customScrollbarFrame))
-        return RenderScrollbar::createCustomScrollbar(this, orientation, customScrollbarElement, customScrollbarFrame);
+    if (frameRenderer && frameRenderer->style()->hasPseudoStyle(SCROLLBAR))
+        return RenderScrollbar::createCustomScrollbar(this, orientation, 0, m_frame.get());
 
     // Nobody set a custom style, so we just use a native scrollbar.
     return ScrollView::createScrollbar(orientation);
@@ -1836,19 +1817,15 @@ void FrameView::scrollbarExistenceDidChange()
     if (!frame().view())
         return;
 
-    Element* customScrollbarElement = 0;
-    Frame* customScrollbarFrame = 0;
-    bool scrollbarAffectsLayout = !ScrollbarTheme::theme()->usesOverlayScrollbars()
-        || hasCustomScrollbars()
-        || shouldUseCustomScrollbars(customScrollbarElement, customScrollbarFrame);
+    bool useOverlayScrollbars = ScrollbarTheme::theme()->usesOverlayScrollbars();
 
-    if (renderView() && scrollbarAffectsLayout)
+    if (!useOverlayScrollbars && needsLayout())
         layout();
 
     if (renderView() && renderView()->usesCompositing()) {
         renderView()->compositor()->frameViewScrollbarsExistenceDidChange();
 
-        if (scrollbarAffectsLayout)
+        if (!useOverlayScrollbars)
             renderView()->compositor()->frameViewDidChangeSize();
     }
 }

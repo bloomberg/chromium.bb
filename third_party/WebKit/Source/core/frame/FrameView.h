@@ -436,7 +436,6 @@ private:
     void scrollPositionChanged();
 
     bool hasCustomScrollbars() const;
-    bool shouldUseCustomScrollbars(Element*& customScrollbarElement, Frame*& customScrollbarFrame);
 
     virtual void updateScrollCorner();
 

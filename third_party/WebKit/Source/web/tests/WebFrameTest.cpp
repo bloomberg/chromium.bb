@@ -664,35 +664,6 @@ TEST_F(WebFrameTest, FrameViewNeedsLayoutOnFixedLayoutResize)
     webViewHelper.webViewImpl()->layout();
 }
 
-TEST_F(WebFrameTest, FrameViewNeedsLayoutForCustomScrollbars)
-{
-    UseMockScrollbarSettings mockScrollbarSettings;
-    registerMockedHttpURLLoad("custom-scrollbars-layout.html");
-    registerMockedHttpURLLoad("custom-scrollbars-no-layout.html");
-
-    FixedLayoutTestWebViewClient client;
-    const int viewportWidth = 640;
-    const int viewportHeight = 480;
-
-    // Compare the number of layouts on a page with custom scrollbars and a page without them, and
-    // expect one additional layout with custom scrollbars.
-    for (int iteration = 0; iteration < 2; ++iteration) {
-        // The first iteration has custom scrollbars, the second one doesn't.
-        const char* filename = iteration ? "custom-scrollbars-layout.html" : "custom-scrollbars-no-layout.html";
-        int expectedLayoutsOnResize = iteration ? 2 : 1;
-
-        FrameTestHelpers::WebViewHelper webViewHelper;
-        webViewHelper.initializeAndLoad(m_baseURL + filename, true, 0, &client, enableViewportSettings);
-
-        // Expect one layout from loading the page.
-        int prevLayoutCount = webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutCount();
-        EXPECT_EQ(1, prevLayoutCount) << "on iteration: " << iteration;
-        webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
-        EXPECT_EQ(prevLayoutCount + expectedLayoutsOnResize, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutCount())
-            << "on iteration: " << iteration;
-    }
-}
-
 TEST_F(WebFrameTest, ChangeInFixedLayoutTriggersTextAutosizingRecalculate)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
