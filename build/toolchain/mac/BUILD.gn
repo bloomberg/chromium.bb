@@ -9,8 +9,8 @@
 # Should only be running on Mac.
 assert(is_mac || is_ios)
 
-# Clang variables.
-import("../clang.gni")
+import("//build/toolchain/clang.gni")
+import("//build/toolchain/goma.gni")
 
 if (is_clang) {
   cc = rebase_path("//third_party/llvm-build/Release+Asserts/bin/clang", ".", root_build_dir)
