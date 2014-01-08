@@ -15,6 +15,7 @@ See more information at
 
 import ast
 import copy
+import datetime
 import itertools
 import logging
 import optparse
@@ -1919,7 +1920,8 @@ def CMDrun(parser, args):
     if not options.outdir:
       if not os.path.isabs(root_dir):
         root_dir = os.path.join(os.path.dirname(options.isolated), root_dir)
-      options.outdir = run_isolated.make_temp_dir('isolate', root_dir)
+      options.outdir = run_isolated.make_temp_dir(
+          'isolate-%s' % datetime.date.today(), root_dir)
     else:
       if not os.path.isdir(options.outdir):
         os.makedirs(options.outdir)
