@@ -110,7 +110,7 @@ TEST(PictureTest, PixelRefIterator) {
 
   FakeContentLayerClient content_layer_client;
 
-  // Lazy pixel refs are found in the following grids:
+  // Discardable pixel refs are found in the following grids:
   // |---|---|---|---|
   // |   | x |   | x |
   // |---|---|---|---|
@@ -120,14 +120,15 @@ TEST(PictureTest, PixelRefIterator) {
   // |---|---|---|---|
   // | x |   | x |   |
   // |---|---|---|---|
-  SkBitmap lazy_bitmap[4][4];
+  SkBitmap discardable_bitmap[4][4];
   for (int y = 0; y < 4; ++y) {
     for (int x = 0; x < 4; ++x) {
       if ((x + y) & 1) {
-        CreateBitmap(gfx::Size(500, 500), "lazy", &lazy_bitmap[y][x]);
+        CreateBitmap(
+            gfx::Size(500, 500), "discardable", &discardable_bitmap[y][x]);
         SkPaint paint;
         content_layer_client.add_draw_bitmap(
-            lazy_bitmap[y][x],
+            discardable_bitmap[y][x],
             gfx::Point(x * 512 + 6, y * 512 + 6), paint);
       }
     }
@@ -149,7 +150,8 @@ TEST(PictureTest, PixelRefIterator) {
                                          picture.get());
       if ((x + y) & 1) {
         EXPECT_TRUE(iterator) << x << " " << y;
-        EXPECT_TRUE(*iterator == lazy_bitmap[y][x].pixelRef()) << x << " " << y;
+        EXPECT_TRUE(*iterator == discardable_bitmap[y][x].pixelRef()) << x <<
+            " " << y;
         EXPECT_FALSE(++iterator) << x << " " << y;
       } else {
         EXPECT_FALSE(iterator) << x << " " << y;
@@ -161,13 +163,13 @@ TEST(PictureTest, PixelRefIterator) {
     Picture::PixelRefIterator iterator(gfx::Rect(512, 512, 2048, 2048),
                                        picture.get());
     EXPECT_TRUE(iterator);
-    EXPECT_TRUE(*iterator == lazy_bitmap[1][2].pixelRef());
+    EXPECT_TRUE(*iterator == discardable_bitmap[1][2].pixelRef());
     EXPECT_TRUE(++iterator);
-    EXPECT_TRUE(*iterator == lazy_bitmap[2][1].pixelRef());
+    EXPECT_TRUE(*iterator == discardable_bitmap[2][1].pixelRef());
     EXPECT_TRUE(++iterator);
-    EXPECT_TRUE(*iterator == lazy_bitmap[2][3].pixelRef());
+    EXPECT_TRUE(*iterator == discardable_bitmap[2][3].pixelRef());
     EXPECT_TRUE(++iterator);
-    EXPECT_TRUE(*iterator == lazy_bitmap[3][2].pixelRef());
+    EXPECT_TRUE(*iterator == discardable_bitmap[3][2].pixelRef());
     EXPECT_FALSE(++iterator);
   }
 
@@ -175,25 +177,25 @@ TEST(PictureTest, PixelRefIterator) {
   Picture::PixelRefIterator iterator(gfx::Rect(512, 512, 2048, 2048),
                                      picture.get());
   EXPECT_TRUE(iterator);
-  EXPECT_TRUE(*iterator == lazy_bitmap[1][2].pixelRef());
+  EXPECT_TRUE(*iterator == discardable_bitmap[1][2].pixelRef());
   EXPECT_TRUE(++iterator);
-  EXPECT_TRUE(*iterator == lazy_bitmap[2][1].pixelRef());
+  EXPECT_TRUE(*iterator == discardable_bitmap[2][1].pixelRef());
 
   // copy now points to the same spot as iterator,
   // but both can be incremented independently.
   Picture::PixelRefIterator copy = iterator;
   EXPECT_TRUE(++iterator);
-  EXPECT_TRUE(*iterator == lazy_bitmap[2][3].pixelRef());
+  EXPECT_TRUE(*iterator == discardable_bitmap[2][3].pixelRef());
   EXPECT_TRUE(++iterator);
-  EXPECT_TRUE(*iterator == lazy_bitmap[3][2].pixelRef());
+  EXPECT_TRUE(*iterator == discardable_bitmap[3][2].pixelRef());
   EXPECT_FALSE(++iterator);
 
   EXPECT_TRUE(copy);
-  EXPECT_TRUE(*copy == lazy_bitmap[2][1].pixelRef());
+  EXPECT_TRUE(*copy == discardable_bitmap[2][1].pixelRef());
   EXPECT_TRUE(++copy);
-  EXPECT_TRUE(*copy == lazy_bitmap[2][3].pixelRef());
+  EXPECT_TRUE(*copy == discardable_bitmap[2][3].pixelRef());
   EXPECT_TRUE(++copy);
-  EXPECT_TRUE(*copy == lazy_bitmap[3][2].pixelRef());
+  EXPECT_TRUE(*copy == discardable_bitmap[3][2].pixelRef());
   EXPECT_FALSE(++copy);
 }
 
@@ -207,7 +209,7 @@ TEST(PictureTest, PixelRefIteratorNonZeroLayer) {
 
   FakeContentLayerClient content_layer_client;
 
-  // Lazy pixel refs are found in the following grids:
+  // Discardable pixel refs are found in the following grids:
   // |---|---|---|---|
   // |   | x |   | x |
   // |---|---|---|---|
@@ -217,14 +219,15 @@ TEST(PictureTest, PixelRefIteratorNonZeroLayer) {
   // |---|---|---|---|
   // | x |   | x |   |
   // |---|---|---|---|
-  SkBitmap lazy_bitmap[4][4];
+  SkBitmap discardable_bitmap[4][4];
   for (int y = 0; y < 4; ++y) {
     for (int x = 0; x < 4; ++x) {
       if ((x + y) & 1) {
-        CreateBitmap(gfx::Size(500, 500), "lazy", &lazy_bitmap[y][x]);
+        CreateBitmap(
+            gfx::Size(500, 500), "discardable", &discardable_bitmap[y][x]);
         SkPaint paint;
         content_layer_client.add_draw_bitmap(
-            lazy_bitmap[y][x],
+            discardable_bitmap[y][x],
             gfx::Point(1024 + x * 512 + 6, y * 512 + 6), paint);
       }
     }
@@ -246,7 +249,7 @@ TEST(PictureTest, PixelRefIteratorNonZeroLayer) {
           gfx::Rect(1024 + x * 512, y * 512, 500, 500), picture.get());
       if ((x + y) & 1) {
         EXPECT_TRUE(iterator) << x << " " << y;
-        EXPECT_TRUE(*iterator == lazy_bitmap[y][x].pixelRef());
+        EXPECT_TRUE(*iterator == discardable_bitmap[y][x].pixelRef());
         EXPECT_FALSE(++iterator) << x << " " << y;
       } else {
         EXPECT_FALSE(iterator) << x << " " << y;
@@ -258,13 +261,13 @@ TEST(PictureTest, PixelRefIteratorNonZeroLayer) {
     Picture::PixelRefIterator iterator(gfx::Rect(1024 + 512, 512, 2048, 2048),
                                        picture.get());
     EXPECT_TRUE(iterator);
-    EXPECT_TRUE(*iterator == lazy_bitmap[1][2].pixelRef());
+    EXPECT_TRUE(*iterator == discardable_bitmap[1][2].pixelRef());
     EXPECT_TRUE(++iterator);
-    EXPECT_TRUE(*iterator == lazy_bitmap[2][1].pixelRef());
+    EXPECT_TRUE(*iterator == discardable_bitmap[2][1].pixelRef());
     EXPECT_TRUE(++iterator);
-    EXPECT_TRUE(*iterator == lazy_bitmap[2][3].pixelRef());
+    EXPECT_TRUE(*iterator == discardable_bitmap[2][3].pixelRef());
     EXPECT_TRUE(++iterator);
-    EXPECT_TRUE(*iterator == lazy_bitmap[3][2].pixelRef());
+    EXPECT_TRUE(*iterator == discardable_bitmap[3][2].pixelRef());
     EXPECT_FALSE(++iterator);
   }
 
@@ -273,25 +276,25 @@ TEST(PictureTest, PixelRefIteratorNonZeroLayer) {
     Picture::PixelRefIterator iterator(gfx::Rect(1024 + 512, 512, 2048, 2048),
                                        picture.get());
     EXPECT_TRUE(iterator);
-    EXPECT_TRUE(*iterator == lazy_bitmap[1][2].pixelRef());
+    EXPECT_TRUE(*iterator == discardable_bitmap[1][2].pixelRef());
     EXPECT_TRUE(++iterator);
-    EXPECT_TRUE(*iterator == lazy_bitmap[2][1].pixelRef());
+    EXPECT_TRUE(*iterator == discardable_bitmap[2][1].pixelRef());
 
     // copy now points to the same spot as iterator,
     // but both can be incremented independently.
     Picture::PixelRefIterator copy = iterator;
     EXPECT_TRUE(++iterator);
-    EXPECT_TRUE(*iterator == lazy_bitmap[2][3].pixelRef());
+    EXPECT_TRUE(*iterator == discardable_bitmap[2][3].pixelRef());
     EXPECT_TRUE(++iterator);
-    EXPECT_TRUE(*iterator == lazy_bitmap[3][2].pixelRef());
+    EXPECT_TRUE(*iterator == discardable_bitmap[3][2].pixelRef());
     EXPECT_FALSE(++iterator);
 
     EXPECT_TRUE(copy);
-    EXPECT_TRUE(*copy == lazy_bitmap[2][1].pixelRef());
+    EXPECT_TRUE(*copy == discardable_bitmap[2][1].pixelRef());
     EXPECT_TRUE(++copy);
-    EXPECT_TRUE(*copy == lazy_bitmap[2][3].pixelRef());
+    EXPECT_TRUE(*copy == discardable_bitmap[2][3].pixelRef());
     EXPECT_TRUE(++copy);
-    EXPECT_TRUE(*copy == lazy_bitmap[3][2].pixelRef());
+    EXPECT_TRUE(*copy == discardable_bitmap[3][2].pixelRef());
     EXPECT_FALSE(++copy);
   }
 
@@ -328,7 +331,7 @@ TEST(PictureTest, PixelRefIteratorOnePixelQuery) {
 
   FakeContentLayerClient content_layer_client;
 
-  // Lazy pixel refs are found in the following grids:
+  // Discardable pixel refs are found in the following grids:
   // |---|---|---|---|
   // |   | x |   | x |
   // |---|---|---|---|
@@ -338,14 +341,15 @@ TEST(PictureTest, PixelRefIteratorOnePixelQuery) {
   // |---|---|---|---|
   // | x |   | x |   |
   // |---|---|---|---|
-  SkBitmap lazy_bitmap[4][4];
+  SkBitmap discardable_bitmap[4][4];
   for (int y = 0; y < 4; ++y) {
     for (int x = 0; x < 4; ++x) {
       if ((x + y) & 1) {
-        CreateBitmap(gfx::Size(500, 500), "lazy", &lazy_bitmap[y][x]);
+        CreateBitmap(
+            gfx::Size(500, 500), "discardable", &discardable_bitmap[y][x]);
         SkPaint paint;
         content_layer_client.add_draw_bitmap(
-            lazy_bitmap[y][x],
+            discardable_bitmap[y][x],
             gfx::Point(x * 512 + 6, y * 512 + 6), paint);
       }
     }
@@ -362,7 +366,7 @@ TEST(PictureTest, PixelRefIteratorOnePixelQuery) {
           gfx::Rect(x * 512, y * 512 + 256, 1, 1), picture.get());
       if ((x + y) & 1) {
         EXPECT_TRUE(iterator) << x << " " << y;
-        EXPECT_TRUE(*iterator == lazy_bitmap[y][x].pixelRef());
+        EXPECT_TRUE(*iterator == discardable_bitmap[y][x].pixelRef());
         EXPECT_FALSE(++iterator) << x << " " << y;
       } else {
         EXPECT_FALSE(iterator) << x << " " << y;

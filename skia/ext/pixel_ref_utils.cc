@@ -1,12 +1,11 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "skia/ext/lazy_pixel_ref_utils.h"
+#include "skia/ext/pixel_ref_utils.h"
 
 #include <algorithm>
 
-#include "skia/ext/lazy_pixel_ref.h"
 #include "third_party/skia/include/core/SkBitmapDevice.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkData.h"
@@ -21,35 +20,35 @@ namespace skia {
 
 namespace {
 
-// URI label for a lazily decoded SkPixelRef.
-const char kLabelLazyDecoded[] = "lazy";
+// URI label for a discardable SkPixelRef.
+const char kLabelDiscardable[] = "discardable";
 
-class LazyPixelRefSet {
+class DiscardablePixelRefSet {
  public:
-  LazyPixelRefSet(
-      std::vector<LazyPixelRefUtils::PositionLazyPixelRef>* pixel_refs)
+  DiscardablePixelRefSet(
+      std::vector<PixelRefUtils::PositionPixelRef>* pixel_refs)
       : pixel_refs_(pixel_refs) {}
 
   void Add(SkPixelRef* pixel_ref, const SkRect& rect) {
-    // Only save lazy pixel refs.
+    // Only save discardable pixel refs.
     if (pixel_ref->getURI() &&
-        !strcmp(pixel_ref->getURI(), kLabelLazyDecoded)) {
-      LazyPixelRefUtils::PositionLazyPixelRef position_pixel_ref;
-      position_pixel_ref.lazy_pixel_ref =
-          static_cast<skia::LazyPixelRef*>(pixel_ref);
+        !strcmp(pixel_ref->getURI(), kLabelDiscardable)) {
+      PixelRefUtils::PositionPixelRef position_pixel_ref;
+      position_pixel_ref.pixel_ref = pixel_ref;
       position_pixel_ref.pixel_ref_rect = rect;
       pixel_refs_->push_back(position_pixel_ref);
     }
   }
 
  private:
-  std::vector<LazyPixelRefUtils::PositionLazyPixelRef>* pixel_refs_;
+  std::vector<PixelRefUtils::PositionPixelRef>* pixel_refs_;
 };
 
 class GatherPixelRefDevice : public SkBitmapDevice {
  public:
-  GatherPixelRefDevice(const SkBitmap& bm, LazyPixelRefSet* lazy_pixel_ref_set)
-      : SkBitmapDevice(bm), lazy_pixel_ref_set_(lazy_pixel_ref_set) {}
+  GatherPixelRefDevice(const SkBitmap& bm,
+                       DiscardablePixelRefSet* pixel_ref_set)
+      : SkBitmapDevice(bm), pixel_ref_set_(pixel_ref_set) {}
 
   virtual void clear(SkColor color) SK_OVERRIDE {}
   virtual void writePixels(const SkBitmap& bitmap,
@@ -327,13 +326,13 @@ class GatherPixelRefDevice : public SkBitmapDevice {
   }
 
  private:
-  LazyPixelRefSet* lazy_pixel_ref_set_;
+  DiscardablePixelRefSet* pixel_ref_set_;
 
   void AddBitmap(const SkBitmap& bm, const SkRect& rect) {
     SkRect canvas_rect = SkRect::MakeWH(width(), height());
     SkRect paint_rect = SkRect::MakeEmpty();
     paint_rect.intersect(rect, canvas_rect);
-    lazy_pixel_ref_set_->Add(bm.pixelRef(), paint_rect);
+    pixel_ref_set_->Add(bm.pixelRef(), paint_rect);
   }
 
   bool GetBitmapFromPaint(const SkPaint& paint, SkBitmap* bm) {
@@ -389,11 +388,11 @@ class NoSaveLayerCanvas : public SkCanvas {
 
 }  // namespace
 
-void LazyPixelRefUtils::GatherPixelRefs(
+void PixelRefUtils::GatherDiscardablePixelRefs(
     SkPicture* picture,
-    std::vector<PositionLazyPixelRef>* lazy_pixel_refs) {
-  lazy_pixel_refs->clear();
-  LazyPixelRefSet pixel_ref_set(lazy_pixel_refs);
+    std::vector<PositionPixelRef>* pixel_refs) {
+  pixel_refs->clear();
+  DiscardablePixelRefSet pixel_ref_set(pixel_refs);
 
   SkBitmap empty_bitmap;
   empty_bitmap.setConfig(

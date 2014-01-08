@@ -834,7 +834,7 @@ void TileManager::ScheduleTasks(
 }
 
 RasterWorkerPool::Task TileManager::CreateImageDecodeTask(
-    Tile* tile, skia::LazyPixelRef* pixel_ref) {
+    Tile* tile, SkPixelRef* pixel_ref) {
   return RasterWorkerPool::CreateImageDecodeTask(
       pixel_ref,
       tile->layer_id(),
@@ -859,7 +859,7 @@ RasterWorkerPool::RasterTask TileManager::CreateRasterTask(Tile* tile) {
                                               tile->contents_scale(),
                                               tile->picture_pile());
        iter; ++iter) {
-    skia::LazyPixelRef* pixel_ref = *iter;
+    SkPixelRef* pixel_ref = *iter;
     uint32_t id = pixel_ref->getGenerationID();
 
     // Append existing image decode task if available.
@@ -897,7 +897,7 @@ RasterWorkerPool::RasterTask TileManager::CreateRasterTask(Tile* tile) {
 
 void TileManager::OnImageDecodeTaskCompleted(
     int layer_id,
-    skia::LazyPixelRef* pixel_ref,
+    SkPixelRef* pixel_ref,
     bool was_canceled) {
   // If the task was canceled, we need to clean it up
   // from |image_decode_tasks_|.

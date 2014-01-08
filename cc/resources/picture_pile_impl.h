@@ -87,8 +87,8 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
                      const PicturePileImpl* picture_pile);
     ~PixelRefIterator();
 
-    skia::LazyPixelRef* operator->() const { return *pixel_ref_iterator_; }
-    skia::LazyPixelRef* operator*() const { return *pixel_ref_iterator_; }
+    SkPixelRef* operator->() const { return *pixel_ref_iterator_; }
+    SkPixelRef* operator*() const { return *pixel_ref_iterator_; }
     PixelRefIterator& operator++();
     operator bool() const { return pixel_ref_iterator_; }
 

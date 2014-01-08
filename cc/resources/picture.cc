@@ -16,7 +16,7 @@
 #include "cc/debug/traced_picture.h"
 #include "cc/debug/traced_value.h"
 #include "cc/layers/content_layer_client.h"
-#include "skia/ext/lazy_pixel_ref_utils.h"
+#include "skia/ext/pixel_ref_utils.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkDrawFilter.h"
@@ -263,9 +263,9 @@ void Picture::GatherPixelRefs(
   int max_x = 0;
   int max_y = 0;
 
-  skia::LazyPixelRefList pixel_refs;
-  skia::LazyPixelRefUtils::GatherPixelRefs(picture_.get(), &pixel_refs);
-  for (skia::LazyPixelRefList::const_iterator it = pixel_refs.begin();
+  skia::DiscardablePixelRefList pixel_refs;
+  skia::PixelRefUtils::GatherDiscardablePixelRefs(picture_.get(), &pixel_refs);
+  for (skia::DiscardablePixelRefList::const_iterator it = pixel_refs.begin();
        it != pixel_refs.end();
        ++it) {
     gfx::Point min(
@@ -282,7 +282,7 @@ void Picture::GatherPixelRefs(
     for (int y = min.y(); y <= max.y(); y += cell_size_.height()) {
       for (int x = min.x(); x <= max.x(); x += cell_size_.width()) {
         PixelRefMapKey key(x, y);
-        pixel_refs_[key].push_back(it->lazy_pixel_ref);
+        pixel_refs_[key].push_back(it->pixel_ref);
       }
     }
 

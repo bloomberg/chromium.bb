@@ -10,9 +10,9 @@
 #include "cc/debug/devtools_instrumentation.h"
 #include "cc/debug/traced_value.h"
 #include "cc/resources/picture_pile_impl.h"
-#include "skia/ext/lazy_pixel_ref.h"
 #include "skia/ext/paint_simplifier.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkPixelRef.h"
 
 namespace cc {
 
@@ -253,7 +253,7 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
 
 class ImageDecodeWorkerPoolTaskImpl : public internal::WorkerPoolTask {
  public:
-  ImageDecodeWorkerPoolTaskImpl(skia::LazyPixelRef* pixel_ref,
+  ImageDecodeWorkerPoolTaskImpl(SkPixelRef* pixel_ref,
                                 int layer_id,
                                 RenderingStatsInstrumentation* rendering_stats,
                                 const RasterWorkerPool::Task::Reply& reply)
@@ -267,7 +267,9 @@ class ImageDecodeWorkerPoolTaskImpl : public internal::WorkerPoolTask {
     TRACE_EVENT0("cc", "ImageDecodeWorkerPoolTaskImpl::RunOnWorkerThread");
     devtools_instrumentation::ScopedImageDecodeTask image_decode_task(
         pixel_ref_.get());
-    pixel_ref_->Decode();
+    // This will cause the image referred to by pixel ref to be decoded.
+    pixel_ref_->lockPixels();
+    pixel_ref_->unlockPixels();
   }
   virtual void CompleteOnOriginThread() OVERRIDE {
     reply_.Run(!HasFinishedRunning());
@@ -277,7 +279,7 @@ class ImageDecodeWorkerPoolTaskImpl : public internal::WorkerPoolTask {
   virtual ~ImageDecodeWorkerPoolTaskImpl() {}
 
  private:
-  skia::RefPtr<skia::LazyPixelRef> pixel_ref_;
+  skia::RefPtr<SkPixelRef> pixel_ref_;
   int layer_id_;
   RenderingStatsInstrumentation* rendering_stats_;
   const RasterWorkerPool::Task::Reply reply_;
@@ -451,7 +453,7 @@ RasterWorkerPool::RasterTask RasterWorkerPool::CreateRasterTask(
 
 // static
 RasterWorkerPool::Task RasterWorkerPool::CreateImageDecodeTask(
-    skia::LazyPixelRef* pixel_ref,
+    SkPixelRef* pixel_ref,
     int layer_id,
     RenderingStatsInstrumentation* stats_instrumentation,
     const Task::Reply& reply) {

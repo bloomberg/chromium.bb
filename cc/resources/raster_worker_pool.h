@@ -17,9 +17,7 @@
 #include "cc/resources/worker_pool.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
-namespace skia {
-class LazyPixelRef;
-}
+class SkPixelRef;
 
 namespace cc {
 namespace internal {
@@ -204,7 +202,7 @@ class CC_EXPORT RasterWorkerPool : public WorkerPool {
       Task::Set* dependencies);
 
   static Task CreateImageDecodeTask(
-      skia::LazyPixelRef* pixel_ref,
+      SkPixelRef* pixel_ref,
       int layer_id,
       RenderingStatsInstrumentation* stats_instrumentation,
       const Task::Reply& reply);

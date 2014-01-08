@@ -18,11 +18,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/region.h"
-#include "skia/ext/lazy_pixel_ref.h"
 #include "skia/ext/refptr.h"
-#include "third_party/skia/include/core/SkPixelRef.h"
 #include "third_party/skia/include/core/SkTileGridPicture.h"
 #include "ui/gfx/rect.h"
+
+class SkPixelRef;
 
 namespace base {
 class Value;
@@ -40,7 +40,7 @@ class CC_EXPORT Picture
     : public base::RefCountedThreadSafe<Picture> {
  public:
   typedef std::pair<int, int> PixelRefMapKey;
-  typedef std::vector<skia::LazyPixelRef*> PixelRefs;
+  typedef std::vector<SkPixelRef*> PixelRefs;
   typedef base::hash_map<PixelRefMapKey, PixelRefs> PixelRefMap;
 
   static scoped_refptr<Picture> Create(gfx::Rect layer_rect);
@@ -87,12 +87,12 @@ class CC_EXPORT Picture
     PixelRefIterator(gfx::Rect layer_rect, const Picture* picture);
     ~PixelRefIterator();
 
-    skia::LazyPixelRef* operator->() const {
+    SkPixelRef* operator->() const {
       DCHECK_LT(current_index_, current_pixel_refs_->size());
       return (*current_pixel_refs_)[current_index_];
     }
 
-    skia::LazyPixelRef* operator*() const {
+    SkPixelRef* operator*() const {
       DCHECK_LT(current_index_, current_pixel_refs_->size());
       return (*current_pixel_refs_)[current_index_];
     }

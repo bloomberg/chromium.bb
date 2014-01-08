@@ -1,17 +1,17 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/test/geometry_test_utils.h"
-#include "skia/ext/lazy_pixel_ref.h"
-#include "skia/ext/lazy_pixel_ref_utils.h"
+#include "skia/ext/pixel_ref_utils.h"
 #include "skia/ext/refptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkFlattenableBuffers.h"
+#include "third_party/skia/include/core/SkPixelRef.h"
 #include "third_party/skia/include/core/SkPoint.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "third_party/skia/src/core/SkOrderedReadBuffer.h"
@@ -24,29 +24,28 @@ namespace {
 
 void CreateBitmap(gfx::Size size, const char* uri, SkBitmap* bitmap);
 
-class TestLazyPixelRef : public skia::LazyPixelRef {
+class TestPixelRef : public SkPixelRef {
  public:
-  TestLazyPixelRef(const SkImageInfo& info);
-  virtual ~TestLazyPixelRef();
+  TestPixelRef(const SkImageInfo& info);
+  virtual ~TestPixelRef();
 
   virtual SkFlattenable::Factory getFactory() const OVERRIDE;
   virtual void* onLockPixels(SkColorTable** color_table) OVERRIDE;
   virtual void onUnlockPixels() OVERRIDE {}
-  virtual bool PrepareToDecode(const PrepareParams& params) OVERRIDE;
-  virtual bool MaybeDecoded() OVERRIDE;
   virtual SkPixelRef* deepCopy(SkBitmap::Config config, const SkIRect* subset)
       OVERRIDE;
-  virtual void Decode() OVERRIDE {}
 
  private:
   scoped_ptr<char[]> pixels_;
 };
 
-class TestLazyShader : public SkShader {
+class TestDiscardableShader : public SkShader {
  public:
-  TestLazyShader() { CreateBitmap(gfx::Size(50, 50), "lazy", &bitmap_); }
+  TestDiscardableShader() {
+    CreateBitmap(gfx::Size(50, 50), "discardable", &bitmap_);
+  }
 
-  TestLazyShader(SkFlattenableReadBuffer& flattenable_buffer) {
+  TestDiscardableShader(SkFlattenableReadBuffer& flattenable_buffer) {
     SkOrderedReadBuffer& buffer =
         static_cast<SkOrderedReadBuffer&>(flattenable_buffer);
     SkReader32* reader = buffer.getReader32();
@@ -55,7 +54,7 @@ class TestLazyShader : public SkShader {
     uint32_t toSkip = reader->readU32();
     reader->skip(toSkip);
 
-    CreateBitmap(gfx::Size(50, 50), "lazy", &bitmap_);
+    CreateBitmap(gfx::Size(50, 50), "discardable", &bitmap_);
   }
 
   virtual SkShader::BitmapType asABitmap(SkBitmap* bitmap,
@@ -68,34 +67,26 @@ class TestLazyShader : public SkShader {
 
   // Pure virtual implementaiton.
   virtual void shadeSpan(int x, int y, SkPMColor[], int count) OVERRIDE {}
-  SK_DECLARE_PUBLIC_FLATTENABLE_DESERIALIZATION_PROCS(TestLazyShader);
+  SK_DECLARE_PUBLIC_FLATTENABLE_DESERIALIZATION_PROCS(TestDiscardableShader);
 
  private:
   SkBitmap bitmap_;
 };
 
-TestLazyPixelRef::TestLazyPixelRef(const SkImageInfo& info)
-    : skia::LazyPixelRef(info),
+TestPixelRef::TestPixelRef(const SkImageInfo& info)
+    : SkPixelRef(info),
       pixels_(new char[4 * info.fWidth * info.fHeight]) {}
 
-TestLazyPixelRef::~TestLazyPixelRef() {}
+TestPixelRef::~TestPixelRef() {}
 
-SkFlattenable::Factory TestLazyPixelRef::getFactory() const { return NULL; }
+SkFlattenable::Factory TestPixelRef::getFactory() const { return NULL; }
 
-void* TestLazyPixelRef::onLockPixels(SkColorTable** color_table) {
+void* TestPixelRef::onLockPixels(SkColorTable** color_table) {
   return pixels_.get();
 }
 
-bool TestLazyPixelRef::PrepareToDecode(const PrepareParams& params) {
-  return true;
-}
-
-bool TestLazyPixelRef::MaybeDecoded() {
-  return true;
-}
-
-SkPixelRef* TestLazyPixelRef::deepCopy(SkBitmap::Config config,
-                                       const SkIRect* subset) {
+SkPixelRef* TestPixelRef::deepCopy(SkBitmap::Config config,
+                                   const SkIRect* subset) {
   this->ref();
   return this;
 }
@@ -104,13 +95,12 @@ void CreateBitmap(gfx::Size size, const char* uri, SkBitmap* bitmap) {
   const SkImageInfo info = {
     size.width(), size.height(), kPMColor_SkColorType, kPremul_SkAlphaType
   };
-
-  skia::RefPtr<TestLazyPixelRef> lazy_pixel_ref =
-      skia::AdoptRef(new TestLazyPixelRef(info));
-  lazy_pixel_ref->setURI(uri);
+  skia::RefPtr<TestPixelRef> pixel_ref =
+      skia::AdoptRef(new TestPixelRef(info));
+  pixel_ref->setURI(uri);
 
   bitmap->setConfig(info);
-  bitmap->setPixelRef(lazy_pixel_ref.get());
+  bitmap->setPixelRef(pixel_ref.get());
 }
 
 SkCanvas* StartRecording(SkPicture* picture, gfx::Rect layer_rect) {
@@ -135,21 +125,21 @@ void StopRecording(SkPicture* picture, SkCanvas* canvas) {
 
 }  // namespace
 
-TEST(LazyPixelRefUtilsTest, DrawPaint) {
+TEST(PixelRefUtilsTest, DrawPaint) {
   gfx::Rect layer_rect(0, 0, 256, 256);
 
   skia::RefPtr<SkPicture> picture = skia::AdoptRef(new SkPicture);
   SkCanvas* canvas = StartRecording(picture.get(), layer_rect);
 
-  TestLazyShader first_shader;
+  TestDiscardableShader first_shader;
   SkPaint first_paint;
   first_paint.setShader(&first_shader);
 
-  TestLazyShader second_shader;
+  TestDiscardableShader second_shader;
   SkPaint second_paint;
   second_paint.setShader(&second_shader);
 
-  TestLazyShader third_shader;
+  TestDiscardableShader third_shader;
   SkPaint third_paint;
   third_paint.setShader(&third_shader);
 
@@ -162,8 +152,8 @@ TEST(LazyPixelRefUtilsTest, DrawPaint) {
 
   StopRecording(picture.get(), canvas);
 
-  std::vector<skia::LazyPixelRefUtils::PositionLazyPixelRef> pixel_refs;
-  skia::LazyPixelRefUtils::GatherPixelRefs(picture.get(), &pixel_refs);
+  std::vector<skia::PixelRefUtils::PositionPixelRef> pixel_refs;
+  skia::PixelRefUtils::GatherDiscardablePixelRefs(picture.get(), &pixel_refs);
 
   EXPECT_EQ(3u, pixel_refs.size());
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(0, 0, 256, 256),
@@ -174,21 +164,21 @@ TEST(LazyPixelRefUtilsTest, DrawPaint) {
                        gfx::SkRectToRectF(pixel_refs[2].pixel_ref_rect));
 }
 
-TEST(LazyPixelRefUtilsTest, DrawPoints) {
+TEST(PixelRefUtilsTest, DrawPoints) {
   gfx::Rect layer_rect(0, 0, 256, 256);
 
   skia::RefPtr<SkPicture> picture = skia::AdoptRef(new SkPicture);
   SkCanvas* canvas = StartRecording(picture.get(), layer_rect);
 
-  TestLazyShader first_shader;
+  TestDiscardableShader first_shader;
   SkPaint first_paint;
   first_paint.setShader(&first_shader);
 
-  TestLazyShader second_shader;
+  TestDiscardableShader second_shader;
   SkPaint second_paint;
   second_paint.setShader(&second_shader);
 
-  TestLazyShader third_shader;
+  TestDiscardableShader third_shader;
   SkPaint third_paint;
   third_paint.setShader(&third_shader);
 
@@ -215,8 +205,8 @@ TEST(LazyPixelRefUtilsTest, DrawPoints) {
 
   StopRecording(picture.get(), canvas);
 
-  std::vector<skia::LazyPixelRefUtils::PositionLazyPixelRef> pixel_refs;
-  skia::LazyPixelRefUtils::GatherPixelRefs(picture.get(), &pixel_refs);
+  std::vector<skia::PixelRefUtils::PositionPixelRef> pixel_refs;
+  skia::PixelRefUtils::GatherDiscardablePixelRefs(picture.get(), &pixel_refs);
 
   EXPECT_EQ(3u, pixel_refs.size());
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(10, 10, 90, 90),
@@ -227,21 +217,21 @@ TEST(LazyPixelRefUtilsTest, DrawPoints) {
                        gfx::SkRectToRectF(pixel_refs[2].pixel_ref_rect));
 }
 
-TEST(LazyPixelRefUtilsTest, DrawRect) {
+TEST(PixelRefUtilsTest, DrawRect) {
   gfx::Rect layer_rect(0, 0, 256, 256);
 
   skia::RefPtr<SkPicture> picture = skia::AdoptRef(new SkPicture);
   SkCanvas* canvas = StartRecording(picture.get(), layer_rect);
 
-  TestLazyShader first_shader;
+  TestDiscardableShader first_shader;
   SkPaint first_paint;
   first_paint.setShader(&first_shader);
 
-  TestLazyShader second_shader;
+  TestDiscardableShader second_shader;
   SkPaint second_paint;
   second_paint.setShader(&second_shader);
 
-  TestLazyShader third_shader;
+  TestDiscardableShader third_shader;
   SkPaint third_paint;
   third_paint.setShader(&third_shader);
 
@@ -261,8 +251,8 @@ TEST(LazyPixelRefUtilsTest, DrawRect) {
   // (50, 50, 50, 50)
   canvas->drawRect(SkRect::MakeXYWH(0, 0, 100, 100), third_paint);
 
-  std::vector<skia::LazyPixelRefUtils::PositionLazyPixelRef> pixel_refs;
-  skia::LazyPixelRefUtils::GatherPixelRefs(picture.get(), &pixel_refs);
+  std::vector<skia::PixelRefUtils::PositionPixelRef> pixel_refs;
+  skia::PixelRefUtils::GatherDiscardablePixelRefs(picture.get(), &pixel_refs);
 
   EXPECT_EQ(3u, pixel_refs.size());
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(10, 20, 30, 40),
@@ -273,21 +263,21 @@ TEST(LazyPixelRefUtilsTest, DrawRect) {
                        gfx::SkRectToRectF(pixel_refs[2].pixel_ref_rect));
 }
 
-TEST(LazyPixelRefUtilsTest, DrawRRect) {
+TEST(PixelRefUtilsTest, DrawRRect) {
   gfx::Rect layer_rect(0, 0, 256, 256);
 
   skia::RefPtr<SkPicture> picture = skia::AdoptRef(new SkPicture);
   SkCanvas* canvas = StartRecording(picture.get(), layer_rect);
 
-  TestLazyShader first_shader;
+  TestDiscardableShader first_shader;
   SkPaint first_paint;
   first_paint.setShader(&first_shader);
 
-  TestLazyShader second_shader;
+  TestDiscardableShader second_shader;
   SkPaint second_paint;
   second_paint.setShader(&second_shader);
 
-  TestLazyShader third_shader;
+  TestDiscardableShader third_shader;
   SkPaint third_paint;
   third_paint.setShader(&third_shader);
 
@@ -312,8 +302,8 @@ TEST(LazyPixelRefUtilsTest, DrawRRect) {
   // (50, 50, 50, 50)
   canvas->drawRRect(rrect, third_paint);
 
-  std::vector<skia::LazyPixelRefUtils::PositionLazyPixelRef> pixel_refs;
-  skia::LazyPixelRefUtils::GatherPixelRefs(picture.get(), &pixel_refs);
+  std::vector<skia::PixelRefUtils::PositionPixelRef> pixel_refs;
+  skia::PixelRefUtils::GatherDiscardablePixelRefs(picture.get(), &pixel_refs);
 
   EXPECT_EQ(3u, pixel_refs.size());
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(10, 20, 30, 40),
@@ -324,21 +314,21 @@ TEST(LazyPixelRefUtilsTest, DrawRRect) {
                        gfx::SkRectToRectF(pixel_refs[2].pixel_ref_rect));
 }
 
-TEST(LazyPixelRefUtilsTest, DrawOval) {
+TEST(PixelRefUtilsTest, DrawOval) {
   gfx::Rect layer_rect(0, 0, 256, 256);
 
   skia::RefPtr<SkPicture> picture = skia::AdoptRef(new SkPicture);
   SkCanvas* canvas = StartRecording(picture.get(), layer_rect);
 
-  TestLazyShader first_shader;
+  TestDiscardableShader first_shader;
   SkPaint first_paint;
   first_paint.setShader(&first_shader);
 
-  TestLazyShader second_shader;
+  TestDiscardableShader second_shader;
   SkPaint second_paint;
   second_paint.setShader(&second_shader);
 
-  TestLazyShader third_shader;
+  TestDiscardableShader third_shader;
   SkPaint third_paint;
   third_paint.setShader(&third_shader);
 
@@ -362,8 +352,8 @@ TEST(LazyPixelRefUtilsTest, DrawOval) {
   // (50, 50, 50, 50)
   canvas->drawRect(SkRect::MakeXYWH(0, 0, 100, 100), third_paint);
 
-  std::vector<skia::LazyPixelRefUtils::PositionLazyPixelRef> pixel_refs;
-  skia::LazyPixelRefUtils::GatherPixelRefs(picture.get(), &pixel_refs);
+  std::vector<skia::PixelRefUtils::PositionPixelRef> pixel_refs;
+  skia::PixelRefUtils::GatherDiscardablePixelRefs(picture.get(), &pixel_refs);
 
   EXPECT_EQ(3u, pixel_refs.size());
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(20, 10, 60, 20),
@@ -374,17 +364,17 @@ TEST(LazyPixelRefUtilsTest, DrawOval) {
                        gfx::SkRectToRectF(pixel_refs[2].pixel_ref_rect));
 }
 
-TEST(LazyPixelRefUtilsTest, DrawPath) {
+TEST(PixelRefUtilsTest, DrawPath) {
   gfx::Rect layer_rect(0, 0, 256, 256);
 
   skia::RefPtr<SkPicture> picture = skia::AdoptRef(new SkPicture);
   SkCanvas* canvas = StartRecording(picture.get(), layer_rect);
 
-  TestLazyShader first_shader;
+  TestDiscardableShader first_shader;
   SkPaint first_paint;
   first_paint.setShader(&first_shader);
 
-  TestLazyShader second_shader;
+  TestDiscardableShader second_shader;
   SkPaint second_paint;
   second_paint.setShader(&second_shader);
 
@@ -406,8 +396,8 @@ TEST(LazyPixelRefUtilsTest, DrawPath) {
 
   StopRecording(picture.get(), canvas);
 
-  std::vector<skia::LazyPixelRefUtils::PositionLazyPixelRef> pixel_refs;
-  skia::LazyPixelRefUtils::GatherPixelRefs(picture.get(), &pixel_refs);
+  std::vector<skia::PixelRefUtils::PositionPixelRef> pixel_refs;
+  skia::PixelRefUtils::GatherDiscardablePixelRefs(picture.get(), &pixel_refs);
 
   EXPECT_EQ(2u, pixel_refs.size());
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(12, 13, 38, 88),
@@ -416,22 +406,22 @@ TEST(LazyPixelRefUtilsTest, DrawPath) {
                        gfx::SkRectToRectF(pixel_refs[1].pixel_ref_rect));
 }
 
-TEST(LazyPixelRefUtilsTest, DrawBitmap) {
+TEST(PixelRefUtilsTest, DrawBitmap) {
   gfx::Rect layer_rect(0, 0, 256, 256);
 
   skia::RefPtr<SkPicture> picture = skia::AdoptRef(new SkPicture);
   SkCanvas* canvas = StartRecording(picture.get(), layer_rect);
 
   SkBitmap first;
-  CreateBitmap(gfx::Size(50, 50), "lazy", &first);
+  CreateBitmap(gfx::Size(50, 50), "discardable", &first);
   SkBitmap second;
-  CreateBitmap(gfx::Size(50, 50), "lazy", &second);
+  CreateBitmap(gfx::Size(50, 50), "discardable", &second);
   SkBitmap third;
-  CreateBitmap(gfx::Size(50, 50), "lazy", &third);
+  CreateBitmap(gfx::Size(50, 50), "discardable", &third);
   SkBitmap fourth;
-  CreateBitmap(gfx::Size(50, 1), "lazy", &fourth);
+  CreateBitmap(gfx::Size(50, 1), "discardable", &fourth);
   SkBitmap fifth;
-  CreateBitmap(gfx::Size(10, 10), "lazy", &fifth);
+  CreateBitmap(gfx::Size(10, 10), "discardable", &fifth);
 
   canvas->save();
 
@@ -460,8 +450,8 @@ TEST(LazyPixelRefUtilsTest, DrawBitmap) {
 
   StopRecording(picture.get(), canvas);
 
-  std::vector<skia::LazyPixelRefUtils::PositionLazyPixelRef> pixel_refs;
-  skia::LazyPixelRefUtils::GatherPixelRefs(picture.get(), &pixel_refs);
+  std::vector<skia::PixelRefUtils::PositionPixelRef> pixel_refs;
+  skia::PixelRefUtils::GatherDiscardablePixelRefs(picture.get(), &pixel_refs);
 
   EXPECT_EQ(5u, pixel_refs.size());
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(0, 0, 50, 50),
@@ -477,33 +467,34 @@ TEST(LazyPixelRefUtilsTest, DrawBitmap) {
 
 }
 
-TEST(LazyPixelRefUtilsTest, DrawBitmapRect) {
+TEST(PixelRefUtilsTest, DrawBitmapRect) {
   gfx::Rect layer_rect(0, 0, 256, 256);
 
   skia::RefPtr<SkPicture> picture = skia::AdoptRef(new SkPicture);
   SkCanvas* canvas = StartRecording(picture.get(), layer_rect);
 
   SkBitmap first;
-  CreateBitmap(gfx::Size(50, 50), "lazy", &first);
+  CreateBitmap(gfx::Size(50, 50), "discardable", &first);
   SkBitmap second;
-  CreateBitmap(gfx::Size(50, 50), "lazy", &second);
+  CreateBitmap(gfx::Size(50, 50), "discardable", &second);
   SkBitmap third;
-  CreateBitmap(gfx::Size(50, 50), "lazy", &third);
+  CreateBitmap(gfx::Size(50, 50), "discardable", &third);
 
-  TestLazyShader first_shader;
+  TestDiscardableShader first_shader;
   SkPaint first_paint;
   first_paint.setShader(&first_shader);
 
-  SkPaint non_lazy_paint;
+  SkPaint non_discardable_paint;
 
   canvas->save();
 
   // (0, 0, 100, 100).
-  canvas->drawBitmapRect(first, SkRect::MakeWH(100, 100), &non_lazy_paint);
+  canvas->drawBitmapRect(
+      first, SkRect::MakeWH(100, 100), &non_discardable_paint);
   canvas->translate(25, 0);
   // (75, 50, 10, 10).
   canvas->drawBitmapRect(
-      second, SkRect::MakeXYWH(50, 50, 10, 10), &non_lazy_paint);
+      second, SkRect::MakeXYWH(50, 50, 10, 10), &non_discardable_paint);
   canvas->translate(5, 50);
   // (0, 30, 100, 100). One from bitmap, one from paint.
   canvas->drawBitmapRect(
@@ -513,8 +504,8 @@ TEST(LazyPixelRefUtilsTest, DrawBitmapRect) {
 
   StopRecording(picture.get(), canvas);
 
-  std::vector<skia::LazyPixelRefUtils::PositionLazyPixelRef> pixel_refs;
-  skia::LazyPixelRefUtils::GatherPixelRefs(picture.get(), &pixel_refs);
+  std::vector<skia::PixelRefUtils::PositionPixelRef> pixel_refs;
+  skia::PixelRefUtils::GatherDiscardablePixelRefs(picture.get(), &pixel_refs);
 
   EXPECT_EQ(4u, pixel_refs.size());
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(0, 0, 100, 100),
@@ -527,22 +518,22 @@ TEST(LazyPixelRefUtilsTest, DrawBitmapRect) {
                        gfx::SkRectToRectF(pixel_refs[3].pixel_ref_rect));
 }
 
-TEST(LazyPixelRefUtilsTest, DrawSprite) {
+TEST(PixelRefUtilsTest, DrawSprite) {
   gfx::Rect layer_rect(0, 0, 256, 256);
 
   skia::RefPtr<SkPicture> picture = skia::AdoptRef(new SkPicture);
   SkCanvas* canvas = StartRecording(picture.get(), layer_rect);
 
   SkBitmap first;
-  CreateBitmap(gfx::Size(50, 50), "lazy", &first);
+  CreateBitmap(gfx::Size(50, 50), "discardable", &first);
   SkBitmap second;
-  CreateBitmap(gfx::Size(50, 50), "lazy", &second);
+  CreateBitmap(gfx::Size(50, 50), "discardable", &second);
   SkBitmap third;
-  CreateBitmap(gfx::Size(50, 50), "lazy", &third);
+  CreateBitmap(gfx::Size(50, 50), "discardable", &third);
   SkBitmap fourth;
-  CreateBitmap(gfx::Size(50, 50), "lazy", &fourth);
+  CreateBitmap(gfx::Size(50, 50), "discardable", &fourth);
   SkBitmap fifth;
-  CreateBitmap(gfx::Size(50, 50), "lazy", &fifth);
+  CreateBitmap(gfx::Size(50, 50), "discardable", &fifth);
 
   canvas->save();
 
@@ -566,7 +557,7 @@ TEST(LazyPixelRefUtilsTest, DrawSprite) {
 
   canvas->restore();
 
-  TestLazyShader first_shader;
+  TestDiscardableShader first_shader;
   SkPaint first_paint;
   first_paint.setShader(&first_shader);
 
@@ -576,8 +567,8 @@ TEST(LazyPixelRefUtilsTest, DrawSprite) {
 
   StopRecording(picture.get(), canvas);
 
-  std::vector<skia::LazyPixelRefUtils::PositionLazyPixelRef> pixel_refs;
-  skia::LazyPixelRefUtils::GatherPixelRefs(picture.get(), &pixel_refs);
+  std::vector<skia::PixelRefUtils::PositionPixelRef> pixel_refs;
+  skia::PixelRefUtils::GatherDiscardablePixelRefs(picture.get(), &pixel_refs);
 
   EXPECT_EQ(6u, pixel_refs.size());
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(0, 0, 50, 50),
@@ -594,13 +585,13 @@ TEST(LazyPixelRefUtilsTest, DrawSprite) {
                        gfx::SkRectToRectF(pixel_refs[5].pixel_ref_rect));
 }
 
-TEST(LazyPixelRefUtilsTest, DrawText) {
+TEST(PixelRefUtilsTest, DrawText) {
   gfx::Rect layer_rect(0, 0, 256, 256);
 
   skia::RefPtr<SkPicture> picture = skia::AdoptRef(new SkPicture);
   SkCanvas* canvas = StartRecording(picture.get(), layer_rect);
 
-  TestLazyShader first_shader;
+  TestDiscardableShader first_shader;
   SkPaint first_paint;
   first_paint.setShader(&first_shader);
 
@@ -621,27 +612,27 @@ TEST(LazyPixelRefUtilsTest, DrawText) {
   canvas->drawPosText("text", 4, points, first_paint);
   canvas->drawTextOnPath("text", 4, path, NULL, first_paint);
 
-  std::vector<skia::LazyPixelRefUtils::PositionLazyPixelRef> pixel_refs;
-  skia::LazyPixelRefUtils::GatherPixelRefs(picture.get(), &pixel_refs);
+  std::vector<skia::PixelRefUtils::PositionPixelRef> pixel_refs;
+  skia::PixelRefUtils::GatherDiscardablePixelRefs(picture.get(), &pixel_refs);
 
   EXPECT_EQ(3u, pixel_refs.size());
 }
 
-TEST(LazyPixelRefUtilsTest, DrawVertices) {
+TEST(PixelRefUtilsTest, DrawVertices) {
   gfx::Rect layer_rect(0, 0, 256, 256);
 
   skia::RefPtr<SkPicture> picture = skia::AdoptRef(new SkPicture);
   SkCanvas* canvas = StartRecording(picture.get(), layer_rect);
 
-  TestLazyShader first_shader;
+  TestDiscardableShader first_shader;
   SkPaint first_paint;
   first_paint.setShader(&first_shader);
 
-  TestLazyShader second_shader;
+  TestDiscardableShader second_shader;
   SkPaint second_paint;
   second_paint.setShader(&second_shader);
 
-  TestLazyShader third_shader;
+  TestDiscardableShader third_shader;
   SkPaint third_paint;
   third_paint.setShader(&third_shader);
 
@@ -694,8 +685,8 @@ TEST(LazyPixelRefUtilsTest, DrawVertices) {
 
   StopRecording(picture.get(), canvas);
 
-  std::vector<skia::LazyPixelRefUtils::PositionLazyPixelRef> pixel_refs;
-  skia::LazyPixelRefUtils::GatherPixelRefs(picture.get(), &pixel_refs);
+  std::vector<skia::PixelRefUtils::PositionPixelRef> pixel_refs;
+  skia::PixelRefUtils::GatherDiscardablePixelRefs(picture.get(), &pixel_refs);
 
   EXPECT_EQ(3u, pixel_refs.size());
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(10, 10, 90, 90),

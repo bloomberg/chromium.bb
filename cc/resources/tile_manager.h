@@ -154,7 +154,7 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
  private:
   void OnImageDecodeTaskCompleted(
       int layer_id,
-      skia::LazyPixelRef* pixel_ref,
+      SkPixelRef* pixel_ref,
       bool was_canceled);
   void OnRasterTaskCompleted(Tile::Id tile,
                              scoped_ptr<ScopedResource> resource,
@@ -172,7 +172,7 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
   void FreeResourcesForTile(Tile* tile);
   void FreeUnusedResourcesForTile(Tile* tile);
   RasterWorkerPool::Task CreateImageDecodeTask(
-      Tile* tile, skia::LazyPixelRef* pixel_ref);
+      Tile* tile, SkPixelRef* pixel_ref);
   RasterWorkerPool::RasterTask CreateRasterTask(Tile* tile);
   scoped_ptr<base::Value> GetMemoryRequirementsAsValue() const;
   void UpdatePrioritizedTileSetIfNeeded();
