@@ -3780,6 +3780,16 @@
    fun:_ZN11webkit_glue16WebURLLoaderImpl18loadAsynchronouslyERKN5blink13WebURLRequestEPNS1_18WebURLLoaderClientE
 }
 {
+   bug_124445
+   Memcheck:Leak
+   fun:calloc
+   fun:PR_Calloc
+   ...
+   fun:_ZN3net18SSLClientSocketNSS4Core11DoHandshakeEv
+   ...
+   fun:_ZN8remoting8protocol21AuthenticatorTestBase14RunChannelAuthEb
+}
+{
    bug_124488
    Memcheck:Leak
    fun:malloc
