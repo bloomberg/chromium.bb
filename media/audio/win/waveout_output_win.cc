@@ -248,39 +248,25 @@ void PCMWaveOutAudioOutputStream::Stop() {
   state_ = PCMA_STOPPING;
   base::subtle::MemoryBarrier();
 
-  // Stop watching for buffer event, wait till all the callbacks are complete.
-  // Should be done before ::waveOutReset() call to avoid race condition when
-  // callback that is currently active and already checked that stream is still
-  // being played calls ::waveOutWrite() after ::waveOutReset() returns, later
-  // causing ::waveOutClose() to fail with WAVERR_STILLPLAYING.
-  // TODO(enal): that delays actual stopping of playback. Alternative can be
-  //             to call ::waveOutReset() twice, once before
-  //             ::UnregisterWaitEx() and once after.
+  // Stop watching for buffer event, waits until outstanding callbacks finish.
   if (waiting_handle_) {
-    if (!::UnregisterWaitEx(waiting_handle_, INVALID_HANDLE_VALUE)) {
-      state_ = PCMA_PLAYING;
-      HandleError(MMSYSERR_ERROR);
-      return;
-    }
+    if (!::UnregisterWaitEx(waiting_handle_, INVALID_HANDLE_VALUE))
+      HandleError(::GetLastError());
     waiting_handle_ = NULL;
   }
 
   // Stop playback.
   MMRESULT res = ::waveOutReset(waveout_);
-  if (res != MMSYSERR_NOERROR) {
-    state_ = PCMA_PLAYING;
+  if (res != MMSYSERR_NOERROR)
     HandleError(res);
-    return;
-  }
 
   // Wait for lock to ensure all outstanding callbacks have completed.
   base::AutoLock auto_lock(lock_);
 
   // waveOutReset() leaves buffers in the unpredictable state, causing
   // problems if we want to close, release, or reuse them. Fix the states.
-  for (int ix = 0; ix != num_buffers_; ++ix) {
+  for (int ix = 0; ix != num_buffers_; ++ix)
     GetBuffer(ix)->dwFlags = WHDR_PREPARED;
-  }
 
   // Don't use callback after Stop().
   callback_ = NULL;
