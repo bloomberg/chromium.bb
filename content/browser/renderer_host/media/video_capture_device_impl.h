@@ -51,11 +51,11 @@ class ThreadSafeCaptureOracle
   // If |success| is true then the frame provided is valid and |timestamp|
   // indicates when the frame was painted.
   // If |success| is false, both the frame provided and |timestamp| are invalid.
-  typedef base::Callback<void(base::Time timestamp, bool success)>
+  typedef base::Callback<void(base::TimeTicks timestamp, bool success)>
       CaptureFrameCallback;
 
   bool ObserveEventAndDecideCapture(VideoCaptureOracle::Event event,
-                                    base::Time event_time,
+                                    base::TimeTicks event_time,
                                     scoped_refptr<media::VideoFrame>* storage,
                                     CaptureFrameCallback* callback);
 
@@ -81,7 +81,7 @@ class ThreadSafeCaptureOracle
   void DidCaptureFrame(
       scoped_refptr<media::VideoCaptureDevice::Client::Buffer> buffer,
       int frame_number,
-      base::Time timestamp,
+      base::TimeTicks timestamp,
       bool success);
   // Protects everything below it.
   base::Lock lock_;

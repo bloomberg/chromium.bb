@@ -469,7 +469,7 @@ bool CompositingIOSurfaceMac::DrawIOSurface(
 
   base::Closure copy_done_callback;
   if (frame_subscriber) {
-    const base::Time present_time = base::Time::Now();
+    const base::TimeTicks present_time = base::TimeTicks::Now();
     scoped_refptr<media::VideoFrame> frame;
     RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback callback;
     if (frame_subscriber->ShouldCaptureFrame(present_time, &frame, &callback)) {

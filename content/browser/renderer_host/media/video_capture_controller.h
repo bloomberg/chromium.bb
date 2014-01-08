@@ -117,7 +117,7 @@ class CONTENT_EXPORT VideoCaptureController {
       scoped_refptr<media::VideoCaptureDevice::Client::Buffer> buffer,
       const gfx::Size& dimensions,
       int frame_rate,
-      base::Time timestamp);
+      base::TimeTicks timestamp);
   void DoErrorOnIOThread();
   void DoDeviceStoppedOnIOThread();
   void DoBufferDestroyedOnIOThread(int buffer_id_to_drop);

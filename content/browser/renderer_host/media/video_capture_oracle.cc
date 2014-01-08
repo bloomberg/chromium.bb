@@ -33,8 +33,8 @@ VideoCaptureOracle::VideoCaptureOracle(base::TimeDelta capture_period,
                kNumRedundantCapturesOfStaticContent) {}
 
 bool VideoCaptureOracle::ObserveEventAndDecideCapture(
-      Event event,
-      base::Time event_time) {
+    Event event,
+    base::TimeTicks event_time) {
   // Record |event| and decide whether it's a good time to capture.
   const bool content_is_dirty = (event == kCompositorUpdate ||
                                  event == kSoftwarePaint);
@@ -54,7 +54,7 @@ int VideoCaptureOracle::RecordCapture() {
 }
 
 bool VideoCaptureOracle::CompleteCapture(int frame_number,
-                                         base::Time timestamp) {
+                                         base::TimeTicks timestamp) {
   // Drop frame if previous frame number is higher or we're trying to deliver
   // a frame with the same timestamp.
   if (last_delivered_frame_number_ > frame_number ||
@@ -88,7 +88,8 @@ SmoothEventSampler::SmoothEventSampler(base::TimeDelta capture_period,
   DCHECK_GT(capture_period_.InMicroseconds(), 0);
 }
 
-bool SmoothEventSampler::AddEventAndConsiderSampling(base::Time event_time) {
+bool SmoothEventSampler::AddEventAndConsiderSampling(
+    base::TimeTicks event_time) {
   DCHECK(!event_time.is_null());
 
   // Add tokens to the bucket based on advancement in time.  Then, re-bound the
@@ -137,7 +138,8 @@ void SmoothEventSampler::RecordSample() {
       << "Content changed; capture will resume.";
 }
 
-bool SmoothEventSampler::IsOverdueForSamplingAt(base::Time event_time) const {
+bool SmoothEventSampler::IsOverdueForSamplingAt(base::TimeTicks event_time)
+    const {
   DCHECK(!event_time.is_null());
 
   // If we don't get events on compositor updates on this platform, then we
@@ -148,6 +150,9 @@ bool SmoothEventSampler::IsOverdueForSamplingAt(base::Time event_time) const {
       return false;  // Not dirty.
     }
   }
+
+  if (last_sample_.is_null())
+    return true;
 
   // If we're dirty but not yet old, then we've recently gotten updates, so we
   // won't request a sample just yet.

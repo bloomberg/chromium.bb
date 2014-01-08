@@ -69,7 +69,7 @@ void VideoCaptureHost::OnBufferDestroyed(
 void VideoCaptureHost::OnBufferReady(
     const VideoCaptureControllerID& controller_id,
     int buffer_id,
-    base::Time timestamp,
+    base::TimeTicks timestamp,
     const media::VideoCaptureFormat& frame_format) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -112,7 +112,8 @@ void VideoCaptureHost::DoSendFreeBufferOnIOThread(
 
 void VideoCaptureHost::DoSendFilledBufferOnIOThread(
     const VideoCaptureControllerID& controller_id,
-    int buffer_id, base::Time timestamp,
+    int buffer_id,
+    base::TimeTicks timestamp,
     const media::VideoCaptureFormat& format) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 

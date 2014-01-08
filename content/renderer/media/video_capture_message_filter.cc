@@ -117,7 +117,7 @@ void VideoCaptureMessageFilter::OnBufferCreated(
 void VideoCaptureMessageFilter::OnBufferReceived(
     int device_id,
     int buffer_id,
-    base::Time timestamp,
+    base::TimeTicks timestamp,
     const media::VideoCaptureFormat& format) {
   Delegate* delegate = find_delegate(device_id);
   if (!delegate) {

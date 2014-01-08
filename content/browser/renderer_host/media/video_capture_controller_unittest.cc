@@ -59,7 +59,7 @@ class MockVideoCaptureControllerEventHandler
   }
   virtual void OnBufferReady(const VideoCaptureControllerID& id,
                              int buffer_id,
-                             base::Time timestamp,
+                             base::TimeTicks timestamp,
                              const media::VideoCaptureFormat& format) OVERRIDE {
     DoBufferReady(id);
     base::MessageLoop::current()->PostTask(FROM_HERE,
@@ -279,7 +279,7 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   device_->OnIncomingCapturedBuffer(buffer,
                                     media::VideoFrame::I420,
                                     capture_resolution,
-                                    base::Time(),
+                                    base::TimeTicks(),
                                     device_format.frame_rate);
   buffer = NULL;
 
@@ -297,7 +297,7 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   device_->OnIncomingCapturedBuffer(buffer,
                                     media::VideoFrame::I420,
                                     capture_resolution,
-                                    base::Time(),
+                                    base::TimeTicks(),
                                     device_format.frame_rate);
   buffer = NULL;
 
@@ -326,7 +326,7 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
     device_->OnIncomingCapturedBuffer(buffer,
                                       media::VideoFrame::I420,
                                       capture_resolution,
-                                      base::Time(),
+                                      base::TimeTicks(),
                                       device_format.frame_rate);
     buffer = NULL;
   }
@@ -364,7 +364,7 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   device_->OnIncomingCapturedBuffer(buffer,
                                     media::VideoFrame::I420,
                                     capture_resolution,
-                                    base::Time(),
+                                    base::TimeTicks(),
                                     device_format.frame_rate);
   buffer = NULL;
   buffer =
@@ -380,7 +380,7 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   device_->OnIncomingCapturedBuffer(buffer,
                                     media::VideoFrame::I420,
                                     capture_resolution,
-                                    base::Time(),
+                                    base::TimeTicks(),
                                     device_format.frame_rate);
   buffer = NULL;
   // B2 is the only client left, and is the only one that should
@@ -424,8 +424,11 @@ TEST_F(VideoCaptureControllerTest, ErrorBeforeDeviceCreation) {
       device_->ReserveOutputBuffer(media::VideoFrame::I420, capture_resolution);
   ASSERT_TRUE(buffer);
 
-  device_->OnIncomingCapturedBuffer(
-      buffer, media::VideoFrame::I420, capture_resolution, base::Time(), 30);
+  device_->OnIncomingCapturedBuffer(buffer,
+                                    media::VideoFrame::I420,
+                                    capture_resolution,
+                                    base::TimeTicks(),
+                                    30);
   buffer = NULL;
 
   base::RunLoop().RunUntilIdle();
@@ -463,7 +466,7 @@ TEST_F(VideoCaptureControllerTest, ErrorAfterDeviceCreation) {
   device_->OnIncomingCapturedBuffer(buffer,
                                     media::VideoFrame::I420,
                                     dims,
-                                    base::Time(),
+                                    base::TimeTicks(),
                                     device_format.frame_rate);
   buffer = NULL;
 

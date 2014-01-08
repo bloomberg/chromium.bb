@@ -36,14 +36,14 @@ class MockDeviceClient : public media::VideoCaptureDevice::Client {
   MOCK_METHOD5(OnIncomingCapturedFrame,
                void(const uint8* data,
                     int length,
-                    base::Time timestamp,
+                    base::TimeTicks timestamp,
                     int rotation,
                     const media::VideoCaptureFormat& frame_format));
   MOCK_METHOD5(OnIncomingCapturedBuffer,
                void(const scoped_refptr<Buffer>& buffer,
                     media::VideoFrame::Format format,
                     const gfx::Size& dimensions,
-                    base::Time timestamp,
+                    base::TimeTicks timestamp,
                     int frame_rate));
 };
 

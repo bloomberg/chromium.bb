@@ -12,7 +12,8 @@ namespace content {
 namespace {
 
 void SteadyStateSampleAndAdvance(base::TimeDelta vsync,
-                                 SmoothEventSampler* sampler, base::Time* t) {
+                                 SmoothEventSampler* sampler,
+                                 base::TimeTicks* t) {
   ASSERT_TRUE(sampler->AddEventAndConsiderSampling(*t));
   ASSERT_TRUE(sampler->HasUnrecordedEvent());
   sampler->RecordSample();
@@ -23,7 +24,8 @@ void SteadyStateSampleAndAdvance(base::TimeDelta vsync,
 }
 
 void SteadyStateNoSampleAndAdvance(base::TimeDelta vsync,
-                                   SmoothEventSampler* sampler, base::Time* t) {
+                                   SmoothEventSampler* sampler,
+                                   base::TimeTicks* t) {
   ASSERT_FALSE(sampler->AddEventAndConsiderSampling(*t));
   ASSERT_TRUE(sampler->HasUnrecordedEvent());
   ASSERT_FALSE(sampler->IsOverdueForSamplingAt(*t));
@@ -31,9 +33,16 @@ void SteadyStateNoSampleAndAdvance(base::TimeDelta vsync,
   ASSERT_FALSE(sampler->IsOverdueForSamplingAt(*t));
 }
 
+void TimeTicksFromString(const char* string, base::TimeTicks* t) {
+  base::Time time;
+  ASSERT_TRUE(base::Time::FromString(string, &time));
+  *t = base::TimeTicks::UnixEpoch() + (time - base::Time::UnixEpoch());
+}
+
 void TestRedundantCaptureStrategy(base::TimeDelta capture_period,
                                   int redundant_capture_goal,
-                                  SmoothEventSampler* sampler, base::Time* t) {
+                                  SmoothEventSampler* sampler,
+                                  base::TimeTicks* t) {
   // Before any events have been considered, we're overdue for sampling.
   ASSERT_TRUE(sampler->IsOverdueForSamplingAt(*t));
 
@@ -68,8 +77,8 @@ TEST(SmoothEventSamplerTest, Sample60HertzAt30Hertz) {
   const base::TimeDelta vsync = base::TimeDelta::FromSeconds(1) / 60;
 
   SmoothEventSampler sampler(capture_period, true, redundant_capture_goal);
-  base::Time t;
-  ASSERT_TRUE(base::Time::FromString("Sat, 23 Mar 2013 1:21:08 GMT", &t));
+  base::TimeTicks t;
+  TimeTicksFromString("Sat, 23 Mar 2013 1:21:08 GMT", &t);
 
   TestRedundantCaptureStrategy(capture_period, redundant_capture_goal,
                                &sampler, &t);
@@ -108,8 +117,8 @@ TEST(SmoothEventSamplerTest, Sample50HertzAt30Hertz) {
   const base::TimeDelta vsync = base::TimeDelta::FromSeconds(1) / 50;
 
   SmoothEventSampler sampler(capture_period, true, redundant_capture_goal);
-  base::Time t;
-  ASSERT_TRUE(base::Time::FromString("Sat, 23 Mar 2013 1:21:08 GMT", &t));
+  base::TimeTicks t;
+  TimeTicksFromString("Sat, 23 Mar 2013 1:21:08 GMT", &t);
 
   TestRedundantCaptureStrategy(capture_period, redundant_capture_goal,
                                &sampler, &t);
@@ -154,8 +163,8 @@ TEST(SmoothEventSamplerTest, Sample75HertzAt30Hertz) {
   const base::TimeDelta vsync = base::TimeDelta::FromSeconds(1) / 75;
 
   SmoothEventSampler sampler(capture_period, true, redundant_capture_goal);
-  base::Time t;
-  ASSERT_TRUE(base::Time::FromString("Sat, 23 Mar 2013 1:21:08 GMT", &t));
+  base::TimeTicks t;
+  TimeTicksFromString("Sat, 23 Mar 2013 1:21:08 GMT", &t);
 
   TestRedundantCaptureStrategy(capture_period, redundant_capture_goal,
                                &sampler, &t);
@@ -204,8 +213,8 @@ TEST(SmoothEventSamplerTest, Sample30HertzAt30Hertz) {
   const base::TimeDelta vsync = base::TimeDelta::FromSeconds(1) / 30;
 
   SmoothEventSampler sampler(capture_period, true, redundant_capture_goal);
-  base::Time t;
-  ASSERT_TRUE(base::Time::FromString("Sat, 23 Mar 2013 1:21:08 GMT", &t));
+  base::TimeTicks t;
+  TimeTicksFromString("Sat, 23 Mar 2013 1:21:08 GMT", &t);
 
   TestRedundantCaptureStrategy(capture_period, redundant_capture_goal,
                                &sampler, &t);
@@ -240,8 +249,8 @@ TEST(SmoothEventSamplerTest, Sample24HertzAt30Hertz) {
   const base::TimeDelta vsync = base::TimeDelta::FromSeconds(1) / 24;
 
   SmoothEventSampler sampler(capture_period, true, redundant_capture_goal);
-  base::Time t;
-  ASSERT_TRUE(base::Time::FromString("Sat, 23 Mar 2013 1:21:08 GMT", &t));
+  base::TimeTicks t;
+  TimeTicksFromString("Sat, 23 Mar 2013 1:21:08 GMT", &t);
 
   TestRedundantCaptureStrategy(capture_period, redundant_capture_goal,
                                &sampler, &t);
@@ -274,8 +283,8 @@ TEST(SmoothEventSamplerTest, DoubleDrawAtOneTimeStillDirties) {
   const base::TimeDelta overdue_period = base::TimeDelta::FromSeconds(1);
 
   SmoothEventSampler sampler(capture_period, true, 1);
-  base::Time t;
-  ASSERT_TRUE(base::Time::FromString("Sat, 23 Mar 2013 1:21:08 GMT", &t));
+  base::TimeTicks t;
+  TimeTicksFromString("Sat, 23 Mar 2013 1:21:08 GMT", &t);
 
   ASSERT_TRUE(sampler.AddEventAndConsiderSampling(t));
   sampler.RecordSample();
@@ -299,8 +308,8 @@ TEST(SmoothEventSamplerTest, FallbackToPollingIfUpdatesUnreliable) {
 
   SmoothEventSampler should_not_poll(timer_interval, true, 1);
   SmoothEventSampler should_poll(timer_interval, false, 1);
-  base::Time t;
-  ASSERT_TRUE(base::Time::FromString("Sat, 23 Mar 2013 1:21:08 GMT", &t));
+  base::TimeTicks t;
+  TimeTicksFromString("Sat, 23 Mar 2013 1:21:08 GMT", &t);
 
   // Do one round of the "happy case" where an event was received and
   // RecordSample() was called by the client.
@@ -355,8 +364,8 @@ struct DataPoint {
 void ReplayCheckingSamplerDecisions(const DataPoint* data_points,
                                     size_t num_data_points,
                                     SmoothEventSampler* sampler) {
-  base::Time t;
-  ASSERT_TRUE(base::Time::FromString("Sat, 23 Mar 2013 1:21:08 GMT", &t));
+  base::TimeTicks t;
+  TimeTicksFromString("Sat, 23 Mar 2013 1:21:08 GMT", &t);
   for (size_t i = 0; i < num_data_points; ++i) {
     t += base::TimeDelta::FromMicroseconds(
         static_cast<int64>(data_points[i].increment_ms * 1000));

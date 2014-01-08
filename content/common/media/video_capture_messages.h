@@ -46,7 +46,7 @@ IPC_MESSAGE_CONTROL2(VideoCaptureMsg_FreeBuffer,
 IPC_MESSAGE_CONTROL4(VideoCaptureMsg_BufferReady,
                      int /* device id */,
                      int /* buffer_id */,
-                     base::Time /* timestamp */,
+                     base::TimeTicks /* timestamp */,
                      media::VideoCaptureFormat /* resolution */)
 
 // Start a video capture as |device_id|, a new id picked by the renderer

@@ -510,7 +510,7 @@ void VideoCaptureDeviceLinux::OnCaptureTask() {
       client_->OnIncomingCapturedFrame(
           static_cast<uint8*>(buffer_pool_[buffer.index].start),
           buffer.bytesused,
-          base::Time::Now(),
+          base::TimeTicks::Now(),
           0,
           capture_format_);
 

@@ -307,7 +307,7 @@ void VideoCaptureDeviceMac::ReceiveFrame(
 
   client_->OnIncomingCapturedFrame(video_frame,
                                    video_frame_length,
-                                   base::Time::Now(),
+                                   base::TimeTicks::Now(),
                                    0,
                                    capture_format_);
 }

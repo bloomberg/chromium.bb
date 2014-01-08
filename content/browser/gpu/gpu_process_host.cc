@@ -981,7 +981,7 @@ void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
 
   FrameSubscriberMap::iterator it = frame_subscribers_.find(params.surface_id);
   if (it != frame_subscribers_.end() && it->second) {
-    const base::Time present_time = base::Time::Now();
+    const base::TimeTicks present_time = base::TimeTicks::Now();
     scoped_refptr<media::VideoFrame> target_frame;
     RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback copy_callback;
     if (it->second->ShouldCaptureFrame(present_time,

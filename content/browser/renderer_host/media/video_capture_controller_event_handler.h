@@ -41,11 +41,10 @@ class CONTENT_EXPORT VideoCaptureControllerEventHandler {
                                  int buffer_id) = 0;
 
   // A buffer has been filled with I420 video.
-  virtual void OnBufferReady(
-      const VideoCaptureControllerID& id,
-      int buffer_id,
-      base::Time timestamp,
-      const media::VideoCaptureFormat& format) = 0;
+  virtual void OnBufferReady(const VideoCaptureControllerID& id,
+                             int buffer_id,
+                             base::TimeTicks timestamp,
+                             const media::VideoCaptureFormat& format) = 0;
 
   // The capture session has ended and no more frames will be sent.
   virtual void OnEnded(const VideoCaptureControllerID& id) = 0;

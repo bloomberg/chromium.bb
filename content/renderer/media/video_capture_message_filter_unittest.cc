@@ -29,9 +29,10 @@ class MockVideoCaptureDelegate : public VideoCaptureMessageFilter::Delegate {
                                      int length,
                                      int buffer_id));
   MOCK_METHOD1(OnBufferDestroyed, void(int buffer_id));
-  MOCK_METHOD3(OnBufferReceived, void(int buffer_id,
-                                      base::Time timestamp,
-                                      const media::VideoCaptureFormat& format));
+  MOCK_METHOD3(OnBufferReceived,
+               void(int buffer_id,
+                    base::TimeTicks timestamp,
+                    const media::VideoCaptureFormat& format));
   MOCK_METHOD1(OnStateChanged, void(VideoCaptureState state));
 
   virtual void OnDelegateAdded(int32 device_id) OVERRIDE {
@@ -79,7 +80,7 @@ TEST(VideoCaptureMessageFilterTest, Basic) {
 
   // VideoCaptureMsg_BufferReady
   int buffer_id = 22;
-  base::Time timestamp = base::Time::FromInternalValue(1);
+  base::TimeTicks timestamp = base::TimeTicks::FromInternalValue(1);
 
   media::VideoCaptureFormat format(
       gfx::Size(234, 512), 30, media::PIXEL_FORMAT_I420);

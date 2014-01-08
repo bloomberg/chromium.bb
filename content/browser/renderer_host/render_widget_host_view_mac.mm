@@ -1294,7 +1294,7 @@ void RenderWidgetHostViewMac::CompositorSwapBuffers(
     // There is no window to present so capturing during present won't work.
     // We check if frame subscriber wants this frame and capture manually.
     if (compositing_iosurface_ && frame_subscriber_) {
-      const base::Time present_time = base::Time::Now();
+      const base::TimeTicks present_time = base::TimeTicks::Now();
       scoped_refptr<media::VideoFrame> frame;
       RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback callback;
       if (frame_subscriber_->ShouldCaptureFrame(present_time,

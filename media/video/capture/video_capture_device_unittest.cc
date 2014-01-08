@@ -75,7 +75,7 @@ class MockClient : public media::VideoCaptureDevice::Client {
 
   virtual void OnIncomingCapturedFrame(const uint8* data,
                                        int length,
-                                       base::Time timestamp,
+                                       base::TimeTicks timestamp,
                                        int rotation,
                                        const VideoCaptureFormat& format)
       OVERRIDE {
@@ -85,7 +85,7 @@ class MockClient : public media::VideoCaptureDevice::Client {
   virtual void OnIncomingCapturedBuffer(const scoped_refptr<Buffer>& buffer,
                                         media::VideoFrame::Format format,
                                         const gfx::Size& dimensions,
-                                        base::Time timestamp,
+                                        base::TimeTicks timestamp,
                                         int frame_rate) OVERRIDE {
     NOTREACHED();
   }

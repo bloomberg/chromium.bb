@@ -104,7 +104,7 @@ void VideoCaptureImpl::OnBufferDestroyed(int buffer_id) {
 
 void VideoCaptureImpl::OnBufferReceived(
     int buffer_id,
-    base::Time timestamp,
+    base::TimeTicks timestamp,
     const media::VideoCaptureFormat& format) {
   capture_message_loop_proxy_->PostTask(FROM_HERE,
       base::Bind(&VideoCaptureImpl::DoBufferReceivedOnCaptureThread,
@@ -177,7 +177,7 @@ void VideoCaptureImpl::DoStartCaptureOnCaptureThread(
       }
       DVLOG(1) << "StartCapture: starting with first resolution "
                << params_.requested_format.frame_size.ToString();
-
+      first_frame_timestamp_ = base::TimeTicks();
       StartCaptureInternal();
     }
   }
@@ -242,7 +242,7 @@ void VideoCaptureImpl::DoBufferDestroyedOnCaptureThread(int buffer_id) {
 
 void VideoCaptureImpl::DoBufferReceivedOnCaptureThread(
     int buffer_id,
-    base::Time timestamp,
+    base::TimeTicks timestamp,
     const media::VideoCaptureFormat& format) {
   DCHECK(capture_message_loop_proxy_->BelongsToCurrentThread());
 
@@ -252,6 +252,8 @@ void VideoCaptureImpl::DoBufferReceivedOnCaptureThread(
   }
 
   last_frame_format_ = format;
+  if (first_frame_timestamp_.is_null())
+    first_frame_timestamp_ = timestamp;
 
   ClientBufferMap::iterator iter = client_buffers_.find(buffer_id);
   DCHECK(iter != client_buffers_.end());
@@ -265,9 +267,7 @@ void VideoCaptureImpl::DoBufferReceivedOnCaptureThread(
           reinterpret_cast<uint8*>(buffer->buffer->memory()),
           buffer->buffer_size,
           buffer->buffer->handle(),
-          // TODO(sheu): convert VideoCaptureMessageFilter::Delegate to use
-          // base::TimeTicks instead of base::Time.  http://crbug.com/249215
-          timestamp - base::Time::UnixEpoch(),
+          timestamp - first_frame_timestamp_,
           media::BindToLoop(
               capture_message_loop_proxy_,
               base::Bind(

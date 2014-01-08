@@ -216,7 +216,7 @@ void FakeVideoCaptureDevice::OnCaptureTask() {
   // Give the captured frame to the client.
   client_->OnIncomingCapturedFrame(fake_frame_.get(),
                                    frame_size,
-                                   base::Time::Now(),
+                                   base::TimeTicks::Now(),
                                    0,
                                    capture_format_);
   if (!(frame_count_ % kFakeCaptureCapabilityChangePeriod) &&

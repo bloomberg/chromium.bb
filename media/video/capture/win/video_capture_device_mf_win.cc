@@ -204,7 +204,7 @@ class MFReaderCallback
 
   STDMETHOD(OnReadSample)(HRESULT status, DWORD stream_index,
       DWORD stream_flags, LONGLONG time_stamp, IMFSample* sample) {
-    base::Time stamp(base::Time::Now());
+    base::TimeTicks stamp(base::TimeTicks::Now());
     if (!sample) {
       observer_->OnIncomingCapturedFrame(NULL, 0, stamp, 0);
       return S_OK;
@@ -407,7 +407,7 @@ void VideoCaptureDeviceMFWin::StopAndDeAllocate() {
 void VideoCaptureDeviceMFWin::OnIncomingCapturedFrame(
     const uint8* data,
     int length,
-    const base::Time& time_stamp,
+    const base::TimeTicks& time_stamp,
     int rotation) {
   base::AutoLock lock(lock_);
   if (data && client_.get())

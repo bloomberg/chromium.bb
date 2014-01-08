@@ -62,7 +62,7 @@ ThreadSafeCaptureOracle::~ThreadSafeCaptureOracle() {}
 
 bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
     VideoCaptureOracle::Event event,
-    base::Time event_time,
+    base::TimeTicks event_time,
     scoped_refptr<media::VideoFrame>* storage,
     CaptureFrameCallback* callback) {
   base::AutoLock guard(lock_);
@@ -166,7 +166,7 @@ void ThreadSafeCaptureOracle::ReportError() {
 void ThreadSafeCaptureOracle::DidCaptureFrame(
     scoped_refptr<media::VideoCaptureDevice::Client::Buffer> buffer,
     int frame_number,
-    base::Time timestamp,
+    base::TimeTicks timestamp,
     bool success) {
   base::AutoLock guard(lock_);
   TRACE_EVENT_ASYNC_END2("mirroring", "Capture", buffer.get(),

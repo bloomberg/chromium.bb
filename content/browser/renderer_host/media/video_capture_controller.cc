@@ -112,14 +112,14 @@ class VideoCaptureController::VideoCaptureDeviceClient
       const gfx::Size& size) OVERRIDE;
   virtual void OnIncomingCapturedFrame(const uint8* data,
                                        int length,
-                                       base::Time timestamp,
+                                       base::TimeTicks timestamp,
                                        int rotation,
                                        const VideoCaptureFormat& frame_format)
       OVERRIDE;
   virtual void OnIncomingCapturedBuffer(const scoped_refptr<Buffer>& buffer,
                                         media::VideoFrame::Format format,
                                         const gfx::Size& dimensions,
-                                        base::Time timestamp,
+                                        base::TimeTicks timestamp,
                                         int frame_rate) OVERRIDE;
   virtual void OnError() OVERRIDE;
 
@@ -267,7 +267,7 @@ VideoCaptureController::VideoCaptureDeviceClient::ReserveOutputBuffer(
 void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedFrame(
     const uint8* data,
     int length,
-    base::Time timestamp,
+    base::TimeTicks timestamp,
     int rotation,
     const VideoCaptureFormat& frame_format) {
   TRACE_EVENT0("video", "VideoCaptureController::OnIncomingCapturedFrame");
@@ -410,7 +410,7 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedBuffer(
     const scoped_refptr<Buffer>& buffer,
     media::VideoFrame::Format format,
     const gfx::Size& dimensions,
-    base::Time timestamp,
+    base::TimeTicks timestamp,
     int frame_rate) {
   // The capture pipeline expects I420 for now.
   DCHECK_EQ(format, media::VideoFrame::I420)
@@ -476,7 +476,7 @@ void VideoCaptureController::DoIncomingCapturedI420BufferOnIOThread(
     scoped_refptr<media::VideoCaptureDevice::Client::Buffer> buffer,
     const gfx::Size& dimensions,
     int frame_rate,
-    base::Time timestamp) {
+    base::TimeTicks timestamp) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK_NE(buffer->id(), VideoCaptureBufferPool::kInvalidId);
 

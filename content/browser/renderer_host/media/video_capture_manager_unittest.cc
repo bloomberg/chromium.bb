@@ -53,11 +53,11 @@ class MockFrameObserver : public VideoCaptureControllerEventHandler {
                                int length, int buffer_id) OVERRIDE {}
   virtual void OnBufferDestroyed(const VideoCaptureControllerID& id,
                                int buffer_id) OVERRIDE {}
-  virtual void OnBufferReady(
-      const VideoCaptureControllerID& id,
-      int buffer_id,
-      base::Time timestamp,
-      const media::VideoCaptureFormat& format) OVERRIDE {}
+  virtual void OnBufferReady(const VideoCaptureControllerID& id,
+                             int buffer_id,
+                             base::TimeTicks timestamp,
+                             const media::VideoCaptureFormat& format)
+      OVERRIDE {}
   virtual void OnEnded(const VideoCaptureControllerID& id) OVERRIDE {}
 
   void OnGotControllerCallback(VideoCaptureControllerID) {}

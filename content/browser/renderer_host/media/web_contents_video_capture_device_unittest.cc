@@ -192,7 +192,7 @@ class CaptureTestView : public TestRenderWidgetHostView {
 
   // Simulate a compositor paint event for our subscriber.
   void SimulateUpdate() {
-    const base::Time present_time = base::Time::Now();
+    const base::TimeTicks present_time = base::TimeTicks::Now();
     RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback callback;
     scoped_refptr<media::VideoFrame> target;
     if (subscriber_ && subscriber_->ShouldCaptureFrame(present_time,
@@ -335,7 +335,7 @@ class StubClient : public media::VideoCaptureDevice::Client {
   virtual void OnIncomingCapturedFrame(
       const uint8* data,
       int length,
-      base::Time timestamp,
+      base::TimeTicks timestamp,
       int rotation,
       const media::VideoCaptureFormat& frame_format) OVERRIDE {
     FAIL();
@@ -344,7 +344,7 @@ class StubClient : public media::VideoCaptureDevice::Client {
   virtual void OnIncomingCapturedBuffer(const scoped_refptr<Buffer>& buffer,
                                         media::VideoFrame::Format format,
                                         const gfx::Size& dimensions,
-                                        base::Time timestamp,
+                                        base::TimeTicks timestamp,
                                         int frame_rate) OVERRIDE {
     EXPECT_EQ(gfx::Size(kTestWidth, kTestHeight), dimensions);
     EXPECT_EQ(media::VideoFrame::I420, format);

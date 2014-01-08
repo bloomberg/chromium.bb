@@ -22,7 +22,7 @@ class CONTENT_EXPORT SmoothEventSampler {
   // Add a new event to the event history, and return whether it ought to be
   // sampled based on the desired |capture_period|. The event is not recorded as
   // a sample until RecordSample() is called.
-  bool AddEventAndConsiderSampling(base::Time event_time);
+  bool AddEventAndConsiderSampling(base::TimeTicks event_time);
 
   // Operates on the last event added by AddEventAndConsiderSampling(), marking
   // it as sampled. After this point we are current in the stream of events, as
@@ -31,7 +31,7 @@ class CONTENT_EXPORT SmoothEventSampler {
 
   // Returns true if, at time |event_time|, sampling should occur because too
   // much time will have passed relative to the last event and/or sample.
-  bool IsOverdueForSamplingAt(base::Time event_time) const;
+  bool IsOverdueForSamplingAt(base::TimeTicks event_time) const;
 
   // Returns true if AddEventAndConsiderSampling() has been called since the
   // last call to RecordSample().
@@ -43,8 +43,8 @@ class CONTENT_EXPORT SmoothEventSampler {
   const int redundant_capture_goal_;
   const base::TimeDelta token_bucket_capacity_;
 
-  base::Time current_event_;
-  base::Time last_sample_;
+  base::TimeTicks current_event_;
+  base::TimeTicks last_sample_;
   int overdue_sample_count_;
   base::TimeDelta token_bucket_;
 
@@ -70,9 +70,7 @@ class CONTENT_EXPORT VideoCaptureOracle {
   // Record an event of type |event|, and decide whether the caller should do a
   // frame capture immediately. Decisions of the oracle are final: the caller
   // must do what it is told.
-  bool ObserveEventAndDecideCapture(
-      Event event,
-      base::Time event_time);
+  bool ObserveEventAndDecideCapture(Event event, base::TimeTicks event_time);
 
   // Record the start of a capture.  Returns a frame_number to be used with
   // CompleteCapture().
@@ -80,7 +78,7 @@ class CONTENT_EXPORT VideoCaptureOracle {
 
   // Record the completion of a capture.  Returns true iff the captured frame
   // should be delivered.
-  bool CompleteCapture(int frame_number, base::Time timestamp);
+  bool CompleteCapture(int frame_number, base::TimeTicks timestamp);
 
   base::TimeDelta capture_period() const { return capture_period_; }
 
@@ -96,7 +94,7 @@ class CONTENT_EXPORT VideoCaptureOracle {
   int last_delivered_frame_number_;
 
   // Stores the timestamp of the last delivered frame.
-  base::Time last_delivered_frame_timestamp_;
+  base::TimeTicks last_delivered_frame_timestamp_;
 
   // Tracks present/paint history.
   SmoothEventSampler sampler_;

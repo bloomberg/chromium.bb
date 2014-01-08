@@ -162,7 +162,7 @@ class MEDIA_EXPORT VideoCaptureDevice {
     virtual void OnIncomingCapturedFrame(
         const uint8* data,
         int length,
-        base::Time timestamp,
+        base::TimeTicks timestamp,
         int rotation,  // Clockwise.
         const VideoCaptureFormat& frame_format) = 0;
 
@@ -176,7 +176,7 @@ class MEDIA_EXPORT VideoCaptureDevice {
     virtual void OnIncomingCapturedBuffer(const scoped_refptr<Buffer>& buffer,
                                           media::VideoFrame::Format format,
                                           const gfx::Size& dimensions,
-                                          base::Time timestamp,
+                                          base::TimeTicks timestamp,
                                           int frame_rate) = 0;
 
     // An error has occurred that cannot be handled and VideoCaptureDevice must

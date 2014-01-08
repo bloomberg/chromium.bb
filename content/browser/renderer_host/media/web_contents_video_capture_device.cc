@@ -103,7 +103,7 @@ gfx::Rect ComputeYV12LetterboxRegion(const gfx::Size& frame_size,
 // compatible with RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback.
 void InvokeCaptureFrameCallback(
     const ThreadSafeCaptureOracle::CaptureFrameCallback& capture_frame_cb,
-    base::Time timestamp,
+    base::TimeTicks timestamp,
     bool frame_captured) {
   capture_frame_cb.Run(timestamp, frame_captured);
 }
@@ -118,7 +118,7 @@ class FrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
         oracle_proxy_(oracle) {}
 
   virtual bool ShouldCaptureFrame(
-      base::Time present_time,
+      base::TimeTicks present_time,
       scoped_refptr<media::VideoFrame>* storage,
       RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback*
           deliver_frame_cb) OVERRIDE;
@@ -145,11 +145,11 @@ class FrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
 // autonomously on some other thread.
 class ContentCaptureSubscription : public content::NotificationObserver {
  public:
-  typedef base::Callback<void(
-      const base::Time&,
-      const scoped_refptr<media::VideoFrame>&,
-      const RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback&)>
-          CaptureCallback;
+  typedef base::Callback<
+      void(const base::TimeTicks&,
+           const scoped_refptr<media::VideoFrame>&,
+           const RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback&)>
+      CaptureCallback;
 
   // Create a subscription. Whenever a manual capture is required, the
   // subscription will invoke |capture_callback| on the UI thread to do the
@@ -218,11 +218,10 @@ class WebContentsCaptureMachine
   // completes. The copy will occur to |target|.
   //
   // This may be used as a ContentCaptureSubscription::CaptureCallback.
-  void Capture(
-      const base::Time& start_time,
-      const scoped_refptr<media::VideoFrame>& target,
-      const RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback&
-          deliver_frame_cb);
+  void Capture(const base::TimeTicks& start_time,
+               const scoped_refptr<media::VideoFrame>& target,
+               const RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback&
+                   deliver_frame_cb);
 
   // content::WebContentsObserver implementation.
   virtual void DidShowFullscreenWidget(int routing_id) OVERRIDE {
@@ -261,7 +260,7 @@ class WebContentsCaptureMachine
 
   // Response callback for RenderWidgetHost::CopyFromBackingStore().
   void DidCopyFromBackingStore(
-      const base::Time& start_time,
+      const base::TimeTicks& start_time,
       const scoped_refptr<media::VideoFrame>& target,
       const RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback&
           deliver_frame_cb,
@@ -270,7 +269,7 @@ class WebContentsCaptureMachine
 
   // Response callback for RWHVP::CopyFromCompositingSurfaceToVideoFrame().
   void DidCopyFromCompositingSurfaceToVideoFrame(
-      const base::Time& start_time,
+      const base::TimeTicks& start_time,
       const RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback&
           deliver_frame_cb,
       bool success);
@@ -318,7 +317,7 @@ class VideoFrameDeliveryLog {
  private:
   // The following keep track of and log the effective frame rate whenever
   // verbose logging is turned on.
-  base::Time last_frame_rate_log_time_;
+  base::TimeTicks last_frame_rate_log_time_;
   int count_frames_rendered_;
   int last_frame_number_;
 
@@ -326,7 +325,7 @@ class VideoFrameDeliveryLog {
 };
 
 bool FrameSubscriber::ShouldCaptureFrame(
-    base::Time present_time,
+    base::TimeTicks present_time,
     scoped_refptr<media::VideoFrame>* storage,
     DeliverFrameCallback* deliver_frame_cb) {
   TRACE_EVENT1("mirroring", "FrameSubscriber::ShouldCaptureFrame",
@@ -413,7 +412,7 @@ void ContentCaptureSubscription::Observe(
   base::Closure copy_done_callback;
   scoped_refptr<media::VideoFrame> frame;
   RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback deliver_frame_cb;
-  const base::Time start_time = base::Time::Now();
+  const base::TimeTicks start_time = base::TimeTicks::Now();
   if (paint_subscriber_.ShouldCaptureFrame(start_time,
                                            &frame,
                                            &deliver_frame_cb)) {
@@ -432,7 +431,7 @@ void ContentCaptureSubscription::OnTimer() {
   scoped_refptr<media::VideoFrame> frame;
   RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback deliver_frame_cb;
 
-  const base::Time start_time = base::Time::Now();
+  const base::TimeTicks start_time = base::TimeTicks::Now();
   if (timer_subscriber_.ShouldCaptureFrame(start_time,
                                            &frame,
                                            &deliver_frame_cb)) {
@@ -519,7 +518,7 @@ void VideoFrameDeliveryLog::ChronicleFrameDelivery(int frame_number) {
   // Log frame rate, if verbose logging is turned on.
   static const base::TimeDelta kFrameRateLogInterval =
       base::TimeDelta::FromSeconds(10);
-  const base::Time now = base::Time::Now();
+  const base::TimeTicks now = base::TimeTicks::Now();
   if (last_frame_rate_log_time_.is_null()) {
     last_frame_rate_log_time_ = now;
     count_frames_rendered_ = 0;
@@ -589,7 +588,7 @@ void WebContentsCaptureMachine::Stop() {
 }
 
 void WebContentsCaptureMachine::Capture(
-    const base::Time& start_time,
+    const base::TimeTicks& start_time,
     const scoped_refptr<media::VideoFrame>& target,
     const RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback&
         deliver_frame_cb) {
@@ -599,7 +598,7 @@ void WebContentsCaptureMachine::Capture(
   RenderWidgetHostViewPort* view =
       rwh ? RenderWidgetHostViewPort::FromRWHV(rwh->GetView()) : NULL;
   if (!view || !rwh) {
-    deliver_frame_cb.Run(base::Time(), false);
+    deliver_frame_cb.Run(base::TimeTicks(), false);
     return;
   }
 
@@ -698,7 +697,7 @@ RenderWidgetHost* WebContentsCaptureMachine::GetTarget() {
 }
 
 void WebContentsCaptureMachine::DidCopyFromBackingStore(
-    const base::Time& start_time,
+    const base::TimeTicks& start_time,
     const scoped_refptr<media::VideoFrame>& target,
     const RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback&
         deliver_frame_cb,
@@ -706,7 +705,7 @@ void WebContentsCaptureMachine::DidCopyFromBackingStore(
     const SkBitmap& bitmap) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  base::Time now = base::Time::Now();
+  base::TimeTicks now = base::TimeTicks::Now();
   if (success) {
     UMA_HISTOGRAM_TIMES("TabCapture.CopyTimeBitmap", now - start_time);
     TRACE_EVENT_ASYNC_STEP_INTO0("mirroring", "Capture", target.get(),
@@ -722,12 +721,12 @@ void WebContentsCaptureMachine::DidCopyFromBackingStore(
 }
 
 void WebContentsCaptureMachine::DidCopyFromCompositingSurfaceToVideoFrame(
-    const base::Time& start_time,
+    const base::TimeTicks& start_time,
     const RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback&
         deliver_frame_cb,
     bool success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  base::Time now = base::Time::Now();
+  base::TimeTicks now = base::TimeTicks::Now();
 
   if (success) {
     UMA_HISTOGRAM_TIMES("TabCapture.CopyTimeVideoFrame", now - start_time);

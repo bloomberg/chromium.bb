@@ -147,7 +147,7 @@ class RenderWidgetHostViewBrowserTest : public ContentBrowserTest {
   // Callback when using frame subscriber API.
   void FrameDelivered(const scoped_refptr<base::MessageLoopProxy>& loop,
                       base::Closure quit_closure,
-                      base::Time timestamp,
+                      base::TimeTicks timestamp,
                       bool frame_captured) {
     ++callback_invoke_count_;
     if (frame_captured)
@@ -338,10 +338,9 @@ class FakeFrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
       : callback_(callback) {
   }
 
-  virtual bool ShouldCaptureFrame(
-      base::Time present_time,
-      scoped_refptr<media::VideoFrame>* storage,
-      DeliverFrameCallback* callback) OVERRIDE {
+  virtual bool ShouldCaptureFrame(base::TimeTicks present_time,
+                                  scoped_refptr<media::VideoFrame>* storage,
+                                  DeliverFrameCallback* callback) OVERRIDE {
     // Only allow one frame capture to be made.  Otherwise, the compositor could
     // start multiple captures, unbounded, and eventually its own limiter logic
     // will begin invoking |callback| with a |false| result.  This flakes out
@@ -494,14 +493,15 @@ IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest, CopyTwice) {
                  base::Unretained(this),
                  base::MessageLoopProxy::current(),
                  base::Closure(),
-                 base::Time::Now()));
+                 base::TimeTicks::Now()));
   view->CopyFromCompositingSurfaceToVideoFrame(
-      gfx::Rect(view->GetViewBounds().size()), second_output,
+      gfx::Rect(view->GetViewBounds().size()),
+      second_output,
       base::Bind(&RenderWidgetHostViewBrowserTest::FrameDelivered,
                  base::Unretained(this),
                  base::MessageLoopProxy::current(),
                  run_loop.QuitClosure(),
-                 base::Time::Now()));
+                 base::TimeTicks::Now()));
   run_loop.Run();
 
   EXPECT_EQ(2, callback_invoke_count());

@@ -62,10 +62,10 @@ class CONTENT_EXPORT VideoCaptureImpl
                                int length,
                                int buffer_id) OVERRIDE;
   virtual void OnBufferDestroyed(int buffer_id) OVERRIDE;
-  virtual void OnBufferReceived(
-      int buffer_id,
-      base::Time timestamp,
-      const media::VideoCaptureFormat& format) OVERRIDE;
+  virtual void OnBufferReceived(int buffer_id,
+                                base::TimeTicks timestamp,
+                                const media::VideoCaptureFormat& format)
+      OVERRIDE;
   virtual void OnStateChanged(VideoCaptureState state) OVERRIDE;
   virtual void OnDelegateAdded(int32 device_id) OVERRIDE;
 
@@ -94,10 +94,9 @@ class CONTENT_EXPORT VideoCaptureImpl
                                       int length,
                                       int buffer_id);
   void DoBufferDestroyedOnCaptureThread(int buffer_id);
-  void DoBufferReceivedOnCaptureThread(
-      int buffer_id,
-      base::Time timestamp,
-      const media::VideoCaptureFormat& format);
+  void DoBufferReceivedOnCaptureThread(int buffer_id,
+                                       base::TimeTicks timestamp,
+                                       const media::VideoCaptureFormat& format);
   void DoClientBufferFinishedOnCaptureThread(
       int buffer_id,
       const scoped_refptr<ClientBuffer>& buffer);
@@ -140,6 +139,9 @@ class CONTENT_EXPORT VideoCaptureImpl
 
   // The device's video capture format sent from browser process side.
   media::VideoCaptureFormat last_frame_format_;
+
+  // The device's first captured frame timestamp sent from browser process side.
+  base::TimeTicks first_frame_timestamp_;
 
   bool suspended_;
   VideoCaptureState state_;

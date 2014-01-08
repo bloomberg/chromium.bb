@@ -1297,7 +1297,7 @@ void RenderWidgetHostViewAura::SwapBuffersCompleted(
 
 void RenderWidgetHostViewAura::DidReceiveFrameFromRenderer() {
   if (frame_subscriber() && CanCopyToVideoFrame()) {
-    const base::Time present_time = base::Time::Now();
+    const base::TimeTicks present_time = base::TimeTicks::Now();
     scoped_refptr<media::VideoFrame> frame;
     RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback callback;
     if (frame_subscriber()->ShouldCaptureFrame(present_time,

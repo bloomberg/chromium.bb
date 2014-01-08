@@ -286,7 +286,7 @@ void FileVideoCaptureDevice::OnCaptureTask() {
   // Give the captured frame to the client.
   client_->OnIncomingCapturedFrame(video_frame_.get(),
                                    frame_size_,
-                                   base::Time::Now(),
+                                   base::TimeTicks::Now(),
                                    0,
                                    capture_format_);
   // Reschedule next CaptureTask.

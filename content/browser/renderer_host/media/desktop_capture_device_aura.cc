@@ -128,7 +128,7 @@ class DesktopVideoCaptureMachine
   // Response callback for cc::Layer::RequestCopyOfOutput().
   void DidCopyOutput(
       scoped_refptr<media::VideoFrame> video_frame,
-      base::Time start_time,
+      base::TimeTicks start_time,
       const ThreadSafeCaptureOracle::CaptureFrameCallback& capture_frame_cb,
       scoped_ptr<cc::CopyOutputResult> result);
 
@@ -255,7 +255,7 @@ void DesktopVideoCaptureMachine::Capture(bool dirty) {
   scoped_refptr<media::VideoFrame> frame;
   ThreadSafeCaptureOracle::CaptureFrameCallback capture_frame_cb;
 
-  const base::Time start_time = base::Time::Now();
+  const base::TimeTicks start_time = base::TimeTicks::Now();
   const VideoCaptureOracle::Event event =
       dirty ? VideoCaptureOracle::kCompositorUpdate
             : VideoCaptureOracle::kTimerPoll;
@@ -275,7 +275,7 @@ void DesktopVideoCaptureMachine::Capture(bool dirty) {
 }
 
 void CopyOutputFinishedForVideo(
-    base::Time start_time,
+    base::TimeTicks start_time,
     const ThreadSafeCaptureOracle::CaptureFrameCallback& capture_frame_cb,
     const scoped_refptr<media::VideoFrame>& target,
     const SkBitmap& cursor_bitmap,
@@ -290,7 +290,7 @@ void CopyOutputFinishedForVideo(
 
 void DesktopVideoCaptureMachine::DidCopyOutput(
     scoped_refptr<media::VideoFrame> video_frame,
-    base::Time start_time,
+    base::TimeTicks start_time,
     const ThreadSafeCaptureOracle::CaptureFrameCallback& capture_frame_cb,
     scoped_ptr<cc::CopyOutputResult> result) {
   if (result->IsEmpty() || result->size().IsEmpty() || !desktop_layer_)

@@ -222,7 +222,7 @@ void VideoCaptureDeviceAndroid::OnFrameAvailable(
 
     client_->OnIncomingCapturedFrame(reinterpret_cast<uint8*>(buffer),
                                      length,
-                                     base::Time::Now(),
+                                     base::TimeTicks::Now(),
                                      rotation,
                                      capture_format_);
   }

@@ -34,7 +34,7 @@ class CONTENT_EXPORT VideoCaptureMessageFilter
 
     // Called when a video frame buffer is received from the browser process.
     virtual void OnBufferReceived(int buffer_id,
-                                  base::Time timestamp,
+                                  base::TimeTicks timestamp,
                                   const media::VideoCaptureFormat& format) = 0;
 
     // Called when state of a video capture device has changed in the browser
@@ -85,7 +85,7 @@ class CONTENT_EXPORT VideoCaptureMessageFilter
   // Receive a filled buffer from browser process.
   void OnBufferReceived(int device_id,
                         int buffer_id,
-                        base::Time timestamp,
+                        base::TimeTicks timestamp,
                         const media::VideoCaptureFormat& format);
 
   // State of browser process' video capture device has changed.

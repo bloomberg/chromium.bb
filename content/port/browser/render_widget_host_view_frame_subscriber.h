@@ -40,9 +40,8 @@ class RenderWidgetHostViewFrameSubscriber {
   // If |frame_captured| is false then the content in frame provided is
   // invalid. There was an error during the process of frame capture or the
   // platform layer is shutting down. |timestamp| is also invalid in this case.
-  typedef base::Callback<void(
-      base::Time /* timestamp */,
-      bool /* frame_captured */)> DeliverFrameCallback;
+  typedef base::Callback<void(base::TimeTicks /* timestamp */,
+                              bool /* frame_captured */)> DeliverFrameCallback;
 
   // Called when a new frame is going to be presented at time
   // |present_time|. Implementation can decide whether the current frame should
@@ -61,10 +60,9 @@ class RenderWidgetHostViewFrameSubscriber {
   // platform layer to decide when to deliver a captured frame.
   //
   // Return false if the current frame should not be captured.
-  virtual bool ShouldCaptureFrame(
-      base::Time present_time,
-      scoped_refptr<media::VideoFrame>* storage,
-      DeliverFrameCallback* callback) = 0;
+  virtual bool ShouldCaptureFrame(base::TimeTicks present_time,
+                                  scoped_refptr<media::VideoFrame>* storage,
+                                  DeliverFrameCallback* callback) = 0;
 };
 
 }  // namespace content
