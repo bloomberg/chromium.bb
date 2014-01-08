@@ -228,7 +228,10 @@ class WebrtcBrowserTest: public ContentBrowserTest {
 
     GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
     NavigateToURL(shell(), url);
+    ExecuteTestAndWaitForOk(javascript);
+  }
 
+  void ExecuteTestAndWaitForOk(const std::string& javascript) {
 #if defined (OS_ANDROID)
     // Always force iSAC 16K on Android for now (Opus is broken).
     ASSERT_TRUE(ExecuteJavascript("forceIsac16KInSdp();"));
@@ -752,9 +755,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MAYBE_CallWithAecDump) {
 
   GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
-
-  EXPECT_TRUE(ExecuteJavascript("call({video: true, audio: true});"));
-  ExpectTitle("OK");
+  ExecuteTestAndWaitForOk("call({video: true, audio: true});");
 
   EXPECT_TRUE(base::PathExists(dump_file));
   int64 file_size = 0;
@@ -790,9 +791,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
 
   GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
-
-  EXPECT_TRUE(ExecuteJavascript("call({video: true, audio: true});"));
-  ExpectTitle("OK");
+  ExecuteTestAndWaitForOk("call({video: true, audio: true});");
 
   EXPECT_TRUE(base::PathExists(dump_file));
   int64 file_size = 0;

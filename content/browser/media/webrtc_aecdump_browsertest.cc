@@ -82,6 +82,11 @@ IN_PROC_BROWSER_TEST_F(WebrtcAecDumpBrowserTest, MAYBE_CallWithAecDump) {
   GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
 
+#if defined (OS_ANDROID)
+    // Always force iSAC 16K on Android for now (Opus is broken).
+    ASSERT_TRUE(ExecuteJavascript("forceIsac16KInSdp();"));
+#endif
+
   EXPECT_TRUE(ExecuteJavascript("call({video: true, audio: true});"));
   ExpectTitle("OK");
 
