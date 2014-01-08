@@ -56,6 +56,12 @@ struct CastRtpPayloadParams {
   // Name of the codec used.
   std::string codec_name;
 
+  // AES encryption key.
+  std::string aes_key;
+
+  // AES encryption IV mask.
+  std::string aes_iv_mask;
+
   // List of codec specific parameters.
   std::vector<CastCodecSpecificParams> codec_specific_params;
 
@@ -70,9 +76,6 @@ struct CastRtpCaps {
 
   // Names of supported RTCP features.
   std::vector<std::string> rtcp_features;
-
-  // Names of supported FEC (Forward Error Correction) mechanisms.
-  std::vector<std::string> fec_mechanisms;
 
   CastRtpCaps();
   ~CastRtpCaps();

@@ -54,14 +54,14 @@ CastRtpPayloadParams DefaultVp8Payload() {
 CastRtpCaps DefaultAudioCaps() {
   CastRtpCaps caps;
   caps.payloads.push_back(DefaultOpusPayload());
-  // TODO(hclam): Fill in |rtcp_features| and |fec_mechanisms|.
+  // TODO(hclam): Fill in |rtcp_features|.
   return caps;
 }
 
 CastRtpCaps DefaultVideoCaps() {
   CastRtpCaps caps;
   caps.payloads.push_back(DefaultVp8Payload());
-  // TODO(hclam): Fill in |rtcp_features| and |fec_mechanisms|.
+  // TODO(hclam): Fill in |rtcp_features|.
   return caps;
 }
 
@@ -77,6 +77,8 @@ bool ToAudioSenderConfig(const CastRtpParams& params,
   config->frequency = payload_params.clock_rate;
   config->channels = payload_params.channels;
   config->bitrate = payload_params.max_bitrate;
+  config->aes_key = payload_params.aes_key;
+  config->aes_iv_mask = payload_params.aes_iv_mask;
   config->codec = media::cast::kPcm16;
   if (payload_params.codec_name == kCodecNameOpus)
     config->codec = media::cast::kOpus;
@@ -98,6 +100,8 @@ bool ToVideoSenderConfig(const CastRtpParams& params,
   config->height = payload_params.height;
   config->min_bitrate = config->start_bitrate = payload_params.min_bitrate;
   config->max_bitrate = payload_params.max_bitrate;
+  config->aes_key = payload_params.aes_key;
+  config->aes_iv_mask = payload_params.aes_iv_mask;
   if (payload_params.codec_name == kCodecNameVp8)
     config->codec = media::cast::kVp8;
   else

@@ -6,6 +6,7 @@
 
 #include <functional>
 
+#include "base/base64.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/common/extensions/api/cast_streaming_rtp_stream.h"
@@ -35,6 +36,8 @@ const char kRtpStreamNotFound[] = "The RTP stream cannot be found";
 const char kUdpTransportNotFound[] = "The UDP transport cannot be found";
 const char kInvalidUdpParams[] = "Invalid UDP params";
 const char kInvalidRtpParams[] = "Invalid value for RTP params";
+const char kInvalidAesKey[] = "Invalid value for AES key";
+const char kInvalidAesIvMask[] = "Invalid value for AES IV mask";
 const char kUnableToConvertArgs[] = "Unable to convert arguments";
 const char kUnableToConvertParams[] = "Unable to convert params";
 
@@ -52,8 +55,9 @@ void FromCastCodecSpecificParams(const CastCodecSpecificParams& cast_params,
   ext_params->value = cast_params.value;
 }
 
-void ToCastRtpPayloadParams(const RtpPayloadParams& ext_params,
-                            CastRtpPayloadParams* cast_params) {
+bool ToCastRtpPayloadParamsOrThrow(v8::Isolate* isolate,
+                                   const RtpPayloadParams& ext_params,
+                                   CastRtpPayloadParams* cast_params) {
   cast_params->payload_type = ext_params.payload_type;
   cast_params->codec_name = ext_params.codec_name;
   cast_params->ssrc = ext_params.ssrc ? *ext_params.ssrc : 0;
@@ -67,12 +71,26 @@ void ToCastRtpPayloadParams(const RtpPayloadParams& ext_params,
   cast_params->channels = ext_params.channels ? *ext_params.channels : 0;
   cast_params->width = ext_params.width ? *ext_params.width : 0;
   cast_params->height = ext_params.height ? *ext_params.height : 0;
+  if (ext_params.aes_key &&
+      !base::Base64Decode(*ext_params.aes_key, &cast_params->aes_key)) {
+    isolate->ThrowException(v8::Exception::Error(
+        v8::String::NewFromUtf8(isolate, kInvalidAesKey)));
+    return false;
+  }
+  if (ext_params.aes_iv_mask &&
+      !base::Base64Decode(*ext_params.aes_iv_mask,
+                          &cast_params->aes_iv_mask)) {
+    isolate->ThrowException(v8::Exception::Error(
+        v8::String::NewFromUtf8(isolate, kInvalidAesIvMask)));
+    return false;
+  }
   for (size_t i = 0; i < ext_params.codec_specific_params.size(); ++i) {
     CastCodecSpecificParams cast_codec_params;
     ToCastCodecSpecificParams(*ext_params.codec_specific_params[i],
                               &cast_codec_params);
     cast_params->codec_specific_params.push_back(cast_codec_params);
   }
+  return true;
 }
 
 void FromCastRtpPayloadParams(const CastRtpPayloadParams& cast_params,
@@ -114,14 +132,21 @@ void FromCastRtpCaps(const CastRtpCaps& cast_caps, RtpCaps* ext_caps) {
   }
 }
 
-void ToCastRtpParams(const RtpParams& ext_params, CastRtpParams* cast_params) {
+bool ToCastRtpParamsOrThrow(v8::Isolate* isolate,
+                            const RtpParams& ext_params,
+                            CastRtpParams* cast_params) {
   std::copy(ext_params.rtcp_features.begin(), ext_params.rtcp_features.end(),
             cast_params->rtcp_features.begin());
   for (size_t i = 0; i < ext_params.payloads.size(); ++i) {
     CastRtpPayloadParams cast_payload_params;
-    ToCastRtpPayloadParams(*ext_params.payloads[i], &cast_payload_params);
+    if (!ToCastRtpPayloadParamsOrThrow(isolate,
+                                       *ext_params.payloads[i],
+                                       &cast_payload_params)) {
+      return false;
+    }
     cast_params->payloads.push_back(cast_payload_params);
   }
+  return true;
 }
 
 }  // namespace
@@ -277,7 +302,9 @@ void CastStreamingNativeHandler::StartCastRtpStream(
   }
 
   CastRtpCaps cast_params;
-  ToCastRtpParams(*params, &cast_params);
+  v8::Isolate* isolate = context()->v8_context()->GetIsolate();
+  if (!ToCastRtpParamsOrThrow(isolate, *params, &cast_params))
+    return;
   transport->Start(cast_params);
 }
 

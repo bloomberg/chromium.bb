@@ -21,7 +21,7 @@ namespace cast.streaming.rtpStream {
     // Synchronization source identifier.
     long? ssrc;
 
-    long? feedback_ssrc;
+    long? feedbackSsrc;
 
     long? clockRate;
 
@@ -37,6 +37,12 @@ namespace cast.streaming.rtpStream {
 
     // Video height in pixels.
     long? height;
+
+    // 16 bytes AES key encoded in Base64.
+    DOMString? aesKey;
+
+    // 16 bytes AES IV (Initialization vector) mask encoded in Base64.
+    DOMString? aesIvMask;
 
     // A list of codec specific params.
     CodecSpecificParams[] codecSpecificParams;
