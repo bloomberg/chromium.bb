@@ -1164,14 +1164,6 @@ class DesktopAuraTopLevelWindowTest
     }
   }
 
-  aura::Window* owned_window() {
-    return owned_window_;
-  }
-
-  views::Widget* top_level_widget() {
-    return top_level_widget_;
-  }
-
  private:
   views::Widget widget_;
   views::Widget* top_level_widget_;
@@ -1212,24 +1204,6 @@ TEST_F(WidgetTest, DesktopAuraTopLevelOwnedPopupTest) {
   ASSERT_NO_FATAL_FAILURE(popup_window.CreateTopLevelWindow(
       gfx::Rect(0, 0, 200, 200), false));
 
-  RunPendingMessages();
-  ASSERT_NO_FATAL_FAILURE(popup_window.DestroyOwnedWindow());
-  RunPendingMessages();
-}
-
-// This test validates that when a top level owned popup Aura window is
-// resized, the widget is resized as well.
-TEST_F(WidgetTest, DesktopAuraTopLevelOwnedPopupResizeTest) {
-  ViewsDelegate::views_delegate = NULL;
-  DesktopAuraTopLevelWindowTest popup_window;
-  ASSERT_NO_FATAL_FAILURE(popup_window.CreateTopLevelWindow(
-      gfx::Rect(0, 0, 200, 200), false));
-
-  gfx::Rect new_size(0, 0, 400, 400);
-  popup_window.owned_window()->SetBounds(new_size);
-
-  EXPECT_EQ(popup_window.top_level_widget()->GetNativeView()->bounds().size(),
-            new_size.size());
   RunPendingMessages();
   ASSERT_NO_FATAL_FAILURE(popup_window.DestroyOwnedWindow());
   RunPendingMessages();
