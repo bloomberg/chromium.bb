@@ -302,8 +302,6 @@
         'resources/bitmap_content_layer_updater.h',
         'resources/bitmap_skpicture_content_layer_updater.cc',
         'resources/bitmap_skpicture_content_layer_updater.h',
-        'resources/caching_bitmap_content_layer_updater.cc',
-        'resources/caching_bitmap_content_layer_updater.h',
         'resources/content_layer_updater.cc',
         'resources/content_layer_updater.h',
         'resources/etc1_pixel_ref.cc',
