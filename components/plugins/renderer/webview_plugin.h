@@ -40,10 +40,6 @@ class WebViewPlugin : public blink::WebPlugin,
     // This method is called from WebFrameClient::didClearWindowObject.
     virtual void BindWebFrame(blink::WebFrame* frame) = 0;
 
-    // Called before the WebViewPlugin is destroyed. The delegate should delete
-    // itself here.
-    virtual void WillDestroyPlugin() = 0;
-
     // Called upon a context menu event.
     virtual void ShowContextMenu(const blink::WebMouseEvent&) = 0;
   };
@@ -136,13 +132,17 @@ class WebViewPlugin : public blink::WebPlugin,
   friend class base::DeleteHelper<WebViewPlugin>;
   virtual ~WebViewPlugin();
 
+  // Manages its own lifetime.
   Delegate* delegate_;
-  // Destroys itself.
+
   blink::WebCursorInfo current_cursor_;
+
   // Owns us.
   blink::WebPluginContainer* container_;
+
   // Owned by us, deleted via |close()|.
   blink::WebView* web_view_;
+
   // Owned by us, deleted via |close()|.
   blink::WebFrame* web_frame_;
   gfx::Rect rect_;

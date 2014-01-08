@@ -10,8 +10,8 @@
 #include "content/public/renderer/context_menu_client.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_process_observer.h"
+#include "gin/wrappable.h"
 #include "third_party/WebKit/public/web/WebPluginParams.h"
-#include "webkit/renderer/cpp_bound_class.h"
 
 namespace content {
 struct WebPluginInfo;
@@ -21,9 +21,10 @@ namespace plugins {
 // Placeholders can be used if a plug-in is missing or not available
 // (blocked or disabled).
 class PluginPlaceholder : public content::RenderFrameObserver,
-                          public webkit_glue::CppBoundClass,
-                          public WebViewPlugin::Delegate {
+                          public WebViewPlugin::Delegate,
+                          public gin::Wrappable<PluginPlaceholder> {
  public:
+  static gin::WrapperInfo kWrapperInfo;
 
   WebViewPlugin* plugin() { return plugin_; }
 
@@ -65,28 +66,26 @@ class PluginPlaceholder : public content::RenderFrameObserver,
   // Load the blocked plugin.
   void LoadPlugin();
 
-  // WebViewPlugin::Delegate method:
-  virtual void BindWebFrame(blink::WebFrame* frame) OVERRIDE;
+  // gin::Wrappable method:
+  virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
+      v8::Isolate* isolate) OVERRIDE;
 
  private:
   // WebViewPlugin::Delegate methods:
-  virtual void WillDestroyPlugin() OVERRIDE;
   virtual void ShowContextMenu(const blink::WebMouseEvent&) OVERRIDE;
 
+  // RenderFrameObserver methods:
+  virtual void OnDestruct() OVERRIDE;
+
   // Javascript callbacks:
-  // All ignore arguments (which are, however, required by caller) and return
-  // nothing.
 
   // Load the blocked plugin by calling LoadPlugin().
-  void LoadCallback(const webkit_glue::CppArgumentList& args,
-                    webkit_glue::CppVariant* result);
+  void LoadCallback();
 
   // Hide the blocked plugin by calling HidePlugin().
-  void HideCallback(const webkit_glue::CppArgumentList& args,
-                    webkit_glue::CppVariant* result);
+  void HideCallback();
 
-  void DidFinishLoadingCallback(const webkit_glue::CppArgumentList& args,
-                                webkit_glue::CppVariant* result);
+  void DidFinishLoadingCallback();
 
   void UpdateMessage();
 

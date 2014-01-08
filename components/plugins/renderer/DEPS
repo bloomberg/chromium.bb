@@ -1,4 +1,5 @@
 include_rules = [
+  "+gin",
   "+net",
 
   "+content/public/renderer",
@@ -8,6 +9,5 @@ include_rules = [
   "+third_party/re2",
   "+skia",
   "+webkit/common",
-  "+webkit/renderer",
   "+ui/base/webui",
 ]

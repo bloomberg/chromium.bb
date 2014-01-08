@@ -14,12 +14,15 @@
 #include "content/public/common/context_menu_params.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
+#include "gin/handle.h"
+#include "gin/object_template_builder.h"
 #include "grit/generated_resources.h"
 #include "grit/renderer_resources.h"
 #include "grit/webkit_strings.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -36,8 +39,6 @@ using blink::WebNode;
 using blink::WebPlugin;
 using blink::WebPluginContainer;
 using blink::WebPluginParams;
-using webkit_glue::CppArgumentList;
-using webkit_glue::CppVariant;
 
 namespace {
 const plugins::PluginPlaceholder* g_last_active_menu = NULL;
@@ -218,9 +219,7 @@ void ChromePluginPlaceholder::OnLoadBlockedPlugins(
   plugins::PluginPlaceholder::OnLoadBlockedPlugins(identifier);
 }
 
-void ChromePluginPlaceholder::OpenAboutPluginsCallback(
-    const CppArgumentList& args,
-    CppVariant* result) {
+void ChromePluginPlaceholder::OpenAboutPluginsCallback() {
   RenderThread::Get()->Send(
       new ChromeViewHostMsg_OpenAboutPlugins(routing_id()));
 }
@@ -267,7 +266,7 @@ void ChromePluginPlaceholder::OnCancelledDownloadingPlugin() {
 #endif  // defined(ENABLE_PLUGIN_INSTALLATION)
 
 void ChromePluginPlaceholder::PluginListChanged() {
-  if (!GetFrame())
+  if (!GetFrame() || !plugin())
     return;
   WebDocument document = GetFrame()->top()->document();
   if (document.isNull())
@@ -354,8 +353,19 @@ void ChromePluginPlaceholder::ShowContextMenu(const WebMouseEvent& event) {
 }
 
 void ChromePluginPlaceholder::BindWebFrame(blink::WebFrame* frame) {
-  plugins::PluginPlaceholder::BindWebFrame(frame);
-  BindCallback("openAboutPlugins",
-               base::Bind(&ChromePluginPlaceholder::OpenAboutPluginsCallback,
-                          base::Unretained(this)));
+  v8::Isolate* isolate = blink::mainThreadIsolate();
+  v8::HandleScope handle_scope(isolate);
+  v8::Handle<v8::Context> context = frame->mainWorldScriptContext();
+  DCHECK(!context.IsEmpty());
+
+  v8::Context::Scope context_scope(context);
+  v8::Handle<v8::Object> global = context->Global();
+  global->Set(gin::StringToV8(isolate, "plugin"),
+              gin::CreateHandle(isolate, this).ToV8());
+}
+
+gin::ObjectTemplateBuilder ChromePluginPlaceholder::GetObjectTemplateBuilder(
+    v8::Isolate* isolate) {
+  return PluginPlaceholder::GetObjectTemplateBuilder(isolate).SetMethod(
+      "openAboutPlugins", &ChromePluginPlaceholder::OpenAboutPluginsCallback);
 }
