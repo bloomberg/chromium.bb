@@ -4,6 +4,7 @@
 
 define([
     'console',
+    'timer',
     'mojo/apps/js/bindings/connector',
     'mojo/apps/js/bindings/core',
     'mojo/apps/js/bindings/gl',
@@ -12,6 +13,7 @@ define([
     'mojom/gles2',
     'mojom/shell',
 ], function(console,
+            timer,
             connector,
             core,
             gljs,
@@ -41,6 +43,18 @@ define([
     this.m = new Float32Array(16);
   }
 
+  ESMatrix.prototype.getIndex = function(x, y) {
+    return x * 4 + y;
+  }
+
+  ESMatrix.prototype.set = function(x, y, v) {
+    this.m[this.getIndex(x, y)] = v;
+  };
+
+  ESMatrix.prototype.get = function(x, y) {
+    return this.m[this.getIndex(x, y)];
+  };
+
   ESMatrix.prototype.loadZero = function() {
     for (var i = 0; i < this.m.length; i++) {
       this.m[i] = 0;
@@ -50,8 +64,131 @@ define([
   ESMatrix.prototype.loadIdentity = function() {
     this.loadZero();
     for (var i = 0; i < 4; i++) {
-      this.m[i*4+i] = 1;
+      this.set(i, i, 1);
     }
+  };
+
+  ESMatrix.prototype.multiply = function(a, b) {
+    var result = new ESMatrix();
+    for (var i = 0; i < 4; i++) {
+      result.set(i, 0,
+          (a.get(i, 0) * b.get(0, 0)) +
+          (a.get(i, 1) * b.get(1, 0)) +
+          (a.get(i, 2) * b.get(2, 0)) +
+          (a.get(i, 3) * b.get(3, 0)));
+
+      result.set(i, 1,
+          (a.get(i, 0) * b.get(0, 1)) +
+          (a.get(i, 1) * b.get(1, 1)) +
+          (a.get(i, 2) * b.get(2, 1)) +
+          (a.get(i, 3) * b.get(3, 1)));
+
+      result.set(i, 2,
+          (a.get(i, 0) * b.get(0, 2)) +
+          (a.get(i, 1) * b.get(1, 2)) +
+          (a.get(i, 2) * b.get(2, 2)) +
+          (a.get(i, 3) * b.get(3, 2)));
+
+      result.set(i, 3,
+          (a.get(i, 0) * b.get(0, 3)) +
+          (a.get(i, 1) * b.get(1, 3)) +
+          (a.get(i, 2) * b.get(2, 3)) +
+          (a.get(i, 3) * b.get(3, 3)));
+    }
+    for (var i = 0; i < result.m.length; i++) {
+      this.m[i] = result.m[i];
+    }
+  };
+
+  ESMatrix.prototype.frustrum = function(left, right, bottom, top, nearZ,
+                                         farZ) {
+    var deltaX = right - left;
+    var deltaY = top - bottom;
+    var deltaZ = farZ - nearZ;
+
+    if (nearZ < 0 || farZ < 0 || deltaZ < 0 || deltaY < 0 || deltaX < 0) {
+      return;
+    }
+
+    var frust = new ESMatrix();
+    frust.set(0, 0, 2 * nearZ / deltaX);
+
+    frust.set(1, 1, 2 * nearZ / deltaY);
+
+    frust.set(2, 0, (right + left) / deltaX);
+    frust.set(2, 1, (top + bottom) / deltaY);
+    frust.set(2, 2, -(nearZ + farZ) / deltaZ);
+    frust.set(2, 3, -1);
+
+    frust.set(3, 2, -2 * nearZ * farZ / deltaZ);
+
+    this.multiply(frust, this);
+  };
+
+  ESMatrix.prototype.perspective = function(fovY, aspect, nearZ, farZ) {
+    var frustrumH = Math.tan(fovY / 360 * Math.PI) * nearZ;
+    var frustrumW = frustrumH * aspect;
+    this.frustrum(-frustrumW, frustrumW, -frustrumH, frustrumH, nearZ, farZ);
+  };
+
+  ESMatrix.prototype.translate = function(tx, ty, tz) {
+    this.set(3, 0, this.get(3, 0) + this.get(0, 0) *
+             tx + this.get(1, 0) * ty + this.get(2, 0) * tz);
+    this.set(3, 1, this.get(3, 1) + this.get(0, 1) *
+             tx + this.get(1, 1) * ty + this.get(2, 1) * tz);
+    this.set(3, 2, this.get(3, 2) + this.get(0, 2) *
+             tx + this.get(1, 2) * ty + this.get(2, 2) * tz);
+    this.set(3, 3, this.get(3, 3) + this.get(0, 3) *
+             tx + this.get(1, 3) * ty + this.get(2, 3) * tz);
+  };
+
+  ESMatrix.prototype.rotate = function(angle, x, y, z) {
+    var mag = Math.sqrt(x * x + y * y + z * z);
+    var sinAngle = Math.sin(angle * Math.PI / 180);
+    var cosAngle = Math.cos(angle * Math.PI / 180);
+    if (mag <= 0) {
+      return;
+    }
+
+    var xx, yy, zz, xy, yz, zx, xs, ys, zs, oneMinusCos;
+    var rotation = new ESMatrix();
+
+    x /= mag;
+    y /= mag;
+    z /= mag;
+
+    xx = x * x;
+    yy = y * y;
+    zz = z * z;
+    xy = x * y;
+    yz = y * z;
+    zx = z * x;
+    xs = x * sinAngle;
+    ys = y * sinAngle;
+    zs = z * sinAngle;
+    oneMinusCos = 1 - cosAngle;
+
+    rotation.set(0, 0, (oneMinusCos * xx) + cosAngle);
+    rotation.set(0, 1, (oneMinusCos * xy) - zs);
+    rotation.set(0, 2, (oneMinusCos * zx) + ys);
+    rotation.set(0, 3, 0);
+
+    rotation.set(1, 0, (oneMinusCos * xy) + zs);
+    rotation.set(1, 1, (oneMinusCos * yy) + cosAngle);
+    rotation.set(1, 2, (oneMinusCos * yz) - xs);
+    rotation.set(1, 3, 0);
+
+    rotation.set(2, 0, (oneMinusCos * zx) - ys);
+    rotation.set(2, 1, (oneMinusCos * yz) + xs);
+    rotation.set(2, 2, (oneMinusCos * zz) + cosAngle);
+    rotation.set(2, 3, 0);
+
+    rotation.set(3, 0, 0);
+    rotation.set(3, 1, 0);
+    rotation.set(3, 2, 0);
+    rotation.set(3, 3, 1);
+
+    this.multiply(rotation, this);
   };
 
   function loadProgram(gl) {
@@ -139,19 +276,6 @@ define([
     return cubeIndices.length;
   }
 
-  function drawCube(gl, width, height, program, positionLocation, mvpLocation,
-                    numIndices, mvpMatrix) {
-    gl.viewport(0, 0, width, height);
-    gl.clear(gl.COLOR_BUFFER_BIT);
-    gl.useProgram(program);
-    gl.bindBuffer(gl.ARRAY_BUFFER, vboVertices);
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, vboIndices);
-    gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 12, 0);
-    gl.enableVertexAttribArray(positionLocation);
-    gl.uniformMatrix4fv(mvpLocation, false, mvpMatrix.m);
-    gl.drawElements(gl.TRIANGLES, numIndices, gl.UNSIGNED_SHORT, 0);
-  }
-
   function SampleApp(shell) {
     this.shell_ = shell;
 
@@ -189,6 +313,8 @@ define([
 
   function GLES2ClientImpl(remote) {
     this.remote_ = remote;
+    this.lastTime_ = Date.now();
+    this.angle_ = 45;
   }
   GLES2ClientImpl.prototype =
       Object.create(gles2.GLES2ClientStub.prototype);
@@ -196,18 +322,63 @@ define([
   GLES2ClientImpl.prototype.didCreateContext = function(encoded,
                                                         width,
                                                         height) {
-    var gl = new gljs.Context(encoded, width, height);
-    var program = loadProgram(gl);
-    var positionLocation = gl.getAttribLocation(program, 'a_position');
-    var mvpLocation = gl.getUniformLocation(program, 'u_mvpMatrix');
-    var numIndices = generateCube(gl);
-    var mvpMatrix = new ESMatrix();
+    this.width_ = width;
+    this.height_ = height;
+    this.gl_ = new gljs.Context(encoded, width, height);
+    this.program_ = loadProgram(this.gl_);
+    this.positionLocation_ =
+        this.gl_.getAttribLocation(this.program_, 'a_position');
+    this.mvpLocation_ =
+        this.gl_.getUniformLocation(this.program_, 'u_mvpMatrix');
+    this.numIndices_ = generateCube(this.gl_);
+    this.mvpMatrix_ = new ESMatrix();
+    this.mvpMatrix_.loadIdentity();
 
-    gl.clearColor(0, 0, 0, 0);
-    mvpMatrix.loadIdentity();
-    drawCube(gl, width, height, program, positionLocation, mvpLocation,
-             numIndices, mvpMatrix);
-    gl.swapBuffers();
+    this.gl_.clearColor(0, 0, 0, 0);
+    this.timer_ = timer.createRepeating(16, this.handleTimer.bind(this));
+  };
+
+  GLES2ClientImpl.prototype.drawCube = function() {
+    this.gl_.viewport(0, 0, this.width_, this.height_);
+    this.gl_.clear(this.gl_.COLOR_BUFFER_BIT);
+    this.gl_.useProgram(this.program_);
+    this.gl_.bindBuffer(this.gl_.ARRAY_BUFFER, vboVertices);
+    this.gl_.bindBuffer(this.gl_.ELEMENT_ARRAY_BUFFER, vboIndices);
+    this.gl_.vertexAttribPointer(this.positionLocation_, 3, this.gl_.FLOAT,
+                                 false, 12, 0);
+    this.gl_.enableVertexAttribArray(this.positionLocation_);
+    this.gl_.uniformMatrix4fv(this.mvpLocation_, false, this.mvpMatrix_.m);
+    this.gl_.drawElements(this.gl_.TRIANGLES, this.numIndices_,
+                          this.gl_.UNSIGNED_SHORT, 0);
+    this.gl_.swapBuffers();
+  };
+
+  GLES2ClientImpl.prototype.handleTimer = function() {
+    var now = Date.now();
+    var timeDelta = Date.now() - this.lastTime_;
+    this.lastTime_ = now;
+
+    this.angle_ += this.getRotationForTimeDelgate(timeDelta);
+    this.angle_ = this.angle_ % 360;
+
+    var aspect = this.width_ / this.height_;
+
+    var perspective = new ESMatrix();
+    perspective.loadIdentity();
+    perspective.perspective(60, aspect, 1, 20);
+
+    var modelView = new ESMatrix();
+    modelView.loadIdentity();
+    modelView.translate(0, 0, -2);
+    modelView.rotate(this.angle_, 1, 0, 1);
+
+    this.mvpMatrix_.multiply(modelView, perspective);
+
+    this.drawCube();
+  };
+
+  GLES2ClientImpl.prototype.getRotationForTimeDelgate = function(timeDelta) {
+    return timeDelta * .04;
   };
 
   GLES2ClientImpl.prototype.contextLost = function() {

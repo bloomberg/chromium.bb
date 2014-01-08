@@ -72,6 +72,7 @@ void Timer::OnTimerFired() {
 
 // TimerModule =================================================================
 
+const char TimerModule::kName[] = "timer";
 WrapperInfo TimerModule::kWrapperInfo = { kEmbedderNativeGin };
 
 // static

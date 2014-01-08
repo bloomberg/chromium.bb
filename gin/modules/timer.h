@@ -46,6 +46,7 @@ class GIN_EXPORT Timer : public Wrappable<Timer> {
 
 class GIN_EXPORT TimerModule : public Wrappable<TimerModule> {
  public:
+  static const char kName[];
   static WrapperInfo kWrapperInfo;
   static Handle<TimerModule> Create(v8::Isolate* isolate);
   static v8::Local<v8::Value> GetModule(v8::Isolate* isolate);
