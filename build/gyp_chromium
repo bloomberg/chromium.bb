@@ -130,7 +130,6 @@ def GetArgsStringForGN(supplemental_files):
   Based on a subset of the GYP variables that have been rewritten a bit."""
 
   vars_dict = GetGypVarsForGN(supplemental_files)
-  print vars_dict
   gn_args = ''
 
   # Note: These are the additional flags passed to various builds by builders
