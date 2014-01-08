@@ -9,7 +9,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "grit/browser_resources.h"
-
+#include "grit/chromium_strings.h"
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/webui/chromeos/login/inline_login_handler_chromeos.h"
 #else
@@ -28,6 +28,8 @@ content::WebUIDataSource* CreateWebUIDataSource() {
   source->SetDefaultResource(IDR_INLINE_LOGIN_HTML);
   source->AddResourcePath("inline_login.css", IDR_INLINE_LOGIN_CSS);
   source->AddResourcePath("inline_login.js", IDR_INLINE_LOGIN_JS);
+
+  source->AddLocalizedString("title", IDS_CHROME_SIGNIN_TITLE);
   return source;
 };
 
