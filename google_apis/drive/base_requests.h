@@ -94,8 +94,7 @@ class ResponseWriter : public net::URLFetcherResponseWriter {
  public:
   // If file_path is not empty, the response will be saved with file_writer_,
   // otherwise it will be saved to data_.
-  ResponseWriter(net::URLFetcher* url_fetcher,
-                 base::SequencedTaskRunner* file_task_runner,
+  ResponseWriter(base::SequencedTaskRunner* file_task_runner,
                  const base::FilePath& file_path,
                  const GetContentCallback& get_content_callback);
   virtual ~ResponseWriter();
@@ -113,10 +112,14 @@ class ResponseWriter : public net::URLFetcherResponseWriter {
   virtual int Finish(const net::CompletionCallback& callback) OVERRIDE;
 
  private:
-  net::URLFetcher* url_fetcher_;
+  void DidWrite(scoped_refptr<net::IOBuffer> buffer,
+                const net::CompletionCallback& callback,
+                int result);
+
   const GetContentCallback get_content_callback_;
   std::string data_;
   scoped_ptr<net::URLFetcherFileWriter> file_writer_;
+  base::WeakPtrFactory<ResponseWriter> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ResponseWriter);
 };

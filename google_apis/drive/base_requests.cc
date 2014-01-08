@@ -107,12 +107,11 @@ void ParseJson(base::TaskRunner* blocking_task_runner,
 }
 
 //=========================== ResponseWriter ==================================
-ResponseWriter::ResponseWriter(net::URLFetcher* url_fetcher,
-                               base::SequencedTaskRunner* file_task_runner,
+ResponseWriter::ResponseWriter(base::SequencedTaskRunner* file_task_runner,
                                const base::FilePath& file_path,
                                const GetContentCallback& get_content_callback)
-    : url_fetcher_(url_fetcher),
-      get_content_callback_(get_content_callback) {
+    : get_content_callback_(get_content_callback),
+      weak_ptr_factory_(this) {
   if (!file_path.empty()) {
     file_writer_.reset(
         new net::URLFetcherFileWriter(file_task_runner, file_path));
@@ -138,17 +137,21 @@ int ResponseWriter::Initialize(const net::CompletionCallback& callback) {
 int ResponseWriter::Write(net::IOBuffer* buffer,
                           int num_bytes,
                           const net::CompletionCallback& callback) {
-  // |get_content_callback_| and |file_writer_| are used only when the response
-  // code is successful one.
-  if (IsSuccessfulResponseCode(url_fetcher_->GetResponseCode())) {
-    if (!get_content_callback_.is_null()) {
-      get_content_callback_.Run(
-          HTTP_SUCCESS,
-          make_scoped_ptr(new std::string(buffer->data(), num_bytes)));
-    }
+  if (!get_content_callback_.is_null()) {
+    get_content_callback_.Run(
+        HTTP_SUCCESS,
+        make_scoped_ptr(new std::string(buffer->data(), num_bytes)));
+  }
 
-    if (file_writer_)
-      return file_writer_->Write(buffer, num_bytes, callback);
+  if (file_writer_) {
+    const int result = file_writer_->Write(
+        buffer, num_bytes,
+        base::Bind(&ResponseWriter::DidWrite,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   make_scoped_refptr(buffer), callback));
+    if (result != net::ERR_IO_PENDING)
+      DidWrite(buffer, net::CompletionCallback(), result);
+    return result;
   }
 
   data_.append(buffer->data(), num_bytes);
@@ -160,6 +163,24 @@ int ResponseWriter::Finish(const net::CompletionCallback& callback) {
     return file_writer_->Finish(callback);
 
   return net::OK;
+}
+
+void ResponseWriter::DidWrite(scoped_refptr<net::IOBuffer> buffer,
+                              const net::CompletionCallback& callback,
+                              int result) {
+  if (result > 0) {
+    // Even if file_writer_ is used, append the data to |data_|, so that it can
+    // be used to get error information in case of server side errors.
+    // The size limit is to avoid consuming too much redundant memory.
+    const size_t kMaxStringSize = 1024*1024;
+    if (data_.size() < kMaxStringSize) {
+      data_.append(buffer->data(), std::min(static_cast<size_t>(result),
+                                            kMaxStringSize - data_.size()));
+    }
+  }
+
+  if (!callback.is_null())
+    callback.Run(result);
 }
 
 //============================ UrlFetchRequestBase ===========================
@@ -207,8 +228,7 @@ void UrlFetchRequestBase::Start(const std::string& access_token,
   GetOutputFilePath(&output_file_path, &get_content_callback);
   if (!get_content_callback.is_null())
     get_content_callback = CreateRelayCallback(get_content_callback);
-  response_writer_ = new ResponseWriter(url_fetcher_.get(),
-                                        blocking_task_runner(),
+  response_writer_ = new ResponseWriter(blocking_task_runner(),
                                         output_file_path,
                                         get_content_callback);
   url_fetcher_->SaveResponseWithWriter(
