@@ -247,19 +247,9 @@ TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorKey
     keyframeBadMultipleOp->setPropertyValue(CSSPropertyWebkitTransform, AnimatableDouble::create(10.0).get());
     EXPECT_FALSE(isCandidateHelperForSingleKeyframe(keyframeBadMultipleOp.get()));
 
-    // Check both an unsupported property which hashes before and after the
-    // supported property.
-    typedef DefaultHash<CSSPropertyID>::Hash HashFunctions;
-
-    RefPtr<Keyframe> keyframeBadMultiple1ID = createDefaultKeyframe(CSSPropertyColor, AnimationEffect::CompositeReplace);
-    keyframeBadMultiple1ID->setPropertyValue(CSSPropertyOpacity, AnimatableDouble::create(10.0).get());
-    EXPECT_FALSE(isCandidateHelperForSingleKeyframe(keyframeBadMultiple1ID.get()));
-    EXPECT_LT(HashFunctions::hash(CSSPropertyColor), HashFunctions::hash(CSSPropertyOpacity));
-
-    RefPtr<Keyframe> keyframeBadMultiple2ID = createDefaultKeyframe(CSSPropertyWebkitTransform, AnimationEffect::CompositeReplace);
-    keyframeBadMultiple2ID->setPropertyValue(CSSPropertyWidth, AnimatableDouble::create(10.0).get());
-    EXPECT_FALSE(isCandidateHelperForSingleKeyframe(keyframeBadMultiple2ID.get()));
-    EXPECT_GT(HashFunctions::hash(CSSPropertyWebkitTransform), HashFunctions::hash(CSSPropertyWidth));
+    RefPtr<Keyframe> keyframeBadMultipleID = createDefaultKeyframe(CSSPropertyColor, AnimationEffect::CompositeReplace);
+    keyframeBadMultipleID->setPropertyValue(CSSPropertyOpacity, AnimatableDouble::create(10.0).get());
+    EXPECT_FALSE(isCandidateHelperForSingleKeyframe(keyframeBadMultipleID.get()));
 }
 
 TEST_F(AnimationCompositorAnimationsTest, isNotCandidateForCompositorAnimationTransformDependsOnBoxSize)
