@@ -8,6 +8,7 @@
 #include "base/stl_util.h"
 #include "tools/gn/parse_tree.h"
 #include "tools/gn/scheduler.h"
+#include "tools/gn/scope_per_file_provider.h"
 
 namespace {
 
@@ -24,6 +25,7 @@ Scope* UncachedImport(const Settings* settings,
   CHECK(block);
 
   scoped_ptr<Scope> scope(new Scope(settings->base_config()));
+  ScopePerFileProvider per_file_provider(scope.get());
   scope->set_source_dir(file.GetDir());
   scope->SetProcessingImport();
   block->ExecuteBlockInScope(scope.get(), err);
