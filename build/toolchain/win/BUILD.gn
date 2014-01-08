@@ -7,23 +7,17 @@ import("//build/toolchain/goma.gni")
 # Should only be running on Windows.
 assert(is_win)
 
+import("//build/config/win/visual_studio_version.gni")
+
 # Setup the Visual Studio state.
 #
-# Its argument is the location to write the environment files.
-# It will write "environment.x86" and "environment.x64" to this directory,
-# and return a list to us.
-#
-# The list contains the include path as its only element. (I'm expecting to
-# add more so it's currently a list inside a list.)
-#exec_script("get_msvc_config.py",
-                     #     [relative_root_output_dir],
-                     #     "value")
-
-# This will save the environment block and and copy the gyp-win-tool to the
-# build directory. We pass in the source file of the win tool.
-gyp_win_tool_source =
-  rebase_path("//tools/gyp/pylib/gyp/win_tool.py", ".", root_build_dir)
-exec_script("setup_toolchain.py", [ gyp_win_tool_source ], "value")
+# Its arguments are the VS path and the compiler wrapper tool. It will write
+# "environment.x86" and "environment.x64" to the build directory and return a
+# list to us.
+gyp_win_tool_path = rebase_path("//tools/gyp/pylib/gyp/win_tool.py", ".",
+                                root_build_dir)
+exec_script("setup_toolchain.py", [ visual_studio_path, gyp_win_tool_path ],
+            "string")
 
 stamp_command = "$python_path gyp-win-tool stamp \$out"
 copy_command = "$python_path gyp-win-tool recursive-mirror \$in \$out"

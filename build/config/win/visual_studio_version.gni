@@ -1,0 +1,36 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+declare_args() {
+  # Version of Visual Studio to use.
+  #
+  # Possible values:
+  #  - "auto"
+  #  - "2010"
+  #  - "2010e"
+  #  - "2012"
+  #  - "2012e"
+  #  - "2013"
+  #  - "2013e"
+  #
+  # The "e" variants denote "Express". The default, "auto" will find the
+  # preferred one of all Visual Studios installed on the current system.
+  visual_studio_version = "auto"
+
+  # The path to use as the root of a Visual Studio install. If nonempty,
+  # this path will be used instead of any autodetected install locations,
+  # which allows you to have the Visual Studio files in a directory without
+  # actually "installing" it.
+  #
+  # When empty, we will autodetect the best Visual Studio path to use. The
+  # autodetected one is usually something like
+  # "C:\Program Files (x86)\Microsoft Visual Studio 10.0".
+  visual_studio_path = ""
+}
+
+if (visual_studio_path == "") {
+  visual_studio_path = exec_script("get_visual_studio_path.py",
+                                   [ visual_studio_version ], "value")
+}
+
