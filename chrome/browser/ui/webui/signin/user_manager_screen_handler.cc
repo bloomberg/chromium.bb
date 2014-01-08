@@ -23,6 +23,8 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
+#include "google_apis/gaia/gaia_auth_fetcher.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -210,21 +212,30 @@ void UserManagerScreenHandler::HandleAuthenticatedLaunchUser(
     NOTREACHED();
     return;
   }
+
+  authenticating_profile_index_ = profile_index;
   if (!chrome::ValidateLocalAuthCredentials(profile_index, password)) {
-    web_ui()->CallJavascriptFunction(
-        "cr.ui.Oobe.showSignInError",
-        base::FundamentalValue(0),
-        base::StringValue(
-            l10n_util::GetStringUTF8(IDS_LOGIN_ERROR_AUTHENTICATING)),
-        base::StringValue(""),
-        base::FundamentalValue(0));
+    // Make a second attempt via an on-line authentication call.  This handles
+    // profiles that are missing sign-in credentials and also cases where the
+    // password has been changed externally.
+    client_login_.reset(new GaiaAuthFetcher(
+        this,
+        GaiaConstants::kChromeSource,
+        web_ui()->GetWebContents()->GetBrowserContext()->GetRequestContext()));
+    std::string email_string;
+    args->GetString(0, &email_string);
+    client_login_->StartClientLogin(
+        email_string,
+        password,
+        GaiaConstants::kSyncService,
+        std::string(),
+        std::string(),
+        GaiaAuthFetcher::HostedAccountsAllowed);
+    password_attempt_ = password;
     return;
   }
 
-  info_cache.SetProfileSigninRequiredAtIndex(profile_index, false);
-  base::FilePath path = info_cache.GetPathOfProfileAtIndex(profile_index);
-  profiles::SwitchToProfile(path, desktop_type_, true,
-                            base::Bind(&chrome::HideUserManager));
+  ReportAuthenticationResult(true);
 }
 
 void UserManagerScreenHandler::HandleRemoveUser(const base::ListValue* args) {
@@ -286,6 +297,18 @@ void UserManagerScreenHandler::HandleLaunchUser(const base::ListValue* args) {
   base::FilePath path = info_cache.GetPathOfProfileAtIndex(profile_index);
   profiles::SwitchToProfile(
       path, desktop_type_, true, base::Bind(&chrome::HideUserManager));
+}
+
+void UserManagerScreenHandler::OnClientLoginSuccess(
+    const ClientLoginResult& result) {
+  chrome::SetLocalAuthCredentials(authenticating_profile_index_,
+                                  password_attempt_);
+  ReportAuthenticationResult(true);
+}
+
+void UserManagerScreenHandler::OnClientLoginFailure(
+    const GoogleServiceAuthError& error) {
+  ReportAuthenticationResult(false);
 }
 
 void UserManagerScreenHandler::RegisterMessages() {
@@ -372,7 +395,7 @@ void UserManagerScreenHandler::GetLocalizedValues(
                                base::string16());
   localized_strings->SetString("multiple-signin-banner-text",
                                base::string16());
- }
+}
 
 void UserManagerScreenHandler::SendUserList() {
   base::ListValue users_list;
@@ -417,4 +440,27 @@ void UserManagerScreenHandler::SendUserList() {
 
   web_ui()->CallJavascriptFunction("login.AccountPickerScreen.loadUsers",
     users_list, base::FundamentalValue(false), base::FundamentalValue(true));
+}
+
+void UserManagerScreenHandler::ReportAuthenticationResult(bool success) {
+  if (success) {
+    ProfileInfoCache& info_cache =
+        g_browser_process->profile_manager()->GetProfileInfoCache();
+    info_cache.SetProfileSigninRequiredAtIndex(
+        authenticating_profile_index_, false);
+    base::FilePath path = info_cache.GetPathOfProfileAtIndex(
+        authenticating_profile_index_);
+    profiles::SwitchToProfile(path, desktop_type_, true,
+                              base::Bind(&chrome::HideUserManager));
+  } else {
+    web_ui()->CallJavascriptFunction(
+        "cr.ui.Oobe.showSignInError",
+        base::FundamentalValue(0),
+        base::StringValue(
+            l10n_util::GetStringUTF8(IDS_LOGIN_ERROR_AUTHENTICATING)),
+        base::StringValue(""),
+        base::FundamentalValue(0));
+  }
+
+  password_attempt_.clear();
 }

@@ -9,6 +9,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "google_apis/gaia/gaia_auth_consumer.h"
+
+class GaiaAuthFetcher;
 
 namespace base {
 class DictionaryValue;
@@ -16,7 +19,8 @@ class FilePath;
 class ListValue;
 }
 
-class UserManagerScreenHandler : public content::WebUIMessageHandler {
+class UserManagerScreenHandler : public content::WebUIMessageHandler,
+                                 public GaiaAuthConsumer {
  public:
   UserManagerScreenHandler();
   virtual ~UserManagerScreenHandler();
@@ -38,8 +42,16 @@ class UserManagerScreenHandler : public content::WebUIMessageHandler {
   void HandleLaunchUser(const base::ListValue* args);
   void HandleRemoveUser(const base::ListValue* args);
 
+  // Handle GAIA auth results.
+  virtual void OnClientLoginSuccess(const ClientLoginResult& result) OVERRIDE;
+  virtual void OnClientLoginFailure(const GoogleServiceAuthError& error)
+      OVERRIDE;
+
   // Sends user list to account chooser.
   void SendUserList();
+
+  // Pass success/failure information back to the web page.
+  void ReportAuthenticationResult(bool success);
 
   // Observes the ProfileInfoCache and gets notified when a profile has been
   // modified, so that the displayed user pods can be updated.
@@ -47,6 +59,15 @@ class UserManagerScreenHandler : public content::WebUIMessageHandler {
 
   // The host desktop type this user manager belongs to.
   chrome::HostDesktopType desktop_type_;
+
+  // Authenticator used when local-auth fails.
+  scoped_ptr<GaiaAuthFetcher> client_login_;
+
+  // The index of the profile currently being authenticated.
+  size_t authenticating_profile_index_;
+
+  // Login password, held during on-line auth for saving later if correct.
+  std::string password_attempt_;
 
   DISALLOW_COPY_AND_ASSIGN(UserManagerScreenHandler);
 };
