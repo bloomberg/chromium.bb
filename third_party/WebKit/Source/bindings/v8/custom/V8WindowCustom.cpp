@@ -247,13 +247,15 @@ void V8Window::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::Value>
     DOMWindow* window = V8Window::toNative(info.Holder());
     DOMWindow* source = activeDOMWindow();
 
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "postMessage", "Window", info.Holder(), info.GetIsolate());
+
     // If called directly by WebCore we don't have a calling context.
     if (!source) {
-        throwUninformativeAndGenericTypeError(info.GetIsolate());
+        exceptionState.throwTypeError("No active calling context exists.");
+        exceptionState.throwIfNeeded();
         return;
     }
 
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "postMessage", "Window", info.Holder(), info.GetIsolate());
     // This function has variable arguments and can be:
     // Per current spec:
     //   postMessage(message, targetOrigin)

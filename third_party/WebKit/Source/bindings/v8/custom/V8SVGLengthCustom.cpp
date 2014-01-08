@@ -61,7 +61,7 @@ void V8SVGLength::valueAttributeSetterCustom(v8::Local<v8::Value> value, const v
     }
 
     if (!isUndefinedOrNull(value) && !value->IsNumber() && !value->IsBoolean()) {
-        throwUninformativeAndGenericTypeError(info.GetIsolate());
+        throwTypeError("The value provided is invalid.", info.GetIsolate());
         return;
     }
 

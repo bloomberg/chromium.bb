@@ -83,7 +83,6 @@ public:
 
     // Please don't use these methods. Use ::throwDOMException and ::throwTypeError, and pass in a useful exception message.
     virtual void throwUninformativeAndGenericDOMException(const ExceptionCode& ec) { throwDOMException(ec, String()); }
-    virtual void throwUninformativeAndGenericTypeError() { throwTypeError(String()); }
 
     bool hadException() const { return !m_exception.isEmpty() || m_code; }
     void clearException();

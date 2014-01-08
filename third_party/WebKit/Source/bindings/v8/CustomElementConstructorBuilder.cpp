@@ -266,7 +266,7 @@ static void constructCustomElement(const v8::FunctionCallbackInfo<v8::Value>& in
     }
 
     if (info.Length() > 0) {
-        throwUninformativeAndGenericTypeError(isolate);
+        throwTypeError("This constructor should be called without arguments.", isolate);
         return;
     }
 

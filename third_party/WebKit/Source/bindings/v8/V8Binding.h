@@ -70,9 +70,6 @@ namespace WebCore {
     // A helper for throwing JavaScript TypeError.
     v8::Handle<v8::Value> throwTypeError(const String&, v8::Isolate*);
 
-    // FIXME: Remove this once we kill its callers.
-    v8::Handle<v8::Value> throwUninformativeAndGenericTypeError(v8::Isolate*);
-
     v8::ArrayBuffer::Allocator* v8ArrayBufferAllocator();
 
     v8::Handle<v8::Value> toV8Sequence(v8::Handle<v8::Value>, uint32_t& length, v8::Isolate*);
