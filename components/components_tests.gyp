@@ -47,7 +47,6 @@
             'precache/core/precache_fetcher_unittest.cc',
             'precache/core/precache_url_table_unittest.cc',
             'sessions/serialized_navigation_entry_unittest.cc',
-            'signin/core/webdata/token_service_table_unittest.cc',
             'test/run_all_unittests.cc',
             'translate/core/common/translate_metrics_unittest.cc',
             'translate/core/common/translate_util_unittest.cc',
@@ -105,9 +104,6 @@
             # Dependencies of precache/core
             'components.gyp:precache_core',
 
-            # Dependencies of signin
-            'components.gyp:signin_core',
-
             # Dependencies of translate.
             'components.gyp:translate_core_common',
             'components.gyp:translate_language_detection',
@@ -158,7 +154,6 @@
                 ['include', '^autofill/'],
                 ['include', '^dom_distiller/'],
                 ['include', '^precache/core/'],
-                ['include', '^signin/'],
                 ['include', '^translate/'],
               ],
             }],

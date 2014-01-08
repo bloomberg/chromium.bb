@@ -19,7 +19,6 @@
     'onc.gypi',
     'policy.gypi',
     'precache.gypi',
-    'signin.gypi',
     'startup_metric_utils.gypi',
     'translate.gypi',
     'user_prefs.gypi',

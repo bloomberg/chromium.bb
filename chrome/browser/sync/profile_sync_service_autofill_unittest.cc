@@ -195,9 +195,7 @@ syncer::ModelType GetModelType<AutofillProfile>() {
 class TokenWebDataServiceFake : public TokenWebData {
  public:
   TokenWebDataServiceFake()
-      : TokenWebData(
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB)) {
+      : TokenWebData() {
   }
 
   virtual bool IsDatabaseLoaded() OVERRIDE {

@@ -6,8 +6,8 @@
 // information and MUST not be extracted, overwritten or modified except
 // through Chromium defined APIs.
 
-#ifndef COMPONENTS_SIGNIN_CORE_WEBDATA_TOKEN_WEB_DATA_H__
-#define COMPONENTS_SIGNIN_CORE_WEBDATA_TOKEN_WEB_DATA_H__
+#ifndef CHROME_BROWSER_WEBDATA_TOKEN_WEB_DATA_H__
+#define CHROME_BROWSER_WEBDATA_TOKEN_WEB_DATA_H__
 
 #include <map>
 #include <string>
@@ -22,25 +22,24 @@
 #include "components/webdata/common/web_data_service_consumer.h"
 #include "components/webdata/common/web_database.h"
 
-namespace base {
-class MessageLoopProxy;
-}
-
 class TokenWebDataBackend;
 class WebDatabaseService;
 class WebDataServiceConsumer;
+
+namespace content {
+class BrowserContext;
+}
 
 // TokenWebData is a data repository for storage of authentication tokens.
 
 class TokenWebData : public WebDataServiceBase {
  public:
-  TokenWebData(scoped_refptr<WebDatabaseService> wdbs,
-               scoped_refptr<base::MessageLoopProxy> ui_thread,
-               scoped_refptr<base::MessageLoopProxy> db_thread,
-               const ProfileErrorCallback& callback);
+  // Retrieve a WebDataService for the given context.
+  static scoped_refptr<TokenWebData> FromBrowserContext(
+      content::BrowserContext* context);
 
-  TokenWebData(scoped_refptr<base::MessageLoopProxy> ui_thread,
-               scoped_refptr<base::MessageLoopProxy> db_thread);
+  TokenWebData(scoped_refptr<WebDatabaseService> wdbs,
+               const ProfileErrorCallback& callback);
 
   // Set a token to use for a specified service.
   void SetTokenForService(const std::string& service,
@@ -67,4 +66,4 @@ class TokenWebData : public WebDataServiceBase {
   DISALLOW_COPY_AND_ASSIGN(TokenWebData);
 };
 
-#endif  // COMPONENTS_SIGNIN_CORE_WEBDATA_TOKEN_WEB_DATA_H__
+#endif  // CHROME_BROWSER_WEBDATA_TOKEN_WEB_DATA_H__

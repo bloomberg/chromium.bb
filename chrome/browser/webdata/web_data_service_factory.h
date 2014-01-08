@@ -67,10 +67,6 @@ class WebDataServiceFactory : public BrowserContextKeyedServiceFactory {
       GetAutofillWebDataForProfile(Profile* profile,
                                    Profile::ServiceAccessType access_type);
 
-  // Returns the TokenWebData associated with the |profile|.
-  static scoped_refptr<TokenWebData> GetTokenWebDataForProfile(Profile* profile,
-      Profile::ServiceAccessType access_type);
-
   static WebDataServiceFactory* GetInstance();
 
  private:
