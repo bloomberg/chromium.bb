@@ -203,12 +203,14 @@ body:not(.controls-visible) .dynamic {
   background-color: transparent;
 }
 
+.buttons #album-print,
 .buttons #browser-print {
   background-image: -webkit-image-set(
       url(../images/browser_button_print.png) 1x,
       url(../images/2x/browser_button_print.png) 2x);
 }
 
+.buttons #album-export,
 .buttons #browser-export {
   background-image: -webkit-image-set(
       url(../images/browser_button_export.png) 1x,
@@ -679,8 +681,25 @@ body.album #album {
 
 /* Printing in the browser view. */
 @media print {
+  /* For the album view, do not restrict to one page. */
+  html {
+    height: 100%;  /* Required for printing. */
+  }
+
+  body {
+    height: auto;
+    overflow: visible;
+    position: static;
+    width: 100%;
+  }
+
+  body.album:not(.browser) #album {
+    bottom: auto;
+  }
+
   /* Reset background colors. */
   body,
+  #album,
   #browser {
     background: transparent;
   }
@@ -692,8 +711,9 @@ body.album #album {
     display: none;
   }
 
-  /* Hide all root elements, except the browser view. */
-  body > :not(#browser) {
+  /* Hide all root elements, except the printed view. */
+  body.browser > :not(#browser),
+  body.album:not(.browser) > :not(#album) {
     display: none;
   }
 
@@ -702,7 +722,8 @@ body.album #album {
     display: none;
   }
 
-  /* Reset styles to default, and set the maximum dimensions to 100%. */
+  /* Reset styles to default on the borwser view, and set the maximum dimensions
+     to 100%. */
   #browser img.selected {
     -webkit-transform: scale(1);
     border: none;
@@ -713,6 +734,16 @@ body.album #album {
     max-width: 100%;
     position: absolute;
     width: auto;
+  }
+
+  /* Reset styles to default on the album view. */
+  #album img,
+  #album img.selected {
+    -webkit-transform: scale(1);
+    border: none;
+    box-shadow: none;
+    height: auto;
+    max-width: 30%;
   }
 }
 

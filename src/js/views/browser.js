@@ -108,6 +108,7 @@ camera.views.Browser.prototype.onEnter = function() {
  */
 camera.views.Browser.prototype.onActivate = function() {
   camera.views.GalleryBase.prototype.onActivate.apply(this, arguments);
+
   if (!this.scroller_.animating)
     this.synchronizeFocus();
 };
@@ -156,7 +157,7 @@ camera.views.Browser.prototype.onPrintButtonClicked_ = function(event) {
  * @private
  */
 camera.views.Browser.prototype.onExportButtonClicked_ = function(event) {
-  this.exportSelection_();
+  this.exportSelection();
 };
 
 /**
@@ -285,51 +286,13 @@ camera.views.Browser.prototype.onPictureDeleting = function(index) {
 };
 
 /**
- * Exports the selected picture. If nothing selected, then nothing happens.
- * @private
- */
-camera.views.Browser.prototype.exportSelection_ = function() {
-  if (!this.currentPicture())
-    return;
-
-  var accepts = [{
-    description: '*.jpg',
-    extensions: ['jpg", "jpeg'],
-    mimeTypes: ['image/jpeg']
-  }];
-
-  var picture = this.currentPicture().picture;
-
-  var onError = function() {
-    // TODO(mtomasz): Check if it works.
-    this.context_.onError(
-        'gallery-export-error',
-        chrome.i18n.getMessage('errorMsgGalleryExportFailed'));
-  }.bind(this);
-
-  chrome.fileSystem.chooseEntry({
-    type: 'saveFile',
-    suggestedName: picture.imageEntry.name,
-    accepts: accepts
-  }, function(fileEntry) {
-      if (!fileEntry)
-        return;
-      this.model.exportPicture(
-          picture,
-          fileEntry,
-          function() {},
-          onError);
-  }.bind(this));
-};
-
-/**
  * @override
  */
 camera.views.Browser.prototype.onKeyPressed = function(event) {
   var currentPicture = this.currentPicture();
   switch (camera.util.getShortcutIdentifier(event)) {
     case 'Ctrl-U+0053':  // Ctrl+S for saving.
-      this.exportSelection_();
+      this.exportSelection();
       event.preventDefault();
       return;
     case 'Ctrl-U+0050':  // Ctrl+P for printing.

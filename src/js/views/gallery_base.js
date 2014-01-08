@@ -158,6 +158,44 @@ camera.views.GalleryBase.prototype.renderPictures_ = function() {
 };
 
 /**
+ * Exports the selected picture. If nothing selected, then nothing happens.
+ * @protected
+ */
+camera.views.GalleryBase.prototype.exportSelection = function() {
+  if (!this.currentPicture())
+    return;
+
+  var accepts = [{
+    description: '*.jpg',
+    extensions: ['jpg', 'jpeg'],
+    mimeTypes: ['image/jpeg']
+  }];
+
+  var picture = this.currentPicture().picture;
+
+  var onError = function() {
+    // TODO(mtomasz): Check if it works.
+    this.context_.onError(
+        'gallery-export-error',
+        chrome.i18n.getMessage('errorMsgGalleryExportFailed'));
+  }.bind(this);
+
+  chrome.fileSystem.chooseEntry({
+    type: 'saveFile',
+    suggestedName: picture.imageEntry.name,
+    accepts: accepts
+  }, function(fileEntry) {
+      if (!fileEntry)
+        return;
+      this.model.exportPicture(
+          picture,
+          fileEntry,
+          function() {},
+          onError);
+  }.bind(this));
+};
+
+/**
  * Deletes the currently selected picture. If nothing selected, then nothing
  * happens.
  * @protected
