@@ -451,24 +451,23 @@ void HTMLMetaElement::process()
         return;
 
     const AtomicString& nameValue = fastGetAttribute(nameAttr);
-    if (nameValue.isNull()) {
-        // Get the document to process the tag, but only if we're actually part of DOM
-        // tree (changing a meta tag while it's not in the tree shouldn't have any effect
-        // on the document).
-        const AtomicString& httpEquivValue = fastGetAttribute(http_equivAttr);
-        if (!httpEquivValue.isNull())
-            document().processHttpEquiv(httpEquivValue, contentValue);
-        return;
+    if (!nameValue.isEmpty()) {
+        if (equalIgnoringCase(nameValue, "viewport"))
+            processViewportContentAttribute(contentValue, ViewportDescription::ViewportMeta);
+        else if (equalIgnoringCase(nameValue, "referrer"))
+            document().processReferrerPolicy(contentValue);
+        else if (equalIgnoringCase(nameValue, "handheldfriendly") && equalIgnoringCase(contentValue, "true"))
+            processViewportContentAttribute("width=device-width", ViewportDescription::HandheldFriendlyMeta);
+        else if (equalIgnoringCase(nameValue, "mobileoptimized"))
+            processViewportContentAttribute("width=device-width, initial-scale=1", ViewportDescription::MobileOptimizedMeta);
     }
 
-    if (equalIgnoringCase(nameValue, "viewport"))
-        processViewportContentAttribute(contentValue, ViewportDescription::ViewportMeta);
-    else if (equalIgnoringCase(nameValue, "referrer"))
-        document().processReferrerPolicy(contentValue);
-    else if (equalIgnoringCase(nameValue, "handheldfriendly") && equalIgnoringCase(contentValue, "true"))
-        processViewportContentAttribute("width=device-width", ViewportDescription::HandheldFriendlyMeta);
-    else if (equalIgnoringCase(nameValue, "mobileoptimized"))
-        processViewportContentAttribute("width=device-width, initial-scale=1", ViewportDescription::MobileOptimizedMeta);
+    // Get the document to process the tag, but only if we're actually part of DOM
+    // tree (changing a meta tag while it's not in the tree shouldn't have any effect
+    // on the document).
+    const AtomicString& httpEquivValue = fastGetAttribute(http_equivAttr);
+    if (!httpEquivValue.isEmpty())
+        document().processHttpEquiv(httpEquivValue, contentValue);
 }
 
 const AtomicString& HTMLMetaElement::content() const
