@@ -35,7 +35,7 @@ class Browser;
 class BrowserView;
 class Profile;
 
-class BrowserDesktopRootWindowHostX11;
+class BrowserDesktopWindowTreeHostX11;
 struct GlobalMenuBarCommand;
 
 // Controls the Mac style menu bar on Unity.
@@ -49,10 +49,10 @@ struct GlobalMenuBarCommand;
 class GlobalMenuBarX11 : public CommandObserver,
                          public content::NotificationObserver,
                          public TabRestoreServiceObserver,
-                         public views::DesktopRootWindowHostObserverX11 {
+                         public views::DesktopWindowTreeHostObserverX11 {
  public:
   GlobalMenuBarX11(BrowserView* browser_view,
-                   BrowserDesktopRootWindowHostX11* host);
+                   BrowserDesktopWindowTreeHostX11* host);
   virtual ~GlobalMenuBarX11();
 
   // Creates the object path for DbusemenuServer which is attached to |xid|.
@@ -126,7 +126,7 @@ class GlobalMenuBarX11 : public CommandObserver,
   virtual void TabRestoreServiceChanged(TabRestoreService* service) OVERRIDE;
   virtual void TabRestoreServiceDestroyed(TabRestoreService* service) OVERRIDE;
 
-  // Overridden from views::DesktopRootWindowHostObserverX11:
+  // Overridden from views::DesktopWindowTreeHostObserverX11:
   virtual void OnWindowMapped(unsigned long xid) OVERRIDE;
   virtual void OnWindowUnmapped(unsigned long xid) OVERRIDE;
 
@@ -140,7 +140,7 @@ class GlobalMenuBarX11 : public CommandObserver,
   Browser* browser_;
   Profile* profile_;
   BrowserView* browser_view_;
-  BrowserDesktopRootWindowHostX11* host_;
+  BrowserDesktopWindowTreeHostX11* host_;
 
   // Maps command ids to DbusmenuMenuitems so we can modify their
   // enabled/checked state in response to state change notifications.

@@ -11,35 +11,35 @@
 
 namespace views {
 
-typedef ViewsTestBase DesktopRootWindowHostWinTest;
+typedef ViewsTestBase DesktopWindowTreeHostWinTest;
 
 namespace {
 
 // See description above SaveFocusOnDeactivateFromHandleCreate.
-class TestDesktopRootWindowHostWin : public DesktopRootWindowHostWin {
+class TestDesktopWindowTreeHostWin : public DesktopWindowTreeHostWin {
  public:
-  TestDesktopRootWindowHostWin(
+  TestDesktopWindowTreeHostWin(
       internal::NativeWidgetDelegate* native_widget_delegate,
       DesktopNativeWidgetAura* desktop_native_widget_aura)
-      : DesktopRootWindowHostWin(native_widget_delegate,
+      : DesktopWindowTreeHostWin(native_widget_delegate,
                                  desktop_native_widget_aura) {}
-  virtual ~TestDesktopRootWindowHostWin() {}
+  virtual ~TestDesktopWindowTreeHostWin() {}
 
-  // DesktopRootWindowHostWin overrides:
+  // DesktopWindowTreeHostWin overrides:
   virtual void HandleCreate() OVERRIDE {
-    DesktopRootWindowHostWin::HandleCreate();
+    DesktopWindowTreeHostWin::HandleCreate();
     SaveFocusOnDeactivate();
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TestDesktopRootWindowHostWin);
+  DISALLOW_COPY_AND_ASSIGN(TestDesktopWindowTreeHostWin);
 };
 
 }  // namespace
 
 // Verifies if SaveFocusOnDeactivate() is invoked from
-// DesktopRootWindowHostWin::HandleCreate we don't crash.
-TEST_F(DesktopRootWindowHostWinTest, SaveFocusOnDeactivateFromHandleCreate) {
+// DesktopWindowTreeHostWin::HandleCreate we don't crash.
+TEST_F(DesktopWindowTreeHostWinTest, SaveFocusOnDeactivateFromHandleCreate) {
   Widget widget;
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   params.bounds = gfx::Rect(0, 0, 200, 200);
@@ -47,7 +47,7 @@ TEST_F(DesktopRootWindowHostWinTest, SaveFocusOnDeactivateFromHandleCreate) {
   DesktopNativeWidgetAura* desktop_native_widget_aura =
       new DesktopNativeWidgetAura(&widget);
   params.native_widget = desktop_native_widget_aura;
-  params.desktop_root_window_host = new TestDesktopRootWindowHostWin(
+  params.desktop_root_window_host = new TestDesktopWindowTreeHostWin(
       &widget, desktop_native_widget_aura);
   widget.Init(params);
 }

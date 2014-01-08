@@ -264,7 +264,7 @@ class StickyKeysTest : public test::AshTestBase,
     handler->HandleKeyEvent(ev.get());
   }
 
-  void SendActivateStickyKeyPattern(aura::RootWindowHostDelegate* delegate,
+  void SendActivateStickyKeyPattern(aura::WindowTreeHostDelegate* delegate,
                                     ui::KeyboardCode key_code) {
     scoped_ptr<ui::KeyEvent> ev;
     ev.reset(GenerateKey(true, key_code));
@@ -792,8 +792,8 @@ TEST_F(StickyKeysTest, KeyEventDispatchImpl) {
   // Test the actual key event dispatch implementation.
   EventBuffer buffer;
   ScopedVector<ui::Event> events;
-  aura::RootWindowHostDelegate* delegate = Shell::GetPrimaryRootWindow()
-      ->GetDispatcher()->AsRootWindowHostDelegate();
+  aura::WindowTreeHostDelegate* delegate = Shell::GetPrimaryRootWindow()
+      ->GetDispatcher()->AsWindowTreeHostDelegate();
   Shell::GetInstance()->AddPreTargetHandler(&buffer);
   Shell::GetInstance()->sticky_keys_controller()->Enable(true);
 
@@ -831,8 +831,8 @@ TEST_F(StickyKeysTest, MouseEventDispatchImpl) {
   // Test the actual sticky mouse event dispatch implementation.
   EventBuffer buffer;
   ScopedVector<ui::Event> events;
-  aura::RootWindowHostDelegate* delegate = Shell::GetPrimaryRootWindow()
-      ->GetDispatcher()->AsRootWindowHostDelegate();
+  aura::WindowTreeHostDelegate* delegate = Shell::GetPrimaryRootWindow()
+      ->GetDispatcher()->AsWindowTreeHostDelegate();
   Shell::GetInstance()->AddPreTargetHandler(&buffer);
   Shell::GetInstance()->sticky_keys_controller()->Enable(true);
 
@@ -867,8 +867,8 @@ TEST_F(StickyKeysTest, MouseWheelEventDispatchImpl) {
   // Test the actual mouse wheel event dispatch implementation.
   EventBuffer buffer;
   ScopedVector<ui::Event> events;
-  aura::RootWindowHostDelegate* delegate = Shell::GetPrimaryRootWindow()
-      ->GetDispatcher()->AsRootWindowHostDelegate();
+  aura::WindowTreeHostDelegate* delegate = Shell::GetPrimaryRootWindow()
+      ->GetDispatcher()->AsWindowTreeHostDelegate();
   Shell::GetInstance()->AddPreTargetHandler(&buffer);
   Shell::GetInstance()->sticky_keys_controller()->Enable(true);
 

@@ -81,7 +81,7 @@ void ChromeMetroViewerProcessHost::OnChannelError() {
   // connected.
   ::SetEnvironmentVariableA(env_vars::kMetroConnected, NULL);
 
-  aura::RemoteRootWindowHostWin::Instance()->Disconnected();
+  aura::RemoteWindowTreeHostWin::Instance()->Disconnected();
   g_browser_process->ReleaseModule();
 
   // If browser is trying to quit, we shouldn't reenter the process.
@@ -123,7 +123,7 @@ void ChromeMetroViewerProcessHost::OnSetTargetSurface(
 
   HWND hwnd = reinterpret_cast<HWND>(target_surface);
   // Tell our root window host that the viewer has connected.
-  aura::RemoteRootWindowHostWin::Instance()->Connected(this, hwnd);
+  aura::RemoteWindowTreeHostWin::Instance()->Connected(this, hwnd);
 
   // On Windows 8 ASH we default to SHOW_STATE_MAXIMIZED for the browser
   // window. This is to ensure that we honor metro app conventions by default.
@@ -154,6 +154,6 @@ void ChromeMetroViewerProcessHost::OnWindowSizeChanged(uint32 width,
       base::StringPrintf("%dx%d", width, height)));
   ash::Shell::GetInstance()->display_manager()->OnNativeDisplaysChanged(
       info_list);
-  aura::RemoteRootWindowHostWin::Instance()->HandleWindowSizeChanged(width,
+  aura::RemoteWindowTreeHostWin::Instance()->HandleWindowSizeChanged(width,
                                                                      height);
 }

@@ -16,12 +16,12 @@ class ContextProviderInProcess;
 namespace mojo {
 namespace examples {
 
-class RootWindowHostMojo;
+class WindowTreeHostMojo;
 
 // The default factory that creates in-process contexts.
 class DemoContextFactory : public ui::ContextFactory {
  public:
-  explicit DemoContextFactory(RootWindowHostMojo* rwhm);
+  explicit DemoContextFactory(WindowTreeHostMojo* rwhm);
   virtual ~DemoContextFactory();
 
   // ContextFactory implementation
@@ -48,7 +48,7 @@ class DemoContextFactory : public ui::ContextFactory {
   scoped_refptr<webkit::gpu::ContextProviderInProcess>
       shared_main_thread_contexts_;
 
-  RootWindowHostMojo* rwhm_;
+  WindowTreeHostMojo* rwhm_;
 
   DISALLOW_COPY_AND_ASSIGN(DemoContextFactory);
 };

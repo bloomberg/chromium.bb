@@ -162,8 +162,8 @@ ui::MenuModel* ShellDelegateImpl::CreateContextMenu(aura::Window* root) {
   return new ContextMenu(root);
 }
 
-RootWindowHostFactory* ShellDelegateImpl::CreateRootWindowHostFactory() {
-  return RootWindowHostFactory::Create();
+WindowTreeHostFactory* ShellDelegateImpl::CreateWindowTreeHostFactory() {
+  return WindowTreeHostFactory::Create();
 }
 
 base::string16 ShellDelegateImpl::GetProductName() const {

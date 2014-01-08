@@ -15,7 +15,7 @@ void DispatchCancelMode() {
       Shell::GetAllRootWindowControllers());
   for (Shell::RootWindowControllerList::const_iterator i = controllers.begin();
        i != controllers.end(); ++i) {
-    (*i)->dispatcher()->AsRootWindowHostDelegate()->OnHostCancelMode();
+    (*i)->dispatcher()->AsWindowTreeHostDelegate()->OnHostCancelMode();
   }
 }
 

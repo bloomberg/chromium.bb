@@ -29,26 +29,26 @@ class ImageSkiaRep;
 namespace views {
 class DesktopDragDropClientAuraX11;
 class DesktopDispatcherClient;
-class DesktopRootWindowHostObserverX11;
+class DesktopWindowTreeHostObserverX11;
 class X11DesktopWindowMoveClient;
 class X11ScopedCapture;
 class X11WindowEventFilter;
 
-class VIEWS_EXPORT DesktopRootWindowHostX11 :
-    public DesktopRootWindowHost,
-    public aura::RootWindowHost,
+class VIEWS_EXPORT DesktopWindowTreeHostX11 :
+    public DesktopWindowTreeHost,
+    public aura::WindowTreeHost,
     public base::MessageLoop::Dispatcher {
  public:
-  DesktopRootWindowHostX11(
+  DesktopWindowTreeHostX11(
       internal::NativeWidgetDelegate* native_widget_delegate,
       DesktopNativeWidgetAura* desktop_native_widget_aura);
-  virtual ~DesktopRootWindowHostX11();
+  virtual ~DesktopWindowTreeHostX11();
 
   // A way of converting an X11 |xid| host window into a |content_window_|.
   static aura::Window* GetContentWindowForXID(XID xid);
 
   // A way of converting an X11 |xid| host window into this object.
-  static DesktopRootWindowHostX11* GetHostForXID(XID xid);
+  static DesktopWindowTreeHostX11* GetHostForXID(XID xid);
 
   // Get all open top-level windows. This includes windows that may not be
   // visible. This list is sorted in their stacking order, i.e. the first window
@@ -62,14 +62,14 @@ class VIEWS_EXPORT DesktopRootWindowHostX11 :
   // has changed our activation.
   void HandleNativeWidgetActivationChanged(bool active);
 
-  void AddObserver(views::DesktopRootWindowHostObserverX11* observer);
-  void RemoveObserver(views::DesktopRootWindowHostObserverX11* observer);
+  void AddObserver(views::DesktopWindowTreeHostObserverX11* observer);
+  void RemoveObserver(views::DesktopWindowTreeHostObserverX11* observer);
 
   // Deallocates the internal list of open windows.
   static void CleanUpWindowList();
 
  protected:
-  // Overridden from DesktopRootWindowHost:
+  // Overridden from DesktopWindowTreeHost:
   virtual void Init(aura::Window* content_window,
                     const Widget::InitParams& params,
                     aura::RootWindow::CreateParams* rw_create_params) OVERRIDE;
@@ -80,7 +80,7 @@ class VIEWS_EXPORT DesktopRootWindowHostX11 :
       CreateDragDropClient(DesktopNativeCursorManager* cursor_manager) OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual void CloseNow() OVERRIDE;
-  virtual aura::RootWindowHost* AsRootWindowHost() OVERRIDE;
+  virtual aura::WindowTreeHost* AsWindowTreeHost() OVERRIDE;
   virtual void ShowWindowWithState(ui::WindowShowState show_state) OVERRIDE;
   virtual void ShowMaximizedWithBounds(
       const gfx::Rect& restored_bounds) OVERRIDE;
@@ -130,7 +130,7 @@ class VIEWS_EXPORT DesktopRootWindowHostX11 :
   virtual void OnNativeWidgetBlur() OVERRIDE;
   virtual bool IsAnimatingClosed() const OVERRIDE;
 
-  // Overridden from aura::RootWindowHost:
+  // Overridden from aura::WindowTreeHost:
   virtual aura::RootWindow* GetRootWindow() OVERRIDE;
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
   virtual void Show() OVERRIDE;
@@ -201,7 +201,7 @@ private:
   // Overridden from Dispatcher:
   virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
 
-  base::WeakPtrFactory<DesktopRootWindowHostX11> close_widget_factory_;
+  base::WeakPtrFactory<DesktopWindowTreeHostX11> close_widget_factory_;
 
   // X11 things
   // The display and the native X window hosting the root window.
@@ -263,10 +263,10 @@ private:
 
   // We can optionally have a parent which can order us to close, or own
   // children who we're responsible for closing when we CloseNow().
-  DesktopRootWindowHostX11* window_parent_;
-  std::set<DesktopRootWindowHostX11*> window_children_;
+  DesktopWindowTreeHostX11* window_parent_;
+  std::set<DesktopWindowTreeHostX11*> window_children_;
 
-  ObserverList<DesktopRootWindowHostObserverX11> observer_list_;
+  ObserverList<DesktopWindowTreeHostObserverX11> observer_list_;
 
   // Copy of custom window shape specified via SetShape(), if any.
   ::Region custom_window_shape_;
@@ -276,7 +276,7 @@ private:
   // there are no notifications when this changes. We need to track this so we
   // can notify widgets when they have lost capture, which controls a bunch of
   // things in views like hiding menus.
-  static DesktopRootWindowHostX11* g_current_capture;
+  static DesktopWindowTreeHostX11* g_current_capture;
 
   // A list of all (top-level) windows that have been created but not yet
   // destroyed.
@@ -286,7 +286,7 @@ private:
 
   base::string16 window_title_;
 
-  DISALLOW_COPY_AND_ASSIGN(DesktopRootWindowHostX11);
+  DISALLOW_COPY_AND_ASSIGN(DesktopWindowTreeHostX11);
 };
 
 }  // namespace views

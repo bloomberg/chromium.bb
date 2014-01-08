@@ -51,7 +51,7 @@ class TestShellDelegate : public ShellDelegate {
   virtual MediaDelegate* CreateMediaDelegate() OVERRIDE;
   virtual aura::client::UserActionClient* CreateUserActionClient() OVERRIDE;
   virtual ui::MenuModel* CreateContextMenu(aura::Window* root) OVERRIDE;
-  virtual RootWindowHostFactory* CreateRootWindowHostFactory() OVERRIDE;
+  virtual WindowTreeHostFactory* CreateWindowTreeHostFactory() OVERRIDE;
   virtual base::string16 GetProductName() const OVERRIDE;
 
   int num_exit_requests() const { return num_exit_requests_; }

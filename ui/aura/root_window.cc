@@ -70,10 +70,10 @@ void SetLastMouseLocation(const Window* root_window,
   }
 }
 
-RootWindowHost* CreateHost(RootWindow* root_window,
+WindowTreeHost* CreateHost(RootWindow* root_window,
                            const RootWindow::CreateParams& params) {
-  RootWindowHost* host = params.host ?
-      params.host : RootWindowHost::Create(params.initial_bounds);
+  WindowTreeHost* host = params.host ?
+      params.host : WindowTreeHost::Create(params.initial_bounds);
   host->set_delegate(root_window);
   return host;
 }
@@ -190,7 +190,7 @@ void RootWindow::RepostEvent(const ui::LocatedEvent& event) {
   }
 }
 
-RootWindowHostDelegate* RootWindow::AsRootWindowHostDelegate() {
+WindowTreeHostDelegate* RootWindow::AsWindowTreeHostDelegate() {
   return this;
 }
 
@@ -348,9 +348,9 @@ void RootWindow::OnKeyboardMappingChanged() {
                     OnKeyboardMappingChanged(this));
 }
 
-void RootWindow::OnRootWindowHostCloseRequested() {
+void RootWindow::OnWindowTreeHostCloseRequested() {
   FOR_EACH_OBSERVER(RootWindowObserver, observers_,
-                    OnRootWindowHostCloseRequested(this));
+                    OnWindowTreeHostCloseRequested(this));
 }
 
 void RootWindow::AddRootWindowObserver(RootWindowObserver* observer) {
@@ -671,7 +671,7 @@ void RootWindow::OnLayerAnimationAborted(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// RootWindow, RootWindowHostDelegate implementation:
+// RootWindow, WindowTreeHostDelegate implementation:
 
 bool RootWindow::OnHostKeyEvent(ui::KeyEvent* event) {
   DispatchDetails details = OnEventFromSource(event);
@@ -728,7 +728,7 @@ void RootWindow::OnHostMoved(const gfx::Point& origin) {
                "origin", origin.ToString());
 
   FOR_EACH_OBSERVER(RootWindowObserver, observers_,
-                    OnRootWindowHostMoved(this, origin));
+                    OnWindowTreeHostMoved(this, origin));
 }
 
 void RootWindow::OnHostResized(const gfx::Size& size) {
@@ -739,7 +739,7 @@ void RootWindow::OnHostResized(const gfx::Size& size) {
   if (details.dispatcher_destroyed)
     return;
   FOR_EACH_OBSERVER(RootWindowObserver, observers_,
-                    OnRootWindowHostResized(this));
+                    OnWindowTreeHostResized(this));
 }
 
 RootWindow* RootWindow::AsRootWindow() {

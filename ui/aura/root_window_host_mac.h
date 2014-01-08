@@ -23,13 +23,13 @@ namespace internal {
 class TouchEventCalibrate;
 }
 
-class AURA_EXPORT RootWindowHostMac : public RootWindowHost {
+class AURA_EXPORT WindowTreeHostMac : public WindowTreeHost {
  public:
-  explicit RootWindowHostMac(const gfx::Rect& bounds);
-  virtual ~RootWindowHostMac();
+  explicit WindowTreeHostMac(const gfx::Rect& bounds);
+  virtual ~WindowTreeHostMac();
 
  private:
-  // RootWindowHost Overrides.
+  // WindowTreeHost Overrides.
   virtual RootWindow* GetRootWindow() OVERRIDE;
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
   virtual void Show() OVERRIDE;
@@ -55,7 +55,7 @@ class AURA_EXPORT RootWindowHostMac : public RootWindowHost {
  private:
   base::scoped_nsobject<NSWindow> window_;
 
-  DISALLOW_COPY_AND_ASSIGN(RootWindowHostMac);
+  DISALLOW_COPY_AND_ASSIGN(WindowTreeHostMac);
 };
 
 }  // namespace aura

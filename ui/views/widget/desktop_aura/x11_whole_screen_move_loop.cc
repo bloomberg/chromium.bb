@@ -29,7 +29,7 @@ namespace {
 
 class ScopedCapturer {
  public:
-  explicit ScopedCapturer(aura::RootWindowHost* host)
+  explicit ScopedCapturer(aura::WindowTreeHost* host)
       : host_(host) {
     host_->SetCapture();
   }
@@ -39,7 +39,7 @@ class ScopedCapturer {
   }
 
  private:
-  aura::RootWindowHost* host_;
+  aura::WindowTreeHost* host_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedCapturer);
 };
@@ -57,7 +57,7 @@ X11WholeScreenMoveLoop::X11WholeScreenMoveLoop(
 X11WholeScreenMoveLoop::~X11WholeScreenMoveLoop() {}
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopRootWindowHostLinux, MessageLoop::Dispatcher implementation:
+// DesktopWindowTreeHostLinux, MessageLoop::Dispatcher implementation:
 
 bool X11WholeScreenMoveLoop::Dispatch(const base::NativeEvent& event) {
   XEvent* xev = event;
@@ -89,7 +89,7 @@ bool X11WholeScreenMoveLoop::Dispatch(const base::NativeEvent& event) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopRootWindowHostLinux, aura::client::WindowMoveClient implementation:
+// DesktopWindowTreeHostLinux, aura::client::WindowMoveClient implementation:
 
 bool X11WholeScreenMoveLoop::RunMoveLoop(aura::Window* source,
                                          gfx::NativeCursor cursor) {

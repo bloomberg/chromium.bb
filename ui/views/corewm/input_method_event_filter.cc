@@ -63,7 +63,7 @@ bool InputMethodEventFilter::DispatchKeyEventPostIME(
   DCHECK(event.message != WM_CHAR);
 #endif
   ui::TranslatedKeyEvent aura_event(event, false /* is_char */);
-  return target_dispatcher_->AsRootWindowHostDelegate()->OnHostKeyEvent(
+  return target_dispatcher_->AsWindowTreeHostDelegate()->OnHostKeyEvent(
       &aura_event);
 }
 
@@ -73,7 +73,7 @@ bool InputMethodEventFilter::DispatchFabricatedKeyEventPostIME(
     int flags) {
   ui::TranslatedKeyEvent aura_event(type == ui::ET_KEY_PRESSED, key_code,
                                     flags);
-  return target_dispatcher_->AsRootWindowHostDelegate()->OnHostKeyEvent(
+  return target_dispatcher_->AsWindowTreeHostDelegate()->OnHostKeyEvent(
       &aura_event);
 }
 

@@ -19,15 +19,15 @@ class Window;
 class AURA_EXPORT RootWindowObserver {
  public:
   // Invoked after the RootWindow's host has been resized.
-  virtual void OnRootWindowHostResized(const RootWindow* root) {}
+  virtual void OnWindowTreeHostResized(const RootWindow* root) {}
 
   // Invoked after the RootWindow's host has been moved on screen.
-  virtual void OnRootWindowHostMoved(const RootWindow* root,
+  virtual void OnWindowTreeHostMoved(const RootWindow* root,
                                      const gfx::Point& new_origin) {}
 
   // Invoked when the native windowing system sends us a request to close our
   // window.
-  virtual void OnRootWindowHostCloseRequested(const RootWindow* root) {}
+  virtual void OnWindowTreeHostCloseRequested(const RootWindow* root) {}
 
   // Invoked when the keyboard mapping has changed.
   virtual void OnKeyboardMappingChanged(const RootWindow* root) {}

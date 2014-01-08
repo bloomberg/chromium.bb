@@ -289,7 +289,7 @@ void LockStateController::SetLockScreenDisplayedCallback(
   lock_screen_displayed_callback_ = callback;
 }
 
-void LockStateController::OnRootWindowHostCloseRequested(
+void LockStateController::OnWindowTreeHostCloseRequested(
                                                 const aura::RootWindow*) {
   Shell::GetInstance()->delegate()->Exit();
 }

@@ -32,7 +32,7 @@ struct CompositionText;
 //   metro_driver process via RemoteInputMethodDelegateWin.
 // - Data retrieval from RemoteInputMethodPrivateWin is implemented with
 //   data cache. Whenever the IME state in the metro_driver process is changed,
-//   RemoteRootWindowHostWin, which receives IPCs from metro_driver process,
+//   RemoteWindowTreeHostWin, which receives IPCs from metro_driver process,
 //   will call RemoteInputMethodPrivateWin::OnCandidatePopupChanged and/or
 //   RemoteInputMethodPrivateWin::OnInputSourceChanged accordingly so that
 //   the state cache should be updated.

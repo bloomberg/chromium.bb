@@ -125,7 +125,7 @@ class AuraDemo : public ShellClient {
 
     mojo::ScopedMessagePipeHandle client_handle, native_viewport_handle;
     CreateMessagePipe(&client_handle, &native_viewport_handle);
-    root_window_host_.reset(new RootWindowHostMojo(
+    root_window_host_.reset(new WindowTreeHostMojo(
         native_viewport_handle.Pass(),
         base::Bind(&AuraDemo::HostContextCreated, base::Unretained(this))));
     mojo::AllocationScope scope;
@@ -183,7 +183,7 @@ class AuraDemo : public ShellClient {
   aura::Window* window21_;
 
   mojo::RemotePtr<Shell> shell_;
-  scoped_ptr<RootWindowHostMojo> root_window_host_;
+  scoped_ptr<WindowTreeHostMojo> root_window_host_;
   scoped_ptr<aura::RootWindow> root_window_;
 };
 

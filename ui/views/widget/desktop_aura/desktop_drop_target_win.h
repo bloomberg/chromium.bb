@@ -23,7 +23,7 @@ class OSExchangeData;
 namespace views {
 
 // DesktopDropTargetWin takes care of managing drag and drop for
-// DesktopRootWindowHostWin. It converts Windows OLE drop messages into
+// DesktopWindowTreeHostWin. It converts Windows OLE drop messages into
 // aura::client::DragDropDelegate calls.
 class DesktopDropTargetWin : public ui::DropTargetWin,
                              public aura::WindowObserver {

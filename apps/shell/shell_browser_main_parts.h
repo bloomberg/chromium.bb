@@ -56,7 +56,7 @@ class ShellBrowserMainParts : public content::BrowserMainParts,
   virtual void PostMainMessageLoopRun() OVERRIDE;
 
   // aura::RootWindowObserver overrides:
-  virtual void OnRootWindowHostCloseRequested(const aura::RootWindow* root)
+  virtual void OnWindowTreeHostCloseRequested(const aura::RootWindow* root)
       OVERRIDE;
 
  private:

@@ -9,23 +9,23 @@
 #include "ui/gfx/rect.h"
 
 namespace aura {
-class RootWindowHost;
+class WindowTreeHost;
 }
 
 namespace ash {
 
-class ASH_EXPORT RootWindowHostFactory {
+class ASH_EXPORT WindowTreeHostFactory {
  public:
-  virtual ~RootWindowHostFactory() {}
+  virtual ~WindowTreeHostFactory() {}
 
-  static RootWindowHostFactory* Create();
+  static WindowTreeHostFactory* Create();
 
-  // Creates a new aura::RootWindowHost. The caller owns the returned value.
-  virtual aura::RootWindowHost* CreateRootWindowHost(
+  // Creates a new aura::WindowTreeHost. The caller owns the returned value.
+  virtual aura::WindowTreeHost* CreateWindowTreeHost(
       const gfx::Rect& initial_bounds) = 0;
 
  protected:
-  RootWindowHostFactory() {}
+  WindowTreeHostFactory() {}
 };
 
 }  // namespace ash

@@ -19,17 +19,17 @@ namespace examples {
 
 class GLES2ClientImpl;
 
-class RootWindowHostMojo : public aura::RootWindowHost,
+class WindowTreeHostMojo : public aura::WindowTreeHost,
                            public NativeViewportClient {
  public:
-  RootWindowHostMojo(ScopedMessagePipeHandle viewport_handle,
+  WindowTreeHostMojo(ScopedMessagePipeHandle viewport_handle,
                      const base::Callback<void()>& compositor_created_callback);
-  virtual ~RootWindowHostMojo();
+  virtual ~WindowTreeHostMojo();
 
   GLES2ClientImpl* gles2_client() { return gles2_client_.get(); }
 
  private:
-  // RootWindowHost:
+  // WindowTreeHost:
   virtual aura::RootWindow* GetRootWindow() OVERRIDE;
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
   virtual void Show() OVERRIDE;
@@ -65,7 +65,7 @@ class RootWindowHostMojo : public aura::RootWindowHost,
   RemotePtr<NativeViewport> native_viewport_;
   base::Callback<void()> compositor_created_callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(RootWindowHostMojo);
+  DISALLOW_COPY_AND_ASSIGN(WindowTreeHostMojo);
 };
 
 }  // namespace examples

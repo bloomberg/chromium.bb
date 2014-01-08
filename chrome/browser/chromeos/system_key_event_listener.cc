@@ -126,7 +126,7 @@ bool SystemKeyEventListener::ProcessedXEvent(XEvent* xevent) {
       input_method::InputMethodManager::Get();
 
   if (xevent->type == xkb_event_base_) {
-    // TODO(yusukes): Move this part to aura::RootWindowHost.
+    // TODO(yusukes): Move this part to aura::WindowTreeHost.
     XkbEvent* xkey_event = reinterpret_cast<XkbEvent*>(xevent);
     if (xkey_event->any.xkb_type == XkbStateNotify) {
       const bool caps_lock_enabled = (xkey_event->state.locked_mods) & LockMask;

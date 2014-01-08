@@ -18,12 +18,12 @@ namespace mojo {
 namespace examples {
 
 // static
-ui::ContextFactory* RootWindowHostMojo::context_factory_ = NULL;
+ui::ContextFactory* WindowTreeHostMojo::context_factory_ = NULL;
 
 ////////////////////////////////////////////////////////////////////////////////
-// RootWindowHostMojo, public:
+// WindowTreeHostMojo, public:
 
-RootWindowHostMojo::RootWindowHostMojo(
+WindowTreeHostMojo::WindowTreeHostMojo(
     ScopedMessagePipeHandle viewport_handle,
     const base::Callback<void()>& compositor_created_callback)
     : native_viewport_(viewport_handle.Pass(), this),
@@ -45,117 +45,117 @@ RootWindowHostMojo::RootWindowHostMojo(
 
   gles2_client_.reset(new GLES2ClientImpl(
       gles2_handle.Pass(),
-      base::Bind(&RootWindowHostMojo::DidCreateContext,
+      base::Bind(&WindowTreeHostMojo::DidCreateContext,
                  base::Unretained(this))));
   native_viewport_->CreateGLES2Context(gles2_client_handle.Pass());
 }
 
-RootWindowHostMojo::~RootWindowHostMojo() {}
+WindowTreeHostMojo::~WindowTreeHostMojo() {}
 
 ////////////////////////////////////////////////////////////////////////////////
-// RootWindowHostMojo, aura::RootWindowHost implementation:
+// WindowTreeHostMojo, aura::WindowTreeHost implementation:
 
-aura::RootWindow* RootWindowHostMojo::GetRootWindow() {
+aura::RootWindow* WindowTreeHostMojo::GetRootWindow() {
   return delegate_->AsRootWindow();
 }
 
-gfx::AcceleratedWidget RootWindowHostMojo::GetAcceleratedWidget() {
+gfx::AcceleratedWidget WindowTreeHostMojo::GetAcceleratedWidget() {
   NOTIMPLEMENTED();
   return gfx::kNullAcceleratedWidget;
 }
 
-void RootWindowHostMojo::Show() {
+void WindowTreeHostMojo::Show() {
   NOTIMPLEMENTED();
 }
 
-void RootWindowHostMojo::Hide() {
+void WindowTreeHostMojo::Hide() {
   NOTIMPLEMENTED();
 }
 
-void RootWindowHostMojo::ToggleFullScreen() {
+void WindowTreeHostMojo::ToggleFullScreen() {
   NOTIMPLEMENTED();
 }
 
-gfx::Rect RootWindowHostMojo::GetBounds() const {
+gfx::Rect WindowTreeHostMojo::GetBounds() const {
   NOTIMPLEMENTED();
   return gfx::Rect(500, 500);
 }
 
-void RootWindowHostMojo::SetBounds(const gfx::Rect& bounds) {
+void WindowTreeHostMojo::SetBounds(const gfx::Rect& bounds) {
   NOTIMPLEMENTED();
 }
 
-gfx::Insets RootWindowHostMojo::GetInsets() const {
+gfx::Insets WindowTreeHostMojo::GetInsets() const {
   NOTIMPLEMENTED();
   return gfx::Insets();
 }
 
-void RootWindowHostMojo::SetInsets(const gfx::Insets& insets) {
+void WindowTreeHostMojo::SetInsets(const gfx::Insets& insets) {
   NOTIMPLEMENTED();
 }
 
-gfx::Point RootWindowHostMojo::GetLocationOnNativeScreen() const {
+gfx::Point WindowTreeHostMojo::GetLocationOnNativeScreen() const {
   return gfx::Point(0, 0);
 }
 
-void RootWindowHostMojo::SetCapture() {
+void WindowTreeHostMojo::SetCapture() {
   NOTIMPLEMENTED();
 }
 
-void RootWindowHostMojo::ReleaseCapture() {
+void WindowTreeHostMojo::ReleaseCapture() {
   NOTIMPLEMENTED();
 }
 
-void RootWindowHostMojo::SetCursor(gfx::NativeCursor cursor) {
+void WindowTreeHostMojo::SetCursor(gfx::NativeCursor cursor) {
   NOTIMPLEMENTED();
 }
 
-bool RootWindowHostMojo::QueryMouseLocation(gfx::Point* location_return) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
-bool RootWindowHostMojo::ConfineCursorToRootWindow() {
+bool WindowTreeHostMojo::QueryMouseLocation(gfx::Point* location_return) {
   NOTIMPLEMENTED();
   return false;
 }
 
-void RootWindowHostMojo::UnConfineCursor() {
+bool WindowTreeHostMojo::ConfineCursorToRootWindow() {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+void WindowTreeHostMojo::UnConfineCursor() {
   NOTIMPLEMENTED();
 }
 
-void RootWindowHostMojo::OnCursorVisibilityChanged(bool show) {
+void WindowTreeHostMojo::OnCursorVisibilityChanged(bool show) {
   NOTIMPLEMENTED();
 }
 
-void RootWindowHostMojo::MoveCursorTo(const gfx::Point& location) {
+void WindowTreeHostMojo::MoveCursorTo(const gfx::Point& location) {
   NOTIMPLEMENTED();
 }
 
-void RootWindowHostMojo::PostNativeEvent(
+void WindowTreeHostMojo::PostNativeEvent(
     const base::NativeEvent& native_event) {
   NOTIMPLEMENTED();
 }
 
-void RootWindowHostMojo::OnDeviceScaleFactorChanged(float device_scale_factor) {
+void WindowTreeHostMojo::OnDeviceScaleFactorChanged(float device_scale_factor) {
   NOTIMPLEMENTED();
 }
 
-void RootWindowHostMojo::PrepareForShutdown() {
+void WindowTreeHostMojo::PrepareForShutdown() {
   NOTIMPLEMENTED();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// RootWindowHostMojo, NativeViewportClient implementation:
+// WindowTreeHostMojo, NativeViewportClient implementation:
 
-void RootWindowHostMojo::OnCreated() {
+void WindowTreeHostMojo::OnCreated() {
 }
 
-void RootWindowHostMojo::OnDestroyed() {
+void WindowTreeHostMojo::OnDestroyed() {
   base::MessageLoop::current()->Quit();
 }
 
-void RootWindowHostMojo::OnEvent(const Event& event) {
+void WindowTreeHostMojo::OnEvent(const Event& event) {
   if (!event.location().is_null())
     native_viewport_->AckEvent(event);
 
@@ -163,9 +163,9 @@ void RootWindowHostMojo::OnEvent(const Event& event) {
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// RootWindowHostMojo, private:
+// WindowTreeHostMojo, private:
 
-void RootWindowHostMojo::DidCreateContext(gfx::Size viewport_size) {
+void WindowTreeHostMojo::DidCreateContext(gfx::Size viewport_size) {
   CreateCompositor(GetAcceleratedWidget());
   compositor_created_callback_.Run();
   NotifyHostResized(viewport_size);

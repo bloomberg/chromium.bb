@@ -46,7 +46,7 @@ class ViewProp;
 
 namespace aura {
 class RootWindow;
-class RootWindowHost;
+class WindowTreeHost;
 class RootWindowObserver;
 class TestScreen;
 class WindowTargeter;
@@ -56,7 +56,7 @@ class AURA_EXPORT RootWindow : public ui::EventProcessor,
                                public ui::GestureEventHelper,
                                public ui::LayerAnimationObserver,
                                public aura::client::CaptureDelegate,
-                               public aura::RootWindowHostDelegate {
+                               public aura::WindowTreeHostDelegate {
  public:
   struct AURA_EXPORT CreateParams {
     // CreateParams with initial_bounds and default host in pixel.
@@ -67,13 +67,13 @@ class AURA_EXPORT RootWindow : public ui::EventProcessor,
 
     // A host to use in place of the default one that RootWindow will create.
     // NULL by default.
-    RootWindowHost* host;
+    WindowTreeHost* host;
   };
 
   explicit RootWindow(const CreateParams& params);
   virtual ~RootWindow();
 
-  // Returns the RootWindowHost for the specified accelerated widget, or NULL
+  // Returns the WindowTreeHost for the specified accelerated widget, or NULL
   // if there is none associated.
   static RootWindow* GetForAcceleratedWidget(gfx::AcceleratedWidget widget);
 
@@ -81,11 +81,11 @@ class AURA_EXPORT RootWindow : public ui::EventProcessor,
     return const_cast<Window*>(const_cast<const RootWindow*>(this)->window());
   }
   const Window* window() const { return window_.get(); }
-  RootWindowHost* host() {
-    return const_cast<RootWindowHost*>(
+  WindowTreeHost* host() {
+    return const_cast<WindowTreeHost*>(
         const_cast<const RootWindow*>(this)->host());
   }
-  const RootWindowHost* host() const { return host_.get(); }
+  const WindowTreeHost* host() const { return host_.get(); }
   gfx::NativeCursor last_cursor() const { return last_cursor_; }
   Window* mouse_pressed_handler() { return mouse_pressed_handler_; }
   Window* mouse_moved_handler() { return mouse_moved_handler_; }
@@ -101,7 +101,7 @@ class AURA_EXPORT RootWindow : public ui::EventProcessor,
   // types (although the latter is currently a no-op).
   void RepostEvent(const ui::LocatedEvent& event);
 
-  RootWindowHostDelegate* AsRootWindowHostDelegate();
+  WindowTreeHostDelegate* AsWindowTreeHostDelegate();
 
   // Gets/sets the size of the host window.
   void SetHostSize(const gfx::Size& size_in_pixel);
@@ -132,7 +132,7 @@ class AURA_EXPORT RootWindow : public ui::EventProcessor,
 
   // Handles a gesture event. Returns true if handled. Unlike the other
   // event-dispatching function (e.g. for touch/mouse/keyboard events), gesture
-  // events are dispatched from GestureRecognizer instead of RootWindowHost.
+  // events are dispatched from GestureRecognizer instead of WindowTreeHost.
   void DispatchGestureEvent(ui::GestureEvent* event);
 
   // Invoked when |window| is being destroyed.
@@ -161,7 +161,7 @@ class AURA_EXPORT RootWindow : public ui::EventProcessor,
   void OnKeyboardMappingChanged();
 
   // The system windowing system has sent a request that we close our window.
-  void OnRootWindowHostCloseRequested();
+  void OnWindowTreeHostCloseRequested();
 
   // Add/remove observer. There is no need to remove the observer if
   // the root window is being deleted. In particular, you SHOULD NOT remove
@@ -210,7 +210,7 @@ class AURA_EXPORT RootWindow : public ui::EventProcessor,
   };
 
   // Updates the event with the appropriate transform for the device scale
-  // factor. The RootWindowHostDelegate dispatches events in the physical pixel
+  // factor. The WindowTreeHostDelegate dispatches events in the physical pixel
   // coordinate. But the event processing from RootWindow onwards happen in
   // device-independent pixel coordinate. So it is necessary to update the event
   // received from the host.
@@ -272,7 +272,7 @@ class AURA_EXPORT RootWindow : public ui::EventProcessor,
   virtual void OnLayerAnimationAborted(
       ui::LayerAnimationSequence* animation) OVERRIDE;
 
-  // Overridden from aura::RootWindowHostDelegate:
+  // Overridden from aura::WindowTreeHostDelegate:
   virtual bool OnHostKeyEvent(ui::KeyEvent* event) OVERRIDE;
   virtual bool OnHostMouseEvent(ui::MouseEvent* event) OVERRIDE;
   virtual bool OnHostScrollEvent(ui::ScrollEvent* event) OVERRIDE;
@@ -295,7 +295,7 @@ class AURA_EXPORT RootWindow : public ui::EventProcessor,
   // dispatch held and newly incoming mouse and touch events, typically when an
   // event other than one of these needs dispatching or a matching
   // ReleaseMouseMoves()/ReleaseTouchMoves() is called.  NOTE: because these
-  // methods dispatch events from RootWindowHost the coordinates are in terms of
+  // methods dispatch events from WindowTreeHost the coordinates are in terms of
   // the root.
   ui::EventDispatchDetails DispatchMouseEventImpl(ui::MouseEvent* event)
       WARN_UNUSED_RESULT;
@@ -321,7 +321,7 @@ class AURA_EXPORT RootWindow : public ui::EventProcessor,
   // TODO(beng): evaluate the ideal ownership model.
   scoped_ptr<Window> window_;
 
-  scoped_ptr<RootWindowHost> host_;
+  scoped_ptr<WindowTreeHost> host_;
 
   // Touch ids that are currently down.
   uint32 touch_ids_down_;

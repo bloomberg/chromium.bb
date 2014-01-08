@@ -46,7 +46,7 @@
 //       TextServiceImpl
 //         -> ChromeAppViewAsh
 //         -- (process boundary) --
-//         -> RemoteRootWindowHostWin
+//         -> RemoteWindowTreeHostWin
 //         -> RemoteInputMethodWin
 //
 //   browser process -> metro_driver process
@@ -55,7 +55,7 @@
 //       - MetroViewerHostMsg_ImeTextInputClientUpdated
 //     Message Routing:
 //       RemoteInputMethodWin
-//         -> RemoteRootWindowHostWin
+//         -> RemoteWindowTreeHostWin
 //         -- (process boundary) --
 //         -> ChromeAppViewAsh
 //         -> TextServiceImpl

@@ -140,8 +140,8 @@ void AshTestBase::SetUp() {
           new TestMetroViewerProcessHost(ipc_thread_->message_loop_proxy()));
       CHECK(metro_viewer_host_->LaunchViewerAndWaitForConnection(
           win8::test::kDefaultTestAppUserModelId));
-      aura::RemoteRootWindowHostWin* root_window_host =
-          aura::RemoteRootWindowHostWin::Instance();
+      aura::RemoteWindowTreeHostWin* root_window_host =
+          aura::RemoteWindowTreeHostWin::Instance();
       CHECK(root_window_host != NULL);
     }
     ash::WindowPositioner::SetMaximizeFirstWindow(true);

@@ -61,7 +61,7 @@ class MojoContextProvider : public cc::ContextProvider {
 
 }  // namespace
 
-DemoContextFactory::DemoContextFactory(RootWindowHostMojo* rwhm) : rwhm_(rwhm) {
+DemoContextFactory::DemoContextFactory(WindowTreeHostMojo* rwhm) : rwhm_(rwhm) {
 }
 
 DemoContextFactory::~DemoContextFactory() {

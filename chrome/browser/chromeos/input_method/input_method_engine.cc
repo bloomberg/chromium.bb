@@ -226,7 +226,7 @@ bool InputMethodEngine::SendKeyEvents(
     flags |= event.caps_lock ? ui::EF_CAPS_LOCK_DOWN : ui::EF_NONE;
 
     ui::KeyEvent ui_event(type, key_code, code, flags, false /* is_char */);
-    dispatcher->AsRootWindowHostDelegate()->OnHostKeyEvent(&ui_event);
+    dispatcher->AsWindowTreeHostDelegate()->OnHostKeyEvent(&ui_event);
   }
   return true;
 }

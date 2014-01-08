@@ -612,7 +612,7 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageNaClTest, BackgroundKeepaliveActive) {
 
 // Verify that nacl modules that go idle will not send keepalive impulses.
 // Disabled on windows due to Win XP failures:
-// DesktopRootWindowHostWin::HandleCreate not implemented. crbug.com/331954
+// DesktopWindowTreeHostWin::HandleCreate not implemented. crbug.com/331954
 #if defined(OS_WIN)
 #define MAYBE_BackgroundKeepaliveIdle DISABLED_BackgroundKeepaliveIdle
 #else

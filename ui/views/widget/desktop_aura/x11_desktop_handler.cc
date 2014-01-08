@@ -151,13 +151,13 @@ void X11DesktopHandler::OnWillDestroyEnv() {
 void X11DesktopHandler::OnActiveWindowChanged(::Window xid) {
   if (current_window_ == xid)
     return;
-  DesktopRootWindowHostX11* old_host =
-      views::DesktopRootWindowHostX11::GetHostForXID(current_window_);
+  DesktopWindowTreeHostX11* old_host =
+      views::DesktopWindowTreeHostX11::GetHostForXID(current_window_);
   if (old_host)
     old_host->HandleNativeWidgetActivationChanged(false);
 
-  DesktopRootWindowHostX11* new_host =
-      views::DesktopRootWindowHostX11::GetHostForXID(xid);
+  DesktopWindowTreeHostX11* new_host =
+      views::DesktopWindowTreeHostX11::GetHostForXID(xid);
   if (new_host)
     new_host->HandleNativeWidgetActivationChanged(true);
 

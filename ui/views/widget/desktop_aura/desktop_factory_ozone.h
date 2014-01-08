@@ -13,7 +13,7 @@ class Rect;
 
 namespace views {
 class DesktopNativeWidgetAura;
-class DesktopRootWindowHost;
+class DesktopWindowTreeHost;
 
 namespace internal {
 class NativeWidgetDelegate;
@@ -30,9 +30,9 @@ class VIEWS_EXPORT DesktopFactoryOzone {
   // Sets the implementation delegate. Ownership is retained by the caller.
   static void SetInstance(DesktopFactoryOzone* impl);
 
-  // Delegates implementation of DesktopRootWindowHost::Create externally to
+  // Delegates implementation of DesktopWindowTreeHost::Create externally to
   // Ozone implementation.
-  virtual DesktopRootWindowHost* CreateRootWindowHost(
+  virtual DesktopWindowTreeHost* CreateWindowTreeHost(
       internal::NativeWidgetDelegate* native_widget_delegate,
       DesktopNativeWidgetAura* desktop_native_widget_aura) = 0;
 

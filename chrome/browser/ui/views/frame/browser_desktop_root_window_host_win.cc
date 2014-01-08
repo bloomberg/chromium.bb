@@ -31,7 +31,7 @@ const int kClientEdgeThickness = 3;
 const int kDWMFrameTopOffset = 3;
 
 // DesktopThemeProvider maps resource ids using MapThemeImage(). This is
-// necessary for BrowserDesktopRootWindowHostWin so that it uses the windows
+// necessary for BrowserDesktopWindowTreeHostWin so that it uses the windows
 // theme images rather than the ash theme images.
 class DesktopThemeProvider : public ui::ThemeProvider {
  public:
@@ -72,14 +72,14 @@ class DesktopThemeProvider : public ui::ThemeProvider {
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
-// BrowserDesktopRootWindowHostWin, public:
+// BrowserDesktopWindowTreeHostWin, public:
 
-BrowserDesktopRootWindowHostWin::BrowserDesktopRootWindowHostWin(
+BrowserDesktopWindowTreeHostWin::BrowserDesktopWindowTreeHostWin(
     views::internal::NativeWidgetDelegate* native_widget_delegate,
     views::DesktopNativeWidgetAura* desktop_native_widget_aura,
     BrowserView* browser_view,
     BrowserFrame* browser_frame)
-    : DesktopRootWindowHostWin(native_widget_delegate,
+    : DesktopWindowTreeHostWin(native_widget_delegate,
                                desktop_native_widget_aura),
       browser_view_(browser_view),
       browser_frame_(browser_frame),
@@ -90,10 +90,10 @@ BrowserDesktopRootWindowHostWin::BrowserDesktopRootWindowHostWin(
   browser_frame->SetThemeProvider(theme_provider.Pass());
 }
 
-BrowserDesktopRootWindowHostWin::~BrowserDesktopRootWindowHostWin() {
+BrowserDesktopWindowTreeHostWin::~BrowserDesktopWindowTreeHostWin() {
 }
 
-views::NativeMenuWin* BrowserDesktopRootWindowHostWin::GetSystemMenu() {
+views::NativeMenuWin* BrowserDesktopWindowTreeHostWin::GetSystemMenu() {
   if (!system_menu_.get()) {
     SystemMenuInsertionDelegateWin insertion_delegate;
     system_menu_.reset(
@@ -105,25 +105,25 @@ views::NativeMenuWin* BrowserDesktopRootWindowHostWin::GetSystemMenu() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// BrowserDesktopRootWindowHostWin, BrowserDesktopRootWindowHost implementation:
+// BrowserDesktopWindowTreeHostWin, BrowserDesktopWindowTreeHost implementation:
 
-views::DesktopRootWindowHost*
-    BrowserDesktopRootWindowHostWin::AsDesktopRootWindowHost() {
+views::DesktopWindowTreeHost*
+    BrowserDesktopWindowTreeHostWin::AsDesktopWindowTreeHost() {
   return this;
 }
 
-int BrowserDesktopRootWindowHostWin::GetMinimizeButtonOffset() const {
+int BrowserDesktopWindowTreeHostWin::GetMinimizeButtonOffset() const {
   return minimize_button_metrics_.GetMinimizeButtonOffsetX();
 }
 
-bool BrowserDesktopRootWindowHostWin::UsesNativeSystemMenu() const {
+bool BrowserDesktopWindowTreeHostWin::UsesNativeSystemMenu() const {
   return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// BrowserDesktopRootWindowHostWin, views::DesktopRootWindowHostWin overrides:
+// BrowserDesktopWindowTreeHostWin, views::DesktopWindowTreeHostWin overrides:
 
-int BrowserDesktopRootWindowHostWin::GetInitialShowState() const {
+int BrowserDesktopWindowTreeHostWin::GetInitialShowState() const {
   STARTUPINFO si = {0};
   si.cb = sizeof(si);
   si.dwFlags = STARTF_USESHOWWINDOW;
@@ -131,7 +131,7 @@ int BrowserDesktopRootWindowHostWin::GetInitialShowState() const {
   return si.wShowWindow;
 }
 
-bool BrowserDesktopRootWindowHostWin::GetClientAreaInsets(
+bool BrowserDesktopWindowTreeHostWin::GetClientAreaInsets(
     gfx::Insets* insets) const {
   // Use the default client insets for an opaque frame or a glass popup/app
   // frame.
@@ -151,8 +151,8 @@ bool BrowserDesktopRootWindowHostWin::GetClientAreaInsets(
   return true;
 }
 
-void BrowserDesktopRootWindowHostWin::HandleCreate() {
-  DesktopRootWindowHostWin::HandleCreate();
+void BrowserDesktopWindowTreeHostWin::HandleCreate() {
+  DesktopWindowTreeHostWin::HandleCreate();
   browser_window_property_manager_ =
       BrowserWindowPropertyManager::CreateBrowserWindowPropertyManager(
           browser_view_);
@@ -160,7 +160,7 @@ void BrowserDesktopRootWindowHostWin::HandleCreate() {
     browser_window_property_manager_->UpdateWindowProperties(GetHWND());
 }
 
-void BrowserDesktopRootWindowHostWin::HandleFrameChanged() {
+void BrowserDesktopWindowTreeHostWin::HandleFrameChanged() {
   // Reinitialize the status bubble, since it needs to be initialized
   // differently depending on whether or not DWM composition is enabled
   browser_view_->InitStatusBubble();
@@ -168,10 +168,10 @@ void BrowserDesktopRootWindowHostWin::HandleFrameChanged() {
   // We need to update the glass region on or off before the base class adjusts
   // the window region.
   UpdateDWMFrame();
-  DesktopRootWindowHostWin::HandleFrameChanged();
+  DesktopWindowTreeHostWin::HandleFrameChanged();
 }
 
-bool BrowserDesktopRootWindowHostWin::PreHandleMSG(UINT message,
+bool BrowserDesktopWindowTreeHostWin::PreHandleMSG(UINT message,
                                                    WPARAM w_param,
                                                    LPARAM l_param,
                                                    LRESULT* result) {
@@ -187,11 +187,11 @@ bool BrowserDesktopRootWindowHostWin::PreHandleMSG(UINT message,
       GetSystemMenu()->UpdateStates();
       return true;
   }
-  return DesktopRootWindowHostWin::PreHandleMSG(
+  return DesktopWindowTreeHostWin::PreHandleMSG(
       message, w_param, l_param, result);
 }
 
-void BrowserDesktopRootWindowHostWin::PostHandleMSG(UINT message,
+void BrowserDesktopWindowTreeHostWin::PostHandleMSG(UINT message,
                                                     WPARAM w_param,
                                                     LPARAM l_param) {
   switch (message) {
@@ -220,7 +220,7 @@ void BrowserDesktopRootWindowHostWin::PostHandleMSG(UINT message,
     break;
   }
   case WM_ERASEBKGND:
-    if (!did_gdi_clear_ && DesktopRootWindowHostWin::ShouldUseNativeFrame()) {
+    if (!did_gdi_clear_ && DesktopWindowTreeHostWin::ShouldUseNativeFrame()) {
       // This is necessary to avoid white flashing in the titlebar area around
       // the minimize/maximize/close buttons.
       HDC dc = GetDC(GetHWND());
@@ -239,12 +239,12 @@ void BrowserDesktopRootWindowHostWin::PostHandleMSG(UINT message,
 }
 
 
-bool BrowserDesktopRootWindowHostWin::IsUsingCustomFrame() const {
+bool BrowserDesktopWindowTreeHostWin::IsUsingCustomFrame() const {
   // We don't theme popup or app windows, so regardless of whether or not a
   // theme is active for normal browser windows, we don't want to use the custom
   // frame for popups/apps.
   if (!browser_view_->IsBrowserTypeNormal() &&
-      !DesktopRootWindowHostWin::IsUsingCustomFrame()) {
+      !DesktopWindowTreeHostWin::IsUsingCustomFrame()) {
     return false;
   }
 
@@ -253,8 +253,8 @@ bool BrowserDesktopRootWindowHostWin::IsUsingCustomFrame() const {
   return !GetWidget()->GetThemeProvider()->ShouldUseNativeFrame();
 }
 
-bool BrowserDesktopRootWindowHostWin::ShouldUseNativeFrame() {
-  if (!views::DesktopRootWindowHostWin::ShouldUseNativeFrame())
+bool BrowserDesktopWindowTreeHostWin::ShouldUseNativeFrame() {
+  if (!views::DesktopWindowTreeHostWin::ShouldUseNativeFrame())
     return false;
   // This function can get called when the Browser window is closed i.e. in the
   // context of the BrowserView destructor.
@@ -264,15 +264,15 @@ bool BrowserDesktopRootWindowHostWin::ShouldUseNativeFrame() {
                                       GetWidget()->GetThemeProvider());
 }
 
-void BrowserDesktopRootWindowHostWin::FrameTypeChanged() {
-  views::DesktopRootWindowHostWin::FrameTypeChanged();
+void BrowserDesktopWindowTreeHostWin::FrameTypeChanged() {
+  views::DesktopWindowTreeHostWin::FrameTypeChanged();
   did_gdi_clear_ = false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// BrowserDesktopRootWindowHostWin, private:
+// BrowserDesktopWindowTreeHostWin, private:
 
-void BrowserDesktopRootWindowHostWin::UpdateDWMFrame() {
+void BrowserDesktopWindowTreeHostWin::UpdateDWMFrame() {
   // For "normal" windows on Aero, we always need to reset the glass area
   // correctly, even if we're not currently showing the native frame (e.g.
   // because a theme is showing), so we explicitly check for that case rather
@@ -282,7 +282,7 @@ void BrowserDesktopRootWindowHostWin::UpdateDWMFrame() {
   // opaque frame.  Instead, we use that function below to tell us whether the
   // frame is currently native or opaque.
   if (!GetWidget()->client_view() || !browser_view_->IsBrowserTypeNormal() ||
-      !DesktopRootWindowHostWin::ShouldUseNativeFrame())
+      !DesktopWindowTreeHostWin::ShouldUseNativeFrame())
     return;
 
   MARGINS margins = GetDWMFrameMargins();
@@ -290,7 +290,7 @@ void BrowserDesktopRootWindowHostWin::UpdateDWMFrame() {
   DwmExtendFrameIntoClientArea(GetHWND(), &margins);
 }
 
-MARGINS BrowserDesktopRootWindowHostWin::GetDWMFrameMargins() const {
+MARGINS BrowserDesktopWindowTreeHostWin::GetDWMFrameMargins() const {
   MARGINS margins = { 0 };
 
   // If the opaque frame is visible, we use the default (zero) margins.
@@ -318,16 +318,16 @@ MARGINS BrowserDesktopRootWindowHostWin::GetDWMFrameMargins() const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// BrowserDesktopRootWindowHost, public:
+// BrowserDesktopWindowTreeHost, public:
 
 // static
-BrowserDesktopRootWindowHost*
-    BrowserDesktopRootWindowHost::CreateBrowserDesktopRootWindowHost(
+BrowserDesktopWindowTreeHost*
+    BrowserDesktopWindowTreeHost::CreateBrowserDesktopWindowTreeHost(
         views::internal::NativeWidgetDelegate* native_widget_delegate,
         views::DesktopNativeWidgetAura* desktop_native_widget_aura,
         BrowserView* browser_view,
         BrowserFrame* browser_frame) {
-  return new BrowserDesktopRootWindowHostWin(native_widget_delegate,
+  return new BrowserDesktopWindowTreeHostWin(native_widget_delegate,
                                              desktop_native_widget_aura,
                                              browser_view,
                                              browser_frame);

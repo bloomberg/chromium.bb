@@ -123,7 +123,7 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
   LOG(WARNING) << "-----------------------------------";
 }
 
-void ShellBrowserMainParts::OnRootWindowHostCloseRequested(
+void ShellBrowserMainParts::OnWindowTreeHostCloseRequested(
     const aura::RootWindow* root) {
   base::MessageLoop::current()->PostTask(FROM_HERE,
                                          base::MessageLoop::QuitClosure());

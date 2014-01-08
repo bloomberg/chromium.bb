@@ -10,7 +10,7 @@
 
 namespace aura {
 
-RootWindowHostMac::RootWindowHostMac(const gfx::Rect& bounds) {
+WindowTreeHostMac::WindowTreeHostMac(const gfx::Rect& bounds) {
   window_.reset(
       [[NSWindow alloc]
           initWithContentRect:NSRectFromCGRect(bounds.ToCGRect())
@@ -20,101 +20,101 @@ RootWindowHostMac::RootWindowHostMac(const gfx::Rect& bounds) {
   CreateCompositor(GetAcceleratedWidget());
 }
 
-RootWindowHostMac::~RootWindowHostMac() {
+WindowTreeHostMac::~WindowTreeHostMac() {
 }
 
-RootWindow* RootWindowHostMac::GetRootWindow() {
+RootWindow* WindowTreeHostMac::GetRootWindow() {
   return delegate_->AsRootWindow();
 }
 
-gfx::AcceleratedWidget RootWindowHostMac::GetAcceleratedWidget() {
+gfx::AcceleratedWidget WindowTreeHostMac::GetAcceleratedWidget() {
   return [window_ contentView];
 }
-void RootWindowHostMac::Show() {
+void WindowTreeHostMac::Show() {
   [window_ makeKeyAndOrderFront:nil];
 }
 
-void RootWindowHostMac::Hide() {
+void WindowTreeHostMac::Hide() {
   [window_ orderOut:nil];
 }
 
-void RootWindowHostMac::ToggleFullScreen() {
+void WindowTreeHostMac::ToggleFullScreen() {
 }
 
-gfx::Rect RootWindowHostMac::GetBounds() const {
+gfx::Rect WindowTreeHostMac::GetBounds() const {
   return gfx::Rect(NSRectToCGRect([window_ frame]));
 }
 
-void RootWindowHostMac::SetBounds(const gfx::Rect& bounds) {
+void WindowTreeHostMac::SetBounds(const gfx::Rect& bounds) {
   [window_ setFrame:NSRectFromCGRect(bounds.ToCGRect()) display:YES animate:NO];
 }
 
-gfx::Insets RootWindowHostMac::GetInsets() const {
+gfx::Insets WindowTreeHostMac::GetInsets() const {
   NOTIMPLEMENTED();
   return gfx::Insets();
 }
 
-void RootWindowHostMac::SetInsets(const gfx::Insets& insets) {
+void WindowTreeHostMac::SetInsets(const gfx::Insets& insets) {
   NOTIMPLEMENTED();
 }
 
-gfx::Point RootWindowHostMac::GetLocationOnNativeScreen() const {
+gfx::Point WindowTreeHostMac::GetLocationOnNativeScreen() const {
   NOTIMPLEMENTED();
   return gfx::Point(0, 0);
 }
 
-void RootWindowHostMac::SetCapture() {
+void WindowTreeHostMac::SetCapture() {
   NOTIMPLEMENTED();
 }
 
-void RootWindowHostMac::ReleaseCapture() {
+void WindowTreeHostMac::ReleaseCapture() {
   NOTIMPLEMENTED();
 }
 
-void RootWindowHostMac::SetCursor(gfx::NativeCursor cursor_type) {
+void WindowTreeHostMac::SetCursor(gfx::NativeCursor cursor_type) {
   NOTIMPLEMENTED();
 }
 
-bool RootWindowHostMac::QueryMouseLocation(gfx::Point* location_return) {
+bool WindowTreeHostMac::QueryMouseLocation(gfx::Point* location_return) {
   NOTIMPLEMENTED();
   return false;
 }
 
-bool RootWindowHostMac::ConfineCursorToRootWindow() {
+bool WindowTreeHostMac::ConfineCursorToRootWindow() {
   return false;
 }
 
-void RootWindowHostMac::UnConfineCursor() {
+void WindowTreeHostMac::UnConfineCursor() {
   NOTIMPLEMENTED();
 }
 
-void RootWindowHostMac::OnCursorVisibilityChanged(bool show) {
+void WindowTreeHostMac::OnCursorVisibilityChanged(bool show) {
   NOTIMPLEMENTED();
 }
 
-void RootWindowHostMac::MoveCursorTo(const gfx::Point& location) {
+void WindowTreeHostMac::MoveCursorTo(const gfx::Point& location) {
   NOTIMPLEMENTED();
 }
 
-void RootWindowHostMac::PostNativeEvent(const base::NativeEvent& event) {
+void WindowTreeHostMac::PostNativeEvent(const base::NativeEvent& event) {
   NOTIMPLEMENTED();
 }
 
-void RootWindowHostMac::OnDeviceScaleFactorChanged(float device_scale_factor) {
+void WindowTreeHostMac::OnDeviceScaleFactorChanged(float device_scale_factor) {
   NOTIMPLEMENTED();
 }
 
-void RootWindowHostMac::PrepareForShutdown() {
+void WindowTreeHostMac::PrepareForShutdown() {
   NOTIMPLEMENTED();
 }
 
 // static
-RootWindowHost* RootWindowHost::Create(const gfx::Rect& bounds) {
-  return new RootWindowHostMac(bounds);
+WindowTreeHost* WindowTreeHost::Create(const gfx::Rect& bounds) {
+  return new WindowTreeHostMac(bounds);
 }
 
 // static
-gfx::Size RootWindowHost::GetNativeScreenSize() {
+gfx::Size WindowTreeHost::GetNativeScreenSize() {
   NOTIMPLEMENTED();
   return gfx::Size(1024, 768);
 }

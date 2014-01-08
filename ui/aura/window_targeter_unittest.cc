@@ -39,7 +39,7 @@ TEST_F(WindowTargeterTest, Basic) {
                        gfx::Point(20, 20),
                        ui::EF_NONE,
                        ui::EF_NONE);
-  root_window()->GetDispatcher()->AsRootWindowHostDelegate()->
+  root_window()->GetDispatcher()->AsWindowTreeHostDelegate()->
       OnHostMouseEvent(&press);
   EXPECT_EQ(1, handler.num_mouse_events());
 

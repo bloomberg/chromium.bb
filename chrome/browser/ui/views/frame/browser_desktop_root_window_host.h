@@ -12,24 +12,24 @@ class Rect;
 }
 namespace views {
 class DesktopNativeWidgetAura;
-class DesktopRootWindowHost;
+class DesktopWindowTreeHost;
 namespace internal {
 class NativeWidgetDelegate;
 }
 }
 
 // Interface to a platform specific browser frame implementation. The object
-// implementing this interface will also implement views::DesktopRootWindowHost.
-class BrowserDesktopRootWindowHost {
+// implementing this interface will also implement views::DesktopWindowTreeHost.
+class BrowserDesktopWindowTreeHost {
  public:
   // BDRWH is owned by the RootWindow.
-  static BrowserDesktopRootWindowHost* CreateBrowserDesktopRootWindowHost(
+  static BrowserDesktopWindowTreeHost* CreateBrowserDesktopWindowTreeHost(
       views::internal::NativeWidgetDelegate* native_widget_delegate,
       views::DesktopNativeWidgetAura* desktop_native_widget_aura,
       BrowserView* browser_view,
       BrowserFrame* browser_frame);
 
-  virtual views::DesktopRootWindowHost* AsDesktopRootWindowHost() = 0;
+  virtual views::DesktopWindowTreeHost* AsDesktopWindowTreeHost() = 0;
 
   virtual int GetMinimizeButtonOffset() const = 0;
 

@@ -116,7 +116,7 @@ TEST_F(RootWindowTest, OnHostMouseEvent) {
   ui::MouseEvent event1(
       ui::ET_MOUSE_PRESSED, point, point, ui::EF_LEFT_MOUSE_BUTTON,
       ui::EF_LEFT_MOUSE_BUTTON);
-  dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(&event1);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostMouseEvent(&event1);
 
   // Event was tested for non-client area for the target window.
   EXPECT_EQ(1, delegate1->non_client_count());
@@ -159,7 +159,7 @@ TEST_F(RootWindowTest, MouseButtonState) {
       location,
       ui::EF_LEFT_MOUSE_BUTTON,
       ui::EF_LEFT_MOUSE_BUTTON));
-  dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(event.get());
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostMouseEvent(event.get());
   EXPECT_TRUE(Env::GetInstance()->IsMouseButtonDown());
 
   // Additionally press the right.
@@ -169,7 +169,7 @@ TEST_F(RootWindowTest, MouseButtonState) {
       location,
       ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON,
       ui::EF_RIGHT_MOUSE_BUTTON));
-  dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(event.get());
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostMouseEvent(event.get());
   EXPECT_TRUE(Env::GetInstance()->IsMouseButtonDown());
 
   // Release the left button.
@@ -179,7 +179,7 @@ TEST_F(RootWindowTest, MouseButtonState) {
       location,
       ui::EF_RIGHT_MOUSE_BUTTON,
       ui::EF_LEFT_MOUSE_BUTTON));
-  dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(event.get());
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostMouseEvent(event.get());
   EXPECT_TRUE(Env::GetInstance()->IsMouseButtonDown());
 
   // Release the right button.  We should ignore the Shift-is-down flag.
@@ -189,7 +189,7 @@ TEST_F(RootWindowTest, MouseButtonState) {
       location,
       ui::EF_SHIFT_DOWN,
       ui::EF_RIGHT_MOUSE_BUTTON));
-  dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(event.get());
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostMouseEvent(event.get());
   EXPECT_FALSE(Env::GetInstance()->IsMouseButtonDown());
 
   // Press the middle button.
@@ -199,7 +199,7 @@ TEST_F(RootWindowTest, MouseButtonState) {
       location,
       ui::EF_MIDDLE_MOUSE_BUTTON,
       ui::EF_MIDDLE_MOUSE_BUTTON));
-  dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(event.get());
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostMouseEvent(event.get());
   EXPECT_TRUE(Env::GetInstance()->IsMouseButtonDown());
 }
 
@@ -343,12 +343,12 @@ TEST_F(RootWindowTest, IgnoreUnknownKeys) {
   root_window()->SetEventFilter(filter);  // passes ownership
 
   ui::KeyEvent unknown_event(ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN, 0, false);
-  EXPECT_FALSE(dispatcher()->AsRootWindowHostDelegate()->OnHostKeyEvent(
+  EXPECT_FALSE(dispatcher()->AsWindowTreeHostDelegate()->OnHostKeyEvent(
       &unknown_event));
   EXPECT_EQ(0, filter->num_key_events());
 
   ui::KeyEvent known_event(ui::ET_KEY_PRESSED, ui::VKEY_A, 0, false);
-  EXPECT_TRUE(dispatcher()->AsRootWindowHostDelegate()->OnHostKeyEvent(
+  EXPECT_TRUE(dispatcher()->AsWindowTreeHostDelegate()->OnHostKeyEvent(
       &known_event));
   EXPECT_EQ(1, filter->num_key_events());
 }
@@ -361,7 +361,7 @@ TEST_F(RootWindowTest, NoDelegateWindowReceivesKeyEvents) {
   test::TestEventHandler handler;
   w1->AddPreTargetHandler(&handler);
   ui::KeyEvent key_press(ui::ET_KEY_PRESSED, ui::VKEY_A, 0, false);
-  EXPECT_TRUE(dispatcher()->AsRootWindowHostDelegate()->OnHostKeyEvent(
+  EXPECT_TRUE(dispatcher()->AsWindowTreeHostDelegate()->OnHostKeyEvent(
       &key_press));
   EXPECT_EQ(1, handler.num_key_events());
 
@@ -377,14 +377,14 @@ TEST_F(RootWindowTest, TouchEventsOutsideBounds) {
   gfx::Point position = root_window()->bounds().origin();
   position.Offset(-10, -10);
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, position, 0, base::TimeDelta());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
   EXPECT_EQ(1, filter->num_touch_events());
 
   position = root_window()->bounds().origin();
   position.Offset(root_window()->bounds().width() + 10,
                   root_window()->bounds().height() + 10);
   ui::TouchEvent release(ui::ET_TOUCH_RELEASED, position, 0, base::TimeDelta());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release);
   EXPECT_EQ(2, filter->num_touch_events());
 }
 
@@ -406,7 +406,7 @@ TEST_F(RootWindowTest, ScrollEventDispatch) {
                           0, -10,
                           0, -10,
                           2);
-  dispatcher()->AsRootWindowHostDelegate()->OnHostScrollEvent(&scroll1);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostScrollEvent(&scroll1);
   EXPECT_EQ(1, filter->num_scroll_events());
 
   // Scroll event on a window should be dispatched properly.
@@ -417,7 +417,7 @@ TEST_F(RootWindowTest, ScrollEventDispatch) {
                           -10, 0,
                           -10, 0,
                           2);
-  dispatcher()->AsRootWindowHostDelegate()->OnHostScrollEvent(&scroll2);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostScrollEvent(&scroll2);
   EXPECT_EQ(2, filter->num_scroll_events());
 }
 
@@ -592,7 +592,7 @@ TEST_F(RootWindowTest, MouseMovesHeld) {
 
   ui::MouseEvent mouse_move_event(ui::ET_MOUSE_MOVED, gfx::Point(0, 0),
                                   gfx::Point(0, 0), 0, 0);
-  dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostMouseEvent(
       &mouse_move_event);
   // Discard MOUSE_ENTER.
   filter->events().clear();
@@ -602,7 +602,7 @@ TEST_F(RootWindowTest, MouseMovesHeld) {
   // Check that we don't immediately dispatch the MOUSE_DRAGGED event.
   ui::MouseEvent mouse_dragged_event(ui::ET_MOUSE_DRAGGED, gfx::Point(0, 0),
                                      gfx::Point(0, 0), 0, 0);
-  dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostMouseEvent(
       &mouse_dragged_event);
   EXPECT_TRUE(filter->events().empty());
 
@@ -610,7 +610,7 @@ TEST_F(RootWindowTest, MouseMovesHeld) {
   // of event.
   ui::MouseEvent mouse_pressed_event(ui::ET_MOUSE_PRESSED, gfx::Point(0, 0),
                                      gfx::Point(0, 0), 0, 0);
-  dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostMouseEvent(
       &mouse_pressed_event);
   EXPECT_EQ("MOUSE_DRAGGED MOUSE_PRESSED",
             EventTypesToString(filter->events()));
@@ -619,12 +619,12 @@ TEST_F(RootWindowTest, MouseMovesHeld) {
   // Check that we coalesce held MOUSE_DRAGGED events.
   ui::MouseEvent mouse_dragged_event2(ui::ET_MOUSE_DRAGGED, gfx::Point(1, 1),
                                       gfx::Point(1, 1), 0, 0);
-  dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostMouseEvent(
       &mouse_dragged_event);
-  dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostMouseEvent(
       &mouse_dragged_event2);
   EXPECT_TRUE(filter->events().empty());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostMouseEvent(
       &mouse_pressed_event);
   EXPECT_EQ("MOUSE_DRAGGED MOUSE_PRESSED",
             EventTypesToString(filter->events()));
@@ -632,7 +632,7 @@ TEST_F(RootWindowTest, MouseMovesHeld) {
 
   // Check that on ReleasePointerMoves, held events are not dispatched
   // immediately, but posted instead.
-  dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostMouseEvent(
       &mouse_dragged_event);
   dispatcher()->ReleasePointerMoves();
   EXPECT_TRUE(filter->events().empty());
@@ -643,10 +643,10 @@ TEST_F(RootWindowTest, MouseMovesHeld) {
   // However if another message comes in before the dispatch of the posted
   // event, check that the posted event is dispatched before this new event.
   dispatcher()->HoldPointerMoves();
-  dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostMouseEvent(
       &mouse_dragged_event);
   dispatcher()->ReleasePointerMoves();
-  dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostMouseEvent(
       &mouse_pressed_event);
   EXPECT_EQ("MOUSE_DRAGGED MOUSE_PRESSED",
             EventTypesToString(filter->events()));
@@ -657,10 +657,10 @@ TEST_F(RootWindowTest, MouseMovesHeld) {
   // Check that if the other message is another MOUSE_DRAGGED, we still coalesce
   // them.
   dispatcher()->HoldPointerMoves();
-  dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostMouseEvent(
       &mouse_dragged_event);
   dispatcher()->ReleasePointerMoves();
-  dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostMouseEvent(
       &mouse_dragged_event2);
   EXPECT_EQ("MOUSE_DRAGGED", EventTypesToString(filter->events()));
   filter->events().clear();
@@ -681,7 +681,7 @@ TEST_F(RootWindowTest, TouchMovesHeld) {
   // test.
   ui::TouchEvent touch_pressed_event(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0),
                                      0, base::TimeDelta());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(
       &touch_pressed_event);
   RunAllPendingInMessageLoop();
   filter->events().clear();
@@ -691,13 +691,13 @@ TEST_F(RootWindowTest, TouchMovesHeld) {
   // Check that we don't immediately dispatch the TOUCH_MOVED event.
   ui::TouchEvent touch_moved_event(ui::ET_TOUCH_MOVED, gfx::Point(0, 0),
                                    0, base::TimeDelta());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(
       &touch_moved_event);
   EXPECT_TRUE(filter->events().empty());
 
   // Check that on ReleasePointerMoves, held events are not dispatched
   // immediately, but posted instead.
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(
       &touch_moved_event);
   dispatcher()->ReleasePointerMoves();
   EXPECT_TRUE(filter->events().empty());
@@ -711,9 +711,9 @@ TEST_F(RootWindowTest, TouchMovesHeld) {
                                       0, base::TimeDelta());
   filter->events().clear();
   dispatcher()->HoldPointerMoves();
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(
       &touch_moved_event);
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(
       &touch_released_event);
   EXPECT_EQ("TOUCH_MOVED TOUCH_RELEASED GESTURE_TAP_CANCEL GESTURE_END",
             EventTypesToString(filter->events()));
@@ -740,20 +740,20 @@ TEST_F(RootWindowTest, DispatchSyntheticMouseEvents) {
   // Dispatch a non-synthetic mouse event when mouse events are enabled.
   ui::MouseEvent mouse1(ui::ET_MOUSE_MOVED, gfx::Point(10, 10),
                         gfx::Point(10, 10), 0, 0);
-  dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse1);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostMouseEvent(&mouse1);
   EXPECT_FALSE(filter->events().empty());
   filter->events().clear();
 
   // Dispatch a synthetic mouse event when mouse events are enabled.
   ui::MouseEvent mouse2(ui::ET_MOUSE_MOVED, gfx::Point(10, 10),
                         gfx::Point(10, 10), ui::EF_IS_SYNTHESIZED, 0);
-  dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse2);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostMouseEvent(&mouse2);
   EXPECT_FALSE(filter->events().empty());
   filter->events().clear();
 
   // Dispatch a synthetic mouse event when mouse events are disabled.
   cursor_client.DisableMouseEvents();
-  dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse2);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostMouseEvent(&mouse2);
   EXPECT_TRUE(filter->events().empty());
 }
 
@@ -775,7 +775,7 @@ TEST_F(RootWindowTest, DispatchMouseExitWhenCursorHidden) {
   ui::MouseEvent mouse1(ui::ET_MOUSE_MOVED, mouse_location,
                         mouse_location, 0, 0);
   EXPECT_TRUE(filter->events().empty());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse1);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostMouseEvent(&mouse1);
   EXPECT_FALSE(filter->events().empty());
   filter->events().clear();
 
@@ -1226,7 +1226,7 @@ class ValidRootDuringDestructionWindowObserver : public aura::WindowObserver {
 }  // namespace
 
 #if defined(USE_OZONE)
-// Creating multiple RootWindowHostOzone instances is broken.
+// Creating multiple WindowTreeHostOzone instances is broken.
 #define MAYBE_ValidRootDuringDestruction DISABLED_ValidRootDuringDestruction
 #else
 #define MAYBE_ValidRootDuringDestruction ValidRootDuringDestruction
@@ -1290,8 +1290,8 @@ class DontResetHeldEventWindowDelegate : public test::TestWindowDelegate {
 TEST_F(RootWindowTest, DontResetHeldEvent) {
   DontResetHeldEventWindowDelegate delegate(root_window());
   scoped_ptr<Window> w1(CreateNormalWindow(1, root_window(), &delegate));
-  RootWindowHostDelegate* root_window_delegate =
-      static_cast<RootWindowHostDelegate*>(root_window()->GetDispatcher());
+  WindowTreeHostDelegate* root_window_delegate =
+      static_cast<WindowTreeHostDelegate*>(root_window()->GetDispatcher());
   w1->SetBounds(gfx::Rect(0, 0, 40, 40));
   ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED,
                          gfx::Point(10, 10), gfx::Point(10, 10),
@@ -1346,7 +1346,7 @@ class DeleteRootFromHeldMouseEventDelegate : public test::TestWindowDelegate {
 }  // namespace
 
 #if defined(USE_OZONE)
-// Creating multiple RootWindowHostOzone instances is broken.
+// Creating multiple WindowTreeHostOzone instances is broken.
 #define MAYBE_DeleteRootFromHeldMouseEvent DISABLED_DeleteRootFromHeldMouseEvent
 #else
 #define MAYBE_DeleteRootFromHeldMouseEvent DeleteRootFromHeldMouseEvent
@@ -1383,7 +1383,7 @@ TEST_F(RootWindowTest, WindowHideCancelsActiveTouches) {
 
   gfx::Point position1 = root_window()->bounds().origin();
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, position1, 0, base::TimeDelta());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
 
   EXPECT_EQ("TOUCH_PRESSED GESTURE_BEGIN GESTURE_TAP_DOWN",
             EventTypesToString(filter->GetAndResetEvents()));
@@ -1405,13 +1405,13 @@ TEST_F(RootWindowTest, WindowHideCancelsActiveGestures) {
   gfx::Point position1 = root_window()->bounds().origin();
   gfx::Point position2 = root_window()->bounds().CenterPoint();
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, position1, 0, base::TimeDelta());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
 
   ui::TouchEvent move(ui::ET_TOUCH_MOVED, position2, 0, base::TimeDelta());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move);
 
   ui::TouchEvent press2(ui::ET_TOUCH_PRESSED, position1, 1, base::TimeDelta());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press2);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press2);
 
   EXPECT_EQ("TOUCH_PRESSED GESTURE_BEGIN GESTURE_TAP_DOWN TOUCH_MOVED "
             "GESTURE_TAP_CANCEL GESTURE_SCROLL_BEGIN GESTURE_SCROLL_UPDATE "
@@ -1442,11 +1442,11 @@ TEST_F(RootWindowTest, EndingEventDoesntRetarget) {
 
   gfx::Point position = window1->bounds().origin();
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, position, 0, base::TimeDelta());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
 
   gfx::Point position2 = window1->bounds().CenterPoint();
   ui::TouchEvent move(ui::ET_TOUCH_MOVED, position2, 0, base::TimeDelta());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move);
 
   window2->SetCapture();
 

@@ -14,7 +14,7 @@ class Screen;
 namespace views {
 
 // Creates a Screen that represents the screen of the environment that hosts
-// a RootWindowHost. Caller owns the result.
+// a WindowTreeHost. Caller owns the result.
 VIEWS_EXPORT gfx::Screen* CreateDesktopScreen();
 
 }  // namespace views

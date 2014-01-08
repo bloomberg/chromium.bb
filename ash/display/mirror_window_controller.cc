@@ -164,7 +164,7 @@ void MirrorWindowController::UpdateWindow(const DisplayInfo& display_info) {
     const gfx::Rect& bounds_in_native = display_info.bounds_in_native();
     aura::RootWindow::CreateParams params(bounds_in_native);
     params.host = Shell::GetInstance()->root_window_host_factory()->
-        CreateRootWindowHost(bounds_in_native);
+        CreateWindowTreeHost(bounds_in_native);
     root_window_.reset(new aura::RootWindow(params));
     root_window_->window()->SetName(
         base::StringPrintf("MirrorRootWindow-%d", mirror_root_window_count++));
@@ -318,7 +318,7 @@ void MirrorWindowController::SetMirroredCursorVisibility(bool visible) {
     visible ? cursor_window_->Show() : cursor_window_->Hide();
 }
 
-void MirrorWindowController::OnRootWindowHostResized(
+void MirrorWindowController::OnWindowTreeHostResized(
     const aura::RootWindow* root) {
   // Do not use |old_size| as it contains RootWindow's (but not host's) size,
   // and this parameter wil be removed soon.

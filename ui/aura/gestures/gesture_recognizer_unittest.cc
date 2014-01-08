@@ -589,7 +589,7 @@ class TimedEvents {
       ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(x, y),
                           touch_id,
                           base::TimeDelta::FromMilliseconds(simulated_now_));
-      root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&move);
+      root_window->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move);
       simulated_now_ += time_step;
     }
   }
@@ -603,7 +603,7 @@ class TimedEvents {
     ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(x, y),
                         touch_id,
                         base::TimeDelta::FromMilliseconds(simulated_now_));
-    root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&move);
+    root_window->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move);
     simulated_now_++;
   }
 };
@@ -717,7 +717,7 @@ TEST_F(GestureRecognizerTest, GestureEventTap) {
   delegate->Reset();
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
                        kTouchId, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
   EXPECT_FALSE(delegate->tap());
   EXPECT_FALSE(delegate->show_press());
   EXPECT_TRUE(delegate->tap_down());
@@ -739,7 +739,7 @@ TEST_F(GestureRecognizerTest, GestureEventTap) {
   ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
                          kTouchId, tes.LeapForward(50));
 
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release);
   EXPECT_TRUE(delegate->tap());
   EXPECT_FALSE(delegate->tap_down());
   EXPECT_FALSE(delegate->tap_cancel());
@@ -772,7 +772,7 @@ TEST_F(GestureRecognizerTest, GestureEventTapRegion) {
                           kTouchId, tes.Now());
      press.set_radius_x(5);
      press.set_radius_y(12);
-     dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+     dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
      EXPECT_FALSE(delegate->tap());
      EXPECT_TRUE(delegate->tap_down());
      EXPECT_FALSE(delegate->tap_cancel());
@@ -790,7 +790,7 @@ TEST_F(GestureRecognizerTest, GestureEventTapRegion) {
      release.set_radius_x(5);
      release.set_radius_y(12);
 
-     dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
+     dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release);
      EXPECT_TRUE(delegate->tap());
      EXPECT_FALSE(delegate->tap_down());
      EXPECT_FALSE(delegate->tap_cancel());
@@ -815,7 +815,7 @@ TEST_F(GestureRecognizerTest, GestureEventTapRegion) {
                           kTouchId, tes.Now());
      press.set_radius_x(8);
      press.set_radius_y(14);
-     dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+     dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
      EXPECT_FALSE(delegate->tap());
      EXPECT_TRUE(delegate->tap_down());
      EXPECT_FALSE(delegate->tap_cancel());
@@ -831,7 +831,7 @@ TEST_F(GestureRecognizerTest, GestureEventTapRegion) {
      release.set_radius_x(20);
      release.set_radius_y(13);
 
-     dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
+     dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release);
      EXPECT_TRUE(delegate->tap());
      EXPECT_FALSE(delegate->tap_down());
      EXPECT_FALSE(delegate->tap_cancel());
@@ -856,7 +856,7 @@ TEST_F(GestureRecognizerTest, GestureEventTapRegion) {
                           kTouchId, tes.Now());
      press.set_radius_x(6);
      press.set_radius_y(10);
-     dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+     dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
      EXPECT_FALSE(delegate->tap());
      EXPECT_TRUE(delegate->tap_down());
      EXPECT_FALSE(delegate->tap_cancel());
@@ -872,7 +872,7 @@ TEST_F(GestureRecognizerTest, GestureEventTapRegion) {
                          kTouchId, tes.LeapForward(50));
      move.set_radius_x(8);
      move.set_radius_y(12);
-     dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move);
+     dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move);
      EXPECT_FALSE(delegate->tap());
      EXPECT_FALSE(delegate->tap_down());
      EXPECT_FALSE(delegate->tap_cancel());
@@ -888,7 +888,7 @@ TEST_F(GestureRecognizerTest, GestureEventTapRegion) {
      release.set_radius_x(4);
      release.set_radius_y(8);
 
-     dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
+     dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release);
      EXPECT_TRUE(delegate->tap());
      EXPECT_FALSE(delegate->tap_down());
      EXPECT_FALSE(delegate->tap_cancel());
@@ -913,7 +913,7 @@ TEST_F(GestureRecognizerTest, GestureEventTapRegion) {
                           kTouchId, tes.Now());
      press.set_radius_x(7);
      press.set_radius_y(10);
-     dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+     dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
      EXPECT_FALSE(delegate->tap());
      EXPECT_TRUE(delegate->tap_down());
      EXPECT_FALSE(delegate->tap_cancel());
@@ -928,7 +928,7 @@ TEST_F(GestureRecognizerTest, GestureEventTapRegion) {
                          kTouchId, tes.LeapForward(50));
      move.set_radius_x(13);
      move.set_radius_y(12);
-     dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move);
+     dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move);
      EXPECT_FALSE(delegate->tap());
      EXPECT_FALSE(delegate->tap_down());
      EXPECT_FALSE(delegate->tap_cancel());
@@ -943,7 +943,7 @@ TEST_F(GestureRecognizerTest, GestureEventTapRegion) {
                           kTouchId, tes.LeapForward(50));
      move1.set_radius_x(16);
      move1.set_radius_y(16);
-     dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move1);
+     dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move1);
      EXPECT_FALSE(delegate->tap());
      EXPECT_FALSE(delegate->tap_down());
      EXPECT_FALSE(delegate->tap_cancel());
@@ -958,7 +958,7 @@ TEST_F(GestureRecognizerTest, GestureEventTapRegion) {
                           kTouchId, tes.LeapForward(50));
      move2.set_radius_x(14);
      move2.set_radius_y(10);
-     dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move2);
+     dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move2);
      EXPECT_FALSE(delegate->tap());
      EXPECT_FALSE(delegate->tap_down());
      EXPECT_FALSE(delegate->tap_cancel());
@@ -974,7 +974,7 @@ TEST_F(GestureRecognizerTest, GestureEventTapRegion) {
      release.set_radius_x(8);
      release.set_radius_y(9);
 
-     dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
+     dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release);
      EXPECT_TRUE(delegate->tap());
      EXPECT_FALSE(delegate->tap_down());
      EXPECT_FALSE(delegate->tap_cancel());
@@ -1008,7 +1008,7 @@ TEST_F(GestureRecognizerTest, GestureEventScroll) {
   delegate->Reset();
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
                        kTouchId, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
   EXPECT_2_EVENTS(delegate->events(),
                   ui::ET_GESTURE_BEGIN,
                   ui::ET_GESTURE_TAP_DOWN);
@@ -1049,7 +1049,7 @@ TEST_F(GestureRecognizerTest, GestureEventScroll) {
   ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
                          kTouchId,
                          tes.LeapForward(50));
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release);
   EXPECT_2_EVENTS(delegate->events(),
                   ui::ET_SCROLL_FLING_START,
                   ui::ET_GESTURE_END);
@@ -1076,7 +1076,7 @@ TEST_F(GestureRecognizerTest, GestureEventScrollPrediction) {
   gfx::Vector2dF total_scroll;
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
                        kTouchId, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
   EXPECT_2_EVENTS(delegate->events(),
                   ui::ET_GESTURE_BEGIN,
                   ui::ET_GESTURE_TAP_DOWN);
@@ -1126,7 +1126,7 @@ TEST_F(GestureRecognizerTest, GestureEventScrollPrediction) {
   ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
                          kTouchId,
                          tes.LeapForward(50));
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release);
 }
 
 // Check that the bounding box during a scroll event is correct.
@@ -1150,7 +1150,7 @@ TEST_F(GestureRecognizerTest, GestureEventScrollBoundingBox) {
                          gfx::Point(kPositionX, kPositionY),
                          kTouchId,
                          tes.Now());
-    dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+    dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
     EXPECT_EQ(gfx::Rect(kPositionX - radius,
                         kPositionY - radius,
                         radius * 2,
@@ -1175,7 +1175,7 @@ TEST_F(GestureRecognizerTest, GestureEventScrollBoundingBox) {
                                           kPositionY + kScrollAmount),
                                kTouchId, press.time_stamp() +
                                base::TimeDelta::FromMilliseconds(50));
-    dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
+    dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release);
     EXPECT_EQ(gfx::Rect(kPositionX + kScrollAmount - radius,
                         kPositionY + kScrollAmount - radius,
                         radius * 2,
@@ -1198,7 +1198,7 @@ TEST_F(GestureRecognizerTest, GestureEventHorizontalRailFling) {
 
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0),
                        kTouchId, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
 
   // Move the touch-point horizontally enough that it is considered a
   // horizontal scroll.
@@ -1221,7 +1221,7 @@ TEST_F(GestureRecognizerTest, GestureEventHorizontalRailFling) {
   delegate->Reset();
   ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
                          kTouchId, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release);
 
   EXPECT_TRUE(delegate->fling());
   EXPECT_FALSE(delegate->scroll_end());
@@ -1242,7 +1242,7 @@ TEST_F(GestureRecognizerTest, GestureEventVerticalRailFling) {
 
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0),
                        kTouchId, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
 
   // Move the touch-point vertically enough that it is considered a
   // vertical scroll.
@@ -1265,7 +1265,7 @@ TEST_F(GestureRecognizerTest, GestureEventVerticalRailFling) {
   delegate->Reset();
   ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
                          kTouchId, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release);
 
   EXPECT_TRUE(delegate->fling());
   EXPECT_FALSE(delegate->scroll_end());
@@ -1286,7 +1286,7 @@ TEST_F(GestureRecognizerTest, GestureEventNonRailFling) {
 
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0),
                        kTouchId, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
 
   // Move the touch-point such that a non-rail scroll begins
   tes.SendScrollEvent(dispatcher(), 20, 20, kTouchId, delegate.get());
@@ -1301,7 +1301,7 @@ TEST_F(GestureRecognizerTest, GestureEventNonRailFling) {
   delegate->Reset();
   ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
                          kTouchId, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release);
 
   EXPECT_TRUE(delegate->fling());
   EXPECT_FALSE(delegate->scroll_end());
@@ -1330,7 +1330,7 @@ TEST_F(GestureRecognizerTest, GestureEventLongPress) {
 
   ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
                         kTouchId, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press1);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press1);
   EXPECT_TRUE(delegate->tap_down());
   EXPECT_TRUE(delegate->begin());
   EXPECT_FALSE(delegate->tap_cancel());
@@ -1347,7 +1347,7 @@ TEST_F(GestureRecognizerTest, GestureEventLongPress) {
   delegate->Reset();
   ui::TouchEvent release1(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
                           kTouchId, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release1);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release1);
   EXPECT_FALSE(delegate->long_press());
 
   // Note the tap down isn't cancelled until the release
@@ -1379,7 +1379,7 @@ TEST_F(GestureRecognizerTest, GestureEventLongPressCancelledByScroll) {
 
   ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
                         kTouchId, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press1);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press1);
   EXPECT_TRUE(delegate->tap_down());
 
   // We haven't pressed long enough for a long press to occur
@@ -1396,7 +1396,7 @@ TEST_F(GestureRecognizerTest, GestureEventLongPressCancelledByScroll) {
   delegate->Reset();
   ui::TouchEvent release1(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
                           kTouchId, tes.LeapForward(10));
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release1);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release1);
   EXPECT_FALSE(delegate->long_press());
   EXPECT_FALSE(delegate->tap_cancel());
 }
@@ -1422,7 +1422,7 @@ TEST_F(GestureRecognizerTest, GestureEventLongTap) {
 
   ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
                         kTouchId, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press1);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press1);
   EXPECT_TRUE(delegate->tap_down());
   EXPECT_TRUE(delegate->begin());
   EXPECT_FALSE(delegate->tap_cancel());
@@ -1439,7 +1439,7 @@ TEST_F(GestureRecognizerTest, GestureEventLongTap) {
   delegate->Reset();
   ui::TouchEvent release1(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
                           kTouchId, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release1);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release1);
   EXPECT_FALSE(delegate->long_press());
   EXPECT_TRUE(delegate->long_tap());
 
@@ -1472,7 +1472,7 @@ TEST_F(GestureRecognizerTest, GestureEventLongPressCancelledBySecondTap) {
   delegate->Reset();
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
                        kTouchId1, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
   EXPECT_TRUE(delegate->tap_down());
   EXPECT_TRUE(delegate->begin());
 
@@ -1483,7 +1483,7 @@ TEST_F(GestureRecognizerTest, GestureEventLongPressCancelledBySecondTap) {
   delegate->Reset();
   ui::TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(10, 10),
                         kTouchId2, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press2);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press2);
   EXPECT_FALSE(delegate->tap_down());  // no touch down for second tap.
   EXPECT_TRUE(delegate->tap_cancel());
   EXPECT_TRUE(delegate->begin());
@@ -1497,7 +1497,7 @@ TEST_F(GestureRecognizerTest, GestureEventLongPressCancelledBySecondTap) {
   delegate->Reset();
   ui::TouchEvent release1(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
                           kTouchId1, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release1);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release1);
   EXPECT_FALSE(delegate->long_press());
   EXPECT_TRUE(delegate->two_finger_tap());
   EXPECT_FALSE(delegate->tap_cancel());
@@ -1516,7 +1516,7 @@ TEST_F(GestureRecognizerTest, GestureEventHorizontalRailScroll) {
 
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0),
                        kTouchId, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
 
   // Move the touch-point horizontally enough that it is considered a
   // horizontal scroll.
@@ -1563,7 +1563,7 @@ TEST_F(GestureRecognizerTest, GestureEventVerticalRailScroll) {
 
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0),
                        kTouchId, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
 
   // Move the touch-point vertically enough that it is considered a
   // vertical scroll.
@@ -1611,7 +1611,7 @@ TEST_F(GestureRecognizerTest, GestureTapFollowedByScroll) {
   delegate->Reset();
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
                        kTouchId, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
   EXPECT_FALSE(delegate->tap());
   EXPECT_TRUE(delegate->tap_down());
   EXPECT_FALSE(delegate->tap_cancel());
@@ -1624,7 +1624,7 @@ TEST_F(GestureRecognizerTest, GestureTapFollowedByScroll) {
   delegate->Reset();
   ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
                          kTouchId, tes.LeapForward(50));
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release);
   EXPECT_TRUE(delegate->tap());
   EXPECT_FALSE(delegate->tap_down());
   EXPECT_FALSE(delegate->tap_cancel());
@@ -1637,7 +1637,7 @@ TEST_F(GestureRecognizerTest, GestureTapFollowedByScroll) {
   delegate->Reset();
   ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
                         kTouchId, tes.LeapForward(1000));
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press1);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press1);
   EXPECT_FALSE(delegate->tap());
   EXPECT_TRUE(delegate->tap_down());
   EXPECT_FALSE(delegate->tap_cancel());
@@ -1652,7 +1652,7 @@ TEST_F(GestureRecognizerTest, GestureTapFollowedByScroll) {
   delegate->Reset();
   ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(130, 230),
                       kTouchId, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move);
   EXPECT_FALSE(delegate->tap());
   EXPECT_FALSE(delegate->tap_down());
   EXPECT_TRUE(delegate->tap_cancel());
@@ -1668,7 +1668,7 @@ TEST_F(GestureRecognizerTest, GestureTapFollowedByScroll) {
   delegate->Reset();
   ui::TouchEvent move1(ui::ET_TOUCH_MOVED, gfx::Point(110, 211),
                        kTouchId, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move1);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move1);
   EXPECT_FALSE(delegate->tap());
   EXPECT_FALSE(delegate->tap_down());
   EXPECT_FALSE(delegate->tap_cancel());
@@ -1683,7 +1683,7 @@ TEST_F(GestureRecognizerTest, GestureTapFollowedByScroll) {
   delegate->Reset();
   ui::TouchEvent move2(ui::ET_TOUCH_MOVED, gfx::Point(140, 215),
                        kTouchId, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move2);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move2);
   EXPECT_FALSE(delegate->tap());
   EXPECT_FALSE(delegate->tap_down());
   EXPECT_FALSE(delegate->tap_cancel());
@@ -1697,7 +1697,7 @@ TEST_F(GestureRecognizerTest, GestureTapFollowedByScroll) {
   delegate->Reset();
   ui::TouchEvent release1(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
                           kTouchId, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release1);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release1);
   EXPECT_FALSE(delegate->tap());
   EXPECT_FALSE(delegate->tap_down());
   EXPECT_FALSE(delegate->tap_cancel());
@@ -1724,7 +1724,7 @@ TEST_F(GestureRecognizerTest, AsynchronousGestureRecognition) {
   queued_delegate->Reset();
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
                            kTouchId1, GetTime());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
   EXPECT_FALSE(queued_delegate->tap());
   EXPECT_FALSE(queued_delegate->tap_down());
   EXPECT_FALSE(queued_delegate->tap_cancel());
@@ -1739,7 +1739,7 @@ TEST_F(GestureRecognizerTest, AsynchronousGestureRecognition) {
   ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
                              kTouchId1, press.time_stamp() +
                              base::TimeDelta::FromMilliseconds(50));
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release);
   EXPECT_FALSE(queued_delegate->tap());
   EXPECT_FALSE(queued_delegate->tap_down());
   EXPECT_FALSE(queued_delegate->tap_cancel());
@@ -1758,7 +1758,7 @@ TEST_F(GestureRecognizerTest, AsynchronousGestureRecognition) {
   delegate->Reset();
   ui::TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(10, 20),
                             kTouchId2, GetTime());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press2);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press2);
   EXPECT_FALSE(delegate->tap());
   EXPECT_TRUE(delegate->tap_down());
   EXPECT_FALSE(delegate->tap_cancel());
@@ -1770,7 +1770,7 @@ TEST_F(GestureRecognizerTest, AsynchronousGestureRecognition) {
 
   ui::TouchEvent release2(ui::ET_TOUCH_RELEASED, gfx::Point(10, 20),
                               kTouchId2, GetTime());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release2);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release2);
 
   // Process the first queued event.
   queued_delegate->Reset();
@@ -1801,7 +1801,7 @@ TEST_F(GestureRecognizerTest, AsynchronousGestureRecognition) {
   queued_delegate->Reset();
   ui::TouchEvent press3(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
                             kTouchId1, GetTime());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press3);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press3);
   EXPECT_FALSE(queued_delegate->tap());
   EXPECT_FALSE(queued_delegate->tap_down());
   EXPECT_FALSE(queued_delegate->tap_cancel());
@@ -1817,7 +1817,7 @@ TEST_F(GestureRecognizerTest, AsynchronousGestureRecognition) {
   delegate->Reset();
   ui::TouchEvent press4(ui::ET_TOUCH_PRESSED, gfx::Point(103, 203),
                             kTouchId2, GetTime());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press4);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press4);
   EXPECT_FALSE(delegate->tap());
   EXPECT_FALSE(delegate->tap_down());
   EXPECT_FALSE(delegate->tap_cancel());
@@ -1842,7 +1842,7 @@ TEST_F(GestureRecognizerTest, AsynchronousGestureRecognition) {
   int x_move = ui::GestureConfiguration::max_touch_move_in_pixels_for_click();
   ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(103 + x_move, 203),
                           kTouchId2, GetTime());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move);
   EXPECT_FALSE(delegate->tap());
   EXPECT_FALSE(delegate->tap_down());
   EXPECT_FALSE(delegate->tap_cancel());
@@ -1916,7 +1916,7 @@ TEST_F(GestureRecognizerTest, GestureEventPinchFromScroll) {
   delegate->Reset();
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
                        kTouchId1, tes.Now());
-  root->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  root->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
   EXPECT_2_EVENTS(delegate->events(),
                   ui::ET_GESTURE_BEGIN,
                   ui::ET_GESTURE_TAP_DOWN);
@@ -1926,7 +1926,7 @@ TEST_F(GestureRecognizerTest, GestureEventPinchFromScroll) {
   delegate->Reset();
   ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(130, 301),
                       kTouchId1, tes.Now());
-  root->AsRootWindowHostDelegate()->OnHostTouchEvent(&move);
+  root->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move);
   EXPECT_3_EVENTS(delegate->events(),
                   ui::ET_GESTURE_TAP_CANCEL,
                   ui::ET_GESTURE_SCROLL_BEGIN,
@@ -1937,7 +1937,7 @@ TEST_F(GestureRecognizerTest, GestureEventPinchFromScroll) {
   delegate->Reset();
   ui::TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(10, 10),
                         kTouchId2, tes.Now());
-  root->AsRootWindowHostDelegate()->OnHostTouchEvent(&press2);
+  root->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press2);
   EXPECT_2_EVENTS(delegate->events(),
                  ui::ET_GESTURE_BEGIN,
                  ui::ET_GESTURE_PINCH_BEGIN);
@@ -1948,7 +1948,7 @@ TEST_F(GestureRecognizerTest, GestureEventPinchFromScroll) {
   delegate->Reset();
   ui::TouchEvent move3(ui::ET_TOUCH_MOVED, gfx::Point(95, 201),
                        kTouchId1, tes.Now());
-  root->AsRootWindowHostDelegate()->OnHostTouchEvent(&move3);
+  root->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move3);
   EXPECT_2_EVENTS(delegate->events(),
                   ui::ET_GESTURE_PINCH_UPDATE,
                   ui::ET_GESTURE_SCROLL_UPDATE);
@@ -1959,7 +1959,7 @@ TEST_F(GestureRecognizerTest, GestureEventPinchFromScroll) {
   delegate->Reset();
   ui::TouchEvent move4(ui::ET_TOUCH_MOVED, gfx::Point(55, 15),
                        kTouchId2, tes.Now());
-  root->AsRootWindowHostDelegate()->OnHostTouchEvent(&move4);
+  root->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move4);
   EXPECT_2_EVENTS(delegate->events(),
                   ui::ET_GESTURE_PINCH_UPDATE,
                   ui::ET_GESTURE_SCROLL_UPDATE);
@@ -1970,7 +1970,7 @@ TEST_F(GestureRecognizerTest, GestureEventPinchFromScroll) {
   delegate->Reset();
   ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
                          kTouchId1, tes.Now());
-  root->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
+  root->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release);
   EXPECT_2_EVENTS(delegate->events(),
                  ui::ET_GESTURE_PINCH_END,
                  ui::ET_GESTURE_END);
@@ -1981,7 +1981,7 @@ TEST_F(GestureRecognizerTest, GestureEventPinchFromScroll) {
   delegate->Reset();
   ui::TouchEvent move5(ui::ET_TOUCH_MOVED, gfx::Point(25, 10),
                        kTouchId2, tes.Now());
-  root->AsRootWindowHostDelegate()->OnHostTouchEvent(&move5);
+  root->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move5);
   EXPECT_1_EVENT(delegate->events(), ui::ET_GESTURE_SCROLL_UPDATE);
   EXPECT_TRUE(delegate->bounding_box().IsEmpty());
 }
@@ -2000,11 +2000,11 @@ scoped_ptr<GestureEventConsumeDelegate> delegate(
 
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(101, 301),
                        kTouchId1, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
   delegate->Reset();
   ui::TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(10, 10),
                         kTouchId2, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press2);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press2);
   EXPECT_FALSE(delegate->pinch_begin());
 
   // Touch move triggers pinch begin.
@@ -2021,7 +2021,7 @@ scoped_ptr<GestureEventConsumeDelegate> delegate(
   delegate->Reset();
   ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
                          kTouchId1, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release);
   EXPECT_TRUE(delegate->pinch_end());
 
   tes.SendScrollEvent(dispatcher(), 130, 230, kTouchId2, delegate.get());
@@ -2031,12 +2031,12 @@ scoped_ptr<GestureEventConsumeDelegate> delegate(
   delegate->Reset();
   ui::TouchEvent press3(ui::ET_TOUCH_PRESSED, gfx::Point(10, 10),
                         kTouchId1, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press3);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press3);
   // Now the touch points are close. So we will go into two finger tap.
   // Move the touch-point enough to break two-finger-tap and enter pinch.
   ui::TouchEvent move2(ui::ET_TOUCH_MOVED, gfx::Point(101, 202),
                        kTouchId1, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move2);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move2);
   EXPECT_TRUE(delegate->pinch_begin());
 
   tes.SendScrollEvent(dispatcher(), 130, 230, kTouchId1, delegate.get());
@@ -2060,7 +2060,7 @@ TEST_F(GestureRecognizerTest, GestureEventPinchFromTap) {
   delegate->Reset();
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(101, 301),
                        kTouchId1, tes.Now());
-  root->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  root->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
   EXPECT_2_EVENTS(delegate->events(),
                   ui::ET_GESTURE_BEGIN,
                   ui::ET_GESTURE_TAP_DOWN);
@@ -2070,7 +2070,7 @@ TEST_F(GestureRecognizerTest, GestureEventPinchFromTap) {
   delegate->Reset();
   ui::TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(10, 10),
                         kTouchId2, tes.Now());
-  root->AsRootWindowHostDelegate()->OnHostTouchEvent(&press2);
+  root->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press2);
   EXPECT_2_EVENTS(delegate->events(),
                   ui::ET_GESTURE_TAP_CANCEL,
                   ui::ET_GESTURE_BEGIN);
@@ -2081,7 +2081,7 @@ TEST_F(GestureRecognizerTest, GestureEventPinchFromTap) {
   delegate->Reset();
   ui::TouchEvent move3(ui::ET_TOUCH_MOVED, gfx::Point(65, 201),
                        kTouchId1, tes.Now());
-  root->AsRootWindowHostDelegate()->OnHostTouchEvent(&move3);
+  root->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move3);
   EXPECT_2_EVENTS(delegate->events(),
                   ui::ET_GESTURE_PINCH_BEGIN,
                   ui::ET_GESTURE_SCROLL_BEGIN);
@@ -2092,7 +2092,7 @@ TEST_F(GestureRecognizerTest, GestureEventPinchFromTap) {
   delegate->Reset();
   ui::TouchEvent move4(ui::ET_TOUCH_MOVED, gfx::Point(55, 15),
                        kTouchId2, tes.Now());
-  root->AsRootWindowHostDelegate()->OnHostTouchEvent(&move4);
+  root->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move4);
   EXPECT_2_EVENTS(delegate->events(),
                   ui::ET_GESTURE_PINCH_UPDATE,
                   ui::ET_GESTURE_SCROLL_UPDATE);
@@ -2103,7 +2103,7 @@ TEST_F(GestureRecognizerTest, GestureEventPinchFromTap) {
   delegate->Reset();
   ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
                          kTouchId1, tes.LeapForward(10));
-  root->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
+  root->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release);
   EXPECT_2_EVENTS(delegate->events(),
                   ui::ET_GESTURE_PINCH_END,
                   ui::ET_GESTURE_END);
@@ -2114,7 +2114,7 @@ TEST_F(GestureRecognizerTest, GestureEventPinchFromTap) {
   delegate->Reset();
   ui::TouchEvent move5(ui::ET_TOUCH_MOVED, gfx::Point(25, 10),
                        kTouchId2, tes.Now());
-  root->AsRootWindowHostDelegate()->OnHostTouchEvent(&move5);
+  root->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move5);
   EXPECT_1_EVENT(delegate->events(), ui::ET_GESTURE_SCROLL_UPDATE);
   EXPECT_TRUE(delegate->bounding_box().IsEmpty());
 }
@@ -2126,7 +2126,7 @@ TEST_F(GestureRecognizerTest, GestureEventIgnoresDisconnectedEvents) {
 
   ui::TouchEvent release1(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
                           6, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release1);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release1);
   EXPECT_FALSE(delegate->tap());
   EXPECT_FALSE(delegate->tap_down());
 }
@@ -2164,7 +2164,7 @@ TEST_F(GestureRecognizerTest, GestureEventTouchLockSelectsCorrectWindow) {
     windows[i]->set_id(i);
     ui::TouchEvent press(ui::ET_TOUCH_PRESSED, window_bounds[i].origin(),
                          i, tes.Now());
-    dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+    dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
   }
 
   // Touches should now be associated with the closest touch within
@@ -2181,10 +2181,10 @@ TEST_F(GestureRecognizerTest, GestureEventTouchLockSelectsCorrectWindow) {
   // Add a touch in the middle associated with windows[2]
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(0, 500),
                        kNumWindows, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
   ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(250, 250),
                       kNumWindows, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move);
 
   target = gesture_recognizer->GetTargetForLocation(gfx::Point(250, 250));
   EXPECT_EQ("2", WindowIDAsString(target));
@@ -2205,7 +2205,7 @@ TEST_F(GestureRecognizerTest, GestureEventTouchLockSelectsCorrectWindow) {
   // Move a touch associated with windows[2] to 1000, 1000
   ui::TouchEvent move2(ui::ET_TOUCH_MOVED, gfx::Point(1000, 1000),
                        kNumWindows, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move2);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move2);
 
   target = gesture_recognizer->GetTargetForLocation(gfx::Point(1000, 1000));
   EXPECT_EQ("2", WindowIDAsString(target));
@@ -2236,11 +2236,11 @@ TEST_F(GestureRecognizerTest, GestureEventOutsideRootWindowTap) {
 
   gfx::Point pos1(-10, -10);
   ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, pos1, 0, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press1);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press1);
 
   gfx::Point pos2(1000, 1000);
   ui::TouchEvent press2(ui::ET_TOUCH_PRESSED, pos2, 1, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press2);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press2);
 
   // As these presses were outside the root window, they should be
   // associated with the root window.
@@ -2261,10 +2261,10 @@ TEST_F(GestureRecognizerTest, NoTapWithPreventDefaultedRelease) {
   delegate->Reset();
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
                        kTouchId, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
   ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
                          kTouchId, tes.LeapForward(50));
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release);
 
   delegate->Reset();
   delegate->ReceivedAck();
@@ -2294,9 +2294,9 @@ TEST_F(GestureRecognizerTest, PinchScrollWithPreventDefaultedRelease) {
                         tes.LeapForward(200));
     ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(15, 25), kTouchId1,
                            tes.LeapForward(50));
-    dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
-    dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move);
-    dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
+    dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
+    dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move);
+    dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release);
     delegate->Reset();
 
     // Ack the press event.
@@ -2330,12 +2330,12 @@ TEST_F(GestureRecognizerTest, PinchScrollWithPreventDefaultedRelease) {
                           tes.LeapForward(14));
 
   // Do a pinch.
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move);
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press2);
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move2);
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release2);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press2);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move2);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release2);
 
   // Ack the press and move events.
   delegate->Reset();
@@ -2464,14 +2464,14 @@ TEST_F(GestureRecognizerTest, PressDoesNotCrash) {
 
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(45, 45), 7, tes.Now());
   press.set_radius_x(40);
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
   EXPECT_TRUE(delegate->tap_down());
   EXPECT_EQ(gfx::Rect(5, 5, 80, 80).ToString(),
             delegate->bounding_box().ToString());
   delegate->Reset();
 
   ui::TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(55, 45), 7, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press2);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press2);
 
   // This new press should not generate a tap-down.
   EXPECT_FALSE(delegate->begin());
@@ -2495,7 +2495,7 @@ TEST_F(GestureRecognizerTest, TwoFingerTap) {
   delegate->Reset();
   ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
                         kTouchId1, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press1);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press1);
   EXPECT_FALSE(delegate->tap());
   EXPECT_TRUE(delegate->tap_down());
   EXPECT_FALSE(delegate->tap_cancel());
@@ -2508,7 +2508,7 @@ TEST_F(GestureRecognizerTest, TwoFingerTap) {
   delegate->Reset();
   ui::TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(130, 201),
                         kTouchId2, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press2);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press2);
   EXPECT_FALSE(delegate->tap());
   EXPECT_FALSE(delegate->tap_down());  // no touch down for second tap.
   EXPECT_TRUE(delegate->tap_cancel());
@@ -2522,10 +2522,10 @@ TEST_F(GestureRecognizerTest, TwoFingerTap) {
   delegate->Reset();
   ui::TouchEvent move1(ui::ET_TOUCH_MOVED, gfx::Point(102, 202),
                        kTouchId1, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move1);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move1);
   ui::TouchEvent move2(ui::ET_TOUCH_MOVED, gfx::Point(131, 202),
                        kTouchId2, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move2);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move2);
   EXPECT_FALSE(delegate->tap());
   EXPECT_FALSE(delegate->tap_down());
   EXPECT_FALSE(delegate->tap_cancel());
@@ -2541,7 +2541,7 @@ TEST_F(GestureRecognizerTest, TwoFingerTap) {
   ui::TouchEvent release1(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
                           kTouchId1, tes.LeapForward(50));
 
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release1);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release1);
   EXPECT_FALSE(delegate->tap());
   EXPECT_FALSE(delegate->tap_down());
   EXPECT_FALSE(delegate->tap_cancel());
@@ -2557,7 +2557,7 @@ TEST_F(GestureRecognizerTest, TwoFingerTap) {
   ui::TouchEvent release2(ui::ET_TOUCH_RELEASED, gfx::Point(130, 201),
                           kTouchId2, tes.LeapForward(50));
 
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release2);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release2);
   EXPECT_FALSE(delegate->tap());
   EXPECT_FALSE(delegate->tap_down());
   EXPECT_FALSE(delegate->tap_cancel());
@@ -2583,19 +2583,19 @@ TEST_F(GestureRecognizerTest, TwoFingerTapExpired) {
   delegate->Reset();
   ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
                         kTouchId1, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press1);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press1);
 
   delegate->Reset();
   ui::TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(130, 201),
                         kTouchId2, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press2);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press2);
 
   // Send release event after sufficient delay so that two finger time expires.
   delegate->Reset();
   ui::TouchEvent release1(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
                           kTouchId1, tes.LeapForward(1000));
 
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release1);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release1);
   EXPECT_FALSE(delegate->two_finger_tap());
 
   // Lift second finger.
@@ -2605,7 +2605,7 @@ TEST_F(GestureRecognizerTest, TwoFingerTapExpired) {
   ui::TouchEvent release2(ui::ET_TOUCH_RELEASED, gfx::Point(130, 201),
                           kTouchId2, tes.LeapForward(50));
 
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release2);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release2);
   EXPECT_FALSE(delegate->two_finger_tap());
 }
 
@@ -2627,12 +2627,12 @@ TEST_F(GestureRecognizerTest, TwoFingerTapChangesToPinch) {
     delegate->Reset();
     ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
                           kTouchId1, tes.Now());
-    dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press1);
+    dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press1);
 
     delegate->Reset();
     ui::TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(130, 201),
                           kTouchId2, tes.Now());
-    dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press2);
+    dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press2);
 
     tes.SendScrollEvent(dispatcher(), 130, 230, kTouchId1, delegate.get());
     EXPECT_FALSE(delegate->two_finger_tap());
@@ -2644,7 +2644,7 @@ TEST_F(GestureRecognizerTest, TwoFingerTapChangesToPinch) {
     ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
                            kTouchId2, tes.LeapForward(50));
 
-    dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
+    dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release);
     EXPECT_FALSE(delegate->two_finger_tap());
     EXPECT_TRUE(delegate->pinch_end());
   }
@@ -2658,12 +2658,12 @@ TEST_F(GestureRecognizerTest, TwoFingerTapChangesToPinch) {
     delegate->Reset();
     ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
                           kTouchId1, tes.Now());
-    dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press1);
+    dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press1);
 
     delegate->Reset();
     ui::TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(130, 201),
                           kTouchId2, tes.Now());
-    dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press2);
+    dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press2);
 
     tes.SendScrollEvent(dispatcher(), 101, 230, kTouchId2, delegate.get());
     EXPECT_FALSE(delegate->two_finger_tap());
@@ -2675,7 +2675,7 @@ TEST_F(GestureRecognizerTest, TwoFingerTapChangesToPinch) {
     ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
                            kTouchId1, tes.LeapForward(50));
 
-    dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
+    dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release);
     EXPECT_FALSE(delegate->two_finger_tap());
     EXPECT_TRUE(delegate->pinch_end());
   }
@@ -2697,13 +2697,13 @@ TEST_F(GestureRecognizerTest, NoTwoFingerTapWhenFirstFingerHasScrolled) {
   delegate->Reset();
   ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
                         kTouchId1, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press1);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press1);
   tes.SendScrollEvent(dispatcher(), 130, 230, kTouchId1, delegate.get());
 
   delegate->Reset();
   ui::TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(130, 201),
                         kTouchId2, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press2);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press2);
 
   EXPECT_TRUE(delegate->pinch_begin());
 
@@ -2713,7 +2713,7 @@ TEST_F(GestureRecognizerTest, NoTwoFingerTapWhenFirstFingerHasScrolled) {
   ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
                          kTouchId2, tes.LeapForward(50));
 
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release);
   EXPECT_FALSE(delegate->two_finger_tap());
   EXPECT_TRUE(delegate->pinch_end());
 }
@@ -2776,17 +2776,17 @@ TEST_F(GestureRecognizerTest, TwoFingerTapCancelled) {
     delegate->Reset();
     ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
                           kTouchId1, tes.Now());
-    dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press1);
+    dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press1);
 
     delegate->Reset();
     ui::TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(130, 201),
                           kTouchId2, tes.Now());
-    dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press2);
+    dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press2);
 
     delegate->Reset();
     ui::TouchEvent cancel(ui::ET_TOUCH_CANCELLED, gfx::Point(130, 201),
                           kTouchId1, tes.Now());
-    dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&cancel);
+    dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&cancel);
     EXPECT_FALSE(delegate->two_finger_tap());
 
     // Make sure there is enough delay before the touch is released so that it
@@ -2795,7 +2795,7 @@ TEST_F(GestureRecognizerTest, TwoFingerTapCancelled) {
     ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
                            kTouchId2, tes.LeapForward(50));
 
-    dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
+    dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release);
     EXPECT_FALSE(delegate->two_finger_tap());
   }
 
@@ -2808,17 +2808,17 @@ TEST_F(GestureRecognizerTest, TwoFingerTapCancelled) {
     delegate->Reset();
     ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
                           kTouchId1, tes.Now());
-    dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press1);
+    dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press1);
 
     delegate->Reset();
     ui::TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(130, 201),
                           kTouchId2, tes.Now());
-    dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press2);
+    dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press2);
 
     delegate->Reset();
     ui::TouchEvent cancel(ui::ET_TOUCH_CANCELLED, gfx::Point(130, 201),
                           kTouchId2, tes.Now());
-    dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&cancel);
+    dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&cancel);
     EXPECT_FALSE(delegate->two_finger_tap());
 
     // Make sure there is enough delay before the touch is released so that it
@@ -2827,7 +2827,7 @@ TEST_F(GestureRecognizerTest, TwoFingerTapCancelled) {
     ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
                            kTouchId1, tes.LeapForward(50));
 
-    dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
+    dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release);
     EXPECT_FALSE(delegate->two_finger_tap());
   }
 }
@@ -2847,7 +2847,7 @@ TEST_F(GestureRecognizerTest, VeryWideTwoFingerTouchDownShouldBeAPinch) {
   delegate->Reset();
   ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
                         kTouchId1, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press1);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press1);
   EXPECT_FALSE(delegate->tap());
   EXPECT_TRUE(delegate->tap_down());
   EXPECT_FALSE(delegate->tap_cancel());
@@ -2860,7 +2860,7 @@ TEST_F(GestureRecognizerTest, VeryWideTwoFingerTouchDownShouldBeAPinch) {
   delegate->Reset();
   ui::TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(430, 201),
                         kTouchId2, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press2);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press2);
   EXPECT_FALSE(delegate->tap());
   EXPECT_FALSE(delegate->tap_down());  // no touch down for second tap.
   EXPECT_TRUE(delegate->tap_cancel());
@@ -2874,7 +2874,7 @@ TEST_F(GestureRecognizerTest, VeryWideTwoFingerTouchDownShouldBeAPinch) {
   delegate->Reset();
   ui::TouchEvent move2(ui::ET_TOUCH_MOVED, gfx::Point(530, 301),
                        kTouchId2, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move2);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move2);
   EXPECT_FALSE(delegate->tap());
   EXPECT_FALSE(delegate->tap_down());
   EXPECT_FALSE(delegate->tap_cancel());
@@ -2901,10 +2901,10 @@ TEST_F(GestureRecognizerTest, FlushAllOnHide) {
 
   ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(10, 10),
                         kTouchId1, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press1);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press1);
   ui::TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(20, 20),
                         kTouchId2, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press2);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press2);
   window->Hide();
   EXPECT_EQ(NULL,
       ui::GestureRecognizer::Get()->GetTouchLockedTarget(press1));
@@ -2933,7 +2933,7 @@ TEST_F(GestureRecognizerTest, LongPressTimerStopsOnPreventDefaultedTouchMoves) {
   delegate->Reset();
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
                        kTouchId, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
   // Scroll around, to cancel the long press
   tes.SendScrollEvent(dispatcher(), 130, 230, kTouchId, delegate.get());
 
@@ -2986,7 +2986,7 @@ TEST_F(GestureRecognizerTest, GestureEventScrollTouchMoveConsumed) {
   delegate->Reset();
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
                        kTouchId, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
   EXPECT_FALSE(delegate->tap());
   EXPECT_TRUE(delegate->tap_down());
   EXPECT_FALSE(delegate->tap_cancel());
@@ -3012,7 +3012,7 @@ TEST_F(GestureRecognizerTest, GestureEventScrollTouchMoveConsumed) {
   delegate->Reset();
   ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(130, 230),
                          kTouchId, tes.LeapForward(50));
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release);
   EXPECT_FALSE(delegate->tap());
   EXPECT_FALSE(delegate->tap_down());
   EXPECT_FALSE(delegate->tap_cancel());
@@ -3040,7 +3040,7 @@ TEST_F(GestureRecognizerTest, GestureEventScrollTwoFingerTouchMoveConsumed) {
   delegate->Reset();
   ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
                         kTouchId1, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press1);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press1);
   tes.SendScrollEvent(dispatcher(), 131, 231, kTouchId1, delegate.get());
 
   // First finger touches down and moves.
@@ -3053,7 +3053,7 @@ TEST_F(GestureRecognizerTest, GestureEventScrollTwoFingerTouchMoveConsumed) {
   // Second finger touches down and moves.
   ui::TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(130, 201),
                         kTouchId2, tes.LeapForward(50));
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press2);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press2);
   tes.SendScrollEvent(dispatcher(), 161, 231, kTouchId2, delegate.get());
 
   // PinchBegin & ScrollBegin were not sent if the touch-move events were
@@ -3110,8 +3110,8 @@ TEST_F(GestureRecognizerTest, GestureEventScrollTwoFingerTouchMoveConsumed) {
                           kTouchId1, tes.Now());
   ui::TouchEvent release2(ui::ET_TOUCH_RELEASED, gfx::Point(130, 201),
                           kTouchId2, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release1);
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release2);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release1);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release2);
 
   EXPECT_FALSE(delegate->tap());
   // Touch release is not consumed, so we still see two finger tap.
@@ -3144,7 +3144,7 @@ TEST_F(GestureRecognizerTest, GestureEventScrollTouchMovePartialConsumed) {
   delegate->Reset();
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
                        kTouchId, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
   EXPECT_FALSE(delegate->tap());
   EXPECT_TRUE(delegate->tap_down());
   EXPECT_FALSE(delegate->tap_cancel());
@@ -3211,7 +3211,7 @@ TEST_F(GestureRecognizerTest, GestureEventScrollTouchMovePartialConsumed) {
   delegate->Reset();
   ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
                          kTouchId, tes.LeapForward(50));
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release);
   EXPECT_FALSE(delegate->tap());
   EXPECT_FALSE(delegate->tap_down());
   EXPECT_FALSE(delegate->tap_cancel());
@@ -3238,19 +3238,19 @@ TEST_F(GestureRecognizerTest, GestureEventDoubleTap) {
   // First tap (tested in GestureEventTap)
   ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(104, 201),
                         kTouchId, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press1);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press1);
   ui::TouchEvent release1(ui::ET_TOUCH_RELEASED, gfx::Point(104, 201),
                           kTouchId, tes.LeapForward(50));
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release1);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release1);
   delegate->Reset();
 
   // Second tap
   ui::TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(101, 203),
                         kTouchId, tes.LeapForward(200));
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press2);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press2);
   ui::TouchEvent release2(ui::ET_TOUCH_RELEASED, gfx::Point(102, 206),
                           kTouchId, tes.LeapForward(50));
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release2);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release2);
 
   EXPECT_TRUE(delegate->tap());
   EXPECT_TRUE(delegate->tap_down());
@@ -3279,10 +3279,10 @@ TEST_F(GestureRecognizerTest, GestureEventTripleTap) {
   // First tap (tested in GestureEventTap)
   ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(104, 201),
                         kTouchId, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press1);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press1);
   ui::TouchEvent release1(ui::ET_TOUCH_RELEASED, gfx::Point(104, 201),
                           kTouchId, tes.LeapForward(50));
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release1);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release1);
 
   EXPECT_EQ(1, delegate->tap_count());
   delegate->Reset();
@@ -3290,10 +3290,10 @@ TEST_F(GestureRecognizerTest, GestureEventTripleTap) {
   // Second tap (tested in GestureEventDoubleTap)
   ui::TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(101, 203),
                         kTouchId, tes.LeapForward(200));
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press2);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press2);
   ui::TouchEvent release2(ui::ET_TOUCH_RELEASED, gfx::Point(102, 206),
                           kTouchId, tes.LeapForward(50));
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release2);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release2);
 
   EXPECT_EQ(2, delegate->tap_count());
   delegate->Reset();
@@ -3301,10 +3301,10 @@ TEST_F(GestureRecognizerTest, GestureEventTripleTap) {
   // Third tap
   ui::TouchEvent press3(ui::ET_TOUCH_PRESSED, gfx::Point(102, 206),
                         kTouchId, tes.LeapForward(200));
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press3);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press3);
   ui::TouchEvent release3(ui::ET_TOUCH_RELEASED, gfx::Point(102, 206),
                           kTouchId, tes.LeapForward(50));
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release3);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release3);
 
 
   EXPECT_TRUE(delegate->tap());
@@ -3334,19 +3334,19 @@ TEST_F(GestureRecognizerTest, TwoTapsFarApart) {
   // First tap (tested in GestureEventTap)
   ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
                         kTouchId, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press1);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press1);
   ui::TouchEvent release1(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
                           kTouchId, tes.LeapForward(50));
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release1);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release1);
   delegate->Reset();
 
   // Second tap, close in time but far in distance
   ui::TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(201, 201),
                         kTouchId, tes.LeapForward(200));
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press2);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press2);
   ui::TouchEvent release2(ui::ET_TOUCH_RELEASED, gfx::Point(201, 201),
                           kTouchId, tes.LeapForward(50));
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release2);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release2);
 
   EXPECT_TRUE(delegate->tap());
   EXPECT_TRUE(delegate->tap_down());
@@ -3376,19 +3376,19 @@ TEST_F(GestureRecognizerTest, TwoTapsWithDelayBetween) {
   // First tap (tested in GestureEventTap)
   ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
                         kTouchId, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press1);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press1);
   ui::TouchEvent release1(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
                           kTouchId, tes.LeapForward(50));
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release1);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release1);
   delegate->Reset();
 
   // Second tap, close in distance but after some delay
   ui::TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
                         kTouchId, tes.LeapForward(2000));
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press2);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press2);
   ui::TouchEvent release2(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
                           kTouchId, tes.LeapForward(50));
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release2);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release2);
 
   EXPECT_TRUE(delegate->tap());
   EXPECT_TRUE(delegate->tap_down());
@@ -3418,7 +3418,7 @@ TEST_F(GestureRecognizerTest, BoundingBoxRadiusChange) {
 
   ui::TouchEvent press1(
       ui::ET_TOUCH_PRESSED, gfx::Point(101, 201), kTouchId, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press1);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press1);
   EXPECT_TRUE(delegate->bounding_box().IsEmpty());
 
   delegate->Reset();
@@ -3427,7 +3427,7 @@ TEST_F(GestureRecognizerTest, BoundingBoxRadiusChange) {
       ui::ET_TOUCH_PRESSED, gfx::Point(201, 201), kTouchId2,
       tes.LeapForward(400));
   press2.set_radius_x(5);
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press2);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press2);
   EXPECT_FALSE(delegate->pinch_begin());
   EXPECT_EQ(gfx::Rect(101, 201, 100, 0).ToString(),
             delegate->bounding_box().ToString());
@@ -3436,7 +3436,7 @@ TEST_F(GestureRecognizerTest, BoundingBoxRadiusChange) {
 
   ui::TouchEvent move1(ui::ET_TOUCH_MOVED, gfx::Point(141, 201), kTouchId,
                        tes.LeapForward(40));
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move1);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move1);
   EXPECT_TRUE(delegate->pinch_begin());
   EXPECT_EQ(gfx::Rect(141, 201, 60, 0).ToString(),
             delegate->bounding_box().ToString());
@@ -3448,7 +3448,7 @@ TEST_F(GestureRecognizerTest, BoundingBoxRadiusChange) {
                        tes.LeapForward(40));
   move2.set_radius_x(50);
   move2.set_radius_y(60);
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move2);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move2);
   EXPECT_FALSE(delegate->tap());
   EXPECT_FALSE(delegate->tap_cancel());
   EXPECT_FALSE(delegate->scroll_update());
@@ -3474,21 +3474,21 @@ TEST_F(GestureRecognizerTest, NoDriftInScroll) {
 
   ui::TouchEvent press1(
       ui::ET_TOUCH_PRESSED, gfx::Point(101, 208), kTouchId, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press1);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press1);
   EXPECT_TRUE(delegate->begin());
 
   delegate->Reset();
 
   ui::TouchEvent move1(ui::ET_TOUCH_MOVED, gfx::Point(101, 206), kTouchId,
                        tes.LeapForward(40));
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move1);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move1);
   EXPECT_FALSE(delegate->scroll_begin());
 
   delegate->Reset();
 
   ui::TouchEvent move2(ui::ET_TOUCH_MOVED, gfx::Point(101, 204), kTouchId,
                        tes.LeapForward(40));
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move2);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move2);
   EXPECT_TRUE(delegate->tap_cancel());
   EXPECT_TRUE(delegate->scroll_begin());
   EXPECT_TRUE(delegate->scroll_update());
@@ -3499,14 +3499,14 @@ TEST_F(GestureRecognizerTest, NoDriftInScroll) {
 
   ui::TouchEvent move3(ui::ET_TOUCH_MOVED, gfx::Point(101, 204), kTouchId,
                        tes.LeapForward(40));
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move3);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move3);
   EXPECT_FALSE(delegate->scroll_update());
 
   delegate->Reset();
 
   ui::TouchEvent move4(ui::ET_TOUCH_MOVED, gfx::Point(101, 203), kTouchId,
                        tes.LeapForward(40));
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move4);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move4);
   EXPECT_TRUE(delegate->scroll_update());
   EXPECT_EQ(-1, delegate->scroll_y());
 
@@ -3530,7 +3530,7 @@ TEST_F(GestureRecognizerTest, GestureEventConsumedTouchMoveCanFireTapCancel) {
                        kTouchId, tes.Now());
 
   delegate->set_consume_touch_move(false);
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
   delegate->set_consume_touch_move(true);
   delegate->Reset();
   // Move the touch-point enough so that it would normally be considered a
@@ -3567,8 +3567,8 @@ TEST_F(GestureRecognizerTest,
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
                        kTouchId, tes.Now());
   ui::TouchEvent p2(ui::ET_TOUCH_PRESSED, gfx::Point(50, 50), 1, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&p2);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&p2);
   EXPECT_FALSE(delegate->tap());
   EXPECT_TRUE(delegate->tap_down());
   EXPECT_TRUE(delegate->tap_cancel());
@@ -3609,7 +3609,7 @@ TEST_F(GestureRecognizerTest, GestureEventShowPress) {
 
   ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
                         kTouchId, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press1);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press1);
   EXPECT_TRUE(delegate->tap_down());
   EXPECT_TRUE(delegate->begin());
   EXPECT_FALSE(delegate->tap_cancel());
@@ -3625,7 +3625,7 @@ TEST_F(GestureRecognizerTest, GestureEventShowPress) {
   delegate->Reset();
   ui::TouchEvent release1(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
                           kTouchId, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release1);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release1);
   EXPECT_FALSE(delegate->long_press());
 
   // Note the tap down isn't cancelled until the release
@@ -3657,7 +3657,7 @@ TEST_F(GestureRecognizerTest, GestureEventShowPressCancelledByScroll) {
 
   ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
                         kTouchId, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press1);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press1);
   EXPECT_TRUE(delegate->tap_down());
 
   // We haven't pressed long enough for a show press to occur
@@ -3674,7 +3674,7 @@ TEST_F(GestureRecognizerTest, GestureEventShowPressCancelledByScroll) {
   delegate->Reset();
   ui::TouchEvent release1(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
                           kTouchId, tes.LeapForward(10));
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release1);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release1);
   EXPECT_FALSE(delegate->show_press());
   EXPECT_FALSE(delegate->tap_cancel());
 }
@@ -3695,7 +3695,7 @@ TEST_F(GestureRecognizerTest, GestureEventShowPressSentOnTap) {
 
   ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
                         kTouchId, tes.Now());
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press1);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press1);
   EXPECT_TRUE(delegate->tap_down());
 
   // We haven't pressed long enough for a show press to occur
@@ -3705,7 +3705,7 @@ TEST_F(GestureRecognizerTest, GestureEventShowPressSentOnTap) {
   delegate->Reset();
   ui::TouchEvent release1(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
                           kTouchId, tes.LeapForward(50));
-  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release1);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&release1);
   EXPECT_TRUE(delegate->show_press());
   EXPECT_FALSE(delegate->tap_cancel());
   EXPECT_TRUE(delegate->tap());

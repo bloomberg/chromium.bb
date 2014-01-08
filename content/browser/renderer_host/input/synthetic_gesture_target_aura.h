@@ -10,7 +10,7 @@
 #include "content/common/input/synthetic_gesture_params.h"
 
 namespace aura {
-class RootWindowHostDelegate;
+class WindowTreeHostDelegate;
 class Window;
 
 namespace client {
@@ -49,7 +49,7 @@ class SyntheticGestureTargetAura : public SyntheticGestureTargetBase {
 
  private:
   aura::Window* GetWindow() const;
-  aura::RootWindowHostDelegate* GetRootWindowHostDelegate() const;
+  aura::WindowTreeHostDelegate* GetWindowTreeHostDelegate() const;
   aura::client::ScreenPositionClient* GetScreenPositionClient() const;
 
   DISALLOW_COPY_AND_ASSIGN(SyntheticGestureTargetAura);

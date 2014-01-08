@@ -48,8 +48,8 @@ void SyntheticGestureTargetAura::DispatchWebTouchEventToPlatform(
       touch_with_latency, &events, SCREEN_COORDINATES);
   DCHECK(conversion_success);
 
-  aura::RootWindowHostDelegate* root_window_host_delegate =
-      GetRootWindowHostDelegate();
+  aura::WindowTreeHostDelegate* root_window_host_delegate =
+      GetWindowTreeHostDelegate();
   for (ScopedVector<ui::TouchEvent>::iterator iter = events.begin(),
       end = events.end(); iter != end; ++iter) {
     root_window_host_delegate->OnHostTouchEvent(*iter);
@@ -70,7 +70,7 @@ void SyntheticGestureTargetAura::DispatchWebMouseWheelEventToPlatform(
   ui::MouseWheelEvent wheel_event(
       mouse_event, web_wheel.deltaX, web_wheel.deltaY);
 
-  GetRootWindowHostDelegate()->OnHostMouseEvent(&wheel_event);
+  GetWindowTreeHostDelegate()->OnHostMouseEvent(&wheel_event);
 }
 
 namespace {
@@ -137,7 +137,7 @@ void SyntheticGestureTargetAura::DispatchWebMouseEventToPlatform(
   int flags = WebMouseEventButtonToFlags(web_mouse.button);
   ui::MouseEvent mouse_event(event_type, location, location, flags, flags);
 
-  GetRootWindowHostDelegate()->OnHostMouseEvent(&mouse_event);
+  GetWindowTreeHostDelegate()->OnHostMouseEvent(&mouse_event);
 }
 
 SyntheticGestureParams::GestureSourceType
@@ -163,11 +163,11 @@ aura::Window* SyntheticGestureTargetAura::GetWindow() const {
   return window;
 }
 
-aura::RootWindowHostDelegate*
-SyntheticGestureTargetAura::GetRootWindowHostDelegate() const {
+aura::WindowTreeHostDelegate*
+SyntheticGestureTargetAura::GetWindowTreeHostDelegate() const {
   aura::Window* root_window = GetWindow()->GetRootWindow();
-  aura::RootWindowHostDelegate* root_window_host_delegate =
-      root_window->GetDispatcher()->AsRootWindowHostDelegate();
+  aura::WindowTreeHostDelegate* root_window_host_delegate =
+      root_window->GetDispatcher()->AsWindowTreeHostDelegate();
   DCHECK(root_window_host_delegate);
   return root_window_host_delegate;
 }

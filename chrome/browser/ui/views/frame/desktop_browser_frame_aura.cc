@@ -53,14 +53,14 @@ void DesktopBrowserFrameAura::OnHostClosed() {
 void DesktopBrowserFrameAura::InitNativeWidget(
     const views::Widget::InitParams& params) {
   browser_desktop_root_window_host_ =
-      BrowserDesktopRootWindowHost::CreateBrowserDesktopRootWindowHost(
+      BrowserDesktopWindowTreeHost::CreateBrowserDesktopWindowTreeHost(
           browser_frame_,
           this,
           browser_view_,
           browser_frame_);
   views::Widget::InitParams modified_params = params;
   modified_params.desktop_root_window_host =
-      browser_desktop_root_window_host_->AsDesktopRootWindowHost();
+      browser_desktop_root_window_host_->AsDesktopWindowTreeHost();
   DesktopNativeWidgetAura::InitNativeWidget(modified_params);
 
   user_action_client_.reset(
