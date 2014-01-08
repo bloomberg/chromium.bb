@@ -40,14 +40,6 @@ void ToolbarButton::Init() {
   // Provides the hover/pressed style used by buttons in the toolbar.
   views::LabelButtonBorder* border =
       new views::LabelButtonBorder(views::Button::STYLE_TEXTBUTTON);
-  const int kHoverImages[] = IMAGE_GRID(IDR_TOOLBAR_BUTTON_HOVER);
-  border->SetPainter(false, views::Button::STATE_HOVERED,
-                     views::Painter::CreateImageGridPainter(
-                         kHoverImages));
-  const int kPressedImages[] = IMAGE_GRID(IDR_TOOLBAR_BUTTON_PRESSED);
-  border->SetPainter(false, views::Button::STATE_PRESSED,
-                     views::Painter::CreateImageGridPainter(
-                         kPressedImages));
   set_border(border);
 }
 
