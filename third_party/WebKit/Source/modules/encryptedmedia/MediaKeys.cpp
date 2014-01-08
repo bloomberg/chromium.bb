@@ -124,10 +124,15 @@ PassRefPtr<MediaKeySession> MediaKeys::createSession(ExecutionContext* context, 
 
 void MediaKeys::setMediaElement(HTMLMediaElement* element)
 {
-    // FIXME: Cause HTMLMediaElement::setMediaKeys() to throw an exception if m_mediaElement is not 0.
-    // FIXME: Hook up the CDM to the WebMediaPlayer in Chromium.
-    ASSERT(!m_mediaElement);
+    // FIXME: Cause HTMLMediaElement::setMediaKeys() to throw an exception if m_mediaElement is not 0
+    // and remove the code that prevents the assert below in HTMLMediaElement.
+    ASSERT(!m_mediaElement != !element);
     m_mediaElement = element;
+}
+
+blink::WebContentDecryptionModule* MediaKeys::contentDecryptionModule()
+{
+    return m_cdm ? m_cdm->contentDecryptionModule() : 0;
 }
 
 }

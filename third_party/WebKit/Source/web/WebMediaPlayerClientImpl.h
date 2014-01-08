@@ -54,6 +54,7 @@ namespace blink {
 
 class WebHelperPluginImpl;
 class WebAudioSourceProvider;
+class WebContentDecryptionModule;
 class WebMediaPlayer;
 
 // This class serves as a bridge between WebCore::MediaPlayer and
@@ -139,6 +140,7 @@ public:
     virtual WebCore::MediaPlayer::MediaKeyException generateKeyRequest(const String& keySystem, const unsigned char* initData, unsigned initDataLength) OVERRIDE;
     virtual WebCore::MediaPlayer::MediaKeyException addKey(const String& keySystem, const unsigned char* key, unsigned keyLength, const unsigned char* initData, unsigned initDataLength, const String& sessionId) OVERRIDE;
     virtual WebCore::MediaPlayer::MediaKeyException cancelKeyRequest(const String& keySystem, const String& sessionId) OVERRIDE;
+    virtual void setContentDecryptionModule(WebContentDecryptionModule*) OVERRIDE;
 
 private:
     explicit WebMediaPlayerClientImpl(WebCore::MediaPlayerClient*);
@@ -164,6 +166,7 @@ private:
     double m_volume;
     bool m_muted;
     double m_rate;
+    WebContentDecryptionModule* m_cdm;
 
 #if ENABLE(WEB_AUDIO)
     // AudioClientImpl wraps an AudioSourceProviderClient.

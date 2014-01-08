@@ -55,6 +55,8 @@ public:
     bool supportsMIMEType(const String&);
     PassOwnPtr<ContentDecryptionModuleSession> createSession(ContentDecryptionModuleSessionClient*);
 
+    blink::WebContentDecryptionModule* contentDecryptionModule() { return m_cdm.get(); }
+
 private:
     OwnPtr<blink::WebContentDecryptionModule> m_cdm;
 };

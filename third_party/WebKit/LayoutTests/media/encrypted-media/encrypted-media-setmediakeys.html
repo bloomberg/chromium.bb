@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>MediaKeys</title>
+        <script src=../video-test.js></script>
+        <script>
+            var mediaKeys;
+            var mediaKeys2;
+
+            function runTest()
+            {
+                consoleWrite("Test MediaKeys assignment.");
+                findMediaElement();
+                testExpected('video', null, '!=');
+                testExpected('video.mediaKeys', null);
+                testExpected('typeof video.setMediaKeys', 'function');
+
+                consoleWrite("Try setting mediaKeys to null.");
+                run('video.setMediaKeys(null)');
+                testExpected('video.mediaKeys', null);
+
+                consoleWrite("Create a MediaKeys object and assign it to video.");
+                run('mediaKeys = new MediaKeys("org.w3.clearkey")');
+                testExpected('mediaKeys', null, '!=');
+                testExpected('mediaKeys.keySystem', 'org.w3.clearkey');
+                run('video.setMediaKeys(mediaKeys)');
+                testExpected('video.mediaKeys', null, '!=');
+                testExpected('video.mediaKeys', mediaKeys, '===');
+
+                consoleWrite("Set it a second time.");
+                run('video.setMediaKeys(mediaKeys)');
+                testExpected('video.mediaKeys', null, '!=');
+                testExpected('video.mediaKeys', mediaKeys, '===');
+
+                consoleWrite("Create a second MediaKeys and assign it to video.");
+                run('mediaKeys2 = new MediaKeys("org.w3.clearkey")');
+                testExpected('mediaKeys', null, '!=');
+                testExpected('mediaKeys.keySystem', 'org.w3.clearkey');
+                run('video.setMediaKeys(mediaKeys2)');
+                testExpected('video.mediaKeys', null, '!=');
+                testExpected('video.mediaKeys', mediaKeys, '!=');
+                testExpected('video.mediaKeys', mediaKeys2, '===');
+
+                consoleWrite("Set it back to first MediaKeys.");
+                run('video.setMediaKeys(mediaKeys)');
+                testExpected('video.mediaKeys', mediaKeys, '===');
+                testExpected('video.mediaKeys', mediaKeys2, '!=');
+
+                consoleWrite("Set mediaKeys to null.");
+                run('video.setMediaKeys(null)');
+                testExpected('video.mediaKeys', null);
+
+                consoleWrite("Set it to null a second time.");
+                run('video.setMediaKeys(null)');
+                testExpected('video.mediaKeys', null);
+
+                consoleWrite("Set it back to first MediaKeys again.");
+                run('video.setMediaKeys(mediaKeys)');
+                testExpected('video.mediaKeys', mediaKeys, '===');
+                testExpected('video.mediaKeys', mediaKeys2, '!=');
+                endTest();
+            }
+        </script>
+    </head>
+    <body onload="runTest()">
+        <p>This tests setting MediaKeys on a video object.</p>
+        <video id="video"></video>
+    </body>
+</html>

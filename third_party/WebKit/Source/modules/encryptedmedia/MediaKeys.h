@@ -35,6 +35,10 @@
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
+namespace blink {
+class WebContentDecryptionModule;
+}
+
 namespace WebCore {
 
 class ContentDecryptionModule;
@@ -56,6 +60,8 @@ public:
     const String& keySystem() const { return m_keySystem; }
 
     void setMediaElement(HTMLMediaElement*);
+
+    blink::WebContentDecryptionModule* contentDecryptionModule();
 
 protected:
     MediaKeys(const String& keySystem, PassOwnPtr<ContentDecryptionModule>);

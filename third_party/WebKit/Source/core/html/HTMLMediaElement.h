@@ -38,6 +38,7 @@
 #include "public/platform/WebMimeRegistry.h"
 
 namespace blink {
+class WebContentDecryptionModule;
 class WebInbandTextTrack;
 class WebLayer;
 }
@@ -451,6 +452,8 @@ private:
     bool isBlockedOnMediaController() const;
     bool hasCurrentSrc() const { return !m_currentSrc.isEmpty(); }
     bool isAutoplaying() const { return m_autoplaying; }
+
+    blink::WebContentDecryptionModule* contentDecryptionModule();
 
     Timer<HTMLMediaElement> m_loadTimer;
     Timer<HTMLMediaElement> m_progressEventTimer;

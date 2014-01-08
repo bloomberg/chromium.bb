@@ -76,6 +76,7 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebContentDecryptionModule.h"
 #include "public/platform/WebInbandTextTrack.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/MathExtras.h"
@@ -1735,6 +1736,7 @@ bool HTMLMediaElement::mediaPlayerKeyNeeded(const String& keySystem, const Strin
 
 bool HTMLMediaElement::mediaPlayerKeyNeeded(Uint8Array* initData)
 {
+    // FIXME: This should be using the unprefixed event name ("needkey").
     if (!hasEventListeners("webkitneedkey")) {
         m_error = MediaError::create(MediaError::MEDIA_ERR_ENCRYPTED);
         scheduleEvent(EventTypeNames::error);
@@ -1753,6 +1755,11 @@ bool HTMLMediaElement::mediaPlayerKeyNeeded(Uint8Array* initData)
     return true;
 }
 
+blink::WebContentDecryptionModule* HTMLMediaElement::contentDecryptionModule()
+{
+    return m_mediaKeys ? m_mediaKeys->contentDecryptionModule() : 0;
+}
+
 void HTMLMediaElement::setMediaKeys(MediaKeys* mediaKeys)
 {
     if (m_mediaKeys == mediaKeys)
@@ -1763,6 +1770,10 @@ void HTMLMediaElement::setMediaKeys(MediaKeys* mediaKeys)
     m_mediaKeys = mediaKeys;
     if (m_mediaKeys)
         m_mediaKeys->setMediaElement(this);
+
+    // If a player is connected, tell it that the CDM has changed.
+    if (m_player)
+        m_player->setContentDecryptionModule(contentDecryptionModule());
 }
 
 void HTMLMediaElement::progressEventTimerFired(Timer<HTMLMediaElement>*)
@@ -3413,6 +3424,8 @@ void HTMLMediaElement::clearMediaPlayer(int flags)
 
     closeMediaSource();
 
+    setMediaKeys(0);
+
     clearMediaPlayerAndAudioSourceProviderClient();
 
     stopPeriodicTimers();
@@ -3710,6 +3723,9 @@ void HTMLMediaElement::createMediaPlayer()
         closeMediaSource();
 
     m_player = MediaPlayer::create(this);
+
+    if (m_player)
+        m_player->setContentDecryptionModule(contentDecryptionModule());
 
 #if ENABLE(WEB_AUDIO)
     if (m_audioSourceNode) {

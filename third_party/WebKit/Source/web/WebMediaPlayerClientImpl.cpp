@@ -27,6 +27,7 @@
 #include "public/platform/WebCString.h"
 #include "public/platform/WebCanvas.h"
 #include "public/platform/WebCompositorSupport.h"
+#include "public/platform/WebContentDecryptionModule.h"
 #include "public/platform/WebInbandTextTrack.h"
 #include "public/platform/WebMediaPlayer.h"
 #include "public/platform/WebRect.h"
@@ -240,6 +241,9 @@ void WebMediaPlayerClientImpl::loadInternal()
         m_audioSourceProvider.wrap(m_webMediaPlayer->audioSourceProvider());
 #endif
 
+        // Tell WebMediaPlayer about any connected CDM (may be null).
+        m_webMediaPlayer->setContentDecryptionModule(m_cdm);
+
         WebMediaPlayer::CORSMode corsMode = static_cast<WebMediaPlayer::CORSMode>(m_client->mediaPlayerCORSMode());
         m_webMediaPlayer->load(m_loadType, m_url, corsMode);
     }
@@ -299,6 +303,13 @@ MediaPlayer::MediaKeyException WebMediaPlayerClientImpl::cancelKeyRequest(const 
 
     WebMediaPlayer::MediaKeyException result = m_webMediaPlayer->cancelKeyRequest(keySystem, sessionId);
     return static_cast<MediaPlayer::MediaKeyException>(result);
+}
+
+void WebMediaPlayerClientImpl::setContentDecryptionModule(WebContentDecryptionModule* cdm)
+{
+    m_cdm = cdm;
+    if (m_webMediaPlayer)
+        m_webMediaPlayer->setContentDecryptionModule(cdm);
 }
 
 void WebMediaPlayerClientImpl::prepareToPlay()
@@ -606,6 +617,7 @@ WebMediaPlayerClientImpl::WebMediaPlayerClientImpl(MediaPlayerClient* client)
     , m_volume(1.0)
     , m_muted(false)
     , m_rate(1.0)
+    , m_cdm(0)
     , m_loadType(WebMediaPlayer::LoadTypeURL)
 {
     ASSERT(m_client);
