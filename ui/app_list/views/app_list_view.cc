@@ -329,6 +329,9 @@ void AppListView::OnBeforeBubbleWidgetInit(
   // Set up a custom WM_CLASS for the app launcher window. This allows task
   // switchers in X11 environments to distinguish it from main browser windows.
   params->wm_class_name = kAppListWMClass;
+  // Show the window in the taskbar, even though it is a bubble, which would not
+  // normally be shown.
+  params->force_show_in_taskbar = true;
 #endif
 }
 

@@ -1016,9 +1016,10 @@ void DesktopWindowTreeHostX11::InitX11Window(
   // List of window state properties (_NET_WM_STATE) to set, if any.
   std::vector< ::Atom> state_atom_list;
 
-  // Remove popup windows from taskbar.
-  if (params.type == Widget::InitParams::TYPE_POPUP ||
-      params.type == Widget::InitParams::TYPE_BUBBLE) {
+  // Remove popup windows from taskbar unless overridden.
+  if ((params.type == Widget::InitParams::TYPE_POPUP ||
+       params.type == Widget::InitParams::TYPE_BUBBLE) &&
+      !params.force_show_in_taskbar) {
     state_atom_list.push_back(
         atom_cache_.GetAtom("_NET_WM_STATE_SKIP_TASKBAR"));
   }

@@ -225,6 +225,11 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // where it wants your window placed.) NULL is not allowed if you are using
     // aura.
     gfx::NativeView context;
+    // If true, forces the window to be shown in the taskbar, even for window
+    // types that do not appear in the taskbar by default (popup and bubble).
+    // Currently only used by X11.
+    // TODO(mgiuca): Respect this flag in Windows (http://crbug.com/332277).
+    bool force_show_in_taskbar;
     // Only used by X11, for root level windows. Specifies the res_name and
     // res_class fields, respectively, of the WM_CLASS window property. Controls
     // window grouping and desktop file matching in Linux window managers.
