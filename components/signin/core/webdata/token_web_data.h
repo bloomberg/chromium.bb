@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,8 @@
 // information and MUST not be extracted, overwritten or modified except
 // through Chromium defined APIs.
 
-#ifndef CHROME_BROWSER_WEBDATA_TOKEN_WEB_DATA_H__
-#define CHROME_BROWSER_WEBDATA_TOKEN_WEB_DATA_H__
+#ifndef COMPONENTS_SIGNIN_CORE_WEBDATA_TOKEN_WEB_DATA_H__
+#define COMPONENTS_SIGNIN_CORE_WEBDATA_TOKEN_WEB_DATA_H__
 
 #include <map>
 #include <string>
@@ -22,24 +22,25 @@
 #include "components/webdata/common/web_data_service_consumer.h"
 #include "components/webdata/common/web_database.h"
 
+namespace base {
+class MessageLoopProxy;
+}
+
 class TokenWebDataBackend;
 class WebDatabaseService;
 class WebDataServiceConsumer;
-
-namespace content {
-class BrowserContext;
-}
 
 // TokenWebData is a data repository for storage of authentication tokens.
 
 class TokenWebData : public WebDataServiceBase {
  public:
-  // Retrieve a WebDataService for the given context.
-  static scoped_refptr<TokenWebData> FromBrowserContext(
-      content::BrowserContext* context);
-
   TokenWebData(scoped_refptr<WebDatabaseService> wdbs,
+               scoped_refptr<base::MessageLoopProxy> ui_thread,
+               scoped_refptr<base::MessageLoopProxy> db_thread,
                const ProfileErrorCallback& callback);
+
+  TokenWebData(scoped_refptr<base::MessageLoopProxy> ui_thread,
+               scoped_refptr<base::MessageLoopProxy> db_thread);
 
   // Set a token to use for a specified service.
   void SetTokenForService(const std::string& service,
@@ -66,4 +67,4 @@ class TokenWebData : public WebDataServiceBase {
   DISALLOW_COPY_AND_ASSIGN(TokenWebData);
 };
 
-#endif  // CHROME_BROWSER_WEBDATA_TOKEN_WEB_DATA_H__
+#endif  // COMPONENTS_SIGNIN_CORE_WEBDATA_TOKEN_WEB_DATA_H__

@@ -9,8 +9,9 @@
 #include "chrome/browser/signin/signin_account_id_helper.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/webdata/token_web_data.h"
+#include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/signin/core/webdata/token_web_data.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -76,7 +77,8 @@ class MutableProfileOAuth2TokenServiceTest :
   void AddAuthTokenManually(const std::string& service,
                             const std::string& value)  {
     scoped_refptr<TokenWebData> token_web_data =
-        TokenWebData::FromBrowserContext(profile());
+        WebDataServiceFactory::GetTokenWebDataForProfile(
+            profile(), Profile::EXPLICIT_ACCESS);
     if (token_web_data.get())
       token_web_data->SetTokenForService(service, value);
   }

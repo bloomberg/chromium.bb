@@ -1761,7 +1761,6 @@
         'browser/web_resource/resource_request_allowed_notifier_unittest.cc',
         'browser/webdata/autofill_profile_syncable_service_unittest.cc',
         'browser/webdata/keyword_table_unittest.cc',
-        'browser/webdata/token_service_table_unittest.cc',
         'browser/webdata/web_apps_table_unittest.cc',
         'common/cancelable_task_tracker_unittest.cc',
         'common/chrome_paths_unittest.cc',
