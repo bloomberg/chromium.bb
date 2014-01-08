@@ -31,6 +31,9 @@
 using content::NavigationController;
 using content::WebContents;
 
+// Note: All tests in here require the internal PDF plugin, so they're disabled
+// in non-official builds. We still compile them though, to prevent bitrot.
+
 namespace {
 
 // Include things like browser frame and scrollbar and make sure we're bigger
@@ -212,8 +215,8 @@ class PDFBrowserTest : public InProcessBrowserTest,
   net::test_server::EmbeddedTestServer pdf_test_server_;
 };
 
-#if defined(OS_CHROMEOS)
-// TODO(sanjeevr): http://crbug.com/79837
+#if !defined(GOOGLE_CHROME_BUILD) || defined(OS_CHROMEOS)
+// TODO(thestig): http://crbug.com/79837
 #define MAYBE_Basic DISABLED_Basic
 #else
 #define MAYBE_Basic Basic
@@ -236,7 +239,7 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_Basic) {
 #endif
 }
 
-#if defined(OS_CHROMEOS)
+#if !defined(GOOGLE_CHROME_BUILD) || defined(OS_CHROMEOS)
 // TODO(sanjeevr): http://crbug.com/79837
 #define MAYBE_Scroll DISABLED_Scroll
 #else
@@ -266,8 +269,8 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_Scroll) {
   ASSERT_GT(y_offset, 0);
 }
 
-#if defined(OS_CHROMEOS)
-// TODO(sanjeevr): http://crbug.com/79837
+#if !defined(GOOGLE_CHROME_BUILD) || defined(OS_CHROMEOS)
+// TODO(thestig): http://crbug.com/79837
 #define MAYBE_FindAndCopy DISABLED_FindAndCopy
 #else
 #define MAYBE_FindAndCopy FindAndCopy
@@ -304,7 +307,12 @@ const int kLoadingNumberOfParts = 10;
 // This also loads all documents that used to crash, to ensure we don't have
 // regressions.
 // If it flakes, reopen http://crbug.com/74548.
-IN_PROC_BROWSER_TEST_P(PDFBrowserTest, Loading) {
+#if !defined(GOOGLE_CHROME_BUILD)
+#define MAYBE_Loading DISABLED_Loading
+#else
+#define MAYBE_Loading Loading
+#endif
+IN_PROC_BROWSER_TEST_P(PDFBrowserTest, MAYBE_Loading) {
   ASSERT_TRUE(pdf_test_server()->InitializeAndWaitUntilReady());
 
   NavigationController* controller =
@@ -370,7 +378,7 @@ INSTANTIATE_TEST_CASE_P(PDFTestFiles,
                         PDFBrowserTest,
                         testing::Range(0, kLoadingNumberOfParts));
 
-#if defined(GOOGLE_CHROME_BUILD) && defined(OS_MACOSX)
+#if !defined(GOOGLE_CHROME_BUILD) || defined(OS_MACOSX)
 // http://crbug.com/315160
 #define MAYBE_Action DISABLED_Action
 #else
