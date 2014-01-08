@@ -194,9 +194,12 @@ void SafariImporter::RecursiveReadBookmarksFolder(
   }
 
   NSArray* elements = [bookmark_folder objectForKey:@"Children"];
-  if (!elements && (!parent_path_elements.empty() || !is_in_toolbar)) {
-    // This is an empty folder, so add it explicitly; but don't add the toolbar
-    // folder if it is empty.  Note that all non-empty folders are added
+  if (!elements &&
+      (!parent_path_elements.empty() || !is_in_toolbar) &&
+      ![title isEqualToString:@"BookmarksMenu"]) {
+    // This is an empty folder, so add it explicitly.  Note that the condition
+    // above prevents either the toolbar folder or the bookmarks menu from being
+    // added if either is empty.  Note also that all non-empty folders are added
     // implicitly when their children are added.
     ImportedBookmarkEntry entry;
     // Safari doesn't specify a creation time for the folder.

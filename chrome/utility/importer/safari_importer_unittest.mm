@@ -28,22 +28,24 @@ using base::ASCIIToUTF16;
 // simulated Library directory containing dummy data files in the same
 // structure as ~/Library in the Chrome test data directory.
 // This function returns the path to that directory.
-base::FilePath GetTestSafariLibraryPath() {
+base::FilePath GetTestSafariLibraryPath(const std::string& suffix) {
   base::FilePath test_dir;
   PathService::Get(chrome::DIR_TEST_DATA, &test_dir);
 
   // Our simulated ~/Library directory
-  test_dir = test_dir.AppendASCII("safari_import");
-  return test_dir;
+  return
+      test_dir.AppendASCII("import").AppendASCII("safari").AppendASCII(suffix);
 }
 
 class SafariImporterTest : public PlatformTest {
  public:
   SafariImporter* GetSafariImporter() {
-    base::FilePath test_library_dir = GetTestSafariLibraryPath();
-    CHECK(base::PathExists(test_library_dir))  <<
-        "Missing test data directory";
+    return GetSafariImporterWithPathSuffix("default");
+  }
 
+  SafariImporter* GetSafariImporterWithPathSuffix(const std::string& suffix) {
+    base::FilePath test_library_dir = GetTestSafariLibraryPath(suffix);
+    CHECK(base::PathExists(test_library_dir));
     return new SafariImporter(test_library_dir);
   }
 };
@@ -153,6 +155,70 @@ TEST_F(SafariImporterTest, BookmarkImport) {
   }
 }
 
+TEST_F(SafariImporterTest, BookmarkImportWithEmptyBookmarksMenu) {
+  // Expected results.
+  const struct {
+    bool in_toolbar;
+    GURL url;
+    // We store the path with levels of nesting delimited by forward slashes.
+    base::string16 path;
+    base::string16 title;
+  } kImportedBookmarksData[] = {
+    {
+      true,
+      GURL("http://www.apple.com/"),
+      ASCIIToUTF16("Toolbar/"),
+      ASCIIToUTF16("Apple")
+    },
+    {
+      true,
+      GURL("http://www.yahoo.com/"),
+      ASCIIToUTF16("Toolbar/"),
+      ASCIIToUTF16("Yahoo!")
+    },
+    {
+      true,
+      GURL("http://www.cnn.com/"),
+      ASCIIToUTF16("Toolbar/News"),
+      ASCIIToUTF16("CNN")
+    },
+    {
+      true,
+      GURL("http://www.nytimes.com/"),
+      ASCIIToUTF16("Toolbar/News"),
+      ASCIIToUTF16("The New York Times")
+    },
+    {
+      false,
+      GURL("http://www.webkit.org/blog/"),
+      base::string16(),
+      ASCIIToUTF16("Surfin' Safari - The WebKit Blog")
+    },
+  };
+
+  scoped_refptr<SafariImporter> importer(
+      GetSafariImporterWithPathSuffix("empty_bookmarks_menu"));
+  std::vector<ImportedBookmarkEntry> bookmarks;
+  importer->ParseBookmarks(ASCIIToUTF16("Toolbar"), &bookmarks);
+  size_t num_bookmarks = bookmarks.size();
+  ASSERT_EQ(ARRAYSIZE_UNSAFE(kImportedBookmarksData), num_bookmarks);
+
+  for (size_t i = 0; i < num_bookmarks; ++i) {
+    ImportedBookmarkEntry& entry = bookmarks[i];
+    EXPECT_EQ(kImportedBookmarksData[i].in_toolbar, entry.in_toolbar);
+    EXPECT_EQ(kImportedBookmarksData[i].url, entry.url);
+
+    std::vector<base::string16> path;
+    Tokenize(kImportedBookmarksData[i].path, ASCIIToUTF16("/"), &path);
+    ASSERT_EQ(path.size(), entry.path.size());
+    for (size_t j = 0; j < path.size(); ++j) {
+      EXPECT_EQ(path[j], entry.path[j]);
+    }
+
+    EXPECT_EQ(kImportedBookmarksData[i].title, entry.title);
+  }
+}
+
 TEST_F(SafariImporterTest, FaviconImport) {
   scoped_refptr<SafariImporter> importer(GetSafariImporter());
   sql::Connection db;
@@ -190,7 +256,8 @@ TEST_F(SafariImporterTest, FaviconImport) {
 
 TEST_F(SafariImporterTest, CanImport) {
   uint16 items = importer::NONE;
-  EXPECT_TRUE(SafariImporterCanImport(GetTestSafariLibraryPath(), &items));
+  EXPECT_TRUE(SafariImporterCanImport(
+      GetTestSafariLibraryPath("default"), &items));
   EXPECT_EQ(items, importer::HISTORY | importer::FAVORITES);
   EXPECT_EQ(items & importer::COOKIES, importer::NONE);
   EXPECT_EQ(items & importer::PASSWORDS, importer::NONE);

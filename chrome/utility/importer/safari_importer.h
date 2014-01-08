@@ -46,6 +46,8 @@ class SafariImporter : public Importer {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SafariImporterTest, BookmarkImport);
+  FRIEND_TEST_ALL_PREFIXES(SafariImporterTest,
+                           BookmarkImportWithEmptyBookmarksMenu);
   FRIEND_TEST_ALL_PREFIXES(SafariImporterTest, FaviconImport);
   FRIEND_TEST_ALL_PREFIXES(SafariImporterTest, HistoryImport);
 
