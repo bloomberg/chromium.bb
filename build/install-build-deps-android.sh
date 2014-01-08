@@ -43,15 +43,8 @@ sudo apt-get -f install
 # on since the package names are different, and Sun's Java must
 # be installed manually on late-model versions.
 
-# Common to all Ubuntu versions:
-#  - checkstyle: Used to check Java coding style during presubmit.
-#  - imagemagick: Used to mirror image assets for RTL at build time.
-#  - lighttpd
-#  - python-pexpect
-#  - xvfb
-#  - x11-utils
-sudo apt-get -y install checkstyle imagemagick lighttpd python-pexpect xvfb \
-    x11-utils
+# common
+sudo apt-get -y install checkstyle lighttpd python-pexpect xvfb x11-utils
 
 # Few binaries in the Android SDK require 32-bit libraries on the host.
 sudo apt-get -y install lib32z1 g++-multilib

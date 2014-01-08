@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright 2012 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -10,10 +10,8 @@ import optparse
 import os
 import shlex
 import shutil
-import tempfile
 
 from util import build_utils
-import mirror_images
 
 def ParseArgs():
   """Parses command line options.
@@ -28,15 +26,10 @@ def ParseArgs():
   parser.add_option('--R-dir', help='directory to hold generated R.java')
   parser.add_option('--res-dirs',
                     help='directories containing resources to be packaged')
-  parser.add_option('--image-input-dir', help='directory containing images to '
-                    'be crunched and possibly mirrored.')
+  parser.add_option('--crunch-input-dir',
+                    help='directory containing images to be crunched')
   parser.add_option('--crunch-output-dir',
                     help='directory to hold crunched resources')
-  parser.add_option('--mirror-config', help='config file specifying which '
-                    'images should be mirrored. Images will be mirrored only '
-                    'if this is provided.')
-  parser.add_option('--mirror-output-dir',
-                    help='directory where mirrored images should be saved')
   parser.add_option('--non-constant-id', action='store_true')
   parser.add_option('--custom-package', help='Java package for R.java')
   parser.add_option('--android-manifest', help='AndroidManifest.xml path')
@@ -50,13 +43,9 @@ def ParseArgs():
   if args:
     parser.error('No positional arguments should be given.')
 
-  if (options.mirror_config is None) != (options.mirror_output_dir is None):
-    parser.error('--mirror-config and --mirror-output-dir must both be present '
-                 'or neither present.')
-
   # Check that required options have been provided.
   required_options = ('android_sdk', 'android_sdk_tools', 'R_dir',
-                      'res_dirs', 'image_input_dir', 'crunch_output_dir')
+                      'res_dirs', 'crunch_input_dir', 'crunch_output_dir')
   build_utils.CheckOptions(options, parser, required=required_options)
 
   return options
@@ -88,15 +77,6 @@ def MoveImagesToNonMdpiFolders(res_root):
       shutil.move(src_file, dst_file)
 
 
-def CrunchImages(aapt, input_res_dir, output_res_dir):
-  build_utils.MakeDirectory(output_res_dir)
-  aapt_cmd = [aapt,
-              'crunch',
-              '-S', input_res_dir,
-              '-C', output_res_dir]
-  build_utils.CheckOutput(aapt_cmd, fail_if_stderr=True)
-
-
 def main():
   options = ParseArgs()
   android_jar = os.path.join(options.android_sdk, 'android.jar')
@@ -126,22 +106,16 @@ def main():
     package_command += ['--custom-package', options.custom_package]
   build_utils.CheckOutput(package_command)
 
-  # Mirror images if requested.
-  if options.mirror_config:
-    # Mirrored images are generated into a temp dir. Once these images are
-    # crunched, they'll go in the desired mirror output dir.
-    mirrored_uncrunched_dir = tempfile.mkdtemp()
-    try:
-      mirror_images.main(['--config', options.mirror_config,
-                          '--input-res-dir', options.image_input_dir,
-                          '--output-res-dir', mirrored_uncrunched_dir])
-      CrunchImages(aapt, mirrored_uncrunched_dir, options.mirror_output_dir)
-    finally:
-      shutil.rmtree(mirrored_uncrunched_dir)
-
   # Crunch image resources. This shrinks png files and is necessary for 9-patch
   # images to display correctly.
-  CrunchImages(aapt, options.image_input_dir, options.crunch_output_dir)
+  build_utils.MakeDirectory(options.crunch_output_dir)
+  aapt_cmd = [aapt,
+              'crunch',
+              '-S', options.crunch_input_dir,
+              '-C', options.crunch_output_dir]
+  build_utils.CheckOutput(aapt_cmd, fail_if_stderr=True)
+
+  MoveImagesToNonMdpiFolders(options.crunch_output_dir)
 
   if options.stamp:
     build_utils.Touch(options.stamp)
