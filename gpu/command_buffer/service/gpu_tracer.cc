@@ -8,103 +8,45 @@
 
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
-#include "base/memory/weak_ptr.h"
 #include "base/strings/string_util.h"
-#include "base/threading/thread.h"
 #include "base/time/time.h"
-#include "ui/gl/gl_bindings.h"
 
 namespace gpu {
 namespace gles2 {
-namespace {
-
-class Outputter;
 
 static const unsigned int kProcessInterval = 16;
-static Outputter* g_outputter_thread = NULL;
+static TraceOutputter* g_outputter_thread = NULL;
 
-class Outputter
-    : private base::Thread,
-      public base::RefCounted<Outputter> {
- public:
-  static scoped_refptr<Outputter> Create(const std::string& name) {
-    if (!g_outputter_thread) {
-      g_outputter_thread = new Outputter(name);
-      g_outputter_thread->Start();
-      g_outputter_thread->Stop();
-    }
-    return g_outputter_thread;
+scoped_refptr<TraceOutputter> TraceOutputter::Create(const std::string& name) {
+  if (!g_outputter_thread) {
+    g_outputter_thread = new TraceOutputter(name);
   }
+  return g_outputter_thread;
+}
 
-  uint64 Id() { return thread_id(); }
+TraceOutputter::TraceOutputter(const std::string& name)
+    : named_thread_(name.c_str()), local_trace_id_(0) {
+  named_thread_.Start();
+  named_thread_.Stop();
+}
 
- private:
-  friend class base::RefCounted<Outputter>;
+TraceOutputter::~TraceOutputter() { g_outputter_thread = NULL; }
 
-  explicit Outputter(const std::string& name) : base::Thread(name.c_str()) {}
-
-  virtual ~Outputter() {
-    g_outputter_thread = NULL;
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(Outputter);
-};
-
-class Trace : public base::RefCounted<Trace> {
- public:
-  explicit Trace(const std::string& name) : name_(name) {}
-
-  virtual void Start() = 0;
-  virtual void End() = 0;
-
-  // True if the the results of this query are available.
-  virtual bool IsAvailable() = 0;
-
-  virtual bool IsProcessable() { return true; }
-  virtual void Process() = 0;
-
-  virtual const std::string& name() {
-    return name_;
-  }
-
- protected:
-  virtual ~Trace() {}
-
- private:
-  friend class base::RefCounted<Trace>;
-
-  std::string name_;
-
-  DISALLOW_COPY_AND_ASSIGN(Trace);
-};
-
-class GLARBTimerTrace : public Trace {
- public:
-  GLARBTimerTrace(scoped_refptr<Outputter> outputter, const std::string& name,
-                  int64 offset);
-
-  // Implementation of Tracer
-  virtual void Start() OVERRIDE;
-  virtual void End() OVERRIDE;
-  virtual bool IsAvailable() OVERRIDE;
-  virtual void Process() OVERRIDE;
-
- private:
-  virtual ~GLARBTimerTrace();
-
-  void Output();
-
-  scoped_refptr<Outputter> outputter_;
-
-  int64 offset_;
-  int64 start_time_;
-  int64 end_time_;
-  bool end_requested_;
-
-  GLuint queries_[2];
-
-  DISALLOW_COPY_AND_ASSIGN(GLARBTimerTrace);
-};
+void TraceOutputter::Trace(const std::string& name,
+                           int64 start_time,
+                           int64 end_time) {
+  TRACE_EVENT_COPY_BEGIN_WITH_ID_TID_AND_TIMESTAMP0("gpu",
+                                                    name.c_str(),
+                                                    local_trace_id_,
+                                                    named_thread_.thread_id(),
+                                                    start_time);
+  TRACE_EVENT_COPY_END_WITH_ID_TID_AND_TIMESTAMP0("gpu",
+                                                  name.c_str(),
+                                                  local_trace_id_,
+                                                  named_thread_.thread_id(),
+                                                  end_time);
+  ++local_trace_id_;
+}
 
 class NoopTrace : public Trace {
  public:
@@ -181,8 +123,13 @@ class GPUTracerARBTimerQuery : public GPUTracerImpl {
   DISALLOW_COPY_AND_ASSIGN(GPUTracerARBTimerQuery);
 };
 
+bool Trace::IsProcessable() { return true; }
+
+const std::string& Trace::name() { return name_; }
+
 GLARBTimerTrace::GLARBTimerTrace(scoped_refptr<Outputter> outputter,
-                                 const std::string& name, int64 offset)
+                                 const std::string& name,
+                                 int64 offset)
     : Trace(name),
       outputter_(outputter),
       offset_(offset),
@@ -216,23 +163,19 @@ bool GLARBTimerTrace::IsAvailable() {
 void GLARBTimerTrace::Process() {
   DCHECK(IsAvailable());
 
-  GLint64 timestamp;
+  GLuint64 timestamp;
 
   // TODO(dsinclair): It's possible for the timer to wrap during the start/end.
   // We need to detect if the end is less then the start and correct for the
   // wrapping.
-  glGetQueryObjecti64v(queries_[0], GL_QUERY_RESULT, &timestamp);
+  glGetQueryObjectui64v(queries_[0], GL_QUERY_RESULT, &timestamp);
   start_time_ = (timestamp / base::Time::kNanosecondsPerMicrosecond) + offset_;
 
-  glGetQueryObjecti64v(queries_[1], GL_QUERY_RESULT, &timestamp);
+  glGetQueryObjectui64v(queries_[1], GL_QUERY_RESULT, &timestamp);
   end_time_ = (timestamp / base::Time::kNanosecondsPerMicrosecond) + offset_;
 
   glDeleteQueries(2, queries_);
-
-  TRACE_EVENT_COPY_BEGIN_WITH_ID_TID_AND_TIMESTAMP0("gpu", name().c_str(),
-                                   this, outputter_->Id(), start_time_);
-  TRACE_EVENT_COPY_END_WITH_ID_TID_AND_TIMESTAMP0("gpu", name().c_str(),
-                                   this, outputter_->Id(), end_time_);
+  outputter_->Trace(name(), start_time_, end_time_);
 }
 
 bool GPUTracerImpl::Begin(const std::string& name) {
@@ -295,7 +238,7 @@ GPUTracerARBTimerQuery::GPUTracerARBTimerQuery()
       timer_offset_(0),
       last_offset_check_(0) {
   CalculateTimerOffset();
-  outputter_ = Outputter::Create("GL_ARB_timer_query");
+  outputter_ = TraceOutputter::Create("GL_ARB_timer_query");
 }
 
 GPUTracerARBTimerQuery::~GPUTracerARBTimerQuery() {
@@ -335,11 +278,10 @@ void GPUTracerARBTimerQuery::CalculateTimerOffset() {
   last_offset_check_ = system_now.ToInternalValue();
 }
 
-}  // namespace
-
 scoped_ptr<GPUTracer> GPUTracer::Create() {
-  if (gfx::g_driver_gl.ext.b_GL_ARB_timer_query)
+  if (gfx::g_driver_gl.ext.b_GL_ARB_timer_query) {
     return scoped_ptr<GPUTracer>(new GPUTracerARBTimerQuery());
+  }
   return scoped_ptr<GPUTracer>(new GPUTracerImpl());
 }
 

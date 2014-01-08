@@ -245,6 +245,7 @@
         'command_buffer/service/transfer_buffer_manager_unittest.cc',
         'command_buffer/service/vertex_attrib_manager_unittest.cc',
         'command_buffer/service/vertex_array_manager_unittest.cc',
+        'command_buffer/service/gpu_tracer_unittest.cc',
         'config/gpu_blacklist_unittest.cc',
         'config/gpu_control_list_entry_unittest.cc',
         'config/gpu_control_list_machine_model_info_unittest.cc',
