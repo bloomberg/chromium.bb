@@ -38,7 +38,7 @@ protected:
     {
     }
 
-    virtual void finish()
+    virtual void finish() OVERRIDE
     {
         if (!isStopped())
             document()->finishedParsing();
@@ -51,11 +51,11 @@ private:
         appendBytes(0, 0);
     }
 
-    virtual void insert(const SegmentedString&)
+    virtual void insert(const SegmentedString&) OVERRIDE
     {
     }
 
-    virtual void append(PassRefPtr<StringImpl>)
+    virtual void append(PassRefPtr<StringImpl>) OVERRIDE
     {
         ASSERT_NOT_REACHED();
     }

@@ -234,7 +234,7 @@ public:
     using SecurityContext::contentSecurityPolicy;
     using ExecutionContextClient::addConsoleMessage;
 
-    virtual bool canContainRangeEndPoint() const { return true; }
+    virtual bool canContainRangeEndPoint() const OVERRIDE { return true; }
 
     SelectorQueryCache& selectorQueryCache();
 
@@ -357,7 +357,7 @@ public:
     void setXMLStandalone(bool, ExceptionState&);
     void setHasXMLDeclaration(bool hasXMLDeclaration) { m_hasXMLDeclaration = hasXMLDeclaration ? 1 : 0; }
 
-    virtual KURL baseURI() const OVERRIDE;
+    virtual KURL baseURI() const OVERRIDE FINAL;
 
     String visibilityState() const;
     bool hidden() const;
@@ -542,8 +542,8 @@ public:
     using TreeScope::completeURL; // Disambiguate between ExecutionContext and TreeScope methods.
     KURL completeURLWithOverride(const String&, const KURL& baseURLOverride) const;
 
-    virtual String userAgent(const KURL&) const;
-    virtual void disableEval(const String& errorMessage);
+    virtual String userAgent(const KURL&) const OVERRIDE FINAL;
+    virtual void disableEval(const String& errorMessage) OVERRIDE FINAL;
 
     bool canNavigate(Frame* targetFrame);
     Frame* findUnsafeParentScrollPropagationBoundary();
@@ -834,11 +834,11 @@ public:
     // FIXME(crbug.com/305497): This should be removed once DOMWindow is an ExecutionContext.
     virtual void postTask(PassOwnPtr<ExecutionContextTask>) OVERRIDE; // Executes the task on context's thread asynchronously.
 
-    virtual void tasksWereSuspended() OVERRIDE;
-    virtual void tasksWereResumed() OVERRIDE;
-    virtual void suspendScheduledTasks() OVERRIDE;
-    virtual void resumeScheduledTasks() OVERRIDE;
-    virtual bool tasksNeedSuspension() OVERRIDE;
+    virtual void tasksWereSuspended() OVERRIDE FINAL;
+    virtual void tasksWereResumed() OVERRIDE FINAL;
+    virtual void suspendScheduledTasks() OVERRIDE FINAL;
+    virtual void resumeScheduledTasks() OVERRIDE FINAL;
+    virtual bool tasksNeedSuspension() OVERRIDE FINAL;
 
     void finishedParsing();
 
@@ -855,7 +855,7 @@ public:
     const Vector<AnnotatedRegionValue>& annotatedRegions() const;
     void setAnnotatedRegions(const Vector<AnnotatedRegionValue>&);
 
-    virtual void removeAllEventListeners();
+    virtual void removeAllEventListeners() OVERRIDE FINAL;
 
     const SVGDocumentExtensions* svgExtensions();
     SVGDocumentExtensions* accessSVGExtensions();
@@ -887,8 +887,8 @@ public:
     void setContainsPlugins() { m_containsPlugins = true; }
     bool containsPlugins() const { return m_containsPlugins; }
 
-    virtual bool isContextThread() const;
-    virtual bool isJSExecutionForbidden() const { return false; }
+    virtual bool isContextThread() const OVERRIDE FINAL;
+    virtual bool isJSExecutionForbidden() const OVERRIDE FINAL { return false; }
 
     bool containsValidityStyleRules() const { return m_containsValidityStyleRules; }
     void setContainsValidityStyleRules() { m_containsValidityStyleRules = true; }
@@ -919,8 +919,8 @@ public:
     void cancelAnimationFrame(int id);
     void serviceScriptedAnimations(double monotonicAnimationStartTime);
 
-    virtual EventTarget* errorEventTarget();
-    virtual void logExceptionToConsole(const String& errorMessage, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack>);
+    virtual EventTarget* errorEventTarget() OVERRIDE FINAL;
+    virtual void logExceptionToConsole(const String& errorMessage, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack>) OVERRIDE FINAL;
 
     void initDNSPrefetch();
 
@@ -998,8 +998,8 @@ public:
 
     void addConsoleMessageWithRequestIdentifier(MessageSource, MessageLevel, const String& message, unsigned long requestIdentifier);
 
-    virtual DOMWindow* executingWindow() OVERRIDE { return domWindow(); }
-    virtual void userEventWasHandled() OVERRIDE { resetLastHandledUserGestureTimestamp(); }
+    virtual DOMWindow* executingWindow() OVERRIDE FINAL { return domWindow(); }
+    virtual void userEventWasHandled() OVERRIDE FINAL { resetLastHandledUserGestureTimestamp(); }
 
     DocumentLifecycleNotifier& lifecycleNotifier();
     bool isActive() const { return m_lifecyle.state() == DocumentLifecycle::Active; }
@@ -1021,7 +1021,7 @@ public:
 protected:
     Document(const DocumentInit&, DocumentClassFlags = DefaultDocumentClass);
 
-    virtual void didUpdateSecurityOrigin() OVERRIDE;
+    virtual void didUpdateSecurityOrigin() OVERRIDE FINAL;
 
     void clearXMLVersion() { m_xmlVersion = String(); }
 
@@ -1034,34 +1034,34 @@ private:
     friend class IgnoreDestructiveWriteCountIncrementer;
 
     ScriptedAnimationController& ensureScriptedAnimationController();
-    virtual SecurityContext& securityContext() OVERRIDE { return *this; }
-    virtual EventQueue* eventQueue() const FINAL;
+    virtual SecurityContext& securityContext() OVERRIDE FINAL { return *this; }
+    virtual EventQueue* eventQueue() const OVERRIDE FINAL;
 
     void updateDistributionIfNeeded();
 
     void detachParser();
 
-    virtual bool isDocument() const OVERRIDE { return true; }
+    virtual bool isDocument() const OVERRIDE FINAL { return true; }
 
-    virtual void childrenChanged(bool changedByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0);
+    virtual void childrenChanged(bool changedByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0) OVERRIDE;
 
-    virtual String nodeName() const;
-    virtual NodeType nodeType() const;
-    virtual bool childTypeAllowed(NodeType) const;
-    virtual PassRefPtr<Node> cloneNode(bool deep = true);
+    virtual String nodeName() const OVERRIDE FINAL;
+    virtual NodeType nodeType() const OVERRIDE FINAL;
+    virtual bool childTypeAllowed(NodeType) const OVERRIDE FINAL;
+    virtual PassRefPtr<Node> cloneNode(bool deep = true) OVERRIDE FINAL;
     void cloneDataFromDocument(const Document&);
 
-    virtual void refExecutionContext() { ref(); }
-    virtual void derefExecutionContext() { deref(); }
+    virtual void refExecutionContext() OVERRIDE FINAL { ref(); }
+    virtual void derefExecutionContext() OVERRIDE FINAL { deref(); }
 
-    virtual const KURL& virtualURL() const; // Same as url(), but needed for ExecutionContext to implement it without a performance loss for direct calls.
-    virtual KURL virtualCompleteURL(const String&) const; // Same as completeURL() for the same reason as above.
+    virtual const KURL& virtualURL() const OVERRIDE FINAL; // Same as url(), but needed for ExecutionContext to implement it without a performance loss for direct calls.
+    virtual KURL virtualCompleteURL(const String&) const OVERRIDE FINAL; // Same as completeURL() for the same reason as above.
 
-    virtual void reportBlockedScriptExecutionToInspector(const String& directiveText) OVERRIDE;
-    virtual void addMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber, ScriptState*);
+    virtual void reportBlockedScriptExecutionToInspector(const String& directiveText) OVERRIDE FINAL;
+    virtual void addMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber, ScriptState*) OVERRIDE FINAL;
     void internalAddMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber, PassRefPtr<ScriptCallStack>, ScriptState*);
 
-    virtual double timerAlignmentInterval() const;
+    virtual double timerAlignmentInterval() const OVERRIDE FINAL;
 
     void updateTitle(const String&);
     void updateFocusAppearanceTimerFired(Timer<Document>*);

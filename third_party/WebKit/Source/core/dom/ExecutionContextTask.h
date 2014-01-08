@@ -47,7 +47,7 @@ public:
     virtual bool isCleanupTask() const { return false; }
 };
 
-class CallClosureTask : public ExecutionContextTask {
+class CallClosureTask FINAL : public ExecutionContextTask {
 public:
     static PassOwnPtr<CallClosureTask> create(const Closure& closure)
     {

@@ -40,7 +40,7 @@ typedef HashCountedSet<Node*> TouchEventTargetSet;
 class Document;
 class DOMWindow;
 
-class TouchController : public DocumentSupplement, public DOMWindowLifecycleObserver, public DocumentLifecycleObserver {
+class TouchController FINAL : public DocumentSupplement, public DOMWindowLifecycleObserver, public DocumentLifecycleObserver {
 
 public:
     virtual ~TouchController();

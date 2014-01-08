@@ -35,7 +35,7 @@ class ScriptLoaderClient;
 class ScriptSourceCode;
 
 
-class ScriptLoader : private ResourceClient {
+class ScriptLoader FINAL : private ResourceClient {
 public:
     static PassOwnPtr<ScriptLoader> create(Element*, bool createdByParser, bool isEvaluated);
     virtual ~ScriptLoader();

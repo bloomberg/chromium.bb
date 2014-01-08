@@ -43,7 +43,7 @@ namespace WebCore {
 class Document;
 class DOMNamedFlowCollection;
 
-class NamedFlowCollection : public RefCounted<NamedFlowCollection>, public DocumentLifecycleObserver {
+class NamedFlowCollection FINAL : public RefCounted<NamedFlowCollection>, public DocumentLifecycleObserver {
 public:
     static PassRefPtr<NamedFlowCollection> create(Document* doc) { return adoptRef(new NamedFlowCollection(doc)); }
 

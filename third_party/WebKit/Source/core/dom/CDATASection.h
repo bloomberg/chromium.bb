@@ -34,9 +34,9 @@ public:
 private:
     CDATASection(Document&, const String&);
 
-    virtual String nodeName() const;
-    virtual NodeType nodeType() const;
-    virtual bool childTypeAllowed(NodeType) const;
+    virtual String nodeName() const OVERRIDE;
+    virtual NodeType nodeType() const OVERRIDE;
+    virtual bool childTypeAllowed(NodeType) const OVERRIDE;
     virtual PassRefPtr<Text> cloneWithData(const String&) OVERRIDE;
 };
 

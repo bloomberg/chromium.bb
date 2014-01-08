@@ -34,7 +34,7 @@ namespace WebCore {
 
 class ExceptionState;
 
-class DOMSettableTokenList : public DOMTokenList, public RefCounted<DOMSettableTokenList> {
+class DOMSettableTokenList FINAL : public DOMTokenList, public RefCounted<DOMSettableTokenList> {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     static PassRefPtr<DOMSettableTokenList> create()

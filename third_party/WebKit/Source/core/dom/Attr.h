@@ -77,13 +77,13 @@ private:
     virtual NodeType nodeType() const OVERRIDE { return ATTRIBUTE_NODE; }
 
     virtual String nodeValue() const OVERRIDE { return value(); }
-    virtual void setNodeValue(const String&);
-    virtual PassRefPtr<Node> cloneNode(bool deep = true);
+    virtual void setNodeValue(const String&) OVERRIDE;
+    virtual PassRefPtr<Node> cloneNode(bool deep = true) OVERRIDE;
 
-    virtual bool isAttributeNode() const { return true; }
-    virtual bool childTypeAllowed(NodeType) const;
+    virtual bool isAttributeNode() const OVERRIDE { return true; }
+    virtual bool childTypeAllowed(NodeType) const OVERRIDE;
 
-    virtual void childrenChanged(bool changedByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0);
+    virtual void childrenChanged(bool changedByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0) OVERRIDE;
 
     Attribute& elementAttribute();
 

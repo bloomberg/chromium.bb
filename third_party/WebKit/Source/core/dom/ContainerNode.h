@@ -115,7 +115,7 @@ public:
 
     virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
     virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;
-    virtual LayoutRect boundingBox() const OVERRIDE;
+    virtual LayoutRect boundingBox() const OVERRIDE FINAL;
     virtual void setFocus(bool) OVERRIDE;
     void focusStateChanged();
     virtual void setActive(bool = true) OVERRIDE;

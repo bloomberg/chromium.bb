@@ -37,12 +37,12 @@ DocumentMarkerDetails::~DocumentMarkerDetails()
 {
 }
 
-class DocumentMarkerDescription : public DocumentMarkerDetails {
+class DocumentMarkerDescription FINAL : public DocumentMarkerDetails {
 public:
     static PassRefPtr<DocumentMarkerDescription> create(const String&);
 
     const String& description() const { return m_description; }
-    virtual bool isDescription() const { return true; }
+    virtual bool isDescription() const OVERRIDE { return true; }
 
 private:
     DocumentMarkerDescription(const String& description)
@@ -66,12 +66,12 @@ inline DocumentMarkerDescription* toDocumentMarkerDescription(DocumentMarkerDeta
 }
 
 
-class DocumentMarkerTextMatch : public DocumentMarkerDetails {
+class DocumentMarkerTextMatch FINAL : public DocumentMarkerDetails {
 public:
     static PassRefPtr<DocumentMarkerTextMatch> instanceFor(bool);
 
     bool activeMatch() const { return m_match; }
-    virtual bool isTextMatch() const { return true; }
+    virtual bool isTextMatch() const OVERRIDE { return true; }
 
 private:
     explicit DocumentMarkerTextMatch(bool match)

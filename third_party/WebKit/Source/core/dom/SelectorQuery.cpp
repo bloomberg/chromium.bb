@@ -45,13 +45,13 @@ public:
     virtual Node* next() = 0;
 };
 
-class SingleNodeList : public SimpleNodeList {
+class SingleNodeList FINAL : public SimpleNodeList {
 public:
     explicit SingleNodeList(Node* rootNode) : m_currentNode(rootNode) { }
 
-    bool isEmpty() const { return !m_currentNode; }
+    bool isEmpty() const OVERRIDE { return !m_currentNode; }
 
-    Node* next()
+    Node* next() OVERRIDE
     {
         Node* current = m_currentNode;
         m_currentNode = 0;
@@ -62,16 +62,16 @@ private:
     Node* m_currentNode;
 };
 
-class ClassRootNodeList : public SimpleNodeList {
+class ClassRootNodeList FINAL : public SimpleNodeList {
 public:
     ClassRootNodeList(Node& rootNode, const AtomicString& className)
         : m_className(className)
         , m_rootNode(rootNode)
         , m_currentElement(nextInternal(ElementTraversal::firstWithin(m_rootNode))) { }
 
-    bool isEmpty() const { return !m_currentElement; }
+    bool isEmpty() const OVERRIDE { return !m_currentElement; }
 
-    Node* next()
+    Node* next() OVERRIDE
     {
         Node* current = m_currentElement;
         ASSERT(current);
@@ -94,16 +94,16 @@ private:
     Element* m_currentElement;
 };
 
-class ClassElementList : public SimpleNodeList {
+class ClassElementList FINAL : public SimpleNodeList {
 public:
     ClassElementList(Node& rootNode, const AtomicString& className)
         : m_className(className)
         , m_rootNode(rootNode)
         , m_currentElement(nextInternal(ElementTraversal::firstWithin(rootNode))) { }
 
-    bool isEmpty() const { return !m_currentElement; }
+    bool isEmpty() const OVERRIDE { return !m_currentElement; }
 
-    Node* next()
+    Node* next() OVERRIDE
     {
         Node* current = m_currentElement;
         ASSERT(current);

@@ -35,7 +35,7 @@ namespace WebCore {
 
 class DOMWindow;
 
-class WheelController : public DocumentSupplement, public DOMWindowLifecycleObserver {
+class WheelController FINAL : public DocumentSupplement, public DOMWindowLifecycleObserver {
 
 public:
     virtual ~WheelController();

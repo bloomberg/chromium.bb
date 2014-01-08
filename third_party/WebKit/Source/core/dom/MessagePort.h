@@ -56,7 +56,7 @@ typedef Vector<RefPtr<MessagePort>, 1> MessagePortArray;
 // Not to be confused with blink::WebMessagePortChannelArray; this one uses Vector and OwnPtr instead of WebVector and raw pointers.
 typedef Vector<OwnPtr<blink::WebMessagePortChannel>, 1> MessagePortChannelArray;
 
-class MessagePort : public RefCounted<MessagePort>
+class MessagePort FINAL : public RefCounted<MessagePort>
     , public ActiveDOMObject
     , public EventTargetWithInlineData
     , public ScriptWrappable

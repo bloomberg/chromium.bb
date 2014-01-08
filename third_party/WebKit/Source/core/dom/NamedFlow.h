@@ -45,12 +45,12 @@ class NodeList;
 class RenderNamedFlowThread;
 class ExecutionContext;
 
-class NamedFlow : public RefCounted<NamedFlow>, public ScriptWrappable, public EventTargetWithInlineData {
+class NamedFlow FINAL : public RefCounted<NamedFlow>, public ScriptWrappable, public EventTargetWithInlineData {
     REFCOUNTED_EVENT_TARGET(NamedFlow);
 public:
     static PassRefPtr<NamedFlow> create(PassRefPtr<NamedFlowCollection> manager, const AtomicString& flowThreadName);
 
-    ~NamedFlow();
+    virtual ~NamedFlow();
 
     const AtomicString& name() const;
     bool overset() const;

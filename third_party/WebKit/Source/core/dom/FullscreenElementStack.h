@@ -46,7 +46,7 @@ class RenderFullScreen;
 class RenderStyle;
 class ExecutionContext;
 
-class FullscreenElementStack
+class FullscreenElementStack FINAL
     : public DocumentSupplement
     , public DocumentLifecycleObserver {
 public:

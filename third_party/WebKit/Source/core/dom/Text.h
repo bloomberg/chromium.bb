@@ -75,7 +75,7 @@ private:
     virtual PassRefPtr<Text> cloneWithData(const String&);
 
 #ifndef NDEBUG
-    virtual void formatForDebugger(char* buffer, unsigned length) const;
+    virtual void formatForDebugger(char* buffer, unsigned length) const OVERRIDE;
 #endif
 };
 
