@@ -59,7 +59,7 @@
 #endif
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
-#include "components/policy/core/common/url_blacklist_manager.h"
+#include "components/policy/core/browser/url_blacklist_manager.h"
 #endif
 
 #if defined(OS_ANDROID)

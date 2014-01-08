@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/policy/core/common/url_blacklist_manager.h"
+#include "components/policy/core/browser/url_blacklist_manager.h"
 
 #include <ostream>
 
@@ -22,7 +22,7 @@
 #include "url/gurl.h"
 
 // TODO(joaodasilva): this file should be moved next to
-// components/policy/core/common/url_blacklist_manager.(cc|h).
+// components/policy/core/browser/url_blacklist_manager.(cc|h).
 // However, url_fixer_upper.h can't be included from the component. Rather
 // than having it mocked out, the actual URLFixerUpper::SegmentURL call is used
 // to make sure that the parsing of URL filters is correct.

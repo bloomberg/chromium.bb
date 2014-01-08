@@ -29,6 +29,7 @@
         '../components/component_strings.gyp:component_strings',
         '../components/components.gyp:encryptor',
         '../components/components.gyp:navigation_metrics',
+        '../components/components.gyp:policy_component',
         '../components/components.gyp:precache_core',
         '../components/components.gyp:signin_core',
         '../components/components.gyp:startup_metric_utils',

@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_POLICY_CORE_COMMON_URL_BLACKLIST_MANAGER_H_
-#define COMPONENTS_POLICY_CORE_COMMON_URL_BLACKLIST_MANAGER_H_
+#ifndef COMPONENTS_POLICY_CORE_BROWSER_URL_BLACKLIST_MANAGER_H_
+#define COMPONENTS_POLICY_CORE_BROWSER_URL_BLACKLIST_MANAGER_H_
 
 #include <map>
 #include <string>
@@ -224,4 +224,4 @@ class POLICY_EXPORT URLBlacklistManager {
 
 }  // namespace policy
 
-#endif  // COMPONENTS_POLICY_CORE_COMMON_URL_BLACKLIST_MANAGER_H_
+#endif  // COMPONENTS_POLICY_CORE_BROWSER_URL_BLACKLIST_MANAGER_H_

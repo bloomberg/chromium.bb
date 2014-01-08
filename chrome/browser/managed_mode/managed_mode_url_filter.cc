@@ -14,7 +14,7 @@
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/common/net/url_fixer_upper.h"
-#include "components/policy/core/common/url_blacklist_manager.h"
+#include "components/policy/core/browser/url_blacklist_manager.h"
 #include "components/url_matcher/url_matcher.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"

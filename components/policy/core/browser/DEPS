@@ -1,4 +1,6 @@
 include_rules = [
+  "+components/url_matcher",
+  "+components/user_prefs",
   "+grit/component_strings.h",
   "+ui/base/l10n",
   "+ui/base/resource",
