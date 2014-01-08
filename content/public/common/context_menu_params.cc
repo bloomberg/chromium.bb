@@ -32,7 +32,8 @@ ContextMenuParams::ContextMenuParams()
       writing_direction_right_to_left(
           blink::WebContextMenuData::CheckableMenuItemEnabled),
       edit_flags(0),
-      referrer_policy(blink::WebReferrerPolicyDefault) {
+      referrer_policy(blink::WebReferrerPolicyDefault),
+      source_type(ui::MENU_SOURCE_NONE) {
 }
 
 ContextMenuParams::~ContextMenuParams() {
