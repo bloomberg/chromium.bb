@@ -879,8 +879,6 @@ void NativeWidgetAura::OnWindowActivated(aura::Window* gained_active,
       GetWidget()->GetFocusManager()->StoreFocusedView(true);
   }
   delegate_->OnNativeWidgetActivationChanged(window_ == gained_active);
-  if (IsVisible() && GetWidget()->non_client_view())
-    GetWidget()->non_client_view()->SchedulePaint();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -21,6 +21,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/size.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/native_widget_aura.h"
@@ -160,11 +161,6 @@ class CustomFrameViewAsh::HeaderView
   virtual void Layout() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
-  // Sets whether the header should be painted as active.
-  void set_paint_as_active(bool paint_as_active) {
-    paint_as_active_ = paint_as_active;
-  }
-
   HeaderPainter* header_painter() {
     return header_painter_.get();
   }
@@ -196,9 +192,6 @@ class CustomFrameViewAsh::HeaderView
   // Keeps track of whether |maximize_bubble_| is still alive.
   scoped_ptr<views::WidgetDeletionObserver> maximize_bubble_lifetime_observer_;
 
-  // Whether the header should be painted as active.
-  bool paint_as_active_;
-
   // The fraction of the header's height which is visible while in fullscreen.
   // This value is meaningless when not in fullscreen.
   double fullscreen_visible_fraction_;
@@ -211,7 +204,6 @@ CustomFrameViewAsh::HeaderView::HeaderView(views::Widget* frame)
       header_painter_(new ash::HeaderPainter),
       caption_button_container_(NULL),
       maximize_bubble_(NULL),
-      paint_as_active_(false),
       fullscreen_visible_fraction_(0) {
   // Unfortunately, there is no views::WidgetDelegate::CanMinimize(). Assume
   // that the window frame can be minimized if it can be maximized.
@@ -272,7 +264,7 @@ void CustomFrameViewAsh::HeaderView::OnPaint(gfx::Canvas* canvas) {
   int theme_image_id = 0;
   if (frame_->IsMaximized() || frame_->IsFullscreen())
     theme_image_id = IDR_AURA_WINDOW_HEADER_BASE_MINIMAL;
-  else if (paint_as_active_)
+  else if (frame_->non_client_view()->frame_view()->ShouldPaintAsActive())
     theme_image_id = IDR_AURA_WINDOW_HEADER_BASE_ACTIVE;
   else
     theme_image_id = IDR_AURA_WINDOW_HEADER_BASE_INACTIVE;
@@ -477,8 +469,9 @@ gfx::Size CustomFrameViewAsh::GetMaximumSize() {
 void CustomFrameViewAsh::SchedulePaintInRect(const gfx::Rect& r) {
   // The HeaderView is not a child of CustomFrameViewAsh. Redirect the paint to
   // HeaderView instead.
-  header_view_->set_paint_as_active(ShouldPaintAsActive());
-  header_view_->SchedulePaint();
+  gfx::RectF to_paint(r);
+  views::View::ConvertRectToTarget(this, header_view_, &to_paint);
+  header_view_->SchedulePaintInRect(gfx::ToEnclosingRect(to_paint));
 }
 
 bool CustomFrameViewAsh::HitTestRect(const gfx::Rect& rect) const {

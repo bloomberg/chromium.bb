@@ -232,12 +232,23 @@ views::View* NonClientView::GetTooltipHandlerForPoint(const gfx::Point& point) {
 ////////////////////////////////////////////////////////////////////////////////
 // NonClientFrameView, public:
 
+NonClientFrameView::~NonClientFrameView() {
+}
+
 void NonClientFrameView::SetInactiveRenderingDisabled(bool disable) {
-  if (paint_as_active_ == disable)
+  if (inactive_rendering_disabled_ == disable)
     return;
 
-  paint_as_active_ = disable;
-  ShouldPaintAsActiveChanged();
+  bool should_paint_as_active_old = ShouldPaintAsActive();
+  inactive_rendering_disabled_ = disable;
+
+  // The widget schedules a paint when the activation changes.
+  if (should_paint_as_active_old != ShouldPaintAsActive())
+    SchedulePaint();
+}
+
+bool NonClientFrameView::ShouldPaintAsActive() const {
+  return inactive_rendering_disabled_ || GetWidget()->IsActive();
 }
 
 int NonClientFrameView::GetHTComponentForFrame(const gfx::Point& point,
@@ -301,14 +312,6 @@ bool NonClientFrameView::HitTestRect(const gfx::Rect& rect) const {
 ////////////////////////////////////////////////////////////////////////////////
 // NonClientFrameView, protected:
 
-bool NonClientFrameView::ShouldPaintAsActive() const {
-  return GetWidget()->IsActive() || paint_as_active_;
-}
-
-void NonClientFrameView::ShouldPaintAsActiveChanged() {
-  SchedulePaint();
-}
-
 void NonClientFrameView::GetAccessibleState(ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_CLIENT;
 }
@@ -320,6 +323,9 @@ const char* NonClientFrameView::GetClassName() const {
 void NonClientFrameView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   // Overridden to do nothing. The NonClientView manually calls Layout on the
   // FrameView when it is itself laid out, see comment in NonClientView::Layout.
+}
+
+NonClientFrameView::NonClientFrameView() : inactive_rendering_disabled_(false) {
 }
 
 }  // namespace views

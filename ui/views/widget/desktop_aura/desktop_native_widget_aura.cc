@@ -1001,10 +1001,6 @@ bool DesktopNativeWidgetAura::ShouldActivate() const {
 void DesktopNativeWidgetAura::OnWindowActivated(aura::Window* gained_active,
                                                 aura::Window* lost_active) {
   DCHECK(content_window_ == gained_active || content_window_ == lost_active);
-  if ((content_window_ == gained_active || content_window_ == lost_active) &&
-      IsVisible() && GetWidget()->non_client_view()) {
-    GetWidget()->non_client_view()->SchedulePaint();
-  }
   if (gained_active == content_window_ && restore_focus_on_activate_) {
     restore_focus_on_activate_ = false;
     GetWidget()->GetFocusManager()->RestoreFocusedView();

@@ -1002,6 +1002,9 @@ void Widget::OnNativeWidgetActivationChanged(bool active) {
 
   FOR_EACH_OBSERVER(WidgetObserver, observers_,
                     OnWidgetActivationChanged(this, active));
+
+  if (IsVisible() && non_client_view())
+    non_client_view()->frame_view()->SchedulePaint();
 }
 
 void Widget::OnNativeFocus(gfx::NativeView old_focused_view) {

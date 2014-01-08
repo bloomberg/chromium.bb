@@ -625,7 +625,7 @@ void NativeWidgetWin::HandleAppDeactivated() {
     // TODO(pkotwicz): Remove need for SchedulePaint(). crbug.com/165841
     View* non_client_view = GetWidget()->non_client_view();
     if (non_client_view)
-      non_client_view->SchedulePaint();
+      non_client_view->frame_view()->SchedulePaint();
   }
 }
 
