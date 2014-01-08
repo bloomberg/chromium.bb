@@ -20,7 +20,7 @@
  */
 
 #include "config.h"
-#include "core/platform/animation/CSSAnimationData.h"
+#include "core/animation/css/CSSAnimationData.h"
 
 namespace WebCore {
 

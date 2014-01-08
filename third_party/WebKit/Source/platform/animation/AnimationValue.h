@@ -27,7 +27,7 @@
 #ifndef AnimationValue_h
 #define AnimationValue_h
 
-#include "core/platform/animation/TimingFunction.h"
+#include "platform/animation/TimingFunction.h"
 #include "platform/graphics/filters/FilterOperations.h"
 #include "platform/transforms/TransformOperations.h"
 

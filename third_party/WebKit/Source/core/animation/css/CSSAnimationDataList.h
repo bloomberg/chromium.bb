@@ -25,7 +25,7 @@
 #ifndef CSSAnimationDataList_h
 #define CSSAnimationDataList_h
 
-#include "core/platform/animation/CSSAnimationData.h"
+#include "core/animation/css/CSSAnimationData.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
@@ -38,7 +38,7 @@ public:
     explicit CSSAnimationDataList(const CSSAnimationDataList&);
 
     void fillUnsetProperties();
-    bool operator==(const CSSAnimationDataList& o) const;
+    bool operator==(const CSSAnimationDataList&) const;
     bool operator!=(const CSSAnimationDataList& o) const
     {
         return !(*this == o);

@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/platform/animation/TimingFunctionTestHelper.h"
+#include "platform/animation/TimingFunctionTestHelper.h"
 
 
 namespace WebCore {

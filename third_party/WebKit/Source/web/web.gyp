@@ -36,6 +36,7 @@
         '../build/scripts/scripts.gypi',
         '../build/win/precompile.gypi',
         '../modules/modules.gypi',
+        '../platform/blink_platform.gypi',
         '../wtf/wtf.gypi',
         'web.gypi',
     ],
@@ -116,6 +117,8 @@
                         '<@(bindings_unittest_files)',
                         '<@(core_unittest_files)',
                         '<@(modules_unittest_files)',
+                        # FIXME: the next line should not be needed. We prefer to run these unit tests outside webkit.dll.
+                        '<@(platform_web_unittest_files)',
                         '<@(web_unittest_files)',
                         'WebTestingSupport.cpp',
                         'tests/WebUnitTests.cpp',   # Components test runner support.

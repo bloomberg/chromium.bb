@@ -38,7 +38,7 @@
 #include "core/animation/AnimatableValueTestHelper.h"
 #include "core/animation/CompositorAnimationsImpl.h"
 #include "core/animation/CompositorAnimationsTestHelper.h"
-#include "core/platform/animation/TimingFunctionTestHelper.h"
+#include "platform/animation/TimingFunctionTestHelper.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/filters/FilterOperations.h"
 #include "platform/transforms/TransformOperations.h"

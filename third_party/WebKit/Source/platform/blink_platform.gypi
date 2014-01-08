@@ -140,6 +140,10 @@
       'Widget.h',
       'WindowsKeyboardCodes.h',
       'animation/AnimationUtilities.h',
+      'animation/AnimationValue.h',
+      'animation/KeyframeValueList.cpp',
+      'animation/KeyframeValueList.h',
+      'animation/TimingFunction.h',
       'animation/UnitBezier.h',
       'audio/AudioArray.h',
       'audio/AudioBus.cpp',
@@ -914,6 +918,16 @@
       'weborigin/KURLTest.cpp',
       'weborigin/OriginAccessEntryTest.cpp',
       'weborigin/SecurityOriginTest.cpp',
+    ],
+    # NOTE: these are legacy unit tests, do not add more!
+    'platform_web_unittest_files': [
+      'animation/TimingFunctionTestHelper.cpp',
+      'animation/TimingFunctionTestHelper.h',
+      'animation/TimingFunctionTestHelperTest.cpp',
+      'graphics/DeferredImageDecoderTest.cpp',
+      'graphics/ImageDecodingStoreTest.cpp',
+      'graphics/ImageFrameGeneratorTest.cpp',
+      'graphics/test/MockImageDecoder.h',
     ],
   },
 }

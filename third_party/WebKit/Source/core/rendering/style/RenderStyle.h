@@ -26,9 +26,9 @@
 #define RenderStyle_h
 
 #include "CSSPropertyNames.h"
+#include "core/animation/css/CSSAnimationDataList.h"
 #include "core/css/CSSLineBoxContainValue.h"
 #include "core/css/CSSPrimitiveValue.h"
-#include "core/platform/animation/CSSAnimationDataList.h"
 #include "core/rendering/style/BorderValue.h"
 #include "core/rendering/style/CounterDirectives.h"
 #include "core/rendering/style/DataRef.h"

@@ -32,7 +32,7 @@
 
 #include "core/animation/CompositorAnimations.h"
 
-#include "core/platform/animation/TimingFunctionTestHelper.h"
+#include "platform/animation/TimingFunctionTestHelper.h"
 
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"

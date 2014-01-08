@@ -27,8 +27,8 @@
 
 #include "core/rendering/animation/WebAnimationProvider.h"
 
-#include "core/platform/animation/AnimationTranslationUtil.h"
-#include "core/platform/animation/CSSAnimationData.h"
+#include "core/animation/AnimationTranslationUtil.h"
+#include "core/animation/css/CSSAnimationData.h"
 #include "core/rendering/style/KeyframeList.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "public/platform/WebAnimation.h"

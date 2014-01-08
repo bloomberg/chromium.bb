@@ -29,6 +29,7 @@
 #include "core/css/resolver/CSSToStyleMap.h"
 
 #include "CSSValueKeywords.h"
+#include "core/animation/css/CSSAnimationData.h"
 #include "core/css/CSSBorderImageSliceValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
@@ -36,7 +37,6 @@
 #include "core/css/Pair.h"
 #include "core/css/Rect.h"
 #include "core/css/resolver/StyleResolverState.h"
-#include "core/platform/animation/CSSAnimationData.h"
 #include "core/rendering/style/BorderImageLengthBox.h"
 #include "core/rendering/style/FillLayer.h"
 

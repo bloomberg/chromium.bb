@@ -24,11 +24,11 @@
 
 #include "config.h"
 
-#include "core/platform/animation/AnimationTranslationUtil.h"
+#include "core/animation/AnimationTranslationUtil.h"
 
-#include "core/platform/animation/CSSAnimationData.h"
-#include "core/platform/animation/KeyframeValueList.h"
+#include "core/animation/css/CSSAnimationData.h"
 #include "platform/LengthFunctions.h"
+#include "platform/animation/KeyframeValueList.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/transforms/InterpolatedTransformOperation.h"

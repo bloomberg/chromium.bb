@@ -35,6 +35,7 @@
         '../build/scripts/scripts.gypi',
         '../core/core.gypi',
         '../modules/modules.gypi',
+        '../platform/blink_platform.gypi',
         '../web/web.gypi',
         '../wtf/wtf.gypi',
     ],
@@ -123,6 +124,7 @@
                         '<@(bindings_unittest_files)',
                         '<@(core_unittest_files)',
                         '<@(modules_unittest_files)',
+                        '<@(platform_web_unittest_files)',
                         '<@(web_unittest_files)',
                     ],
                     'conditions': [

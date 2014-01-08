@@ -26,8 +26,8 @@
 #define CSSAnimationData_h
 
 #include "CSSPropertyNames.h"
-#include "core/platform/animation/TimingFunction.h"
 #include "core/rendering/style/RenderStyleConstants.h"
+#include "platform/animation/TimingFunction.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
@@ -134,7 +134,7 @@ public:
 
     void setIsNoneAnimation(bool n) { m_isNone = n; }
 
-    CSSAnimationData& operator=(const CSSAnimationData& o);
+    CSSAnimationData& operator=(const CSSAnimationData&);
 
     // return true every CSSAnimationData in the chain (defined by m_next) match
     bool operator==(const CSSAnimationData& o) const { return animationsMatchForStyleRecalc(&o); }
@@ -163,17 +163,17 @@ private:
 
     unsigned m_playState     : 2;
 
-    bool m_delaySet          : 1;
-    bool m_directionSet      : 1;
-    bool m_durationSet       : 1;
-    bool m_fillModeSet       : 1;
-    bool m_iterationCountSet : 1;
-    bool m_nameSet           : 1;
-    bool m_playStateSet      : 1;
-    bool m_propertySet       : 1;
-    bool m_timingFunctionSet : 1;
+    unsigned m_delaySet          : 1;
+    unsigned m_directionSet      : 1;
+    unsigned m_durationSet       : 1;
+    unsigned m_fillModeSet       : 1;
+    unsigned m_iterationCountSet : 1;
+    unsigned m_nameSet           : 1;
+    unsigned m_playStateSet      : 1;
+    unsigned m_propertySet       : 1;
+    unsigned m_timingFunctionSet : 1;
 
-    bool m_isNone            : 1;
+    unsigned m_isNone            : 1;
 
 public:
     static double initialAnimationDelay() { return 0; }

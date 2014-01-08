@@ -26,7 +26,7 @@
 
 #include "config.h"
 
-#include "core/platform/animation/KeyframeValueList.h"
+#include "platform/animation/KeyframeValueList.h"
 
 namespace WebCore {
 

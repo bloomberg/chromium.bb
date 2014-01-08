@@ -24,10 +24,10 @@
 
 #include "config.h"
 
-#include "core/platform/animation/AnimationTranslationUtil.h"
+#include "core/animation/AnimationTranslationUtil.h"
 
-#include "core/platform/animation/CSSAnimationData.h"
-#include "core/platform/animation/KeyframeValueList.h"
+#include "core/animation/css/CSSAnimationData.h"
+#include "platform/animation/KeyframeValueList.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/filters/FilterOperations.h"
 #include "platform/transforms/Matrix3DTransformOperation.h"

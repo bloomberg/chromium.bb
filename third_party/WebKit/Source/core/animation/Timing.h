@@ -31,7 +31,7 @@
 #ifndef Timing_h
 #define Timing_h
 
-#include "core/platform/animation/TimingFunction.h"
+#include "platform/animation/TimingFunction.h"
 #include "wtf/MathExtras.h"
 #include "wtf/RefPtr.h"
 

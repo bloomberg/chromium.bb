@@ -265,10 +265,6 @@
       'painting/PaintAggregator.h',
     ],
     'web_unittest_files': [
-      '../platform/graphics/DeferredImageDecoderTest.cpp',
-      '../platform/graphics/ImageDecodingStoreTest.cpp',
-      '../platform/graphics/ImageFrameGeneratorTest.cpp',
-      '../platform/graphics/test/MockImageDecoder.h',
       'tests/AssociatedURLLoaderTest.cpp',
       'tests/BitmapImageTest.cpp',
       'tests/Canvas2DLayerBridgeTest.cpp',

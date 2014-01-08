@@ -27,7 +27,7 @@
 #define WebAnimationProvider_h
 
 #include "CSSPropertyNames.h"
-#include "core/platform/animation/KeyframeValueList.h"
+#include "platform/animation/KeyframeValueList.h"
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"

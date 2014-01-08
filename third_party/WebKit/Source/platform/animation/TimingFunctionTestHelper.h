@@ -36,7 +36,7 @@
 #ifndef TimingFunctionTestHelper_h
 #define TimingFunctionTestHelper_h
 
-#include "core/platform/animation/TimingFunction.h"
+#include "platform/animation/TimingFunction.h"
 
 #include <ostream> // NOLINT
 

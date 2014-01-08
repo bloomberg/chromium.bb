@@ -27,7 +27,7 @@
 #ifndef KeyframeValueList_h
 #define KeyframeValueList_h
 
-#include "core/platform/animation/AnimationValue.h"
+#include "platform/animation/AnimationValue.h"
 
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -45,7 +45,7 @@ enum AnimatedPropertyID {
 
 // Used to store a series of values in a keyframe list.
 // Values will all be of the same type, which can be inferred from the property.
-class KeyframeValueList {
+class PLATFORM_EXPORT KeyframeValueList {
 public:
     explicit KeyframeValueList(AnimatedPropertyID property)
         : m_property(property)

@@ -31,7 +31,7 @@
 #include "core/animation/AnimationEffect.h"
 #include "core/animation/KeyframeEffectModel.h"
 #include "core/animation/Timing.h"
-#include "core/platform/animation/TimingFunction.h"
+#include "platform/animation/TimingFunction.h"
 #include "public/platform/WebAnimation.h"
 
 namespace WebCore {
