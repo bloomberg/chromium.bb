@@ -495,7 +495,7 @@ recorder_binding(struct weston_seat *seat, uint32_t time, uint32_t key, void *da
 	struct weston_seat *ws = (struct weston_seat *) seat;
 	struct weston_compositor *ec = ws->compositor;
 	struct weston_output *output;
-	struct wl_listener *listener;
+	struct wl_listener *listener = NULL;
 	struct weston_recorder *recorder;
 	static const char filename[] = "capture.wcap";
 
