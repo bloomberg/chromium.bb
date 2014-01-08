@@ -746,7 +746,7 @@ prune-host() {
   fi
 
   echo "removing unused clang shared lib"
-  rm -rf "${LLVM_INSTALL_DIR}/${SO_DIR}/${SO_PREFIX}clang${SO_EXT}"
+  rm -rf "${LLVM_INSTALL_DIR}"/${SO_DIR}/*clang${SO_EXT}
 
   echo "removing unused binutils binaries"
   rm -rf "${LLVM_INSTALL_DIR}"/bin/le32-nacl-elfedit
@@ -1055,35 +1055,10 @@ llvm-install() {
   fi
   spopd
 
-  llvm-install-links
-
   # This is really part of libgcc_eh, but gets blown away by the ninja build.
   install-unwind-header
 }
 
-llvm-install-links() {
-  local makelink="ln -sf"
-   # On Windows, these can't be symlinks.
-  if ${BUILD_PLATFORM_WIN}; then
-    makelink="cp -a"
-  fi
-  mkdir -p "${BFD_PLUGIN_DIR}"
-
-  # TODO(dschuff): These are still necessary, but a change to gold
-  # could make them unnecessary
-  if [ -f "${BINUTILS_INSTALL_DIR}/${SO_DIR}/LLVMgold${SO_EXT}" ]; then
-    # this is to make sure whatever name LLVMgold.so is, it is always
-    # libLLVMgold.so as far as PNaCl is concerned
-
-    StepBanner "Symlinking LLVMgold.so to libLLVMgold.so in " \
-     "${BINUTILS_INSTALL_DIR}/${SO_DIR}"
-
-    (cd "${BINUTILS_INSTALL_DIR}/${SO_DIR}";
-      ${makelink} "LLVMgold${SO_EXT}" "${SO_PREFIX}LLVMgold${SO_EXT}";
-    )
-  fi
-
-}
 #########################################################################
 #########################################################################
 #     < LIBGCC_EH >

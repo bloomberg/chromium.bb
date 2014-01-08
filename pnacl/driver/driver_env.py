@@ -101,11 +101,6 @@ INITIAL_ENV = {
   'SO_DIR_windows'  : 'bin',  # On Windows, DLLs are placed in bin/
                               # because the dynamic loader searches %PATH%
 
-  'SO_PREFIX'        : '${SO_PREFIX_%BUILD_OS%}',
-  'SO_PREFIX_darwin' : 'lib',
-  'SO_PREFIX_linux'  : 'lib',
-  'SO_PREFIX_windows': 'cyg',
-
   'EXEC_EXT'        : '${EXEC_EXT_%BUILD_OS%}',
   'EXEC_EXT_darwin' : '',
   'EXEC_EXT_linux'  : '',
@@ -117,7 +112,7 @@ INITIAL_ENV = {
   'SCONS_OS_windows'    : 'win',
 
   # llvm goldplugin
-  'GOLD_PLUGIN_SO'  : '${BASE_LLVM}/${SO_DIR}/${SO_PREFIX}LLVMgold${SO_EXT}',
+  'GOLD_PLUGIN_SO'  : '${BASE_LLVM}/${SO_DIR}/LLVMgold${SO_EXT}',
 
   'SCONS_STAGING'       : '${SCONS_STAGING_%ARCH%}',
   'SCONS_STAGING_X8632' : '${SCONS_OUT}/opt-${SCONS_OS}-x86-32/staging',
