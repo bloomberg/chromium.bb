@@ -332,8 +332,11 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
     // If no profile was passed, we take the currently active profile and use it
     // as the owner of the current desktop.
     // Use the original profile as on chromeos we may get a temporary off the
-    // record profile.
-    profile_ = ProfileManager::GetActiveUserProfile()->GetOriginalProfile();
+    // record profile, unless in guest session (where off the record profile is
+    // the right one).
+    Profile* active_profile = ProfileManager::GetActiveUserProfile();
+    profile_ = active_profile->IsGuestSession() ? active_profile :
+        active_profile->GetOriginalProfile();
 
     app_sync_ui_state_ = AppSyncUIState::Get(profile_);
     if (app_sync_ui_state_)

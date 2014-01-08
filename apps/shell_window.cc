@@ -146,6 +146,8 @@ ShellWindow::ShellWindow(Profile* profile,
       show_on_first_paint_(false),
       first_paint_complete_(false),
       cached_always_on_top_(false) {
+  CHECK(!profile->IsGuestSession() || profile->IsOffTheRecord())
+      << "Only off the record window may be opened in the guest mode.";
 }
 
 void ShellWindow::Init(const GURL& url,

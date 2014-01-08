@@ -355,6 +355,8 @@ Browser::Browser(const CreateParams& params)
   // that is disallowed by policy. The crash prevents the disabled window type
   // from opening at all, but the path that triggered it should be fixed.
   CHECK(IncognitoModePrefs::CanOpenBrowser(profile_));
+  CHECK(!profile_->IsGuestSession() || profile_->IsOffTheRecord())
+      << "Only off the record browser may be opened in guest mode";
 
   // TODO(jeremy): Move to initializer list once flag is removed.
   if (IsFastTabUnloadEnabled())

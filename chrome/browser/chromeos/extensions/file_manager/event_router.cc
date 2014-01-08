@@ -29,6 +29,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/network_handler.h"
@@ -625,9 +626,11 @@ void EventRouter::DispatchDirectoryChangeEvent(
 void EventRouter::ShowRemovableDeviceInFileManager(
     const base::FilePath& mount_path) {
   // Do not attempt to open File Manager while the login is in progress or
-  // the screen is locked.
+  // the screen is locked and make sure the file manager is opened only for the
+  // active user.
   if (chromeos::LoginDisplayHostImpl::default_host() ||
-      chromeos::ScreenLocker::default_screen_locker())
+      chromeos::ScreenLocker::default_screen_locker() ||
+      profile_ != ProfileManager::GetActiveUserProfile())
     return;
 
   // According to DCF (Design rule of Camera File system) by JEITA / CP-3461

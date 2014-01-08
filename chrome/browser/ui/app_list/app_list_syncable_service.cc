@@ -121,7 +121,10 @@ void AppListSyncableService::BuildModel() {
   if (service)
     controller = service->GetControllerDelegate();
   apps_builder_.reset(new ExtensionAppModelBuilder(controller));
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
+  DCHECK(profile_);
+  // TODO(stevenjb): Correctly handle OTR profiles for Guest mode.
+  if (!profile_->IsOffTheRecord() &&
+      CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableSyncAppList)) {
     DVLOG(1) << this << ": AppListSyncableService: InitializeWithService.";
     SyncStarted();
@@ -130,8 +133,6 @@ void AppListSyncableService::BuildModel() {
     DVLOG(1) << this << ": AppListSyncableService: InitializeWithProfile.";
     apps_builder_->InitializeWithProfile(profile_, model_.get());
   }
-
-  DCHECK(profile_);
 }
 
 void AppListSyncableService::Observe(
