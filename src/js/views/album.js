@@ -244,9 +244,11 @@ camera.views.Album.prototype.addPictureToDOM = function(picture) {
   this.pictures.push(new camera.views.GalleryBase.DOMPicture(picture, img));
 
   // Add handlers.
-  img.addEventListener('click', function(event) {
-    this.model.currentIndex = this.model.pictures.indexOf(picture);
+  img.addEventListener('mousedown', function(event) {
     event.preventDefault();  // Prevent focusing.
+  });
+  img.addEventListener('click', function() {
+    this.model.currentIndex = this.model.pictures.indexOf(picture);
   }.bind(this));
   img.addEventListener('focus', function() {
     this.model.currentIndex = this.model.pictures.indexOf(picture);
