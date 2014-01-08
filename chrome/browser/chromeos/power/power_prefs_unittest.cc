@@ -140,7 +140,7 @@ std::string PowerPrefsTest::GetExpectedPowerPolicyForProfile(
 
 std::string PowerPrefsTest::GetCurrentPowerPolicy() const {
   return PowerPolicyController::GetPolicyDebugString(
-      fake_power_manager_client_->get_policy());
+      fake_power_manager_client_->policy());
 }
 
 bool PowerPrefsTest::GetCurrentAllowScreenWakeLocks() const {
@@ -202,9 +202,9 @@ TEST_F(PowerPrefsTest, LoginScreen) {
                         content::Source<Profile>(login_profile),
                         content::NotificationService::NoDetails());
 
+  // The login profile's prefs should still be used.
   EXPECT_FALSE(GetProfile());
-  EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(
-                power_manager::PowerManagementPolicy()),
+  EXPECT_EQ(GetExpectedPowerPolicyForProfile(login_profile),
             GetCurrentPowerPolicy());
 }
 
@@ -259,9 +259,9 @@ TEST_F(PowerPrefsTest, UserSession) {
                         content::Source<Profile>(user_profile),
                         content::NotificationService::NoDetails());
 
+  // The user profile's prefs should still be used.
   EXPECT_FALSE(GetProfile());
-  EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(
-                power_manager::PowerManagementPolicy()),
+  EXPECT_EQ(GetExpectedPowerPolicyForProfile(user_profile),
             GetCurrentPowerPolicy());
 }
 

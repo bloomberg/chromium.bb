@@ -400,7 +400,7 @@ void AutomaticRebootManagerBasicTest::SetRebootAfterUpdate(
       base::Value::CreateBooleanValue(reboot_after_update));
   task_runner_->RunUntilIdle();
   EXPECT_EQ(expect_reboot ? 1 : 0,
-            power_manager_client_->request_restart_call_count());
+            power_manager_client_->num_request_restart_calls());
 }
 
 void AutomaticRebootManagerBasicTest::SetUptimeLimit(
@@ -416,7 +416,7 @@ void AutomaticRebootManagerBasicTest::SetUptimeLimit(
   }
   task_runner_->RunUntilIdle();
   EXPECT_EQ(expect_reboot ? 1 : 0,
-            power_manager_client_->request_restart_call_count());
+            power_manager_client_->num_request_restart_calls());
 }
 
 void AutomaticRebootManagerBasicTest::NotifyUpdateRebootNeeded() {
@@ -424,14 +424,14 @@ void AutomaticRebootManagerBasicTest::NotifyUpdateRebootNeeded() {
   automatic_reboot_manager_->UpdateStatusChanged(
       update_engine_client_->GetLastStatus());
   task_runner_->RunUntilIdle();
-  EXPECT_EQ(0, power_manager_client_->request_restart_call_count());
+  EXPECT_EQ(0, power_manager_client_->num_request_restart_calls());
 }
 
 void AutomaticRebootManagerBasicTest::NotifyResumed(bool expect_reboot) {
   automatic_reboot_manager_->SystemResumed(base::TimeDelta::FromHours(1));
   task_runner_->RunUntilIdle();
   EXPECT_EQ(expect_reboot ? 1 : 0,
-            power_manager_client_->request_restart_call_count());
+            power_manager_client_->num_request_restart_calls());
 }
 
 void AutomaticRebootManagerBasicTest::NotifyTerminating(bool expect_reboot) {
@@ -441,7 +441,7 @@ void AutomaticRebootManagerBasicTest::NotifyTerminating(bool expect_reboot) {
       content::NotificationService::NoDetails());
   task_runner_->RunUntilIdle();
   EXPECT_EQ(expect_reboot ? 1 : 0,
-            power_manager_client_->request_restart_call_count());
+            power_manager_client_->num_request_restart_calls());
 }
 
 void AutomaticRebootManagerBasicTest::FastForwardBy(
@@ -449,14 +449,14 @@ void AutomaticRebootManagerBasicTest::FastForwardBy(
     bool expect_reboot) {
   task_runner_->FastForwardBy(delta);
   EXPECT_EQ(expect_reboot ? 1 : 0,
-            power_manager_client_->request_restart_call_count());
+            power_manager_client_->num_request_restart_calls());
 }
 
 void AutomaticRebootManagerBasicTest::FastForwardUntilNoTasksRemain(
     bool expect_reboot) {
   task_runner_->FastForwardUntilNoTasksRemain();
   EXPECT_EQ(expect_reboot ? 1 : 0,
-            power_manager_client_->request_restart_call_count());
+            power_manager_client_->num_request_restart_calls());
 }
 
 void AutomaticRebootManagerBasicTest::CreateAutomaticRebootManager(
@@ -465,7 +465,7 @@ void AutomaticRebootManagerBasicTest::CreateAutomaticRebootManager(
       scoped_ptr<base::TickClock>(new MockTimeTickClock(task_runner_))));
   task_runner_->RunUntilIdle();
   EXPECT_EQ(expect_reboot ? 1 : 0,
-            power_manager_client_->request_restart_call_count());
+            power_manager_client_->num_request_restart_calls());
 
   uptime_processing_delay_ =
       base::TimeTicks() - automatic_reboot_manager_->boot_time_ -
