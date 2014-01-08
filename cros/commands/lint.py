@@ -64,6 +64,10 @@ class DocStringChecker(BaseChecker):
                 ('Used when not all arguments are in the doc string')),
       'C9011': ('Variable args/keywords are named *args/**kwargs, not %(arg)s',
                 ('Used when funcs use different names for varargs')),
+      'C9012': ('Incorrectly formatted Args section: %(arg)s',
+                ('Used when spacing is incorrect after colon in Args')),
+      'C9013': ('Too many blank lines in a row: %s' % MSG_ARGS,
+                ('Used when more than one blank line is found')),
   }
   options = ()
 
@@ -122,10 +126,19 @@ class DocStringChecker(BaseChecker):
     """Verify whitespace is sane"""
     # Verify no trailing whitespace.
     # We skip the last line since it's supposed to be pure whitespace.
+    #
+    # Also check for multiple blank lines in a row.
+    last_blank = False
     for l, i in zip(lines[:-1], xrange(len(lines))):
+      margs = {'offset': i, 'line': l}
+
       if l.rstrip() != l:
-        margs = {'offset': i, 'line': l}
         self.add_message('C9003', node=node, line=node.fromlineno, args=margs)
+
+      curr_blank = l == ''
+      if last_blank and curr_blank:
+        self.add_message('C9013', node=node, line=node.fromlineno, args=margs)
+      last_blank = curr_blank
 
     # Now specially handle the last line.  Note: if there's just one line,
     # then we can check leading & trailing whitespace.
@@ -134,8 +147,6 @@ class DocStringChecker(BaseChecker):
         (l.strip() != '' and l.rstrip() != l)):
       margs = {'offset': len(lines), 'line': l}
       self.add_message('C9003', node=node, line=node.fromlineno, args=margs)
-
-    # Should we scan for more than one new line in a row ?
 
   def _check_last_line(self, node, lines):
     """Make sure last line is all by itself"""
@@ -162,13 +173,16 @@ class DocStringChecker(BaseChecker):
 
     last = lines[0].strip()
     for line, i in zip(lines[1:], xrange(len(lines))):
+      margs = {'offset': i + 1, 'line': line}
       l = line.strip()
+
+      # Catch semi-common javadoc style.
+      if l.startswith('@param') or l.startswith('@return'):
+        self.add_message('C9007', node=node, line=node.fromlineno, args=margs)
 
       # See if we can detect incorrect behavior.
       section = l.split(':', 1)[0]
       if section in self.VALID_SECTIONS or section.lower() in invalid_sections:
-        margs = {'offset': i + 1, 'line': line}
-
         # Make sure it has some number of leading whitespace.
         if not line.startswith(' '):
           self.add_message('C9004', node=node, line=node.fromlineno, args=margs)
@@ -215,9 +229,8 @@ class DocStringChecker(BaseChecker):
       return
 
     # Now verify all args exist.
-    # XXX: Should we verify arg order matches doc order ?
-    # XXX: Should we check indentation of wrapped docs ?
-    # XXX: Should we check amount of space after the : ?
+    # TODO: Should we verify arg order matches doc order ?
+    # TODO: Should we check indentation of wrapped docs ?
     missing_args = []
     for arg in node.args.args:
       # Ignore class related args.
@@ -228,7 +241,13 @@ class DocStringChecker(BaseChecker):
         continue
 
       for l in arg_lines:
-        if l.lstrip().startswith('%s:' % arg.name):
+        aline = l.lstrip()
+        if aline.startswith('%s:' % arg.name):
+          amsg = aline[len(arg.name) + 1:]
+          if len(amsg) and len(amsg) - len(amsg.lstrip()) != 1:
+            margs = {'arg': l}
+            self.add_message('C9012', node=node, line=node.fromlineno,
+                             args=margs)
           break
       else:
         missing_args.append(arg.name)

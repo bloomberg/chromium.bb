@@ -19,6 +19,7 @@ class TestNode(object):
   """Object good enough to stand in for lint funcs"""
 
   Args = collections.namedtuple('Args', ('args', 'vararg', 'kwarg'))
+  Arg = collections.namedtuple('Arg', ('name',))
 
   def __init__(self, doc='', fromlineno=0, path='foo.py', args=(), vararg='',
                kwarg=''):
@@ -26,7 +27,8 @@ class TestNode(object):
     self.lines = doc.split('\n')
     self.fromlineno = fromlineno
     self.file = path
-    self.args = self.Args(args=args, vararg=vararg, kwarg=kwarg)
+    self.args = self.Args(args=[self.Arg(name=x) for x in args],
+                          vararg=vararg, kwarg=kwarg)
 
   def argnames(self):
     return self.args
@@ -102,6 +104,21 @@ class DocStringCheckerTest(cros_test_lib.TestCase):
       Yield:
         a car
       """,
+      """Section name has bad spacing
+
+      Args:\x20\x20\x20
+        key: here
+      """,
+      """too many blank lines
+
+
+      Returns:
+        None
+      """,
+      """wrongly uses javadoc
+
+      @returns None
+      """
   )
 
   # The current linter isn't good enough yet to detect these.
@@ -117,11 +134,6 @@ class DocStringCheckerTest(cros_test_lib.TestCase):
 
         Args:
           some: day
-      """,
-      """too many spaces after the colon
-
-      Args:
-        some:    day
       """,
   )
 
@@ -188,6 +200,106 @@ class DocStringCheckerTest(cros_test_lib.TestCase):
       self.results = []
       node = TestNode(doc=dc)
       self.checker._check_first_line(node, node.lines)
+      self.assertEqual(len(self.results), 1)
+
+  def testGoodFuncVarKwArg(self):
+    """Check valid inputs for *args and **kwargs"""
+    # pylint: disable=W0212
+    for vararg in (None, 'args', '_args'):
+      for kwarg in (None, 'kwargs', '_kwargs'):
+        self.results = []
+        node = TestNode(vararg=vararg, kwarg=kwarg)
+        self.checker._check_func_signature(node)
+        self.assertEqual(len(self.results), 0)
+
+  def testMisnamedFuncVarKwArg(self):
+    """Reject anything but *args and **kwargs"""
+    # pylint: disable=W0212
+    for vararg in ('arg', 'params', 'kwargs', '_moo'):
+      self.results = []
+      node = TestNode(vararg=vararg)
+      self.checker._check_func_signature(node)
+      self.assertEqual(len(self.results), 1)
+
+    for kwarg in ('kwds', '_kwds', 'args', '_moo'):
+      self.results = []
+      node = TestNode(kwarg=kwarg)
+      self.checker._check_func_signature(node)
+      self.assertEqual(len(self.results), 1)
+
+  def testGoodFuncArgs(self):
+    """Verify normal args in Args are allowed"""
+    # pylint: disable=W0212
+    datasets = (
+        ("""args are correct, and cls is ignored
+
+         Args:
+           moo: cow
+         """,
+         ('cls', 'moo',), None, None,
+        ),
+        ("""args are correct, and self is ignored
+
+         Args:
+           moo: cow
+           *args: here
+         """,
+         ('self', 'moo',), 'args', 'kwargs',
+        ),
+        ("""args are allowed to wrap
+
+         Args:
+           moo:
+             a big fat cow
+             that takes many lines
+             to describe its fatness
+         """,
+         ('moo',), None, 'kwargs',
+        ),
+    )
+    for dc, args, vararg, kwarg in datasets:
+      self.results = []
+      node = TestNode(doc=dc, args=args, vararg=vararg, kwarg=kwarg)
+      self.checker._check_all_args_in_doc(node, node.lines)
+      self.assertEqual(len(self.results), 0)
+
+  def testBadFuncArgs(self):
+    """Verify bad/missing args in Args are caught"""
+    # pylint: disable=W0212
+    datasets = (
+        ("""missing 'bar'
+
+         Args:
+           moo: cow
+         """,
+         ('moo', 'bar',),
+        ),
+        ("""missing 'cow' but has 'bloop'
+
+         Args:
+           moo: cow
+         """,
+         ('bloop',),
+        ),
+        ("""too much space after colon
+
+         Args:
+           moo:  cow
+         """,
+         ('moo',),
+        ),
+        ("""not enough space after colon
+
+         Args:
+           moo:cow
+         """,
+         ('moo',),
+        ),
+    )
+    for dc, args in datasets:
+      self.results = []
+      node = TestNode(doc=dc, args=args)
+      self.checker._check_all_args_in_doc(node, node.lines)
       self.assertEqual(len(self.results), 1)
 
 
