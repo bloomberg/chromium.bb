@@ -1567,10 +1567,11 @@ bool RenderObject::repaintAfterLayoutIfNeeded(const RenderLayerModelObject* repa
         LayoutUnit boxWidth = isBox() ? toRenderBox(this)->width() : LayoutUnit();
         LayoutUnit minInsetRightShadowExtent = min<LayoutUnit>(-insetShadowExtent.right(), min<LayoutUnit>(newBounds.width(), oldBounds.width()));
         LayoutUnit borderWidth = max<LayoutUnit>(borderRight, max<LayoutUnit>(valueForLength(style()->borderTopRightRadius().width(), boxWidth), valueForLength(style()->borderBottomRightRadius().width(), boxWidth)));
-        LayoutUnit decorationsWidth = max<LayoutUnit>(-outlineStyle->outlineOffset(), borderWidth + minInsetRightShadowExtent) + max<LayoutUnit>(outlineWidth, shadowRight);
-        LayoutRect rightRect(newOutlineBox.x() + min(newOutlineBox.width(), oldOutlineBox.width()) - decorationsWidth,
+        LayoutUnit decorationsLeftWidth = max<LayoutUnit>(-outlineStyle->outlineOffset(), borderWidth + minInsetRightShadowExtent) + max<LayoutUnit>(outlineWidth, -shadowLeft);
+        LayoutUnit decorationsRightWidth = max<LayoutUnit>(-outlineStyle->outlineOffset(), borderWidth + minInsetRightShadowExtent) + max<LayoutUnit>(outlineWidth, shadowRight);
+        LayoutRect rightRect(newOutlineBox.x() + min(newOutlineBox.width(), oldOutlineBox.width()) - decorationsLeftWidth,
             newOutlineBox.y(),
-            width + decorationsWidth,
+            width + decorationsLeftWidth + decorationsRightWidth,
             max(newOutlineBox.height(), oldOutlineBox.height()));
         LayoutUnit right = min<LayoutUnit>(newBounds.maxX(), oldBounds.maxX());
         if (rightRect.x() < right) {
@@ -1587,11 +1588,12 @@ bool RenderObject::repaintAfterLayoutIfNeeded(const RenderLayerModelObject* repa
         LayoutUnit boxHeight = isBox() ? toRenderBox(this)->height() : LayoutUnit();
         LayoutUnit minInsetBottomShadowExtent = min<LayoutUnit>(-insetShadowExtent.bottom(), min<LayoutUnit>(newBounds.height(), oldBounds.height()));
         LayoutUnit borderHeight = max<LayoutUnit>(borderBottom, max<LayoutUnit>(valueForLength(style()->borderBottomLeftRadius().height(), boxHeight), valueForLength(style()->borderBottomRightRadius().height(), boxHeight)));
-        LayoutUnit decorationsHeight = max<LayoutUnit>(-outlineStyle->outlineOffset(), borderHeight + minInsetBottomShadowExtent) + max<LayoutUnit>(outlineWidth, shadowBottom);
+        LayoutUnit decorationsTopHeight = max<LayoutUnit>(-outlineStyle->outlineOffset(), borderHeight + minInsetBottomShadowExtent) + max<LayoutUnit>(outlineWidth, -shadowTop);
+        LayoutUnit decorationsBottomHeight = max<LayoutUnit>(-outlineStyle->outlineOffset(), borderHeight + minInsetBottomShadowExtent) + max<LayoutUnit>(outlineWidth, shadowBottom);
         LayoutRect bottomRect(newOutlineBox.x(),
-            min(newOutlineBox.maxY(), oldOutlineBox.maxY()) - decorationsHeight,
+            min(newOutlineBox.maxY(), oldOutlineBox.maxY()) - decorationsTopHeight,
             max(newOutlineBox.width(), oldOutlineBox.width()),
-            height + decorationsHeight);
+            height + decorationsTopHeight + decorationsBottomHeight);
         LayoutUnit bottom = min(newBounds.maxY(), oldBounds.maxY());
         if (bottomRect.y() < bottom) {
             bottomRect.setHeight(min(bottomRect.height(), bottom - bottomRect.y()));
