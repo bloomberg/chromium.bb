@@ -411,7 +411,7 @@ void StartExplicitSync(const StartSyncArgs& args,
                        content::WebContents* contents,
                        OneClickSigninSyncStarter::StartSyncMode start_mode,
                        ConfirmEmailDialogDelegate::Action action) {
-  bool enable_inline = switches::IsEnableInlineSignin();
+  bool enable_inline = !switches::IsEnableWebBasedSignin();
   if (action == ConfirmEmailDialogDelegate::START_SYNC) {
     StartSync(args, start_mode);
     if (!enable_inline) {

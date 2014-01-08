@@ -11,8 +11,8 @@
 
 namespace switches {
 
-// Enables the inline sign in flow on Chrome desktop.
-bool IsEnableInlineSignin();
+// Enables the web-based sign in flow on Chrome desktop.
+bool IsEnableWebBasedSignin();
 
 // Enables using GAIA information to populate profile name and icon.
 bool IsGoogleProfileInfo();

@@ -180,7 +180,7 @@ GURL GetPromoURL(Source source, bool auto_close) {
 GURL GetPromoURL(Source source, bool auto_close, bool is_constrained) {
   DCHECK_NE(SOURCE_UNKNOWN, source);
 
-  if (switches::IsEnableInlineSignin()) {
+  if (!switches::IsEnableWebBasedSignin()) {
     std::string url(chrome::kChromeUIChromeSigninURL);
     base::StringAppendF(&url, "?%s=%d", kSignInPromoQueryKeySource, source);
     if (auto_close)

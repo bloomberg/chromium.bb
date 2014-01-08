@@ -5,23 +5,39 @@
 #include "chrome/common/profile_management_switches.h"
 
 #include "base/command_line.h"
+#include "base/metrics/field_trial.h"
 #include "chrome/common/chrome_switches.h"
+
+namespace {
+
+const char kNewProfileManagementFieldTrialName[] = "NewProfileManagement";
+
+bool CheckProfileManagementFlag(std::string command_switch, bool active_state) {
+  std::string trial_type =
+      base::FieldTrialList::FindFullName(kNewProfileManagementFieldTrialName);
+  if (!trial_type.empty()) {
+    if (trial_type == "Enabled")
+      return active_state;
+    if (trial_type == "Disabled")
+      return !active_state;
+  }
+  return CommandLine::ForCurrentProcess()->HasSwitch(command_switch);
+}
+
+}  // namespace
 
 namespace switches {
 
-bool IsEnableInlineSignin() {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableWebBasedSignin);
+bool IsEnableWebBasedSignin() {
+  return CheckProfileManagementFlag(switches::kEnableWebBasedSignin, false);
 }
 
 bool IsGoogleProfileInfo() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kGoogleProfileInfo);
+  return CheckProfileManagementFlag(switches::kGoogleProfileInfo, true);
 }
 
 bool IsNewProfileManagement() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kNewProfileManagement);
+  return CheckProfileManagementFlag(switches::kNewProfileManagement, true);
 }
 
 }  // namespace switches

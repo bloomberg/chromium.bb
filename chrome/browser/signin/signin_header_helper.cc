@@ -72,7 +72,7 @@ void AppendMirrorRequestHeaderIfPossible(
   // available.
   const GURL& url = redirect_url.is_empty() ? request->url() : redirect_url;
   GURL origin(url.GetOrigin());
-  bool is_gaia_origin = switches::IsEnableInlineSignin() &&
+  bool is_gaia_origin = !switches::IsEnableWebBasedSignin() &&
       switches::IsNewProfileManagement() &&
       gaia::IsGaiaSignonRealm(origin);
   if (!is_gaia_origin && !IsDriveOrigin(origin))
