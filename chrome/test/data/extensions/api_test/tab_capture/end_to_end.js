@@ -85,7 +85,7 @@ function TestStream(stream) {
     }
   }
   // Play the LocalMediaStream in the video element.
-  video.src = webkitURL.createObjectURL(stream);
+  video.src = URL.createObjectURL(stream);
   video.play();
 
   // Kick it off.

@@ -27,7 +27,7 @@ function TestStream(stream) {
   var start_time = new Date().getTime();
 
   // Play the LocalMediaStream in the video element.
-  video.src = webkitURL.createObjectURL(stream);
+  video.src = URL.createObjectURL(stream);
   video.play();
 
   var frame = 0;

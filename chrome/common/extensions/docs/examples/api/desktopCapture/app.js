@@ -5,7 +5,7 @@
 function gotStream(stream) {
   console.log("Received local stream");
   var video = document.querySelector("video");
-  video.src = webkitURL.createObjectURL(stream);
+  video.src = URL.createObjectURL(stream);
   localstream = stream;
   stream.onended = function() { console.log("Ended"); };
 }

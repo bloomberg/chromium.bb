@@ -3,7 +3,7 @@
 <a download="foo.exe" href="">link</a>
 <script>
   var blob = new Blob(['foo']);
-  document.querySelector('a[download]').href = webkitURL.createObjectURL(blob);
+  document.querySelector('a[download]').href = URL.createObjectURL(blob);
 
   url = window.location.href
   document.querySelector('a[download]').download = url.substr(url.indexOf('=') + 1)

@@ -61,7 +61,7 @@ xhr.open('GET', 'https://supersweetdomainbutnotcspfriendly.com/image.png', true)
 xhr.responseType = 'blob';
 xhr.onload = function(e) {
   var img = document.createElement('img');
-  img.src = window.webkitURL.createObjectURL(this.response);
+  img.src = window.URL.createObjectURL(this.response);
   document.body.appendChild(img);
 };
 

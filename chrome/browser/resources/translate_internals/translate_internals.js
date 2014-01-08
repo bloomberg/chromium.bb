@@ -408,7 +408,7 @@
     function onDetectionLogsDump() {
       var data = JSON.stringify(cr.translateInternals.detectionLogs());
       var blob = new Blob([data], {'type': 'text/json'});
-      var url = webkitURL.createObjectURL(blob);
+      var url = URL.createObjectURL(blob);
       var filename = 'translate_internals_detect_logs_dump.json';
 
       var a = document.createElement('a');

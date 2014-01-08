@@ -223,7 +223,7 @@ var loadImage = function(uri, callback) {
   var xhr = new XMLHttpRequest();
   xhr.responseType = &#39;blob&#39;;
   xhr.onload = function() {
-    callback(window.webkitURL.createObjectURL(xhr.response), uri);
+    callback(window.URL.createObjectURL(xhr.response), uri);
   }
   xhr.open(&#39;GET&#39;, uri, true);
   xhr.send();

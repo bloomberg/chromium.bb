@@ -113,7 +113,7 @@ var ExportView = (function() {
 
       // Clean up previous blob, if any, to reduce resource usage.
       if (this.lastBlobURL_) {
-        window.webkitURL.revokeObjectURL(this.lastBlobURL_);
+        window.URL.revokeObjectURL(this.lastBlobURL_);
         this.lastBlobURL_ = null;
       }
       this.createLogDump_(this.onLogDumpCreated_.bind(this));
@@ -185,7 +185,7 @@ var ExportView = (function() {
      */
     onLogDumpCreated_: function(dumpText) {
       var textBlob = new Blob([dumpText], {type: 'octet/stream'});
-      this.lastBlobURL_ = window.webkitURL.createObjectURL(textBlob);
+      this.lastBlobURL_ = window.URL.createObjectURL(textBlob);
 
       // Update the anchor tag and simulate a click on it to start the
       // download.

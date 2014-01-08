@@ -92,7 +92,7 @@ var DumpCreator = (function() {
       var textBlob =
           new Blob([JSON.stringify(peerConnectionDataStore, null, ' ')],
                                    {type: 'octet/stream'});
-      var URL = window.webkitURL.createObjectURL(textBlob);
+      var URL = window.URL.createObjectURL(textBlob);
       this.root_.getElementsByTagName('a')[0].href = URL;
       // The default action of the anchor will download the URL.
     },

@@ -71,7 +71,7 @@
 
   function plugStreamIntoLocalView(stream) {
     gLocalStream = stream;
-    var localStreamUrl = webkitURL.createObjectURL(stream);
+    var localStreamUrl = URL.createObjectURL(stream);
     $('local-view').src = localStreamUrl;
   }
 
@@ -100,7 +100,7 @@
       expectEquals(new_stream.getAudioTracks().length, 0);
     }
 
-    var newStreamUrl = webkitURL.createObjectURL(new_stream);
+    var newStreamUrl = URL.createObjectURL(new_stream);
     $('local-view').src = newStreamUrl;
     waitForVideo('local-view');
   }

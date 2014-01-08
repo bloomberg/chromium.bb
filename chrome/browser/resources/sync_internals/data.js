@@ -89,7 +89,7 @@ function isSelectedDatatype(node) {
 
 function makeBlobUrl(data) {
   var textBlob = new Blob([data], {type: 'octet/stream'});
-  var blobUrl = window.webkitURL.createObjectURL(textBlob);
+  var blobUrl = window.URL.createObjectURL(textBlob);
   return blobUrl;
 }
 

@@ -94,7 +94,7 @@ std::string TestVideoSource::TestGetFrame() {
   js_code += "var test_stream;"
              "function gotStream(stream){"
              "  test_stream = stream;"
-             "  var url = webkitURL.createObjectURL(test_stream);"
+             "  var url = URL.createObjectURL(test_stream);"
              "  var plugin = document.getElementById('plugin');"
              "  plugin.postMessage(url);"
              "}"

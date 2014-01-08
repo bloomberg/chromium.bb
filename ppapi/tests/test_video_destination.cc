@@ -101,7 +101,7 @@ std::string TestVideoDestination::TestCreate() {
 std::string TestVideoDestination::TestPutFrame() {
   std::string js_code;
   js_code += "var test_stream = new webkitMediaStream([]);"
-             "var url = webkitURL.createObjectURL(test_stream);"
+             "var url = URL.createObjectURL(test_stream);"
              "var plugin = document.getElementById('plugin');"
              "plugin.postMessage(url);";
   instance_->EvalScript(js_code);

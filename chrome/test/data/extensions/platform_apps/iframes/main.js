@@ -60,7 +60,7 @@ chrome.test.getConfig(function(config) {
     function blobUrlIframe() {
       var blob = new Blob(['This frame should be displayed'],
                           {type: 'text/html'});
-      var blobUrl = window.webkitURL.createObjectURL(blob);
+      var blobUrl = window.URL.createObjectURL(blob);
       var iframe = document.createElement('iframe');
       iframe.onload = chrome.test.callbackPass(function() {
         console.log('blob: URL iframe loaded');

@@ -52,7 +52,7 @@ textarea {
 var RTCPeerConnection = webkitRTCPeerConnection;
 var getUserMedia = navigator.webkitGetUserMedia.bind(navigator);
 var attachMediaStream = function(element, stream) {
-  element.src = webkitURL.createObjectURL(stream);
+  element.src = URL.createObjectURL(stream);
 };
 var startButton = document.getElementById('startButton');
 var toggleEffectButton = document.getElementById('toggleEffectButton');
@@ -95,7 +95,7 @@ function start() {
 }  
 
 function onRegisterStreamDone() {
-  vidprocessedlocal.src = webkitURL.createObjectURL(processedLocalstream);
+  vidprocessedlocal.src = URL.createObjectURL(processedLocalstream);
   toggleEffectButton.disabled = false;
 }
 
@@ -110,9 +110,9 @@ function HandleMessage(message_event) {
 }
 
 function initEffect() {
-  var url = webkitURL.createObjectURL(localstream);
+  var url = URL.createObjectURL(localstream);
   processedLocalstream = new webkitMediaStream([]);
-  var processedStreamUrl = webkitURL.createObjectURL(processedLocalstream);
+  var processedStreamUrl = URL.createObjectURL(processedLocalstream);
   effectsPlugin.postMessage(
       'registerStream' + ' ' + url + ' ' + processedStreamUrl);
 }
@@ -177,7 +177,7 @@ function hangup() {
 }
 
 function gotRemoteStream(e){
-  vidremote.src = webkitURL.createObjectURL(e.stream);
+  vidremote.src = URL.createObjectURL(e.stream);
   trace("Received remote stream");
 }
 

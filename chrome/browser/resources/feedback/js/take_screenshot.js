@@ -42,7 +42,7 @@ function takeScreenshot(callback) {
     function(stream) {
       if (stream) {
         screenshotStream = stream;
-        video.src = window.webkitURL.createObjectURL(screenshotStream);
+        video.src = window.URL.createObjectURL(screenshotStream);
         video.play();
       }
     },

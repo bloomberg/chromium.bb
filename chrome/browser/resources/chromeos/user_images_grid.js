@@ -295,7 +295,7 @@ cr.define('options', function() {
      */
     handleCameraAvailable_: function(onAvailable, stream) {
       if (this.cameraStartInProgress_ && onAvailable()) {
-        this.cameraVideo_.src = window.webkitURL.createObjectURL(stream);
+        this.cameraVideo_.src = URL.createObjectURL(stream);
         this.cameraStream_ = stream;
       } else {
         stream.stop();

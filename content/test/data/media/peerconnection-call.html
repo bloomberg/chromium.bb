@@ -535,7 +535,7 @@
   }
 
   function displayAndRemember(localStream) {
-    var localStreamUrl = webkitURL.createObjectURL(localStream);
+    var localStreamUrl = URL.createObjectURL(localStream);
     $('local-view').src = localStreamUrl;
 
     gLocalStream = localStream;
@@ -746,7 +746,7 @@
       return;
     }
     gRemoteStreams[target] = e.stream;
-    var remoteStreamUrl = webkitURL.createObjectURL(e.stream);
+    var remoteStreamUrl = URL.createObjectURL(e.stream);
     var remoteVideo = $(target);
     remoteVideo.src = remoteStreamUrl;
   }
