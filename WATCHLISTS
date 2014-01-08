@@ -472,6 +472,9 @@
     'sessions': {
       'filepath': 'chrome/browser/sessions/',
     },
+    'service_worker': {
+      'filepath': 'content/(browser|renderer|child)/service_worker/',
+    },
     'shell_window': {
       'filepath': 'chrome/browser/ui/(views/|gtk/|cocoa/|)'\
                   'extensions/(shell|app|native)'
@@ -818,6 +821,10 @@
                  'amit@chromium.org',
                  'sanjeevr@chromium.org'],
     'sessions': ['marja+watch@chromium.org'],
+    'service_worker': ['tzik@chromium.org',
+                       'kinuko+watch@chromium.org',
+                       'nhiroki@chromium.org',
+                       'horo+watch@chromium.org'],
     'shell_window': ['jeremya+watch@chromium.org'],
     'site_instance': ['creis+watch@chromium.org', 'ajwong+watch@chromium.org'],
     'spellcheck': ['groby+spellwatch@chromium.org',
