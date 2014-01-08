@@ -149,7 +149,7 @@ public:
     static const StylePropertyShorthand& animatableProperties();
     // FIXME: This should take a const ScopedStyleTree instead of a StyleResolver.
     // We should also change the Element* to a const Element*
-    static PassOwnPtr<CSSAnimationUpdate> calculateUpdate(Element*, const RenderStyle&, RenderStyle* parentStyle, StyleResolver*);
+    static PassOwnPtr<CSSAnimationUpdate> calculateUpdate(Element*, const Element& parentElement, const RenderStyle&, RenderStyle* parentStyle, StyleResolver*);
 
     void setPendingUpdate(PassOwnPtr<CSSAnimationUpdate> update) { m_pendingUpdate = update; }
     void maybeApplyPendingUpdate(Element*);
@@ -174,7 +174,7 @@ private:
 
     AnimationEffect::CompositableValueMap m_previousCompositableValuesForAnimations;
 
-    static void calculateAnimationUpdate(CSSAnimationUpdate*, Element*, const RenderStyle&, RenderStyle* parentStyle, StyleResolver*);
+    static void calculateAnimationUpdate(CSSAnimationUpdate*, Element*, const Element& parentElement, const RenderStyle&, RenderStyle* parentStyle, StyleResolver*);
     static void calculateTransitionUpdate(CSSAnimationUpdate*, const Element*, const RenderStyle&);
     static void calculateTransitionUpdateForProperty(CSSPropertyID, const CSSAnimationData*, const RenderStyle& oldStyle, const RenderStyle&, const TransitionMap* activeTransitions, CSSAnimationUpdate*, const Element*);
 

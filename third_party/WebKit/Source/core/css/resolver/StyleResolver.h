@@ -226,6 +226,8 @@ public:
     unsigned accessCount() const { return m_accessCount; }
     void didAccess() { ++m_accessCount; }
 
+    PassRefPtr<PseudoElement> createPseudoElementIfNeeded(Element&, PseudoId);
+
 private:
     // FontSelectorClient implementation.
     virtual void fontsNeedUpdate(FontSelector*);
@@ -280,6 +282,8 @@ private:
     bool isRightPage(int pageIndex) const { return !isLeftPage(pageIndex); }
     bool isFirstPage(int pageIndex) const;
     String pageName(int pageIndex) const;
+
+    bool pseudoStyleForElementInternal(Element&, const PseudoStyleRequest&, RenderStyle* parentStyle, StyleResolverState&);
 
     // FIXME: This likely belongs on RuleSet.
     typedef HashMap<StringImpl*, RefPtr<StyleRuleKeyframes> > KeyframesRuleMap;

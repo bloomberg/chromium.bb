@@ -2756,28 +2756,26 @@ void Element::updatePseudoElement(PseudoId pseudoId, StyleRecalcChange change)
         createPseudoElementIfNeeded(pseudoId);
 }
 
-void Element::createPseudoElementIfNeeded(PseudoId pseudoId)
-{
-    if (needsPseudoElement(pseudoId))
-        createPseudoElement(pseudoId);
-}
-
-bool Element::needsPseudoElement(PseudoId pseudoId) const
+bool Element::needsPseudoElement(PseudoId pseudoId, const RenderStyle& style) const
 {
     if (pseudoId == BACKDROP && !isInTopLayer())
         return false;
-    if (!renderer() || !pseudoElementRendererIsNeeded(renderer()->getCachedPseudoStyle(pseudoId)))
+    if (!renderer() || !pseudoElementRendererIsNeeded(&style))
         return false;
     if (!renderer()->canHaveGeneratedChildren())
         return false;
     return true;
 }
 
-void Element::createPseudoElement(PseudoId pseudoId)
+void Element::createPseudoElementIfNeeded(PseudoId pseudoId)
 {
-    ASSERT(needsPseudoElement(pseudoId));
-    ASSERT(!isPseudoElement());
-    RefPtr<PseudoElement> element = PseudoElement::create(this, pseudoId);
+    if (isPseudoElement())
+        return;
+
+    RefPtr<PseudoElement> element = document().ensureStyleResolver().createPseudoElementIfNeeded(*this, pseudoId);
+    if (!element)
+        return;
+
     if (pseudoId == BACKDROP)
         document().addToTopLayer(element.get(), this);
     element->insertedInto(this);

@@ -882,15 +882,39 @@ PassRefPtr<KeyframeEffectModel> StyleResolver::createKeyframeEffectModel(Element
     return KeyframeEffectModel::create(keyframes);
 }
 
-PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* element, const PseudoStyleRequest& pseudoStyleRequest, RenderStyle* parentStyle)
+PassRefPtr<PseudoElement> StyleResolver::createPseudoElementIfNeeded(Element& element, PseudoId pseudoId)
+{
+    RenderObject* renderer = element.renderer();
+    if (!renderer)
+        return 0;
+
+    if (pseudoId < FIRST_INTERNAL_PSEUDOID && !renderer->style()->hasPseudoStyle(pseudoId))
+        return 0;
+
+    RenderStyle* parentStyle = renderer->style();
+    StyleResolverState state(document(), &element, parentStyle);
+    if (!pseudoStyleForElementInternal(element, pseudoId, parentStyle, state))
+        return 0;
+    RefPtr<RenderStyle> style = state.takeStyle();
+    ASSERT(style);
+
+    if (!element.needsPseudoElement(pseudoId, *style))
+        return 0;
+
+    renderer->style()->addCachedPseudoStyle(style.release());
+    RefPtr<PseudoElement> pseudo = PseudoElement::create(&element, pseudoId);
+
+    setAnimationUpdateIfNeeded(state, *pseudo);
+    if (ActiveAnimations* activeAnimations = pseudo->activeAnimations())
+        activeAnimations->cssAnimations().maybeApplyPendingUpdate(pseudo.get());
+    return pseudo.release();
+}
+
+bool StyleResolver::pseudoStyleForElementInternal(Element& element, const PseudoStyleRequest& pseudoStyleRequest, RenderStyle* parentStyle, StyleResolverState& state)
 {
     ASSERT(document().frame());
     ASSERT(documentSettings());
-    ASSERT(parentStyle);
-    if (!element)
-        return 0;
-
-    StyleResolverState state(document(), element, parentStyle);
+    ASSERT(pseudoStyleRequest.pseudoId != FIRST_LINE_INHERITED);
 
     if (pseudoStyleRequest.allowsInheritance(state.parentStyle())) {
         state.setStyle(RenderStyle::create());
@@ -914,7 +938,7 @@ PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* element, c
         matchAuthorRules(state.element(), collector, false);
 
         if (collector.matchedResult().matchedProperties.isEmpty())
-            return 0;
+            return false;
 
         state.style()->setStyleType(pseudoStyleRequest.pseudoId);
 
@@ -932,15 +956,28 @@ PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* element, c
     // FIXME: The CSSWG wants to specify that the effects of animations are applied before
     // important rules, but this currently happens here as we require adjustment to have happened
     // before deciding which properties to transition.
-    applyAnimatedProperties(state, element->pseudoElement(pseudoStyleRequest.pseudoId));
+    applyAnimatedProperties(state, element.pseudoElement(pseudoStyleRequest.pseudoId));
 
     didAccess();
 
-    if (PseudoElement* pseudoElement = element->pseudoElement(pseudoStyleRequest.pseudoId))
-        setAnimationUpdateIfNeeded(state, *pseudoElement);
-
     if (state.style()->hasViewportUnits())
         document().setHasViewportUnits();
+
+    return true;
+}
+
+PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* element, const PseudoStyleRequest& pseudoStyleRequest, RenderStyle* parentStyle)
+{
+    ASSERT(parentStyle);
+    if (!element)
+        return 0;
+
+    StyleResolverState state(document(), element, parentStyle);
+    if (!pseudoStyleForElementInternal(*element, pseudoStyleRequest, parentStyle, state))
+        return 0;
+
+    if (PseudoElement* pseudoElement = element->pseudoElement(pseudoStyleRequest.pseudoId))
+        setAnimationUpdateIfNeeded(state, *pseudoElement);
 
     // Now return the style.
     return state.takeStyle();
@@ -1094,19 +1131,26 @@ void StyleResolver::collectPseudoRulesForElement(Element* element, ElementRuleCo
 
 void StyleResolver::applyAnimatedProperties(StyleResolverState& state, Element* animatingElement)
 {
-    // animatingElement may be null, for example if we're calculating the
-    // style for a potential pseudo element that has yet to be created.
-    if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled() || !animatingElement)
+    if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled())
         return;
 
-    if (!animatingElement->hasActiveAnimations()
+    const Element* element = state.element();
+    ASSERT(element);
+
+    // The animating element may be this element, or its pseudo element. It is
+    // null when calculating the style for a potential pseudo element that has
+    // yet to be created.
+    ASSERT(animatingElement == element || !animatingElement || animatingElement->parentOrShadowHostElement() == element);
+
+    if (!(animatingElement && animatingElement->hasActiveAnimations())
         && !(state.style()->transitions() && !state.style()->transitions()->isEmpty())
         && !(state.style()->animations() && !state.style()->animations()->isEmpty()))
         return;
 
-    state.setAnimationUpdate(CSSAnimations::calculateUpdate(animatingElement, *state.style(), state.parentStyle(), this));
+    state.setAnimationUpdate(CSSAnimations::calculateUpdate(animatingElement, *element, *state.style(), state.parentStyle(), this));
     if (!state.animationUpdate())
         return;
+
     const AnimationEffect::CompositableValueMap& compositableValuesForAnimations = state.animationUpdate()->compositableValuesForAnimations();
     const AnimationEffect::CompositableValueMap& compositableValuesForTransitions = state.animationUpdate()->compositableValuesForTransitions();
     applyAnimatedProperties<HighPriorityProperties>(state, compositableValuesForAnimations);
