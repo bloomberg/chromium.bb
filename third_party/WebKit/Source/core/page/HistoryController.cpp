@@ -29,10 +29,10 @@
  */
 
 #include "config.h"
-#include "core/loader/HistoryController.h"
+#include "core/page/HistoryController.h"
 
-#include "core/loader/FrameLoader.h"
 #include "core/frame/Frame.h"
+#include "core/loader/FrameLoader.h"
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
 #include "wtf/Deque.h"

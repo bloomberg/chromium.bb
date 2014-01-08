@@ -24,7 +24,7 @@
 #include "core/dom/ViewportDescription.h"
 #include "core/frame/SettingsDelegate.h"
 #include "core/frame/UseCounter.h"
-#include "core/loader/HistoryController.h"
+#include "core/page/HistoryController.h"
 #include "core/page/PageVisibilityState.h"
 #include "core/rendering/Pagination.h"
 #include "platform/LifecycleContext.h"

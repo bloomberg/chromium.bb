@@ -83,7 +83,7 @@ public:
     void setReferrer(const AtomicString&);
     void setTarget(const String&);
 
-    void setStateObject(PassRefPtr<SerializedScriptValue> object);
+    void setStateObject(PassRefPtr<SerializedScriptValue>);
     SerializedScriptValue* stateObject() const { return m_stateObject.get(); }
 
     void setItemSequenceNumber(long long number) { m_itemSequenceNumber = number; }
@@ -121,13 +121,13 @@ private:
     HistoryItemVector m_children;
 
     // If two HistoryItems have the same item sequence number, then they are
-    // clones of one another.  Traversing history from one such HistoryItem to
-    // another is a no-op.  HistoryItem clones are created for parent and
+    // clones of one another. Traversing history from one such HistoryItem to
+    // another is a no-op. HistoryItem clones are created for parent and
     // sibling frames when only a subframe navigates.
     int64_t m_itemSequenceNumber;
 
     // If two HistoryItems have the same document sequence number, then they
-    // refer to the same instance of a document.  Traversing history from one
+    // refer to the same instance of a document. Traversing history from one
     // such HistoryItem to another preserves the document.
     int64_t m_documentSequenceNumber;
 
@@ -140,8 +140,8 @@ private:
     RefPtr<FormData> m_formData;
     AtomicString m_formContentType;
 
-}; //class HistoryItem
+}; // class HistoryItem
 
-} //namespace WebCore
+} // namespace WebCore
 
 #endif // HISTORYITEM_H

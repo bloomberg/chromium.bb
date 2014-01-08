@@ -30,8 +30,8 @@
 #ifndef HistoryController_h
 #define HistoryController_h
 
-#include "core/history/HistoryItem.h"
 #include "core/loader/FrameLoaderTypes.h"
+#include "core/loader/HistoryItem.h"
 #include "platform/network/ResourceRequest.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"

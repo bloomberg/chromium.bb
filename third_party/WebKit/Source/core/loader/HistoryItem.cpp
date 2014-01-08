@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/history/HistoryItem.h"
+#include "core/loader/HistoryItem.h"
 
 #include "core/dom/Document.h"
 #include "platform/network/ResourceRequest.h"
@@ -93,7 +93,7 @@ const String& HistoryItem::urlString() const
     return m_urlString;
 }
 
-// The first URL we loaded to get to where this history item points.  Includes both client
+// The first URL we loaded to get to where this history item points. Includes both client
 // and server redirects.
 const String& HistoryItem::originalURLString() const
 {

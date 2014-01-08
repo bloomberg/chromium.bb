@@ -31,7 +31,6 @@
 #ifndef BackForwardClientImpl_h
 #define BackForwardClientImpl_h
 
-#include "core/history/HistoryItem.h"
 #include "core/page/BackForwardClient.h"
 
 namespace blink {
