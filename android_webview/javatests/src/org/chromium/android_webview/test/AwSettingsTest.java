@@ -14,12 +14,12 @@ import android.test.suitebuilder.annotation.SmallTest;
 import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
+import android.webkit.WebSettings.LayoutAlgorithm;
 
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwSettings;
-import org.chromium.android_webview.AwSettings.LayoutAlgorithm;
 import org.chromium.android_webview.InterceptedRequestData;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.ImagePageGenerator;
@@ -1919,7 +1919,7 @@ public class AwSettingsTest extends AwTestBase {
         }
     }
 
-    public static class AudioEvent {
+    static class AudioEvent {
         private CallbackHelper mCallback;
         public AudioEvent(CallbackHelper callback) {
             mCallback = callback;
