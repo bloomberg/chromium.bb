@@ -11,6 +11,7 @@
       'target_name': 'nacl_core_sdk',
       'type': 'none',
       'dependencies': [
+        '../src/untrusted/irt/irt.gyp:irt_core_nexe',
         '../src/untrusted/minidump_generator/minidump_generator.gyp:minidump_generator_lib',
         '../src/untrusted/nacl/nacl.gyp:nacl_dynacode_lib',
         '../src/untrusted/nacl/nacl.gyp:nacl_exception_lib',
@@ -20,12 +21,14 @@
         '../src/untrusted/pthread/pthread.gyp:pthread_lib',
       ],
       'conditions': [
+        ['(target_arch!="arm" and target_arch!="mipsel") or OS=="linux"', {
+          # sel_ldr is not buildable for arm, except on linux.
+          'dependencies': [
+            '../src/trusted/service_runtime/service_runtime.gyp:sel_ldr',
+          ],
+        }],
         ['target_arch!="arm" and target_arch!="mipsel"', {
           'dependencies': [
-            # sel_ldr and irt are host-only and not needed when building the
-            # arm and mips components of the SDK.
-            '../src/untrusted/irt/irt.gyp:irt_core_nexe',
-            '../src/trusted/service_runtime/service_runtime.gyp:sel_ldr',
             # these libraries don't currently exist on arm and mips
             '../src/untrusted/valgrind/valgrind.gyp:dynamic_annotations_lib',
             '../src/untrusted/valgrind/valgrind.gyp:valgrind_lib',
