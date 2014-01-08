@@ -59,7 +59,7 @@ public:
     PassRefPtr<WebKitNotification> createNotification(const String& iconUrl, const String& title, const String& body, ExceptionState& exceptionState)
     {
         if (!client()) {
-            exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+            exceptionState.throwDOMException(InvalidStateError, "The notification client is null.");
             return 0;
         }
         return WebKitNotification::create(title, body, iconUrl, executionContext(), exceptionState, this);

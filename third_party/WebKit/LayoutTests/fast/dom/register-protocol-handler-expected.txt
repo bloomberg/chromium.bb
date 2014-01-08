@@ -24,7 +24,7 @@ Pass: Valid protocol "urn" allowed.
 Pass: Valid protocol "webcal" allowed.
 Pass: Valid protocol "wtai" allowed.
 Pass: Valid protocol "xmpp" allowed.
-Pass: Invalid url "" threw SyntaxError exception.
-Pass: Invalid url "%S" threw SyntaxError exception.
+Pass: Invalid url "" threw SyntaxError exception: "Failed to execute 'registerProtocolHandler' on 'Navigator': The url provided ('') does not contain '%s'.".
+Pass: Invalid url "%S" threw SyntaxError exception: "Failed to execute 'registerProtocolHandler' on 'Navigator': The url provided ('%S') does not contain '%s'.".
 Pass: Valid call succeeded.
 

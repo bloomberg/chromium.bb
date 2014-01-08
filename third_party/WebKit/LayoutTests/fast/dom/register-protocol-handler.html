@@ -57,10 +57,11 @@ invalid_urls.forEach(function (url) {
         window.navigator.registerProtocolHandler('web+myprotocol', url, 'title');
     } catch (e) {
         succeeded = 'SyntaxError' == e.name;
+        errorMessage = e.message;
     }
 
     if (succeeded)
-        debug('Pass: Invalid url "' + url + '" threw SyntaxError exception.');
+        debug('Pass: Invalid url "' + url + '" threw SyntaxError exception: "' + errorMessage + '".');
     else
         debug('Fail: Invalid url "' + url + '" allowed.');
 });

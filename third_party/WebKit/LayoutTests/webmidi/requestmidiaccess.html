@@ -54,7 +54,7 @@ function successCallback1(a) {
 
     // Test sending system exclusive messages. These should throw, since we don't have sysex access.
     shouldThrow('output.send([0xf1, 0x45, 0x7f])', '"SecurityError: Failed to execute \'send\' on \'MIDIOutput\': permission to send system exclusive messages is denied."');
-
+    shouldThrow('output.send([0xfff, 0x45, 0x7f])');
     // Now test System Exclusive access - our test mock should not allow this type of access.
     shouldNotThrow("navigator.requestMIDIAccess({sysex: true}).then(successCallback2, errorCallback2)");
 }

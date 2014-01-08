@@ -74,7 +74,7 @@ static bool verifyCustomHandlerURL(const String& baseURL, const String& url, Exc
     static const char token[] = "%s";
     int index = url.find(token);
     if (-1 == index) {
-        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
+        exceptionState.throwDOMException(SyntaxError, "The url provided ('" + url + "') does not contain '%s'.");
         return false;
     }
 
@@ -87,7 +87,7 @@ static bool verifyCustomHandlerURL(const String& baseURL, const String& url, Exc
     KURL kurl(base, newURL);
 
     if (kurl.isEmpty() || !kurl.isValid()) {
-        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
+        exceptionState.throwDOMException(SyntaxError, "The custom handler URL created by removing '%s' and prepending '" + baseURL + "' is invalid.");
         return false;
     }
 
