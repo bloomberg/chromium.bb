@@ -796,8 +796,10 @@ void ExtensionSettingsHandler::HandleInspectMessage(
     const Extension* extension =
         extension_service_->extensions()->GetByID(extension_id);
     DCHECK(extension);
-    devtools_util::InspectBackgroundPage(extension,
-                                         Profile::FromWebUI(web_ui()));
+    Profile* profile = Profile::FromWebUI(web_ui());
+    if (incognito)
+      profile = profile->GetOffTheRecordProfile();
+    devtools_util::InspectBackgroundPage(extension, profile);
     return;
   }
 
@@ -1134,7 +1136,8 @@ ExtensionSettingsHandler::GetInspectablePagesForExtension(
   // Repeat for the incognito process, if applicable. Don't try to get
   // shell windows for incognito processes.
   if (extension_service_->profile()->HasOffTheRecordProfile() &&
-      IncognitoInfo::IsSplitMode(extension)) {
+      IncognitoInfo::IsSplitMode(extension) &&
+      extension_util::IsIncognitoEnabled(extension->id(), extension_service_)) {
     extensions::ProcessManager* process_manager =
         ExtensionSystem::Get(extension_service_->profile()->
             GetOffTheRecordProfile())->process_manager();
