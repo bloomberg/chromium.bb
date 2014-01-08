@@ -80,6 +80,10 @@ NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_Crash, {
   RunNaClIntegrationTest(FILE_PATH_LITERAL("ppapi_crash.html"));
 })
 
+NACL_BROWSER_TEST_F(NaClBrowserTest, Nameservice, {
+  RunNaClIntegrationTest(FILE_PATH_LITERAL("pm_nameservice_test.html"));
+})
+
 // Some versions of Visual Studio does not like preprocessor
 // conditionals inside the argument of a macro, so we put the
 // conditionals on a helper function.  We are already in an anonymous

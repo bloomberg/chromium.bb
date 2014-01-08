@@ -1,5 +1,5 @@
 <!--
-  Copyright (c) 2011 The Chromium Authors. All rights reserved.
+  Copyright 2014 The Chromium Authors. All rights reserved.
   Use of this source code is governed by a BSD-style license that can
   be found in the LICENSE file.
 -->
@@ -15,19 +15,27 @@
 
   <body>
     <h1>Native Client Post Message Name Service Test</h1>
-    <div>
-    <embed id="naclModule"
-           name="naclModule"
-           width=400 height=400
-           src="pm_nameservice_test.nmf"
-           basic_tests="2"
-           stress_tests="0"
-           style="background-color:gray"
-           type="application/x-nacl" />
-    </div>
 
   <script type="text/javascript">
     //<![CDATA[
+function createModule(id, src, type) {
+  return createNaClEmbed({
+    id: id,
+    src: src,
+    width: 400,
+    height: 400,
+    type: type
+  });
+}
+var mime = 'application/x-nacl';
+if (getTestArguments()['pnacl'] !== undefined) {
+  mime = 'application/x-pnacl';
+}
+var embed = createModule('naclModule', 'pm_nameservice_test.nmf', mime);
+embed.basic_tests ='2';
+embed.stress_tests = '0';
+document.body.appendChild(embed);
+
 function setupTests(tester, plugin) {
   tester.addAsyncTest('TestInit', function(status) {
     plugin.addEventListener('message', function(message_event) {
