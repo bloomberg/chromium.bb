@@ -35,10 +35,10 @@ class TestVideoReceiverCallback :
     ++num_called_;
   }
 
-  void FrameToDecode(scoped_ptr<EncodedVideoFrame> video_frame,
+  void FrameToDecode(scoped_ptr<transport::EncodedVideoFrame> video_frame,
       const base::TimeTicks& render_time) {
     EXPECT_TRUE(video_frame->key_frame);
-    EXPECT_EQ(kVp8, video_frame->codec);
+    EXPECT_EQ(transport::kVp8, video_frame->codec);
     ++num_called_;
   }
 
@@ -69,12 +69,12 @@ class VideoReceiverTest : public ::testing::Test {
  protected:
   VideoReceiverTest() {
     // Configure to use vp8 software implementation.
-    config_.codec = kVp8;
+    config_.codec = transport::kVp8;
     config_.use_external_decoder = false;
     task_runner_ = new test::FakeTaskRunner(&testing_clock_);
     cast_environment_ = new CastEnvironment(&testing_clock_, task_runner_,
         task_runner_, task_runner_, task_runner_, task_runner_,
-        GetDefaultCastLoggingConfig());
+        task_runner_, GetDefaultCastLoggingConfig());
     receiver_.reset(new
         PeerVideoReceiver(cast_environment_, config_, &mock_transport_));
     testing_clock_.Advance(

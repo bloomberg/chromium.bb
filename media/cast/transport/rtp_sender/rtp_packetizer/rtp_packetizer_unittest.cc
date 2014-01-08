@@ -6,7 +6,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "media/cast/cast_config.h"
 #include "media/cast/transport/pacing/paced_sender.h"
 #include "media/cast/transport/rtp_sender/packet_storage/packet_storage.h"
 #include "media/cast/transport/rtp_sender/rtp_packetizer/test/rtp_header_parser.h"

@@ -24,7 +24,7 @@ const uint32 kStartFrameId = GG_UINT32_C(0xffffffff);
 
 // Number of skipped frames threshold in fps (as configured) per period above.
 const int kSkippedFramesThreshold = 3;
-const size_t kIpPacketSize = 1500;
+const size_t kMaxIpPacketSize = 1500;
 const int kStartRttMs = 20;
 const int64 kCastMessageUpdateIntervalMs = 33;
 const int64 kNackRepeatIntervalMs = 30;

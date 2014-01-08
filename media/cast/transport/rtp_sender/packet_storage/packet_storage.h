@@ -14,7 +14,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
-#include "media/cast/cast_config.h"
+#include "media/cast/transport/cast_transport_config.h"
+#include "media/cast/transport/cast_transport_defines.h"
 
 namespace media {
 namespace cast {

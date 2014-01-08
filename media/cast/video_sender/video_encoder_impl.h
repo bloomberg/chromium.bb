@@ -21,7 +21,7 @@ namespace cast {
 // the video encoder thread.
 class VideoEncoderImpl : public VideoEncoder {
  public:
-  typedef base::Callback<void(scoped_ptr<EncodedVideoFrame>,
+  typedef base::Callback<void(scoped_ptr<transport::EncodedVideoFrame>,
                               const base::TimeTicks&)> FrameEncodedCallback;
 
   VideoEncoderImpl(scoped_refptr<CastEnvironment> cast_environment,

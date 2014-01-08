@@ -61,7 +61,7 @@ class VideoReceiver : public base::NonThreadSafe,
                                const RtpCastHeader& rtp_header);
 
   void DecodeVideoFrameThread(
-      scoped_ptr<EncodedVideoFrame> encoded_frame,
+      scoped_ptr<transport::EncodedVideoFrame> encoded_frame,
       const base::TimeTicks render_time,
       const VideoFrameDecodedCallback& frame_decoded_callback);
 
@@ -72,15 +72,16 @@ class VideoReceiver : public base::NonThreadSafe,
   void CastFeedback(const RtcpCastMessage& cast_message);
 
   void DecodeVideoFrame(const VideoFrameDecodedCallback& callback,
-                        scoped_ptr<EncodedVideoFrame> encoded_frame,
+                        scoped_ptr<transport::EncodedVideoFrame> encoded_frame,
                         const base::TimeTicks& render_time);
 
-  bool DecryptVideoFrame(scoped_ptr<EncodedVideoFrame>* video_frame);
+  bool DecryptVideoFrame(scoped_ptr<transport::EncodedVideoFrame>* video_frame);
 
-  bool PullEncodedVideoFrame(uint32 rtp_timestamp,
-                             bool next_frame,
-                             scoped_ptr<EncodedVideoFrame>* encoded_frame,
-                             base::TimeTicks* render_time);
+  bool PullEncodedVideoFrame(
+      uint32 rtp_timestamp,
+      bool next_frame,
+      scoped_ptr<transport::EncodedVideoFrame>* encoded_frame,
+      base::TimeTicks* render_time);
 
   void PlayoutTimeout();
 
@@ -104,7 +105,7 @@ class VideoReceiver : public base::NonThreadSafe,
   scoped_ptr<VideoDecoder> video_decoder_;
   scoped_refptr<CastEnvironment> cast_environment_;
   scoped_ptr<Framer> framer_;
-  const VideoCodec codec_;
+  const transport::VideoCodec codec_;
   base::TimeDelta target_delay_delta_;
   base::TimeDelta frame_delay_;
   scoped_ptr<LocalRtpVideoData> incoming_payload_callback_;

@@ -25,7 +25,7 @@ AudioDecoder::AudioDecoder(scoped_refptr<CastEnvironment> cast_environment,
 
   webrtc::CodecInst receive_codec;
   switch (audio_config.codec) {
-    case kPcm16:
+    case transport::kPcm16:
       receive_codec.pltype = audio_config.rtp_payload_type;
       strncpy(receive_codec.plname, "L16", 4);
       receive_codec.plfreq = audio_config.frequency;
@@ -33,7 +33,7 @@ AudioDecoder::AudioDecoder(scoped_refptr<CastEnvironment> cast_environment,
       receive_codec.channels = audio_config.channels;
       receive_codec.rate = -1;
       break;
-    case kOpus:
+    case transport::kOpus:
       receive_codec.pltype = audio_config.rtp_payload_type;
       strncpy(receive_codec.plname, "opus", 5);
       receive_codec.plfreq = audio_config.frequency;
@@ -41,7 +41,7 @@ AudioDecoder::AudioDecoder(scoped_refptr<CastEnvironment> cast_environment,
       receive_codec.channels = audio_config.channels;
       receive_codec.rate = -1;
       break;
-    case kExternalAudio:
+    case transport::kExternalAudio:
       NOTREACHED() << "Codec must be specified for audio decoder";
       break;
   }
@@ -109,7 +109,7 @@ void AudioDecoder::IncomingParsedRtpPacket(const uint8* payload_data,
                                            size_t payload_size,
                                            const RtpCastHeader& rtp_header) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  DCHECK_LE(payload_size, kIpPacketSize);
+  DCHECK_LE(payload_size, kMaxIpPacketSize);
   audio_decoder_->IncomingPacket(payload_data, static_cast<int32>(payload_size),
                                  rtp_header.webrtc);
   lock_.Acquire();

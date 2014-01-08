@@ -28,7 +28,7 @@ typedef base::Callback<void(scoped_ptr<PcmAudioFrame>, const base::TimeTicks&)>
     AudioFrameDecodedCallback;
 
 // Callback in which the encoded audio frame and play-out time will be returned.
-typedef base::Callback<void(scoped_ptr<EncodedAudioFrame>,
+typedef base::Callback<void(scoped_ptr<transport::EncodedAudioFrame>,
     const base::TimeTicks&)> AudioFrameEncodedCallback;
 
 // Callback in which the raw frame and render time will be returned once
@@ -38,7 +38,7 @@ typedef base::Callback<void(const scoped_refptr<media::VideoFrame>& video_frame,
     VideoFrameDecodedCallback;
 
 // Callback in which the encoded video frame and render time will be returned.
-typedef base::Callback<void(scoped_ptr<EncodedVideoFrame>,
+typedef base::Callback<void(scoped_ptr<transport::EncodedVideoFrame>,
     const base::TimeTicks&)> VideoFrameEncodedCallback;
 
 // This Class is thread safe.
@@ -74,7 +74,7 @@ class CastReceiver {
 
   // All received RTP and RTCP packets for the call should be inserted to this
   // PacketReceiver.
-  virtual scoped_refptr<PacketReceiver> packet_receiver() = 0;
+  virtual scoped_refptr<transport::PacketReceiver> packet_receiver() = 0;
 
   // Polling interface to get audio and video frames from the CastReceiver.
   virtual scoped_refptr<FrameReceiver> frame_receiver() = 0;

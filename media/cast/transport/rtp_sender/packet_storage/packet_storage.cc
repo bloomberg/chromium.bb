@@ -21,11 +21,11 @@ typedef TimeToPacketMap::iterator TimeToPacketIterator;
 class StoredPacket {
  public:
   StoredPacket() {
-    packet_.reserve(kIpPacketSize);
+    packet_.reserve(kMaxIpPacketSize);
   }
 
   void Save(const Packet* packet) {
-    DCHECK_LT(packet->size(), kIpPacketSize) << "Invalid argument";
+    DCHECK_LT(packet->size(), kMaxIpPacketSize) << "Invalid argument";
     packet_.clear();
     packet_.insert(packet_.begin(), packet->begin(), packet->end());
   }

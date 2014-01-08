@@ -6,13 +6,45 @@
 #define MEDIA_CAST_TRANSPORT_CAST_TRANSPORT_DEFINES_H_
 
 #include <list>
+#include <map>
+#include <set>
+
 #include "base/basictypes.h"
+#include "base/time/time.h"
 
 namespace media {
 namespace cast {
 namespace transport {
 
+enum CastTransportStatus {
+  UNINITIALIZED,
+  INITIALIZED,
+  INVALID_CRYPTO_CONFIG,
+  SOCKET_ERROR,
+  // TODO(mikhal): Add.
+};
+
+const size_t kMaxIpPacketSize = 1500;
+// Each uint16 represents one packet id within a cast frame.
+typedef std::set<uint16> PacketIdSet;
+// Each uint8 represents one cast frame.
+typedef std::map<uint8, PacketIdSet> MissingFramesAndPacketsMap;
+
 // Rtcp defines.
+
+enum RtcpPacketTypes {
+  kPacketTypeLow = 194,  // SMPTE time-code mapping.
+  kPacketTypeInterArrivalJitterReport = 195,
+  kPacketTypeSenderReport = 200,
+  kPacketTypeReceiverReport = 201,
+  kPacketTypeSdes = 202,
+  kPacketTypeBye = 203,
+  kPacketTypeApplicationDefined = 204,
+  kPacketTypeGenericRtpFeedback = 205,
+  kPacketTypePayloadSpecific = 206,
+  kPacketTypeXr = 207,
+  kPacketTypeHigh = 210,  // Port Mapping.
+};
 
 // Log messages form sender to receiver.
 enum RtcpSenderFrameStatus {
