@@ -48,6 +48,7 @@ class Node;
 class RuleFeatureSet;
 class ShadowTreeStyleSheetCollection;
 class StyleResolver;
+class StyleRuleFontFace;
 class StyleSheet;
 class StyleSheetCollection;
 class StyleSheetContents;
@@ -164,6 +165,8 @@ public:
     void clearMasterResolver();
 
     CSSFontSelector* fontSelector() { return m_fontSelector.get(); }
+    void removeFontFaceRules(const Vector<const StyleRuleFontFace*>&);
+    // FIXME: still need to use resetFontSelector when GenericFontFamilySettings is changed.
     void resetFontSelector();
 
     void didAttach();

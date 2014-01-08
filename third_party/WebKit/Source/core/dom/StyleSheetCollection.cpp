@@ -152,24 +152,19 @@ bool StyleSheetCollection::activeLoadingStyleSheetLoaded(const Vector<RefPtr<CSS
     return false;
 }
 
-static bool styleSheetContentsHasFontFaceRule(Vector<StyleSheetContents*> sheets)
+static bool findFontFaceRulesFromStyleSheetContents(Vector<StyleSheetContents*> sheets, Vector<const StyleRuleFontFace*>& fontFaceRules)
 {
-    for (unsigned i = 0; i < sheets.size(); ++i) {
-        ASSERT(sheets[i]);
-        if (sheets[i]->hasFontFaceRule())
-            return true;
-    }
-    return false;
-}
+    bool hasFontFaceRule = false;
 
-static bool cssStyleSheetHasFontFaceRule(const Vector<RefPtr<CSSStyleSheet> > sheets)
-{
     for (unsigned i = 0; i < sheets.size(); ++i) {
         ASSERT(sheets[i]);
-        if (sheets[i]->contents()->hasFontFaceRule())
-            return true;
+        if (sheets[i]->hasFontFaceRule()) {
+            // FIXME: We don't need this for styles in shadow tree.
+            sheets[i]->findFontFaceRules(fontFaceRules);
+            hasFontFaceRule = true;
+        }
     }
-    return false;
+    return hasFontFaceRule;
 }
 
 void StyleSheetCollection::analyzeStyleSheetChange(StyleResolverUpdateMode updateMode, const StyleSheetCollectionBase& newCollection, StyleSheetChange& change)
@@ -189,18 +184,10 @@ void StyleSheetCollection::analyzeStyleSheetChange(StyleResolverUpdateMode updat
         if (updateType != Additive) {
             change.styleResolverUpdateType = updateType;
         } else {
-            if (styleSheetContentsHasFontFaceRule(addedSheets)) {
-                change.styleResolverUpdateType = ResetStyleResolverAndFontSelector;
+            change.styleResolverUpdateType = Reset;
+            // If @font-face is removed, needs full style recalc.
+            if (findFontFaceRulesFromStyleSheetContents(addedSheets, change.fontFaceRulesToRemove))
                 return;
-            }
-            // FIXME: since currently all stylesheets are re-added after reseting styleresolver,
-            // fontSelector should be always reset. After creating RuleSet for each StyleSheetContents,
-            // we can avoid appending all stylesheetcontents in reset case.
-            // So we can remove "styleSheetContentsHasFontFaceRule(newSheets)".
-            if (cssStyleSheetHasFontFaceRule(newCollection.activeAuthorStyleSheets()))
-                change.styleResolverUpdateType = ResetStyleResolverAndFontSelector;
-            else
-                change.styleResolverUpdateType = Reset;
         }
     }
 

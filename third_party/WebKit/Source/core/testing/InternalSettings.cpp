@@ -222,7 +222,7 @@ void InternalSettings::setStandardFontFamily(const AtomicString& family, const S
     UScriptCode code = scriptNameToCode(script);
     if (code == USCRIPT_INVALID_CODE)
         return;
-    settings()->genericFontFamilySettings().setStandard(family, code);
+    settings()->setStandardFontFamily(family, code);
     m_page->setNeedsRecalcStyleInAllFrames();
 }
 
@@ -232,7 +232,7 @@ void InternalSettings::setSerifFontFamily(const AtomicString& family, const Stri
     UScriptCode code = scriptNameToCode(script);
     if (code == USCRIPT_INVALID_CODE)
         return;
-    settings()->genericFontFamilySettings().setSerif(family, code);
+    settings()->setSerifFontFamily(family, code);
     m_page->setNeedsRecalcStyleInAllFrames();
 }
 
@@ -242,7 +242,7 @@ void InternalSettings::setSansSerifFontFamily(const AtomicString& family, const 
     UScriptCode code = scriptNameToCode(script);
     if (code == USCRIPT_INVALID_CODE)
         return;
-    settings()->genericFontFamilySettings().setSansSerif(family, code);
+    settings()->setSansSerifFontFamily(family, code);
     m_page->setNeedsRecalcStyleInAllFrames();
 }
 
@@ -252,7 +252,7 @@ void InternalSettings::setFixedFontFamily(const AtomicString& family, const Stri
     UScriptCode code = scriptNameToCode(script);
     if (code == USCRIPT_INVALID_CODE)
         return;
-    settings()->genericFontFamilySettings().setFixed(family, code);
+    settings()->setFixedFontFamily(family, code);
     m_page->setNeedsRecalcStyleInAllFrames();
 }
 
@@ -262,7 +262,7 @@ void InternalSettings::setCursiveFontFamily(const AtomicString& family, const St
     UScriptCode code = scriptNameToCode(script);
     if (code == USCRIPT_INVALID_CODE)
         return;
-    settings()->genericFontFamilySettings().setCursive(family, code);
+    settings()->setCursiveFontFamily(family, code);
     m_page->setNeedsRecalcStyleInAllFrames();
 }
 
@@ -272,7 +272,7 @@ void InternalSettings::setFantasyFontFamily(const AtomicString& family, const St
     UScriptCode code = scriptNameToCode(script);
     if (code == USCRIPT_INVALID_CODE)
         return;
-    settings()->genericFontFamilySettings().setFantasy(family, code);
+    settings()->setFantasyFontFamily(family, code);
     m_page->setNeedsRecalcStyleInAllFrames();
 }
 
@@ -282,7 +282,7 @@ void InternalSettings::setPictographFontFamily(const AtomicString& family, const
     UScriptCode code = scriptNameToCode(script);
     if (code == USCRIPT_INVALID_CODE)
         return;
-    settings()->genericFontFamilySettings().setPictograph(family, code);
+    settings()->setPictographFontFamily(family, code);
     m_page->setNeedsRecalcStyleInAllFrames();
 }
 

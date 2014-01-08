@@ -48,6 +48,7 @@ class Node;
 class StyleSheet;
 class StyleSheetContents;
 class StyleSheetList;
+class StyleRuleFontFace;
 
 // FIXME: Should be in separate file and be renamed like:
 // - StyleSheetCollectionBase -> StyleSheetCollection
@@ -99,13 +100,13 @@ protected:
     enum StyleResolverUpdateType {
         Reconstruct,
         Reset,
-        Additive,
-        ResetStyleResolverAndFontSelector
+        Additive
     };
 
     struct StyleSheetChange {
         StyleResolverUpdateType styleResolverUpdateType;
         bool requiresFullStyleRecalc;
+        Vector<const StyleRuleFontFace*> fontFaceRulesToRemove;
 
         StyleSheetChange()
             : styleResolverUpdateType(Reconstruct)
