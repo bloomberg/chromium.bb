@@ -74,9 +74,7 @@ SigninManagerAndroid::SigninManagerAndroid(JNIEnv* env, jobject obj)
     : profile_(NULL),
       weak_factory_(this) {
   java_signin_manager_.Reset(env, obj);
-  DCHECK(g_browser_process);
-  DCHECK(g_browser_process->profile_manager());
-  profile_ = g_browser_process->profile_manager()->GetDefaultProfile();
+  profile_ = ProfileManager::GetActiveUserProfile();
   DCHECK(profile_);
 }
 

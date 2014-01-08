@@ -27,12 +27,9 @@ using base::android::ScopedJavaLocalRef;
 namespace autofill {
 namespace {
 
-Profile* GetDefaultProfile() {
-  return g_browser_process->profile_manager()->GetDefaultProfile();
-}
-
 PrefService* GetPrefs() {
-  return GetDefaultProfile()->GetOriginalProfile()->GetPrefs();
+  return
+      ProfileManager::GetActiveUserProfile()->GetOriginalProfile()->GetPrefs();
 }
 
 ScopedJavaLocalRef<jobject> CreateJavaProfileFromNative(
@@ -162,8 +159,8 @@ void PopulateNativeCreditCardFromJava(
 PersonalDataManagerAndroid::PersonalDataManagerAndroid(JNIEnv* env,
                                                        jobject obj)
     : weak_java_obj_(env, obj),
-      personal_data_manager_(
-          PersonalDataManagerFactory::GetForProfile(GetDefaultProfile())) {
+      personal_data_manager_(PersonalDataManagerFactory::GetForProfile(
+          ProfileManager::GetActiveUserProfile())) {
   personal_data_manager_->AddObserver(this);
 }
 

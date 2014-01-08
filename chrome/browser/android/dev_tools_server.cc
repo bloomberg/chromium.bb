@@ -293,8 +293,7 @@ class DevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
 
   virtual scoped_ptr<content::DevToolsTarget> CreateNewTarget(
       const GURL& url) OVERRIDE {
-    Profile* profile =
-        g_browser_process->profile_manager()->GetDefaultProfile();
+    Profile* profile = ProfileManager::GetActiveUserProfile();
     TabModel* tab_model = TabModelList::GetTabModelWithProfile(profile);
     if (!tab_model)
       return scoped_ptr<content::DevToolsTarget>();
