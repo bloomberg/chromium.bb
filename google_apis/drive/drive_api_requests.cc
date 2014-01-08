@@ -505,6 +505,26 @@ GURL AppsListRequest::GetURLInternal() const {
   return url_generator_.GetAppsListUrl();
 }
 
+//============================== AppsDeleteRequest ===========================
+
+AppsDeleteRequest::AppsDeleteRequest(RequestSender* sender,
+                                     const DriveApiUrlGenerator& url_generator,
+                                     const EntryActionCallback& callback)
+    : EntryActionRequest(sender, callback),
+      url_generator_(url_generator) {
+  DCHECK(!callback.is_null());
+}
+
+AppsDeleteRequest::~AppsDeleteRequest() {}
+
+net::URLFetcher::RequestType AppsDeleteRequest::GetRequestType() const {
+  return net::URLFetcher::DELETE_REQUEST;
+}
+
+GURL AppsDeleteRequest::GetURL() const {
+  return url_generator_.GetAppsDeleteUrl(app_id_);
+}
+
 //========================== ChildrenInsertRequest ============================
 
 ChildrenInsertRequest::ChildrenInsertRequest(

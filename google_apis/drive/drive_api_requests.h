@@ -504,6 +504,34 @@ class AppsListRequest : public DriveApiDataRequest {
   DISALLOW_COPY_AND_ASSIGN(AppsListRequest);
 };
 
+//============================= AppsDeleteRequest ==============================
+
+// This class performs the request for deleting a Drive app.
+// This request is mapped to
+// https://developers.google.com/drive/v2/reference/files/trash
+class AppsDeleteRequest : public EntryActionRequest {
+ public:
+  AppsDeleteRequest(RequestSender* sender,
+                    const DriveApiUrlGenerator& url_generator,
+                    const EntryActionCallback& callback);
+  virtual ~AppsDeleteRequest();
+
+  // Required parameter.
+  const std::string& app_id() const { return app_id_; }
+  void set_app_id(const std::string& app_id) { app_id_ = app_id; }
+
+ protected:
+  // Overridden from UrlFetchRequestBase.
+  virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
+  virtual GURL GetURL() const OVERRIDE;
+
+ private:
+  const DriveApiUrlGenerator url_generator_;
+  std::string app_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(AppsDeleteRequest);
+};
+
 //========================== ChildrenInsertRequest ============================
 
 // This class performs the request for inserting a resource to a directory.

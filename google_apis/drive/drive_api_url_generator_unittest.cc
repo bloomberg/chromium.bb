@@ -41,6 +41,13 @@ TEST_F(DriveApiUrlGeneratorTest, GetAppsListUrl) {
             test_url_generator_.GetAppsListUrl().spec());
 }
 
+TEST_F(DriveApiUrlGeneratorTest, GetAppsDeleteUrl) {
+  EXPECT_EQ("https://www.googleapis.com/drive/v2internal/apps/0ADK06pfg",
+            url_generator_.GetAppsDeleteUrl("0ADK06pfg").spec());
+  EXPECT_EQ("http://127.0.0.1:12345/drive/v2internal/apps/0ADK06pfg",
+            test_url_generator_.GetAppsDeleteUrl("0ADK06pfg").spec());
+}
+
 TEST_F(DriveApiUrlGeneratorTest, GetFilesGetUrl) {
   // |file_id| should be embedded into the url.
   EXPECT_EQ("https://www.googleapis.com/drive/v2/files/0ADK06pfg",

@@ -310,10 +310,10 @@ void DriveAPIService::Initialize(const std::string& account_id) {
   std::vector<std::string> scopes;
   scopes.push_back(kDriveScope);
   scopes.push_back(kDriveAppsReadonlyScope);
-
-  // GData WAPI token. These are for GetShareUrl().
-  scopes.push_back(util::kDocsListScope);
   scopes.push_back(util::kDriveAppsScope);
+
+  // GData WAPI token for GetShareUrl() and GetResourceListInDirectoryByWapi().
+  scopes.push_back(util::kDocsListScope);
 
   sender_.reset(new RequestSender(
       new google_apis::AuthService(oauth2_token_service_,
@@ -798,9 +798,11 @@ CancelCallback DriveAPIService::UninstallApp(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // TODO(kinaba) implement.
-  NOTREACHED();
-  return CancelCallback();
+  google_apis::drive::AppsDeleteRequest* request =
+      new google_apis::drive::AppsDeleteRequest(sender_.get(), url_generator_,
+                                                callback);
+  request->set_app_id(app_id);
+  return sender_->StartRequestWithRetry(request);
 }
 
 CancelCallback DriveAPIService::GetResourceListInDirectoryByWapi(

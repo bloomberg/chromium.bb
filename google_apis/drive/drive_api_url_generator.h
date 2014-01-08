@@ -32,6 +32,9 @@ class DriveApiUrlGenerator {
   // Returns a URL to invoke "Apps: list" method.
   GURL GetAppsListUrl() const;
 
+  // Returns a URL to uninstall an app with the give |app_id|.
+  GURL GetAppsDeleteUrl(const std::string& app_id) const;
+
   // Returns a URL to fetch a file metadata.
   GURL GetFilesGetUrl(const std::string& file_id) const;
 

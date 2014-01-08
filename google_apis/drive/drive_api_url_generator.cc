@@ -17,6 +17,9 @@ namespace {
 // Hard coded URLs for communication with a google drive server.
 const char kDriveV2AboutUrl[] = "/drive/v2/about";
 const char kDriveV2AppsUrl[] = "/drive/v2/apps";
+// apps.delete API is exposed through a special endpoint v2internal that
+// is accessible only by the official API key for Chrome.
+const char kDriveV2AppsDeleteUrlFormat[] = "/drive/v2internal/apps/%s";
 const char kDriveV2ChangelistUrl[] = "/drive/v2/changes";
 const char kDriveV2FilesUrl[] = "/drive/v2/files";
 const char kDriveV2FileUrlPrefix[] = "/drive/v2/files/";
@@ -58,6 +61,11 @@ GURL DriveApiUrlGenerator::GetAboutGetUrl() const {
 
 GURL DriveApiUrlGenerator::GetAppsListUrl() const {
   return base_url_.Resolve(kDriveV2AppsUrl);
+}
+
+GURL DriveApiUrlGenerator::GetAppsDeleteUrl(const std::string& app_id) const {
+  return base_url_.Resolve(base::StringPrintf(
+      kDriveV2AppsDeleteUrlFormat, net::EscapePath(app_id).c_str()));
 }
 
 GURL DriveApiUrlGenerator::GetFilesGetUrl(const std::string& file_id) const {
