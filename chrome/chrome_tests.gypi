@@ -327,7 +327,6 @@
             # fix the individual failures, but each time I disable a test from
             # these suites, it seems like one or another starts timing out too.
             'browser/apps/web_view_interactive_browsertest.cc',
-            'browser/autofill/autofill_interactive_uitest.cc',
             'browser/extensions/api/extension_action/browser_action_interactive_test.cc',
             'browser/extensions/api/omnibox/omnibox_api_interactive_test.cc',
             'browser/ui/omnibox/omnibox_view_browsertest.cc',
