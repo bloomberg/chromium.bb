@@ -46,14 +46,14 @@ using blink::WebView;
 
 const char kGpuBenchmarkingExtensionName[] = "v8/GpuBenchmarking";
 
+// offset parameter is deprecated/ignored, and will be remove from the
+// signature in a future skia release. <reed@google.com>
 static SkData* EncodeBitmapToData(size_t* offset, const SkBitmap& bm) {
     SkPixelRef* pr = bm.pixelRef();
     if (pr != NULL) {
         SkData* data = pr->refEncodedData();
-        if (data != NULL) {
-            *offset = bm.pixelRefOffset();
+        if (data != NULL)
             return data;
-        }
     }
     std::vector<unsigned char> vector;
     if (gfx::PNGCodec::EncodeBGRASkBitmap(bm, false, &vector)) {
