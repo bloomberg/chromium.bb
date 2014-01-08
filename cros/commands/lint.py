@@ -53,10 +53,10 @@ class DocStringChecker(BaseChecker):
       'C9006': ('Section names should be preceded by one blank line'
                 ': %s' % MSG_ARGS,
                 ('Used when we detect misbehavior around sections')),
-      'C9007': ('Section names should be "Args:", "Returns:", and "Raises:"'
-                ': %s' % MSG_ARGS,
+      'C9007': ('Section names should be "Args:", "Returns:", "Yields:", '
+                'and "Raises:": %s' % MSG_ARGS,
                 ('Used when we detect misbehavior around sections')),
-      'C9008': ('Sections should be in the order: Args, Returns, Raises',
+      'C9008': ('Sections should be in the order: Args, Returns/Yields, Raises',
                 ('Used when the various sections are misordered')),
       'C9009': ('First line should be a short summary',
                 ('Used when a short doc string is on multiple lines')),
@@ -66,6 +66,9 @@ class DocStringChecker(BaseChecker):
                 ('Used when funcs use different names for varargs')),
   }
   options = ()
+
+  # TODO: Should we enforce Examples?
+  VALID_SECTIONS = ('Args', 'Returns', 'Yields', 'Raises',)
 
   def visit_function(self, node):
     """Verify function docstrings"""
@@ -147,15 +150,13 @@ class DocStringChecker(BaseChecker):
         self.add_message('C9005', node=node, line=node.fromlineno)
 
   def _check_section_lines(self, node, lines):
-    """Verify each section (Args/Returns/Raises) is sane"""
-    # TODO: Should we handle Yields?  Or force it to be a Returns?
-    # TODO: Should we enforce Examples?
-    valid_sections = ('Args', 'Returns', 'Raises',)
-    lineno_sections = [-1] * len(valid_sections)
+    """Verify each section (Args/Returns/Yields/Raises) is sane"""
+    lineno_sections = [-1] * len(self.VALID_SECTIONS)
     invalid_sections = (
         # Handle common misnamings.
         'arg', 'argument', 'arguments',
         'ret', 'rets', 'return',
+        'yield', 'yeild', 'yeilds',
         'raise', 'throw', 'throws',
     )
 
@@ -165,7 +166,7 @@ class DocStringChecker(BaseChecker):
 
       # See if we can detect incorrect behavior.
       section = l.split(':', 1)[0]
-      if section in valid_sections or section.lower() in invalid_sections:
+      if section in self.VALID_SECTIONS or section.lower() in invalid_sections:
         margs = {'offset': i + 1, 'line': line}
 
         # Make sure it has some number of leading whitespace.
@@ -181,7 +182,7 @@ class DocStringChecker(BaseChecker):
           self.add_message('C9007', node=node, line=node.fromlineno, args=margs)
         else:
           # Gather the order of the sections.
-          lineno_sections[valid_sections.index(section)] = i
+          lineno_sections[self.VALID_SECTIONS.index(section)] = i
 
         # Verify blank line before it.
         if last != '':
@@ -204,7 +205,7 @@ class DocStringChecker(BaseChecker):
     arg_lines = []
     for l in lines:
       if arg_lines:
-        if l.strip() in ('', 'Returns:'):
+        if l.strip() in [''] + ['%s:' % x for x in self.VALID_SECTIONS]:
           break
       elif l.strip() != 'Args:':
         continue

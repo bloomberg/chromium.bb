@@ -54,7 +54,15 @@ class DocStringCheckerTest(cros_test_lib.TestCase):
 
       Raises:
         something else
-      """
+      """,
+      """Short summary.
+
+      Args:
+        fat: cat
+
+      Yields:
+        a spoon
+      """,
   )
 
   BAD_FUNC_DOCSTRINGS = (
@@ -88,6 +96,11 @@ class DocStringCheckerTest(cros_test_lib.TestCase):
         foo: bar
       Returns:
         yeah
+      """,
+      """yields is misspelled
+
+      Yield:
+        a car
       """,
   )
 
