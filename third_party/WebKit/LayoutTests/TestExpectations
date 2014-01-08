@@ -825,9 +825,6 @@ crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/oscillation-jav
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/wide-child.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/wide-in-narrow-overflow-scroll.html [ ImageOnlyFailure ]
 
-crbug.com/331898 mhtml/invalid-bad-boundary.mht [ NeedsRebaseline ]
-crbug.com/331898 mhtml/invalid-bad-boundary2.mht [ NeedsRebaseline ]
-
 # FIXME(crbug.com/329904): Remove these when hash-based autosizer is deemed fast enough, aka second pass optimization.
 crbug.com/329904 fast/text-autosizing/forum-comments-autosizing.html [ ImageOnlyFailure ]
 
