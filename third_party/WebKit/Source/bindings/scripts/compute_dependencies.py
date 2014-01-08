@@ -244,6 +244,9 @@ def generate_dependencies(idl_file_name, interfaces_info, partial_interface_file
         'full_path': full_path,
         'implements_interfaces': get_implemented_interfaces_from_idl(idl_file_contents, interface_name),
     }
+    extended_attributes = get_interface_extended_attributes_from_idl(idl_file_contents)
+    if 'ImplementedAs' in extended_attributes:
+        interfaces_info[interface_name]['implemented_as'] = extended_attributes['ImplementedAs']
 
     return None
 

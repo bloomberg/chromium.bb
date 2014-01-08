@@ -111,7 +111,7 @@ interface TestObjectPython {
     attribute Uint8Array uint8ArrayAttribute;
     // Exceptions for is_keep_alive_for_gc
     attribute TestInterfaceEmpty self;
-    readonly attribute Window readonlyWindowAttribute;  // FIXME: support [ImplementedAs] on interface
+    readonly attribute Window readonlyWindowAttribute;  // FIXME: add custom type conversion, compute interface_info for real IDLs too (for [ImplementedAs])
     attribute HTMLCollection htmlCollectionAttribute;
     attribute HTMLElement htmlElementAttribute;
     // Arrays
@@ -154,6 +154,7 @@ interface TestObjectPython {
     [RaisesException=Getter] attribute long getterRaisesExceptionLongAttribute;
     [ImplementedAs=implementedAsName] attribute long implementedAsLongAttribute;
     [Custom, ImplementedAs=implementedAsNameWithCustom] attribute long customImplementedAsLongAttribute;
+    attribute TestInterfacePython testInterfacePythonAttribute;  // interface type that itself has [ImplementedAs] (not self; self-reference test at TestInterfacePython)
     [Custom=Getter, ImplementedAs=implementedAsNameWithCustomGetter] attribute long customGetterImplementedAsLongAttribute;
     [Custom=Setter, ImplementedAs=implementedAsNameWithCustomGetter] attribute long customSetterImplementedAsLongAttribute;
     [MeasureAs=TestFeature] attribute long measureAsLongAttribute;

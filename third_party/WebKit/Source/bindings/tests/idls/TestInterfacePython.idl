@@ -38,6 +38,7 @@
 ] interface TestInterfacePython : TestInterfaceEmpty {
     // members needed to test [ImplementedAs], as this affect attribute
     // configuration and method configuration
+    attribute TestInterfacePython testInterfacePythonAttribute;  // Self-referential interface type with [ImplementedAs]
     [PerWorldBindings] attribute DOMString perWorldBindingsStringAttribute;
     [PerWorldBindings] void voidMethod();
 };

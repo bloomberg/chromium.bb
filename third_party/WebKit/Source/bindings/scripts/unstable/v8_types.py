@@ -279,10 +279,13 @@ def cpp_type(idl_type, extended_attributes=None, used_as_argument=False):
     if this_array_or_sequence_type:
         return cpp_template_type('Vector', cpp_type(this_array_or_sequence_type))
 
-    if is_typed_array_type and used_as_argument:
+    if is_typed_array_type(idl_type) and used_as_argument:
         return idl_type + '*'
-    if is_interface_type(idl_type) and not used_as_argument:
-        return cpp_template_type('RefPtr', idl_type)
+    if is_interface_type(idl_type):
+        implemented_as_class = implemented_as(idl_type)
+        if used_as_argument:
+            return implemented_as_class + '*'
+        return cpp_template_type('RefPtr', implemented_as_class)
     # Default, assume native type is a pointer with same type name as idl type
     return idl_type + '*'
 
@@ -298,6 +301,27 @@ def cpp_template_type(template, inner_type):
 
 def v8_type(interface_type):
     return 'V8' + interface_type
+
+
+# [ImplementedAs]
+# This handles [ImplementedAs] on interface types, not [ImplementedAs] in the
+# interface being generated. e.g., given:
+#   Foo.idl: interface Foo {attribute Bar bar};
+#   Bar.idl: [ImplementedAs=Zork] interface Bar {};
+# when generating bindings for Foo, the [ImplementedAs] on Bar is needed.
+# This data is external to Foo.idl, and hence computed as global information in
+# compute_dependencies.py to avoid having to parse IDLs of all used interfaces.
+implemented_as_interfaces = {}
+
+
+def implemented_as(idl_type):
+    if idl_type in implemented_as_interfaces:
+        return implemented_as_interfaces[idl_type]
+    return idl_type
+
+
+def set_implemented_as_interfaces(new_implemented_as_interfaces):
+    implemented_as_interfaces.update(new_implemented_as_interfaces)
 
 
 ################################################################################

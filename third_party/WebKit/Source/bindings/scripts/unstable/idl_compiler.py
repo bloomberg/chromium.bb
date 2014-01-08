@@ -38,7 +38,7 @@ For details, see bug http://crbug.com/239771
 
 import optparse
 import os
-import pickle
+import cPickle as pickle
 import posixpath
 import shlex
 import sys
@@ -111,9 +111,16 @@ def main():
         print idl_filename
     relative_dir_posix = get_relative_dir_posix(idl_filename)
 
-    reader = idl_reader.IdlReader(options.interfaces_info_file, options.additional_idl_files, options.idl_attributes_file, output_directory, verbose)
+    interfaces_info_filename = options.interfaces_info_file
+    if interfaces_info_filename:
+        with open(interfaces_info_filename, 'r') as interfaces_info_file:
+            interfaces_info = pickle.load(interfaces_info_file)
+    else:
+        interfaces_info = None
+
+    reader = idl_reader.IdlReader(interfaces_info, options.additional_idl_files, options.idl_attributes_file, output_directory, verbose)
     definitions = reader.read_idl_definitions(idl_filename)
-    code_generator = code_generator_v8.CodeGeneratorV8(definitions, interface_name, options.output_directory, relative_dir_posix, options.idl_directories, verbose)
+    code_generator = code_generator_v8.CodeGeneratorV8(definitions, interface_name, interfaces_info, options.output_directory, relative_dir_posix, options.idl_directories, verbose)
     if not definitions:
         # We generate dummy .h and .cpp files just to tell build scripts
         # that outputs have been created.

@@ -37,14 +37,14 @@ import interface_dependency_resolver
 
 
 class IdlReader:
-    def __init__(self, interfaces_info_filename=None, additional_idl_filenames=None, idl_attributes_filename=None, outputdir='', verbose=False):
+    def __init__(self, interfaces_info=None, additional_idl_filenames=None, idl_attributes_filename=None, outputdir='', verbose=False):
         if idl_attributes_filename:
             self.extended_attribute_validator = idl_validator.IDLExtendedAttributeValidator(idl_attributes_filename)
         else:
             self.extended_attribute_validator = None
 
-        if interfaces_info_filename:
-            self.interface_dependency_resolver = interface_dependency_resolver.InterfaceDependencyResolver(interfaces_info_filename, additional_idl_filenames, self)
+        if interfaces_info:
+            self.interface_dependency_resolver = interface_dependency_resolver.InterfaceDependencyResolver(interfaces_info, additional_idl_filenames, self)
         else:
             self.interface_dependency_resolver = None
 

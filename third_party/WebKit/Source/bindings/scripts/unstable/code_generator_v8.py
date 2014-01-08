@@ -60,7 +60,7 @@ from v8_utilities import capitalize, cpp_name, conditional_string, v8_class_name
 
 
 class CodeGeneratorV8:
-    def __init__(self, definitions, interface_name, output_directory, relative_dir_posix, idl_directories, verbose=False):
+    def __init__(self, definitions, interface_name, interfaces_info, output_directory, relative_dir_posix, idl_directories, verbose=False):
         self.idl_definitions = definitions
         self.interface_name = interface_name
         self.idl_directories = idl_directories
@@ -96,8 +96,13 @@ class CodeGeneratorV8:
 
         class_name = cpp_name(self.interface)
         self.include_for_cpp_class = posixpath.join(relative_dir_posix, class_name + '.h')
+
         v8_types.set_callback_function_types(definitions.callback_functions)
         v8_types.set_enum_types(definitions.enumerations)
+        v8_types.set_implemented_as_interfaces(dict(
+            (interface_name, interface_info['implemented_as'])
+            for interface_name, interface_info in interfaces_info.iteritems()
+            if 'implemented_as' in interface_info))
 
     def write_dummy_header_and_cpp(self):
         # FIXME: fix GYP so these files aren't needed and remove this method

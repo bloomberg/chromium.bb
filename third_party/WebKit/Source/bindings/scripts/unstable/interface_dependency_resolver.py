@@ -52,12 +52,12 @@ class InvalidPartialInterfaceError(Exception):
 
 
 class InterfaceDependencyResolver:
-    def __init__(self, interfaces_info_filename, additional_idl_filenames, reader):
+    def __init__(self, interfaces_info, additional_idl_filenames, reader):
         """Inits dependency resolver.
 
         Args:
-            interfaces_info_filename:
-                interfaces information file, output by compute_dependencies.py
+            interfaces_info:
+                dict of interfaces information, from compute_dependencies.py
             additional_idl_filenames:
                 list of additional files, not listed in
                 interface_dependencies_file, for which bindings should
@@ -65,8 +65,7 @@ class InterfaceDependencyResolver:
             reader:
                 IdlReader, used for reading dependency files
         """
-        with open(interfaces_info_filename, 'r') as interfaces_info_file:
-            self.interfaces_info = pickle.load(interfaces_info_file)
+        self.interfaces_info = interfaces_info
         self.additional_interfaces = set()
         for filename in additional_idl_filenames:
             basename = os.path.basename(filename)
