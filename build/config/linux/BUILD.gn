@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("pkg_config.gni")
+import("//build/config/linux/pkg_config.gni")
 
 # Sets up the dynamic library search path to include our "lib" directory.
 config("executable_ldconfig") {

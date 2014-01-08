@@ -1,0 +1,60 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This file contains common system config stuff for the Android build.
+if (is_android) {
+  declare_args() {
+    android_src = ""
+
+    # This is set when building the Android WebView inside the Android build
+    # system, using the 'android' gyp backend. The WebView code is still built
+    # when this is unset, but builds using the normal chromium build system.
+    is_android_webview_build = false
+  }
+
+  if (is_android_webview_build) {
+    assert(android_src != "",
+           "You must specify android_src for an Android WebView build.")
+  }
+
+  # android_ndk_root -----------------------------------------------------------
+
+  # Full system path to the Android NDK.
+  android_ndk_root =
+    rebase_path("//third_party/android_tools/ndk", ".", "")
+
+  # stlport stuff --------------------------------------------------------------
+
+  use_system_stlport = is_android_webview_build
+
+  if (use_system_stlport) {
+    android_stlport_library = "stlport"
+  } else if (component_mode == "shared_library") {
+    android_stlport_library = "stlport_shared"
+  } else {
+    android_stlport_library = "stlport_static"
+  }
+
+  # ABI ------------------------------------------------------------------------
+
+  if (cpu_arch == "x86") {
+    android_app_abi = "x86"
+  } else if (cpu_arch == "arm") {
+    import("//build/config/arm.gni")
+    if (arm_version < 7) {
+      android_app_abi = "armeabi"
+    } else {
+      android_app_abi = "armeabi-v7a"
+    }
+  } else if (cpu_arch == "mipsel") {
+    android_app_abi = "mips"
+  } else {
+    assert(false, "Unknown Android ABI")
+  }
+} else {
+  if (!defined(is_android_webview_build)) {
+    is_android_webview_build = false
+  }
+  use_system_stlport = false
+}

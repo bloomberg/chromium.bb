@@ -5,9 +5,24 @@
 # This header file defines the "sysroot" variable which is the absolute path
 # of the sysroot. If no sysroot applies, the variable will be an empty string.
 
-# For official linux builds, use the sysroot checked into the internal source
-# repo so that the builds work on older versions of Linux.
-if (is_linux && is_chrome_branded && is_official_build && !is_chromeos) {
+if (is_android) {
+  import("//build/config/android/config.gni")
+  if (!is_android_webview_build) {
+    if (cpu_arch == "x86") {
+      sysroot = "$android_ndk_root/platforms/android-14/arch-x86"
+    } else if (cpu_arch == "arm") {
+      sysroot = "$android_ndk_root/platforms/android-14/arch-arm"
+    } else if (cpu_arch == "mipsel") {
+      sysroot = "$android_ndk_root/platforms/android-14/arch-mips"
+    } else {
+      sysroot = ""
+    }
+  } else {
+    sysroot = ""
+  }
+} else if (is_linux && is_chrome_branded && is_official_build && !is_chromeos) {
+  # For official builds, use the sysroot checked into the internal source repo
+  # so that the builds work on older versions of Linux.
   if (cpu_arch == "x64") {
     sysroot = rebase_path(
       "//chrome/installer/linux/debian_wheezy_amd64-sysroot", ".", "")

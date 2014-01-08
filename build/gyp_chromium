@@ -148,6 +148,7 @@ def GetArgsStringForGN(supplemental_files):
   # These tuples of (key, value, gn_arg_string) use the gn_arg_string for
   # gn when the key is set to the given value in the GYP arguments.
   remap_cases = [
+      ('android_webview_build', '1', 'is_android_webview_build=true'),
       ('branding', 'Chrome', 'is_chrome_branded=true'),
       ('buildtype', 'Official', 'is_official_build=true'),
       ('component', 'shared_library', 'is_component_build=true'),
@@ -171,10 +172,16 @@ def GetArgsStringForGN(supplemental_files):
     if i[0] in vars_dict and vars_dict[i[0]] == i[1]:
       gn_args += ' ' + i[2]
 
-  # These string arguments get passed directly.
-  for v in ['windows_sdk_path']:
+  # These string arguments get passed directly as GN strings.
+  for v in ['android_src', 'windows_sdk_path']:
     if v in vars_dict:
       gn_args += ' ' + v + '=' + EscapeStringForGN(vars_dict[v])
+
+  # These arguments get passed directly as integers (avoiding the quoting and
+  # escaping of the string ones above).
+  for v in ['arm_version']:
+    if v in vars_dict:
+      gn_args += ' %s=%s' % (v, vars_dict[v])
 
   # Some other flags come from GYP environment variables.
   gyp_msvs_version = os.environ.get('GYP_MSVS_VERSION', '')

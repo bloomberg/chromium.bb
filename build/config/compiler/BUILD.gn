@@ -2,13 +2,34 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/android/config.gni")
 import("//build/config/sysroot.gni")
 
+# compiler ---------------------------------------------------------------------
+#
 # Base compiler configuration.
+# 
+# See also "runtime_library" below for related stuff and a discusison about
+# where stuff should go. Put warning related stuff in the "warnings" config.
+
 config("compiler") {
-  include_dirs = [ "//", root_gen_dir ]
+  cflags = []
+  cflags_c = []
+  cflags_cc = []
+  ldflags = []
+  defines = []
+  include_dirs = []
+
+  include_dirs += [ "//", root_gen_dir ]
+
+  # In general, Windows is totally different, but all the other builds share
+  # some common GCC configuration. This section sets up Windows and the common
+  # GCC flags, and then we handle the other non-Windows platforms specifically
+  # below.
   if (is_win) {
-    cflags = [
+    # Windows compiler flags setup.
+    # -----------------------------
+    cflags += [
       "/Gy",  # Enable function-level linking.
       "/GS",  # Enable buffer security checking.
       "/EHsc",  # Assume C functions can't throw exceptions and don't catch
@@ -17,18 +38,14 @@ config("compiler") {
   } else {
     # Common GCC compiler flags setup.
     # --------------------------------
-    cflags = [
+    cflags += [
       "-fno-strict-aliasing",  # See http://crbug.com/32204
       "-fvisibility=hidden",
     ]
-    cflags_c = [
-    ]
-    cflags_cc = [
+    cflags_cc += [
       "-fno-exceptions",
       "-fno-threadsafe-statics",
       "-fvisibility-inlines-hidden",
-    ]
-    ldflags = [
     ]
 
     # Stack protection.
@@ -37,114 +54,172 @@ config("compiler") {
     } else if (is_linux) {
       cflags += [ "-fstack-protector", "--param=ssp-buffer-size=4" ]
     }
+  }
 
-    if (is_mac) {
-      # Mac-specific compiler flags setup.
-      # ----------------------------------
+  # Mac-specific compiler flags setup.
+  # ----------------------------------
+  if (is_mac) {
+    # These flags are shared between the C compiler and linker.
+    common_mac_flags = [
+      "-isysroot", sysroot,
+      "-mmacosx-version-min=10.6",
+    ]
 
-      # These flags are shared between the C compiler and linker.
-      common_mac_flags = [
-        "-isysroot", sysroot,
-        "-mmacosx-version-min=10.6",
-      ]
-
-      # CPU architecture.
-      if (cpu_arch == "x64") {
-        common_mac_flags += "-arch x86_64"
-      } else if (cpu_arch == "x86") {
-        common_mac_flags += "-arch i386"
-      }
-
-      cflags += common_mac_flags + [
-        # Without this, the constructors and destructors of a C++ object inside
-        # an Objective C struct won't be called, which is very bad.
-        "-fobjc-call-cxx-cdtors",
-      ]
-
-      cflags_c += [ "-std=c99" ]
-      cflags_cc += [ "-std=gnu++11" ]
-
-      ldflags += common_mac_flags + [
-        "-L.",
-
-        # TODO(brettW) I don't understand these options.
-        "-Wl,-rpath,@loader_path/.",
-        "-Wl,-rpath,@loader_path/../../..",
-      ]
-    } else {
-      # Non-Mac Posix compiler flags setup.
-      # -----------------------------------
-
-      # CPU architecture. We may or may not be doing a cross compile now, so for
-      # simplicity we always explicitly set the architecture.
-      if (cpu_arch == "x64") {
-        cflags += "-m64"
-        ldflags += "-m64"
-      } else if (cpu_arch == "x86") {
-        cflags += "-m32"
-        ldflags += "-m32"
-      }
+    # CPU architecture.
+    if (cpu_arch == "x64") {
+      common_mac_flags += "-arch x86_64"
+    } else if (cpu_arch == "x86") {
+      common_mac_flags += "-arch i386"
     }
 
-    # Linux-specific compiler flags setup.
-    # ------------------------------------
-    if (is_linux) {
-      cflags += [
-        "-fPIC",
-        "-pthread",
-        "-pipe",  # Use pipes for communicating between sub-processes. Faster.
-      ]
+    cflags += common_mac_flags + [
+      # Without this, the constructors and destructors of a C++ object inside
+      # an Objective C struct won't be called, which is very bad.
+      "-fobjc-call-cxx-cdtors",
+    ]
 
-      # Use gold for linking on 64-bit Linux only (on 32-bit it runs out of
-      # address space, and it doesn't support cross-compiling).
-      if (cpu_arch == "x64") {
-        gold_path = rebase_path("//third_party/gold", ".", root_build_dir)
-        ldflags += [
-          "-B$gold_path",
+    cflags_c += [ "-std=c99" ]
+    cflags_cc += [ "-std=gnu++11" ]
 
-          # There seems to be a conflict of --icf and -pie in gold which can
-          # generate crashy binaries. As a security measure, -pie takes
-          # precendence for now.
-          # TODO(brettw) common.gypi has this only for target toolset.
-          #"-Wl,--icf=safe",
-          "-Wl,--icf=none",
+    ldflags += common_mac_flags + [
+      "-L.",
 
-          # Experimentation found that using four linking threads
-          # saved ~20% of link time.
-          # https://groups.google.com/a/chromium.org/group/chromium-dev/browse_thread/thread/281527606915bb36
-          # Only apply this to the target linker, since the host
-          # linker might not be gold, but isn't used much anyway.
-          "-Wl,--threads",
-          "-Wl,--thread-count=4",
-        ]
-      }
+      # TODO(brettW) I don't understand these options.
+      "-Wl,-rpath,@loader_path/.",
+      "-Wl,-rpath,@loader_path/../../..",
+    ]
+  } else if (is_posix) {
+    # Non-Mac Posix compiler flags setup.
+    # -----------------------------------
 
-      if (sysroot != "") {
-        cflags += "--sysroot=" + sysroot
-        ldflags += "--sysroot=" + sysroot
+    # CPU architecture. We may or may not be doing a cross compile now, so for
+    # simplicity we always explicitly set the architecture.
+    if (cpu_arch == "x64") {
+      cflags += "-m64"
+      ldflags += "-m64"
+    } else if (cpu_arch == "x86") {
+      cflags += "-m32"
+      ldflags += "-m32"
+    }
+  }
 
-        # Need to get some linker flags out of the sysroot.
-        ldflags += exec_script("../linux/sysroot_ld_path.py",
-            [rebase_path("../../linux/sysroot_ld_path.sh", ".", root_build_dir),
-             sysroot],
-            "value")
-      }
+  # Linux-specific compiler flags setup.
+  # ------------------------------------
+  if (is_linux) {
+    cflags += [
+      "-fPIC",
+      "-pipe",  # Use pipes for communicating between sub-processes. Faster.
+    ]
+    if (!is_android) {
+      cflags += [ "-pthread" ]
+    }
 
+    # Use gold for linking on 64-bit Linux only (on 32-bit it runs out of
+    # address space, and it doesn't support cross-compiling).
+    if (cpu_arch == "x64") {
+      gold_path = rebase_path("//third_party/gold", ".", root_build_dir)
       ldflags += [
-        "-fPIC",
-        "-pthread",
-        "-Wl,-z,noexecstack",
-        "-Wl,-z,now",
-        "-Wl,-z,relro",
+        "-B$gold_path",
+
+        # There seems to be a conflict of --icf and -pie in gold which can
+        # generate crashy binaries. As a security measure, -pie takes
+        # precendence for now.
+        # TODO(brettw) common.gypi has this only for target toolset.
+        #"-Wl,--icf=safe",
+        "-Wl,--icf=none",
+
+        # Experimentation found that using four linking threads
+        # saved ~20% of link time.
+        # https://groups.google.com/a/chromium.org/group/chromium-dev/browse_thread/thread/281527606915bb36
+        # Only apply this to the target linker, since the host
+        # linker might not be gold, but isn't used much anyway.
+        "-Wl,--threads",
+        "-Wl,--thread-count=4",
       ]
     }
 
-    # Clang-specific compiler flags setup.
-    # ------------------------------------
-    if (is_clang) {
-      cflags += [
-        "-fcolor-diagnostics",
+    if (sysroot != "") {
+      cflags += "--sysroot=" + sysroot
+      ldflags += "--sysroot=" + sysroot
+
+      # Need to get some linker flags out of the sysroot.
+      ldflags += exec_script("../linux/sysroot_ld_path.py",
+          [rebase_path("../../linux/sysroot_ld_path.sh", ".", root_build_dir),
+           sysroot],
+          "value")
+    }
+
+    ldflags += [
+      "-fPIC",
+      "-pthread",
+      "-Wl,-z,noexecstack",
+      "-Wl,-z,now",
+      "-Wl,-z,relro",
+    ]
+  }
+
+  # Clang-specific compiler flags setup.
+  # ------------------------------------
+  if (is_clang) {
+    cflags += [
+      "-fcolor-diagnostics",
+    ]
+  }
+
+  # Android-specific flags setup.
+  # -----------------------------
+  if (is_android) {
+    cflags += [
+      "-ffunction-sections",
+      "-funwind-tables",
+      "-fno-short-enums",
+      "-finline-limit=64",
+    ]
+    if (is_android_webview_build) {
+      # Android predefines this as 1; undefine it here so Chromium can redefine
+      # it later to be 2 for chromium code and unset for third party code. This
+      # works because cflags are added before defines.
+      # TODO(brettw) the above comment seems incorrect. We specify defines
+      # before cflags on our compiler command lines.
+      cflags += [ "-U_FORTIFY_SOURCE" ]
+    }
+
+    if (is_asan) {
+      # Android build relies on -Wl,--gc-sections removing unreachable code.
+      # ASan instrumentation for globals inhibits this and results in a library
+      # with unresolvable relocations.
+      # TODO(eugenis): find a way to reenable this.
+      cflags += [ "-mllvm -asan-globals=0" ]
+    }
+
+    defines += [ "ANDROID" ]
+    if (!is_android_webview_build) {
+      # The NDK has these things, but doesn't define the constants
+      # to say that it does. Define them here instead.
+      defines += [ "HAVE_SYS_UIO_H" ]
+    }
+
+    ldflags += [
+      "-Wl,--no-undefined",
+      # Don't export symbols from statically linked libraries.
+      "-Wl,--exclude-libs=ALL",
+    ]
+    if (cpu_arch == "arm") {
+      ldflags += [
+        # Enable identical code folding to reduce size.
+        "-Wl,--icf=safe",
       ]
+    }
+
+    if (cpu_arch == "arm") {
+      cflags += [
+        "-target arm-linux-androideabi",
+        "-mllvm -arm-enable-ehabi",
+      ]
+      ldflags += [ "-target arm-linux-androideabi" ]
+    } else if (cpu_arch == "x86") {
+      cflags += [ "-target x86-linux-androideabi" ]
+      ldflags += [ "-target x86-linux-androideabi" ]
     }
   }
 }
@@ -153,21 +228,29 @@ config("compiler") {
 #
 # Sets the runtime library and associated options.
 #
-# We don't bother making multiple versions that are toggle-able since there
-# is more than one axis of control (which makes it complicated) and there's
-# no practical reason for anybody to change this since the CRT must agree.
+# How do you determine what should go in here vs. "compiler" above? Consider if
+# a target might choose to use a different runtime library (ignore for a moment
+# if this is possible or reasonable on your system). If such a target would want
+# to change or remove your option, put it in the runtime_library config. If a
+# target wants the option regardless, put it in the compiler config.
 
 config("runtime_library") {
+  cflags = []
+  defines = []
+  ldflags = []
+  lib_dirs = []
+  libs = []
+
   if (is_component_build) {
     # Component mode: dynamic CRT.
-    defines = [ "COMPONENT_BUILD" ]
+    defines += [ "COMPONENT_BUILD" ]
     if (is_win) {
       # Since the library is shared, it requires exceptions or will give errors
       # about things not matching, so keep exceptions on.
       if (is_debug) {
-        cflags = [ "/MDd" ]
+        cflags += [ "/MDd" ]
       } else {
-        cflags = [ "/MD" ]
+        cflags += [ "/MD" ]
       }
     }
   } else {
@@ -175,11 +258,11 @@ config("runtime_library") {
     if (is_win) {
       # We don't use exceptions, and when we link statically we can just get
       # rid of them entirely.
-      defines = [ "_HAS_EXCEPTIONS=0" ]
+      defines += [ "_HAS_EXCEPTIONS=0" ]
       if (is_debug) {
-        cflags = [ "/MTd" ]
+        cflags += [ "/MTd" ]
       } else {
-        cflags = [ "/MT" ]
+        cflags += [ "/MT" ]
       }
     }
   }
@@ -195,6 +278,67 @@ config("runtime_library") {
       "_UNICODE",
       "UNICODE",
     ]
+  }
+
+  # Stlport setup. Android uses a different (smaller) version of the STL.
+  if (is_android) {
+    if (is_clang) {
+      # Work around incompatibilities between bionic and clang headers.
+      defines += [
+        "__compiler_offsetof=__builtin_offsetof",
+        "-Dnan=__builtin_nan",
+      ]
+    }
+
+    defines += [
+      "USE_STLPORT=1",
+      "_STLP_USE_PTR_SPECIALIZATIONS=1",
+      "__GNU_SOURCE=1",  # Necessary for clone().
+    ]
+
+    ldflags += [
+      "-nostdlib",
+    ]
+
+    libs += [
+      # TODO(brettw) write a version of this, hopefully we can express this
+      # without forking out to GCC just to get the library name. The android
+      # toolchain directory should probably be extracted into a .gni file that
+      # this file and the android toolchain .gn file can share.
+      #   # Manually link the libgcc.a that the cross compiler uses.
+      #   '<!(<(android_toolchain)/*-gcc -print-libgcc-file-name)',
+      "c",
+      "dl",
+      "m"
+    ]
+
+    # NOTE: The stlport header include paths below are specified in cflags
+    # rather than include_dirs because they need to come after include_dirs.
+    # Think of them like system headers, but don't use '-isystem' because the
+    # arm-linux-androideabi-4.4.3 toolchain (circa Gingerbread) will exhibit
+    # strange errors. The include ordering here is important; change with
+    # caution.
+    if (use_system_stlport) {
+      cflags += [
+        # For libstdc++/include, which is used by stlport.
+        "-I$android_src/bionic",
+        "-I$android_src/external/stlport/stlport",
+      ]
+      libs += [
+        "stlport",
+      ]
+    } else {
+      android_stlport_root = "$android_ndk_root/sources/cxx-stl/stlport"
+
+      cflags += [ "-I$android_stlport_root/stlport" ]
+      lib_dirs += [ "$android_stlport_root/libs/$android_app_abi" ]
+
+      if (component_mode == "shared_library") {
+        libs += [ "stlport_shared" ]
+      } else {
+        libs += [ "stlport_static" ]
+      }
+    }
   }
 }
 
@@ -246,6 +390,20 @@ config("no_chromium_code") {
       "_CRT_NONSTDC_NO_DEPRECATE",
     ]
   }
+
+  if (is_android_webview_build) {
+    # There is a class of warning which:
+    #  1) Android always enables and also treats as errors
+    #  2) Chromium ignores in third party code
+    # So we re-enable those warnings when building Android.
+    cflags = [
+      "-Wno-address",
+      "-Wno-format-security",
+      "-Wno-return-type",
+      "-Wno-sequence-point",
+    ]
+    cflags_cc = [ "-Wno-non-virtual-dtor" ]
+  }
 }
 
 # rtti ------------------------------------------------------------------------
@@ -266,6 +424,9 @@ config("no_rtti") {
 }
 
 # Warnings ---------------------------------------------------------------------
+#
+# This is where we disable various warnings that we've decided aren't
+# worthwhile.
 
 config("default_warnings") {
   if (is_win) {
@@ -277,9 +438,6 @@ config("default_warnings") {
       "/wd4125",  # Decimal digit terminates octal escape sequence.
       "/wd4127",  # Conditional expression is constant.
       "/wd4130",  # Logical operation on address of string constant.
-      # TODO(brettw) is this necessary? If so, it should probably be on whoever
-      # is silly enough to be doing this rather than globally.
-      #"/wd4131",  # Function uses old-style declarator.
       "/wd4189",  # A variable was declared and initialized but never used.
       "/wd4201",  # Nonstandard extension used: nameless struct/union.
       "/wd4238",  # Nonstandard extension used: class rvalue used as lvalue.
@@ -353,6 +511,27 @@ config("default_warnings") {
 
         # Warns when a const char[] is converted to bool.
         "-Wstring-conversion",
+      ]
+    }
+
+    if (is_android) {
+      # Disable any additional warnings enabled by the Android build system but
+      # which chromium does not build cleanly with (when treating warning as
+      # errors).
+      cflags += [
+        "-Wno-extra",
+        "-Wno-ignored-qualifiers",
+        "-Wno-type-limits",
+      ]
+      cflags_cc = [
+        # Disabling c++0x-compat should be handled in WebKit, but
+        # this currently doesn't work because gcc_version is not set
+        # correctly when building with the Android build system.
+        # TODO(torne): Fix this in WebKit.
+        "-Wno-error=c++0x-compat",
+        # Other things unrelated to -Wextra:
+        "-Wno-non-virtual-dtor",
+        "-Wno-sign-promo",
       ]
     }
   }

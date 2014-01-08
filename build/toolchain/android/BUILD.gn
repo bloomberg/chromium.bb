@@ -2,13 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("../clang.gni")
-import("../goma.gni")
-import("../gcc_toolchain.gni")
-
-# Get the location of the Android tools in our tree.
-android_ndk_root =
-  rebase_path("//third_party/android_tools/ndk", ".", "")
+import("//build/config/android/config.gni")
+import("//build/toolchain/clang.gni")
+import("//build/toolchain/goma.gni")
+import("//build/toolchain/gcc_toolchain.gni")
 
 # Get the Android version of the name of the build host's architecture.
 if (build_cpu_arch == "x64") {
