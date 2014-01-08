@@ -77,12 +77,6 @@ void WorkspaceEventHandler::OnMouseEvent(ui::MouseEvent* event) {
     case ui::ET_MOUSE_EXITED:
       break;
     case ui::ET_MOUSE_PRESSED: {
-      // Maximize behavior is implemented as post-target handling so the target
-      // can cancel it.
-      if (ui::EventCanceledDefaultHandling(*event)) {
-        ToplevelWindowEventHandler::OnMouseEvent(event);
-        return;
-      }
       wm::WindowState* target_state = wm::GetWindowState(target);
       if (event->flags() & ui::EF_IS_DOUBLE_CLICK &&
           event->IsOnlyLeftMouseButton() &&

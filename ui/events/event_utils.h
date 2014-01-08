@@ -158,10 +158,6 @@ EVENTS_EXPORT uint16 GetScanCodeFromLParam(LPARAM lParam);
 EVENTS_EXPORT LPARAM GetLParamFromScanCode(uint16 scan_code);
 #endif
 
-// Returns true if default post-target handling was canceled for |event| after
-// its dispatch to its target.
-EVENTS_EXPORT bool EventCanceledDefaultHandling(const Event& event);
-
 // Registers a custom event type.
 EVENTS_EXPORT int RegisterCustomEventType();
 

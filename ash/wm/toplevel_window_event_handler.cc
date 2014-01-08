@@ -386,9 +386,7 @@ void ToplevelWindowEventHandler::CompleteDrag(DragCompletionStatus status) {
 void ToplevelWindowEventHandler::HandleMousePressed(
     aura::Window* target,
     ui::MouseEvent* event) {
-  // Move/size operations are initiated post-target handling to give the target
-  // an opportunity to cancel this default behavior by returning ER_HANDLED.
-  if (ui::EventCanceledDefaultHandling(*event))
+  if (event->phase() != ui::EP_PRETARGET)
     return;
 
   // We also update the current window component here because for the
