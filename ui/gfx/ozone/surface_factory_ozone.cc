@@ -7,6 +7,7 @@
 #include <stdlib.h>
 
 #include "base/command_line.h"
+#include "ui/gfx/vsync_provider.h"
 
 namespace gfx {
 
@@ -35,9 +36,9 @@ class SurfaceFactoryOzoneStub : public SurfaceFactoryOzone {
       const gfx::Rect& bounds) OVERRIDE {
     return false;
   }
-  virtual gfx::VSyncProvider* GetVSyncProvider(
+  virtual scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider(
       gfx::AcceleratedWidget w) OVERRIDE {
-    return NULL;
+    return scoped_ptr<VSyncProvider>();
   }
 };
 

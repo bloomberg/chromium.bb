@@ -12,6 +12,7 @@
 #include "third_party/skia/include/core/SkBitmapDevice.h"
 #include "third_party/skia/include/core/SkDevice.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/vsync_provider.h"
 
 namespace {
 
@@ -89,8 +90,9 @@ SkCanvas* FileSurfaceFactory::GetCanvasForWidget(AcceleratedWidget w) {
   return canvas_.get();
 }
 
-VSyncProvider* FileSurfaceFactory::GetVSyncProvider(AcceleratedWidget w) {
-  return NULL;
+scoped_ptr<VSyncProvider> FileSurfaceFactory::CreateVSyncProvider(
+    AcceleratedWidget w) {
+  return scoped_ptr<VSyncProvider>();
 }
 
 }  // namespace gfx

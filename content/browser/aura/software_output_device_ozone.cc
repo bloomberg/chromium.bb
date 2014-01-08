@@ -24,7 +24,7 @@ SoftwareOutputDeviceOzone::SoftwareOutputDeviceOzone(ui::Compositor* compositor)
   if (realized_widget_ == gfx::kNullAcceleratedWidget)
     LOG(FATAL) << "Failed to get a realized AcceleratedWidget";
 
-  vsync_provider_.reset(factory->GetVSyncProvider(realized_widget_));
+  vsync_provider_ = factory->CreateVSyncProvider(realized_widget_);
 }
 
 SoftwareOutputDeviceOzone::~SoftwareOutputDeviceOzone() {

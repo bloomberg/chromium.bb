@@ -41,7 +41,7 @@ class GFX_EXPORT DriSurfaceFactory : public SurfaceFactoryOzone {
 
   virtual SkCanvas* GetCanvasForWidget(gfx::AcceleratedWidget w) OVERRIDE;
 
-  virtual gfx::VSyncProvider* GetVSyncProvider(
+  virtual scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider(
       gfx::AcceleratedWidget w) OVERRIDE;
 
  private:

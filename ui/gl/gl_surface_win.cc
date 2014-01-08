@@ -230,10 +230,10 @@ scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
     case kGLImplementationEGLGLES2: {
       scoped_refptr<NativeViewGLSurfaceEGL> surface(
           new NativeViewGLSurfaceEGL(window));
-      DWMVSyncProvider* sync_provider = NULL;
+      scoped_ptr<VSyncProvider> sync_provider;
       if (base::win::GetVersion() >= base::win::VERSION_VISTA)
-        sync_provider = new DWMVSyncProvider;
-      if (!surface->Initialize(sync_provider))
+        sync_provider.reset(new DWMVSyncProvider);
+      if (!surface->Initialize(sync_provider.Pass()))
         return NULL;
 
       return surface;

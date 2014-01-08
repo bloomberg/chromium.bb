@@ -250,12 +250,12 @@ NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(gfx::AcceleratedWidget window)
 }
 
 bool NativeViewGLSurfaceEGL::Initialize() {
-  return Initialize(NULL);
+  return Initialize(scoped_ptr<VSyncProvider>());
 }
 
-bool NativeViewGLSurfaceEGL::Initialize(VSyncProvider* sync_provider) {
+bool NativeViewGLSurfaceEGL::Initialize(
+    scoped_ptr<VSyncProvider> sync_provider) {
   DCHECK(!surface_);
-  scoped_ptr<VSyncProvider> vsync_provider(sync_provider);
 
   if (window_ == kNullAcceleratedWidget) {
     LOG(ERROR) << "Trying to create surface without window.";
@@ -296,7 +296,7 @@ bool NativeViewGLSurfaceEGL::Initialize(VSyncProvider* sync_provider) {
   supports_post_sub_buffer_ = (surfaceVal && retVal) == EGL_TRUE;
 
   if (sync_provider)
-    vsync_provider_.swap(vsync_provider);
+    vsync_provider_.reset(sync_provider.release());
   else if (g_egl_sync_control_supported)
     vsync_provider_.reset(new EGLSyncControlVSyncProvider(surface_));
   return true;
@@ -718,15 +718,15 @@ GLSurface::CreateViewGLSurface(gfx::AcceleratedWidget window) {
   DCHECK(GetGLImplementation() == kGLImplementationEGLGLES2);
   if (window) {
     scoped_refptr<NativeViewGLSurfaceEGL> surface;
-    VSyncProvider* sync_provider = NULL;
+    scoped_ptr<VSyncProvider> sync_provider;
 #if defined(USE_OZONE)
     window = gfx::SurfaceFactoryOzone::GetInstance()->RealizeAcceleratedWidget(
         window);
     sync_provider =
-        gfx::SurfaceFactoryOzone::GetInstance()->GetVSyncProvider(window);
+        gfx::SurfaceFactoryOzone::GetInstance()->CreateVSyncProvider(window);
 #endif
     surface = new NativeViewGLSurfaceEGL(window);
-    if(surface->Initialize(sync_provider))
+    if(surface->Initialize(sync_provider.Pass()))
       return surface;
   } else {
     scoped_refptr<GLSurface> surface = new GLSurfaceStub();

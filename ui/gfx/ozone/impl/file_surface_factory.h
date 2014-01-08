@@ -35,7 +35,8 @@ class GFX_EXPORT FileSurfaceFactory : public SurfaceFactoryOzone {
                                                 const Rect& bounds) OVERRIDE;
   virtual bool SchedulePageFlip(AcceleratedWidget widget) OVERRIDE;
   virtual SkCanvas* GetCanvasForWidget(AcceleratedWidget widget) OVERRIDE;
-  virtual VSyncProvider* GetVSyncProvider(AcceleratedWidget widget) OVERRIDE;
+  virtual scoped_ptr<VSyncProvider> CreateVSyncProvider(
+      AcceleratedWidget widget) OVERRIDE;
 
   base::FilePath location_;
   skia::RefPtr<SkBitmapDevice> device_;
