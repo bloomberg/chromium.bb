@@ -1,0 +1,5 @@
+AXWebArea
+    AXGroup AXSubrole=AXDocumentRegion
+        AXStaticText AXValue='This is a section element.'
+    AXGroup AXSubrole=AXDocumentRegion
+        AXStaticText AXValue='This is an ARIA region.'

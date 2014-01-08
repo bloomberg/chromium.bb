@@ -1,0 +1,5 @@
+ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE
+    IA2_ROLE_SECTION READONLY xml-roles:region
+        ROLE_SYSTEM_TEXT name='This is a section element.' READONLY
+    IA2_ROLE_SECTION READONLY xml-roles:region
+        ROLE_SYSTEM_TEXT name='This is an ARIA region.' READONLY

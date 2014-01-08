@@ -1,0 +1,27 @@
+AXWebArea
+    AXGroup AXSubrole=AXLandmarkBanner
+        AXStaticText AXValue='This is a header element.'
+    AXGroup AXSubrole=AXLandmarkComplementary
+        AXStaticText AXValue='This is an aside element.'
+    AXGroup AXSubrole=AXLandmarkContentInfo
+        AXStaticText AXValue='This is an address element.'
+    AXGroup AXSubrole=AXLandmarkContentInfo
+        AXStaticText AXValue='This is a footer element.'
+    AXGroup AXSubrole=AXLandmarkMain
+        AXStaticText AXValue='This is a main element.'
+    AXGroup AXSubrole=AXLandmarkNavigation
+        AXStaticText AXValue='This is a nav element.'
+    AXGroup AXSubrole=AXLandmarkApplication
+        AXStaticText AXValue='This is an ARIA application landmark.'
+    AXGroup AXSubrole=AXLandmarkBanner
+        AXStaticText AXValue='This is an ARIA banner landmark.'
+    AXGroup AXSubrole=AXLandmarkComplementary
+        AXStaticText AXValue='This is an ARIA complementary landmark.'
+    AXGroup AXSubrole=AXLandmarkContentInfo
+        AXStaticText AXValue='This is an ARIA contentinfo landmark.'
+    AXGroup AXSubrole=AXLandmarkMain
+        AXStaticText AXValue='This is an ARIA main landmark.'
+    AXGroup AXSubrole=AXLandmarkNavigation
+        AXStaticText AXValue='This is an ARIA navigation landmark.'
+    AXGroup AXSubrole=AXLandmarkSearch
+        AXStaticText AXValue='This is an ARIA search landmark.'

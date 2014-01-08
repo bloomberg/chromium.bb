@@ -1,0 +1,27 @@
+ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE
+    IA2_ROLE_SECTION READONLY xml-roles:banner
+        ROLE_SYSTEM_TEXT name='This is a header element.' READONLY
+    IA2_ROLE_SECTION READONLY xml-roles:complementary
+        ROLE_SYSTEM_TEXT name='This is an aside element.' READONLY
+    IA2_ROLE_SECTION READONLY xml-roles:contentinfo
+        ROLE_SYSTEM_TEXT name='This is an address element.' READONLY
+    IA2_ROLE_FOOTER READONLY xml-roles:contentinfo
+        ROLE_SYSTEM_TEXT name='This is a footer element.' READONLY
+    IA2_ROLE_SECTION READONLY xml-roles:main
+        ROLE_SYSTEM_TEXT name='This is a main element.' READONLY
+    IA2_ROLE_SECTION READONLY xml-roles:navigation
+        ROLE_SYSTEM_TEXT name='This is a nav element.' READONLY
+    ROLE_SYSTEM_APPLICATION xml-roles:application
+        ROLE_SYSTEM_TEXT name='This is an ARIA application landmark.' READONLY
+    IA2_ROLE_SECTION READONLY xml-roles:banner
+        ROLE_SYSTEM_TEXT name='This is an ARIA banner landmark.' READONLY
+    IA2_ROLE_SECTION READONLY xml-roles:complementary
+        ROLE_SYSTEM_TEXT name='This is an ARIA complementary landmark.' READONLY
+    IA2_ROLE_SECTION READONLY xml-roles:contentinfo
+        ROLE_SYSTEM_TEXT name='This is an ARIA contentinfo landmark.' READONLY
+    IA2_ROLE_SECTION READONLY xml-roles:main
+        ROLE_SYSTEM_TEXT name='This is an ARIA main landmark.' READONLY
+    IA2_ROLE_SECTION READONLY xml-roles:navigation
+        ROLE_SYSTEM_TEXT name='This is an ARIA navigation landmark.' READONLY
+    IA2_ROLE_SECTION READONLY xml-roles:search
+        ROLE_SYSTEM_TEXT name='This is an ARIA search landmark.' READONLY

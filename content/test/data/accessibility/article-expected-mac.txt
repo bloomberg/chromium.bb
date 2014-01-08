@@ -1,3 +1,5 @@
 AXWebArea
     AXGroup AXSubrole=AXDocumentArticle
-        AXStaticText AXValue='This is an article.'
+        AXStaticText AXValue='This is an article element.'
+    AXGroup AXSubrole=AXDocumentArticle
+        AXStaticText AXValue='This is an ARIA article.'

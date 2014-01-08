@@ -51,6 +51,30 @@ bool IsParentUnignoredOf(const WebAXObject& ancestor,
   return LowerCaseEqualsASCII(html_value, "true");
 }
 
+std::string GetEquivalentAriaRoleString(const ui::AXRole role) {
+  switch (role) {
+    case ui::AX_ROLE_ARTICLE:
+      return "article";
+    case ui::AX_ROLE_BANNER:
+      return "banner";
+    case ui::AX_ROLE_COMPLEMENTARY:
+      return "complementary";
+    case ui::AX_ROLE_CONTENT_INFO:
+    case ui::AX_ROLE_FOOTER:
+      return "contentinfo";
+    case ui::AX_ROLE_MAIN:
+      return "main";
+    case ui::AX_ROLE_NAVIGATION:
+      return "navigation";
+    case ui::AX_ROLE_REGION:
+      return "region";
+    default:
+      break;
+  }
+
+  return std::string();
+}
+
 }  // Anonymous namespace
 
 void SerializeAccessibilityNode(
@@ -202,6 +226,10 @@ void SerializeAccessibilityNode(
     if (element.hasAttribute("role")) {
       dst->AddStringAttribute(ui::AX_ATTR_ROLE,
                               UTF16ToUTF8(element.getAttribute("role")));
+    } else {
+      std::string role = GetEquivalentAriaRoleString(dst->role);
+      if (!role.empty())
+        dst->AddStringAttribute(ui::AX_ATTR_ROLE, role);
     }
 
     // Live region attributes
