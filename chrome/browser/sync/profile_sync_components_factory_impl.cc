@@ -376,7 +376,7 @@ base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
         return AutocompleteSyncableService::FromWebDataService(
             web_data_service_.get())->AsWeakPtr();
       } else {
-        return AutofillProfileSyncableService::FromWebDataService(
+        return autofill::AutofillProfileSyncableService::FromWebDataService(
             web_data_service_.get())->AsWeakPtr();
       }
     }

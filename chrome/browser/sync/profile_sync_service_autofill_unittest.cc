@@ -69,6 +69,7 @@ using autofill::ServerFieldType;
 using autofill::AutofillKey;
 using autofill::AutofillProfile;
 using autofill::AutofillProfileChange;
+using autofill::AutofillProfileSyncableService;
 using autofill::AutofillTable;
 using autofill::AutofillWebDataService;
 using autofill::PersonalDataManager;
@@ -642,7 +643,7 @@ class ProfileSyncServiceAutofillTest
   bool AddAutofillSyncNode(const AutofillProfile& profile) {
     syncer::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
     syncer::ReadNode autofill_root(&trans);
-    if (autofill_root.InitByTagLookup(kAutofillProfileTag) !=
+    if (autofill_root.InitByTagLookup(autofill::kAutofillProfileTag) !=
             BaseNode::INIT_OK) {
       return false;
     }
@@ -706,7 +707,7 @@ class ProfileSyncServiceAutofillTest
       std::vector<AutofillProfile>* profiles) {
     syncer::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
     syncer::ReadNode autofill_root(&trans);
-    if (autofill_root.InitByTagLookup(kAutofillProfileTag) !=
+    if (autofill_root.InitByTagLookup(autofill::kAutofillProfileTag) !=
             BaseNode::INIT_OK) {
       return false;
     }

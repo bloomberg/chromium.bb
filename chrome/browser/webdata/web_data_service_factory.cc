@@ -29,6 +29,7 @@
 #include "grit/generated_resources.h"
 
 using autofill::AutofillWebDataService;
+using autofill::AutofillProfileSyncableService;
 using content::BrowserThread;
 
 namespace {
