@@ -118,6 +118,7 @@ class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
     FORMATETC data_;
 #elif defined(USE_AURA)
     explicit FormatType(const std::string& native_format);
+    const std::string& data() const { return data_; }
     std::string data_;
 #elif defined(OS_MACOSX)
     explicit FormatType(NSString* native_format);
