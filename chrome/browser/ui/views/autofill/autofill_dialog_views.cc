@@ -398,12 +398,11 @@ class LoadingAnimationView : public views::View,
             ui::ResourceBundle::LargeFont);
     animation_.reset(new LoadingAnimation(this, font_list.GetHeight()));
 
-    views::Label* label = new views::Label(text, font_list);
-    container_->AddChildView(label);
+    container_->AddChildView(new views::Label(text, font_list));
 
     for (size_t i = 0; i < 3; ++i) {
-      views::Label* dot = new views::Label(base::ASCIIToUTF16("."), font_list);
-      container_->AddChildView(dot);
+      container_->AddChildView(
+          new views::Label(base::ASCIIToUTF16("."), font_list));
     }
 
     OnNativeThemeChanged(GetNativeTheme());
