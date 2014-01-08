@@ -7,17 +7,9 @@
 #include <vector>
 
 #include "base/mac/bundle_locations.h"
-#import "base/mac/mac_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/sys_string_conversions.h"
-#include "chrome/browser/browsing_data/browsing_data_appcache_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_database_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_file_system_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_indexed_db_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
-#include "chrome/browser/browsing_data/browsing_data_server_bound_cert_helper.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/local_shared_objects_container.h"
@@ -33,7 +25,6 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/apple_sample_code/ImageAndTextCell.h"
@@ -110,19 +101,14 @@ void CollectedCookiesMac::OnConstrainedWindowClosed(
 
 #pragma mark Window Controller
 
-@interface CollectedCookiesWindowController(Private)
--(void)showInfoBarForDomain:(const base::string16&)domain
-                    setting:(ContentSetting)setting;
--(void)showInfoBarForMultipleDomainsAndSetting:(ContentSetting)setting;
--(void)animateInfoBar;
+@interface CollectedCookiesWindowController (Private)
+- (void)showInfoBarForDomain:(const base::string16&)domain
+                     setting:(ContentSetting)setting;
+- (void)showInfoBarForMultipleDomainsAndSetting:(ContentSetting)setting;
+- (void)animateInfoBar;
 @end
 
 @implementation CollectedCookiesWindowController
-
-@synthesize allowedCookiesButtonsEnabled =
-    allowedCookiesButtonsEnabled_;
-@synthesize blockedCookiesButtonsEnabled =
-    blockedCookiesButtonsEnabled_;
 
 @synthesize allowedTreeController = allowedTreeController_;
 @synthesize blockedTreeController = blockedTreeController_;
@@ -135,6 +121,12 @@ void CollectedCookiesMac::OnConstrainedWindowClosed(
 @synthesize blockedScrollView = blockedScrollView_;
 @synthesize blockedCookiesText = blockedCookiesText_;
 @synthesize cookieDetailsViewPlaceholder = cookieDetailsViewPlaceholder_;
+
+@synthesize allowedCookiesButtonsEnabled =
+    allowedCookiesButtonsEnabled_;
+@synthesize blockedCookiesButtonsEnabled =
+    blockedCookiesButtonsEnabled_;
+@synthesize deleteCookiesButtonEnabled = deleteCookiesButtonEnabled_;
 
 - (id)initWithWebContents:(content::WebContents*)webContents
       collectedCookiesMac:(CollectedCookiesMac*)collectedCookiesMac {
@@ -256,25 +248,31 @@ void CollectedCookiesMac::OnConstrainedWindowClosed(
 }
 
 - (IBAction)allowOrigin:(id)sender {
-  [self    addException:CONTENT_SETTING_ALLOW
+  [self addException:CONTENT_SETTING_ALLOW
       forTreeController:blockedTreeController_];
 }
 
 - (IBAction)allowForSessionFromOrigin:(id)sender {
-  [self    addException:CONTENT_SETTING_SESSION_ONLY
+  [self addException:CONTENT_SETTING_SESSION_ONLY
       forTreeController:blockedTreeController_];
 }
 
 - (IBAction)blockOrigin:(id)sender {
-  [self    addException:CONTENT_SETTING_BLOCK
+  [self addException:CONTENT_SETTING_BLOCK
       forTreeController:allowedTreeController_];
 }
 
-- (CocoaCookieTreeNode*)cocoaAllowedTreeModel {
-  return cocoaAllowedTreeModel_.get();
+- (IBAction)deleteSelected:(id)sender {
+  NSArray* nodes = [allowedTreeController_ selectedNodes];
+  for (NSTreeNode* cocoaTreeNode in nodes) {
+    CookieTreeNode* cookieNode = static_cast<CookieTreeNode*>(
+        [[cocoaTreeNode representedObject] treeNode]);
+    allowedTreeModel_->DeleteCookieNode(cookieNode);
+  }
 }
-- (void)setCocoaAllowedTreeModel:(CocoaCookieTreeNode*)model {
-  cocoaAllowedTreeModel_.reset([model retain]);
+
+- (CocoaCookieTreeNode*)cocoaAllowedTreeModel {
+  return allowedControllerBridge_->cocoa_model();
 }
 
 - (CookiesTreeModel*)allowedTreeModel {
@@ -282,10 +280,7 @@ void CollectedCookiesMac::OnConstrainedWindowClosed(
 }
 
 - (CocoaCookieTreeNode*)cocoaBlockedTreeModel {
-  return cocoaBlockedTreeModel_.get();
-}
-- (void)setCocoaBlockedTreeModel:(CocoaCookieTreeNode*)model {
-  cocoaBlockedTreeModel_.reset([model retain]);
+  return blockedControllerBridge_->cocoa_model();
 }
 
 - (CookiesTreeModel*)blockedTreeModel {
@@ -315,8 +310,10 @@ void CollectedCookiesMac::OnConstrainedWindowClosed(
   BOOL isAllowedOutlineView;
   if ([notif object] == allowedOutlineView_) {
     isAllowedOutlineView = YES;
+    [self setDeleteCookiesButtonEnabled:YES];
   } else if ([notif object] == blockedOutlineView_) {
     isAllowedOutlineView = NO;
+    [self setDeleteCookiesButtonEnabled:NO];
   } else {
     NOTREACHED();
     return;
@@ -380,18 +377,13 @@ void CollectedCookiesMac::OnConstrainedWindowClosed(
       rb.GetNativeImageNamed(IDR_BOOKMARK_BAR_FOLDER).ToNSImage()];
 
   // Create the Cocoa model.
-  CookieTreeNode* root =
-      static_cast<CookieTreeNode*>(allowedTreeModel_->GetRoot());
-  base::scoped_nsobject<CocoaCookieTreeNode> model(
-      [[CocoaCookieTreeNode alloc] initWithNode:root]);
-  [self setCocoaAllowedTreeModel:model.get()];  // Takes ownership.
-  root = static_cast<CookieTreeNode*>(blockedTreeModel_->GetRoot());
-  model.reset(
-      [[CocoaCookieTreeNode alloc] initWithNode:root]);
-  [self setCocoaBlockedTreeModel:model.get()];  // Takes ownership.
+  allowedControllerBridge_.reset(
+      new CookiesTreeControllerBridge(allowedTreeModel_.get()));
+  blockedControllerBridge_.reset(
+      new CookiesTreeControllerBridge(blockedTreeModel_.get()));
 }
 
--(void)showInfoBarForMultipleDomainsAndSetting:(ContentSetting)setting {
+- (void)showInfoBarForMultipleDomainsAndSetting:(ContentSetting)setting {
   NSString* label;
   switch (setting) {
     case CONTENT_SETTING_BLOCK:
@@ -417,8 +409,8 @@ void CollectedCookiesMac::OnConstrainedWindowClosed(
   [self animateInfoBar];
 }
 
--(void)showInfoBarForDomain:(const base::string16&)domain
-                    setting:(ContentSetting)setting {
+- (void)showInfoBarForDomain:(const base::string16&)domain
+                     setting:(ContentSetting)setting {
   NSString* label;
   switch (setting) {
     case CONTENT_SETTING_BLOCK:
@@ -447,13 +439,11 @@ void CollectedCookiesMac::OnConstrainedWindowClosed(
   [self animateInfoBar];
 }
 
--(void)animateInfoBar {
+- (void)animateInfoBar {
   if (infoBarVisible_)
     return;
 
   infoBarVisible_ = YES;
-
-  NSMutableArray* animations = [NSMutableArray arrayWithCapacity:3];
 
   NSWindow* sheet = [self window];
   NSRect sheetFrame = [sheet frame];
@@ -471,37 +461,32 @@ void CollectedCookiesMac::OnConstrainedWindowClosed(
   sheetFrame.origin.y -= NSHeight(infoBarFrame);
   sheetFrame.size.height += NSHeight(infoBarFrame);
 
-  // Slide the infobar in.
-  [animations addObject:
-      [NSDictionary dictionaryWithObjectsAndKeys:
-          infoBar_, NSViewAnimationTargetKey,
-          [NSValue valueWithRect:infoBarFrame],
-              NSViewAnimationEndFrameKey,
-          nil]];
-  // Make sure the tab view ends up in the right position.
-  [animations addObject:
-      [NSDictionary dictionaryWithObjectsAndKeys:
-          tabView_, NSViewAnimationTargetKey,
-          [NSValue valueWithRect:tabViewFrame],
-              NSViewAnimationEndFrameKey,
-          nil]];
+  NSArray* animations = @[
+    // Slide the infobar in.
+    @{
+      NSViewAnimationTargetKey : infoBar_,
+      NSViewAnimationEndFrameKey : [NSValue valueWithRect:infoBarFrame]
+    },
+    // Make sure the tab view ends up in the right position.
+    @{
+      NSViewAnimationTargetKey : tabView_,
+      NSViewAnimationEndFrameKey : [NSValue valueWithRect:tabViewFrame]
+    },
+    // Grow the sheet.
+    @{
+      NSViewAnimationTargetKey : sheet,
+      NSViewAnimationEndFrameKey : [NSValue valueWithRect:sheetFrame]
+    }
+  ];
 
-  // Grow the sheet.
-  [animations addObject:
-      [NSDictionary dictionaryWithObjectsAndKeys:
-          sheet, NSViewAnimationTargetKey,
-          [NSValue valueWithRect:sheetFrame],
-              NSViewAnimationEndFrameKey,
-          nil]];
   [animation_ setViewAnimations:animations];
   // The default duration is 0.5s, which actually feels slow in here, so speed
   // it up a bit.
-  [animation_ gtm_setDuration:0.2
-                    eventMask:NSLeftMouseUpMask];
+  [animation_ gtm_setDuration:0.2 eventMask:NSLeftMouseUpMask];
   [animation_ startAnimation];
 }
 
-- (void)         tabView:(NSTabView*)tabView
+- (void)tabView:(NSTabView*)tabView
     didSelectTabViewItem:(NSTabViewItem*)tabViewItem {
   NSTreeController* treeController = nil;
   switch ([tabView indexOfTabViewItem:tabViewItem]) {

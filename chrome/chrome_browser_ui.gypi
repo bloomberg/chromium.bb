@@ -701,6 +701,8 @@
         'browser/ui/cocoa/content_settings/cookie_details_view_controller.mm',
         'browser/ui/cocoa/content_settings/cookie_tree_node.h',
         'browser/ui/cocoa/content_settings/cookie_tree_node.mm',
+        'browser/ui/cocoa/content_settings/cookies_tree_controller_bridge.h',
+        'browser/ui/cocoa/content_settings/cookies_tree_controller_bridge.mm',
         'browser/ui/cocoa/custom_frame_view.h',
         'browser/ui/cocoa/custom_frame_view.mm',
         'browser/ui/cocoa/dev_tools_controller.h',
