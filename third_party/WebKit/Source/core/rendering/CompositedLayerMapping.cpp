@@ -160,7 +160,6 @@ CompositedLayerMapping::CompositedLayerMapping(RenderLayer* layer)
     : m_owningLayer(layer)
     , m_animationProvider(adoptPtr(new WebAnimationProvider))
     , m_artificiallyInflatedBounds(false)
-    , m_boundsConstrainedByClipping(false)
     , m_isMainFrameRenderViewLayer(false)
     , m_requiresOwnBackingStoreForIntrinsicReasons(true)
     , m_requiresOwnBackingStoreForAncestorReasons(true)
@@ -370,9 +369,6 @@ void CompositedLayerMapping::updateCompositedBounds()
         clippingBounds.move(-delta.x(), -delta.y());
 
         layerBounds.intersect(clippingBounds);
-        m_boundsConstrainedByClipping = true;
-    } else {
-        m_boundsConstrainedByClipping = false;
     }
 
     // If the element has a transform-origin that has fixed lengths, and the renderer has zero size,
@@ -660,14 +656,8 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry()
     m_graphicsLayer->setOffsetFromRenderer(toIntSize(localCompositingBounds.location()));
 
     FloatSize oldSize = m_graphicsLayer->size();
-    if (oldSize != contentsSize) {
+    if (oldSize != contentsSize)
         m_graphicsLayer->setSize(contentsSize);
-        // Usually invalidation will happen via layout etc, but if we've affected the layer
-        // size by constraining relative to a clipping ancestor or the viewport, we
-        // have to invalidate to avoid showing stretched content.
-        if (m_boundsConstrainedByClipping)
-            m_graphicsLayer->setNeedsDisplay();
-    }
 
     // If we have a layer that clips children, position it.
     IntRect clippingBox;
