@@ -1086,6 +1086,29 @@ public:
         FinalizedHeapObjectHeader* header = FinalizedHeapObjectHeader::fromPayload(objectPointer);
         visitHeader(header, header->payload(), callback);
     }
+
+    virtual bool isMarked(const void* objectPointer)
+    {
+        return FinalizedHeapObjectHeader::fromPayload(objectPointer)->isMarked();
+    }
+
+    // This macro defines the necessary visitor methods for typed heaps
+#define DEFINE_VISITOR_METHODS(Type)                                     \
+    virtual void mark(const Type* objectPointer, TraceCallback callback) \
+    {                                                                    \
+        if (!objectPointer)                                              \
+            return;                                                      \
+        HeapObjectHeader* header =                                       \
+            HeapObjectHeader::fromPayload(objectPointer);                \
+        visitHeader(header, header->payload(), callback);                \
+    }                                                                    \
+    virtual bool isMarked(const Type* objectPointer)                     \
+    {                                                                    \
+        return HeapObjectHeader::fromPayload(objectPointer)->isMarked(); \
+    }
+
+    FOR_EACH_TYPED_HEAP(DEFINE_VISITOR_METHODS)
+#undef DEFINE_VISITOR_METHODS
 };
 
 void Heap::init(intptr_t* startOfStack)

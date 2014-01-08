@@ -32,7 +32,15 @@
 #define Visitor_h
 
 #include "heap/HeapExport.h"
+#include "heap/ThreadState.h"
 #include "wtf/Assertions.h"
+#include "wtf/OwnPtr.h"
+
+#ifndef NDEBUG
+#define DEBUG_ONLY(x) x
+#else
+#define DEBUG_ONLY(x)
+#endif
 
 namespace WebCore {
 
@@ -211,6 +219,23 @@ public:
         mark(t.raw());
     }
 
+    // Fallback trace method for part objects to allow individual
+    // trace methods to trace through a part object with
+    // visitor->trace(m_partObject).
+    template<typename T>
+    void trace(const T& t)
+    {
+        const_cast<T&>(t).trace(this);
+    }
+
+    // OwnPtrs that are traced are treated as part objects and the
+    // trace method of the owned object is called.
+    template<typename T>
+    void trace(const OwnPtr<T>& t)
+    {
+        t->trace(this);
+    }
+
     // This method marks an object and adds it to the set of objects
     // that should have their trace method called. Since not all
     // objects have vtables we have to have the callback as an
@@ -223,11 +248,21 @@ public:
     virtual void mark(HeapObjectHeader*, TraceCallback) = 0;
     virtual void mark(FinalizedHeapObjectHeader*, TraceCallback) = 0;
 
+    virtual bool isMarked(const void*) = 0;
+
 #ifndef NDEBUG
     void checkTypeMarker(const void*, const char* marker);
 #endif
-};
 
+    // Macro to declare methods needed for each typed heap.
+#define DECLARE_VISITOR_METHODS(Type)                                  \
+    DEBUG_ONLY(void checkTypeMarker(const Type*, const char* marker);) \
+    virtual void mark(const Type*, TraceCallback) = 0;                 \
+    virtual bool isMarked(const Type*) = 0;
+
+    FOR_EACH_TYPED_HEAP(DECLARE_VISITOR_METHODS)
+#undef DECLARE_VISITOR_METHODS
+};
 
 #ifndef NDEBUG
 template<typename T> void TraceTrait<T>::checkTypeMarker(Visitor* visitor, const T* t)

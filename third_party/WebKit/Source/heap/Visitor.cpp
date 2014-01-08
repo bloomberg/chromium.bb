@@ -42,6 +42,20 @@ void Visitor::checkTypeMarker(const void* payload, const char* marker)
     FinalizedHeapObjectHeader::fromPayload(payload)->checkHeader();
     ASSERT(FinalizedHeapObjectHeader::fromPayload(payload)->typeMarker() == marker);
 }
+
+#define DEFINE_VISITOR_CHECK_MARKER(Type)                                    \
+    void Visitor::checkTypeMarker(const Type* payload, const char* marker)   \
+    {                                                                        \
+        HeapObjectHeader::fromPayload(payload)->checkHeader();               \
+        Type* object = const_cast<Type*>(payload);                           \
+        Address addr = pageHeaderAddress(reinterpret_cast<Address>(object)); \
+        BaseHeapPage* page = reinterpret_cast<BaseHeapPage*>(addr);          \
+        ASSERT(page->gcInfo());                                              \
+        ASSERT(page->gcInfo()->m_typeMarker == marker);                      \
+    }
+
+FOR_EACH_TYPED_HEAP(DEFINE_VISITOR_CHECK_MARKER)
+#undef DEFINE_VISITOR_CHECK_MARKER
 #endif
 
 }

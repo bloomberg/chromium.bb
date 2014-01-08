@@ -73,13 +73,16 @@ struct ThreadingTrait {
     static const ThreadAffinity Affinity = MainThreadOnly;
 };
 
-// List of typed heaps used to generate the implementation of typed
-// heaps.
+// List of typed heaps. The list is used to generate the implementation
+// of typed heap related methods.
 //
 // To create a new typed heap add a H(<ClassName>) to the
 // FOR_EACH_TYPED_HEAP macro below.
+// FIXME: When the Node hierarchy has been moved use Node in our
+// tests instead of TestTypedHeapClass.
 #define FOR_EACH_TYPED_HEAP(H)  \
-    H(Node)
+    H(TestTypedHeapClass)
+//    H(Node)
 
 #define TypedHeapEnumName(Type) Type##Heap,
 

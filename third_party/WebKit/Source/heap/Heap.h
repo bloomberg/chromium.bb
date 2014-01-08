@@ -110,7 +110,7 @@ class HeapStats;
 class PageMemory;
 template <typename Header> class ThreadHeap;
 
-size_t osPageSize();
+HEAP_EXPORT size_t osPageSize();
 
 // Blink heap pages are set up with a guard page before and after the
 // payload.
@@ -136,12 +136,26 @@ inline size_t headerPadding()
 }
 
 #ifndef NDEBUG
+
+// Masks an address down to the enclosing blink page base address.
+inline Address blinkPageAddress(Address address)
+{
+    return reinterpret_cast<Address>(reinterpret_cast<uintptr_t>(address) & blinkPageBaseMask);
+}
+
 // Sanity check for a page header address: the address of the page
 // header should be OS page size away from being Blink page size
 // aligned.
 inline bool isPageHeaderAddress(Address address)
 {
     return !((reinterpret_cast<uintptr_t>(address) & blinkPageOffsetMask) - osPageSize());
+}
+
+// Mask an address down to the enclosing oilpan heap page base address.
+// All oilpan heap pages are aligned at blinkPageBase plus an OS page size.
+inline Address pageHeaderAddress(Address address)
+{
+    return blinkPageAddress(address) + osPageSize();
 }
 #endif
 

@@ -36,9 +36,7 @@
 
 #include <gtest/gtest.h>
 
-using namespace WebCore;
-
-namespace {
+namespace WebCore {
 
 class HeapAllocatedArray : public GarbageCollected<HeapAllocatedArray> {
     DECLARE_GC_INFO
@@ -212,7 +210,16 @@ public:
         return new ClassWithMember();
     }
 
-    void trace(Visitor* visitor) { visitor->trace(m_traceCounter); }
+    void trace(Visitor* visitor)
+    {
+        EXPECT_TRUE(visitor->isMarked(this));
+        if (!traceCount())
+            EXPECT_FALSE(visitor->isMarked(m_traceCounter));
+        else
+            EXPECT_TRUE(visitor->isMarked(m_traceCounter));
+
+        visitor->trace(m_traceCounter);
+    }
 
     int traceCount() { return m_traceCounter->traceCount(); }
 
@@ -244,6 +251,38 @@ TEST(HeapTest, SimplePersistent)
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
     EXPECT_EQ(1, classWithMember->traceCount());
     EXPECT_EQ(2, traceCounter->traceCount());
+
+    Heap::shutdown();
+}
+
+class TestTypedHeapClass : public GarbageCollected<TestTypedHeapClass> {
+    DECLARE_GC_INFO
+public:
+    static TestTypedHeapClass* create()
+    {
+        return new TestTypedHeapClass();
+    }
+
+    void trace(Visitor*) { }
+
+private:
+    TestTypedHeapClass() { }
+};
+
+DEFINE_GC_INFO(TestTypedHeapClass);
+
+TEST(HeapTest, TypedHeapSanity)
+{
+    // FIXME: init and shutdown should be called via Blink
+    // initialization in the test runner.
+    Heap::init(0);
+
+    // We use TraceCounter for allocating an object on the general heap.
+    Persistent<TraceCounter> generalHeapObject = TraceCounter::create();
+    Persistent<TestTypedHeapClass> typedHeapObject = TestTypedHeapClass::create();
+
+    EXPECT_NE(pageHeaderAddress(reinterpret_cast<Address>(typedHeapObject.raw())),
+        pageHeaderAddress(reinterpret_cast<Address>(generalHeapObject.raw())));
 
     Heap::shutdown();
 }
