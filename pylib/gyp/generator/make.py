@@ -1951,7 +1951,8 @@ def GenerateOutput(target_list, target_dicts, data, params):
     # We write the file in the base_path directory.
     output_file = os.path.join(options.depth, base_path, base_name)
     if options.generator_output:
-      output_file = os.path.join(options.generator_output, output_file)
+      output_file = os.path.join(
+          options.depth, options.generator_output, base_path, base_name)
     base_path = gyp.common.RelativePath(os.path.dirname(build_file),
                                         options.toplevel_dir)
     return base_path, output_file
@@ -1974,7 +1975,8 @@ def GenerateOutput(target_list, target_dicts, data, params):
   makefile_path = os.path.join(options.toplevel_dir, makefile_name)
   if options.generator_output:
     global srcdir_prefix
-    makefile_path = os.path.join(options.generator_output, makefile_path)
+    makefile_path = os.path.join(
+        options.toplevel_dir, options.generator_output, makefile_name)
     srcdir = gyp.common.RelativePath(srcdir, options.generator_output)
     srcdir_prefix = '$(srcdir)/'
 
