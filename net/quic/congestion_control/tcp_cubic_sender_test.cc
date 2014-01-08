@@ -2,13 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/quic/congestion_control/tcp_cubic_sender.h"
+#include <algorithm>
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "net/quic/congestion_control/tcp_cubic_sender.h"
 #include "net/quic/congestion_control/tcp_receiver.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using std::min;
 
 namespace net {
 namespace test {
@@ -50,7 +53,7 @@ class TcpCubicSenderTest : public ::testing::Test {
   void SendAvailableSendWindow() {
     QuicByteCount bytes_to_send = sender_->AvailableSendWindow();
     while (bytes_to_send > 0) {
-      QuicByteCount bytes_in_packet = std::min(kDefaultTCPMSS, bytes_to_send);
+      QuicByteCount bytes_in_packet = min(kDefaultTCPMSS, bytes_to_send);
       sender_->OnPacketSent(clock_.Now(), sequence_number_++, bytes_in_packet,
                             NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
       bytes_to_send -= bytes_in_packet;
@@ -394,7 +397,7 @@ TEST_F(TcpCubicSenderTest, SendWindowNotAffectedByAcks) {
 
   // Send a packet with no retransmittable data, and ensure that the congestion
   // window doesn't change.
-  QuicByteCount bytes_in_packet = std::min(kDefaultTCPMSS, send_window);
+  QuicByteCount bytes_in_packet = min(kDefaultTCPMSS, send_window);
   sender_->OnPacketSent(clock_.Now(), sequence_number_++, bytes_in_packet,
                         NOT_RETRANSMISSION, NO_RETRANSMITTABLE_DATA);
   EXPECT_EQ(send_window, sender_->AvailableSendWindow());

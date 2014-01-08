@@ -15,7 +15,6 @@ namespace net {
 typedef uint64 QuicByteCount;
 
 class NET_EXPORT_PRIVATE QuicBandwidth {
-
  public:
   // Creates a new QuicBandwidth with an internal value of 0.
   static QuicBandwidth Zero();

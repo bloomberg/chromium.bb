@@ -11,6 +11,8 @@
 #include "base/logging.h"
 #include "net/quic/quic_protocol.h"
 
+using std::max;
+
 namespace {
   const int kInitialBitrate = 100000;  // In bytes per second.
   const uint64 kWindowSizeUs = 10000;  // 10 ms.
@@ -118,7 +120,7 @@ QuicByteCount FixRateSender::CongestionWindow() {
   QuicByteCount window_size_bytes = bitrate_.ToBytesPerPeriod(
       QuicTime::Delta::FromMicroseconds(kWindowSizeUs));
   // Make sure window size is not less than a packet.
-  return std::max(kDefaultMaxPacketSize, window_size_bytes);
+  return max(kDefaultMaxPacketSize, window_size_bytes);
 }
 
 QuicBandwidth FixRateSender::BandwidthEstimate() const {

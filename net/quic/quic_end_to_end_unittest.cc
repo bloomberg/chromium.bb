@@ -27,8 +27,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
-extern int FLAGS_fake_packet_loss_percentage;
-
 using base::StringPiece;
 using net::tools::QuicInMemoryCache;
 using net::tools::test::QuicInMemoryCachePeer;
@@ -48,7 +46,6 @@ class TestTransactionFactory : public HttpTransactionFactory {
       : session_(new HttpNetworkSession(params)) {}
 
   virtual ~TestTransactionFactory() {
-    FLAGS_fake_packet_loss_percentage = 0;
   }
 
   // HttpTransactionFactory methods

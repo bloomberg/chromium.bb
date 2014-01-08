@@ -43,6 +43,8 @@ typedef uint32 QuicHeaderId;
 // QuicTag is the type of a tag in the wire protocol.
 typedef uint32 QuicTag;
 typedef std::vector<QuicTag> QuicTagVector;
+// TODO(rtenneti): Didn't use SpdyPriority because SpdyPriority is uint8 and
+// QuicPriority is uint32. Use SpdyPriority when we change the QUIC_VERSION.
 typedef uint32 QuicPriority;
 
 // TODO(rch): Consider Quic specific names for these constants.

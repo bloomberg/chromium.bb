@@ -13,7 +13,6 @@
 #include "base/basictypes.h"
 #include "net/base/net_export.h"
 #include "net/quic/quic_bandwidth.h"
-#include "net/quic/quic_clock.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_time.h"
 

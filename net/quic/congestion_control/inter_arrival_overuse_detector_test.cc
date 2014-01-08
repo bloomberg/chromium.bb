@@ -269,7 +269,7 @@ TEST_F(InterArrivalOveruseDetectorTest, DISABLED_TestNoise) {
     count[GaussianRandom(mean, standard_deviation).ToMilliseconds()]++;
   }
   for (int j = 0; j < 100; ++j) {
-    DLOG(INFO) << j << ":" << count[j];
+    DVLOG(1) << j << ":" << count[j];
   }
 }
 

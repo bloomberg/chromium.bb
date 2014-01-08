@@ -62,4 +62,5 @@ class NET_EXPORT_PRIVATE InterArrivalBitrateRampUp {
 };
 
 }  // namespace net
+
 #endif  // NET_QUIC_CONGESTION_CONTROL_INTER_ARRIVAL_BITRATE_RAMP_UP_H_

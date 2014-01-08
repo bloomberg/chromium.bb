@@ -9,6 +9,7 @@
 #include "base/metrics/histogram.h"
 
 using std::max;
+using std::min;
 
 namespace net {
 
@@ -197,7 +198,7 @@ QuicByteCount TcpCubicSender::AvailableSendWindow() {
 
 QuicByteCount TcpCubicSender::SendWindow() {
   // What's the current send window in bytes.
-  return std::min(receive_window_, GetCongestionWindow());
+  return min(receive_window_, GetCongestionWindow());
 }
 
 QuicBandwidth TcpCubicSender::BandwidthEstimate() const {
@@ -268,7 +269,7 @@ void TcpCubicSender::CongestionAvoidance(QuicPacketSequenceNumber ack) {
         }
         DVLOG(1) << "Reno; congestion window:" << congestion_window_;
       } else {
-        congestion_window_ = std::min(
+        congestion_window_ = min(
             max_tcp_congestion_window_,
             cubic_.CongestionWindowAfterAck(congestion_window_, delay_min_));
         DVLOG(1) << "Cubic; congestion window:" << congestion_window_;

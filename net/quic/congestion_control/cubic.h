@@ -39,11 +39,6 @@ class NET_EXPORT_PRIVATE Cubic {
       QuicTcpCongestionWindow current,
       QuicTime::Delta delay_min);
 
- protected:
-  // Calculates the cubic root using a table lookup followed by one Newton-
-  // Raphson iteration.
-  uint32 CubeRoot(uint64 a);
-
  private:
   static const QuicTime::Delta MaxCubicTimeInterval() {
     return QuicTime::Delta::FromMilliseconds(30);
@@ -84,4 +79,5 @@ class NET_EXPORT_PRIVATE Cubic {
 };
 
 }  // namespace net
+
 #endif  // NET_QUIC_CONGESTION_CONTROL_CUBIC_H_

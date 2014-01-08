@@ -18,6 +18,8 @@ using std::min;
 using std::numeric_limits;
 using std::string;
 
+bool FLAGS_quic_allow_oversized_packets_for_test = false;
+
 namespace net {
 
 namespace {
@@ -266,6 +268,8 @@ size_t QuicFramer::GetSerializedFrameLength(
       // Note that we may not use every byte of the writer in this case.
       DVLOG(1) << "Truncating large frame";
       return free_bytes;
+    } else if (!FLAGS_quic_allow_oversized_packets_for_test) {
+      return 0;
     }
   }
   return frame_len;
@@ -1729,7 +1733,7 @@ bool QuicFramer::AppendPacketSequenceNumber(
           packet_sequence_number & k6ByteSequenceNumberMask);
       break;
     default:
-      NOTREACHED() << "sequence_number_length: " << sequence_number_length;
+      DCHECK(false) << "sequence_number_length: " << sequence_number_length;
       return false;
   }
 }

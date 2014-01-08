@@ -7,8 +7,8 @@
 
 namespace net {
 
+// Originally 64K bytes, but increased it to 256K to support higher bitrates.
 // static
-// Originally 64K bytes for TCP, setting it to 256K to support higher bitrates.
 const QuicByteCount TcpReceiver::kReceiveWindowTCP = 256000;
 
 TcpReceiver::TcpReceiver()

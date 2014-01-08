@@ -10,6 +10,8 @@
 #include "net/quic/test_tools/mock_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using std::min;
+
 namespace net {
 namespace test {
 
@@ -116,14 +118,14 @@ TEST_F(InterArrivalBitrateRampUpTest, GoodEstimatesLimitedSendRate) {
   for (int i = 0; i < 25; ++i) {
     clock_.AdvanceTime(hundred_ms_);
     // Cap our previus sent rate.
-    sent_bitrate = std::min(sent_bitrate, max_sent_rate);
+    sent_bitrate = min(sent_bitrate, max_sent_rate);
     sent_bitrate = bitrate_ramp_up_.GetNewBitrate(sent_bitrate);
     EXPECT_GE(available_channel_estimate, sent_bitrate);
     EXPECT_LE(start_rate, sent_bitrate);
   }
   clock_.AdvanceTime(hundred_ms_);
   // Cap our previus sent rate.
-  sent_bitrate = std::min(sent_bitrate, max_sent_rate);
+  sent_bitrate = min(sent_bitrate, max_sent_rate);
   sent_bitrate = bitrate_ramp_up_.GetNewBitrate(sent_bitrate);
   EXPECT_LE(available_channel_estimate, sent_bitrate);
 
@@ -131,13 +133,13 @@ TEST_F(InterArrivalBitrateRampUpTest, GoodEstimatesLimitedSendRate) {
   for (int j = 0; j < 25; ++j) {
     clock_.AdvanceTime(hundred_ms_);
     // Cap our previus sent rate.
-    sent_bitrate = std::min(sent_bitrate, max_sent_rate);
+    sent_bitrate = min(sent_bitrate, max_sent_rate);
     sent_bitrate = bitrate_ramp_up_.GetNewBitrate(sent_bitrate);
     EXPECT_LE(available_channel_estimate, sent_bitrate);
     EXPECT_GE(halfway_point, sent_bitrate);
   }
   clock_.AdvanceTime(hundred_ms_);
-  sent_bitrate = std::min(sent_bitrate, max_sent_rate);
+  sent_bitrate = min(sent_bitrate, max_sent_rate);
   sent_bitrate = bitrate_ramp_up_.GetNewBitrate(sent_bitrate);
   // We expect 2 * sent_bitrate to cap the rate.
   EXPECT_LE(max_sent_rate.Add(max_sent_rate), sent_bitrate);

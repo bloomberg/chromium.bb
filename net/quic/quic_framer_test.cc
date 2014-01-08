@@ -42,6 +42,12 @@ const size_t kGuidOffset = kPublicFlagsSize;
 // Index into the version string in the header. (if present).
 const size_t kVersionOffset = kGuidOffset + PACKET_8BYTE_GUID;
 
+// Size in bytes of the stream frame fields for an arbitrary StreamID and
+// offset and the last frame in a packet.
+size_t GetMinStreamFrameSize(QuicVersion version) {
+  return kQuicFrameTypeSize + kQuicMaxStreamIdSize + kQuicMaxStreamOffsetSize;
+}
+
 // Index into the sequence number offset in the header.
 size_t GetSequenceNumberOffset(QuicGuidLength guid_length,
                                bool include_version) {
@@ -200,8 +206,8 @@ class TestQuicVisitor : public ::net::QuicFramerVisitorInterface {
   }
 
   virtual void OnError(QuicFramer* f) OVERRIDE {
-    DLOG(INFO) << "QuicFramer Error: " << QuicUtils::ErrorToString(f->error())
-               << " (" << f->error() << ")";
+    DVLOG(1) << "QuicFramer Error: " << QuicUtils::ErrorToString(f->error())
+             << " (" << f->error() << ")";
     error_count_++;
   }
 
@@ -222,15 +228,9 @@ class TestQuicVisitor : public ::net::QuicFramerVisitorInterface {
   }
 
   virtual bool OnProtocolVersionMismatch(QuicVersion version) OVERRIDE {
-    DLOG(INFO) << "QuicFramer Version Mismatch, version: " << version;
+    DVLOG(1) << "QuicFramer Version Mismatch, version: " << version;
     version_mismatch_++;
     return true;
-  }
-
-  virtual bool OnPacketHeader(const QuicPacketHeader& header) OVERRIDE {
-    packet_count_++;
-    header_.reset(new QuicPacketHeader(header));
-    return accept_packet_;
   }
 
   virtual bool OnUnauthenticatedPublicHeader(
@@ -242,6 +242,12 @@ class TestQuicVisitor : public ::net::QuicFramerVisitorInterface {
   virtual bool OnUnauthenticatedHeader(
       const QuicPacketHeader& header) OVERRIDE {
     return true;
+  }
+
+  virtual bool OnPacketHeader(const QuicPacketHeader& header) OVERRIDE {
+    packet_count_++;
+    header_.reset(new QuicPacketHeader(header));
+    return accept_packet_;
   }
 
   virtual bool OnStreamFrame(const QuicStreamFrame& frame) OVERRIDE {
@@ -2302,7 +2308,7 @@ TEST_P(QuicFramerTest, PublicResetPacket) {
   // Now test framing boundaries
   for (size_t i = 0; i < GetPublicResetPacketSize(); ++i) {
     string expected_error;
-    DLOG(INFO) << "iteration: " << i;
+    DVLOG(1) << "iteration: " << i;
     if (i < kGuidOffset) {
       expected_error = "Unable to read public flags.";
       CheckProcessingFails(packet, i, expected_error,
@@ -3281,8 +3287,7 @@ TEST_P(QuicFramerTest, EncryptPacketWithVersionFlag) {
   EXPECT_TRUE(CheckEncryption(sequence_number, raw.get()));
 }
 
-// TODO(rch) enable after landing the revised truncation CL.
-TEST_P(QuicFramerTest, DISABLED_Truncation) {
+TEST_P(QuicFramerTest, Truncation) {
   QuicPacketHeader header;
   header.public_header.guid = GG_UINT64_C(0xFEDCBA9876543210);
   header.public_header.reset_flag = false;

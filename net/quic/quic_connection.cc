@@ -35,12 +35,7 @@ using std::vector;
 using std::set;
 using std::string;
 
-int FLAGS_fake_packet_loss_percentage = 0;
-
-// If true, then QUIC connections will bundle acks with any outgoing packet when
-// an ack is being delayed. This is an optimization to reduce ack latency and
-// packet count of pure ack packets.
-bool FLAGS_bundle_ack_with_outgoing_packet = false;
+extern bool FLAGS_quic_allow_oversized_packets_for_test;
 
 namespace net {
 
@@ -65,7 +60,6 @@ bool Near(QuicPacketSequenceNumber a, QuicPacketSequenceNumber b) {
   QuicPacketSequenceNumber delta = (a > b) ? a - b : b - a;
   return delta <= kMaxPacketGap;
 }
-
 
 // An alarm that is scheduled to send an ack if a timeout occurs.
 class AckAlarm : public QuicAlarm::Delegate {
@@ -137,17 +131,17 @@ class TimeoutAlarm : public QuicAlarm::Delegate {
 
 // Indicates if any of the frames are intended to be sent with FORCE.
 // Returns FORCE when one of the frames is a CONNECTION_CLOSE_FRAME.
-net::QuicConnection::Force HasForcedFrames(
+QuicConnection::Force HasForcedFrames(
     const RetransmittableFrames* retransmittable_frames) {
   if (!retransmittable_frames) {
-    return net::QuicConnection::NO_FORCE;
+    return QuicConnection::NO_FORCE;
   }
   for (size_t i = 0; i < retransmittable_frames->frames().size(); ++i) {
     if (retransmittable_frames->frames()[i].type == CONNECTION_CLOSE_FRAME) {
-      return net::QuicConnection::FORCE;
+      return QuicConnection::FORCE;
     }
   }
-  return net::QuicConnection::NO_FORCE;
+  return QuicConnection::NO_FORCE;
 }
 
 }  // namespace
@@ -828,7 +822,6 @@ QuicConsumedData QuicConnection::SendStreamData(
 
 void QuicConnection::SendRstStream(QuicStreamId id,
                                    QuicRstStreamErrorCode error) {
-  DVLOG(1) << "Sending RST_STREAM: " << id << " code: " << error;
   // Opportunistically bundle an ack with this outgoing packet.
   ScopedPacketBundler ack_bundler(this, true);
   packet_generator_.AddControlFrame(
@@ -1137,7 +1130,8 @@ bool QuicConnection::WritePacket(EncryptionLevel level,
   DVLOG(2) << ENDPOINT << "packet(" << sequence_number << "): " << std::endl
            << QuicUtils::StringToHexASCIIDump(packet->AsStringPiece());
 
-  DCHECK(encrypted->length() <= kMaxPacketSize)
+  DCHECK(encrypted->length() <= kMaxPacketSize ||
+         FLAGS_quic_allow_oversized_packets_for_test)
       << "Packet " << sequence_number << " will not be read; too large: "
       << packet->length() << " " << encrypted->length() << " "
       << " forced: " << (forced == FORCE ? "yes" : "no");
@@ -1592,8 +1586,8 @@ void QuicConnection::SetOverallConnectionTimeout(QuicTime::Delta timeout) {
 
 bool QuicConnection::CheckForTimeout() {
   QuicTime now = clock_->ApproximateNow();
-  QuicTime time_of_last_packet = std::max(time_of_last_received_packet_,
-                                          time_of_last_sent_new_packet_);
+  QuicTime time_of_last_packet = max(time_of_last_received_packet_,
+                                     time_of_last_sent_new_packet_);
 
   // |delta| can be < 0 as |now| is approximate time but |time_of_last_packet|
   // is accurate time. However, this should not change the behavior of

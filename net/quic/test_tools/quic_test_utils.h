@@ -56,10 +56,6 @@ size_t GetPacketLengthForOneStream(
     InFecGroup is_in_fec_group,
     size_t* payload_length);
 
-// Size in bytes of the stream frame fields for an arbitrary StreamID and
-// offset and the last frame in a packet.
-size_t GetMinStreamFrameSize(QuicVersion version);
-
 // Returns QuicConfig set to default values.
 QuicConfig DefaultQuicConfig();
 

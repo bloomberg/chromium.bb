@@ -4,6 +4,7 @@
 
 #include "net/quic/reliable_quic_stream.h"
 
+#include "base/logging.h"
 #include "net/quic/quic_session.h"
 #include "net/quic/quic_spdy_decompressor.h"
 #include "net/spdy/write_blocked_list.h"

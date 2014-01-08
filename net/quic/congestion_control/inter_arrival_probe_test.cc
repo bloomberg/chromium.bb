@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/quic/congestion_control/inter_arrival_probe.h"
+
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "net/quic/congestion_control/inter_arrival_probe.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
