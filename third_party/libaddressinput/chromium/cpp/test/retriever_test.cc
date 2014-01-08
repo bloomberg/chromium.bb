@@ -122,6 +122,32 @@ TEST_F(RetrieverTest, FaultyDownloader) {
   EXPECT_TRUE(data_.empty());
 }
 
+// The downloader that doesn't get back to you.
+class HangingDownloader : public Downloader {
+ public:
+  HangingDownloader() {}
+  virtual ~HangingDownloader() {}
+
+  // Downloader implementation.
+  virtual void Download(const std::string& url,
+                        scoped_ptr<Callback> downloaded) const {}
+};
+
+TEST_F(RetrieverTest, RequestsDontStack) {
+  Retriever slow_retriever(FakeDownloader::kFakeDataUrl,
+                           scoped_ptr<const Downloader>(new HangingDownloader),
+                           scoped_ptr<Storage>(new FakeStorage));
+
+  slow_retriever.Retrieve(kKey, BuildCallback());
+  EXPECT_FALSE(success_);
+  EXPECT_TRUE(key_.empty());
+
+#if !defined(NDEBUG)
+  // This request should cause an assert.
+  ASSERT_DEATH(slow_retriever.Retrieve(kKey, BuildCallback()), "");
+#endif
+}
+
 }  // namespace
 
 }  // namespace addressinput

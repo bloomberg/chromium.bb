@@ -21,6 +21,7 @@
 #include <libaddressinput/util/basictypes.h>
 #include <libaddressinput/util/scoped_ptr.h>
 
+#include <map>
 #include <string>
 
 #include "lookup_key_util.h"
@@ -50,12 +51,28 @@ class Retriever {
   // Retrieves the data for |key| and invokes the |retrieved| callback. Checks
   // for the data in storage first. If storage does not have the data for |key|,
   // then downloads the data and places it in storage.
-  void Retrieve(const std::string& key, scoped_ptr<Callback> retrieved) const;
+  void Retrieve(const std::string& key, scoped_ptr<Callback> retrieved);
 
  private:
+  // Callback for when a rule is retrieved from |storage_|.
+  void OnDataRetrievedFromStorage(bool success,
+                                  const std::string& key,
+                                  const std::string& data);
+
+  // Callback for when a rule is retrieved by |downloader_|.
+  void OnDownloaded(bool success,
+                    const std::string& url,
+                    const std::string& data);
+
+  // Looks up the callback for |key| in |requests_|, removes it from the map
+  // and returns it. Assumes that |key| is in fact in |requests_|.
+  scoped_ptr<Callback> GetCallbackForKey(const std::string& key);
+
   const LookupKeyUtil lookup_key_util_;
   scoped_ptr<const Downloader> downloader_;
   scoped_ptr<Storage> storage_;
+  // Holds pending requests. The callback pointers are owned.
+  std::map<std::string, Callback*> requests_;
 
   DISALLOW_COPY_AND_ASSIGN(Retriever);
 };
