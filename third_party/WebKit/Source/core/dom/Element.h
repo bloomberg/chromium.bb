@@ -479,8 +479,6 @@ public:
     // to event listeners, and prevents DOMActivate events from being sent at all.
     virtual bool isDisabledFormControl() const { return false; }
 
-    virtual bool shouldBeReparentedUnderRenderView(const RenderStyle*) const { return isInTopLayer(); }
-
     bool hasPendingResources() const;
     void setHasPendingResources();
     void clearHasPendingResources();

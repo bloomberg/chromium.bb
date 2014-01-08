@@ -26,6 +26,7 @@
 #include "config.h"
 #include "core/dom/RenderTreeBuilder.h"
 
+#include "HTMLNames.h"
 #include "RuntimeEnabledFeatures.h"
 #include "SVGNames.h"
 #include "core/css/resolver/StyleResolver.h"
@@ -43,32 +44,24 @@ namespace WebCore {
 
 RenderObject* RenderTreeBuilder::nextRenderer() const
 {
-    Element* element = m_node->isElementNode() ? toElement(m_node) : 0;
-    if (element && element->shouldBeReparentedUnderRenderView(m_style.get())) {
-        // FIXME: Reparented renderers not in the top layer should probably be
-        // ordered in DOM tree order. We don't have a good way to do that yet,
-        // since NodeRenderingTraversal isn't aware of reparenting. It's safe to
-        // just append for now; it doesn't disrupt the top layer rendering as
-        // the layer collection in RenderLayer only requires that top layer
-        // renderers are orderered correctly relative to each other.
-        if (!element->isInTopLayer())
-            return 0;
+    ASSERT(m_renderingParent);
 
-        const Vector<RefPtr<Element> >& topLayerElements = element->document().topLayerElements();
-        size_t position = topLayerElements.find(element);
-        ASSERT(position != kNotFound);
-        for (size_t i = position + 1; i < topLayerElements.size(); ++i) {
-            if (RenderObject* renderer = topLayerElements[i]->renderer())
-                return renderer;
-        }
-        return 0;
+    Element* element = m_node->isElementNode() ? toElement(m_node) : 0;
+
+    if (element) {
+        if (element->isInTopLayer())
+            return NodeRenderingTraversal::nextInTopLayer(element);
+        // FIXME: Reparented dialogs not in the top layer need to be in DOM tree order.
+        // FIXME: The spec should not require magical behavior for <dialog>.
+        if (element->hasTagName(HTMLNames::dialogTag) && m_style->position() == AbsolutePosition)
+            return 0;
     }
 
     if (m_parentFlowRenderer)
         return m_parentFlowRenderer->nextRendererForNode(m_node);
 
     // Avoid an O(N^2) walk over the children when reattaching all children of a node.
-    if (m_renderingParent && m_renderingParent->needsAttach())
+    if (m_renderingParent->needsAttach())
         return 0;
 
     return NodeRenderingTraversal::nextSiblingRenderer(m_node);
@@ -76,22 +69,33 @@ RenderObject* RenderTreeBuilder::nextRenderer() const
 
 RenderObject* RenderTreeBuilder::parentRenderer() const
 {
-    if (m_node->isElementNode() && toElement(m_node)->shouldBeReparentedUnderRenderView(m_style.get())) {
-        // The parent renderer of reparented elements is the RenderView, but only
-        // if the normal parent would have had a renderer.
-        // FIXME: This behavior isn't quite right as the spec for top layer
-        // only talks about display: none ancestors so putting a <dialog> inside
-        // an <optgroup> seems like it should still work even though this check
-        // will prevent it.
-        if (!m_renderingParent || !m_renderingParent->renderer())
-            return 0;
-        return m_node->document().renderView();
+    ASSERT(m_renderingParent);
+
+    Element* element = m_node->isElementNode() ? toElement(m_node) : 0;
+
+    if (element && m_renderingParent->renderer()) {
+        // FIXME: The spec should not require magical behavior for <dialog>. Note that the first
+        // time we enter here the m_style might be null because of a call in shouldCreateRenderer()
+        // which means we return the wrong wrong renderer for that check and then return a totally
+        // different renderer (the RenderView) later when this method is called after setting m_style.
+        if (element->hasTagName(HTMLNames::dialogTag) && m_style && m_style->position() == AbsolutePosition)
+            return m_node->document().renderView();
+
+        // FIXME: Guarding this by m_renderingParent->renderer() isn't quite right as the spec for
+        // top layer only talks about display: none ancestors so putting a <dialog> inside an
+        // <optgroup> seems like it should still work even though this check will prevent it.
+        if (element->isInTopLayer())
+            return m_node->document().renderView();
     }
 
+    // Even if the normal parent has no renderer we still can be flowed into a named flow.
+    // FIXME: This is bad, it breaks the assumption that if you have a renderer then
+    // NodeRenderingTraversal::parent(this) also has one which likely means lots of bugs
+    // with regions.
     if (m_parentFlowRenderer)
         return m_parentFlowRenderer;
 
-    return m_renderingParent ? m_renderingParent->renderer() : 0;
+    return m_renderingParent->renderer();
 }
 
 bool RenderTreeBuilder::shouldCreateRenderer() const
@@ -114,8 +118,9 @@ bool RenderTreeBuilder::shouldCreateRenderer() const
 // Check the specific case of elements that are children of regions but are flowed into a flow thread themselves.
 bool RenderTreeBuilder::elementInsideRegionNeedsRenderer()
 {
+    if (!RuntimeEnabledFeatures::cssRegionsEnabled())
+        return false;
     Element* element = toElement(m_node);
-    bool elementInsideRegionNeedsRenderer = false;
     RenderObject* parentRenderer = this->parentRenderer();
     if ((parentRenderer && !parentRenderer->canHaveChildren() && parentRenderer->isRenderNamedFlowFragmentContainer())
         || (!parentRenderer && element->parentElement() && element->parentElement()->isInsideRegion())) {
@@ -123,14 +128,14 @@ bool RenderTreeBuilder::elementInsideRegionNeedsRenderer()
         if (!m_style)
             m_style = element->styleForRenderer();
 
-        elementInsideRegionNeedsRenderer = element->shouldMoveToFlowThread(m_style.get());
-
         // Children of this element will only be allowed to be flowed into other flow-threads if display is NOT none.
         if (element->rendererIsNeeded(*m_style))
             element->setIsInsideRegion(true);
+
+        return element->shouldMoveToFlowThread(m_style.get());
     }
 
-    return elementInsideRegionNeedsRenderer;
+    return false;
 }
 
 void RenderTreeBuilder::moveToFlowThreadIfNeeded()
@@ -153,9 +158,11 @@ void RenderTreeBuilder::createRendererForElementIfNeeded()
 {
     ASSERT(!m_node->renderer());
 
-    Element* element = toElement(m_node);
+    // If we're out of composition then we can't render since there's no parent to inherit from.
+    if (!m_renderingParent)
+        return;
 
-    element->setIsInsideRegion(false);
+    Element* element = toElement(m_node);
 
     if (!shouldCreateRenderer() && !elementInsideRegionNeedsRenderer())
         return;
@@ -201,11 +208,14 @@ void RenderTreeBuilder::createRendererForTextIfNeeded()
 {
     ASSERT(!m_node->renderer());
 
-    Text* textNode = toText(m_node);
+    // If we're out of composition then we can't render since there's no parent to inherit from.
+    if (!m_renderingParent)
+        return;
 
     if (!shouldCreateRenderer())
         return;
 
+    Text* textNode = toText(m_node);
     RenderObject* parentRenderer = this->parentRenderer();
 
     if (m_parentDetails.resetStyleInheritance())

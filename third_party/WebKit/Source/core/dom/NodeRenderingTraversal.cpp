@@ -27,6 +27,7 @@
 #include "config.h"
 #include "core/dom/NodeRenderingTraversal.h"
 
+#include "HTMLNames.h"
 #include "core/dom/PseudoElement.h"
 #include "core/dom/shadow/ComposedTreeWalker.h"
 #include "core/rendering/RenderObject.h"
@@ -41,7 +42,11 @@ static bool isRendererReparented(const RenderObject* renderer)
         return false;
     if (renderer->style() && !renderer->style()->flowThread().isEmpty())
         return true;
-    if (toElement(renderer->node())->shouldBeReparentedUnderRenderView(renderer->style()))
+    Element& element = toElement(*renderer->node());
+    if (element.isInTopLayer())
+        return true;
+    // FIXME: The spec should not require magical behavior for <dialog>.
+    if (element.hasTagName(HTMLNames::dialogTag) && renderer->style()->position() == AbsolutePosition)
         return true;
     return false;
 }
@@ -124,6 +129,20 @@ RenderObject* previousSiblingRenderer(const Node* node)
     for (Node* sibling = NodeRenderingTraversal::previousSibling(node); sibling; sibling = NodeRenderingTraversal::previousSibling(sibling)) {
         RenderObject* renderer = sibling->renderer();
         if (renderer && !isRendererReparented(renderer))
+            return renderer;
+    }
+    return 0;
+}
+
+RenderObject* nextInTopLayer(const Element* element)
+{
+    if (!element->isInTopLayer())
+        return 0;
+    const Vector<RefPtr<Element> >& topLayerElements = element->document().topLayerElements();
+    size_t position = topLayerElements.find(element);
+    ASSERT(position != kNotFound);
+    for (size_t i = position + 1; i < topLayerElements.size(); ++i) {
+        if (RenderObject* renderer = topLayerElements[i]->renderer())
             return renderer;
     }
     return 0;

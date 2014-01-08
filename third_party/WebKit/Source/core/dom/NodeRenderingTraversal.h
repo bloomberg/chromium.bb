@@ -66,6 +66,7 @@ Node* nextSibling(const Node*);
 Node* previousSibling(const Node*);
 RenderObject* nextSiblingRenderer(const Node*);
 RenderObject* previousSiblingRenderer(const Node*);
+RenderObject* nextInTopLayer(const Element*);
 
 inline ContainerNode* parent(const Node* node)
 {

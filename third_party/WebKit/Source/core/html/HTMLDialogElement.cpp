@@ -201,11 +201,4 @@ void HTMLDialogElement::defaultEventHandler(Event* event)
     HTMLElement::defaultEventHandler(event);
 }
 
-bool HTMLDialogElement::shouldBeReparentedUnderRenderView(const RenderStyle* style) const
-{
-    if (style && style->position() == AbsolutePosition)
-        return true;
-    return Element::shouldBeReparentedUnderRenderView(style);
-}
-
 } // namespace WebCore

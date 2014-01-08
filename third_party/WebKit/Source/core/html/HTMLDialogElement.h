@@ -62,7 +62,6 @@ private:
 
     virtual bool isPresentationAttribute(const QualifiedName&) const OVERRIDE;
     virtual void defaultEventHandler(Event*) OVERRIDE;
-    virtual bool shouldBeReparentedUnderRenderView(const RenderStyle*) const OVERRIDE;
 
     void forceLayoutForCentering();
 
