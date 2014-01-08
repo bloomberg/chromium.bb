@@ -6358,26 +6358,6 @@
    fun:_ZN3net14URLFetcherCore15StartOnIOThreadEv
 }
 {
-   bug_332271a
-   Memcheck:Param
-   write(buf)
-   obj:*libpthread*
-   fun:_ZN3IPC7Channel11ChannelImpl23ProcessOutgoingMessagesEv
-   fun:_ZN3IPC7Channel11ChannelImpl29OnFileCanWriteWithoutBlockingEi
-   fun:_ZN4base19MessagePumpLibevent21FileDescriptorWatcher29OnFileCanWriteWithoutBlocking*
-   fun:_ZN4base19MessagePumpLibevent22OnLibeventNotificationEisPv
-}
-{
-   bug_332271b
-   Memcheck:Param
-   write(buf)
-   obj:*libpthread*
-   fun:_ZN3IPC7Channel11ChannelImpl23ProcessOutgoingMessagesEv
-   fun:_ZN3IPC7Channel11ChannelImpl4SendEPNS_7MessageE
-   fun:_ZN3IPC7Channel4SendEPNS_7MessageE
-   fun:_ZN3IPC12ChannelProxy7Context13OnSendMessage*
-}
-{
    bug_332328
    Memcheck:Leak
    fun:malloc

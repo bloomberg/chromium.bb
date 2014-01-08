@@ -609,7 +609,7 @@ void WebTestProxyBase::paintPagesWithBoundaries()
     int pageCount = webFrame->printBegin(pageSizeInPixels);
     int totalHeight = pageCount * (pageSizeInPixels.height + 1) - 1;
 
-    SkCanvas* testCanvas = skia::TryCreateBitmapCanvas(pageSizeInPixels.width, totalHeight, true);
+    SkCanvas* testCanvas = skia::TryCreateBitmapCanvas(pageSizeInPixels.width, totalHeight, false);
     if (testCanvas) {
         discardBackingStore();
         m_canvas.reset(testCanvas);
@@ -632,7 +632,10 @@ SkCanvas* WebTestProxyBase::canvas()
     float deviceScaleFactor = webView()->deviceScaleFactor();
     int scaledWidth = static_cast<int>(ceil(static_cast<float>(widgetSize.width) * deviceScaleFactor));
     int scaledHeight = static_cast<int>(ceil(static_cast<float>(widgetSize.height) * deviceScaleFactor));
-    m_canvas.reset(skia::CreateBitmapCanvas(scaledWidth, scaledHeight, true));
+    // We're allocating the canvas to be non-opaque (third parameter), so we
+    // don't end up with uninitialized memory if a layout test doesn't damage
+    // the entire view.
+    m_canvas.reset(skia::CreateBitmapCanvas(scaledWidth, scaledHeight, false));
     return m_canvas.get();
 }
 
