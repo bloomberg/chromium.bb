@@ -103,6 +103,7 @@ FileManagerDialogBase.prototype.showTitleOnlyDialog = function(title) {
  *     dialog failed to show due to an existing dialog.
  */
 FileManagerDialogBase.prototype.showTitleAndTextDialog = function(title, text) {
+  this.buttons.style.display = 'none';
   return this.showImpl_(title, text, null, null, null);
 };
 

@@ -66,22 +66,22 @@ cr.define('cr.ui.dialogs', function() {
     this.text_.className = 'cr-dialog-text';
     this.frame_.appendChild(this.text_);
 
-    var buttons = doc.createElement('div');
-    buttons.className = 'cr-dialog-buttons';
-    this.frame_.appendChild(buttons);
+    this.buttons = doc.createElement('div');
+    this.buttons.className = 'cr-dialog-buttons';
+    this.frame_.appendChild(this.buttons);
 
     this.okButton_ = doc.createElement('button');
     this.okButton_.className = 'cr-dialog-ok';
     this.okButton_.textContent = BaseDialog.OK_LABEL;
     this.okButton_.addEventListener('click', this.onOkClick_.bind(this));
-    buttons.appendChild(this.okButton_);
+    this.buttons.appendChild(this.okButton_);
 
     this.cancelButton_ = doc.createElement('button');
     this.cancelButton_.className = 'cr-dialog-cancel';
     this.cancelButton_.textContent = BaseDialog.CANCEL_LABEL;
     this.cancelButton_.addEventListener('click',
                                         this.onCancelClick_.bind(this));
-    buttons.appendChild(this.cancelButton_);
+    this.buttons.appendChild(this.cancelButton_);
 
     this.initialFocusElement_ = this.okButton_;
   };

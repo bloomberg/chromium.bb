@@ -568,7 +568,7 @@ CommandHandler.COMMANDS_['open-with'] = {
     if (tasks) {
       tasks.showTaskPicker(fileManager.defaultTaskPicker,
           str('OPEN_WITH_BUTTON_LABEL'),
-          null,
+          '',
           function(task) {
             tasks.execute(task.taskId);
           });

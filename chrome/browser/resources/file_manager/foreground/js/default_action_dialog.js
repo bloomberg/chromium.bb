@@ -36,6 +36,8 @@ cr.define('cr.filebrowser', function() {
     // but doesn't exceed predefined size.
     this.list_.autoExpands = true;
     this.list_.activateItemAtIndex = this.activateItemAtIndex_.bind(this);
+    // Use 'click' instead of 'change' for keyboard users.
+    this.list_.addEventListener('click', this.onSelected_.bind(this));
 
     this.initialFocusElement_ = this.list_;
 
@@ -93,14 +95,16 @@ cr.define('cr.filebrowser', function() {
    * @param {string} message Message in dialog caption.
    * @param {Array.<Object>} items Items to render in the list.
    * @param {number} defaultIndex Item to select by default.
-   * @param {function(Object=)} opt_onOk OK callback with the selected item.
-   * @param {function()=} opt_onCancel Cancel callback.
+   * @param {function(Object)} onSelectedItem Callback which is called when an
+   *     item is selected.
    */
   DefaultActionDialog.prototype.show = function(title, message, items,
-      defaultIndex, opt_onOk, opt_onCancel) {
+      defaultIndex, onSelectedItem) {
 
-    var show = FileManagerDialogBase.prototype.showOkCancelDialog.call(
-        this, title, message, opt_onOk, opt_onCancel);
+    this.onSelectedItemCallback_ = onSelectedItem;
+
+    var show = FileManagerDialogBase.prototype.showTitleAndTextDialog.call(
+        this, title, message);
 
     if (!show) {
       console.error('DefaultActionDialog can\'t be shown.');
@@ -128,15 +132,15 @@ cr.define('cr.filebrowser', function() {
    */
   DefaultActionDialog.prototype.activateItemAtIndex_ = function(index) {
     this.hide();
-    this.onOk_(this.dataModel_.item(index));
+    this.onSelectedItemCallback_(this.dataModel_.item(index));
   };
 
   /**
    * Closes dialog and invokes callback with currently-selected item.
-   * @override
    */
-  DefaultActionDialog.prototype.onOkClick_ = function() {
-    this.activateItemAtIndex_(this.selectionModel_.selectedIndex);
+  DefaultActionDialog.prototype.onSelected_ = function() {
+    if (this.selectionModel_.selectedIndex !== -1)
+      this.activateItemAtIndex_(this.selectionModel_.selectedIndex);
   };
 
   /**
@@ -145,10 +149,10 @@ cr.define('cr.filebrowser', function() {
   DefaultActionDialog.prototype.onContainerKeyDown_ = function(event) {
     // Handle Escape.
     if (event.keyCode == 27) {
-      this.onCancelClick_(event);
+      this.hide();
       event.preventDefault();
     } else if (event.keyCode == 32 || event.keyCode == 13) {
-      this.onOkClick_();
+      this.onSelected_();
       event.preventDefault();
     }
   };
