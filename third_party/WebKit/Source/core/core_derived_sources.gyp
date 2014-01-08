@@ -104,24 +104,6 @@
       ],
       'actions': [
         {
-          'action_name': 'generateV8ArrayBufferViewCustomScript',
-          'inputs': [
-            '<(bindings_dir)/v8/custom/V8ArrayBufferViewCustomScript.js',
-          ],
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/blink/V8ArrayBufferViewCustomScript.h',
-          ],
-          'action': [
-            'python',
-            '../build/scripts/xxd.py',
-            'V8ArrayBufferViewCustomScript_js',
-            '<@(_inputs)',
-            '<@(_outputs)'
-          ],
-          'message': 'Generating V8ArrayBufferViewCustomScript.h from V8ArrayBufferViewCustomScript.js',
-          'msvs_cygwin_shell': 0,
-        },
-        {
           'action_name': 'generateXMLViewerCSS',
           'inputs': [
             'xml/XMLViewer.css',
