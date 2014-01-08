@@ -20,3 +20,37 @@ class StartupWarmBlankPage(test.Test):
   page_set = 'page_sets/blank_page.json'
   options = {'warm': True,
              'pageset_repeat_iters': 20}
+
+class StartupColdTheme(test.Test):
+  tag = 'theme_cold'
+  test = startup.Startup
+  page_set = 'page_sets/blank_page.json'
+  generated_profile_archive = 'theme_profile.zip'
+  options = {'cold': True,
+             'pageset_repeat_iters': 5}
+
+
+class StartupWarmTheme(test.Test):
+  tag = 'theme_warm'
+  test = startup.Startup
+  page_set = 'page_sets/blank_page.json'
+  generated_profile_archive = 'theme_profile.zip'
+  options = {'warm': True,
+             'pageset_repeat_iters': 20}
+
+class StartupColdManyExtensions(test.Test):
+  tag = 'many_extensions_cold'
+  test = startup.Startup
+  page_set = 'page_sets/blank_page.json'
+  generated_profile_archive = 'many_extensions_profile.zip'
+  options = {'cold': True,
+             'pageset_repeat_iters': 5}
+
+
+class StartupWarmManyExtensions(test.Test):
+  tag = 'many_extensions_warm'
+  test = startup.Startup
+  page_set = 'page_sets/blank_page.json'
+  generated_profile_archive = 'many_extensions_profile.zip'
+  options = {'warm': True,
+             'pageset_repeat_iters': 20}
