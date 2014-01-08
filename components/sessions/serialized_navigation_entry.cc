@@ -65,9 +65,9 @@ SerializedNavigationEntry SerializedNavigationEntry::FromSyncData(
   SerializedNavigationEntry navigation;
   navigation.index_ = index;
   navigation.unique_id_ = sync_data.unique_id();
-  navigation.referrer_ =
-      content::Referrer(GURL(sync_data.referrer()),
-                        blink::WebReferrerPolicyDefault);
+  navigation.referrer_ = content::Referrer(
+      GURL(sync_data.referrer()),
+      static_cast<blink::WebReferrerPolicy>(sync_data.referrer_policy()));
   navigation.virtual_url_ = GURL(sync_data.virtual_url());
   navigation.title_ = base::UTF8ToUTF16(sync_data.title());
   navigation.page_state_ =
@@ -366,8 +366,8 @@ scoped_ptr<NavigationEntry> SerializedNavigationEntry::ToNavigationEntry(
 sync_pb::TabNavigation SerializedNavigationEntry::ToSyncData() const {
   sync_pb::TabNavigation sync_data;
   sync_data.set_virtual_url(virtual_url_.spec());
-  // FIXME(zea): Support referrer policy?
   sync_data.set_referrer(referrer_.url.spec());
+  sync_data.set_referrer_policy(referrer_.policy);
   sync_data.set_title(base::UTF16ToUTF8(title_));
 
   // Page transition core.

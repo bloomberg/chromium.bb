@@ -134,4 +134,6 @@ message TabNavigation {
   repeated string content_pack_categories = 19;
   // The status code from the last navigation.
   optional int32 http_status_code = 20;
+  // Referrer policy.
+  optional int32 referrer_policy = 21;
 }

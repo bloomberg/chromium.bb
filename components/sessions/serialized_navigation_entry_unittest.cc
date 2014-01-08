@@ -78,6 +78,7 @@ sync_pb::TabNavigation MakeSyncDataForTest() {
   sync_pb::TabNavigation sync_data;
   sync_data.set_virtual_url(kVirtualURL.spec());
   sync_data.set_referrer(kReferrer.url.spec());
+  sync_data.set_referrer_policy(blink::WebReferrerPolicyOrigin);
   sync_data.set_title(base::UTF16ToUTF8(kTitle));
   sync_data.set_state(kPageState.ToEncodedData());
   sync_data.set_page_transition(
@@ -153,7 +154,7 @@ TEST(SerializedNavigationEntryTest, FromSyncData) {
   EXPECT_EQ(kIndex, navigation.index());
   EXPECT_EQ(kUniqueID, navigation.unique_id());
   EXPECT_EQ(kReferrer.url, navigation.referrer().url);
-  EXPECT_EQ(blink::WebReferrerPolicyDefault, navigation.referrer().policy);
+  EXPECT_EQ(blink::WebReferrerPolicyOrigin, navigation.referrer().policy);
   EXPECT_EQ(kVirtualURL, navigation.virtual_url());
   EXPECT_EQ(kTitle, navigation.title());
   EXPECT_EQ(kPageState, navigation.page_state());
