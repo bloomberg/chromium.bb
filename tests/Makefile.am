@@ -69,6 +69,7 @@ weston_test_la_SOURCES =		\
 	wayland-test-server-protocol.h
 
 if ENABLE_EGL
+weston_test_la_CFLAGS += $(EGL_TESTS_CFLAGS)
 weston_test_la_LDFLAGS += $(EGL_TESTS_LIBS)
 endif
 
@@ -121,6 +122,7 @@ subsurface_weston_SOURCES = subsurface-test.c
 subsurface_weston_LDADD = libtest-client.la
 
 buffer_count_weston_SOURCES = buffer-count-test.c
+buffer_count_weston_CFLAGS = $(GCC_CFLAGS) $(EGL_TESTS_CFLAGS)
 buffer_count_weston_LDADD = libtest-client.la $(EGL_TESTS_LIBS)
 
 xwayland_weston_SOURCES = xwayland-test.c
