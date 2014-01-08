@@ -1189,8 +1189,8 @@ void Window::StackChildLayerRelativeTo(Window* child,
 
   if (!target_layer) {
     if (direction == STACK_ABOVE) {
-      for (Layers::const_reverse_iterator i = layers.rbegin();
-           i != layers.rend(); ++i) {
+      for (Layers::const_reverse_iterator i = layers.rbegin(),
+               rend = layers.rend(); i != rend; ++i) {
         ancestor_layer->StackAtBottom(*i);
       }
     } else {
@@ -1201,8 +1201,8 @@ void Window::StackChildLayerRelativeTo(Window* child,
   }
 
   if (direction == STACK_ABOVE) {
-    for (Layers::const_reverse_iterator i = layers.rbegin();
-         i != layers.rend(); ++i) {
+    for (Layers::const_reverse_iterator i = layers.rbegin(),
+             rend = layers.rend(); i != rend; ++i) {
       ancestor_layer->StackAbove(*i, target_layer);
     }
   } else {
