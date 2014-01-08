@@ -8,17 +8,16 @@
       'target_name': 'mojo_sample_app',
       'type': 'shared_library',
       'dependencies': [
-        '../base/base.gyp:base',
         '../gpu/gpu.gyp:gles2_c_lib',
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',
         '../ui/gl/gl.gyp:gl',
-        'mojo_common_lib',
         'mojo_gles2',
         'mojo_gles2_bindings',
         'mojo_native_viewport_bindings',
         'mojo_shell_bindings',
         'mojo_system',
+        'mojo_utility',
       ],
       'sources': [
         'examples/sample_app/gles2_client_impl.cc',

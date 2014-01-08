@@ -38,6 +38,7 @@ class GLES2ClientImpl : public GLES2Client {
                                 uint32_t width,
                                 uint32_t height) MOJO_OVERRIDE;
   virtual void ContextLost() MOJO_OVERRIDE;
+  virtual void DrawAnimationFrame() MOJO_OVERRIDE;
 
   base::Callback<void(gfx::Size viewport_size)> context_created_callback_;
   gpu::gles2::GLES2Implementation* impl_;

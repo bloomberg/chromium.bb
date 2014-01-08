@@ -40,5 +40,7 @@ gpu::ContextSupport* GLES2ClientImpl::Support() const {
 
 void GLES2ClientImpl::ContextLost() { impl_ = NULL; }
 
+void GLES2ClientImpl::DrawAnimationFrame() {}
+
 }  // namespace examples
 }  // namespace mojo

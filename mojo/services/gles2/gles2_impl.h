@@ -6,6 +6,7 @@
 #define MOJO_SERVICES_GLES2_GLES2_IMPL_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "base/timer/timer.h"
 #include "mojo/public/bindings/lib/remote_ptr.h"
 #include "mojo/public/system/core_cpp.h"
 #include "mojom/gles2.h"
@@ -24,13 +25,17 @@ class GLES2Impl : public GLES2 {
   explicit GLES2Impl(ScopedMessagePipeHandle client);
   virtual ~GLES2Impl();
 
-  virtual void Destroy() OVERRIDE;
-
   void CreateContext(gfx::AcceleratedWidget widget, const gfx::Size& size);
 
  private:
-  void OnGLContextLost();
+  virtual void RequestAnimationFrames() OVERRIDE;
+  virtual void CancelAnimationFrames() OVERRIDE;
+  virtual void Destroy() OVERRIDE;
 
+  void OnGLContextLost();
+  void DrawAnimationFrame();
+
+  base::RepeatingTimer<GLES2Impl> timer_;
   scoped_ptr<gpu::GLInProcessContext> gl_context_;
   RemotePtr<GLES2Client> client_;
 

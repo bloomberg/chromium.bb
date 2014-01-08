@@ -5,14 +5,14 @@
 #include <stdio.h>
 #include <string>
 
-#include "base/message_loop/message_loop.h"
-#include "mojo/common/bindings_support_impl.h"
 #include "mojo/examples/sample_app/gles2_client_impl.h"
 #include "mojo/public/bindings/lib/bindings_support.h"
 #include "mojo/public/bindings/lib/remote_ptr.h"
 #include "mojo/public/gles2/gles2.h"
 #include "mojo/public/system/core.h"
 #include "mojo/public/system/macros.h"
+#include "mojo/public/utility/environment.h"
+#include "mojo/public/utility/run_loop.h"
 #include "mojom/native_viewport.h"
 #include "mojom/shell.h"
 
@@ -42,7 +42,6 @@ class SampleApp : public ShellClient {
   }
 
   virtual void AcceptConnection(ScopedMessagePipeHandle handle) MOJO_OVERRIDE {
-    NOTREACHED() << "SampleApp can't be connected to.";
   }
 
  private:
@@ -63,7 +62,7 @@ class SampleApp : public ShellClient {
     }
 
     virtual void OnDestroyed() MOJO_OVERRIDE {
-      base::MessageLoop::current()->Quit();
+      utility::RunLoop::current()->Quit();
     }
 
     virtual void OnEvent(const Event& event) MOJO_OVERRIDE {
@@ -86,9 +85,8 @@ class SampleApp : public ShellClient {
 
 extern "C" SAMPLE_APP_EXPORT MojoResult CDECL MojoMain(
     MojoHandle shell_handle) {
-  base::MessageLoop loop;
-  mojo::common::BindingsSupportImpl bindings_support_impl;
-  mojo::BindingsSupport::Set(&bindings_support_impl);
+  mojo::utility::Environment env;
+  mojo::utility::RunLoop loop;
   MojoGLES2Initialize();
 
   mojo::examples::SampleApp app(

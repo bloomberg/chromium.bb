@@ -22,7 +22,8 @@ float CalculateDragDistance(const gfx::PointF& start, const Point& end) {
 }
 
 GLES2ClientImpl::GLES2ClientImpl(ScopedMessagePipeHandle pipe)
-    : service_(pipe.Pass(), this) {
+    : getting_animation_frames_(false),
+      service_(pipe.Pass(), this) {
 }
 
 GLES2ClientImpl::~GLES2ClientImpl() {
@@ -33,14 +34,14 @@ void GLES2ClientImpl::HandleInputEvent(const Event& event) {
   switch (event.action()) {
   case ui::ET_MOUSE_PRESSED:
   case ui::ET_TOUCH_PRESSED:
-    timer_.Stop();
+    CancelAnimationFrames();
     capture_point_.SetPoint(event.location().x(), event.location().y());
     last_drag_point_ = capture_point_;
-    drag_start_time_ = base::Time::Now();
+    drag_start_time_ = GetTimeTicksNow();
     break;
   case ui::ET_MOUSE_DRAGGED:
   case ui::ET_TOUCH_MOVED:
-    if (!timer_.IsRunning()) {
+    if (!getting_animation_frames_) {
       int direction = event.location().y() < last_drag_point_.y() ||
           event.location().x() > last_drag_point_.x() ? 1 : -1;
       cube_.set_direction(direction);
@@ -54,12 +55,14 @@ void GLES2ClientImpl::HandleInputEvent(const Event& event) {
     break;
   case ui::ET_MOUSE_RELEASED:
   case ui::ET_TOUCH_RELEASED: {
+      MojoTimeTicks offset = GetTimeTicksNow() - drag_start_time_;
+      float delta = static_cast<float>(offset) / 1000000.;
       cube_.SetFlingMultiplier(
           CalculateDragDistance(capture_point_, event.location()),
-          base::TimeDelta(base::Time::Now() - drag_start_time_).InSecondsF());
+          delta);
 
       capture_point_ = last_drag_point_ = gfx::PointF();
-      StartTimer();
+      RequestAnimationFrames();
     }
     break;
   default:
@@ -73,27 +76,33 @@ void GLES2ClientImpl::DidCreateContext(uint64_t encoded,
   MojoGLES2MakeCurrent(encoded);
 
   cube_.Init(width, height);
-  StartTimer();
+  RequestAnimationFrames();
 }
 
 void GLES2ClientImpl::ContextLost() {
-  timer_.Stop();
+  CancelAnimationFrames();
 }
 
-void GLES2ClientImpl::Draw() {
-  base::Time now = base::Time::Now();
-  base::TimeDelta offset = now - last_time_;
+void GLES2ClientImpl::DrawAnimationFrame() {
+  MojoTimeTicks now = GetTimeTicksNow();
+  MojoTimeTicks offset = now - last_time_;
+  float delta = static_cast<float>(offset) / 1000000.;
   last_time_ = now;
-  cube_.UpdateForTimeDelta(offset.InSecondsF());
+  cube_.UpdateForTimeDelta(delta);
   cube_.Draw();
 
   MojoGLES2SwapBuffers();
 }
 
-void GLES2ClientImpl::StartTimer() {
-  last_time_ = base::Time::Now();
-  timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(16),
-               this, &GLES2ClientImpl::Draw);
+void GLES2ClientImpl::RequestAnimationFrames() {
+  getting_animation_frames_ = true;
+  service_->RequestAnimationFrames();
+  last_time_ = GetTimeTicksNow();
+}
+
+void GLES2ClientImpl::CancelAnimationFrames() {
+  getting_animation_frames_ = false;
+  service_->CancelAnimationFrames();
 }
 
 }  // namespace examples

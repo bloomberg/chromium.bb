@@ -5,8 +5,6 @@
 #ifndef MOJO_EXAMPLES_SAMPLE_APP_GLES2_CLIENT_IMPL_H_
 #define MOJO_EXAMPLES_SAMPLE_APP_GLES2_CLIENT_IMPL_H_
 
-#include "base/time/time.h"
-#include "base/timer/timer.h"
 #include "mojo/examples/sample_app/spinning_cube.h"
 #include "mojo/public/bindings/lib/remote_ptr.h"
 #include "mojom/gles2.h"
@@ -28,16 +26,17 @@ class GLES2ClientImpl : public GLES2Client {
                                 uint32_t width,
                                 uint32_t height) MOJO_OVERRIDE;
   virtual void ContextLost() MOJO_OVERRIDE;
+  virtual void DrawAnimationFrame() MOJO_OVERRIDE;
 
-  void Draw();
-  void StartTimer();
+  void RequestAnimationFrames();
+  void CancelAnimationFrames();
 
-  base::Time last_time_;
-  base::RepeatingTimer<GLES2ClientImpl> timer_;
+  MojoTimeTicks last_time_;
   SpinningCube cube_;
   gfx::PointF capture_point_;
   gfx::PointF last_drag_point_;
-  base::Time drag_start_time_;
+  MojoTimeTicks drag_start_time_;
+  bool getting_animation_frames_;
 
   RemotePtr<GLES2> service_;
 

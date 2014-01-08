@@ -19,6 +19,15 @@ GLES2Impl::GLES2Impl(ScopedMessagePipeHandle client)
 GLES2Impl::~GLES2Impl() {
 }
 
+void GLES2Impl::RequestAnimationFrames() {
+  timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(16),
+               this, &GLES2Impl::DrawAnimationFrame);
+}
+
+void GLES2Impl::CancelAnimationFrames() {
+  timer_.Stop();
+}
+
 void GLES2Impl::Destroy() {
   gl_context_.reset();
 }
@@ -39,6 +48,10 @@ void GLES2Impl::CreateContext(gfx::AcceleratedWidget widget,
 
 void GLES2Impl::OnGLContextLost() {
   client_->ContextLost();
+}
+
+void GLES2Impl::DrawAnimationFrame() {
+  client_->DrawAnimationFrame();
 }
 
 }  // namespace services

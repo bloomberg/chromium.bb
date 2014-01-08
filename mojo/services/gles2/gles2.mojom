@@ -6,6 +6,8 @@ module mojo {
 
 [Peer=GLES2Client]
 interface GLES2 {
+  void RequestAnimationFrames();
+  void CancelAnimationFrames();
   void Destroy();
 };
 
@@ -13,6 +15,7 @@ interface GLES2 {
 interface GLES2Client {
   void DidCreateContext(uint64 encoded, uint32 width, uint32 height);
   void ContextLost();
+  void DrawAnimationFrame();
 };
 
 }
