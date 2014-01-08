@@ -16,7 +16,6 @@ namespace net {
 class MockClock : public QuicClock {
  public:
   MockClock();
-
   virtual ~MockClock();
 
   void AdvanceTime(QuicTime::Delta delta);

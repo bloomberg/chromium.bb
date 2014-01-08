@@ -84,7 +84,7 @@ class ValueRestore {
 class MockFramerVisitor : public QuicFramerVisitorInterface {
  public:
   MockFramerVisitor();
-  ~MockFramerVisitor();
+  virtual ~MockFramerVisitor();
 
   MOCK_METHOD1(OnError, void(QuicFramer* framer));
   // The constructor sets this up to return false by default.
@@ -405,7 +405,7 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
   MOCK_METHOD5(OnPacketSent,
                bool(QuicTime sent_time, QuicPacketSequenceNumber, QuicByteCount,
                     TransmissionType, HasRetransmittableData));
-  MOCK_METHOD0(OnRetransmissionTimeout, void());
+  MOCK_METHOD1(OnRetransmissionTimeout, void(bool));
   MOCK_METHOD2(OnPacketAbandoned, void(QuicPacketSequenceNumber sequence_number,
                                       QuicByteCount abandoned_bytes));
   MOCK_METHOD4(TimeUntilSend, QuicTime::Delta(QuicTime now, TransmissionType,

@@ -152,7 +152,9 @@ class QuicCryptoServerConfigPeer {
 class TestStrikeRegisterClient : public StrikeRegisterClient {
  public:
   explicit TestStrikeRegisterClient(QuicCryptoServerConfig* config)
-      : config_(config), is_known_orbit_called_(false) {}
+      : config_(config),
+        is_known_orbit_called_(false) {
+  }
 
   virtual bool IsKnownOrbit(StringPiece orbit) const OVERRIDE {
     // Ensure that the strike register client lock is not held.

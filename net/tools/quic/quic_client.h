@@ -88,8 +88,9 @@ class QuicClient : public EpollCallbackInterface,
   bool WaitForEvents();
 
   // From EpollCallbackInterface
-  virtual void OnRegistration(
-      EpollServer* eps, int fd, int event_mask) OVERRIDE {}
+  virtual void OnRegistration(EpollServer* eps,
+                              int fd,
+                              int event_mask) OVERRIDE {}
   virtual void OnModification(int fd, int event_mask) OVERRIDE {}
   virtual void OnEvent(int fd, EpollEvent* event) OVERRIDE;
   // |fd_| can be unregistered without the client being disconnected. This

@@ -49,7 +49,7 @@ class NET_EXPORT_PRIVATE InterArrivalSender : public SendAlgorithmInterface {
       QuicByteCount bytes,
       TransmissionType transmission_type,
       HasRetransmittableData has_retransmittable_data) OVERRIDE;
-  virtual void OnRetransmissionTimeout() OVERRIDE;
+  virtual void OnRetransmissionTimeout(bool packets_retransmitted) OVERRIDE;
   virtual void OnPacketAbandoned(QuicPacketSequenceNumber sequence_number,
                                  QuicByteCount abandoned_bytes) OVERRIDE;
   virtual QuicTime::Delta TimeUntilSend(

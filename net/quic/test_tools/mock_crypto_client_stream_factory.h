@@ -16,7 +16,6 @@ namespace net {
 class MockCryptoClientStreamFactory : public QuicCryptoClientStreamFactory  {
  public:
   MockCryptoClientStreamFactory();
-
   virtual ~MockCryptoClientStreamFactory() {}
 
   virtual QuicCryptoClientStream* CreateQuicCryptoClientStream(

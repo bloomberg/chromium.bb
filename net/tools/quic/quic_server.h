@@ -44,8 +44,9 @@ class QuicServer : public EpollCallbackInterface {
   void Shutdown();
 
   // From EpollCallbackInterface
-  virtual void OnRegistration(
-      EpollServer* eps, int fd, int event_mask) OVERRIDE {}
+  virtual void OnRegistration(EpollServer* eps,
+                              int fd,
+                              int event_mask) OVERRIDE {}
   virtual void OnModification(int fd, int event_mask) OVERRIDE {}
   virtual void OnEvent(int fd, EpollEvent* event) OVERRIDE;
   virtual void OnUnregistration(int fd, bool replaced) OVERRIDE {}

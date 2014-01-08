@@ -33,7 +33,7 @@ class NET_EXPORT_PRIVATE QuicStreamSequencer {
   QuicStreamSequencer(size_t max_frame_memory,
                       ReliableQuicStream* quic_stream);
 
-  virtual ~QuicStreamSequencer();
+  virtual ~QuicStreamSequencer() ;
 
   // Returns the expected value of OnStreamFrame for this frame.
   bool WillAcceptStreamFrame(const QuicStreamFrame& frame) const;

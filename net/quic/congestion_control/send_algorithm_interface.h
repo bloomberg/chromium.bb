@@ -82,8 +82,9 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
                             TransmissionType transmission_type,
                             HasRetransmittableData is_retransmittable) = 0;
 
-  // Called when the retransmission timeout fires.
-  virtual void OnRetransmissionTimeout() = 0;
+  // Called when the retransmission timeout fires.  Neither OnPacketAbandoned
+  // nor OnPacketLost will be called for these packets.
+  virtual void OnRetransmissionTimeout(bool packets_retransmitted) = 0;
 
   // Called when a packet is timed out.
   virtual void OnPacketAbandoned(QuicPacketSequenceNumber sequence_number,

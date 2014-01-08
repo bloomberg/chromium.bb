@@ -266,8 +266,12 @@ bool InterArrivalSender::OnPacketSent(
   return true;
 }
 
-void InterArrivalSender::OnRetransmissionTimeout() {
+void InterArrivalSender::OnRetransmissionTimeout(
+    bool /*packets_retransmitted*/) {
   // TODO(ianswett): Decrease the available bandwidth.
+  if (probing_) {
+    probe_->OnRetransmissionTimeout();
+  }
 }
 
 void InterArrivalSender::OnPacketAbandoned(

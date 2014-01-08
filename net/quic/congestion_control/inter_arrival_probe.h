@@ -29,6 +29,9 @@ class NET_EXPORT_PRIVATE InterArrivalProbe {
   // the peer for.
   void OnAcknowledgedPacket(QuicByteCount bytes);
 
+  // Called when the RTO fires, and all packets have been lost.
+  void OnRetransmissionTimeout();
+
   // Call to get the number of bytes that can be sent as part of this probe.
   QuicByteCount GetAvailableCongestionWindow();
 

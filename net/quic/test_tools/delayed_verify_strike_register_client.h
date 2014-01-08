@@ -43,7 +43,9 @@ class DelayedVerifyStrikeRegisterClient : public LocalStrikeRegisterClient {
     VerifyArgs(base::StringPiece in_nonce,
                QuicWallTime in_now,
                ResultCallback* in_cb)
-        : nonce(in_nonce.as_string()), now(in_now), cb(in_cb) {
+        : nonce(in_nonce.as_string()),
+          now(in_now),
+          cb(in_cb) {
     }
 
     std::string nonce;

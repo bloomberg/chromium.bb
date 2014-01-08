@@ -243,8 +243,17 @@ TEST_F(TcpCubicSenderTest, RTOCongestionWindow) {
   EXPECT_EQ(kDefaultWindowTCP, sender_->SendWindow());
 
   // Expect the window to decrease to the minimum once the RTO fires.
-  sender_->OnRetransmissionTimeout();
+  sender_->OnRetransmissionTimeout(true);
   EXPECT_EQ(2 * kDefaultTCPMSS, sender_->SendWindow());
+}
+
+TEST_F(TcpCubicSenderTest, RTOCongestionWindowNoRetransmission) {
+  EXPECT_EQ(kDefaultWindowTCP, sender_->SendWindow());
+
+  // Expect the window to remain unchanged if the RTO fires but no
+  // packets are retransmitted.
+  sender_->OnRetransmissionTimeout(false);
+  EXPECT_EQ(kDefaultWindowTCP, sender_->SendWindow());
 }
 
 TEST_F(TcpCubicSenderTest, RetransmissionDelay) {

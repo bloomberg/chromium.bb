@@ -1324,8 +1324,7 @@ TEST_F(QuicConnectionTest, AbandonFECFromCongestionWindow) {
   clock_.AdvanceTime(retransmission_time);
 
   // Abandon FEC packet and data packet.
-  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(2);
-  EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout());
+  EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
   EXPECT_CALL(visitor_, OnCanWrite());
   connection_.OnRetransmissionTimeout();
@@ -1354,13 +1353,12 @@ TEST_F(QuicConnectionTest, DontAbandonAckedFEC) {
 
   // Don't abandon the acked FEC packet, but it will abandon 2 the subsequent
   // FEC packets.
-  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(5);
-  EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout());
+  EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(3);
   connection_.GetRetransmissionAlarm()->Fire();
 }
 
-TEST_F(QuicConnectionTest, DontAbandonAllFEC) {
+TEST_F(QuicConnectionTest, AbandonAllFEC) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   connection_.options()->max_packets_per_fec_group = 1;
 
@@ -1387,14 +1385,12 @@ TEST_F(QuicConnectionTest, DontAbandonAllFEC) {
   clock_.AdvanceTime(DefaultRetransmissionTime().Subtract(
       QuicTime::Delta::FromMilliseconds(1)));
 
-  // Don't abandon the acked FEC packet, but it will abandon 1 of the subsequent
-  // FEC packets.
-  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(4, _));
+  // Abandon all packets
+  EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(false));
   connection_.GetRetransmissionAlarm()->Fire();
 
-  // Ensure the connection's alarm is still set, in order to abandon the third
-  // FEC packet.
-  EXPECT_TRUE(connection_.GetRetransmissionAlarm()->IsSet());
+  // Ensure the alarm is not set since all packets have been abandoned.
+  EXPECT_FALSE(connection_.GetRetransmissionAlarm()->IsSet());
 }
 
 TEST_F(QuicConnectionTest, FramePacking) {
@@ -1747,8 +1743,7 @@ TEST_F(QuicConnectionTest, QueueAfterTwoRTOs) {
   writer_->set_blocked(true);
   clock_.AdvanceTime(DefaultRetransmissionTime());
   // Only one packet should be retransmitted.
-  EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout());
-  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(10);
+  EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
   connection_.GetRetransmissionAlarm()->Fire();
   EXPECT_TRUE(connection_.HasQueuedData());
 
@@ -1941,8 +1936,7 @@ TEST_F(QuicConnectionTest, RTO) {
             connection_.GetRetransmissionAlarm()->deadline());
   // Simulate the retransmission alarm firing.
   clock_.AdvanceTime(DefaultRetransmissionTime());
-  EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout());
-  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(1u, _));
+  EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, 2u, _, _, _));
   connection_.GetRetransmissionAlarm()->Fire();
   EXPECT_EQ(2u, last_header()->packet_sequence_number);
@@ -1970,9 +1964,7 @@ TEST_F(QuicConnectionTest, RTOWithSameEncryptionLevel) {
             connection_.GetRetransmissionAlarm()->deadline());
   {
     InSequence s;
-    EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(1, _));
-    EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(2, _));
-    EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout());
+    EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
     EXPECT_CALL(*send_algorithm_, OnPacketSent(_, 3, _, RTO_RETRANSMISSION, _));
     EXPECT_CALL(*send_algorithm_, OnPacketSent(_, 4, _, RTO_RETRANSMISSION, _));
   }
@@ -2030,9 +2022,8 @@ TEST_F(QuicConnectionTest,
                            new TaggingEncrypter(0x02));
   connection_.SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
 
-  EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout());
+  EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(0);
-  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(sequence_number, _)).Times(1);
 
   QuicTime default_retransmission_time = clock_.ApproximateNow().Add(
       DefaultRetransmissionTime());
@@ -2102,8 +2093,7 @@ TEST_F(QuicConnectionTest, TestRetransmitOrder) {
   EXPECT_NE(first_packet_size, second_packet_size);
   // Advance the clock by huge time to make sure packets will be retransmitted.
   clock_.AdvanceTime(QuicTime::Delta::FromSeconds(10));
-  EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout());
-  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(2);
+  EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
   {
     InSequence s;
     EXPECT_CALL(*send_algorithm_,
@@ -2115,8 +2105,7 @@ TEST_F(QuicConnectionTest, TestRetransmitOrder) {
 
   // Advance again and expect the packets to be sent again in the same order.
   clock_.AdvanceTime(QuicTime::Delta::FromSeconds(20));
-  EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout());
-  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(2);
+  EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
   {
     InSequence s;
     EXPECT_CALL(*send_algorithm_,
@@ -2140,9 +2129,7 @@ TEST_F(QuicConnectionTest, RetransmissionCountCalculation) {
       &connection_, original_sequence_number));
   // Force retransmission due to RTO.
   clock_.AdvanceTime(QuicTime::Delta::FromSeconds(10));
-  EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout());
-  EXPECT_CALL(*send_algorithm_,
-              OnPacketAbandoned(original_sequence_number, _)).Times(1);
+  EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
   QuicPacketSequenceNumber rto_sequence_number;
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, RTO_RETRANSMISSION, _))
       .WillOnce(DoAll(SaveArg<1>(&rto_sequence_number), Return(true)));
@@ -2215,9 +2202,8 @@ TEST_F(QuicConnectionTest, DelayRTOWithAckReceipt) {
   // Ensure the second packet gets retransmitted when it finally fires.
   EXPECT_TRUE(retransmission_alarm->IsSet());
   EXPECT_LT(retransmission_alarm->deadline(), clock_.ApproximateNow());
-  EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout());
+  EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, RTO_RETRANSMISSION, _));
-  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _));
   // Manually cancel the alarm to simulate a real test.
   connection_.GetRetransmissionAlarm()->Fire();
 
@@ -2426,7 +2412,6 @@ TEST_F(QuicConnectionTest, SendSchedulerDelayThenSend) {
 TEST_F(QuicConnectionTest, SendSchedulerDelayThenRetransmit) {
   EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, NOT_RETRANSMISSION, _, _))
       .WillRepeatedly(testing::Return(QuicTime::Delta::Zero()));
-  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(1, _)).Times(1);
   EXPECT_CALL(*send_algorithm_,
               OnPacketSent(_, 1, _, NOT_RETRANSMISSION, _));
   connection_.SendStreamDataWithString(3, "foo", 0, !kFin, NULL);
@@ -2435,7 +2420,7 @@ TEST_F(QuicConnectionTest, SendSchedulerDelayThenRetransmit) {
   clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(501));
   // Test that if we send a retransmit with a delay, it ends up queued in the
   // sent packet manager, but not yet serialized.
-  EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout());
+  EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
   EXPECT_CALL(*send_algorithm_,
               TimeUntilSend(_, RTO_RETRANSMISSION, _, _)).WillOnce(
                   testing::Return(QuicTime::Delta::FromMicroseconds(1)));
@@ -3001,12 +2986,12 @@ TEST_F(QuicConnectionTest, CheckSendStats) {
   size_t second_packet_size = last_sent_packet_size();
 
   // 2 retransmissions due to rto, 1 due to explicit nack.
-  EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout());
+  EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout(true));
   EXPECT_CALL(*send_algorithm_,
               OnPacketSent(_, _, _, RTO_RETRANSMISSION, _)).Times(2);
   EXPECT_CALL(*send_algorithm_,
               OnPacketSent(_, _, _, NACK_RETRANSMISSION, _));
-  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(3);
+  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(1);
   EXPECT_CALL(visitor_, OnCanWrite()).WillRepeatedly(Return(true));
 
   // Retransmit due to RTO.

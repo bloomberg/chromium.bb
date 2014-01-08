@@ -3457,8 +3457,7 @@ TEST_P(QuicFramerTest, FecEntropyTest) {
   EXPECT_EQ(1 << 4, visitor_.header_->entropy_hash);
 };
 
-// http://crbug.com/331630. TODO(rtenneti): fix the uninitialized memory issue.
-TEST_P(QuicFramerTest, DISABLED_StopPacketProcessing) {
+TEST_P(QuicFramerTest, StopPacketProcessing) {
   unsigned char packet[] = {
     // public flags (8 byte guid)
     0x3C,
@@ -3511,6 +3510,7 @@ TEST_P(QuicFramerTest, DISABLED_StopPacketProcessing) {
   EXPECT_CALL(visitor, OnStreamFrame(_)).WillOnce(Return(false));
   EXPECT_CALL(visitor, OnAckFrame(_)).Times(0);
   EXPECT_CALL(visitor, OnPacketComplete());
+  EXPECT_CALL(visitor, OnUnauthenticatedPublicHeader(_)).WillOnce(Return(true));
 
   QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
   EXPECT_TRUE(framer_.ProcessPacket(encrypted));

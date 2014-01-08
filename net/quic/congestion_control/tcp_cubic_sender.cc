@@ -278,9 +278,12 @@ void TcpCubicSender::CongestionAvoidance(QuicPacketSequenceNumber ack) {
   }
 }
 
-void TcpCubicSender::OnRetransmissionTimeout() {
-  cubic_.Reset();
-  congestion_window_ = kMinimumCongestionWindow;
+void TcpCubicSender::OnRetransmissionTimeout(bool packets_retransmitted) {
+  bytes_in_flight_ = 0;
+  if (packets_retransmitted) {
+    cubic_.Reset();
+    congestion_window_ = kMinimumCongestionWindow;
+  }
 }
 
 void TcpCubicSender::AckAccounting(QuicTime::Delta rtt) {

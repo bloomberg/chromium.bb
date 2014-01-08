@@ -33,7 +33,6 @@ class NET_EXPORT_PRIVATE QuicConnectionHelper
   QuicConnectionHelper(base::TaskRunner* task_runner,
                        const QuicClock* clock,
                        QuicRandom* random_generator);
-
   virtual ~QuicConnectionHelper();
 
   // QuicConnectionHelperInterface

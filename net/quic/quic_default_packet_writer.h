@@ -31,7 +31,6 @@ class NET_EXPORT_PRIVATE QuicDefaultPacketWriter : public QuicPacketWriter {
       const net::IPAddressNumber& self_address,
       const net::IPEndPoint& peer_address,
       QuicBlockedWriterInterface* blocked_writer) OVERRIDE;
-
   virtual bool IsWriteBlockedDataBuffered() const OVERRIDE;
 
   void OnWriteComplete(int rv);

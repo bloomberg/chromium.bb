@@ -26,7 +26,8 @@ class RecordResultCallback : public StrikeRegisterClient::ResultCallback {
   // |*saved_value| and sets |*called| to true.  The callback is self
   // deleting.
   RecordResultCallback(bool* called, bool* saved_value)
-      : called_(called), saved_value_(saved_value) {
+      : called_(called),
+        saved_value_(saved_value) {
     *called_ = false;
   }
 

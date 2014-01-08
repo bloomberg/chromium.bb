@@ -89,7 +89,7 @@ bool FixRateSender::OnPacketSent(
   return true;
 }
 
-void FixRateSender::OnRetransmissionTimeout() { }
+void FixRateSender::OnRetransmissionTimeout(bool packets_retransmitted) { }
 
 void FixRateSender::OnPacketAbandoned(
     QuicPacketSequenceNumber /*sequence_number*/,

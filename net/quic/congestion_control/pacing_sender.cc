@@ -67,8 +67,8 @@ bool PacingSender::OnPacketSent(
                                transmission_type, has_retransmittable_data);
 }
 
-void PacingSender::OnRetransmissionTimeout() {
-  sender_->OnRetransmissionTimeout();
+void PacingSender::OnRetransmissionTimeout(bool packets_retransmitted) {
+  sender_->OnRetransmissionTimeout(packets_retransmitted);
 }
 
 void PacingSender::OnPacketAbandoned(QuicPacketSequenceNumber sequence_number,

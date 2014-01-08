@@ -46,7 +46,7 @@ class NET_EXPORT_PRIVATE PacingSender : public SendAlgorithmInterface {
                             QuicByteCount bytes,
                             TransmissionType transmission_type,
                             HasRetransmittableData is_retransmittable) OVERRIDE;
-  virtual void OnRetransmissionTimeout() OVERRIDE;
+  virtual void OnRetransmissionTimeout(bool packets_retransmitted) OVERRIDE;
   virtual void OnPacketAbandoned(QuicPacketSequenceNumber sequence_number,
                                  QuicByteCount abandoned_bytes) OVERRIDE;
   virtual QuicTime::Delta TimeUntilSend(

@@ -158,7 +158,6 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     client_supported_versions_ = GetParam().client_supported_versions;
     server_supported_versions_ = GetParam().server_supported_versions;
     negotiated_version_ = GetParam().negotiated_version;
-    FLAGS_limit_rto_increase_for_tests = true;
     FLAGS_enable_quic_pacing = GetParam().use_pacing;
     LOG(INFO) << "Using Configuration: " << GetParam();
 
@@ -253,8 +252,10 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
   void SetPacketLossPercentage(int32 loss) {
     // TODO(rtenneti): enable when we can do random packet loss tests in
     // chrome's tree.
-    // client_writer_->set_fake_packet_loss_percentage(loss);
-    // server_writer_->set_fake_packet_loss_percentage(loss);
+    if (loss != 0 && loss != 100)
+      return;
+    client_writer_->set_fake_packet_loss_percentage(loss);
+    server_writer_->set_fake_packet_loss_percentage(loss);
   }
 
   void SetPacketSendDelay(QuicTime::Delta delay) {
@@ -777,6 +778,41 @@ TEST_P(EndToEndTest, MaxStreamsUberTest) {
   // WaitForEvents waits 50ms and returns true if there are outstanding
   // requests.
   while (client_->client()->WaitForEvents() == true) {
+  }
+}
+
+TEST_P(EndToEndTest, StreamCancelErrorTest) {
+  ASSERT_TRUE(Initialize());
+  string small_body;
+  GenerateBody(&small_body, 256);
+
+  AddToCache("GET", "/small_response", "HTTP/1.1", "200", "OK", small_body);
+
+  client_->client()->WaitForCryptoHandshakeConfirmed();
+
+  QuicSession* session = client_->client()->session();
+  // Lose the request.
+  SetPacketLossPercentage(100);
+  EXPECT_LT(0, client_->SendRequest("/small_response"));
+  client_->client()->WaitForEvents();
+  // Transmit the cancel, and ensure the connection is torn down properly.
+  SetPacketLossPercentage(0);
+  QuicStreamId stream_id = negotiated_version_ > QUIC_VERSION_12 ? 5 : 3;
+  session->SendRstStream(stream_id, QUIC_STREAM_CANCELLED);
+
+  // WaitForEvents waits 50ms and returns true if there are outstanding
+  // requests.
+  while (client_->client()->WaitForEvents() == true) {
+  }
+  if (negotiated_version_ > QUIC_VERSION_12) {
+    // It should be completely fine to RST a stream before any data has bee
+    // received for that stream.
+    EXPECT_EQ(QUIC_NO_ERROR, client_->connection_error());
+  } else {
+    // Check that the connection is always properly closed
+    // from a stream being RST before headers are decompressed.
+    EXPECT_EQ(QUIC_STREAM_RST_BEFORE_HEADERS_DECOMPRESSED,
+              client_->connection_error());
   }
 }
 

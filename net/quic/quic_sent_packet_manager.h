@@ -20,7 +20,6 @@
 #include "net/quic/quic_protocol.h"
 
 NET_EXPORT_PRIVATE extern bool FLAGS_track_retransmission_history;
-NET_EXPORT_PRIVATE extern bool FLAGS_limit_rto_increase_for_tests;
 NET_EXPORT_PRIVATE extern bool FLAGS_enable_quic_pacing;
 
 namespace net {
@@ -295,6 +294,9 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   void ClearPreviousRetransmissions(size_t num_to_clear);
 
   void CleanupPacketHistory();
+
+  // Removes |sequence_number| as a previous transmission of any other packets.
+  void RemovePreviousTransmission(QuicPacketSequenceNumber sequence_number);
 
   // Newly serialized retransmittable and fec packets are added to this map,
   // which contains owning pointers to any contained frames.  If a packet is

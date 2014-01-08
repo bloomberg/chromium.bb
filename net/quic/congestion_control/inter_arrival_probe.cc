@@ -55,6 +55,12 @@ void InterArrivalProbe::OnAcknowledgedPacket(QuicByteCount bytes) {
   }
 }
 
+void InterArrivalProbe::OnRetransmissionTimeout() {
+  if (!estimate_available_) {
+    unacked_data_ = 0;
+  }
+}
+
 QuicByteCount InterArrivalProbe::GetAvailableCongestionWindow() {
   if (estimate_available_) {
     return 0;

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Common utilities for Quic tests
+
 #ifndef NET_TOOLS_QUIC_TEST_TOOLS_QUIC_TEST_UTILS_H_
 #define NET_TOOLS_QUIC_TEST_TOOLS_QUIC_TEST_UTILS_H_
 
@@ -127,7 +129,7 @@ class MockPacketWriter : public QuicPacketWriter {
 class MockQuicSessionOwner : public QuicSessionOwner {
  public:
   MockQuicSessionOwner();
-  ~MockQuicSessionOwner();
+  virtual ~MockQuicSessionOwner();
   MOCK_METHOD2(OnConnectionClosed, void(QuicGuid guid, QuicErrorCode error));
 };
 
