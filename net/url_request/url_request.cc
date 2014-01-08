@@ -198,6 +198,10 @@ void URLRequest::Delegate::OnSSLCertificateError(URLRequest* request,
   request->Cancel();
 }
 
+void URLRequest::Delegate::OnBeforeNetworkStart(URLRequest* request,
+                                                bool* defer) {
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // URLRequest
 
@@ -225,7 +229,8 @@ URLRequest::URLRequest(const GURL& url,
                                           base::Unretained(this))),
       has_notified_completion_(false),
       received_response_content_length_(0),
-      creation_time_(base::TimeTicks::Now()) {
+      creation_time_(base::TimeTicks::Now()),
+      notified_before_network_start_(false) {
   SIMPLE_STATS_COUNTER("URLRequestCount");
 
   // Sanity check out environment.
@@ -822,6 +827,24 @@ void URLRequest::NotifyReceivedRedirect(const GURL& location,
     delegate_->OnReceivedRedirect(this, location, defer_redirect);
     // |this| may be have been destroyed here.
   }
+}
+
+void URLRequest::NotifyBeforeNetworkStart(bool* defer) {
+  if (delegate_ && !notified_before_network_start_) {
+    OnCallToDelegate();
+    delegate_->OnBeforeNetworkStart(this, defer);
+    if (!*defer)
+      OnCallToDelegateComplete();
+    notified_before_network_start_ = true;
+  }
+}
+
+void URLRequest::ResumeNetworkStart() {
+  DCHECK(job_);
+  DCHECK(notified_before_network_start_);
+
+  OnCallToDelegateComplete();
+  job_->ResumeNetworkStart();
 }
 
 void URLRequest::NotifyResponseStarted() {

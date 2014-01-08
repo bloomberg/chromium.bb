@@ -412,6 +412,15 @@ int MockNetworkTransaction::StartInternal(
   return net::ERR_IO_PENDING;
 }
 
+void MockNetworkTransaction::SetBeforeNetworkStartCallback(
+    const BeforeNetworkStartCallback& callback) {
+}
+
+int MockNetworkTransaction::ResumeNetworkStart() {
+  // Should not get here.
+  return net::ERR_FAILED;
+}
+
 void MockNetworkTransaction::CallbackLater(
     const net::CompletionCallback& callback, int result) {
   base::MessageLoop::current()->PostTask(

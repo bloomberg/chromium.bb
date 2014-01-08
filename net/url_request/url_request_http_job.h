@@ -113,6 +113,7 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   virtual void CancelAuth() OVERRIDE;
   virtual void ContinueWithCertificate(X509Certificate* client_cert) OVERRIDE;
   virtual void ContinueDespiteLastError() OVERRIDE;
+  virtual void ResumeNetworkStart() OVERRIDE;
   virtual bool ReadRawData(IOBuffer* buf, int buf_size,
                            int* bytes_read) OVERRIDE;
   virtual void StopCaching() OVERRIDE;

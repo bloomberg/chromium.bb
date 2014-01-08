@@ -274,6 +274,12 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
                                        const SSLInfo& ssl_info,
                                        bool fatal);
 
+    // Called to notify that the request must use the network to complete the
+    // request and is about to do so. This is called at most once per
+    // URLRequest, and by default does not defer. If deferred, call
+    // ResumeNetworkStart() to continue or Cancel() to cancel.
+    virtual void OnBeforeNetworkStart(URLRequest* request, bool* defer);
+
     // After calling Start(), the delegate will receive an OnResponseStarted
     // callback when the request has completed.  If an error occurred, the
     // request->status() will be set.  On success, all redirects have been
@@ -622,6 +628,10 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // response to an OnReceivedRedirect call.
   void FollowDeferredRedirect();
 
+  // This method must be called to resume network communications that were
+  // deferred in response to an OnBeforeNetworkStart call.
+  void ResumeNetworkStart();
+
   // One of the following two methods should be called in response to an
   // OnAuthRequired() callback (and only then).
   // SetAuth will reissue the request with the given credentials.
@@ -688,6 +698,10 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
 
   // Called by URLRequestJob to allow interception when a redirect occurs.
   void NotifyReceivedRedirect(const GURL& location, bool* defer_redirect);
+
+  // Called by URLRequestHttpJob (note, only HTTP(S) jobs will call this) to
+  // allow deferral of network initialization.
+  void NotifyBeforeNetworkStart(bool* defer);
 
   // Allow an interceptor's URLRequestJob to restart this request.
   // Should only be called if the original job has not started a response.
@@ -878,6 +892,9 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   LoadTimingInfo load_timing_info_;
 
   scoped_ptr<const base::debug::StackTrace> stack_trace_;
+
+  // Keeps track of whether or not OnBeforeNetworkStart has been called yet.
+  bool notified_before_network_start_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequest);
 };

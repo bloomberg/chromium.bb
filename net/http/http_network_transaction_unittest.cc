@@ -404,6 +404,28 @@ INSTANTIATE_TEST_CASE_P(
 
 namespace {
 
+class BeforeNetworkStartHandler {
+ public:
+  explicit BeforeNetworkStartHandler(bool defer)
+      : defer_on_before_network_start_(defer),
+        observed_before_network_start_(false) {}
+
+  void OnBeforeNetworkStart(bool* defer) {
+    *defer = defer_on_before_network_start_;
+    observed_before_network_start_ = true;
+  }
+
+  bool observed_before_network_start() const {
+    return observed_before_network_start_;
+  }
+
+ private:
+  const bool defer_on_before_network_start_;
+  bool observed_before_network_start_;
+
+  DISALLOW_COPY_AND_ASSIGN(BeforeNetworkStartHandler);
+};
+
 // Fill |str| with a long header list that consumes >= |size| bytes.
 void FillLargeHeadersString(std::string* str, int size) {
   const char* row =
@@ -1341,6 +1363,85 @@ TEST_P(HttpNetworkTransactionTest, NonKeepAliveConnectionEOF) {
   SimpleGetHelperResult out = SimpleGetHelper(data_reads,
                                               arraysize(data_reads));
   EXPECT_EQ(ERR_EMPTY_RESPONSE, out.rv);
+}
+
+// Test that network access can be deferred and resumed.
+TEST_P(HttpNetworkTransactionTest, ThrottleBeforeNetworkStart) {
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("http://www.google.com/");
+  request.load_flags = 0;
+
+  scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  scoped_ptr<HttpTransaction> trans(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
+
+  // Defer on OnBeforeNetworkStart.
+  BeforeNetworkStartHandler net_start_handler(true);  // defer
+  trans->SetBeforeNetworkStartCallback(
+      base::Bind(&BeforeNetworkStartHandler::OnBeforeNetworkStart,
+                 base::Unretained(&net_start_handler)));
+
+  MockRead data_reads[] = {
+    MockRead("HTTP/1.0 200 OK\r\n"),
+    MockRead("Content-Length: 5\r\n\r\n"),
+    MockRead("hello"),
+    MockRead(SYNCHRONOUS, 0),
+  };
+  StaticSocketDataProvider data(data_reads, arraysize(data_reads), NULL, 0);
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  TestCompletionCallback callback;
+
+  int rv = trans->Start(&request, callback.callback(), BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  base::MessageLoop::current()->RunUntilIdle();
+
+  // Should have deferred for network start.
+  EXPECT_TRUE(net_start_handler.observed_before_network_start());
+  EXPECT_EQ(LOAD_STATE_WAITING_FOR_DELEGATE, trans->GetLoadState());
+  EXPECT_TRUE(trans->GetResponseInfo() == NULL);
+
+  trans->ResumeNetworkStart();
+  rv = callback.WaitForResult();
+  EXPECT_EQ(OK, rv);
+  EXPECT_TRUE(trans->GetResponseInfo() != NULL);
+
+  scoped_refptr<IOBufferWithSize> io_buf(new IOBufferWithSize(100));
+  rv = trans->Read(io_buf.get(), io_buf->size(), callback.callback());
+  if (rv == ERR_IO_PENDING)
+    rv = callback.WaitForResult();
+  EXPECT_EQ(5, rv);
+  trans.reset();
+}
+
+// Test that network use can be deferred and canceled.
+TEST_P(HttpNetworkTransactionTest, ThrottleAndCancelBeforeNetworkStart) {
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("http://www.google.com/");
+  request.load_flags = 0;
+
+  scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  scoped_ptr<HttpTransaction> trans(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
+
+  // Defer on OnBeforeNetworkStart.
+  BeforeNetworkStartHandler net_start_handler(true);  // defer
+  trans->SetBeforeNetworkStartCallback(
+      base::Bind(&BeforeNetworkStartHandler::OnBeforeNetworkStart,
+                 base::Unretained(&net_start_handler)));
+
+  TestCompletionCallback callback;
+
+  int rv = trans->Start(&request, callback.callback(), BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  base::MessageLoop::current()->RunUntilIdle();
+
+  // Should have deferred for network start.
+  EXPECT_TRUE(net_start_handler.observed_before_network_start());
+  EXPECT_EQ(LOAD_STATE_WAITING_FOR_DELEGATE, trans->GetLoadState());
+  EXPECT_TRUE(trans->GetResponseInfo() == NULL);
 }
 
 // Next 2 cases (KeepAliveEarlyClose and KeepAliveEarlyClose2) are regression

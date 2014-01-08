@@ -72,6 +72,9 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   virtual void SetPriority(RequestPriority priority) OVERRIDE;
   virtual void SetWebSocketHandshakeStreamCreateHelper(
       WebSocketHandshakeStreamBase::CreateHelper* create_helper) OVERRIDE;
+  virtual void SetBeforeNetworkStartCallback(
+      const BeforeNetworkStartCallback& callback) OVERRIDE;
+  virtual int ResumeNetworkStart() OVERRIDE;
 
   // HttpStreamRequest::Delegate methods:
   virtual void OnStreamReady(const SSLConfig& used_ssl_config,
@@ -117,6 +120,7 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
                            FlowControlNegativeSendWindowSize);
 
   enum State {
+    STATE_NOTIFY_BEFORE_CREATE_STREAM,
     STATE_CREATE_STREAM,
     STATE_CREATE_STREAM_COMPLETE,
     STATE_INIT_STREAM,
@@ -152,6 +156,7 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   // argument receive the result from the previous state.  If a method returns
   // ERR_IO_PENDING, then the result from OnIOComplete will be passed to the
   // next state method as the result arg.
+  int DoNotifyBeforeCreateStream();
   int DoCreateStream();
   int DoCreateStreamComplete(int result);
   int DoInitStream();
@@ -331,6 +336,8 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   // objects. Only relevant when establishing a WebSocket connection.
   WebSocketHandshakeStreamBase::CreateHelper*
       websocket_handshake_stream_base_create_helper_;
+
+  BeforeNetworkStartCallback before_network_start_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpNetworkTransaction);
 };

@@ -544,6 +544,18 @@ void HttpCache::Transaction::SetWebSocketHandshakeStreamCreateHelper(
     network_trans_->SetWebSocketHandshakeStreamCreateHelper(create_helper);
 }
 
+void HttpCache::Transaction::SetBeforeNetworkStartCallback(
+    const BeforeNetworkStartCallback& callback) {
+  DCHECK(!network_trans_);
+  before_network_start_callback_ = callback;
+}
+
+int HttpCache::Transaction::ResumeNetworkStart() {
+  if (network_trans_)
+    return network_trans_->ResumeNetworkStart();
+  return ERR_UNEXPECTED;
+}
+
 //-----------------------------------------------------------------------------
 
 void HttpCache::Transaction::DoCallback(int rv) {
@@ -865,6 +877,7 @@ int HttpCache::Transaction::DoSendRequest() {
                                                      &network_trans_);
   if (rv != OK)
     return rv;
+  network_trans_->SetBeforeNetworkStartCallback(before_network_start_callback_);
 
   // Old load timing information, if any, is now obsolete.
   old_network_trans_load_timing_.reset();

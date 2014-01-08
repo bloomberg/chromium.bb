@@ -28,6 +28,10 @@ class X509Certificate;
 // answered.  Cookies are assumed to be managed by the caller.
 class NET_EXPORT_PRIVATE HttpTransaction {
  public:
+  // If |*defer| is set to true, the transaction will wait until
+  // ResumeNetworkStart is called before establishing a connection.
+  typedef base::Callback<void(bool* defer)> BeforeNetworkStartCallback;
+
   // Stops any pending IO and destroys the transaction object.
   virtual ~HttpTransaction() {}
 
@@ -144,6 +148,13 @@ class NET_EXPORT_PRIVATE HttpTransaction {
   // Start(). Ownership of |create_helper| remains with the caller.
   virtual void SetWebSocketHandshakeStreamCreateHelper(
       WebSocketHandshakeStreamBase::CreateHelper* create_helper) = 0;
+
+  // Set the callback to receive notification just before network use.
+  virtual void SetBeforeNetworkStartCallback(
+      const BeforeNetworkStartCallback& callback) = 0;
+
+  // Resumes the transaction after being deferred.
+  virtual int ResumeNetworkStart() = 0;
 };
 
 }  // namespace net

@@ -179,6 +179,9 @@ class NET_EXPORT URLRequestJob
   // Continue processing the request ignoring the last error.
   virtual void ContinueDespiteLastError();
 
+  // Continue with the network request.
+  virtual void ResumeNetworkStart();
+
   void FollowDeferredRedirect();
 
   // Returns true if the Job is done producing response data and has called
@@ -232,6 +235,9 @@ class NET_EXPORT URLRequestJob
   // Delegates to URLRequest::Delegate.
   bool CanEnablePrivacyMode() const;
 
+  // Notifies the job that the network is about to be used.
+  void NotifyBeforeNetworkStart(bool* defer);
+
   // Notifies the job that headers have been received.
   void NotifyHeadersComplete();
 
@@ -257,7 +263,7 @@ class NET_EXPORT URLRequestJob
   void NotifyCanceled();
 
   // Notifies the job the request should be restarted.
-  // Should only be called if the job has not started a resposne.
+  // Should only be called if the job has not started a response.
   void NotifyRestartRequired();
 
   // See corresponding functions in url_request.h.

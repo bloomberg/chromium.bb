@@ -211,6 +211,11 @@ class MockNetworkTransaction
   virtual void SetWebSocketHandshakeStreamCreateHelper(
       CreateHelper* create_helper) OVERRIDE;
 
+  virtual void SetBeforeNetworkStartCallback(
+      const BeforeNetworkStartCallback& callback) OVERRIDE;
+
+  virtual int ResumeNetworkStart() OVERRIDE;
+
   CreateHelper* websocket_handshake_stream_create_helper() {
     return websocket_handshake_stream_create_helper_;
   }

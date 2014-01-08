@@ -131,6 +131,9 @@ class HttpCache::Transaction : public HttpTransaction {
   virtual void SetPriority(RequestPriority priority) OVERRIDE;
   virtual void SetWebSocketHandshakeStreamCreateHelper(
       net::WebSocketHandshakeStreamBase::CreateHelper* create_helper) OVERRIDE;
+  virtual void SetBeforeNetworkStartCallback(
+      const BeforeNetworkStartCallback& callback) OVERRIDE;
+  virtual int ResumeNetworkStart() OVERRIDE;
 
  private:
   static const size_t kNumValidationHeaders = 2;
@@ -437,6 +440,8 @@ class HttpCache::Transaction : public HttpTransaction {
   // case the transaction does not exist yet.
   WebSocketHandshakeStreamBase::CreateHelper*
       websocket_handshake_stream_base_create_helper_;
+
+  BeforeNetworkStartCallback before_network_start_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(Transaction);
 };

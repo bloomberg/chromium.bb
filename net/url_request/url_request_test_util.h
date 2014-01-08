@@ -130,6 +130,9 @@ class TestDelegate : public URLRequest::Delegate {
   }
   void set_quit_on_complete(bool val) { quit_on_complete_ = val; }
   void set_quit_on_redirect(bool val) { quit_on_redirect_ = val; }
+  void set_quit_on_network_start(bool val) {
+    quit_on_before_network_start_ = val;
+  }
   void set_allow_certificate_errors(bool val) {
     allow_certificate_errors_ = val;
   }
@@ -142,6 +145,9 @@ class TestDelegate : public URLRequest::Delegate {
   int bytes_received() const { return static_cast<int>(data_received_.size()); }
   int response_started_count() const { return response_started_count_; }
   int received_redirect_count() const { return received_redirect_count_; }
+  int received_before_network_start_count() const {
+    return received_before_network_start_count_;
+  }
   bool received_data_before_response() const {
     return received_data_before_response_;
   }
@@ -160,6 +166,7 @@ class TestDelegate : public URLRequest::Delegate {
   // URLRequest::Delegate:
   virtual void OnReceivedRedirect(URLRequest* request, const GURL& new_url,
                                   bool* defer_redirect) OVERRIDE;
+  virtual void OnBeforeNetworkStart(URLRequest* request, bool* defer) OVERRIDE;
   virtual void OnAuthRequired(URLRequest* request,
                               AuthChallengeInfo* auth_info) OVERRIDE;
   // NOTE: |fatal| causes |certificate_errors_are_fatal_| to be set to true.
@@ -184,6 +191,7 @@ class TestDelegate : public URLRequest::Delegate {
   bool cancel_in_rd_pending_;
   bool quit_on_complete_;
   bool quit_on_redirect_;
+  bool quit_on_before_network_start_;
   bool allow_certificate_errors_;
   AuthCredentials credentials_;
 
@@ -191,6 +199,7 @@ class TestDelegate : public URLRequest::Delegate {
   int response_started_count_;
   int received_bytes_count_;
   int received_redirect_count_;
+  int received_before_network_start_count_;
   bool received_data_before_response_;
   bool request_failed_;
   bool have_certificate_errors_;

@@ -212,6 +212,12 @@ void URLRequestJob::FollowDeferredRedirect() {
   FollowRedirect(redirect_url, redirect_status_code);
 }
 
+void URLRequestJob::ResumeNetworkStart() {
+  // This should only be called for HTTP Jobs, and implemented in the derived
+  // class.
+  NOTREACHED();
+}
+
 bool URLRequestJob::GetMimeType(std::string* mime_type) const {
   return false;
 }
@@ -273,6 +279,13 @@ bool URLRequestJob::CanEnablePrivacyMode() const {
     return false;  // The request was destroyed, so there is no more work to do.
 
   return request_->CanEnablePrivacyMode();
+}
+
+void URLRequestJob::NotifyBeforeNetworkStart(bool* defer) {
+  if (!request_)
+    return;
+
+  request_->NotifyBeforeNetworkStart(defer);
 }
 
 void URLRequestJob::NotifyHeadersComplete() {

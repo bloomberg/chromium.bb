@@ -198,7 +198,7 @@ int HttpNetworkTransaction::Start(const HttpRequestInfo* request_info,
       (request_->privacy_mode == kPrivacyModeDisabled);
   server_ssl_config_.channel_id_enabled = channel_id_enabled;
 
-  next_state_ = STATE_CREATE_STREAM;
+  next_state_ = STATE_NOTIFY_BEFORE_CREATE_STREAM;
   int rv = DoLoop(OK);
   if (rv == ERR_IO_PENDING)
     callback_ = callback;
@@ -404,6 +404,8 @@ LoadState HttpNetworkTransaction::GetLoadState() const {
   // TODO(wtc): Define a new LoadState value for the
   // STATE_INIT_CONNECTION_COMPLETE state, which delays the HTTP request.
   switch (next_state_) {
+    case STATE_CREATE_STREAM:
+      return LOAD_STATE_WAITING_FOR_DELEGATE;
     case STATE_CREATE_STREAM_COMPLETE:
       return stream_request_->GetLoadState();
     case STATE_GENERATE_PROXY_AUTH_TOKEN_COMPLETE:
@@ -451,6 +453,16 @@ void HttpNetworkTransaction::SetPriority(RequestPriority priority) {
 void HttpNetworkTransaction::SetWebSocketHandshakeStreamCreateHelper(
     WebSocketHandshakeStreamBase::CreateHelper* create_helper) {
   websocket_handshake_stream_base_create_helper_ = create_helper;
+}
+
+void HttpNetworkTransaction::SetBeforeNetworkStartCallback(
+    const BeforeNetworkStartCallback& callback) {
+  before_network_start_callback_ = callback;
+}
+
+int HttpNetworkTransaction::ResumeNetworkStart() {
+  DCHECK_EQ(next_state_, STATE_CREATE_STREAM);
+  return DoLoop(OK);
 }
 
 void HttpNetworkTransaction::OnStreamReady(const SSLConfig& used_ssl_config,
@@ -589,6 +601,10 @@ int HttpNetworkTransaction::DoLoop(int result) {
     State state = next_state_;
     next_state_ = STATE_NONE;
     switch (state) {
+      case STATE_NOTIFY_BEFORE_CREATE_STREAM:
+        DCHECK_EQ(OK, rv);
+        rv = DoNotifyBeforeCreateStream();
+        break;
       case STATE_CREATE_STREAM:
         DCHECK_EQ(OK, rv);
         rv = DoCreateStream();
@@ -682,9 +698,18 @@ int HttpNetworkTransaction::DoLoop(int result) {
   return rv;
 }
 
+int HttpNetworkTransaction::DoNotifyBeforeCreateStream() {
+  next_state_ = STATE_CREATE_STREAM;
+  bool defer = false;
+  if (!before_network_start_callback_.is_null())
+    before_network_start_callback_.Run(&defer);
+  if (!defer)
+    return OK;
+  return ERR_IO_PENDING;
+}
+
 int HttpNetworkTransaction::DoCreateStream() {
   next_state_ = STATE_CREATE_STREAM_COMPLETE;
-
   if (ForWebSocketHandshake()) {
     stream_request_.reset(
         session_->http_stream_factory_for_websocket()
@@ -1568,6 +1593,7 @@ bool HttpNetworkTransaction::ForWebSocketHandshake() const {
 std::string HttpNetworkTransaction::DescribeState(State state) {
   std::string description;
   switch (state) {
+    STATE_CASE(STATE_NOTIFY_BEFORE_CREATE_STREAM);
     STATE_CASE(STATE_CREATE_STREAM);
     STATE_CASE(STATE_CREATE_STREAM_COMPLETE);
     STATE_CASE(STATE_INIT_REQUEST_BODY);
