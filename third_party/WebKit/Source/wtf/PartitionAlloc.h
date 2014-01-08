@@ -256,7 +256,7 @@ struct PartitionSuperPageExtentEntry {
     PartitionSuperPageExtentEntry* next;
 };
 
-struct PartitionRootBase {
+struct WTF_EXPORT PartitionRootBase {
     size_t totalSizeOfSuperPages;
     unsigned numBuckets;
     unsigned maxAllocation;
@@ -266,8 +266,11 @@ struct PartitionRootBase {
     char* nextPartitionPageEnd;
     PartitionSuperPageExtentEntry* currentExtent;
     PartitionSuperPageExtentEntry firstExtent;
-    PartitionPage seedPage;
-    PartitionBucket seedBucket;
+
+    static int gInitializedLock;
+    static bool gInitialized;
+    static PartitionPage gSeedPage;
+    static PartitionBucket gPagedBucket;
 };
 
 // Never instantiate a PartitionRoot directly, instead use PartitionAlloc.
@@ -289,7 +292,6 @@ struct PartitionRootGeneric : public PartitionRootBase {
     // need to index array[blah][max+1] which risks undefined behavior.
     PartitionBucket* bucketLookups[((kBitsPerSizet + 1) * kGenericNumBucketsPerOrder) + 1];
     PartitionBucket buckets[kGenericNumBucketedOrders * kGenericNumBucketsPerOrder];
-    PartitionBucket pagedBucket;
 };
 
 WTF_EXPORT void partitionAllocInit(PartitionRoot*, size_t numBuckets, size_t maxAllocation);
@@ -475,7 +477,7 @@ ALWAYS_INLINE bool partitionPageIsFree(PartitionPage* page)
 
 ALWAYS_INLINE PartitionFreelistEntry* partitionPageFreelistHead(PartitionPage* page)
 {
-    ASSERT((page == &page->bucket->root->seedPage && !page->u.freelistHead) || !partitionPageIsFree(page));
+    ASSERT((page == &PartitionRootBase::gSeedPage && !page->u.freelistHead) || !partitionPageIsFree(page));
     return page->u.freelistHead;
 }
 
@@ -488,7 +490,7 @@ ALWAYS_INLINE void partitionPageSetFreelistHead(PartitionPage* page, PartitionFr
 ALWAYS_INLINE void* partitionBucketAlloc(PartitionRootBase* root, size_t size, PartitionBucket* bucket)
 {
     PartitionPage* page = bucket->activePagesHead;
-    ASSERT(page == &root->seedPage || page->numAllocatedSlots >= 0);
+    ASSERT(page == &PartitionRootBase::gSeedPage || page->numAllocatedSlots >= 0);
     void* ret = partitionPageFreelistHead(page);
     if (LIKELY(ret != 0)) {
         // If these asserts fire, you probably corrupted memory.

@@ -102,7 +102,7 @@ static WTF::PartitionPage* GetFullPage(size_t size)
     EXPECT_EQ(numSlots, static_cast<size_t>(bucket->activePagesHead->numAllocatedSlots));
     EXPECT_EQ(0, partitionPageFreelistHead(bucket->activePagesHead));
     EXPECT_TRUE(bucket->activePagesHead);
-    EXPECT_TRUE(bucket->activePagesHead != &allocator.root()->seedPage);
+    EXPECT_TRUE(bucket->activePagesHead != &WTF::PartitionRootGeneric::gSeedPage);
     return bucket->activePagesHead;
 }
 
@@ -124,7 +124,7 @@ TEST(WTF_PartitionAlloc, Basic)
 {
     TestSetup();
     WTF::PartitionBucket* bucket = &allocator.root()->buckets()[kTestBucketIndex];
-    WTF::PartitionPage* seedPage = &allocator.root()->seedPage;
+    WTF::PartitionPage* seedPage = &WTF::PartitionRootGeneric::gSeedPage;
 
     EXPECT_FALSE(bucket->freePagesHead);
     EXPECT_EQ(seedPage, bucket->activePagesHead);
