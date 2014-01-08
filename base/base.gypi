@@ -294,6 +294,7 @@
           'mac/scoped_sending_event.h',
           'mac/scoped_sending_event.mm',
           'mac/sdk_forward_declarations.h',
+          'macros.h',
           'md5.cc',
           'md5.h',
           'memory/aligned_memory.cc',
