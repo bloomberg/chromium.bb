@@ -838,5 +838,56 @@ TEST_P(QuicNetworkTransactionTest, FailedZeroRttBrokenAlternateProtocol) {
   EXPECT_TRUE(quic_data.at_write_eof());
 }
 
+TEST_P(QuicNetworkTransactionTest, ConnectionCloseDuringConnect) {
+  HttpStreamFactory::EnableNpnSpdy3();  // Enables QUIC too.
+
+  QuicStreamId stream_id = GetParam() > QUIC_VERSION_12 ? 5 : 3;
+  MockQuicData mock_quic_data;
+  mock_quic_data.AddRead(ConstructConnectionClosePacket(1));
+  if (GetParam() > QUIC_VERSION_12) {
+    mock_quic_data.AddWrite(
+        ConstructRequestHeadersPacket(1, stream_id, true, true,
+                                      GetRequestHeaders("GET", "http", "/")));
+    mock_quic_data.AddWrite(ConstructAckPacket(2, 1));
+  } else {
+    mock_quic_data.AddWrite(
+        ConstructDataPacket(1, stream_id, true, true, 0,
+                            GetRequestString("GET", "http", "/")));
+    mock_quic_data.AddWrite(ConstructAckPacket(1, 0));
+  }
+  mock_quic_data.AddDelayedSocketDataToFactory(&socket_factory_, 0);
+
+  // When the QUIC connection fails, we will try the request again over HTTP.
+  MockRead http_reads[] = {
+    MockRead("HTTP/1.1 200 OK\r\n"),
+    MockRead(kQuicAlternateProtocolHttpHeader),
+    MockRead("hello world"),
+    MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
+    MockRead(ASYNC, OK)
+  };
+
+  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads),
+                                     NULL, 0);
+  socket_factory_.AddSocketDataProvider(&http_data);
+
+  // In order for a new QUIC session to be established via alternate-protocol
+  // without racing an HTTP connection, we need the host resolution to happen
+  // synchronously.
+  host_resolver_.set_synchronous_mode(true);
+  host_resolver_.rules()->AddIPLiteralRule("www.google.com", "192.168.0.1", "");
+  HostResolver::RequestInfo info(HostPortPair("www.google.com", 80));
+  AddressList address;
+  host_resolver_.Resolve(info,
+                         DEFAULT_PRIORITY,
+                         &address,
+                         CompletionCallback(),
+                         NULL,
+                         net_log_.bound());
+
+  CreateSession();
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
+  SendRequestAndExpectHttpResponse("hello world");
+}
+
 }  // namespace test
 }  // namespace net

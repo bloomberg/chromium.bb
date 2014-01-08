@@ -537,7 +537,7 @@ void QuicClientSession::OnReadComplete(int result) {
   // use a weak pointer to be safe.
   connection()->ProcessUdpPacket(local_address, peer_address, packet);
   if (!connection()->connected()) {
-    stream_factory_->OnSessionClosed(this);
+    NotifyFactoryOfSessionClosedLater();
     return;
   }
   StartReading();

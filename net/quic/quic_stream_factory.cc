@@ -240,6 +240,9 @@ int QuicStreamFactory::Job::DoConnect() {
   }
 
   session_->StartReading();
+  if (!session_->connection()->connected()) {
+    return ERR_QUIC_PROTOCOL_ERROR;
+  }
   rv = session_->CryptoConnect(
       factory_->require_confirmation() || is_https_,
       base::Bind(&QuicStreamFactory::Job::OnIOComplete,
