@@ -8,17 +8,6 @@ namespace extensions {
 
 namespace event_names {
 
-const char kOnDirectoryChanged[] = "fileBrowserPrivate.onDirectoryChanged";
-const char kOnFileBrowserMountCompleted[] =
-    "fileBrowserPrivate.onMountCompleted";
-const char kOnFileTransfersUpdated[] =
-    "fileBrowserPrivate.onFileTransfersUpdated";
-const char kOnFileBrowserPreferencesChanged[] =
-    "fileBrowserPrivate.onPreferencesChanged";
-const char kOnFileBrowserDriveConnectionStatusChanged[] =
-    "fileBrowserPrivate.onDriveConnectionStatusChanged";
-const char kOnFileBrowserCopyProgress[] = "fileBrowserPrivate.onCopyProgress";
-
 const char kOnInputMethodChanged[] = "inputMethodPrivate.onChanged";
 
 const char kOnContextMenus[] = "contextMenus";

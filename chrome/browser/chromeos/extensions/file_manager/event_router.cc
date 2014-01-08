@@ -51,9 +51,6 @@ namespace file_browser_private = extensions::api::file_browser_private;
 namespace file_manager {
 namespace {
 
-const char kPathChanged[] = "changed";
-const char kPathWatchError[] = "error";
-
 void DirectoryExistsOnBlockingPool(const base::FilePath& directory_path,
                                    const base::Closure& success_callback,
                                    const base::Closure& failure_callback) {
@@ -93,27 +90,30 @@ bool IsUploadJob(drive::JobType type) {
           type == drive::TYPE_UPLOAD_EXISTING_FILE);
 }
 
-// Converts the job info to its JSON (Value) form.
-scoped_ptr<base::DictionaryValue> JobInfoToDictionaryValue(
+// Converts the job info to a IDL generated type.
+void JobInfoToTransferStatus(
     const std::string& extension_id,
     const std::string& job_status,
-    const drive::JobInfo& job_info) {
+    const drive::JobInfo& job_info,
+    file_browser_private::FileTransferStatus* status) {
   DCHECK(IsActiveFileTransferJobInfo(job_info));
 
   scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue);
   GURL url = util::ConvertRelativeFilePathToFileSystemUrl(
       job_info.file_path, extension_id);
-  result->SetString("fileUrl", url.spec());
-  result->SetString("transferState", job_status);
-  result->SetString("transferType",
-                    IsUploadJob(job_info.job_type) ? "upload" : "download");
+  status->file_url = url.spec();
+  status->transfer_state = file_browser_private::ParseTransferState(job_status);
+  status->transfer_type =
+      IsUploadJob(job_info.job_type) ?
+      file_browser_private::TRANSFER_TYPE_UPLOAD :
+      file_browser_private::TRANSFER_TYPE_DOWNLOAD;
   // JavaScript does not have 64-bit integers. Instead we use double, which
   // is in IEEE 754 formant and accurate up to 52-bits in JS, and in practice
   // in C++. Larger values are rounded.
-  result->SetDouble("processed",
-                    static_cast<double>(job_info.num_completed_bytes));
-  result->SetDouble("total", static_cast<double>(job_info.num_total_bytes));
-  return result.Pass();
+  status->processed.reset(
+      new double(static_cast<double>(job_info.num_completed_bytes)));
+  status->total.reset(
+      new double(static_cast<double>(job_info.num_total_bytes)));
 }
 
 // Checks for availability of the Google+ Photos app.
@@ -226,7 +226,7 @@ void BroadcastMountCompletedEvent(
 
   BroadcastEvent(
       profile,
-      extensions::event_names::kOnFileBrowserMountCompleted,
+      file_browser_private::OnMountCompleted::kEventName,
       file_browser_private::OnMountCompleted::Create(event));
 }
 
@@ -429,7 +429,7 @@ void EventRouter::OnCopyCompleted(int copy_id,
 
   BroadcastEvent(
       profile_,
-      extensions::event_names::kOnFileBrowserCopyProgress,
+      file_browser_private::OnCopyProgress::kEventName,
       file_browser_private::OnCopyProgress::Create(copy_id, status));
 }
 
@@ -451,7 +451,7 @@ void EventRouter::OnCopyProgress(
 
   BroadcastEvent(
       profile_,
-      extensions::event_names::kOnFileBrowserCopyProgress,
+      file_browser_private::OnCopyProgress::kEventName,
       file_browser_private::OnCopyProgress::Create(copy_id, status));
 }
 
@@ -464,8 +464,8 @@ void EventRouter::DefaultNetworkChanged(const chromeos::NetworkState* network) {
 
   BroadcastEvent(
       profile_,
-      extensions::event_names::kOnFileBrowserDriveConnectionStatusChanged,
-      make_scoped_ptr(new base::ListValue));
+      file_browser_private::OnDriveConnectionStatusChanged::kEventName,
+      file_browser_private::OnDriveConnectionStatusChanged::Create());
 }
 
 void EventRouter::OnFileManagerPrefsChanged() {
@@ -477,8 +477,8 @@ void EventRouter::OnFileManagerPrefsChanged() {
 
   BroadcastEvent(
       profile_,
-      extensions::event_names::kOnFileBrowserPreferencesChanged,
-      make_scoped_ptr(new base::ListValue));
+      file_browser_private::OnPreferencesChanged::kEventName,
+      file_browser_private::OnPreferencesChanged::Create());
 }
 
 void EventRouter::OnJobAdded(const drive::JobInfo& job_info) {
@@ -539,25 +539,23 @@ void EventRouter::SendDriveFileTransferEvent(bool always) {
       return;
   }
 
-  // Convert the current |drive_jobs_| to a JSON value.
-  scoped_ptr<base::ListValue> event_list(new base::ListValue);
+  // Convert the current |drive_jobs_| to IDL type.
+  std::vector<linked_ptr<file_browser_private::FileTransferStatus> >
+      status_list;
   for (std::map<drive::JobID, DriveJobInfoWithStatus>::iterator
            iter = drive_jobs_.begin(); iter != drive_jobs_.end(); ++iter) {
-
-    scoped_ptr<base::DictionaryValue> job_info_dict(
-        JobInfoToDictionaryValue(kFileManagerAppId,
-                                 iter->second.status,
-                                 iter->second.job_info));
-    event_list->Append(job_info_dict.release());
+    linked_ptr<file_browser_private::FileTransferStatus> status(
+        new file_browser_private::FileTransferStatus());
+    JobInfoToTransferStatus(kFileManagerAppId,
+                            iter->second.status,
+                            iter->second.job_info,
+                            status.get());
+    status_list.push_back(status);
   }
-
-  scoped_ptr<base::ListValue> args(new base::ListValue());
-  args->Append(event_list.release());
-  scoped_ptr<extensions::Event> event(new extensions::Event(
-      extensions::event_names::kOnFileTransfersUpdated, args.Pass()));
-  extensions::ExtensionSystem::Get(profile_)->event_router()->
-      DispatchEventToExtension(kFileManagerAppId, event.Pass());
-
+  BroadcastEvent(
+      profile_,
+      file_browser_private::OnFileTransfersUpdated::kEventName,
+      file_browser_private::OnFileTransfersUpdated::Create(status_list));
   last_file_transfer_event_ = now;
 }
 
@@ -571,8 +569,8 @@ void EventRouter::OnRefreshTokenInvalid() {
   // Raise a DriveConnectionStatusChanged event to notify the status offline.
   BroadcastEvent(
       profile_,
-      extensions::event_names::kOnFileBrowserDriveConnectionStatusChanged,
-      make_scoped_ptr(new base::ListValue));
+      file_browser_private::OnDriveConnectionStatusChanged::kEventName,
+      file_browser_private::OnDriveConnectionStatusChanged::Create());
 }
 
 void EventRouter::HandleFileWatchNotification(const base::FilePath& local_path,
@@ -598,28 +596,27 @@ void EventRouter::DispatchDirectoryChangeEvent(
 
   for (size_t i = 0; i < extension_ids.size(); ++i) {
     const std::string& extension_id = extension_ids[i];
-
-    GURL target_origin_url(extensions::Extension::GetBaseURLFromExtensionId(
-        extension_id));
-    scoped_ptr<base::ListValue> args(new base::ListValue());
-    base::DictionaryValue* watch_info = new base::DictionaryValue();
-    args->Append(watch_info);
-
+    const GURL target_origin_url(
+        extensions::Extension::GetBaseURLFromExtensionId(extension_id));
     // This will be replaced with a real Entry in custom bindings.
-    fileapi::FileSystemInfo info =
+    const fileapi::FileSystemInfo info =
         fileapi::GetFileSystemInfoForChromeOS(target_origin_url.GetOrigin());
-    base::DictionaryValue* entry = new base::DictionaryValue();
-    entry->SetString("fileSystemName", info.name);
-    entry->SetString("fileSystemRoot", info.root_url.spec());
-    entry->SetString("fileFullPath", "/" + virtual_path.value());
-    entry->SetBoolean("fileIsDirectory", true);
-    watch_info->Set("entry", entry);
-    watch_info->SetString("eventType",
-                          got_error ? kPathWatchError : kPathChanged);
-    scoped_ptr<extensions::Event> event(new extensions::Event(
-        extensions::event_names::kOnDirectoryChanged, args.Pass()));
-    extensions::ExtensionSystem::Get(profile_)->event_router()->
-        DispatchEventToExtension(extension_id, event.Pass());
+
+    file_browser_private::FileWatchEvent event;
+    event.event_type = got_error ?
+        file_browser_private::FILE_WATCH_EVENT_TYPE_ERROR :
+        file_browser_private::FILE_WATCH_EVENT_TYPE_CHANGED;
+    event.entry.additional_properties.SetString("fileSystemName", info.name);
+    event.entry.additional_properties.SetString("fileSystemRoot",
+                                                info.root_url.spec());
+    event.entry.additional_properties.SetString("fileFullPath",
+                                                "/" + virtual_path.value());
+    event.entry.additional_properties.SetBoolean("fileIsDirectory", true);
+
+    BroadcastEvent(
+        profile_,
+        file_browser_private::OnDirectoryChanged::kEventName,
+        file_browser_private::OnDirectoryChanged::Create(event));
   }
 }
 
