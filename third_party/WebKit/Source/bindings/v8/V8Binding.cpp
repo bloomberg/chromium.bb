@@ -153,7 +153,7 @@ DOMWindow* toNativeDOMWindow(v8::Handle<v8::Value> value, v8::Isolate* isolate)
 const int32_t kMaxInt32 = 0x7fffffff;
 const int32_t kMinInt32 = -kMaxInt32 - 1;
 const uint32_t kMaxUInt32 = 0xffffffff;
-const int64_t kJSMaxInteger = 0x20000000000000LL - 1; // 2^53 - 1, maximum integer exactly representable in ECMAScript.
+const int64_t kJSMaxInteger = 0x20000000000000LL - 1; // 2^53 - 1, maximum uniquely representable integer in ECMAScript.
 
 static double enforceRange(double x, double minimum, double maximum, const char* typeName, ExceptionState& exceptionState)
 {

@@ -312,6 +312,14 @@ converter.testLongLong = -0x80000000
 PASS converter.testLongLong is -0x80000000
 converter.testLongLong = -0x80000001
 PASS converter.testLongLong is -0x80000001
+converter.testLongLong = -Math.pow(2, 53) + 1
+PASS converter.testLongLong is -Math.pow(2, 53) + 1
+converter.testLongLong = -Math.pow(2, 53)
+PASS converter.testLongLong is -Math.pow(2, 53)
+converter.testLongLong = Math.pow(2, 53) - 1
+PASS converter.testLongLong is Math.pow(2, 53) - 1
+converter.testLongLong = Math.pow(2, 53)
+PASS converter.testLongLong is Math.pow(2, 53)
 converter.testLongLong = 0xDCBA9876543210
 PASS converter.testLongLong is 0xDCBA9876543210
 converter.testLongLong = Number.MIN_VALUE
@@ -386,6 +394,12 @@ converter.testEnforceRangeLongLong = -0x80000000
 PASS converter.testEnforceRangeLongLong is -0x80000000
 converter.testEnforceRangeLongLong = -0x80000001
 PASS converter.testEnforceRangeLongLong is -0x80000001
+converter.testEnforceRangeLongLong = -Math.pow(2, 53) + 1
+PASS converter.testEnforceRangeLongLong is -Math.pow(2, 53) + 1
+PASS converter.testEnforceRangeLongLong = -Math.pow(2, 53) threw exception TypeError: Failed to set the 'testEnforceRangeLongLong' property on 'TypeConversions': Value is outside the 'long long' value range..
+converter.testEnforceRangeLongLong = Math.pow(2, 53) - 1
+PASS converter.testEnforceRangeLongLong is Math.pow(2, 53) - 1
+PASS converter.testEnforceRangeLongLong = Math.pow(2, 53) + 1 threw exception TypeError: Failed to set the 'testEnforceRangeLongLong' property on 'TypeConversions': Value is outside the 'long long' value range..
 PASS converter.testEnforceRangeLongLong = 0xDCBA9876543210 threw exception TypeError: Failed to set the 'testEnforceRangeLongLong' property on 'TypeConversions': Value is outside the 'long long' value range..
 converter.testEnforceRangeLongLong = Number.MIN_VALUE
 PASS converter.testEnforceRangeLongLong is 0
@@ -452,6 +466,14 @@ converter.testUnsignedLongLong = -0x80000000
 PASS converter.testUnsignedLongLong is 0xFFFFFFFF80000000
 converter.testUnsignedLongLong = -0x80000001
 PASS converter.testUnsignedLongLong is 0xFFFFFFFF7FFFFFFF
+converter.testUnsignedLongLong = -Math.pow(2, 53) + 1
+PASS converter.testUnsignedLongLong is Math.pow(2, 64) - Math.pow(2, 53)
+converter.testUnsignedLongLong = -Math.pow(2, 53)
+PASS converter.testUnsignedLongLong is Math.pow(2, 64) - Math.pow(2, 53)
+converter.testUnsignedLongLong = Math.pow(2, 53) - 1
+PASS converter.testUnsignedLongLong is Math.pow(2, 53) - 1
+converter.testUnsignedLongLong = Math.pow(2, 53)
+PASS converter.testUnsignedLongLong is Math.pow(2, 53)
 converter.testUnsignedLongLong = 0xDCBA9876543210
 PASS converter.testUnsignedLongLong is 0xDCBA9876543210
 converter.testUnsignedLongLong = Number.MIN_VALUE
@@ -519,6 +541,11 @@ converter.testEnforceRangeUnsignedLongLong = 0xFFFFFFFF
 PASS converter.testEnforceRangeUnsignedLongLong is 0xFFFFFFFF
 PASS converter.testEnforceRangeUnsignedLongLong = -0x80000000 threw exception TypeError: Failed to set the 'testEnforceRangeUnsignedLongLong' property on 'TypeConversions': Value is outside the 'unsigned long long' value range..
 PASS converter.testEnforceRangeUnsignedLongLong = -0x80000001 threw exception TypeError: Failed to set the 'testEnforceRangeUnsignedLongLong' property on 'TypeConversions': Value is outside the 'unsigned long long' value range..
+PASS converter.testEnforceRangeUnsignedLongLong = -Math.pow(2, 53) + 1 threw exception TypeError: Failed to set the 'testEnforceRangeUnsignedLongLong' property on 'TypeConversions': Value is outside the 'unsigned long long' value range..
+PASS converter.testEnforceRangeUnsignedLongLong = -Math.pow(2, 53) threw exception TypeError: Failed to set the 'testEnforceRangeUnsignedLongLong' property on 'TypeConversions': Value is outside the 'unsigned long long' value range..
+converter.testEnforceRangeUnsignedLongLong = Math.pow(2, 53) - 1
+PASS converter.testEnforceRangeUnsignedLongLong is Math.pow(2, 53) - 1
+PASS converter.testEnforceRangeUnsignedLongLong = Math.pow(2, 53) threw exception TypeError: Failed to set the 'testEnforceRangeUnsignedLongLong' property on 'TypeConversions': Value is outside the 'unsigned long long' value range..
 PASS converter.testEnforceRangeUnsignedLongLong = 0xDCBA9876543210 threw exception TypeError: Failed to set the 'testEnforceRangeUnsignedLongLong' property on 'TypeConversions': Value is outside the 'unsigned long long' value range..
 converter.testEnforceRangeUnsignedLongLong = Number.MIN_VALUE
 PASS converter.testEnforceRangeUnsignedLongLong is 0
