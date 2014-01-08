@@ -612,6 +612,8 @@
         'renderer/media/media_stream_registry_interface.h',
         'renderer/media/media_stream_source_observer.cc',
         'renderer/media/media_stream_source_observer.h',
+        'renderer/media/media_stream_video_source.cc',
+        'renderer/media/media_stream_video_source.h',
         'renderer/media/native_handle_impl.cc',
         'renderer/media/native_handle_impl.h',
         'renderer/media/peer_connection_audio_sink_owner.cc',

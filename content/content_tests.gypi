@@ -537,6 +537,7 @@
         'renderer/media/buffered_resource_loader_unittest.cc',
         'renderer/media/cache_util_unittest.cc',
         'renderer/media/crypto/key_systems_unittest.cc',
+        'renderer/media/media_stream_video_source_unittest.cc',
         'renderer/media/test_response_generator.cc',
         'renderer/media/test_response_generator.h',
         'renderer/media/video_capture_impl_unittest.cc',
