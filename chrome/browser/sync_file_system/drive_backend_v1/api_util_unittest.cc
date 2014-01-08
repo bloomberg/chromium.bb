@@ -63,7 +63,8 @@ class APIUtilTest : public testing::Test {
     fake_drive_uploader_ = new FakeDriveUploader(fake_drive_service_);
 
     fake_drive_helper_.reset(new FakeDriveServiceHelper(
-        fake_drive_service_, fake_drive_uploader_));
+        fake_drive_service_, fake_drive_uploader_,
+        APIUtil::GetSyncRootDirectoryName()));
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     api_util_ = APIUtil::CreateForTesting(

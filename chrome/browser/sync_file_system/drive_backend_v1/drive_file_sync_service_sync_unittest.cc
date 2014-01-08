@@ -68,7 +68,8 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
         fake_drive_service_, base::MessageLoopProxy::current().get());
 
     fake_drive_helper_.reset(new FakeDriveServiceHelper(
-        fake_drive_service_, drive_uploader_));
+        fake_drive_service_, drive_uploader_,
+        APIUtil::GetSyncRootDirectoryName()));
 
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
     bool created = false;

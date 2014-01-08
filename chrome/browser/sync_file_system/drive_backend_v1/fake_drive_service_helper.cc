@@ -9,7 +9,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/sync_file_system/drive_backend_v1/api_util.h"
 #include "chrome/browser/sync_file_system/sync_file_system_test_util.h"
 #include "chrome/browser/sync_file_system/sync_status_code.h"
 #include "content/public/test/test_browser_thread.h"
@@ -52,9 +51,11 @@ void DownloadResultCallback(GDataErrorCode* error_out,
 
 FakeDriveServiceHelper::FakeDriveServiceHelper(
     drive::FakeDriveService* fake_drive_service,
-    drive::DriveUploaderInterface* drive_uploader)
+    drive::DriveUploaderInterface* drive_uploader,
+    const std::string& sync_root_folder_title)
     : fake_drive_service_(fake_drive_service),
-      drive_uploader_(drive_uploader) {
+      drive_uploader_(drive_uploader),
+      sync_root_folder_title_(sync_root_folder_title) {
   Initialize();
 }
 
@@ -164,7 +165,7 @@ GDataErrorCode FakeDriveServiceHelper::GetSyncRootFolderID(
   GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
   scoped_ptr<ResourceList> resource_list;
   fake_drive_service_->SearchByTitle(
-      APIUtil::GetSyncRootDirectoryName(), std::string(),
+      sync_root_folder_title_, std::string(),
       CreateResultReceiver(&error, &resource_list));
   base::RunLoop().RunUntilIdle();
   if (error != google_apis::HTTP_SUCCESS)

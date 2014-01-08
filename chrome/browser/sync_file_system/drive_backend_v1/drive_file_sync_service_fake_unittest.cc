@@ -190,7 +190,8 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
         fake_drive_service_, base::MessageLoopProxy::current().get());
 
     fake_drive_helper_.reset(new FakeDriveServiceHelper(
-        fake_drive_service_, drive_uploader));
+        fake_drive_service_, drive_uploader,
+        APIUtil::GetSyncRootDirectoryName()));
 
     api_util_ = APIUtil::CreateForTesting(
         fake_drive_helper_->base_dir_path().AppendASCII("tmp"),

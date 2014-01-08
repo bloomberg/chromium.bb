@@ -22,6 +22,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
 #include "chrome/browser/sync_file_system/drive_backend_v1/drive_file_sync_util.h"
 #include "chrome/browser/sync_file_system/logger.h"
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
@@ -41,10 +42,6 @@ enum ParentType {
   PARENT_TYPE_ROOT_OR_EMPTY,
   PARENT_TYPE_DIRECTORY,
 };
-
-const char kSyncRootDirectoryName[] = "Chrome Syncable FileSystem";
-const char kSyncRootDirectoryNameDev[] = "Chrome Syncable FileSystem Dev";
-const char kMimeTypeOctetStream[] = "application/octet-stream";
 
 const char kFakeAccountId[] = "test_user@gmail.com";
 
@@ -643,8 +640,8 @@ void APIUtil::DidGetDriveRootResourceIdForEnsureSyncRoot(
 // TODO(calvinlo): Delete this when Sync Directory Operations are supported by
 // default.
 std::string APIUtil::GetSyncRootDirectoryName() {
-  return IsSyncFSDirectoryOperationEnabled() ? kSyncRootDirectoryNameDev
-                                             : kSyncRootDirectoryName;
+  return IsSyncFSDirectoryOperationEnabled() ? kSyncRootFolderTitleDev
+                                             : kSyncRootFolderTitle;
 }
 
 // static

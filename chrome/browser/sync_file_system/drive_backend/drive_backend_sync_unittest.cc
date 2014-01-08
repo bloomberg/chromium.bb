@@ -9,6 +9,7 @@
 #include "base/run_loop.h"
 #include "chrome/browser/drive/drive_uploader.h"
 #include "chrome/browser/drive/fake_drive_service.h"
+#include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine.h"
@@ -69,7 +70,8 @@ class DriveBackendSyncTest : public testing::Test {
     remote_sync_service_->Initialize();
 
     fake_drive_service_helper_.reset(new FakeDriveServiceHelper(
-        fake_drive_service(), drive_uploader()));
+        fake_drive_service(), drive_uploader(),
+        kSyncRootFolderTitle));
 
     local_sync_service_->SetLocalChangeProcessor(remote_sync_service_.get());
     remote_sync_service_->SetRemoteChangeProcessor(local_sync_service_.get());

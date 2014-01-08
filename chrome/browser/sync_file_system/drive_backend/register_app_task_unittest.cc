@@ -52,7 +52,8 @@ class RegisterAppTaskTest : public testing::Test,
         fake_drive_service_.get(), base::MessageLoopProxy::current()));
 
     fake_drive_service_helper_.reset(new FakeDriveServiceHelper(
-        fake_drive_service_.get(), drive_uploader_.get()));
+        fake_drive_service_.get(), drive_uploader_.get(),
+        kSyncRootFolderTitle));
 
     ASSERT_EQ(google_apis::HTTP_CREATED,
               fake_drive_service_helper_->AddOrphanedFolder(

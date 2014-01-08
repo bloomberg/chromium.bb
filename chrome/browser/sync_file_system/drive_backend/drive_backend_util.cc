@@ -21,12 +21,6 @@
 namespace sync_file_system {
 namespace drive_backend {
 
-namespace {
-
-const char kMimeTypeOctetStream[] = "application/octet-stream";
-
-}  // namespace
-
 void PutServiceMetadataToBatch(const ServiceMetadata& service_metadata,
                                leveldb::WriteBatch* batch) {
   std::string value;

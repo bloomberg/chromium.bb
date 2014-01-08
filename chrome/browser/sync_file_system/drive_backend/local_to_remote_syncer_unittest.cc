@@ -61,7 +61,8 @@ class LocalToRemoteSyncerTest : public testing::Test,
 
     drive_uploader_.reset(new FakeDriveUploader(fake_drive_service_.get()));
     fake_drive_helper_.reset(new FakeDriveServiceHelper(
-        fake_drive_service_.get(), drive_uploader_.get()));
+        fake_drive_service_.get(), drive_uploader_.get(),
+        kSyncRootFolderTitle));
     fake_remote_change_processor_.reset(new FakeRemoteChangeProcessor);
 
     RegisterSyncableFileSystem();

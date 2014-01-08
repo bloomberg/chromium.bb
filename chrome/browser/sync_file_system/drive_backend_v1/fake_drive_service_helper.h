@@ -22,7 +22,8 @@ namespace drive_backend {
 class FakeDriveServiceHelper {
  public:
   FakeDriveServiceHelper(drive::FakeDriveService* fake_drive_service,
-                         drive::DriveUploaderInterface* drive_uploader);
+                         drive::DriveUploaderInterface* drive_uploader,
+                         const std::string& sync_root_folder_title);
   virtual ~FakeDriveServiceHelper();
 
   google_apis::GDataErrorCode AddOrphanedFolder(
@@ -79,6 +80,8 @@ class FakeDriveServiceHelper {
   // Not own.
   drive::FakeDriveService* fake_drive_service_;
   drive::DriveUploaderInterface* drive_uploader_;
+
+  std::string sync_root_folder_title_;
 };
 
 }  // namespace drive_backend
