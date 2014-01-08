@@ -166,7 +166,7 @@ body.uber-frame section > div:only-of-type {
 .page-banner-text {
   -webkit-padding-end: 8px;
   -webkit-padding-start: 26px;
-  background-image: url('chrome://theme/IDR_MANAGED');
+  background-image: url('chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY');
   background-position: 5px center;
   background-repeat: no-repeat;
   background-size: 16px;

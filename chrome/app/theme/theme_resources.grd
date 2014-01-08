@@ -450,7 +450,6 @@
         <structure type="chrome_scaled_image" name="IDR_LOGIN_PASSWORD_CAPS_LOCK" file="login_password_capslock.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_LOGIN_GUEST" file="common/login_guest.png" />
-      <structure type="chrome_scaled_image" name="IDR_MANAGED" file="managed_small.png" />
       <if expr="pp_ifdef('chromeos')">
         <structure type="chrome_scaled_image" name="IDR_MANAGED_MODE_ICON" file="cros/managed_mode_icon.png" />
       </if>
