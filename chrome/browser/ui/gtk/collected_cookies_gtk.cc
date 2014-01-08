@@ -266,6 +266,12 @@ GtkWidget* CollectedCookiesGtk::CreateAllowedPane() {
                    G_CALLBACK(OnBlockAllowedButtonClickedThunk), this);
   gtk_container_add(GTK_CONTAINER(button_box), block_allowed_cookie_button_);
 
+  delete_allowed_cookie_button_ = gtk_button_new_with_label(
+      l10n_util::GetStringUTF8(IDS_COOKIES_REMOVE_LABEL).c_str());
+  g_signal_connect(delete_allowed_cookie_button_, "clicked",
+                   G_CALLBACK(OnDeleteAllowedButtonClickedThunk), this);
+  gtk_container_add(GTK_CONTAINER(button_box), delete_allowed_cookie_button_);
+
   // Wrap the vbox inside an hbox so that we can specify padding along the
   // horizontal axis.
   GtkWidget* box = gtk_hbox_new(FALSE, 0);
@@ -437,6 +443,9 @@ void CollectedCookiesGtk::EnableControls() {
                                   allowed_cookies_tree_adapter_.get());
   gtk_widget_set_sensitive(block_allowed_cookie_button_,
                            enable_for_allowed_cookies);
+  gtk_widget_set_sensitive(
+      delete_allowed_cookie_button_,
+      gtk_tree_selection_count_selected_rows(allowed_selection_) > 0);
 
   bool enable_for_blocked_cookies =
       SelectionContainsHostNode(blocked_selection_,
@@ -507,6 +516,20 @@ void CollectedCookiesGtk::AddExceptions(GtkTreeSelection* selection,
 void CollectedCookiesGtk::OnBlockAllowedButtonClicked(GtkWidget* button) {
   AddExceptions(allowed_selection_, allowed_cookies_tree_adapter_.get(),
                 CONTENT_SETTING_BLOCK);
+}
+
+void CollectedCookiesGtk::OnDeleteAllowedButtonClicked(GtkWidget* button) {
+  GtkTreeModel* model;
+  GList* paths = gtk_tree_selection_get_selected_rows(
+      allowed_selection_, &model);
+  for (GList* item = paths; item; item = item->next) {
+    GtkTreeIter iter;
+    gtk_tree_model_get_iter(
+        model, &iter, reinterpret_cast<GtkTreePath*>(item->data));
+    CookieTreeNode* node = static_cast<CookieTreeNode*>(
+        allowed_cookies_tree_adapter_->GetNode(&iter));
+    allowed_cookies_tree_model_->DeleteCookieNode(node);
+  }
 }
 
 void CollectedCookiesGtk::OnAllowBlockedButtonClicked(GtkWidget* button) {

@@ -73,6 +73,7 @@ class CollectedCookiesGtk : public gtk_tree::TreeAdapter::Delegate,
   CHROMEGTK_CALLBACK_0(CollectedCookiesGtk, void, OnTreeViewSelectionChange);
   CHROMEGTK_CALLBACK_0(CollectedCookiesGtk, void, OnClose);
   CHROMEGTK_CALLBACK_0(CollectedCookiesGtk, void, OnBlockAllowedButtonClicked);
+  CHROMEGTK_CALLBACK_0(CollectedCookiesGtk, void, OnDeleteAllowedButtonClicked);
   CHROMEGTK_CALLBACK_0(CollectedCookiesGtk, void, OnAllowBlockedButtonClicked);
   CHROMEGTK_CALLBACK_0(CollectedCookiesGtk, void,
                        OnForSessionBlockedButtonClicked);
@@ -91,6 +92,7 @@ class CollectedCookiesGtk : public gtk_tree::TreeAdapter::Delegate,
   GtkWidget* blocked_description_label_;
 
   GtkWidget* block_allowed_cookie_button_;
+  GtkWidget* delete_allowed_cookie_button_;
 
   GtkWidget* allow_blocked_cookie_button_;
   GtkWidget* for_session_blocked_cookie_button_;
