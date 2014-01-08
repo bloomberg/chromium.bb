@@ -70,39 +70,21 @@ class DriveAppRegistry {
   void UpdateFromAppList(const google_apis::AppList& app_list);
 
  private:
-
-  // Defines mapping between file content type selectors (extensions, MIME
-  // types) and corresponding app.
-  typedef std::multimap<std::string, DriveAppInfo*> DriveAppFileSelectorMap;
-
   // Part of Update(). Runs upon the completion of fetching the Drive apps
   // data from the server.
   void UpdateAfterGetAppList(google_apis::GDataErrorCode gdata_error,
                              scoped_ptr<google_apis::AppList> app_list);
 
-  // Helper function for loading Drive application file |selectors| into
-  // corresponding |map|.
-  static void AddAppSelectorList(
-      const std::string& app_name,
-      const google_apis::InstalledApp::IconList& app_icons,
-      const google_apis::InstalledApp::IconList& document_icons,
-      const std::string& app_id,
-      const GURL& create_url,
-      const ScopedVector<std::string>& selectors,
-      DriveAppFileSelectorMap* map);
+  // Map of application id to each app's info.
+  std::map<std::string, DriveAppInfo> all_apps_;
 
-  // Finds matching |apps| from |map| based on provided file |selector|.
-  void FindAppsForSelector(const std::string& selector,
-                           const DriveAppFileSelectorMap& map,
-                           std::vector<DriveAppInfo*>* matched_apps) const;
+  // Defines mapping between file content type selectors (extensions, MIME
+  // types) and corresponding app.
+  typedef std::multimap<std::string, std::string> DriveAppFileSelectorMap;
+  DriveAppFileSelectorMap extension_map_;
+  DriveAppFileSelectorMap mimetype_map_;
 
   JobScheduler* scheduler_;
-
-  // Map of filename extension to application info.
-  DriveAppFileSelectorMap app_extension_map_;
-
-  // Map of MIME type to application info.
-  DriveAppFileSelectorMap app_mimetypes_map_;
 
   bool is_updating_;
 

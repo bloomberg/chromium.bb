@@ -18,6 +18,28 @@
 
 using content::BrowserThread;
 
+namespace {
+
+// Add {selector -> app_id} mapping to |map|.
+void AddAppSelectorList(const ScopedVector<std::string>& selectors,
+                        const std::string& app_id,
+                        std::multimap<std::string, std::string>* map) {
+  for (size_t i = 0; i < selectors.size(); ++i)
+    map->insert(std::make_pair(*selectors[i], app_id));
+}
+
+// Append list of app ids in |map| looked up by |selector| to |matched_apps|.
+void FindAppsForSelector(const std::string& selector,
+                         const std::multimap<std::string, std::string>& map,
+                         std::vector<std::string>* matched_apps) {
+  typedef std::multimap<std::string, std::string>::const_iterator iterator;
+  std::pair<iterator, iterator> range = map.equal_range(selector);
+  for (iterator it = range.first; it != range.second; ++it)
+    matched_apps->push_back(it->second);
+}
+
+}  // namespace
+
 namespace drive {
 
 DriveAppInfo::DriveAppInfo() {
@@ -46,8 +68,6 @@ DriveAppRegistry::DriveAppRegistry(JobScheduler* scheduler)
 }
 
 DriveAppRegistry::~DriveAppRegistry() {
-  STLDeleteValues(&app_extension_map_);
-  STLDeleteValues(&app_mimetypes_map_);
 }
 
 void DriveAppRegistry::GetAppsForFile(
@@ -56,20 +76,23 @@ void DriveAppRegistry::GetAppsForFile(
     ScopedVector<DriveAppInfo>* apps) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  std::vector<DriveAppInfo*> matched_apps;
+  std::vector<std::string> matched_apps;
   if (!file_extension.empty()) {
     const base::FilePath::StringType without_dot = file_extension.substr(1);
-    FindAppsForSelector(without_dot, app_extension_map_, &matched_apps);
+    FindAppsForSelector(without_dot, extension_map_, &matched_apps);
   }
   if (!mime_type.empty())
-    FindAppsForSelector(mime_type, app_mimetypes_map_, &matched_apps);
+    FindAppsForSelector(mime_type, mimetype_map_, &matched_apps);
 
   // Insert found Drive apps into |apps|, but skip duplicate results.
   std::set<std::string> inserted_app_ids;
   for (size_t i = 0; i < matched_apps.size(); ++i) {
-    if (inserted_app_ids.count(matched_apps[i]->app_id) == 0) {
-      inserted_app_ids.insert(matched_apps[i]->app_id);
-      apps->push_back(new DriveAppInfo(*matched_apps[i]));
+    if (inserted_app_ids.count(matched_apps[i]) == 0) {
+      inserted_app_ids.insert(matched_apps[i]);
+      std::map<std::string, DriveAppInfo>::const_iterator it =
+          all_apps_.find(matched_apps[i]);
+      DCHECK(it != all_apps_.end());
+      apps->push_back(new DriveAppInfo(it->second));
     }
   }
 }
@@ -104,11 +127,13 @@ void DriveAppRegistry::UpdateAfterGetAppList(
 }
 
 void DriveAppRegistry::UpdateFromAppList(const google_apis::AppList& app_list) {
-  STLDeleteValues(&app_extension_map_);
-  STLDeleteValues(&app_mimetypes_map_);
+  all_apps_.clear();
+  extension_map_.clear();
+  mimetype_map_.clear();
 
   for (size_t i = 0; i < app_list.items().size(); ++i) {
     const google_apis::AppResource& app = *app_list.items()[i];
+    const std::string id = app.application_id();
 
     google_apis::InstalledApp::IconList app_icons;
     google_apis::InstalledApp::IconList document_icons;
@@ -124,65 +149,17 @@ void DriveAppRegistry::UpdateFromAppList(const google_apis::AppList& app_list) {
                                                 icon.icon_url()));
     }
 
-    AddAppSelectorList(app.name(),
-                       app_icons,
-                       document_icons,
-                       app.application_id(),
-                       app.create_url(),
-                       app.primary_mimetypes(),
-                       &app_mimetypes_map_);
-    AddAppSelectorList(app.name(),
-                       app_icons,
-                       document_icons,
-                       app.application_id(),
-                       app.create_url(),
-                       app.secondary_mimetypes(),
-                       &app_mimetypes_map_);
-    AddAppSelectorList(app.name(),
-                       app_icons,
-                       document_icons,
-                       app.application_id(),
-                       app.create_url(),
-                       app.primary_file_extensions(),
-                       &app_extension_map_);
-    AddAppSelectorList(app.name(),
-                       app_icons,
-                       document_icons,
-                       app.application_id(),
-                       app.create_url(),
-                       app.secondary_file_extensions(),
-                       &app_extension_map_);
-  }
-}
-
-// static.
-void DriveAppRegistry::AddAppSelectorList(
-    const std::string& app_name,
-    const google_apis::InstalledApp::IconList& app_icons,
-    const google_apis::InstalledApp::IconList& document_icons,
-    const std::string& app_id,
-    const GURL& create_url,
-    const ScopedVector<std::string>& selectors,
-    DriveAppFileSelectorMap* map) {
-  for (ScopedVector<std::string>::const_iterator it = selectors.begin();
-       it != selectors.end(); ++it) {
-    std::string* value = *it;
-    map->insert(std::make_pair(
-        *value, new DriveAppInfo(app_id,
+    all_apps_[id] = DriveAppInfo(app.application_id(),
                                  app_icons,
                                  document_icons,
-                                 app_name,
-                                 create_url)));
-  }
-}
+                                 app.name(),
+                                 app.create_url());
 
-void DriveAppRegistry::FindAppsForSelector(
-    const std::string& file_selector,
-    const DriveAppFileSelectorMap& map,
-    std::vector<DriveAppInfo*>* matched_apps) const {
-  for (DriveAppFileSelectorMap::const_iterator it = map.find(file_selector);
-       it != map.end() && it->first == file_selector; ++it) {
-    matched_apps->push_back(it->second);
+    // TODO(kinaba): consider taking primary/secondary distinction into account.
+    AddAppSelectorList(app.primary_mimetypes(), id, &mimetype_map_);
+    AddAppSelectorList(app.secondary_mimetypes(), id, &mimetype_map_);
+    AddAppSelectorList(app.primary_file_extensions(), id, &extension_map_);
+    AddAppSelectorList(app.secondary_file_extensions(), id, &extension_map_);
   }
 }
 
