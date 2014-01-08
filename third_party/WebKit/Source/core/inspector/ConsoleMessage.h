@@ -62,8 +62,6 @@ public:
     void setTimestamp(double timestamp) { m_timestamp = timestamp; }
     bool isEqual(ConsoleMessage* msg) const;
 
-    MessageSource source() const { return m_source; }
-    const String& message() const { return m_message; }
     MessageType type() const { return m_type; }
 
     void windowCleared(DOMWindow*);
