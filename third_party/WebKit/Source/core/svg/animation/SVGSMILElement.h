@@ -109,7 +109,8 @@ public:
     virtual void clearAnimatedType(SVGElement* targetElement) = 0;
     virtual void applyResultsToTarget() = 0;
 
-    void connectConditions();
+    void connectSyncBaseConditions();
+    void connectEventBaseConditions();
 
     void dispatchPendingEvent(SMILEventSender*);
     void dispatchRepeatEvents(unsigned);
@@ -126,7 +127,7 @@ protected:
 
 private:
     void buildPendingResource();
-    void clearResourceReferences();
+    void clearResourceAndEventBaseReferences();
 
     virtual void startedActiveInterval() = 0;
     void endedActiveInterval();
@@ -172,15 +173,16 @@ private:
     void parseBeginOrEnd(const String&, BeginOrEnd beginOrEnd);
     Element* eventBaseFor(const Condition&);
 
-    void disconnectConditions();
+    void disconnectSyncBaseConditions();
+    void disconnectEventBaseConditions();
 
     // Event base timing
     void handleConditionEvent(Event*, Condition*);
 
     void notifyDependentsIntervalChanged();
     void createInstanceTimesFromSyncbase(SVGSMILElement* syncbase);
-    void addTimeDependent(SVGSMILElement*);
-    void removeTimeDependent(SVGSMILElement*);
+    void addSyncBaseDependent(SVGSMILElement*);
+    void removeSyncBaseDependent(SVGSMILElement*);
 
     enum ActiveState {
         Inactive,
@@ -197,13 +199,13 @@ private:
     mutable SVGElement* m_targetElement;
 
     Vector<Condition> m_conditions;
-    bool m_conditionsConnected;
+    bool m_syncBaseConditionsConnected;
     bool m_hasEndEventConditions;
 
     bool m_isWaitingForFirstInterval;
 
     typedef HashSet<SVGSMILElement*> TimeDependentSet;
-    TimeDependentSet m_timeDependents;
+    TimeDependentSet m_syncBaseDependents;
 
     // Instance time lists
     Vector<SMILTimeWithOrigin> m_beginTimes;

@@ -892,9 +892,6 @@ crbug.com/328234 fast/css/mask-missing-image-crash.html [ Pass Failure ]
 
 crbug.com/331576 [ Mac ] fullscreen/parent-flow-inline-with-block-child.html [ Pass ImageOnlyFailure Crash ]
 
-# This test will pass once we implement SVG animation events using SVGDocumentExtensions
-crbug.com/323915 svg/animations/repeatn-remove-add-animation.html [ Failure ]
-
 crbug.com/330602 svg/filters/feColorMatrix-offset.svg [ NeedsRebaseline ]
 crbug.com/330602 svg/filters/color-clear-input.svg [ NeedsRebaseline ]
 crbug.com/330602 svg/filters/innershadow.svg [ NeedsRebaseline ]

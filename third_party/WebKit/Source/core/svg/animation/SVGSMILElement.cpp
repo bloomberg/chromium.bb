@@ -162,7 +162,7 @@ SVGSMILElement::SVGSMILElement(const QualifiedName& tagName, Document& doc)
     : SVGElement(tagName, doc)
     , m_attributeName(anyQName())
     , m_targetElement(0)
-    , m_conditionsConnected(false)
+    , m_syncBaseConditionsConnected(false)
     , m_hasEndEventConditions(false)
     , m_isWaitingForFirstInterval(true)
     , m_intervalBegin(SMILTime::unresolved())
@@ -184,24 +184,25 @@ SVGSMILElement::SVGSMILElement(const QualifiedName& tagName, Document& doc)
 
 SVGSMILElement::~SVGSMILElement()
 {
-    clearResourceReferences();
+    clearResourceAndEventBaseReferences();
     smilEndEventSender().cancelEvent(this);
     smilBeginEventSender().cancelEvent(this);
     smilRepeatEventSender().cancelEvent(this);
     smilRepeatNEventSender().cancelEvent(this);
-    disconnectConditions();
+    disconnectSyncBaseConditions();
+    disconnectEventBaseConditions();
     if (m_timeContainer && m_targetElement && hasValidAttributeName())
         m_timeContainer->unschedule(this, m_targetElement, m_attributeName);
 }
 
-void SVGSMILElement::clearResourceReferences()
+void SVGSMILElement::clearResourceAndEventBaseReferences()
 {
     document().accessSVGExtensions()->removeAllTargetReferencesForElement(this);
 }
 
 void SVGSMILElement::buildPendingResource()
 {
-    clearResourceReferences();
+    clearResourceAndEventBaseReferences();
 
     if (!inDocument()) {
         // Reset the target element if we are no longer in the document.
@@ -238,6 +239,7 @@ void SVGSMILElement::buildPendingResource()
         // that leads to relayout/repainting now informs us, so we can react to it.
         document().accessSVGExtensions()->addElementReferencingTarget(this, svgTarget);
     }
+    connectEventBaseConditions();
 }
 
 static inline QualifiedName constructQualifiedName(const SVGElement* svgElement, const AtomicString& attributeName)
@@ -319,8 +321,9 @@ Node::InsertionNotificationRequest SVGSMILElement::insertedInto(ContainerNode* r
 void SVGSMILElement::removedFrom(ContainerNode* rootParent)
 {
     if (rootParent->inDocument()) {
-        clearResourceReferences();
-        disconnectConditions();
+        clearResourceAndEventBaseReferences();
+        disconnectSyncBaseConditions();
+        disconnectEventBaseConditions();
         setTargetElement(0);
         setAttributeName(anyQName());
         animationAttributeChanged();
@@ -502,22 +505,22 @@ void SVGSMILElement::parseAttribute(const QualifiedName& name, const AtomicStrin
 {
     if (name == SVGNames::beginAttr) {
         if (!m_conditions.isEmpty()) {
-            disconnectConditions();
+            disconnectSyncBaseConditions();
             m_conditions.clear();
             parseBeginOrEnd(fastGetAttribute(SVGNames::endAttr), End);
         }
         parseBeginOrEnd(value.string(), Begin);
         if (inDocument())
-            connectConditions();
+            connectSyncBaseConditions();
     } else if (name == SVGNames::endAttr) {
         if (!m_conditions.isEmpty()) {
-            disconnectConditions();
+            disconnectSyncBaseConditions();
             m_conditions.clear();
             parseBeginOrEnd(fastGetAttribute(SVGNames::beginAttr), Begin);
         }
         parseBeginOrEnd(value.string(), End);
         if (inDocument())
-            connectConditions();
+            connectSyncBaseConditions();
     } else if (name == SVGNames::onbeginAttr) {
         setAttributeEventListener(EventTypeNames::beginEvent, createAttributeEventListener(this, name, value));
     } else if (name == SVGNames::onendAttr) {
@@ -567,38 +570,63 @@ inline Element* SVGSMILElement::eventBaseFor(const Condition& condition)
     return condition.m_baseID.isEmpty() ? targetElement() : treeScope().getElementById(AtomicString(condition.m_baseID));
 }
 
-void SVGSMILElement::connectConditions()
+void SVGSMILElement::connectSyncBaseConditions()
 {
-    if (m_conditionsConnected)
-        disconnectConditions();
-    m_conditionsConnected = true;
+    if (m_syncBaseConditionsConnected)
+        disconnectSyncBaseConditions();
+    m_syncBaseConditionsConnected = true;
     for (unsigned n = 0; n < m_conditions.size(); ++n) {
         Condition& condition = m_conditions[n];
-        if (condition.m_type == Condition::EventBase) {
-            ASSERT(!condition.m_syncbase);
-            Element* eventBase = eventBaseFor(condition);
-            if (!eventBase)
-                continue;
-            ASSERT(!condition.m_eventListener);
-            condition.m_eventListener = ConditionEventListener::create(this, &condition);
-            eventBase->addEventListener(AtomicString(condition.m_name), condition.m_eventListener, false);
-        } else if (condition.m_type == Condition::Syncbase) {
+        if (condition.m_type == Condition::Syncbase) {
             ASSERT(!condition.m_baseID.isEmpty());
             condition.m_syncbase = treeScope().getElementById(AtomicString(condition.m_baseID));
             if (!condition.m_syncbase || !isSVGSMILElement(*condition.m_syncbase)) {
                 condition.m_syncbase = 0;
                 continue;
             }
-            toSVGSMILElement(condition.m_syncbase.get())->addTimeDependent(this);
+            toSVGSMILElement(condition.m_syncbase.get())->addSyncBaseDependent(this);
         }
     }
 }
 
-void SVGSMILElement::disconnectConditions()
+void SVGSMILElement::disconnectSyncBaseConditions()
 {
-    if (!m_conditionsConnected)
+    if (!m_syncBaseConditionsConnected)
         return;
-    m_conditionsConnected = false;
+    m_syncBaseConditionsConnected = false;
+    for (unsigned n = 0; n < m_conditions.size(); ++n) {
+        Condition& condition = m_conditions[n];
+        if (condition.m_type == Condition::Syncbase) {
+            if (condition.m_syncbase)
+                toSVGSMILElement(condition.m_syncbase.get())->removeSyncBaseDependent(this);
+            condition.m_syncbase = 0;
+        }
+    }
+}
+
+void SVGSMILElement::connectEventBaseConditions()
+{
+    disconnectEventBaseConditions();
+    for (unsigned n = 0; n < m_conditions.size(); ++n) {
+        Condition& condition = m_conditions[n];
+        if (condition.m_type == Condition::EventBase) {
+            ASSERT(!condition.m_syncbase);
+            Element* eventBase = eventBaseFor(condition);
+            if (!eventBase) {
+                if (!condition.m_baseID.isEmpty() && !document().accessSVGExtensions()->isElementPendingResource(this, AtomicString(condition.m_baseID)))
+                    document().accessSVGExtensions()->addPendingResource(AtomicString(condition.m_baseID), this);
+                continue;
+            }
+            ASSERT(!condition.m_eventListener);
+            condition.m_eventListener = ConditionEventListener::create(this, &condition);
+            eventBase->addEventListener(AtomicString(condition.m_name), condition.m_eventListener, false);
+            document().accessSVGExtensions()->addElementReferencingTarget(this, toSVGElement(eventBase));
+        }
+    }
+}
+
+void SVGSMILElement::disconnectEventBaseConditions()
+{
     for (unsigned n = 0; n < m_conditions.size(); ++n) {
         Condition& condition = m_conditions[n];
         if (condition.m_type == Condition::EventBase) {
@@ -615,11 +643,7 @@ void SVGSMILElement::disconnectConditions()
                 eventBase->removeEventListener(AtomicString(condition.m_name), condition.m_eventListener.get(), false);
             condition.m_eventListener->disconnectAnimation();
             condition.m_eventListener = 0;
-        } else if (condition.m_type == Condition::Syncbase) {
-            if (condition.m_syncbase)
-                toSVGSMILElement(condition.m_syncbase.get())->removeTimeDependent(this);
         }
-        condition.m_syncbase = 0;
     }
 }
 
@@ -651,7 +675,7 @@ void SVGSMILElement::setTargetElement(SVGElement* target)
     if (m_targetElement) {
         // Clear values that may depend on the previous target.
         clearAnimatedType(m_targetElement);
-        disconnectConditions();
+        disconnectSyncBaseConditions();
     }
 
     // If the animation state is not Inactive, always reset to a clear state before leaving the old target element.
@@ -1098,8 +1122,8 @@ bool SVGSMILElement::progress(SMILTime elapsed, SVGSMILElement* resultElement, b
     ASSERT(m_timeContainer);
     ASSERT(m_isWaitingForFirstInterval || m_intervalBegin.isFinite());
 
-    if (!m_conditionsConnected)
-        connectConditions();
+    if (!m_syncBaseConditionsConnected)
+        connectSyncBaseConditions();
 
     if (!m_intervalBegin.isFinite()) {
         ASSERT(m_activeState == Inactive);
@@ -1195,8 +1219,8 @@ void SVGSMILElement::notifyDependentsIntervalChanged()
     if (!loopBreaker.add(this).isNewEntry)
         return;
 
-    TimeDependentSet::iterator end = m_timeDependents.end();
-    for (TimeDependentSet::iterator it = m_timeDependents.begin(); it != end; ++it) {
+    TimeDependentSet::iterator end = m_syncBaseDependents.end();
+    for (TimeDependentSet::iterator it = m_syncBaseDependents.begin(); it != end; ++it) {
         SVGSMILElement* dependent = *it;
         dependent->createInstanceTimesFromSyncbase(this);
     }
@@ -1227,16 +1251,16 @@ void SVGSMILElement::createInstanceTimesFromSyncbase(SVGSMILElement* syncbase)
     }
 }
 
-void SVGSMILElement::addTimeDependent(SVGSMILElement* animation)
+void SVGSMILElement::addSyncBaseDependent(SVGSMILElement* animation)
 {
-    m_timeDependents.add(animation);
+    m_syncBaseDependents.add(animation);
     if (m_intervalBegin.isFinite())
         animation->createInstanceTimesFromSyncbase(this);
 }
 
-void SVGSMILElement::removeTimeDependent(SVGSMILElement* animation)
+void SVGSMILElement::removeSyncBaseDependent(SVGSMILElement* animation)
 {
-    m_timeDependents.remove(animation);
+    m_syncBaseDependents.remove(animation);
 }
 
 void SVGSMILElement::handleConditionEvent(Event* event, Condition* condition)
