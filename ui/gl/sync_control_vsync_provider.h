@@ -31,6 +31,7 @@ class SyncControlVSyncProvider : public VSyncProvider {
   base::TimeTicks last_timebase_;
   uint64 last_media_stream_counter_;
   base::TimeDelta last_good_interval_;
+  bool invalid_msc_;
 
   // A short history of the last few computed intervals.
   // We use this to filter out the noise in the computation resulting

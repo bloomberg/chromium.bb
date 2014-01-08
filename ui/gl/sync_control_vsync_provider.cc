@@ -24,7 +24,7 @@ const double kRelativeIntervalDifferenceThreshold = 0.05;
 namespace gfx {
 
 SyncControlVSyncProvider::SyncControlVSyncProvider()
-    : VSyncProvider(), last_media_stream_counter_(0) {
+    : VSyncProvider(), last_media_stream_counter_(0), invalid_msc_(false) {
   // On platforms where we can't get an accurate reading on the refresh
   // rate we fall back to the assumption that we're displaying 60 frames
   // per second.
@@ -54,9 +54,11 @@ void SyncControlVSyncProvider::GetVSyncParameters(
   // Both Intel and Mali drivers will return TRUE for GetSyncValues
   // but a value of 0 for MSC if they cannot access the CRTC data structure
   // associated with the surface. crbug.com/231945
-  if (media_stream_counter == 0) {
-    LOG(ERROR) << "glXGetSyncValuesOML should not return TRUE with a "
-               << "media stream counter of 0.";
+  bool prev_invalid_msc = invalid_msc_;
+  invalid_msc_ = (media_stream_counter == 0);
+  if (invalid_msc_) {
+    LOG_IF(ERROR, !prev_invalid_msc) << "glXGetSyncValuesOML "
+        "should not return TRUE with a media stream counter of 0.";
     return;
   }
 
