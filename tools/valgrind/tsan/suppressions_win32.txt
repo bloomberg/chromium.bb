@@ -243,6 +243,24 @@
   fun:NdrNonEncapsulatedUnionBufferSize
 }
 {
+  bug_309847
+  ThreadSanitizer:Race
+  fun:tracked_objects::ThreadData::TallyADeath
+  fun:tracked_objects::ThreadData::TallyRunOnNamedThreadIfTracking
+  fun:base::MessageLoop::RunTask
+  fun:base::MessageLoop::RunTask
+  fun:base::MessageLoop::RunTask
+  fun:base::MessageLoop::DeferOrRunPendingTask
+  fun:base::MessageLoop::DoWork
+  fun:base::MessageLoop::DoWork
+  fun:base::MessagePumpDefault::Run
+  fun:base::MessageLoop::RunHandler
+  fun:base::RunLoop::Run
+  fun:net::test_server::EmbeddedTestServer::PostTaskToIOThreadAndWait
+  fun:net::test_server::EmbeddedTestServer::InitializeAndWaitUntilReady
+  fun:net::test_server::EmbeddedTestServerThreadingTestDelegate::ThreadMain
+}
+{
   bug_314654_a
   ThreadSanitizer:Race
   ...
