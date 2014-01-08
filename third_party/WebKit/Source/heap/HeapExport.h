@@ -50,21 +50,4 @@
 #define HEAP_EXPORT
 #endif
 
-// GCC and CLANG need extern template declarations when exporting
-// something implemented in an implementation file instead of the
-// header file. Unfortunately, they do not agree on how to export
-// extern templates.
-//
-// On Windows extern template declarations are not needed in order
-// to correctly export.
-#if defined(COMPONENT_BUILD)
-#if COMPILER(CLANG)
-#define EXTERN_TEMPLATE_HEAP_EXPORT HEAP_EXPORT
-#else // COMPILER(CLANG)
-#define EXTERN_TEMPLATE_HEAP_EXPORT
-#endif
-#else // defined(COMPONENT_BUILD)
-#define EXTERN_TEMPLATE_HEAP_EXPORT
-#endif
-
 #endif // HeapExport_h

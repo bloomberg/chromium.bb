@@ -718,7 +718,7 @@ public:
     HeapStats& stats() { return m_threadState->stats(); }
     HeapContainsCache* heapContainsCache() { return m_threadState->heapContainsCache(); }
 
-    HEAP_EXPORT inline Address allocate(size_t, const GCInfo*);
+    inline Address allocate(size_t, const GCInfo*);
     void addToFreeList(Address, size_t);
     void addPageToPool(HeapPage<Header>*);
 
@@ -747,7 +747,7 @@ private:
         PagePoolEntry* m_next;
     };
 
-    Address outOfLineAllocate(size_t, const GCInfo*);
+    HEAP_EXPORT Address outOfLineAllocate(size_t, const GCInfo*);
     void addPageToHeap(const GCInfo*);
     HEAP_EXPORT Address allocateLargeObject(size_t, const GCInfo*);
     Address currentAllocationPoint() const { return m_currentAllocationPoint; }
@@ -760,7 +760,7 @@ private:
         m_currentAllocationPoint = point;
         m_remainingAllocationSize = size;
     }
-    HEAP_EXPORT void ensureCurrentAllocation(size_t, const GCInfo*);
+    void ensureCurrentAllocation(size_t, const GCInfo*);
     bool allocateFromFreeList(size_t);
 
     void setFinalizeAll(bool finalizingAll) { m_inFinalizeAll = finalizingAll; }
@@ -961,20 +961,6 @@ size_t allocationSizeFromSize(size_t size)
 }
 
 template<typename Header>
-Address ThreadHeap<Header>::outOfLineAllocate(size_t size, const GCInfo* gcInfo)
-{
-    size_t allocationSize = allocationSizeFromSize<Header>(size);
-    if (threadState()->shouldGC()) {
-        if (threadState()->shouldForceConservativeGC())
-            Heap::collectGarbage(ThreadState::HeapPointersOnStack);
-        else
-            threadState()->setGCRequested();
-    }
-    ensureCurrentAllocation(allocationSize, gcInfo);
-    return allocate(size, gcInfo);
-}
-
-template<typename Header>
 Address ThreadHeap<Header>::allocate(size_t size, const GCInfo* gcInfo)
 {
     size_t allocationSize = allocationSizeFromSize<Header>(size);
@@ -1044,14 +1030,13 @@ Address Heap::reallocate(void* previous, size_t size)
     return address;
 }
 
-#if !defined(WIN32)
-// With GCC and clang we need to declare which specializations will be
-// implemented in the implementation file in order to be able to
-// export them when using the component build.
+#if COMPILER(CLANG)
+// Clang does not export the symbols that we have explicitly asked it
+// to export. This forces it to export all the methods from ThreadHeap.
 template<> void ThreadHeap<FinalizedHeapObjectHeader>::addPageToHeap(const GCInfo*);
 template<> void ThreadHeap<HeapObjectHeader>::addPageToHeap(const GCInfo*);
-extern template class EXTERN_TEMPLATE_HEAP_EXPORT ThreadHeap<FinalizedHeapObjectHeader>;
-extern template class EXTERN_TEMPLATE_HEAP_EXPORT ThreadHeap<HeapObjectHeader>;
+extern template class HEAP_EXPORT ThreadHeap<FinalizedHeapObjectHeader>;
+extern template class HEAP_EXPORT ThreadHeap<HeapObjectHeader>;
 #endif
 
 }

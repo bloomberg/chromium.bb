@@ -412,6 +412,20 @@ ThreadHeap<Header>::~ThreadHeap()
 }
 
 template<typename Header>
+Address ThreadHeap<Header>::outOfLineAllocate(size_t size, const GCInfo* gcInfo)
+{
+    size_t allocationSize = allocationSizeFromSize<Header>(size);
+    if (threadState()->shouldGC()) {
+        if (threadState()->shouldForceConservativeGC())
+            Heap::collectGarbage(ThreadState::HeapPointersOnStack);
+        else
+            threadState()->setGCRequested();
+    }
+    ensureCurrentAllocation(allocationSize, gcInfo);
+    return allocate(size, gcInfo);
+}
+
+template<typename Header>
 bool ThreadHeap<Header>::allocateFromFreeList(size_t minSize)
 {
     size_t bucketSize = 1 << m_biggestFreeListIndex;
