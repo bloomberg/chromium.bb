@@ -172,7 +172,9 @@ void SearchResultView::Layout() {
 }
 
 bool SearchResultView::OnKeyPressed(const ui::KeyEvent& event) {
-  DCHECK(result_);
+  // |result_| could be NULL when result list is changing.
+  if (!result_)
+    return false;
 
   switch (event.key_code()) {
     case ui::VKEY_TAB: {
@@ -304,7 +306,7 @@ void SearchResultView::OnIsInstallingChanged() {
 }
 
 void SearchResultView::OnPercentDownloadedChanged() {
-  progress_bar_->SetValue(result_->percent_downloaded() / 100.0);
+  progress_bar_->SetValue(result_ ? result_->percent_downloaded() / 100.0 : 0);
 }
 
 void SearchResultView::OnItemInstalled() {
@@ -317,7 +319,10 @@ void SearchResultView::OnItemUninstalled() {
 
 void SearchResultView::OnSearchResultActionActivated(size_t index,
                                                      int event_flags) {
-  DCHECK(result_);
+  // |result_| could be NULL when result list is changing.
+  if (!result_)
+    return;
+
   DCHECK_LT(index, result_->actions().size());
 
   delegate_->SearchResultActionActivated(this, index, event_flags);
@@ -326,6 +331,10 @@ void SearchResultView::OnSearchResultActionActivated(size_t index,
 void SearchResultView::ShowContextMenuForView(views::View* source,
                                               const gfx::Point& point,
                                               ui::MenuSourceType source_type) {
+  // |result_| could be NULL when result list is changing.
+  if (!result_)
+    return;
+
   ui::MenuModel* menu_model = result_->GetContextMenuModel();
   if (!menu_model)
     return;
