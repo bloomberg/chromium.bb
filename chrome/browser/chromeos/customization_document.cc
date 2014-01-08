@@ -17,7 +17,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/system/statistics_provider.h"
@@ -297,8 +296,7 @@ void ServicesCustomizationDocument::StartFileFetch() {
   DCHECK(url_.is_valid());
   url_fetcher_.reset(net::URLFetcher::Create(
       url_, net::URLFetcher::GET, this));
-  url_fetcher_->SetRequestContext(
-      ProfileManager::GetDefaultProfile()->GetRequestContext());
+  url_fetcher_->SetRequestContext(g_browser_process->system_request_context());
   url_fetcher_->Start();
 }
 
