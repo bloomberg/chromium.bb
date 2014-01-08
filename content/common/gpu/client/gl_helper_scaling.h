@@ -5,9 +5,13 @@
 #ifndef CONTENT_COMMON_GPU_CLIENT_GL_HELPER_SCALING_H_
 #define CONTENT_COMMON_GPU_CLIENT_GL_HELPER_SCALING_H_
 
+#include <deque>
+#include <map>
 #include <vector>
 
 #include "content/common/gpu/client/gl_helper.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/size.h"
 
 namespace content {
 
@@ -41,13 +45,13 @@ class CONTENT_EXPORT GLHelperScaling {
     virtual ~ShaderInterface() {}
     // Note that the src_texture will have the min/mag filter set to GL_LINEAR
     // and wrap_s/t set to CLAMP_TO_EDGE in this call.
-    virtual void Execute(blink::WebGLId source_texture,
-                         const std::vector<blink::WebGLId>& dest_textures) = 0;
+    virtual void Execute(GLuint source_texture,
+                         const std::vector<GLuint>& dest_textures) = 0;
   };
 
   typedef std::pair<ShaderType, bool> ShaderProgramKeyType;
 
-  GLHelperScaling(blink::WebGraphicsContext3D* context,
+  GLHelperScaling(gpu::gles2::GLES2Interface* gl,
                   GLHelper* helper);
   ~GLHelperScaling();
   void InitBuffer();
@@ -182,9 +186,9 @@ class CONTENT_EXPORT GLHelperScaling {
 
   // Interleaved array of 2-dimentional vertex positions (x, y) and
   // 2-dimentional texture coordinates (s, t).
-  static const blink::WGC3Dfloat kVertexAttributes[];
+  static const GLfloat kVertexAttributes[];
 
-  blink::WebGraphicsContext3D* context_;
+  gpu::gles2::GLES2Interface* gl_;
   GLHelper* helper_;
 
   // The buffer that holds the vertices and the texture coordinates data for

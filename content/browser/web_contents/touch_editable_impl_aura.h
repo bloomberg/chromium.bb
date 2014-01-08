@@ -7,6 +7,7 @@
 
 #include <deque>
 #include <map>
+#include <queue>
 
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "ui/aura/window_observer.h"

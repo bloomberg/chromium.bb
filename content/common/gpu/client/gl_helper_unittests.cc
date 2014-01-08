@@ -49,29 +49,25 @@ using blink::WebGraphicsContext3D;
 using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
 
 content::GLHelper::ScalerQuality kQualities[] = {
-  content::GLHelper::SCALER_QUALITY_BEST,
-  content::GLHelper::SCALER_QUALITY_GOOD,
-  content::GLHelper::SCALER_QUALITY_FAST,
-};
+    content::GLHelper::SCALER_QUALITY_BEST,
+    content::GLHelper::SCALER_QUALITY_GOOD,
+    content::GLHelper::SCALER_QUALITY_FAST, };
 
-const char *kQualityNames[] = {
-  "best",
-  "good",
-  "fast",
-};
+const char* kQualityNames[] = {"best", "good", "fast", };
 
 class GLHelperTest : public testing::Test {
  protected:
   virtual void SetUp() {
     WebGraphicsContext3D::Attributes attributes;
-    context_ = WebGraphicsContext3DInProcessCommandBufferImpl::
-        CreateOffscreenContext(attributes);
+    context_ =
+        WebGraphicsContext3DInProcessCommandBufferImpl::CreateOffscreenContext(
+            attributes);
     context_->makeContextCurrent();
     context_support_ = context_->GetContextSupport();
-    helper_.reset(new content::GLHelper(context_.get(), context_support_));
+    helper_.reset(
+        new content::GLHelper(context_->GetGLInterface(), context_support_));
     helper_scaling_.reset(new content::GLHelperScaling(
-        context_.get(),
-        helper_.get()));
+        context_->GetGLInterface(), helper_.get()));
   }
 
   virtual void TearDown() {
@@ -102,7 +98,7 @@ class GLHelperTest : public testing::Test {
 
   // End tracing, return tracing data in a simple map
   // of event name->counts.
-  void EndTracing(std::map<std::string, int> *event_counts) {
+  void EndTracing(std::map<std::string, int>* event_counts) {
     std::string json_data = "[";
     base::debug::TraceLog::GetInstance()->SetDisabled();
     base::RunLoop run_loop;
@@ -117,9 +113,9 @@ class GLHelperTest : public testing::Test {
     base::ListValue* list;
     CHECK(trace_data->GetAsList(&list));
     for (size_t i = 0; i < list->GetSize(); i++) {
-      base::Value *item = NULL;
+      base::Value* item = NULL;
       if (list->Get(i, &item)) {
-        base::DictionaryValue *dict;
+        base::DictionaryValue* dict;
         CHECK(item->GetAsDictionary(&dict));
         std::string name;
         CHECK(dict->GetString("name", &name));
@@ -147,9 +143,9 @@ class GLHelperTest : public testing::Test {
   // Look up a single R/G/B/A value.
   // Clamp x/y.
   int Channel(SkBitmap* pixels, int x, int y, int c) {
-    uint32 *data = pixels->getAddr32(
-        std::max(0, std::min(x, pixels->width() - 1)),
-        std::max(0, std::min(y, pixels->height() - 1)));
+    uint32* data =
+        pixels->getAddr32(std::max(0, std::min(x, pixels->width() - 1)),
+                          std::max(0, std::min(y, pixels->height() - 1)));
     return (*data) >> (c * 8) & 0xff;
   }
 
@@ -159,7 +155,7 @@ class GLHelperTest : public testing::Test {
     DCHECK_GE(y, 0);
     DCHECK_LT(x, pixels->width());
     DCHECK_LT(y, pixels->height());
-    uint32 *data = pixels->getAddr32(x, y);
+    uint32* data = pixels->getAddr32(x, y);
     v = std::max(0, std::min(v, 255));
     *data = (*data & ~(0xffu << (c * 8))) | (v << (c * 8));
   }
@@ -168,16 +164,17 @@ class GLHelperTest : public testing::Test {
   // human-readable format.
   void PrintChannel(SkBitmap* pixels, int c) {
     for (int y = 0; y < pixels->height(); y++) {
+      std::string formatted;
       for (int x = 0; x < pixels->width(); x++) {
-        printf("%3d, ", Channel(pixels, x, y, c));
+        formatted.append(base::StringPrintf("%3d, ", Channel(pixels, x, y, c)));
       }
-      printf("\n");
+      LOG(ERROR) << formatted;
     }
   }
 
   // Print out the individual steps of a scaler pipeline.
   std::string PrintStages(
-      const std::vector<GLHelperScaling::ScalerStage> &scaler_stages) {
+      const std::vector<GLHelperScaling::ScalerStage>& scaler_stages) {
     std::string ret;
     for (size_t i = 0; i < scaler_stages.size(); i++) {
       ret.append(base::StringPrintf("%dx%d -> %dx%d ",
@@ -262,7 +259,7 @@ class GLHelperTest : public testing::Test {
   // Make sure that the stages of the scaler pipeline are sane.
   void ValidateScalerStages(
       content::GLHelper::ScalerQuality quality,
-      const std::vector<GLHelperScaling::ScalerStage> &scaler_stages,
+      const std::vector<GLHelperScaling::ScalerStage>& scaler_stages,
       const std::string& message) {
     bool previous_error = HasFailure();
     // First, check that the input size for each stage is equal to
@@ -369,8 +366,9 @@ class GLHelperTest : public testing::Test {
     }
 
     if (HasFailure() && !previous_error) {
-      printf("Invalid scaler stages: %s\n", message.c_str());
-      printf("Scaler stages:\n%s", PrintStages(scaler_stages).c_str());
+      LOG(ERROR) << "Invalid scaler stages: " << message;
+      LOG(ERROR) << "Scaler stages:";
+      LOG(ERROR) << PrintStages(scaler_stages);
     }
   }
 
@@ -381,7 +379,7 @@ class GLHelperTest : public testing::Test {
                SkBitmap* other,
                int maxdiff,
                SkBitmap* source,
-               const std::vector<GLHelperScaling::ScalerStage> &scaler_stages,
+               const std::vector<GLHelperScaling::ScalerStage>& scaler_stages,
                std::string message) {
     EXPECT_EQ(truth->width(), other->width());
     EXPECT_EQ(truth->height(), other->height());
@@ -390,22 +388,19 @@ class GLHelperTest : public testing::Test {
         for (int c = 0; c < 4; c++) {
           int a = Channel(truth, x, y, c);
           int b = Channel(other, x, y, c);
-          EXPECT_NEAR(a, b, maxdiff)
-              << " x=" << x
-              << " y=" << y
-              << " c=" << c
-              << " " << message;
+          EXPECT_NEAR(a, b, maxdiff) << " x=" << x << " y=" << y << " c=" << c
+                                     << " " << message;
           if (std::abs(a - b) > maxdiff) {
-            printf("-------expected--------\n");
+            LOG(ERROR) << "-------expected--------";
             PrintChannel(truth, c);
-            printf("-------actual--------\n");
+            LOG(ERROR) << "-------actual--------";
             PrintChannel(other, c);
             if (source) {
-              printf("-------before scaling--------\n");
+              LOG(ERROR) << "-------before scaling--------";
               PrintChannel(source, c);
             }
-            printf("-----Scaler stages------\n%s",
-                   PrintStages(scaler_stages).c_str());
+            LOG(ERROR) << "-----Scaler stages------";
+            LOG(ERROR) << PrintStages(scaler_stages);
             return;
           }
         }
@@ -451,14 +446,15 @@ class GLHelperTest : public testing::Test {
           switch (quality) {
             case content::GLHelper::SCALER_QUALITY_BEST:
               for (int src_y = -10; src_y < input->height() + 10; ++src_y) {
-                float coeff_y = Bicubic(
-                    (src_y + 0.5f - dst_y_in_src) * clamped_yscale);
+                float coeff_y =
+                    Bicubic((src_y + 0.5f - dst_y_in_src) * clamped_yscale);
                 if (coeff_y == 0.0f) {
                   continue;
                 }
                 for (int src_x = -10; src_x < input->width() + 10; ++src_x) {
-                  float coeff = coeff_y * Bicubic(
-                      (src_x + 0.5f - dst_x_in_src) * clamped_xscale);
+                  float coeff =
+                      coeff_y *
+                      Bicubic((src_x + 0.5f - dst_x_in_src) * clamped_xscale);
                   if (coeff == 0.0f) {
                     continue;
                   }
@@ -480,17 +476,17 @@ class GLHelperTest : public testing::Test {
               int xmag = 1 << xshift;
               int ymag = 1 << yshift;
               if (xmag == 4 && output->width() * 3 >= input->width()) {
-                xmag=3;
+                xmag = 3;
               }
               if (ymag == 4 && output->height() * 3 >= input->height()) {
-                ymag=3;
+                ymag = 3;
               }
               for (int x = 0; x < xmag; x++) {
                 for (int y = 0; y < ymag; y++) {
                   value += Bilinear(input,
                                     (dst_x * xmag + x + 0.5) * xscale / xmag,
                                     (dst_y * ymag + y + 0.5) * yscale / ymag,
-                      channel);
+                                    channel);
                   sum += 1.0;
                 }
               }
@@ -502,7 +498,10 @@ class GLHelperTest : public testing::Test {
               sum = 1.0;
           }
           value /= sum;
-          SetChannel(output, dst_x, dst_y, channel,
+          SetChannel(output,
+                     dst_x,
+                     dst_y,
+                     channel,
                      static_cast<int>(value * 255.0f + 0.5f));
         }
       }
@@ -574,8 +573,10 @@ class GLHelperTest : public testing::Test {
 
   // Scaling test: Create a test image, scale it using GLHelperScaling
   // and a reference implementation and compare the results.
-  void TestScale(int xsize, int ysize,
-                 int scaled_xsize, int scaled_ysize,
+  void TestScale(int xsize,
+                 int ysize,
+                 int scaled_xsize,
+                 int scaled_ysize,
                  int test_pattern,
                  size_t quality,
                  bool flip) {
@@ -602,9 +603,9 @@ class GLHelperTest : public testing::Test {
             SetChannel(&input_pixels, x, y, 3, 255);
             break;
           case 2:  // Medium blocks
-            SetChannel(&input_pixels, x, y, 0, 10 + x/2 * 50);
-            SetChannel(&input_pixels, x, y, 1, 10 + y/3 * 50);
-            SetChannel(&input_pixels, x, y, 2, (x + y)/5 * 50 + 5);
+            SetChannel(&input_pixels, x, y, 0, 10 + x / 2 * 50);
+            SetChannel(&input_pixels, x, y, 1, 10 + y / 3 * 50);
+            SetChannel(&input_pixels, x, y, 2, (x + y) / 5 * 50 + 5);
             SetChannel(&input_pixels, x, y, 3, 255);
             break;
         }
@@ -623,43 +624,44 @@ class GLHelperTest : public testing::Test {
                          GL_UNSIGNED_BYTE,
                          input_pixels.getPixels());
 
-    std::string message = base::StringPrintf("input size: %dx%d "
-                                             "output size: %dx%d "
-                                             "pattern: %d quality: %s",
-                                             xsize, ysize,
-                                             scaled_xsize, scaled_ysize,
-                                             test_pattern,
-                                             kQualityNames[quality]);
-
+    std::string message = base::StringPrintf(
+        "input size: %dx%d "
+        "output size: %dx%d "
+        "pattern: %d quality: %s",
+        xsize,
+        ysize,
+        scaled_xsize,
+        scaled_ysize,
+        test_pattern,
+        kQualityNames[quality]);
 
     std::vector<GLHelperScaling::ScalerStage> stages;
-    helper_scaling_->ComputeScalerStages(
-        kQualities[quality],
-        gfx::Size(xsize, ysize),
-        gfx::Rect(0, 0, xsize, ysize),
-        gfx::Size(scaled_xsize, scaled_ysize),
-        flip,
-        false,
-        &stages);
+    helper_scaling_->ComputeScalerStages(kQualities[quality],
+                                         gfx::Size(xsize, ysize),
+                                         gfx::Rect(0, 0, xsize, ysize),
+                                         gfx::Size(scaled_xsize, scaled_ysize),
+                                         flip,
+                                         false,
+                                         &stages);
     ValidateScalerStages(kQualities[quality], stages, message);
 
-    WebGLId dst_texture = helper_->CopyAndScaleTexture(
-        src_texture,
-        gfx::Size(xsize, ysize),
-        gfx::Size(scaled_xsize, scaled_ysize),
-        flip,
-        kQualities[quality]);
+    WebGLId dst_texture =
+        helper_->CopyAndScaleTexture(src_texture,
+                                     gfx::Size(xsize, ysize),
+                                     gfx::Size(scaled_xsize, scaled_ysize),
+                                     flip,
+                                     kQualities[quality]);
 
     SkBitmap output_pixels;
-    output_pixels.setConfig(SkBitmap::kARGB_8888_Config,
-                            scaled_xsize, scaled_ysize);
+    output_pixels.setConfig(
+        SkBitmap::kARGB_8888_Config, scaled_xsize, scaled_ysize);
     output_pixels.allocPixels();
     SkAutoLockPixels output_lock(output_pixels);
 
     helper_->ReadbackTextureSync(
         dst_texture,
         gfx::Rect(0, 0, scaled_xsize, scaled_ysize),
-        static_cast<unsigned char *>(output_pixels.getPixels()));
+        static_cast<unsigned char*>(output_pixels.getPixels()));
     if (flip) {
       // Flip the pixels back.
       FlipSKBitmap(&output_pixels);
@@ -673,8 +675,8 @@ class GLHelperTest : public testing::Test {
               message + " comparing against input");
     }
     SkBitmap truth_pixels;
-    truth_pixels.setConfig(SkBitmap::kARGB_8888_Config,
-                           scaled_xsize, scaled_ysize);
+    truth_pixels.setConfig(
+        SkBitmap::kARGB_8888_Config, scaled_xsize, scaled_ysize);
     truth_pixels.allocPixels();
     SkAutoLockPixels truth_lock(truth_pixels);
 
@@ -694,45 +696,48 @@ class GLHelperTest : public testing::Test {
   // Create a scaling pipeline and check that it is made up of
   // valid scaling operations.
   void TestScalerPipeline(size_t quality,
-                          int xsize, int ysize,
-                          int dst_xsize, int dst_ysize) {
+                          int xsize,
+                          int ysize,
+                          int dst_xsize,
+                          int dst_ysize) {
     std::vector<GLHelperScaling::ScalerStage> stages;
-    helper_scaling_->ComputeScalerStages(
-        kQualities[quality],
-        gfx::Size(xsize, ysize),
-        gfx::Rect(0, 0, xsize, ysize),
-        gfx::Size(dst_xsize, dst_ysize),
-        false,
-        false,
-        &stages);
-    ValidateScalerStages(kQualities[quality], stages,
-                         base::StringPrintf("input size: %dx%d "
-                                            "output size: %dx%d "
-                                            "quality: %s",
-                                            xsize, ysize,
-                                            dst_xsize, dst_ysize,
-                                            kQualityNames[quality]));
+    helper_scaling_->ComputeScalerStages(kQualities[quality],
+                                         gfx::Size(xsize, ysize),
+                                         gfx::Rect(0, 0, xsize, ysize),
+                                         gfx::Size(dst_xsize, dst_ysize),
+                                         false,
+                                         false,
+                                         &stages);
+    ValidateScalerStages(kQualities[quality],
+                         stages,
+                         base::StringPrintf(
+                             "input size: %dx%d "
+                             "output size: %dx%d "
+                             "quality: %s",
+                             xsize,
+                             ysize,
+                             dst_xsize,
+                             dst_ysize,
+                             kQualityNames[quality]));
   }
 
   // Create a scaling pipeline and make sure that the steps
   // are exactly the steps we expect.
   void CheckPipeline(content::GLHelper::ScalerQuality quality,
-                     int xsize, int ysize,
-                     int dst_xsize, int dst_ysize,
-                     const std::string &description) {
+                     int xsize,
+                     int ysize,
+                     int dst_xsize,
+                     int dst_ysize,
+                     const std::string& description) {
     std::vector<GLHelperScaling::ScalerStage> stages;
-    helper_scaling_->ComputeScalerStages(
-        quality,
-        gfx::Size(xsize, ysize),
-        gfx::Rect(0, 0, xsize, ysize),
-        gfx::Size(dst_xsize, dst_ysize),
-        false,
-        false,
-        &stages);
-    ValidateScalerStages(
-        content::GLHelper::SCALER_QUALITY_GOOD,
-        stages,
-        "");
+    helper_scaling_->ComputeScalerStages(quality,
+                                         gfx::Size(xsize, ysize),
+                                         gfx::Rect(0, 0, xsize, ysize),
+                                         gfx::Size(dst_xsize, dst_ysize),
+                                         false,
+                                         false,
+                                         &stages);
+    ValidateScalerStages(content::GLHelper::SCALER_QUALITY_GOOD, stages, "");
     EXPECT_EQ(PrintStages(stages), description);
   }
 
@@ -789,12 +794,13 @@ class GLHelperTest : public testing::Test {
     callback.Run();
   }
 
-  void PrintPlane(unsigned char *plane, int xsize, int stride, int ysize) {
+  void PrintPlane(unsigned char* plane, int xsize, int stride, int ysize) {
     for (int y = 0; y < ysize; y++) {
-      for (int x = 0; x < xsize ; x++) {
-        printf("%3d, ", plane[y * stride + x]);
+      std::string formatted;
+      for (int x = 0; x < xsize; x++) {
+        formatted.append(base::StringPrintf("%3d, ", plane[y * stride + x]));
       }
-      printf("   (%p)\n", plane + y * stride);
+      LOG(ERROR) << formatted << "   (" << (plane + y * stride) << ")";
     }
   }
 
@@ -813,21 +819,19 @@ class GLHelperTest : public testing::Test {
       for (int y = 0; y < ysize; y++) {
         int a = other[y * stride + x];
         int b = truth[y * stride + x];
-        EXPECT_NEAR(a, b, maxdiff)
-            << " x=" << x
-            << " y=" << y
-            << " " << message;
+        EXPECT_NEAR(a, b, maxdiff) << " x=" << x << " y=" << y << " "
+                                   << message;
         if (std::abs(a - b) > maxdiff) {
-          printf("-------expected--------\n");
+          LOG(ERROR) << "-------expected--------";
           PrintPlane(truth, xsize, truth_stride, ysize);
-          printf("-------actual--------\n");
+          LOG(ERROR) << "-------actual--------";
           PrintPlane(other, xsize, stride, ysize);
           if (source) {
-            printf("-------before yuv conversion: red--------\n");
+            LOG(ERROR) << "-------before yuv conversion: red--------";
             PrintChannel(source, 0);
-            printf("-------before yuv conversion: green------\n");
+            LOG(ERROR) << "-------before yuv conversion: green------";
             PrintChannel(source, 1);
-            printf("-------before yuv conversion: blue-------\n");
+            LOG(ERROR) << "-------before yuv conversion: blue-------";
             PrintChannel(source, 2);
           }
           return;
@@ -871,9 +875,9 @@ class GLHelperTest : public testing::Test {
             SetChannel(&input_pixels, x, y, 3, 255);
             break;
           case 2:  // Medium blocks
-            SetChannel(&input_pixels, x, y, 0, 10 + x/2 * 50);
-            SetChannel(&input_pixels, x, y, 1, 10 + y/3 * 50);
-            SetChannel(&input_pixels, x, y, 2, (x + y)/5 * 50 + 5);
+            SetChannel(&input_pixels, x, y, 0, 10 + x / 2 * 50);
+            SetChannel(&input_pixels, x, y, 1, 10 + y / 3 * 50);
+            SetChannel(&input_pixels, x, y, 2, (x + y) / 5 * 50 + 5);
             SetChannel(&input_pixels, x, y, 3, 255);
             break;
         }
@@ -897,16 +901,20 @@ class GLHelperTest : public testing::Test {
     context_->produceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
     uint32 sync_point = context_->insertSyncPoint();
 
-    std::string message = base::StringPrintf("input size: %dx%d "
-                                             "output size: %dx%d "
-                                             "margin: %dx%d "
-                                             "pattern: %d %s %s",
-                                             xsize, ysize,
-                                             output_xsize, output_ysize,
-                                             xmargin, ymargin,
-                                             test_pattern,
-                                             flip ? "flip" : "noflip",
-                                             flip ? "mrt" : "nomrt");
+    std::string message = base::StringPrintf(
+        "input size: %dx%d "
+        "output size: %dx%d "
+        "margin: %dx%d "
+        "pattern: %d %s %s",
+        xsize,
+        ysize,
+        output_xsize,
+        output_ysize,
+        xmargin,
+        ymargin,
+        test_pattern,
+        flip ? "flip" : "noflip",
+        flip ? "mrt" : "nomrt");
     scoped_ptr<ReadbackYUVInterface> yuv_reader(
         helper_->CreateReadbackPipelineYUV(
             quality,
@@ -933,11 +941,10 @@ class GLHelperTest : public testing::Test {
             base::TimeDelta::FromSeconds(0));
 
     base::RunLoop run_loop;
-    yuv_reader->ReadbackYUV(
-        mailbox,
-        sync_point,
-        output_frame.get(),
-        base::Bind(&callcallback, run_loop.QuitClosure()));
+    yuv_reader->ReadbackYUV(mailbox,
+                            sync_point,
+                            output_frame.get(),
+                            base::Bind(&callcallback, run_loop.QuitClosure()));
     run_loop.Run();
 
     if (flip) {
@@ -959,44 +966,43 @@ class GLHelperTest : public testing::Test {
         Y[(y + ymargin) * y_stride + x + xmargin] = float_to_byte(
             ChannelAsFloat(&input_pixels, x, y, 0) * 0.257 +
             ChannelAsFloat(&input_pixels, x, y, 1) * 0.504 +
-            ChannelAsFloat(&input_pixels, x, y, 2) * 0.098 +
-            0.0625);
+            ChannelAsFloat(&input_pixels, x, y, 2) * 0.098 + 0.0625);
       }
     }
 
     for (int y = 0; y < ysize / 2; y++) {
       for (int x = 0; x < xsize / 2; x++) {
-        U[(y + ymargin / 2) * u_stride + x + xmargin / 2] =
-            float_to_byte(
-                Bilinear(&input_pixels, x * 2 + 1.0, y * 2 + 1.0, 0) * -0.148 +
-                Bilinear(&input_pixels, x * 2 + 1.0, y * 2 + 1.0, 1) * -0.291 +
-                Bilinear(&input_pixels, x * 2 + 1.0, y * 2 + 1.0, 2) * 0.439 +
-                0.5);
-        V[(y + ymargin / 2) * v_stride + x + xmargin / 2] =
-            float_to_byte(
-                Bilinear(&input_pixels, x * 2 + 1.0, y * 2 + 1.0, 0) * 0.439 +
-                Bilinear(&input_pixels, x * 2 + 1.0, y * 2 + 1.0, 1) * -0.368 +
-                Bilinear(&input_pixels, x * 2 + 1.0, y * 2 + 1.0, 2) * -0.071 +
-                0.5);
+        U[(y + ymargin / 2) * u_stride + x + xmargin / 2] = float_to_byte(
+            Bilinear(&input_pixels, x * 2 + 1.0, y * 2 + 1.0, 0) * -0.148 +
+            Bilinear(&input_pixels, x * 2 + 1.0, y * 2 + 1.0, 1) * -0.291 +
+            Bilinear(&input_pixels, x * 2 + 1.0, y * 2 + 1.0, 2) * 0.439 + 0.5);
+        V[(y + ymargin / 2) * v_stride + x + xmargin / 2] = float_to_byte(
+            Bilinear(&input_pixels, x * 2 + 1.0, y * 2 + 1.0, 0) * 0.439 +
+            Bilinear(&input_pixels, x * 2 + 1.0, y * 2 + 1.0, 1) * -0.368 +
+            Bilinear(&input_pixels, x * 2 + 1.0, y * 2 + 1.0, 2) * -0.071 +
+            0.5);
       }
     }
 
     ComparePlane(Y,
-                 output_frame->data(media::VideoFrame::kYPlane), 2,
+                 output_frame->data(media::VideoFrame::kYPlane),
+                 2,
                  output_xsize,
                  y_stride,
                  output_ysize,
                  &input_pixels,
                  message + " Y plane");
     ComparePlane(U,
-                 output_frame->data(media::VideoFrame::kUPlane), 2,
+                 output_frame->data(media::VideoFrame::kUPlane),
+                 2,
                  output_xsize / 2,
                  u_stride,
                  output_ysize / 2,
                  &input_pixels,
                  message + " U plane");
     ComparePlane(V,
-                 output_frame->data(media::VideoFrame::kVPlane), 2,
+                 output_frame->data(media::VideoFrame::kVPlane),
+                 2,
                  output_xsize / 2,
                  v_stride,
                  output_ysize / 2,
@@ -1006,10 +1012,7 @@ class GLHelperTest : public testing::Test {
     context_->deleteTexture(src_texture);
   }
 
-  void TestAddOps(int src,
-                  int dst,
-                  bool scale_x,
-                  bool allow3) {
+  void TestAddOps(int src, int dst, bool scale_x, bool allow3) {
     std::deque<GLHelperScaling::ScaleOp> ops;
     GLHelperScaling::ScaleOp::AddOps(src, dst, scale_x, allow3, &ops);
     // Scale factor 3 is a special case.
@@ -1027,8 +1030,7 @@ class GLHelperTest : public testing::Test {
       if (i == 0) {
         // Only the first op is allowed to be a scale up.
         // (Scaling up *after* scaling down would make it fuzzy.)
-        EXPECT_TRUE(ops[0].scale_factor == 0 ||
-                    ops[0].scale_factor == 2);
+        EXPECT_TRUE(ops[0].scale_factor == 0 || ops[0].scale_factor == 2);
       } else {
         // All other operations must be 50% downscales.
         EXPECT_EQ(ops[i].scale_factor, 2);
@@ -1049,9 +1051,11 @@ class GLHelperTest : public testing::Test {
     EXPECT_EQ(tmp, src);
   }
 
-  void CheckPipeline2(int xsize, int ysize,
-                      int dst_xsize, int dst_ysize,
-                      const std::string &description) {
+  void CheckPipeline2(int xsize,
+                      int ysize,
+                      int dst_xsize,
+                      int dst_ysize,
+                      const std::string& description) {
     std::vector<GLHelperScaling::ScalerStage> stages;
     helper_scaling_->ConvertScalerOpsToScalerStages(
         content::GLHelper::SCALER_QUALITY_GOOD,
@@ -1065,10 +1069,7 @@ class GLHelperTest : public testing::Test {
         &stages);
     EXPECT_EQ(x_ops_.size(), 0U);
     EXPECT_EQ(y_ops_.size(), 0U);
-    ValidateScalerStages(
-        content::GLHelper::SCALER_QUALITY_GOOD,
-        stages,
-        "");
+    ValidateScalerStages(content::GLHelper::SCALER_QUALITY_GOOD, stages, "");
     EXPECT_EQ(PrintStages(stages), description);
   }
 
@@ -1076,53 +1077,49 @@ class GLHelperTest : public testing::Test {
     // Basic upscale. X and Y should be combined into one pass.
     x_ops_.push_back(GLHelperScaling::ScaleOp(0, true, 2000));
     y_ops_.push_back(GLHelperScaling::ScaleOp(0, false, 2000));
-    CheckPipeline2(1024, 768, 2000, 2000,
-                   "1024x768 -> 2000x2000 bilinear\n");
+    CheckPipeline2(1024, 768, 2000, 2000, "1024x768 -> 2000x2000 bilinear\n");
 
     // X scaled 1/2, Y upscaled, should still be one pass.
     x_ops_.push_back(GLHelperScaling::ScaleOp(2, true, 512));
     y_ops_.push_back(GLHelperScaling::ScaleOp(0, false, 2000));
-    CheckPipeline2(1024, 768, 512, 2000,
-                   "1024x768 -> 512x2000 bilinear\n");
+    CheckPipeline2(1024, 768, 512, 2000, "1024x768 -> 512x2000 bilinear\n");
 
     // X upscaled, Y scaled 1/2, one bilinear pass
     x_ops_.push_back(GLHelperScaling::ScaleOp(0, true, 2000));
     y_ops_.push_back(GLHelperScaling::ScaleOp(2, false, 384));
-    CheckPipeline2(1024, 768, 2000, 384,
-                   "1024x768 -> 2000x384 bilinear\n");
+    CheckPipeline2(1024, 768, 2000, 384, "1024x768 -> 2000x384 bilinear\n");
 
     // X scaled 1/2, Y scaled 1/2, one bilinear pass
     x_ops_.push_back(GLHelperScaling::ScaleOp(2, true, 512));
     y_ops_.push_back(GLHelperScaling::ScaleOp(2, false, 384));
-    CheckPipeline2(1024, 768, 2000, 384,
-                   "1024x768 -> 512x384 bilinear\n");
+    CheckPipeline2(1024, 768, 2000, 384, "1024x768 -> 512x384 bilinear\n");
 
     // X scaled 1/2, Y scaled to 60%, one bilinear2 pass.
     x_ops_.push_back(GLHelperScaling::ScaleOp(2, true, 50));
     y_ops_.push_back(GLHelperScaling::ScaleOp(0, false, 120));
     y_ops_.push_back(GLHelperScaling::ScaleOp(2, false, 60));
-    CheckPipeline2(100, 100, 50, 60,
-                   "100x100 -> 50x60 bilinear2 Y\n");
+    CheckPipeline2(100, 100, 50, 60, "100x100 -> 50x60 bilinear2 Y\n");
 
     // X scaled to 60%, Y scaled 1/2, one bilinear2 pass.
     x_ops_.push_back(GLHelperScaling::ScaleOp(0, true, 120));
     x_ops_.push_back(GLHelperScaling::ScaleOp(2, true, 60));
     y_ops_.push_back(GLHelperScaling::ScaleOp(2, false, 50));
-    CheckPipeline2(100, 100, 50, 60,
-                   "100x100 -> 60x50 bilinear2 X\n");
+    CheckPipeline2(100, 100, 50, 60, "100x100 -> 60x50 bilinear2 X\n");
 
     // X scaled to 60%, Y scaled 60%, one bilinear2x2 pass.
     x_ops_.push_back(GLHelperScaling::ScaleOp(0, true, 120));
     x_ops_.push_back(GLHelperScaling::ScaleOp(2, true, 60));
     y_ops_.push_back(GLHelperScaling::ScaleOp(0, false, 120));
     y_ops_.push_back(GLHelperScaling::ScaleOp(2, false, 60));
-    CheckPipeline2(100, 100, 60, 60,
-                   "100x100 -> 60x60 bilinear2x2\n");
+    CheckPipeline2(100, 100, 60, 60, "100x100 -> 60x60 bilinear2x2\n");
 
     // X scaled to 40%, Y scaled 40%, two bilinear3 passes.
     x_ops_.push_back(GLHelperScaling::ScaleOp(3, true, 40));
     y_ops_.push_back(GLHelperScaling::ScaleOp(3, false, 40));
-    CheckPipeline2(100, 100, 40, 40,
+    CheckPipeline2(100,
+                   100,
+                   40,
+                   40,
                    "100x100 -> 100x40 bilinear3 Y\n"
                    "100x40 -> 40x40 bilinear3 X\n");
 
@@ -1130,7 +1127,10 @@ class GLHelperTest : public testing::Test {
     x_ops_.push_back(GLHelperScaling::ScaleOp(0, true, 120));
     x_ops_.push_back(GLHelperScaling::ScaleOp(2, true, 60));
     y_ops_.push_back(GLHelperScaling::ScaleOp(3, false, 40));
-    CheckPipeline2(100, 100, 60, 40,
+    CheckPipeline2(100,
+                   100,
+                   60,
+                   40,
                    "100x100 -> 100x40 bilinear3 Y\n"
                    "100x40 -> 60x40 bilinear2 X\n");
 
@@ -1138,7 +1138,10 @@ class GLHelperTest : public testing::Test {
     x_ops_.push_back(GLHelperScaling::ScaleOp(3, true, 40));
     y_ops_.push_back(GLHelperScaling::ScaleOp(0, false, 120));
     y_ops_.push_back(GLHelperScaling::ScaleOp(2, false, 60));
-    CheckPipeline2(100, 100, 40, 60,
+    CheckPipeline2(100,
+                   100,
+                   40,
+                   60,
                    "100x100 -> 100x60 bilinear2 Y\n"
                    "100x60 -> 40x60 bilinear3 X\n");
 
@@ -1149,7 +1152,10 @@ class GLHelperTest : public testing::Test {
     y_ops_.push_back(GLHelperScaling::ScaleOp(0, false, 120));
     y_ops_.push_back(GLHelperScaling::ScaleOp(2, false, 60));
     y_ops_.push_back(GLHelperScaling::ScaleOp(2, false, 30));
-    CheckPipeline2(100, 100, 30, 30,
+    CheckPipeline2(100,
+                   100,
+                   30,
+                   30,
                    "100x100 -> 100x30 bilinear4 Y\n"
                    "100x30 -> 30x30 bilinear4 X\n");
 
@@ -1158,8 +1164,7 @@ class GLHelperTest : public testing::Test {
     y_ops_.push_back(GLHelperScaling::ScaleOp(0, false, 120));
     y_ops_.push_back(GLHelperScaling::ScaleOp(2, false, 60));
     y_ops_.push_back(GLHelperScaling::ScaleOp(2, false, 30));
-    CheckPipeline2(100, 100, 50, 30,
-                   "100x100 -> 50x30 bilinear4 Y\n");
+    CheckPipeline2(100, 100, 50, 30, "100x100 -> 50x30 bilinear4 Y\n");
 
     // X scaled to 150%, Y scaled 30%
     // Note that we avoid combinding X and Y passes
@@ -1168,7 +1173,10 @@ class GLHelperTest : public testing::Test {
     y_ops_.push_back(GLHelperScaling::ScaleOp(0, false, 120));
     y_ops_.push_back(GLHelperScaling::ScaleOp(2, false, 60));
     y_ops_.push_back(GLHelperScaling::ScaleOp(2, false, 30));
-    CheckPipeline2(100, 100, 150, 30,
+    CheckPipeline2(100,
+                   100,
+                   150,
+                   30,
                    "100x100 -> 100x30 bilinear4 Y\n"
                    "100x30 -> 150x30 bilinear\n");
 
@@ -1189,7 +1197,10 @@ class GLHelperTest : public testing::Test {
     y_ops_.push_back(GLHelperScaling::ScaleOp(2, false, 4));
     y_ops_.push_back(GLHelperScaling::ScaleOp(2, false, 2));
     y_ops_.push_back(GLHelperScaling::ScaleOp(2, false, 1));
-    CheckPipeline2(100, 100, 30, 30,
+    CheckPipeline2(100,
+                   100,
+                   30,
+                   30,
                    "100x100 -> 100x32 bilinear4 Y\n"
                    "100x32 -> 100x4 bilinear4 Y\n"
                    "100x4 -> 64x1 bilinear2x2\n"
@@ -1209,14 +1220,16 @@ TEST_F(GLHelperTest, YUVReadbackOptTest) {
   // scaling passes are actually performed by the YUV readback pipeline.
   StartTracing(TRACE_DISABLED_BY_DEFAULT("cb_command"));
 
-  TestYUVReadback(
-      800, 400,
-      800, 400,
-      0,  0,
-      1,
-      false,
-      true,
-      content::GLHelper::SCALER_QUALITY_FAST);
+  TestYUVReadback(800,
+                  400,
+                  800,
+                  400,
+                  0,
+                  0,
+                  1,
+                  false,
+                  true,
+                  content::GLHelper::SCALER_QUALITY_FAST);
 
   std::map<std::string, int> event_counts;
   EndTracing(&event_counts);
@@ -1239,7 +1252,7 @@ TEST_F(GLHelperTest, YUVReadbackOptTest) {
 }
 
 TEST_F(GLHelperTest, YUVReadbackTest) {
-  int sizes[] = { 2, 4, 14 };
+  int sizes[] = {2, 4, 14};
   for (int flip = 0; flip <= 1; flip++) {
     for (int use_mrt = 0; use_mrt <= 1; use_mrt++) {
       for (unsigned int x = 0; x < arraysize(sizes); x++) {
@@ -1255,17 +1268,16 @@ TEST_F(GLHelperTest, YUVReadbackTest) {
                      ym <= MarginRight;
                      ym = NextMargin(ym)) {
                   for (int pattern = 0; pattern < 3; pattern++) {
-                    TestYUVReadback(
-                        sizes[x],
-                        sizes[y],
-                        sizes[ox],
-                        sizes[oy],
-                        compute_margin(sizes[x], sizes[ox], xm),
-                        compute_margin(sizes[y], sizes[oy], ym),
-                        pattern,
-                        flip == 1,
-                        use_mrt == 1,
-                        content::GLHelper::SCALER_QUALITY_GOOD);
+                    TestYUVReadback(sizes[x],
+                                    sizes[y],
+                                    sizes[ox],
+                                    sizes[oy],
+                                    compute_margin(sizes[x], sizes[ox], xm),
+                                    compute_margin(sizes[y], sizes[oy], ym),
+                                    pattern,
+                                    flip == 1,
+                                    use_mrt == 1,
+                                    content::GLHelper::SCALER_QUALITY_GOOD);
                     if (HasFailure()) {
                       return;
                     }
@@ -1318,9 +1330,8 @@ TEST_F(GLHelperTest, ValidateScalerPipelines) {
       for (size_t y = 0; y < arraysize(sizes); y++) {
         for (size_t dst_x = 0; dst_x < arraysize(sizes); dst_x++) {
           for (size_t dst_y = 0; dst_y < arraysize(sizes); dst_y++) {
-            TestScalerPipeline(q,
-                               sizes[x], sizes[y],
-                               sizes[dst_x], sizes[dst_y]);
+            TestScalerPipeline(
+                q, sizes[x], sizes[y], sizes[dst_x], sizes[dst_y]);
             if (HasFailure()) {
               return;
             }
@@ -1336,16 +1347,25 @@ TEST_F(GLHelperTest, ValidateScalerPipelines) {
 TEST_F(GLHelperTest, CheckSpecificPipelines) {
   // Upscale should be single pass.
   CheckPipeline(content::GLHelper::SCALER_QUALITY_GOOD,
-                1024, 700, 1280, 720,
+                1024,
+                700,
+                1280,
+                720,
                 "1024x700 -> 1280x720 bilinear\n");
   // Slight downscale should use BILINEAR2X2.
   CheckPipeline(content::GLHelper::SCALER_QUALITY_GOOD,
-                1280, 720, 1024, 700,
+                1280,
+                720,
+                1024,
+                700,
                 "1280x720 -> 1024x700 bilinear2x2\n");
   // Most common tab capture pipeline on the Pixel.
   // Should be using two BILINEAR3 passes.
   CheckPipeline(content::GLHelper::SCALER_QUALITY_GOOD,
-                2560, 1476, 1249, 720,
+                2560,
+                1476,
+                1249,
+                720,
                 "2560x1476 -> 2560x720 bilinear3 Y\n"
                 "2560x720 -> 1249x720 bilinear3 X\n");
 }
@@ -1356,8 +1376,7 @@ TEST_F(GLHelperTest, ScalerOpTest) {
       for (int src = 1; src < 2049; src++) {
         TestAddOps(src, dst, allow3 == 1, (src & 1) == 1);
         if (HasFailure()) {
-          LOG(ERROR) << "Failed for src=" << src
-                     << " dst=" << dst
+          LOG(ERROR) << "Failed for src=" << src << " dst=" << dst
                      << " allow3=" << allow3;
           return;
         }

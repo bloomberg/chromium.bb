@@ -10,6 +10,7 @@
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
+#include "gpu/command_buffer/client/gles2_implementation.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/gfx/android/device_display_info.h"
@@ -144,7 +145,7 @@ void CmdBufferImageTransportFactory::AcquireTexture(
 
 GLHelper* CmdBufferImageTransportFactory::GetGLHelper() {
   if (!gl_helper_)
-    gl_helper_.reset(new GLHelper(context_.get(),
+    gl_helper_.reset(new GLHelper(context_->GetImplementation(),
                                   context_->GetContextSupport()));
 
   return gl_helper_.get();

@@ -67,9 +67,10 @@ class GLHelperTest : public testing::Test {
     context_->makeContextCurrent();
 
     helper_.reset(
-        new content::GLHelper(context_.get(), context_->GetContextSupport()));
+        new content::GLHelper(context_->GetGLInterface(),
+                              context_->GetContextSupport()));
     helper_scaling_.reset(new content::GLHelperScaling(
-        context_.get(),
+        context_->GetGLInterface(),
         helper_.get()));
   }
 

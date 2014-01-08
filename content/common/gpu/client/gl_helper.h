@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
-#include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 
 namespace gfx {
 class Rect;
@@ -32,169 +32,122 @@ namespace content {
 
 class GLHelperScaling;
 
-class ScopedWebGLId {
+class ScopedGLuint {
  public:
-  typedef void (blink::WebGraphicsContext3D::*DeleteFunc)(WebGLId);
-  ScopedWebGLId(blink::WebGraphicsContext3D* context,
-                WebGLId id,
-                DeleteFunc delete_func)
-      : context_(context),
-        id_(id),
-        delete_func_(delete_func) {
+  typedef void (gpu::gles2::GLES2Interface::*GenFunc)(GLsizei n, GLuint* ids);
+  typedef void (gpu::gles2::GLES2Interface::*DeleteFunc)(GLsizei n,
+                                                         const GLuint* ids);
+  ScopedGLuint(gpu::gles2::GLES2Interface* gl,
+               GenFunc gen_func,
+               DeleteFunc delete_func)
+      : gl_(gl), id_(0u), delete_func_(delete_func) {
+    (gl_->*gen_func)(1, &id_);
   }
 
-  operator WebGLId() const {
-    return id_;
-  }
+  operator GLuint() const { return id_; }
 
-  WebGLId id() const { return id_; }
+  GLuint id() const { return id_; }
 
-  WebGLId Detach() {
-    WebGLId id = id_;
-    id_ = 0;
-    return id;
-  }
-
-  ~ScopedWebGLId() {
+  ~ScopedGLuint() {
     if (id_ != 0) {
-      (context_->*delete_func_)(id_);
+      (gl_->*delete_func_)(1, &id_);
     }
   }
 
  private:
-  blink::WebGraphicsContext3D* context_;
-  WebGLId id_;
+  gpu::gles2::GLES2Interface* gl_;
+  GLuint id_;
   DeleteFunc delete_func_;
 
-  DISALLOW_COPY_AND_ASSIGN(ScopedWebGLId);
+  DISALLOW_COPY_AND_ASSIGN(ScopedGLuint);
 };
 
-class ScopedBuffer : public ScopedWebGLId {
+class ScopedBuffer : public ScopedGLuint {
  public:
-  ScopedBuffer(blink::WebGraphicsContext3D* context,
-               WebGLId id)
-      : ScopedWebGLId(context,
-                      id,
-                      &blink::WebGraphicsContext3D::deleteBuffer) {}
+  explicit ScopedBuffer(gpu::gles2::GLES2Interface* gl)
+      : ScopedGLuint(gl,
+                     &gpu::gles2::GLES2Interface::GenBuffers,
+                     &gpu::gles2::GLES2Interface::DeleteBuffers) {}
 };
 
-class ScopedFramebuffer : public ScopedWebGLId {
+class ScopedFramebuffer : public ScopedGLuint {
  public:
-  ScopedFramebuffer(blink::WebGraphicsContext3D* context,
-                    WebGLId id)
-      : ScopedWebGLId(context,
-                      id,
-                      &blink::WebGraphicsContext3D::deleteFramebuffer) {}
+  explicit ScopedFramebuffer(gpu::gles2::GLES2Interface* gl)
+      : ScopedGLuint(gl,
+                     &gpu::gles2::GLES2Interface::GenFramebuffers,
+                     &gpu::gles2::GLES2Interface::DeleteFramebuffers) {}
 };
 
-class ScopedProgram : public ScopedWebGLId {
+class ScopedTexture : public ScopedGLuint {
  public:
-  ScopedProgram(blink::WebGraphicsContext3D* context,
-                WebGLId id)
-      : ScopedWebGLId(context,
-                      id,
-                      &blink::WebGraphicsContext3D::deleteProgram) {}
+  explicit ScopedTexture(gpu::gles2::GLES2Interface* gl)
+      : ScopedGLuint(gl,
+                     &gpu::gles2::GLES2Interface::GenTextures,
+                     &gpu::gles2::GLES2Interface::DeleteTextures) {}
 };
 
-class ScopedShader : public ScopedWebGLId {
- public:
-  ScopedShader(blink::WebGraphicsContext3D* context,
-               WebGLId id)
-      : ScopedWebGLId(context,
-                      id,
-                      &blink::WebGraphicsContext3D::deleteShader) {}
-};
-
-class ScopedTexture : public ScopedWebGLId {
- public:
-  ScopedTexture(blink::WebGraphicsContext3D* context,
-                WebGLId id)
-      : ScopedWebGLId(context,
-                      id,
-                      &blink::WebGraphicsContext3D::deleteTexture) {}
-};
-
-template <blink::WGC3Denum target>
+template <GLenum Target>
 class ScopedBinder {
  public:
-  typedef void (blink::WebGraphicsContext3D::*BindFunc)(blink::WGC3Denum,
-                                                         WebGLId);
-  ScopedBinder(blink::WebGraphicsContext3D* context,
-               WebGLId id,
-               BindFunc bind_func)
-      : context_(context),
-        bind_func_(bind_func) {
-    (context_->*bind_func_)(target, id);
+  typedef void (gpu::gles2::GLES2Interface::*BindFunc)(GLenum target,
+                                                       GLuint id);
+  ScopedBinder(gpu::gles2::GLES2Interface* gl, GLuint id, BindFunc bind_func)
+      : gl_(gl), bind_func_(bind_func) {
+    (gl_->*bind_func_)(Target, id);
   }
 
-  virtual ~ScopedBinder() {
-    (context_->*bind_func_)(target, 0);
-  }
+  virtual ~ScopedBinder() { (gl_->*bind_func_)(Target, 0); }
 
  private:
-  blink::WebGraphicsContext3D* context_;
+  gpu::gles2::GLES2Interface* gl_;
   BindFunc bind_func_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedBinder);
 };
 
-template <blink::WGC3Denum target>
-class ScopedBufferBinder : ScopedBinder<target> {
+template <GLenum Target>
+class ScopedBufferBinder : ScopedBinder<Target> {
  public:
-  ScopedBufferBinder(blink::WebGraphicsContext3D* context,
-                     WebGLId id)
-      : ScopedBinder<target>(
-          context,
-          id,
-          &blink::WebGraphicsContext3D::bindBuffer) {}
+  ScopedBufferBinder(gpu::gles2::GLES2Interface* gl, GLuint id)
+      : ScopedBinder<Target>(gl, id, &gpu::gles2::GLES2Interface::BindBuffer) {}
 };
 
-template <blink::WGC3Denum target>
-class ScopedFramebufferBinder : ScopedBinder<target> {
+template <GLenum Target>
+class ScopedFramebufferBinder : ScopedBinder<Target> {
  public:
-  ScopedFramebufferBinder(blink::WebGraphicsContext3D* context,
-                          WebGLId id)
-      : ScopedBinder<target>(
-          context,
-          id,
-          &blink::WebGraphicsContext3D::bindFramebuffer) {}
+  ScopedFramebufferBinder(gpu::gles2::GLES2Interface* gl, GLuint id)
+      : ScopedBinder<Target>(gl,
+                             id,
+                             &gpu::gles2::GLES2Interface::BindFramebuffer) {}
 };
 
-template <blink::WGC3Denum target>
-class ScopedTextureBinder : ScopedBinder<target> {
+template <GLenum Target>
+class ScopedTextureBinder : ScopedBinder<Target> {
  public:
-  ScopedTextureBinder(blink::WebGraphicsContext3D* context,
-                      WebGLId id)
-      : ScopedBinder<target>(
-          context,
-          id,
-          &blink::WebGraphicsContext3D::bindTexture) {}
+  ScopedTextureBinder(gpu::gles2::GLES2Interface* gl, GLuint id)
+      : ScopedBinder<Target>(gl, id, &gpu::gles2::GLES2Interface::BindTexture) {
+  }
 };
 
 class ScopedFlush {
  public:
-  explicit ScopedFlush(blink::WebGraphicsContext3D* context)
-      : context_(context) {
-  }
+  explicit ScopedFlush(gpu::gles2::GLES2Interface* gl) : gl_(gl) {}
 
-  ~ScopedFlush() {
-    context_->flush();
-  }
+  ~ScopedFlush() { gl_->Flush(); }
 
  private:
-  blink::WebGraphicsContext3D* context_;
+  gpu::gles2::GLES2Interface* gl_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedFlush);
 };
 
-
 class ReadbackYUVInterface;
 
-// Provides higher level operations on top of the blink::WebGraphicsContext3D
+// Provides higher level operations on top of the gpu::gles2::GLES2Interface
 // interfaces.
 class CONTENT_EXPORT GLHelper {
  public:
-  GLHelper(blink::WebGraphicsContext3D* context,
+  GLHelper(gpu::gles2::GLES2Interface* gl,
            gpu::ContextSupport* context_support);
   ~GLHelper();
 
@@ -214,7 +167,6 @@ class CONTENT_EXPORT GLHelper {
     SCALER_QUALITY_BEST = 3,
   };
 
-
   // Copies the block of pixels specified with |src_subrect| from |src_texture|,
   // scales it to |dst_size|, and writes it into |out|.
   // |src_size| is the size of |src_texture|. The result is of format GL_BGRA
@@ -224,7 +176,7 @@ class CONTENT_EXPORT GLHelper {
   // Note that the src_texture will have the min/mag filter set to GL_LINEAR
   // and wrap_s/t set to CLAMP_TO_EDGE in this call.
   void CropScaleReadbackAndCleanTexture(
-      blink::WebGLId src_texture,
+      GLuint src_texture,
       const gfx::Size& src_size,
       const gfx::Rect& src_subrect,
       const gfx::Size& dst_size,
@@ -252,44 +204,41 @@ class CONTENT_EXPORT GLHelper {
   // Copies the texture data out of |texture| into |out|.  |size| is the
   // size of the texture.  No post processing is applied to the pixels.  The
   // texture is assumed to have a format of GL_RGBA with a pixel type of
-  // GL_UNSIGNED_BYTE.  This is a blocking call that calls glReadPixels on this
-  // current context.
-  void ReadbackTextureSync(blink::WebGLId texture,
+  // GL_UNSIGNED_BYTE.  This is a blocking call that calls glReadPixels on the
+  // current OpenGL context.
+  void ReadbackTextureSync(GLuint texture,
                            const gfx::Rect& src_rect,
                            unsigned char* out);
 
   // Creates a copy of the specified texture. |size| is the size of the texture.
   // Note that the src_texture will have the min/mag filter set to GL_LINEAR
   // and wrap_s/t set to CLAMP_TO_EDGE in this call.
-  blink::WebGLId CopyTexture(blink::WebGLId texture,
-                              const gfx::Size& size);
+  GLuint CopyTexture(GLuint texture, const gfx::Size& size);
 
   // Creates a scaled copy of the specified texture. |src_size| is the size of
   // the texture and |dst_size| is the size of the resulting copy.
   // Note that the src_texture will have the min/mag filter set to GL_LINEAR
   // and wrap_s/t set to CLAMP_TO_EDGE in this call.
-  blink::WebGLId CopyAndScaleTexture(
-      blink::WebGLId texture,
-      const gfx::Size& src_size,
-      const gfx::Size& dst_size,
-      bool vertically_flip_texture,
-      ScalerQuality quality);
+  GLuint CopyAndScaleTexture(GLuint texture,
+                             const gfx::Size& src_size,
+                             const gfx::Size& dst_size,
+                             bool vertically_flip_texture,
+                             ScalerQuality quality);
 
   // Returns the shader compiled from the source.
-  blink::WebGLId CompileShaderFromSource(const blink::WGC3Dchar* source,
-                                          blink::WGC3Denum type);
+  GLuint CompileShaderFromSource(const GLchar* source, GLenum type);
 
   // Copies all pixels from |previous_texture| into |texture| that are
   // inside the region covered by |old_damage| but not part of |new_damage|.
-  void CopySubBufferDamage(blink::WebGLId texture,
-                           blink::WebGLId previous_texture,
+  void CopySubBufferDamage(GLuint texture,
+                           GLuint previous_texture,
                            const SkRegion& new_damage,
                            const SkRegion& old_damage);
 
   // Simply creates a texture.
-  blink::WebGLId CreateTexture();
+  GLuint CreateTexture();
   // Deletes a texture.
-  void DeleteTexture(blink::WebGLId texture_id);
+  void DeleteTexture(GLuint texture_id);
 
   // Insert a sync point into the GL command buffer.
   uint32 InsertSyncPoint();
@@ -300,23 +249,22 @@ class CONTENT_EXPORT GLHelper {
   // point to wait on before using the mailbox. Returns an empty mailbox on
   // failure.
   // Note the texture is assumed to be GL_TEXTURE_2D.
-  gpu::Mailbox ProduceMailboxFromTexture(blink::WebGLId texture_id,
-                                         uint32* sync_point);
+  gpu::Mailbox ProduceMailboxFromTexture(GLuint texture_id, uint32* sync_point);
 
   // Creates a texture and consumes a mailbox into it. Returns 0 on failure.
   // Note the mailbox is assumed to be GL_TEXTURE_2D.
-  blink::WebGLId ConsumeMailboxToTexture(const gpu::Mailbox& mailbox,
-                                          uint32 sync_point);
+  GLuint ConsumeMailboxToTexture(const gpu::Mailbox& mailbox,
+                                 uint32 sync_point);
 
   // Resizes the texture's size to |size|.
-  void ResizeTexture(blink::WebGLId texture, const gfx::Size& size);
+  void ResizeTexture(GLuint texture, const gfx::Size& size);
 
   // Copies the framebuffer data given in |rect| to |texture|.
-  void CopyTextureSubImage(blink::WebGLId texture, const gfx::Rect& rect);
+  void CopyTextureSubImage(GLuint texture, const gfx::Rect& rect);
 
   // Copies the all framebuffer data to |texture|. |size| specifies the
   // size of the framebuffer.
-  void CopyTextureFullImage(blink::WebGLId texture, const gfx::Size& size);
+  void CopyTextureFullImage(GLuint texture, const gfx::Size& size);
 
   // A scaler will cache all intermediate textures and programs
   // needed to scale from a specified size to a destination size.
@@ -329,8 +277,7 @@ class CONTENT_EXPORT GLHelper {
 
     // Note that the src_texture will have the min/mag filter set to GL_LINEAR
     // and wrap_s/t set to CLAMP_TO_EDGE in this call.
-    virtual void Scale(blink::WebGLId source_texture,
-                       blink::WebGLId dest_texture) = 0;
+    virtual void Scale(GLuint source_texture, GLuint dest_texture) = 0;
     virtual const gfx::Size& SrcSize() = 0;
     virtual const gfx::Rect& SrcSubrect() = 0;
     virtual const gfx::Size& DstSize() = 0;
@@ -355,18 +302,17 @@ class CONTENT_EXPORT GLHelper {
   // a multiple of two. If |use_mrt| is true, the pipeline will try to optimize
   // the YUV conversion using the multi-render-target extension. |use_mrt|
   // should only be set to false for testing.
-  ReadbackYUVInterface* CreateReadbackPipelineYUV(
-      ScalerQuality quality,
-      const gfx::Size& src_size,
-      const gfx::Rect& src_subrect,
-      const gfx::Size& dst_size,
-      const gfx::Rect& dst_subrect,
-      bool flip_vertically,
-      bool use_mrt);
+  ReadbackYUVInterface* CreateReadbackPipelineYUV(ScalerQuality quality,
+                                                  const gfx::Size& src_size,
+                                                  const gfx::Rect& src_subrect,
+                                                  const gfx::Size& dst_size,
+                                                  const gfx::Rect& dst_subrect,
+                                                  bool flip_vertically,
+                                                  bool use_mrt);
 
   // Returns the maximum number of draw buffers available,
   // 0 if GL_EXT_draw_buffers is not available.
-  blink::WGC3Dint MaxDrawBuffers();
+  GLint MaxDrawBuffers();
 
  protected:
   class CopyTextureToImpl;
@@ -376,7 +322,7 @@ class CONTENT_EXPORT GLHelper {
   // Creates |scaler_impl_| if NULL.
   void InitScalerImpl();
 
-  blink::WebGraphicsContext3D* context_;
+  gpu::gles2::GLES2Interface* gl_;
   gpu::ContextSupport* context_support_;
   scoped_ptr<CopyTextureToImpl> copy_texture_to_impl_;
   scoped_ptr<GLHelperScaling> scaler_impl_;
@@ -392,16 +338,15 @@ class CONTENT_EXPORT GLHelper {
 // if the source or destination sizes change, you'll need to create
 // a new readback pipeline.
 class CONTENT_EXPORT ReadbackYUVInterface {
-public:
+ public:
   ReadbackYUVInterface() {}
   virtual ~ReadbackYUVInterface() {}
 
   // Note that |target| must use YV12 format.
-  virtual void ReadbackYUV(
-      const gpu::Mailbox& mailbox,
-      uint32 sync_point,
-      const scoped_refptr<media::VideoFrame>& target,
-      const base::Callback<void(bool)>& callback) = 0;
+  virtual void ReadbackYUV(const gpu::Mailbox& mailbox,
+                           uint32 sync_point,
+                           const scoped_refptr<media::VideoFrame>& target,
+                           const base::Callback<void(bool)>& callback) = 0;
   virtual GLHelper::ScalerInterface* scaler() = 0;
 };
 

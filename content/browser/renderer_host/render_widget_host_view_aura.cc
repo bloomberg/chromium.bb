@@ -2633,7 +2633,7 @@ void RenderWidgetHostViewAura::DidRecreateLayer(ui::Layer *old_layer,
     scoped_refptr<ui::Texture> new_texture;
     if (host_->is_accelerated_compositing_active() &&
         gl_helper && current_surface_.get()) {
-      blink::WebGLId texture_id =
+      GLuint texture_id =
           gl_helper->CopyTexture(current_surface_->PrepareTexture(),
                                  current_surface_->size());
       if (texture_id) {
