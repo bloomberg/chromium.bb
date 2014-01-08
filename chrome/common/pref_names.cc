@@ -47,6 +47,11 @@ const char kManagedUserCustodianEmail[] = "profile.managed.custodian_email";
 // starts a session.
 const char kManagedUserCustodianName[] = "profile.managed.custodian_name";
 
+// Stores settings that can be modified both by a supervised user and their
+// manager. See ManagedUserSharedSettingsService for a description of
+// the format.
+const char kManagedUserSharedSettings[] = "profile.managed.shared_settings";
+
 // An integer that keeps track of the profile icon version. This allows us to
 // determine the state of the profile icon for icon format changes.
 const char kProfileIconVersion[] = "profile.icon_version";

@@ -25,6 +25,7 @@ extern const char kManagedModeManualHosts[];
 extern const char kManagedModeManualURLs[];
 extern const char kManagedUserCustodianEmail[];
 extern const char kManagedUserCustodianName[];
+extern const char kManagedUserSharedSettings[];
 extern const char kProfileIconVersion[];
 extern const char kRestoreOnStartup[];
 extern const char kRestoreOnStartupMigrated[];

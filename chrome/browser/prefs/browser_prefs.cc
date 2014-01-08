@@ -112,6 +112,7 @@
 
 #if defined(ENABLE_MANAGED_USERS)
 #include "chrome/browser/managed_mode/managed_user_service.h"
+#include "chrome/browser/managed_mode/managed_user_shared_settings_service.h"
 #include "chrome/browser/managed_mode/managed_user_sync_service.h"
 #endif
 
@@ -387,6 +388,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 #if defined(ENABLE_MANAGED_USERS)
   ManagedUserService::RegisterProfilePrefs(registry);
+  ManagedUserSharedSettingsService::RegisterProfilePrefs(registry);
   ManagedUserSyncService::RegisterProfilePrefs(registry);
 #endif
 

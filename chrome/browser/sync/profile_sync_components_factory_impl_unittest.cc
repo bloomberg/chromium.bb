@@ -59,6 +59,7 @@ class ProfileSyncComponentsFactoryImplTest : public testing::Test {
     datatypes.push_back(syncer::FAVICON_IMAGES);
     datatypes.push_back(syncer::SYNCED_NOTIFICATIONS);
     datatypes.push_back(syncer::MANAGED_USERS);
+    datatypes.push_back(syncer::MANAGED_USER_SHARED_SETTINGS);
 
   return datatypes;
   }
