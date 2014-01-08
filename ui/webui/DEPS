@@ -1,6 +1,4 @@
 include_rules = [
-  "+grit/app_locale_settings.h",
-  "+grit/webui_resources.h",
   "+net",
   "+ui/base",
   "+ui/gfx",
