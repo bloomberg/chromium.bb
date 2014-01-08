@@ -74,8 +74,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, ApiTests) {
 #endif
 
   AddExtensionToCommandLineWhitelist();
-  ASSERT_TRUE(RunExtensionSubtest("tab_capture/experimental",
-                                  "api_tests.html")) << message_;
+  ASSERT_TRUE(RunExtensionSubtest("tab_capture", "api_tests.html")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, ApiTestsAudio) {
@@ -87,8 +86,8 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, ApiTestsAudio) {
 #endif
 
   AddExtensionToCommandLineWhitelist();
-  ASSERT_TRUE(RunExtensionSubtest("tab_capture/experimental",
-                                  "api_tests_audio.html")) << message_;
+  ASSERT_TRUE(RunExtensionSubtest("tab_capture", "api_tests_audio.html"))
+      << message_;
 }
 
 // http://crbug.com/177163
@@ -106,8 +105,8 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_EndToEnd) {
 #endif
 
   AddExtensionToCommandLineWhitelist();
-  ASSERT_TRUE(RunExtensionSubtest("tab_capture/experimental",
-                                  "end_to_end.html")) << message_;
+  ASSERT_TRUE(RunExtensionSubtest("tab_capture", "end_to_end.html"))
+      << message_;
 }
 
 // http://crbug.com/177163
@@ -120,8 +119,8 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_EndToEnd) {
 IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_GetUserMediaTest) {
   ExtensionTestMessageListener listener("ready", true);
 
-  ASSERT_TRUE(RunExtensionSubtest("tab_capture/experimental",
-                                  "get_user_media_test.html")) << message_;
+  ASSERT_TRUE(RunExtensionSubtest("tab_capture", "get_user_media_test.html"))
+      << message_;
 
   EXPECT_TRUE(listener.WaitUntilSatisfied());
 
@@ -155,9 +154,9 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_ActiveTabPermission) {
   ExtensionTestMessageListener before_open_new_tab("ready3", true);
   ExtensionTestMessageListener before_whitelist_extension("ready4", true);
 
-  ASSERT_TRUE(RunExtensionSubtest(
-      "tab_capture/experimental", "active_tab_permission_test.html"))
-          << message_;
+  ASSERT_TRUE(RunExtensionSubtest("tab_capture",
+                                  "active_tab_permission_test.html"))
+      << message_;
 
   // Open a new tab and make sure capture is denied.
   EXPECT_TRUE(before_open_tab.WaitUntilSatisfied());
@@ -224,8 +223,8 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_FullscreenEvents) {
   ExtensionTestMessageListener listeners_setup("ready1", true);
   ExtensionTestMessageListener fullscreen_entered("ready2", true);
 
-  ASSERT_TRUE(RunExtensionSubtest("tab_capture/experimental",
-                                  "fullscreen_test.html")) << message_;
+  ASSERT_TRUE(RunExtensionSubtest("tab_capture", "fullscreen_test.html"))
+      << message_;
   EXPECT_TRUE(listeners_setup.WaitUntilSatisfied());
 
   // Toggle fullscreen after setting up listeners.
@@ -255,8 +254,9 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_FullscreenEvents) {
 // Make sure tabCapture API can be granted for Chrome:// pages.
 IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_GrantForChromePages) {
   ExtensionTestMessageListener before_open_tab("ready1", true);
-  ASSERT_TRUE(RunExtensionSubtest("tab_capture/experimental",
-                                  "active_tab_chrome_pages.html")) << message_;
+  ASSERT_TRUE(RunExtensionSubtest("tab_capture",
+                                  "active_tab_chrome_pages.html"))
+      << message_;
   EXPECT_TRUE(before_open_tab.WaitUntilSatisfied());
 
   // Open a tab on a chrome:// page and make sure we can capture.
@@ -286,7 +286,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_GrantForChromePages) {
 // Test that a tab can be captured in split incognito mode.
 IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_CaptureInSplitIncognitoMode) {
   AddExtensionToCommandLineWhitelist();
-  ASSERT_TRUE(RunExtensionSubtest("tab_capture/experimental",
+  ASSERT_TRUE(RunExtensionSubtest("tab_capture",
                                   "incognito.html",
                                   kFlagEnableIncognito | kFlagUseIncognito))
       << message_;
@@ -299,6 +299,6 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_CaptureInSplitIncognitoMode) {
 #endif
 IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_Constraints) {
   AddExtensionToCommandLineWhitelist();
-  ASSERT_TRUE(RunExtensionSubtest("tab_capture/experimental",
-                                  "constraints.html")) << message_;
+  ASSERT_TRUE(RunExtensionSubtest("tab_capture", "constraints.html"))
+      << message_;
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -124,10 +124,10 @@ function testThroughWebRTC(stream) {
 
 function endToEndVideoTest() {
   chrome.tabCapture.capture(
-      { video: true,
-        audio: false,
-	videoConstraints: {
-          mandatory: {
+    { video: true,
+      audio: false,
+      videoConstraints: {
+        mandatory: {
           minWidth: 64,
           minHeight: 48
         }
@@ -138,10 +138,10 @@ function endToEndVideoTest() {
 
 function endToEndVideoTestWithWebRTC() {
   chrome.tabCapture.capture(
-      { video: true,
-        audio: false,
-	videoConstraints: {
-          mandatory: {
+    { video: true,
+      audio: false,
+      videoConstraints: {
+        mandatory: {
           minWidth: 64,
           minHeight: 48
         }
