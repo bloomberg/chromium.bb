@@ -227,7 +227,7 @@ void AutofillPopupViewViews::Show() {
   set_border(views::Border::CreateSolidBorder(kBorderThickness, kBorderColor));
 
   UpdateBoundsAndRedrawPopup();
-  GetWidget()->Show();
+  GetWidget()->ShowInactive();
 
   if (controller_->hide_on_outside_click())
     GetWidget()->SetCapture(this);

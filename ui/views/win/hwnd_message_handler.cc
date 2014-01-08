@@ -560,7 +560,7 @@ void HWNDMessageHandler::StackAtTop() {
 
 void HWNDMessageHandler::Show() {
   if (IsWindow(hwnd()))
-    ShowWindowWithState(ui::SHOW_STATE_INACTIVE);
+    ShowWindowWithState(ui::SHOW_STATE_NORMAL);
 }
 
 void HWNDMessageHandler::ShowWindowWithState(ui::WindowShowState show_state) {

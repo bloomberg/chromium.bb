@@ -462,7 +462,7 @@ void NativeWidgetAura::CloseNow() {
 }
 
 void NativeWidgetAura::Show() {
-  ShowWithWindowState(ui::SHOW_STATE_INACTIVE);
+  ShowWithWindowState(ui::SHOW_STATE_NORMAL);
 }
 
 void NativeWidgetAura::Hide() {

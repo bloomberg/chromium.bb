@@ -226,7 +226,7 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
       // window showing.
       return;
     }
-    popup_->Show();
+    popup_->ShowInactive();
   } else {
     // Animate the popup shrinking, but don't animate growing larger since that
     // would make the popup feel less responsive.

@@ -167,7 +167,8 @@ ui::WindowShowState GetWidgetShowState(const Widget* widget) {
   return widget->IsFullscreen() ? ui::SHOW_STATE_FULLSCREEN :
       widget->IsMaximized() ? ui::SHOW_STATE_MAXIMIZED :
       widget->IsMinimized() ? ui::SHOW_STATE_MINIMIZED :
-                              ui::SHOW_STATE_NORMAL;
+      widget->IsActive() ? ui::SHOW_STATE_NORMAL :
+                           ui::SHOW_STATE_INACTIVE;
 }
 
 TEST_F(WidgetTest, WidgetInitParams) {
@@ -2258,6 +2259,44 @@ TEST_F(WidgetTest, WindowModalityActivationTest) {
 }
 #endif
 #endif
+
+TEST_F(WidgetTest, ShowCreatesActiveWindow) {
+  Widget* widget = CreateTopLevelPlatformWidget();
+
+  widget->Show();
+  EXPECT_EQ(GetWidgetShowState(widget), ui::SHOW_STATE_NORMAL);
+
+  widget->CloseNow();
+}
+
+TEST_F(WidgetTest, ShowInactive) {
+  Widget* widget = CreateTopLevelPlatformWidget();
+
+  widget->ShowInactive();
+  EXPECT_EQ(GetWidgetShowState(widget), ui::SHOW_STATE_INACTIVE);
+
+  widget->CloseNow();
+}
+
+TEST_F(WidgetTest, ShowInactiveAfterShow) {
+  Widget* widget = CreateTopLevelPlatformWidget();
+
+  widget->Show();
+  widget->ShowInactive();
+  EXPECT_EQ(GetWidgetShowState(widget), ui::SHOW_STATE_NORMAL);
+
+  widget->CloseNow();
+}
+
+TEST_F(WidgetTest, ShowAfterShowInactive) {
+  Widget* widget = CreateTopLevelPlatformWidget();
+
+  widget->ShowInactive();
+  widget->Show();
+  EXPECT_EQ(GetWidgetShowState(widget), ui::SHOW_STATE_NORMAL);
+
+  widget->CloseNow();
+}
 
 }  // namespace test
 }  // namespace views

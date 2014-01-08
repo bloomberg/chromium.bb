@@ -430,8 +430,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // set to true after Close() has been invoked on the NativeWidget.
   bool IsClosed() const;
 
-  // Shows or hides the widget, without changing activation state.
+  // Shows the widget and activates it.
   virtual void Show();
+  // Hides the widget.
   void Hide();
 
   // Like Show(), but does not activate the window.

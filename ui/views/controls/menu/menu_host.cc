@@ -76,7 +76,7 @@ void MenuHost::ShowMenuHost(bool do_capture) {
   // Doing a capture may make us get capture lost. Ignore it while we're in the
   // process of showing.
   base::AutoReset<bool> reseter(&ignore_capture_lost_, true);
-  Show();
+  ShowInactive();
   if (do_capture) {
 #if defined(USE_AURA)
     // Cancel existing touches, so we don't miss some touch release/cancel

@@ -293,7 +293,7 @@ FullscreenExitBubbleViews::FullscreenExitBubbleViews(
   // that it is sliding off the top of the screen.
   popup_->GetRootView()->SetLayoutManager(NULL);
   view_->SetBounds(0, 0, size.width(), size.height());
-  popup_->Show();  // This does not activate the popup.
+  popup_->ShowInactive();  // This does not activate the popup.
 
   popup_->AddObserver(this);
 

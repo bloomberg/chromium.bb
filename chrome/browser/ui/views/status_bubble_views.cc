@@ -211,7 +211,7 @@ void StatusBubbleViews::StatusView::Show() {
   Stop();
   CancelTimer();
   SetOpacity(1.0);
-  popup_->Show();
+  popup_->ShowInactive();
   state_ = BUBBLE_SHOWN;
 }
 
@@ -295,7 +295,7 @@ void StatusBubbleViews::StatusView::StartHiding() {
 
 void StatusBubbleViews::StatusView::StartShowing() {
   if (state_ == BUBBLE_HIDDEN) {
-    popup_->Show();
+    popup_->ShowInactive();
     state_ = BUBBLE_SHOWING_TIMER;
     StartTimer(base::TimeDelta::FromMilliseconds(kShowDelay));
   } else if (state_ == BUBBLE_HIDING_TIMER) {
