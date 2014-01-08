@@ -137,7 +137,6 @@ private:
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
     virtual bool isPresentationAttribute(const QualifiedName&) const OVERRIDE;
 
-    virtual bool childShouldCreateRenderer(const Node& child) const OVERRIDE { return false; }
     virtual RenderObject* createRenderer(RenderStyle *);
     virtual bool appendFormData(FormDataList&, bool);
 

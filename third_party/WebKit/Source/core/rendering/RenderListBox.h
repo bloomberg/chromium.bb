@@ -63,6 +63,7 @@ private:
     virtual const char* renderName() const { return "RenderListBox"; }
 
     virtual bool isListBox() const { return true; }
+    virtual bool isChildAllowed(RenderObject*, RenderStyle*) const OVERRIDE;
 
     virtual void updateFromElement();
     virtual bool hasControlClip() const { return true; }

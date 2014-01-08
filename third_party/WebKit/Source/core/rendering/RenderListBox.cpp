@@ -103,6 +103,13 @@ RenderListBox::~RenderListBox()
         frameView->removeScrollableArea(this);
 }
 
+// FIXME: Instead of this hack we should add a ShadowRoot to <select> with no insertion point
+// to prevent children from rendering.
+bool RenderListBox::isChildAllowed(RenderObject* object, RenderStyle*) const
+{
+    return object->isAnonymous() && !object->isRenderFullScreen();
+}
+
 inline HTMLSelectElement* RenderListBox::selectElement() const
 {
     return toHTMLSelectElement(node());

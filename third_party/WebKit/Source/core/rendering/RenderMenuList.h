@@ -55,6 +55,7 @@ private:
     HTMLSelectElement* selectElement() const;
 
     virtual bool isMenuList() const { return true; }
+    virtual bool isChildAllowed(RenderObject*, RenderStyle*) const OVERRIDE;
 
     virtual void addChild(RenderObject* newChild, RenderObject* beforeChild = 0);
     virtual void removeChild(RenderObject*);

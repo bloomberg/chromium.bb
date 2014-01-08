@@ -73,6 +73,13 @@ RenderMenuList::~RenderMenuList()
     m_popup = 0;
 }
 
+// FIXME: Instead of this hack we should add a ShadowRoot to <select> with no insertion point
+// to prevent children from rendering.
+bool RenderMenuList::isChildAllowed(RenderObject* object, RenderStyle*) const
+{
+    return object->isAnonymous() && !object->isRenderFullScreen();
+}
+
 void RenderMenuList::createInnerBlock()
 {
     if (m_innerBlock) {
