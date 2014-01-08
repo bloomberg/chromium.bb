@@ -196,19 +196,10 @@ Element::~Element()
     // content nodes should have been removed from the content nodes collection
     // and the inNamedFlow flag reset.
     ASSERT(!document().renderView() || !inNamedFlow());
+    ASSERT(needsAttach());
 
-    if (hasRareData()) {
-        ElementRareData* data = elementRareData();
-        data->setPseudoElement(BEFORE, 0);
-        data->setPseudoElement(AFTER, 0);
-        data->setPseudoElement(BACKDROP, 0);
-        data->clearShadow();
-
-        if (RuntimeEnabledFeatures::webAnimationsCSSEnabled()) {
-            if (ActiveAnimations* activeAnimations = data->activeAnimations())
-                activeAnimations->cssAnimations().cancel();
-        }
-    }
+    if (hasRareData())
+        elementRareData()->clearShadow();
 
     if (isCustomElement())
         CustomElement::wasDestroyed(this);
@@ -1437,9 +1428,7 @@ void Element::detach(const AttachContext& context)
     removeCallbackSelectors();
     if (hasRareData()) {
         ElementRareData* data = elementRareData();
-        data->setPseudoElement(BEFORE, 0);
-        data->setPseudoElement(AFTER, 0);
-        data->setPseudoElement(BACKDROP, 0);
+        data->clearPseudoElements();
         data->setIsInsideRegion(false);
 
         // attach() will perform the below steps for us when inside recalcStyle.
@@ -1460,9 +1449,10 @@ void Element::detach(const AttachContext& context)
                 }
             }
         }
+
+        if (ElementShadow* shadow = data->shadow())
+            shadow->detach(context);
     }
-    if (ElementShadow* shadow = this->shadow())
-        shadow->detach(context);
     ContainerNode::detach(context);
 }
 

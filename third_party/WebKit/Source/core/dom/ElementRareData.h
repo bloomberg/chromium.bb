@@ -151,6 +151,7 @@ public:
     }
 
     bool hasPseudoElements() const;
+    void clearPseudoElements();
 
 private:
     short m_tabIndex;
@@ -239,6 +240,13 @@ inline ElementRareData::~ElementRareData()
 inline bool ElementRareData::hasPseudoElements() const
 {
     return m_generatedBefore || m_generatedAfter || m_backdrop;
+}
+
+inline void ElementRareData::clearPseudoElements()
+{
+    setPseudoElement(BEFORE, 0);
+    setPseudoElement(AFTER, 0);
+    setPseudoElement(BACKDROP, 0);
 }
 
 inline void ElementRareData::setPseudoElement(PseudoId pseudoId, PassRefPtr<PseudoElement> element)
