@@ -11,6 +11,7 @@
 #include "base/file_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/win/scoped_comptr.h"
+#include "base/win/scoped_propvariant.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 
@@ -172,52 +173,138 @@ bool CreateOrUpdateShortcutLink(const FilePath& shortcut_path,
   return succeeded;
 }
 
-bool ResolveShortcut(const FilePath& shortcut_path,
-                     FilePath* target_path,
-                     string16* args) {
+bool ResolveShortcutProperties(const FilePath& shortcut_path,
+                               uint32 options,
+                               ShortcutProperties* properties) {
+  DCHECK(options && properties);
   base::ThreadRestrictions::AssertIOAllowed();
 
-  HRESULT result;
+  if (options & ~ShortcutProperties::PROPERTIES_ALL)
+    NOTREACHED() << "Unhandled property is used.";
+
   ScopedComPtr<IShellLink> i_shell_link;
 
   // Get pointer to the IShellLink interface.
-  result = i_shell_link.CreateInstance(CLSID_ShellLink, NULL,
-                                       CLSCTX_INPROC_SERVER);
-  if (FAILED(result))
+  if (FAILED(i_shell_link.CreateInstance(CLSID_ShellLink, NULL,
+                                         CLSCTX_INPROC_SERVER))) {
     return false;
+  }
 
   ScopedComPtr<IPersistFile> persist;
   // Query IShellLink for the IPersistFile interface.
-  result = persist.QueryFrom(i_shell_link);
-  if (FAILED(result))
+  if (FAILED(persist.QueryFrom(i_shell_link)))
     return false;
 
   // Load the shell link.
-  result = persist->Load(shortcut_path.value().c_str(), STGM_READ);
-  if (FAILED(result))
+  if (FAILED(persist->Load(shortcut_path.value().c_str(), STGM_READ)))
     return false;
 
-  WCHAR temp[MAX_PATH];
-  if (target_path) {
+  // Reset |properties|.
+  properties->options = 0;
+
+  wchar_t temp[MAX_PATH];
+  if (options & ShortcutProperties::PROPERTIES_TARGET) {
     // Try to find the target of a shortcut.
-    result = i_shell_link->Resolve(0, SLR_NO_UI | SLR_NOSEARCH);
-    if (FAILED(result))
+    if (FAILED(i_shell_link->Resolve(0, SLR_NO_UI | SLR_NOSEARCH)))
       return false;
-
-    result = i_shell_link->GetPath(temp, MAX_PATH, NULL, SLGP_UNCPRIORITY);
-    if (FAILED(result))
+    if (FAILED(i_shell_link->GetPath(temp, MAX_PATH, NULL, SLGP_UNCPRIORITY)))
       return false;
-
-    *target_path = FilePath(temp);
+    properties->set_target(FilePath(temp));
   }
 
-  if (args) {
-    result = i_shell_link->GetArguments(temp, MAX_PATH);
-    if (FAILED(result))
+  if (options & ShortcutProperties::PROPERTIES_WORKING_DIR) {
+    if (FAILED(i_shell_link->GetWorkingDirectory(temp, MAX_PATH)))
+      return false;
+    properties->set_working_dir(FilePath(temp));
+  }
+
+  if (options & ShortcutProperties::PROPERTIES_ARGUMENTS) {
+    if (FAILED(i_shell_link->GetArguments(temp, MAX_PATH)))
+      return false;
+    properties->set_arguments(temp);
+  }
+
+  if (options & ShortcutProperties::PROPERTIES_DESCRIPTION) {
+    // Note: description length constrained by MAX_PATH.
+    if (FAILED(i_shell_link->GetDescription(temp, MAX_PATH)))
+      return false;
+    properties->set_description(temp);
+  }
+
+  if (options & ShortcutProperties::PROPERTIES_ICON) {
+    int temp_index;
+    if (FAILED(i_shell_link->GetIconLocation(temp, MAX_PATH, &temp_index)))
+      return false;
+    properties->set_icon(FilePath(temp), temp_index);
+  }
+
+  // Windows 7+ options, avoiding unnecessary work.
+  if ((options & ShortcutProperties::PROPERTIES_WIN7) &&
+      GetVersion() >= VERSION_WIN7) {
+    ScopedComPtr<IPropertyStore> property_store;
+    if (FAILED(property_store.QueryFrom(i_shell_link)))
       return false;
 
-    *args = string16(temp);
+    if (options & ShortcutProperties::PROPERTIES_APP_ID) {
+      ScopedPropVariant pv_app_id;
+      if (property_store->GetValue(PKEY_AppUserModel_ID,
+                                   pv_app_id.Receive()) != S_OK) {
+        return false;
+      }
+      switch (pv_app_id.get().vt) {
+        case VT_EMPTY:
+          properties->set_app_id(L"");
+          break;
+        case VT_LPWSTR:
+          properties->set_app_id(pv_app_id.get().pwszVal);
+          break;
+        default:
+          NOTREACHED() << "Unexpected variant type: " << pv_app_id.get().vt;
+          return false;
+      }
+    }
+
+    if (options & ShortcutProperties::PROPERTIES_DUAL_MODE) {
+      ScopedPropVariant pv_dual_mode;
+      if (property_store->GetValue(PKEY_AppUserModel_IsDualMode,
+                                   pv_dual_mode.Receive()) != S_OK) {
+        return false;
+      }
+      switch (pv_dual_mode.get().vt) {
+        case VT_EMPTY:
+          properties->set_dual_mode(false);
+          break;
+        case VT_BOOL:
+          properties->set_dual_mode(pv_dual_mode.get().boolVal == VARIANT_TRUE);
+          break;
+        default:
+          NOTREACHED() << "Unexpected variant type: " << pv_dual_mode.get().vt;
+          return false;
+      }
+    }
   }
+
+  return true;
+}
+
+bool ResolveShortcut(const FilePath& shortcut_path,
+                     FilePath* target_path,
+                     string16* args) {
+  uint32 options = 0;
+  if (target_path)
+    options |= ShortcutProperties::PROPERTIES_TARGET;
+  if (args)
+    options |= ShortcutProperties::PROPERTIES_ARGUMENTS;
+  DCHECK(options);
+
+  ShortcutProperties properties;
+  if (!ResolveShortcutProperties(shortcut_path, options, &properties))
+    return false;
+
+  if (target_path)
+    *target_path = properties.target;
+  if (args)
+    *args = properties.arguments;
   return true;
 }
 
@@ -237,7 +324,7 @@ bool TaskbarUnpinShortcutLink(const wchar_t* shortcut) {
   base::ThreadRestrictions::AssertIOAllowed();
 
   // "Unpin from taskbar" is only supported after Win7.
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
+  if (GetVersion() < VERSION_WIN7)
     return false;
 
   int result = reinterpret_cast<int>(ShellExecute(NULL, L"taskbarunpin",

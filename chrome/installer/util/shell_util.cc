@@ -1267,12 +1267,29 @@ bool ShortcutOpDelete(const base::FilePath& shortcut_path) {
   return ret;
 }
 
-bool ShortcutOpUpdate(const base::win::ShortcutProperties& shortcut_properties,
-                      const base::FilePath& shortcut_path) {
-  bool ret = base::win::CreateOrUpdateShortcutLink(
-      shortcut_path, shortcut_properties, base::win::SHORTCUT_UPDATE_EXISTING);
-  LOG_IF(ERROR, !ret) << "Failed to update " << shortcut_path.value();
-  return ret;
+bool ShortcutOpRetarget(const base::FilePath& old_target,
+                        const base::FilePath& new_target,
+                        const base::FilePath& shortcut_path) {
+  base::win::ShortcutProperties new_prop;
+  new_prop.set_target(new_target);
+
+  // If the old icon matches old target, then update icon while keeping the old
+  // icon index. Non-fatal if we fail to get the old icon.
+  base::win::ShortcutProperties old_prop;
+  if (base::win::ResolveShortcutProperties(
+          shortcut_path,
+          base::win::ShortcutProperties::PROPERTIES_ICON,
+          &old_prop)) {
+    if (InstallUtil::ProgramCompare(old_target).EvaluatePath(old_prop.icon))
+      new_prop.set_icon(new_target, old_prop.icon_index);
+  } else {
+    LOG(ERROR) << "Failed to resolve " << shortcut_path.value();
+  }
+
+  bool result = base::win::CreateOrUpdateShortcutLink(
+        shortcut_path, new_prop, base::win::SHORTCUT_UPDATE_EXISTING);
+  LOG_IF(ERROR, !result) << "Failed to retarget " << shortcut_path.value();
+  return result;
 }
 
 // {|location|, |dist|, |level|} determine |shortcut_folder|.
@@ -2104,18 +2121,18 @@ bool ShellUtil::RemoveShortcuts(ShellUtil::ShortcutLocation location,
 }
 
 // static
-bool ShellUtil::UpdateShortcutsWithArgs(
+bool ShellUtil::RetargetShortcutsWithArgs(
     ShellUtil::ShortcutLocation location,
     BrowserDistribution* dist,
     ShellChange level,
-    const base::FilePath& target_exe,
-    const ShellUtil::ShortcutProperties& properties) {
+    const base::FilePath& old_target_exe,
+    const base::FilePath& new_target_exe) {
   if (!ShellUtil::ShortcutLocationIsSupported(location))
     return true;  // Vacuous success.
 
-  FilterTargetEq shortcut_filter(target_exe, true);
+  FilterTargetEq shortcut_filter(old_target_exe, true);
   ShortcutOperationCallback shortcut_operation(
-      base::Bind(&ShortcutOpUpdate, TranslateShortcutProperties(properties)));
+      base::Bind(&ShortcutOpRetarget, old_target_exe, new_target_exe));
   return BatchShortcutAction(shortcut_filter.AsShortcutFilterCallback(),
                              shortcut_operation, location, dist, level);
 }

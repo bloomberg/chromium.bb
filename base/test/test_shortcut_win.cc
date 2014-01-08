@@ -19,10 +19,6 @@
 namespace base {
 namespace win {
 
-namespace {
-
-// Validates |actual_path|'s LongPathName case-insensitively matches
-// |expected_path|'s LongPathName.
 void ValidatePathsAreEqual(const base::FilePath& expected_path,
                            const base::FilePath& actual_path) {
   wchar_t long_expected_path_chars[MAX_PATH] = {0};
@@ -50,8 +46,6 @@ void ValidatePathsAreEqual(const base::FilePath& expected_path,
 
   EXPECT_EQ(long_expected_path, long_actual_path);
 }
-
-}  // namespace
 
 void ValidateShortcut(const base::FilePath& shortcut_path,
                       const ShortcutProperties& properties) {

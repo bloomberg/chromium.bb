@@ -13,6 +13,11 @@
 namespace base {
 namespace win {
 
+// Validates |actual_path|'s LongPathName case-insensitively matches
+// |expected_path|'s LongPathName.
+void ValidatePathsAreEqual(const base::FilePath& expected_path,
+                           const base::FilePath& actual_path);
+
 // Validates that a shortcut exists at |shortcut_path| with the expected
 // |properties|.
 // Logs gtest failures on failed verifications.

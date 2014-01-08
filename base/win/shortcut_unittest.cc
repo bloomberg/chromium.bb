@@ -12,6 +12,7 @@
 #include "base/test/test_file_util.h"
 #include "base/test/test_shortcut_win.h"
 #include "base/win/scoped_com_initializer.h"
+#include "base/win/windows_version.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -79,6 +80,56 @@ class ShortcutTest : public testing::Test {
 };
 
 }  // namespace
+
+TEST_F(ShortcutTest, CreateAndResolveShortcutProperties) {
+  uint32 valid_properties = ShortcutProperties::PROPERTIES_BASIC;
+  if (GetVersion() >= VERSION_WIN7)
+    valid_properties |= ShortcutProperties::PROPERTIES_WIN7;
+
+  // Test all properties.
+  FilePath file_1(temp_dir_.path().Append(L"Link1.lnk"));
+  ASSERT_TRUE(CreateOrUpdateShortcutLink(
+      file_1, link_properties_, SHORTCUT_CREATE_ALWAYS));
+
+  ShortcutProperties properties_read_1;
+  ASSERT_TRUE(ResolveShortcutProperties(
+      file_1, ShortcutProperties::PROPERTIES_ALL, &properties_read_1));
+  EXPECT_EQ(valid_properties, properties_read_1.options);
+  ValidatePathsAreEqual(link_properties_.target, properties_read_1.target);
+  ValidatePathsAreEqual(link_properties_.working_dir,
+                        properties_read_1.working_dir);
+  EXPECT_EQ(link_properties_.arguments, properties_read_1.arguments);
+  EXPECT_EQ(link_properties_.description, properties_read_1.description);
+  ValidatePathsAreEqual(link_properties_.icon, properties_read_1.icon);
+  EXPECT_EQ(link_properties_.icon_index, properties_read_1.icon_index);
+  if (GetVersion() >= VERSION_WIN7) {
+    EXPECT_EQ(link_properties_.app_id, properties_read_1.app_id);
+    EXPECT_EQ(link_properties_.dual_mode, properties_read_1.dual_mode);
+  }
+
+  // Test simple shortcut with no special properties set.
+  FilePath file_2(temp_dir_.path().Append(L"Link2.lnk"));
+  ShortcutProperties only_target_properties;
+  only_target_properties.set_target(link_properties_.target);
+  ASSERT_TRUE(CreateOrUpdateShortcutLink(
+      file_2, only_target_properties, SHORTCUT_CREATE_ALWAYS));
+
+  ShortcutProperties properties_read_2;
+  ASSERT_TRUE(ResolveShortcutProperties(
+      file_2, ShortcutProperties::PROPERTIES_ALL, &properties_read_2));
+  EXPECT_EQ(valid_properties, properties_read_2.options);
+  ValidatePathsAreEqual(only_target_properties.target,
+                        properties_read_2.target);
+  ValidatePathsAreEqual(FilePath(), properties_read_2.working_dir);
+  EXPECT_EQ(L"", properties_read_2.arguments);
+  EXPECT_EQ(L"", properties_read_2.description);
+  ValidatePathsAreEqual(FilePath(), properties_read_2.icon);
+  EXPECT_EQ(0, properties_read_2.icon_index);
+  if (GetVersion() >= VERSION_WIN7) {
+    EXPECT_EQ(L"", properties_read_2.app_id);
+    EXPECT_FALSE(properties_read_2.dual_mode);
+  }
+}
 
 TEST_F(ShortcutTest, CreateAndResolveShortcut) {
   ShortcutProperties only_target_properties;

@@ -326,17 +326,15 @@ void RetargetUserShortcutsWithArgs(const InstallerState& installer_state,
   }
   BrowserDistribution* dist = product.distribution();
   ShellUtil::ShellChange install_level = ShellUtil::CURRENT_USER;
-  ShellUtil::ShortcutProperties updated_properties(install_level);
-  updated_properties.set_target(new_target_exe);
 
   // Retarget all shortcuts that point to |old_target_exe| from all
   // ShellUtil::ShortcutLocations.
   VLOG(1) << "Retargeting shortcuts.";
   for (int location = ShellUtil::SHORTCUT_LOCATION_FIRST;
       location < ShellUtil::NUM_SHORTCUT_LOCATIONS; ++location) {
-    if (!ShellUtil::UpdateShortcutsWithArgs(
+    if (!ShellUtil::RetargetShortcutsWithArgs(
             static_cast<ShellUtil::ShortcutLocation>(location), dist,
-            install_level, old_target_exe, updated_properties)) {
+            install_level, old_target_exe, new_target_exe)) {
       LOG(WARNING) << "Failed to retarget shortcuts in ShortcutLocation: "
                    << location;
     }

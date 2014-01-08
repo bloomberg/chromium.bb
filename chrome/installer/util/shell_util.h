@@ -529,18 +529,20 @@ class ShellUtil {
                               ShellChange level,
                               const base::FilePath& target_exe);
 
-  // Applies the updates in |properties| to all matching shortcuts in
-  // |location|, i.e.:
-  // - the shortcut's original target is |target_exe|,
+  // Updates the target of all shortcuts in |location| that satisfy the
+  // following:
+  // - the shortcut's original target is |old_target_exe|,
   // - the original arguments are non-empty.
+  // If the shortcut's icon points to |old_target_exe|, then it also gets
+  // redirected to |new_target_exe|.
   // Returns true if all updates to matching shortcuts are successful, including
   // the vacuous case where no matching shortcuts are found.
-  static bool UpdateShortcutsWithArgs(
+  static bool RetargetShortcutsWithArgs(
       ShellUtil::ShortcutLocation location,
       BrowserDistribution* dist,
       ShellChange level,
-      const base::FilePath& target_exe,
-      const ShellUtil::ShortcutProperties& properties);
+      const base::FilePath& old_target_exe,
+      const base::FilePath& new_target_exe);
 
   // Sets |suffix| to the base 32 encoding of the md5 hash of this user's sid
   // preceded by a dot.
