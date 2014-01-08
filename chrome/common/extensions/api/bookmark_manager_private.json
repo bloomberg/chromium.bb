@@ -302,6 +302,64 @@
             "parameters": []
           }
         ]
+      },
+      {
+        "name": "undo",
+        "type": "function",
+        "description": "Performs an undo of the last change to the bookmark model",
+        "nodoc": "true",
+        "parameters": []
+      },
+      {
+        "name": "redo",
+        "type": "function",
+        "description": "Performs a redo of last undone change to the bookmark model",
+        "nodoc": "true",
+        "parameters": []
+      },
+      {
+        "name": "getUndoInfo",
+        "type": "function",
+        "description": "Gets the information for the undo if available",
+        "nodoc": "true",
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {
+                "name": "result",
+                "type": "object",
+                "properties": {
+                  "enabled" : {"type": "boolean", "description": "Whether there is an action to undo"},
+                  "label" : {"type": "string", "description": "The i18n label to use for the undo action"}
+				}
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "getRedoInfo",
+        "type": "function",
+        "description": "Gets the information for the redo if available",
+        "nodoc": "true",
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {
+                "name": "result",
+                "type": "object",
+                "properties": {
+                  "enabled" : {"type": "boolean", "description": "Whether there is an action to redo"},
+                  "label" : {"type": "string", "description": "The i18n label to use for the redo action"}
+				}
+              }
+            ]
+          }
+        ]
       }
     ],
     "events": [

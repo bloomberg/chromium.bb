@@ -10,6 +10,8 @@
 #include "chrome/browser/extensions/api/bookmarks/bookmarks_api.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
+#include "chrome/browser/undo/bookmark_undo_service.h"
+#include "chrome/browser/undo/bookmark_undo_service_factory.h"
 
 struct BookmarkNodeData;
 class Profile;
@@ -252,6 +254,58 @@ class BookmarkManagerPrivateRemoveTreesFunction
 
  protected:
   virtual ~BookmarkManagerPrivateRemoveTreesFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+};
+
+class BookmarkManagerPrivateUndoFunction
+    : public extensions::BookmarksFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("bookmarkManagerPrivate.undo",
+                             BOOKMARKMANAGERPRIVATE_UNDO)
+
+ protected:
+  virtual ~BookmarkManagerPrivateUndoFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+};
+
+class BookmarkManagerPrivateRedoFunction
+    : public extensions::BookmarksFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("bookmarkManagerPrivate.redo",
+                             BOOKMARKMANAGERPRIVATE_REDO)
+
+ protected:
+  virtual ~BookmarkManagerPrivateRedoFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+};
+
+class BookmarkManagerPrivateGetUndoInfoFunction
+    : public extensions::BookmarksFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("bookmarkManagerPrivate.getUndoInfo",
+                             BOOKMARKMANAGERPRIVATE_UNDOINFO)
+
+ protected:
+  virtual ~BookmarkManagerPrivateGetUndoInfoFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+};
+
+class BookmarkManagerPrivateGetRedoInfoFunction
+    : public extensions::BookmarksFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("bookmarkManagerPrivate.getRedoInfo",
+                             BOOKMARKMANAGERPRIVATE_REDOINFO)
+
+ protected:
+  virtual ~BookmarkManagerPrivateGetRedoInfoFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
