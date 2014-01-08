@@ -513,6 +513,19 @@ Event_Dump_Debug_Log(void* vinfo)
 }
 
 /**
+ * Clear Debug Buffer
+ */
+void
+Event_Clear_Debug_Log(void* vinfo)
+{
+    EvdevPtr device = (EvdevPtr) vinfo;
+    EventStatePtr evstate = device->evstate;
+
+    memset(evstate->debug_buf, 0, sizeof(evstate->debug_buf));
+    evstate->debug_buf_tail = 0;
+}
+
+/**
  * Clear EV_REL event state.  This function should be called after a EV_SYN
  * event is processed because EV_REL event state is not accumulative.
  */

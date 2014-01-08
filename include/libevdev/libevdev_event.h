@@ -39,6 +39,7 @@ void Event_Free(EvdevPtr);
 void Event_Open(EvdevPtr);
 bool Event_Process(EvdevPtr, struct input_event*);
 void Event_Dump_Debug_Log(void *);
+void Event_Clear_Debug_Log(void *);
 
 int Event_Get_Left(EvdevPtr);
 int Event_Get_Right(EvdevPtr);
