@@ -40,6 +40,28 @@
                         width:300,
                         height:150
                     },
+                    {
+                        description:", with only a 'width' attribute so size should have the same aspect ratio as &lt;video&gt; default",
+                        url:"",
+                        reflectedUrl:"video-poster.html",
+                        width:600,
+                        height:300,
+                        widthAttr: 600
+                    },
+                    {
+                        description:", with only a 'width' attribute so size should equal a scaled up image size with the same aspect ratio as the original image",
+                        url:"content/abe.png",
+                        width:152,
+                        height:206,
+                        widthAttr: 152
+                    },
+                    {
+                        description:", invalid url w/ width attribute so size should have the same aspect ratio as &lt;video&gt; default",
+                        url:"content/bogus.png",
+                        width:600,
+                        height:300,
+                        widthAttr: 600
+                    },
                 ]
             };
 
@@ -83,11 +105,15 @@
                   return;
                 }
                 var currentPoster = posterInfo.posters[posterInfo.current];
-                listenForWidthAndHeight(currentPoster.width, currentPoster.height, testPoster);
+
+                if (currentPoster.widthAttr)
+                    video.width = currentPoster.widthAttr;
+
                 var url = currentPoster.url;
                 var desc = "<b>Setting poster to <em>\""+ url + "\"</em></b>";
                 consoleWrite(desc);
                 video.poster = url;
+                listenForWidthAndHeight(currentPoster.width, currentPoster.height, testPoster);
             }
 
             function unexpectedEvent(evt)
