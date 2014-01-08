@@ -92,7 +92,8 @@ static void setPropertySwitchesFromRuntimeFeatures()
         CSSPropertyGridRow,
         CSSPropertyGridArea,
         CSSPropertyGridAutoFlow,
-        CSSPropertyGridTemplate
+        CSSPropertyGridTemplate,
+        CSSPropertyJustifySelf
     };
     setCSSPropertiesEnabled(cssGridLayoutProperties, WTF_ARRAY_LENGTH(cssGridLayoutProperties), RuntimeEnabledFeatures::cssGridLayoutEnabled());
     CSSPropertyID cssObjectFitPositionProperties[] = {

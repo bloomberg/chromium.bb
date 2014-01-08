@@ -684,14 +684,17 @@ static inline bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, int 
         }
         break;
     case CSSPropertyAlignContent:
+        // FIXME: Per CSS alignment, this property should accept an optional <overflow-position>. We should share this parsing code with 'justify-self'.
          if (valueID == CSSValueFlexStart || valueID == CSSValueFlexEnd || valueID == CSSValueCenter || valueID == CSSValueSpaceBetween || valueID == CSSValueSpaceAround || valueID == CSSValueStretch)
              return true;
          break;
     case CSSPropertyAlignItems:
+        // FIXME: Per CSS alignment, this property should accept the same arguments as 'justify-self' so we should share its parsing code.
         if (valueID == CSSValueFlexStart || valueID == CSSValueFlexEnd || valueID == CSSValueCenter || valueID == CSSValueBaseline || valueID == CSSValueStretch)
             return true;
         break;
     case CSSPropertyAlignSelf:
+        // FIXME: Per CSS alignment, this property should accept the same arguments as 'justify-self' so we should share its parsing code.
         if (valueID == CSSValueAuto || valueID == CSSValueFlexStart || valueID == CSSValueFlexEnd || valueID == CSSValueCenter || valueID == CSSValueBaseline || valueID == CSSValueStretch)
             return true;
         break;
@@ -704,6 +707,7 @@ static inline bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, int 
              return true;
         break;
     case CSSPropertyJustifyContent:
+        // FIXME: Per CSS alignment, this property should accept an optional <overflow-position>. We should share this parsing code with 'justify-self'.
         if (valueID == CSSValueFlexStart || valueID == CSSValueFlexEnd || valueID == CSSValueCenter || valueID == CSSValueSpaceBetween || valueID == CSSValueSpaceAround)
             return true;
         break;
@@ -1228,8 +1232,9 @@ bool BisonCSSParser::parseSystemColor(RGBA32& color, const String& string, Docum
     if (id <= 0)
         return false;
 
-    color = RenderTheme::theme().systemColor(id).rgb();
-    return true;
+    Color parsedColor = RenderTheme::theme().systemColor(id);
+    color = parsedColor.rgb();
+    return parsedColor.isValid();
 }
 
 void BisonCSSParser::parseSelector(const String& string, CSSSelectorList& selectorList)
@@ -2426,6 +2431,11 @@ bool BisonCSSParser::parseValue(CSSPropertyID propId, bool important)
         return false;
     }
 
+    case CSSPropertyJustifySelf:
+        if (!RuntimeEnabledFeatures::cssGridLayoutEnabled())
+            return false;
+
+        return parseJustifySelf(propId, important);
     case CSSPropertyGridAutoColumns:
     case CSSPropertyGridAutoRows:
         if (!RuntimeEnabledFeatures::cssGridLayoutEnabled())
@@ -5078,6 +5088,65 @@ bool BisonCSSParser::parseClipShape(CSSPropertyID propId, bool important)
         return true;
     }
     return false;
+}
+
+static bool isItemPositionKeyword(CSSValueID id)
+{
+    return id == CSSValueStart || id == CSSValueEnd || id == CSSValueCenter
+        || id == CSSValueSelfStart || id == CSSValueSelfEnd || id == CSSValueFlexStart
+        || id == CSSValueFlexEnd || id == CSSValueLeft || id == CSSValueRight;
+}
+
+bool BisonCSSParser::parseJustifySelf(CSSPropertyID propId, bool important)
+{
+    // auto | baseline | stretch | [<item-position> && <overflow-position>? ]
+    // <item-position> = center | start | end | self-start | self-end | flex-start | flex-end | left | right;
+    // <overflow-position> = true | safe
+
+    CSSParserValue* value = m_valueList->current();
+
+    if (value->id == CSSValueAuto || value->id == CSSValueBaseline || value->id == CSSValueStretch) {
+        if (m_valueList->next())
+            return false;
+
+        addProperty(propId, cssValuePool().createIdentifierValue(value->id), important);
+        return true;
+    }
+
+    RefPtr<CSSPrimitiveValue> position = 0;
+    RefPtr<CSSPrimitiveValue> overflowAlignmentKeyword = 0;
+    if (isItemPositionKeyword(value->id)) {
+        position = cssValuePool().createIdentifierValue(value->id);
+        value = m_valueList->next();
+        if (value) {
+            if (value->id == CSSValueTrue || value->id == CSSValueSafe)
+                overflowAlignmentKeyword = cssValuePool().createIdentifierValue(value->id);
+            else
+                return false;
+        }
+    } else if (value->id == CSSValueTrue || value->id == CSSValueSafe) {
+        overflowAlignmentKeyword = cssValuePool().createIdentifierValue(value->id);
+        value = m_valueList->next();
+        if (value) {
+            if (isItemPositionKeyword(value->id))
+                position = cssValuePool().createIdentifierValue(value->id);
+            else
+                return false;
+        }
+    } else {
+        return false;
+    }
+
+    if (m_valueList->next())
+        return false;
+
+    ASSERT(position);
+    if (overflowAlignmentKeyword)
+        addProperty(propId, createPrimitiveValuePair(position, overflowAlignmentKeyword), important);
+    else
+        addProperty(propId, position.release(), important);
+
+    return true;
 }
 
 PassRefPtr<CSSBasicShape> BisonCSSParser::parseBasicShapeRectangle(CSSParserValueList* args)

@@ -1020,3 +1020,19 @@ script
 // touch-action
 pan-x
 pan-y
+
+// justify-self
+// auto
+// stretch
+// baseline
+// center
+// start
+// end
+self-start
+self-end
+// flex-start
+// flex-end
+// left
+// right
+true
+safe

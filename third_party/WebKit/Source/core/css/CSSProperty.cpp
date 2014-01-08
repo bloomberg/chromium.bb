@@ -439,6 +439,7 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyFontStretch:
     case CSSPropertyHeight:
     case CSSPropertyIsolation:
+    case CSSPropertyJustifySelf:
     case CSSPropertyLeft:
     case CSSPropertyLightingColor:
     case CSSPropertyMargin:

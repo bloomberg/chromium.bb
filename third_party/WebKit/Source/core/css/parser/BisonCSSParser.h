@@ -176,9 +176,12 @@ public:
 
     bool parseClipShape(CSSPropertyID, bool important);
 
+    bool parseJustifySelf(CSSPropertyID, bool important);
+
     PassRefPtr<CSSValue> parseShapeProperty(CSSPropertyID propId);
     PassRefPtr<CSSPrimitiveValue> parseBasicShape();
     PassRefPtr<CSSPrimitiveValue> parseShapeRadius(CSSParserValue*);
+
     PassRefPtr<CSSBasicShape> parseBasicShapeRectangle(CSSParserValueList* args);
     PassRefPtr<CSSBasicShape> parseBasicShapeCircle(CSSParserValueList* args);
     PassRefPtr<CSSBasicShape> parseDeprecatedBasicShapeCircle(CSSParserValueList* args);

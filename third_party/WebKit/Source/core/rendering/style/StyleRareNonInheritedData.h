@@ -191,6 +191,9 @@ public:
 
     unsigned m_isolation : 1; // Isolation
 
+    unsigned m_justifySelf : 4; // JustifySelf
+    unsigned m_justifySelfOverflowAlignment : 2; // OverflowAlignment
+
 private:
     StyleRareNonInheritedData();
     StyleRareNonInheritedData(const StyleRareNonInheritedData&);

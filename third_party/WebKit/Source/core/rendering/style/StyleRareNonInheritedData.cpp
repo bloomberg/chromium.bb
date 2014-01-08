@@ -80,6 +80,8 @@ StyleRareNonInheritedData::StyleRareNonInheritedData()
     , m_touchAction(RenderStyle::initialTouchAction())
     , m_objectFit(RenderStyle::initialObjectFit())
     , m_isolation(RenderStyle::initialIsolation())
+    , m_justifySelf(RenderStyle::initialJustifySelf())
+    , m_justifySelfOverflowAlignment(RenderStyle::initialJustifySelfOverflowAlignment())
 {
     m_maskBoxImage.setMaskDefaults();
 }
@@ -156,6 +158,8 @@ StyleRareNonInheritedData::StyleRareNonInheritedData(const StyleRareNonInherited
     , m_touchAction(o.m_touchAction)
     , m_objectFit(o.m_objectFit)
     , m_isolation(o.m_isolation)
+    , m_justifySelf(o.m_justifySelf)
+    , m_justifySelfOverflowAlignment(o.m_justifySelfOverflowAlignment)
 {
 }
 
@@ -238,7 +242,9 @@ bool StyleRareNonInheritedData::operator==(const StyleRareNonInheritedData& o) c
         && m_hasAspectRatio == o.m_hasAspectRatio
         && m_touchAction == o.m_touchAction
         && m_objectFit == o.m_objectFit
-        && m_isolation == o.m_isolation;
+        && m_isolation == o.m_isolation
+        && m_justifySelf == o.m_justifySelf
+        && m_justifySelfOverflowAlignment == o.m_justifySelfOverflowAlignment;
 }
 
 bool StyleRareNonInheritedData::contentDataEquivalent(const StyleRareNonInheritedData& o) const

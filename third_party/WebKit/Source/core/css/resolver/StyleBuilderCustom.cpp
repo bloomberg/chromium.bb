@@ -59,6 +59,7 @@
 #include "core/css/CSSReflectValue.h"
 #include "core/css/CSSVariableValue.h"
 #include "core/css/Counter.h"
+#include "core/css/Pair.h"
 #include "core/css/Rect.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
@@ -1697,6 +1698,18 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
         state.style()->setNamedGridArea(gridTemplateValue->gridAreaMap());
         state.style()->setNamedGridAreaRowCount(gridTemplateValue->rowCount());
         state.style()->setNamedGridAreaColumnCount(gridTemplateValue->columnCount());
+        return;
+    }
+
+    case CSSPropertyJustifySelf: {
+        HANDLE_INHERIT_AND_INITIAL(justifySelf, JustifySelf);
+        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+        if (Pair* pairValue = primitiveValue->getPairValue()) {
+            state.style()->setJustifySelf(*pairValue->first());
+            state.style()->setJustifySelfOverflowAlignment(*pairValue->second());
+        } else {
+            state.style()->setJustifySelf(*primitiveValue);
+        }
         return;
     }
 

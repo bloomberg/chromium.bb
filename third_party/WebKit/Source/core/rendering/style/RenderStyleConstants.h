@@ -531,6 +531,27 @@ enum EIsolation { IsolationAuto, IsolationIsolate };
 
 enum TouchActionDelay { TouchActionDelayNone, TouchActionDelayScript };
 
+enum JustifySelf {
+    JustifySelfAuto,
+    JustifySelfStretch,
+    JustifySelfBaseline,
+    JustifySelfCenter,
+    JustifySelfStart,
+    JustifySelfEnd,
+    JustifySelfSelfStart,
+    JustifySelfSelfEnd,
+    JustifySelfFlexStart,
+    JustifySelfFlexEnd,
+    JustifySelfLeft,
+    JustifySelfRight
+};
+
+enum JustifySelfOverflowAlignment {
+    JustifySelfOverflowAlignmentDefault,
+    JustifySelfOverflowAlignmentTrue,
+    JustifySelfOverflowAlignmentSafe
+};
+
 // Reasonable maximum to prevent insane font sizes from causing crashes on some platforms (such as Windows).
 static const float maximumAllowedFontSize = 1000000.0f;
 

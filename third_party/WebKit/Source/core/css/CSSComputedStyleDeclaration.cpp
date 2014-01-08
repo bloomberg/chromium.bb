@@ -144,6 +144,7 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyHeight,
     CSSPropertyImageRendering,
     CSSPropertyIsolation,
+    CSSPropertyJustifySelf,
     CSSPropertyLeft,
     CSSPropertyLetterSpacing,
     CSSPropertyLineHeight,
@@ -2104,6 +2105,13 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             return CSSPrimitiveValue::create(style->imageRendering());
         case CSSPropertyIsolation:
             return cssValuePool().createValue(style->isolation());
+        case CSSPropertyJustifySelf: {
+            RefPtr<CSSValueList> result = CSSValueList::createSpaceSeparated();
+            result->append(CSSPrimitiveValue::create(style->justifySelf()));
+            if (style->justifySelf() >= JustifySelfCenter && style->justifySelfOverflowAlignment() != JustifySelfOverflowAlignmentDefault)
+                result->append(CSSPrimitiveValue::create(style->justifySelfOverflowAlignment()));
+            return result.release();
+        }
         case CSSPropertyLeft:
             return valueForPositionOffset(*style, CSSPropertyLeft, renderer);
         case CSSPropertyLetterSpacing:
