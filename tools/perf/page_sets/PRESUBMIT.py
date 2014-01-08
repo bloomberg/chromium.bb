@@ -80,8 +80,9 @@ def _SyncFilesToCloud(input_api, output_api):
       continue
 
     try:
-      bucket_input = raw_input('Uploading to Cloud Storage: %s\nIs this file '
-                               '[p]ublic or Google-[i]nternal?').lower()
+      bucket_input = raw_input('Uploading to Cloud Storage: %s\n'
+                               'Is this file [p]ublic or Google-[i]nternal?'
+                               % file_path).lower()
       if 'public'.startswith(bucket_input):
         bucket = cloud_storage.PUBLIC_BUCKET
       elif ('internal'.startswith(bucket_input) or
@@ -94,10 +95,10 @@ def _SyncFilesToCloud(input_api, output_api):
 
       cloud_storage.Insert(bucket, file_hash, file_path)
       results.append(output_api.PresubmitNotifyResult(
-          'Uploaded file to Cloud Storage: %s' % hash_path))
+          'Uploaded file to Cloud Storage: %s' % file_path))
     except cloud_storage.CloudStorageError, e:
       results.append(output_api.PresubmitError(
-          'Unable to upload to Cloud Storage: %s\n\n%s' % (hash_path, e)))
+          'Unable to upload to Cloud Storage: %s\n\n%s' % (file_path, e)))
 
   return results
 
