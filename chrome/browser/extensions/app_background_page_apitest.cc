@@ -616,7 +616,8 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageNaClTest, BackgroundKeepaliveActive) {
 #if defined(OS_WIN)
 #define MAYBE_BackgroundKeepaliveIdle DISABLED_BackgroundKeepaliveIdle
 #else
-#define MAYBE_BackgroundKeepaliveIdle BackgroundKeepaliveIdle
+// ASAN errors appearing: https://crbug.com/332440
+#define MAYBE_BackgroundKeepaliveIdle DISABLED_BackgroundKeepaliveIdle
 #endif
 IN_PROC_BROWSER_TEST_F(AppBackgroundPageNaClTest,
                        MAYBE_BackgroundKeepaliveIdle) {
