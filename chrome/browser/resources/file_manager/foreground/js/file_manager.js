@@ -914,7 +914,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     this.fileFilter_ = new FileFilter(
         this.metadataCache_,
-        true /* Show dot files by default. */);
+        false  /* Don't show dot files by default. */);
 
     this.fileWatcher_ = new FileWatcher(this.metadataCache_);
     this.fileWatcher_.addEventListener(
