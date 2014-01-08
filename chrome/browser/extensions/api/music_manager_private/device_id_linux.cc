@@ -15,7 +15,9 @@
 namespace {
 
 const char kDiskByUuidDirectoryName[] = "/dev/disk/by-uuid";
-const char* kDeviceNames[] = { "sda1", "hda1", "dm-0" };
+const char* kDeviceNames[] = {
+  "sda1", "hda1", "dm-0", "xvda1", "sda2", "hda2", "dm-1", "xvda2",
+};
 
 // Map from device name to disk uuid
 typedef std::map<base::FilePath, base::FilePath> DiskEntries;
