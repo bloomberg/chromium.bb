@@ -231,7 +231,13 @@ Authenticator.prototype = {
     };
     window.parent.postMessage(msg, this.parentPage_);
     if (this.inlineMode_) {
-      $('gaia-frame').focus();
+      // TODO(guohui): temporary workaround until webview team fixes the focus
+      // on their side.
+      var gaiaFrame = $('gaia-frame');
+      gaiaFrame.focus();
+      gaiaFrame.onblur = function() {
+        gaiaFrame.focus();
+      };
     }
     this.loaded_ = true;
   },
