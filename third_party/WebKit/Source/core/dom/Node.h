@@ -394,7 +394,8 @@ public:
     void setHasEventTargetData(bool flag) { setFlag(flag, HasEventTargetDataFlag); }
 
     bool isV8CollectableDuringMinorGC() const { return getFlag(V8CollectableDuringMinorGCFlag); }
-    void setV8CollectableDuringMinorGC(bool flag) { setFlag(flag, V8CollectableDuringMinorGCFlag); }
+    void markV8CollectableDuringMinorGC() { setFlag(true, V8CollectableDuringMinorGCFlag); }
+    void clearV8CollectableDuringMinorGC() { setFlag(false, V8CollectableDuringMinorGCFlag); }
 
     virtual void setFocus(bool flag);
     virtual void setActive(bool flag = true);

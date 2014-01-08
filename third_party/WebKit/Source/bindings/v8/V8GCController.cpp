@@ -132,8 +132,18 @@ public:
             ActiveDOMObject* activeDOMObject = type->toActiveDOMObject(*wrapper);
             if (activeDOMObject && activeDOMObject->hasPendingActivity())
                 return;
+            // FIXME: Remove the special handling for image elements.
+            // The same special handling is in V8GCController::opaqueRootForGC().
+            // Maybe should image elements be active DOM nodes?
+            // See https://code.google.com/p/chromium/issues/detail?id=164882
+            if (node->hasTagName(HTMLNames::imgTag) && toHTMLImageElement(node)->hasPendingActivity())
+                return;
+            // FIXME: Remove the special handling for SVG context elements.
+            if (node->isSVGElement() && toSVGElement(node)->isContextElement())
+                return;
+
             m_nodesInNewSpace.append(node);
-            node->setV8CollectableDuringMinorGC(true);
+            node->markV8CollectableDuringMinorGC();
         }
     }
 
@@ -144,46 +154,43 @@ public:
         for (; nodeIterator < nodeIteratorEnd; ++nodeIterator) {
             Node* node = *nodeIterator;
             ASSERT(node->containsWrapper());
-            if (node->isV8CollectableDuringMinorGC()) // This branch is just for performance.
+            if (node->isV8CollectableDuringMinorGC()) { // This branch is just for performance.
                 gcTree(m_isolate, node);
+                node->clearV8CollectableDuringMinorGC();
+            }
         }
     }
 
 private:
-    bool traverseTree(Node* rootNode, Vector<Node*, initialNodeVectorSize>* newSpaceNodes)
+    bool traverseTree(Node* rootNode, Vector<Node*, initialNodeVectorSize>* partiallyDependentNodes)
     {
         // To make each minor GC time bounded, we might need to give up
         // traversing at some point for a large DOM tree. That being said,
         // I could not observe the need even in pathological test cases.
         for (Node* node = rootNode; node; node = NodeTraversal::next(*node)) {
             if (node->containsWrapper()) {
-                // FIXME: Remove the special handling for image elements.
-                // FIXME: Remove the special handling for SVG context elements.
-                // The same special handling is in V8GCController::opaqueRootForGC().
-                // Maybe should image elements be active DOM nodes?
-                // See https://code.google.com/p/chromium/issues/detail?id=164882
-                if (!node->isV8CollectableDuringMinorGC() || (node->hasTagName(HTMLNames::imgTag) && toHTMLImageElement(node)->hasPendingActivity()) || (node->isSVGElement() && toSVGElement(node)->isContextElement())) {
+                if (!node->isV8CollectableDuringMinorGC()) {
                     // This node is not in the new space of V8. This indicates that
                     // the minor GC cannot anyway judge reachability of this DOM tree.
                     // Thus we give up traversing the DOM tree.
                     return false;
                 }
-                node->setV8CollectableDuringMinorGC(false);
-                newSpaceNodes->append(node);
+                node->clearV8CollectableDuringMinorGC();
+                partiallyDependentNodes->append(node);
             }
             if (ShadowRoot* shadowRoot = node->youngestShadowRoot()) {
-                if (!traverseTree(shadowRoot, newSpaceNodes))
+                if (!traverseTree(shadowRoot, partiallyDependentNodes))
                     return false;
             } else if (node->isShadowRoot()) {
                 if (ShadowRoot* shadowRoot = toShadowRoot(node)->olderShadowRoot()) {
-                    if (!traverseTree(shadowRoot, newSpaceNodes))
+                    if (!traverseTree(shadowRoot, partiallyDependentNodes))
                         return false;
                 }
             }
             // <template> has a |content| property holding a DOM fragment which we must traverse,
             // just like we do for the shadow trees above.
             if (node->hasTagName(HTMLNames::templateTag)) {
-                if (!traverseTree(toHTMLTemplateElement(node)->content(), newSpaceNodes))
+                if (!traverseTree(toHTMLTemplateElement(node)->content(), partiallyDependentNodes))
                     return false;
             }
         }
@@ -192,20 +199,20 @@ private:
 
     void gcTree(v8::Isolate* isolate, Node* startNode)
     {
-        Vector<Node*, initialNodeVectorSize> newSpaceNodes;
+        Vector<Node*, initialNodeVectorSize> partiallyDependentNodes;
 
         Node* node = startNode;
         while (Node* parent = node->parentOrShadowHostOrTemplateHostNode())
             node = parent;
 
-        if (!traverseTree(node, &newSpaceNodes))
+        if (!traverseTree(node, &partiallyDependentNodes))
             return;
 
         // We completed the DOM tree traversal. All wrappers in the DOM tree are
-        // stored in newSpaceNodes and are expected to exist in the new space of V8.
+        // stored in partiallyDependentNodes and are expected to exist in the new space of V8.
         // We report those wrappers to V8 as an object group.
-        Node** nodeIterator = newSpaceNodes.begin();
-        Node** const nodeIteratorEnd = newSpaceNodes.end();
+        Node** nodeIterator = partiallyDependentNodes.begin();
+        Node** const nodeIteratorEnd = partiallyDependentNodes.end();
         if (nodeIterator == nodeIteratorEnd)
             return;
         v8::UniqueId id(reinterpret_cast<intptr_t>((*nodeIterator)->unsafePersistent().value()));
