@@ -5,10 +5,7 @@
 #include "chrome/browser/chromeos/drive/drive_app_registry.h"
 
 #include "base/files/file_path.h"
-#include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
-#include "chrome/browser/chromeos/drive/job_scheduler.h"
-#include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/drive/drive_api_parser.h"
@@ -21,28 +18,20 @@ namespace drive {
 class DriveAppRegistryTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
-    pref_service_.reset(new TestingPrefServiceSimple);
-    test_util::RegisterDrivePrefs(pref_service_->registry());
-
     fake_drive_service_.reset(new FakeDriveService);
     fake_drive_service_->LoadAppListForDriveApi("drive/applist.json");
 
-    scheduler_.reset(new JobScheduler(pref_service_.get(),
-                                      fake_drive_service_.get(),
-                                      base::MessageLoopProxy::current().get()));
-
-    web_apps_registry_.reset(new DriveAppRegistry(scheduler_.get()));
+    apps_registry_.reset(new DriveAppRegistry(fake_drive_service_.get()));
   }
 
-  bool VerifyApp(const ScopedVector<DriveAppInfo>& list,
+  bool VerifyApp(const std::vector<DriveAppInfo>& list,
                  const std::string& app_id,
                  const std::string& app_name) {
     bool found = false;
-    for (ScopedVector<DriveAppInfo>::const_iterator it = list.begin();
-         it != list.end(); ++it) {
-      const DriveAppInfo* app = *it;
-      if (app_id == app->app_id) {
-        EXPECT_EQ(app_name, app->app_name);
+    for (size_t i = 0; i < list.size(); ++i) {
+      const DriveAppInfo& app = list[i];
+      if (app_id == app.app_id) {
+        EXPECT_EQ(app_name, app.app_name);
         found = true;
         break;
       }
@@ -52,33 +41,31 @@ class DriveAppRegistryTest : public testing::Test {
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_ptr<TestingPrefServiceSimple> pref_service_;
   scoped_ptr<FakeDriveService> fake_drive_service_;
-  scoped_ptr<JobScheduler> scheduler_;
-  scoped_ptr<DriveAppRegistry> web_apps_registry_;
+  scoped_ptr<DriveAppRegistry> apps_registry_;
 };
 
 TEST_F(DriveAppRegistryTest, LoadAndFindDriveApps) {
-  web_apps_registry_->Update();
+  apps_registry_->Update();
   base::RunLoop().RunUntilIdle();
 
   // Find by primary extension 'exe'.
-  ScopedVector<DriveAppInfo> ext_results;
+  std::vector<DriveAppInfo> ext_results;
   base::FilePath ext_file(FILE_PATH_LITERAL("drive/file.exe"));
-  web_apps_registry_->GetAppsForFile(ext_file.Extension(), "", &ext_results);
+  apps_registry_->GetAppsForFile(ext_file.Extension(), "", &ext_results);
   ASSERT_EQ(1U, ext_results.size());
   VerifyApp(ext_results, "123456788192", "Drive app 1");
 
   // Find by primary MIME type.
-  ScopedVector<DriveAppInfo> primary_app;
-  web_apps_registry_->GetAppsForFile(base::FilePath::StringType(),
+  std::vector<DriveAppInfo> primary_app;
+  apps_registry_->GetAppsForFile(base::FilePath::StringType(),
       "application/vnd.google-apps.drive-sdk.123456788192", &primary_app);
   ASSERT_EQ(1U, primary_app.size());
   VerifyApp(primary_app, "123456788192", "Drive app 1");
 
   // Find by secondary MIME type.
-  ScopedVector<DriveAppInfo> secondary_app;
-  web_apps_registry_->GetAppsForFile(
+  std::vector<DriveAppInfo> secondary_app;
+  apps_registry_->GetAppsForFile(
       base::FilePath::StringType(), "text/html", &secondary_app);
   ASSERT_EQ(1U, secondary_app.size());
   VerifyApp(secondary_app, "123456788192", "Drive app 1");
@@ -90,22 +77,22 @@ TEST_F(DriveAppRegistryTest, UpdateFromAppList) {
   scoped_ptr<google_apis::AppList> app_list(
       google_apis::AppList::CreateFrom(*app_info_value));
 
-  web_apps_registry_->UpdateFromAppList(*app_list);
+  apps_registry_->UpdateFromAppList(*app_list);
 
   // Confirm that something was loaded from applist.json.
-  ScopedVector<DriveAppInfo> ext_results;
+  std::vector<DriveAppInfo> ext_results;
   base::FilePath ext_file(FILE_PATH_LITERAL("drive/file.exe"));
-  web_apps_registry_->GetAppsForFile(ext_file.Extension(), "", &ext_results);
+  apps_registry_->GetAppsForFile(ext_file.Extension(), "", &ext_results);
   ASSERT_EQ(1U, ext_results.size());
 }
 
 TEST_F(DriveAppRegistryTest, MultipleUpdate) {
   // Call Update().
-  web_apps_registry_->Update();
+  apps_registry_->Update();
 
   // Call Update() again.
   // This call should be ignored because there is already an ongoing update.
-  web_apps_registry_->Update();
+  apps_registry_->Update();
 
   // The app list should be loaded only once.
   base::RunLoop().RunUntilIdle();

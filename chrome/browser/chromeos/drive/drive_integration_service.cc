@@ -253,7 +253,7 @@ DriveIntegrationService::DriveIntegrationService(
       cache_root_directory_.Append(kCacheFileDirectory),
       blocking_task_runner_.get(),
       NULL /* free_disk_space_getter */));
-  drive_app_registry_.reset(new DriveAppRegistry(scheduler_.get()));
+  drive_app_registry_.reset(new DriveAppRegistry(drive_service_.get()));
 
   resource_metadata_.reset(new internal::ResourceMetadata(
       metadata_storage_.get(), blocking_task_runner_));

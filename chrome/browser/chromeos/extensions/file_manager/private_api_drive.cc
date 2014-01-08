@@ -144,7 +144,7 @@ void FileBrowserPrivateGetDriveEntryPropertiesFunction::OnGetFileInfo(
 
   // Get drive WebApps that can accept this file. We just need to extract the
   // doc icon for the drive app, which is set as default.
-  ScopedVector<drive::DriveAppInfo> drive_apps;
+  std::vector<drive::DriveAppInfo> drive_apps;
   app_registry->GetAppsForFile(file_path_.Extension(),
                                file_specific_info.content_mime_type(),
                                &drive_apps);
@@ -158,11 +158,11 @@ void FileBrowserPrivateGetDriveEntryPropertiesFunction::OnGetFileInfo(
     file_manager::file_tasks::ParseTaskID(default_task_id, &default_task);
     DCHECK(default_task_id.empty() || !default_task.app_id.empty());
     for (size_t i = 0; i < drive_apps.size(); ++i) {
-      const drive::DriveAppInfo* app_info = drive_apps[i];
-      if (default_task.app_id == app_info->app_id) {
+      const drive::DriveAppInfo& app_info = drive_apps[i];
+      if (default_task.app_id == app_info.app_id) {
         // The drive app is set as default. Files.app should use the doc icon.
         const GURL doc_icon =
-            drive::util::FindPreferredIcon(app_info->document_icons,
+            drive::util::FindPreferredIcon(app_info.document_icons,
                                            drive::util::kPreferredIconSize);
         properties_->custom_icon_url.reset(new std::string(doc_icon.spec()));
       }

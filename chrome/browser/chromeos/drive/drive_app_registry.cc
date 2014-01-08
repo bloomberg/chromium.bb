@@ -5,14 +5,11 @@
 #include "chrome/browser/chromeos/drive/drive_app_registry.h"
 
 #include <algorithm>
-#include <string>
+#include <set>
 #include <utility>
-#include <vector>
 
 #include "base/files/file_path.h"
-#include "base/strings/string_util.h"
-#include "chrome/browser/chromeos/drive/file_system_util.h"
-#include "chrome/browser/chromeos/drive/job_scheduler.h"
+#include "chrome/browser/drive/drive_service_interface.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/drive/drive_api_parser.h"
 
@@ -61,8 +58,8 @@ DriveAppInfo::DriveAppInfo(
 DriveAppInfo::~DriveAppInfo() {
 }
 
-DriveAppRegistry::DriveAppRegistry(JobScheduler* scheduler)
-    : scheduler_(scheduler),
+DriveAppRegistry::DriveAppRegistry(DriveServiceInterface* drive_service)
+    : drive_service_(drive_service),
       is_updating_(false),
       weak_ptr_factory_(this) {
 }
@@ -73,7 +70,7 @@ DriveAppRegistry::~DriveAppRegistry() {
 void DriveAppRegistry::GetAppsForFile(
     const base::FilePath::StringType& file_extension,
     const std::string& mime_type,
-    ScopedVector<DriveAppInfo>* apps) const {
+    std::vector<DriveAppInfo>* apps) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   std::vector<std::string> matched_apps;
@@ -92,7 +89,7 @@ void DriveAppRegistry::GetAppsForFile(
       std::map<std::string, DriveAppInfo>::const_iterator it =
           all_apps_.find(matched_apps[i]);
       DCHECK(it != all_apps_.end());
-      apps->push_back(new DriveAppInfo(it->second));
+      apps->push_back(it->second);
     }
   }
 }
@@ -104,8 +101,9 @@ void DriveAppRegistry::Update() {
     return;
   is_updating_ = true;
 
-  scheduler_->GetAppList(base::Bind(&DriveAppRegistry::UpdateAfterGetAppList,
-                                    weak_ptr_factory_.GetWeakPtr()));
+  drive_service_->GetAppList(
+      base::Bind(&DriveAppRegistry::UpdateAfterGetAppList,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DriveAppRegistry::UpdateAfterGetAppList(
@@ -116,11 +114,9 @@ void DriveAppRegistry::UpdateAfterGetAppList(
   DCHECK(is_updating_);
   is_updating_ = false;
 
-  FileError error = GDataToFileError(gdata_error);
-  if (error != FILE_ERROR_OK) {
-    // Failed to fetch the data from the server. We can do nothing here.
+  // Failed to fetch the data from the server. We can do nothing here.
+  if (gdata_error != google_apis::HTTP_SUCCESS)
     return;
-  }
 
   DCHECK(app_list);
   UpdateFromAppList(*app_list);

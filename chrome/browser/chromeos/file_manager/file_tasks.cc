@@ -330,23 +330,21 @@ void FindDriveAppTasks(
     if (!drive::util::IsUnderDriveMountPoint(file_path))
       return;
 
-    ScopedVector<drive::DriveAppInfo> app_info_list;
+    std::vector<drive::DriveAppInfo> app_info_list;
     drive_app_registry.GetAppsForFile(file_path.Extension(),
                                       mime_type,
                                       &app_info_list);
 
     if (is_first) {
       // For the first file, we store all the info.
-      for (size_t j = 0; j < app_info_list.size(); ++j) {
-        const drive::DriveAppInfo& app_info = *app_info_list[j];
-        drive_app_map[app_info.app_id] = app_info;
-      }
+      for (size_t j = 0; j < app_info_list.size(); ++j)
+        drive_app_map[app_info_list[j].app_id] = app_info_list[j];
     } else {
       // For remaining files, take the intersection with the current
       // result, based on the app id.
       std::set<std::string> app_id_set;
       for (size_t j = 0; j < app_info_list.size(); ++j)
-        app_id_set.insert(app_info_list[j]->app_id);
+        app_id_set.insert(app_info_list[j].app_id);
       for (DriveAppInfoMap::iterator iter = drive_app_map.begin();
            iter != drive_app_map.end();) {
         if (app_id_set.count(iter->first) == 0) {

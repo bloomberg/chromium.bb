@@ -11,7 +11,6 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "google_apis/drive/gdata_errorcode.h"
 #include "google_apis/drive/gdata_wapi_parser.h"
@@ -23,7 +22,7 @@ class AppList;
 
 namespace drive {
 
-class JobScheduler;
+class DriveServiceInterface;
 
 // Data structure that defines Drive app. See
 // https://chrome.google.com/webstore/category/collection/drive_apps for
@@ -47,21 +46,22 @@ struct DriveAppInfo {
   google_apis::InstalledApp::IconList document_icons;
   // App name.
   std::string app_name;
-  // URL for opening a new file in the app.
+  // URL for opening a new file in the app. Empty if the app does not support
+  // new file creation.
   GURL create_url;
 };
 
 // Keeps the track of installed drive applications in-memory.
 class DriveAppRegistry {
  public:
-  explicit DriveAppRegistry(JobScheduler* scheduler);
+  explicit DriveAppRegistry(DriveServiceInterface* scheduler);
   ~DriveAppRegistry();
 
   // Returns a list of Drive app information for the |file_extension| with
   // |mime_type|.
   void GetAppsForFile(const base::FilePath::StringType& file_extension,
                       const std::string& mime_type,
-                      ScopedVector<DriveAppInfo>* apps) const;
+                      std::vector<DriveAppInfo>* apps) const;
 
   // Updates this registry by fetching the data from the server.
   void Update();
@@ -84,7 +84,7 @@ class DriveAppRegistry {
   DriveAppFileSelectorMap extension_map_;
   DriveAppFileSelectorMap mimetype_map_;
 
-  JobScheduler* scheduler_;
+  DriveServiceInterface* drive_service_;
 
   bool is_updating_;
 
