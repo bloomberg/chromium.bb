@@ -358,9 +358,10 @@ camera.views.Browser.prototype.addPictureToDOM = function(picture) {
   // Add to the collection.
   this.pictures.push(new camera.views.GalleryBase.DOMPicture(picture, img));
 
-  img.addEventListener('click', function(event) {
+  img.addEventListener('mousedown', function(event) {
     event.preventDefault();  // Prevent focusing.
-
+  });
+  img.addEventListener('click', function(event) {
     // If scrolled while clicking, then discard this selection, since another
     // one will be choosen in the onScrollEnded handler.
     if (this.scrollTracker_.scrolling &&
