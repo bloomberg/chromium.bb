@@ -331,17 +331,6 @@ TestLauncher::TestLauncher(TestLauncherDelegate* launcher_delegate,
     // --test-launcher-jobs flag.
     parallel_jobs_ = 1;
   }
-
-#if defined(USE_AURA) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  // TODO(erg): Trying to parallelize tests on linux_aura makes things flaky
-  // because all shards share X11 state. http://crbug.com/326701
-  parallel_jobs_ = 1;
-
-  fprintf(stdout,
-          "Disabling parallelization due to the linux_aura flake. "
-          "http://crbug.com/326701\n");
-  fflush(stdout);
-#endif
 }
 
 TestLauncher::~TestLauncher() {
