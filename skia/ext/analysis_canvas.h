@@ -20,14 +20,17 @@ class AnalysisDevice;
 // To use: create a SkBitmap with kNo_Config, create an AnalysisDevice
 // using that bitmap, and create an AnalysisCanvas using the device.
 // Play a picture into the canvas, and then check result.
-class SK_API AnalysisCanvas : public SkCanvas {
+class SK_API AnalysisCanvas : public SkCanvas, public SkDrawPictureCallback {
  public:
-  explicit AnalysisCanvas(AnalysisDevice* device);
+  AnalysisCanvas(AnalysisDevice*);
   virtual ~AnalysisCanvas();
 
   // Returns true when a SkColor can be used to represent result.
   bool GetColorIfSolid(SkColor* color) const;
   bool HasText() const;
+
+  // SkDrawPictureCallback override.
+  virtual bool abortDrawing() OVERRIDE;
 
   // SkCanvas overrides.
   virtual bool clipRect(const SkRect& rect,
@@ -60,9 +63,6 @@ class SK_API AnalysisCanvas : public SkCanvas {
 // to be derived from SkBaseDevice (rather than SkBitmapDevice)
 class SK_API AnalysisDevice : public SkBitmapDevice {
  public:
-  // |analysis_rect| is in device space.
-  AnalysisDevice(const SkBitmap& bitmap, SkRect analysis_rect);
-  // Analyze the entire bitmap.
   AnalysisDevice(const SkBitmap& bitmap);
   virtual ~AnalysisDevice();
 
@@ -71,8 +71,6 @@ class SK_API AnalysisDevice : public SkBitmapDevice {
 
   void SetForceNotSolid(bool flag);
   void SetForceNotTransparent(bool flag);
-
-  SkRect AnalysisRect() const { return analysis_rect_; }
 
  protected:
   // SkBaseDevice overrides.
@@ -159,7 +157,6 @@ class SK_API AnalysisDevice : public SkBitmapDevice {
  private:
   typedef SkBitmapDevice INHERITED;
 
-  SkRect analysis_rect_;
   bool is_forced_not_solid_;
   bool is_forced_not_transparent_;
   bool is_solid_color_;
