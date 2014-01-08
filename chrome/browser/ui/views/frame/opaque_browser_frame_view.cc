@@ -428,6 +428,9 @@ void OpaqueBrowserFrameView::Observe(
 
 bool OpaqueBrowserFrameView::ShouldShowWindowIcon() const {
   views::WidgetDelegate* delegate = frame()->widget_delegate();
+  // ShouldShowTitleBar defaults to true.
+  if (platform_observer_ && !platform_observer_->ShouldShowTitleBar())
+    return false;
   return delegate && delegate->ShouldShowWindowIcon();
 }
 
@@ -436,6 +439,9 @@ bool OpaqueBrowserFrameView::ShouldShowWindowTitle() const {
   // a window is being destroyed.
   // See more discussion at http://crosbug.com/8958
   views::WidgetDelegate* delegate = frame()->widget_delegate();
+  // ShouldShowTitleBar defaults to true.
+  if (platform_observer_ && !platform_observer_->ShouldShowTitleBar())
+    return false;
   return delegate && delegate->ShouldShowWindowTitle();
 }
 

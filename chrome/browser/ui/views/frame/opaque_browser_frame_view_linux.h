@@ -23,6 +23,7 @@ class OpaqueBrowserFrameViewLinux
 
   // Overridden from OpaqueBrowserFrameViewPlatformSpecific:
   virtual bool ShouldShowCaptionButtons() const OVERRIDE;
+  virtual bool ShouldShowTitleBar() const OVERRIDE;
 
   // Overridden from views::WindowButtonOrderObserver:
   virtual void OnWindowButtonOrderingChange(

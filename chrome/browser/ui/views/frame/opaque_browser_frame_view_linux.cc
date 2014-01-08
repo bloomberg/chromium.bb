@@ -38,6 +38,13 @@ bool OpaqueBrowserFrameViewLinux::ShouldShowCaptionButtons() const {
   return !(view_->IsMaximized() && ui && ui->UnityIsRunning());
 }
 
+bool OpaqueBrowserFrameViewLinux::ShouldShowTitleBar() const {
+  // On Ubuntu Unity, if the window is maximized, the system will provide
+  // a title bar, so Chrome should not add its own.
+  views::LinuxUI* ui = views::LinuxUI::instance();
+  return !(view_->IsMaximized() && ui && ui->UnityIsRunning());
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // OpaqueBrowserFrameViewLinux,
 //     views::WindowButtonOrderObserver implementation:
