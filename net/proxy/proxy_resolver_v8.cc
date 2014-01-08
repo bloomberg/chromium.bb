@@ -422,7 +422,8 @@ class ProxyResolverV8::Context {
     v8_this_.Reset(isolate_, v8::External::New(isolate_, this));
     v8::Local<v8::External> v8_this =
         v8::Local<v8::External>::New(isolate_, v8_this_);
-    v8::Local<v8::ObjectTemplate> global_template = v8::ObjectTemplate::New();
+    v8::Local<v8::ObjectTemplate> global_template =
+        v8::ObjectTemplate::New(isolate_);
 
     // Attach the javascript bindings.
     v8::Local<v8::FunctionTemplate> alert_template =

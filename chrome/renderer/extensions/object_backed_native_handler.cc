@@ -24,7 +24,8 @@ const char* kHandlerFunction = "handler_function";
 ObjectBackedNativeHandler::ObjectBackedNativeHandler(
     ChromeV8Context* context)
     : context_(context),
-      object_template_(v8::ObjectTemplate::New()) {
+      object_template_(v8::ObjectTemplate::New(
+          context->v8_context()->GetIsolate())) {
 }
 
 ObjectBackedNativeHandler::~ObjectBackedNativeHandler() {

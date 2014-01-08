@@ -53,7 +53,7 @@ class V8ValueConverterImplTest : public testing::Test {
  protected:
   virtual void SetUp() {
     v8::HandleScope handle_scope(isolate_);
-    v8::Handle<v8::ObjectTemplate> global = v8::ObjectTemplate::New();
+    v8::Handle<v8::ObjectTemplate> global = v8::ObjectTemplate::New(isolate_);
     context_.Reset(isolate_, v8::Context::New(isolate_, NULL, global));
   }
 
