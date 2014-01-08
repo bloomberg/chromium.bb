@@ -417,6 +417,16 @@ void ComponentLoader::AddDefaultComponentExtensions(
   AddDefaultComponentExtensionsWithBackgroundPages(skip_session_components);
 }
 
+void ComponentLoader::AddDefaultComponentExtensionsForKioskMode(
+    bool skip_session_components) {
+  // No component extension for kiosk app launch splash screen.
+  if (skip_session_components)
+    return;
+
+  // Component extensions needed for kiosk apps.
+  AddFileManagerExtension();
+}
+
 void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
     bool skip_session_components) {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();

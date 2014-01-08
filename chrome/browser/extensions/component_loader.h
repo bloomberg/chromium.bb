@@ -82,6 +82,9 @@ class ComponentLoader {
   // platforms this |skip_session_components| is expected to be unset.
   void AddDefaultComponentExtensions(bool skip_session_components);
 
+  // Similar to above but adds the default component extensions for kiosk mode.
+  void AddDefaultComponentExtensionsForKioskMode(bool skip_session_components);
+
   // Parse the given JSON manifest. Returns NULL if it cannot be parsed, or if
   // if the result is not a DictionaryValue.
   base::DictionaryValue* ParseManifest(
