@@ -61,12 +61,6 @@ class ProfileManager : public base::NonThreadSafe,
   // Note that in case of a guest account this will return a 'suitable' profile.
   static Profile* GetActiveUserProfile();
 
-  // Same as GetPrimaryUserProfile. Do not use!
-  static Profile* GetPrimaryUserProfileOrOffTheRecord();
-
-  // Same as GetPrimaryUserProfile. Do not use!
-  static Profile* GetActiveUserProfileOrOffTheRecord();
-
   // The following DEPRECATED functions should be removed: crbug.com/83792.
 
   // DEPRECATED: DO NOT USE unless in ChromeOS.

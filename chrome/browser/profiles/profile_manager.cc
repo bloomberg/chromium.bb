@@ -428,16 +428,6 @@ Profile* ProfileManager::GetActiveUserProfile() {
 #endif
 }
 
-// TODO(skuhne): Remove this method once all clients are migrated.
-Profile* ProfileManager::GetPrimaryUserProfileOrOffTheRecord() {
-  return GetPrimaryUserProfile();
-}
-
-// TODO(skuhne): Remove this method once all clients are migrated.
-Profile* ProfileManager::GetActiveUserProfileOrOffTheRecord() {
-  return GetActiveUserProfile();
-}
-
 Profile* ProfileManager::GetDefaultProfile(
     const base::FilePath& user_data_dir) {
 #if defined(OS_CHROMEOS)
