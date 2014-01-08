@@ -100,7 +100,7 @@ class ASH_EXPORT DisplayInfo {
   // The native bounds for the display. The size of this can be
   // different from the |size_in_pixel| when overscan insets are set
   // and/or |configured_ui_scale_| is set.
-  const gfx::Rect bounds_in_native() const {
+  const gfx::Rect& bounds_in_native() const {
     return bounds_in_native_;
   }
 

@@ -327,7 +327,7 @@ private:
   // The mapping from the display ID to its internal data.
   std::map<int64, DisplayInfo> display_info_;
 
-  // Selected resolutions for displays. Key is the displays' ID.
+  // Selected resolutions in pixels for displays. Key is the displays' ID.
   std::map<int64, gfx::Size> resolutions_;
 
   // When set to true, the host window's resize event updates

@@ -749,6 +749,53 @@ TEST_F(DisplayManagerTest, DontRememberBestResolution) {
       display_id, &selected));
 }
 
+TEST_F(DisplayManagerTest, ResolutionFallback) {
+  int display_id = 1000;
+  DisplayInfo native_display_info =
+      CreateDisplayInfo(display_id, gfx::Rect(0, 0, 1000, 500));
+  std::vector<Resolution> resolutions;
+  resolutions.push_back(Resolution(gfx::Size(1000, 500), false));
+  resolutions.push_back(Resolution(gfx::Size(800, 300), false));
+  resolutions.push_back(Resolution(gfx::Size(400, 500), false));
+
+  std::vector<Resolution> copy = resolutions;
+  native_display_info.set_resolutions(copy);
+
+  std::vector<DisplayInfo> display_info_list;
+  display_info_list.push_back(native_display_info);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  {
+    display_manager()->SetDisplayResolution(display_id, gfx::Size(800, 300));
+    DisplayInfo new_native_display_info =
+        CreateDisplayInfo(display_id, gfx::Rect(0, 0, 400, 500));
+    copy = resolutions;
+    new_native_display_info.set_resolutions(copy);
+    std::vector<DisplayInfo> new_display_info_list;
+    new_display_info_list.push_back(new_native_display_info);
+    display_manager()->OnNativeDisplaysChanged(new_display_info_list);
+
+    gfx::Size selected;
+    EXPECT_TRUE(display_manager()->GetSelectedResolutionForDisplayId(
+        display_id, &selected));
+    EXPECT_EQ("400x500", selected.ToString());
+  }
+  {
+    // Best resolution should not be set.
+    display_manager()->SetDisplayResolution(display_id, gfx::Size(800, 300));
+    DisplayInfo new_native_display_info =
+        CreateDisplayInfo(display_id, gfx::Rect(0, 0, 1000, 500));
+    std::vector<Resolution> copy = resolutions;
+    new_native_display_info.set_resolutions(copy);
+    std::vector<DisplayInfo> new_display_info_list;
+    new_display_info_list.push_back(new_native_display_info);
+    display_manager()->OnNativeDisplaysChanged(new_display_info_list);
+
+    gfx::Size selected;
+    EXPECT_FALSE(display_manager()->GetSelectedResolutionForDisplayId(
+        display_id, &selected));
+  }
+}
+
 TEST_F(DisplayManagerTest, Rotate) {
   if (!SupportsMultipleDisplays())
     return;

@@ -551,6 +551,21 @@ void DisplayManager::OnNativeDisplaysChanged(
       origins.insert(origin);
       new_display_info_list.push_back(*iter);
     }
+
+    const gfx::Size& resolution = iter->bounds_in_native().size();
+    const std::vector<Resolution>& resolutions = iter->resolutions();
+    // This is empty the displays are initialized from InitFromCommandLine.
+    if (!resolutions.size())
+      continue;
+    std::vector<Resolution>::const_iterator resolution_iter =
+        std::find_if(resolutions.begin(),
+                     resolutions.end(),
+                     ResolutionMatcher(resolution));
+    // Update the actual resolution selected as the resolution request may fail.
+    if (resolution_iter == resolutions.begin())
+      resolutions_.erase(iter->id());
+    else if (resolutions_.find(iter->id()) != resolutions_.end())
+      resolutions_[iter->id()] = resolution;
   }
   if (HasInternalDisplay() &&
       !internal_display_connected &&

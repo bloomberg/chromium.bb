@@ -34,9 +34,9 @@ const char kOffsetKey[] = "offset";
 
 class DisplayPreferencesTest : public ash::test::AshTestBase {
  protected:
-  DisplayPreferencesTest() : ash::test::AshTestBase(),
-                             mock_user_manager_(new MockUserManager),
-                             user_manager_enabler_(mock_user_manager_) {
+  DisplayPreferencesTest()
+      : mock_user_manager_(new MockUserManager),
+        user_manager_enabler_(mock_user_manager_) {
   }
 
   virtual ~DisplayPreferencesTest() {}
@@ -337,6 +337,34 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
 
   UpdateDisplay("200x200*2, 600x500#600x500|500x400");
 
+  // Update key as the 2nd display gets new id.
+  id2 = ash::ScreenAsh::GetSecondaryDisplay().id();
+  key = base::Int64ToString(id1) + "," + base::Int64ToString(id2);
+  EXPECT_TRUE(displays->GetDictionary(key, &layout_value));
+  EXPECT_TRUE(layout_value->GetString(kPositionKey, &position));
+  EXPECT_EQ("right", position);
+  EXPECT_TRUE(layout_value->GetInteger(kOffsetKey, &offset));
+  EXPECT_EQ(0, offset);
+  mirrored = true;
+  EXPECT_TRUE(layout_value->GetBoolean(kMirroredKey, &mirrored));
+  EXPECT_FALSE(mirrored);
+  EXPECT_TRUE(layout_value->GetString(kPrimaryIdKey, &primary_id_str));
+  EXPECT_EQ(base::Int64ToString(id1), primary_id_str);
+
+  // Best resolution should not be saved.
+  EXPECT_TRUE(properties->GetDictionary(base::Int64ToString(id2), &property));
+  EXPECT_FALSE(property->GetInteger("width", &width));
+  EXPECT_FALSE(property->GetInteger("height", &height));
+
+  // Set yet another new display's selected resolution.
+  display_manager->RegisterDisplayProperty(id2 + 1,
+                                           gfx::Display::ROTATE_0,
+                                           1.0f,
+                                           NULL,
+                                           gfx::Size(500, 400));
+  // Disconnect 2nd display first to generate new id for external display.
+  UpdateDisplay("200x200*2");
+  UpdateDisplay("200x200*2, 500x400#600x500|500x400");
   // Update key as the 2nd display gets new id.
   id2 = ash::ScreenAsh::GetSecondaryDisplay().id();
   key = base::Int64ToString(id1) + "," + base::Int64ToString(id2);
