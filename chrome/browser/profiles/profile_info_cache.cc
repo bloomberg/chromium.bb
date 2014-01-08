@@ -155,10 +155,8 @@ void ReadBitmap(const base::FilePath& image_path,
     return;
   }
 
-  const unsigned char* data =
-      reinterpret_cast<const unsigned char*>(image_data.data());
-  gfx::Image image =
-      gfx::Image::CreateFrom1xPNGBytes(data, image_data.length());
+  gfx::Image image = gfx::Image::CreateFrom1xPNGBytes(
+      base::RefCountedString::TakeString(&image_data));
   if (image.IsEmpty()) {
     LOG(ERROR) << "Failed to decode PNG file.";
     return;

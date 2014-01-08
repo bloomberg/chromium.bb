@@ -602,8 +602,17 @@ Image Image::CreateFrom1xPNGBytes(const unsigned char* input,
 
   scoped_refptr<base::RefCountedBytes> raw_data(new base::RefCountedBytes());
   raw_data->data().assign(input, input + input_size);
+
+  return CreateFrom1xPNGBytes(raw_data);
+}
+
+Image Image::CreateFrom1xPNGBytes(
+    const scoped_refptr<base::RefCountedMemory>& input) {
+  if (!input.get() || input->size() == 0u)
+    return gfx::Image();
+
   std::vector<gfx::ImagePNGRep> image_reps;
-  image_reps.push_back(ImagePNGRep(raw_data, 1.0f));
+  image_reps.push_back(ImagePNGRep(input, 1.0f));
   return gfx::Image(image_reps);
 }
 

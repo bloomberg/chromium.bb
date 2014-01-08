@@ -113,6 +113,10 @@ class GFX_EXPORT Image {
   static Image CreateFrom1xPNGBytes(const unsigned char* input,
                                     size_t input_size);
 
+  // Creates an image from the PNG encoded input.
+  static Image CreateFrom1xPNGBytes(
+      const scoped_refptr<base::RefCountedMemory>& input);
+
   // Converts the Image to the desired representation and stores it internally.
   // The returned result is a weak pointer owned by and scoped to the life of
   // the Image. Must only be called if IsEmpty() is false.

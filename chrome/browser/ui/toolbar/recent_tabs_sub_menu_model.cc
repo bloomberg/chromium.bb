@@ -593,8 +593,7 @@ void RecentTabsSubMenuModel::AddTabFavicon(int command_id, const GURL& url) {
     scoped_refptr<base::RefCountedMemory> favicon_png;
     if (open_tabs &&
         open_tabs->GetSyncedFaviconForPageURL(url.spec(), &favicon_png)) {
-      gfx::Image image = gfx::Image::CreateFrom1xPNGBytes(favicon_png->front(),
-                                                          favicon_png->size());
+      gfx::Image image = gfx::Image::CreateFrom1xPNGBytes(favicon_png);
       SetIcon(index_in_menu, image);
       return;
     }

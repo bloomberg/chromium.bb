@@ -100,7 +100,7 @@ class SnapshotAuraTest : public testing::Test {
     gfx::Rect local_bounds(test_window_->bounds().size());
     ui::GrabWindowSnapshot(test_window(), &png_representation, local_bounds);
     return gfx::Image::CreateFrom1xPNGBytes(
-      &(png_representation[0]), png_representation.size());
+        base::RefCountedBytes::TakeVector(&png_representation));
   }
 
  private:
