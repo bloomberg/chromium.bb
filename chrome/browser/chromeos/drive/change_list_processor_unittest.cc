@@ -525,11 +525,14 @@ TEST_F(ChangeListProcessorTest, RefreshDirectory) {
   change_lists[0]->mutable_parent_resource_ids()->push_back(kRootId);
 
   // Update the directory with the map.
+  ResourceEntry root;
+  EXPECT_EQ(FILE_ERROR_OK, metadata_->GetResourceEntryByPath(
+      util::GetDriveMyDriveRootPath(), &root));
   const int64 kNewChangestamp = 12345;
   base::FilePath file_path;
   EXPECT_EQ(FILE_ERROR_OK, ChangeListProcessor::RefreshDirectory(
       metadata_.get(),
-      DirectoryFetchInfo(kRootId, kNewChangestamp),
+      DirectoryFetchInfo(root.local_id(), kRootId, kNewChangestamp),
       change_lists.Pass(),
       &file_path));
   EXPECT_EQ(util::GetDriveMyDriveRootPath().value(), file_path.value());
@@ -567,11 +570,14 @@ TEST_F(ChangeListProcessorTest, RefreshDirectory_WrongParentId) {
 
 
   // Update the directory.
+  ResourceEntry root;
+  EXPECT_EQ(FILE_ERROR_OK, metadata_->GetResourceEntryByPath(
+      util::GetDriveMyDriveRootPath(), &root));
   const int64 kNewChangestamp = 12345;
   base::FilePath file_path;
   EXPECT_EQ(FILE_ERROR_OK, ChangeListProcessor::RefreshDirectory(
       metadata_.get(),
-      DirectoryFetchInfo(kRootId, kNewChangestamp),
+      DirectoryFetchInfo(root.local_id(), kRootId, kNewChangestamp),
       change_lists.Pass(),
       &file_path));
   EXPECT_EQ(util::GetDriveMyDriveRootPath().value(), file_path.value());

@@ -451,7 +451,8 @@ void ChangeListLoader::LoadDirectoryIfNeededAfterGetEntry(
     return;
   }
 
-  Load(DirectoryFetchInfo(entry->resource_id(),
+  Load(DirectoryFetchInfo(entry->local_id(),
+                          entry->resource_id(),
                           entry->directory_specific_info().changestamp()),
        callback);
 }
@@ -494,17 +495,17 @@ void ChangeListLoader::Load(const DirectoryFetchInfo& directory_fetch_info,
   const bool is_initial_load = (!loaded_ && !IsRefreshing());
 
   // Register the callback function to be called when it is loaded.
-  const std::string& resource_id = directory_fetch_info.resource_id();
-  pending_load_callback_[resource_id].push_back(callback);
+  const std::string& local_id = directory_fetch_info.local_id();
+  pending_load_callback_[local_id].push_back(callback);
 
   // If loading task for |resource_id| is already running, do nothing.
-  if (pending_load_callback_[resource_id].size() > 1)
+  if (pending_load_callback_[local_id].size() > 1)
     return;
 
   // For initial loading, even for directory fetching, we do load the full
   // resource list from the server to sync up. So we register a dummy
   // callback to indicate that update for full hierarchy is running.
-  if (is_initial_load && !resource_id.empty()) {
+  if (is_initial_load && !directory_fetch_info.empty()) {
     pending_load_callback_[""].push_back(
         base::Bind(&util::EmptyFileOperationCallback));
   }
@@ -533,7 +534,7 @@ void ChangeListLoader::LoadAfterGetLargestChangestamp(
 
     // Continues to load from server in background.
     // Put dummy callbacks to indicate that fetching is still continuing.
-    pending_load_callback_[directory_fetch_info.resource_id()].push_back(
+    pending_load_callback_[directory_fetch_info.local_id()].push_back(
         base::Bind(&util::EmptyFileOperationCallback));
     if (!directory_fetch_info.empty()) {
       pending_load_callback_[""].push_back(
@@ -622,7 +623,8 @@ void ChangeListLoader::LoadAfterGetAboutResource(
     // Start fetching the directory content, and mark it with the changestamp
     // |remote_changestamp|.
     DirectoryFetchInfo new_directory_fetch_info(
-        directory_fetch_info.resource_id(), remote_changestamp);
+        directory_fetch_info.local_id(), directory_fetch_info.resource_id(),
+        remote_changestamp);
     LoadDirectoryFromServer(
         new_directory_fetch_info,
         base::Bind(&ChangeListLoader::LoadAfterLoadDirectory,
@@ -685,10 +687,10 @@ void ChangeListLoader::OnDirectoryLoadComplete(
             "Fast-fetch complete: %s => %s",
             directory_fetch_info.ToString().c_str(),
             FileErrorToString(error).c_str());
-  const std::string& resource_id = directory_fetch_info.resource_id();
-  LoadCallbackMap::iterator it = pending_load_callback_.find(resource_id);
+  const std::string& local_id = directory_fetch_info.local_id();
+  LoadCallbackMap::iterator it = pending_load_callback_.find(local_id);
   if (it != pending_load_callback_.end()) {
-    DVLOG(1) << "Running callback for " << resource_id;
+    DVLOG(1) << "Running callback for " << local_id;
     const std::vector<FileOperationCallback>& callbacks = it->second;
     for (size_t i = 0; i < callbacks.size(); ++i) {
       base::MessageLoopProxy::current()->PostTask(
@@ -802,7 +804,7 @@ void ChangeListLoader::LoadDirectoryFromServer(
   DCHECK(cached_about_resource_);
   DVLOG(1) << "Start loading directory: " << directory_fetch_info.ToString();
 
-  if (directory_fetch_info.resource_id() == util::kDriveGrandRootLocalId) {
+  if (directory_fetch_info.local_id() == util::kDriveGrandRootLocalId) {
     // Load for a grand root directory means slightly different from other
     // directories. It should have two directories; <other> and mydrive root.
     // <other> directory should always exist, but mydrive root should be
@@ -853,7 +855,7 @@ void ChangeListLoader::LoadDirectoryFromServerAfterLoad(
 
   if (error != FILE_ERROR_OK) {
     LOG(ERROR) << "Failed to load directory: "
-               << directory_fetch_info.resource_id()
+               << directory_fetch_info.local_id()
                << ": " << FileErrorToString(error);
     callback.Run(error);
     return;

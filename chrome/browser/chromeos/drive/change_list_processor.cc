@@ -56,7 +56,8 @@ class ChangeListToEntryMapUMAStats {
 }  // namespace
 
 std::string DirectoryFetchInfo::ToString() const {
-  return ("resource_id: " + resource_id_ +
+  return ("local_id: " + local_id_ +
+          ", resource_id: " + resource_id_ +
           ", changestamp: " + base::Int64ToString(changestamp_));
 }
 
@@ -357,15 +358,9 @@ FileError ChangeListProcessor::RefreshDirectory(
     base::FilePath* out_file_path) {
   DCHECK(!directory_fetch_info.empty());
 
-  std::string directory_local_id;
-  FileError error = resource_metadata->GetIdByResourceId(
-      directory_fetch_info.resource_id(), &directory_local_id);
-  if (error != FILE_ERROR_OK)
-    return error;
-
   ResourceEntry directory;
-  error = resource_metadata->GetResourceEntryById(directory_local_id,
-                                                  &directory);
+  FileError error = resource_metadata->GetResourceEntryById(
+      directory_fetch_info.local_id(), &directory);
   if (error != FILE_ERROR_OK)
     return error;
 
@@ -389,7 +384,7 @@ FileError ChangeListProcessor::RefreshDirectory(
         continue;
       }
 
-      entry->set_parent_local_id(directory_local_id);
+      entry->set_parent_local_id(directory_fetch_info.local_id());
 
       std::string local_id;
       error = resource_metadata->GetIdByResourceId(entry->resource_id(),
@@ -416,7 +411,8 @@ FileError ChangeListProcessor::RefreshDirectory(
   if (error != FILE_ERROR_OK)
     return error;
 
-  *out_file_path = resource_metadata->GetFilePath(directory_local_id);
+  *out_file_path = resource_metadata->GetFilePath(
+      directory_fetch_info.local_id());
   return FILE_ERROR_OK;
 }
 
