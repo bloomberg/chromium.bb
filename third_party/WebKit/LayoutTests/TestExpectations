@@ -482,16 +482,6 @@ crbug.com/310866 fast/workers/storage/use-same-database-in-page-and-workers.html
 
 crbug.com/245630 virtual/gpu/compositedscrolling/overflow/overflow-positioning.html [ ImageOnlyFailure Pass ]
 
-crbug.com/264101 compositing/direct-image-compositing.html [ NeedsRebaseline ]
-crbug.com/264101 css3/filters/effect-reference-zoom.html [ NeedsRebaseline ]
-crbug.com/264101 css3/filters/filter-repaint-blur.html [ NeedsRebaseline ]
-crbug.com/264101 css3/filters/filter-repaint-child-layers.html [ NeedsRebaseline ]
-crbug.com/264101 css3/filters/filter-repaint-shadow.html [ NeedsRebaseline ]
-crbug.com/264101 css3/filters/nested-filter.html [ NeedsRebaseline ]
-crbug.com/264101 fast/sub-pixel/transformed-iframe-copy-on-scroll.html [ NeedsRebaseline ]
-crbug.com/264101 virtual/softwarecompositing/direct-image-compositing.html [ NeedsRebaseline ]
-crbug.com/264101 svg/zoom/page/zoom-clip-path.html [ NeedsRebaseline ]
-
 crbug.com/248063 plugins/plugin-clip-subframe.html [ Pass Failure ]
 crbug.com/248067 fast/workers/shared-worker-storagequota-query-usage.html [ Pass Failure ]
 crbug.com/248067 storage/storageinfo-query-usage.html [ Pass Failure ]
