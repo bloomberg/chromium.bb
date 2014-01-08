@@ -27,10 +27,10 @@
 
 #include "core/css/CSSSelector.h"
 #include "core/dom/SecurityContext.h"
+#include "core/frame/ContentSecurityPolicy.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorStyleSheet.h"
-#include "core/frame/ContentSecurityPolicy.h"
 #include "platform/JSONValues.h"
 #include "wtf/HashCountedSet.h"
 #include "wtf/HashMap.h"
@@ -192,9 +192,9 @@ private:
     TypeBuilder::CSS::StyleSheetOrigin::Enum detectOrigin(CSSStyleSheet* pageStyleSheet, Document* ownerDocument);
     bool styleSheetEditInProgress() const { return m_styleSheetsPendingMutation || m_styleDeclarationPendingMutation || m_isSettingStyleSheetText; }
 
-    PassRefPtr<TypeBuilder::CSS::CSSRule> buildObjectForRule(CSSStyleRule*, StyleResolver&);
-    PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSRule> > buildArrayForRuleList(CSSRuleList*, StyleResolver&);
-    PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::RuleMatch> > buildArrayForMatchedRuleList(CSSRuleList*, StyleResolver&, Element*);
+    PassRefPtr<TypeBuilder::CSS::CSSRule> buildObjectForRule(CSSStyleRule*);
+    PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSRule> > buildArrayForRuleList(CSSRuleList*);
+    PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::RuleMatch> > buildArrayForMatchedRuleList(CSSRuleList*, Element*);
     PassRefPtr<TypeBuilder::CSS::CSSStyle> buildObjectForAttributesStyle(Element*);
     PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::Region> > buildArrayForRegions(ErrorString*, PassRefPtr<NodeList>, int documentNodeId);
     PassRefPtr<TypeBuilder::CSS::NamedFlow> buildObjectForNamedFlow(ErrorString*, NamedFlow*, int documentNodeId);
@@ -224,6 +224,8 @@ private:
     HashSet<int> m_namedFlowCollectionsRequested;
     OwnPtr<UpdateRegionLayoutTask> m_updateRegionLayoutTask;
     OwnPtr<ChangeRegionOversetTask> m_changeRegionOversetTask;
+
+    RefPtr<CSSStyleSheet> m_inspectorUserAgentStyleSheet;
 
     int m_lastStyleSheetId;
     int m_styleSheetsPendingMutation;

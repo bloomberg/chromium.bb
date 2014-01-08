@@ -23,7 +23,6 @@
 #define StyleResolver_h
 
 #include "core/animation/KeyframeEffectModel.h"
-#include "core/css/InspectorCSSOMWrappers.h"
 #include "core/css/PseudoStyleRequest.h"
 #include "core/css/RuleFeature.h"
 #include "core/css/RuleSet.h"
@@ -35,7 +34,6 @@
 #include "core/css/resolver/ScopedStyleResolver.h"
 #include "core/css/resolver/ScopedStyleTree.h"
 #include "core/css/resolver/StyleBuilder.h"
-#include "core/css/resolver/StyleResolverIncludes.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/css/resolver/StyleResourceLoader.h"
 #include "wtf/Deque.h"
@@ -179,8 +177,8 @@ public:
         AllButEmptyCSSRules = UAAndUserCSSRules | AuthorCSSRules | CrossOriginCSSRules,
         AllCSSRules         = AllButEmptyCSSRules | EmptyCSSRules,
     };
-    PassRefPtr<CSSRuleList> cssRulesForElement(Element*, unsigned rulesToInclude = AllButEmptyCSSRules, ShouldIncludeStyleSheetInCSSOMWrapper = IncludeStyleSheetInCSSOMWrapper);
-    PassRefPtr<CSSRuleList> pseudoCSSRulesForElement(Element*, PseudoId, unsigned rulesToInclude = AllButEmptyCSSRules, ShouldIncludeStyleSheetInCSSOMWrapper = IncludeStyleSheetInCSSOMWrapper);
+    PassRefPtr<CSSRuleList> cssRulesForElement(Element*, unsigned rulesToInclude = AllButEmptyCSSRules);
+    PassRefPtr<CSSRuleList> pseudoCSSRulesForElement(Element*, PseudoId, unsigned rulesToInclude = AllButEmptyCSSRules);
     PassRefPtr<StyleRuleList> styleRulesForElement(Element*, unsigned rulesToInclude);
 
     // |properties| is an array with |count| elements.
@@ -203,9 +201,6 @@ public:
 
     // Exposed for RenderStyle::isStyleAvilable().
     static RenderStyle* styleNotYetAvailable() { return s_styleNotYetAvailable; }
-
-    // FIXME: StyleResolver should not have this member or method.
-    InspectorCSSOMWrappers& inspectorCSSOMWrappers() { return m_inspectorCSSOMWrappers; }
 
     const RuleFeatureSet& ensureRuleFeatureSet()
     {
@@ -321,8 +316,6 @@ private:
     TreeBoundaryCrossingRules m_treeBoundaryCrossingRules;
 
     bool m_needCollectFeatures;
-
-    InspectorCSSOMWrappers m_inspectorCSSOMWrappers;
 
     StyleResourceLoader m_styleResourceLoader;
 

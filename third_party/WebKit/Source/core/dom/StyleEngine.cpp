@@ -156,19 +156,6 @@ const Vector<RefPtr<CSSStyleSheet> >& StyleEngine::activeAuthorStyleSheets() con
     return m_documentStyleSheetCollection.activeAuthorStyleSheets();
 }
 
-void StyleEngine::getActiveAuthorStyleSheets(Vector<const Vector<RefPtr<CSSStyleSheet> >*>& activeAuthorStyleSheets) const
-{
-    activeAuthorStyleSheets.append(&m_documentStyleSheetCollection.activeAuthorStyleSheets());
-
-    HashMap<TreeScope*, OwnPtr<StyleSheetCollection> >::const_iterator::Values begin = m_styleSheetCollectionMap.values().begin();
-    HashMap<TreeScope*, OwnPtr<StyleSheetCollection> >::const_iterator::Values end = m_styleSheetCollectionMap.values().end();
-    HashMap<TreeScope*, OwnPtr<StyleSheetCollection> >::const_iterator::Values it = begin;
-    for (; it != end; ++it) {
-        const StyleSheetCollection* collection = it->get();
-        activeAuthorStyleSheets.append(&collection->activeAuthorStyleSheets());
-    }
-}
-
 void StyleEngine::combineCSSFeatureFlags(const RuleFeatureSet& features)
 {
     // Delay resetting the flags until after next style recalc since unapplying the style may not work without these set (this is true at least with before/after).

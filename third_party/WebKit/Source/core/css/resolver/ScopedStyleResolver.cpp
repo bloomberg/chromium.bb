@@ -67,9 +67,10 @@ ContainerNode* ScopedStyleResolver::scopingNodeFor(Document& document, const CSS
     return (parent->isElementNode() || parent->isShadowRoot()) ? parent : 0;
 }
 
-void ScopedStyleResolver::addRulesFromSheet(StyleSheetContents* sheet, const MediaQueryEvaluator& medium, StyleResolver* resolver)
+void ScopedStyleResolver::addRulesFromSheet(CSSStyleSheet* cssSheet, const MediaQueryEvaluator& medium, StyleResolver* resolver)
 {
-    m_authorStyleSheets.append(sheet);
+    m_authorStyleSheets.append(cssSheet);
+    StyleSheetContents* sheet = cssSheet->contents();
 
     AddRuleFlags addRuleFlags = resolver->document().securityOrigin()->canRequest(sheet->baseURL()) ? RuleHasDocumentSecurityOrigin : RuleHasNoSpecialState;
     const RuleSet& ruleSet = sheet->ensureRuleSet(medium, addRuleFlags);
@@ -80,7 +81,7 @@ void ScopedStyleResolver::addRulesFromSheet(StyleSheetContents* sheet, const Med
 void ScopedStyleResolver::collectFeaturesTo(RuleFeatureSet& features)
 {
     for (size_t i = 0; i < m_authorStyleSheets.size(); ++i)
-        features.add(m_authorStyleSheets[i]->ruleSet().features());
+        features.add(m_authorStyleSheets[i]->contents()->ruleSet().features());
 }
 
 void ScopedStyleResolver::resetAuthorStyle()
@@ -92,7 +93,7 @@ void ScopedStyleResolver::resetAuthorStyle()
 bool ScopedStyleResolver::checkRegionStyle(Element* regionElement)
 {
     for (size_t i = 0; i < m_authorStyleSheets.size(); ++i) {
-        const RuleSet& ruleSet = m_authorStyleSheets[i]->ruleSet();
+        const RuleSet& ruleSet = m_authorStyleSheets[i]->contents()->ruleSet();
         for (unsigned i = 0; i < ruleSet.m_regionSelectorsAndRuleSets.size(); ++i) {
             ASSERT(ruleSet.m_regionSelectorsAndRuleSets.at(i).ruleSet.get());
             if (checkRegionSelector(ruleSet.m_regionSelectorsAndRuleSets.at(i).selector, regionElement))
@@ -143,7 +144,7 @@ void ScopedStyleResolver::collectMatchingAuthorRules(ElementRuleCollector& colle
 
     RuleRange ruleRange = collector.matchedResult().ranges.authorRuleRange();
     for (size_t i = 0; i < m_authorStyleSheets.size(); ++i) {
-        MatchRequest matchRequest(&m_authorStyleSheets[i]->ruleSet(), includeEmptyRules, scopingNode, applyAuthorStyles, i);
+        MatchRequest matchRequest(&m_authorStyleSheets[i]->contents()->ruleSet(), includeEmptyRules, scopingNode, applyAuthorStyles, i, m_authorStyleSheets[i]);
         collector.collectMatchingRules(matchRequest, ruleRange, static_cast<SelectorChecker::BehaviorAtBoundary>(behaviorAtBoundary), cascadeScope, cascadeOrder);
         collector.collectMatchingRulesForRegion(matchRequest, ruleRange, static_cast<SelectorChecker::BehaviorAtBoundary>(behaviorAtBoundary), cascadeScope, cascadeOrder);
     }
@@ -154,7 +155,7 @@ void ScopedStyleResolver::matchPageRules(PageRuleCollector& collector)
     // Only consider the global author RuleSet for @page rules, as per the HTML5 spec.
     ASSERT(m_scopingNode.isDocumentNode());
     for (size_t i = 0; i < m_authorStyleSheets.size(); ++i)
-        collector.matchPageRules(&m_authorStyleSheets[i]->ruleSet());
+        collector.matchPageRules(&m_authorStyleSheets[i]->contents()->ruleSet());
 }
 
 void ScopedStyleResolver::collectViewportRulesTo(StyleResolver* resolver) const
@@ -162,7 +163,7 @@ void ScopedStyleResolver::collectViewportRulesTo(StyleResolver* resolver) const
     if (!m_scopingNode.isDocumentNode())
         return;
     for (size_t i = 0; i < m_authorStyleSheets.size(); ++i)
-        resolver->viewportStyleResolver()->collectViewportRules(&m_authorStyleSheets[i]->ruleSet(), ViewportStyleResolver::AuthorOrigin);
+        resolver->viewportStyleResolver()->collectViewportRules(&m_authorStyleSheets[i]->contents()->ruleSet(), ViewportStyleResolver::AuthorOrigin);
 }
 
 } // namespace WebCore

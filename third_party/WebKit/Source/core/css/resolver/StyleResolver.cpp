@@ -202,15 +202,13 @@ void StyleResolver::appendCSSStyleSheet(CSSStyleSheet* cssSheet)
     if (cssSheet->mediaQueries() && !m_medium->eval(cssSheet->mediaQueries(), &m_viewportDependentMediaQueryResults))
         return;
 
-    StyleSheetContents* sheet = cssSheet->contents();
     ContainerNode* scopingNode = ScopedStyleResolver::scopingNodeFor(document(), cssSheet);
     if (!scopingNode)
         return;
 
     ScopedStyleResolver* resolver = ensureScopedStyleResolver(scopingNode);
     ASSERT(resolver);
-    resolver->addRulesFromSheet(sheet, *m_medium, this);
-    m_inspectorCSSOMWrappers.collectFromStyleSheetIfNeeded(cssSheet);
+    resolver->addRulesFromSheet(cssSheet, *m_medium, this);
 }
 
 void StyleResolver::appendPendingAuthorStyleSheets()
@@ -697,10 +695,8 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
 
     bool needsCollection = false;
     CSSDefaultStyleSheets::ensureDefaultStyleSheetsForElement(element, needsCollection);
-    if (needsCollection) {
+    if (needsCollection)
         collectFeatures();
-        m_inspectorCSSOMWrappers.reset();
-    }
 
     {
         ElementRuleCollector collector(state.elementContext(), m_selectorFilter, state.style());
@@ -1065,19 +1061,19 @@ PassRefPtr<StyleRuleList> StyleResolver::styleRulesForElement(Element* element, 
     return collector.matchedStyleRuleList();
 }
 
-PassRefPtr<CSSRuleList> StyleResolver::pseudoCSSRulesForElement(Element* element, PseudoId pseudoId, unsigned rulesToInclude, ShouldIncludeStyleSheetInCSSOMWrapper includeDocument)
+PassRefPtr<CSSRuleList> StyleResolver::pseudoCSSRulesForElement(Element* element, PseudoId pseudoId, unsigned rulesToInclude)
 {
     ASSERT(element);
     StyleResolverState state(document(), element);
-    ElementRuleCollector collector(state.elementContext(), m_selectorFilter, state.style(), includeDocument);
+    ElementRuleCollector collector(state.elementContext(), m_selectorFilter, state.style());
     collector.setMode(SelectorChecker::CollectingCSSRules);
     collectPseudoRulesForElement(element, collector, pseudoId, rulesToInclude);
     return collector.matchedCSSRuleList();
 }
 
-PassRefPtr<CSSRuleList> StyleResolver::cssRulesForElement(Element* element, unsigned rulesToInclude, ShouldIncludeStyleSheetInCSSOMWrapper includeDocument)
+PassRefPtr<CSSRuleList> StyleResolver::cssRulesForElement(Element* element, unsigned rulesToInclude)
 {
-    return pseudoCSSRulesForElement(element, NOPSEUDO, rulesToInclude, includeDocument);
+    return pseudoCSSRulesForElement(element, NOPSEUDO, rulesToInclude);
 }
 
 void StyleResolver::collectPseudoRulesForElement(Element* element, ElementRuleCollector& collector, PseudoId pseudoId, unsigned rulesToInclude)

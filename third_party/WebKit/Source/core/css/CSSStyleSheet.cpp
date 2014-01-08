@@ -28,7 +28,6 @@
 #include "core/css/CSSImportRule.h"
 #include "core/css/parser/BisonCSSParser.h"
 #include "core/css/CSSRuleList.h"
-#include "core/css/CSSStyleRule.h"
 #include "core/css/MediaList.h"
 #include "core/css/StyleRule.h"
 #include "core/css/StyleSheetContents.h"
@@ -121,36 +120,10 @@ CSSStyleSheet::~CSSStyleSheet()
             m_childRuleCSSOMWrappers[i]->setParentStyleSheet(0);
     }
 
-    for (unsigned i = 0; i < m_extraChildRuleCSSOMWrappers.size(); ++i)
-        m_extraChildRuleCSSOMWrappers[i]->setParentStyleSheet(0);
-
     if (m_mediaCSSOMWrapper)
         m_mediaCSSOMWrapper->clearParentStyleSheet();
 
     m_contents->unregisterClient(this);
-}
-
-void CSSStyleSheet::extraCSSOMWrapperIndices(Vector<unsigned>& indices)
-{
-    indices.grow(m_extraChildRuleCSSOMWrappers.size());
-
-    for (unsigned i = 0; i < m_extraChildRuleCSSOMWrappers.size(); ++i) {
-        CSSRule* cssRule = m_extraChildRuleCSSOMWrappers[i].get();
-        ASSERT(cssRule->type() == CSSRule::STYLE_RULE);
-        StyleRule* styleRule = toCSSStyleRule(cssRule)->styleRule();
-
-        bool didFindIndex = false;
-        for (unsigned j = 0; j < m_contents->ruleCount(); ++j) {
-            if (m_contents->ruleAt(j) == styleRule) {
-                didFindIndex = true;
-                indices[i] = j;
-                break;
-            }
-        }
-        ASSERT(didFindIndex);
-        if (!didFindIndex)
-            indices[i] = 0;
-    }
 }
 
 void CSSStyleSheet::willMutateRules()
@@ -165,9 +138,6 @@ void CSSStyleSheet::willMutateRules()
     // Only cacheable stylesheets should have multiple clients.
     ASSERT(m_contents->isCacheable());
 
-    Vector<unsigned> indices;
-    extraCSSOMWrapperIndices(indices);
-
     // Copy-on-write.
     m_contents->unregisterClient(this);
     m_contents = m_contents->copy();
@@ -176,7 +146,7 @@ void CSSStyleSheet::willMutateRules()
     m_contents->setMutable();
 
     // Any existing CSSOM wrappers need to be connected to the copied child rules.
-    reattachChildRuleCSSOMWrappers(indices);
+    reattachChildRuleCSSOMWrappers();
 }
 
 void CSSStyleSheet::didMutateRules()
@@ -200,17 +170,8 @@ void CSSStyleSheet::didMutate(StyleSheetUpdateType updateType)
     owner->modifiedStyleSheet(this, RecalcStyleDeferred, updateMode);
 }
 
-void CSSStyleSheet::registerExtraChildRuleCSSOMWrapper(PassRefPtr<CSSRule> rule)
+void CSSStyleSheet::reattachChildRuleCSSOMWrappers()
 {
-    m_extraChildRuleCSSOMWrappers.append(rule);
-}
-
-void CSSStyleSheet::reattachChildRuleCSSOMWrappers(const Vector<unsigned>& extraCSSOMWrapperIndices)
-{
-    ASSERT(extraCSSOMWrapperIndices.size() == m_extraChildRuleCSSOMWrappers.size());
-    for (unsigned i = 0; i < extraCSSOMWrapperIndices.size(); ++i)
-        m_extraChildRuleCSSOMWrappers[i]->reattach(m_contents->ruleAt(extraCSSOMWrapperIndices[i]));
-
     for (unsigned i = 0; i < m_childRuleCSSOMWrappers.size(); ++i) {
         if (!m_childRuleCSSOMWrappers[i])
             continue;

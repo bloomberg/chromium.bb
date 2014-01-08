@@ -27,12 +27,12 @@
 #include "core/css/resolver/ElementResolveContext.h"
 #include "core/css/resolver/MatchRequest.h"
 #include "core/css/resolver/MatchResult.h"
-#include "core/css/resolver/StyleResolverIncludes.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
 
+class CSSStyleSheet;
 class CSSRuleList;
 class RenderRegion;
 class RuleData;
@@ -50,11 +50,12 @@ const CascadeOrder ignoreCascadeOrder = 0;
 class MatchedRule {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    explicit MatchedRule(const RuleData* ruleData, unsigned specificity, CascadeScope cascadeScope, CascadeOrder cascadeOrder, unsigned styleSheetIndex)
+    explicit MatchedRule(const RuleData* ruleData, unsigned specificity, CascadeScope cascadeScope, CascadeOrder cascadeOrder, unsigned styleSheetIndex, const CSSStyleSheet* parentStyleSheet)
         : m_ruleData(ruleData)
         , m_specificity(specificity)
         , m_cascadeScope(cascadeScope)
         , m_styleSheetIndex(styleSheetIndex)
+        , m_parentStyleSheet(parentStyleSheet)
     {
         ASSERT(m_ruleData);
         static const unsigned BitsForPositionInRuleData = 18;
@@ -66,6 +67,7 @@ public:
     uint32_t position() const { return m_position; }
     unsigned specificity() const { return ruleData()->specificity() + m_specificity; }
     uint32_t styleSheetIndex() const { return m_styleSheetIndex; }
+    const CSSStyleSheet* parentStyleSheet() const { return m_parentStyleSheet; }
 
 private:
     const RuleData* m_ruleData;
@@ -73,6 +75,7 @@ private:
     CascadeScope m_cascadeScope;
     uint32_t m_position;
     uint32_t m_styleSheetIndex;
+    const CSSStyleSheet* m_parentStyleSheet;
 };
 
 class StyleRuleList : public RefCounted<StyleRuleList> {
@@ -88,7 +91,7 @@ public:
 class ElementRuleCollector {
     WTF_MAKE_NONCOPYABLE(ElementRuleCollector);
 public:
-    ElementRuleCollector(const ElementResolveContext&, const SelectorFilter&, RenderStyle* = 0, ShouldIncludeStyleSheetInCSSOMWrapper = IncludeStyleSheetInCSSOMWrapper);
+    ElementRuleCollector(const ElementResolveContext&, const SelectorFilter&, RenderStyle* = 0);
     ~ElementRuleCollector();
 
     void setMode(SelectorChecker::Mode mode) { m_mode = mode; }
@@ -119,11 +122,13 @@ private:
     void collectMatchingRulesForList(const RuleData*, SelectorChecker::BehaviorAtBoundary, CascadeScope, CascadeOrder, const MatchRequest&, RuleRange&);
     bool ruleMatches(const RuleData&, const ContainerNode* scope, SelectorChecker::BehaviorAtBoundary, SelectorChecker::MatchResult*);
 
-    void appendCSSOMWrapperForRule(StyleRule*);
+    CSSRuleList* nestedRuleList(CSSRule*);
+    template<class CSSRuleCollection>
+    CSSRule* findStyleRule(CSSRuleCollection*, StyleRule*);
+    void appendCSSOMWrapperForRule(CSSStyleSheet*, StyleRule*);
 
     void sortMatchedRules();
-    void addMatchedRule(const RuleData*, unsigned specificity, CascadeScope, CascadeOrder);
-    void addMatchedRule(const RuleData*, unsigned specificity, CascadeScope, CascadeOrder, unsigned styleSheetIndex);
+    void addMatchedRule(const RuleData*, unsigned specificity, CascadeScope, CascadeOrder, unsigned styleSheetIndex, const CSSStyleSheet* parentStyleSheet);
 
     StaticCSSRuleList* ensureRuleList();
     StyleRuleList* ensureStyleRuleList();
@@ -139,7 +144,6 @@ private:
     bool m_canUseFastReject;
     bool m_sameOriginOnly;
     bool m_matchingUARules;
-    bool m_includeStyleSheet;
 
     OwnPtr<Vector<MatchedRule, 32> > m_matchedRules;
 

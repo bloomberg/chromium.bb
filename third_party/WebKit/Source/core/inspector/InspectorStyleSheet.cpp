@@ -1281,8 +1281,6 @@ PassRefPtr<TypeBuilder::CSS::CSSRule> InspectorStyleSheet::buildObjectForRule(CS
             result->setRuleId(id.asProtocolValue<TypeBuilder::CSS::CSSRuleId>());
     }
 
-    RefPtr<Array<TypeBuilder::CSS::CSSMedia> > mediaArray = Array<TypeBuilder::CSS::CSSMedia>::create();
-
     if (mediaStack)
         result->setMedia(mediaStack);
 
@@ -1297,10 +1295,10 @@ PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyleSheet::buildObjectForStyle(
 
     InspectorCSSId id = ruleOrStyleId(style);
     if (id.isEmpty()) {
-        RefPtr<TypeBuilder::CSS::CSSStyle> bogusStyle = TypeBuilder::CSS::CSSStyle::create()
-            .setCssProperties(Array<TypeBuilder::CSS::CSSProperty>::create())
-            .setShorthandEntries(Array<TypeBuilder::CSS::ShorthandEntry>::create());
-        return bogusStyle.release();
+        // Any rule coming from User Agent and not from DefaultStyleSheet will not have id.
+        // See InspectorCSSAgent::buildObjectForRule for details.
+        RefPtr<InspectorStyle> inspectorStyle = InspectorStyle::create(id, style, this);
+        return inspectorStyle->buildObjectForStyle();
     }
     RefPtr<InspectorStyle> inspectorStyle = inspectorStyleForId(id);
     RefPtr<TypeBuilder::CSS::CSSStyle> result = inspectorStyle->buildObjectForStyle();

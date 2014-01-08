@@ -143,7 +143,6 @@ public:
     void didModifySeamlessParentStyleSheet() { markDocumentDirty(); }
     void didRemoveShadowRoot(ShadowRoot*);
     void appendActiveAuthorStyleSheets();
-    void getActiveAuthorStyleSheets(Vector<const Vector<RefPtr<CSSStyleSheet> >*>& activeAuthorStyleSheets) const;
 
     StyleResolver* resolver() const
     {

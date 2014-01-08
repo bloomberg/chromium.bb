@@ -46,7 +46,6 @@
 #include "core/animation/DocumentAnimations.h"
 #include "core/animation/DocumentTimeline.h"
 #include "core/animation/css/TransitionTimeline.h"
-#include "core/css/CSSDefaultStyleSheets.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/css/CSSStyleDeclaration.h"
 #include "core/css/CSSStyleSheet.h"

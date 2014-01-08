@@ -61,7 +61,7 @@ public:
 
     void collectMatchingAuthorRules(ElementRuleCollector&, bool includeEmptyRules, bool applyAuthorStyles, CascadeScope, CascadeOrder = ignoreCascadeOrder);
     void matchPageRules(PageRuleCollector&);
-    void addRulesFromSheet(StyleSheetContents*, const MediaQueryEvaluator&, StyleResolver*);
+    void addRulesFromSheet(CSSStyleSheet*, const MediaQueryEvaluator&, StyleResolver*);
     void collectFeaturesTo(RuleFeatureSet&);
     void resetAuthorStyle();
     void collectViewportRulesTo(StyleResolver*) const;
@@ -69,12 +69,10 @@ public:
 private:
     explicit ScopedStyleResolver(ContainerNode& scopingNode) : m_scopingNode(scopingNode), m_parent(0) { }
 
-    RuleSet* ensureAuthorStyle();
-
     ContainerNode& m_scopingNode;
     ScopedStyleResolver* m_parent;
 
-    Vector<StyleSheetContents*> m_authorStyleSheets;
+    Vector<CSSStyleSheet*> m_authorStyleSheets;
 
     typedef HashMap<const StringImpl*, RefPtr<StyleRuleKeyframes> > KeyframesRuleMap;
     KeyframesRuleMap m_keyframesRuleMap;
