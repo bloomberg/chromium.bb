@@ -1,13 +1,16 @@
 <!DOCTYPE html>
 <html>
 <body>
-<p id="description">This test setting a suggested value on an input element.
-The dump below should have the "suggested value" instead of "initial value".</p>
-<pre><input id="test" type="text" value="initial value"></pre>
+<p id="description">This test setting suggested values on an input element 
+and a textarea element. The dump below should have the "suggested value"
+instead of "initial value".</p>
+<pre><input id="test" type="text" value="initial value"><textarea id="textarea"></textarea></pre>
 <script src="../../resources/dump-as-markup.js"></script>
 <script>
 
 var input = document.getElementById('test');
+var textarea = document.getElementById('textarea');
+textarea.value = "initial value";
 var result = document.getElementById('result');
 if (!window.internals)
     testFailed('This test requires internals object');
@@ -16,6 +19,7 @@ else {
     input.selectionStart = input.selectionEnd = 0;
 
     internals.setSuggestedValue(input, 'suggested value');
+    internals.setSuggestedValue(textarea, 'suggested value');
 
     Markup.description(document.getElementById('description').textContent)
 
@@ -24,7 +28,9 @@ else {
     addTextResult('internals.suggestedValue(input)');
     addTextResult('input.selectionStart');
     addTextResult('input.selectionEnd');
-
+    addTextResult('textarea.value');
+    addTextResult('internals.suggestedValue(textarea)');
+    
     Markup.dump(input.parentNode);
 }
 

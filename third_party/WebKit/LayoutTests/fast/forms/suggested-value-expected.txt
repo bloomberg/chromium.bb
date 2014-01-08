@@ -1,5 +1,6 @@
-This test setting a suggested value on an input element.
-The dump below should have the "suggested value" instead of "initial value".
+This test setting suggested values on an input element 
+and a textarea element. The dump below should have the "suggested value"
+instead of "initial value".
 | <input>
 |   id="test"
 |   type="text"
@@ -9,7 +10,16 @@ The dump below should have the "suggested value" instead of "initial value".
 |     <div>
 |       id="inner-editor"
 |       "suggested value"
+| <textarea>
+|   id="textarea"
+|   this.value="initial value"
+|   <shadow:root>
+|     <div>
+|       id="inner-editor"
+|       "suggested value"
 | "input.value: initial value"
 | "internals.suggestedValue(input): suggested value"
 | "input.selectionStart: 0"
 | "input.selectionEnd: 0"
+| "textarea.value: initial value"
+| "internals.suggestedValue(textarea): suggested value"

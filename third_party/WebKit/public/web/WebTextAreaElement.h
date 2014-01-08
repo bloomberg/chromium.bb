@@ -54,6 +54,8 @@ public:
 
     BLINK_EXPORT void setValue(const WebString&);
     BLINK_EXPORT WebString value() const;
+    BLINK_EXPORT void setSuggestedValue(const WebString&);
+    BLINK_EXPORT WebString suggestedValue() const;
 
 #if BLINK_IMPLEMENTATION
     WebTextAreaElement(const WTF::PassRefPtr<WebCore::HTMLTextAreaElement>&);

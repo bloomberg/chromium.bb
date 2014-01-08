@@ -1034,12 +1034,18 @@ String Internals::suggestedValue(Element* element, ExceptionState& exceptionStat
         return String();
     }
 
-    if (!element->hasTagName(inputTag)) {
+    if (!element->isFormControlElement()) {
         exceptionState.throwUninformativeAndGenericDOMException(InvalidNodeTypeError);
         return String();
     }
 
-    return toHTMLInputElement(element)->suggestedValue();
+    String suggestedValue;
+    if (element->hasTagName(inputTag))
+        suggestedValue = toHTMLInputElement(element)->suggestedValue();
+
+    if (element->hasTagName(textareaTag))
+        suggestedValue = toHTMLTextAreaElement(element)->suggestedValue();
+    return suggestedValue;
 }
 
 void Internals::setSuggestedValue(Element* element, const String& value, ExceptionState& exceptionState)
@@ -1049,12 +1055,16 @@ void Internals::setSuggestedValue(Element* element, const String& value, Excepti
         return;
     }
 
-    if (!element->hasTagName(inputTag)) {
+    if (!element->isFormControlElement()) {
         exceptionState.throwUninformativeAndGenericDOMException(InvalidNodeTypeError);
         return;
     }
 
-    toHTMLInputElement(element)->setSuggestedValue(value);
+    if (element->hasTagName(inputTag))
+        toHTMLInputElement(element)->setSuggestedValue(value);
+
+    if (element->hasTagName(textareaTag))
+        toHTMLTextAreaElement(element)->setSuggestedValue(value);
 }
 
 void Internals::setEditingValue(Element* element, const String& value, ExceptionState& exceptionState)

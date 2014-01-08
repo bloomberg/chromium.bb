@@ -48,6 +48,10 @@ public:
     int textLength() const { return value().length(); }
     virtual int maxLength() const;
     void setMaxLength(int, ExceptionState&);
+
+    String suggestedValue() const;
+    void setSuggestedValue(const String&);
+
     // For ValidityState
     virtual String validationMessage() const OVERRIDE;
     virtual bool valueMissing() const OVERRIDE;
@@ -122,6 +126,7 @@ private:
     WrapMethod m_wrap;
     mutable String m_value;
     mutable bool m_isDirty;
+    String m_suggestedValue;
 };
 
 DEFINE_NODE_TYPE_CASTS(HTMLTextAreaElement, hasTagName(HTMLNames::textareaTag));

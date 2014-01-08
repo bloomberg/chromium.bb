@@ -158,8 +158,8 @@ public:
 
     bool wasLastChangeUserEdit(Element* textField, ExceptionState&);
     bool elementShouldAutoComplete(Element* inputElement, ExceptionState&);
-    String suggestedValue(Element* inputElement, ExceptionState&);
-    void setSuggestedValue(Element* inputElement, const String&, ExceptionState&);
+    String suggestedValue(Element*, ExceptionState&);
+    void setSuggestedValue(Element*, const String&, ExceptionState&);
     void setEditingValue(Element* inputElement, const String&, ExceptionState&);
     void setAutofilled(Element*, bool enabled, ExceptionState&);
     void scrollElementToRect(Element*, long x, long y, long w, long h, ExceptionState&);
