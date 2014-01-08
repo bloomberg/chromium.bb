@@ -84,10 +84,6 @@ DriveAppRegistry* GetDriveAppRegistryByProfile(Profile* profile);
 // or disabled), returns NULL.
 DriveServiceInterface* GetDriveServiceByProfile(Profile* profile);
 
-// Checks if the resource ID is a special one, which is effective only in our
-// implementation and is not supposed to be sent to the server.
-bool IsSpecialResourceId(const std::string& resource_id);
-
 // Returns a ResourceEntry for "/drive/root" directory.
 ResourceEntry CreateMyDriveRootEntry(const std::string& root_resource_id);
 

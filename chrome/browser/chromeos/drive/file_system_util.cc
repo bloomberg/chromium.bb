@@ -166,11 +166,6 @@ DriveServiceInterface* GetDriveServiceByProfile(Profile* profile) {
   return integration_service ? integration_service->drive_service() : NULL;
 }
 
-bool IsSpecialResourceId(const std::string& resource_id) {
-  return resource_id == kDriveGrandRootLocalId ||
-      resource_id == kDriveOtherDirLocalId;
-}
-
 ResourceEntry CreateMyDriveRootEntry(const std::string& root_resource_id) {
   ResourceEntry mydrive_root;
   mydrive_root.mutable_file_info()->set_is_directory(true);

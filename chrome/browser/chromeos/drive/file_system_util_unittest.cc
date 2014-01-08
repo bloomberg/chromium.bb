@@ -234,16 +234,6 @@ TEST(FileSystemUtilTest, ConvertToMyDriveNamespace) {
                 base::FilePath::FromUTF8Unsafe("/special/drive/dir1")));
 }
 
-TEST(FileSystemUtilTest, IsSpecialResourceId) {
-  EXPECT_FALSE(util::IsSpecialResourceId("abc"));
-  EXPECT_FALSE(util::IsSpecialResourceId("file:123"));
-  EXPECT_FALSE(util::IsSpecialResourceId("folder:root"));
-  EXPECT_FALSE(util::IsSpecialResourceId("folder:xyz"));
-
-  EXPECT_TRUE(util::IsSpecialResourceId("<drive>"));
-  EXPECT_TRUE(util::IsSpecialResourceId("<other>"));
-}
-
 TEST(FileSystemUtilTest, GDocFile) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());

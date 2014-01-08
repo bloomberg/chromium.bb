@@ -743,8 +743,8 @@ void FileSystem::GetShareUrlAfterGetResourceEntry(
     callback.Run(error, GURL());
     return;
   }
-  if (util::IsSpecialResourceId(entry->resource_id())) {
-    // Do not load special directories. Just return.
+  if (entry->resource_id().empty()) {
+    // This entry does not exist on the server. Just return.
     callback.Run(FILE_ERROR_FAILED, GURL());
     return;
   }

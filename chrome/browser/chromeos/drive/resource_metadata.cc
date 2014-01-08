@@ -119,23 +119,29 @@ bool ResourceMetadata::SetUpDefaultEntries() {
   if (!storage_->GetEntry(util::kDriveGrandRootLocalId, &entry)) {
     ResourceEntry root;
     root.mutable_file_info()->set_is_directory(true);
-    // TODO(hashimoto): Stop setting dummy resource ID here.
-    root.set_resource_id(util::kDriveGrandRootLocalId);
     root.set_local_id(util::kDriveGrandRootLocalId);
     root.set_title(util::kDriveGrandRootDirName);
     SetBaseNameFromTitle(&root);
     if (!storage_->PutEntry(root))
       return false;
+  } else if (!entry.resource_id().empty()) {
+    // Old implementations used kDriveGrandRootLocalId as a resource ID.
+    entry.clear_resource_id();
+    if (!storage_->PutEntry(entry))
+      return false;
   }
   if (!storage_->GetEntry(util::kDriveOtherDirLocalId, &entry)) {
     ResourceEntry other_dir;
     other_dir.mutable_file_info()->set_is_directory(true);
-    // TODO(hashimoto): Stop setting dummy resource ID here.
-    other_dir.set_resource_id(util::kDriveOtherDirLocalId);
     other_dir.set_local_id(util::kDriveOtherDirLocalId);
     other_dir.set_parent_local_id(util::kDriveGrandRootLocalId);
     other_dir.set_title(util::kDriveOtherDirName);
     if (!PutEntryUnderDirectory(other_dir))
+      return false;
+  } else if (!entry.resource_id().empty()) {
+    // Old implementations used kDriveOtherDirLocalId as a resource ID.
+    entry.clear_resource_id();
+    if (!storage_->PutEntry(entry))
       return false;
   }
   if (!storage_->GetEntry(util::kDriveTrashDirLocalId, &entry)) {

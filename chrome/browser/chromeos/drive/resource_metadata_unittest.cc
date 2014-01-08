@@ -420,7 +420,6 @@ TEST_F(ResourceMetadataTest, RefreshEntry) {
 
   // Cannot refresh root.
   dir_entry.Clear();
-  dir_entry.set_resource_id(util::kDriveGrandRootLocalId);
   dir_entry.set_local_id(util::kDriveGrandRootLocalId);
   dir_entry.set_title("new-root-name");
   dir_entry.set_parent_local_id(dir3_id);
@@ -726,7 +725,7 @@ TEST_F(ResourceMetadataTest, Reset) {
                 base::FilePath::FromUTF8Unsafe("drive"), &entry));
   EXPECT_EQ("drive", entry.base_name());
   ASSERT_TRUE(entry.file_info().is_directory());
-  EXPECT_EQ(util::kDriveGrandRootLocalId, entry.resource_id());
+  EXPECT_EQ(util::kDriveGrandRootLocalId, entry.local_id());
 
   // There are "other" and "trash" under "drive".
   ASSERT_EQ(FILE_ERROR_OK,

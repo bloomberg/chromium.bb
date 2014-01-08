@@ -139,16 +139,12 @@ void EntryUpdatePerformer::UpdateEntryAfterPrepare(
     return;
   }
 
-  std::string parent_resource_id;
-  if (!util::IsSpecialResourceId(parent_entry->resource_id()))
-    parent_resource_id = parent_entry->resource_id();
-
   base::Time last_modified =
       base::Time::FromInternalValue(entry->file_info().last_modified());
   base::Time last_accessed =
       base::Time::FromInternalValue(entry->file_info().last_accessed());
   scheduler_->UpdateResource(
-      entry->resource_id(), parent_resource_id,
+      entry->resource_id(), parent_entry->resource_id(),
       entry->title(), last_modified, last_accessed,
       ClientContext(BACKGROUND),
       base::Bind(&EntryUpdatePerformer::UpdateEntryAfterUpdateResource,
