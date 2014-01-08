@@ -579,7 +579,338 @@ TEST(LocalDataPipeTest, MayDiscard) {
   dp->ConsumerClose();
 }
 
-// TODO(vtl): More "all or none" tests (without and with "may discard").
+TEST(LocalDataPipeTest, AllOrNone) {
+  const MojoCreateDataPipeOptions options = {
+    kSizeOfOptions,  // |struct_size|.
+    MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
+    static_cast<uint32_t>(sizeof(int32_t)),  // |element_num_bytes|.
+    10 * sizeof(int32_t)  // |capacity_num_bytes|.
+  };
+  MojoCreateDataPipeOptions validated_options = { 0 };
+  EXPECT_EQ(MOJO_RESULT_OK,
+            DataPipe::ValidateOptions(&options, &validated_options));
+
+  scoped_refptr<LocalDataPipe> dp(new LocalDataPipe(validated_options));
+
+  // Try writing way too much.
+  uint32_t num_bytes = 20u * sizeof(int32_t);
+  int32_t buffer[100];
+  Seq(0, arraysize(buffer), buffer);
+  EXPECT_EQ(MOJO_RESULT_OUT_OF_RANGE,
+            dp->ProducerWriteData(buffer, &num_bytes, true));
+
+  // Should still be empty.
+  num_bytes = ~0u;
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerQueryData(&num_bytes));
+  EXPECT_EQ(0u, num_bytes);
+
+  // Write some data.
+  num_bytes = 5u * sizeof(int32_t);
+  Seq(100, arraysize(buffer), buffer);
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerWriteData(buffer, &num_bytes, true));
+  EXPECT_EQ(5u * sizeof(int32_t), num_bytes);
+
+  // Half full.
+  num_bytes = 0u;
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerQueryData(&num_bytes));
+  EXPECT_EQ(5u * sizeof(int32_t), num_bytes);
+
+  // Too much.
+  num_bytes = 6u * sizeof(int32_t);
+  Seq(200, arraysize(buffer), buffer);
+  EXPECT_EQ(MOJO_RESULT_OUT_OF_RANGE,
+            dp->ProducerWriteData(buffer, &num_bytes, true));
+
+  // Try reading too much.
+  num_bytes = 11u * sizeof(int32_t);
+  memset(buffer, 0xab, sizeof(buffer));
+  EXPECT_EQ(MOJO_RESULT_OUT_OF_RANGE,
+            dp->ConsumerReadData(buffer, &num_bytes, true));
+  int32_t expected_buffer[100];
+  memset(expected_buffer, 0xab, sizeof(expected_buffer));
+  EXPECT_EQ(0, memcmp(buffer, expected_buffer, sizeof(buffer)));
+
+  // Try discarding too much.
+  num_bytes = 11u * sizeof(int32_t);
+  EXPECT_EQ(MOJO_RESULT_OUT_OF_RANGE,
+            dp->ConsumerDiscardData(&num_bytes, true));
+
+  // Just a little.
+  num_bytes = 2u * sizeof(int32_t);
+  Seq(300, arraysize(buffer), buffer);
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerWriteData(buffer, &num_bytes, true));
+  EXPECT_EQ(2u * sizeof(int32_t), num_bytes);
+
+  // Just right.
+  num_bytes = 3u * sizeof(int32_t);
+  Seq(400, arraysize(buffer), buffer);
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerWriteData(buffer, &num_bytes, true));
+  EXPECT_EQ(3u * sizeof(int32_t), num_bytes);
+
+  // Exactly full.
+  num_bytes = 0u;
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerQueryData(&num_bytes));
+  EXPECT_EQ(10u * sizeof(int32_t), num_bytes);
+
+  // Read half.
+  num_bytes = 5u * sizeof(int32_t);
+  memset(buffer, 0xab, sizeof(buffer));
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerReadData(buffer, &num_bytes, true));
+  EXPECT_EQ(5u * sizeof(int32_t), num_bytes);
+  memset(expected_buffer, 0xab, sizeof(expected_buffer));
+  Seq(100, 5, expected_buffer);
+  EXPECT_EQ(0, memcmp(buffer, expected_buffer, sizeof(buffer)));
+
+  // Try reading too much again.
+  num_bytes = 6u * sizeof(int32_t);
+  memset(buffer, 0xab, sizeof(buffer));
+  EXPECT_EQ(MOJO_RESULT_OUT_OF_RANGE,
+            dp->ConsumerReadData(buffer, &num_bytes, true));
+  memset(expected_buffer, 0xab, sizeof(expected_buffer));
+  EXPECT_EQ(0, memcmp(buffer, expected_buffer, sizeof(buffer)));
+
+  // Try discarding too much again.
+  num_bytes = 6u * sizeof(int32_t);
+  EXPECT_EQ(MOJO_RESULT_OUT_OF_RANGE,
+            dp->ConsumerDiscardData(&num_bytes, true));
+
+  // Discard a little.
+  num_bytes = 2u * sizeof(int32_t);
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerDiscardData(&num_bytes, true));
+  EXPECT_EQ(2u * sizeof(int32_t), num_bytes);
+
+  // Three left.
+  num_bytes = 0u;
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerQueryData(&num_bytes));
+  EXPECT_EQ(3u * sizeof(int32_t), num_bytes);
+
+  // Close the producer, then test producer-closed cases.
+  dp->ProducerClose();
+
+  // Try reading too much; "failed precondition" since the producer is closed.
+  num_bytes = 4u * sizeof(int32_t);
+  memset(buffer, 0xab, sizeof(buffer));
+  EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
+            dp->ConsumerReadData(buffer, &num_bytes, true));
+  memset(expected_buffer, 0xab, sizeof(expected_buffer));
+  EXPECT_EQ(0, memcmp(buffer, expected_buffer, sizeof(buffer)));
+
+  // Try discarding too much; "failed precondition" again.
+  num_bytes = 4u * sizeof(int32_t);
+  EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
+            dp->ConsumerDiscardData(&num_bytes, true));
+
+  // Read a little.
+  num_bytes = 2u * sizeof(int32_t);
+  memset(buffer, 0xab, sizeof(buffer));
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerReadData(buffer, &num_bytes, true));
+  EXPECT_EQ(2u * sizeof(int32_t), num_bytes);
+  memset(expected_buffer, 0xab, sizeof(expected_buffer));
+  Seq(400, 2, expected_buffer);
+  EXPECT_EQ(0, memcmp(buffer, expected_buffer, sizeof(buffer)));
+
+  // Discard the remaining element.
+  num_bytes = 1u * sizeof(int32_t);
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerDiscardData(&num_bytes, true));
+  EXPECT_EQ(1u * sizeof(int32_t), num_bytes);
+
+  // Empty again.
+  num_bytes = ~0u;
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerQueryData(&num_bytes));
+  EXPECT_EQ(0u, num_bytes);
+
+  dp->ConsumerClose();
+}
+
+TEST(LocalDataPipeTest, AllOrNoneMayDiscard) {
+  const MojoCreateDataPipeOptions options = {
+    kSizeOfOptions,  // |struct_size|.
+    MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_MAY_DISCARD,  // |flags|.
+    static_cast<uint32_t>(sizeof(int32_t)),  // |element_num_bytes|.
+    10 * sizeof(int32_t)  // |capacity_num_bytes|.
+  };
+  MojoCreateDataPipeOptions validated_options = { 0 };
+  EXPECT_EQ(MOJO_RESULT_OK,
+            DataPipe::ValidateOptions(&options, &validated_options));
+
+  scoped_refptr<LocalDataPipe> dp(new LocalDataPipe(validated_options));
+
+  // Try writing way too much.
+  uint32_t num_bytes = 20u * sizeof(int32_t);
+  int32_t buffer[100];
+  Seq(0, arraysize(buffer), buffer);
+  EXPECT_EQ(MOJO_RESULT_OUT_OF_RANGE,
+            dp->ProducerWriteData(buffer, &num_bytes, true));
+
+  // Write some stuff.
+  num_bytes = 5u * sizeof(int32_t);
+  Seq(100, arraysize(buffer), buffer);
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerWriteData(buffer, &num_bytes, true));
+  EXPECT_EQ(5u * sizeof(int32_t), num_bytes);
+
+  // Write lots of stuff (discarding all but "104").
+  num_bytes = 9u * sizeof(int32_t);
+  Seq(200, arraysize(buffer), buffer);
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerWriteData(buffer, &num_bytes, true));
+  EXPECT_EQ(9u * sizeof(int32_t), num_bytes);
+
+  // Read one.
+  num_bytes = 1u * sizeof(int32_t);
+  memset(buffer, 0xab, sizeof(buffer));
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerReadData(buffer, &num_bytes, true));
+  EXPECT_EQ(1u * sizeof(int32_t), num_bytes);
+  int32_t expected_buffer[100];
+  memset(expected_buffer, 0xab, sizeof(expected_buffer));
+  expected_buffer[0] = 104;
+  EXPECT_EQ(0, memcmp(buffer, expected_buffer, sizeof(buffer)));
+
+  // Try reading too many.
+  num_bytes = 10u * sizeof(int32_t);
+  memset(buffer, 0xab, sizeof(buffer));
+  EXPECT_EQ(MOJO_RESULT_OUT_OF_RANGE,
+            dp->ConsumerReadData(buffer, &num_bytes, true));
+  memset(expected_buffer, 0xab, sizeof(expected_buffer));
+  EXPECT_EQ(0, memcmp(buffer, expected_buffer, sizeof(buffer)));
+
+  // Try discarding too many.
+  num_bytes = 10u * sizeof(int32_t);
+  EXPECT_EQ(MOJO_RESULT_OUT_OF_RANGE,
+            dp->ConsumerDiscardData(&num_bytes, true));
+
+  // Discard a bunch.
+  num_bytes = 4u * sizeof(int32_t);
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerDiscardData(&num_bytes, true));
+
+  // Half full.
+  num_bytes = 0u;
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerQueryData(&num_bytes));
+  EXPECT_EQ(5u * sizeof(int32_t), num_bytes);
+
+  // Write as much as possible.
+  num_bytes = 10u * sizeof(int32_t);
+  Seq(300, arraysize(buffer), buffer);
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerWriteData(buffer, &num_bytes, true));
+  EXPECT_EQ(10u * sizeof(int32_t), num_bytes);
+
+  // Read everything.
+  num_bytes = 10u * sizeof(int32_t);
+  memset(buffer, 0xab, sizeof(buffer));
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerReadData(buffer, &num_bytes, true));
+  memset(expected_buffer, 0xab, sizeof(expected_buffer));
+  EXPECT_EQ(10u * sizeof(int32_t), num_bytes);
+  Seq(300, 10, expected_buffer);
+  EXPECT_EQ(0, memcmp(buffer, expected_buffer, sizeof(buffer)));
+
+  dp->ProducerClose();
+  dp->ConsumerClose();
+}
+
+TEST(LocalDataPipeTest, TwoPhaseAllOrNone) {
+  const MojoCreateDataPipeOptions options = {
+    kSizeOfOptions,  // |struct_size|.
+    MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
+    static_cast<uint32_t>(sizeof(int32_t)),  // |element_num_bytes|.
+    10 * sizeof(int32_t)  // |capacity_num_bytes|.
+  };
+  MojoCreateDataPipeOptions validated_options = { 0 };
+  EXPECT_EQ(MOJO_RESULT_OK,
+            DataPipe::ValidateOptions(&options, &validated_options));
+
+  scoped_refptr<LocalDataPipe> dp(new LocalDataPipe(validated_options));
+
+  // Try writing way too much (two-phase).
+  uint32_t num_bytes = 20u * sizeof(int32_t);
+  void* write_ptr = NULL;
+  EXPECT_EQ(MOJO_RESULT_OUT_OF_RANGE,
+            dp->ProducerBeginWriteData(&write_ptr, &num_bytes, true));
+
+  // Try reading way too much (two-phase).
+  num_bytes = 20u * sizeof(int32_t);
+  const void* read_ptr = NULL;
+  EXPECT_EQ(MOJO_RESULT_OUT_OF_RANGE,
+            dp->ConsumerBeginReadData(&read_ptr, &num_bytes, true));
+
+  // Write half (two-phase).
+  num_bytes = 5u * sizeof(int32_t);
+  write_ptr = NULL;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ProducerBeginWriteData(&write_ptr, &num_bytes, true));
+  // May provide more space than requested.
+  EXPECT_GE(num_bytes, 5u * sizeof(int32_t));
+  EXPECT_TRUE(write_ptr != NULL);
+  Seq(0, 5, static_cast<int32_t*>(write_ptr));
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerEndWriteData(5u * sizeof(int32_t)));
+
+  // Read one (two-phase).
+  num_bytes = 1u * sizeof(int32_t);
+  read_ptr = NULL;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ConsumerBeginReadData(&read_ptr, &num_bytes, true));
+  EXPECT_GE(num_bytes, 1u * sizeof(int32_t));
+  EXPECT_EQ(0, static_cast<const int32_t*>(read_ptr)[0]);
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerEndReadData(1u * sizeof(int32_t)));
+
+  // We should have four left, leaving room for six.
+  num_bytes = 0u;
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerQueryData(&num_bytes));
+  EXPECT_EQ(4u * sizeof(int32_t), num_bytes);
+
+  // Assuming a tight circular buffer of the specified capacity, we can't do a
+  // two-phase write of six now.
+  num_bytes = 6u * sizeof(int32_t);
+  write_ptr = NULL;
+  EXPECT_EQ(MOJO_RESULT_OUT_OF_RANGE,
+            dp->ProducerBeginWriteData(&write_ptr, &num_bytes, true));
+
+  // Write six elements (simple), filling the buffer.
+  num_bytes = 6u * sizeof(int32_t);
+  int32_t buffer[100];
+  Seq(100, 6, buffer);
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerWriteData(buffer, &num_bytes, true));
+  EXPECT_EQ(6u * sizeof(int32_t), num_bytes);
+
+  // We have ten.
+  num_bytes = 0u;
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerQueryData(&num_bytes));
+  EXPECT_EQ(10u * sizeof(int32_t), num_bytes);
+
+  // But a two-phase read of ten should fail.
+  num_bytes = 10u * sizeof(int32_t);
+  read_ptr = NULL;
+  EXPECT_EQ(MOJO_RESULT_OUT_OF_RANGE,
+            dp->ConsumerBeginReadData(&read_ptr, &num_bytes, true));
+
+  // Close the producer.
+  dp->ProducerClose();
+
+  // A two-phase read of nine should work.
+  num_bytes = 9u * sizeof(int32_t);
+  read_ptr = NULL;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ConsumerBeginReadData(&read_ptr, &num_bytes, true));
+  EXPECT_GE(num_bytes, 9u * sizeof(int32_t));
+  EXPECT_EQ(1, static_cast<const int32_t*>(read_ptr)[0]);
+  EXPECT_EQ(2, static_cast<const int32_t*>(read_ptr)[1]);
+  EXPECT_EQ(3, static_cast<const int32_t*>(read_ptr)[2]);
+  EXPECT_EQ(4, static_cast<const int32_t*>(read_ptr)[3]);
+  EXPECT_EQ(100, static_cast<const int32_t*>(read_ptr)[4]);
+  EXPECT_EQ(101, static_cast<const int32_t*>(read_ptr)[5]);
+  EXPECT_EQ(102, static_cast<const int32_t*>(read_ptr)[6]);
+  EXPECT_EQ(103, static_cast<const int32_t*>(read_ptr)[7]);
+  EXPECT_EQ(104, static_cast<const int32_t*>(read_ptr)[8]);
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerEndReadData(9u * sizeof(int32_t)));
+
+  // A two-phase read of two should fail, with "failed precondition".
+  num_bytes = 2u * sizeof(int32_t);
+  read_ptr = NULL;
+  EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
+            dp->ConsumerBeginReadData(&read_ptr, &num_bytes, true));
+
+  dp->ConsumerClose();
+}
+
+// TODO(vtl): Test two-phase read/write with "all or none" and "may discard",
+// once that's supported.
 
 // Tests that |ProducerWriteData()| and |ConsumerReadData()| writes and reads,
 // respectively, as much as possible, even if it has to "wrap around" the

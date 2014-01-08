@@ -270,7 +270,8 @@ MojoResult LocalDataPipe::ConsumerBeginReadDataImplNoLock(
   if (all_or_none && *buffer_num_bytes > max_num_bytes_to_read) {
     // Don't return "should wait" since you can't wait for a specified amount of
     // data.
-    return MOJO_RESULT_OUT_OF_RANGE;
+    return producer_open_no_lock() ? MOJO_RESULT_OUT_OF_RANGE :
+                                     MOJO_RESULT_FAILED_PRECONDITION;
   }
 
   // Don't go into a two-phase read if there's no data.
