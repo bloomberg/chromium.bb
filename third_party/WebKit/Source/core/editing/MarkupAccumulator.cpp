@@ -46,13 +46,37 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
+struct EntityDescription {
+    UChar entity;
+    const CString& reference;
+    EntityMask mask;
+};
+
+template <typename CharType>
+static inline void appendCharactersReplacingEntitiesInternal(StringBuilder& result, CharType* text, unsigned length, const EntityDescription entityMaps[], unsigned entityMapsCount, EntityMask entityMask)
+{
+    unsigned positionAfterLastEntity = 0;
+    for (unsigned i = 0; i < length; ++i) {
+        for (unsigned entityIndex = 0; entityIndex < entityMapsCount; ++entityIndex) {
+            if (text[i] == entityMaps[entityIndex].entity && entityMaps[entityIndex].mask & entityMask) {
+                result.append(text + positionAfterLastEntity, i - positionAfterLastEntity);
+                const CString& replacement = entityMaps[entityIndex].reference;
+                result.append(replacement.data(), replacement.length());
+                positionAfterLastEntity = i + 1;
+                break;
+            }
+        }
+    }
+    result.append(text + positionAfterLastEntity, length - positionAfterLastEntity);
+}
+
 void MarkupAccumulator::appendCharactersReplacingEntities(StringBuilder& result, const String& source, unsigned offset, unsigned length, EntityMask entityMask)
 {
-    DEFINE_STATIC_LOCAL(const String, ampReference, ("&amp;"));
-    DEFINE_STATIC_LOCAL(const String, ltReference, ("&lt;"));
-    DEFINE_STATIC_LOCAL(const String, gtReference, ("&gt;"));
-    DEFINE_STATIC_LOCAL(const String, quotReference, ("&quot;"));
-    DEFINE_STATIC_LOCAL(const String, nbspReference, ("&nbsp;"));
+    DEFINE_STATIC_LOCAL(const CString, ampReference, ("&amp;"));
+    DEFINE_STATIC_LOCAL(const CString, ltReference, ("&lt;"));
+    DEFINE_STATIC_LOCAL(const CString, gtReference, ("&gt;"));
+    DEFINE_STATIC_LOCAL(const CString, quotReference, ("&quot;"));
+    DEFINE_STATIC_LOCAL(const CString, nbspReference, ("&nbsp;"));
 
     static const EntityDescription entityMaps[] = {
         { '&', ampReference, EntityAmp },
@@ -66,38 +90,10 @@ void MarkupAccumulator::appendCharactersReplacingEntities(StringBuilder& result,
         return;
 
     ASSERT(offset + length <= source.length());
-
-    if (source.is8Bit()) {
-        const LChar* text = source.characters8() + offset;
-
-        size_t positionAfterLastEntity = 0;
-        for (size_t i = 0; i < length; ++i) {
-            for (size_t entityIndex = 0; entityIndex < WTF_ARRAY_LENGTH(entityMaps); ++entityIndex) {
-                if (text[i] == entityMaps[entityIndex].entity && entityMaps[entityIndex].mask & entityMask) {
-                    result.append(text + positionAfterLastEntity, i - positionAfterLastEntity);
-                    result.append(entityMaps[entityIndex].reference);
-                    positionAfterLastEntity = i + 1;
-                    break;
-                }
-            }
-        }
-        result.append(text + positionAfterLastEntity, length - positionAfterLastEntity);
-    } else {
-        const UChar* text = source.characters16() + offset;
-
-        size_t positionAfterLastEntity = 0;
-        for (size_t i = 0; i < length; ++i) {
-            for (size_t entityIndex = 0; entityIndex < WTF_ARRAY_LENGTH(entityMaps); ++entityIndex) {
-                if (text[i] == entityMaps[entityIndex].entity && entityMaps[entityIndex].mask & entityMask) {
-                    result.append(text + positionAfterLastEntity, i - positionAfterLastEntity);
-                    result.append(entityMaps[entityIndex].reference);
-                    positionAfterLastEntity = i + 1;
-                    break;
-                }
-            }
-        }
-        result.append(text + positionAfterLastEntity, length - positionAfterLastEntity);
-    }
+    if (source.is8Bit())
+        appendCharactersReplacingEntitiesInternal(result, source.characters8() + offset, length, entityMaps, WTF_ARRAY_LENGTH(entityMaps), entityMask);
+    else
+        appendCharactersReplacingEntitiesInternal(result, source.characters16() + offset, length, entityMaps, WTF_ARRAY_LENGTH(entityMaps), entityMask);
 }
 
 MarkupAccumulator::MarkupAccumulator(Vector<Node*>* nodes, EAbsoluteURLs resolveUrlsMethod, const Range* range)

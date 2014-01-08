@@ -57,12 +57,6 @@ enum EntityMask {
     EntityMaskInHTMLAttributeValue = EntityAmp | EntityQuot | EntityNbsp,
 };
 
-struct EntityDescription {
-    UChar entity;
-    const String& reference;
-    EntityMask mask;
-};
-
 class MarkupAccumulator {
     WTF_MAKE_NONCOPYABLE(MarkupAccumulator);
 
