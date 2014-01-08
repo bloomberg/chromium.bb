@@ -465,6 +465,20 @@ TEST_F(ResourceSchedulerTest, NonHTTPSchedulesImmediately) {
   EXPECT_TRUE(request->started());
 }
 
+TEST_F(ResourceSchedulerTest, SpdyProxySchedulesImmediately) {
+  scoped_ptr<TestRequest> high(NewRequest("http://host/high", net::HIGHEST));
+  scoped_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
+
+  scoped_ptr<TestRequest> request(NewRequest("http://host/req", net::IDLE));
+  EXPECT_FALSE(request->started());
+
+  scheduler_.OnReceivedSpdyProxiedHttpResponse(kChildId, kRouteId);
+  EXPECT_TRUE(request->started());
+
+  scoped_ptr<TestRequest> after(NewRequest("http://host/after", net::IDLE));
+  EXPECT_TRUE(after->started());
+}
+
 }  // unnamed namespace
 
 }  // namespace content

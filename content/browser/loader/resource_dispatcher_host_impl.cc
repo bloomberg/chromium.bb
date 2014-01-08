@@ -704,6 +704,13 @@ void ResourceDispatcherHostImpl::DidReceiveRedirect(ResourceLoader* loader,
 void ResourceDispatcherHostImpl::DidReceiveResponse(ResourceLoader* loader) {
   ResourceRequestInfoImpl* info = loader->GetRequestInfo();
 
+  if (loader->request()->was_fetched_via_proxy() &&
+      loader->request()->was_fetched_via_spdy() &&
+      loader->request()->url().SchemeIs("http")) {
+    scheduler_->OnReceivedSpdyProxiedHttpResponse(
+        info->GetChildID(), info->GetRouteID());
+  }
+
   // There should be an entry in the map created when we dispatched the
   // request unless it's been detached and the renderer has died.
   OfflineMap::iterator policy_it(

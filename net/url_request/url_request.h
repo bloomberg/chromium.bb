@@ -506,6 +506,11 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
     return response_info_.was_fetched_via_proxy;
   }
 
+  // Returns true if the URLRequest was delivered over SPDY.
+  bool was_fetched_via_spdy() const {
+    return response_info_.was_fetched_via_spdy;
+  }
+
   // Returns the host and port that the content was fetched from.  See
   // http_response_info.h for caveats relating to cached content.
   HostPortPair GetSocketAddress() const;

@@ -78,6 +78,12 @@ class CONTENT_EXPORT ResourceScheduler : public base::NonThreadSafe {
   // resource loads won't interfere with first paint.
   void OnWillInsertBody(int child_id, int route_id);
 
+  // Signals from the IO thread
+
+  // Called when we received a response to a http request that was served
+  // from a proxy using SPDY.
+  void OnReceivedSpdyProxiedHttpResponse(int child_id, int route_id);
+
  private:
   class RequestQueue;
   class ScheduledResourceRequest;

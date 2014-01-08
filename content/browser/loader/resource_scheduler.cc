@@ -178,10 +178,11 @@ class ResourceScheduler::ScheduledResourceRequest
 
 // Each client represents a tab.
 struct ResourceScheduler::Client {
-  Client() : has_body(false) {}
+  Client() : has_body(false), using_spdy_proxy(false) {}
   ~Client() {}
 
   bool has_body;
+  bool using_spdy_proxy;
   RequestQueue pending_requests;
   RequestSet in_flight_requests;
 };
@@ -305,9 +306,25 @@ void ResourceScheduler::OnWillInsertBody(int child_id, int route_id) {
   }
 
   Client* client = it->second;
-  client->has_body = false;
-  if (!client->has_body) {
-    client->has_body = true;
+  client->has_body = true;
+  LoadAnyStartablePendingRequests(client);
+}
+
+void ResourceScheduler::OnReceivedSpdyProxiedHttpResponse(
+    int child_id,
+    int route_id) {
+  DCHECK(CalledOnValidThread());
+  ClientId client_id = MakeClientId(child_id, route_id);
+
+  ClientMap::iterator client_it = client_map_.find(client_id);
+  if (client_it == client_map_.end()) {
+    return;
+  }
+
+  Client* client = client_it->second;
+
+  if (!client->using_spdy_proxy) {
+    client->using_spdy_proxy = true;
     LoadAnyStartablePendingRequests(client);
   }
 }
@@ -448,6 +465,10 @@ ResourceScheduler::ShouldStartReqResult ResourceScheduler::ShouldStartRequest(
   // TODO(simonjam): This may end up causing disk contention. We should
   // experiment with throttling if that happens.
   if (!url_request.url().SchemeIsHTTPOrHTTPS()) {
+    return START_REQUEST;
+  }
+
+  if (client->using_spdy_proxy && url_request.url().SchemeIs("http")) {
     return START_REQUEST;
   }
 
