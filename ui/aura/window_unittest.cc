@@ -268,11 +268,11 @@ TEST_F(WindowTest, GetChildById) {
 // and not containing NULL or parents.
 TEST_F(WindowTest, Contains) {
   Window parent(NULL);
-  parent.Init(ui::LAYER_NOT_DRAWN);
+  parent.Init(aura::WINDOW_LAYER_NOT_DRAWN);
   Window child1(NULL);
-  child1.Init(ui::LAYER_NOT_DRAWN);
+  child1.Init(aura::WINDOW_LAYER_NOT_DRAWN);
   Window child2(NULL);
-  child2.Init(ui::LAYER_NOT_DRAWN);
+  child2.Init(aura::WINDOW_LAYER_NOT_DRAWN);
 
   parent.AddChild(&child1);
   child1.AddChild(&child2);
@@ -473,7 +473,7 @@ TEST_F(WindowTest, MoveCursorToWithComplexTransform) {
 TEST_F(WindowTest, HitTest) {
   Window w1(new ColorTestWindowDelegate(SK_ColorWHITE));
   w1.set_id(1);
-  w1.Init(ui::LAYER_TEXTURED);
+  w1.Init(aura::WINDOW_LAYER_TEXTURED);
   w1.SetBounds(gfx::Rect(10, 20, 50, 60));
   w1.Show();
   ParentWindow(&w1);
@@ -505,7 +505,7 @@ TEST_F(WindowTest, HitTest) {
 TEST_F(WindowTest, HitTestMask) {
   MaskedWindowDelegate d1(gfx::Rect(5, 6, 20, 30));
   Window w1(&d1);
-  w1.Init(ui::LAYER_NOT_DRAWN);
+  w1.Init(aura::WINDOW_LAYER_NOT_DRAWN);
   w1.SetBounds(gfx::Rect(10, 20, 50, 60));
   w1.Show();
   ParentWindow(&w1);
@@ -659,7 +659,7 @@ TEST_F(WindowTest, WindowAddedToRootWindowShouldNotifyChildAndNotParent) {
   AddedToRootWindowObserver child_observer;
   scoped_ptr<Window> parent_window(CreateTestWindowWithId(1, root_window()));
   scoped_ptr<Window> child_window(new Window(NULL));
-  child_window->Init(ui::LAYER_TEXTURED);
+  child_window->Init(aura::WINDOW_LAYER_TEXTURED);
   child_window->Show();
 
   parent_window->AddObserver(&parent_observer);
@@ -708,11 +708,11 @@ TEST_F(WindowTest, OrphanedBeforeOnDestroyed) {
 // Make sure StackChildAtTop moves both the window and layer to the front.
 TEST_F(WindowTest, StackChildAtTop) {
   Window parent(NULL);
-  parent.Init(ui::LAYER_NOT_DRAWN);
+  parent.Init(aura::WINDOW_LAYER_NOT_DRAWN);
   Window child1(NULL);
-  child1.Init(ui::LAYER_NOT_DRAWN);
+  child1.Init(aura::WINDOW_LAYER_NOT_DRAWN);
   Window child2(NULL);
-  child2.Init(ui::LAYER_NOT_DRAWN);
+  child2.Init(aura::WINDOW_LAYER_NOT_DRAWN);
 
   parent.AddChild(&child1);
   parent.AddChild(&child2);
@@ -735,15 +735,15 @@ TEST_F(WindowTest, StackChildAtTop) {
 // Make sure StackChildBelow works.
 TEST_F(WindowTest, StackChildBelow) {
   Window parent(NULL);
-  parent.Init(ui::LAYER_NOT_DRAWN);
+  parent.Init(aura::WINDOW_LAYER_NOT_DRAWN);
   Window child1(NULL);
-  child1.Init(ui::LAYER_NOT_DRAWN);
+  child1.Init(aura::WINDOW_LAYER_NOT_DRAWN);
   child1.set_id(1);
   Window child2(NULL);
-  child2.Init(ui::LAYER_NOT_DRAWN);
+  child2.Init(aura::WINDOW_LAYER_NOT_DRAWN);
   child2.set_id(2);
   Window child3(NULL);
-  child3.Init(ui::LAYER_NOT_DRAWN);
+  child3.Init(aura::WINDOW_LAYER_NOT_DRAWN);
   child3.set_id(3);
 
   parent.AddChild(&child1);
@@ -767,13 +767,13 @@ TEST_F(WindowTest, StackChildBelow) {
 // Various assertions for StackChildAbove.
 TEST_F(WindowTest, StackChildAbove) {
   Window parent(NULL);
-  parent.Init(ui::LAYER_NOT_DRAWN);
+  parent.Init(aura::WINDOW_LAYER_NOT_DRAWN);
   Window child1(NULL);
-  child1.Init(ui::LAYER_NOT_DRAWN);
+  child1.Init(aura::WINDOW_LAYER_NOT_DRAWN);
   Window child2(NULL);
-  child2.Init(ui::LAYER_NOT_DRAWN);
+  child2.Init(aura::WINDOW_LAYER_NOT_DRAWN);
   Window child3(NULL);
-  child3.Init(ui::LAYER_NOT_DRAWN);
+  child3.Init(aura::WINDOW_LAYER_NOT_DRAWN);
 
   parent.AddChild(&child1);
   parent.AddChild(&child2);
@@ -1951,7 +1951,7 @@ TEST_F(WindowTest, RecreateLayer) {
   // Set properties to non default values.
   Window w(new ColorTestWindowDelegate(SK_ColorWHITE));
   w.set_id(1);
-  w.Init(ui::LAYER_SOLID_COLOR);
+  w.Init(aura::WINDOW_LAYER_SOLID_COLOR);
   w.SetBounds(gfx::Rect(0, 0, 100, 100));
 
   ui::Layer* layer = w.layer();
@@ -2190,7 +2190,7 @@ TEST_F(WindowTest, RootWindowAttachment) {
 
   // Test a direct add/remove from the RootWindow.
   scoped_ptr<Window> w1(new Window(NULL));
-  w1->Init(ui::LAYER_NOT_DRAWN);
+  w1->Init(aura::WINDOW_LAYER_NOT_DRAWN);
   w1->AddObserver(&observer);
 
   ParentWindow(w1.get());
@@ -2205,9 +2205,9 @@ TEST_F(WindowTest, RootWindowAttachment) {
 
   // Test an indirect add/remove from the RootWindow.
   w1.reset(new Window(NULL));
-  w1->Init(ui::LAYER_NOT_DRAWN);
+  w1->Init(aura::WINDOW_LAYER_NOT_DRAWN);
   Window* w11 = new Window(NULL);
-  w11->Init(ui::LAYER_NOT_DRAWN);
+  w11->Init(aura::WINDOW_LAYER_NOT_DRAWN);
   w11->AddObserver(&observer);
   w1->AddChild(w11);
   EXPECT_EQ(0, observer.added_count());
@@ -2226,13 +2226,13 @@ TEST_F(WindowTest, RootWindowAttachment) {
 
   // Test an indirect add/remove with nested observers.
   w1.reset(new Window(NULL));
-  w1->Init(ui::LAYER_NOT_DRAWN);
+  w1->Init(aura::WINDOW_LAYER_NOT_DRAWN);
   w11 = new Window(NULL);
-  w11->Init(ui::LAYER_NOT_DRAWN);
+  w11->Init(aura::WINDOW_LAYER_NOT_DRAWN);
   w11->AddObserver(&observer);
   w1->AddChild(w11);
   Window* w111 = new Window(NULL);
-  w111->Init(ui::LAYER_NOT_DRAWN);
+  w111->Init(aura::WINDOW_LAYER_NOT_DRAWN);
   w111->AddObserver(&observer);
   w11->AddChild(w111);
 
@@ -2255,10 +2255,10 @@ TEST_F(WindowTest, OwnedByParentFalse) {
   // window will not be destroyed when its parent is.
 
   scoped_ptr<Window> w1(new Window(NULL));
-  w1->Init(ui::LAYER_NOT_DRAWN);
+  w1->Init(aura::WINDOW_LAYER_NOT_DRAWN);
   scoped_ptr<Window> w2(new Window(NULL));
   w2->set_owned_by_parent(false);
-  w2->Init(ui::LAYER_NOT_DRAWN);
+  w2->Init(aura::WINDOW_LAYER_NOT_DRAWN);
   w1->AddChild(w2.get());
 
   w1.reset();
@@ -2298,13 +2298,13 @@ class OwningWindowDelegate : public TestWindowDelegate {
 // bubble.
 TEST_F(WindowTest, DeleteWindowFromOnWindowDestroyed) {
   scoped_ptr<Window> parent(new Window(NULL));
-  parent->Init(ui::LAYER_NOT_DRAWN);
+  parent->Init(aura::WINDOW_LAYER_NOT_DRAWN);
   OwningWindowDelegate delegate;
   Window* c1 = new Window(&delegate);
-  c1->Init(ui::LAYER_NOT_DRAWN);
+  c1->Init(aura::WINDOW_LAYER_NOT_DRAWN);
   parent->AddChild(c1);
   Window* c2 = new Window(NULL);
-  c2->Init(ui::LAYER_NOT_DRAWN);
+  c2->Init(aura::WINDOW_LAYER_NOT_DRAWN);
   parent->AddChild(c2);
   delegate.SetOwnedWindow(c2);
   parent.reset();
@@ -2681,11 +2681,11 @@ TEST_F(WindowTest, OnWindowHierarchyChange) {
 // thing.
 TEST_F(WindowTest, LayerlessWindowSchedulePaint) {
   Window root(NULL);
-  root.Init(ui::LAYER_NOT_DRAWN);
+  root.Init(aura::WINDOW_LAYER_NOT_DRAWN);
   root.SetBounds(gfx::Rect(0, 0, 100, 100));
 
   Window* layerless_window = new Window(NULL);  // Owned by |root|.
-  layerless_window->InitWithWindowLayerType(WINDOW_LAYER_NONE);
+  layerless_window->Init(WINDOW_LAYER_NONE);
   layerless_window->SetBounds(gfx::Rect(10, 11, 12, 13));
   root.AddChild(layerless_window);
 
@@ -2697,7 +2697,7 @@ TEST_F(WindowTest, LayerlessWindowSchedulePaint) {
             ToString());
 
   Window* layerless_window2 = new Window(NULL);  // Owned by |layerless_window|.
-  layerless_window2->InitWithWindowLayerType(WINDOW_LAYER_NONE);
+  layerless_window2->Init(WINDOW_LAYER_NONE);
   layerless_window2->SetBounds(gfx::Rect(1, 2, 3, 4));
   layerless_window->AddChild(layerless_window2);
 
@@ -2723,30 +2723,30 @@ TEST_F(WindowTest, NestedLayerlessWindowsBoundsOnAddRemove) {
   //
   // ll: layer less, eg no layer
   Window root(NULL);
-  root.InitWithWindowLayerType(WINDOW_LAYER_NOT_DRAWN);
+  root.Init(WINDOW_LAYER_NOT_DRAWN);
   root.SetBounds(gfx::Rect(0, 0, 100, 100));
 
   Window* w1ll = new Window(NULL);
-  w1ll->InitWithWindowLayerType(WINDOW_LAYER_NONE);
+  w1ll->Init(WINDOW_LAYER_NONE);
   w1ll->SetBounds(gfx::Rect(1, 2, 100, 100));
 
   Window* w11ll = new Window(NULL);
-  w11ll->InitWithWindowLayerType(WINDOW_LAYER_NONE);
+  w11ll->Init(WINDOW_LAYER_NONE);
   w11ll->SetBounds(gfx::Rect(3, 4, 100, 100));
   w1ll->AddChild(w11ll);
 
   Window* w111 = new Window(NULL);
-  w111->InitWithWindowLayerType(WINDOW_LAYER_NOT_DRAWN);
+  w111->Init(WINDOW_LAYER_NOT_DRAWN);
   w111->SetBounds(gfx::Rect(5, 6, 100, 100));
   w11ll->AddChild(w111);
 
   Window* w12 = new Window(NULL);
-  w12->InitWithWindowLayerType(WINDOW_LAYER_NOT_DRAWN);
+  w12->Init(WINDOW_LAYER_NOT_DRAWN);
   w12->SetBounds(gfx::Rect(7, 8, 100, 100));
   w1ll->AddChild(w12);
 
   Window* w121 = new Window(NULL);
-  w121->InitWithWindowLayerType(WINDOW_LAYER_NOT_DRAWN);
+  w121->Init(WINDOW_LAYER_NOT_DRAWN);
   w121->SetBounds(gfx::Rect(9, 10, 100, 100));
   w12->AddChild(w121);
 
@@ -2803,30 +2803,30 @@ TEST_F(WindowTest, NestedLayerlessWindowsBoundsOnSetBounds) {
   //
   // ll: layer less, eg no layer
   Window root(NULL);
-  root.InitWithWindowLayerType(WINDOW_LAYER_NOT_DRAWN);
+  root.Init(WINDOW_LAYER_NOT_DRAWN);
   root.SetBounds(gfx::Rect(0, 0, 100, 100));
 
   Window* w1ll = new Window(NULL);
-  w1ll->InitWithWindowLayerType(WINDOW_LAYER_NONE);
+  w1ll->Init(WINDOW_LAYER_NONE);
   w1ll->SetBounds(gfx::Rect(1, 2, 100, 100));
 
   Window* w11ll = new Window(NULL);
-  w11ll->InitWithWindowLayerType(WINDOW_LAYER_NONE);
+  w11ll->Init(WINDOW_LAYER_NONE);
   w11ll->SetBounds(gfx::Rect(3, 4, 100, 100));
   w1ll->AddChild(w11ll);
 
   Window* w111 = new Window(NULL);
-  w111->InitWithWindowLayerType(WINDOW_LAYER_NOT_DRAWN);
+  w111->Init(WINDOW_LAYER_NOT_DRAWN);
   w111->SetBounds(gfx::Rect(5, 6, 100, 100));
   w11ll->AddChild(w111);
 
   Window* w12 = new Window(NULL);
-  w12->InitWithWindowLayerType(WINDOW_LAYER_NOT_DRAWN);
+  w12->Init(WINDOW_LAYER_NOT_DRAWN);
   w12->SetBounds(gfx::Rect(7, 8, 100, 100));
   w1ll->AddChild(w12);
 
   Window* w121 = new Window(NULL);
-  w121->InitWithWindowLayerType(WINDOW_LAYER_NOT_DRAWN);
+  w121->Init(WINDOW_LAYER_NOT_DRAWN);
   w121->SetBounds(gfx::Rect(9, 10, 100, 100));
   w12->AddChild(w121);
 
@@ -2917,23 +2917,23 @@ TEST_F(WindowTest, PaintLayerless) {
   PaintWindowDelegate w111_delegate;
 
   Window root(NULL);
-  root.InitWithWindowLayerType(WINDOW_LAYER_NOT_DRAWN);
+  root.Init(WINDOW_LAYER_NOT_DRAWN);
   root.SetBounds(gfx::Rect(0, 0, 100, 100));
 
   Window* w1ll = new Window(&w1ll_delegate);
-  w1ll->InitWithWindowLayerType(WINDOW_LAYER_NONE);
+  w1ll->Init(WINDOW_LAYER_NONE);
   w1ll->SetBounds(gfx::Rect(1, 2, 40, 50));
   w1ll->Show();
   root.AddChild(w1ll);
 
   Window* w11ll = new Window(&w11ll_delegate);
-  w11ll->InitWithWindowLayerType(WINDOW_LAYER_NONE);
+  w11ll->Init(WINDOW_LAYER_NONE);
   w11ll->SetBounds(gfx::Rect(3, 4, 11, 12));
   w11ll->Show();
   w1ll->AddChild(w11ll);
 
   Window* w111 = new Window(&w111_delegate);
-  w111->InitWithWindowLayerType(WINDOW_LAYER_NOT_DRAWN);
+  w111->Init(WINDOW_LAYER_NOT_DRAWN);
   w111->SetBounds(gfx::Rect(5, 6, 100, 100));
   w111->Show();
   w11ll->AddChild(w111);
@@ -2985,30 +2985,30 @@ TEST_F(WindowTest, ConvertPointToTargetLayerless) {
   //
   // ll: layer less, eg no layer
   Window root(NULL);
-  root.InitWithWindowLayerType(WINDOW_LAYER_NOT_DRAWN);
+  root.Init(WINDOW_LAYER_NOT_DRAWN);
   root.SetBounds(gfx::Rect(0, 0, 100, 100));
 
   Window* w1ll = new Window(NULL);
-  w1ll->InitWithWindowLayerType(WINDOW_LAYER_NONE);
+  w1ll->Init(WINDOW_LAYER_NONE);
   w1ll->SetBounds(gfx::Rect(1, 2, 100, 100));
 
   Window* w11ll = new Window(NULL);
-  w11ll->InitWithWindowLayerType(WINDOW_LAYER_NONE);
+  w11ll->Init(WINDOW_LAYER_NONE);
   w11ll->SetBounds(gfx::Rect(3, 4, 100, 100));
   w1ll->AddChild(w11ll);
 
   Window* w111 = new Window(NULL);
-  w111->InitWithWindowLayerType(WINDOW_LAYER_NOT_DRAWN);
+  w111->Init(WINDOW_LAYER_NOT_DRAWN);
   w111->SetBounds(gfx::Rect(5, 6, 100, 100));
   w11ll->AddChild(w111);
 
   Window* w12 = new Window(NULL);
-  w12->InitWithWindowLayerType(WINDOW_LAYER_NOT_DRAWN);
+  w12->Init(WINDOW_LAYER_NOT_DRAWN);
   w12->SetBounds(gfx::Rect(7, 8, 100, 100));
   w1ll->AddChild(w12);
 
   Window* w121 = new Window(NULL);
-  w121->InitWithWindowLayerType(WINDOW_LAYER_NOT_DRAWN);
+  w121->Init(WINDOW_LAYER_NOT_DRAWN);
   w121->SetBounds(gfx::Rect(9, 10, 100, 100));
   w12->AddChild(w121);
 
@@ -3046,7 +3046,7 @@ TEST_F(WindowTest, ConvertPointToTargetLayerless) {
 // Verifies PrintWindowHierarchy() doesn't crash with a layerless window.
 TEST_F(WindowTest, PrintWindowHierarchyNotCrashLayerless) {
   Window root(NULL);
-  root.InitWithWindowLayerType(WINDOW_LAYER_NONE);
+  root.Init(WINDOW_LAYER_NONE);
   root.SetBounds(gfx::Rect(0, 0, 100, 100));
   root.PrintWindowHierarchy(0);
 }
@@ -3072,7 +3072,7 @@ aura::Window* CreateWindowFromDescription(const std::string& description,
                            << description;
   }
   Window* window = new Window(delegate);
-  window->InitWithWindowLayerType(window_type);
+  window->Init(window_type);
   window->SetName(name);
   // Window name is only propagated to layer in debug builds.
   if (window->layer())
@@ -3302,7 +3302,7 @@ TEST_F(WindowTest, StackChildAtLayerless) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i) {
     test::TestWindowDelegate delegate;
     Window root(NULL);
-    root.InitWithWindowLayerType(WINDOW_LAYER_NOT_DRAWN);
+    root.Init(WINDOW_LAYER_NOT_DRAWN);
     root.SetBounds(gfx::Rect(0, 0, 100, 100));
     AddWindowsFromString(
         &root,

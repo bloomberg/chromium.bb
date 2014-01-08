@@ -82,7 +82,7 @@ WindowTreeHost::~WindowTreeHost() {
 }
 
 void WindowTreeHost::InitHost() {
-  window()->Init(ui::LAYER_NOT_DRAWN);
+  window()->Init(aura::WINDOW_LAYER_NOT_DRAWN);
   InitCompositor();
   UpdateRootWindowSize(GetBounds().size());
   Env::GetInstance()->NotifyRootWindowInitialized(delegate_->AsRootWindow());

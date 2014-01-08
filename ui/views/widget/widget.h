@@ -12,8 +12,8 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "ui/aura/window_layer_type.h"
 #include "ui/base/ui_base_types.h"
-#include "ui/compositor/layer_type.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/focus/focus_manager.h"
@@ -215,8 +215,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // |parent| is set.)
     bool top_level;
     // Only used by NativeWidgetAura. Specifies the type of layer for the
-    // aura::Window. Default is LAYER_TEXTURED.
-    ui::LayerType layer_type;
+    // aura::Window. Default is WINDOW_LAYER_TEXTURED.
+    aura::WindowLayerType layer_type;
     // Only used by Aura. Provides a context window whose RootWindow is
     // consulted during widget creation to determine where in the Window
     // hierarchy this widget should be placed. (This is separate from |parent|;

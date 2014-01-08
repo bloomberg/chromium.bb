@@ -40,19 +40,6 @@ namespace aura {
 
 namespace {
 
-WindowLayerType UILayerTypeToWindowLayerType(ui::LayerType layer_type) {
-  switch (layer_type) {
-    case ui::LAYER_NOT_DRAWN:
-      return WINDOW_LAYER_NOT_DRAWN;
-    case ui::LAYER_TEXTURED:
-      return WINDOW_LAYER_TEXTURED;
-    case ui::LAYER_SOLID_COLOR:
-      return WINDOW_LAYER_SOLID_COLOR;
-  }
-  NOTREACHED();
-  return WINDOW_LAYER_NOT_DRAWN;
-}
-
 ui::LayerType WindowLayerTypeToUILayerType(WindowLayerType window_layer_type) {
   switch (window_layer_type) {
     case WINDOW_LAYER_NONE:
@@ -279,11 +266,7 @@ Window::~Window() {
   }
 }
 
-void Window::Init(ui::LayerType layer_type) {
-  InitWithWindowLayerType(UILayerTypeToWindowLayerType(layer_type));
-}
-
-void Window::InitWithWindowLayerType(WindowLayerType window_layer_type) {
+void Window::Init(WindowLayerType window_layer_type) {
   if (window_layer_type != WINDOW_LAYER_NONE) {
     layer_ = new ui::Layer(WindowLayerTypeToUILayerType(window_layer_type));
     layer_owner_.reset(layer_);

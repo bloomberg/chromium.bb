@@ -20,7 +20,6 @@
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/layer_delegate.h"
 #include "ui/compositor/layer_owner.h"
-#include "ui/compositor/layer_type.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_target.h"
 #include "ui/events/event_targeter.h"
@@ -86,10 +85,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   virtual ~Window();
 
   // Initializes the window. This creates the window's layer.
-  void Init(ui::LayerType layer_type);
-
-  // TODO(sky): replace other Init() with this once m32 is more baked.
-  void InitWithWindowLayerType(WindowLayerType layer_type);
+  void Init(WindowLayerType layer_type);
 
   // Creates a new layer for the window. Erases the layer-owned bounds, so the
   // caller may wish to set new bounds and other state on the window/layer.

@@ -90,7 +90,7 @@ Window* AuraTestBase::CreateNormalWindow(int id, Window* parent,
       delegate ? delegate :
       test::TestWindowDelegate::CreateSelfDestroyingDelegate());
   window->set_id(id);
-  window->Init(ui::LAYER_TEXTURED);
+  window->Init(aura::WINDOW_LAYER_TEXTURED);
   parent->AddChild(window);
   window->SetBounds(gfx::Rect(0, 0, 100, 100));
   window->Show();

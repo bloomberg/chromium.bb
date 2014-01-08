@@ -188,7 +188,7 @@ void MirrorWindowController::UpdateWindow(const DisplayInfo& display_info) {
 
     // TODO(oshima): Start mirroring.
     aura::Window* mirror_window = new aura::Window(NULL);
-    mirror_window->Init(ui::LAYER_TEXTURED);
+    mirror_window->Init(aura::WINDOW_LAYER_TEXTURED);
     root_window_->window()->AddChild(mirror_window);
     mirror_window->SetBounds(root_window_->window()->bounds());
     mirror_window->Show();
@@ -198,7 +198,7 @@ void MirrorWindowController::UpdateWindow(const DisplayInfo& display_info) {
 
     cursor_window_ = new aura::Window(cursor_window_delegate_.get());
     cursor_window_->SetTransparent(true);
-    cursor_window_->Init(ui::LAYER_TEXTURED);
+    cursor_window_->Init(aura::WINDOW_LAYER_TEXTURED);
     root_window_->window()->AddChild(cursor_window_);
     cursor_window_->Show();
   } else {

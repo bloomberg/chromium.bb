@@ -331,7 +331,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DestroyFullscreenOnBlur) {
   TestWindowObserver observer(window);
   aura::test::TestWindowDelegate delegate;
   scoped_ptr<aura::Window> sibling(new aura::Window(&delegate));
-  sibling->Init(ui::LAYER_TEXTURED);
+  sibling->Init(aura::WINDOW_LAYER_TEXTURED);
   sibling->Show();
   window->parent()->AddChild(sibling.get());
   sibling->Focus();

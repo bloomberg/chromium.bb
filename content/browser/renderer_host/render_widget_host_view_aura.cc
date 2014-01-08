@@ -496,7 +496,7 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
 
 void RenderWidgetHostViewAura::InitAsChild(
     gfx::NativeView parent_view) {
-  window_->Init(ui::LAYER_TEXTURED);
+  window_->Init(aura::WINDOW_LAYER_TEXTURED);
   window_->SetName("RenderWidgetHostViewAura");
 }
 
@@ -524,7 +524,7 @@ void RenderWidgetHostViewAura::InitAsPopup(
   }
   popup_parent_host_view_->popup_child_host_view_ = this;
   window_->SetType(ui::wm::WINDOW_TYPE_MENU);
-  window_->Init(ui::LAYER_TEXTURED);
+  window_->Init(aura::WINDOW_LAYER_TEXTURED);
   window_->SetName("RenderWidgetHostViewAura");
 
   aura::Window* root = popup_parent_host_view_->window_->GetRootWindow();
@@ -549,7 +549,7 @@ void RenderWidgetHostViewAura::InitAsFullscreen(
     RenderWidgetHostView* reference_host_view) {
   is_fullscreen_ = true;
   window_->SetType(ui::wm::WINDOW_TYPE_NORMAL);
-  window_->Init(ui::LAYER_TEXTURED);
+  window_->Init(aura::WINDOW_LAYER_TEXTURED);
   window_->SetName("RenderWidgetHostViewAura");
   window_->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
 

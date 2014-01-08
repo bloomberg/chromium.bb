@@ -148,21 +148,21 @@ class AuraDemo : public ShellClient {
 
     delegate1_.reset(new DemoWindowDelegate(SK_ColorBLUE));
     window1_ = new aura::Window(delegate1_.get());
-    window1_->Init(ui::LAYER_TEXTURED);
+    window1_->Init(aura::WINDOW_LAYER_TEXTURED);
     window1_->SetBounds(gfx::Rect(100, 100, 400, 400));
     window1_->Show();
     root_window_->window()->AddChild(window1_);
 
     delegate2_.reset(new DemoWindowDelegate(SK_ColorRED));
     window2_ = new aura::Window(delegate2_.get());
-    window2_->Init(ui::LAYER_TEXTURED);
+    window2_->Init(aura::WINDOW_LAYER_TEXTURED);
     window2_->SetBounds(gfx::Rect(200, 200, 350, 350));
     window2_->Show();
     root_window_->window()->AddChild(window2_);
 
     delegate21_.reset(new DemoWindowDelegate(SK_ColorGREEN));
     window21_ = new aura::Window(delegate21_.get());
-    window21_->Init(ui::LAYER_TEXTURED);
+    window21_->Init(aura::WINDOW_LAYER_TEXTURED);
     window21_->SetBounds(gfx::Rect(10, 10, 50, 50));
     window21_->Show();
     window2_->AddChild(window21_);

@@ -96,7 +96,7 @@ class DockedWindowResizerTest
     aura::Window* window = new aura::Window(&delegate_);
     window->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_SYSTEM);
     window->SetType(ui::wm::WINDOW_TYPE_NORMAL);
-    window->Init(ui::LAYER_TEXTURED);
+    window->Init(aura::WINDOW_LAYER_TEXTURED);
     window->Show();
 
     if (bounds.IsEmpty()) {

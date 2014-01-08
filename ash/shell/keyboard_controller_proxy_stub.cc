@@ -22,7 +22,7 @@ KeyboardControllerProxyStub::~KeyboardControllerProxyStub() {
 aura::Window* KeyboardControllerProxyStub::GetKeyboardWindow() {
   if (!keyboard_) {
     keyboard_.reset(new aura::Window(&delegate_));
-    keyboard_->Init(ui::LAYER_NOT_DRAWN);
+    keyboard_->Init(aura::WINDOW_LAYER_NOT_DRAWN);
   }
   return keyboard_.get();
 }

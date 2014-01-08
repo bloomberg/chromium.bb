@@ -59,7 +59,7 @@ class TestKeyboardControllerProxy : public KeyboardControllerProxy {
       : window_(new aura::Window(&delegate_)),
         input_method_(ui::CreateInputMethod(NULL,
                                             gfx::kNullAcceleratedWidget)) {
-    window_->Init(ui::LAYER_NOT_DRAWN);
+    window_->Init(aura::WINDOW_LAYER_NOT_DRAWN);
     window_->set_owned_by_parent(false);
   }
 
@@ -255,7 +255,7 @@ TEST_F(KeyboardControllerTest, ClickDoesNotFocusKeyboard) {
   const gfx::Rect& root_bounds = root_window()->bounds();
   aura::test::EventCountDelegate delegate;
   scoped_ptr<aura::Window> window(new aura::Window(&delegate));
-  window->Init(ui::LAYER_NOT_DRAWN);
+  window->Init(aura::WINDOW_LAYER_NOT_DRAWN);
   window->SetBounds(root_bounds);
   root_window()->AddChild(window.get());
   window->Show();
