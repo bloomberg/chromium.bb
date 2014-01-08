@@ -97,7 +97,7 @@ init_egl(struct test_data *test_data)
 			     test_data->egl_surface, test_data->egl_ctx);
 	assert(ret == EGL_TRUE);
 
-	/* This test is specific to mesa 10.0 and later, which is the
+	/* This test is specific to mesa 10.1 and later, which is the
 	 * first release that doesn't accidentally triple-buffer. */
 	str = (const char *) glGetString(GL_VERSION);
 	mesa = strstr(str, "Mesa ");
@@ -105,7 +105,7 @@ init_egl(struct test_data *test_data)
 		skip("unknown EGL implementation (%s)\n", str);
 	if (sscanf(mesa + 5, "%d.%d", &major, &minor) != 2)
 		skip("unrecognized mesa version (%s)\n", str);
-	if (major < 10)
+	if (major < 10 || (major == 10 && minor < 1))
 		skip("mesa version too old (%s)\n", str);
 
 }
