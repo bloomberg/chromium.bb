@@ -587,8 +587,6 @@
       'graphics/DisplayList.h',
       'graphics/DrawLooper.cpp',
       'graphics/DrawLooper.h',
-      'graphics/Extensions3D.cpp',
-      'graphics/Extensions3D.h',
       'graphics/FrameData.cpp',
       'graphics/FrameData.h',
       'graphics/GeneratedImage.cpp',

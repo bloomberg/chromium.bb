@@ -32,11 +32,11 @@
 #include "config.h"
 #include "platform/graphics/filters/custom/FECustomFilter.h"
 
-#include "platform/graphics/Extensions3D.h"
 #include "platform/graphics/GraphicsContext3D.h"
 #include "platform/graphics/filters/custom/CustomFilterRenderer.h"
 #include "platform/graphics/filters/custom/CustomFilterValidatedProgram.h"
 #include "platform/text/TextStream.h"
+#include "public/platform/WebGraphicsContext3D.h"
 #include "wtf/Uint8ClampedArray.h"
 
 namespace WebCore {
@@ -224,16 +224,14 @@ bool FECustomFilter::createMultisampleBuffer()
     ASSERT(!m_triedMultisampleBuffer);
     m_triedMultisampleBuffer = true;
 
-    Extensions3D* extensions = m_context->extensions();
-    if (!extensions
-        || !extensions->supports("GL_ANGLE_framebuffer_multisample")
-        || !extensions->supports("GL_ANGLE_framebuffer_blit")
-        || !extensions->supports("GL_OES_rgb8_rgba8"))
+    if (!m_context->supportsExtension("GL_ANGLE_framebuffer_multisample")
+        || !m_context->supportsExtension("GL_ANGLE_framebuffer_blit")
+        || !m_context->supportsExtension("GL_OES_rgb8_rgba8"))
         return false;
 
-    extensions->ensureEnabled("GL_ANGLE_framebuffer_blit");
-    extensions->ensureEnabled("GL_ANGLE_framebuffer_multisample");
-    extensions->ensureEnabled("GL_OES_rgb8_rgba8");
+    m_context->ensureExtensionEnabled("GL_ANGLE_framebuffer_blit");
+    m_context->ensureExtensionEnabled("GL_ANGLE_framebuffer_multisample");
+    m_context->ensureExtensionEnabled("GL_OES_rgb8_rgba8");
 
     if (!m_multisampleFrameBuffer)
         m_multisampleFrameBuffer = m_context->createFramebuffer();
@@ -248,14 +246,13 @@ bool FECustomFilter::createMultisampleBuffer()
 void FECustomFilter::resolveMultisampleBuffer()
 {
     ASSERT(m_triedMultisampleBuffer && m_multisampleFrameBuffer && m_multisampleRenderBuffer && m_multisampleDepthBuffer);
-    m_context->bindFramebuffer(Extensions3D::READ_FRAMEBUFFER, m_multisampleFrameBuffer);
-    m_context->bindFramebuffer(Extensions3D::DRAW_FRAMEBUFFER, m_frameBuffer);
+    m_context->bindFramebuffer(GL_READ_FRAMEBUFFER_ANGLE, m_multisampleFrameBuffer);
+    m_context->bindFramebuffer(GL_DRAW_FRAMEBUFFER_ANGLE, m_frameBuffer);
 
-    ASSERT(m_context->extensions());
-    m_context->extensions()->blitFramebuffer(0, 0, m_contextSize.width(), m_contextSize.height(), 0, 0, m_contextSize.width(), m_contextSize.height(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    m_context->webContext()->blitFramebufferCHROMIUM(0, 0, m_contextSize.width(), m_contextSize.height(), 0, 0, m_contextSize.width(), m_contextSize.height(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
-    m_context->bindFramebuffer(Extensions3D::READ_FRAMEBUFFER, 0);
-    m_context->bindFramebuffer(Extensions3D::DRAW_FRAMEBUFFER, 0);
+    m_context->bindFramebuffer(GL_READ_FRAMEBUFFER_ANGLE, 0);
+    m_context->bindFramebuffer(GL_DRAW_FRAMEBUFFER_ANGLE, 0);
 
     m_context->bindFramebuffer(GL_FRAMEBUFFER, m_frameBuffer);
 }
@@ -275,24 +272,21 @@ bool FECustomFilter::resizeMultisampleBuffers(const IntSize& newContextSize)
 
     static const int kMaxSampleCount = 4;
     int maxSupportedSampleCount = 0;
-    m_context->getIntegerv(Extensions3D::MAX_SAMPLES, &maxSupportedSampleCount);
+    m_context->getIntegerv(GL_MAX_SAMPLES_ANGLE, &maxSupportedSampleCount);
     int sampleCount = std::min(kMaxSampleCount, maxSupportedSampleCount);
     if (!sampleCount) {
         deleteMultisampleRenderBuffers();
         return false;
     }
 
-    Extensions3D* extensions = m_context->extensions();
-    ASSERT(extensions);
-
     m_context->bindFramebuffer(GL_FRAMEBUFFER, m_multisampleFrameBuffer);
 
     m_context->bindRenderbuffer(GL_RENDERBUFFER, m_multisampleRenderBuffer);
-    extensions->renderbufferStorageMultisample(GL_RENDERBUFFER, sampleCount, Extensions3D::RGBA8_OES, newContextSize.width(), newContextSize.height());
+    m_context->webContext()->renderbufferStorageMultisampleCHROMIUM(GL_RENDERBUFFER, sampleCount, GL_RGBA8_OES, newContextSize.width(), newContextSize.height());
     m_context->framebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, m_multisampleRenderBuffer);
 
     m_context->bindRenderbuffer(GL_RENDERBUFFER, m_multisampleDepthBuffer);
-    extensions->renderbufferStorageMultisample(GL_RENDERBUFFER, sampleCount, GL_DEPTH_COMPONENT16, newContextSize.width(), newContextSize.height());
+    m_context->webContext()->renderbufferStorageMultisampleCHROMIUM(GL_RENDERBUFFER, sampleCount, GL_DEPTH_COMPONENT16, newContextSize.width(), newContextSize.height());
     m_context->framebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_multisampleDepthBuffer);
 
     m_context->bindRenderbuffer(GL_RENDERBUFFER, 0);

@@ -26,7 +26,6 @@
 #include "config.h"
 
 #include "core/html/canvas/OESStandardDerivatives.h"
-#include "platform/graphics/Extensions3D.h"
 
 namespace WebCore {
 
@@ -34,7 +33,7 @@ OESStandardDerivatives::OESStandardDerivatives(WebGLRenderingContext* context)
     : WebGLExtension(context)
 {
     ScriptWrappable::init(this);
-    context->graphicsContext3D()->extensions()->ensureEnabled("GL_OES_standard_derivatives");
+    context->graphicsContext3D()->ensureExtensionEnabled("GL_OES_standard_derivatives");
 }
 
 OESStandardDerivatives::~OESStandardDerivatives()
@@ -53,8 +52,7 @@ PassRefPtr<OESStandardDerivatives> OESStandardDerivatives::create(WebGLRendering
 
 bool OESStandardDerivatives::supported(WebGLRenderingContext* context)
 {
-    Extensions3D* extensions = context->graphicsContext3D()->extensions();
-    return extensions->supports("GL_OES_standard_derivatives");
+    return context->graphicsContext3D()->supportsExtension("GL_OES_standard_derivatives");
 }
 
 const char* OESStandardDerivatives::extensionName()
