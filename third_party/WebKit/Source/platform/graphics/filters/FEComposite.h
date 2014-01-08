@@ -60,7 +60,7 @@ public:
 
     virtual void correctFilterResultIfNeeded() OVERRIDE;
 
-    virtual void determineAbsolutePaintRect();
+    virtual FloatRect determineAbsolutePaintRect(const FloatRect& requestedRect) OVERRIDE;
 
     virtual TextStream& externalRepresentation(TextStream&, int indention) const;
 

@@ -59,6 +59,14 @@ PassRefPtr<FEConvolveMatrix> FEConvolveMatrix::create(Filter* filter, const IntS
         preserveAlpha, kernelMatrix));
 }
 
+FloatRect FEConvolveMatrix::mapPaintRect(const FloatRect& rect, bool forward)
+{
+    FloatRect result = rect;
+
+    result.moveBy(forward ? -m_targetOffset : m_targetOffset - m_kernelSize);
+    result.expand(m_kernelSize);
+    return result;
+}
 
 IntSize FEConvolveMatrix::kernelSize() const
 {

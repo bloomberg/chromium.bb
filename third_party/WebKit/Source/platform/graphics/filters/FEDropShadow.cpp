@@ -49,21 +49,6 @@ PassRefPtr<FEDropShadow> FEDropShadow::create(Filter* filter, float stdX, float 
     return adoptRef(new FEDropShadow(filter, stdX, stdY, dx, dy, shadowColor, shadowOpacity));
 }
 
-void FEDropShadow::determineAbsolutePaintRect()
-{
-    Filter* filter = this->filter();
-    ASSERT_UNUSED(filter, filter);
-
-    FloatRect absolutePaintRect = mapRect(inputEffect(0)->absolutePaintRect());
-
-    if (clipsToBounds())
-        absolutePaintRect.intersect(maxEffectRect());
-    else
-        absolutePaintRect.unite(maxEffectRect());
-
-    setAbsolutePaintRect(enclosingIntRect(absolutePaintRect));
-}
-
 FloatRect FEDropShadow::mapRect(const FloatRect& rect, bool forward)
 {
     FloatRect result = rect;

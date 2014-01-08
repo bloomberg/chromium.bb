@@ -60,8 +60,7 @@ private:
     virtual void applySoftware() OVERRIDE;
     virtual bool applySkia() OVERRIDE;
 
-    virtual void determineAbsolutePaintRect() OVERRIDE;
-    bool affectsTransparentPixels();
+    bool affectsTransparentPixels() OVERRIDE;
 
     ColorMatrixType m_type;
     Vector<float> m_values;

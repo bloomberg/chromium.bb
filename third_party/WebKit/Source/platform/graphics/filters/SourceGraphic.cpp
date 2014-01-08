@@ -40,12 +40,19 @@ const AtomicString& SourceGraphic::effectName()
     return s_effectName;
 }
 
-void SourceGraphic::determineAbsolutePaintRect()
+static FloatRect sourceImageRectInResolution(Filter* filter)
 {
-    Filter* filter = this->filter();
-    FloatRect paintRect = filter->sourceImageRect();
-    paintRect.scale(filter->filterResolution().width(), filter->filterResolution().height());
-    setAbsolutePaintRect(enclosingIntRect(paintRect));
+    FloatRect srcRect = filter->sourceImageRect();
+    srcRect.scale(filter->filterResolution().width(), filter->filterResolution().height());
+    return srcRect;
+}
+
+FloatRect SourceGraphic::determineAbsolutePaintRect(const FloatRect& requestedRect)
+{
+    FloatRect srcRect = sourceImageRectInResolution(filter());
+    srcRect.intersect(requestedRect);
+    addAbsolutePaintRect(srcRect);
+    return srcRect;
 }
 
 void SourceGraphic::applySoftware()
@@ -55,7 +62,11 @@ void SourceGraphic::applySoftware()
     if (!resultImage || !filter->sourceImage())
         return;
 
-    resultImage->context()->drawImageBuffer(filter->sourceImage(), IntPoint());
+    FloatRect srcRect = sourceImageRectInResolution(filter);
+    IntRect srcIntRect = enclosingIntRect(srcRect);
+    resultImage->context()->drawImageBuffer(
+        filter->sourceImage(),
+        IntPoint(srcIntRect.location() - absolutePaintRect().location()));
 }
 
 TextStream& SourceGraphic::externalRepresentation(TextStream& ts, int indent) const

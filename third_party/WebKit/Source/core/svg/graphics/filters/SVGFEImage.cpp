@@ -63,21 +63,50 @@ PassRefPtr<FEImage> FEImage::createWithIRIReference(Filter* filter, Document& do
     return adoptRef(new FEImage(filter, document, href, preserveAspectRatio));
 }
 
-void FEImage::determineAbsolutePaintRect()
+static FloatRect getRendererRepaintRect(RenderObject* renderer)
 {
-    FloatRect paintRect = filter()->absoluteTransform().mapRect(filterPrimitiveSubregion());
-    FloatRect srcRect;
-    if (m_image) {
-        srcRect.setSize(m_image->size());
-        m_preserveAspectRatio.transformRect(paintRect, srcRect);
-    } else if (RenderObject* renderer = referencedRenderer())
-        srcRect = filter()->absoluteTransform().mapRect(renderer->repaintRectInLocalCoordinates());
+    return renderer->localToParentTransform().mapRect(
+        renderer->repaintRectInLocalCoordinates());
+}
 
+FloatRect FEImage::determineAbsolutePaintRect(const FloatRect& originalRequestedRect)
+{
+    RenderObject* renderer = referencedRenderer();
+    if (!m_image && !renderer)
+        return FloatRect();
+
+    FloatRect requestedRect = originalRequestedRect;
     if (clipsToBounds())
-        paintRect.intersect(maxEffectRect());
-    else
-        paintRect.unite(maxEffectRect());
-    setAbsolutePaintRect(enclosingIntRect(paintRect));
+        requestedRect.intersect(maxEffectRect());
+
+    FloatRect destRect = filter()->absoluteTransform().mapRect(filterPrimitiveSubregion());
+    FloatSize filterResolution = filter()->filterResolution();
+    destRect.scale(filterResolution.width(), filterResolution.height());
+    FloatRect srcRect;
+    if (renderer) {
+        srcRect = getRendererRepaintRect(renderer);
+        SVGElement* contextNode = toSVGElement(renderer->node());
+
+        if (contextNode->hasRelativeLengths()) {
+            // FIXME: This fixes relative lengths but breaks non-relative ones (see crbug/260709).
+            SVGLengthContext lengthContext(contextNode);
+            FloatSize viewportSize;
+            if (lengthContext.determineViewport(viewportSize)) {
+                srcRect = makeMapBetweenRects(FloatRect(FloatPoint(), viewportSize), destRect).mapRect(srcRect);
+            }
+        } else {
+            srcRect = filter()->absoluteTransform().mapRect(srcRect);
+            srcRect.move(destRect.x(), destRect.y());
+        }
+        destRect.intersect(srcRect);
+    } else {
+        srcRect = FloatRect(FloatPoint(), m_image->size());
+        m_preserveAspectRatio.transformRect(destRect, srcRect);
+    }
+
+    destRect.intersect(requestedRect);
+    addAbsolutePaintRect(destRect);
+    return destRect;
 }
 
 RenderObject* FEImage::referencedRenderer() const
@@ -99,44 +128,42 @@ void FEImage::applySoftware()
     ImageBuffer* resultImage = createImageBufferResult();
     if (!resultImage)
         return;
-
-    FloatRect destRect = filter()->absoluteTransform().mapRect(filterPrimitiveSubregion());
-
-    FloatRect srcRect;
-    if (renderer)
-        srcRect = filter()->absoluteTransform().mapRect(renderer->repaintRectInLocalCoordinates());
-    else {
-        srcRect = FloatRect(FloatPoint(), m_image->size());
-        m_preserveAspectRatio.transformRect(destRect, srcRect);
-    }
-
     IntPoint paintLocation = absolutePaintRect().location();
-    destRect.move(-paintLocation.x(), -paintLocation.y());
+    resultImage->context()->translate(-paintLocation.x(), -paintLocation.y());
 
     // FEImage results are always in ColorSpaceDeviceRGB
     setResultColorSpace(ColorSpaceDeviceRGB);
 
-    if (renderer) {
-        SVGElement* contextNode = toSVGElement(renderer->node());
-        if (contextNode->hasRelativeLengths()) {
-            SVGLengthContext lengthContext(contextNode);
-            FloatSize viewportSize;
+    FloatRect destRect = filter()->absoluteTransform().mapRect(filterPrimitiveSubregion());
+    FloatSize filterResolution = filter()->filterResolution();
+    destRect.scale(filterResolution.width(), filterResolution.height());
+    FloatRect srcRect;
 
-            // If we're referencing an element with percentage units, eg. <rect with="30%"> those values were resolved against the viewport.
-            // Build up a transformation that maps from the viewport space to the filter primitive subregion.
-            if (lengthContext.determineViewport(viewportSize))
-                resultImage->context()->concatCTM(makeMapBetweenRects(FloatRect(FloatPoint(), viewportSize), destRect));
-        } else {
-            const AffineTransform& absoluteTransform = filter()->absoluteTransform();
-            resultImage->context()->concatCTM(absoluteTransform);
-        }
+    if (!renderer) {
+        srcRect = FloatRect(FloatPoint(), m_image->size());
+        m_preserveAspectRatio.transformRect(destRect, srcRect);
 
-        AffineTransform contentTransformation;
-        SVGRenderingContext::renderSubtree(resultImage->context(), renderer, contentTransformation);
+        resultImage->context()->drawImage(m_image.get(), destRect, srcRect);
         return;
     }
 
-    resultImage->context()->drawImage(m_image.get(), destRect, srcRect);
+    SVGElement* contextNode = toSVGElement(renderer->node());
+    if (contextNode->hasRelativeLengths()) {
+        // FIXME: This fixes relative lengths but breaks non-relative ones (see crbug/260709).
+        SVGLengthContext lengthContext(contextNode);
+        FloatSize viewportSize;
+
+        // If we're referencing an element with percentage units, eg. <rect with="30%"> those values were resolved against the viewport.
+        // Build up a transformation that maps from the viewport space to the filter primitive subregion.
+        if (lengthContext.determineViewport(viewportSize))
+            resultImage->context()->concatCTM(makeMapBetweenRects(FloatRect(FloatPoint(), viewportSize), destRect));
+    } else {
+        resultImage->context()->translate(destRect.x(), destRect.y());
+        resultImage->context()->concatCTM(filter()->absoluteTransform());
+    }
+
+    AffineTransform contentTransformation;
+    SVGRenderingContext::renderSubtree(resultImage->context(), renderer, contentTransformation);
 }
 
 TextStream& FEImage::externalRepresentation(TextStream& ts, int indent) const
@@ -145,7 +172,7 @@ TextStream& FEImage::externalRepresentation(TextStream& ts, int indent) const
     if (m_image)
         imageSize = m_image->size();
     else if (RenderObject* renderer = referencedRenderer())
-        imageSize = enclosingIntRect(renderer->repaintRectInLocalCoordinates()).size();
+        imageSize = enclosingIntRect(getRendererRepaintRect(renderer)).size();
     writeIndent(ts, indent);
     ts << "[feImage";
     FilterEffect::externalRepresentation(ts);

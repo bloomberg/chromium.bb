@@ -282,17 +282,6 @@ bool FEColorMatrix::applySkia()
     return true;
 }
 
-void FEColorMatrix::determineAbsolutePaintRect()
-{
-    if (affectsTransparentPixels()) {
-        // We have output for pixels that are transparent in the input, this primitive
-        // should apply for the whole filter region.
-        setAbsolutePaintRect(enclosingIntRect(maxEffectRect()));
-    } else {
-        FilterEffect::determineAbsolutePaintRect();
-    }
-}
-
 bool FEColorMatrix::affectsTransparentPixels()
 {
     // Because the input pixels are premultiplied, the only way clear pixels can be

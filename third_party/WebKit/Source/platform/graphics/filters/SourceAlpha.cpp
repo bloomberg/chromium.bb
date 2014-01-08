@@ -43,12 +43,19 @@ const AtomicString& SourceAlpha::effectName()
     return s_effectName;
 }
 
-void SourceAlpha::determineAbsolutePaintRect()
+static FloatRect sourceImageRectInResolution(Filter* filter)
 {
-    Filter* filter = this->filter();
-    FloatRect paintRect = filter->sourceImageRect();
-    paintRect.scale(filter->filterResolution().width(), filter->filterResolution().height());
-    setAbsolutePaintRect(enclosingIntRect(paintRect));
+    FloatRect srcRect = filter->sourceImageRect();
+    srcRect.scale(filter->filterResolution().width(), filter->filterResolution().height());
+    return srcRect;
+}
+
+FloatRect SourceAlpha::determineAbsolutePaintRect(const FloatRect& requestedRect)
+{
+    FloatRect srcRect = sourceImageRectInResolution(filter());
+    srcRect.intersect(requestedRect);
+    addAbsolutePaintRect(srcRect);
+    return srcRect;
 }
 
 void SourceAlpha::applySoftware()
@@ -63,7 +70,13 @@ void SourceAlpha::applySoftware()
     FloatRect imageRect(FloatPoint(), absolutePaintRect().size());
     GraphicsContext* filterContext = resultImage->context();
     filterContext->fillRect(imageRect, Color::black);
-    filterContext->drawImageBuffer(filter->sourceImage(), IntPoint(), CompositeDestinationIn);
+
+    FloatRect srcRect = sourceImageRectInResolution(filter);
+    IntRect srcIntRect = enclosingIntRect(srcRect);
+    filterContext->drawImageBuffer(
+        filter->sourceImage(),
+        IntPoint(srcIntRect.location() - absolutePaintRect().location()),
+        CompositeDestinationIn);
 }
 
 PassRefPtr<SkImageFilter> SourceAlpha::createImageFilter(SkiaImageFilterBuilder* builder)

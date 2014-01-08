@@ -46,8 +46,6 @@ class PLATFORM_EXPORT FELighting : public FilterEffect {
 public:
     virtual PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) OVERRIDE;
 
-    virtual void determineAbsolutePaintRect() { setAbsolutePaintRect(enclosingIntRect(maxEffectRect())); }
-
 protected:
     static const int s_minimalRectDimension = 100 * 100; // Empirical data limit for parallel jobs
 
@@ -85,6 +83,9 @@ protected:
         int yStart;
         int yEnd;
     };
+
+    virtual FloatRect mapPaintRect(const FloatRect&, bool forward = true) OVERRIDE FINAL;
+    virtual bool affectsTransparentPixels() OVERRIDE { return true; }
 
     static void platformApplyGenericWorker(PlatformApplyGenericParameters*);
     static void platformApplyNeonWorker(FELightingPaintingDataForNeon*);

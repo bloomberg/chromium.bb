@@ -204,17 +204,6 @@ bool FEComponentTransfer::applySkia()
     return true;
 }
 
-void FEComponentTransfer::determineAbsolutePaintRect()
-{
-    if (affectsTransparentPixels()) {
-        // We have output for pixels that are transparent in the input, this primitive
-        // should apply for the whole filter region.
-        setAbsolutePaintRect(enclosingIntRect(maxEffectRect()));
-    } else {
-        FilterEffect::determineAbsolutePaintRect();
-    }
-}
-
 bool FEComponentTransfer::affectsTransparentPixels()
 {
     double intercept = 0;

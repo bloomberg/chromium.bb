@@ -38,7 +38,7 @@ public:
     static PassRefPtr<FEImage> createWithImage(Filter*, PassRefPtr<Image>, const SVGPreserveAspectRatio&);
     static PassRefPtr<FEImage> createWithIRIReference(Filter*, Document&, const String&, const SVGPreserveAspectRatio&);
 
-    virtual void determineAbsolutePaintRect();
+    virtual FloatRect determineAbsolutePaintRect(const FloatRect& requestedRect) OVERRIDE;
 
     virtual FilterEffectType filterEffectType() const { return FilterEffectTypeImage; }
 

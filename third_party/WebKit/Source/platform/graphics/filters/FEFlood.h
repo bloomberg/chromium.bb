@@ -46,8 +46,6 @@ public:
 
     virtual PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) OVERRIDE;
 
-    virtual void determineAbsolutePaintRect() { setAbsolutePaintRect(enclosingIntRect(maxEffectRect())); }
-
     virtual TextStream& externalRepresentation(TextStream&, int indention) const;
 
 private:

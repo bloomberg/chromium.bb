@@ -38,7 +38,6 @@ public:
     float dy() const;
     void setDy(float);
 
-    virtual void determineAbsolutePaintRect();
     virtual FloatRect mapRect(const FloatRect&, bool forward = true) OVERRIDE FINAL;
 
     virtual TextStream& externalRepresentation(TextStream&, int indention) const;

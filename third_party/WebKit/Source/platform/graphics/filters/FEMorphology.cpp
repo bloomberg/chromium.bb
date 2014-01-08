@@ -80,16 +80,6 @@ float FEMorphology::radiusY() const
     return m_radiusY;
 }
 
-void FEMorphology::determineAbsolutePaintRect()
-{
-    FloatRect paintRect = mapRect(inputEffect(0)->absolutePaintRect());
-    if (clipsToBounds())
-        paintRect.intersect(maxEffectRect());
-    else
-        paintRect.unite(maxEffectRect());
-    setAbsolutePaintRect(enclosingIntRect(paintRect));
-}
-
 FloatRect FEMorphology::mapRect(const FloatRect& rect, bool)
 {
     FloatRect result = rect;

@@ -33,7 +33,7 @@ public:
 
     static const AtomicString& effectName();
 
-    virtual void determineAbsolutePaintRect();
+    virtual FloatRect determineAbsolutePaintRect(const FloatRect& requestedRect) OVERRIDE;
 
     virtual FilterEffectType filterEffectType() const { return FilterEffectTypeSourceInput; }
 

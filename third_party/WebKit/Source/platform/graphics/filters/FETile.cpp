@@ -46,6 +46,11 @@ PassRefPtr<FETile> FETile::create(Filter* filter)
     return adoptRef(new FETile(filter));
 }
 
+FloatRect FETile::mapPaintRect(const FloatRect& rect, bool forward)
+{
+    return forward ? maxEffectRect() : inputEffect(0)->maxEffectRect();
+}
+
 void FETile::applySoftware()
 {
     FilterEffect* in = inputEffect(0);

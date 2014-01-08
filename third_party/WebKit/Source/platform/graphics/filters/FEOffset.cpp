@@ -66,18 +66,6 @@ void FEOffset::setDy(float dy)
     m_dy = dy;
 }
 
-void FEOffset::determineAbsolutePaintRect()
-{
-    FloatRect paintRect = inputEffect(0)->absolutePaintRect();
-    Filter* filter = this->filter();
-    paintRect.move(filter->applyHorizontalScale(m_dx), filter->applyVerticalScale(m_dy));
-    if (clipsToBounds())
-        paintRect.intersect(maxEffectRect());
-    else
-        paintRect.unite(maxEffectRect());
-    setAbsolutePaintRect(enclosingIntRect(paintRect));
-}
-
 FloatRect FEOffset::mapRect(const FloatRect& rect, bool forward)
 {
     FloatRect result = rect;

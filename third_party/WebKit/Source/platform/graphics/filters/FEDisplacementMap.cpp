@@ -49,6 +49,14 @@ PassRefPtr<FEDisplacementMap> FEDisplacementMap::create(Filter* filter, ChannelS
     return adoptRef(new FEDisplacementMap(filter, xChannelSelector, yChannelSelector, scale));
 }
 
+FloatRect FEDisplacementMap::mapPaintRect(const FloatRect& rect, bool)
+{
+    FloatRect result = rect;
+    result.inflateX(filter()->applyHorizontalScale(m_scale / 2));
+    result.inflateY(filter()->applyVerticalScale(m_scale / 2));
+    return result;
+}
+
 ChannelSelectorType FEDisplacementMap::xChannelSelector() const
 {
     return m_xChannelSelector;

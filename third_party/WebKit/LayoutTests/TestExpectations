@@ -905,6 +905,14 @@ crbug.com/326524 virtual/threaded/compositing/visibility/visibility-simple-video
 
 crbug.com/328749 virtual/threaded/transitions/position-background-transition.html [ ImageOnlyFailure ]
 
+crbug.com/331751 svg/filters/fecomposite-region.svg [ NeedsRebaseline ]
+crbug.com/331751 svg/filters/fecomposite-two-regions.svg [ NeedsRebaseline ]
+crbug.com/331751 css3/filters/effect-reference-composite.html [ NeedsRebaseline ]
+crbug.com/331751 svg/filters/subRegion-two-effects.svg [ NeedsRebaseline ]
+crbug.com/331751 svg/filters/feImage-filterUnits-userSpaceOnUse-primitiveUnits-userSpaceOnUse.svg [ NeedsRebaseline ]
+crbug.com/331751 svg/filters/feImage-filterUnits-userSpaceOnUse-primitiveUnits-objectBoundingBox.svg [ NeedsRebaseline ]
+crbug.com/331751 svg/filters/feImage-late-indirect-update.svg [ NeedsRebaseline ]
+
 Bug(dcarney) http/tests/security/naked-global-object.html [ NeedsManualRebaseline ]
 
 crbug.com/330617 inspector/profiler/heap-snapshot-loader.html [ Pass Failure ]

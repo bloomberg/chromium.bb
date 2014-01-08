@@ -255,18 +255,6 @@ void FEGaussianBlur::calculateKernelSize(Filter* filter, unsigned& kernelSizeX, 
     calculateUnscaledKernelSize(kernelSizeX, kernelSizeY, stdX, stdY);
 }
 
-void FEGaussianBlur::determineAbsolutePaintRect()
-{
-    FloatRect absolutePaintRect = mapRect(inputEffect(0)->absolutePaintRect());
-
-    if (clipsToBounds())
-        absolutePaintRect.intersect(maxEffectRect());
-    else
-        absolutePaintRect.unite(maxEffectRect());
-
-    setAbsolutePaintRect(enclosingIntRect(absolutePaintRect));
-}
-
 FloatRect FEGaussianBlur::mapRect(const FloatRect& rect, bool)
 {
     FloatRect result = rect;
@@ -278,6 +266,26 @@ FloatRect FEGaussianBlur::mapRect(const FloatRect& rect, bool)
     result.inflateX(3 * kernelSizeX * 0.5f);
     result.inflateY(3 * kernelSizeY * 0.5f);
     return result;
+}
+
+FloatRect FEGaussianBlur::determineAbsolutePaintRect(const FloatRect& originalRequestedRect)
+{
+    FloatRect requestedRect = originalRequestedRect;
+    if (clipsToBounds())
+        requestedRect.intersect(maxEffectRect());
+
+    FilterEffect* input = inputEffect(0);
+    FloatRect inputRect = input->determineAbsolutePaintRect(mapRect(requestedRect, false));
+    FloatRect outputRect = mapRect(inputRect, true);
+    outputRect.intersect(requestedRect);
+    addAbsolutePaintRect(outputRect);
+
+    // Blur needs space for both input and output pixels in the paint area.
+    // Input is also clipped to subregion.
+    if (clipsToBounds())
+        inputRect.intersect(maxEffectRect());
+    addAbsolutePaintRect(inputRect);
+    return outputRect;
 }
 
 void FEGaussianBlur::applySoftware()

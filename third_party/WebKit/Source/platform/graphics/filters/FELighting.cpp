@@ -53,6 +53,14 @@ FELighting::FELighting(Filter* filter, LightingType lightingType, const Color& l
 {
 }
 
+FloatRect FELighting::mapPaintRect(const FloatRect& rect, bool)
+{
+    FloatRect result = rect;
+    // The areas affected need to be a pixel bigger to accommodate the Sobel kernel.
+    result.inflate(1);
+    return result;
+}
+
 const static int cPixelSize = 4;
 const static int cAlphaChannelOffset = 3;
 const static unsigned char cOpaqueAlpha = static_cast<unsigned char>(0xff);
