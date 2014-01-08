@@ -76,7 +76,7 @@ public:
 private:
     ElementShadow();
 
-    void removeAllShadowRoots();
+    void removeDetachedShadowRoots();
     bool resolveApplyAuthorStyles() const;
 
     void distribute();

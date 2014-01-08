@@ -134,7 +134,7 @@ ElementShadow::ElementShadow()
 
 ElementShadow::~ElementShadow()
 {
-    removeAllShadowRoots();
+    removeDetachedShadowRoots();
 }
 
 ShadowRoot& ElementShadow::addShadowRoot(Element& shadowHost, ShadowRoot::ShadowRootType type)
@@ -162,7 +162,7 @@ ShadowRoot& ElementShadow::addShadowRoot(Element& shadowHost, ShadowRoot::Shadow
     return *m_shadowRoots.head();
 }
 
-void ElementShadow::removeAllShadowRoots()
+void ElementShadow::removeDetachedShadowRoots()
 {
     // Dont protect this ref count.
     Element* shadowHost = host();
@@ -176,8 +176,8 @@ void ElementShadow::removeAllShadowRoots()
         oldRoot->setParentTreeScope(shadowHost->document());
         oldRoot->setPrev(0);
         oldRoot->setNext(0);
-        ChildNodeRemovalNotifier(*shadowHost).notify(*oldRoot);
     }
+
 }
 
 void ElementShadow::attach(const Node::AttachContext& context)
