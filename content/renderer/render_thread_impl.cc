@@ -26,6 +26,7 @@
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
+#include "cc/base/switches.h"
 #include "content/child/appcache/appcache_dispatcher.h"
 #include "content/child/appcache/appcache_frontend_impl.h"
 #include "content/child/child_histogram_message_filter.h"
@@ -742,6 +743,19 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
     ScheduleIdleHandler(kLongIdleHandlerDelayMs);
 
   webkit::SetSharedMemoryAllocationFunction(AllocateSharedMemoryFunction);
+
+  // Limit use of the scaled image cache to when deferred image decoding
+  // is enabled.
+  // TODO(reveman): Allow use of this cache on Android once
+  // SkDiscardablePixelRef is used for decoded images. crbug.com/330041
+  bool use_skia_scaled_image_cache = false;
+#if !defined(OS_ANDROID)
+  use_skia_scaled_image_cache =
+      command_line.HasSwitch(switches::kEnableDeferredImageDecoding) ||
+      cc::switches::IsImplSidePaintingEnabled();
+#endif
+  if (!use_skia_scaled_image_cache)
+    SkGraphics::SetImageCacheByteLimit(0u);
 }
 
 void RenderThreadImpl::RegisterSchemes() {
