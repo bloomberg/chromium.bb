@@ -44,7 +44,6 @@ class KeyboardController;
 
 namespace ash {
 class ShelfWidget;
-class SoloWindowTracker;
 class StackingController;
 class SystemTray;
 class ToplevelWindowEventHandler;
@@ -153,10 +152,6 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
     return animating_wallpaper_controller_.get();
   }
   void SetAnimatingWallpaperController(AnimatingDesktopController* controller);
-
-  SoloWindowTracker* solo_window_tracker() {
-    return solo_window_tracker_.get();
-  }
 
   // Access the shelf layout manager associated with this root
   // window controller, NULL if no such shelf exists.
@@ -313,7 +308,6 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   scoped_ptr<DesktopBackgroundWidgetController> wallpaper_controller_;
   scoped_ptr<AnimatingDesktopController> animating_wallpaper_controller_;
   scoped_ptr<views::corewm::ScopedCaptureClient> capture_client_;
-  scoped_ptr<SoloWindowTracker> solo_window_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindowController);
 };

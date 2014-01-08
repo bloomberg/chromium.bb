@@ -279,7 +279,6 @@ void CustomFrameViewAsh::HeaderView::OnPaint(gfx::Canvas* canvas) {
 
   header_painter_->PaintHeader(
       canvas,
-      paint_as_active_ ? HeaderPainter::ACTIVE : HeaderPainter::INACTIVE,
       theme_image_id,
       0);
   header_painter_->PaintTitleBar(canvas, GetTitleFont());

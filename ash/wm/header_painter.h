@@ -37,16 +37,6 @@ class FrameCaptionButtonContainerView;
 class ASH_EXPORT HeaderPainter : public aura::WindowObserver,
                                  public gfx::AnimationDelegate {
  public:
-  // Opacity values for the window header in various states, from 0 to 255.
-  static int kActiveWindowOpacity;
-  static int kInactiveWindowOpacity;
-  static int kSoloWindowOpacity;
-
-  enum HeaderMode {
-    ACTIVE,
-    INACTIVE
-  };
-
   HeaderPainter();
   virtual ~HeaderPainter();
 
@@ -88,7 +78,6 @@ class ASH_EXPORT HeaderPainter : public aura::WindowObserver,
   // Paints the header.
   // |theme_frame_overlay_id| is 0 if no overlay image should be used.
   void PaintHeader(gfx::Canvas* canvas,
-                   HeaderMode header_mode,
                    int theme_frame_id,
                    int theme_frame_overlay_id);
 
@@ -135,7 +124,6 @@ class ASH_EXPORT HeaderPainter : public aura::WindowObserver,
   virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(HeaderPainterTest, GetHeaderOpacity);
   FRIEND_TEST_ALL_PREFIXES(HeaderPainterTest, TitleIconAlignment);
 
   // Returns the header bounds in the coordinates of |header_view_|. The header
@@ -149,12 +137,6 @@ class ASH_EXPORT HeaderPainter : public aura::WindowObserver,
   // Returns the vertical center of the caption button container in window
   // coordinates.
   int GetCaptionButtonContainerCenterY() const;
-
-  // Returns the opacity value used to paint the header.
-  // |theme_frame_overlay_id| is 0 if no overlay image is used.
-  int GetHeaderOpacity(HeaderMode header_mode,
-                       int theme_frame_id,
-                       int theme_frame_overlay_id) const;
 
   // Returns the radius of the header's top corners.
   int GetHeaderCornerRadius() const;
@@ -187,12 +169,10 @@ class ASH_EXPORT HeaderPainter : public aura::WindowObserver,
   // Image ids and opacity last used for painting header.
   int previous_theme_frame_id_;
   int previous_theme_frame_overlay_id_;
-  int previous_opacity_;
 
   // Image ids and opacity we are crossfading from.
   int crossfade_theme_frame_id_;
   int crossfade_theme_frame_overlay_id_;
-  int crossfade_opacity_;
 
   scoped_ptr<gfx::SlideAnimation> crossfade_animation_;
 

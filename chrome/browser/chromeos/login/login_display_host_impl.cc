@@ -10,7 +10,6 @@
 #include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
-#include "ash/wm/solo_window_tracker.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
@@ -952,7 +951,6 @@ void LoginDisplayHostImpl::StartPostponedWebUI() {
 void LoginDisplayHostImpl::InitLoginWindowAndView() {
   if (login_window_)
     return;
-  ash::SoloWindowTracker::SetSoloHeaderEnabled(false);
 
   if (system::keyboard_settings::ForceKeyboardDrivenUINavigation()) {
     views::FocusManager::set_arrow_key_traversal_enabled(true);
@@ -1006,7 +1004,6 @@ void LoginDisplayHostImpl::InitLoginWindowAndView() {
 void LoginDisplayHostImpl::ResetLoginWindowAndView() {
   if (!login_window_)
     return;
-  ash::SoloWindowTracker::SetSoloHeaderEnabled(true);
   login_window_->Close();
   login_window_ = NULL;
   login_view_ = NULL;

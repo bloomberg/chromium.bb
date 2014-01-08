@@ -250,8 +250,6 @@ void BrowserNonClientFrameViewAsh::OnPaint(gfx::Canvas* canvas) {
   }
   header_painter_->PaintHeader(
       canvas,
-      ShouldPaintAsActive() ?
-          ash::HeaderPainter::ACTIVE : ash::HeaderPainter::INACTIVE,
       theme_frame_image_id,
       theme_frame_overlay_image_id);
   if (browser_view()->ShouldShowWindowTitle())

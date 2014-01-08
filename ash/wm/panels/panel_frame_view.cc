@@ -123,7 +123,6 @@ void PanelFrameView::OnPaint(gfx::Canvas* canvas) {
 
   header_painter_->PaintHeader(
       canvas,
-      paint_as_active ? HeaderPainter::ACTIVE : HeaderPainter::INACTIVE,
       theme_frame_id,
       0);
   header_painter_->PaintTitleBar(canvas, title_font_);

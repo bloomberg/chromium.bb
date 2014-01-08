@@ -8,7 +8,6 @@
 
 #include "ash/root_window_controller.h"
 #include "ash/wm/caption_buttons/frame_caption_button_container_view.h"
-#include "ash/wm/solo_window_tracker.h"
 #include "base/logging.h"  // DCHECK
 #include "grit/ash_resources.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -59,8 +58,6 @@ const SkColor kHeaderContentSeparatorColor = SkColorSetRGB(128, 128, 128);
 const int kThemeFrameImageInsetX = 5;
 // Duration of crossfade animation for activating and deactivating frame.
 const int kActivationCrossfadeDurationMs = 200;
-// Alpha/opacity value for fully-opaque headers.
-const int kFullyOpaque = 255;
 
 // Tiles an image into an area, rounding the top corners. Samples |image|
 // starting |image_inset_x| pixels from the left of the image.
@@ -135,11 +132,6 @@ void PaintFrameImagesInRoundRect(gfx::Canvas* canvas,
 
 namespace ash {
 
-// static
-int HeaderPainter::kActiveWindowOpacity = 255;  // 1.0
-int HeaderPainter::kInactiveWindowOpacity = 255;  // 1.0
-int HeaderPainter::kSoloWindowOpacity = 77;  // 0.3
-
 ///////////////////////////////////////////////////////////////////////////////
 // HeaderPainter, public:
 
@@ -157,10 +149,8 @@ HeaderPainter::HeaderPainter()
       header_right_edge_(NULL),
       previous_theme_frame_id_(0),
       previous_theme_frame_overlay_id_(0),
-      previous_opacity_(0),
       crossfade_theme_frame_id_(0),
-      crossfade_theme_frame_overlay_id_(0),
-      crossfade_opacity_(0) {}
+      crossfade_theme_frame_overlay_id_(0) {}
 
 HeaderPainter::~HeaderPainter() {
   // Sometimes we are destroyed before the window closes, so ensure we clean up.
@@ -259,7 +249,6 @@ int HeaderPainter::GetThemeBackgroundXInset() const {
 }
 
 void HeaderPainter::PaintHeader(gfx::Canvas* canvas,
-                                HeaderMode header_mode,
                                 int theme_frame_id,
                                 int theme_frame_overlay_id) {
   bool initial_paint = (previous_theme_frame_id_ == 0);
@@ -281,7 +270,6 @@ void HeaderPainter::PaintHeader(gfx::Canvas* canvas,
       crossfade_animation_.reset(new gfx::SlideAnimation(this));
       crossfade_theme_frame_id_ = previous_theme_frame_id_;
       crossfade_theme_frame_overlay_id_ = previous_theme_frame_overlay_id_;
-      crossfade_opacity_ = previous_opacity_;
       crossfade_animation_->SetSlideDuration(kActivationCrossfadeDurationMs);
       crossfade_animation_->Show();
     } else {
@@ -289,8 +277,6 @@ void HeaderPainter::PaintHeader(gfx::Canvas* canvas,
     }
   }
 
-  int opacity =
-      GetHeaderOpacity(header_mode, theme_frame_id, theme_frame_overlay_id);
   ui::ThemeProvider* theme_provider = frame_->GetThemeProvider();
   gfx::ImageSkia* theme_frame = theme_provider->GetImageSkiaNamed(
       theme_frame_id);
@@ -317,11 +303,9 @@ void HeaderPainter::PaintHeader(gfx::Canvas* canvas,
       // Reset the animation. This case occurs when the user switches the theme
       // that they are using.
       crossfade_animation_.reset();
-      paint.setAlpha(opacity);
     } else {
-      double current_value = crossfade_animation_->GetCurrentValue();
-      int old_alpha = (1 - current_value) * crossfade_opacity_;
-      int new_alpha = current_value * opacity;
+      int old_alpha = crossfade_animation_->CurrentValueBetween(255, 0);
+      int new_alpha = 255 - old_alpha;
 
       // Draw the old header background, clipping the corners to be rounded.
       paint.setAlpha(old_alpha);
@@ -336,8 +320,6 @@ void HeaderPainter::PaintHeader(gfx::Canvas* canvas,
 
       paint.setAlpha(new_alpha);
     }
-  } else {
-    paint.setAlpha(opacity);
   }
 
   // Draw the header background, clipping the corners to be rounded.
@@ -351,7 +333,6 @@ void HeaderPainter::PaintHeader(gfx::Canvas* canvas,
 
   previous_theme_frame_id_ = theme_frame_id;
   previous_theme_frame_overlay_id_ = theme_frame_overlay_id;
-  previous_opacity_ = opacity;
 
   // We don't need the extra lightness in the edges when we're at the top edge
   // of the screen or when the header's corners are not rounded.
@@ -527,36 +508,6 @@ int HeaderPainter::GetHeaderCornerRadius() const {
   bool square_corners = (frame_->IsMaximized() || frame_->IsFullscreen());
   const int kCornerRadius = 2;
   return square_corners ? 0 : kCornerRadius;
-}
-
-int HeaderPainter::GetHeaderOpacity(
-    HeaderMode header_mode,
-    int theme_frame_id,
-    int theme_frame_overlay_id) const {
-  // User-provided themes are painted fully opaque.
-  ui::ThemeProvider* theme_provider = frame_->GetThemeProvider();
-  if (theme_provider->HasCustomImage(theme_frame_id) ||
-      (theme_frame_overlay_id != 0 &&
-       theme_provider->HasCustomImage(theme_frame_overlay_id))) {
-    return kFullyOpaque;
-  }
-
-  // Maximized and fullscreen windows are fully opaque.
-  if (frame_->IsMaximized() || frame_->IsFullscreen())
-    return kFullyOpaque;
-
-  // Solo header is very transparent.
-  ash::SoloWindowTracker* solo_window_tracker =
-      internal::RootWindowController::ForWindow(window_)->solo_window_tracker();
-  if (solo_window_tracker &&
-      solo_window_tracker->GetWindowWithSoloHeader() == window_) {
-    return kSoloWindowOpacity;
-  }
-
-  // Otherwise, change transparency based on window activation status.
-  if (header_mode == ACTIVE)
-    return kActiveWindowOpacity;
-  return kInactiveWindowOpacity;
 }
 
 void HeaderPainter::SchedulePaintForHeader() {

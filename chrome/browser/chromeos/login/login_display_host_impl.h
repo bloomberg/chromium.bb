@@ -260,10 +260,6 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   std::string wizard_first_screen_name_;
   scoped_ptr<base::DictionaryValue> wizard_screen_parameters_;
 
-  // Old value of the ash::internal::kIgnoreSoloWindowFramePainterPolicy
-  // property of the root window for |login_window_|.
-  bool old_ignore_solo_window_frame_painter_policy_value_;
-
   // Called before host deletion.
   base::Closure completion_callback_;
 
