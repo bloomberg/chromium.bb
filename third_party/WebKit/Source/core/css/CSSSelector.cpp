@@ -185,12 +185,6 @@ PseudoId CSSSelector::pseudoId(PseudoType type)
         return SCROLLBAR_TRACK_PIECE;
     case PseudoResizer:
         return RESIZER;
-    case PseudoFullScreen:
-        return FULL_SCREEN;
-    case PseudoFullScreenDocument:
-        return FULL_SCREEN_DOCUMENT;
-    case PseudoFullScreenAncestor:
-        return FULL_SCREEN_ANCESTOR;
     case PseudoUnknown:
     case PseudoEmpty:
     case PseudoFirstChild:
@@ -257,6 +251,9 @@ PseudoId CSSSelector::pseudoId(PseudoType type)
     case PseudoUnresolved:
     case PseudoContent:
     case PseudoHost:
+    case PseudoFullScreen:
+    case PseudoFullScreenDocument:
+    case PseudoFullScreenAncestor:
         return NOPSEUDO;
     case PseudoNotParsed:
         ASSERT_NOT_REACHED();
