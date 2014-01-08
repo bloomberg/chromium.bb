@@ -28,6 +28,7 @@
 #include "core/html/canvas/WebGLCompressedTextureS3TC.h"
 
 #include "core/html/canvas/WebGLRenderingContext.h"
+#include "platform/graphics/Extensions3D.h"
 
 namespace WebCore {
 
@@ -35,10 +36,10 @@ WebGLCompressedTextureS3TC::WebGLCompressedTextureS3TC(WebGLRenderingContext* co
     : WebGLExtension(context)
 {
     ScriptWrappable::init(this);
-    context->addCompressedTextureFormat(GL_COMPRESSED_RGB_S3TC_DXT1_EXT);
-    context->addCompressedTextureFormat(GL_COMPRESSED_RGBA_S3TC_DXT1_EXT);
-    context->addCompressedTextureFormat(GL_COMPRESSED_RGBA_S3TC_DXT3_EXT);
-    context->addCompressedTextureFormat(GL_COMPRESSED_RGBA_S3TC_DXT5_EXT);
+    context->addCompressedTextureFormat(Extensions3D::COMPRESSED_RGB_S3TC_DXT1_EXT);
+    context->addCompressedTextureFormat(Extensions3D::COMPRESSED_RGBA_S3TC_DXT1_EXT);
+    context->addCompressedTextureFormat(Extensions3D::COMPRESSED_RGBA_S3TC_DXT3_EXT);
+    context->addCompressedTextureFormat(Extensions3D::COMPRESSED_RGBA_S3TC_DXT5_EXT);
 }
 
 WebGLCompressedTextureS3TC::~WebGLCompressedTextureS3TC()
@@ -57,11 +58,11 @@ PassRefPtr<WebGLCompressedTextureS3TC> WebGLCompressedTextureS3TC::create(WebGLR
 
 bool WebGLCompressedTextureS3TC::supported(WebGLRenderingContext* context)
 {
-    GraphicsContext3D* contextSupport = context->graphicsContext3D();
-    return contextSupport->supportsExtension("GL_EXT_texture_compression_s3tc")
-        || (contextSupport->supportsExtension("GL_EXT_texture_compression_dxt1")
-            && contextSupport->supportsExtension("GL_CHROMIUM_texture_compression_dxt3")
-            && contextSupport->supportsExtension("GL_CHROMIUM_texture_compression_dxt5"));
+    Extensions3D* extensions = context->graphicsContext3D()->extensions();
+    return extensions->supports("GL_EXT_texture_compression_s3tc")
+        || (extensions->supports("GL_EXT_texture_compression_dxt1")
+            && extensions->supports("GL_CHROMIUM_texture_compression_dxt3")
+            && extensions->supports("GL_CHROMIUM_texture_compression_dxt5"));
 }
 
 const char* WebGLCompressedTextureS3TC::extensionName()

@@ -28,6 +28,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/html/canvas/WebGLExtension.h"
+#include "platform/graphics/GraphicsTypes3D.h"
 #include "wtf/PassRefPtr.h"
 
 namespace WebCore {

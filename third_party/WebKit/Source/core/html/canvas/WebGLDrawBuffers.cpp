@@ -27,13 +27,15 @@
 
 #include "core/html/canvas/WebGLDrawBuffers.h"
 
+#include "platform/graphics/Extensions3D.h"
+
 namespace WebCore {
 
 WebGLDrawBuffers::WebGLDrawBuffers(WebGLRenderingContext* context)
     : WebGLExtension(context)
 {
     ScriptWrappable::init(this);
-    context->graphicsContext3D()->ensureExtensionEnabled("GL_EXT_draw_buffers");
+    context->graphicsContext3D()->extensions()->ensureEnabled("GL_EXT_draw_buffers");
 }
 
 WebGLDrawBuffers::~WebGLDrawBuffers()
@@ -53,7 +55,8 @@ PassRefPtr<WebGLDrawBuffers> WebGLDrawBuffers::create(WebGLRenderingContext* con
 // static
 bool WebGLDrawBuffers::supported(WebGLRenderingContext* context)
 {
-    return (context->graphicsContext3D()->supportsExtension("GL_EXT_draw_buffers")
+    Extensions3D* extensions = context->graphicsContext3D()->extensions();
+    return (extensions->supports("GL_EXT_draw_buffers")
         && satisfiesWebGLRequirements(context));
 }
 
@@ -79,7 +82,7 @@ void WebGLDrawBuffers::drawBuffersWEBGL(const Vector<GLenum>& buffers)
         }
         // Because the backbuffer is simulated on all current WebKit ports, we need to change BACK to COLOR_ATTACHMENT0.
         GLenum value = (bufs[0] == GL_BACK) ? GL_COLOR_ATTACHMENT0 : GL_NONE;
-        m_context->webGraphicsContext3D()->drawBuffersEXT(1, &value);
+        m_context->graphicsContext3D()->extensions()->drawBuffersEXT(1, &value);
         m_context->setBackDrawBuffer(bufs[0]);
     } else {
         if (n > m_context->maxDrawBuffers()) {
@@ -87,7 +90,7 @@ void WebGLDrawBuffers::drawBuffersWEBGL(const Vector<GLenum>& buffers)
             return;
         }
         for (GLsizei i = 0; i < n; ++i) {
-            if (bufs[i] != GL_NONE && bufs[i] != static_cast<GLenum>(GL_COLOR_ATTACHMENT0_EXT + i)) {
+            if (bufs[i] != GL_NONE && bufs[i] != static_cast<GLenum>(Extensions3D::COLOR_ATTACHMENT0_EXT + i)) {
                 m_context->synthesizeGLError(GL_INVALID_OPERATION, "drawBuffersWEBGL", "COLOR_ATTACHMENTi_EXT or NONE");
                 return;
             }
@@ -99,14 +102,13 @@ void WebGLDrawBuffers::drawBuffersWEBGL(const Vector<GLenum>& buffers)
 // static
 bool WebGLDrawBuffers::satisfiesWebGLRequirements(WebGLRenderingContext* webglContext)
 {
-    blink::WebGraphicsContext3D* context = webglContext->webGraphicsContext3D();
-    GraphicsContext3D* contextSupport = webglContext->graphicsContext3D();
+    GraphicsContext3D* context = webglContext->graphicsContext3D();
 
     // This is called after we make sure GL_EXT_draw_buffers is supported.
     GLint maxDrawBuffers = 0;
     GLint maxColorAttachments = 0;
-    context->getIntegerv(GL_MAX_DRAW_BUFFERS_EXT, &maxDrawBuffers);
-    context->getIntegerv(GL_MAX_COLOR_ATTACHMENTS_EXT, &maxColorAttachments);
+    context->getIntegerv(Extensions3D::MAX_DRAW_BUFFERS_EXT, &maxDrawBuffers);
+    context->getIntegerv(Extensions3D::MAX_COLOR_ATTACHMENTS_EXT, &maxColorAttachments);
     if (maxDrawBuffers < 4 || maxColorAttachments < 4)
         return false;
 
@@ -114,11 +116,11 @@ bool WebGLDrawBuffers::satisfiesWebGLRequirements(WebGLRenderingContext* webglCo
     context->bindFramebuffer(GL_FRAMEBUFFER, fbo);
 
     const unsigned char* buffer = 0; // Chromium doesn't allow init data for depth/stencil tetxures.
-    bool supportsDepth = (contextSupport->supportsExtension("GL_CHROMIUM_depth_texture")
-        || contextSupport->supportsExtension("GL_OES_depth_texture")
-        || contextSupport->supportsExtension("GL_ARB_depth_texture"));
-    bool supportsDepthStencil = (contextSupport->supportsExtension("GL_EXT_packed_depth_stencil")
-        || contextSupport->supportsExtension("GL_OES_packed_depth_stencil"));
+    bool supportsDepth = (context->extensions()->supports("GL_CHROMIUM_depth_texture")
+        || context->extensions()->supports("GL_OES_depth_texture")
+        || context->extensions()->supports("GL_ARB_depth_texture"));
+    bool supportsDepthStencil = (context->extensions()->supports("GL_EXT_packed_depth_stencil")
+        || context->extensions()->supports("GL_OES_packed_depth_stencil"));
     Platform3DObject depthStencil = 0;
     if (supportsDepthStencil) {
         depthStencil = context->createTexture();

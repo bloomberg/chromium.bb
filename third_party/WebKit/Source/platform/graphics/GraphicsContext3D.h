@@ -28,6 +28,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/geometry/IntRect.h"
+#include "platform/graphics/Extensions3D.h"
 #include "platform/graphics/GraphicsTypes3D.h"
 #include "platform/graphics/Image.h"
 #include "platform/weborigin/KURL.h"
@@ -57,6 +58,7 @@ class WebGraphicsContext3DProvider;
 
 namespace WebCore {
 class DrawingBuffer;
+class Extensions3D;
 class GraphicsContext3DContextLostCallbackAdapter;
 class GraphicsContext3DErrorMessageCallbackAdapter;
 class Image;
@@ -302,6 +304,12 @@ public:
     // getError in the order they were added.
     void synthesizeGLError(GLenum error);
 
+    // Support for extensions. Returns a non-null object, though not
+    // all methods it contains may necessarily be supported on the
+    // current hardware. Must call Extensions3D::supports() to
+    // determine this.
+    Extensions3D* extensions();
+
     static unsigned getClearBitsByFormat(GLenum);
 
     enum ChannelBits {
@@ -399,15 +407,14 @@ public:
 
     void setPackAlignment(GLint param);
 
-    // Extension support.
+    // Extensions3D support.
     bool supportsExtension(const String& name);
     bool ensureExtensionEnabled(const String& name);
     bool isExtensionEnabled(const String& name);
-    bool canUseCopyTextureCHROMIUM(GLenum destFormat, GLenum destType, GLint level);
-
-    void paintFramebufferToCanvas(int framebuffer, int width, int height, bool premultiplyAlpha, ImageBuffer*);
 
 private:
+    friend class Extensions3D;
+
     GraphicsContext3D(PassOwnPtr<blink::WebGraphicsContext3D>, bool preserveDrawingBuffer);
     GraphicsContext3D(PassOwnPtr<blink::WebGraphicsContext3DProvider>, bool preserveDrawingBuffer);
     GraphicsContext3D(blink::WebGraphicsContext3D* webContext);
@@ -420,6 +427,7 @@ private:
     // Implemented in GraphicsContext3DImagePacking.cpp
     static bool packPixels(const uint8_t* sourceData, DataFormat sourceDataFormat, unsigned width, unsigned height, unsigned sourceUnpackAlignment, unsigned destinationFormat, unsigned destinationType, AlphaOp, void* destinationData, bool flipY);
 
+    void paintFramebufferToCanvas(int framebuffer, int width, int height, bool premultiplyAlpha, ImageBuffer*);
     // Helper function to flip a bitmap vertically.
     void flipVertically(uint8_t* data, int width, int height);
 
@@ -432,6 +440,7 @@ private:
     OwnPtr<GraphicsContext3DContextLostCallbackAdapter> m_contextLostCallbackAdapter;
     OwnPtr<GraphicsContext3DErrorMessageCallbackAdapter> m_errorMessageCallbackAdapter;
     OwnPtr<blink::WebGraphicsContext3D> m_ownedWebContext;
+    OwnPtr<Extensions3D> m_extensions;
     bool m_initializedAvailableExtensions;
     HashSet<String> m_enabledExtensions;
     HashSet<String> m_requestableExtensions;

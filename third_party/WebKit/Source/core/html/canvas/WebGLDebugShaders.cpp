@@ -29,6 +29,7 @@
 #include "bindings/v8/ExceptionState.h"
 #include "core/html/canvas/WebGLRenderingContext.h"
 #include "core/html/canvas/WebGLShader.h"
+#include "platform/graphics/Extensions3D.h"
 
 namespace WebCore {
 
@@ -58,12 +59,13 @@ String WebGLDebugShaders::getTranslatedShaderSource(WebGLShader* shader)
         return String();
     if (!m_context->validateWebGLObject("getTranslatedShaderSource", shader))
         return "";
-    return m_context->webGraphicsContext3D()->getTranslatedShaderSourceANGLE(shader->object());
+    return m_context->graphicsContext3D()->extensions()->getTranslatedShaderSourceANGLE(shader->object());
 }
 
 bool WebGLDebugShaders::supported(WebGLRenderingContext* context)
 {
-    return context->graphicsContext3D()->supportsExtension("GL_ANGLE_translated_shader_source");
+    Extensions3D* extensions = context->graphicsContext3D()->extensions();
+    return extensions->supports("GL_ANGLE_translated_shader_source");
 }
 
 const char* WebGLDebugShaders::extensionName()

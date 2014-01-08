@@ -459,8 +459,9 @@ bool WebMediaPlayerClientImpl::copyVideoTextureToPlatformTexture(WebCore::Graphi
 {
     if (!context || !m_webMediaPlayer)
         return false;
-    if (!context->supportsExtension("GL_CHROMIUM_copy_texture") || !context->supportsExtension("GL_CHROMIUM_flipy")
-        || !context->canUseCopyTextureCHROMIUM(internalFormat, type, level) || !context->makeContextCurrent())
+    Extensions3D* extensions = context->extensions();
+    if (!extensions || !extensions->supports("GL_CHROMIUM_copy_texture") || !extensions->supports("GL_CHROMIUM_flipy")
+        || !extensions->canUseCopyTextureCHROMIUM(internalFormat, type, level) || !context->makeContextCurrent())
         return false;
     WebGraphicsContext3D* webGraphicsContext3D = context->webContext();
     return m_webMediaPlayer->copyVideoTextureToPlatformTexture(webGraphicsContext3D, texture, level, internalFormat, type, premultiplyAlpha, flipY);
@@ -556,7 +557,8 @@ void WebMediaPlayerClientImpl::paintOnAndroid(WebCore::GraphicsContext* context,
     if (!context || !context3D || !m_webMediaPlayer || context->paintingDisabled())
         return;
 
-    if (!context->supportsExtension("GL_CHROMIUM_copy_texture") || !context->supportsExtension("GL_CHROMIUM_flipy")
+    Extensions3D* extensions = context3D->extensions();
+    if (!extensions || !extensions->supports("GL_CHROMIUM_copy_texture") || !extensions->supports("GL_CHROMIUM_flipy")
         || !context3D->makeContextCurrent())
         return;
 

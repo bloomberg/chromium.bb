@@ -28,6 +28,7 @@
 #include "core/html/canvas/WebGLCompressedTexturePVRTC.h"
 
 #include "core/html/canvas/WebGLRenderingContext.h"
+#include "platform/graphics/Extensions3D.h"
 
 namespace WebCore {
 
@@ -35,10 +36,10 @@ WebGLCompressedTexturePVRTC::WebGLCompressedTexturePVRTC(WebGLRenderingContext* 
     : WebGLExtension(context)
 {
     ScriptWrappable::init(this);
-    context->addCompressedTextureFormat(GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG);
-    context->addCompressedTextureFormat(GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG);
-    context->addCompressedTextureFormat(GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG);
-    context->addCompressedTextureFormat(GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG);
+    context->addCompressedTextureFormat(Extensions3D::COMPRESSED_RGB_PVRTC_4BPPV1_IMG);
+    context->addCompressedTextureFormat(Extensions3D::COMPRESSED_RGB_PVRTC_2BPPV1_IMG);
+    context->addCompressedTextureFormat(Extensions3D::COMPRESSED_RGBA_PVRTC_4BPPV1_IMG);
+    context->addCompressedTextureFormat(Extensions3D::COMPRESSED_RGBA_PVRTC_2BPPV1_IMG);
 }
 
 WebGLCompressedTexturePVRTC::~WebGLCompressedTexturePVRTC()
@@ -57,7 +58,8 @@ PassRefPtr<WebGLCompressedTexturePVRTC> WebGLCompressedTexturePVRTC::create(WebG
 
 bool WebGLCompressedTexturePVRTC::supported(WebGLRenderingContext* context)
 {
-    return context->graphicsContext3D()->supportsExtension("GL_IMG_texture_compression_pvrtc");
+    Extensions3D* extensions = context->graphicsContext3D()->extensions();
+    return extensions->supports("GL_IMG_texture_compression_pvrtc");
 }
 
 const char* WebGLCompressedTexturePVRTC::extensionName()

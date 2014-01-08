@@ -27,13 +27,15 @@
 
 #include "core/html/canvas/OESTextureHalfFloatLinear.h"
 
+#include "platform/graphics/Extensions3D.h"
+
 namespace WebCore {
 
 OESTextureHalfFloatLinear::OESTextureHalfFloatLinear(WebGLRenderingContext* context)
     : WebGLExtension(context)
 {
     ScriptWrappable::init(this);
-    context->graphicsContext3D()->ensureExtensionEnabled("GL_OES_texture_half_float_linear");
+    context->graphicsContext3D()->extensions()->ensureEnabled("GL_OES_texture_half_float_linear");
 }
 
 OESTextureHalfFloatLinear::~OESTextureHalfFloatLinear()
@@ -52,7 +54,8 @@ PassRefPtr<OESTextureHalfFloatLinear> OESTextureHalfFloatLinear::create(WebGLRen
 
 bool OESTextureHalfFloatLinear::supported(WebGLRenderingContext* context)
 {
-    return context->graphicsContext3D()->supportsExtension("GL_OES_texture_half_float_linear");
+    Extensions3D* extensions = context->graphicsContext3D()->extensions();
+    return extensions->supports("GL_OES_texture_half_float_linear");
 }
 
 const char* OESTextureHalfFloatLinear::extensionName()

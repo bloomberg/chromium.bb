@@ -29,6 +29,7 @@
 
 #include "core/html/canvas/WebGLRenderingContext.h"
 #include "platform/NotImplemented.h"
+#include "platform/graphics/Extensions3D.h"
 
 namespace WebCore {
 
@@ -627,18 +628,18 @@ void WebGLFramebuffer::drawBuffersIfNecessary(bool force)
         }
     }
     if (reset) {
-        context()->webGraphicsContext3D()->drawBuffersEXT(
+        context()->graphicsContext3D()->extensions()->drawBuffersEXT(
             m_filteredDrawBuffers.size(), m_filteredDrawBuffers.data());
     }
 }
 
 GLenum WebGLFramebuffer::getDrawBuffer(GLenum drawBuffer)
 {
-    int index = static_cast<int>(drawBuffer - GL_DRAW_BUFFER0_EXT);
+    int index = static_cast<int>(drawBuffer - Extensions3D::DRAW_BUFFER0_EXT);
     ASSERT(index >= 0);
     if (index < static_cast<int>(m_drawBuffers.size()))
         return m_drawBuffers[index];
-    if (drawBuffer == GL_DRAW_BUFFER0_EXT)
+    if (drawBuffer == Extensions3D::DRAW_BUFFER0_EXT)
         return GL_COLOR_ATTACHMENT0;
     return GL_NONE;
 }
