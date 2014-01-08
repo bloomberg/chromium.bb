@@ -23,7 +23,7 @@ def LoadSupport(input_api):
   return globals()['cloud_storage']
 
 
-def _SyncFilesToCloud(input_api, output_api):
+def _GetFilesNotInCloud(input_api):
   """Searches for .sha1 files and uploads them to Cloud Storage.
 
   It validates all the hashes and skips upload if not necessary.
@@ -33,22 +33,38 @@ def _SyncFilesToCloud(input_api, output_api):
 
   # Look in both buckets, in case the user uploaded the file manually. But this
   # script focuses on WPR archives, so it only uploads to the internal bucket.
-  hashes_in_cloud_storage = cloud_storage.List(cloud_storage.INTERNAL_BUCKET)
-  hashes_in_cloud_storage += cloud_storage.List(cloud_storage.PUBLIC_BUCKET)
+  hashes_in_cloud_storage = cloud_storage.List(cloud_storage.PUBLIC_BUCKET)
+  try:
+    hashes_in_cloud_storage += cloud_storage.List(cloud_storage.INTERNAL_BUCKET)
+  except (cloud_storage.PermissionError, cloud_storage.CredentialsError):
+    pass
 
-  results = []
+  files = []
   for affected_file in input_api.AffectedFiles(include_deletes=False):
     hash_path = affected_file.AbsoluteLocalPath()
-    file_path, extension = os.path.splitext(hash_path)
+    _, extension = os.path.splitext(hash_path)
     if extension != '.sha1':
       continue
 
     with open(hash_path, 'rb') as f:
       file_hash = f.read(1024).rstrip()
-    if file_hash in hashes_in_cloud_storage:
-      results.append(output_api.PresubmitNotifyResult(
-          'File already in Cloud Storage, skipping upload: %s' % hash_path))
-      continue
+    if file_hash not in hashes_in_cloud_storage:
+      files.append((hash_path, file_hash))
+
+  return files
+
+
+def _SyncFilesToCloud(input_api, output_api):
+  """Searches for .sha1 files and uploads them to Cloud Storage.
+
+  It validates all the hashes and skips upload if not necessary.
+  """
+
+  cloud_storage = LoadSupport(input_api)
+
+  results = []
+  for hash_path, file_hash in _GetFilesNotInCloud(input_api):
+    file_path, _ = os.path.splitext(hash_path)
 
     if not re.match('^([A-Za-z0-9]{40})$', file_hash):
       results.append(output_api.PresubmitError(
@@ -64,7 +80,19 @@ def _SyncFilesToCloud(input_api, output_api):
       continue
 
     try:
-      cloud_storage.Insert(cloud_storage.INTERNAL_BUCKET, file_hash, file_path)
+      bucket_input = raw_input('Uploading to Cloud Storage: %s\nIs this file '
+                               '[p]ublic or Google-[i]nternal?').lower()
+      if 'public'.startswith(bucket_input):
+        bucket = cloud_storage.PUBLIC_BUCKET
+      elif ('internal'.startswith(bucket_input) or
+            'google-internal'.startswith(bucket_input)):
+        bucket = cloud_storage.INTERNAL_BUCKET
+      else:
+        results.append(output_api.PresubmitError(
+            'Response was neither "public" nor "internal": %s' % bucket_input))
+        return results
+
+      cloud_storage.Insert(bucket, file_hash, file_path)
       results.append(output_api.PresubmitNotifyResult(
           'Uploaded file to Cloud Storage: %s' % hash_path))
     except cloud_storage.CloudStorageError, e:
@@ -74,9 +102,22 @@ def _SyncFilesToCloud(input_api, output_api):
   return results
 
 
+def _VerifyFilesInCloud(input_api, output_api):
+  """Searches for .sha1 files and uploads them to Cloud Storage.
+
+  It validates all the hashes and skips upload if not necessary.
+  """
+  results = []
+  for hash_path, _ in _GetFilesNotInCloud(input_api):
+    results.append(output_api.PresubmitError(
+        'Attemping to commit hash file, but corresponding '
+        'data file is not in Cloud Storage: %s' % hash_path))
+  return results
+
+
 def CheckChangeOnUpload(input_api, output_api):
   return _SyncFilesToCloud(input_api, output_api)
 
 
 def CheckChangeOnCommit(input_api, output_api):
-  return _SyncFilesToCloud(input_api, output_api)
+  return _VerifyFilesInCloud(input_api, output_api)
