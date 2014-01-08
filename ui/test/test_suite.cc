@@ -8,7 +8,6 @@
 #include "base/path_service.h"
 #include "build/build_config.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/resource/resource_handle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/gfx/gfx_paths.h"
 
@@ -54,26 +53,12 @@ void UITestSuite::Initialize() {
 #error Unknown branding
 #endif
   base::mac::SetOverrideFrameworkBundlePath(path);
-#elif defined(OS_POSIX)
-  base::FilePath pak_dir;
-#if defined(OS_ANDROID)
-  PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &pak_dir);
-#else
-  PathService::Get(base::DIR_MODULE, &pak_dir);
-  pak_dir = pak_dir.AppendASCII("ui_unittests_strings");
-  PathService::Override(ui::DIR_LOCALES, pak_dir);
-#endif  // defined(OS_ANDROID)
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
-  // Force unittests to run using en-US so if we test against string
-  // output, it'll pass regardless of the system language.
+  // TODO(tfarina): This loads chrome_100_percent.pak and thus introduces a
+  // dependency on chrome/, we don't want that here, so change this to
+  // InitSharedInstanceWithPakPath().
   ui::ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
-
-#if !defined(OS_MACOSX) && defined(OS_POSIX)
-  ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
-      pak_dir.AppendASCII("chrome_100_percent.pak"),
-      ui::SCALE_FACTOR_100P);
-#endif
 }
 
 void UITestSuite::Shutdown() {

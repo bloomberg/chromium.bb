@@ -66,6 +66,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:test_support_base',
+        '../chrome/chrome_resources.gyp:packed_resources',
         'ui.gyp:ui',
       ],
       'sources': [
