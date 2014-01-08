@@ -232,6 +232,13 @@ void SystemTrayNotifier::NotifyShowLoginButtonChanged(bool show_login_button) {
                     OnShowLogoutButtonInTrayChanged(show_login_button));
 }
 
+void SystemTrayNotifier::NotifyLogoutDialogDurationChanged(
+    base::TimeDelta duration) {
+  FOR_EACH_OBSERVER(LogoutButtonObserver,
+                    logout_button_observers_,
+                    OnLogoutDialogDurationChanged(duration));
+}
+
 void SystemTrayNotifier::NotifyLocaleChanged(
     LocaleObserver::Delegate* delegate,
     const std::string& cur_locale,
