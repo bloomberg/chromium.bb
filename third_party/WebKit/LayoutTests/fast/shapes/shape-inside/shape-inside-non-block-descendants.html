@@ -1,0 +1,18 @@
+<html>
+<head>
+<style>
+div, video {
+    float: left;
+    width: 500px;
+    height: 500px;
+}
+div {
+    shape-inside: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+}
+</style>
+</head>
+<body>
+Descendants of non-block elements should ignore an ancestor's shape-inside. The video controls should render below ignoring the shape-inside.
+<div><video controls></video></div>
+</body>
+</html>

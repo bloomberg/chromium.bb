@@ -1,0 +1,15 @@
+<html>
+<head>
+<style>
+div, video {
+    float: left;
+    width: 500px;
+    height: 500px;
+}
+</style>
+</head>
+<body>
+Descendants of non-block elements should ignore an ancestor's shape-inside. The video controls should render below ignoring the shape-inside.
+<div><video controls></video></div>
+</body>
+</html>

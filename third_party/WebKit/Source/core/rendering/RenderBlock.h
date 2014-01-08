@@ -646,6 +646,8 @@ inline bool RenderBlock::allowsShapeInsideInfoSharing(const RenderBlock* other) 
     for (const RenderBlock* current = this; current && current != other && !current->isRenderFlowThread(); current = current->containingBlock()) {
         if (current->isInline() || current->isFloating())
             return false;
+        if (current->parent() != current->containingBlock())
+            return false;
     }
     return true;
 }
