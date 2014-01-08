@@ -1174,8 +1174,8 @@ void Heap::collectGarbage(ThreadState::StackState stackState, GCType gcType)
     // FIXME: Move GCScope to trunk.
     // GCScope gcScope(stackState);
 
-    // FIXME: Move NoAllocation to trunk.
-    // NoAllocation<AnyThread> noAllocationScope;
+    // Disallow allocation during garbage collection.
+    NoAllocationScope<AnyThread> noAllocationScope;
     prepareForGC();
     MarkingVisitor marker;
 

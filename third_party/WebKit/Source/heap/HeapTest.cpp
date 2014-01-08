@@ -286,4 +286,21 @@ TEST(HeapTest, TypedHeapSanity)
     Heap::shutdown();
 }
 
+TEST(HeapTest, NoAllocation)
+{
+    // FIXME: init and shutdown should be called via Blink
+    // initialization in the test runner.
+    Heap::init(0);
+
+    EXPECT_TRUE(ThreadState::current()->isAllocationAllowed());
+    {
+        // Disallow allocation
+        NoAllocationScope<AnyThread> noAllocationScope;
+        EXPECT_FALSE(ThreadState::current()->isAllocationAllowed());
+    }
+    EXPECT_TRUE(ThreadState::current()->isAllocationAllowed());
+
+    Heap::shutdown();
+}
+
 } // namespace

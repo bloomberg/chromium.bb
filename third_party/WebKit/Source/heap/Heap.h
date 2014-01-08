@@ -833,6 +833,45 @@ public:
     static CallbackStack* s_markingStack;
 };
 
+// The NoAllocationScope class is used in debug mode to catch unwanted
+// allocations. E.g. allocations during GC.
+template<ThreadAffinity Affinity>
+class NoAllocationScope {
+public:
+    NoAllocationScope() : m_active(true) { enter(); }
+
+    explicit NoAllocationScope(bool active) : m_active(active) { enter(); }
+
+    NoAllocationScope(const NoAllocationScope& other) : m_active(other.m_active) { enter(); }
+
+    NoAllocationScope& operator=(const NoAllocationScope& other)
+    {
+        release();
+        m_active = other.m_active;
+        enter();
+        return *this;
+    }
+
+    ~NoAllocationScope() { release(); }
+
+    void release()
+    {
+        if (m_active) {
+            ThreadStateFor<Affinity>::state()->leaveNoAllocationScope();
+            m_active = false;
+        }
+    }
+
+private:
+    void enter() const
+    {
+        if (m_active)
+            ThreadStateFor<Affinity>::state()->enterNoAllocationScope();
+    }
+
+    bool m_active;
+};
+
 // Base class for objects allocated in the Blink garbage-collected
 // heap.
 //
