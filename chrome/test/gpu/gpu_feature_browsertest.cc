@@ -295,8 +295,8 @@ IN_PROC_BROWSER_TEST_F(WebGLTest, WebGLDisabled) {
   RunEventTest(url, kWebGLCreationEvent, false);
 }
 
-#if defined(GOOGLE_CHROME_BUILD) && defined(OS_MACOSX)
-// http://crbug.com/314745
+#if (defined(GOOGLE_CHROME_BUILD) && defined(OS_MACOSX)) || defined(OS_WIN)
+// http://crbug.com/314745 and http://crbug.com/332341
 #define MultisamplingAllowed DISABLED_MultisamplingAllowed
 #endif
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MultisamplingAllowed) {
@@ -367,7 +367,13 @@ IN_PROC_BROWSER_TEST_F(WebGLMultisamplingTest, MultisamplingDisabled) {
   RunTest(url, "\"FALSE\"", true);
 }
 
-IN_PROC_BROWSER_TEST_F(GpuFeatureTest, Canvas2DAllowed) {
+// http://crbug.com/332341
+#if defined(OS_WIN)
+#define MAYBE_Canvas2DAllowed DISABLED_Canvas2DAllowed
+#else
+#define MAYBE_Canvas2DAllowed Canvas2DAllowed
+#endif
+IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MAYBE_Canvas2DAllowed) {
   // Accelerated canvas 2D is not supported on XP.
   if (gpu::GPUTestBotConfig::CurrentConfigMatches("XP"))
     return;
@@ -442,8 +448,16 @@ IN_PROC_BROWSER_TEST_F(Canvas2DDisabledTest, Canvas2DDisabled) {
   RunEventTest(url, kAcceleratedCanvasCreationEvent, false);
 }
 
+// Fails on XP and Vista bots. http://crbug.com/332341
+#if defined(OS_WIN)
+#define MAYBE_CanOpenPopupAndRenderWithWebGLCanvas \
+  DISABLED_CanOpenPopupAndRenderWithWebGLCanvas
+#else
+#define MAYBE_CanOpenPopupAndRenderWithWebGLCanvas \
+  CanOpenPopupAndRenderWithWebGLCanvas
+#endif
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest,
-                       CanOpenPopupAndRenderWithWebGLCanvas) {
+                       MAYBE_CanOpenPopupAndRenderWithWebGLCanvas) {
   if (gpu::GPUTestBotConfig::GpuBlacklistedOnBot())
     return;
 
