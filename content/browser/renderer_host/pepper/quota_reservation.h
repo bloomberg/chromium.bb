@@ -55,6 +55,11 @@ class CONTENT_EXPORT QuotaReservation
   void ReserveQuota(int64_t amount,
                     const OffsetMap& max_written_offsets,
                     const ReserveQuotaCallback& callback);
+
+  // Notifies underlying QuotaReservation that the associated client crashed,
+  // and that the reserved quota is no longer traceable.
+  void OnClientCrash();
+
  private:
   friend class base::RefCountedThreadSafe<QuotaReservation,
                                           QuotaReservationDeleter>;

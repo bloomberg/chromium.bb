@@ -93,6 +93,10 @@ void QuotaReservation::ReserveQuota(
                  callback));
 }
 
+void QuotaReservation::OnClientCrash() {
+  quota_reservation_->OnClientCrash();
+}
+
 void QuotaReservation::GotReservedQuota(
     const ReserveQuotaCallback& callback,
     base::PlatformFileError error) {

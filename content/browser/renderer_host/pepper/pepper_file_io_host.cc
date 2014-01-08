@@ -101,9 +101,6 @@ PepperFileIOHost::PepperFileIOHost(BrowserPpapiHostImpl* host,
 }
 
 PepperFileIOHost::~PepperFileIOHost() {
-  // FileIOResource will normally send a close message, but the plugin may have
-  // crashed.
-  OnHostMsgClose(NULL, max_written_offset_);
 }
 
 int32_t PepperFileIOHost::OnResourceMessageReceived(

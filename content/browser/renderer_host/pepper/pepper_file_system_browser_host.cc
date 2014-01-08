@@ -64,6 +64,14 @@ PepperFileSystemBrowserHost::PepperFileSystemBrowserHost(BrowserPpapiHost* host,
 }
 
 PepperFileSystemBrowserHost::~PepperFileSystemBrowserHost() {
+  // If |files_| is not empty, the plugin failed to close some files. It must
+  // have crashed.
+  if (!files_.empty()) {
+    file_system_context_->default_file_task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&QuotaReservation::OnClientCrash, quota_reservation_));
+  }
+
   // All FileRefs and FileIOs that reference us must have been destroyed. Cancel
   // all pending file system operations.
   if (file_system_operation_runner_)
