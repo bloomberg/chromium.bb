@@ -91,8 +91,6 @@ class PageCyclerNetsimTop10(test.Test):
 
 
 class PageCyclerTop10Mobile(test.Test):
-  enabled = False  # Fails on Android.
-
   test = page_cycler.PageCycler
   page_set = 'page_sets/top_10_mobile.json'
   options = {'pageset_repeat_iters': 10}
