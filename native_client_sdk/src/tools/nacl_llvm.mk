@@ -10,14 +10,13 @@
 #
 # Paths to Tools
 #
-PNACL_BIN = $(TC_PATH)/$(OSNAME)_$(TOOLCHAIN)/bin
-PNACL_CC ?= $(PNACL_BIN)/pnacl-clang -c
-PNACL_CXX ?= $(PNACL_BIN)/pnacl-clang++ -c
-PNACL_LINK ?= $(PNACL_BIN)/pnacl-clang++
-PNACL_LIB ?= $(PNACL_BIN)/pnacl-ar
-PNACL_STRIP ?= $(PNACL_BIN)/pnacl-strip
-PNACL_FINALIZE ?= $(PNACL_BIN)/pnacl-finalize
-PNACL_TRANSLATE ?= $(PNACL_BIN)/pnacl-translate
+PNACL_CC ?= $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) --tool=cc)
+PNACL_CXX ?= $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) --tool=c++)
+PNACL_LINK ?= $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) --tool=c++)
+PNACL_LIB ?= $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) --tool=ar)
+PNACL_STRIP ?= $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) --tool=strip)
+PNACL_FINALIZE ?= $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) --tool=finalize)
+PNACL_TRANSLATE ?= $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) --tool=translate)
 
 #
 # Compile Macro

@@ -191,9 +191,11 @@ def GetToolPath(toolchain, arch, tool):
                         'x86_64-nacl-gdb')
 
   if toolchain == 'pnacl':
+    CheckValidToolchainArch(toolchain, arch)
     tool = PNACL_TOOLS.get(tool, tool)
     full_tool_name = 'pnacl-%s' % tool
   else:
+    CheckValidToolchainArch(toolchain, arch, arch_required=True)
     ExpectArch(arch, VALID_ARCHES)
     tool = NACL_TOOLS.get(tool, tool)
     full_tool_name = '%s-nacl-%s' % (GetArchName(arch), tool)
@@ -203,6 +205,11 @@ def GetToolPath(toolchain, arch, tool):
 def GetCFlags(toolchain):
   ExpectToolchain(toolchain, VALID_TOOLCHAINS)
   return ' '.join('-I%s' % dirname for dirname in GetSDKIncludeDirs(toolchain))
+
+
+def GetIncludeDirs(toolchain):
+  ExpectToolchain(toolchain, VALID_TOOLCHAINS)
+  return ' '.join(GetSDKIncludeDirs(toolchain))
 
 
 def GetLDFlags():
@@ -225,6 +232,9 @@ def main(args):
                     action='store_true')
   group.add_option('--libs', '--ldflags', help='output all linker flags',
                     action='store_true')
+  group.add_option('--include-dirs',
+                   help='output include dirs, separated by spaces',
+                   action='store_true')
   parser.add_option_group(group)
 
   options, _ = parser.parse_args(args)
@@ -238,10 +248,11 @@ def main(args):
 
   if options.cflags:
     print GetCFlags(options.toolchain)
+  elif options.include_dirs:
+    print GetIncludeDirs(options.toolchain)
   elif options.libs:
     print GetLDFlags()
   elif options.tool:
-    CheckValidToolchainArch(options.toolchain, options.arch, True)
     print GetToolPath(options.toolchain, options.arch, options.tool)
   else:
     parser.error('Expected a command. Run with --help for more information.')

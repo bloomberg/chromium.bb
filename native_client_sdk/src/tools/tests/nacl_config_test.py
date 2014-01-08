@@ -53,6 +53,19 @@ class TestNaclConfig(unittest.TestCase):
       self.assertEqual(expected, nacl_config.GetCFlags(toolchain))
     self.assertRaises(nacl_config.Error, nacl_config.GetCFlags, 'foo')
 
+  def testIncludeDirs(self):
+    cases = {
+        'newlib': '/sdk_root/include /sdk_root/include/newlib',
+        'glibc': '/sdk_root/include /sdk_root/include/glibc',
+        'pnacl': '/sdk_root/include /sdk_root/include/pnacl',
+        'win': '/sdk_root/include /sdk_root/include/win',
+        'mac': '/sdk_root/include /sdk_root/include/mac',
+        'linux': '/sdk_root/include /sdk_root/include/linux'
+    }
+    for toolchain, expected in cases.iteritems():
+      self.assertEqual(expected, nacl_config.GetIncludeDirs(toolchain))
+    self.assertRaises(nacl_config.Error, nacl_config.GetIncludeDirs, 'foo')
+
   def testLDFlags(self):
     self.assertEqual('-L/sdk_root/lib', nacl_config.GetLDFlags())
 
@@ -72,8 +85,6 @@ class TestNaclConfig(unittest.TestCase):
             '/sdk_root/toolchain/mac_x86_glibc/bin/i686-nacl-%s' % nacl_tool,
         ('glibc', 'x86_64'):
             '/sdk_root/toolchain/mac_x86_glibc/bin/x86_64-nacl-%s' % nacl_tool,
-        ('glibc', 'arm'):
-            '/sdk_root/toolchain/mac_arm_glibc/bin/arm-nacl-%s' % nacl_tool,
 
         'pnacl': '/sdk_root/toolchain/mac_pnacl/bin/pnacl-%s' % pnacl_tool,
     }
@@ -90,6 +101,10 @@ class TestNaclConfig(unittest.TestCase):
     for toolchain in ('host', 'mac', 'win', 'linux'):
       self.assertRaises(nacl_config.Error,
                         nacl_config.GetToolPath, toolchain, None, tool)
+
+    # No arm glibc.
+    self.assertRaises(nacl_config.Error,
+                      nacl_config.GetToolPath, 'glibc', 'arm', tool)
 
   def testCC(self):
     self._TestTool('cc', 'gcc', 'clang')
@@ -111,7 +126,6 @@ class TestNaclConfig(unittest.TestCase):
       for arch in ('x86_32', 'x86_64', 'arm'):
         self.assertEqual(expected,
                          nacl_config.GetToolPath(toolchain, arch, 'gdb'))
-
 
 
 if __name__ == '__main__':

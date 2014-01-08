@@ -91,33 +91,6 @@ class TestGetos(TestCaseExtended):
         self.assertEqual(chrome, mock_location)
         mock_exists.assert_called_with(chrome)
 
-  def testGetHelperPath(self):
-    """GetHelperPath checks that helper exists."""
-    platform = getos.GetPlatform()
-    # The helper is only needed on linux. On other platforms
-    # GetHelperPath() simply return empty string.
-    if platform == 'linux':
-      with mock.patch('os.path.exists') as mock_exists:
-        helper = getos.GetHelperPath(platform)
-        mock_exists.assert_called_with(helper)
-    else:
-      helper = getos.GetHelperPath(platform)
-      self.assertEqual(helper, '')
-
-  def testGetIrtBinPath(self):
-    """GetIrtBinPath checks that irtbin exists."""
-    platform = getos.GetPlatform()
-    with mock.patch('os.path.exists') as mock_exists:
-      irt = getos.GetIrtBinPath(platform)
-      mock_exists.assert_called_with(irt)
-
-  def testGetLoaderPath(self):
-    """checks that loader exists."""
-    platform = getos.GetPlatform()
-    with mock.patch('os.path.exists') as mock_exists:
-      loader = getos.GetLoaderPath(platform)
-      mock_exists.assert_called_with(loader)
-
   def testGetNaClArch(self):
     """returns a valid architecture."""
     platform = getos.GetPlatform()

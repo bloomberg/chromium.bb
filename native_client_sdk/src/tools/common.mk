@@ -28,6 +28,7 @@ TOP_MAKE := $(word 1,$(MAKEFILE_LIST))
 # Figure out which OS we are running on.
 #
 GETOS := python $(NACL_SDK_ROOT)/tools/getos.py
+NACL_CONFIG := python $(NACL_SDK_ROOT)/tools/nacl_config.py
 FIXDEPS := python $(NACL_SDK_ROOT)/tools/fix_deps.py -c
 OSNAME := $(shell $(GETOS))
 
@@ -331,12 +332,7 @@ NACL_LDFLAGS += -Wl,-as-needed -pthread
 #
 # Default Paths
 #
-ifeq (,$(findstring $(TOOLCHAIN),linux mac win))
-INC_PATHS ?= $(NACL_SDK_ROOT)/include $(NACL_SDK_ROOT)/include/$(TOOLCHAIN) $(EXTRA_INC_PATHS)
-else
-INC_PATHS ?= $(NACL_SDK_ROOT)/include/$(OSNAME) $(NACL_SDK_ROOT)/include $(EXTRA_INC_PATHS)
-endif
-
+INC_PATHS ?= $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) --include-dirs) $(EXTRA_INC_PATHS)
 LIB_PATHS ?= $(NACL_SDK_ROOT)/lib $(EXTRA_LIB_PATHS)
 
 #
@@ -501,7 +497,7 @@ run_package: check_for_chrome all
 	@echo "$(TOOLCHAIN) $(CONFIG)" > $(CURDIR)/run_package_config
 	$(CHROME_PATH_ESCAPE) --load-and-launch-app=$(CURDIR) $(CHROME_ARGS)
 
-GDB_ARGS += -D $(TC_PATH)/$(OSNAME)_x86_newlib/bin/x86_64-nacl-gdb
+GDB_ARGS += -D $(shell $(NACL_CONFIG) --tool=gdb)
 GDB_ARGS += -D --eval-command="nacl-manifest $(abspath $(OUTDIR))/$(TARGET).nmf"
 GDB_ARGS += -D $(GDB_DEBUG_TARGET)
 

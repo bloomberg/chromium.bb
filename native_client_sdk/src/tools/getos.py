@@ -172,35 +172,6 @@ def GetNaClArch(platform):
   return 'x86_32'
 
 
-def GetLoaderPath(platform):
-  sdk_path = GetSDKPath()
-  arch = GetNaClArch(platform)
-  sel_ldr = os.path.join(sdk_path, 'tools', 'sel_ldr_' + arch)
-  if not os.path.exists(sel_ldr):
-    raise Error("sel_ldr not found: %s" % sel_ldr)
-  return sel_ldr
-
-
-def GetHelperPath(platform):
-  sdk_path = GetSDKPath()
-  if platform != 'linux':
-    return ''
-  arch = GetNaClArch(platform)
-  helper = os.path.join(sdk_path, 'tools', 'nacl_helper_bootstrap_' + arch)
-  if not os.path.exists(helper):
-    raise Error("helper not found: %s" % helper)
-  return helper
-
-
-def GetIrtBinPath(platform):
-  sdk_path = GetSDKPath()
-  arch = GetNaClArch(platform)
-  irt =  os.path.join(sdk_path, 'tools', 'irt_core_%s.nexe' % arch)
-  if not os.path.exists(irt):
-    raise Error("irt not found: %s" % irt)
-  return irt
-
-
 def ParseVersion(version):
   if '.' in version:
     version = version.split('.')
@@ -222,12 +193,6 @@ def main(args):
            'then $PATH).')
   parser.add_option('--nacl-arch', action='store_true',
       help='Print architecture used by NaCl on the current machine.')
-  parser.add_option('--helper', action='store_true',
-      help='Print chrome helper path.')
-  parser.add_option('--irtbin', action='store_true',
-      help='Print irt binary path.')
-  parser.add_option('--loader', action='store_true',
-      help='Print NEXE loader path.')
   parser.add_option('--sdk-version', action='store_true',
       help='Print major version of the NaCl SDK.')
   parser.add_option('--sdk-revision', action='store_true',
@@ -253,12 +218,6 @@ def main(args):
     out = GetNaClArch(platform)
   elif options.chrome:
     out = GetChromePath(platform)
-  elif options.helper:
-    out = GetHelperPath(platform)
-  elif options.irtbin:
-    out = GetIrtBinPath(platform)
-  elif options.loader:
-    out = GetLoaderPath(platform)
   elif options.sdk_version:
     out = GetSDKVersion()[0]
   elif options.sdk_revision:
