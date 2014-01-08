@@ -466,13 +466,6 @@ DELEGATE_TO_WEBCONTEXT_1(deleteTexture, Platform3DObject)
 
 DELEGATE_TO_WEBCONTEXT_1(synthesizeGLError, GLenum)
 
-Extensions3D* GraphicsContext3D::extensions()
-{
-    if (!m_extensions)
-        m_extensions = adoptPtr(new Extensions3D(this));
-    return m_extensions.get();
-}
-
 bool GraphicsContext3D::texImage2DResourceSafe(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, GLint unpackAlignment)
 {
     ASSERT(unpackAlignment == 1 || unpackAlignment == 2 || unpackAlignment == 4 || unpackAlignment == 8);
@@ -496,7 +489,7 @@ bool GraphicsContext3D::computeFormatAndTypeParameters(GLenum format, GLenum typ
         *componentsPerPixel = 3;
         break;
     case GL_RGBA:
-    case Extensions3D::BGRA_EXT: // GL_EXT_texture_format_BGRA8888
+    case GL_BGRA_EXT: // GL_EXT_texture_format_BGRA8888
         *componentsPerPixel = 4;
         break;
     default:
@@ -798,6 +791,17 @@ bool GraphicsContext3D::isExtensionEnabled(const String& name)
     initializeExtensions();
     String mappedName = mapExtensionName(name);
     return m_enabledExtensions.contains(mappedName);
+}
+
+bool GraphicsContext3D::canUseCopyTextureCHROMIUM(GLenum destFormat, GLenum destType, GLint level)
+{
+    // FIXME: restriction of (RGB || RGBA)/UNSIGNED_BYTE/(Level 0) should be lifted when
+    // WebGraphicsContext3D::copyTextureCHROMIUM(...) are fully functional.
+    if ((destFormat == GL_RGB || destFormat == GL_RGBA)
+        && destType == GL_UNSIGNED_BYTE
+        && !level)
+        return true;
+    return false;
 }
 
 void GraphicsContext3D::flipVertically(uint8_t* framebuffer, int width, int height)

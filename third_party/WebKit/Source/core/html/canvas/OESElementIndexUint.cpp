@@ -26,7 +26,6 @@
 #include "config.h"
 
 #include "core/html/canvas/OESElementIndexUint.h"
-#include "platform/graphics/Extensions3D.h"
 
 namespace WebCore {
 
@@ -34,7 +33,7 @@ OESElementIndexUint::OESElementIndexUint(WebGLRenderingContext* context)
     : WebGLExtension(context)
 {
     ScriptWrappable::init(this);
-    context->graphicsContext3D()->extensions()->ensureEnabled("GL_OES_element_index_uint");
+    context->graphicsContext3D()->ensureExtensionEnabled("GL_OES_element_index_uint");
 }
 
 OESElementIndexUint::~OESElementIndexUint()
@@ -53,8 +52,7 @@ PassRefPtr<OESElementIndexUint> OESElementIndexUint::create(WebGLRenderingContex
 
 bool OESElementIndexUint::supported(WebGLRenderingContext* context)
 {
-    Extensions3D* extensions = context->graphicsContext3D()->extensions();
-    return extensions->supports("GL_OES_element_index_uint");
+    return context->graphicsContext3D()->supportsExtension("GL_OES_element_index_uint");
 }
 
 const char* OESElementIndexUint::extensionName()

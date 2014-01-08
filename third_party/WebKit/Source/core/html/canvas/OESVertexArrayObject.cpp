@@ -30,7 +30,6 @@
 #include "bindings/v8/ExceptionState.h"
 #include "core/html/canvas/WebGLRenderingContext.h"
 #include "core/html/canvas/WebGLVertexArrayObjectOES.h"
-#include "platform/graphics/Extensions3D.h"
 
 namespace WebCore {
 
@@ -38,7 +37,7 @@ OESVertexArrayObject::OESVertexArrayObject(WebGLRenderingContext* context)
     : WebGLExtension(context)
 {
     ScriptWrappable::init(this);
-    context->graphicsContext3D()->extensions()->ensureEnabled("GL_OES_vertex_array_object");
+    context->graphicsContext3D()->ensureExtensionEnabled("GL_OES_vertex_array_object");
 }
 
 OESVertexArrayObject::~OESVertexArrayObject()
@@ -84,8 +83,7 @@ GLboolean OESVertexArrayObject::isVertexArrayOES(WebGLVertexArrayObjectOES* arra
     if (!arrayObject->hasEverBeenBound())
         return 0;
 
-    Extensions3D* extensions = m_context->graphicsContext3D()->extensions();
-    return extensions->isVertexArrayOES(arrayObject->object());
+    return m_context->webGraphicsContext3D()->isVertexArrayOES(arrayObject->object());
 }
 
 void OESVertexArrayObject::bindVertexArrayOES(WebGLVertexArrayObjectOES* arrayObject)
@@ -94,26 +92,24 @@ void OESVertexArrayObject::bindVertexArrayOES(WebGLVertexArrayObjectOES* arrayOb
         return;
 
     if (arrayObject && (arrayObject->isDeleted() || !arrayObject->validate(0, context()))) {
-        m_context->graphicsContext3D()->synthesizeGLError(GL_INVALID_OPERATION);
+        m_context->webGraphicsContext3D()->synthesizeGLError(GL_INVALID_OPERATION);
         return;
     }
 
-    Extensions3D* extensions = m_context->graphicsContext3D()->extensions();
     if (arrayObject && !arrayObject->isDefaultObject() && arrayObject->object()) {
-        extensions->bindVertexArrayOES(arrayObject->object());
+        m_context->webGraphicsContext3D()->bindVertexArrayOES(arrayObject->object());
 
         arrayObject->setHasEverBeenBound();
         m_context->setBoundVertexArrayObject(arrayObject);
     } else {
-        extensions->bindVertexArrayOES(0);
+        m_context->webGraphicsContext3D()->bindVertexArrayOES(0);
         m_context->setBoundVertexArrayObject(0);
     }
 }
 
 bool OESVertexArrayObject::supported(WebGLRenderingContext* context)
 {
-    Extensions3D* extensions = context->graphicsContext3D()->extensions();
-    return extensions->supports("GL_OES_vertex_array_object");
+    return context->graphicsContext3D()->supportsExtension("GL_OES_vertex_array_object");
 }
 
 const char* OESVertexArrayObject::extensionName()

@@ -28,7 +28,6 @@
 
 #include "platform/graphics/gpu/SharedGraphicsContext3D.h"
 
-#include "platform/graphics/Extensions3D.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebGraphicsContext3D.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
@@ -67,7 +66,7 @@ public:
         }
 
         if (m_context && wasCreated)
-            m_context->extensions()->pushGroupMarkerEXT("SharedGraphicsContext");
+            m_context->webContext()->pushGroupMarkerEXT("SharedGraphicsContext");
         return m_context;
     }
 

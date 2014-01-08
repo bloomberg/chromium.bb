@@ -28,7 +28,6 @@
 #include "core/html/canvas/WebGLVertexArrayObjectOES.h"
 
 #include "core/html/canvas/WebGLRenderingContext.h"
-#include "platform/graphics/Extensions3D.h"
 
 namespace WebCore {
 
@@ -46,12 +45,11 @@ WebGLVertexArrayObjectOES::WebGLVertexArrayObjectOES(WebGLRenderingContext* ctx,
     ScriptWrappable::init(this);
     m_vertexAttribState.resize(ctx->maxVertexAttribs());
 
-    Extensions3D* extensions = context()->graphicsContext3D()->extensions();
     switch (m_type) {
     case VaoTypeDefault:
         break;
     default:
-        setObject(extensions->createVertexArrayOES());
+        setObject(context()->webGraphicsContext3D()->createVertexArrayOES());
         break;
     }
 }
@@ -63,12 +61,11 @@ WebGLVertexArrayObjectOES::~WebGLVertexArrayObjectOES()
 
 void WebGLVertexArrayObjectOES::deleteObjectImpl(GraphicsContext3D* context3d, Platform3DObject object)
 {
-    Extensions3D* extensions = context3d->extensions();
     switch (m_type) {
     case VaoTypeDefault:
         break;
     default:
-        extensions->deleteVertexArrayOES(object);
+        context()->webGraphicsContext3D()->deleteVertexArrayOES(object);
         break;
     }
 

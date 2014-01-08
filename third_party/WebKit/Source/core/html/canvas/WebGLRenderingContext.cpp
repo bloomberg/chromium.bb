@@ -74,7 +74,6 @@
 #include "platform/CheckedInt.h"
 #include "platform/NotImplemented.h"
 #include "platform/geometry/IntSize.h"
-#include "platform/graphics/Extensions3D.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/DrawingBuffer.h"
 #include "public/platform/Platform.h"
@@ -2437,9 +2436,9 @@ WebGLGetInfo WebGLRenderingContext::getParameter(GLenum pname)
         return WebGLGetInfo("WebGL 1.0 (" + m_contextSupport->getString(GL_VERSION) + ")");
     case GL_VIEWPORT:
         return getWebGLIntArrayParameter(pname);
-    case Extensions3D::FRAGMENT_SHADER_DERIVATIVE_HINT_OES: // OES_standard_derivatives
+    case GL_FRAGMENT_SHADER_DERIVATIVE_HINT_OES: // OES_standard_derivatives
         if (m_oesStandardDerivatives)
-            return getUnsignedIntParameter(Extensions3D::FRAGMENT_SHADER_DERIVATIVE_HINT_OES);
+            return getUnsignedIntParameter(GL_FRAGMENT_SHADER_DERIVATIVE_HINT_OES);
         synthesizeGLError(GL_INVALID_ENUM, "getParameter", "invalid parameter name, OES_standard_derivatives not enabled");
         return WebGLGetInfo();
     case WebGLDebugRendererInfo::UNMASKED_RENDERER_WEBGL:
@@ -2452,7 +2451,7 @@ WebGLGetInfo WebGLRenderingContext::getParameter(GLenum pname)
             return WebGLGetInfo(m_contextSupport->getString(GL_VENDOR));
         synthesizeGLError(GL_INVALID_ENUM, "getParameter", "invalid parameter name, WEBGL_debug_renderer_info not enabled");
         return WebGLGetInfo();
-    case Extensions3D::VERTEX_ARRAY_BINDING_OES: // OES_vertex_array_object
+    case GL_VERTEX_ARRAY_BINDING_OES: // OES_vertex_array_object
         if (m_oesVertexArrayObject) {
             if (!m_boundVertexArrayObject->isDefaultObject())
                 return WebGLGetInfo(PassRefPtr<WebGLVertexArrayObjectOES>(m_boundVertexArrayObject));
@@ -2460,25 +2459,25 @@ WebGLGetInfo WebGLRenderingContext::getParameter(GLenum pname)
         }
         synthesizeGLError(GL_INVALID_ENUM, "getParameter", "invalid parameter name, OES_vertex_array_object not enabled");
         return WebGLGetInfo();
-    case Extensions3D::MAX_TEXTURE_MAX_ANISOTROPY_EXT: // EXT_texture_filter_anisotropic
+    case GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT: // EXT_texture_filter_anisotropic
         if (m_extTextureFilterAnisotropic)
-            return getUnsignedIntParameter(Extensions3D::MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+            return getUnsignedIntParameter(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT);
         synthesizeGLError(GL_INVALID_ENUM, "getParameter", "invalid parameter name, EXT_texture_filter_anisotropic not enabled");
         return WebGLGetInfo();
-    case Extensions3D::MAX_COLOR_ATTACHMENTS_EXT: // EXT_draw_buffers BEGIN
+    case GL_MAX_COLOR_ATTACHMENTS_EXT: // EXT_draw_buffers BEGIN
         if (m_webglDrawBuffers)
             return WebGLGetInfo(maxColorAttachments());
         synthesizeGLError(GL_INVALID_ENUM, "getParameter", "invalid parameter name, WEBGL_draw_buffers not enabled");
         return WebGLGetInfo();
-    case Extensions3D::MAX_DRAW_BUFFERS_EXT:
+    case GL_MAX_DRAW_BUFFERS_EXT:
         if (m_webglDrawBuffers)
             return WebGLGetInfo(maxDrawBuffers());
         synthesizeGLError(GL_INVALID_ENUM, "getParameter", "invalid parameter name, WEBGL_draw_buffers not enabled");
         return WebGLGetInfo();
     default:
         if (m_webglDrawBuffers
-            && pname >= Extensions3D::DRAW_BUFFER0_EXT
-            && pname < static_cast<GLenum>(Extensions3D::DRAW_BUFFER0_EXT + maxDrawBuffers())) {
+            && pname >= GL_DRAW_BUFFER0_EXT
+            && pname < static_cast<GLenum>(GL_DRAW_BUFFER0_EXT + maxDrawBuffers())) {
             GLint value = GL_NONE;
             if (m_framebufferBinding)
                 value = m_framebufferBinding->getDrawBuffer(pname);
@@ -2671,7 +2670,7 @@ WebGLGetInfo WebGLRenderingContext::getTexParameter(GLenum target, GLenum pname)
     case GL_TEXTURE_WRAP_T:
         m_context->getTexParameteriv(target, pname, &value);
         return WebGLGetInfo(static_cast<unsigned>(value));
-    case Extensions3D::TEXTURE_MAX_ANISOTROPY_EXT: // EXT_texture_filter_anisotropic
+    case GL_TEXTURE_MAX_ANISOTROPY_EXT: // EXT_texture_filter_anisotropic
         if (m_extTextureFilterAnisotropic) {
             m_context->getTexParameteriv(target, pname, &value);
             return WebGLGetInfo(static_cast<unsigned>(value));
@@ -2857,7 +2856,7 @@ WebGLGetInfo WebGLRenderingContext::getVertexAttrib(GLuint index, GLenum pname)
     }
     const WebGLVertexArrayObjectOES::VertexAttribState& state = m_boundVertexArrayObject->getVertexAttribState(index);
 
-    if (m_angleInstancedArrays && pname == Extensions3D::VERTEX_ATTRIB_ARRAY_DIVISOR_ANGLE)
+    if (m_angleInstancedArrays && pname == GL_VERTEX_ATTRIB_ARRAY_DIVISOR_ANGLE)
         return WebGLGetInfo(state.divisor);
 
     switch (pname) {
@@ -2904,7 +2903,7 @@ void WebGLRenderingContext::hint(GLenum target, GLenum mode)
     case GL_GENERATE_MIPMAP_HINT:
         isValid = true;
         break;
-    case Extensions3D::FRAGMENT_SHADER_DERIVATIVE_HINT_OES: // OES_standard_derivatives
+    case GL_FRAGMENT_SHADER_DERIVATIVE_HINT_OES: // OES_standard_derivatives
         if (m_oesStandardDerivatives)
             isValid = true;
         break;
@@ -3162,7 +3161,7 @@ void WebGLRenderingContext::renderbufferStorage(GLenum target, GLenum internalfo
         break;
     case GL_DEPTH_STENCIL_OES:
         if (isDepthStencilSupported()) {
-            m_context->renderbufferStorage(target, Extensions3D::DEPTH24_STENCIL8, width, height);
+            m_context->renderbufferStorage(target, GL_DEPTH24_STENCIL8_OES, width, height);
         } else {
             WebGLRenderbuffer* emulatedStencilBuffer = ensureEmulatedStencilBuffer(target, m_renderbufferBinding.get());
             if (!emulatedStencilBuffer) {
@@ -3559,7 +3558,7 @@ void WebGLRenderingContext::texParameter(GLenum target, GLenum pname, GLfloat pa
             return;
         }
         break;
-    case Extensions3D::TEXTURE_MAX_ANISOTROPY_EXT: // EXT_texture_filter_anisotropic
+    case GL_TEXTURE_MAX_ANISOTROPY_EXT: // EXT_texture_filter_anisotropic
         if (!m_extTextureFilterAnisotropic) {
             synthesizeGLError(GL_INVALID_ENUM, "texParameter", "invalid parameter, EXT_texture_filter_anisotropic not enabled");
             return;
@@ -4826,8 +4825,8 @@ bool WebGLRenderingContext::validateCompressedTexFuncData(const char* functionNa
     unsigned bytesRequired = 0;
 
     switch (format) {
-    case Extensions3D::COMPRESSED_RGB_S3TC_DXT1_EXT:
-    case Extensions3D::COMPRESSED_RGBA_S3TC_DXT1_EXT:
+    case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
+    case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
         {
             const int kBlockWidth = 4;
             const int kBlockHeight = 4;
@@ -4838,8 +4837,8 @@ bool WebGLRenderingContext::validateCompressedTexFuncData(const char* functionNa
             bytesRequired = numBlocks * kBlockSize;
         }
         break;
-    case Extensions3D::COMPRESSED_RGBA_S3TC_DXT3_EXT:
-    case Extensions3D::COMPRESSED_RGBA_S3TC_DXT5_EXT:
+    case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
+    case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
         {
             const int kBlockWidth = 4;
             const int kBlockHeight = 4;
@@ -4850,25 +4849,25 @@ bool WebGLRenderingContext::validateCompressedTexFuncData(const char* functionNa
             bytesRequired = numBlocks * kBlockSize;
         }
         break;
-    case Extensions3D::COMPRESSED_ATC_RGB_AMD:
+    case GC3D_COMPRESSED_ATC_RGB_AMD:
         {
             bytesRequired = floor(static_cast<double>((width + 3) / 4)) * floor(static_cast<double>((height + 3) / 4)) * 8;
         }
         break;
-    case Extensions3D::COMPRESSED_ATC_RGBA_EXPLICIT_ALPHA_AMD:
-    case Extensions3D::COMPRESSED_ATC_RGBA_INTERPOLATED_ALPHA_AMD:
+    case GC3D_COMPRESSED_ATC_RGBA_EXPLICIT_ALPHA_AMD:
+    case GC3D_COMPRESSED_ATC_RGBA_INTERPOLATED_ALPHA_AMD:
         {
             bytesRequired = floor(static_cast<double>((width + 3) / 4)) * floor(static_cast<double>((height + 3) / 4)) * 16;
         }
         break;
-    case Extensions3D::COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
-    case Extensions3D::COMPRESSED_RGBA_PVRTC_4BPPV1_IMG:
+    case GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
+    case GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG:
         {
             bytesRequired = max(width, 8) * max(height, 8) / 2;
         }
         break;
-    case Extensions3D::COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
-    case Extensions3D::COMPRESSED_RGBA_PVRTC_2BPPV1_IMG:
+    case GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
+    case GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG:
         {
             bytesRequired = max(width, 8) * max(height, 8) / 4;
         }
@@ -4892,10 +4891,10 @@ bool WebGLRenderingContext::validateCompressedTexDimensions(const char* function
         return false;
 
     switch (format) {
-    case Extensions3D::COMPRESSED_RGB_S3TC_DXT1_EXT:
-    case Extensions3D::COMPRESSED_RGBA_S3TC_DXT1_EXT:
-    case Extensions3D::COMPRESSED_RGBA_S3TC_DXT3_EXT:
-    case Extensions3D::COMPRESSED_RGBA_S3TC_DXT5_EXT: {
+    case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
+    case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
+    case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
+    case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT: {
         const int kBlockWidth = 4;
         const int kBlockHeight = 4;
         bool widthValid = (level && width == 1) || (level && width == 2) || !(width % kBlockWidth);
@@ -4919,10 +4918,10 @@ bool WebGLRenderingContext::validateCompressedTexSubDimensions(const char* funct
     }
 
     switch (format) {
-    case Extensions3D::COMPRESSED_RGB_S3TC_DXT1_EXT:
-    case Extensions3D::COMPRESSED_RGBA_S3TC_DXT1_EXT:
-    case Extensions3D::COMPRESSED_RGBA_S3TC_DXT3_EXT:
-    case Extensions3D::COMPRESSED_RGBA_S3TC_DXT5_EXT: {
+    case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
+    case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
+    case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
+    case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT: {
         const int kBlockWidth = 4;
         const int kBlockHeight = 4;
         if ((xoffset % kBlockWidth) || (yoffset % kBlockHeight)) {
@@ -5578,9 +5577,9 @@ GLint WebGLRenderingContext::maxDrawBuffers()
     if (isContextLost() || !m_webglDrawBuffers)
         return 0;
     if (!m_maxDrawBuffers)
-        m_context->getIntegerv(Extensions3D::MAX_DRAW_BUFFERS_EXT, &m_maxDrawBuffers);
+        m_context->getIntegerv(GL_MAX_DRAW_BUFFERS_EXT, &m_maxDrawBuffers);
     if (!m_maxColorAttachments)
-        m_context->getIntegerv(Extensions3D::MAX_COLOR_ATTACHMENTS_EXT, &m_maxColorAttachments);
+        m_context->getIntegerv(GL_MAX_COLOR_ATTACHMENTS_EXT, &m_maxColorAttachments);
     // WEBGL_draw_buffers requires MAX_COLOR_ATTACHMENTS >= MAX_DRAW_BUFFERS.
     return std::min(m_maxDrawBuffers, m_maxColorAttachments);
 }
@@ -5590,7 +5589,7 @@ GLint WebGLRenderingContext::maxColorAttachments()
     if (isContextLost() || !m_webglDrawBuffers)
         return 0;
     if (!m_maxColorAttachments)
-        m_context->getIntegerv(Extensions3D::MAX_COLOR_ATTACHMENTS_EXT, &m_maxColorAttachments);
+        m_context->getIntegerv(GL_MAX_COLOR_ATTACHMENTS_EXT, &m_maxColorAttachments);
     return m_maxColorAttachments;
 }
 
