@@ -71,7 +71,7 @@ void TreeScopeAdopter::moveTreeToNewScope(Node& root) const
         }
 
         for (ShadowRoot* shadow = node->youngestShadowRoot(); shadow; shadow = shadow->olderShadowRoot()) {
-            shadow->setParentTreeScope(&m_newScope);
+            shadow->setParentTreeScope(m_newScope);
             if (willMoveToNewDocument)
                 moveTreeToNewDocument(*shadow, oldDocument, newDocument);
         }

@@ -49,11 +49,8 @@ class RenderObject;
 // so that the Node destructor no longer does problematic NodeList cache manipulation in
 // the destructor.
 class TreeScope {
-    friend class TreeScopeAdopter;
-
 public:
     TreeScope* parentTreeScope() const { return m_parentTreeScope; }
-    void setParentTreeScope(TreeScope*);
 
     Element* adjustedFocusedElement() const;
     Element* getElementById(const AtomicString&) const;
@@ -139,6 +136,7 @@ protected:
 
     void destroyTreeScopeData();
     void setDocument(Document& document) { m_document = &document; }
+    void setParentTreeScope(TreeScope&);
 
     bool hasGuardRefCount() const { return m_guardRefCount; }
 

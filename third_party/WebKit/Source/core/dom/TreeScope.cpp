@@ -106,18 +106,16 @@ void TreeScope::destroyTreeScopeData()
     m_labelsByForAttribute.clear();
 }
 
-void TreeScope::setParentTreeScope(TreeScope* newParentScope)
+void TreeScope::setParentTreeScope(TreeScope& newParentScope)
 {
     // A document node cannot be re-parented.
     ASSERT(!rootNode()->isDocumentNode());
-    // Every scope other than document needs a parent scope.
-    ASSERT(newParentScope);
 
-    newParentScope->guardRef();
+    newParentScope.guardRef();
     if (m_parentTreeScope)
         m_parentTreeScope->guardDeref();
-    m_parentTreeScope = newParentScope;
-    setDocument(newParentScope->document());
+    m_parentTreeScope = &newParentScope;
+    setDocument(newParentScope.document());
 }
 
 Element* TreeScope::getElementById(const AtomicString& elementId) const

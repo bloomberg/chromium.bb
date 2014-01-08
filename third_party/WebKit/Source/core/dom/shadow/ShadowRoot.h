@@ -103,6 +103,10 @@ public:
 
     ShadowRootType type() const { return static_cast<ShadowRootType>(m_type); }
 
+    // Make protected methods from base class public here.
+    using TreeScope::setDocument;
+    using TreeScope::setParentTreeScope;
+
 public:
     Element* activeElement() const;
 

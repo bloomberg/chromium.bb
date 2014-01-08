@@ -145,7 +145,7 @@ ShadowRoot& ElementShadow::addShadowRoot(Element& shadowHost, ShadowRoot::Shadow
         root->lazyReattachIfAttached();
 
     shadowRoot->setParentOrShadowHostNode(&shadowHost);
-    shadowRoot->setParentTreeScope(&shadowHost.treeScope());
+    shadowRoot->setParentTreeScope(shadowHost.treeScope());
     m_shadowRoots.push(shadowRoot.get());
     ChildNodeInsertionNotifier(shadowHost).notify(*shadowRoot);
     setNeedsDistributionRecalc();
@@ -173,7 +173,7 @@ void ElementShadow::removeAllShadowRoots()
         shadowHost->document().removeFocusedElementOfSubtree(oldRoot.get());
         m_shadowRoots.removeHead();
         oldRoot->setParentOrShadowHostNode(0);
-        oldRoot->setParentTreeScope(&shadowHost->document());
+        oldRoot->setParentTreeScope(shadowHost->document());
         oldRoot->setPrev(0);
         oldRoot->setNext(0);
         ChildNodeRemovalNotifier(*shadowHost).notify(*oldRoot);
