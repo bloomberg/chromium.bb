@@ -197,7 +197,7 @@ def generate_constructor_attribute_list(interface_name, extended_attributes):
     return attributes_list
 
 
-def generate_event_names_file(destination_filename, event_names, only_if_changed):
+def generate_event_names_file(destination_filename, event_names, interfaces_info, interface_extended_attributes, only_if_changed):
     def extended_attribute_string(name):
         value = extended_attributes[name]
         if name == 'RuntimeEnabled':
@@ -208,13 +208,17 @@ def generate_event_names_file(destination_filename, event_names, only_if_changed
     lines = []
     lines.append('namespace="Event"\n')
     lines.append('\n')
-    for filename, extended_attributes in sorted(event_names.iteritems()):
+    for filename, extended_attributes in sorted(
+        (interface_info['full_path'],
+         interface_extended_attributes[interface_name])
+        for interface_name, interface_info in interfaces_info.iteritems()
+        if interface_name in event_names):
         refined_filename, _ = os.path.splitext(os.path.relpath(filename, source_dir))
         refined_filename = refined_filename.replace(os.sep, posixpath.sep)
         extended_attributes_list = [
-                extended_attribute_string(name)
-                for name in 'Conditional', 'ImplementedAs', 'RuntimeEnabled'
-                if name in extended_attributes]
+            extended_attribute_string(name)
+            for name in 'Conditional', 'ImplementedAs', 'RuntimeEnabled'
+            if name in extended_attributes]
         lines.append('%s %s\n' % (refined_filename, ', '.join(extended_attributes_list)))
     write_file(lines, destination_filename, only_if_changed)
 
@@ -263,7 +267,7 @@ def remove_interfaces_implemented_somewhere(interfaces_info):
         del interfaces_info[interface]
 
 
-def record_global_constructors_and_extended_attribute(idl_file_name, global_constructors, interface_extended_attribute, parent_interface):
+def record_global_constructors_and_extended_attribute(idl_file_name, global_constructors, interface_extended_attributes, parent_interface):
     interface_name, _ = os.path.splitext(os.path.basename(idl_file_name))
     full_path = os.path.realpath(idl_file_name)
     idl_file_contents = get_file_contents(full_path)
@@ -278,11 +282,11 @@ def record_global_constructors_and_extended_attribute(idl_file_name, global_cons
 
     # Record parents and extended attributes for generating event names
     if interface_name == 'Event':
-        interface_extended_attribute[interface_name] = extended_attributes
+        interface_extended_attributes[interface_name] = extended_attributes
     parent = get_parent_interface(idl_file_contents)
     if parent:
         parent_interface[interface_name] = parent
-        interface_extended_attribute[interface_name] = extended_attributes
+        interface_extended_attributes[interface_name] = extended_attributes
 
 
 def parse_idl_files(main_idl_files, support_idl_files, global_constructors_filenames):
@@ -298,7 +302,9 @@ def parse_idl_files(main_idl_files, support_idl_files, global_constructors_filen
         global_constructors:
             dict of global objects -> list of constructors on that object
         event_names:
-            dict of interfaces that inherit from Event -> list of extended attributes for the interface
+            set of interfaces that inherit from Event
+        interface_extended_attributes:
+            dict of interface name -> extended attributes
     """
     interfaces_info = {}
     partial_interface_files = {}
@@ -309,12 +315,20 @@ def parse_idl_files(main_idl_files, support_idl_files, global_constructors_filen
     # Parents and extended attributes (of interfaces with parents) are
     # used in generating event names
     parent_interface = {}
-    interface_extended_attribute = {}
+    interface_extended_attributes = {}
 
     # Generate dependencies, global_constructors and interface_extended_attributes for main IDL files
     for idl_file_name in main_idl_files:
         if not generate_dependencies(idl_file_name, interfaces_info, partial_interface_files):
-            record_global_constructors_and_extended_attribute(idl_file_name, global_constructors, interface_extended_attribute, parent_interface)
+            record_global_constructors_and_extended_attribute(idl_file_name, global_constructors, interface_extended_attributes, parent_interface)
+
+    # Compute ancestors
+    for interface, parent in parent_interface.iteritems():
+        ancestors = [parent]
+        while parent in parent_interface:
+            parent = parent_interface[parent]
+            ancestors.append(parent)
+        interfaces_info[interface]['ancestors'] = ancestors
 
     # File names of all main IDL files (no support ones) for derived sources
     bindings_derived_sources_info = interfaces_info.copy()
@@ -349,16 +363,14 @@ def parse_idl_files(main_idl_files, support_idl_files, global_constructors_filen
 
     # Generate event names for all interfaces that inherit from Event,
     # including Event itself.
-    event_names = {}
-    if 'Event' in interfaces_info:
-        event_names[interfaces_info['Event']['full_path']] = interface_extended_attribute['Event']
-    for interface, parent in parent_interface.iteritems():
-        while parent in parent_interface:
-            parent = parent_interface[parent]
-        if parent == 'Event':
-            event_names[interfaces_info[interface]['full_path']] = interface_extended_attribute[interface]
+    event_names = set(
+        interface_name
+        for interface_name, interface_info in interfaces_info.iteritems()
+        if (interface_name == 'Event' or
+            ('ancestors' in interface_info and
+             interface_info['ancestors'][-1] == 'Event')))
 
-    return interfaces_info, bindings_derived_sources, global_constructors, event_names
+    return interfaces_info, bindings_derived_sources, global_constructors, event_names, interface_extended_attributes
 
 
 def write_dependencies_file(dependencies_filename, interfaces_info, only_if_changed):
@@ -409,7 +421,7 @@ def main():
         'ServiceWorkerGlobalScope': options.serviceworkerglobalscope_constructors_file,
         }
 
-    interfaces_info, bindings_derived_sources, global_constructors, event_names = parse_idl_files(main_idl_files, support_idl_files, global_constructors_filenames)
+    interfaces_info, bindings_derived_sources, global_constructors, event_names, interface_extended_attributes = parse_idl_files(main_idl_files, support_idl_files, global_constructors_filenames)
 
     write_dependencies_file(options.interface_dependencies_file, interfaces_info, only_if_changed)
     write_pickle_file(options.interfaces_info_file, interfaces_info, only_if_changed)
@@ -417,7 +429,7 @@ def main():
     for interface_name, filename in global_constructors_filenames.iteritems():
         if interface_name in interfaces_info:
             generate_global_constructors_partial_interface(interface_name, filename, global_constructors[interface_name], only_if_changed)
-    generate_event_names_file(options.event_names_file, event_names, only_if_changed)
+    generate_event_names_file(options.event_names_file, event_names, interfaces_info, interface_extended_attributes, only_if_changed)
 
 
 if __name__ == '__main__':
