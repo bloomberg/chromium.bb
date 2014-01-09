@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // From private/ppb_content_decryptor_private.idl,
-//   modified Fri Dec  6 12:16:22 2013.
+//   modified Wed Jan  8 16:02:43 2014.
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_content_decryptor_private.h"
@@ -145,8 +145,8 @@ void DeliverSamples(
                                     decrypted_sample_info);
 }
 
-const PPB_ContentDecryptor_Private_0_9
-    g_ppb_contentdecryptor_private_thunk_0_9 = {
+const PPB_ContentDecryptor_Private_0_10
+    g_ppb_contentdecryptor_private_thunk_0_10 = {
   &SessionCreated,
   &SessionMessage,
   &SessionReady,
@@ -162,9 +162,9 @@ const PPB_ContentDecryptor_Private_0_9
 
 }  // namespace
 
-const PPB_ContentDecryptor_Private_0_9*
-    GetPPB_ContentDecryptor_Private_0_9_Thunk() {
-  return &g_ppb_contentdecryptor_private_thunk_0_9;
+const PPB_ContentDecryptor_Private_0_10*
+    GetPPB_ContentDecryptor_Private_0_10_Thunk() {
+  return &g_ppb_contentdecryptor_private_thunk_0_10;
 }
 
 }  // namespace thunk

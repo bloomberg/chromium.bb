@@ -4,7 +4,7 @@
  */
 
 /* From private/ppp_content_decryptor_private.idl,
- *   modified Tue Dec  3 17:05:10 2013.
+ *   modified Wed Jan  8 16:02:29 2014.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPP_CONTENT_DECRYPTOR_PRIVATE_H_
@@ -18,10 +18,10 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/private/pp_content_decryptor.h"
 
-#define PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_9 \
-    "PPP_ContentDecryptor_Private;0.9"
+#define PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_10 \
+    "PPP_ContentDecryptor_Private;0.10"
 #define PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE \
-    PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_9
+    PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_10
 
 /**
  * @file
@@ -42,7 +42,7 @@
  * Decryption Module (CDM) for Encrypted Media Extensions:
  * http://www.w3.org/TR/encrypted-media/
  */
-struct PPP_ContentDecryptor_Private_0_9 {
+struct PPP_ContentDecryptor_Private_0_10 {
   /**
    * Initialize for the specified key system.
    *
@@ -228,7 +228,7 @@ struct PPP_ContentDecryptor_Private_0_9 {
       const struct PP_EncryptedBlockInfo* encrypted_block_info);
 };
 
-typedef struct PPP_ContentDecryptor_Private_0_9 PPP_ContentDecryptor_Private;
+typedef struct PPP_ContentDecryptor_Private_0_10 PPP_ContentDecryptor_Private;
 /**
  * @}
  */

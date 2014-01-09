@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/pp_content_decryptor.idl modified Mon Oct 21 18:38:44 2013. */
+/* From private/pp_content_decryptor.idl modified Mon Dec 30 15:55:57 2013. */
 
 #ifndef PPAPI_C_PRIVATE_PP_CONTENT_DECRYPTOR_H_
 #define PPAPI_C_PRIVATE_PP_CONTENT_DECRYPTOR_H_
@@ -103,10 +103,6 @@ struct PP_EncryptedBlockInfo {
    */
   uint32_t data_size;
   /**
-   * Size in bytes of data to be discarded before applying the decryption.
-   */
-  uint32_t data_offset;
-  /**
    * Key ID of the block to be decrypted.
    *
    * TODO(xhwang): For WebM the key ID can be as large as 2048 bytes in theory.
@@ -127,13 +123,8 @@ struct PP_EncryptedBlockInfo {
    */
   struct PP_DecryptSubsampleDescription subsamples[16];
   uint32_t num_subsamples;
-  /**
-   * 4-byte padding to make the size of <code>PP_EncryptedBlockInfo</code>
-   * a multiple of 8 bytes. The value of this field should not be used.
-   */
-  uint32_t padding;
 };
-PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_EncryptedBlockInfo, 248);
+PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_EncryptedBlockInfo, 240);
 /**
  * @}
  */

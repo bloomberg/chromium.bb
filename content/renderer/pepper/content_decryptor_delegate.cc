@@ -106,8 +106,6 @@ static bool MakeEncryptedBlockInfo(
 
   const media::DecryptConfig* decrypt_config =
       encrypted_buffer->decrypt_config();
-  // TODO(xhwang): Drop |data_offset| in PP_EncryptedBlockInfo.
-  block_info->data_offset = 0;
 
   if (!CopyStringToArray(decrypt_config->key_id(), block_info->key_id) ||
       !CopyStringToArray(decrypt_config->iv(), block_info->iv))

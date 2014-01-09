@@ -12,7 +12,7 @@
 [generate_thunk]
 
 label Chrome {
-  M33 = 0.9
+  M34 = 0.10
 };
 
 /**
