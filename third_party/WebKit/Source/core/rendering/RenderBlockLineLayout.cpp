@@ -466,7 +466,7 @@ static inline void setLogicalWidthForTextRun(RootInlineBox* lineBox, BidiRun* ru
     LayoutUnit hyphenWidth = 0;
     if (toInlineTextBox(run->m_box)->hasHyphen()) {
         const Font& font = renderer->style(lineInfo.isFirstLine())->font();
-        hyphenWidth = measureHyphenWidth(renderer, font);
+        hyphenWidth = measureHyphenWidth(renderer, font, run->direction());
     }
     float measuredWidth = 0;
 

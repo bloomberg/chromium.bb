@@ -692,16 +692,22 @@ inline void updateSegmentsForShapes(RenderBlockFlow* block, const FloatingObject
     width.updateAvailableWidth();
 }
 
-inline float measureHyphenWidth(RenderText* renderer, const Font& font)
+inline float measureHyphenWidth(RenderText* renderer, const Font& font, TextDirection textDirection)
 {
     RenderStyle* style = renderer->style();
-    return font.width(RenderBlockFlow::constructTextRun(renderer, font, style->hyphenString().string(), style));
+    return font.width(RenderBlockFlow::constructTextRun(renderer, font,
+        style->hyphenString().string(), style, textDirection));
+}
+
+ALWAYS_INLINE TextDirection textDirectionFromUnicode(WTF::Unicode::Direction direction)
+{
+    return direction == WTF::Unicode::RightToLeft
+        || direction == WTF::Unicode::RightToLeftArabic ? RTL : LTR;
 }
 
 ALWAYS_INLINE float textWidth(RenderText* text, unsigned from, unsigned len, const Font& font, float xPos, bool isFixedPitch, WTF::Unicode::Direction direction, bool collapseWhiteSpace, HashSet<const SimpleFontData*>* fallbackFonts = 0, TextLayout* layout = 0)
 {
-    TextDirection textDirection = direction == WTF::Unicode::RightToLeft
-        || direction == WTF::Unicode::RightToLeftArabic ? RTL : LTR;
+    TextDirection textDirection = textDirectionFromUnicode(direction);
     GlyphOverflow glyphOverflow;
     if (isFixedPitch || (!from && len == text->textLength()) || text->style()->hasTextCombine())
         return text->width(from, len, font, xPos, textDirection, fallbackFonts, &glyphOverflow);
@@ -782,7 +788,11 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
 
     // Non-zero only when kerning is enabled and TextLayout isn't used, in which case we measure
     // words with their trailing space, then subtract its width.
-    float wordTrailingSpaceWidth = (font.typesettingFeatures() & Kerning) && !textLayout ? font.width(RenderBlockFlow::constructTextRun(renderText, font, &space, 1, style)) + wordSpacing : 0;
+    float wordTrailingSpaceWidth = (font.typesettingFeatures() & Kerning) && !textLayout ?
+        font.width(RenderBlockFlow::constructTextRun(
+            renderText, font, &space, 1, style,
+            textDirectionFromUnicode(m_resolver.position().direction()))) + wordSpacing
+        : 0;
 
     UChar lastCharacter = m_renderTextInfo.m_lineBreakIterator.lastCharacter();
     UChar secondToLastCharacter = m_renderTextInfo.m_lineBreakIterator.secondToLastCharacter();
@@ -796,7 +806,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
             m_lineInfo.setEmpty(false, m_block, &m_width);
 
         if (c == softHyphen && m_autoWrap && !hyphenWidth) {
-            hyphenWidth = measureHyphenWidth(renderText, font);
+            hyphenWidth = measureHyphenWidth(renderText, font, textDirectionFromUnicode(m_resolver.position().direction()));
             m_width.addUncommittedWidth(hyphenWidth);
         }
 
