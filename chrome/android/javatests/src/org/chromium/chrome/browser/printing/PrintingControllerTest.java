@@ -13,16 +13,12 @@ import android.print.PrintDocumentInfo;
 import android.test.suitebuilder.annotation.LargeTest;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.testshell.ChromiumTestShellTestBase;
 import org.chromium.chrome.testshell.TestShellTab;
-import org.chromium.printing.PrintDocumentAdapterWrapper;
-import org.chromium.printing.PrintManagerDelegate;
-import org.chromium.printing.PrintingControllerImpl;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -75,30 +71,18 @@ public class PrintingControllerTest extends ChromiumTestShellTestBase {
      * Test a basic printing flow by emulating the corresponding system calls to the printing
      * controller: onStart, onLayout, onWrite, onFinish.  Each one is called once, and in this
      * order, in the UI thread.
-     @LargeTest
-     @Feature({"Printing"})
-     crbug.com/330291
      */
-    @DisabledTest
+    @LargeTest
+    @Feature({"Printing"})
     public void testNormalPrintingFlow() throws Throwable {
         if (!ApiCompatibilityUtils.isPrintingSupported()) return;
 
         final TestShellTab currentTab = launchChromiumTestShellWithUrl(URL).getActiveTab();
         assertTrue(waitForActiveShellToBeDoneLoading());
 
-        final PrintManagerDelegate mockPrintManagerDelegate = new PrintManagerDelegate() {
-            @Override
-            public void print(String printJobName,
-                    PrintDocumentAdapter documentAdapter,
-                    PrintAttributes attributes) {
-                // Do nothing, as we will emulate the framework call sequence within the test.
-            }
-        };
-        final PrintingControllerImpl printingController =
-                (PrintingControllerImpl) PrintingControllerImpl.create(mockPrintManagerDelegate,
-                        new PrintDocumentAdapterWrapper(), PRINT_JOB_NAME);
+        final PrintingControllerImpl printingController = createControllerOnUiThread();
 
-        startController(printingController, currentTab);
+        startControllerOnUiThread(printingController, currentTab);
         // {@link PrintDocumentAdapter#onStart} is always called first.
         callStartOnUiThread(printingController);
 
@@ -156,7 +140,39 @@ public class PrintingControllerTest extends ChromiumTestShellTestBase {
 
     }
 
-    private void startController(final PrintingControllerImpl controller, final TestShellTab tab) {
+    private PrintingControllerImpl createControllerOnUiThread() {
+        try {
+            final PrintManagerDelegate mockPrintManagerDelegate = new PrintManagerDelegate() {
+                @Override
+                public void print(String printJobName,
+                        PrintDocumentAdapter documentAdapter,
+                        PrintAttributes attributes) {
+                    // Do nothing, as we will emulate the framework call sequence within the test.
+                }
+            };
+
+            final FutureTask<PrintingControllerImpl> task =
+                    new FutureTask<PrintingControllerImpl>(new Callable<PrintingControllerImpl>() {
+                @Override
+                public PrintingControllerImpl call() throws Exception {
+                    return (PrintingControllerImpl) PrintingControllerImpl.create(
+                            mockPrintManagerDelegate,
+                            new PrintDocumentAdapterWrapper(),
+                            PRINT_JOB_NAME);
+                }
+            });
+
+            runTestOnUiThread(task);
+            PrintingControllerImpl result = task.get(TEST_TIMEOUT, TimeUnit.MILLISECONDS);
+            return result;
+        } catch (Throwable e) {
+            fail("Error on creating PrintingControllerImpl on the UI thread: " + e);
+        }
+        return null;
+    }
+
+    private void startControllerOnUiThread(final PrintingControllerImpl controller,
+            final TestShellTab tab) {
         try {
             runTestOnUiThread(new Runnable() {
                 @Override
