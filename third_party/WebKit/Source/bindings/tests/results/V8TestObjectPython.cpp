@@ -5367,6 +5367,47 @@ static void overloadedMethodGMethodCallback(const v8::FunctionCallbackInfo<v8::V
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void overloadedMethodH1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    imp->overloadedMethodH();
+}
+
+static void overloadedMethodH2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodH", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        return;
+    }
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    if (info.Length() <= 0 || !info[0]->IsFunction()) {
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodH", "TestObjectPython", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
+        return;
+    }
+    OwnPtr<TestCallbackInterface> testCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), getExecutionContext());
+    imp->overloadedMethodH(testCallbackInterfaceArg.release());
+}
+
+static void overloadedMethodHMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (((info.Length() == 0))) {
+        overloadedMethodH1Method(info);
+        return;
+    }
+    if (((info.Length() == 1) && (info[0]->IsNull() || info[0]->IsFunction()))) {
+        overloadedMethodH2Method(info);
+        return;
+    }
+    throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodH", "TestObjectPython", "No function was found that matched the signature provided."), info.GetIsolate());
+}
+
+static void overloadedMethodHMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::overloadedMethodHMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 static void overloadedPerWorldBindingsMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
@@ -6608,6 +6649,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectPythonMethods[]
     {"overloadedMethodE", TestObjectPythonV8Internal::overloadedMethodEMethodCallback, 0, 1},
     {"overloadedMethodF", TestObjectPythonV8Internal::overloadedMethodFMethodCallback, 0, 1},
     {"overloadedMethodG", TestObjectPythonV8Internal::overloadedMethodGMethodCallback, 0, 0},
+    {"overloadedMethodH", TestObjectPythonV8Internal::overloadedMethodHMethodCallback, 0, 0},
     {"overloadedPerWorldBindingsMethod", TestObjectPythonV8Internal::overloadedPerWorldBindingsMethodMethodCallback, TestObjectPythonV8Internal::overloadedPerWorldBindingsMethodMethodCallbackForMainWorld, 0},
     {"addEventListener", TestObjectPythonV8Internal::addEventListenerMethodCallback, 0, 2},
     {"removeEventListener", TestObjectPythonV8Internal::removeEventListenerMethodCallback, 0, 2},

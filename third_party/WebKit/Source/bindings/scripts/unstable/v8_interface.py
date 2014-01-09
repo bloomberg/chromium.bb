@@ -332,6 +332,9 @@ def overload_check_argument(index, argument):
                             '%s->IsObject()' % cpp_value])
     if v8_types.array_or_sequence_type(idl_type):
         return '%s->IsArray()' % cpp_value
+    if v8_types.is_callback_interface(idl_type):
+        return ' || '.join(['%s->IsNull()' % cpp_value,
+                            '%s->IsFunction()' % cpp_value])
     if v8_types.is_wrapper_type(idl_type):
         type_check = 'V8{idl_type}::hasInstance({cpp_value}, info.GetIsolate(), worldType(info.GetIsolate()))'.format(idl_type=idl_type, cpp_value=cpp_value)
         if argument['is_nullable']:

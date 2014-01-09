@@ -338,6 +338,8 @@ interface TestObjectPython {
     void overloadedMethodF(TestInterfaceEmpty? testInterfaceEmptyNullableArg);
     void overloadedMethodG();
     void overloadedMethodG([StrictTypeChecking] DOMString strictTypeCheckingStringArg);
+    void overloadedMethodH();
+    void overloadedMethodH(TestCallbackInterface testCallbackInterfaceArg);
 
     [PerWorldBindings] void overloadedPerWorldBindingsMethod();
     [PerWorldBindings] void overloadedPerWorldBindingsMethod(long longArg);
