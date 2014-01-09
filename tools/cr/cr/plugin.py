@@ -182,6 +182,10 @@ class Plugin(cr.loader.AutoExport):
         getattr(self, config_root.property_name).enabled = False
 
   @classmethod
+  def ClassInit(cls):
+    pass
+
+  @classmethod
   def GetInstance(cls):
     """Gets an instance of this plugin.
 
@@ -193,6 +197,8 @@ class Plugin(cr.loader.AutoExport):
     """
     plugin = _plugins.get(cls, None)
     if plugin is None:
+      # Run delayed class initialization
+      cls.ClassInit()
       # Build a new instance of cls, and register it as the main instance.
       plugin = cls()
       _plugins[cls] = plugin

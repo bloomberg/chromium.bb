@@ -44,12 +44,10 @@ class SyncCommand(cr.Command):
     cr.Host.Execute(context, '{GCLIENT_BINARY}', 'sync', *context.remains)
 
 
-def _AutoDetectGClient():
-  """Attempts to detect gclient and it's parent repository."""
-  gclient_binaries = cr.Host.SearchPath('gclient')
-  if gclient_binaries:
-    SyncCommand.DETECTED.Set(GCLIENT_BINARY=gclient_binaries[0])
-    SyncCommand.DETECTED.Set(DEPOT_TOOLS=os.path.dirname(gclient_binaries[0]))
-
-# Invoke the auto detection
-_AutoDetectGClient()
+  @classmethod
+  def ClassInit(cls):
+    # Attempt to detect gclient and it's parent repository.
+    gclient_binaries = cr.Host.SearchPath('gclient')
+    if gclient_binaries:
+      cls.DETECTED.Set(GCLIENT_BINARY=gclient_binaries[0])
+      cls.DETECTED.Set(DEPOT_TOOLS=os.path.dirname(gclient_binaries[0]))

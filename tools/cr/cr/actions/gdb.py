@@ -30,11 +30,10 @@ class GdbDebugger(cr.Debugger):
   def Attach(self, context, targets, arguments):
     raise NotImplementedError('Attach not currently supported for gdb.')
 
+  @classmethod
+  def ClassInit(cls):
+    # Attempt to find a valid gdb on the path.
+    gdb_binaries = cr.Host.SearchPath('gdb')
+    if gdb_binaries:
+      cls.DETECTED.Set(CR_GDB=gdb_binaries[0])
 
-def _DetectGdb():
-  """Attempts to find a valid gdb on the path."""
-  gdb_binaries = cr.Host.SearchPath('gdb')
-  if gdb_binaries:
-    GdbDebugger.DETECTED.Set(CR_GDB=gdb_binaries[0])
-
-_DetectGdb()
