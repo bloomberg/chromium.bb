@@ -1488,6 +1488,14 @@ notify_touch(struct weston_seat *seat, uint32_t time, int touch_id,
 		grab->interface->motion(grab, time, touch_id, sx, sy);
 		break;
 	case WL_TOUCH_UP:
+		if (touch->num_tp == 0) {
+			/* This can happen if we start out with one or
+			 * more fingers on the touch screen, in which
+			 * case we didn't get the corresponding down
+			 * event. */
+			weston_log("unmatched touch up event\n");
+			break;
+		}
 		weston_compositor_idle_release(ec);
 		touch->num_tp--;
 
