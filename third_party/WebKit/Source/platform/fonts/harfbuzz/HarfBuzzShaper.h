@@ -123,7 +123,7 @@ private:
     void setFontFeatures();
 
     bool collectHarfBuzzRuns();
-    bool shapeHarfBuzzRuns(bool shouldSetDirection);
+    bool shapeHarfBuzzRuns();
     bool fillGlyphBuffer(GlyphBuffer*);
     void fillGlyphBufferFromHarfBuzzRun(GlyphBuffer*, HarfBuzzRun*, FloatPoint& firstOffsetOfNextRun);
     void setGlyphPositionsForHarfBuzzRun(HarfBuzzRun*, hb_buffer_t*);

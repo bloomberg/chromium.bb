@@ -140,8 +140,9 @@ struct BidiCharacterRun {
     int start() const { return m_start; }
     int stop() const { return m_stop; }
     unsigned char level() const { return m_level; }
-    bool reversed(bool visuallyOrdered) { return m_level % 2 && !visuallyOrdered; }
+    bool reversed(bool visuallyOrdered) const { return m_level % 2 && !visuallyOrdered; }
     bool dirOverride(bool visuallyOrdered) { return m_override || visuallyOrdered; }
+    TextDirection direction() const { return reversed(false) ? RTL : LTR; }
 
     BidiCharacterRun* next() const { return m_next; }
     void setNext(BidiCharacterRun* next) { m_next = next; }
@@ -219,7 +220,7 @@ public:
     void embed(WTF::Unicode::Direction, BidiEmbeddingSource);
     bool commitExplicitEmbedding();
 
-    void createBidiRunsForLine(const Iterator& end, VisualDirectionOverride = NoVisualOverride, bool hardLineBreak = false);
+    void createBidiRunsForLine(const Iterator& end, VisualDirectionOverride = NoVisualOverride, bool hardLineBreak = false, bool reorderRuns = true);
 
     BidiRunList<Run>& runs() { return m_runs; }
 
@@ -635,7 +636,7 @@ TextDirection BidiResolver<Iterator, Run>::determineParagraphDirectionality(bool
 }
 
 template <class Iterator, class Run>
-void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, VisualDirectionOverride override, bool hardLineBreak)
+void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, VisualDirectionOverride override, bool hardLineBreak, bool reorderRuns)
 {
     using namespace WTF::Unicode;
 
@@ -1034,7 +1035,8 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
     }
 
     m_runs.setLogicallyLastRun(m_runs.lastRun());
-    reorderRunsFromLevels();
+    if (reorderRuns)
+        reorderRunsFromLevels();
     m_endOfRunAtEndOfLine = Iterator();
     m_endOfLine = Iterator();
 

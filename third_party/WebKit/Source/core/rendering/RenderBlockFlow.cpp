@@ -2659,9 +2659,15 @@ LayoutUnit RenderBlockFlow::logicalRightSelectionOffset(RenderBlock* rootBlock, 
 template <typename CharacterType>
 static inline TextRun constructTextRunInternal(RenderObject* context, const Font& font, const CharacterType* characters, int length, RenderStyle* style, TextRun::ExpansionBehavior expansion)
 {
+    return constructTextRunInternal(context, font, characters, length, style, LTR, expansion);
+}
+
+template <typename CharacterType>
+static inline TextRun constructTextRunInternal(RenderObject* context, const Font& font, const CharacterType* characters, int length, RenderStyle* style, TextDirection direction, TextRun::ExpansionBehavior expansion)
+{
     ASSERT(style);
 
-    TextDirection textDirection = LTR;
+    TextDirection textDirection = direction;
     bool directionalOverride = style->rtlOrdering() == VisualOrder;
 
     TextRun run(characters, length, 0, 0, expansion, textDirection, directionalOverride);
@@ -2709,12 +2715,12 @@ TextRun RenderBlockFlow::constructTextRun(RenderObject* context, const Font& fon
     return constructTextRunInternal(context, font, text->characters16(), text->textLength(), style, expansion);
 }
 
-TextRun RenderBlockFlow::constructTextRun(RenderObject* context, const Font& font, const RenderText* text, unsigned offset, unsigned length, RenderStyle* style, TextRun::ExpansionBehavior expansion)
+TextRun RenderBlockFlow::constructTextRun(RenderObject* context, const Font& font, const RenderText* text, unsigned offset, unsigned length, RenderStyle* style, TextDirection direction, TextRun::ExpansionBehavior expansion)
 {
     ASSERT(offset + length <= text->textLength());
     if (text->is8Bit())
-        return constructTextRunInternal(context, font, text->characters8() + offset, length, style, expansion);
-    return constructTextRunInternal(context, font, text->characters16() + offset, length, style, expansion);
+        return constructTextRunInternal(context, font, text->characters8() + offset, length, style, direction, expansion);
+    return constructTextRunInternal(context, font, text->characters16() + offset, length, style, direction, expansion);
 }
 
 TextRun RenderBlockFlow::constructTextRun(RenderObject* context, const Font& font, const String& string, RenderStyle* style, TextRun::ExpansionBehavior expansion, TextRunFlags flags)

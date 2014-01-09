@@ -84,8 +84,8 @@ public:
     unsigned textLength() const { return m_text.length(); } // non virtual implementation of length()
     void positionLineBox(InlineBox*);
 
-    virtual float width(unsigned from, unsigned len, const Font&, float xPos, HashSet<const SimpleFontData*>* fallbackFonts = 0, GlyphOverflow* = 0) const;
-    virtual float width(unsigned from, unsigned len, float xPos, bool firstLine = false, HashSet<const SimpleFontData*>* fallbackFonts = 0, GlyphOverflow* = 0) const;
+    virtual float width(unsigned from, unsigned len, const Font&, float xPos, TextDirection, HashSet<const SimpleFontData*>* fallbackFonts = 0, GlyphOverflow* = 0) const;
+    virtual float width(unsigned from, unsigned len, float xPos, TextDirection, bool firstLine = false, HashSet<const SimpleFontData*>* fallbackFonts = 0, GlyphOverflow* = 0) const;
 
     float minLogicalWidth() const;
     float maxLogicalWidth() const;
@@ -178,7 +178,7 @@ private:
 
     void deleteTextBoxes();
     bool containsOnlyWhitespace(unsigned from, unsigned len) const;
-    float widthFromCache(const Font&, int start, int len, float xPos, HashSet<const SimpleFontData*>* fallbackFonts, GlyphOverflow*) const;
+    float widthFromCache(const Font&, int start, int len, float xPos, TextDirection, HashSet<const SimpleFontData*>* fallbackFonts, GlyphOverflow*) const;
     bool isAllASCII() const { return m_isAllASCII; }
 
     void secureText(UChar mask);

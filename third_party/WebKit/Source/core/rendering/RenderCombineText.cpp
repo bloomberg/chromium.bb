@@ -55,7 +55,7 @@ void RenderCombineText::setTextInternal(PassRefPtr<StringImpl> text)
     m_needsFontUpdate = true;
 }
 
-float RenderCombineText::width(unsigned from, unsigned length, const Font& font, float xPosition, HashSet<const SimpleFontData*>* fallbackFonts, GlyphOverflow* glyphOverflow) const
+float RenderCombineText::width(unsigned from, unsigned length, const Font& font, float xPosition, TextDirection direction, HashSet<const SimpleFontData*>* fallbackFonts, GlyphOverflow* glyphOverflow) const
 {
     if (hasEmptyText())
         return 0;
@@ -63,7 +63,7 @@ float RenderCombineText::width(unsigned from, unsigned length, const Font& font,
     if (m_isCombined)
         return font.size();
 
-    return RenderText::width(from, length, font, xPosition, fallbackFonts, glyphOverflow);
+    return RenderText::width(from, length, font, xPosition, direction, fallbackFonts, glyphOverflow);
 }
 
 void RenderCombineText::adjustTextOrigin(FloatPoint& textOrigin, const FloatRect& boxRect) const

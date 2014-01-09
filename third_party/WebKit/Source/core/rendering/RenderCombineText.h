@@ -39,7 +39,7 @@ public:
 
 private:
     virtual bool isCombineText() const { return true; }
-    virtual float width(unsigned from, unsigned length, const Font&, float xPosition, HashSet<const SimpleFontData*>* fallbackFonts = 0, GlyphOverflow* = 0) const;
+    virtual float width(unsigned from, unsigned length, const Font&, float xPosition, TextDirection, HashSet<const SimpleFontData*>* fallbackFonts = 0, GlyphOverflow* = 0) const;
     virtual const char* renderName() const { return "RenderCombineText"; }
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle);
     virtual void setTextInternal(PassRefPtr<StringImpl>);

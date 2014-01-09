@@ -542,9 +542,7 @@ bool HarfBuzzShaper::shape(GlyphBuffer* glyphBuffer)
         return false;
 
     m_totalWidth = 0;
-    // WebKit doesn't set direction when calulating widths. Leave the direction setting to
-    // HarfBuzz when we are calculating widths (except when directionalOverride() is set).
-    if (!shapeHarfBuzzRuns(glyphBuffer || m_run.directionalOverride()))
+    if (!shapeHarfBuzzRuns())
         return false;
 
     if (!RuntimeEnabledFeatures::subpixelFontScalingEnabled())
@@ -634,7 +632,7 @@ static const uint16_t* toUint16(const UChar* src)
     return reinterpret_cast<const uint16_t*>(src);
 }
 
-bool HarfBuzzShaper::shapeHarfBuzzRuns(bool shouldSetDirection)
+bool HarfBuzzShaper::shapeHarfBuzzRuns()
 {
     HarfBuzzScopedPtr<hb_buffer_t> harfBuzzBuffer(hb_buffer_create(), hb_buffer_destroy);
 
@@ -654,11 +652,7 @@ bool HarfBuzzShaper::shapeHarfBuzzRuns(bool shouldSetDirection)
             return false;
 
         hb_buffer_set_script(harfBuzzBuffer.get(), currentRun->script());
-        if (shouldSetDirection)
-            hb_buffer_set_direction(harfBuzzBuffer.get(), currentRun->rtl() ? HB_DIRECTION_RTL : HB_DIRECTION_LTR);
-        else
-            // Leaving direction to HarfBuzz to guess is *really* bad, but will do for now.
-            hb_buffer_guess_segment_properties(harfBuzzBuffer.get());
+        hb_buffer_set_direction(harfBuzzBuffer.get(), currentRun->rtl() ? HB_DIRECTION_RTL : HB_DIRECTION_LTR);
 
         hb_segment_properties_t props;
         hb_buffer_get_segment_properties(harfBuzzBuffer.get(), &props);

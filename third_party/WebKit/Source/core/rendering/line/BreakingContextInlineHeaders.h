@@ -698,16 +698,18 @@ inline float measureHyphenWidth(RenderText* renderer, const Font& font)
     return font.width(RenderBlockFlow::constructTextRun(renderer, font, style->hyphenString().string(), style));
 }
 
-ALWAYS_INLINE float textWidth(RenderText* text, unsigned from, unsigned len, const Font& font, float xPos, bool isFixedPitch, bool collapseWhiteSpace, HashSet<const SimpleFontData*>* fallbackFonts = 0, TextLayout* layout = 0)
+ALWAYS_INLINE float textWidth(RenderText* text, unsigned from, unsigned len, const Font& font, float xPos, bool isFixedPitch, WTF::Unicode::Direction direction, bool collapseWhiteSpace, HashSet<const SimpleFontData*>* fallbackFonts = 0, TextLayout* layout = 0)
 {
+    TextDirection textDirection = direction == WTF::Unicode::RightToLeft
+        || direction == WTF::Unicode::RightToLeftArabic ? RTL : LTR;
     GlyphOverflow glyphOverflow;
     if (isFixedPitch || (!from && len == text->textLength()) || text->style()->hasTextCombine())
-        return text->width(from, len, font, xPos, fallbackFonts, &glyphOverflow);
+        return text->width(from, len, font, xPos, textDirection, fallbackFonts, &glyphOverflow);
 
     if (layout)
         return Font::width(*layout, from, len, fallbackFonts);
 
-    TextRun run = RenderBlockFlow::constructTextRun(text, font, text, from, len, text->style());
+    TextRun run = RenderBlockFlow::constructTextRun(text, font, text, from, len, text->style(), textDirection);
     run.setCharactersLength(text->textLength() - from);
     ASSERT(run.charactersLength() >= run.length());
 
@@ -803,7 +805,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
         if ((breakAll || breakWords) && !midWordBreak) {
             wrapW += charWidth;
             bool midWordBreakIsBeforeSurrogatePair = U16_IS_LEAD(c) && m_current.offset() + 1 < renderText->textLength() && U16_IS_TRAIL((*renderText)[m_current.offset() + 1]);
-            charWidth = textWidth(renderText, m_current.offset(), midWordBreakIsBeforeSurrogatePair ? 2 : 1, font, m_width.committedWidth() + wrapW, isFixedPitch, m_collapseWhiteSpace, 0, textLayout);
+            charWidth = textWidth(renderText, m_current.offset(), midWordBreakIsBeforeSurrogatePair ? 2 : 1, font, m_width.committedWidth() + wrapW, isFixedPitch, m_resolver.position().direction(), m_collapseWhiteSpace, 0, textLayout);
             midWordBreak = m_width.committedWidth() + wrapW + charWidth > m_width.availableWidth();
         }
 
@@ -839,9 +841,9 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
 
             float additionalTmpW;
             if (wordTrailingSpaceWidth && c == ' ')
-                additionalTmpW = textWidth(renderText, lastSpace, m_current.offset() + 1 - lastSpace, font, m_width.currentWidth(), isFixedPitch, m_collapseWhiteSpace, &wordMeasurement.fallbackFonts, textLayout) - wordTrailingSpaceWidth;
+                additionalTmpW = textWidth(renderText, lastSpace, m_current.offset() + 1 - lastSpace, font, m_width.currentWidth(), isFixedPitch, m_resolver.position().direction(), m_collapseWhiteSpace, &wordMeasurement.fallbackFonts, textLayout) - wordTrailingSpaceWidth;
             else
-                additionalTmpW = textWidth(renderText, lastSpace, m_current.offset() - lastSpace, font, m_width.currentWidth(), isFixedPitch, m_collapseWhiteSpace, &wordMeasurement.fallbackFonts, textLayout);
+                additionalTmpW = textWidth(renderText, lastSpace, m_current.offset() - lastSpace, font, m_width.currentWidth(), isFixedPitch, m_resolver.position().direction(), m_collapseWhiteSpace, &wordMeasurement.fallbackFonts, textLayout);
 
             wordMeasurement.width = additionalTmpW + wordSpacingForWordMeasurement;
             additionalTmpW += lastSpaceWordSpacing;
@@ -864,7 +866,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
                 // as candidate width for this line.
                 bool lineWasTooWide = false;
                 if (m_width.fitsOnLine() && m_currentCharacterIsSpace && m_currentStyle->breakOnlyAfterWhiteSpace() && !midWordBreak) {
-                    float charWidth = textWidth(renderText, m_current.offset(), 1, font, m_width.currentWidth(), isFixedPitch, m_collapseWhiteSpace, &wordMeasurement.fallbackFonts, textLayout) + (applyWordSpacing ? wordSpacing : 0);
+                    float charWidth = textWidth(renderText, m_current.offset(), 1, font, m_width.currentWidth(), isFixedPitch, m_resolver.position().direction(), m_collapseWhiteSpace, &wordMeasurement.fallbackFonts, textLayout) + (applyWordSpacing ? wordSpacing : 0);
                     // Check if line is too big even without the extra space
                     // at the end of the line. If it is not, do nothing.
                     // If the line needs the extra whitespace to be too long,
@@ -995,7 +997,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
     wordMeasurement.renderer = renderText;
 
     // IMPORTANT: current.m_pos is > length here!
-    float additionalTmpW = m_ignoringSpaces ? 0 : textWidth(renderText, lastSpace, m_current.offset() - lastSpace, font, m_width.currentWidth(), isFixedPitch, m_collapseWhiteSpace, &wordMeasurement.fallbackFonts, textLayout);
+    float additionalTmpW = m_ignoringSpaces ? 0 : textWidth(renderText, lastSpace, m_current.offset() - lastSpace, font, m_width.currentWidth(), isFixedPitch, m_resolver.position().direction(), m_collapseWhiteSpace, &wordMeasurement.fallbackFonts, textLayout);
     wordMeasurement.startOffset = lastSpace;
     wordMeasurement.endOffset = m_current.offset();
     wordMeasurement.width = m_ignoringSpaces ? 0 : additionalTmpW + wordSpacingForWordMeasurement;

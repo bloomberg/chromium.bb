@@ -495,7 +495,7 @@ static inline void setLogicalWidthForTextRun(RootInlineBox* lineBox, BidiRun* ru
             lastEndOffset = wordMeasurement.endOffset;
             if (kerningIsEnabled && lastEndOffset == run->m_stop) {
                 int wordLength = lastEndOffset - wordMeasurement.startOffset;
-                measuredWidth += renderer->width(wordMeasurement.startOffset, wordLength, xPos, lineInfo.isFirstLine());
+                measuredWidth += renderer->width(wordMeasurement.startOffset, wordLength, xPos, run->direction(), lineInfo.isFirstLine());
                 if (i > 0 && wordLength == 1 && renderer->characterAt(wordMeasurement.startOffset) == ' ')
                     measuredWidth += renderer->style()->wordSpacing();
             } else
@@ -514,7 +514,7 @@ static inline void setLogicalWidthForTextRun(RootInlineBox* lineBox, BidiRun* ru
     }
 
     if (!measuredWidth)
-        measuredWidth = renderer->width(run->m_start, run->m_stop - run->m_start, xPos, lineInfo.isFirstLine(), &fallbackFonts, &glyphOverflow);
+        measuredWidth = renderer->width(run->m_start, run->m_stop - run->m_start, xPos, run->direction(), lineInfo.isFirstLine(), &fallbackFonts, &glyphOverflow);
 
     run->m_box->setLogicalWidth(measuredWidth + hyphenWidth);
     if (!fallbackFonts.isEmpty()) {

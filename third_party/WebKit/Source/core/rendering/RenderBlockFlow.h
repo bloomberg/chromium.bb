@@ -201,6 +201,7 @@ public:
         TextRun::ExpansionBehavior = TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion);
 
     static TextRun constructTextRun(RenderObject* context, const Font&, const RenderText*, unsigned offset, unsigned length, RenderStyle*,
+        TextDirection = LTR,
         TextRun::ExpansionBehavior = TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion);
 
     static TextRun constructTextRun(RenderObject* context, const Font&, const RenderText*, unsigned offset, RenderStyle*,

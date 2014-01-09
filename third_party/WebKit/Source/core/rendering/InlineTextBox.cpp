@@ -305,7 +305,7 @@ float InlineTextBox::placeEllipsisBox(bool flowIsLTR, float visibleLeftEdge, flo
 
         // If we got here that means that we were only partially truncated and we need to return the pixel offset at which
         // to place the ellipsis.
-        float widthOfVisibleText = toRenderText(renderer())->width(m_start, offset, textPos(), isFirstLineStyle());
+        float widthOfVisibleText = toRenderText(renderer())->width(m_start, offset, textPos(), flowIsLTR ? LTR : RTL, isFirstLineStyle());
 
         // The ellipsis needs to be placed just after the last visible character.
         // Where "after" is defined by the flow directionality, not the inline
@@ -504,7 +504,7 @@ void InlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, 
             // farther to the right.
             // NOTE: WebKit's behavior differs from that of IE which appears to just overlay the ellipsis on top of the
             // truncated string i.e.  |Hello|CBA| -> |...lo|CBA|
-            LayoutUnit widthOfVisibleText = toRenderText(renderer())->width(m_start, m_truncation, textPos(), isFirstLineStyle());
+            LayoutUnit widthOfVisibleText = toRenderText(renderer())->width(m_start, m_truncation, textPos(), isLeftToRightDirection() ? LTR : RTL, isFirstLineStyle());
             LayoutUnit widthOfHiddenText = m_logicalWidth - widthOfVisibleText;
             // FIXME: The hit testing logic also needs to take this translation into account.
             LayoutSize truncationOffset(isLeftToRightDirection() ? widthOfHiddenText : -widthOfHiddenText, 0);
@@ -1062,7 +1062,7 @@ void InlineTextBox::paintDecoration(GraphicsContext* context, const FloatPoint& 
 
     float width = m_logicalWidth;
     if (m_truncation != cNoTruncation) {
-        width = toRenderText(renderer())->width(m_start, m_truncation, textPos(), isFirstLineStyle());
+        width = toRenderText(renderer())->width(m_start, m_truncation, textPos(), isLeftToRightDirection() ? LTR : RTL, isFirstLineStyle());
         if (!isLeftToRightDirection())
             localOrigin.move(m_logicalWidth - width, 0);
     }
@@ -1349,7 +1349,7 @@ void InlineTextBox::paintCompositionUnderline(GraphicsContext* ctx, const FloatP
     if (paintStart <= underline.startOffset) {
         paintStart = underline.startOffset;
         useWholeWidth = false;
-        start = toRenderText(renderer())->width(m_start, paintStart - m_start, textPos(), isFirstLineStyle());
+        start = toRenderText(renderer())->width(m_start, paintStart - m_start, textPos(), isLeftToRightDirection() ? LTR : RTL, isFirstLineStyle());
     }
     if (paintEnd != underline.endOffset) {      // end points at the last char, not past it
         paintEnd = min(paintEnd, (unsigned)underline.endOffset);
@@ -1360,7 +1360,7 @@ void InlineTextBox::paintCompositionUnderline(GraphicsContext* ctx, const FloatP
         useWholeWidth = false;
     }
     if (!useWholeWidth) {
-        width = toRenderText(renderer())->width(paintStart, paintEnd - paintStart, textPos() + start, isFirstLineStyle());
+        width = toRenderText(renderer())->width(paintStart, paintEnd - paintStart, textPos() + start, isLeftToRightDirection() ? LTR : RTL, isFirstLineStyle());
     }
 
     // Thick marked text underlines are 2px thick as long as there is room for the 2px line under the baseline.
