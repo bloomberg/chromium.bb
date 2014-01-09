@@ -151,8 +151,13 @@ HttpBridge::RequestContext::RequestContext(
   // should be tied to whatever the sync servers expect (if anything). These
   // fields should probably just be settable by sync backend; though we should
   // figure out if we need to give the user explicit control over policies etc.
+  std::string accepted_language_list;
+  if (baseline_context->http_user_agent_settings()) {
+    accepted_language_list =
+        baseline_context->http_user_agent_settings()->GetAcceptLanguage();
+  }
   http_user_agent_settings_.reset(new net::StaticHttpUserAgentSettings(
-      baseline_context->GetAcceptLanguage(),
+      accepted_language_list,
       user_agent));
   set_http_user_agent_settings(http_user_agent_settings_.get());
 

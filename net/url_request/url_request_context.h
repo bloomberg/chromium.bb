@@ -167,17 +167,6 @@ class NET_EXPORT URLRequestContext
     cert_transparency_verifier_ = verifier;
   }
 
-  // ---------------------------------------------------------------------------
-  // Legacy accessors that delegate to http_user_agent_settings_.
-  // TODO(pauljensen): Remove after all clients are updated to directly access
-  // http_user_agent_settings_.
-  // Gets the value of 'Accept-Language' header field.
-  std::string GetAcceptLanguage() const;
-  // Gets the UA string to use for the given URL.  Pass an invalid URL (such as
-  // GURL()) to get the default UA string.
-  std::string GetUserAgent(const GURL& url) const;
-  // ---------------------------------------------------------------------------
-
   const URLRequestJobFactory* job_factory() const { return job_factory_; }
   void set_job_factory(const URLRequestJobFactory* job_factory) {
     job_factory_ = job_factory;

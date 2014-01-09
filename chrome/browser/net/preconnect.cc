@@ -14,6 +14,7 @@
 #include "net/http/http_stream_factory.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/ssl/ssl_config_service.h"
+#include "net/url_request/http_user_agent_settings.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -57,11 +58,14 @@ void PreconnectOnIOThread(
   net::HttpTransactionFactory* factory = context->http_transaction_factory();
   net::HttpNetworkSession* session = factory->GetSession();
 
+  std::string user_agent;
+  if (context->http_user_agent_settings())
+    user_agent = context->http_user_agent_settings()->GetUserAgent(url);
   net::HttpRequestInfo request_info;
   request_info.url = url;
   request_info.method = "GET";
   request_info.extra_headers.SetHeader(net::HttpRequestHeaders::kUserAgent,
-                                       context->GetUserAgent(url));
+                                       user_agent);
 
   net::NetworkDelegate* delegate = context->network_delegate();
   if (delegate->CanEnablePrivacyMode(url, first_party_for_cookies))

@@ -81,16 +81,6 @@ void URLRequestContext::set_cookie_store(CookieStore* cookie_store) {
   cookie_store_ = cookie_store;
 }
 
-std::string URLRequestContext::GetAcceptLanguage() const {
-  return http_user_agent_settings_ ?
-      http_user_agent_settings_->GetAcceptLanguage() : std::string();
-}
-
-std::string URLRequestContext::GetUserAgent(const GURL& url) const {
-  return http_user_agent_settings_ ?
-      http_user_agent_settings_->GetUserAgent(url) : std::string();
-}
-
 void URLRequestContext::AssertNoURLRequests() const {
   int num_requests = url_requests_->size();
   if (num_requests != 0) {

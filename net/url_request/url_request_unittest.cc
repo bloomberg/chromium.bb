@@ -5943,7 +5943,8 @@ TEST_F(URLRequestTestHTTP, DefaultUserAgent) {
                  &default_context_);
   req.Start();
   base::RunLoop().Run();
-  EXPECT_EQ(req.context()->GetUserAgent(req.url()), d.data_received());
+  EXPECT_EQ(req.context()->http_user_agent_settings()->GetUserAgent(req.url()),
+            d.data_received());
 }
 
 // Check that if request overrides the User-Agent header,

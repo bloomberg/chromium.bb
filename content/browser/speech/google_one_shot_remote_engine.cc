@@ -16,6 +16,7 @@
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
+#include "net/url_request/http_user_agent_settings.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -174,9 +175,12 @@ void GoogleOneShotRemoteEngine::StartRecognition() {
     // TODO(pauljensen): GoogleOneShotRemoteEngine should be constructed with
     // a reference to the HttpUserAgentSettings rather than accessing the
     // accept language through the URLRequestContext.
-    std::string accepted_language_list = request_context->GetAcceptLanguage();
-    size_t separator = accepted_language_list.find_first_of(",;");
-    lang_param = accepted_language_list.substr(0, separator);
+    if (request_context->http_user_agent_settings()) {
+      std::string accepted_language_list =
+          request_context->http_user_agent_settings()->GetAcceptLanguage();
+      size_t separator = accepted_language_list.find_first_of(",;");
+      lang_param = accepted_language_list.substr(0, separator);
+    }
   }
 
   if (lang_param.empty())
