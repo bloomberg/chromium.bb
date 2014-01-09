@@ -236,7 +236,6 @@ interface TestObjectPython {
     TestInterfaceEmpty testInterfaceEmptyMethod();
     void voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg);
     void voidMethodLongArgTestInterfaceEmptyArg(long longArg, TestInterfaceEmpty testInterfaceEmptyArg);
-    void voidMethodTestCallbackInterfaceArg(TestCallbackInterface testCallbackInterfaceArg);
     // Callback function type
     VoidCallbackFunction voidCallbackFunctionMethod();
     AnyCallbackFunctionOptionalAnyArg anyCallbackFunctionOptionalAnyArgMethod();
@@ -282,6 +281,9 @@ interface TestObjectPython {
     // Nullable types
     // Currently only used on interface type arguments
     void voidMethodNullableStringArg(TestInterfaceEmpty? nullableTestInterfaceEmptyArg);
+    // Callback interface types
+    void voidMethodTestCallbackInterfaceArg(TestCallbackInterface testCallbackInterfaceArg);
+    void voidMethodNullableTestCallbackInterfaceArg(TestCallbackInterface? testCallbackInterfaceArg);
     // Enumerations
     TestEnum testEnumMethod();
     void voidMethodTestEnumArg(TestEnum testEnumTypeArg);

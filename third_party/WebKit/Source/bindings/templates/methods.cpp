@@ -95,13 +95,13 @@ if (info.Length() > {{argument.index}} && !isUndefinedOrNull(info[{{argument.ind
 }
 {% endif %}
 {% if argument.is_callback_interface %}
-if (info.Length() <= {{argument.index}} || !info[{{argument.index}}]->IsFunction()) {
+if (info.Length() <= {{argument.index}} || !{% if argument.is_nullable %}(info[{{argument.index}}]->IsFunction() || info[{{argument.index}}]->IsNull()){% else %}info[{{argument.index}}]->IsFunction(){% endif %}) {
     {{throw_type_error(method,
           '"The callback provided as parameter %s is not a function."' %
               (argument.index + 1)) | indent }}
     return;
 }
-OwnPtr<{{argument.idl_type}}> {{argument.name}} = V8{{argument.idl_type}}::create(v8::Handle<v8::Function>::Cast(info[{{argument.index}}]), getExecutionContext());
+OwnPtr<{{argument.idl_type}}> {{argument.name}} = {% if argument.is_nullable %}info[{{argument.index}}]->IsNull() ? nullptr : {% endif %}V8{{argument.idl_type}}::create(v8::Handle<v8::Function>::Cast(info[{{argument.index}}]), getExecutionContext());
 {% elif argument.is_clamp %}
 {# NaN is treated as 0: http://www.w3.org/TR/WebIDL/#es-type-mapping #}
 {{argument.cpp_type}} {{argument.name}} = 0;
