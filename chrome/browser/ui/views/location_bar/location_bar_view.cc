@@ -289,8 +289,12 @@ void LocationBarView::Init() {
   AddChildView(ev_bubble_view_);
 
   // Initialize the Omnibox view.
-  omnibox_view_ = new OmniboxViewViews(this, profile(), command_updater(),
-                                       is_popup_mode_, this, font_list);
+  omnibox_view_ = new OmniboxViewViews(
+      this, profile(), command_updater(),
+      is_popup_mode_ ||
+          (browser_->is_app() && CommandLine::ForCurrentProcess()->
+              HasSwitch(switches::kEnableStreamlinedHostedApps)),
+      this, font_list);
   omnibox_view_->Init();
   omnibox_view_->SetFocusable(true);
   AddChildView(omnibox_view_);

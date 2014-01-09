@@ -103,11 +103,6 @@ int GetButtonSpacing() {
       ToolbarView::kStandardSpacing : 0;
 }
 
-bool IsStreamlinedHostedAppsEnabled() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableStreamlinedHostedApps);
-}
-
 }  // namespace
 
 // static
@@ -136,7 +131,8 @@ ToolbarView::ToolbarView(Browser* browser)
 
   display_mode_ = DISPLAYMODE_LOCATION;
   if (browser->SupportsWindowFeature(Browser::FEATURE_TABSTRIP) ||
-      (browser->is_app() && IsStreamlinedHostedAppsEnabled()))
+      (browser->is_app() && CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableStreamlinedHostedApps)))
     display_mode_ = DISPLAYMODE_NORMAL;
 
   registrar_.Add(this, chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
@@ -193,8 +189,7 @@ void ToolbarView::Init() {
   location_bar_ = new LocationBarView(
       browser_, browser_->profile(),
       browser_->command_controller()->command_updater(), this,
-      display_mode_ == DISPLAYMODE_LOCATION ||
-          (browser_->is_app() && IsStreamlinedHostedAppsEnabled()));
+      display_mode_ == DISPLAYMODE_LOCATION);
 
   reload_ = new ReloadButton(location_bar_,
                              browser_->command_controller()->command_updater());
