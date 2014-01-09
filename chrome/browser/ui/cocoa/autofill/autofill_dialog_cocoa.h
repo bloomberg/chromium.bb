@@ -65,14 +65,13 @@ class AutofillDialogCocoa : public AutofillDialogView,
   // http://crbug.com/256864
   virtual void SubmitForTesting() OVERRIDE;
   virtual void CancelForTesting() OVERRIDE;
-  virtual base::string16 GetTextContentsOfInput(
-      const DetailInput& input) OVERRIDE;
-  virtual void SetTextContentsOfInput(const DetailInput& input,
+  virtual base::string16 GetTextContentsOfInput(ServerFieldType type) OVERRIDE;
+  virtual void SetTextContentsOfInput(ServerFieldType type,
                                       const base::string16& contents) OVERRIDE;
   virtual void SetTextContentsOfSuggestionInput(
       DialogSection section,
       const base::string16& text) OVERRIDE;
-  virtual void ActivateInput(const DetailInput& input) OVERRIDE;
+  virtual void ActivateInput(ServerFieldType type) OVERRIDE;
   virtual gfx::Size GetSize() const OVERRIDE;
   virtual content::WebContents* GetSignInWebContents() OVERRIDE;
   virtual bool IsShowingOverlay() const OVERRIDE;

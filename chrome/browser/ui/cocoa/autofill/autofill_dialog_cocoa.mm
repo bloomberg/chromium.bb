@@ -152,12 +152,12 @@ void AutofillDialogCocoa::CancelForTesting() {
 }
 
 base::string16 AutofillDialogCocoa::GetTextContentsOfInput(
-    const DetailInput& input) {
+    ServerFieldType type) {
   for (size_t i = SECTION_MIN; i <= SECTION_MAX; ++i) {
     DialogSection section = static_cast<DialogSection>(i);
     FieldValueMap contents;
     [sheet_delegate_ getInputs:&contents forSection:section];
-    FieldValueMap::const_iterator it = contents.find(input.type);
+    FieldValueMap::const_iterator it = contents.find(type);
     if (it != contents.end())
       return it->second;
   }
@@ -167,10 +167,10 @@ base::string16 AutofillDialogCocoa::GetTextContentsOfInput(
 }
 
 void AutofillDialogCocoa::SetTextContentsOfInput(
-    const DetailInput& input,
+    ServerFieldType type,
     const base::string16& contents) {
   [sheet_delegate_ setTextContents:base::SysUTF16ToNSString(contents)
-                          forInput:input];
+                           forType:type];
 }
 
 void AutofillDialogCocoa::SetTextContentsOfSuggestionInput(
@@ -180,8 +180,8 @@ void AutofillDialogCocoa::SetTextContentsOfSuggestionInput(
             ofSuggestionForSection:section];
 }
 
-void AutofillDialogCocoa::ActivateInput(const DetailInput& input) {
-  [sheet_delegate_ activateFieldForInput:input];
+void AutofillDialogCocoa::ActivateInput(ServerFieldType type) {
+  [sheet_delegate_ activateFieldForType:type];
 }
 
 gfx::Size AutofillDialogCocoa::GetSize() const {

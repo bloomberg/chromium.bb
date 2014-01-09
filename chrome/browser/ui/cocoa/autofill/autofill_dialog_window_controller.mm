@@ -466,11 +466,11 @@ const CGFloat kMinimumContentsHeight = 101;
 @implementation AutofillDialogWindowController (TestableAutofillDialogView)
 
 - (void)setTextContents:(NSString*)text
-               forInput:(const autofill::DetailInput&)input {
+               forType:(autofill::ServerFieldType)type {
   for (size_t i = autofill::SECTION_MIN; i <= autofill::SECTION_MAX; ++i) {
     autofill::DialogSection section = static_cast<autofill::DialogSection>(i);
     // TODO(groby): Need to find the section for an input directly - wasteful.
-    [[mainContainer_ sectionForId:section] setFieldValue:text forInput:input];
+    [[mainContainer_ sectionForId:section] setFieldValue:text forType:type];
   }
 }
 
@@ -479,10 +479,10 @@ const CGFloat kMinimumContentsHeight = 101;
   [[mainContainer_ sectionForId:section] setSuggestionFieldValue:text];
 }
 
-- (void)activateFieldForInput:(const autofill::DetailInput&)input {
+- (void)activateFieldForType:(autofill::ServerFieldType)type {
   for (size_t i = autofill::SECTION_MIN; i <= autofill::SECTION_MAX; ++i) {
     autofill::DialogSection section = static_cast<autofill::DialogSection>(i);
-    [[mainContainer_ sectionForId:section] activateFieldForInput:input];
+    [[mainContainer_ sectionForId:section] activateFieldForType:type];
   }
 }
 

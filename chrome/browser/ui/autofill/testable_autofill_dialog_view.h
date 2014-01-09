@@ -19,19 +19,19 @@ class TestableAutofillDialogView {
   // Simulates the user pressing 'Cancel' to abort the dialog.
   virtual void CancelForTesting() = 0;
 
-  // Returns the actual contents of the input which is modelled by |input|.
-  virtual base::string16 GetTextContentsOfInput(const DetailInput& input) = 0;
+  // Returns the actual contents of the input of |type|.
+  virtual base::string16 GetTextContentsOfInput(ServerFieldType type) = 0;
 
-  // Sets the actual contents of the input which is modelled by |input|.
-  virtual void SetTextContentsOfInput(const DetailInput& input,
+  // Sets the actual contents of the input of |type|.
+  virtual void SetTextContentsOfInput(ServerFieldType type,
                                       const base::string16& contents) = 0;
 
   // Sets the content of the extra field for a section.
   virtual void SetTextContentsOfSuggestionInput(DialogSection section,
                                                 const base::string16& text) = 0;
 
-  // Simulates a user activatino of the input which is modelled by |input|.
-  virtual void ActivateInput(const DetailInput& input) = 0;
+  // Simulates a user activation of the input of |type|.
+  virtual void ActivateInput(ServerFieldType type) = 0;
 
   // Get the size of the entire view.
   virtual gfx::Size GetSize() const = 0;

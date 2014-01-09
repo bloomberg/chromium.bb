@@ -702,25 +702,22 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
 }
 
 - (void)setFieldValue:(NSString*)text
-             forInput:(const autofill::DetailInput&)input {
-  if ([self detailInputForType:input.type] != &input)
-    return;
-
-  NSControl<AutofillInputField>* field = [inputs_ viewWithTag:input.type];
-  [field setFieldValue:text];
+              forType:(autofill::ServerFieldType)type {
+  NSControl<AutofillInputField>* field = [inputs_ viewWithTag:type];
+  if (field)
+    [field setFieldValue:text];
 }
 
 - (void)setSuggestionFieldValue:(NSString*)text {
   [[suggestContainer_ inputField] setFieldValue:text];
 }
 
-- (void)activateFieldForInput:(const autofill::DetailInput&)input {
-  if ([self detailInputForType:input.type] != &input)
-    return;
-
-  NSControl<AutofillInputField>* field = [inputs_ viewWithTag:input.type];
-  [[field window] makeFirstResponder:field];
-  [self textfieldEditedOrActivated:field edited:NO];
+- (void)activateFieldForType:(autofill::ServerFieldType)type {
+  NSControl<AutofillInputField>* field = [inputs_ viewWithTag:type];
+  if (field) {
+    [[field window] makeFirstResponder:field];
+    [self textfieldEditedOrActivated:field edited:NO];
+  }
 }
 
 @end

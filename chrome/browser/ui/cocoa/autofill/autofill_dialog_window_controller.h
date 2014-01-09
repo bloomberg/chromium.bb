@@ -93,10 +93,10 @@ class AutofillDialogCocoa;
 @interface AutofillDialogWindowController (TestableAutofillDialogView)
 
 - (void)setTextContents:(NSString*)text
-               forInput:(const autofill::DetailInput&)input;
+                forType:(autofill::ServerFieldType)type;
 - (void)setTextContents:(NSString*)text
  ofSuggestionForSection:(autofill::DialogSection)section;
-- (void)activateFieldForInput:(const autofill::DetailInput&)input;
+- (void)activateFieldForType:(autofill::ServerFieldType)type;
 - (content::WebContents*)getSignInWebContents;
 - (BOOL)isShowingOverlay;
 

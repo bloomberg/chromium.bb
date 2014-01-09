@@ -556,21 +556,21 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, FillInputFromAutofill) {
 
   const DetailInputs& inputs =
       controller()->RequestedFieldsForSection(SECTION_SHIPPING);
-  const DetailInput& triggering_input = inputs[0];
-  base::string16 value = full_profile.GetRawInfo(triggering_input.type);
+  const ServerFieldType triggering_type = inputs[0].type;
+  base::string16 value = full_profile.GetRawInfo(triggering_type);
   TestableAutofillDialogView* view = controller()->GetTestableView();
-  view->SetTextContentsOfInput(triggering_input,
+  view->SetTextContentsOfInput(triggering_type,
                                value.substr(0, value.size() / 2));
-  view->ActivateInput(triggering_input);
+  view->ActivateInput(triggering_type);
 
-  ASSERT_EQ(triggering_input.type, controller()->popup_input_type());
+  ASSERT_EQ(triggering_type, controller()->popup_input_type());
   controller()->DidAcceptSuggestion(base::string16(), 0);
 
   // All inputs should be filled.
   AutofillProfileWrapper wrapper(&full_profile);
   for (size_t i = 0; i < inputs.size(); ++i) {
     EXPECT_EQ(wrapper.GetInfo(AutofillType(inputs[i].type)),
-              view->GetTextContentsOfInput(inputs[i]));
+              view->GetTextContentsOfInput(inputs[i].type));
   }
 
   // Now simulate some user edits and try again.
@@ -578,23 +578,23 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, FillInputFromAutofill) {
   for (size_t i = 0; i < inputs.size(); ++i) {
     base::string16 users_input = i % 2 == 0 ? base::string16()
                                             : ASCIIToUTF16("dummy");
-    view->SetTextContentsOfInput(inputs[i], users_input);
+    view->SetTextContentsOfInput(inputs[i].type, users_input);
     // Empty inputs should be filled, others should be left alone.
     base::string16 expectation =
-        &inputs[i] == &triggering_input || users_input.empty() ?
+        inputs[i].type == triggering_type || users_input.empty() ?
         wrapper.GetInfo(AutofillType(inputs[i].type)) :
         users_input;
     expectations.push_back(expectation);
   }
 
-  view->SetTextContentsOfInput(triggering_input,
+  view->SetTextContentsOfInput(triggering_type,
                                value.substr(0, value.size() / 2));
-  view->ActivateInput(triggering_input);
-  ASSERT_EQ(triggering_input.type, controller()->popup_input_type());
+  view->ActivateInput(triggering_type);
+  ASSERT_EQ(triggering_type, controller()->popup_input_type());
   controller()->DidAcceptSuggestion(base::string16(), 0);
 
   for (size_t i = 0; i < inputs.size(); ++i) {
-    EXPECT_EQ(expectations[i], view->GetTextContentsOfInput(inputs[i]));
+    EXPECT_EQ(expectations[i], view->GetTextContentsOfInput(inputs[i].type));
   }
 }
 
@@ -609,24 +609,24 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
 
   const DetailInputs& inputs =
       controller()->RequestedFieldsForSection(SECTION_SHIPPING);
-  const DetailInput& triggering_input = inputs[0];
-  base::string16 value = full_profile.GetRawInfo(triggering_input.type);
+  const ServerFieldType triggering_type = inputs[0].type;
+  base::string16 value = full_profile.GetRawInfo(triggering_type);
   TestableAutofillDialogView* view = controller()->GetTestableView();
-  view->SetTextContentsOfInput(triggering_input,
+  view->SetTextContentsOfInput(triggering_type,
                                value.substr(0, value.size() / 2));
-  view->ActivateInput(triggering_input);
+  view->ActivateInput(triggering_type);
 
-  ASSERT_EQ(triggering_input.type, controller()->popup_input_type());
+  ASSERT_EQ(triggering_type, controller()->popup_input_type());
   controller()->DidAcceptSuggestion(base::string16(), 0);
 
   // All inputs should be filled.
   AutofillProfileWrapper wrapper(&full_profile);
   for (size_t i = 0; i < inputs.size(); ++i) {
+    const ServerFieldType type = inputs[i].type;
     base::string16 expectation =
-        AutofillType(inputs[i].type).GetStorableType() == ADDRESS_HOME_COUNTRY ?
-        ASCIIToUTF16("United States") :
-        wrapper.GetInfo(AutofillType(inputs[i].type));
-    EXPECT_EQ(expectation, view->GetTextContentsOfInput(inputs[i]));
+        AutofillType(type).GetStorableType() == ADDRESS_HOME_COUNTRY ?
+        ASCIIToUTF16("United States") : wrapper.GetInfo(AutofillType(type));
+    EXPECT_EQ(expectation, view->GetTextContentsOfInput(type));
   }
 
   // Now simulate some user edits and try again.
@@ -634,10 +634,10 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   for (size_t i = 0; i < inputs.size(); ++i) {
     base::string16 users_input = i % 2 == 0 ? base::string16()
                                             : ASCIIToUTF16("dummy");
-    view->SetTextContentsOfInput(inputs[i], users_input);
+    view->SetTextContentsOfInput(inputs[i].type, users_input);
     // Empty inputs should be filled, others should be left alone.
     base::string16 expectation =
-        &inputs[i] == &triggering_input || users_input.empty() ?
+        inputs[i].type == triggering_type || users_input.empty() ?
         wrapper.GetInfo(AutofillType(inputs[i].type)) :
         users_input;
     if (AutofillType(inputs[i].type).GetStorableType() == ADDRESS_HOME_COUNTRY)
@@ -646,14 +646,14 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
     expectations.push_back(expectation);
   }
 
-  view->SetTextContentsOfInput(triggering_input,
+  view->SetTextContentsOfInput(triggering_type,
                                value.substr(0, value.size() / 2));
-  view->ActivateInput(triggering_input);
-  ASSERT_EQ(triggering_input.type, controller()->popup_input_type());
+  view->ActivateInput(triggering_type);
+  ASSERT_EQ(triggering_type, controller()->popup_input_type());
   controller()->DidAcceptSuggestion(base::string16(), 0);
 
   for (size_t i = 0; i < inputs.size(); ++i) {
-    EXPECT_EQ(expectations[i], view->GetTextContentsOfInput(inputs[i]));
+    EXPECT_EQ(expectations[i], view->GetTextContentsOfInput(inputs[i].type));
   }
 }
 
@@ -676,12 +676,12 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
 
   const DetailInputs& inputs =
       controller()->RequestedFieldsForSection(SECTION_BILLING);
-  const DetailInput& triggering_input = inputs[0];
-  EXPECT_EQ(NAME_BILLING_FULL, triggering_input.type);
+  const ServerFieldType triggering_type = inputs[0].type;
+  EXPECT_EQ(NAME_BILLING_FULL, triggering_type);
   TestableAutofillDialogView* view = controller()->GetTestableView();
-  view->ActivateInput(triggering_input);
+  view->ActivateInput(triggering_type);
 
-  ASSERT_EQ(triggering_input.type, controller()->popup_input_type());
+  ASSERT_EQ(triggering_type, controller()->popup_input_type());
 
   // Choose the variant suggestion.
   controller()->DidAcceptSuggestion(base::string16(), 1);
@@ -691,7 +691,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
       &full_profile, AutofillType(NAME_BILLING_FULL), 1);
   for (size_t i = 0; i < inputs.size(); ++i) {
     EXPECT_EQ(wrapper.GetInfo(AutofillType(inputs[i].type)),
-              view->GetTextContentsOfInput(inputs[i]));
+              view->GetTextContentsOfInput(inputs[i].type));
   }
 
   // Make sure the wrapper applies the variant index to the right group.
@@ -722,72 +722,72 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
 
   const DetailInputs& inputs =
       controller()->RequestedFieldsForSection(SECTION_CC);
-  const DetailInput& triggering_input = inputs[0];
-  base::string16 value = card1.GetRawInfo(triggering_input.type);
+  const ServerFieldType triggering_type = inputs[0].type;
+  base::string16 value = card1.GetRawInfo(triggering_type);
   TestableAutofillDialogView* view = controller()->GetTestableView();
-  view->SetTextContentsOfInput(triggering_input,
+  view->SetTextContentsOfInput(triggering_type,
                                value.substr(0, value.size() / 2));
-  view->ActivateInput(triggering_input);
+  view->ActivateInput(triggering_type);
 
-  ASSERT_EQ(triggering_input.type, controller()->popup_input_type());
+  ASSERT_EQ(triggering_type, controller()->popup_input_type());
   controller()->DidAcceptSuggestion(base::string16(), 0);
 
   // All inputs should be filled.
   AutofillCreditCardWrapper wrapper1(&card1);
   for (size_t i = 0; i < inputs.size(); ++i) {
     EXPECT_EQ(wrapper1.GetInfo(AutofillType(inputs[i].type)),
-              view->GetTextContentsOfInput(inputs[i]));
+              view->GetTextContentsOfInput(inputs[i].type));
   }
 
   // Try again with different data. Only expiration date and the triggering
   // input should be overwritten.
-  value = card2.GetRawInfo(triggering_input.type);
-  view->SetTextContentsOfInput(triggering_input,
+  value = card2.GetRawInfo(triggering_type);
+  view->SetTextContentsOfInput(triggering_type,
                                value.substr(0, value.size() / 2));
-  view->ActivateInput(triggering_input);
-  ASSERT_EQ(triggering_input.type, controller()->popup_input_type());
+  view->ActivateInput(triggering_type);
+  ASSERT_EQ(triggering_type, controller()->popup_input_type());
   controller()->DidAcceptSuggestion(base::string16(), 0);
 
   AutofillCreditCardWrapper wrapper2(&card2);
   for (size_t i = 0; i < inputs.size(); ++i) {
-    const DetailInput& input = inputs[i];
-    if (&input == &triggering_input ||
-        input.type == CREDIT_CARD_EXP_MONTH ||
-        input.type == CREDIT_CARD_EXP_4_DIGIT_YEAR) {
-      EXPECT_EQ(wrapper2.GetInfo(AutofillType(input.type)),
-                view->GetTextContentsOfInput(input));
-    } else if (input.type == CREDIT_CARD_VERIFICATION_CODE) {
-      EXPECT_TRUE(view->GetTextContentsOfInput(input).empty());
+    const ServerFieldType type = inputs[i].type;
+    if (type == triggering_type ||
+        type == CREDIT_CARD_EXP_MONTH ||
+        type == CREDIT_CARD_EXP_4_DIGIT_YEAR) {
+      EXPECT_EQ(wrapper2.GetInfo(AutofillType(type)),
+                view->GetTextContentsOfInput(type));
+    } else if (type == CREDIT_CARD_VERIFICATION_CODE) {
+      EXPECT_TRUE(view->GetTextContentsOfInput(type).empty());
     } else {
-      EXPECT_EQ(wrapper1.GetInfo(AutofillType(input.type)),
-                view->GetTextContentsOfInput(input));
+      EXPECT_EQ(wrapper1.GetInfo(AutofillType(type)),
+                view->GetTextContentsOfInput(type));
     }
   }
 
   // Now fill from a profile. It should not overwrite any CC info.
   const DetailInputs& billing_inputs =
       controller()->RequestedFieldsForSection(SECTION_BILLING);
-  const DetailInput& billing_triggering_input = billing_inputs[0];
-  value = full_profile.GetRawInfo(triggering_input.type);
-  view->SetTextContentsOfInput(billing_triggering_input,
+  const ServerFieldType billing_triggering_type = billing_inputs[0].type;
+  value = full_profile.GetRawInfo(triggering_type);
+  view->SetTextContentsOfInput(billing_triggering_type,
                                value.substr(0, value.size() / 2));
-  view->ActivateInput(billing_triggering_input);
+  view->ActivateInput(billing_triggering_type);
 
-  ASSERT_EQ(billing_triggering_input.type, controller()->popup_input_type());
+  ASSERT_EQ(billing_triggering_type, controller()->popup_input_type());
   controller()->DidAcceptSuggestion(base::string16(), 0);
 
   for (size_t i = 0; i < inputs.size(); ++i) {
-    const DetailInput& input = inputs[i];
-    if (&input == &triggering_input ||
-        input.type == CREDIT_CARD_EXP_MONTH ||
-        input.type == CREDIT_CARD_EXP_4_DIGIT_YEAR) {
-      EXPECT_EQ(wrapper2.GetInfo(AutofillType(input.type)),
-                view->GetTextContentsOfInput(input));
-    } else if (input.type == CREDIT_CARD_VERIFICATION_CODE) {
-      EXPECT_TRUE(view->GetTextContentsOfInput(input).empty());
+    const ServerFieldType type = inputs[i].type;
+    if (type == triggering_type ||
+        type == CREDIT_CARD_EXP_MONTH ||
+        type == CREDIT_CARD_EXP_4_DIGIT_YEAR) {
+      EXPECT_EQ(wrapper2.GetInfo(AutofillType(type)),
+                view->GetTextContentsOfInput(type));
+    } else if (type == CREDIT_CARD_VERIFICATION_CODE) {
+      EXPECT_TRUE(view->GetTextContentsOfInput(type).empty());
     } else {
-      EXPECT_EQ(wrapper1.GetInfo(AutofillType(input.type)),
-                view->GetTextContentsOfInput(input));
+      EXPECT_EQ(wrapper1.GetInfo(AutofillType(type)),
+                view->GetTextContentsOfInput(type));
     }
   }
 }
@@ -799,17 +799,12 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, ShouldShowErrorBubble) {
   ASSERT_FALSE(card.IsVerified());
   controller()->GetTestingManager()->AddTestingCreditCard(&card);
 
-  const DetailInputs& cc_inputs =
-      controller()->RequestedFieldsForSection(SECTION_CC);
-  const DetailInput& cc_number_input = cc_inputs[0];
-  ASSERT_EQ(CREDIT_CARD_NUMBER, cc_number_input.type);
-
   TestableAutofillDialogView* view = controller()->GetTestableView();
   view->SetTextContentsOfInput(
-      cc_number_input,
+      CREDIT_CARD_NUMBER,
       card.GetRawInfo(CREDIT_CARD_NUMBER).substr(0, 1));
 
-  view->ActivateInput(cc_number_input);
+  view->ActivateInput(CREDIT_CARD_NUMBER);
   EXPECT_FALSE(controller()->ShouldShowErrorBubble());
 
   controller()->FocusMoved();
@@ -955,20 +950,11 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, MAYBE_PreservedSections) {
   controller()->set_use_validation(true);
 
   TestableAutofillDialogView* view = controller()->GetTestableView();
-
-  {
-    // Create some valid inputted billing data.
-    const DetailInput& cc_number =
-        controller()->RequestedFieldsForSection(SECTION_CC)[0];
-    EXPECT_EQ(cc_number.type, CREDIT_CARD_NUMBER);
-    view->SetTextContentsOfInput(cc_number, ASCIIToUTF16("4111111111111111"));
-  }
+  view->SetTextContentsOfInput(CREDIT_CARD_NUMBER,
+                               ASCIIToUTF16("4111111111111111"));
 
   // Create some invalid, manually inputted shipping data.
-  const DetailInput& shipping_zip =
-      controller()->RequestedFieldsForSection(SECTION_SHIPPING)[5];
-  ASSERT_EQ(ADDRESS_HOME_ZIP, shipping_zip.type);
-  view->SetTextContentsOfInput(shipping_zip, ASCIIToUTF16("shipping zip"));
+  view->SetTextContentsOfInput(ADDRESS_HOME_ZIP, ASCIIToUTF16("shipping zip"));
 
   // Switch to Wallet by simulating a successful server response.
   controller()->OnDidFetchWalletCookieValue(std::string());
@@ -976,31 +962,21 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, MAYBE_PreservedSections) {
       wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED));
   ASSERT_TRUE(controller()->IsPayingWithWallet());
 
-  {
-    // The valid data should be preserved.
-    const DetailInput& cc_number =
-        controller()->RequestedFieldsForSection(SECTION_CC_BILLING)[0];
-    EXPECT_EQ(cc_number.type, CREDIT_CARD_NUMBER);
-    EXPECT_EQ(ASCIIToUTF16("4111111111111111"),
-              view->GetTextContentsOfInput(cc_number));
-  }
+  // The valid data should be preserved.
+  EXPECT_EQ(ASCIIToUTF16("4111111111111111"),
+            view->GetTextContentsOfInput(CREDIT_CARD_NUMBER));
 
   // The invalid data should be dropped.
-  EXPECT_TRUE(view->GetTextContentsOfInput(shipping_zip).empty());
+  EXPECT_TRUE(view->GetTextContentsOfInput(ADDRESS_HOME_ZIP).empty());
 
   // Switch back to Autofill.
   ui::MenuModel* account_chooser = controller()->MenuModelForAccountChooser();
   account_chooser->ActivatedAt(account_chooser->GetItemCount() - 1);
   ASSERT_FALSE(controller()->IsPayingWithWallet());
 
-  {
-    // The valid data should still be preserved when switched back.
-    const DetailInput& cc_number =
-        controller()->RequestedFieldsForSection(SECTION_CC)[0];
-    EXPECT_EQ(cc_number.type, CREDIT_CARD_NUMBER);
-    EXPECT_EQ(ASCIIToUTF16("4111111111111111"),
-              view->GetTextContentsOfInput(cc_number));
-  }
+  // The valid data should still be preserved when switched back.
+  EXPECT_EQ(ASCIIToUTF16("4111111111111111"),
+            view->GetTextContentsOfInput(CREDIT_CARD_NUMBER));
 }
 #endif  // defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
 
@@ -1224,21 +1200,18 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AddNewClearsComboboxes) {
   controller()->MenuModelForSection(SECTION_CC)->ActivatedAt(0);
   EXPECT_TRUE(controller()->IsEditingExistingData(SECTION_CC));
 
-  const DetailInputs& inputs =
-      controller()->RequestedFieldsForSection(SECTION_CC);
-  const DetailInput& cc_exp_month = inputs[1];
-  ASSERT_EQ(CREDIT_CARD_EXP_MONTH, cc_exp_month.type);
-
   // Get the contents of the combobox of the credit card's expiration month.
   TestableAutofillDialogView* view = controller()->GetTestableView();
-  base::string16 cc_exp_month_text = view->GetTextContentsOfInput(cc_exp_month);
+  base::string16 cc_exp_month_text =
+      view->GetTextContentsOfInput(CREDIT_CARD_EXP_MONTH);
 
   // Select "New X..." from the suggestion menu to clear the section's inputs.
   controller()->MenuModelForSection(SECTION_CC)->ActivatedAt(1);
   EXPECT_FALSE(controller()->IsEditingExistingData(SECTION_CC));
 
   // Ensure that the credit card expiration month has changed.
-  EXPECT_NE(cc_exp_month_text, view->GetTextContentsOfInput(cc_exp_month));
+  EXPECT_NE(cc_exp_month_text,
+            view->GetTextContentsOfInput(CREDIT_CARD_EXP_MONTH));
 }
 
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, TabOpensToJustRight) {

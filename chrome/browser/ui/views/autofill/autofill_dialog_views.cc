@@ -1443,12 +1443,12 @@ void AutofillDialogViews::CancelForTesting() {
 }
 
 base::string16 AutofillDialogViews::GetTextContentsOfInput(
-    const DetailInput& input) {
-  views::Textfield* textfield = TextfieldForType(input.type);
+    ServerFieldType type) {
+  views::Textfield* textfield = TextfieldForType(type);
   if (textfield)
     return textfield->text();
 
-  views::Combobox* combobox = ComboboxForType(input.type);
+  views::Combobox* combobox = ComboboxForType(type);
   if (combobox)
     return combobox->model()->GetItemAt(combobox->selected_index());
 
@@ -1457,17 +1457,17 @@ base::string16 AutofillDialogViews::GetTextContentsOfInput(
 }
 
 void AutofillDialogViews::SetTextContentsOfInput(
-    const DetailInput& input,
+    ServerFieldType type,
     const base::string16& contents) {
-  views::Textfield* textfield = TextfieldForType(input.type);
+  views::Textfield* textfield = TextfieldForType(type);
   if (textfield) {
     textfield->SetText(contents);
     return;
   }
 
-  views::Combobox* combobox = ComboboxForType(input.type);
+  views::Combobox* combobox = ComboboxForType(type);
   if (combobox) {
-    SelectComboboxValueOrSetToDefault(combobox, input.initial_value);
+    SelectComboboxValueOrSetToDefault(combobox, contents);
     return;
   }
 
@@ -1481,8 +1481,8 @@ void AutofillDialogViews::SetTextContentsOfSuggestionInput(
       SetText(text);
 }
 
-void AutofillDialogViews::ActivateInput(const DetailInput& input) {
-  TextfieldEditedOrActivated(TextfieldForType(input.type), false);
+void AutofillDialogViews::ActivateInput(ServerFieldType type) {
+  TextfieldEditedOrActivated(TextfieldForType(type), false);
 }
 
 gfx::Size AutofillDialogViews::GetSize() const {

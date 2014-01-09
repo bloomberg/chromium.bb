@@ -112,17 +112,17 @@ class AutofillDialogViewDelegate;
 // Retrieve the field associated with the given type.
 - (NSControl<AutofillInputField>*)getField:(autofill::ServerFieldType)type;
 
-// Sets the value for the field matching |input|. Does nothing if the field is
+// Sets the value for the field matching |type|. Does nothing if the field is
 // not part of this section.
 - (void)setFieldValue:(NSString*)text
-             forInput:(const autofill::DetailInput&)input;
+              forType:(autofill::ServerFieldType)type;
 
 // Sets the value for the suggestion text field.
 - (void)setSuggestionFieldValue:(NSString*)text;
 
-// Activates a given input field, determined by |input|. Does nothing if the
+// Activates a given input field, determined by |type|. Does nothing if the
 // field is not part of this section.
-- (void)activateFieldForInput:(const autofill::DetailInput&)input;
+- (void)activateFieldForType:(autofill::ServerFieldType)type;
 
 @end
 
