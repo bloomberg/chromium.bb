@@ -139,9 +139,6 @@ static void partitionBucketInitBase(PartitionBucket* bucket, PartitionRootBase* 
     bucket->freePagesHead = 0;
     bucket->numFullPages = 0;
     bucket->numSystemPagesPerSlotSpan = partitionBucketNumSystemPages(bucket->slotSize);
-#ifndef NDEBUG
-    bucket->root = root;
-#endif
 }
 
 void partitionAllocInit(PartitionRoot* root, size_t numBuckets, size_t maxAllocation)
@@ -649,8 +646,9 @@ void* partitionReallocGeneric(PartitionRootGeneric* root, void* ptr, size_t newS
     PartitionBucket* oldBucket = &PartitionRootGeneric::gPagedBucket;
     if (LIKELY(partitionPointerIsValid(root, ptr))) {
         void* realPtr = partitionCookieFreePointerAdjust(ptr);
-        oldBucket = partitionPointerToPage(realPtr)->bucket;
-        ASSERT(oldBucket->root == root);
+        PartitionPage* oldPage = partitionPointerToPage(realPtr);
+        oldBucket = oldPage->bucket;
+        ASSERT(partitionPageToRoot(oldPage) == root);
     }
 
     size_t allocSize = partitionCookieSizeAdjustAdd(newSize);

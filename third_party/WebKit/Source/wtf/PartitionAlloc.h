@@ -242,9 +242,6 @@ struct PartitionBucket {
     uint16_t slotSize;
     uint16_t numSystemPagesPerSlotSpan;
     uint32_t numFullPages;
-#ifndef NDEBUG
-    PartitionRootBase* root;
-#endif
 };
 
 // An "extent" is a span of consecutive superpages. We link to the partition's
@@ -497,11 +494,11 @@ ALWAYS_INLINE void* partitionBucketAlloc(PartitionRootBase* root, size_t size, P
     void* ret = partitionPageFreelistHead(page);
     if (LIKELY(ret != 0)) {
         // If these asserts fire, you probably corrupted memory.
-        ASSERT(partitionPointerIsValid(bucket->root, ret));
+        ASSERT(partitionPointerIsValid(root, ret));
         ASSERT(partitionPointerToPage(ret));
         PartitionFreelistEntry* newHead = partitionFreelistMask(static_cast<PartitionFreelistEntry*>(ret)->next);
         partitionPageSetFreelistHead(page, newHead);
-        ASSERT(!ret || partitionPointerIsValid(bucket->root, ret));
+        ASSERT(!ret || partitionPointerIsValid(root, ret));
         ASSERT(!ret || partitionPointerToPage(ret));
         page->numAllocatedSlots++;
     } else {
@@ -540,6 +537,12 @@ ALWAYS_INLINE void* partitionAlloc(PartitionRoot* root, size_t size)
 #endif // defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
 }
 
+ALWAYS_INLINE PartitionRootBase* partitionPageToRoot(PartitionPage* page)
+{
+    PartitionSuperPageExtentEntry* extentEntry = reinterpret_cast<PartitionSuperPageExtentEntry*>(reinterpret_cast<uintptr_t>(page) & kSystemPageBaseMask);
+    return extentEntry->root;
+}
+
 ALWAYS_INLINE void partitionFreeWithPage(void* ptr, PartitionPage* page)
 {
     // If these asserts fire, you probably corrupted memory.
@@ -551,7 +554,7 @@ ALWAYS_INLINE void partitionFreeWithPage(void* ptr, PartitionPage* page)
     memset(ptr, kFreedByte, bucketSize);
 #endif
     PartitionFreelistEntry* freelistHead = partitionPageFreelistHead(page);
-    ASSERT(!freelistHead || partitionPointerIsValid(page->bucket->root, freelistHead));
+    ASSERT(!freelistHead || partitionPointerIsValid(partitionPageToRoot(page), freelistHead));
     ASSERT(!freelistHead || partitionPointerToPage(freelistHead));
     RELEASE_ASSERT(ptr != freelistHead); // Catches an immediate double free.
     ASSERT(!freelistHead || ptr != partitionFreelistMask(freelistHead->next)); // Look for double free one level deeper in debug.
@@ -570,7 +573,7 @@ ALWAYS_INLINE void partitionFree(void* ptr)
 #else
     ptr = partitionCookieFreePointerAdjust(ptr);
     PartitionPage* page = partitionPointerToPage(ptr);
-    ASSERT(partitionPointerIsValid(page->bucket->root, ptr));
+    ASSERT(partitionPointerIsValid(partitionPageToRoot(page), ptr));
     partitionFreeWithPage(ptr, page);
 #endif
 }
