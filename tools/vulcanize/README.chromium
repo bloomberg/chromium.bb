@@ -1,0 +1,13 @@
+Name: vulcanize
+URL: https://github.com/Polymer/vulcanize
+Version: 0.1.9
+License: BSD
+License File: NOT_SHIPPED
+Security Critical: No
+
+Description:
+Vulcanize is used to combine polymer elements into a single file. It is only
+used in the chrome build.
+
+This directory was setup using npm to make dependency managament simpler.
+To update vulcanize, run "npm update vulcanize".
