@@ -83,7 +83,7 @@ public:
     const long long m_start;
     const long long m_size;
 
-    Block(long long start, long long size);
+    Block(long long start, long long size, long long discard_padding);
     ~Block();
 
     long Parse(const Cluster*);
@@ -110,6 +110,8 @@ public:
 
     const Frame& GetFrame(int frame_index) const;
 
+    long long GetDiscardPadding() const;
+
 private:
     long long m_track;   //Track::Number()
     short m_timecode;  //relative to cluster
@@ -118,6 +120,8 @@ private:
     Frame* m_frames;
     int m_frame_count;
 
+protected:
+    const long long m_discard_padding;
 };
 
 
@@ -178,7 +182,8 @@ public:
         long long block_size,  //size of block's payload
         long long prev,
         long long next,
-        long long duration);
+        long long duration,
+        long long discard_padding);
 
     long Parse();
 
@@ -194,7 +199,6 @@ private:
     const long long m_prev;
     const long long m_next;
     const long long m_duration;
-
 };
 
 ///////////////////////////////////////////////////////////////
@@ -355,6 +359,8 @@ public:
     const unsigned char* GetCodecPrivate(size_t&) const;
     bool GetLacing() const;
     unsigned long long GetDefaultDuration() const;
+    unsigned long long GetCodecDelay() const;
+    unsigned long long GetSeekPreRoll() const;
 
     const BlockEntry* GetEOS() const;
 
@@ -371,14 +377,12 @@ public:
         ~Info();
         int Copy(Info&) const;
         void Clear();
-    private:
-        Info(const Info&);
-        Info& operator=(const Info&);
-    public:
         long type;
         long number;
         unsigned long long uid;
         unsigned long long defaultDuration;
+        unsigned long long codecDelay;
+        unsigned long long seekPreRoll;
         char* nameAsUTF8;
         char* language;
         char* codecId;
@@ -387,7 +391,10 @@ public:
         size_t codecPrivateSize;
         bool lacing;
         Settings settings;
+
     private:
+        Info(const Info&);
+        Info& operator=(const Info&);
         int CopyStr(char* Info::*str, Info&) const;
     };
 
@@ -944,8 +951,10 @@ private:
     long ParseSimpleBlock(long long, long long&, long&);
     long ParseBlockGroup(long long, long long&, long&);
 
-    long CreateBlock(long long id, long long pos, long long size);
-    long CreateBlockGroup(long long, long long);
+    long CreateBlock(long long id, long long pos, long long size,
+                     long long discard_padding);
+    long CreateBlockGroup(long long start_offset, long long size,
+                          long long discard_padding);
     long CreateSimpleBlock(long long, long long);
 
 };

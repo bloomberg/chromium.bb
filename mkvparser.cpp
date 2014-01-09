@@ -5517,7 +5517,9 @@ Track::Info::Info():
     codecId(NULL),
     codecNameAsUTF8(NULL),
     codecPrivate(NULL),
-    codecPrivateSize(0)
+    codecPrivateSize(0),
+    codecDelay(0),
+    seekPreRoll(0)
 {
 }
 
@@ -5581,6 +5583,8 @@ int Track::Info::Copy(Info& dst) const
     dst.type = type;
     dst.number = number;
     dst.defaultDuration = defaultDuration;
+    dst.codecDelay = codecDelay;
+    dst.seekPreRoll = seekPreRoll;
     dst.uid = uid;
     dst.lacing = lacing;
     dst.settings = settings;
@@ -5682,6 +5686,16 @@ bool Track::GetLacing() const
 unsigned long long Track::GetDefaultDuration() const
 {
     return m_info.defaultDuration;
+}
+
+unsigned long long Track::GetCodecDelay() const
+{
+    return m_info.codecDelay;
+}
+
+unsigned long long Track::GetSeekPreRoll() const
+{
+    return m_info.seekPreRoll;
 }
 
 long Track::GetFirst(const BlockEntry*& pBlockEntry) const
@@ -6766,6 +6780,15 @@ long Tracks::ParseTrackEntry(
             if (status)
                 return status;
         }
+        else if (id == 0x16AA)  //Codec Delay
+        {
+            info.codecDelay = UnserializeUInt(pReader, pos, size);
+
+        }
+        else if (id == 0x16BB) //Seek Pre Roll
+        {
+            info.seekPreRoll = UnserializeUInt(pReader, pos, size);
+        }
 
         pos += size;  //consume payload
         assert(pos <= track_stop);
@@ -7519,7 +7542,9 @@ long Cluster::ParseSimpleBlock(
         return E_BUFFER_NOT_FULL;
     }
 
-    status = CreateBlock(0x23, block_start, block_size);  //simple block id
+    status = CreateBlock(0x23,  //simple block id
+                         block_start, block_size,
+                         0);  //DiscardPadding
 
     if (status != 0)
         return status;
@@ -7557,6 +7582,8 @@ long Cluster::ParseBlockGroup(
          len = static_cast<long>(payload_size);
          return E_BUFFER_NOT_FULL;
     }
+
+    long long discard_padding = 0;
 
     while (pos < payload_stop)
     {
@@ -7633,6 +7660,19 @@ long Cluster::ParseBlockGroup(
 
         if (size == unknown_size)
             return E_FILE_FORMAT_INVALID;
+
+        if (id == 0x35A2)  //DiscardPadding
+        {
+            result = GetUIntLength(pReader, pos, len);
+
+            if (result < 0)  //error
+                return static_cast<long>(result);
+
+            status = UnserializeInt(pReader, pos, len, discard_padding);
+
+            if (status < 0)  //error
+                return status;
+        }
 
         if (id != 0x21)  //sub-part of BlockGroup is not a Block
         {
@@ -7761,8 +7801,9 @@ long Cluster::ParseBlockGroup(
 
     assert(pos == payload_stop);
 
-    status = CreateBlock(0x20, payload_start, payload_size);  //BlockGroup ID
-
+    status = CreateBlock(0x20,  //BlockGroup ID
+                         payload_start, payload_size,
+                         discard_padding);
     if (status != 0)
         return status;
 
@@ -8265,7 +8306,8 @@ long long Cluster::GetLastTime() const
 long Cluster::CreateBlock(
     long long id,
     long long pos,   //absolute pos of payload
-    long long size)
+    long long size,
+    long long discard_padding)
 {
     assert((id == 0x20) || (id == 0x23));  //BlockGroup or SimpleBlock
 
@@ -8308,15 +8350,16 @@ long Cluster::CreateBlock(
     }
 
     if (id == 0x20)  //BlockGroup ID
-        return CreateBlockGroup(pos, size);
+        return CreateBlockGroup(pos, size, discard_padding);
     else  //SimpleBlock ID
         return CreateSimpleBlock(pos, size);
 }
 
 
 long Cluster::CreateBlockGroup(
-    long long st,
-    long long sz)
+    long long start_offset,
+    long long size,
+    long long discard_padding)
 {
     assert(m_entries);
     assert(m_entries_size > 0);
@@ -8325,8 +8368,8 @@ long Cluster::CreateBlockGroup(
 
     IMkvReader* const pReader = m_pSegment->m_pReader;
 
-    long long pos = st;
-    const long long stop = st + sz;
+    long long pos = start_offset;
+    const long long stop = start_offset + size;
 
     //For WebM files, there is a bias towards previous reference times
     //(in order to support alt-ref frames, which refer back to the previous
@@ -8407,7 +8450,8 @@ long Cluster::CreateBlockGroup(
                                   bsize,
                                   prev,
                                   next,
-                                  duration);
+                                  duration,
+                                  discard_padding);
 
     if (pEntry == NULL)
         return -1;  //generic error
@@ -8984,7 +9028,7 @@ SimpleBlock::SimpleBlock(
     long long start,
     long long size) :
     BlockEntry(pCluster, idx),
-    m_block(start, size)
+    m_block(start, size, 0)
 {
 }
 
@@ -9014,9 +9058,10 @@ BlockGroup::BlockGroup(
     long long block_size,
     long long prev,
     long long next,
-    long long duration) :
+    long long duration,
+    long long discard_padding) :
     BlockEntry(pCluster, idx),
-    m_block(block_start, block_size),
+    m_block(block_start, block_size, discard_padding),
     m_prev(prev),
     m_next(next),
     m_duration(duration)
@@ -9082,14 +9127,15 @@ long long BlockGroup::GetDurationTimeCode() const
     return m_duration;
 }
 
-Block::Block(long long start, long long size_) :
+Block::Block(long long start, long long size_, long long discard_padding) :
     m_start(start),
     m_size(size_),
     m_track(0),
     m_timecode(-1),
     m_flags(0),
     m_frames(NULL),
-    m_frame_count(-1)
+    m_frame_count(-1),
+    m_discard_padding(discard_padding)
 {
 }
 
@@ -9535,5 +9581,9 @@ long Block::Frame::Read(IMkvReader* pReader, unsigned char* buf) const
     return status;
 }
 
+long long Block::GetDiscardPadding() const
+{
+    return m_discard_padding;
+}
 
 }  //end namespace mkvparser

@@ -225,7 +225,7 @@ int main(int argc, char* argv[])
             const AudioTrack* const pAudioTrack =
                 static_cast<const AudioTrack*>(pTrack);
 
-            const long long channels =  pAudioTrack->GetChannels();
+            const long long channels = pAudioTrack->GetChannels();
             printf("\t\tAudio Channels\t\t: %lld\n", channels);
 
             const long long bitDepth = pAudioTrack->GetBitDepth();
@@ -233,6 +233,12 @@ int main(int argc, char* argv[])
 
             const double sampleRate = pAudioTrack->GetSamplingRate();
             printf("\t\tAddio Sample Rate\t: %.3f\n", sampleRate);
+
+            const long long codecDelay = pAudioTrack->GetCodecDelay();
+            printf("\t\tAudio Codec Delay\t\t: %lld\n", codecDelay);
+
+            const long long seekPreRoll = pAudioTrack->GetSeekPreRoll();
+            printf("\t\tAudio Seek Pre Roll\t\t: %lld\n", seekPreRoll);
         }
     }
 
@@ -282,11 +288,12 @@ int main(int argc, char* argv[])
                 const long long trackType = pTrack->GetType();
                 const int frameCount = pBlock->GetFrameCount();
                 const long long time_ns = pBlock->GetTime(pCluster);
+                const long long discard_padding = pBlock->GetDiscardPadding();
 
-                printf("\t\t\tBlock\t\t:%s,%s,%15lld\n",
+                printf("\t\t\tBlock\t\t:%s,%s,%15lld,%lld\n",
                        (trackType == mkvparser::Track::kVideo) ? "V" : "A",
                        pBlock->IsKey() ? "I" : "P",
-                       time_ns);
+                       time_ns, discard_padding);
 
                 for (int i = 0; i < frameCount; ++i)
                 {
