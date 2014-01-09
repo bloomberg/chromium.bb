@@ -1687,12 +1687,7 @@ void RenderBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& re
             if (o->isReplaced() || o->isFloating() || o->isOutOfFlowPositioned()) {
                 RenderBox* box = toRenderBox(o);
 
-                if (relayoutChildren || box->hasRelativeDimensions())
-                    o->setChildNeedsLayout(MarkOnlyThis);
-
-                // If relayoutChildren is set and the child has percentage padding or an embedded content box, we also need to invalidate the childs pref widths.
-                if (relayoutChildren && box->needsPreferredWidthsRecalculation())
-                    o->setPreferredLogicalWidthsDirty(MarkOnlyThis);
+                updateBlockChildDirtyBitsBeforeLayout(relayoutChildren, box);
 
                 if (o->isOutOfFlowPositioned())
                     o->containingBlock()->insertPositionedObject(box);

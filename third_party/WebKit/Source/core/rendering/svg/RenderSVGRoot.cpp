@@ -428,14 +428,6 @@ bool RenderSVGRoot::nodeAtPoint(const HitTestRequest& request, HitTestResult& re
     return false;
 }
 
-bool RenderSVGRoot::hasRelativeDimensions() const
-{
-    SVGSVGElement* svg = toSVGSVGElement(node());
-    ASSERT(svg);
-
-    return svg->intrinsicHeight(SVGSVGElement::IgnoreCSSProperties).isPercent() || svg->intrinsicWidth(SVGSVGElement::IgnoreCSSProperties).isPercent();
-}
-
 bool RenderSVGRoot::hasRelativeIntrinsicLogicalWidth() const
 {
     SVGSVGElement* svg = toSVGSVGElement(node());

@@ -55,7 +55,6 @@ public:
     IntSize containerSize() const { return m_containerSize; }
     void setContainerSize(const IntSize& containerSize) { m_containerSize = containerSize; }
 
-    virtual bool hasRelativeDimensions() const OVERRIDE;
     virtual bool hasRelativeIntrinsicLogicalWidth() const OVERRIDE;
     virtual bool hasRelativeLogicalHeight() const OVERRIDE;
 
