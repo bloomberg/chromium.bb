@@ -124,8 +124,8 @@ bool IsOnline(NetworkStateInformer::State state,
       reason != ErrorScreenActor::ERROR_REASON_LOADING_TIMEOUT;
 }
 
-bool IsUnderCaptivePortal(NetworkStateInformer::State state,
-                          ErrorScreenActor::ErrorReason reason) {
+bool IsBehindCaptivePortal(NetworkStateInformer::State state,
+                           ErrorScreenActor::ErrorReason reason) {
   return state == NetworkStateInformer::CAPTIVE_PORTAL ||
       reason == ErrorScreenActor::ERROR_REASON_PORTAL_DETECTED;
 }
@@ -160,82 +160,6 @@ std::string GetNetworkName(const std::string& service_path) {
   if (!network)
     return std::string();
   return network->name();
-}
-
-// Returns captive portal state for a network by its service path.
-NetworkPortalDetector::CaptivePortalState GetCaptivePortalState(
-    const std::string& service_path) {
-  NetworkPortalDetector* detector = NetworkPortalDetector::Get();
-  const NetworkState* network = NetworkHandler::Get()->network_state_handler()->
-      GetNetworkState(service_path);
-  if (!detector || !network)
-    return NetworkPortalDetector::CaptivePortalState();
-  return detector->GetCaptivePortalState(network);
-}
-
-void RecordDiscrepancyWithShill(
-    const NetworkState* network,
-    const NetworkPortalDetector::CaptivePortalStatus status) {
-  if (network->connection_state() == shill::kStateOnline) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "CaptivePortal.OOBE.DiscrepancyWithShill_Online",
-        status,
-        NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT);
-  } else if (network->connection_state() == shill::kStatePortal) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "CaptivePortal.OOBE.DiscrepancyWithShill_RestrictedPool",
-        status,
-        NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT);
-  } else {
-    UMA_HISTOGRAM_ENUMERATION(
-        "CaptivePortal.OOBE.DiscrepancyWithShill_Offline",
-        status,
-        NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT);
-  }
-}
-
-// Record state and descripancies with shill (e.g. shill thinks that
-// network is online but NetworkPortalDetector claims that it's behind
-// portal) for the network identified by |service_path|.
-void RecordNetworkPortalDetectorStats(const std::string& service_path) {
-  const NetworkState* network = NetworkHandler::Get()->network_state_handler()->
-      GetNetworkState(service_path);
-  if (!network)
-    return;
-  NetworkPortalDetector::CaptivePortalState state =
-      GetCaptivePortalState(service_path);
-  if (state.status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN)
-    return;
-
-  UMA_HISTOGRAM_ENUMERATION("CaptivePortal.OOBE.DetectionResult",
-                            state.status,
-                            NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT);
-
-  switch (state.status) {
-    case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN:
-      NOTREACHED();
-      break;
-    case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE:
-      if (network->connection_state() == shill::kStateOnline ||
-          network->connection_state() == shill::kStatePortal)
-        RecordDiscrepancyWithShill(network, state.status);
-      break;
-    case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE:
-      if (network->connection_state() != shill::kStateOnline)
-        RecordDiscrepancyWithShill(network, state.status);
-      break;
-    case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL:
-      if (network->connection_state() != shill::kStatePortal)
-        RecordDiscrepancyWithShill(network, state.status);
-      break;
-    case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED:
-      if (network->connection_state() != shill::kStateOnline)
-        RecordDiscrepancyWithShill(network, state.status);
-      break;
-    case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT:
-      NOTREACHED();
-      break;
-  }
 }
 
 static bool SetUserInputMethodImpl(
@@ -606,7 +530,7 @@ void SigninScreenHandler::UpdateStateInternal(
   connecting_closure_.Cancel();
 
   const bool is_online = IsOnline(state, reason);
-  const bool is_under_captive_portal = IsUnderCaptivePortal(state, reason);
+  const bool is_behind_captive_portal = IsBehindCaptivePortal(state, reason);
   const bool is_gaia_loading_timeout =
       (reason == ErrorScreenActor::ERROR_REASON_LOADING_TIMEOUT);
   const bool is_gaia_error =
@@ -618,7 +542,7 @@ void SigninScreenHandler::UpdateStateInternal(
       is_online && last_network_state_ != NetworkStateInformer::ONLINE;
   last_network_state_ = state;
 
-  if (is_online || !is_under_captive_portal)
+  if (is_online || !is_behind_captive_portal)
     error_screen_actor_->HideCaptivePortal();
 
   // Hide offline message (if needed) and return if current screen is
@@ -663,19 +587,15 @@ void SigninScreenHandler::SetupAndShowOfflineMessage(
     NetworkStateInformer:: State state,
     ErrorScreenActor::ErrorReason reason) {
   const std::string network_path = network_state_informer_->network_path();
-  const bool is_under_captive_portal = IsUnderCaptivePortal(state, reason);
+  const bool is_behind_captive_portal = IsBehindCaptivePortal(state, reason);
   const bool is_proxy_error = IsProxyError(state, reason, FrameError());
   const bool is_gaia_loading_timeout =
       (reason == ErrorScreenActor::ERROR_REASON_LOADING_TIMEOUT);
 
-  // Record portal detection stats only if we're going to show or
-  // change state of the error screen.
-  RecordNetworkPortalDetectorStats(network_path);
-
   if (is_proxy_error) {
     error_screen_actor_->SetErrorState(ErrorScreen::ERROR_STATE_PROXY,
                                        std::string());
-  } else if (is_under_captive_portal) {
+  } else if (is_behind_captive_portal) {
     // Do not bother a user with obsessive captive portal showing. This
     // check makes captive portal being shown only once: either when error
     // screen is shown for the first time or when switching from another

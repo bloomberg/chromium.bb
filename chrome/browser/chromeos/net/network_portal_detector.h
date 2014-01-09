@@ -116,6 +116,9 @@ class NetworkPortalDetector {
   // Gets the instance of the NetworkPortalDetector.
   static NetworkPortalDetector* Get();
 
+  // Returns non-localized string representation of |status|.
+  static std::string CaptivePortalStatusString(CaptivePortalStatus status);
+
  protected:
   NetworkPortalDetector() {}
   virtual ~NetworkPortalDetector() {}

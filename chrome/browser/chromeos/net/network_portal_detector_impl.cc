@@ -39,37 +39,42 @@ const int kProxyChangeDelaySec = 1;
 // Delay between consecutive portal checks for a network in lazy mode.
 const int kLazyCheckIntervalSec = 5;
 
-const char kCaptivePortalStatusUnknown[] = "Unknown";
-const char kCaptivePortalStatusOffline[] = "Offline";
-const char kCaptivePortalStatusOnline[]  = "Online";
-const char kCaptivePortalStatusPortal[]  = "Portal";
-const char kCaptivePortalStatusProxyAuthRequired[] =
-    "Proxy authentication required";
-const char kCaptivePortalStatusUnrecognized[] = "Unrecognized";
-
-std::string CaptivePortalStatusString(
-    NetworkPortalDetectorImpl::CaptivePortalStatus status) {
-  switch (status) {
-    case NetworkPortalDetectorImpl::CAPTIVE_PORTAL_STATUS_UNKNOWN:
-      return kCaptivePortalStatusUnknown;
-    case NetworkPortalDetectorImpl::CAPTIVE_PORTAL_STATUS_OFFLINE:
-      return kCaptivePortalStatusOffline;
-    case NetworkPortalDetectorImpl::CAPTIVE_PORTAL_STATUS_ONLINE:
-      return kCaptivePortalStatusOnline;
-    case NetworkPortalDetectorImpl::CAPTIVE_PORTAL_STATUS_PORTAL:
-      return kCaptivePortalStatusPortal;
-    case NetworkPortalDetectorImpl::CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED:
-      return kCaptivePortalStatusProxyAuthRequired;
-    case NetworkPortalDetectorImpl::CAPTIVE_PORTAL_STATUS_COUNT:
-      NOTREACHED();
+void RecordDiscrepancyWithShill(
+    const NetworkState* network,
+    const NetworkPortalDetector::CaptivePortalStatus status) {
+  if (network->connection_state() == shill::kStateOnline) {
+    UMA_HISTOGRAM_ENUMERATION(
+        NetworkPortalDetectorImpl::kShillOnlineHistogram,
+        status,
+        NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT);
+  } else if (network->connection_state() == shill::kStatePortal) {
+    UMA_HISTOGRAM_ENUMERATION(
+        NetworkPortalDetectorImpl::kShillPortalHistogram,
+        status,
+        NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT);
+  } else if (network->connection_state() == shill::kStateOffline) {
+    UMA_HISTOGRAM_ENUMERATION(
+        NetworkPortalDetectorImpl::kShillOfflineHistogram,
+        status,
+        NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT);
   }
-  return kCaptivePortalStatusUnrecognized;
 }
 
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkPortalDetectorImpl, public:
+
+const char NetworkPortalDetectorImpl::kDetectionResultHistogram[] =
+  "CaptivePortal.OOBE.DetectionResult";
+const char NetworkPortalDetectorImpl::kDetectionDurationHistogram[] =
+  "CaptivePortal.OOBE.DetectionDuration";
+const char NetworkPortalDetectorImpl::kShillOnlineHistogram[] =
+  "CaptivePortal.OOBE.DiscrepancyWithShill_Online";
+const char NetworkPortalDetectorImpl::kShillPortalHistogram[] =
+  "CaptivePortal.OOBE.DiscrepancyWithShill_RestrictedPool";
+const char NetworkPortalDetectorImpl::kShillOfflineHistogram[] =
+  "CaptivePortal.OOBE.DiscrepancyWithShill_Offline";
 
 NetworkPortalDetectorImpl::NetworkPortalDetectorImpl(
     const scoped_refptr<net::URLRequestContextGetter>& request_context)
@@ -452,11 +457,6 @@ bool NetworkPortalDetectorImpl::IsCheckingForPortal() const {
 void NetworkPortalDetectorImpl::SetCaptivePortalState(
     const NetworkState* network,
     const CaptivePortalState& state) {
-  if (!detection_start_time_.is_null()) {
-    UMA_HISTOGRAM_TIMES("CaptivePortal.OOBE.DetectionDuration",
-                        GetCurrentTimeTicks() - detection_start_time_);
-  }
-
   if (!network) {
     NotifyPortalDetectionCompleted(network, state);
     return;
@@ -472,6 +472,12 @@ void NetworkPortalDetectorImpl::SetCaptivePortalState(
             << "id=" << network->guid() << ", "
             << "status=" << CaptivePortalStatusString(state.status) << ", "
             << "response_code=" << state.response_code;
+
+    // Record detection duration iff detection result differs from the
+    // previous one for this network. The reason is to record all stats
+    // only when network changes it's state.
+    RecordDetectionStats(network, state.status);
+
     portal_state_map_[network->path()] = state;
   }
   NotifyPortalDetectionCompleted(network, state);
@@ -503,6 +509,48 @@ int NetworkPortalDetectorImpl::GetRequestTimeoutSec() const {
   if (lazy_detection_enabled_)
     return kLazyRequestTimeoutSec;
   return attempt_count_ * kBaseRequestTimeoutSec;
+}
+
+void NetworkPortalDetectorImpl::RecordDetectionStats(
+    const NetworkState* network,
+    CaptivePortalStatus status) {
+  // Don't record stats for offline state.
+  if (!network)
+    return;
+
+  if (!detection_start_time_.is_null()) {
+    UMA_HISTOGRAM_MEDIUM_TIMES(kDetectionDurationHistogram,
+                               GetCurrentTimeTicks() - detection_start_time_);
+  }
+  UMA_HISTOGRAM_ENUMERATION(kDetectionResultHistogram,
+                            status,
+                            NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT);
+  switch (status) {
+    case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN:
+      NOTREACHED();
+      break;
+    case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE:
+      if (network->connection_state() == shill::kStateOnline ||
+          network->connection_state() == shill::kStatePortal) {
+        RecordDiscrepancyWithShill(network, status);
+      }
+      break;
+    case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE:
+      if (network->connection_state() != shill::kStateOnline)
+        RecordDiscrepancyWithShill(network, status);
+      break;
+    case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL:
+      if (network->connection_state() != shill::kStatePortal)
+        RecordDiscrepancyWithShill(network, status);
+      break;
+    case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED:
+      if (network->connection_state() != shill::kStateOnline)
+        RecordDiscrepancyWithShill(network, status);
+      break;
+    case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT:
+      NOTREACHED();
+      break;
+  }
 }
 
 }  // namespace chromeos

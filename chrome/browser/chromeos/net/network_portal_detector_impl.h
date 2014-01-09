@@ -42,6 +42,12 @@ class NetworkPortalDetectorImpl
       public chromeos::NetworkStateHandlerObserver,
       public content::NotificationObserver {
  public:
+  static const char kDetectionResultHistogram[];
+  static const char kDetectionDurationHistogram[];
+  static const char kShillOnlineHistogram[];
+  static const char kShillPortalHistogram[];
+  static const char kShillOfflineHistogram[];
+
   explicit NetworkPortalDetectorImpl(
       const scoped_refptr<net::URLRequestContextGetter>& request_context);
   virtual ~NetworkPortalDetectorImpl();
@@ -186,6 +192,11 @@ class NetworkPortalDetectorImpl
   // * if lazy detection mode is enabled, kLazyRequestTimeoutSec is used
   // * otherwise, timeout equals to |attempt_count_| * kBaseRequestTimeoutSec
   int GetRequestTimeoutSec() const;
+
+  // Record detection stats such as detection duration and detection
+  // result in UMA.
+  void RecordDetectionStats(const NetworkState* network,
+                            CaptivePortalStatus status);
 
   // Name of the default network.
   std::string default_network_name_;

@@ -2,9 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
+#include <vector>
+
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram_base.h"
+#include "base/metrics/histogram_samples.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/run_loop.h"
 #include "chrome/browser/captive_portal/captive_portal_detector.h"
 #include "chrome/browser/captive_portal/testing_utils.h"
@@ -30,6 +36,12 @@ namespace chromeos {
 
 namespace {
 
+// Service paths for stub network devices.
+const char kStubEthernet[] = "stub_ethernet";
+const char kStubWireless1[] = "stub_wifi1";
+const char kStubWireless2[] = "stub_wifi2";
+const char kStubCellular[] = "stub_cellular";
+
 void ErrorCallbackFunction(const std::string& error_name,
                            const std::string& error_message) {
   LOG(ERROR) << "Shill Error: " << error_name << " : " << error_message;
@@ -44,13 +56,69 @@ class MockObserver : public NetworkPortalDetector::Observer {
                     const NetworkPortalDetector::CaptivePortalState& state));
 };
 
-}  // namespace
+class ResultHistogramChecker {
+ public:
+  explicit ResultHistogramChecker(base::HistogramSamples* base)
+      : base_(base),
+        count_(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT) {
+  }
+  virtual ~ResultHistogramChecker() {}
 
-// Service paths for stub network devices.
-const char* kStubEthernet = "stub_ethernet";
-const char* kStubWireless1 = "stub_wifi1";
-const char* kStubWireless2 = "stub_wifi2";
-const char* kStubCellular = "stub_cellular";
+  ResultHistogramChecker* Expect(
+      NetworkPortalDetector::CaptivePortalStatus status,
+      int count) {
+    count_[status] = count;
+    return this;
+  }
+
+  bool Check() const {
+    base::HistogramBase* histogram = base::StatisticsRecorder::FindHistogram(
+        NetworkPortalDetectorImpl::kDetectionResultHistogram);
+    bool empty = false;
+    if (static_cast<size_t>(std::count(count_.begin(), count_.end(), 0)) ==
+        count_.size()) {
+      empty = true;
+    }
+
+    if (!histogram) {
+      if (empty)
+        return true;
+      LOG(ERROR) << "Can't get histogram for "
+                 << NetworkPortalDetectorImpl::kDetectionResultHistogram;
+      return false;
+    }
+    scoped_ptr<base::HistogramSamples> samples = histogram->SnapshotSamples();
+    if (!samples.get()) {
+      if (empty)
+        return true;
+      LOG(ERROR) << "Can't get samples for "
+                 << NetworkPortalDetectorImpl::kDetectionResultHistogram;
+      return false;
+    }
+    bool ok = true;
+    for (size_t i = 0; i < count_.size(); ++i) {
+      const int base = base_ ? base_->GetCount(i) : 0;
+      const int actual = samples->GetCount(i) - base;
+      const NetworkPortalDetector::CaptivePortalStatus status =
+          static_cast<NetworkPortalDetector::CaptivePortalStatus>(i);
+      if (actual != count_[i]) {
+        LOG(ERROR) << "Expected: " << count_[i] << ", "
+                   << "actual: " << actual << " for "
+                   << NetworkPortalDetector::CaptivePortalStatusString(status);
+        ok = false;
+      }
+    }
+    return ok;
+  }
+
+ private:
+  base::HistogramSamples* base_;
+  std::vector<int> count_;
+
+  DISALLOW_COPY_AND_ASSIGN(ResultHistogramChecker);
+};
+
+}  // namespace
 
 class NetworkPortalDetectorImplTest
     : public testing::Test,
@@ -58,6 +126,7 @@ class NetworkPortalDetectorImplTest
  protected:
   virtual void SetUp() {
     DBusThreadManager::InitializeWithStub();
+    base::StatisticsRecorder::Initialize();
     SetupNetworkHandler();
 
     profile_.reset(new TestingProfile());
@@ -69,6 +138,12 @@ class NetworkPortalDetectorImplTest
 
     // Prevents flakiness due to message loop delays.
     set_time_ticks(base::TimeTicks::Now());
+
+    if (base::HistogramBase* histogram =
+        base::StatisticsRecorder::FindHistogram(
+            NetworkPortalDetectorImpl::kDetectionResultHistogram)) {
+      original_samples_.reset(histogram->SnapshotSamples().release());
+    }
   }
 
   virtual void TearDown() {
@@ -206,6 +281,11 @@ class NetworkPortalDetectorImplTest
     base::RunLoop().RunUntilIdle();
   }
 
+  scoped_ptr<ResultHistogramChecker> MakeResultHistogramChecker() {
+    return scoped_ptr<ResultHistogramChecker>(
+        new ResultHistogramChecker(original_samples_.get())).Pass();
+  }
+
  private:
   void SetupDefaultShillState() {
     base::RunLoop().RunUntilIdle();
@@ -240,6 +320,7 @@ class NetworkPortalDetectorImplTest
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<NetworkPortalDetectorImpl> network_portal_detector_;
+  scoped_ptr<base::HistogramSamples> original_samples_;
 };
 
 TEST_F(NetworkPortalDetectorImplTest, NoPortal) {
@@ -256,6 +337,9 @@ TEST_F(NetworkPortalDetectorImplTest, NoPortal) {
   ASSERT_TRUE(is_state_idle());
   CheckPortalState(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE, 204,
                    kStubWireless1);
+  ASSERT_TRUE(MakeResultHistogramChecker()
+              ->Expect(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE, 1)
+              ->Check());
 }
 
 TEST_F(NetworkPortalDetectorImplTest, Portal) {
@@ -290,6 +374,10 @@ TEST_F(NetworkPortalDetectorImplTest, Portal) {
   ASSERT_TRUE(is_state_idle());
   CheckPortalState(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL, 302,
                    kStubEthernet);
+
+  ASSERT_TRUE(MakeResultHistogramChecker()
+              ->Expect(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL, 3)
+              ->Check());
 }
 
 TEST_F(NetworkPortalDetectorImplTest, Online2Offline) {
@@ -329,6 +417,10 @@ TEST_F(NetworkPortalDetectorImplTest, Online2Offline) {
   }
 
   network_portal_detector()->RemoveObserver(&observer);
+
+  ASSERT_TRUE(MakeResultHistogramChecker()
+              ->Expect(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE, 1)
+              ->Check());
 }
 
 TEST_F(NetworkPortalDetectorImplTest, TwoNetworks) {
@@ -351,6 +443,11 @@ TEST_F(NetworkPortalDetectorImplTest, TwoNetworks) {
                    kStubEthernet);
   CheckPortalState(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL, 200,
                    kStubWireless1);
+
+  ASSERT_TRUE(MakeResultHistogramChecker()
+              ->Expect(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE, 1)
+              ->Expect(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL, 1)
+              ->Check());
 }
 
 TEST_F(NetworkPortalDetectorImplTest, NetworkChanged) {
@@ -379,6 +476,10 @@ TEST_F(NetworkPortalDetectorImplTest, NetworkChanged) {
   // network, it's state must be unknown.
   CheckPortalState(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN, -1,
                    kStubWireless1);
+
+  ASSERT_TRUE(MakeResultHistogramChecker()
+              ->Expect(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE, 1)
+              ->Check());
 }
 
 TEST_F(NetworkPortalDetectorImplTest, NetworkStateNotChanged) {
@@ -395,6 +496,10 @@ TEST_F(NetworkPortalDetectorImplTest, NetworkStateNotChanged) {
 
   SetConnected(kStubWireless1);
   ASSERT_TRUE(is_state_idle());
+
+  ASSERT_TRUE(MakeResultHistogramChecker()
+              ->Expect(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE, 1)
+              ->Check());
 }
 
 TEST_F(NetworkPortalDetectorImplTest, NetworkStateChanged) {
@@ -427,6 +532,11 @@ TEST_F(NetworkPortalDetectorImplTest, NetworkStateChanged) {
   ASSERT_TRUE(is_state_idle());
   CheckPortalState(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL, 200,
                    kStubWireless1);
+
+  ASSERT_TRUE(MakeResultHistogramChecker()
+              ->Expect(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE, 1)
+              ->Expect(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL, 2)
+              ->Check());
 }
 
 TEST_F(NetworkPortalDetectorImplTest, PortalDetectionTimeout) {
@@ -446,6 +556,8 @@ TEST_F(NetworkPortalDetectorImplTest, PortalDetectionTimeout) {
   ASSERT_TRUE(is_state_portal_detection_pending());
   ASSERT_EQ(1, attempt_count());
   ASSERT_EQ(base::TimeDelta::FromSeconds(3), next_attempt_delay());
+
+  ASSERT_TRUE(MakeResultHistogramChecker()->Check());
 }
 
 TEST_F(NetworkPortalDetectorImplTest, PortalDetectionRetryAfter) {
@@ -464,6 +576,8 @@ TEST_F(NetworkPortalDetectorImplTest, PortalDetectionRetryAfter) {
   ASSERT_TRUE(is_state_portal_detection_pending());
   ASSERT_EQ(1, attempt_count());
   ASSERT_EQ(base::TimeDelta::FromSeconds(101), next_attempt_delay());
+
+  ASSERT_TRUE(MakeResultHistogramChecker()->Check());
 }
 
 TEST_F(NetworkPortalDetectorImplTest, PortalDetectorRetryAfterIsSmall) {
@@ -483,6 +597,8 @@ TEST_F(NetworkPortalDetectorImplTest, PortalDetectorRetryAfterIsSmall) {
   ASSERT_TRUE(is_state_portal_detection_pending());
   ASSERT_EQ(1, attempt_count());
   ASSERT_EQ(base::TimeDelta::FromSeconds(3), next_attempt_delay());
+
+  ASSERT_TRUE(MakeResultHistogramChecker()->Check());
 }
 
 TEST_F(NetworkPortalDetectorImplTest, FirstAttemptFailed) {
@@ -509,6 +625,10 @@ TEST_F(NetworkPortalDetectorImplTest, FirstAttemptFailed) {
   ASSERT_EQ(2, attempt_count());
   CheckPortalState(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE, 204,
                    kStubWireless1);
+
+  ASSERT_TRUE(MakeResultHistogramChecker()
+              ->Expect(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE, 1)
+              ->Check());
 }
 
 TEST_F(NetworkPortalDetectorImplTest, AllAttemptsFailed) {
@@ -543,6 +663,10 @@ TEST_F(NetworkPortalDetectorImplTest, AllAttemptsFailed) {
   ASSERT_EQ(3, attempt_count());
   CheckPortalState(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE, 503,
                    kStubWireless1);
+
+  ASSERT_TRUE(MakeResultHistogramChecker()
+              ->Expect(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE, 1)
+              ->Check());
 }
 
 TEST_F(NetworkPortalDetectorImplTest, ProxyAuthRequired) {
@@ -556,6 +680,12 @@ TEST_F(NetworkPortalDetectorImplTest, ProxyAuthRequired) {
   CheckPortalState(
       NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED, 407,
       kStubWireless1);
+
+  ASSERT_TRUE(
+      MakeResultHistogramChecker()
+      ->Expect(
+          NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED, 1)
+      ->Check());
 }
 
 TEST_F(NetworkPortalDetectorImplTest, NoResponseButBehindPortal) {
@@ -592,6 +722,10 @@ TEST_F(NetworkPortalDetectorImplTest, NoResponseButBehindPortal) {
   CheckPortalState(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL,
                    net::URLFetcher::RESPONSE_CODE_INVALID,
                    kStubWireless1);
+
+  ASSERT_TRUE(MakeResultHistogramChecker()
+              ->Expect(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL, 1)
+              ->Check());
 }
 
 TEST_F(NetworkPortalDetectorImplTest, DisableLazyDetectionWhilePendingRequest) {
@@ -603,6 +737,8 @@ TEST_F(NetworkPortalDetectorImplTest, DisableLazyDetectionWhilePendingRequest) {
 
   // To run CaptivePortalDetector::DetectCaptivePortal().
   base::MessageLoop::current()->RunUntilIdle();
+
+  ASSERT_TRUE(MakeResultHistogramChecker()->Check());
 }
 
 TEST_F(NetworkPortalDetectorImplTest, LazyDetectionForOnlineNetwork) {
@@ -644,6 +780,10 @@ TEST_F(NetworkPortalDetectorImplTest, LazyDetectionForOnlineNetwork) {
   CheckPortalState(
       NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE, 204,
       kStubWireless1);
+
+  ASSERT_TRUE(MakeResultHistogramChecker()
+              ->Expect(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE, 1)
+              ->Check());
 }
 
 TEST_F(NetworkPortalDetectorImplTest, LazyDetectionForPortalNetwork) {
@@ -694,6 +834,10 @@ TEST_F(NetworkPortalDetectorImplTest, LazyDetectionForPortalNetwork) {
   ASSERT_TRUE(is_state_idle());
   CheckPortalState(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL, 200,
                    kStubWireless1);
+
+  ASSERT_TRUE(MakeResultHistogramChecker()
+              ->Expect(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL, 1)
+              ->Check());
 }
 
 TEST_F(NetworkPortalDetectorImplTest, DetectionTimeoutIsCancelled) {
@@ -711,6 +855,8 @@ TEST_F(NetworkPortalDetectorImplTest, DetectionTimeoutIsCancelled) {
   ASSERT_TRUE(detection_timeout_is_cancelled());
   CheckPortalState(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN, -1,
                    kStubWireless1);
+
+  ASSERT_TRUE(MakeResultHistogramChecker()->Check());
 }
 
 TEST_F(NetworkPortalDetectorImplTest, TestDetectionRestart) {
@@ -740,6 +886,11 @@ TEST_F(NetworkPortalDetectorImplTest, TestDetectionRestart) {
   CheckPortalState(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL, 200,
                    kStubWireless1);
   ASSERT_TRUE(is_state_idle());
+
+  ASSERT_TRUE(MakeResultHistogramChecker()->
+              Expect(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE, 1)->
+              Expect(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL, 1)->
+              Check());
 }
 
 TEST_F(NetworkPortalDetectorImplTest, RequestTimeouts) {
@@ -797,6 +948,11 @@ TEST_F(NetworkPortalDetectorImplTest, RequestTimeouts) {
   disable_lazy_detection();
   CheckRequestTimeoutAndCompleteAttempt(3, 15, net::OK, 204);
   ASSERT_TRUE(is_state_idle());
+
+  ASSERT_TRUE(MakeResultHistogramChecker()
+              ->Expect(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE, 1)
+              ->Expect(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE, 1)
+              ->Check());
 }
 
 TEST_F(NetworkPortalDetectorImplTest, StartDetectionIfIdle) {
@@ -828,6 +984,11 @@ TEST_F(NetworkPortalDetectorImplTest, StartDetectionIfIdle) {
   base::RunLoop().RunUntilIdle();
   CheckRequestTimeoutAndCompleteAttempt(1, 5, net::OK, 204);
   ASSERT_TRUE(is_state_idle());
+
+  ASSERT_TRUE(MakeResultHistogramChecker()
+              ->Expect(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE, 1)
+              ->Expect(NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE, 1)
+              ->Check());
 }
 
 }  // namespace chromeos
