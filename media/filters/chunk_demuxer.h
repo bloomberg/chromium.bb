@@ -137,6 +137,8 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
 
   void Shutdown();
 
+  // Sets the memory limit on each stream. |memory_limit| is the
+  // maximum number of bytes each stream is allowed to hold in its buffer.
   void SetMemoryLimitsForTesting(int memory_limit);
 
   // Returns the ranges representing the buffered data in the demuxer.
@@ -217,6 +219,10 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
 
   // Seeks all SourceBufferStreams to |seek_time|.
   void SeekAllSources(base::TimeDelta seek_time);
+
+  // Shuts down all DemuxerStreams by calling Shutdown() on
+  // all objects in |source_state_map_|.
+  void ShutdownAllStreams();
 
   mutable base::Lock lock_;
   State state_;

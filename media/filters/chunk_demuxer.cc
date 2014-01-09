@@ -114,6 +114,10 @@ class SourceState {
   // Aborts the current append sequence and resets the parser.
   void Abort();
 
+  // Calls Remove(|start|, |end|, |duration|) on all
+  // ChunkDemuxerStreams managed by this object.
+  void Remove(TimeDelta start, TimeDelta end, TimeDelta duration);
+
   // Sets |timestamp_offset_| if possible.
   // Returns if the offset was set. Returns false if the offset could not be
   // updated at this time.
@@ -145,6 +149,11 @@ class SourceState {
   void OnSetDuration(TimeDelta duration);
   void MarkEndOfStream();
   void UnmarkEndOfStream();
+  void Shutdown();
+  // Sets the memory limit on each stream. |memory_limit| is the
+  // maximum number of bytes each stream is allowed to hold in its buffer.
+  void SetMemoryLimitsForTesting(int memory_limit);
+  bool IsSeekWaitingForData() const;
 
  private:
   // Called by the |stream_parser_| when a new initialization segment is
@@ -305,6 +314,7 @@ class ChunkDemuxerStream : public DemuxerStream {
   // if type() != TEXT.
   TextTrackConfig text_track_config();
 
+  // Sets the memory limit, in bytes, on the SourceBufferStream.
   void set_memory_limit_for_testing(int memory_limit) {
     stream_->set_memory_limit_for_testing(memory_limit);
   }
@@ -360,17 +370,9 @@ SourceState::SourceState(scoped_ptr<StreamParser> stream_parser,
 }
 
 SourceState::~SourceState() {
-  if (audio_)
-    audio_->Shutdown();
+  Shutdown();
 
-  if (video_)
-    video_->Shutdown();
-
-  for (TextStreamMap::iterator itr = text_stream_map_.begin();
-       itr != text_stream_map_.end(); ++itr) {
-    itr->second->Shutdown();
-    delete itr->second;
-  }
+  STLDeleteValues(&text_stream_map_);
 }
 
 void SourceState::Init(const StreamParser::InitCB& init_cb,
@@ -422,6 +424,19 @@ void SourceState::Abort() {
   can_update_offset_ = true;
 }
 
+void SourceState::Remove(TimeDelta start, TimeDelta end, TimeDelta duration) {
+  if (audio_)
+    audio_->Remove(start, end, duration);
+
+  if (video_)
+    video_->Remove(start, end, duration);
+
+  for (TextStreamMap::iterator itr = text_stream_map_.begin();
+       itr != text_stream_map_.end(); ++itr) {
+    itr->second->Remove(start, end, duration);
+  }
+}
+
 Ranges<TimeDelta> SourceState::GetBufferedRanges(TimeDelta duration,
                                                  bool ended) const {
   // TODO(acolwell): When we start allowing disabled tracks we'll need to update
@@ -449,7 +464,6 @@ TimeDelta SourceState::GetMaxBufferedDuration() const {
 
   if (video_)
     max_duration = std::max(max_duration, video_->GetBufferedDuration());
-
 
   for (TextStreamMap::const_iterator itr = text_stream_map_.begin();
        itr != text_stream_map_.end(); ++itr) {
@@ -548,6 +562,49 @@ void SourceState::UnmarkEndOfStream() {
        itr != text_stream_map_.end(); ++itr) {
     itr->second->UnmarkEndOfStream();
   }
+}
+
+void SourceState::Shutdown() {
+  if (audio_)
+    audio_->Shutdown();
+
+  if (video_)
+    video_->Shutdown();
+
+  for (TextStreamMap::iterator itr = text_stream_map_.begin();
+       itr != text_stream_map_.end(); ++itr) {
+    itr->second->Shutdown();
+  }
+}
+
+void SourceState::SetMemoryLimitsForTesting(int memory_limit) {
+  if (audio_)
+    audio_->set_memory_limit_for_testing(memory_limit);
+
+  if (video_)
+    video_->set_memory_limit_for_testing(memory_limit);
+
+  for (TextStreamMap::iterator itr = text_stream_map_.begin();
+       itr != text_stream_map_.end(); ++itr) {
+    itr->second->set_memory_limit_for_testing(memory_limit);
+  }
+}
+
+bool SourceState::IsSeekWaitingForData() const {
+  if (audio_ && audio_->IsSeekWaitingForData())
+    return true;
+
+  if (video_ && video_->IsSeekWaitingForData())
+    return true;
+
+  // NOTE: We are intentionally not checking the text tracks
+  // because text tracks are discontinuous and may not have data
+  // for the seek position. This is ok and playback should not be
+  // stalled because we don't have cues. If cues, with timestamps after
+  // the seek time, eventually arrive they will be delivered properly
+  // in response to ChunkDemuxerStream::Read() calls.
+
+  return false;
 }
 
 void SourceState::AdjustBufferTimestamps(
@@ -884,6 +941,11 @@ void ChunkDemuxerStream::Shutdown() {
 
 bool ChunkDemuxerStream::IsSeekWaitingForData() const {
   base::AutoLock auto_lock(lock_);
+
+  // This method should not be called for text tracks. See the note in
+  // SourceState::IsSeekWaitingForData().
+  DCHECK_NE(type_, DemuxerStream::TEXT);
+
   return stream_->IsSeekPending();
 }
 
@@ -1382,17 +1444,15 @@ void ChunkDemuxer::Abort(const std::string& id) {
   source_state_map_[id]->Abort();
 }
 
-void ChunkDemuxer::Remove(const std::string& id, base::TimeDelta start,
-                          base::TimeDelta end) {
+void ChunkDemuxer::Remove(const std::string& id, TimeDelta start,
+                          TimeDelta end) {
   DVLOG(1) << "Remove(" << id << ", " << start.InSecondsF()
            << ", " << end.InSecondsF() << ")";
   base::AutoLock auto_lock(lock_);
 
-  if (id == source_id_audio_ && audio_)
-    audio_->Remove(start, end, duration_);
-
-  if (id == source_id_video_ && video_)
-    video_->Remove(start, end, duration_);
+  DCHECK(!id.empty());
+  CHECK(IsValidId(id));
+  source_state_map_[id]->Remove(start, end, duration_);
 }
 
 double ChunkDemuxer::GetDuration() {
@@ -1537,11 +1597,7 @@ void ChunkDemuxer::Shutdown() {
   if (state_ == SHUTDOWN)
     return;
 
-  if (audio_)
-    audio_->Shutdown();
-
-  if (video_)
-    video_->Shutdown();
+  ShutdownAllStreams();
 
   ChangeState_Locked(SHUTDOWN);
 
@@ -1550,11 +1606,10 @@ void ChunkDemuxer::Shutdown() {
 }
 
 void ChunkDemuxer::SetMemoryLimitsForTesting(int memory_limit) {
-  if (audio_)
-    audio_->set_memory_limit_for_testing(memory_limit);
-
-  if (video_)
-    video_->set_memory_limit_for_testing(memory_limit);
+  for (SourceStateMap::iterator itr = source_state_map_.begin();
+       itr != source_state_map_.end(); ++itr) {
+    itr->second->SetMemoryLimitsForTesting(memory_limit);
+  }
 }
 
 void ChunkDemuxer::ChangeState_Locked(State new_state) {
@@ -1566,11 +1621,8 @@ void ChunkDemuxer::ChangeState_Locked(State new_state) {
 
 ChunkDemuxer::~ChunkDemuxer() {
   DCHECK_NE(state_, INITIALIZED);
-  for (SourceStateMap::iterator it = source_state_map_.begin();
-       it != source_state_map_.end(); ++it) {
-    delete it->second;
-  }
-  source_state_map_.clear();
+
+  STLDeleteValues(&source_state_map_);
 }
 
 void ChunkDemuxer::ReportError_Locked(PipelineStatus error) {
@@ -1588,11 +1640,7 @@ void ChunkDemuxer::ReportError_Locked(PipelineStatus error) {
     if (!seek_cb_.is_null())
       std::swap(cb, seek_cb_);
 
-    if (audio_)
-      audio_->Shutdown();
-
-    if (video_)
-      video_->Shutdown();
+    ShutdownAllStreams();
   }
 
   if (!cb.is_null()) {
@@ -1606,15 +1654,13 @@ void ChunkDemuxer::ReportError_Locked(PipelineStatus error) {
 
 bool ChunkDemuxer::IsSeekWaitingForData_Locked() const {
   lock_.AssertAcquired();
-  bool waiting_for_data = false;
+  for (SourceStateMap::const_iterator itr = source_state_map_.begin();
+       itr != source_state_map_.end(); ++itr) {
+    if (itr->second->IsSeekWaitingForData())
+      return true;
+  }
 
-  if (audio_)
-    waiting_for_data = audio_->IsSeekWaitingForData();
-
-  if (!waiting_for_data && video_)
-    waiting_for_data = video_->IsSeekWaitingForData();
-
-  return waiting_for_data;
+  return false;
 }
 
 void ChunkDemuxer::OnSourceInitDone(bool success, TimeDelta duration) {
@@ -1770,6 +1816,13 @@ void ChunkDemuxer::CompletePendingReadsIfPossible() {
   for (SourceStateMap::iterator itr = source_state_map_.begin();
        itr != source_state_map_.end(); ++itr) {
     itr->second->CompletePendingReadIfPossible();
+  }
+}
+
+void ChunkDemuxer::ShutdownAllStreams() {
+  for (SourceStateMap::iterator itr = source_state_map_.begin();
+       itr != source_state_map_.end(); ++itr) {
+    itr->second->Shutdown();
   }
 }
 
