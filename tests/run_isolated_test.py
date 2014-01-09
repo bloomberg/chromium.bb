@@ -156,9 +156,16 @@ class RunIsolatedTest(auto_stub.TestCase):
 
   def test_main(self):
     self.mock(run_isolated.tools, 'disable_buffering', lambda: None)
+    calls = []
+    # Unused argument ''
+    # pylint: disable=W0613
+    def call(command, cwd, env):
+      calls.append(command)
+      return 0
+    self.mock(run_isolated.subprocess, 'call', call)
     isolated = json.dumps(
         {
-          'command': ['python', '-c', 'print(\'test_main works\')'],
+          'command': ['foo.exe', 'cmd with space'],
         })
     isolated_hash = hashlib.sha1(isolated).hexdigest()
     def get_storage(_isolate_server, _namespace):
@@ -173,6 +180,39 @@ class RunIsolatedTest(auto_stub.TestCase):
     ]
     ret = run_isolated.main(cmd)
     self.assertEqual(0, ret)
+    self.assertEqual([[u'foo.exe', u'cmd with space']], calls)
+
+  def test_main_args(self):
+    self.mock(run_isolated.tools, 'disable_buffering', lambda: None)
+    calls = []
+    # Unused argument ''
+    # pylint: disable=W0613
+    def call(command, cwd, env):
+      calls.append(command)
+      return 0
+    self.mock(run_isolated.subprocess, 'call', call)
+    isolated = json.dumps(
+        {
+          'command': ['foo.exe', 'cmd with space'],
+        })
+    isolated_hash = hashlib.sha1(isolated).hexdigest()
+    def get_storage(_isolate_server, _namespace):
+      return StorageFake({isolated_hash:isolated})
+    self.mock(run_isolated.isolateserver, 'get_storage', get_storage)
+
+    cmd = [
+        '--no-log',
+        '--hash', isolated_hash,
+        '--cache', self.tempdir,
+        '--isolate-server', 'https://localhost',
+        '--',
+        '--extraargs',
+        'bar',
+    ]
+    ret = run_isolated.main(cmd)
+    self.assertEqual(0, ret)
+    self.assertEqual(
+        [[u'foo.exe', u'cmd with space', '--extraargs', 'bar']], calls)
 
 
 if __name__ == '__main__':

@@ -586,7 +586,7 @@ class DiskCache(isolateserver.LocalCache):
       logging.error('Error attempting to delete a file %s:\n%s' % (digest, e))
 
 
-def run_tha_test(isolated_hash, storage, cache, algo, outdir):
+def run_tha_test(isolated_hash, storage, cache, algo, outdir, extra_args):
   """Downloads the dependencies in the cache, hardlinks them into a |outdir|
   and runs the executable.
   """
@@ -617,7 +617,8 @@ def run_tha_test(isolated_hash, storage, cache, algo, outdir):
       make_tree_writeable(outdir)
 
     cwd = os.path.normpath(os.path.join(outdir, settings.relative_cwd))
-    logging.info('Running %s, cwd=%s' % (settings.command, cwd))
+    command = settings.command + extra_args
+    logging.info('Running %s, cwd=%s' % (command, cwd))
 
     # TODO(csharp): This should be specified somewhere else.
     # TODO(vadimsh): Pass it via 'env_vars' in manifest.
@@ -628,9 +629,9 @@ def run_tha_test(isolated_hash, storage, cache, algo, outdir):
           os.path.join(MAIN_DIR, RUN_TEST_CASES_LOG))
     try:
       with tools.Profiler('RunTest'):
-        result = subprocess.call(settings.command, cwd=cwd, env=env)
+        result = subprocess.call(command, cwd=cwd, env=env)
     except OSError:
-      tools.report_error('Failed to run %s; cwd=%s' % (settings.command, cwd))
+      tools.report_error('Failed to run %s; cwd=%s' % (command, cwd))
       result = 1
   finally:
     if outdir:
@@ -712,8 +713,6 @@ def main(args):
   if bool(options.isolated) == bool(options.hash):
     logging.debug('One and only one of --isolated or --hash is required.')
     parser.error('One and only one of --isolated or --hash is required.')
-  if args:
-    parser.error('Unsupported args %s' % ' '.join(args))
   if not options.isolate_server:
     parser.error('--isolate-server is required.')
 
@@ -729,7 +728,7 @@ def main(args):
     with isolateserver.get_storage(
         options.isolate_server, options.namespace) as storage:
       return run_tha_test(
-          options.isolated or options.hash, storage, cache, algo, outdir)
+          options.isolated or options.hash, storage, cache, algo, outdir, args)
   except Exception as e:
     # Make sure any exception is logged.
     tools.report_error(e)
