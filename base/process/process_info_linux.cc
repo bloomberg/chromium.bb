@@ -15,8 +15,8 @@ namespace base {
 //static
 const Time CurrentProcessInfo::CreationTime() {
   ProcessHandle pid = GetCurrentProcessHandle();
-  int start_ticks = internal::ReadProcStatsAndGetFieldAsInt(
-      pid, internal::VM_STARTTIME);
+  int64 start_ticks =
+      internal::ReadProcStatsAndGetFieldAsInt64(pid, internal::VM_STARTTIME);
   DCHECK(start_ticks);
   TimeDelta start_offset = internal::ClockTicksToTimeDelta(start_ticks);
   Time boot_time = internal::GetBootTime();

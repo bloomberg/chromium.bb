@@ -11,7 +11,7 @@ namespace base {
 
 ProcessId GetParentProcessId(ProcessHandle process) {
   ProcessId pid =
-      internal::ReadProcStatsAndGetFieldAsInt(process, internal::VM_PPID);
+      internal::ReadProcStatsAndGetFieldAsInt64(process, internal::VM_PPID);
   if (pid)
     return pid;
   return -1;

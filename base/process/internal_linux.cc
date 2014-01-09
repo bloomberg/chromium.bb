@@ -115,13 +115,13 @@ void ParseProcStat(const std::string& contents, ProcStatMap* output) {
   }
 }
 
-int GetProcStatsFieldAsInt(const std::vector<std::string>& proc_stats,
-                           ProcStatsFields field_num) {
+int64 GetProcStatsFieldAsInt64(const std::vector<std::string>& proc_stats,
+                               ProcStatsFields field_num) {
   DCHECK_GE(field_num, VM_PPID);
   CHECK_LT(static_cast<size_t>(field_num), proc_stats.size());
 
-  int value;
-  return StringToInt(proc_stats[field_num], &value) ? value : 0;
+  int64 value;
+  return StringToInt64(proc_stats[field_num], &value) ? value : 0;
 }
 
 size_t GetProcStatsFieldAsSizeT(const std::vector<std::string>& proc_stats,
@@ -133,15 +133,14 @@ size_t GetProcStatsFieldAsSizeT(const std::vector<std::string>& proc_stats,
   return StringToSizeT(proc_stats[field_num], &value) ? value : 0;
 }
 
-int ReadProcStatsAndGetFieldAsInt(pid_t pid,
-                                  ProcStatsFields field_num) {
+int64 ReadProcStatsAndGetFieldAsInt64(pid_t pid, ProcStatsFields field_num) {
   std::string stats_data;
   if (!ReadProcStats(pid, &stats_data))
     return 0;
   std::vector<std::string> proc_stats;
   if (!ParseProcStats(stats_data, &proc_stats))
     return 0;
-  return GetProcStatsFieldAsInt(proc_stats, field_num);
+  return GetProcStatsFieldAsInt64(proc_stats, field_num);
 }
 
 size_t ReadProcStatsAndGetFieldAsSizeT(pid_t pid,

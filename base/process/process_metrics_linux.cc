@@ -391,16 +391,16 @@ int ParseProcStatCPU(const std::string& input) {
 
   if (proc_stats.size() <= internal::VM_STIME)
     return -1;
-  int utime = GetProcStatsFieldAsInt(proc_stats, internal::VM_UTIME);
-  int stime = GetProcStatsFieldAsInt(proc_stats, internal::VM_STIME);
+  int utime = GetProcStatsFieldAsInt64(proc_stats, internal::VM_UTIME);
+  int stime = GetProcStatsFieldAsInt64(proc_stats, internal::VM_STIME);
   return utime + stime;
 }
 
 const char kProcSelfExe[] = "/proc/self/exe";
 
 int GetNumberOfThreads(ProcessHandle process) {
-  return internal::ReadProcStatsAndGetFieldAsInt(process,
-                                                 internal::VM_NUMTHREADS);
+  return internal::ReadProcStatsAndGetFieldAsInt64(process,
+                                                   internal::VM_NUMTHREADS);
 }
 
 namespace {

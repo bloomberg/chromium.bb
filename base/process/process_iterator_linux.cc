@@ -121,8 +121,8 @@ bool ProcessIterator::CheckForNextProcess() {
   }
 
   entry_.pid_ = pid;
-  entry_.ppid_ = GetProcStatsFieldAsInt(proc_stats, internal::VM_PPID);
-  entry_.gid_ = GetProcStatsFieldAsInt(proc_stats, internal::VM_PGRP);
+  entry_.ppid_ = GetProcStatsFieldAsInt64(proc_stats, internal::VM_PPID);
+  entry_.gid_ = GetProcStatsFieldAsInt64(proc_stats, internal::VM_PGRP);
   entry_.cmd_line_args_.assign(cmd_line_args.begin(), cmd_line_args.end());
   entry_.exe_file_ = GetProcessExecutablePath(pid).BaseName().value();
   return true;

@@ -63,19 +63,18 @@ enum ProcStatsFields {
 // Reads the |field_num|th field from |proc_stats|. Returns 0 on failure.
 // This version does not handle the first 3 values, since the first value is
 // simply |pid|, and the next two values are strings.
-int GetProcStatsFieldAsInt(const std::vector<std::string>& proc_stats,
-                           ProcStatsFields field_num);
+int64 GetProcStatsFieldAsInt64(const std::vector<std::string>& proc_stats,
+                               ProcStatsFields field_num);
 
-// Same as GetProcStatsFieldAsInt(), but for size_t values.
+// Same as GetProcStatsFieldAsInt64(), but for size_t values.
 size_t GetProcStatsFieldAsSizeT(const std::vector<std::string>& proc_stats,
                                 ProcStatsFields field_num);
 
-// Convenience wrapper around GetProcStatsFieldAsInt(), ParseProcStats() and
-// ReadProcStats(). See GetProcStatsFieldAsInt() for details.
-int ReadProcStatsAndGetFieldAsInt(pid_t pid,
-                                  ProcStatsFields field_num);
+// Convenience wrapper around GetProcStatsFieldAsInt64(), ParseProcStats() and
+// ReadProcStats(). See GetProcStatsFieldAsInt64() for details.
+int64 ReadProcStatsAndGetFieldAsInt64(pid_t pid, ProcStatsFields field_num);
 
-// Same as ReadProcStatsAndGetFieldAsInt() but for size_t values.
+// Same as ReadProcStatsAndGetFieldAsInt64() but for size_t values.
 size_t ReadProcStatsAndGetFieldAsSizeT(pid_t pid,
                                        ProcStatsFields field_num);
 
