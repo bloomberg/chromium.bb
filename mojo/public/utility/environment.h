@@ -8,7 +8,6 @@
 #include "mojo/public/system/macros.h"
 
 namespace mojo {
-namespace utility {
 
 namespace internal {
 class BindingsSupportImpl;
@@ -28,7 +27,6 @@ class Environment {
   MOJO_DISALLOW_COPY_AND_ASSIGN(Environment);
 };
 
-}  // namespace utility
 }  // namespace mojo
 
 #endif  // MOJO_PUBLIC_UTILITY_ENVIRONMENT_H_

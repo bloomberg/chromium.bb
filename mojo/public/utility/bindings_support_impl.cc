@@ -12,7 +12,6 @@
 #include "mojo/public/utility/thread_local.h"
 
 namespace mojo {
-namespace utility {
 namespace internal {
 namespace {
 
@@ -109,5 +108,4 @@ void BindingsSupportImpl::CancelWait(AsyncWaitID async_wait_id) {
 }
 
 }  // namespace internal
-}  // namespace utility
 }  // namespace mojo

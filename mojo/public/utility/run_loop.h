@@ -10,7 +10,6 @@
 #include "mojo/public/system/core_cpp.h"
 
 namespace mojo {
-namespace utility {
 
 class RunLoopHandler;
 
@@ -95,7 +94,6 @@ class RunLoop {
   MOJO_DISALLOW_COPY_AND_ASSIGN(RunLoop);
 };
 
-}  // namespace utility
 }  // namespace mojo
 
 #endif  // MOJO_PUBLIC_UTILITY_RUN_LOOP_H_

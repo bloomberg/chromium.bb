@@ -8,7 +8,6 @@
 #include <pthread.h>
 
 namespace mojo {
-namespace utility {
 namespace internal {
 
 // static
@@ -38,5 +37,4 @@ void ThreadLocalPlatform::SetValueInSlot(SlotType slot, void* value) {
 }
 
 }  // namespace internal
-}  // namespace utility
 }  // namespace mojo

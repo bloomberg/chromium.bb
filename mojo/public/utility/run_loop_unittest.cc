@@ -12,7 +12,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
-namespace utility {
 namespace {
 
 class TestRunLoopHandler : public RunLoopHandler {
@@ -190,5 +189,4 @@ TEST_F(RunLoopTest, Current) {
 }
 
 }  // namespace
-}  // namespace utility
 }  // namespace mojo

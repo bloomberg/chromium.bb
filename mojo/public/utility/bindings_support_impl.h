@@ -9,7 +9,6 @@
 #include "mojo/public/system/macros.h"
 
 namespace mojo {
-namespace utility {
 namespace internal {
 
 // BindingsSupport implementation that uses RunLoop. Before using this you must
@@ -40,7 +39,6 @@ class BindingsSupportImpl : public BindingsSupport {
 };
 
 }  // namespace internal
-}  // namespace utility
 }  // namespace mojo
 
 #endif  // MOJO_PUBLIC_UTILITY_BINDINGS_SUPPORT_IMPL_H_

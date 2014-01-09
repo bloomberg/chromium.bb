@@ -13,7 +13,6 @@
 #include "mojo/public/utility/thread_local.h"
 
 namespace mojo {
-namespace utility {
 namespace {
 
 ThreadLocalPointer<RunLoop>* tls_run_loop = NULL;
@@ -207,5 +206,4 @@ RunLoop::WaitState RunLoop::GetWaitState() const {
   return wait_state;
 }
 
-}  // namespace utility
 }  // namespace mojo

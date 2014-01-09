@@ -8,7 +8,6 @@
 #include "mojo/public/utility/run_loop.h"
 
 namespace mojo {
-namespace utility {
 
 Environment::Environment() : bindings_support_(NULL) {
   RunLoop::SetUp();
@@ -28,5 +27,4 @@ Environment::~Environment() {
   RunLoop::TearDown();
 }
 
-}  // namespace utility
 }  // namespace mojo

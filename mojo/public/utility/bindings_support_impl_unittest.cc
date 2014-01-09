@@ -12,7 +12,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
-namespace utility {
 namespace {
 
 class TestAsyncWaitCallback : public BindingsSupport::AsyncWaitCallback {
@@ -110,5 +109,4 @@ TEST_F(BindingsSupportImplTest, CancelCallback) {
 }
 
 }  // namespace
-}  // namespace utility
 }  // namespace mojo

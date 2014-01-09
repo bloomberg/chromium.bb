@@ -57,7 +57,6 @@
 #include "mojo/public/system/macros.h"
 
 namespace mojo {
-namespace utility {
 namespace internal {
 
 // Helper functions that abstract the cross-platform APIs.  Do not use directly.
@@ -124,7 +123,6 @@ class ThreadLocalBoolean {
   MOJO_DISALLOW_COPY_AND_ASSIGN(ThreadLocalBoolean);
 };
 
-}  // namespace utility
 }  // namespace mojo
 
 #endif  // MOJO_PUBLIC_UTILITY_THREAD_LOCAL_H_

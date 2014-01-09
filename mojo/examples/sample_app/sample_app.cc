@@ -62,7 +62,7 @@ class SampleApp : public ShellClient {
     }
 
     virtual void OnDestroyed() MOJO_OVERRIDE {
-      utility::RunLoop::current()->Quit();
+      RunLoop::current()->Quit();
     }
 
     virtual void OnEvent(const Event& event) MOJO_OVERRIDE {
@@ -85,8 +85,8 @@ class SampleApp : public ShellClient {
 
 extern "C" SAMPLE_APP_EXPORT MojoResult CDECL MojoMain(
     MojoHandle shell_handle) {
-  mojo::utility::Environment env;
-  mojo::utility::RunLoop loop;
+  mojo::Environment env;
+  mojo::RunLoop loop;
   MojoGLES2Initialize();
 
   mojo::examples::SampleApp app(

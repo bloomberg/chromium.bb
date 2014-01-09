@@ -8,7 +8,6 @@
 #include "mojo/public/system/core_cpp.h"
 
 namespace mojo {
-namespace utility {
 
 // Used by RunLoop to notify when a handle is either ready or has become
 // invalid.
@@ -21,7 +20,6 @@ class RunLoopHandler {
   virtual ~RunLoopHandler() {}
 };
 
-}  // namespace utility
 }  // namespace mojo
 
 #endif  // MOJO_PUBLIC_UTILITY_RUN_LOOP_HANDLER_H_
