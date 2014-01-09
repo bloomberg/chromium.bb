@@ -45,6 +45,7 @@
 #include "ppapi/c/extensions/dev/ppb_ext_socket_dev.h"
 #include "ppapi/c/ppb_audio.h"
 #include "ppapi/c/ppb_audio_config.h"
+#include "ppapi/c/ppb_audio_frame.h"
 #include "ppapi/c/ppb_console.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppb_file_io.h"
@@ -58,6 +59,7 @@
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/c/ppb_input_event.h"
 #include "ppapi/c/ppb_instance.h"
+#include "ppapi/c/ppb_media_stream_audio_track.h"
 #include "ppapi/c/ppb_media_stream_video_track.h"
 #include "ppapi/c/ppb_message_loop.h"
 #include "ppapi/c/ppb_messaging.h"
@@ -154,6 +156,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_WheelInputEvent_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_KeyboardInputEvent_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TouchInputEvent_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_IMEInputEvent_1_0;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_MediaStreamAudioTrack_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_MediaStreamVideoTrack_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_MessageLoop_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Messaging_1_0;
@@ -246,6 +249,8 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Ext_Socket_Dev_0_2;
 /* Not generating wrapper methods for PPB_AudioConfig_1_0 */
 
 /* Not generating wrapper methods for PPB_AudioConfig_1_1 */
+
+/* Not generating wrapper methods for PPB_AudioFrame_0_1 */
 
 /* Begin wrapper methods for PPB_Console_1_0 */
 
@@ -914,6 +919,45 @@ static void Pnacl_M13_PPB_IMEInputEvent_GetSelection(PP_Resource ime_event, uint
 /* End wrapper methods for PPB_IMEInputEvent_1_0 */
 
 /* Not generating wrapper methods for PPB_Instance_1_0 */
+
+/* Begin wrapper methods for PPB_MediaStreamAudioTrack_0_1 */
+
+static PP_Bool Pnacl_M34_PPB_MediaStreamAudioTrack_IsMediaStreamAudioTrack(PP_Resource resource) {
+  const struct PPB_MediaStreamAudioTrack_0_1 *iface = Pnacl_WrapperInfo_PPB_MediaStreamAudioTrack_0_1.real_iface;
+  return iface->IsMediaStreamAudioTrack(resource);
+}
+
+static int32_t Pnacl_M34_PPB_MediaStreamAudioTrack_Configure(PP_Resource audio_track, uint32_t samples_per_frame, uint32_t max_buffered_frames) {
+  const struct PPB_MediaStreamAudioTrack_0_1 *iface = Pnacl_WrapperInfo_PPB_MediaStreamAudioTrack_0_1.real_iface;
+  return iface->Configure(audio_track, samples_per_frame, max_buffered_frames);
+}
+
+static void Pnacl_M34_PPB_MediaStreamAudioTrack_GetId(struct PP_Var* _struct_result, PP_Resource audio_track) {
+  const struct PPB_MediaStreamAudioTrack_0_1 *iface = Pnacl_WrapperInfo_PPB_MediaStreamAudioTrack_0_1.real_iface;
+  *_struct_result = iface->GetId(audio_track);
+}
+
+static PP_Bool Pnacl_M34_PPB_MediaStreamAudioTrack_HasEnded(PP_Resource audio_track) {
+  const struct PPB_MediaStreamAudioTrack_0_1 *iface = Pnacl_WrapperInfo_PPB_MediaStreamAudioTrack_0_1.real_iface;
+  return iface->HasEnded(audio_track);
+}
+
+static int32_t Pnacl_M34_PPB_MediaStreamAudioTrack_GetFrame(PP_Resource audio_track, PP_Resource* frame, struct PP_CompletionCallback* callback) {
+  const struct PPB_MediaStreamAudioTrack_0_1 *iface = Pnacl_WrapperInfo_PPB_MediaStreamAudioTrack_0_1.real_iface;
+  return iface->GetFrame(audio_track, frame, *callback);
+}
+
+static int32_t Pnacl_M34_PPB_MediaStreamAudioTrack_RecycleFrame(PP_Resource audio_track, PP_Resource frame) {
+  const struct PPB_MediaStreamAudioTrack_0_1 *iface = Pnacl_WrapperInfo_PPB_MediaStreamAudioTrack_0_1.real_iface;
+  return iface->RecycleFrame(audio_track, frame);
+}
+
+static void Pnacl_M34_PPB_MediaStreamAudioTrack_Close(PP_Resource audio_track) {
+  const struct PPB_MediaStreamAudioTrack_0_1 *iface = Pnacl_WrapperInfo_PPB_MediaStreamAudioTrack_0_1.real_iface;
+  iface->Close(audio_track);
+}
+
+/* End wrapper methods for PPB_MediaStreamAudioTrack_0_1 */
 
 /* Begin wrapper methods for PPB_MediaStreamVideoTrack_0_1 */
 
@@ -4028,6 +4072,8 @@ static int32_t Pnacl_M29_PPB_Ext_Socket_Dev_GetJoinedGroups(PP_Instance instance
 
 /* Not generating wrapper interface for PPB_AudioConfig_1_1 */
 
+/* Not generating wrapper interface for PPB_AudioFrame_0_1 */
+
 static struct PPB_Console_1_0 Pnacl_Wrappers_PPB_Console_1_0 = {
     .Log = (void (*)(PP_Instance instance, PP_LogLevel level, struct PP_Var value))&Pnacl_M25_PPB_Console_Log,
     .LogWithSource = (void (*)(PP_Instance instance, PP_LogLevel level, struct PP_Var source, struct PP_Var value))&Pnacl_M25_PPB_Console_LogWithSource
@@ -4206,6 +4252,16 @@ static struct PPB_IMEInputEvent_1_0 Pnacl_Wrappers_PPB_IMEInputEvent_1_0 = {
 };
 
 /* Not generating wrapper interface for PPB_Instance_1_0 */
+
+static struct PPB_MediaStreamAudioTrack_0_1 Pnacl_Wrappers_PPB_MediaStreamAudioTrack_0_1 = {
+    .IsMediaStreamAudioTrack = (PP_Bool (*)(PP_Resource resource))&Pnacl_M34_PPB_MediaStreamAudioTrack_IsMediaStreamAudioTrack,
+    .Configure = (int32_t (*)(PP_Resource audio_track, uint32_t samples_per_frame, uint32_t max_buffered_frames))&Pnacl_M34_PPB_MediaStreamAudioTrack_Configure,
+    .GetId = (struct PP_Var (*)(PP_Resource audio_track))&Pnacl_M34_PPB_MediaStreamAudioTrack_GetId,
+    .HasEnded = (PP_Bool (*)(PP_Resource audio_track))&Pnacl_M34_PPB_MediaStreamAudioTrack_HasEnded,
+    .GetFrame = (int32_t (*)(PP_Resource audio_track, PP_Resource* frame, struct PP_CompletionCallback callback))&Pnacl_M34_PPB_MediaStreamAudioTrack_GetFrame,
+    .RecycleFrame = (int32_t (*)(PP_Resource audio_track, PP_Resource frame))&Pnacl_M34_PPB_MediaStreamAudioTrack_RecycleFrame,
+    .Close = (void (*)(PP_Resource audio_track))&Pnacl_M34_PPB_MediaStreamAudioTrack_Close
+};
 
 static struct PPB_MediaStreamVideoTrack_0_1 Pnacl_Wrappers_PPB_MediaStreamVideoTrack_0_1 = {
     .IsMediaStreamVideoTrack = (PP_Bool (*)(PP_Resource resource))&Pnacl_M34_PPB_MediaStreamVideoTrack_IsMediaStreamVideoTrack,
@@ -5185,6 +5241,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_IMEInputEvent_1_0 = {
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_MediaStreamAudioTrack_0_1 = {
+  .iface_macro = PPB_MEDIASTREAMAUDIOTRACK_INTERFACE_0_1,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_MediaStreamAudioTrack_0_1,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_MediaStreamVideoTrack_0_1 = {
   .iface_macro = PPB_MEDIASTREAMVIDEOTRACK_INTERFACE_0_1,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_MediaStreamVideoTrack_0_1,
@@ -5701,6 +5763,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_KeyboardInputEvent_1_0,
   &Pnacl_WrapperInfo_PPB_TouchInputEvent_1_0,
   &Pnacl_WrapperInfo_PPB_IMEInputEvent_1_0,
+  &Pnacl_WrapperInfo_PPB_MediaStreamAudioTrack_0_1,
   &Pnacl_WrapperInfo_PPB_MediaStreamVideoTrack_0_1,
   &Pnacl_WrapperInfo_PPB_MessageLoop_1_0,
   &Pnacl_WrapperInfo_PPB_Messaging_1_0,

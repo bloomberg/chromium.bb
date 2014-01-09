@@ -20,6 +20,7 @@
       'FILES': [
         'pp_array_output.h',
         'ppb_audio_config.h',
+        'ppb_audio_frame.h',
         'ppb_audio.h',
         'ppb_console.h',
         'ppb_core.h',
@@ -35,6 +36,7 @@
         'ppb_image_data.h',
         'ppb_input_event.h',
         'ppb_instance.h',
+        'ppb_media_stream_audio_track.h',
         'ppb_media_stream_video_track.h',
         'ppb_message_loop.h',
         'ppb_messaging.h',
