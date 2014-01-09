@@ -212,4 +212,5 @@ class V8ObjectStatsMetric(Metric):
     """Add results for this page to the results object."""
     assert self._results != None, 'Must call Stop() first'
     for counter_name in self._results:
-      results.Add(counter_name, 'kb', self._results[counter_name] / 1024.0)
+      display_name = counter_name.replace('.', '_')
+      results.Add(display_name, 'kb', self._results[counter_name] / 1024.0)
