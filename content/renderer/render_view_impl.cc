@@ -1361,6 +1361,8 @@ void RenderViewImpl::OnNavigate(const ViewMsg_Navigate_Params& params) {
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, Navigate(params.url));
 
   bool is_reload = IsReload(params);
+  WebURLRequest::CachePolicy cache_policy =
+      WebURLRequest::UseProtocolCachePolicy;
 
   // If this is a stale back/forward (due to a recent navigation the browser
   // didn't know about), ignore it.
@@ -1378,6 +1380,7 @@ void RenderViewImpl::OnNavigate(const ViewMsg_Navigate_Params& params) {
     // params.state.  Setting is_reload to false will treat this like a back
     // navigation to accomplish that.
     is_reload = false;
+    cache_policy = WebURLRequest::ReloadIgnoringCacheData;
 
     // We refresh timezone when a view is swapped in since timezone
     // can get out of sync when the system timezone is updated while
@@ -1411,10 +1414,9 @@ void RenderViewImpl::OnNavigate(const ViewMsg_Navigate_Params& params) {
 
   if (is_reload && frame->currentHistoryItem().isNull()) {
     // We cannot reload if we do not have any history state.  This happens, for
-    // example, when recovering from a crash.  Our workaround here is a bit of
-    // a hack since it means that reload after a crashed tab does not cause an
-    // end-to-end cache validation.
+    // example, when recovering from a crash.
     is_reload = false;
+    cache_policy = WebURLRequest::ReloadIgnoringCacheData;
   }
 
   pending_navigation_params_.reset(new ViewMsg_Navigate_Params(params));
@@ -1442,7 +1444,7 @@ void RenderViewImpl::OnNavigate(const ViewMsg_Navigate_Params& params) {
       // Ensure we didn't save the swapped out URL in UpdateState, since the
       // browser should never be telling us to navigate to swappedout://.
       CHECK(item.urlString() != WebString::fromUTF8(kSwappedOutURL));
-      frame->loadHistoryItem(item);
+      frame->loadHistoryItem(item, cache_policy);
     }
   } else if (!params.base_url_for_data_url.is_empty()) {
     // A loadData request with a specified base URL.
@@ -3461,6 +3463,11 @@ void RenderViewImpl::PopulateDocumentStateFromPending(
     // can result in stale data for pages that are set to expire. We explicitly
     // override that by setting the policy here so that as necessary we load
     // from the network.
+    //
+    // TODO(davidben): Remove this in favor of passing a cache policy to the
+    // loadHistoryItem call in OnNavigate. That requires not overloading
+    // UseProtocolCachePolicy to mean both "normal load" and "determine cache
+    // policy based on load type, etc".
     internal_data->set_cache_policy_override(
         WebURLRequest::UseProtocolCachePolicy);
   }
