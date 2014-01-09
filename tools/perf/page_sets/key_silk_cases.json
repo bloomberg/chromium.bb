@@ -136,7 +136,25 @@
       "smoothness": { "action": "wait", "seconds": 5 }
     },
     {
-      "url": "file://key_silk_cases/inbox_app.html",
+      "url": "file://key_silk_cases/inbox_app.html?toggle_drawer",
+      "navigate_steps" : [
+        { "action": "navigate" },
+        { "action": "wait", "seconds": 2 }
+      ],
+      "smoothness": {
+        "action": "toggle_drawer",
+        "repeat": 6
+      },
+      "toggle_drawer": [
+        {
+          "action": "click_element",
+          "selector": "#menu-button"
+        },
+        { "action": "wait", "seconds": 1 }
+      ]
+    },
+    {
+      "url": "file://key_silk_cases/inbox_app.html?slide_drawer",
       "navigate_steps" : [
         { "action": "navigate" },
         { "action": "wait", "seconds": 2 }

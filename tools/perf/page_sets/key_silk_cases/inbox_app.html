@@ -2658,7 +2658,10 @@ polymer-ui-icon {
     </app-frame>
     <script>
       document.addEventListener('WebComponentsReady', function() {
-      // document.getElementById('menu-button').addEventListener('click', function() {
+        document.getElementById('nav-drawer').toggle();
+      });
+
+      document.getElementById('menu-button').addEventListener('click', function() {
         document.getElementById('nav-drawer').toggle();
       });
     </script>
