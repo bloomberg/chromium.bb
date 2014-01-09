@@ -189,7 +189,7 @@ def GetArgsStringForGN(supplemental_files):
     gn_args += ' visual_studio_version=' + EscapeStringForGN(gyp_msvs_version)
   gyp_msvs_override_path = os.environ.get('GYP_MSVS_OVERRIDE_PATH', '')
   if gyp_msvs_override_path:
-    gn_args += ' visual_studio_override_path=' + \
+    gn_args += ' visual_studio_path=' + \
         EscapeStringForGN(gyp_msvs_override_path)
 
   # Set the GYP flag so BUILD files know they're being invoked in GYP mode.
