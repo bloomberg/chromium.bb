@@ -57,6 +57,7 @@
 #include "platform/fonts/FontCache.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/scroll/Scrollbar.h"
+#include "platform/text/BidiTextRun.h"
 
 using namespace std;
 
@@ -140,8 +141,12 @@ void RenderListBox::updateFromElement()
 
             if (!text.isEmpty()) {
                 applyTextTransform(style(), text, ' ');
-                // FIXME: Why is this always LTR? Can't text direction affect the width?
+
+                bool hasStrongDirectionality;
+                TextDirection direction = determineDirectionality(text, hasStrongDirectionality);
                 TextRun textRun = constructTextRun(this, itemFont, text, style(), TextRun::AllowTrailingExpansion);
+                if (hasStrongDirectionality)
+                    textRun.setDirection(direction);
                 textRun.disableRoundingHacks();
                 float textWidth = itemFont.width(textRun);
                 width = max(width, textWidth);
