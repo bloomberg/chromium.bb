@@ -4,6 +4,7 @@
 
 #include "ash/shelf/shelf_window_watcher.h"
 
+#include "ash/ash_switches.h"
 #include "ash/display/display_controller.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_item_delegate_manager.h"
@@ -12,6 +13,7 @@
 #include "ash/shelf/shelf_window_watcher_item_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/client/activation_client.h"
@@ -41,6 +43,11 @@ bool HasLauncherItemForWindow(aura::Window* window) {
   return false;
 }
 
+// Returns true if |window| is in the process of being dragged.
+bool IsDragging(aura::Window* window) {
+  return ash::wm::GetWindowState(window)->is_dragged();
+}
+
 }  // namespace
 
 namespace ash {
@@ -59,14 +66,55 @@ void ShelfWindowWatcher::RootWindowObserver::OnWindowDestroying(
   window_watcher_->OnRootWindowRemoved(window);
 }
 
+ShelfWindowWatcher::RemovedWindowObserver::RemovedWindowObserver(
+    ShelfWindowWatcher* window_watcher)
+    : window_watcher_(window_watcher) {
+}
+
+ShelfWindowWatcher::RemovedWindowObserver::~RemovedWindowObserver() {
+}
+
+void ShelfWindowWatcher::RemovedWindowObserver::OnWindowParentChanged(
+    aura::Window* window,
+    aura::Window* parent) {
+  // When |parent| is NULL, this |window| will be destroyed. In that case, its
+  // item will be removed at OnWindowDestroyed().
+  if (!parent)
+    return;
+
+  // When |parent| is changed from default container to docked container
+  // during the dragging, |window|'s item should not be removed because it will
+  // be re-parented to default container again after finishing the dragging.
+  // We don't need to check |parent| is default container because this observer
+  // is already removed from |window| when |window| is re-parented to default
+  // container.
+  if (switches::UseDockedWindows() &&
+      IsDragging(window) &&
+      parent->id() == kShellWindowId_DockedContainer)
+    return;
+
+  // When |window| is re-parented to other containers or |window| is re-parented
+  // not to |docked_container| during the dragging, its item should be removed
+  // and stop observing this |window|.
+  window_watcher_->FinishObservingRemovedWindow(window);
+}
+
+void ShelfWindowWatcher::RemovedWindowObserver::OnWindowDestroyed(
+    aura::Window* window) {
+  DCHECK(HasLauncherItemForWindow(window));
+  window_watcher_->FinishObservingRemovedWindow(window);
+}
+
 ShelfWindowWatcher::ShelfWindowWatcher(
     ShelfModel* model,
     ShelfItemDelegateManager* item_delegate_manager)
     : model_(model),
       item_delegate_manager_(item_delegate_manager),
       root_window_observer_(this),
+      removed_window_observer_(this),
       observed_windows_(this),
       observed_root_windows_(&root_window_observer_),
+      observed_removed_windows_(&removed_window_observer_),
       observed_activation_clients_(this) {
   // We can't assume all RootWindows have the same ActivationClient.
   // Add a RootWindow and its ActivationClient to the observed list.
@@ -87,7 +135,7 @@ void ShelfWindowWatcher::AddLauncherItem(aura::Window* window) {
       GetLauncherItemDetailsForWindow(window);
   LauncherItem item;
   LauncherID id = model_->next_id();
-  item.status = ash::wm::IsActiveWindow(window) ? STATUS_ACTIVE: STATUS_RUNNING;
+  item.status = wm::IsActiveWindow(window) ? STATUS_ACTIVE: STATUS_RUNNING;
   SetShelfItemDetailsForLauncherItem(&item, *item_details);
   SetLauncherIDForWindow(id, window);
   scoped_ptr<ShelfItemDelegate> item_delegate(
@@ -138,6 +186,15 @@ int ShelfWindowWatcher::GetLauncherItemIndexForWindow(
   return model_->ItemIndexByID(GetLauncherIDForWindow(window));
 }
 
+void ShelfWindowWatcher::StartObservingRemovedWindow(aura::Window* window) {
+  observed_removed_windows_.Add(window);
+}
+
+void ShelfWindowWatcher::FinishObservingRemovedWindow(aura::Window* window) {
+  observed_removed_windows_.Remove(window);
+  RemoveLauncherItem(window);
+}
+
 void ShelfWindowWatcher::OnWindowActivated(aura::Window* gained_active,
                                            aura::Window* lost_active) {
   if (gained_active && HasLauncherItemForWindow(gained_active))
@@ -148,21 +205,33 @@ void ShelfWindowWatcher::OnWindowActivated(aura::Window* gained_active,
 
 void ShelfWindowWatcher::OnWindowAdded(aura::Window* window) {
   observed_windows_.Add(window);
+
+  if (observed_removed_windows_.IsObserving(window)) {
+    // When |window| is added and it is already observed by
+    // |dragged_window_observer_|, |window| already has its item.
+    DCHECK(HasLauncherItemForWindow(window));
+    observed_removed_windows_.Remove(window);
+    return;
+  }
+
   // Add LauncherItem if |window| already has a LauncherItemDetails when it is
   // created. Don't make a new LauncherItem for the re-parented |window| that
   // already has a LauncherItem.
-  if (GetLauncherIDForWindow(window) == ash::kInvalidShelfID &&
+  if (GetLauncherIDForWindow(window) == kInvalidShelfID &&
       GetLauncherItemDetailsForWindow(window))
     AddLauncherItem(window);
 }
 
 void ShelfWindowWatcher::OnWillRemoveWindow(aura::Window* window) {
-  // Remove a child window of default container and its item if it has.
+  // Remove a child window of default container.
   if (observed_windows_.IsObserving(window))
     observed_windows_.Remove(window);
 
+  // Don't remove |window| item immediately. Instead, defer handling of removing
+  // |window|'s item to RemovedWindowObserver because |window| could be added
+  // again to default container.
   if (HasLauncherItemForWindow(window))
-    RemoveLauncherItem(window);
+    StartObservingRemovedWindow(window);
 }
 
 void ShelfWindowWatcher::OnWindowDestroying(aura::Window* window) {

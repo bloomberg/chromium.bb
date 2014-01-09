@@ -56,6 +56,25 @@ class ShelfWindowWatcher : public aura::client::ActivationChangeObserver,
     DISALLOW_COPY_AND_ASSIGN(RootWindowObserver);
   };
 
+  // Used to track windows that are removed. See description of
+  // ShelfWindowWatcher::StartObservingRemovedWindow() for more details.
+  class RemovedWindowObserver : public aura::WindowObserver {
+   public:
+    explicit RemovedWindowObserver(ShelfWindowWatcher* window_watcher);
+    virtual ~RemovedWindowObserver();
+
+   private:
+    // aura::WindowObserver overrides:
+    virtual void OnWindowParentChanged(aura::Window* window,
+                                       aura::Window* parent) OVERRIDE;
+    virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
+
+    // Owned by Shell.
+    ShelfWindowWatcher* window_watcher_;
+
+    DISALLOW_COPY_AND_ASSIGN(RemovedWindowObserver);
+  };
+
   // Creates a LauncherItem for |window| that has LauncherItemDetails.
   void AddLauncherItem(aura::Window* window);
 
@@ -73,6 +92,16 @@ class ShelfWindowWatcher : public aura::client::ActivationChangeObserver,
 
   // Returns the index of LauncherItem associated with |window|.
   int GetLauncherItemIndexForWindow(aura::Window* window) const;
+
+  // Used when a window is removed. During the dragging a window may be removed
+  // and when the drag completes added back. When this happens we don't want to
+  // remove the shelf item. StartObservingRemovedWindow, if necessary, attaches
+  // an observer. When done, FinishObservingRemovedWindow() is invoked.
+  void StartObservingRemovedWindow(aura::Window* window);
+
+  // Stop observing |window| by RemovedWindowObserver and remove an item
+  // associated with |window|.
+  void FinishObservingRemovedWindow(aura::Window* window);
 
   // aura::client::ActivationChangeObserver overrides:
   virtual void OnWindowActivated(aura::Window* gained_active,
@@ -97,11 +126,16 @@ class ShelfWindowWatcher : public aura::client::ActivationChangeObserver,
 
   RootWindowObserver root_window_observer_;
 
+  RemovedWindowObserver removed_window_observer_;
+
   // Holds all observed windows.
   ScopedObserver<aura::Window, aura::WindowObserver> observed_windows_;
 
   // Holds all observed root windows.
   ScopedObserver<aura::Window, aura::WindowObserver> observed_root_windows_;
+
+  // Holds removed windows that has an item from default container.
+  ScopedObserver<aura::Window, aura::WindowObserver> observed_removed_windows_;
 
   // Holds all observed activation clients.
   ScopedObserverWithDuplicatedSources<aura::client::ActivationClient,
