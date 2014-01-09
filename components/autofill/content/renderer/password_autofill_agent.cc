@@ -26,6 +26,7 @@
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebNode.h"
 #include "third_party/WebKit/public/web/WebNodeList.h"
+#include "third_party/WebKit/public/web/WebPasswordFormData.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -181,6 +182,16 @@ bool DoUsernamesMatch(const base::string16& username1,
   return StartsWith(username1, username2, true);
 }
 
+// Returns |true| if the given element is both editable and has permission to be
+// autocompleted. The latter can be either because there is no
+// autocomplete='off' set for the element, or because the flag is set to ignore
+// autocomplete='off'. Otherwise, returns |false|.
+bool IsElementAutocompletable(const blink::WebInputElement& element) {
+  return IsElementEditable(element) &&
+         (ShouldIgnoreAutocompleteOffForPasswordFields() ||
+          element.autoComplete());
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -250,9 +261,8 @@ bool PasswordAutofillAgent::TextDidChangeInTextField(
   if (iter->second.fill_data.wait_for_username)
     return false;
 
-  if (!IsElementEditable(element) || !element.isText() ||
-      (!ShouldIgnoreAutocompleteOffForPasswordFields() &&
-       !element.autoComplete())) {
+  if (!element.isText() || !IsElementAutocompletable(element) ||
+      !IsElementAutocompletable(password)) {
     return false;
   }
 
@@ -324,6 +334,14 @@ bool PasswordAutofillAgent::ShowSuggestions(
       login_to_password_info_.find(element);
   if (iter == login_to_password_info_.end())
     return false;
+
+  // If autocomplete='off' is set on the form elements, no suggestion dialog
+  // should be shown. However, return |true| to indicate that this is a known
+  // password form and that the request to show suggestions has been handled (as
+  // a no-op).
+  if (!IsElementAutocompletable(element) ||
+      !IsElementAutocompletable(iter->second.password_field))
+    return true;
 
   return ShowSuggestionPopup(iter->second.fill_data, element);
 }
@@ -645,16 +663,12 @@ void PasswordAutofillAgent::FillFormOnPasswordRecieved(
     return;
 
   // If we can't modify the password, don't try to set the username
-  if (!IsElementEditable(password_element) ||
-      (!ShouldIgnoreAutocompleteOffForPasswordFields() &&
-       !password_element.autoComplete()))
+  if (!IsElementAutocompletable(password_element))
     return;
 
   // Try to set the username to the preferred name, but only if the field
   // can be set and isn't prefilled.
-  if (IsElementEditable(username_element) &&
-      (ShouldIgnoreAutocompleteOffForPasswordFields() ||
-       username_element.autoComplete()) &&
+  if (IsElementAutocompletable(username_element) &&
       username_element.value().isEmpty()) {
     // TODO(tkent): Check maxlength and pattern.
     username_element.setValue(fill_data.basic_data.fields[0].value);
@@ -722,16 +736,12 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
   // fields.
 
   // Don't fill username if password can't be set.
-  if (!IsElementEditable(*password_element) ||
-      (!ShouldIgnoreAutocompleteOffForPasswordFields() &&
-       !password_element->autoComplete())) {
+  if (!IsElementAutocompletable(*password_element)) {
     return false;
   }
 
   // Input matches the username, fill in required values.
-  if (IsElementEditable(*username_element) &&
-      (ShouldIgnoreAutocompleteOffForPasswordFields() ||
-       username_element->autoComplete())) {
+  if (IsElementAutocompletable(*username_element)) {
     username_element->setValue(username);
     SetElementAutofilled(username_element, true);
 

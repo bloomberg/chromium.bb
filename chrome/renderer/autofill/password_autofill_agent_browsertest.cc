@@ -254,6 +254,28 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
                                      GetMainFrame(), username_element_);
   }
 
+  // Tests that no suggestion popup is generated when the username_element_ is
+  // edited.
+  void ExpectNoSuggestionsPopup() {
+    // The first test below ensures that the suggestions have been handled by
+    // the password_autofill_agent, even though autocomplete='off' is set. The
+    // second check ensures that, although handled, no "show suggestions" IPC to
+    // the browser was generated.
+    //
+    // This is interesting in the specific case of an autocomplete='off' form
+    // that also has a remembered username and password
+    // (http://crbug.com/326679). To fix the DCHECK that this case used to hit,
+    // |true| is returned from ShowSuggestions for all forms with valid
+    // usersnames that are autocomplete='off', prentending that a selection box
+    // has been shown to the user. Of course, it hasn't, so a message is never
+    // sent to the browser on acceptance, and the DCHECK isn't hit (and nothing
+    // is filled).
+    EXPECT_TRUE(autofill_agent_->password_autofill_agent_->ShowSuggestions(
+        username_element_));
+
+    EXPECT_FALSE(render_thread_->sink().GetFirstMessageMatching(
+        AutofillHostMsg_ShowPasswordSuggestions::ID));
+  }
 
   void SimulateKeyDownEvent(const WebInputElement& element,
                             ui::KeyboardCode key_code) {
@@ -804,6 +826,68 @@ TEST_F(PasswordAutofillAgentTest, NoDOMActivationTest) {
 
   ExecuteJavaScript(kJavaScriptClick);
   CheckTextFieldsDOMState(kAliceUsername, true, "", true);
+}
+
+// Regression test for http://crbug.com/326679
+TEST_F(PasswordAutofillAgentTest, SelectUsernameWithUsernameAutofillOff) {
+  // Simulate the browser sending back the login info.
+  SimulateOnFillPasswordForm(fill_data_);
+
+  // Set the username element to autocomplete='off'
+  username_element_.setAttribute(WebString::fromUTF8("autocomplete"),
+                                 WebString::fromUTF8("off"));
+
+  // Simulate the user changing the username to some known username.
+  SimulateUsernameChange(kAliceUsername, true);
+
+  ExpectNoSuggestionsPopup();
+}
+
+// Regression test for http://crbug.com/326679
+TEST_F(PasswordAutofillAgentTest,
+       SelectUnknownUsernameWithUsernameAutofillOff) {
+  // Simulate the browser sending back the login info.
+  SimulateOnFillPasswordForm(fill_data_);
+
+  // Set the username element to autocomplete='off'
+  username_element_.setAttribute(WebString::fromUTF8("autocomplete"),
+                                 WebString::fromUTF8("off"));
+
+  // Simulate the user changing the username to some unknown username.
+  SimulateUsernameChange("foo", true);
+
+  ExpectNoSuggestionsPopup();
+}
+
+// Regression test for http://crbug.com/326679
+TEST_F(PasswordAutofillAgentTest, SelectUsernameWithPasswordAutofillOff) {
+  // Simulate the browser sending back the login info.
+  SimulateOnFillPasswordForm(fill_data_);
+
+  // Set the main password element to autocomplete='off'
+  password_element_.setAttribute(WebString::fromUTF8("autocomplete"),
+                                 WebString::fromUTF8("off"));
+
+  // Simulate the user changing the username to some known username.
+  SimulateUsernameChange(kAliceUsername, true);
+
+  ExpectNoSuggestionsPopup();
+}
+
+// Regression test for http://crbug.com/326679
+TEST_F(PasswordAutofillAgentTest,
+       SelectUnknownUsernameWithPasswordAutofillOff) {
+  // Simulate the browser sending back the login info.
+  SimulateOnFillPasswordForm(fill_data_);
+
+  // Set the main password element to autocomplete='off'
+  password_element_.setAttribute(WebString::fromUTF8("autocomplete"),
+                                 WebString::fromUTF8("off"));
+
+  // Simulate the user changing the username to some unknown username.
+  SimulateUsernameChange("foo", true);
+
+  ExpectNoSuggestionsPopup();
 }
 
 }  // namespace autofill
