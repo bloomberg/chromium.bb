@@ -22,6 +22,7 @@ import org.chromium.net.test.util.TestWebServer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -120,7 +121,7 @@ public class LoadUrlTest extends AwTestBase {
             assertEquals(1, matchingHeaders.length);
 
             Header header = matchingHeaders[0];
-            assertEquals(refNamesAndValues[i].toLowerCase(), header.getName());
+            assertEquals(refNamesAndValues[i].toLowerCase(Locale.ENGLISH), header.getName());
             assertEquals(refNamesAndValues[i + 1], header.getValue());
         }
     }
@@ -196,7 +197,8 @@ public class LoadUrlTest extends AwTestBase {
             Header[] matchingHeaders = webServer.getLastRequest(path).getHeaders(extraHeaders[0]);
             assertEquals(1, matchingHeaders.length);
             Header header = matchingHeaders[0];
-            assertEquals(extraHeaders[0].toLowerCase(), header.getName().toLowerCase());
+            assertEquals(extraHeaders[0].toLowerCase(Locale.ENGLISH),
+                    header.getName().toLowerCase(Locale.ENGLISH));
             // Just check that the value is there, and it's not the one we provided.
             assertTrue(header.getValue().length() > 0);
             assertFalse(extraHeaders[1].equals(header.getValue()));
