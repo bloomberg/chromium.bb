@@ -27,7 +27,7 @@ jmethodID g_Test_testStaticMethodWithNoParam = NULL;
 
 // Step 2: method stubs.
 static jint Method(JNIEnv* env, jobject jcaller,
-    jint nativeTest,
+    jlong nativeTest,
     jint arg1) {
   Test* native = reinterpret_cast<Test*>(nativeTest);
   CHECK_NATIVE_PTR(env, jcaller, native, "Method", 0);
@@ -67,7 +67,7 @@ static base::android::ScopedJavaLocalRef<jstring>
 static const JNINativeMethod kMethodsTest[] = {
     { "nativeMethod",
 "("
-"I"
+"J"
 "I"
 ")"
 "I", reinterpret_cast<void*>(Method) },

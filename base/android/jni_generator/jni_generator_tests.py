@@ -37,7 +37,7 @@ class TestOptions(object):
     self.script_name = SCRIPT_NAME
     self.includes = INCLUDES
     self.pure_native_methods = False
-    self.ptr_type = 'int'
+    self.ptr_type = 'long'
     self.jni_init_native_name = None
     self.eager_called_by_natives = False
 
@@ -949,10 +949,10 @@ class Foo {
     package org.chromium.example.jni_generator;
 
     /** The pointer to the native Test. */
-    int nativeTest;
+    long nativeTest;
 
     class Test {
-        private static native int nativeMethod(int nativeTest, int arg1);
+        private static native long nativeMethod(long nativeTest, int arg1);
     }
     """
     options = TestOptions()
@@ -966,11 +966,11 @@ class Foo {
     package org.chromium.example.jni_generator;
 
     /** The pointer to the native Test. */
-    int nativeTest;
+    long nativeTest;
 
     class Test {
         private static native boolean initNativeClass();
-        private static native int nativeMethod(int nativeTest, int arg1);
+        private static native int nativeMethod(long nativeTest, int arg1);
     }
     """
     options = TestOptions()
@@ -984,11 +984,11 @@ class Foo {
     package org.chromium.example.jni_generator;
 
     /** The pointer to the native Test. */
-    int nativeTest;
+    long nativeTest;
 
     class Test {
         private static native boolean initNativeClass();
-        private static native int nativeMethod(int nativeTest, int arg1);
+        private static native int nativeMethod(long nativeTest, int arg1);
         @CalledByNative
         private void testMethodWithParam(int iParam);
         @CalledByNative

@@ -59,7 +59,7 @@ base::android::ScopedJavaLocalRef<jstring> CPPClass::ReturnAString(
 }
 
 // Static free functions declared and called directly from java.
-static jint Init(JNIEnv* env, jobject obj, jstring param) {
+static jlong Init(JNIEnv* env, jobject obj, jstring param) {
   return 0;
 }
 

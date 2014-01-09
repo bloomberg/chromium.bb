@@ -34,7 +34,7 @@ jclass g_InnerStructB_clazz = NULL;
 namespace base {
 namespace android {
 
-static jint Init(JNIEnv* env, jobject jcaller,
+static jlong Init(JNIEnv* env, jobject jcaller,
     jstring param);
 
 static jdouble GetDoubleFunction(JNIEnv* env, jobject jcaller);
@@ -48,21 +48,21 @@ static jobject GetNonPODDatatype(JNIEnv* env, jobject jcaller);
 
 // Step 2: method stubs.
 static void Destroy(JNIEnv* env, jobject jcaller,
-    jint nativeCPPClass) {
+    jlong nativeCPPClass) {
   CPPClass* native = reinterpret_cast<CPPClass*>(nativeCPPClass);
   CHECK_NATIVE_PTR(env, jcaller, native, "Destroy");
   return native->Destroy(env, jcaller);
 }
 
 static jint Method(JNIEnv* env, jobject jcaller,
-    jint nativeCPPClass) {
+    jlong nativeCPPClass) {
   CPPClass* native = reinterpret_cast<CPPClass*>(nativeCPPClass);
   CHECK_NATIVE_PTR(env, jcaller, native, "Method", 0);
   return native->Method(env, jcaller);
 }
 
 static jdouble MethodOtherP0(JNIEnv* env, jobject jcaller,
-    jint nativePtr) {
+    jlong nativePtr) {
   CPPClass::InnerClass* native =
       reinterpret_cast<CPPClass::InnerClass*>(nativePtr);
   CHECK_NATIVE_PTR(env, jcaller, native, "MethodOtherP0", 0);
@@ -70,7 +70,7 @@ static jdouble MethodOtherP0(JNIEnv* env, jobject jcaller,
 }
 
 static void AddStructB(JNIEnv* env, jobject jcaller,
-    jint nativeCPPClass,
+    jlong nativeCPPClass,
     jobject b) {
   CPPClass* native = reinterpret_cast<CPPClass*>(nativeCPPClass);
   CHECK_NATIVE_PTR(env, jcaller, native, "AddStructB");
@@ -78,14 +78,14 @@ static void AddStructB(JNIEnv* env, jobject jcaller,
 }
 
 static void IterateAndDoSomethingWithStructB(JNIEnv* env, jobject jcaller,
-    jint nativeCPPClass) {
+    jlong nativeCPPClass) {
   CPPClass* native = reinterpret_cast<CPPClass*>(nativeCPPClass);
   CHECK_NATIVE_PTR(env, jcaller, native, "IterateAndDoSomethingWithStructB");
   return native->IterateAndDoSomethingWithStructB(env, jcaller);
 }
 
 static jstring ReturnAString(JNIEnv* env, jobject jcaller,
-    jint nativeCPPClass) {
+    jlong nativeCPPClass) {
   CPPClass* native = reinterpret_cast<CPPClass*>(nativeCPPClass);
   CHECK_NATIVE_PTR(env, jcaller, native, "ReturnAString", NULL);
   return native->ReturnAString(env, jcaller).Release();
@@ -315,10 +315,10 @@ static const JNINativeMethod kMethodsSampleForTests[] = {
 "("
 "Ljava/lang/String;"
 ")"
-"I", reinterpret_cast<void*>(Init) },
+"J", reinterpret_cast<void*>(Init) },
     { "nativeDestroy",
 "("
-"I"
+"J"
 ")"
 "V", reinterpret_cast<void*>(Destroy) },
     { "nativeGetDoubleFunction",
@@ -340,28 +340,28 @@ static const JNINativeMethod kMethodsSampleForTests[] = {
 "Ljava/lang/Object;", reinterpret_cast<void*>(GetNonPODDatatype) },
     { "nativeMethod",
 "("
-"I"
+"J"
 ")"
 "I", reinterpret_cast<void*>(Method) },
     { "nativeMethodOtherP0",
 "("
-"I"
+"J"
 ")"
 "D", reinterpret_cast<void*>(MethodOtherP0) },
     { "nativeAddStructB",
 "("
-"I"
+"J"
 "Lorg/chromium/example/jni_generator/SampleForTests$InnerStructB;"
 ")"
 "V", reinterpret_cast<void*>(AddStructB) },
     { "nativeIterateAndDoSomethingWithStructB",
 "("
-"I"
+"J"
 ")"
 "V", reinterpret_cast<void*>(IterateAndDoSomethingWithStructB) },
     { "nativeReturnAString",
 "("
-"I"
+"J"
 ")"
 "Ljava/lang/String;", reinterpret_cast<void*>(ReturnAString) },
 };

@@ -39,7 +39,7 @@ import java.util.List;
 // functions across boundaries, call only one (and then, internally in the other side,
 // call as many little functions as required).
 //
-// - If a Java object "owns" a native object, stash the pointer in a "int mNativeClassName".
+// - If a Java object "owns" a native object, stash the pointer in a "long mNativeClassName".
 // Note that it needs to have a "destruction path", i.e., it must eventually call a method
 // to delete the native object (for example, the java object has a "close()" method that
 // in turn deletes the native object). Avoid relying on finalizers: those run in a different
@@ -78,7 +78,7 @@ import java.util.List;
 class SampleForTests {
   // Classes can store their C++ pointer counter part as an int that is normally initialized by
   // calling out a nativeInit() function.
-  int mNativeCPPObject;
+  long mNativeCPPObject;
 
   // You can define methods and attributes on the java class just like any other.
   // Methods without the @CalledByNative annotation won't be exposed to JNI.
@@ -168,14 +168,14 @@ class SampleForTests {
   // The caller of this method should store it, and supply it as a the nativeCPPClass param to
   // subsequent native method calls (see the methods below that take an "int native..." as first
   // param).
-  private native int nativeInit(String param);
+  private native long nativeInit(String param);
 
   // This defines a function binding to the associated C++ class member function. The name is
   // derived from |nativeDestroy| and |nativeCPPClass| to arrive at CPPClass::Destroy() (i.e. native
   // prefixes stripped).
   // The |nativeCPPClass| is automatically cast to type CPPClass* in order to obtain the object on
   // which to invoke the member function.
-  private native void nativeDestroy(int nativeCPPClass);
+  private native void nativeDestroy(long nativeCPPClass);
 
   // This declares a C++ function which the application code must implement:
   //   static jdouble GetDoubleFunction(JNIEnv* env, jobject obj);
@@ -200,12 +200,12 @@ class SampleForTests {
 
   // Similar to nativeDestroy above, this will cast nativeCPPClass into pointer of CPPClass type and
   // call its Method member function.
-  private native int nativeMethod(int nativeCPPClass);
+  private native int nativeMethod(long nativeCPPClass);
 
   // Similar to nativeMethod above, but here the C++ fully qualified class name is taken from the
   // annotation rather than parameter name, which can thus be chosen freely.
   @NativeClassQualifiedName("CPPClass::InnerClass")
-  private native double nativeMethodOtherP0(int nativePtr);
+  private native double nativeMethodOtherP0(long nativePtr);
 
   // This "struct" will be created by the native side using |createInnerStructA|,
   // and used by the java-side somehow.
@@ -281,7 +281,7 @@ class SampleForTests {
       nativeIterateAndDoSomethingWithStructB(mNativeCPPObject);
   }
 
-  native void nativeAddStructB(int nativeCPPClass, InnerStructB b);
-  native void nativeIterateAndDoSomethingWithStructB(int nativeCPPClass);
-  native String nativeReturnAString(int nativeCPPClass);
+  native void nativeAddStructB(long nativeCPPClass, InnerStructB b);
+  native void nativeIterateAndDoSomethingWithStructB(long nativeCPPClass);
+  native String nativeReturnAString(long nativeCPPClass);
 }
