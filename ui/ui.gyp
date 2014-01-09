@@ -125,6 +125,7 @@
         'base/cocoa/window_size_constants.mm',
         'base/cursor/cursor.cc',
         'base/cursor/cursor.h',
+        'base/cursor/cursor_android.cc',
         'base/cursor/cursor_loader.h',
         'base/cursor/cursor_loader_null.cc',
         'base/cursor/cursor_loader_null.h',
@@ -584,6 +585,11 @@
         ['OS=="android" and android_webview_build==0', {
           'dependencies': [
             'android/ui_android.gyp:ui_java',
+          ],
+        }],
+        ['OS=="android" and use_aura==0', {
+          'sources!': [
+            'base/cursor/cursor_android.cc'
           ],
         }],
         ['OS=="android" or OS=="ios"', {

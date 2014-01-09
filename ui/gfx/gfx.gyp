@@ -391,7 +391,6 @@
           'sources!': [
             'animation/throb_animation.cc',
             'display_observer.cc',
-            'path.cc',
             'selection_model.cc',
           ],
           'dependencies': [
@@ -403,6 +402,11 @@
               '-ljnigraphics',
             ],
           },
+        }],
+        ['OS=="android" and use_aura==0', {
+          'sources!': [
+            'path.cc',
+          ],
         }],
         ['OS=="android" and android_webview_build==0', {
           'dependencies': [
