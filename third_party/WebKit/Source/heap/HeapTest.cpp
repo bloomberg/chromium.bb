@@ -40,7 +40,7 @@ namespace WebCore {
 
 class TestGCScope {
 public:
-    TestGCScope(ThreadState::StackState state)
+    explicit TestGCScope(ThreadState::StackState state)
         : m_state(ThreadState::current())
         , m_safePointScope(state)
     {
@@ -82,11 +82,43 @@ private:
 
 DEFINE_GC_INFO(HeapAllocatedArray);
 
+class IntWrapper : public GarbageCollectedFinalized<IntWrapper> {
+    DECLARE_GC_INFO
+public:
+    static IntWrapper* create(int x)
+    {
+        return new IntWrapper(x);
+    }
+
+    virtual ~IntWrapper()
+    {
+        ++s_destructorCalls;
+    }
+
+    static int s_destructorCalls;
+
+    void trace(Visitor*) { }
+    int value() const { return m_x; }
+    bool operator==(const IntWrapper& other) const { return other.value() == value(); }
+    unsigned hash() { return IntHash<int>::hash(m_x); }
+
+protected:
+    IntWrapper(int x) : m_x(x) { }
+
+private:
+    IntWrapper();
+    int m_x;
+};
+
+DEFINE_GC_INFO(IntWrapper);
+USED_FROM_MULTIPLE_THREADS(IntWrapper);
+
+int IntWrapper::s_destructorCalls = 0;
+
 class ThreadedHeapTester {
 public:
     static void test()
     {
-        ThreadState::init(0);
         ThreadedHeapTester* tester = new ThreadedHeapTester();
         for (int i = 0; i < numberOfThreads; i++)
             createThread(&threadFunc, tester, "testing thread");
@@ -94,7 +126,6 @@ public:
             ThreadState::current()->safePoint();
             yield();
         }
-        ThreadState::shutdown();
     }
 
 private:
@@ -122,38 +153,33 @@ private:
         while (!done()) {
             ThreadState::current()->safePoint();
             {
+                // FIXME: Just use a raw pointer here when we know the
+                // start of the stack and can use conservative stack
+                // scanning.
+                Persistent<IntWrapper> wrapper;
+
                 for (int i = 0; i < numberOfAllocations; i++) {
-                    // FIXME: replace with actual allocation when allocation is implemented.
-                    sleep(1);
+                    wrapper = IntWrapper::create(0x0bbac0de);
                     if (!(i % 10))
                         ThreadState::current()->safePoint();
                     yield();
                 }
 
                 if (gcCount < gcPerThread) {
-                    // FIXME: replace with actual GC when GC is implemented.
-                    ThreadState::SafePointScope safePointScope(ThreadState::NoHeapPointersOnStack);
-                    ThreadState::stopThreads();
-                    sleep(5);
-                    ThreadState::resumeThreads();
+                    // FIXME: Use HeapPointersOnStack here when we
+                    // know the start of the stack and can use
+                    // conservative stack scanning.
+                    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
                     gcCount++;
                     atomicIncrement(&m_gcCount);
-                    sleep(10);
                 }
+
+                EXPECT_EQ(wrapper->value(), 0x0bbac0de);
             }
             yield();
         }
         ThreadState::detach();
         atomicDecrement(&m_threadsToFinish);
-    }
-
-    static void sleep(int milliseconds)
-    {
-#if OS(WIN)
-        ::Sleep(milliseconds);
-#else
-        usleep(milliseconds * 1000);
-#endif
     }
 
     volatile int m_gcCount;
@@ -168,7 +194,9 @@ static void getHeapStats(HeapStats* stats)
 
 TEST(HeapTest, Threading)
 {
+    Heap::init(0);
     ThreadedHeapTester::test();
+    Heap::shutdown();
 }
 
 TEST(HeapTest, Init)
@@ -266,18 +294,63 @@ TEST(HeapTest, SimplePersistent)
     // initialization in the test runner.
     Heap::init(0);
 
-    Persistent<TraceCounter> traceCounter = TraceCounter::create();
-    EXPECT_EQ(0, traceCounter->traceCount());
+    {
+        Persistent<TraceCounter> traceCounter = TraceCounter::create();
+        EXPECT_EQ(0, traceCounter->traceCount());
+
+        Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+        EXPECT_EQ(1, traceCounter->traceCount());
+
+        Persistent<ClassWithMember> classWithMember = ClassWithMember::create();
+        EXPECT_EQ(0, classWithMember->traceCount());
+
+        Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+        EXPECT_EQ(1, classWithMember->traceCount());
+        EXPECT_EQ(2, traceCounter->traceCount());
+    }
+
+    Heap::shutdown();
+}
+
+class SimpleFinalizedObject : public GarbageCollectedFinalized<SimpleFinalizedObject> {
+    DECLARE_GC_INFO
+public:
+    static SimpleFinalizedObject* create()
+    {
+        return new SimpleFinalizedObject();
+    }
+
+    ~SimpleFinalizedObject()
+    {
+        ++s_destructorCalls;
+    }
+
+    static int s_destructorCalls;
+
+    void trace(Visitor*) { }
+
+private:
+    SimpleFinalizedObject() { }
+};
+
+DEFINE_GC_INFO(SimpleFinalizedObject);
+int SimpleFinalizedObject::s_destructorCalls = 0;
+
+TEST(HeapTest, SimpleFinalization)
+{
+    // FIXME: init and shutdown should be called via Blink
+    // initialization in the test runner.
+    Heap::init(0);
+
+    {
+        Persistent<SimpleFinalizedObject> finalized = SimpleFinalizedObject::create();
+        EXPECT_EQ(0, SimpleFinalizedObject::s_destructorCalls);
+        Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+        EXPECT_EQ(0, SimpleFinalizedObject::s_destructorCalls);
+    }
 
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
-    EXPECT_EQ(1, traceCounter->traceCount());
-
-    Persistent<ClassWithMember> classWithMember = ClassWithMember::create();
-    EXPECT_EQ(0, classWithMember->traceCount());
-
-    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
-    EXPECT_EQ(1, classWithMember->traceCount());
-    EXPECT_EQ(2, traceCounter->traceCount());
+    EXPECT_EQ(1, SimpleFinalizedObject::s_destructorCalls);
 
     Heap::shutdown();
 }
@@ -304,11 +377,13 @@ TEST(HeapTest, TypedHeapSanity)
     // initialization in the test runner.
     Heap::init(0);
 
-    // We use TraceCounter for allocating an object on the general heap.
-    Persistent<TraceCounter> generalHeapObject = TraceCounter::create();
-    Persistent<TestTypedHeapClass> typedHeapObject = TestTypedHeapClass::create();
+    {
+        // We use TraceCounter for allocating an object on the general heap.
+        Persistent<TraceCounter> generalHeapObject = TraceCounter::create();
+        Persistent<TestTypedHeapClass> typedHeapObject = TestTypedHeapClass::create();
 
-    // FIXME: Add a check that these two objects are allocated on separate pages.
+        // FIXME: Add a check that these two objects are allocated on separate pages.
+    }
 
     Heap::shutdown();
 }

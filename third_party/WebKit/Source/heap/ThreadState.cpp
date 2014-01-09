@@ -178,6 +178,7 @@ ThreadState::ThreadState(intptr_t* startOfStack)
     , m_atSafePoint(false)
     , m_interruptor(0)
     , m_gcRequested(false)
+    , m_sweepRequested(0)
     , m_sweepInProgress(false)
     , m_noAllocationCount(0)
     , m_inGC(false)
@@ -200,6 +201,10 @@ ThreadState::~ThreadState()
     checkThread();
     for (int i = GeneralHeap; i < NumberOfHeaps; i++)
         delete m_heaps[i];
+    delete m_persistents;
+    m_persistents = 0;
+    delete m_interruptor;
+    m_interruptor = 0;
     **s_threadSpecific = 0;
 }
 
@@ -286,7 +291,7 @@ bool ThreadState::shouldForceConservativeGC()
 
 bool ThreadState::sweepRequested()
 {
-    checkThread();
+    ASSERT(isAnyThreadInGC() || checkThread());
     return m_sweepRequested;
 }
 
@@ -459,11 +464,15 @@ void ThreadState::performPendingSweep()
 {
     if (sweepRequested()) {
         m_sweepInProgress = true;
-        // FIXME: implement sweep. For now we just clear marks.
-        for (int i = 0; i < NumberOfHeaps; i++) {
-            BaseHeap* heap = m_heaps[i];
-            heap->clearMarks();
+        {
+            // Diallow allocation during sweeping and finalization.
+            enterNoAllocationScope();
+            m_stats.clear(); // Sweeping will recalculate the stats
+            for (int i = 0; i < NumberOfHeaps; i++)
+                m_heaps[i]->sweep();
+            leaveNoAllocationScope();
         }
+        getStats(m_statsAfterLastGC);
         m_sweepInProgress = false;
         clearGCRequested();
         clearSweepRequested();

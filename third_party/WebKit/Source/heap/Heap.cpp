@@ -260,7 +260,7 @@ private:
 
 class GCScope {
 public:
-    GCScope(ThreadState::StackState stackState)
+    explicit GCScope(ThreadState::StackState stackState)
         : m_state(ThreadState::current())
         , m_safePointScope(stackState)
     {
@@ -839,8 +839,6 @@ void HeapPage<Header>::sweep()
             // poison it again when done to allow the object's own finalizer to operate
             // on the object, but not have other finalizers be allowed to access it.
             ASAN_UNPOISON_MEMORY_REGION(header->payload(), header->payloadSize());
-            // FIXME: Add back perf stats.
-            // PERF_STATS(ScopedTimer timer(&heap()->threadState()->perfStats().m_finalizationTime));
             finalize(header);
             ASAN_POISON_MEMORY_REGION(header->payload(), header->payloadSize());
             headerAddress += header->size();

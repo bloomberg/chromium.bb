@@ -73,6 +73,30 @@ struct ThreadingTrait {
     static const ThreadAffinity Affinity = MainThreadOnly;
 };
 
+// Marks the specified class as being used from multiple threads. When
+// a class is used from multiple threads we go through thread local
+// storage to get the heap in which to allocate an object of that type
+// and when allocating a Persistent handle for an object with that
+// type. Notice that marking the base class does not automatically
+// mark its descendants and they have to be explicitly marked.
+#define USED_FROM_MULTIPLE_THREADS(Class)                 \
+    class Class;                                          \
+    template<> struct ThreadingTrait<Class> {             \
+        static const ThreadAffinity Affinity = AnyThread; \
+    }
+
+#define USED_FROM_MULTIPLE_THREADS_NAMESPACE(Namespace, Class)          \
+    namespace Namespace {                                               \
+        class Class;                                                    \
+    }                                                                   \
+    namespace WebCore {                                                 \
+        template<> struct ThreadingTrait<Namespace::Class> {            \
+            static const ThreadAffinity Affinity = AnyThread;           \
+        };                                                              \
+    }
+
+template<typename U> class ThreadingTrait<const U> : public ThreadingTrait<U> { };
+
 // List of typed heaps. The list is used to generate the implementation
 // of typed heap related methods.
 //
@@ -207,9 +231,10 @@ public:
 
     static bool isMainThread() { return current() == mainThreadState(); }
 
-    inline void checkThread() const
+    inline bool checkThread() const
     {
         ASSERT(m_thread == currentThread());
+        return true;
     }
 
     // shouldGC and shouldForceConservativeGC implement the heuristics
@@ -268,7 +293,7 @@ public:
 
     // Is the thread corresponding to this thread state currently
     // sweeping?
-    bool isSweepInProgress() { return m_sweepInProgress; }
+    bool isSweepInProgress() const { return m_sweepInProgress; }
 
     void prepareForGC();
 
@@ -368,8 +393,6 @@ public:
 
     // Should only be called under protection of threadAttachMutex().
     Interruptor* interruptor() const { return m_interruptor; }
-
-    bool isSweepInProgress() const { return m_sweepInProgress; }
 
     void recordStackEnd(intptr_t* endOfStack)
     {
