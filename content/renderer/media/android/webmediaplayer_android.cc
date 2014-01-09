@@ -434,8 +434,18 @@ bool WebMediaPlayerAndroid::hasVideo() const {
 }
 
 bool WebMediaPlayerAndroid::hasAudio() const {
-  // TODO(hclam): Query status of audio and return the actual value.
-  return true;
+  if (!url_.has_path())
+    return false;
+  std::string mime;
+  if (!net::GetMimeTypeFromFile(base::FilePath(url_.path()), &mime))
+    return true;
+
+  if (mime.find("audio/") != std::string::npos ||
+      mime.find("video/") != std::string::npos ||
+      mime.find("application/ogg") != std::string::npos) {
+    return true;
+  }
+  return false;
 }
 
 bool WebMediaPlayerAndroid::paused() const {
