@@ -19,7 +19,7 @@ class ImageDecoding(page_measurement.PageMeasurement):
     """)
     tab.StartTimelineRecording()
 
-  def NeedsBrowserRestartAfterEachRun(self, browser):
+  def StopBrowserAfterPage(self, browser, page):
     return not browser.tabs[0].ExecuteJavaScript("""
         window.chrome &&
             chrome.gpuBenchmarking &&

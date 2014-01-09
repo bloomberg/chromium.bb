@@ -15,7 +15,8 @@ class Startup(page_measurement.PageMeasurement):
   """
 
   def __init__(self):
-    super(Startup, self).__init__(needs_browser_restart_after_each_run=True)
+    super(Startup, self).__init__(needs_browser_restart_after_each_run=True,
+                                  action_name_to_run='navigate_steps')
 
   def AddCommandLineOptions(self, parser):
     parser.add_option('--cold', action='store_true',

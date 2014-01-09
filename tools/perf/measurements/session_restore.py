@@ -38,7 +38,8 @@ class SessionRestore(startup.Startup):
     # Reject any pageset that contains more than one WPR archive.
     wpr_archives = {}
     for page in page_set:
-      wpr_archives[page_set.WprFilePathForPage(page)] = True
+      if not page.is_local:
+        wpr_archives[page_set.WprFilePathForPage(page)] = True
 
     if len(wpr_archives.keys()) > 1:
       raise Exception("Invalid pageset: more than 1 WPR archive found.: " +
