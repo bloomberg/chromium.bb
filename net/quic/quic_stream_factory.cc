@@ -514,14 +514,9 @@ int QuicStreamFactory::CreateSession(
   IPEndPoint addr = *address_list.begin();
   scoped_refptr<PortSuggester> port_suggester =
       new PortSuggester(host_port_proxy_pair.first, port_seed_);
-  DatagramSocket::BindType bind_type = DatagramSocket::RANDOM_BIND;
-#if defined(OS_WIN)
-  // TODO(jar)bug=329255 Provide better implementation to avoid pop-up warning.
-  bind_type = DatagramSocket::DEFAULT_BIND;
-#endif
   scoped_ptr<DatagramClientSocket> socket(
       client_socket_factory_->CreateDatagramClientSocket(
-          bind_type,
+          DatagramSocket::RANDOM_BIND,
           base::Bind(&PortSuggester::SuggestPort, port_suggester),
           net_log.net_log(), net_log.source()));
   int rv = socket->Connect(addr);
@@ -529,12 +524,7 @@ int QuicStreamFactory::CreateSession(
     return rv;
   UMA_HISTOGRAM_COUNTS("Net.QuicEphemeralPortsSuggested",
                        port_suggester->call_count());
-#if defined(OS_WIN)
-  // TODO(jar)bug=329255 Provide better implementation to avoid pop-up warning.
-  DCHECK_EQ(0u, port_suggester->call_count());
-#else
   DCHECK_LE(1u, port_suggester->call_count());
-#endif
 
   // We should adaptively set this buffer size, but for now, we'll use a size
   // that is more than large enough for a full receive window, and yet

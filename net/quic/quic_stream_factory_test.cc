@@ -576,11 +576,6 @@ TEST_P(QuicStreamFactoryTest, CancelCreate) {
 }
 
 TEST_P(QuicStreamFactoryTest, CreateConsistentEphemeralPort) {
-#if defined(OS_WIN)
-  // TODO(jar)bug=329255 Provide better implementation to avoid pop-up warning.
-  return;
-#endif
-
   // Sequentially connect to the default host, then another host, and then the
   // default host.  Verify that the default host gets a consistent ephemeral
   // port, that is different from the other host's connection.
