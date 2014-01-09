@@ -11,10 +11,10 @@
 #include <utility>
 #include <vector>
 
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/platform_file.h"
 #include "base/time/time.h"
 #include "net/base/cache_type.h"
 #include "net/base/net_export.h"
@@ -213,13 +213,13 @@ class SimpleSynchronousEntry {
   // or if the file was not found and is allowed to be omitted if the
   // corresponding stream is empty.
   bool MaybeOpenFile(int file_index,
-                     base::PlatformFileError* out_error);
+                     base::File::Error* out_error);
   // Creates one of the cache entry files if necessary. If the file is allowed
   // to be omitted if the corresponding stream is empty, and if |file_required|
   // is FILE_NOT_REQUIRED, then the file is not created; otherwise, it is.
   bool MaybeCreateFile(int file_index,
                        FileRequired file_required,
-                       base::PlatformFileError* out_error);
+                       base::File::Error* out_error);
   bool OpenFiles(bool had_index,
                  SimpleEntryStat* out_entry_stat);
   bool CreateFiles(bool had_index,
@@ -268,7 +268,7 @@ class SimpleSynchronousEntry {
   bool CreateSparseFile();
 
   // Closes the sparse data file.
-  bool CloseSparseFile();
+  void CloseSparseFile();
 
   // Writes the header to the (newly-created) sparse file.
   bool InitializeSparseFile();
@@ -305,7 +305,7 @@ class SimpleSynchronousEntry {
   base::FilePath GetFilenameFromFileIndex(int file_index);
 
   bool sparse_file_open() const {
-    return sparse_file_ != base::kInvalidPlatformFileValue;
+    return sparse_file_.IsValid();
   }
 
   const net::CacheType cache_type_;
@@ -316,7 +316,7 @@ class SimpleSynchronousEntry {
   bool have_open_files_;
   bool initialized_;
 
-  base::PlatformFile files_[kSimpleEntryFileCount];
+  base::File files_[kSimpleEntryFileCount];
 
   // True if the corresponding stream is empty and therefore no on-disk file
   // was created to store it.
@@ -325,7 +325,7 @@ class SimpleSynchronousEntry {
   typedef std::map<int64, SparseRange> SparseRangeOffsetMap;
   typedef SparseRangeOffsetMap::iterator SparseRangeIterator;
   SparseRangeOffsetMap sparse_ranges_;
-  base::PlatformFile sparse_file_;
+  base::File sparse_file_;
   // Offset of the end of the sparse file (where the next sparse range will be
   // written).
   int64 sparse_tail_offset_;

@@ -10,7 +10,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/i18n/file_util_icu.h"
 #include "base/message_loop/message_loop.h"
-#include "base/platform_file.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/directory_lister.h"
 #include "net/base/net_errors.h"

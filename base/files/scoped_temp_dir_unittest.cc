@@ -5,8 +5,8 @@
 #include <string>
 
 #include "base/file_util.h"
+#include "base/files/file.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/platform_file.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -98,17 +98,13 @@ TEST(ScopedTempDir, MultipleInvocations) {
 TEST(ScopedTempDir, LockedTempDir) {
   ScopedTempDir dir;
   EXPECT_TRUE(dir.CreateUniqueTempDir());
-  int file_flags = base::PLATFORM_FILE_CREATE_ALWAYS |
-                   base::PLATFORM_FILE_WRITE;
-  base::PlatformFileError error_code = base::PLATFORM_FILE_OK;
-  FilePath file_path(dir.path().Append(FILE_PATH_LITERAL("temp")));
-  base::PlatformFile file = base::CreatePlatformFile(file_path, file_flags,
-                                                     NULL, &error_code);
-  EXPECT_NE(base::kInvalidPlatformFileValue, file);
-  EXPECT_EQ(base::PLATFORM_FILE_OK, error_code);
+  base::File file(dir.path().Append(FILE_PATH_LITERAL("temp")),
+                  base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
+  EXPECT_TRUE(file.IsValid());
+  EXPECT_EQ(base::File::FILE_OK, file.error_details());
   EXPECT_FALSE(dir.Delete());  // We should not be able to delete.
   EXPECT_FALSE(dir.path().empty());  // We should still have a valid path.
-  EXPECT_TRUE(base::ClosePlatformFile(file));
+  file.Close();
   // Now, we should be able to delete.
   EXPECT_TRUE(dir.Delete());
 }

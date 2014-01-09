@@ -195,7 +195,6 @@ void SimpleIndexFile::SyncWriteToDisk(net::CacheType cache_type,
   // part of a Create operation does not fit into the time budget for the index
   // flush delay. This simple approach will be reconsidered if it does not allow
   // for maintaining freshness.
-  base::PlatformFileInfo cache_dir_info;
   base::Time cache_dir_mtime;
   if (!simple_util::GetMTime(cache_directory, &cache_dir_mtime)) {
     LOG(ERROR) << "Could obtain information about cache age";

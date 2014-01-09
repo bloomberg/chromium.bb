@@ -6,8 +6,6 @@
 #define NET_ANDROID_CERT_VERIFY_RESULT_ANDROID_H_
 
 #include "base/basictypes.h"
-#include "base/platform_file.h"
-#include "net/base/net_export.h"
 
 namespace net {
 

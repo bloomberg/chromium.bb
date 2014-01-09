@@ -23,24 +23,9 @@
 #include "net/disk_cache/simple/simple_util.h"
 #include "third_party/zlib/zlib.h"
 
-using base::kInvalidPlatformFileValue;
-using base::ClosePlatformFile;
+using base::File;
 using base::FilePath;
-using base::GetPlatformFileInfo;
-using base::PlatformFileError;
-using base::PlatformFileInfo;
-using base::PLATFORM_FILE_CREATE;
-using base::PLATFORM_FILE_ERROR_EXISTS;
-using base::PLATFORM_FILE_ERROR_NOT_FOUND;
-using base::PLATFORM_FILE_OK;
-using base::PLATFORM_FILE_OPEN;
-using base::PLATFORM_FILE_OPEN_ALWAYS;
-using base::PLATFORM_FILE_READ;
-using base::PLATFORM_FILE_WRITE;
-using base::ReadPlatformFile;
 using base::Time;
-using base::TruncatePlatformFile;
-using base::WritePlatformFile;
 
 namespace {
 
@@ -301,8 +286,9 @@ void SimpleSynchronousEntry::ReadData(const EntryOperationData& in_entry_op,
   // be handled in the SimpleEntryImpl.
   DCHECK_LT(0, in_entry_op.buf_len);
   DCHECK(!empty_file_omitted_[file_index]);
-  int bytes_read = ReadPlatformFile(
-      files_[file_index], file_offset, out_buf->data(), in_entry_op.buf_len);
+  File* file = const_cast<File*>(&files_[file_index]);
+  int bytes_read =
+      file->Read(file_offset, out_buf->data(), in_entry_op.buf_len);
   if (bytes_read > 0) {
     entry_stat->set_last_used(Time::Now());
     *out_crc32 = crc32(crc32(0L, Z_NULL, 0),
@@ -343,7 +329,7 @@ void SimpleSynchronousEntry::WriteData(const EntryOperationData& in_entry_op,
       *out_result = net::ERR_CACHE_WRITE_FAILURE;
       return;
     }
-    PlatformFileError error;
+    File::Error error;
     if (!MaybeCreateFile(file_index, FILE_REQUIRED, &error)) {
       RecordWriteResult(cache_type_, WRITE_RESULT_LAZY_CREATE_FAILURE);
       Doom();
@@ -364,7 +350,7 @@ void SimpleSynchronousEntry::WriteData(const EntryOperationData& in_entry_op,
     // The EOF record and the eventual stream afterward need to be zeroed out.
     const int64 file_eof_offset =
         out_entry_stat->GetEOFOffsetInFile(key_, index);
-    if (!TruncatePlatformFile(files_[file_index], file_eof_offset)) {
+    if (!files_[file_index].SetLength(file_eof_offset)) {
       RecordWriteResult(cache_type_, WRITE_RESULT_PRETRUNCATE_FAILURE);
       Doom();
       *out_result = net::ERR_CACHE_WRITE_FAILURE;
@@ -372,8 +358,7 @@ void SimpleSynchronousEntry::WriteData(const EntryOperationData& in_entry_op,
     }
   }
   if (buf_len > 0) {
-    if (WritePlatformFile(
-            files_[file_index], file_offset, in_buf->data(), buf_len) !=
+    if (files_[file_index].Write(file_offset, in_buf->data(), buf_len) !=
         buf_len) {
       RecordWriteResult(cache_type_, WRITE_RESULT_WRITE_FAILURE);
       Doom();
@@ -387,7 +372,7 @@ void SimpleSynchronousEntry::WriteData(const EntryOperationData& in_entry_op,
   } else {
     out_entry_stat->set_data_size(index, offset + buf_len);
     int file_eof_offset = out_entry_stat->GetLastEOFOffsetInFile(key_, index);
-    if (!TruncatePlatformFile(files_[file_index], file_eof_offset)) {
+    if (!files_[file_index].SetLength(file_eof_offset)) {
       RecordWriteResult(cache_type_, WRITE_RESULT_TRUNCATE_FAILURE);
       Doom();
       *out_result = net::ERR_CACHE_WRITE_FAILURE;
@@ -488,8 +473,8 @@ void SimpleSynchronousEntry::WriteSparseData(
   // This is a pessimistic estimate; it assumes the entire buffer is going to
   // be appended as a new range, not written over existing ranges.
   if (sparse_data_size + buf_len > max_sparse_data_size) {
-    DLOG(INFO) << "Truncating sparse data file (" << sparse_data_size << " + "
-               << buf_len << " > " << max_sparse_data_size << ")";
+    DVLOG(1) << "Truncating sparse data file (" << sparse_data_size << " + "
+             << buf_len << " > " << max_sparse_data_size << ")";
     TruncateSparseFile();
   }
 
@@ -624,7 +609,7 @@ void SimpleSynchronousEntry::CheckEOFRecord(int index,
     return;
   }
   if (has_crc32 && crc32 != expected_crc32) {
-    DLOG(INFO) << "EOF record had bad crc.";
+    DVLOG(1) << "EOF record had bad crc.";
     *out_result = net::ERR_CACHE_CHECKSUM_MISMATCH;
     RecordCheckEOFResult(cache_type_, CHECK_EOF_RESULT_CRC_MISMATCH);
     Doom();
@@ -640,12 +625,11 @@ void SimpleSynchronousEntry::Close(
   DCHECK(stream_0_data);
   // Write stream 0 data.
   int stream_0_offset = entry_stat.GetOffsetInFile(key_, 0, 0);
-  if (WritePlatformFile(files_[0],
-                        stream_0_offset,
-                        stream_0_data->data(),
-                        entry_stat.data_size(0)) != entry_stat.data_size(0)) {
+  if (files_[0].Write(stream_0_offset, stream_0_data->data(),
+                      entry_stat.data_size(0)) !=
+      entry_stat.data_size(0)) {
     RecordCloseResult(cache_type_, CLOSE_RESULT_WRITE_FAILURE);
-    DLOG(INFO) << "Could not write stream 0 data.";
+    DVLOG(1) << "Could not write stream 0 data.";
     Doom();
   }
 
@@ -668,18 +652,18 @@ void SimpleSynchronousEntry::Close(
     // next open will yield wrong stream sizes. On stream 1 and stream 2 proper
     // resizing of the file is handled in SimpleSynchronousEntry::WriteData().
     if (stream_index == 0 &&
-        !TruncatePlatformFile(files_[file_index], eof_offset)) {
+        !files_[file_index].SetLength(eof_offset)) {
       RecordCloseResult(cache_type_, CLOSE_RESULT_WRITE_FAILURE);
-      DLOG(INFO) << "Could not truncate stream 0 file.";
+      DVLOG(1) << "Could not truncate stream 0 file.";
       Doom();
       break;
     }
-    if (WritePlatformFile(files_[file_index],
-                          eof_offset,
-                          reinterpret_cast<const char*>(&eof_record),
-                          sizeof(eof_record)) != sizeof(eof_record)) {
+    if (files_[file_index].Write(eof_offset,
+                                 reinterpret_cast<const char*>(&eof_record),
+                                 sizeof(eof_record)) !=
+        sizeof(eof_record)) {
       RecordCloseResult(cache_type_, CLOSE_RESULT_WRITE_FAILURE);
-      DLOG(INFO) << "Could not write eof record.";
+      DVLOG(1) << "Could not write eof record.";
       Doom();
       break;
     }
@@ -688,8 +672,7 @@ void SimpleSynchronousEntry::Close(
     if (empty_file_omitted_[i])
       continue;
 
-    bool did_close_file = ClosePlatformFile(files_[i]);
-    DCHECK(did_close_file);
+    files_[i].Close();
     const int64 file_size = entry_stat.GetFileSize(key_, i);
     SIMPLE_CACHE_UMA(CUSTOM_COUNTS,
                      "LastClusterSize", cache_type_,
@@ -700,10 +683,8 @@ void SimpleSynchronousEntry::Close(
                      cluster_loss * 100 / (cluster_loss + file_size));
   }
 
-  if (sparse_file_open()) {
-    bool did_close_file = ClosePlatformFile(sparse_file_);
-    CHECK(did_close_file);
-  }
+  if (sparse_file_open())
+    sparse_file_.Close();
 
   if (files_created_) {
     const int stream2_file_index = GetFileIndexFromStreamIndex(2);
@@ -724,12 +705,9 @@ SimpleSynchronousEntry::SimpleSynchronousEntry(net::CacheType cache_type,
       entry_hash_(entry_hash),
       key_(key),
       have_open_files_(false),
-      initialized_(false),
-      sparse_file_(kInvalidPlatformFileValue) {
-  for (int i = 0; i < kSimpleEntryFileCount; ++i) {
-    files_[i] = kInvalidPlatformFileValue;
+      initialized_(false) {
+  for (int i = 0; i < kSimpleEntryFileCount; ++i)
     empty_file_omitted_[i] = false;
-  }
 }
 
 SimpleSynchronousEntry::~SimpleSynchronousEntry() {
@@ -740,26 +718,27 @@ SimpleSynchronousEntry::~SimpleSynchronousEntry() {
 
 bool SimpleSynchronousEntry::MaybeOpenFile(
     int file_index,
-    PlatformFileError* out_error) {
+    File::Error* out_error) {
   DCHECK(out_error);
 
   FilePath filename = GetFilenameFromFileIndex(file_index);
-  int flags = PLATFORM_FILE_OPEN | PLATFORM_FILE_READ | PLATFORM_FILE_WRITE;
-  files_[file_index] = CreatePlatformFile(filename, flags, NULL, out_error);
+  int flags = File::FLAG_OPEN | File::FLAG_READ | File::FLAG_WRITE;
+  files_[file_index].Initialize(filename, flags);
+  *out_error = files_[file_index].error_details();
 
-  if (CanOmitEmptyFile(file_index) &&
-      *out_error == PLATFORM_FILE_ERROR_NOT_FOUND) {
+  if (CanOmitEmptyFile(file_index) && !files_[file_index].IsValid() &&
+      *out_error == File::FILE_ERROR_NOT_FOUND) {
     empty_file_omitted_[file_index] = true;
     return true;
   }
 
-  return *out_error == PLATFORM_FILE_OK;
+  return files_[file_index].IsValid();
 }
 
 bool SimpleSynchronousEntry::MaybeCreateFile(
     int file_index,
     FileRequired file_required,
-    PlatformFileError* out_error) {
+    File::Error* out_error) {
   DCHECK(out_error);
 
   if (CanOmitEmptyFile(file_index) && file_required == FILE_NOT_REQUIRED) {
@@ -768,19 +747,20 @@ bool SimpleSynchronousEntry::MaybeCreateFile(
   }
 
   FilePath filename = GetFilenameFromFileIndex(file_index);
-  int flags = PLATFORM_FILE_CREATE | PLATFORM_FILE_READ | PLATFORM_FILE_WRITE;
-  files_[file_index] = CreatePlatformFile(filename, flags, NULL, out_error);
+  int flags = File::FLAG_CREATE | File::FLAG_READ | File::FLAG_WRITE;
+  files_[file_index].Initialize(filename, flags);
+  *out_error = files_[file_index].error_details();
 
   empty_file_omitted_[file_index] = false;
 
-  return *out_error == PLATFORM_FILE_OK;
+  return files_[file_index].IsValid();
 }
 
 bool SimpleSynchronousEntry::OpenFiles(
     bool had_index,
     SimpleEntryStat* out_entry_stat) {
   for (int i = 0; i < kSimpleEntryFileCount; ++i) {
-    PlatformFileError error;
+    File::Error error;
     if (!MaybeOpenFile(i, &error)) {
       // TODO(ttuttle,gavinp): Remove one each of these triplets of histograms.
       // We can calculate the third as the sum or difference of the other two.
@@ -814,8 +794,8 @@ bool SimpleSynchronousEntry::OpenFiles(
       continue;
     }
 
-    PlatformFileInfo file_info;
-    bool success = GetPlatformFileInfo(files_[i], &file_info);
+    File::Info file_info;
+    bool success = files_[i].GetInfo(&file_info);
     base::Time file_last_modified;
     if (!success) {
       DLOG(WARNING) << "Could not get platform file info.";
@@ -860,7 +840,7 @@ bool SimpleSynchronousEntry::CreateFiles(
     bool had_index,
     SimpleEntryStat* out_entry_stat) {
   for (int i = 0; i < kSimpleEntryFileCount; ++i) {
-    PlatformFileError error;
+    File::Error error;
     if (!MaybeCreateFile(i, FILE_NOT_REQUIRED, &error)) {
       // TODO(ttuttle,gavinp): Remove one each of these triplets of histograms.
       // We can calculate the third as the sum or difference of the other two.
@@ -901,16 +881,12 @@ void SimpleSynchronousEntry::CloseFile(int index) {
   if (empty_file_omitted_[index]) {
     empty_file_omitted_[index] = false;
   } else {
-    DCHECK_NE(kInvalidPlatformFileValue, files_[index]);
-    bool did_close = ClosePlatformFile(files_[index]);
-    DCHECK(did_close);
-    files_[index] = kInvalidPlatformFileValue;
+    DCHECK(files_[index].IsValid());
+    files_[index].Close();
   }
 
-  if (sparse_file_open()) {
-    bool did_close = CloseSparseFile();
-    DCHECK(did_close);
-  }
+  if (sparse_file_open())
+    CloseSparseFile();
 }
 
 void SimpleSynchronousEntry::CloseFiles() {
@@ -934,8 +910,7 @@ int SimpleSynchronousEntry::InitializeForOpen(
 
     SimpleFileHeader header;
     int header_read_result =
-        ReadPlatformFile(files_[i], 0, reinterpret_cast<char*>(&header),
-                         sizeof(header));
+        files_[i].Read(0, reinterpret_cast<char*>(&header), sizeof(header));
     if (header_read_result != sizeof(header)) {
       DLOG(WARNING) << "Cannot read header from entry.";
       RecordSyncOpenResult(cache_type_, OPEN_ENTRY_CANT_READ_HEADER, had_index);
@@ -958,8 +933,8 @@ int SimpleSynchronousEntry::InitializeForOpen(
     }
 
     scoped_ptr<char[]> key(new char[header.key_length]);
-    int key_read_result = ReadPlatformFile(files_[i], sizeof(header),
-                                           key.get(), header.key_length);
+    int key_read_result = files_[i].Read(sizeof(header), key.get(),
+                                         header.key_length);
     if (key_read_result != implicit_cast<int>(header.key_length)) {
       DLOG(WARNING) << "Cannot read key from entry.";
       RecordSyncOpenResult(cache_type_, OPEN_ENTRY_CANT_READ_KEY, had_index);
@@ -1005,7 +980,7 @@ int SimpleSynchronousEntry::InitializeForOpen(
   DCHECK(CanOmitEmptyFile(stream2_file_index));
   if (!empty_file_omitted_[stream2_file_index] &&
       out_entry_stat->data_size(2) == 0) {
-    DLOG(INFO) << "Removing empty stream 2 file.";
+    DVLOG(1) << "Removing empty stream 2 file.";
     CloseFile(stream2_file_index);
     DeleteFileForEntryHash(path_, entry_hash_, stream2_file_index);
     empty_file_omitted_[stream2_file_index] = true;
@@ -1030,15 +1005,15 @@ bool SimpleSynchronousEntry::InitializeCreatedFile(
   header.key_length = key_.size();
   header.key_hash = base::Hash(key_);
 
-  int bytes_written = WritePlatformFile(
-      files_[file_index], 0, reinterpret_cast<char*>(&header), sizeof(header));
+  int bytes_written = files_[file_index].Write(
+      0, reinterpret_cast<char*>(&header), sizeof(header));
   if (bytes_written != sizeof(header)) {
     *out_result = CREATE_ENTRY_CANT_WRITE_HEADER;
     return false;
   }
 
-  bytes_written = WritePlatformFile(
-      files_[file_index], sizeof(header), key_.data(), key_.size());
+  bytes_written = files_[file_index].Write(sizeof(header), key_.data(),
+                                           key_.size());
   if (bytes_written != implicit_cast<int>(key_.size())) {
     *out_result = CREATE_ENTRY_CANT_WRITE_KEY;
     return false;
@@ -1100,8 +1075,9 @@ int SimpleSynchronousEntry::ReadAndValidateStream0(
   *stream_0_data = new net::GrowableIOBuffer();
   (*stream_0_data)->SetCapacity(stream_0_size);
   int file_offset = out_entry_stat->GetOffsetInFile(key_, 0, 0);
-  int bytes_read = ReadPlatformFile(
-      files_[0], file_offset, (*stream_0_data)->data(), stream_0_size);
+  File* file = const_cast<File*>(&files_[0]);
+  int bytes_read =
+      file->Read(file_offset, (*stream_0_data)->data(), stream_0_size);
   if (bytes_read != stream_0_size)
     return net::ERR_FAILED;
 
@@ -1113,7 +1089,7 @@ int SimpleSynchronousEntry::ReadAndValidateStream0(
                   reinterpret_cast<const Bytef*>((*stream_0_data)->data()),
                   stream_0_size);
   if (has_crc32 && read_crc32 != expected_crc32) {
-    DLOG(INFO) << "EOF record had bad crc.";
+    DVLOG(1) << "EOF record had bad crc.";
     RecordCheckEOFResult(cache_type_, CHECK_EOF_RESULT_CRC_MISMATCH);
     return net::ERR_FAILED;
   }
@@ -1130,17 +1106,17 @@ int SimpleSynchronousEntry::GetEOFRecordData(int index,
   SimpleFileEOF eof_record;
   int file_offset = entry_stat.GetEOFOffsetInFile(key_, index);
   int file_index = GetFileIndexFromStreamIndex(index);
-  if (ReadPlatformFile(files_[file_index],
-                       file_offset,
-                       reinterpret_cast<char*>(&eof_record),
-                       sizeof(eof_record)) != sizeof(eof_record)) {
+  File* file = const_cast<File*>(&files_[file_index]);
+  if (file->Read(file_offset, reinterpret_cast<char*>(&eof_record),
+                 sizeof(eof_record)) !=
+      sizeof(eof_record)) {
     RecordCheckEOFResult(cache_type_, CHECK_EOF_RESULT_READ_FAILURE);
     return net::ERR_CACHE_CHECKSUM_READ_FAILURE;
   }
 
   if (eof_record.final_magic_number != kSimpleFinalMagicNumber) {
     RecordCheckEOFResult(cache_type_, CHECK_EOF_RESULT_MAGIC_NUMBER_MISMATCH);
-    DLOG(INFO) << "EOF record had bad magic number.";
+    DVLOG(1) << "EOF record had bad magic number.";
     return net::ERR_CACHE_CHECKSUM_READ_FAILURE;
   }
 
@@ -1208,14 +1184,12 @@ bool SimpleSynchronousEntry::OpenSparseFileIfExists(
 
   FilePath filename = path_.AppendASCII(
       GetSparseFilenameFromEntryHash(entry_hash_));
-  int flags = PLATFORM_FILE_OPEN | PLATFORM_FILE_READ | PLATFORM_FILE_WRITE;
-  bool created;
-  PlatformFileError error;
-  sparse_file_ = CreatePlatformFile(filename, flags, &created, &error);
-  if (error == PLATFORM_FILE_ERROR_NOT_FOUND)
-    return true;
+  int flags = File::FLAG_OPEN | File::FLAG_READ | File::FLAG_WRITE;
+  sparse_file_.Initialize(filename, flags);
+  if (sparse_file_.IsValid())
+    return ScanSparseFile(out_sparse_data_size);
 
-  return ScanSparseFile(out_sparse_data_size);
+  return sparse_file_.error_details() == File::FILE_ERROR_NOT_FOUND;
 }
 
 bool SimpleSynchronousEntry::CreateSparseFile() {
@@ -1223,30 +1197,24 @@ bool SimpleSynchronousEntry::CreateSparseFile() {
 
   FilePath filename = path_.AppendASCII(
       GetSparseFilenameFromEntryHash(entry_hash_));
-  int flags = PLATFORM_FILE_CREATE | PLATFORM_FILE_READ | PLATFORM_FILE_WRITE;
-  bool created;
-  PlatformFileError error;
-  sparse_file_ = CreatePlatformFile(filename, flags, &created, &error);
-  if (error != PLATFORM_FILE_OK)
+  int flags = File::FLAG_CREATE | File::FLAG_READ | File::FLAG_WRITE;
+  sparse_file_.Initialize(filename, flags);
+  if (!sparse_file_.IsValid())
     return false;
 
   return InitializeSparseFile();
 }
 
-bool SimpleSynchronousEntry::CloseSparseFile() {
+void SimpleSynchronousEntry::CloseSparseFile() {
   DCHECK(sparse_file_open());
-
-  bool did_close = ClosePlatformFile(sparse_file_);
-  if (did_close)
-    sparse_file_ = kInvalidPlatformFileValue;
-  return did_close;
+  sparse_file_.Close();
 }
 
 bool SimpleSynchronousEntry::TruncateSparseFile() {
   DCHECK(sparse_file_open());
 
   int64 header_and_key_length = sizeof(SimpleFileHeader) + key_.size();
-  if (!TruncatePlatformFile(sparse_file_, header_and_key_length)) {
+  if (!sparse_file_.SetLength(header_and_key_length)) {
     DLOG(WARNING) << "Could not truncate sparse file";
     return false;
   }
@@ -1266,15 +1234,14 @@ bool SimpleSynchronousEntry::InitializeSparseFile() {
   header.key_hash = base::Hash(key_);
 
   int header_write_result =
-      WritePlatformFile(sparse_file_, 0, reinterpret_cast<char*>(&header),
-                        sizeof(header));
+      sparse_file_.Write(0, reinterpret_cast<char*>(&header), sizeof(header));
   if (header_write_result != sizeof(header)) {
     DLOG(WARNING) << "Could not write sparse file header";
     return false;
   }
 
-  int key_write_result = WritePlatformFile(sparse_file_, sizeof(header),
-                                           key_.data(), key_.size());
+  int key_write_result = sparse_file_.Write(sizeof(header), key_.data(),
+                                            key_.size());
   if (key_write_result != implicit_cast<int>(key_.size())) {
     DLOG(WARNING) << "Could not write sparse file key";
     return false;
@@ -1293,8 +1260,7 @@ bool SimpleSynchronousEntry::ScanSparseFile(int32* out_sparse_data_size) {
 
   SimpleFileHeader header;
   int header_read_result =
-      ReadPlatformFile(sparse_file_, 0, reinterpret_cast<char*>(&header),
-                       sizeof(header));
+      sparse_file_.Read(0, reinterpret_cast<char*>(&header), sizeof(header));
   if (header_read_result != sizeof(header)) {
     DLOG(WARNING) << "Could not read header from sparse file.";
     return false;
@@ -1316,10 +1282,9 @@ bool SimpleSynchronousEntry::ScanSparseFile(int32* out_sparse_data_size) {
   while (1) {
     SimpleFileSparseRangeHeader range_header;
     int range_header_read_result =
-        ReadPlatformFile(sparse_file_,
-                         range_header_offset,
-                         reinterpret_cast<char*>(&range_header),
-                         sizeof(range_header));
+        sparse_file_.Read(range_header_offset,
+                          reinterpret_cast<char*>(&range_header),
+                          sizeof(range_header));
     if (range_header_read_result == 0)
       break;
     if (range_header_read_result != sizeof(range_header)) {
@@ -1359,9 +1324,7 @@ bool SimpleSynchronousEntry::ReadSparseRange(const SparseRange* range,
   DCHECK_GE(range->length, offset);
   DCHECK_GE(range->length, offset + len);
 
-  int bytes_read = ReadPlatformFile(sparse_file_,
-                                    range->file_offset + offset,
-                                    buf, len);
+  int bytes_read = sparse_file_.Read(range->file_offset + offset, buf, len);
   if (bytes_read < len) {
     DLOG(WARNING) << "Could not read sparse range.";
     return false;
@@ -1406,19 +1369,16 @@ bool SimpleSynchronousEntry::WriteSparseRange(SparseRange* range,
     header.length = range->length;
     header.data_crc32 = range->data_crc32;
 
-    int bytes_written = WritePlatformFile(sparse_file_,
-                                          range->file_offset - sizeof(header),
-                                          reinterpret_cast<char*>(&header),
-                                          sizeof(header));
+    int bytes_written = sparse_file_.Write(range->file_offset - sizeof(header),
+                                           reinterpret_cast<char*>(&header),
+                                           sizeof(header));
     if (bytes_written != implicit_cast<int>(sizeof(header))) {
       DLOG(WARNING) << "Could not rewrite sparse range header.";
       return false;
     }
   }
 
-  int bytes_written = WritePlatformFile(sparse_file_,
-                                        range->file_offset + offset,
-                                        buf, len);
+  int bytes_written = sparse_file_.Write(range->file_offset + offset, buf, len);
   if (bytes_written < len) {
     DLOG(WARNING) << "Could not write sparse range.";
     return false;
@@ -1444,20 +1404,16 @@ bool SimpleSynchronousEntry::AppendSparseRange(int64 offset,
   header.length = len;
   header.data_crc32 = data_crc32;
 
-  int bytes_written = WritePlatformFile(sparse_file_,
-                                        sparse_tail_offset_,
-                                        reinterpret_cast<char*>(&header),
-                                        sizeof(header));
+  int bytes_written = sparse_file_.Write(sparse_tail_offset_,
+                                         reinterpret_cast<char*>(&header),
+                                         sizeof(header));
   if (bytes_written != implicit_cast<int>(sizeof(header))) {
     DLOG(WARNING) << "Could not append sparse range header.";
     return false;
   }
   sparse_tail_offset_ += bytes_written;
 
-  bytes_written = WritePlatformFile(sparse_file_,
-                                    sparse_tail_offset_,
-                                    buf,
-                                    len);
+  bytes_written = sparse_file_.Write(sparse_tail_offset_, buf, len);
   if (bytes_written < len) {
     DLOG(WARNING) << "Could not append sparse range data.";
     return false;

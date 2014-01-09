@@ -23,7 +23,6 @@
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/message_loop/message_loop.h"
-#include "base/platform_file.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
 #include "base/task_runner.h"

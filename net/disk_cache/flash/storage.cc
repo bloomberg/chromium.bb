@@ -7,7 +7,6 @@
 #include <fcntl.h>
 
 #include "base/logging.h"
-#include "base/platform_file.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/flash/format.h"
 
@@ -22,41 +21,38 @@ Storage::Storage(const base::FilePath& path,
 }
 
 bool Storage::Init() {
-  int flags = base::PLATFORM_FILE_READ |
-              base::PLATFORM_FILE_WRITE |
-              base::PLATFORM_FILE_OPEN_ALWAYS;
+  int flags = base::File::FLAG_READ |
+              base::File::FLAG_WRITE |
+              base::File::FLAG_OPEN_ALWAYS;
 
-  file_ = base::CreatePlatformFile(path_, flags, NULL, NULL);
-  if (file_ == base::kInvalidPlatformFileValue)
+  file_.Initialize(path_, flags);
+  if (!file_.IsValid())
     return false;
 
   // TODO(agayev): if file already exists, do some validation and return either
   // true or false based on the result.
 
 #if defined(OS_LINUX)
-  fallocate(file_, 0, 0, size_);
+  fallocate(file_.GetPlatformFile(), 0, 0, size_);
 #endif
 
   return true;
 }
 
 Storage::~Storage() {
-  base::ClosePlatformFile(file_);
 }
 
 bool Storage::Read(void* buffer, int32 size, int32 offset) {
   DCHECK(offset >= 0 && offset + size <= size_);
 
-  int rv = base::ReadPlatformFile(file_, offset, static_cast<char*>(buffer),
-                                  size);
+  int rv = file_.Read(offset, static_cast<char*>(buffer), size);
   return rv == size;
 }
 
 bool Storage::Write(const void* buffer, int32 size, int32 offset) {
   DCHECK(offset >= 0 && offset + size <= size_);
 
-  int rv = base::WritePlatformFile(file_, offset,
-                                   static_cast<const char*>(buffer), size);
+  int rv = file_.Write(offset, static_cast<const char*>(buffer), size);
   return rv == size;
 }
 

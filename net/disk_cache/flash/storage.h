@@ -6,7 +6,7 @@
 #define NET_DISK_CACHE_FLASH_STORAGE_H_
 
 #include "base/basictypes.h"
-#include "base/platform_file.h"
+#include "base/files/file.h"
 #include "net/base/net_export.h"
 
 namespace disk_cache {
@@ -25,7 +25,7 @@ class NET_EXPORT_PRIVATE Storage {
  private:
   base::FilePath path_;
   int32 size_;
-  base::PlatformFile file_;
+  base::File file_;
 
   DISALLOW_COPY_AND_ASSIGN(Storage);
 };

@@ -7,11 +7,11 @@
 #include <cstring>
 
 #include "base/file_util.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
 #include "base/pickle.h"
-#include "base/platform_file.h"
 #include "net/disk_cache/simple/simple_backend_version.h"
 #include "net/disk_cache/simple/simple_entry_format_history.h"
 #include "third_party/zlib/zlib.h"
@@ -30,20 +30,17 @@ void LogMessageFailedUpgradeFromVersion(int version) {
 }
 
 bool WriteFakeIndexFile(const base::FilePath& file_name) {
-  base::PlatformFileError error;
-  base::PlatformFile file = base::CreatePlatformFile(
-      file_name,
-      base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_WRITE,
-      NULL,
-      &error);
+  base::File file(file_name,  base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+  if (!file.IsValid())
+    return false;
+
   disk_cache::FakeIndexData file_contents;
   file_contents.initial_magic_number =
       disk_cache::simplecache_v5::kSimpleInitialMagicNumber;
   file_contents.version = disk_cache::kSimpleVersion;
-  int bytes_written = base::WritePlatformFile(
-      file, 0, reinterpret_cast<char*>(&file_contents), sizeof(file_contents));
-  if (!base::ClosePlatformFile(file) ||
-      bytes_written != sizeof(file_contents)) {
+  int bytes_written = file.Write(0, reinterpret_cast<char*>(&file_contents),
+                                 sizeof(file_contents));
+  if (bytes_written != sizeof(file_contents)) {
     LOG(ERROR) << "Failed to write fake index file: "
                << file_name.LossyDisplayName();
     return false;
@@ -136,29 +133,27 @@ bool UpgradeSimpleCacheOnDisk(const base::FilePath& path) {
   // 2. The Simple Backend has pickled file format for the index making it hacky
   //    to have the magic in the right place.
   const base::FilePath fake_index = path.AppendASCII(kFakeIndexFileName);
-  base::PlatformFileError error;
-  base::PlatformFile fake_index_file = base::CreatePlatformFile(
-      fake_index,
-      base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ,
-      NULL,
-      &error);
-  if (error == base::PLATFORM_FILE_ERROR_NOT_FOUND) {
-    return WriteFakeIndexFile(fake_index);
-  } else if (error != base::PLATFORM_FILE_OK) {
+  base::File fake_index_file(fake_index,
+                             base::File::FLAG_OPEN | base::File::FLAG_READ);
+
+  if (!fake_index_file.IsValid()) {
+    if (fake_index_file.error_details() == base::File::FILE_ERROR_NOT_FOUND) {
+      return WriteFakeIndexFile(fake_index);
+    }
     return false;
   }
+
   FakeIndexData file_header;
-  int bytes_read = base::ReadPlatformFile(fake_index_file,
-                                          0,
-                                          reinterpret_cast<char*>(&file_header),
-                                          sizeof(file_header));
-  if (!base::ClosePlatformFile(fake_index_file) ||
-      bytes_read != sizeof(file_header) ||
+  int bytes_read = fake_index_file.Read(0,
+                                        reinterpret_cast<char*>(&file_header),
+                                        sizeof(file_header));
+  if (bytes_read != sizeof(file_header) ||
       file_header.initial_magic_number !=
           disk_cache::simplecache_v5::kSimpleInitialMagicNumber) {
     LOG(ERROR) << "File structure does not match the disk cache backend.";
     return false;
   }
+  fake_index_file.Close();
 
   uint32 version_from = file_header.version;
   if (version_from < kMinVersionAbleToUpgrade ||
