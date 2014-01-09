@@ -58,7 +58,13 @@ void RuntimeCustomBindings::OpenChannelToExtension(
   CHECK(args[0]->IsString() && args[1]->IsString() && args[2]->IsBoolean());
 
   ExtensionMsg_ExternalConnectionInfo info;
-  info.source_id = context()->GetExtensionID();
+
+  // For messaging APIs, hosted apps should be considered a web page so hide
+  // its extension ID.
+  const Extension* extension = context()->extension();
+  if (extension && !extension->is_hosted_app())
+    info.source_id = extension->id();
+
   info.target_id = *v8::String::Utf8Value(args[0]->ToString());
   info.source_url = context()->GetURL();
   std::string channel_name = *v8::String::Utf8Value(args[1]->ToString());

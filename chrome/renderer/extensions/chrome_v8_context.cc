@@ -104,8 +104,17 @@ bool ChromeV8Context::IsAnyFeatureAvailableToContext(const Feature& api) {
 
 Feature::Availability ChromeV8Context::GetAvailability(
     const std::string& api_name) {
+  // Hack: Hosted apps should have the availability of messaging APIs based on
+  // the URL of the page (which might have access depending on some extension
+  // with externally_connectable), not whether the app has access to messaging
+  // (which it won't).
+  const Extension* extension = extension_.get();
+  if (extension && extension->is_hosted_app() &&
+      (api_name == "runtime.connect" || api_name == "runtime.sendMessage")) {
+    extension = NULL;
+  }
   return ExtensionAPI::GetSharedInstance()->IsAvailable(api_name,
-                                                        extension_.get(),
+                                                        extension,
                                                         context_type_,
                                                         GetURL());
 }

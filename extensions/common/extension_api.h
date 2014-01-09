@@ -65,8 +65,12 @@ class ExtensionAPI {
   void RegisterDependencyProvider(const std::string& name,
                                   FeatureProvider* provider);
 
-  // Returns true if the specified API is available. Returns true if the feature
-  // and all of its dependencies are available to the specified context.
+  // Returns true if the API feature |api| and all of its dependencies are
+  // available in |context|.
+  //
+  // Depending on the configuration of |api| (in _api_features.json), either
+  // |extension| or |url| (or both) may determine its availability, but this is
+  // up to the configuration of the individual feature.
   Feature::Availability IsAvailable(const Feature& api,
                                     const Extension* extension,
                                     Feature::Context context,

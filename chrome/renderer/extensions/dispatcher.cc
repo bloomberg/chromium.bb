@@ -707,7 +707,8 @@ void Dispatcher::AddOrRemoveBindingsForContext(ChromeV8Context* context) {
   // the same code regardless of context type.
   switch (context->context_type()) {
     case Feature::UNSPECIFIED_CONTEXT:
-    case Feature::WEB_PAGE_CONTEXT: {
+    case Feature::WEB_PAGE_CONTEXT:
+    case Feature::BLESSED_WEB_PAGE_CONTEXT: {
       // Web page context; it's too expensive to run the full bindings code.
       // Hard-code that the app and webstore APIs are available...
       RegisterBinding("app", context);
@@ -732,7 +733,6 @@ void Dispatcher::AddOrRemoveBindingsForContext(ChromeV8Context* context) {
     }
 
     case Feature::BLESSED_EXTENSION_CONTEXT:
-    case Feature::BLESSED_WEB_PAGE_CONTEXT:
     case Feature::UNBLESSED_EXTENSION_CONTEXT:
     case Feature::CONTENT_SCRIPT_CONTEXT: {
       // Extension context; iterate through all the APIs and bind the available

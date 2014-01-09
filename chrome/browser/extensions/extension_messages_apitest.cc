@@ -226,7 +226,8 @@ class ExternallyConnectableMessagingTest : public ExtensionApiTest {
         "onMessage",
         "onMessageExternal",
         "onRestartRequired",
-        "id",
+        // Note: no "id" here because this test method is used for hosted apps,
+        // which do have access to runtime.id.
     };
 
     // Turn the array into a JS array, which effectively gets eval()ed.
@@ -313,6 +314,25 @@ class ExternallyConnectableMessagingTest : public ExtensionApiTest {
                                 connectable_with_tls_channel_id_manifest());
   }
 
+  const Extension* LoadChromiumHostedApp() {
+    const Extension* hosted_app =
+        LoadExtensionIntoDir(&hosted_app_dir_, base::StringPrintf(
+            "{"
+            "  \"name\": \"chromium_hosted_app\","
+            "  \"version\": \"1.0\","
+            "  \"manifest_version\": 2,"
+            "  \"app\": {"
+            "    \"urls\": [\"%s\"],"
+            "    \"launch\": {"
+            "      \"web_url\": \"%s\""
+            "    }\n"
+            "  }\n"
+            "}", chromium_org_url().spec().c_str(),
+                 chromium_org_url().spec().c_str()));
+    CHECK(hosted_app);
+    return hosted_app;
+  }
+
   void InitializeTestServer() {
     base::FilePath test_data;
     EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data));
@@ -392,6 +412,7 @@ class ExternallyConnectableMessagingTest : public ExtensionApiTest {
   TestExtensionDir web_connectable_dir_;
   TestExtensionDir not_connectable_dir_;
   TestExtensionDir tls_channel_id_connectable_dir_;
+  TestExtensionDir hosted_app_dir_;
 };
 
 IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest, NotInstalled) {
@@ -894,6 +915,24 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MessagingUserGesture) {
           "    window.domAutomationController.send('' + response.result);\n"
           "  });\n"
           "});", receiver->id().c_str())));
+}
+
+// Tests that a hosted app on a connectable site doesn't interfere with the
+// connectability of that site.
+IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest, HostedAppOnWebsite) {
+  InitializeTestServer();
+
+  LoadChromiumHostedApp();
+
+  // The presence of the hosted app shouldn't give the ability to send messages.
+  ui_test_utils::NavigateToURL(browser(), chromium_org_url());
+  EXPECT_EQ(NAMESPACE_NOT_DEFINED, CanConnectAndSendMessages(""));
+  EXPECT_FALSE(AreAnyNonWebApisDefined());
+
+  // Once a connectable extension is installed, it should.
+  const Extension* extension = LoadChromiumConnectableExtension();
+  EXPECT_EQ(OK, CanConnectAndSendMessages(extension->id()));
+  EXPECT_FALSE(AreAnyNonWebApisDefined());
 }
 
 }  // namespace
