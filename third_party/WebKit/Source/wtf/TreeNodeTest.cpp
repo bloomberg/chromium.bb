@@ -195,7 +195,7 @@ TEST(WTF, TreeNodeTraverseNext)
     };
 
     unsigned orderIndex = 0;
-    for (TestTree* node = trio.root.get(); node; node = traverseNext(*node), orderIndex++)
+    for (TestTree* node = trio.root.get(); node; node = traverseNext<TestTree>(*node), orderIndex++)
         ASSERT_EQ(node, order[orderIndex]);
     ASSERT_EQ(orderIndex, sizeof(order) / sizeof(TestTree*));
 }
@@ -212,7 +212,7 @@ TEST(WTF, TreeNodeTraverseNextPostORder)
     };
 
     unsigned orderIndex = 0;
-    for (TestTree* node = traverseFirstPostOrder(*trio.root.get()); node; node = traverseNextPostOrder(*node), orderIndex++)
+    for (TestTree* node = traverseFirstPostOrder<TestTree>(*trio.root.get()); node; node = traverseNextPostOrder<TestTree>(*node), orderIndex++)
         ASSERT_EQ(node, order[orderIndex]);
     ASSERT_EQ(orderIndex, sizeof(order) / sizeof(TestTree*));
 

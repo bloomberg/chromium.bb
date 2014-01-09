@@ -64,17 +64,17 @@ Node* previousIncludingPseudo(const Node&, const Node* stayWithin = 0);
 Node* nextIncludingPseudo(const Node&, const Node* stayWithin = 0);
 Node* nextIncludingPseudoSkippingChildren(const Node&, const Node* stayWithin = 0);
 
-inline Node* next(const Node& current) { return traverseNext(current); }
-inline Node* next(const ContainerNode& current) { return traverseNext<Node>(current); }
+inline Node* next(const Node& current) { return traverseNext<Node>(current); }
+inline Node* next(const ContainerNode& current) { return traverseNext<Node, ContainerNode>(current); }
 
-inline Node* next(const Node& current, const Node* stayWithin) { return traverseNext(current, stayWithin); }
-inline Node* next(const ContainerNode& current, const Node* stayWithin) { return traverseNext<Node>(current, stayWithin); }
+inline Node* next(const Node& current, const Node* stayWithin) { return traverseNext<Node>(current, stayWithin); }
+inline Node* next(const ContainerNode& current, const Node* stayWithin) { return traverseNext<Node, ContainerNode>(current, stayWithin); }
 
-inline Node* nextSkippingChildren(const Node& current) { return traverseNextSkippingChildren(current); }
-inline Node* nextSkippingChildren(const ContainerNode& current) { return traverseNextSkippingChildren<Node>(current); }
+inline Node* nextSkippingChildren(const Node& current) { return traverseNextSkippingChildren<Node>(current); }
+inline Node* nextSkippingChildren(const ContainerNode& current) { return traverseNextSkippingChildren<Node, ContainerNode>(current); }
 
-inline Node* nextSkippingChildren(const Node& current, const Node* stayWithin) { return traverseNextSkippingChildren(current, stayWithin); }
-inline Node* nextSkippingChildren(const ContainerNode& current, const Node* stayWithin) { return traverseNextSkippingChildren<Node>(current, stayWithin); }
+inline Node* nextSkippingChildren(const Node& current, const Node* stayWithin) { return traverseNextSkippingChildren<Node>(current, stayWithin); }
+inline Node* nextSkippingChildren(const ContainerNode& current, const Node* stayWithin) { return traverseNextSkippingChildren<Node, ContainerNode>(current, stayWithin); }
 
 }
 

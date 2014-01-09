@@ -340,7 +340,7 @@ void StyleEngine::collectDocumentActiveStyleSheets(StyleSheetCollectionBase& col
     ASSERT(isMaster());
 
     if (HTMLImport* rootImport = m_document.import()) {
-        for (HTMLImport* import = traverseFirstPostOrder(*rootImport); import; import = traverseNextPostOrder(*import)) {
+        for (HTMLImport* import = traverseFirstPostOrder<HTMLImport>(*rootImport); import; import = traverseNextPostOrder<HTMLImport>(*import)) {
             Document* document = import->document();
             if (!document)
                 continue;

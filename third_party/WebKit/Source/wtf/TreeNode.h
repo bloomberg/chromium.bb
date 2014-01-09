@@ -159,10 +159,6 @@ inline NodeType* traverseNext(const ContainerType& current)
     return 0;
 }
 
-template<class ContainerType>
-inline ContainerType* traverseNext(const ContainerType& current)
-{ return traverseNext<ContainerType, ContainerType>(current); }
-
 template<class NodeType, class ContainerType>
 inline NodeType* traverseNext(const ContainerType& current, const NodeType* stayWithin)
 {
@@ -182,10 +178,6 @@ inline NodeType* traverseNext(const ContainerType& current, const NodeType* stay
     return 0;
 }
 
-template<class ContainerType>
-inline ContainerType* traverseNext(const ContainerType& current, const ContainerType* stayWithin)
-{ return traverseNext<ContainerType, ContainerType>(current, stayWithin); }
-
 /* non-recursive post-order traversal */
 template<class NodeType, class ContainerType>
 inline NodeType* traverseFirstPostOrder(const ContainerType& current)
@@ -195,10 +187,6 @@ inline NodeType* traverseFirstPostOrder(const ContainerType& current)
         first = first->firstChild();
     return first;
 }
-
-template<class ContainerType>
-inline ContainerType* traverseFirstPostOrder(const ContainerType& current)
-{ return traverseFirstPostOrder<ContainerType, ContainerType>(current); }
 
 template<class NodeType, class ContainerType>
 inline NodeType* traverseNextPostOrder(const ContainerType& current)
@@ -210,10 +198,6 @@ inline NodeType* traverseNextPostOrder(const ContainerType& current)
         nextSibling = nextSibling->firstChild();
     return nextSibling;
 }
-
-template<class ContainerType>
-inline ContainerType* traverseNextPostOrder(const ContainerType& current)
-{ return traverseNextPostOrder<ContainerType, ContainerType>(current); }
 
 template<class NodeType, class ContainerType>
 inline NodeType* traverseNextPostOrder(const ContainerType& current, const NodeType* stayWithin)
@@ -229,10 +213,6 @@ inline NodeType* traverseNextPostOrder(const ContainerType& current, const NodeT
     return nextSibling;
 }
 
-template<class ContainerType>
-inline ContainerType* traverseNextPostOrder(const ContainerType& current, const ContainerType* stayWithin)
-{ return traverseNextPostOrder<ContainerType, ContainerType>(current, stayWithin); }
-
 /* non-recursive traversal skipping children */
 template <class NodeType, class ContainerType>
 inline NodeType* traverseNextSkippingChildren(const ContainerType& current)
@@ -246,10 +226,6 @@ inline NodeType* traverseNextSkippingChildren(const ContainerType& current)
 
     return 0;
 }
-
-template <class ContainerType>
-inline ContainerType* traverseNextSkippingChildren(const ContainerType& current)
-{ return traverseNextSkippingChildren<ContainerType, ContainerType>(current); }
 
 template <class NodeType, class ContainerType>
 inline NodeType* traverseNextSkippingChildren(const ContainerType& current, const NodeType* stayWithin)
@@ -267,10 +243,6 @@ inline NodeType* traverseNextSkippingChildren(const ContainerType& current, cons
 
     return 0;
 }
-
-template <class ContainerType>
-inline ContainerType* traverseNextSkippingChildren(const ContainerType& current, const ContainerType* stayWithin)
-{ return traverseNextSkippingChildren<ContainerType, ContainerType>(current, stayWithin); }
 
 } // namespace WTF
 
