@@ -6292,6 +6292,58 @@ static void raisesExceptionVoidMethodOptionalLongArgMethodCallback(const v8::Fun
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void raisesExceptionVoidMethodTestCallbackInterfaceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "raisesExceptionVoidMethodTestCallbackInterfaceArg", "TestObjectPython", info.Holder(), info.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    if (info.Length() <= 0 || !info[0]->IsFunction()) {
+        exceptionState.throwTypeError("The callback provided as parameter 1 is not a function.");
+        exceptionState.throwIfNeeded();
+        return;
+    }
+    OwnPtr<TestCallbackInterface> testCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), getExecutionContext());
+    imp->raisesExceptionVoidMethodTestCallbackInterfaceArg(testCallbackInterfaceArg.release(), exceptionState);
+    if (exceptionState.throwIfNeeded())
+        return;
+}
+
+static void raisesExceptionVoidMethodTestCallbackInterfaceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::raisesExceptionVoidMethodTestCallbackInterfaceArgMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void raisesExceptionVoidMethodOptionalTestCallbackInterfaceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "raisesExceptionVoidMethodOptionalTestCallbackInterfaceArg", "TestObjectPython", info.Holder(), info.GetIsolate());
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    OwnPtr<TestCallbackInterface> optionalTestCallbackInterfaceArg;
+    if (info.Length() > 0 && !isUndefinedOrNull(info[0])) {
+        if (!info[0]->IsFunction()) {
+            exceptionState.throwTypeError("The callback provided as parameter 1 is not a function.");
+            exceptionState.throwIfNeeded();
+            return;
+        }
+        optionalTestCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), getExecutionContext());
+    }
+    imp->raisesExceptionVoidMethodOptionalTestCallbackInterfaceArg(optionalTestCallbackInterfaceArg.release(), exceptionState);
+    if (exceptionState.throwIfNeeded())
+        return;
+}
+
+static void raisesExceptionVoidMethodOptionalTestCallbackInterfaceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::raisesExceptionVoidMethodOptionalTestCallbackInterfaceArgMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 static void readOnlyVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
@@ -6692,6 +6744,8 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectPythonMethods[]
     {"perWorldBindingsVoidMethodTestInterfaceEmptyArg", TestObjectPythonV8Internal::perWorldBindingsVoidMethodTestInterfaceEmptyArgMethodCallback, TestObjectPythonV8Internal::perWorldBindingsVoidMethodTestInterfaceEmptyArgMethodCallbackForMainWorld, 1},
     {"raisesExceptionVoidMethod", TestObjectPythonV8Internal::raisesExceptionVoidMethodMethodCallback, 0, 0},
     {"raisesExceptionVoidMethodOptionalLongArg", TestObjectPythonV8Internal::raisesExceptionVoidMethodOptionalLongArgMethodCallback, 0, 0},
+    {"raisesExceptionVoidMethodTestCallbackInterfaceArg", TestObjectPythonV8Internal::raisesExceptionVoidMethodTestCallbackInterfaceArgMethodCallback, 0, 1},
+    {"raisesExceptionVoidMethodOptionalTestCallbackInterfaceArg", TestObjectPythonV8Internal::raisesExceptionVoidMethodOptionalTestCallbackInterfaceArgMethodCallback, 0, 0},
     {"strictTypeCheckingVoidMethodTestInterfaceEmptyArg", TestObjectPythonV8Internal::strictTypeCheckingVoidMethodTestInterfaceEmptyArgMethodCallback, 0, 1},
     {"treatReturnedNullStringAsNullStringMethod", TestObjectPythonV8Internal::treatReturnedNullStringAsNullStringMethodMethodCallback, 0, 0},
     {"treatReturnedNullStringAsUndefinedStringMethod", TestObjectPythonV8Internal::treatReturnedNullStringAsUndefinedStringMethodMethodCallback, 0, 0},

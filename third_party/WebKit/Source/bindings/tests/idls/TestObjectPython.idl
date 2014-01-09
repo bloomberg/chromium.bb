@@ -399,6 +399,8 @@ interface TestObjectPython {
     [PerWorldBindings] void perWorldBindingsVoidMethodTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg);
     [RaisesException] void raisesExceptionVoidMethod();
     [RaisesException] void raisesExceptionVoidMethodOptionalLongArg(optional long optionalLongArg);
+    [RaisesException] void raisesExceptionVoidMethodTestCallbackInterfaceArg(TestCallbackInterface testCallbackInterfaceArg);
+    [RaisesException] void raisesExceptionVoidMethodOptionalTestCallbackInterfaceArg(optional TestCallbackInterface optionalTestCallbackInterfaceArg);
     [ReadOnly] void readOnlyVoidMethod();
     [NotEnumerable, ReadOnly] void notEnumerableReadOnlyVoidMethod();
     [RuntimeEnabled=FeatureName] void runtimeEnabledVoidMethod();
