@@ -59,7 +59,8 @@ class PresubmitTest(unittest.TestCase):
     success_file_hash = 'da39a3ee5e6b4b0d3255bfef95601890afd80709'
 
     self._stubs = system_stub.Override(
-        PRESUBMIT, ['cloud_storage', 'open', 'os'])
+        PRESUBMIT, ['cloud_storage', 'open', 'os', 'raw_input'])
+    self._stubs.raw_input.input = 'public'
     # Files in Cloud Storage.
     self._stubs.cloud_storage.remote_paths = [
         'skip'.zfill(40),
@@ -122,8 +123,7 @@ class PresubmitTest(unittest.TestCase):
 
   def testSkip(self):
     results = self._CheckUpload(['/path/to/skip.wpr.sha1'])
-    self.assertResultCount(results, 0, 1)
-    self.assertTrue('skipping' in str(results[0]), msg=results[0])
+    self.assertResultCount(results, 0, 0)
 
   def testSuccess(self):
     results = self._CheckUpload(['/path/to/success.wpr.sha1'])

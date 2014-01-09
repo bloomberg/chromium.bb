@@ -81,7 +81,7 @@ def _SyncFilesToCloud(input_api, output_api):
 
     try:
       bucket_input = raw_input('Uploading to Cloud Storage: %s\n'
-                               'Is this file [p]ublic or Google-[i]nternal?'
+                               'Is this file [P]ublic or Google-[i]nternal?'
                                % file_path).lower()
       if 'public'.startswith(bucket_input):
         bucket = cloud_storage.PUBLIC_BUCKET
