@@ -696,7 +696,6 @@ class ExtensionService
   // that have been orphaned by an uninstall.
   void GarbageCollectIsolatedStorage();
   void OnGarbageCollectIsolatedStorageFinished();
-  void OnNeedsToGarbageCollectIsolatedStorage();
 
   // extensions::Blacklist::Observer implementation.
   virtual void OnBlacklistUpdated() OVERRIDE;

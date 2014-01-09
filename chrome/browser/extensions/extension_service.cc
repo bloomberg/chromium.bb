@@ -61,7 +61,6 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/extensions/manifest_handlers/app_isolation_info.h"
-#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -843,27 +842,7 @@ bool ExtensionService::UninstallExtension(
       NOTREACHED();
   }
 
-  GURL launch_web_url_origin(
-      extensions::AppLaunchInfo::GetLaunchWebURL(extension.get()).GetOrigin());
-  bool is_storage_isolated =
-      extensions::AppIsolationInfo::HasIsolatedStorage(extension.get());
-
-  if (is_storage_isolated) {
-    BrowserContext::AsyncObliterateStoragePartition(
-        profile_,
-        GetSiteForExtensionId(extension_id),
-        base::Bind(&ExtensionService::OnNeedsToGarbageCollectIsolatedStorage,
-                   AsWeakPtr()));
-  } else {
-    if (extension->is_hosted_app() &&
-        !profile_->GetExtensionSpecialStoragePolicy()->
-            IsStorageProtected(launch_web_url_origin)) {
-      extensions::DataDeleter::StartDeleting(
-          profile_, extension_id, launch_web_url_origin);
-    }
-    extensions::DataDeleter::StartDeleting(profile_, extension_id,
-                                           extension->url());
-  }
+  extensions::DataDeleter::StartDeleting(profile_, extension.get());
 
   UntrackTerminatedExtension(extension_id);
 
@@ -2769,10 +2748,6 @@ void ExtensionService::MaybeFinishDelayedInstallations() {
        ++it) {
     MaybeFinishDelayedInstallation(*it);
   }
-}
-
-void ExtensionService::OnNeedsToGarbageCollectIsolatedStorage() {
-  extension_prefs_->SetNeedsStorageGarbageCollection(true);
 }
 
 void ExtensionService::OnBlacklistUpdated() {

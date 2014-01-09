@@ -1292,5 +1292,44 @@ IN_PROC_BROWSER_TEST_F(RestartDeviceTest, Restart) {
 
 #endif  // defined(OS_CHROMEOS)
 
+// Test that when an application is uninstalled and re-install it does not have
+// access to the previously set data.
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ReinstallDataCleanup) {
+  // The application is installed and launched. After the 'Launched' message is
+  // acknowledged by the browser process, the application will test that some
+  // data are not installed and then install them. The application will then be
+  // uninstalled and the same process will be repeated.
+  std::string extension_id;
+
+  {
+    ExtensionTestMessageListener launched_listener("Launched", false);
+    const Extension* extension =
+        LoadAndLaunchPlatformApp("reinstall_data_cleanup");
+    ASSERT_TRUE(extension);
+    extension_id = extension->id();
+
+    ExtensionApiTest::ResultCatcher result_catcher;
+    ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+
+    EXPECT_TRUE(result_catcher.GetNextResult());
+  }
+
+  UninstallExtension(extension_id);
+  content::RunAllPendingInMessageLoop();
+
+  {
+    ExtensionTestMessageListener launched_listener("Launched", false);
+    const Extension* extension =
+        LoadAndLaunchPlatformApp("reinstall_data_cleanup");
+    ASSERT_TRUE(extension);
+    ASSERT_EQ(extension_id, extension->id());
+
+    ExtensionApiTest::ResultCatcher result_catcher;
+
+    ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+
+    EXPECT_TRUE(result_catcher.GetNextResult());
+  }
+}
 
 }  // namespace extensions

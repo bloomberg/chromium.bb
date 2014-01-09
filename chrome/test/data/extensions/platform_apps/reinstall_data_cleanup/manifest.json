@@ -1,0 +1,14 @@
+{
+  "name": "Platform App Test: reinstall data cleanup",
+  "version": "1",
+  "app": {
+    "background": {
+      "scripts": [
+        "test.js"
+      ]
+    }
+  },
+  "permissions": [
+    "storage"
+  ]
+}
