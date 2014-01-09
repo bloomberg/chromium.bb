@@ -59,6 +59,7 @@ void ManagedUserImportHandler::GetLocalizedValues(
       { "managedUserImportText", IDS_IMPORT_EXISTING_MANAGED_USER_TEXT },
       { "createNewUserLink", IDS_CREATE_NEW_USER_LINK },
       { "managedUserImportOk", IDS_IMPORT_EXISTING_MANAGED_USER_OK },
+      { "managedUserImportSigninError", IDS_MANAGED_USER_IMPORT_SIGN_IN_ERROR },
       { "managedUserAlreadyOnThisDevice",
           IDS_MANAGED_USER_ALREADY_ON_THIS_DEVICE },
       { "noExistingManagedUsers", IDS_MANAGED_USER_NO_EXISTING_ERROR },
@@ -107,12 +108,6 @@ void ManagedUserImportHandler::RequestManagedUserImportUpdate(
   if (!IsAccountConnected() || HasAuthError()) {
     ClearManagedUsersAndShowError();
   } else {
-    // Account connected and no sign-in errors, then hide
-    // any error messages and send the managed users to update
-    // the managed user list.
-    web_ui()->CallJavascriptFunction(
-        "ManagedUserImportOverlay.hideErrorBubble");
-
     ManagedUserSyncService* managed_user_sync_service =
         ManagedUserSyncServiceFactory::GetForProfile(
             Profile::FromWebUI(web_ui()));
@@ -167,17 +162,12 @@ void ManagedUserImportHandler::SendExistingManagedUsers(
   }
 
   web_ui()->CallJavascriptFunction(
-      "ManagedUserImportOverlay.receiveExistingManagedUsers",
+      "options.ManagedUserListData.receiveExistingManagedUsers",
       managed_users);
 }
 
 void ManagedUserImportHandler::ClearManagedUsersAndShowError() {
-  web_ui()->CallJavascriptFunction(
-      "ManagedUserImportOverlay.receiveExistingManagedUsers");
-  base::string16 error_message =
-      l10n_util::GetStringUTF16(IDS_MANAGED_USER_IMPORT_SIGN_IN_ERROR);
-  web_ui()->CallJavascriptFunction("ManagedUserImportOverlay.onError",
-                                   base::StringValue(error_message));
+  web_ui()->CallJavascriptFunction("options.ManagedUserListData.onSigninError");
 }
 
 bool ManagedUserImportHandler::IsAccountConnected() const {

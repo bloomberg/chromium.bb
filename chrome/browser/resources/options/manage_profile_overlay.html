@@ -66,7 +66,6 @@
           <input id="create-profile-name" type="text" required>
         </label>
       </div>
-      <div id="create-profile-error-bubble" hidden></div>
     </div>
     <div id="create-profile-managed-content-area" class="content-area">
       <div id="create-shortcut-container" class="checkbox" hidden>
@@ -108,10 +107,13 @@
         </span>
       </div>
     </div>
+    <div id="create-profile-error-bubble-content-area" class="content-area">
+      <div id="create-profile-error-bubble" hidden></div>
+    </div>
     <div class="action-area">
       <div id="create-profile-throbber" class="throbber"></div>
       <button id="import-existing-managed-user-link" class="link-button"
-          i18n-content="importExistingManagedUserLink">
+          i18n-content="importExistingManagedUserLink" hidden>
       </button>
       <div class="button-strip">
         <button id="create-profile-cancel" i18n-content="cancel"></button>

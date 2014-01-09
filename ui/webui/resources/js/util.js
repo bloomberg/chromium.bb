@@ -381,3 +381,31 @@ function scrollLeftForDocument(doc) {
 function setScrollLeftForDocument(doc, value) {
   doc.documentElement.scrollLeft = doc.body.scrollLeft = value;
 }
+
+/**
+ * Replaces '&', '<', '>', '"', and ''' characters with their HTML encoding.
+ * @param {string} original The original string.
+ * @return {string} The string with all the characters mentioned above replaced.
+ */
+function HTMLEscape(original) {
+  return original.replace(/&/g, '&amp;')
+                 .replace(/</g, '&lt;')
+                 .replace(/>/g, '&gt;')
+                 .replace(/"/g, '&quot;')
+                 .replace(/'/g, '&#39;');
+}
+
+/**
+ * Shortens the provided string (if necessary) to a string of length at most
+ * |maxLength|.
+ * @param {string} original The original string.
+ * @param {number} maxLength The maximum length allowed for the string.
+ * @return {string} The original string if its length does not exceed
+ *     |maxLength|. Otherwise the first |maxLength| - 3 characters with '...'
+ *     appended.
+ */
+function elide(original, maxLength) {
+  if (original.length <= maxLength)
+    return original;
+  return original.substring(0, maxLength - 3) + '...';
+}

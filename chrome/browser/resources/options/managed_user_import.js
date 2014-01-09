@@ -75,7 +75,8 @@ cr.define('options', function() {
      * @override
      */
     didShowPage: function() {
-      chrome.send('requestManagedUserImportUpdate');
+      options.ManagedUserListData.requestExistingManagedUsers(
+          this.receiveExistingManagedUsers_, this.onSigninError_.bind(this));
 
       this.updateImportInProgress_(false);
       $('managed-user-import-error-bubble').hidden = true;
@@ -119,6 +120,7 @@ cr.define('options', function() {
       // 'createProfile' is handled by CreateProfileHandler.
       chrome.send('createProfile', [managedUser.name, avatarUrl,
                                     false, true, managedUser.id]);
+      options.ManagedUserListData.reloadExistingManagedUsers();
     },
 
     /**
@@ -157,8 +159,7 @@ cr.define('options', function() {
     },
 
     /**
-     * Adds all the existing |managedUsers| to the list. If |managedUsers|
-     * is undefined, then the list is cleared.
+     * Sets the data model of the managed user list to |managedUsers|.
      * @param {Array.<Object>} managedUsers An array of managed user objects.
      *     Each object is of the form:
      *       managedUser = {
@@ -171,11 +172,6 @@ cr.define('options', function() {
      * @private
      */
     receiveExistingManagedUsers_: function(managedUsers) {
-      if (!managedUsers) {
-        $('managed-user-list').dataModel = null;
-        return;
-      }
-
       managedUsers.sort(function(a, b) {
         return a.name.localeCompare(b.name);
       });
@@ -184,14 +180,15 @@ cr.define('options', function() {
       if (managedUsers.length == 0) {
         this.onError_(loadTimeData.getString('noExistingManagedUsers'));
         $('managed-user-import-ok').disabled = true;
+      } else {
+        // Hide the error bubble.
+        $('managed-user-import-error-bubble').hidden = true;
       }
     },
 
-    /**
-     * @private
-     */
-    hideErrorBubble_: function() {
-      $('managed-user-import-error-bubble').hidden = true;
+    onSigninError_: function() {
+      $('managed-user-list').dataModel = null;
+      this.onError_(loadTimeData.getString('managedUserImportSigninError'));
     },
 
     /**
@@ -220,10 +217,7 @@ cr.define('options', function() {
 
   // Forward public APIs to private implementations.
   [
-    'hideErrorBubble',
-    'onError',
     'onSuccess',
-    'receiveExistingManagedUsers',
   ].forEach(function(name) {
     ManagedUserImportOverlay[name] = function() {
       var instance = ManagedUserImportOverlay.getInstance();

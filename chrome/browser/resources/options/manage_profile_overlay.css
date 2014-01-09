@@ -43,9 +43,19 @@
   margin-right: auto;
   max-height: 50px;
   overflow: hidden;
-  padding: 1px 10px;
+  padding: 10px 10px;
   text-align: center;
   width: 80%;
+}
+
+html[dir='ltr'] #create-profile-error-bubble {
+  margin-left: 20px;
+  width: 90%;
+}
+
+html[dir='rtl'] #create-profile-error-bubble {
+  margin-right: 20px;
+  width: 90%;
 }
 
 #create-profile-error-bubble[hidden],
@@ -121,10 +131,15 @@ html[dir='rtl'] #delete-profile-icon {
 }
 
 #create-profile-managed-content-area {
-  padding-top: 0;
+  padding-top: 10;
 }
 
 #import-existing-managed-user-link {
   left: 17px;
   position: absolute;
+}
+
+#supervised-user-import {
+  margin: 0;
+  padding: 0;
 }

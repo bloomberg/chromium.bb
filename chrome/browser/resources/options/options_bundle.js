@@ -97,6 +97,7 @@ var CertificateImportErrorOverlay = options.CertificateImportErrorOverlay;
 <include src="managed_user_import.js"></include>
 <include src="managed_user_learn_more.js"</include>
 <include src="managed_user_list.js"></include>
+<include src="managed_user_list_data.js"></include>
 <include src="media_galleries_list.js"></include>
 <include src="media_galleries_manager_overlay.js"></include>
 <include src="options_focus_manager.js"></include>
