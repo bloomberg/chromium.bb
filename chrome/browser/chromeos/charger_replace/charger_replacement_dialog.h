@@ -48,7 +48,7 @@ class ChargerReplacementDialog : public ui::WebDialogDelegate {
   static bool is_window_visible_;
   static gfx::NativeWindow current_window_;
 
-  gfx::NativeWindow parent_window_;
+  const gfx::NativeWindow parent_window_;
   bool can_close_;
   ChargerReplacementHandler* charger_replacement_handler_;
 

@@ -73,9 +73,13 @@ void ChargerReplacementDialog::Show() {
         content::UserMetricsAction("ShowChargerReplacementDialog"));
 
   is_window_visible_ = true;
-  current_window_ = chrome::ShowWebDialog(parent_window_,
-                                          ProfileManager::GetDefaultProfile(),
-                                          this);
+  // We show the dialog for the active user, so that the dialog will get
+  // displayed immediately. The parent window is a system modal/lock container
+  // and does not belong to any user.
+  current_window_ = chrome::ShowWebDialog(
+      parent_window_,
+      ProfileManager::GetActiveUserProfile(),
+      this);
   charger_replacement_handler_->set_charger_window(current_window_);
 }
 
