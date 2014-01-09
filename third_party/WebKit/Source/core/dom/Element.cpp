@@ -73,6 +73,7 @@
 #include "core/frame/ContentSecurityPolicy.h"
 #include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/ClassList.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLDocument.h"
@@ -1232,6 +1233,8 @@ String Element::nodeNamePreservingCase() const
 
 void Element::setPrefix(const AtomicString& prefix, ExceptionState& exceptionState)
 {
+    UseCounter::count(document(), UseCounter::ElementSetPrefix);
+
     checkSetPrefix(prefix, exceptionState);
     if (exceptionState.hadException())
         return;

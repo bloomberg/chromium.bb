@@ -64,7 +64,6 @@
                                                     [TreatNullAs=NullString,Default=Undefined] optional DOMString version); // Removed in DOM4.
 
     [TreatReturnedNullStringAs=Null, PerWorldBindings, MeasureAs=NodeNamespaceURI] readonly attribute DOMString namespaceURI; // Moved to Element and Attr in DOM4.
-    [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, PerWorldBindings, RaisesException=Setter, MeasureAs=NodePrefix] attribute DOMString prefix; // Moved to Element and Attr in DOM4.
     [TreatReturnedNullStringAs=Null, PerWorldBindings, MeasureAs=NodeLocalName] readonly attribute DOMString localName; // Moved to Element and Attr in DOM4.
 
     // Introduced in DOM Level 3:

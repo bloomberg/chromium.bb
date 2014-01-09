@@ -206,7 +206,6 @@ public:
     virtual const AtomicString& localName() const;
     virtual const AtomicString& namespaceURI() const;
     virtual const AtomicString& prefix() const;
-    virtual void setPrefix(const AtomicString&, ExceptionState&);
     void normalize();
 
     bool isSameNode(Node* other) const { return this == other; }
@@ -485,7 +484,6 @@ public:
     unsigned childNodeCount() const;
     Node* childNode(unsigned index) const;
 
-    void checkSetPrefix(const AtomicString& prefix, ExceptionState&);
     bool isDescendantOf(const Node*) const;
     bool contains(const Node*) const;
     bool containsIncludingShadowDOM(const Node*) const;
@@ -802,6 +800,8 @@ protected:
 
     bool isParsingChildrenFinished() const { return getFlag(IsParsingChildrenFinishedFlag); }
     void setIsParsingChildrenFinished(bool value) { setFlag(value, IsParsingChildrenFinishedFlag); }
+
+    void checkSetPrefix(const AtomicString& prefix, ExceptionState&);
 
 private:
     friend class TreeShared<Node>;

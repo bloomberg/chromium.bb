@@ -517,14 +517,6 @@ const AtomicString& Node::prefix() const
     return nullAtom;
 }
 
-void Node::setPrefix(const AtomicString& /*prefix*/, ExceptionState& exceptionState)
-{
-    // The spec says that for nodes other than elements and attributes, prefix is always null.
-    // It does not say what to do when the user tries to set the prefix on another type of
-    // node, however Mozilla throws a NamespaceError exception.
-    exceptionState.throwDOMException(NamespaceError, "Prefixes are only supported on element and attribute nodes.");
-}
-
 const AtomicString& Node::localName() const
 {
     return nullAtom;

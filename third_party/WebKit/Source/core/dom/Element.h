@@ -526,7 +526,7 @@ public:
     InputMethodContext* inputMethodContext();
     bool hasInputMethodContext() const;
 
-    virtual void setPrefix(const AtomicString&, ExceptionState&) OVERRIDE FINAL;
+    void setPrefix(const AtomicString&, ExceptionState&);
 
     void synchronizeAttribute(const AtomicString& localName) const;
 

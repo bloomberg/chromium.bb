@@ -180,7 +180,7 @@ public:
         NodeIsSameNode, // Removed from DOM4.
         NodeIsSupported, // Removed from DOM4.
         NodeNamespaceURI, // Removed from DOM4.
-        NodePrefix, // Removed from DOM4.
+        UnusedSlot06, // Removed, was Node.prefix.
         NodeLocalName, // Removed from DOM4.
         NavigatorProductSub,
         NavigatorVendor,
@@ -283,6 +283,7 @@ public:
         CSSStyleSheetRemoveRule,
         InitMessageEvent,
         PrefixedInitMessageEvent,
+        ElementSetPrefix, // Element.prefix is readonly in DOM4.
         // Add new features immediately above this line. Don't change assigned
         // numbers of each items, and don't reuse unused slots.
         NumberOfFeatures, // This enum value must be last.
