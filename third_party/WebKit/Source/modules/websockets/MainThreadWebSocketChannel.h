@@ -112,6 +112,8 @@ protected:
 private:
     MainThreadWebSocketChannel(Document*, WebSocketChannelClient*, const String&, unsigned);
 
+    void clearDocument();
+
     void disconnectHandle();
 
     bool appendToBuffer(const char* data, size_t len);

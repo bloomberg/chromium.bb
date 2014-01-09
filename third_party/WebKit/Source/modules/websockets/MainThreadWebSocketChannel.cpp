@@ -180,6 +180,13 @@ void MainThreadWebSocketChannel::close(int code, const String& reason)
         m_closingTimer.startOneShot(2 * TCPMaximumSegmentLifetime);
 }
 
+void MainThreadWebSocketChannel::clearDocument()
+{
+    if (m_handshake)
+        m_handshake->clearDocument();
+    m_document = 0;
+}
+
 void MainThreadWebSocketChannel::disconnectHandle()
 {
     if (!m_handle)
@@ -220,10 +227,10 @@ void MainThreadWebSocketChannel::disconnect()
     WTF_LOG(Network, "MainThreadWebSocketChannel %p disconnect()", this);
     if (m_identifier && m_document)
         InspectorInstrumentation::didCloseWebSocket(m_document, m_identifier);
-    if (m_handshake)
-        m_handshake->clearExecutionContext();
+
+    clearDocument();
+
     m_client = 0;
-    m_document = 0;
     disconnectHandle();
 }
 
@@ -283,7 +290,7 @@ void MainThreadWebSocketChannel::didCloseSocketStream(SocketStreamHandle* handle
         m_unhandledBufferedAmount = m_handle->bufferedAmount();
         WebSocketChannelClient* client = m_client;
         m_client = 0;
-        m_document = 0;
+        clearDocument();
         m_handle = 0;
         if (client)
             client->didClose(m_unhandledBufferedAmount, m_receivedClosingHandshake ? WebSocketChannelClient::ClosingHandshakeComplete : WebSocketChannelClient::ClosingHandshakeIncomplete, m_closeEventCode, m_closeEventReason);

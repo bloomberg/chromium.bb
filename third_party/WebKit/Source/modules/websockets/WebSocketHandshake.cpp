@@ -34,7 +34,6 @@
 #include "modules/websockets/WebSocketHandshake.h"
 
 #include "core/dom/Document.h"
-#include "core/dom/ExecutionContext.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/loader/CookieJar.h"
 #include "modules/websockets/WebSocket.h"
@@ -131,11 +130,11 @@ String WebSocketHandshake::getExpectedWebSocketAccept(const String& secWebSocket
     return base64Encode(reinterpret_cast<const char*>(hash.data()), sha1HashSize);
 }
 
-WebSocketHandshake::WebSocketHandshake(const KURL& url, const String& protocol, ExecutionContext* context)
+WebSocketHandshake::WebSocketHandshake(const KURL& url, const String& protocol, Document* document)
     : m_url(url)
     , m_clientProtocol(protocol)
     , m_secure(m_url.protocolIs("wss"))
-    , m_context(context)
+    , m_document(document)
     , m_mode(Incomplete)
 {
     m_secWebSocketKey = generateSecWebSocketKey();
@@ -179,7 +178,7 @@ bool WebSocketHandshake::secure() const
 
 String WebSocketHandshake::clientOrigin() const
 {
-    return m_context->securityOrigin()->toString();
+    return m_document->securityOrigin()->toString();
 }
 
 String WebSocketHandshake::clientLocation() const
@@ -194,6 +193,8 @@ String WebSocketHandshake::clientLocation() const
 
 CString WebSocketHandshake::clientHandshakeMessage() const
 {
+    ASSERT(m_document);
+
     // Keep the following consistent with clientHandshakeRequest().
     StringBuilder builder;
 
@@ -210,13 +211,11 @@ CString WebSocketHandshake::clientHandshakeMessage() const
         fields.append("Sec-WebSocket-Protocol: " + m_clientProtocol);
 
     KURL url = httpURLForAuthenticationAndCookies();
-    if (m_context->isDocument()) {
-        Document* document = toDocument(m_context);
-        String cookie = cookieRequestHeaderFieldValue(document, url);
-        if (!cookie.isEmpty())
-            fields.append("Cookie: " + cookie);
-        // Set "Cookie2: <cookie>" if cookies 2 exists for url?
-    }
+
+    String cookie = cookieRequestHeaderFieldValue(m_document, url);
+    if (!cookie.isEmpty())
+        fields.append("Cookie: " + cookie);
+    // Set "Cookie2: <cookie>" if cookies 2 exists for url?
 
     // Add no-cache headers to avoid compatibility issue.
     // There are some proxies that rewrite "Connection: upgrade"
@@ -231,8 +230,7 @@ CString WebSocketHandshake::clientHandshakeMessage() const
     if (extensionValue.length())
         fields.append("Sec-WebSocket-Extensions: " + extensionValue);
 
-    // Add a User-Agent header.
-    fields.append("User-Agent: " + m_context->userAgent(m_context->url()));
+    fields.append("User-Agent: " + m_document->userAgent(m_document->url()));
 
     // Fields in the handshake are sent by the client in a random order; the
     // order is not meaningful. Thus, it's ok to send the order we constructed
@@ -250,6 +248,8 @@ CString WebSocketHandshake::clientHandshakeMessage() const
 
 PassRefPtr<WebSocketHandshakeRequest> WebSocketHandshake::clientHandshakeRequest() const
 {
+    ASSERT(m_document);
+
     // Keep the following consistent with clientHandshakeMessage().
     // FIXME: do we need to store m_secWebSocketKey1, m_secWebSocketKey2 and
     // m_key3 in WebSocketHandshakeRequest?
@@ -262,13 +262,11 @@ PassRefPtr<WebSocketHandshakeRequest> WebSocketHandshake::clientHandshakeRequest
         request->addHeaderField("Sec-WebSocket-Protocol", AtomicString(m_clientProtocol));
 
     KURL url = httpURLForAuthenticationAndCookies();
-    if (m_context->isDocument()) {
-        Document* document = toDocument(m_context);
-        String cookie = cookieRequestHeaderFieldValue(document, url);
-        if (!cookie.isEmpty())
-            request->addHeaderField("Cookie", AtomicString(cookie));
-        // Set "Cookie2: <cookie>" if cookies 2 exists for url?
-    }
+
+    String cookie = cookieRequestHeaderFieldValue(m_document, url);
+    if (!cookie.isEmpty())
+        request->addHeaderField("Cookie", AtomicString(cookie));
+    // Set "Cookie2: <cookie>" if cookies 2 exists for url?
 
     request->addHeaderField("Pragma", "no-cache");
     request->addHeaderField("Cache-Control", "no-cache");
@@ -279,8 +277,7 @@ PassRefPtr<WebSocketHandshakeRequest> WebSocketHandshake::clientHandshakeRequest
     if (extensionValue.length())
         request->addHeaderField("Sec-WebSocket-Extensions", AtomicString(extensionValue));
 
-    // Add a User-Agent header.
-    request->addHeaderField("User-Agent", AtomicString(m_context->userAgent(m_context->url())));
+    request->addHeaderField("User-Agent", AtomicString(m_document->userAgent(m_document->url())));
 
     return request.release();
 }
@@ -291,9 +288,9 @@ void WebSocketHandshake::reset()
     m_extensionDispatcher.reset();
 }
 
-void WebSocketHandshake::clearExecutionContext()
+void WebSocketHandshake::clearDocument()
 {
-    m_context = 0;
+    m_document = 0;
 }
 
 int WebSocketHandshake::readServerHandshake(const char* header, size_t len)
