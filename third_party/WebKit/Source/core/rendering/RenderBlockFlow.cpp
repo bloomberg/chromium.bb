@@ -33,6 +33,7 @@
 
 #include "core/accessibility/AXObjectCache.h"
 #include "core/frame/FrameView.h"
+#include "core/rendering/FastTextAutosizer.h"
 #include "core/rendering/HitTestLocation.h"
 #include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/LayoutRepainter.h"
@@ -302,6 +303,10 @@ void RenderBlockFlow::layoutBlock(bool relayoutChildren, LayoutUnit pageLogicalH
     LayoutUnit previousHeight = logicalHeight();
     setLogicalHeight(beforeEdge);
 
+    FastTextAutosizer* textAutosizer = document().fastTextAutosizer();
+    if (textAutosizer)
+        textAutosizer->beginLayout(this);
+
     m_repaintLogicalTop = 0;
     m_repaintLogicalBottom = 0;
     LayoutUnit maxFloatLogicalBottom = 0;
@@ -311,6 +316,9 @@ void RenderBlockFlow::layoutBlock(bool relayoutChildren, LayoutUnit pageLogicalH
         layoutInlineChildren(relayoutChildren, m_repaintLogicalTop, m_repaintLogicalBottom, afterEdge);
     else
         layoutBlockChildren(relayoutChildren, maxFloatLogicalBottom, layoutScope, beforeEdge, afterEdge);
+
+    if (textAutosizer)
+        textAutosizer->endLayout(this);
 
     if (frameView()->partialLayout().isStopping()) {
         statePusher.pop();

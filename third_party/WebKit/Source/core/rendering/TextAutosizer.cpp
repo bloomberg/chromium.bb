@@ -525,6 +525,7 @@ bool TextAutosizer::isIndependentDescendant(const RenderBlock* renderer)
     // from the box's parent (we want to avoid having significantly different
     // width blocks within a cluster, since the narrower blocks would end up
     // larger than would otherwise be necessary).
+    RenderBlock* containingBlock = renderer->containingBlock();
     return renderer->isRenderView()
         || renderer->isFloating()
         || renderer->isOutOfFlowPositioned()
@@ -532,7 +533,7 @@ bool TextAutosizer::isIndependentDescendant(const RenderBlock* renderer)
         || renderer->isTableCaption()
         || renderer->isFlexibleBoxIncludingDeprecated()
         || renderer->hasColumns()
-        || renderer->containingBlock()->isHorizontalWritingMode() != renderer->isHorizontalWritingMode()
+        || (containingBlock && containingBlock->isHorizontalWritingMode() != renderer->isHorizontalWritingMode())
         || renderer->style()->isDisplayReplacedType()
         || renderer->isTextArea()
         || renderer->style()->userModify() != READ_ONLY;

@@ -38,6 +38,7 @@
 #include "core/page/Page.h"
 #include "core/rendering/InlineIterator.h"
 #include "core/rendering/RenderBlock.h"
+#include "core/rendering/RenderView.h"
 #include "core/rendering/TextAutosizer.h"
 
 using namespace std;
@@ -49,96 +50,177 @@ FastTextAutosizer::FastTextAutosizer(Document* document)
 {
 }
 
-void FastTextAutosizer::prepareForLayout()
+void FastTextAutosizer::record(RenderBlock* block)
 {
-    if (!m_document->settings()
-        || !m_document->settings()->textAutosizingEnabled()
-        || m_document->printing()
-        || !m_document->page())
+    if (!enabled())
         return;
-    bool windowWidthChanged = updateWindowWidth();
 
-    // If needed, set existing clusters as needing their multiplier recalculated.
-    for (FingerprintToClusterMap::iterator it = m_clusterForFingerprint.begin(), end = m_clusterForFingerprint.end(); it != end; ++it) {
-        Cluster* cluster = it->value.get();
-        ASSERT(cluster);
-        WTF::HashSet<RenderBlock*>& blocks = cluster->m_blocks;
+    if (!shouldBeClusterRoot(block))
+        return;
 
-        if (windowWidthChanged) {
-            // Clusters depend on the window width. Changes to the width should cause all clusters to recalc.
-            cluster->setNeedsClusterRecalc();
-        } else {
-            // If any of the cluster's blocks need a layout, mark the entire cluster as needing a recalc.
-            for (WTF::HashSet<RenderBlock*>::iterator block = blocks.begin(); block != blocks.end(); ++block) {
-                if ((*block)->needsLayout()) {
-                    cluster->setNeedsClusterRecalc();
-                    break;
-                }
-            }
-        }
+    AtomicString fingerprint = computeFingerprint(block);
+    if (fingerprint.isNull())
+        return;
 
-        // If the cluster needs a recalc, mark all blocks as needing a layout so they pick up the new cluster info.
-        if (cluster->needsClusterRecalc()) {
-            for (WTF::HashSet<RenderBlock*>::iterator block = blocks.begin(); block != blocks.end(); ++block)
-                (*block)->setNeedsLayout();
-        }
+    m_fingerprintMapper.add(block, fingerprint);
+}
+
+void FastTextAutosizer::destroy(RenderBlock* block)
+{
+    m_fingerprintMapper.remove(block);
+}
+
+void FastTextAutosizer::beginLayout(RenderBlock* block)
+{
+    if (!enabled())
+        return;
+
+    if (block->isRenderView())
+        prepareWindowInfo(toRenderView(block));
+
+    if (shouldBeClusterRoot(block))
+        m_clusterStack.append(getOrCreateCluster(block));
+}
+
+void FastTextAutosizer::inflate(RenderBlock* block)
+{
+    if (m_clusterStack.isEmpty())
+        return;
+    Cluster* cluster = m_clusterStack.last();
+
+    applyMultiplier(block, cluster->m_multiplier);
+
+    // FIXME: Add an optimization to not do this walk if it's not needed.
+    for (InlineWalker walker(block); !walker.atEnd(); walker.advance()) {
+        RenderObject* inlineObj = walker.current();
+        if (inlineObj->isText())
+            applyMultiplier(inlineObj, cluster->m_multiplier);
     }
 }
 
-bool FastTextAutosizer::updateWindowWidth()
+void FastTextAutosizer::endLayout(RenderBlock* block)
 {
-    int originalWindowWidth = m_windowWidth;
+    if (!enabled())
+        return;
+
+    if (!m_clusterStack.isEmpty() && m_clusterStack.last()->m_root == block)
+        m_clusterStack.removeLast();
+}
+
+bool FastTextAutosizer::enabled()
+{
+    return m_document->settings()
+        && m_document->settings()->textAutosizingEnabled()
+        && !m_document->printing()
+        && m_document->page();
+}
+
+void FastTextAutosizer::prepareWindowInfo(RenderView* renderView)
+{
+    bool horizontalWritingMode = isHorizontalWritingMode(renderView->style()->writingMode());
 
     Frame* mainFrame = m_document->page()->mainFrame();
     IntSize windowSize = m_document->settings()->textAutosizingWindowSizeOverride();
     if (windowSize.isEmpty())
         windowSize = mainFrame->view()->unscaledVisibleContentSize(ScrollableArea::IncludeScrollbars);
-    m_windowWidth = windowSize.width();
+    m_windowWidth = horizontalWritingMode ? windowSize.width() : windowSize.height();
 
-    return m_windowWidth != originalWindowWidth;
+    IntSize layoutSize = m_document->page()->mainFrame()->view()->layoutSize();
+    m_layoutWidth = horizontalWritingMode ? layoutSize.width() : layoutSize.height();
 }
 
-void FastTextAutosizer::record(RenderBlock* block)
+bool FastTextAutosizer::shouldBeClusterRoot(RenderBlock* block)
 {
-    if (!m_document->settings()
-        || !m_document->settings()->textAutosizingEnabled()
-        || m_document->printing()
-        || !m_document->page())
-        return;
-
-    if (!TextAutosizer::isAutosizingContainer(block))
-        return;
-
-    AtomicString blockFingerprint = fingerprint(block);
-    HashMap<AtomicString, OwnPtr<Cluster> >::AddResult result =
-        m_clusterForFingerprint.add(blockFingerprint, PassOwnPtr<Cluster>());
-
-    if (result.isNewEntry)
-        result.iterator->value = adoptPtr(new Cluster(blockFingerprint));
-
-    Cluster* cluster = result.iterator->value.get();
-    cluster->addBlock(block);
-
-    m_clusterForBlock.set(block, cluster);
+    // FIXME: move the logic out of TextAutosizer.cpp into this class.
+    return block->isRenderView()
+        || (TextAutosizer::isAutosizingContainer(block)
+            && TextAutosizer::isIndependentDescendant(block));
 }
 
-void FastTextAutosizer::destroy(RenderBlock* block)
+bool FastTextAutosizer::clusterWantsAutosizing(RenderBlock* root)
 {
-    Cluster* cluster = m_clusterForBlock.take(block);
-    if (!cluster)
-        return;
-    cluster->m_blocks.remove(block);
-    if (cluster->m_blocks.isEmpty()) {
-        // This deletes the Cluster.
-        m_clusterForFingerprint.remove(cluster->m_fingerprint);
-        return;
+    // FIXME: this should be slightly different.
+    return TextAutosizer::containerShouldBeAutosized(root);
+}
+
+AtomicString FastTextAutosizer::computeFingerprint(RenderBlock* block)
+{
+    // FIXME(crbug.com/322340): Implement a fingerprinting algorithm.
+    return nullAtom;
+}
+
+FastTextAutosizer::Cluster* FastTextAutosizer::getOrCreateCluster(RenderBlock* block)
+{
+    ClusterMap::AddResult addResult = m_clusters.add(block, PassOwnPtr<Cluster>());
+    if (!addResult.isNewEntry)
+        return addResult.iterator->value.get();
+
+    AtomicString fingerprint = m_fingerprintMapper.get(block);
+    if (fingerprint.isNull()) {
+        addResult.iterator->value = adoptPtr(createCluster(block));
+        return addResult.iterator->value.get();
     }
-    cluster->setNeedsClusterRecalc();
+    return addSupercluster(fingerprint, block);
 }
 
-static void applyMultiplier(RenderObject* renderer, float multiplier)
+FastTextAutosizer::Cluster* FastTextAutosizer::createCluster(RenderBlock* block)
 {
-    RenderStyle* currentStyle  = renderer->style();
+    float multiplier = clusterWantsAutosizing(block) ? computeMultiplier(block) : 1.0f;
+    return new Cluster(block, multiplier);
+}
+
+FastTextAutosizer::Cluster* FastTextAutosizer::addSupercluster(AtomicString fingerprint, RenderBlock* returnFor)
+{
+    BlockSet& roots = m_fingerprintMapper.getBlocks(fingerprint);
+    RenderBlock* superRoot = deepestCommonAncestor(roots);
+
+    bool shouldAutosize = false;
+    for (BlockSet::iterator it = roots.begin(); it != roots.end(); ++it)
+        shouldAutosize |= clusterWantsAutosizing(*it);
+
+    float multiplier = shouldAutosize ? computeMultiplier(superRoot) : 1.0f;
+
+    Cluster* result = 0;
+    for (BlockSet::iterator it = roots.begin(); it != roots.end(); ++it) {
+        Cluster* cluster = new Cluster(*it, multiplier);
+        m_clusters.set(*it, adoptPtr(cluster));
+
+        if (*it == returnFor)
+            result = cluster;
+    }
+    return result;
+}
+
+RenderBlock* FastTextAutosizer::deepestCommonAncestor(BlockSet& blocks)
+{
+    // Find the lowest common ancestor of blocks.
+    // Note: this could be improved to not be O(b*h) for b blocks and tree height h.
+    HashCountedSet<RenderObject*> ancestors;
+    for (BlockSet::iterator it = blocks.begin(); it != blocks.end(); ++it) {
+        for (RenderBlock* block = (*it); block; block = block->containingBlock()) {
+            ancestors.add(block);
+            // The first ancestor that has all of the blocks as children wins.
+            if (ancestors.count(block) == blocks.size())
+                return block;
+        }
+    }
+    ASSERT_NOT_REACHED();
+    return 0;
+}
+
+float FastTextAutosizer::computeMultiplier(RenderBlock* block)
+{
+    // Block width, in CSS pixels.
+    float blockWidth = block->contentLogicalWidth();
+
+    // FIXME: incorporate font scale factor.
+    // FIXME: incorporate device scale adjustment.
+    return max(min(blockWidth, (float) m_layoutWidth) / m_windowWidth, 1.0f);
+}
+
+void FastTextAutosizer::applyMultiplier(RenderObject* renderer, float multiplier)
+{
+    RenderStyle* currentStyle = renderer->style();
     if (currentStyle->textAutosizingMultiplier() == multiplier)
         return;
 
@@ -149,83 +231,37 @@ static void applyMultiplier(RenderObject* renderer, float multiplier)
     renderer->setStyleInternal(style.release());
 }
 
-void FastTextAutosizer::inflate(RenderBlock* block)
+void FastTextAutosizer::FingerprintMapper::add(RenderBlock* block, AtomicString fingerprint)
 {
-    Cluster* cluster = 0;
-    for (const RenderObject* clusterBlock = block; clusterBlock && !cluster; clusterBlock = clusterBlock->parent()) {
-        if (clusterBlock->isRenderBlock())
-            cluster = m_clusterForBlock.get(toRenderBlock(clusterBlock));
-    }
-    if (!cluster)
-        return;
+    m_fingerprints.set(block, fingerprint);
 
-    recalcClusterIfNeeded(cluster);
-
-    applyMultiplier(block, cluster->m_multiplier);
-
-    // FIXME: Add an optimization to not do this walk if it's not needed.
-    for (InlineWalker walker(block); !walker.atEnd(); walker.advance()) {
-        RenderObject* inlineObj = walker.current();
-        if (inlineObj->isRenderBlock() && m_clusterForBlock.contains(toRenderBlock(inlineObj)))
-            continue;
-
-        applyMultiplier(inlineObj, cluster->m_multiplier);
-    }
+    ReverseFingerprintMap::AddResult addResult = m_blocksForFingerprint.add(fingerprint, PassOwnPtr<BlockSet>());
+    if (addResult.isNewEntry)
+        addResult.iterator->value = adoptPtr(new BlockSet);
+    addResult.iterator->value->add(block);
 }
 
-AtomicString FastTextAutosizer::fingerprint(const RenderBlock* block)
+void FastTextAutosizer::FingerprintMapper::remove(RenderBlock* block)
 {
-    // FIXME(crbug.com/322340): Implement a better fingerprinting algorithm.
-    return AtomicString::number((unsigned long long) block);
+    AtomicString fingerprint = m_fingerprints.take(block);
+    if (fingerprint.isNull())
+        return;
+
+    ReverseFingerprintMap::iterator blocksIter = m_blocksForFingerprint.find(fingerprint);
+    BlockSet& blocks = *blocksIter->value;
+    blocks.remove(block);
+    if (blocks.isEmpty())
+        m_blocksForFingerprint.remove(blocksIter);
 }
 
-void FastTextAutosizer::recalcClusterIfNeeded(FastTextAutosizer::Cluster* cluster)
+AtomicString FastTextAutosizer::FingerprintMapper::get(RenderBlock* block)
 {
-    ASSERT(m_windowWidth > 0);
-    if (!cluster->needsClusterRecalc())
-        return;
+    return m_fingerprints.get(block);
+}
 
-    WTF::HashSet<RenderBlock*>& blocks = cluster->m_blocks;
-
-    bool shouldAutosize = false;
-    for (WTF::HashSet<RenderBlock*>::iterator it = blocks.begin(); it != blocks.end(); ++it)
-        shouldAutosize |= TextAutosizer::containerShouldBeAutosized(*it);
-
-    if (!shouldAutosize) {
-        cluster->m_multiplier = 1.0f;
-        return;
-    }
-
-    // Find the lowest common ancestor of blocks.
-    // Note: this could be improved to not be O(b*h) for b blocks and tree height h.
-    cluster->m_clusterRoot = 0;
-    HashCountedSet<const RenderObject*> ancestors;
-    for (WTF::HashSet<RenderBlock*>::iterator it = blocks.begin(); !cluster->m_clusterRoot && it != blocks.end(); ++it) {
-        const RenderObject* renderer = (*it);
-        while (renderer && (renderer = renderer->parent())) {
-            ancestors.add(renderer);
-            // The first ancestor that has all of the blocks as children wins and is crowned the cluster root.
-            if (ancestors.count(renderer) == blocks.size()) {
-                cluster->m_clusterRoot = renderer->isRenderBlock() ? renderer : renderer->containingBlock();
-                break;
-            }
-        }
-    }
-
-    ASSERT(cluster->m_clusterRoot);
-    bool horizontalWritingMode = isHorizontalWritingMode(cluster->m_clusterRoot->style()->writingMode());
-
-    // Largest area of block that can be visible at once (assuming the main
-    // frame doesn't get scaled to less than overview scale), in CSS pixels.
-    IntSize layoutSize = m_document->page()->mainFrame()->view()->layoutSize();
-    float layoutWidth = horizontalWritingMode ? layoutSize.width() : layoutSize.height();
-
-    // Cluster root layout width, in CSS pixels.
-    float rootWidth = toRenderBlock(cluster->m_clusterRoot)->contentLogicalWidth();
-
-    // FIXME: incorporate font scale factor.
-    float multiplier = min(rootWidth, layoutWidth) / m_windowWidth;
-    cluster->m_multiplier = max(multiplier, 1.0f);
+FastTextAutosizer::BlockSet& FastTextAutosizer::FingerprintMapper::getBlocks(AtomicString fingerprint)
+{
+    return *m_blocksForFingerprint.get(fingerprint);
 }
 
 } // namespace WebCore

@@ -866,9 +866,6 @@ void FrameView::performPreLayoutTasks()
     // the layout beats any sort of style recalc update that needs to occur.
     TemporaryChange<bool> changeDoingPreLayoutStyleUpdate(m_doingPreLayoutStyleUpdate, true);
     document->updateStyleIfNeeded();
-
-    if (FastTextAutosizer* textAutosizer = document->fastTextAutosizer())
-        textAutosizer->prepareForLayout();
 }
 
 void FrameView::performLayout(RenderObject* rootForThisLayout, bool inSubtreeLayout)

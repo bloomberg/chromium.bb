@@ -58,51 +58,68 @@ public:
         return adoptPtr(new FastTextAutosizer(document));
     }
 
-    void prepareForLayout();
-
     void record(RenderBlock*);
     void destroy(RenderBlock*);
+
+    void beginLayout(RenderBlock*);
     void inflate(RenderBlock*);
+    void endLayout(RenderBlock*);
 
 private:
-    // FIXME(crbug.com/327811): make a proper API for this class.
     struct Cluster {
-        explicit Cluster(AtomicString fingerprint)
-            : m_fingerprint(fingerprint)
-            , m_multiplier(0)
+        explicit Cluster(RenderBlock* root, float multiplier)
+            : m_root(root)
+            , m_multiplier(multiplier)
         {
         }
-
-        AtomicString m_fingerprint;
-        WTF::HashSet<RenderBlock*> m_blocks;
+        RenderBlock* m_root;
         float m_multiplier;
-        const RenderObject* m_clusterRoot;
+    };
 
-        void addBlock(RenderBlock* block)
-        {
-            m_blocks.add(block);
-            setNeedsClusterRecalc();
-        }
+    typedef WTF::HashSet<RenderBlock*> BlockSet;
+    typedef WTF::HashMap<RenderBlock*, OwnPtr<Cluster> > ClusterMap;
+    typedef WTF::Vector<Cluster*> ClusterStack;
 
-        void setNeedsClusterRecalc() { m_multiplier = 0; m_clusterRoot = 0; }
-        bool needsClusterRecalc() const { return !m_clusterRoot || m_multiplier <= 0; }
+    // Fingerprints are computed during style recalc, for (some subset of)
+    // blocks that will become cluster roots.
+    class FingerprintMapper {
+    public:
+        void add(RenderBlock*, AtomicString);
+        void remove(RenderBlock*);
+        AtomicString get(RenderBlock*);
+        BlockSet& getBlocks(AtomicString);
+    private:
+        typedef WTF::HashMap<RenderBlock*, AtomicString> FingerprintMap;
+        typedef WTF::HashMap<AtomicString, OwnPtr<BlockSet> > ReverseFingerprintMap;
+
+        FingerprintMap m_fingerprints;
+        ReverseFingerprintMap m_blocksForFingerprint;
     };
 
     explicit FastTextAutosizer(Document*);
 
-    bool updateWindowWidth();
-
-    AtomicString fingerprint(const RenderBlock*);
-    void recalcClusterIfNeeded(Cluster*);
-
-    int m_windowWidth;
+    bool enabled();
+    void prepareWindowInfo(RenderView*);
+    bool shouldBeClusterRoot(RenderBlock*);
+    bool clusterWantsAutosizing(RenderBlock*);
+    AtomicString computeFingerprint(RenderBlock*);
+    Cluster* getOrCreateCluster(RenderBlock*);
+    Cluster* createCluster(RenderBlock*);
+    Cluster* addSupercluster(AtomicString, RenderBlock*);
+    RenderBlock* deepestCommonAncestor(BlockSet&);
+    float computeMultiplier(RenderBlock*);
+    void applyMultiplier(RenderObject*, float);
 
     Document* m_document;
+    int m_windowWidth; // Frame width in density-independent pixels (DIPs).
+    int m_layoutWidth; // Layout width in CSS pixels.
 
-    typedef WTF::HashMap<const RenderBlock*, Cluster*> BlockToClusterMap;
-    typedef WTF::HashMap<AtomicString, OwnPtr<Cluster> > FingerprintToClusterMap;
-    BlockToClusterMap m_clusterForBlock;
-    FingerprintToClusterMap m_clusterForFingerprint;
+    // Clusters are created and destroyed during layout. The map key is the
+    // cluster root. Clusters whose roots share the same fingerprint use the
+    // same multiplier.
+    ClusterMap m_clusters;
+    ClusterStack m_clusterStack;
+    FingerprintMapper m_fingerprintMapper;
 };
 
 } // namespace WebCore
