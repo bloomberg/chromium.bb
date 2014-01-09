@@ -124,10 +124,8 @@ static void parititonAllocBaseInit(PartitionRootBase* root)
     root->nextSuperPage = 0;
     root->nextPartitionPage = 0;
     root->nextPartitionPageEnd = 0;
-    root->currentExtent = &root->firstExtent;
-    root->firstExtent.superPageBase = 0;
-    root->firstExtent.superPagesEnd = 0;
-    root->firstExtent.next = 0;
+    root->firstExtent = 0;
+    root->currentExtent = 0;
 
     // This is a "magic" value so we can test if a root pointer is valid.
     root->invertedSelf = ~reinterpret_cast<uintptr_t>(root);
@@ -263,7 +261,7 @@ static void partitionAllocBaseShutdown(PartitionRootBase* root)
     // on the stack because some of them are themselves store in super pages.
     char* superPages[kMaxPartitionSize / kSuperPageSize];
     size_t numSuperPages = 0;
-    PartitionSuperPageExtentEntry* entry = &root->firstExtent;
+    PartitionSuperPageExtentEntry* entry = root->firstExtent;
     while (entry) {
         char* superPage = entry->superPageBase;
         while (superPage != entry->superPagesEnd) {
@@ -353,14 +351,15 @@ static ALWAYS_INLINE void* partitionAllocPartitionPages(PartitionRootBase* root,
     PartitionSuperPageExtentEntry* currentExtent = root->currentExtent;
     bool isNewExtent = (superPage != requestedAddress);
     if (UNLIKELY(isNewExtent)) {
-        if (currentExtent->superPageBase) {
-            // We already have a super page, so need to allocate metadata in the linked list.
-            PartitionSuperPageExtentEntry* newEntry = reinterpret_cast<PartitionSuperPageExtentEntry*>(partitionSuperPageToMetadataArea(currentExtent->superPageBase));
-            newEntry->next = 0;
-            currentExtent->next = newEntry;
-            currentExtent = newEntry;
-            root->currentExtent = newEntry;
+        latestExtent->next = 0;
+        if (UNLIKELY(!currentExtent)) {
+            root->firstExtent = latestExtent;
+        } else {
+            ASSERT(currentExtent->superPageBase);
+            currentExtent->next = latestExtent;
         }
+        root->currentExtent = latestExtent;
+        currentExtent = latestExtent;
         currentExtent->superPageBase = superPage;
         currentExtent->superPagesEnd = superPage + kSuperPageSize;
     } else {

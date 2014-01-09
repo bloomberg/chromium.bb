@@ -263,7 +263,7 @@ struct WTF_EXPORT PartitionRootBase {
     char* nextPartitionPage;
     char* nextPartitionPageEnd;
     PartitionSuperPageExtentEntry* currentExtent;
-    PartitionSuperPageExtentEntry firstExtent;
+    PartitionSuperPageExtentEntry* firstExtent;
     uintptr_t invertedSelf;
 
     static int gInitializedLock;
@@ -456,11 +456,12 @@ ALWAYS_INLINE bool partitionPointerIsValid(PartitionRootBase* root, void* ptr)
     // On 64-bit systems, we check the list of super page extents. Due to the
     // massive address space, we typically have a single extent.
     // Dominant case: the pointer is in the first extent, which grew without any collision.
-    if (LIKELY(ptr >= root->firstExtent.superPageBase) && LIKELY(ptr < root->firstExtent.superPagesEnd))
+    PartitionSuperPageExtentEntry* firstExtent = root->firstExtent;
+    if (LIKELY(ptr >= firstExtent->superPageBase) && LIKELY(ptr < firstExtent->superPagesEnd))
         return true;
 
     // Otherwise, scan through the extent list.
-    PartitionSuperPageExtentEntry* entry = root->firstExtent.next;
+    PartitionSuperPageExtentEntry* entry = firstExtent->next;
     while (UNLIKELY(entry != 0)) {
         if (ptr >= entry->superPageBase && ptr < entry->superPagesEnd)
             return true;
