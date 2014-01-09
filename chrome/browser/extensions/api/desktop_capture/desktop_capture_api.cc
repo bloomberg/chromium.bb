@@ -100,13 +100,8 @@ bool DesktopCaptureChooseDesktopMediaFunction::RunImpl() {
     }
 
     content::WebContents* web_contents = NULL;
-    if (!ExtensionTabUtil::GetTabById(*(params->target_tab->id),
-                                      GetProfile(),
-                                      false,
-                                      NULL,
-                                      NULL,
-                                      &web_contents,
-                                      NULL)) {
+    if (!ExtensionTabUtil::GetTabById(*(params->target_tab->id), GetProfile(),
+                                      true, NULL, NULL, &web_contents, NULL)) {
       error_ = kInvalidTabIdError;
       return false;
     }
