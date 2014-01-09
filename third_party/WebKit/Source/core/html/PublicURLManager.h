@@ -40,7 +40,7 @@ class SecurityOrigin;
 class URLRegistry;
 class URLRegistrable;
 
-class PublicURLManager : public ActiveDOMObject {
+class PublicURLManager FINAL : public ActiveDOMObject {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     static PassOwnPtr<PublicURLManager> create(ExecutionContext*);

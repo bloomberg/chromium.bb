@@ -32,7 +32,7 @@ class HTMLBRElement FINAL : public HTMLElement {
 public:
     static PassRefPtr<HTMLBRElement> create(Document&);
 
-    virtual bool canContainRangeEndPoint() const { return false; }
+    virtual bool canContainRangeEndPoint() const OVERRIDE { return false; }
 
 private:
     explicit HTMLBRElement(Document&);
@@ -40,7 +40,7 @@ private:
     virtual bool isPresentationAttribute(const QualifiedName&) const OVERRIDE;
     virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) OVERRIDE;
 
-    virtual RenderObject* createRenderer(RenderStyle*);
+    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
 };
 
 } // namespace

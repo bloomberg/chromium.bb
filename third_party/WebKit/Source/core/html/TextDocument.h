@@ -39,7 +39,7 @@ public:
 private:
     TextDocument(const DocumentInit&);
 
-    virtual PassRefPtr<DocumentParser> createParser();
+    virtual PassRefPtr<DocumentParser> createParser() OVERRIDE;
 };
 
 }

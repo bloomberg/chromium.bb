@@ -56,16 +56,16 @@ private:
 
     virtual bool isURLAttribute(const Attribute&) const OVERRIDE;
 
-    virtual bool supportsFocus() const;
+    virtual bool supportsFocus() const OVERRIDE;
 
-    virtual int scrollLeft();
-    virtual void setScrollLeft(int scrollLeft);
+    virtual int scrollLeft() OVERRIDE;
+    virtual void setScrollLeft(int) OVERRIDE;
 
-    virtual int scrollTop();
-    virtual void setScrollTop(int scrollTop);
+    virtual int scrollTop() OVERRIDE;
+    virtual void setScrollTop(int) OVERRIDE;
 
-    virtual int scrollHeight();
-    virtual int scrollWidth();
+    virtual int scrollHeight() OVERRIDE;
+    virtual int scrollWidth() OVERRIDE;
 };
 
 DEFINE_NODE_TYPE_CASTS(HTMLBodyElement, hasTagName(HTMLNames::bodyTag));

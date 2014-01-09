@@ -42,7 +42,7 @@ public:
 
     virtual ~HTMLFormControlsCollection();
 
-    virtual Node* namedItem(const AtomicString& name) const;
+    virtual Node* namedItem(const AtomicString& name) const OVERRIDE;
     void namedGetter(const AtomicString& name, bool&, RefPtr<RadioNodeList>&, bool&, RefPtr<Node>&);
 
 private:

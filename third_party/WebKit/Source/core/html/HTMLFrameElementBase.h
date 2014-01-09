@@ -34,7 +34,7 @@ public:
     KURL location() const;
     void setLocation(const String&);
 
-    virtual ScrollbarMode scrollingMode() const { return m_scrolling; }
+    virtual ScrollbarMode scrollingMode() const OVERRIDE FINAL { return m_scrolling; }
 
     int marginWidth() const { return m_marginWidth; }
     int marginHeight() const { return m_marginHeight; }
@@ -42,7 +42,7 @@ public:
     int width();
     int height();
 
-    virtual bool canContainRangeEndPoint() const { return false; }
+    virtual bool canContainRangeEndPoint() const OVERRIDE FINAL { return false; }
 
 protected:
     HTMLFrameElementBase(const QualifiedName&, Document&);
@@ -51,19 +51,19 @@ protected:
 
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
-    virtual void didNotifySubtreeInsertionsToDocument() OVERRIDE;
+    virtual void didNotifySubtreeInsertionsToDocument() OVERRIDE FINAL;
     virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
 
 private:
-    virtual bool supportsFocus() const;
-    virtual void setFocus(bool) OVERRIDE;
+    virtual bool supportsFocus() const OVERRIDE FINAL;
+    virtual void setFocus(bool) OVERRIDE FINAL;
 
-    virtual bool isURLAttribute(const Attribute&) const OVERRIDE;
-    virtual bool isHTMLContentAttribute(const Attribute&) const OVERRIDE;
+    virtual bool isURLAttribute(const Attribute&) const OVERRIDE FINAL;
+    virtual bool isHTMLContentAttribute(const Attribute&) const OVERRIDE FINAL;
 
-    virtual bool isFrameElementBase() const { return true; }
+    virtual bool isFrameElementBase() const OVERRIDE FINAL { return true; }
 
-    virtual bool areAuthorShadowsAllowed() const OVERRIDE { return false; }
+    virtual bool areAuthorShadowsAllowed() const OVERRIDE FINAL { return false; }
 
     void setNameAndOpenURL();
     void openURL(bool lockBackForwardList = true);

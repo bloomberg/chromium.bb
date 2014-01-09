@@ -80,7 +80,7 @@ public:
 
     const Vector<HTMLElement*>& listItems() const;
 
-    virtual void accessKeyAction(bool sendMouseEvents);
+    virtual void accessKeyAction(bool sendMouseEvents) OVERRIDE;
     void accessKeySetSelectedIndex(int);
 
     void setMultiple(bool);
@@ -118,16 +118,16 @@ protected:
     HTMLSelectElement(Document&, HTMLFormElement*, bool createdByParser);
 
 private:
-    virtual const AtomicString& formControlType() const;
+    virtual const AtomicString& formControlType() const OVERRIDE;
 
     virtual bool shouldShowFocusRingOnMouseFocus() const OVERRIDE;
 
     virtual void dispatchFocusEvent(Element* oldFocusedElement, FocusDirection) OVERRIDE;
     virtual void dispatchBlurEvent(Element* newFocusedElemnet) OVERRIDE;
 
-    virtual bool canStartSelection() const { return false; }
+    virtual bool canStartSelection() const OVERRIDE { return false; }
 
-    virtual bool isEnumeratable() const { return true; }
+    virtual bool isEnumeratable() const OVERRIDE { return true; }
     virtual bool isInteractiveContent() const OVERRIDE;
     virtual bool supportLabels() const OVERRIDE { return true; }
 
@@ -137,10 +137,10 @@ private:
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
     virtual bool isPresentationAttribute(const QualifiedName&) const OVERRIDE;
 
-    virtual RenderObject* createRenderer(RenderStyle *);
-    virtual bool appendFormData(FormDataList&, bool);
+    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
+    virtual bool appendFormData(FormDataList&, bool) OVERRIDE;
 
-    virtual void defaultEventHandler(Event*);
+    virtual void defaultEventHandler(Event*) OVERRIDE;
 
     void dispatchChangeEventForMenuList();
 
@@ -152,8 +152,8 @@ private:
 
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
 
-    virtual bool isOptionalFormControl() const { return !isRequiredFormControl(); }
-    virtual bool isRequiredFormControl() const;
+    virtual bool isOptionalFormControl() const OVERRIDE { return !isRequiredFormControl(); }
+    virtual bool isRequiredFormControl() const OVERRIDE;
 
     bool hasPlaceholderLabelOption() const;
 
@@ -185,7 +185,7 @@ private:
     int lastSelectableListIndex() const;
     int nextSelectableListIndexPageAway(int startIndex, SkipDirection) const;
 
-    virtual void childrenChanged(bool changedByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0);
+    virtual void childrenChanged(bool changedByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0) OVERRIDE;
     virtual bool areAuthorShadowsAllowed() const OVERRIDE { return false; }
     virtual void finishParsingChildren() OVERRIDE;
 

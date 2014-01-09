@@ -42,17 +42,17 @@ public:
 private:
     explicit HTMLOptGroupElement(Document&);
 
-    virtual const AtomicString& formControlType() const;
+    virtual const AtomicString& formControlType() const OVERRIDE;
     virtual bool rendererIsFocusable() const OVERRIDE;
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual bool rendererIsNeeded(const RenderStyle&) { return false; }
+    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
     virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
     virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;
-    void willRecalcStyle(StyleRecalcChange) OVERRIDE;
+    virtual void willRecalcStyle(StyleRecalcChange) OVERRIDE;
 
-    virtual void childrenChanged(bool changedByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0);
+    virtual void childrenChanged(bool changedByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0) OVERRIDE;
 
-    virtual void accessKeyAction(bool sendMouseEvents);
+    virtual void accessKeyAction(bool sendMouseEvents) OVERRIDE;
 
     // <optgroup> never has a renderer so we manually manage a cached style.
     void updateNonRenderStyle();

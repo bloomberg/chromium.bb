@@ -44,11 +44,11 @@ public:
     virtual bool useFallbackContent() const OVERRIDE;
     virtual void renderFallbackContent() OVERRIDE;
 
-    virtual bool isFormControlElement() const { return false; }
+    virtual bool isFormControlElement() const OVERRIDE { return false; }
 
-    virtual bool isEnumeratable() const { return true; }
+    virtual bool isEnumeratable() const OVERRIDE { return true; }
     virtual bool isInteractiveContent() const OVERRIDE;
-    virtual bool appendFormData(FormDataList&, bool);
+    virtual bool appendFormData(FormDataList&, bool) OVERRIDE;
 
     virtual bool isObjectElement() const OVERRIDE { return true; }
 
@@ -61,7 +61,7 @@ public:
     using Node::ref;
     using Node::deref;
 
-    virtual bool canContainRangeEndPoint() const { return useFallbackContent(); }
+    virtual bool canContainRangeEndPoint() const OVERRIDE { return useFallbackContent(); }
 
     bool isExposed() const;
 
@@ -75,10 +75,10 @@ private:
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
     virtual void removedFrom(ContainerNode*) OVERRIDE;
 
-    virtual bool rendererIsNeeded(const RenderStyle&);
+    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE;
     virtual void didMoveToNewDocument(Document& oldDocument) OVERRIDE;
 
-    virtual void childrenChanged(bool changedByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0);
+    virtual void childrenChanged(bool changedByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0) OVERRIDE;
 
     virtual bool isURLAttribute(const Attribute&) const OVERRIDE;
     virtual const AtomicString imageSourceURL() const OVERRIDE;
@@ -99,8 +99,8 @@ private:
     bool shouldAllowQuickTimeClassIdQuirk();
     bool hasValidClassId();
 
-    virtual void refFormAssociatedElement() { ref(); }
-    virtual void derefFormAssociatedElement() { deref(); }
+    virtual void refFormAssociatedElement() OVERRIDE { ref(); }
+    virtual void derefFormAssociatedElement() OVERRIDE { deref(); }
 
     virtual bool shouldRegisterAsNamedItem() const OVERRIDE { return true; }
     virtual bool shouldRegisterAsExtraNamedItem() const OVERRIDE { return true; }

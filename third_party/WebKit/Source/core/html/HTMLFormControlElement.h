@@ -56,17 +56,17 @@ public:
     virtual bool formControlValueMatchesRenderer() const { return m_valueMatchesRenderer; }
     virtual void setFormControlValueMatchesRenderer(bool b) { m_valueMatchesRenderer = b; }
 
-    virtual bool wasChangedSinceLastFormControlChangeEvent() const;
-    virtual void setChangedSinceLastFormControlChangeEvent(bool);
+    virtual bool wasChangedSinceLastFormControlChangeEvent() const OVERRIDE FINAL;
+    virtual void setChangedSinceLastFormControlChangeEvent(bool) OVERRIDE FINAL;
 
-    virtual void dispatchFormControlChangeEvent();
-    virtual void dispatchFormControlInputEvent();
+    virtual void dispatchFormControlChangeEvent() OVERRIDE;
+    void dispatchFormControlInputEvent();
 
-    virtual HTMLFormElement* formOwner() const OVERRIDE;
+    virtual HTMLFormElement* formOwner() const OVERRIDE FINAL;
 
     virtual bool isDisabledFormControl() const OVERRIDE;
 
-    virtual bool isEnumeratable() const { return false; }
+    virtual bool isEnumeratable() const OVERRIDE { return false; }
 
     bool isRequired() const;
 
@@ -78,7 +78,7 @@ public:
 
     // Override in derived classes to get the encoded name=value pair for submitting.
     // Return true for a successful control (see HTML4-17.13.2).
-    virtual bool appendFormData(FormDataList&, bool) { return false; }
+    virtual bool appendFormData(FormDataList&, bool) OVERRIDE { return false; }
     virtual String resultForDialogSubmit();
 
     virtual bool canBeSuccessfulSubmitButton() const { return false; }
@@ -88,13 +88,13 @@ public:
 
     enum CheckValidityDispatchEvents { CheckValidityDispatchEventsAllowed, CheckValidityDispatchEventsNone };
 
-    virtual bool willValidate() const;
+    virtual bool willValidate() const OVERRIDE;
     void updateVisibleValidationMessage();
     void hideVisibleValidationMessage();
     bool checkValidity(Vector<RefPtr<FormAssociatedElement> >* unhandledInvalidControls = 0, CheckValidityDispatchEvents = CheckValidityDispatchEventsAllowed);
     // This must be called when a validation constraint or control value is changed.
     void setNeedsValidityCheck();
-    virtual void setCustomValidity(const String&) OVERRIDE;
+    virtual void setCustomValidity(const String&) OVERRIDE FINAL;
 
     bool isReadOnly() const { return m_isReadOnly; }
     bool isDisabledOrReadOnly() const { return isDisabledFormControl() || m_isReadOnly; }
@@ -127,12 +127,12 @@ protected:
     virtual bool supportsFocus() const OVERRIDE;
     virtual bool isKeyboardFocusable() const OVERRIDE;
     virtual bool shouldShowFocusRingOnMouseFocus() const;
-    virtual bool shouldHaveFocusAppearance() const OVERRIDE;
+    virtual bool shouldHaveFocusAppearance() const OVERRIDE FINAL;
     virtual void dispatchFocusEvent(Element* oldFocusedElement, FocusDirection) OVERRIDE;
     virtual void dispatchBlurEvent(Element* newFocusedElement) OVERRIDE;
-    virtual void willCallDefaultEventHandler(const Event&) OVERRIDE;
+    virtual void willCallDefaultEventHandler(const Event&) OVERRIDE FINAL;
 
-    virtual void didRecalcStyle(StyleRecalcChange) OVERRIDE;
+    virtual void didRecalcStyle(StyleRecalcChange) OVERRIDE FINAL;
 
     // This must be called any time the result of willValidate() has changed.
     void setNeedsWillValidateCheck();
@@ -141,16 +141,16 @@ protected:
     virtual void resetImpl() { }
 
 private:
-    virtual void refFormAssociatedElement() { ref(); }
-    virtual void derefFormAssociatedElement() { deref(); }
+    virtual void refFormAssociatedElement() OVERRIDE FINAL { ref(); }
+    virtual void derefFormAssociatedElement() OVERRIDE FINAL { deref(); }
 
-    virtual bool isFormControlElement() const { return true; }
+    virtual bool isFormControlElement() const OVERRIDE FINAL { return true; }
     virtual bool alwaysCreateUserAgentShadowRoot() const OVERRIDE { return true; }
 
-    virtual short tabIndex() const;
+    virtual short tabIndex() const OVERRIDE FINAL;
 
-    virtual bool isDefaultButtonForForm() const;
-    virtual bool isValidFormControlElement();
+    virtual bool isDefaultButtonForForm() const OVERRIDE FINAL;
+    virtual bool isValidFormControlElement() OVERRIDE FINAL;
     void updateAncestorDisabledState() const;
 
     OwnPtr<ValidationMessage> m_validationMessage;

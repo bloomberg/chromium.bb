@@ -38,7 +38,7 @@ class Element;
 
 typedef int ExceptionCode;
 
-class ClassList : public DOMTokenList {
+class ClassList FINAL : public DOMTokenList {
 public:
     static PassOwnPtr<ClassList> create(Element* element)
     {

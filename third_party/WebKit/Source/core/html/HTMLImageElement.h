@@ -74,7 +74,7 @@ public:
 
     bool hasPendingActivity() const { return m_imageLoader.hasPendingActivity(); }
 
-    virtual bool canContainRangeEndPoint() const { return false; }
+    virtual bool canContainRangeEndPoint() const OVERRIDE { return false; }
 
     void addClient(ImageLoaderClient* client) { m_imageLoader.addClient(client); }
     void removeClient(ImageLoaderClient* client) { m_imageLoader.removeClient(client); }
@@ -96,13 +96,13 @@ private:
     virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) OVERRIDE;
 
     virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
-    virtual RenderObject* createRenderer(RenderStyle*);
+    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
 
-    virtual bool canStartSelection() const;
+    virtual bool canStartSelection() const OVERRIDE;
 
     virtual bool isURLAttribute(const Attribute&) const OVERRIDE;
 
-    virtual bool draggable() const;
+    virtual bool draggable() const OVERRIDE;
 
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
     virtual void removedFrom(ContainerNode*) OVERRIDE;

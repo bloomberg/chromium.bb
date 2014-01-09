@@ -74,17 +74,16 @@ private:
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
     virtual void didNotifySubtreeInsertionsToDocument() OVERRIDE;
     virtual void removedFrom(ContainerNode*) OVERRIDE;
-    virtual void childrenChanged(bool changedByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0);
+    virtual void childrenChanged(bool changedByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0) OVERRIDE;
 
-    virtual void finishParsingChildren();
+    virtual void finishParsingChildren() OVERRIDE;
 
-    virtual bool isLoading() const { return StyleElement::isLoading(); }
-    virtual bool sheetLoaded() { return StyleElement::sheetLoaded(document()); }
-    virtual void notifyLoadedSheetAndAllCriticalSubresources(bool errorOccurred);
-    virtual void startLoadingDynamicSheet() { StyleElement::startLoadingDynamicSheet(document()); }
+    virtual bool sheetLoaded() OVERRIDE { return StyleElement::sheetLoaded(document()); }
+    virtual void notifyLoadedSheetAndAllCriticalSubresources(bool errorOccurred) OVERRIDE;
+    virtual void startLoadingDynamicSheet() OVERRIDE { StyleElement::startLoadingDynamicSheet(document()); }
 
-    virtual const AtomicString& media() const;
-    virtual const AtomicString& type() const;
+    virtual const AtomicString& media() const OVERRIDE;
+    virtual const AtomicString& type() const OVERRIDE;
 
     void scopedAttributeChanged(bool);
     void registerWithScopingNode(bool);

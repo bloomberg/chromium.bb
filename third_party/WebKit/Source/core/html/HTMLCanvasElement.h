@@ -123,13 +123,13 @@ public:
 
     bool shouldAccelerate(const IntSize&) const;
 
-    InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
+    virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
 
 private:
     explicit HTMLCanvasElement(Document&);
 
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual RenderObject* createRenderer(RenderStyle*);
+    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
     virtual bool areAuthorShadowsAllowed() const OVERRIDE { return false; }
 
     void reset();

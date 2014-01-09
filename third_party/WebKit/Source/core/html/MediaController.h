@@ -43,7 +43,7 @@ class ExceptionState;
 class HTMLMediaElement;
 class ExecutionContext;
 
-class MediaController : public RefCounted<MediaController>, public ScriptWrappable, public MediaControllerInterface, public EventTargetWithInlineData {
+class MediaController FINAL : public RefCounted<MediaController>, public ScriptWrappable, public MediaControllerInterface, public EventTargetWithInlineData {
     REFCOUNTED_EVENT_TARGET(MediaController);
 public:
     static PassRefPtr<MediaController> create(ExecutionContext*);
@@ -55,52 +55,52 @@ public:
 
     const String& mediaGroup() const { return m_mediaGroup; }
 
-    virtual PassRefPtr<TimeRanges> buffered() const;
-    virtual PassRefPtr<TimeRanges> seekable() const;
-    virtual PassRefPtr<TimeRanges> played();
+    virtual PassRefPtr<TimeRanges> buffered() const OVERRIDE;
+    virtual PassRefPtr<TimeRanges> seekable() const OVERRIDE;
+    virtual PassRefPtr<TimeRanges> played() OVERRIDE;
 
-    virtual double duration() const;
-    virtual double currentTime() const;
-    virtual void setCurrentTime(double, ExceptionState&);
+    virtual double duration() const OVERRIDE;
+    virtual double currentTime() const OVERRIDE;
+    virtual void setCurrentTime(double, ExceptionState&) OVERRIDE;
 
-    virtual bool paused() const { return m_paused; }
-    virtual void play();
-    virtual void pause();
+    virtual bool paused() const OVERRIDE { return m_paused; }
+    virtual void play() OVERRIDE;
+    virtual void pause() OVERRIDE;
     void unpause();
 
-    virtual double defaultPlaybackRate() const { return m_defaultPlaybackRate; }
-    virtual void setDefaultPlaybackRate(double);
+    virtual double defaultPlaybackRate() const OVERRIDE { return m_defaultPlaybackRate; }
+    virtual void setDefaultPlaybackRate(double) OVERRIDE;
 
-    virtual double playbackRate() const;
-    virtual void setPlaybackRate(double);
+    virtual double playbackRate() const OVERRIDE;
+    virtual void setPlaybackRate(double) OVERRIDE;
 
-    virtual double volume() const { return m_volume; }
-    virtual void setVolume(double, ExceptionState&);
+    virtual double volume() const OVERRIDE { return m_volume; }
+    virtual void setVolume(double, ExceptionState&) OVERRIDE;
 
-    virtual bool muted() const { return m_muted; }
-    virtual void setMuted(bool);
+    virtual bool muted() const OVERRIDE { return m_muted; }
+    virtual void setMuted(bool) OVERRIDE;
 
-    virtual ReadyState readyState() const { return m_readyState; }
+    virtual ReadyState readyState() const OVERRIDE { return m_readyState; }
 
     enum PlaybackState { WAITING, PLAYING, ENDED };
     const AtomicString& playbackState() const;
 
-    virtual bool supportsFullscreen() const { return false; }
-    virtual bool isFullscreen() const { return false; }
-    virtual void enterFullscreen() { }
+    virtual bool supportsFullscreen() const OVERRIDE { return false; }
+    virtual bool isFullscreen() const OVERRIDE { return false; }
+    virtual void enterFullscreen() OVERRIDE { }
 
-    virtual bool hasAudio() const;
-    virtual bool hasVideo() const;
-    virtual bool hasClosedCaptions() const;
-    virtual void setClosedCaptionsVisible(bool);
-    virtual bool closedCaptionsVisible() const { return m_closedCaptionsVisible; }
+    virtual bool hasAudio() const OVERRIDE;
+    virtual bool hasVideo() const OVERRIDE;
+    virtual bool hasClosedCaptions() const OVERRIDE;
+    virtual void setClosedCaptionsVisible(bool) OVERRIDE;
+    virtual bool closedCaptionsVisible() const OVERRIDE { return m_closedCaptionsVisible; }
 
-    virtual void beginScrubbing();
-    virtual void endScrubbing();
+    virtual void beginScrubbing() OVERRIDE;
+    virtual void endScrubbing() OVERRIDE;
 
-    virtual bool canPlay() const;
+    virtual bool canPlay() const OVERRIDE;
 
-    virtual bool hasCurrentSrc() const;
+    virtual bool hasCurrentSrc() const OVERRIDE;
 
     bool isBlocked() const;
 

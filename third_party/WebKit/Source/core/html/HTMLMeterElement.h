@@ -71,8 +71,7 @@ private:
 
     virtual bool supportLabels() const OVERRIDE { return true; }
 
-    virtual bool recalcWillValidate() const { return false; }
-    virtual RenderObject* createRenderer(RenderStyle*);
+    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
 
     void didElementStateChange();

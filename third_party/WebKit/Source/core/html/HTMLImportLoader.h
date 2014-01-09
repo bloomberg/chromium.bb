@@ -47,7 +47,7 @@ class HTMLImportLoaderClient;
 // HTMLImportLoader is owned by and shared between HTMLImportChild.
 //
 //
-class HTMLImportLoader : public RefCounted<HTMLImportLoader>, public HTMLImportResourceOwner {
+class HTMLImportLoader FINAL : public RefCounted<HTMLImportLoader>, public HTMLImportResourceOwner {
 public:
     enum State {
         StateLoading,

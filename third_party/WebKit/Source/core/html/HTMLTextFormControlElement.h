@@ -72,7 +72,7 @@ public:
     PassRefPtr<Range> selection() const;
     String selectedText() const;
 
-    virtual void dispatchFormControlChangeEvent();
+    virtual void dispatchFormControlChangeEvent() OVERRIDE FINAL;
 
     virtual int maxLength() const = 0;
     virtual String value() const = 0;
@@ -105,7 +105,7 @@ protected:
     void restoreCachedSelection();
     bool hasCachedSelection() const { return m_cachedSelectionStart >= 0; }
 
-    virtual void defaultEventHandler(Event*);
+    virtual void defaultEventHandler(Event*) OVERRIDE;
     virtual void subtreeHasChanged() = 0;
 
     void setLastChangeWasNotUserEdit() { m_lastChangeWasUserEdit = false; }
@@ -117,8 +117,8 @@ private:
     int computeSelectionEnd() const;
     TextFieldSelectionDirection computeSelectionDirection() const;
 
-    virtual void dispatchFocusEvent(Element* oldFocusedElement, FocusDirection) OVERRIDE;
-    virtual void dispatchBlurEvent(Element* newFocusedElement) OVERRIDE;
+    virtual void dispatchFocusEvent(Element* oldFocusedElement, FocusDirection) OVERRIDE FINAL;
+    virtual void dispatchBlurEvent(Element* newFocusedElement) OVERRIDE FINAL;
 
     // Returns true if user-editable value is empty. Used to check placeholder visibility.
     virtual bool isEmptyValue() const = 0;

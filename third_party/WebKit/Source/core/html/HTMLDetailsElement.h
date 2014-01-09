@@ -35,7 +35,7 @@ public:
 private:
     explicit HTMLDetailsElement(Document&);
 
-    virtual RenderObject* createRenderer(RenderStyle*);
+    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
     virtual void didAddUserAgentShadowRoot(ShadowRoot&) OVERRIDE;
     virtual bool isInteractiveContent() const OVERRIDE;

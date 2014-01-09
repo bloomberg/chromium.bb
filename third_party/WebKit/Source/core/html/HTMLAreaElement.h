@@ -50,12 +50,12 @@ private:
     explicit HTMLAreaElement(Document&);
 
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual bool supportsFocus() const;
+    virtual bool supportsFocus() const OVERRIDE;
     virtual AtomicString target() const OVERRIDE;
     virtual bool isKeyboardFocusable() const OVERRIDE;
-    virtual bool isMouseFocusable() const;
+    virtual bool isMouseFocusable() const OVERRIDE;
     virtual bool rendererIsFocusable() const OVERRIDE;
-    virtual void updateFocusAppearance(bool /*restorePreviousSelection*/);
+    virtual void updateFocusAppearance(bool /*restorePreviousSelection*/) OVERRIDE;
     virtual void setFocus(bool) OVERRIDE;
 
     enum Shape { Default, Poly, Rect, Circle, Unknown };

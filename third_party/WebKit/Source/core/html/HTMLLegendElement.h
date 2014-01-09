@@ -42,7 +42,7 @@ private:
     // Control in the legend's fieldset that gets focus and access key.
     HTMLFormControlElement* associatedControl();
 
-    virtual void accessKeyAction(bool sendMouseEvents);
+    virtual void accessKeyAction(bool sendMouseEvents) OVERRIDE;
     virtual void focus(bool restorePreviousSelection, FocusDirection) OVERRIDE;
 };
 

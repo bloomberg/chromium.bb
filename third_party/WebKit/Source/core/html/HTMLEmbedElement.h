@@ -40,7 +40,7 @@ private:
     virtual bool isPresentationAttribute(const QualifiedName&) const OVERRIDE;
     virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) OVERRIDE;
 
-    virtual bool rendererIsNeeded(const RenderStyle&);
+    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE;
 
     virtual bool isURLAttribute(const Attribute&) const OVERRIDE;
     virtual const AtomicString imageSourceURL() const OVERRIDE;

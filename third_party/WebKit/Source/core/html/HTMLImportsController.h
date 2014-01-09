@@ -48,7 +48,7 @@ class ResourceFetcher;
 class HTMLImportChild;
 class HTMLImportChildClient;
 
-class HTMLImportsController : public HTMLImportRoot, public DocumentSupplement {
+class HTMLImportsController FINAL : public HTMLImportRoot, public DocumentSupplement {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     static void provideTo(Document*);

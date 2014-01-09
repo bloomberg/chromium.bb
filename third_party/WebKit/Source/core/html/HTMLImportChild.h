@@ -52,7 +52,7 @@ class HTMLImportChildClient;
 // HTMLImportChild implements ResourceClient through HTMLImportResourceOwner
 // so that it can speculatively request linked resources while it is unblocked.
 //
-class HTMLImportChild : public HTMLImport, public HTMLImportLoaderClient, public HTMLImportResourceOwner {
+class HTMLImportChild FINAL : public HTMLImport, public HTMLImportLoaderClient, public HTMLImportResourceOwner {
 public:
     HTMLImportChild(const KURL&, bool createdByParser);
     virtual ~HTMLImportChild();

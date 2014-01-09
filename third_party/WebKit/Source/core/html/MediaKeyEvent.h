@@ -43,7 +43,7 @@ struct MediaKeyEventInit : public EventInit {
     unsigned short systemCode;
 };
 
-class MediaKeyEvent : public Event {
+class MediaKeyEvent FINAL : public Event {
 public:
     virtual ~MediaKeyEvent();
 
@@ -57,7 +57,7 @@ public:
         return adoptRef(new MediaKeyEvent(type, initializer));
     }
 
-    virtual const AtomicString& interfaceName() const;
+    virtual const AtomicString& interfaceName() const OVERRIDE;
 
     String keySystem() const { return m_keySystem; }
     String sessionId() const { return m_sessionId; }

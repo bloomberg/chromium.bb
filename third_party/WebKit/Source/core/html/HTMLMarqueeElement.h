@@ -58,10 +58,10 @@ private:
     virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) OVERRIDE;
 
     // ActiveDOMObject
-    virtual void suspend();
-    virtual void resume();
+    virtual void suspend() OVERRIDE;
+    virtual void resume() OVERRIDE;
 
-    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE FINAL;
+    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
 
     RenderMarquee* renderMarquee() const;
 };

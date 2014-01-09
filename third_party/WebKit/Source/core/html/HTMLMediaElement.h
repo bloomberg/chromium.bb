@@ -81,10 +81,10 @@ public:
 
     virtual bool isVideo() const = 0;
     virtual bool hasVideo() const OVERRIDE { return false; }
-    virtual bool hasAudio() const OVERRIDE;
+    virtual bool hasAudio() const OVERRIDE FINAL;
 
     // Eventually overloaded in HTMLVideoElement
-    virtual bool supportsFullscreen() const OVERRIDE { return false; };
+    virtual bool supportsFullscreen() const OVERRIDE { return false; }
 
     bool supportsSave() const;
 
@@ -112,32 +112,32 @@ public:
     String preload() const;
     void setPreload(const AtomicString&);
 
-    PassRefPtr<TimeRanges> buffered() const;
+    virtual PassRefPtr<TimeRanges> buffered() const OVERRIDE FINAL;
     void load();
     String canPlayType(const String& mimeType, const String& keySystem = String(), const KURL& = KURL()) const;
 
     // ready state
-    ReadyState readyState() const;
+    virtual ReadyState readyState() const OVERRIDE FINAL;
     bool seeking() const;
 
     // playback state
-    double currentTime() const;
-    void setCurrentTime(double, ExceptionState&);
-    double duration() const;
-    bool paused() const;
-    double defaultPlaybackRate() const;
-    void setDefaultPlaybackRate(double);
-    double playbackRate() const;
-    void setPlaybackRate(double);
+    virtual double currentTime() const OVERRIDE FINAL;
+    virtual void setCurrentTime(double, ExceptionState&) OVERRIDE FINAL;
+    virtual double duration() const OVERRIDE FINAL;
+    virtual bool paused() const OVERRIDE FINAL;
+    virtual double defaultPlaybackRate() const OVERRIDE FINAL;
+    virtual void setDefaultPlaybackRate(double) OVERRIDE FINAL;
+    virtual double playbackRate() const OVERRIDE FINAL;
+    virtual void setPlaybackRate(double) OVERRIDE FINAL;
     void updatePlaybackRate();
-    PassRefPtr<TimeRanges> played();
-    PassRefPtr<TimeRanges> seekable() const;
+    virtual PassRefPtr<TimeRanges> played() OVERRIDE FINAL;
+    virtual PassRefPtr<TimeRanges> seekable() const OVERRIDE FINAL;
     bool ended() const;
     bool autoplay() const;
     bool loop() const;
     void setLoop(bool b);
-    void play();
-    void pause();
+    virtual void play() OVERRIDE FINAL;
+    virtual void pause() OVERRIDE FINAL;
 
     // statistics
     unsigned webkitAudioDecodedByteCount() const;
@@ -165,16 +165,16 @@ public:
     // controls
     bool controls() const;
     void setControls(bool);
-    double volume() const;
-    void setVolume(double, ExceptionState&);
-    bool muted() const;
-    void setMuted(bool);
+    virtual double volume() const OVERRIDE FINAL;
+    virtual void setVolume(double, ExceptionState&) OVERRIDE FINAL;
+    virtual bool muted() const OVERRIDE FINAL;
+    virtual void setMuted(bool) OVERRIDE FINAL;
 
     void togglePlayState();
-    void beginScrubbing();
-    void endScrubbing();
+    virtual void beginScrubbing() OVERRIDE FINAL;
+    virtual void endScrubbing() OVERRIDE FINAL;
 
-    bool canPlay() const;
+    virtual bool canPlay() const OVERRIDE FINAL;
 
     double percentLoaded() const;
 
@@ -194,8 +194,8 @@ public:
     void didAddTrack(HTMLTrackElement*);
     void didRemoveTrack(HTMLTrackElement*);
 
-    virtual void mediaPlayerDidAddTrack(blink::WebInbandTextTrack*) OVERRIDE;
-    virtual void mediaPlayerDidRemoveTrack(blink::WebInbandTextTrack*) OVERRIDE;
+    virtual void mediaPlayerDidAddTrack(blink::WebInbandTextTrack*) OVERRIDE FINAL;
+    virtual void mediaPlayerDidRemoveTrack(blink::WebInbandTextTrack*) OVERRIDE FINAL;
 
     struct TrackGroup {
         enum GroupKind { CaptionsAndSubtitles, Description, Chapter, Metadata, Other };
@@ -229,29 +229,29 @@ public:
     void textTrackReadyStateChanged(TextTrack*);
 
     // TextTrackClient
-    virtual void textTrackKindChanged(TextTrack*) OVERRIDE;
-    virtual void textTrackModeChanged(TextTrack*) OVERRIDE;
-    virtual void textTrackAddCues(TextTrack*, const TextTrackCueList*) OVERRIDE;
-    virtual void textTrackRemoveCues(TextTrack*, const TextTrackCueList*) OVERRIDE;
-    virtual void textTrackAddCue(TextTrack*, PassRefPtr<TextTrackCue>) OVERRIDE;
-    virtual void textTrackRemoveCue(TextTrack*, PassRefPtr<TextTrackCue>) OVERRIDE;
+    virtual void textTrackKindChanged(TextTrack*) OVERRIDE FINAL;
+    virtual void textTrackModeChanged(TextTrack*) OVERRIDE FINAL;
+    virtual void textTrackAddCues(TextTrack*, const TextTrackCueList*) OVERRIDE FINAL;
+    virtual void textTrackRemoveCues(TextTrack*, const TextTrackCueList*) OVERRIDE FINAL;
+    virtual void textTrackAddCue(TextTrack*, PassRefPtr<TextTrackCue>) OVERRIDE FINAL;
+    virtual void textTrackRemoveCue(TextTrack*, PassRefPtr<TextTrackCue>) OVERRIDE FINAL;
 
     // EventTarget function.
     // Both Node (via HTMLElement) and ActiveDOMObject define this method, which
     // causes an ambiguity error at compile time. This class's constructor
     // ensures that both implementations return document, so return the result
     // of one of them here.
-    virtual ExecutionContext* executionContext() const OVERRIDE { return HTMLElement::executionContext(); }
+    virtual ExecutionContext* executionContext() const OVERRIDE FINAL { return HTMLElement::executionContext(); }
 
     bool hasSingleSecurityOrigin() const { return !m_player || m_player->hasSingleSecurityOrigin(); }
 
-    bool isFullscreen() const;
-    void enterFullscreen();
+    virtual bool isFullscreen() const OVERRIDE FINAL;
+    virtual void enterFullscreen() OVERRIDE FINAL;
     void exitFullscreen();
 
-    bool hasClosedCaptions() const;
-    bool closedCaptionsVisible() const;
-    void setClosedCaptionsVisible(bool);
+    virtual bool hasClosedCaptions() const OVERRIDE FINAL;
+    virtual bool closedCaptionsVisible() const OVERRIDE FINAL;
+    virtual void setClosedCaptionsVisible(bool) OVERRIDE FINAL;
 
     MediaControls* mediaControls() const;
 
@@ -261,8 +261,8 @@ public:
     bool isPlaying() const { return m_playing; }
 
     // ActiveDOMObject functions.
-    virtual bool hasPendingActivity() const OVERRIDE;
-    virtual void contextDestroyed() OVERRIDE;
+    virtual bool hasPendingActivity() const OVERRIDE FINAL;
+    virtual void contextDestroyed() OVERRIDE FINAL;
 
 #if ENABLE(WEB_AUDIO)
     MediaElementAudioSourceNode* audioSourceNode() { return m_audioSourceNode; }
@@ -282,7 +282,7 @@ protected:
     virtual ~HTMLMediaElement();
 
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual void finishParsingChildren() OVERRIDE;
+    virtual void finishParsingChildren() OVERRIDE FINAL;
     virtual bool isURLAttribute(const Attribute&) const OVERRIDE;
     virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
 
@@ -292,7 +292,7 @@ protected:
     DisplayMode displayMode() const { return m_displayMode; }
     virtual void setDisplayMode(DisplayMode mode) { m_displayMode = mode; }
 
-    virtual bool isMediaElement() const OVERRIDE { return true; }
+    virtual bool isMediaElement() const OVERRIDE FINAL { return true; }
 
     void setControllerInternal(PassRefPtr<MediaController>);
 
@@ -321,51 +321,51 @@ protected:
 private:
     void createMediaPlayer();
 
-    virtual bool alwaysCreateUserAgentShadowRoot() const OVERRIDE { return true; }
-    virtual bool areAuthorShadowsAllowed() const OVERRIDE { return false; }
+    virtual bool alwaysCreateUserAgentShadowRoot() const OVERRIDE FINAL { return true; }
+    virtual bool areAuthorShadowsAllowed() const OVERRIDE FINAL { return false; }
 
-    virtual bool hasCustomFocusLogic() const OVERRIDE;
-    virtual bool supportsFocus() const OVERRIDE;
-    virtual bool isMouseFocusable() const OVERRIDE;
+    virtual bool hasCustomFocusLogic() const OVERRIDE FINAL;
+    virtual bool supportsFocus() const OVERRIDE FINAL;
+    virtual bool isMouseFocusable() const OVERRIDE FINAL;
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE;
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
-    virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
-    virtual void removedFrom(ContainerNode*) OVERRIDE;
-    virtual void didRecalcStyle(StyleRecalcChange) OVERRIDE;
+    virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE FINAL;
+    virtual void removedFrom(ContainerNode*) OVERRIDE FINAL;
+    virtual void didRecalcStyle(StyleRecalcChange) OVERRIDE FINAL;
 
-    virtual void didBecomeFullscreenElement() OVERRIDE;
-    virtual void willStopBeingFullscreenElement() OVERRIDE;
-    virtual bool isInteractiveContent() const OVERRIDE;
+    virtual void didBecomeFullscreenElement() OVERRIDE FINAL;
+    virtual void willStopBeingFullscreenElement() OVERRIDE FINAL;
+    virtual bool isInteractiveContent() const OVERRIDE FINAL;
 
     // ActiveDOMObject functions.
-    virtual void stop() OVERRIDE;
+    virtual void stop() OVERRIDE FINAL;
 
     virtual void updateDisplayState() { }
 
     void setReadyState(MediaPlayer::ReadyState);
     void setNetworkState(MediaPlayer::NetworkState);
 
-    virtual void mediaPlayerNetworkStateChanged() OVERRIDE;
-    virtual void mediaPlayerReadyStateChanged() OVERRIDE;
-    virtual void mediaPlayerTimeChanged() OVERRIDE;
-    virtual void mediaPlayerDurationChanged() OVERRIDE;
-    virtual void mediaPlayerPlaybackStateChanged() OVERRIDE;
-    virtual void mediaPlayerRequestFullscreen() OVERRIDE;
-    virtual void mediaPlayerRequestSeek(double) OVERRIDE;
-    virtual void mediaPlayerRepaint() OVERRIDE;
-    virtual void mediaPlayerSizeChanged() OVERRIDE;
+    virtual void mediaPlayerNetworkStateChanged() OVERRIDE FINAL;
+    virtual void mediaPlayerReadyStateChanged() OVERRIDE FINAL;
+    virtual void mediaPlayerTimeChanged() OVERRIDE FINAL;
+    virtual void mediaPlayerDurationChanged() OVERRIDE FINAL;
+    virtual void mediaPlayerPlaybackStateChanged() OVERRIDE FINAL;
+    virtual void mediaPlayerRequestFullscreen() OVERRIDE FINAL;
+    virtual void mediaPlayerRequestSeek(double) OVERRIDE FINAL;
+    virtual void mediaPlayerRepaint() OVERRIDE FINAL;
+    virtual void mediaPlayerSizeChanged() OVERRIDE FINAL;
 
-    virtual void mediaPlayerKeyAdded(const String& keySystem, const String& sessionId) OVERRIDE;
-    virtual void mediaPlayerKeyError(const String& keySystem, const String& sessionId, MediaPlayerClient::MediaKeyErrorCode, unsigned short systemCode) OVERRIDE;
-    virtual void mediaPlayerKeyMessage(const String& keySystem, const String& sessionId, const unsigned char* message, unsigned messageLength, const KURL& defaultURL) OVERRIDE;
-    virtual bool mediaPlayerKeyNeeded(const String& keySystem, const String& sessionId, const unsigned char* initData, unsigned initDataLength) OVERRIDE;
-    virtual bool mediaPlayerKeyNeeded(Uint8Array*) OVERRIDE;
+    virtual void mediaPlayerKeyAdded(const String& keySystem, const String& sessionId) OVERRIDE FINAL;
+    virtual void mediaPlayerKeyError(const String& keySystem, const String& sessionId, MediaPlayerClient::MediaKeyErrorCode, unsigned short systemCode) OVERRIDE FINAL;
+    virtual void mediaPlayerKeyMessage(const String& keySystem, const String& sessionId, const unsigned char* message, unsigned messageLength, const KURL& defaultURL) OVERRIDE FINAL;
+    virtual bool mediaPlayerKeyNeeded(const String& keySystem, const String& sessionId, const unsigned char* initData, unsigned initDataLength) OVERRIDE FINAL;
+    virtual bool mediaPlayerKeyNeeded(Uint8Array*) OVERRIDE FINAL;
 
-    virtual CORSMode mediaPlayerCORSMode() const OVERRIDE;
+    virtual CORSMode mediaPlayerCORSMode() const OVERRIDE FINAL;
 
-    virtual void mediaPlayerSetWebLayer(blink::WebLayer*) OVERRIDE;
-    virtual void mediaPlayerSetOpaque(bool) OVERRIDE;
-    virtual void mediaPlayerMediaSourceOpened(blink::WebMediaSource*) OVERRIDE;
+    virtual void mediaPlayerSetWebLayer(blink::WebLayer*) OVERRIDE FINAL;
+    virtual void mediaPlayerSetOpaque(bool) OVERRIDE FINAL;
+    virtual void mediaPlayerMediaSourceOpened(blink::WebMediaSource*) OVERRIDE FINAL;
 
     void loadTimerFired(Timer<HTMLMediaElement>*);
     void progressEventTimerFired(Timer<HTMLMediaElement>*);
@@ -438,7 +438,7 @@ private:
     void prepareMediaFragmentURI();
     void applyMediaFragmentURI();
 
-    virtual void* preDispatchEventHandler(Event*) OVERRIDE;
+    virtual void* preDispatchEventHandler(Event*) OVERRIDE FINAL;
 
     void changeNetworkStateFromLoadingToIdle();
 
@@ -449,7 +449,7 @@ private:
     void updateMediaController();
     bool isBlocked() const;
     bool isBlockedOnMediaController() const;
-    bool hasCurrentSrc() const { return !m_currentSrc.isEmpty(); }
+    virtual bool hasCurrentSrc() const OVERRIDE FINAL { return !m_currentSrc.isEmpty(); }
     bool isAutoplaying() const { return m_autoplaying; }
 
     blink::WebContentDecryptionModule* contentDecryptionModule();

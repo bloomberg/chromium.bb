@@ -177,7 +177,7 @@ private:
     virtual bool sheetLoaded() OVERRIDE;
     virtual void notifyLoadedSheetAndAllCriticalSubresources(bool errorOccurred) OVERRIDE;
     virtual void startLoadingDynamicSheet() OVERRIDE;
-    virtual void finishParsingChildren();
+    virtual void finishParsingChildren() OVERRIDE;
 
     // From LinkLoaderClient
     virtual void linkLoaded() OVERRIDE;
