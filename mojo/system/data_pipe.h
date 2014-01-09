@@ -83,9 +83,6 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
   friend class base::RefCountedThreadSafe<DataPipe>;
   virtual ~DataPipe();
 
-  void AwakeProducerWaitersForStateChangeNoLock();
-  void AwakeConsumerWaitersForStateChangeNoLock();
-
   virtual void ProducerCloseImplNoLock() = 0;
   // |*num_bytes| will be a nonzero multiple of |element_num_bytes_|.
   virtual MojoResult ProducerWriteDataImplNoLock(const void* elements,
@@ -97,6 +94,7 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
       bool all_or_none) = 0;
   virtual MojoResult ProducerEndWriteDataImplNoLock(
       uint32_t num_bytes_written) = 0;
+  // Note: A producer should not be writable during a two-phase write.
   virtual MojoWaitFlags ProducerSatisfiedFlagsNoLock() = 0;
   virtual MojoWaitFlags ProducerSatisfiableFlagsNoLock() = 0;
 
@@ -113,6 +111,7 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
                                                      uint32_t* buffer_num_bytes,
                                                      bool all_or_none) = 0;
   virtual MojoResult ConsumerEndReadDataImplNoLock(uint32_t num_bytes_read) = 0;
+  // Note: A consumer should not be writable during a two-phase read.
   virtual MojoWaitFlags ConsumerSatisfiedFlagsNoLock() = 0;
   virtual MojoWaitFlags ConsumerSatisfiableFlagsNoLock() = 0;
 
@@ -158,6 +157,9 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
   }
 
  private:
+  void AwakeProducerWaitersForStateChangeNoLock();
+  void AwakeConsumerWaitersForStateChangeNoLock();
+
   bool has_local_producer_no_lock() const {
     lock_.AssertAcquired();
     return !!producer_waiter_list_.get();

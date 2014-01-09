@@ -65,6 +65,10 @@ class MOJO_SYSTEM_IMPL_EXPORT LocalDataPipe : public DataPipe {
   size_t GetMaxNumBytesToWriteNoLock();
   size_t GetMaxNumBytesToReadNoLock();
 
+  // Marks the given number of bytes as consumed/discarded. |num_bytes| must be
+  // greater than |current_num_bytes_|.
+  void MarkDataAsConsumedNoLock(size_t num_bytes);
+
   // The members below are protected by |DataPipe|'s |lock_|:
   scoped_ptr_malloc<char, base::ScopedPtrAlignedFree> buffer_;
   // Circular buffer.

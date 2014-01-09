@@ -182,6 +182,9 @@ TEST(LocalDataPipeTest, SimpleReadWrite) {
   dp->ConsumerClose();
 }
 
+// Note: The "basic" waiting tests test that the "wait states" are correct in
+// various situations; they don't test that waiters are properly awoken on state
+// changes. (For that, we need to use multiple threads.)
 TEST(LocalDataPipeTest, BasicProducerWaiting) {
   // Note: We take advantage of the fact that for |LocalDataPipe|, capacities
   // are strict maximums. This is not guaranteed by the API.
@@ -196,110 +199,107 @@ TEST(LocalDataPipeTest, BasicProducerWaiting) {
   EXPECT_EQ(MOJO_RESULT_OK,
             DataPipe::ValidateOptions(&options, &validated_options));
 
-  {
-    scoped_refptr<LocalDataPipe> dp(new LocalDataPipe(validated_options));
-    Waiter waiter;
+  scoped_refptr<LocalDataPipe> dp(new LocalDataPipe(validated_options));
+  Waiter waiter;
 
-    // Never readable.
-    waiter.Init();
-    EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-              dp->ProducerAddWaiter(&waiter, MOJO_WAIT_FLAG_READABLE, 12));
+  // Never readable.
+  waiter.Init();
+  EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
+            dp->ProducerAddWaiter(&waiter, MOJO_WAIT_FLAG_READABLE, 12));
 
-    // Already writable.
-    waiter.Init();
-    EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
-              dp->ProducerAddWaiter(&waiter, MOJO_WAIT_FLAG_WRITABLE, 34));
+  // Already writable.
+  waiter.Init();
+  EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
+            dp->ProducerAddWaiter(&waiter, MOJO_WAIT_FLAG_WRITABLE, 34));
 
-    // Write two elements.
-    int32_t elements[2] = { 123, 456 };
-    uint32_t num_bytes = static_cast<uint32_t>(2u * sizeof(elements[0]));
-    EXPECT_EQ(MOJO_RESULT_OK,
-              dp->ProducerWriteData(elements, &num_bytes, true));
-    EXPECT_EQ(static_cast<uint32_t>(2u * sizeof(elements[0])), num_bytes);
+  // Write two elements.
+  int32_t elements[2] = { 123, 456 };
+  uint32_t num_bytes = static_cast<uint32_t>(2u * sizeof(elements[0]));
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerWriteData(elements, &num_bytes, true));
+  EXPECT_EQ(static_cast<uint32_t>(2u * sizeof(elements[0])), num_bytes);
 
-    // Adding a waiter should now succeed.
-    waiter.Init();
-    EXPECT_EQ(MOJO_RESULT_OK,
-              dp->ProducerAddWaiter(&waiter, MOJO_WAIT_FLAG_WRITABLE, 56));
-    // And it shouldn't be writable yet.
-    EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED, waiter.Wait(0));
-    dp->ProducerRemoveWaiter(&waiter);
+  // Adding a waiter should now succeed.
+  waiter.Init();
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ProducerAddWaiter(&waiter, MOJO_WAIT_FLAG_WRITABLE, 56));
+  // And it shouldn't be writable yet.
+  EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED, waiter.Wait(0));
+  dp->ProducerRemoveWaiter(&waiter);
 
-    // Do it again.
-    waiter.Init();
-    EXPECT_EQ(MOJO_RESULT_OK,
-              dp->ProducerAddWaiter(&waiter, MOJO_WAIT_FLAG_WRITABLE, 78));
+  // Do it again.
+  waiter.Init();
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ProducerAddWaiter(&waiter, MOJO_WAIT_FLAG_WRITABLE, 78));
 
-    // Read one element.
-    elements[0] = -1;
-    elements[1] = -1;
-    num_bytes = static_cast<uint32_t>(1u * sizeof(elements[0]));
-    EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerReadData(elements, &num_bytes, true));
-    EXPECT_EQ(static_cast<uint32_t>(1u * sizeof(elements[0])), num_bytes);
-    EXPECT_EQ(123, elements[0]);
-    EXPECT_EQ(-1, elements[1]);
+  // Read one element.
+  elements[0] = -1;
+  elements[1] = -1;
+  num_bytes = static_cast<uint32_t>(1u * sizeof(elements[0]));
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerReadData(elements, &num_bytes, true));
+  EXPECT_EQ(static_cast<uint32_t>(1u * sizeof(elements[0])), num_bytes);
+  EXPECT_EQ(123, elements[0]);
+  EXPECT_EQ(-1, elements[1]);
 
-    // Waiting should now succeed.
-    EXPECT_EQ(78, waiter.Wait(1000));
-    dp->ProducerRemoveWaiter(&waiter);
+  // Waiting should now succeed.
+  EXPECT_EQ(78, waiter.Wait(1000));
+  dp->ProducerRemoveWaiter(&waiter);
 
-    // Try writing, using a two-phase write.
-    void* buffer = NULL;
-    num_bytes = static_cast<uint32_t>(3u * sizeof(elements[0]));
-    EXPECT_EQ(MOJO_RESULT_OK,
-              dp->ProducerBeginWriteData(&buffer, &num_bytes, false));
-    EXPECT_TRUE(buffer != NULL);
-    EXPECT_EQ(static_cast<uint32_t>(1u * sizeof(elements[0])), num_bytes);
-    static_cast<int32_t*>(buffer)[0] = 789;
-    EXPECT_EQ(MOJO_RESULT_OK,
-              dp->ProducerEndWriteData(
-                  static_cast<uint32_t>(1u * sizeof(elements[0]))));
+  // Try writing, using a two-phase write.
+  void* buffer = NULL;
+  num_bytes = static_cast<uint32_t>(3u * sizeof(elements[0]));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ProducerBeginWriteData(&buffer, &num_bytes, false));
+  EXPECT_TRUE(buffer != NULL);
+  EXPECT_EQ(static_cast<uint32_t>(1u * sizeof(elements[0])), num_bytes);
 
-    // Add a waiter.
-    waiter.Init();
-    EXPECT_EQ(MOJO_RESULT_OK,
-              dp->ProducerAddWaiter(&waiter, MOJO_WAIT_FLAG_WRITABLE, 90));
+  static_cast<int32_t*>(buffer)[0] = 789;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ProducerEndWriteData(
+                static_cast<uint32_t>(1u * sizeof(elements[0]))));
 
-    // Read one element, using a two-phase read.
-    const void* read_buffer = NULL;
-    num_bytes = 0u;
-    EXPECT_EQ(MOJO_RESULT_OK,
-              dp->ConsumerBeginReadData(&read_buffer, &num_bytes, false));
-    EXPECT_TRUE(read_buffer != NULL);
-    // Since we only read one element (after having written three in all), the
-    // two-phase read should only allow us to read one. This checks an
-    // implementation detail!
-    EXPECT_EQ(static_cast<uint32_t>(1u * sizeof(elements[0])), num_bytes);
-    EXPECT_EQ(456, static_cast<const int32_t*>(read_buffer)[0]);
-    EXPECT_EQ(MOJO_RESULT_OK,
-              dp->ConsumerEndReadData(
-                  static_cast<uint32_t>(1u * sizeof(elements[0]))));
+  // Add a waiter.
+  waiter.Init();
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ProducerAddWaiter(&waiter, MOJO_WAIT_FLAG_WRITABLE, 90));
 
-    // Waiting should succeed.
-    EXPECT_EQ(90, waiter.Wait(1000));
-    dp->ProducerRemoveWaiter(&waiter);
+  // Read one element, using a two-phase read.
+  const void* read_buffer = NULL;
+  num_bytes = 0u;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ConsumerBeginReadData(&read_buffer, &num_bytes, false));
+  EXPECT_TRUE(read_buffer != NULL);
+  // Since we only read one element (after having written three in all), the
+  // two-phase read should only allow us to read one. This checks an
+  // implementation detail!
+  EXPECT_EQ(static_cast<uint32_t>(1u * sizeof(elements[0])), num_bytes);
+  EXPECT_EQ(456, static_cast<const int32_t*>(read_buffer)[0]);
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ConsumerEndReadData(
+                static_cast<uint32_t>(1u * sizeof(elements[0]))));
 
-    // Write one element.
-    elements[0] = 123;
-    num_bytes = static_cast<uint32_t>(1u * sizeof(elements[0]));
-    EXPECT_EQ(MOJO_RESULT_OK,
-              dp->ProducerWriteData(elements, &num_bytes, false));
-    EXPECT_EQ(static_cast<uint32_t>(1u * sizeof(elements[0])), num_bytes);
+  // Waiting should succeed.
+  EXPECT_EQ(90, waiter.Wait(1000));
+  dp->ProducerRemoveWaiter(&waiter);
 
-    // Add a waiter.
-    waiter.Init();
-    EXPECT_EQ(MOJO_RESULT_OK,
-              dp->ProducerAddWaiter(&waiter, MOJO_WAIT_FLAG_WRITABLE, 12));
+  // Write one element.
+  elements[0] = 123;
+  num_bytes = static_cast<uint32_t>(1u * sizeof(elements[0]));
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerWriteData(elements, &num_bytes, false));
+  EXPECT_EQ(static_cast<uint32_t>(1u * sizeof(elements[0])), num_bytes);
 
-    // Close the consumer.
-    dp->ConsumerClose();
+  // Add a waiter.
+  waiter.Init();
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ProducerAddWaiter(&waiter, MOJO_WAIT_FLAG_WRITABLE, 12));
 
-    // It should now be never-writable.
-    EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, waiter.Wait(1000));
-    dp->ProducerRemoveWaiter(&waiter);
+  // Close the consumer.
+  dp->ConsumerClose();
 
-    dp->ProducerClose();
-  }
+  // It should now be never-writable.
+  EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, waiter.Wait(1000));
+  dp->ProducerRemoveWaiter(&waiter);
+
+  dp->ProducerClose();
 }
 
 TEST(LocalDataPipeTest, BasicConsumerWaiting) {
@@ -476,6 +476,195 @@ TEST(LocalDataPipeTest, BasicConsumerWaiting) {
   }
 }
 
+// Tests that data pipes aren't writable/readable during two-phase writes/reads.
+TEST(LocalDataPipeTest, BasicTwoPhaseWaiting) {
+  const MojoCreateDataPipeOptions options = {
+    kSizeOfOptions,  // |struct_size|.
+    MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
+    static_cast<uint32_t>(sizeof(int32_t)),  // |element_num_bytes|.
+    1000 * sizeof(int32_t)  // |capacity_num_bytes|.
+  };
+  MojoCreateDataPipeOptions validated_options = { 0 };
+  EXPECT_EQ(MOJO_RESULT_OK,
+            DataPipe::ValidateOptions(&options, &validated_options));
+
+  scoped_refptr<LocalDataPipe> dp(new LocalDataPipe(validated_options));
+  Waiter waiter;
+
+  // It should be writable.
+  waiter.Init();
+  EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
+            dp->ProducerAddWaiter(&waiter, MOJO_WAIT_FLAG_WRITABLE, 0));
+
+  uint32_t num_bytes = static_cast<uint32_t>(1u * sizeof(int32_t));
+  void* write_ptr = NULL;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ProducerBeginWriteData(&write_ptr, &num_bytes, false));
+  EXPECT_TRUE(write_ptr != NULL);
+  EXPECT_GE(num_bytes, static_cast<uint32_t>(1u * sizeof(int32_t)));
+
+  // At this point, it shouldn't be writable.
+  waiter.Init();
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ProducerAddWaiter(&waiter, MOJO_WAIT_FLAG_WRITABLE, 1));
+  EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED, waiter.Wait(0));
+  dp->ProducerRemoveWaiter(&waiter);
+
+  // It shouldn't be readable yet either.
+  waiter.Init();
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ConsumerAddWaiter(&waiter, MOJO_WAIT_FLAG_READABLE, 2));
+  EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED, waiter.Wait(0));
+  dp->ConsumerRemoveWaiter(&waiter);
+
+  static_cast<int32_t*>(write_ptr)[0] = 123;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ProducerEndWriteData(
+                static_cast<uint32_t>(1u * sizeof(int32_t))));
+
+  // It should be writable again.
+  waiter.Init();
+  EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
+            dp->ProducerAddWaiter(&waiter, MOJO_WAIT_FLAG_WRITABLE, 3));
+
+  // And readable.
+  waiter.Init();
+  EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
+            dp->ConsumerAddWaiter(&waiter, MOJO_WAIT_FLAG_READABLE, 4));
+
+  // Start another two-phase write and check that it's readable even in the
+  // middle of it.
+  num_bytes = static_cast<uint32_t>(1u * sizeof(int32_t));
+  write_ptr = NULL;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ProducerBeginWriteData(&write_ptr, &num_bytes, false));
+  EXPECT_TRUE(write_ptr != NULL);
+  EXPECT_GE(num_bytes, static_cast<uint32_t>(1u * sizeof(int32_t)));
+
+  // It should be readable.
+  waiter.Init();
+  EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
+            dp->ConsumerAddWaiter(&waiter, MOJO_WAIT_FLAG_READABLE, 5));
+
+  // End the two-phase write without writing anything.
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerEndWriteData(0u));
+
+  // Start a two-phase read.
+  num_bytes = static_cast<uint32_t>(1u * sizeof(int32_t));
+  const void* read_ptr = NULL;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ConsumerBeginReadData(&read_ptr, &num_bytes, false));
+  EXPECT_TRUE(read_ptr != NULL);
+  EXPECT_EQ(static_cast<uint32_t>(1u * sizeof(int32_t)), num_bytes);
+
+  // At this point, it should still be writable.
+  waiter.Init();
+  EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
+            dp->ProducerAddWaiter(&waiter, MOJO_WAIT_FLAG_WRITABLE, 6));
+
+  // But not readable.
+  waiter.Init();
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ConsumerAddWaiter(&waiter, MOJO_WAIT_FLAG_READABLE, 7));
+  EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED, waiter.Wait(0));
+  dp->ConsumerRemoveWaiter(&waiter);
+
+  // End the two-phase read without reading anything.
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerEndReadData(0u));
+
+  // It should be readable again.
+  waiter.Init();
+  EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
+            dp->ConsumerAddWaiter(&waiter, MOJO_WAIT_FLAG_READABLE, 8));
+
+  dp->ProducerClose();
+  dp->ConsumerClose();
+}
+
+// Test that a "may discard" data pipe is writable even when it's full.
+TEST(LocalDataPipeTest, BasicMayDiscardWaiting) {
+  const MojoCreateDataPipeOptions options = {
+    kSizeOfOptions,  // |struct_size|.
+    MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_MAY_DISCARD,  // |flags|.
+    static_cast<uint32_t>(sizeof(int32_t)),  // |element_num_bytes|.
+    1 * sizeof(int32_t)  // |capacity_num_bytes|.
+  };
+  MojoCreateDataPipeOptions validated_options = { 0 };
+  EXPECT_EQ(MOJO_RESULT_OK,
+            DataPipe::ValidateOptions(&options, &validated_options));
+
+  scoped_refptr<LocalDataPipe> dp(new LocalDataPipe(validated_options));
+  Waiter waiter;
+
+  // Writable.
+  waiter.Init();
+  EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
+            dp->ProducerAddWaiter(&waiter, MOJO_WAIT_FLAG_WRITABLE, 0));
+
+  // Not readable.
+  waiter.Init();
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ConsumerAddWaiter(&waiter, MOJO_WAIT_FLAG_READABLE, 1));
+  EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED, waiter.Wait(0));
+  dp->ConsumerRemoveWaiter(&waiter);
+
+  uint32_t num_bytes = static_cast<uint32_t>(sizeof(int32_t));
+  int32_t element = 123;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ProducerWriteData(&element, &num_bytes, false));
+  EXPECT_EQ(static_cast<uint32_t>(sizeof(int32_t)), num_bytes);
+
+  // Still writable (even though it's full.
+  waiter.Init();
+  EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
+            dp->ProducerAddWaiter(&waiter, MOJO_WAIT_FLAG_WRITABLE, 2));
+
+  // Now readable.
+  waiter.Init();
+  EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
+            dp->ConsumerAddWaiter(&waiter, MOJO_WAIT_FLAG_READABLE, 3));
+
+  // Overwrite that element.
+  num_bytes = static_cast<uint32_t>(sizeof(int32_t));
+  element = 456;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ProducerWriteData(&element, &num_bytes, false));
+  EXPECT_EQ(static_cast<uint32_t>(sizeof(int32_t)), num_bytes);
+
+  // Still writable.
+  waiter.Init();
+  EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
+            dp->ProducerAddWaiter(&waiter, MOJO_WAIT_FLAG_WRITABLE, 4));
+
+  // And still readable.
+  waiter.Init();
+  EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
+            dp->ConsumerAddWaiter(&waiter, MOJO_WAIT_FLAG_READABLE, 5));
+
+  // Read that element.
+  num_bytes = static_cast<uint32_t>(sizeof(int32_t));
+  element = 0;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ConsumerReadData(&element, &num_bytes, false));
+  EXPECT_EQ(static_cast<uint32_t>(sizeof(int32_t)), num_bytes);
+  EXPECT_EQ(456, element);
+
+  // Still writable.
+  waiter.Init();
+  EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
+            dp->ProducerAddWaiter(&waiter, MOJO_WAIT_FLAG_WRITABLE, 6));
+
+  // No longer readable.
+  waiter.Init();
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ConsumerAddWaiter(&waiter, MOJO_WAIT_FLAG_READABLE, 7));
+  EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED, waiter.Wait(0));
+  dp->ConsumerRemoveWaiter(&waiter);
+
+  dp->ProducerClose();
+  dp->ConsumerClose();
+}
+
 void Seq(int32_t start, size_t count, int32_t* out) {
   for (size_t i = 0; i < count; i++)
     out[i] = start + static_cast<int32_t>(i);
@@ -573,7 +762,81 @@ TEST(LocalDataPipeTest, MayDiscard) {
   expected_buffer[9] = 304;
   EXPECT_EQ(0, memcmp(buffer, expected_buffer, sizeof(buffer)));
 
-  // TODO(vtl): Test two-phase write when it supports "may discard".
+  // Test two-phase writes, including in all-or-none mode.
+  // Note: Again, the following depends on an implementation detail -- namely
+  // that the write pointer will point at the 5th element of the buffer (and the
+  // buffer has exactly the capacity requested).
+
+  num_bytes = 0u;
+  void* write_ptr = NULL;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ProducerBeginWriteData(&write_ptr, &num_bytes, false));
+  EXPECT_TRUE(write_ptr != NULL);
+  EXPECT_EQ(6u * sizeof(int32_t), num_bytes);
+  Seq(400, 6, static_cast<int32_t*>(write_ptr));
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerEndWriteData(6u * sizeof(int32_t)));
+  // Internally, a circular buffer would now look like:
+  //   -, -, -, -, 400, 401, 402, 403, 404, 405
+
+  // |ProducerBeginWriteData()| ignores |*num_bytes| except in "all-or-none"
+  // mode.
+  num_bytes = 6u * sizeof(int32_t);
+  write_ptr = NULL;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ProducerBeginWriteData(&write_ptr, &num_bytes, false));
+  EXPECT_EQ(4u * sizeof(int32_t), num_bytes);
+  static_cast<int32_t*>(write_ptr)[0] = 500;
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerEndWriteData(1u * sizeof(int32_t)));
+  // Internally, a circular buffer would now look like:
+  //   500, -, -, -, 400, 401, 402, 403, 404, 405
+
+  // Requesting a 10-element buffer in all-or-none mode fails at this point.
+  num_bytes = 10u * sizeof(int32_t);
+  write_ptr = NULL;
+  EXPECT_EQ(MOJO_RESULT_OUT_OF_RANGE,
+            dp->ProducerBeginWriteData(&write_ptr, &num_bytes, true));
+
+  // But requesting, say, a 5-element (up to 9, really) buffer should be okay.
+  // It will discard two elements.
+  num_bytes = 5u * sizeof(int32_t);
+  write_ptr = NULL;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ProducerBeginWriteData(&write_ptr, &num_bytes, true));
+  EXPECT_EQ(5u * sizeof(int32_t), num_bytes);
+  // Only write 4 elements though.
+  Seq(600, 4, static_cast<int32_t*>(write_ptr));
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerEndWriteData(4u * sizeof(int32_t)));
+  // Internally, a circular buffer would now look like:
+  //   500, 600, 601, 602, 603, -, 402, 403, 404, 405
+
+  // Do this again. Make sure we can get a buffer all the way out to the end of
+  // the internal buffer.
+  num_bytes = 5u * sizeof(int32_t);
+  write_ptr = NULL;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ProducerBeginWriteData(&write_ptr, &num_bytes, true));
+  EXPECT_EQ(5u * sizeof(int32_t), num_bytes);
+  // Only write 3 elements though.
+  Seq(700, 3, static_cast<int32_t*>(write_ptr));
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerEndWriteData(3u * sizeof(int32_t)));
+  // Internally, a circular buffer would now look like:
+  //   500, 600, 601, 602, 603, 700, 701, 702, -, -
+
+  // Read everything.
+  num_bytes = sizeof(buffer);
+  memset(buffer, 0xab, sizeof(buffer));
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerReadData(buffer, &num_bytes, false));
+  EXPECT_EQ(8u * sizeof(int32_t), num_bytes);
+  memset(expected_buffer, 0xab, sizeof(expected_buffer));
+  expected_buffer[0] = 500;
+  expected_buffer[1] = 600;
+  expected_buffer[2] = 601;
+  expected_buffer[3] = 602;
+  expected_buffer[4] = 603;
+  expected_buffer[5] = 700;
+  expected_buffer[6] = 701;
+  expected_buffer[7] = 702;
+  EXPECT_EQ(0, memcmp(buffer, expected_buffer, sizeof(buffer)));
 
   dp->ProducerClose();
   dp->ConsumerClose();
@@ -801,6 +1064,9 @@ TEST(LocalDataPipeTest, AllOrNoneMayDiscard) {
   Seq(300, 10, expected_buffer);
   EXPECT_EQ(0, memcmp(buffer, expected_buffer, sizeof(buffer)));
 
+  // Note: All-or-none two-phase writes on a "may discard" data pipe are tested
+  // in LocalDataPipeTest.MayDiscard.
+
   dp->ProducerClose();
   dp->ConsumerClose();
 }
@@ -908,9 +1174,6 @@ TEST(LocalDataPipeTest, TwoPhaseAllOrNone) {
 
   dp->ConsumerClose();
 }
-
-// TODO(vtl): Test two-phase read/write with "all or none" and "may discard",
-// once that's supported.
 
 // Tests that |ProducerWriteData()| and |ConsumerReadData()| writes and reads,
 // respectively, as much as possible, even if it has to "wrap around" the
@@ -1167,8 +1430,6 @@ TEST(LocalDataPipeTest, CloseWriteRead) {
     dp->ConsumerClose();
   }
 }
-
-// TODO(vtl): More.
 
 }  // namespace
 }  // namespace system
