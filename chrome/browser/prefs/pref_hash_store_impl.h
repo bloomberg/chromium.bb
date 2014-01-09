@@ -46,9 +46,15 @@ class PrefHashStoreImpl : public PrefHashStore {
                          const base::Value* value) OVERRIDE;
 
  private:
+  // Returns true if the dictionary of hashes stored for |hash_store_id_| is
+  // trusted (which implies unknown values can be trusted as newly tracked
+  // values).
+  bool IsHashDictionaryTrusted() const;
+
   std::string hash_store_id_;
   PrefHashCalculator pref_hash_calculator_;
   PrefService* local_state_;
+  bool initial_hashes_dictionary_trusted_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefHashStoreImpl);
 };

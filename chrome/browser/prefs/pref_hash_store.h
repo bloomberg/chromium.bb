@@ -13,6 +13,16 @@ namespace base {
 class Value;
 }  // namespace base
 
+namespace internals {
+
+// Hash of hashes for each profile, used to validate the existing hashes when
+// debating whether an unknown value is to be trusted, will be stored as a
+// string under
+// |kProfilePreferenceHashes|.|kHashOfHashesPref|.|hash_stored_id_|.
+const char kHashOfHashesPref[] = "hash_of_hashes";
+
+}  // namespace internals
+
 // Stores hashes of and verifies preference values. To use, first call
 // |InitializeTrackedValue| with each preference that should be tracked. Then
 // call |OnPrefValueChanged| to update the hash store when preference values
@@ -32,7 +42,13 @@ class PrefHashStore {
     // The preference value has been changed since the last hash.
     CHANGED,
     // No stored hash exists for the preference value.
-    UNKNOWN_VALUE,
+    UNTRUSTED_UNKNOWN_VALUE,
+    // No stored hash exists for the preference value, but the current set of
+    // hashes stored is trusted and thus this value can safely be seeded. This
+    // happens when all hashes are already properly seeded and a newly
+    // tracked value needs to be seeded). NULL values are inherently trusted as
+    // well.
+    TRUSTED_UNKNOWN_VALUE,
   };
 
   // Checks |initial_value| against the existing stored value hash.

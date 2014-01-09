@@ -16925,6 +16925,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Settings.HashesDictionaryTrusted" enum="BooleanValid">
+  <summary>
+    Logged on profile load. Indicates whether the hashes dictionary for this
+    profile is trusted.
+  </summary>
+</histogram>
+
 <histogram name="Settings.HomePageDomain" enum="OmniboxSearchEngine">
   <obsolete>
     Deprecated in Chrome 30.  Replaced by Settings.HomePageEngineType.
@@ -17095,6 +17102,15 @@ other types of suffix sets.
 
 <histogram name="Settings.TrackedPreferenceReset" enum="TrackedPreference">
   <summary>The id of a tracked preference which was reset by Chrome.</summary>
+</histogram>
+
+<histogram name="Settings.TrackedPreferenceTrustedInitialized"
+    enum="TrackedPreference">
+  <summary>
+    The id of a tracked preference which was initialized despite the absence of
+    a MAC as either (1) the current MACs are trusted, infering that this is a
+    newly tracked pref, or (2) its value is NULL.
+  </summary>
 </histogram>
 
 <histogram name="Settings.TrackedPreferenceUnchanged" enum="TrackedPreference">

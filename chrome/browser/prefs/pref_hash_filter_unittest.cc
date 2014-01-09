@@ -177,8 +177,9 @@ TEST_P(PrefHashFilterTest, FilterUntrackedPrefUpdate) {
 
 TEST_P(PrefHashFilterTest, EmptyAndUnknown) {
   ASSERT_FALSE(pref_store_contents_.Get(kTestPref, NULL));
+  // NULL values are always trusted by the PrefHashStore.
   mock_pref_hash_store_->SetCheckResult(kTestPref,
-                                        PrefHashStore::UNKNOWN_VALUE);
+                                        PrefHashStore::TRUSTED_UNKNOWN_VALUE);
   pref_hash_filter_->FilterOnLoad(&pref_store_contents_);
   ASSERT_EQ(arraysize(kTestTrackedPrefs),
             mock_pref_hash_store_->checked_paths_count());
@@ -196,7 +197,7 @@ TEST_P(PrefHashFilterTest, InitialValueUnknown) {
   ASSERT_TRUE(pref_store_contents_.Get(kTestPref, NULL));
 
   mock_pref_hash_store_->SetCheckResult(kTestPref,
-                                        PrefHashStore::UNKNOWN_VALUE);
+                                        PrefHashStore::UNTRUSTED_UNKNOWN_VALUE);
   pref_hash_filter_->FilterOnLoad(&pref_store_contents_);
   ASSERT_EQ(arraysize(kTestTrackedPrefs),
             mock_pref_hash_store_->checked_paths_count());
@@ -215,6 +216,27 @@ TEST_P(PrefHashFilterTest, InitialValueUnknown) {
     ASSERT_EQ(string_value, value_in_store);
     ASSERT_EQ(string_value, mock_pref_hash_store_->stored_value(kTestPref));
   }
+}
+
+TEST_P(PrefHashFilterTest, InitialValueTrustedUnknown) {
+  // Ownership of this value is transfered to |pref_store_contents_|.
+  base::Value* string_value = base::Value::CreateStringValue("test");
+  pref_store_contents_.Set(kTestPref, string_value);
+
+  ASSERT_TRUE(pref_store_contents_.Get(kTestPref, NULL));
+
+  mock_pref_hash_store_->SetCheckResult(kTestPref,
+                                        PrefHashStore::TRUSTED_UNKNOWN_VALUE);
+  pref_hash_filter_->FilterOnLoad(&pref_store_contents_);
+  ASSERT_EQ(arraysize(kTestTrackedPrefs),
+            mock_pref_hash_store_->checked_paths_count());
+  ASSERT_EQ(1u, mock_pref_hash_store_->stored_paths_count());
+
+  // Seeding is always allowed for trusted unknown values.
+  const base::Value* value_in_store;
+  ASSERT_TRUE(pref_store_contents_.Get(kTestPref, &value_in_store));
+  ASSERT_EQ(string_value, value_in_store);
+  ASSERT_EQ(string_value, mock_pref_hash_store_->stored_value(kTestPref));
 }
 
 TEST_P(PrefHashFilterTest, InitialValueChanged) {

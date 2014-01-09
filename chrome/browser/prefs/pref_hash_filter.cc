@@ -31,8 +31,12 @@ void ReportValidationResult(PrefHashStore::ValueState value_state,
       UMA_HISTOGRAM_ENUMERATION("Settings.TrackedPreferenceChanged",
                                 value_index, num_values);
       return;
-    case PrefHashStore::UNKNOWN_VALUE:
+    case PrefHashStore::UNTRUSTED_UNKNOWN_VALUE:
       UMA_HISTOGRAM_ENUMERATION("Settings.TrackedPreferenceInitialized",
+                                value_index, num_values);
+      return;
+    case PrefHashStore::TRUSTED_UNKNOWN_VALUE:
+      UMA_HISTOGRAM_ENUMERATION("Settings.TrackedPreferenceTrustedInitialized",
                                 value_index, num_values);
       return;
   }
@@ -99,10 +103,13 @@ void PrefHashFilter::FilterOnLoad(base::DictionaryValue* pref_store_contents) {
         case PrefHashStore::CLEARED:
           // Unfortunate case, but there is nothing we can do.
           break;
+        case PrefHashStore::TRUSTED_UNKNOWN_VALUE:
+          // It is okay to seed the hash in this case.
+          break;
         case PrefHashStore::MIGRATED:
           reset_state = no_migration_ ? DO_RESET : WANTED_RESET;
           break;
-        case PrefHashStore::UNKNOWN_VALUE:
+        case PrefHashStore::UNTRUSTED_UNKNOWN_VALUE:
           reset_state = no_seeding_ ? DO_RESET : WANTED_RESET;
           break;
         case PrefHashStore::CHANGED:
