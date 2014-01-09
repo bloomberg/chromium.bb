@@ -537,7 +537,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
     EXPECT_TRUE(
         mock_candidate_window->last_update_lookup_table_arg().is_visible);
 
-    const ui::CandidateWindow& table =
+    const CandidateWindow& table =
         mock_candidate_window->last_update_lookup_table_arg().lookup_table;
     EXPECT_TRUE(table.is_cursor_visible());
   }
@@ -562,13 +562,13 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
     EXPECT_TRUE(
         mock_candidate_window->last_update_lookup_table_arg().is_visible);
 
-    const ui::CandidateWindow& table =
+    const CandidateWindow& table =
         mock_candidate_window->last_update_lookup_table_arg().lookup_table;
 
     // cursor visibility is kept as before.
     EXPECT_TRUE(table.is_cursor_visible());
 
-    EXPECT_EQ(ui::CandidateWindow::VERTICAL, table.orientation());
+    EXPECT_EQ(CandidateWindow::VERTICAL, table.orientation());
   }
   {
     SCOPED_TRACE("setCandidateWindowProperties:pageSize test");
@@ -591,14 +591,14 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
     EXPECT_TRUE(
         mock_candidate_window->last_update_lookup_table_arg().is_visible);
 
-    const ui::CandidateWindow& table =
+    const CandidateWindow& table =
         mock_candidate_window->last_update_lookup_table_arg().lookup_table;
 
     // cursor visibility is kept as before.
     EXPECT_TRUE(table.is_cursor_visible());
 
     // oritantation is kept as before.
-    EXPECT_EQ(ui::CandidateWindow::VERTICAL, table.orientation());
+    EXPECT_EQ(CandidateWindow::VERTICAL, table.orientation());
 
     EXPECT_EQ(7U, table.page_size());
   }
@@ -619,7 +619,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
         set_candidate_window_properties_test_script));
     EXPECT_EQ(1, mock_candidate_window->update_lookup_table_call_count());
 
-    const ui::CandidateWindow& table =
+    const input_method::CandidateWindow& table =
         mock_candidate_window->last_update_lookup_table_arg().lookup_table;
     EXPECT_TRUE(table.is_auxiliary_text_visible());
   }
@@ -641,7 +641,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
     EXPECT_EQ(1, mock_candidate_window->update_lookup_table_call_count());
 
     // aux text visibility is kept as before.
-    const ui::CandidateWindow& table =
+    const input_method::CandidateWindow& table =
         mock_candidate_window->last_update_lookup_table_arg().lookup_table;
     EXPECT_TRUE(table.is_auxiliary_text_visible());
     EXPECT_EQ("AUXILIARY_TEXT", table.auxiliary_text());
@@ -684,14 +684,14 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
     EXPECT_TRUE(
         mock_candidate_window->last_update_lookup_table_arg().is_visible);
 
-    const ui::CandidateWindow& table =
+    const CandidateWindow& table =
         mock_candidate_window->last_update_lookup_table_arg().lookup_table;
 
     // cursor visibility is kept as before.
     EXPECT_TRUE(table.is_cursor_visible());
 
     // oritantation is kept as before.
-    EXPECT_EQ(ui::CandidateWindow::VERTICAL, table.orientation());
+    EXPECT_EQ(CandidateWindow::VERTICAL, table.orientation());
 
     // page size is kept as before.
     EXPECT_EQ(7U, table.page_size());
@@ -731,14 +731,14 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
     EXPECT_TRUE(
         mock_candidate_window->last_update_lookup_table_arg().is_visible);
 
-    const ui::CandidateWindow& table =
+    const CandidateWindow& table =
         mock_candidate_window->last_update_lookup_table_arg().lookup_table;
 
     // cursor visibility is kept as before.
     EXPECT_TRUE(table.is_cursor_visible());
 
     // oritantation is kept as before.
-    EXPECT_EQ(ui::CandidateWindow::VERTICAL, table.orientation());
+    EXPECT_EQ(CandidateWindow::VERTICAL, table.orientation());
 
     // page size is kept as before.
     EXPECT_EQ(7U, table.page_size());

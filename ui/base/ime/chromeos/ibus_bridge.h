@@ -18,11 +18,13 @@ class Rect;
 }  // namespace gfx
 
 namespace ui {
-class CandidateWindow;
 class KeyEvent;
 }  // namespace ui
 
 namespace chromeos {
+namespace input_method {
+class CandidateWindow;
+}  // namespace input_method
 
 class IBusText;
 
@@ -109,8 +111,9 @@ class UI_BASE_EXPORT IBusPanelCandidateWindowHandlerInterface {
   virtual ~IBusPanelCandidateWindowHandlerInterface() {}
 
   // Called when the IME updates the lookup table.
-  virtual void UpdateLookupTable(const ui::CandidateWindow& candidate_window,
-                                 bool visible) = 0;
+  virtual void UpdateLookupTable(
+      const input_method::CandidateWindow& candidate_window,
+      bool visible) = 0;
 
   // Called when the IME updates the preedit text. The |text| is given in
   // UTF-8 encoding.

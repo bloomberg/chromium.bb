@@ -8,6 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/input_method/candidate_view.h"
 #include "chrome/browser/chromeos/input_method/candidate_window_constants.h"
+#include "chromeos/ime/candidate_window.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/screen.h"
 #include "ui/native_theme/native_theme.h"
@@ -74,7 +75,7 @@ class CandidateWindowBorder : public views::BubbleBorder {
 // Computes the page index. For instance, if the page size is 9, and the
 // cursor is pointing to 13th candidate, the page index will be 1 (2nd
 // page, as the index is zero-origin). Returns -1 on error.
-int ComputePageIndex(const ui::CandidateWindow& candidate_window) {
+int ComputePageIndex(const CandidateWindow& candidate_window) {
   if (candidate_window.page_size() > 0)
     return candidate_window.cursor_position() / candidate_window.page_size();
   return -1;
@@ -163,7 +164,7 @@ CandidateWindowView::CandidateWindowView(gfx::NativeView parent)
   preedit_->SetVisible(false);
   candidate_area_->SetVisible(false);
   preedit_->SetBorder(InformationTextArea::BOTTOM);
-  if (candidate_window_.orientation() == ui::CandidateWindow::VERTICAL) {
+  if (candidate_window_.orientation() == CandidateWindow::VERTICAL) {
     AddChildView(preedit_);
     AddChildView(candidate_area_);
     AddChildView(auxiliary_text_);
@@ -231,13 +232,13 @@ void CandidateWindowView::ShowLookupTable() {
 }
 
 void CandidateWindowView::UpdateCandidates(
-    const ui::CandidateWindow& new_candidate_window) {
+    const CandidateWindow& new_candidate_window) {
   // Updating the candidate views is expensive. We'll skip this if possible.
   if (!candidate_window_.IsEqual(new_candidate_window)) {
     if (candidate_window_.orientation() != new_candidate_window.orientation()) {
       // If the new layout is vertical, the aux text should appear at the
       // bottom. If horizontal, it should appear between preedit and candidates.
-      if (new_candidate_window.orientation() == ui::CandidateWindow::VERTICAL) {
+      if (new_candidate_window.orientation() == CandidateWindow::VERTICAL) {
         ReorderChildView(auxiliary_text_, -1);
         auxiliary_text_->SetAlignment(gfx::ALIGN_RIGHT);
         auxiliary_text_->SetBorder(InformationTextArea::TOP);
@@ -274,18 +275,18 @@ void CandidateWindowView::UpdateCandidates(
       CandidateView* candidate_view = candidate_views_[index_in_page];
       // Set the candidate text.
       if (candidate_index < new_candidate_window.candidates().size()) {
-        const ui::CandidateWindow::Entry& entry =
+        const CandidateWindow::Entry& entry =
             new_candidate_window.candidates()[candidate_index];
         candidate_view->SetEntry(entry);
         candidate_view->SetState(views::Button::STATE_NORMAL);
         candidate_view->SetInfolistIcon(!entry.description_title.empty());
       } else {
         // Disable the empty row.
-        candidate_view->SetEntry(ui::CandidateWindow::Entry());
+        candidate_view->SetEntry(CandidateWindow::Entry());
         candidate_view->SetState(views::Button::STATE_DISABLED);
         candidate_view->SetInfolistIcon(false);
       }
-      if (new_candidate_window.orientation() == ui::CandidateWindow::VERTICAL) {
+      if (new_candidate_window.orientation() == CandidateWindow::VERTICAL) {
         int shortcut_width = 0;
         int candidate_width = 0;
         candidate_views_[i]->GetPreferredWidths(
@@ -294,14 +295,14 @@ void CandidateWindowView::UpdateCandidates(
         max_candidate_width = std::max(max_candidate_width, candidate_width);
       }
     }
-    if (new_candidate_window.orientation() == ui::CandidateWindow::VERTICAL) {
+    if (new_candidate_window.orientation() == CandidateWindow::VERTICAL) {
       for (size_t i = 0; i < candidate_views_.size(); ++i)
         candidate_views_[i]->SetWidths(max_shortcut_width, max_candidate_width);
     }
 
     CandidateWindowBorder* border = static_cast<CandidateWindowBorder*>(
         GetBubbleFrameView()->bubble_border());
-    if (new_candidate_window.orientation() == ui::CandidateWindow::VERTICAL)
+    if (new_candidate_window.orientation() == CandidateWindow::VERTICAL)
       border->set_offset(max_shortcut_width);
     else
       border->set_offset(0);
@@ -342,8 +343,8 @@ void CandidateWindowView::SetCursorBounds(const gfx::Rect& cursor_bounds,
 }
 
 void CandidateWindowView::MaybeInitializeCandidateViews(
-    const ui::CandidateWindow& candidate_window) {
-  const ui::CandidateWindow::Orientation orientation =
+    const CandidateWindow& candidate_window) {
+  const CandidateWindow::Orientation orientation =
       candidate_window.orientation();
   const size_t page_size = candidate_window.page_size();
 

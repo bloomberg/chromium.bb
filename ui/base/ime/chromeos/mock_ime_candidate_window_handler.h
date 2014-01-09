@@ -5,7 +5,7 @@
 #ifndef UI_BASE_IME_CHROMEOS_MOCK_IME_CANDIDATE_WINDOW_HANDLER_H_
 #define UI_BASE_IME_CHROMEOS_MOCK_IME_CANDIDATE_WINDOW_HANDLER_H_
 
-#include "ui/base/ime/candidate_window.h"
+#include "chromeos/ime/candidate_window.h"
 #include "ui/base/ime/chromeos/ibus_bridge.h"
 #include "ui/base/ui_base_export.h"
 
@@ -15,7 +15,7 @@ class UI_BASE_EXPORT MockIMECandidateWindowHandler
     : public IBusPanelCandidateWindowHandlerInterface {
  public:
   struct UpdateLookupTableArg {
-    ui::CandidateWindow lookup_table;
+    input_method::CandidateWindow lookup_table;
     bool is_visible;
   };
 
@@ -29,7 +29,7 @@ class UI_BASE_EXPORT MockIMECandidateWindowHandler
 
   // IBusPanelCandidateWindowHandlerInterface override.
   virtual void UpdateLookupTable(
-      const ui::CandidateWindow& candidate_window,
+      const input_method::CandidateWindow& candidate_window,
       bool visible) OVERRIDE;
   virtual void UpdatePreeditText(const std::string& text, uint32 cursor_pos,
                                  bool visible) OVERRIDE;

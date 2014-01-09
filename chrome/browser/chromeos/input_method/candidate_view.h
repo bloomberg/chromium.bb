@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_CANDIDATE_VIEW_H_
 
 #include "base/gtest_prod_util.h"
-#include "ui/base/ime/candidate_window.h"
+#include "chromeos/ime/candidate_window.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/view.h"
@@ -18,7 +18,7 @@ namespace input_method {
 class CandidateView : public views::CustomButton {
  public:
   CandidateView(views::ButtonListener* listener,
-                ui::CandidateWindow::Orientation orientation);
+                CandidateWindow::Orientation orientation);
   virtual ~CandidateView() {}
 
   void GetPreferredWidths(int* shortcut_width,
@@ -27,7 +27,7 @@ class CandidateView : public views::CustomButton {
   void SetWidths(int shortcut_width,
                  int candidate_width);
 
-  void SetEntry(const ui::CandidateWindow::Entry& entry);
+  void SetEntry(const CandidateWindow::Entry& entry);
 
   // Sets infolist icon.
   void SetInfolistIcon(bool enable);
@@ -45,7 +45,7 @@ class CandidateView : public views::CustomButton {
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
   // The orientation of the candidate view.
-  ui::CandidateWindow::Orientation orientation_;
+  CandidateWindow::Orientation orientation_;
 
   // Views created in the class will be part of tree of |this|, so these
   // child views will be deleted when |this| is deleted.

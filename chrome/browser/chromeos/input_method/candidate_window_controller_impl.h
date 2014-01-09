@@ -18,13 +18,10 @@ namespace views {
 class Widget;
 }  // namespace views
 
-namespace ui {
-class CandidateWindow;
-}  // namespace ui
-
 namespace chromeos {
 namespace input_method {
 
+class CandidateWindow;
 class DelayableWidget;
 class ModeIndicatorController;
 
@@ -51,7 +48,7 @@ class CandidateWindowControllerImpl
   // |has_highlighted| to true if infolist_entries contains highlighted entry.
   // TODO(mukai): move this method (and tests) to the new InfolistEntry model.
   static void ConvertLookupTableToInfolistEntry(
-      const ui::CandidateWindow& candidate_window,
+      const CandidateWindow& candidate_window,
       std::vector<InfolistEntry>* infolist_entries,
       bool* has_highlighted);
 
@@ -65,9 +62,8 @@ class CandidateWindowControllerImpl
   // IBusPanelCandidateWindowHandlerInterface implementation.
   virtual void SetCursorBounds(const gfx::Rect& cursor_bounds,
                                const gfx::Rect& composition_head) OVERRIDE;
-  virtual void UpdateLookupTable(
-      const ui::CandidateWindow& candidate_window,
-      bool visible) OVERRIDE;
+  virtual void UpdateLookupTable(const CandidateWindow& candidate_window,
+                                 bool visible) OVERRIDE;
   virtual void UpdatePreeditText(const std::string& utf8_text,
                                  unsigned int cursor, bool visible) OVERRIDE;
   virtual void FocusStateChanged(bool is_focused) OVERRIDE;

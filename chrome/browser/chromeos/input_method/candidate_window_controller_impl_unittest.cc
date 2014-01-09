@@ -58,10 +58,10 @@ class CandidateWindowControllerImplTest : public testing::Test {
 
 TEST_F(CandidateWindowControllerImplTest,
        ConvertLookupTableToInfolistEntryTest_DenseCase) {
-  ui::CandidateWindow candidate_window;
+  CandidateWindow candidate_window;
   candidate_window.set_page_size(10);
   for (size_t i = 0; i < kSampleCandidateSize; ++i) {
-    ui::CandidateWindow::Entry entry;
+    CandidateWindow::Entry entry;
     entry.value = kSampleCandidate[i];
     entry.description_title = kSampleDescriptionTitle[i];
     entry.description_body = kSampleDescriptionBody[i];
@@ -84,15 +84,15 @@ TEST_F(CandidateWindowControllerImplTest,
 
 TEST_F(CandidateWindowControllerImplTest,
        ConvertLookupTableToInfolistEntryTest_SparseCase) {
-  ui::CandidateWindow candidate_window;
+  CandidateWindow candidate_window;
   candidate_window.set_page_size(10);
   for (size_t i = 0; i < kSampleCandidateSize; ++i) {
-    ui::CandidateWindow::Entry entry;
+    CandidateWindow::Entry entry;
     entry.value = kSampleCandidate[i];
     candidate_window.mutable_candidates()->push_back(entry);
   }
 
-  std::vector<ui::CandidateWindow::Entry>* candidates =
+  std::vector<CandidateWindow::Entry>* candidates =
       candidate_window.mutable_candidates();
   (*candidates)[2].description_title = kSampleDescriptionTitle[2];
   (*candidates)[2].description_body = kSampleDescriptionBody[2];
@@ -115,16 +115,16 @@ TEST_F(CandidateWindowControllerImplTest,
 
 TEST_F(CandidateWindowControllerImplTest,
        ConvertLookupTableToInfolistEntryTest_SparseNoSelectionCase) {
-  ui::CandidateWindow candidate_window;
+  CandidateWindow candidate_window;
   candidate_window.set_page_size(10);
 
   for (size_t i = 0; i < kSampleCandidateSize; ++i) {
-    ui::CandidateWindow::Entry entry;
+    CandidateWindow::Entry entry;
     entry.value = kSampleCandidate[i];
     candidate_window.mutable_candidates()->push_back(entry);
   }
 
-  std::vector<ui::CandidateWindow::Entry>* candidates =
+  std::vector<CandidateWindow::Entry>* candidates =
       candidate_window.mutable_candidates();
   (*candidates)[2].description_title = kSampleDescriptionTitle[2];
   (*candidates)[2].description_body = kSampleDescriptionBody[2];
@@ -148,11 +148,11 @@ TEST_F(CandidateWindowControllerImplTest,
 
 TEST_F(CandidateWindowControllerImplTest,
        ConvertLookupTableToInfolistEntryTest_NoInfolistCase) {
-  ui::CandidateWindow candidate_window;
+  CandidateWindow candidate_window;
   candidate_window.set_page_size(10);
 
   for (size_t i = 0; i < kSampleCandidateSize; ++i) {
-    ui::CandidateWindow::Entry entry;
+    CandidateWindow::Entry entry;
     entry.value = kSampleCandidate[i];
     candidate_window.mutable_candidates()->push_back(entry);
   }

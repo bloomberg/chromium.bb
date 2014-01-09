@@ -20,6 +20,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chromeos/ime/candidate_window.h"
 #include "chromeos/ime/component_extension_ime_manager.h"
 #include "chromeos/ime/extension_ime_util.h"
 #include "chromeos/ime/ibus_keymap.h"
@@ -27,7 +28,6 @@
 #include "chromeos/ime/input_method_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
-#include "ui/base/ime/candidate_window.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/dom4/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
@@ -61,7 +61,7 @@ InputMethodEngine::InputMethodEngine()
       observer_(NULL),
       preedit_text_(new IBusText()),
       preedit_cursor_(0),
-      candidate_window_(new ui::CandidateWindow()),
+      candidate_window_(new input_method::CandidateWindow()),
       window_visible_(false) {}
 
 InputMethodEngine::~InputMethodEngine() {
@@ -254,7 +254,7 @@ void InputMethodEngine::SetCandidateWindowProperty(
     const CandidateWindowProperty& property) {
   // Type conversion from InputMethodEngineInterface::CandidateWindowProperty to
   // CandidateWindow::CandidateWindowProperty defined in chromeos/ime/.
-  ui::CandidateWindow::CandidateWindowProperty dest_property;
+  input_method::CandidateWindow::CandidateWindowProperty dest_property;
   dest_property.page_size = property.page_size;
   dest_property.is_cursor_visible = property.is_cursor_visible;
   dest_property.is_vertical = property.is_vertical;
@@ -310,7 +310,7 @@ bool InputMethodEngine::SetCandidates(
   candidate_window_->mutable_candidates()->clear();
   for (std::vector<Candidate>::const_iterator ix = candidates.begin();
        ix != candidates.end(); ++ix) {
-    ui::CandidateWindow::Entry entry;
+    input_method::CandidateWindow::Entry entry;
     entry.value = ix->value;
     entry.label = ix->label;
     entry.annotation = ix->annotation;
