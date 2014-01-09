@@ -191,7 +191,7 @@ void HTMLImportChild::shareLoader(HTMLImportChild* loader)
 
 bool HTMLImportChild::isProcessing() const
 {
-    return m_loader && m_loader->isOwnedBy(this) && m_loader->isProcessing();
+    return m_loader && m_loader->isOwnedBy(this) && !m_loader->isDone();
 }
 
 bool HTMLImportChild::isDone() const
@@ -199,10 +199,11 @@ bool HTMLImportChild::isDone() const
     return m_loader && m_loader->isDone();
 }
 
-bool HTMLImportChild::isLoaded() const
+bool HTMLImportChild::loaderHasError() const
 {
-    return m_loader->isLoaded();
+    return m_loader && m_loader->hasError();
 }
+
 
 void HTMLImportChild::addClient(HTMLImportChildClient* client)
 {

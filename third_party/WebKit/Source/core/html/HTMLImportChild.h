@@ -63,7 +63,6 @@ public:
     void wasAlreadyLoaded();
     void startLoading(const ResourcePtr<RawResource>&);
     void importDestroyed();
-    bool isLoaded() const;
 
     // HTMLImport
     virtual HTMLImportRoot* root() OVERRIDE;
@@ -78,6 +77,7 @@ public:
 
     void addClient(HTMLImportChildClient*);
     void removeClient(HTMLImportChildClient*);
+    bool loaderHasError() const;
 
 private:
     // RawResourceOwner doing nothing.

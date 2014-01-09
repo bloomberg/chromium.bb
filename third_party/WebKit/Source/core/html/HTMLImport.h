@@ -103,7 +103,7 @@ class CustomElementPendingImport;
 // The blocking state can change when one of the imports finish loading. The Document notices it through
 // HTMLImportRoot::blockerGone(). The blockerGone() triggers HTMLImport::unblockFromRunningScript(), which traverses
 // whole import tree and find unblock-able imports and unblock them.
-// Unblocked imported documents are notified through Document::didLoadAllImports() so that
+// Ready imported documents are notified through Document::didLoadAllImports() so that
 // it can resume its parser.
 //
 // # Document Blocking
@@ -140,10 +140,9 @@ public:
     HTMLImportsController* controller();
 
     bool isCreatedByParser() const { return m_createdByParser; }
-    bool isLoaded() const { return !isBlockedFromRunningScript() && !isProcessing(); }
-    bool isBlockedFromRunningScript() const { return m_blockingState <= BlockedFromRunningScript; }
-    bool isBlockedFromCreatingDocument() const { return m_blockingState <= BlockedFromCreatingDocument; }
-    bool isBlocked() const { return m_blockingState < Unblocked; }
+    bool isBlockedFromRunningScript() const { return m_state <= BlockedFromRunningScript; }
+    bool isBlockedFromCreatingDocument() const { return m_state <= BlockedFromCreatingDocument; }
+    bool isBlocked() const { return m_state < Ready; }
 
     void appendChild(HTMLImport*);
 
@@ -156,17 +155,15 @@ public:
     virtual CustomElementPendingImport* pendingImport() const { return 0; }
 
 protected:
-    // FIXME: Should be renamed to "State" as this state is no longer only about blocking-ness.
-    // Some block/unblock functions should be renamed acordingly.
-    enum BlockingState {
+    enum State {
         BlockedFromCreatingDocument,
         BlockedFromRunningScript,
         WaitingLoaderOrChildren,
-        Unblocked // FIXME: Should be renamed to "Ready".
+        Ready
     };
 
-    explicit HTMLImport(BlockingState state, bool createdByParser = false)
-        : m_blockingState(state)
+    explicit HTMLImport(State state, bool createdByParser = false)
+        : m_state(state)
         , m_createdByParser(createdByParser)
     { }
 
@@ -193,7 +190,7 @@ private:
     bool isBlockingFollowersFromRunningScript() const;
     bool isBlockingFollowersFromCreatingDocument() const;
 
-    enum BlockingState m_blockingState;
+    State m_state;
 
     bool m_createdByParser : 1;
 };
@@ -201,7 +198,7 @@ private:
 // An abstract class to decouple its sublcass HTMLImportsController.
 class HTMLImportRoot : public HTMLImport {
 public:
-    HTMLImportRoot() : HTMLImport(Unblocked) { }
+    HTMLImportRoot() : HTMLImport(Ready) { }
 
     virtual void blockerGone() = 0;
     virtual HTMLImportsController* toController() = 0;

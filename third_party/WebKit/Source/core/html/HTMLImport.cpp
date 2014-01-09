@@ -86,27 +86,27 @@ bool HTMLImport::isBlockedFromRunningScriptByPredecessors() const
 
 void HTMLImport::waitLoaderOrChildren()
 {
-    if (WaitingLoaderOrChildren < m_blockingState)
-        m_blockingState = WaitingLoaderOrChildren;
+    if (WaitingLoaderOrChildren < m_state)
+        m_state = WaitingLoaderOrChildren;
 }
 
 void HTMLImport::blockFromRunningScript()
 {
-    if (BlockedFromRunningScript < m_blockingState)
-        m_blockingState = BlockedFromRunningScript;
+    if (BlockedFromRunningScript < m_state)
+        m_state = BlockedFromRunningScript;
 }
 
 void HTMLImport::blockFromCreatingDocument()
 {
-    if (BlockedFromCreatingDocument < m_blockingState)
-        m_blockingState = BlockedFromCreatingDocument;
+    if (BlockedFromCreatingDocument < m_state)
+        m_state = BlockedFromCreatingDocument;
 }
 
 void HTMLImport::becomeReady()
 {
     if (!isBlocked())
         return;
-    m_blockingState = Unblocked;
+    m_state = Ready;
     didBecomeReady();
 }
 
@@ -114,7 +114,7 @@ void HTMLImport::unblockFromRunningScript()
 {
     if (!isBlockedFromRunningScript())
         return;
-    m_blockingState = WaitingLoaderOrChildren;
+    m_state = WaitingLoaderOrChildren;
     didUnblockFromRunningScript();
 }
 
@@ -122,7 +122,7 @@ void HTMLImport::unblockFromCreatingDocument()
 {
     if (!isBlockedFromCreatingDocument())
         return;
-    m_blockingState = BlockedFromRunningScript;
+    m_state = BlockedFromRunningScript;
     didUnblockFromCreatingDocument();
 }
 
@@ -152,14 +152,14 @@ void HTMLImport::loaderWasResolved()
 
 void HTMLImport::loaderDidFinish()
 {
-    if (m_blockingState == WaitingLoaderOrChildren)
+    if (m_state == WaitingLoaderOrChildren)
         becomeReady();
     root()->blockerGone();
 }
 
 inline bool HTMLImport::isBlockingFollowersFromRunningScript() const
 {
-    return !isLoaded() && isCreatedByParser();
+    return (isBlockedFromRunningScript() || isProcessing()) && isCreatedByParser();
 }
 
 inline bool HTMLImport::isBlockingFollowersFromCreatingDocument() const

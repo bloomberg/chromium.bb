@@ -125,7 +125,7 @@ bool LinkImport::isCreatedByParser() const
 
 bool LinkImport::hasLoaded() const
 {
-    return m_child && m_child->isLoaded();
+    return m_child && m_child->isDone() && !m_child->loaderHasError();
 }
 
 } // namespace WebCore

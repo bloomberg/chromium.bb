@@ -51,7 +51,7 @@ PassRefPtr<HTMLImportLoader> HTMLImportLoader::create(HTMLImport* import, Resour
 HTMLImportLoader::HTMLImportLoader(HTMLImport* import, ResourceFetcher* fetcher)
     : m_import(import)
     , m_fetcher(fetcher)
-    , m_blockingState(StateLoading)
+    , m_state(StateLoading)
 {
 }
 
@@ -118,17 +118,17 @@ HTMLImportLoader::State HTMLImportLoader::finishParsing()
 
 void HTMLImportLoader::setState(State state)
 {
-    if (m_blockingState == state)
+    if (m_state == state)
         return;
 
-    m_blockingState = state;
+    m_state = state;
 
-    if (m_blockingState == StateReady || m_blockingState == StateError || m_blockingState == StateWritten) {
+    if (m_state == StateReady || m_state == StateError || m_state == StateWritten) {
         if (RefPtr<DocumentWriter> writer = m_writer.release())
             writer->end();
     }
 
-    // Since DocumentWriter::end() can let setState() reenter, we shouldn't refer to m_blockingState here.
+    // Since DocumentWriter::end() can let setState() reenter, we shouldn't refer to m_state here.
     if (state == StateReady || state == StateError)
         didFinish();
 }
@@ -140,16 +140,9 @@ void HTMLImportLoader::didFinishParsing()
 
 Document* HTMLImportLoader::importedDocument() const
 {
-    if (m_blockingState == StateError)
+    if (m_state == StateError)
         return 0;
     return m_importedDocument.get();
-}
-
-bool HTMLImportLoader::isProcessing() const
-{
-    if (!m_importedDocument)
-        return !isDone();
-    return m_importedDocument->parsing();
 }
 
 void HTMLImportLoader::didFinish()
