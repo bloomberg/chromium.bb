@@ -8,7 +8,7 @@ test-25fps.h264:
 
 test-25fps.h264.md5:
   MD5s of RGB thumbnail rendered version of test-25fps.h264 decoded with Intel
-  VAAPI on Haswell, Ivy Bridge, Sandy Bridge and Exynos EVDA.
+  VAAPI on Haswell, Ivy Bridge, Sandy Bridge and V4L2VDA on Exynos.
   Written out by video_decode_accelerator_unittest.
   These differ between implementations because color space-converted frames are
   not specified to the last bit and GLES shader/texture filtering
@@ -21,5 +21,5 @@ test-25fps.vp8:
       mkvextract tracks test-25fps.webm 1:test-25fps.vp8 && rm test-25fps.webm
 
 test-25fps.vp8.md5:
-  MD5 of RGB thumbnail rendered version of test-25fps.vp8 decoded with Exynos
-  EVDA.  Written out by video_decode_accelerator_unittest.
+  MD5 of RGB thumbnail rendered version of test-25fps.vp8 decoded with V4L2VDA
+  on Exynos. Written out by video_decode_accelerator_unittest.

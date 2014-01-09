@@ -1,12 +1,13 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// This file contains an implementation of VideoDecoderAccelerator
-// that utilizes the hardware video decoder present on the Exynos SoC.
+// This file contains an implementation of VideoDecodeAccelerator
+// that utilizes hardware video decoders, which expose Video4Linux 2 API
+// (http://linuxtv.org/downloads/v4l-dvb-apis/).
 
-#ifndef CONTENT_COMMON_GPU_MEDIA_EXYNOS_VIDEO_DECODE_ACCELERATOR_H_
-#define CONTENT_COMMON_GPU_MEDIA_EXYNOS_VIDEO_DECODE_ACCELERATOR_H_
+#ifndef CONTENT_COMMON_GPU_MEDIA_V4L2_VIDEO_DECODE_ACCELERATOR_H_
+#define CONTENT_COMMON_GPU_MEDIA_V4L2_VIDEO_DECODE_ACCELERATOR_H_
 
 #include <queue>
 #include <vector>
@@ -30,8 +31,8 @@ class MessageLoopProxy;
 namespace content {
 class H264Parser;
 
-// This class handles Exynos video acceleration directly through the V4L2
-// device exported by the Multi Format Codec hardware block.
+// This class handles video accelerators directly through a V4L2 device exported
+// by the hardware blocks.
 //
 // The threading model of this class is driven by the fact that it needs to
 // interface two fundamentally different event queues -- the one Chromium
@@ -56,16 +57,16 @@ class H264Parser;
 // decoder_thread_, so there are no synchronization issues.
 // ... well, there are, but it's a matter of getting messages posted in the
 // right order, not fiddling with locks.
-class CONTENT_EXPORT ExynosVideoDecodeAccelerator
+class CONTENT_EXPORT V4L2VideoDecodeAccelerator
     : public VideoDecodeAcceleratorImpl {
  public:
-  ExynosVideoDecodeAccelerator(
+  V4L2VideoDecodeAccelerator(
       EGLDisplay egl_display,
       Client* client,
       const base::WeakPtr<Client>& io_client_,
       const base::Callback<bool(void)>& make_context_current,
       const scoped_refptr<base::MessageLoopProxy>& io_message_loop_proxy);
-  virtual ~ExynosVideoDecodeAccelerator();
+  virtual ~V4L2VideoDecodeAccelerator();
 
   // media::VideoDecodeAccelerator implementation.
   // Note: Initialize() and Destroy() are synchronous.
@@ -84,10 +85,10 @@ class CONTENT_EXPORT ExynosVideoDecodeAccelerator
  private:
   // These are rather subjectively tuned.
   enum {
-    kMfcInputBufferCount = 8,
-    // TODO(posciak): determine MFC input buffer size based on level limits.
+    kInputBufferCount = 8,
+    // TODO(posciak): determine input buffer size based on level limits.
     // See http://crbug.com/255116.
-    kMfcInputBufferMaxSize = 1024 * 1024,
+    kInputBufferMaxSize = 1024 * 1024,
     // Number of output buffers to use for each VDA stage above what's required
     // by the decoder (e.g. DPB size, in H264).  We need
     // media::limits::kMaxVideoFrames to fill up the GpuVideoDecode pipeline,
@@ -113,7 +114,7 @@ class CONTENT_EXPORT ExynosVideoDecodeAccelerator
 
   // File descriptors we need to poll.
   enum PollFds {
-    kPollMfc = (1 << 0),
+    kPollDecoder = (1 << 0),
   };
 
   // Auto-destruction reference for BitstreamBuffer, for message-passing from
@@ -130,10 +131,10 @@ class CONTENT_EXPORT ExynosVideoDecodeAccelerator
   // Record for decoded pictures that can be sent to PictureReady.
   struct PictureRecord;
 
-  // Record for MFC input buffers.
-  struct MfcInputRecord {
-    MfcInputRecord();
-    ~MfcInputRecord();
+  // Record for input buffers.
+  struct InputRecord {
+    InputRecord();
+    ~InputRecord();
     bool at_device;         // held by device.
     void* address;          // mmap() address.
     size_t length;          // mmap() length.
@@ -141,10 +142,10 @@ class CONTENT_EXPORT ExynosVideoDecodeAccelerator
     int32 input_id;         // triggering input_id as given to Decode().
   };
 
-  // Record for MFC output buffers.
-  struct MfcOutputRecord {
-    MfcOutputRecord();
-    ~MfcOutputRecord();
+  // Record for output buffers.
+  struct OutputRecord {
+    OutputRecord();
+    ~OutputRecord();
     bool at_device;         // held by device.
     bool at_client;         // held by client.
     int fds[2];             // file descriptors for each plane.
@@ -190,17 +191,17 @@ class CONTENT_EXPORT ExynosVideoDecodeAccelerator
   void AssignPictureBuffersTask(scoped_ptr<PictureBufferArrayRef> pic_buffers);
 
   // Service I/O on the V4L2 devices.  This task should only be scheduled from
-  // DevicePollTask().  If |mfc_event_pending| is true, one or more events
-  // on MFC file descriptor are pending.
-  void ServiceDeviceTask(bool mfc_event_pending);
+  // DevicePollTask().  If |event_pending| is true, one or more events
+  // on file descriptor are pending.
+  void ServiceDeviceTask(bool event_pending);
   // Handle the various device queues.
-  void EnqueueMfc();
-  void DequeueMfc();
-  // Handle incoming MFC events.
-  void DequeueMfcEvents();
+  void Enqueue();
+  void Dequeue();
+  // Handle incoming events.
+  void DequeueEvents();
   // Enqueue a buffer on the corresponding queue.
-  bool EnqueueMfcInputRecord();
-  bool EnqueueMfcOutputRecord();
+  bool EnqueueInputRecord();
+  bool EnqueueOutputRecord();
 
   // Process a ReusePictureBuffer() API call.  The API call create an EGLSync
   // object on the main (GPU process) thread; we will record this object so we
@@ -230,9 +231,9 @@ class CONTENT_EXPORT ExynosVideoDecodeAccelerator
 
   // Attempt to start/stop device_poll_thread_.
   bool StartDevicePoll();
-  // If |keep_mfc_input_state| is true, don't reset MFC input state; used during
+  // If |keep_input_state| is true, don't reset input state; used during
   // resolution change.
-  bool StopDevicePoll(bool keep_mfc_input_state);
+  bool StopDevicePoll(bool keep_input_state);
   // Set/clear the device poll interrupt (using device_poll_interrupt_fd_).
   bool SetDevicePollInterrupt();
   bool ClearDevicePollInterrupt();
@@ -241,10 +242,10 @@ class CONTENT_EXPORT ExynosVideoDecodeAccelerator
   void FinishResolutionChange();
   void ResumeAfterResolutionChange();
 
-  // Try to get output format from MFC, detected after parsing the beginning
+  // Try to get output format, detected after parsing the beginning
   // of the stream. Sets |again| to true if more parsing is needed.
   bool GetFormatInfo(struct v4l2_format* format, bool* again);
-  // Create MFC output buffers for the given |format|.
+  // Create output buffers for the given |format|.
   bool CreateBuffersForFormat(const struct v4l2_format& format);
 
   //
@@ -272,16 +273,16 @@ class CONTENT_EXPORT ExynosVideoDecodeAccelerator
   //
 
   // Create the buffers we need.
-  bool CreateMfcInputBuffers();
-  bool CreateMfcOutputBuffers();
+  bool CreateInputBuffers();
+  bool CreateOutputBuffers();
 
   //
   // Methods run on child thread.
   //
 
   // Destroy buffers.
-  void DestroyMfcInputBuffers();
-  void DestroyMfcOutputBuffers();
+  void DestroyInputBuffers();
+  void DestroyOutputBuffers();
   void ResolutionChangeDestroyBuffers();
 
   // Send decoded pictures to PictureReady.
@@ -302,7 +303,7 @@ class CONTENT_EXPORT ExynosVideoDecodeAccelerator
   // that this object is still alive.  As a result, tasks posted from the child
   // thread to the decoder or device thread should use base::Unretained(this),
   // and tasks posted the other way should use |weak_this_|.
-  base::WeakPtr<ExynosVideoDecodeAccelerator> weak_this_;
+  base::WeakPtr<V4L2VideoDecodeAccelerator> weak_this_;
 
   // To expose client callbacks from VideoDecodeAccelerator.
   // NOTE: all calls to these objects *MUST* be executed on
@@ -330,7 +331,7 @@ class CONTENT_EXPORT ExynosVideoDecodeAccelerator
   // queued afterwards.  For flushing or resetting the pipeline then, we will
   // delay these buffers until after the flush or reset completes.
   int decoder_delay_bitstream_buffer_id_;
-  // MFC input buffer we're presently filling.
+  // Input buffer we're presently filling.
   int decoder_current_input_buffer_;
   // We track the number of buffer decode tasks we have scheduled, since each
   // task execution should complete one buffer.  If we fall behind (due to
@@ -358,34 +359,34 @@ class CONTENT_EXPORT ExynosVideoDecodeAccelerator
   // the hardware, decoder_thread_ owns these too.
   //
 
-  // Completed decode buffers, waiting for MFC.
-  std::queue<int> mfc_input_ready_queue_;
+  // Completed decode buffers.
+  std::queue<int> input_ready_queue_;
 
-  // MFC decode device.
-  int mfc_fd_;
+  // Decode device.
+  int fd_;
 
-  // MFC input buffer state.
-  bool mfc_input_streamon_;
-  // MFC input buffers enqueued to device.
-  int mfc_input_buffer_queued_count_;
+  // Input buffer state.
+  bool input_streamon_;
+  // Input buffers enqueued to device.
+  int input_buffer_queued_count_;
   // Input buffers ready to use, as a LIFO since we don't care about ordering.
-  std::vector<int> mfc_free_input_buffers_;
-  // Mapping of int index to MFC input buffer record.
-  std::vector<MfcInputRecord> mfc_input_buffer_map_;
+  std::vector<int> free_input_buffers_;
+  // Mapping of int index to input buffer record.
+  std::vector<InputRecord> input_buffer_map_;
 
-  // MFC output buffer state.
-  bool mfc_output_streamon_;
-  // MFC output buffers enqueued to device.
-  int mfc_output_buffer_queued_count_;
+  // Output buffer state.
+  bool output_streamon_;
+  // Output buffers enqueued to device.
+  int output_buffer_queued_count_;
   // Output buffers ready to use, as a FIFO since we want oldest-first to hide
   // synchronization latency with GL.
-  std::queue<int> mfc_free_output_buffers_;
-  // Mapping of int index to MFC output buffer record.
-  std::vector<MfcOutputRecord> mfc_output_buffer_map_;
-  // MFC output pixel format.
-  uint32 mfc_output_buffer_pixelformat_;
+  std::queue<int> free_output_buffers_;
+  // Mapping of int index to output buffer record.
+  std::vector<OutputRecord> output_buffer_map_;
+  // Output pixel format.
+  uint32 output_buffer_pixelformat_;
   // Required size of DPB for decoding.
-  int mfc_output_dpb_size_;
+  int output_dpb_size_;
 
   // Pictures that are ready but not sent to PictureReady yet.
   std::queue<PictureRecord> pending_picture_ready_;
@@ -419,9 +420,9 @@ class CONTENT_EXPORT ExynosVideoDecodeAccelerator
   // The codec we'll be decoding for.
   media::VideoCodecProfile video_profile_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExynosVideoDecodeAccelerator);
+  DISALLOW_COPY_AND_ASSIGN(V4L2VideoDecodeAccelerator);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_GPU_MEDIA_EXYNOS_VIDEO_DECODE_ACCELERATOR_H_
+#endif  // CONTENT_COMMON_GPU_MEDIA_V4L2_VIDEO_DECODE_ACCELERATOR_H_

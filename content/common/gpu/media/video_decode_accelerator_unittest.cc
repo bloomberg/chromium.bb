@@ -55,7 +55,7 @@
 #include "content/common/gpu/media/dxva_video_decode_accelerator.h"
 #elif defined(OS_CHROMEOS)
 #if defined(ARCH_CPU_ARMEL)
-#include "content/common/gpu/media/exynos_video_decode_accelerator.h"
+#include "content/common/gpu/media/v4l2_video_decode_accelerator.h"
 #elif defined(ARCH_CPU_X86_FAMILY)
 #include "content/common/gpu/media/vaapi_video_decode_accelerator.h"
 #include "content/common/gpu/media/vaapi_wrapper.h"
@@ -546,7 +546,7 @@ void GLRenderingVDAClient::CreateAndStartDecoder() {
       new DXVAVideoDecodeAccelerator(client, base::Bind(&DoNothingReturnTrue)));
 #elif defined(OS_CHROMEOS)
 #if defined(ARCH_CPU_ARMEL)
-  decoder_.reset(new ExynosVideoDecodeAccelerator(
+  decoder_.reset(new V4L2VideoDecodeAccelerator(
       static_cast<EGLDisplay>(rendering_helper_->GetGLDisplay()),
       client,
       weak_client,

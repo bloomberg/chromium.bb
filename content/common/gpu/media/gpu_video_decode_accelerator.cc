@@ -26,7 +26,7 @@
 #include "base/win/windows_version.h"
 #include "content/common/gpu/media/dxva_video_decode_accelerator.h"
 #elif defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL) && defined(USE_X11)
-#include "content/common/gpu/media/exynos_video_decode_accelerator.h"
+#include "content/common/gpu/media/v4l2_video_decode_accelerator.h"
 #elif defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY) && defined(USE_X11)
 #include "ui/gl/gl_context_glx.h"
 #include "content/common/gpu/media/vaapi_video_decode_accelerator.h"
@@ -271,7 +271,7 @@ void GpuVideoDecodeAccelerator::Initialize(
   video_decode_accelerator_.reset(new DXVAVideoDecodeAccelerator(
       this, make_context_current_));
 #elif defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL) && defined(USE_X11)
-  video_decode_accelerator_.reset(new ExynosVideoDecodeAccelerator(
+  video_decode_accelerator_.reset(new V4L2VideoDecodeAccelerator(
       gfx::GLSurfaceEGL::GetHardwareDisplay(),
       this,
       weak_factory_for_io_.GetWeakPtr(),

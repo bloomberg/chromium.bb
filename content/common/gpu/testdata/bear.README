@@ -8,7 +8,7 @@ bear.h264:
 
 bear.h264.md5:
   MD5s of RGB thumbnail rendered version of bear.h264 decoded with Intel
-  VAAPI on Ivy Bridge and Sandy Bridge and Exynos EVDA.
+  VAAPI on Ivy Bridge and Sandy Bridge and V4L2VDA on Exynos.
   Written out by video_decode_accelerator_unittest.
   These differ between implementations because color space-converted frames are
   not specified to the last bit and GLES shader/texture filtering
