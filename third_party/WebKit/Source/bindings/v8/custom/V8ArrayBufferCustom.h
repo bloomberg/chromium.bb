@@ -34,9 +34,9 @@
 
 namespace WebCore {
 
-class V8ArrayBufferDeallocationObserver: public WTF::ArrayBufferDeallocationObserver {
+class V8ArrayBufferDeallocationObserver FINAL: public WTF::ArrayBufferDeallocationObserver {
 public:
-    virtual void arrayBufferDeallocated(unsigned sizeInBytes)
+    virtual void arrayBufferDeallocated(unsigned sizeInBytes) OVERRIDE
     {
         v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(-static_cast<int>(sizeInBytes));
     }

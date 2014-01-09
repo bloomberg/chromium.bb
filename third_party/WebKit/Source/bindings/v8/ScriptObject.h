@@ -40,11 +40,11 @@ namespace WebCore {
     class InspectorFrontendHost;
     class ScriptState;
 
-    class ScriptObject : public ScriptValue {
+    class ScriptObject FINAL : public ScriptValue {
     public:
         ScriptObject(ScriptState*, v8::Handle<v8::Object>);
         ScriptObject(ScriptState*, const ScriptValue&);
-        ScriptObject() : m_scriptState(0) { };
+        ScriptObject() : m_scriptState(0) { }
         virtual ~ScriptObject() { }
 
         v8::Handle<v8::Object> v8Object() const;

@@ -127,21 +127,21 @@ private:
 };
 
 // Used if exceptions can/should not be directly thrown.
-class NonThrowableExceptionState : public ExceptionState {
+class NonThrowableExceptionState FINAL : public ExceptionState {
 public:
     NonThrowableExceptionState(): ExceptionState(v8::Handle<v8::Object>(), v8::Isolate::GetCurrent()) { }
-    virtual void throwDOMException(const ExceptionCode&, const String& message) OVERRIDE FINAL;
-    virtual void throwTypeError(const String& message = String()) OVERRIDE FINAL;
-    virtual void throwSecurityError(const String& sanitizedMessage, const String& unsanitizedMessage = String()) OVERRIDE FINAL;
+    virtual void throwDOMException(const ExceptionCode&, const String& message) OVERRIDE;
+    virtual void throwTypeError(const String& message = String()) OVERRIDE;
+    virtual void throwSecurityError(const String& sanitizedMessage, const String& unsanitizedMessage = String()) OVERRIDE;
 };
 
 // Used if any exceptions thrown are ignorable.
-class TrackExceptionState : public ExceptionState {
+class TrackExceptionState FINAL : public ExceptionState {
 public:
     TrackExceptionState(): ExceptionState(v8::Handle<v8::Object>(), v8::Isolate::GetCurrent()) { }
-    virtual void throwDOMException(const ExceptionCode&, const String& message) OVERRIDE FINAL;
-    virtual void throwTypeError(const String& message = String()) OVERRIDE FINAL;
-    virtual void throwSecurityError(const String& sanitizedMessage, const String& unsanitizedMessage = String()) OVERRIDE FINAL;
+    virtual void throwDOMException(const ExceptionCode&, const String& message) OVERRIDE;
+    virtual void throwTypeError(const String& message = String()) OVERRIDE;
+    virtual void throwSecurityError(const String& sanitizedMessage, const String& unsanitizedMessage = String()) OVERRIDE;
 };
 
 } // namespace WebCore

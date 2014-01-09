@@ -41,13 +41,13 @@ class ExceptionState;
 
 typedef int ExceptionCode;
 
-class IgnorableExceptionState : public ExceptionState {
+class IgnorableExceptionState FINAL : public ExceptionState {
 public:
     IgnorableExceptionState(): ExceptionState(v8::Handle<v8::Object>(), 0) { }
     ExceptionState& returnThis() { return *this; }
-    virtual void throwDOMException(const ExceptionCode&, const String& message = String()) OVERRIDE FINAL { };
-    virtual void throwTypeError(const String& message = String()) OVERRIDE FINAL { }
-    virtual void throwSecurityError(const String& sanitizedMessage, const String& unsanitizedMessage = String()) OVERRIDE FINAL { }
+    virtual void throwDOMException(const ExceptionCode&, const String& message = String()) OVERRIDE { }
+    virtual void throwTypeError(const String& message = String()) OVERRIDE { }
+    virtual void throwSecurityError(const String& sanitizedMessage, const String& unsanitizedMessage = String()) OVERRIDE { }
 };
 
 #define IGNORE_EXCEPTION (::WebCore::IgnorableExceptionState().returnThis())
@@ -58,13 +58,13 @@ public:
 
 #else
 
-class NoExceptionStateAssertionChecker : public ExceptionState {
+class NoExceptionStateAssertionChecker FINAL : public ExceptionState {
 public:
     NoExceptionStateAssertionChecker(const char* file, int line);
     ExceptionState& returnThis() { return *this; }
-    virtual void throwDOMException(const ExceptionCode&, const String& message = String()) OVERRIDE FINAL;
-    virtual void throwTypeError(const String& message = String()) OVERRIDE FINAL;
-    virtual void throwSecurityError(const String& sanitizedMessage, const String& unsanitizedMessage = String()) OVERRIDE FINAL;
+    virtual void throwDOMException(const ExceptionCode&, const String& message = String()) OVERRIDE;
+    virtual void throwTypeError(const String& message = String()) OVERRIDE;
+    virtual void throwSecurityError(const String& sanitizedMessage, const String& unsanitizedMessage = String()) OVERRIDE;
 
 private:
     const char* m_file;

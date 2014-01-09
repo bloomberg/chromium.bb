@@ -38,17 +38,17 @@ namespace WebCore {
 class Node;
 
 // Implements v8::RetainedObjectInfo.
-class RetainedDOMInfo : public RetainedObjectInfo {
+class RetainedDOMInfo FINAL : public RetainedObjectInfo {
 public:
     explicit RetainedDOMInfo(Node* root);
     virtual ~RetainedDOMInfo();
-    virtual void Dispose();
-    virtual bool IsEquivalent(v8::RetainedObjectInfo* other);
-    virtual intptr_t GetHash();
-    virtual const char* GetGroupLabel();
-    virtual const char* GetLabel();
-    virtual intptr_t GetElementCount();
-    virtual intptr_t GetEquivalenceClass();
+    virtual void Dispose() OVERRIDE;
+    virtual bool IsEquivalent(v8::RetainedObjectInfo* other) OVERRIDE;
+    virtual intptr_t GetHash() OVERRIDE;
+    virtual const char* GetGroupLabel() OVERRIDE;
+    virtual const char* GetLabel() OVERRIDE;
+    virtual intptr_t GetElementCount() OVERRIDE;
+    virtual intptr_t GetEquivalenceClass() OVERRIDE;
 
 private:
     // V8 guarantees to keep RetainedObjectInfos alive only during a GC or heap snapshotting round, when renderer

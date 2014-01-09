@@ -39,7 +39,7 @@ namespace WebCore {
 
 class ExecutionContext;
 
-class V8MutationCallback : public MutationCallback, public ActiveDOMCallback {
+class V8MutationCallback FINAL : public MutationCallback, public ActiveDOMCallback {
 public:
     static PassOwnPtr<V8MutationCallback> create(v8::Handle<v8::Function> callback, ExecutionContext* context, v8::Handle<v8::Object> owner, v8::Isolate* isolate)
     {

@@ -44,7 +44,7 @@ class ScriptController;
 class ScriptPreprocessor;
 class ScriptSourceCode;
 
-class PageScriptDebugServer : public ScriptDebugServer {
+class PageScriptDebugServer FINAL : public ScriptDebugServer {
     WTF_MAKE_NONCOPYABLE(PageScriptDebugServer);
 public:
     static PageScriptDebugServer& shared();
@@ -60,21 +60,21 @@ public:
     };
     void setClientMessageLoop(PassOwnPtr<ClientMessageLoop>);
 
-    virtual void compileScript(ScriptState*, const String& expression, const String& sourceURL, String* scriptId, String* exceptionMessage);
-    virtual void clearCompiledScripts();
-    virtual void runScript(ScriptState*, const String& scriptId, ScriptValue* result, bool* wasThrown, String* exceptionMessage);
-    virtual void setPreprocessorSource(const String&);
-    virtual void preprocessBeforeCompile(const v8::Debug::EventDetails&);
-    virtual PassOwnPtr<ScriptSourceCode> preprocess(Frame*, const ScriptSourceCode&);
-    virtual String preprocessEventListener(Frame*, const String& source, const String& url, const String& functionName);
+    virtual void compileScript(ScriptState*, const String& expression, const String& sourceURL, String* scriptId, String* exceptionMessage) OVERRIDE;
+    virtual void clearCompiledScripts() OVERRIDE;
+    virtual void runScript(ScriptState*, const String& scriptId, ScriptValue* result, bool* wasThrown, String* exceptionMessage) OVERRIDE;
+    virtual void setPreprocessorSource(const String&) OVERRIDE;
+    virtual void preprocessBeforeCompile(const v8::Debug::EventDetails&) OVERRIDE;
+    virtual PassOwnPtr<ScriptSourceCode> preprocess(Frame*, const ScriptSourceCode&) OVERRIDE;
+    virtual String preprocessEventListener(Frame*, const String& source, const String& url, const String& functionName) OVERRIDE;
 
 private:
     PageScriptDebugServer();
     virtual ~PageScriptDebugServer() { }
 
-    virtual ScriptDebugListener* getDebugListenerForContext(v8::Handle<v8::Context>);
-    virtual void runMessageLoopOnPause(v8::Handle<v8::Context>);
-    virtual void quitMessageLoopOnPause();
+    virtual ScriptDebugListener* getDebugListenerForContext(v8::Handle<v8::Context>) OVERRIDE;
+    virtual void runMessageLoopOnPause(v8::Handle<v8::Context>) OVERRIDE;
+    virtual void quitMessageLoopOnPause() OVERRIDE;
 
     typedef HashMap<Page*, ScriptDebugListener*> ListenersMap;
     ListenersMap m_listenersMap;

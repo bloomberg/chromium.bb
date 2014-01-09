@@ -69,9 +69,9 @@ namespace WebCore {
 
         // Implementation of EventListener interface.
 
-        virtual bool operator==(const EventListener& other) { return this == &other; }
+        virtual bool operator==(const EventListener& other) OVERRIDE { return this == &other; }
 
-        virtual void handleEvent(ExecutionContext*, Event*);
+        virtual void handleEvent(ExecutionContext*, Event*) OVERRIDE;
 
         virtual bool isLazy() const { return false; }
 

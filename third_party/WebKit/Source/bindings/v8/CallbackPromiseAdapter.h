@@ -61,7 +61,7 @@ namespace WebCore {
 // example that ownership of the WebCallbacks instance is being passed
 // in and it is up to the callee to free the WebCallbacks instace.
 template<typename S, typename T>
-class CallbackPromiseAdapter : public blink::WebCallbacks<typename S::WebType, typename T::WebType> {
+class CallbackPromiseAdapter FINAL : public blink::WebCallbacks<typename S::WebType, typename T::WebType> {
 public:
     explicit CallbackPromiseAdapter(PassRefPtr<ScriptPromiseResolver> resolver, ExecutionContext* context)
         : m_resolver(resolver)

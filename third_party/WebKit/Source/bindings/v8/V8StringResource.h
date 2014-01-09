@@ -111,7 +111,7 @@ private:
 #endif
 };
 
-class WebCoreStringResource16 : public WebCoreStringResourceBase, public v8::String::ExternalStringResource {
+class WebCoreStringResource16 FINAL : public WebCoreStringResourceBase, public v8::String::ExternalStringResource {
 public:
     explicit WebCoreStringResource16(const String& string)
         : WebCoreStringResourceBase(string)
@@ -132,7 +132,7 @@ public:
     }
 };
 
-class WebCoreStringResource8 : public WebCoreStringResourceBase, public v8::String::ExternalAsciiStringResource {
+class WebCoreStringResource8 FINAL : public WebCoreStringResourceBase, public v8::String::ExternalAsciiStringResource {
 public:
     explicit WebCoreStringResource8(const String& string)
         : WebCoreStringResourceBase(string)

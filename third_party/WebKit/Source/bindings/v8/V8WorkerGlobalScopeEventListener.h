@@ -39,20 +39,20 @@ namespace WebCore {
 
     class Event;
 
-    class V8WorkerGlobalScopeEventListener : public V8EventListener {
+    class V8WorkerGlobalScopeEventListener FINAL : public V8EventListener {
     public:
         static PassRefPtr<V8WorkerGlobalScopeEventListener> create(v8::Local<v8::Object> listener, bool isInline, v8::Isolate* isolate)
         {
             return adoptRef(new V8WorkerGlobalScopeEventListener(listener, isInline, isolate));
         }
 
-        virtual void handleEvent(ExecutionContext*, Event*);
+        virtual void handleEvent(ExecutionContext*, Event*) OVERRIDE;
 
     protected:
         V8WorkerGlobalScopeEventListener(v8::Local<v8::Object> listener, bool isInline, v8::Isolate*);
 
     private:
-        virtual v8::Local<v8::Value> callListenerFunction(ExecutionContext*, v8::Handle<v8::Value> jsEvent, Event*);
+        virtual v8::Local<v8::Value> callListenerFunction(ExecutionContext*, v8::Handle<v8::Value> jsEvent, Event*) OVERRIDE;
         v8::Local<v8::Object> getReceiverObject(ExecutionContext*, Event*);
     };
 

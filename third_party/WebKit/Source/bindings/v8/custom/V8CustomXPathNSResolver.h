@@ -42,7 +42,7 @@ namespace WebCore {
 // V8CustomXPathNSResolver does not create a persistent handle to the
 // given resolver object.  So the lifetime of V8CustomXPathNSResolver
 // must not exceed the lifetime of the passed handle.
-class V8CustomXPathNSResolver : public XPathNSResolver {
+class V8CustomXPathNSResolver FINAL : public XPathNSResolver {
 public:
     static PassRefPtr<V8CustomXPathNSResolver> create(v8::Handle<v8::Object> resolver, v8::Isolate*);
 

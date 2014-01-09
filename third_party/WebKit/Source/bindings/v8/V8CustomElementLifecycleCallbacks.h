@@ -46,7 +46,7 @@ class Element;
 class ExecutionContext;
 class V8PerContextData;
 
-class V8CustomElementLifecycleCallbacks : public CustomElementLifecycleCallbacks, ContextLifecycleObserver {
+class V8CustomElementLifecycleCallbacks FINAL : public CustomElementLifecycleCallbacks, ContextLifecycleObserver {
 public:
     static PassRefPtr<V8CustomElementLifecycleCallbacks> create(ExecutionContext*, v8::Handle<v8::Object> prototype, v8::Handle<v8::Function> created, v8::Handle<v8::Function> attached, v8::Handle<v8::Function> detached, v8::Handle<v8::Function> attributeChanged);
 

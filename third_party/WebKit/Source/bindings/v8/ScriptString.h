@@ -37,7 +37,7 @@
 
 namespace WebCore {
 
-class ScriptString : public ScriptValue {
+class ScriptString FINAL : public ScriptValue {
 public:
     ScriptString() { }
     ScriptString(v8::Handle<v8::String> value, v8::Isolate* isolate) : ScriptValue(value, isolate) { }

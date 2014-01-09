@@ -40,7 +40,7 @@ namespace WebCore {
 class ErrorEvent;
 class Frame;
 
-class V8ErrorHandler : public V8EventListener {
+class V8ErrorHandler FINAL : public V8EventListener {
 public:
     static PassRefPtr<V8ErrorHandler> create(v8::Local<v8::Object> listener, bool isInline, v8::Isolate* isolate)
     {
@@ -52,8 +52,8 @@ public:
 private:
     V8ErrorHandler(v8::Local<v8::Object> listener, bool isInline, v8::Isolate*);
 
-    virtual v8::Local<v8::Value> callListenerFunction(ExecutionContext*, v8::Handle<v8::Value> jsEvent, Event*);
-    virtual bool shouldPreventDefault(v8::Local<v8::Value> returnValue);
+    virtual v8::Local<v8::Value> callListenerFunction(ExecutionContext*, v8::Handle<v8::Value> jsEvent, Event*) OVERRIDE;
+    virtual bool shouldPreventDefault(v8::Local<v8::Value> returnValue) OVERRIDE;
 };
 
 } // namespace WebCore

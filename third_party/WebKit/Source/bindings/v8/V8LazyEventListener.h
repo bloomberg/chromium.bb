@@ -46,28 +46,28 @@ namespace WebCore {
 
     // V8LazyEventListener is a wrapper for a JavaScript code string that is compiled and evaluated when an event is fired.
     // A V8LazyEventListener is either a HTML or SVG event handler.
-    class V8LazyEventListener : public V8AbstractEventListener {
+    class V8LazyEventListener FINAL : public V8AbstractEventListener {
     public:
         static PassRefPtr<V8LazyEventListener> create(const AtomicString& functionName, const AtomicString& eventParameterName, const String& code, const String& sourceURL, const TextPosition& position, Node* node, v8::Isolate* isolate)
         {
             return adoptRef(new V8LazyEventListener(functionName, eventParameterName, code, sourceURL, position, node, isolate));
         }
 
-        virtual bool isLazy() const { return true; }
+        virtual bool isLazy() const OVERRIDE { return true; }
 
     protected:
-        virtual void prepareListenerObject(ExecutionContext*);
+        virtual void prepareListenerObject(ExecutionContext*) OVERRIDE;
 
     private:
         V8LazyEventListener(const AtomicString& functionName, const AtomicString& eventParameterName, const String& code, const String sourceURL, const TextPosition&, Node*, v8::Isolate*);
 
-        virtual v8::Local<v8::Value> callListenerFunction(ExecutionContext*, v8::Handle<v8::Value> jsEvent, Event*);
+        virtual v8::Local<v8::Value> callListenerFunction(ExecutionContext*, v8::Handle<v8::Value> jsEvent, Event*) OVERRIDE;
 
         // Needs to return true for all event handlers implemented in JavaScript so that
         // the SVG code does not add the event handler in both
         // SVGUseElement::buildShadowTree and again in
         // SVGUseElement::transferEventListenersToShadowTree
-        virtual bool wasCreatedFromMarkup() const { return true; }
+        virtual bool wasCreatedFromMarkup() const OVERRIDE { return true; }
 
         AtomicString m_functionName;
         AtomicString m_eventParameterName;
