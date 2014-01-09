@@ -1456,7 +1456,7 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect
 
         IntRect updateRect = pixelSnappedIntRect(layer->repainter().repaintRectIncludingNonCompositingDescendants());
 
-        RenderLayer* enclosingCompositingLayer = layer->enclosingCompositingLayer(false);
+        RenderLayer* enclosingCompositingLayer = layer->enclosingCompositingLayer(ExcludeSelf);
         if (enclosingCompositingLayer && !enclosingCompositingLayer->renderer()->isRenderView()) {
             // If the fixed-position layer is contained by a composited layer that is not its containing block,
             // then we have to invlidate that enclosing layer, not the RenderView.

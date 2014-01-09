@@ -66,7 +66,7 @@ public:
     LayoutSize relativePositionOffset() const;
     LayoutSize relativePositionLogicalOffset() const { return style()->isHorizontalWritingMode() ? relativePositionOffset() : relativePositionOffset().transposedSize(); }
 
-    void computeStickyPositionConstraints(StickyPositionViewportConstraints&, const FloatRect& viewportRect) const;
+    void computeStickyPositionConstraints(StickyPositionViewportConstraints&, const FloatRect& constrainingRect) const;
     LayoutSize stickyPositionOffset() const;
     LayoutSize stickyPositionLogicalOffset() const { return style()->isHorizontalWritingMode() ? stickyPositionOffset() : stickyPositionOffset().transposedSize(); }
 

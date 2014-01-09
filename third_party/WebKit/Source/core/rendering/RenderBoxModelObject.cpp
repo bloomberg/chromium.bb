@@ -319,7 +319,7 @@ LayoutPoint RenderBoxModelObject::adjustedPositionRelativeToOffsetParent(const L
     return referencePoint;
 }
 
-void RenderBoxModelObject::computeStickyPositionConstraints(StickyPositionViewportConstraints& constraints, const FloatRect& viewportRect) const
+void RenderBoxModelObject::computeStickyPositionConstraints(StickyPositionViewportConstraints& constraints, const FloatRect& constrainingRect) const
 {
     RenderBlock* containingBlock = this->containingBlock();
 
@@ -347,40 +347,56 @@ void RenderBoxModelObject::computeStickyPositionConstraints(StickyPositionViewpo
     // Map to the view to avoid including page scale factor.
     FloatRect absContainerFrame = containingBlock->localToContainerQuad(FloatRect(FloatPoint(), containingBlock->size()), view()).boundingBox();
 
+    if (containingBlock->hasOverflowClip()) {
+        IntSize scrollOffset = containingBlock->layer()->scrollableArea()->adjustedScrollOffset();
+        stickyLocation -= scrollOffset;
+    }
+
     // We can't call localToAbsolute on |this| because that will recur. FIXME: For now, assume that |this| is not transformed.
     FloatRect absoluteStickyBoxRect(absContainerFrame.location() + stickyLocation, flippedStickyBoxRect.size());
     constraints.setAbsoluteStickyBoxRect(absoluteStickyBoxRect);
 
     if (!style()->left().isAuto()) {
-        constraints.setLeftOffset(valueForLength(style()->left(), viewportRect.width()));
+        constraints.setLeftOffset(valueForLength(style()->left(), constrainingRect.width()));
         constraints.addAnchorEdge(ViewportConstraints::AnchorEdgeLeft);
     }
 
     if (!style()->right().isAuto()) {
-        constraints.setRightOffset(valueForLength(style()->right(), viewportRect.width()));
+        constraints.setRightOffset(valueForLength(style()->right(), constrainingRect.width()));
         constraints.addAnchorEdge(ViewportConstraints::AnchorEdgeRight);
     }
 
     if (!style()->top().isAuto()) {
-        constraints.setTopOffset(valueForLength(style()->top(), viewportRect.height()));
+        constraints.setTopOffset(valueForLength(style()->top(), constrainingRect.height()));
         constraints.addAnchorEdge(ViewportConstraints::AnchorEdgeTop);
     }
 
     if (!style()->bottom().isAuto()) {
-        constraints.setBottomOffset(valueForLength(style()->bottom(), viewportRect.height()));
+        constraints.setBottomOffset(valueForLength(style()->bottom(), constrainingRect.height() ));
         constraints.addAnchorEdge(ViewportConstraints::AnchorEdgeBottom);
     }
 }
 
 LayoutSize RenderBoxModelObject::stickyPositionOffset() const
 {
-    LayoutRect viewportRect = view()->frameView()->viewportConstrainedVisibleContentRect();
+    FloatRect constrainingRect;
+
+    ASSERT(hasLayer());
+    RenderLayer* enclosingClippingLayer = layer()->enclosingOverflowClipLayer(ExcludeSelf);
+    if (enclosingClippingLayer) {
+        RenderBox* enclosingClippingBox = toRenderBox(enclosingClippingLayer->renderer());
+        LayoutRect clipRect = enclosingClippingBox->overflowClipRect(LayoutPoint(), 0); // FIXME: make this work in regions.
+        constrainingRect = enclosingClippingBox->localToContainerQuad(FloatRect(clipRect), view()).boundingBox();
+    } else {
+        LayoutRect viewportRect = view()->frameView()->viewportConstrainedVisibleContentRect();
+        constrainingRect = viewportRect;
+    }
 
     StickyPositionViewportConstraints constraints;
-    computeStickyPositionConstraints(constraints, viewportRect);
+    computeStickyPositionConstraints(constraints, constrainingRect);
 
     // The sticky offset is physical, so we can just return the delta computed in absolute coords (though it may be wrong with transforms).
-    return LayoutSize(constraints.computeStickyOffset(viewportRect));
+    return LayoutSize(constraints.computeStickyOffset(constrainingRect));
 }
 
 LayoutSize RenderBoxModelObject::offsetForInFlowPosition() const

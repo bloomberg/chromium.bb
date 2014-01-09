@@ -75,6 +75,7 @@ class RenderStyle;
 class TransformationMatrix;
 
 enum BorderRadiusClippingRule { IncludeSelfForBorderRadius, DoNotIncludeSelfForBorderRadius };
+enum IncludeSelfOrNot { IncludeSelf, ExcludeSelf };
 
 class RenderLayer {
 public:
@@ -215,11 +216,13 @@ public:
     // The layer relative to which clipping rects for this layer are computed.
     RenderLayer* clippingRootForPainting() const;
 
+    RenderLayer* enclosingOverflowClipLayer(IncludeSelfOrNot = IncludeSelf) const;
+
     // Enclosing compositing layer; if includeSelf is true, may return this.
-    RenderLayer* enclosingCompositingLayer(bool includeSelf = true) const;
-    RenderLayer* enclosingCompositingLayerForRepaint(bool includeSelf = true) const;
+    RenderLayer* enclosingCompositingLayer(IncludeSelfOrNot = IncludeSelf) const;
+    RenderLayer* enclosingCompositingLayerForRepaint(IncludeSelfOrNot = IncludeSelf) const;
     // Ancestor compositing layer, excluding this.
-    RenderLayer* ancestorCompositingLayer() const { return enclosingCompositingLayer(false); }
+    RenderLayer* ancestorCompositingLayer() const { return enclosingCompositingLayer(ExcludeSelf); }
 
     // Ancestor composited scrolling layer at or above our containing block.
     RenderLayer* ancestorCompositedScrollingLayer() const;
@@ -227,7 +230,7 @@ public:
     // Ancestor scrolling layer at or above our containing block.
     RenderLayer* ancestorScrollingLayer() const;
 
-    RenderLayer* enclosingFilterLayer(bool includeSelf = true) const;
+    RenderLayer* enclosingFilterLayer(IncludeSelfOrNot = IncludeSelf) const;
     RenderLayer* enclosingFilterRepaintLayer() const;
     bool hasAncestorWithFilterOutsets() const;
 

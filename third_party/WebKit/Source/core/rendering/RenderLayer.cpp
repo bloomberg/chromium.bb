@@ -583,6 +583,18 @@ TransformationMatrix RenderLayer::renderableTransform(PaintBehavior paintBehavio
     return *m_transform;
 }
 
+RenderLayer* RenderLayer::enclosingOverflowClipLayer(IncludeSelfOrNot includeSelf) const
+{
+    const RenderLayer* layer = (includeSelf == IncludeSelf) ? this : parent();
+    while (layer) {
+        if (layer->renderer()->hasOverflowClip())
+            return const_cast<RenderLayer*>(layer);
+
+        layer = layer->parent();
+    }
+    return 0;
+}
+
 static bool checkContainingBlockChainForPagination(RenderLayerModelObject* renderer, RenderBox* ancestorColumnsRenderer)
 {
     RenderView* view = renderer->view();
@@ -1055,9 +1067,9 @@ static inline const RenderLayer* compositingContainer(const RenderLayer* layer)
 // the includeSelf option. It is very likely that we don't even want either of these functions; A layer
 // should be told explicitly which GraphicsLayer is the repaintContainer for a RenderLayer, and
 // any other use cases should probably have an API between the non-compositing and compositing sides of code.
-RenderLayer* RenderLayer::enclosingCompositingLayer(bool includeSelf) const
+RenderLayer* RenderLayer::enclosingCompositingLayer(IncludeSelfOrNot includeSelf) const
 {
-    if (includeSelf && compositingState() != NotComposited && compositingState() != PaintsIntoGroupedBacking)
+    if ((includeSelf == IncludeSelf) && compositingState() != NotComposited && compositingState() != PaintsIntoGroupedBacking)
         return const_cast<RenderLayer*>(this);
 
     for (const RenderLayer* curr = compositingContainer(this); curr; curr = compositingContainer(curr)) {
@@ -1068,9 +1080,9 @@ RenderLayer* RenderLayer::enclosingCompositingLayer(bool includeSelf) const
     return 0;
 }
 
-RenderLayer* RenderLayer::enclosingCompositingLayerForRepaint(bool includeSelf) const
+RenderLayer* RenderLayer::enclosingCompositingLayerForRepaint(IncludeSelfOrNot includeSelf) const
 {
-    if (includeSelf && (compositingState() == PaintsIntoOwnBacking || compositingState() == PaintsIntoGroupedBacking))
+    if ((includeSelf == IncludeSelf) && (compositingState() == PaintsIntoOwnBacking || compositingState() == PaintsIntoGroupedBacking))
         return const_cast<RenderLayer*>(this);
 
     for (const RenderLayer* curr = compositingContainer(this); curr; curr = compositingContainer(curr)) {
@@ -1112,9 +1124,9 @@ RenderLayer* RenderLayer::ancestorScrollingLayer() const
     return 0;
 }
 
-RenderLayer* RenderLayer::enclosingFilterLayer(bool includeSelf) const
+RenderLayer* RenderLayer::enclosingFilterLayer(IncludeSelfOrNot includeSelf) const
 {
-    const RenderLayer* curr = includeSelf ? this : parent();
+    const RenderLayer* curr = (includeSelf == IncludeSelf) ? this : parent();
     for (; curr; curr = curr->parent()) {
         if (curr->requiresFullLayerImageForFilters())
             return const_cast<RenderLayer*>(curr);
@@ -1661,7 +1673,7 @@ RenderLayer* RenderLayer::clipParent() const
     RenderLayer* clipParent = 0;
     if ((compositingReasons() & CompositingReasonOutOfFlowClipping) && !needsAncestorClip) {
         if (RenderObject* containingBlock = renderer()->containingBlock())
-            clipParent = containingBlock->enclosingLayer()->enclosingCompositingLayer(true);
+            clipParent = containingBlock->enclosingLayer()->enclosingCompositingLayer();
     }
 
     return clipParent;
@@ -3404,7 +3416,7 @@ LayoutRect RenderLayer::calculateLayerBounds(const RenderLayer* ancestorLayer, c
         // prior to updating its bounds. The requires-own-backing-store-for-ancestor-reasons
         // could be stale. Refresh them now.
         if (node->layer()->hasCompositedLayerMapping()) {
-            RenderLayer* enclosingCompositingLayer = node->layer()->enclosingCompositingLayer(false);
+            RenderLayer* enclosingCompositingLayer = node->layer()->enclosingCompositingLayer(ExcludeSelf);
             node->layer()->compositedLayerMapping()->updateRequiresOwnBackingStoreForAncestorReasons(enclosingCompositingLayer);
         }
 
