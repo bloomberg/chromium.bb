@@ -444,9 +444,14 @@ Address ThreadHeap<Header>::outOfLineAllocate(size_t size, const GCInfo* gcInfo)
 {
     size_t allocationSize = allocationSizeFromSize<Header>(size);
     if (threadState()->shouldGC()) {
+        // FIXME: Add back below collection once we support conservative stack
+        // scanning. Until then we cannot do the collection since it causes our
+        // tests to crash.
+#if 0
         if (threadState()->shouldForceConservativeGC())
             Heap::collectGarbage(ThreadState::HeapPointersOnStack);
         else
+#endif // 0
             threadState()->setGCRequested();
     }
     ensureCurrentAllocation(allocationSize, gcInfo);
@@ -557,16 +562,52 @@ void ThreadHeap<Header>::addToFreeList(Address address, size_t size)
 template<typename Header>
 Address ThreadHeap<Header>::allocateLargeObject(size_t size, const GCInfo* gcInfo)
 {
-    // FIXME: Implement.
-    ASSERT_NOT_REACHED();
-    return 0;
+    // Caller already added space for object header and rounded up to allocation alignment
+    ASSERT(!(size & allocationMask));
+
+    size_t allocationSize = sizeof(LargeHeapObject<Header>) + size;
+
+    // Ensure that there is enough space for alignment. If the header
+    // is not a multiple of 8 bytes we will allocate an extra
+    // headerPadding<Header> bytes to ensure it 8 byte aligned.
+    allocationSize += headerPadding<Header>();
+
+    // If ASAN is supported we add allocationGranularity bytes to the allocated space and
+    // poison that to detect overflows
+#if USE_ASAN
+    allocationSize += allocationGranularity;
+#endif
+    if (threadState()->shouldGC())
+        threadState()->setGCRequested();
+    PageMemory* pageMemory = PageMemory::allocate(allocationSize);
+    Address largeObjectAddress = pageMemory->writableStart();
+    Address headerAddress = largeObjectAddress + sizeof(LargeHeapObject<Header>) + headerPadding<Header>();
+    memset(headerAddress, 0, size);
+    Header* header = new (NotNull, headerAddress) Header(size, gcInfo);
+    Address result = headerAddress + sizeof(*header);
+    ASSERT(!(reinterpret_cast<uintptr_t>(result) & allocationMask));
+    LargeHeapObject<Header>* largeObject = new (largeObjectAddress) LargeHeapObject<Header>(pageMemory, gcInfo);
+
+    // Poison the object header and allocationGranularity bytes after the object
+    ASAN_POISON_MEMORY_REGION(header, sizeof(*header));
+    ASAN_POISON_MEMORY_REGION(largeObject->address() + largeObject->size(), allocationGranularity);
+    largeObject->link(&m_firstLargeHeapObject);
+    stats().increaseAllocatedSpace(largeObject->size());
+    stats().increaseObjectSpace(largeObject->payloadSize());
+    return result;
 }
 
 template<typename Header>
 void ThreadHeap<Header>::freeLargeObject(LargeHeapObject<Header>* object, LargeHeapObject<Header>** previousNext)
 {
-    // FIXME: Implement.
-    ASSERT_NOT_REACHED();
+    object->unlink(previousNext);
+    object->finalize();
+
+    // Unpoison the object header and allocationGranularity bytes after the
+    // object before freeing.
+    ASAN_UNPOISON_MEMORY_REGION(object->heapObjectHeader(), sizeof(Header));
+    ASAN_UNPOISON_MEMORY_REGION(object->address() + object->size(), allocationGranularity);
+    delete object->storage();
 }
 
 template<>

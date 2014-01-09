@@ -188,7 +188,8 @@ ThreadState::ThreadState(intptr_t* startOfStack)
     **s_threadSpecific = this;
 
     m_persistents = new PersistentAnchor();
-
+    m_stats.clear();
+    m_statsAfterLastGC.clear();
     // First allocate the general heap, second iterate through to
     // allocate the type specific heaps
     m_heaps[GeneralHeap] = new ThreadHeap<FinalizedHeapObjectHeader>(this);

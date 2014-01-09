@@ -134,8 +134,6 @@ inline size_t headerPadding()
     return (allocationGranularity - (sizeof(Header) % allocationGranularity)) % allocationGranularity;
 }
 
-#ifndef NDEBUG
-
 // Masks an address down to the enclosing blink page base address.
 inline Address blinkPageAddress(Address address)
 {
@@ -152,11 +150,12 @@ inline bool isPageHeaderAddress(Address address)
 
 // Mask an address down to the enclosing oilpan heap page base address.
 // All oilpan heap pages are aligned at blinkPageBase plus an OS page size.
-inline Address pageHeaderAddress(Address address)
+// FIXME: Remove HEAP_EXPORT once we get a proper public interface to our typed heaps.
+// This is only exported to enable tests in HeapTest.cpp.
+HEAP_EXPORT inline Address pageHeaderAddress(Address address)
 {
     return blinkPageAddress(address) + osPageSize();
 }
-#endif
 
 // Common header for heap pages.
 class BaseHeapPage {

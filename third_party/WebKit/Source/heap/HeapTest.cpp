@@ -192,6 +192,30 @@ static void getHeapStats(HeapStats* stats)
     Heap::getStats(stats);
 }
 
+// Do several GCs to make sure that later GCs don't free up old memory from
+// previously run tests in this process.
+static void clearOutOldGarbage(HeapStats* heapStats)
+{
+    while (true) {
+        getHeapStats(heapStats);
+        size_t used = heapStats->totalObjectSpace();
+        Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+        getHeapStats(heapStats);
+        if (heapStats->totalObjectSpace() >= used)
+            break;
+    }
+}
+
+// The accounting for memory includes the memory used by rounding up object
+// sizes. This is done in a different way on 32 bit and 64 bit, so we have to
+// have some slack in the tests.
+template<typename T>
+void CheckWithSlack(T expected, T actual, int slack)
+{
+    EXPECT_LE(expected, actual);
+    EXPECT_GE((intptr_t)expected + slack, (intptr_t)actual);
+}
+
 class TraceCounter : public GarbageCollectedFinalized<TraceCounter> {
     DECLARE_GC_INFO
 public:
@@ -415,6 +439,54 @@ private:
     Member<Bar> m_bars[width];
 };
 
+class ConstructorAllocation : public GarbageCollected<ConstructorAllocation> {
+    DECLARE_GC_INFO
+public:
+    static ConstructorAllocation* create() { return new ConstructorAllocation(); }
+
+    void trace(Visitor* visitor) { visitor->trace(m_intWrapper); }
+
+private:
+    ConstructorAllocation()
+    {
+        m_intWrapper = IntWrapper::create(42);
+    }
+
+    Member<IntWrapper> m_intWrapper;
+};
+
+DEFINE_GC_INFO(ConstructorAllocation);
+
+class LargeObject : public GarbageCollectedFinalized<LargeObject> {
+    DECLARE_GC_INFO
+public:
+    ~LargeObject()
+    {
+        s_destructorCalls++;
+    }
+    static LargeObject* create() { return new LargeObject(); }
+    char get(size_t i) { return m_data[i]; }
+    void set(size_t i, char c) { m_data[i] = c; }
+    size_t length() { return s_length; }
+    void trace(Visitor* visitor)
+    {
+        visitor->trace(m_intWrapper);
+    }
+    static int s_destructorCalls;
+
+private:
+    static const size_t s_length = 1024*1024;
+    LargeObject()
+    {
+        m_intWrapper = IntWrapper::create(23);
+    }
+    Member<IntWrapper> m_intWrapper;
+    char m_data[s_length];
+};
+
+int LargeObject::s_destructorCalls = 0;
+DEFINE_GC_INFO(LargeObject);
+
 TEST(HeapTest, Threading)
 {
     Heap::init(0);
@@ -510,8 +582,8 @@ TEST(HeapTest, TypedHeapSanity)
         // We use TraceCounter for allocating an object on the general heap.
         Persistent<TraceCounter> generalHeapObject = TraceCounter::create();
         Persistent<TestTypedHeapClass> typedHeapObject = TestTypedHeapClass::create();
-
-        // FIXME: Add a check that these two objects are allocated on separate pages.
+        EXPECT_NE(pageHeaderAddress(reinterpret_cast<Address>(generalHeapObject.raw())),
+            pageHeaderAddress(reinterpret_cast<Address>(typedHeapObject.raw())));
     }
 
     Heap::shutdown();
@@ -620,6 +692,79 @@ TEST(HeapTest, WideTest)
     EXPECT_EQ(Bars::width + 1, Bar::s_live);
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
     EXPECT_EQ(0u, Bar::s_live);
+
+    Heap::shutdown();
+}
+
+TEST(HeapTest, NestedAllocation)
+{
+    // FIXME: init and shutdown should be called via Blink
+    // initialization in the test runner.
+    Heap::init(0);
+
+    HeapStats initialHeapSize;
+    clearOutOldGarbage(&initialHeapSize);
+    {
+        Persistent<ConstructorAllocation> constructorAllocation = ConstructorAllocation::create();
+    }
+    HeapStats afterFree;
+    clearOutOldGarbage(&afterFree);
+    EXPECT_TRUE(initialHeapSize == afterFree);
+
+    Heap::shutdown();
+}
+
+TEST(HeapTest, LargeObjects)
+{
+    // FIXME: init and shutdown should be called via Blink
+    // initialization in the test runner.
+    Heap::init(0);
+
+    HeapStats initialHeapSize;
+    clearOutOldGarbage(&initialHeapSize);
+    IntWrapper::s_destructorCalls = 0;
+    LargeObject::s_destructorCalls = 0;
+    {
+        int slack = 8; // LargeObject points to an IntWrapper that is also allocated.
+        Persistent<LargeObject> object = LargeObject::create();
+        HeapStats afterAllocation;
+        clearOutOldGarbage(&afterAllocation);
+        {
+            object->set(0, 'a');
+            EXPECT_EQ('a', object->get(0));
+            object->set(object->length() - 1, 'b');
+            EXPECT_EQ('b', object->get(object->length() - 1));
+            size_t expectedObjectSpace = sizeof(LargeObject) + sizeof(IntWrapper);
+            size_t actualObjectSpace =
+                afterAllocation.totalObjectSpace() - initialHeapSize.totalObjectSpace();
+            CheckWithSlack(expectedObjectSpace, actualObjectSpace, slack);
+            // There is probably space for the IntWrapper in a heap page without
+            // allocating extra pages. However, the IntWrapper allocation might cause
+            // the addition of a heap page.
+            size_t largeObjectAllocationSize =
+                sizeof(LargeObject) + sizeof(LargeHeapObject<FinalizedHeapObjectHeader>) + sizeof(FinalizedHeapObjectHeader);
+            size_t allocatedSpaceLowerBound =
+                initialHeapSize.totalAllocatedSpace() + largeObjectAllocationSize;
+            size_t allocatedSpaceUpperBound = allocatedSpaceLowerBound + slack + blinkPageSize;
+            EXPECT_LE(allocatedSpaceLowerBound, afterAllocation.totalAllocatedSpace());
+            EXPECT_LE(afterAllocation.totalAllocatedSpace(), allocatedSpaceUpperBound);
+            EXPECT_EQ(0, IntWrapper::s_destructorCalls);
+            EXPECT_EQ(0, LargeObject::s_destructorCalls);
+            for (int i = 0; i < 10; i++)
+                object = LargeObject::create();
+        }
+        HeapStats oneLargeObject;
+        clearOutOldGarbage(&oneLargeObject);
+        EXPECT_TRUE(oneLargeObject == afterAllocation);
+        EXPECT_EQ(10, IntWrapper::s_destructorCalls);
+        EXPECT_EQ(10, LargeObject::s_destructorCalls);
+    }
+    HeapStats backToInitial;
+    clearOutOldGarbage(&backToInitial);
+    EXPECT_TRUE(initialHeapSize == backToInitial);
+    EXPECT_EQ(11, IntWrapper::s_destructorCalls);
+    EXPECT_EQ(11, LargeObject::s_destructorCalls);
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
 
     Heap::shutdown();
 }
