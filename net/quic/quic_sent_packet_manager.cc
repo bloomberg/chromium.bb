@@ -876,9 +876,8 @@ const QuicTime QuicSentPacketManager::GetRetransmissionTime() const {
       QuicTime rto_timeout = sent_time.Add(GetRetransmissionDelay());
       return QuicTime::Max(min_timeout, rto_timeout);
     }
-    default:
-      DCHECK(false);
   }
+  DCHECK(false);
   return QuicTime::Zero();
 }
 
