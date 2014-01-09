@@ -231,6 +231,7 @@ Visit.prototype.getResultDOM = function(propertyBag) {
     dropDown.value = 'Open action menu';
     dropDown.title = loadTimeData.getString('actionMenuDescription');
     dropDown.setAttribute('menu', '#action-menu');
+    dropDown.setAttribute('aria-haspopup', 'true');
     cr.ui.decorate(dropDown, MenuButton);
 
     dropDown.addEventListener('mousedown', setActiveVisit);
