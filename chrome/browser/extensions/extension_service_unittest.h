@@ -13,6 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "extensions/common/feature_switch.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -94,6 +95,7 @@ class ExtensionServiceTestBase : public testing::Test {
   extensions::ManagementPolicy* management_policy_;
   scoped_ptr<ExtensionSyncService> extension_sync_service_;
   size_t expected_extensions_count_;
+  content::InProcessUtilityThreadHelper in_process_utility_thread_helper_;
 
 #if defined OS_CHROMEOS
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;

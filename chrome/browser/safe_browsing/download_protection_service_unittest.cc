@@ -25,9 +25,9 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/signature_util.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/test/mock_download_item.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "net/cert/x509_certificate.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -157,7 +157,6 @@ class DownloadProtectionServiceTest : public testing::Test {
             content::TestBrowserThreadBundle::IO_MAINLOOP) {
   }
   virtual void SetUp() {
-    content::RenderProcessHost::SetRunRendererInProcess(true);
     // Start real threads for the IO and File threads so that the DCHECKs
     // to test that we're on the correct thread work.
     sb_service_ = new StrictMock<FakeSafeBrowsingService>();
@@ -185,7 +184,6 @@ class DownloadProtectionServiceTest : public testing::Test {
     // tasks currently running.
     FlushThreadMessageLoops();
     sb_service_ = NULL;
-    content::RenderProcessHost::SetRunRendererInProcess(false);
   }
 
   bool RequestContainsResource(const ClientDownloadRequest& request,
@@ -318,6 +316,7 @@ class DownloadProtectionServiceTest : public testing::Test {
   DownloadProtectionService::DownloadCheckResult result_;
   bool has_result_;
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::InProcessUtilityThreadHelper in_process_utility_thread_helper_;
   base::FilePath testdata_path_;
 };
 

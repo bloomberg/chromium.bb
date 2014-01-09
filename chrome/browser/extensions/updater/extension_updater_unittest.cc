@@ -46,7 +46,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/common/extension.h"
@@ -494,7 +493,6 @@ class ExtensionUpdaterTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     prefs_.reset(new TestExtensionPrefs(base::MessageLoopProxy::current()));
-    content::RenderProcessHost::SetRunRendererInProcess(true);
   }
 
   virtual void TearDown() OVERRIDE {
@@ -503,7 +501,6 @@ class ExtensionUpdaterTest : public testing::Test {
     // those objects are released.
     RunUntilIdle();
     prefs_.reset();
-    content::RenderProcessHost::SetRunRendererInProcess(false);
   }
 
   void RunUntilIdle() {
@@ -1393,6 +1390,7 @@ class ExtensionUpdaterTest : public testing::Test {
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
+  content::InProcessUtilityThreadHelper in_process_utility_thread_helper_;
 
 #if defined OS_CHROMEOS
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;

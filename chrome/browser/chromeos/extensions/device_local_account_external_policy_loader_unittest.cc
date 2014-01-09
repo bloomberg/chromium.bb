@@ -27,7 +27,6 @@
 #include "components/policy/core/common/policy_types.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/external_provider_interface.h"
@@ -113,6 +112,8 @@ class DeviceLocalAccountExternalPolicyLoaderTest : public testing::Test {
   scoped_refptr<DeviceLocalAccountExternalPolicyLoader> loader_;
   MockExternalPolicyProviderVisitor visitor_;
   scoped_ptr<extensions::ExternalProviderImpl> provider_;
+
+  content::InProcessUtilityThreadHelper in_process_utility_thread_helper_;
 };
 
 DeviceLocalAccountExternalPolicyLoaderTest::
@@ -143,13 +144,10 @@ void DeviceLocalAccountExternalPolicyLoaderTest::SetUp() {
       extensions::Manifest::EXTERNAL_POLICY_DOWNLOAD,
       extensions::Extension::NO_FLAGS));
 
-  content::RenderProcessHost::SetRunRendererInProcess(true);
-
   VerifyAndResetVisitorCallExpectations();
 }
 
 void DeviceLocalAccountExternalPolicyLoaderTest::TearDown() {
-  content::RenderProcessHost::SetRunRendererInProcess(false);
   TestingBrowserProcess::GetGlobal()->SetSystemRequestContext(NULL);
 }
 

@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
+#include "content/public/browser/browser_child_process_observer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
@@ -182,6 +183,34 @@ class WindowedNotificationObserver : public NotificationObserver {
   scoped_refptr<MessageLoopRunner> message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowedNotificationObserver);
+};
+
+// Unit tests can use code which runs in the utility process by having it run on
+// an in-process utility thread. This eliminates having two code paths in
+// production code to deal with unit tests, and also helps with the binary
+// separation on Windows since chrome.dll doesn't need to call into Blink code
+// for some utility code to handle the single process case.
+// Include this class as a member variable in your test harness if you take
+// advantage of this functionality to ensure that the in-process utility thread
+// is torn down correctly. See http://crbug.com/316919 for more information.
+// Note: this class should be declared after the TestBrowserThreadBundle and
+// ShadowingAtExitManager (if it exists) as it will need to be run before they
+// are torn down.
+class InProcessUtilityThreadHelper : public BrowserChildProcessObserver {
+ public:
+  InProcessUtilityThreadHelper();
+  virtual ~InProcessUtilityThreadHelper();
+
+ private:
+  virtual void BrowserChildProcessHostConnected(
+      const ChildProcessData& data) OVERRIDE;
+  virtual void BrowserChildProcessHostDisconnected(
+      const ChildProcessData& data) OVERRIDE;
+
+  int child_thread_count_;
+  scoped_refptr<MessageLoopRunner> runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(InProcessUtilityThreadHelper);
 };
 
 }  // namespace content

@@ -9,8 +9,11 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/common/process_type.h"
 #include "content/public/test/test_launcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -240,6 +243,37 @@ void WindowedNotificationObserver::Observe(
 
   message_loop_runner_->Quit();
   running_ = false;
+}
+
+InProcessUtilityThreadHelper::InProcessUtilityThreadHelper()
+    : child_thread_count_(0) {
+  RenderProcessHost::SetRunRendererInProcess(true);
+  BrowserChildProcessObserver::Add(this);
+}
+
+InProcessUtilityThreadHelper::~InProcessUtilityThreadHelper() {
+  if (child_thread_count_) {
+    DCHECK(BrowserThread::IsMessageLoopValid(BrowserThread::UI));
+    DCHECK(BrowserThread::IsMessageLoopValid(BrowserThread::IO));
+    runner_ = new MessageLoopRunner;
+    runner_->Run();
+  }
+  BrowserChildProcessObserver::Remove(this);
+  RenderProcessHost::SetRunRendererInProcess(false);
+}
+
+void InProcessUtilityThreadHelper::BrowserChildProcessHostConnected(
+    const ChildProcessData& data) {
+  child_thread_count_++;
+}
+
+void InProcessUtilityThreadHelper::BrowserChildProcessHostDisconnected(
+    const ChildProcessData& data) {
+  if (--child_thread_count_)
+    return;
+
+  if (runner_.get())
+    runner_->Quit();
 }
 
 }  // namespace content

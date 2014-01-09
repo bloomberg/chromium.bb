@@ -12,7 +12,6 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/sandboxed_unpacker.h"
 #include "chrome/common/chrome_paths.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/common/constants.h"
@@ -61,9 +60,10 @@ class SandboxedUnpackerTest : public testing::Test {
    ASSERT_TRUE(extensions_dir_.CreateUniqueTempDir());
     browser_threads_.reset(new content::TestBrowserThreadBundle(
         content::TestBrowserThreadBundle::IO_MAINLOOP));
+    in_process_utility_thread_helper_.reset(
+        new content::InProcessUtilityThreadHelper);
     // It will delete itself.
     client_ = new MockSandboxedUnpackerClient;
-    content::RenderProcessHost::SetRunRendererInProcess(true);
   }
 
   virtual void TearDown() {
@@ -71,7 +71,6 @@ class SandboxedUnpackerTest : public testing::Test {
     // it posts a task to it.
     sandboxed_unpacker_ = NULL;
     base::RunLoop().RunUntilIdle();
-    content::RenderProcessHost::SetRunRendererInProcess(false);
   }
 
   void SetupUnpacker(const std::string& crx_name) {
@@ -105,6 +104,8 @@ class SandboxedUnpackerTest : public testing::Test {
   MockSandboxedUnpackerClient* client_;
   scoped_refptr<SandboxedUnpacker> sandboxed_unpacker_;
   scoped_ptr<content::TestBrowserThreadBundle> browser_threads_;
+  scoped_ptr<content::InProcessUtilityThreadHelper>
+      in_process_utility_thread_helper_;
 };
 
 TEST_F(SandboxedUnpackerTest, NoCatalogsSuccess) {
