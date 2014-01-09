@@ -7,7 +7,7 @@
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
-#include "content/common/service_worker_messages.h"
+#include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sender.h"

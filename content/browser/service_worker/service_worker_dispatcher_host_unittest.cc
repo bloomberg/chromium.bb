@@ -10,7 +10,7 @@
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
-#include "content/common/service_worker_messages.h"
+#include "content/common/service_worker/service_worker_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"

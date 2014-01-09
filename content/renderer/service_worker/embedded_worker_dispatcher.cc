@@ -10,7 +10,7 @@
 #include "content/child/child_process.h"
 #include "content/child/scoped_child_process_reference.h"
 #include "content/child/thread_safe_sender.h"
-#include "content/common/service_worker_messages.h"
+#include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/service_worker/embedded_worker_context_client.h"
 #include "third_party/WebKit/public/platform/WebString.h"

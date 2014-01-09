@@ -8,7 +8,7 @@
 #include "base/threading/thread_local.h"
 #include "content/child/service_worker/web_service_worker_impl.h"
 #include "content/child/thread_safe_sender.h"
-#include "content/common/service_worker_messages.h"
+#include "content/common/service_worker/service_worker_messages.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 
 using blink::WebServiceWorkerError;

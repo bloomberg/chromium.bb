@@ -5,7 +5,7 @@
 #include "content/browser/service_worker/embedded_worker_instance.h"
 
 #include "content/browser/service_worker/embedded_worker_registry.h"
-#include "content/common/service_worker_messages.h"
+#include "content/common/service_worker/embedded_worker_messages.h"
 #include "url/gurl.h"
 
 namespace content {
