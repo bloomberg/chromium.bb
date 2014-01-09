@@ -97,6 +97,7 @@ interface TestObjectPython {
     attribute any anyAttribute;
     // Custom type conversions
     attribute Promise promiseAttribute;
+    attribute Window windowAttribute;
     // DOM Node types
     attribute Document documentAttribute;
     attribute DocumentFragment documentFragmentAttribute;
@@ -111,7 +112,7 @@ interface TestObjectPython {
     attribute Uint8Array uint8ArrayAttribute;
     // Exceptions for is_keep_alive_for_gc
     attribute TestInterfaceEmpty self;
-    readonly attribute Window readonlyWindowAttribute;  // FIXME: add custom type conversion, compute interface_info for real IDLs too (for [ImplementedAs])
+    readonly attribute Window readonlyWindowAttribute;
     attribute HTMLCollection htmlCollectionAttribute;
     attribute HTMLElement htmlElementAttribute;
     // Arrays
