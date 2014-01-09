@@ -65,8 +65,8 @@ public:
     void addClient(HTMLImportLoaderClient*);
     void removeClient(HTMLImportLoaderClient*);
 
-    bool isDone() const { return m_state == StateReady || m_state == StateError; }
-    bool isLoaded() const { return m_state == StateReady; }
+    bool isDone() const { return m_blockingState == StateReady || m_blockingState == StateError; }
+    bool isLoaded() const { return m_blockingState == StateReady; }
     bool isProcessing() const;
 
     void startLoading(const ResourcePtr<RawResource>&);
@@ -91,7 +91,7 @@ private:
     HTMLImport* m_import;
     ResourceFetcher* m_fetcher;
     Vector<HTMLImportLoaderClient*> m_clients;
-    State m_state;
+    State m_blockingState;
     RefPtr<Document> m_importedDocument;
     RefPtr<DocumentWriter> m_writer;
 };

@@ -79,9 +79,9 @@ HTMLImportChild* HTMLImportsController::load(HTMLImport* parent, HTMLImportChild
 {
     ASSERT(!request.url().isEmpty() && request.url().isValid());
 
-    if (HTMLImportChild* found = findLinkFor(request.url())) {
+    if (findLinkFor(request.url())) {
         HTMLImportChild* child = createChild(request.url(), parent, client);
-        child->wasAlreadyLoadedAs(found);
+        child->wasAlreadyLoaded();
         return child;
     }
 

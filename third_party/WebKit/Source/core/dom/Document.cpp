@@ -773,7 +773,7 @@ void Document::didLoadAllImports()
 
 bool Document::haveImportsLoaded() const
 {
-    return !m_import || !m_import->isBlocked();
+    return !m_import || !m_import->isBlockedFromRunningScript();
 }
 
 PassRefPtr<DocumentFragment> Document::createDocumentFragment()

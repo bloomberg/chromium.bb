@@ -36,7 +36,6 @@
 
 namespace WebCore {
 
-class Frame;
 class Document;
 class Frame;
 class HTMLImportChild;
@@ -152,15 +151,29 @@ public:
     virtual void wasDetachedFromDocument() = 0;
     virtual void didFinishParsing() = 0;
     virtual bool isProcessing() const = 0;
-    virtual bool isDone() const = 0;
+    virtual bool isDone() const = 0; // FIXME: Should be renamed to haveFinishedLoading()
 
 protected:
-    explicit HTMLImport(bool createdByParser = false)
-        : m_blockingState(Unblocked)
+    // FIXME: Should be renamed to "State" as this state is no longer only about blocking-ness.
+    // Some block/unblock functions should be renamed acordingly.
+    enum BlockingState {
+        BlockedFromCreatingDocument,
+        BlockedFromRunningScript,
+        WaitingLoaderOrChildren,
+        Unblocked // FIXME: Should be renamed to "Ready".
+    };
+
+    explicit HTMLImport(BlockingState state, bool createdByParser = false)
+        : m_blockingState(state)
         , m_createdByParser(createdByParser)
     { }
 
     virtual void didUnblockFromCreatingDocument();
+    virtual void didUnblockFromRunningScript();
+    virtual void didBecomeReady();
+
+    void loaderWasResolved();
+    void loaderDidFinish();
 
 private:
     static void block(HTMLImport*);
@@ -168,20 +181,15 @@ private:
     void blockPredecessorsOf(HTMLImport* child);
     void blockFromRunningScript();
     void blockFromCreatingDocument();
+    void waitLoaderOrChildren();
     void unblockFromRunningScript();
     void unblockFromCreatingDocument();
-    void didUnblockFromRunningScript();
+    void becomeReady();
 
     bool isBlockedFromCreatingDocumentByPredecessors() const;
     bool isBlockedFromRunningScriptByPredecessors() const;
     bool isBlockingFollowersFromRunningScript() const;
     bool isBlockingFollowersFromCreatingDocument() const;
-
-    enum BlockingState {
-        BlockedFromCreatingDocument,
-        BlockedFromRunningScript,
-        Unblocked
-    };
 
     enum BlockingState m_blockingState;
 
@@ -191,6 +199,8 @@ private:
 // An abstract class to decouple its sublcass HTMLImportsController.
 class HTMLImportRoot : public HTMLImport {
 public:
+    HTMLImportRoot() : HTMLImport(Unblocked) { }
+
     virtual void blockerGone() = 0;
     virtual HTMLImportsController* toController() = 0;
     virtual HTMLImportChild* findLinkFor(const KURL&, HTMLImport* excluding = 0) const = 0;

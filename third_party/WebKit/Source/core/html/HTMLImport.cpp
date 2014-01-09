@@ -84,6 +84,12 @@ bool HTMLImport::isBlockedFromRunningScriptByPredecessors() const
     return false;
 }
 
+void HTMLImport::waitLoaderOrChildren()
+{
+    if (WaitingLoaderOrChildren < m_blockingState)
+        m_blockingState = WaitingLoaderOrChildren;
+}
+
 void HTMLImport::blockFromRunningScript()
 {
     if (BlockedFromRunningScript < m_blockingState)
@@ -96,37 +102,59 @@ void HTMLImport::blockFromCreatingDocument()
         m_blockingState = BlockedFromCreatingDocument;
 }
 
+void HTMLImport::becomeReady()
+{
+    if (!isBlocked())
+        return;
+    m_blockingState = Unblocked;
+    didBecomeReady();
+}
+
 void HTMLImport::unblockFromRunningScript()
 {
-    bool wasBlocked = isBlockedFromRunningScript();
-    m_blockingState = Unblocked;
-    if (wasBlocked)
-        didUnblockFromRunningScript();
+    if (!isBlockedFromRunningScript())
+        return;
+    m_blockingState = WaitingLoaderOrChildren;
+    didUnblockFromRunningScript();
 }
 
 void HTMLImport::unblockFromCreatingDocument()
 {
-    bool wasBlocked = isBlockedFromCreatingDocument();
+    if (!isBlockedFromCreatingDocument())
+        return;
     m_blockingState = BlockedFromRunningScript;
-    if (wasBlocked)
-        didUnblockFromCreatingDocument();
+    didUnblockFromCreatingDocument();
 }
 
 void HTMLImport::didUnblockFromRunningScript()
 {
     ASSERT(!isBlockedFromCreatingDocument());
     ASSERT(!isBlockedFromRunningScript());
-
-    if (!isProcessing())
-        return;
-
     if (Document* document = this->document())
         document->didLoadAllImports();
+}
+
+void HTMLImport::didBecomeReady()
+{
+    ASSERT(!isProcessing());
 }
 
 void HTMLImport::didUnblockFromCreatingDocument()
 {
     ASSERT(!isBlockedFromCreatingDocument());
+}
+
+void HTMLImport::loaderWasResolved()
+{
+    unblockFromCreatingDocument();
+    unblockFromRunningScript();
+}
+
+void HTMLImport::loaderDidFinish()
+{
+    if (m_blockingState == WaitingLoaderOrChildren)
+        becomeReady();
+    root()->blockerGone();
 }
 
 inline bool HTMLImport::isBlockingFollowersFromRunningScript() const
@@ -153,6 +181,8 @@ bool HTMLImport::unblock(HTMLImport* import)
     }
 
     import->unblockFromRunningScript();
+    if (!import->isProcessing())
+        import->becomeReady();
 
     return !import->isBlockingFollowersFromRunningScript();
 }

@@ -32,13 +32,14 @@
 #include "core/html/HTMLImportChild.h"
 
 #include "core/dom/Document.h"
+#include "core/dom/custom/CustomElementRegistrationContext.h"
 #include "core/html/HTMLImportChildClient.h"
 #include "core/html/HTMLImportLoader.h"
 
 namespace WebCore {
 
 HTMLImportChild::HTMLImportChild(const KURL& url, bool createdByParser)
-    : HTMLImport(createdByParser)
+    : HTMLImport(WaitingLoaderOrChildren, createdByParser)
     , m_url(url)
     , m_traversingClients(false)
 {
@@ -54,11 +55,13 @@ HTMLImportChild::~HTMLImportChild()
     }
 }
 
-void HTMLImportChild::wasAlreadyLoadedAs(HTMLImportChild* found)
+void HTMLImportChild::wasAlreadyLoaded()
 {
     ASSERT(!m_loader);
     ASSERT(m_clients.size());
-    shareLoader(found);
+
+    loaderWasResolved();
+    ensureLoader();
 }
 
 void HTMLImportChild::startLoading(const ResourcePtr<RawResource>& resource)
@@ -76,7 +79,7 @@ void HTMLImportChild::startLoading(const ResourcePtr<RawResource>& resource)
     if (isBlockedFromCreatingDocument())
         return;
 
-    createLoader();
+    ensureLoader();
 }
 
 void HTMLImportChild::didFinish()
@@ -85,9 +88,12 @@ void HTMLImportChild::didFinish()
         TemporaryChange<bool> traversing(m_traversingClients, true);
         m_clients[i]->didFinish();
     }
+}
 
+void HTMLImportChild::didFinishLoading()
+{
     clearResource();
-    root()->blockerGone();
+    loaderDidFinish();
 }
 
 Document* HTMLImportChild::importedDocument() const
@@ -137,9 +143,20 @@ void HTMLImportChild::didUnblockFromCreatingDocument()
 {
     HTMLImport::didUnblockFromCreatingDocument();
     ASSERT(!m_loader || !m_loader->isOwnedBy(this));
+    ensureLoader();
+}
 
+void HTMLImportChild::didBecomeReady()
+{
+    HTMLImport::didBecomeReady();
+    didFinish();
+}
+
+void HTMLImportChild::ensureLoader()
+{
     if (m_loader)
         return;
+
     if (HTMLImportChild* found = root()->findLinkFor(m_url, this))
         shareLoader(found);
     else

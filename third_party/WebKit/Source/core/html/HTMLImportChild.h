@@ -59,7 +59,7 @@ public:
     Document* importedDocument() const;
     const KURL& url() const { return m_url; }
 
-    void wasAlreadyLoadedAs(HTMLImportChild* found);
+    void wasAlreadyLoaded();
     void startLoading(const ResourcePtr<RawResource>&);
     void importDestroyed();
     bool isLoaded() const;
@@ -72,6 +72,7 @@ public:
     virtual bool isProcessing() const OVERRIDE;
     virtual bool isDone() const OVERRIDE;
     virtual void didUnblockFromCreatingDocument() OVERRIDE;
+    virtual void didBecomeReady() OVERRIDE;
 
     void addClient(HTMLImportChildClient*);
     void removeClient(HTMLImportChildClient*);
@@ -84,10 +85,12 @@ private:
     virtual void notifyFinished(Resource*) OVERRIDE { }
 
     // HTMLImportLoaderClient
-    virtual void didFinish() OVERRIDE;
+    virtual void didFinishLoading() OVERRIDE;
 
+    void didFinish();
     void createLoader();
     void shareLoader(HTMLImportChild*);
+    void ensureLoader();
 
     KURL m_url;
     RefPtr<HTMLImportLoader> m_loader;

@@ -32,7 +32,6 @@
 #include "core/html/HTMLImportLoader.h"
 
 #include "core/dom/Document.h"
-#include "core/dom/custom/CustomElementRegistrationContext.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/ContentSecurityPolicyResponseHeaders.h"
 #include "core/html/HTMLDocument.h"
@@ -52,7 +51,7 @@ PassRefPtr<HTMLImportLoader> HTMLImportLoader::create(HTMLImport* import, Resour
 HTMLImportLoader::HTMLImportLoader(HTMLImport* import, ResourceFetcher* fetcher)
     : m_import(import)
     , m_fetcher(fetcher)
-    , m_state(StateLoading)
+    , m_blockingState(StateLoading)
 {
 }
 
@@ -119,17 +118,17 @@ HTMLImportLoader::State HTMLImportLoader::finishParsing()
 
 void HTMLImportLoader::setState(State state)
 {
-    if (m_state == state)
+    if (m_blockingState == state)
         return;
 
-    m_state = state;
+    m_blockingState = state;
 
-    if (m_state == StateReady || m_state == StateError || m_state == StateWritten) {
+    if (m_blockingState == StateReady || m_blockingState == StateError || m_blockingState == StateWritten) {
         if (RefPtr<DocumentWriter> writer = m_writer.release())
             writer->end();
     }
 
-    // Since DocumentWriter::end() can let setState() reenter, we shouldn't refer to m_state here.
+    // Since DocumentWriter::end() can let setState() reenter, we shouldn't refer to m_blockingState here.
     if (state == StateReady || state == StateError)
         didFinish();
 }
@@ -141,7 +140,7 @@ void HTMLImportLoader::didFinishParsing()
 
 Document* HTMLImportLoader::importedDocument() const
 {
-    if (m_state == StateError)
+    if (m_blockingState == StateError)
         return 0;
     return m_importedDocument.get();
 }
@@ -156,7 +155,7 @@ bool HTMLImportLoader::isProcessing() const
 void HTMLImportLoader::didFinish()
 {
     for (size_t i = 0; i < m_clients.size(); ++i)
-        m_clients[i]->didFinish();
+        m_clients[i]->didFinishLoading();
 
     clearResource();
 
@@ -168,7 +167,7 @@ void HTMLImportLoader::addClient(HTMLImportLoaderClient* client)
     ASSERT(kNotFound == m_clients.find(client));
     m_clients.append(client);
     if (isDone())
-        client->didFinish();
+        client->didFinishLoading();
 }
 
 void HTMLImportLoader::removeClient(HTMLImportLoaderClient* client)
