@@ -46,7 +46,7 @@ CustomElementCallbackQueue::CustomElementCallbackQueue(PassRefPtr<Element> eleme
 {
 }
 
-void CustomElementCallbackQueue::processInElementQueue(ElementQueue caller)
+bool CustomElementCallbackQueue::process(ElementQueue caller)
 {
     ASSERT(!m_inCreatedCallback);
 
@@ -66,6 +66,8 @@ void CustomElementCallbackQueue::processInElementQueue(ElementQueue caller)
         m_queue.resize(0);
         m_owner = -1;
     }
+
+    return true;
 }
 
 } // namespace WebCore

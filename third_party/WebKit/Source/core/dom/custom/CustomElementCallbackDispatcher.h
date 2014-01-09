@@ -32,12 +32,15 @@
 #define CustomElementCallbackDispatcher_h
 
 #include "core/dom/custom/CustomElementBaseElementQueue.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
 
 class CustomElementCallbackQueue;
 class CustomElementCallbackScheduler;
+class CustomElementPendingImport;
+
 
 class CustomElementCallbackDispatcher {
     WTF_MAKE_NONCOPYABLE(CustomElementCallbackDispatcher);
@@ -72,6 +75,8 @@ public:
 protected:
     friend class CustomElementCallbackScheduler;
     void enqueue(CustomElementCallbackQueue*);
+    void enqueue(CustomElementPendingImport*);
+    void removeAndDeleteLater(PassOwnPtr<CustomElementPendingImport>);
 
 private:
     CustomElementCallbackDispatcher()
@@ -104,6 +109,9 @@ private:
     static void processElementQueueAndPop();
     void processElementQueueAndPop(size_t start, size_t end);
 
+    CustomElementBaseElementQueue& queueFor(CustomElementCallbackQueue*);
+    CustomElementBaseElementQueue& queueFor(CustomElementPendingImport*);
+
     // The base element queue, used when no CallbackDeliveryScope is
     // active. Callbacks for elements created by the parser are
     // enqueued here.
@@ -114,6 +122,7 @@ private:
     // is a null sentinel value.
     static const size_t kNumSentinels = 1;
     Vector<CustomElementCallbackQueue*> m_flattenedProcessingStack;
+
 };
 
 }

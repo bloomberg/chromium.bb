@@ -36,6 +36,7 @@
 #include "core/dom/custom/CustomElementRegistry.h"
 #include "core/dom/custom/CustomElementUpgradeCandidateMap.h"
 #include "wtf/HashMap.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/AtomicString.h"
 
@@ -43,6 +44,7 @@ namespace WebCore {
 
 class CustomElementConstructorBuilder;
 class CustomElementDefinition;
+class CustomElementPendingImport;
 class Document;
 class Element;
 class ExceptionState;
@@ -61,6 +63,9 @@ public:
     static void setTypeExtension(Element*, const AtomicString& type);
 
     void resolve(Element*, const CustomElementDescriptor&);
+
+    void didStartLoadingImport(CustomElementPendingImport*);
+    void didFinishLoadingImport(PassOwnPtr<CustomElementPendingImport>);
 
 protected:
     CustomElementRegistrationContext() { }

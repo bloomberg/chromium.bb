@@ -28,51 +28,43 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CustomElementCallbackQueue_h
-#define CustomElementCallbackQueue_h
+#include "config.h"
+#include "core/dom/custom/CustomElementPendingImport.h"
 
-#include "core/dom/Element.h"
-#include "core/dom/custom/CustomElementBaseElementQueueItem.h"
-#include "core/dom/custom/CustomElementProcessingStep.h"
-#include "wtf/PassOwnPtr.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
-#include "wtf/Vector.h"
+#include "core/html/HTMLImportChild.h"
+#include "core/html/HTMLLinkElement.h"
 
 namespace WebCore {
 
-// FIXME: Should be renamed to CustomElementProcessingQueue
-class CustomElementCallbackQueue : public CustomElementBaseElementQueueItem {
-    WTF_MAKE_NONCOPYABLE(CustomElementCallbackQueue);
-public:
-    static PassOwnPtr<CustomElementCallbackQueue> create(PassRefPtr<Element>);
-
-    ElementQueue owner() const { return m_owner; }
-    Element* element() const { return m_element.get(); }
-
-    void setOwner(ElementQueue newOwner)
-    {
-        // ElementCallbackQueues only migrate towards the top of the
-        // processing stack.
-        ASSERT(newOwner >= m_owner);
-        m_owner = newOwner;
-    }
-
-    virtual bool process(ElementQueue queueId) OVERRIDE;
-
-    void append(PassOwnPtr<CustomElementProcessingStep> invocation) { m_queue.append(invocation); }
-    bool inCreatedCallback() const { return m_inCreatedCallback; }
-
-private:
-    CustomElementCallbackQueue(PassRefPtr<Element>);
-
-    RefPtr<Element> m_element;
-    Vector<OwnPtr<CustomElementProcessingStep> > m_queue;
-    ElementQueue m_owner;
-    size_t m_index;
-    bool m_inCreatedCallback;
-};
-
+PassOwnPtr<CustomElementPendingImport> CustomElementPendingImport::create(HTMLImportChild* import)
+{
+    return adoptPtr(new CustomElementPendingImport(import));
 }
 
-#endif // CustomElementCallbackQueue_h
+CustomElementPendingImport::CustomElementPendingImport(HTMLImportChild* import)
+    : m_import(import)
+{
+}
+
+CustomElementPendingImport::~CustomElementPendingImport()
+{
+    // Remaining tasks in m_baseElementQueue will be discarded.
+    // Such a case only happens when the frame is closed
+    // while loading the import.
+}
+
+bool CustomElementPendingImport::process(ElementQueue baseQueueId)
+{
+    m_baseElementQueue.dispatch(baseQueueId);
+    return false;
+}
+
+CustomElementBaseElementQueue* CustomElementPendingImport::parentBaseElementQueue() const
+{
+    CustomElementPendingImport* parentPendingImport = m_import->parent()->pendingImport();
+    if (!parentPendingImport)
+        return 0;
+    return &parentPendingImport->baseElementQueue();
+}
+
+} // namespace WebCore

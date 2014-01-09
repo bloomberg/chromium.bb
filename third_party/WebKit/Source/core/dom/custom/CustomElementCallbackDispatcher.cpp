@@ -33,6 +33,8 @@
 
 #include "core/dom/custom/CustomElementCallbackQueue.h"
 #include "core/dom/custom/CustomElementCallbackScheduler.h"
+#include "core/dom/custom/CustomElementPendingImport.h"
+#include "core/html/HTMLImport.h"
 #include "wtf/MainThread.h"
 
 namespace WebCore {
@@ -55,7 +57,8 @@ bool CustomElementCallbackDispatcher::dispatch()
         return false;
 
     bool didWork = m_baseElementQueue.dispatch(baseElementQueue());
-    CustomElementCallbackScheduler::clearElementCallbackQueueMap();
+    if (m_baseElementQueue.isEmpty())
+        CustomElementCallbackScheduler::clearElementCallbackQueueMap();
     return didWork;
 }
 
@@ -75,7 +78,7 @@ void CustomElementCallbackDispatcher::processElementQueueAndPop(size_t start, si
             // The created callback may schedule entered document
             // callbacks.
             CallbackDeliveryScope deliveryScope;
-            m_flattenedProcessingStack[i]->processInElementQueue(thisQueue);
+            m_flattenedProcessingStack[i]->process(thisQueue);
         }
 
         ASSERT(start == s_elementQueueStart);
@@ -90,6 +93,23 @@ void CustomElementCallbackDispatcher::processElementQueueAndPop(size_t start, si
         CustomElementCallbackScheduler::clearElementCallbackQueueMap();
 }
 
+inline CustomElementBaseElementQueue& CustomElementCallbackDispatcher::queueFor(CustomElementCallbackQueue* callbackQueue)
+{
+    if (HTMLImport* import = callbackQueue->element()->document().import()) {
+        if (CustomElementPendingImport* pending = import->pendingImport())
+            return pending->baseElementQueue();
+    }
+
+    return m_baseElementQueue;
+}
+
+inline CustomElementBaseElementQueue& CustomElementCallbackDispatcher::queueFor(CustomElementPendingImport* pendingImport)
+{
+    if (CustomElementBaseElementQueue* parentQueue = pendingImport->parentBaseElementQueue())
+        return *parentQueue;
+    return m_baseElementQueue;
+}
+
 void CustomElementCallbackDispatcher::enqueue(CustomElementCallbackQueue* callbackQueue)
 {
     if (callbackQueue->owner() == currentElementQueue())
@@ -101,8 +121,19 @@ void CustomElementCallbackDispatcher::enqueue(CustomElementCallbackQueue* callba
         m_flattenedProcessingStack.append(callbackQueue);
         ++s_elementQueueEnd;
     } else {
-        m_baseElementQueue.enqueue(callbackQueue);
+        queueFor(callbackQueue).enqueue(callbackQueue);
     }
+}
+
+void CustomElementCallbackDispatcher::enqueue(CustomElementPendingImport* pendingImport)
+{
+    queueFor(pendingImport).enqueue(pendingImport);
+}
+
+void CustomElementCallbackDispatcher::removeAndDeleteLater(PassOwnPtr<CustomElementPendingImport> pendingImport)
+{
+    CustomElementBaseElementQueue& queue = queueFor(pendingImport.get());
+    queue.removeAndDeleteLater(pendingImport);
 }
 
 } // namespace WebCore

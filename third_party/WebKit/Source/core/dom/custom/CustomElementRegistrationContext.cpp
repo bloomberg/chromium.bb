@@ -38,6 +38,7 @@
 #include "core/dom/custom/CustomElement.h"
 #include "core/dom/custom/CustomElementCallbackScheduler.h"
 #include "core/dom/custom/CustomElementDefinition.h"
+#include "core/dom/custom/CustomElementPendingImport.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLUnknownElement.h"
 #include "core/svg/SVGUnknownElement.h"
@@ -142,6 +143,16 @@ void CustomElementRegistrationContext::setTypeExtension(Element* element, const 
 
     if (CustomElementRegistrationContext* context = element->document().registrationContext())
         context->didGiveTypeExtension(element, type);
+}
+
+void CustomElementRegistrationContext::didStartLoadingImport(CustomElementPendingImport* pendingImport)
+{
+    CustomElementCallbackScheduler::appendPendingImport(pendingImport);
+}
+
+void CustomElementRegistrationContext::didFinishLoadingImport(PassOwnPtr<CustomElementPendingImport> pendingImport)
+{
+    CustomElementCallbackScheduler::removePendingImport(pendingImport);
 }
 
 } // namespace WebCore

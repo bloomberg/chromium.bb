@@ -32,6 +32,7 @@
 #include "core/html/HTMLImportChild.h"
 
 #include "core/dom/Document.h"
+#include "core/dom/custom/CustomElementPendingImport.h"
 #include "core/dom/custom/CustomElementRegistrationContext.h"
 #include "core/html/HTMLImportChildClient.h"
 #include "core/html/HTMLImportLoader.h"
@@ -69,6 +70,11 @@ void HTMLImportChild::startLoading(const ResourcePtr<RawResource>& resource)
     ASSERT(!hasResource());
     ASSERT(!m_loader);
 
+    if (isCreatedByParser()) {
+        m_pendingImport = CustomElementPendingImport::create(this);
+        master()->registrationContext()->didStartLoadingImport(m_pendingImport.get());
+    }
+
     HTMLImportResourceOwner::setResource(resource);
 
     // If the node is "document blocked", it cannot create HTMLImportLoader
@@ -88,6 +94,9 @@ void HTMLImportChild::didFinish()
         TemporaryChange<bool> traversing(m_traversingClients, true);
         m_clients[i]->didFinish();
     }
+
+    if (m_pendingImport)
+        master()->registrationContext()->didFinishLoadingImport(m_pendingImport.release());
 }
 
 void HTMLImportChild::didFinishLoading()

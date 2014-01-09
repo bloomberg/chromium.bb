@@ -35,6 +35,7 @@
 #include "core/dom/custom/CustomElementCallbackDispatcher.h"
 #include "core/dom/custom/CustomElementCallbackInvocation.h"
 #include "core/dom/custom/CustomElementLifecycleCallbacks.h"
+#include "core/dom/custom/CustomElementPendingImport.h"
 #include "core/dom/custom/CustomElementRegistrationContext.h"
 #include "core/dom/custom/CustomElementResolutionStep.h"
 
@@ -93,6 +94,16 @@ void CustomElementCallbackScheduler::clearElementCallbackQueueMap()
 {
     ElementCallbackQueueMap emptyMap;
     instance().m_elementCallbackQueueMap.swap(emptyMap);
+}
+
+void CustomElementCallbackScheduler::appendPendingImport(CustomElementPendingImport* pendingImport)
+{
+    CustomElementCallbackDispatcher::instance().enqueue(pendingImport);
+}
+
+void CustomElementCallbackScheduler::removePendingImport(PassOwnPtr<CustomElementPendingImport> pendingImport)
+{
+    CustomElementCallbackDispatcher::instance().removeAndDeleteLater(pendingImport);
 }
 
 // Finds or creates the callback queue for element. If the

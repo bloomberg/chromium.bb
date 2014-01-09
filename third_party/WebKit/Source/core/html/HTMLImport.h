@@ -42,6 +42,7 @@ class HTMLImportChild;
 class HTMLImportRoot;
 class HTMLImportsController;
 class KURL;
+class CustomElementPendingImport;
 
 //
 // # Basic Data Structure and Algorithms of HTML Imports implemenation.
@@ -152,6 +153,7 @@ public:
     virtual void didFinishParsing() = 0;
     virtual bool isProcessing() const = 0;
     virtual bool isDone() const = 0; // FIXME: Should be renamed to haveFinishedLoading()
+    virtual CustomElementPendingImport* pendingImport() const { return 0; }
 
 protected:
     // FIXME: Should be renamed to "State" as this state is no longer only about blocking-ness.

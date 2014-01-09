@@ -31,26 +31,31 @@
 #ifndef CustomElementBaseElementQueue_h
 #define CustomElementBaseElementQueue_h
 
+#include "core/dom/custom/CustomElementBaseElementQueueItem.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
 
-class CustomElementCallbackQueue;
-
 class CustomElementBaseElementQueue {
     WTF_MAKE_NONCOPYABLE(CustomElementBaseElementQueue);
 public:
+    typedef CustomElementBaseElementQueueItem Item;
+
     CustomElementBaseElementQueue() : m_inDispatch(false) { }
 
     bool isEmpty() const { return m_queue.isEmpty(); }
-    void enqueue(CustomElementCallbackQueue*);
+    void enqueue(Item*);
+    void remove(Item*);
+    void removeAndDeleteLater(PassOwnPtr<Item>);
 
     typedef int ElementQueue;
     bool dispatch(ElementQueue baseQueueId);
 
 private:
     bool m_inDispatch;
-    Vector<CustomElementCallbackQueue*> m_queue;
+    Vector<Item*> m_queue;
+    Vector<OwnPtr<Item> > m_dyingItems;
 };
 
 }

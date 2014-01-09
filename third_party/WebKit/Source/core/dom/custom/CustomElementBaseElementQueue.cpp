@@ -36,9 +36,24 @@
 
 namespace WebCore {
 
-void CustomElementBaseElementQueue::enqueue(CustomElementCallbackQueue* queue)
+void CustomElementBaseElementQueue::enqueue(CustomElementBaseElementQueue::Item* item)
 {
-    m_queue.append(queue);
+    m_queue.append(item);
+}
+
+void CustomElementBaseElementQueue::remove(Item* item)
+{
+    size_t found = m_queue.find(item);
+    if (found != kNotFound)
+        m_queue.remove(found);
+}
+
+void CustomElementBaseElementQueue::removeAndDeleteLater(PassOwnPtr<Item> item)
+{
+    size_t found = m_queue.find(item.get());
+    if (found != kNotFound)
+        m_queue.remove(found);
+    m_dyingItems.append(item);
 }
 
 bool CustomElementBaseElementQueue::dispatch(ElementQueue baseQueueId)
@@ -46,16 +61,23 @@ bool CustomElementBaseElementQueue::dispatch(ElementQueue baseQueueId)
     ASSERT(!m_inDispatch);
     m_inDispatch = true;
 
-    bool didWork = m_queue.size();
-
-    for (Vector<CustomElementCallbackQueue*>::iterator it = m_queue.begin(); it != m_queue.end(); ++it) {
+    unsigned i;
+    for (i = 0; i < m_queue.size(); ++i) {
         // The created callback may schedule entered document
         // callbacks.
         CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
-        (*it)->processInElementQueue(baseQueueId);
+        // The task can be blocked by pending imports.
+        if (!m_queue[i]->process(baseQueueId))
+            break;
     }
 
-    m_queue.resize(0);
+    bool didWork = 0 < m_queue.size() && 0 < i;
+    if (i < m_queue.size())
+        m_queue.remove(0, i);
+    else
+        m_queue.resize(0);
+
+    m_dyingItems.clear();
     m_inDispatch = 0;
 
     return didWork;

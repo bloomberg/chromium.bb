@@ -28,51 +28,37 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CustomElementCallbackQueue_h
-#define CustomElementCallbackQueue_h
+#ifndef CustomElementPendingImport_h
+#define CustomElementPendingImport_h
 
-#include "core/dom/Element.h"
+#include "core/dom/custom/CustomElementBaseElementQueue.h"
 #include "core/dom/custom/CustomElementBaseElementQueueItem.h"
-#include "core/dom/custom/CustomElementProcessingStep.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
-#include "wtf/Vector.h"
 
 namespace WebCore {
 
-// FIXME: Should be renamed to CustomElementProcessingQueue
-class CustomElementCallbackQueue : public CustomElementBaseElementQueueItem {
-    WTF_MAKE_NONCOPYABLE(CustomElementCallbackQueue);
+class HTMLImportChild;
+
+class CustomElementPendingImport : public CustomElementBaseElementQueueItem {
+    WTF_MAKE_NONCOPYABLE(CustomElementPendingImport);
 public:
-    static PassOwnPtr<CustomElementCallbackQueue> create(PassRefPtr<Element>);
+    static PassOwnPtr<CustomElementPendingImport> create(HTMLImportChild*);
 
-    ElementQueue owner() const { return m_owner; }
-    Element* element() const { return m_element.get(); }
+    virtual ~CustomElementPendingImport();
+    virtual bool process(ElementQueue) OVERRIDE;
 
-    void setOwner(ElementQueue newOwner)
-    {
-        // ElementCallbackQueues only migrate towards the top of the
-        // processing stack.
-        ASSERT(newOwner >= m_owner);
-        m_owner = newOwner;
-    }
+    CustomElementBaseElementQueue& baseElementQueue() { return m_baseElementQueue; }
+    CustomElementBaseElementQueue* parentBaseElementQueue() const;
 
-    virtual bool process(ElementQueue queueId) OVERRIDE;
+protected:
+    CustomElementPendingImport(HTMLImportChild*);
 
-    void append(PassOwnPtr<CustomElementProcessingStep> invocation) { m_queue.append(invocation); }
-    bool inCreatedCallback() const { return m_inCreatedCallback; }
-
-private:
-    CustomElementCallbackQueue(PassRefPtr<Element>);
-
-    RefPtr<Element> m_element;
-    Vector<OwnPtr<CustomElementProcessingStep> > m_queue;
-    ElementQueue m_owner;
-    size_t m_index;
-    bool m_inCreatedCallback;
+    HTMLImportChild* m_import;
+    CustomElementBaseElementQueue m_baseElementQueue;
 };
 
 }
 
-#endif // CustomElementCallbackQueue_h
+#endif // CustomElementPendingImport_h

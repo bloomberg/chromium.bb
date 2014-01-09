@@ -34,6 +34,7 @@
 #include "core/dom/custom/CustomElementCallbackQueue.h"
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/AtomicString.h"
 
@@ -50,6 +51,8 @@ public:
     static void scheduleAttachedCallback(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>);
     static void scheduleDetachedCallback(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>);
     static void scheduleResolutionStep(const CustomElementDescriptor&, PassRefPtr<Element>);
+    static void appendPendingImport(CustomElementPendingImport*);
+    static void removePendingImport(PassOwnPtr<CustomElementPendingImport>);
 
 protected:
     friend class CustomElementCallbackDispatcher;

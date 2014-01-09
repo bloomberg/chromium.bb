@@ -39,6 +39,7 @@
 
 namespace WebCore {
 
+class CustomElementPendingImport;
 class HTMLImportLoader;
 class HTMLImportChildClient;
 
@@ -73,6 +74,7 @@ public:
     virtual bool isDone() const OVERRIDE;
     virtual void didUnblockFromCreatingDocument() OVERRIDE;
     virtual void didBecomeReady() OVERRIDE;
+    virtual CustomElementPendingImport* pendingImport() const OVERRIDE { return m_pendingImport.get(); }
 
     void addClient(HTMLImportChildClient*);
     void removeClient(HTMLImportChildClient*);
@@ -93,6 +95,7 @@ private:
     void ensureLoader();
 
     KURL m_url;
+    OwnPtr<CustomElementPendingImport> m_pendingImport;
     RefPtr<HTMLImportLoader> m_loader;
     Vector<HTMLImportChildClient*> m_clients;
     bool m_traversingClients;

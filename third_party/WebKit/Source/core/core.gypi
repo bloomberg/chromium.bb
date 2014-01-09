@@ -2041,6 +2041,8 @@
             'dom/custom/CustomElementLifecycleCallbacks.h',
             'dom/custom/CustomElementObserver.cpp',
             'dom/custom/CustomElementObserver.h',
+            'dom/custom/CustomElementPendingImport.cpp',
+            'dom/custom/CustomElementPendingImport.h',
             'dom/custom/CustomElementProcessingStep.h',
             'dom/custom/CustomElementRegistrationContext.cpp',
             'dom/custom/CustomElementRegistrationContext.h',
