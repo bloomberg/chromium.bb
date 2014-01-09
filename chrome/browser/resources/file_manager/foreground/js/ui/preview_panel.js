@@ -58,7 +58,9 @@ var PreviewPanel = function(element,
    * @type {PreviewPanel.Thumbnails}
    */
   this.thumbnails = new PreviewPanel.Thumbnails(
-      element.querySelector('.preview-thumbnails'), metadataCache);
+      element.querySelector('.preview-thumbnails'),
+      metadataCache,
+      volumeManager);
 
   /**
    * @type {HTMLElement}
@@ -95,7 +97,7 @@ var PreviewPanel = function(element,
   this.sequence_ = 0;
 
   /**
-   * @type {VolumeManager}
+   * @type {VolumeManagerWrapper}
    * @private
    */
   this.volumeManager_ = volumeManager;
@@ -375,11 +377,13 @@ PreviewPanel.CalculatingSizeLabel.prototype.onStep_ = function() {
  *
  * @param {HTMLElement} element DOM Element of thumbnail container.
  * @param {MetadataCache} metadataCache MetadataCache.
+ * @param {VolumeManagerWrapper} volumeManager Volume manager instance.
  * @constructor
  */
-PreviewPanel.Thumbnails = function(element, metadataCache) {
+PreviewPanel.Thumbnails = function(element, metadataCache, volumeManager) {
   this.element_ = element;
   this.metadataCache_ = metadataCache;
+  this.volumeManager_ = volumeManager;
   this.sequence_ = 0;
   Object.seal(this);
 };
@@ -437,6 +441,7 @@ PreviewPanel.Thumbnails.prototype.loadThumbnails_ = function(selection) {
       FileGrid.decorateThumbnailBox(box,
                                     entries[i],
                                     this.metadataCache_,
+                                    this.volumeManager_,
                                     ThumbnailLoader.FillMode.FILL,
                                     FileGrid.ThumbnailQuality.LOW,
                                     i == 0 && length == 1 &&

@@ -957,14 +957,12 @@ filelist.decorateSelectionCheckbox = function(input, entry, list) {
  */
 filelist.decorateListItem = function(li, entry, metadataCache) {
   li.classList.add(entry.isDirectory ? 'directory' : 'file');
-  // TODO(mtomasz): Use Entry instead of paths.
-  if (PathUtil.isDriveBasedPath(entry.fullPath)) {
-    // The metadata may not yet be ready. In that case, the list item will be
-    // updated when the metadata is ready via updateListItemsMetadata.
-    var driveProps = metadataCache.getCached(entry, 'drive');
-    if (driveProps)
-      filelist.updateListItemDriveProps(li, driveProps);
-  }
+  // The metadata may not yet be ready. In that case, the list item will be
+  // updated when the metadata is ready via updateListItemsMetadata. For files
+  // not on Drive, driveProps is not available.
+  var driveProps = metadataCache.getCached(entry, 'drive');
+  if (driveProps)
+    filelist.updateListItemDriveProps(li, driveProps);
 
   // Overriding the default role 'list' to 'listbox' for better
   // accessibility on ChromeOS.

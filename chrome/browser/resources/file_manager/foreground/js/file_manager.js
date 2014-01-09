@@ -732,7 +732,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     var fullPage = this.dialogType == DialogType.FULL_PAGE;
     FileTable.decorate(this.table_, this.metadataCache_, fullPage);
-    FileGrid.decorate(this.grid_, this.metadataCache_);
+    FileGrid.decorate(this.grid_, this.metadataCache_, this.volumeManager_);
 
     this.previewPanel_ = new PreviewPanel(
         dom.querySelector('.preview-panel'),
