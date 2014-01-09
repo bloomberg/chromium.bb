@@ -138,9 +138,6 @@ private:
 
     void initialize(const IntSize&);
 
-    Platform3DObject frontColorBuffer() const;
-    Platform3DObject colorBuffer() const { return m_colorBuffer; }
-
     unsigned createColorTexture(const IntSize& size = IntSize());
     // Create the depth/stencil and multisample buffers, if needed.
     void createSecondaryBuffers();
@@ -177,6 +174,7 @@ private:
     bool m_multisampleExtensionSupported;
     bool m_packedDepthStencilExtensionSupported;
     Platform3DObject m_fbo;
+    // DrawingBuffer's output is double-buffered. m_colorBuffer is the back buffer.
     Platform3DObject m_colorBuffer;
     Platform3DObject m_frontColorBuffer;
 
@@ -210,7 +208,6 @@ private:
     Vector<RefPtr<MailboxInfo> > m_textureMailboxes;
     // Mailboxes that were released by the compositor and can be used again by this DrawingBuffer.
     Vector<RefPtr<MailboxInfo> > m_recycledMailboxes;
-    RefPtr<MailboxInfo> m_lastColorBuffer;
 
     RefPtr<ContextEvictionManager> m_contextEvictionManager;
 };

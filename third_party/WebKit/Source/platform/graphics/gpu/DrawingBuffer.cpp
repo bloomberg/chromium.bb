@@ -150,12 +150,12 @@ blink::WebGraphicsContext3D* DrawingBuffer::context()
 
 bool DrawingBuffer::prepareMailbox(blink::WebExternalTextureMailbox* outMailbox, blink::WebExternalBitmap* bitmap)
 {
-    if (!m_context || !m_contentsChanged || !m_lastColorBuffer)
+    if (!m_context || !m_contentsChanged)
         return false;
 
     m_context->makeContextCurrent();
 
-    // Resolve the multisampled buffer into the texture referenced by m_lastColorBuffer mailbox.
+    // Resolve the multisampled buffer into m_colorBuffer texture.
     if (multisample())
         commit();
 
@@ -174,21 +174,20 @@ bool DrawingBuffer::prepareMailbox(blink::WebExternalTextureMailbox* outMailbox,
     ScopedTextureUnit0BindingRestorer restorer(m_context.get(), m_activeTextureUnit, m_texture2DBinding);
 
     // First try to recycle an old buffer.
-    RefPtr<MailboxInfo> nextFrontColorBuffer = recycledMailbox();
+    RefPtr<MailboxInfo> frontColorBufferMailbox = recycledMailbox();
 
     // No buffer available to recycle, create a new one.
-    if (!nextFrontColorBuffer) {
+    if (!frontColorBufferMailbox) {
         unsigned newColorBuffer = createColorTexture(m_size);
         // Bad things happened, abandon ship.
         if (!newColorBuffer)
             return false;
 
-        nextFrontColorBuffer = createNewMailbox(newColorBuffer);
+        frontColorBufferMailbox = createNewMailbox(newColorBuffer);
     }
 
     if (m_preserveDrawingBuffer == Discard) {
-        m_colorBuffer = nextFrontColorBuffer->textureId;
-        swap(nextFrontColorBuffer, m_lastColorBuffer);
+        swap(frontColorBufferMailbox->textureId, m_colorBuffer);
         // It appears safe to overwrite the context's framebuffer binding in the Discard case since there will always be a
         // WebGLRenderingContext::clearIfComposited() call made before the next draw call which restores the framebuffer binding.
         // If this stops being true at some point, we should track the current framebuffer binding in the DrawingBuffer and restore
@@ -196,7 +195,7 @@ bool DrawingBuffer::prepareMailbox(blink::WebExternalTextureMailbox* outMailbox,
         m_context->bindFramebuffer(GL_FRAMEBUFFER, m_fbo);
         m_context->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_colorBuffer, 0);
     } else {
-        m_context->webContext()->copyTextureCHROMIUM(GL_TEXTURE_2D, m_colorBuffer, nextFrontColorBuffer->textureId, 0, GL_RGBA, GL_UNSIGNED_BYTE);
+        m_context->webContext()->copyTextureCHROMIUM(GL_TEXTURE_2D, m_colorBuffer, frontColorBufferMailbox->textureId, 0, GL_RGBA, GL_UNSIGNED_BYTE);
     }
 
     if (multisample() && !m_framebufferBinding)
@@ -206,13 +205,13 @@ bool DrawingBuffer::prepareMailbox(blink::WebExternalTextureMailbox* outMailbox,
 
     m_contentsChanged = false;
 
-    context()->bindTexture(GL_TEXTURE_2D, nextFrontColorBuffer->textureId);
-    context()->produceTextureCHROMIUM(GL_TEXTURE_2D, nextFrontColorBuffer->mailbox.name);
+    context()->bindTexture(GL_TEXTURE_2D, frontColorBufferMailbox->textureId);
+    context()->produceTextureCHROMIUM(GL_TEXTURE_2D, frontColorBufferMailbox->mailbox.name);
     context()->flush();
     m_context->markLayerComposited();
 
-    *outMailbox = nextFrontColorBuffer->mailbox;
-    m_frontColorBuffer = nextFrontColorBuffer->textureId;
+    *outMailbox = frontColorBufferMailbox->mailbox;
+    m_frontColorBuffer = frontColorBufferMailbox->textureId;
     return true;
 }
 
@@ -292,12 +291,6 @@ void DrawingBuffer::initialize(const IntSize& size)
     m_context->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_colorBuffer, 0);
     createSecondaryBuffers();
     reset(size);
-    m_lastColorBuffer = createNewMailbox(m_colorBuffer);
-}
-
-unsigned DrawingBuffer::frontColorBuffer() const
-{
-    return m_frontColorBuffer;
 }
 
 bool DrawingBuffer::copyToPlatformTexture(GraphicsContext3D& context, Platform3DObject texture, GLenum internalFormat, GLenum destType, GLint level, bool premultiplyAlpha, bool flipY)
@@ -314,7 +307,7 @@ bool DrawingBuffer::copyToPlatformTexture(GraphicsContext3D& context, Platform3D
         }
         m_context->flush();
     }
-    Platform3DObject sourceTexture = colorBuffer();
+    Platform3DObject sourceTexture = m_colorBuffer;
 
     if (!context.makeContextCurrent())
         return false;
@@ -453,7 +446,6 @@ void DrawingBuffer::releaseResources()
     m_fbo = 0;
     m_contextEvictionManager.clear();
 
-    m_lastColorBuffer.clear();
     m_recycledMailboxes.clear();
     m_textureMailboxes.clear();
 
@@ -500,9 +492,6 @@ bool DrawingBuffer::resizeFramebuffer(const IntSize& size)
 
     m_context->bindTexture(GL_TEXTURE_2D, m_colorBuffer);
     m_context->texImage2DResourceSafe(GL_TEXTURE_2D, 0, m_internalColorFormat, size.width(), size.height(), 0, m_colorFormat, GL_UNSIGNED_BYTE);
-    if (m_lastColorBuffer)
-        m_lastColorBuffer->size = size;
-
     m_context->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_colorBuffer, 0);
 
     m_context->bindTexture(GL_TEXTURE_2D, 0);
