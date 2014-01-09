@@ -12,6 +12,7 @@
 #include "third_party/WebKit/public/platform/WebContentDecryptionModule.h"
 
 namespace media {
+class Decryptor;
 class MediaKeys;
 }
 
@@ -27,6 +28,12 @@ class WebContentDecryptionModuleImpl
       const base::string16& key_system);
 
   virtual ~WebContentDecryptionModuleImpl();
+
+  // Returns the Decryptor associated with this CDM. May be NULL if no
+  // Decryptor associated with the MediaKeys object.
+  // TODO(jrummell): Figure out lifetimes, as WMPI may still use the decryptor
+  // after WebContentDecryptionModule is freed. http://crbug.com/330324
+  media::Decryptor* GetDecryptor();
 
   // blink::WebContentDecryptionModule implementation.
   virtual blink::WebContentDecryptionModuleSession* createSession(
@@ -45,6 +52,12 @@ class WebContentDecryptionModuleImpl
 
   DISALLOW_COPY_AND_ASSIGN(WebContentDecryptionModuleImpl);
 };
+
+// Allow typecasting from blink type as this is the only implementation.
+inline WebContentDecryptionModuleImpl* ToWebContentDecryptionModuleImpl(
+    blink::WebContentDecryptionModule* cdm) {
+  return static_cast<WebContentDecryptionModuleImpl*>(cdm);
+}
 
 }  // namespace content
 

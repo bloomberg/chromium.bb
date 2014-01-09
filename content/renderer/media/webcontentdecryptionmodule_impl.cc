@@ -210,6 +210,10 @@ WebContentDecryptionModuleImpl::createSession(
   return session;
 }
 
+media::Decryptor* WebContentDecryptionModuleImpl::GetDecryptor() {
+  return media_keys_->GetDecryptor();
+}
+
 void WebContentDecryptionModuleImpl::OnSessionClosed(uint32 session_id) {
   adapter_->RemoveSession(session_id);
 }

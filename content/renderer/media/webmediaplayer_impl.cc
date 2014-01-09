@@ -25,6 +25,7 @@
 #include "content/renderer/media/render_media_log.h"
 #include "content/renderer/media/texttrack_impl.h"
 #include "content/renderer/media/webaudiosourceprovider_impl.h"
+#include "content/renderer/media/webcontentdecryptionmodule_impl.h"
 #include "content/renderer/media/webinbandtexttrack_impl.h"
 #include "content/renderer/media/webmediaplayer_delegate.h"
 #include "content/renderer/media/webmediaplayer_params.h"
@@ -52,6 +53,7 @@
 #include "media/filters/opus_audio_decoder.h"
 #include "media/filters/video_renderer_impl.h"
 #include "media/filters/vpx_video_decoder.h"
+#include "third_party/WebKit/public/platform/WebContentDecryptionModule.h"
 #include "third_party/WebKit/public/platform/WebMediaSource.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
@@ -165,7 +167,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       pending_repaint_(false),
       pending_size_change_(false),
       video_frame_provider_client_(NULL),
-      text_track_index_(0) {
+      text_track_index_(0),
+      web_cdm_(NULL) {
   media_log_->AddEvent(
       media_log_->CreateEvent(media::MediaLogEvent::WEBMEDIAPLAYER_CREATED));
 
@@ -854,6 +857,13 @@ WebMediaPlayerImpl::CancelKeyRequestInternal(
 
   decryptor_->CancelKeyRequest(session_id.utf8());
   return WebMediaPlayer::MediaKeyExceptionNoError;
+}
+
+void WebMediaPlayerImpl::setContentDecryptionModule(
+    blink::WebContentDecryptionModule* cdm) {
+  web_cdm_ = ToWebContentDecryptionModuleImpl(cdm);
+  // TODO(jrummell): use web_cdm_->getDecryptor() instead of creating
+  // ProxyDecryptor().
 }
 
 void WebMediaPlayerImpl::OnDestruct() {

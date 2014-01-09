@@ -47,6 +47,7 @@
 class RenderAudioSourceProvider;
 
 namespace blink {
+class WebContentDecryptionModule;
 class WebFrame;
 }
 
@@ -67,6 +68,7 @@ class WebLayerImpl;
 namespace content {
 class BufferedDataSource;
 class WebAudioSourceProviderImpl;
+class WebContentDecryptionModuleImpl;
 class WebMediaPlayerDelegate;
 class WebMediaPlayerParams;
 class WebTextTrackImpl;
@@ -174,6 +176,9 @@ class WebMediaPlayerImpl
   virtual MediaKeyException cancelKeyRequest(
       const blink::WebString& key_system,
       const blink::WebString& session_id);
+
+  virtual void setContentDecryptionModule(
+      blink::WebContentDecryptionModule* cdm);
 
   // content::RenderViewObserver implementation.
   virtual void OnDestruct() OVERRIDE;
@@ -369,6 +374,10 @@ class WebMediaPlayerImpl
 
   // Text track objects get a unique index value when they're created.
   int text_track_index_;
+
+  // Non-owned pointer to the CDM. Updated via calls to
+  // setContentDecryptionModule().
+  WebContentDecryptionModuleImpl* web_cdm_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };
