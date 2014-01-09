@@ -1559,6 +1559,7 @@ def GetDefaultConcurrentLinks():
     hard_cap = max(1, int(os.getenv('GYP_LINK_CONCURRENCY_MAX', 2**32)))
     # return min(mem_limit, hard_cap)
     # TODO(scottmg): Temporary speculative fix for OOM on builders
+    # See http://crbug.com/333000.
     return 2
   elif sys.platform.startswith('linux'):
     with open("/proc/meminfo") as meminfo:
