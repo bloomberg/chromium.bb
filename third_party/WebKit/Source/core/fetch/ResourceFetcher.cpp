@@ -236,12 +236,6 @@ ResourceFetcher::~ResourceFetcher()
     ASSERT(!m_requestCount);
 }
 
-Resource* ResourceFetcher::cachedResource(const String& resourceURL) const
-{
-    KURL url = m_document->completeURL(resourceURL);
-    return cachedResource(url);
-}
-
 Resource* ResourceFetcher::cachedResource(const KURL& resourceURL) const
 {
     KURL url = MemoryCache::removeFragmentIdentifierIfNeeded(resourceURL);

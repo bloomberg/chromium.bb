@@ -103,7 +103,6 @@ public:
     // Logs an access denied message to the console for the specified URL.
     void printAccessDeniedMessage(const KURL&) const;
 
-    Resource* cachedResource(const String& url) const;
     Resource* cachedResource(const KURL&) const;
 
     typedef HashMap<String, ResourcePtr<Resource> > DocumentResourceMap;

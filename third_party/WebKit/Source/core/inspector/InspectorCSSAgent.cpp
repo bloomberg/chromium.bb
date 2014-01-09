@@ -668,7 +668,7 @@ void InspectorCSSAgent::enable(ErrorString*, PassRefPtr<EnableCallback> prpCallb
         Document* document = styleSheet->ownerDocument();
         if (!document)
             continue;
-        Resource* cachedResource = document->fetcher()->cachedResource(url);
+        Resource* cachedResource = document->fetcher()->cachedResource(document->completeURL(url));
         if (cachedResource)
             continue;
         urlsToFetch.add(styleSheet->finalURL());
