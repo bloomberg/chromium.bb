@@ -46,7 +46,6 @@ SKIP_PYTHON = set([
     'TestEventTarget.idl',
     'TestImplements.idl',
     'TestInterface.idl',
-    'TestInterfaceImplementedAs.idl',
     'TestNode.idl',
     'TestObject.idl',
     'TestPartialInterface.idl',
