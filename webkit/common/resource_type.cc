@@ -42,6 +42,8 @@ ResourceType::Type ResourceType::FromTargetType(
       return ResourceType::XHR;
     case WebURLRequest::TargetIsPing:
       return ResourceType::PING;
+    case WebURLRequest::TargetIsServiceWorker:
+      return ResourceType::SERVICE_WORKER;
     default:
       NOTREACHED();
       return ResourceType::SUB_RESOURCE;
