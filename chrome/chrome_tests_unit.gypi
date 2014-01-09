@@ -68,6 +68,8 @@
         'browser/chromeos/contacts/contact_test_util.h',
         'browser/chromeos/input_method/mock_candidate_window_controller.cc',
         'browser/chromeos/input_method/mock_candidate_window_controller.h',
+        'browser/chromeos/input_method/mock_input_method_engine.cc',
+        'browser/chromeos/input_method/mock_input_method_engine.h',
         'browser/chromeos/input_method/mock_input_method_manager.cc',
         'browser/chromeos/input_method/mock_input_method_manager.h',
         'browser/chromeos/login/fake_login_utils.cc',

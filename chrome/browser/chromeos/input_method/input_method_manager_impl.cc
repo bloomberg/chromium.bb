@@ -420,11 +420,6 @@ void InputMethodManagerImpl::ActivateInputMethodProperty(
 
 void InputMethodManagerImpl::AddInputMethodExtension(
     const std::string& id,
-    const std::string& name,
-    const std::vector<std::string>& layouts,
-    const std::vector<std::string>& languages,
-    const GURL& options_url,
-    const GURL& inputview_url,
     InputMethodEngineInterface* engine) {
   if (state_ == STATE_TERMINATING)
     return;
@@ -435,15 +430,17 @@ void InputMethodManagerImpl::AddInputMethodExtension(
     return;
   }
 
-  extra_input_methods_[id] = InputMethodDescriptor(
-      id, name, layouts, languages, false, options_url, inputview_url);
+  DCHECK(engine);
+
+  const InputMethodDescriptor& descriptor = engine->GetDescriptor();
+  extra_input_methods_[id] = descriptor;
   if (Contains(enabled_extension_imes_, id) &&
       !extension_ime_util::IsComponentExtensionIME(id)) {
     if (!Contains(active_input_method_ids_, id)) {
       active_input_method_ids_.push_back(id);
     } else {
       DVLOG(1) << "AddInputMethodExtension: alread added: "
-               << id << ", " << name;
+               << id << ", " << descriptor.name();
       // Call Start() anyway, just in case.
     }
 
@@ -451,9 +448,7 @@ void InputMethodManagerImpl::AddInputMethodExtension(
     MaybeInitializeCandidateWindowController();
   }
 
-  // TODO(komatsu): Engine should not be NULL even in unittests.
-  if (engine)
-    IBusBridge::Get()->SetEngineHandler(id, engine);
+  IBusBridge::Get()->SetEngineHandler(id, engine);
 }
 
 void InputMethodManagerImpl::RemoveInputMethodExtension(const std::string& id) {

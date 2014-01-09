@@ -13,7 +13,9 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "chrome/browser/chromeos/input_method/input_method_engine_interface.h"
 #include "chrome/browser/chromeos/input_method/mock_candidate_window_controller.h"
+#include "chrome/browser/chromeos/input_method/mock_input_method_engine.h"
 #include "chromeos/ime/extension_ime_util.h"
 #include "chromeos/ime/fake_input_method_delegate.h"
 #include "chromeos/ime/mock_component_extension_ime_manager_delegate.h"
@@ -205,7 +207,6 @@ class TestCandidateWindowObserver
  private:
   DISALLOW_COPY_AND_ASSIGN(TestCandidateWindowObserver);
 };
-
 }  // namespace
 
 TEST_F(InputMethodManagerImplTest, TestGetXKeyboard) {
@@ -911,24 +912,24 @@ TEST_F(InputMethodManagerImplTest, TestAddRemoveExtensionInputMethods) {
   layouts.push_back("us");
   std::vector<std::string> languages;
   languages.push_back("en-US");
+
   const std::string ext1_id =
       extension_ime_util::GetInputMethodID("deadbeef", "engine_id");
-  manager_->AddInputMethodExtension(
-      ext1_id,
-      "deadbeef input method",
-      layouts,
-      languages,
-      GURL(),
-      GURL(),
-      NULL);
-  IBusBridge::Get()->SetEngineHandler(ext1_id, mock_engine_handler_.get());
+  const InputMethodDescriptor descriptor1(ext1_id,
+                                          "deadbeef input method",
+                                          layouts,
+                                          languages,
+                                          false,  // is_login_keyboard
+                                          GURL(),
+                                          GURL());
+  MockInputMethodEngine engine(descriptor1);
+  manager_->AddInputMethodExtension(ext1_id, &engine);
 
   // Extension IMEs are not enabled by default.
   EXPECT_EQ(1U, manager_->GetNumActiveInputMethods());
 
   std::vector<std::string> extension_ime_ids;
-  extension_ime_ids.push_back(
-      extension_ime_util::GetInputMethodID("deadbeef", "engine_id"));
+  extension_ime_ids.push_back(ext1_id);
   manager_->SetEnabledExtensionImes(&extension_ime_ids);
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
 
@@ -936,42 +937,39 @@ TEST_F(InputMethodManagerImplTest, TestAddRemoveExtensionInputMethods) {
     scoped_ptr<InputMethodDescriptors> methods(
         manager_->GetActiveInputMethods());
     ASSERT_EQ(2U, methods->size());
-    EXPECT_EQ(extension_ime_util::GetInputMethodID("deadbeef", "engine_id"),
-              // Ext IMEs should be at the end of the list.
-              methods->at(1).id());
+    // Ext IMEs should be at the end of the list.
+    EXPECT_EQ(ext1_id, methods->at(1).id());
   }
+
   const std::string ext2_id =
       extension_ime_util::GetInputMethodID("cafebabe", "engine_id");
-  manager_->AddInputMethodExtension(
-      ext2_id,
-      "cafebabe input method",
-      layouts,
-      languages,
-      GURL(),
-      GURL(),
-      NULL);
-  IBusBridge::Get()->SetEngineHandler(ext2_id, mock_engine_handler_.get());
+  const InputMethodDescriptor descriptor2(ext2_id,
+                                          "cafebabe input method",
+                                          layouts,
+                                          languages,
+                                          false,  // is_login_keyboard
+                                          GURL(),
+                                          GURL());
+  MockInputMethodEngine engine2(descriptor2);
+  manager_->AddInputMethodExtension(ext2_id, &engine2);
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
 
-  extension_ime_ids.push_back(
-      extension_ime_util::GetInputMethodID("cafebabe", "engine_id"));
+  extension_ime_ids.push_back(ext2_id);
   manager_->SetEnabledExtensionImes(&extension_ime_ids);
   EXPECT_EQ(3U, manager_->GetNumActiveInputMethods());
   {
     scoped_ptr<InputMethodDescriptors> methods(
         manager_->GetActiveInputMethods());
     ASSERT_EQ(3U, methods->size());
-    EXPECT_EQ(extension_ime_util::GetInputMethodID("deadbeef", "engine_id"),
-              // Ext IMEs should be at the end of the list.
-              methods->at(1).id());
+    // Ext IMEs should be at the end of the list.
+    EXPECT_EQ(ext1_id, methods->at(1).id());
+    EXPECT_EQ(ext2_id, methods->at(2).id());
   }
 
   // Remove them.
-  manager_->RemoveInputMethodExtension(
-      extension_ime_util::GetInputMethodID("deadbeef", "engine_id"));
+  manager_->RemoveInputMethodExtension(ext1_id);
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
-  manager_->RemoveInputMethodExtension(
-      extension_ime_util::GetInputMethodID("cafebabe", "engine_id"));
+  manager_->RemoveInputMethodExtension(ext2_id);
   EXPECT_EQ(1U, manager_->GetNumActiveInputMethods());
 }
 
@@ -993,33 +991,32 @@ TEST_F(InputMethodManagerImplTest, TestAddExtensionInputThenLockScreen) {
   layouts.push_back("us(dvorak)");
   std::vector<std::string> languages;
   languages.push_back("en-US");
+
   const std::string ext_id =
       extension_ime_util::GetInputMethodID("deadbeef", "engine_id");
-  manager_->AddInputMethodExtension(
-      ext_id,
-      "deadbeef input method",
-      layouts,
-      languages,
-      GURL(),
-      GURL(),
-      NULL);
-  IBusBridge::Get()->SetEngineHandler(ext_id, mock_engine_handler_.get());
+  const InputMethodDescriptor descriptor(ext_id,
+                                         "deadbeef input method",
+                                         layouts,
+                                         languages,
+                                         false,  // is_login_keyboard
+                                         GURL(),
+                                         GURL());
+  MockInputMethodEngine engine(descriptor);
+  manager_->AddInputMethodExtension(ext_id, &engine);
 
   // Extension IME is not enabled by default.
   EXPECT_EQ(1U, manager_->GetNumActiveInputMethods());
   EXPECT_EQ(1, observer.input_method_changed_count_);
 
   std::vector<std::string> extension_ime_ids;
-  extension_ime_ids.push_back(
-      extension_ime_util::GetInputMethodID("deadbeef", "engine_id"));
+  extension_ime_ids.push_back(ext_id);
   manager_->SetEnabledExtensionImes(&extension_ime_ids);
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
 
   // Switch to the IME.
   manager_->SwitchToNextInputMethod();
   EXPECT_EQ(3, observer.input_method_changed_count_);
-  EXPECT_EQ(extension_ime_util::GetInputMethodID("deadbeef", "engine_id"),
-            manager_->GetCurrentInputMethod().id());
+  EXPECT_EQ(ext_id, manager_->GetCurrentInputMethod().id());
   EXPECT_EQ("us(dvorak)", xkeyboard_->last_layout_);
 
   // Lock the screen. This is for crosbug.com/27049.
@@ -1032,17 +1029,15 @@ TEST_F(InputMethodManagerImplTest, TestAddExtensionInputThenLockScreen) {
   // Unlock the screen.
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
-  EXPECT_EQ(extension_ime_util::GetInputMethodID("deadbeef", "engine_id"),
-            manager_->GetCurrentInputMethod().id());
+  EXPECT_EQ(ext_id, manager_->GetCurrentInputMethod().id());
   EXPECT_EQ("us(dvorak)", xkeyboard_->last_layout_);
   {
     // This is for crosbug.com/27052.
     scoped_ptr<InputMethodDescriptors> methods(
         manager_->GetActiveInputMethods());
     ASSERT_EQ(2U, methods->size());
-    EXPECT_EQ(extension_ime_util::GetInputMethodID("deadbeef", "engine_id"),
-              // Ext. IMEs should be at the end of the list.
-              methods->at(1).id());
+    // Ext. IMEs should be at the end of the list.
+    EXPECT_EQ(ext_id, methods->at(1).id());
   }
   manager_->RemoveObserver(&observer);
 }

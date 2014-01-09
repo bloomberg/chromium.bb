@@ -15,6 +15,7 @@ class GURL;
 namespace chromeos {
 
 namespace input_method {
+class InputMethodDescriptor;
 struct KeyEventHandle;
 }  // namespace input_method
 
@@ -168,6 +169,8 @@ class InputMethodEngineInterface : public IBusEngineHandlerInterface {
   };
 
   virtual ~InputMethodEngineInterface() {}
+
+  virtual const input_method::InputMethodDescriptor& GetDescriptor() const = 0;
 
   // Called when the input metho initialization is done.
   // This function is called from private API.

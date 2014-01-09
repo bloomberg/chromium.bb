@@ -24,7 +24,7 @@ class Profile;
 namespace chromeos {
 class InputMethodEngineInterface;
 class ImeObserver;
-}
+}  // namespace chromeos
 
 namespace extensions {
 struct InputComponentInfo;

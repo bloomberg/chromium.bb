@@ -1,11 +1,10 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_INPUT_METHOD_ENGINE_H_
-#define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_INPUT_METHOD_ENGINE_H_
+#ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_MOCK_INPUT_METHOD_ENGINE_H_
+#define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_MOCK_INPUT_METHOD_ENGINE_H_
 
-#include <map>
 #include <string>
 #include <vector>
 #include "chrome/browser/chromeos/input_method/input_method_engine_interface.h"
@@ -26,21 +25,11 @@ struct InputMethodProperty;
 struct KeyEventHandle;
 }  // namespace input_method
 
-class InputMethodEngine : public InputMethodEngineInterface {
+class MockInputMethodEngine : public InputMethodEngineInterface {
  public:
-  InputMethodEngine();
-
-  virtual ~InputMethodEngine();
-
-  void Initialize(
-      InputMethodEngineInterface::Observer* observer,
-      const char* engine_name,
-      const char* extension_id,
-      const char* engine_id,
-      const std::vector<std::string>& languages,
-      const std::vector<std::string>& layouts,
-      const GURL& options_page,
-      const GURL& input_view);
+  explicit MockInputMethodEngine(
+      const input_method::InputMethodDescriptor& descriptor);
+  virtual ~MockInputMethodEngine();
 
   // InputMethodEngineInterface overrides.
   virtual const input_method::InputMethodDescriptor& GetDescriptor()
@@ -95,57 +84,13 @@ class InputMethodEngine : public InputMethodEngineInterface {
   virtual void HideInputView() OVERRIDE;
 
  private:
-  // Converts MenuItem to InputMethodProperty.
-  void MenuItemToProperty(const MenuItem& item,
-                          input_method::InputMethodProperty* property);
-
   // Descriptor of this input method.
   input_method::InputMethodDescriptor descriptor_;
 
-  // True if the current context has focus.
-  bool focused_;
-
-  // True if this engine is active.
-  bool active_;
-
-  // ID that is used for the current input context.  False if there is no focus.
-  int context_id_;
-
-  // Next id that will be assigned to a context.
-  int next_context_id_;
-
-  // This IME ID in Chrome Extension.
-  std::string engine_id_;
-
-  // This IME ID in InputMethodManager.
-  std::string imm_id_;
-
-  // Pointer to the object recieving events for this IME.
-  InputMethodEngineInterface::Observer* observer_;
-
-  // The current preedit text, and it's cursor position.
-  scoped_ptr<IBusText> preedit_text_;
-  int preedit_cursor_;
-
-  // The current candidate window.
-  scoped_ptr<input_method::CandidateWindow> candidate_window_;
-
   // The current candidate window property.
   CandidateWindowProperty candidate_window_property_;
-
-  // Indicates whether the candidate window is visible.
-  bool window_visible_;
-
-  // Mapping of candidate index to candidate id.
-  std::vector<int> candidate_ids_;
-
-  // Mapping of candidate id to index.
-  std::map<int, int> candidate_indexes_;
-
-  // Used for input view window.
-  GURL input_view_url_;
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_INPUT_METHOD_INPUT_METHOD_ENGINE_H_
+#endif  // CHROME_BROWSER_CHROMEOS_INPUT_METHOD_MOCK_INPUT_METHOD_ENGINE_H_

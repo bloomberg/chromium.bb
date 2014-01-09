@@ -22,7 +22,6 @@ namespace chromeos {
 class ComponentExtensionIMEManager;
 class InputMethodEngineInterface;
 namespace input_method {
-
 class InputMethodUtil;
 class XKeyboard;
 
@@ -137,12 +136,7 @@ class CHROMEOS_EXPORT InputMethodManager {
   // Adds an input method extension. This function does not takes ownership of
   // |instance|.
   virtual void AddInputMethodExtension(
-      const std::string& id,
-      const std::string& name,
-      const std::vector<std::string>& layouts,
-      const std::vector<std::string>& languages,
-      const GURL& options_url,
-      const GURL& inputview_url,
+      const std::string& imm_id,
       InputMethodEngineInterface* instance) = 0;
 
   // Removes an input method extension.

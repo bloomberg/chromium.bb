@@ -65,7 +65,7 @@ InputMethodEngine::InputMethodEngine()
       window_visible_(false) {}
 
 InputMethodEngine::~InputMethodEngine() {
-  input_method::InputMethodManager::Get()->RemoveInputMethodExtension(ibus_id_);
+  input_method::InputMethodManager::Get()->RemoveInputMethodExtension(imm_id_);
 }
 
 void InputMethodEngine::Initialize(
@@ -79,31 +79,45 @@ void InputMethodEngine::Initialize(
     const GURL& input_view) {
   DCHECK(observer) << "Observer must not be null.";
 
+  // TODO(komatsu): It is probably better to set observer out of Initialize.
   observer_ = observer;
   engine_id_ = engine_id;
 
   input_method::InputMethodManager* manager =
       input_method::InputMethodManager::Get();
-  ComponentExtensionIMEManager* comp_ext_ime_manager
-      = manager->GetComponentExtensionIMEManager();
+  ComponentExtensionIMEManager* comp_ext_ime_manager =
+      manager->GetComponentExtensionIMEManager();
 
   if (comp_ext_ime_manager->IsInitialized() &&
       comp_ext_ime_manager->IsWhitelistedExtension(extension_id)) {
-    ibus_id_ = comp_ext_ime_manager->GetId(extension_id, engine_id);
+    imm_id_ = comp_ext_ime_manager->GetId(extension_id, engine_id);
   } else {
-    ibus_id_ = extension_ime_util::GetInputMethodID(extension_id, engine_id);
+    imm_id_ = extension_ime_util::GetInputMethodID(extension_id, engine_id);
   }
 
   input_view_url_ = input_view;
+  descriptor_ = input_method::InputMethodDescriptor(imm_id_,
+                                                    engine_name,
+                                                    layouts,
+                                                    languages,
+                                                    false,  // is_login_keyboard
+                                                    options_page,
+                                                    input_view);
 
-  manager->AddInputMethodExtension(ibus_id_, engine_name, layouts, languages,
-                                   options_page, input_view, this);
+  // TODO(komatsu): It is probably better to call AddInputMethodExtension
+  // out of Initialize.
+  manager->AddInputMethodExtension(imm_id_, this);
+}
+
+const input_method::InputMethodDescriptor& InputMethodEngine::GetDescriptor()
+    const {
+  return descriptor_;
 }
 
 void InputMethodEngine::StartIme() {
   input_method::InputMethodManager* manager =
       input_method::InputMethodManager::Get();
-  if (manager && ibus_id_ == manager->GetCurrentInputMethod().id())
+  if (manager && imm_id_ == manager->GetCurrentInputMethod().id())
     Enable();
 }
 
