@@ -135,7 +135,7 @@ void NotificationServiceSessionsRouter::OnNavigationBlocked(
     content::WebContents* web_contents) {
   SyncedTabDelegate* tab =
       SyncedTabDelegate::ImplFromWebContents(web_contents);
-  if (!tab)
+  if (!tab || !handler_)
     return;
 
   DCHECK(tab->profile() == profile_);
