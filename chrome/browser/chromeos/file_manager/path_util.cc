@@ -7,7 +7,9 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/sys_info.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/profiles/profile.h"
 
 namespace file_manager {
 namespace util {
@@ -17,14 +19,15 @@ const base::FilePath::CharType kOldDownloadsFolderPath[] =
     FILE_PATH_LITERAL("/home/chronos/user/Downloads");
 
 base::FilePath GetDownloadsFolderForProfile(Profile* profile) {
-  // TODO(kinaba) crbug/309556: "Downloads" directory should be per-profile.
-  //
-  // For this to be per-profile, a unique directory path from profile->GetPath()
-  // should be used rather than the HOME directory. We'll switch to the new path
-  // once we have upgraded all code locations assuming the old path.
-  base::FilePath path;
-  CHECK(PathService::Get(base::DIR_HOME, &path));
-  return path.AppendASCII(kDownloadsFolderName);
+  if (!base::SysInfo::IsRunningOnChromeOS()) {
+    // On the developer run on Linux desktop build, user $HOME/Downloads
+    // for ease for accessing local files for debugging.
+    base::FilePath path;
+    CHECK(PathService::Get(base::DIR_HOME, &path));
+    return path.AppendASCII(kDownloadsFolderName);
+  }
+
+  return profile->GetPath().AppendASCII(kDownloadsFolderName);
 }
 
 bool MigratePathFromOldFormat(Profile* profile,
