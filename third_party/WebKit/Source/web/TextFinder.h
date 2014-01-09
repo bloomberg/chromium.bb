@@ -31,248 +31,44 @@
 #ifndef TextFinder_h
 #define TextFinder_h
 
-#include "WebFrame.h"
-
-#include "FrameLoaderClientImpl.h"
-#include "core/frame/Frame.h"
+#include "WebFindOptions.h"
+#include "core/editing/FindOptions.h"
 #include "platform/geometry/FloatRect.h"
-#include "public/platform/WebFileSystemType.h"
-#include "wtf/Compiler.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/RefCounted.h"
+#include "public/platform/WebFloatPoint.h"
+#include "public/platform/WebFloatRect.h"
+#include "public/platform/WebRect.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
-class GraphicsContext;
-class HTMLInputElement;
-class HistoryItem;
-class IntSize;
-class KURL;
-class Node;
 class Range;
-class SubstituteData;
-struct FrameLoadRequest;
-struct WindowFeatures;
 }
 
 namespace blink {
-class ChromePrintContext;
-class SharedWorkerRepositoryClientImpl;
-class WebDataSourceImpl;
-class WebInputElement;
-class WebFrameClient;
-class WebPerformance;
-class WebPluginContainerImpl;
-class WebView;
-class WebViewImpl;
-struct WebPrintParams;
+class WebFrameImpl;
 
 template <typename T> class WebVector;
 
-// Implementation of WebFrame, note that this is a reference counted object.
-class WebFrameImpl
-    : public WebFrame
-    , public RefCounted<WebFrameImpl> {
+class TextFinder {
 public:
-    // WebFrame methods:
-    virtual void close();
-    virtual WebString uniqueName() const;
-    virtual WebString assignedName() const;
-    virtual void setName(const WebString&);
-    virtual long long embedderIdentifier() const;
-    virtual WebVector<WebIconURL> iconURLs(int iconTypesMask) const;
-    virtual void setRemoteWebLayer(WebLayer*);
-    virtual void setPermissionClient(WebPermissionClient*);
-    virtual void setSharedWorkerRepositoryClient(WebSharedWorkerRepositoryClient*);
-    virtual WebSize scrollOffset() const;
-    virtual void setScrollOffset(const WebSize&);
-    virtual WebSize minimumScrollOffset() const;
-    virtual WebSize maximumScrollOffset() const;
-    virtual WebSize contentsSize() const;
-    virtual bool hasVisibleContent() const;
-    virtual WebRect visibleContentRect() const;
-    virtual bool hasHorizontalScrollbar() const;
-    virtual bool hasVerticalScrollbar() const;
-    virtual WebView* view() const;
-    virtual WebFrame* opener() const;
-    virtual void setOpener(const WebFrame*);
-    virtual WebFrame* parent() const;
-    virtual WebFrame* top() const;
-    virtual WebFrame* firstChild() const;
-    virtual WebFrame* lastChild() const;
-    virtual WebFrame* nextSibling() const;
-    virtual WebFrame* previousSibling() const;
-    virtual WebFrame* traverseNext(bool wrap) const;
-    virtual WebFrame* traversePrevious(bool wrap) const;
-    virtual WebFrame* findChildByName(const WebString&) const;
-    virtual WebFrame* findChildByExpression(const WebString&) const;
-    virtual WebDocument document() const;
-    virtual WebPerformance performance() const;
-    virtual NPObject* windowObject() const;
-    virtual void bindToWindowObject(const WebString& name, NPObject*);
-    virtual void bindToWindowObject(const WebString& name, NPObject*, void*);
-    virtual void executeScript(const WebScriptSource&);
-    virtual void executeScriptInIsolatedWorld(
-        int worldID, const WebScriptSource* sources, unsigned numSources,
-        int extensionGroup);
-    virtual void setIsolatedWorldSecurityOrigin(int worldID, const WebSecurityOrigin&);
-    virtual void setIsolatedWorldContentSecurityPolicy(int worldID, const WebString&);
-    virtual void addMessageToConsole(const WebConsoleMessage&);
-    virtual void collectGarbage();
-    virtual bool checkIfRunInsecureContent(const WebURL&) const;
-    virtual v8::Handle<v8::Value> executeScriptAndReturnValue(
-        const WebScriptSource&);
-    virtual void executeScriptInIsolatedWorld(
-        int worldID, const WebScriptSource* sourcesIn, unsigned numSources,
-        int extensionGroup, WebVector<v8::Local<v8::Value> >* results);
-    virtual v8::Handle<v8::Value> callFunctionEvenIfScriptDisabled(
-        v8::Handle<v8::Function>,
-        v8::Handle<v8::Object>,
-        int argc,
-        v8::Handle<v8::Value> argv[]);
-    virtual v8::Local<v8::Context> mainWorldScriptContext() const;
-    virtual v8::Handle<v8::Value> createFileSystem(WebFileSystemType,
-        const WebString& name,
-        const WebString& path);
-    virtual v8::Handle<v8::Value> createSerializableFileSystem(WebFileSystemType,
-        const WebString& name,
-        const WebString& path);
-    virtual v8::Handle<v8::Value> createFileEntry(WebFileSystemType,
-        const WebString& fileSystemName,
-        const WebString& fileSystemPath,
-        const WebString& filePath,
-        bool isDirectory);
-    virtual void reload(bool ignoreCache);
-    virtual void reloadWithOverrideURL(const WebURL& overrideUrl, bool ignoreCache);
-    virtual void loadRequest(const WebURLRequest&);
-    virtual void loadHistoryItem(const WebHistoryItem&);
-    virtual void loadData(
-        const WebData&, const WebString& mimeType, const WebString& textEncoding,
-        const WebURL& baseURL, const WebURL& unreachableURL, bool replace);
-    virtual void loadHTMLString(
-        const WebData& html, const WebURL& baseURL, const WebURL& unreachableURL,
-        bool replace);
-    virtual bool isLoading() const;
-    virtual void stopLoading();
-    virtual WebDataSource* provisionalDataSource() const;
-    virtual WebDataSource* dataSource() const;
-    virtual WebHistoryItem previousHistoryItem() const;
-    virtual WebHistoryItem currentHistoryItem() const;
-    virtual void enableViewSourceMode(bool enable);
-    virtual bool isViewSourceModeEnabled() const;
-    virtual void setReferrerForRequest(WebURLRequest&, const WebURL& referrer);
-    virtual void dispatchWillSendRequest(WebURLRequest&);
-    virtual WebURLLoader* createAssociatedURLLoader(const WebURLLoaderOptions&);
-    virtual unsigned unloadListenerCount() const;
-    virtual void replaceSelection(const WebString&);
-    virtual void insertText(const WebString&);
-    virtual void setMarkedText(const WebString&, unsigned location, unsigned length);
-    virtual void unmarkText();
-    virtual bool hasMarkedText() const;
-    virtual WebRange markedRange() const;
-    virtual bool firstRectForCharacterRange(unsigned location, unsigned length, WebRect&) const;
-    virtual size_t characterIndexForPoint(const WebPoint&) const;
-    virtual bool executeCommand(const WebString&, const WebNode& = WebNode());
-    virtual bool executeCommand(const WebString&, const WebString& value, const WebNode& = WebNode());
-    virtual bool isCommandEnabled(const WebString&) const;
-    virtual void enableContinuousSpellChecking(bool);
-    virtual bool isContinuousSpellCheckingEnabled() const;
-    virtual void requestTextChecking(const WebElement&);
-    virtual void replaceMisspelledRange(const WebString&);
-    virtual void removeSpellingMarkers();
-    virtual bool hasSelection() const;
-    virtual WebRange selectionRange() const;
-    virtual WebString selectionAsText() const;
-    virtual WebString selectionAsMarkup() const;
-    virtual bool selectWordAroundCaret();
-    virtual void selectRange(const WebPoint& base, const WebPoint& extent);
-    virtual void selectRange(const WebRange&);
-    virtual void moveRangeSelection(const WebPoint& base, const WebPoint& extent);
-    virtual void moveCaretSelection(const WebPoint&);
-    virtual void setCaretVisible(bool);
-    virtual int printBegin(const WebPrintParams&, const WebNode& constrainToNode);
-    virtual float printPage(int pageToPrint, WebCanvas*);
-    virtual float getPrintPageShrink(int page);
-    virtual void printEnd();
-    virtual bool isPrintScalingDisabledForPlugin(const WebNode&);
-    virtual bool hasCustomPageSizeStyle(int pageIndex);
-    virtual bool isPageBoxVisible(int pageIndex);
-    virtual void pageSizeAndMarginsInPixels(int pageIndex,
-                                            WebSize& pageSize,
-                                            int& marginTop,
-                                            int& marginRight,
-                                            int& marginBottom,
-                                            int& marginLeft);
-    virtual WebString pageProperty(const WebString& propertyName, int pageIndex);
-    virtual void printPagesWithBoundaries(WebCanvas*, const WebSize&);
-    virtual bool find(
+    static PassOwnPtr<TextFinder> create(WebFrameImpl& ownerFrame);
+
+    bool find(
         int identifier, const WebString& searchText, const WebFindOptions&,
         bool wrapWithinFrame, WebRect* selectionRect);
-    virtual void stopFinding(bool clearSelection);
-    virtual void scopeStringMatches(
+    void stopFindingAndClearSelection();
+    void scopeStringMatches(
         int identifier, const WebString& searchText, const WebFindOptions&,
         bool reset);
-    virtual void cancelPendingScopingEffort();
-    virtual void increaseMatchCount(int count, int identifier);
-    virtual void resetMatchCount();
-    virtual int findMatchMarkersVersion() const;
-    virtual WebFloatRect activeFindMatchRect();
-    virtual void findMatchRects(WebVector<WebFloatRect>&);
-    virtual int selectNearestFindMatch(const WebFloatPoint&, WebRect* selectionRect);
-
-    virtual void sendOrientationChangeEvent(int orientation);
-
-    virtual void dispatchMessageEventWithOriginCheck(
-        const WebSecurityOrigin& intendedTargetOrigin,
-        const WebDOMEvent&);
-
-    virtual WebString contentAsText(size_t maxChars) const;
-    virtual WebString contentAsMarkup() const;
-    virtual WebString renderTreeAsText(RenderAsTextControls toShow = RenderAsTextNormal) const;
-    virtual WebString markerTextForListItem(const WebElement&) const;
-    virtual WebRect selectionBoundsRect() const;
-
-    virtual bool selectionStartHasSpellingMarkerFor(int from, int length) const;
-    virtual WebString layerTreeAsText(bool showDebugInfo = false) const;
-
-    void willDetachParent();
-
-    static WebFrameImpl* create(WebFrameClient*);
-    // FIXME: Move the embedderIdentifier concept fully to the embedder and
-    // remove this factory method.
-    static WebFrameImpl* create(WebFrameClient*, long long embedderIdentifier);
-    virtual ~WebFrameImpl();
-
-    // Called by the WebViewImpl to initialize the main frame for the page.
-    void initializeAsMainFrame(WebCore::Page*);
-
-    PassRefPtr<WebCore::Frame> createChildFrame(
-        const WebCore::FrameLoadRequest&, WebCore::HTMLFrameOwnerElement*);
-
-    void didChangeContentsSize(const WebCore::IntSize&);
-
-    void createFrameView();
-
-    static WebFrameImpl* fromFrame(WebCore::Frame* frame);
-    static WebFrameImpl* fromFrameOwnerElement(WebCore::Element* element);
-
-    // If the frame hosts a PluginDocument, this method returns the WebPluginContainerImpl
-    // that hosts the plugin.
-    static WebPluginContainerImpl* pluginContainerFromFrame(WebCore::Frame*);
-
-    // If the frame hosts a PluginDocument, this method returns the WebPluginContainerImpl
-    // that hosts the plugin. If the provided node is a plugin, then it runs its
-    // WebPluginContainerImpl.
-    static WebPluginContainerImpl* pluginContainerFromNode(WebCore::Frame*, const WebNode&);
-
-    WebViewImpl* viewImpl() const;
-
-    WebCore::FrameView* frameView() const { return frame() ? frame()->view() : 0; }
-
-    // Getters for the impls corresponding to Get(Provisional)DataSource. They
-    // may return 0 if there is no corresponding data source.
-    WebDataSourceImpl* dataSourceImpl() const;
-    WebDataSourceImpl* provisionalDataSourceImpl() const;
+    void cancelPendingScopingEffort();
+    void increaseMatchCount(int identifier, int count);
+    void resetMatchCount();
+    int findMatchMarkersVersion() const { return m_findMatchMarkersVersion; }
+    WebFloatRect activeFindMatchRect();
+    void findMatchRects(WebVector<WebFloatRect>&);
+    int selectNearestFindMatch(const WebFloatPoint&, WebRect* selectionRect);
 
     // Returns which frame has an active match. This function should only be
     // called on the main frame, as it is the only frame keeping track. Returned
@@ -283,36 +79,19 @@ public:
     // the local frame has no active match.
     WebCore::Range* activeMatch() const { return m_activeMatch.get(); }
 
-    // When a Find operation ends, we want to set the selection to what was active
-    // and set focus to the first focusable node we find (starting with the first
-    // node in the matched range and going up the inheritance chain). If we find
-    // nothing to focus we focus the first focusable node in the range. This
-    // allows us to set focus to a link (when we find text inside a link), which
-    // allows us to navigate by pressing Enter after closing the Find box.
-    void setFindEndstateFocusAndSelection();
+    void flushCurrentScoping();
 
-    void didFail(const WebCore::ResourceError&, bool wasProvisional);
+    void resetActiveMatch() { m_activeMatch = 0; }
 
-    // Sets whether the WebFrameImpl allows its document to be scrolled.
-    // If the parameter is true, allow the document to be scrolled.
-    // Otherwise, disallow scrolling.
-    void setCanHaveScrollbars(bool);
+    int totalMatchCount() const { return m_totalMatchCount; }
+    bool scopingInProgress() const { return m_scopingInProgress; }
+    void increaseMarkerVersion() { ++m_findMatchMarkersVersion; }
 
-    WebCore::Frame* frame() const { return m_frame.get(); }
-    WebFrameClient* client() const { return m_client; }
-    void setClient(WebFrameClient* client) { m_client = client; }
-
-    WebPermissionClient* permissionClient() { return m_permissionClient; }
-    SharedWorkerRepositoryClientImpl* sharedWorkerRepositoryClient() const { return m_sharedWorkerRepositoryClient.get(); }
-
-    void setInputEventsTransformForEmulation(const WebCore::IntSize&, float);
-
-    static void selectWordAroundPosition(WebCore::Frame*, WebCore::VisiblePosition);
+    ~TextFinder();
 
 private:
     class DeferredScopeStringMatches;
     friend class DeferredScopeStringMatches;
-    friend class FrameLoaderClientImpl;
 
     struct FindMatch {
         RefPtr<WebCore::Range> m_range;
@@ -329,16 +108,13 @@ private:
 
     // A bit mask specifying area of the frame to invalidate.
     enum AreaToInvalidate {
-      InvalidateNothing,
-      InvalidateContentArea,
-      InvalidateScrollbar,   // Vertical scrollbar only.
-      InvalidateAll          // Both content area and the scrollbar.
+        InvalidateNothing,
+        InvalidateContentArea,
+        InvalidateScrollbar, // Vertical scrollbar only.
+        InvalidateAll // Both content area and the scrollbar.
     };
 
-    WebFrameImpl(WebFrameClient*, long long frame_identifier);
-
-    // Sets the local WebCore frame and registers destruction observers.
-    void setWebCoreFrame(PassRefPtr<WebCore::Frame>);
+    explicit TextFinder(WebFrameImpl& ownerFrame);
 
     // Notifies the delegate about a new selection rect.
     void reportFindInPageSelection(
@@ -412,37 +188,15 @@ private:
     // Determines whether to invalidate the content area and scrollbar.
     void invalidateIfNecessary();
 
-    void loadJavaScriptURL(const WebCore::KURL&);
+    // Sets the markers within a current match range as active or inactive.
+    void setMatchMarkerActive(bool);
 
-    // Returns a hit-tested VisiblePosition for the given point
-    WebCore::VisiblePosition visiblePositionForWindowPoint(const WebPoint&);
+    void decrementFramesScopingCount(int identifier);
 
-    class WebFrameInit : public WebCore::FrameInit {
-    public:
-        static PassRefPtr<WebFrameInit> create(WebFrameImpl* webFrameImpl, int64_t frameID)
-        {
-            return adoptRef(new WebFrameInit(webFrameImpl, frameID));
-        }
+    // Returns the ordinal of the first match in the owner frame.
+    int ordinalOfFirstMatch() const;
 
-    private:
-        WebFrameInit(WebFrameImpl* webFrameImpl, int64_t frameID)
-            : WebCore::FrameInit(frameID)
-            , m_frameLoaderClientImpl(webFrameImpl)
-        {
-            setFrameLoaderClient(&m_frameLoaderClientImpl);
-        }
-
-        FrameLoaderClientImpl m_frameLoaderClientImpl;
-    };
-    RefPtr<WebFrameInit> m_frameInit;
-
-    // The embedder retains a reference to the WebCore Frame while it is active in the DOM. This
-    // reference is released when the frame is removed from the DOM or the entire page is closed.
-    RefPtr<WebCore::Frame> m_frame;
-
-    WebFrameClient* m_client;
-    WebPermissionClient* m_permissionClient;
-    OwnPtr<SharedWorkerRepositoryClientImpl> m_sharedWorkerRepositoryClient;
+    WebFrameImpl& m_ownerFrame;
 
     // A way for the main frame to keep track of which frame has an active
     // match. Should be 0 for all other frames.
@@ -453,11 +207,6 @@ private:
 
     // The index of the active match for the current frame.
     int m_activeMatchIndexInCurrentFrame;
-
-    // This flag is used by the scoping effort to determine if we need to figure
-    // out which rectangle is the active match. Once we find the active
-    // rectangle we clear this flag.
-    bool m_locatingActiveRect;
 
     // The scoping effort can time out and we need to keep track of where we
     // ended our last search so we can continue from where we left of.
@@ -488,13 +237,6 @@ private:
     // the frame in order to reply if required in case the frame is detached.
     int m_findRequestIdentifier;
 
-    // Keeps track of whether there is an scoping effort ongoing in the frame.
-    bool m_scopingInProgress;
-
-    // Keeps track of whether the last find request completed its scoping effort
-    // without finding any matches in this frame.
-    bool m_lastFindRequestCompletedWithNoMatches;
-
     // Keeps track of when the scoping effort should next invalidate the scrollbar
     // and the frame area.
     int m_nextInvalidateAfter;
@@ -509,24 +251,26 @@ private:
     // Local cache of the find match markers currently displayed for this frame.
     Vector<FindMatch> m_findMatchesCache;
 
-    // Determines if the rects in the find-in-page matches cache of this frame
-    // are invalid and should be recomputed.
-    bool m_findMatchRectsAreValid;
-
     // Contents size when find-in-page match rects were last computed for this
     // frame's cache.
     WebCore::IntSize m_contentsSizeForCurrentFindMatchRects;
 
-    // Valid between calls to BeginPrint() and EndPrint(). Containts the print
-    // information. Is used by PrintPage().
-    OwnPtr<ChromePrintContext> m_printContext;
+    // This flag is used by the scoping effort to determine if we need to figure
+    // out which rectangle is the active match. Once we find the active
+    // rectangle we clear this flag.
+    bool m_locatingActiveRect;
 
-    // Stores the additional input events offset and scale when device metrics emulation is enabled.
-    WebCore::IntSize m_inputEventsOffsetForEmulation;
-    float m_inputEventsScaleFactorForEmulation;
+    // Keeps track of whether there is an scoping effort ongoing in the frame.
+    bool m_scopingInProgress;
+
+    // Keeps track of whether the last find request completed its scoping effort
+    // without finding any matches in this frame.
+    bool m_lastFindRequestCompletedWithNoMatches;
+
+    // Determines if the rects in the find-in-page matches cache of this frame
+    // are invalid and should be recomputed.
+    bool m_findMatchRectsAreValid;
 };
-
-DEFINE_TYPE_CASTS(WebFrameImpl, WebFrame, frame, true, true);
 
 } // namespace blink
 
