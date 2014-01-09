@@ -140,7 +140,7 @@
                 '<(additional_modules_input_path)',
                 '<@(_outputs)',
               ],
-              'message': 'Transforming additional modules list.',
+              'message': 'Transforming additional modules list',
             }
           ],
         }],

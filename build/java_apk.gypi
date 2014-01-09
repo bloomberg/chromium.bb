@@ -289,7 +289,7 @@
               '<@(linker_tests_gcc_preprocess_defines)',
             ],
           },
-          'message': 'Creating NativeLibraries.java for <(_target_name).',
+          'message': 'Creating NativeLibraries.java for <(_target_name)',
           'inputs': [
             '<(DEPTH)/build/android/gyp/util/build_utils.py',
             '<(DEPTH)/build/android/gyp/gcc_preprocess.py',
@@ -340,7 +340,7 @@
             },
             {
               'action_name': 'create device library symlinks',
-              'message': 'Creating links on device for <(_target_name).',
+              'message': 'Creating links on device for <(_target_name)',
               'inputs': [
                 '<(DEPTH)/build/android/gyp/util/build_utils.py',
                 '<(DEPTH)/build/android/gyp/create_device_library_links.py',
@@ -684,7 +684,7 @@
     },
     {
       'action_name': 'ant package resources',
-      'message': 'Packaging resources for <(_target_name) APK.',
+      'message': 'Packaging resources for <(_target_name) APK',
       'inputs': [
         '<(DEPTH)/build/android/ant/apk-package-resources.xml',
         '<(DEPTH)/build/android/gyp/util/build_utils.py',
@@ -737,7 +737,7 @@
     },
     {
       'action_name': 'ant_package_<(_target_name)',
-      'message': 'Packaging <(_target_name).',
+      'message': 'Packaging <(_target_name)',
       'inputs': [
         '<(DEPTH)/build/android/ant/apk-package.xml',
         '<(DEPTH)/build/android/gyp/util/build_utils.py',
