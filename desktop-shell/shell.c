@@ -1469,6 +1469,7 @@ common_surface_move(struct wl_resource *resource,
 	struct weston_surface *surface;
 
 	if (seat->pointer &&
+	    seat->pointer->focus &&
 	    seat->pointer->button_count > 0 &&
 	    seat->pointer->grab_serial == serial) {
 		surface = weston_surface_get_main_surface(seat->pointer->focus->surface);
@@ -1476,6 +1477,7 @@ common_surface_move(struct wl_resource *resource,
 		    (surface_move(shsurf, seat) < 0))
 			wl_resource_post_no_memory(resource);
 	} else if (seat->touch &&
+		   seat->touch->focus &&
 		   seat->touch->grab_serial == serial) {
 		surface = weston_surface_get_main_surface(seat->touch->focus->surface);
 		if ((surface == shsurf->surface) && 
@@ -1656,10 +1658,13 @@ common_surface_resize(struct wl_resource *resource,
 	if (shsurf->state.fullscreen)
 		return;
 
-	surface = weston_surface_get_main_surface(seat->pointer->focus->surface);
 	if (seat->pointer->button_count == 0 ||
 	    seat->pointer->grab_serial != serial ||
-	    surface != shsurf->surface)
+	    seat->pointer->focus == NULL)
+		return;
+
+	surface = weston_surface_get_main_surface(seat->pointer->focus->surface);
+	if (surface != shsurf->surface)
 		return;
 
 	if (surface_resize(shsurf, seat, edges) < 0)
