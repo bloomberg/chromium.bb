@@ -39,13 +39,13 @@ class CSSStyleDeclaration;
 class StyleRuleViewport;
 class StyleRuleCSSStyleDeclaration;
 
-class CSSViewportRule: public CSSRule {
+class CSSViewportRule FINAL: public CSSRule {
 public:
     static PassRefPtr<CSSViewportRule> create(StyleRuleViewport* viewportRule, CSSStyleSheet* sheet)
     {
         return adoptRef(new CSSViewportRule(viewportRule, sheet));
     }
-    ~CSSViewportRule();
+    virtual ~CSSViewportRule();
 
     virtual CSSRule::Type type() const OVERRIDE { return VIEWPORT_RULE; }
     virtual String cssText() const OVERRIDE;

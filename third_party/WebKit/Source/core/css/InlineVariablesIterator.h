@@ -27,7 +27,7 @@ namespace WebCore {
 class Element;
 
 // A CSSVariablesIterator implementation for the inline style of an element.
-class InlineVariablesIterator : public AbstractVariablesIterator {
+class InlineVariablesIterator FINAL : public AbstractVariablesIterator {
 public:
     static PassRefPtr<InlineVariablesIterator> create(Element*);
 

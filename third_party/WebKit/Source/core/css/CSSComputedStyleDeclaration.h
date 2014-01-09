@@ -49,9 +49,9 @@ class StylePropertyShorthand;
 
 enum EUpdateLayout { DoNotUpdateLayout = false, UpdateLayout = true };
 
-class CSSComputedStyleDeclaration : public CSSStyleDeclaration {
+class CSSComputedStyleDeclaration FINAL : public CSSStyleDeclaration {
 private:
-    class ComputedCSSVariablesIterator : public CSSVariablesIterator {
+    class ComputedCSSVariablesIterator FINAL : public CSSVariablesIterator {
     public:
         virtual ~ComputedCSSVariablesIterator() { }
         static PassRefPtr<ComputedCSSVariablesIterator> create(const HashMap<AtomicString, String>* variableMap) { return adoptRef(new ComputedCSSVariablesIterator(variableMap)); }
@@ -101,22 +101,22 @@ private:
     Node* styledNode() const;
 
     // CSSOM functions. Don't make these public.
-    virtual CSSRule* parentRule() const;
-    virtual unsigned length() const;
-    virtual String item(unsigned index) const;
+    virtual CSSRule* parentRule() const OVERRIDE;
+    virtual unsigned length() const OVERRIDE;
+    virtual String item(unsigned index) const OVERRIDE;
     PassRefPtr<RenderStyle> computeRenderStyle(CSSPropertyID) const;
-    virtual PassRefPtr<CSSValue> getPropertyCSSValue(const String& propertyName);
-    virtual String getPropertyValue(const String& propertyName);
-    virtual String getPropertyPriority(const String& propertyName);
-    virtual String getPropertyShorthand(const String& propertyName);
-    virtual bool isPropertyImplicit(const String& propertyName);
-    virtual void setProperty(const String& propertyName, const String& value, const String& priority, ExceptionState&);
-    virtual String removeProperty(const String& propertyName, ExceptionState&);
-    virtual String cssText() const;
-    virtual void setCSSText(const String&, ExceptionState&);
-    virtual PassRefPtr<CSSValue> getPropertyCSSValueInternal(CSSPropertyID);
-    virtual String getPropertyValueInternal(CSSPropertyID);
-    virtual void setPropertyInternal(CSSPropertyID, const String& value, bool important, ExceptionState&);
+    virtual PassRefPtr<CSSValue> getPropertyCSSValue(const String& propertyName) OVERRIDE;
+    virtual String getPropertyValue(const String& propertyName) OVERRIDE;
+    virtual String getPropertyPriority(const String& propertyName) OVERRIDE;
+    virtual String getPropertyShorthand(const String& propertyName) OVERRIDE;
+    virtual bool isPropertyImplicit(const String& propertyName) OVERRIDE;
+    virtual void setProperty(const String& propertyName, const String& value, const String& priority, ExceptionState&) OVERRIDE;
+    virtual String removeProperty(const String& propertyName, ExceptionState&) OVERRIDE;
+    virtual String cssText() const OVERRIDE;
+    virtual void setCSSText(const String&, ExceptionState&) OVERRIDE;
+    virtual PassRefPtr<CSSValue> getPropertyCSSValueInternal(CSSPropertyID) OVERRIDE;
+    virtual String getPropertyValueInternal(CSSPropertyID) OVERRIDE;
+    virtual void setPropertyInternal(CSSPropertyID, const String& value, bool important, ExceptionState&) OVERRIDE;
 
     const HashMap<AtomicString, String>* variableMap() const;
     virtual unsigned variableCount() const OVERRIDE;

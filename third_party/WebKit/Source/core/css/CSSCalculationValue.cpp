@@ -191,7 +191,7 @@ CSSCalcExpressionNode::~CSSCalcExpressionNode()
 {
 }
 
-class CSSCalcPrimitiveValue : public CSSCalcExpressionNode {
+class CSSCalcPrimitiveValue FINAL : public CSSCalcExpressionNode {
     WTF_MAKE_FAST_ALLOCATED;
 public:
 
@@ -207,27 +207,27 @@ public:
         return adoptRef(new CSSCalcPrimitiveValue(CSSPrimitiveValue::create(value, type).get(), isInteger));
     }
 
-    virtual bool isZero() const
+    virtual bool isZero() const OVERRIDE
     {
         return !m_value->getDoubleValue();
     }
 
-    virtual String customCSSText() const
+    virtual String customCSSText() const OVERRIDE
     {
         return m_value->cssText();
     }
 
-    virtual String serializeResolvingVariables(const HashMap<AtomicString, String>& variables) const
+    virtual String serializeResolvingVariables(const HashMap<AtomicString, String>& variables) const OVERRIDE
     {
         return m_value->customSerializeResolvingVariables(variables);
     }
 
-    virtual bool hasVariableReference() const
+    virtual bool hasVariableReference() const OVERRIDE
     {
         return m_value->isVariableName();
     }
 
-    virtual PassOwnPtr<CalcExpressionNode> toCalcValue(const CSSToLengthConversionData& conversionData) const
+    virtual PassOwnPtr<CalcExpressionNode> toCalcValue(const CSSToLengthConversionData& conversionData) const OVERRIDE
     {
         switch (m_category) {
         case CalcNumber:
@@ -247,7 +247,7 @@ public:
         return nullptr;
     }
 
-    virtual double doubleValue() const
+    virtual double doubleValue() const OVERRIDE
     {
         if (hasDoubleValue(primitiveType()))
             return m_value->getDoubleValue();
@@ -255,7 +255,7 @@ public:
         return 0;
     }
 
-    virtual double computeLengthPx(const CSSToLengthConversionData& conversionData) const
+    virtual double computeLengthPx(const CSSToLengthConversionData& conversionData) const OVERRIDE
     {
         switch (m_category) {
         case CalcLength:
@@ -274,7 +274,7 @@ public:
         return 0;
     }
 
-    virtual bool equals(const CSSCalcExpressionNode& other) const
+    virtual bool equals(const CSSCalcExpressionNode& other) const OVERRIDE
     {
         if (type() != other.type())
             return false;
@@ -282,8 +282,8 @@ public:
         return compareCSSValuePtr(m_value, static_cast<const CSSCalcPrimitiveValue&>(other).m_value);
     }
 
-    virtual Type type() const { return CssCalcPrimitiveValue; }
-    virtual CSSPrimitiveValue::UnitTypes primitiveType() const
+    virtual Type type() const OVERRIDE { return CssCalcPrimitiveValue; }
+    virtual CSSPrimitiveValue::UnitTypes primitiveType() const OVERRIDE
     {
         return CSSPrimitiveValue::UnitTypes(m_value->primitiveType());
     }
@@ -344,7 +344,7 @@ static bool isIntegerResult(const CSSCalcExpressionNode* leftSide, const CSSCalc
     return op != CalcDivide && leftSide->isInteger() && rightSide->isInteger();
 }
 
-class CSSCalcBinaryOperation : public CSSCalcExpressionNode {
+class CSSCalcBinaryOperation FINAL : public CSSCalcExpressionNode {
 
 public:
     static PassRefPtr<CSSCalcExpressionNode> create(PassRefPtr<CSSCalcExpressionNode> leftSide, PassRefPtr<CSSCalcExpressionNode> rightSide, CalcOperator op)
@@ -415,12 +415,12 @@ public:
         return create(leftSide, rightSide, op);
     }
 
-    virtual bool isZero() const
+    virtual bool isZero() const OVERRIDE
     {
         return !doubleValue();
     }
 
-    virtual PassOwnPtr<CalcExpressionNode> toCalcValue(const CSSToLengthConversionData& conversionData) const
+    virtual PassOwnPtr<CalcExpressionNode> toCalcValue(const CSSToLengthConversionData& conversionData) const OVERRIDE
     {
         OwnPtr<CalcExpressionNode> left(m_leftSide->toCalcValue(conversionData));
         if (!left)
@@ -431,12 +431,12 @@ public:
         return adoptPtr(new CalcExpressionBinaryOperation(left.release(), right.release(), m_operator));
     }
 
-    virtual double doubleValue() const
+    virtual double doubleValue() const OVERRIDE
     {
         return evaluate(m_leftSide->doubleValue(), m_rightSide->doubleValue());
     }
 
-    virtual double computeLengthPx(const CSSToLengthConversionData& conversionData) const
+    virtual double computeLengthPx(const CSSToLengthConversionData& conversionData) const OVERRIDE
     {
         const double leftValue = m_leftSide->computeLengthPx(conversionData);
         const double rightValue = m_rightSide->computeLengthPx(conversionData);
@@ -457,22 +457,22 @@ public:
         return result.toString();
     }
 
-    virtual String customCSSText() const
+    virtual String customCSSText() const OVERRIDE
     {
         return buildCSSText(m_leftSide->customCSSText(), m_rightSide->customCSSText(), m_operator);
     }
 
-    virtual String serializeResolvingVariables(const HashMap<AtomicString, String>& variables) const
+    virtual String serializeResolvingVariables(const HashMap<AtomicString, String>& variables) const OVERRIDE
     {
         return buildCSSText(m_leftSide->serializeResolvingVariables(variables), m_rightSide->serializeResolvingVariables(variables), m_operator);
     }
 
-    virtual bool hasVariableReference() const
+    virtual bool hasVariableReference() const OVERRIDE
     {
         return m_leftSide->hasVariableReference() || m_rightSide->hasVariableReference();
     }
 
-    virtual bool equals(const CSSCalcExpressionNode& exp) const
+    virtual bool equals(const CSSCalcExpressionNode& exp) const OVERRIDE
     {
         if (type() != exp.type())
             return false;
@@ -483,9 +483,9 @@ public:
             && m_operator == other.m_operator;
     }
 
-    virtual Type type() const { return CssCalcBinaryOperation; }
+    virtual Type type() const OVERRIDE { return CssCalcBinaryOperation; }
 
-    virtual CSSPrimitiveValue::UnitTypes primitiveType() const
+    virtual CSSPrimitiveValue::UnitTypes primitiveType() const OVERRIDE
     {
         switch (m_category) {
         case CalcNumber:

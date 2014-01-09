@@ -48,23 +48,23 @@ protected:
     CSSRuleList();
 };
 
-class StaticCSSRuleList : public CSSRuleList {
+class StaticCSSRuleList FINAL : public CSSRuleList {
 public:
     static PassRefPtr<StaticCSSRuleList> create() { return adoptRef(new StaticCSSRuleList()); }
 
-    virtual void ref() { ++m_refCount; }
-    virtual void deref();
+    virtual void ref() OVERRIDE { ++m_refCount; }
+    virtual void deref() OVERRIDE;
 
     Vector<RefPtr<CSSRule> >& rules() { return m_rules; }
 
-    virtual CSSStyleSheet* styleSheet() const { return 0; }
+    virtual CSSStyleSheet* styleSheet() const OVERRIDE { return 0; }
 
 private:
     StaticCSSRuleList();
-    ~StaticCSSRuleList();
+    virtual ~StaticCSSRuleList();
 
-    virtual unsigned length() const { return m_rules.size(); }
-    virtual CSSRule* item(unsigned index) const { return index < m_rules.size() ? m_rules[index].get() : 0; }
+    virtual unsigned length() const OVERRIDE { return m_rules.size(); }
+    virtual CSSRule* item(unsigned index) const OVERRIDE { return index < m_rules.size() ? m_rules[index].get() : 0; }
 
     Vector<RefPtr<CSSRule> > m_rules;
     unsigned m_refCount;
@@ -72,17 +72,17 @@ private:
 
 // The rule owns the live list.
 template <class Rule>
-class LiveCSSRuleList : public CSSRuleList {
+class LiveCSSRuleList FINAL : public CSSRuleList {
 public:
     LiveCSSRuleList(Rule* rule) : m_rule(rule) { }
 
-    virtual void ref() { m_rule->ref(); }
-    virtual void deref() { m_rule->deref(); }
+    virtual void ref() OVERRIDE { m_rule->ref(); }
+    virtual void deref() OVERRIDE { m_rule->deref(); }
 
 private:
-    virtual unsigned length() const { return m_rule->length(); }
-    virtual CSSRule* item(unsigned index) const  { return m_rule->item(index); }
-    virtual CSSStyleSheet* styleSheet() const { return m_rule->parentStyleSheet(); }
+    virtual unsigned length() const OVERRIDE { return m_rule->length(); }
+    virtual CSSRule* item(unsigned index) const OVERRIDE { return m_rule->item(index); }
+    virtual CSSStyleSheet* styleSheet() const OVERRIDE { return m_rule->parentStyleSheet(); }
 
     Rule* m_rule;
 };

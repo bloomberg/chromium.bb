@@ -30,13 +30,13 @@ class CSSStyleDeclaration;
 class StyleRuleCSSStyleDeclaration;
 class StyleRule;
 
-class CSSStyleRule : public CSSRule {
+class CSSStyleRule FINAL : public CSSRule {
 public:
     static PassRefPtr<CSSStyleRule> create(StyleRule* rule, CSSStyleSheet* sheet) { return adoptRef(new CSSStyleRule(rule, sheet)); }
 
     virtual ~CSSStyleRule();
 
-    virtual CSSRule::Type type() const { return STYLE_RULE; }
+    virtual CSSRule::Type type() const OVERRIDE { return STYLE_RULE; }
     virtual String cssText() const OVERRIDE;
     virtual void reattach(StyleRuleBase*) OVERRIDE;
 

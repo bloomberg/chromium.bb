@@ -60,19 +60,19 @@ private:
 
     // NOTE: We put the CanvasObserver in a member instead of inheriting from it
     // to avoid adding a vptr to CSSCanvasValue.
-    class CanvasObserverProxy : public CanvasObserver {
+    class CanvasObserverProxy FINAL : public CanvasObserver {
     public:
         CanvasObserverProxy(CSSCanvasValue* ownerValue) : m_ownerValue(ownerValue) { }
         virtual ~CanvasObserverProxy() { }
-        virtual void canvasChanged(HTMLCanvasElement* canvas, const FloatRect& changedRect)
+        virtual void canvasChanged(HTMLCanvasElement* canvas, const FloatRect& changedRect) OVERRIDE
         {
             m_ownerValue->canvasChanged(canvas, changedRect);
         }
-        virtual void canvasResized(HTMLCanvasElement* canvas)
+        virtual void canvasResized(HTMLCanvasElement* canvas) OVERRIDE
         {
             m_ownerValue->canvasResized(canvas);
         }
-        virtual void canvasDestroyed(HTMLCanvasElement* canvas)
+        virtual void canvasDestroyed(HTMLCanvasElement* canvas) OVERRIDE
         {
             m_ownerValue->canvasDestroyed(canvas);
         }

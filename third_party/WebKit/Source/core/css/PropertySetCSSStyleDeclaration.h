@@ -50,30 +50,30 @@ protected:
     virtual PassRefPtr<CSSVariablesIterator> variablesIterator() const OVERRIDE;
 
 private:
-    virtual CSSRule* parentRule() const OVERRIDE { return 0; };
-    virtual unsigned length() const OVERRIDE;
-    virtual String item(unsigned index) const OVERRIDE;
-    virtual PassRefPtr<CSSValue> getPropertyCSSValue(const String& propertyName) OVERRIDE;
-    virtual String getPropertyValue(const String& propertyName) OVERRIDE;
-    virtual String getPropertyPriority(const String& propertyName) OVERRIDE;
-    virtual String getPropertyShorthand(const String& propertyName) OVERRIDE;
-    virtual bool isPropertyImplicit(const String& propertyName) OVERRIDE;
-    virtual void setProperty(const String& propertyName, const String& value, const String& priority, ExceptionState&) OVERRIDE;
-    virtual String removeProperty(const String& propertyName, ExceptionState&) OVERRIDE;
-    virtual String cssText() const OVERRIDE;
-    virtual void setCSSText(const String&, ExceptionState&) OVERRIDE;
-    virtual PassRefPtr<CSSValue> getPropertyCSSValueInternal(CSSPropertyID) OVERRIDE;
-    virtual String getPropertyValueInternal(CSSPropertyID) OVERRIDE;
-    virtual void setPropertyInternal(CSSPropertyID, const String& value, bool important, ExceptionState&) OVERRIDE;
+    virtual CSSRule* parentRule() const OVERRIDE { return 0; }
+    virtual unsigned length() const OVERRIDE FINAL;
+    virtual String item(unsigned index) const OVERRIDE FINAL;
+    virtual PassRefPtr<CSSValue> getPropertyCSSValue(const String& propertyName) OVERRIDE FINAL;
+    virtual String getPropertyValue(const String& propertyName) OVERRIDE FINAL;
+    virtual String getPropertyPriority(const String& propertyName) OVERRIDE FINAL;
+    virtual String getPropertyShorthand(const String& propertyName) OVERRIDE FINAL;
+    virtual bool isPropertyImplicit(const String& propertyName) OVERRIDE FINAL;
+    virtual void setProperty(const String& propertyName, const String& value, const String& priority, ExceptionState&) OVERRIDE FINAL;
+    virtual String removeProperty(const String& propertyName, ExceptionState&) OVERRIDE FINAL;
+    virtual String cssText() const OVERRIDE FINAL;
+    virtual void setCSSText(const String&, ExceptionState&) OVERRIDE FINAL;
+    virtual PassRefPtr<CSSValue> getPropertyCSSValueInternal(CSSPropertyID) OVERRIDE FINAL;
+    virtual String getPropertyValueInternal(CSSPropertyID) OVERRIDE FINAL;
+    virtual void setPropertyInternal(CSSPropertyID, const String& value, bool important, ExceptionState&) OVERRIDE FINAL;
 
-    virtual unsigned variableCount() const OVERRIDE;
-    virtual String variableValue(const AtomicString& name) const OVERRIDE;
-    virtual bool setVariableValue(const AtomicString& name, const String& value, ExceptionState&) OVERRIDE;
-    virtual bool removeVariable(const AtomicString& name) OVERRIDE;
-    virtual bool clearVariables(ExceptionState&) OVERRIDE;
+    virtual unsigned variableCount() const OVERRIDE FINAL;
+    virtual String variableValue(const AtomicString& name) const OVERRIDE FINAL;
+    virtual bool setVariableValue(const AtomicString& name, const String& value, ExceptionState&) OVERRIDE FINAL;
+    virtual bool removeVariable(const AtomicString& name) OVERRIDE FINAL;
+    virtual bool clearVariables(ExceptionState&) OVERRIDE FINAL;
 
-    virtual bool cssPropertyMatches(CSSPropertyID, const CSSValue*) const OVERRIDE;
-    virtual PassRefPtr<MutableStylePropertySet> copyProperties() const OVERRIDE;
+    virtual bool cssPropertyMatches(CSSPropertyID, const CSSValue*) const OVERRIDE FINAL;
+    virtual PassRefPtr<MutableStylePropertySet> copyProperties() const OVERRIDE FINAL;
 
     CSSValue* cloneAndCacheForCSSOM(CSSValue*);
 
@@ -94,12 +94,12 @@ public:
     virtual void deref() OVERRIDE;
 
 protected:
-    virtual MutableStylePropertySet* propertySet() const { return m_propertySet; };
+    virtual MutableStylePropertySet* propertySet() const OVERRIDE FINAL { return m_propertySet; }
 
     MutableStylePropertySet* m_propertySet;
 };
 
-class StyleRuleCSSStyleDeclaration : public PropertySetCSSStyleDeclaration
+class StyleRuleCSSStyleDeclaration FINAL : public PropertySetCSSStyleDeclaration
 {
 public:
     static PassRefPtr<StyleRuleCSSStyleDeclaration> create(MutableStylePropertySet* propertySet, CSSRule* parentRule)
@@ -129,7 +129,7 @@ private:
     CSSRule* m_parentRule;
 };
 
-class InlineCSSStyleDeclaration : public AbstractPropertySetCSSStyleDeclaration
+class InlineCSSStyleDeclaration FINAL : public AbstractPropertySetCSSStyleDeclaration
 {
 public:
     explicit InlineCSSStyleDeclaration(Element* parentElement)

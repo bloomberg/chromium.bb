@@ -28,7 +28,7 @@ namespace WebCore {
 
 class ExceptionState;
 
-class CSSCharsetRule : public CSSRule {
+class CSSCharsetRule FINAL : public CSSRule {
 public:
     static PassRefPtr<CSSCharsetRule> create(CSSStyleSheet* parent, const String& encoding)
     {

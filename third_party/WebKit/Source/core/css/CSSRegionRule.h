@@ -37,7 +37,7 @@ namespace WebCore {
 
 class StyleRuleRegion;
 
-class CSSRegionRule : public CSSGroupingRule {
+class CSSRegionRule FINAL : public CSSGroupingRule {
 public:
     static PassRefPtr<CSSRegionRule> create(StyleRuleRegion* rule, CSSStyleSheet* sheet) { return adoptRef(new CSSRegionRule(rule, sheet)); }
 

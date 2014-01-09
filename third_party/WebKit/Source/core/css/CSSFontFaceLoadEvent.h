@@ -44,7 +44,7 @@ struct CSSFontFaceLoadEventInit : public EventInit {
     FontFaceArray fontfaces;
 };
 
-class CSSFontFaceLoadEvent : public Event {
+class CSSFontFaceLoadEvent FINAL : public Event {
 public:
     static PassRefPtr<CSSFontFaceLoadEvent> create()
     {
@@ -65,7 +65,7 @@ public:
 
     FontFaceArray fontfaces() const { return m_fontfaces; }
 
-    virtual const AtomicString& interfaceName() const;
+    virtual const AtomicString& interfaceName() const OVERRIDE;
 
 private:
     CSSFontFaceLoadEvent();

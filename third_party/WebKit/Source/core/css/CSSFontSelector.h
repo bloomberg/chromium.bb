@@ -62,7 +62,7 @@ private:
     ResourceFetcher* m_resourceFetcher;
 };
 
-class CSSFontSelector : public FontSelector {
+class CSSFontSelector FINAL : public FontSelector {
 public:
     static PassRefPtr<CSSFontSelector> create(Document* document)
     {
@@ -72,7 +72,7 @@ public:
 
     virtual unsigned version() const OVERRIDE { return m_cssSegmentedFontFaceCache.version(); }
 
-    virtual PassRefPtr<FontData> getFontData(const FontDescription&, const AtomicString&);
+    virtual PassRefPtr<FontData> getFontData(const FontDescription&, const AtomicString&) OVERRIDE;
     CSSSegmentedFontFace* getFontFace(const FontDescription&, const AtomicString& family);
     virtual void willUseFontData(const FontDescription&, const AtomicString& family) OVERRIDE;
 
@@ -82,10 +82,10 @@ public:
     void removeFontFaceRule(const StyleRuleFontFace*);
 
     void fontLoaded();
-    virtual void fontCacheInvalidated();
+    virtual void fontCacheInvalidated() OVERRIDE;
 
-    virtual void registerForInvalidationCallbacks(FontSelectorClient*);
-    virtual void unregisterForInvalidationCallbacks(FontSelectorClient*);
+    virtual void registerForInvalidationCallbacks(FontSelectorClient*) OVERRIDE;
+    virtual void unregisterForInvalidationCallbacks(FontSelectorClient*) OVERRIDE;
 
     Document* document() const { return m_document; }
 

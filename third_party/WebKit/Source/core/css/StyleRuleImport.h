@@ -54,11 +54,11 @@ public:
 private:
     // NOTE: We put the StyleSheetResourceClient in a member instead of inheriting from it
     // to avoid adding a vptr to StyleRuleImport.
-    class ImportedStyleSheetClient : public StyleSheetResourceClient {
+    class ImportedStyleSheetClient FINAL : public StyleSheetResourceClient {
     public:
         ImportedStyleSheetClient(StyleRuleImport* ownerRule) : m_ownerRule(ownerRule) { }
         virtual ~ImportedStyleSheetClient() { }
-        virtual void setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CSSStyleSheetResource* sheet)
+        virtual void setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CSSStyleSheetResource* sheet) OVERRIDE
         {
             m_ownerRule->setCSSStyleSheet(href, baseURL, charset, sheet);
         }

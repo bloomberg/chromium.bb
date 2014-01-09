@@ -26,7 +26,7 @@
 
 namespace WebCore {
 
-class CSSUnknownRule : public CSSRule {
+class CSSUnknownRule FINAL : public CSSRule {
 public:
     CSSUnknownRule() : CSSRule(0) { }
     virtual ~CSSUnknownRule() { }

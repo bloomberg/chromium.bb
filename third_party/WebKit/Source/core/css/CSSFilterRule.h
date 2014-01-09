@@ -38,7 +38,7 @@ class CSSStyleDeclaration;
 class StyleRuleFilter;
 class StyleRuleCSSStyleDeclaration;
 
-class CSSFilterRule : public CSSRule {
+class CSSFilterRule FINAL : public CSSRule {
 public:
     static PassRefPtr<CSSFilterRule> create(StyleRuleFilter* rule, CSSStyleSheet* sheet) { return adoptRef(new CSSFilterRule(rule, sheet)); }
 

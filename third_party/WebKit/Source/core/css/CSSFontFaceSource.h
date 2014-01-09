@@ -44,7 +44,7 @@ class SVGFontFaceElement;
 #endif
 
 
-class CSSFontFaceSource : public FontResourceClient {
+class CSSFontFaceSource FINAL : public FontResourceClient {
 public:
     CSSFontFaceSource(const String&, FontResource* = 0);
     virtual ~CSSFontFaceSource();
@@ -58,7 +58,7 @@ public:
     void setFontFace(CSSFontFace* face) { m_face = face; }
 
     virtual void didStartFontLoad(FontResource*) OVERRIDE;
-    virtual void fontLoaded(FontResource*);
+    virtual void fontLoaded(FontResource*) OVERRIDE;
 
     PassRefPtr<SimpleFontData> getFontData(const FontDescription&);
 

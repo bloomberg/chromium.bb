@@ -36,16 +36,16 @@ public:
 protected:
     void takeRemainingNames(Vector<AtomicString>& remainingNames) { m_remainingNames.swap(remainingNames); }
 
-    virtual void initRemainingNames(const StylePropertySet*);
+    void initRemainingNames(const StylePropertySet*);
 
 private:
-    virtual void advance() OVERRIDE;
-    virtual bool atEnd() const OVERRIDE { return m_remainingNames.isEmpty(); }
-    virtual AtomicString name() const OVERRIDE { return m_remainingNames.last(); }
-    virtual String value() const OVERRIDE;
-    virtual void addedVariable(const AtomicString& name) OVERRIDE;
-    virtual void removedVariable(const AtomicString& name) OVERRIDE;
-    virtual void clearedVariables() OVERRIDE;
+    virtual void advance() OVERRIDE FINAL;
+    virtual bool atEnd() const OVERRIDE FINAL { return m_remainingNames.isEmpty(); }
+    virtual AtomicString name() const OVERRIDE FINAL { return m_remainingNames.last(); }
+    virtual String value() const OVERRIDE FINAL;
+    virtual void addedVariable(const AtomicString& name) OVERRIDE FINAL;
+    virtual void removedVariable(const AtomicString& name) OVERRIDE FINAL;
+    virtual void clearedVariables() OVERRIDE FINAL;
 
     virtual MutableStylePropertySet* propertySet() const = 0;
 
@@ -53,7 +53,7 @@ private:
     Vector<AtomicString> m_newNames;
 };
 
-class VariablesIterator : public AbstractVariablesIterator {
+class VariablesIterator FINAL : public AbstractVariablesIterator {
 public:
     static PassRefPtr<VariablesIterator> create(MutableStylePropertySet*);
 

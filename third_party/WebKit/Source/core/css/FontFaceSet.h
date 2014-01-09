@@ -54,7 +54,7 @@ class FontResource;
 class FontsReadyPromiseResolver;
 class ExecutionContext;
 
-class FontFaceSet : public RefCountedSupplement<Document, FontFaceSet>, public ActiveDOMObject, public EventTargetWithInlineData {
+class FontFaceSet FINAL : public RefCountedSupplement<Document, FontFaceSet>, public ActiveDOMObject, public EventTargetWithInlineData {
     REFCOUNTED_EVENT_TARGET(FontFaceSet);
 public:
     virtual ~FontFaceSet();
