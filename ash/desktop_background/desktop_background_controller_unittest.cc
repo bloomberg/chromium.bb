@@ -129,16 +129,21 @@ class DesktopBackgroundControllerTest : public test::AshTestBase {
   static const SkColor kLargeGuestWallpaperColor = SK_ColorBLUE;
   static const SkColor kSmallGuestWallpaperColor = SK_ColorYELLOW;
 
+  // A color that can be passed to CreateImage(). Specifically chosen to not
+  // conflict with any of the default wallpaper colors.
+  static const SkColor kCustomWallpaperColor = SK_ColorMAGENTA;
+
   // Dimension used for width and height of default wallpaper images. A
   // small value is used to minimize the amount of time spent compressing
   // and writing images.
   static const int kWallpaperSize = 2;
 
   // Creates an image of size |size|.
-  gfx::ImageSkia CreateImage(int width, int height) {
+  gfx::ImageSkia CreateImage(int width, int height, SkColor color) {
     SkBitmap bitmap;
     bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
     bitmap.allocPixels();
+    bitmap.eraseColor(color);
     gfx::ImageSkia image = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
     return image;
   }
@@ -440,7 +445,7 @@ TEST_F(DesktopBackgroundControllerTest, DisplayChange) {
 
   // Set the wallpaper to ensure that UpdateWallpaper() will be called when the
   // display configuration changes.
-  gfx::ImageSkia image = CreateImage(640, 480);
+  gfx::ImageSkia image = CreateImage(640, 480, kCustomWallpaperColor);
   wallpaper_delegate_->set_custom_wallpaper(image);
   controller_->SetCustomWallpaper(image, WALLPAPER_LAYOUT_STRETCH);
 
@@ -603,7 +608,7 @@ TEST_F(DesktopBackgroundControllerTest, ResizeCustomWallpaper) {
       Shell::GetInstance()->display_manager());
   display_manager_test_api.UpdateDisplay("320x200");
 
-  gfx::ImageSkia image = CreateImage(640, 480);
+  gfx::ImageSkia image = CreateImage(640, 480, kCustomWallpaperColor);
 
   // Set the image as custom wallpaper, wait for the resize to finish, and check
   // that the resized image is the expected size.
@@ -663,6 +668,29 @@ TEST_F(DesktopBackgroundControllerTest, GetMaxDisplaySize) {
   EXPECT_EQ(
       "400x500",
       DesktopBackgroundController::GetMaxDisplaySizeInNative().ToString());
+}
+
+TEST_F(DesktopBackgroundControllerTest, SwitchBetweenDefaultAndCustom) {
+  // Start loading the default wallpaper.
+  UpdateDisplay("640x480");
+  WriteWallpapersAndSetFlags();
+  ASSERT_TRUE(controller_->SetDefaultWallpaper(false));
+
+  // Custom wallpaper should be applied immediately, canceling the default
+  // wallpaper load task.
+  gfx::ImageSkia image = CreateImage(640, 480, kCustomWallpaperColor);
+  controller_->SetCustomWallpaper(image, WALLPAPER_LAYOUT_STRETCH);
+  EXPECT_TRUE(ImageIsNearColor(controller_->GetWallpaper(),
+                               kCustomWallpaperColor));
+
+  // A call to SetDefaultWallpaper() should return true now, indicating that a
+  // new load task was started (since the previous one was interrupted by
+  // SetCustomWallpaper()). See http://crbug.com/327443.
+  TestObserver observer(controller_);
+  ASSERT_TRUE(controller_->SetDefaultWallpaper(false));
+  observer.WaitForWallpaperDataChanged();
+  EXPECT_TRUE(ImageIsNearColor(controller_->GetWallpaper(),
+                               kSmallWallpaperColor));
 }
 
 }  // namespace ash
