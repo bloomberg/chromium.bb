@@ -728,7 +728,7 @@ struct sslSessionIDStr {
 	     * cached. Before then, there is no need to lock anything because
 	     * the sid isn't being shared by anything.
 	     */
-	    PRRWLock *lock;
+	    NSSRWLock *lock;
 
 	    /* The lock must be held while reading or writing these members
 	     * because they change while the sid is cached.

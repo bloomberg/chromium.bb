@@ -138,7 +138,7 @@ ssl_DestroySID(sslSessionID *sid)
         }
 
         if (sid->u.ssl3.lock) {
-            PR_DestroyRWLock(sid->u.ssl3.lock);
+            NSSRWLock_Destroy(sid->u.ssl3.lock);
         }
     }
 
@@ -314,7 +314,7 @@ CacheSID(sslSessionID *sid)
 	PRINT_BUF(8, (0, "sessionID:",
 		      sid->u.ssl3.sessionID, sid->u.ssl3.sessionIDLength));
 
-	sid->u.ssl3.lock = PR_NewRWLock(PR_RWLOCK_RANK_NONE, NULL);
+	sid->u.ssl3.lock = NSSRWLock_New(NSS_RWLOCK_RANK_NONE, NULL);
 	if (!sid->u.ssl3.lock) {
 	    return;
 	}
@@ -454,7 +454,7 @@ ssl3_SetSIDSessionTicket(sslSessionID *sid,
      * yet, so no locking is needed.
      */
     if (sid->u.ssl3.lock) {
-	PR_RWLock_Wlock(sid->u.ssl3.lock);
+	NSSRWLock_LockWrite(sid->u.ssl3.lock);
 
 	/* A server might have sent us an empty ticket, which has the
 	 * effect of clearing the previously known ticket.
@@ -473,6 +473,6 @@ ssl3_SetSIDSessionTicket(sslSessionID *sid,
     newSessionTicket->ticket.len = 0;
 
     if (sid->u.ssl3.lock) {
-	PR_RWLock_Unlock(sid->u.ssl3.lock);
+	NSSRWLock_UnlockWrite(sid->u.ssl3.lock);
     }
 }
