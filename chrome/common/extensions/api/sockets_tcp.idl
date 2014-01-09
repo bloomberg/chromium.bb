@@ -4,9 +4,7 @@
 
 // Use the <code>chrome.sockets.tcp</code> API to send and receive data over the
 // network using TCP connections. This API supersedes the TCP functionality
-// previously found in the <code>chrome.socket</code> API. Note that the socket
-// ids created from this namespace are not compatible with ids created in other
-// namespaces.
+// previously found in the <code>chrome.socket</code> API.
 namespace sockets.tcp {
   // The socket properties specified in the <code>create</code> or
   // <code>update</code> function. Each property is optional. If a property
@@ -31,7 +29,9 @@ namespace sockets.tcp {
 
   // Result of <code>create</code> call.
   dictionary CreateInfo {
-    // The ID of the newly created socket.
+    // The ID of the newly created socket. Note that socket IDs created from
+    // this API are not compatible with socket IDs created from other APIs, such
+    // as the deprecated <code>$ref:socket</code> API.
     long socketId;
   };
 

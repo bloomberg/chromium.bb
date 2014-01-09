@@ -4,8 +4,7 @@
 
 // Use the <code>chrome.sockets.udp</code> API to send and receive data over the
 // network using UDP connections. This API supersedes the UDP functionality
-// previously found in the "socket" API. Note that the socket ids created from
-// this namespace are not compatible with ids created in other namespaces.
+// previously found in the "socket" API.
 namespace sockets.udp {
   // The socket properties specified in the <code>create</code> or
   // <code>update</code> function. Each property is optional. If a property
@@ -31,7 +30,9 @@ namespace sockets.udp {
 
   // Result of <code>create</code> call.
   dictionary CreateInfo {
-    // The ID of the newly created socket.
+    // The ID of the newly created socket. Note that socket IDs created from
+    // this API are not compatible with socket IDs created from other APIs, such
+    // as the deprecated <code>$ref:socket</code> API.
     long socketId;
   };
 

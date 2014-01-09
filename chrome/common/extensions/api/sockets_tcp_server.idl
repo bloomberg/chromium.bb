@@ -4,9 +4,7 @@
 
 // Use the <code>chrome.sockets.tcpServer</code> API to create server
 // applications using TCP connections. This API supersedes the TCP functionality
-// previously found in the <code>chrome.socket</code> API. Note that the socket
-// ids created from this namespace are not compatible with ids created in other
-// namespaces.
+// previously found in the <code>chrome.socket</code> API.
 namespace sockets.tcpServer {
   // The socket properties specified in the <code>create</code> or
   // <code>update</code> function. Each property is optional. If a property
@@ -28,7 +26,9 @@ namespace sockets.tcpServer {
 
   // Result of <code>create</code> call.
   dictionary CreateInfo {
-    // The ID of the newly created server socket.
+    // The ID of the newly created server socket. Note that socket IDs created
+    // from this API are not compatible with socket IDs created from other APIs,
+    // such as the deprecated <code>$ref:socket</code> API.
     long socketId;
   };
 
