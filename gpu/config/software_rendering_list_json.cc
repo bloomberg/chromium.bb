@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "6.22",
+  "version": "6.23",
   "entries": [
     {
       "id": 1,
@@ -566,8 +566,8 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 50,
-      "description": "Disable VMware software renderer",
-      "cr_bugs": [145531],
+      "description": "Disable VMware software renderer on older Mesa",
+      "cr_bugs": [145531, 332596],
       "os": {
         "type": "linux"
       },
@@ -575,6 +575,18 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
         "op": "beginwith",
         "value": "VMware"
       },
+      "exceptions": [
+        {
+          "driver_vendor": {
+            "op": "=",
+            "value": "Mesa"
+          },
+          "driver_version": {
+            "op": ">=",
+            "value": "9.2.1"
+          }
+        }
+      ],
       "features": [
         "all"
       ]
