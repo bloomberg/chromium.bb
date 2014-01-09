@@ -211,15 +211,17 @@ config("compiler") {
       ]
     }
 
-    if (cpu_arch == "arm") {
-      cflags += [
-        "-target arm-linux-androideabi",
-        "-mllvm -arm-enable-ehabi",
-      ]
-      ldflags += [ "-target arm-linux-androideabi" ]
-    } else if (cpu_arch == "x86") {
-      cflags += [ "-target x86-linux-androideabi" ]
-      ldflags += [ "-target x86-linux-androideabi" ]
+    if (is_clang) {
+      if (cpu_arch == "arm") {
+        cflags += [
+          "-target arm-linux-androideabi",
+          "-mllvm -arm-enable-ehabi",
+        ]
+        ldflags += [ "-target arm-linux-androideabi" ]
+      } else if (cpu_arch == "x86") {
+        cflags += [ "-target x86-linux-androideabi" ]
+        ldflags += [ "-target x86-linux-androideabi" ]
+      }
     }
   }
 }
