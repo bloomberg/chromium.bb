@@ -2435,7 +2435,7 @@ bool BisonCSSParser::parseValue(CSSPropertyID propId, bool important)
         if (!RuntimeEnabledFeatures::cssGridLayoutEnabled())
             return false;
 
-        return parseJustifySelf(propId, important);
+        return parseItemPositionOverflowPosition(propId, important);
     case CSSPropertyGridAutoColumns:
     case CSSPropertyGridAutoRows:
         if (!RuntimeEnabledFeatures::cssGridLayoutEnabled())
@@ -5097,7 +5097,7 @@ static bool isItemPositionKeyword(CSSValueID id)
         || id == CSSValueFlexEnd || id == CSSValueLeft || id == CSSValueRight;
 }
 
-bool BisonCSSParser::parseJustifySelf(CSSPropertyID propId, bool important)
+bool BisonCSSParser::parseItemPositionOverflowPosition(CSSPropertyID propId, bool important)
 {
     // auto | baseline | stretch | [<item-position> && <overflow-position>? ]
     // <item-position> = center | start | end | self-start | self-end | flex-start | flex-end | left | right;

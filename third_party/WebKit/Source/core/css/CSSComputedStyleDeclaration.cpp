@@ -2108,7 +2108,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyJustifySelf: {
             RefPtr<CSSValueList> result = CSSValueList::createSpaceSeparated();
             result->append(CSSPrimitiveValue::create(style->justifySelf()));
-            if (style->justifySelf() >= JustifySelfCenter && style->justifySelfOverflowAlignment() != JustifySelfOverflowAlignmentDefault)
+            if (style->justifySelf() >= ItemPositionCenter && style->justifySelfOverflowAlignment() != OverflowAlignmentDefault)
                 result->append(CSSPrimitiveValue::create(style->justifySelfOverflowAlignment()));
             return result.release();
         }

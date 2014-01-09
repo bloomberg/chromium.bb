@@ -530,25 +530,25 @@ enum EIsolation { IsolationAuto, IsolationIsolate };
 
 enum TouchActionDelay { TouchActionDelayNone, TouchActionDelayScript };
 
-enum JustifySelf {
-    JustifySelfAuto,
-    JustifySelfStretch,
-    JustifySelfBaseline,
-    JustifySelfCenter,
-    JustifySelfStart,
-    JustifySelfEnd,
-    JustifySelfSelfStart,
-    JustifySelfSelfEnd,
-    JustifySelfFlexStart,
-    JustifySelfFlexEnd,
-    JustifySelfLeft,
-    JustifySelfRight
+enum ItemPosition {
+    ItemPositionAuto,
+    ItemPositionStretch,
+    ItemPositionBaseline,
+    ItemPositionCenter,
+    ItemPositionStart,
+    ItemPositionEnd,
+    ItemPositionSelfStart,
+    ItemPositionSelfEnd,
+    ItemPositionFlexStart,
+    ItemPositionFlexEnd,
+    ItemPositionLeft,
+    ItemPositionRight
 };
 
-enum JustifySelfOverflowAlignment {
-    JustifySelfOverflowAlignmentDefault,
-    JustifySelfOverflowAlignmentTrue,
-    JustifySelfOverflowAlignmentSafe
+enum OverflowAlignment {
+    OverflowAlignmentDefault,
+    OverflowAlignmentTrue,
+    OverflowAlignmentSafe
 };
 
 // Reasonable maximum to prevent insane font sizes from causing crashes on some platforms (such as Windows).

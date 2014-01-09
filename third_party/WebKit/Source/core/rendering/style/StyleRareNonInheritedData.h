@@ -191,7 +191,7 @@ public:
 
     unsigned m_isolation : 1; // Isolation
 
-    unsigned m_justifySelf : 4; // JustifySelf
+    unsigned m_justifySelf : 4; // ItemPosition
     unsigned m_justifySelfOverflowAlignment : 2; // OverflowAlignment
 
 private:

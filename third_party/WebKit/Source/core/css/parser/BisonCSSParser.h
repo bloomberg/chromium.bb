@@ -176,7 +176,7 @@ public:
 
     bool parseClipShape(CSSPropertyID, bool important);
 
-    bool parseJustifySelf(CSSPropertyID, bool important);
+    bool parseItemPositionOverflowPosition(CSSPropertyID, bool important);
 
     PassRefPtr<CSSValue> parseShapeProperty(CSSPropertyID propId);
     PassRefPtr<CSSPrimitiveValue> parseBasicShape();

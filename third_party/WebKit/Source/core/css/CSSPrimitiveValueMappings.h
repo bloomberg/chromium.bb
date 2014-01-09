@@ -4985,113 +4985,113 @@ template<> inline CSSPrimitiveValue::operator LayoutBox() const
     return ContentBox;
 }
 
-template<> inline CSSPrimitiveValue::CSSPrimitiveValue(JustifySelf justifySelf)
+template<> inline CSSPrimitiveValue::CSSPrimitiveValue(ItemPosition itemPosition)
     : CSSValue(PrimitiveClass)
 {
     m_primitiveUnitType = CSS_VALUE_ID;
-    switch (justifySelf) {
-    case JustifySelfAuto:
+    switch (itemPosition) {
+    case ItemPositionAuto:
         m_value.valueID = CSSValueAuto;
         break;
-    case JustifySelfStretch:
+    case ItemPositionStretch:
         m_value.valueID = CSSValueStretch;
         break;
-    case JustifySelfBaseline:
+    case ItemPositionBaseline:
         m_value.valueID = CSSValueBaseline;
         break;
-    case JustifySelfCenter:
+    case ItemPositionCenter:
         m_value.valueID = CSSValueCenter;
         break;
-    case JustifySelfStart:
+    case ItemPositionStart:
         m_value.valueID = CSSValueStart;
         break;
-    case JustifySelfEnd:
+    case ItemPositionEnd:
         m_value.valueID = CSSValueEnd;
         break;
-    case JustifySelfSelfStart:
+    case ItemPositionSelfStart:
         m_value.valueID = CSSValueSelfStart;
         break;
-    case JustifySelfSelfEnd:
+    case ItemPositionSelfEnd:
         m_value.valueID = CSSValueSelfEnd;
         break;
-    case JustifySelfFlexStart:
+    case ItemPositionFlexStart:
         m_value.valueID = CSSValueFlexStart;
         break;
-    case JustifySelfFlexEnd:
+    case ItemPositionFlexEnd:
         m_value.valueID = CSSValueFlexEnd;
         break;
-    case JustifySelfLeft:
+    case ItemPositionLeft:
         m_value.valueID = CSSValueLeft;
         break;
-    case JustifySelfRight:
+    case ItemPositionRight:
         m_value.valueID = CSSValueRight;
         break;
     }
 }
 
-template<> inline CSSPrimitiveValue::operator JustifySelf() const
+template<> inline CSSPrimitiveValue::operator ItemPosition() const
 {
     switch (m_value.valueID) {
     case CSSValueAuto:
-        return JustifySelfAuto;
+        return ItemPositionAuto;
     case CSSValueStretch:
-        return JustifySelfStretch;
+        return ItemPositionStretch;
     case CSSValueBaseline:
-        return JustifySelfBaseline;
+        return ItemPositionBaseline;
     case CSSValueCenter:
-        return JustifySelfCenter;
+        return ItemPositionCenter;
     case CSSValueStart:
-        return JustifySelfStart;
+        return ItemPositionStart;
     case CSSValueEnd:
-        return JustifySelfEnd;
+        return ItemPositionEnd;
     case CSSValueSelfStart:
-        return JustifySelfSelfStart;
+        return ItemPositionSelfStart;
     case CSSValueSelfEnd:
-        return JustifySelfSelfEnd;
+        return ItemPositionSelfEnd;
     case CSSValueFlexStart:
-        return JustifySelfFlexStart;
+        return ItemPositionFlexStart;
     case CSSValueFlexEnd:
-        return JustifySelfFlexEnd;
+        return ItemPositionFlexEnd;
     case CSSValueLeft:
-        return JustifySelfLeft;
+        return ItemPositionLeft;
     case CSSValueRight:
-        return JustifySelfRight;
+        return ItemPositionRight;
     default:
         break;
     }
     ASSERT_NOT_REACHED();
-    return JustifySelfAuto;
+    return ItemPositionAuto;
 }
 
-template<> inline CSSPrimitiveValue::CSSPrimitiveValue(JustifySelfOverflowAlignment overflowAlignment)
+template<> inline CSSPrimitiveValue::CSSPrimitiveValue(OverflowAlignment overflowAlignment)
     : CSSValue(PrimitiveClass)
 {
     m_primitiveUnitType = CSS_VALUE_ID;
     switch (overflowAlignment) {
-    case JustifySelfOverflowAlignmentDefault:
+    case OverflowAlignmentDefault:
         m_value.valueID = CSSValueDefault;
         break;
-    case JustifySelfOverflowAlignmentTrue:
+    case OverflowAlignmentTrue:
         m_value.valueID = CSSValueTrue;
         break;
-    case JustifySelfOverflowAlignmentSafe:
+    case OverflowAlignmentSafe:
         m_value.valueID = CSSValueSafe;
         break;
     }
 }
 
-template<> inline CSSPrimitiveValue::operator JustifySelfOverflowAlignment() const
+template<> inline CSSPrimitiveValue::operator OverflowAlignment() const
 {
     switch (m_value.valueID) {
     case CSSValueTrue:
-        return JustifySelfOverflowAlignmentTrue;
+        return OverflowAlignmentTrue;
     case CSSValueSafe:
-        return JustifySelfOverflowAlignmentSafe;
+        return OverflowAlignmentSafe;
     default:
         break;
     }
     ASSERT_NOT_REACHED();
-    return JustifySelfOverflowAlignmentTrue;
+    return OverflowAlignmentTrue;
 }
 
 }

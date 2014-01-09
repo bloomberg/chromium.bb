@@ -765,8 +765,8 @@ public:
     bool isReverseFlexDirection() const { return flexDirection() == FlowRowReverse || flexDirection() == FlowColumnReverse; }
     EFlexWrap flexWrap() const { return static_cast<EFlexWrap>(rareNonInheritedData->m_flexibleBox->m_flexWrap); }
     EJustifyContent justifyContent() const { return static_cast<EJustifyContent>(rareNonInheritedData->m_justifyContent); }
-    JustifySelf justifySelf() const { return static_cast<JustifySelf>(rareNonInheritedData->m_justifySelf); }
-    JustifySelfOverflowAlignment justifySelfOverflowAlignment() const { return static_cast<JustifySelfOverflowAlignment>(rareNonInheritedData->m_justifySelfOverflowAlignment); }
+    ItemPosition justifySelf() const { return static_cast<ItemPosition>(rareNonInheritedData->m_justifySelf); }
+    OverflowAlignment justifySelfOverflowAlignment() const { return static_cast<OverflowAlignment>(rareNonInheritedData->m_justifySelfOverflowAlignment); }
 
     const Vector<GridTrackSize>& gridDefinitionColumns() const { return rareNonInheritedData->m_grid->m_gridDefinitionColumns; }
     const Vector<GridTrackSize>& gridDefinitionRows() const { return rareNonInheritedData->m_grid->m_gridDefinitionRows; }
@@ -1242,8 +1242,8 @@ public:
     void setFlexDirection(EFlexDirection direction) { SET_VAR(rareNonInheritedData.access()->m_flexibleBox, m_flexDirection, direction); }
     void setFlexWrap(EFlexWrap w) { SET_VAR(rareNonInheritedData.access()->m_flexibleBox, m_flexWrap, w); }
     void setJustifyContent(EJustifyContent p) { SET_VAR(rareNonInheritedData, m_justifyContent, p); }
-    void setJustifySelf(JustifySelf justifySelf) { SET_VAR(rareNonInheritedData, m_justifySelf, justifySelf); }
-    void setJustifySelfOverflowAlignment(JustifySelfOverflowAlignment overflowAlignment) { SET_VAR(rareNonInheritedData, m_justifySelfOverflowAlignment, overflowAlignment); }
+    void setJustifySelf(ItemPosition justifySelf) { SET_VAR(rareNonInheritedData, m_justifySelf, justifySelf); }
+    void setJustifySelfOverflowAlignment(OverflowAlignment overflowAlignment) { SET_VAR(rareNonInheritedData, m_justifySelfOverflowAlignment, overflowAlignment); }
     void setGridAutoColumns(const GridTrackSize& length) { SET_VAR(rareNonInheritedData.access()->m_grid, m_gridAutoColumns, length); }
     void setGridAutoRows(const GridTrackSize& length) { SET_VAR(rareNonInheritedData.access()->m_grid, m_gridAutoRows, length); }
     void setGridDefinitionColumns(const Vector<GridTrackSize>& lengths) { SET_VAR(rareNonInheritedData.access()->m_grid, m_gridDefinitionColumns, lengths); }
@@ -1607,8 +1607,8 @@ public:
     static EFlexDirection initialFlexDirection() { return FlowRow; }
     static EFlexWrap initialFlexWrap() { return FlexNoWrap; }
     static EJustifyContent initialJustifyContent() { return JustifyFlexStart; }
-    static JustifySelf initialJustifySelf() { return JustifySelfAuto; }
-    static JustifySelfOverflowAlignment initialJustifySelfOverflowAlignment() { return JustifySelfOverflowAlignmentDefault; }
+    static ItemPosition initialJustifySelf() { return ItemPositionAuto; }
+    static OverflowAlignment initialJustifySelfOverflowAlignment() { return OverflowAlignmentDefault; }
     static int initialMarqueeLoopCount() { return -1; }
     static int initialMarqueeSpeed() { return 85; }
     static Length initialMarqueeIncrement() { return Length(6, Fixed); }
