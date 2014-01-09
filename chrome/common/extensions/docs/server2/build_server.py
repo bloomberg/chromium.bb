@@ -58,6 +58,8 @@ def main():
 
 
   CopyThirdParty(os.path.join(THIRD_PARTY_DIR, 'handlebar'), 'handlebar')
+  CopyThirdParty(os.path.join(THIRD_PARTY_DIR, 'markdown'), 'markdown',
+                 make_init=False)
   CopyThirdParty(os.path.join(SRC_DIR, 'ppapi', 'generators'),
                  'json_schema_compiler')
   CopyThirdParty(os.path.join(THIRD_PARTY_DIR, 'ply'),
