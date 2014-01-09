@@ -2973,22 +2973,6 @@ RenderRegion* Element::renderRegion() const
     return 0;
 }
 
-bool Element::shouldMoveToFlowThread(RenderStyle* styleToUse) const
-{
-    ASSERT(styleToUse);
-
-    if (FullscreenElementStack::isActiveFullScreenElement(this))
-        return false;
-
-    if (isInShadowTree())
-        return false;
-
-    if (styleToUse->flowThread().isEmpty())
-        return false;
-
-    return !isRegisteredWithNamedFlow();
-}
-
 const AtomicString& Element::webkitRegionOverset() const
 {
     DEFINE_STATIC_LOCAL(AtomicString, undefinedState, ("undefined", AtomicString::ConstructFromLiteral));

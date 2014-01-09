@@ -120,22 +120,52 @@ bool RenderTreeBuilder::elementInsideRegionNeedsRenderer()
 {
     if (!RuntimeEnabledFeatures::cssRegionsEnabled())
         return false;
-    Element* element = toElement(m_node);
+    Element& element = toElement(*m_node);
     RenderObject* parentRenderer = this->parentRenderer();
     if ((parentRenderer && !parentRenderer->canHaveChildren() && parentRenderer->isRenderNamedFlowFragmentContainer())
-        || (!parentRenderer && element->parentElement() && element->parentElement()->isInsideRegion())) {
-
-        if (!m_style)
-            m_style = element->styleForRenderer();
+        || (!parentRenderer && element.parentElement() && element.parentElement()->isInsideRegion())) {
 
         // Children of this element will only be allowed to be flowed into other flow-threads if display is NOT none.
-        if (element->rendererIsNeeded(*m_style))
-            element->setIsInsideRegion(true);
+        if (element.rendererIsNeeded(style()))
+            element.setIsInsideRegion(true);
 
-        return element->shouldMoveToFlowThread(m_style.get());
+        return shouldMoveToFlowThread();
     }
 
     return false;
+}
+
+bool RenderTreeBuilder::shouldMoveToFlowThread() const
+{
+    Element& element = toElement(*m_node);
+    RenderStyle& style = this->style();
+
+    if (style.flowThread().isEmpty())
+        return false;
+
+    if (FullscreenElementStack::isActiveFullScreenElement(&element))
+        return false;
+
+    if (element.isInShadowTree())
+        return false;
+
+    // As per http://dev.w3.org/csswg/css3-regions/#flow-into, pseudo-elements such as
+    // ::first-line, ::first-letter, ::before or ::after cannot be directly collected
+    // into a named flow.
+    if (element.isPseudoElement())
+        return false;
+
+    // Allow only svg root elements to be directly collected by a render flow thread.
+    if (element.isSVGElement()) {
+        if (!element.hasTagName(SVGNames::svgTag))
+            return false;
+        if (!element.parentNode())
+            return false;
+        if (element.parentNode()->isSVGElement())
+            return false;
+    }
+
+    return !element.isRegisteredWithNamedFlow();
 }
 
 void RenderTreeBuilder::moveToFlowThreadIfNeeded()
@@ -143,15 +173,19 @@ void RenderTreeBuilder::moveToFlowThreadIfNeeded()
     if (!RuntimeEnabledFeatures::cssRegionsEnabled())
         return;
 
-    Element* element = toElement(m_node);
-
-    if (!element->shouldMoveToFlowThread(m_style.get()))
+    if (!shouldMoveToFlowThread())
         return;
 
-    ASSERT(m_node->document().renderView());
     FlowThreadController* flowThreadController = m_node->document().renderView()->flowThreadController();
-    m_parentFlowRenderer = flowThreadController->ensureRenderFlowThreadWithName(m_style->flowThread());
+    m_parentFlowRenderer = flowThreadController->ensureRenderFlowThreadWithName(style().flowThread());
     flowThreadController->registerNamedFlowContentNode(m_node, m_parentFlowRenderer);
+}
+
+RenderStyle& RenderTreeBuilder::style() const
+{
+    if (!m_style)
+        m_style = toElement(m_node)->styleForRenderer();
+    return *m_style;
 }
 
 void RenderTreeBuilder::createRendererForElementIfNeeded()
@@ -167,21 +201,20 @@ void RenderTreeBuilder::createRendererForElementIfNeeded()
     if (!shouldCreateRenderer() && !elementInsideRegionNeedsRenderer())
         return;
 
-    if (!m_style)
-        m_style = element->styleForRenderer();
-
     moveToFlowThreadIfNeeded();
 
-    if (!element->rendererIsNeeded(*m_style))
+    RenderStyle& style = this->style();
+
+    if (!element->rendererIsNeeded(style))
         return;
 
-    RenderObject* newRenderer = element->createRenderer(m_style.get());
+    RenderObject* newRenderer = element->createRenderer(&style);
     if (!newRenderer)
         return;
 
     RenderObject* parentRenderer = this->parentRenderer();
 
-    if (!parentRenderer->isChildAllowed(newRenderer, m_style.get())) {
+    if (!parentRenderer->isChildAllowed(newRenderer, &style)) {
         newRenderer->destroy();
         return;
     }
@@ -192,7 +225,7 @@ void RenderTreeBuilder::createRendererForElementIfNeeded()
 
     RenderObject* nextRenderer = this->nextRenderer();
     element->setRenderer(newRenderer);
-    newRenderer->setAnimatableStyle(m_style.release()); // setAnimatableStyle() can depend on renderer() already being set.
+    newRenderer->setAnimatableStyle(&style); // setAnimatableStyle() can depend on renderer() already being set.
 
     if (FullscreenElementStack::isActiveFullScreenElement(element)) {
         newRenderer = RenderFullScreen::wrapRenderer(newRenderer, parentRenderer, &element->document());

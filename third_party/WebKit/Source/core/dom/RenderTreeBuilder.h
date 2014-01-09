@@ -66,14 +66,16 @@ private:
     RenderObject* parentRenderer() const;
     RenderObject* nextRenderer() const;
     bool shouldCreateRenderer() const;
+    RenderStyle& style() const;
 
+    bool shouldMoveToFlowThread() const;
     void moveToFlowThreadIfNeeded();
     bool elementInsideRegionNeedsRenderer();
 
     Node* m_node;
     ContainerNode* m_renderingParent;
     NodeRenderingTraversal::ParentDetails m_parentDetails;
-    RefPtr<RenderStyle> m_style;
+    mutable RefPtr<RenderStyle> m_style;
     RenderNamedFlowThread* m_parentFlowRenderer;
 };
 

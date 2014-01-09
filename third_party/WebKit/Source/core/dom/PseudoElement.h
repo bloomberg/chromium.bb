@@ -44,10 +44,6 @@ public:
     virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE;
 
-    // As per http://dev.w3.org/csswg/css3-regions/#flow-into, pseudo-elements such as ::first-line, ::first-letter, ::before or ::after
-    // cannot be directly collected into a named flow.
-    virtual bool shouldMoveToFlowThread(RenderStyle*) const OVERRIDE { return false; }
-
     virtual bool canStartSelection() const OVERRIDE { return false; }
     virtual bool canContainRangeEndPoint() const OVERRIDE { return false; }
 

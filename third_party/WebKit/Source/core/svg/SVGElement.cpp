@@ -916,12 +916,6 @@ static bool hasLoadListener(Element* element)
     return false;
 }
 
-bool SVGElement::shouldMoveToFlowThread(RenderStyle* styleToUse) const
-{
-    // Allow only svg root elements to be directly collected by a render flow thread.
-    return parentNode() && !parentNode()->isSVGElement() && hasTagName(SVGNames::svgTag) && Element::shouldMoveToFlowThread(styleToUse);
-}
-
 void SVGElement::sendSVGLoadEventIfPossible(bool sendParentLoadEvents)
 {
     RefPtr<SVGElement> currentTarget = this;

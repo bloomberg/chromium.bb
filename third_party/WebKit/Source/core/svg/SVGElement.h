@@ -143,8 +143,6 @@ public:
     virtual bool addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture) OVERRIDE;
     virtual bool removeEventListener(const AtomicString& eventType, EventListener*, bool useCapture) OVERRIDE;
 
-    virtual bool shouldMoveToFlowThread(RenderStyle*) const OVERRIDE;
-
     void invalidateRelativeLengthClients(SubtreeLayoutScope* = 0);
 
     bool isContextElement() const { return m_isContextElement; }
