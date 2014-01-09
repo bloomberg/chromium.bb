@@ -1,8 +1,8 @@
 {
     "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.", 
     "archives": {
-        "startup_pages_004.wpr": [
-            "http://news.bbc.co.uk", 
+        "startup_pages_000.wpr": [
+            "http://bbc.co.uk", 
             "http://kapook.com"
         ]
     }

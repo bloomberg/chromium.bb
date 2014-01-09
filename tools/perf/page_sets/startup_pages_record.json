@@ -9,7 +9,7 @@
   "archive_data_file": "data/startup_pages.json",
   "pages": [
     {
-      "url": "http://news.bbc.co.uk",
+      "url": "http://bbc.co.uk",
       "why": "typical page"
     },
     {

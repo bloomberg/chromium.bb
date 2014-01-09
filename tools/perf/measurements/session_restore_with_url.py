@@ -12,4 +12,4 @@ class SessionRestoreWithUrl(session_restore.SessionRestore):
 
   def CanRunForPage(self, page):
     # Run for every page in the page set that has a startup url.
-    return page.hasattr('startup_url')
+    return page.navigate_steps[0]['action'] == 'set_startup_url'

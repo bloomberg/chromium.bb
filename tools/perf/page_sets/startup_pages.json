@@ -15,10 +15,10 @@
       ]
     },
     {
-      "url": "http://news.bbc.co.uk",
+      "url": "http://bbc.co.uk",
       "why": "typical page",
       "navigate_steps" : [
-        {"action": "set_startup_url", "startup_url": "http://news.bbc.co.uk"},
+        {"action": "set_startup_url", "startup_url": "http://bbc.co.uk"},
         {"action": "wait", "seconds": 10 }
       ]
     },
