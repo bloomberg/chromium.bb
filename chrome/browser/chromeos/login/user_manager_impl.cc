@@ -609,10 +609,10 @@ Profile* UserManagerImpl::GetProfileByUser(const User* user) const {
   if (IsMultipleProfilesAllowed() && user->is_profile_created())
     profile = ProfileHelper::GetProfileByUserIdHash(user->username_hash());
   else
-    profile = g_browser_process->profile_manager()->GetDefaultProfile();
+    profile = ProfileManager::GetActiveUserProfile();
 
-  // GetDefaultProfile() or GetProfileByUserIdHash() returns a new instance of
-  // ProfileImpl(), but actually its OffTheRecordProfile() should be used.
+  // GetActiveUserProfile() or GetProfileByUserIdHash() returns a new instance
+  // of ProfileImpl(), but actually its OffTheRecordProfile() should be used.
   if (profile && IsLoggedInAsGuest())
     profile = profile->GetOffTheRecordProfile();
   return profile;

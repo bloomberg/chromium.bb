@@ -418,7 +418,9 @@ Profile* ProfileManager::GetPrimaryUserProfile() {
 Profile* ProfileManager::GetActiveUserProfile() {
 #if defined(OS_CHROMEOS)
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  if (!profile_manager->IsLoggedIn() || !chromeos::UserManager::IsInitialized())
+  if (!chromeos::UserManager::IsMultipleProfilesAllowed() ||
+      !profile_manager->IsLoggedIn() ||
+      !chromeos::UserManager::IsInitialized())
     return GetDefaultProfile();
   chromeos::UserManager* manager = chromeos::UserManager::Get();
   // Note: The user manager will take care of guest profiles.
