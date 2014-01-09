@@ -39,19 +39,19 @@ const char* kSampleDescriptionBody[] = {
 };
 
 void InitCandidateWindow(size_t page_size,
-                         CandidateWindow* candidate_window) {
+                         ui::CandidateWindow* candidate_window) {
   candidate_window->set_cursor_position(0);
   candidate_window->set_page_size(page_size);
   candidate_window->mutable_candidates()->clear();
-  candidate_window->set_orientation(CandidateWindow::VERTICAL);
+  candidate_window->set_orientation(ui::CandidateWindow::VERTICAL);
 }
 
 void InitCandidateWindowWithCandidatesFilled(
     size_t page_size,
-    CandidateWindow* candidate_window) {
+    ui::CandidateWindow* candidate_window) {
   InitCandidateWindow(page_size, candidate_window);
   for (size_t i = 0; i < page_size; ++i) {
-    CandidateWindow::Entry entry;
+    ui::CandidateWindow::Entry entry;
     entry.value = base::StringPrintf("value %lld",
                                      static_cast<unsigned long long>(i));
     entry.label = base::StringPrintf("%lld",
@@ -94,7 +94,8 @@ class CandidateWindowViewTest : public views::ViewsTestBase {
     candidate_window_view_->SelectCandidateAt(index_in_page);
   }
 
-  void MaybeInitializeCandidateViews(const CandidateWindow& candidate_window) {
+  void MaybeInitializeCandidateViews(
+      const ui::CandidateWindow& candidate_window) {
     candidate_window_view_->MaybeInitializeCandidateViews(candidate_window);
   }
 
@@ -116,7 +117,7 @@ class CandidateWindowViewTest : public views::ViewsTestBase {
 
 TEST_F(CandidateWindowViewTest, UpdateCandidatesTest_CursorVisibility) {
   // Visible (by default) cursor.
-  CandidateWindow candidate_window;
+  ui::CandidateWindow candidate_window;
   const int candidate_window_size = 9;
   InitCandidateWindowWithCandidatesFilled(candidate_window_size,
                                           &candidate_window);
@@ -141,7 +142,7 @@ TEST_F(CandidateWindowViewTest, UpdateCandidatesTest_CursorVisibility) {
 
 TEST_F(CandidateWindowViewTest, SelectCandidateAtTest) {
   // Set 9 candidates.
-  CandidateWindow candidate_window_large;
+  ui::CandidateWindow candidate_window_large;
   const int candidate_window_large_size = 9;
   InitCandidateWindowWithCandidatesFilled(candidate_window_large_size,
                                           &candidate_window_large);
@@ -152,7 +153,7 @@ TEST_F(CandidateWindowViewTest, SelectCandidateAtTest) {
   SelectCandidateAt(candidate_window_large_size - 1);
 
   // Reduce the number of candidates to 3.
-  CandidateWindow candidate_window_small;
+  ui::CandidateWindow candidate_window_small;
   const int candidate_window_small_size = 3;
   InitCandidateWindowWithCandidatesFilled(candidate_window_small_size,
                                           &candidate_window_small);
@@ -172,7 +173,7 @@ TEST_F(CandidateWindowViewTest, ShortcutSettingTest) {
     SCOPED_TRACE("candidate_views allocation test");
     const size_t kMaxPageSize = 16;
     for (size_t i = 1; i < kMaxPageSize; ++i) {
-      CandidateWindow candidate_window;
+      ui::CandidateWindow candidate_window;
       InitCandidateWindow(i, &candidate_window);
       candidate_window_view()->UpdateCandidates(candidate_window);
       EXPECT_EQ(i, GetCandidatesSize());
@@ -181,12 +182,12 @@ TEST_F(CandidateWindowViewTest, ShortcutSettingTest) {
   {
     SCOPED_TRACE("Empty string for each labels expects empty labels(vertical)");
     const size_t kPageSize = 3;
-    CandidateWindow candidate_window;
+    ui::CandidateWindow candidate_window;
     InitCandidateWindow(kPageSize, &candidate_window);
 
-    candidate_window.set_orientation(CandidateWindow::VERTICAL);
+    candidate_window.set_orientation(ui::CandidateWindow::VERTICAL);
     for (size_t i = 0; i < kPageSize; ++i) {
-      CandidateWindow::Entry entry;
+      ui::CandidateWindow::Entry entry;
       entry.value = kSampleCandidate[i];
       entry.annotation = kSampleAnnotation[i];
       entry.description_title = kSampleDescriptionTitle[i];
@@ -207,12 +208,12 @@ TEST_F(CandidateWindowViewTest, ShortcutSettingTest) {
     SCOPED_TRACE(
         "Empty string for each labels expect empty labels(horizontal)");
     const size_t kPageSize = 3;
-    CandidateWindow candidate_window;
+    ui::CandidateWindow candidate_window;
     InitCandidateWindow(kPageSize, &candidate_window);
 
-    candidate_window.set_orientation(CandidateWindow::HORIZONTAL);
+    candidate_window.set_orientation(ui::CandidateWindow::HORIZONTAL);
     for (size_t i = 0; i < kPageSize; ++i) {
-      CandidateWindow::Entry entry;
+      ui::CandidateWindow::Entry entry;
       entry.value = kSampleCandidate[i];
       entry.annotation = kSampleAnnotation[i];
       entry.description_title = kSampleDescriptionTitle[i];
@@ -233,12 +234,12 @@ TEST_F(CandidateWindowViewTest, ShortcutSettingTest) {
   {
     SCOPED_TRACE("Vertical customized label case");
     const size_t kPageSize = 3;
-    CandidateWindow candidate_window;
+    ui::CandidateWindow candidate_window;
     InitCandidateWindow(kPageSize, &candidate_window);
 
-    candidate_window.set_orientation(CandidateWindow::VERTICAL);
+    candidate_window.set_orientation(ui::CandidateWindow::VERTICAL);
     for (size_t i = 0; i < kPageSize; ++i) {
-      CandidateWindow::Entry entry;
+      ui::CandidateWindow::Entry entry;
       entry.value = kSampleCandidate[i];
       entry.annotation = kSampleAnnotation[i];
       entry.description_title = kSampleDescriptionTitle[i];
@@ -261,12 +262,12 @@ TEST_F(CandidateWindowViewTest, ShortcutSettingTest) {
   {
     SCOPED_TRACE("Horizontal customized label case");
     const size_t kPageSize = 3;
-    CandidateWindow candidate_window;
+    ui::CandidateWindow candidate_window;
     InitCandidateWindow(kPageSize, &candidate_window);
 
-    candidate_window.set_orientation(CandidateWindow::HORIZONTAL);
+    candidate_window.set_orientation(ui::CandidateWindow::HORIZONTAL);
     for (size_t i = 0; i < kPageSize; ++i) {
-      CandidateWindow::Entry entry;
+      ui::CandidateWindow::Entry entry;
       entry.value = kSampleCandidate[i];
       entry.annotation = kSampleAnnotation[i];
       entry.description_title = kSampleDescriptionTitle[i];
@@ -290,8 +291,8 @@ TEST_F(CandidateWindowViewTest, ShortcutSettingTest) {
 
 TEST_F(CandidateWindowViewTest, DoNotChangeRowHeightWithLabelSwitchTest) {
   const size_t kPageSize = 10;
-  CandidateWindow candidate_window;
-  CandidateWindow no_shortcut_candidate_window;
+  ui::CandidateWindow candidate_window;
+  ui::CandidateWindow no_shortcut_candidate_window;
 
   const char kSampleCandidate1[] = "Sample String 1";
   const char kSampleCandidate2[] = "\xE3\x81\x82";  // multi byte string.
@@ -311,10 +312,10 @@ TEST_F(CandidateWindowViewTest, DoNotChangeRowHeightWithLabelSwitchTest) {
   candidate_window.set_cursor_position(0);
   candidate_window.set_page_size(3);
   candidate_window.mutable_candidates()->clear();
-  candidate_window.set_orientation(CandidateWindow::VERTICAL);
+  candidate_window.set_orientation(ui::CandidateWindow::VERTICAL);
   no_shortcut_candidate_window.CopyFrom(candidate_window);
 
-  CandidateWindow::Entry entry;
+  ui::CandidateWindow::Entry entry;
   entry.value = kSampleCandidate1;
   entry.annotation = kSampleAnnotation1;
   candidate_window.mutable_candidates()->push_back(entry);

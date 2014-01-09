@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_CANDIDATE_WINDOW_VIEW_H_
 #define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_CANDIDATE_WINDOW_VIEW_H_
 
-#include "chromeos/ime/candidate_window.h"
+#include "ui/base/ime/candidate_window.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
 
@@ -64,7 +64,7 @@ class CandidateWindowView : public views::BubbleDelegateView,
 
   // Updates candidates of the candidate window from |candidate_window|.
   // Candidates are arranged per |orientation|.
-  void UpdateCandidates(const CandidateWindow& candidate_window);
+  void UpdateCandidates(const ui::CandidateWindow& candidate_window);
 
   void SetCursorBounds(const gfx::Rect& cursor_bounds,
                        const gfx::Rect& composition_head);
@@ -80,10 +80,11 @@ class CandidateWindowView : public views::BubbleDelegateView,
   void UpdateVisibility();
 
   // Initializes the candidate views if needed.
-  void MaybeInitializeCandidateViews(const CandidateWindow& candidate_window);
+  void MaybeInitializeCandidateViews(
+      const ui::CandidateWindow& candidate_window);
 
   // The candidate window data model.
-  CandidateWindow candidate_window_;
+  ui::CandidateWindow candidate_window_;
 
   // The index in the current page of the candidate currently being selected.
   int selected_candidate_index_in_page_;

@@ -7,6 +7,8 @@
     '<(DEPTH)/ui/events/events.gyp:events',
   ],
   'sources': [
+    'candidate_window.cc',
+    'candidate_window.h',
     'chromeos/character_composer.cc',
     'chromeos/character_composer.h',
     'chromeos/ibus_bridge.cc',
