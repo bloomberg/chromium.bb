@@ -222,6 +222,12 @@ bool DownloadResourceHandler::OnWillStart(int request_id,
   return true;
 }
 
+bool DownloadResourceHandler::OnBeforeNetworkStart(int request_id,
+                                                   const GURL& url,
+                                                   bool* defer) {
+  return true;
+}
+
 // Create a new buffer, which will be handed to the download thread for file
 // writing and deletion.
 bool DownloadResourceHandler::OnWillRead(int request_id,

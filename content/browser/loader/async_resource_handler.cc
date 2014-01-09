@@ -220,6 +220,12 @@ bool AsyncResourceHandler::OnWillStart(int request_id,
   return true;
 }
 
+bool AsyncResourceHandler::OnBeforeNetworkStart(int request_id,
+                                                const GURL& url,
+                                                bool* defer) {
+  return true;
+}
+
 bool AsyncResourceHandler::OnWillRead(int request_id,
                                       scoped_refptr<net::IOBuffer>* buf,
                                       int* buf_size,

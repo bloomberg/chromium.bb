@@ -289,6 +289,20 @@ void ResourceLoader::OnSSLCertificateError(net::URLRequest* request,
       fatal);
 }
 
+void ResourceLoader::OnBeforeNetworkStart(net::URLRequest* unused,
+                                          bool* defer) {
+  DCHECK_EQ(request_.get(), unused);
+
+  // Give the handler a chance to delay the URLRequest from using the network.
+  if (!handler_->OnBeforeNetworkStart(
+           GetRequestInfo()->GetRequestID(), request_->url(), defer)) {
+    Cancel();
+    return;
+  } else if (*defer) {
+    deferred_stage_ = DEFERRED_NETWORK_START;
+  }
+}
+
 void ResourceLoader::OnResponseStarted(net::URLRequest* unused) {
   DCHECK_EQ(request_.get(), unused);
 
@@ -390,6 +404,9 @@ void ResourceLoader::Resume() {
       break;
     case DEFERRED_START:
       StartRequestInternal();
+      break;
+    case DEFERRED_NETWORK_START:
+      request_->ResumeNetworkStart();
       break;
     case DEFERRED_REDIRECT:
       request_->FollowDeferredRedirect();

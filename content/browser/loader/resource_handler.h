@@ -73,6 +73,15 @@ class CONTENT_EXPORT ResourceHandler
   // until someone calls ResourceDispatcherHost::StartDeferredRequest().
   virtual bool OnWillStart(int request_id, const GURL& url, bool* defer) = 0;
 
+  // Called before the net::URLRequest for |request_id| (whose url is |url|}
+  // uses the network for the first time to load the resource. If the handler
+  // returns false, then the request is cancelled. Otherwise if the return value
+  // is true, the ResourceHandler can delay the request from starting by setting
+  // |*defer = true|. Call controller()->Resume() to continue if deferred.
+  virtual bool OnBeforeNetworkStart(int request_id,
+                                    const GURL& url,
+                                    bool* defer) = 0;
+
   // Data will be read for the response.  Upon success, this method places the
   // size and address of the buffer where the data is to be written in its
   // out-params.  This call will be followed by either OnReadCompleted or

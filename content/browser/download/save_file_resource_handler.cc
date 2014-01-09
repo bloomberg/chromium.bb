@@ -74,6 +74,12 @@ bool SaveFileResourceHandler::OnWillStart(int request_id,
   return true;
 }
 
+bool SaveFileResourceHandler::OnBeforeNetworkStart(int request_id,
+                                                   const GURL& url,
+                                                   bool* defer) {
+  return true;
+}
+
 bool SaveFileResourceHandler::OnWillRead(int request_id,
                                          scoped_refptr<net::IOBuffer>* buf,
                                          int* buf_size,

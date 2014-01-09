@@ -45,6 +45,11 @@ class SaveFileResourceHandler : public ResourceHandler {
                            const GURL& url,
                            bool* defer) OVERRIDE;
 
+  // Pass-through implementation.
+  virtual bool OnBeforeNetworkStart(int request_id,
+                                    const GURL& url,
+                                    bool* defer) OVERRIDE;
+
   // Creates a new buffer, which will be handed to the download thread for file
   // writing and deletion.
   virtual bool OnWillRead(int request_id,

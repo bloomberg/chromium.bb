@@ -54,6 +54,11 @@ class CertificateResourceHandler : public ResourceHandler {
                            const GURL& url,
                            bool* defer) OVERRIDE;
 
+  // Pass-through implementation.
+  virtual bool OnBeforeNetworkStart(int request_id,
+                                    const GURL& url,
+                                    bool* defer) OVERRIDE;
+
   // Create a new buffer to store received data.
   virtual bool OnWillRead(int request_id,
                           scoped_refptr<net::IOBuffer>* buf,

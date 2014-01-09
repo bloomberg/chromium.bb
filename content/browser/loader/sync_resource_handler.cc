@@ -101,6 +101,12 @@ bool SyncResourceHandler::OnWillStart(int request_id,
   return true;
 }
 
+bool SyncResourceHandler::OnBeforeNetworkStart(int request_id,
+                                               const GURL& url,
+                                               bool* defer) {
+  return true;
+}
+
 bool SyncResourceHandler::OnWillRead(int request_id,
                                      scoped_refptr<net::IOBuffer>* buf,
                                      int* buf_size,

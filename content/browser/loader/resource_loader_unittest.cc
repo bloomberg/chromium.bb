@@ -94,6 +94,12 @@ class ResourceHandlerStub : public ResourceHandler {
     return true;
   }
 
+  virtual bool OnBeforeNetworkStart(int request_id,
+                                    const GURL& url,
+                                    bool* defer) OVERRIDE {
+    return true;
+  }
+
   virtual bool OnWillRead(int request_id,
                           scoped_refptr<net::IOBuffer>* buf,
                           int* buf_size,

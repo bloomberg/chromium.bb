@@ -57,6 +57,12 @@ bool StreamResourceHandler::OnWillStart(int request_id,
   return true;
 }
 
+bool StreamResourceHandler::OnBeforeNetworkStart(int request_id,
+                                                 const GURL& url,
+                                                 bool* defer) {
+  return true;
+}
+
 bool StreamResourceHandler::OnWillRead(int request_id,
                                        scoped_refptr<net::IOBuffer>* buf,
                                        int* buf_size,

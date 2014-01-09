@@ -56,6 +56,12 @@ bool CertificateResourceHandler::OnWillStart(int request_id,
   return true;
 }
 
+bool CertificateResourceHandler::OnBeforeNetworkStart(int request_id,
+                                                      const GURL& url,
+                                                      bool* defer) {
+  return true;
+}
+
 bool CertificateResourceHandler::OnWillRead(int request_id,
                                            scoped_refptr<net::IOBuffer>* buf,
                                            int* buf_size,

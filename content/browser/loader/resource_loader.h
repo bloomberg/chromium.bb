@@ -66,6 +66,8 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
   virtual void OnSSLCertificateError(net::URLRequest* request,
                                      const net::SSLInfo& info,
                                      bool fatal) OVERRIDE;
+  virtual void OnBeforeNetworkStart(net::URLRequest* request,
+                                    bool* defer) OVERRIDE;
   virtual void OnResponseStarted(net::URLRequest* request) OVERRIDE;
   virtual void OnReadCompleted(net::URLRequest* request,
                                int bytes_read) OVERRIDE;
@@ -117,6 +119,7 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
   enum DeferredStage {
     DEFERRED_NONE,
     DEFERRED_START,
+    DEFERRED_NETWORK_START,
     DEFERRED_REDIRECT,
     DEFERRED_READ,
     DEFERRED_FINISH
