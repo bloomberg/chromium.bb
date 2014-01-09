@@ -514,6 +514,8 @@ Track::Track(unsigned int* seed)
       number_(0),
       type_(0),
       uid_(MakeUID(seed)),
+      codec_delay_(0),
+      seek_pre_roll_(0),
       codec_private_length_(0),
       content_encoding_entries_(NULL),
       content_encoding_entries_size_(0) {
@@ -635,6 +637,11 @@ bool Track::Write(IMkvWriter* writer) const {
     size += EbmlElementSize(kMkvName, name_);
   if (max_block_additional_id_)
     size += EbmlElementSize(kMkvMaxBlockAdditionID, max_block_additional_id_);
+  if (codec_delay_)
+    size += EbmlElementSize(kMkvCodecDelay, codec_delay_);
+  if (seek_pre_roll_)
+    size += EbmlElementSize(kMkvSeekPreRoll, seek_pre_roll_);
+
 
   const int64 payload_position = writer->Position();
   if (payload_position < 0)
@@ -646,11 +653,21 @@ bool Track::Write(IMkvWriter* writer) const {
     return false;
   if (!WriteEbmlElement(writer, kMkvTrackType, type_))
     return false;
-  if (max_block_additional_id_)
+  if (max_block_additional_id_) {
     if (!WriteEbmlElement(writer,
                           kMkvMaxBlockAdditionID,
-                          max_block_additional_id_))
+                          max_block_additional_id_)) {
       return false;
+    }
+  }
+  if (codec_delay_) {
+    if (!WriteEbmlElement(writer, kMkvCodecDelay, codec_delay_))
+      return false;
+  }
+  if (seek_pre_roll_) {
+    if (!WriteEbmlElement(writer, kMkvSeekPreRoll, seek_pre_roll_))
+      return false;
+  }
   if (codec_id_) {
     if (!WriteEbmlElement(writer, kMkvCodecID, codec_id_))
       return false;

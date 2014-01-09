@@ -74,6 +74,8 @@ enum MkvId {
   kMkvCodecPrivate            = 0x63A2,
   kMkvCodecName               = 0x258688,
   kMkvMaxBlockAdditionID      = 0x55EE,
+  kMkvCodecDelay              = 0x56AA,
+  kMkvSeekPreRoll             = 0x56BB,
   //video
   kMkvVideo                   = 0xE0,
   kMkvFlagInterlaced          = 0x9A,

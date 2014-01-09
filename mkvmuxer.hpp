@@ -340,6 +340,12 @@ class Track {
   uint64 type() const { return type_; }
   void set_uid(uint64 uid) { uid_ = uid; }
   uint64 uid() const { return uid_; }
+  void set_codec_delay(uint64 codec_delay) { codec_delay_ = codec_delay; }
+  uint64 codec_delay() const { return codec_delay_; }
+  void set_seek_pre_roll(uint64 seek_pre_roll) {
+    seek_pre_roll_ = seek_pre_roll;
+  }
+  uint64 seek_pre_roll() const { return seek_pre_roll_; }
 
   uint64 codec_private_length() const { return codec_private_length_; }
   uint32 content_encoding_entries_size() const {
@@ -356,6 +362,8 @@ class Track {
   uint64 number_;
   uint64 type_;
   uint64 uid_;
+  uint64 codec_delay_;
+  uint64 seek_pre_roll_;
 
   // Size of the CodecPrivate data in bytes.
   uint64 codec_private_length_;

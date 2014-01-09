@@ -398,6 +398,11 @@ int main(int argc, char* argv[]) {
       const long long bit_depth = pAudioTrack->GetBitDepth();
       if (bit_depth > 0)
         audio->set_bit_depth(bit_depth);
+
+      if (pAudioTrack->GetCodecDelay())
+        audio->set_codec_delay(pAudioTrack->GetCodecDelay());
+      if (pAudioTrack->GetSeekPreRoll())
+        audio->set_seek_pre_roll(pAudioTrack->GetSeekPreRoll());
     }
   }
 
