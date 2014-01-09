@@ -1282,7 +1282,7 @@ TEST_P(WorkspaceControllerTestDragging, DragWindowOverlapShelf) {
   ShelfLayoutManager* shelf = shelf_layout_manager();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
 
-  // Drag near the shelf
+  // Drag near the shelf.
   aura::test::EventGenerator generator(
       Shell::GetPrimaryRootWindow(), gfx::Point());
   generator.MoveMouseTo(10, 10);
@@ -1298,6 +1298,32 @@ TEST_P(WorkspaceControllerTestDragging, DragWindowOverlapShelf) {
   EXPECT_TRUE(GetWindowOverlapsShelf());
   generator.ReleaseLeftButton();
   EXPECT_TRUE(GetWindowOverlapsShelf());
+}
+
+// Verifies that when dragging a window autohidden shelf stays hidden during
+// and after the drag.
+TEST_P(WorkspaceControllerTestDragging, DragWindowKeepsShelfAutohidden) {
+  aura::test::TestWindowDelegate delegate;
+  delegate.set_window_component(HTCAPTION);
+  scoped_ptr<Window> w1(aura::test::CreateTestWindowWithDelegate(
+      &delegate, ui::wm::WINDOW_TYPE_NORMAL, gfx::Rect(5, 5, 100, 50), NULL));
+  ParentWindowInPrimaryRootWindow(w1.get());
+
+  ShelfLayoutManager* shelf = shelf_layout_manager();
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+
+  // Drag very little.
+  aura::test::EventGenerator generator(
+      Shell::GetPrimaryRootWindow(), gfx::Point());
+  generator.MoveMouseTo(10, 10);
+  generator.PressLeftButton();
+  generator.MoveMouseTo(12, 12);
+
+  // Shelf should be hidden during and after the drag.
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+  generator.ReleaseLeftButton();
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
 }
 
 INSTANTIATE_TEST_CASE_P(DockedOrNot, WorkspaceControllerTestDragging,

@@ -10,6 +10,7 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/window_cycle_list.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller.h"
 #include "ui/aura/client/activation_client.h"
@@ -29,6 +30,19 @@ void AddTrackedWindows(aura::Window* root,
   aura::Window* container = Shell::GetContainer(root, container_id);
   const MruWindowTracker::WindowList& children(container->children());
   windows->insert(windows->end(), children.begin(), children.end());
+}
+
+// Adds windows being dragged in the docked container to |windows| list.
+void AddDraggedWindows(aura::Window* root,
+                       MruWindowTracker::WindowList* windows) {
+  aura::Window* container = Shell::GetContainer(
+      root, internal::kShellWindowId_DockedContainer);
+  const MruWindowTracker::WindowList& children = container->children();
+  for (MruWindowTracker::WindowList::const_iterator iter = children.begin();
+       iter != children.end(); ++iter) {
+    if (wm::GetWindowState(*iter)->is_dragged())
+      windows->insert(windows->end(), *iter);
+  }
 }
 
 // Returns true if |window| is a container whose windows can be cycled to.
@@ -72,6 +86,10 @@ MruWindowTracker::WindowList BuildWindowListInternal(
   // in the active root window becomes the front of the list.
   for (size_t i = 0; i < kSwitchableWindowContainerIdsLength; ++i)
     AddTrackedWindows(active_root, kSwitchableWindowContainerIds[i], &windows);
+
+  // Dragged windows are temporarily parented in docked container. Include them
+  // in the in tracked list.
+  AddDraggedWindows(active_root, &windows);
 
   // Removes unfocusable windows.
   MruWindowTracker::WindowList::iterator last =
