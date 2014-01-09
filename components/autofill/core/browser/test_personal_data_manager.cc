@@ -9,8 +9,7 @@
 namespace autofill {
 
 TestPersonalDataManager::TestPersonalDataManager()
-    : PersonalDataManager("en-US"),
-      default_country_code_("US") {}
+    : PersonalDataManager("en-US") {}
 
 TestPersonalDataManager::~TestPersonalDataManager() {}
 
@@ -27,6 +26,11 @@ void TestPersonalDataManager::AddTestingCreditCard(CreditCard* credit_card) {
 }
 
 const std::vector<AutofillProfile*>& TestPersonalDataManager::GetProfiles()
+    const {
+  return profiles_;
+}
+
+const std::vector<AutofillProfile*>& TestPersonalDataManager::web_profiles()
     const {
   return profiles_;
 }
@@ -48,9 +52,9 @@ std::string TestPersonalDataManager::SaveImportedCreditCard(
   return imported_credit_card.guid();
 }
 
-const std::string& TestPersonalDataManager::GetDefaultCountryCodeForNewAddress()
+std::string TestPersonalDataManager::CountryCodeForCurrentTimezone()
     const {
-  return default_country_code_;
+  return timezone_country_code_;
 }
 
 }  // namespace autofill

@@ -184,6 +184,12 @@ class PersonalDataManager : public WebDataServiceConsumer,
       const std::string& app_locale,
       std::vector<AutofillProfile>* merged_profiles);
 
+  // Returns true if |country_code| is a country that the user is likely to
+  // be associated with the user. More concretely, it checks if there are any
+  // addresses with this country or if the user's system timezone is in the
+  // given country.
+  virtual bool IsCountryOfInterest(const std::string& country_code) const;
+
   // Returns our best guess for the country a user is likely to use when
   // inputting a new address. The value is calculated once and cached, so it
   // will only update when Chrome is restarted.
@@ -254,6 +260,9 @@ class PersonalDataManager : public WebDataServiceConsumer,
 
   // Returns the value of the AutofillEnabled pref.
   virtual bool IsAutofillEnabled() const;
+
+  // Overrideable for testing.
+  virtual std::string CountryCodeForCurrentTimezone() const;
 
   // For tests.
   const AutofillMetrics* metric_logger() const { return metric_logger_.get(); }

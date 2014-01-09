@@ -2721,10 +2721,18 @@ TEST_F(AutofillDialogControllerTest, InputEditability) {
 
 // When the default country is something besides US, wallet is not selected
 // and the account chooser shouldn't be visible.
-// TODO(estade): this is disabled until http://crbug.com/323641 is fixed.
-TEST_F(AutofillDialogControllerTest, DISABLED_HideWalletInOtherCountries) {
+TEST_F(AutofillDialogControllerTest, HideWalletInOtherCountries) {
+  // Addresses from different countries.
+  AutofillProfile us_profile(base::GenerateGUID(), kSettingsOrigin),
+      es_profile(base::GenerateGUID(), kSettingsOrigin),
+      es_profile2(base::GenerateGUID(), kSettingsOrigin);
+  us_profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
+  es_profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("ES"));
+  es_profile2.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("ES"));
+
+  // If US is indicated (via timezone), show Wallet.
   ResetControllerWithFormData(DefaultFormData());
-  controller()->GetTestingManager()->set_default_country_code("US");
+  controller()->GetTestingManager()->set_timezone_country_code("US");
   controller()->Show();
   EXPECT_TRUE(
       controller()->AccountChooserModelForTesting()->WalletIsSelected());
@@ -2734,11 +2742,47 @@ TEST_F(AutofillDialogControllerTest, DISABLED_HideWalletInOtherCountries) {
   EXPECT_TRUE(
       controller()->AccountChooserModelForTesting()->WalletIsSelected());
 
+  // If US is not indicated, don't show Wallet.
   ResetControllerWithFormData(DefaultFormData());
-  controller()->GetTestingManager()->set_default_country_code("ES");
+  controller()->GetTestingManager()->set_timezone_country_code("ES");
   controller()->Show();
+  controller()->OnDidFetchWalletCookieValue(std::string());
+  controller()->OnDidGetWalletItems(CompleteAndValidWalletItems());
   EXPECT_FALSE(controller()->ShouldShowAccountChooser());
-  EXPECT_FALSE(
+
+  // If US is indicated (via a profile), show Wallet.
+  ResetControllerWithFormData(DefaultFormData());
+  controller()->GetTestingManager()->set_timezone_country_code("ES");
+  controller()->GetTestingManager()->AddTestingProfile(&us_profile);
+  controller()->Show();
+  controller()->OnDidFetchWalletCookieValue(std::string());
+  controller()->OnDidGetWalletItems(CompleteAndValidWalletItems());
+  EXPECT_TRUE(controller()->ShouldShowAccountChooser());
+  EXPECT_TRUE(
+      controller()->AccountChooserModelForTesting()->WalletIsSelected());
+
+  // Make sure the profile doesn't just override the timezone.
+  ResetControllerWithFormData(DefaultFormData());
+  controller()->GetTestingManager()->set_timezone_country_code("US");
+  controller()->GetTestingManager()->AddTestingProfile(&es_profile);
+  controller()->Show();
+  controller()->OnDidFetchWalletCookieValue(std::string());
+  controller()->OnDidGetWalletItems(CompleteAndValidWalletItems());
+  EXPECT_TRUE(controller()->ShouldShowAccountChooser());
+  EXPECT_TRUE(
+      controller()->AccountChooserModelForTesting()->WalletIsSelected());
+
+  // Only takes one US address to enable Wallet.
+  ResetControllerWithFormData(DefaultFormData());
+  controller()->GetTestingManager()->set_timezone_country_code("FR");
+  controller()->GetTestingManager()->AddTestingProfile(&es_profile);
+  controller()->GetTestingManager()->AddTestingProfile(&es_profile2);
+  controller()->GetTestingManager()->AddTestingProfile(&us_profile);
+  controller()->Show();
+  controller()->OnDidFetchWalletCookieValue(std::string());
+  controller()->OnDidGetWalletItems(CompleteAndValidWalletItems());
+  EXPECT_TRUE(controller()->ShouldShowAccountChooser());
+  EXPECT_TRUE(
       controller()->AccountChooserModelForTesting()->WalletIsSelected());
 }
 

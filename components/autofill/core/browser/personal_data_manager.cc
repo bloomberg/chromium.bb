@@ -682,6 +682,10 @@ bool PersonalDataManager::IsAutofillEnabled() const {
   return pref_service_->GetBoolean(prefs::kAutofillEnabled);
 }
 
+std::string PersonalDataManager::CountryCodeForCurrentTimezone() const {
+  return base::CountryCodeForCurrentTimezone();
+}
+
 // static
 bool PersonalDataManager::IsValidLearnableProfile(
     const AutofillProfile& profile,
@@ -745,6 +749,31 @@ std::string PersonalDataManager::MergeProfile(
   return guid;
 }
 
+bool PersonalDataManager::IsCountryOfInterest(const std::string& country_code)
+    const {
+  DCHECK_EQ(2U, country_code.size());
+
+  const std::vector<AutofillProfile*>& profiles = web_profiles();
+  std::list<std::string> country_codes;
+  for (size_t i = 0; i < profiles.size(); ++i) {
+    country_codes.push_back(StringToLowerASCII(UTF16ToASCII(
+        profiles[i]->GetRawInfo(ADDRESS_HOME_COUNTRY))));
+  }
+
+  std::string timezone_country = CountryCodeForCurrentTimezone();
+  if (!timezone_country.empty())
+    country_codes.push_back(StringToLowerASCII(timezone_country));
+
+  // Only take the locale into consideration if all else fails.
+  if (country_codes.empty()) {
+    country_codes.push_back(StringToLowerASCII(
+        AutofillCountry::CountryCodeForLocale(app_locale())));
+  }
+
+  return std::find(country_codes.begin(), country_codes.end(),
+                   StringToLowerASCII(country_code)) != country_codes.end();
+}
+
 const std::string& PersonalDataManager::GetDefaultCountryCodeForNewAddress()
     const {
   if (default_country_code_.empty())
@@ -752,7 +781,7 @@ const std::string& PersonalDataManager::GetDefaultCountryCodeForNewAddress()
 
   // Failing that, guess based on system timezone.
   if (default_country_code_.empty())
-    default_country_code_ = base::CountryCodeForCurrentTimezone();
+    default_country_code_ = CountryCodeForCurrentTimezone();
 
   // Failing that, guess based on locale.
   if (default_country_code_.empty())

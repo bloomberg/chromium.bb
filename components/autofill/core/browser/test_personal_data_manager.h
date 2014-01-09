@@ -27,6 +27,7 @@ class TestPersonalDataManager : public PersonalDataManager {
   void AddTestingCreditCard(CreditCard* credit_card);
 
   virtual const std::vector<AutofillProfile*>& GetProfiles() const OVERRIDE;
+  virtual const std::vector<AutofillProfile*>& web_profiles() const OVERRIDE;
   virtual const std::vector<CreditCard*>& GetCreditCards() const OVERRIDE;
 
   virtual std::string SaveImportedProfile(
@@ -34,11 +35,10 @@ class TestPersonalDataManager : public PersonalDataManager {
   virtual std::string SaveImportedCreditCard(
       const CreditCard& imported_credit_card) OVERRIDE;
 
-  virtual const std::string& GetDefaultCountryCodeForNewAddress() const
-      OVERRIDE;
+  virtual std::string CountryCodeForCurrentTimezone() const OVERRIDE;
 
-  void set_default_country_code(const std::string& default_country_code) {
-    default_country_code_ = default_country_code;
+  void set_timezone_country_code(const std::string& timezone_country_code) {
+    timezone_country_code_ = timezone_country_code;
   }
 
   const AutofillProfile& imported_profile() { return imported_profile_; }
@@ -49,7 +49,7 @@ class TestPersonalDataManager : public PersonalDataManager {
   std::vector<CreditCard*> credit_cards_;
   AutofillProfile imported_profile_;
   CreditCard imported_credit_card_;
-  std::string default_country_code_;
+  std::string timezone_country_code_;
 };
 
 }  // namespace autofill

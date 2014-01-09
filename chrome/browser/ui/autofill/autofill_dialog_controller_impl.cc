@@ -736,10 +736,8 @@ bool AutofillDialogControllerImpl::ShouldShowSpinner() const {
          SignedInState() == REQUIRES_PASSIVE_SIGN_IN;
 }
 
-// TODO(estade): Only show account chooser for Wallet in the US.
-// http://crbug.com/323641
 bool AutofillDialogControllerImpl::ShouldShowAccountChooser() const {
-  return !ShouldShowSpinner();
+  return !ShouldShowSpinner() && GetManager()->IsCountryOfInterest("US");
 }
 
 bool AutofillDialogControllerImpl::ShouldShowSignInWebView() const {
