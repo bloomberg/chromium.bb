@@ -208,6 +208,7 @@ void CandidateWindowView::UpdateVisibility() {
 
 void CandidateWindowView::HideLookupTable() {
   candidate_area_->SetVisible(false);
+  auxiliary_text_->SetVisible(false);
   UpdateVisibility();
 }
 
