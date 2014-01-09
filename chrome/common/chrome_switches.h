@@ -204,6 +204,7 @@ extern const char kEnablePanels[];
 extern const char kEnablePasswordAutofillPublicSuffixDomainMatching[];
 extern const char kEnableQueryExtraction[];
 extern const char kEnablePrintPreviewRegisterPromos[];
+extern const char kEnablePrivetStorage[];
 extern const char kEnableProfiling[];
 extern const char kEnableQuic[];
 extern const char kEnableQuicHttps[];

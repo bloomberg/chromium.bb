@@ -711,6 +711,9 @@ const char kEnablePanels[]                  = "enable-panels";
 const char kEnablePrintPreviewRegisterPromos[] =
     "enable-print-preview-register-promos";
 
+// Enable Privet storage.
+const char kEnablePrivetStorage[]     = "enable-privet-storage";
+
 // Enables tracking of tasks in profiler for viewing via about:profiler.
 // To predominantly disable tracking (profiling), use the command line switch:
 // --enable-profiling=0
