@@ -31,15 +31,15 @@ assertInterpolation({
 
 assertInterpolation({
   property: 'shape-outside',
-  from: 'circle(0%, 0%, 100%)',
-  to: 'circle(25%, 25%, 50%)',
+  from: 'circle(100% at 0% 0%)',
+  to: 'circle(50% at 25% 25%)',
 }, [
-  {at: -0.3, is: 'circle(-7.5%, -7.5%, 115%)'},
-  {at: 0, is: 'circle(0%, 0%, 100%)'},
-  {at: 0.3, is: 'circle(7.5%, 7.5%, 85%)'},
-  {at: 0.6, is: 'circle(15%, 15%, 70%)'},
-  {at: 1, is: 'circle(25%, 25%, 50%)'},
-  {at: 1.5, is: 'circle(37.5%, 37.5%, 25%)'}
+  {at: -0.3, is: 'circle(115% at -7.5% -7.5%)'},
+  {at: 0, is: 'circle(100% at 0% 0%)'},
+  {at: 0.3, is: 'circle(85% at 7.5% 7.5%)'},
+  {at: 0.6, is: 'circle(70% at 15% 15%)'},
+  {at: 1, is: 'circle(50% at 25% 25%)'},
+  {at: 1.5, is: 'circle(25% at 37.5% 37.5%)'}
 ]);
 
 assertInterpolation({

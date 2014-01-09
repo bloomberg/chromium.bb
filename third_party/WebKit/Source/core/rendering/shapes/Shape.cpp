@@ -30,6 +30,7 @@
 #include "config.h"
 #include "core/rendering/shapes/Shape.h"
 
+#include "core/css/BasicShapeFunctions.h"
 #include "core/fetch/ImageResource.h"
 #include "core/rendering/shapes/BoxShape.h"
 #include "core/rendering/shapes/PolygonShape.h"
@@ -154,8 +155,12 @@ PassOwnPtr<Shape> Shape::createShape(const BasicShape* basicShape, const LayoutS
     }
 
     case BasicShape::BasicShapeCircleType: {
-        // FIXME implement layout.
-        shape = createRectangleShape(FloatRect(0, 0, boxWidth, boxHeight), FloatSize(0, 0));
+        const BasicShapeCircle* circle = static_cast<const BasicShapeCircle*>(basicShape);
+        FloatPoint center = floatPointForCenterCoordinate(circle->centerX(), circle->centerY(), FloatSize(boxWidth, boxHeight));
+        float radius = circle->floatValueForRadiusInBox(FloatSize(boxWidth, boxHeight));
+        FloatPoint logicalCenter = physicalPointToLogical(center, logicalBoxSize.height(), writingMode);
+
+        shape = createCircleShape(logicalCenter, radius);
         break;
     }
 

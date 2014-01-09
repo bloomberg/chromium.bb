@@ -28,8 +28,9 @@
  */
 
 #include "config.h"
-
 #include "core/rendering/style/BasicShapes.h"
+
+#include "core/css/BasicShapeFunctions.h"
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/Path.h"
@@ -46,6 +47,16 @@ bool BasicShape::canBlend(const BasicShape* other) const
     if (type() == BasicShape::BasicShapePolygonType
         && static_cast<const BasicShapePolygon*>(this)->values().size() != static_cast<const BasicShapePolygon*>(other)->values().size())
         return false;
+
+    // Circles with keywords for radii or center coordinates cannot be animated.
+    if (type() == BasicShape::BasicShapeCircleType) {
+        const BasicShapeCircle* thisCircle = static_cast<const BasicShapeCircle*>(this);
+        const BasicShapeCircle* otherCircle = static_cast<const BasicShapeCircle*>(other);
+        if (!thisCircle->radius().canBlend(otherCircle->radius())
+            || !thisCircle->centerX().canBlend(otherCircle->centerX())
+            || !thisCircle->centerY().canBlend(otherCircle->centerY()))
+            return false;
+    }
 
     return true;
 }
@@ -101,7 +112,7 @@ bool DeprecatedBasicShapeCircle::operator==(const BasicShape& o) const
 void DeprecatedBasicShapeCircle::path(Path& path, const FloatRect& boundingBox)
 {
     ASSERT(path.isEmpty());
-    float diagonal = sqrtf((boundingBox.width() * boundingBox.width() + boundingBox.height() * boundingBox.height()) / 2);
+    float diagonal = hypotf(boundingBox.width(), boundingBox.height()) / sqrtf(2);
     float centerX = floatValueForLength(m_centerX, boundingBox.width());
     float centerY = floatValueForLength(m_centerY, boundingBox.height());
     float radius = floatValueForLength(m_radius, diagonal);
@@ -133,24 +144,28 @@ bool BasicShapeCircle::operator==(const BasicShape& o) const
     return m_centerX == other.m_centerX && m_centerY == other.m_centerY && m_radius == other.m_radius;
 }
 
+float BasicShapeCircle::floatValueForRadiusInBox(FloatSize boxSize) const
+{
+    if (m_radius.type() == BasicShapeRadius::Value)
+        return floatValueForLength(m_radius.value(), hypotf(boxSize.width(), boxSize.height()) / sqrtf(2));
+
+    FloatPoint center = floatPointForCenterCoordinate(m_centerX, m_centerY, boxSize);
+
+    if (m_radius.type() == BasicShapeRadius::ClosestSide)
+        return std::min(std::min(center.x(), boxSize.width() - center.x()), std::min(center.y(), boxSize.height() - center.y()));
+
+    // If radius.type() == BasicShapeRadius::FarthestSide.
+    return std::max(std::max(center.x(), boxSize.width() - center.x()), std::max(center.y(), boxSize.height() - center.y()));
+}
+
 void BasicShapeCircle::path(Path& path, const FloatRect& boundingBox)
 {
     ASSERT(path.isEmpty());
-    // FIXME Complete implementation of path.
-    // Compute closest-side and farthest-side from boundingBox.
-    // Compute top, left, bottom, right from boundingBox.
-    if (m_radius.type() != BasicShapeRadius::Value)
-        return;
-    if (m_centerX.keyword() != BasicShapeCenterCoordinate::None || m_centerY.keyword() != BasicShapeCenterCoordinate::None)
-        return;
-
-    float diagonal = sqrtf((boundingBox.width() * boundingBox.width() + boundingBox.height() * boundingBox.height()) / 2);
-    float centerX = floatValueForLength(m_centerX.length(), boundingBox.width());
-    float centerY = floatValueForLength(m_centerY.length(), boundingBox.height());
-    float radius = floatValueForLength(m_radius.value(), diagonal);
+    FloatPoint center = floatPointForCenterCoordinate(m_centerX, m_centerY, boundingBox.size());
+    float radius = floatValueForRadiusInBox(boundingBox.size());
     path.addEllipse(FloatRect(
-        centerX - radius + boundingBox.x(),
-        centerY - radius + boundingBox.y(),
+        center.x() - radius + boundingBox.x(),
+        center.y() - radius + boundingBox.y(),
         radius * 2,
         radius * 2
     ));
@@ -161,13 +176,6 @@ PassRefPtr<BasicShape> BasicShapeCircle::blend(const BasicShape* other, double p
     ASSERT(type() == other->type());
     const BasicShapeCircle* o = static_cast<const BasicShapeCircle*>(other);
     RefPtr<BasicShapeCircle> result =  BasicShapeCircle::create();
-
-    if (m_radius.type() != BasicShapeRadius::Value || o->radius().type() != BasicShapeRadius::Value) {
-        result->setCenterX(o->centerX());
-        result->setCenterY(o->centerY());
-        result->setRadius(o->radius());
-        return result;
-    }
 
     result->setCenterX(m_centerX.blend(o->centerX(), progress));
     result->setCenterY(m_centerY.blend(o->centerY(), progress));
@@ -230,7 +238,7 @@ void BasicShapeEllipse::path(Path& path, const FloatRect& boundingBox)
     if (m_centerX.keyword() != BasicShapeCenterCoordinate::None || m_centerY.keyword() != BasicShapeCenterCoordinate::None)
         return;
 
-    float diagonal = sqrtf((boundingBox.width() * boundingBox.width() + boundingBox.height() * boundingBox.height()) / 2);
+    float diagonal = hypotf(boundingBox.width(), boundingBox.height()) / sqrtf(2);
     float centerX = floatValueForLength(m_centerX.length(), boundingBox.width());
     float centerY = floatValueForLength(m_centerY.length(), boundingBox.height());
     float radiusX = floatValueForLength(m_radiusX.value(), diagonal);

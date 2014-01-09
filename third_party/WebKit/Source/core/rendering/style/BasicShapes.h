@@ -40,6 +40,7 @@
 namespace WebCore {
 
 class FloatRect;
+class FloatSize;
 class Path;
 
 class BasicShape : public RefCounted<BasicShape> {
@@ -142,6 +143,12 @@ public:
     Keyword keyword() const { return m_keyword; }
     const Length& length() const { return m_length; }
 
+    bool canBlend(const BasicShapeCenterCoordinate& other) const
+    {
+        // FIXME determine how to interpolate between keywords. See issue 330248.
+        return m_keyword == None && other.keyword() == None;
+    }
+
     BasicShapeCenterCoordinate blend(const BasicShapeCenterCoordinate& other, double progress) const
     {
         if (m_keyword != None || other.keyword() != None)
@@ -171,6 +178,12 @@ public:
     const Length& value() const { return m_value; }
     Type type() const { return m_type; }
 
+    bool canBlend(const BasicShapeRadius& other) const
+    {
+        // FIXME determine how to interpolate between keywords. See issue 330248.
+        return m_type == Value && other.type() == Value;
+    }
+
     BasicShapeRadius blend(const BasicShapeRadius& other, double progress) const
     {
         if (m_type != Value || other.type() != Value)
@@ -193,6 +206,7 @@ public:
     const BasicShapeCenterCoordinate& centerY() const { return m_centerY; }
     const BasicShapeRadius& radius() const { return m_radius; }
 
+    float floatValueForRadiusInBox(FloatSize) const;
     void setCenterX(BasicShapeCenterCoordinate centerX) { m_centerX = centerX; }
     void setCenterY(BasicShapeCenterCoordinate centerY) { m_centerY = centerY; }
     void setRadius(BasicShapeRadius radius) { m_radius = radius; }

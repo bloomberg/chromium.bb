@@ -356,4 +356,37 @@ PassRefPtr<BasicShape> basicShapeForValue(const StyleResolverState& state, const
 
     return basicShape.release();
 }
+
+FloatPoint floatPointForCenterCoordinate(const BasicShapeCenterCoordinate& centerX, const BasicShapeCenterCoordinate& centerY, FloatSize boxSize)
+{
+    FloatPoint p;
+    float offset = floatValueForLength(centerX.length(), boxSize.width());
+    switch (centerX.keyword()) {
+    case BasicShapeCenterCoordinate::None:
+    case BasicShapeCenterCoordinate::Left:
+        p.setX(offset);
+        break;
+    case BasicShapeCenterCoordinate::Right:
+        p.setX(boxSize.width() - offset);
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+    }
+
+    offset = floatValueForLength(centerY.length(), boxSize.height());
+    switch (centerY.keyword()) {
+    case BasicShapeCenterCoordinate::None:
+    case BasicShapeCenterCoordinate::Top:
+        p.setY(offset);
+        break;
+    case BasicShapeCenterCoordinate::Bottom:
+        p.setY(boxSize.height() - offset);
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+    }
+
+    return p;
+}
+
 }
