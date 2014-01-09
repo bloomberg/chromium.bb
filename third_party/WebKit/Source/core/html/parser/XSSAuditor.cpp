@@ -298,7 +298,7 @@ void XSSAuditor::init(Document* document, XSSAuditorDelegate* auditorDelegate)
         // FIXME: Combine the two report URLs in some reasonable way.
         if (auditorDelegate)
             auditorDelegate->setReportURL(xssProtectionReportURL.copy());
-        FormData* httpBody = documentLoader->originalRequest().httpBody();
+        FormData* httpBody = documentLoader->request().httpBody();
         if (httpBody && !httpBody->isEmpty()) {
             httpBodyAsString = httpBody->flattenToString();
             if (!httpBodyAsString.isEmpty()) {
