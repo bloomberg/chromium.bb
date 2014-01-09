@@ -1946,11 +1946,6 @@ void Document::clearStyleResolver()
     m_styleEngine->clearResolver();
 }
 
-CSSFontSelector* Document::fontSelector() const
-{
-    return m_styleEngine->fontSelector();
-}
-
 void Document::attach(const AttachContext& context)
 {
     ASSERT(m_lifecyle.state() == DocumentLifecycle::Inactive);

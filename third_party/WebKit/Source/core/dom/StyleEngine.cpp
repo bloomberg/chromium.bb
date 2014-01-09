@@ -557,16 +557,6 @@ void StyleEngine::resetFontSelector()
     }
 }
 
-void StyleEngine::removeFontFaceRules(const Vector<const StyleRuleFontFace*>& fontFaceRules)
-{
-    if (!m_fontSelector)
-        return;
-    for (unsigned i = 0; i < fontFaceRules.size(); ++i)
-        m_fontSelector->removeFontFaceRule(fontFaceRules[i]);
-    if (m_resolver)
-        m_resolver->invalidateMatchedPropertiesCache();
-}
-
 void StyleEngine::markTreeScopeDirty(TreeScope& scope)
 {
     if (scope == m_document) {

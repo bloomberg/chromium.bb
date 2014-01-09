@@ -396,7 +396,6 @@ public:
 
     StyleResolver* styleResolver() const;
     StyleResolver& ensureStyleResolver() const;
-    CSSFontSelector* fontSelector() const;
 
     bool isViewSource() const { return m_isViewSource; }
     void setIsViewSource(bool);

@@ -164,22 +164,23 @@ bool DocumentStyleSheetCollection::updateActiveStyleSheets(StyleEngine* engine, 
 
     if (change.styleResolverUpdateType == Reconstruct) {
         engine->clearMasterResolver();
-        // FIMXE: The following depends on whether StyleRuleFontFace was modified or not.
-        // No need to always-reset.
         engine->resetFontSelector();
     } else if (StyleResolver* styleResolver = engine->resolver()) {
         // FIXME: We might have already had styles in child treescope. In this case, we cannot use buildScopedStyleTreeInDocumentOrder.
         // Need to change "false" to some valid condition.
         styleResolver->setBuildScopedStyleTreeInDocumentOrder(false);
         if (change.styleResolverUpdateType != Additive) {
-            ASSERT(change.styleResolverUpdateType == Reset);
+            ASSERT(change.styleResolverUpdateType == Reset || change.styleResolverUpdateType == ResetStyleResolverAndFontSelector);
             resetAllRuleSetsInTreeScope(styleResolver);
-            engine->removeFontFaceRules(change.fontFaceRulesToRemove);
+            if (change.styleResolverUpdateType == ResetStyleResolverAndFontSelector)
+                engine->resetFontSelector();
             styleResolver->removePendingAuthorStyleSheets(m_activeAuthorStyleSheets);
             styleResolver->lazyAppendAuthorStyleSheets(0, collection.activeAuthorStyleSheets());
         } else {
             styleResolver->lazyAppendAuthorStyleSheets(m_activeAuthorStyleSheets.size(), collection.activeAuthorStyleSheets());
         }
+    } else if (change.styleResolverUpdateType == ResetStyleResolverAndFontSelector) {
+        engine->resetFontSelector();
     }
     m_scopingNodesForStyleScoped.didRemoveScopingNodes();
     collection.swap(*this);

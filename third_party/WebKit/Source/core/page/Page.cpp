@@ -518,10 +518,6 @@ void Page::settingsChanged(SettingsDelegate::ChangeType changeType)
         }
         setNeedsRecalcStyleInAllFrames();
         break;
-    case SettingsDelegate::FontFamilyChange:
-        for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNext())
-            frame->document()->styleEngine()->resetFontSelector();
-        break;
     }
 }
 

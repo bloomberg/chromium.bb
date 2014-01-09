@@ -55,13 +55,6 @@ public:
     static PassOwnPtr<Settings> create();
 
     GenericFontFamilySettings& genericFontFamilySettings() { return m_genericFontFamilySettings; }
-    void setCursiveFontFamily(const AtomicString&, UScriptCode = USCRIPT_COMMON);
-    void setFantasyFontFamily(const AtomicString&, UScriptCode = USCRIPT_COMMON);
-    void setFixedFontFamily(const AtomicString&, UScriptCode = USCRIPT_COMMON);
-    void setPictographFontFamily(const AtomicString&, UScriptCode = USCRIPT_COMMON);
-    void setSansSerifFontFamily(const AtomicString&, UScriptCode = USCRIPT_COMMON);
-    void setSerifFontFamily(const AtomicString&, UScriptCode = USCRIPT_COMMON);
-    void setStandardFontFamily(const AtomicString&, UScriptCode = USCRIPT_COMMON);
 
     void setTextAutosizingEnabled(bool);
     bool textAutosizingEnabled() const;
@@ -99,7 +92,6 @@ private:
     Settings();
 
     void invalidate(SettingsDelegate::ChangeType);
-    void notifyFontFamilySettingsChanged();
 
     // FIXME: pageOfShame() is a hack for the inspector code:
     // http://crbug.com/327476

@@ -56,7 +56,6 @@ public:
         MultisamplingChange,
         ImageLoadingChange,
         TextAutosizingChange,
-        FontFamilyChange,
     };
 
     virtual void settingsChanged(ChangeType) = 0;

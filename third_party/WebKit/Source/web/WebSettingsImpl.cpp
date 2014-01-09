@@ -66,37 +66,37 @@ WebSettingsImpl::WebSettingsImpl(Settings* settings)
 
 void WebSettingsImpl::setStandardFontFamily(const WebString& font, UScriptCode script)
 {
-    m_settings->setStandardFontFamily(font, script);
+    m_settings->genericFontFamilySettings().setStandard(font, script);
 }
 
 void WebSettingsImpl::setFixedFontFamily(const WebString& font, UScriptCode script)
 {
-    m_settings->setFixedFontFamily(font, script);
+    m_settings->genericFontFamilySettings().setFixed(font, script);
 }
 
 void WebSettingsImpl::setSerifFontFamily(const WebString& font, UScriptCode script)
 {
-    m_settings->setSerifFontFamily(font, script);
+    m_settings->genericFontFamilySettings().setSerif(font, script);
 }
 
 void WebSettingsImpl::setSansSerifFontFamily(const WebString& font, UScriptCode script)
 {
-    m_settings->setSansSerifFontFamily(font, script);
+    m_settings->genericFontFamilySettings().setSansSerif(font, script);
 }
 
 void WebSettingsImpl::setCursiveFontFamily(const WebString& font, UScriptCode script)
 {
-    m_settings->setCursiveFontFamily(font, script);
+    m_settings->genericFontFamilySettings().setCursive(font, script);
 }
 
 void WebSettingsImpl::setFantasyFontFamily(const WebString& font, UScriptCode script)
 {
-    m_settings->setFantasyFontFamily(font, script);
+    m_settings->genericFontFamilySettings().setFantasy(font, script);
 }
 
 void WebSettingsImpl::setPictographFontFamily(const WebString& font, UScriptCode script)
 {
-    m_settings->setPictographFontFamily(font, script);
+    m_settings->genericFontFamilySettings().setPictograph(font, script);
 }
 
 void WebSettingsImpl::setDefaultFontSize(int size)

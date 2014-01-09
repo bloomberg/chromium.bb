@@ -164,46 +164,4 @@ void Settings::setOpenGLMultisamplingEnabled(bool flag)
     invalidate(SettingsDelegate::MultisamplingChange);
 }
 
-void Settings::setStandardFontFamily(const AtomicString& font, UScriptCode script)
-{
-    m_genericFontFamilySettings.setStandard(font, script);
-    invalidate(SettingsDelegate::FontFamilyChange);
-}
-
-void Settings::setFixedFontFamily(const AtomicString& font, UScriptCode script)
-{
-    m_genericFontFamilySettings.setFixed(font, script);
-    invalidate(SettingsDelegate::FontFamilyChange);
-}
-
-void Settings::setSerifFontFamily(const AtomicString& font, UScriptCode script)
-{
-    m_genericFontFamilySettings.setSerif(font, script);
-    invalidate(SettingsDelegate::FontFamilyChange);
-}
-
-void Settings::setSansSerifFontFamily(const AtomicString& font, UScriptCode script)
-{
-    m_genericFontFamilySettings.setSansSerif(font, script);
-    invalidate(SettingsDelegate::FontFamilyChange);
-}
-
-void Settings::setCursiveFontFamily(const AtomicString& font, UScriptCode script)
-{
-    m_genericFontFamilySettings.setCursive(font, script);
-    invalidate(SettingsDelegate::FontFamilyChange);
-}
-
-void Settings::setFantasyFontFamily(const AtomicString& font, UScriptCode script)
-{
-    m_genericFontFamilySettings.setFantasy(font, script);
-    invalidate(SettingsDelegate::FontFamilyChange);
-}
-
-void Settings::setPictographFontFamily(const AtomicString& font, UScriptCode script)
-{
-    m_genericFontFamilySettings.setPictograph(font, script);
-    invalidate(SettingsDelegate::FontFamilyChange);
-}
-
 } // namespace WebCore
