@@ -8,7 +8,9 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
+#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/webstore_data_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_contents.h"
@@ -34,7 +36,7 @@ const char kWebstoreRequestError[] =
 const char kInvalidWebstoreResponseError[] = "Invalid Chrome Web Store reponse";
 const char kInvalidManifestError[] = "Invalid manifest";
 const char kUserCancelledError[] = "User cancelled install";
-
+const char kExtensionIsBlacklisted[] = "Extension is blacklisted";
 
 WebstoreStandaloneInstaller::WebstoreStandaloneInstaller(
     const std::string& webstore_item_id,
@@ -234,6 +236,25 @@ void WebstoreStandaloneInstaller::OnWebstoreParseFailure(
 void WebstoreStandaloneInstaller::InstallUIProceed() {
   if (!CheckRequestorAlive()) {
     CompleteInstall(std::string());
+    return;
+  }
+
+  ExtensionService* extension_service =
+      ExtensionSystem::Get(profile_)->extension_service();
+  const Extension* extension =
+      extension_service->GetExtensionById(id_, true /* include disabled */);
+  if (extension) {
+    std::string install_result;  // Empty string for install success.
+    if (!extension_service->IsExtensionEnabled(id_)) {
+      if (!ExtensionPrefs::Get(profile_)->IsExtensionBlacklisted(id_)) {
+        // If the extension is installed but disabled, and not blacklisted,
+        // enable it.
+        extension_service->EnableExtension(id_);
+      } else {  // Don't install a blacklisted extension.
+        install_result = kExtensionIsBlacklisted;
+      }
+    }  // else extension is installed and enabled; no work to be done.
+    CompleteInstall(install_result);
     return;
   }
 
