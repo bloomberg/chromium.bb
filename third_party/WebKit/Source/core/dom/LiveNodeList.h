@@ -129,7 +129,6 @@ protected:
 
 private:
     Node* itemBeforeOrAfterCachedItem(unsigned offset, ContainerNode* root) const;
-    Element* traverseLiveNodeListFirstElement(ContainerNode& root) const;
     bool isLastItemCloserThanLastOrCachedItem(unsigned offset) const;
     bool isFirstItemCloserThanCachedItem(unsigned offset) const;
     Node* iterateForPreviousNode(Node* current) const;
@@ -189,6 +188,7 @@ public:
     virtual Node* namedItem(const AtomicString&) const OVERRIDE FINAL;
     virtual bool nodeMatches(Element*) const = 0;
 
+    Node* traverseToFirstElement(ContainerNode& root) const;
     Node* traverseForwardToOffset(unsigned offset, Node& currentNode, unsigned& currentOffset, ContainerNode* root) const;
 
 private:

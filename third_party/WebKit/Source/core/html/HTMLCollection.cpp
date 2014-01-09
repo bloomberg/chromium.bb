@@ -353,16 +353,21 @@ static inline Node* traverseSiblingsForwardToOffset(unsigned offset, Node& curre
     return 0;
 }
 
-// FIXME: This should be in LiveNodeList
-inline Element* LiveNodeListBase::traverseLiveNodeListFirstElement(ContainerNode& root) const
+// FIXME: This should be in LiveNodeList.cpp but it needs to stay here until firstMatchingElement()
+// and others are moved to a separate header.
+inline Node* LiveNodeList::traverseToFirstElement(ContainerNode& root) const
 {
     ASSERT(isLiveNodeListType(type()));
-    ASSERT(type() != ChildNodeListType);
-    if (type() == HTMLTagNodeListType)
+    switch (type()) {
+    case ChildNodeListType:
+        return root.firstChild();
+    case HTMLTagNodeListType:
         return firstMatchingElement(static_cast<const HTMLTagNodeList*>(this), root);
-    if (type() == ClassNodeListType)
+    case ClassNodeListType:
         return firstMatchingElement(static_cast<const ClassNodeList*>(this), root);
-    return firstMatchingElement(static_cast<const LiveNodeList*>(this), root);
+    default:
+        return firstMatchingElement(static_cast<const LiveNodeList*>(this), root);
+    }
 }
 
 // FIXME: This should be in LiveNodeList.cpp but it needs to stay here until traverseMatchingElementsForwardToOffset()
@@ -434,12 +439,10 @@ Node* LiveNodeListBase::item(unsigned offset) const
         setItemCache(lastItem, cachedLength() - 1);
     } else if (!isItemCacheValid() || isFirstItemCloserThanCachedItem(offset) || (overridesItemAfter() && offset < cachedItemOffset())) {
         Node* firstItem;
-        if (type() == ChildNodeListType)
-            firstItem = root->firstChild();
-        else if (isLiveNodeListType(type()))
-            firstItem = traverseLiveNodeListFirstElement(*root);
+        if (isLiveNodeListType(type()))
+            firstItem = static_cast<const LiveNodeList*>(this)->traverseToFirstElement(*root);
         else
-            firstItem = static_cast<const HTMLCollection*>(this)->traverseFirstElement(*root);
+            firstItem = static_cast<const HTMLCollection*>(this)->traverseToFirstElement(*root);
 
         if (!firstItem) {
             setLengthCache(0);
@@ -541,7 +544,7 @@ inline Element* nextMatchingChildElement(const HTMLCollection* nodeList, Element
     return next;
 }
 
-inline Element* HTMLCollection::traverseFirstElement(ContainerNode& root) const
+inline Element* HTMLCollection::traverseToFirstElement(ContainerNode& root) const
 {
     if (overridesItemAfter())
         return virtualItemAfter(0);
@@ -594,7 +597,7 @@ Node* HTMLCollection::namedItem(const AtomicString& name) const
         return 0;
 
     unsigned i = 0;
-    for (Element* element = traverseFirstElement(*root); element; element = traverseNextElement(*element, root)) {
+    for (Element* element = traverseToFirstElement(*root); element; element = traverseNextElement(*element, root)) {
         if (checkForNameMatch(element, /* checkName */ false, name)) {
             setItemCache(element, i);
             return element;
@@ -603,7 +606,7 @@ Node* HTMLCollection::namedItem(const AtomicString& name) const
     }
 
     i = 0;
-    for (Element* element = traverseFirstElement(*root); element; element = traverseNextElement(*element, root)) {
+    for (Element* element = traverseToFirstElement(*root); element; element = traverseNextElement(*element, root)) {
         if (checkForNameMatch(element, /* checkName */ true, name)) {
             setItemCache(element, i);
             return element;
@@ -623,7 +626,7 @@ void HTMLCollection::updateNameCache() const
     if (!root)
         return;
 
-    for (Element* element = traverseFirstElement(*root); element; element = traverseNextElement(*element, root)) {
+    for (Element* element = traverseToFirstElement(*root); element; element = traverseNextElement(*element, root)) {
         const AtomicString& idAttrVal = element->getIdAttribute();
         if (!idAttrVal.isEmpty())
             appendIdCache(idAttrVal, element);
