@@ -4,6 +4,7 @@
   "name": "Feedback",
   "version": "1.0",
   "manifest_version": 2,
+  "incognito" : "split",
   "description": "User feedback extension",
   "icons": {
     "32": "images/icon32.png",
