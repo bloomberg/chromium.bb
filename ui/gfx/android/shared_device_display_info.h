@@ -18,8 +18,11 @@ class SharedDeviceDisplayInfo {
  public:
   static SharedDeviceDisplayInfo* GetInstance();
 
+  // See documentation in DeviceDisplayInfo.java
   int GetDisplayHeight();
   int GetDisplayWidth();
+  int GetPhysicalDisplayHeight();
+  int GetPhysicalDisplayWidth();
   int GetBitsPerPixel();
   int GetBitsPerComponent();
   double GetDIPScale();
@@ -32,6 +35,8 @@ class SharedDeviceDisplayInfo {
                     jobject jobj,
                     jint display_height,
                     jint display_width,
+                    jint physical_display_height,
+                    jint physical_display_width,
                     jint bits_per_pixel,
                     jint bits_per_component,
                     jdouble dip_scale,
@@ -45,6 +50,8 @@ class SharedDeviceDisplayInfo {
                          jobject jobj,
                          jint display_height,
                          jint display_width,
+                         jint physical_display_height,
+                         jint physical_display_width,
                          jint bits_per_pixel,
                          jint bits_per_component,
                          jdouble dip_scale,
@@ -55,6 +62,8 @@ class SharedDeviceDisplayInfo {
 
   int display_height_;
   int display_width_;
+  int physical_display_height_;
+  int physical_display_width_;
   int bits_per_pixel_;
   int bits_per_component_;
   double dip_scale_;

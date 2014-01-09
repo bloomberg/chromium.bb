@@ -8,6 +8,7 @@ import android.content.ComponentCallbacks;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.PixelFormat;
+import android.graphics.Point;
 import android.os.Build;
 import android.util.DisplayMetrics;
 import android.view.Display;
@@ -29,6 +30,7 @@ public class DeviceDisplayInfo {
 
     private final Context mAppContext;
     private final WindowManager mWinManager;
+    private Point mTempPoint = new Point();
 
     private DeviceDisplayInfo(Context context) {
         mAppContext = context.getApplicationContext();
@@ -49,6 +51,30 @@ public class DeviceDisplayInfo {
     @CalledByNative
     public int getDisplayWidth() {
         return getMetrics().widthPixels;
+    }
+
+    /**
+     * @return Real physical display height in physical pixels.
+     */
+    @CalledByNative
+    public int getPhysicalDisplayHeight() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            return 0;
+        }
+        getDisplay().getRealSize(mTempPoint);
+        return mTempPoint.y;
+    }
+
+    /**
+     * @return Real physical display width in physical pixels.
+     */
+    @CalledByNative
+    public int getPhysicalDisplayWidth() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            return 0;
+        }
+        getDisplay().getRealSize(mTempPoint);
+        return mTempPoint.x;
     }
 
     @SuppressWarnings("deprecation")
@@ -141,8 +167,10 @@ public class DeviceDisplayInfo {
     }
 
     private void updateNativeSharedDisplayInfo() {
-        nativeUpdateSharedDeviceDisplayInfo(getDisplayHeight(),
-                getDisplayWidth(), getBitsPerPixel(), getBitsPerComponent(),
+        nativeUpdateSharedDeviceDisplayInfo(
+                getDisplayHeight(), getDisplayWidth(),
+                getPhysicalDisplayHeight(), getPhysicalDisplayWidth(),
+                getBitsPerPixel(), getBitsPerComponent(),
                 getDIPScale(), getSmallestDIPWidth());
     }
 
@@ -171,9 +199,10 @@ public class DeviceDisplayInfo {
         return deviceDisplayInfo;
     }
 
-    private native void nativeUpdateSharedDeviceDisplayInfo(int displayHeight,
-            int displayWidth, int bitsPerPixel,
-            int bitsPerComponent, double dipScale,
+    private native void nativeUpdateSharedDeviceDisplayInfo(
+            int displayHeight, int displayWidth,
+            int physicalDisplayHeight, int physicalDisplayWidth,
+            int bitsPerPixel, int bitsPerComponent, double dipScale,
             int smallestDIPWidth);
 
 }

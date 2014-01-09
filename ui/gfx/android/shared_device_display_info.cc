@@ -16,12 +16,16 @@ static void UpdateSharedDeviceDisplayInfo(JNIEnv* env,
                                           jobject obj,
                                           jint display_height,
                                           jint display_width,
+                                          jint physical_display_height,
+                                          jint physical_display_width,
                                           jint bits_per_pixel,
                                           jint bits_per_component,
                                           jdouble dip_scale,
                                           jint smallest_dip_width) {
   SharedDeviceDisplayInfo::GetInstance()->InvokeUpdate(env, obj,
-      display_height, display_width, bits_per_pixel, bits_per_component,
+      display_height, display_width,
+      physical_display_height, physical_display_width,
+      bits_per_pixel, bits_per_component,
       dip_scale, smallest_dip_width);
 }
 
@@ -40,6 +44,16 @@ int SharedDeviceDisplayInfo::GetDisplayWidth() {
   base::AutoLock autolock(lock_);
   DCHECK_NE(0, display_width_);
   return display_width_;
+}
+
+int SharedDeviceDisplayInfo::GetPhysicalDisplayHeight() {
+  base::AutoLock autolock(lock_);
+  return physical_display_height_;
+}
+
+int SharedDeviceDisplayInfo::GetPhysicalDisplayWidth() {
+  base::AutoLock autolock(lock_);
+  return physical_display_width_;
 }
 
 int SharedDeviceDisplayInfo::GetBitsPerPixel() {
@@ -75,14 +89,18 @@ void SharedDeviceDisplayInfo::InvokeUpdate(JNIEnv* env,
                                            jobject obj,
                                            jint display_height,
                                            jint display_width,
+                                           jint physical_display_height,
+                                           jint physical_display_width,
                                            jint bits_per_pixel,
                                            jint bits_per_component,
                                            jdouble dip_scale,
                                            jint smallest_dip_width) {
   base::AutoLock autolock(lock_);
 
-  UpdateDisplayInfo(env, obj, display_height,
-      display_width, bits_per_pixel, bits_per_component, dip_scale,
+  UpdateDisplayInfo(env, obj,
+      display_height, display_width,
+      physical_display_height, physical_display_width,
+      bits_per_pixel, bits_per_component, dip_scale,
       smallest_dip_width);
 }
 
@@ -100,6 +118,9 @@ SharedDeviceDisplayInfo::SharedDeviceDisplayInfo()
   UpdateDisplayInfo(env, j_device_info_.obj(),
       Java_DeviceDisplayInfo_getDisplayHeight(env, j_device_info_.obj()),
       Java_DeviceDisplayInfo_getDisplayWidth(env, j_device_info_.obj()),
+      Java_DeviceDisplayInfo_getPhysicalDisplayHeight(env,
+                                                      j_device_info_.obj()),
+      Java_DeviceDisplayInfo_getPhysicalDisplayWidth(env, j_device_info_.obj()),
       Java_DeviceDisplayInfo_getBitsPerPixel(env, j_device_info_.obj()),
       Java_DeviceDisplayInfo_getBitsPerComponent(env, j_device_info_.obj()),
       Java_DeviceDisplayInfo_getDIPScale(env, j_device_info_.obj()),
@@ -113,12 +134,16 @@ void SharedDeviceDisplayInfo::UpdateDisplayInfo(JNIEnv* env,
                                                 jobject jobj,
                                                 jint display_height,
                                                 jint display_width,
+                                                jint physical_display_height,
+                                                jint physical_display_width,
                                                 jint bits_per_pixel,
                                                 jint bits_per_component,
                                                 jdouble dip_scale,
                                                 jint smallest_dip_width) {
   display_height_ = static_cast<int>(display_height);
   display_width_ = static_cast<int>(display_width);
+  physical_display_height_ = static_cast<int>(physical_display_height);
+  physical_display_width_ = static_cast<int>(physical_display_width);
   bits_per_pixel_ = static_cast<int>(bits_per_pixel);
   bits_per_component_ = static_cast<int>(bits_per_component);
   dip_scale_ = static_cast<double>(dip_scale);
