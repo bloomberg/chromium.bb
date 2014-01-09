@@ -307,17 +307,19 @@ IntSize ScrollView::overhangAmount() const
 {
     IntSize stretch;
 
-    int physicalScrollY = scrollPosition().y() + scrollOrigin().y();
-    if (physicalScrollY < 0)
-        stretch.setHeight(physicalScrollY);
-    else if (contentsHeight() && physicalScrollY > contentsHeight() - visibleHeight())
-        stretch.setHeight(physicalScrollY - (contentsHeight() - visibleHeight()));
+    IntPoint currentScrollPosition = scrollPosition();
+    IntPoint minScrollPosition = minimumScrollPosition();
+    IntPoint maxScrollPosition = maximumScrollPosition();
 
-    int physicalScrollX = scrollPosition().x() + scrollOrigin().x();
-    if (physicalScrollX < 0)
-        stretch.setWidth(physicalScrollX);
-    else if (contentsWidth() && physicalScrollX > contentsWidth() - visibleWidth())
-        stretch.setWidth(physicalScrollX - (contentsWidth() - visibleWidth()));
+    if (currentScrollPosition.x() < minScrollPosition.x())
+        stretch.setWidth(currentScrollPosition.x() - minScrollPosition.x());
+    if (currentScrollPosition.x() > maxScrollPosition.x())
+        stretch.setWidth(currentScrollPosition.x() - maxScrollPosition.x());
+
+    if (currentScrollPosition.y() < minScrollPosition.y())
+        stretch.setHeight(currentScrollPosition.y() - minScrollPosition.y());
+    if (currentScrollPosition.y() > maxScrollPosition.y())
+        stretch.setHeight(currentScrollPosition.y() - maxScrollPosition.y());
 
     return stretch;
 }
