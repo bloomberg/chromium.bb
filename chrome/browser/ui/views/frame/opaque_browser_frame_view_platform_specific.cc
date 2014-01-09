@@ -13,7 +13,7 @@ OpaqueBrowserFrameViewPlatformSpecific*
 OpaqueBrowserFrameViewPlatformSpecific::Create(
     OpaqueBrowserFrameView* view,
     OpaqueBrowserFrameViewLayout* layout) {
-  return 0;
+  return new OpaqueBrowserFrameViewPlatformSpecific();
 }
 
 #endif

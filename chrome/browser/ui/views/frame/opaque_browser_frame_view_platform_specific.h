@@ -13,8 +13,7 @@ class OpaqueBrowserFrameViewPlatformSpecific {
  public:
   virtual ~OpaqueBrowserFrameViewPlatformSpecific() {}
 
-  // Builds an observer for |view| and |layout|. This method returns NULL on
-  // platforms which don't need configuration.
+  // Builds an observer for |view| and |layout|.
   static OpaqueBrowserFrameViewPlatformSpecific* Create(
       OpaqueBrowserFrameView* view,
       OpaqueBrowserFrameViewLayout* layout);
