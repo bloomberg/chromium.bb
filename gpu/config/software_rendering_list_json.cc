@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "6.21",
+  "version": "6.22",
   "entries": [
     {
       "id": 1,
@@ -1011,6 +1011,19 @@ LONG_STRING_CONST(
       },
       "features": [
         "accelerated_video_decode"
+      ]
+    },
+    {
+      "id": 86,
+      "description": "Intel Graphics Media Accelerator 3150 causes the GPU process to hang running WebGL",
+      "cr_bugs": [305431],
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x8086",
+      "device_id": ["0xa011"],
+      "features": [
+        "webgl"
       ]
     }
   ]
