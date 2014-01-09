@@ -411,7 +411,7 @@ TEST_P(SystemGestureEventFilterTest, TwoFingerDragTwoWindows) {
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
   ui::GestureConfiguration::set_max_separation_for_gesture_touches_in_pixels(0);
   views::Widget* first = views::Widget::CreateWindowWithContextAndBounds(
-      new ResizableWidgetDelegate, root_window, gfx::Rect(0, 0, 50, 100));
+      new ResizableWidgetDelegate, root_window, gfx::Rect(10, 0, 50, 100));
   first->Show();
   views::Widget* second = views::Widget::CreateWindowWithContextAndBounds(
       new ResizableWidgetDelegate, root_window, gfx::Rect(100, 0, 100, 100));
