@@ -12,7 +12,6 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/common/file_chooser_params.h"
 #include "content/public/common/page_zoom.h"
-#include "content/public/common/stop_find_action.h"
 #include "third_party/WebKit/public/web/WebDragOperation.h"
 
 class GURL;
@@ -36,7 +35,6 @@ struct SelectedFileInfo;
 }
 
 namespace blink {
-struct WebFindOptions;
 struct WebMediaPlayerAction;
 struct WebPluginAction;
 }
@@ -180,14 +178,6 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
 
   // Asks the renderer to exit fullscreen
   virtual void ExitFullscreen() = 0;
-
-  // Finds text on a page.
-  virtual void Find(int request_id, const base::string16& search_text,
-                    const blink::WebFindOptions& options) = 0;
-
-  // Notifies the renderer that the user has closed the FindInPage window
-  // (and what action to take regarding the selection).
-  virtual void StopFinding(StopFindAction action) = 0;
 
   // Causes the renderer to invoke the onbeforeunload event handler.  The
   // result will be returned via ViewMsg_ShouldClose. See also ClosePage and

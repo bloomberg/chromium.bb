@@ -18,6 +18,7 @@
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/save_page_type.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/common/stop_find_action.h"
 #include "ipc/ipc_sender.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/window_open_disposition.h"
@@ -30,6 +31,10 @@
 
 namespace base {
 class TimeTicks;
+}
+
+namespace blink {
+struct WebFindOptions;
 }
 
 namespace gfx {
@@ -481,6 +486,15 @@ class WebContents : public PageNavigator,
   // TODO: this doesn't really belong here. With site isolation, this should be
   // removed since we can then embed iframes in different processes.
   virtual bool IsSubframe() const = 0;
+
+  // Finds text on a page.
+  virtual void Find(int request_id,
+                    const base::string16& search_text,
+                    const blink::WebFindOptions& options) = 0;
+
+  // Notifies the renderer that the user has closed the FindInPage window
+  // (and what action to take regarding the selection).
+  virtual void StopFinding(StopFindAction action) = 0;
 
 #if defined(OS_ANDROID)
   CONTENT_EXPORT static WebContents* FromJavaWebContents(

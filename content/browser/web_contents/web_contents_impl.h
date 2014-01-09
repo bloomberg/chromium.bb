@@ -283,6 +283,10 @@ class CONTENT_EXPORT WebContentsImpl
                             uint32_t max_bitmap_size,
                             const ImageDownloadCallback& callback) OVERRIDE;
   virtual bool IsSubframe() const OVERRIDE;
+  virtual void Find(int request_id,
+                    const base::string16& search_text,
+                    const blink::WebFindOptions& options) OVERRIDE;
+  virtual void StopFinding(StopFindAction action) OVERRIDE;
 #if defined(OS_ANDROID)
   virtual base::android::ScopedJavaLocalRef<jobject> GetJavaWebContents()
       OVERRIDE;

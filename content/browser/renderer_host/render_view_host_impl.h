@@ -41,7 +41,6 @@ struct ViewHostMsg_SelectionBounds_Params;
 struct ViewHostMsg_ShowPopup_Params;
 struct ViewMsg_Navigate_Params;
 struct ViewMsg_PostMessage_Params;
-struct ViewMsg_StopFinding_Params;
 
 namespace base {
 class ListValue;
@@ -183,9 +182,6 @@ class CONTENT_EXPORT RenderViewHostImpl
       const gfx::Point& location,
       const blink::WebPluginAction& action) OVERRIDE;
   virtual void ExitFullscreen() OVERRIDE;
-  virtual void Find(int request_id, const base::string16& search_text,
-                    const blink::WebFindOptions& options) OVERRIDE;
-  virtual void StopFinding(StopFindAction action) OVERRIDE;
   virtual void FirePageBeforeUnload(bool for_cross_site_transition) OVERRIDE;
   virtual void FilesSelectedInChooser(
       const std::vector<ui::SelectedFileInfo>& files,

@@ -2043,12 +2043,6 @@ void RenderViewHostImpl::ReloadFrame() {
   Send(new ViewMsg_ReloadFrame(GetRoutingID()));
 }
 
-void RenderViewHostImpl::Find(int request_id,
-                              const base::string16& search_text,
-                              const blink::WebFindOptions& options) {
-  Send(new ViewMsg_Find(GetRoutingID(), request_id, search_text, options));
-}
-
 void RenderViewHostImpl::InsertCSS(const base::string16& frame_xpath,
                                    const std::string& css) {
   Send(new ViewMsg_CSSInsertRequest(GetRoutingID(), frame_xpath, css));
@@ -2099,10 +2093,6 @@ void RenderViewHostImpl::ExecutePluginActionAtLocation(
 
 void RenderViewHostImpl::NotifyMoveOrResizeStarted() {
   Send(new ViewMsg_MoveOrResizeStarted(GetRoutingID()));
-}
-
-void RenderViewHostImpl::StopFinding(StopFindAction action) {
-  Send(new ViewMsg_StopFinding(GetRoutingID(), action));
 }
 
 void RenderViewHostImpl::OnAccessibilityEvents(
