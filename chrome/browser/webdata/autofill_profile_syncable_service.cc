@@ -344,16 +344,17 @@ bool AutofillProfileSyncableService::OverwriteProfileWithServerData(
 
   // Update all simple single-valued address fields.
   diff = UpdateField(COMPANY_NAME, specifics.company_name(), profile) || diff;
-  diff = UpdateField(ADDRESS_HOME_LINE1,
-                     specifics.address_home_line1(), profile) || diff;
-  diff = UpdateField(ADDRESS_HOME_LINE2,
-                     specifics.address_home_line2(), profile) || diff;
   diff = UpdateField(ADDRESS_HOME_CITY,
                      specifics.address_home_city(), profile) || diff;
   diff = UpdateField(ADDRESS_HOME_STATE,
                      specifics.address_home_state(), profile) || diff;
   diff = UpdateField(ADDRESS_HOME_ZIP,
                      specifics.address_home_zip(), profile) || diff;
+  diff = UpdateField(ADDRESS_HOME_SORTING_CODE,
+                     specifics.address_home_sorting_code(), profile) || diff;
+  diff = UpdateField(ADDRESS_HOME_DEPENDENT_LOCALITY,
+                     specifics.address_home_dependent_locality(),
+                     profile) || diff;
 
   // Update the country field, which can contain either a country code (if set
   // by a newer version of Chrome), or a country name (if set by an older
@@ -364,6 +365,19 @@ bool AutofillProfileSyncableService::OverwriteProfileWithServerData(
       AutofillCountry::GetCountryCode(country_name_or_code, app_locale);
   diff = UpdateField(ADDRESS_HOME_COUNTRY, country_code, profile) || diff;
 
+  // Update the street address.  In newer versions of Chrome (M34+), this data
+  // is stored in the |address_home_street_address| field.  In older versions,
+  // this data is stored separated out by address line.
+  if (specifics.has_address_home_street_address()) {
+    diff = UpdateField(ADDRESS_HOME_STREET_ADDRESS,
+                       specifics.address_home_street_address(),
+                       profile) || diff;
+  } else {
+    diff = UpdateField(ADDRESS_HOME_LINE1,
+                       specifics.address_home_line1(), profile) || diff;
+    diff = UpdateField(ADDRESS_HOME_LINE2,
+                       specifics.address_home_line2(), profile) || diff;
+  }
   return diff;
 }
 
@@ -414,6 +428,13 @@ void AutofillProfileSyncableService::WriteAutofillProfile(
       LimitData(UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_ZIP))));
   specifics->set_address_home_country(
       LimitData(UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_COUNTRY))));
+  specifics->set_address_home_street_address(
+      LimitData(UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS))));
+  specifics->set_address_home_sorting_code(
+      LimitData(UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_SORTING_CODE))));
+  specifics->set_address_home_dependent_locality(
+      LimitData(
+          UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY))));
 
   profile.GetRawMultiInfo(EMAIL_ADDRESS, &values);
   for (size_t i = 0; i < values.size(); ++i) {

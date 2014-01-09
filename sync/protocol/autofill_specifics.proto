@@ -28,13 +28,18 @@ message AutofillProfileSpecifics {
   repeated string email_address = 5;
   optional string company_name = 6;
 
-  // Home address.
+  // Address.
   optional string address_home_line1 = 7;
   optional string address_home_line2 = 8;
   optional string address_home_city = 9;
   optional string address_home_state = 10;
   optional string address_home_zip = 11;
   optional string address_home_country = 12;
+
+  // Additional address fields for i18n.
+  optional string address_home_street_address = 17;
+  optional string address_home_sorting_code = 18;
+  optional string address_home_dependent_locality = 19;
 
   // Phone.
   repeated string phone_home_whole_number = 13;

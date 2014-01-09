@@ -22,8 +22,11 @@ using ::testing::DoAll;
 using ::testing::Eq;
 using ::testing::Return;
 using ::testing::Property;
+using base::ASCIIToUTF16;
 using base::UTF8ToUTF16;
 using content::BrowserThread;
+
+namespace {
 
 // Some guids for testing.
 const char kGuid1[] = "EDC609ED-7EEE-4F27-B00C-423242A9C44B";
@@ -64,8 +67,8 @@ MATCHER_P(CheckSyncChanges, n_sync_changes_list, "") {
     DCHECK(passed->IsValid());
     if (passed->change_type() != expected->change_type())
       return false;
-    if (passed->sync_data().GetSpecifics().autofill_profile().guid() !=
-        expected->sync_data().GetSpecifics().autofill_profile().guid()) {
+    if (passed->sync_data().GetSpecifics().SerializeAsString() !=
+            expected->sync_data().GetSpecifics().SerializeAsString()) {
       return false;
     }
   }
@@ -127,6 +130,87 @@ class TestSyncChangeProcessor : public syncer::SyncChangeProcessor {
   syncer::SyncChangeList changes_;
 };
 
+// Returns a profile with all fields set.  Contains identical data to the data
+// returned from ConstructCompleteSyncData().
+scoped_ptr<AutofillProfile> ConstructCompleteProfile() {
+  scoped_ptr<AutofillProfile> profile(
+      new AutofillProfile(kGuid1, kHttpsOrigin));
+
+  std::vector<base::string16> names;
+  names.push_back(ASCIIToUTF16("John K. Doe"));
+  names.push_back(ASCIIToUTF16("Jane Luise Smith"));
+  profile->SetRawMultiInfo(NAME_FULL, names);
+
+  std::vector<base::string16> emails;
+  emails.push_back(ASCIIToUTF16("user@example.com"));
+  emails.push_back(ASCIIToUTF16("superuser@example.org"));
+  profile->SetRawMultiInfo(EMAIL_ADDRESS, emails);
+
+  std::vector<base::string16> phones;
+  phones.push_back(ASCIIToUTF16("1.800.555.1234"));
+  phones.push_back(ASCIIToUTF16("1.866.650.0000"));
+  profile->SetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, phones);
+
+  profile->SetRawInfo(ADDRESS_HOME_STREET_ADDRESS,
+                      ASCIIToUTF16("123 Fake St.\n"
+                                   "Apt. 42"));
+  EXPECT_EQ(ASCIIToUTF16("123 Fake St."),
+            profile->GetRawInfo(ADDRESS_HOME_LINE1));
+  EXPECT_EQ(ASCIIToUTF16("Apt. 42"), profile->GetRawInfo(ADDRESS_HOME_LINE2));
+
+  profile->SetRawInfo(COMPANY_NAME, ASCIIToUTF16("Google, Inc."));
+  profile->SetRawInfo(ADDRESS_HOME_CITY, ASCIIToUTF16("Mountain View"));
+  profile->SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("California"));
+  profile->SetRawInfo(ADDRESS_HOME_ZIP, ASCIIToUTF16("94043"));
+  profile->SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
+  profile->SetRawInfo(ADDRESS_HOME_SORTING_CODE, ASCIIToUTF16("CEDEX"));
+  profile->SetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY,
+                      ASCIIToUTF16("Santa Clara"));
+  return profile.Pass();
+}
+
+// Returns SyncData with all Autofill profile fields set.  Contains identical
+// data to the data returned from ConstructCompleteProfile().
+syncer::SyncData ConstructCompleteSyncData() {
+  sync_pb::EntitySpecifics entity_specifics;
+  sync_pb::AutofillProfileSpecifics* specifics =
+      entity_specifics.mutable_autofill_profile();
+
+  specifics->set_guid(kGuid1);
+  specifics->set_origin(kHttpsOrigin);
+
+  specifics->add_name_first("John");
+  specifics->add_name_middle("K.");
+  specifics->add_name_last("Doe");
+
+  specifics->add_name_first("Jane");
+  specifics->add_name_middle("Luise");
+  specifics->add_name_last("Smith");
+
+  specifics->add_email_address("user@example.com");
+  specifics->add_email_address("superuser@example.org");
+
+  specifics->add_phone_home_whole_number("1.800.555.1234");
+  specifics->add_phone_home_whole_number("1.866.650.0000");
+
+  specifics->set_address_home_line1("123 Fake St.");
+  specifics->set_address_home_line2("Apt. 42");
+  specifics->set_address_home_street_address("123 Fake St.\n"
+                                             "Apt. 42");
+
+  specifics->set_company_name("Google, Inc.");
+  specifics->set_address_home_city("Mountain View");
+  specifics->set_address_home_state("California");
+  specifics->set_address_home_zip("94043");
+  specifics->set_address_home_country("US");
+  specifics->set_address_home_sorting_code("CEDEX");
+  specifics->set_address_home_dependent_locality("Santa Clara");
+
+  return syncer::SyncData::CreateLocalData(kGuid1, kGuid1, entity_specifics);
+}
+
+}  // namespace
+
 class AutofillProfileSyncableServiceTest : public testing::Test {
  public:
   AutofillProfileSyncableServiceTest()
@@ -151,12 +235,16 @@ class AutofillProfileSyncableServiceTest : public testing::Test {
                 SaveChangesToWebData(DataBundleCheck(expected_bundle)))
         .Times(1)
         .WillOnce(Return(true));
-    ON_CALL(*sync_processor_, ProcessSyncChanges(_, _))
-        .WillByDefault(Return(syncer::SyncError()));
-    EXPECT_CALL(*sync_processor_,
-                ProcessSyncChanges(_, CheckSyncChanges(expected_change_list)))
-        .Times(1)
-        .WillOnce(Return(syncer::SyncError()));
+    if (expected_change_list.empty()) {
+      EXPECT_CALL(*sync_processor_, ProcessSyncChanges(_, _)).Times(0);
+    } else {
+      ON_CALL(*sync_processor_, ProcessSyncChanges(_, _))
+          .WillByDefault(Return(syncer::SyncError()));
+      EXPECT_CALL(*sync_processor_,
+                  ProcessSyncChanges(_, CheckSyncChanges(expected_change_list)))
+          .Times(1)
+          .WillOnce(Return(syncer::SyncError()));
+    }
 
     // Takes ownership of sync_processor_.
     autofill_syncable_service_.MergeDataAndStartSyncing(
@@ -374,21 +462,9 @@ TEST_F(AutofillProfileSyncableServiceTest, MergeDataEmptyOrigins) {
           profile.guid(), profile.guid(), specifics));
 
   MockAutofillProfileSyncableService::DataBundle expected_bundle;
-  EXPECT_CALL(autofill_syncable_service_, LoadAutofillData(_))
-      .Times(1)
-      .WillOnce(DoAll(CopyData(&profiles_from_web_db), Return(true)));
-  EXPECT_CALL(autofill_syncable_service_,
-              SaveChangesToWebData(DataBundleCheck(expected_bundle)))
-      .Times(1)
-      .WillOnce(Return(true));
-  EXPECT_CALL(*sync_processor_, ProcessSyncChanges(_, _)).Times(0);
-
-  // Takes ownership of sync_processor_.
-  autofill_syncable_service_.MergeDataAndStartSyncing(
-      syncer::AUTOFILL_PROFILE, data_list,
-      sync_processor_.PassAs<syncer::SyncChangeProcessor>(),
-      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
-
+  syncer::SyncChangeList expected_change_list;
+  MergeDataAndStartSyncing(
+      profiles_from_web_db, data_list, expected_bundle, expected_change_list);
   autofill_syncable_service_.StopSyncing(syncer::AUTOFILL_PROFILE);
 }
 
@@ -658,6 +734,145 @@ TEST_F(AutofillProfileSyncableServiceTest, MergeProfile) {
   profile1.GetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, &values);
   ASSERT_EQ(values.size(), 1U);
   EXPECT_EQ(values[0], UTF8ToUTF16("650234567"));
+}
+
+// Ensure that all profile fields are able to be synced up from the client to
+// the server.
+TEST_F(AutofillProfileSyncableServiceTest, SyncAllFieldsToServer) {
+  std::vector<AutofillProfile*> profiles_from_web_db;
+
+  // Create a profile with all fields set.
+  profiles_from_web_db.push_back(ConstructCompleteProfile().release());
+
+  // Set up expectations: No changes to the WebDB, and all fields correctly
+  // copied to Sync.
+  MockAutofillProfileSyncableService::DataBundle expected_bundle;
+  syncer::SyncChangeList expected_change_list;
+  expected_change_list.push_back(
+      syncer::SyncChange(FROM_HERE,
+                         syncer::SyncChange::ACTION_ADD,
+                         ConstructCompleteSyncData()));
+
+  // Verify the expectations.
+  syncer::SyncDataList data_list;
+  MergeDataAndStartSyncing(
+      profiles_from_web_db, data_list, expected_bundle, expected_change_list);
+  autofill_syncable_service_.StopSyncing(syncer::AUTOFILL_PROFILE);
+}
+
+// Ensure that all profile fields are able to be synced down from the server to
+// the client.
+TEST_F(AutofillProfileSyncableServiceTest, SyncAllFieldsToClient) {
+  // Create a profile with all fields set.
+  syncer::SyncDataList data_list;
+  data_list.push_back(ConstructCompleteSyncData());
+
+  // Set up expectations: All fields correctly copied to the WebDB, and no
+  // changes propagated to Sync.
+  syncer::SyncChangeList expected_change_list;
+  scoped_ptr<AutofillProfile> expected_profile = ConstructCompleteProfile();
+  MockAutofillProfileSyncableService::DataBundle expected_bundle;
+  expected_bundle.profiles_to_add.push_back(expected_profile.get());
+
+  // Verify the expectations.
+  std::vector<AutofillProfile*> profiles_from_web_db;
+  MergeDataAndStartSyncing(
+      profiles_from_web_db, data_list, expected_bundle, expected_change_list);
+  autofill_syncable_service_.StopSyncing(syncer::AUTOFILL_PROFILE);
+}
+
+// Ensure that the street address field takes precedence over the address line 1
+// and line 2 fields, even though these are expected to always be in sync in
+// practice.
+TEST_F(AutofillProfileSyncableServiceTest,
+       StreetAddressTakesPrecedenceOverAddressLines) {
+  // Create a Sync profile with conflicting address data in the street address
+  // field vs. the address line 1 and address line 2 fields.
+  sync_pb::EntitySpecifics specifics;
+  sync_pb::AutofillProfileSpecifics* autofill_specifics =
+      specifics.mutable_autofill_profile();
+  autofill_specifics->set_guid(kGuid1);
+  autofill_specifics->set_origin(kHttpsOrigin);
+  autofill_specifics->add_name_first(std::string());
+  autofill_specifics->add_name_middle(std::string());
+  autofill_specifics->add_name_last(std::string());
+  autofill_specifics->add_email_address(std::string());
+  autofill_specifics->add_phone_home_whole_number(std::string());
+  autofill_specifics->set_address_home_line1("123 Example St.");
+  autofill_specifics->set_address_home_line2("Apt. 42");
+  autofill_specifics->set_address_home_street_address("456 El Camino Real\n"
+                                                      "Suite #1337");
+
+  syncer::SyncDataList data_list;
+  data_list.push_back(
+      syncer::SyncData::CreateLocalData(kGuid1, kGuid1, specifics));
+
+  // Set up expectations: Full street address takes precedence over address
+  // lines.
+  syncer::SyncChangeList expected_change_list;
+  AutofillProfile expected_profile(kGuid1, kHttpsOrigin);
+  expected_profile.SetRawInfo(ADDRESS_HOME_STREET_ADDRESS,
+                              ASCIIToUTF16("456 El Camino Real\n"
+                                           "Suite #1337"));
+  EXPECT_EQ(ASCIIToUTF16("456 El Camino Real"),
+            expected_profile.GetRawInfo(ADDRESS_HOME_LINE1));
+  EXPECT_EQ(ASCIIToUTF16("Suite #1337"),
+            expected_profile.GetRawInfo(ADDRESS_HOME_LINE2));
+  MockAutofillProfileSyncableService::DataBundle expected_bundle;
+  expected_bundle.profiles_to_add.push_back(&expected_profile);
+
+  // Verify the expectations.
+  std::vector<AutofillProfile*> profiles_from_web_db;
+  MergeDataAndStartSyncing(
+      profiles_from_web_db, data_list, expected_bundle, expected_change_list);
+  autofill_syncable_service_.StopSyncing(syncer::AUTOFILL_PROFILE);
+}
+
+// Ensure that no Sync events are generated to fill in missing street address
+// fields from Sync with explicitly present ones identical to the data stored in
+// the line1 and line2 fields.  This ensures that the migration to add the
+// street address field to profiles does not generate lots of needless Sync
+// updates.
+TEST_F(AutofillProfileSyncableServiceTest, MergeDataEmptyStreetAddress) {
+  std::vector<AutofillProfile*> profiles_from_web_db;
+
+  // Create a profile with the street address set.
+  AutofillProfile profile(kGuid1, kHttpsOrigin);
+  profile.SetRawInfo(ADDRESS_HOME_STREET_ADDRESS,
+                     ASCIIToUTF16("123 Example St.\n"
+                                  "Apt. 42"));
+  EXPECT_EQ(ASCIIToUTF16("123 Example St."),
+            profile.GetRawInfo(ADDRESS_HOME_LINE1));
+  EXPECT_EQ(ASCIIToUTF16("Apt. 42"), profile.GetRawInfo(ADDRESS_HOME_LINE2));
+
+  profiles_from_web_db.push_back(new AutofillProfile(profile));
+
+  // Create a Sync profile identical to |profile|, except without street address
+  // explicitly set.
+  sync_pb::EntitySpecifics specifics;
+  sync_pb::AutofillProfileSpecifics* autofill_specifics =
+      specifics.mutable_autofill_profile();
+  autofill_specifics->set_guid(profile.guid());
+  autofill_specifics->set_origin(profile.origin());
+  autofill_specifics->add_name_first(std::string());
+  autofill_specifics->add_name_middle(std::string());
+  autofill_specifics->add_name_last(std::string());
+  autofill_specifics->add_email_address(std::string());
+  autofill_specifics->add_phone_home_whole_number(std::string());
+  autofill_specifics->set_address_home_line1("123 Example St.");
+  autofill_specifics->set_address_home_line2("Apt. 42");
+  EXPECT_FALSE(autofill_specifics->has_address_home_street_address());
+
+  syncer::SyncDataList data_list;
+  data_list.push_back(
+      syncer::SyncData::CreateLocalData(
+          profile.guid(), profile.guid(), specifics));
+
+  MockAutofillProfileSyncableService::DataBundle expected_bundle;
+  syncer::SyncChangeList expected_change_list;
+  MergeDataAndStartSyncing(
+      profiles_from_web_db, data_list, expected_bundle, expected_change_list);
+  autofill_syncable_service_.StopSyncing(syncer::AUTOFILL_PROFILE);
 }
 
 }  // namespace autofill
