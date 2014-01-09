@@ -23634,6 +23634,8 @@ other types of suffix sets.
   <int value="248" label="Report device users"/>
   <int value="249" label="User avatar image"/>
   <int value="250" label="Enable network configuration prompt when offline"/>
+  <int value="251" label="Native Messaging blacklist"/>
+  <int value="252" label="Native Messaging whitelist"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">

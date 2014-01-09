@@ -33,6 +33,7 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/download/download_prefs.h"
+#include "chrome/browser/extensions/api/messaging/native_message_process_host.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -2876,6 +2877,56 @@ IN_PROC_BROWSER_TEST_F(PolicyVariationsServiceTest, VariationsURLIsValid) {
   EXPECT_TRUE(net::GetValueForKeyInQuery(url, "restrict", &value));
   EXPECT_EQ("restricted", value);
 }
-#endif
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, NativeMessagingBlacklistSelective) {
+  base::ListValue blacklist;
+  blacklist.Append(base::Value::CreateStringValue("host.name"));
+  PolicyMap policies;
+  policies.Set(key::kNativeMessagingBlacklist, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, blacklist.DeepCopy(), NULL);
+  UpdateProviderPolicy(policies);
+
+  PrefService* prefs = browser()->profile()->GetPrefs();
+  EXPECT_FALSE(extensions::NativeMessageProcessHost::IsHostAllowed(
+      prefs, "host.name"));
+  EXPECT_TRUE(extensions::NativeMessageProcessHost::IsHostAllowed(
+      prefs, "other.host.name"));
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, NativeMessagingBlacklistWildcard) {
+  base::ListValue blacklist;
+  blacklist.Append(base::Value::CreateStringValue("*"));
+  PolicyMap policies;
+  policies.Set(key::kNativeMessagingBlacklist, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, blacklist.DeepCopy(), NULL);
+  UpdateProviderPolicy(policies);
+
+  PrefService* prefs = browser()->profile()->GetPrefs();
+  EXPECT_FALSE(extensions::NativeMessageProcessHost::IsHostAllowed(
+      prefs, "host.name"));
+  EXPECT_FALSE(extensions::NativeMessageProcessHost::IsHostAllowed(
+      prefs, "other.host.name"));
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, NativeMessagingWhitelist) {
+  base::ListValue blacklist;
+  blacklist.Append(base::Value::CreateStringValue("*"));
+  base::ListValue whitelist;
+  whitelist.Append(base::Value::CreateStringValue("host.name"));
+  PolicyMap policies;
+  policies.Set(key::kNativeMessagingBlacklist, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, blacklist.DeepCopy(), NULL);
+  policies.Set(key::kNativeMessagingWhitelist, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, whitelist.DeepCopy(), NULL);
+  UpdateProviderPolicy(policies);
+
+  PrefService* prefs = browser()->profile()->GetPrefs();
+  EXPECT_TRUE(extensions::NativeMessageProcessHost::IsHostAllowed(
+      prefs, "host.name"));
+  EXPECT_FALSE(extensions::NativeMessageProcessHost::IsHostAllowed(
+      prefs, "other.host.name"));
+}
+
+#endif  // !defined(CHROME_OS)
 
 }  // namespace policy

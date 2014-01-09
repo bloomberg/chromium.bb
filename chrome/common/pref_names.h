@@ -410,6 +410,9 @@ extern const char kProfileResetPromptMemento[];
 extern const char kGCMUserAccountID[];
 extern const char kGCMUserToken[];
 
+extern const char kNativeMessagingBlacklist[];
+extern const char kNativeMessagingWhitelist[];
+
 // Local state prefs. Please add Profile prefs above instead.
 extern const char kCertRevocationCheckingEnabled[];
 extern const char kCertRevocationCheckingRequiredLocalAnchors[];

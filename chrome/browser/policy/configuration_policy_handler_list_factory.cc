@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/api/messaging/native_messaging_policy_handler.h"
 #include "chrome/browser/extensions/policy_handlers.h"
 #include "chrome/browser/net/disk_cache_dir_policy_handler.h"
 #include "chrome/browser/net/proxy_policy_handler.h"
@@ -525,6 +526,17 @@ scoped_ptr<ConfigurationPolicyHandlerList> BuildHandlerList() {
       new DiskCacheDirPolicyHandler()));
   handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
       new DownloadDirPolicyHandler));
+
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new extensions::NativeMessagingHostListPolicyHandler(
+          key::kNativeMessagingWhitelist,
+          prefs::kNativeMessagingWhitelist,
+          false)));
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new extensions::NativeMessagingHostListPolicyHandler(
+          key::kNativeMessagingBlacklist,
+          prefs::kNativeMessagingBlacklist,
+          true)));
 #endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
 
 #if defined(OS_CHROMEOS)

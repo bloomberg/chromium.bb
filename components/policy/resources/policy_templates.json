@@ -118,7 +118,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 250
+#   For your editing convenience: highest ID currently used: 252
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -2526,6 +2526,64 @@
           'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to display notifications.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultNotificationsSetting' policy if it is set, or the user's personal configuration otherwise.''',
+        },
+      ],
+    },
+    {
+      'name': 'NativeMessaging',
+      'type': 'group',
+      'caption': '''Native Messaging''',
+      'desc': '''Configures policies for Native Messaging. Blacklisted native messaging hosts won't be allowed unless they are whitelisted.''',
+      'policies': [
+        {
+          'name': 'NativeMessagingBlacklist',
+          'type': 'list',
+          'schema': {
+            'type': 'array',
+            'items': { 'type': 'string' },
+          },
+          'supported_on': ['chrome.*:34-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': True,
+          },
+          'example_value': [
+            'com.native.messaging.host.name1',
+            'com.native.messaging.host.name2',
+          ],
+          'id': 251,
+          'caption': '''Configure native messaging blacklist''',
+          'desc': '''Allows you to specify which native messaging hosts that should not be loaded.
+
+          A blacklist value of '*' means all native messaging hosts are blacklisted unless they are explicitly listed in the whitelist.
+
+          If this policy is left not set <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will load all installed native messaging hosts.''',
+          'label': '''Names of the forbidden native messaging hosts (or * for all)''',
+        },
+        {
+          'name': 'NativeMessagingWhitelist',
+          'type': 'list',
+          'schema': {
+            'type': 'array',
+            'items': { 'type': 'string' },
+          },
+          'supported_on': ['chrome.*:34-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': True,
+          },
+          'example_value': [
+            'com.native.messaging.host.name1',
+            'com.native.messaging.host.name2',
+          ],
+          'id': 252,
+          'caption': '''Configure native messaging whitelist''',
+          'desc': '''Allows you to specify which native messaging hosts are not subject to the blacklist.
+
+          A blacklist value of * means all native messaging hosts are blacklisted and only native messaging hosts listed in the whitelist will be loaded.
+
+          By default, all native messaging hosts are whitelisted, but if all native messaging hosts have been blacklisted by policy, the whitelist can be used to override that policy.''',
+          'label': '''Names of the native messaging hosts to exempt from the blacklist''',
         },
       ],
     },

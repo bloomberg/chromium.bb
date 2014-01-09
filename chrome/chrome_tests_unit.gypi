@@ -843,9 +843,10 @@
         'browser/extensions/api/image_writer_private/test_utils.cc',
         'browser/extensions/api/image_writer_private/write_from_file_operation_unittest.cc',
         'browser/extensions/api/log_private/syslog_parser_unittest.cc',
+        'browser/extensions/api/mdns/dns_sd_registry_unittest.cc',
         'browser/extensions/api/messaging/native_message_process_host_unittest.cc',
         'browser/extensions/api/messaging/native_messaging_host_manifest_unittest.cc',
-        'browser/extensions/api/mdns/dns_sd_registry_unittest.cc',
+        'browser/extensions/api/messaging/native_messaging_policy_handler_unittest.cc',
         'browser/extensions/api/omnibox/omnibox_unittest.cc',
         'browser/extensions/api/permissions/permissions_api_helpers_unittest.cc',
         'browser/extensions/api/power/power_api_unittest.cc',
@@ -2282,6 +2283,9 @@
         }],
         ['chromeos==1', {
           'sources!': [
+            'browser/extensions/api/messaging/native_message_process_host_unittest.cc',
+            'browser/extensions/api/messaging/native_messaging_host_manifest_unittest.cc',
+            'browser/extensions/api/messaging/native_messaging_policy_handler_unittest.cc',
             'browser/password_manager/native_backend_gnome_x_unittest.cc',
             'browser/password_manager/native_backend_kwallet_x_unittest.cc',
             'browser/policy/cloud/user_policy_signin_service_unittest.cc',
@@ -2290,9 +2294,9 @@
             'browser/shell_integration_linux_unittest.cc',
             'browser/signin/signin_manager_unittest.cc',
             'browser/storage_monitor/storage_monitor_linux_unittest.cc',
-            'browser/ui/views/frame/opaque_browser_frame_view_layout_unittest.cc',
             'browser/ui/sync/one_click_signin_helper_unittest.cc',
             'browser/ui/sync/one_click_signin_sync_starter_unittest.cc',
+            'browser/ui/views/frame/opaque_browser_frame_view_layout_unittest.cc',
           ],
         }, { # else: chromeos == 0
           'sources/': [

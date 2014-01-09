@@ -8,12 +8,14 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/platform_file.h"
+#include "base/prefs/pref_service.h"
 #include "base/process/kill.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/messaging/native_messaging_host_manifest.h"
 #include "chrome/browser/extensions/api/messaging/native_process_launcher.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/pref_names.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/features/feature.h"
 #include "net/base/file_stream.h"
@@ -48,6 +50,37 @@ const char kHostInputOuputError[] =
 }  // namespace
 
 namespace extensions {
+
+// static
+bool NativeMessageProcessHost::IsHostAllowed(
+    const PrefService* pref_service,
+    const std::string& native_host_name) {
+  // All native messaging hosts are allowed if there is no blacklist.
+  if (!pref_service->IsManagedPreference(prefs::kNativeMessagingBlacklist))
+    return true;
+  const base::ListValue* blacklist =
+      pref_service->GetList(prefs::kNativeMessagingBlacklist);
+  if (!blacklist)
+    return true;
+
+  // Check if the name or the wildcard is in the blacklist.
+  base::StringValue name_value(native_host_name);
+  base::StringValue wildcard_value("*");
+  if (blacklist->Find(name_value) == blacklist->end() &&
+      blacklist->Find(wildcard_value) == blacklist->end()) {
+    return true;
+  }
+
+  // The native messaging host is blacklisted. Check the whitelist.
+  if (pref_service->IsManagedPreference(prefs::kNativeMessagingWhitelist)) {
+    const base::ListValue* whitelist =
+        pref_service->GetList(prefs::kNativeMessagingWhitelist);
+    if (whitelist && whitelist->Find(name_value) != whitelist->end())
+      return true;
+  }
+
+  return false;
+}
 
 NativeMessageProcessHost::NativeMessageProcessHost(
     base::WeakPtr<Client> weak_client_ui,

@@ -63,6 +63,9 @@ const char kReceivingEndDoesntExistError[] =
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 const char kMissingPermissionError[] =
     "Access to native messaging requires nativeMessaging permission.";
+const char kProhibitedByPoliciesError[] =
+    "Access to the native messaging host was disabled by the system "
+    "administrator.";
 #endif
 
 struct MessageService::MessageChannel {
@@ -365,6 +368,13 @@ void MessageService::OpenChannelToNativeApp(
 
   if (!has_permission) {
     DispatchOnDisconnect(source, receiver_port_id, kMissingPermissionError);
+    return;
+  }
+
+  // Verify that the host is not blocked by policies.
+  if (!NativeMessageProcessHost::IsHostAllowed(profile->GetPrefs(),
+                                               native_app_name)) {
+    DispatchOnDisconnect(source, receiver_port_id, kProhibitedByPoliciesError);
     return;
   }
 

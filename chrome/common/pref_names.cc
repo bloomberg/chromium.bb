@@ -1299,6 +1299,10 @@ const char kProfileResetPromptMemento[] = "profile.reset_prompt_memento";
 const char kGCMUserAccountID[] = "gcm.user.account_id";
 const char kGCMUserToken[] = "gcm.user.token";
 
+// Whitelist of Native Messaging Hosts.
+const char kNativeMessagingBlacklist[] = "native_messaging.blacklist";
+const char kNativeMessagingWhitelist[] = "native_messaging.whitelist";
+
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
 
@@ -2686,4 +2690,5 @@ const char kOsPasswordLastChanged[] =
 
 // Whether DNS Quick Check is disabled in proxy resolution.
 const char kQuickCheckEnabled[] = "proxy.quick_check_enabled";
+
 }  // namespace prefs

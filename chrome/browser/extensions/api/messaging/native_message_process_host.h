@@ -16,6 +16,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "ui/gfx/native_widget_types.h"
 
+class PrefService;
+
 namespace net {
 
 class DrainableIOBuffer;
@@ -51,6 +53,12 @@ class NativeMessageProcessHost
   };
 
   virtual ~NativeMessageProcessHost();
+
+  // Verifies that the native messaging host with the specified name is allowed
+  // by the system policies.
+  static bool IsHostAllowed(
+      const PrefService* pref_service,
+      const std::string& native_host_name);
 
   static scoped_ptr<NativeMessageProcessHost> Create(
       gfx::NativeView native_view,

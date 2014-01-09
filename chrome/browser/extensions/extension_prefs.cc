@@ -1756,6 +1756,10 @@ void ExtensionPrefs::RegisterProfilePrefs(
       kInstallSignature,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
+  registry->RegisterListPref(prefs::kNativeMessagingBlacklist,
+                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterListPref(prefs::kNativeMessagingWhitelist,
+                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 template <class ExtensionIdContainer>

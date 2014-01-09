@@ -1959,6 +1959,22 @@
     ]
   },
 
+  "NativeMessagingBlacklist": {
+    "os": ["win", "linux", "mac"],
+    "test_policy": { "NativeMessagingBlacklist": ["*"] },
+    "pref_mappings": [
+      { "pref": "native_messaging.blacklist" }
+    ]
+  },
+
+  "NativeMessagingWhitelist": {
+    "os": ["win", "linux", "mac"],
+    "test_policy": { "NativeMessagingWhitelist": ["native.messaging.host.name"] },
+    "pref_mappings": [
+      { "pref": "native_messaging.whitelist" }
+    ]
+  },
+
   "----- Chrome OS device policies ---------------------------------------": {},
 
   "DevicePolicyRefreshRate": {
