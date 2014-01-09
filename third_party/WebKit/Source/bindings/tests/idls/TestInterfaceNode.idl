@@ -32,6 +32,7 @@
     DependentLifetime,  // FIXME: should inherit from Node
 ] interface TestInterfaceNode : Node {
     attribute DOMString stringAttribute;
+    readonly attribute TestInterfaceEmpty readonlyTestInterfaceEmptyAttribute;
     attribute EventHandler eventHandlerAttribute;
     // [Reflect] attribute DOMString reflectStringAttribute;
     // [Reflect, URL] attribute DOMString reflectUrlStringAttribute;

@@ -111,10 +111,11 @@ interface TestObjectPython {
     attribute Float32Array float32ArrayAttribute;
     attribute Uint8Array uint8ArrayAttribute;
     // Exceptions for is_keep_alive_for_gc
-    attribute TestInterfaceEmpty self;
+    readonly attribute TestInterfaceEmpty self;
+    readonly attribute EventTarget readonlyEventTargetAttribute;
     readonly attribute Window readonlyWindowAttribute;
-    attribute HTMLCollection htmlCollectionAttribute;
-    attribute HTMLElement htmlElementAttribute;
+    readonly attribute HTMLCollection htmlCollectionAttribute;
+    readonly attribute HTMLElement htmlElementAttribute;
     // Arrays
     attribute DOMString[] stringArrayAttribute;
     attribute TestInterfaceEmpty[] testInterfaceEmptyArrayAttribute;

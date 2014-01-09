@@ -34,6 +34,7 @@
 #include "V8TestInterfaceNode.h"
 
 #include "RuntimeEnabledFeatures.h"
+#include "V8TestInterfaceEmpty.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8AbstractEventListener.h"
 #include "bindings/v8/V8DOMConfiguration.h"
@@ -42,6 +43,8 @@
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
 #include "platform/TraceEvent.h"
+#include "wtf/GetPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
@@ -98,6 +101,19 @@ static void stringAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Lo
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void readonlyTestInterfaceEmptyAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestInterfaceNode* imp = V8TestInterfaceNode::toNative(info.Holder());
+    v8SetReturnValueFast(info, imp->readonlyTestInterfaceEmptyAttribute(), imp);
+}
+
+static void readonlyTestInterfaceEmptyAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestInterfaceNodeV8Internal::readonlyTestInterfaceEmptyAttributeAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 static void eventHandlerAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterfaceNode* imp = V8TestInterfaceNode::toNative(info.Holder());
@@ -129,6 +145,7 @@ static void eventHandlerAttributeAttributeSetterCallback(v8::Local<v8::String>, 
 
 static const V8DOMConfiguration::AttributeConfiguration V8TestInterfaceNodeAttributes[] = {
     {"stringAttribute", TestInterfaceNodeV8Internal::stringAttributeAttributeGetterCallback, TestInterfaceNodeV8Internal::stringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"readonlyTestInterfaceEmptyAttribute", TestInterfaceNodeV8Internal::readonlyTestInterfaceEmptyAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"eventHandlerAttribute", TestInterfaceNodeV8Internal::eventHandlerAttributeAttributeGetterCallback, TestInterfaceNodeV8Internal::eventHandlerAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 };
 

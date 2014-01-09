@@ -101,7 +101,7 @@ def generate_attribute(interface, attribute):
             extended_attributes['RaisesException'] in [None, 'Getter']),
         'is_initialized_by_event_constructor':
             'InitializedByEventConstructor' in extended_attributes,
-        'is_keep_alive_for_gc': is_keep_alive_for_gc(attribute),
+        'is_keep_alive_for_gc': is_keep_alive_for_gc(interface, attribute),
         'is_nullable': attribute.is_nullable,
         'is_per_world_bindings': 'PerWorldBindings' in extended_attributes,
         'is_read_only': attribute.is_read_only,
@@ -213,7 +213,7 @@ def getter_base_name(attribute, arguments):
     return 'fastGetAttribute'
 
 
-def is_keep_alive_for_gc(attribute):
+def is_keep_alive_for_gc(interface, attribute):
     idl_type = attribute.idl_type
     extended_attributes = attribute.extended_attributes
     return (
@@ -225,6 +225,7 @@ def is_keep_alive_for_gc(attribute):
          # There are some exceptions, however:
          not(
              # Node lifetime is managed by object grouping.
+             v8_types.is_dom_node_type(interface.name) or
              v8_types.is_dom_node_type(idl_type) or
              # A self-reference is unnecessary.
              attribute.name == 'self' or
