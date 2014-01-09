@@ -103,11 +103,11 @@ void RTCDemuxerStream::Read(const ReadCB& read_cb) {
   base::AutoLock lock(lock_);
   DCHECK(read_cb_.is_null());
   if (is_destroyed_) {
-    media::BindToLoop(base::MessageLoopProxy::current(), read_cb)
-        .Run(DemuxerStream::kAborted, NULL);
+    base::MessageLoopProxy::current()->PostTask(FROM_HERE, base::Bind(
+        read_cb, DemuxerStream::kAborted, NULL));
     return;
   }
-  read_cb_ = media::BindToLoop(base::MessageLoopProxy::current(), read_cb);
+  read_cb_ = media::BindToCurrentLoop(read_cb);
   RunReadCallback_Locked();
 }
 
@@ -197,7 +197,7 @@ void RTCVideoDecoderFactoryTv::Initialize(media::DemuxerHost* /*host*/,
                                           const media::PipelineStatusCB& cb,
                                           bool /*enable_text_tracks*/) {
   base::AutoLock lock(lock_);
-  init_cb_ = media::BindToLoop(base::MessageLoopProxy::current(), cb);
+  init_cb_ = media::BindToCurrentLoop(cb);
   if (stream_)
     base::ResetAndReturn(&init_cb_).Run(media::PIPELINE_OK);
 }

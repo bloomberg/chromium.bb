@@ -19,9 +19,6 @@
 
 namespace media {
 
-#define BIND_TO_LOOP(function) \
-    media::BindToLoop(task_runner_, base::Bind(function, weak_this_))
-
 static bool IsStreamValidAndEncrypted(DemuxerStream* stream) {
   return ((stream->type() == DemuxerStream::AUDIO &&
            stream->audio_decoder_config().IsValidConfig() &&
@@ -57,8 +54,8 @@ void DecryptingDemuxerStream::Initialize(DemuxerStream* stream,
   InitializeDecoderConfig();
 
   state_ = kDecryptorRequested;
-  set_decryptor_ready_cb_.Run(
-      BIND_TO_LOOP(&DecryptingDemuxerStream::SetDecryptor));
+  set_decryptor_ready_cb_.Run(BindToCurrentLoop(
+      base::Bind(&DecryptingDemuxerStream::SetDecryptor, weak_this_)));
 }
 
 void DecryptingDemuxerStream::Read(const ReadCB& read_cb) {
@@ -155,7 +152,8 @@ void DecryptingDemuxerStream::SetDecryptor(Decryptor* decryptor) {
 
   decryptor_->RegisterNewKeyCB(
       GetDecryptorStreamType(),
-      BIND_TO_LOOP(&DecryptingDemuxerStream::OnKeyAdded));
+      BindToCurrentLoop(
+          base::Bind(&DecryptingDemuxerStream::OnKeyAdded, weak_this_)));
 
   state_ = kIdle;
   base::ResetAndReturn(&init_cb_).Run(PIPELINE_OK);
@@ -231,7 +229,8 @@ void DecryptingDemuxerStream::DecryptPendingBuffer() {
   decryptor_->Decrypt(
       GetDecryptorStreamType(),
       pending_buffer_to_decrypt_,
-      BIND_TO_LOOP(&DecryptingDemuxerStream::DeliverBuffer));
+      BindToCurrentLoop(
+          base::Bind(&DecryptingDemuxerStream::DeliverBuffer, weak_this_)));
 }
 
 void DecryptingDemuxerStream::DeliverBuffer(

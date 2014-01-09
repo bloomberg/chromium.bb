@@ -62,14 +62,14 @@ WaitableMessageLoopEvent::~WaitableMessageLoopEvent() {}
 
 base::Closure WaitableMessageLoopEvent::GetClosure() {
   DCHECK_EQ(message_loop_, base::MessageLoop::current());
-  return BindToLoop(message_loop_->message_loop_proxy(), base::Bind(
+  return BindToCurrentLoop(base::Bind(
       &WaitableMessageLoopEvent::OnCallback, base::Unretained(this),
       PIPELINE_OK));
 }
 
 PipelineStatusCB WaitableMessageLoopEvent::GetPipelineStatusCB() {
   DCHECK_EQ(message_loop_, base::MessageLoop::current());
-  return BindToLoop(message_loop_->message_loop_proxy(), base::Bind(
+  return BindToCurrentLoop(base::Bind(
       &WaitableMessageLoopEvent::OnCallback, base::Unretained(this)));
 }
 

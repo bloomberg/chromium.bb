@@ -15,19 +15,18 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/single_thread_task_runner.h"
 
-// This is a helper utility for base::Bind()ing callbacks on to particular
-// MessageLoops.  A typical use is when |a| (of class |A|) wants to hand a
+// This is a helper utility for base::Bind()ing callbacks to the current
+// MessageLoop. The typical use is when |a| (of class |A|) wants to hand a
 // callback such as base::Bind(&A::AMethod, a) to |b|, but needs to ensure that
-// when |b| executes the callback, it does so on a particular MessageLoop.
+// when |b| executes the callback, it does so on |a|'s current MessageLoop.
 //
 // Typical usage: request to be called back on the current thread:
 // other->StartAsyncProcessAndCallMeBack(
-//    media::BindToLoop(MessageLoopProxy::current(),
-//                      base::Bind(&MyClass::MyMethod, this)));
+//    media::BindToCurrentLoop(base::Bind(&MyClass::MyMethod, this)));
 //
-// Note that like base::Bind(), BindToLoop() can't bind non-constant references,
-// and that *unlike* base::Bind(), BindToLoop() makes copies of its arguments,
-// and thus can't be used with arrays.
+// Note that like base::Bind(), BindToCurrentLoop() can't bind non-constant
+// references, and that *unlike* base::Bind(), BindToCurrentLoop() makes copies
+// of its arguments, and thus can't be used with arrays.
 
 namespace media {
 
@@ -155,17 +154,13 @@ struct TrampolineHelper<void(A1, A2, A3, A4, A5, A6, A7)> {
 
 }  // namespace internal
 
-template<typename T>
-static base::Callback<T> BindToLoop(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    const base::Callback<T>& cb) {
-  return base::Bind(&internal::TrampolineHelper<T>::Run, task_runner, cb);
-}
-
+// TODO(scherkus): Rename me to something that emphasizes the asynchrony
+// http://crbug.com/167240
 template<typename T>
 static base::Callback<T> BindToCurrentLoop(
     const base::Callback<T>& cb) {
-  return BindToLoop(base::MessageLoopProxy::current(), cb);
+  return base::Bind(&internal::TrampolineHelper<T>::Run,
+                    base::MessageLoopProxy::current(), cb);
 }
 
 }  // namespace media

@@ -205,8 +205,8 @@ class MediaSourcePlayerTest : public testing::Test {
   // Prevent usage creep of MSP::set_decode_callback_for_testing() by
   // only using it for the ReleaseWithOnPrefetchDoneAlreadyPosted test.
   void OnNextTestDecodeCallbackPostTaskToReleasePlayer() {
-    player_.set_decode_callback_for_testing(media::BindToLoop(
-      message_loop_.message_loop_proxy(),
+    DCHECK_EQ(&message_loop_, base::MessageLoop::current());
+    player_.set_decode_callback_for_testing(media::BindToCurrentLoop(
       base::Bind(
           &MediaSourcePlayerTest::ReleaseWithPendingPrefetchDoneVerification,
           base::Unretained(this))));

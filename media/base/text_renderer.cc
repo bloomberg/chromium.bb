@@ -126,11 +126,8 @@ void TextRenderer::AddTextStream(DemuxerStream* text_stream,
   DCHECK(pending_eos_set_.find(text_stream) ==
          pending_eos_set_.end());
 
-  media::AddTextTrackDoneCB done_cb =
-      media::BindToLoop(task_runner_,
-                        base::Bind(&TextRenderer::OnAddTextTrackDone,
-                                   weak_this_,
-                                   text_stream));
+  AddTextTrackDoneCB done_cb = BindToCurrentLoop(
+      base::Bind(&TextRenderer::OnAddTextTrackDone, weak_this_, text_stream));
 
   add_text_track_cb_.Run(config, done_cb);
 }

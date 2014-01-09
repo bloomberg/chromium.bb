@@ -154,7 +154,11 @@ class MediaSourceDelegate : public media::DemuxerHost {
   void ResetVideoDecryptingDemuxerStream();
   void FinishResettingDecryptingDemuxerStreams();
 
+  // Callback for ChunkDemuxer::Stop() and helper for deleting |this| on the
+  // main thread.
   void OnDemuxerStopDone();
+  void DeleteSelf();
+
   void OnDemuxerOpened();
   void OnNeedKey(const std::string& type,
                  const std::vector<uint8>& init_data);

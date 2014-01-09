@@ -258,7 +258,7 @@ void MediaDecoderJob::DecodeNextAccessUnit(
       &MediaDecoderJob::DecodeInternal, base::Unretained(this),
       received_data_.access_units[access_unit_index_],
       start_time_ticks, start_presentation_timestamp, needs_flush_,
-      media::BindToLoop(ui_task_runner_, base::Bind(
+      media::BindToCurrentLoop(base::Bind(
           &MediaDecoderJob::OnDecodeCompleted, base::Unretained(this)))));
   needs_flush_ = false;
 }

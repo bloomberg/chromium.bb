@@ -234,6 +234,9 @@ private:
   // decoder thread to the ChildThread should use |weak_this_|.
   base::WeakPtr<VaapiVideoDecodeAccelerator> weak_this_;
 
+  // Callback used when creating VASurface objects.
+  VASurface::ReleaseCB va_surface_release_cb_;
+
   // To expose client callbacks from VideoDecodeAccelerator.
   // NOTE: all calls to these objects *MUST* be executed on message_loop_.
   base::WeakPtrFactory<Client> client_ptr_factory_;

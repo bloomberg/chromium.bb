@@ -268,13 +268,11 @@ void VideoCaptureImpl::DoBufferReceivedOnCaptureThread(
           buffer->buffer_size,
           buffer->buffer->handle(),
           timestamp - first_frame_timestamp_,
-          media::BindToLoop(
-              capture_message_loop_proxy_,
-              base::Bind(
-                  &VideoCaptureImpl::DoClientBufferFinishedOnCaptureThread,
-                  weak_this_factory_.GetWeakPtr(),
-                  buffer_id,
-                  buffer)));
+          media::BindToCurrentLoop(base::Bind(
+              &VideoCaptureImpl::DoClientBufferFinishedOnCaptureThread,
+              weak_this_factory_.GetWeakPtr(),
+              buffer_id,
+              buffer)));
 
   for (ClientInfo::iterator it = clients_.begin(); it != clients_.end(); ++it)
     it->first->OnFrameReady(this, frame);

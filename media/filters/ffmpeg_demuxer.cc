@@ -374,8 +374,6 @@ FFmpegDemuxer::FFmpegDemuxer(
       audio_disabled_(false),
       text_enabled_(false),
       duration_known_(false),
-      url_protocol_(data_source, BindToLoop(task_runner_, base::Bind(
-          &FFmpegDemuxer::OnDataSourceError, base::Unretained(this)))),
       need_key_cb_(need_key_cb) {
   DCHECK(task_runner_.get());
   DCHECK(data_source_);
@@ -385,7 +383,7 @@ FFmpegDemuxer::~FFmpegDemuxer() {}
 
 void FFmpegDemuxer::Stop(const base::Closure& callback) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  url_protocol_.Abort();
+  url_protocol_->Abort();
   data_source_->Stop(BindToCurrentLoop(base::Bind(
       &FFmpegDemuxer::OnDataSourceStopped, weak_this_,
       BindToCurrentLoop(callback))));
@@ -441,7 +439,9 @@ void FFmpegDemuxer::Initialize(DemuxerHost* host,
   // see http://crbug.com/122071
   data_source_->set_host(host);
 
-  glue_.reset(new FFmpegGlue(&url_protocol_));
+  url_protocol_.reset(new BlockingUrlProtocol(data_source_, BindToCurrentLoop(
+      base::Bind(&FFmpegDemuxer::OnDataSourceError, base::Unretained(this)))));
+  glue_.reset(new FFmpegGlue(url_protocol_.get()));
   AVFormatContext* format_context = glue_->format_context();
 
   // Disable ID3v1 tag reading to avoid costly seeks to end of file for data we
@@ -671,7 +671,7 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
   duration_known_ = (max_duration != kInfiniteDuration());
 
   int64 filesize_in_bytes = 0;
-  url_protocol_.GetSize(&filesize_in_bytes);
+  url_protocol_->GetSize(&filesize_in_bytes);
   bitrate_ = CalculateBitrate(format_context, max_duration, filesize_in_bytes);
   if (bitrate_ > 0)
     data_source_->SetBitrate(bitrate_);

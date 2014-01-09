@@ -120,13 +120,8 @@ COMPILE_ASSERT_MATCHING_ENUM(UseCredentials);
 #undef COMPILE_ASSERT_MATCHING_ENUM
 
 #define BIND_TO_RENDER_LOOP(function) \
-  media::BindToLoop(main_loop_, base::Bind(function, AsWeakPtr()))
-
-#define BIND_TO_RENDER_LOOP_1(function, arg1) \
-  media::BindToLoop(main_loop_, base::Bind(function, AsWeakPtr(), arg1))
-
-#define BIND_TO_RENDER_LOOP_2(function, arg1, arg2) \
-  media::BindToLoop(main_loop_, base::Bind(function, AsWeakPtr(), arg1, arg2))
+  (DCHECK(main_loop_->BelongsToCurrentThread()), \
+  media::BindToCurrentLoop(base::Bind(function, AsWeakPtr())))
 
 static void LogMediaSourceError(const scoped_refptr<media::MediaLog>& media_log,
                                 const std::string& error) {
@@ -1085,6 +1080,7 @@ void WebMediaPlayerImpl::NotifyDownloading(bool is_downloading) {
 }
 
 void WebMediaPlayerImpl::StartPipeline() {
+  DCHECK(main_loop_->BelongsToCurrentThread());
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
 
   // Keep track if this is a MSE or non-MSE playback.

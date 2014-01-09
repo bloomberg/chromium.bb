@@ -132,9 +132,8 @@ void MediaSourceDelegate::StopDemuxer() {
 
   // The callback OnDemuxerStopDone() owns |this| and will delete it when
   // called. Hence using base::Unretained(this) is safe here.
-  demuxer_->Stop(media::BindToLoop(main_loop_,
-      base::Bind(&MediaSourceDelegate::OnDemuxerStopDone,
-                 base::Unretained(this))));
+  demuxer_->Stop(base::Bind(&MediaSourceDelegate::OnDemuxerStopDone,
+                            base::Unretained(this)));
 }
 
 void MediaSourceDelegate::InitializeMediaSource(
@@ -656,6 +655,14 @@ void MediaSourceDelegate::FinishResettingDecryptingDemuxerStreams() {
 }
 
 void MediaSourceDelegate::OnDemuxerStopDone() {
+  DCHECK(media_loop_->BelongsToCurrentThread());
+  DVLOG(1) << __FUNCTION__ << " : " << demuxer_client_id_;
+  main_loop_->PostTask(
+      FROM_HERE,
+      base::Bind(&MediaSourceDelegate::DeleteSelf, base::Unretained(this)));
+}
+
+void MediaSourceDelegate::DeleteSelf() {
   DCHECK(main_loop_->BelongsToCurrentThread());
   DVLOG(1) << __FUNCTION__ << " : " << demuxer_client_id_;
   chunk_demuxer_.reset();

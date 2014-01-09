@@ -162,17 +162,19 @@ bool AudioManagerWin::HasAudioInputDevices() {
 }
 
 void AudioManagerWin::CreateDeviceListener() {
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+
   // AudioDeviceListenerWin must be initialized on a COM thread and should only
   // be used if WASAPI / Core Audio is supported.
   if (CoreAudioUtil::IsSupported()) {
-    output_device_listener_.reset(new AudioDeviceListenerWin(BindToLoop(
-        GetTaskRunner(), base::Bind(
-            &AudioManagerWin::NotifyAllOutputDeviceChangeListeners,
-            base::Unretained(this)))));
+    output_device_listener_.reset(new AudioDeviceListenerWin(BindToCurrentLoop(
+        base::Bind(&AudioManagerWin::NotifyAllOutputDeviceChangeListeners,
+                   base::Unretained(this)))));
   }
 }
 
 void AudioManagerWin::DestroyDeviceListener() {
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   output_device_listener_.reset();
 }
 

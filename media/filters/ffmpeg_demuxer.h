@@ -253,7 +253,7 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   bool duration_known_;
 
   // FFmpegURLProtocol implementation and corresponding glue bits.
-  BlockingUrlProtocol url_protocol_;
+  scoped_ptr<BlockingUrlProtocol> url_protocol_;
   scoped_ptr<FFmpegGlue> glue_;
 
   const NeedKeyCB need_key_cb_;

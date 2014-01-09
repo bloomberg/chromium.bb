@@ -38,18 +38,14 @@ void BoundIntegersSet(int* a_var, int* b_var, int a_val, int b_val) {
 // Various tests that check that the bound function is only actually executed
 // on the message loop, not during the original Run.
 class BindToLoopTest : public ::testing::Test {
- public:
-  BindToLoopTest() : proxy_(loop_.message_loop_proxy()) {}
-
  protected:
   base::MessageLoop loop_;
-  scoped_refptr<base::SingleThreadTaskRunner> proxy_;
 };
 
 TEST_F(BindToLoopTest, Closure) {
   // Test the closure is run inside the loop, not outside it.
   base::WaitableEvent waiter(false, false);
-  base::Closure cb = BindToLoop(proxy_, base::Bind(
+  base::Closure cb = BindToCurrentLoop(base::Bind(
       &base::WaitableEvent::Signal, base::Unretained(&waiter)));
   cb.Run();
   EXPECT_FALSE(waiter.IsSignaled());
@@ -59,7 +55,7 @@ TEST_F(BindToLoopTest, Closure) {
 
 TEST_F(BindToLoopTest, Bool) {
   bool bool_var = false;
-  base::Callback<void(bool)> cb = BindToLoop(proxy_, base::Bind(
+  base::Callback<void(bool)> cb = BindToCurrentLoop(base::Bind(
       &BoundBoolSet, &bool_var));
   cb.Run(true);
   EXPECT_FALSE(bool_var);
@@ -70,7 +66,7 @@ TEST_F(BindToLoopTest, Bool) {
 TEST_F(BindToLoopTest, BoundScopedPtrBool) {
   bool bool_val = false;
   scoped_ptr<bool> scoped_ptr_bool(new bool(true));
-  base::Closure cb = BindToLoop(proxy_, base::Bind(
+  base::Closure cb = BindToCurrentLoop(base::Bind(
       &BoundBoolSetFromScopedPtr, &bool_val, base::Passed(&scoped_ptr_bool)));
   cb.Run();
   EXPECT_FALSE(bool_val);
@@ -81,7 +77,7 @@ TEST_F(BindToLoopTest, BoundScopedPtrBool) {
 TEST_F(BindToLoopTest, PassedScopedPtrBool) {
   bool bool_val = false;
   scoped_ptr<bool> scoped_ptr_bool(new bool(true));
-  base::Callback<void(scoped_ptr<bool>)> cb = BindToLoop(proxy_, base::Bind(
+  base::Callback<void(scoped_ptr<bool>)> cb = BindToCurrentLoop(base::Bind(
       &BoundBoolSetFromScopedPtr, &bool_val));
   cb.Run(scoped_ptr_bool.Pass());
   EXPECT_FALSE(bool_val);
@@ -93,7 +89,7 @@ TEST_F(BindToLoopTest, BoundScopedArrayBool) {
   bool bool_val = false;
   scoped_ptr<bool[]> scoped_array_bool(new bool[1]);
   scoped_array_bool[0] = true;
-  base::Closure cb = BindToLoop(proxy_, base::Bind(
+  base::Closure cb = BindToCurrentLoop(base::Bind(
       &BoundBoolSetFromScopedArray, &bool_val,
       base::Passed(&scoped_array_bool)));
   cb.Run();
@@ -106,7 +102,7 @@ TEST_F(BindToLoopTest, PassedScopedArrayBool) {
   bool bool_val = false;
   scoped_ptr<bool[]> scoped_array_bool(new bool[1]);
   scoped_array_bool[0] = true;
-  base::Callback<void(scoped_ptr<bool[]>)> cb = BindToLoop(proxy_, base::Bind(
+  base::Callback<void(scoped_ptr<bool[]>)> cb = BindToCurrentLoop(base::Bind(
       &BoundBoolSetFromScopedArray, &bool_val));
   cb.Run(scoped_array_bool.Pass());
   EXPECT_FALSE(bool_val);
@@ -119,7 +115,7 @@ TEST_F(BindToLoopTest, BoundScopedPtrMallocBool) {
   scoped_ptr_malloc<bool> scoped_ptr_malloc_bool(
       static_cast<bool*>(malloc(sizeof(bool))));
   *scoped_ptr_malloc_bool = true;
-  base::Closure cb = BindToLoop(proxy_, base::Bind(
+  base::Closure cb = BindToCurrentLoop(base::Bind(
       &BoundBoolSetFromScopedPtrMalloc, &bool_val,
       base::Passed(&scoped_ptr_malloc_bool)));
   cb.Run();
@@ -133,8 +129,8 @@ TEST_F(BindToLoopTest, PassedScopedPtrMallocBool) {
   scoped_ptr_malloc<bool> scoped_ptr_malloc_bool(
       static_cast<bool*>(malloc(sizeof(bool))));
   *scoped_ptr_malloc_bool = true;
-  base::Callback<void(scoped_ptr_malloc<bool>)> cb = BindToLoop(
-      proxy_, base::Bind(&BoundBoolSetFromScopedPtrMalloc, &bool_val));
+  base::Callback<void(scoped_ptr_malloc<bool>)> cb = BindToCurrentLoop(
+      base::Bind(&BoundBoolSetFromScopedPtrMalloc, &bool_val));
   cb.Run(scoped_ptr_malloc_bool.Pass());
   EXPECT_FALSE(bool_val);
   loop_.RunUntilIdle();
@@ -145,7 +141,7 @@ TEST_F(BindToLoopTest, BoolConstRef) {
   bool bool_var = false;
   bool true_var = true;
   const bool& true_ref = true_var;
-  base::Closure cb = BindToLoop(proxy_, base::Bind(
+  base::Closure cb = BindToCurrentLoop(base::Bind(
       &BoundBoolSetFromConstRef, &bool_var, true_ref));
   cb.Run();
   EXPECT_FALSE(bool_var);
@@ -156,7 +152,7 @@ TEST_F(BindToLoopTest, BoolConstRef) {
 TEST_F(BindToLoopTest, Integers) {
   int a = 0;
   int b = 0;
-  base::Callback<void(int, int)> cb = BindToLoop(proxy_, base::Bind(
+  base::Callback<void(int, int)> cb = BindToCurrentLoop(base::Bind(
       &BoundIntegersSet, &a, &b));
   cb.Run(1, -1);
   EXPECT_EQ(a, 0);

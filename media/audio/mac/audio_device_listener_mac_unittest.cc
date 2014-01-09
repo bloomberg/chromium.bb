@@ -36,12 +36,11 @@ class AudioDeviceListenerMacTest : public testing::Test {
   }
 
   void CreateDeviceListener() {
-    // Force a post task using BindToLoop to ensure device listener internals
-    // are working correctly.
-    output_device_listener_.reset(new AudioDeviceListenerMac(BindToLoop(
-        message_loop_.message_loop_proxy(), base::Bind(
-            &AudioDeviceListenerMacTest::OnDeviceChange,
-            base::Unretained(this)))));
+    // Force a post task using BindToCurrentLoop() to ensure device listener
+    // internals are working correctly.
+    output_device_listener_.reset(new AudioDeviceListenerMac(BindToCurrentLoop(
+        base::Bind(&AudioDeviceListenerMacTest::OnDeviceChange,
+                   base::Unretained(this)))));
   }
 
   void DestroyDeviceListener() {
