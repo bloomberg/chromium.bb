@@ -421,6 +421,10 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
   // Requests the ownership of the given service name.
   // Returns true on success, or the the service name is already obtained.
   //
+  // Note that it's important to expose methods before requesting a service
+  // name with this method.  See also ExportedObject::ExportMethodAndBlock()
+  // for details.
+  //
   // BLOCKING CALL.
   virtual bool RequestOwnershipAndBlock(const std::string& service_name,
                                         ServiceOwnershipOptions options);

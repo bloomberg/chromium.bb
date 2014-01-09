@@ -66,6 +66,14 @@ class CHROME_DBUS_EXPORT ExportedObject
   // |method_callback| can safely reference objects in the origin thread
   // (i.e. UI thread in most cases).
   //
+  // IMPORTANT NOTE: You should export all methods before requesting a
+  // service name by Bus::RequestOwnership/AndBlock(). If you do it in the
+  // wrong order (i.e. request a service name then export methods), there
+  // will be a short time period where your service is unable to respond to
+  // method calls because these methods aren't yet exposed. This race is a
+  // real problem as clients may start calling methods of your service as
+  // soon as you acquire a service name, by watching the name owner change.
+  //
   // BLOCKING CALL.
   virtual bool ExportMethodAndBlock(const std::string& interface_name,
                                     const std::string& method_name,

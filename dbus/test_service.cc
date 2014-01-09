@@ -38,7 +38,7 @@ TestService::TestService(const Options& options)
     : base::Thread("TestService"),
       request_ownership_options_(options.request_ownership_options),
       dbus_task_runner_(options.dbus_task_runner),
-      on_all_methods_exported_(false, false),
+      on_name_obtained_(false, false),
       num_exported_methods_(0) {
 }
 
@@ -54,8 +54,8 @@ bool TestService::StartService() {
 
 bool TestService::WaitUntilServiceIsStarted() {
   const base::TimeDelta timeout(TestTimeouts::action_max_timeout());
-  // Wait until all methods are exported.
-  return on_all_methods_exported_.TimedWait(timeout);
+  // Wait until the ownership of the service name is obtained.
+  return on_name_obtained_.TimedWait(timeout);
 }
 
 void TestService::ShutdownAndBlock() {
@@ -138,6 +138,8 @@ void TestService::OnOwnership(base::Callback<void(bool)> callback,
   has_ownership_ = success;
   LOG_IF(ERROR, !success) << "Failed to own: " << service_name;
   callback.Run(success);
+
+  on_name_obtained_.Signal();
 }
 
 void TestService::OnExported(const std::string& interface_name,
@@ -152,8 +154,15 @@ void TestService::OnExported(const std::string& interface_name,
   }
 
   ++num_exported_methods_;
-  if (num_exported_methods_ == kNumMethodsToExport)
-    on_all_methods_exported_.Signal();
+  if (num_exported_methods_ == kNumMethodsToExport) {
+    // As documented in exported_object.h, the service name should be
+    // requested after all methods are exposed.
+    bus_->RequestOwnership("org.chromium.TestService",
+                           request_ownership_options_,
+                           base::Bind(&TestService::OnOwnership,
+                                      base::Unretained(this),
+                                      base::Bind(&EmptyCallback)));
+  }
 }
 
 void TestService::Run(base::MessageLoop* message_loop) {
@@ -162,12 +171,6 @@ void TestService::Run(base::MessageLoop* message_loop) {
   bus_options.connection_type = Bus::PRIVATE;
   bus_options.dbus_task_runner = dbus_task_runner_;
   bus_ = new Bus(bus_options);
-
-  bus_->RequestOwnership("org.chromium.TestService",
-                         request_ownership_options_,
-                         base::Bind(&TestService::OnOwnership,
-                                    base::Unretained(this),
-                                    base::Bind(&EmptyCallback)));
 
   exported_object_ = bus_->GetExportedObject(
       ObjectPath("/org/chromium/TestObject"));

@@ -170,7 +170,7 @@ class TestService : public base::Thread {
   Bus::ServiceOwnershipOptions request_ownership_options_;
 
   scoped_refptr<base::SequencedTaskRunner> dbus_task_runner_;
-  base::WaitableEvent on_all_methods_exported_;
+  base::WaitableEvent on_name_obtained_;
   // The number of methods actually exported.
   int num_exported_methods_;
 
