@@ -53,7 +53,11 @@ void ChromeMIDIPermissionContext::RequestMIDISysExPermission(
   const PermissionRequestID id(render_process_id, render_view_id, bridge_id, 0);
 
   GURL embedder = web_contents->GetURL();
-  if (!requesting_frame.is_valid() || !embedder.is_valid()) {
+  // |requesting_frame| can be empty and invalid when the frame is a local
+  // file. Here local files should be granted to show an infobar.
+  // Any user's action will not be stored to content settings data base.
+  if ((!requesting_frame.is_valid() && !requesting_frame.is_empty()) ||
+      !embedder.is_valid()) {
     LOG(WARNING) << "Attempt to use MIDI sysex from an invalid URL: "
                  << requesting_frame << "," << embedder
                  << " (Web MIDI is not supported in popups)";
