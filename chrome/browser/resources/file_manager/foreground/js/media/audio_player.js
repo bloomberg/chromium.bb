@@ -12,12 +12,12 @@
  */
 function AudioPlayer(container) {
   this.container_ = container;
-  this.metadataCache_ = MetadataCache.createFull();
   this.currentTrack_ = -1;
   this.playlistGeneration_ = 0;
   this.selectedEntry_ = null;
   this.volumeManager_ = new VolumeManagerWrapper(
       VolumeManagerWrapper.DriveEnabledStatus.DRIVE_ENABLED);
+  this.metadataCache_ = MetadataCache.createFull(this.volumeManager_);
 
   this.container_.classList.add('collapsed');
 

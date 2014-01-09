@@ -141,11 +141,11 @@ function loadVideoPlayer() {
         document.querySelector('#video-container'),
         document.querySelector('#controls'));
 
-    metadataCache = MetadataCache.createFull();
     volumeManager = new VolumeManagerWrapper(
         VolumeManagerWrapper.DriveEnabledStatus.DRIVE_ENABLED);
     volumeManager.addEventListener('externally-unmounted',
                                    onExternallyUnmounted);
+    metadataCache = MetadataCache.createFull(volumeManager);
 
     // If the video player is starting before the first instance of the File
     // Manager then it does not have access to filesystem URLs.

@@ -108,12 +108,13 @@ MetadataCache.DESCENDANTS = 2;
 MetadataCache.EVICTION_NUMBER = 1000;
 
 /**
+ * @param {VolumeManagerWrapper} volumeManager Volume manager instance.
  * @return {MetadataCache!} The cache with all providers.
  */
-MetadataCache.createFull = function() {
+MetadataCache.createFull = function(volumeManager) {
   var cache = new MetadataCache();
   cache.providers_.push(new FilesystemProvider());
-  cache.providers_.push(new DriveProvider());
+  cache.providers_.push(new DriveProvider(volumeManager));
   cache.providers_.push(new ContentProvider());
   return cache;
 };
@@ -671,10 +672,17 @@ FilesystemProvider.prototype.fetch = function(
  *     drive: { pinned, hosted, present, customIconUrl, etc. }
  *     thumbnail: { url, transform }
  *     streaming: { }
+ * @param {VolumeManagerWrapper} volumeManager Volume manager instance.
  * @constructor
  */
-function DriveProvider() {
+function DriveProvider(volumeManager) {
   MetadataProvider.call(this);
+
+  /**
+   * @type {VolumeManagerWrapper}
+   * @private
+   */
+  this.volumeManager_ = volumeManager;
 
   // We batch metadata fetches into single API call.
   this.entries_ = [];
@@ -693,8 +701,8 @@ DriveProvider.prototype = {
  * @return {boolean} Whether this provider supports the entry.
  */
 DriveProvider.prototype.supportsEntry = function(entry) {
-  // TODO(mtomasz): Use Entry instead of paths.
-  return PathUtil.isDriveBasedPath(entry.fullPath);
+  var locationInfo = this.volumeManager_.getLocationInfo(entry);
+  return locationInfo && locationInfo.isDriveBased;
 };
 
 /**

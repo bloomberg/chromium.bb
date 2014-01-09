@@ -659,7 +659,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
          DialogType.FULL_PAGE]);
 
     // Create the metadata cache.
-    this.metadataCache_ = MetadataCache.createFull();
+    this.metadataCache_ = MetadataCache.createFull(this.volumeManager_);
 
     // Create the root view of FileManager.
     this.ui_ = new FileManagerUI(this.dialogDom_, this.dialogType);
