@@ -100,6 +100,12 @@ public:
     }
 
 protected:
+    virtual LayoutBox resolvedLayoutBox() const OVERRIDE
+    {
+        if (shapeValue()->layoutBox() == BoxMissing)
+            return ContentBox;
+        return shapeValue()->layoutBox();
+    }
     virtual LayoutRect computedShapeLogicalBoundingBox() const OVERRIDE { return computedShape()->shapePaddingLogicalBoundingBox(); }
     virtual ShapeValue* shapeValue() const OVERRIDE;
     virtual void getIntervals(LayoutUnit lineTop, LayoutUnit lineHeight, SegmentList& segments) const OVERRIDE

@@ -70,29 +70,24 @@ public:
 
     void setShapeSize(LayoutUnit logicalWidth, LayoutUnit logicalHeight)
     {
-        if (shapeValue()->type() == ShapeValue::Box) {
-            switch (shapeValue()->layoutBox()) {
-            case MarginBox:
-                logicalHeight += m_renderer->marginLogicalHeight();
-                logicalWidth += m_renderer->marginLogicalWidth();
-                break;
-            case BorderBox:
-                break;
-            case PaddingBox:
-                logicalHeight -= m_renderer->borderLogicalHeight();
-                logicalWidth -= m_renderer->borderLogicalWidth();
-                break;
-            case ContentBox:
-                logicalHeight -= m_renderer->borderAndPaddingLogicalHeight();
-                logicalWidth -= m_renderer->borderAndPaddingLogicalWidth();
-                break;
-            case BoxMissing:
-                // A non-missing box value must be supplied.
-                ASSERT_NOT_REACHED();
-            }
-        } else if (m_renderer->style()->boxSizing() == CONTENT_BOX) {
+        switch (resolvedLayoutBox()) {
+        case MarginBox:
+            logicalHeight += m_renderer->marginLogicalHeight();
+            logicalWidth += m_renderer->marginLogicalWidth();
+            break;
+        case BorderBox:
+            break;
+        case PaddingBox:
+            logicalHeight -= m_renderer->borderLogicalHeight();
+            logicalWidth -= m_renderer->borderLogicalWidth();
+            break;
+        case ContentBox:
             logicalHeight -= m_renderer->borderAndPaddingLogicalHeight();
             logicalWidth -= m_renderer->borderAndPaddingLogicalWidth();
+            break;
+        case BoxMissing:
+            // A non-missing box value must be supplied.
+            ASSERT_NOT_REACHED();
         }
 
         LayoutSize newLogicalSize(logicalWidth, logicalHeight);
@@ -128,48 +123,45 @@ protected:
 
     const Shape* computedShape() const;
 
+    virtual LayoutBox resolvedLayoutBox() const = 0;
     virtual LayoutRect computedShapeLogicalBoundingBox() const = 0;
     virtual ShapeValue* shapeValue() const = 0;
     virtual void getIntervals(LayoutUnit, LayoutUnit, SegmentList&) const = 0;
 
     LayoutUnit logicalTopOffset() const
     {
-        if (shapeValue()->type() == ShapeValue::Box) {
-            switch (shapeValue()->layoutBox()) {
-            case MarginBox:
-                return -m_renderer->marginBefore();
-            case BorderBox:
-                return LayoutUnit();
-            case PaddingBox:
-                return m_renderer->borderBefore();
-            case ContentBox:
-                return m_renderer->borderAndPaddingBefore();
-            case BoxMissing:
-                // A non-missing box value must be supplied.
-                ASSERT_NOT_REACHED();
-            }
+        switch (resolvedLayoutBox()) {
+        case MarginBox:
+            return -m_renderer->marginBefore();
+        case BorderBox:
+            return LayoutUnit();
+        case PaddingBox:
+            return m_renderer->borderBefore();
+        case ContentBox:
+            return m_renderer->borderAndPaddingBefore();
+        case BoxMissing:
+            // A non-missing box value must be supplied.
+            ASSERT_NOT_REACHED();
         }
-        return m_renderer->style()->boxSizing() == CONTENT_BOX ? m_renderer->borderAndPaddingBefore() : LayoutUnit();
+        return LayoutUnit();
     }
 
     LayoutUnit logicalLeftOffset() const
     {
-        if (shapeValue()->type() == ShapeValue::Box) {
-            switch (shapeValue()->layoutBox()) {
-            case MarginBox:
-                return -m_renderer->marginStart();
-            case BorderBox:
-                return LayoutUnit();
-            case PaddingBox:
-                return m_renderer->borderStart();
-            case ContentBox:
-                return m_renderer->borderAndPaddingStart();
-            case BoxMissing:
-                // A non-missing box value must be supplied.
-                ASSERT_NOT_REACHED();
-            }
+        switch (resolvedLayoutBox()) {
+        case MarginBox:
+            return -m_renderer->marginStart();
+        case BorderBox:
+            return LayoutUnit();
+        case PaddingBox:
+            return m_renderer->borderStart();
+        case ContentBox:
+            return m_renderer->borderAndPaddingStart();
+        case BoxMissing:
+            // A non-missing box value must be supplied.
+            ASSERT_NOT_REACHED();
         }
-        return (m_renderer->style()->boxSizing() == CONTENT_BOX && !m_renderer->isRenderRegion()) ? m_renderer->borderAndPaddingStart() : LayoutUnit();
+        return LayoutUnit();
     }
 
     LayoutUnit m_shapeLineTop;

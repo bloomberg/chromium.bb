@@ -88,7 +88,7 @@ private:
     ShapeValue(PassRefPtr<BasicShape> shape)
         : m_type(Shape)
         , m_shape(shape)
-        , m_layoutBox(BoxMissing)
+        , m_layoutBox(m_shape->layoutBox())
     {
     }
     ShapeValue(ShapeValueType type)
@@ -99,7 +99,7 @@ private:
     ShapeValue(PassRefPtr<StyleImage> image)
         : m_type(Image)
         , m_image(image)
-        , m_layoutBox(BoxMissing)
+        , m_layoutBox(ContentBox)
     {
     }
     ShapeValue(LayoutBox layoutBox)
