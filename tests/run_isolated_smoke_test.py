@@ -327,7 +327,7 @@ class RunIsolatedTest(unittest.TestCase):
       print err
     self.assertEqual(0, returncode)
     expected = {
-      '.': (040775, 040755, 040777),
+      '.': (040700, 040700, 040777),
       'state.json': (0100600, 0100600, 0100666),
       file1_hash: (0100400, 0100400, 0100666),
       isolated_hash: (0100400, 0100400, 0100444),
@@ -381,7 +381,7 @@ class RunIsolatedTest(unittest.TestCase):
       print err
     self.assertEqual(0, returncode)
     expected = {
-      '.': (040775, 040755, 040777),
+      '.': (040700, 040700, 040777),
       'state.json': (0100600, 0100600, 0100666),
       file1_hash: (0100400, 0100400, 0100666),
       isolated_hash: (0100400, 0100400, 0100444),

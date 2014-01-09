@@ -784,7 +784,7 @@ class TestIsolated(auto_stub.TestCase):
       },
       u'includes': [u'0123456789abcdef0123456789abcdef01234567'],
       u'os': 'oPhone',
-      u'read_only': False,
+      u'read_only': 1,
       u'relative_cwd': u'somewhere_else'
     }
     m = isolateserver.load_isolated(json.dumps(data), None, ALGO)
@@ -1046,7 +1046,7 @@ class TestArchive(TestCase):
       # If you modify isolateserver.ISOLATED_FILE_VERSION, you'll have to update
       # the hash below. Sorry about that.
       self.checkOutput(
-          '650c96bf4150c842a081683580f92d5735b78ce2 %s\n' % p,
+          '189dbab83102b8ebcff92c1332a25fe26c1a5d7d %s\n' % p,
           '')
     finally:
       os.chdir(old_cwd)

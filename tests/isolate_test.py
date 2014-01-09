@@ -798,7 +798,8 @@ class IsolateCommand(IsolateBase):
       actual_isolated = f.read()
     expected_isolated = (
         '{"algo":"sha-1","command":["foo"],"files":{},"os":"dendy",'
-        '"relative_cwd":".","version":"1.2"}')
+        '"relative_cwd":".","version":"%s"}'
+    ) % isolate.isolateserver.ISOLATED_FILE_VERSION
     self.assertEqual(expected_isolated, actual_isolated)
     isolated_data = json.loads(actual_isolated)
 
@@ -809,7 +810,8 @@ class IsolateCommand(IsolateBase):
         '"config_variables":{"OS":"dendy"},'
         '"extra_variables":{"EXECUTABLE_SUFFIX":""},"files":{},'
         '"isolate_file":"x.isolate","path_variables":{},'
-        '"relative_cwd":".","version":"1.2"}')
+        '"relative_cwd":".","version":"%s"}'
+    ) % isolate.isolateserver.ISOLATED_FILE_VERSION
     self.assertEqual(expected_isolated_state, actual_isolated_state)
     isolated_state_data = json.loads(actual_isolated_state)
 

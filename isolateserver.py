@@ -35,7 +35,7 @@ from utils import tools
 # Version of isolate protocol passed to the server in /handshake request.
 ISOLATE_PROTOCOL_VERSION = '1.0'
 # Version stored and expected in .isolated files.
-ISOLATED_FILE_VERSION = '1.2'
+ISOLATED_FILE_VERSION = '1.3'
 
 
 # The number of files to check the isolate server per /pre-upload query.
@@ -1365,7 +1365,7 @@ def process_input(filepath, prevdict, read_only, flavor, algo):
     filepath: File to act on.
     prevdict: the previous dictionary. It is used to retrieve the cached sha-1
               to skip recalculating the hash. Optional.
-    read_only: If True, the file mode is manipulated. In practice, only save
+    read_only: If 1 or 2, the file mode is manipulated. In practice, only save
                one of 4 modes: 0755 (rwx), 0644 (rw), 0555 (rx), 0444 (r). On
                windows, mode is not set since all files are 'executable' by
                default.
@@ -1586,8 +1586,8 @@ def load_isolated(content, os_flavor, algo):
           raise ConfigError('Expected sha-1, got %r' % subvalue)
 
     elif key == 'read_only':
-      if not isinstance(value, bool):
-        raise ConfigError('Expected bool, got %r' % value)
+      if not value in (0, 1, 2):
+        raise ConfigError('Expected 0, 1 or 2, got %r' % value)
 
     elif key == 'relative_cwd':
       if not isinstance(value, basestring):
@@ -1747,7 +1747,6 @@ class Settings(object):
     assert check(self.root)
 
     self.relative_cwd = self.relative_cwd or ''
-    self.read_only = self.read_only or False
 
   def _traverse_tree(self, fetch_queue, node):
     if node.can_fetch:

@@ -84,7 +84,7 @@ class IsolateFormatTest(unittest.TestCase):
             KEY_UNTRACKED: ['d'],
             KEY_TOUCHED: ['touched_a'],
             'command': ['echo', 'Hello World'],
-            'read_only': True,
+            'read_only': 2,
           },
         }],
         ['OS=="amiga" or OS=="coleco" or OS=="dendy"', {
@@ -98,7 +98,7 @@ class IsolateFormatTest(unittest.TestCase):
         ['OS=="amiga"', {
           'variables': {
             KEY_TRACKED: ['g'],
-            'read_only': False,
+            'read_only': 1,
           },
         }],
         ['OS=="amiga" or OS=="atari" or OS=="dendy"', {
@@ -114,14 +114,14 @@ class IsolateFormatTest(unittest.TestCase):
         KEY_TOUCHED: ['touched', 'touched_e'],
         KEY_TRACKED: ['a', 'e', 'g', 'x'],
         KEY_UNTRACKED: ['b', 'f', 'h'],
-        'read_only': False,
+        'read_only': 1,
       },
       ('atari',): {
         'command': ['echo', 'Hello World'],
         KEY_TOUCHED: ['touched', 'touched_a'],
         KEY_TRACKED: ['a', 'c', 'x'],
         KEY_UNTRACKED: ['b', 'd', 'h'],
-        'read_only': True,
+        'read_only': 2,
       },
       ('coleco',): {
         'command': ['echo', 'You should get an Atari'],
@@ -166,14 +166,14 @@ class IsolateFormatTest(unittest.TestCase):
         KEY_TOUCHED: ['touched', 'touched_e'],
         KEY_TRACKED: ['a', 'e', 'g', 'x'],
         KEY_UNTRACKED: ['b', 'f', 'h'],
-        'read_only': False,
+        'read_only': 0,
       },
       ('atari',): {
         'command': ['echo', 'Hello World'],
         KEY_TOUCHED: ['touched', 'touched_a'],
         KEY_TRACKED: ['a', 'c', 'x'],
         KEY_UNTRACKED: ['b', 'd', 'h'],
-        'read_only': True,
+        'read_only': 1,
       },
       ('coleco',): {
         'command': ['echo', 'You should get an Atari'],
@@ -214,8 +214,8 @@ class IsolateFormatTest(unittest.TestCase):
         'touched_e': amiga | coleco | dendy,
       },
       'read_only': {
-        False: amiga,
-        True: atari,
+        0: amiga,
+        1: atari,
       },
     }
     actual_values = isolate_format.invert_map(value)
@@ -248,8 +248,8 @@ class IsolateFormatTest(unittest.TestCase):
         'touched_e': amiga | coleco | dendy,
       },
       'read_only': {
-        False: amiga,
-        True: atari,
+        0: amiga,
+        1: atari,
       },
     }
     expected_values = {
@@ -276,8 +276,8 @@ class IsolateFormatTest(unittest.TestCase):
         'touched_e': amiga | coleco | dendy,
       },
       'read_only': {
-        False: amiga,
-        True: atari,
+        0: amiga,
+        1: atari,
       },
     }
     actual_values = isolate_format.reduce_inputs(values)
@@ -394,15 +394,15 @@ class IsolateFormatTest(unittest.TestCase):
         'touched_e': (amiga, coleco, dendy),
       },
       'read_only': {
-        False: (amiga,),
-        True: (atari,),
+        0: (amiga,),
+        1: (atari,),
       },
     }
     expected_conditions = [
       ['OS=="amiga"', {
         'variables': {
           KEY_TRACKED: ['g'],
-          'read_only': False,
+          'read_only': 0,
         },
       }],
       ['OS=="amiga" or OS=="atari" or OS=="coleco" or OS=="dendy"', {
@@ -431,7 +431,7 @@ class IsolateFormatTest(unittest.TestCase):
           KEY_TRACKED: ['c'],
           KEY_UNTRACKED: ['d'],
           KEY_TOUCHED: ['touched_a'],
-          'read_only': True,
+          'read_only': 1,
         },
       }],
     ]
@@ -451,8 +451,8 @@ class IsolateFormatTest(unittest.TestCase):
 
   def test_merge_empty(self):
     actual = isolate_format.convert_map_to_isolate_dict(
-        isolate_format.reduce_inputs(
-            isolate_format.invert_map({})), ('dummy1', 'dummy2'))
+        isolate_format.reduce_inputs(isolate_format.invert_map({})),
+        ('dummy1', 'dummy2'))
     self.assertEqual({'conditions': []}, actual)
 
   def test_load_two_conditions(self):
@@ -605,6 +605,68 @@ class IsolateFormatTest(unittest.TestCase):
         ('OS',))
     self.assertEqual(expected, actual)
 
+  def test_merge_three_conditions_read_only(self):
+    values = {
+      ('linux',): {
+        'isolate_dependency_tracked': ['file_common', 'file_linux'],
+        'read_only': 1,
+      },
+      ('mac',): {
+        'isolate_dependency_tracked': ['file_common', 'file_mac'],
+        'read_only': 0,
+      },
+      ('win',): {
+        'isolate_dependency_tracked': ['file_common', 'file_win'],
+        'read_only': 2,
+      },
+      ('amiga',): {
+        'read_only': 1,
+      }
+    }
+    expected = {
+      'conditions': [
+        ['OS=="amiga" or OS=="linux"', {
+          'variables': {
+            'read_only': 1,
+          },
+        }],
+        ['OS=="linux"', {
+          'variables': {
+            'isolate_dependency_tracked': [
+              'file_linux',
+            ],
+          },
+        }],
+        ['OS=="linux" or OS=="mac" or OS=="win"', {
+          'variables': {
+            'isolate_dependency_tracked': [
+              'file_common',
+            ],
+          },
+        }],
+        ['OS=="mac"', {
+          'variables': {
+            'isolate_dependency_tracked': [
+              'file_mac',
+            ],
+            'read_only': 0,
+          },
+        }],
+        ['OS=="win"', {
+          'variables': {
+            'isolate_dependency_tracked': [
+              'file_win',
+            ],
+            'read_only': 2,
+          },
+        }],
+      ],
+    }
+    actual = isolate_format.convert_map_to_isolate_dict(
+        isolate_format.reduce_inputs(isolate_format.invert_map(values)),
+        ('OS',))
+    self.assertEqual(expected, actual)
+
   def test_configs_comment(self):
     # Pylint is confused with isolate_format.union() return type.
     # pylint: disable=E1103
@@ -659,7 +721,7 @@ class IsolateFormatTest(unittest.TestCase):
               'file3',
             ],
             'command': ['python', '-c', 'print "H\\i\'"'],
-            'read_only': True,
+            'read_only': 2,
             'relative_cwd': 'isol\'at\\e',
           },
         }],
@@ -687,7 +749,7 @@ class IsolateFormatTest(unittest.TestCase):
         "          'print \"H\\i\'\"',\n"
         "        ],\n"
         "        'relative_cwd': 'isol\\'at\\\\e',\n"
-        "        'read_only': True\n"
+        "        'read_only': 2\n"
         "        'isolate_dependency_tracked': [\n"
         "          'file4',\n"
         "          'file3',\n"
@@ -801,12 +863,14 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
             'isolate_dependency_tracked': [
               'file_linux',
             ],
+            'read_only': 1,
           },
         }, {
           'variables': {
             'isolate_dependency_tracked': [
               'file_non_linux',
             ],
+            'read_only': 0,
           },
         }],
       ],
@@ -826,6 +890,7 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
             'isolate_dependency_tracked': [
               'file_mac',
             ],
+            'read_only': 2,
           },
         }],
       ],
@@ -839,6 +904,7 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
           'file_less_common',
           'file_linux',
         ],
+        'read_only': 1,
       },
       ('mac',): {
         'isolate_dependency_tracked': [
@@ -847,6 +913,7 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
           'file_mac',
           'file_non_linux',
         ],
+        'read_only': 2,
       },
       ('win',): {
         'isolate_dependency_tracked': [
@@ -854,6 +921,7 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
           'file_less_common',
           'file_non_linux',
         ],
+        'read_only': 0,
       },
     }
     self.assertEqual(expected, actual.flatten())

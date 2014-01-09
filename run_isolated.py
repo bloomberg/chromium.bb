@@ -149,6 +149,7 @@ def set_read_only(path, read_only):
 
   Zaps out access to 'group' and 'others'.
   """
+  assert isinstance(read_only, bool), read_only
   mode = os.lstat(path).st_mode
   # TODO(maruel): Stop removing GO bits.
   if read_only:
@@ -173,6 +174,8 @@ def make_tree_read_only(root):
   """Makes all the files in the directories read only.
 
   Also makes the directories read only, only if it makes sense on the platform.
+
+  This means no file can be created or deleted.
   """
   logging.debug('make_tree_read_only(%s)', root)
   assert os.path.isabs(root), root
@@ -183,8 +186,27 @@ def make_tree_read_only(root):
       # It must not be done on Windows.
       for dirname in dirnames:
         set_read_only(os.path.join(dirpath, dirname), True)
-  # TODO(maruel): Investigate if it makes sense.
-  #set_read_only(root, True)
+  if sys.platform != 'win32':
+    set_read_only(root, True)
+
+
+def make_tree_files_read_only(root):
+  """Makes all the files in the directories read only but not the directories
+  themselves.
+
+  This means files can be created or deleted.
+  """
+  logging.debug('make_tree_files_read_only(%s)', root)
+  assert os.path.isabs(root), root
+  if sys.platform != 'win32':
+    set_read_only(root, False)
+  for dirpath, dirnames, filenames in os.walk(root, topdown=True):
+    for filename in filenames:
+      set_read_only(os.path.join(dirpath, filename), True)
+    if sys.platform != 'win32':
+      # It must not be done on Windows.
+      for dirname in dirnames:
+        set_read_only(os.path.join(dirpath, dirname), False)
 
 
 def make_tree_writeable(root):
@@ -503,10 +525,13 @@ class DiskCache(isolateserver.LocalCache):
   def _save(self):
     """Saves the LRU ordering."""
     self._lock.assert_locked()
-    try:
+    if sys.platform != 'win32':
+      d = os.path.dirname(self.state_file)
+      if os.path.isdir(d):
+        # Necessary otherwise the file can't be created.
+        set_read_only(d, False)
+    if os.path.isfile(self.state_file):
       set_read_only(self.state_file, False)
-    except OSError:
-      pass
     self._lru.save(self.state_file)
 
   def _trim(self):
@@ -586,6 +611,36 @@ class DiskCache(isolateserver.LocalCache):
       logging.error('Error attempting to delete a file %s:\n%s' % (digest, e))
 
 
+def change_tree_read_only(rootdir, read_only):
+  """Changes the tree read-only bits according to the read_only specification.
+
+  The flag can be 0, 1 or 2, which will affect the possibility to modify files
+  and create or delete files.
+  """
+  if read_only == 2:
+    # Files and directories (except on Windows) are marked read only. This
+    # inhibits modifying, creating or deleting files in the test directory,
+    # except on Windows where creating and deleting files is still possible.
+    make_tree_read_only(rootdir)
+  elif read_only == 1:
+    # Files are marked read only but not the directories. This inhibits
+    # modifying files but creating or deleting files is still possible.
+    make_tree_files_read_only(rootdir)
+  elif read_only in (0, None):
+    # Anything can be modified. This is the default in the .isolated file
+    # format.
+    #
+    # TODO(maruel): This is currently dangerous as long as DiskCache.touch()
+    # is not yet changed to verify the hash of the content of the files it is
+    # looking at, so that if a test modifies an input file, the file must be
+    # deleted.
+    make_tree_writeable(rootdir)
+  else:
+    raise ValueError(
+        'change_tree_read_only(%s, %s): Unknown flag %s' %
+        (rootdir, read_only, read_only))
+
+
 def run_tha_test(isolated_hash, storage, cache, algo, outdir, extra_args):
   """Downloads the dependencies in the cache, hardlinks them into a |outdir|
   and runs the executable.
@@ -606,16 +661,7 @@ def run_tha_test(isolated_hash, storage, cache, algo, outdir, extra_args):
       result = 1
       return result
 
-    if settings.read_only:
-      # Note that the files themselves are read only anyway. This only inhibits
-      # creating files or deleting files in the test directory.
-      make_tree_read_only(outdir)
-    else:
-      # This code is safe to keep but DiskCache.touch() must be changed to
-      # verify the hash of the content of the files it is looking at, so that if
-      # a test modifies an input file, the file must be deleted.
-      make_tree_writeable(outdir)
-
+    change_tree_read_only(outdir, settings.read_only)
     cwd = os.path.normpath(os.path.join(outdir, settings.relative_cwd))
     command = settings.command + extra_args
     logging.info('Running %s, cwd=%s' % (command, cwd))
@@ -634,24 +680,22 @@ def run_tha_test(isolated_hash, storage, cache, algo, outdir, extra_args):
       tools.report_error('Failed to run %s; cwd=%s' % (command, cwd))
       result = 1
   finally:
-    if outdir:
-      try:
-        rmtree(outdir)
-      except OSError:
-        # Swallow the exception so it doesn't generate an infrastructure error.
-        #
-        # It usually happens on Windows when a child process is not properly
-        # terminated, usually because of a test case starting child processes
-        # that time out. This causes files to be locked and it becomes
-        # impossible to delete them.
-        #
-        # Only report an infrastructure error if the test didn't fail. This is
-        # because a swarming bot will likely not reboot. This situation will
-        # cause accumulation of temporary hardlink trees.
-        if result:
-          logging.warning('Leaking %s' % outdir)
-        else:
-          raise
+    try:
+      rmtree(outdir)
+    except OSError:
+      logging.warning('Leaking %s', outdir)
+      # Swallow the exception so it doesn't generate an infrastructure error.
+      #
+      # It usually happens on Windows when a child process is not properly
+      # terminated, usually because of a test case starting child processes
+      # that time out. This causes files to be locked and it becomes
+      # impossible to delete them.
+      #
+      # Only report an infrastructure error if the test didn't fail. This is
+      # because a swarming bot will likely not reboot. This situation will
+      # cause accumulation of temporary hardlink trees.
+      if not result:
+        raise
   return result
 
 

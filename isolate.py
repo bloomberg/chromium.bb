@@ -1054,6 +1054,7 @@ def CMDarchive(parser, args):
             infiles=infiles,
             action=run_isolated.HARDLINK_WITH_FALLBACK,
             as_hash=True)
+        # TODO(maruel): Make the files read-only?
       success = True
       print('%s  %s' % (isolated_hash[0], os.path.basename(options.isolated)))
     finally:
@@ -1239,6 +1240,7 @@ def CMDrun(parser, args):
     else:
       if not os.path.isdir(options.outdir):
         os.makedirs(options.outdir)
+    # TODO(maruel): Use run_isolated.run_tha_test().
     recreate_tree(
         outdir=options.outdir,
         indir=root_dir,
@@ -1252,8 +1254,8 @@ def CMDrun(parser, args):
       # .isolate file. But the directory must exist to be the current working
       # directory.
       os.makedirs(cwd)
-    if complete_state.saved_state.read_only:
-      run_isolated.make_writable(options.outdir, True)
+    run_isolated.change_tree_read_only(
+        options.outdir, complete_state.saved_state.read_only)
     logging.info('Running %s, cwd=%s' % (cmd, cwd))
     result = subprocess.call(cmd, cwd=cwd)
   finally:

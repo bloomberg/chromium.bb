@@ -150,7 +150,7 @@ def pretty_print(variables, stdout):
       elif isinstance(item, basestring):
         stdout.write(
             '\'%s\',\n' % item.replace('\\', '\\\\').replace('\'', '\\\''))
-      elif item in (True, False, None):
+      elif isinstance(item, (int, bool)) or item is None:
         stdout.write('%s\n' % item)
       else:
         assert False, item
@@ -244,7 +244,7 @@ def verify_variables(variables):
   assert set(VALID_VARIABLES).issuperset(set(variables)), variables.keys()
   for name, value in variables.iteritems():
     if name == 'read_only':
-      assert value in (True, False, None), value
+      assert value in (0, 1, 2, None), value
     else:
       assert isinstance(value, list), value
       assert all(isinstance(i, basestring) for i in value), value
@@ -420,7 +420,7 @@ def convert_map_to_isolate_dict(values, config_variables):
       then = conditions.setdefault(frozenset(configs), {})
       variables = then.setdefault('variables', {})
 
-      if item in (True, False):
+      if isinstance(item, int):
         # One-off for read_only.
         variables[key] = item
       else:
@@ -639,7 +639,7 @@ def load_isolate_as_config(isolate_dir, value, file_comment):
           'isolate_dependency_untracked': [
             ...
           ],
-          'read_only': False,
+          'read_only': 0,
         },
       }],
       ...

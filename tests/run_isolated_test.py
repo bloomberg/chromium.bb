@@ -3,6 +3,7 @@
 # Use of this source code is governed under the Apache License, Version 2.0 that
 # can be found in the LICENSE file.
 
+import functools
 import hashlib
 import json
 import logging
@@ -213,6 +214,124 @@ class RunIsolatedTest(auto_stub.TestCase):
     self.assertEqual(0, ret)
     self.assertEqual(
         [[u'foo.exe', u'cmd with space', '--extraargs', 'bar']], calls)
+
+  def _run_tha_test(self, isolated_hash, files):
+    make_tree_call = []
+    def add(i, _):
+      make_tree_call.append(i)
+    for i in ('make_tree_read_only', 'make_tree_files_read_only',
+              'make_tree_deleteable', 'make_tree_writeable'):
+      self.mock(run_isolated, i, functools.partial(add, i))
+
+    # Keeps tuple of (args, kwargs).
+    subprocess_call = []
+    self.mock(
+        run_isolated.subprocess, 'call',
+        lambda *x, **y: subprocess_call.append((x, y)) or 0)
+
+    outdir = tempfile.mkdtemp('run_tha_test')
+    try:
+      ret = run_isolated.run_tha_test(
+          isolated_hash,
+          StorageFake(files),
+          run_isolated.isolateserver.MemoryCache(),
+          run_isolated.isolateserver.get_hash_algo('default-deflate'),
+          outdir,
+          [])
+    finally:
+      if os.path.isdir(outdir):
+        run_isolated.rmtree(outdir)
+        self.fail('Temporary directory should have been deleted')
+    self.assertEqual(0, ret)
+    return subprocess_call, make_tree_call
+
+  def test_run_tha_test_naked(self):
+    isolated = json.dumps({'command': ['invalid', 'command']})
+    isolated_hash = hashlib.sha1(isolated).hexdigest()
+    files = {isolated_hash:isolated}
+    subprocess_call, make_tree_call = self._run_tha_test(isolated_hash, files)
+    self.assertEqual(
+        ['make_tree_writeable', 'make_tree_deleteable'], make_tree_call)
+    self.assertEqual(1, len(subprocess_call))
+    self.assertTrue(subprocess_call[0][1].pop('cwd'))
+    self.assertTrue(subprocess_call[0][1].pop('env'))
+    self.assertEqual([(([u'invalid', u'command'],), {})], subprocess_call)
+
+  def test_run_tha_test_naked_read_only_0(self):
+    isolated = json.dumps(
+        {
+          'command': ['invalid', 'command'],
+          'read_only': 0,
+        })
+    isolated_hash = hashlib.sha1(isolated).hexdigest()
+    files = {isolated_hash:isolated}
+    subprocess_call, make_tree_call = self._run_tha_test(isolated_hash, files)
+    self.assertEqual(
+        ['make_tree_writeable', 'make_tree_deleteable'], make_tree_call)
+    self.assertEqual(1, len(subprocess_call))
+    self.assertTrue(subprocess_call[0][1].pop('cwd'))
+    self.assertTrue(subprocess_call[0][1].pop('env'))
+    self.assertEqual([(([u'invalid', u'command'],), {})], subprocess_call)
+
+  def test_run_tha_test_naked_read_only_1(self):
+    isolated = json.dumps(
+        {
+          'command': ['invalid', 'command'],
+          'read_only': 1,
+        })
+    isolated_hash = hashlib.sha1(isolated).hexdigest()
+    files = {isolated_hash:isolated}
+    subprocess_call, make_tree_call = self._run_tha_test(isolated_hash, files)
+    self.assertEqual(
+        ['make_tree_files_read_only', 'make_tree_deleteable'], make_tree_call)
+    self.assertEqual(1, len(subprocess_call))
+    self.assertTrue(subprocess_call[0][1].pop('cwd'))
+    self.assertTrue(subprocess_call[0][1].pop('env'))
+    self.assertEqual([(([u'invalid', u'command'],), {})], subprocess_call)
+
+  def test_run_tha_test_naked_read_only_2(self):
+    isolated = json.dumps(
+        {
+          'command': ['invalid', 'command'],
+          'read_only': 2,
+        })
+    isolated_hash = hashlib.sha1(isolated).hexdigest()
+    files = {isolated_hash:isolated}
+    subprocess_call, make_tree_call = self._run_tha_test(isolated_hash, files)
+    self.assertEqual(
+        ['make_tree_read_only', 'make_tree_deleteable'], make_tree_call)
+    self.assertEqual(1, len(subprocess_call))
+    self.assertTrue(subprocess_call[0][1].pop('cwd'))
+    self.assertTrue(subprocess_call[0][1].pop('env'))
+    self.assertEqual([(([u'invalid', u'command'],), {})], subprocess_call)
+
+  def test_main_naked(self):
+    # The most naked .isolated file that can exist.
+    self.mock(run_isolated.tools, 'disable_buffering', lambda: None)
+    isolated = json.dumps({'command': ['invalid', 'command']})
+    isolated_hash = hashlib.sha1(isolated).hexdigest()
+    def get_storage(_isolate_server, _namespace):
+      return StorageFake({isolated_hash:isolated})
+    self.mock(run_isolated.isolateserver, 'get_storage', get_storage)
+
+    # Keeps tuple of (args, kwargs).
+    subprocess_call = []
+    self.mock(
+        run_isolated.subprocess, 'call',
+        lambda *x, **y: subprocess_call.append((x, y)) or 8)
+
+    cmd = [
+        '--no-log',
+        '--hash', isolated_hash,
+        '--cache', self.tempdir,
+        '--isolate-server', 'https://localhost',
+    ]
+    ret = run_isolated.main(cmd)
+    self.assertEqual(8, ret)
+    self.assertEqual(1, len(subprocess_call))
+    self.assertTrue(subprocess_call[0][1].pop('cwd'))
+    self.assertTrue(subprocess_call[0][1].pop('env'))
+    self.assertEqual([(([u'invalid', u'command'],), {})], subprocess_call)
 
 
 if __name__ == '__main__':
