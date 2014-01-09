@@ -89,7 +89,7 @@ void DesktopScreenPositionClient::SetBounds(
   DesktopNativeWidgetAura* desktop_native_widget =
       DesktopNativeWidgetAura::ForWindow(window);
   if (desktop_native_widget) {
-    root->GetDispatcher()->SetHostBounds(bounds);
+    root->GetDispatcher()->host()->SetBounds(bounds);
     // Setting bounds of root resizes |window|.
   } else {
     window->SetBounds(bounds);

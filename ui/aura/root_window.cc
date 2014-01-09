@@ -194,33 +194,6 @@ WindowTreeHostDelegate* RootWindow::AsWindowTreeHostDelegate() {
   return this;
 }
 
-void RootWindow::SetHostSize(const gfx::Size& size_in_pixel) {
-  DispatchDetails details = DispatchHeldEvents();
-  if (details.dispatcher_destroyed)
-    return;
-  gfx::Rect bounds = host_->GetBounds();
-  bounds.set_size(size_in_pixel);
-  host_->SetBounds(bounds);
-
-  // Requery the location to constrain it within the new root window size.
-  gfx::Point point;
-  if (host_->QueryMouseLocation(&point)) {
-    SetLastMouseLocation(window(),
-                         ui::ConvertPointToDIP(window()->layer(), point));
-  }
-
-  synthesize_mouse_move_ = false;
-}
-
-void RootWindow::SetHostBounds(const gfx::Rect& bounds_in_pixel) {
-  DCHECK(!bounds_in_pixel.IsEmpty());
-  DispatchDetails details = DispatchHeldEvents();
-  if (details.dispatcher_destroyed)
-    return;
-  host_->SetBounds(bounds_in_pixel);
-  synthesize_mouse_move_ = false;
-}
-
 void RootWindow::SetCursor(gfx::NativeCursor cursor) {
   last_cursor_ = cursor;
   // A lot of code seems to depend on NULL cursors actually showing an arrow,
@@ -740,6 +713,14 @@ void RootWindow::OnHostResized(const gfx::Size& size) {
     return;
   FOR_EACH_OBSERVER(RootWindowObserver, observers_,
                     OnWindowTreeHostResized(this));
+
+  // Constrain the mouse position within the new root Window size.
+  gfx::Point point;
+  if (host_->QueryMouseLocation(&point)) {
+    SetLastMouseLocation(window(),
+                         ui::ConvertPointToDIP(window()->layer(), point));
+  }
+  synthesize_mouse_move_ = false;
 }
 
 RootWindow* RootWindow::AsRootWindow() {

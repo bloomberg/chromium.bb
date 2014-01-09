@@ -147,7 +147,7 @@ ShellAuraPlatformData::~ShellAuraPlatformData() {
 }
 
 void ShellAuraPlatformData::ResizeWindow(int width, int height) {
-  root_window_->SetHostSize(gfx::Size(width, height));
+  root_window_->host()->SetBounds(gfx::Rect(width, height));
 }
 
 // static

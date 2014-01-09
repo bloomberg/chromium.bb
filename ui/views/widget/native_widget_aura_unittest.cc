@@ -40,8 +40,7 @@ class NativeWidgetAuraTest : public ViewsTestBase {
   // testing::Test overrides:
   virtual void SetUp() OVERRIDE {
     ViewsTestBase::SetUp();
-    root_window()->SetBounds(gfx::Rect(0, 0, 640, 480));
-    dispatcher()->SetHostSize(gfx::Size(640, 480));
+    dispatcher()->host()->SetBounds(gfx::Rect(640, 480));
   }
 
  protected:
