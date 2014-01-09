@@ -153,7 +153,7 @@ class NET_EXPORT WebSocketChannel {
 
   // Failure callback from WebSocketStream::CreateAndConnectStream(). Reports
   // failure to the event interface. May delete |this|.
-  void OnConnectFailure(uint16 websocket_error);
+  void OnConnectFailure(const std::string& message);
 
   // Returns true if state_ is SEND_CLOSED, CLOSE_WAIT or CLOSED.
   bool InClosingState() const;

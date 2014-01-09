@@ -112,8 +112,8 @@ class WebSocketChannel::ConnectDelegate
     // |this| may have been deleted.
   }
 
-  virtual void OnFailure(uint16 websocket_error) OVERRIDE {
-    creator_->OnConnectFailure(websocket_error);
+  virtual void OnFailure(const std::string& message) OVERRIDE {
+    creator_->OnConnectFailure(message);
     // |this| has been deleted.
   }
 
@@ -312,11 +312,11 @@ void WebSocketChannel::OnConnectSuccess(scoped_ptr<WebSocketStream> stream) {
   // |this| may have been deleted.
 }
 
-void WebSocketChannel::OnConnectFailure(uint16 websocket_error) {
+void WebSocketChannel::OnConnectFailure(const std::string& message) {
   DCHECK_EQ(CONNECTING, state_);
   state_ = CLOSED;
   stream_request_.reset();
-  AllowUnused(event_interface_->OnAddChannelResponse(true, ""));
+  AllowUnused(event_interface_->OnFailChannel(message));
   // |this| has been deleted.
 }
 

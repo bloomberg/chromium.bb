@@ -117,6 +117,10 @@ class MockWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
     return scoped_ptr<WebSocketStream>();
   }
 
+  virtual std::string GetFailureMessage() const OVERRIDE {
+    return std::string();
+  }
+
  private:
   const StreamType type_;
 };

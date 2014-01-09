@@ -57,10 +57,9 @@ class NET_EXPORT_PRIVATE WebSocketStream {
     // WebSocketStream.
     virtual void OnSuccess(scoped_ptr<WebSocketStream> stream) = 0;
 
-    // Called on failure to connect. The parameter is either one of the values
-    // defined in net::WebSocketError, or an error defined by some WebSocket
-    // extension protocol that we implement.
-    virtual void OnFailure(unsigned short websocket_error) = 0;
+    // Called on failure to connect.
+    // |message| contains defails of the failure.
+    virtual void OnFailure(const std::string& message) = 0;
   };
 
   // Create and connect a WebSocketStream of an appropriate type. The actual

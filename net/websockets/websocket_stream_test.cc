@@ -45,7 +45,7 @@ class DeterministicKeyWebSocketHandshakeStreamCreateHelper
 
 class WebSocketStreamCreateTest : public ::testing::Test {
  protected:
-  WebSocketStreamCreateTest() : websocket_error_(0) {}
+  WebSocketStreamCreateTest(): has_failed_(false) {}
 
   void CreateAndConnectCustomResponse(
       const std::string& socket_url,
@@ -110,18 +110,21 @@ class WebSocketStreamCreateTest : public ::testing::Test {
     return std::vector<std::string>();
   }
 
-  uint16 error() const { return websocket_error_; }
+  const std::string& failure_message() const { return failure_message_; }
+  bool has_failed() const { return has_failed_; }
 
   class TestConnectDelegate : public WebSocketStream::ConnectDelegate {
    public:
-    TestConnectDelegate(WebSocketStreamCreateTest* owner) : owner_(owner) {}
+    explicit TestConnectDelegate(WebSocketStreamCreateTest* owner)
+        : owner_(owner) {}
 
     virtual void OnSuccess(scoped_ptr<WebSocketStream> stream) OVERRIDE {
       stream.swap(owner_->stream_);
     }
 
-    virtual void OnFailure(uint16 websocket_error) OVERRIDE {
-      owner_->websocket_error_ = websocket_error;
+    virtual void OnFailure(const std::string& message) OVERRIDE {
+      owner_->has_failed_ = true;
+      owner_->failure_message_ = message;
     }
 
    private:
@@ -132,8 +135,9 @@ class WebSocketStreamCreateTest : public ::testing::Test {
   scoped_ptr<WebSocketStreamRequest> stream_request_;
   // Only set if the connection succeeded.
   scoped_ptr<WebSocketStream> stream_;
-  // Only set if the connection failed. 0 otherwise.
-  uint16 websocket_error_;
+  // Only set if the connection failed.
+  std::string failure_message_;
+  bool has_failed_;
 };
 
 // Confirm that the basic case works as expected.
@@ -141,6 +145,7 @@ TEST_F(WebSocketStreamCreateTest, SimpleSuccess) {
   CreateAndConnectStandard(
       "ws://localhost/", "/", NoSubProtocols(), "http://localhost/", "", "");
   RunUntilIdle();
+  EXPECT_FALSE(has_failed());
   EXPECT_TRUE(stream_);
 }
 
@@ -148,6 +153,7 @@ TEST_F(WebSocketStreamCreateTest, SimpleSuccess) {
 TEST_F(WebSocketStreamCreateTest, NeedsToRunLoop) {
   CreateAndConnectStandard(
       "ws://localhost/", "/", NoSubProtocols(), "http://localhost/", "", "");
+  EXPECT_FALSE(has_failed());
   EXPECT_FALSE(stream_);
 }
 
@@ -160,6 +166,7 @@ TEST_F(WebSocketStreamCreateTest, PathIsUsed) {
                            "",
                            "");
   RunUntilIdle();
+  EXPECT_FALSE(has_failed());
   EXPECT_TRUE(stream_);
 }
 
@@ -172,6 +179,7 @@ TEST_F(WebSocketStreamCreateTest, OriginIsUsed) {
                            "",
                            "");
   RunUntilIdle();
+  EXPECT_FALSE(has_failed());
   EXPECT_TRUE(stream_);
 }
 
@@ -189,6 +197,7 @@ TEST_F(WebSocketStreamCreateTest, SubProtocolIsUsed) {
                            "Sec-WebSocket-Protocol: chatv20.chromium.org\r\n");
   RunUntilIdle();
   EXPECT_TRUE(stream_);
+  EXPECT_FALSE(has_failed());
   EXPECT_EQ("chatv20.chromium.org", stream_->GetSubProtocol());
 }
 
@@ -202,20 +211,30 @@ TEST_F(WebSocketStreamCreateTest, UnsolicitedSubProtocol) {
                            "Sec-WebSocket-Protocol: chatv20.chromium.org\r\n");
   RunUntilIdle();
   EXPECT_FALSE(stream_);
-  EXPECT_EQ(1006, error());
+  EXPECT_TRUE(has_failed());
+  EXPECT_EQ("Error during WebSocket handshake: "
+            "Response must not include 'Sec-WebSocket-Protocol' header "
+            "if not present in request: chatv20.chromium.org",
+            failure_message());
 }
 
 // Missing sub-protocol response is rejected.
 TEST_F(WebSocketStreamCreateTest, UnacceptedSubProtocol) {
+  std::vector<std::string> sub_protocols;
+  sub_protocols.push_back("chat.example.com");
   CreateAndConnectStandard("ws://localhost/testing_path",
                            "/testing_path",
-                           std::vector<std::string>(1, "chat.example.com"),
+                           sub_protocols,
                            "http://localhost/",
                            "Sec-WebSocket-Protocol: chat.example.com\r\n",
                            "");
   RunUntilIdle();
   EXPECT_FALSE(stream_);
-  EXPECT_EQ(1006, error());
+  EXPECT_TRUE(has_failed());
+  EXPECT_EQ("Error during WebSocket handshake: "
+            "Sent non-empty 'Sec-WebSocket-Protocol' header "
+            "but no response was received",
+            failure_message());
 }
 
 // Only one sub-protocol can be accepted.
@@ -233,7 +252,32 @@ TEST_F(WebSocketStreamCreateTest, MultipleSubProtocolsInResponse) {
                            "chatv20.chromium.org\r\n");
   RunUntilIdle();
   EXPECT_FALSE(stream_);
-  EXPECT_EQ(1006, error());
+  EXPECT_TRUE(has_failed());
+  EXPECT_EQ("Error during WebSocket handshake: "
+            "'Sec-WebSocket-Protocol' header must not appear "
+            "more than once in a response",
+            failure_message());
+}
+
+// Unmatched sub-protocol should be rejected.
+TEST_F(WebSocketStreamCreateTest, UnmatchedSubProtocolInResponse) {
+  std::vector<std::string> sub_protocols;
+  sub_protocols.push_back("chatv11.chromium.org");
+  sub_protocols.push_back("chatv20.chromium.org");
+  CreateAndConnectStandard("ws://localhost/testing_path",
+                           "/testing_path",
+                           sub_protocols,
+                           "http://google.com/",
+                           "Sec-WebSocket-Protocol: chatv11.chromium.org, "
+                           "chatv20.chromium.org\r\n",
+                           "Sec-WebSocket-Protocol: chatv21.chromium.org\r\n");
+  RunUntilIdle();
+  EXPECT_FALSE(stream_);
+  EXPECT_TRUE(has_failed());
+  EXPECT_EQ("Error during WebSocket handshake: "
+            "'Sec-WebSocket-Protocol' header value 'chatv21.chromium.org' "
+            "in response does not match any of sent values",
+            failure_message());
 }
 
 // Unknown extension in the response is rejected
@@ -246,7 +290,11 @@ TEST_F(WebSocketStreamCreateTest, UnknownExtension) {
                            "Sec-WebSocket-Extensions: x-unknown-extension\r\n");
   RunUntilIdle();
   EXPECT_FALSE(stream_);
-  EXPECT_EQ(1006, error());
+  EXPECT_TRUE(has_failed());
+  EXPECT_EQ("Error during WebSocket handshake: "
+            "Found an unsupported extension 'x-unknown-extension' "
+            "in 'Sec-WebSocket-Extensions' header",
+            failure_message());
 }
 
 // Additional Sec-WebSocket-Accept headers should be rejected.
@@ -260,7 +308,11 @@ TEST_F(WebSocketStreamCreateTest, DoubleAccept) {
       "Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n");
   RunUntilIdle();
   EXPECT_FALSE(stream_);
-  EXPECT_EQ(1006, error());
+  EXPECT_TRUE(has_failed());
+  EXPECT_EQ("Error during WebSocket handshake: "
+            "'Sec-WebSocket-Accept' header must not appear "
+            "more than once in a response",
+            failure_message());
 }
 
 // Response code 200 must be rejected.
@@ -278,7 +330,8 @@ TEST_F(WebSocketStreamCreateTest, InvalidStatusCode) {
                                  "",
                                  kInvalidStatusCodeResponse);
   RunUntilIdle();
-  EXPECT_EQ(1006, error());
+  EXPECT_TRUE(has_failed());
+  EXPECT_EQ("Unexpected status code: 200", failure_message());
 }
 
 // Redirects are not followed (according to the WHATWG WebSocket API, which
@@ -299,7 +352,8 @@ TEST_F(WebSocketStreamCreateTest, RedirectsRejected) {
                                  "",
                                  kRedirectResponse);
   RunUntilIdle();
-  EXPECT_EQ(1006, error());
+  EXPECT_TRUE(has_failed());
+  EXPECT_EQ("Unexpected status code: 302", failure_message());
 }
 
 // Malformed responses should be rejected. HttpStreamParser will accept just
@@ -321,7 +375,8 @@ TEST_F(WebSocketStreamCreateTest, MalformedResponse) {
                                  "",
                                  kMalformedResponse);
   RunUntilIdle();
-  EXPECT_EQ(1006, error());
+  EXPECT_TRUE(has_failed());
+  EXPECT_EQ("Unexpected status code: 200", failure_message());
 }
 
 // Upgrade header must be present.
@@ -338,7 +393,9 @@ TEST_F(WebSocketStreamCreateTest, MissingUpgradeHeader) {
                                  "",
                                  kMissingUpgradeResponse);
   RunUntilIdle();
-  EXPECT_EQ(1006, error());
+  EXPECT_TRUE(has_failed());
+  EXPECT_EQ("Error during WebSocket handshake: 'Upgrade' header is missing",
+            failure_message());
 }
 
 // There must only be one upgrade header.
@@ -350,7 +407,31 @@ TEST_F(WebSocketStreamCreateTest, DoubleUpgradeHeader) {
       "http://localhost/",
       "", "Upgrade: HTTP/2.0\r\n");
   RunUntilIdle();
-  EXPECT_EQ(1006, error());
+  EXPECT_TRUE(has_failed());
+  EXPECT_EQ("Error during WebSocket handshake: "
+            "'Upgrade' header must not appear more than once in a response",
+            failure_message());
+}
+
+// There must only be one correct upgrade header.
+TEST_F(WebSocketStreamCreateTest, IncorrectUpgradeHeader) {
+  static const char kMissingUpgradeResponse[] =
+      "HTTP/1.1 101 Switching Protocols\r\n"
+      "Connection: Upgrade\r\n"
+      "Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n"
+      "Upgrade: hogefuga\r\n"
+      "\r\n";
+  CreateAndConnectCustomResponse("ws://localhost/",
+                                 "/",
+                                 NoSubProtocols(),
+                                 "http://localhost/",
+                                 "",
+                                 kMissingUpgradeResponse);
+  RunUntilIdle();
+  EXPECT_TRUE(has_failed());
+  EXPECT_EQ("Error during WebSocket handshake: "
+            "'Upgrade' header value is not 'WebSocket': hogefuga",
+            failure_message());
 }
 
 // Connection header must be present.
@@ -367,7 +448,31 @@ TEST_F(WebSocketStreamCreateTest, MissingConnectionHeader) {
                                  "",
                                  kMissingConnectionResponse);
   RunUntilIdle();
-  EXPECT_EQ(1006, error());
+  EXPECT_TRUE(has_failed());
+  EXPECT_EQ("Error during WebSocket handshake: "
+            "'Connection' header is missing",
+            failure_message());
+}
+
+// Connection header must contain "Upgrade".
+TEST_F(WebSocketStreamCreateTest, IncorrectConnectionHeader) {
+  static const char kMissingConnectionResponse[] =
+      "HTTP/1.1 101 Switching Protocols\r\n"
+      "Upgrade: websocket\r\n"
+      "Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n"
+      "Connection: hogefuga\r\n"
+      "\r\n";
+  CreateAndConnectCustomResponse("ws://localhost/",
+                                 "/",
+                                 NoSubProtocols(),
+                                 "http://localhost/",
+                                 "",
+                                 kMissingConnectionResponse);
+  RunUntilIdle();
+  EXPECT_TRUE(has_failed());
+  EXPECT_EQ("Error during WebSocket handshake: "
+            "'Connection' header value must contain 'Upgrade'",
+            failure_message());
 }
 
 // Connection header is permitted to contain other tokens.
@@ -385,6 +490,7 @@ TEST_F(WebSocketStreamCreateTest, AdditionalTokenInConnectionHeader) {
                                  "",
                                  kAdditionalConnectionTokenResponse);
   RunUntilIdle();
+  EXPECT_FALSE(has_failed());
   EXPECT_TRUE(stream_);
 }
 
@@ -402,7 +508,10 @@ TEST_F(WebSocketStreamCreateTest, MissingSecWebSocketAccept) {
                                  "",
                                  kMissingAcceptResponse);
   RunUntilIdle();
-  EXPECT_EQ(1006, error());
+  EXPECT_TRUE(has_failed());
+  EXPECT_EQ("Error during WebSocket handshake: "
+            "'Sec-WebSocket-Accept' header is missing",
+            failure_message());
 }
 
 // Sec-WebSocket-Accept header must match the key that was sent.
@@ -420,7 +529,10 @@ TEST_F(WebSocketStreamCreateTest, WrongSecWebSocketAccept) {
                                  "",
                                  kIncorrectAcceptResponse);
   RunUntilIdle();
-  EXPECT_EQ(1006, error());
+  EXPECT_TRUE(has_failed());
+  EXPECT_EQ("Error during WebSocket handshake: "
+            "Incorrect 'Sec-WebSocket-Accept' header value",
+            failure_message());
 }
 
 // Cancellation works.
@@ -429,6 +541,7 @@ TEST_F(WebSocketStreamCreateTest, Cancellation) {
       "ws://localhost/", "/", NoSubProtocols(), "http://localhost/", "", "");
   stream_request_.reset();
   RunUntilIdle();
+  EXPECT_FALSE(has_failed());
   EXPECT_FALSE(stream_);
 }
 
@@ -441,7 +554,9 @@ TEST_F(WebSocketStreamCreateTest, ConnectionFailure) {
   CreateAndConnectRawExpectations("ws://localhost/", NoSubProtocols(),
                                   "http://localhost/", socket_data.Pass());
   RunUntilIdle();
-  EXPECT_EQ(1006, error());
+  EXPECT_TRUE(has_failed());
+  EXPECT_EQ("Error in connection establishment: net::ERR_CONNECTION_REFUSED",
+            failure_message());
 }
 
 // Connect timeout must look just like any other failure.
@@ -453,7 +568,9 @@ TEST_F(WebSocketStreamCreateTest, ConnectionTimeout) {
   CreateAndConnectRawExpectations("ws://localhost/", NoSubProtocols(),
                                   "http://localhost/", socket_data.Pass());
   RunUntilIdle();
-  EXPECT_EQ(1006, error());
+  EXPECT_TRUE(has_failed());
+  EXPECT_EQ("Error in connection establishment: net::ERR_CONNECTION_TIMED_OUT",
+            failure_message());
 }
 
 // Cancellation during connect works.
@@ -467,6 +584,7 @@ TEST_F(WebSocketStreamCreateTest, CancellationDuringConnect) {
                                   socket_data.Pass());
   stream_request_.reset();
   RunUntilIdle();
+  EXPECT_FALSE(has_failed());
   EXPECT_FALSE(stream_);
 }
 
@@ -487,6 +605,7 @@ TEST_F(WebSocketStreamCreateTest, CancellationDuringWrite) {
   socket_data->Run();
   stream_request_.reset();
   RunUntilIdle();
+  EXPECT_FALSE(has_failed());
   EXPECT_FALSE(stream_);
 }
 
@@ -508,6 +627,7 @@ TEST_F(WebSocketStreamCreateTest, CancellationDuringRead) {
   socket_data->Run();
   stream_request_.reset();
   RunUntilIdle();
+  EXPECT_FALSE(has_failed());
   EXPECT_FALSE(stream_);
 }
 

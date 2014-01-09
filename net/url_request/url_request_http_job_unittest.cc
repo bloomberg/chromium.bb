@@ -257,6 +257,10 @@ class FakeWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
     return scoped_ptr<WebSocketStream>();
   }
 
+  virtual std::string GetFailureMessage() const OVERRIDE {
+    return std::string();
+  }
+
  private:
   bool initialize_stream_was_called_;
 };

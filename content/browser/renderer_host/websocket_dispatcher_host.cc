@@ -138,6 +138,17 @@ WebSocketHostState WebSocketDispatcherHost::SendFinishOpeningHandshake(
       routing_id, response));
 }
 
+WebSocketHostState WebSocketDispatcherHost::NotifyFailure(
+    int routing_id,
+    const std::string& message) {
+  if (SendOrDrop(new WebSocketMsg_NotifyFailure(
+          routing_id, message)) == WEBSOCKET_HOST_DELETED) {
+    return WEBSOCKET_HOST_DELETED;
+  }
+  DeleteWebSocketHost(routing_id);
+  return WEBSOCKET_HOST_DELETED;
+}
+
 WebSocketHostState WebSocketDispatcherHost::DoDropChannel(
     int routing_id,
     uint16 code,

@@ -142,8 +142,9 @@ class MockWebSocketEventInterface : public WebSocketEventInterface {
                ChannelState(bool,
                             WebSocketMessageType,
                             const std::vector<char>&));  // NOLINT
-  MOCK_METHOD1(OnFlowControl, ChannelState(int64));      // NOLINT
+  MOCK_METHOD1(OnFlowControl, ChannelState(int64));  // NOLINT
   MOCK_METHOD0(OnClosingHandshake, ChannelState(void));  // NOLINT
+  MOCK_METHOD1(OnFailChannel, ChannelState(const std::string&));  // NOLINT
   MOCK_METHOD2(OnDropChannel,
                ChannelState(uint16, const std::string&));  // NOLINT
 };
@@ -165,6 +166,9 @@ class FakeWebSocketEventInterface : public WebSocketEventInterface {
     return CHANNEL_ALIVE;
   }
   virtual ChannelState OnClosingHandshake() OVERRIDE { return CHANNEL_ALIVE; }
+  virtual ChannelState OnFailChannel(const std::string& message) OVERRIDE {
+    return CHANNEL_DELETED;
+  }
   virtual ChannelState OnDropChannel(uint16 code,
                                      const std::string& reason) OVERRIDE {
     return CHANNEL_DELETED;
@@ -761,7 +765,8 @@ enum EventInterfaceCall {
   EVENT_ON_DATA_FRAME = 0x2,
   EVENT_ON_FLOW_CONTROL = 0x4,
   EVENT_ON_CLOSING_HANDSHAKE = 0x8,
-  EVENT_ON_DROP_CHANNEL = 0x10,
+  EVENT_ON_FAIL_CHANNEL = 0x10,
+  EVENT_ON_DROP_CHANNEL = 0x20,
 };
 
 class WebSocketChannelDeletingTest : public WebSocketChannelTest {
@@ -780,6 +785,7 @@ class WebSocketChannelDeletingTest : public WebSocketChannelTest {
       : deleting_(EVENT_ON_ADD_CHANNEL_RESPONSE | EVENT_ON_DATA_FRAME |
                   EVENT_ON_FLOW_CONTROL |
                   EVENT_ON_CLOSING_HANDSHAKE |
+                  EVENT_ON_FAIL_CHANNEL |
                   EVENT_ON_DROP_CHANNEL) {}
   // Create a ChannelDeletingFakeWebSocketEventInterface. Defined out-of-line to
   // avoid circular dependency.
@@ -818,6 +824,10 @@ class ChannelDeletingFakeWebSocketEventInterface
 
   virtual ChannelState OnClosingHandshake() OVERRIDE {
     return fixture_->DeleteIfDeleting(EVENT_ON_CLOSING_HANDSHAKE);
+  }
+
+  virtual ChannelState OnFailChannel(const std::string& message) OVERRIDE {
+    return fixture_->DeleteIfDeleting(EVENT_ON_FAIL_CHANNEL);
   }
 
   virtual ChannelState OnDropChannel(uint16 code,
@@ -915,8 +925,7 @@ TEST_F(WebSocketChannelTest, SendFlowControlDuringHandshakeOkay) {
 TEST_F(WebSocketChannelDeletingTest, OnAddChannelResponseFail) {
   CreateChannelAndConnect();
   EXPECT_TRUE(channel_);
-  connect_data_.creator.connect_delegate->OnFailure(
-      kWebSocketErrorNoStatusReceived);
+  connect_data_.creator.connect_delegate->OnFailure("bye");
   EXPECT_EQ(NULL, channel_.get());
 }
 
@@ -964,7 +973,7 @@ TEST_F(WebSocketChannelDeletingTest, OnFlowControlAfterConnect) {
 TEST_F(WebSocketChannelDeletingTest, OnFlowControlAfterSend) {
   set_stream(make_scoped_ptr(new WriteableFakeWebSocketStream));
   // Avoid deleting the channel yet.
-  deleting_ = EVENT_ON_DROP_CHANNEL;
+  deleting_ = EVENT_ON_FAIL_CHANNEL | EVENT_ON_DROP_CHANNEL;
   CreateChannelAndConnectSuccessfully();
   ASSERT_TRUE(channel_);
   deleting_ = EVENT_ON_FLOW_CONTROL;
@@ -1156,13 +1165,11 @@ TEST_F(WebSocketChannelEventInterfaceTest, ConnectSuccessReported) {
 }
 
 TEST_F(WebSocketChannelEventInterfaceTest, ConnectFailureReported) {
-  // true means failure.
-  EXPECT_CALL(*event_interface_, OnAddChannelResponse(true, ""));
+  EXPECT_CALL(*event_interface_, OnFailChannel("hello"));
 
   CreateChannelAndConnect();
 
-  connect_data_.creator.connect_delegate->OnFailure(
-      kWebSocketErrorNoStatusReceived);
+  connect_data_.creator.connect_delegate->OnFailure("hello");
 }
 
 TEST_F(WebSocketChannelEventInterfaceTest, NonWebSocketSchemeRejected) {

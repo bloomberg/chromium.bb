@@ -70,7 +70,25 @@ class StreamRequestImpl : public WebSocketStreamRequest {
   }
 
   void ReportFailure() {
-    connect_delegate_->OnFailure(kWebSocketErrorAbnormalClosure);
+    std::string failure_message;
+    if (create_helper_->stream()) {
+      failure_message = create_helper_->stream()->GetFailureMessage();
+    } else {
+      switch (url_request_.status().status()) {
+        case URLRequestStatus::SUCCESS:
+        case URLRequestStatus::IO_PENDING:
+          break;
+        case URLRequestStatus::CANCELED:
+          failure_message = "WebSocket opening handshake was canceled";
+          break;
+        case URLRequestStatus::FAILED:
+          failure_message =
+              std::string("Error in connection establishment: ") +
+              ErrorToString(url_request_.status().error());
+          break;
+      }
+    }
+    connect_delegate_->OnFailure(failure_message);
   }
 
  private:

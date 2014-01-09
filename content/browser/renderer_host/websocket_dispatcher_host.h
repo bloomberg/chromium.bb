@@ -94,6 +94,12 @@ class CONTENT_EXPORT WebSocketDispatcherHost : public BrowserMessageFilter {
       int routing_id,
       const WebSocketHandshakeResponse& response) WARN_UNUSED_RESULT;
 
+  // Sends a WebSocketMsg_NotifyFailure IPC and deletes and unregisters the
+  // channel.
+  WebSocketHostState NotifyFailure(
+      int routing_id,
+      const std::string& message) WARN_UNUSED_RESULT;
+
   // Sends a WebSocketMsg_DropChannel IPC and deletes and unregisters the
   // channel.
   WebSocketHostState DoDropChannel(

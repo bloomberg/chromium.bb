@@ -9,6 +9,8 @@
 // Since net/http can be built without linking net/websockets code,
 // this file must not introduce any link-time dependencies on websockets.
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -63,6 +65,10 @@ class NET_EXPORT WebSocketHandshakeStreamBase : public HttpStreamBase {
   // The WebSocketHandshakeStreamBase object is unusable after Upgrade() has
   // been called.
   virtual scoped_ptr<WebSocketStream> Upgrade() = 0;
+
+  // Returns a string describing the connection failure information.
+  // Returns an empty string if there is no failure.
+  virtual std::string GetFailureMessage() const = 0;
 
  protected:
   // As with the destructor, this must be inline.

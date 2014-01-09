@@ -72,6 +72,8 @@ class NET_EXPORT_PRIVATE WebSocketBasicHandshakeStream
   // For tests only.
   void SetWebSocketKeyForTesting(const std::string& key);
 
+  virtual std::string GetFailureMessage() const OVERRIDE;
+
  private:
   // A wrapper for the ReadResponseHeaders callback that checks whether or not
   // the connection has been accepted.
@@ -113,6 +115,8 @@ class NET_EXPORT_PRIVATE WebSocketBasicHandshakeStream
 
   // The extension(s) selected by the server.
   std::string extensions_;
+
+  std::string failure_message_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketBasicHandshakeStream);
 };

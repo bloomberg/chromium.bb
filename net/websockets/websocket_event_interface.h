@@ -71,6 +71,16 @@ class NET_EXPORT WebSocketEventInterface {
   virtual ChannelState OnDropChannel(uint16 code, const std::string& reason)
       WARN_UNUSED_RESULT = 0;
 
+  // Called when the browser fails the channel, as specified in the spec.
+  //
+  // The channel should not be used again after OnFailChannel() has been
+  // called.
+  //
+  // This method returns a ChannelState for consistency, but all implementations
+  // must delete the Channel and return CHANNEL_DELETED.
+  virtual ChannelState OnFailChannel(const std::string& message)
+      WARN_UNUSED_RESULT = 0;
+
  protected:
   WebSocketEventInterface() {}
 
