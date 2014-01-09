@@ -81,6 +81,16 @@ int WebRtcAudioDeviceImpl::OnData(const int16* audio_data,
   CHECK_EQ(number_of_frames % samples_per_10_msec, 0);
   int accumulated_audio_samples = 0;
   uint32_t new_volume = 0;
+
+  // The lock here is to protect the racing in the resampler inside webrtc when
+  // there are more than one input stream calling OnData(), which can happen
+  // when the users setup two getUserMedia, one for the microphone, another
+  // for WebAudio. Currently we don't have a better way to fix it except for
+  // adding a lock here to sequence the call.
+  // TODO(xians): Remove this workaround after we move the
+  // webrtc::AudioProcessing module to Chrome. See http://crbug/264611 for
+  // details.
+  base::AutoLock auto_lock(capture_callback_lock_);
   while (accumulated_audio_samples < number_of_frames) {
     // Deliver 10ms of recorded 16-bit linear PCM audio.
     int new_mic_level = audio_transport_callback_->OnDataAvailable(
