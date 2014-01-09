@@ -13,10 +13,13 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_api_utils.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/common/extensions/api/bluetooth.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -28,6 +31,18 @@ namespace extensions {
 
 namespace bluetooth = api::bluetooth;
 
+// A struct storing a Bluetooth socket and the extension that added it.
+struct ExtensionBluetoothSocketRecord {
+  std::string extension_id;
+  scoped_refptr<device::BluetoothSocket> socket;
+};
+
+// A struct storing a Bluetooth profile and the extension that added it.
+struct ExtensionBluetoothProfileRecord {
+  std::string extension_id;
+  device::BluetoothProfile* profile;
+};
+
 ExtensionBluetoothEventRouter::ExtensionBluetoothEventRouter(Profile* profile)
     : send_discovery_events_(false),
       responsible_for_discovery_(false),
@@ -37,6 +52,8 @@ ExtensionBluetoothEventRouter::ExtensionBluetoothEventRouter(Profile* profile)
       next_socket_id_(1),
       weak_ptr_factory_(this) {
   DCHECK(profile_);
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                 content::Source<Profile>(profile_));
 }
 
 ExtensionBluetoothEventRouter::~ExtensionBluetoothEventRouter() {
@@ -51,7 +68,7 @@ ExtensionBluetoothEventRouter::~ExtensionBluetoothEventRouter() {
   for (BluetoothProfileMap::iterator iter = bluetooth_profile_map_.begin();
        iter != bluetooth_profile_map_.end();
        ++iter) {
-    iter->second->Unregister();
+    iter->second.profile->Unregister();
   }
 }
 
@@ -82,15 +99,17 @@ void ExtensionBluetoothEventRouter::OnListenerRemoved() {
 }
 
 int ExtensionBluetoothEventRouter::RegisterSocket(
+    const std::string& extension_id,
     scoped_refptr<device::BluetoothSocket> socket) {
   // If there is a socket registered with the same fd, just return it's id
   for (SocketMap::const_iterator i = socket_map_.begin();
       i != socket_map_.end(); ++i) {
-    if (i->second.get() == socket.get())
+    if (i->second.socket.get() == socket.get())
       return i->first;
   }
   int return_id = next_socket_id_++;
-  socket_map_[return_id] = socket;
+  ExtensionBluetoothSocketRecord record = { extension_id, socket };
+  socket_map_[return_id] = record;
   return return_id;
 }
 
@@ -104,15 +123,17 @@ bool ExtensionBluetoothEventRouter::ReleaseSocket(int id) {
 
 void ExtensionBluetoothEventRouter::AddProfile(
     const std::string& uuid,
+    const std::string& extension_id,
     device::BluetoothProfile* bluetooth_profile) {
   DCHECK(!HasProfile(uuid));
-  bluetooth_profile_map_[uuid] = bluetooth_profile;
+  ExtensionBluetoothProfileRecord record = { extension_id, bluetooth_profile };
+  bluetooth_profile_map_[uuid] = record;
 }
 
 void ExtensionBluetoothEventRouter::RemoveProfile(const std::string& uuid) {
   BluetoothProfileMap::iterator iter = bluetooth_profile_map_.find(uuid);
   if (iter != bluetooth_profile_map_.end()) {
-    device::BluetoothProfile* bluetooth_profile = iter->second;
+    device::BluetoothProfile* bluetooth_profile = iter->second.profile;
     bluetooth_profile_map_.erase(iter);
     bluetooth_profile->Unregister();
   }
@@ -126,7 +147,7 @@ device::BluetoothProfile* ExtensionBluetoothEventRouter::GetProfile(
     const std::string& uuid) const {
   BluetoothProfileMap::const_iterator iter = bluetooth_profile_map_.find(uuid);
   if (iter != bluetooth_profile_map_.end())
-    return iter->second;
+    return iter->second.profile;
 
   return NULL;
 }
@@ -136,7 +157,7 @@ ExtensionBluetoothEventRouter::GetSocket(int id) {
   SocketMap::iterator socket_entry = socket_map_.find(id);
   if (socket_entry == socket_map_.end())
     return NULL;
-  return socket_entry->second;
+  return socket_entry->second.socket;;
 }
 
 void ExtensionBluetoothEventRouter::SetResponsibleForDiscovery(
@@ -178,7 +199,7 @@ void ExtensionBluetoothEventRouter::DispatchConnectionEvent(
   if (!HasProfile(uuid))
     return;
 
-  int socket_id = RegisterSocket(socket);
+  int socket_id = RegisterSocket(extension_id, socket);
   api::bluetooth::Socket result_socket;
   api::bluetooth::BluetoothDeviceToApiDevice(*device, &result_socket.device);
   result_socket.profile.uuid = uuid;
@@ -279,6 +300,46 @@ void ExtensionBluetoothEventRouter::DispatchAdapterStateEvent() {
       bluetooth::OnAdapterStateChanged::kEventName,
       args.Pass()));
   ExtensionSystem::Get(profile_)->event_router()->BroadcastEvent(event.Pass());
+}
+
+void ExtensionBluetoothEventRouter::CleanUpForExtension(
+    const std::string& extension_id) {
+  // Remove all profiles added by the extension.
+  BluetoothProfileMap::iterator profile_iter = bluetooth_profile_map_.begin();
+  while (profile_iter != bluetooth_profile_map_.end()) {
+    ExtensionBluetoothProfileRecord record = profile_iter->second;
+    if (record.extension_id == extension_id) {
+      bluetooth_profile_map_.erase(profile_iter++);
+      record.profile->Unregister();
+    } else {
+      profile_iter++;
+    }
+  }
+
+  // Remove all sockets opened by the extension.
+  SocketMap::iterator socket_iter = socket_map_.begin();
+  while (socket_iter != socket_map_.end()) {
+    int socket_id = socket_iter->first;
+    ExtensionBluetoothSocketRecord record = socket_iter->second;
+    socket_iter++;
+    if (record.extension_id == extension_id) {
+      ReleaseSocket(socket_id);
+    }
+  }
+}
+
+void ExtensionBluetoothEventRouter::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  switch (type) {
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
+      extensions::UnloadedExtensionInfo* info =
+          content::Details<extensions::UnloadedExtensionInfo>(details).ptr();
+      CleanUpForExtension(info->extension->id());
+      break;
+    }
+  }
 }
 
 }  // namespace extensions

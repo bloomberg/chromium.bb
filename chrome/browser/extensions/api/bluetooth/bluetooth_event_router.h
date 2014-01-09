@@ -11,6 +11,8 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/common/extensions/api/bluetooth.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_socket.h"
@@ -26,8 +28,13 @@ class BluetoothProfile;
 
 namespace extensions {
 
+// Foward declarations of internal structs.
+struct ExtensionBluetoothSocketRecord;
+struct ExtensionBluetoothProfileRecord;
+
 class ExtensionBluetoothEventRouter
-    : public device::BluetoothAdapter::Observer {
+    : public device::BluetoothAdapter::Observer,
+      public content::NotificationObserver {
  public:
   explicit ExtensionBluetoothEventRouter(Profile* profile);
   virtual ~ExtensionBluetoothEventRouter();
@@ -46,18 +53,22 @@ class ExtensionBluetoothEventRouter
   void OnListenerRemoved();
 
   // Register the BluetoothSocket |socket| for use by the extensions system.
-  // This class will hold onto the socket for its lifetime, or until
-  // ReleaseSocket is called for the socket.  Returns an id for the socket.
-  int RegisterSocket(scoped_refptr<device::BluetoothSocket> socket);
+  // This class will hold onto the socket for its lifetime until
+  // ReleaseSocket is called for the socket, or until the extension associated
+  // with the socket is disabled/ reloaded. Returns an id for the socket.
+  int RegisterSocket(const std::string& extension_id,
+                     scoped_refptr<device::BluetoothSocket> socket);
 
   // Release the BluetoothSocket corresponding to |id|.  Returns true if
   // the socket was found and released, false otherwise.
   bool ReleaseSocket(int id);
 
   // Add the BluetoothProfile |bluetooth_profile| for use by the extension
-  // system. This class will hold onto the profile for its lifetime, or until
-  // RemoveProfile is called for the profile.
+  // system. This class will hold onto the profile until RemoveProfile is
+  // called for the profile, or until the extension that added the profile
+  // is disabled/reloaded.
   void AddProfile(const std::string& uuid,
+                  const std::string& extension_id,
                   device::BluetoothProfile* bluetooth_profile);
 
   // Unregister the BluetoothProfile corersponding to |uuid| and release the
@@ -105,6 +116,11 @@ class ExtensionBluetoothEventRouter
   virtual void DeviceAdded(device::BluetoothAdapter* adapter,
                            device::BluetoothDevice* device) OVERRIDE;
 
+  // Overridden from content::NotificationObserver
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
   // Exposed for testing.
   void SetAdapterForTest(device::BluetoothAdapter* adapter) {
     adapter_ = adapter;
@@ -114,6 +130,7 @@ class ExtensionBluetoothEventRouter
   void InitializeAdapter(scoped_refptr<device::BluetoothAdapter> adapter);
   void MaybeReleaseAdapter();
   void DispatchAdapterStateEvent();
+  void CleanUpForExtension(const std::string& extension_id);
 
   bool send_discovery_events_;
   bool responsible_for_discovery_;
@@ -128,16 +145,19 @@ class ExtensionBluetoothEventRouter
   // the extension javascript.
   int next_socket_id_;
 
-  typedef std::map<int, scoped_refptr<device::BluetoothSocket> > SocketMap;
+  typedef std::map<int, ExtensionBluetoothSocketRecord> SocketMap;
   SocketMap socket_map_;
 
   typedef ScopedVector<extensions::api::bluetooth::Device>
       DeviceList;
   DeviceList discovered_devices_;
 
-  // A map that maps uuids to the BluetoothProfile objects.
-  typedef std::map<std::string, device::BluetoothProfile*> BluetoothProfileMap;
+  // A map that maps uuids to ExtensionBluetoothProfileRecord.
+  typedef std::map<std::string, ExtensionBluetoothProfileRecord>
+      BluetoothProfileMap;
   BluetoothProfileMap bluetooth_profile_map_;
+
+  content::NotificationRegistrar registrar_;
 
   base::WeakPtrFactory<ExtensionBluetoothEventRouter> weak_ptr_factory_;
 

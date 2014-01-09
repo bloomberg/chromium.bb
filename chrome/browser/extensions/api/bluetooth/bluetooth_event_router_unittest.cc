@@ -8,23 +8,27 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_event_router.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/common/extensions/api/bluetooth.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/bluetooth/test/mock_bluetooth_device.h"
 #include "device/bluetooth/test/mock_bluetooth_profile.h"
 #include "device/bluetooth/test/mock_bluetooth_socket.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/common/extension_builder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
+const char kTestExtensionId[] = "test extension id";
 const char kAudioProfileUuid[] = "audio profile uuid";
 const char kHealthProfileUuid[] = "health profile uuid";
 
@@ -131,8 +135,10 @@ TEST_F(ExtensionBluetoothEventRouterTest, Profiles) {
   EXPECT_FALSE(router_.HasProfile(kAudioProfileUuid));
   EXPECT_FALSE(router_.HasProfile(kHealthProfileUuid));
 
-  router_.AddProfile(kAudioProfileUuid, &mock_audio_profile_);
-  router_.AddProfile(kHealthProfileUuid, &mock_health_profile_);
+  router_.AddProfile(
+      kAudioProfileUuid, kTestExtensionId, &mock_audio_profile_);
+  router_.AddProfile(
+      kHealthProfileUuid, kTestExtensionId, &mock_health_profile_);
   EXPECT_TRUE(router_.HasProfile(kAudioProfileUuid));
   EXPECT_TRUE(router_.HasProfile(kHealthProfileUuid));
 
@@ -146,21 +152,55 @@ TEST_F(ExtensionBluetoothEventRouterTest, Profiles) {
   EXPECT_CALL(*mock_adapter_, RemoveObserver(testing::_)).Times(1);
 }
 
+TEST_F(ExtensionBluetoothEventRouterTest, UnloadExtension) {
+  scoped_refptr<const extensions::Extension> extension =
+      extensions::ExtensionBuilder()
+          .SetManifest(extensions::DictionaryBuilder()
+              .Set("name", "BT event router test")
+              .Set("version", "1.0")
+              .Set("manifest_version", 2))
+          .SetID(kTestExtensionId)
+          .Build();
+
+  router_.AddProfile(
+      kAudioProfileUuid, kTestExtensionId, &mock_audio_profile_);
+  router_.AddProfile(
+      kHealthProfileUuid, kTestExtensionId, &mock_health_profile_);
+  EXPECT_TRUE(router_.HasProfile(kAudioProfileUuid));
+  EXPECT_TRUE(router_.HasProfile(kHealthProfileUuid));
+
+  // Unloading the extension should unregister all profiles added by it.
+  EXPECT_CALL(mock_audio_profile_, Unregister()).Times(1);
+  EXPECT_CALL(mock_health_profile_, Unregister()).Times(1);
+
+  content::NotificationService* notifier =
+      content::NotificationService::current();
+  UnloadedExtensionInfo details(
+      extension, UnloadedExtensionInfo::REASON_DISABLE);
+  notifier->Notify(chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                   content::Source<Profile>(test_profile_.get()),
+                   content::Details<UnloadedExtensionInfo>(&details));
+
+  EXPECT_FALSE(router_.HasProfile(kAudioProfileUuid));
+  EXPECT_FALSE(router_.HasProfile(kHealthProfileUuid));
+  EXPECT_CALL(*mock_adapter_, RemoveObserver(testing::_)).Times(1);
+}
+
 TEST_F(ExtensionBluetoothEventRouterTest, DispatchConnectionEvent) {
-  router_.AddProfile(kAudioProfileUuid, &mock_audio_profile_);
+  router_.AddProfile(
+      kAudioProfileUuid, kTestExtensionId, &mock_audio_profile_);
 
   FakeExtensionSystem* fake_extension_system =
       static_cast<FakeExtensionSystem*>(ExtensionSystemFactory::GetInstance()->
           SetTestingFactoryAndUse(test_profile_.get(),
                                   &BuildFakeExtensionSystem));
 
-  const char test_extension_id[] = "test extension id";
   testing::NiceMock<device::MockBluetoothDevice> mock_device(
       mock_adapter_, 0, "device name", "device address", true, false);
   scoped_refptr<testing::NiceMock<device::MockBluetoothSocket> > mock_socket(
       new testing::NiceMock<device::MockBluetoothSocket>());
 
-  router_.DispatchConnectionEvent(test_extension_id,
+  router_.DispatchConnectionEvent(kTestExtensionId,
                                   kAudioProfileUuid,
                                   &mock_device,
                                   mock_socket);
@@ -168,7 +208,7 @@ TEST_F(ExtensionBluetoothEventRouterTest, DispatchConnectionEvent) {
   FakeEventRouter* fake_event_router =
       static_cast<FakeEventRouter*>(fake_extension_system->event_router());
 
-  EXPECT_STREQ(test_extension_id, fake_event_router->extension_id().c_str());
+  EXPECT_STREQ(kTestExtensionId, fake_event_router->extension_id().c_str());
   EXPECT_STREQ(bluetooth::OnConnection::kEventName,
                fake_event_router->event()->event_name.c_str());
 

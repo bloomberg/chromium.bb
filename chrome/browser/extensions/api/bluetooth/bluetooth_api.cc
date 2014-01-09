@@ -194,7 +194,8 @@ void BluetoothAddProfileFunction::OnProfileRegistered(
                  base::Unretained(GetEventRouter(GetProfile())),
                  extension_id(),
                  uuid_));
-  GetEventRouter(GetProfile())->AddProfile(uuid_, bluetooth_profile);
+  GetEventRouter(GetProfile())->AddProfile(
+      uuid_, extension_id(), bluetooth_profile);
   SendResponse(true);
 }
 

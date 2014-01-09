@@ -500,7 +500,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, OnConnection) {
   scoped_refptr<device::MockBluetoothSocket> socket =
       new device::MockBluetoothSocket();
 
-  event_router()->AddProfile("1234", profile1_.get());
+  event_router()->AddProfile("1234", extension->id(), profile1_.get());
   event_router()->DispatchConnectionEvent(
       extension->id(), "1234", device1_.get(), socket);
 
