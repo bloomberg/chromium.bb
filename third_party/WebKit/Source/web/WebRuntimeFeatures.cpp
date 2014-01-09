@@ -370,6 +370,16 @@ bool WebRuntimeFeatures::isTouchEnabled()
     return RuntimeEnabledFeatures::touchEnabled();
 }
 
+void WebRuntimeFeatures::enableTouchIconLoading(bool enable)
+{
+    RuntimeEnabledFeatures::setTouchIconLoadingEnabled(enable);
+}
+
+bool WebRuntimeFeatures::isTouchIconLoadingEnabled()
+{
+    return RuntimeEnabledFeatures::touchIconLoadingEnabled();
+}
+
 void WebRuntimeFeatures::enableWebAnimationsCSS(bool enable)
 {
     RuntimeEnabledFeatures::setWebAnimationsCSSEnabled(enable);

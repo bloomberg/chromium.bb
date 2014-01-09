@@ -137,6 +137,9 @@ public:
     BLINK_EXPORT static void enableTouch(bool);
     BLINK_EXPORT static bool isTouchEnabled();
 
+    BLINK_EXPORT static void enableTouchIconLoading(bool);
+    BLINK_EXPORT static bool isTouchIconLoadingEnabled();
+
     BLINK_EXPORT static void enableWebAnimationsCSS(bool);
     BLINK_EXPORT static void enableWebAnimationsSVG(bool);
 

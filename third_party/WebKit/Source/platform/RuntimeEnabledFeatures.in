@@ -122,6 +122,7 @@ SVGPaintOrder status=experimental
 // touchscreen) in ApplyWebPreferences.
 Touch status=stable
 
+TouchIconLoading
 UserSelectAll status=experimental
 Vibration status=stable
 VideoTrack depends_on=Media, status=stable
