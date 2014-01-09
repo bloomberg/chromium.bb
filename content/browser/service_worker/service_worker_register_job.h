@@ -5,33 +5,47 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_REGISTER_JOB_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_REGISTER_JOB_H_
 
+#include <vector>
+
 #include "base/memory/weak_ptr.h"
 #include "content/browser/service_worker/service_worker_registration_status.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 
 namespace content {
 
+class ServiceWorkerJobCoordinator;
+
 // A ServiceWorkerRegisterJob lives only for the lifetime of a single
 // registration or unregistration.
 class ServiceWorkerRegisterJob {
  public:
+  enum RegistrationType {
+    REGISTER,
+    UNREGISTER,
+  };
+
   typedef base::Callback<void(ServiceWorkerRegistrationStatus status,
                               const scoped_refptr<ServiceWorkerRegistration>&
                                   registration)> RegistrationCallback;
   typedef base::Callback<void(ServiceWorkerRegistrationStatus status)>
       UnregistrationCallback;
 
-  typedef base::Callback<void(
-      ServiceWorkerRegisterJob* job,
-      ServiceWorkerRegistrationStatus status,
-      ServiceWorkerRegistration* registration)> RegistrationCompleteCallback;
-
   // All type of jobs (Register and Unregister) complete through a
   // single call to this callback on the IO thread.
   ServiceWorkerRegisterJob(ServiceWorkerStorage* storage,
-                           const RegistrationCompleteCallback& callback);
+                           ServiceWorkerJobCoordinator* coordinator,
+                           const GURL& pattern,
+                           const GURL& script_url,
+                           RegistrationType type);
   ~ServiceWorkerRegisterJob();
 
+  void AddCallback(const RegistrationCallback& callback);
+
+  void Start();
+
+  bool Equals(ServiceWorkerRegisterJob* job);
+
+ private:
   // The Registration flow includes most or all of the following,
   // depending on what is already registered:
   //  - creating a ServiceWorkerRegistration instance if there isn't
@@ -44,25 +58,20 @@ class ServiceWorkerRegisterJob {
   //  - Waiting for older ServiceWorkerVersions to deactivate
   //  - designating the new version to be the 'active' version
   // This method should be called once and only once per job.
-  void StartRegister(const GURL& pattern, const GURL& script_url);
+  void StartRegister();
 
   // The Unregistration process is primarily cleanup, removing
   // everything that was created during the Registration process,
   // including the ServiceWorkerRegistration itself.
   // This method should be called once and only once per job.
-  void StartUnregister(const GURL& pattern);
+  void StartUnregister();
 
- private:
   // These are all steps in the registration and unregistration pipeline.
   void RegisterPatternAndContinue(
-      const GURL& pattern,
-      const GURL& script_url,
       const RegistrationCallback& callback,
       ServiceWorkerRegistrationStatus previous_status);
 
   void UnregisterPatternAndContinue(
-      const GURL& pattern,
-      const GURL& script_url,
       const UnregistrationCallback& callback,
       bool found,
       ServiceWorkerRegistrationStatus previous_status,
@@ -75,6 +84,10 @@ class ServiceWorkerRegisterJob {
       ServiceWorkerRegistrationStatus status,
       const scoped_refptr<ServiceWorkerRegistration>& registration);
 
+  void RunCallbacks(
+      ServiceWorkerRegistrationStatus status,
+      const scoped_refptr<ServiceWorkerRegistration>& registration);
+
   // The ServiceWorkerStorage object should always outlive
   // this.
 
@@ -83,7 +96,11 @@ class ServiceWorkerRegisterJob {
   // because we may be cancelling while there are outstanding
   // callbacks that expect access to storage_.
   ServiceWorkerStorage* storage_;
-  const RegistrationCompleteCallback callback_;
+  ServiceWorkerJobCoordinator* coordinator_;
+  const GURL pattern_;
+  const GURL script_url_;
+  const RegistrationType type_;
+  std::vector<RegistrationCallback> callbacks_;
   base::WeakPtrFactory<ServiceWorkerRegisterJob> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRegisterJob);

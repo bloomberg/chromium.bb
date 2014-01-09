@@ -4,6 +4,9 @@
 
 #include "content/browser/service_worker/service_worker_register_job.h"
 
+#include <vector>
+
+#include "content/browser/service_worker/service_worker_job_coordinator.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
@@ -12,13 +15,38 @@ namespace content {
 
 ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
     ServiceWorkerStorage* storage,
-    const RegistrationCompleteCallback& callback)
-    : storage_(storage), callback_(callback), weak_factory_(this) {}
+    ServiceWorkerJobCoordinator* coordinator,
+    const GURL& pattern,
+    const GURL& script_url,
+    RegistrationType type)
+    : storage_(storage),
+      coordinator_(coordinator),
+      pattern_(pattern),
+      script_url_(script_url),
+      type_(type),
+      weak_factory_(this) {}
 
 ServiceWorkerRegisterJob::~ServiceWorkerRegisterJob() {}
 
-void ServiceWorkerRegisterJob::StartRegister(const GURL& pattern,
-                                             const GURL& script_url) {
+void ServiceWorkerRegisterJob::AddCallback(
+    const RegistrationCallback& callback) {
+  callbacks_.push_back(callback);
+}
+
+void ServiceWorkerRegisterJob::Start() {
+  if (type_ == REGISTER)
+    StartRegister();
+  else
+    StartUnregister();
+}
+
+bool ServiceWorkerRegisterJob::Equals(ServiceWorkerRegisterJob* job) {
+  return job->type_ == type_ &&
+         (type_ == ServiceWorkerRegisterJob::UNREGISTER ||
+          job->script_url_ == script_url_);
+}
+
+void ServiceWorkerRegisterJob::StartRegister() {
   // Set up a chain of callbacks, in reverse order. Each of these
   // callbacks may be called asynchronously by the previous callback.
   RegistrationCallback finish_registration(base::Bind(
@@ -27,21 +55,17 @@ void ServiceWorkerRegisterJob::StartRegister(const GURL& pattern,
   UnregistrationCallback register_new(
       base::Bind(&ServiceWorkerRegisterJob::RegisterPatternAndContinue,
                  weak_factory_.GetWeakPtr(),
-                 pattern,
-                 script_url,
                  finish_registration));
 
   ServiceWorkerStorage::FindRegistrationCallback unregister_old(
       base::Bind(&ServiceWorkerRegisterJob::UnregisterPatternAndContinue,
                  weak_factory_.GetWeakPtr(),
-                 pattern,
-                 script_url,
                  register_new));
 
-  storage_->FindRegistrationForPattern(pattern, unregister_old);
+  storage_->FindRegistrationForPattern(pattern_, unregister_old);
 }
 
-void ServiceWorkerRegisterJob::StartUnregister(const GURL& pattern) {
+void ServiceWorkerRegisterJob::StartUnregister() {
   // Set up a chain of callbacks, in reverse order. Each of these
   // callbacks may be called asynchronously by the previous callback.
   UnregistrationCallback finish_unregistration(
@@ -51,16 +75,12 @@ void ServiceWorkerRegisterJob::StartUnregister(const GURL& pattern) {
   ServiceWorkerStorage::FindRegistrationCallback unregister(
       base::Bind(&ServiceWorkerRegisterJob::UnregisterPatternAndContinue,
                  weak_factory_.GetWeakPtr(),
-                 pattern,
-                 GURL(),
                  finish_unregistration));
 
-  storage_->FindRegistrationForPattern(pattern, unregister);
+  storage_->FindRegistrationForPattern(pattern_, unregister);
 }
 
 void ServiceWorkerRegisterJob::RegisterPatternAndContinue(
-    const GURL& pattern,
-    const GURL& script_url,
     const RegistrationCallback& callback,
     ServiceWorkerRegistrationStatus previous_status) {
   if (previous_status != REGISTRATION_OK) {
@@ -76,15 +96,13 @@ void ServiceWorkerRegisterJob::RegisterPatternAndContinue(
   // TODO: Eventually RegisterInternal will be replaced by an asynchronous
   // operation. Pass its resulting status through 'callback'.
   scoped_refptr<ServiceWorkerRegistration> registration =
-      storage_->RegisterInternal(pattern, script_url);
+      storage_->RegisterInternal(pattern_, script_url_);
   BrowserThread::PostTask(BrowserThread::IO,
                           FROM_HERE,
                           base::Bind(callback, REGISTRATION_OK, registration));
 }
 
 void ServiceWorkerRegisterJob::UnregisterPatternAndContinue(
-    const GURL& pattern,
-    const GURL& new_script_url,
     const UnregistrationCallback& callback,
     bool found,
     ServiceWorkerRegistrationStatus previous_status,
@@ -92,26 +110,38 @@ void ServiceWorkerRegisterJob::UnregisterPatternAndContinue(
 
   // The previous registration may not exist, which is ok.
   if (previous_status == REGISTRATION_OK && found &&
-      (new_script_url.is_empty() ||
-       previous_registration->script_url() != new_script_url)) {
+      (script_url_.is_empty() ||
+       previous_registration->script_url() != script_url_)) {
     // TODO: Eventually UnregisterInternal will be replaced by an
     // asynchronous operation. Pass its resulting status though
     // 'callback'.
-    storage_->UnregisterInternal(pattern);
+    storage_->UnregisterInternal(pattern_);
+    DCHECK(previous_registration->is_shutdown());
   }
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE, base::Bind(callback, previous_status));
 }
 
+void ServiceWorkerRegisterJob::RunCallbacks(
+    ServiceWorkerRegistrationStatus status,
+    const scoped_refptr<ServiceWorkerRegistration>& registration) {
+  for (std::vector<RegistrationCallback>::iterator it = callbacks_.begin();
+       it != callbacks_.end();
+       ++it) {
+    it->Run(status, registration);
+  }
+}
 void ServiceWorkerRegisterJob::RegisterComplete(
     ServiceWorkerRegistrationStatus status,
     const scoped_refptr<ServiceWorkerRegistration>& registration) {
-  callback_.Run(this, status, registration);
+  RunCallbacks(status, registration);
+  coordinator_->FinishJob(pattern_, this);
 }
 
 void ServiceWorkerRegisterJob::UnregisterComplete(
     ServiceWorkerRegistrationStatus status) {
-  callback_.Run(this, status, NULL);
+  RunCallbacks(status, NULL);
+  coordinator_->FinishJob(pattern_, this);
 }
 
 }  // namespace content

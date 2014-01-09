@@ -5,8 +5,10 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_JOB_COORDINATOR_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_JOB_COORDINATOR_H_
 
+#include <deque>
+#include <map>
+
 #include "base/bind.h"
-#include "base/memory/scoped_vector.h"
 #include "content/browser/service_worker/service_worker_register_job.h"
 #include "content/browser/service_worker/service_worker_registration_status.h"
 #include "content/browser/service_worker/service_worker_storage.h"
@@ -21,7 +23,7 @@ class ServiceWorkerRegistration;
 // operations are run through instances of ServiceWorkerRegisterJob.
 class CONTENT_EXPORT ServiceWorkerJobCoordinator {
  public:
-  ServiceWorkerJobCoordinator(ServiceWorkerStorage* storage);
+  explicit ServiceWorkerJobCoordinator(ServiceWorkerStorage* storage);
   ~ServiceWorkerJobCoordinator();
 
   void Register(const GURL& pattern,
@@ -32,34 +34,41 @@ class CONTENT_EXPORT ServiceWorkerJobCoordinator {
       const GURL& pattern,
       const ServiceWorkerRegisterJob::UnregistrationCallback& callback);
 
+  // Jobs are removed whenever they are finished or canceled.
+  void FinishJob(const GURL& pattern, ServiceWorkerRegisterJob* job);
+
  private:
   friend class ServiceWorkerRegisterJob;
 
-  typedef ScopedVector<ServiceWorkerRegisterJob> RegistrationJobList;
+  class JobQueue {
+   public:
+    JobQueue();
+    ~JobQueue();
 
-  // Jobs are removed whenever they are finished or canceled.
-  void EraseJob(ServiceWorkerRegisterJob* job);
+    void Push(scoped_ptr<ServiceWorkerRegisterJob> job,
+              const ServiceWorkerRegisterJob::RegistrationCallback& callback);
 
-  // Called at ServiceWorkerRegisterJob completion.
-  void RegisterComplete(
-      const ServiceWorkerRegisterJob::RegistrationCallback& callback,
-      ServiceWorkerRegisterJob* job,
-      ServiceWorkerRegistrationStatus status,
-      ServiceWorkerRegistration* registration);
+    void Pop(ServiceWorkerRegisterJob* job);
+
+    bool empty() { return jobs_.empty(); }
+
+   private:
+    std::deque<ServiceWorkerRegisterJob*> jobs_;
+  };
+
+  typedef std::map<GURL, JobQueue> RegistrationJobMap;
 
   // Called at ServiceWorkerRegisterJob completion.
   void UnregisterComplete(
       const ServiceWorkerRegisterJob::UnregistrationCallback& callback,
-      ServiceWorkerRegisterJob* job,
       ServiceWorkerRegistrationStatus status,
-      ServiceWorkerRegistration* registration);
+      const scoped_refptr<ServiceWorkerRegistration>& registration);
 
   // The ServiceWorkerStorage object should always outlive this
   ServiceWorkerStorage* storage_;
   base::WeakPtrFactory<ServiceWorkerJobCoordinator> weak_factory_;
-  // A list of currently running jobs. This is a temporary structure until we
-  // start managing overlapping registrations explicitly.
-  RegistrationJobList registration_jobs_;
+
+  RegistrationJobMap jobs_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerJobCoordinator);
 };

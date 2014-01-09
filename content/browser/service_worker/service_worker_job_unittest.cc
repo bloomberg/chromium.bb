@@ -368,4 +368,155 @@ TEST_F(ServiceWorkerJobTest, RegisterDuplicateScript) {
   ASSERT_EQ(new_registration, old_registration);
 }
 
+// Register and then unregister the pattern, in parallel. Job coordinator should
+// process jobs until the last job.
+TEST_F(ServiceWorkerJobTest, ParallelRegUnreg) {
+  GURL pattern("http://www.example.com/*");
+  GURL script_url("http://www.example.com/service_worker.js");
+
+  bool registration_called = false;
+  scoped_refptr<ServiceWorkerRegistration> registration;
+  job_coordinator_->Register(
+      pattern,
+      script_url,
+      SaveRegistration(REGISTRATION_OK, &registration_called, &registration));
+
+  bool unregistration_called = false;
+  job_coordinator_->Unregister(
+      pattern, SaveUnregistration(REGISTRATION_OK, &unregistration_called));
+
+  ASSERT_FALSE(registration_called);
+  ASSERT_FALSE(unregistration_called);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(registration_called);
+  ASSERT_TRUE(unregistration_called);
+
+  ASSERT_TRUE(registration->is_shutdown());
+
+  bool find_called = false;
+  storage_->FindRegistrationForPattern(
+      pattern,
+      SaveFoundRegistration(
+          false, REGISTRATION_OK, &find_called, &registration));
+
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_EQ(scoped_refptr<ServiceWorkerRegistration>(), registration);
+}
+
+// Register conflicting scripts for the same pattern. The most recent
+// registration should win, and the old registration should have been
+// shutdown.
+TEST_F(ServiceWorkerJobTest, ParallelRegNewScript) {
+  GURL pattern("http://www.example.com/*");
+
+  GURL script_url1("http://www.example.com/service_worker1.js");
+  bool registration1_called = false;
+  scoped_refptr<ServiceWorkerRegistration> registration1;
+  job_coordinator_->Register(
+      pattern,
+      script_url1,
+      SaveRegistration(REGISTRATION_OK, &registration1_called, &registration1));
+
+  GURL script_url2("http://www.example.com/service_worker2.js");
+  bool registration2_called = false;
+  scoped_refptr<ServiceWorkerRegistration> registration2;
+  job_coordinator_->Register(
+      pattern,
+      script_url2,
+      SaveRegistration(REGISTRATION_OK, &registration2_called, &registration2));
+
+  ASSERT_FALSE(registration1_called);
+  ASSERT_FALSE(registration2_called);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(registration1_called);
+  ASSERT_TRUE(registration2_called);
+
+  scoped_refptr<ServiceWorkerRegistration> registration;
+  bool find_called = false;
+  storage_->FindRegistrationForPattern(
+      pattern,
+      SaveFoundRegistration(
+          true, REGISTRATION_OK, &find_called, &registration));
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(registration1->is_shutdown());
+  EXPECT_FALSE(registration2->is_shutdown());
+  ASSERT_EQ(registration2, registration);
+}
+
+// Register the exact same pattern + script. Requests should be
+// coalesced such that both callers get the exact same registration
+// object.
+TEST_F(ServiceWorkerJobTest, ParallelRegSameScript) {
+  GURL pattern("http://www.example.com/*");
+
+  GURL script_url("http://www.example.com/service_worker1.js");
+  bool registration1_called = false;
+  scoped_refptr<ServiceWorkerRegistration> registration1;
+  job_coordinator_->Register(
+      pattern,
+      script_url,
+      SaveRegistration(REGISTRATION_OK, &registration1_called, &registration1));
+
+  bool registration2_called = false;
+  scoped_refptr<ServiceWorkerRegistration> registration2;
+  job_coordinator_->Register(
+      pattern,
+      script_url,
+      SaveRegistration(REGISTRATION_OK, &registration2_called, &registration2));
+
+  ASSERT_FALSE(registration1_called);
+  ASSERT_FALSE(registration2_called);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(registration1_called);
+  ASSERT_TRUE(registration2_called);
+
+  ASSERT_EQ(registration1, registration2);
+
+  scoped_refptr<ServiceWorkerRegistration> registration;
+  bool find_called = false;
+  storage_->FindRegistrationForPattern(
+      pattern,
+      SaveFoundRegistration(
+          true, REGISTRATION_OK, &find_called, &registration));
+
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(registration, registration1);
+}
+
+// Call simulataneous unregister calls.
+TEST_F(ServiceWorkerJobTest, ParallelUnreg) {
+  GURL pattern("http://www.example.com/*");
+
+  GURL script_url("http://www.example.com/service_worker.js");
+  bool unregistration1_called = false;
+  job_coordinator_->Unregister(
+      pattern, SaveUnregistration(REGISTRATION_OK, &unregistration1_called));
+
+  bool unregistration2_called = false;
+  job_coordinator_->Unregister(
+      pattern, SaveUnregistration(REGISTRATION_OK, &unregistration2_called));
+
+  ASSERT_FALSE(unregistration1_called);
+  ASSERT_FALSE(unregistration2_called);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(unregistration1_called);
+  ASSERT_TRUE(unregistration2_called);
+
+  // There isn't really a way to test that they are being coalesced,
+  // but we can make sure they can exist simultaneously without
+  // crashing.
+  scoped_refptr<ServiceWorkerRegistration> registration;
+  bool find_called = false;
+  storage_->FindRegistrationForPattern(
+      pattern,
+      SaveFoundRegistration(
+          false, REGISTRATION_OK, &find_called, &registration));
+
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(scoped_refptr<ServiceWorkerRegistration>(), registration);
+}
+
 }  // namespace content
