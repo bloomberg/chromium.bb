@@ -2701,19 +2701,21 @@ WebGLGetInfo WebGLRenderingContext::getUniform(WebGLProgram* program, const WebG
         if (!m_context->getActiveUniform(objectOrZero(program), i, info))
             return WebGLGetInfo();
         String name = info.name;
+        StringBuilder nameBuilder;
         // Strip "[0]" from the name if it's an array.
         if (info.size > 1 && name.endsWith("[0]"))
             info.name = name.left(name.length() - 3);
         // If it's an array, we need to iterate through each element, appending "[index]" to the name.
         for (GLint index = 0; index < info.size; ++index) {
-            name = info.name;
+            nameBuilder.clear();
+            nameBuilder.append(info.name);
             if (info.size > 1 && index >= 1) {
-                name.append('[');
-                name.append(String::number(index));
-                name.append(']');
+                nameBuilder.append('[');
+                nameBuilder.append(String::number(index));
+                nameBuilder.append(']');
             }
             // Now need to look this up by name again to find its location
-            GLint loc = m_context->getUniformLocation(objectOrZero(program), name.utf8().data());
+            GLint loc = m_context->getUniformLocation(objectOrZero(program), nameBuilder.toString().utf8().data());
             if (loc == location) {
                 // Found it. Use the type in the ActiveInfo to determine the return type.
                 GLenum baseType;
