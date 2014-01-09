@@ -212,8 +212,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 - (IBAction)showUserManager:(id)sender {
   // Only non-guest users appear in the User Manager.
   base::FilePath profile_path;
-  // The button tag indicates whether the active profile is a non-guest profile.
-  if ([sender tag]) {
+  if (!isGuestSession_) {
     size_t active_index = avatarMenu_->GetActiveProfileIndex();
     profile_path = avatarMenu_->GetItemAt(active_index).profile_path;
   }
