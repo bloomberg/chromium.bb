@@ -38,6 +38,31 @@
 
 namespace WebCore {
 
+class TestGCScope {
+public:
+    TestGCScope(ThreadState::StackState state)
+        : m_state(ThreadState::current())
+        , m_safePointScope(state)
+    {
+        m_state->checkThread();
+        ASSERT(!m_state->isInGC());
+        ThreadState::stopThreads();
+        m_state->enterGC();
+        Heap::makeConsistentForGC();
+    }
+
+    ~TestGCScope()
+    {
+        m_state->leaveGC();
+        ASSERT(!m_state->isInGC());
+        ThreadState::resumeThreads();
+    }
+
+private:
+    ThreadState* m_state;
+    ThreadState::SafePointScope m_safePointScope;
+};
+
 class HeapAllocatedArray : public GarbageCollected<HeapAllocatedArray> {
     DECLARE_GC_INFO
 public:
@@ -135,6 +160,12 @@ private:
     volatile int m_threadsToFinish;
 };
 
+static void getHeapStats(HeapStats* stats)
+{
+    TestGCScope scope(ThreadState::NoHeapPointersOnStack);
+    Heap::getStats(stats);
+}
+
 TEST(HeapTest, Threading)
 {
     ThreadedHeapTester::test();
@@ -156,18 +187,14 @@ TEST(HeapTest, SimpleAllocation)
     Heap::init(0);
 
     // Get initial heap stats.
-    //
-    // FIXME: We should put in a testing GCScope object that will make
-    // the test thread reach a safepoint so that we can enable
-    // threading asserts in getStats.
     HeapStats initialHeapStats;
-    Heap::getStats(&initialHeapStats);
+    getHeapStats(&initialHeapStats);
     EXPECT_EQ(0ul, initialHeapStats.totalObjectSpace());
 
     // Allocate an object in the heap.
     HeapAllocatedArray* a = new HeapAllocatedArray();
     HeapStats statsAfterAllocation;
-    Heap::getStats(&statsAfterAllocation);
+    getHeapStats(&statsAfterAllocation);
     EXPECT_TRUE(statsAfterAllocation.totalObjectSpace() >= sizeof(HeapAllocatedArray));
 
     // Sanity check of the contents in the heap.

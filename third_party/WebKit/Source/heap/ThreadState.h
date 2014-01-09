@@ -242,6 +242,33 @@ public:
     // Before performing GC the thread-specific heap state should be
     // made consistent for garbage collection.
     bool isConsistentForGC();
+    void makeConsistentForGC();
+
+    // Is the thread corresponding to this thread state currently
+    // performing GC?
+    bool isInGC() const { return m_inGC; }
+
+    // Is any of the threads registered with the blink garbage collection
+    // infrastructure currently perform GC?
+    static bool isAnyThreadInGC() { return s_inGC; }
+
+    void enterGC()
+    {
+        ASSERT(!m_inGC);
+        ASSERT(!s_inGC);
+        m_inGC = true;
+        s_inGC = true;
+    }
+
+    void leaveGC()
+    {
+        m_inGC = false;
+        s_inGC = false;
+    }
+
+    // Is the thread corresponding to this thread state currently
+    // sweeping?
+    bool isSweepInProgress() { return m_sweepInProgress; }
 
     void prepareForGC();
 
@@ -395,6 +422,10 @@ private:
     static WTF::ThreadSpecific<ThreadState*>* s_threadSpecific;
     static SafePointBarrier* s_safePointBarrier;
 
+    // This variable is flipped to true after all threads are stoped
+    // and outermost GC has started.
+    static bool s_inGC;
+
     // We can't create a static member of type ThreadState here
     // because it will introduce global constructor and destructor.
     // We would like to manage lifetime of the ThreadState attached
@@ -419,6 +450,7 @@ private:
     volatile int m_sweepRequested;
     bool m_sweepInProgress;
     size_t m_noAllocationCount;
+    bool m_inGC;
     BaseHeap* m_heaps[NumberOfHeaps];
     HeapContainsCache* m_heapContainsCache;
     HeapStats m_stats;

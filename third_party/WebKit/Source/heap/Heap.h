@@ -108,7 +108,6 @@ const uint8_t finalizedZapValue = 24;
 
 class HeapStats;
 class PageMemory;
-template <typename Header> class ThreadHeap;
 
 HEAP_EXPORT size_t osPageSize();
 
@@ -829,6 +828,9 @@ public:
     // garbage collector. Should only be called during garbage
     // collection where threads are known to be at safe points.
     static void getStats(HeapStats*);
+
+    static bool isConsistentForGC();
+    static void makeConsistentForGC();
 
     static CallbackStack* s_markingStack;
 };

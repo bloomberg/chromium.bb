@@ -40,6 +40,7 @@ namespace WebCore {
 WTF::ThreadSpecific<ThreadState*>* ThreadState::s_threadSpecific = 0;
 uint8_t ThreadState::s_mainThreadStateStorage[sizeof(ThreadState)];
 SafePointBarrier* ThreadState::s_safePointBarrier = 0;
+bool ThreadState::s_inGC = false;
 
 static Mutex& threadAttachMutex()
 {
@@ -179,6 +180,7 @@ ThreadState::ThreadState(intptr_t* startOfStack)
     , m_gcRequested(false)
     , m_sweepInProgress(false)
     , m_noAllocationCount(0)
+    , m_inGC(false)
     , m_heapContainsCache(new HeapContainsCache())
 {
     ASSERT(!**s_threadSpecific);
@@ -330,6 +332,12 @@ bool ThreadState::isConsistentForGC()
     return true;
 }
 
+void ThreadState::makeConsistentForGC()
+{
+    for (int i = 0; i < NumberOfHeaps; i++)
+        m_heaps[i]->makeConsistentForGC();
+}
+
 void ThreadState::prepareForGC()
 {
     for (int i = 0; i < NumberOfHeaps; i++) {
@@ -451,7 +459,11 @@ void ThreadState::performPendingSweep()
 {
     if (sweepRequested()) {
         m_sweepInProgress = true;
-        // FIXME: implement sweep.
+        // FIXME: implement sweep. For now we just clear marks.
+        for (int i = 0; i < NumberOfHeaps; i++) {
+            BaseHeap* heap = m_heaps[i];
+            heap->clearMarks();
+        }
         m_sweepInProgress = false;
         clearGCRequested();
         clearSweepRequested();

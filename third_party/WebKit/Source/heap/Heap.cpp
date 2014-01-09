@@ -258,6 +258,34 @@ private:
     MemoryRegion m_writable;
 };
 
+class GCScope {
+public:
+    GCScope(ThreadState::StackState stackState)
+        : m_state(ThreadState::current())
+        , m_safePointScope(stackState)
+    {
+        m_state->checkThread();
+
+        // FIXME: in an unlikely coincidence that two threads decide
+        // to collect garbage at the same time, avoid doing two GCs in
+        // a row.
+        ASSERT(!m_state->isInGC());
+        ThreadState::stopThreads();
+        m_state->enterGC();
+    }
+
+    ~GCScope()
+    {
+        m_state->leaveGC();
+        ASSERT(!m_state->isInGC());
+        ThreadState::resumeThreads();
+    }
+
+private:
+    ThreadState* m_state;
+    ThreadState::SafePointScope m_safePointScope;
+};
+
 NO_SANITIZE_ADDRESS
 bool HeapObjectHeader::isMarked() const
 {
@@ -403,9 +431,9 @@ template<typename Header>
 ThreadHeap<Header>::~ThreadHeap()
 {
     clearFreeLists();
-    // FIXME(oilpan): at the moment we can't finalize all objects
-    // owned by the main thread eagerly because there are tangled
-    // destruction order dependencies there.
+    // FIXME: at the moment we can't finalize all objects owned by the
+    // main thread eagerly because there are tangled destruction order
+    // dependencies there.
     if (!ThreadState::isMainThread())
         finalizeAll();
     deletePages();
@@ -1139,8 +1167,7 @@ void Heap::shutdown()
 
 bool Heap::contains(Address address)
 {
-    // FIXME: It's unsafe to iterate threads outside of GC. Enable the ASSERT.
-    // ASSERT(ThreadState::isAnyThreadInGC());
+    ASSERT(ThreadState::isAnyThreadInGC());
     ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
     for (ThreadState::AttachedThreadStateSet::iterator it = threads.begin(), end = threads.end(); it != end; ++it) {
         if ((*it)->contains(address))
@@ -1161,8 +1188,7 @@ bool Heap::popAndInvokeTraceCallback(Visitor* visitor)
 
 void Heap::prepareForGC()
 {
-    // FIXME: It's unsafe to iterate threads outside of GC. Enable the ASSERT.
-    // ASSERT(ThreadState::isAnyThreadInGC());
+    ASSERT(ThreadState::isAnyThreadInGC());
     ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
     for (ThreadState::AttachedThreadStateSet::iterator it = threads.begin(), end = threads.end(); it != end; ++it)
         (*it)->prepareForGC();
@@ -1171,8 +1197,7 @@ void Heap::prepareForGC()
 void Heap::collectGarbage(ThreadState::StackState stackState, GCType gcType)
 {
     ThreadState::current()->clearGCRequested();
-    // FIXME: Move GCScope to trunk.
-    // GCScope gcScope(stackState);
+    GCScope gcScope(stackState);
 
     // Disallow allocation during garbage collection.
     NoAllocationScope<AnyThread> noAllocationScope;
@@ -1202,8 +1227,7 @@ void Heap::pushTraceCallback(void* object, TraceCallback callback)
 void Heap::getStats(HeapStats* stats)
 {
     stats->clear();
-    // FIXME: It's unsafe to iterate threads outside of GC. Enable the ASSERT.
-    // ASSERT(ThreadState::isAnyThreadInGC());
+    ASSERT(ThreadState::isAnyThreadInGC());
     ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
     typedef ThreadState::AttachedThreadStateSet::iterator ThreadStateIterator;
     for (ThreadStateIterator it = threads.begin(), end = threads.end(); it != end; ++it) {
@@ -1211,6 +1235,23 @@ void Heap::getStats(HeapStats* stats)
         (*it)->getStats(temp);
         stats->add(&temp);
     }
+}
+
+bool Heap::isConsistentForGC()
+{
+    ASSERT(ThreadState::isAnyThreadInGC());
+    ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
+    for (ThreadState::AttachedThreadStateSet::iterator it = threads.begin(), end = threads.end(); it != end; ++it)
+        return (*it)->isConsistentForGC();
+    return true;
+}
+
+void Heap::makeConsistentForGC()
+{
+    ASSERT(ThreadState::isAnyThreadInGC());
+    ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
+    for (ThreadState::AttachedThreadStateSet::iterator it = threads.begin(), end = threads.end(); it != end; ++it)
+        (*it)->makeConsistentForGC();
 }
 
 // Force template instantiations for the types that we need.
