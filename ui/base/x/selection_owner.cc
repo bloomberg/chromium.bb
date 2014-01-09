@@ -39,7 +39,6 @@ SelectionOwner::~SelectionOwner() {
 }
 
 void SelectionOwner::RetrieveTargets(std::vector<Atom>* targets) {
-  targets->clear();
   for (SelectionFormatMap::const_iterator it = format_map_.begin();
        it != format_map_.end(); ++it) {
     targets->push_back(it->first);

@@ -35,7 +35,7 @@ class UI_BASE_EXPORT SelectionOwner {
   // Returns the current selection data. Useful for fast paths.
   const SelectionFormatMap& selection_format_map() { return format_map_; }
 
-  // Retrieves a list of types we're offering.
+  // Appends a list of types we're offering to |targets|.
   void RetrieveTargets(std::vector<Atom>* targets);
 
   // Attempts to take ownership of the selection. If we're successful, present
