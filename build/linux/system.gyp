@@ -415,9 +415,6 @@
     {
       'target_name': 'libbrlapi',
       'type': 'static_library',
-      'dependencies': [
-        '../../base/base.gyp:base',
-      ],
       'all_dependent_settings': {
         'include_dirs': [
           '<(SHARED_INTERMEDIATE_DIR)',
@@ -435,6 +432,9 @@
           }],
         ],
       },
+      'include_dirs': [
+        '../..',
+      ],
       'hard_dependency': 1,
       'actions': [
         {
