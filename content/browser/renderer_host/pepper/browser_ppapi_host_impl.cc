@@ -76,7 +76,7 @@ ppapi::host::PpapiHost* BrowserPpapiHostImpl::GetPpapiHost() {
 
 base::ProcessHandle BrowserPpapiHostImpl::GetPluginProcessHandle() const {
   // Handle should previously have been set before use.
-  DCHECK(plugin_process_handle_ != base::kNullProcessHandle);
+  DCHECK(in_process_ || plugin_process_handle_ != base::kNullProcessHandle);
   return plugin_process_handle_;
 }
 

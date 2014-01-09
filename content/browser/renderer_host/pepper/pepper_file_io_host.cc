@@ -450,13 +450,11 @@ void PepperFileIOHost::SendOpenErrorReply(
 bool PepperFileIOHost::AddFileToReplyContext(
     int32_t open_flags,
     ppapi::host::ReplyMessageContext* reply_context) const {
-  base::ProcessId plugin_process_id;
-  if (browser_ppapi_host_->in_process()) {
+  base::ProcessId plugin_process_id =
+      base::GetProcId(browser_ppapi_host_->GetPluginProcessHandle());
+  if (plugin_process_id == base::kNullProcessId)
     plugin_process_id = resolved_render_process_id_;
-  } else {
-    plugin_process_id = base::GetProcId(
-        browser_ppapi_host_->GetPluginProcessHandle());
-  }
+
   IPC::PlatformFileForTransit transit_file = BrokerGetFileHandleForProcess(
       file_, plugin_process_id, false);
   if (transit_file == IPC::InvalidPlatformFileForTransit())
