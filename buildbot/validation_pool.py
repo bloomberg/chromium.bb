@@ -50,7 +50,7 @@ CQ = 'cq'
 
 # The gerrit-on-borg team tells us that delays up to 2 minutes can be
 # normal.  Setting timeout to 4 minutes to be safe-ish.
-SUBMITTED_WAIT_TIMEOUT = 4 * 60 # Time in seconds.
+SUBMITTED_WAIT_TIMEOUT = 8 * 60 # Time in seconds.
 
 class TreeIsClosedException(Exception):
   """Raised when the tree is closed and we wanted to submit changes."""
