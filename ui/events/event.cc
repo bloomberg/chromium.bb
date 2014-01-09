@@ -5,6 +5,7 @@
 #include "ui/events/event.h"
 
 #if defined(USE_X11)
+#include <X11/extensions/XInput2.h>
 #include <X11/Xlib.h>
 #endif
 
@@ -437,7 +438,8 @@ TouchEvent::TouchEvent(const base::NativeEvent& native_event)
       radius_x_(GetTouchRadiusX(native_event)),
       radius_y_(GetTouchRadiusY(native_event)),
       rotation_angle_(GetTouchAngle(native_event)),
-      force_(GetTouchForce(native_event)) {
+      force_(GetTouchForce(native_event)),
+      source_device_id_(-1) {
   latency()->AddLatencyNumberWithTimestamp(
       INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
       0,
@@ -445,6 +447,12 @@ TouchEvent::TouchEvent(const base::NativeEvent& native_event)
       base::TimeTicks::FromInternalValue(time_stamp().ToInternalValue()),
       1,
       true);
+
+#if defined(USE_X11)
+  XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(native_event->xcookie.data);
+  source_device_id_ = xiev->deviceid;
+#endif
+
   latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
 }
 
@@ -457,7 +465,8 @@ TouchEvent::TouchEvent(EventType type,
       radius_x_(0.0f),
       radius_y_(0.0f),
       rotation_angle_(0.0f),
-      force_(0.0f) {
+      force_(0.0f),
+      source_device_id_(-1) {
   latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
 }
 
@@ -475,7 +484,8 @@ TouchEvent::TouchEvent(EventType type,
       radius_x_(radius_x),
       radius_y_(radius_y),
       rotation_angle_(angle),
-      force_(force) {
+      force_(force),
+      source_device_id_(-1) {
   latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
 }
 

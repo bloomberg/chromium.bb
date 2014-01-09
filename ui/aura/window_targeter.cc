@@ -110,7 +110,8 @@ Window* WindowTargeter::FindTargetInRootWindow(Window* root_window,
     if (consumer)
       return static_cast<Window*>(consumer);
     consumer =
-        ui::GestureRecognizer::Get()->GetTargetForLocation(event.location());
+        ui::GestureRecognizer::Get()->GetTargetForLocation(
+            event.location(), touch.source_device_id());
     if (consumer)
       return static_cast<Window*>(consumer);
 

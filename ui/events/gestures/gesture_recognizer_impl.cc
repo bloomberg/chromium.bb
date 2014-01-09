@@ -78,15 +78,17 @@ GestureConsumer* GestureRecognizerImpl::GetTargetForGestureEvent(
 }
 
 GestureConsumer* GestureRecognizerImpl::GetTargetForLocation(
-    const gfx::Point& location) {
+    const gfx::Point& location, int source_device_id) {
   const GesturePoint* closest_point = NULL;
   int64 closest_distance_squared = 0;
   std::map<GestureConsumer*, GestureSequence*>::iterator i;
   for (i = consumer_sequence_.begin(); i != consumer_sequence_.end(); ++i) {
     const GesturePoint* points = i->second->points();
     for (int j = 0; j < GestureSequence::kMaxGesturePoints; ++j) {
-      if (!points[j].in_use())
+      if (!points[j].in_use() ||
+          source_device_id != points[j].source_device_id()) {
         continue;
+      }
       gfx::Vector2d delta = points[j].last_touch_position() - location;
       // Relative distance is all we need here, so LengthSquared() is
       // appropriate, and cheaper than Length().
@@ -269,6 +271,11 @@ GestureRecognizer* GestureRecognizer::Get() {
   if (!g_gesture_recognizer_instance)
     g_gesture_recognizer_instance = new GestureRecognizerImpl();
   return g_gesture_recognizer_instance;
+}
+
+// GestureRecognizer, static
+void GestureRecognizer::Reset() {
+  g_gesture_recognizer_instance = NULL;
 }
 
 void SetGestureRecognizerForTesting(GestureRecognizer* gesture_recognizer) {

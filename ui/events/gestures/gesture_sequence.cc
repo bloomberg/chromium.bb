@@ -520,6 +520,7 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
     }
     new_point->set_point_id(point_count_++);
     new_point->set_touch_id(event.touch_id());
+    new_point->set_source_device_id(event.source_device_id());
   }
 
   GestureState last_state = state_;
