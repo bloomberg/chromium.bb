@@ -45,7 +45,7 @@ public:
     enum Priority { DefaultPriority, TransitionPriority };
 
     static PassRefPtr<Animation> create(PassRefPtr<Element>, PassRefPtr<AnimationEffect>, const Timing&, Priority = DefaultPriority, PassOwnPtr<EventDelegate> = nullptr);
-    virtual bool isAnimation() const OVERRIDE FINAL { return true; }
+    virtual bool isAnimation() const OVERRIDE { return true; }
 
     const AnimationEffect::CompositableValueList* compositableValues() const
     {
@@ -68,12 +68,12 @@ public:
 
 protected:
     // Returns whether style recalc was triggered.
-    virtual bool applyEffects(bool previouslyInEffect);
-    virtual void clearEffects();
-    virtual bool updateChildrenAndEffects() const OVERRIDE FINAL;
-    virtual void didAttach() OVERRIDE FINAL;
-    virtual void willDetach() OVERRIDE FINAL;
-    virtual double calculateTimeToEffectChange(double inheritedTime, double timeToNextIteration) const OVERRIDE FINAL;
+    bool applyEffects(bool previouslyInEffect);
+    void clearEffects();
+    virtual bool updateChildrenAndEffects() const OVERRIDE;
+    virtual void didAttach() OVERRIDE;
+    virtual void willDetach() OVERRIDE;
+    virtual double calculateTimeToEffectChange(double inheritedTime, double timeToNextIteration) const OVERRIDE;
 
 private:
     Animation(PassRefPtr<Element>, PassRefPtr<AnimationEffect>, const Timing&, Priority, PassOwnPtr<EventDelegate>);

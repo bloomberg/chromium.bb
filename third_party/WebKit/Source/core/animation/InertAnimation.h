@@ -46,9 +46,9 @@ public:
     bool paused() const { return m_paused; }
 
 protected:
-    virtual bool updateChildrenAndEffects() const OVERRIDE { return false; };
-    virtual void willDetach() OVERRIDE { };
-    virtual double calculateTimeToEffectChange(double inheritedTime, double timeToNextIteration) const OVERRIDE FINAL;
+    virtual bool updateChildrenAndEffects() const OVERRIDE { return false; }
+    virtual void willDetach() OVERRIDE { }
+    virtual double calculateTimeToEffectChange(double inheritedTime, double timeToNextIteration) const OVERRIDE;
 
 private:
     InertAnimation(PassRefPtr<AnimationEffect>, const Timing&, bool paused);

@@ -36,7 +36,7 @@
 
 namespace WebCore {
 
-class AnimatableClipPathOperation : public AnimatableValue {
+class AnimatableClipPathOperation FINAL : public AnimatableValue {
 public:
     virtual ~AnimatableClipPathOperation() { }
     static PassRefPtr<AnimatableClipPathOperation> create(ClipPathOperation* operation)

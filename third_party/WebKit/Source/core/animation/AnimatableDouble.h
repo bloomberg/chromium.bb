@@ -36,7 +36,7 @@
 
 namespace WebCore {
 
-class AnimatableDouble : public AnimatableValue {
+class AnimatableDouble FINAL : public AnimatableValue {
 public:
     virtual ~AnimatableDouble() { }
 

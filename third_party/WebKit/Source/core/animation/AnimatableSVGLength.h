@@ -36,7 +36,7 @@
 
 namespace WebCore {
 
-class AnimatableSVGLength: public AnimatableValue {
+class AnimatableSVGLength FINAL : public AnimatableValue {
 public:
     virtual ~AnimatableSVGLength() { }
 
@@ -60,7 +60,7 @@ private:
     {
     }
 
-    virtual AnimatableType type() const { return TypeSVGLength; }
+    virtual AnimatableType type() const OVERRIDE { return TypeSVGLength; }
     virtual bool equalTo(const AnimatableValue*) const OVERRIDE;
 
     SVGLength m_length;

@@ -68,10 +68,10 @@ protected:
 
 private:
     virtual PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
-    virtual PassRefPtr<AnimatableValue> addWith(const AnimatableValue*) const OVERRIDE;
+    virtual PassRefPtr<AnimatableValue> addWith(const AnimatableValue*) const OVERRIDE FINAL;
 
     virtual AnimatableType type() const OVERRIDE { return TypeRepeatable; }
-    virtual bool equalTo(const AnimatableValue*) const OVERRIDE;
+    virtual bool equalTo(const AnimatableValue*) const OVERRIDE FINAL;
 };
 
 DEFINE_TYPE_CASTS(AnimatableRepeatable, AnimatableValue, value, (value->isRepeatable() || value->isStrokeDasharrayList()), (value.isRepeatable() || value.isStrokeDasharrayList()));

@@ -35,7 +35,7 @@
 
 namespace WebCore {
 
-class AnimatableLengthSize : public AnimatableValue {
+class AnimatableLengthSize FINAL : public AnimatableValue {
 public:
     virtual ~AnimatableLengthSize() { }
     static PassRefPtr<AnimatableLengthSize> create(PassRefPtr<AnimatableValue> width, PassRefPtr<AnimatableValue> height)

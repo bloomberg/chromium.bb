@@ -37,7 +37,7 @@
 
 namespace WebCore {
 
-class AnimatableSVGPaint : public AnimatableValue {
+class AnimatableSVGPaint FINAL : public AnimatableValue {
 public:
     virtual ~AnimatableSVGPaint() { }
     static PassRefPtr<AnimatableSVGPaint> create(SVGPaint::SVGPaintType type, const Color& color, const String& uri)

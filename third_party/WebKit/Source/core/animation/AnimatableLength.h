@@ -46,7 +46,7 @@ enum NumberRange {
 // Handles animation of CSS length and percentage values including CSS calc.
 // See primitiveUnitToNumberType() for the list of supported units.
 // If created from a CSSPrimitiveValue this class will cache it to be returned in toCSSValue().
-class AnimatableLength : public AnimatableValue {
+class AnimatableLength FINAL : public AnimatableValue {
 public:
     enum NumberUnitType {
         UnitTypeCalc,

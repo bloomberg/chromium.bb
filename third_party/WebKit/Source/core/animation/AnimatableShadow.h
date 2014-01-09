@@ -36,7 +36,7 @@
 
 namespace WebCore {
 
-class AnimatableShadow : public AnimatableValue {
+class AnimatableShadow FINAL : public AnimatableValue {
 public:
     virtual ~AnimatableShadow() { }
     static PassRefPtr<AnimatableShadow> create(PassRefPtr<ShadowList> shadowList)

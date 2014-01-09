@@ -112,7 +112,7 @@ private:
 
     OwnPtr<PlatformTiming> m_timing;
 
-    class DocumentTimelineTiming : public PlatformTiming {
+    class DocumentTimelineTiming FINAL : public PlatformTiming {
     public:
         DocumentTimelineTiming(DocumentTimeline* documentTimeline)
             : m_timeline(documentTimeline)

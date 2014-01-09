@@ -36,7 +36,7 @@
 
 namespace WebCore {
 
-class AnimatableFilterOperations : public AnimatableValue {
+class AnimatableFilterOperations FINAL : public AnimatableValue {
 public:
     virtual ~AnimatableFilterOperations() { }
     static PassRefPtr<AnimatableFilterOperations> create(const FilterOperations& operations)

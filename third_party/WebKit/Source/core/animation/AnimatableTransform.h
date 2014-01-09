@@ -36,7 +36,7 @@
 
 namespace WebCore {
 
-class AnimatableTransform : public AnimatableValue {
+class AnimatableTransform FINAL : public AnimatableValue {
 public:
     virtual ~AnimatableTransform() { }
     static PassRefPtr<AnimatableTransform> create(const TransformOperations&);

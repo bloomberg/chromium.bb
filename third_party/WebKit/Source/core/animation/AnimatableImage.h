@@ -37,7 +37,7 @@
 
 namespace WebCore {
 
-class AnimatableImage : public AnimatableValue {
+class AnimatableImage FINAL : public AnimatableValue {
 public:
     virtual ~AnimatableImage() { }
     static PassRefPtr<AnimatableImage> create(StyleImage* image)

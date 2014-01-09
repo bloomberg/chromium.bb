@@ -74,7 +74,7 @@ private:
     PropertyValueMap m_propertyValues;
 };
 
-class KeyframeEffectModel : public AnimationEffect {
+class KeyframeEffectModel FINAL : public AnimationEffect {
 public:
     class PropertySpecificKeyframe;
     typedef Vector<RefPtr<Keyframe> > KeyframeVector;

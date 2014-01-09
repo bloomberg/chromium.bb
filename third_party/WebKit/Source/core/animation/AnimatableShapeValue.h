@@ -36,7 +36,7 @@
 
 namespace WebCore {
 
-class AnimatableShapeValue : public AnimatableValue {
+class AnimatableShapeValue FINAL : public AnimatableValue {
 public:
     virtual ~AnimatableShapeValue() { }
     static PassRefPtr<AnimatableShapeValue> create(ShapeValue* shape)

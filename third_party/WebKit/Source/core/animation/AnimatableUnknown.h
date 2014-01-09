@@ -37,7 +37,7 @@
 
 namespace WebCore {
 
-class AnimatableUnknown : public AnimatableValue {
+class AnimatableUnknown FINAL : public AnimatableValue {
 public:
     virtual ~AnimatableUnknown() { }
 
@@ -59,7 +59,7 @@ protected:
         return defaultInterpolateTo(this, value, fraction);
     }
 
-    virtual bool usesDefaultInterpolationWith(const AnimatableValue*) const { return true; }
+    virtual bool usesDefaultInterpolationWith(const AnimatableValue*) const OVERRIDE { return true; }
 
 private:
     explicit AnimatableUnknown(PassRefPtr<CSSValue> value)

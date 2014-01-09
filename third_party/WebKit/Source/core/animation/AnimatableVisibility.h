@@ -36,7 +36,7 @@
 
 namespace WebCore {
 
-class AnimatableVisibility : public AnimatableValue {
+class AnimatableVisibility FINAL : public AnimatableValue {
 public:
     virtual ~AnimatableVisibility() { }
     static PassRefPtr<AnimatableVisibility> create(EVisibility visibility)

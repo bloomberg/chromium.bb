@@ -35,7 +35,7 @@
 
 namespace WebCore {
 
-class AnimatableNeutral : public AnimatableValue {
+class AnimatableNeutral FINAL : public AnimatableValue {
 public:
     virtual ~AnimatableNeutral() { }
 

@@ -36,7 +36,7 @@
 
 namespace WebCore {
 
-class AnimatableStrokeDasharrayList: public AnimatableRepeatable {
+class AnimatableStrokeDasharrayList FINAL : public AnimatableRepeatable {
 public:
     virtual ~AnimatableStrokeDasharrayList() { }
 
@@ -59,7 +59,7 @@ private:
     {
     }
 
-    virtual AnimatableType type() const { return TypeStrokeDasharrayList; }
+    virtual AnimatableType type() const OVERRIDE { return TypeStrokeDasharrayList; }
 };
 
 DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableStrokeDasharrayList, isStrokeDasharrayList());
