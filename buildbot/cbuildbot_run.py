@@ -2,9 +2,27 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Provide a BuilderRun class for collecting info on one builder run."""
+"""Provide a class for collecting info on one builder run.
 
+There are two public classes, BuilderRun and ChildBuilderRun, that serve
+this function.  The first is for most situations, the second is for "child"
+configs within a builder config that has entries in "child_configs".
+
+Almost all functionality is within the common _BuilderRunBase class.  The
+only thing the BuilderRun and ChildBuilderRun classes are responsible for
+is overriding the self.config value in the _BuilderRunBase object whenever
+it is accessed.
+
+It is important to note that for one overall run, there will be one
+BuilderRun object and zero or more ChildBuilderRun objects, but they
+will all share the same _BuilderRunBase *object*.  This means, for example,
+that run attributes (e.g. self.attrs.release_tag) are shared between them
+all, as intended.
+"""
+
+import functools
 import os
+import types
 
 from chromite.buildbot import manifest_version
 
@@ -30,8 +48,12 @@ class RunAttributes(object):
   )
 
 
-class BuilderRun(object):
-  """Class to represent one run of a builder."""
+class _BuilderRunBase(object):
+  """Class to represent one run of a builder.
+
+  This class should never be instantiated directly, but instead be
+  instantiated as part of a BuilderRun object.
+  """
 
   # Class-level dict of RunAttributes objects to make it less
   # problematic to send BuilderRun objects between processes through
@@ -57,9 +79,16 @@ class BuilderRun(object):
       # test = (config build_tests AND option tests)
   )
 
-  def __init__(self, options, build_config):
+  def __init__(self, options):
     self.options = options
-    self.config = build_config
+
+    # Note that self.config is filled in dynamically by either of the classes
+    # that are actually instantiated: BuilderRun and ChildBuilderRun.  In other
+    # words, self.config can be counted on anywhere except in this __init__.
+    # The implication is that any plain attributes that are calculated from
+    # self.config contents must be provided as properties (or methods).
+    # See the _RealBuilderRun class and its __getattr__ method for details.
+    self.config = None
 
     # Create the RunAttributes object for this BuilderRun and save
     # the id number for it in order to look it up via attrs property.
@@ -137,23 +166,97 @@ class BuilderRun(object):
     return calc_version
 
 
-class ChildBuilderRun(object):
-  """A BuilderRun for a "child" build config, overriding self.config."""
+class _RealBuilderRun(object):
+  """Base BuilderRun class that manages self.config access.
 
-  __slots__ = BuilderRun.__slots__ + (
-      '_builder_run',    # The full (master) BuilderRun.
-      'config',          # The child BuildConfig for this ChildBuilderRun.
-      'child_index',     # Index into self.full_config.child_configs.
+  For any builder run, sometimes the build config is the top-level config and
+  sometimes it is a "child" config.  In either case, the config to use should
+  override self.config for all cases.  This class provides a mechanism for
+  overriding self.config access generally.
+  """
+
+  __slots__ = _BuilderRunBase.__slots__ + (
+      '_run_base',  # The _BuilderRunBase object where most functionality is.
+      '_config',    # Config to use for dynamically overriding self.config.
   )
 
-  def __init__(self, builder_run, child_index):
-    self._builder_run = builder_run
-    self.child_index = child_index
-    self.config = builder_run.config.child_configs[child_index]
+  def __init__(self, run_base, build_config):
+    self._run_base = run_base
+    self._config = build_config
 
   def __getattr__(self, attr):
     # Remember, __getattr__ only called if attribute was not found normally.
-    # Point at self._builder_run, but access self._builder_run in a way that
-    # does not cause infinite recursion.
-    full_builder_run = self.__getattribute__('_builder_run')
-    return getattr(full_builder_run, attr)
+    # In normal usage, the __init__ guarantees that self._run_base and
+    # self._config will be present.  However, the unpickle process bypasses
+    # __init__, and this object must be pickle-able.  That is why we access
+    # self._run_base and self._config through __getattribute__ here, otherwise
+    # unpickling results in infinite recursion.
+    # TODO(mtennant): Revisit this if pickling support is changed to go through
+    # the __init__ method, such as by supplying __reduce__ method.
+    run_base = self.__getattribute__('_run_base')
+    config = self.__getattribute__('_config')
+
+    try:
+      # run_base.config should always be None except when accessed through
+      # this routine.  Override the value here, then undo later.
+      run_base.config = config
+
+      result = getattr(run_base, attr)
+      if isinstance(result, types.MethodType):
+        # Make sure run_base.config is also managed when the method is called.
+        @functools.wraps(result)
+        def FuncWrapper(*args, **kwargs):
+          run_base.config = config
+          try:
+            return result(*args, **kwargs)
+          finally:
+            run_base.config = None
+
+        # TODO(mtennant): Find a way to make the following actually work.  It
+        # makes pickling more complicated, unfortunately.
+        # Cache this function wrapper to re-use next time without going through
+        # __getattr__ again.  This ensures that the same wrapper object is used
+        # each time, which is nice for identity and equality checks.  Subtle
+        # gotcha that we accept: if the function itself on run_base is replaced
+        # then this will continue to provide the behavior of the previous one.
+        #setattr(self, attr, FuncWrapper)
+
+        return FuncWrapper
+      else:
+        return result
+
+    finally:
+      run_base.config = None
+
+
+class BuilderRun(_RealBuilderRun):
+  """A standard BuilderRun for a top-level build config."""
+
+  def __init__(self, options, build_config):
+    """Initialize.
+
+    Args:
+      options: Command line options from this cbuildbot run.
+      build_config: Build config for this cbuildbot run.
+    """
+    run_base = _BuilderRunBase(options)
+    super(BuilderRun, self).__init__(run_base, build_config)
+
+
+class ChildBuilderRun(_RealBuilderRun):
+  """A BuilderRun for a "child" build config."""
+
+  def __init__(self, builder_run, child_index):
+    """Initialize.
+
+    Args:
+      builder_run: BuilderRun for the parent (main) cbuildbot run.  Extract
+        the _BuilderRunBase from it to make sure the same base is used for
+        both the main cbuildbot run and any child runs.
+      child_index: The child index of this child run, used to index into
+        the main run's config.child_configs.
+    """
+    # pylint: disable=W0212
+    run_base = builder_run._run_base
+    config = builder_run.config.child_configs[child_index]
+    super(ChildBuilderRun, self).__init__(run_base, config)

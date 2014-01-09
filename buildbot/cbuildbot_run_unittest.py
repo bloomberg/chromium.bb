@@ -27,12 +27,14 @@ DEFAULT_BOARD = 'TheBoard'
 DEFAULT_OPTIONS = cros_test_lib.EasyAttr(buildroot=DEFAULT_BUILDROOT,
                                          buildnumber=DEFAULT_BUILDNUMBER,
                                          branch=DEFAULT_BRANCH,
+                                         postsync_patch=True,
                                         )
 DEFAULT_CONFIG = cros_test_lib.EasyAttr(
     master=True,
     boards=[DEFAULT_BOARD],
-    child_configs=[cros_test_lib.EasyAttr(name='foo'),
-                   cros_test_lib.EasyAttr(name='bar'),
+    postsync_patch=True,
+    child_configs=[cros_test_lib.EasyAttr(name='foo', postsync_patch=False),
+                   cros_test_lib.EasyAttr(name='bar', postsync_patch=False),
                   ])
 
 
@@ -86,6 +88,10 @@ class BuilderRunPickleTest(cros_test_lib.TestCase):
   def testPickleBuilderRun(self):
     run1 = _NewBuilderRun()
     run1.attrs.release_tag = 'TheReleaseTag'
+
+    # Accessing a method on BuilderRun has special behavior, so access and
+    # use one before pickling.
+    patch_after_sync = run1.ShouldPatchAfterSync()
     run2 = cPickle.loads(cPickle.dumps(run1, cPickle.HIGHEST_PROTOCOL))
 
     self.assertEquals(run1.buildnumber, run2.buildnumber)
@@ -94,19 +100,21 @@ class BuilderRunPickleTest(cros_test_lib.TestCase):
     self.assertEquals(run1.attrs.release_tag, run2.attrs.release_tag)
     self.assertRaises(AttributeError, getattr, run1.attrs, 'manifest_manager')
     self.assertRaises(AttributeError, getattr, run2.attrs, 'manifest_manager')
+    self.assertEquals(patch_after_sync, run2.ShouldPatchAfterSync())
 
   def testPickleChildBuilderRun(self):
     run1 = _NewChildBuilderRun(0)
     run1.attrs.release_tag = 'TheReleaseTag'
+    patch_after_sync = run1.ShouldPatchAfterSync()
     run2 = cPickle.loads(cPickle.dumps(run1, cPickle.HIGHEST_PROTOCOL))
 
-    self.assertEquals(run1.child_index, run2.child_index)
     self.assertEquals(run1.buildnumber, run2.buildnumber)
     self.assertEquals(run1.config.name, run2.config.name)
     self.assertEquals(run1.options.branch, run2.options.branch)
     self.assertEquals(run1.attrs.release_tag, run2.attrs.release_tag)
     self.assertRaises(AttributeError, getattr, run1.attrs, 'manifest_manager')
     self.assertRaises(AttributeError, getattr, run2.attrs, 'manifest_manager')
+    self.assertEquals(patch_after_sync, run2.ShouldPatchAfterSync())
 
 
 class BuilderRunTest(cros_test_lib.TestCase):
@@ -120,6 +128,15 @@ class BuilderRunTest(cros_test_lib.TestCase):
     self.assertEquals(DEFAULT_OPTIONS, run.options)
     self.assertEquals(DEFAULT_CONFIG, run.config)
     self.assertTrue(isinstance(run.attrs, cbuildbot_run.RunAttributes))
+
+    # Make sure methods behave normally, since BuilderRun messes with them.
+    meth1 = run.GetVersion
+    meth2 = run.GetVersion
+    self.assertEqual(meth1.__name__, meth2.__name__)
+
+    # We actually do not support identity and equality checks right now.
+    self.assertNotEqual(meth1, meth2)
+    self.assertFalse(meth1 is meth2)
 
   def testOptions(self):
     options = _ExtendDefaultOptions(foo=True, bar=10)
@@ -153,14 +170,14 @@ class BuilderRunTest(cros_test_lib.TestCase):
     self.assertRaises(AttributeError, run.attrs.__getattribute__, 'foobar')
     self.assertRaises(AttributeError, run.attrs.__setattr__, 'foobar', 'foo')
 
-  def _RunAccessor(self, method, options_dict, config_dict):
+  def _RunAccessor(self, method_name, options_dict, config_dict):
     """Run the given accessor method of the BuilderRun class.
 
     Create a BuilderRun object with the options and config provided and
     then return the result of calling the given method on it.
 
     Args:
-      method: A BuilderRun method to call.
+      method_name: A BuilderRun method to call, specified by name.
       options_dict: Extend default options with this.
       config_dict: Extend default config with this.
 
@@ -170,12 +187,14 @@ class BuilderRunTest(cros_test_lib.TestCase):
     options = _ExtendDefaultOptions(**options_dict)
     config = _ExtendDefaultConfig(**config_dict)
     run = _NewBuilderRun(options=options, config=config)
-    return method(run)
+    method = getattr(run, method_name)
+    self.assertEqual(method.__name__, method_name)
+    return method()
 
   def testDualEnableSetting(self):
     settings = {
-        'prebuilts': cbuildbot_run.BuilderRun.ShouldUploadPrebuilts,
-        'postsync_patch': cbuildbot_run.BuilderRun.ShouldPatchAfterSync,
+        'prebuilts': 'ShouldUploadPrebuilts',
+        'postsync_patch': 'ShouldPatchAfterSync',
     }
 
     # Both option and config enabled should result in True.
@@ -207,7 +226,7 @@ class BuilderRunTest(cros_test_lib.TestCase):
         build_root = DEFAULT_BUILDROOT
 
       result = self._RunAccessor(
-          cbuildbot_run.BuilderRun.ShouldReexecAfterSync,
+          'ShouldReexecAfterSync',
           {'postsync_reexec': option_val, 'buildroot': build_root},
           {'postsync_reexec': config_val})
 
@@ -216,19 +235,22 @@ class BuilderRunTest(cros_test_lib.TestCase):
 
 class GetVersionTest(cros_test_lib.MockTestCase):
   """Test the GetVersion and GetVersionInfo methods of BuilderRun class."""
+  # Access to protected member.
+  # pylint: disable=W0212
 
   def testGetVersionInfo(self):
     verinfo = object()
 
     with mock.patch('cbuildbot_run.manifest_version.VersionInfo.from_repo',
                     return_value=verinfo) as m:
-      result = cbuildbot_run.BuilderRun.GetVersionInfo(DEFAULT_BUILDROOT)
+      result = cbuildbot_run._BuilderRunBase.GetVersionInfo(DEFAULT_BUILDROOT)
       self.assertEquals(result, verinfo)
 
       m.assert_called_once_with(DEFAULT_BUILDROOT)
 
   def _TestGetVersionReleaseTag(self, release_tag):
-    with mock.patch.object(cbuildbot_run.BuilderRun, 'GetVersionInfo') as m:
+    with mock.patch.object(cbuildbot_run._BuilderRunBase,
+                           'GetVersionInfo') as m:
       verinfo_mock = mock.Mock()
       verinfo_mock.chrome_branch = DEFAULT_CHROME_BRANCH
       verinfo_mock.VersionString = mock.Mock(return_value='VS')
@@ -268,8 +290,16 @@ class ChildBuilderRunTest(cros_test_lib.TestCase):
     self.assertEquals(DEFAULT_OPTIONS, crun.options)
     self.assertEquals(DEFAULT_CONFIG.child_configs[0], crun.config)
     self.assertEquals('foo', crun.config.name)
-    self.assertEquals(0, crun.child_index)
     self.assertTrue(isinstance(crun.attrs, cbuildbot_run.RunAttributes))
+
+    # Make sure methods behave normally, since BuilderRun messes with them.
+    meth1 = crun.GetVersion
+    meth2 = crun.GetVersion
+    self.assertEqual(meth1.__name__, meth2.__name__)
+
+    # We actually do not support identity and equality checks right now.
+    self.assertNotEqual(meth1, meth2)
+    self.assertFalse(meth1 is meth2)
 
 
 if __name__ == '__main__':

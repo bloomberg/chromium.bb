@@ -120,7 +120,7 @@ DEFAULT_CHROME_BRANCH = '27'
 class BuilderRunMock(partial_mock.PartialMock):
   """Partial mock for BuilderRun class."""
 
-  TARGET = 'chromite.buildbot.cbuildbot_run.BuilderRun'
+  TARGET = 'chromite.buildbot.cbuildbot_run._BuilderRunBase'
   ATTRS = ('GetVersionInfo', )
   VERSION = '3333.1.0'
 

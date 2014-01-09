@@ -158,7 +158,7 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
 
     self.PatchObject(cbuildbot.Builder, '_RunStage')
     self.PatchObject(cbuildbot.SimpleBuilder, '_RunParallelStages')
-    self.PatchObject(cbuildbot_run.BuilderRun, 'GetVersion',
+    self.PatchObject(cbuildbot_run._BuilderRunBase, 'GetVersion',
                      return_value='1234.0.0')
     self.StartPatcher(parallel_unittest.ParallelMock())
 
