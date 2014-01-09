@@ -18,13 +18,17 @@
 
 readonly ALL_DIRS="
 ash/resources
-ui/resources
 chrome/app/theme
 chrome/browser/resources
 chrome/renderer/resources
-webkit/glue/resources
+content/public/android/java/res
+content/renderer/resources
+content/shell/resources
 remoting/resources
-remoting/webapp
+ui/resources
+ui/webui/resources/images
+webkit/glue/resources
+win8/metro_driver/resources
 "
 
 # Files larger than this file size (in bytes) will
@@ -44,14 +48,24 @@ readonly LARGE_RANDOM_TRIALS=1
 TOTAL_OLD_BYTES=0
 TOTAL_NEW_BYTES=0
 TOTAL_FILE=0
+CORRUPTED_FILE=0
 PROCESSED_FILE=0
 
 declare -a THROBBER_STR=('-' '\\' '|' '/')
 THROBBER_COUNT=0
 
+SUBPROCESS=0
+
+# NoOp in subprocess, echo otherwise.
+function info {
+  if [ $SUBPROCESS -eq 0 ]; then
+    echo $@
+  fi
+}
+
 # Show throbber character at current cursor position.
 function throbber {
-  echo -ne "${THROBBER_STR[$THROBBER_COUNT]}\b"
+  info -ne "${THROBBER_STR[$THROBBER_COUNT]}\b"
   let THROBBER_COUNT=($THROBBER_COUNT+1)%4
 }
 
@@ -92,7 +106,7 @@ function get_color_depth_list {
 #
 # TODO(oshima): Experiment with -d0 w/o -c0.
 function process_grayscale {
-  echo -n "|gray"
+  info -n "|gray"
   for opt in $(get_color_depth_list); do
     pngout_loop $file -c0 $opt
   done
@@ -101,7 +115,7 @@ function process_grayscale {
 # Usage: process_grayscale_alpha <file>
 # Optimize grayscale images with alpha for all color bit depths.
 function process_grayscale_alpha {
-  echo -n "|gray-a"
+  info -n "|gray-a"
   pngout_loop $file -c4
   for opt in $(get_color_depth_list); do
     pngout_loop $file -c3 $opt
@@ -111,7 +125,7 @@ function process_grayscale_alpha {
 # Usage: process_rgb <file>
 # Optimize rgb images with or without alpha for all color bit depths.
 function process_rgb {
-  echo -n "|rgb"
+  info -n "|rgb"
   for opt in $(get_color_depth_list); do
     pngout_loop $file -c3 $opt
   done
@@ -123,7 +137,7 @@ function process_rgb {
 # Optimize the huffman blocks.
 function huffman_blocks {
   local file=$1
-  echo -n "|huffman"
+  info -n "|huffman"
   local size=$(stat -c%s $file)
   local min_block_size=$DEFAULT_MIN_BLOCK_SIZE
   local limit_blocks=$DEFAULT_LIMIT_BLOCKS
@@ -149,7 +163,7 @@ function huffman_blocks {
 # TODO(oshima): Try adjusting different parameters for large files to
 # reduce runtime.
 function random_huffman_table_trial {
-  echo -n "|random"
+  info -n "|random"
   local file=$1
   local old_size=$(stat -c%s $file)
   local trials_count=$DEFAULT_RANDOM_TRIALS
@@ -171,7 +185,7 @@ function random_huffman_table_trial {
 # Further compress using optipng and advdef.
 # TODO(oshima): Experiment with 256.
 function final_compression {
-  echo -n "|final"
+  info -n "|final"
   local file=$1
   if [ $OPTIMIZE_LEVEL == 2 ]; then
     for i in 32k 16k 8k 4k 2k 1k 512; do
@@ -183,7 +197,7 @@ function final_compression {
     throbber
     advdef -q -z -$i $file
   done
-  echo -ne "\r"
+  info -ne "\r"
 }
 
 # Usage: get_color_type <file>
@@ -206,7 +220,7 @@ function get_color_type {
 function optimize_size {
   tput el
   local file=$1
-  echo -n "$file "
+  info -n "$file "
 
   advdef -q -z -4 $file
 
@@ -225,7 +239,7 @@ function optimize_size {
     fi
   fi
 
-  echo -n "|filter"
+  info -n "|filter"
   local old_color_type=$(get_color_type $file)
   optipng -q -zc9 -zm8 -zs0-3 -f0-5 $file -out $file.tmp.png
   local new_color_type=$(get_color_type $file.tmp.png)
@@ -236,7 +250,7 @@ function optimize_size {
   # https://sourceforge.net/tracker/?func=detail&aid=3603630&group_id=151404&atid=780913
   if [[ $old_color_type == "RGBA" && $new_color_type =~ gray.* ]] ; then
     rm $file.tmp.png
-    echo -n "[skip opting]"
+    info -n "[skip opting]"
   else
     mv $file.tmp.png $file
   fi
@@ -245,7 +259,7 @@ function optimize_size {
   huffman_blocks $file
 
   # TODO(oshima): Experiment with strategy 1.
-  echo -n "|strategy"
+  info -n "|strategy"
   if [ $OPTIMIZE_LEVEL == 2 ]; then
     for i in 3 2 0; do
       pngout -q -k1 -ks -s$i $file
@@ -268,7 +282,7 @@ function process_file {
   # -rem alla removes all ancillary chunks except for tRNS
   pngcrush -d $TMP_DIR -brute -reduce -rem alla $file > /dev/null
 
-  if [ $OPTIMIZE_LEVEL != 0 ]; then
+  if [ -f $TMP_DIR/$name -a $OPTIMIZE_LEVEL != 0 ]; then
     optimize_size $TMP_DIR/$name
   fi
 }
@@ -283,13 +297,19 @@ function optimize_file {
   local name=$(basename $file)
   local old=$(stat -c%s $file)
   local tmp_file=$TMP_DIR/$name
+  let TOTAL_FILE+=1
 
   process_file $file
+
+  if [ ! -e  $tmp_file ] ; then
+    let CORRUPTED_FILE+=1
+    echo "The png file ($file) may be corrupted. skipping"
+    return
+  fi
 
   local new=$(stat -c%s $tmp_file)
   let diff=$old-$new
   let percent=($diff*100)/$old
-  let TOTAL_FILE+=1
 
   tput el
   if [ $new -lt $old ]; then
@@ -300,7 +320,7 @@ function optimize_file {
     let PROCESSED_FILE+=1
   else
     if [ $OPTIMIZE_LEVEL == 0 ]; then
-      echo -ne "$file : skipped\r"
+      info -ne "$file : skipped\r"
     fi
     rm $tmp_file
   fi
@@ -347,7 +367,7 @@ function fail_if_not_installed {
 function show_help {
   local program=$(basename $0)
   echo \
-"Usage: $program [options] dir ...
+"Usage: $program [options] <dir> ...
 
 $program is a utility to reduce the size of png files by removing
 unnecessary chunks and compressing the image.
@@ -364,6 +384,8 @@ Options:
   -r<revision> If this is specified, the script processes only png files
                changed since this revision. The <dir> options will be used
                to narrow down the files under specific directories.
+  -s  Run as subprocess. This may be used to parallelize execution.
+      Usage: find <dir> -name \"*.png\" | xargs -n1 -P16 $program -s -o2
   -h  Print this help text."
   exit 1
 }
@@ -381,7 +403,7 @@ fi
 
 OPTIMIZE_LEVEL=1
 # Parse options
-while getopts o:r:h opts
+while getopts o:r:h:s opts
 do
   case $opts in
     r)
@@ -396,6 +418,9 @@ do
         show_help
       fi
       OPTIMIZE_LEVEL=$OPTARG
+      ;;
+    s)
+      let SUBPROCESS=1
       ;;
     [h?])
       show_help;;
@@ -437,7 +462,8 @@ trap "rm -rf $TMP_DIR" EXIT
 DIRS=$@
 set ${DIRS:=$ALL_DIRS}
 
-echo "Optimize level=$OPTIMIZE_LEVEL"
+info "Optimize level=$OPTIMIZE_LEVEL"
+
 if [ -n "$COMMIT" ] ; then
  ALL_FILES=$(git diff --name-only $COMMIT HEAD $DIRS | grep "png$")
  ALL_FILES_LIST=( $ALL_FILES )
@@ -451,7 +477,7 @@ if [ -n "$COMMIT" ] ; then
  done
 else
   for d in $DIRS; do
-    echo "Optimizing png files in $d"
+    info "Optimizing png files in $d"
     optimize_dir $d
     echo
   done
@@ -469,4 +495,8 @@ else
        "in $(date -u -d @$SECONDS +%T)s"
   echo "Result : $TOTAL_OLD_BYTES => $TOTAL_NEW_BYTES bytes" \
        "($diff bytes : $percent %)"
+fi
+if [ $CORRUPTED_FILE != 0 ]; then
+  echo "Warning: corrupted files found: $CORRUPTED_FILE"
+  echo "Please contact the author of the CL that landed corrupted png files"
 fi
