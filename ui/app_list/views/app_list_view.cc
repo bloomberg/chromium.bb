@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/strings/string_util.h"
+#include "base/win/windows_version.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_view_delegate.h"
@@ -325,7 +326,13 @@ void AppListView::OnBeforeBubbleWidgetInit(
   if (delegate_ && delegate_->ForceNativeDesktop())
     params->native_widget = new views::DesktopNativeWidgetAura(widget);
 #endif
-#if defined(OS_LINUX)
+#if defined(OS_WIN)
+  // Windows 7 and higher offer pinning to the taskbar, but we need presence
+  // on the taskbar for the user to be able to pin us. So, show the window on
+  // the taskbar for these versions of Windows.
+  if (base::win::GetVersion() >= base::win::VERSION_WIN7)
+    params->force_show_in_taskbar = true;
+#elif defined(OS_LINUX)
   // Set up a custom WM_CLASS for the app launcher window. This allows task
   // switchers in X11 environments to distinguish it from main browser windows.
   params->wm_class_name = kAppListWMClass;

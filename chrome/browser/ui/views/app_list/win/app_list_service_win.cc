@@ -263,15 +263,6 @@ void CreateAppListShortcuts(
 // Customizes the app list |hwnd| for Windows (eg: disable aero peek, set up
 // restart params).
 void SetWindowAttributes(HWND hwnd) {
-  // Vista and lower do not offer pinning to the taskbar, which makes any
-  // presence on the taskbar useless. So, hide the window on the taskbar
-  // for these versions of Windows.
-  if (base::win::GetVersion() <= base::win::VERSION_VISTA) {
-    LONG_PTR ex_styles = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
-    ex_styles |= WS_EX_TOOLWINDOW;
-    SetWindowLongPtr(hwnd, GWL_EXSTYLE, ex_styles);
-  }
-
   if (base::win::GetVersion() > base::win::VERSION_VISTA) {
     // Disable aero peek. Without this, hovering over the taskbar popup puts
     // Windows into a mode for switching between windows in the same

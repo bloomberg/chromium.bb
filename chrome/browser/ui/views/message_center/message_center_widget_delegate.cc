@@ -149,14 +149,6 @@ void MessageCenterWidgetDelegate::InitWidget() {
 #endif
   widget->Init(params);
 
-#if defined(OS_WIN)
-  // Remove the Message Center from taskbar and alt-tab rotation.
-  HWND hwnd = views::HWNDForWidget(widget);
-  LONG_PTR ex_styles = ::GetWindowLongPtr(hwnd, GWL_EXSTYLE);
-  ex_styles |= WS_EX_TOOLWINDOW;
-  ::SetWindowLongPtr(hwnd, GWL_EXSTYLE, ex_styles);
-#endif
-
   widget->AddObserver(this);
   widget->StackAtTop();
   widget->SetAlwaysOnTop(true);

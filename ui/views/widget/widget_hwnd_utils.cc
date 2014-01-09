@@ -122,10 +122,13 @@ void CalculateWindowStylesFromInitParams(
     case Widget::InitParams::TYPE_BUBBLE:
       *style |= WS_POPUP;
       *style |= WS_CLIPCHILDREN;
+      if (!params.force_show_in_taskbar)
+        *ex_style |= WS_EX_TOOLWINDOW;
       break;
     case Widget::InitParams::TYPE_POPUP:
       *style |= WS_POPUP;
-      *ex_style |= WS_EX_TOOLWINDOW;
+      if (!params.force_show_in_taskbar)
+        *ex_style |= WS_EX_TOOLWINDOW;
       break;
     case Widget::InitParams::TYPE_MENU:
       *style |= WS_POPUP;
