@@ -430,14 +430,14 @@ bool TracingControllerImpl::GetTraceBufferPercentFull(
   pending_trace_buffer_percent_full_filters_ = trace_message_filters_;
   maximum_trace_buffer_percent_full_ = 0;
 
-  // Handle special case of zero child processes.
-  if (pending_trace_buffer_percent_full_ack_count_ == 1) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        base::Bind(&TracingControllerImpl::OnTraceBufferPercentFullReply,
-                   base::Unretained(this),
-                   scoped_refptr<TraceMessageFilter>(),
-                   TraceLog::GetInstance()->GetBufferPercentFull()));
-  }
+  // Call OnTraceBufferPercentFullReply unconditionally for the browser process.
+  // This will result in immediate execution of the callback if there are no
+  // child processes.
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+      base::Bind(&TracingControllerImpl::OnTraceBufferPercentFullReply,
+                  base::Unretained(this),
+                  scoped_refptr<TraceMessageFilter>(),
+                  TraceLog::GetInstance()->GetBufferPercentFull()));
 
   // Notify all child processes.
   for (TraceMessageFilterSet::iterator it = trace_message_filters_.begin();
@@ -767,16 +767,6 @@ void TracingControllerImpl::OnTraceBufferPercentFullReply(
     pending_trace_buffer_percent_full_callback_.Run(
         maximum_trace_buffer_percent_full_);
     pending_trace_buffer_percent_full_callback_.Reset();
-  }
-
-  if (pending_trace_buffer_percent_full_ack_count_ == 1) {
-    // The last ack represents local trace, so we need to ack it now. Note that
-    // this code only executes if there were child processes.
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        base::Bind(&TracingControllerImpl::OnTraceBufferPercentFullReply,
-                   base::Unretained(this),
-                   make_scoped_refptr(trace_message_filter),
-                   TraceLog::GetInstance()->GetBufferPercentFull()));
   }
 }
 
