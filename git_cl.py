@@ -1444,6 +1444,9 @@ def RietveldUpload(options, args, cl):
 
   change_desc = None
 
+  if options.email is not None:
+    upload_args.extend(['--email', options.email])
+
   if cl.GetIssue():
     if options.title:
       upload_args.extend(['--title', options.title])
@@ -1583,6 +1586,9 @@ def CMDupload(parser, args):
   parser.add_option('--target_branch',
                     help='When uploading to gerrit, remote branch to '
                          'use for CL.  Default: master')
+  parser.add_option('--email', default=None,
+                    help='email address to use to connect to Rietveld')
+
   add_git_similarity(parser)
   (options, args) = parser.parse_args(args)
 
