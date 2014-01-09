@@ -669,10 +669,16 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
   CloseDevToolsPopupWindow(devtools_window);
 }
 
+// FLaky on Windows bots: see crbug.com/323847
+#if defined(OS_WIN)
+#define MAYBE_TestDevToolsOnDevTools DISABLED_TestDevToolsOnDevTools
+#else
+#define MAYBE_TestDevToolsOnDevTools TestDevToolsOnDevTools
+#endif
 // Tests that BeforeUnload event gets called on devtools that are opened
 // on another devtools.
 IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
-                       TestDevToolsOnDevTools) {
+                       MAYBE_TestDevToolsOnDevTools) {
   ASSERT_TRUE(test_server()->Start());
   LoadTestPage(kDebuggerTestPage);
 
