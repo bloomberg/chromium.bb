@@ -168,7 +168,7 @@ class GCMProfileServiceTest : public testing::Test,
     return gcm_event_router_mock_.get();
   }
 
-  virtual void CheckInFinished(const GCMClient::CheckInInfo& checkin_info,
+  virtual void CheckInFinished(const GCMClient::CheckinInfo& checkin_info,
                                GCMClient::Result result) OVERRIDE {
     checkin_info_ = checkin_info;
     SignalCompleted();
@@ -229,7 +229,7 @@ class GCMProfileServiceTest : public testing::Test,
   ExtensionService* extension_service_;  // Not owned.
   scoped_ptr<base::RunLoop> run_loop_;
   scoped_ptr<GCMEventRouterMock> gcm_event_router_mock_;
-  GCMClient::CheckInInfo checkin_info_;
+  GCMClient::CheckinInfo checkin_info_;
 
 #if defined(OS_CHROMEOS)
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
@@ -300,8 +300,8 @@ void GCMEventRouterMock::OnSendError(const std::string& app_id,
 TEST_F(GCMProfileServiceTest, CheckIn) {
   EXPECT_TRUE(checkin_info_.IsValid());
 
-  GCMClient::CheckInInfo expected_checkin_info =
-      GCMClientMock::GetCheckInInfoFromUsername(kTestingUsername);
+  GCMClient::CheckinInfo expected_checkin_info =
+      GCMClientMock::GetCheckinInfoFromUsername(kTestingUsername);
   EXPECT_EQ(expected_checkin_info.android_id, checkin_info_.android_id);
   EXPECT_EQ(expected_checkin_info.secret, checkin_info_.secret);
 }
@@ -309,7 +309,7 @@ TEST_F(GCMProfileServiceTest, CheckIn) {
 TEST_F(GCMProfileServiceTest, CheckInFromPrefsStore) {
   // The first check-in should be successful.
   EXPECT_TRUE(checkin_info_.IsValid());
-  GCMClient::CheckInInfo saved_checkin_info = checkin_info_;
+  GCMClient::CheckinInfo saved_checkin_info = checkin_info_;
   checkin_info_.Reset();
 
   // Check-in should not reach the server. Forcing GCMClient server error should

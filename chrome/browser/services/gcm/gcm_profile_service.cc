@@ -166,7 +166,7 @@ class GCMProfileService::IOWorker
 
   // Overridden from GCMClient::Delegate:
   // Called from IO thread.
-  virtual void OnCheckInFinished(const GCMClient::CheckInInfo& checkin_info,
+  virtual void OnCheckInFinished(const GCMClient::CheckinInfo& checkin_info,
                                  GCMClient::Result result) OVERRIDE;
   virtual void OnRegisterFinished(const std::string& app_id,
                                   const std::string& registration_id,
@@ -181,7 +181,7 @@ class GCMProfileService::IOWorker
   virtual void OnMessageSendError(const std::string& app_id,
                                   const std::string& message_id,
                                   GCMClient::Result result) OVERRIDE;
-  virtual GCMClient::CheckInInfo GetCheckInInfo() const OVERRIDE;
+  virtual GCMClient::CheckinInfo GetCheckinInfo() const OVERRIDE;
   virtual void OnLoadingCompleted() OVERRIDE;
   virtual base::TaskRunner* GetFileTaskRunner() OVERRIDE;
 
@@ -189,7 +189,8 @@ class GCMProfileService::IOWorker
   void SetUser(const std::string& username);
   void RemoveUser(const std::string& username);
   void CheckIn();
-  void SetCheckInInfo(GCMClient::CheckInInfo checkin_info);
+  // TODO(fgorski): Update to pass by const ref.
+  void SetCheckinInfo(GCMClient::CheckinInfo checkin_info);
   void CheckOut();
   void Register(const std::string& app_id,
                 const std::vector<std::string>& sender_ids,
@@ -210,7 +211,7 @@ class GCMProfileService::IOWorker
 
   // The checkin info obtained from the server for the signed in user associated
   // with the profile.
-  GCMClient::CheckInInfo checkin_info_;
+  GCMClient::CheckinInfo checkin_info_;
 };
 
 GCMProfileService::IOWorker::IOWorker(
@@ -222,7 +223,7 @@ GCMProfileService::IOWorker::~IOWorker() {
 }
 
 void GCMProfileService::IOWorker::OnCheckInFinished(
-    const GCMClient::CheckInInfo& checkin_info,
+    const GCMClient::CheckinInfo& checkin_info,
     GCMClient::Result result) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
@@ -310,7 +311,7 @@ void GCMProfileService::IOWorker::OnMessageSendError(
                  result));
 }
 
-GCMClient::CheckInInfo GCMProfileService::IOWorker::GetCheckInInfo() const {
+GCMClient::CheckinInfo GCMProfileService::IOWorker::GetCheckinInfo() const {
   return checkin_info_;
 }
 
@@ -360,8 +361,8 @@ void GCMProfileService::IOWorker::CheckIn() {
   GCMClient::Get()->CheckIn(username_);
 }
 
-void GCMProfileService::IOWorker::SetCheckInInfo(
-    GCMClient::CheckInInfo checkin_info) {
+void GCMProfileService::IOWorker::SetCheckinInfo(
+    GCMClient::CheckinInfo checkin_info) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
   checkin_info_ = checkin_info;
@@ -670,13 +671,13 @@ void GCMProfileService::AddUser(const std::string& username) {
     Encryptor::DecryptString(encrypted_secret, &decrypted_secret);
     uint64 secret = 0;
     if (base::StringToUint64(decrypted_secret, &secret) && secret) {
-      GCMClient::CheckInInfo checkin_info;
+      GCMClient::CheckinInfo checkin_info;
       checkin_info.android_id = android_id;
       checkin_info.secret = secret;
       content::BrowserThread::PostTask(
           content::BrowserThread::IO,
           FROM_HERE,
-          base::Bind(&GCMProfileService::IOWorker::SetCheckInInfo,
+          base::Bind(&GCMProfileService::IOWorker::SetCheckinInfo,
                      io_worker_,
                      checkin_info));
 
@@ -735,7 +736,7 @@ void GCMProfileService::Unregister(const std::string& app_id) {
                  app_id));
 }
 
-void GCMProfileService::CheckInFinished(GCMClient::CheckInInfo checkin_info,
+void GCMProfileService::CheckInFinished(GCMClient::CheckinInfo checkin_info,
                                         GCMClient::Result result) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 

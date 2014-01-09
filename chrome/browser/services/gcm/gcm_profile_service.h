@@ -50,7 +50,7 @@ class GCMProfileService : public BrowserContextKeyedService,
   class TestingDelegate {
    public:
     virtual GCMEventRouter* GetEventRouter() const = 0;
-    virtual void CheckInFinished(const GCMClient::CheckInInfo& checkin_info,
+    virtual void CheckInFinished(const GCMClient::CheckinInfo& checkin_info,
                                  GCMClient::Result result) = 0;
   };
 
@@ -140,7 +140,8 @@ class GCMProfileService : public BrowserContextKeyedService,
               const GCMClient::OutgoingMessage& message);
 
   // Callbacks posted from IO thread to UI thread.
-  void CheckInFinished(GCMClient::CheckInInfo checkin_info,
+  // TODO(fgorski): Update parameters to be passed by const ref.
+  void CheckInFinished(GCMClient::CheckinInfo checkin_info,
                        GCMClient::Result result);
   void RegisterFinished(std::string app_id,
                         std::string registration_id,

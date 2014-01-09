@@ -47,7 +47,7 @@ class GCMClientMock : public GCMClient {
 
   void SetIsLoading(bool is_loading);
 
-  static CheckInInfo GetCheckInInfoFromUsername(const std::string& username);
+  static CheckinInfo GetCheckinInfoFromUsername(const std::string& username);
   static std::string GetRegistrationIdFromSenderIds(
       const std::vector<std::string>& sender_ids);
 
@@ -55,7 +55,8 @@ class GCMClientMock : public GCMClient {
   Delegate* GetDelegate(const std::string& username) const;
 
   // Called on IO thread.
-  void CheckInFinished(std::string username, CheckInInfo checkin_info);
+  // TODO(fgorski): Update parameters to const ref.
+  void CheckInFinished(std::string username, CheckinInfo checkin_info);
   void RegisterFinished(std::string username,
                         std::string app_id,
                         std::string registrion_id);

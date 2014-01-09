@@ -47,9 +47,9 @@ void GCMClientMock::CheckIn(const std::string& username) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
   // Simulate the android_id and secret by some sort of hashing.
-  CheckInInfo checkin_info;
+  CheckinInfo checkin_info;
   if (!simulate_server_error_)
-    checkin_info = GetCheckInInfoFromUsername(username);
+    checkin_info = GetCheckinInfoFromUsername(username);
 
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
@@ -146,9 +146,9 @@ void GCMClientMock::SetIsLoading(bool is_loading) {
 }
 
 // static
-GCMClient::CheckInInfo GCMClientMock::GetCheckInInfoFromUsername(
+GCMClient::CheckinInfo GCMClientMock::GetCheckinInfoFromUsername(
     const std::string& username) {
-  CheckInInfo checkin_info;
+  CheckinInfo checkin_info;
   checkin_info.android_id = HashToUInt64(username);
   checkin_info.secret = checkin_info.android_id / 10;
   return checkin_info;
@@ -181,7 +181,7 @@ GCMClient::Delegate* GCMClientMock::GetDelegate(
 }
 
 void GCMClientMock::CheckInFinished(std::string username,
-                                    CheckInInfo checkin_info) {
+                                    CheckinInfo checkin_info) {
   GetDelegate(username)->OnCheckInFinished(
       checkin_info, checkin_info.IsValid() ? SUCCESS : SERVER_ERROR);
 }

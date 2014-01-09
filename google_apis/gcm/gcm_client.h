@@ -64,8 +64,8 @@ class GCM_EXPORT GCMClient {
   };
 
   // The check-in info for the user. Returned by the server.
-  struct GCM_EXPORT CheckInInfo {
-    CheckInInfo() : android_id(0), secret(0) {}
+  struct GCM_EXPORT CheckinInfo {
+    CheckinInfo() : android_id(0), secret(0) {}
     bool IsValid() const { return android_id != 0 && secret != 0; }
     void Reset() {
       android_id = 0;
@@ -81,9 +81,9 @@ class GCM_EXPORT GCMClient {
   class Delegate {
    public:
     // Called when the user has been checked in successfully or an error occurs.
-    // |checkin_info|: valid if the checkin completed successfully.
+    // |checkin_info|: valid if the CheckIn(..) completed successfully.
     // |result|: the type of the error if an error occured, success otherwise.
-    virtual void OnCheckInFinished(const CheckInInfo& checkin_info,
+    virtual void OnCheckInFinished(const CheckinInfo& checkin_info,
                                    Result result) = 0;
 
     // Called when the registration completed successfully or an error occurs.
@@ -124,7 +124,7 @@ class GCM_EXPORT GCMClient {
     // Returns the checkin info associated with this user. The delegate class
     // is expected to persist the checkin info that is provided by
     // OnCheckInFinished.
-    virtual CheckInInfo GetCheckInInfo() const = 0;
+    virtual CheckinInfo GetCheckinInfo() const = 0;
 
     // Called when the loading from the persistent store is done. The loading
     // is triggered asynchronously when GCMClient is created.
@@ -157,7 +157,7 @@ class GCM_EXPORT GCMClient {
 
   // Registers the application for GCM. Delegate::OnRegisterFinished will be
   // called asynchronously upon completion.
-  // |username|: the username (email address) passed in CheckIn.
+  // |username|: the username (email address) passed in CheckIn(..).
   // |app_id|: application ID.
   // |cert|: SHA-1 of public key of the application, in base16 format.
   // |sender_ids|: list of IDs of the servers that are allowed to send the
@@ -171,14 +171,14 @@ class GCM_EXPORT GCMClient {
   // Unregisters the application from GCM when it is uninstalled.
   // Delegate::OnUnregisterFinished will be called asynchronously upon
   // completion.
-  // |username|: the username (email address) passed in CheckIn.
+  // |username|: the username (email address) passed in CheckIn(..).
   // |app_id|: application ID.
   virtual void Unregister(const std::string& username,
                           const std::string& app_id) = 0;
 
   // Sends a message to a given receiver. Delegate::OnSendFinished will be
   // called asynchronously upon completion.
-  // |username|: the username (email address) passed in CheckIn.
+  // |username|: the username (email address) passed in CheckIn(..).
   // |app_id|: application ID.
   // |receiver_id|: registration ID of the receiver party.
   // |message|: message to be sent.
