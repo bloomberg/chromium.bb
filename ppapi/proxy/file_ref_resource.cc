@@ -129,11 +129,11 @@ PP_Resource FileRefResource::GetParent() {
 }
 
 int32_t FileRefResource::MakeDirectory(
-    int32_t make_directory_flags,
+    PP_Bool make_ancestors,
     scoped_refptr<TrackedCallback> callback) {
   Call<PpapiPluginMsg_FileRef_MakeDirectoryReply>(
       BROWSER,
-      PpapiHostMsg_FileRef_MakeDirectory(make_directory_flags),
+      PpapiHostMsg_FileRef_MakeDirectory(PP_TRUE == make_ancestors),
       base::Bind(&FileRefResource::RunTrackedCallback, this, callback));
   return PP_OK_COMPLETIONPENDING;
 }

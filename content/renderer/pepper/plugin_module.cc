@@ -313,12 +313,11 @@ const void* InternalGetInterface(const char* name) {
   #define PROXIED_IFACE(iface_str, iface_struct) \
       UNPROXIED_IFACE(iface_str, iface_struct)
 
-  #include "ppapi/thunk/interfaces_ppb_private.h"
-  #include "ppapi/thunk/interfaces_ppb_private_flash.h"
-  #include "ppapi/thunk/interfaces_ppb_private_no_permissions.h"
-  #include "ppapi/thunk/interfaces_ppb_public_dev.h"
-  #include "ppapi/thunk/interfaces_ppb_public_dev_channel.h"
   #include "ppapi/thunk/interfaces_ppb_public_stable.h"
+  #include "ppapi/thunk/interfaces_ppb_public_dev.h"
+  #include "ppapi/thunk/interfaces_ppb_private.h"
+  #include "ppapi/thunk/interfaces_ppb_private_no_permissions.h"
+  #include "ppapi/thunk/interfaces_ppb_private_flash.h"
 
   #undef UNPROXIED_API
   #undef PROXIED_IFACE

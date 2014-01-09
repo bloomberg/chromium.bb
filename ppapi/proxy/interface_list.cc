@@ -192,8 +192,12 @@ InterfaceList::InterfaceList() {
 #endif  // !defined(OS_NACL)
   }
   {
-    Permission current_required_permission = PERMISSION_DEV_CHANNEL;
-    #include "ppapi/thunk/interfaces_ppb_public_dev_channel.h"
+    // TODO(teravest): These lines should be uncommented when a dev channel
+    // interface is added.  They're commented right now because they cause an
+    // unused variable warning.
+    //
+    // Permission current_required_permission = PERMISSION_DEV_CHANNEL;
+    // #include "ppapi/thunk/interfaces_ppb_public_dev_channel.h"
   }
 
   #undef PROXIED_API

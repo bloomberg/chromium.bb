@@ -8,6 +8,5 @@
 #include "ppapi/thunk/interfaces_preamble.h"
 
 // Interfaces go here.
-PROXIED_IFACE(PPB_FILEREF_INTERFACE_1_2, PPB_FileRef_1_2)
 
 #include "ppapi/thunk/interfaces_postamble.h"

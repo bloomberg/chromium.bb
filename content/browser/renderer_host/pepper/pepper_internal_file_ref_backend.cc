@@ -21,7 +21,6 @@
 #include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
-#include "ppapi/c/ppb_file_ref.h"
 #include "ppapi/host/dispatch_host_message.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -93,14 +92,14 @@ void PepperInternalFileRefBackend::DidFinish(
 
 int32_t PepperInternalFileRefBackend::MakeDirectory(
     ppapi::host::ReplyMessageContext reply_context,
-    int32_t make_directory_flags) {
+    bool make_ancestors) {
   if (!GetFileSystemURL().is_valid())
     return PP_ERROR_FAILED;
 
   GetFileSystemContext()->operation_runner()->CreateDirectory(
       GetFileSystemURL(),
-      !!(make_directory_flags & PP_MAKEDIRECTORYFLAG_EXCLUSIVE),
-      !!(make_directory_flags & PP_MAKEDIRECTORYFLAG_WITH_ANCESTORS),
+      false,
+      make_ancestors,
       base::Bind(&PepperInternalFileRefBackend::DidFinish,
                  weak_factory_.GetWeakPtr(),
                  reply_context,

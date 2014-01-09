@@ -33,7 +33,7 @@ PepperExternalFileRefBackend::~PepperExternalFileRefBackend() {
 
 int32_t PepperExternalFileRefBackend::MakeDirectory(
     ppapi::host::ReplyMessageContext reply_context,
-    int32_t make_directory_flags) {
+    bool make_ancestors) {
   // This operation isn't supported for external filesystems.
   return PP_ERROR_NOACCESS;
 }

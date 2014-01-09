@@ -28,7 +28,7 @@ class PepperExternalFileRefBackend : public PepperFileRefBackend {
 
   // PepperFileRefBackend overrides.
   virtual int32_t MakeDirectory(ppapi::host::ReplyMessageContext context,
-                                int32_t make_directory_flags) OVERRIDE;
+                                bool make_ancestors) OVERRIDE;
   virtual int32_t Touch(ppapi::host::ReplyMessageContext context,
                         PP_Time last_accessed_time,
                         PP_Time last_modified_time) OVERRIDE;
