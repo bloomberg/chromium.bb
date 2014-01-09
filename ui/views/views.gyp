@@ -961,6 +961,10 @@
       'type': 'executable',
       'dependencies': [
         '../../base/base.gyp:base',
+        '../gfx/gfx.gyp:gfx',
+        '../resources/ui_resources.gyp:ui_test_pak',
+        '../ui.gyp:ui',
+        'views',
       ],
       'sources': [
         'examples/examples_main.cc',
