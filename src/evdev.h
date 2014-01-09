@@ -58,6 +58,7 @@ struct evdev_device {
 	int fd;
 	struct {
 		int min_x, max_x, min_y, max_y;
+		uint32_t seat_slot;
 		int32_t x, y;
 
 		int apply_calibration;
@@ -68,6 +69,7 @@ struct evdev_device {
 		int slot;
 		struct {
 			int32_t x, y;
+			uint32_t seat_slot;
 		} slots[MAX_SLOTS];
 	} mt;
 	struct mtdev *mtdev;

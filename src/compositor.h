@@ -509,6 +509,7 @@ struct weston_seat {
 
 	void (*led_update)(struct weston_seat *ws, enum weston_led leds);
 
+	uint32_t slot_map;
 	struct input_method *input_method;
 	char *seat_name;
 };
