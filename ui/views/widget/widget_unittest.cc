@@ -1218,10 +1218,6 @@ TEST_F(WidgetTest, DesktopAuraTopLevelOwnedPopupTest) {
   RunPendingMessages();
 }
 
-#if defined(OS_WIN)
-// TODO(ananta)
-// Fix this test to work on Linux Aura. Need to implement the
-// views::DesktopWindowTreeHostX11::SetSize function
 // This test validates that when a top level owned popup Aura window is
 // resized, the widget is resized as well.
 TEST_F(WidgetTest, DesktopAuraTopLevelOwnedPopupResizeTest) {
@@ -1239,7 +1235,6 @@ TEST_F(WidgetTest, DesktopAuraTopLevelOwnedPopupResizeTest) {
   ASSERT_NO_FATAL_FAILURE(popup_window.DestroyOwnedWindow());
   RunPendingMessages();
 }
-#endif
 
 // Test to ensure that the aura Window's visiblity state is set to visible if
 // the underlying widget is hidden and then shown.
