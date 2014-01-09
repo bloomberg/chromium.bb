@@ -9,8 +9,6 @@
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
-#include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_profile_loader.h"
@@ -32,8 +30,7 @@ class UserManager;
 // coordinating loading the kiosk profile, launching the app, and
 // updating the splash screen UI.
 class AppLaunchController
-    : public base::SupportsWeakPtr<AppLaunchController>,
-      public AppLaunchSplashScreenActor::Delegate,
+    : public AppLaunchSplashScreenActor::Delegate,
       public KioskProfileLoader::Delegate,
       public StartupAppLauncher::Delegate,
       public AppLaunchSigninScreen::Delegate,
@@ -121,6 +118,9 @@ class AppLaunchController
   content::NotificationRegistrar registrar_;
   bool webui_visible_;
   bool launcher_ready_;
+
+  // A timer to ensure the app splash is shown for a minimum amount of time.
+  base::OneShotTimer<AppLaunchController> splash_wait_timer_;
 
   base::OneShotTimer<AppLaunchController> network_wait_timer_;
   bool waiting_for_network_;

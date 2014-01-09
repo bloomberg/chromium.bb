@@ -26,7 +26,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "net/base/network_change_notifier.h"
 
@@ -219,6 +218,7 @@ void AppLaunchController::OnProfileLoadFailed(
 void AppLaunchController::CleanUp() {
   kiosk_profile_loader_.reset();
   startup_app_launcher_.reset();
+  splash_wait_timer_.Stop();
 
   if (host_)
     host_->Finalize();
@@ -326,6 +326,9 @@ void AppLaunchController::OnReadyToLaunch() {
   if (!webui_visible_)
     return;
 
+  if (splash_wait_timer_.IsRunning())
+    return;
+
   const int64 time_taken_ms = (base::TimeTicks::Now() -
       base::TimeTicks::FromInternalValue(launch_splash_start_time_)).
       InMilliseconds();
@@ -333,12 +336,12 @@ void AppLaunchController::OnReadyToLaunch() {
   // Enforce that we show app install splash screen for some minimum amount
   // of time.
   if (!skip_splash_wait_ && time_taken_ms < kAppInstallSplashScreenMinTimeMS) {
-    content::BrowserThread::PostDelayedTask(
-        content::BrowserThread::UI,
+    splash_wait_timer_.Start(
         FROM_HERE,
-        base::Bind(&AppLaunchController::OnReadyToLaunch, AsWeakPtr()),
         base::TimeDelta::FromMilliseconds(
-            kAppInstallSplashScreenMinTimeMS - time_taken_ms));
+            kAppInstallSplashScreenMinTimeMS - time_taken_ms),
+        this,
+        &AppLaunchController::OnReadyToLaunch);
     return;
   }
 
@@ -355,7 +358,8 @@ void AppLaunchController::OnLaunchSucceeded() {
 }
 
 void AppLaunchController::OnLaunchFailed(KioskAppLaunchError::Error error) {
-  LOG(ERROR) << "Kiosk launch failed. Will now shut down.";
+  LOG(ERROR) << "Kiosk launch failed. Will now shut down."
+             << ", error=" << error;
   DCHECK_NE(KioskAppLaunchError::NONE, error);
 
   // Saves the error and ends the session to go back to login screen.
