@@ -143,6 +143,11 @@ bool passesAccessControlCheck(const ResourceResponse& response, StoredCredential
     AtomicallyInitializedStatic(AtomicString&, accessControlAllowOrigin = *new AtomicString("access-control-allow-origin", AtomicString::ConstructFromLiteral));
     AtomicallyInitializedStatic(AtomicString&, accessControlAllowCredentials = *new AtomicString("access-control-allow-credentials", AtomicString::ConstructFromLiteral));
 
+    if (!response.httpStatusCode()) {
+        errorDescription = "Received an invalid response. Origin '" + securityOrigin->toString() + "' is therefore not allowed access.";
+        return false;
+    }
+
     // A wildcard Access-Control-Allow-Origin can not be used if credentials are to be sent,
     // even with Access-Control-Allow-Credentials set to true.
     const AtomicString& accessControlOriginString = response.httpHeaderField(accessControlAllowOrigin);
