@@ -14,7 +14,6 @@
         '../../base/base.gyp:base',
         '../../base/base.gyp:base_i18n',
         '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-        '../../cc/cc.gyp:cc',
         '../../gpu/gpu.gyp:gpu',
         '../../skia/skia.gyp:skia',
         '../compositor/compositor.gyp:compositor',
@@ -225,6 +224,7 @@
       'dependencies': [
         '../../base/base.gyp:base',
         '../../base/base.gyp:base_i18n',
+        '../../cc/cc.gyp:cc',
         '../../skia/skia.gyp:skia',
         '../../third_party/icu/icu.gyp:icui18n',
         '../../third_party/icu/icu.gyp:icuuc',
