@@ -94,6 +94,8 @@ public:
     LayoutRect selfClipRect() const; // Returns the background clip rect of the layer in the document's coordinate space.
     LayoutRect localClipRect() const; // Returns the background clip rect of the layer in the local coordinate space.
 
+    ClipRect backgroundClipRect(const ClipRectsContext&) const;
+
     // FIXME: The following functions should be private.
 
     // This method figures out our layerBounds in coordinates relative to
@@ -108,6 +110,8 @@ public:
     void calculateClipRects(const ClipRectsContext&, ClipRects&) const;
 
 private:
+    void parentClipRects(const ClipRectsContext&, ClipRects&) const;
+
     // FIXME: Could this be a RenderBox?
     RenderLayerModelObject* m_renderer;
 

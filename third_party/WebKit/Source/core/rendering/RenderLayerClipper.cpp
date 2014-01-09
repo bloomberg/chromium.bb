@@ -168,7 +168,7 @@ void RenderLayerClipper::calculateRects(const ClipRectsContext& clipRectsContext
     ClipRect& backgroundRect, ClipRect& foregroundRect, ClipRect& outlineRect, const LayoutPoint* offsetFromRoot) const
 {
     if (clipRectsContext.rootLayer != m_renderer->layer() && m_renderer->layer()->parent()) {
-        backgroundRect = m_renderer->layer()->backgroundClipRect(clipRectsContext);
+        backgroundRect = backgroundClipRect(clipRectsContext);
         backgroundRect.intersect(paintDirtyRect);
     } else {
         backgroundRect = paintDirtyRect;
@@ -295,6 +295,58 @@ void RenderLayerClipper::calculateClipRects(const ClipRectsContext& clipRectsCon
             clipRects.setFixedClipRect(intersection(newPosClip, clipRects.fixedClipRect()));
         }
     }
+}
+
+static inline ClipRect backgroundClipRectForPosition(const ClipRects& parentRects, EPosition position)
+{
+    if (position == FixedPosition)
+        return parentRects.fixedClipRect();
+
+    if (position == AbsolutePosition)
+        return parentRects.posClipRect();
+
+    return parentRects.overflowClipRect();
+}
+
+ClipRect RenderLayerClipper::backgroundClipRect(const ClipRectsContext& clipRectsContext) const
+{
+    ASSERT(m_renderer->layer()->parent());
+
+    ClipRects parentRects;
+
+    // If we cross into a different pagination context, then we can't rely on the cache.
+    // Just switch over to using TemporaryClipRects.
+    if (clipRectsContext.clipRectsType != TemporaryClipRects && m_renderer->layer()->parent()->enclosingPaginationLayer() != m_renderer->layer()->enclosingPaginationLayer()) {
+        ClipRectsContext tempContext(clipRectsContext);
+        tempContext.clipRectsType = TemporaryClipRects;
+        parentClipRects(tempContext, parentRects);
+    } else {
+        parentClipRects(clipRectsContext, parentRects);
+    }
+
+    ClipRect backgroundClipRect = backgroundClipRectForPosition(parentRects, m_renderer->style()->position());
+    RenderView* view = m_renderer->view();
+    ASSERT(view);
+
+    // Note: infinite clipRects should not be scrolled here, otherwise they will accidentally no longer be considered infinite.
+    if (parentRects.fixed() && clipRectsContext.rootLayer->renderer() == view && backgroundClipRect != PaintInfo::infiniteRect())
+        backgroundClipRect.move(view->frameView()->scrollOffsetForFixedPosition());
+
+    return backgroundClipRect;
+}
+
+void RenderLayerClipper::parentClipRects(const ClipRectsContext& clipRectsContext, ClipRects& clipRects) const
+{
+    ASSERT(m_renderer->layer()->parent());
+
+    RenderLayerClipper& parentClipper = m_renderer->layer()->parent()->clipper();
+    if (clipRectsContext.clipRectsType == TemporaryClipRects) {
+        parentClipper.calculateClipRects(clipRectsContext, clipRects);
+        return;
+    }
+
+    parentClipper.updateClipRects(clipRectsContext);
+    clipRects = *parentClipper.clipRects(clipRectsContext);
 }
 
 } // namespace WebCore

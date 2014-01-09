@@ -79,8 +79,6 @@ class RenderLayer {
 public:
     friend class RenderReplica;
     // FIXME: Needed until we move all the necessary bits to the new class.
-    friend class RenderLayerClipper;
-    // FIXME: Needed until we move all the necessary bits to the new class.
     friend class RenderLayerStackingNode;
     // FIXME: Needed until we move all the necessary bits to the new class.
     friend class RenderLayerScrollableArea;
@@ -574,9 +572,6 @@ private:
 
     void updateOrRemoveFilterClients();
     void updateOrRemoveFilterEffectRenderer();
-
-    void parentClipRects(const ClipRectsContext&, ClipRects&) const;
-    ClipRect backgroundClipRect(const ClipRectsContext&) const;
 
     LayoutRect paintingExtent(const RenderLayer* rootLayer, const LayoutRect& paintDirtyRect, PaintBehavior);
 

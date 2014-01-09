@@ -1938,7 +1938,7 @@ void RenderLayer::paintLayer(GraphicsContext* context, const LayerPaintingInfo& 
         if (parent()) {
             ClipRectsContext clipRectsContext(paintingInfo.rootLayer, paintingInfo.region, (paintFlags & PaintLayerTemporaryClipRects) ? TemporaryClipRects : PaintingClipRects,
                 IgnoreOverlayScrollbarSize, (paintFlags & PaintLayerPaintingOverflowContents) ? IgnoreOverflowClip : RespectOverflowClip);
-            clipRect = backgroundClipRect(clipRectsContext);
+            clipRect = clipper().backgroundClipRect(clipRectsContext);
             clipRect.intersect(paintingInfo.paintDirtyRect);
 
             // Push the parent coordinate space's clip.
@@ -2284,7 +2284,7 @@ void RenderLayer::collectFragments(LayerFragments& fragments, const RenderLayer*
     ClipRect ancestorClipRect = dirtyRect;
     if (enclosingPaginationLayer()->parent()) {
         ClipRectsContext clipRectsContext(rootLayer, region, clipRectsType, inOverlayScrollbarSizeRelevancy, respectOverflowClip);
-        ancestorClipRect = enclosingPaginationLayer()->backgroundClipRect(clipRectsContext);
+        ancestorClipRect = enclosingPaginationLayer()->clipper().backgroundClipRect(clipRectsContext);
         ancestorClipRect.intersect(dirtyRect);
     }
 
@@ -2343,7 +2343,7 @@ void RenderLayer::paintTransformedLayerIntoFragments(GraphicsContext* context, c
 
             ClipRectsContext clipRectsContext(enclosingPaginationLayer(), paintingInfo.region, (paintFlags & PaintLayerTemporaryClipRects) ? TemporaryClipRects : PaintingClipRects,
                 IgnoreOverlayScrollbarSize, (paintFlags & PaintLayerPaintingOverflowContents) ? IgnoreOverflowClip : RespectOverflowClip);
-            LayoutRect parentClipRect = backgroundClipRect(clipRectsContext).rect();
+            LayoutRect parentClipRect = clipper().backgroundClipRect(clipRectsContext).rect();
             parentClipRect.moveBy(fragment.paginationOffset + offsetOfPaginationLayerFromRoot);
             clipRect.intersect(parentClipRect);
         }
@@ -2807,7 +2807,7 @@ RenderLayer* RenderLayer::hitTestLayer(RenderLayer* rootLayer, RenderLayer* cont
         // Make sure the parent's clip rects have been calculated.
         if (parent()) {
             ClipRectsContext clipRectsContext(rootLayer, hitTestLocation.region(), RootRelativeClipRects, IncludeOverlayScrollbarSize);
-            ClipRect clipRect = backgroundClipRect(clipRectsContext);
+            ClipRect clipRect = clipper().backgroundClipRect(clipRectsContext);
             // Go ahead and test the enclosing clip now.
             if (!clipRect.intersects(hitTestLocation))
                 return 0;
@@ -2990,7 +2990,7 @@ RenderLayer* RenderLayer::hitTestTransformedLayerInFragments(RenderLayer* rootLa
             enclosingPaginationLayer()->convertToLayerCoords(rootLayer, offsetOfPaginationLayerFromRoot);
 
             ClipRectsContext clipRectsContext(enclosingPaginationLayer(), hitTestLocation.region(), RootRelativeClipRects, IncludeOverlayScrollbarSize);
-            LayoutRect parentClipRect = backgroundClipRect(clipRectsContext).rect();
+            LayoutRect parentClipRect = clipper().backgroundClipRect(clipRectsContext).rect();
             parentClipRect.moveBy(fragment.paginationOffset + offsetOfPaginationLayerFromRoot);
             clipRect.intersect(parentClipRect);
         }
@@ -3220,55 +3220,6 @@ RenderLayer* RenderLayer::hitTestChildLayerColumns(RenderLayer* childLayer, Rend
     }
 
     return 0;
-}
-
-void RenderLayer::parentClipRects(const ClipRectsContext& clipRectsContext, ClipRects& clipRects) const
-{
-    ASSERT(parent());
-    if (clipRectsContext.clipRectsType == TemporaryClipRects) {
-        parent()->clipper().calculateClipRects(clipRectsContext, clipRects);
-        return;
-    }
-
-    parent()->m_clipper.updateClipRects(clipRectsContext);
-    clipRects = *parent()->clipper().clipRects(clipRectsContext);
-}
-
-static inline ClipRect backgroundClipRectForPosition(const ClipRects& parentRects, EPosition position)
-{
-    if (position == FixedPosition)
-        return parentRects.fixedClipRect();
-
-    if (position == AbsolutePosition)
-        return parentRects.posClipRect();
-
-    return parentRects.overflowClipRect();
-}
-
-ClipRect RenderLayer::backgroundClipRect(const ClipRectsContext& clipRectsContext) const
-{
-    ASSERT(parent());
-
-    ClipRects parentRects;
-
-    // If we cross into a different pagination context, then we can't rely on the cache.
-    // Just switch over to using TemporaryClipRects.
-    if (clipRectsContext.clipRectsType != TemporaryClipRects && parent()->enclosingPaginationLayer() != enclosingPaginationLayer()) {
-        ClipRectsContext tempContext(clipRectsContext);
-        tempContext.clipRectsType = TemporaryClipRects;
-        parentClipRects(tempContext, parentRects);
-    } else
-        parentClipRects(clipRectsContext, parentRects);
-
-    ClipRect backgroundClipRect = backgroundClipRectForPosition(parentRects, renderer()->style()->position());
-    RenderView* view = renderer()->view();
-    ASSERT(view);
-
-    // Note: infinite clipRects should not be scrolled here, otherwise they will accidentally no longer be considered infinite.
-    if (parentRects.fixed() && clipRectsContext.rootLayer->renderer() == view && backgroundClipRect != PaintInfo::infiniteRect())
-        backgroundClipRect.move(view->frameView()->scrollOffsetForFixedPosition());
-
-    return backgroundClipRect;
 }
 
 void RenderLayer::addBlockSelectionGapsBounds(const LayoutRect& bounds)
