@@ -97,6 +97,7 @@
             'transport/rtp_sender/rtp_packetizer/rtp_packetizer_unittest.cc',
             'transport/rtp_sender/rtp_packetizer/test/rtp_header_parser.cc',
             'transport/rtp_sender/rtp_packetizer/test/rtp_header_parser.h',
+            'transport/transport/udp_transport_unittest.cc',
             'video_receiver/video_decoder_unittest.cc',
             'video_receiver/video_receiver_unittest.cc',
             'video_sender/external_video_encoder_unittest.cc',

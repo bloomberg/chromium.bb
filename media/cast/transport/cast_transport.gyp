@@ -33,8 +33,8 @@
         'rtp_sender/rtp_packetizer/rtp_packetizer.h',
         'rtp_sender/rtp_sender.cc',
         'rtp_sender/rtp_sender.h',
-        'transport/transport.cc',
-        'transport/transport.h',
+        'transport/udp_transport.cc',
+        'transport/udp_transport.h',
       ], # source
     },
   ],  # targets,

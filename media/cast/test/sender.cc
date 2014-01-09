@@ -18,7 +18,7 @@
 #include "media/cast/test/audio_utility.h"
 #include "media/cast/test/utility/input_helper.h"
 #include "media/cast/test/video_utility.h"
-#include "media/cast/transport/transport/transport.h"
+#include "media/cast/transport/transport/udp_transport.h"
 #include "ui/gfx/size.h"
 
 namespace media {
@@ -295,11 +295,9 @@ int main(int argc, char** argv) {
   base::AtExitManager at_exit;
   VLOG(1) << "Cast Sender";
   base::Thread test_thread("Cast sender test app thread");
-  base::Thread main_thread("Cast main send thread");
   base::Thread audio_thread("Cast audio encoder thread");
   base::Thread video_thread("Cast video encoder thread");
   test_thread.Start();
-  main_thread.Start();
   audio_thread.Start();
   video_thread.Start();
 
@@ -310,12 +308,12 @@ int main(int argc, char** argv) {
   scoped_refptr<media::cast::CastEnvironment> cast_environment(new
       media::cast::CastEnvironment(
       &clock,
-      main_thread.message_loop_proxy(),
+      io_message_loop.message_loop_proxy(),
       audio_thread.message_loop_proxy(),
       NULL,
       video_thread.message_loop_proxy(),
       NULL,
-      main_thread.message_loop_proxy(),
+      io_message_loop.message_loop_proxy(),
       media::cast::GetDefaultCastLoggingConfig()));
 
   media::cast::AudioSenderConfig audio_config =
@@ -323,27 +321,39 @@ int main(int argc, char** argv) {
   media::cast::VideoSenderConfig video_config =
       media::cast::GetVideoSenderConfig();
 
-  scoped_ptr<media::cast::transport::Transport> transport(
-      new media::cast::transport::Transport(
-      io_message_loop.message_loop_proxy()));
+  int remote_port, local_port;
+  media::cast::GetPorts(&remote_port, &local_port);
+
+  std::string remote_ip_address =
+      media::cast::GetIpAddress("Enter receiver IP.");
+  std::string local_ip_address = media::cast::GetIpAddress("Enter local IP.");
+  net::IPAddressNumber remote_ip_number;
+  net::IPAddressNumber local_ip_number;
+
+  if (!net::ParseIPLiteralToNumber(remote_ip_address, &remote_ip_number)) {
+    LOG(ERROR) << "Invalid remote IP address.";
+    return 1;
+  }
+
+  if (!net::ParseIPLiteralToNumber(local_ip_address, &local_ip_number)) {
+    LOG(ERROR) << "Invalid local IP address.";
+    return 1;
+  }
+
+  net::IPEndPoint remote_end_point(remote_ip_number, remote_port);
+  net::IPEndPoint local_end_point(local_ip_number, local_port);
+  scoped_ptr<media::cast::transport::UdpTransport> transport(
+      new media::cast::transport::UdpTransport(
+          io_message_loop.message_loop_proxy(),
+          local_end_point,
+          remote_end_point));
   scoped_ptr<media::cast::CastSender> cast_sender(
       media::cast::CastSender::CreateCastSender(cast_environment,
       audio_config,
       video_config,
       NULL,  // VideoEncoderController.
-      transport->packet_sender()));
-
-  media::cast::transport::PacketReceiver* packet_receiver =
-      cast_sender->packet_receiver();
-
-  int send_to_port, receive_port;
-  media::cast::GetPorts(&send_to_port, &receive_port);
-  std::string ip_address = media::cast::GetIpAddress("Enter destination IP.");
-  std::string local_ip_address = media::cast::GetIpAddress("Enter local IP.");
-
-  transport->SetLocalReceiver(packet_receiver, ip_address, local_ip_address,
-                              receive_port);
-  transport->SetSendDestination(ip_address, send_to_port);
+      transport.get()));
+  transport->StartReceiving(cast_sender->packet_receiver());
 
   media::cast::FrameInput* frame_input = cast_sender->frame_input();
   scoped_ptr<media::cast::SendProcess> send_process(new
@@ -354,6 +364,5 @@ int main(int argc, char** argv) {
 
   send_process->SendFrame();
   io_message_loop.Run();
-  transport->StopReceiving();
   return 0;
 }
