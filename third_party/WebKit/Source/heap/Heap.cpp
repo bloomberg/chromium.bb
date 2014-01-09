@@ -692,7 +692,54 @@ void ThreadHeap<Header>::sweep()
 template<typename Header>
 void ThreadHeap<Header>::finalizeAll(const void* except)
 {
-    // FIXME: Implement.
+    if (inFinalizeAll())
+        return;
+    setFinalizeAll(true);
+
+    // No nested GCs are permitted. The thread is exiting.
+    NoAllocationScope<AnyThread> noAllocation;
+    makeConsistentForGC();
+    for (HeapPage<Header>* page = m_firstPage; page; page = page->next()) {
+        Address startOfGap = page->payload();
+        Address end = page->end();
+        Address headerAddress;
+        for (headerAddress = page->payload(); headerAddress < end; ) {
+            BasicObjectHeader* basicHeader = reinterpret_cast<BasicObjectHeader*>(headerAddress);
+            ASSERT(basicHeader->size() < blinkPagePayloadSize());
+
+            if (basicHeader->isFree()) {
+                headerAddress += basicHeader->size();
+                continue;
+            }
+            // At this point we know this is a valid object of type Header
+            Header* header = static_cast<Header*>(basicHeader);
+
+            if (header->payload() == except) {
+                if (startOfGap != headerAddress)
+                    addToFreeList(startOfGap, headerAddress - startOfGap);
+                headerAddress += header->size();
+                startOfGap = headerAddress;
+                continue;
+            }
+
+            page->finalize(header);
+            headerAddress += header->size();
+        }
+        ASSERT(headerAddress == end);
+        if (startOfGap != end)
+            addToFreeList(startOfGap, end - startOfGap);
+    }
+
+    LargeHeapObject<Header>** previousNext = &m_firstLargeHeapObject;
+    for (LargeHeapObject<Header>* current = m_firstLargeHeapObject; current;) {
+        LargeHeapObject<Header>* next = current->next();
+        if (current->heapObjectHeader()->payload() != except)
+            freeLargeObject(current, previousNext);
+        else
+            previousNext = &current->m_next;
+        current = next;
+    }
+    setFinalizeAll(false);
 }
 
 template<typename Header>
