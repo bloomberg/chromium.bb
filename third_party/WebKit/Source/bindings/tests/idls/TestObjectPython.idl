@@ -283,6 +283,7 @@ interface TestObjectPython {
     void voidMethodNullableStringArg(TestInterfaceEmpty? nullableTestInterfaceEmptyArg);
     // Callback interface types
     void voidMethodTestCallbackInterfaceArg(TestCallbackInterface testCallbackInterfaceArg);
+    void voidMethodOptionalTestCallbackInterfaceArg(optional TestCallbackInterface optionalTestCallbackInterfaceArg);
     void voidMethodNullableTestCallbackInterfaceArg(TestCallbackInterface? testCallbackInterfaceArg);
     // Enumerations
     TestEnum testEnumMethod();

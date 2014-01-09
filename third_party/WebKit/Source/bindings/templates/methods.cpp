@@ -76,7 +76,8 @@ if (listener) {
 {######################################}
 {% macro generate_argument(method, argument) %}
 {% if argument.is_optional and not argument.has_default and
-      argument.idl_type != 'Dictionary' %}
+      argument.idl_type != 'Dictionary' and
+      not argument.is_callback_interface %}
 {# Optional arguments without a default value generate an early call with
    fewer arguments if they are omitted.
    Optional Dictionary arguments default to empty dictionary. #}
@@ -95,6 +96,18 @@ if (info.Length() > {{argument.index}} && !isUndefinedOrNull(info[{{argument.ind
 }
 {% endif %}
 {% if argument.is_callback_interface %}
+{% if argument.is_optional %}
+OwnPtr<{{argument.idl_type}}> {{argument.name}};
+if (info.Length() > {{argument.index}} && !isUndefinedOrNull(info[{{argument.index}}])) {
+    if (!info[{{argument.index}}]->IsFunction()) {
+        {{throw_type_error(method,
+              '"The callback provided as parameter %s is not a function."' %
+                  (argument.index + 1)) | indent(8)}}
+        return;
+    }
+    {{argument.name}} = V8{{argument.idl_type}}::create(v8::Handle<v8::Function>::Cast(info[{{argument.index}}]), getExecutionContext());
+}
+{% else %}
 if (info.Length() <= {{argument.index}} || !{% if argument.is_nullable %}(info[{{argument.index}}]->IsFunction() || info[{{argument.index}}]->IsNull()){% else %}info[{{argument.index}}]->IsFunction(){% endif %}) {
     {{throw_type_error(method,
           '"The callback provided as parameter %s is not a function."' %
@@ -102,7 +115,8 @@ if (info.Length() <= {{argument.index}} || !{% if argument.is_nullable %}(info[{
     return;
 }
 OwnPtr<{{argument.idl_type}}> {{argument.name}} = {% if argument.is_nullable %}info[{{argument.index}}]->IsNull() ? nullptr : {% endif %}V8{{argument.idl_type}}::create(v8::Handle<v8::Function>::Cast(info[{{argument.index}}]), getExecutionContext());
-{% elif argument.is_clamp %}
+{% endif %}{# argument.is_optional #}
+{% elif argument.is_clamp %}{# argument.is_callback_interface #}
 {# NaN is treated as 0: http://www.w3.org/TR/WebIDL/#es-type-mapping #}
 {{argument.cpp_type}} {{argument.name}} = 0;
 V8TRYCATCH_VOID(double, {{argument.name}}NativeValue, info[{{argument.index}}]->NumberValue());
