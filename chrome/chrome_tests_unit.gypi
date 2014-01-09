@@ -2179,7 +2179,6 @@
         ['enable_task_manager==0', {
           'sources/': [
             ['exclude', '^browser/task_manager/'],
-            ['exclude', '^browser/ui/webui/task_manager/'],
           ],
         }],
         ['file_manager_extension==0', {

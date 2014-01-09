@@ -2588,12 +2588,6 @@
         'browser/ui/webui/sync_setup_handler.h',
         'browser/ui/webui/system_info_ui.cc',
         'browser/ui/webui/system_info_ui.h',
-        'browser/ui/webui/task_manager/task_manager_dialog.cc',
-        'browser/ui/webui/task_manager/task_manager_dialog.h',
-        'browser/ui/webui/task_manager/task_manager_handler.cc',
-        'browser/ui/webui/task_manager/task_manager_handler.h',
-        'browser/ui/webui/task_manager/task_manager_ui.cc',
-        'browser/ui/webui/task_manager/task_manager_ui.h',
         'browser/ui/webui/theme_handler.cc',
         'browser/ui/webui/theme_handler.h',
         'browser/ui/webui/theme_source.cc',
@@ -2715,7 +2709,6 @@
         }],
         ['enable_task_manager==0', {
           'sources/': [
-            ['exclude', '^browser/ui/webui/task_manager/'],
             ['exclude', '^browser/ui/views/task_manager_view.cc'],
             ['exclude', '^browser/ui/cocoa/task_manager_mac.h'],
             ['exclude', '^browser/ui/cocoa/task_manager_mac.mm'],
@@ -2906,7 +2899,6 @@
             ['exclude', '^browser/ui/views/user_data_dir_dialog_view.cc'],
             ['exclude', '^browser/ui/views/tab_contents/web_drag_bookmark_handler_win.cc'],
             ['exclude', '^browser/ui/views/tab_contents/web_drag_bookmark_handler_win.h'],
-            ['exclude', '^browser/ui/webui/task_manager/'],
             ['exclude', '^browser/ui/window_sizer/window_sizer_win.cc'],
             # TODO: (stevenjb/beng): Find a home for these.
             ['include', '^browser/ui/views/simple_message_box_views.cc'],
@@ -2957,7 +2949,6 @@
             ['exclude', '^browser/ui/webui/gesture_config_ui.h'],
             ['exclude', '^browser/ui/webui/salsa_ui.cc'],
             ['exclude', '^browser/ui/webui/salsa_ui.h'],
-            ['exclude', '^browser/ui/webui/task_manager/'],
           ],
         }],
         ['ui_compositor_image_transport==1', {
