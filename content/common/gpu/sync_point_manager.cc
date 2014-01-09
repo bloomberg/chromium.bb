@@ -57,4 +57,13 @@ void SyncPointManager::AddSyncPointCallback(uint32 sync_point,
   callback.Run();
 }
 
+bool SyncPointManager::IsSyncPointRetired(uint32 sync_point) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  {
+    base::AutoLock lock(lock_);
+    SyncPointMap::iterator it = sync_point_map_.find(sync_point);
+    return it == sync_point_map_.end();
+  }
+}
+
 }  // namespace content

@@ -35,6 +35,8 @@ class SyncPointManager : public base::RefCountedThreadSafe<SyncPointManager> {
   // called on the main thread.
   void AddSyncPointCallback(uint32 sync_point, const base::Closure& callback);
 
+  bool IsSyncPointRetired(uint32 sync_point);
+
  private:
   friend class base::RefCountedThreadSafe<SyncPointManager>;
   typedef std::vector<base::Closure> ClosureList;
