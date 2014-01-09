@@ -627,6 +627,7 @@
   }
 
   function negotiateBetween(caller, callee) {
+    console.log("Negotiating call...");
     // Not stable = negotiation is ongoing. The behavior of re-negotiating while
     // a negotiation is ongoing is more or less undefined, so avoid this.
     if (caller.signalingState != 'stable')
@@ -649,6 +650,7 @@
   }
 
   function receiveOffer(offerSdp, caller, callee) {
+    console.log("Receiving offer...");
     offerSdp = transformRemoteSdp(offerSdp);
 
     var parsedOffer = new RTCSessionDescription({ type: 'offer',
@@ -714,6 +716,7 @@
   }
 
   function receiveAnswer(answerSdp, caller) {
+    console.log("Receiving answer...");
     answerSdp = transformRemoteSdp(answerSdp);
     var parsedAnswer = new RTCSessionDescription({ type: 'answer',
                                                    sdp: answerSdp });
@@ -740,6 +743,7 @@
   }
 
   function onRemoteStream(e, target) {
+    console.log("Receiving remote stream...");
     if (gTestWithoutMsid && e.stream.id != "default") {
       document.title = 'a default remote stream was expected but instead ' +
           e.stream.id + ' was received.';

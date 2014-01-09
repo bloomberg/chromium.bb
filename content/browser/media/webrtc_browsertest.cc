@@ -716,13 +716,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, CallAndVerifyVideoMutingWorks) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
-
-  GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
-  NavigateToURL(shell(), url);
-
-  EXPECT_TRUE(ExecuteJavascript("callAndEnsureVideoMutingWorks();"));
-  ExpectTitle("OK");
+  MakeTypicalPeerConnectionCall("callAndEnsureVideoMutingWorks();");
 }
 
 #if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY))

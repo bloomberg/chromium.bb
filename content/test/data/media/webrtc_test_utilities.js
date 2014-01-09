@@ -37,11 +37,13 @@ function detectVideoStopped(videoElementName, callback) {
 }
 
 function detectVideo(videoElementName, predicate, callback) {
+  console.log('Looking at video in element ' + videoElementName);
+
   var width = VIDEO_TAG_WIDTH;
   var height = VIDEO_TAG_HEIGHT;
   var videoElement = $(videoElementName);
   var canvas = $(videoElementName + '-canvas');
-  var old_pixels = [];
+  var oldPixels = [];
   var waitVideo = setInterval(function() {
     var context = canvas.getContext('2d');
     context.drawImage(videoElement, 0, 0, width, height);
@@ -49,12 +51,13 @@ function detectVideo(videoElementName, predicate, callback) {
     // Check that there is an old and a new picture with the same size to
     // compare and use the function |predicate| to detect the video state in
     // that case.
-    if (old_pixels.length == pixels.length &&
-        predicate(pixels, old_pixels)) {
+    if (oldPixels.length == pixels.length &&
+        predicate(pixels, oldPixels)) {
+      console.log('Done looking at video in element ' + videoElementName);
       clearInterval(waitVideo);
       callback();
     }
-    old_pixels = pixels;
+    oldPixels = pixels;
   }, 200);
 }
 
@@ -92,9 +95,9 @@ function eventOccured() {
 
 // This very basic video verification algorithm will be satisfied if any
 // pixels are changed.
-function isVideoPlaying(pixels, previous_pixels) {
+function isVideoPlaying(pixels, previousPixels) {
   for (var i = 0; i < pixels.length; i++) {
-    if (pixels[i] != previous_pixels[i]) {
+    if (pixels[i] != previousPixels[i]) {
       return true;
     }
   }
