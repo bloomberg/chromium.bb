@@ -50,6 +50,7 @@ namespace WebCore {
 class DOMWindow;
 class Frame;
 class HTMLDocument;
+class SecurityOrigin;
 
 // V8WindowShell represents all the per-global object state for a Frame that
 // persist between navigations.
@@ -67,7 +68,7 @@ public:
 
     // Update the security origin of a document
     // (e.g., after setting docoument.domain).
-    void updateSecurityOrigin();
+    void updateSecurityOrigin(SecurityOrigin*);
 
     bool isContextInitialized() { return m_contextHolder; }
     bool isGlobalInitialized() { return !m_global.isEmpty(); }
@@ -89,7 +90,7 @@ private:
     };
     void disposeContext(GlobalDetachmentBehavior);
 
-    void setSecurityToken();
+    void setSecurityToken(SecurityOrigin*);
 
     // The JavaScript wrapper for the document object is cached on the global
     // object for fast access. UpdateDocumentProperty sets the wrapper

@@ -136,7 +136,7 @@ public:
     void namedItemAdded(HTMLDocument*, const AtomicString&);
     void namedItemRemoved(HTMLDocument*, const AtomicString&);
 
-    void updateSecurityOrigin();
+    void updateSecurityOrigin(SecurityOrigin*);
     void clearScriptObjects();
     void cleanupScriptObjectsForPlugin(Widget*);
 

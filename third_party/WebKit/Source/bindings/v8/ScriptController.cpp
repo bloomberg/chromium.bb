@@ -141,9 +141,9 @@ void ScriptController::clearForClose()
     blink::Platform::current()->histogramCustomCounts("WebCore.ScriptController.clearForClose", (currentTime() - start) * 1000, 0, 10000, 50);
 }
 
-void ScriptController::updateSecurityOrigin()
+void ScriptController::updateSecurityOrigin(SecurityOrigin* origin)
 {
-    m_windowShell->updateSecurityOrigin();
+    m_windowShell->updateSecurityOrigin(origin);
 }
 
 v8::Local<v8::Value> ScriptController::callFunction(v8::Handle<v8::Function> function, v8::Handle<v8::Object> receiver, int argc, v8::Handle<v8::Value> info[])

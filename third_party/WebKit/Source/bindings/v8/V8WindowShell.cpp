@@ -230,8 +230,8 @@ bool V8WindowShell::initializeIfNeeded()
 
     if (isMainWorld) {
         updateDocument();
-        setSecurityToken();
         if (m_frame->document()) {
+            setSecurityToken(m_frame->document()->securityOrigin());
             ContentSecurityPolicy* csp = m_frame->document()->contentSecurityPolicy();
             context->AllowCodeGenerationFromStrings(csp->allowEval(0, ContentSecurityPolicy::SuppressReport));
             context->SetErrorMessageForCodeGenerationFromStrings(v8String(m_isolate, csp->evalDisabledErrorMessage()));
@@ -376,24 +376,19 @@ void V8WindowShell::clearDocumentProperty()
     m_contextHolder->context()->Global()->ForceDelete(v8AtomicString(m_isolate, "document"));
 }
 
-void V8WindowShell::setSecurityToken()
+void V8WindowShell::setSecurityToken(SecurityOrigin* origin)
 {
     ASSERT(m_world->isMainWorld());
-
-    Document* document = m_frame->document();
-
-    // Ask the document's SecurityOrigin to generate a security token.
     // If two tokens are equal, then the SecurityOrigins canAccess each other.
     // If two tokens are not equal, then we have to call canAccess.
     // Note: we can't use the HTTPOrigin if it was set from the DOM.
-    SecurityOrigin* origin = document->securityOrigin();
     String token;
     // We stick with an empty token if document.domain was modified or if we
     // are in the initial empty document, so that we can do a full canAccess
     // check in those cases.
     if (!origin->domainWasSetInDOM()
         && !m_frame->loader().stateMachine()->isDisplayingInitialEmptyDocument())
-        token = document->securityOrigin()->toString();
+        token = origin->toString();
 
     // An empty or "null" token means we always have to call
     // canAccess. The toString method on securityOrigins returns the
@@ -422,7 +417,7 @@ void V8WindowShell::updateDocument()
     if (!m_contextHolder)
         return;
     updateDocumentProperty();
-    updateSecurityOrigin();
+    updateSecurityOrigin(m_frame->document()->securityOrigin());
 }
 
 static v8::Handle<v8::Value> getNamedProperty(HTMLDocument* htmlDocument, const AtomicString& key, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
@@ -497,13 +492,13 @@ void V8WindowShell::namedItemRemoved(HTMLDocument* document, const AtomicString&
     documentHandle->Delete(v8String(m_isolate, name));
 }
 
-void V8WindowShell::updateSecurityOrigin()
+void V8WindowShell::updateSecurityOrigin(SecurityOrigin* origin)
 {
     ASSERT(m_world->isMainWorld());
     if (!m_contextHolder)
         return;
     v8::HandleScope handleScope(m_isolate);
-    setSecurityToken();
+    setSecurityToken(origin);
 }
 
 } // WebCore

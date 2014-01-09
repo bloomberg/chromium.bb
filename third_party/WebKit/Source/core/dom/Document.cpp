@@ -3828,7 +3828,7 @@ void Document::setDomain(const String& newDomain, ExceptionState& exceptionState
 
     securityOrigin()->setDomainFromDOM(newDomain);
     if (m_frame)
-        m_frame->script().updateSecurityOrigin();
+        m_frame->script().updateSecurityOrigin(securityOrigin());
 }
 
 // http://www.whatwg.org/specs/web-apps/current-work/#dom-document-lastmodified
@@ -4563,7 +4563,7 @@ void Document::didUpdateSecurityOrigin()
 {
     if (!m_frame)
         return;
-    m_frame->script().updateSecurityOrigin();
+    m_frame->script().updateSecurityOrigin(securityOrigin());
 }
 
 bool Document::isContextThread() const
