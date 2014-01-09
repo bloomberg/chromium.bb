@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TRANSLATE_TRANSLATE_BROWSER_METRICS_H_
-#define CHROME_BROWSER_TRANSLATE_TRANSLATE_BROWSER_METRICS_H_
+#ifndef COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_BROWSER_METRICS_H_
+#define COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_BROWSER_METRICS_H_
 
 #include <string>
 
@@ -61,4 +61,4 @@ const char* GetMetricsName(MetricsNameIndex index);
 
 }  // namespace TranslateBrowserMetrics
 
-#endif  // CHROME_BROWSER_TRANSLATE_TRANSLATE_BROWSER_METRICS_H_
+#endif  // COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_BROWSER_METRICS_H_

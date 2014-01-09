@@ -948,8 +948,6 @@
         'browser/jankometer_mac.cc',
         'browser/jumplist_win.cc',
         'browser/jumplist_win.h',
-        'browser/language_usage_metrics.cc',
-        'browser/language_usage_metrics.h',
         'browser/lifetime/application_lifetime.cc',
         'browser/lifetime/application_lifetime.h',
         'browser/lifetime/application_lifetime_android.cc',
@@ -2494,8 +2492,6 @@
         'browser/translate/options_menu_model.h',
         'browser/translate/translate_accept_languages.h',
         'browser/translate/translate_accept_languages.cc',
-        'browser/translate/translate_browser_metrics.cc',
-        'browser/translate/translate_browser_metrics.h',
         'browser/translate/translate_infobar_delegate.cc',
         'browser/translate/translate_infobar_delegate.h',
         'browser/translate/translate_language_list.cc',
@@ -3344,7 +3340,7 @@
             }],
           ],
         }, {  # 'OS!="win"
-          'sources/': [ 
+          'sources/': [
             # Exclude files that should be excluded for all non-Windows platforms.
             ['exclude', '^browser/first_run/try_chrome_dialog_view.cc'],
             ['exclude', '^browser/first_run/try_chrome_dialog_view.h'],

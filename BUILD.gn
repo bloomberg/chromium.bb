@@ -18,6 +18,7 @@ group("root") {
   deps = [
     "//base(//build/toolchain/nacl:x86_newlib)",
     "//chrome",
+    "//components/language_usage_metrics",
     "//components/navigation_metrics",
     "//components/onc:onc_component",
     "//components/startup_metric_utils",

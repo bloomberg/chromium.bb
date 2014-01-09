@@ -15,6 +15,7 @@
     'breakpad.gypi',
     'dom_distiller.gypi',
     'json_schema.gypi',
+    'language_usage_metrics.gypi',
     'navigation_metrics.gypi',
     'onc.gypi',
     'policy.gypi',

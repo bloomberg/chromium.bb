@@ -1,4 +1,8 @@
 include_rules = [
-  # translate is used on iOS, which cannot depend on content.
+  "+components/language_usage_metrics",
+
+  # Translate is a layered component; subdirectories must explicitly introduce
+  # the ability to use the content layer as appropriate.
   "-content",
+  "-components/translate/content",
 ]

@@ -8,6 +8,7 @@
       'target_name': 'translate_core_browser',
       'type': 'static_library',
       'dependencies': [
+        'language_usage_metrics',
         'translate_core_common',
         '../base/base.gyp:base',
         '../url/url.gyp:url_lib',
@@ -17,6 +18,8 @@
       ],
       'sources': [
         'translate/core/browser/page_translated_details.h',
+        'translate/core/browser/translate_browser_metrics.cc',
+        'translate/core/browser/translate_browser_metrics.h',
         'translate/core/browser/translate_error_details.h',
         'translate/core/browser/translate_event_details.cc',
         'translate/core/browser/translate_event_details.h',

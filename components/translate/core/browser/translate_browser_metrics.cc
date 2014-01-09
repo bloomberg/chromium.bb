@@ -1,15 +1,15 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/translate/translate_browser_metrics.h"
+#include "components/translate/core/browser/translate_browser_metrics.h"
 
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
-#include "chrome/browser/language_usage_metrics.h"
+#include "components/language_usage_metrics/language_usage_metrics.h"
 
 namespace {
 
@@ -63,18 +63,21 @@ void ReportLanguageDetectionError() {
 }
 
 void ReportLocalesOnDisabledByPrefs(const std::string& locale) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY(kTranslateLocalesOnDisabledByPrefs,
-                              LanguageUsageMetrics::ToLanguageCode(locale));
+  UMA_HISTOGRAM_SPARSE_SLOWLY(
+      kTranslateLocalesOnDisabledByPrefs,
+      language_usage_metrics::LanguageUsageMetrics::ToLanguageCode(locale));
 }
 
 void ReportUndisplayableLanguage(const std::string& language) {
-  int language_code = LanguageUsageMetrics::ToLanguageCode(language);
+  int language_code =
+      language_usage_metrics::LanguageUsageMetrics::ToLanguageCode(language);
   UMA_HISTOGRAM_SPARSE_SLOWLY(kTranslateUndisplayableLanguage,
                               language_code);
 }
 
 void ReportUnsupportedLanguageAtInitiation(const std::string& language) {
-  int language_code = LanguageUsageMetrics::ToLanguageCode(language);
+  int language_code =
+      language_usage_metrics::LanguageUsageMetrics::ToLanguageCode(language);
   UMA_HISTOGRAM_SPARSE_SLOWLY(kTranslateUnsupportedLanguageAtInitiation,
                               language_code);
 }

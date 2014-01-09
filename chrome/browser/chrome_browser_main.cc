@@ -62,7 +62,6 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/gpu/gl_string_manager.h"
 #include "chrome/browser/jankometer.h"
-#include "chrome/browser/language_usage_metrics.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/metrics/field_trial_synchronizer.h"
 #include "chrome/browser/metrics/metrics_log.h"
@@ -114,6 +113,7 @@
 #include "chrome/common/profile_management_switches.h"
 #include "chrome/common/profiling.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "components/language_usage_metrics/language_usage_metrics.h"
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/browser/nacl_process_host.h"
 #include "components/startup_metric_utils/startup_metric_utils.h"
@@ -1391,9 +1391,9 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   browser_process_->metrics_service()->RecordBreakpadHasDebugger(
       base::debug::BeingDebugged());
 
-  LanguageUsageMetrics::RecordAcceptLanguages(
+  language_usage_metrics::LanguageUsageMetrics::RecordAcceptLanguages(
       profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
-  LanguageUsageMetrics::RecordApplicationLanguage(
+  language_usage_metrics::LanguageUsageMetrics::RecordApplicationLanguage(
       browser_process_->GetApplicationLocale());
 
   // The extension service may be available at this point. If the command line

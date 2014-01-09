@@ -11,6 +11,7 @@ include_rules = [
   "+components/breakpad",
   "+components/browser_context_keyed_service",
   "+components/dom_distiller",
+  "+components/language_usage_metrics",
   "+components/nacl/browser",
   "+components/nacl/common",
   "+components/navigation_interception",

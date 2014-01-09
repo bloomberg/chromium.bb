@@ -7,6 +7,8 @@ static_library("translate_core_browser") {
 
   sources = [
     "core/browser/page_translated_details.h",
+    "core/browser/translate_browser_metrics.cc",
+    "core/browser/translate_browser_metrics.h",
     "core/browser/translate_error_details.h",
     "core/browser/translate_event_details.cc",
     "core/browser/translate_event_details.h",

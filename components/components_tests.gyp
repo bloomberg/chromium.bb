@@ -41,6 +41,7 @@
             'json_schema/json_schema_validator_unittest.cc',
             'json_schema/json_schema_validator_unittest_base.cc',
             'json_schema/json_schema_validator_unittest_base.h',
+            'language_usage_metrics/language_usage_metrics_unittest.cc',
             'navigation_interception/intercept_navigation_resource_throttle_unittest.cc',
             'precache/content/precache_manager_unittest.cc',
             'precache/core/precache_database_unittest.cc',
@@ -49,6 +50,7 @@
             'sessions/serialized_navigation_entry_unittest.cc',
             'signin/core/webdata/token_service_table_unittest.cc',
             'test/run_all_unittests.cc',
+            'translate/core/browser/translate_browser_metrics_unittest.cc',
             'translate/core/common/translate_metrics_unittest.cc',
             'translate/core/common/translate_util_unittest.cc',
             'translate/language_detection/language_detection_util_unittest.cc',
@@ -102,6 +104,9 @@
             # Dependencies of json_schema
             'components.gyp:json_schema',
 
+            # Dependencies of language_usage_metrics
+            'components.gyp:language_usage_metrics',
+
             # Dependencies of precache/core
             'components.gyp:precache_core',
 
@@ -109,6 +114,7 @@
             'components.gyp:signin_core',
 
             # Dependencies of translate.
+            'components.gyp:translate_core_browser',
             'components.gyp:translate_core_common',
             'components.gyp:translate_language_detection',
 
@@ -157,6 +163,7 @@
                 ['include', '^auto_login_parser/'],
                 ['include', '^autofill/'],
                 ['include', '^dom_distiller/'],
+                ['include', '^language_usage_metrics/'],
                 ['include', '^precache/core/'],
                 ['include', '^signin/'],
                 ['include', '^translate/'],

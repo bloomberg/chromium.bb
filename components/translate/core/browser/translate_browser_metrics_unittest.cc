@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/translate/translate_browser_metrics.h"
+#include "components/translate/core/browser/translate_browser_metrics.h"
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"

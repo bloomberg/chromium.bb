@@ -1,10 +1,12 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/language_usage_metrics.h"
+#include "components/language_usage_metrics/language_usage_metrics.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace language_usage_metrics {
 
 TEST(LanguageUsageMetricsTest, ParseAcceptLanguages) {
   std::set<int> language_set;
@@ -101,3 +103,5 @@ TEST(LanguageUsageMetricsTest, ToLanguageCode) {
   // However, LanguageUsageMetrics doesn't tell what code is valid.
   EXPECT_EQ(30840, LanguageUsageMetrics::ToLanguageCode("xx"));
 }
+
+}  // namespace language_usage_metrics
