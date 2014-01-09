@@ -13,6 +13,7 @@ import optparse
 import os
 import random
 import re
+import ssl
 import string
 import sys
 import tempfile
@@ -400,8 +401,14 @@ class ChangeInfo(object):
     """Do background work on Rietveld to lint the file so that the results are
     ready when the issue is viewed."""
     if self.issue and self.patchset:
-      self.SendToRietveld('/lint/issue%s_%s' % (self.issue, self.patchset),
-          timeout=10)
+      try:
+        self.SendToRietveld('/lint/issue%s_%s' % (self.issue, self.patchset),
+            timeout=10)
+      except ssl.SSLError as e:
+        # It takes more than 10 seconds to lint some CLs. Silently ignore
+        # the expected timeout.
+        if e.message != 'The read operation timed out':
+          raise
 
   def SendToRietveld(self, request_path, timeout=None, **kwargs):
     """Send a POST/GET to Rietveld.  Returns the response body."""
