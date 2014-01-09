@@ -48,8 +48,15 @@ Retriever::~Retriever() {
 
 void Retriever::Retrieve(const std::string& key,
                          scoped_ptr<Callback> retrieved) {
-  assert(requests_.find(key) == requests_.end());
-  requests_.insert(std::make_pair(key, retrieved.release()));
+  std::map<std::string, Callback*>::iterator request_it =
+      requests_.find(key);
+  if (request_it != requests_.end()) {
+    // Abandon a previous request.
+    delete request_it->second;
+    requests_.erase(request_it);
+  }
+
+  requests_[key] = retrieved.release();
   storage_->Get(key,
                 BuildCallback(this, &Retriever::OnDataRetrievedFromStorage));
 }
@@ -57,9 +64,13 @@ void Retriever::Retrieve(const std::string& key,
 void Retriever::OnDataRetrievedFromStorage(bool success,
                                            const std::string& key,
                                            const std::string& data) {
+  // TODO(rouslan): Add validation for data integrity and freshness. If a
+  // download fails, then it's OK to use stale data.
   if (success) {
     scoped_ptr<Callback> retrieved = GetCallbackForKey(key);
-    (*retrieved)(success, key, data);
+    if (retrieved != NULL) {
+      (*retrieved)(success, key, data);
+    }
   } else {
     downloader_->Download(lookup_key_util_.GetUrlForKey(key),
                           BuildCallback(this, &Retriever::OnDownloaded));
@@ -74,14 +85,19 @@ void Retriever::OnDownloaded(bool success,
     storage_->Put(key, data);
   }
   scoped_ptr<Callback> retrieved = GetCallbackForKey(key);
-  (*retrieved)(success, key, success ? data : std::string());
+  if (retrieved != NULL) {
+    (*retrieved)(success, key, success ? data : std::string());
+  }
 }
 
 scoped_ptr<Retriever::Callback> Retriever::GetCallbackForKey(
     const std::string& key) {
   std::map<std::string, Callback*>::iterator iter =
       requests_.find(key);
-  assert(iter != requests_.end());
+  if (iter == requests_.end()) {
+    // An abandonened request.
+    return scoped_ptr<Callback>();
+  }
   scoped_ptr<Callback> callback(iter->second);
   requests_.erase(iter);
   return callback.Pass();

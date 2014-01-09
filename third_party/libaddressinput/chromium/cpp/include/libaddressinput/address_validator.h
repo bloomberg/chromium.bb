@@ -17,7 +17,6 @@
 
 #include <libaddressinput/address_field.h>
 #include <libaddressinput/address_problem.h>
-#include <libaddressinput/util/basictypes.h>
 #include <libaddressinput/util/scoped_ptr.h>
 
 #include <map>
@@ -30,7 +29,6 @@ namespace addressinput {
 class Downloader;
 class LoadRulesDelegate;
 class Localization;
-class Retriever;
 class Storage;
 struct AddressData;
 
@@ -84,20 +82,28 @@ class AddressValidator {
     RULES_NOT_READY
   };
 
-  // Does not take ownership of |load_rules_delegate|, which can be NULL.
-  AddressValidator(scoped_ptr<const Downloader> downloader,
-                   scoped_ptr<Storage> storage,
-                   LoadRulesDelegate* load_rules_delegate);
-  ~AddressValidator();
+  virtual ~AddressValidator();
+
+  // Builds an address validator. Takes ownership of |downloader| and |storage|,
+  // which cannot be NULL. Does not take ownership of |load_rules_delegate|,
+  // which can be NULL. The caller owns the result.
+  static scoped_ptr<AddressValidator> Build(
+      scoped_ptr<const Downloader> downloader,
+      scoped_ptr<Storage> storage,
+      LoadRulesDelegate* load_rules_delegate);
 
   // Loads the generic validation rules for |country_code| and specific rules
   // for the country's administrative areas, localities, and dependent
   // localities. A typical data size is 10KB. The largest is 250KB. If a country
   // has language-specific validation rules, then these are also loaded.
   //
-  // If the rules were loaded successfully before, then does nothing. Notifies
-  // |load_rules_delegate| when the loading finishes.
-  void LoadRules(const std::string& country_code);
+  // Example rule:
+  // https://i18napis.appspot.com/ssl-address/data/US
+  //
+  // If the rules were loaded successfully before or are still being loaded,
+  // then does nothing. Notifies |load_rules_delegate| when the loading
+  // finishes.
+  virtual void LoadRules(const std::string& country_code) = 0;
 
   // Validates the |address| and populates |problems| with the validation
   // problems, filtered according to the |filter| parameter.
@@ -108,15 +114,10 @@ class AddressValidator {
   //
   // If the |problems| parameter is NULL, then checks whether the validation
   // rules are available, but does not validate the |address|.
-  Status ValidateAddress(const AddressData& address,
-                         const AddressProblemFilter& filter,
-                         const Localization& localization,
-                         AddressProblems* problems) const;
- private:
-  scoped_ptr<Retriever> retriever_;
-  LoadRulesDelegate* load_rules_delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(AddressValidator);
+  virtual Status ValidateAddress(const AddressData& address,
+                                 const AddressProblemFilter& filter,
+                                 const Localization& localization,
+                                 AddressProblems* problems) const = 0;
 };
 
 }  // namespace addressinput

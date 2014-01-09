@@ -142,10 +142,7 @@ TEST_F(RetrieverTest, RequestsDontStack) {
   EXPECT_FALSE(success_);
   EXPECT_TRUE(key_.empty());
 
-#if !defined(NDEBUG)
-  // This request should cause an assert.
-  ASSERT_DEATH(slow_retriever.Retrieve(kKey, BuildCallback()), "");
-#endif
+  EXPECT_NO_FATAL_FAILURE(slow_retriever.Retrieve(kKey, BuildCallback()));
 }
 
 }  // namespace
