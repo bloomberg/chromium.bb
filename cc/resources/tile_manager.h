@@ -52,6 +52,7 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
   static scoped_ptr<TileManager> Create(
       TileManagerClient* client,
       ResourceProvider* resource_provider,
+      ContextProvider* context_provider,
       size_t num_raster_threads,
       RenderingStatsInstrumentation* rendering_stats_instrumentation,
       bool use_map_image,

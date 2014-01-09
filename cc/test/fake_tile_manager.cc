@@ -15,7 +15,7 @@ namespace {
 
 class FakeRasterWorkerPool : public RasterWorkerPool {
  public:
-  FakeRasterWorkerPool() : RasterWorkerPool(NULL, 1) {}
+  FakeRasterWorkerPool() : RasterWorkerPool(NULL, NULL, 1) {}
 
   virtual void ScheduleTasks(RasterTask::Queue* queue) OVERRIDE {
     RasterWorkerPool::SetRasterTasks(queue);

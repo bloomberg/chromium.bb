@@ -102,6 +102,10 @@ class PerfWorkerPool : public WorkerPool {
     tasks_.swap(tasks);
   }
 
+  void CheckForCompletedTasks() {
+    CheckForCompletedWorkerTasks();
+  }
+
  private:
   typedef std::vector<scoped_refptr<internal::WorkerPoolTask> > TaskVector;
 

@@ -13,6 +13,9 @@
 #include "skia/ext/paint_simplifier.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
+#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/SkGpuDevice.h"
+#include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 
 namespace cc {
 
@@ -58,10 +61,13 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
                            int layer_id,
                            const void* tile_id,
                            int source_frame_number,
+                           bool use_gpu_rasterization,
                            RenderingStatsInstrumentation* rendering_stats,
                            const RasterWorkerPool::RasterTask::Reply& reply,
                            TaskVector* dependencies)
-      : internal::RasterWorkerPoolTask(resource, dependencies),
+      : internal::RasterWorkerPoolTask(resource,
+                                       dependencies,
+                                       use_gpu_rasterization),
         picture_pile_(picture_pile),
         content_rect_(content_rect),
         contents_scale_(contents_scale),
@@ -118,9 +124,6 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
     if (analysis_.is_solid_color)
       return false;
 
-    PicturePileImpl* picture_clone =
-        picture_pile_->GetCloneForDrawingOnThread(thread_index);
-
     SkBitmap bitmap;
     switch (resource()->format()) {
       case RGBA_4444:
@@ -148,49 +151,7 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
 
     SkBitmapDevice device(bitmap);
     SkCanvas canvas(&device);
-    skia::RefPtr<SkDrawFilter> draw_filter;
-    switch (raster_mode_) {
-      case LOW_QUALITY_RASTER_MODE:
-        draw_filter = skia::AdoptRef(new skia::PaintSimplifier);
-        break;
-      case HIGH_QUALITY_NO_LCD_RASTER_MODE:
-        draw_filter = skia::AdoptRef(new DisableLCDTextFilter);
-        break;
-      case HIGH_QUALITY_RASTER_MODE:
-        break;
-      case NUM_RASTER_MODES:
-      default:
-        NOTREACHED();
-    }
-
-    canvas.setDrawFilter(draw_filter.get());
-
-    base::TimeDelta prev_rasterize_time =
-        rendering_stats_->impl_thread_rendering_stats().rasterize_time;
-
-    // Only record rasterization time for highres tiles, because
-    // lowres tiles are not required for activation and therefore
-    // introduce noise in the measurement (sometimes they get rasterized
-    // before we draw and sometimes they aren't)
-    if (tile_resolution_ == HIGH_RESOLUTION) {
-      picture_clone->RasterToBitmap(
-          &canvas, content_rect_, contents_scale_, rendering_stats_);
-    } else {
-      picture_clone->RasterToBitmap(
-          &canvas, content_rect_, contents_scale_, NULL);
-    }
-
-    if (rendering_stats_->record_rendering_stats()) {
-      base::TimeDelta current_rasterize_time =
-          rendering_stats_->impl_thread_rendering_stats().rasterize_time;
-      HISTOGRAM_CUSTOM_COUNTS(
-          "Renderer4.PictureRasterTimeUS",
-          (current_rasterize_time - prev_rasterize_time).InMicroseconds(),
-          0,
-          100000,
-          100);
-    }
-
+    Raster(picture_pile_->GetCloneForDrawingOnThread(thread_index), &canvas);
     ChangeBitmapConfigIfNeeded(bitmap, buffer);
 
     return true;
@@ -200,11 +161,39 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
   virtual bool RunOnWorkerThread(unsigned thread_index,
                                  void* buffer,
                                  gfx::Size size,
-                                 int stride)
-      OVERRIDE {
+                                 int stride) OVERRIDE {
+    // TODO(alokp): For now run-on-worker-thread implies software rasterization.
+    DCHECK(!use_gpu_rasterization());
     RunAnalysisOnThread(thread_index);
     return RunRasterOnThread(thread_index, buffer, size, stride);
   }
+
+  virtual void RunOnOriginThread(ResourceProvider* resource_provider,
+                                 ContextProvider* context_provider) OVERRIDE {
+    // TODO(alokp): For now run-on-origin-thread implies gpu rasterization.
+    DCHECK(use_gpu_rasterization());
+    ResourceProvider::ScopedWriteLockGL lock(resource_provider,
+                                             resource()->id());
+    DCHECK_NE(lock.texture_id(), 0u);
+
+    GrBackendTextureDesc desc;
+    desc.fFlags = kRenderTarget_GrBackendTextureFlag;
+    desc.fWidth = content_rect_.width();
+    desc.fHeight = content_rect_.height();
+    desc.fConfig = ToGrFormat(resource()->format());
+    desc.fOrigin = kTopLeft_GrSurfaceOrigin;
+    desc.fTextureHandle = lock.texture_id();
+
+    GrContext* gr_context = context_provider->GrContext();
+    skia::RefPtr<GrTexture> texture =
+        skia::AdoptRef(gr_context->wrapBackendTexture(desc));
+    skia::RefPtr<SkGpuDevice> device =
+        skia::AdoptRef(SkGpuDevice::Create(texture.get()));
+    skia::RefPtr<SkCanvas> canvas = skia::AdoptRef(new SkCanvas(device.get()));
+
+    Raster(picture_pile_, canvas.get());
+  }
+
   virtual void CompleteOnOriginThread() OVERRIDE {
     reply_.Run(analysis_, !HasFinishedRunning() || WasCanceled());
   }
@@ -220,6 +209,57 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
     res->SetInteger("source_frame_number", source_frame_number_);
     res->SetInteger("layer_id", layer_id_);
     return res.PassAs<base::Value>();
+  }
+
+  static GrPixelConfig ToGrFormat(ResourceFormat format) {
+    switch (format) {
+      case RGBA_8888: return kRGBA_8888_GrPixelConfig;
+      case BGRA_8888: return kBGRA_8888_GrPixelConfig;
+      case RGBA_4444: return kRGBA_4444_GrPixelConfig;
+      default: break;
+    }
+    DCHECK(false) << "Unsupported resource format.";
+    return kSkia8888_GrPixelConfig;
+  }
+
+  void Raster(PicturePileImpl* picture_pile, SkCanvas* canvas) {
+    skia::RefPtr<SkDrawFilter> draw_filter;
+    switch (raster_mode_) {
+      case LOW_QUALITY_RASTER_MODE:
+        draw_filter = skia::AdoptRef(new skia::PaintSimplifier);
+        break;
+      case HIGH_QUALITY_NO_LCD_RASTER_MODE:
+        draw_filter = skia::AdoptRef(new DisableLCDTextFilter);
+        break;
+      case HIGH_QUALITY_RASTER_MODE:
+        break;
+      case NUM_RASTER_MODES:
+      default:
+        NOTREACHED();
+    }
+    canvas->setDrawFilter(draw_filter.get());
+
+    base::TimeDelta prev_rasterize_time =
+        rendering_stats_->impl_thread_rendering_stats().rasterize_time;
+
+    // Only record rasterization time for highres tiles, because
+    // lowres tiles are not required for activation and therefore
+    // introduce noise in the measurement (sometimes they get rasterized
+    // before we draw and sometimes they aren't)
+    RenderingStatsInstrumentation* stats =
+        tile_resolution_ == HIGH_RESOLUTION ? rendering_stats_ : NULL;
+    picture_pile->RasterToBitmap(canvas, content_rect_, contents_scale_, stats);
+
+    if (rendering_stats_->record_rendering_stats()) {
+      base::TimeDelta current_rasterize_time =
+          rendering_stats_->impl_thread_rendering_stats().rasterize_time;
+      HISTOGRAM_CUSTOM_COUNTS(
+          "Renderer4.PictureRasterTimeUS",
+          (current_rasterize_time - prev_rasterize_time).InMicroseconds(),
+          0,
+          100000,
+          100);
+    }
   }
 
   void ChangeBitmapConfigIfNeeded(const SkBitmap& bitmap,
@@ -327,12 +367,14 @@ const char* kWorkerThreadNamePrefix = "CompositorRaster";
 
 namespace internal {
 
-RasterWorkerPoolTask::RasterWorkerPoolTask(
-    const Resource* resource, TaskVector* dependencies)
+RasterWorkerPoolTask::RasterWorkerPoolTask(const Resource* resource,
+                                           TaskVector* dependencies,
+                                           bool use_gpu_rasterization)
     : did_run_(false),
       did_complete_(false),
       was_canceled_(false),
-      resource_(resource) {
+      resource_(resource),
+      use_gpu_rasterization_(use_gpu_rasterization) {
   dependencies_.swap(*dependencies);
 }
 
@@ -433,6 +475,7 @@ RasterWorkerPool::RasterTask RasterWorkerPool::CreateRasterTask(
     int layer_id,
     const void* tile_id,
     int source_frame_number,
+    bool use_gpu_rasterization,
     RenderingStatsInstrumentation* rendering_stats,
     const RasterTask::Reply& reply,
     Task::Set* dependencies) {
@@ -446,6 +489,7 @@ RasterWorkerPool::RasterTask RasterWorkerPool::CreateRasterTask(
                                    layer_id,
                                    tile_id,
                                    source_frame_number,
+                                   use_gpu_rasterization,
                                    rendering_stats,
                                    reply,
                                    &dependencies->tasks_));
@@ -464,10 +508,12 @@ RasterWorkerPool::Task RasterWorkerPool::CreateImageDecodeTask(
 }
 
 RasterWorkerPool::RasterWorkerPool(ResourceProvider* resource_provider,
+                                   ContextProvider* context_provider,
                                    size_t num_threads)
     : WorkerPool(num_threads, kWorkerThreadNamePrefix),
       client_(NULL),
       resource_provider_(resource_provider),
+      context_provider_(context_provider),
       weak_ptr_factory_(this) {
 }
 
@@ -486,6 +532,24 @@ void RasterWorkerPool::Shutdown() {
   weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
+void RasterWorkerPool::CheckForCompletedTasks() {
+  TRACE_EVENT0("cc", "RasterWorkerPool::CheckForCompletedTasks");
+
+  // Check for completed worker-thread tasks.
+  CheckForCompletedWorkerTasks();
+
+  // Complete gpu rasterization tasks.
+  while (!completed_gpu_raster_tasks_.empty()) {
+    internal::RasterWorkerPoolTask* task =
+        completed_gpu_raster_tasks_.front().get();
+    task->WillComplete();
+    task->CompleteOnOriginThread();
+    task->DidComplete();
+
+    completed_gpu_raster_tasks_.pop_front();
+  }
+}
+
 void RasterWorkerPool::SetRasterTasks(RasterTask::Queue* queue) {
   raster_tasks_.swap(queue->tasks_);
   raster_tasks_required_for_activation_.swap(
@@ -497,6 +561,32 @@ bool RasterWorkerPool::IsRasterTaskRequiredForActivation(
   return
       raster_tasks_required_for_activation_.find(task) !=
       raster_tasks_required_for_activation_.end();
+}
+
+void RasterWorkerPool::RunGpuRasterTasks(const RasterTaskVector& tasks) {
+  if (tasks.empty())
+    return;
+
+  blink::WebGraphicsContext3D* context = context_provider_->Context3d();
+  if (!context->makeContextCurrent())
+    return;
+
+  GrContext* gr_context = context_provider_->GrContext();
+  // TODO(alokp): Implement TestContextProvider::GrContext().
+  if (gr_context) gr_context->resetContext();
+
+  for (RasterTaskVector::const_iterator it = tasks.begin();
+       it != tasks.end(); ++it) {
+    internal::RasterWorkerPoolTask* task = it->get();
+    DCHECK(task->use_gpu_rasterization());
+
+    task->RunOnOriginThread(resource_provider_, context_provider_);
+    task->DidRun(false);
+    completed_gpu_raster_tasks_.push_back(task);
+  }
+
+  // TODO(alokp): Implement TestContextProvider::GrContext().
+  if (gr_context) gr_context->flush();
 }
 
 scoped_refptr<internal::WorkerPoolTask>

@@ -105,9 +105,6 @@ class CC_EXPORT WorkerPool {
   // completed.
   virtual void Shutdown();
 
-  // Force a check for completed tasks.
-  virtual void CheckForCompletedTasks();
-
  protected:
   // A task graph contains a unique set of tasks with edges between
   // dependencies pointing in the direction of the dependents. Each task
@@ -123,6 +120,9 @@ class CC_EXPORT WorkerPool {
   // that are not already running will be canceled. Canceled tasks don't run
   // but completion of them is still processed.
   void SetTaskGraph(TaskGraph* graph);
+
+  // Force a check for completed tasks.
+  void CheckForCompletedWorkerTasks();
 
  private:
   class Inner;

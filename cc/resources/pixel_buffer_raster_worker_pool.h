@@ -20,27 +20,30 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool {
 
   static scoped_ptr<RasterWorkerPool> Create(
       ResourceProvider* resource_provider,
+      ContextProvider* context_provider,
       size_t num_threads,
       size_t max_transfer_buffer_usage_bytes) {
     return make_scoped_ptr<RasterWorkerPool>(
         new PixelBufferRasterWorkerPool(resource_provider,
+                                        context_provider,
                                         num_threads,
                                         max_transfer_buffer_usage_bytes));
   }
 
   // Overridden from WorkerPool:
   virtual void Shutdown() OVERRIDE;
-  virtual void CheckForCompletedTasks() OVERRIDE;
 
   // Overridden from RasterWorkerPool:
   virtual void ScheduleTasks(RasterTask::Queue* queue) OVERRIDE;
   virtual GLenum GetResourceTarget() const OVERRIDE;
   virtual ResourceFormat GetResourceFormat() const OVERRIDE;
+  virtual void CheckForCompletedTasks() OVERRIDE;
   virtual void OnRasterTasksFinished() OVERRIDE;
   virtual void OnRasterTasksRequiredForActivationFinished() OVERRIDE;
 
  private:
   PixelBufferRasterWorkerPool(ResourceProvider* resource_provider,
+                              ContextProvider* context_provider,
                               size_t num_threads,
                               size_t max_transfer_buffer_usage_bytes);
 
@@ -65,13 +68,9 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool {
   bool shutdown_;
 
   TaskMap pixel_buffer_tasks_;
-
-  typedef std::deque<scoped_refptr<internal::RasterWorkerPoolTask> > TaskDeque;
-  TaskDeque tasks_with_pending_upload_;
-  TaskDeque completed_tasks_;
-
-  typedef base::hash_set<internal::RasterWorkerPoolTask*> TaskSet;
-  TaskSet tasks_required_for_activation_;
+  RasterTaskDeque tasks_with_pending_upload_;
+  RasterTaskDeque completed_tasks_;
+  RasterTaskSet tasks_required_for_activation_;
 
   size_t scheduled_raster_task_count_;
   size_t bytes_pending_upload_;

@@ -34,6 +34,8 @@ class CC_EXPORT RasterWorkerPoolTask
                                  void* buffer,
                                  gfx::Size size,
                                  int stride) = 0;
+  virtual void RunOnOriginThread(ResourceProvider* resource_provider,
+                                 ContextProvider* context_provider) = 0;
   virtual void CompleteOnOriginThread() = 0;
 
   void DidRun(bool was_canceled);
@@ -45,11 +47,14 @@ class CC_EXPORT RasterWorkerPoolTask
 
   const Resource* resource() const { return resource_; }
   const TaskVector& dependencies() const { return dependencies_; }
+  bool use_gpu_rasterization() const { return use_gpu_rasterization_; }
 
  protected:
   friend class base::RefCounted<RasterWorkerPoolTask>;
 
-  RasterWorkerPoolTask(const Resource* resource, TaskVector* dependencies);
+  RasterWorkerPoolTask(const Resource* resource,
+                       TaskVector* dependencies,
+                       bool use_gpu_rasterization);
   virtual ~RasterWorkerPoolTask();
 
  private:
@@ -58,6 +63,7 @@ class CC_EXPORT RasterWorkerPoolTask
   bool was_canceled_;
   const Resource* resource_;
   TaskVector dependencies_;
+  bool use_gpu_rasterization_;
 };
 
 }  // namespace internal
@@ -169,8 +175,7 @@ class CC_EXPORT RasterWorkerPool : public WorkerPool {
 
   void SetClient(RasterWorkerPoolClient* client);
 
-  // Tells the worker pool to shutdown after canceling all previously
-  // scheduled tasks. Reply callbacks are still guaranteed to run.
+  // Overidden from WorkerPool:
   virtual void Shutdown() OVERRIDE;
 
   // Schedule running of raster tasks in |queue| and all dependencies.
@@ -186,6 +191,10 @@ class CC_EXPORT RasterWorkerPool : public WorkerPool {
   // Returns the format that needs to be used for raster task resources.
   virtual ResourceFormat GetResourceFormat() const = 0;
 
+  // Force a check for completed raster tasks.
+  // Calls completion callbacks on completed tasks.
+  virtual void CheckForCompletedTasks();
+
   // TODO(vmpstr): Figure out an elegant way to not pass this many parameters.
   static RasterTask CreateRasterTask(
       const Resource* resource,
@@ -197,6 +206,7 @@ class CC_EXPORT RasterWorkerPool : public WorkerPool {
       int layer_id,
       const void* tile_id,
       int source_frame_number,
+      bool use_gpu_rasterization,
       RenderingStatsInstrumentation* rendering_stats,
       const RasterTask::Reply& reply,
       Task::Set* dependencies);
@@ -211,12 +221,16 @@ class CC_EXPORT RasterWorkerPool : public WorkerPool {
   typedef std::vector<scoped_refptr<internal::WorkerPoolTask> > TaskVector;
   typedef std::vector<scoped_refptr<internal::RasterWorkerPoolTask> >
       RasterTaskVector;
+  typedef std::deque<scoped_refptr<internal::RasterWorkerPoolTask> >
+      RasterTaskDeque;
   typedef base::hash_set<internal::RasterWorkerPoolTask*> RasterTaskSet;
   typedef internal::RasterWorkerPoolTask* TaskMapKey;
   typedef base::hash_map<TaskMapKey,
                          scoped_refptr<internal::WorkerPoolTask> > TaskMap;
 
-  RasterWorkerPool(ResourceProvider* resource_provider, size_t num_threads);
+  RasterWorkerPool(ResourceProvider* resource_provider,
+                   ContextProvider* context_provider,
+                   size_t num_threads);
 
   virtual void OnRasterTasksFinished() = 0;
   virtual void OnRasterTasksRequiredForActivationFinished() = 0;
@@ -224,9 +238,12 @@ class CC_EXPORT RasterWorkerPool : public WorkerPool {
   void SetRasterTasks(RasterTask::Queue* queue);
   bool IsRasterTaskRequiredForActivation(
       internal::RasterWorkerPoolTask* task) const;
+  // Run raster tasks that use GPU on current thread.
+  void RunGpuRasterTasks(const RasterTaskVector& tasks);
 
   RasterWorkerPoolClient* client() const { return client_; }
   ResourceProvider* resource_provider() const { return resource_provider_; }
+  ContextProvider* context_provider() const { return context_provider_; }
   const RasterTaskVector& raster_tasks() const { return raster_tasks_; }
   const RasterTaskSet& raster_tasks_required_for_activation() const {
     return raster_tasks_required_for_activation_;
@@ -266,8 +283,10 @@ class CC_EXPORT RasterWorkerPool : public WorkerPool {
 
   RasterWorkerPoolClient* client_;
   ResourceProvider* resource_provider_;
+  ContextProvider* context_provider_;
   RasterTask::Queue::TaskVector raster_tasks_;
   RasterTask::Queue::TaskSet raster_tasks_required_for_activation_;
+  RasterTaskDeque completed_gpu_raster_tasks_;
 
   scoped_refptr<internal::WorkerPoolTask> raster_finished_task_;
   scoped_refptr<internal::WorkerPoolTask>

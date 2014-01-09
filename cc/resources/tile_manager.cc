@@ -167,6 +167,7 @@ scoped_ptr<base::Value> RasterTaskCompletionStatsAsValue(
 scoped_ptr<TileManager> TileManager::Create(
     TileManagerClient* client,
     ResourceProvider* resource_provider,
+    ContextProvider* context_provider,
     size_t num_raster_threads,
     RenderingStatsInstrumentation* rendering_stats_instrumentation,
     bool use_map_image,
@@ -179,10 +180,12 @@ scoped_ptr<TileManager> TileManager::Create(
                       use_map_image ?
                       ImageRasterWorkerPool::Create(
                           resource_provider,
+                          context_provider,
                           num_raster_threads,
                           map_image_texture_target) :
                       PixelBufferRasterWorkerPool::Create(
                           resource_provider,
+                          context_provider,
                           num_raster_threads,
                           max_transfer_buffer_usage_bytes),
                       num_raster_threads,
@@ -886,6 +889,7 @@ RasterWorkerPool::RasterTask TileManager::CreateRasterTask(Tile* tile) {
       tile->layer_id(),
       static_cast<const void *>(tile),
       tile->source_frame_number(),
+      tile->use_gpu_rasterization(),
       rendering_stats_instrumentation_,
       base::Bind(&TileManager::OnRasterTaskCompleted,
                  base::Unretained(this),

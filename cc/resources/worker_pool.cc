@@ -394,8 +394,17 @@ void WorkerPool::Shutdown() {
   inner_->Shutdown();
 }
 
-void WorkerPool::CheckForCompletedTasks() {
-  TRACE_EVENT0("cc", "WorkerPool::CheckForCompletedTasks");
+void WorkerPool::SetTaskGraph(TaskGraph* graph) {
+  TRACE_EVENT1("cc", "WorkerPool::SetTaskGraph",
+               "num_tasks", graph->size());
+
+  DCHECK(!in_dispatch_completion_callbacks_);
+
+  inner_->SetTaskGraph(graph);
+}
+
+void WorkerPool::CheckForCompletedWorkerTasks() {
+  TRACE_EVENT0("cc", "WorkerPool::CheckForCompletedWorkerTasks");
 
   DCHECK(!in_dispatch_completion_callbacks_);
 
@@ -423,15 +432,6 @@ void WorkerPool::ProcessCompletedTasks(
   }
 
   in_dispatch_completion_callbacks_ = false;
-}
-
-void WorkerPool::SetTaskGraph(TaskGraph* graph) {
-  TRACE_EVENT1("cc", "WorkerPool::SetTaskGraph",
-               "num_tasks", graph->size());
-
-  DCHECK(!in_dispatch_completion_callbacks_);
-
-  inner_->SetTaskGraph(graph);
 }
 
 }  // namespace cc

@@ -15,10 +15,12 @@ class CC_EXPORT ImageRasterWorkerPool : public RasterWorkerPool {
 
   static scoped_ptr<RasterWorkerPool> Create(
       ResourceProvider* resource_provider,
+      ContextProvider* context_provider,
       size_t num_threads,
       GLenum texture_target) {
     return make_scoped_ptr<RasterWorkerPool>(
         new ImageRasterWorkerPool(resource_provider,
+                                  context_provider,
                                   num_threads,
                                   texture_target));
   }
@@ -32,6 +34,7 @@ class CC_EXPORT ImageRasterWorkerPool : public RasterWorkerPool {
 
  private:
   ImageRasterWorkerPool(ResourceProvider* resource_provider,
+                        ContextProvider* context_provider,
                         size_t num_threads,
                         GLenum texture_target);
 

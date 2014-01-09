@@ -58,9 +58,10 @@ class ImageWorkerPoolTaskImpl : public internal::WorkerPoolTask {
 
 ImageRasterWorkerPool::ImageRasterWorkerPool(
     ResourceProvider* resource_provider,
+    ContextProvider* context_provider,
     size_t num_threads,
     GLenum texture_target)
-    : RasterWorkerPool(resource_provider, num_threads),
+    : RasterWorkerPool(resource_provider, context_provider, num_threads),
       texture_target_(texture_target),
       raster_tasks_pending_(false),
       raster_tasks_required_for_activation_pending_(false) {
@@ -100,11 +101,18 @@ void ImageRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
                              priority++,
                              &graph);
 
+  RasterTaskVector gpu_raster_tasks;
+
   for (RasterTaskVector::const_iterator it = raster_tasks().begin();
        it != raster_tasks().end(); ++it) {
     internal::RasterWorkerPoolTask* task = it->get();
     DCHECK(!task->HasCompleted());
     DCHECK(!task->WasCanceled());
+
+    if (task->use_gpu_rasterization()) {
+      gpu_raster_tasks.push_back(task);
+      continue;
+    }
 
     TaskMap::iterator image_it = image_tasks_.find(task);
     if (image_it != image_tasks_.end()) {
@@ -152,6 +160,8 @@ void ImageRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
   set_raster_required_for_activation_finished_task(
       new_raster_required_for_activation_finished_task);
 
+  RunGpuRasterTasks(gpu_raster_tasks);
+
   TRACE_EVENT_ASYNC_STEP_INTO1(
       "cc", "ScheduledTasks", this, "rasterizing",
       "state", TracedValue::FromValue(StateAsValue().release()));
@@ -187,6 +197,7 @@ void ImageRasterWorkerPool::OnRasterTaskCompleted(
   TRACE_EVENT1("cc", "ImageRasterWorkerPool::OnRasterTaskCompleted",
                "was_canceled", was_canceled);
 
+  DCHECK(!task->use_gpu_rasterization());
   DCHECK(image_tasks_.find(task.get()) != image_tasks_.end());
 
   // Balanced with MapImage() call in ScheduleTasks().

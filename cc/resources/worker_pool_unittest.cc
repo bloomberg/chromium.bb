@@ -116,6 +116,10 @@ class FakeWorkerPool : public WorkerPool {
     tasks_.swap(new_tasks);
   }
 
+  void CheckForCompletedTasks() {
+    CheckForCompletedWorkerTasks();
+  }
+
   void WaitForTasksToComplete() {
     DCHECK(scheduled_tasks_completion_);
     scheduled_tasks_completion_->Wait();

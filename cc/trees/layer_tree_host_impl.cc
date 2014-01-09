@@ -1720,6 +1720,7 @@ void LayerTreeHostImpl::CreateAndSetTileManager(
   tile_manager_ =
       TileManager::Create(this,
                           resource_provider,
+                          context_provider,
                           settings_.num_raster_threads,
                           rendering_stats_instrumentation_,
                           using_map_image,

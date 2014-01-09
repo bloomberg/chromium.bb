@@ -29,7 +29,7 @@ class PerfWorkerPoolTaskImpl : public internal::WorkerPoolTask {
 
 class PerfRasterWorkerPool : public RasterWorkerPool {
  public:
-  PerfRasterWorkerPool() : RasterWorkerPool(NULL, 1) {}
+  PerfRasterWorkerPool() : RasterWorkerPool(NULL, NULL, 1) {}
   virtual ~PerfRasterWorkerPool() {}
 
   static scoped_ptr<PerfRasterWorkerPool> Create() {
@@ -172,6 +172,7 @@ class RasterWorkerPoolPerfTest : public testing::Test {
               1,
               NULL,
               1,
+              false,
               NULL,
               base::Bind(&RasterWorkerPoolPerfTest::OnRasterTaskCompleted),
               &decode_tasks),
