@@ -14,18 +14,24 @@
 #include "url/gurl.h"
 
 namespace blink {
+class WebMessagePortChannel;
 class WebSharedWorker;
 }
 
 namespace content {
 
 class SharedWorkerDevToolsAgent;
+class WebMessagePortChannelImpl;
 
 // This class creates a WebSharedWorker, and translates incoming IPCs to the
 // appropriate WebSharedWorker APIs.
 class WebSharedWorkerStub : public IPC::Listener {
  public:
-  WebSharedWorkerStub(const base::string16& name, int route_id,
+  WebSharedWorkerStub(const GURL& url,
+                      const base::string16& name,
+                      const base::string16& content_security_policy,
+                      blink::WebContentSecurityPolicyType security_policy_type,
+                      int route_id,
                       const WorkerAppCacheInitInfo& appcache_init_info);
 
   // IPC::Listener implementation.
@@ -34,6 +40,9 @@ class WebSharedWorkerStub : public IPC::Listener {
 
   // Invoked when the WebSharedWorkerClientProxy is shutting down.
   void Shutdown();
+
+  void WorkerScriptLoaded();
+  void WorkerScriptLoadFailed();
 
   // Called after terminating the worker context to make sure that the worker
   // actually terminates (is not stuck in an infinite loop).
@@ -74,11 +83,11 @@ class WebSharedWorkerStub : public IPC::Listener {
   base::string16 name_;
   bool started_;
   GURL url_;
+  bool worker_script_loaded_;
   scoped_ptr<SharedWorkerDevToolsAgent> worker_devtools_agent_;
 
-  typedef std::pair<int, int> PendingConnectInfo;
-  typedef std::vector<PendingConnectInfo> PendingConnectInfoList;
-  PendingConnectInfoList pending_connects_;
+  typedef std::vector<blink::WebMessagePortChannel*> PendingChannelList;
+  PendingChannelList pending_channels_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSharedWorkerStub);
 };

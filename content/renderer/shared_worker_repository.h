@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "content/public/renderer/render_frame_observer.h"
+#include "third_party/WebKit/public/web/WebContentSecurityPolicy.h"
 #include "third_party/WebKit/public/web/WebSharedWorkerRepositoryClient.h"
 
 namespace content {
@@ -28,7 +29,9 @@ class SharedWorkerRepository : public RenderFrameObserver,
   virtual blink::WebSharedWorkerConnector* createSharedWorkerConnector(
       const blink::WebURL& url,
       const blink::WebString& name,
-      DocumentID document_id) OVERRIDE;
+      DocumentID document_id,
+      const blink::WebString& content_security_policy,
+      blink::WebContentSecurityPolicyType) OVERRIDE;
   virtual void documentDetached(DocumentID document_id) OVERRIDE;
 
  private:

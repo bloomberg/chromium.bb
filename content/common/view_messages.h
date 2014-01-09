@@ -388,6 +388,12 @@ IPC_STRUCT_BEGIN(ViewHostMsg_CreateWorker_Params)
   // Name for a SharedWorker, otherwise empty string.
   IPC_STRUCT_MEMBER(base::string16, name)
 
+  // Security policy used in the worker.
+  IPC_STRUCT_MEMBER(base::string16, content_security_policy)
+
+  // Security policy type used in the worker.
+  IPC_STRUCT_MEMBER(blink::WebContentSecurityPolicyType, security_policy_type)
+
   // The ID of the parent document (unique within parent renderer).
   IPC_STRUCT_MEMBER(unsigned long long, document_id)
 

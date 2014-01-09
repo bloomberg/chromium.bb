@@ -282,6 +282,8 @@ void WorkerProcessHost::CreateWorker(const WorkerInstance& instance) {
   WorkerProcessMsg_CreateWorker_Params params;
   params.url = instance.url();
   params.name = instance.name();
+  params.content_security_policy = instance.content_security_policy();
+  params.security_policy_type = instance.security_policy_type();
   params.route_id = instance.worker_route_id();
   params.creator_process_id = instance.parent_process_id();
   params.shared_worker_appcache_id = instance.main_resource_appcache_id();
@@ -577,6 +579,8 @@ net::URLRequestContext* WorkerProcessHost::GetRequestContext(
 WorkerProcessHost::WorkerInstance::WorkerInstance(
     const GURL& url,
     const base::string16& name,
+    const base::string16& content_security_policy,
+    blink::WebContentSecurityPolicyType security_policy_type,
     int worker_route_id,
     int parent_process_id,
     int64 main_resource_appcache_id,
@@ -585,6 +589,8 @@ WorkerProcessHost::WorkerInstance::WorkerInstance(
     : url_(url),
       closed_(false),
       name_(name),
+      content_security_policy_(content_security_policy),
+      security_policy_type_(security_policy_type),
       worker_route_id_(worker_route_id),
       parent_process_id_(parent_process_id),
       main_resource_appcache_id_(main_resource_appcache_id),

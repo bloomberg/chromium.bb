@@ -14,9 +14,9 @@
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
+#include "content/common/content_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
-#include "third_party/WebKit/public/web/WebContentSecurityPolicy.h"
 #include "url/gurl.h"
 
 #undef IPC_MESSAGE_EXPORT
@@ -40,12 +40,12 @@ IPC_STRUCT_END()
 IPC_STRUCT_BEGIN(WorkerProcessMsg_CreateWorker_Params)
   IPC_STRUCT_MEMBER(GURL, url)
   IPC_STRUCT_MEMBER(base::string16, name)
+  IPC_STRUCT_MEMBER(base::string16, content_security_policy)
+  IPC_STRUCT_MEMBER(blink::WebContentSecurityPolicyType, security_policy_type)
   IPC_STRUCT_MEMBER(int, route_id)
   IPC_STRUCT_MEMBER(int, creator_process_id)
   IPC_STRUCT_MEMBER(int64, shared_worker_appcache_id)
 IPC_STRUCT_END()
-
-IPC_ENUM_TRAITS(blink::WebContentSecurityPolicyType)
 
 //-----------------------------------------------------------------------------
 // WorkerProcess messages

@@ -121,7 +121,13 @@ void WorkerThread::OnCreateWorker(
       params.shared_worker_appcache_id);
 
   // WebSharedWorkerStub own themselves.
-  new WebSharedWorkerStub(params.name, params.route_id, appcache_init_info);
+  new WebSharedWorkerStub(
+      params.url,
+      params.name,
+      params.content_security_policy,
+      params.security_policy_type,
+      params.route_id,
+      appcache_init_info);
 }
 
 // The browser process is likely dead. Terminate all workers.

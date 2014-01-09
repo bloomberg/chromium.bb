@@ -10,6 +10,7 @@
 
 #include "content/common/content_export.h"
 #include "ipc/ipc_message_macros.h"
+#include "third_party/WebKit/public/web/WebContentSecurityPolicy.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/events/latency_info.h"
 #include "webkit/common/resource_type.h"
@@ -18,6 +19,7 @@
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 
 IPC_ENUM_TRAITS(ResourceType::Type)
+IPC_ENUM_TRAITS(blink::WebContentSecurityPolicyType)
 IPC_ENUM_TRAITS(blink::WebInputEvent::Type)
 IPC_ENUM_TRAITS(ui::LatencyComponentType)
 

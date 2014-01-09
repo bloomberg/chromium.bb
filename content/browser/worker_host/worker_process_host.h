@@ -19,6 +19,7 @@
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/common/process_type.h"
 #include "ipc/ipc_sender.h"
+#include "third_party/WebKit/public/web/WebContentSecurityPolicy.h"
 #include "url/gurl.h"
 #include "webkit/common/resource_type.h"
 
@@ -58,6 +59,8 @@ class WorkerProcessHost : public BrowserChildProcessHostDelegate,
    public:
     WorkerInstance(const GURL& url,
                    const base::string16& name,
+                   const base::string16& content_security_policy,
+                   blink::WebContentSecurityPolicyType security_policy_type,
                    int worker_route_id,
                    int parent_process_id,
                    int64 main_resource_appcache_id,
@@ -108,6 +111,12 @@ class WorkerProcessHost : public BrowserChildProcessHostDelegate,
     void set_closed(bool closed) { closed_ = closed; }
     const GURL& url() const { return url_; }
     const base::string16 name() const { return name_; }
+    const base::string16 content_security_policy() const {
+        return content_security_policy_;
+    }
+    blink::WebContentSecurityPolicyType security_policy_type() const {
+        return security_policy_type_;
+    }
     int worker_route_id() const { return worker_route_id_; }
     int parent_process_id() const { return parent_process_id_; }
     int64 main_resource_appcache_id() const {
@@ -128,6 +137,8 @@ class WorkerProcessHost : public BrowserChildProcessHostDelegate,
     GURL url_;
     bool closed_;
     base::string16 name_;
+    base::string16 content_security_policy_;
+    blink::WebContentSecurityPolicyType security_policy_type_;
     int worker_route_id_;
     int parent_process_id_;
     int64 main_resource_appcache_id_;

@@ -312,6 +312,8 @@ void WorkerServiceImpl::CreateWorker(
   WorkerProcessHost::WorkerInstance instance(
       params.url,
       params.name,
+      params.content_security_policy,
+      params.security_policy_type,
       next_worker_route_id(),
       0,
       params.script_resource_appcache_id,

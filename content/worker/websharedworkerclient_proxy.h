@@ -21,6 +21,7 @@ namespace content {
 
 class SharedWorkerDevToolsAgent;
 class WebSharedWorkerStub;
+class WorkerWebApplicationCacheHostImpl;
 
 // This class receives IPCs from the renderer and calls the WebCore::Worker
 // implementation (after the data types have been converted by glue code).  It
@@ -35,6 +36,9 @@ class WebSharedWorkerClientProxy : public blink::WebSharedWorkerClient {
   // WebSharedWorkerClient implementation.
   virtual void workerContextClosed();
   virtual void workerContextDestroyed();
+  virtual void workerScriptLoaded();
+  virtual void workerScriptLoadFailed();
+  virtual void selectAppCacheID(long long app_cache_id);
 
   virtual blink::WebNotificationPresenter* notificationPresenter();
 
@@ -61,6 +65,7 @@ class WebSharedWorkerClientProxy : public blink::WebSharedWorkerClient {
   WebSharedWorkerStub* stub_;
   base::WeakPtrFactory<WebSharedWorkerClientProxy> weak_factory_;
   SharedWorkerDevToolsAgent* devtools_agent_;
+  WorkerWebApplicationCacheHostImpl* app_cache_host_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSharedWorkerClientProxy);
 };

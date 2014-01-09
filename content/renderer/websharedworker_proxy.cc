@@ -62,6 +62,8 @@ void WebSharedWorkerProxy::CreateWorkerContext(
   ViewHostMsg_CreateWorker_Params params;
   params.url = script_url;
   params.name = name;
+  params.content_security_policy = content_security_policy;
+  params.security_policy_type = policy_type;
   params.document_id = document_id_;
   params.render_frame_route_id = render_frame_route_id_;
   params.route_id = pending_route_id;

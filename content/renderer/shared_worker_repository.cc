@@ -26,13 +26,17 @@ blink::WebSharedWorkerConnector*
 SharedWorkerRepository::createSharedWorkerConnector(
     const blink::WebURL& url,
     const blink::WebString& name,
-    DocumentID document_id) {
+    DocumentID document_id,
+    const blink::WebString& content_security_policy,
+    blink::WebContentSecurityPolicyType security_policy_type) {
   int route_id = MSG_ROUTING_NONE;
   bool exists = false;
   bool url_mismatch = false;
   ViewHostMsg_CreateWorker_Params params;
   params.url = url;
   params.name = name;
+  params.content_security_policy = content_security_policy;
+  params.security_policy_type = security_policy_type;
   params.document_id = document_id;
   params.render_frame_route_id = render_frame()->GetRoutingID();
   params.route_id = MSG_ROUTING_NONE;
