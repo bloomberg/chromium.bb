@@ -71,9 +71,9 @@ static_library("gtest") {
 
   if (is_mac) {
     sources += [
-      "gtest_mac.h",
-      "gtest_mac.mm",
-      "platform_test_mac.mm",
+      "../gtest_mac.h",
+      "../gtest_mac.mm",
+      "../platform_test_mac.mm",
     ]
   }
 
