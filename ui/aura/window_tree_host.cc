@@ -187,4 +187,15 @@ void WindowTreeHost::NotifyHostResized(const gfx::Size& new_size) {
   delegate_->OnHostResized(new_size);
 }
 
+#if defined(OS_ANDROID)
+// static
+WindowTreeHost* WindowTreeHost::Create(const gfx::Rect& bounds) {
+  // This is only hit for tests and ash, right now these aren't an issue so
+  // adding the CHECK.
+  // TODO(sky): decide if we want a factory.
+  CHECK(false);
+  return NULL;
+}
+#endif
+
 }  // namespace aura
