@@ -4,45 +4,42 @@
 Release Notes
 #############
 
-This page provides notes for all releases of the Native Client SDK (including
-releases that have been or will be published subsequent to Pepper 28).
-
-Chrome 33 Release (branched on December 16 2013)
-================================================
+Chrome/Pepper 33 (branched on 16 December 2013)
+===============================================
 
 Portable Native Client
 ----------------------
 
-PNaCl's default C++ standard library is now LLVM's own libc++, based on
-LLVM 3.3. It also now supports optional ``setjmp``/``longjmp`` exception
-handling. See the `announcement
-<https://groups.google.com/forum/#!topic/native-client-discuss/0spfg6O04FM>`_
-for more details.
+* PNaCl's default C++ standard library is now LLVM's own libc++, based on
+  LLVM 3.3. This library now supports optional ``setjmp``/``longjmp`` exception
+  handling (see `announcement
+  <https://groups.google.com/forum/#!topic/native-client-discuss/0spfg6O04FM>`_
+  for details).
 
 SDK
 ---
 
-* Add FUSE mount.
-* Make common.js load the Release nexe/pexe by default.
-* Fix "make debug" and "make run" on Mac.
+* The ``nacl_io`` library now includes a FUSE mount.
+* In the SDK examples, ``common.js`` now loads the Release version of the
+  nexes/pexes that are built (by default).
+* "``make debug``" and "``make run``" have been fixed on Mac.
 
 PNaCl enabled by default in Chrome 31 (12 Nov 2013)
 ===================================================
 
 * Portable Native Client (PNaCl) is enabled by default in Chrome 31. See
   :doc:`NaCl and PNaCl </nacl-and-pnacl>` for details on the differences between
-  PNaCl and NaCl.
-* The PNaCl ABI has changed from the preview release in Chrome
-  version 30. If you have pexes built with the Native Client SDK version 30,
-  please recompile them with the newest SDK to run in Chrome 31. As a general
-  rule, it is always recommended to build applications with the latest Native
-  Client SDK. The PNaCl ABI will remain stable starting with the release of
-  Chrome 31.
+  NaCl and PNaCl.
+* The PNaCl ABI has changed from the preview release in Chrome 30.
+  Pexe modules built with the ``pepper_30`` bundle in the SDK must be recompiled
+  with the ``pepper_31`` bundle or later.
+  As a general rule, we always recommended building applications with the latest
+  stable bundle in the Native Client SDK.
+  The PNaCl ABI will remain stable starting with the release of Chrome 31.
+* Additional changes in the Chrome/Pepper 31 release:
 
-Additional changes:
-
-* Updates to the Pepper API, including socket and network support.
-* Improved socket support in nacl_io.
+  * Updates to the Pepper API, including socket and network support
+  * Improved socket support in the ``nacl_io`` library
 
 PNaCl in Chrome 30 Dev channel (01 Aug 2013)
 ============================================
