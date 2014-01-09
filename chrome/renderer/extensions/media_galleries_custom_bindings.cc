@@ -6,8 +6,6 @@
 
 #include <string>
 
-#include "base/files/file_path.h"
-#include "base/strings/stringprintf.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
@@ -16,17 +14,11 @@
 
 namespace extensions {
 
-MediaGalleriesCustomBindings::MediaGalleriesCustomBindings(
-    Dispatcher* dispatcher, ChromeV8Context* context)
-    : ChromeV8Extension(dispatcher, context) {
-  RouteFunction(
-      "GetMediaFileSystemObject",
-      base::Bind(&MediaGalleriesCustomBindings::GetMediaFileSystemObject,
-                 base::Unretained(this)));
-}
+namespace {
 
-void MediaGalleriesCustomBindings::GetMediaFileSystemObject(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
+// FileSystemObject GetMediaFileSystem(string file_system_url): construct
+// a file system object from a file system url.
+void GetMediaFileSystemObject(const v8::FunctionCallbackInfo<v8::Value>& args) {
   if (args.Length() != 1) {
     NOTREACHED();
     return;
@@ -52,6 +44,15 @@ void MediaGalleriesCustomBindings::GetMediaFileSystemObject(
       webframe->createFileSystem(blink::WebFileSystemTypeIsolated,
                                  blink::WebString::fromUTF8(fs_name),
                                  blink::WebString::fromUTF8(root_url)));
+}
+
+}  // namespace
+
+MediaGalleriesCustomBindings::MediaGalleriesCustomBindings(
+    Dispatcher* dispatcher, ChromeV8Context* context)
+    : ChromeV8Extension(dispatcher, context) {
+  RouteFunction("GetMediaFileSystemObject",
+                base::Bind(&GetMediaFileSystemObject));
 }
 
 }  // namespace extensions

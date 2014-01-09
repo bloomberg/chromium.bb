@@ -16,11 +16,6 @@ class MediaGalleriesCustomBindings : public ChromeV8Extension {
                                ChromeV8Context* context);
 
  private:
-  // FileSystemObject GetMediaFileSystem(string file_system_url): construct
-  // a file system object from a file system url.
-  void GetMediaFileSystemObject(
-      const v8::FunctionCallbackInfo<v8::Value>& args);
-
   DISALLOW_COPY_AND_ASSIGN(MediaGalleriesCustomBindings);
 };
 
