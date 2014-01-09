@@ -24,8 +24,7 @@ GesturePoint::GesturePoint()
       velocity_calculator_(
           GestureConfiguration::points_buffered_for_velocity()),
       point_id_(-1),
-      touch_id_(-1),
-      source_device_id_(-1) {
+      touch_id_(-1) {
 }
 
 GesturePoint::~GesturePoint() {}
@@ -35,7 +34,6 @@ void GesturePoint::Reset() {
   ResetVelocity();
   point_id_ = -1;
   clear_enclosing_rectangle();
-  source_device_id_ = -1;
 }
 
 void GesturePoint::ResetVelocity() {

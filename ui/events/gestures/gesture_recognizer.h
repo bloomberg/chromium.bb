@@ -19,7 +19,6 @@ class EVENTS_EXPORT GestureRecognizer {
  public:
   static GestureRecognizer* Create();
   static GestureRecognizer* Get();
-  static void Reset();
 
   // List of GestureEvent*.
   typedef ScopedVector<GestureEvent> Gestures;
@@ -47,12 +46,10 @@ class EVENTS_EXPORT GestureRecognizer {
   virtual GestureConsumer* GetTargetForGestureEvent(
       const GestureEvent& event) = 0;
 
-  // Returns the target of the nearest active touch with source device of
-  // |source_device_id|, within
-  // GestureConfiguration::max_separation_for_gesture_touches_in_pixels of
-  // |location|, or NULL if no such point exists.
-  virtual GestureConsumer* GetTargetForLocation(
-      const gfx::Point& location, int source_device_id) = 0;
+  // If there is an active touch within
+  // GestureConfiguration::max_separation_for_gesture_touches_in_pixels,
+  // of |location|, returns the target of the nearest active touch.
+  virtual GestureConsumer* GetTargetForLocation(const gfx::Point& location) = 0;
 
   // Makes |new_consumer| the target for events previously targeting
   // |current_consumer|. All other targets are canceled.

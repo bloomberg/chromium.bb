@@ -79,11 +79,6 @@ class GesturePoint {
 
   const gfx::Rect& enclosing_rectangle() const { return enclosing_rect_; }
 
-  void set_source_device_id(int source_device_id) {
-    source_device_id_ = source_device_id;
-  }
-  int source_device_id() const { return source_device_id_; }
-
  private:
   // Various statistical functions to manipulate gestures.
 
@@ -135,8 +130,6 @@ class GesturePoint {
 
   // Count of the number of events with same direction.
   gfx::Vector2d same_direction_count_;
-
-  int source_device_id_;
 
   DISALLOW_COPY_AND_ASSIGN(GesturePoint);
 };
