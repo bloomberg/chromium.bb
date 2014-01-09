@@ -73,7 +73,8 @@ class PpapiDecryptor : public media::MediaKeys, public media::Decryptor {
   virtual void DeinitializeDecoder(StreamType stream_type) OVERRIDE;
 
  private:
-  PpapiDecryptor(const scoped_refptr<PepperPluginInstanceImpl>& plugin_instance,
+  PpapiDecryptor(const std::string& key_system,
+                 const scoped_refptr<PepperPluginInstanceImpl>& plugin_instance,
                  ContentDecryptorDelegate* plugin_cdm_delegate,
                  const media::SessionCreatedCB& session_created_cb,
                  const media::SessionMessageCB& session_message_cb,
@@ -96,6 +97,11 @@ class PpapiDecryptor : public media::MediaKeys, public media::Decryptor {
   void OnSessionError(uint32 session_id,
                       media::MediaKeys::KeyError error_code,
                       int system_code);
+
+  // Callback to notify that a fatal error happened in |plugin_cdm_delegate_|.
+  // The error is terminal and |plugin_cdm_delegate_| should not be used after
+  // this call.
+  void OnFatalPluginError();
 
   base::WeakPtr<PpapiDecryptor> weak_this_;
 

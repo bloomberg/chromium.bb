@@ -66,6 +66,9 @@ const char kExternalClearKeyDecryptOnlyKeySystem[] =
     "org.chromium.externalclearkey.decryptonly";
 const char kExternalClearKeyFileIOTestKeySystem[] =
     "org.chromium.externalclearkey.fileiotest";
+const char kExternalClearKeyCrashKeySystem[] =
+    "org.chromium.externalclearkey.crash";
+
 const int64 kSecondsPerMinute = 60;
 const int64 kMsPerSecond = 1000;
 const int64 kInitialTimerDelayMs = 200;
@@ -147,7 +150,8 @@ void* CreateCdmInstance(int cdm_interface_version,
   std::string key_system_string(key_system, key_system_size);
   if (key_system_string != kExternalClearKeyKeySystem &&
       key_system_string != kExternalClearKeyDecryptOnlyKeySystem &&
-      key_system_string != kExternalClearKeyFileIOTestKeySystem) {
+      key_system_string != kExternalClearKeyFileIOTestKeySystem &&
+      key_system_string != kExternalClearKeyCrashKeySystem) {
     DVLOG(1) << "Unsupported key system:" << key_system_string;
     return NULL;
   }
@@ -390,6 +394,10 @@ cdm::Status ClearKeyCdm::DecryptAndDecodeSamples(
     const cdm::InputBuffer& encrypted_buffer,
     cdm::AudioFrames* audio_frames) {
   DVLOG(1) << "DecryptAndDecodeSamples()";
+
+  // Trigger a crash on purpose for testing purpose.
+  if (key_system_ == kExternalClearKeyCrashKeySystem)
+    CHECK(false);
 
   scoped_refptr<media::DecoderBuffer> buffer;
   cdm::Status status = DecryptToMediaDecoderBuffer(encrypted_buffer, &buffer);

@@ -718,6 +718,11 @@ void PepperPluginInstanceImpl::InstanceCrashed() {
   BindGraphics(pp_instance(), 0);
   InvalidateRect(gfx::Rect());
 
+  if (content_decryptor_delegate_) {
+    content_decryptor_delegate_->InstanceCrashed();
+    content_decryptor_delegate_.reset();
+  }
+
   render_frame_->PluginCrashed(module_->path(), module_->GetPeerProcessId());
   UnSetAndDeleteLockTargetAdapter();
 }

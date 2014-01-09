@@ -40,6 +40,8 @@ const char kExternalClearKeyFileIOTestKeySystem[] =
     "org.chromium.externalclearkey.fileiotest";
 const char kExternalClearKeyInitializeFailKeySystem[] =
     "org.chromium.externalclearkey.initializefail";
+const char kExternalClearKeyCrashKeySystem[] =
+    "org.chromium.externalclearkey.crash";
 
 // Supported media types.
 const char kWebMAudioOnly[] = "audio/webm; codecs=\"vorbis\"";
@@ -398,6 +400,16 @@ IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, InitializeCDMFail) {
                         kExternalClearKeyInitializeFailKeySystem,
                         SRC,
                         kEmeKeyError);
+}
+
+// When CDM crashes, we should still get a decode error.
+IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, CDMCrashDuringDecode) {
+  RunEncryptedMediaTest("encrypted_media_player.html",
+                        "bear-a-enc_a.webm",
+                        kWebMAudioOnly,
+                        kExternalClearKeyCrashKeySystem,
+                        SRC,
+                        kError);
 }
 
 IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, FileIOTest) {

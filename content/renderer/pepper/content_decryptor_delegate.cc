@@ -256,29 +256,35 @@ ContentDecryptorDelegate::ContentDecryptorDelegate(
 }
 
 ContentDecryptorDelegate::~ContentDecryptorDelegate() {
+  SatisfyAllPendingCallbacksOnError();
 }
 
-void ContentDecryptorDelegate::Initialize(const std::string& key_system) {
-  DCHECK(!key_system.empty());
-  DCHECK(key_system_.empty());
-  key_system_ = key_system;
-
-  plugin_decryption_interface_->Initialize(
-      pp_instance_,
-      StringVar::StringToPPVar(key_system_));
-}
-
-void ContentDecryptorDelegate::SetSessionEventCallbacks(
+void ContentDecryptorDelegate::Initialize(
+    const std::string& key_system,
     const media::SessionCreatedCB& session_created_cb,
     const media::SessionMessageCB& session_message_cb,
     const media::SessionReadyCB& session_ready_cb,
     const media::SessionClosedCB& session_closed_cb,
-    const media::SessionErrorCB& session_error_cb) {
+    const media::SessionErrorCB& session_error_cb,
+    const base::Closure& fatal_plugin_error_cb) {
+  DCHECK(!key_system.empty());
+  DCHECK(key_system_.empty());
+  key_system_ = key_system;
+
   session_created_cb_ = session_created_cb;
   session_message_cb_ = session_message_cb;
   session_ready_cb_ = session_ready_cb;
   session_closed_cb_ = session_closed_cb;
   session_error_cb_ = session_error_cb;
+  fatal_plugin_error_cb_ = fatal_plugin_error_cb;
+
+  plugin_decryption_interface_->Initialize(
+      pp_instance_, StringVar::StringToPPVar(key_system_));
+}
+
+void ContentDecryptorDelegate::InstanceCrashed() {
+  fatal_plugin_error_cb_.Run();
+  SatisfyAllPendingCallbacksOnError();
 }
 
 bool ContentDecryptorDelegate::CreateSession(uint32 session_id,
@@ -319,6 +325,7 @@ bool ContentDecryptorDelegate::Decrypt(
     const scoped_refptr<media::DecoderBuffer>& encrypted_buffer,
     const Decryptor::DecryptCB& decrypt_cb) {
   DVLOG(3) << "Decrypt() - stream_type: " << stream_type;
+
   // |{audio|video}_input_resource_| is not being used by the plugin
   // now because there is only one pending audio/video decrypt request at any
   // time. This is enforced by the media pipeline.
@@ -1020,6 +1027,32 @@ bool ContentDecryptorDelegate::DeserializeAudioFrames(
   } while (bytes_left > 0);
 
   return true;
+}
+
+void ContentDecryptorDelegate::SatisfyAllPendingCallbacksOnError() {
+  if (!audio_decoder_init_cb_.is_null())
+    audio_decoder_init_cb_.ResetAndReturn().Run(false);
+
+  if (!video_decoder_init_cb_.is_null())
+    video_decoder_init_cb_.ResetAndReturn().Run(false);
+
+  audio_input_resource_ = NULL;
+  video_input_resource_ = NULL;
+
+  if (!audio_decrypt_cb_.is_null())
+    audio_decrypt_cb_.ResetAndReturn().Run(media::Decryptor::kError, NULL);
+
+  if (!video_decrypt_cb_.is_null())
+    video_decrypt_cb_.ResetAndReturn().Run(media::Decryptor::kError, NULL);
+
+  if (!audio_decode_cb_.is_null()) {
+    const media::Decryptor::AudioBuffers empty_frames;
+    audio_decode_cb_.ResetAndReturn().Run(media::Decryptor::kError,
+                                          empty_frames);
+  }
+
+  if (!video_decode_cb_.is_null())
+    video_decode_cb_.ResetAndReturn().Run(media::Decryptor::kError, NULL);
 }
 
 }  // namespace content

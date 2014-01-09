@@ -40,14 +40,16 @@ class ContentDecryptorDelegate {
       const PPP_ContentDecryptor_Private* plugin_decryption_interface);
   ~ContentDecryptorDelegate();
 
-  void Initialize(const std::string& key_system);
+  // This object should not be accessed after |fatal_plugin_error_cb| is called.
+  void Initialize(const std::string& key_system,
+                  const media::SessionCreatedCB& session_created_cb,
+                  const media::SessionMessageCB& session_message_cb,
+                  const media::SessionReadyCB& session_ready_cb,
+                  const media::SessionClosedCB& session_closed_cb,
+                  const media::SessionErrorCB& session_error_cb,
+                  const base::Closure& fatal_plugin_error_cb);
 
-  void SetSessionEventCallbacks(
-      const media::SessionCreatedCB& session_created_cb,
-      const media::SessionMessageCB& session_message_cb,
-      const media::SessionReadyCB& session_ready_cb,
-      const media::SessionClosedCB& session_closed_cb,
-      const media::SessionErrorCB& session_error_cb);
+  void InstanceCrashed();
 
   // Provides access to PPP_ContentDecryptor_Private.
   bool CreateSession(uint32 session_id,
@@ -109,8 +111,11 @@ class ContentDecryptorDelegate {
   class TrackableCallback {
    public:
     TrackableCallback() : id_(0u) {}
-    // TODO(xhwang): Check that no callback is pending in dtor.
-    ~TrackableCallback() {};
+    ~TrackableCallback() {
+      // Callbacks must be satisfied.
+      DCHECK_EQ(id_, 0u);
+      DCHECK(is_null());
+    };
 
     bool Matches(uint32_t id) const { return id == id_; }
 
@@ -162,6 +167,8 @@ class ContentDecryptorDelegate {
                               media::SampleFormat sample_format,
                               media::Decryptor::AudioBuffers* frames);
 
+  void SatisfyAllPendingCallbacksOnError();
+
   const PP_Instance pp_instance_;
   const PPP_ContentDecryptor_Private* const plugin_decryption_interface_;
 
@@ -174,6 +181,10 @@ class ContentDecryptorDelegate {
   media::SessionReadyCB session_ready_cb_;
   media::SessionClosedCB session_closed_cb_;
   media::SessionErrorCB session_error_cb_;
+
+  // Callback to notify that unexpected error happened and |this| should not
+  // be used anymore.
+  base::Closure fatal_plugin_error_cb_;
 
   gfx::Size natural_size_;
 

@@ -23,6 +23,7 @@ class MediaBrowserTest : public InProcessBrowserTest {
 
   // Common test results.
   static const char kEnded[];
+  // TODO(xhwang): Report detailed errors, e.g. "ERROR-3".
   static const char kError[];
   static const char kFailed[];
 
