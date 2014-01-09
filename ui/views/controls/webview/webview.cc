@@ -30,7 +30,6 @@ const char WebView::kViewClassName[] = "WebView";
 
 WebView::WebView(content::BrowserContext* browser_context)
     : wcv_holder_(new NativeViewHost),
-      web_contents_(NULL),
       embed_fullscreen_widget_mode_enabled_(false),
       is_embedding_fullscreen_widget_(false),
       browser_context_(browser_context),
@@ -44,30 +43,25 @@ WebView::~WebView() {
 }
 
 content::WebContents* WebView::GetWebContents() {
-  CreateWebContentsWithSiteInstance(NULL);
-  return web_contents_;
-}
-
-void WebView::CreateWebContentsWithSiteInstance(
-    content::SiteInstance* site_instance) {
-  if (!web_contents_) {
-    wc_owner_.reset(CreateWebContents(browser_context_, site_instance));
-    web_contents_ = wc_owner_.get();
-    web_contents_->SetDelegate(this);
-    AttachWebContents();
+  if (!web_contents()) {
+    wc_owner_.reset(CreateWebContents(browser_context_));
+    wc_owner_->SetDelegate(this);
+    SetWebContents(wc_owner_.get());
   }
+  return web_contents();
 }
 
-void WebView::SetWebContents(content::WebContents* web_contents) {
-  if (web_contents == web_contents_)
+void WebView::SetWebContents(content::WebContents* replacement) {
+  if (replacement == web_contents())
     return;
   DetachWebContents();
-  if (wc_owner_ != web_contents)
+  if (wc_owner_ != replacement)
     wc_owner_.reset();
-  web_contents_ = web_contents;
+  WebContentsObserver::Observe(replacement);
+  // web_contents() now returns |replacement| from here onwards.
   if (embed_fullscreen_widget_mode_enabled_) {
     is_embedding_fullscreen_widget_ =
-        web_contents_ && web_contents_->GetFullscreenRenderWidgetHostView();
+        web_contents() && web_contents()->GetFullscreenRenderWidgetHostView();
   } else {
     is_embedding_fullscreen_widget_ = false;
   }
@@ -80,7 +74,7 @@ void WebView::SetEmbedFullscreenWidgetMode(bool enable) {
     DCHECK(!is_embedding_fullscreen_widget_);
     embed_fullscreen_widget_mode_enabled_ = true;
     should_be_embedded =
-        web_contents_ && web_contents_->GetFullscreenRenderWidgetHostView();
+        web_contents() && web_contents()->GetFullscreenRenderWidgetHostView();
   } else if (embed_fullscreen_widget_mode_enabled_ && !enable) {
     embed_fullscreen_widget_mode_enabled_ = false;
   }
@@ -135,31 +129,31 @@ bool WebView::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
   // We'll first give the page a chance to process the key events.  If it does
   // not process them, they'll be returned to us and we'll treat them as
   // accelerators then.
-  return web_contents_ && !web_contents_->IsCrashed();
+  return web_contents() && !web_contents()->IsCrashed();
 }
 
 bool WebView::IsFocusable() const {
   // We need to be focusable when our contents is not a view hierarchy, as
   // clicking on the contents needs to focus us.
-  return !!web_contents_;
+  return !!web_contents();
 }
 
 void WebView::OnFocus() {
-  if (!web_contents_)
+  if (!web_contents())
     return;
   if (is_embedding_fullscreen_widget_) {
     content::RenderWidgetHostView* const current_fs_view =
-        web_contents_->GetFullscreenRenderWidgetHostView();
+        web_contents()->GetFullscreenRenderWidgetHostView();
     if (current_fs_view)
       current_fs_view->Focus();
   } else {
-    web_contents_->GetView()->Focus();
+    web_contents()->GetView()->Focus();
   }
 }
 
 void WebView::AboutToRequestFocusFromTabTraversal(bool reverse) {
-  if (web_contents_)
-    web_contents_->FocusThroughTabTraversal(reverse);
+  if (web_contents())
+    web_contents()->FocusThroughTabTraversal(reverse);
 }
 
 void WebView::GetAccessibleState(ui::AccessibleViewState* state) {
@@ -167,9 +161,9 @@ void WebView::GetAccessibleState(ui::AccessibleViewState* state) {
 }
 
 gfx::NativeViewAccessible WebView::GetNativeViewAccessible() {
-  if (web_contents_) {
+  if (web_contents()) {
     content::RenderWidgetHostView* host_view =
-        web_contents_->GetRenderWidgetHostView();
+        web_contents()->GetRenderWidgetHostView();
     if (host_view)
       return host_view->GetNativeViewAccessible();
   }
@@ -189,7 +183,7 @@ gfx::Size WebView::GetPreferredSize() {
 void WebView::WebContentsFocused(content::WebContents* web_contents) {
   DCHECK(wc_owner_.get());
   // The WebView is only the delegate of WebContentses it creates itself.
-  OnWebContentsFocused(web_contents_);
+  OnWebContentsFocused(wc_owner_.get());
 }
 
 bool WebView::EmbedsFullscreenWidget() const {
@@ -231,12 +225,12 @@ void WebView::DidDestroyFullscreenWidget(int routing_id) {
 void WebView::AttachWebContents() {
   // Prevents attachment if the WebView isn't already in a Widget, or it's
   // already attached.
-  if (!GetWidget() || !web_contents_)
+  if (!GetWidget() || !web_contents())
     return;
 
   const gfx::NativeView view_to_attach = is_embedding_fullscreen_widget_ ?
-      web_contents_->GetFullscreenRenderWidgetHostView()->GetNativeView() :
-      web_contents_->GetView()->GetNativeView();
+      web_contents()->GetFullscreenRenderWidgetHostView()->GetNativeView() :
+      web_contents()->GetView()->GetNativeView();
   if (wcv_holder_->native_view() == view_to_attach)
     return;
   wcv_holder_->Attach(view_to_attach);
@@ -248,18 +242,16 @@ void WebView::AttachWebContents() {
   if (focus_manager && focus_manager->GetFocusedView() == this)
     OnFocus();
 
-  WebContentsObserver::Observe(web_contents_);
-
 #if defined(OS_WIN) && defined(USE_AURA)
   if (!is_embedding_fullscreen_widget_) {
-    web_contents_->SetParentNativeViewAccessible(
+    web_contents()->SetParentNativeViewAccessible(
         parent()->GetNativeViewAccessible());
   }
 #endif
 }
 
 void WebView::DetachWebContents() {
-  if (web_contents_) {
+  if (web_contents()) {
     wcv_holder_->Detach();
 #if defined(OS_WIN)
     if (!is_embedding_fullscreen_widget_) {
@@ -271,35 +263,33 @@ void WebView::DetachWebContents() {
       //
       // Moving this out of here would also mean we wouldn't be potentially
       // calling member functions on a half-destroyed WebContents.
-      ShowWindow(web_contents_->GetView()->GetNativeView(), SW_HIDE);
+      ShowWindow(web_contents()->GetView()->GetNativeView(), SW_HIDE);
 #else
-      web_contents_->SetParentNativeViewAccessible(NULL);
+      web_contents()->SetParentNativeViewAccessible(NULL);
 #endif
     }
 #endif
   }
-  WebContentsObserver::Observe(NULL);
 }
 
 void WebView::ReattachForFullscreenChange(bool enter_fullscreen) {
   DetachWebContents();
   is_embedding_fullscreen_widget_ = enter_fullscreen &&
-      web_contents_ && web_contents_->GetFullscreenRenderWidgetHostView();
+      web_contents() && web_contents()->GetFullscreenRenderWidgetHostView();
   AttachWebContents();
 }
 
 content::WebContents* WebView::CreateWebContents(
-      content::BrowserContext* browser_context,
-      content::SiteInstance* site_instance) {
+      content::BrowserContext* browser_context) {
   content::WebContents* contents = NULL;
   if (ViewsDelegate::views_delegate) {
     contents = ViewsDelegate::views_delegate->CreateWebContents(
-        browser_context, site_instance);
+        browser_context, NULL);
   }
 
   if (!contents) {
     content::WebContents::CreateParams create_params(
-        browser_context, site_instance);
+        browser_context, NULL);
     return content::WebContents::Create(create_params);
   }
 

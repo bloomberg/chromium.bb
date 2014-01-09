@@ -13,10 +13,6 @@
 #include "ui/views/controls/webview/webview_export.h"
 #include "ui/views/view.h"
 
-namespace content {
-class SiteInstance;
-}
-
 namespace views {
 
 class NativeViewHost;
@@ -34,10 +30,6 @@ class WEBVIEW_EXPORT WebView : public View,
   // WebView owns this implicitly created WebContents.
   content::WebContents* GetWebContents();
 
-  // Creates a WebContents if none is yet assocaited with this WebView, with the
-  // specified site instance. The WebView owns this WebContents.
-  void CreateWebContentsWithSiteInstance(content::SiteInstance* site_instance);
-
   // WebView does not assume ownership of WebContents set via this method, only
   // those it implicitly creates via GetWebContents() above.
   void SetWebContents(content::WebContents* web_contents);
@@ -48,7 +40,9 @@ class WEBVIEW_EXPORT WebView : public View,
   // widget or restore the normal WebContentsView.
   void SetEmbedFullscreenWidgetMode(bool mode);
 
-  content::WebContents* web_contents() { return web_contents_; }
+  content::WebContents* web_contents() const {
+    return content::WebContentsObserver::web_contents();
+  }
 
   content::BrowserContext* browser_context() { return browser_context_; }
 
@@ -125,12 +119,11 @@ class WEBVIEW_EXPORT WebView : public View,
   // Create a regular or test web contents (based on whether we're running
   // in a unit test or not).
   content::WebContents* CreateWebContents(
-      content::BrowserContext* browser_context,
-      content::SiteInstance* site_instance);
+      content::BrowserContext* browser_context);
 
   NativeViewHost* wcv_holder_;
+  // Non-NULL if |web_contents()| was created and is owned by this WebView.
   scoped_ptr<content::WebContents> wc_owner_;
-  content::WebContents* web_contents_;
   // When true, WebView auto-embeds fullscreen widgets as a child view.
   bool embed_fullscreen_widget_mode_enabled_;
   // Set to true while WebView is embedding a fullscreen widget view as a child
