@@ -13,6 +13,7 @@
 #include "ui/gfx/ozone/surface_factory_ozone.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/gfx/vsync_provider.h"
 #include "ui/gl/gl_implementation.h"
 
 namespace {
@@ -47,9 +48,9 @@ class MockSurfaceFactoryOzone : public gfx::SurfaceFactoryOzone {
   virtual SkCanvas* GetCanvasForWidget(gfx::AcceleratedWidget w) OVERRIDE {
     return canvas_.get();
   }
-  virtual gfx::VSyncProvider* GetVSyncProvider(
+  virtual scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider(
       gfx::AcceleratedWidget w) OVERRIDE {
-    return NULL;
+    return scoped_ptr<gfx::VSyncProvider>();
   }
  private:
   skia::RefPtr<SkBitmapDevice> device_;
