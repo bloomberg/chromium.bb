@@ -189,4 +189,16 @@ RenderObject* HTMLMarqueeElement::createRenderer(RenderStyle*)
     return new RenderMarquee(this);
 }
 
+void HTMLMarqueeElement::timerFired(Timer<HTMLMarqueeElement>*)
+{
+    if (!renderer())
+        return;
+
+    document().updateLayout();
+
+    // The updateLayout() could have destroyed renderer(), so this re-check is very important.
+    if (renderer())
+        toRenderMarquee(renderer())->timerFired();
+}
+
 } // namespace WebCore

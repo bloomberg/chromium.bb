@@ -60,11 +60,11 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-RenderMarquee::RenderMarquee(Element* element)
+RenderMarquee::RenderMarquee(HTMLMarqueeElement* element)
     : RenderBlockFlow(element)
     , m_currentLoop(0)
     , m_totalLoops(0)
-    , m_timer(this, &RenderMarquee::timerFired)
+    , m_timer(element, &HTMLMarqueeElement::timerFired)
     , m_start(0)
     , m_end(0)
     , m_speed(0)
@@ -267,7 +267,7 @@ void RenderMarquee::layoutBlock(bool relayoutChildren, LayoutUnit pageLogicalHei
     updateMarqueePosition();
 }
 
-void RenderMarquee::timerFired(Timer<RenderMarquee>*)
+void RenderMarquee::timerFired()
 {
     // FIXME: Why do we need to check the view and not just the RenderMarquee itself?
     if (view()->needsLayout())

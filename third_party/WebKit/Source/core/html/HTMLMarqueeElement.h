@@ -51,6 +51,8 @@ public:
     int loop() const;
     void setLoop(int, ExceptionState&);
 
+    void timerFired(Timer<HTMLMarqueeElement>*);
+
 private:
     explicit HTMLMarqueeElement(Document&);
 
