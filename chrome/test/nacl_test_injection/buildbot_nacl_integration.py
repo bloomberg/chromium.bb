@@ -50,6 +50,8 @@ def Main(args):
       # run_breakpad_browser_process_crash_test is flaky.
       # See http://crbug.com/317890
       tests_to_disable.append('run_breakpad_browser_process_crash_test')
+      # See http://crbug.com/332301
+      tests_to_disable.append('run_breakpad_crash_in_syscall_test')
 
   script_dir = os.path.dirname(os.path.abspath(__file__))
   nacl_integration_script = os.path.join(script_dir,
