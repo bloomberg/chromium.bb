@@ -34,11 +34,11 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/GraphicsLayerClient.h"
+#include "platform/graphics/GraphicsLayerDebugInfo.h"
 #include "platform/graphics/OpaqueRectTrackingContentLayerDelegate.h"
 #include "platform/graphics/filters/FilterOperations.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "public/platform/WebAnimationDelegate.h"
-#include "public/platform/WebCompositingReasons.h"
 #include "public/platform/WebContentLayer.h"
 #include "public/platform/WebImageLayer.h"
 #include "public/platform/WebLayerClient.h"
@@ -52,7 +52,6 @@
 namespace blink {
 class GraphicsLayerFactoryChromium;
 class WebAnimation;
-class WebGraphicsLayerDebugInfo;
 class WebLayer;
 }
 
@@ -92,8 +91,10 @@ public:
     virtual blink::WebString debugName(blink::WebLayer*) OVERRIDE;
     virtual blink::WebGraphicsLayerDebugInfo* takeDebugInfo() OVERRIDE;
 
-    void setCompositingReasons(blink::WebCompositingReasons);
-    blink::WebCompositingReasons compositingReasons() const { return m_compositingReasons; }
+    GraphicsLayerDebugInfo& debugInfo();
+
+    void setCompositingReasons(CompositingReasons);
+    CompositingReasons compositingReasons() const { return m_debugInfo.compositingReasons(); }
 
     GraphicsLayer* parent() const { return m_parent; };
     void setParent(GraphicsLayer*); // Internal use only.
@@ -179,8 +180,6 @@ public:
 
     void setScrollParent(blink::WebLayer*);
     void setClipParent(blink::WebLayer*);
-
-    void setDebugInfo(blink::WebGraphicsLayerDebugInfo*);
 
     // For special cases, e.g. drawing missing tiles on Android.
     // The compositor should never paint this color in normal cases because the RenderLayer
@@ -404,8 +403,7 @@ private:
     OwnPtr<OpaqueRectTrackingContentLayerDelegate> m_opaqueRectTrackingContentLayerDelegate;
 
     ScrollableArea* m_scrollableArea;
-    blink::WebCompositingReasons m_compositingReasons;
-    blink::WebGraphicsLayerDebugInfo* m_debugInfo;
+    GraphicsLayerDebugInfo m_debugInfo;
 };
 
 

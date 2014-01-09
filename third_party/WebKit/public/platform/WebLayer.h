@@ -134,9 +134,6 @@ public:
     // (opacity, transforms), it may conflict and hide the background filters.
     virtual void setBackgroundFilters(const WebFilterOperations&) = 0;
 
-    // Provides a bitfield that describe why this composited layer was created.
-    virtual void setCompositingReasons(WebCompositingReasons) = 0;
-
     // An animation delegate is notified when animations are started and
     // stopped. The WebLayer does not take ownership of the delegate, and it is
     // the responsibility of the client to reset the layer's delegate before

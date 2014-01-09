@@ -101,8 +101,6 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     , m_contentsLayer(0)
     , m_contentsLayerId(0)
     , m_scrollableArea(0)
-    , m_compositingReasons(blink::CompositingReasonUnknown)
-    , m_debugInfo(0)
 {
 #ifndef NDEBUG
     if (m_client)
@@ -504,18 +502,14 @@ void GraphicsLayer::clearContentsLayerIfUnregistered()
     m_contentsLayerId = 0;
 }
 
-void GraphicsLayer::setDebugInfo(blink::WebGraphicsLayerDebugInfo* debugInfo)
+GraphicsLayerDebugInfo& GraphicsLayer::debugInfo()
 {
-    if (m_debugInfo)
-        delete m_debugInfo;
-    m_debugInfo = debugInfo;
+    return m_debugInfo;
 }
 
 blink::WebGraphicsLayerDebugInfo* GraphicsLayer::takeDebugInfo()
 {
-    blink::WebGraphicsLayerDebugInfo* tempDebugInfo = m_debugInfo;
-    m_debugInfo = 0;
-    return tempDebugInfo;
+    return m_debugInfo.clone();
 }
 
 WebLayer* GraphicsLayer::contentsLayerIfRegistered()
@@ -801,10 +795,9 @@ blink::WebString GraphicsLayer::debugName(blink::WebLayer* webLayer)
     return name;
 }
 
-void GraphicsLayer::setCompositingReasons(blink::WebCompositingReasons reasons)
+void GraphicsLayer::setCompositingReasons(CompositingReasons reasons)
 {
-    m_compositingReasons = reasons;
-    m_layer->layer()->setCompositingReasons(reasons);
+    m_debugInfo.setCompositingReasons(reasons);
 }
 
 void GraphicsLayer::setPosition(const FloatPoint& point)

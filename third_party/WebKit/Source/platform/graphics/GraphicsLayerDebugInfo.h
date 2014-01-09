@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2014 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -31,7 +31,9 @@
 #ifndef GraphicsLayerDebugInfo_h
 #define GraphicsLayerDebugInfo_h
 
+#include "platform/JSONValues.h"
 #include "platform/geometry/LayoutRect.h"
+#include "platform/graphics/CompositingReasons.h"
 #include "public/platform/WebGraphicsLayerDebugInfo.h"
 
 #include "wtf/Vector.h"
@@ -40,8 +42,22 @@ namespace WebCore {
 
 class GraphicsLayerDebugInfo FINAL : public blink::WebGraphicsLayerDebugInfo {
 public:
+    GraphicsLayerDebugInfo();
+    virtual ~GraphicsLayerDebugInfo();
+
     virtual void appendAsTraceFormat(blink::WebString* out) const OVERRIDE;
-    virtual ~GraphicsLayerDebugInfo() { };
+
+    GraphicsLayerDebugInfo* clone() const;
+
+    Vector<LayoutRect>& currentLayoutRects() { return m_currentLayoutRects; }
+    CompositingReasons compositingReasons() const { return m_compositingReasons; }
+    void setCompositingReasons(CompositingReasons reasons) { m_compositingReasons = reasons; }
+
+private:
+    void appendLayoutRects(JSONObject*) const;
+    void appendCompositingReasons(JSONObject*) const;
+
+    CompositingReasons m_compositingReasons;
     Vector<LayoutRect> m_currentLayoutRects;
 };
 

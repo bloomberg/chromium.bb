@@ -37,6 +37,8 @@
 namespace blink {
 
 // This is a clone of CompositingReasons in RenderLayer.h.
+// FIXME: once we're passing compositing reasons as part of GraphicsLayerDebugInfo
+// this file may be deleted.
 const uint64_t CompositingReasonUnknown                                = 0;
 const uint64_t CompositingReason3DTransform                            = static_cast<uint64_t>(1) << 0;
 const uint64_t CompositingReasonVideo                                  = static_cast<uint64_t>(1) << 1;

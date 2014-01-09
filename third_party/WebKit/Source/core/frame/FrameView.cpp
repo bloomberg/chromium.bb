@@ -39,7 +39,6 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourceLoadPriorityOptimizer.h"
 #include "core/frame/Frame.h"
-#include "core/frame/GraphicsLayerDebugInfo.h"
 #include "core/frame/Settings.h"
 #include "core/frame/animation/AnimationController.h"
 #include "core/html/HTMLFrameElement.h"
@@ -75,6 +74,7 @@
 #include "platform/fonts/FontCache.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/GraphicsLayerDebugInfo.h"
 #include "platform/scroll/ScrollAnimator.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "platform/text/TextStream.h"
@@ -1210,16 +1210,16 @@ void FrameView::gatherDebugLayoutRects(RenderObject* layoutRoot)
     if (!graphicsLayer)
         return;
 
-    GraphicsLayerDebugInfo* debugInfo = new GraphicsLayerDebugInfo();
+    GraphicsLayerDebugInfo& debugInfo = graphicsLayer->debugInfo();
+
+    debugInfo.currentLayoutRects().clear();
     for (RenderObject* renderer = layoutRoot; renderer; renderer = renderer->nextInPreOrder()) {
         if (renderer->layoutDidGetCalled()) {
             LayoutRect rect = renderer->newRepaintRect();
-            debugInfo->m_currentLayoutRects.append(rect);
+            debugInfo.currentLayoutRects().append(rect);
             renderer->setLayoutDidGetCalled(false);
         }
     }
-
-    graphicsLayer->setDebugInfo(debugInfo);
 }
 
 

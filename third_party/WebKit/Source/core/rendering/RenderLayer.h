@@ -46,7 +46,6 @@
 #define RenderLayer_h
 
 #include "core/rendering/CompositedLayerMappingPtr.h"
-#include "core/rendering/CompositingReasons.h"
 #include "core/rendering/LayerPaintingInfo.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderLayerBlendInfo.h"
@@ -57,6 +56,7 @@
 #include "core/rendering/RenderLayerScrollableArea.h"
 #include "core/rendering/RenderLayerStackingNode.h"
 #include "core/rendering/RenderLayerStackingNodeIterator.h"
+#include "platform/graphics/CompositingReasons.h"
 #include "wtf/OwnPtr.h"
 
 namespace WebCore {
