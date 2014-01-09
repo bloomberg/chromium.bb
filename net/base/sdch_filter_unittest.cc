@@ -1232,6 +1232,83 @@ TEST_F(SdchFilterTest, CanSetExactMatchDictionary) {
               GURL("http://" + dictionary_domain)));
 }
 
+TEST_F(SdchFilterTest, CanAdvertiseDictionaryOverHTTP) {
+  std::string dictionary_domain("x.y.z.google.com");
+  std::string dictionary_text(NewSdchDictionary(dictionary_domain));
+
+  EXPECT_TRUE(sdch_manager_->AddSdchDictionary(dictionary_text,
+              GURL("http://" + dictionary_domain)));
+
+  std::string dictionary_list;
+  // HTTP target URL can advertise dictionary.
+  sdch_manager_->GetAvailDictionaryList(
+      GURL("http://" + dictionary_domain + "/test"),
+      &dictionary_list);
+  EXPECT_FALSE(dictionary_list.empty());
+}
+
+TEST_F(SdchFilterTest, CanNotAdvertiseDictionaryOverHTTPS) {
+  std::string dictionary_domain("x.y.z.google.com");
+  std::string dictionary_text(NewSdchDictionary(dictionary_domain));
+
+  EXPECT_TRUE(sdch_manager_->AddSdchDictionary(dictionary_text,
+              GURL("http://" + dictionary_domain)));
+
+  std::string dictionary_list;
+  // HTTPS target URL should NOT advertise dictionary.
+  sdch_manager_->GetAvailDictionaryList(
+      GURL("https://" + dictionary_domain + "/test"),
+      &dictionary_list);
+  EXPECT_TRUE(dictionary_list.empty());
+}
+
+TEST_F(SdchFilterTest, CanUseHTTPSDictionaryOverHTTPSIfEnabled) {
+  std::string dictionary_domain("x.y.z.google.com");
+  std::string dictionary_text(NewSdchDictionary(dictionary_domain));
+
+  EXPECT_TRUE(sdch_manager_->AddSdchDictionary(dictionary_text,
+              GURL("https://" + dictionary_domain)));
+
+  GURL target_url("https://" + dictionary_domain + "/test");
+  std::string dictionary_list;
+  // HTTPS target URL should advertise dictionary if secure scheme support is
+  // enabled.
+  sdch_manager_->EnableSecureSchemeSupport(true);
+  sdch_manager_->GetAvailDictionaryList(target_url, &dictionary_list);
+  EXPECT_FALSE(dictionary_list.empty());
+
+  // Dictionary should be available.
+  SdchManager::Dictionary* dictionary = NULL;
+  std::string client_hash;
+  std::string server_hash;
+  sdch_manager_->GenerateHash(dictionary_text, &client_hash, &server_hash);
+  sdch_manager_->GetVcdiffDictionary(server_hash, target_url, &dictionary);
+  EXPECT_TRUE(dictionary != NULL);
+}
+
+TEST_F(SdchFilterTest, CanNotUseHTTPDictionaryOverHTTPS) {
+  std::string dictionary_domain("x.y.z.google.com");
+  std::string dictionary_text(NewSdchDictionary(dictionary_domain));
+
+  EXPECT_TRUE(sdch_manager_->AddSdchDictionary(dictionary_text,
+              GURL("http://" + dictionary_domain)));
+
+  GURL target_url("https://" + dictionary_domain + "/test");
+  std::string dictionary_list;
+  // HTTPS target URL should not advertise dictionary acquired over HTTP even if
+  // secure scheme support is enabled.
+  sdch_manager_->EnableSecureSchemeSupport(true);
+  sdch_manager_->GetAvailDictionaryList(target_url, &dictionary_list);
+  EXPECT_TRUE(dictionary_list.empty());
+
+  SdchManager::Dictionary* dictionary = NULL;
+  std::string client_hash;
+  std::string server_hash;
+  sdch_manager_->GenerateHash(dictionary_text, &client_hash, &server_hash);
+  sdch_manager_->GetVcdiffDictionary(server_hash, target_url, &dictionary);
+  EXPECT_TRUE(dictionary == NULL);
+}
+
 TEST_F(SdchFilterTest, FailToSetDomainMismatchDictionary) {
   std::string dictionary_domain("x.y.z.google.com");
   std::string dictionary_text(NewSdchDictionary(dictionary_domain));

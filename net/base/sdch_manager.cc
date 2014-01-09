@@ -28,6 +28,9 @@ SdchManager* SdchManager::global_ = NULL;
 // static
 bool SdchManager::g_sdch_enabled_ = true;
 
+// static
+bool SdchManager::g_secure_scheme_supported_ = false;
+
 //------------------------------------------------------------------------------
 SdchManager::Dictionary::Dictionary(const std::string& dictionary_text,
                                     size_t offset,
@@ -63,6 +66,8 @@ bool SdchManager::Dictionary::CanAdvertise(const GURL& target_url) {
          ports listed in the Port attribute.
       3. The request URI path-matches the path header of the dictionary.
       4. The request is not an HTTPS request.
+     We can override (ignore) item (4) only when we have explicitly enabled
+     HTTPS support AND dictionary has been acquired over HTTPS.
     */
   if (!DomainMatch(target_url, domain_))
     return false;
@@ -70,7 +75,9 @@ bool SdchManager::Dictionary::CanAdvertise(const GURL& target_url) {
     return false;
   if (path_.size() && !PathMatch(target_url.path(), path_))
     return false;
-  if (target_url.SchemeIsSecure())
+  if (!SdchManager::secure_scheme_supported() && target_url.SchemeIsSecure())
+    return false;
+  if (target_url.SchemeIsSecure() && !url_.SchemeIsSecure())
     return false;
   if (base::Time::Now() > expiration_)
     return false;
@@ -152,6 +159,8 @@ bool SdchManager::Dictionary::CanUse(const GURL& referring_url) {
       ports listed in the Port attribute.
     3. The request URL path-matches the path attribute of the dictionary.
     4. The request is not an HTTPS request.
+    We can override (ignore) item (4) only when we have explicitly enabled
+    HTTPS support AND dictionary has been acquired over HTTPS.
 */
   if (!DomainMatch(referring_url, domain_)) {
     SdchErrorRecovery(DICTIONARY_FOUND_HAS_WRONG_DOMAIN);
@@ -166,14 +175,19 @@ bool SdchManager::Dictionary::CanUse(const GURL& referring_url) {
     SdchErrorRecovery(DICTIONARY_FOUND_HAS_WRONG_PATH);
     return false;
   }
-  if (referring_url.SchemeIsSecure()) {
+  if (!SdchManager::secure_scheme_supported() &&
+      referring_url.SchemeIsSecure()) {
+    SdchErrorRecovery(DICTIONARY_FOUND_HAS_WRONG_SCHEME);
+    return false;
+  }
+  if (referring_url.SchemeIsSecure() && !url_.SchemeIsSecure()) {
     SdchErrorRecovery(DICTIONARY_FOUND_HAS_WRONG_SCHEME);
     return false;
   }
 
   // TODO(jar): Remove overly restrictive failsafe test (added per security
   // review) when we have a need to be more general.
-  if (!referring_url.SchemeIs("http")) {
+  if (!referring_url.SchemeIsHTTPOrHTTPS()) {
     SdchErrorRecovery(ATTEMPT_TO_DECODE_NON_HTTP_DATA);
     return false;
   }
@@ -249,6 +263,11 @@ void SdchManager::set_sdch_fetcher(SdchFetcher* fetcher) {
 // static
 void SdchManager::EnableSdchSupport(bool enabled) {
   g_sdch_enabled_ = enabled;
+}
+
+// static
+void SdchManager::EnableSecureSchemeSupport(bool enabled) {
+  g_secure_scheme_supported_ = enabled;
 }
 
 // static
@@ -344,7 +363,8 @@ bool SdchManager::CanFetchDictionary(const GURL& referring_url,
   DCHECK(CalledOnValidThread());
   /* The user agent may retrieve a dictionary from the dictionary URL if all of
      the following are true:
-       1 The dictionary URL host name matches the referrer URL host name
+       1 The dictionary URL host name matches the referrer URL host name and
+           scheme.
        2 The dictionary URL host name domain matches the parent domain of the
            referrer URL host name
        3 The parent domain of the referrer URL host name is not a top level
@@ -353,18 +373,19 @@ bool SdchManager::CanFetchDictionary(const GURL& referring_url,
    */
   // Item (1) above implies item (2).  Spec should be updated.
   // I take "host name match" to be "is identical to"
-  if (referring_url.host() != dictionary_url.host()) {
+  if (referring_url.host() != dictionary_url.host() ||
+      referring_url.scheme() != dictionary_url.scheme()) {
     SdchErrorRecovery(DICTIONARY_LOAD_ATTEMPT_FROM_DIFFERENT_HOST);
     return false;
   }
-  if (referring_url.SchemeIs("https")) {
+  if (!secure_scheme_supported() && referring_url.SchemeIsSecure()) {
     SdchErrorRecovery(DICTIONARY_SELECTED_FOR_SSL);
     return false;
   }
 
   // TODO(jar): Remove this failsafe conservative hack which is more restrictive
   // than current SDCH spec when needed, and justified by security audit.
-  if (!referring_url.SchemeIs("http")) {
+  if (!referring_url.SchemeIsHTTPOrHTTPS()) {
     SdchErrorRecovery(DICTIONARY_SELECTED_FROM_NON_HTTP);
     return false;
   }
