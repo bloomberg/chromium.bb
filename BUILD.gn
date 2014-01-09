@@ -32,7 +32,7 @@ group("root") {
     "//third_party/icu:icudata",
     "//third_party/leveldatabase",
     "//third_party/zlib",
-    "//third_party/WebKit/Source/weborigin",
+    "//third_party/WebKit/Source/platform",
     "//skia",
     "//tools/gn",
     "//url",
