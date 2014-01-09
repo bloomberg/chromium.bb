@@ -890,12 +890,7 @@ PassRefPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionSt
 
         return newFragment.release();
     }
-    case ENTITY_NODE:
-    case NOTATION_NODE:
-        // FIXME: It should be possible to import these node types, however in DOM3 the DocumentType is readonly, so there isn't much sense in doing that.
-        // Ability to add these imported nodes to a DocumentType will be considered for addition to a future release of the DOM.
     case DOCUMENT_NODE:
-    case XPATH_NAMESPACE_NODE:
         break;
     }
     Element* el = toElement(importedNode);
@@ -913,11 +908,8 @@ PassRefPtr<Node> Document::adoptNode(PassRefPtr<Node> source, ExceptionState& ex
     EventQueueScope scope;
 
     switch (source->nodeType()) {
-    case ENTITY_NODE:
-    case NOTATION_NODE:
     case DOCUMENT_NODE:
     case DOCUMENT_TYPE_NODE:
-    case XPATH_NAMESPACE_NODE:
         exceptionState.throwDOMException(NotSupportedError, "The node provided is of type '" + source->nodeName() + "', which may not be adopted.");
         return 0;
     case ATTRIBUTE_NODE: {
@@ -3019,10 +3011,7 @@ bool Document::childTypeAllowed(NodeType type) const
     case CDATA_SECTION_NODE:
     case DOCUMENT_FRAGMENT_NODE:
     case DOCUMENT_NODE:
-    case ENTITY_NODE:
-    case NOTATION_NODE:
     case TEXT_NODE:
-    case XPATH_NAMESPACE_NODE:
         return false;
     case COMMENT_NODE:
     case PROCESSING_INSTRUCTION_NODE:
@@ -3073,10 +3062,7 @@ bool Document::canReplaceChild(const Node& newChild, const Node& oldChild) const
             case CDATA_SECTION_NODE:
             case DOCUMENT_FRAGMENT_NODE:
             case DOCUMENT_NODE:
-            case ENTITY_NODE:
-            case NOTATION_NODE:
             case TEXT_NODE:
-            case XPATH_NAMESPACE_NODE:
                 return false;
             case COMMENT_NODE:
             case PROCESSING_INSTRUCTION_NODE:
@@ -3095,10 +3081,7 @@ bool Document::canReplaceChild(const Node& newChild, const Node& oldChild) const
         case CDATA_SECTION_NODE:
         case DOCUMENT_FRAGMENT_NODE:
         case DOCUMENT_NODE:
-        case ENTITY_NODE:
-        case NOTATION_NODE:
         case TEXT_NODE:
-        case XPATH_NAMESPACE_NODE:
             return false;
         case COMMENT_NODE:
         case PROCESSING_INSTRUCTION_NODE:

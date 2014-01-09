@@ -28,11 +28,7 @@ namespace WebCore {
 
 class Notation : public ContainerNode {
 private:
-    Notation(TreeScope* treeScope) : ContainerNode(treeScope)
-    {
-        ASSERT_NOT_REACHED();
-        ScriptWrappable::init(this);
-    }
+    Notation(); // Left unimplemented on purpose.
 };
 
 } // namespace WebCore

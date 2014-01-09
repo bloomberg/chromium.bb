@@ -150,14 +150,8 @@ v8::Handle<v8::Object> wrap(Node* impl, v8::Handle<v8::Object> creationContext, 
         if (impl->isShadowRoot())
             return wrap(toShadowRoot(impl), creationContext, isolate);
         return wrap(toDocumentFragment(impl), creationContext, isolate);
-    case Node::ENTITY_NODE:
-    case Node::NOTATION_NODE:
-        // We never create objects of Entity and Notation.
-        ASSERT_NOT_REACHED();
-        break;
-    default:
-        break; // ENTITY_REFERENCE_NODE or XPATH_NAMESPACE_NODE
     }
+    ASSERT_NOT_REACHED();
     return V8Node::createWrapper(impl, creationContext, isolate);
 }
 } // namespace WebCore

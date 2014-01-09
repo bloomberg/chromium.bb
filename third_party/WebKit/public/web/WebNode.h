@@ -80,15 +80,15 @@ public:
         AttributeNode = 2,
         TextNode = 3,
         CDataSectionNode = 4,
-        // EntityReferenceNodes are deprecated and impossible to create in WebKit.
-        EntityNode = 6,
+        // EntityReferenceNodes are impossible to create in Blink.
+        // EntityNodes are impossible to create in Blink.
         ProcessingInstructionsNode = 7,
         CommentNode = 8,
         DocumentNode = 9,
         DocumentTypeNode = 10,
         DocumentFragmentNode = 11,
-        NotationNode = 12,
-        XPathNamespaceNode = 13,
+        // NotationNodes are impossible to create in Blink.
+        // XPathNamespaceNodes are impossible to create in Blink.
         ShadowRootNode = 14
     };
 

@@ -656,12 +656,9 @@ static inline unsigned lengthOfContentsInNode(Node* node)
         return toProcessingInstruction(node)->data().length();
     case Node::ELEMENT_NODE:
     case Node::ATTRIBUTE_NODE:
-    case Node::ENTITY_NODE:
     case Node::DOCUMENT_NODE:
     case Node::DOCUMENT_TYPE_NODE:
     case Node::DOCUMENT_FRAGMENT_NODE:
-    case Node::NOTATION_NODE:
-    case Node::XPATH_NAMESPACE_NODE:
         return node->childNodeCount();
     }
     ASSERT_NOT_REACHED();
@@ -828,12 +825,9 @@ PassRefPtr<Node> Range::processContentsBetweenOffsets(ActionType action, PassRef
         break;
     case Node::ELEMENT_NODE:
     case Node::ATTRIBUTE_NODE:
-    case Node::ENTITY_NODE:
     case Node::DOCUMENT_NODE:
     case Node::DOCUMENT_TYPE_NODE:
     case Node::DOCUMENT_FRAGMENT_NODE:
-    case Node::NOTATION_NODE:
-    case Node::XPATH_NAMESPACE_NODE:
         // FIXME: Should we assert that some nodes never appear here?
         if (action == EXTRACT_CONTENTS || action == CLONE_CONTENTS) {
             if (fragment)
@@ -1009,8 +1003,6 @@ void Range::insertNode(PassRefPtr<Node> prpNewNode, ExceptionState& exceptionSta
     // InvalidNodeTypeError: Raised if newNode is an Attr, Entity, Notation, ShadowRoot or Document node.
     switch (newNodeType) {
     case Node::ATTRIBUTE_NODE:
-    case Node::ENTITY_NODE:
-    case Node::NOTATION_NODE:
     case Node::DOCUMENT_NODE:
         exceptionState.throwDOMException(InvalidNodeTypeError, "The node to be inserted is a '" + newNode->nodeName() + "' node, which may not be inserted here.");
         return;
@@ -1140,8 +1132,6 @@ Node* Range::checkNodeWOffset(Node* n, int offset, ExceptionState& exceptionStat
 {
     switch (n->nodeType()) {
         case Node::DOCUMENT_TYPE_NODE:
-        case Node::ENTITY_NODE:
-        case Node::NOTATION_NODE:
             exceptionState.throwDOMException(InvalidNodeTypeError, "The node provided is of type '" + n->nodeName() + "'.");
             return 0;
         case Node::CDATA_SECTION_NODE:
@@ -1157,8 +1147,7 @@ Node* Range::checkNodeWOffset(Node* n, int offset, ExceptionState& exceptionStat
         case Node::ATTRIBUTE_NODE:
         case Node::DOCUMENT_FRAGMENT_NODE:
         case Node::DOCUMENT_NODE:
-        case Node::ELEMENT_NODE:
-        case Node::XPATH_NAMESPACE_NODE: {
+        case Node::ELEMENT_NODE: {
             if (!offset)
                 return 0;
             Node* childBefore = n->childNode(offset - 1);
@@ -1196,8 +1185,6 @@ void Range::checkNodeBA(Node* n, ExceptionState& exceptionState) const
         case Node::ATTRIBUTE_NODE:
         case Node::DOCUMENT_FRAGMENT_NODE:
         case Node::DOCUMENT_NODE:
-        case Node::ENTITY_NODE:
-        case Node::NOTATION_NODE:
             exceptionState.throwDOMException(InvalidNodeTypeError, "The node provided is of type '" + n->nodeName() + "'.");
             return;
         case Node::CDATA_SECTION_NODE:
@@ -1206,7 +1193,6 @@ void Range::checkNodeBA(Node* n, ExceptionState& exceptionState) const
         case Node::ELEMENT_NODE:
         case Node::PROCESSING_INSTRUCTION_NODE:
         case Node::TEXT_NODE:
-        case Node::XPATH_NAMESPACE_NODE:
             break;
     }
 
@@ -1223,11 +1209,8 @@ void Range::checkNodeBA(Node* n, ExceptionState& exceptionState) const
         case Node::CDATA_SECTION_NODE:
         case Node::COMMENT_NODE:
         case Node::DOCUMENT_TYPE_NODE:
-        case Node::ENTITY_NODE:
-        case Node::NOTATION_NODE:
         case Node::PROCESSING_INSTRUCTION_NODE:
         case Node::TEXT_NODE:
-        case Node::XPATH_NAMESPACE_NODE:
             exceptionState.throwDOMException(InvalidNodeTypeError, "The node provided is of type '" + n->nodeName() + "'.");
             return;
     }
@@ -1300,11 +1283,8 @@ void Range::selectNode(Node* refNode, ExceptionState& exceptionState)
             case Node::ELEMENT_NODE:
             case Node::PROCESSING_INSTRUCTION_NODE:
             case Node::TEXT_NODE:
-            case Node::XPATH_NAMESPACE_NODE:
                 break;
             case Node::DOCUMENT_TYPE_NODE:
-            case Node::ENTITY_NODE:
-            case Node::NOTATION_NODE:
                 exceptionState.throwDOMException(InvalidNodeTypeError, "The node provided has an ancestor of type '" + anc->nodeName() + "'.");
                 return;
         }
@@ -1317,13 +1297,10 @@ void Range::selectNode(Node* refNode, ExceptionState& exceptionState)
         case Node::ELEMENT_NODE:
         case Node::PROCESSING_INSTRUCTION_NODE:
         case Node::TEXT_NODE:
-        case Node::XPATH_NAMESPACE_NODE:
             break;
         case Node::ATTRIBUTE_NODE:
         case Node::DOCUMENT_FRAGMENT_NODE:
         case Node::DOCUMENT_NODE:
-        case Node::ENTITY_NODE:
-        case Node::NOTATION_NODE:
             exceptionState.throwDOMException(InvalidNodeTypeError, "The node provided is of type '" + refNode->nodeName() + "'.");
             return;
     }
@@ -1359,11 +1336,8 @@ void Range::selectNodeContents(Node* refNode, ExceptionState& exceptionState)
             case Node::ELEMENT_NODE:
             case Node::PROCESSING_INSTRUCTION_NODE:
             case Node::TEXT_NODE:
-            case Node::XPATH_NAMESPACE_NODE:
                 break;
             case Node::DOCUMENT_TYPE_NODE:
-            case Node::ENTITY_NODE:
-            case Node::NOTATION_NODE:
                 exceptionState.throwDOMException(InvalidNodeTypeError, "The node provided is of type '" + refNode->nodeName() + "'.");
                 return;
         }
@@ -1397,8 +1371,6 @@ void Range::surroundContents(PassRefPtr<Node> passNewParent, ExceptionState& exc
         case Node::DOCUMENT_FRAGMENT_NODE:
         case Node::DOCUMENT_NODE:
         case Node::DOCUMENT_TYPE_NODE:
-        case Node::ENTITY_NODE:
-        case Node::NOTATION_NODE:
             exceptionState.throwDOMException(InvalidNodeTypeError, "The node provided is of type '" + newParent->nodeName() + "'.");
             return;
         case Node::CDATA_SECTION_NODE:
@@ -1406,7 +1378,6 @@ void Range::surroundContents(PassRefPtr<Node> passNewParent, ExceptionState& exc
         case Node::ELEMENT_NODE:
         case Node::PROCESSING_INSTRUCTION_NODE:
         case Node::TEXT_NODE:
-        case Node::XPATH_NAMESPACE_NODE:
             break;
     }
 

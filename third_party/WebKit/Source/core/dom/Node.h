@@ -126,22 +126,22 @@ public:
         ATTRIBUTE_NODE = 2,
         TEXT_NODE = 3,
         CDATA_SECTION_NODE = 4,
-        ENTITY_NODE = 6,
         PROCESSING_INSTRUCTION_NODE = 7,
         COMMENT_NODE = 8,
         DOCUMENT_NODE = 9,
         DOCUMENT_TYPE_NODE = 10,
         DOCUMENT_FRAGMENT_NODE = 11,
-        NOTATION_NODE = 12,
-        XPATH_NAMESPACE_NODE = 13,
     };
 
-    // EntityReference nodes are deprecated and impossible to create in WebKit.
-    // We want Node.ENTITY_REFERNCE_NODE to exist in JS and this enum, makes the bindings
+    // Entity, EntityReference, Notation, and XPathNamespace nodes are impossible to create in Blink.
+    // But for compatibility reasons we want these enum values exist in JS, and this enum makes the bindings
     // generation not complain about ENTITY_REFERENCE_NODE being missing from the implementation
     // while not requiring all switch(NodeType) blocks to include this deprecated constant.
     enum DeprecatedNodeType {
-        ENTITY_REFERENCE_NODE = 5
+        ENTITY_REFERENCE_NODE = 5,
+        ENTITY_NODE = 6,
+        NOTATION_NODE = 12,
+        XPATH_NAMESPACE_NODE = 13,
     };
 
     enum DocumentPosition {

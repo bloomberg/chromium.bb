@@ -149,8 +149,6 @@ static inline Node::NodeType primaryNodeType(Step::Axis axis)
     switch (axis) {
         case Step::AttributeAxis:
             return Node::ATTRIBUTE_NODE;
-        case Step::NamespaceAxis:
-            return Node::XPATH_NAMESPACE_NODE;
         default:
             return Node::ELEMENT_NODE;
     }
@@ -283,8 +281,7 @@ void Step::nodesInAxis(Node* context, NodeSet& nodes) const
             return;
         }
         case FollowingSiblingAxis:
-            if (context->nodeType() == Node::ATTRIBUTE_NODE ||
-                 context->nodeType() == Node::XPATH_NAMESPACE_NODE)
+            if (context->nodeType() == Node::ATTRIBUTE_NODE)
                 return;
 
             for (Node* n = context->nextSibling(); n; n = n->nextSibling())
@@ -292,8 +289,7 @@ void Step::nodesInAxis(Node* context, NodeSet& nodes) const
                     nodes.append(n);
             return;
         case PrecedingSiblingAxis:
-            if (context->nodeType() == Node::ATTRIBUTE_NODE ||
-                 context->nodeType() == Node::XPATH_NAMESPACE_NODE)
+            if (context->nodeType() == Node::ATTRIBUTE_NODE)
                 return;
 
             for (Node* n = context->previousSibling(); n; n = n->previousSibling())
@@ -362,7 +358,7 @@ void Step::nodesInAxis(Node* context, NodeSet& nodes) const
             return;
         }
         case NamespaceAxis:
-            // XPath namespace nodes are not implemented yet.
+            // XPath namespace nodes are not implemented.
             return;
         case SelfAxis:
             if (nodeMatches(context, SelfAxis, m_nodeTest))
