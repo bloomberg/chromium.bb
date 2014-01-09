@@ -113,6 +113,8 @@ def _CheckLicenseHeaders(excluded_dirs_list, whitelisted_files):
   excluded_dirs_list.append('gin/test')
   # This is a test output directory
   excluded_dirs_list.append('data/dom_perf')
+  # This is a tests directory that doesn't exist in the shipped product.
+  excluded_dirs_list.append('tools/perf/page_sets')
   # Histogram tools, doesn't exist in the snapshot
   excluded_dirs_list.append('tools/histograms')
   # Swarming tools, doesn't exist in the snapshot

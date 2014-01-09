@@ -134,6 +134,29 @@
     {
       "url": "file://key_silk_cases/font_wipe.html",
       "smoothness": { "action": "wait", "seconds": 5 }
+    },
+    {
+      "url": "file://key_silk_cases/inbox_app.html",
+      "navigate_steps" : [
+        { "action": "navigate" },
+        { "action": "wait", "seconds": 2 }
+      ],
+      "smoothness": {
+        "action": "slide_drawer"
+      },
+      "slide_drawer": [
+        {
+          "action": "swipe",
+          "element_function": "function(callback) { callback(document.getElementById('nav-drawer')); }",
+          "distance": 200,
+          "direction": "left",
+          "left_start_percentage": 0.8,
+          "top_start_percentage": 0.2,
+          "wait_after": {
+            "javascript": "!document.getElementById('nav-drawer').active"
+          }
+        }
+      ]
     }
   ]
 }
