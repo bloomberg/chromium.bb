@@ -202,6 +202,26 @@ my %typedArrayHash = ("ArrayBuffer" => [],
                       "Float64Array" => ["double", "v8::kExternalDoubleArray"],
                      );
 
+my %domNodeTypes = ("Attr" => 1,
+                    "CDATASection" => 1,
+                    "CharacterData" => 1,
+                    "Comment" => 1,
+                    "Document" => 1,
+                    "DocumentFragment" => 1,
+                    "DocumentType" => 1,
+                    "Element" => 1,
+                    "Entity" => 1,
+                    "HTMLDocument" => 1,
+                    "Node" => 1,
+                    "Notation" => 1,
+                    "ProcessingInstruction" => 1,
+                    "ShadowRoot" => 1,
+                    "SVGDocument" => 1,
+                    "Text" => 1,
+                    "TestNode" => 1,
+                    "TestInterfaceNode" => 1,
+                   );
+
 my %callbackFunctionTypeHash = ();
 
 my %enumTypeHash = ();
@@ -5605,27 +5625,9 @@ sub IsDOMNodeType
 {
     my $type = shift;
 
-    return 1 if $type eq 'Attr';
-    return 1 if $type eq 'CDATASection';
-    return 1 if $type eq 'CharacterData';
-    return 1 if $type eq 'Comment';
-    return 1 if $type eq 'Document';
-    return 1 if $type eq 'DocumentFragment';
-    return 1 if $type eq 'DocumentType';
-    return 1 if $type eq 'Element';
-    return 1 if $type eq 'Entity';
-    return 1 if $type eq 'HTMLDocument';
-    return 1 if $type eq 'Node';
-    return 1 if $type eq 'Notation';
-    return 1 if $type eq 'ProcessingInstruction';
-    return 1 if $type eq 'ShadowRoot';
-    return 1 if $type eq 'SVGDocument';
-    return 1 if $type eq 'Text';
-
+    return 1 if $domNodeTypes{$type};
     return 1 if $type =~ /^HTML.*Element$/;
     return 1 if $type =~ /^SVG.*Element$/;
-
-    return 1 if $type eq 'TestNode';
 
     return 0;
 }

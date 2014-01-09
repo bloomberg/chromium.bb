@@ -178,6 +178,7 @@ DOM_NODE_TYPES = set([
     'SVGDocument',
     'Text',
     'TestNode',
+    'TestInterfaceNode',
 ])
 NON_WRAPPER_TYPES = set([
     'CompareHow',
@@ -207,6 +208,7 @@ def constructor_type(idl_type):
 
 
 def is_dom_node_type(idl_type):
+    # FIXME: replace with checking inheritance
     return (idl_type in DOM_NODE_TYPES or
             (idl_type.startswith(('HTML', 'SVG')) and
              idl_type.endswith('Element')))

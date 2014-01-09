@@ -145,7 +145,7 @@ v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info
     {% endif %}
     {% if attribute.idl_type != 'EventHandler' %}
     {{attribute.v8_value_to_local_cpp_value}};
-    {% else %}{# EventHandler hack #}
+    {% elif not is_node %}{# EventHandler hack #}
     transferHiddenDependency(info.Holder(), {{attribute.event_handler_getter_expression}}, jsValue, {{v8_class}}::eventListenerCacheIndex, info.GetIsolate());
     {% endif %}
     {% if attribute.enum_validation_expression %}
