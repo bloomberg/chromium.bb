@@ -322,6 +322,8 @@ function populateRemoteTargets(devices) {
 function addToPagesList(data) {
   var row = addTargetToList(data, $('pages-list'), ['name', 'url']);
   addFavicon(row, data);
+  if (data.guests)
+    addGuestViews(row, data.guests);
 }
 
 function addToExtensionsList(data) {
