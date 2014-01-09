@@ -77,6 +77,9 @@
                    '|LayoutTests/editing/spelling' \
                    '|public/web/WebSpellCheckClient.h',
     },
+    'workers': {
+      'filepath': 'Source/core/workers',
+    },
     'wtf': {
       'filepath': 'Source/wtf',
     },
@@ -275,6 +278,7 @@
     'heap': [ 'ager@chromium.org', 'haraken@chromium.org' ],
     'html': [ 'adamk+blink@chromium.org', 'dglazkov+blink@chromium.org' ],
     'public_api': [ 'abarth@chromium.org', 'jamesr@chromium.org', 'dglazkov+blink@chromium.org' ],
+    'workers': [ 'kinuko+watch@chromium.org' ],
     'wtf': [ 'abarth@chromium.org',
              'adamk+blink@chromium.org',
              'loislo+blink@chromium.org',
