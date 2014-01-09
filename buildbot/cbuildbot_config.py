@@ -58,7 +58,7 @@ def OverrideConfigForTrybot(build_config, options):
   """Apply trybot-specific configuration settings.
 
   Args:
-    build_config:  The build configuration dictionary to override.
+    build_config: The build configuration dictionary to override.
       The dictionary is not modified.
     options: The options passed on the commandline.
 
@@ -1568,6 +1568,21 @@ internal_arm_paladin.add_config('nyan-paladin',
 
 internal_incremental.add_config('mario-incremental',
   boards=['x86-mario'],
+)
+
+internal_arm_full = full.derive(internal, arm)
+
+internal_arm_full.add_config('lasercats-full',
+  boards=['daisy_winter'],
+  build_tests=False,
+  manifest='lasercats.xml',
+  # We don't need chrome.
+  sync_chrome=False,
+  chrome_sdk=False,
+  # Note that this forces build_packages to only build chromeos base packages.
+  packages=['chromeos-base/chromeos'],
+  images=['base'],
+  upload_hw_test_artifacts=True,
 )
 
 _toolchain_major.add_config('internal-toolchain-major', internal, official,
