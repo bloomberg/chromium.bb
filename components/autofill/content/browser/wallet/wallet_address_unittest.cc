@@ -448,7 +448,7 @@ TEST_F(WalletAddressTest, GetStreetAddress) {
                    ASCIIToUTF16("phone_number"),
                    "id1");
   AutofillType type = AutofillType(HTML_TYPE_STREET_ADDRESS, HTML_MODE_NONE);
-  EXPECT_EQ(ASCIIToUTF16("address_line_1, address_line_2"),
+  EXPECT_EQ(ASCIIToUTF16("address_line_1\naddress_line_2"),
             address1.GetInfo(type, "en-US"));
 
   // Address has only line 1.

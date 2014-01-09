@@ -42,8 +42,14 @@ bool InputTypeMatchesFieldType(const DetailInput& input,
 
   // Check the groups to distinguish billing types from shipping ones.
   AutofillType input_type = AutofillType(input.type);
-  return input_type.GetStorableType() == server_type &&
-         input_type.group() == field_type.group();
+  if (input_type.group() != field_type.group())
+    return false;
+
+  // Street address (all lines) is matched to the first input address line.
+  if (server_type == ADDRESS_HOME_STREET_ADDRESS)
+    return input_type.GetStorableType() == ADDRESS_HOME_LINE1;
+
+  return input_type.GetStorableType() == server_type;
 }
 
 // Returns true if |input| in the given |section| should be used for a

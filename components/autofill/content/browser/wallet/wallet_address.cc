@@ -280,16 +280,18 @@ base::string16 Address::GetInfo(const AutofillType& type,
   if (type.html_type() == HTML_TYPE_COUNTRY_CODE) {
     DCHECK(IsStringASCII(country_name_code()));
     return base::ASCIIToUTF16(country_name_code());
-  } else if (type.html_type() == HTML_TYPE_STREET_ADDRESS) {
-    base::string16 address = address_line_1();
-    if (!address_line_2().empty())
-      address += base::ASCIIToUTF16(", ") + address_line_2();
-    return address;
   }
 
   switch (type.GetStorableType()) {
     case NAME_FULL:
       return recipient_name();
+
+    case ADDRESS_HOME_STREET_ADDRESS: {
+      base::string16 address = address_line_1();
+      if (!address_line_2().empty())
+        address += base::ASCIIToUTF16("\n") + address_line_2();
+      return address;
+    }
 
     case ADDRESS_HOME_LINE1:
       return address_line_1();

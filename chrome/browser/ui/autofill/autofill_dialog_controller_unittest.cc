@@ -1208,6 +1208,76 @@ TEST_F(AutofillDialogControllerTest, BillingVsShippingPhoneNumber) {
             form_structure()->field(0)->value);
 }
 
+// Similar to the above, but tests that street-address (i.e. all lines of the
+// street address) is successfully filled for both shipping and billing
+// sections.
+TEST_F(AutofillDialogControllerTest, BillingVsShippingStreetAddress) {
+  FormFieldData shipping_address;
+  shipping_address.autocomplete_attribute = "shipping street-address";
+  FormFieldData billing_address;
+  billing_address.autocomplete_attribute = "billing street-address";
+  FormFieldData shipping_address_textarea;
+  shipping_address_textarea.autocomplete_attribute = "shipping street-address";
+  shipping_address_textarea.form_control_type = "textarea";
+  FormFieldData billing_address_textarea;
+  billing_address_textarea.autocomplete_attribute = "billing street-address";
+  billing_address_textarea.form_control_type = "textarea";
+
+  FormData form_data;
+  form_data.fields.push_back(shipping_address);
+  form_data.fields.push_back(billing_address);
+  form_data.fields.push_back(shipping_address_textarea);
+  form_data.fields.push_back(billing_address_textarea);
+  SetUpControllerWithFormData(form_data);
+
+  SwitchToAutofill();
+
+  // The profile that will be chosen for the shipping section.
+  AutofillProfile shipping_profile(test::GetVerifiedProfile());
+  // The profile that will be chosen for the billing section.
+  AutofillProfile billing_profile(test::GetVerifiedProfile2());
+  CreditCard credit_card(test::GetVerifiedCreditCard());
+  controller()->GetTestingManager()->AddTestingProfile(&shipping_profile);
+  controller()->GetTestingManager()->AddTestingProfile(&billing_profile);
+  controller()->GetTestingManager()->AddTestingCreditCard(&credit_card);
+  ui::MenuModel* billing_model =
+      controller()->MenuModelForSection(SECTION_BILLING);
+  billing_model->ActivatedAt(1);
+
+  controller()->OnAccept();
+  ASSERT_EQ(4U, form_structure()->field_count());
+  EXPECT_EQ(ADDRESS_HOME_STREET_ADDRESS,
+            form_structure()->field(0)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME, form_structure()->field(0)->Type().group());
+  EXPECT_EQ(ADDRESS_HOME_STREET_ADDRESS,
+            form_structure()->field(1)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_BILLING, form_structure()->field(1)->Type().group());
+  // Inexact matching; single-line inputs get the address data concatenated but
+  // separated by commas.
+  EXPECT_TRUE(StartsWith(form_structure()->field(0)->value,
+                         shipping_profile.GetRawInfo(ADDRESS_HOME_LINE1),
+                         true));
+  EXPECT_TRUE(EndsWith(form_structure()->field(0)->value,
+                       shipping_profile.GetRawInfo(ADDRESS_HOME_LINE2),
+                       true));
+  EXPECT_TRUE(StartsWith(form_structure()->field(1)->value,
+                         billing_profile.GetRawInfo(ADDRESS_HOME_LINE1),
+                         true));
+  EXPECT_TRUE(EndsWith(form_structure()->field(1)->value,
+                       billing_profile.GetRawInfo(ADDRESS_HOME_LINE2),
+                       true));
+  // The textareas should be an exact match.
+  EXPECT_EQ(shipping_profile.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS),
+            form_structure()->field(2)->value);
+  EXPECT_EQ(billing_profile.GetRawInfo(ADDRESS_HOME_STREET_ADDRESS),
+            form_structure()->field(3)->value);
+
+  EXPECT_NE(form_structure()->field(1)->value,
+            form_structure()->field(0)->value);
+  EXPECT_NE(form_structure()->field(3)->value,
+            form_structure()->field(2)->value);
+}
+
 TEST_F(AutofillDialogControllerTest, AcceptLegalDocuments) {
   for (size_t i = 0; i < 2; ++i) {
     SCOPED_TRACE(testing::Message() << "Case " << i);
