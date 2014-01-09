@@ -219,7 +219,6 @@ void IndexedDBDispatcher::RequestIDBFactoryOpen(
     WebIDBCallbacks* callbacks_ptr,
     WebIDBDatabaseCallbacks* database_callbacks_ptr,
     const std::string& database_identifier) {
-  ResetCursorPrefetchCaches();
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
   scoped_ptr<WebIDBDatabaseCallbacks> database_callbacks(
       database_callbacks_ptr);
@@ -239,7 +238,6 @@ void IndexedDBDispatcher::RequestIDBFactoryOpen(
 void IndexedDBDispatcher::RequestIDBFactoryGetDatabaseNames(
     WebIDBCallbacks* callbacks_ptr,
     const std::string& database_identifier) {
-  ResetCursorPrefetchCaches();
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 
   IndexedDBHostMsg_FactoryGetDatabaseNames_Params params;
@@ -253,7 +251,6 @@ void IndexedDBDispatcher::RequestIDBFactoryDeleteDatabase(
     const base::string16& name,
     WebIDBCallbacks* callbacks_ptr,
     const std::string& database_identifier) {
-  ResetCursorPrefetchCaches();
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 
   IndexedDBHostMsg_FactoryDeleteDatabase_Params params;
@@ -267,7 +264,6 @@ void IndexedDBDispatcher::RequestIDBFactoryDeleteDatabase(
 void IndexedDBDispatcher::RequestIDBDatabaseClose(
     int32 ipc_database_id,
     int32 ipc_database_callbacks_id) {
-  ResetCursorPrefetchCaches();
   Send(new IndexedDBHostMsg_DatabaseClose(ipc_database_id));
   // There won't be pending database callbacks if the transaction was aborted in
   // the initial upgradeneeded event handler.
@@ -718,6 +714,7 @@ void IndexedDBDispatcher::OnIntVersionChange(int32 ipc_thread_id,
 
 void IndexedDBDispatcher::ResetCursorPrefetchCaches(
     int32 ipc_exception_cursor_id) {
+  // TODO(jsbell): Only reset cursors from the same transaction.
   typedef std::map<int32, WebIDBCursorImpl*>::iterator Iterator;
   for (Iterator i = cursors_.begin(); i != cursors_.end(); ++i) {
     if (i->first == ipc_exception_cursor_id)
