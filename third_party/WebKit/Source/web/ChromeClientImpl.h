@@ -218,6 +218,8 @@ public:
     ~NavigatorContentUtilsClientImpl() { }
 
     virtual void registerProtocolHandler(const String& scheme, const String& baseURL, const String& url, const String& title) OVERRIDE;
+    virtual CustomHandlersState isProtocolHandlerRegistered(const String& scheme, const String& baseURL, const String& url) OVERRIDE;
+    virtual void unregisterProtocolHandler(const String& scheme, const String& baseURL, const String& url) OVERRIDE;
 
 private:
     explicit NavigatorContentUtilsClientImpl(WebViewImpl*);

@@ -91,6 +91,7 @@
 #include "platform/Cursor.h"
 #include "platform/DateTimeChooser.h"
 #include "platform/FileChooser.h"
+#include "platform/NotImplemented.h"
 #include "platform/PlatformScreen.h"
 #include "platform/exported/WrappedResourceRequest.h"
 #include "platform/geometry/FloatRect.h"
@@ -1028,6 +1029,17 @@ NavigatorContentUtilsClientImpl::NavigatorContentUtilsClientImpl(WebViewImpl* we
 void NavigatorContentUtilsClientImpl::registerProtocolHandler(const String& scheme, const String& baseURL, const String& url, const String& title)
 {
     m_webView->client()->registerProtocolHandler(scheme, baseURL, url, title);
+}
+
+NavigatorContentUtilsClient::CustomHandlersState NavigatorContentUtilsClientImpl::isProtocolHandlerRegistered(const String& scheme, const String& baseURL, const String& url)
+{
+    notImplemented();
+    return NavigatorContentUtilsClient::CustomHandlersDeclined;
+}
+
+void NavigatorContentUtilsClientImpl::unregisterProtocolHandler(const String& scheme, const String& baseURL, const String& url)
+{
+    notImplemented();
 }
 
 } // namespace blink

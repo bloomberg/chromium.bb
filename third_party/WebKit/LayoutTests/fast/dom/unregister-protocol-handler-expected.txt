@@ -1,30 +1,30 @@
 This test makes sure that navigator.unregisterProtocolHandler throws the proper exceptions and has no-op default implementation.
 
-Fail: window.navigator.unregisterProtocolHandler is not defined.
-Fail: Invalid protocol "http" allowed.
-Fail: Invalid protocol "https" allowed.
-Fail: Invalid protocol "file" allowed.
-Fail: Invalid protocol "web+" allowed.
-Fail: Valid protocol "bitcoin" failed.
-Fail: Valid protocol "geo" failed.
-Fail: Valid protocol "im" failed.
-Fail: Valid protocol "irc" failed.
-Fail: Valid protocol "ircs" failed.
-Fail: Valid protocol "magnet" failed.
-Fail: Valid protocol "mailto" failed.
-Fail: Valid protocol "mms" failed.
-Fail: Valid protocol "news" failed.
-Fail: Valid protocol "nntp" failed.
-Fail: Valid protocol "sip" failed.
-Fail: Valid protocol "sms" failed.
-Fail: Valid protocol "smsto" failed.
-Fail: Valid protocol "ssh" failed.
-Fail: Valid protocol "tel" failed.
-Fail: Valid protocol "urn" failed.
-Fail: Valid protocol "webcal" failed.
-Fail: Valid protocol "wtai" failed.
-Fail: Valid protocol "xmpp" failed.
+Pass: window.navigator.unregisterProtocolHandler is defined.
+Pass: Invalid protocol "http" threw SecurityError exception.
+Pass: Invalid protocol "https" threw SecurityError exception.
+Pass: Invalid protocol "file" threw SecurityError exception.
+Pass: Invalid protocol "web+" threw SecurityError exception.
+Pass: Valid protocol "bitcoin" allowed.
+Pass: Valid protocol "geo" allowed.
+Pass: Valid protocol "im" allowed.
+Pass: Valid protocol "irc" allowed.
+Pass: Valid protocol "ircs" allowed.
+Pass: Valid protocol "magnet" allowed.
+Pass: Valid protocol "mailto" allowed.
+Pass: Valid protocol "mms" allowed.
+Pass: Valid protocol "news" allowed.
+Pass: Valid protocol "nntp" allowed.
+Pass: Valid protocol "sip" allowed.
+Pass: Valid protocol "sms" allowed.
+Pass: Valid protocol "smsto" allowed.
+Pass: Valid protocol "ssh" allowed.
+Pass: Valid protocol "tel" allowed.
+Pass: Valid protocol "urn" allowed.
+Pass: Valid protocol "webcal" allowed.
+Pass: Valid protocol "wtai" allowed.
+Pass: Valid protocol "xmpp" allowed.
 Fail: Invalid url "" allowed.
 Fail: Invalid url "%S" allowed.
-Fail: Invalid call did not succeed.
+Pass: Valid call succeeded.
 

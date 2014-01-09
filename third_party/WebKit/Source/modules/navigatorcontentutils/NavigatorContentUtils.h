@@ -47,10 +47,8 @@ public:
 
     static void registerProtocolHandler(Navigator*, const String& scheme, const String& url, const String& title, ExceptionState&);
 
-#if ENABLE(CUSTOM_SCHEME_HANDLER)
     static String isProtocolHandlerRegistered(Navigator*, const String& scheme, const String& url, ExceptionState&);
     static void unregisterProtocolHandler(Navigator*, const String& scheme, const String& url, ExceptionState&);
-#endif
 
     static PassRefPtr<NavigatorContentUtils> create(NavigatorContentUtilsClient*);
 

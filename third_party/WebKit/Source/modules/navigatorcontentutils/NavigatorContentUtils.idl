@@ -21,7 +21,7 @@
 // http://www.w3.org/TR/html5/system-state-and-capabilities.html#custom-handlers
 partial interface Navigator {
     [RuntimeEnabled=NavigatorContentUtils, RaisesException] void registerProtocolHandler(DOMString scheme, DOMString url, DOMString title);
-    [RuntimeEnabled=NavigatorContentUtils, Conditional=CUSTOM_SCHEME_HANDLER, RaisesException] DOMString isProtocolHandlerRegistered(DOMString scheme, DOMString url);
-    [RuntimeEnabled=NavigatorContentUtils, Conditional=CUSTOM_SCHEME_HANDLER, RaisesException] void unregisterProtocolHandler(DOMString scheme, DOMString url);
+    [RuntimeEnabled=CustomSchemeHandler, RaisesException] DOMString isProtocolHandlerRegistered(DOMString scheme, DOMString url);
+    [RuntimeEnabled=CustomSchemeHandler, RaisesException] void unregisterProtocolHandler(DOMString scheme, DOMString url);
 };
 

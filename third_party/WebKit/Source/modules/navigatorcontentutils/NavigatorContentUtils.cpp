@@ -154,7 +154,6 @@ void NavigatorContentUtils::registerProtocolHandler(Navigator* navigator, const 
     NavigatorContentUtils::from(navigator->frame()->page())->client()->registerProtocolHandler(scheme, baseURL, url, title);
 }
 
-#if ENABLE(CUSTOM_SCHEME_HANDLER)
 static String customHandlersStateString(const NavigatorContentUtilsClient::CustomHandlersState state)
 {
     DEFINE_STATIC_LOCAL(const String, newHandler, ("new"));
@@ -209,7 +208,6 @@ void NavigatorContentUtils::unregisterProtocolHandler(Navigator* navigator, cons
 
     NavigatorContentUtils::from(navigator->frame()->page())->client()->unregisterProtocolHandler(scheme, baseURL, url);
 }
-#endif
 
 const char* NavigatorContentUtils::supplementName()
 {

@@ -37,7 +37,6 @@ public:
     virtual ~NavigatorContentUtilsClient() { }
     virtual void registerProtocolHandler(const String& scheme, const String& baseURL, const String& url, const String& title) = 0;
 
-#if ENABLE(CUSTOM_SCHEME_HANDLER)
     enum CustomHandlersState {
         CustomHandlersNew,
         CustomHandlersRegistered,
@@ -46,7 +45,6 @@ public:
 
     virtual CustomHandlersState isProtocolHandlerRegistered(const String& scheme, const String& baseURL, const String& url) = 0;
     virtual void unregisterProtocolHandler(const String& scheme, const String& baseURL, const String& url) = 0;
-#endif
 };
 
 void provideNavigatorContentUtilsTo(Page*, NavigatorContentUtilsClient*);
