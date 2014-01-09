@@ -47,6 +47,7 @@ namespace WebCore {
 using namespace HTMLNames;
 
 class Document;
+class VTTScanner;
 
 class VTTParserClient {
 public:
@@ -81,13 +82,12 @@ public:
             || tagName == rubyTag
             || tagName == rtTag;
     }
-
-    static inline bool isASpace(char c)
+    static inline bool isASpace(UChar c)
     {
         // WebVTT space characters are U+0020 SPACE, U+0009 CHARACTER TABULATION (tab), U+000A LINE FEED (LF), U+000C FORM FEED (FF), and U+000D CARRIAGE RETURN    (CR).
         return c == ' ' || c == '\t' || c == '\n' || c == '\f' || c == '\r';
     }
-    static inline bool isValidSettingDelimiter(char c)
+    static inline bool isValidSettingDelimiter(UChar c)
     {
         // ... a WebVTT cue consists of zero or more of the following components, in any order, separated from each other by one or more
         // U+0020 SPACE characters or U+0009 CHARACTER TABULATION (tab) characters.
@@ -133,7 +133,7 @@ private:
     void collectMetadataHeader(const String&);
     void createNewRegion(const String& headerValue);
 
-    static void skipWhiteSpace(const String&, unsigned*);
+    static bool collectTimeStamp(VTTScanner& input, double& timeStamp);
 
     BufferedLineReader m_lineReader;
     OwnPtr<TextResourceDecoder> m_decoder;

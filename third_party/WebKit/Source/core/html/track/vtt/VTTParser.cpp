@@ -35,6 +35,7 @@
 #include "core/dom/ProcessingInstruction.h"
 #include "core/dom/Text.h"
 #include "core/html/track/vtt/VTTElement.h"
+#include "core/html/track/vtt/VTTScanner.h"
 #include "platform/text/SegmentedString.h"
 #include "wtf/text/WTFString.h"
 
@@ -55,25 +56,8 @@ static unsigned scanDigits(const String& input, unsigned* position)
 
 unsigned VTTParser::collectDigitsToInt(const String& input, unsigned* position, int& number)
 {
-    unsigned startPosition = *position;
-    unsigned numDigits = scanDigits(input, position);
-    if (!numDigits) {
-        number = 0;
-        return 0;
-    }
-    bool validNumber;
-    if (input.is8Bit())
-        number = charactersToInt(input.characters8() + startPosition, numDigits, &validNumber);
-    else
-        number = charactersToInt(input.characters16() + startPosition, numDigits, &validNumber);
-
-    // Since we know that scanDigits only scanned valid (ASCII) digits (and
-    // hence that's what got passed to charactersToInt()), the remaining
-    // failure mode for charactersToInt() is overflow, so if |validNumber| is
-    // not true, then set |number| to the maximum int value.
-    if (!validNumber)
-        number = std::numeric_limits<int>::max();
-    return numDigits;
+    VTTLegacyScanner inputScanner(input, position);
+    return inputScanner.scanDigits(number);
 }
 
 String VTTParser::collectWord(const String& input, unsigned* position)
@@ -82,12 +66,6 @@ String VTTParser::collectWord(const String& input, unsigned* position)
     while (*position < input.length() && !isASpace(input[*position]))
         string.append(input[(*position)++]);
     return string.toString();
-}
-
-void VTTParser::skipWhiteSpace(const String& line, unsigned* position)
-{
-    while (*position < line.length() && isASpace(line[*position]))
-        (*position)++;
 }
 
 bool VTTParser::parseFloatPercentageValue(const String& value, float& percentage)
@@ -307,35 +285,29 @@ VTTParser::ParseState VTTParser::collectCueId(const String& line)
 
 VTTParser::ParseState VTTParser::collectTimingsAndSettings(const String& line)
 {
+    VTTScanner input(line);
+
     // Collect WebVTT cue timings and settings. (5.3 WebVTT cue timings and settings parsing.)
     // Steps 1 - 3 - Let input be the string being parsed and position be a pointer into input.
-    unsigned position = 0;
-    skipWhiteSpace(line, &position);
+    input.skipWhile<isASpace>();
 
     // Steps 4 - 5 - Collect a WebVTT timestamp. If that fails, then abort and return failure. Otherwise, let cue's text track cue start time be the collected time.
-    if (!collectTimeStamp(line, &position, m_currentStartTime))
+    if (!collectTimeStamp(input, m_currentStartTime))
         return BadCue;
-    if (position >= line.length())
-        return BadCue;
-
-    skipWhiteSpace(line, &position);
+    input.skipWhile<isASpace>();
 
     // Steps 6 - 9 - If the next three characters are not "-->", abort and return failure.
-    if (line.find("-->", position) == kNotFound)
+    if (!input.scan("-->"))
         return BadCue;
-    position += 3;
-    if (position >= line.length())
-        return BadCue;
-
-    skipWhiteSpace(line, &position);
+    input.skipWhile<isASpace>();
 
     // Steps 10 - 11 - Collect a WebVTT timestamp. If that fails, then abort and return failure. Otherwise, let cue's text track cue end time be the collected time.
-    if (!collectTimeStamp(line, &position, m_currentEndTime))
+    if (!collectTimeStamp(input, m_currentEndTime))
         return BadCue;
-    skipWhiteSpace(line, &position);
+    input.skipWhile<isASpace>();
 
     // Step 12 - Parse the WebVTT settings for the cue (conducted in TextTrackCue).
-    m_currentSettings = line.substring(position, line.length()-1);
+    m_currentSettings = input.restOfInputAsString();
     return CueText;
 }
 
@@ -470,6 +442,12 @@ void VTTParser::createNewRegion(const String& headerValue)
 
 bool VTTParser::collectTimeStamp(const String& line, unsigned* position, double& timeStamp)
 {
+    VTTLegacyScanner input(line, position);
+    return collectTimeStamp(input, timeStamp);
+}
+
+bool VTTParser::collectTimeStamp(VTTScanner& input, double& timeStamp)
+{
     // Collect a WebVTT timestamp (5.3 WebVTT cue timings and settings parsing.)
     // Steps 1 - 4 - Initial checks, let most significant units be minutes.
     enum Mode { Minutes, Hours };
@@ -478,25 +456,21 @@ bool VTTParser::collectTimeStamp(const String& line, unsigned* position, double&
     // Steps 5 - 7 - Collect a sequence of characters that are 0-9.
     // If not 2 characters or value is greater than 59, interpret as hours.
     int value1;
-    unsigned value1Digits = collectDigitsToInt(line, position, value1);
+    unsigned value1Digits = input.scanDigits(value1);
     if (!value1Digits)
         return false;
     if (value1Digits != 2 || value1 > 59)
         mode = Hours;
 
     // Steps 8 - 11 - Collect the next sequence of 0-9 after ':' (must be 2 chars).
-    if (*position >= line.length() || line[(*position)++] != ':')
-        return false;
     int value2;
-    if (collectDigitsToInt(line, position, value2) != 2)
+    if (!input.scan(':') || input.scanDigits(value2) != 2)
         return false;
 
     // Step 12 - Detect whether this timestamp includes hours.
     int value3;
-    if (mode == Hours || (*position < line.length() && line[*position] == ':')) {
-        if (*position >= line.length() || line[(*position)++] != ':')
-            return false;
-        if (collectDigitsToInt(line, position, value3) != 2)
+    if (mode == Hours || input.match(':')) {
+        if (!input.scan(':') || input.scanDigits(value3) != 2)
             return false;
     } else {
         value3 = value2;
@@ -505,10 +479,8 @@ bool VTTParser::collectTimeStamp(const String& line, unsigned* position, double&
     }
 
     // Steps 13 - 17 - Collect next sequence of 0-9 after '.' (must be 3 chars).
-    if (*position >= line.length() || line[(*position)++] != '.')
-        return false;
     int value4;
-    if (collectDigitsToInt(line, position, value4) != 3)
+    if (!input.scan('.') || input.scanDigits(value4) != 3)
         return false;
     if (value2 > 59 || value3 > 59)
         return false;
