@@ -652,18 +652,6 @@ class _config(dict):
     # Super class (dict) has no __getattr__ method, so use __getattribute__.
     return super(_config, self).__getattribute__(name)
 
-  def GetBotId(self, remote_trybot=False):
-    """Get the 'bot id' of a particular bot.
-
-    The bot id is used to specify the subdirectory where artifacts are stored
-    in Google Storage. To avoid conflicts between remote trybots and regular
-    bots, we add a 'trybot-' prefix to any remote trybot runs.
-
-    Args:
-      remote_trybot: Whether this run is a remote trybot run.
-    """
-    return 'trybot-%s' % self.name if remote_trybot else self.name
-
   def derive(self, *args, **kwargs):
     """Create a new config derived from this one.
 

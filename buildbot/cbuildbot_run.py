@@ -49,7 +49,6 @@ class BuilderRun(object):
       # Some pre-computed run configuration values.
       'buildnumber',     # The build number for this run.
       'buildroot',       # The build root path for this run.
-      'bot_id',          # Effective name of builder for this run.
       'manifest_branch', # The manifest branch to build and test for this run.
 
       # TODO(mtennant): Other candidates here include:
@@ -74,7 +73,6 @@ class BuilderRun(object):
     self.buildroot = self.options.buildroot
     self.buildnumber = self.options.buildnumber
     self.manifest_branch = self.options.branch
-    self.bot_id = self.config.GetBotId(remote_trybot=self.options.remote_trybot)
 
   @property
   def attrs(self):
