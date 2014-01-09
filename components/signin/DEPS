@@ -1,0 +1,14 @@
+include_rules = [
+  "+components/webdata/common",
+  "+components/webdata/encryptor",
+  "+google_apis/gaia/gaia_urls.h",
+  "+grit",  # For generated headers
+  "+net",
+  "+sql",
+  "+ui",
+  # Signin is a layered component; subdirectories must explicitly introduce
+  # the ability to use the content layer as appropriate.
+  "-components/signin/content",
+  "-content/public/common",
+  "-ipc",
+]

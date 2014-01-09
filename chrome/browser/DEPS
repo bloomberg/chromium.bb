@@ -18,6 +18,7 @@ include_rules = [
   "+components/policy",
   "+components/precache",
   "+components/sessions",
+  "+components/signin",
   "+components/startup_metric_utils",
   "+components/translate/core/browser",
   "+components/translate/core/common",

@@ -14,8 +14,6 @@
 #include "chrome/browser/webdata/autofill_profile_syncable_service.h"
 #include "chrome/browser/webdata/keyword_table.h"
 #include "chrome/browser/webdata/logins_table.h"
-#include "chrome/browser/webdata/token_service_table.h"
-#include "chrome/browser/webdata/token_web_data.h"
 #include "chrome/browser/webdata/web_apps_table.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/webdata/web_intents_table.h"
@@ -23,6 +21,8 @@
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/signin/core/webdata/token_service_table.h"
+#include "components/signin/core/webdata/token_web_data.h"
 #include "components/webdata/common/webdata_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/chromium_strings.h"
@@ -106,8 +106,8 @@ WebDataServiceWrapper::WebDataServiceWrapper(Profile* profile) {
   autofill_web_data_->Init();
 
   token_web_data_ = new TokenWebData(
-      web_database_, base::Bind(&ProfileErrorCallback,
-                                PROFILE_ERROR_DB_TOKEN_WEB_DATA));
+      web_database_, ui_thread, db_thread, base::Bind(
+         &ProfileErrorCallback, PROFILE_ERROR_DB_TOKEN_WEB_DATA));
   token_web_data_->Init();
 
   web_data_ = new WebDataService(
@@ -143,21 +143,6 @@ scoped_refptr<WebDataService> WebDataServiceWrapper::GetWebData() {
 
 scoped_refptr<TokenWebData> WebDataServiceWrapper::GetTokenWebData() {
   return token_web_data_.get();
-}
-
-// static
-scoped_refptr<TokenWebData> TokenWebData::FromBrowserContext(
-    content::BrowserContext* context) {
-  // For this service, the implicit/explicit distinction doesn't
-  // really matter; it's just used for a DCHECK.  So we currently
-  // cheat and always say EXPLICIT_ACCESS.
-  WebDataServiceWrapper* wrapper =
-      WebDataServiceFactory::GetForProfile(
-          static_cast<Profile*>(context), Profile::EXPLICIT_ACCESS);
-  if (wrapper)
-    return wrapper->GetTokenWebData();
-  // |wrapper| can be NULL in Incognito mode.
-  return scoped_refptr<TokenWebData>(NULL);
 }
 
 // static
@@ -219,6 +204,18 @@ WebDataServiceFactory::GetAutofillWebDataForProfile(
   return wrapper ?
       wrapper->GetAutofillWebData() :
       scoped_refptr<AutofillWebDataService>(NULL);
+}
+
+// static
+scoped_refptr<TokenWebData>
+WebDataServiceFactory::GetTokenWebDataForProfile(
+    Profile* profile,
+    Profile::ServiceAccessType access_type) {
+  WebDataServiceWrapper* wrapper =
+      WebDataServiceFactory::GetForProfile(profile, access_type);
+  // |wrapper| can be NULL in Incognito mode.
+  return wrapper ? wrapper->GetTokenWebData()
+                 : scoped_refptr<TokenWebData>(NULL);
 }
 
 // static

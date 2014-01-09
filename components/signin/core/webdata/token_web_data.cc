@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/webdata/token_web_data.h"
+#include "components/signin/core/webdata/token_web_data.h"
 
 #include "base/bind.h"
+#include "base/memory/ref_counted_delete_on_message_loop.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/stl_util.h"
-#include "chrome/browser/webdata/token_service_table.h"
+#include "components/signin/core/webdata/token_service_table.h"
 #include "components/webdata/common/web_database_service.h"
-#include "content/public/browser/browser_thread.h"
 
 using base::Bind;
 using base::Time;
-using content::BrowserThread;
 
 class TokenWebDataBackend
-    : public base::RefCountedThreadSafe<TokenWebDataBackend,
-                                        BrowserThread::DeleteOnDBThread> {
+    : public base::RefCountedDeleteOnMessageLoop<TokenWebDataBackend> {
 
  public:
-  TokenWebDataBackend() {
+  TokenWebDataBackend(scoped_refptr<base::MessageLoopProxy> db_thread)
+      : base::RefCountedDeleteOnMessageLoop<TokenWebDataBackend>(db_thread) {
   }
 
   WebDatabase::State RemoveAllTokens(WebDatabase* db) {
@@ -59,20 +59,16 @@ class TokenWebDataBackend
   }
 
  private:
-  friend struct BrowserThread::DeleteOnThread<BrowserThread::DB>;
+  friend class base::RefCountedDeleteOnMessageLoop<TokenWebDataBackend>;
   friend class base::DeleteHelper<TokenWebDataBackend>;
-  // We have to friend RCTS<> so WIN shared-lib build is happy
-  // (http://crbug/112250).
-  friend class base::RefCountedThreadSafe<TokenWebDataBackend,
-                                          BrowserThread::DeleteOnDBThread>;
-
 };
 
 TokenWebData::TokenWebData(scoped_refptr<WebDatabaseService> wdbs,
-                               const ProfileErrorCallback& callback)
-    : WebDataServiceBase(wdbs, callback,
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)),
-      token_backend_(new TokenWebDataBackend()) {
+                           scoped_refptr<base::MessageLoopProxy> ui_thread,
+                           scoped_refptr<base::MessageLoopProxy> db_thread,
+                           const ProfileErrorCallback& callback)
+    : WebDataServiceBase(wdbs, callback, ui_thread),
+      token_backend_(new TokenWebDataBackend(db_thread)) {
 }
 
 void TokenWebData::SetTokenForService(const std::string& service,
@@ -100,10 +96,10 @@ WebDataServiceBase::Handle TokenWebData::GetAllTokens(
       Bind(&TokenWebDataBackend::GetAllTokens, token_backend_), consumer);
 }
 
-TokenWebData::TokenWebData()
-    : WebDataServiceBase(NULL, ProfileErrorCallback(),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)),
-      token_backend_(new TokenWebDataBackend()) {
+TokenWebData::TokenWebData(scoped_refptr<base::MessageLoopProxy> ui_thread,
+                           scoped_refptr<base::MessageLoopProxy> db_thread)
+    : WebDataServiceBase(NULL, ProfileErrorCallback(), ui_thread),
+      token_backend_(new TokenWebDataBackend(db_thread)) {
 }
 
 TokenWebData::~TokenWebData() {
