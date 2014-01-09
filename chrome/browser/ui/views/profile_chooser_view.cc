@@ -791,22 +791,16 @@ views::View* ProfileChooserView::CreateCurrentProfileAccountsView(
   std::string primary_account =
       SigninManagerFactory::GetForProfile(profile)->GetAuthenticatedUsername();
   DCHECK(!primary_account.empty());
-  std::vector<std::string> accounts(
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile)->GetAccounts());
-  DCHECK_EQ(1, std::count_if(accounts.begin(), accounts.end(),
-                             std::bind1st(std::equal_to<std::string>(),
-                                          primary_account)));
+  std::vector<std::string>accounts =
+      profiles::GetSecondaryAccountsForProfile(profile, primary_account);
 
-  // The primary account should always be listed first.  However, the vector
-  // returned by ProfileOAuth2TokenService::GetAccounts() will contain the
-  // primary account too.  Ignore it when it appears later.
+  // The primary account should always be listed first.
   // TODO(rogerta): we still need to further differentiate the primary account
-  // from the others, so more work is likely required here: crbug.com/311124.
+  // from the others in the UI, so more work is likely required here:
+  // crbug.com/311124.
   CreateAccountButton(layout, primary_account, true);
-  for (size_t i = 0; i < accounts.size(); ++i) {
-    if (primary_account != accounts[i])
-      CreateAccountButton(layout, accounts[i], false);
-  }
+  for (size_t i = 0; i < accounts.size(); ++i)
+    CreateAccountButton(layout, accounts[i], false);
 
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 

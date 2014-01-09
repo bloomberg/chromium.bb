@@ -7,7 +7,6 @@
 #import "chrome/browser/ui/cocoa/browser/profile_chooser_controller.h"
 
 #include "base/mac/bundle_locations.h"
-#include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -17,6 +16,7 @@
 #include "chrome/browser/profiles/profile_info_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
@@ -579,39 +579,30 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   base::scoped_nsobject<NSView> container([[NSView alloc] initWithFrame:rect]);
   currentProfileAccounts_.clear();
 
-  // The primary account should always be listed first.  However, the vector
-  // returned by ProfileOAuth2TokenService::GetAccounts() will contain the
-  // primary account too.  Ignore it when it appears later.
-  // TODO(rogerta): we still need to further differentiate the primary account
-  // from the others, so more work is likely required here: crbug.com/311124.
   Profile* profile = browser_->profile();
-
-  // TODO(noms): This code is duplicated by the views implementation. See
-  // crbug.com/331805.
   std::string primaryAccount =
       SigninManagerFactory::GetForProfile(profile)->GetAuthenticatedUsername();
   DCHECK(!primaryAccount.empty());
-  std::vector<std::string> accounts =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile)->GetAccounts();
-  DCHECK_EQ(1, std::count_if(accounts.begin(), accounts.end(),
-                             std::bind1st(std::equal_to<std::string>(),
-                                          primaryAccount)));
+  std::vector<std::string>accounts =
+      profiles::GetSecondaryAccountsForProfile(profile, primaryAccount);
+
   rect.origin.y = 0;
   for (size_t i = 0; i < accounts.size(); ++i) {
     // Save the original email address, as the button text could be elided.
     currentProfileAccounts_[i] = accounts[i];
-    if (primaryAccount != accounts[i]) {
-      NSButton* accountButton = [self makeAccountButtonWithRect:rect
-                                                          title:accounts[i]
-                                                   canBeDeleted:true];
-      [accountButton setTag:i];
-      [container addSubview:accountButton];
-      rect.origin.y = NSMaxY([accountButton frame]) + kSmallVerticalSpacing;
-    }
+    NSButton* accountButton = [self makeAccountButtonWithRect:rect
+                                                        title:accounts[i]
+                                                 canBeDeleted:true];
+    [accountButton setTag:i];
+    [container addSubview:accountButton];
+    rect.origin.y = NSMaxY([accountButton frame]) + kSmallVerticalSpacing;
   }
 
-  // Add the primary account button. It doesn't need a tag, as it cannot be
-  // removed.
+  // The primary account should always be listed first. It doesn't need a tag,
+  // as it cannot be removed.
+  // TODO(rogerta): we still need to further differentiate the primary account
+  // from the others in the UI, so more work is likely required here:
+  // crbug.com/311124.
   NSButton* accountButton = [self makeAccountButtonWithRect:rect
                                                       title:primaryAccount
                                                canBeDeleted:false];

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PROFILES_PROFILES_STATE_H_
 #define CHROME_BROWSER_PROFILES_PROFILES_STATE_H_
 
+#include <vector>
 #include "base/strings/string16.h"
 
 class Browser;
@@ -34,6 +35,13 @@ base::string16 GetActiveProfileDisplayName(Browser* browser);
 // profile preferences, which triggers an update in the ProfileInfoCache.
 void UpdateProfileName(Profile* profile,
                        const base::string16& new_profile_name);
+
+// Returns the list of secondary accounts for a specific |profile|, which is
+// all the email addresses associated with the profile that are not equal to
+// the |primary_account|.
+std::vector<std::string> GetSecondaryAccountsForProfile(
+    Profile* profile,
+    const std::string& primary_account);
 
 }  // namespace profiles
 
