@@ -28,7 +28,7 @@ class PPAPI_THUNK_EXPORT PPB_FileRef_API {
   virtual PP_Var GetName() const = 0;
   virtual PP_Var GetPath() const = 0;
   virtual PP_Resource GetParent() = 0;
-  virtual int32_t MakeDirectory(PP_Bool make_ancestors,
+  virtual int32_t MakeDirectory(int32_t make_directory_flags,
                                 scoped_refptr<TrackedCallback> callback) = 0;
   virtual int32_t Touch(PP_Time last_access_time,
                         PP_Time last_modified_time,

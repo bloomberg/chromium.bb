@@ -25,6 +25,7 @@
 #include "ppapi/thunk/interfaces_ppb_private_flash.h"
 #include "ppapi/thunk/interfaces_ppb_public_stable.h"
 #include "ppapi/thunk/interfaces_ppb_public_dev.h"
+#include "ppapi/thunk/interfaces_ppb_public_dev_channel.h"
 
 #undef UNPROXIED_IFACE
 #undef PROXIED_IFACE

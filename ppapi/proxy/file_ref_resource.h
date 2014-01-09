@@ -42,8 +42,8 @@ class PPAPI_PROXY_EXPORT FileRefResource
   virtual PP_Var GetPath() const OVERRIDE;
   virtual PP_Resource GetParent() OVERRIDE;
   virtual int32_t MakeDirectory(
-     PP_Bool make_ancestors,
-     scoped_refptr<TrackedCallback> callback) OVERRIDE;
+      int32_t make_directory_flags,
+      scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual int32_t Touch(PP_Time last_access_time,
                         PP_Time last_modified_time,
                         scoped_refptr<TrackedCallback> callback) OVERRIDE;

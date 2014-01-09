@@ -180,12 +180,12 @@ int32_t PepperFileRefHost::OnResourceMessageReceived(
 
 int32_t PepperFileRefHost::OnMakeDirectory(
     ppapi::host::HostMessageContext* context,
-    bool make_ancestors) {
+    int32_t make_directory_flags) {
   int32_t rv = CanCreate();
   if (rv != PP_OK)
     return rv;
-  return backend_->MakeDirectory(context->MakeReplyMessageContext(),
-                                 make_ancestors);
+  return backend_->MakeDirectory(
+      context->MakeReplyMessageContext(), make_directory_flags);
 }
 
 int32_t PepperFileRefHost::OnTouch(ppapi::host::HostMessageContext* context,

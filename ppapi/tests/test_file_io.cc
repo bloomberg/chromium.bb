@@ -296,7 +296,8 @@ std::string TestFileIO::TestOpenDirectory() {
 
   // Make a directory.
   pp::FileRef dir_ref(file_system, "/test_dir_open_directory");
-  callback.WaitForResult(dir_ref.MakeDirectory(callback.GetCallback()));
+  callback.WaitForResult(dir_ref.MakeDirectory(
+      PP_MAKEDIRECTORYFLAG_NONE, callback.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(callback);
   ASSERT_EQ(PP_OK, callback.result());
 

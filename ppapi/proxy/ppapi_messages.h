@@ -1256,7 +1256,7 @@ IPC_MESSAGE_CONTROL2(PpapiHostMsg_FileRef_CreateInternal,
 // Requests that the browser create a directory at the location indicated by
 // the FileRef.
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_FileRef_MakeDirectory,
-                     bool /* make_ancestors */)
+                     int32_t /* make_directory_flags */)
 IPC_MESSAGE_CONTROL0(PpapiPluginMsg_FileRef_MakeDirectoryReply)
 
 // Requests that the browser update the last accessed and last modified times
