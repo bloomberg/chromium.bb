@@ -6,7 +6,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/time/time.h"
+#include "base/timer/elapsed_timer.h"
 #include "tools/gn/build_settings.h"
 #include "tools/gn/commands.h"
 #include "tools/gn/ninja_target_writer.h"
@@ -57,7 +57,7 @@ const char kGen_Help[] =
 
 // Note: partially duplicated in command_gyp.cc.
 int RunGen(const std::vector<std::string>& args) {
-  base::TimeTicks begin_time = base::TimeTicks::Now();
+  base::ElapsedTimer timer;
 
   // Deliberately leaked to avoid expensive process teardown.
   Setup* setup = new Setup;
@@ -80,7 +80,7 @@ int RunGen(const std::vector<std::string>& args) {
                                      setup->builder()))
     return 1;
 
-  base::TimeTicks end_time = base::TimeTicks::Now();
+  base::TimeDelta elapsed_time = timer.Elapsed();
 
   if (!CommandLine::ForCurrentProcess()->HasSwitch(kSwitchQuiet)) {
     OutputString("Done. ", DECORATION_GREEN);
@@ -91,7 +91,7 @@ int RunGen(const std::vector<std::string>& args) {
         base::IntToString(
             setup->scheduler().input_file_manager()->GetInputFileCount()) +
         " files in " +
-        base::IntToString((end_time - begin_time).InMilliseconds()) + "ms\n";
+        base::IntToString(elapsed_time.InMilliseconds()) + "ms\n";
     OutputString(stats);
   }
 

@@ -10,7 +10,7 @@
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/time/time.h"
+#include "base/timer/elapsed_timer.h"
 #include "tools/gn/build_settings.h"
 #include "tools/gn/commands.h"
 #include "tools/gn/err.h"
@@ -326,9 +326,7 @@ const char kGyp_Help[] =
     "  }\n";
 
 int RunGyp(const std::vector<std::string>& args) {
-  const CommandLine* cmdline = CommandLine::ForCurrentProcess();
-
-  base::TimeTicks begin_time = base::TimeTicks::Now();
+  base::ElapsedTimer timer;
 
   // Deliberately leaked to avoid expensive process teardown.
   Setup* setup_debug = new Setup;
@@ -407,9 +405,9 @@ int RunGyp(const std::vector<std::string>& args) {
     return 1;
   }
 
-  // Timing info.
-  base::TimeTicks end_time = base::TimeTicks::Now();
-  if (!cmdline->HasSwitch(kSwitchQuiet)) {
+  base::TimeDelta elapsed_time = timer.Elapsed();
+
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(kSwitchQuiet)) {
     OutputString("Done. ", DECORATION_GREEN);
 
     std::string stats = "Wrote " +
@@ -418,7 +416,7 @@ int RunGyp(const std::vector<std::string>& args) {
         base::IntToString(
             setup_debug->scheduler().input_file_manager()->GetInputFileCount())
         + " GN files in " +
-        base::IntToString((end_time - begin_time).InMilliseconds()) + "ms\n";
+        base::IntToString(elapsed_time.InMilliseconds()) + "ms\n";
 
     OutputString(stats);
   }
