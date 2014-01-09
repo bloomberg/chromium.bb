@@ -1172,11 +1172,12 @@ FileOperationManager.prototype.paste = function(
  */
 FileOperationManager.prototype.isMovable = function(
     sourceEntry, targetDirEntry) {
-  // TODO(mtomasz): Use the volume manager instead of full paths.
-  return (PathUtil.isDriveBasedPath(sourceEntry.fullPath) &&
-          PathUtil.isDriveBasedPath(targetDirEntry.fullPath)) ||
-         (PathUtil.getRootPath(sourceEntry.fullPath) ==
-          PathUtil.getRootPath(targetDirEntry.fullPath));
+  var sourceLocationInfo = this.volumeManager_.getLocationInfo(sourceEntry);
+  var targetDirLocationInfo = this.volumeManager_.getLocationInfo(
+      targetDirEntry);
+
+  return sourceLocationInfo && targetDirLocationInfo &&
+      sourceLocationInfo.volumeInfo === targetDirLocationInfo.volumeInfo;
 };
 
 /**
