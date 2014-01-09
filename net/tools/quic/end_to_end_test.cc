@@ -218,19 +218,15 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     server_thread_.reset(new ServerThread(server_address_, server_config_,
                                           server_supported_versions_,
                                           strike_register_no_startup_period_));
-    server_thread_->Start();
-    server_thread_->WaitForServerStartup();
+    server_thread_->Initialize();
     server_address_ = IPEndPoint(server_address_.address(),
                                  server_thread_->GetPort());
     QuicDispatcher* dispatcher =
         QuicServerPeer::GetDispatcher(server_thread_->server());
+    QuicDispatcherPeer::UseWriter(dispatcher, server_writer_);
     server_writer_->SetConnectionHelper(
         QuicDispatcherPeer::GetHelper(dispatcher));
-    // TODO(rtenneti): Enable server_thread's Pause/Resume.
-    // server_thread_->Pause();
-    QuicDispatcherPeer::UseWriter(dispatcher, server_writer_);
-    // TODO(rtenneti): Enable server_thread's Pause/Resume.
-    // server_thread_->Resume();
+    server_thread_->Start();
     server_started_ = true;
   }
 
@@ -728,9 +724,7 @@ TEST_P(EndToEndTest, InitialRTT) {
   client_->client()->WaitForCryptoHandshakeConfirmed();
   server_thread_->WaitForCryptoHandshakeConfirmed();
 
-  // Pause the server so we can access the server's internals without races.
-  // TODO(rtenneti): Enable server_thread's Pause/Resume.
-  // server_thread_->Pause();
+  server_thread_->Pause();
   QuicDispatcher* dispatcher =
       QuicServerPeer::GetDispatcher(server_thread_->server());
   ASSERT_EQ(1u, dispatcher->session_map().size());
@@ -751,8 +745,7 @@ TEST_P(EndToEndTest, InitialRTT) {
   EXPECT_FALSE(client_sent_packet_manager.SmoothedRtt().IsInfinite());
   EXPECT_GE(static_cast<int64>(kMaxInitialRoundTripTimeUs),
             server_sent_packet_manager.SmoothedRtt().ToMicroseconds());
-  // TODO(rtenneti): Enable server_thread's Pause/Resume.
-  // server_thread_->Resume();
+  server_thread_->Resume();
 }
 
 TEST_P(EndToEndTest, ResetConnection) {

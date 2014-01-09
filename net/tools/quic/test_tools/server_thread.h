@@ -24,19 +24,22 @@ class ServerThread : public base::SimpleThread {
 
   virtual ~ServerThread();
 
-  // SimpleThread implementation.
-  virtual void Run() OVERRIDE;
+  // Prepares the server, but does not start accepting connections. Useful for
+  // injecting mocks.
+  void Initialize();
 
-  // Waits until the server has started and is listening for requests.
-  void WaitForServerStartup();
+  // Runs the event loop. Will initialize if necessary.
+  virtual void Run() OVERRIDE;
 
   // Waits for the handshake to be confirmed for the first session created.
   void WaitForCryptoHandshakeConfirmed();
 
-  // Pauses execution of the server until Resume() is called.
+  // Pauses execution of the server until Resume() is called.  May only be
+  // called once.
   void Pause();
 
-  // Resumes execution of the server after Pause() has been called.
+  // Resumes execution of the server after Pause() has been called.  May only
+  // be called once.
   void Resume();
 
   // Stops the server from executing and shuts it down, destroying all
@@ -54,16 +57,19 @@ class ServerThread : public base::SimpleThread {
  private:
   void MaybeNotifyOfHandshakeConfirmation();
 
-  base::Lock event_loop_mu_;       // Held when the server is processing events.
-  base::WaitableEvent listening_;  // Notified when the server is listening.
   base::WaitableEvent confirmed_;  // Notified when the first handshake is
                                    // confirmed.
+  base::WaitableEvent pause_;      // Notified when the server should pause.
+  base::WaitableEvent paused_;     // Notitied when the server has paused
+  base::WaitableEvent resume_;     // Notified when the server should resume.
   base::WaitableEvent quit_;       // Notified when the server should quit.
 
   tools::QuicServer server_;
   IPEndPoint address_;
   base::Lock port_lock_;
   int port_;
+
+  bool initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(ServerThread);
 };
