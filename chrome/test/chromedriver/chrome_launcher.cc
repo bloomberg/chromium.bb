@@ -353,7 +353,7 @@ Status LaunchAndroidChrome(
     status = device_manager->AcquireSpecificDevice(
         capabilities.android_device_serial, &device);
   }
-  if (!status.IsOk())
+  if (status.IsError())
     return status;
 
   Switches switches(capabilities.switches);
@@ -367,7 +367,7 @@ Status LaunchAndroidChrome(
                          switches.ToString(),
                          capabilities.android_use_running_app,
                          port);
-  if (!status.IsOk()) {
+  if (status.IsError()) {
     device->TearDown();
     return status;
   }
@@ -377,8 +377,10 @@ Status LaunchAndroidChrome(
                                           context_getter,
                                           socket_factory,
                                           &devtools_client);
-  if (status.IsError())
+  if (status.IsError()) {
+    device->TearDown();
     return status;
+  }
 
   chrome->reset(new ChromeAndroidImpl(devtools_client.Pass(),
                                       devtools_event_listeners,
@@ -407,14 +409,12 @@ Status LaunchChrome(
   int port = 0;
   scoped_ptr<PortReservation> port_reservation;
   Status port_status(kOk);
-  if (port_server)
-    port_status = port_server->ReservePort(&port, &port_reservation);
-  else
-    port_status = port_manager->ReservePort(&port, &port_reservation);
-  if (port_status.IsError())
-    return Status(kUnknownError, "cannot reserve port for Chrome", port_status);
 
   if (capabilities.IsAndroid()) {
+    port_status = port_manager->ReservePortFromPool(&port, &port_reservation);
+    if (port_status.IsError())
+      return Status(kUnknownError, "cannot reserve port for Chrome",
+                    port_status);
     return LaunchAndroidChrome(context_getter,
                                port,
                                port_reservation.Pass(),
@@ -424,6 +424,13 @@ Status LaunchChrome(
                                device_manager,
                                chrome);
   } else {
+    if (port_server)
+      port_status = port_server->ReservePort(&port, &port_reservation);
+    else
+      port_status = port_manager->ReservePort(&port, &port_reservation);
+    if (port_status.IsError())
+      return Status(kUnknownError, "cannot reserve port for Chrome",
+                    port_status);
     return LaunchDesktopChrome(context_getter,
                                port,
                                port_reservation.Pass(),

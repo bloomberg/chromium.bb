@@ -141,10 +141,7 @@ PortManager::PortManager(int min_port, int max_port)
 
 PortManager::~PortManager() {}
 
-Status PortManager::ReservePort(int* port,
-                                scoped_ptr<PortReservation>* reservation) {
-  base::AutoLock lock(taken_lock_);
-
+int PortManager::FindAvailablePort() const {
   int start = base::RandInt(min_port_, max_port_);
   bool wrapped = false;
   for (int try_port = start; try_port != start || !wrapped; ++try_port) {
@@ -161,20 +158,57 @@ Status PortManager::ReservePort(int* port,
     net::IPAddressNumber address(parts, parts + arraysize(parts));
     net::NetLog::Source source;
     net::TCPServerSocket sock(NULL, source);
-    if (sock.Listen(net::IPEndPoint(address, try_port), 1) != net::OK)
-      continue;
-
-    taken_.insert(try_port);
-    *port = try_port;
-    reservation->reset(new PortReservation(
-        base::Bind(&PortManager::ReleasePort, base::Unretained(this), try_port),
-        try_port));
-    return Status(kOk);
+    if (sock.Listen(net::IPEndPoint(address, try_port), 1) == net::OK)
+      return try_port;
   }
-  return Status(kUnknownError, "unable to find open port");
+  return 0;
+}
+
+Status PortManager::ReservePort(int* port,
+                                scoped_ptr<PortReservation>* reservation) {
+  base::AutoLock lock(lock_);
+  int port_to_use = FindAvailablePort();
+  if (!port_to_use)
+    return Status(kUnknownError, "unable to find open port");
+
+  taken_.insert(port_to_use);
+  *port = port_to_use;
+  reservation->reset(new PortReservation(
+      base::Bind(&PortManager::ReleasePort, base::Unretained(this),
+                 port_to_use),
+      port_to_use));
+  return Status(kOk);
+}
+
+Status PortManager::ReservePortFromPool(
+    int* port, scoped_ptr<PortReservation>* reservation) {
+  base::AutoLock lock(lock_);
+  int port_to_use = 0;
+  if (unused_forwarded_port_.size()) {
+    port_to_use = unused_forwarded_port_.front();
+    unused_forwarded_port_.pop_front();
+  } else {
+    port_to_use = FindAvailablePort();
+  }
+  if (!port_to_use)
+    return Status(kUnknownError, "unable to find open port");
+
+  taken_.insert(port_to_use);
+  *port = port_to_use;
+  reservation->reset(new PortReservation(
+      base::Bind(&PortManager::ReleasePortToPool, base::Unretained(this),
+                 port_to_use),
+      port_to_use));
+  return Status(kOk);
 }
 
 void PortManager::ReleasePort(int port) {
-  base::AutoLock lock(taken_lock_);
+  base::AutoLock lock(lock_);
   taken_.erase(port);
+}
+
+void PortManager::ReleasePortToPool(int port) {
+  base::AutoLock lock(lock_);
+  taken_.erase(port);
+  unused_forwarded_port_.push_back(port);
 }

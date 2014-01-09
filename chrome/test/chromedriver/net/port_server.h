@@ -54,13 +54,19 @@ class PortManager {
   ~PortManager();
 
   Status ReservePort(int* port, scoped_ptr<PortReservation>* reservation);
+  // Since we cannot remove forwarded adb ports on older SDKs,
+  // maintain a pool of forwarded ports for reuse.
+  Status ReservePortFromPool(int* port,
+                             scoped_ptr<PortReservation>* reservation);
 
  private:
+  int FindAvailablePort() const;
   void ReleasePort(int port);
+  void ReleasePortToPool(int port);
 
-  base::Lock taken_lock_;
+  base::Lock lock_;
   std::set<int> taken_;
-
+  std::list<int> unused_forwarded_port_;
   int min_port_;
   int max_port_;
 };

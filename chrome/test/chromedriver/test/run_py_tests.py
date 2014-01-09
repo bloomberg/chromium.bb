@@ -76,7 +76,7 @@ _DESKTOP_NEGATIVE_FILTER = [
     'ChromeDriverTest.testSingleTapElement',
     'ChromeDriverTest.testTouchDownUpElement',
     'ChromeDriverTest.testTouchMovedElement',
-    'ChromeDriverTest.testLatestAndroidAppInstalled',
+    'ChromeDriverAndroidTest.*',
 ]
 
 
@@ -177,7 +177,8 @@ class ChromeDriverTest(ChromeDriverBaseTest):
         chrome_paths.GetTestData())
     ChromeDriverTest._sync_server = webserver.SyncWebServer()
     if _ANDROID_PACKAGE_KEY:
-      ChromeDriverTest._adb = android_commands.AndroidCommands()
+      ChromeDriverTest._adb = android_commands.AndroidCommands(
+          android_commands.GetAttachedDevices()[0])
       http_host_port = ChromeDriverTest._http_server._server.server_port
       sync_host_port = ChromeDriverTest._sync_server._server.server_port
       forwarder.Forwarder.Map(
@@ -654,11 +655,16 @@ class ChromeDriverTest(ChromeDriverBaseTest):
   def testDoesntHangOnDebugger(self):
     self._driver.ExecuteScript('debugger;')
 
+
+class ChromeDriverAndroidTest(ChromeDriverBaseTest):
+  """End to end tests for Android-specific tests."""
+
   def testLatestAndroidAppInstalled(self):
-    assert _ANDROID_PACKAGE_KEY
     if ('stable' not in _ANDROID_PACKAGE_KEY and
         'beta' not in _ANDROID_PACKAGE_KEY):
       return
+
+    self._driver = self.CreateDriver()
 
     try:
       omaha_list = json.loads(
@@ -675,6 +681,13 @@ class ChromeDriverTest(ChromeDriverBaseTest):
       raise RuntimeError('Malformed omaha JSON')
     except urllib2.URLError as e:
       print 'Unable to fetch current version info from omahaproxy (%s)' % e
+
+  def testDeviceManagement(self):
+    self._drivers = [self.CreateDriver() for x in
+                     android_commands.GetAttachedDevices()]
+    self.assertRaises(chromedriver.UnknownError, self.CreateDriver)
+    self._drivers[0].Quit()
+    self._drivers[0] = self.CreateDriver()
 
 
 class ChromeSwitchesCapabilityTest(ChromeDriverBaseTest):
