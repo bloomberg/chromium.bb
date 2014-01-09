@@ -482,7 +482,7 @@
               '<@(nacl_win64_defines)',
           ],
               'dependencies': [
-              '<(DEPTH)/base/base.gyp:base_nacl_win64',
+              '<(DEPTH)/base/base.gyp:base_win64',
           ],
           'configurations': {
             'Common_Base': {

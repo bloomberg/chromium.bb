@@ -550,7 +550,7 @@
             'gpu_ipc.gypi',
           ],
           'dependencies': [
-            '../base/base.gyp:base_nacl_win64',
+            '../base/base.gyp:base_win64',
             '../ipc/ipc.gyp:ipc_win64',
           ],
           'defines': [

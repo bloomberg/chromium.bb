@@ -337,7 +337,7 @@
             'target_arch': 'x64',
           },
           'dependencies': [
-            '../base/base.gyp:base_nacl_win64',
+            '../base/base.gyp:base_win64',
             '../base/base.gyp:base_static_win64',
           ],
           'configurations': {

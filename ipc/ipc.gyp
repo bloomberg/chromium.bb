@@ -156,7 +156,7 @@
             'ipc_target': 1,
           },
           'dependencies': [
-            '../base/base.gyp:base_nacl_win64',
+            '../base/base.gyp:base_win64',
             # TODO(viettrungluu): Needed for base/lazy_instance.h, which is
             # suspect.
             '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations_win64',

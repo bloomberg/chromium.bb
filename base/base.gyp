@@ -1015,8 +1015,10 @@
     }],
     ['OS == "win" and target_arch=="ia32"', {
       'targets': [
+        # The base_win64 target here allows us to use base for Win64 targets
+        # (the normal build is 32 bits).
         {
-          'target_name': 'base_nacl_win64',
+          'target_name': 'base_win64',
           'type': '<(component)',
           'variables': {
             'base_target': 1,
@@ -1024,6 +1026,7 @@
           'dependencies': [
             'base_static_win64',
             'allocator/allocator.gyp:allocator_extension_thunks_win64',
+            '../third_party/modp_b64/modp_b64.gyp:modp_b64_win64',
             'third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations_win64',
           ],
           # TODO(gregoryd): direct_dependent_settings should be shared with the
@@ -1034,11 +1037,8 @@
             ],
           },
           'defines': [
+            'BASE_WIN64',
             '<@(nacl_win64_defines)',
-          ],
-          'sources!': [
-            # base64.cc depends on modp_b64.
-            'base64.cc',
           ],
           'configurations': {
             'Common_Base': {
@@ -1051,6 +1051,40 @@
                 'debug/debug_on_start_win.cc',
               ],
             }],
+          ],
+          # TODO(rvargas): Bug 78117. Remove this.
+          'msvs_disabled_warnings': [
+            4244,
+            4996,
+            4267,
+          ],
+          'sources': [
+            'third_party/nspr/prcpucfg.h',
+            'third_party/nspr/prcpucfg_win.h',
+            'third_party/nspr/prtypes.h',
+            'third_party/xdg_user_dirs/xdg_user_dir_lookup.cc',
+            'third_party/xdg_user_dirs/xdg_user_dir_lookup.h',
+            'async_socket_io_handler.h',
+            'async_socket_io_handler_posix.cc',
+            'async_socket_io_handler_win.cc',
+            'auto_reset.h',
+            'event_recorder.h',
+            'event_recorder_stubs.cc',
+            'event_recorder_win.cc',
+            'linux_util.cc',
+            'linux_util.h',
+            'md5.cc',
+            'md5.h',
+            'message_loop/message_pump_observer.h',
+            'message_loop/message_pump_libevent.cc',
+            'message_loop/message_pump_libevent.h',
+            'metrics/field_trial.cc',
+            'metrics/field_trial.h',
+            'posix/file_descriptor_shuffle.cc',
+            'posix/file_descriptor_shuffle.h',
+            'sync_socket.h',
+            'sync_socket_win.cc',
+            'sync_socket_posix.cc',
           ],
         },
         {
@@ -1103,7 +1137,7 @@
             },
           },
           'defines': [
-            'NACL_WIN64',
+            '<@(nacl_win64_defines)',
           ],
           # TODO(rvargas): Bug 78117. Remove this.
           'msvs_disabled_warnings': [
