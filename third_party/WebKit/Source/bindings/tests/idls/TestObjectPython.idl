@@ -236,6 +236,7 @@ interface TestObjectPython {
     TestInterfaceEmpty testInterfaceEmptyMethod();
     void voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg);
     void voidMethodLongArgTestInterfaceEmptyArg(long longArg, TestInterfaceEmpty testInterfaceEmptyArg);
+    void voidMethodTestCallbackInterfaceArg(TestCallbackInterface testCallbackInterfaceArg);
     // Callback function type
     VoidCallbackFunction voidCallbackFunctionMethod();
     AnyCallbackFunctionOptionalAnyArg anyCallbackFunctionOptionalAnyArgMethod();

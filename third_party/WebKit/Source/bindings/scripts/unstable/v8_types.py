@@ -77,8 +77,9 @@ INTEGER_TYPES = set([
 ])
 BASIC_TYPES.update(INTEGER_TYPES)
 
-enum_types = {}  # name -> values
-callback_function_types = set()
+callback_functions = set()
+callback_interfaces = set()
+enums = {}  # name -> values
 
 
 def array_or_sequence_type(idl_type):
@@ -98,12 +99,20 @@ def is_integer_type(idl_type):
     return idl_type in INTEGER_TYPES
 
 
-def is_callback_function_type(idl_type):
-    return idl_type in callback_function_types
+def is_callback_function(idl_type):
+    return idl_type in callback_functions
 
 
-def set_callback_function_types(callback_functions):
-    callback_function_types.update(callback_functions.keys())
+def set_callback_functions(new_callback_functions):
+    callback_functions.update(new_callback_functions)
+
+
+def is_callback_interface(idl_type):
+    return idl_type in callback_interfaces
+
+
+def set_callback_interfaces(new_callback_interfaces):
+    callback_interfaces.update(new_callback_interfaces)
 
 
 def is_composite_type(idl_type):
@@ -113,17 +122,16 @@ def is_composite_type(idl_type):
             is_union_type(idl_type))
 
 
-def is_enum_type(idl_type):
-    return idl_type in enum_types
+def is_enum(idl_type):
+    return idl_type in enums
 
 
 def enum_values(idl_type):
-    return enum_types.get(idl_type)
+    return enums.get(idl_type)
 
 
-def set_enum_types(enumerations):
-    enum_types.update([[enum.name, enum.values]
-                       for enum in enumerations.values()])
+def set_enums(new_enums):
+    enums.update(new_enums)
 
 
 def is_interface_type(idl_type):
@@ -133,8 +141,8 @@ def is_interface_type(idl_type):
     # In C++ these are RefPtr or PassRefPtr types.
     return not(is_basic_type(idl_type) or
                is_composite_type(idl_type) or
-               is_callback_function_type(idl_type) or
-               is_enum_type(idl_type) or
+               is_callback_function(idl_type) or
+               is_enum(idl_type) or
                idl_type == 'object' or
                idl_type == 'Promise')  # Promise will be basic in future
 
@@ -468,10 +476,10 @@ def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variabl
 
 
 def preprocess_idl_type(idl_type):
-    if is_enum_type(idl_type):
+    if is_enum(idl_type):
         # Enumerations are internally DOMStrings
         return 'DOMString'
-    if (idl_type == 'any' or is_callback_function_type(idl_type)):
+    if (idl_type == 'any' or is_callback_function(idl_type)):
         return 'ScriptValue'
     return idl_type
 

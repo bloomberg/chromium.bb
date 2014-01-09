@@ -142,6 +142,7 @@ def generate_argument(interface, method, argument, index):
         'idl_type': idl_type,
         'index': index,
         'is_clamp': 'Clamp' in extended_attributes,
+        'is_callback_interface': v8_types.is_callback_interface(idl_type),
         'is_nullable': argument.is_nullable,
         'is_optional': argument.is_optional,
         'is_strict_type_checking': 'StrictTypeChecking' in extended_attributes,
@@ -155,7 +156,9 @@ def generate_argument(interface, method, argument, index):
 
 def cpp_value(interface, method, number_of_arguments):
     def cpp_argument(argument):
-        if argument.idl_type in ['NodeFilter', 'XPathNSResolver']:
+        idl_type = argument.idl_type
+        if (v8_types.is_callback_interface(idl_type) or
+            idl_type in ['NodeFilter', 'XPathNSResolver']):
             # FIXME: remove this special case
             return '%s.release()' % argument.name
         return argument.name

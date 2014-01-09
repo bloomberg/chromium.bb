@@ -91,7 +91,7 @@ def uncapitalize(name):
 
 # C++
 def enum_validation_expression(idl_type):
-    if not v8_types.is_enum_type(idl_type):
+    if not v8_types.is_enum(idl_type):
         return None
     return ' || '.join(['string == "%s"' % enum_value
                         for enum_value in v8_types.enum_values(idl_type)])

@@ -47,6 +47,7 @@
 #include "V8Node.h"
 #include "V8NodeFilter.h"
 #include "V8ShadowRoot.h"
+#include "V8TestCallbackInterface.h"
 #include "V8TestInterface.h"
 #include "V8TestInterfaceEmpty.h"
 #include "V8TestInterfacePython.h"
@@ -3797,6 +3798,28 @@ static void voidMethodLongArgTestInterfaceEmptyArgMethodCallback(const v8::Funct
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void voidMethodTestCallbackInterfaceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("voidMethodTestCallbackInterfaceArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        return;
+    }
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    if (info.Length() <= 0 || !info[0]->IsFunction()) {
+        throwTypeError(ExceptionMessages::failedToExecute("voidMethodTestCallbackInterfaceArg", "TestObjectPython", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
+        return;
+    }
+    OwnPtr<TestCallbackInterface> testCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), getExecutionContext());
+    imp->voidMethodTestCallbackInterfaceArg(testCallbackInterfaceArg.release());
+}
+
+static void voidMethodTestCallbackInterfaceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::voidMethodTestCallbackInterfaceArgMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 static void voidCallbackFunctionMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
@@ -6466,6 +6489,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectPythonMethods[]
     {"testInterfaceEmptyMethod", TestObjectPythonV8Internal::testInterfaceEmptyMethodMethodCallback, 0, 0},
     {"voidMethodTestInterfaceEmptyArg", TestObjectPythonV8Internal::voidMethodTestInterfaceEmptyArgMethodCallback, 0, 1},
     {"voidMethodLongArgTestInterfaceEmptyArg", TestObjectPythonV8Internal::voidMethodLongArgTestInterfaceEmptyArgMethodCallback, 0, 2},
+    {"voidMethodTestCallbackInterfaceArg", TestObjectPythonV8Internal::voidMethodTestCallbackInterfaceArgMethodCallback, 0, 1},
     {"voidCallbackFunctionMethod", TestObjectPythonV8Internal::voidCallbackFunctionMethodMethodCallback, 0, 0},
     {"anyCallbackFunctionOptionalAnyArgMethod", TestObjectPythonV8Internal::anyCallbackFunctionOptionalAnyArgMethodMethodCallback, 0, 0},
     {"voidMethodVoidCallbackFunctionArg", TestObjectPythonV8Internal::voidMethodVoidCallbackFunctionArgMethodCallback, 0, 1},

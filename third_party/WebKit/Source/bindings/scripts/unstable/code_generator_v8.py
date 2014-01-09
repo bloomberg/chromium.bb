@@ -97,8 +97,13 @@ class CodeGeneratorV8:
         class_name = cpp_name(self.interface)
         self.include_for_cpp_class = posixpath.join(relative_dir_posix, class_name + '.h')
 
-        v8_types.set_callback_function_types(definitions.callback_functions)
-        v8_types.set_enum_types(definitions.enumerations)
+        v8_types.set_callback_functions(definitions.callback_functions.keys())
+        v8_types.set_enums((enum.name, enum.values)
+                           for enum in definitions.enumerations.values())
+        v8_types.set_callback_interfaces(set(
+            interface_name
+            for interface_name, interface_info in interfaces_info.iteritems()
+            if interface_info['is_callback_interface']))
         v8_types.set_implemented_as_interfaces(dict(
             (interface_name, interface_info['implemented_as'])
             for interface_name, interface_info in interfaces_info.iteritems()

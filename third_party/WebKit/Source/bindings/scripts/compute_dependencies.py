@@ -137,7 +137,7 @@ def get_implemented_interfaces_from_idl(file_contents, interface_name):
 
 
 def is_callback_interface_from_idl(file_contents):
-    match = re.search(r'callback\s+interface\s+\w+', file_contents)
+    match = re.search(r'callback\s+interface\s+\w+\s*{', file_contents)
     return bool(match)
 
 
@@ -243,6 +243,7 @@ def generate_dependencies(idl_file_name, interfaces_info, partial_interface_file
     interfaces_info[interface_name] = {
         'full_path': full_path,
         'implements_interfaces': get_implemented_interfaces_from_idl(idl_file_contents, interface_name),
+        'is_callback_interface': is_callback_interface_from_idl(idl_file_contents),
     }
     extended_attributes = get_interface_extended_attributes_from_idl(idl_file_contents)
     if 'ImplementedAs' in extended_attributes:
