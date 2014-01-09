@@ -535,8 +535,6 @@ crbug.com/268692 [ SnowLeopard ] svg/custom/foreign-object-skew.svg [ ImageOnlyF
 
 crbug.com/268832 [ SnowLeopard Debug ] fast/multicol/newmulticol/direct-child-column-span-all.html [ Crash Pass ]
 
-crbug.com/261277 fast/events/touch/gesture/pad-gesture-fling.html [ Pass Failure ]
-
 crbug.com/271243 [ Win ] http/tests/misc/acid3.html [ Failure ]
 
 # crbug.com/277110 also makes this test fail.
