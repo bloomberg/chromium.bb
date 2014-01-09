@@ -35,8 +35,7 @@ static base::ListValue* EnsureLogList(base::DictionaryValue* dict) {
 }  // namespace
 
 WebRTCInternals::WebRTCInternals()
-    : is_recording_rtp_(false),
-      aec_dump_enabled_(false) {
+    : aec_dump_enabled_(false) {
   registrar_.Add(this, NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                  NotificationService::AllBrowserContextsAndSources());
   BrowserChildProcessObserver::Add(this);
@@ -230,20 +229,6 @@ void WebRTCInternals::UpdateObserver(WebRTCInternalsUIObserver* observer) {
   }
 }
 
-void WebRTCInternals::StartRtpRecording() {
-  if (!is_recording_rtp_) {
-    is_recording_rtp_ = true;
-    // TODO(justinlin): start RTP recording.
-  }
-}
-
-void WebRTCInternals::StopRtpRecording() {
-  if (is_recording_rtp_) {
-    is_recording_rtp_ = false;
-    // TODO(justinlin): stop RTP recording.
-  }
-}
-
 void WebRTCInternals::EnableAecDump(content::WebContents* web_contents) {
 #if defined(ENABLE_WEBRTC)
   select_file_dialog_ = ui::SelectFileDialog::Create(this, NULL);
@@ -354,21 +339,11 @@ void WebRTCInternals::OnRendererExit(int render_process_id) {
   }
 }
 
-// TODO(justlin): Calls this method as necessary to update the recording status
-// UI.
-void WebRTCInternals::SendRtpRecordingUpdate() {
-  DCHECK(is_recording_rtp_);
-  base::DictionaryValue update;
-  // TODO(justinlin): Fill in |update| with values as appropriate.
-  SendUpdate("updateDumpStatus", &update);
-}
-
 void WebRTCInternals::ResetForTesting() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   observers_.Clear();
   peer_connection_data_.Clear();
   get_user_media_requests_.Clear();
-  is_recording_rtp_ = false;
   aec_dump_enabled_ = false;
 }
 

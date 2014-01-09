@@ -264,16 +264,6 @@ function removeGetUserMediaForRenderer(data) {
   // TODO(jiayl): remove the getUserMedia info from the tabbed UI.
 }
 
-
-/**
- * Delegates to dumpCreator to update the recording status.
- * @param {!Object.<string>} update Key-value pairs describing the status of the
- *     RTP recording.
- */
-function updateDumpStatus(update) {
-  dumpCreator.onUpdate(update);
-}
-
 /**
  * Set
  */

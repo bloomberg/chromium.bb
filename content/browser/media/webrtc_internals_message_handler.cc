@@ -27,13 +27,6 @@ void WebRTCInternalsMessageHandler::RegisterMessages() {
       base::Bind(&WebRTCInternalsMessageHandler::OnGetAllStats,
                  base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback("startRtpRecording",
-      base::Bind(&WebRTCInternalsMessageHandler::OnStartRtpRecording,
-                 base::Unretained(this)));
-
-  web_ui()->RegisterMessageCallback("stopRtpRecording",
-      base::Bind(&WebRTCInternalsMessageHandler::OnStopRtpRecording,
-                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("enableAecRecording",
       base::Bind(&WebRTCInternalsMessageHandler::OnSetAecRecordingEnabled,
                  base::Unretained(this), true));
@@ -54,16 +47,6 @@ void WebRTCInternalsMessageHandler::OnGetAllStats(
        !i.IsAtEnd(); i.Advance()) {
     i.GetCurrentValue()->Send(new PeerConnectionTracker_GetAllStats());
   }
-}
-
-void WebRTCInternalsMessageHandler::OnStartRtpRecording(
-    const base::ListValue* /* unused_list */) {
-  WebRTCInternals::GetInstance()->StartRtpRecording();
-}
-
-void WebRTCInternalsMessageHandler::OnStopRtpRecording(
-    const base::ListValue* /* unused_list */) {
-  WebRTCInternals::GetInstance()->StopRtpRecording();
 }
 
 void WebRTCInternalsMessageHandler::OnSetAecRecordingEnabled(

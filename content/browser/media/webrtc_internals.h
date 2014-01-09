@@ -85,10 +85,6 @@ class CONTENT_EXPORT WebRTCInternals : public BrowserChildProcessObserver,
   // Sends all update data to |observer|.
   void UpdateObserver(WebRTCInternalsUIObserver* observer);
 
-  // Tells the renderer processes to start or stop recording RTP packets.
-  void StartRtpRecording();
-  void StopRtpRecording();
-
   // Enables or disables AEC dump (diagnostic echo canceller recording).
   void EnableAecDump(content::WebContents* web_contents);
   void DisableAecDump();
@@ -131,8 +127,6 @@ class CONTENT_EXPORT WebRTCInternals : public BrowserChildProcessObserver,
   // Called when a renderer exits (including crashes).
   void OnRendererExit(int render_process_id);
 
-  void SendRtpRecordingUpdate();
-
   ObserverList<WebRTCInternalsUIObserver> observers_;
 
   // |peer_connection_data_| is a list containing all the PeerConnection
@@ -160,8 +154,6 @@ class CONTENT_EXPORT WebRTCInternals : public BrowserChildProcessObserver,
   base::ListValue get_user_media_requests_;
 
   NotificationRegistrar registrar_;
-
-  bool is_recording_rtp_;
 
   // For managing select file dialog.
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
