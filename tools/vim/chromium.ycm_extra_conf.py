@@ -160,8 +160,7 @@ def GetClangCommandFromNinjaForFilename(chrome_root, filename):
   else:
     return chrome_flags
 
-  # Parse out the -I and -D flags. These seem to be the only ones that are
-  # important for YCM's purposes.
+  # Parse flags that are important for YCM's purposes.
   for flag in clang_line.split(' '):
     if flag.startswith('-I'):
       # Relative paths need to be resolved, because they're relative to the
@@ -171,6 +170,8 @@ def GetClangCommandFromNinjaForFilename(chrome_root, filename):
       else:
         abs_path = os.path.normpath(os.path.join(out_dir, flag[2:]))
         chrome_flags.append('-I' + abs_path)
+    elif flag.startswith('-std'):
+      chrome_flags.append(flag)
     elif flag.startswith('-') and flag[1] in 'DWFfmO':
       if flag == '-Wno-deprecated-register' or flag == '-Wno-header-guard':
         # These flags causes libclang (3.3) to crash. Remove it until things
