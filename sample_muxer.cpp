@@ -347,6 +347,8 @@ int main(int argc, char* argv[]) {
       if (track_name)
         video->set_name(track_name);
 
+      video->set_codec_id(pVideoTrack->GetCodecId());
+
       if (display_width > 0)
         video->set_display_width(display_width);
       if (display_height > 0)
@@ -384,6 +386,8 @@ int main(int argc, char* argv[]) {
 
       if (track_name)
         audio->set_name(track_name);
+
+      audio->set_codec_id(pAudioTrack->GetCodecId());
 
       size_t private_size;
       const unsigned char* const private_data =

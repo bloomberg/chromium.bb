@@ -481,9 +481,11 @@ class Tracks {
     kVideo = 0x1,
     kAudio = 0x2
   };
-  // Vorbis and VP8 coded id defined by the Matroska specs.
-  static const char* const kVorbisCodecId;
-  static const char* const kVp8CodecId;
+  // Opus, Vorbis, VP8, and VP9 codec ids defined by the Matroska specs.
+  static const char kOpusCodecId[];
+  static const char kVorbisCodecId[];
+  static const char kVp8CodecId[];
+  static const char kVp9CodecId[];
 
   Tracks();
   ~Tracks();
@@ -980,8 +982,8 @@ class Segment {
   // track number.
   Track* AddTrack(int32 number);
 
-  // Adds an audio track to the segment. Returns the number of the track on
-  // success, 0 on error. |number| is the number to use for the audio track.
+  // Adds a Vorbis audio track to the segment. Returns the number of the track
+  // on success, 0 on error. |number| is the number to use for the audio track.
   // |number| must be >= 0. If |number| == 0 then the muxer will decide on
   // the track number.
   uint64 AddAudioTrack(int32 sample_rate, int32 channels, int32 number);
@@ -1059,7 +1061,7 @@ class Segment {
   //   frame: frame object
   bool AddGenericFrame(const Frame* frame);
 
-  // Adds a video track to the segment. Returns the number of the track on
+  // Adds a VP8 video track to the segment. Returns the number of the track on
   // success, 0 on error. |number| is the number to use for the video track.
   // |number| must be >= 0. If |number| == 0 then the muxer will decide on
   // the track number.

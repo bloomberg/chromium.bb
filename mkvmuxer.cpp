@@ -589,6 +589,10 @@ uint64 Track::PayloadSize() const {
     size += EbmlElementSize(kMkvName, name_);
   if (max_block_additional_id_)
     size += EbmlElementSize(kMkvMaxBlockAdditionID, max_block_additional_id_);
+  if (codec_delay_)
+    size += EbmlElementSize(kMkvCodecDelay, codec_delay_);
+  if (seek_pre_roll_)
+    size += EbmlElementSize(kMkvSeekPreRoll, seek_pre_roll_);
 
   if (content_encoding_entries_size_ > 0) {
     uint64 content_encodings_size = 0;
@@ -959,8 +963,11 @@ bool AudioTrack::Write(IMkvWriter* writer) const {
 //
 // Tracks Class
 
-const char* const Tracks::kVp8CodecId = "V_VP8";
-const char* const Tracks::kVorbisCodecId = "A_VORBIS";
+const char Tracks::kOpusCodecId[] = "A_OPUS";
+const char Tracks::kVorbisCodecId[] = "A_VORBIS";
+const char Tracks::kVp8CodecId[] = "V_VP8";
+const char Tracks::kVp9CodecId[] = "V_VP9";
+
 
 Tracks::Tracks()
     : track_entries_(NULL),
