@@ -2311,7 +2311,7 @@ other types of suffix sets.
 <histogram name="DNS.IndependentFailedNavigation" units="milliseconds">
   <summary>
     When either a pre-resolution was not done recently enough to provide
-    benefit, or the the corresponding pre-resolution is still pending, this
+    benefit, or the corresponding pre-resolution is still pending, this
     histogram shows the duration of time used to resolve a hostname as not
     existing during a failed attempt to navigate to (GET) a URL.  In newer
     versions, if the hostname has never been found as a link during a page scan,
@@ -2323,7 +2323,7 @@ other types of suffix sets.
 <histogram name="DNS.IndependentNavigation" units="milliseconds">
   <summary>
     When either a pre-resolution was not done recently enough to provide
-    benefit, or the the corresponding pre-resolution is still pending, this
+    benefit, or the corresponding pre-resolution is still pending, this
     histogram shows the duration of the duration of time used to resolve a
     hostname to navigate to (GET) a URL.  In newer versions, if the hostname has
     never been found as a link during a page scan, and it has a referring URL,
@@ -8798,14 +8798,14 @@ other types of suffix sets.
 
 <histogram name="Net.IPv6ConnectFailureMatch" enum="BooleanSuccess">
   <summary>
-    Whether the the interface-enumeration IPv6 probe method failed given that
-    the UDP-connect IPV6 probe failed.
+    Whether the interface-enumeration IPv6 probe method failed given that the
+    UDP-connect IPV6 probe failed.
   </summary>
 </histogram>
 
 <histogram name="Net.IPv6ConnectSuccessMatch" enum="BooleanSuccess">
   <summary>
-    Whether the the interface-enumeration IPv6 probe method was successful given
+    Whether the interface-enumeration IPv6 probe method was successful given
     that the UDP-connect IPV6 probe was successful.
   </summary>
 </histogram>
@@ -9784,8 +9784,8 @@ other types of suffix sets.
 
 <histogram name="Net.SpdyStreamDownloadTime" units="milliseconds">
   <summary>
-    The time between receiving the the first chunk and the last chunk of data on
-    a Spdy stream.
+    The time between receiving the first chunk and the last chunk of data on a
+    Spdy stream.
   </summary>
 </histogram>
 
@@ -10886,6 +10886,15 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Network.Shill.Cellular.ExpiredLeaseLengthSeconds"
+    units="seconds">
+  <summary>
+    Chrome OS network performance metric that tracks the length of a lease for a
+    cellular network at the time it expired without the DHCP client being able
+    to renew it.
+  </summary>
+</histogram>
+
 <histogram name="Network.Shill.Cellular.OutOfCreditsReason"
     enum="NetworkCellularOutOfCreditsReason">
   <summary>
@@ -11011,6 +11020,15 @@ other types of suffix sets.
   <summary>
     Chrome OS network usage metric that tracks whether the Ethernet network was
     disconnected due to an error or was explicitly disconnected by the user.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Ethernet.ExpiredLeaseLengthSeconds"
+    units="seconds">
+  <summary>
+    Chrome OS network performance metric that tracks the length of a lease for
+    an Ethernet network at the time it expired without the DHCP client being
+    able to renew it.
   </summary>
 </histogram>
 
@@ -11283,6 +11301,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Network.Shill.Wifi.ExpiredLeaseLengthSeconds" units="seconds">
+  <summary>
+    Chrome OS network performance metric that tracks the length of a lease for a
+    WiFi network at the time it expired without the DHCP client being able to
+    renew it.
+  </summary>
+</histogram>
+
 <histogram name="Network.Shill.WiFi.FrequenciesConnectedEver">
   <summary>
     Chrome OS metric sampling the number of different frequencies (i.e.
@@ -11476,6 +11502,14 @@ other types of suffix sets.
     encountered by Shill.  This indicates that Shill is using minimal DHCP
     options due to suspected MTU issues on the return path from the DHCP server
     back to the client.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.WiMax.ExpiredLeaseLengthSeconds" units="seconds">
+  <summary>
+    Chrome OS network performance metric that tracks the length of a lease for a
+    WiMax network at the time it expired without the DHCP client being able to
+    renew it.
   </summary>
 </histogram>
 
@@ -12310,9 +12344,8 @@ other types of suffix sets.
   <summary>
     When a client resumes a download, the HTTP request includes range specifier
     to skip the bytes it already has. This metric conveys this as a percentage
-    of the the file size.  This is reported every time a file is served, even if
-    the request does not include a range specifier (in which case 0 is
-    reported).
+    of the file size.  This is reported every time a file is served, even if the
+    request does not include a range specifier (in which case 0 is reported).
   </summary>
 </histogram>
 
@@ -12340,8 +12373,8 @@ other types of suffix sets.
 
 <histogram name="PasswordManager.AccountsPerSite">
   <summary>
-    The number of accounts stored per site in the the password manager (one
-    event per site)
+    The number of accounts stored per site in the password manager (one event
+    per site)
   </summary>
 </histogram>
 
@@ -13873,8 +13906,8 @@ other types of suffix sets.
     Perceived load time of a prerendered page that is displayed. This is the
     time from when the prerendered page is moved into a TabContents until
     finish. &quot;Finish&quot; == after onload() and all resources are loaded.
-    Note that this is 0 if the loading finishes before the the page is moved
-    into a TabContents.
+    Note that this is 0 if the loading finishes before the page is moved into a
+    TabContents.
   </summary>
 </histogram>
 
@@ -14913,7 +14946,7 @@ other types of suffix sets.
     the renderer process. This is the time from when the prerendered page is
     moved into a TabContents until finish. &quot;Finish&quot; == after onload()
     and all resources are loaded. Note that this is 0 if the loading finishes
-    before the the page is moved into a TabContents.
+    before the page is moved into a TabContents.
   </summary>
 </histogram>
 
