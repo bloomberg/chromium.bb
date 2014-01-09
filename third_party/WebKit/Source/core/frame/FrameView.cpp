@@ -963,6 +963,9 @@ void FrameView::layout(bool allowSubtree)
     if (m_inLayout)
         return;
 
+    if (!m_frame->document()->isActive())
+        return;
+
     ASSERT(!partialLayout().isStopping());
 
     TRACE_EVENT0("webkit", "FrameView::layout");
