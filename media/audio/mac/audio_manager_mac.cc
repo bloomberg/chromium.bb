@@ -401,16 +401,12 @@ void AudioManagerMac::GetAudioOutputDeviceNames(
 
 AudioParameters AudioManagerMac::GetInputStreamParameters(
     const std::string& device_id) {
-  // Due to the sharing of the input and output buffer sizes, we need to choose
-  // the input buffer size based on the output sample rate.  See
-  // http://crbug.com/154352.
-  const int buffer_size = ChooseBufferSize(
-      AUAudioOutputStream::HardwareSampleRate());
-
   AudioDeviceID device = GetAudioDeviceIdByUId(true, device_id);
   if (device == kAudioObjectUnknown) {
     DLOG(ERROR) << "Invalid device " << device_id;
-    return AudioParameters();
+    return AudioParameters(
+        AudioParameters::AUDIO_PCM_LOW_LATENCY, CHANNEL_LAYOUT_STEREO,
+        kFallbackSampleRate, 16, ChooseBufferSize(kFallbackSampleRate));
   }
 
   int channels = 0;
@@ -426,6 +422,11 @@ AudioParameters AudioManagerMac::GetInputStreamParameters(
   int sample_rate = HardwareSampleRateForDevice(device);
   if (!sample_rate)
     sample_rate = kFallbackSampleRate;
+
+  // Due to the sharing of the input and output buffer sizes, we need to choose
+  // the input buffer size based on the output sample rate.  See
+  // http://crbug.com/154352.
+  const int buffer_size = ChooseBufferSize(sample_rate);
 
   // TODO(xians): query the native channel layout for the specific device.
   return AudioParameters(
@@ -646,7 +647,9 @@ AudioParameters AudioManagerMac::GetPreferredOutputStreamParameters(
   AudioDeviceID device = GetAudioDeviceIdByUId(false, output_device_id);
   if (device == kAudioObjectUnknown) {
     DLOG(ERROR) << "Invalid output device " << output_device_id;
-    return AudioParameters();
+    return input_params.IsValid() ? input_params : AudioParameters(
+        AudioParameters::AUDIO_PCM_LOW_LATENCY, CHANNEL_LAYOUT_STEREO,
+        kFallbackSampleRate, 16, ChooseBufferSize(kFallbackSampleRate));
   }
 
   int hardware_channels = 2;
