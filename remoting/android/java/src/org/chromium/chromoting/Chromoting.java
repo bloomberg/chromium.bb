@@ -11,6 +11,8 @@ import android.accounts.AccountManagerFuture;
 import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
 import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -38,7 +40,7 @@ import java.util.Scanner;
  * The user interface for querying and displaying a user's host list from the directory server. It
  * also requests and renews authentication tokens using the system account manager.
  */
-public class Chromoting extends Activity {
+public class Chromoting extends Activity implements JniInterface.ConnectionListener {
     /** Only accounts of this type will be selectable for authentication. */
     private static final String ACCOUNT_TYPE = "com.google";
 
@@ -77,6 +79,9 @@ public class Chromoting extends Activity {
 
     /** Callback handler to be used for network operations. */
     private Handler mNetwork;
+
+    /** Dialog for reporting connection progress. */
+    private ProgressDialog mProgressIndicator;
 
     /**
      * Called when the activity is first created. Loads the native library and requests an
@@ -187,13 +192,7 @@ public class Chromoting extends Activity {
         try {
             synchronized (mLock) {
                 JniInterface.connectToHost(mAccount.name, mToken, host.getString("jabberId"),
-                        host.getString("hostId"), host.getString("publicKey"),
-                        new Runnable() {
-                                @Override
-                                public void run() {
-                                    startActivity(new Intent(Chromoting.this, Desktop.class));
-                                }
-                        });
+                        host.getString("hostId"), host.getString("publicKey"), this);
             }
         } catch (JSONException ex) {
             Log.w("host", ex);
@@ -361,6 +360,63 @@ public class Chromoting extends Activity {
 
             // Close the application.
             finish();
+        }
+    }
+
+    @Override
+    public void onConnectionState(JniInterface.ConnectionListener.State state,
+            JniInterface.ConnectionListener.Error error) {
+        String stateText = getResources().getStringArray(R.array.protoc_states)[state.value()];
+        boolean dismissProgress = false;
+        switch (state) {
+            case INITIALIZING:
+            case CONNECTING:
+            case AUTHENTICATED:
+                // The connection is still being established, so we'll report the current progress.
+                if (mProgressIndicator == null) {
+                    mProgressIndicator = ProgressDialog.show(this,
+                            getString(R.string.progress_title), stateText, true, true,
+                            new DialogInterface.OnCancelListener() {
+                                @Override
+                                public void onCancel(DialogInterface dialog) {
+                                    JniInterface.disconnectFromHost();
+                                }
+                            });
+                } else {
+                    mProgressIndicator.setMessage(stateText);
+                }
+                break;
+
+            case CONNECTED:
+                dismissProgress = true;
+                Toast.makeText(this, stateText, Toast.LENGTH_SHORT).show();
+
+                // Display the remote desktop.
+                startActivityForResult(new Intent(this, Desktop.class), 0);
+                break;
+
+            case FAILED:
+                dismissProgress = true;
+                Toast.makeText(this, stateText + ": "
+                        + getResources().getStringArray(R.array.protoc_errors)[error.value()],
+                        Toast.LENGTH_LONG).show();
+
+                // Close the Desktop view, if it is currently running.
+                finishActivity(0);
+                break;
+
+            case CLOSED:
+                // No need to show toast in this case. Either the connection will have failed
+                // because of an error, which will trigger toast already. Or the disconnection will
+                // have been initiated by the user.
+                dismissProgress = true;
+                finishActivity(0);
+                break;
+        }
+
+        if (dismissProgress && mProgressIndicator != null) {
+            mProgressIndicator.dismiss();
+            mProgressIndicator = null;
         }
     }
 }

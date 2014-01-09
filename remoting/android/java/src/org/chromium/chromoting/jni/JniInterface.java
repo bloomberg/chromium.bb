@@ -6,7 +6,6 @@ package org.chromium.chromoting.jni;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
@@ -33,9 +32,6 @@ import java.nio.ByteOrder;
  */
 @JNINamespace("remoting")
 public class JniInterface {
-    /** The status code indicating successful connection. */
-    private static final int SUCCESSFUL_CONNECTION = 3;
-
     /*
      * Library-loading state machine.
      */
@@ -45,22 +41,80 @@ public class JniInterface {
     /** The application context. Accessed on the UI thread. */
     private static Activity sContext = null;
 
+    /** Interface used for connection state notifications. */
+    public interface ConnectionListener {
+        /**
+         * This enum must match the C++ enumeration remoting::protocol::ConnectionToHost::State.
+         */
+        public enum State {
+            INITIALIZING(0),
+            CONNECTING(1),
+            AUTHENTICATED(2),
+            CONNECTED(3),
+            FAILED(4),
+            CLOSED(5);
+
+            private final int mValue;
+
+            State(int value) {
+                mValue = value;
+            }
+
+            public int value() {
+                return mValue;
+            }
+
+            public static State fromValue(int value) {
+                return values()[value];
+            }
+        }
+
+        /**
+         * This enum must match the C++ enumeration remoting::protocol::ErrorCode.
+         */
+        public enum Error {
+            OK(0),
+            PEER_IS_OFFLINE(1),
+            SESSION_REJECTED(2),
+            INCOMPATIBLE_PROTOCOL(3),
+            AUTHENTICATION_FAILED(4),
+            CHANNEL_CONNECTION_ERROR(5),
+            SIGNALING_ERROR(6),
+            SIGNALING_TIMEOUT(7),
+            HOST_OVERLOAD(8),
+            UNKNOWN_ERROR(9);
+
+            private final int mValue;
+
+            Error(int value) {
+                mValue = value;
+            }
+
+            public int value() {
+                return mValue;
+            }
+
+            public static Error fromValue(int value) {
+                return values()[value];
+            }
+        }
+
+        /**
+         * Notified on connection state change.
+         * @param state The new connection state.
+         * @param error The error code, if state is STATE_FAILED.
+         */
+        void onConnectionState(State state, Error error);
+    }
+
     /*
      * Connection-initiating state machine.
      */
     /** Whether the native code is attempting a connection. Accessed on the UI thread. */
     private static boolean sConnected = false;
 
-    /** Callback to signal upon successful connection. Accessed on the UI thread. */
-    private static Runnable sSuccessCallback = null;
-
-    /** Dialog for reporting connection progress. Accessed on the UI thread. */
-    private static ProgressDialog sProgressIndicator = null;
-
-    // Protects access to |sProgressIndicator|. Used only to silence FindBugs warnings - the
-    // variable it protects is only accessed on a single thread.
-    // TODO(lambroslambrou): Refactor the ProgressIndicator into a separate class.
-    private static Object sProgressIndicatorLock = new Object();
+    /** Notified upon successful connection or disconnection. Accessed on the UI thread. */
+    private static ConnectionListener sConnectionListener = null;
 
     /**
      * Callback invoked on the graphics thread to repaint the desktop. Accessed on the UI and
@@ -108,10 +162,10 @@ public class JniInterface {
 
     /** Attempts to form a connection to the user-selected host. Called on the UI thread. */
     public static void connectToHost(String username, String authToken,
-            String hostJid, String hostId, String hostPubkey, Runnable successCallback) {
+            String hostJid, String hostId, String hostPubkey, ConnectionListener listener) {
         disconnectFromHost();
 
-        sSuccessCallback = successCallback;
+        sConnectionListener = listener;
         SharedPreferences prefs = sContext.getPreferences(Activity.MODE_PRIVATE);
         nativeConnect(username, authToken, hostJid, hostId, hostPubkey,
                 prefs.getString(hostId + "_id", ""), prefs.getString(hostId + "_secret", ""));
@@ -126,15 +180,11 @@ public class JniInterface {
     public static void disconnectFromHost() {
         if (!sConnected) return;
 
-        synchronized (sProgressIndicatorLock) {
-            if (sProgressIndicator != null) {
-                sProgressIndicator.dismiss();
-                sProgressIndicator = null;
-            }
-        }
+        sConnectionListener.onConnectionState(ConnectionListener.State.CLOSED,
+                ConnectionListener.Error.OK);
 
         nativeDisconnect();
-        sSuccessCallback = null;
+        sConnectionListener = null;
         sConnected = false;
 
         // Drop the reference to free the Bitmap for GC.
@@ -149,47 +199,8 @@ public class JniInterface {
     /** Reports whenever the connection status changes. Called on the UI thread. */
     @CalledByNative
     private static void reportConnectionStatus(int state, int error) {
-        if (state < SUCCESSFUL_CONNECTION && error == 0) {
-            // The connection is still being established, so we'll report the current progress.
-            synchronized (sProgressIndicatorLock) {
-                if (sProgressIndicator == null) {
-                    sProgressIndicator = ProgressDialog.show(sContext, sContext.
-                            getString(R.string.progress_title), sContext.getResources().
-                            getStringArray(R.array.protoc_states)[state], true, true,
-                            new DialogInterface.OnCancelListener() {
-                                @Override
-                                public void onCancel(DialogInterface dialog) {
-                                    Log.i("jniiface", "User canceled connection initiation");
-                                    disconnectFromHost();
-                                }
-                            });
-                } else {
-                    sProgressIndicator.setMessage(
-                            sContext.getResources().getStringArray(R.array.protoc_states)[state]);
-                }
-            }
-        } else {
-            // The connection is complete or has failed, so we can lose the progress indicator.
-            synchronized (sProgressIndicatorLock) {
-                if (sProgressIndicator != null) {
-                    sProgressIndicator.dismiss();
-                    sProgressIndicator = null;
-                }
-            }
-
-            if (state == SUCCESSFUL_CONNECTION) {
-                Toast.makeText(sContext, sContext.getResources().
-                        getStringArray(R.array.protoc_states)[state], Toast.LENGTH_SHORT).show();
-
-                // Actually display the remote desktop.
-                sSuccessCallback.run();
-            } else {
-                Toast.makeText(sContext, sContext.getResources().getStringArray(
-                        R.array.protoc_states)[state] + (error == 0 ? "" : ": " +
-                        sContext.getResources().getStringArray(R.array.protoc_errors)[error]),
-                        Toast.LENGTH_LONG).show();
-            }
-        }
+        sConnectionListener.onConnectionState(ConnectionListener.State.fromValue(state),
+                ConnectionListener.Error.fromValue(error));
     }
 
     /** Prompts the user to enter a PIN. Called on the UI thread. */
