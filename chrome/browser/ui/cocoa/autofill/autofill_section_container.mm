@@ -345,13 +345,13 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
   [self updateAndClobber:YES];
 }
 
-- (void)fillForInput:(const autofill::DetailInput&)input {
+- (void)fillForType:(const autofill::ServerFieldType)type {
   // Make sure to overwrite the originating input if it is a text field.
   AutofillTextField* field =
-      base::mac::ObjCCast<AutofillTextField>([inputs_ viewWithTag:input.type]);
+      base::mac::ObjCCast<AutofillTextField>([inputs_ viewWithTag:type]);
   [field setFieldValue:@""];
 
-  if (ShouldOverwriteComboboxes(section_, input.type)) {
+  if (ShouldOverwriteComboboxes(section_, type)) {
     for (NSControl* control in [inputs_ subviews]) {
       AutofillPopUpButton* popup =
           base::mac::ObjCCast<AutofillPopUpButton>(control);

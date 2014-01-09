@@ -95,8 +95,8 @@ void AutofillDialogCocoa::UpdateSection(DialogSection section) {
 }
 
 void AutofillDialogCocoa::FillSection(DialogSection section,
-                                      const DetailInput& originating_input) {
-  [sheet_delegate_ fillSection:section forInput:originating_input];
+                                      ServerFieldType originating_type) {
+  [sheet_delegate_ fillSection:section forType:originating_type];
 }
 
 void AutofillDialogCocoa::GetUserInput(DialogSection section,
@@ -108,7 +108,7 @@ base::string16 AutofillDialogCocoa::GetCvc() {
   return base::SysNSStringToUTF16([sheet_delegate_ getCvc]);
 }
 
-bool AutofillDialogCocoa::HitTestInput(const DetailInput& input,
+bool AutofillDialogCocoa::HitTestInput(ServerFieldType type,
                                        const gfx::Point& screen_point) {
   // TODO(dbeam): implement.
   return false;

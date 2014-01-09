@@ -178,7 +178,7 @@ class TestAutofillDialogView : public AutofillDialogView {
   }
 
   virtual void FillSection(DialogSection section,
-                           const DetailInput& originating_input) OVERRIDE {};
+                           ServerFieldType originating_type) OVERRIDE {}
   virtual void GetUserInput(DialogSection section, FieldValueMap* output)
       OVERRIDE {
     *output = outputs_[section];
@@ -188,7 +188,7 @@ class TestAutofillDialogView : public AutofillDialogView {
   }
 
   virtual base::string16 GetCvc() OVERRIDE { return base::string16(); }
-  virtual bool HitTestInput(const DetailInput& input,
+  virtual bool HitTestInput(ServerFieldType type,
                             const gfx::Point& screen_point) OVERRIDE {
     return false;
   }

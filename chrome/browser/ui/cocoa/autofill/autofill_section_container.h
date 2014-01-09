@@ -92,8 +92,8 @@ class AutofillDialogViewDelegate;
 - (void)update;
 
 // Fills the section with Autofill data that was triggered by a user
-// interaction with the originating |input|.
-- (void)fillForInput:(const autofill::DetailInput&)input;
+// interaction with the originating |type|.
+- (void)fillForType:(const autofill::ServerFieldType)type;
 
 // Validate this section. Validation rules depend on |validationType|.
 - (BOOL)validateFor:(autofill::ValidationType)validationType;

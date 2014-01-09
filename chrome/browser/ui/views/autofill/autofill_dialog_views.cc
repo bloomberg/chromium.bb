@@ -1315,11 +1315,11 @@ void AutofillDialogViews::UpdateErrorBubble() {
 }
 
 void AutofillDialogViews::FillSection(DialogSection section,
-                                      const DetailInput& originating_input) {
+                                      ServerFieldType originating_type) {
   DetailsGroup* group = GroupForSection(section);
   // Make sure to overwrite the originating input.
   TextfieldMap::iterator text_mapping =
-      group->textfields.find(originating_input.type);
+      group->textfields.find(originating_type);
   if (text_mapping != group->textfields.end())
     text_mapping->second->SetText(base::string16());
 
@@ -1327,7 +1327,7 @@ void AutofillDialogViews::FillSection(DialogSection section,
   // CC comboboxes (even if they already have something in them). If the
   // Autofill data comes from an AutofillProfile, leave the comboboxes alone.
   if (section == GetCreditCardSection() &&
-      AutofillType(originating_input.type).group() == CREDIT_CARD) {
+      AutofillType(originating_type).group() == CREDIT_CARD) {
     for (ComboboxMap::const_iterator it = group->comboboxes.begin();
          it != group->comboboxes.end(); ++it) {
       if (AutofillType(it->first).group() == CREDIT_CARD)
@@ -1357,11 +1357,11 @@ base::string16 AutofillDialogViews::GetCvc() {
       decorated_textfield()->text();
 }
 
-bool AutofillDialogViews::HitTestInput(const DetailInput& input,
+bool AutofillDialogViews::HitTestInput(ServerFieldType type,
                                        const gfx::Point& screen_point) {
-  views::View* view = TextfieldForType(input.type);
+  views::View* view = TextfieldForType(type);
   if (!view)
-    view = ComboboxForType(input.type);
+    view = ComboboxForType(type);
 
   if (view) {
     gfx::Point target_point(screen_point);

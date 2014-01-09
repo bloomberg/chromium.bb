@@ -166,7 +166,7 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
 
   // Increase visibility for testing.
   using AutofillDialogControllerImpl::view;
-  using AutofillDialogControllerImpl::input_showing_popup;
+  using AutofillDialogControllerImpl::popup_input_type;
 
   MOCK_METHOD0(LoadRiskFingerprintData, void());
 
@@ -563,7 +563,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, FillInputFromAutofill) {
                                value.substr(0, value.size() / 2));
   view->ActivateInput(triggering_input);
 
-  ASSERT_EQ(&triggering_input, controller()->input_showing_popup());
+  ASSERT_EQ(triggering_input.type, controller()->popup_input_type());
   controller()->DidAcceptSuggestion(base::string16(), 0);
 
   // All inputs should be filled.
@@ -590,7 +590,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, FillInputFromAutofill) {
   view->SetTextContentsOfInput(triggering_input,
                                value.substr(0, value.size() / 2));
   view->ActivateInput(triggering_input);
-  ASSERT_EQ(&triggering_input, controller()->input_showing_popup());
+  ASSERT_EQ(triggering_input.type, controller()->popup_input_type());
   controller()->DidAcceptSuggestion(base::string16(), 0);
 
   for (size_t i = 0; i < inputs.size(); ++i) {
@@ -616,7 +616,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
                                value.substr(0, value.size() / 2));
   view->ActivateInput(triggering_input);
 
-  ASSERT_EQ(&triggering_input, controller()->input_showing_popup());
+  ASSERT_EQ(triggering_input.type, controller()->popup_input_type());
   controller()->DidAcceptSuggestion(base::string16(), 0);
 
   // All inputs should be filled.
@@ -649,7 +649,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   view->SetTextContentsOfInput(triggering_input,
                                value.substr(0, value.size() / 2));
   view->ActivateInput(triggering_input);
-  ASSERT_EQ(&triggering_input, controller()->input_showing_popup());
+  ASSERT_EQ(triggering_input.type, controller()->popup_input_type());
   controller()->DidAcceptSuggestion(base::string16(), 0);
 
   for (size_t i = 0; i < inputs.size(); ++i) {
@@ -681,7 +681,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   TestableAutofillDialogView* view = controller()->GetTestableView();
   view->ActivateInput(triggering_input);
 
-  ASSERT_EQ(&triggering_input, controller()->input_showing_popup());
+  ASSERT_EQ(triggering_input.type, controller()->popup_input_type());
 
   // Choose the variant suggestion.
   controller()->DidAcceptSuggestion(base::string16(), 1);
@@ -729,7 +729,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
                                value.substr(0, value.size() / 2));
   view->ActivateInput(triggering_input);
 
-  ASSERT_EQ(&triggering_input, controller()->input_showing_popup());
+  ASSERT_EQ(triggering_input.type, controller()->popup_input_type());
   controller()->DidAcceptSuggestion(base::string16(), 0);
 
   // All inputs should be filled.
@@ -745,7 +745,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   view->SetTextContentsOfInput(triggering_input,
                                value.substr(0, value.size() / 2));
   view->ActivateInput(triggering_input);
-  ASSERT_EQ(&triggering_input, controller()->input_showing_popup());
+  ASSERT_EQ(triggering_input.type, controller()->popup_input_type());
   controller()->DidAcceptSuggestion(base::string16(), 0);
 
   AutofillCreditCardWrapper wrapper2(&card2);
@@ -773,7 +773,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
                                value.substr(0, value.size() / 2));
   view->ActivateInput(billing_triggering_input);
 
-  ASSERT_EQ(&billing_triggering_input, controller()->input_showing_popup());
+  ASSERT_EQ(billing_triggering_input.type, controller()->popup_input_type());
   controller()->DidAcceptSuggestion(base::string16(), 0);
 
   for (size_t i = 0; i < inputs.size(); ++i) {

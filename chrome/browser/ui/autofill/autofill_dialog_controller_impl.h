@@ -241,8 +241,8 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   // Exposed for testing.
   AutofillDialogView* view() { return view_.get(); }
   virtual AutofillDialogView* CreateView();
-  const DetailInput* input_showing_popup() const {
-    return input_showing_popup_;
+  ServerFieldType popup_input_type() const {
+    return popup_input_type_;
   }
 
   // Returns the PersonalDataManager for |profile_|.
@@ -672,9 +672,8 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   // they're manually filling the dialog).
   base::WeakPtr<AutofillPopupControllerImpl> popup_controller_;
 
-  // The input for which |popup_controller_| is currently showing a popup
-  // (if any).
-  const DetailInput* input_showing_popup_;
+  // The type of the visible Autofill popup input (or UNKNOWN_TYPE if none).
+  ServerFieldType popup_input_type_;
 
   scoped_ptr<AutofillDialogView> view_;
 

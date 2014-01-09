@@ -71,7 +71,7 @@ class AutofillDialogView {
   // Fills the given section with Autofill data that was triggered by a user
   // interaction with |originating_input|.
   virtual void FillSection(DialogSection section,
-                           const DetailInput& originating_input) = 0;
+                           ServerFieldType originating_type) = 0;
 
   // Fills |output| with data the user manually input.
   virtual void GetUserInput(DialogSection section, FieldValueMap* output) = 0;
@@ -81,8 +81,8 @@ class AutofillDialogView {
   // relevant.
   virtual base::string16 GetCvc() = 0;
 
-  // Whether or not |point| is within |input|'s bounds.
-  virtual bool HitTestInput(const DetailInput& input,
+  // Whether or not |point| is within the bounds of an input of |type|.
+  virtual bool HitTestInput(ServerFieldType type,
                             const gfx::Point& screen_point) = 0;
 
   // Returns true if new or edited autofill details should be saved.

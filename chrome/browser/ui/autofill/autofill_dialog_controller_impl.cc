@@ -1897,18 +1897,8 @@ void AutofillDialogControllerImpl::UserEditedOrActivatedInput(
     return;
   }
 
-  // |input_showing_popup_| must be set before calling |Show()|.
-  const DetailInputs& inputs = RequestedFieldsForSection(section);
-  for (DetailInputs::const_iterator iter = inputs.begin();
-       iter != inputs.end(); ++iter) {
-    if (iter->type == type) {
-      input_showing_popup_ = &(*iter);
-      break;
-    }
-  }
-
-  if (!input_showing_popup_)
-    return;
+  // |popup_input_type_| must be set before calling |Show()|.
+  popup_input_type_ = type;
 
   // TODO(estade): do we need separators and control rows like 'Clear
   // Form'?
@@ -1937,7 +1927,7 @@ void AutofillDialogControllerImpl::FocusMoved() {
 }
 
 bool AutofillDialogControllerImpl::ShouldShowErrorBubble() const {
-  return !input_showing_popup_;
+  return popup_input_type_ == UNKNOWN_TYPE;
 }
 
 void AutofillDialogControllerImpl::ViewClosed() {
@@ -2142,8 +2132,10 @@ void AutofillDialogControllerImpl::OnPopupHidden() {}
 
 bool AutofillDialogControllerImpl::ShouldRepostEvent(
     const ui::MouseEvent& event) {
-  // If the event would be reposted inside |input_showing_popup_|, just ignore.
-  return !view_->HitTestInput(*input_showing_popup_, event.location());
+  DCHECK_NE(UNKNOWN_TYPE, popup_input_type_);
+  // If the event would be reposted inside the input showing an Autofill popup,
+  // just ignore.
+  return !view_->HitTestInput(popup_input_type_, event.location());
 }
 
 void AutofillDialogControllerImpl::DidSelectSuggestion(int identifier) {
@@ -2157,20 +2149,20 @@ void AutofillDialogControllerImpl::DidAcceptSuggestion(
   const PersonalDataManager::GUIDPair& pair = popup_guids_[identifier];
 
   scoped_ptr<DataModelWrapper> wrapper;
-  if (common::IsCreditCardType(input_showing_popup_->type)) {
+  if (common::IsCreditCardType(popup_input_type_)) {
     wrapper.reset(new AutofillCreditCardWrapper(
         GetManager()->GetCreditCardByGUID(pair.first)));
   } else {
     wrapper.reset(new AutofillProfileWrapper(
         GetManager()->GetProfileByGUID(pair.first),
-        AutofillType(input_showing_popup_->type),
+        AutofillType(popup_input_type_),
         pair.second));
   }
 
   for (size_t i = SECTION_MIN; i <= SECTION_MAX; ++i) {
     DialogSection section = static_cast<DialogSection>(i);
     wrapper->FillInputs(MutableRequestedFieldsForSection(section));
-    view_->FillSection(section, *input_showing_popup_);
+    view_->FillSection(section, popup_input_type_);
   }
 
   GetMetricLogger().LogDialogPopupEvent(
@@ -2536,7 +2528,7 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
       suggested_cc_billing_(this),
       suggested_shipping_(this),
       cares_about_shipping_(true),
-      input_showing_popup_(NULL),
+      popup_input_type_(UNKNOWN_TYPE),
       weak_ptr_factory_(this),
       waiting_for_explicit_sign_in_response_(false),
       has_accepted_legal_documents_(false),
@@ -3003,7 +2995,7 @@ DetailInputs* AutofillDialogControllerImpl::MutableRequestedFieldsForSection(
 void AutofillDialogControllerImpl::HidePopup() {
   if (popup_controller_.get())
     popup_controller_->Hide();
-  input_showing_popup_ = NULL;
+  popup_input_type_ = UNKNOWN_TYPE;
 }
 
 void AutofillDialogControllerImpl::SetEditingExistingData(

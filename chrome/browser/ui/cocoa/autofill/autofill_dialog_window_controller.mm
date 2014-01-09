@@ -398,8 +398,8 @@ const CGFloat kMinimumContentsHeight = 101;
 }
 
 - (void)fillSection:(autofill::DialogSection)section
-           forInput:(const autofill::DetailInput&)input {
-  [[mainContainer_ sectionForId:section] fillForInput:input];
+            forType:(autofill::ServerFieldType)type {
+  [[mainContainer_ sectionForId:section] fillForType:type];
   [mainContainer_ updateSaveInChrome];
 }
 

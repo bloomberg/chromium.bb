@@ -47,11 +47,11 @@ class AutofillDialogCocoa : public AutofillDialogView,
   virtual void UpdateSection(DialogSection section) OVERRIDE;
   virtual void UpdateErrorBubble() OVERRIDE;
   virtual void FillSection(DialogSection section,
-                           const DetailInput& originating_input) OVERRIDE;
+                           ServerFieldType originating_type) OVERRIDE;
   virtual void GetUserInput(DialogSection section,
                             FieldValueMap* output) OVERRIDE;
   virtual base::string16 GetCvc() OVERRIDE;
-  virtual bool HitTestInput(const DetailInput& input,
+  virtual bool HitTestInput(ServerFieldType type,
                             const gfx::Point& screen_point) OVERRIDE;
   virtual bool SaveDetailsLocally() OVERRIDE;
   virtual const content::NavigationController* ShowSignIn() OVERRIDE;
