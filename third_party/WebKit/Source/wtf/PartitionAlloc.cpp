@@ -477,13 +477,20 @@ static ALWAYS_INLINE char* partitionPageAllocAndFillFreelist(PartitionPage* page
 }
 
 // This helper function scans the active page list for a suitable new active
-// page, starting at the page passed in. When it finds a suitable new active
-// page (one that has free slots), it is also set as the new active page. If
-// there is no suitable new active page, the current active page is set to null.
-static ALWAYS_INLINE void partitionSetNewActivePage(PartitionBucket* bucket, PartitionPage* page)
+// page, starting at the current active page, and optionally skipping the
+// current active page as a candidate.
+// When it finds a suitable new active page (one that has free slots), it is
+// set as the new active page and true is returned. If there is no suitable new
+// active page, false is returned.
+static ALWAYS_INLINE bool partitionSetNewActivePage(PartitionBucket* bucket, bool currentPageOk)
 {
-    ASSERT(page == &PartitionRootGeneric::gSeedPage || page->bucket == bucket);
+    PartitionPage* page = bucket->activePagesHead;
+    if (!currentPageOk)
+        page = page->activePageNext;
+
     for (; page; page = page->activePageNext) {
+        ASSERT(page->bucket == bucket->activePagesHead->bucket);
+
         // Skip over free pages. We need this check first so that we can trust
         // that the page union field really containts a freelist pointer.
         if (UNLIKELY(partitionPageIsFree(page)))
@@ -491,8 +498,10 @@ static ALWAYS_INLINE void partitionSetNewActivePage(PartitionBucket* bucket, Par
 
         // Page is usable if it has something on the freelist, or unprovisioned
         // slots that can be turned into a freelist.
-        if (LIKELY(partitionPageFreelistHead(page) != 0) || LIKELY(page->numUnprovisionedSlots))
-            break;
+        if (LIKELY(partitionPageFreelistHead(page) != 0) || LIKELY(page->numUnprovisionedSlots)) {
+            bucket->activePagesHead = page;
+            return true;
+        }
         // If we get here, we found a full page. Skip over it too, and also tag
         // it as full (via a negative value). We need it tagged so that free'ing
         // can tell, and move it back into the active page list.
@@ -501,7 +510,8 @@ static ALWAYS_INLINE void partitionSetNewActivePage(PartitionBucket* bucket, Par
         ++bucket->numFullPages;
     }
 
-    bucket->activePagesHead = page;
+    bucket->activePagesHead->activePageNext = 0;
+    return false;
 }
 
 static ALWAYS_INLINE void partitionPageSetFreePageNext(PartitionPage* page, PartitionPage* nextFree)
@@ -538,18 +548,17 @@ void* partitionAllocSlowPath(PartitionRootBase* root, size_t size, PartitionBuck
     }
 
     // First, look for a usable page in the existing active pages list.
-    PartitionPage* page = bucket->activePagesHead;
-    partitionSetNewActivePage(bucket, page);
-    page = bucket->activePagesHead;
-    if (LIKELY(page != 0)) {
-        if (LIKELY(partitionPageFreelistHead(page) != 0)) {
-            PartitionFreelistEntry* ret = partitionPageFreelistHead(page);
-            partitionPageSetFreelistHead(page, partitionFreelistMask(ret->next));
-            page->numAllocatedSlots++;
+    // Change active page, accepting the current page as a candidate.
+    if (LIKELY(partitionSetNewActivePage(bucket, true))) {
+        PartitionPage* newPage = bucket->activePagesHead;
+        if (LIKELY(partitionPageFreelistHead(newPage) != 0)) {
+            PartitionFreelistEntry* ret = partitionPageFreelistHead(newPage);
+            partitionPageSetFreelistHead(newPage, partitionFreelistMask(ret->next));
+            newPage->numAllocatedSlots++;
             return ret;
         }
-        ASSERT(page->numUnprovisionedSlots);
-        return partitionPageAllocAndFillFreelist(page);
+        ASSERT(newPage->numUnprovisionedSlots);
+        return partitionPageAllocAndFillFreelist(newPage);
     }
 
     // Second, look in our list of freed but reserved pages.
@@ -593,24 +602,16 @@ void partitionFreeSlowPath(PartitionPage* page)
         // Page became fully unused.
         // If it's the current page, change it!
         if (LIKELY(page == bucket->activePagesHead)) {
-            PartitionPage* newPage = 0;
-            if (page->activePageNext) {
-                partitionSetNewActivePage(bucket, page->activePageNext);
-                newPage = bucket->activePagesHead;
-            }
-
-            ASSERT(newPage != page);
-            if (UNLIKELY(!newPage)) {
+            // Change active page, rejecting the current page as a candidate.
+            if (!partitionSetNewActivePage(bucket, false)) {
                 // We do not free the last active page in a bucket.
                 // To do so is a serious performance issue as we can get into
                 // a repeating state change between 0 and 1 objects of a given
                 // size allocated; and each state change incurs either a system
                 // call or a page fault, or more.
-                page->activePageNext = 0;
-                bucket->activePagesHead = page;
+                ASSERT(!page->activePageNext);
                 return;
             }
-            bucket->activePagesHead = newPage;
         }
         partitionPutPageOnFreelist(page, bucket);
     } else {
