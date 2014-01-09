@@ -186,6 +186,10 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'GPL (v2 or later)',
         'UNKNOWN',  # http://crbug.com/98123
     ],
+    'third_party/fontconfig': [
+        # https://bugs.freedesktop.org/show_bug.cgi?id=73401
+        'UNKNOWN',
+    ],
     'third_party/freetype2': [ # http://crbug.com/177319
         'UNKNOWN',
     ],
