@@ -124,6 +124,7 @@ class AddressSanitizerTool(BaseTool):
 
   def SetupEnvironment(self):
     self._adb.EnableAdbRoot()
+    self._adb.RunShellCommand('setenforce 0')
     for prop in self._wrap_properties:
       self._adb.RunShellCommand('setprop %s "logwrapper %s"' % (
           prop, self.GetTestWrapper()))
@@ -167,6 +168,7 @@ class ValgrindTool(BaseTool):
   def SetupEnvironment(self):
     """Sets up device environment."""
     self._adb.RunShellCommand('chmod 777 /data/local/tmp')
+    self._adb.RunShellCommand('setenforce 0')
     for prop in self._wrap_properties:
       self._adb.RunShellCommand('setprop %s "logwrapper %s"' % (
           prop, self.GetTestWrapper()))
