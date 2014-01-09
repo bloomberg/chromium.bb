@@ -98,6 +98,11 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
 
   BrowserPluginGuestManager* GetBrowserPluginGuestManager();
 
+  bool DidSendScreenRectsCallback(BrowserPluginGuest* guest);
+
+  bool UnlockMouseIfNecessaryCallback(const NativeWebKeyboardEvent& event,
+                                      BrowserPluginGuest* guest);
+
   // Message handlers.
 
   void OnAllocateInstanceID(int request_id);

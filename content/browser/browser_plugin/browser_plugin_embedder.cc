@@ -8,6 +8,7 @@
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/browser_plugin/browser_plugin_guest_manager.h"
 #include "content/browser/browser_plugin/browser_plugin_host_factory.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/browser_plugin/browser_plugin_constants.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
@@ -22,6 +23,7 @@
 #include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/escape.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 
 namespace content {
 
@@ -79,15 +81,42 @@ void BrowserPluginEmbedder::GetRenderViewHostAtPosition(
   ++next_get_render_view_request_id_;
 }
 
+bool BrowserPluginEmbedder::DidSendScreenRectsCallback(
+   BrowserPluginGuest* guest) {
+  static_cast<RenderViewHostImpl*>(
+      guest->GetWebContents()->GetRenderViewHost())->SendScreenRects();
+  // Not handled => Iterate over all guests.
+  return false;
+}
+
 void BrowserPluginEmbedder::DidSendScreenRects() {
-  GetBrowserPluginGuestManager()->DidSendScreenRects(
-      static_cast<WebContentsImpl*>(web_contents()));
+  WebContentsImpl* embedder =
+      static_cast<WebContentsImpl*>(web_contents());
+  GetBrowserPluginGuestManager()->ForEachGuest(embedder, base::Bind(
+      &BrowserPluginEmbedder::DidSendScreenRectsCallback,
+      base::Unretained(this)));
+}
+
+bool BrowserPluginEmbedder::UnlockMouseIfNecessaryCallback(
+    const NativeWebKeyboardEvent& event,
+    BrowserPluginGuest* guest) {
+  return guest->UnlockMouseIfNecessary(event);
 }
 
 bool BrowserPluginEmbedder::HandleKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
-  return GetBrowserPluginGuestManager()->UnlockMouseIfNecessary(
-      static_cast<WebContentsImpl*>(web_contents()), event);
+  if ((event.type != blink::WebInputEvent::RawKeyDown) ||
+      (event.windowsKeyCode != ui::VKEY_ESCAPE) ||
+      (event.modifiers & blink::WebInputEvent::InputModifiers)) {
+    return false;
+  }
+
+  WebContentsImpl* embedder =
+      static_cast<WebContentsImpl*>(web_contents());
+  return GetBrowserPluginGuestManager()->ForEachGuest(embedder, base::Bind(
+      &BrowserPluginEmbedder::UnlockMouseIfNecessaryCallback,
+      base::Unretained(this),
+      event));
 }
 
 void BrowserPluginEmbedder::RenderProcessGone(base::TerminationStatus status) {

@@ -17,7 +17,6 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "net/base/escape.h"
-#include "ui/events/keycodes/keyboard_codes.h"
 
 namespace content {
 
@@ -224,40 +223,17 @@ void BrowserPluginGuestManager::OnUnhandledSwapBuffersACK(
                                                params.sync_point);
 }
 
-void BrowserPluginGuestManager::DidSendScreenRects(
-    WebContentsImpl* embedder_web_contents) {
-  // TODO(lazyboy): Generalize iterating over guest instances and performing
-  // actions on the guests.
+bool BrowserPluginGuestManager::ForEachGuest(
+    WebContentsImpl* embedder_web_contents, const GuestCallback& callback) {
   for (GuestInstanceMap::iterator it =
            guest_web_contents_by_instance_id_.begin();
-               it != guest_web_contents_by_instance_id_.end(); ++it) {
+       it != guest_web_contents_by_instance_id_.end(); ++it) {
     BrowserPluginGuest* guest = it->second->GetBrowserPluginGuest();
-    if (embedder_web_contents == guest->embedder_web_contents()) {
-      static_cast<RenderViewHostImpl*>(
-          guest->GetWebContents()->GetRenderViewHost())->SendScreenRects();
-    }
-  }
-}
+    if (embedder_web_contents != guest->embedder_web_contents())
+      continue;
 
-bool BrowserPluginGuestManager::UnlockMouseIfNecessary(
-    WebContentsImpl* embedder_web_contents,
-    const NativeWebKeyboardEvent& event) {
-  if ((event.type != blink::WebInputEvent::RawKeyDown) ||
-      (event.windowsKeyCode != ui::VKEY_ESCAPE) ||
-      (event.modifiers & blink::WebInputEvent::InputModifiers)) {
-    return false;
-  }
-
-  // TODO(lazyboy): Generalize iterating over guest instances and performing
-  // actions on the guests.
-  for (GuestInstanceMap::iterator it =
-           guest_web_contents_by_instance_id_.begin();
-               it != guest_web_contents_by_instance_id_.end(); ++it) {
-    BrowserPluginGuest* guest = it->second->GetBrowserPluginGuest();
-    if (embedder_web_contents == guest->embedder_web_contents()) {
-      if (guest->UnlockMouseIfNecessary(event))
-        return true;
-    }
+    if (callback.Run(guest))
+      return true;
   }
   return false;
 }
