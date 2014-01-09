@@ -26,30 +26,48 @@ function assertThrowsError(method, opt_expectedError) {
 }
 
 chrome.test.runTests([
-  function testDocument() {
-    assertThrowsError(document.open);
-    assertThrowsError(document.clear);
-    assertThrowsError(document.close);
+  function testDocumentBenignMethods() {
+    // The real document.open returns a document.
+    assertEq('undefined', typeof(document.open()));
+
+    // document.clear() has been deprecated on the Web as well, so there is no
+    // good method of testing that the method has been stubbed. We have to
+    // settle for testing that calling the method doesn't throw.
+    assertEq('undefined', typeof(document.clear()));
+
+    // document.close() doesn't do anything on its own, so there is good method
+    // of testing that it has been stubbed. Settle for making sure it doesn't
+    // throw.
+    assertEq('undefined', typeof(document.close()));
+
+    succeed();
+  },
+
+  function testDocumentEvilMethods() {
     assertThrowsError(document.write);
     assertThrowsError(document.writeln);
 
-    assertThrowsError(function() {document.all;});
-    assertThrowsError(function() {document.bgColor;});
-    assertThrowsError(function() {document.fgColor;});
-    assertThrowsError(function() {document.alinkColor;});
-    assertThrowsError(function() {document.linkColor;});
-    assertThrowsError(function() {document.vlinkColor;});
+    succeed();
+  },
+
+  function testDocumentGetters() {
+    assertEq('undefined', typeof(document.all));
+    assertEq('undefined', typeof(document.bgColor));
+    assertEq('undefined', typeof(document.fgColor));
+    assertEq('undefined', typeof(document.alinkColor));
+    assertEq('undefined', typeof(document.linkColor));
+    assertEq('undefined', typeof(document.vlinkColor));
 
     succeed();
   },
 
   function testHistory() {
-    // These are replaced by wrappers that throws exceptions.
-    assertThrowsError(history.back);
-    assertThrowsError(history.forward);
-    assertThrowsError(function() {history.length;});
+    // Accessing these logs warnings to the console.
+    assertEq('undefined', typeof(history.back));
+    assertEq('undefined', typeof(history.forward));
+    assertEq('undefined', typeof(history.length));
 
-    // These are part of the HTML5 History API that is feature detected, so we
+    // These are part of the HTML5 History API that are feature detected, so we
     // remove them altogether, allowing apps to have fallback behavior.
     chrome.test.assertFalse('pushState' in history);
     chrome.test.assertFalse('replaceState' in history);
@@ -59,30 +77,30 @@ chrome.test.runTests([
   },
 
   function testWindowFind() {
-    assertThrowsError(Window.prototype.find);
-    assertThrowsError(window.find);
-    assertThrowsError(find);
+    assertEq('undefined', typeof(Window.prototype.find('needle')));
+    assertEq('undefined', typeof(window.find('needle')));
+    assertEq('undefined', typeof(find('needle')));
     succeed();
   },
 
   function testWindowAlert() {
-    assertThrowsError(Window.prototype.alert);
-    assertThrowsError(window.alert);
-    assertThrowsError(alert);
+    assertEq('undefined', typeof(Window.prototype.alert()));
+    assertEq('undefined', typeof(window.alert()));
+    assertEq('undefined', typeof(alert()));
     succeed();
   },
 
   function testWindowConfirm() {
-    assertThrowsError(Window.prototype.confirm);
-    assertThrowsError(window.confirm);
-    assertThrowsError(confirm);
+    assertEq('undefined', typeof(Window.prototype.confirm('Failed')));
+    assertEq('undefined', typeof(window.confirm('Failed')));
+    assertEq('undefined', typeof(confirm('Failed')));
     succeed();
   },
 
   function testWindowPrompt() {
-    assertThrowsError(Window.prototype.prompt);
-    assertThrowsError(window.prompt);
-    assertThrowsError(prompt);
+    assertEq('undefined', typeof(Window.prototype.prompt('Failed')));
+    assertEq('undefined', typeof(window.prompt('Failed')));
+    assertEq('undefined', typeof(prompt('Failed')));
     succeed();
   },
 
@@ -90,29 +108,31 @@ chrome.test.runTests([
     var bars = ['locationbar', 'menubar', 'personalbar',
                 'scrollbars', 'statusbar', 'toolbar'];
     for (var x = 0; x < bars.length; x++) {
-      assertThrowsError(function() {
-        var visible = this[bars[x]].visible;
-        visible = window[bars[x]].visible;
-      });
+      assertEq('undefined', typeof(this[bars[x]]));
+      assertEq('undefined', typeof(window[bars[x]]));
     }
     succeed();
   },
 
   function testBlockedEvents() {
-    var eventHandler = function() { fail('event handled'); };
+    // Fails the test if called by dispatchEvent().
+    var eventHandler = function() { fail('blocked event handled'); };
+
     var blockedEvents = ['unload', 'beforeunload'];
 
     for (var i = 0; i < blockedEvents.length; ++i) {
-      assertThrowsError(function() {
-        window['on' + blockedEvents[i]] = eventHandler;
-      });
-      assertThrowsError(function() {
-        window.addEventListener(blockedEvents[i], eventHandler);
-      });
-      assertThrowsError(function() {
-        Window.prototype.addEventListener.apply(window,
-            [blockedEvents[i], eventHandler]);
-      });
+      window['on' + blockedEvents[i]] = eventHandler;
+      assertEq(undefined, window['on' + blockedEvents[i]]);
+
+      var event = new Event(blockedEvents[i]);
+      window.addEventListener(blockedEvents[i], eventHandler);
+      // Ensures that addEventListener did not actually register the handler.
+      // If eventHandler is registered as a listener, it will be called by
+      // dispatchEvent() and the test will fail.
+      window.dispatchEvent(event);
+      Window.prototype.addEventListener.apply(window,
+          [blockedEvents[i], eventHandler]);
+      window.dispatchEvent(event);
     }
 
     succeed();
@@ -132,7 +152,7 @@ chrome.test.runTests([
   function testIframe() {
     var iframe = document.createElement('iframe');
     iframe.onload = function() {
-      assertThrowsError(iframe.contentWindow.alert);
+      assertThrowsError(iframe.contentWindow.document.write);
       succeed();
     };
     iframe.src = 'iframe.html';

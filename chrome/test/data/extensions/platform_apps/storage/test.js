@@ -18,15 +18,7 @@ chrome.test.runTests([
   },
 
   function testLocalStorage() {
-    try {
-      window.localStorage;
-      chrome.test.fail('error not thrown');
-    } catch (e) {
-      var message = e.message || e;
-      var expected = 'is not available in packaged apps. ' +
-                     'Use chrome.storage.local instead.';
-      assertContains(message, expected, 'Unexpected message ' + message);
-      chrome.test.succeed();
-    }
+    chrome.test.assertTrue(!window.localStorage);
+    chrome.test.succeed();
   }
 ]);

@@ -3,17 +3,16 @@
 // found in the LICENSE file.
 
 window.onload = function() {
-  try {
-    window.alert('should throw');
+  window.onunload = function() {
     window.parent.postMessage({'success': false,
-                               'reason' : 'should have thrown'},
+                               'reason' : 'unload handler works'},
                               '*');
-  } catch(e) {
-    var message = e.message || e;
-    var succ = message.indexOf('is not available in packaged apps') != -1;
-    window.parent.postMessage({'success': succ,
-                               'reason' : 'got wrong error: ' + message},
+  };
+  if (typeof(window.unload) !== 'undefined') {
+    window.parent.postMessage({'success': false,
+                               'reason' : 'unload is not undefined'},
                               '*');
-
   }
+  window.dispatchEvent(new Event('unload'));
+  window.parent.postMessage({'success': true}, '*');
 };
