@@ -27,6 +27,17 @@ class NoSupportedActionError(page_measurement.MeasurementFailure):
         'None of the actions is supported by smoothness measurement')
 
 
+def _GetSyntheticDelayCategoriesFromPage(page):
+  if not hasattr(page, 'synthetic_delays'):
+    return []
+  result = []
+  for delay, options in page.synthetic_delays.items():
+    options = '%f;%s' % (options.get('target_duration', 0),
+                         options.get('mode', 'static'))
+    result.append('DELAY(%s;%s)' % (delay, options))
+  return result
+
+
 class SmoothnessMetric(Metric):
   def __init__(self):
     super(SmoothnessMetric, self).__init__()
@@ -37,7 +48,9 @@ class SmoothnessMetric(Metric):
     self._actions.append(action)
 
   def Start(self, page, tab):
-    tab.browser.StartTracing('webkit.console,benchmark', 60)
+    custom_categories = ['webkit.console', 'benchmark']
+    custom_categories += _GetSyntheticDelayCategoriesFromPage(page)
+    tab.browser.StartTracing(','.join(custom_categories), 60)
     tab.ExecuteJavaScript('console.time("' + TIMELINE_MARKER + '")')
     if tab.browser.platform.IsRawDisplayFrameRateSupported():
       tab.browser.platform.StartRawDisplayFrameRateMeasurement()
