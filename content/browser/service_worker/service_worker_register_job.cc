@@ -11,7 +11,7 @@
 namespace content {
 
 ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
-    const base::WeakPtr<ServiceWorkerStorage>& storage,
+    ServiceWorkerStorage* storage,
     const RegistrationCompleteCallback& callback)
     : storage_(storage), callback_(callback), weak_factory_(this) {}
 
@@ -21,10 +21,10 @@ void ServiceWorkerRegisterJob::StartRegister(const GURL& pattern,
                                              const GURL& script_url) {
   // Set up a chain of callbacks, in reverse order. Each of these
   // callbacks may be called asynchronously by the previous callback.
-  ServiceWorkerStorage::RegistrationCallback finish_registration(base::Bind(
+  RegistrationCallback finish_registration(base::Bind(
       &ServiceWorkerRegisterJob::RegisterComplete, weak_factory_.GetWeakPtr()));
 
-  ServiceWorkerStorage::UnregistrationCallback register_new(
+  UnregistrationCallback register_new(
       base::Bind(&ServiceWorkerRegisterJob::RegisterPatternAndContinue,
                  weak_factory_.GetWeakPtr(),
                  pattern,
@@ -44,7 +44,7 @@ void ServiceWorkerRegisterJob::StartRegister(const GURL& pattern,
 void ServiceWorkerRegisterJob::StartUnregister(const GURL& pattern) {
   // Set up a chain of callbacks, in reverse order. Each of these
   // callbacks may be called asynchronously by the previous callback.
-  ServiceWorkerStorage::UnregistrationCallback finish_unregistration(
+  UnregistrationCallback finish_unregistration(
       base::Bind(&ServiceWorkerRegisterJob::UnregisterComplete,
                  weak_factory_.GetWeakPtr()));
 
@@ -61,7 +61,7 @@ void ServiceWorkerRegisterJob::StartUnregister(const GURL& pattern) {
 void ServiceWorkerRegisterJob::RegisterPatternAndContinue(
     const GURL& pattern,
     const GURL& script_url,
-    const ServiceWorkerStorage::RegistrationCallback& callback,
+    const RegistrationCallback& callback,
     ServiceWorkerRegistrationStatus previous_status) {
   if (previous_status != REGISTRATION_OK) {
     BrowserThread::PostTask(
@@ -85,7 +85,7 @@ void ServiceWorkerRegisterJob::RegisterPatternAndContinue(
 void ServiceWorkerRegisterJob::UnregisterPatternAndContinue(
     const GURL& pattern,
     const GURL& new_script_url,
-    const ServiceWorkerStorage::UnregistrationCallback& callback,
+    const UnregistrationCallback& callback,
     bool found,
     ServiceWorkerRegistrationStatus previous_status,
     const scoped_refptr<ServiceWorkerRegistration>& previous_registration) {
@@ -103,15 +103,15 @@ void ServiceWorkerRegisterJob::UnregisterPatternAndContinue(
       BrowserThread::IO, FROM_HERE, base::Bind(callback, previous_status));
 }
 
-void ServiceWorkerRegisterJob::UnregisterComplete(
-    ServiceWorkerRegistrationStatus status) {
-  callback_.Run(this, status, NULL);
-}
-
 void ServiceWorkerRegisterJob::RegisterComplete(
     ServiceWorkerRegistrationStatus status,
     const scoped_refptr<ServiceWorkerRegistration>& registration) {
   callback_.Run(this, status, registration);
+}
+
+void ServiceWorkerRegisterJob::UnregisterComplete(
+    ServiceWorkerRegistrationStatus status) {
+  callback_.Run(this, status, NULL);
 }
 
 }  // namespace content

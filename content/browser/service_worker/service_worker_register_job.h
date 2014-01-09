@@ -15,6 +15,12 @@ namespace content {
 // registration or unregistration.
 class ServiceWorkerRegisterJob {
  public:
+  typedef base::Callback<void(ServiceWorkerRegistrationStatus status,
+                              const scoped_refptr<ServiceWorkerRegistration>&
+                                  registration)> RegistrationCallback;
+  typedef base::Callback<void(ServiceWorkerRegistrationStatus status)>
+      UnregistrationCallback;
+
   typedef base::Callback<void(
       ServiceWorkerRegisterJob* job,
       ServiceWorkerRegistrationStatus status,
@@ -22,7 +28,7 @@ class ServiceWorkerRegisterJob {
 
   // All type of jobs (Register and Unregister) complete through a
   // single call to this callback on the IO thread.
-  ServiceWorkerRegisterJob(const base::WeakPtr<ServiceWorkerStorage>& storage,
+  ServiceWorkerRegisterJob(ServiceWorkerStorage* storage,
                            const RegistrationCompleteCallback& callback);
   ~ServiceWorkerRegisterJob();
 
@@ -51,13 +57,13 @@ class ServiceWorkerRegisterJob {
   void RegisterPatternAndContinue(
       const GURL& pattern,
       const GURL& script_url,
-      const ServiceWorkerStorage::RegistrationCallback& callback,
+      const RegistrationCallback& callback,
       ServiceWorkerRegistrationStatus previous_status);
 
   void UnregisterPatternAndContinue(
       const GURL& pattern,
       const GURL& script_url,
-      const ServiceWorkerStorage::UnregistrationCallback& callback,
+      const UnregistrationCallback& callback,
       bool found,
       ServiceWorkerRegistrationStatus previous_status,
       const scoped_refptr<ServiceWorkerRegistration>& previous_registration);
@@ -69,7 +75,14 @@ class ServiceWorkerRegisterJob {
       ServiceWorkerRegistrationStatus status,
       const scoped_refptr<ServiceWorkerRegistration>& registration);
 
-  const base::WeakPtr<ServiceWorkerStorage> storage_;
+  // The ServiceWorkerStorage object should always outlive
+  // this.
+
+  // TODO(alecflett) When we support job cancelling, if we are keeping
+  // this job alive for any reason, be sure to clear this variable,
+  // because we may be cancelling while there are outstanding
+  // callbacks that expect access to storage_.
+  ServiceWorkerStorage* storage_;
   const RegistrationCompleteCallback callback_;
   base::WeakPtrFactory<ServiceWorkerRegisterJob> weak_factory_;
 

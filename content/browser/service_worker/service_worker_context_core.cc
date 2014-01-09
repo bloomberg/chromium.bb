@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/strings/string_util.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
+#include "content/browser/service_worker/service_worker_job_coordinator.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_register_job.h"
 #include "content/browser/service_worker/service_worker_registration.h"
@@ -22,6 +23,7 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
     const base::FilePath& path,
     quota::QuotaManagerProxy* quota_manager_proxy)
     : storage_(new ServiceWorkerStorage(path, quota_manager_proxy)),
+      job_coordinator_(new ServiceWorkerJobCoordinator(storage_.get())),
       embedded_worker_registry_(new EmbeddedWorkerRegistry(AsWeakPtr())) {}
 
 ServiceWorkerContextCore::~ServiceWorkerContextCore() {}
@@ -69,11 +71,12 @@ void ServiceWorkerContextCore::RegisterServiceWorker(
     const RegistrationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  storage_->Register(pattern,
-                     script_url,
-                     base::Bind(&ServiceWorkerContextCore::RegistrationComplete,
-                                AsWeakPtr(),
-                                callback));
+  job_coordinator_->Register(
+      pattern,
+      script_url,
+      base::Bind(&ServiceWorkerContextCore::RegistrationComplete,
+                 AsWeakPtr(),
+                 callback));
 }
 
 void ServiceWorkerContextCore::UnregisterServiceWorker(
@@ -81,7 +84,7 @@ void ServiceWorkerContextCore::UnregisterServiceWorker(
     const UnregistrationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  storage_->Unregister(pattern, callback);
+  job_coordinator_->Unregister(pattern, callback);
 }
 
 void ServiceWorkerContextCore::RegistrationComplete(

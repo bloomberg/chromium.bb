@@ -30,6 +30,7 @@ class QuotaManagerProxy;
 namespace content {
 
 class EmbeddedWorkerRegistry;
+class ServiceWorkerJobCoordinator;
 class ServiceWorkerProviderHost;
 class ServiceWorkerRegistration;
 class ServiceWorkerStorage;
@@ -94,6 +95,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
 
   ProcessToProviderMap providers_;
   scoped_ptr<ServiceWorkerStorage> storage_;
+  scoped_ptr<ServiceWorkerJobCoordinator> job_coordinator_;
   scoped_refptr<EmbeddedWorkerRegistry> embedded_worker_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContextCore);
