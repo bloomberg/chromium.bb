@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Google Inc. All Rights Reserved.
+ * Copyright (C) 2014 Google Inc. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -25,40 +25,37 @@
  */
 
 #include "config.h"
-#include "core/events/WindowEventContext.h"
+#include "core/events/TreeScopeEventContext.h"
 
-#include "core/dom/Document.h"
-#include "core/dom/Node.h"
-#include "core/events/Event.h"
-#include "core/events/NodeEventContext.h"
-#include "core/frame/DOMWindow.h"
+#include "core/dom/StaticNodeList.h"
+#include "core/events/TouchEventContext.h"
 
 namespace WebCore {
 
-WindowEventContext::WindowEventContext(Event* event, PassRefPtr<Node> node, const NodeEventContext* topNodeEventContext)
+void TreeScopeEventContext::adoptEventPath(Vector<RefPtr<Node> >& nodes)
 {
-    // We don't dispatch load events to the window. This quirk was originally
-    // added because Mozilla doesn't propagate load events to the window object.
-    if (event->type() == EventTypeNames::load)
-        return;
-
-    Node* topLevelContainer = topNodeEventContext ? topNodeEventContext->node() : node.get();
-    if (!topLevelContainer->isDocumentNode())
-        return;
-
-    m_window = toDocument(topLevelContainer)->domWindow();
-    m_target = topNodeEventContext ? topNodeEventContext->target() : node.get();
+    m_eventPath = StaticNodeList::adopt(nodes);
 }
 
-bool WindowEventContext::handleLocalEvents(Event* event)
+TouchEventContext* TreeScopeEventContext::ensureTouchEventContext()
 {
-    if (!m_window)
-        return false;
+    if (!m_touchEventContext)
+        m_touchEventContext = TouchEventContext::create();
+    return m_touchEventContext.get();
+}
 
-    event->setTarget(target());
-    event->setCurrentTarget(window());
-    m_window->fireEventListeners(event);
-    return true;
+PassRefPtr<TreeScopeEventContext> TreeScopeEventContext::create(TreeScope& treeScope)
+{
+    return adoptRef(new TreeScopeEventContext(treeScope));
+}
+
+TreeScopeEventContext::TreeScopeEventContext(TreeScope& treeScope)
+    : m_treeScope(treeScope)
+{
+}
+
+TreeScopeEventContext::~TreeScopeEventContext()
+{
 }
 
 }

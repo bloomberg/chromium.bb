@@ -38,6 +38,7 @@
 #include "core/events/FocusEvent.h"
 #include "core/events/MouseEvent.h"
 #include "core/events/TouchEvent.h"
+#include "core/events/TouchEventContext.h"
 #include "core/svg/SVGElementInstance.h"
 #include "core/svg/SVGUseElement.h"
 

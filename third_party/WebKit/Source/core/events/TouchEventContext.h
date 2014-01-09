@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Google Inc. All Rights Reserved.
+ * Copyright (C) 2014 Google Inc. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -24,41 +24,35 @@
  *
  */
 
-#include "config.h"
-#include "core/events/WindowEventContext.h"
+#ifndef TouchEventContext_h
+#define TouchEventContext_h
 
-#include "core/dom/Document.h"
-#include "core/dom/Node.h"
-#include "core/events/Event.h"
-#include "core/events/NodeEventContext.h"
-#include "core/frame/DOMWindow.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
-WindowEventContext::WindowEventContext(Event* event, PassRefPtr<Node> node, const NodeEventContext* topNodeEventContext)
-{
-    // We don't dispatch load events to the window. This quirk was originally
-    // added because Mozilla doesn't propagate load events to the window object.
-    if (event->type() == EventTypeNames::load)
-        return;
+class Event;
+class TouchList;
 
-    Node* topLevelContainer = topNodeEventContext ? topNodeEventContext->node() : node.get();
-    if (!topLevelContainer->isDocumentNode())
-        return;
+class TouchEventContext : public RefCounted<TouchEventContext> {
+public:
+    static PassRefPtr<TouchEventContext> create();
+    ~TouchEventContext();
+    void handleLocalEvents(Event*) const;
+    TouchList& touches() { return *m_touches; }
+    TouchList& targetTouches() { return *m_targetTouches; }
+    TouchList& changedTouches() { return *m_changedTouches; }
 
-    m_window = toDocument(topLevelContainer)->domWindow();
-    m_target = topNodeEventContext ? topNodeEventContext->target() : node.get();
-}
+private:
+    TouchEventContext();
 
-bool WindowEventContext::handleLocalEvents(Event* event)
-{
-    if (!m_window)
-        return false;
-
-    event->setTarget(target());
-    event->setCurrentTarget(window());
-    m_window->fireEventListeners(event);
-    return true;
-}
+    RefPtr<TouchList> m_touches;
+    RefPtr<TouchList> m_targetTouches;
+    RefPtr<TouchList> m_changedTouches;
+};
 
 }
+
+#endif // TouchEventContext_h

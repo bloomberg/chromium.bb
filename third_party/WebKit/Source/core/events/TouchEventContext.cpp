@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Google Inc. All Rights Reserved.
+ * Copyright (C) 2014 Google Inc. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -25,54 +25,13 @@
  */
 
 #include "config.h"
-#include "core/events/EventContext.h"
+#include "core/events/TouchEventContext.h"
 
-#include "core/events/Event.h"
-#include "core/events/FocusEvent.h"
-#include "core/events/MouseEvent.h"
-#include "core/events/TouchEvent.h"
 #include "core/dom/TouchList.h"
+#include "core/events/Event.h"
+#include "core/events/TouchEvent.h"
 
 namespace WebCore {
-
-NodeEventContext::NodeEventContext(PassRefPtr<Node> node, PassRefPtr<EventTarget> currentTarget)
-    : m_node(node)
-    , m_currentTarget(currentTarget)
-{
-    ASSERT(m_node);
-}
-
-NodeEventContext::~NodeEventContext()
-{
-}
-
-void TreeScopeEventContext::adoptEventPath(Vector<RefPtr<Node> >& nodes)
-{
-    m_eventPath = StaticNodeList::adopt(nodes);
-}
-
-void NodeEventContext::handleLocalEvents(Event* event) const
-{
-    if (touchEventContext()) {
-        touchEventContext()->handleLocalEvents(event);
-    } else if (relatedTarget()) {
-        if (event->isMouseEvent()) {
-            toMouseEvent(event)->setRelatedTarget(relatedTarget());
-        } else if (event->isFocusEvent()) {
-            toFocusEvent(event)->setRelatedTarget(relatedTarget());
-        }
-    }
-    event->setTarget(target());
-    event->setCurrentTarget(m_currentTarget.get());
-    m_node->handleLocalEvents(event);
-}
-
-TouchEventContext* TreeScopeEventContext::ensureTouchEventContext()
-{
-    if (!m_touchEventContext)
-        m_touchEventContext = TouchEventContext::create();
-    return m_touchEventContext.get();
-}
 
 PassRefPtr<TouchEventContext> TouchEventContext::create()
 {
@@ -97,20 +56,6 @@ void TouchEventContext::handleLocalEvents(Event* event) const
     touchEvent->setTouches(m_touches);
     touchEvent->setTargetTouches(m_targetTouches);
     touchEvent->setChangedTouches(m_changedTouches);
-}
-
-PassRefPtr<TreeScopeEventContext> TreeScopeEventContext::create(TreeScope& treeScope)
-{
-    return adoptRef(new TreeScopeEventContext(treeScope));
-}
-
-TreeScopeEventContext::TreeScopeEventContext(TreeScope& treeScope)
-    : m_treeScope(treeScope)
-{
-}
-
-TreeScopeEventContext::~TreeScopeEventContext()
-{
 }
 
 }

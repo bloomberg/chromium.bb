@@ -26,22 +26,17 @@
 #ifndef EventDispatcher_h
 #define EventDispatcher_h
 
-#include "core/events/EventContext.h"
 #include "core/dom/SimulatedClickOptions.h"
-#include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
 class Event;
 class EventDispatchMediator;
-class EventTarget;
 class FrameView;
 class Node;
-class PlatformKeyboardEvent;
-class PlatformMouseEvent;
-class ShadowRoot;
-class TreeScope;
+class NodeEventContext;
 class WindowEventContext;
 
 enum EventDispatchContinuation {

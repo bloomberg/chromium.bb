@@ -38,7 +38,7 @@
 #include "core/dom/CharacterData.h"
 #include "core/dom/Element.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/events/EventContext.h"
+#include "core/events/NodeEventContext.h"
 #include "core/frame/Frame.h"
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/page/Page.h"

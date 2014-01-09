@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Google Inc. All Rights Reserved.
+ * Copyright (C) 2014 Google Inc. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -24,69 +24,19 @@
  *
  */
 
-#ifndef EventContext_h
-#define EventContext_h
+#ifndef NodeEventContext_h
+#define NodeEventContext_h
 
-#include "core/events/EventTarget.h"
 #include "core/dom/Node.h"
-#include "core/dom/StaticNodeList.h"
 #include "core/dom/TreeScope.h"
+#include "core/events/EventTarget.h"
+#include "core/events/TreeScopeEventContext.h"
+#include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {
 
 class Event;
-class TouchList;
-
-class TouchEventContext : public RefCounted<TouchEventContext> {
-public:
-    static PassRefPtr<TouchEventContext> create();
-    ~TouchEventContext();
-    void handleLocalEvents(Event*) const;
-    TouchList& touches() { return *m_touches; }
-    TouchList& targetTouches() { return *m_targetTouches; }
-    TouchList& changedTouches() { return *m_changedTouches; }
-
-private:
-    TouchEventContext();
-
-    RefPtr<TouchList> m_touches;
-    RefPtr<TouchList> m_targetTouches;
-    RefPtr<TouchList> m_changedTouches;
-};
-
-class TreeScopeEventContext : public RefCounted<TreeScopeEventContext> {
-public:
-    static PassRefPtr<TreeScopeEventContext> create(TreeScope&);
-    ~TreeScopeEventContext();
-
-    TreeScope& treeScope() const { return m_treeScope; }
-
-    EventTarget* target() const { return m_target.get(); }
-    void setTarget(PassRefPtr<EventTarget>);
-
-    EventTarget* relatedTarget() const { return m_relatedTarget.get(); }
-    void setRelatedTarget(PassRefPtr<EventTarget>);
-
-    TouchEventContext* touchEventContext() const { return m_touchEventContext.get(); }
-    TouchEventContext* ensureTouchEventContext();
-
-    PassRefPtr<NodeList> eventPath() const { return m_eventPath; }
-    void adoptEventPath(Vector<RefPtr<Node> >&);
-
-private:
-    TreeScopeEventContext(TreeScope&);
-
-#ifndef NDEBUG
-    bool isUnreachableNode(EventTarget*);
-#endif
-
-    TreeScope& m_treeScope;
-    RefPtr<EventTarget> m_target;
-    RefPtr<EventTarget> m_relatedTarget;
-    RefPtr<NodeList> m_eventPath;
-    RefPtr<TouchEventContext> m_touchEventContext;
-};
 
 class NodeEventContext {
 public:
@@ -136,4 +86,4 @@ inline void TreeScopeEventContext::setRelatedTarget(PassRefPtr<EventTarget> rela
 
 }
 
-#endif // EventContext_h
+#endif // NodeEventContext_h

@@ -27,7 +27,8 @@
 #ifndef EventPath_h
 #define EventPath_h
 
-#include "core/events/EventContext.h"
+#include "core/events/NodeEventContext.h"
+#include "core/events/TreeScopeEventContext.h"
 
 #include "wtf/HashMap.h"
 #include "wtf/Vector.h"

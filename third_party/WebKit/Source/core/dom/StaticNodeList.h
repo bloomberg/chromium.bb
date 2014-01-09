@@ -29,6 +29,7 @@
 #ifndef StaticNodeList_h
 #define StaticNodeList_h
 
+#include "core/dom/Node.h"
 #include "core/dom/NodeList.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Google Inc. All Rights Reserved.
+ * Copyright (C) 2014 Google Inc. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -25,40 +25,41 @@
  */
 
 #include "config.h"
-#include "core/events/WindowEventContext.h"
-
-#include "core/dom/Document.h"
-#include "core/dom/Node.h"
-#include "core/events/Event.h"
 #include "core/events/NodeEventContext.h"
-#include "core/frame/DOMWindow.h"
+
+#include "core/dom/TouchList.h"
+#include "core/events/Event.h"
+#include "core/events/FocusEvent.h"
+#include "core/events/MouseEvent.h"
+#include "core/events/TouchEventContext.h"
 
 namespace WebCore {
 
-WindowEventContext::WindowEventContext(Event* event, PassRefPtr<Node> node, const NodeEventContext* topNodeEventContext)
+NodeEventContext::NodeEventContext(PassRefPtr<Node> node, PassRefPtr<EventTarget> currentTarget)
+    : m_node(node)
+    , m_currentTarget(currentTarget)
 {
-    // We don't dispatch load events to the window. This quirk was originally
-    // added because Mozilla doesn't propagate load events to the window object.
-    if (event->type() == EventTypeNames::load)
-        return;
-
-    Node* topLevelContainer = topNodeEventContext ? topNodeEventContext->node() : node.get();
-    if (!topLevelContainer->isDocumentNode())
-        return;
-
-    m_window = toDocument(topLevelContainer)->domWindow();
-    m_target = topNodeEventContext ? topNodeEventContext->target() : node.get();
+    ASSERT(m_node);
 }
 
-bool WindowEventContext::handleLocalEvents(Event* event)
+NodeEventContext::~NodeEventContext()
 {
-    if (!m_window)
-        return false;
+}
 
+void NodeEventContext::handleLocalEvents(Event* event) const
+{
+    if (touchEventContext()) {
+        touchEventContext()->handleLocalEvents(event);
+    } else if (relatedTarget()) {
+        if (event->isMouseEvent()) {
+            toMouseEvent(event)->setRelatedTarget(relatedTarget());
+        } else if (event->isFocusEvent()) {
+            toFocusEvent(event)->setRelatedTarget(relatedTarget());
+        }
+    }
     event->setTarget(target());
-    event->setCurrentTarget(window());
-    m_window->fireEventListeners(event);
-    return true;
+    event->setCurrentTarget(m_currentTarget.get());
+    m_node->handleLocalEvents(event);
 }
 
 }
