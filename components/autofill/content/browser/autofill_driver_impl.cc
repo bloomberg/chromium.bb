@@ -185,9 +185,6 @@ bool AutofillDriverImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_FORWARD(AutofillHostMsg_QueryFormFieldAutofill,
                         autofill_manager_.get(),
                         AutofillManager::OnQueryFormFieldAutofill)
-    IPC_MESSAGE_FORWARD(AutofillHostMsg_ShowAutofillDialog,
-                        autofill_manager_.get(),
-                        AutofillManager::OnShowAutofillDialog)
     IPC_MESSAGE_FORWARD(AutofillHostMsg_FillAutofillFormData,
                         autofill_manager_.get(),
                         AutofillManager::OnFillAutofillFormData)

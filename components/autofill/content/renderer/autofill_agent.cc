@@ -16,6 +16,7 @@
 #include "components/autofill/content/renderer/page_click_tracker.h"
 #include "components/autofill/content/renderer/password_autofill_agent.h"
 #include "components/autofill/core/common/autofill_constants.h"
+#include "components/autofill/core/common/autofill_data_validation.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_data_predictions.h"
@@ -54,16 +55,9 @@ using blink::WebNodeCollection;
 using blink::WebOptionElement;
 using blink::WebString;
 
+namespace autofill {
+
 namespace {
-
-// The size above which we stop triggering autofill for an input text field
-// (so to avoid sending long strings through IPC).
-const size_t kMaximumTextSizeForAutofill = 1000;
-
-// The maximum number of data list elements to send to the browser process
-// via IPC (to prevent long IPC messages).
-const size_t kMaximumDataListSizeForAutofill = 30;
-
 
 // Gets all the data list values (with corresponding label) for the given
 // element.
@@ -105,13 +99,13 @@ void GetDataListSuggestions(const blink::WebInputElement& element,
 // don't send too much data through the IPC.
 void TrimStringVectorForIPC(std::vector<base::string16>* strings) {
   // Limit the size of the vector.
-  if (strings->size() > kMaximumDataListSizeForAutofill)
-    strings->resize(kMaximumDataListSizeForAutofill);
+  if (strings->size() > kMaxListSize)
+    strings->resize(kMaxListSize);
 
   // Limit the size of the strings in the vector.
   for (size_t i = 0; i < strings->size(); ++i) {
-    if ((*strings)[i].length() > kMaximumTextSizeForAutofill)
-      (*strings)[i].resize(kMaximumTextSizeForAutofill);
+    if ((*strings)[i].length() > kMaxDataLength)
+      (*strings)[i].resize(kMaxDataLength);
   }
 }
 
@@ -124,8 +118,6 @@ gfx::RectF GetScaledBoundingBox(float scale, WebInputElement* element) {
 }
 
 }  // namespace
-
-namespace autofill {
 
 AutofillAgent::AutofillAgent(content::RenderView* render_view,
                              PasswordAutofillAgent* password_autofill_agent)
@@ -512,7 +504,7 @@ void AutofillAgent::ShowSuggestions(const WebInputElement& element,
   // criteria are not met.
   WebString value = element.editingValue();
   if (!datalist_only &&
-      (value.length() > kMaximumTextSizeForAutofill ||
+      (value.length() > kMaxDataLength ||
        (!autofill_on_empty_values && value.isEmpty()) ||
        (requires_caret_at_end &&
         (element.selectionStart() != element.selectionEnd() ||

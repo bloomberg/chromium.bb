@@ -12,6 +12,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/common/autofill_data_validation.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
@@ -50,9 +51,6 @@ using blink::WebVector;
 
 namespace autofill {
 namespace {
-
-// The maximum length allowed for form data.
-const size_t kMaxDataLength = 1024;
 
 // A bit field mask for FillForm functions to not fill some fields.
 enum FieldFilterMask {

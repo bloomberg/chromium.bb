@@ -84,6 +84,8 @@ class AutofillManager : public AutofillDownloadManager::Observer {
   // Sets an external delegate.
   void SetExternalDelegate(AutofillExternalDelegate* delegate);
 
+  void ShowAutofillSettings();
+
   // Called from our external delegate so they cannot be private.
   virtual void OnFillAutofillFormData(int query_id,
                                       const FormData& form,
@@ -91,7 +93,6 @@ class AutofillManager : public AutofillDownloadManager::Observer {
                                       int unique_id);
   void OnDidShowAutofillSuggestions(bool is_new_popup);
   void OnDidFillAutofillFormData(const base::TimeTicks& timestamp);
-  void OnShowAutofillDialog();
   void OnDidPreviewAutofillFormData();
 
   // Remove the credit card or Autofill profile that matches |unique_id|
@@ -140,7 +141,7 @@ class AutofillManager : public AutofillDownloadManager::Observer {
   void OnDidEndTextFieldEditing();
   void OnHideAutofillUI();
   void OnAddPasswordFormMapping(
-      const FormFieldData& form,
+      const FormFieldData& username_field,
       const PasswordFormFillData& fill_data);
   void OnShowPasswordSuggestions(
       const FormFieldData& field,

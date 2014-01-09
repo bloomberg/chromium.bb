@@ -22,7 +22,7 @@
                    'autofill/core/browser/autofill_regex_constants.cc.utf8'],
       }],
     },
-    
+
     {
       'target_name': 'autofill_core_common',
       'type': 'static_library',
@@ -52,6 +52,8 @@
         'autofill/core/browser/android/personal_data_manager_android.cc',
         'autofill/core/common/autofill_constants.cc',
         'autofill/core/common/autofill_constants.h',
+        'autofill/core/common/autofill_data_validation.cc',
+        'autofill/core/common/autofill_data_validation.h',
         'autofill/core/common/autofill_pref_names.cc',
         'autofill/core/common/autofill_pref_names.h',
         'autofill/core/common/autofill_switches.cc',
@@ -258,9 +260,9 @@
             '..',
           ],
           'sources': [
-            'autofill/content/common/autofill_messages.h',
             'autofill/content/common/autofill_message_generator.cc',
             'autofill/content/common/autofill_message_generator.h',
+            'autofill/content/common/autofill_messages.h',
             'autofill/content/common/autofill_param_traits_macros.h',
           ],
         },

@@ -7,6 +7,7 @@
 #include "components/autofill/content/browser/autofill_driver_impl.h"
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/core/browser/form_structure.h"
+#include "components/autofill/core/common/autofill_data_validation.h"
 #include "components/autofill/core/common/form_data.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -26,6 +27,9 @@ RequestAutocompleteManager::~RequestAutocompleteManager() {}
 void RequestAutocompleteManager::OnRequestAutocomplete(
     const FormData& form,
     const GURL& frame_url) {
+  if (!IsValidFormData(form))
+    return;
+
   if (!autofill_driver_->autofill_manager()->IsAutofillEnabled()) {
     ReturnAutocompleteResult(
         blink::WebFormElement::AutocompleteResultErrorDisabled,

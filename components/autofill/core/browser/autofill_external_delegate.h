@@ -93,9 +93,8 @@ class AutofillExternalDelegate
   void Reset();
 
   // Inform the Password Manager of a filled form.
-  void AddPasswordFormMapping(
-      const FormFieldData& form,
-      const PasswordFormFillData& fill_data);
+  void AddPasswordFormMapping(const FormFieldData& username_field,
+                              const PasswordFormFillData& fill_data);
 
  protected:
   base::WeakPtr<AutofillExternalDelegate> GetWeakPtr();

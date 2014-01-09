@@ -35,6 +35,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/phone_number.h"
 #include "components/autofill/core/browser/phone_number_i18n.h"
+#include "components/autofill/core/common/autofill_data_validation.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_data.h"
@@ -230,8 +231,15 @@ void AutofillManager::SetExternalDelegate(AutofillExternalDelegate* delegate) {
   autocomplete_history_manager_->SetExternalDelegate(delegate);
 }
 
+void AutofillManager::ShowAutofillSettings() {
+  manager_delegate_->ShowAutofillSettings();
+}
+
 bool AutofillManager::OnFormSubmitted(const FormData& form,
                                       const TimeTicks& timestamp) {
+  if (!IsValidFormData(form))
+    return false;
+
   // Let Autocomplete know as well.
   autocomplete_history_manager_->OnFormSubmitted(form);
 
@@ -301,6 +309,9 @@ bool AutofillManager::OnFormSubmitted(const FormData& form,
 void AutofillManager::OnFormsSeen(const std::vector<FormData>& forms,
                                   const TimeTicks& timestamp,
                                   autofill::FormsSeenState state) {
+  if (!IsValidFormDataVector(forms))
+    return;
+
   bool is_post_document_load = state == autofill::DYNAMIC_FORMS_SEEN;
   // If new forms were added dynamically, treat as a new page.
   if (is_post_document_load)
@@ -325,6 +336,9 @@ void AutofillManager::OnFormsSeen(const std::vector<FormData>& forms,
 void AutofillManager::OnTextFieldDidChange(const FormData& form,
                                            const FormFieldData& field,
                                            const TimeTicks& timestamp) {
+  if (!IsValidFormData(form) || !IsValidFormFieldData(field))
+    return;
+
   FormStructure* form_structure = NULL;
   AutofillField* autofill_field = NULL;
   if (!GetCachedFormAndField(form, field, &form_structure, &autofill_field))
@@ -355,6 +369,9 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
                                                const FormFieldData& field,
                                                const gfx::RectF& bounding_box,
                                                bool display_warning) {
+  if (!IsValidFormData(form) || !IsValidFormFieldData(field))
+    return;
+
   std::vector<base::string16> values;
   std::vector<base::string16> labels;
   std::vector<base::string16> icons;
@@ -442,6 +459,9 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
                                              const FormData& form,
                                              const FormFieldData& field,
                                              int unique_id) {
+  if (!IsValidFormData(form) || !IsValidFormFieldData(field))
+    return;
+
   const AutofillDataModel* data_model = NULL;
   size_t variant = 0;
   FormStructure* form_structure = NULL;
@@ -522,10 +542,6 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
   driver_->SendFormDataToRenderer(query_id, result);
 }
 
-void AutofillManager::OnShowAutofillDialog() {
-  manager_delegate_->ShowAutofillSettings();
-}
-
 void AutofillManager::OnDidPreviewAutofillFormData() {
   if (test_delegate_)
     test_delegate_->DidPreviewFormData();
@@ -599,9 +615,13 @@ void AutofillManager::SetTestDelegate(
 }
 
 void AutofillManager::OnAddPasswordFormMapping(
-      const FormFieldData& form,
+      const FormFieldData& username_field,
       const PasswordFormFillData& fill_data) {
-  external_delegate_->AddPasswordFormMapping(form, fill_data);
+  if (!IsValidFormFieldData(username_field) ||
+      !IsValidPasswordFormFillData(fill_data))
+    return;
+
+  external_delegate_->AddPasswordFormMapping(username_field, fill_data);
 }
 
 void AutofillManager::OnShowPasswordSuggestions(
@@ -609,8 +629,9 @@ void AutofillManager::OnShowPasswordSuggestions(
     const gfx::RectF& bounds,
     const std::vector<base::string16>& suggestions,
     const std::vector<base::string16>& realms) {
-  // Bail if the IPC message is corrupt.
-  if (suggestions.size() != realms.size())
+  if (!IsValidString16Vector(suggestions) ||
+      !IsValidString16Vector(realms) ||
+      suggestions.size() != realms.size())
     return;
 
   external_delegate_->OnShowPasswordSuggestions(suggestions,
@@ -621,8 +642,9 @@ void AutofillManager::OnShowPasswordSuggestions(
 
 void AutofillManager::OnSetDataList(const std::vector<base::string16>& values,
                                     const std::vector<base::string16>& labels) {
-  // Bail if the IPC message is corrupt.
-  if (values.size() != labels.size())
+  if (!IsValidString16Vector(values) ||
+      !IsValidString16Vector(labels) ||
+      values.size() != labels.size())
     return;
 
   external_delegate_->SetCurrentDataListValues(values, labels);

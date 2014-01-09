@@ -176,7 +176,7 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const base::string16& value,
                                                    int identifier) {
   if (identifier == WebAutofillClient::MenuItemIDAutofillOptions) {
     // User selected 'Autofill Options'.
-    autofill_manager_->OnShowAutofillDialog();
+    autofill_manager_->ShowAutofillSettings();
   } else if (identifier == WebAutofillClient::MenuItemIDClearForm) {
     // User selected 'Clear form'.
     autofill_driver_->RendererShouldClearFilledForm();
@@ -223,9 +223,9 @@ void AutofillExternalDelegate::Reset() {
 }
 
 void AutofillExternalDelegate::AddPasswordFormMapping(
-      const FormFieldData& form,
+      const FormFieldData& username_field,
       const PasswordFormFillData& fill_data) {
-  password_autofill_manager_.AddPasswordFormMapping(form, fill_data);
+  password_autofill_manager_.AddPasswordFormMapping(username_field, fill_data);
 }
 
 base::WeakPtr<AutofillExternalDelegate> AutofillExternalDelegate::GetWeakPtr() {
