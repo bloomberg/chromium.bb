@@ -44,7 +44,7 @@ class Downloader {
 
   // Downloads |url| and invokes the |downloaded| callback.
   virtual void Download(const std::string& url,
-                        scoped_ptr<Callback> downloaded) const = 0;
+                        scoped_ptr<Callback> downloaded) = 0;
 };
 
 }  // namespace addressinput

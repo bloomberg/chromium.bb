@@ -41,7 +41,7 @@ class RetrieverTest : public testing::Test {
  protected:
   RetrieverTest()
       : retriever_(FakeDownloader::kFakeDataUrl,
-                   scoped_ptr<const Downloader>(new FakeDownloader),
+                   scoped_ptr<Downloader>(new FakeDownloader),
                    scoped_ptr<Storage>(new FakeStorage)),
         success_(false),
         key_(),
@@ -106,14 +106,14 @@ class FaultyDownloader : public Downloader {
 
   // Downloader implementation.
   virtual void Download(const std::string& url,
-                        scoped_ptr<Callback> downloaded) const {
+                        scoped_ptr<Callback> downloaded) {
     (*downloaded)(false, url, "garbage");
   }
 };
 
 TEST_F(RetrieverTest, FaultyDownloader) {
   Retriever bad_retriever(FakeDownloader::kFakeDataUrl,
-                          scoped_ptr<const Downloader>(new FaultyDownloader),
+                          scoped_ptr<Downloader>(new FaultyDownloader),
                           scoped_ptr<Storage>(new FakeStorage));
   bad_retriever.Retrieve(kKey, BuildCallback());
 
@@ -130,12 +130,12 @@ class HangingDownloader : public Downloader {
 
   // Downloader implementation.
   virtual void Download(const std::string& url,
-                        scoped_ptr<Callback> downloaded) const {}
+                        scoped_ptr<Callback> downloaded) {}
 };
 
 TEST_F(RetrieverTest, RequestsDontStack) {
   Retriever slow_retriever(FakeDownloader::kFakeDataUrl,
-                           scoped_ptr<const Downloader>(new HangingDownloader),
+                           scoped_ptr<Downloader>(new HangingDownloader),
                            scoped_ptr<Storage>(new FakeStorage));
 
   slow_retriever.Retrieve(kKey, BuildCallback());

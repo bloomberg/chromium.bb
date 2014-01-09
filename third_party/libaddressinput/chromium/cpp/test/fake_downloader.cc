@@ -72,7 +72,7 @@ FakeDownloader::FakeDownloader() {}
 FakeDownloader::~FakeDownloader() {}
 
 void FakeDownloader::Download(const std::string& url,
-                              scoped_ptr<Callback> downloaded) const {
+                              scoped_ptr<Callback> downloaded) {
   std::map<std::string, std::string>::const_iterator data_it =
       GetData().find(url);
   bool success = data_it != GetData().end();

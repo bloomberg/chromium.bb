@@ -33,7 +33,7 @@ namespace i18n {
 namespace addressinput {
 
 Retriever::Retriever(const std::string& validation_data_url,
-                     scoped_ptr<const Downloader> downloader,
+                     scoped_ptr<Downloader> downloader,
                      scoped_ptr<Storage> storage)
     : lookup_key_util_(validation_data_url),
       downloader_(downloader.Pass()),

@@ -42,7 +42,7 @@ class AddressValidatorImpl : public AddressValidator {
  public:
   // Takes ownership of |downloader| and |storage|. Does not take ownership of
   // |load_rules_delegate|.
-  AddressValidatorImpl(scoped_ptr<const Downloader> downloader,
+  AddressValidatorImpl(scoped_ptr<Downloader> downloader,
                        scoped_ptr<Storage> storage,
                        LoadRulesDelegate* load_rules_delegate)
     : aggregator_(scoped_ptr<Retriever>(new Retriever(
@@ -116,7 +116,7 @@ AddressValidator::~AddressValidator() {}
 
 // static
 scoped_ptr<AddressValidator> AddressValidator::Build(
-    scoped_ptr<const Downloader> downloader,
+    scoped_ptr<Downloader> downloader,
     scoped_ptr<Storage> storage,
     LoadRulesDelegate* load_rules_delegate) {
   return scoped_ptr<AddressValidator>(new AddressValidatorImpl(

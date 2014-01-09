@@ -44,7 +44,7 @@ class Retriever {
   typedef i18n::addressinput::Callback<std::string, std::string> Callback;
 
   Retriever(const std::string& validation_data_url,
-            scoped_ptr<const Downloader> downloader,
+            scoped_ptr<Downloader> downloader,
             scoped_ptr<Storage> storage);
   ~Retriever();
 
@@ -69,7 +69,7 @@ class Retriever {
   scoped_ptr<Callback> GetCallbackForKey(const std::string& key);
 
   const LookupKeyUtil lookup_key_util_;
-  scoped_ptr<const Downloader> downloader_;
+  scoped_ptr<Downloader> downloader_;
   scoped_ptr<Storage> storage_;
   // Holds pending requests. The callback pointers are owned.
   std::map<std::string, Callback*> requests_;

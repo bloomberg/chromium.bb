@@ -49,6 +49,8 @@
         '<(SHARED_INTERMEDIATE_DIR)/libaddressinput/',
       ],
       'sources': [
+        'chromium/chrome_downloader_impl.cc',
+        'chromium/chrome_downloader_impl.h',
         'chromium/chrome_storage_impl.cc',
         'chromium/chrome_storage_impl.h',
         'chromium/json.cc',
@@ -117,8 +119,7 @@
         '<(SHARED_INTERMEDIATE_DIR)/libaddressinput/',
       ],
       'sources': [
-        'chromium/chrome_storage_impl.cc',
-        'chromium/chrome_storage_impl.h',
+        'chromium/chrome_downloader_impl_unittest.cc',
         'chromium/chrome_storage_impl_unittest.cc',
         '<(libaddressinput_dir)/cpp/test/address_ui_test.cc',
         '<(libaddressinput_dir)/cpp/test/fake_downloader.cc',
@@ -148,6 +149,7 @@
         'libaddressinput',
         '<(DEPTH)/base/base.gyp:base_prefs',
         '<(DEPTH)/base/base.gyp:run_all_unittests',
+        '<(DEPTH)/net/net.gyp:net_test_support',
         '<(DEPTH)/testing/gtest.gyp:gtest',
       ],
     },

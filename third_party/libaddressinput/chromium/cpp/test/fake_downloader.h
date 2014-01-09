@@ -58,7 +58,7 @@ class FakeDownloader : public Downloader {
 
   // Downloader implementation.
   virtual void Download(const std::string& url,
-                        scoped_ptr<Callback> downloaded) const;
+                        scoped_ptr<Callback> downloaded);
 };
 
 }  // namespace addressinput

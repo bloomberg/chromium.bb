@@ -88,7 +88,7 @@ class AddressValidator {
   // which cannot be NULL. Does not take ownership of |load_rules_delegate|,
   // which can be NULL. The caller owns the result.
   static scoped_ptr<AddressValidator> Build(
-      scoped_ptr<const Downloader> downloader,
+      scoped_ptr<Downloader> downloader,
       scoped_ptr<Storage> storage,
       LoadRulesDelegate* load_rules_delegate);
 

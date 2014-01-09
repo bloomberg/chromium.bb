@@ -9,8 +9,7 @@
 #include "base/prefs/value_map_pref_store.h"
 #include "cpp/test/storage_test_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-namespace {
+#include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/callback.h"
 
 // Tests for ChromeStorageImpl object.
 class ChromeStorageImplTest : public testing::Test {
@@ -30,5 +29,3 @@ class ChromeStorageImplTest : public testing::Test {
 TEST_F(ChromeStorageImplTest, StandardStorageTests) {
   EXPECT_NO_FATAL_FAILURE(runner_.RunAllTests());
 }
-
-}  // namespace
