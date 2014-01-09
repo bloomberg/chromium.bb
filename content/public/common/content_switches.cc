@@ -499,6 +499,10 @@ const char kEnableOfflineCacheAccess[]      = "enable-offline-cache-access";
 // Enables use of hardware overlay for fullscreen video playback. Android only.
 const char kEnableOverlayFullscreenVideo[]  = "enable-overlay-fullscreen-video";
 
+// Enables blink subtitle and media control on top of overlay full screen video.
+const char kEnableOverlayFullscreenVideoSubtitle[] =
+    "enable-overlay-fullscreen-video-subtitle";
+
 // Enables overlay scrollbars on Aura or Linux. Does nothing on Mac.
 const char kEnableOverlayScrollbars[]       = "enable-overlay-scrollbars";
 

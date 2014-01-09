@@ -242,6 +242,8 @@ class RenderWidgetHostViewAndroid
   void SynchronousFrameMetadata(
       const cc::CompositorFrameMetadata& frame_metadata);
 
+  void SetOverlayVideoMode(bool enabled);
+
  private:
   void BuffersSwapped(const gpu::Mailbox& mailbox,
                       uint32_t output_surface_id,

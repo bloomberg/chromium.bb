@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.View;
 import android.widget.Toast;
 
 import org.chromium.base.BaseSwitches;
@@ -118,7 +119,19 @@ public class ContentShellActivity extends Activity {
         getActiveContentView().setContentViewClient(new ContentViewClient() {
             @Override
             public ContentVideoViewClient getContentVideoViewClient() {
-                return new ActivityContentVideoViewClient(ContentShellActivity.this);
+                return new ActivityContentVideoViewClient(ContentShellActivity.this) {
+                    @Override
+                    public void onShowCustomView(View view) {
+                        super.onShowCustomView(view);
+                        mShellManager.setOverlayVideoMode(true);
+                    }
+
+                    @Override
+                    public void onDestroyContentVideoView() {
+                        super.onDestroyContentVideoView();
+                        mShellManager.setOverlayVideoMode(false);
+                    }
+                };
             }
         });
     }

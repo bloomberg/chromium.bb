@@ -97,7 +97,12 @@ void ContentVideoView::OnPlaybackComplete() {
 }
 
 void ContentVideoView::OnExitFullscreen() {
-  DestroyContentVideoView(false);
+  JNIEnv *env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> content_video_view = GetJavaObject(env);
+  if (!content_video_view.is_null()) {
+    Java_ContentVideoView_onExitFullscreen(env, content_video_view.obj());
+    j_content_video_view_.reset();
+  }
 }
 
 void ContentVideoView::UpdateMediaMetadata() {
@@ -145,7 +150,7 @@ void ContentVideoView::Pause(JNIEnv*, jobject obj) {
 }
 
 void ContentVideoView::ExitFullscreen(
-    JNIEnv* env, jobject, jboolean release_media_player) {
+    JNIEnv*, jobject, jboolean release_media_player) {
   if (fullscreen_state_ == SUSPENDED)
     return;
   j_content_video_view_.reset();
@@ -198,13 +203,16 @@ ScopedJavaLocalRef<jobject> ContentVideoView::GetJavaObject(JNIEnv* env) {
 JavaObjectWeakGlobalRef ContentVideoView::CreateJavaObject() {
   ContentViewCoreImpl* content_view_core = manager_->GetContentViewCore();
   JNIEnv *env = AttachCurrentThread();
+  bool legacyMode = !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableOverlayFullscreenVideoSubtitle);
   return JavaObjectWeakGlobalRef(
       env,
       Java_ContentVideoView_createContentVideoView(
           env,
           content_view_core->GetContext().obj(),
           reinterpret_cast<intptr_t>(this),
-          content_view_core->GetContentVideoViewClient().obj()).obj());
+          content_view_core->GetContentVideoViewClient().obj(),
+          legacyMode).obj());
 }
 
 void ContentVideoView::DestroyContentVideoView(bool native_view_destroyed) {

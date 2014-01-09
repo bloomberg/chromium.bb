@@ -8,11 +8,9 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.graphics.Color;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
-import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -20,7 +18,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-import android.widget.MediaController;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -28,9 +25,11 @@ import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
 
+/**
+ * This class implements accelerated fullscreen video playback using surface view.
+ */
 @JNINamespace("content")
-public class ContentVideoView extends FrameLayout implements MediaController.MediaPlayerControl,
-        SurfaceHolder.Callback, View.OnTouchListener, View.OnKeyListener {
+public class ContentVideoView extends FrameLayout implements SurfaceHolder.Callback {
 
     private static final String TAG = "ContentVideoView";
 
@@ -63,12 +62,7 @@ public class ContentVideoView extends FrameLayout implements MediaController.Med
     private SurfaceHolder mSurfaceHolder;
     private int mVideoWidth;
     private int mVideoHeight;
-    private int mCurrentBufferPercentage;
     private int mDuration;
-    private MediaController mMediaController;
-    private boolean mCanPause;
-    private boolean mCanSeekBack;
-    private boolean mCanSeekForward;
 
     // Native pointer to C++ ContentVideoView object.
     private long mNativeContentVideoView;
@@ -131,32 +125,6 @@ public class ContentVideoView extends FrameLayout implements MediaController.Med
         }
     }
 
-    private static class FullScreenMediaController extends MediaController {
-
-        View mVideoView;
-
-        public FullScreenMediaController(Context context, View video) {
-            super(context);
-            mVideoView = video;
-        }
-
-        @Override
-        public void show() {
-            super.show();
-            if (mVideoView != null) {
-                mVideoView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
-            }
-        }
-
-        @Override
-        public void hide() {
-            if (mVideoView != null) {
-                mVideoView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE);
-            }
-            super.hide();
-        }
-    }
-
     private final Runnable mExitFullscreenRunnable = new Runnable() {
         @Override
         public void run() {
@@ -164,15 +132,13 @@ public class ContentVideoView extends FrameLayout implements MediaController.Med
         }
     };
 
-    private ContentVideoView(Context context, long nativeContentVideoView,
+    protected ContentVideoView(Context context, long nativeContentVideoView,
             ContentVideoViewClient client) {
         super(context);
         mNativeContentVideoView = nativeContentVideoView;
         mClient = client;
         initResources(context);
-        mCurrentBufferPercentage = 0;
         mVideoSurfaceView = new VideoSurfaceView(context);
-        setBackgroundColor(Color.BLACK);
         showContentVideoView();
         setVisibility(View.VISIBLE);
         mClient.onShowCustomView(this);
@@ -192,29 +158,25 @@ public class ContentVideoView extends FrameLayout implements MediaController.Med
                 org.chromium.content.R.string.media_player_loading_video);
     }
 
-    private void showContentVideoView() {
-        FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
+    protected void showContentVideoView() {
+        mVideoSurfaceView.getHolder().addCallback(this);
+        this.addView(mVideoSurfaceView, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                Gravity.CENTER);
-        this.addView(mVideoSurfaceView, layoutParams);
-        View progressView = mClient.getVideoLoadingProgressView();
-        if (progressView != null) {
-            mProgressView = progressView;
-        } else {
+                Gravity.CENTER));
+
+        mProgressView = mClient.getVideoLoadingProgressView();
+        if (mProgressView == null) {
             mProgressView = new ProgressView(getContext(), mVideoLoadingText);
         }
         this.addView(mProgressView, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 Gravity.CENTER));
-        mVideoSurfaceView.setZOrderOnTop(true);
-        mVideoSurfaceView.setOnKeyListener(this);
-        mVideoSurfaceView.setOnTouchListener(this);
-        mVideoSurfaceView.getHolder().addCallback(this);
-        mVideoSurfaceView.setFocusable(true);
-        mVideoSurfaceView.setFocusableInTouchMode(true);
-        mVideoSurfaceView.requestFocus();
+    }
+
+    protected SurfaceView getSurfaceView() {
+        return mVideoSurfaceView;
     }
 
     @CalledByNative
@@ -230,9 +192,6 @@ public class ContentVideoView extends FrameLayout implements MediaController.Med
         }
 
         mCurrentState = STATE_ERROR;
-        if (mMediaController != null) {
-            mMediaController.hide();
-        }
 
         /* Pop up an error dialog so the user knows that
          * something bad has happened. Only try and pop up the dialog
@@ -281,8 +240,7 @@ public class ContentVideoView extends FrameLayout implements MediaController.Med
     }
 
     @CalledByNative
-    private void onBufferingUpdate(int percent) {
-        mCurrentBufferPercentage = percent;
+    protected void onBufferingUpdate(int percent) {
     }
 
     @CalledByNative
@@ -291,38 +249,21 @@ public class ContentVideoView extends FrameLayout implements MediaController.Med
     }
 
     @CalledByNative
-    private void onUpdateMediaMetadata(
+    protected void onUpdateMediaMetadata(
             int videoWidth,
             int videoHeight,
             int duration,
             boolean canPause,
             boolean canSeekBack,
             boolean canSeekForward) {
-        mProgressView.setVisibility(View.GONE);
         mDuration = duration;
-        mCanPause = canPause;
-        mCanSeekBack = canSeekBack;
-        mCanSeekForward = canSeekForward;
+        mProgressView.setVisibility(View.GONE);
         mCurrentState = isPlaying() ? STATE_PLAYING : STATE_PAUSED;
-        if (mMediaController != null) {
-            mMediaController.setEnabled(true);
-            // If paused , should show the controller for ever.
-            if (isPlaying())
-                mMediaController.show();
-            else
-                mMediaController.show(0);
-        }
-
         onVideoSizeChanged(videoWidth, videoHeight);
     }
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        mVideoSurfaceView.setFocusable(true);
-        mVideoSurfaceView.setFocusableInTouchMode(true);
-        if (isInPlaybackState() && mMediaController != null) {
-            mMediaController.show();
-        }
     }
 
     @Override
@@ -340,28 +281,10 @@ public class ContentVideoView extends FrameLayout implements MediaController.Med
         post(mExitFullscreenRunnable);
     }
 
-    private void setMediaController(MediaController controller) {
-        if (mMediaController != null) {
-            mMediaController.hide();
-        }
-        mMediaController = controller;
-        attachMediaController();
-    }
-
-    private void attachMediaController() {
-        if (mMediaController != null) {
-            mMediaController.setMediaPlayer(this);
-            mMediaController.setAnchorView(mVideoSurfaceView);
-            mMediaController.setEnabled(false);
-        }
-    }
-
     @CalledByNative
-    private void openVideo() {
+    protected void openVideo() {
         if (mSurfaceHolder != null) {
             mCurrentState = STATE_IDLE;
-            mCurrentBufferPercentage = 0;
-            setMediaController(new FullScreenMediaController(getContext(), this));
             if (mNativeContentVideoView != 0) {
                 nativeUpdateMediaMetadata(mNativeContentVideoView);
                 nativeSetSurface(mNativeContentVideoView,
@@ -370,90 +293,16 @@ public class ContentVideoView extends FrameLayout implements MediaController.Med
         }
     }
 
-    private void onCompletion() {
+    protected void onCompletion() {
         mCurrentState = STATE_PLAYBACK_COMPLETED;
-        if (mMediaController != null) {
-            mMediaController.hide();
-        }
     }
 
-    @Override
-    public boolean onTouch(View v, MotionEvent event) {
-        if (isInPlaybackState() && mMediaController != null &&
-                event.getAction() == MotionEvent.ACTION_DOWN) {
-            toggleMediaControlsVisiblity();
-        }
-        return true;
-    }
 
-    @Override
-    public boolean onTrackballEvent(MotionEvent ev) {
-        if (isInPlaybackState() && mMediaController != null) {
-            toggleMediaControlsVisiblity();
-        }
-        return false;
-    }
-
-    @Override
-    public boolean onKey(View v, int keyCode, KeyEvent event) {
-        boolean isKeyCodeSupported = keyCode != KeyEvent.KEYCODE_BACK &&
-                                     keyCode != KeyEvent.KEYCODE_VOLUME_UP &&
-                                     keyCode != KeyEvent.KEYCODE_VOLUME_DOWN &&
-                                     keyCode != KeyEvent.KEYCODE_VOLUME_MUTE &&
-                                     keyCode != KeyEvent.KEYCODE_CALL &&
-                                     keyCode != KeyEvent.KEYCODE_MENU &&
-                                     keyCode != KeyEvent.KEYCODE_SEARCH &&
-                                     keyCode != KeyEvent.KEYCODE_ENDCALL;
-        if (isInPlaybackState() && isKeyCodeSupported && mMediaController != null) {
-            if (keyCode == KeyEvent.KEYCODE_HEADSETHOOK ||
-                    keyCode == KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE) {
-                if (isPlaying()) {
-                    pause();
-                    mMediaController.show();
-                } else {
-                    start();
-                    mMediaController.hide();
-                }
-                return true;
-            } else if (keyCode == KeyEvent.KEYCODE_MEDIA_PLAY) {
-                if (!isPlaying()) {
-                    start();
-                    mMediaController.hide();
-                }
-                return true;
-            } else if (keyCode == KeyEvent.KEYCODE_MEDIA_STOP
-                    || keyCode == KeyEvent.KEYCODE_MEDIA_PAUSE) {
-                if (isPlaying()) {
-                    pause();
-                    mMediaController.show();
-                }
-                return true;
-            } else {
-                toggleMediaControlsVisiblity();
-            }
-        } else if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_UP) {
-            exitFullscreen(false);
-            return true;
-        } else if (keyCode == KeyEvent.KEYCODE_MENU || keyCode == KeyEvent.KEYCODE_SEARCH) {
-            return true;
-        }
-        return super.onKeyDown(keyCode, event);
-    }
-
-    private void toggleMediaControlsVisiblity() {
-        if (mMediaController.isShowing()) {
-            mMediaController.hide();
-        } else {
-            mMediaController.show();
-        }
-    }
-
-    private boolean isInPlaybackState() {
+    protected boolean isInPlaybackState() {
         return (mCurrentState != STATE_ERROR && mCurrentState != STATE_IDLE);
     }
 
-    @Override
-    public void start() {
+    protected void start() {
         if (isInPlaybackState()) {
             if (mNativeContentVideoView != 0) {
                 nativePlay(mNativeContentVideoView);
@@ -462,8 +311,7 @@ public class ContentVideoView extends FrameLayout implements MediaController.Med
         }
     }
 
-    @Override
-    public void pause() {
+    protected void pause() {
         if (isInPlaybackState()) {
             if (isPlaying()) {
                 if (mNativeContentVideoView != 0) {
@@ -475,8 +323,7 @@ public class ContentVideoView extends FrameLayout implements MediaController.Med
     }
 
     // cache duration as mDuration for faster access
-    @Override
-    public int getDuration() {
+    protected int getDuration() {
         if (isInPlaybackState()) {
             if (mDuration > 0) {
                 return mDuration;
@@ -492,68 +339,37 @@ public class ContentVideoView extends FrameLayout implements MediaController.Med
         return mDuration;
     }
 
-    @Override
-    public int getCurrentPosition() {
+    protected int getCurrentPosition() {
         if (isInPlaybackState() && mNativeContentVideoView != 0) {
             return nativeGetCurrentPosition(mNativeContentVideoView);
         }
         return 0;
     }
 
-    @Override
-    public void seekTo(int msec) {
+    protected void seekTo(int msec) {
         if (mNativeContentVideoView != 0) {
             nativeSeekTo(mNativeContentVideoView, msec);
         }
     }
 
-    @Override
-    public boolean isPlaying() {
+    protected boolean isPlaying() {
         return mNativeContentVideoView != 0 && nativeIsPlaying(mNativeContentVideoView);
-    }
-
-    @Override
-    public int getBufferPercentage() {
-        return mCurrentBufferPercentage;
-    }
-
-    @Override
-    public boolean canPause() {
-        return mCanPause;
-    }
-
-    @Override
-    public boolean canSeekBackward() {
-        return mCanSeekBack;
-    }
-
-    @Override
-    public boolean canSeekForward() {
-        return mCanSeekForward;
-    }
-
-    @Override
-    public int getAudioSessionId() {
-        return 0;
     }
 
     @CalledByNative
     private static ContentVideoView createContentVideoView(
-            Context context, long nativeContentVideoView, ContentVideoViewClient client) {
+            Context context, long nativeContentVideoView, ContentVideoViewClient client,
+            boolean legacy) {
         ThreadUtils.assertOnUiThread();
         // The context needs be Activity to create the ContentVideoView correctly.
         if (!(context instanceof Activity)) {
             Log.w(TAG, "Wrong type of context, can't create fullscreen video");
             return null;
         }
-        return new ContentVideoView(context, nativeContentVideoView, client);
-    }
-
-    private void removeMediaController() {
-        if (mMediaController != null) {
-            mMediaController.setEnabled(false);
-            mMediaController.hide();
-            mMediaController = null;
+        if (legacy) {
+            return new ContentVideoViewLegacy(context, nativeContentVideoView, client);
+        } else {
+            return new ContentVideoView(context, nativeContentVideoView, client);
         }
     }
 
@@ -572,14 +388,18 @@ public class ContentVideoView extends FrameLayout implements MediaController.Med
         }
     }
 
+    @CalledByNative
+    private void onExitFullscreen() {
+        exitFullscreen(false);
+    }
+
     /**
      * This method shall only be called by native and exitFullscreen,
      * To exit fullscreen, use exitFullscreen in Java.
      */
     @CalledByNative
-    private void destroyContentVideoView(boolean nativeViewDestroyed) {
+    protected void destroyContentVideoView(boolean nativeViewDestroyed) {
         if (mVideoSurfaceView != null) {
-            removeMediaController();
             removeSurfaceView();
             setVisibility(View.GONE);
 
@@ -596,17 +416,12 @@ public class ContentVideoView extends FrameLayout implements MediaController.Med
     }
 
     @Override
-    public boolean onTouchEvent(MotionEvent ev) {
-        return true;
-    }
-
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_UP) {
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
             exitFullscreen(false);
             return true;
         }
-        return super.onKeyDown(keyCode, event);
+        return super.onKeyUp(keyCode, event);
     }
 
     private static native ContentVideoView nativeGetSingletonJavaContentVideoView();

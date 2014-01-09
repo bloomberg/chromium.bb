@@ -151,6 +151,7 @@ extern const char kEnableMemoryBenchmarking[];
 extern const char kEnableMonitorProfile[];
 CONTENT_EXPORT extern const char kEnableOfflineCacheAccess[];
 CONTENT_EXPORT extern const char kEnableOverlayFullscreenVideo[];
+extern const char kEnableOverlayFullscreenVideoSubtitle[];
 CONTENT_EXPORT extern const char kEnableOverlayScrollbars[];
 CONTENT_EXPORT extern const char kEnableOverscrollNotifications[];
 CONTENT_EXPORT extern const char kEnablePinch[];

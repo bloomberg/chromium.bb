@@ -99,6 +99,12 @@ jboolean ContentViewRenderView::CompositeToBitmap(JNIEnv* env, jobject obj,
                                            gfx::Rect(bitmap.size()));
 }
 
+void ContentViewRenderView::SetOverlayVideoMode(
+    JNIEnv* env, jobject obj, bool enabled) {
+  compositor_->SetHasTransparentBackground(enabled);
+  Java_ContentViewRenderView_requestRender(env, obj);
+}
+
 void ContentViewRenderView::ScheduleComposite() {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_ContentViewRenderView_requestRender(env, java_obj_.obj());

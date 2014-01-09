@@ -32,6 +32,7 @@ class ContentViewRenderView : public CompositorClient {
   void SurfaceSetSize(JNIEnv* env, jobject obj, jint width, jint height);
   jboolean Composite(JNIEnv* env, jobject obj);
   jboolean CompositeToBitmap(JNIEnv* env, jobject obj, jobject java_bitmap);
+  void SetOverlayVideoMode(JNIEnv* env, jobject obj, bool enabled);
 
   // CompositorClient ---------------------------------------------------------
   virtual void ScheduleComposite() OVERRIDE;

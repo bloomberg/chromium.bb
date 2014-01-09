@@ -849,6 +849,10 @@ void RenderWidgetHostViewAndroid::SynchronousFrameMetadata(
   }
 }
 
+void RenderWidgetHostViewAndroid::SetOverlayVideoMode(bool enabled) {
+  layer_->SetContentsOpaque(!enabled);
+}
+
 void RenderWidgetHostViewAndroid::SynchronousCopyContents(
     const gfx::Rect& src_subrect_in_pixel,
     const gfx::Size& dst_size_in_pixel,

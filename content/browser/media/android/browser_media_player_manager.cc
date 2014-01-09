@@ -178,6 +178,14 @@ void BrowserMediaPlayerManager::FullscreenPlayerSeek(int msec) {
 }
 
 void BrowserMediaPlayerManager::ExitFullscreen(bool release_media_player) {
+  if (WebContentsDelegate* delegate = web_contents_->GetDelegate())
+    delegate->ToggleFullscreenModeForTab(web_contents_, false);
+  if (RenderWidgetHostViewAndroid* view_android =
+      static_cast<RenderWidgetHostViewAndroid*>(
+          web_contents_->GetRenderWidgetHostView())) {
+    view_android->SetOverlayVideoMode(false);
+  }
+
   Send(new MediaPlayerMsg_DidExitFullscreen(
       routing_id(), fullscreen_player_id_));
   video_view_.reset();
@@ -220,6 +228,14 @@ void BrowserMediaPlayerManager::SetVideoSurface(
                                                player->player_id()));
   }
   player->SetVideoSurface(surface.Pass());
+
+  if (RenderWidgetHostViewAndroid* view_android =
+      static_cast<RenderWidgetHostViewAndroid*>(
+          web_contents_->GetRenderWidgetHostView())) {
+    view_android->SetOverlayVideoMode(true);
+  }
+  if (WebContentsDelegate* delegate = web_contents_->GetDelegate())
+    delegate->ToggleFullscreenModeForTab(web_contents_, true);
 }
 
 void BrowserMediaPlayerManager::OnMediaMetadataChanged(

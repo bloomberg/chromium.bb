@@ -8,6 +8,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.PixelFormat;
 import android.os.Build;
 import android.os.Handler;
 import android.view.Surface;
@@ -61,6 +62,7 @@ public class ContentViewRenderView extends FrameLayout {
         assert mNativeContentViewRenderView != 0;
 
         mSurfaceView = createSurfaceView(getContext());
+        mSurfaceView.setZOrderMediaOverlay(true);
         mSurfaceCallback = new SurfaceHolder.Callback() {
             @Override
             public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
@@ -237,6 +239,16 @@ public class ContentViewRenderView extends FrameLayout {
         return mSurfaceView.getHolder().getSurface() != null;
     }
 
+    /**
+     * Enter or leave overlay video mode.
+     * @param enabled Whether overlay mode is enabled.
+     */
+    public void setOverlayVideoMode(boolean enabled) {
+        int format = enabled ? PixelFormat.TRANSLUCENT : PixelFormat.OPAQUE;
+        mSurfaceView.getHolder().setFormat(format);
+        nativeSetOverlayVideoMode(mNativeContentViewRenderView, enabled);
+    }
+
     @CalledByNative
     private void requestRender() {
         ContentViewCore contentViewCore = mCurrentContentView != null ?
@@ -311,4 +323,6 @@ public class ContentViewRenderView extends FrameLayout {
             int width, int height);
     private native boolean nativeComposite(long nativeContentViewRenderView);
     private native boolean nativeCompositeToBitmap(long nativeContentViewRenderView, Bitmap bitmap);
+    private native void nativeSetOverlayVideoMode(long nativeContentViewRenderView,
+            boolean enabled);
 }
