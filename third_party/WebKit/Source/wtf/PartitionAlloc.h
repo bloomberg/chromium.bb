@@ -251,6 +251,7 @@ struct PartitionBucket {
 // next extent (if there is one) at the very start of a superpage's metadata
 // area.
 struct PartitionSuperPageExtentEntry {
+    PartitionRootBase* root;
     char* superPageBase;
     char* superPagesEnd;
     PartitionSuperPageExtentEntry* next;
@@ -266,6 +267,7 @@ struct WTF_EXPORT PartitionRootBase {
     char* nextPartitionPageEnd;
     PartitionSuperPageExtentEntry* currentExtent;
     PartitionSuperPageExtentEntry firstExtent;
+    uintptr_t invertedSelf;
 
     static int gInitializedLock;
     static bool gInitialized;
@@ -446,6 +448,7 @@ ALWAYS_INLINE PartitionPage* partitionPointerToPage(void* ptr)
 
 ALWAYS_INLINE bool partitionPointerIsValid(PartitionRootBase* root, void* ptr)
 {
+    ASSERT(root->invertedSelf == ~reinterpret_cast<uintptr_t>(root));
     // On 32-bit systems, we have an optimization where we have a bitmap that
     // can instantly tell us if a pointer is in a super page or not.
     // It is a global bitmap instead of a per-partition bitmap but this is a

@@ -128,6 +128,9 @@ static void parititonAllocBaseInit(PartitionRootBase* root)
     root->firstExtent.superPageBase = 0;
     root->firstExtent.superPagesEnd = 0;
     root->firstExtent.next = 0;
+
+    // This is a "magic" value so we can test if a root pointer is valid.
+    root->invertedSelf = ~reinterpret_cast<uintptr_t>(root);
 }
 
 static void partitionBucketInitBase(PartitionBucket* bucket, PartitionRootBase* root)
@@ -349,6 +352,7 @@ static ALWAYS_INLINE void* partitionAllocPartitionPages(PartitionRootBase* root,
 
     // We allocated a new super page so update super page metadata.
     // First check if this is a new extent or not.
+    PartitionSuperPageExtentEntry* latestExtent = reinterpret_cast<PartitionSuperPageExtentEntry*>(partitionSuperPageToMetadataArea(superPage));
     PartitionSuperPageExtentEntry* currentExtent = root->currentExtent;
     bool isNewExtent = (superPage != requestedAddress);
     if (UNLIKELY(isNewExtent)) {
@@ -367,6 +371,9 @@ static ALWAYS_INLINE void* partitionAllocPartitionPages(PartitionRootBase* root,
         currentExtent->superPagesEnd += kSuperPageSize;
         ASSERT(ret >= currentExtent->superPageBase && ret < currentExtent->superPagesEnd);
     }
+    // By storing the root in every extent metadata object, we have a fast way
+    // to go from a pointer within the partition to the root object.
+    latestExtent->root = root;
 
     return ret;
 }
