@@ -83,6 +83,8 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
       protocol::ConnectionToHost::State state,
       protocol::ErrorCode error) OVERRIDE;
   virtual void OnConnectionReady(bool ready) OVERRIDE;
+  virtual void OnRouteChanged(const std::string& channel_name,
+                              const protocol::TransportRoute& route) OVERRIDE;
 
  private:
   // Called when the connection is authenticated.

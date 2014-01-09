@@ -159,6 +159,13 @@ void ChromotingClient::OnConnectionReady(bool ready) {
   user_interface_->OnConnectionReady(ready);
 }
 
+void ChromotingClient::OnRouteChanged(const std::string& channel_name,
+                                      const protocol::TransportRoute& route) {
+  VLOG(0) << "Using " << protocol::TransportRoute::GetTypeString(route.type)
+          << " connection for " << channel_name << " channel";
+  user_interface_->OnRouteChanged(channel_name, route);
+}
+
 void ChromotingClient::OnAuthenticated() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 

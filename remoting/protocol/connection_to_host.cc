@@ -212,8 +212,7 @@ void ConnectionToHost::OnSessionStateChange(
 
 void ConnectionToHost::OnSessionRouteChange(const std::string& channel_name,
                                             const TransportRoute& route) {
-  VLOG(0) << "Using " << TransportRoute::GetTypeString(route.type)
-          << " connection for " << channel_name << " channel";
+  event_callback_->OnRouteChanged(channel_name, route);
 }
 
 void ConnectionToHost::OnSessionChannelReady(const std::string& channel_name,

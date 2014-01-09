@@ -77,6 +77,10 @@ class ConnectionToHost : public SignalStrategy::Listener,
     // delayed. This is used to indicate in the UI when connection is
     // temporarily broken.
     virtual void OnConnectionReady(bool ready) = 0;
+
+    // Called when the route type (direct vs. STUN vs. proxied) changes.
+    virtual void OnRouteChanged(const std::string& channel_name,
+                                const protocol::TransportRoute& route) = 0;
   };
 
   ConnectionToHost(bool allow_nat_traversal);

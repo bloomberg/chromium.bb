@@ -216,6 +216,14 @@ void ChromotingJniInstance::OnConnectionReady(bool ready) {
   // We ignore this message, since OnConnectionState tells us the same thing.
 }
 
+void ChromotingJniInstance::OnRouteChanged(
+    const std::string& channel_name,
+    const protocol::TransportRoute& route) {
+  std::string message = "Channel " + channel_name + " using " +
+      protocol::TransportRoute::GetTypeString(route.type) + " connection.";
+  __android_log_print(ANDROID_LOG_INFO, "route", "%s", message.c_str());
+}
+
 void ChromotingJniInstance::SetCapabilities(const std::string& capabilities) {
   NOTIMPLEMENTED();
 }

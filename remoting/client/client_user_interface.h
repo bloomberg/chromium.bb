@@ -33,6 +33,8 @@ class ClientUserInterface {
   virtual void OnConnectionState(protocol::ConnectionToHost::State state,
                                  protocol::ErrorCode error) = 0;
   virtual void OnConnectionReady(bool ready) = 0;
+  virtual void OnRouteChanged(const std::string& channel_name,
+                              const protocol::TransportRoute& route) = 0;
 
   // Passes the final set of capabilities negotiated between the client and host
   // to the application.

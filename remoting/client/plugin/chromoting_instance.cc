@@ -436,6 +436,15 @@ void ChromotingInstance::OnConnectionReady(bool ready) {
   PostChromotingMessage("onConnectionReady", data.Pass());
 }
 
+void ChromotingInstance::OnRouteChanged(const std::string& channel_name,
+                                        const protocol::TransportRoute& route) {
+  scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
+  std::string message = "Channel " + channel_name + " using " +
+      protocol::TransportRoute::GetTypeString(route.type) + " connection.";
+  data->SetString("message", message);
+  PostChromotingMessage("logDebugMessage", data.Pass());
+}
+
 void ChromotingInstance::SetCapabilities(const std::string& capabilities) {
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
   data->SetString("capabilities", capabilities);
