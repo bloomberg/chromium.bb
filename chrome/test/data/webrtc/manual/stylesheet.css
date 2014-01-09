@@ -46,6 +46,14 @@ input[type=checkbox] {
   top: 2px;
 }
 
+#error {
+  overflow: auto;
+}
+
+#messages {
+  overflow: auto;
+}
+
 .drop-down {
   width: 10%;
 }
@@ -75,6 +83,7 @@ input[type=checkbox] {
 #container {
   overflow: auto;
   width: 100%;
+  height: 96%;
 }
 
 #left {
