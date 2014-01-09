@@ -1305,13 +1305,10 @@ void Document::setTitle(const String& title)
         }
     }
 
-    if (m_titleElement)
-        m_titleElement->removeChildren();
-
-    updateTitle(title);
-
     if (m_titleElement && m_titleElement->hasTagName(titleTag))
         toHTMLTitleElement(m_titleElement)->setText(title);
+    else
+        updateTitle(title);
 }
 
 void Document::setTitleElement(const String& title, Element* titleElement)
