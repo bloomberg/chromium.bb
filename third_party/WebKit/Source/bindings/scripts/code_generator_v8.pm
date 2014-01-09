@@ -1772,7 +1772,6 @@ sub ShouldKeepAttributeAlive
 
     # FIXME: Remove these hard-coded hacks.
     return 0 if $returnType eq "EventTarget";
-    return 0 if $returnType eq "SerializedScriptValue";
     return 0 if $returnType eq "Window";
     return 0 if $returnType =~ /SVG/;
     return 0 if $returnType =~ /HTML/;

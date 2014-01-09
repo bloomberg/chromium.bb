@@ -229,7 +229,7 @@ def is_keep_alive_for_gc(attribute):
              # A self-reference is unnecessary.
              attribute.name == 'self' or
              # FIXME: Remove these hard-coded hacks.
-             idl_type in ['EventHandler', 'Promise', 'Window'] or
+             idl_type in ['EventHandler', 'Window'] or
              idl_type.startswith('HTML'))))
 
 
