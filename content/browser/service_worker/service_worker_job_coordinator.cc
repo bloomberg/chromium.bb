@@ -32,6 +32,7 @@ void ServiceWorkerJobCoordinator::JobQueue::Push(
 void ServiceWorkerJobCoordinator::JobQueue::Pop(ServiceWorkerRegisterJob* job) {
   DCHECK(job == jobs_.front());
   jobs_.pop_front();
+  delete job;
   if (!jobs_.empty())
     jobs_.front()->Start();
 }
