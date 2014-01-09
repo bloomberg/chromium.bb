@@ -198,8 +198,8 @@ void NaClForkDelegate::Init(const int sandboxdesc) {
     // because the existing limit may prevent the initial exec of
     // nacl_helper_bootstrap from succeeding, with its large address space
     // reservation.
-    std::set<int> max_these_limits;
-    max_these_limits.insert(RLIMIT_AS);
+    std::vector<int> max_these_limits;
+    max_these_limits.push_back(RLIMIT_AS);
     options.maximize_rlimits = &max_these_limits;
 
     if (!base::LaunchProcess(argv_to_launch, options, NULL))

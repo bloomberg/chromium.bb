@@ -320,6 +320,9 @@ bool LaunchProcess(const std::vector<std::string>& argv,
   } else if (pid == 0) {
     // Child process
 
+    // DANGER: no calls to malloc or locks are allowed from now on:
+    // http://crbug.com/36678
+
     // DANGER: fork() rule: in the child, if you don't end up doing exec*(),
     // you call _exit() instead of exit(). This is because _exit() does not
     // call any previously-registered (in the parent) exit handlers, which
@@ -358,16 +361,14 @@ bool LaunchProcess(const std::vector<std::string>& argv,
 
     if (options.maximize_rlimits) {
       // Some resource limits need to be maximal in this child.
-      std::set<int>::const_iterator resource;
-      for (resource = options.maximize_rlimits->begin();
-           resource != options.maximize_rlimits->end();
-           ++resource) {
+      for (size_t i = 0; i < options.maximize_rlimits->size(); ++i) {
+        const int resource = (*options.maximize_rlimits)[i];
         struct rlimit limit;
-        if (getrlimit(*resource, &limit) < 0) {
+        if (getrlimit(resource, &limit) < 0) {
           RAW_LOG(WARNING, "getrlimit failed");
         } else if (limit.rlim_cur < limit.rlim_max) {
           limit.rlim_cur = limit.rlim_max;
-          if (setrlimit(*resource, &limit) < 0) {
+          if (setrlimit(resource, &limit) < 0) {
             RAW_LOG(WARNING, "setrlimit failed");
           }
         }
@@ -389,9 +390,6 @@ bool LaunchProcess(const std::vector<std::string>& argv,
     mprotect(malloc_thunk, 4096, PROT_READ | PROT_WRITE | PROT_EXEC);
     memset(reinterpret_cast<void*>(malloc), 0xff, 8);
 #endif  // 0
-
-    // DANGER: no calls to malloc or locks are allowed from now on:
-    // http://crbug.com/36678
 
 #if defined(OS_CHROMEOS)
     if (options.ctrl_terminal_fd >= 0) {
@@ -521,11 +519,12 @@ static GetAppOutputInternalResult GetAppOutputInternal(
       return EXECUTE_FAILURE;
     case 0:  // child
       {
+        // DANGER: no calls to malloc or locks are allowed from now on:
+        // http://crbug.com/36678
+
 #if defined(OS_MACOSX)
         RestoreDefaultExceptionHandler();
 #endif
-        // DANGER: no calls to malloc or locks are allowed from now on:
-        // http://crbug.com/36678
 
         // Obscure fork() rule: in the child, if you don't end up doing exec*(),
         // you call _exit() instead of exit(). This is because _exit() does not
@@ -547,8 +546,8 @@ static GetAppOutputInternalResult GetAppOutputInternal(
         // Adding another element here? Remeber to increase the argument to
         // reserve(), above.
 
-        std::copy(fd_shuffle1.begin(), fd_shuffle1.end(),
-                  std::back_inserter(fd_shuffle2));
+        for (size_t i = 0; i < fd_shuffle1.size(); ++i)
+          fd_shuffle2.push_back(fd_shuffle1[i]);
 
         if (!ShuffleFileDescriptors(&fd_shuffle1))
           _exit(127);

@@ -7,7 +7,6 @@
 #ifndef BASE_PROCESS_LAUNCH_H_
 #define BASE_PROCESS_LAUNCH_H_
 
-#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -102,7 +101,7 @@ struct BASE_EXPORT LaunchOptions {
   // Each element is an RLIMIT_* constant that should be raised to its
   // rlim_max.  This pointer is owned by the caller and must live through
   // the call to LaunchProcess().
-  const std::set<int>* maximize_rlimits;
+  const std::vector<int>* maximize_rlimits;
 
   // If true, start the process in a new process group, instead of
   // inheriting the parent's process group.  The pgid of the child process
