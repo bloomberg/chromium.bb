@@ -14,8 +14,8 @@ import logging
 import os
 import sys
 
-from isolate import eval_content, extract_comment
-from isolate import load_isolate_as_config, print_all, union
+from isolate_format import eval_content, extract_comment
+from isolate_format import load_isolate_as_config, print_all, union
 
 from utils import tools
 

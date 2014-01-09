@@ -58,7 +58,7 @@ def isolate_test_cases(
         logging.error('Got exception: %s', exception)
         continue
       files = log_dict['results'].strip_root(root_dir).files
-      tracked, touched = isolate.split_touched(files)
+      tracked, touched = isolate.isolate_format.split_touched(files)
       value = isolate.generate_isolate(
           tracked,
           [],
@@ -72,7 +72,7 @@ def isolate_test_cases(
       # item['test_case'] could be an invalid file name.
       out = basename + '.' + item['tracename'] + '.isolate'
       with open(out, 'w') as f:
-        isolate.pretty_print(value, f)
+        isolate.isolate_format.pretty_print(value, f)
       inputs.append(out)
 
     # Merges back. Note that it is possible to blow up the command line
