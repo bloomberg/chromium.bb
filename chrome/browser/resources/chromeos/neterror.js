@@ -14,11 +14,8 @@ function toggleHelpBox() {
 }
 
 function diagnoseErrors() {
-  var extensionId = 'idddmepepmjcgiedknnmlbadcokidhoa';
-  var diagnoseFrame = $('diagnose-frame');
-  diagnoseFrame.innerHTML =
-      '<iframe src="chrome-extension://' + extensionId +
-      '/index.html"></iframe>';
+  window.domAutomationController.setAutomationId(1);
+  window.domAutomationController.send('open_connectivity_diagnostics');
 }
 
 // Subframes use a different layout but the same html file.  This is to make it

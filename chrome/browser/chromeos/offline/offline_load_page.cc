@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/offline/offline_load_page.h"
 
+#include "apps/launcher.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/system/tray/system_tray_delegate.h"
@@ -137,6 +138,14 @@ void OfflineLoadPage::CommandReceived(const std::string& cmd) {
   // TODO(oshima): record action for metrics.
   if (command == "open_network_settings") {
     ash::Shell::GetInstance()->system_tray_delegate()->ShowNetworkSettings("");
+  } else if (command == "open_connectivity_diagnostics") {
+    Profile* profile = Profile::FromBrowserContext(
+        web_contents_->GetBrowserContext());
+    const extensions::Extension* extension = profile->GetExtensionService()->
+        GetInstalledExtension("kodldpbjkkmmnilagfdheibampofhaom");
+    apps::LaunchPlatformAppWithUrl(profile, extension, "",
+                                   GURL::EmptyGURL(), GURL::EmptyGURL());
+
   } else {
     LOG(WARNING) << "Unknown command:" << cmd;
   }
