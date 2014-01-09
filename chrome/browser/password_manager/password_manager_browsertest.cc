@@ -46,9 +46,14 @@ class NavigationObserver : public content::NotificationObserver,
       : content::WebContentsObserver(web_contents),
         message_loop_runner_(new content::MessageLoopRunner),
         infobar_shown_(false),
+        infobar_removed_(false),
+        should_automatically_accept_infobar_(true),
         infobar_service_(InfoBarService::FromWebContents(web_contents)) {
     registrar_.Add(this,
                    chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
+                   content::Source<InfoBarService>(infobar_service_));
+    registrar_.Add(this,
+                   chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
                    content::Source<InfoBarService>(infobar_service_));
   }
 
@@ -65,9 +70,23 @@ class NavigationObserver : public content::NotificationObserver,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
-    infobar_service_->infobar_at(0)->delegate()->AsConfirmInfoBarDelegate()->
-        Accept();
-    infobar_shown_ = true;
+    switch (type) {
+      case chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED:
+        if (should_automatically_accept_infobar_) {
+          infobar_service_->infobar_at(0)
+              ->delegate()
+              ->AsConfirmInfoBarDelegate()
+              ->Accept();
+        }
+        infobar_shown_ = true;
+        return;
+      case chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED:
+        infobar_removed_ = true;
+        return;
+      default:
+        NOTREACHED();
+        return;
+    }
   }
 
   // content::WebContentsObserver:
@@ -85,6 +104,11 @@ class NavigationObserver : public content::NotificationObserver,
   }
 
   bool infobar_shown() const { return infobar_shown_; }
+  bool infobar_removed() const { return infobar_removed_; }
+
+  void disable_should_automatically_accept_infobar() {
+    should_automatically_accept_infobar_ = false;
+  }
 
   void Wait() {
     message_loop_runner_->Run();
@@ -94,6 +118,10 @@ class NavigationObserver : public content::NotificationObserver,
   std::string wait_for_path_;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
   bool infobar_shown_;
+  bool infobar_removed_;
+  // If |should_automatically_accept_infobar_| is true, then whenever the test
+  // sees an infobar added, it will click its accepting button. Default = true.
+  bool should_automatically_accept_infobar_;
   content::NotificationRegistrar registrar_;
   InfoBarService* infobar_service_;
 
@@ -180,6 +208,29 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
   observer.Wait();
   EXPECT_TRUE(observer.infobar_shown());
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, Redirects) {
+  NavigateToFile("/password/password_form.html");
+
+  // Fill a form and submit through a <input type="submit"> button. The form
+  // points to a redirection page.
+  NavigationObserver observer(WebContents());
+  std::string fill_and_submit =
+      "document.getElementById('username_redirect').value = 'temp';"
+      "document.getElementById('password_redirect').value = 'random';"
+      "document.getElementById('submit_redirect').click()";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  observer.disable_should_automatically_accept_infobar();
+  observer.Wait();
+  EXPECT_TRUE(observer.infobar_shown());
+
+  // The redirection page now redirects via Javascript. We check that the
+  // infobar stays.
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(),
+                                     "window.location.href = 'done.html';"));
+  observer.Wait();
+  EXPECT_FALSE(observer.infobar_removed());
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,

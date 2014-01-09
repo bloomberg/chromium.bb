@@ -20,9 +20,11 @@
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/common/password_form.h"
+#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/page_transition_types.h"
 #include "content/public/common/ssl_status.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "grit/chromium_strings.h"
@@ -64,6 +66,10 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
   SavePasswordInfoBarDelegate(PasswordFormManager* form_to_save,
                               const std::string& uma_histogram_suffix);
   virtual ~SavePasswordInfoBarDelegate();
+
+  // InfoBarDelegate
+  virtual bool ShouldExpire(const content::LoadCommittedDetails& details)
+      const OVERRIDE;
 
   // ConfirmInfoBarDelegate
   virtual int GetIconID() const OVERRIDE;
@@ -152,6 +158,13 @@ SavePasswordInfoBarDelegate::~SavePasswordInfoBarDelegate() {
             uma_histogram_suffix_,
         timer_.Elapsed() < kMinimumPromptDisplayTime);
   }
+}
+
+bool SavePasswordInfoBarDelegate::ShouldExpire(
+    const content::LoadCommittedDetails& details) const {
+  bool is_not_redirect = !(details.entry->GetTransitionType() &
+                           content::PAGE_TRANSITION_IS_REDIRECT_MASK);
+  return is_not_redirect && InfoBarDelegate::ShouldExpire(details);
 }
 
 int SavePasswordInfoBarDelegate::GetIconID() const {
