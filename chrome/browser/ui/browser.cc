@@ -2163,9 +2163,12 @@ bool Browser::SupportsWindowFeatureImpl(WindowFeature feature,
     if (is_type_tabbed())
       features |= FEATURE_TOOLBAR;
 
-    if (!is_app() || CommandLine::ForCurrentProcess()->HasSwitch(
-                         switches::kEnableStreamlinedHostedApps))
+    if (!is_app() || ((app_type() == APP_TYPE_HOST ||
+                       app_name() == DevToolsWindow::kDevToolsApp) &&
+                      CommandLine::ForCurrentProcess()->HasSwitch(
+                          switches::kEnableStreamlinedHostedApps))) {
       features |= FEATURE_LOCATIONBAR;
+    }
   }
   return !!(features & feature);
 }
