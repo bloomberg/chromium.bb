@@ -245,6 +245,8 @@ void ZeroSuggestProvider::FillResults(
 
   base::string16 result, title;
   std::string type;
+  const base::string16 current_query_string16 =
+      base::ASCIIToUTF16(current_query_);
   for (size_t index = 0; results->GetString(index, &result); ++index) {
     // Google search may return empty suggestions for weird input characters,
     // they make no sense at all and can cause problems in our code.
@@ -270,7 +272,7 @@ void ZeroSuggestProvider::FillResults(
       suggest_results->push_back(SearchProvider::SuggestResult(
           result, AutocompleteMatchType::SEARCH_SUGGEST, result,
           base::string16(), std::string(), std::string(), false, relevance,
-          relevances != NULL, false));
+          relevances != NULL, false, current_query_string16));
     }
   }
 }
@@ -291,10 +293,10 @@ void ZeroSuggestProvider::AddMatchToMap(int relevance,
                                         const base::string16& query_string,
                                         int accepted_suggestion,
                                         SearchProvider::MatchMap* map) {
+  // Pass in query_string as the input_text to avoid bolding.
   SearchProvider::SuggestResult suggestion(
       query_string, type, query_string, base::string16(), std::string(),
-      std::string(), false, relevance, true, false);
-  // Pass in query_string as the input_text since we don't want any bolding.
+      std::string(), false, relevance, true, false, query_string);
   // TODO(samarth|melevin): use the actual omnibox margin here as well instead
   // of passing in -1.
   AutocompleteMatch match = SearchProvider::CreateSearchSuggestion(

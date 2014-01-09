@@ -215,18 +215,29 @@ class SearchProvider : public AutocompleteProvider,
                   bool from_keyword_provider,
                   int relevance,
                   bool relevance_from_server,
-                  bool should_prefetch);
+                  bool should_prefetch,
+                  const base::string16& input_text);
     virtual ~SuggestResult();
 
     const base::string16& suggestion() const { return suggestion_; }
     AutocompleteMatchType::Type type() const { return type_; }
     const base::string16& match_contents() const { return match_contents_; }
+    const ACMatchClassifications& match_contents_class() const {
+      return match_contents_class_;
+    }
     const base::string16& annotation() const { return annotation_; }
     const std::string& suggest_query_params() const {
       return suggest_query_params_;
     }
     const std::string& deletion_url() const { return deletion_url_; }
     bool should_prefetch() const { return should_prefetch_; }
+
+    // Fills in |match_contents_class| to reflect how |match_contents_| should
+    // be displayed and bolded against the current |input_text|.  If
+    // |allow_bolding_all| is false and |match_contents_class_| would have all
+    // of |match_contents_| bolded, do nothing.
+    void ClassifyMatchContents(const bool allow_bolding_all,
+                               const base::string16& input_text);
 
     // Result:
     virtual bool IsInlineable(const base::string16& input) const OVERRIDE;
@@ -240,8 +251,9 @@ class SearchProvider : public AutocompleteProvider,
 
     AutocompleteMatchType::Type type_;
 
-    // The contents to be displayed in the autocomplete match.
+    // The contents to be displayed and its style info.
     base::string16 match_contents_;
+    ACMatchClassifications match_contents_class_;
 
     // Optional annotation for the |match_contents_| for disambiguation.
     // This may be displayed in the autocomplete match contents, but is defined
@@ -369,6 +381,11 @@ class SearchProvider : public AutocompleteProvider,
                                  int verbatim_relevance,
                                  SuggestResults* suggest_results,
                                  NavigationResults* navigation_results);
+
+  // Recalculates the match contents class of |suggest_results| to better
+  // display against the current input.
+  static void UpdateMatchContentsClass(const base::string16& input_text,
+                                       SuggestResults* suggest_results);
 
   // Calculates the relevance score for the keyword verbatim result (if the
   // input matches one of the profile's keyword).

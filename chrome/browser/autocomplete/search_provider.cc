@@ -102,53 +102,6 @@ bool HasMultipleWords(const base::string16& text) {
   return false;
 }
 
-// Builds the match contents and classification for the contents, and updates
-// the given |AutocompleteMatch|.
-void SetAndClassifyMatchContents(const base::string16& query_string,
-                                 const base::string16& input_text,
-                                 const base::string16& match_contents,
-                                 AutocompleteMatch* match) {
-  match->contents = match_contents.empty() ? query_string : match_contents;
-
-  // We do intra-string highlighting for suggestions - the suggested segment
-  // will be highlighted, e.g. for input_text = "you" the suggestion may be
-  // "youtube", so we'll bold the "tube" section: you*tube*.
-  if (input_text != match_contents) {
-    size_t input_position = match->contents.find(input_text);
-    if (input_position == base::string16::npos) {
-      // The input text is not a substring of the query string, e.g. input
-      // text is "slasdot" and the query string is "slashdot", so we bold the
-      // whole thing.
-      match->contents_class.push_back(ACMatchClassification(
-          0, ACMatchClassification::MATCH));
-    } else {
-      // TODO(beng): ACMatchClassification::MATCH now seems to just mean
-      //             "bold" this. Consider modifying the terminology.
-      // We don't iterate over the string here annotating all matches because
-      // it looks odd to have every occurrence of a substring that may be as
-      // short as a single character highlighted in a query suggestion result,
-      // e.g. for input text "s" and query string "southwest airlines", it
-      // looks odd if both the first and last s are highlighted.
-      if (input_position != 0) {
-        match->contents_class.push_back(ACMatchClassification(
-            0, ACMatchClassification::MATCH));
-      }
-      match->contents_class.push_back(
-          ACMatchClassification(input_position, ACMatchClassification::NONE));
-      size_t next_fragment_position = input_position + input_text.length();
-      if (next_fragment_position < query_string.length()) {
-        match->contents_class.push_back(ACMatchClassification(
-            next_fragment_position, ACMatchClassification::MATCH));
-      }
-    }
-  } else {
-    // Otherwise, |match| is a verbatim (what-you-typed) match, either for the
-    // default provider or a keyword search provider.
-    match->contents_class.push_back(ACMatchClassification(
-        0, ACMatchClassification::NONE));
-  }
-}
-
 AutocompleteMatchType::Type GetAutocompleteMatchType(const std::string& type) {
   if (type == "ENTITY")
     return AutocompleteMatchType::SEARCH_SUGGEST_ENTITY;
@@ -262,7 +215,8 @@ SearchProvider::SuggestResult::SuggestResult(
     bool from_keyword_provider,
     int relevance,
     bool relevance_from_server,
-    bool should_prefetch)
+    bool should_prefetch,
+    const base::string16& input_text)
     : Result(from_keyword_provider, relevance, relevance_from_server),
       suggestion_(suggestion),
       type_(type),
@@ -271,9 +225,58 @@ SearchProvider::SuggestResult::SuggestResult(
       suggest_query_params_(suggest_query_params),
       deletion_url_(deletion_url),
       should_prefetch_(should_prefetch) {
+  DCHECK(!match_contents_.empty());
+  ClassifyMatchContents(true, input_text);
 }
 
 SearchProvider::SuggestResult::~SuggestResult() {
+}
+
+void SearchProvider::SuggestResult::ClassifyMatchContents(
+    const bool allow_bolding_all,
+    const base::string16& input_text) {
+  size_t input_position = match_contents_.find(input_text);
+  if (!allow_bolding_all && (input_position == base::string16::npos)) {
+    // Bail if the code below to update the bolding would bold the whole
+    // string.  Note that the string may already be entirely bolded; if
+    // so, leave it as is.
+    return;
+  }
+  match_contents_class_.clear();
+  // We do intra-string highlighting for suggestions - the suggested segment
+  // will be highlighted, e.g. for input_text = "you" the suggestion may be
+  // "youtube", so we'll bold the "tube" section: you*tube*.
+  if (input_text != match_contents_) {
+    if (input_position == base::string16::npos) {
+      // The input text is not a substring of the query string, e.g. input
+      // text is "slasdot" and the query string is "slashdot", so we bold the
+      // whole thing.
+      match_contents_class_.push_back(ACMatchClassification(
+          0, ACMatchClassification::MATCH));
+    } else {
+      // We don't iterate over the string here annotating all matches because
+      // it looks odd to have every occurrence of a substring that may be as
+      // short as a single character highlighted in a query suggestion result,
+      // e.g. for input text "s" and query string "southwest airlines", it
+      // looks odd if both the first and last s are highlighted.
+      if (input_position != 0) {
+        match_contents_class_.push_back(ACMatchClassification(
+            0, ACMatchClassification::MATCH));
+      }
+      match_contents_class_.push_back(
+          ACMatchClassification(input_position, ACMatchClassification::NONE));
+      size_t next_fragment_position = input_position + input_text.length();
+      if (next_fragment_position < match_contents_.length()) {
+        match_contents_class_.push_back(ACMatchClassification(
+            next_fragment_position, ACMatchClassification::MATCH));
+      }
+    }
+  } else {
+    // Otherwise, match_contents_ is a verbatim (what-you-typed) match, either
+    // for the default provider or a keyword search provider.
+    match_contents_class_.push_back(ACMatchClassification(
+        0, ACMatchClassification::NONE));
+  }
 }
 
 bool SearchProvider::SuggestResult::IsInlineable(
@@ -410,9 +413,8 @@ AutocompleteMatch SearchProvider::CreateSearchSuggestion(
   if (!template_url)
     return match;
   match.keyword = template_url->keyword();
-
-  SetAndClassifyMatchContents(suggestion.suggestion(), input_text,
-                              suggestion.match_contents(), &match);
+  match.contents = suggestion.match_contents();
+  match.contents_class = suggestion.match_contents_class();
 
   if (!suggestion.annotation().empty())
     match.description = suggestion.annotation();
@@ -566,6 +568,15 @@ void SearchProvider::RemoveStaleResults(const base::string16& input,
         break;
       nav_it = navigation_results->erase(nav_it);
     }
+  }
+}
+
+// static
+void SearchProvider::UpdateMatchContentsClass(const base::string16& input_text,
+                                              SuggestResults* suggest_results) {
+  for (SuggestResults::iterator sug_it = suggest_results->begin();
+       sug_it != suggest_results->end(); ++sug_it) {
+    sug_it->ClassifyMatchContents(false, input_text);
   }
 }
 
@@ -874,6 +885,14 @@ void SearchProvider::StartOrStopSuggestQuery(bool minimal_changes) {
 
   // Remove existing results that cannot inline autocomplete the new input.
   RemoveAllStaleResults();
+
+  // Update the content classifications of remaining results so they look good
+  // against the current input.
+  UpdateMatchContentsClass(input_.text(), &default_results_.suggest_results);
+  if (!keyword_input_.text().empty()) {
+    UpdateMatchContentsClass(keyword_input_.text(),
+                             &keyword_results_.suggest_results);
+  }
 
   // We can't start a new query if we're only allowed synchronous results.
   if (input_.matches_requested() != AutocompleteInput::ALL_MATCHES)
@@ -1196,6 +1215,9 @@ bool SearchProvider::ParseSuggestResults(base::Value* root_val,
           suggestion_detail->GetString("du", &deletion_url);
           suggestion_detail->GetString("title", &match_contents) ||
               suggestion_detail->GetString("t", &match_contents);
+          // Error correction for bad data from server.
+          if (match_contents.empty())
+            match_contents = suggestion;
           suggestion_detail->GetString("annotation", &annotation) ||
               suggestion_detail->GetString("a", &annotation);
           suggestion_detail->GetString("query_params", &suggest_query_params) ||
@@ -1207,7 +1229,7 @@ bool SearchProvider::ParseSuggestResults(base::Value* root_val,
       results->suggest_results.push_back(SuggestResult(
           suggestion, match_type, match_contents, annotation,
           suggest_query_params, deletion_url, is_keyword, relevance, true,
-          should_prefetch));
+          should_prefetch, input_text));
     }
   }
 
@@ -1257,8 +1279,8 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
   if (verbatim_relevance > 0) {
     SuggestResult verbatim(
         input_.text(), AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
-        input_.text(), base::string16(), std::string(), std::string(),
-        false, verbatim_relevance, relevance_from_server, false);
+        input_.text(), base::string16(), std::string(), std::string(), false,
+        verbatim_relevance, relevance_from_server, false, input_.text());
     AddMatchToMap(verbatim, input_.text(), std::string(),
                   did_not_accept_default_suggestion, &map);
   }
@@ -1280,7 +1302,7 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
             keyword_input_.text(), AutocompleteMatchType::SEARCH_OTHER_ENGINE,
             keyword_input_.text(), base::string16(), std::string(),
             std::string(), true, keyword_verbatim_relevance,
-            keyword_relevance_from_server, false);
+            keyword_relevance_from_server, false, keyword_input_.text());
         AddMatchToMap(verbatim, keyword_input_.text(), std::string(),
                       did_not_accept_keyword_suggestion, &map);
       }
@@ -1630,7 +1652,7 @@ SearchProvider::SuggestResults SearchProvider::ScoreHistoryResults(
     scored_results.push_back(SuggestResult(
         i->term, AutocompleteMatchType::SEARCH_HISTORY, i->term,
         base::string16(), std::string(), std::string(), is_keyword, relevance,
-        false, false));
+        false, false, input_text));
   }
 
   // History returns results sorted for us.  However, we may have docked some

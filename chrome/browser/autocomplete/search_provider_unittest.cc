@@ -3390,9 +3390,9 @@ TEST_F(SearchProviderTest, RemoveStaleResultsTest) {
         provider_->default_results_.suggest_results.push_back(
             SearchProvider::SuggestResult(
                 ASCIIToUTF16(suggestion), AutocompleteMatchType::SEARCH_SUGGEST,
-                base::string16(), base::string16(), std::string(),
+                ASCIIToUTF16(suggestion), base::string16(), std::string(),
                 std::string(), false, cases[i].results[j].relevance, false,
-                false));
+                false, ASCIIToUTF16(cases[i].omnibox_input)));
       }
     }
 
