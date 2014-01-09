@@ -634,8 +634,7 @@ int KernelProxy::truncate(const char* path, off_t len) {
 }
 
 int KernelProxy::lstat(const char* path, struct stat* buf) {
-  errno = ENOSYS;
-  return -1;
+  return stat(path, buf);
 }
 
 int KernelProxy::rename(const char* path, const char* newpath) {

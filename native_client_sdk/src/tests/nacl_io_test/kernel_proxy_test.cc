@@ -416,6 +416,24 @@ TEST_F(KernelProxyTest, MemMountDup) {
   // fd, new_fd, dup_fd -> "/bar"
 }
 
+TEST_F(KernelProxyTest, Lstat) {
+  int fd = ki_open("/foo", O_CREAT | O_RDWR);
+  ASSERT_GT(fd, -1);
+  ASSERT_EQ(0, ki_mkdir("/bar", S_IREAD | S_IWRITE));
+
+  struct stat buf;
+  EXPECT_EQ(0, ki_lstat("/foo", &buf));
+  EXPECT_EQ(0, buf.st_size);
+  EXPECT_TRUE(S_ISREG(buf.st_mode));
+
+  EXPECT_EQ(0, ki_lstat("/bar", &buf));
+  EXPECT_EQ(0, buf.st_size);
+  EXPECT_TRUE(S_ISDIR(buf.st_mode));
+
+  EXPECT_EQ(-1, ki_lstat("/no-such-file", &buf));
+  EXPECT_EQ(ENOENT, errno);
+}
+
 namespace {
 
 StringMap_t g_string_map;
