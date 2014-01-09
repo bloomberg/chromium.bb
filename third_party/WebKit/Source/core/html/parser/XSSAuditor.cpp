@@ -31,12 +31,12 @@
 #include "SVGNames.h"
 #include "XLinkNames.h"
 #include "core/dom/Document.h"
-#include "core/fetch/TextResourceDecoder.h"
 #include "core/frame/ContentSecurityPolicy.h"
 #include "core/frame/Frame.h"
 #include "core/html/HTMLParamElement.h"
 #include "core/html/parser/HTMLDocumentParser.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/html/parser/TextResourceDecoder.h"
 #include "core/html/parser/XSSAuditorDelegate.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/frame/Settings.h"
@@ -227,9 +227,6 @@ void XSSAuditor::initForFragment()
 
 void XSSAuditor::init(Document* document, XSSAuditorDelegate* auditorDelegate)
 {
-    const size_t miniumLengthForSuffixTree = 512; // FIXME: Tune this parameter.
-    const int suffixTreeDepth = 5;
-
     ASSERT(isMainThread());
     if (m_state != Uninitialized)
         return;
@@ -264,11 +261,6 @@ void XSSAuditor::init(Document* document, XSSAuditorDelegate* auditorDelegate)
     if (document->encoding().isValid())
         m_encoding = document->encoding();
 
-    m_decodedURL = fullyDecodeString(m_documentURL.string(), m_encoding);
-    if (m_decodedURL.find(isRequiredForInjection) == kNotFound)
-        m_decodedURL = String();
-
-    String httpBodyAsString;
     if (DocumentLoader* documentLoader = document->frame()->loader().documentLoader()) {
         DEFINE_STATIC_LOCAL(const AtomicString, XSSProtectionHeader, ("X-XSS-Protection", AtomicString::ConstructFromLiteral));
         const AtomicString& headerValue = documentLoader->response().httpHeaderField(XSSProtectionHeader);
@@ -298,23 +290,40 @@ void XSSAuditor::init(Document* document, XSSAuditorDelegate* auditorDelegate)
         // FIXME: Combine the two report URLs in some reasonable way.
         if (auditorDelegate)
             auditorDelegate->setReportURL(xssProtectionReportURL.copy());
+
         FormData* httpBody = documentLoader->request().httpBody();
-        if (httpBody && !httpBody->isEmpty()) {
-            httpBodyAsString = httpBody->flattenToString();
-            if (!httpBodyAsString.isEmpty()) {
-                m_decodedHTTPBody = fullyDecodeString(httpBodyAsString, m_encoding);
-                if (m_decodedHTTPBody.find(isRequiredForInjection) == kNotFound)
-                    m_decodedHTTPBody = String();
-                if (m_decodedHTTPBody.length() >= miniumLengthForSuffixTree)
-                    m_decodedHTTPBodySuffixTree = adoptPtr(new SuffixTree<ASCIICodebook>(m_decodedHTTPBody, suffixTreeDepth));
-            }
-        }
+        if (httpBody && !httpBody->isEmpty())
+            m_httpBodyAsString = httpBody->flattenToString();
     }
 
-    if (m_decodedURL.isEmpty() && m_decodedHTTPBody.isEmpty()) {
-        m_isEnabled = false;
+    setEncoding(m_encoding);
+}
+
+void XSSAuditor::setEncoding(const WTF::TextEncoding& encoding)
+{
+    const size_t miniumLengthForSuffixTree = 512; // FIXME: Tune this parameter.
+    const int suffixTreeDepth = 5;
+
+    if (!encoding.isValid())
         return;
+
+    m_encoding = encoding;
+
+    m_decodedURL = fullyDecodeString(m_documentURL.string(), m_encoding);
+    if (m_decodedURL.find(isRequiredForInjection) == kNotFound)
+        m_decodedURL = String();
+
+    if (!m_httpBodyAsString.isEmpty()) {
+        m_decodedHTTPBody = fullyDecodeString(m_httpBodyAsString, m_encoding);
+        m_httpBodyAsString = String();
+        if (m_decodedHTTPBody.find(isRequiredForInjection) == kNotFound)
+            m_decodedHTTPBody = String();
+            if (m_decodedHTTPBody.length() >= miniumLengthForSuffixTree)
+                m_decodedHTTPBodySuffixTree = adoptPtr(new SuffixTree<ASCIICodebook>(m_decodedHTTPBody, suffixTreeDepth));
     }
+
+    if (m_decodedURL.isEmpty() && m_decodedHTTPBody.isEmpty())
+        m_isEnabled = false;
 }
 
 PassOwnPtr<XSSInfo> XSSAuditor::filterToken(const FilterTokenRequest& request)
@@ -732,7 +741,8 @@ bool XSSAuditor::isSafeToSendToAnotherThread() const
 {
     return m_documentURL.isSafeToSendToAnotherThread()
         && m_decodedURL.isSafeToSendToAnotherThread()
-        && m_decodedHTTPBody.isSafeToSendToAnotherThread();
+        && m_decodedHTTPBody.isSafeToSendToAnotherThread()
+        && m_httpBodyAsString.isSafeToSendToAnotherThread();
 }
 
 } // namespace WebCore

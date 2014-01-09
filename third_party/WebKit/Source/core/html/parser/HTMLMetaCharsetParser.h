@@ -48,22 +48,10 @@ public:
 
     const WTF::TextEncoding& encoding() { return m_encoding; }
 
-    typedef Vector<pair<String, String> > AttributeList;
-    // The returned encoding might not be valid.
-    static WTF::TextEncoding encodingFromMetaAttributes(const AttributeList&
-);
-
 private:
     HTMLMetaCharsetParser();
 
     bool processMeta();
-    static String extractCharset(const String&);
-
-    enum Mode {
-        None,
-        Charset,
-        Pragma,
-    };
 
     OwnPtr<HTMLTokenizer> m_tokenizer;
     OwnPtr<TextCodec> m_assumedCodec;

@@ -34,7 +34,7 @@
 #include "HTMLNames.h"
 #include "RuntimeEnabledFeatures.h"
 #include "core/dom/DocumentFragment.h"
-#include "core/fetch/TextResourceDecoder.h"
+#include "core/html/parser/TextResourceDecoder.h"
 #include "core/html/track/vtt/BufferedLineReader.h"
 #include "core/html/track/vtt/VTTCue.h"
 #include "core/html/track/vtt/VTTRegion.h"

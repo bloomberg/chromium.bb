@@ -27,6 +27,7 @@
 #include "core/html/parser/HTMLViewSourceParser.h"
 
 #include "core/dom/DOMImplementation.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/HTMLParserOptions.h"
 #include "core/html/parser/HTMLToken.h"
 
@@ -52,7 +53,7 @@ void HTMLViewSourceParser::pumpTokenizer()
 
         // FIXME: The tokenizer should do this work for us.
         if (m_token.type() == HTMLToken::StartTag)
-            m_tokenizer->updateStateFor(AtomicString(m_token.name()));
+            m_tokenizer->updateStateFor(attemptStaticStringCreation(m_token.name(), Likely8Bit));
         m_token.clear();
     }
 }

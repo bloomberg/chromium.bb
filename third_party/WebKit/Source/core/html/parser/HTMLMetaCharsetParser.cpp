@@ -51,98 +51,18 @@ HTMLMetaCharsetParser::~HTMLMetaCharsetParser()
 {
 }
 
-static const char charsetString[] = "charset";
-static const size_t charsetLength = sizeof("charset") - 1;
-
-String HTMLMetaCharsetParser::extractCharset(const String& value)
-{
-    size_t pos = 0;
-    unsigned length = value.length();
-
-    while (pos < length) {
-        pos = value.find(charsetString, pos, false);
-        if (pos == kNotFound)
-            break;
-
-        pos += charsetLength;
-
-        // Skip whitespace.
-        while (pos < length && value[pos] <= ' ')
-            ++pos;
-
-        if (value[pos] != '=')
-            continue;
-
-        ++pos;
-
-        while (pos < length && value[pos] <= ' ')
-            ++pos;
-
-        char quoteMark = 0;
-        if (pos < length && (value[pos] == '"' || value[pos] == '\'')) {
-            quoteMark = static_cast<char>(value[pos++]);
-            ASSERT(!(quoteMark & 0x80));
-        }
-
-        if (pos == length)
-            break;
-
-        unsigned end = pos;
-        while (end < length && ((quoteMark && value[end] != quoteMark) || (!quoteMark && value[end] > ' ' && value[end] != '"' && value[end] != '\'' && value[end] != ';')))
-            ++end;
-
-        if (quoteMark && (end == length))
-            break; // Close quote not found.
-
-        return value.substring(pos, end - pos);
-    }
-
-    return "";
-}
-
 bool HTMLMetaCharsetParser::processMeta()
 {
     const HTMLToken::AttributeList& tokenAttributes = m_token.attributes();
-    AttributeList attributes;
+    HTMLAttributeList attributes;
     for (HTMLToken::AttributeList::const_iterator iter = tokenAttributes.begin(); iter != tokenAttributes.end(); ++iter) {
-        String attributeName = StringImpl::create8BitIfPossible(iter->name);
+        String attributeName = attemptStaticStringCreation(iter->name, Likely8Bit);
         String attributeValue = StringImpl::create8BitIfPossible(iter->value);
         attributes.append(std::make_pair(attributeName, attributeValue));
     }
 
     m_encoding = encodingFromMetaAttributes(attributes);
     return m_encoding.isValid();
-}
-
-WTF::TextEncoding HTMLMetaCharsetParser::encodingFromMetaAttributes(const AttributeList& attributes)
-{
-    bool gotPragma = false;
-    Mode mode = None;
-    String charset;
-
-    for (AttributeList::const_iterator iter = attributes.begin(); iter != attributes.end(); ++iter) {
-        const AtomicString& attributeName = AtomicString(iter->first);
-        const String& attributeValue = iter->second;
-
-        if (attributeName == http_equivAttr) {
-            if (equalIgnoringCase(attributeValue, "content-type"))
-                gotPragma = true;
-        } else if (charset.isEmpty()) {
-            if (attributeName == charsetAttr) {
-                charset = attributeValue;
-                mode = Charset;
-            } else if (attributeName == contentAttr) {
-                charset = extractCharset(attributeValue);
-                if (charset.length())
-                    mode = Pragma;
-            }
-        }
-    }
-
-    if (mode == Charset || (mode == Pragma && gotPragma))
-        return WTF::TextEncoding(stripLeadingAndTrailingHTMLSpaces(charset));
-
-    return WTF::TextEncoding();
 }
 
 static const int bytesToCheckUnconditionally = 1024; // That many input bytes will be checked for meta charset even if <head> section is over.
@@ -177,20 +97,20 @@ bool HTMLMetaCharsetParser::checkForMetaCharset(const char* data, size_t length)
     while (m_tokenizer->nextToken(m_input, m_token)) {
         bool end = m_token.type() == HTMLToken::EndTag;
         if (end || m_token.type() == HTMLToken::StartTag) {
-            AtomicString tagName(m_token.name());
+            String tagName = attemptStaticStringCreation(m_token.name(), Likely8Bit);
             if (!end) {
                 m_tokenizer->updateStateFor(tagName);
-                if (tagName == metaTag && processMeta()) {
+                if (threadSafeMatch(tagName, metaTag) && processMeta()) {
                     m_doneChecking = true;
                     return true;
                 }
             }
 
-            if (tagName != scriptTag && tagName != noscriptTag
-                && tagName != styleTag && tagName != linkTag
-                && tagName != metaTag && tagName != objectTag
-                && tagName != titleTag && tagName != baseTag
-                && (end || tagName != htmlTag) && (end || tagName != headTag)) {
+            if (!threadSafeMatch(tagName, scriptTag) && !threadSafeMatch(tagName, noscriptTag)
+                && !threadSafeMatch(tagName, styleTag) && !threadSafeMatch(tagName, linkTag)
+                && !threadSafeMatch(tagName, metaTag) && !threadSafeMatch(tagName, objectTag)
+                && !threadSafeMatch(tagName, titleTag) && !threadSafeMatch(tagName, baseTag)
+                && (end || !threadSafeMatch(tagName, htmlTag)) && (end || !threadSafeMatch(tagName, headTag))) {
                 m_inHeadSection = false;
             }
         }

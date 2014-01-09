@@ -25,13 +25,17 @@
 #include "config.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 
+#include "HTMLNames.h"
 #include <limits>
 #include "wtf/MathExtras.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/StringHash.h"
+#include "wtf/text/TextEncoding.h"
 
 namespace WebCore {
+
+using namespace HTMLNames;
 
 template <typename CharType>
 static String stripLeadingAndTrailingHTMLSpaces(String string, const CharType* characters, unsigned length)
@@ -263,6 +267,92 @@ bool parseHTMLNonNegativeInteger(const String& input, unsigned& value)
 
     const UChar* start = input.characters16();
     return parseHTMLNonNegativeIntegerInternal(start, start + length, value);
+}
+
+static const char charsetString[] = "charset";
+static const size_t charsetLength = sizeof("charset") - 1;
+
+String extractCharset(const String& value)
+{
+    size_t pos = 0;
+    unsigned length = value.length();
+
+    while (pos < length) {
+        pos = value.find(charsetString, pos, false);
+        if (pos == kNotFound)
+            break;
+
+        pos += charsetLength;
+
+        // Skip whitespace.
+        while (pos < length && value[pos] <= ' ')
+            ++pos;
+
+        if (value[pos] != '=')
+            continue;
+
+        ++pos;
+
+        while (pos < length && value[pos] <= ' ')
+            ++pos;
+
+        char quoteMark = 0;
+        if (pos < length && (value[pos] == '"' || value[pos] == '\'')) {
+            quoteMark = static_cast<char>(value[pos++]);
+            ASSERT(!(quoteMark & 0x80));
+        }
+
+        if (pos == length)
+            break;
+
+        unsigned end = pos;
+        while (end < length && ((quoteMark && value[end] != quoteMark) || (!quoteMark && value[end] > ' ' && value[end] != '"' && value[end] != '\'' && value[end] != ';')))
+            ++end;
+
+        if (quoteMark && (end == length))
+            break; // Close quote not found.
+
+        return value.substring(pos, end - pos);
+    }
+
+    return "";
+}
+
+enum Mode {
+    None,
+    Charset,
+    Pragma,
+};
+
+WTF::TextEncoding encodingFromMetaAttributes(const HTMLAttributeList& attributes)
+{
+    bool gotPragma = false;
+    Mode mode = None;
+    String charset;
+
+    for (HTMLAttributeList::const_iterator iter = attributes.begin(); iter != attributes.end(); ++iter) {
+        const String& attributeName = iter->first;
+        const String& attributeValue = AtomicString(iter->second);
+
+        if (threadSafeMatch(attributeName, http_equivAttr)) {
+            if (equalIgnoringCase(attributeValue, "content-type"))
+                gotPragma = true;
+        } else if (charset.isEmpty()) {
+            if (threadSafeMatch(attributeName, charsetAttr)) {
+                charset = attributeValue;
+                mode = Charset;
+            } else if (threadSafeMatch(attributeName, contentAttr)) {
+                charset = extractCharset(attributeValue);
+                if (charset.length())
+                    mode = Pragma;
+            }
+        }
+    }
+
+    if (mode == Charset || (mode == Pragma && gotPragma))
+        return WTF::TextEncoding(stripLeadingAndTrailingHTMLSpaces(charset));
+
+    return WTF::TextEncoding();
 }
 
 static bool threadSafeEqual(const StringImpl* a, const StringImpl* b)
