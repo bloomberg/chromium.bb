@@ -254,11 +254,8 @@ void WorkspaceLayoutManager::AdjustWindowBoundsWhenAdded(
   // When a window is dragged and dropped onto a different
   // root window, the bounds will be updated after they are added
   // to the root window.
-  if (window_state->window()->bounds().IsEmpty() ||
-      window_state->is_dragged() ||
-      SetMaximizedOrFullscreenBounds(window_state)) {
+  if (window_state->window()->bounds().IsEmpty())
     return;
-  }
 
   Window* window = window_state->window();
   gfx::Rect bounds = window->bounds();
@@ -268,6 +265,17 @@ void WorkspaceLayoutManager::AdjustWindowBoundsWhenAdded(
   // visibility which should be enough to see where the window gets
   // moved.
   gfx::Rect display_area = ScreenAsh::GetDisplayBoundsInParent(window);
+
+  if (window_state->is_dragged()) {
+    ash::wm::AdjustBoundsToEnsureMinimumWindowVisibility(
+        display_area, &bounds);
+    if (window->bounds() != bounds)
+      window->SetBounds(bounds);
+    return;
+  }
+
+  if (SetMaximizedOrFullscreenBounds(window_state))
+    return;
 
   int min_width = bounds.width() * kMinimumPercentOnScreenArea;
   int min_height = bounds.height() * kMinimumPercentOnScreenArea;

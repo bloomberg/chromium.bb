@@ -593,9 +593,6 @@ void DockedWindowLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
   if (child == dragged_window_)
     return;
   // If this is the first window getting docked - update alignment.
-  // TODO(oshima|varkha): A window can be added without proper bounds when
-  // window is moved to another display via API or due to display configuration
-  // change, so the the alignment may not be valid.
   if (alignment_ == DOCKED_ALIGNMENT_NONE) {
     alignment_ = GetAlignmentOfWindow(child);
     DCHECK(alignment_ != DOCKED_ALIGNMENT_NONE);

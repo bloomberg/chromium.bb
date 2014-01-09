@@ -94,18 +94,18 @@ void AdjustBoundsToEnsureWindowVisibility(const gfx::Rect& visible_area,
   min_width = std::min(min_width, visible_area.width());
   min_height = std::min(min_height, visible_area.height());
 
-  if (bounds->right() < visible_area.x() + min_width) {
-    bounds->set_x(visible_area.x() + min_width - bounds->width());
-  } else if (bounds->x() > visible_area.right() - min_width) {
+  if (bounds->x() + min_width > visible_area.right()) {
     bounds->set_x(visible_area.right() - min_width);
+  } else if (bounds->right() - min_width < 0) {
+    bounds->set_x(min_width - bounds->width());
   }
-  if (bounds->bottom() < visible_area.y() + min_height) {
-    bounds->set_y(visible_area.y() + min_height - bounds->height());
-  } else if (bounds->y() > visible_area.bottom() - min_height) {
+  if (bounds->y() + min_height > visible_area.bottom()) {
     bounds->set_y(visible_area.bottom() - min_height);
+  } else if (bounds->bottom() - min_height < 0) {
+    bounds->set_y(min_height - bounds->height());
   }
-  if (bounds->y() < visible_area.y())
-    bounds->set_y(visible_area.y());
+  if (bounds->y() < 0)
+    bounds->set_y(0);
 }
 
 bool MoveWindowToEventRoot(aura::Window* window, const ui::Event& event) {
