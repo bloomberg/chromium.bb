@@ -109,6 +109,9 @@ class CodeGeneratorV8:
             for interface_name, interface_info in interfaces_info.iteritems()
             if 'implemented_as' in interface_info))
 
+        interface_info = interfaces_info[interface_name]
+        self.interface.ancestors = interface_info.get('ancestors', [])
+
     def write_dummy_header_and_cpp(self):
         # FIXME: fix GYP so these files aren't needed and remove this method
         target_interface_name = self.interface_name

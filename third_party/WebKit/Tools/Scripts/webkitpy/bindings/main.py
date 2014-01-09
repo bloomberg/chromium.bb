@@ -22,8 +22,10 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+import fnmatch
 import os
-import shutil
+import cPickle as pickle
+from shutil import rmtree
 import tempfile
 from webkitpy.common.checkout.scm.detection import detect_scm_system
 from webkitpy.common.system.executive import ScriptError
@@ -46,14 +48,14 @@ SKIP_PYTHON = set([
     'TestEventTarget.idl',
     'TestImplements.idl',
     'TestInterface.idl',
-    'TestNode.idl',
     'TestObject.idl',
     'TestPartialInterface.idl',
     'TestTypedefs.idl',
 ])
 
-input_directory = os.path.join('bindings', 'tests', 'idls')
-support_input_directory = os.path.join('bindings', 'tests', 'idls', 'testing')
+real_input_directory = '.'  # Relative to Source/
+test_input_directory = os.path.join('bindings', 'tests', 'idls')
+test_support_input_directory = os.path.join('bindings', 'tests', 'idls', 'testing')
 reference_directory = os.path.join('bindings', 'tests', 'results')
 reference_event_names_filename = os.path.join(reference_directory, 'EventInterfaces.in')
 
@@ -67,7 +69,7 @@ class ScopedTempFileProvider(object):
         for filename in self.files:
             os.remove(filename)
         for directory in self.directories:
-            shutil.rmtree(directory)
+            rmtree(directory)
 
     def newtempfile(self):
         file_handle, path = tempfile.mkstemp()
@@ -89,7 +91,7 @@ class BindingsTests(object):
         self.verbose = verbose
         self.executive = executive
         _, self.interface_dependencies_filename = provider.newtempfile()
-        _, self.interfaces_filename = provider.newtempfile()
+        _, self.interfaces_info_filename = provider.newtempfile()
         _, self.derived_sources_list_filename = provider.newtempfile()
         # Generate output into the reference directory if resetting results, or
         # a temp directory if not.
@@ -132,7 +134,7 @@ class BindingsTests(object):
                '--output-dir', self.output_directory_py,
                '--idl-attributes-file', 'bindings/IDLExtendedAttributes.txt',
                '--include', '.',
-               '--interfaces-info-file', self.interfaces_filename,
+               '--interfaces-info-file', self.interfaces_info_filename,
                idl_file]
         try:
             self.run_command(cmd)
@@ -143,46 +145,72 @@ class BindingsTests(object):
         return 0
 
     def generate_interface_dependencies(self):
-        idl_files_list_file, main_idl_files_list_filename = provider.newtempfile()
-        idl_paths = [os.path.join(input_directory, input_file)
-                     for input_file in os.listdir(input_directory)
-                     if input_file.endswith('.idl')]
-        idl_files_list_contents = ''.join(idl_path + '\n'
-                                          for idl_path in idl_paths)
-        os.write(idl_files_list_file, idl_files_list_contents)
-        support_idl_files_list_file, support_idl_files_list_filename = provider.newtempfile()
-        support_idl_paths = [os.path.join(support_input_directory, input_file)
-                     for input_file in os.listdir(support_input_directory)
-                     if input_file.endswith('.idl')]
-        support_idl_files_list_contents = ''.join(idl_path + '\n'
-                                          for idl_path in support_idl_paths)
-        os.write(support_idl_files_list_file, support_idl_files_list_contents)
+        def idl_paths(directory):
+            return [os.path.join(directory, input_file)
+                    for input_file in os.listdir(directory)
+                    if input_file.endswith('.idl')]
 
-        # Dummy files, required by compute_dependencies but not checked
-        _, window_constructors_file = provider.newtempfile()
-        _, workerglobalscope_constructors_file = provider.newtempfile()
-        _, sharedworkerglobalscope_constructors_file = provider.newtempfile()
-        _, dedicatedworkerglobalscope_constructors_file = provider.newtempfile()
-        _, serviceworkersglobalscope_constructors_file = provider.newtempfile()
-        cmd = ['python',
-               'bindings/scripts/compute_dependencies.py',
-               '--main-idl-files-list', main_idl_files_list_filename,
-               '--support-idl-files-list', support_idl_files_list_filename,
-               '--interface-dependencies-file', self.interface_dependencies_filename,
-               '--interfaces-info-file', self.interfaces_filename,
-               '--bindings-derived-sources-file', self.derived_sources_list_filename,
-               '--window-constructors-file', window_constructors_file,
-               '--workerglobalscope-constructors-file', workerglobalscope_constructors_file,
-               '--sharedworkerglobalscope-constructors-file', sharedworkerglobalscope_constructors_file,
-               '--dedicatedworkerglobalscope-constructors-file', dedicatedworkerglobalscope_constructors_file,
-               '--serviceworkerglobalscope-constructors-file', serviceworkersglobalscope_constructors_file,
-               '--event-names-file', self.event_names_filename,
-               '--write-file-only-if-changed', '0']
+        def idl_paths_recursive(directory):
+            idl_paths = []
+            for dirpath, _, files in os.walk(directory):
+                idl_paths.extend(os.path.join(dirpath, filename)
+                                 for filename in fnmatch.filter(files, '*.idl'))
+            return idl_paths
+
+        def write_list_file(idl_paths):
+            list_file, list_filename = provider.newtempfile()
+            list_contents = ''.join(idl_path + '\n'
+                                    for idl_path in idl_paths)
+            os.write(list_file, list_contents)
+            return list_filename
+
+        def compute_dependencies(main_idl_files_list_filename,
+                                 event_names_filename):
+            # Dummy files, required by compute_dependencies but not checked
+            _, window_constructors_file = provider.newtempfile()
+            _, workerglobalscope_constructors_file = provider.newtempfile()
+            _, sharedworkerglobalscope_constructors_file = provider.newtempfile()
+            _, dedicatedworkerglobalscope_constructors_file = provider.newtempfile()
+            _, serviceworkersglobalscope_constructors_file = provider.newtempfile()
+            cmd = ['python',
+                   'bindings/scripts/compute_dependencies.py',
+                   '--main-idl-files-list', main_idl_files_list_filename,
+                   '--support-idl-files-list', support_idl_files_list_filename,
+                   '--interface-dependencies-file', self.interface_dependencies_filename,
+                   '--interfaces-info-file', self.interfaces_info_filename,
+                   '--bindings-derived-sources-file', self.derived_sources_list_filename,
+                   '--window-constructors-file', window_constructors_file,
+                   '--workerglobalscope-constructors-file', workerglobalscope_constructors_file,
+                   '--sharedworkerglobalscope-constructors-file', sharedworkerglobalscope_constructors_file,
+                   '--dedicatedworkerglobalscope-constructors-file', dedicatedworkerglobalscope_constructors_file,
+                   '--serviceworkerglobalscope-constructors-file', serviceworkersglobalscope_constructors_file,
+                   '--event-names-file', event_names_filename,
+                   '--write-file-only-if-changed', '0']
+            self.run_command(cmd)
+
+        test_idl_files_list_filename = write_list_file(idl_paths(test_input_directory))
+        support_idl_files_list_filename = write_list_file(idl_paths(test_support_input_directory))
+        real_idl_files_list_filename = write_list_file(idl_paths_recursive(real_input_directory))
 
         if self.reset_results and self.verbose:
             print 'Reset results: EventInterfaces.in'
         try:
-            self.run_command(cmd)
+            # We need real interfaces_info, not just test interfaces_info, as
+            # some real interfaces are special-cased (e.g., Window).
+            _, dummy_event_names_filename = provider.newtempfile()
+            compute_dependencies(real_idl_files_list_filename,
+                                 dummy_event_names_filename)
+            with open(self.interfaces_info_filename) as interfaces_info_file:
+                real_interfaces_info = pickle.load(interfaces_info_file)
+
+            compute_dependencies(test_idl_files_list_filename,
+                                 self.event_names_filename)
+            with open(self.interfaces_info_filename) as interfaces_info_file:
+                test_interfaces_info = pickle.load(interfaces_info_file)
+
+            test_interfaces_info.update(real_interfaces_info)
+            with open(self.interfaces_info_filename, 'w') as interfaces_info_file:
+                pickle.dump(test_interfaces_info, interfaces_info_file)
         except ScriptError, e:
             print 'ERROR: compute_dependencies.py'
             print e.output
@@ -235,7 +263,7 @@ class BindingsTests(object):
         if self.generate_interface_dependencies():
             return False
 
-        for directory in [input_directory, support_input_directory]:
+        for directory in [test_input_directory, test_support_input_directory]:
             for input_filename in os.listdir(directory):
                 if not input_filename.endswith('.idl'):
                     continue
@@ -247,7 +275,7 @@ class BindingsTests(object):
                 if not self.test_python:
                     continue
                 if (input_filename in SKIP_PYTHON or
-                    directory == support_input_directory):
+                    directory == test_support_input_directory):
                     if self.verbose:
                         print 'SKIP: %s' % input_filename
                     continue

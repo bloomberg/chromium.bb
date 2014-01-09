@@ -113,7 +113,7 @@ def main():
 
     interfaces_info_filename = options.interfaces_info_file
     if interfaces_info_filename:
-        with open(interfaces_info_filename, 'r') as interfaces_info_file:
+        with open(interfaces_info_filename) as interfaces_info_file:
             interfaces_info = pickle.load(interfaces_info_file)
     else:
         interfaces_info = None

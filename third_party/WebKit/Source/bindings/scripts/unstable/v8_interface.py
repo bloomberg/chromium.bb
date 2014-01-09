@@ -435,6 +435,4 @@ def interface_length(interface, constructors):
 # Interface dependencies
 
 def inherits_interface(interface, ancestor):
-    # FIXME: support distant ancestors (but don't parse all ancestors!)
-    # Do by computing ancestor chain in compute_dependencies.py
-    return ancestor in [interface.name, interface.parent]
+    return ancestor == interface.name or ancestor in interface.ancestors
