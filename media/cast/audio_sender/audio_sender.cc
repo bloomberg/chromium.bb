@@ -10,7 +10,6 @@
 #include "crypto/encryptor.h"
 #include "crypto/symmetric_key.h"
 #include "media/cast/audio_sender/audio_encoder.h"
-#include "media/cast/cast_environment.h"
 #include "media/cast/rtcp/rtcp.h"
 #include "media/cast/transport/rtp_sender/rtp_sender.h"
 
@@ -58,7 +57,7 @@ AudioSender::AudioSender(
     const AudioSenderConfig& audio_config,
     transport::PacedPacketSender* const paced_packet_sender)
       : cast_environment_(cast_environment),
-        rtp_sender_(cast_environment, &audio_config, NULL,
+        rtp_sender_(cast_environment->Clock(), &audio_config, NULL,
                     paced_packet_sender),
         rtcp_feedback_(new LocalRtcpAudioSenderFeedback(this)),
         rtp_audio_sender_statistics_(
@@ -119,9 +118,10 @@ void AudioSender::InsertAudio(const AudioBus* audio_bus,
   audio_encoder_->InsertAudio(audio_bus, recorded_time, done_callback);
 }
 
-void AudioSender::InsertCodedAudioFrame(const EncodedAudioFrame* audio_frame,
-                                        const base::TimeTicks& recorded_time,
-                                        const base::Closure callback) {
+void AudioSender::InsertCodedAudioFrame(
+    const transport::EncodedAudioFrame* audio_frame,
+    const base::TimeTicks& recorded_time,
+    const base::Closure callback) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   DCHECK(audio_encoder_.get() == NULL) << "Invalid internal state";
 
@@ -130,7 +130,7 @@ void AudioSender::InsertCodedAudioFrame(const EncodedAudioFrame* audio_frame,
       GetVideoRtpTimestamp(recorded_time), kFrameIdUnknown);
 
   if (encryptor_) {
-    EncodedAudioFrame encrypted_frame;
+    transport::EncodedAudioFrame encrypted_frame;
     if (!EncryptAudioFrame(*audio_frame, &encrypted_frame)) {
       // Logging already done.
       return;
@@ -143,12 +143,12 @@ void AudioSender::InsertCodedAudioFrame(const EncodedAudioFrame* audio_frame,
 }
 
 void AudioSender::SendEncodedAudioFrame(
-    scoped_ptr<EncodedAudioFrame> audio_frame,
+    scoped_ptr<transport::EncodedAudioFrame> audio_frame,
     const base::TimeTicks& recorded_time) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   InitializeTimers();
   if (encryptor_) {
-    EncodedAudioFrame encrypted_frame;
+    transport::EncodedAudioFrame encrypted_frame;
     if (!EncryptAudioFrame(*audio_frame.get(), &encrypted_frame)) {
       // Logging already done.
       return;
@@ -159,8 +159,9 @@ void AudioSender::SendEncodedAudioFrame(
   }
 }
 
-bool AudioSender::EncryptAudioFrame(const EncodedAudioFrame& audio_frame,
-                                    EncodedAudioFrame* encrypted_frame) {
+bool AudioSender::EncryptAudioFrame(
+    const transport::EncodedAudioFrame& audio_frame,
+    transport::EncodedAudioFrame* encrypted_frame) {
   DCHECK(encryptor_) << "Invalid state";
 
   if (!encryptor_->SetCounter(GetAesNonce(audio_frame.frame_id, iv_mask_))) {

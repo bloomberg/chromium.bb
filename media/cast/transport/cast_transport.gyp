@@ -19,6 +19,8 @@
         '<(DEPTH)/net/net.gyp:net',
       ],
       'sources': [
+        'cast_transport_config.cc',
+        'cast_transport_config.h', 
         'cast_transport_defines.h', 
         'cast_transport_sender.h',
         'pacing/paced_sender.cc',

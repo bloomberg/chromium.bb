@@ -51,7 +51,7 @@ class TestRtcpTransport : public PacedPacketSender {
   int packet_count() const { return packet_count_; }
 
  private:
-  uint8 expected_packet_[kIpPacketSize];
+  uint8 expected_packet_[kMaxIpPacketSize];
   size_t expected_packet_length_;
   int packet_count_;
 };

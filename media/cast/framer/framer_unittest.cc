@@ -27,7 +27,7 @@ class FramerTest : public ::testing::Test {
     rtp_header_.max_packet_id = 0;
     rtp_header_.is_reference = false;
     rtp_header_.reference_frame_id = 0;
-    payload_.assign(kIpPacketSize, 0);
+    payload_.assign(kMaxIpPacketSize, 0);
 
     EXPECT_CALL(mock_rtp_payload_feedback_,
                 CastFeedback(testing::_)).WillRepeatedly(testing::Return());
@@ -42,7 +42,7 @@ class FramerTest : public ::testing::Test {
 
 
 TEST_F(FramerTest, EmptyState) {
-  EncodedVideoFrame frame;
+  transport::EncodedVideoFrame frame;
   uint32 rtp_timestamp;
   bool next_frame = false;
   EXPECT_FALSE(framer_.GetEncodedVideoFrame(&frame, &rtp_timestamp,
@@ -50,7 +50,7 @@ TEST_F(FramerTest, EmptyState) {
 }
 
 TEST_F(FramerTest, AlwaysStartWithKey) {
-  EncodedVideoFrame frame;
+  transport::EncodedVideoFrame frame;
   uint32 rtp_timestamp;
   bool next_frame = false;
   bool complete = false;
@@ -76,7 +76,7 @@ TEST_F(FramerTest, AlwaysStartWithKey) {
 }
 
 TEST_F(FramerTest, CompleteFrame) {
-  EncodedVideoFrame frame;
+  transport::EncodedVideoFrame frame;
   uint32 rtp_timestamp;
   bool next_frame = false;
   bool complete = false;
@@ -115,7 +115,7 @@ TEST_F(FramerTest, CompleteFrame) {
 }
 
 TEST_F(FramerTest, DuplicatePackets) {
-  EncodedVideoFrame frame;
+  transport::EncodedVideoFrame frame;
   uint32 rtp_timestamp;
   bool next_frame = false;
   bool complete = false;
@@ -207,7 +207,7 @@ TEST_F(FramerTest, DuplicatePackets) {
 }
 
 TEST_F(FramerTest, ContinuousSequence) {
-  EncodedVideoFrame frame;
+  transport::EncodedVideoFrame frame;
   uint32 rtp_timestamp;
   bool next_frame = false;
   bool complete = false;
@@ -237,7 +237,7 @@ TEST_F(FramerTest, ContinuousSequence) {
 
 TEST_F(FramerTest, Wrap) {
   // Insert key frame, frame_id = 255 (will jump to that)
-  EncodedVideoFrame frame;
+  transport::EncodedVideoFrame frame;
   uint32 rtp_timestamp;
   bool next_frame = false;
   bool duplicate = false;
@@ -266,7 +266,7 @@ TEST_F(FramerTest, Wrap) {
 }
 
 TEST_F(FramerTest, Reset) {
-  EncodedVideoFrame frame;
+  transport::EncodedVideoFrame frame;
   uint32 rtp_timestamp;
   bool next_frame = false;
   bool complete = false;
@@ -283,7 +283,7 @@ TEST_F(FramerTest, Reset) {
 }
 
 TEST_F(FramerTest, RequireKeyAfterReset) {
-  EncodedVideoFrame frame;
+  transport::EncodedVideoFrame frame;
   uint32 rtp_timestamp;
   bool next_frame = false;
   bool duplicate = false;
@@ -307,7 +307,7 @@ TEST_F(FramerTest, RequireKeyAfterReset) {
 }
 
 TEST_F(FramerTest, BasicNonLastReferenceId) {
-  EncodedVideoFrame frame;
+  transport::EncodedVideoFrame frame;
   uint32 rtp_timestamp;
   bool next_frame = false;
   bool duplicate = false;
@@ -335,7 +335,7 @@ TEST_F(FramerTest, BasicNonLastReferenceId) {
 
 TEST_F(FramerTest, InOrderReferenceFrameSelection) {
   // Create pattern: 0, 1, 4, 5.
-  EncodedVideoFrame frame;
+  transport::EncodedVideoFrame frame;
   uint32 rtp_timestamp;
   bool next_frame = false;
   bool duplicate = false;
@@ -395,7 +395,7 @@ TEST_F(FramerTest, InOrderReferenceFrameSelection) {
 
 TEST_F(FramerTest, AudioWrap) {
   // All audio frames are marked as key frames.
-  EncodedAudioFrame frame;
+  transport::EncodedAudioFrame frame;
   uint32 rtp_timestamp;
   bool next_frame = false;
   bool duplicate = false;
@@ -435,7 +435,7 @@ TEST_F(FramerTest, AudioWrap) {
 
 TEST_F(FramerTest, AudioWrapWithMissingFrame) {
   // All audio frames are marked as key frames.
-  EncodedAudioFrame frame;
+  transport::EncodedAudioFrame frame;
   uint32 rtp_timestamp;
   bool next_frame = false;
   bool duplicate = false;

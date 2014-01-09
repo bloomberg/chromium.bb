@@ -31,7 +31,7 @@ class CastReceiverImpl : public CastReceiver {
 
   // All received RTP and RTCP packets for the call should be inserted to this
   // PacketReceiver.
-  virtual scoped_refptr<PacketReceiver> packet_receiver() OVERRIDE;
+  virtual scoped_refptr<transport::PacketReceiver> packet_receiver() OVERRIDE;
 
   // Interface to get audio and video frames from the CastReceiver.
   virtual scoped_refptr<FrameReceiver> frame_receiver() OVERRIDE;
@@ -41,7 +41,7 @@ class CastReceiverImpl : public CastReceiver {
   AudioReceiver audio_receiver_;
   VideoReceiver video_receiver_;
   scoped_refptr<FrameReceiver> frame_receiver_;
-  scoped_refptr<PacketReceiver> packet_receiver_;
+  scoped_refptr<transport::PacketReceiver> packet_receiver_;
 };
 
 }  // namespace cast

@@ -29,7 +29,7 @@ VideoEncoderImpl::VideoEncoderImpl(
       cast_environment_(cast_environment),
       skip_next_frame_(false),
       skip_count_(0) {
-  if (video_config.codec == kVp8) {
+  if (video_config.codec == transport::kVp8) {
     vp8_encoder_.reset(new Vp8Encoder(video_config, max_unacked_frames));
   } else {
     DCHECK(false) << "Invalid config";  // Codec not supported.
@@ -47,7 +47,7 @@ bool VideoEncoderImpl::EncodeVideoFrame(
     const base::TimeTicks& capture_time,
     const FrameEncodedCallback& frame_encoded_callback) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  if (video_config_.codec != kVp8) return false;
+  if (video_config_.codec != transport::kVp8) return false;
 
   if (skip_next_frame_) {
     ++skip_count_;
@@ -81,7 +81,8 @@ void VideoEncoderImpl::EncodeVideoFrameEncoderThread(
       dynamic_config.latest_frame_id_to_reference);
   vp8_encoder_->UpdateRates(dynamic_config.bit_rate);
 
-  scoped_ptr<EncodedVideoFrame> encoded_frame(new EncodedVideoFrame());
+  scoped_ptr<transport::EncodedVideoFrame> encoded_frame(
+      new transport::EncodedVideoFrame());
   bool retval = vp8_encoder_->Encode(video_frame, encoded_frame.get());
 
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();

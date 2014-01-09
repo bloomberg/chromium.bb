@@ -22,8 +22,8 @@ struct RtpParserConfig {
 
   uint32 ssrc;
   int payload_type;
-  AudioCodec audio_codec;
-  VideoCodec video_codec;
+  transport::AudioCodec audio_codec;
+  transport::VideoCodec video_codec;
   int audio_channels;
 };
 

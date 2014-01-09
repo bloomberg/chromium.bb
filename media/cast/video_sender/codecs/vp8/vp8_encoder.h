@@ -31,7 +31,7 @@ class Vp8Encoder {
 
   // Encode a raw image (as a part of a video stream).
   bool Encode(const scoped_refptr<media::VideoFrame>& video_frame,
-              EncodedVideoFrame* encoded_image);
+              transport::EncodedVideoFrame* encoded_image);
 
   // Update the encoder with a new target bit rate.
   void UpdateRates(uint32 new_bitrate);

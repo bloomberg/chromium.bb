@@ -51,9 +51,10 @@ class FrameInput : public base::RefCountedThreadSafe<FrameInput> {
   // The callback is called from the main cast thread as soon as
   // the cast sender is done with the frame; it does not mean that the encoded
   // frame has been sent out.
-  virtual void InsertCodedAudioFrame(const EncodedAudioFrame* audio_frame,
-                                     const base::TimeTicks& recorded_time,
-                                     const base::Closure callback) = 0;
+  virtual void InsertCodedAudioFrame(
+      const transport::EncodedAudioFrame* audio_frame,
+      const base::TimeTicks& recorded_time,
+      const base::Closure callback) = 0;
 
  protected:
   virtual ~FrameInput() {}
@@ -84,7 +85,7 @@ class CastSender {
 
   // All RTCP packets for the session should be inserted to this object.
   // Can be called from any thread.
-  virtual scoped_refptr<PacketReceiver> packet_receiver() = 0;
+  virtual scoped_refptr<transport::PacketReceiver> packet_receiver() = 0;
 };
 
 }  // namespace cast

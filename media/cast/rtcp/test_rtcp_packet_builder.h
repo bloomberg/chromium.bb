@@ -86,7 +86,7 @@ class TestRtcpPacketBuilder {
                            uint16 event_timesamp_delta);
 
   const uint8* Packet();
-  int Length() { return kIpPacketSize - big_endian_writer_.remaining(); }
+  int Length() { return kMaxIpPacketSize - big_endian_writer_.remaining(); }
 
  private:
   void AddRtcpHeader(int payload, int format_or_count);
@@ -94,7 +94,7 @@ class TestRtcpPacketBuilder {
 
   // Where the length field of the current packet is.
   // Note: 0 is not a legal value, it is used for "uninitialized".
-  uint8 buffer_[kIpPacketSize];
+  uint8 buffer_[kMaxIpPacketSize];
   char* ptr_of_length_;
   net::BigEndianWriter big_endian_writer_;
 };

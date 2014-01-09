@@ -91,22 +91,22 @@ class VideoSender : public base::NonThreadSafe,
   void ScheduleNextSkippedFramesCheck();
   void SkippedFramesCheck();
 
-  void SendEncodedVideoFrame(const EncodedVideoFrame* video_frame,
+  void SendEncodedVideoFrame(const transport::EncodedVideoFrame* video_frame,
                              const base::TimeTicks& capture_time);
   void ResendFrame(uint32 resend_frame_id);
   void ReceivedAck(uint32 acked_frame_id);
   void UpdateFramesInFlight();
 
   void SendEncodedVideoFrameMainThread(
-      scoped_ptr<EncodedVideoFrame> video_frame,
+      scoped_ptr<transport::EncodedVideoFrame> video_frame,
       const base::TimeTicks& capture_time);
 
   void InitializeTimers();
 
   // Caller must allocate the destination |encrypted_video_frame| the data
   // member will be resized to hold the encrypted size.
-  bool EncryptVideoFrame(const EncodedVideoFrame& encoded_frame,
-                         EncodedVideoFrame* encrypted_video_frame);
+  bool EncryptVideoFrame(const transport::EncodedVideoFrame& encoded_frame,
+                         transport::EncodedVideoFrame* encrypted_video_frame);
 
   const base::TimeDelta rtp_max_delay_;
   const int max_frame_rate_;

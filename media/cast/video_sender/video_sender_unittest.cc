@@ -70,7 +70,7 @@ class VideoSenderTest : public ::testing::Test {
     video_config.min_qp = 0;
     video_config.max_frame_rate = 30;
     video_config.max_number_of_video_buffers_used = 1;
-    video_config.codec = kVp8;
+    video_config.codec = transport::kVp8;
 
     if (external) {
       video_sender_.reset(new PeerVideoSender(cast_environment_,
@@ -86,8 +86,8 @@ class VideoSenderTest : public ::testing::Test {
   virtual void SetUp() {
     task_runner_ = new test::FakeTaskRunner(&testing_clock_);
     cast_environment_ = new CastEnvironment(&testing_clock_, task_runner_,
-       task_runner_, task_runner_, task_runner_, task_runner_,
-       GetDefaultCastLoggingConfig());
+        task_runner_, task_runner_, task_runner_, task_runner_,
+        task_runner_, GetDefaultCastLoggingConfig());
   }
 
   scoped_refptr<media::VideoFrame> GetNewVideoFrame() {

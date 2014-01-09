@@ -15,7 +15,7 @@ class FrameBufferTest : public ::testing::Test {
   virtual ~FrameBufferTest() {}
 
   virtual void SetUp() {
-    payload_.assign(kIpPacketSize, 0);
+    payload_.assign(kMaxIpPacketSize, 0);
 
     // Build a default one packet frame - populate webrtc header.
     rtp_header_.is_key_frame = false;
@@ -34,7 +34,7 @@ class FrameBufferTest : public ::testing::Test {
 TEST_F(FrameBufferTest, EmptyBuffer) {
   EXPECT_FALSE(buffer_.Complete());
   EXPECT_FALSE(buffer_.is_key_frame());
-  EncodedVideoFrame frame;
+  transport::EncodedVideoFrame frame;
   uint32 rtp_timestamp;
   EXPECT_FALSE(buffer_.GetEncodedVideoFrame(&frame, &rtp_timestamp));
 }
@@ -43,7 +43,7 @@ TEST_F(FrameBufferTest, DefaultOnePacketFrame) {
   buffer_.InsertPacket(payload_.data(), payload_.size(), rtp_header_);
   EXPECT_TRUE(buffer_.Complete());
   EXPECT_FALSE(buffer_.is_key_frame());
-  EncodedVideoFrame frame;
+  transport::EncodedVideoFrame frame;
   uint32 rtp_timestamp;
   EXPECT_TRUE(buffer_.GetEncodedVideoFrame(&frame, &rtp_timestamp));
   EXPECT_EQ(payload_.size(), frame.data.size());
@@ -60,7 +60,7 @@ TEST_F(FrameBufferTest, MultiplePacketFrame) {
   ++rtp_header_.packet_id;
   EXPECT_TRUE(buffer_.Complete());
   EXPECT_TRUE(buffer_.is_key_frame());
-  EncodedVideoFrame frame;
+  transport::EncodedVideoFrame frame;
   uint32 rtp_timestamp;
   EXPECT_TRUE(buffer_.GetEncodedVideoFrame(&frame, &rtp_timestamp));
   EXPECT_EQ(3 * payload_.size(), frame.data.size());

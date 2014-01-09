@@ -240,20 +240,6 @@ struct RtcpCommonHeader {
   uint16 length_in_octets;
 };
 
-enum RtcpPacketTypes {
-  kPacketTypeLow = 194,  // SMPTE time-code mapping.
-  kPacketTypeInterArrivalJitterReport = 195,
-  kPacketTypeSenderReport = 200,
-  kPacketTypeReceiverReport = 201,
-  kPacketTypeSdes = 202,
-  kPacketTypeBye = 203,
-  kPacketTypeApplicationDefined = 204,
-  kPacketTypeGenericRtpFeedback = 205,
-  kPacketTypePayloadSpecific = 206,
-  kPacketTypeXr = 207,
-  kPacketTypeHigh = 210,  // Port Mapping.
-};
-
 class RtcpParser {
  public:
   RtcpParser(const uint8* rtcp_data, size_t rtcp_length);

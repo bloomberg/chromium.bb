@@ -66,8 +66,7 @@ class RtcpBuilder {
   const uint32 ssrc_;
   const std::string c_name_;
 
-  // Not owned by this class.
-  PacedPacketSender* transport_;
+  PacedPacketSender* const transport_;  // Not owned by this class.
 
   DISALLOW_COPY_AND_ASSIGN(RtcpBuilder);
 };
