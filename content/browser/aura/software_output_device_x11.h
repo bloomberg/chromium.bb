@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_AURA_SOFTWARE_OUTPUT_DEVICE_X11_H_
 #define CONTENT_BROWSER_AURA_SOFTWARE_OUTPUT_DEVICE_X11_H_
 
+#include <X11/Xlib.h>
+
 #include "cc/output/software_output_device.h"
 #include "ui/gfx/x/x11_types.h"
 
@@ -20,17 +22,13 @@ class SoftwareOutputDeviceX11 : public cc::SoftwareOutputDevice {
 
   virtual ~SoftwareOutputDeviceX11();
 
-  virtual void Resize(gfx::Size viewport_size) OVERRIDE;
-
   virtual void EndPaint(cc::SoftwareFrameData* frame_data) OVERRIDE;
 
  private:
-  void ClearImage();
-
   ui::Compositor* compositor_;
   XDisplay* display_;
   GC gc_;
-  XImage* image_;
+  XWindowAttributes attributes_;
 };
 
 }  // namespace content

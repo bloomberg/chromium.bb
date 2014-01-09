@@ -11,55 +11,27 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkDevice.h"
 #include "ui/compositor/compositor.h"
+#include "ui/gfx/x/x11_types.h"
 
 namespace content {
 
 SoftwareOutputDeviceX11::SoftwareOutputDeviceX11(ui::Compositor* compositor)
-    : compositor_(compositor),
-      display_(gfx::GetXDisplay()),
-      gc_(NULL),
-      image_(NULL) {
+    : compositor_(compositor), display_(gfx::GetXDisplay()), gc_(NULL) {
   // TODO(skaslev) Remove this when crbug.com/180702 is fixed.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   gc_ = XCreateGC(display_, compositor_->widget(), 0, NULL);
+  if (!XGetWindowAttributes(display_, compositor_->widget(), &attributes_)) {
+    LOG(ERROR) << "XGetWindowAttributes failed for window "
+               << compositor_->widget();
+    return;
+  }
 }
 
 SoftwareOutputDeviceX11::~SoftwareOutputDeviceX11() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   XFreeGC(display_, gc_);
-  ClearImage();
-}
-
-void SoftwareOutputDeviceX11::ClearImage() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (image_) {
-    // XDestroyImage deletes the data referenced by the image which
-    // is actually owned by the device_. So we have to reset data here.
-    image_->data = NULL;
-    XDestroyImage(image_);
-    image_ = NULL;
-  }
-}
-
-void SoftwareOutputDeviceX11::Resize(gfx::Size viewport_size) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  cc::SoftwareOutputDevice::Resize(viewport_size);
-
-  ClearImage();
-  if (!device_)
-    return;
-
-  const SkBitmap& bitmap = device_->accessBitmap(false);
-  image_ = XCreateImage(display_, CopyFromParent,
-                        DefaultDepth(display_, DefaultScreen(display_)),
-                        ZPixmap, 0,
-                        static_cast<char*>(bitmap.getPixels()),
-                        viewport_size_.width(), viewport_size_.height(),
-                        32, 4 * viewport_size_.width());
 }
 
 void SoftwareOutputDeviceX11::EndPaint(cc::SoftwareFrameData* frame_data) {
@@ -77,11 +49,22 @@ void SoftwareOutputDeviceX11::EndPaint(cc::SoftwareFrameData* frame_data) {
   if (rect.IsEmpty())
     return;
 
-  // TODO(skaslev): Maybe switch XShmPutImage since it's async.
-  XPutImage(display_, compositor_->widget(), gc_, image_,
-            rect.x(), rect.y(),
-            rect.x(), rect.y(),
-            rect.width(), rect.height());
+  // TODO(jbauman): Switch to XShmPutImage since it's async.
+  const SkBitmap& bitmap = device_->accessBitmap(false);
+  gfx::PutARGBImage(display_,
+                    attributes_.visual,
+                    attributes_.depth,
+                    compositor_->widget(),
+                    gc_,
+                    static_cast<const uint8*>(bitmap.getPixels()),
+                    viewport_size_.width(),
+                    viewport_size_.height(),
+                    rect.x(),
+                    rect.y(),
+                    rect.x(),
+                    rect.y(),
+                    rect.width(),
+                    rect.height());
 }
 
 }  // namespace content
