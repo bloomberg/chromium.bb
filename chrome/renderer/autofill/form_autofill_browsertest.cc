@@ -161,7 +161,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
   typedef void (*FillFormFunction)(const FormData& form,
                                    const WebInputElement& element);
 
-  typedef WebString (WebInputElement::*GetValueFunction)(void) const;
+  typedef WebString (*GetValueFunction)(WebFormControlElement element);
 
   // Test FormFillxxx functions.
   void TestFormFillFunctions(const char* html,
@@ -235,13 +235,11 @@ class FormAutofillTest : public ChromeRenderViewTest {
     if (element.formControlType() == "select-one") {
       value = element.to<WebSelectElement>().value();
     } else if (element.formControlType() == "textarea") {
-      value = element.to<WebTextAreaElement>().value();
+      value = get_value_function(element);
     } else {
       ASSERT_TRUE(element.formControlType() == "text" ||
                   element.formControlType() == "month");
-      WebInputElement input_element = GetMainFrame()->document().getElementById(
-          ASCIIToUTF16(field_case.name)).to<WebInputElement>();
-      value = (input_element.*get_value_function)();
+      value = get_value_function(element);
     }
 
     const WebString expected_value = ASCIIToUTF16(field_case.expected_value);
@@ -262,6 +260,20 @@ class FormAutofillTest : public ChromeRenderViewTest {
       const FormData& form,
       const WebInputElement& element) {
     FillFormIncludingNonFocusableElements(form, element.form());
+  }
+
+  static WebString GetValueWrapper(WebFormControlElement element) {
+    if (element.formControlType() == "textarea")
+      return element.to<WebTextAreaElement>().value();
+
+    return element.to<WebInputElement>().value();
+  }
+
+  static WebString GetSuggestedValueWrapper(WebFormControlElement element) {
+    if (element.formControlType() == "textarea")
+      return element.to<WebTextAreaElement>().suggestedValue();
+
+    return element.to<WebInputElement>().suggestedValue();
   }
 
  private:
@@ -1115,7 +1127,7 @@ TEST_F(FormAutofillTest, FillForm) {
        "some multi-\nline value", "Go\naway!"},
   };
   TestFormFillFunctions(kFormHtml, field_cases, arraysize(field_cases),
-                        FillForm, &WebInputElement::value);
+                        FillForm, &GetValueWrapper);
   // Verify preview selection.
   WebInputElement firstname = GetMainFrame()->document().
       getElementById("firstname").to<WebInputElement>();
@@ -1165,34 +1177,47 @@ TEST_F(FormAutofillTest, FillFormIncludingNonFocusableElements) {
   };
   TestFormFillFunctions(kFormHtml, field_cases, arraysize(field_cases),
                         &FillFormIncludingNonFocusableElementsWrapper,
-                        &WebInputElement::value);
+                        &GetValueWrapper);
 }
 
 TEST_F(FormAutofillTest, PreviewForm) {
-  static const char* html =
-      "<FORM name=\"TestForm\" action=\"http://buh.com\" method=\"post\">"
-      "  <INPUT type=\"text\" id=\"firstname\"/>"
-      "  <INPUT type=\"text\" id=\"lastname\"/>"
-      "  <INPUT type=\"text\" id=\"notempty\" value=\"Hi\"/>"
-      "  <INPUT type=\"text\" autocomplete=\"off\" id=\"noautocomplete\"/>"
-      "  <INPUT type=\"text\" disabled=\"disabled\" id=\"notenabled\"/>"
-      "  <INPUT type=\"submit\" name=\"reply-send\" value=\"Send\"/>"
-      "</FORM>";
-
   static const AutofillFieldCase field_cases[] = {
       // Normal empty fields should be previewed.
       {"text", "firstname", "", "", true, "suggested firstname",
        "suggested firstname"},
       {"text", "lastname", "", "", true, "suggested lastname",
        "suggested lastname"},
+      // Hidden fields should not be extracted to form_data.
       // Non empty fields should not be previewed.
-      {"text", "notempty", "Hi", "", false, "filled notempty", ""},
+      {"text", "notempty", "Hi", "", false, "suggested notempty", ""},
       // "noautocomplete" should not be extracted to form_data.
       // Disabled fields should not be previewed.
-      {"text", "notenabled", "", "", false, "filled notenabled", ""},
+      {"text", "notenabled", "", "", false, "suggested notenabled", ""},
+      // Readonly fields should not be previewed.
+      {"text", "readonly", "", "", false, "suggested readonly", ""},
+      // Fields with "visibility: hidden" should not be previewed.
+      {"text", "invisible", "", "", false, "suggested invisible",
+       ""},
+      // Fields with "display:none" should not previewed.
+      {"text", "displaynone", "", "", false, "suggested displaynone",
+       ""},
+      // Regular <input type="month"> should not be previewed.
+      {"month", "month", "", "", false, "2017-11", ""},
+      // Non-empty <input type="month"> should not be previewed.
+      {"month", "month-nonempty", "2011-12", "", false, "2017-11", ""},
+      // Regular select fields preview is not yet supported
+      {"select-one", "select", "", "", false, "TX", ""},
+      // Select fields preview is not yet supported
+      {"select-one", "select-nonempty", "CA", "", false, "TX", "CA"},
+      // Normal textarea elements should be previewed.
+      {"textarea", "textarea", "", "", true, "suggested multi-\nline value",
+       "suggested multi-\nline value"},
+      // Nonempty textarea elements should not be previewed.
+      {"textarea", "textarea-nonempty", "Go\naway!", "", false,
+       "suggested multi-\nline value", ""},
   };
-  TestFormFillFunctions(html, field_cases, arraysize(field_cases), &PreviewForm,
-                        &WebInputElement::suggestedValue);
+  TestFormFillFunctions(kFormHtml, field_cases, arraysize(field_cases),
+                        &PreviewForm, &GetSuggestedValueWrapper);
 
   // Verify preview selection.
   WebInputElement firstname = GetMainFrame()->document().

@@ -570,21 +570,26 @@ void PreviewFormField(const FormFieldData& data,
   if (data.value.empty())
     return;
 
-  // Only preview input fields. Excludes checkboxes and radio buttons, as there
-  // is no provision for setSuggestedCheckedValue in WebInputElement.
+  // Preview input and textarea fields. For input fields, excludes checkboxes
+  // and radio buttons, as there is no provision for setSuggestedCheckedValue
+  // in WebInputElement.
   WebInputElement* input_element = toWebInputElement(field);
-  if (!IsTextInput(input_element))
-    return;
-
-  // If the maxlength attribute contains a negative value, maxLength()
-  // returns the default maxlength value.
-  input_element->setSuggestedValue(
+  if (IsTextInput(input_element)) {
+    // If the maxlength attribute contains a negative value, maxLength()
+    // returns the default maxlength value.
+    input_element->setSuggestedValue(
       data.value.substr(0, input_element->maxLength()));
-  input_element->setAutofilled(true);
-  if (is_initiating_node) {
-    // Select the part of the text that the user didn't type.
-    input_element->setSelectionRange(input_element->value().length(),
-                                     input_element->suggestedValue().length());
+    input_element->setAutofilled(true);
+    if (is_initiating_node) {
+      // Select the part of the text that the user didn't type.
+      input_element->setSelectionRange(
+          input_element->value().length(),
+          input_element->suggestedValue().length());
+    }
+  } else if (IsTextAreaElement(*field)) {
+    WebTextAreaElement textarea = field->to<WebTextAreaElement>();
+    textarea.setSuggestedValue(data.value);
+    field->setAutofilled(true);
   }
 }
 
@@ -1047,38 +1052,53 @@ bool ClearPreviewedFormWithElement(const WebInputElement& element,
   ExtractAutofillableElements(form_element, REQUIRE_AUTOCOMPLETE,
                               &control_elements);
   for (size_t i = 0; i < control_elements.size(); ++i) {
-    // Only text input elements can be previewed.
-    WebInputElement* input_element = toWebInputElement(&control_elements[i]);
-    if (!IsTextInput(input_element))
-      continue;
-
-    // If the input element is not auto-filled, we did not preview it, so there
-    // is nothing to reset.
-    if (!input_element->isAutofilled())
-      continue;
-
     // There might be unrelated elements in this form which have already been
     // auto-filled.  For example, the user might have already filled the address
     // part of a form and now be dealing with the credit card section.  We only
     // want to reset the auto-filled status for fields that were previewed.
-    if (input_element->suggestedValue().isEmpty())
+    WebFormControlElement control_element = control_elements[i];
+
+    // Only text input and textarea elements can be previewed.
+    WebInputElement* input_element = toWebInputElement(&control_element);
+    if (!IsTextInput(input_element) && !IsTextAreaElement(control_element))
+      continue;
+
+    // If the element is not auto-filled, we did not preview it,
+    // so there is nothing to reset.
+    if(!control_element.isAutofilled())
+      continue;
+
+    if ((IsTextInput(input_element) &&
+         input_element->suggestedValue().isEmpty()) ||
+        (IsTextAreaElement(control_element) &&
+         control_element.to<WebTextAreaElement>().suggestedValue().isEmpty()))
       continue;
 
     // Clear the suggested value. For the initiating node, also restore the
     // original value.
-    input_element->setSuggestedValue(WebString());
-    bool is_initiating_node = (element == *input_element);
-    if (is_initiating_node)
-      input_element->setAutofilled(was_autofilled);
-    else
-      input_element->setAutofilled(false);
+    if (IsTextInput(input_element)) {
+      input_element->setSuggestedValue(WebString());
+      bool is_initiating_node = (element == *input_element);
+      if (is_initiating_node)
+        input_element->setAutofilled(was_autofilled);
+      else
+        input_element->setAutofilled(false);
 
-    // Clearing the suggested value in the focused node (above) can cause
-    // selection to be lost. We force selection range to restore the text
-    // cursor.
-    if (is_initiating_node) {
-      int length = input_element->value().length();
-      input_element->setSelectionRange(length, length);
+      // Clearing the suggested value in the focused node (above) can cause
+      // selection to be lost. We force selection range to restore the text
+      // cursor.
+      if (is_initiating_node) {
+        int length = input_element->value().length();
+        input_element->setSelectionRange(length, length);
+      }
+    } else if (IsTextAreaElement(control_element)) {
+      WebTextAreaElement text_area = control_element.to<WebTextAreaElement>();
+      text_area.setSuggestedValue(WebString());
+      bool is_initiating_node = (element == text_area);
+      if (is_initiating_node)
+        control_element.setAutofilled(was_autofilled);
+      else
+        control_element.setAutofilled(false);
     }
   }
 
