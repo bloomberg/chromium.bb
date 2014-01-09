@@ -1091,7 +1091,6 @@ void FrameLoader::detachFromParent()
         m_frame->willDetachFrameHost();
         detachClient();
     }
-    m_progressTracker.clear();
     m_frame->detachFromFrameHost();
 
 }
@@ -1100,14 +1099,15 @@ void FrameLoader::detachClient()
 {
     ASSERT(m_client);
 
+    // Finish all cleanup work that might require talking to the embedder.
+    m_progressTracker.clear();
     setOpener(0);
-
     // Notify ScriptController that the frame is closing, since its cleanup ends up calling
     // back to FrameLoaderClient via V8WindowShell.
     m_frame->script().clearForClose();
 
     // After this, we must no longer talk to the client since this clears
-    // its owning reference back to us.
+    // its owning reference back to our owning Frame.
     m_client->detachedFromParent();
     m_client = 0;
 }
