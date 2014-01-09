@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,9 +20,9 @@ import org.chromium.ui.OnColorChangedListener;
 @JNINamespace("web_contents_delegate_android")
 public class ColorChooserAndroid {
     private final ColorPickerDialog mDialog;
-    private final int mNativeColorChooserAndroid;
+    private final long mNativeColorChooserAndroid;
 
-    private ColorChooserAndroid(int nativeColorChooserAndroid,
+    private ColorChooserAndroid(long nativeColorChooserAndroid,
             Context context, int initialColor, ColorSuggestion[] suggestions) {
         OnColorChangedListener listener = new OnColorChangedListener() {
           @Override
@@ -75,5 +75,5 @@ public class ColorChooserAndroid {
     }
 
     // Implemented in color_chooser_android.cc
-    private native void nativeOnColorChosen(int nativeColorChooserAndroid, int color);
+    private native void nativeOnColorChosen(long nativeColorChooserAndroid, int color);
 }
