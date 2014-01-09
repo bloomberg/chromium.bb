@@ -305,6 +305,7 @@ class BlinkIDLParser(IDLParser):
                              | ExtendedAttributeArgList
                              | ExtendedAttributeIdent
                              | ExtendedAttributeIdentList
+                             | ExtendedAttributeStringLiteralList
                              | ExtendedAttributeNamedArgList"""
         p[0] = p[1]
 
@@ -370,6 +371,26 @@ class BlinkIDLParser(IDLParser):
             p[0] = p[1] + p[2] + p[3]
         else:
             p[0] = p[1]
+
+    # Blink extension: Add support for compound Extended Attribute values over string literals ("A"|"B")
+    def p_ExtendedAttributeStringLiteralList(self, p):
+        """ExtendedAttributeStringLiteralList : identifier '=' StringLiteralOrList"""
+        value = self.BuildAttribute('VALUE', p[3])
+        p[0] = self.BuildNamed('ExtAttribute', p, 1, value)
+
+    # Blink extension: one or more string literals. The values aren't propagated as literals,
+    # but their by their value only.
+    def p_StringLiteralOrList(self, p):
+        """StringLiteralOrList : StringLiteral '|' StringLiteralOrList
+                               | StringLiteral"""
+        def unwrap_string(ls):
+            """Reach in and grab the string literal's "NAME"."""
+            return ls[1].value
+
+        if len(p) > 3:
+            p[0] = unwrap_string(p[1]) + p[2] + p[3]
+        else:
+            p[0] = unwrap_string(p[1])
 
     def __dir__(self):
         # Remove REMOVED_RULES from listing so yacc doesn't parse them

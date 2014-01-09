@@ -3268,6 +3268,35 @@ static void unforgeableLongAttributeAttributeSetterCallback(v8::Local<v8::String
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void anotherStringAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    v8SetReturnValueString(info, imp->fastGetAttribute(HTMLNames::ReflectUrlAttributeAsAStringAttr), info.GetIsolate());
+}
+
+static void anotherStringAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestObjectPythonV8Internal::anotherStringAttributeAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void anotherStringAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    imp->setAttribute(HTMLNames::ReflectUrlAttributeAsAStringAttr, cppValue);
+}
+
+static void anotherStringAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    TestObjectPythonV8Internal::anotherStringAttributeAttributeSetter(jsValue, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 static void TestObjectPythonConstructorGetter(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::Value> data = info.Data();
@@ -6588,6 +6617,7 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectPythonAttrib
     {"urlStringAttribute", TestObjectPythonV8Internal::urlStringAttributeAttributeGetterCallback, TestObjectPythonV8Internal::urlStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"urlStringAttribute", TestObjectPythonV8Internal::urlStringAttributeAttributeGetterCallback, TestObjectPythonV8Internal::urlStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"unforgeableLongAttribute", TestObjectPythonV8Internal::unforgeableLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::unforgeableLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::PROHIBITS_OVERWRITING), static_cast<v8::PropertyAttribute>(v8::DontDelete), 0 /* on instance */},
+    {"anotherStringAttribute", TestObjectPythonV8Internal::anotherStringAttributeAttributeGetterCallback, TestObjectPythonV8Internal::anotherStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 };
 
 static const V8DOMConfiguration::AccessorConfiguration V8TestObjectPythonAccessors[] = {

@@ -1620,6 +1620,12 @@ sub parseExtendedAttributeRest2
         my $token = $self->getToken();
         return $token->value();
     }
+    # A Blink syntactic extension to allow string literals.
+    # The string quotes aren't kept.
+    if ($next->type() == StringToken) {
+        my $token = $self->getToken();
+        return $self->parseExtendedAttributeRest3($self->unquoteString($token->value()));
+    }
     $self->assertUnexpectedToken($next->value(), __LINE__);
 }
 

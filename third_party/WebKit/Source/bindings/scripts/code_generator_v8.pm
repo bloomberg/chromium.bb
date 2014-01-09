@@ -6276,13 +6276,13 @@ sub GenerateReflectOnlyCheck
     my $extendedAttributes = shift;
     my $indent = shift;
 
-    my $knownValueString = $extendedAttributes->{"ReflectOnly"};
-    my @knownValues = split(quotemeta("|"), $knownValueString);
+    my $attributeValueList = $extendedAttributes->{"ReflectOnly"};
+    my @knownValues = split(quotemeta("|"), $attributeValueList);
 
     my $missingValueDefault = $extendedAttributes->{"ReflectMissing"};
     if ($missingValueDefault) {
         if (!grep { $_ eq $missingValueDefault } @knownValues) {
-            die "Missing attribute value is not a known value " . $missingValueDefault;
+            die "The [ReflectMissing] attribute value '${missingValueDefault}' is not a known value ";
         }
         $missingValueDefault = "resultValue = \"${missingValueDefault}\"";
     } else {
@@ -6292,30 +6292,44 @@ sub GenerateReflectOnlyCheck
     my $invalidValueDefault = $extendedAttributes->{"ReflectInvalid"};
     if ($invalidValueDefault) {
         if (!grep { $_ eq $invalidValueDefault } @knownValues) {
-            die "Invalid attribute value is not a known value " . $invalidValueDefault;
+            die "The [ReflectInvalid] attribute value '${invalidValueDefault}' is not a known value ";
         }
-        $invalidValueDefault = "\"${invalidValueDefault}\"";
+        $invalidValueDefault = "resultValue = \"${invalidValueDefault}\"";
     } else {
-        $invalidValueDefault = "\"\"";
+        $invalidValueDefault = "resultValue = \"\"";
+    }
+
+    my @normalizeAttributeCode = ();
+
+    # Attributes without a value (div empty-attribute>) can be
+    # separately reflected to some value.
+
+    my $isAttributeValueMissing = "resultValue.isEmpty()";
+    my $emptyValueDefault = $extendedAttributes->{"ReflectEmpty"};
+    if ($emptyValueDefault) {
+        if (!grep { $_ eq $emptyValueDefault } @knownValues) {
+            die "The [ReflectEmpty] attribute value '${emptyValueDefault}' is not a known value ";
+        }
+        $isAttributeValueMissing = "resultValue.isNull()";
+        push(@normalizeAttributeCode, "${indent}} else if (resultValue.isEmpty()) {");
+        push(@normalizeAttributeCode, "${indent}    resultValue = \"$emptyValueDefault\";");
     }
 
     # Attribute is limited to only known values: check that the attribute
     # value is one of those..and if not, set it to the empty string.
     # ( http://www.whatwg.org/specs/web-apps/current-work/#limited-to-only-known-values )
     #
-    my @normalizeAttributeCode = ();
-    my $code = "";
     foreach my $knownValue (@knownValues) {
         push(@normalizeAttributeCode, "${indent}} else if (equalIgnoringCase(resultValue, \"$knownValue\")) {");
         push(@normalizeAttributeCode, "${indent}    resultValue = \"$knownValue\";");
     }
     my $normalizeAttributeValue = join("\n", @normalizeAttributeCode);
-    $code .= <<END;
-${indent}if (resultValue.isEmpty()) {
+    my $code .= <<END;
+${indent}if ($isAttributeValueMissing) {
 ${indent}    $missingValueDefault;
 ${normalizeAttributeValue}
 ${indent}} else {
-${indent}    resultValue = $invalidValueDefault;
+${indent}    $invalidValueDefault;
 ${indent}}
 END
         return "${code}";
