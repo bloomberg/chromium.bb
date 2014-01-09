@@ -155,3 +155,20 @@ ProgressCenterItem.prototype = {
               !this.summarized);
   }
 };
+
+/**
+ * Clones the item.
+ * @return {ProgressCenterItem} New item having the same properties with this.
+ */
+ProgressCenterItem.prototype.clone = function() {
+  var newItem = new ProgressCenterItem();
+  newItem.id = this.id;
+  newItem.state = this.state;
+  newItem.message = this.message;
+  newItem.progressMax = this.progressMax;
+  newItem.progressValue = this.progressValue;
+  newItem.type = this.type;
+  newItem.summarized = this.summarized;
+  newItem.cancelCallback = this.cancelCallback;
+  return newItem;
+};
