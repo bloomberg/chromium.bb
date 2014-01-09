@@ -20,6 +20,7 @@
 #include "ppapi/thunk/ppb_file_system_api.h"
 #include "ppapi/thunk/thunk.h"
 
+using ppapi::proxy::ResourceMessageTestSink;
 using ppapi::thunk::EnterResource;
 using ppapi::thunk::PPB_FileSystem_API;
 
@@ -98,17 +99,15 @@ class FileSystemResourceTest : public PluginProxyTest {
         PP_MakeCompletionCallback(&MockCompletionCallback::Callback, &cb));
     ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
 
-    // Should have sent two "open" messages to the browser and renderer.
-    ResourceMessageCallParams params1, params2;
-    IPC::Message msg1, msg2;
-    ASSERT_TRUE(sink().GetNextResourceCallMatching(
-        PpapiHostMsg_FileSystem_Open::ID, &params1, &msg1));
-    ASSERT_TRUE(sink().GetNextResourceCallMatching(
-        PpapiHostMsg_FileSystem_Open::ID, &params2, &msg2));
+    // Should have sent two new "open" messages to the browser and renderer.
+    ResourceMessageTestSink::ResourceCallVector open_messages =
+        sink().GetAllResourceCallsMatching(PpapiHostMsg_FileSystem_Open::ID);
+    ASSERT_EQ(2U, open_messages.size());
+    sink().ClearMessages();
 
     // The resource is expecting two replies.
-    SendOpenReply(params1, PP_OK);
-    SendOpenReply(params2, PP_OK);
+    SendOpenReply(open_messages[0].first, PP_OK);
+    SendOpenReply(open_messages[1].first, PP_OK);
 
     ASSERT_TRUE(cb.called());
     ASSERT_EQ(PP_OK, cb.result());
@@ -130,8 +129,9 @@ class FileSystemResourceTest : public PluginProxyTest {
     // Should have sent an "open" message.
     ResourceMessageCallParams params;
     IPC::Message msg;
-    ASSERT_TRUE(sink().GetNextResourceCallMatching(
+    ASSERT_TRUE(sink().GetFirstResourceCallMatching(
         PpapiHostMsg_FileIO_Open::ID, &params, &msg));
+    sink().ClearMessages();
 
     // Send a success reply.
     ResourceMessageReplyParams reply_params(params.pp_resource(),
@@ -162,15 +162,13 @@ TEST_F(FileSystemResourceTest, OpenFailure) {
         PP_MakeCompletionCallback(&MockCompletionCallback::Callback, &cb));
     ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
 
-    ResourceMessageCallParams params1, params2;
-    IPC::Message msg1, msg2;
-    ASSERT_TRUE(sink().GetNextResourceCallMatching(
-        PpapiHostMsg_FileSystem_Open::ID, &params1, &msg1));
-    ASSERT_TRUE(sink().GetNextResourceCallMatching(
-        PpapiHostMsg_FileSystem_Open::ID, &params2, &msg2));
+    ResourceMessageTestSink::ResourceCallVector open_messages =
+        sink().GetAllResourceCallsMatching(PpapiHostMsg_FileSystem_Open::ID);
+    ASSERT_EQ(2U, open_messages.size());
+    sink().ClearMessages();
 
-    SendOpenReply(params1, PP_ERROR_FAILED);
-    SendOpenReply(params2, PP_OK);
+    SendOpenReply(open_messages[0].first, PP_ERROR_FAILED);
+    SendOpenReply(open_messages[1].first, PP_OK);
 
     ASSERT_TRUE(cb.called());
     ASSERT_EQ(PP_ERROR_FAILED, cb.result());
@@ -187,15 +185,13 @@ TEST_F(FileSystemResourceTest, OpenFailure) {
         PP_MakeCompletionCallback(&MockCompletionCallback::Callback, &cb));
     ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
 
-    ResourceMessageCallParams params1, params2;
-    IPC::Message msg1, msg2;
-    ASSERT_TRUE(sink().GetNextResourceCallMatching(
-        PpapiHostMsg_FileSystem_Open::ID, &params1, &msg1));
-    ASSERT_TRUE(sink().GetNextResourceCallMatching(
-        PpapiHostMsg_FileSystem_Open::ID, &params2, &msg2));
+    ResourceMessageTestSink::ResourceCallVector open_messages =
+        sink().GetAllResourceCallsMatching(PpapiHostMsg_FileSystem_Open::ID);
+    ASSERT_EQ(2U, open_messages.size());
+    sink().ClearMessages();
 
-    SendOpenReply(params1, PP_OK);
-    SendOpenReply(params2, PP_ERROR_FAILED);
+    SendOpenReply(open_messages[0].first, PP_OK);
+    SendOpenReply(open_messages[1].first, PP_ERROR_FAILED);
 
     ASSERT_TRUE(cb.called());
     ASSERT_EQ(PP_ERROR_FAILED, cb.result());
@@ -237,8 +233,10 @@ TEST_F(FileSystemResourceTest, RequestQuota) {
   // and a map of all currently open files to their max written offsets.
   ResourceMessageCallParams params;
   IPC::Message msg;
-  ASSERT_TRUE(sink().GetNextResourceCallMatching(
+  ASSERT_TRUE(sink().GetFirstResourceCallMatching(
       PpapiHostMsg_FileSystem_ReserveQuota::ID, &params, &msg));
+  sink().ClearMessages();
+
   int64_t amount = 0;
   FileOffsetMap max_written_offsets;
   ASSERT_TRUE(UnpackMessage<PpapiHostMsg_FileSystem_ReserveQuota>(
@@ -248,16 +246,18 @@ TEST_F(FileSystemResourceTest, RequestQuota) {
   ASSERT_EQ(0, max_written_offsets[file_io1.get()]);
   ASSERT_EQ(0, max_written_offsets[file_io2.get()]);
 
-  // Make another request.
+  // Make another request while the "reserve quota" message is pending.
   MockRequestQuotaCallback cb2;
   result = file_system_api->RequestQuota(
       kQuotaRequestAmount2,
       base::Bind(&MockRequestQuotaCallback::Callback, base::Unretained(&cb2)));
   ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
-
+  // No new "reserve quota" message should be sent while one is pending.
+  ASSERT_FALSE(sink().GetFirstResourceCallMatching(
+      PpapiHostMsg_FileSystem_ReserveQuota::ID, &params, &msg));
   {
     ProxyAutoUnlock unlock_to_prevent_deadlock;
-    // Reply with quota reservation amount sufficient to cover the two requests.
+    // Reply with quota reservation amount sufficient to cover both requests.
     // Both callbacks should be called with the requests granted.
     SendReply(params,
               PP_OK,
@@ -283,8 +283,9 @@ TEST_F(FileSystemResourceTest, RequestQuota) {
       base::Bind(&MockRequestQuotaCallback::Callback, base::Unretained(&cb2)));
   ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
 
-  ASSERT_TRUE(sink().GetNextResourceCallMatching(
+  ASSERT_TRUE(sink().GetFirstResourceCallMatching(
       PpapiHostMsg_FileSystem_ReserveQuota::ID, &params, &msg));
+  sink().ClearMessages();
   {
     ProxyAutoUnlock unlock_to_prevent_deadlock;
     // Reply with quota reservation amount insufficient to cover the first
@@ -313,8 +314,9 @@ TEST_F(FileSystemResourceTest, RequestQuota) {
       base::Bind(&MockRequestQuotaCallback::Callback, base::Unretained(&cb2)));
   ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
 
-  ASSERT_TRUE(sink().GetNextResourceCallMatching(
+  ASSERT_TRUE(sink().GetFirstResourceCallMatching(
       PpapiHostMsg_FileSystem_ReserveQuota::ID, &params, &msg));
+  sink().ClearMessages();
   {
     ProxyAutoUnlock unlock_to_prevent_deadlock;
     // Reply with quota reservation amount sufficient only to cover the first
@@ -330,8 +332,9 @@ TEST_F(FileSystemResourceTest, RequestQuota) {
   ASSERT_FALSE(cb2.called());
 
   // Another request message should have been sent.
-  ASSERT_TRUE(sink().GetNextResourceCallMatching(
+  ASSERT_TRUE(sink().GetFirstResourceCallMatching(
       PpapiHostMsg_FileSystem_ReserveQuota::ID, &params, &msg));
+  sink().ClearMessages();
   {
     ProxyAutoUnlock unlock_to_prevent_deadlock;
     // Reply with quota reservation amount sufficient to cover the second

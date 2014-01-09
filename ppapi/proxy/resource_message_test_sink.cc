@@ -13,37 +13,29 @@ namespace proxy {
 
 namespace {
 
-// Backend for GetFirstResource[Call|Reply]Matching.
+// Backend for GetAllResource[Calls|Replies]Matching.
 template<class WrapperMessage, class Params>
-int GetNextResourceMessageMatching(const ResourceMessageTestSink& sink,
-                                   uint32 id,
-                                   int start_index,
-                                   Params* params,
-                                   IPC::Message* nested_msg) {
-  if (start_index < 0)
-    return -1;
-  int message_count = static_cast<int>(sink.message_count());
-  for (int i = start_index; i < message_count; i++) {
+std::vector<std::pair<Params, IPC::Message> >
+GetAllResourceMessagesMatching(const ResourceMessageTestSink& sink,
+                               uint32 id) {
+  std::vector<std::pair<Params, IPC::Message> > result;
+  for (size_t i = 0; i < sink.message_count(); i++) {
     const IPC::Message* msg = sink.GetMessageAt(i);
     if (msg->type() == WrapperMessage::ID) {
       Params cur_params;
       IPC::Message cur_msg;
       WrapperMessage::Read(msg, &cur_params, &cur_msg);
       if (cur_msg.type() == id) {
-        *params = cur_params;
-        *nested_msg = cur_msg;
-        return i;
+        result.push_back(std::make_pair(cur_params, cur_msg));
       }
     }
   }
-  return -1;
+  return result;
 }
 
 }  // namespace
 
-ResourceMessageTestSink::ResourceMessageTestSink()
-    : next_resource_call_(0),
-      next_resource_reply_(0) {
+ResourceMessageTestSink::ResourceMessageTestSink() {
 }
 
 ResourceMessageTestSink::~ResourceMessageTestSink() {
@@ -77,48 +69,42 @@ bool ResourceMessageTestSink::GetFirstResourceCallMatching(
     uint32 id,
     ResourceMessageCallParams* params,
     IPC::Message* nested_msg) const {
-  int index = GetNextResourceMessageMatching<PpapiHostMsg_ResourceCall,
-                                             ResourceMessageCallParams>(
-      *this, id, 0 /* start_index */, params, nested_msg);
-  return index >= 0;
+  ResourceCallVector matching_messages =
+      GetAllResourceMessagesMatching<PpapiHostMsg_ResourceCall,
+                                     ResourceMessageCallParams>(*this, id);
+  if (matching_messages.empty())
+    return false;
+
+  *params = matching_messages[0].first;
+  *nested_msg = matching_messages[0].second;
+  return true;
 }
 
 bool ResourceMessageTestSink::GetFirstResourceReplyMatching(
     uint32 id,
     ResourceMessageReplyParams* params,
     IPC::Message* nested_msg) {
-  int index = GetNextResourceMessageMatching<PpapiPluginMsg_ResourceReply,
-                                             ResourceMessageReplyParams>(
-      *this, id, 0 /* start_index */, params, nested_msg);
-  return index >= 0;
+  ResourceReplyVector matching_messages =
+      GetAllResourceMessagesMatching<PpapiPluginMsg_ResourceReply,
+                                     ResourceMessageReplyParams>(*this, id);
+  if (matching_messages.empty())
+    return false;
+
+  *params = matching_messages[0].first;
+  *nested_msg = matching_messages[0].second;
+  return true;
 }
 
-bool ResourceMessageTestSink::GetNextResourceCallMatching(
-    uint32 id,
-    ResourceMessageCallParams* params,
-    IPC::Message* nested_msg) {
-  int index = GetNextResourceMessageMatching<PpapiHostMsg_ResourceCall,
-                                             ResourceMessageCallParams>(
-      *this, id, next_resource_call_, params, nested_msg);
-  if (index >= 0) {
-    next_resource_call_ = index + 1;
-    return true;
-  }
-  return false;
+ResourceMessageTestSink::ResourceCallVector
+ResourceMessageTestSink::GetAllResourceCallsMatching(uint32 id) {
+  return GetAllResourceMessagesMatching<PpapiHostMsg_ResourceCall,
+                                        ResourceMessageCallParams>(*this, id);
 }
 
-bool ResourceMessageTestSink::GetNextResourceReplyMatching(
-    uint32 id,
-    ResourceMessageReplyParams* params,
-    IPC::Message* nested_msg) {
-  int index = GetNextResourceMessageMatching<PpapiPluginMsg_ResourceReply,
-                                             ResourceMessageReplyParams>(
-      *this, id, next_resource_reply_, params, nested_msg);
-  if (index >= 0) {
-    next_resource_reply_ = index + 1;
-    return true;
-  }
-  return false;
+ResourceMessageTestSink::ResourceReplyVector
+ResourceMessageTestSink::GetAllResourceRepliesMatching(uint32 id) {
+  return GetAllResourceMessagesMatching<PpapiPluginMsg_ResourceReply,
+                                        ResourceMessageReplyParams>(*this, id);
 }
 
 ResourceSyncCallHandler::ResourceSyncCallHandler(
