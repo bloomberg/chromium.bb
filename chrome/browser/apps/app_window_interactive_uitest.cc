@@ -7,7 +7,7 @@
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/test/base/interactive_test_utils.h"
 
-using namespace apps;
+using apps::NativeAppWindow;
 
 // Helper class that has to be created in the stack to check if the fullscreen
 // setting of a NativeWindow has changed since the creation of the object.
@@ -18,7 +18,7 @@ class FullscreenChangeWaiter {
         initial_fullscreen_state_(window_->IsFullscreen()) {}
 
   void Wait() {
-    while (initial_fullscreen_state_ != window_->IsFullscreen())
+    while (initial_fullscreen_state_ == window_->IsFullscreen())
       content::RunAllPendingInMessageLoop();
   }
 
@@ -59,37 +59,26 @@ class AppWindowInteractiveTest : public extensions::PlatformAppBrowserTest {
       false,
       false);
   }
+
+  // This method will wait until the application is able to ack a key event.
+  void WaitUntilKeyFocus() {
+    ExtensionTestMessageListener key_listener("KeyReceived", false);
+
+    while (!key_listener.was_satisfied()) {
+      ASSERT_TRUE(SimulateKeyPress(ui::VKEY_Z));
+      content::RunAllPendingInMessageLoop();
+    }
+  }
 };
 
-#if defined(OS_LINUX) && defined(USE_AURA)
-// These tests do not work on Linux Aura because when the window is raised, the
-// content is not focused thus do not get the key events.
-// See http://crbug.com/324346
-#define MAYBE_ESCDoesNotLeaveFullscreenWindow \
-  DISABLED_ESCDoesNotLeaveFullscreenWindow
-#define MAYBE_ESCDoesNotLeaveFullscreenDOM DISABLED_ESCDoesNotLeaveFullscreenDOM
-// These tests are failing on Linux Aura for unknown reasons.
-#define MAYBE_ESCLeavesFullscreenWindow DISABLED_ESCLeavesFullscreenWindow
-#define MAYBE_ESCLeavesFullscreenDOM DISABLED_ESCLeavesFullscreenDOM
-#elif defined(OS_MACOSX)
-// These tests are highly flaky on MacOS.
-#define MAYBE_ESCLeavesFullscreenWindow DISABLED_ESCLeavesFullscreenWindow
-#define MAYBE_ESCLeavesFullscreenDOM DISABLED_ESCLeavesFullscreenDOM
-#define MAYBE_ESCDoesNotLeaveFullscreenWindow \
-  DISABLED_ESCDoesNotLeaveFullscreenWindow
-#define MAYBE_ESCDoesNotLeaveFullscreenDOM DISABLED_ESCDoesNotLeaveFullscreenDOM
-#else
-#define MAYBE_ESCLeavesFullscreenWindow ESCLeavesFullscreenWindow
-#define MAYBE_ESCLeavesFullscreenDOM ESCLeavesFullscreenDOM
-#define MAYBE_ESCDoesNotLeaveFullscreenWindow ESCDoesNotLeaveFullscreenWindow
-#define MAYBE_ESCDoesNotLeaveFullscreenDOM ESCDoesNotLeaveFullscreenDOM
-#endif
-
-IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest,
-                       MAYBE_ESCLeavesFullscreenWindow) {
+IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest, ESCLeavesFullscreenWindow) {
   ExtensionTestMessageListener launched_listener("Launched", true);
   LoadAndLaunchPlatformApp("leave_fullscreen");
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+
+  // We start by making sure the window is actually focused.
+  ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(
+                  GetFirstShellWindow()->GetNativeWindow()));
 
   // When receiving the reply, the application will try to go fullscreen using
   // the Window API but there is no synchronous way to know if that actually
@@ -103,6 +92,12 @@ IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest,
     fs_changed.Wait();
   }
 
+  // Depending on the platform, going fullscreen might create an animation.
+  // We want to make sure that the ESC key we will send next is actually going
+  // to be received and the application might not receive key events during the
+  // animation so we should wait for the key focus to be back.
+  WaitUntilKeyFocus();
+
   // Same idea as above but for leaving fullscreen. Fullscreen mode should be
   // left when ESC is received.
   {
@@ -114,10 +109,14 @@ IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest, MAYBE_ESCLeavesFullscreenDOM) {
+IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest, ESCLeavesFullscreenDOM) {
   ExtensionTestMessageListener launched_listener("Launched", true);
   LoadAndLaunchPlatformApp("leave_fullscreen");
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+
+  // We start by making sure the window is actually focused.
+  ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(
+                GetFirstShellWindow()->GetNativeWindow()));
 
   launched_listener.Reply("dom");
 
@@ -132,10 +131,17 @@ IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest, MAYBE_ESCLeavesFullscreenDOM) {
   {
     FullscreenChangeWaiter fs_changed(GetFirstShellWindow()->GetBaseWindow());
 
+    WaitUntilKeyFocus();
     ASSERT_TRUE(SimulateKeyPress(ui::VKEY_A));
 
     fs_changed.Wait();
   }
+
+  // Depending on the platform, going fullscreen might create an animation.
+  // We want to make sure that the ESC key we will send next is actually going
+  // to be received and the application might not receive key events during the
+  // animation so we should wait for the key focus to be back.
+  WaitUntilKeyFocus();
 
   // Same idea as above but for leaving fullscreen. Fullscreen mode should be
   // left when ESC is received.
@@ -149,10 +155,14 @@ IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest, MAYBE_ESCLeavesFullscreenDOM) {
 }
 
 IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest,
-                       MAYBE_ESCDoesNotLeaveFullscreenWindow) {
+                       ESCDoesNotLeaveFullscreenWindow) {
   ExtensionTestMessageListener launched_listener("Launched", true);
   LoadAndLaunchPlatformApp("prevent_leave_fullscreen");
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+
+  // We start by making sure the window is actually focused.
+  ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(
+                GetFirstShellWindow()->GetNativeWindow()));
 
   // When receiving the reply, the application will try to go fullscreen using
   // the Window API but there is no synchronous way to know if that actually
@@ -165,6 +175,12 @@ IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest,
 
     fs_changed.Wait();
   }
+
+  // Depending on the platform, going fullscreen might create an animation.
+  // We want to make sure that the ESC key we will send next is actually going
+  // to be received and the application might not receive key events during the
+  // animation so we should wait for the key focus to be back.
+  WaitUntilKeyFocus();
 
   ASSERT_TRUE(SimulateKeyPress(ui::VKEY_ESCAPE));
 
@@ -182,10 +198,14 @@ IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest,
-                       MAYBE_ESCDoesNotLeaveFullscreenDOM) {
+                       ESCDoesNotLeaveFullscreenDOM) {
   ExtensionTestMessageListener launched_listener("Launched", true);
   LoadAndLaunchPlatformApp("prevent_leave_fullscreen");
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+
+  // We start by making sure the window is actually focused.
+  ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(
+                GetFirstShellWindow()->GetNativeWindow()));
 
   launched_listener.Reply("dom");
 
@@ -200,10 +220,17 @@ IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest,
   {
     FullscreenChangeWaiter fs_changed(GetFirstShellWindow()->GetBaseWindow());
 
+    WaitUntilKeyFocus();
     ASSERT_TRUE(SimulateKeyPress(ui::VKEY_A));
 
     fs_changed.Wait();
   }
+
+  // Depending on the platform, going fullscreen might create an animation.
+  // We want to make sure that the ESC key we will send next is actually going
+  // to be received and the application might not receive key events during the
+  // animation so we should wait for the key focus to be back.
+  WaitUntilKeyFocus();
 
   ASSERT_TRUE(SimulateKeyPress(ui::VKEY_ESCAPE));
 
