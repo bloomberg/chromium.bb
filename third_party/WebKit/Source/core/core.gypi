@@ -1579,7 +1579,7 @@
             'rendering/RenderWordBreak.cpp',
             'rendering/RenderWordBreak.h',
             'rendering/RootInlineBox.cpp',
-            'rendering/ScrollBehavior.cpp',
+            'rendering/ScrollAlignment.cpp',
             'rendering/SubtreeLayoutScope.cpp',
             'rendering/SubtreeLayoutScope.h',
             'rendering/TableLayout.h',

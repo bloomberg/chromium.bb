@@ -45,7 +45,7 @@
 #include "core/editing/TextIterator.h"
 #include "core/editing/VisibleSelection.h"
 #include "core/frame/FrameView.h"
-#include "core/rendering/ScrollBehavior.h"
+#include "core/rendering/ScrollAlignment.h"
 #include "platform/Timer.h"
 #include "public/platform/WebVector.h"
 #include "wtf/CurrentTime.h"

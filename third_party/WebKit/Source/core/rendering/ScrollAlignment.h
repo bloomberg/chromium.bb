@@ -41,27 +41,27 @@
  * version of this file under any of the LGPL, the MPL or the GPL.
  */
 
-#ifndef ScrollBehavior_h
-#define ScrollBehavior_h
+#ifndef ScrollAlignment_h
+#define ScrollAlignment_h
 
 namespace WebCore {
 
-enum ScrollBehavior {
-    noScroll,
-    alignCenter,
-    alignTop,
-    alignBottom,
-    alignLeft,
-    alignRight,
-    alignToClosestEdge
+enum ScrollAlignmentBehavior {
+    ScrollAlignmentNoScroll,
+    ScrollAlignmentCenter,
+    ScrollAlignmentTop,
+    ScrollAlignmentBottom,
+    ScrollAlignmentLeft,
+    ScrollAlignmentRight,
+    ScrollAlignmentClosestEdge
 };
 
 class LayoutRect;
 
 struct ScrollAlignment {
-    static ScrollBehavior getVisibleBehavior(const ScrollAlignment& s) { return s.m_rectVisible; }
-    static ScrollBehavior getPartialBehavior(const ScrollAlignment& s) { return s.m_rectPartial; }
-    static ScrollBehavior getHiddenBehavior(const ScrollAlignment& s) { return s.m_rectHidden; }
+    static ScrollAlignmentBehavior getVisibleBehavior(const ScrollAlignment& s) { return s.m_rectVisible; }
+    static ScrollAlignmentBehavior getPartialBehavior(const ScrollAlignment& s) { return s.m_rectPartial; }
+    static ScrollAlignmentBehavior getHiddenBehavior(const ScrollAlignment& s) { return s.m_rectHidden; }
 
     // FIXME: This function should probably go somewhere else but where?
     static LayoutRect getRectToExpose(const LayoutRect& visibleRect, const LayoutRect& exposeRect, const ScrollAlignment& alignX, const ScrollAlignment& alignY);
@@ -72,12 +72,12 @@ struct ScrollAlignment {
     static const ScrollAlignment alignTopAlways;
     static const ScrollAlignment alignBottomAlways;
 
-    ScrollBehavior m_rectVisible;
-    ScrollBehavior m_rectHidden;
-    ScrollBehavior m_rectPartial;
+    ScrollAlignmentBehavior m_rectVisible;
+    ScrollAlignmentBehavior m_rectHidden;
+    ScrollAlignmentBehavior m_rectPartial;
 };
 
 
 }; // namespace WebCore
 
-#endif // ScrollBehavior_h
+#endif // ScrollAlignment_h
