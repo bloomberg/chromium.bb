@@ -7,9 +7,11 @@
 #include "base/basictypes.h"
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_metadata.h"
+#include "cc/output/copy_output_request.h"
 #include "cc/output/gl_frame_data.h"
 #include "content/browser/aura/resize_lock.h"
 #include "content/browser/browser_thread_impl.h"
@@ -18,6 +20,7 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
+#include "content/port/browser/render_widget_host_view_frame_subscriber.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
@@ -113,6 +116,34 @@ class TestWindowObserver : public aura::WindowObserver {
   DISALLOW_COPY_AND_ASSIGN(TestWindowObserver);
 };
 
+class FakeFrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
+ public:
+  FakeFrameSubscriber(gfx::Size size, base::Callback<void(bool)> callback)
+      : size_(size), callback_(callback) {}
+
+  virtual bool ShouldCaptureFrame(base::TimeTicks present_time,
+                                  scoped_refptr<media::VideoFrame>* storage,
+                                  DeliverFrameCallback* callback) OVERRIDE {
+    *storage = media::VideoFrame::CreateFrame(media::VideoFrame::YV12,
+                                              size_,
+                                              gfx::Rect(size_),
+                                              size_,
+                                              base::TimeDelta());
+    *callback = base::Bind(&FakeFrameSubscriber::CallbackMethod, callback_);
+    return true;
+  }
+
+  static void CallbackMethod(base::Callback<void(bool)> callback,
+                             base::TimeTicks timestamp,
+                             bool success) {
+    callback.Run(success);
+  }
+
+ private:
+  gfx::Size size_;
+  base::Callback<void(bool)> callback_;
+};
+
 class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
  public:
   FakeRenderWidgetHostViewAura(RenderWidgetHost* widget)
@@ -132,6 +163,11 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
         new FakeResizeLock(desired_size, defer_compositor_lock));
   }
 
+  virtual void RequestCopyOfOutput(scoped_ptr<cc::CopyOutputRequest> request)
+      OVERRIDE {
+    last_copy_request_ = request.Pass();
+  }
+
   void RunOnCompositingDidCommit() {
     OnCompositingDidCommit(window()->GetDispatcher()->host()->compositor());
   }
@@ -146,6 +182,7 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
 
   bool has_resize_lock_;
   gfx::Size last_frame_size_;
+  scoped_ptr<cc::CopyOutputRequest> last_copy_request_;
 };
 
 class RenderWidgetHostViewAuraTest : public testing::Test {
@@ -153,7 +190,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
   RenderWidgetHostViewAuraTest()
       : browser_thread_for_ui_(BrowserThread::UI, &message_loop_) {}
 
-  virtual void SetUp() {
+  void SetUpEnvironment() {
     ImageTransportFactory::InitializeForUnitTests(
         scoped_ptr<ui::ContextFactory>(new ui::TestContextFactory));
     aura_test_helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
@@ -182,7 +219,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     view_ = new FakeRenderWidgetHostViewAura(widget_host_);
   }
 
-  virtual void TearDown() {
+  void TearDownEnvironment() {
     sink_ = NULL;
     process_host_ = NULL;
     if (view_)
@@ -199,6 +236,10 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     message_loop_.RunUntilIdle();
     ImageTransportFactory::Terminate();
   }
+
+  virtual void SetUp() { SetUpEnvironment(); }
+
+  virtual void TearDown() { TearDownEnvironment(); }
 
  protected:
   base::MessageLoopForUI message_loop_;
@@ -222,6 +263,19 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAuraTest);
+};
+
+class RenderWidgetHostViewAuraShutdownTest
+    : public RenderWidgetHostViewAuraTest {
+ public:
+  RenderWidgetHostViewAuraShutdownTest() {}
+
+  virtual void TearDown() OVERRIDE {
+    // No TearDownEnvironment here, we do this explicitly during the test.
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAuraShutdownTest);
 };
 
 // A layout manager that always resizes a child to the root window size.
@@ -1216,6 +1270,97 @@ TEST_F(RenderWidgetHostViewAuraTest, SoftwareDPIChange) {
   // different scale, we should generate a new frame provider, as the final
   // result will need to be scaled differently to the screen.
   EXPECT_NE(frame_provider.get(), view_->frame_provider_.get());
+}
+
+class RenderWidgetHostViewAuraCopyRequestTest
+    : public RenderWidgetHostViewAuraShutdownTest {
+ public:
+  RenderWidgetHostViewAuraCopyRequestTest()
+      : callback_count_(0), result_(false) {}
+
+  void CallbackMethod(bool result) {
+    result_ = result;
+    callback_count_++;
+  }
+
+  int callback_count_;
+  bool result_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAuraCopyRequestTest);
+};
+
+TEST_F(RenderWidgetHostViewAuraCopyRequestTest, DestroyedAfterCopyRequest) {
+  gfx::Rect view_rect(100, 100);
+  scoped_ptr<cc::CopyOutputRequest> request;
+
+  view_->InitAsChild(NULL);
+  aura::client::ParentWindowWithContext(
+      view_->GetNativeView(),
+      parent_view_->GetNativeView()->GetRootWindow(),
+      gfx::Rect());
+  view_->SetSize(view_rect.size());
+  view_->WasShown();
+
+  scoped_ptr<FakeFrameSubscriber> frame_subscriber(new FakeFrameSubscriber(
+      view_rect.size(),
+      base::Bind(&RenderWidgetHostViewAuraCopyRequestTest::CallbackMethod,
+                 base::Unretained(this))));
+
+  EXPECT_EQ(0, callback_count_);
+  EXPECT_FALSE(view_->last_copy_request_);
+
+  view_->BeginFrameSubscription(
+      frame_subscriber.PassAs<RenderWidgetHostViewFrameSubscriber>());
+  view_->OnSwapCompositorFrame(
+      1, MakeDelegatedFrame(1.f, view_rect.size(), gfx::Rect(view_rect)));
+
+  EXPECT_EQ(0, callback_count_);
+  EXPECT_TRUE(view_->last_copy_request_);
+  EXPECT_TRUE(view_->last_copy_request_->has_texture_mailbox());
+  request = view_->last_copy_request_.Pass();
+
+  // There should be one subscriber texture in flight.
+  EXPECT_EQ(1u, view_->active_frame_subscriber_textures_.size());
+
+  // Send back the mailbox included in the request. There's no release callback
+  // since the mailbox came from the RWHVA originally.
+  request->SendTextureResult(view_rect.size(),
+                             request->texture_mailbox(),
+                             scoped_ptr<cc::SingleReleaseCallback>());
+
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
+
+  // The callback should succeed.
+  EXPECT_EQ(0u, view_->active_frame_subscriber_textures_.size());
+  EXPECT_EQ(1, callback_count_);
+  EXPECT_TRUE(result_);
+
+  view_->OnSwapCompositorFrame(
+      1, MakeDelegatedFrame(1.f, view_rect.size(), gfx::Rect(view_rect)));
+
+  EXPECT_EQ(1, callback_count_);
+  request = view_->last_copy_request_.Pass();
+
+  // There should be one subscriber texture in flight again.
+  EXPECT_EQ(1u, view_->active_frame_subscriber_textures_.size());
+
+  // Destroy the RenderWidgetHostViewAura and ImageTransportFactory.
+  TearDownEnvironment();
+
+  // Send back the mailbox included in the request. There's no release callback
+  // since the mailbox came from the RWHVA originally.
+  request->SendTextureResult(view_rect.size(),
+                             request->texture_mailbox(),
+                             scoped_ptr<cc::SingleReleaseCallback>());
+
+  // Because the copy request callback may be holding state within it, that
+  // state must handle the RWHVA and ImageTransportFactory going away before the
+  // callback is called. This test passes if it does not crash as a result of
+  // these things being destroyed.
+  EXPECT_EQ(2, callback_count_);
+  EXPECT_FALSE(result_);
 }
 
 }  // namespace content

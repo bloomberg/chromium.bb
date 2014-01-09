@@ -23,10 +23,12 @@ class OwnedMailbox : public base::RefCounted<OwnedMailbox>,
   const gpu::Mailbox& mailbox() const { return mailbox_; }
 
   void UpdateSyncPoint(uint32 sync_point);
+  void Destroy();
 
  protected:
   virtual ~OwnedMailbox();
 
+  // ImageTransportFactoryObserver implementation.
   virtual void OnLostResources() OVERRIDE;
 
  private:

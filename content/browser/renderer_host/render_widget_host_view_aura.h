@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_AURA_H_
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -48,6 +49,7 @@ class ScopedTooltipDisabler;
 }
 
 namespace cc {
+class CopyOutputRequest;
 class CopyOutputResult;
 class DelegatedFrameData;
 }
@@ -371,6 +373,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   virtual bool ShouldCreateResizeLock();
   virtual scoped_ptr<ResizeLock> CreateResizeLock(bool defer_compositor_lock);
 
+  virtual void RequestCopyOfOutput(scoped_ptr<cc::CopyOutputRequest> request);
+
   // Exposed for tests.
   aura::Window* window() { return window_; }
   gfx::Size current_frame_size() const { return current_frame_size_; }
@@ -404,6 +408,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest, SoftwareDPIChange);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
                            UpdateCursorIfOverSelf);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraCopyRequestTest,
+                           DestroyedAfterCopyRequest);
 
   class WindowObserver;
   friend class WindowObserver;
@@ -506,6 +512,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       scoped_refptr<OwnedMailbox> subscriber_texture,
       scoped_ptr<cc::SingleReleaseCallback> release_callback,
       bool result);
+  static void ReturnSubscriberTexture(
+      base::WeakPtr<RenderWidgetHostViewAura> rwhva,
+      scoped_refptr<OwnedMailbox> subscriber_texture,
+      uint32 sync_point);
 
   ui::Compositor* GetCompositor() const;
 
@@ -765,6 +775,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Subscriber that listens to frame presentation events.
   scoped_ptr<RenderWidgetHostViewFrameSubscriber> frame_subscriber_;
   std::vector<scoped_refptr<OwnedMailbox> > idle_frame_subscriber_textures_;
+  std::set<OwnedMailbox*> active_frame_subscriber_textures_;
 
   // YUV readback pipeline.
   scoped_ptr<content::ReadbackYUVInterface>
