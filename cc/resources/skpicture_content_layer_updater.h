@@ -14,11 +14,8 @@ namespace cc {
 
 class LayerPainter;
 
-// This class records the content_rect into an SkPicture. Subclasses, provide
-// different implementations of tile updating based on this recorded picture.
-// The BitmapSkPictureContentLayerUpdater and
-// FrameBufferSkPictureContentLayerUpdater are two examples of such
-// implementations.
+// This class records the content_rect into an SkPicture. Subclass provides
+// SkCanvas to DrawPicture() for tile updating based on this recorded picture.
 class SkPictureContentLayerUpdater : public ContentLayerUpdater {
  protected:
   SkPictureContentLayerUpdater(
