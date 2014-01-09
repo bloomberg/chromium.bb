@@ -110,8 +110,6 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer)
     , m_isUnclippedDescendant(false)
     , m_isRootLayer(renderer->isRenderView())
     , m_usedTransparency(false)
-    , m_childLayerHasBlendMode(false)
-    , m_childLayerHasBlendModeStatusDirty(false)
     , m_visibleContentStatusDirty(true)
     , m_hasVisibleContent(false)
     , m_visibleDescendantStatusDirty(false)
@@ -123,7 +121,6 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer)
     , m_containsDirtyOverlayScrollbars(false)
     , m_canSkipRepaintRectsUpdateOnScroll(renderer->isTableCell())
     , m_hasFilterInfo(false)
-    , m_blendMode(blink::WebBlendModeNormal)
     , m_renderer(renderer)
     , m_parent(0)
     , m_previous(0)
@@ -136,6 +133,7 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer)
     , m_groupedMapping(0)
     , m_repainter(renderer)
     , m_clipper(renderer)
+    , m_blendInfo(renderer)
 {
     updateStackingNode();
 
@@ -515,30 +513,6 @@ void RenderLayer::updateLayerPositionsAfterScroll(RenderGeometryMap* geometryMap
         geometryMap->popMappingsToAncestor(parent());
 }
 
-bool RenderLayer::hasBlendMode() const
-{
-    return RuntimeEnabledFeatures::cssCompositingEnabled() && renderer()->hasBlendMode();
-}
-
-void RenderLayer::updateBlendMode()
-{
-    if (!RuntimeEnabledFeatures::cssCompositingEnabled())
-        return;
-
-    bool hadBlendMode = m_blendMode != blink::WebBlendModeNormal;
-    blink::WebBlendMode newBlendMode = renderer()->style()->blendMode();
-    if (newBlendMode != m_blendMode) {
-        m_blendMode = newBlendMode;
-
-        // Only update the flag if a blend mode is set or unset.
-        if (parent() && (!hadBlendMode || !hasBlendMode()))
-            parent()->dirtyAncestorChainBlendedDescendantStatus();
-
-        if (hasCompositedLayerMapping())
-            compositedLayerMapping()->setBlendMode(newBlendMode);
-    }
-}
-
 void RenderLayer::updateTransform()
 {
     // hasTransform() on the renderer is also true when there is transform-style: preserve-3d or perspective set,
@@ -758,33 +732,6 @@ void RenderLayer::setAncestorChainHasVisibleDescendant()
     }
 }
 
-void RenderLayer::dirtyAncestorChainBlendedDescendantStatus()
-{
-    for (RenderLayer* layer = this; layer; layer = layer->parent()) {
-        if (layer->m_childLayerHasBlendModeStatusDirty)
-            break;
-
-        layer->m_childLayerHasBlendModeStatusDirty = true;
-
-        if (layer->stackingNode()->isStackingContext())
-            break;
-    }
-}
-
-void RenderLayer::setAncestorChainBlendedDescendant()
-{
-    for (RenderLayer* layer = this; layer; layer = layer->parent()) {
-        if (!layer->m_childLayerHasBlendModeStatusDirty && layer->childLayerHasBlendMode())
-            break;
-
-        layer->m_childLayerHasBlendMode = true;
-        layer->m_childLayerHasBlendModeStatusDirty = false;
-
-        if (layer->stackingNode()->isStackingContext())
-            break;
-    }
-}
-
 void RenderLayer::updateHasUnclippedDescendant()
 {
     TRACE_EVENT0("blink_rendering", "RenderLayer::updateHasUnclippedDescendant");
@@ -858,19 +805,22 @@ void RenderLayer::updateDescendantDependentFlags()
         m_hasOutOfFlowPositionedDescendantDirty = false;
     }
 
-    if (m_childLayerHasBlendModeStatusDirty) {
-        m_childLayerHasBlendMode = false;
+    if (m_blendInfo.childLayerHasBlendModeStatusDirty()) {
+        m_blendInfo.setChildLayerHasBlendMode(false);
         for (RenderLayer* child = firstChild(); child; child = child->nextSibling()) {
             if (!child->stackingNode()->isStackingContext())
                 child->updateDescendantDependentFlags();
 
-            bool childLayerHasBlendMode = child->paintsWithBlendMode() || (child->m_childLayerHasBlendMode && !child->stackingNode()->isStackingContext());
-            m_childLayerHasBlendMode |= childLayerHasBlendMode;
+            bool childLayerHasBlendMode = child->blendInfo().childLayerHasBlendModeWhileDirty();
+            childLayerHasBlendMode |= child->paintsWithBlendMode()
+                || (childLayerHasBlendMode && !child->stackingNode()->isStackingContext());
 
-            if (m_childLayerHasBlendMode)
+            m_blendInfo.setChildLayerHasBlendMode(childLayerHasBlendMode);
+
+            if (childLayerHasBlendMode)
                 break;
         }
-        m_childLayerHasBlendModeStatusDirty = false;
+        m_blendInfo.setChildLayerHasBlendModeStatusDirty(false);
     }
 
     if (m_visibleContentStatusDirty) {
@@ -1329,7 +1279,7 @@ LayoutRect RenderLayer::paintingExtent(const RenderLayer* rootLayer, const Layou
 
 void RenderLayer::beginTransparencyLayers(GraphicsContext* context, const RenderLayer* rootLayer, const LayoutRect& paintDirtyRect, PaintBehavior paintBehavior)
 {
-    bool createTransparencyLayerForBlendMode = m_stackingNode->isStackingContext() && m_childLayerHasBlendMode;
+    bool createTransparencyLayerForBlendMode = m_stackingNode->isStackingContext() && m_blendInfo.childLayerHasBlendMode();
     if (context->paintingDisabled() || ((paintsWithTransparency(paintBehavior) || paintsWithBlendMode() || createTransparencyLayerForBlendMode) && m_usedTransparency))
         return;
 
@@ -1344,7 +1294,7 @@ void RenderLayer::beginTransparencyLayers(GraphicsContext* context, const Render
         context->clip(clipRect);
 
         if (paintsWithBlendMode())
-            context->setCompositeOperation(context->compositeOperation(), m_blendMode);
+            context->setCompositeOperation(context->compositeOperation(), m_blendInfo.blendMode());
 
         context->beginTransparencyLayer(renderer()->opacity());
 
@@ -1403,8 +1353,8 @@ void RenderLayer::addChild(RenderLayer* child, RenderLayer* beforeChild)
     if (child->isSelfPaintingLayer() || child->hasSelfPaintingLayerDescendant())
         setAncestorChainHasSelfPaintingLayerDescendant();
 
-    if (child->paintsWithBlendMode() || child->childLayerHasBlendMode())
-        setAncestorChainBlendedDescendant();
+    if (child->paintsWithBlendMode() || child->blendInfo().childLayerHasBlendMode())
+        m_blendInfo.setAncestorChainBlendedDescendant();
 
     if (subtreeContainsOutOfFlowPositionedLayer(child)) {
         // Now that the out of flow positioned descendant is in the tree, we
@@ -1464,8 +1414,8 @@ RenderLayer* RenderLayer::removeChild(RenderLayer* oldChild)
     if (oldChild->m_hasVisibleContent || oldChild->m_hasVisibleDescendant)
         dirtyAncestorChainVisibleDescendantStatus();
 
-    if (oldChild->paintsWithBlendMode() || oldChild->childLayerHasBlendMode())
-        dirtyAncestorChainBlendedDescendantStatus();
+    if (oldChild->paintsWithBlendMode() || oldChild->blendInfo().childLayerHasBlendMode())
+        m_blendInfo.dirtyAncestorChainBlendedDescendantStatus();
 
     if (oldChild->isSelfPaintingLayer() || oldChild->hasSelfPaintingLayerDescendant())
         dirtyAncestorChainHasSelfPaintingLayerDescendantStatus();
@@ -2055,7 +2005,7 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
 
     // Blending operations must be performed only with the nearest ancestor stacking context.
     // Note that there is no need to create a transparency layer if we're painting the root.
-    bool createTransparencyLayerForBlendMode = !renderer()->isRoot() && m_stackingNode->isStackingContext() && m_childLayerHasBlendMode;
+    bool createTransparencyLayerForBlendMode = !renderer()->isRoot() && m_stackingNode->isStackingContext() && m_blendInfo.childLayerHasBlendMode();
 
     if (createTransparencyLayerForBlendMode)
         beginTransparencyLayers(context, paintingInfo.rootLayer, paintingInfo.paintDirtyRect, paintingInfo.paintBehavior);
@@ -3515,7 +3465,7 @@ CompositedLayerMappingPtr RenderLayer::ensureCompositedLayerMapping()
         updateOrRemoveFilterEffectRenderer();
 
         if (RuntimeEnabledFeatures::cssCompositingEnabled())
-            compositedLayerMapping()->setBlendMode(m_blendMode);
+            compositedLayerMapping()->setBlendMode(m_blendInfo.blendMode());
     }
     return m_compositedLayerMapping.get();
 }
@@ -3839,7 +3789,7 @@ void RenderLayer::styleChanged(StyleDifference, const RenderStyle* oldStyle)
     updateReflectionInfo(oldStyle);
 
     if (RuntimeEnabledFeatures::cssCompositingEnabled())
-        updateBlendMode();
+        m_blendInfo.updateBlendMode();
 
     updateDescendantDependentFlags();
     updateTransform();

@@ -49,6 +49,7 @@
 #include "core/rendering/CompositingReasons.h"
 #include "core/rendering/LayerPaintingInfo.h"
 #include "core/rendering/RenderBox.h"
+#include "core/rendering/RenderLayerBlendInfo.h"
 #include "core/rendering/RenderLayerClipper.h"
 #include "core/rendering/RenderLayerFilterInfo.h"
 #include "core/rendering/RenderLayerReflectionInfo.h"
@@ -162,8 +163,6 @@ public:
 
     void updateTransform();
 
-    void updateBlendMode();
-
     const LayoutSize& offsetForInFlowPosition() const { return m_offsetForInFlowPosition; }
 
     void addBlockSelectionGapsBounds(const LayoutRect&);
@@ -200,8 +199,6 @@ public:
 
     void setHasOutOfFlowPositionedDescendant(bool hasDescendant) { m_hasOutOfFlowPositionedDescendant = hasDescendant; }
     void setHasOutOfFlowPositionedDescendantDirty(bool dirty) { m_hasOutOfFlowPositionedDescendantDirty = dirty; }
-
-    bool childLayerHasBlendMode() const { ASSERT(!m_childLayerHasBlendModeStatusDirty); return m_childLayerHasBlendMode; }
 
     bool hasUnclippedDescendant() const { return m_hasUnclippedDescendant; }
     void setHasUnclippedDescendant(bool hasDescendant) { m_hasUnclippedDescendant = hasDescendant; }
@@ -317,8 +314,7 @@ public:
     void filterNeedsRepaint();
     bool hasFilter() const { return renderer()->hasFilter(); }
 
-    bool hasBlendMode() const;
-    bool paintsWithBlendMode() const { return hasBlendMode() && compositingState() != PaintsIntoOwnBacking; }
+    bool paintsWithBlendMode() const { return m_blendInfo.hasBlendMode() && compositingState() != PaintsIntoOwnBacking; }
 
     void* operator new(size_t);
     // Only safe to call from RenderLayerModelObject::destroyLayer()
@@ -428,6 +424,8 @@ public:
     void paintLayer(GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags);
 
     PassOwnPtr<Vector<FloatRect> > collectTrackedRepaintRects() const;
+
+    RenderLayerBlendInfo& blendInfo() { return m_blendInfo; }
 
     void setOffsetFromSquashingLayerOrigin(IntSize offset) { m_compositingProperties.offsetFromSquashingLayerOrigin = offset; }
     IntSize offsetFromSquashingLayerOrigin() const { return m_compositingProperties.offsetFromSquashingLayerOrigin; }
@@ -557,9 +555,6 @@ private:
     void dirtyAncestorChainVisibleDescendantStatus();
     void setAncestorChainHasVisibleDescendant();
 
-    void dirtyAncestorChainBlendedDescendantStatus();
-    void setAncestorChainBlendedDescendant();
-
     void updateDescendantDependentFlags();
 
     // This flag is computed by RenderLayerCompositor, which knows more about 3d hierarchies than we do.
@@ -623,9 +618,6 @@ protected:
                                  // we ended up painting this layer or any descendants (and therefore need to
                                  // blend).
 
-    unsigned m_childLayerHasBlendMode : 1;
-    unsigned m_childLayerHasBlendModeStatusDirty : 1;
-
     unsigned m_visibleContentStatusDirty : 1;
     unsigned m_hasVisibleContent : 1;
     unsigned m_visibleDescendantStatusDirty : 1;
@@ -648,8 +640,6 @@ protected:
     const unsigned m_canSkipRepaintRectsUpdateOnScroll : 1;
 
     unsigned m_hasFilterInfo : 1;
-
-    blink::WebBlendMode m_blendMode;
 
     RenderLayerModelObject* m_renderer;
 
@@ -729,6 +719,7 @@ private:
     RenderLayerClipper m_clipper; // FIXME: Lazily allocate?
     OwnPtr<RenderLayerStackingNode> m_stackingNode;
     OwnPtr<RenderLayerReflectionInfo> m_reflectionInfo;
+    RenderLayerBlendInfo m_blendInfo;
 };
 
 } // namespace WebCore

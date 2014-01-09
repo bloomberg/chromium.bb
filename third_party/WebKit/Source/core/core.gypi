@@ -1459,6 +1459,7 @@
             'rendering/RenderInputSpeech.cpp',
             'rendering/RenderInputSpeech.h',
             'rendering/RenderLayer.cpp',
+            'rendering/RenderLayerBlendInfo.cpp',
             'rendering/RenderLayerClipper.cpp',
             'rendering/RenderLayerCompositor.cpp',
             'rendering/RenderLayerCompositor.h',

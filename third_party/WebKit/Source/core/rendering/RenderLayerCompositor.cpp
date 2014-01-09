@@ -978,7 +978,7 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
     if (childRecursionData.m_subtreeIsCompositing)
         currentRecursionData.m_subtreeIsCompositing = true;
 
-    if (willBeComposited && layer->hasBlendMode())
+    if (willBeComposited && layer->blendInfo().hasBlendMode())
         currentRecursionData.m_hasUnisolatedCompositedBlendingDescendant = true;
 
     // Set the flag to say that this SC has compositing children.
