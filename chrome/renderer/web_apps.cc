@@ -7,12 +7,14 @@
 #include <string>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/web_application_info.h"
 #include "grit/common_resources.h"
 #include "grit/generated_resources.h"
@@ -144,8 +146,15 @@ bool ParseWebAppFromWebDocument(WebFrame* frame,
       // see also
       //   <http://en.wikipedia.org/wiki/Favicon>
       //   <http://dev.w3.org/html5/spec/Overview.html#rel-icon>
+      //
+      // Streamlined Hosted Apps also support "apple-touch-icon" and
+      // "apple-touch-icon-precomposed".
       if (LowerCaseEqualsASCII(rel, "icon") ||
-          LowerCaseEqualsASCII(rel, "shortcut icon")) {
+          LowerCaseEqualsASCII(rel, "shortcut icon") ||
+          (CommandLine::ForCurrentProcess()->
+              HasSwitch(switches::kEnableStreamlinedHostedApps) &&
+            (LowerCaseEqualsASCII(rel, "apple-touch-icon") ||
+             LowerCaseEqualsASCII(rel, "apple-touch-icon-precomposed")))) {
         AddInstallIcon(elem, &app_info->icons);
       }
     } else if (elem.hasTagName("meta") && elem.hasAttribute("name")) {

@@ -63,6 +63,7 @@
 #include "extensions/common/extension_resource.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/feature_switch.h"
+#include "skia/ext/image_operations.h"
 #include "ui/gfx/image/image.h"
 
 using content::NavigationController;
@@ -87,6 +88,39 @@ TabHelper::ScriptExecutionObserver::ScriptExecutionObserver()
 TabHelper::ScriptExecutionObserver::~ScriptExecutionObserver() {
   if (tab_helper_)
     tab_helper_->RemoveScriptExecutionObserver(this);
+}
+
+// static
+std::vector<SkBitmap> TabHelper::ConstrainBitmapsToSizes(
+    const std::vector<SkBitmap>& bitmaps,
+    const std::set<int>& sizes) {
+  std::vector<SkBitmap> output_bitmaps;
+  std::map<int, SkBitmap> ordered_bitmaps;
+  for (std::vector<SkBitmap>::const_iterator it = bitmaps.begin();
+       it != bitmaps.end(); ++it) {
+    DCHECK(it->width() == it->height());
+    ordered_bitmaps[it->width()] = *it;
+  }
+
+  std::set<int>::const_iterator sizes_it = sizes.begin();
+  std::map<int, SkBitmap>::const_iterator bitmaps_it = ordered_bitmaps.begin();
+  while (sizes_it != sizes.end() && bitmaps_it != ordered_bitmaps.end()) {
+    int size = *sizes_it;
+    // Find the closest not-smaller bitmap.
+    bitmaps_it = ordered_bitmaps.lower_bound(size);
+    ++sizes_it;
+    // Ensure the bitmap is valid and smaller than the next allowed size.
+    if (bitmaps_it != ordered_bitmaps.end() &&
+        (sizes_it == sizes.end() || bitmaps_it->second.width() < *sizes_it)) {
+      // Resize the bitmap if it does not exactly match the desired size.
+      output_bitmaps.push_back(bitmaps_it->second.width() == size
+          ? bitmaps_it->second
+          : skia::ImageOperations::Resize(
+                bitmaps_it->second, skia::ImageOperations::RESIZE_LANCZOS3,
+                size, size));
+    }
+  }
+  return output_bitmaps;
 }
 
 TabHelper::TabHelper(content::WebContents* web_contents)
@@ -324,20 +358,40 @@ void TabHelper::FinishCreateHostedApp(
   install_info.urls.push_back(install_info.app_url);
   install_info.is_bookmark_app = true;
 
-  // Add the downloaded icons.
+  // Add the downloaded icons. Extensions only allow certain icon sizes. First
+  // populate icons that match the allowed sizes exactly and then downscale
+  // remaining icons to the closest allowed size that doesn't yet have an icon.
+  std::set<int> allowed_sizes(
+      extension_misc::kExtensionIconSizes,
+      extension_misc::kExtensionIconSizes +
+          extension_misc::kNumExtensionIconSizes);
+  std::vector<SkBitmap> downloaded_icons;
   for (FaviconDownloader::FaviconMap::const_iterator map_it = bitmaps.begin();
        map_it != bitmaps.end(); ++map_it) {
     for (std::vector<SkBitmap>::const_iterator bitmap_it =
              map_it->second.begin();
          bitmap_it != map_it->second.end(); ++bitmap_it) {
-      if (!bitmap_it->empty()) {
-        WebApplicationInfo::IconInfo icon_info;
-        icon_info.data = *bitmap_it;
-        icon_info.width = icon_info.data.width();
-        icon_info.height = icon_info.data.height();
-        install_info.icons.push_back(icon_info);
-      }
+      if (bitmap_it->empty() || bitmap_it->width() != bitmap_it->height())
+        continue;
+
+      downloaded_icons.push_back(*bitmap_it);
     }
+  }
+
+  // If there are icons that don't match the accepted icon sizes, find the
+  // closest bigger icon to the accepted sizes and resize the icon to it. An
+  // icon will be resized and used for at most one size.
+  std::vector<SkBitmap> resized_bitmaps(
+      TabHelper::ConstrainBitmapsToSizes(downloaded_icons,
+                                         allowed_sizes));
+  for (std::vector<SkBitmap>::const_iterator resized_bitmaps_it =
+           resized_bitmaps.begin();
+       resized_bitmaps_it != resized_bitmaps.end(); ++resized_bitmaps_it) {
+    WebApplicationInfo::IconInfo icon_info;
+    icon_info.data = *resized_bitmaps_it;
+    icon_info.width = icon_info.data.width();
+    icon_info.height = icon_info.data.height();
+    install_info.icons.push_back(icon_info);
   }
 
   Profile* profile =

@@ -16,6 +16,9 @@
 // Structure used when installing a web page as an app.
 struct WebApplicationInfo {
   struct IconInfo {
+    IconInfo();
+    ~IconInfo();
+
     GURL url;
     int width;
     int height;

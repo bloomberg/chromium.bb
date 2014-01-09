@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_TAB_HELPER_H_
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -86,6 +87,14 @@ class TabHelper : public content::WebContentsObserver,
 
     TabHelper* tab_helper_;
   };
+
+  // This finds the closest not-smaller bitmap in |bitmaps| for each size in
+  // |sizes| and resizes it to that size. This returns a vector of bitmaps
+  // which contains only bitmaps of a size in |sizes| and at most one bitmap of
+  // each size.
+  static std::vector<SkBitmap> ConstrainBitmapsToSizes(
+      const std::vector<SkBitmap>& bitmaps,
+      const std::set<int>& sizes);
 
   virtual ~TabHelper();
 
