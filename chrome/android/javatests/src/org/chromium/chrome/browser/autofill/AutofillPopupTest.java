@@ -8,6 +8,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 import android.text.TextUtils;
 import android.view.View;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
@@ -98,7 +99,12 @@ public class AutofillPopupTest extends ChromiumTestShellTestBase {
 
         waitForKeyboardShowRequest(immw, 1);
 
-        view.getContentViewCore().getInputConnectionForTest().setComposingText("J", 1);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                view.getContentViewCore().getInputConnectionForTest().setComposingText("J", 1);
+            }
+        });
 
         waitForAnchorViewAdd(view);
         View anchorView = view.findViewById(R.id.autofill_popup_window);

@@ -880,32 +880,41 @@ TEST_F(InputRouterImplTest, GestureTypesIgnoringAckInterleaved) {
 // Test that GestureShowPress events don't get out of order due to
 // ignoring their acks.
 TEST_F(InputRouterImplTest, GestureShowPressIsInOrder) {
-  SimulateGestureEvent(WebInputEvent::GestureTap,
+  // GesturePinchBegin ignores its ack.
+  SimulateGestureEvent(WebInputEvent::GesturePinchBegin,
                        WebGestureEvent::Touchscreen);
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
 
+  // GesturePinchBegin waits for an ack.
+  SimulateGestureEvent(WebInputEvent::GesturePinchUpdate,
+                       WebGestureEvent::Touchscreen);
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
   EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
 
   SimulateGestureEvent(WebInputEvent::GestureShowPress,
                        WebGestureEvent::Touchscreen);
-
   EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
   // The ShowPress, though it ignores ack, is still stuck in the queue
-  // behind the Tap which requires an ack.
+  // behind the PinchUpdate which requires an ack.
   EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
 
   SimulateGestureEvent(WebInputEvent::GestureShowPress,
                        WebGestureEvent::Touchscreen);
-
   EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
   // ShowPress has entered the queue.
   EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
 
-  SendInputEventACK(WebInputEvent::GestureTap,
+  // This ack is ignored.
+  SendInputEventACK(WebInputEvent::GesturePinchBegin,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
 
+  SendInputEventACK(WebInputEvent::GesturePinchUpdate,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   // Now that the Tap has been ACKed, the ShowPress events should receive
-  // synthetics acks, and fire immediately.
+  // synthetic acks, and fire immediately.
   EXPECT_EQ(2U, GetSentMessageCountAndResetSink());
   EXPECT_EQ(3U, ack_handler_->GetAndResetAckCount());
 }

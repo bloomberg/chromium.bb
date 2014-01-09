@@ -83,7 +83,7 @@ public class ImeTest extends ContentShellTestBase {
     @MediumTest
     @Feature({"TextInput", "Main"})
     public void testKeyboardDismissedAfterClickingGo() throws Throwable {
-        mConnection.setComposingText("hello", 1);
+        setComposingText(mConnection, "hello", 1);
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 1, "hello", 5, 5, 0, 5);
 
         performGo(getAdapterInputConnection(), mCallbackContainer);
@@ -95,19 +95,19 @@ public class ImeTest extends ContentShellTestBase {
     @SmallTest
     @Feature({"TextInput", "Main"})
     public void testGetTextUpdatesAfterEnteringText() throws Throwable {
-        mConnection.setComposingText("h", 1);
+        setComposingText(mConnection, "h", 1);
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 1, "h", 1, 1, 0, 1);
         assertEquals(1, mInputMethodManagerWrapper.getShowSoftInputCounter());
 
-        mConnection.setComposingText("he", 1);
+        setComposingText(mConnection, "he", 1);
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 2, "he", 2, 2, 0, 2);
         assertEquals(1, mInputMethodManagerWrapper.getShowSoftInputCounter());
 
-        mConnection.setComposingText("hel", 1);
+        setComposingText(mConnection, "hel", 1);
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 3, "hel", 3, 3, 0, 3);
         assertEquals(1, mInputMethodManagerWrapper.getShowSoftInputCounter());
 
-        mConnection.commitText("hel", 1);
+        commitText(mConnection, "hel", 1);
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 4, "hel", 3, 3, -1, -1);
         assertEquals(1, mInputMethodManagerWrapper.getShowSoftInputCounter());
     }
@@ -115,10 +115,10 @@ public class ImeTest extends ContentShellTestBase {
     @SmallTest
     @Feature({"TextInput"})
     public void testImeCopy() throws Exception {
-        mConnection.commitText("hello", 1);
+        commitText(mConnection, "hello", 1);
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 1, "hello", 5, 5, -1, -1);
 
-        mConnection.setSelection(2, 5);
+        setSelection(mConnection, 2, 5);
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 2, "hello", 2, 5, -1, -1);
 
         mImeAdapter.copy();
@@ -128,7 +128,7 @@ public class ImeTest extends ContentShellTestBase {
     @SmallTest
     @Feature({"TextInput"})
     public void testEnterTextAndRefocus() throws Exception {
-        mConnection.commitText("hello", 1);
+        commitText(mConnection, "hello", 1);
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 1, "hello", 5, 5, -1, -1);
 
         DOMUtils.clickNode(this, mContentView, mCallbackContainer, "input_radio");
@@ -143,10 +143,10 @@ public class ImeTest extends ContentShellTestBase {
     @SmallTest
     @Feature({"TextInput"})
     public void testImeCut() throws Exception {
-        mConnection.commitText("snarful", 1);
+        commitText(mConnection, "snarful", 1);
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 1, "snarful", 7, 7, -1, -1);
 
-        mConnection.setSelection(1, 5);
+        setSelection(mConnection, 1, 5);
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 2, "snarful", 1, 5, -1, -1);
 
         mImeAdapter.cut();
@@ -171,7 +171,7 @@ public class ImeTest extends ContentShellTestBase {
         mImeAdapter.paste();
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 1, "blarg", 5, 5, -1, -1);
 
-        mConnection.setSelection(3, 5);
+        setSelection(mConnection, 3, 5);
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 2, "blarg", 3, 5, -1, -1);
 
         mImeAdapter.paste();
@@ -187,7 +187,7 @@ public class ImeTest extends ContentShellTestBase {
     @SmallTest
     @Feature({"TextInput"})
     public void testImeSelectAndUnSelectAll() throws Exception {
-        mConnection.commitText("hello", 1);
+        commitText(mConnection, "hello", 1);
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 1, "hello", 5, 5, -1, -1);
 
         mImeAdapter.selectAll();
@@ -229,22 +229,22 @@ public class ImeTest extends ContentShellTestBase {
         mConnection = (TestAdapterInputConnection) getAdapterInputConnection();
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 0, "", 0, 0, -1, -1);
 
-        mConnection.commitText("hllo", 1);
+        commitText(mConnection, "hllo", 1);
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 1, "hllo", 4, 4, -1, -1);
 
-        mConnection.commitText(" ", 1);
+        commitText(mConnection, " ", 1);
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 2, "hllo ", 5, 5, -1, -1);
 
-        mConnection.setSelection(1, 1);
+        setSelection(mConnection, 1, 1);
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 3, "hllo ", 1, 1, -1, -1);
 
-        mConnection.setComposingRegion(0, 4);
+        setComposingRegion(mConnection, 0, 4);
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 4, "hllo ", 1, 1, 0, 4);
 
-        mConnection.finishComposingText();
+        finishComposingText(mConnection);
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 5, "hllo ", 1, 1, -1, -1);
 
-        mConnection.commitText("\n", 1);
+        commitText(mConnection, "\n", 1);
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 6, "h\nllo ", 2, 2, -1, -1);
     }
 
@@ -262,7 +262,7 @@ public class ImeTest extends ContentShellTestBase {
         mConnection = (TestAdapterInputConnection) getAdapterInputConnection();
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 0, "", 0, 0, -1, -1);
 
-        mConnection.setComposingText("hello", 1);
+        setComposingText(mConnection, "hello", 1);
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 1, "hello", 5, 5, 0, 5);
 
         getInstrumentation().runOnMainSync(new Runnable() {
@@ -351,6 +351,55 @@ public class ImeTest extends ContentShellTestBase {
 
     private AdapterInputConnection getAdapterInputConnection() {
         return getContentViewCore().getInputConnectionForTest();
+    }
+
+    private void commitText(final AdapterInputConnection connection, final CharSequence text,
+            final int newCursorPosition) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                connection.commitText(text, newCursorPosition);
+            }
+        });
+    }
+
+    private void setSelection(final AdapterInputConnection connection, final int start,
+            final int end) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                connection.setSelection(start, end);
+            }
+        });
+    }
+
+    private void setComposingRegion(final AdapterInputConnection connection, final int start,
+            final int end) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                connection.setComposingRegion(start, end);
+            }
+        });
+    }
+
+    private void setComposingText(final AdapterInputConnection connection, final CharSequence text,
+            final int newCursorPosition) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                connection.setComposingText(text, newCursorPosition);
+            }
+        });
+    }
+
+    private void finishComposingText(final AdapterInputConnection connection) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                connection.finishComposingText();
+            }
+        });
     }
 
     private static class TestAdapterInputConnectionFactory extends

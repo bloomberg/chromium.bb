@@ -328,10 +328,9 @@ class TouchEditableImplAuraTest : public ContentBrowserTest {
     // Tap textfield
     touch_editable->Reset();
     generator.GestureTapAt(gfx::Point(bounds.x() + 50, bounds.y() + 40));
+    // Tap Down and Tap acks are sent synchronously.
     touch_editable->WaitForSelectionChangeCallback();
-    // No Tap Down Ack is coming, it's async.
     touch_editable->Reset();
-    touch_editable->WaitForGestureAck();  // Wait for Tap Ack.
 
     // Check if cursor handle is showing.
     ui::TouchSelectionController* controller =
