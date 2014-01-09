@@ -15,11 +15,6 @@ chrome.app.runtime.onLaunched.addListener(function() {
 
     chrome.test.sendMessage('Launched', function(reply) {
       var doc = win.contentWindow.document;
-      doc.addEventListener('keydown', function(e) {
-        if (e.keyCode != 90) // 'z'
-          return;
-        chrome.test.sendMessage('KeyReceived');
-      });
 
       switch (reply) {
         case 'window':
