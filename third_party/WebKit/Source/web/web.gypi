@@ -98,8 +98,6 @@
       'StorageNamespaceProxy.cpp',
       'StorageNamespaceProxy.h',
       'StorageQuotaChromium.cpp',
-      'TextFinder.cpp',
-      'TextFinder.h',
       'UserMediaClientImpl.cpp',
       'UserMediaClientImpl.h',
       'ValidationMessageClientImpl.cpp',

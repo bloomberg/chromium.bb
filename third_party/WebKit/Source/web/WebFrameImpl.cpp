@@ -80,7 +80,6 @@
 #include "HTMLNames.h"
 #include "PageOverlay.h"
 #include "SharedWorkerRepositoryClientImpl.h"
-#include "TextFinder.h"
 #include "V8DOMFileSystem.h"
 #include "V8DirectoryEntry.h"
 #include "V8FileEntry.h"
@@ -461,6 +460,39 @@ static WebDataSource* DataSourceForDocLoader(DocumentLoader* loader)
 {
     return loader ? WebDataSourceImpl::fromDocumentLoader(loader) : 0;
 }
+
+WebFrameImpl::FindMatch::FindMatch(PassRefPtr<Range> range, int ordinal)
+    : m_range(range)
+    , m_ordinal(ordinal)
+{
+}
+
+class WebFrameImpl::DeferredScopeStringMatches {
+public:
+    DeferredScopeStringMatches(WebFrameImpl* webFrame, int identifier, const WebString& searchText, const WebFindOptions& options, bool reset)
+        : m_timer(this, &DeferredScopeStringMatches::doTimeout)
+        , m_webFrame(webFrame)
+        , m_identifier(identifier)
+        , m_searchText(searchText)
+        , m_options(options)
+        , m_reset(reset)
+    {
+        m_timer.startOneShot(0.0);
+    }
+
+private:
+    void doTimeout(Timer<DeferredScopeStringMatches>*)
+    {
+        m_webFrame->callScopeStringMatches(this, m_identifier, m_searchText, m_options, m_reset);
+    }
+
+    Timer<DeferredScopeStringMatches> m_timer;
+    RefPtr<WebFrameImpl> m_webFrame;
+    int m_identifier;
+    WebString m_searchText;
+    WebFindOptions m_options;
+    bool m_reset;
+};
 
 // WebFrame -------------------------------------------------------------------
 
@@ -1432,41 +1464,344 @@ WebString WebFrameImpl::pageProperty(const WebString& propertyName, int pageInde
 
 bool WebFrameImpl::find(int identifier, const WebString& searchText, const WebFindOptions& options, bool wrapWithinFrame, WebRect* selectionRect)
 {
-    return getOrCreateTextFinder().find(identifier, searchText, options, wrapWithinFrame, selectionRect);
+    if (!frame() || !frame()->page())
+        return false;
+
+    WebFrameImpl* mainFrameImpl = viewImpl()->mainFrameImpl();
+
+    if (!options.findNext)
+        frame()->page()->unmarkAllTextMatches();
+    else
+        setMarkerActive(m_activeMatch.get(), false);
+
+    if (m_activeMatch && &m_activeMatch->ownerDocument() != frame()->document())
+        m_activeMatch = 0;
+
+    // If the user has selected something since the last Find operation we want
+    // to start from there. Otherwise, we start searching from where the last Find
+    // operation left off (either a Find or a FindNext operation).
+    VisibleSelection selection(frame()->selection().selection());
+    bool activeSelection = !selection.isNone();
+    if (activeSelection) {
+        m_activeMatch = selection.firstRange().get();
+        frame()->selection().clear();
+    }
+
+    ASSERT(frame() && frame()->view());
+    const FindOptions findOptions = (options.forward ? 0 : Backwards)
+        | (options.matchCase ? 0 : CaseInsensitive)
+        | (wrapWithinFrame ? WrapAround : 0)
+        | (options.wordStart ? AtWordStarts : 0)
+        | (options.medialCapitalAsWordStart ? TreatMedialCapitalAsWordStart : 0)
+        | (options.findNext ? 0 : StartInSelection);
+    m_activeMatch = frame()->editor().findStringAndScrollToVisible(searchText, m_activeMatch.get(), findOptions);
+
+    if (!m_activeMatch) {
+        // If we're finding next the next active match might not be in the current frame.
+        // In this case we don't want to clear the matches cache.
+        if (!options.findNext)
+            clearFindMatchesCache();
+        invalidateArea(InvalidateAll);
+        return false;
+    }
+
+#if OS(ANDROID)
+    viewImpl()->zoomToFindInPageRect(frameView()->contentsToWindow(enclosingIntRect(RenderObject::absoluteBoundingBoxRectForRange(m_activeMatch.get()))));
+#endif
+
+    setMarkerActive(m_activeMatch.get(), true);
+    WebFrameImpl* oldActiveFrame = mainFrameImpl->m_currentActiveMatchFrame;
+    mainFrameImpl->m_currentActiveMatchFrame = this;
+
+    // Make sure no node is focused. See http://crbug.com/38700.
+    frame()->document()->setFocusedElement(0);
+
+    if (!options.findNext || activeSelection) {
+        // This is either a Find operation or a Find-next from a new start point
+        // due to a selection, so we set the flag to ask the scoping effort
+        // to find the active rect for us and report it back to the UI.
+        m_locatingActiveRect = true;
+    } else {
+        if (oldActiveFrame != this) {
+            if (options.forward)
+                m_activeMatchIndexInCurrentFrame = 0;
+            else
+                m_activeMatchIndexInCurrentFrame = m_lastMatchCount - 1;
+        } else {
+            if (options.forward)
+                ++m_activeMatchIndexInCurrentFrame;
+            else
+                --m_activeMatchIndexInCurrentFrame;
+
+            if (m_activeMatchIndexInCurrentFrame + 1 > m_lastMatchCount)
+                m_activeMatchIndexInCurrentFrame = 0;
+            if (m_activeMatchIndexInCurrentFrame == -1)
+                m_activeMatchIndexInCurrentFrame = m_lastMatchCount - 1;
+        }
+        if (selectionRect) {
+            *selectionRect = frameView()->contentsToWindow(m_activeMatch->boundingBox());
+            reportFindInPageSelection(*selectionRect, m_activeMatchIndexInCurrentFrame + 1, identifier);
+        }
+    }
+
+    return true;
 }
 
 void WebFrameImpl::stopFinding(bool clearSelection)
 {
-    ASSERT(m_textFinder);
-
     if (!clearSelection)
         setFindEndstateFocusAndSelection();
-    m_textFinder->stopFindingAndClearSelection();
+    cancelPendingScopingEffort();
+
+    // Remove all markers for matches found and turn off the highlighting.
+    frame()->document()->markers()->removeMarkers(DocumentMarker::TextMatch);
+    frame()->editor().setMarkedTextMatchesAreHighlighted(false);
+    clearFindMatchesCache();
+
+    // Let the frame know that we don't want tickmarks or highlighting anymore.
+    invalidateArea(InvalidateAll);
 }
 
 void WebFrameImpl::scopeStringMatches(int identifier, const WebString& searchText, const WebFindOptions& options, bool reset)
 {
-    getOrCreateTextFinder().scopeStringMatches(identifier, searchText, options, reset);
+    if (reset) {
+        // This is a brand new search, so we need to reset everything.
+        // Scoping is just about to begin.
+        m_scopingInProgress = true;
+
+        // Need to keep the current identifier locally in order to finish the
+        // request in case the frame is detached during the process.
+        m_findRequestIdentifier = identifier;
+
+        // Clear highlighting for this frame.
+        if (frame() && frame()->page() && frame()->editor().markedTextMatchesAreHighlighted())
+            frame()->page()->unmarkAllTextMatches();
+
+        // Clear the tickmarks and results cache.
+        clearFindMatchesCache();
+
+        // Clear the counters from last operation.
+        m_lastMatchCount = 0;
+        m_nextInvalidateAfter = 0;
+
+        m_resumeScopingFromRange = 0;
+
+        // The view might be null on detached frames.
+        if (frame() && frame()->page())
+            viewImpl()->mainFrameImpl()->m_framesScopingCount++;
+
+        // Now, defer scoping until later to allow find operation to finish quickly.
+        scopeStringMatchesSoon(identifier, searchText, options, false); // false means just reset, so don't do it again.
+        return;
+    }
+
+    if (!shouldScopeMatches(searchText)) {
+        // Note that we want to defer the final update when resetting even if shouldScopeMatches returns false.
+        // This is done in order to prevent sending a final message based only on the results of the first frame
+        // since m_framesScopingCount would be 0 as other frames have yet to reset.
+        finishCurrentScopingEffort(identifier);
+        return;
+    }
+
+    WebFrameImpl* mainFrameImpl = viewImpl()->mainFrameImpl();
+    RefPtr<Range> searchRange(rangeOfContents(frame()->document()));
+
+    Node* originalEndContainer = searchRange->endContainer();
+    int originalEndOffset = searchRange->endOffset();
+
+    TrackExceptionState exceptionState, exceptionState2;
+    if (m_resumeScopingFromRange) {
+        // This is a continuation of a scoping operation that timed out and didn't
+        // complete last time around, so we should start from where we left off.
+        searchRange->setStart(m_resumeScopingFromRange->startContainer(), m_resumeScopingFromRange->startOffset(exceptionState2) + 1, exceptionState);
+        if (exceptionState.hadException() || exceptionState2.hadException()) {
+            if (exceptionState2.hadException()) // A non-zero |exceptionState| happens when navigating during search.
+                ASSERT_NOT_REACHED();
+            return;
+        }
+    }
+
+    // This timeout controls how long we scope before releasing control.  This
+    // value does not prevent us from running for longer than this, but it is
+    // periodically checked to see if we have exceeded our allocated time.
+    const double maxScopingDuration = 0.1; // seconds
+
+    int matchCount = 0;
+    bool timedOut = false;
+    double startTime = currentTime();
+    do {
+        // Find next occurrence of the search string.
+        // FIXME: (http://b/1088245) This WebKit operation may run for longer
+        // than the timeout value, and is not interruptible as it is currently
+        // written. We may need to rewrite it with interruptibility in mind, or
+        // find an alternative.
+        RefPtr<Range> resultRange(findPlainText(searchRange.get(),
+                                                searchText,
+                                                options.matchCase ? 0 : CaseInsensitive));
+        if (resultRange->collapsed(exceptionState)) {
+            if (!resultRange->startContainer()->isInShadowTree())
+                break;
+
+            searchRange->setStartAfter(
+                resultRange->startContainer()->deprecatedShadowAncestorNode(), exceptionState);
+            searchRange->setEnd(originalEndContainer, originalEndOffset, exceptionState);
+            continue;
+        }
+
+        ++matchCount;
+
+        // Catch a special case where Find found something but doesn't know what
+        // the bounding box for it is. In this case we set the first match we find
+        // as the active rect.
+        IntRect resultBounds = resultRange->boundingBox();
+        IntRect activeSelectionRect;
+        if (m_locatingActiveRect) {
+            activeSelectionRect = m_activeMatch.get() ?
+                m_activeMatch->boundingBox() : resultBounds;
+        }
+
+        // If the Find function found a match it will have stored where the
+        // match was found in m_activeSelectionRect on the current frame. If we
+        // find this rect during scoping it means we have found the active
+        // tickmark.
+        bool foundActiveMatch = false;
+        if (m_locatingActiveRect && (activeSelectionRect == resultBounds)) {
+            // We have found the active tickmark frame.
+            mainFrameImpl->m_currentActiveMatchFrame = this;
+            foundActiveMatch = true;
+            // We also know which tickmark is active now.
+            m_activeMatchIndexInCurrentFrame = matchCount - 1;
+            // To stop looking for the active tickmark, we set this flag.
+            m_locatingActiveRect = false;
+
+            // Notify browser of new location for the selected rectangle.
+            reportFindInPageSelection(
+                frameView()->contentsToWindow(resultBounds),
+                m_activeMatchIndexInCurrentFrame + 1,
+                identifier);
+        }
+
+        addMarker(resultRange.get(), foundActiveMatch);
+
+        m_findMatchesCache.append(FindMatch(resultRange.get(), m_lastMatchCount + matchCount));
+
+        // Set the new start for the search range to be the end of the previous
+        // result range. There is no need to use a VisiblePosition here,
+        // since findPlainText will use a TextIterator to go over the visible
+        // text nodes.
+        searchRange->setStart(resultRange->endContainer(exceptionState), resultRange->endOffset(exceptionState), exceptionState);
+
+        Node* shadowTreeRoot = searchRange->shadowRoot();
+        if (searchRange->collapsed(exceptionState) && shadowTreeRoot)
+            searchRange->setEnd(shadowTreeRoot, shadowTreeRoot->childNodeCount(), exceptionState);
+
+        m_resumeScopingFromRange = resultRange;
+        timedOut = (currentTime() - startTime) >= maxScopingDuration;
+    } while (!timedOut);
+
+    // Remember what we search for last time, so we can skip searching if more
+    // letters are added to the search string (and last outcome was 0).
+    m_lastSearchString = searchText;
+
+    if (matchCount > 0) {
+        frame()->editor().setMarkedTextMatchesAreHighlighted(true);
+
+        m_lastMatchCount += matchCount;
+
+        // Let the mainframe know how much we found during this pass.
+        mainFrameImpl->increaseMatchCount(matchCount, identifier);
+    }
+
+    if (timedOut) {
+        // If we found anything during this pass, we should redraw. However, we
+        // don't want to spam too much if the page is extremely long, so if we
+        // reach a certain point we start throttling the redraw requests.
+        if (matchCount > 0)
+            invalidateIfNecessary();
+
+        // Scoping effort ran out of time, lets ask for another time-slice.
+        scopeStringMatchesSoon(
+            identifier,
+            searchText,
+            options,
+            false); // don't reset.
+        return; // Done for now, resume work later.
+    }
+
+    finishCurrentScopingEffort(identifier);
+}
+
+void WebFrameImpl::flushCurrentScopingEffort(int identifier)
+{
+    if (!frame() || !frame()->page())
+        return;
+
+    WebFrameImpl* mainFrameImpl = viewImpl()->mainFrameImpl();
+
+    // This frame has no further scoping left, so it is done. Other frames might,
+    // of course, continue to scope matches.
+    mainFrameImpl->m_framesScopingCount--;
+
+    // If this is the last frame to finish scoping we need to trigger the final
+    // update to be sent.
+    if (!mainFrameImpl->m_framesScopingCount)
+        mainFrameImpl->increaseMatchCount(0, identifier);
+}
+
+void WebFrameImpl::finishCurrentScopingEffort(int identifier)
+{
+    flushCurrentScopingEffort(identifier);
+
+    m_scopingInProgress = false;
+    m_lastFindRequestCompletedWithNoMatches = !m_lastMatchCount;
+
+    // This frame is done, so show any scrollbar tickmarks we haven't drawn yet.
+    invalidateArea(InvalidateScrollbar);
 }
 
 void WebFrameImpl::cancelPendingScopingEffort()
 {
-    if (m_textFinder)
-        m_textFinder->cancelPendingScopingEffort();
+    deleteAllValues(m_deferredScopingWork);
+    m_deferredScopingWork.clear();
+
+    m_activeMatchIndexInCurrentFrame = -1;
+
+    // Last request didn't complete.
+    if (m_scopingInProgress)
+        m_lastFindRequestCompletedWithNoMatches = false;
+
+    m_scopingInProgress = false;
 }
 
 void WebFrameImpl::increaseMatchCount(int count, int identifier)
 {
     // This function should only be called on the mainframe.
     ASSERT(!parent());
-    ASSERT(m_textFinder);
-    m_textFinder->increaseMatchCount(identifier, count);
+
+    if (count)
+        ++m_findMatchMarkersVersion;
+
+    m_totalMatchCount += count;
+
+    // Update the UI with the latest findings.
+    if (client())
+        client()->reportFindInPageMatchCount(identifier, m_totalMatchCount, !m_framesScopingCount);
+}
+
+void WebFrameImpl::reportFindInPageSelection(const WebRect& selectionRect, int activeMatchOrdinal, int identifier)
+{
+    // Update the UI with the latest selection rect.
+    if (client())
+        client()->reportFindInPageSelection(identifier, ordinalOfFirstMatchForFrame(this) + activeMatchOrdinal, selectionRect);
 }
 
 void WebFrameImpl::resetMatchCount()
 {
-    ASSERT(m_textFinder);
-    m_textFinder->resetMatchCount();
+    if (m_totalMatchCount > 0)
+        ++m_findMatchMarkersVersion;
+
+    m_totalMatchCount = 0;
+    m_framesScopingCount = 0;
 }
 
 void WebFrameImpl::sendOrientationChangeEvent(int orientation)
@@ -1486,30 +1821,186 @@ void WebFrameImpl::dispatchMessageEventWithOriginCheck(const WebSecurityOrigin& 
 int WebFrameImpl::findMatchMarkersVersion() const
 {
     ASSERT(!parent());
-
-    return m_textFinder ? m_textFinder->findMatchMarkersVersion() : 0;
+    return m_findMatchMarkersVersion;
 }
 
-int WebFrameImpl::selectNearestFindMatch(const WebFloatPoint& point, WebRect* selectionRect)
+void WebFrameImpl::clearFindMatchesCache()
 {
-    ASSERT(!parent());
-    ASSERT(m_textFinder);
-    return m_textFinder->selectNearestFindMatch(point, selectionRect);
+    if (!m_findMatchesCache.isEmpty())
+        viewImpl()->mainFrameImpl()->m_findMatchMarkersVersion++;
+
+    m_findMatchesCache.clear();
+    m_findMatchRectsAreValid = false;
+}
+
+bool WebFrameImpl::isActiveMatchFrameValid() const
+{
+    WebFrameImpl* mainFrameImpl = viewImpl()->mainFrameImpl();
+    WebFrameImpl* activeMatchFrame = mainFrameImpl->activeMatchFrame();
+    return activeMatchFrame && activeMatchFrame->m_activeMatch && activeMatchFrame->frame()->tree().isDescendantOf(mainFrameImpl->frame());
+}
+
+void WebFrameImpl::updateFindMatchRects()
+{
+    IntSize currentContentsSize = contentsSize();
+    if (m_contentsSizeForCurrentFindMatchRects != currentContentsSize) {
+        m_contentsSizeForCurrentFindMatchRects = currentContentsSize;
+        m_findMatchRectsAreValid = false;
+    }
+
+    size_t deadMatches = 0;
+    for (Vector<FindMatch>::iterator it = m_findMatchesCache.begin(); it != m_findMatchesCache.end(); ++it) {
+        if (!it->m_range->boundaryPointsValid() || !it->m_range->startContainer()->inDocument())
+            it->m_rect = FloatRect();
+        else if (!m_findMatchRectsAreValid)
+            it->m_rect = findInPageRectFromRange(it->m_range.get());
+
+        if (it->m_rect.isEmpty())
+            ++deadMatches;
+    }
+
+    // Remove any invalid matches from the cache.
+    if (deadMatches) {
+        Vector<FindMatch> filteredMatches;
+        filteredMatches.reserveCapacity(m_findMatchesCache.size() - deadMatches);
+
+        for (Vector<FindMatch>::const_iterator it = m_findMatchesCache.begin(); it != m_findMatchesCache.end(); ++it)
+            if (!it->m_rect.isEmpty())
+                filteredMatches.append(*it);
+
+        m_findMatchesCache.swap(filteredMatches);
+    }
+
+    // Invalidate the rects in child frames. Will be updated later during traversal.
+    if (!m_findMatchRectsAreValid)
+        for (WebFrame* child = firstChild(); child; child = child->nextSibling())
+            toWebFrameImpl(child)->m_findMatchRectsAreValid = false;
+
+    m_findMatchRectsAreValid = true;
 }
 
 WebFloatRect WebFrameImpl::activeFindMatchRect()
 {
     ASSERT(!parent());
-    ASSERT(m_textFinder);
 
-    return m_textFinder->activeFindMatchRect();
+    if (!isActiveMatchFrameValid())
+        return WebFloatRect();
+
+    return WebFloatRect(findInPageRectFromRange(m_currentActiveMatchFrame->m_activeMatch.get()));
 }
 
 void WebFrameImpl::findMatchRects(WebVector<WebFloatRect>& outputRects)
 {
     ASSERT(!parent());
-    ASSERT(m_textFinder);
-    m_textFinder->findMatchRects(outputRects);
+
+    Vector<WebFloatRect> matchRects;
+    for (WebFrameImpl* frame = this; frame; frame = toWebFrameImpl(frame->traverseNext(false)))
+        frame->appendFindMatchRects(matchRects);
+
+    outputRects = matchRects;
+}
+
+void WebFrameImpl::appendFindMatchRects(Vector<WebFloatRect>& frameRects)
+{
+    updateFindMatchRects();
+    frameRects.reserveCapacity(frameRects.size() + m_findMatchesCache.size());
+    for (Vector<FindMatch>::const_iterator it = m_findMatchesCache.begin(); it != m_findMatchesCache.end(); ++it) {
+        ASSERT(!it->m_rect.isEmpty());
+        frameRects.append(it->m_rect);
+    }
+}
+
+int WebFrameImpl::selectNearestFindMatch(const WebFloatPoint& point, WebRect* selectionRect)
+{
+    ASSERT(!parent());
+
+    WebFrameImpl* bestFrame = 0;
+    int indexInBestFrame = -1;
+    float distanceInBestFrame = FLT_MAX;
+
+    for (WebFrameImpl* frame = this; frame; frame = toWebFrameImpl(frame->traverseNext(false))) {
+        float distanceInFrame;
+        int indexInFrame = frame->nearestFindMatch(point, distanceInFrame);
+        if (distanceInFrame < distanceInBestFrame) {
+            bestFrame = frame;
+            indexInBestFrame = indexInFrame;
+            distanceInBestFrame = distanceInFrame;
+        }
+    }
+
+    if (indexInBestFrame != -1)
+        return bestFrame->selectFindMatch(static_cast<unsigned>(indexInBestFrame), selectionRect);
+
+    return -1;
+}
+
+int WebFrameImpl::nearestFindMatch(const FloatPoint& point, float& distanceSquared)
+{
+    updateFindMatchRects();
+
+    int nearest = -1;
+    distanceSquared = FLT_MAX;
+    for (size_t i = 0; i < m_findMatchesCache.size(); ++i) {
+        ASSERT(!m_findMatchesCache[i].m_rect.isEmpty());
+        FloatSize offset = point - m_findMatchesCache[i].m_rect.center();
+        float width = offset.width();
+        float height = offset.height();
+        float currentDistanceSquared = width * width + height * height;
+        if (currentDistanceSquared < distanceSquared) {
+            nearest = i;
+            distanceSquared = currentDistanceSquared;
+        }
+    }
+    return nearest;
+}
+
+int WebFrameImpl::selectFindMatch(unsigned index, WebRect* selectionRect)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(index < m_findMatchesCache.size());
+
+    RefPtr<Range> range = m_findMatchesCache[index].m_range;
+    if (!range->boundaryPointsValid() || !range->startContainer()->inDocument())
+        return -1;
+
+    // Check if the match is already selected.
+    WebFrameImpl* activeMatchFrame = viewImpl()->mainFrameImpl()->m_currentActiveMatchFrame;
+    if (this != activeMatchFrame || !m_activeMatch || !areRangesEqual(m_activeMatch.get(), range.get())) {
+        if (isActiveMatchFrameValid())
+            activeMatchFrame->setMarkerActive(activeMatchFrame->m_activeMatch.get(), false);
+
+        m_activeMatchIndexInCurrentFrame = m_findMatchesCache[index].m_ordinal - 1;
+
+        // Set this frame as the active frame (the one with the active highlight).
+        viewImpl()->mainFrameImpl()->m_currentActiveMatchFrame = this;
+        viewImpl()->setFocusedFrame(this);
+
+        m_activeMatch = range.release();
+        setMarkerActive(m_activeMatch.get(), true);
+
+        // Clear any user selection, to make sure Find Next continues on from the match we just activated.
+        frame()->selection().clear();
+
+        // Make sure no node is focused. See http://crbug.com/38700.
+        frame()->document()->setFocusedElement(0);
+    }
+
+    IntRect activeMatchRect;
+    IntRect activeMatchBoundingBox = enclosingIntRect(RenderObject::absoluteBoundingBoxRectForRange(m_activeMatch.get()));
+
+    if (!activeMatchBoundingBox.isEmpty()) {
+        if (m_activeMatch->firstNode() && m_activeMatch->firstNode()->renderer())
+            m_activeMatch->firstNode()->renderer()->scrollRectToVisible(activeMatchBoundingBox,
+                    ScrollAlignment::alignCenterIfNeeded, ScrollAlignment::alignCenterIfNeeded);
+
+        // Zoom to the active match.
+        activeMatchRect = frameView()->contentsToWindow(activeMatchBoundingBox);
+        viewImpl()->zoomToFindInPageRect(activeMatchRect);
+    }
+
+    if (selectionRect)
+        *selectionRect = activeMatchRect;
+
+    return ordinalOfFirstMatchForFrame(this) + m_activeMatchIndexInCurrentFrame + 1;
 }
 
 WebString WebFrameImpl::contentAsText(size_t maxChars) const
@@ -1609,6 +2100,19 @@ WebFrameImpl::WebFrameImpl(WebFrameClient* client, long long embedderIdentifier)
     : m_frameInit(WebFrameInit::create(this, embedderIdentifier))
     , m_client(client)
     , m_permissionClient(0)
+    , m_currentActiveMatchFrame(0)
+    , m_activeMatchIndexInCurrentFrame(-1)
+    , m_locatingActiveRect(false)
+    , m_resumeScopingFromRange(0)
+    , m_lastMatchCount(-1)
+    , m_totalMatchCount(-1)
+    , m_framesScopingCount(-1)
+    , m_findRequestIdentifier(-1)
+    , m_scopingInProgress(false)
+    , m_lastFindRequestCompletedWithNoMatches(false)
+    , m_nextInvalidateAfter(0)
+    , m_findMatchMarkersVersion(0)
+    , m_findMatchRectsAreValid(false)
     , m_inputEventsScaleFactorForEmulation(1)
 {
     blink::Platform::current()->incrementStatsCounter(webFrameActiveCount);
@@ -1690,9 +2194,9 @@ PassRefPtr<Frame> WebFrameImpl::createChildFrame(const FrameLoadRequest& request
 void WebFrameImpl::didChangeContentsSize(const IntSize& size)
 {
     // This is only possible on the main frame.
-    if (m_textFinder && m_textFinder->totalMatchCount() > 0) {
+    if (m_totalMatchCount > 0) {
         ASSERT(!parent());
-        m_textFinder->increaseMarkerVersion();
+        ++m_findMatchMarkersVersion;
     }
 }
 
@@ -1753,8 +2257,7 @@ void WebFrameImpl::setFindEndstateFocusAndSelection()
 {
     WebFrameImpl* mainFrameImpl = viewImpl()->mainFrameImpl();
 
-    if (this == mainFrameImpl->activeMatchFrame() && m_textFinder->activeMatch()) {
-        Range* activeMatch = m_textFinder->activeMatch();
+    if (this == mainFrameImpl->activeMatchFrame() && m_activeMatch.get()) {
         // If the user has set the selection since the match was found, we
         // don't focus anything.
         VisibleSelection selection(frame()->selection().selection());
@@ -1763,7 +2266,7 @@ void WebFrameImpl::setFindEndstateFocusAndSelection()
 
         // Try to find the first focusable node up the chain, which will, for
         // example, focus links if we have found text within the link.
-        Node* node = activeMatch->firstNode();
+        Node* node = m_activeMatch->firstNode();
         if (node && node->isInShadowTree()) {
             Node* host = node->deprecatedShadowAncestorNode();
             if (host->hasTagName(HTMLNames::inputTag) || host->hasTagName(HTMLNames::textareaTag))
@@ -1776,7 +2279,7 @@ void WebFrameImpl::setFindEndstateFocusAndSelection()
             if (element->isFocusable()) {
                 // Found a focusable parent node. Set the active match as the
                 // selection and focus to the focusable node.
-                frame()->selection().setSelection(activeMatch);
+                frame()->selection().setSelection(m_activeMatch.get());
                 frame()->document()->setFocusedElement(element);
                 return;
             }
@@ -1785,8 +2288,8 @@ void WebFrameImpl::setFindEndstateFocusAndSelection()
         // Iterate over all the nodes in the range until we find a focusable node.
         // This, for example, sets focus to the first link if you search for
         // text and text that is within one or more links.
-        node = activeMatch->firstNode();
-        for (; node && node != activeMatch->pastLastNode(); node = NodeTraversal::next(*node)) {
+        node = m_activeMatch->firstNode();
+        for (; node && node != m_activeMatch->pastLastNode(); node = NodeTraversal::next(*node)) {
             if (!node->isElementNode())
                 continue;
             Element* element = toElement(node);
@@ -1801,16 +2304,16 @@ void WebFrameImpl::setFindEndstateFocusAndSelection()
         // you'll have the last thing you found highlighted) and make sure that
         // we have nothing focused (otherwise you might have text selected but
         // a link focused, which is weird).
-        frame()->selection().setSelection(activeMatch);
+        frame()->selection().setSelection(m_activeMatch.get());
         frame()->document()->setFocusedElement(0);
 
         // Finally clear the active match, for two reasons:
         // We just finished the find 'session' and we don't want future (potentially
         // unrelated) find 'sessions' operations to start at the same place.
-        // The WebFrameImpl could get reused and the activeMatch could end up pointing
+        // The WebFrameImpl could get reused and the m_activeMatch could end up pointing
         // to a document that is no longer valid. Keeping an invalid reference around
         // is just asking for trouble.
-        m_textFinder->resetActiveMatch();
+        m_activeMatch = 0;
     }
 }
 
@@ -1836,6 +2339,115 @@ void WebFrameImpl::setInputEventsTransformForEmulation(const IntSize& offset, fl
     m_inputEventsScaleFactorForEmulation = contentScaleFactor;
     if (frame()->view())
         frame()->view()->setInputEventsTransformForEmulation(m_inputEventsOffsetForEmulation, m_inputEventsScaleFactorForEmulation);
+}
+
+void WebFrameImpl::invalidateArea(AreaToInvalidate area)
+{
+    ASSERT(frame() && frame()->view());
+    FrameView* view = frame()->view();
+
+    if ((area & InvalidateAll) == InvalidateAll)
+        view->invalidateRect(view->frameRect());
+    else {
+        if ((area & InvalidateContentArea) == InvalidateContentArea) {
+            IntRect contentArea(
+                view->x(), view->y(), view->visibleWidth(), view->visibleHeight());
+            IntRect frameRect = view->frameRect();
+            contentArea.move(-frameRect.x(), -frameRect.y());
+            view->invalidateRect(contentArea);
+        }
+    }
+
+    if ((area & InvalidateScrollbar) == InvalidateScrollbar) {
+        // Invalidate the vertical scroll bar region for the view.
+        Scrollbar* scrollbar = view->verticalScrollbar();
+        if (scrollbar)
+            scrollbar->invalidate();
+    }
+}
+
+void WebFrameImpl::addMarker(Range* range, bool activeMatch)
+{
+    frame()->document()->markers()->addTextMatchMarker(range, activeMatch);
+}
+
+void WebFrameImpl::setMarkerActive(Range* range, bool active)
+{
+    if (!range || range->collapsed(IGNORE_EXCEPTION))
+        return;
+    frame()->document()->markers()->setMarkersActive(range, active);
+}
+
+int WebFrameImpl::ordinalOfFirstMatchForFrame(WebFrameImpl* frame) const
+{
+    int ordinal = 0;
+    WebFrameImpl* mainFrameImpl = viewImpl()->mainFrameImpl();
+    // Iterate from the main frame up to (but not including) |frame| and
+    // add up the number of matches found so far.
+    for (WebFrameImpl* it = mainFrameImpl; it != frame; it = toWebFrameImpl(it->traverseNext(true))) {
+        if (it->m_lastMatchCount > 0)
+            ordinal += it->m_lastMatchCount;
+    }
+    return ordinal;
+}
+
+bool WebFrameImpl::shouldScopeMatches(const String& searchText)
+{
+    // Don't scope if we can't find a frame or a view.
+    // The user may have closed the tab/application, so abort.
+    // Also ignore detached frames, as many find operations report to the main frame.
+    if (!frame() || !frame()->view() || !frame()->page() || !hasVisibleContent())
+        return false;
+
+    ASSERT(frame()->document() && frame()->view());
+
+    // If the frame completed the scoping operation and found 0 matches the last
+    // time it was searched, then we don't have to search it again if the user is
+    // just adding to the search string or sending the same search string again.
+    if (m_lastFindRequestCompletedWithNoMatches && !m_lastSearchString.isEmpty()) {
+        // Check to see if the search string prefixes match.
+        String previousSearchPrefix =
+            searchText.substring(0, m_lastSearchString.length());
+
+        if (previousSearchPrefix == m_lastSearchString)
+            return false; // Don't search this frame, it will be fruitless.
+    }
+
+    return true;
+}
+
+void WebFrameImpl::scopeStringMatchesSoon(int identifier, const WebString& searchText, const WebFindOptions& options, bool reset)
+{
+    m_deferredScopingWork.append(new DeferredScopeStringMatches(this, identifier, searchText, options, reset));
+}
+
+void WebFrameImpl::callScopeStringMatches(DeferredScopeStringMatches* caller, int identifier, const WebString& searchText, const WebFindOptions& options, bool reset)
+{
+    m_deferredScopingWork.remove(m_deferredScopingWork.find(caller));
+    scopeStringMatches(identifier, searchText, options, reset);
+
+    // This needs to happen last since searchText is passed by reference.
+    delete caller;
+}
+
+void WebFrameImpl::invalidateIfNecessary()
+{
+    if (m_lastMatchCount <= m_nextInvalidateAfter)
+        return;
+
+    // FIXME: (http://b/1088165) Optimize the drawing of the tickmarks and
+    // remove this. This calculation sets a milestone for when next to
+    // invalidate the scrollbar and the content area. We do this so that we
+    // don't spend too much time drawing the scrollbar over and over again.
+    // Basically, up until the first 500 matches there is no throttle.
+    // After the first 500 matches, we set set the milestone further and
+    // further out (750, 1125, 1688, 2K, 3K).
+    static const int startSlowingDownAfter = 500;
+    static const int slowdown = 750;
+
+    int i = m_lastMatchCount / startSlowingDownAfter;
+    m_nextInvalidateAfter += i * slowdown;
+    invalidateArea(InvalidateScrollbar);
 }
 
 void WebFrameImpl::loadJavaScriptURL(const KURL& url)
@@ -1873,36 +2485,14 @@ void WebFrameImpl::willDetachParent()
 {
     // Do not expect string scoping results from any frames that got detached
     // in the middle of the operation.
-    if (m_textFinder && m_textFinder->scopingInProgress()) {
+    if (m_scopingInProgress) {
 
         // There is a possibility that the frame being detached was the only
         // pending one. We need to make sure final replies can be sent.
-        m_textFinder->flushCurrentScoping();
+        flushCurrentScopingEffort(m_findRequestIdentifier);
 
-        m_textFinder->cancelPendingScopingEffort();
+        cancelPendingScopingEffort();
     }
-}
-
-WebFrameImpl* WebFrameImpl::activeMatchFrame() const
-{
-    ASSERT(!parent());
-    ASSERT(m_textFinder);
-    return m_textFinder->activeMatchFrame();
-}
-
-WebCore::Range* WebFrameImpl::activeMatch() const
-{
-    ASSERT(m_textFinder);
-    return m_textFinder->activeMatch();
-}
-
-TextFinder& WebFrameImpl::getOrCreateTextFinder()
-{
-    if (!m_textFinder)
-        m_textFinder = TextFinder::create(*this);
-
-    ASSERT(m_textFinder);
-    return *m_textFinder;
 }
 
 } // namespace blink
