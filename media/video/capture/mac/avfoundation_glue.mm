@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/mac/mac_util.h"
+#include "base/metrics/field_trial.h"
 #include "media/base/media_switches.h"
 
 namespace {
@@ -56,9 +57,13 @@ static NSString* ReadNSStringPtr(const char* symbol) {
 }  // namespace media
 
 bool AVFoundationGlue::IsAVFoundationSupported() {
+  if (!base::mac::IsOSLionOrLater())
+    return false;
+  const std::string group_name =
+      base::FieldTrialList::FindFullName("AVFoundationMacVideoCapture");
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-  return cmd_line->HasSwitch(switches::kEnableAVFoundation) &&
-      base::mac::IsOSLionOrLater() && [AVFoundationBundle() load];
+  return (cmd_line->HasSwitch(switches::kEnableAVFoundation) ||
+      group_name == "Enabled") && [AVFoundationBundle() load];
 }
 
 NSBundle const* AVFoundationGlue::AVFoundationBundle() {
