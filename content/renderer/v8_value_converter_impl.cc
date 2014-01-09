@@ -406,8 +406,11 @@ base::Value* V8ValueConverterImpl::FromV8Object(
   //
   // NOTE: check this after |strategy_| so that callers have a chance to
   // do something else, such as convert to the node's name rather than NULL.
+  //
+  // ANOTHER NOTE: returning an empty dictionary here to minimise surprise.
+  // See also http://crbug.com/330559.
   if (val->InternalFieldCount())
-    return NULL;
+    return new base::DictionaryValue();
 
   scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   v8::Handle<v8::Array> property_names(val->GetOwnPropertyNames());

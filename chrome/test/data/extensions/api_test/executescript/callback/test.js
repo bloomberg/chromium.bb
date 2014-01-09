@@ -86,9 +86,10 @@ chrome.test.getConfig(function(config) {
         });
       },
 
-      // DOM objects (nodes, properties, etc) should not get converted. We
-      // could try to convert them the best they can but it's undefined what
-      // that means.
+      // DOM objects (nodes, properties, etc) should be converted to empty
+      // objects. We could try to convert them the best they can but it's
+      // undefined what that means. Ideally it'd just throw an exception but
+      // the backwards compatible ship sailed long ago.
       function executeCallbackDOMObjShouldSucceedAndReturnNull() {
         [ 'document',
           'document.getElementById("testDiv")',
@@ -99,7 +100,7 @@ chrome.test.getConfig(function(config) {
           chrome.tabs.executeScript(tabId,
                                     {code: 'var obj = ' + expr + '; obj'},
                                     chrome.test.callbackPass(function(result) {
-            chrome.test.assertEq([null], result, 'Failed for ' + expr);
+            chrome.test.assertEq([{}], result, 'Failed for ' + expr);
           }));
         });
       },
