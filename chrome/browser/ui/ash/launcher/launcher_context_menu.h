@@ -14,6 +14,10 @@
 
 class ChromeLauncherController;
 
+namespace ash {
+class ShelfItemDelegate;
+}
+
 namespace aura {
 class Window;
 }
@@ -31,6 +35,13 @@ class LauncherContextMenu : public ui::SimpleMenuModel,
   LauncherContextMenu(ChromeLauncherController* controller,
                       const ash::LauncherItem* item,
                       aura::Window* root_window);
+
+  // Creates a menu used by item created by ShelfWindowWatcher.
+  LauncherContextMenu(ChromeLauncherController* controller,
+                      ash::ShelfItemDelegate* item_delegate,
+                      ash::LauncherItem* item,
+                      aura::Window* root_window);
+
   // Creates a menu used as a desktop context menu on |root_window|.
   LauncherContextMenu(ChromeLauncherController* controller,
                       aura::Window* root_window);
@@ -89,6 +100,9 @@ class LauncherContextMenu : public ui::SimpleMenuModel,
   scoped_ptr<extensions::ContextMenuMatcher> extension_items_;
 
   aura::Window* root_window_;
+
+  // Not owned.
+  ash::ShelfItemDelegate* item_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherContextMenu);
 };

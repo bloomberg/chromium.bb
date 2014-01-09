@@ -91,7 +91,7 @@ void ShelfWindowWatcher::AddLauncherItem(aura::Window* window) {
   SetShelfItemDetailsForLauncherItem(&item, *item_details);
   SetLauncherIDForWindow(id, window);
   scoped_ptr<ShelfItemDelegate> item_delegate(
-      new ShelfWindowWatcherItemDelegate(window));
+      new ShelfWindowWatcherItemDelegate(window, model_));
   // |item_delegate| is owned by |item_delegate_manager_|.
   item_delegate_manager_->SetShelfItemDelegate(id, item_delegate.Pass());
   model_->Add(item);

@@ -158,7 +158,10 @@ aura::client::UserActionClient* ShellDelegateImpl::CreateUserActionClient() {
   return NULL;
 }
 
-ui::MenuModel* ShellDelegateImpl::CreateContextMenu(aura::Window* root) {
+ui::MenuModel* ShellDelegateImpl::CreateContextMenu(
+    aura::Window* root,
+    ash::ShelfItemDelegate* item_delegate,
+    ash::LauncherItem* item) {
   return new ContextMenu(root);
 }
 

@@ -127,11 +127,17 @@ aura::client::UserActionClient* ChromeShellDelegate::CreateUserActionClient() {
   return new UserActionHandler;
 }
 
-ui::MenuModel* ChromeShellDelegate::CreateContextMenu(aura::Window* root) {
+ui::MenuModel* ChromeShellDelegate::CreateContextMenu(
+    aura::Window* root,
+    ash::ShelfItemDelegate* item_delegate,
+    ash::LauncherItem* item) {
   DCHECK(shelf_delegate_);
   // Don't show context menu for exclusive app runtime mode.
   if (chrome::IsRunningInAppMode())
     return NULL;
+
+  if (item_delegate && item)
+    return new LauncherContextMenu(shelf_delegate_, item_delegate, item, root);
 
   return new LauncherContextMenu(shelf_delegate_, root);
 }

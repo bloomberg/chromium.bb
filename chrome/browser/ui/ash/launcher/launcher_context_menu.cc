@@ -9,6 +9,7 @@
 #include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/root_window_controller.h"
+#include "ash/shelf/shelf_item_delegate.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "base/bind.h"
@@ -42,7 +43,24 @@ LauncherContextMenu::LauncherContextMenu(ChromeLauncherController* controller,
       controller_(controller),
       item_(*item),
       shelf_alignment_menu_(root),
-      root_window_(root) {
+      root_window_(root),
+      item_delegate_(NULL) {
+  DCHECK(item);
+  DCHECK(root_window_);
+  Init();
+}
+
+LauncherContextMenu::LauncherContextMenu(
+    ChromeLauncherController* controller,
+    ash::ShelfItemDelegate* item_delegate,
+    ash::LauncherItem* item,
+    aura::Window* root)
+    : ui::SimpleMenuModel(NULL),
+      controller_(controller),
+      item_(*item),
+      shelf_alignment_menu_(root),
+      root_window_(root),
+      item_delegate_(item_delegate) {
   DCHECK(item);
   DCHECK(root_window_);
   Init();
@@ -57,7 +75,8 @@ LauncherContextMenu::LauncherContextMenu(ChromeLauncherController* controller,
       extension_items_(new extensions::ContextMenuMatcher(
           controller->profile(), this, this,
           base::Bind(MenuItemHasLauncherContext))),
-      root_window_(root) {
+      root_window_(root),
+      item_delegate_(NULL) {
   DCHECK(root_window_);
   Init();
 }
@@ -120,6 +139,9 @@ void LauncherContextMenu::Init() {
         AddItem(MENU_NEW_INCOGNITO_WINDOW,
                 l10n_util::GetStringUTF16(IDS_LAUNCHER_NEW_INCOGNITO_WINDOW));
       }
+    } else if (item_.type == ash::TYPE_DIALOG) {
+      AddItem(MENU_CLOSE,
+              l10n_util::GetStringUTF16(IDS_LAUNCHER_CONTEXT_MENU_CLOSE));
     } else {
       if (item_.type == ash::TYPE_PLATFORM_APP) {
         AddItem(
@@ -246,7 +268,13 @@ void LauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
       controller_->Launch(item_.id, ui::EF_NONE);
       break;
     case MENU_CLOSE:
-      controller_->Close(item_.id);
+      if (item_.type == ash::TYPE_DIALOG) {
+        DCHECK(item_delegate_);
+        item_delegate_->Close();
+      } else {
+        // TODO(simonhong): Use ShelfItemDelegate::Close().
+        controller_->Close(item_.id);
+      }
       ash::Shell::GetInstance()->metrics()->RecordUserMetricsAction(
           ash::UMA_CLOSE_THROUGH_CONTEXT_MENU);
       break;

@@ -14,17 +14,17 @@ class Window;
 }
 
 namespace ash {
+
+class ShelfModel;
+
 namespace internal {
 
 // ShelfItemDelegate for the items created by ShelfWindowWatcher.
 class ShelfWindowWatcherItemDelegate : public ShelfItemDelegate {
  public:
-  explicit ShelfWindowWatcherItemDelegate(aura::Window* window);
+  ShelfWindowWatcherItemDelegate(aura::Window* window, ShelfModel* model_);
 
   virtual ~ShelfWindowWatcherItemDelegate();
-
-  // Closes the window associated with this item.
-  void Close();
 
  private:
   // ShelfItemDelegate overrides:
@@ -34,9 +34,13 @@ class ShelfWindowWatcherItemDelegate : public ShelfItemDelegate {
   virtual ShelfMenuModel* CreateApplicationMenu(int event_flags) OVERRIDE;
   virtual bool IsDraggable() OVERRIDE;
   virtual bool ShouldShowTooltip() OVERRIDE;
+  virtual void Close() OVERRIDE;
 
   // Stores a Window associated with this item. Not owned.
   aura::Window* window_;
+
+  // Not owned.
+  ShelfModel* model_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfWindowWatcherItemDelegate);
 };

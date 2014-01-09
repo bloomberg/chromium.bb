@@ -53,5 +53,8 @@ bool WindowWatcherShelfItemDelegate::ShouldShowTooltip() {
   return true;
 }
 
+void WindowWatcherShelfItemDelegate::Close() {
+}
+
 }  // namespace shell
 }  // namespace ash

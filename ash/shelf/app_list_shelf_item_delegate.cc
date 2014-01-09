@@ -39,7 +39,9 @@ base::string16 AppListShelfItemDelegate::GetTitle() {
 
 ui::MenuModel* AppListShelfItemDelegate::CreateContextMenu(
     aura::Window* root_window) {
-  return Shell::GetInstance()->delegate()->CreateContextMenu(root_window);
+  return Shell::GetInstance()->delegate()->CreateContextMenu(root_window,
+                                                             NULL,
+                                                             NULL);
 }
 
 ShelfMenuModel* AppListShelfItemDelegate::CreateApplicationMenu(
@@ -54,6 +56,9 @@ bool AppListShelfItemDelegate::IsDraggable() {
 
 bool AppListShelfItemDelegate::ShouldShowTooltip() {
   return true;
+}
+
+void AppListShelfItemDelegate::Close() {
 }
 
 }  // namespace internal

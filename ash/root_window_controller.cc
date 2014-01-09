@@ -541,7 +541,9 @@ void RootWindowController::ShowContextMenu(const gfx::Point& location_in_screen,
                                            ui::MenuSourceType source_type) {
   DCHECK(Shell::GetInstance()->delegate());
   scoped_ptr<ui::MenuModel> menu_model(
-      Shell::GetInstance()->delegate()->CreateContextMenu(root_window()));
+      Shell::GetInstance()->delegate()->CreateContextMenu(root_window(),
+                                                          NULL,
+                                                          NULL));
   if (!menu_model)
     return;
 

@@ -78,9 +78,6 @@ class LauncherItemController : public ash::ShelfItemDelegate {
   // Returns true when a new item got created.
   virtual bool Activate(ash::LaunchSource source) = 0;
 
-  // Closes all windows associated with this item.
-  virtual void Close() = 0;
-
   // Called to retrieve the list of running applications.
   virtual ChromeLauncherAppMenuItems GetApplicationList(int event_flags) = 0;
 

@@ -40,7 +40,6 @@ class AppShortcutLauncherItemController : public LauncherItemController {
   virtual bool IsVisible() const OVERRIDE;
   virtual void Launch(ash::LaunchSource source, int event_flags) OVERRIDE;
   virtual bool Activate(ash::LaunchSource source) OVERRIDE;
-  virtual void Close() OVERRIDE;
   virtual ChromeLauncherAppMenuItems GetApplicationList(
       int event_flags) OVERRIDE;
   virtual bool ItemSelected(const ui::Event& event) OVERRIDE;
@@ -50,6 +49,7 @@ class AppShortcutLauncherItemController : public LauncherItemController {
   virtual ash::ShelfMenuModel* CreateApplicationMenu(int event_flags) OVERRIDE;
   virtual bool IsDraggable() OVERRIDE;
   virtual bool ShouldShowTooltip() OVERRIDE;
+  virtual void Close() OVERRIDE;
 
   // Get the refocus url pattern, which can be used to identify this application
   // from a URL link.

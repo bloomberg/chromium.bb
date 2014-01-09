@@ -26,8 +26,10 @@ int LauncherItemTypeToWeight(LauncherItemType type) {
         return 1;
       case TYPE_PLATFORM_APP:
         return 2;
-      case TYPE_APP_PANEL:
+      case TYPE_DIALOG:
         return 3;
+      case TYPE_APP_PANEL:
+        return 4;
       case TYPE_UNDEFINED:
         NOTREACHED() << "LauncherItemType must be set";
         return -1;
@@ -42,8 +44,10 @@ int LauncherItemTypeToWeight(LauncherItemType type) {
         return 1;
       case TYPE_APP_LIST:
         return 2;
-      case TYPE_APP_PANEL:
+      case TYPE_DIALOG:
         return 3;
+      case TYPE_APP_PANEL:
+        return 4;
       case TYPE_UNDEFINED:
         NOTREACHED() << "LauncherItemType must be set";
         return -1;

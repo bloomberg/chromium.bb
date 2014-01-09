@@ -35,6 +35,9 @@ enum LauncherItemType {
   // Represents a windowed V1 browser app.
   TYPE_WINDOWED_APP,
 
+  // Represents a dialog.
+  TYPE_DIALOG,
+
   // Default value.
   TYPE_UNDEFINED,
 };

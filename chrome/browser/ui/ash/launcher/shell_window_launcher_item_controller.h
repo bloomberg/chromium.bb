@@ -59,7 +59,6 @@ class ShellWindowLauncherItemController : public LauncherItemController,
   virtual bool IsVisible() const OVERRIDE;
   virtual void Launch(ash::LaunchSource source, int event_flags) OVERRIDE;
   virtual bool Activate(ash::LaunchSource source) OVERRIDE;
-  virtual void Close() OVERRIDE;
   virtual ChromeLauncherAppMenuItems GetApplicationList(
       int event_flags) OVERRIDE;
   virtual bool ItemSelected(const ui::Event& eent) OVERRIDE;
@@ -68,6 +67,7 @@ class ShellWindowLauncherItemController : public LauncherItemController,
   virtual ash::ShelfMenuModel* CreateApplicationMenu(int event_flags) OVERRIDE;
   virtual bool IsDraggable() OVERRIDE;
   virtual bool ShouldShowTooltip() OVERRIDE;
+  virtual void Close() OVERRIDE;
 
   // aura::WindowObserver overrides:
   virtual void OnWindowPropertyChanged(aura::Window* window,

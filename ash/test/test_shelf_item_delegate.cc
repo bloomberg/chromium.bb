@@ -48,5 +48,8 @@ bool TestShelfItemDelegate::ShouldShowTooltip() {
   return true;
 }
 
+void TestShelfItemDelegate::Close() {
+}
+
 }  // namespace test
 }  // namespace ash

@@ -28,6 +28,7 @@ class WindowWatcherShelfItemDelegate : public ShelfItemDelegate {
   virtual ShelfMenuModel* CreateApplicationMenu(int event_flags) OVERRIDE;
   virtual bool IsDraggable() OVERRIDE;
   virtual bool ShouldShowTooltip() OVERRIDE;
+  virtual void Close() OVERRIDE;
 
  private:
   LauncherID id_;

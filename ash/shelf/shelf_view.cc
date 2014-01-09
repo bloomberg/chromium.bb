@@ -918,6 +918,7 @@ views::View* ShelfView::CreateViewForItem(const LauncherItem& item) {
     case TYPE_APP_SHORTCUT:
     case TYPE_WINDOWED_APP:
     case TYPE_PLATFORM_APP:
+    case TYPE_DIALOG:
     case TYPE_APP_PANEL: {
       ShelfButton* button = ShelfButton::Create(this, this, layout_manager_);
       button->SetImage(item.image);
@@ -1252,6 +1253,7 @@ bool ShelfView::SameDragType(LauncherItemType typea,
     case TYPE_PLATFORM_APP:
     case TYPE_WINDOWED_APP:
     case TYPE_APP_PANEL:
+    case TYPE_DIALOG:
       return typeb == typea;
     case TYPE_UNDEFINED:
       NOTREACHED() << "LauncherItemType must be set.";
@@ -1614,6 +1616,7 @@ void ShelfView::ShelfItemChanged(int model_index,
     case TYPE_APP_SHORTCUT:
     case TYPE_WINDOWED_APP:
     case TYPE_PLATFORM_APP:
+    case TYPE_DIALOG:
     case TYPE_APP_PANEL: {
       ShelfButton* button = static_cast<ShelfButton*>(view);
       ReflectItemStatus(item, button);
@@ -1788,6 +1791,7 @@ void ShelfView::ButtonPressed(views::Button* sender, const ui::Event& event) {
         break;
 
       case TYPE_APP_PANEL:
+      case TYPE_DIALOG:
         break;
 
       case TYPE_UNDEFINED:

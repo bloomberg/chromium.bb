@@ -59,6 +59,10 @@ class ASH_EXPORT ShelfItemDelegate {
 
   // Returns true if a tooltip should be shown.
   virtual bool ShouldShowTooltip() = 0;
+
+  // Closes all windows associated with this item.
+  virtual void Close() = 0;
+
 };
 
 }  // namespace ash

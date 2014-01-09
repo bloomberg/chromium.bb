@@ -17,6 +17,10 @@
 
 class Browser;
 
+namespace ash {
+class ShelfItemDelegate;
+}
+
 namespace content {
 class WebContents;
 }
@@ -57,7 +61,10 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   virtual ash::NewWindowDelegate* CreateNewWindowDelegate() OVERRIDE;
   virtual ash::MediaDelegate* CreateMediaDelegate() OVERRIDE;
   virtual aura::client::UserActionClient* CreateUserActionClient() OVERRIDE;
-  virtual ui::MenuModel* CreateContextMenu(aura::Window* root) OVERRIDE;
+  virtual ui::MenuModel* CreateContextMenu(
+      aura::Window* root,
+      ash::ShelfItemDelegate* item_delegate,
+      ash::LauncherItem* item) OVERRIDE;
   virtual ash::WindowTreeHostFactory* CreateWindowTreeHostFactory() OVERRIDE;
   virtual base::string16 GetProductName() const OVERRIDE;
 

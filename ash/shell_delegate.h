@@ -49,6 +49,7 @@ class NewWindowDelegate;
 class WindowTreeHostFactory;
 class SessionStateDelegate;
 class ShelfDelegate;
+class ShelfItemDelegate;
 class ShelfModel;
 class SystemTrayDelegate;
 class UserWallpaperDelegate;
@@ -126,7 +127,12 @@ class ASH_EXPORT ShellDelegate {
   virtual aura::client::UserActionClient* CreateUserActionClient() = 0;
 
   // Creates a menu model of the context for the |root_window|.
-  virtual ui::MenuModel* CreateContextMenu(aura::Window* root_window) = 0;
+  // When a ContextMenu is used for an item created by ShelfWindowWatcher,
+  // passes its ShelfItemDelegate and LauncherItem.
+  virtual ui::MenuModel* CreateContextMenu(
+      aura::Window* root_window,
+      ash::ShelfItemDelegate* item_delegate,
+      ash::LauncherItem* item) = 0;
 
   // Creates a root window host factory. Shell takes ownership of the returned
   // value.
