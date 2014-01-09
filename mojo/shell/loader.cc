@@ -9,6 +9,8 @@
 #include "mojo/shell/switches.h"
 #include "net/base/load_flags.h"
 #include "net/base/network_delegate.h"
+#include "net/url_request/url_fetcher.h"
+#include "net/url_request/url_request_status.h"
 
 namespace mojo {
 namespace shell {
@@ -25,6 +27,15 @@ Loader::Job::~Job() {
 }
 
 void Loader::Job::OnURLFetchComplete(const net::URLFetcher* source) {
+  net::URLRequestStatus status = source->GetStatus();
+  if (!status.is_success()) {
+    LOG(ERROR) << "URL fetch didn't succeed: status = " << status.status()
+               << ", error = " << status.error();
+  } else if (source->GetResponseCode() != 200) {
+    LOG(ERROR) << "HTTP response not OK: code = " << source->GetResponseCode();
+  }
+  // TODO: Do something else in the error cases?
+
   base::FilePath app_path;
   source->GetResponseAsFilePath(true, &app_path);
   delegate_->DidCompleteLoad(source->GetURL(), app_path);
