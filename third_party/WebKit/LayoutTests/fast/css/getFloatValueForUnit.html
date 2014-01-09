@@ -9,8 +9,6 @@
 if (window.testRunner)
     testRunner.dumpAsText();
 
-var invalidAccessError = "InvalidAccessError: A parameter or an operation was not supported by the underlying object.";
-
 description("Testing whether CSSPrimitiveValue.getFloatValue() converts units correctly.");
 
 function getFloatValue(propertyName, unit)
@@ -40,22 +38,22 @@ shouldBe("getFloatValue('-webkit-animation-delay', CSSPrimitiveValue.CSS_MS)", "
 shouldBe("getFloatValue('-webkit-animation-delay', CSSPrimitiveValue.CSS_S)", "0.2");
 shouldBe("getFloatValue('-webkit-animation-delay', CSSPrimitiveValue.CSS_NUMBER)", "200");
 
-shouldThrow("getFloatValue('font-size', CSSPrimitiveValue.CSS_PERCENTAGE)", "invalidAccessError");
-shouldThrow("getFloatValue('font-size', CSSPrimitiveValue.CSS_MS)", "invalidAccessError");
-shouldThrow("getFloatValue('font-size', CSSPrimitiveValue.CSS_HZ)", "invalidAccessError");
-shouldThrow("getFloatValue('font-size', CSSPrimitiveValue.CSS_DEG)", "invalidAccessError");
-shouldThrow("getFloatValue('font-size', CSSPrimitiveValue.CSS_RGBCOLOR)", "invalidAccessError");
+shouldThrow("getFloatValue('font-size', CSSPrimitiveValue.CSS_PERCENTAGE)");
+shouldThrow("getFloatValue('font-size', CSSPrimitiveValue.CSS_MS)");
+shouldThrow("getFloatValue('font-size', CSSPrimitiveValue.CSS_HZ)");
+shouldThrow("getFloatValue('font-size', CSSPrimitiveValue.CSS_DEG)");
+shouldThrow("getFloatValue('font-size', CSSPrimitiveValue.CSS_RGBCOLOR)");
 
-shouldThrow("getFirstFloatValueInList('-webkit-transform', CSSPrimitiveValue.CSS_PERCENTAGE)", "invalidAccessError");
-shouldThrow("getFirstFloatValueInList('-webkit-transform', CSSPrimitiveValue.CSS_PX)", "invalidAccessError");
-shouldThrow("getFirstFloatValueInList('-webkit-transform', CSSPrimitiveValue.CSS_MS)", "invalidAccessError");
-shouldThrow("getFirstFloatValueInList('-webkit-transform', CSSPrimitiveValue.CSS_HZ)", "invalidAccessError");
-shouldThrow("getFirstFloatValueInList('-webkit-transform', CSSPrimitiveValue.CSS_RGBCOLOR)", "invalidAccessError");
+shouldThrow("getFirstFloatValueInList('-webkit-transform', CSSPrimitiveValue.CSS_PERCENTAGE)");
+shouldThrow("getFirstFloatValueInList('-webkit-transform', CSSPrimitiveValue.CSS_PX)");
+shouldThrow("getFirstFloatValueInList('-webkit-transform', CSSPrimitiveValue.CSS_MS)");
+shouldThrow("getFirstFloatValueInList('-webkit-transform', CSSPrimitiveValue.CSS_HZ)");
+shouldThrow("getFirstFloatValueInList('-webkit-transform', CSSPrimitiveValue.CSS_RGBCOLOR)");
 
-shouldThrow("getFloatValue('-webkit-animation-delay', CSSPrimitiveValue.CSS_PERCENTAGE)", "invalidAccessError");
-shouldThrow("getFloatValue('-webkit-animation-delay', CSSPrimitiveValue.CSS_PX)", "invalidAccessError");
-shouldThrow("getFloatValue('-webkit-animation-delay', CSSPrimitiveValue.CSS_DEG)", "invalidAccessError");
-shouldThrow("getFloatValue('-webkit-animation-delay', CSSPrimitiveValue.CSS_HZ)", "invalidAccessError");
-shouldThrow("getFloatValue('-webkit-animation-delay', CSSPrimitiveValue.CSS_RGBCOLOR)", "invalidAccessError");
+shouldThrow("getFloatValue('-webkit-animation-delay', CSSPrimitiveValue.CSS_PERCENTAGE)");
+shouldThrow("getFloatValue('-webkit-animation-delay', CSSPrimitiveValue.CSS_PX)");
+shouldThrow("getFloatValue('-webkit-animation-delay', CSSPrimitiveValue.CSS_DEG)");
+shouldThrow("getFloatValue('-webkit-animation-delay', CSSPrimitiveValue.CSS_HZ)");
+shouldThrow("getFloatValue('-webkit-animation-delay', CSSPrimitiveValue.CSS_RGBCOLOR)");
 </script>
 </body>

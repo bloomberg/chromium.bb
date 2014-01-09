@@ -102,7 +102,7 @@ PassRefPtr<FontFace> FontFace::create(const AtomicString& family, const String& 
 {
     RefPtr<CSSValue> src = parseCSSValue(source, CSSPropertySrc);
     if (!src || !src->isValueList()) {
-        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
+        exceptionState.throwDOMException(SyntaxError, "The source provided ('" + source + "') could not be parsed as a value list.");
         return 0;
     }
 
@@ -246,7 +246,7 @@ void FontFace::setPropertyFromString(const String& s, CSSPropertyID propertyID, 
 {
     RefPtr<CSSValue> value = parseCSSValue(s, propertyID);
     if (!value || !setPropertyValue(value, propertyID))
-        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
+        exceptionState.throwDOMException(SyntaxError, "Failed to set '" + s + "' as a property value.");
 }
 
 bool FontFace::setPropertyFromStyle(const StylePropertySet* properties, CSSPropertyID propertyID)

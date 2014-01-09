@@ -201,7 +201,7 @@ void MediaList::deleteMedium(const String& medium, ExceptionState& exceptionStat
 
     bool success = m_mediaQueries->remove(medium);
     if (!success) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotFoundError);
+        exceptionState.throwDOMException(NotFoundError, "Failed to delete '" + medium + "'.");
         return;
     }
     if (m_parentStyleSheet)
@@ -214,7 +214,7 @@ void MediaList::appendMedium(const String& medium, ExceptionState& exceptionStat
 
     bool success = m_mediaQueries->add(medium);
     if (!success) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidCharacterError);
+        exceptionState.throwDOMException(InvalidCharacterError, "The value provided ('" + medium + "') is not a valid medium.");
         return;
     }
 

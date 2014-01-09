@@ -66,14 +66,13 @@ function runTests() {
     shouldBeEqualToString('modifiedFace.featureSettings', "'dlig' 1, 'liga' 0");
 
     debug('');
-    var syntaxError = "'SyntaxError: An invalid or illegal string was specified.'";
-    shouldThrow("new FontFace('test', 'invalid_src', {})", syntaxError);
+    shouldThrow("new FontFace('test', 'invalid_src', {})");
     face = new FontFace('test', 'local(foo)', {});
-    shouldThrow("face.style = ''", syntaxError);
-    shouldThrow("face.weight = 'a'", syntaxError);
-    shouldThrow("face.unicodeRange = 'U+'", syntaxError);
-    shouldThrow("face.variant = '???'", syntaxError);
-    shouldThrow("face.featureSettings = null", syntaxError);
+    shouldThrow("face.style = ''");
+    shouldThrow("face.weight = 'a'");
+    shouldThrow("face.unicodeRange = 'U+'");
+    shouldThrow("face.variant = '???'");
+    shouldThrow("face.featureSettings = null");
 }
 
 if (document.fonts)

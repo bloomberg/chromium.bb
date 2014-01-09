@@ -295,7 +295,7 @@ Vector<RefPtr<FontFace> > FontFaceSet::match(const String& fontString, const Str
 
     Font font;
     if (!resolveFontStyle(fontString, font)) {
-        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
+        exceptionState.throwDOMException(SyntaxError, "Could not resolve '" + fontString + "' as a font.");
         return matchedFonts;
     }
 
@@ -311,7 +311,7 @@ ScriptPromise FontFaceSet::load(const String& fontString, const String& text, Ex
 {
     Font font;
     if (!resolveFontStyle(fontString, font)) {
-        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
+        exceptionState.throwDOMException(SyntaxError, "Could not resolve '" + fontString + "' as a font.");
         return ScriptPromise();
     }
 
@@ -333,7 +333,7 @@ bool FontFaceSet::check(const String& fontString, const String& text, ExceptionS
 {
     Font font;
     if (!resolveFontStyle(fontString, font)) {
-        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
+        exceptionState.throwDOMException(SyntaxError, "Could not resolve '" + fontString + "' as a font.");
         return false;
     }
 
