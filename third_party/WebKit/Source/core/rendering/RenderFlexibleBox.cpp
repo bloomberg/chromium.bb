@@ -1044,15 +1044,6 @@ size_t RenderFlexibleBox::numberOfInFlowPositionedChildren(const OrderedFlexItem
     return count;
 }
 
-bool RenderFlexibleBox::needToStretchChild(RenderBox* child)
-{
-    if (alignmentForChild(child) != AlignStretch)
-        return false;
-
-    Length crossAxisLength = isHorizontalFlow() ? child->style()->height() : child->style()->width();
-    return crossAxisLength.isAuto();
-}
-
 void RenderFlexibleBox::resetAutoMarginsAndLogicalTopInCrossAxis(RenderBox* child)
 {
     if (hasAutoMarginsInCrossAxis(child))
@@ -1084,10 +1075,9 @@ void RenderFlexibleBox::layoutAndPlaceChildren(LayoutUnit& crossAxisOffset, cons
 
         LayoutUnit childPreferredSize = childSizes[i] + mainAxisBorderAndPaddingExtentForChild(child);
         setLogicalOverrideSize(child, childPreferredSize);
-        // FIXME: Can avoid laying out here in some cases. See https://webkit.org/b/87905.
-        if (needToStretchChild(child) || childPreferredSize != mainAxisExtentForChild(child))
+        if (childPreferredSize != mainAxisExtentForChild(child)) {
             child->setChildNeedsLayout(MarkOnlyThis);
-        else {
+        } else {
             // To avoid double applying margin changes in updateAutoMarginsInCrossAxis, we reset the margins here.
             resetAutoMarginsAndLogicalTopInCrossAxis(child);
         }
