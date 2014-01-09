@@ -253,8 +253,13 @@ void SQLTransaction::performPendingCallback()
 
 void SQLTransaction::executeSQL(const String& sqlStatement, const Vector<SQLValue>& arguments, PassOwnPtr<SQLStatementCallback> callback, PassOwnPtr<SQLStatementErrorCallback> callbackError, ExceptionState& exceptionState)
 {
-    if (!m_executeSqlAllowed || !m_database->opened()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+    if (!m_executeSqlAllowed) {
+        exceptionState.throwDOMException(InvalidStateError, "SQL execution is disallowed.");
+        return;
+    }
+
+    if (!m_database->opened()) {
+        exceptionState.throwDOMException(InvalidStateError, "The database has not been opened.");
         return;
     }
 

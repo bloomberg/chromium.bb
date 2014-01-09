@@ -50,7 +50,7 @@ int64_t SQLResultSet::insertId(ExceptionState& exceptionState) const
     if (m_insertIdSet)
         return m_insertId;
 
-    exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
+    exceptionState.throwDOMException(InvalidAccessError, "The query didn't result in any rows being added.");
     return -1;
 }
 

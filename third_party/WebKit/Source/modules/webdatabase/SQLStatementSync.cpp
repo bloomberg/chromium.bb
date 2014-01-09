@@ -60,18 +60,18 @@ PassRefPtr<SQLResultSet> SQLStatementSync::execute(DatabaseSync* db, ExceptionSt
     int result = statement.prepare();
     if (result != SQLResultOk) {
         if (result == SQLResultInterrupt)
-            exceptionState.throwUninformativeAndGenericDOMException(SQLDatabaseError);
+            exceptionState.throwDOMException(SQLDatabaseError, "Connection to the database interrupted.");
         else
-            exceptionState.throwDOMException(SyntaxError, SQLError::syntaxErrorMessage);
+            exceptionState.throwDOMException(SyntaxError, "Could not prepare statement.");
         db->setLastErrorMessage("could not prepare statement", result, database->lastErrorMsg());
         return 0;
     }
 
     if (statement.bindParameterCount() != m_arguments.size()) {
         if (db->isInterrupted())
-            exceptionState.throwUninformativeAndGenericDOMException(SQLDatabaseError);
+            exceptionState.throwDOMException(SQLDatabaseError, "Connection to the database interrupted.");
         else
-            exceptionState.throwDOMException(SyntaxError, SQLError::syntaxErrorMessage);
+            exceptionState.throwDOMException(SyntaxError, "Number of '?'s in statement string (" + String::number(statement.bindParameterCount()) + ") does not match the arguments provided (" + String::number(m_arguments.size()) + ").");
         db->setLastErrorMessage("number of '?'s in statement string does not match argument count");
         return 0;
     }
@@ -85,7 +85,7 @@ PassRefPtr<SQLResultSet> SQLStatementSync::execute(DatabaseSync* db, ExceptionSt
         }
 
         if (result != SQLResultOk) {
-            exceptionState.throwUninformativeAndGenericDOMException(SQLDatabaseError);
+            exceptionState.throwDOMException(SQLDatabaseError, "Could not bind value.");
             db->setLastErrorMessage("could not bind value", result, database->lastErrorMsg());
             return 0;
         }
@@ -110,7 +110,7 @@ PassRefPtr<SQLResultSet> SQLStatementSync::execute(DatabaseSync* db, ExceptionSt
         } while (result == SQLResultRow);
 
         if (result != SQLResultDone) {
-            exceptionState.throwUninformativeAndGenericDOMException(SQLDatabaseError);
+            exceptionState.throwDOMException(SQLDatabaseError, "Could not iterate results.");
             db->setLastErrorMessage("could not iterate results", result, database->lastErrorMsg());
             return 0;
         }
@@ -128,7 +128,7 @@ PassRefPtr<SQLResultSet> SQLStatementSync::execute(DatabaseSync* db, ExceptionSt
         db->setLastErrorMessage("statement failed due to a constraint failure");
         return 0;
     } else {
-        exceptionState.throwUninformativeAndGenericDOMException(SQLDatabaseError);
+        exceptionState.throwDOMException(SQLDatabaseError, "Could not execute statement.");
         db->setLastErrorMessage("could not execute statement", result, database->lastErrorMsg());
         return 0;
     }

@@ -1,9 +1,9 @@
 Test that the correct exceptions are thrown in exceptional situations.
 LOG: Exception thrown in transaction callback.
 PASS: expected and got error with message Exception thrown in transaction callback.
-LOG: SyntaxError: Failed to execute 'executeSql' on 'SQLTransactionSync': Invalid or unauthorized statement; or the number of arguments did not match the number of ? placeholders.
+LOG: SyntaxError: Failed to execute 'executeSql' on 'SQLTransactionSync': Could not prepare statement.
 PASS: expected and got error name SyntaxError
-LOG: SyntaxError: Failed to execute 'executeSql' on 'SQLTransactionSync': Invalid or unauthorized statement; or the number of arguments did not match the number of ? placeholders.
+LOG: SyntaxError: Failed to execute 'executeSql' on 'SQLTransactionSync': Number of '?'s in statement string (2) does not match the arguments provided (1).
 PASS: expected and got error name SyntaxError
 LOG: Cannot call toString() on this object.
 PASS: expected and got error with message Cannot call toString() on this object.
