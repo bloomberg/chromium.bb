@@ -12,8 +12,6 @@
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
-#elif defined(OS_WIN)
-#include "base/win/windows_version.h"
 #endif
 
 namespace gpu {
@@ -281,12 +279,8 @@ bool GPUTestBotConfig::GpuBlacklistedOnBot() {
   if (CurrentConfigMatches("MAC VMWARE") && base::mac::IsOSLionOrEarlier()) {
     return true;
   }
-#elif defined(OS_WIN)
-  // Blacklist rule #79 disables all Gpu acceleration before Windows 7.
-  if (base::win::GetVersion() <= base::win::VERSION_VISTA) {
-    return false;
-  }
 #endif
+  // TODO(ccameron): This should be true on Windows XP as well.
   return false;
 }
 
