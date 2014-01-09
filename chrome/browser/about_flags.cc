@@ -1710,7 +1710,7 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kGoogleProfileInfo)
   },
   {
-    "disable-app-launcher",
+    "reset-app-list-install-state",
     IDS_FLAGS_RESET_APP_LIST_INSTALL_STATE_NAME,
     IDS_FLAGS_RESET_APP_LIST_INSTALL_STATE_DESCRIPTION,
     kOsMac | kOsWin,
