@@ -107,6 +107,8 @@ void PluginPlaceholder::ReplacePlugin(WebPlugin* new_plugin) {
 
 void PluginPlaceholder::HidePlugin() {
   hidden_ = true;
+  if (!plugin_)
+    return;
   WebPluginContainer* container = plugin_->container();
   WebElement element = container->element();
   element.setAttribute("style", "display: none;");
@@ -158,6 +160,8 @@ void PluginPlaceholder::SetMessage(const base::string16& message) {
 }
 
 void PluginPlaceholder::UpdateMessage() {
+  if (!plugin_)
+    return;
   std::string script =
       "window.setMessage(" + base::GetQuotedJSONString(message_) + ")";
   plugin_->web_view()->mainFrame()->executeScript(
