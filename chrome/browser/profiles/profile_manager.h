@@ -61,23 +61,14 @@ class ProfileManager : public base::NonThreadSafe,
   // Note that in case of a guest account this will return a 'suitable' profile.
   static Profile* GetActiveUserProfile();
 
-  // The following DEPRECATED functions should be removed: crbug.com/83792.
-
-  // DEPRECATED: DO NOT USE unless in ChromeOS.
-  // Returns the default profile.  This adds the profile to the
-  // ProfileManager if it doesn't already exist.  This method returns NULL if
+  // DEPRECATED: DO NOT USE. Function will be removed soon (crbug.com/322682).
+  // Use GetPrimaryUserProfile or GetActiveUserProfile instead.
+  // Returns the default profile. This adds the profile to the
+  // ProfileManager if it doesn't already exist. This method returns NULL if
   // the profile doesn't exist and we can't create it.
   // The profile used can be overridden by using --login-profile on cros.
-  Profile* GetDefaultProfile(const base::FilePath& user_data_dir);
-
-  // DEPRECATED: DO NOT USE unless in ChromeOS.
-  // Same as instance method but provides the default user_data_dir as well.
   // Note that in case of a guest account this will return a 'suitable' profile.
   static Profile* GetDefaultProfile();
-
-  // DEPRECATED: DO NOT USE unless in ChromeOS.
-  // Same as GetDefaultProfile(). Do not use.
-  static Profile* GetDefaultProfileOrOffTheRecord();
 
   // Returns a profile for a specific profile directory within the user data
   // dir. This will return an existing profile it had already been created,
@@ -267,6 +258,14 @@ class ProfileManager : public base::NonThreadSafe,
    private:
     DISALLOW_COPY_AND_ASSIGN(ProfileInfo);
   };
+
+  // Returns the profile of the active user and / or the off the record profile
+  // if needed. This adds the profile to the ProfileManager if it doesn't
+  // already exist. The method will return NULL if the profile doesn't exist
+  // and we can't create it.
+  // The profile used can be overridden by using --login-profile on cros.
+  Profile* GetActiveUserOrOffTheRecordProfileFromPath(
+               const base::FilePath& user_data_dir);
 
   // Adds a pre-existing Profile object to the set managed by this
   // ProfileManager. This ProfileManager takes ownership of the Profile.

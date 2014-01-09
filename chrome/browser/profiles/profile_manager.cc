@@ -217,13 +217,8 @@ void ProfileManager::NukeDeletedProfilesFromDisk() {
 // TODO(skuhne): Remove this method once all clients are migrated.
 Profile* ProfileManager::GetDefaultProfile() {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  return profile_manager->GetDefaultProfile(profile_manager->user_data_dir_);
-}
-
-// static
-// TODO(skuhne): Remove this method once all clients are migrated.
-Profile* ProfileManager::GetDefaultProfileOrOffTheRecord() {
-  return GetDefaultProfile();
+  return profile_manager->GetActiveUserOrOffTheRecordProfileFromPath(
+             profile_manager->user_data_dir_);
 }
 
 // static
@@ -337,7 +332,7 @@ Profile* ProfileManager::GetLastUsedProfile(
 #if defined(OS_CHROMEOS)
   // Use default login profile if user has not logged in yet.
   if (!logged_in_) {
-    return GetDefaultProfile(user_data_dir);
+    return GetActiveUserOrOffTheRecordProfileFromPath(user_data_dir);
   } else {
     // CrOS multi-profiles implementation is different so GetLastUsedProfile
     // has custom implementation too.
@@ -427,49 +422,6 @@ Profile* ProfileManager::GetActiveUserProfile() {
   return manager->GetProfileByUser(manager->GetActiveUser());
 #else
   return GetDefaultProfile();
-#endif
-}
-
-Profile* ProfileManager::GetDefaultProfile(
-    const base::FilePath& user_data_dir) {
-#if defined(OS_CHROMEOS)
-  base::FilePath default_profile_dir(user_data_dir);
-  if (logged_in_) {
-    default_profile_dir = default_profile_dir.Append(GetInitialProfileDir());
-  } else {
-    default_profile_dir = profiles::GetDefaultProfileDir(user_data_dir);
-  }
-#else
-  base::FilePath default_profile_dir(user_data_dir);
-  default_profile_dir = default_profile_dir.Append(GetInitialProfileDir());
-#endif
-#if defined(OS_CHROMEOS)
-  if (!logged_in_) {
-    Profile* profile = GetProfile(default_profile_dir);
-    // For cros, return the OTR profile so we never accidentally keep
-    // user data in an unencrypted profile. But doing this makes
-    // many of the browser and ui tests fail. We do return the OTR profile
-    // if the login-profile switch is passed so that we can test this.
-    if (ShouldGoOffTheRecord(profile))
-      return profile->GetOffTheRecordProfile();
-    DCHECK(!chromeos::UserManager::Get()->IsLoggedInAsGuest());
-    return profile;
-  }
-
-  ProfileInfo* profile_info = GetProfileInfoByPath(default_profile_dir);
-  // Fallback to default off-the-record profile, if user profile has not fully
-  // loaded yet.
-  if (profile_info && !profile_info->created)
-    default_profile_dir = profiles::GetDefaultProfileDir(user_data_dir);
-
-  Profile* profile = GetProfile(default_profile_dir);
-  // Some unit tests didn't initialize the UserManager.
-  if (chromeos::UserManager::IsInitialized() &&
-      chromeos::UserManager::Get()->IsLoggedInAsGuest())
-    return profile->GetOffTheRecordProfile();
-  return profile;
-#else
-  return GetProfile(default_profile_dir);
 #endif
 }
 
@@ -572,6 +524,43 @@ void ProfileManager::CreateProfileAsync(
       info->callbacks.push_back(callback);
     }
   }
+}
+
+Profile* ProfileManager::GetActiveUserOrOffTheRecordProfileFromPath(
+    const base::FilePath& user_data_dir) {
+#if defined(OS_CHROMEOS)
+  base::FilePath default_profile_dir(user_data_dir);
+  if (!logged_in_) {
+    default_profile_dir = profiles::GetDefaultProfileDir(user_data_dir);
+    Profile* profile = GetProfile(default_profile_dir);
+    // For cros, return the OTR profile so we never accidentally keep
+    // user data in an unencrypted profile. But doing this makes
+    // many of the browser and ui tests fail. We do return the OTR profile
+    // if the login-profile switch is passed so that we can test this.
+    if (ShouldGoOffTheRecord(profile))
+      return profile->GetOffTheRecordProfile();
+    DCHECK(!chromeos::UserManager::Get()->IsLoggedInAsGuest());
+    return profile;
+  }
+
+  default_profile_dir = default_profile_dir.Append(GetInitialProfileDir());
+  ProfileInfo* profile_info = GetProfileInfoByPath(default_profile_dir);
+  // Fallback to default off-the-record profile, if user profile has not fully
+  // loaded yet.
+  if (profile_info && !profile_info->created)
+    default_profile_dir = profiles::GetDefaultProfileDir(user_data_dir);
+
+  Profile* profile = GetProfile(default_profile_dir);
+  // Some unit tests didn't initialize the UserManager.
+  if (chromeos::UserManager::IsInitialized() &&
+      chromeos::UserManager::Get()->IsLoggedInAsGuest())
+    return profile->GetOffTheRecordProfile();
+  return profile;
+#else
+  base::FilePath default_profile_dir(user_data_dir);
+  default_profile_dir = default_profile_dir.Append(GetInitialProfileDir());
+  return GetProfile(default_profile_dir);
+#endif
 }
 
 bool ProfileManager::AddProfile(Profile* profile) {

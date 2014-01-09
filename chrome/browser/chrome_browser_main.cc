@@ -320,12 +320,12 @@ base::FilePath GetStartupProfilePath(const base::FilePath& user_data_dir,
       user_data_dir);
 }
 
-// Initializes the profile, possibly doing some user prompting to pick a
-// fallback profile. Returns the newly created profile, or NULL if startup
+// Initializes the primary profile, possibly doing some user prompting to pick
+// a fallback profile. Returns the newly created profile, or NULL if startup
 // should not continue.
-Profile* CreateProfile(const content::MainFunctionParams& parameters,
-                       const base::FilePath& user_data_dir,
-                       const CommandLine& parsed_command_line) {
+Profile* CreatePrimaryProfile(const content::MainFunctionParams& parameters,
+                              const base::FilePath& user_data_dir,
+                              const CommandLine& parsed_command_line) {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::CreateProfile")
   base::Time start = base::Time::Now();
   if (profiles::IsMultipleProfilesEnabled() &&
@@ -342,9 +342,12 @@ Profile* CreateProfile(const content::MainFunctionParams& parameters,
 
   Profile* profile = NULL;
 #if defined(OS_CHROMEOS)
-  // TODO(ivankr): http://crbug.com/83792
-  profile = g_browser_process->profile_manager()->GetDefaultProfile(
-      user_data_dir);
+  // On ChromeOS the ProfileManager will use the same path as the one we got
+  // passed. GetActiveUserProfile will therefore use the correct path
+  // automatically.
+  DCHECK_EQ(user_data_dir.value(),
+            g_browser_process->profile_manager()->user_data_dir().value());
+  profile = ProfileManager::GetActiveUserProfile();
 #else
   base::FilePath profile_path =
       GetStartupProfilePath(user_data_dir, parsed_command_line);
@@ -1223,7 +1226,9 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // Profile creation ----------------------------------------------------------
 
   MetricsService::SetExecutionPhase(MetricsService::CREATE_PROFILE);
-  profile_ = CreateProfile(parameters(), user_data_dir_, parsed_command_line());
+  profile_ = CreatePrimaryProfile(parameters(),
+                                  user_data_dir_,
+                                  parsed_command_line());
   if (!profile_)
     return content::RESULT_CODE_NORMAL_EXIT;
 
