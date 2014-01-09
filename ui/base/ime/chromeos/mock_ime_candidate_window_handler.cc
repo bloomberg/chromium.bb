@@ -16,7 +16,7 @@ MockIMECandidateWindowHandler::~MockIMECandidateWindowHandler() {
 }
 
 void MockIMECandidateWindowHandler::UpdateLookupTable(
-    const input_method::CandidateWindow& table,
+    const ui::CandidateWindow& table,
     bool visible) {
   ++update_lookup_table_call_count_;
   last_update_lookup_table_arg_.lookup_table.CopyFrom(table);

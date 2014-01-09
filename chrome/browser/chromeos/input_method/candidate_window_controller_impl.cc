@@ -19,7 +19,6 @@
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
 
-
 namespace chromeos {
 namespace input_method {
 
@@ -101,7 +100,7 @@ void CandidateWindowControllerImpl::FocusStateChanged(bool is_focused) {
 
 // static
 void CandidateWindowControllerImpl::ConvertLookupTableToInfolistEntry(
-    const CandidateWindow& candidate_window,
+    const ui::CandidateWindow& candidate_window,
     std::vector<InfolistEntry>* infolist_entries,
     bool* has_highlighted) {
   DCHECK(infolist_entries);
@@ -113,7 +112,7 @@ void CandidateWindowControllerImpl::ConvertLookupTableToInfolistEntry(
       candidate_window.cursor_position() % candidate_window.page_size();
 
   for (size_t i = 0; i < candidate_window.candidates().size(); ++i) {
-    const CandidateWindow::Entry& ibus_entry =
+    const ui::CandidateWindow::Entry& ibus_entry =
         candidate_window.candidates()[i];
     if (ibus_entry.description_title.empty() &&
         ibus_entry.description_body.empty())
@@ -129,7 +128,7 @@ void CandidateWindowControllerImpl::ConvertLookupTableToInfolistEntry(
 }
 
 void CandidateWindowControllerImpl::UpdateLookupTable(
-    const CandidateWindow& candidate_window,
+    const ui::CandidateWindow& candidate_window,
     bool visible) {
   // If it's not visible, hide the lookup table and return.
   if (!visible) {

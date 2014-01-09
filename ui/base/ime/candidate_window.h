@@ -1,28 +1,27 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_IME_CANDIDATE_WINDOW_H_
-#define CHROMEOS_IME_CANDIDATE_WINDOW_H_
+#ifndef UI_BASE_IME_CANDIDATE_WINDOW_H_
+#define UI_BASE_IME_CANDIDATE_WINDOW_H_
 
 #include <string>
 #include <vector>
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "chromeos/chromeos_export.h"
+#include "ui/base/ui_base_export.h"
 
-namespace chromeos {
-namespace input_method {
+namespace ui {
 
 // CandidateWindow represents the structure of candidates generated from IME.
-class CHROMEOS_EXPORT CandidateWindow {
+class UI_BASE_EXPORT CandidateWindow {
  public:
   enum Orientation {
     HORIZONTAL = 0,
     VERTICAL = 1,
   };
 
-  struct CandidateWindowProperty {
+  struct UI_BASE_EXPORT CandidateWindowProperty {
     CandidateWindowProperty();
     virtual ~CandidateWindowProperty();
     int page_size;
@@ -38,7 +37,7 @@ class CHROMEOS_EXPORT CandidateWindow {
   };
 
   // Represents a candidate entry.
-  struct Entry {
+  struct UI_BASE_EXPORT Entry {
     Entry();
     virtual ~Entry();
     std::string value;
@@ -121,7 +120,6 @@ class CHROMEOS_EXPORT CandidateWindow {
   DISALLOW_COPY_AND_ASSIGN(CandidateWindow);
 };
 
-}  // namespace input_method
-}  // namespace chromeos
+}  // namespace ui
 
-#endif  // CHROMEOS_IME_CANDIDATE_WINDOW_H_
+#endif  // UI_BASE_IME_CANDIDATE_WINDOW_H_

@@ -1,15 +1,14 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/ime/candidate_window.h"
+#include "ui/base/ime/candidate_window.h"
 
 #include <string>
 #include "base/logging.h"
 #include "base/values.h"
 
-namespace chromeos {
-namespace input_method {
+namespace ui {
 
 namespace {
 // The default entry number of a page in CandidateWindow.
@@ -74,5 +73,4 @@ CandidateWindow::Entry::Entry() {
 CandidateWindow::Entry::~Entry() {
 }
 
-}  // namespace input_method
-}  // namespace chromeos
+}  // namespace ui

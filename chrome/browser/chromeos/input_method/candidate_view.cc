@@ -6,7 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/input_method/candidate_window_constants.h"
-#include "chromeos/ime/candidate_window.h"
+#include "ui/base/ime/candidate_window.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
@@ -43,14 +43,14 @@ class VerticalCandidateLabel : public views::Label {
 // Creates the shortcut label, and returns it (never returns NULL).
 // The label text is not set in this function.
 views::Label* CreateShortcutLabel(
-    CandidateWindow::Orientation orientation,
+    ui::CandidateWindow::Orientation orientation,
     const ui::NativeTheme& theme) {
   // Create the shortcut label. The label will be owned by
   // |wrapped_shortcut_label|, hence it's deleted when
   // |wrapped_shortcut_label| is deleted.
   views::Label* shortcut_label = new views::Label;
 
-  if (orientation == CandidateWindow::VERTICAL) {
+  if (orientation == ui::CandidateWindow::VERTICAL) {
     shortcut_label->SetFontList(
         shortcut_label->font_list().DeriveFontListWithSizeDeltaAndStyle(
             kFontSizeDelta, gfx::Font::BOLD));
@@ -70,14 +70,14 @@ views::Label* CreateShortcutLabel(
   const gfx::Insets kVerticalShortcutLabelInsets(1, 6, 1, 6);
   const gfx::Insets kHorizontalShortcutLabelInsets(1, 3, 1, 0);
   const gfx::Insets insets =
-      (orientation == CandidateWindow::VERTICAL ?
+      (orientation == ui::CandidateWindow::VERTICAL ?
        kVerticalShortcutLabelInsets :
        kHorizontalShortcutLabelInsets);
   shortcut_label->set_border(views::Border::CreateEmptyBorder(
       insets.top(), insets.left(), insets.bottom(), insets.right()));
 
   // Add decoration based on the orientation.
-  if (orientation == CandidateWindow::VERTICAL) {
+  if (orientation == ui::CandidateWindow::VERTICAL) {
     // Set the background color.
     SkColor blackish = color_utils::AlphaBlend(
         SK_ColorBLACK,
@@ -95,12 +95,12 @@ views::Label* CreateShortcutLabel(
 // Creates the candidate label, and returns it (never returns NULL).
 // The label text is not set in this function.
 views::Label* CreateCandidateLabel(
-    CandidateWindow::Orientation orientation) {
+    ui::CandidateWindow::Orientation orientation) {
   views::Label* candidate_label = NULL;
 
   // Create the candidate label. The label will be added to |this| as a
   // child view, hence it's deleted when |this| is deleted.
-  if (orientation == CandidateWindow::VERTICAL) {
+  if (orientation == ui::CandidateWindow::VERTICAL) {
     candidate_label = new VerticalCandidateLabel;
   } else {
     candidate_label = new views::Label;
@@ -117,7 +117,8 @@ views::Label* CreateCandidateLabel(
 // Creates the annotation label, and return it (never returns NULL).
 // The label text is not set in this function.
 views::Label* CreateAnnotationLabel(
-    CandidateWindow::Orientation orientation, const ui::NativeTheme& theme) {
+    ui::CandidateWindow::Orientation orientation,
+    const ui::NativeTheme& theme) {
   // Create the annotation label.
   views::Label* annotation_label = new views::Label;
 
@@ -136,7 +137,7 @@ views::Label* CreateAnnotationLabel(
 
 CandidateView::CandidateView(
     views::ButtonListener* listener,
-    CandidateWindow::Orientation orientation)
+    ui::CandidateWindow::Orientation orientation)
     : views::CustomButton(listener),
       orientation_(orientation),
       shortcut_label_(NULL),
@@ -154,7 +155,7 @@ CandidateView::CandidateView(
   AddChildView(candidate_label_);
   AddChildView(annotation_label_);
 
-  if (orientation == CandidateWindow::VERTICAL) {
+  if (orientation == ui::CandidateWindow::VERTICAL) {
     infolist_icon_ = new views::View;
     infolist_icon_->set_background(
         views::Background::CreateSolidBackground(theme.GetSystemColor(
@@ -175,9 +176,9 @@ void CandidateView::SetWidths(int shortcut_width, int candidate_width) {
   candidate_width_ = candidate_width;
 }
 
-void CandidateView::SetEntry(const CandidateWindow::Entry& entry) {
+void CandidateView::SetEntry(const ui::CandidateWindow::Entry& entry) {
   std::string label = entry.label;
-  if (!label.empty() && orientation_ != CandidateWindow::VERTICAL)
+  if (!label.empty() && orientation_ != ui::CandidateWindow::VERTICAL)
     label += '.';
   shortcut_label_->SetText(base::UTF8ToUTF16(label));
   candidate_label_->SetText(base::UTF8ToUTF16(entry.value));
@@ -239,7 +240,7 @@ bool CandidateView::OnMouseDragged(const ui::MouseEvent& event) {
 
 void CandidateView::Layout() {
   const int padding_width =
-      orientation_ == CandidateWindow::VERTICAL ? 4 : 6;
+      orientation_ == ui::CandidateWindow::VERTICAL ? 4 : 6;
   int x = 0;
   shortcut_label_->SetBounds(x, 0, shortcut_width_, height());
   if (shortcut_width_ > 0)
@@ -261,7 +262,7 @@ void CandidateView::Layout() {
 
 gfx::Size CandidateView::GetPreferredSize() {
   const int padding_width =
-      orientation_ == CandidateWindow::VERTICAL ? 4 : 6;
+      orientation_ == ui::CandidateWindow::VERTICAL ? 4 : 6;
   gfx::Size size;
   if (shortcut_label_->visible()) {
     size = shortcut_label_->GetPreferredSize();

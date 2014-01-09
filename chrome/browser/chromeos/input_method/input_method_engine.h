@@ -13,6 +13,7 @@
 #include "url/gurl.h"
 
 namespace ui {
+class CandidateWindow;
 class KeyEvent;
 }  // namespace ui
 
@@ -21,7 +22,6 @@ namespace chromeos {
 class IBusText;
 
 namespace input_method {
-class CandidateWindow;
 struct InputMethodProperty;
 struct KeyEventHandle;
 }  // namespace input_method
@@ -128,7 +128,7 @@ class InputMethodEngine : public InputMethodEngineInterface {
   int preedit_cursor_;
 
   // The current candidate window.
-  scoped_ptr<input_method::CandidateWindow> candidate_window_;
+  scoped_ptr<ui::CandidateWindow> candidate_window_;
 
   // The current candidate window property.
   CandidateWindowProperty candidate_window_property_;
