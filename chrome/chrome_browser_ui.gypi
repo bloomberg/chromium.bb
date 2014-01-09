@@ -2274,6 +2274,8 @@
         'browser/ui/webui/chromeos/mobile_setup_ui.h',
         'browser/ui/webui/chromeos/network_ui.cc',
         'browser/ui/webui/chromeos/network_ui.h',
+        'browser/ui/webui/chromeos/power_ui.cc',
+        'browser/ui/webui/chromeos/power_ui.h',
         'browser/ui/webui/chromeos/proxy_settings_ui.cc',
         'browser/ui/webui/chromeos/proxy_settings_ui.h',
         'browser/ui/webui/chromeos/sim_unlock_ui.cc',

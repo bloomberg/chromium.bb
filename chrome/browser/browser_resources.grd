@@ -415,6 +415,11 @@
         <include name="IDR_SOUND_SPOKEN_FEEDBACK_DISABLED_WAV" file="resources\chromeos\sounds\spoken_feedback_disabled.wav" type="BINDATA" />
         <include name="IDR_SOUND_VOLUME_ADJUST_WAV" file="resources\chromeos\sounds\volume_adjust.wav" type="BINDATA" />
       </if>
+      <if expr="pp_ifdef('chromeos')">
+        <include name="IDR_ABOUT_POWER_HTML" file="resources\chromeos\power.html" type="BINDATA" />
+        <include name="IDR_ABOUT_POWER_JS" file="resources\chromeos\power.js" type="BINDATA" />
+        <include name="IDR_ABOUT_POWER_CSS" file="resources\chromeos\power.css" type="BINDATA" />
+      </if>
     </includes>
   </release>
 </grit>

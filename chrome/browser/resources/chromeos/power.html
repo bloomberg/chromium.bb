@@ -1,0 +1,28 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title i18n-content="titleText"></title>
+  <link rel="stylesheet" href="chrome://power/power.css">
+  <script src="chrome://resources/js/load_time_data.js"></script>
+  <script src="chrome://resources/js/util.js"></script>
+  <script src="chrome://power/strings.js"></script>
+  <script src="chrome://power/power.js"></script>
+</head>
+<body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
+  <div id="main-layout">
+    <div id="battery-charge-section">
+      <h3 i18n-content="batteryChargeHeader"></h3>
+      <div class="plot-canvas-div">
+        <canvas id="battery-charge-canvas" width="600" height="200"></canvas>
+      </div>
+      <button id="battery-charge-reload-button" class="reload-button"
+              i18n-content="reloadButton">
+      </button>
+    </div>
+
+    <hr class="section-boundary">
+  </div>
+  <script src="chrome://resources/js/i18n_template2.js"></script>
+</body>
+</html>
