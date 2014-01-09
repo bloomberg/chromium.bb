@@ -460,7 +460,6 @@ function DirectoryContents(context, isSearch, directoryEntry,
   this.scanner_ = null;
   this.prefetchMetadataQueue_ = new AsyncUtil.Queue();
   this.scanCancelled_ = false;
-  this.fileList_.prepareSort = this.prepareSort_.bind(this);
 }
 
 /**
@@ -483,8 +482,11 @@ DirectoryContents.prototype.clone = function() {
  * @param {Array|cr.ui.ArrayDataModel} fileList The new file list.
  */
 DirectoryContents.prototype.setFileList = function(fileList) {
-  this.fileList_ = fileList;
-  this.fileList_.prepareSort = this.prepareSort_.bind(this);
+  if (fileList instanceof cr.ui.ArrayDataModel)
+    this.fileList_ = fileList;
+  else
+    this.fileList_ = new cr.ui.ArrayDataModel(fileList);
+  this.context_.metadataCache.setCacheSize(this.fileList_.length);
 };
 
 /**
@@ -493,11 +495,12 @@ DirectoryContents.prototype.setFileList = function(fileList) {
  */
 DirectoryContents.prototype.replaceContextFileList = function() {
   if (this.context_.fileList !== this.fileList_) {
-    var spliceArgs = [].slice.call(this.fileList_);
+    var spliceArgs = this.fileList_.slice();
     var fileList = this.context_.fileList;
     spliceArgs.unshift(0, fileList.length);
     fileList.splice.apply(fileList, spliceArgs);
     this.fileList_ = fileList;
+    this.context_.metadataCache.setCacheSize(this.fileList_.length);
   }
 };
 
@@ -605,6 +608,8 @@ DirectoryContents.prototype.onNewEntries_ = function(entries) {
   this.fileList_.push.apply(this.fileList_, entriesFiltered);
   cr.dispatchSimpleEvent(this, 'scan-updated');
 
+  this.context_.metadataCache.setCacheSize(this.fileList_.length);
+
   // Because the prefetchMetadata can be slow, throttling by splitting entries
   // into smaller chunks to reduce UI latency.
   // TODO(hidehiko,mtomasz): This should be handled in MetadataCache.
@@ -619,24 +624,21 @@ DirectoryContents.prototype.onNewEntries_ = function(entries) {
           return;
         }
 
+        // TODO(yoshiki): Here we should fire the update event of changed
+        // items. Currently we have a method this.fileList_.updateIndex() to
+        // fire an event, but this method takes only 1 argument and invokes sort
+        // one by one. It is obviously time wasting. Instead, we call sort
+        // directory.
+        // In future, we should implement a good method like updateIndexes and
+        // use it here.
+        var status = this.fileList_.sortStatus;
+        this.fileList_.sort(status.field, status.direction);
+
         cr.dispatchSimpleEvent(this, 'scan-updated');
         callback();
       }.bind(this));
     }.bind(this, chunk));
   }
-};
-
-/**
- * Cache necessary data before a sort happens.
- *
- * This is called by the table code before a sort happens, so that we can
- * go fetch data for the sort field that we may not have yet.
- * @param {string} field Sort field.
- * @param {function(Object)} callback Called when done.
- * @private
- */
-DirectoryContents.prototype.prepareSort_ = function(field, callback) {
-  this.prefetchMetadata(this.fileList_.slice(), callback);
 };
 
 /**

@@ -2605,7 +2605,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     if (this.commandHandler)
       this.commandHandler.updateAvailability();
     this.hideSpinnerLater_();
-    this.refreshCurrentDirectoryMetadata_();
 
     if (this.scanUpdatedTimer_) {
       clearTimeout(this.scanUpdatedTimer_);
@@ -2697,7 +2696,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.onRescanCompleted_ = function() {
-    this.refreshCurrentDirectoryMetadata_();
     this.selectionHandler_.onFileSelectionChanged();
   };
 

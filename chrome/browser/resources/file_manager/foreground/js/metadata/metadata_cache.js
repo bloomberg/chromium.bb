@@ -76,6 +76,8 @@ function MetadataCache() {
   this.batchCount_ = 0;
   this.totalCount_ = 0;
 
+  this.currentCacheSize_ = 0;
+
   /**
    * Time of first get query of the current batch. Items updated later than this
    * will not be evicted.
@@ -103,9 +105,9 @@ MetadataCache.CHILDREN = 1;
 MetadataCache.DESCENDANTS = 2;
 
 /**
- * Minimum number of items in cache to start eviction.
+ * Margin of the cache size. This amount of caches may be kept in addition.
  */
-MetadataCache.EVICTION_NUMBER = 1000;
+MetadataCache.EVICTION_THRESHOLD_MARGIN = 500;
 
 /**
  * @param {VolumeManagerWrapper} volumeManager Volume manager instance.
@@ -156,6 +158,28 @@ MetadataCache.prototype.isInitialized = function() {
     if (!this.providers_[index].isInitialized()) return false;
   }
   return true;
+};
+
+/**
+ * Sets the size of cache. The actual cache size may be larger than the given
+ * value.
+ * @param {number} size The cache size to be set.
+ */
+MetadataCache.prototype.setCacheSize = function(size) {
+  this.currentCacheSize_ = size;
+
+  if (this.totalCount_ > this.currentEvictionThreshold_())
+    this.evict_();
+};
+
+/**
+ * Returns the current threshold to evict caches. When the number of caches
+ * exceeds this, the cache should be evicted.
+ * @return {number} Threshold to evict caches.
+ * @private
+ */
+MetadataCache.prototype.currentEvictionThreshold_ = function() {
+  return this.currentCacheSize_ * 2 + MetadataCache.EVICTION_THRESHOLD_MARGIN;
 };
 
 /**
@@ -458,7 +482,7 @@ MetadataCache.prototype.startBatchUpdates = function() {
 MetadataCache.prototype.endBatchUpdates = function() {
   this.batchCount_--;
   if (this.batchCount_ !== 0) return;
-  if (this.totalCount_ > MetadataCache.EVICTION_NUMBER)
+  if (this.totalCount_ > this.currentEvictionThreshold_())
     this.evict_();
   for (var index = 0; index < this.observers_.length; index++) {
     var observer = this.observers_[index];
@@ -513,7 +537,7 @@ MetadataCache.prototype.evict_ = function() {
   var toRemove = [];
 
   // We leave only a half of items, so we will not call evict_ soon again.
-  var desiredCount = Math.round(MetadataCache.EVICTION_NUMBER / 2);
+  var desiredCount = this.currentEvictionThreshold();
   var removeCount = this.totalCount_ - desiredCount;
   for (var url in this.cache_) {
     if (this.cache_.hasOwnProperty(url) &&
