@@ -10788,6 +10788,9 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_ONE_CLICK_BUBBLE_UNDO" desc="The text for the undo button in the one click signin bubble.">
         Undo
       </message>
+      <message name="IDS_ONE_CLICK_SIGNIN_BUBBLE_MESSAGE" desc="The body of the sync promo NTP bubble.">
+        Your bookmarks, history, and other settings will be synced to your Google Account.
+      </message>
       <message name="IDS_ONE_CLICK_SIGNIN_DIALOG_OK_BUTTON" desc="The text of the OK button of the one click sign in dialog.">
         OK, got it!
       </message>

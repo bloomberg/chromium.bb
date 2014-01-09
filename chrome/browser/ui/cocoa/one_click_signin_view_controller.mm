@@ -161,6 +161,11 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
       [GTMUILocalizerAndLayoutTweaker
           sizeToFitFixedWidthTextField:messageTextField_];
 
+  ShiftOriginY(titleTextField_, totalYOffset);
+  totalYOffset +=
+      [GTMUILocalizerAndLayoutTweaker
+          sizeToFitFixedWidthTextField:titleTextField_];
+
   if (closeButton_)
     ShiftOriginY(closeButton_, totalYOffset);
 
@@ -224,6 +229,11 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
                                      font:font
                              messageColor:[NSColor blackColor]
                                 linkColor:linkColor];
+
+
+  // Make the "Advanced" link font as large as the "Learn More" link.
+  [[advancedLink_ cell] setFont:font];
+  [advancedLink_ sizeToFit];
 
   // Size to fit.
   [[informativePlaceholderTextField_ cell] setAttributedStringValue:

@@ -28,6 +28,9 @@
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 
+// Minimum width of the the bubble.
+const int kMinBubbleWidth = 310;
+
 // Minimum width for the multi-line label.
 const int kMinimumDialogLabelWidth = 400;
 const int kMinimumLabelWidth = 240;
@@ -115,9 +118,9 @@ OneClickSigninBubbleView::OneClickSigninBubbleView(
     set_arrow(views::BubbleBorder::NONE);
     set_anchor_view_insets(gfx::Insets(0, 0, anchor_view->height() / 2, 0));
     set_close_on_deactivate(false);
-    set_margins(gfx::Insets(kDialogMargin, kDialogMargin, kDialogMargin,
-                          kDialogMargin));
   }
+  int margin = is_sync_dialog_ ? kDialogMargin : views::kButtonVEdgeMarginNew;
+  set_margins(gfx::Insets(margin, margin, margin, margin));
 }
 
 OneClickSigninBubbleView::~OneClickSigninBubbleView() {
@@ -136,6 +139,7 @@ void OneClickSigninBubbleView::AnimationEnded(const gfx::Animation* animation) {
 void OneClickSigninBubbleView::Init() {
   views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);
+
   set_border(views::Border::CreateEmptyBorder(8, 8, 8, 8));
 
   // Column set for descriptive text and link.
@@ -150,7 +154,6 @@ void OneClickSigninBubbleView::Init() {
   cs->AddPaddingColumn(1, views::kUnrelatedControlHorizontalSpacing);
   cs->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER, 0,
                 views::GridLayout::USE_PREF, 0, 0);
-  cs->AddPaddingColumn(0, views::kRelatedButtonHSpacing);
   cs->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER, 0,
                 views::GridLayout::USE_PREF, 0, 0);
 
@@ -171,6 +174,24 @@ void OneClickSigninBubbleView::Init() {
 }
 
 void OneClickSigninBubbleView::InitBubbleContent(views::GridLayout* layout) {
+  layout->set_minimum_size(gfx::Size(kMinBubbleWidth, 0));
+
+  // Add title message.
+  views::ColumnSet* cs = layout->AddColumnSet(COLUMN_SET_TITLE_BAR);
+  cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING, 0,
+                views::GridLayout::USE_PREF, 0, 0);
+  {
+    layout->StartRow(0, COLUMN_SET_TITLE_BAR);
+
+    views::Label* label = new views::Label(
+        l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_TITLE_NEW));
+    label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    label->SetFont(label->font().DeriveFont(3));
+    layout->AddView(label);
+  }
+
+  layout->AddPaddingRow(0, views::kUnrelatedControlLargeVerticalSpacing);
+
   // Add main text description.
   layout->StartRow(0, COLUMN_SET_FILL_ALIGN);
 
@@ -183,6 +204,8 @@ void OneClickSigninBubbleView::InitBubbleContent(views::GridLayout* layout) {
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label->SizeToFit(kMinimumLabelWidth);
   layout->AddView(label);
+
+  layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
 
   layout->StartRow(0, COLUMN_SET_CONTROLS);
 
@@ -257,33 +280,24 @@ void OneClickSigninBubbleView::InitButtons(views::GridLayout* layout) {
 
 void OneClickSigninBubbleView::GetButtons(views::LabelButton** ok_button,
                                           views::LabelButton** undo_button) {
-  *ok_button = new views::LabelButton(this, base::string16());
+  base::string16 ok_label =
+      l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_OK_BUTTON);
+
+  *ok_button = new views::LabelButton(this, ok_label);
   (*ok_button)->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
 
   // The default size of the buttons is too large.  To allow them to be smaller
   // ignore the minimum default size.,
   (*ok_button)->set_min_size(gfx::Size());
 
-  base::string16 ok_label;
-
   if (is_sync_dialog_) {
     *undo_button = new views::LabelButton(this, base::string16());
     (*undo_button)->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
     (*undo_button)->set_min_size(gfx::Size());
 
-    ok_label = l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_OK_BUTTON);
     base::string16 undo_label =
         l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_UNDO_BUTTON);
-
-    // To make sure they are the same size, SetText() is called
-    // with both strings on both buttons.
-    (*ok_button)->SetText(undo_label);
-    (*ok_button)->SetText(ok_label);
-    (*undo_button)->SetText(ok_label);
     (*undo_button)->SetText(undo_label);
-  } else {
-    ok_label = l10n_util::GetStringUTF16(IDS_OK);
-    (*ok_button)->SetText(ok_label);
   }
 }
 

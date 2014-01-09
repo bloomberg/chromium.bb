@@ -21,6 +21,7 @@ class WebContents;
 @interface OneClickSigninViewController : NSViewController<NSTextViewDelegate> {
  @private
   IBOutlet NSTextField* messageTextField_;
+  IBOutlet NSTextField* titleTextField_;
   IBOutlet NSTextField* informativePlaceholderTextField_;
   IBOutlet NSButton* advancedLink_;
   IBOutlet NSButton* closeButton_;
