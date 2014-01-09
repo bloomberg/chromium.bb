@@ -7,6 +7,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/component_updater/component_updater_utils.h"
@@ -470,6 +471,21 @@ TEST_F(ComponentUpdaterTest, InstallCrx) {
   EXPECT_NE(string::npos, post_interceptor_->GetRequests()[0].find(
       "request protocol=\"3.0\" extra=\"foo\""))
       << post_interceptor_->GetRequestsAsString();
+
+  // Tokenize the request string to look for specific attributes, which
+  // are important for backward compatibility with the version v2 of the update
+  // protocol. In this case, inspect the <request>, which is the first element
+  // after the xml declaration of the update request body.
+  // Expect to find the |os| and the |arch| attributes:
+  // <?xml version="1.0" encoding="UTF-8"?>
+  // <request...os=...arch=...>
+  // ...
+  // </request>
+  const std::string update_request(post_interceptor_->GetRequests()[0]);
+  std::vector<base::StringPiece> elements;
+  Tokenize(update_request, "<>", &elements);
+  EXPECT_NE(string::npos, elements[1].find("os="));
+  EXPECT_NE(string::npos, elements[1].find("arch="));
 
   component_updater()->Stop();
 }
