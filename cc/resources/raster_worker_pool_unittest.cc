@@ -70,6 +70,39 @@ class TestRasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
   DISALLOW_COPY_AND_ASSIGN(TestRasterWorkerPoolTaskImpl);
 };
 
+class BlockingRasterWorkerPoolTaskImpl : public TestRasterWorkerPoolTaskImpl {
+ public:
+  BlockingRasterWorkerPoolTaskImpl(const Resource* resource,
+                                   const Reply& reply,
+                                   base::Lock* lock,
+                                   TaskVector* dependencies,
+                                   bool use_gpu_rasterization)
+      : TestRasterWorkerPoolTaskImpl(resource,
+                                     reply,
+                                     dependencies,
+                                     use_gpu_rasterization),
+        lock_(lock) {}
+
+  // Overridden from TestRasterWorkerPoolTaskImpl:
+  virtual bool RunOnWorkerThread(unsigned thread_index,
+                                 void* buffer,
+                                 gfx::Size size,
+                                 int stride) OVERRIDE {
+    base::AutoLock lock(*lock_);
+    return TestRasterWorkerPoolTaskImpl::RunOnWorkerThread(
+        thread_index, buffer, size, stride);
+  }
+  virtual void CompleteOnOriginThread() OVERRIDE {}
+
+ protected:
+  virtual ~BlockingRasterWorkerPoolTaskImpl() {}
+
+ private:
+  base::Lock* lock_;
+
+  DISALLOW_COPY_AND_ASSIGN(BlockingRasterWorkerPoolTaskImpl);
+};
+
 class RasterWorkerPoolTest : public testing::Test,
                              public RasterWorkerPoolClient  {
  public:
@@ -188,6 +221,27 @@ class RasterWorkerPoolTest : public testing::Test,
                        id),
             &empty.tasks_,
             use_gpu_rasterization)));
+  }
+
+  void AppendBlockingTask(unsigned id, base::Lock* lock) {
+    const gfx::Size size(1, 1);
+
+    scoped_ptr<ScopedResource> resource(
+        ScopedResource::Create(resource_provider()));
+    resource->Allocate(size, ResourceProvider::TextureUsageAny, RGBA_8888);
+    const Resource* const_resource = resource.get();
+
+    RasterWorkerPool::Task::Set empty;
+    tasks_.push_back(
+        RasterWorkerPool::RasterTask(new BlockingRasterWorkerPoolTaskImpl(
+            const_resource,
+            base::Bind(&RasterWorkerPoolTest::OnTaskCompleted,
+                       base::Unretained(this),
+                       base::Passed(&resource),
+                       id),
+            lock,
+            &empty.tasks_,
+            false)));
   }
 
   virtual void OnTaskCompleted(
@@ -378,6 +432,40 @@ class RasterWorkerPoolTestFailedMapResource : public RasterWorkerPoolTest {
 };
 
 PIXEL_BUFFER_AND_IMAGE_TEST_F(RasterWorkerPoolTestFailedMapResource);
+
+class RasterWorkerPoolTestFalseThrottling : public RasterWorkerPoolTest {
+ public:
+  // Overridden from RasterWorkerPoolTest:
+  virtual void BeginTest() OVERRIDE {
+    // This test checks that replacing a pending raster task with another does
+    // not prevent the DidFinishRunningTasks notification from being sent.
+
+    // Schedule a task that is prevented from completing with a lock.
+    lock_.Acquire();
+    AppendBlockingTask(0u, &lock_);
+    ScheduleTasks();
+
+    // Schedule another task to replace the still-pending task. Because the old
+    // task is not a throttled task in the new task set, it should not prevent
+    // DidFinishRunningTasks from getting signaled.
+    tasks_.clear();
+    AppendTask(1u, false);
+    ScheduleTasks();
+
+    // Unblock the first task to allow the second task to complete.
+    lock_.Release();
+  }
+
+  virtual void AfterTest() OVERRIDE {}
+
+  virtual void DidFinishRunningTasks() OVERRIDE {
+    EndTest();
+  }
+
+  base::Lock lock_;
+};
+
+PIXEL_BUFFER_AND_IMAGE_TEST_F(RasterWorkerPoolTestFalseThrottling);
 
 }  // namespace
 

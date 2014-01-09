@@ -447,6 +447,7 @@ void PixelBufferRasterWorkerPool::ScheduleMoreTasks() {
   TaskGraph graph;
 
   size_t bytes_pending_upload = bytes_pending_upload_;
+  bool did_throttle_raster_tasks = false;
 
   for (RasterTaskVector::const_iterator it = raster_tasks().begin();
        it != raster_tasks().end(); ++it) {
@@ -468,8 +469,10 @@ void PixelBufferRasterWorkerPool::ScheduleMoreTasks() {
     // All raster tasks need to be throttled by bytes of pending uploads.
     size_t new_bytes_pending_upload = bytes_pending_upload;
     new_bytes_pending_upload += task->resource()->bytes();
-    if (new_bytes_pending_upload > max_bytes_pending_upload_)
+    if (new_bytes_pending_upload > max_bytes_pending_upload_) {
+      did_throttle_raster_tasks = true;
       break;
+    }
 
     internal::WorkerPoolTask* pixel_buffer_task = pixel_buffer_it->second.get();
 
@@ -483,8 +486,10 @@ void PixelBufferRasterWorkerPool::ScheduleMoreTasks() {
     size_t scheduled_raster_task_count =
         tasks[PREPAINT_TYPE].container().size() +
         tasks[REQUIRED_FOR_ACTIVATION_TYPE].container().size();
-    if (scheduled_raster_task_count >= kMaxScheduledRasterTasks)
+    if (scheduled_raster_task_count >= kMaxScheduledRasterTasks) {
+      did_throttle_raster_tasks = true;
       break;
+    }
 
     // Update |bytes_pending_upload| now that task has cleared all
     // throttling limits.
@@ -561,7 +566,7 @@ void PixelBufferRasterWorkerPool::ScheduleMoreTasks() {
   DCHECK_LE(scheduled_raster_task_count, PendingRasterTaskCount());
   // Schedule OnRasterTasksFinished call only when notification is pending
   // and throttling is not preventing all pending tasks from being scheduled.
-  if (scheduled_raster_task_count == PendingRasterTaskCount() &&
+  if (!did_throttle_raster_tasks &&
       should_notify_client_if_no_tasks_are_pending_) {
     new_raster_finished_task = CreateRasterFinishedTask();
     internal::GraphNode* raster_finished_node =
