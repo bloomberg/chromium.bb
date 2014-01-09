@@ -169,6 +169,10 @@ float PaintedScrollbarLayerImpl::TrackLength() const {
   return track_length_ + (orientation() == VERTICAL ? vertical_adjust() : 0);
 }
 
+bool PaintedScrollbarLayerImpl::IsThumbResizable() const {
+  return false;
+}
+
 const char* PaintedScrollbarLayerImpl::LayerTypeAsString() const {
   return "cc::PaintedScrollbarLayerImpl";
 }

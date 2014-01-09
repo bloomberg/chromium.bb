@@ -72,6 +72,10 @@ int SolidColorScrollbarLayerImpl::TrackStart() const {
   return 0;
 }
 
+bool SolidColorScrollbarLayerImpl::IsThumbResizable() const {
+  return true;
+}
+
 void SolidColorScrollbarLayerImpl::AppendQuads(QuadSink* quad_sink,
                            AppendQuadsData* append_quads_data) {
   gfx::Rect thumb_quad_rect = ComputeThumbQuadRect();

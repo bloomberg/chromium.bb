@@ -66,6 +66,9 @@ void ScrollbarLayerImplBase::SetVerticalAdjust(float vertical_adjust) {
 }
 
 void ScrollbarLayerImplBase::SetVisibleToTotalLengthRatio(float ratio) {
+  if (!IsThumbResizable())
+    return;
+
   if (visible_to_total_length_ratio_ == ratio)
     return;
   visible_to_total_length_ratio_ = ratio;

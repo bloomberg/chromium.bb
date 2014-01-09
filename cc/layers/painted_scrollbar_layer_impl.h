@@ -55,6 +55,7 @@ class CC_EXPORT PaintedScrollbarLayerImpl : public ScrollbarLayerImplBase {
   virtual int ThumbLength() const OVERRIDE;
   virtual float TrackLength() const OVERRIDE;
   virtual int TrackStart() const OVERRIDE;
+  virtual bool IsThumbResizable() const OVERRIDE;
 
  private:
   virtual const char* LayerTypeAsString() const OVERRIDE;

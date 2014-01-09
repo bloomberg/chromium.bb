@@ -64,6 +64,9 @@ class CC_EXPORT ScrollbarLayerImplBase : public LayerImpl {
   virtual int ThumbLength() const = 0;
   virtual float TrackLength() const = 0;
   virtual int TrackStart() const = 0;
+  // Indicates whether the thumb length can be changed without going back to the
+  // main thread.
+  virtual bool IsThumbResizable() const = 0;
 
  private:
   int scroll_layer_id_;

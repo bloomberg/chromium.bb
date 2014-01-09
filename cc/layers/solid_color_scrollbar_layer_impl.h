@@ -41,6 +41,7 @@ class CC_EXPORT SolidColorScrollbarLayerImpl : public ScrollbarLayerImplBase {
   virtual int ThumbLength() const OVERRIDE;
   virtual float TrackLength() const OVERRIDE;
   virtual int TrackStart() const OVERRIDE;
+  virtual bool IsThumbResizable() const OVERRIDE;
 
  private:
   int thumb_thickness_;

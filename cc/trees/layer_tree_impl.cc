@@ -353,11 +353,8 @@ void LayerTreeImpl::UpdateDrawProperties() {
   if (IsActiveTree() && RootScrollLayer() && RootContainerLayer())
     UpdateRootScrollLayerSizeDelta();
 
-  if (IsActiveTree() &&
-      RootContainerLayer()
-      && !RootContainerLayer()->masks_to_bounds()) {
+  if (IsActiveTree() && RootContainerLayer())
     UpdateSolidColorScrollbars();
-  }
 
   needs_update_draw_properties_ = false;
   render_surface_layer_list_.clear();
