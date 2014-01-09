@@ -27,6 +27,7 @@
 namespace ui {
 
 class Clipboard;
+class OSExchangeDataProviderAuraX11Test;
 
 // OSExchangeData::Provider implementation for aura on linux.
 class UI_BASE_EXPORT OSExchangeDataProviderAuraX11
@@ -90,6 +91,7 @@ class UI_BASE_EXPORT OSExchangeDataProviderAuraX11
   virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
 
  private:
+  friend class OSExchangeDataProviderAuraX11Test;
   typedef std::map<OSExchangeData::CustomFormat, Pickle>  PickleData;
 
   // Returns true if |formats_| contains a string format and the string can be

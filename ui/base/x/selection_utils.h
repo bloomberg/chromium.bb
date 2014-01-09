@@ -34,14 +34,20 @@ UI_BASE_EXPORT std::vector< ::Atom> GetTextAtomsFrom(
 UI_BASE_EXPORT std::vector< ::Atom> GetURLAtomsFrom(
     const X11AtomCache* atom_cache);
 
+UI_BASE_EXPORT std::vector< ::Atom> GetURIListAtomsFrom(
+    const X11AtomCache* atom_cache);
+
 // Places the intersection of |desired| and |offered| into |output|.
 UI_BASE_EXPORT void GetAtomIntersection(const std::vector< ::Atom>& desired,
-                                   const std::vector< ::Atom>& offered,
-                                   std::vector< ::Atom>* output);
+                                        const std::vector< ::Atom>& offered,
+                                        std::vector< ::Atom>* output);
 
 // Takes the raw bytes of the base::string16 and copies them into |bytes|.
 UI_BASE_EXPORT void AddString16ToVector(const base::string16& str,
-                                   std::vector<unsigned char>* bytes);
+                                        std::vector<unsigned char>* bytes);
+
+// Tokenizes and parses the Selection Data as if it is a URI List.
+UI_BASE_EXPORT std::vector<std::string> ParseURIList(const SelectionData& data);
 
 UI_BASE_EXPORT std::string RefCountedMemoryToString(
     const scoped_refptr<base::RefCountedMemory>& memory);

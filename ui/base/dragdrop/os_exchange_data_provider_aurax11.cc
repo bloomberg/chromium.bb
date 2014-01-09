@@ -139,12 +139,25 @@ void OSExchangeDataProviderAuraX11::SetURL(const GURL& url,
 }
 
 void OSExchangeDataProviderAuraX11::SetFilename(const base::FilePath& path) {
-  NOTIMPLEMENTED();
+  std::vector<OSExchangeData::FileInfo> data;
+  data.push_back(OSExchangeData::FileInfo(path, base::FilePath()));
+  SetFilenames(data);
 }
 
 void OSExchangeDataProviderAuraX11::SetFilenames(
     const std::vector<OSExchangeData::FileInfo>& filenames) {
-  NOTIMPLEMENTED();
+  std::vector<std::string> paths;
+  for (std::vector<OSExchangeData::FileInfo>::const_iterator it =
+           filenames.begin(); it != filenames.end(); ++it) {
+    std::string url_spec = net::FilePathToFileURL(it->path).spec();
+    if (!url_spec.empty())
+      paths.push_back(url_spec);
+  }
+
+  std::string joined_data = JoinString(paths, '\n');
+  scoped_refptr<base::RefCountedMemory> mem(
+      base::RefCountedString::TakeString(&joined_data));
+  format_map_.Insert(atom_cache_.GetAtom(Clipboard::kMimeTypeURIList), mem);
 }
 
 void OSExchangeDataProviderAuraX11::SetPickledData(
@@ -207,21 +220,16 @@ bool OSExchangeDataProviderAuraX11::GetURLAndTitle(
       }
     } else if (data.GetType() == atom_cache_.GetAtom(
                    Clipboard::kMimeTypeURIList)) {
-      // uri-lists are newline separated file lists in URL encoding.
-      std::string unparsed;
-      data.AssignTo(&unparsed);
-
-      std::vector<std::string> tokens;
-      size_t num_tokens = Tokenize(unparsed, "\n", &tokens);
-      if (!num_tokens) {
-        NOTREACHED() << "Empty URI list";
-        return false;
+      std::vector<std::string> tokens = ui::ParseURIList(data);
+      for (std::vector<std::string>::const_iterator it = tokens.begin();
+           it != tokens.end(); ++it) {
+        GURL test_url(*it);
+        if (!test_url.SchemeIsFile()) {
+          *url = test_url;
+          *title = base::string16();
+          return true;
+        }
       }
-
-      *url = GURL(tokens[0]);
-      *title = base::string16();
-
-      return true;
     }
   }
 
@@ -229,14 +237,37 @@ bool OSExchangeDataProviderAuraX11::GetURLAndTitle(
 }
 
 bool OSExchangeDataProviderAuraX11::GetFilename(base::FilePath* path) const {
-  // On X11, files are passed by URL and aren't separate.
+  std::vector<OSExchangeData::FileInfo> filenames;
+  if (GetFilenames(&filenames)) {
+    *path = filenames.front().path;
+    return true;
+  }
+
   return false;
 }
 
 bool OSExchangeDataProviderAuraX11::GetFilenames(
     std::vector<OSExchangeData::FileInfo>* filenames) const {
-  // On X11, files are passed by URL and aren't separate.
-  return false;
+  std::vector< ::Atom> url_atoms = ui::GetURIListAtomsFrom(&atom_cache_);
+  std::vector< ::Atom> requested_types;
+  ui::GetAtomIntersection(url_atoms, GetTargets(), &requested_types);
+
+  filenames->clear();
+  ui::SelectionData data(format_map_.GetFirstOf(requested_types));
+  if (data.IsValid()) {
+    std::vector<std::string> tokens = ui::ParseURIList(data);
+    for (std::vector<std::string>::const_iterator it = tokens.begin();
+         it != tokens.end(); ++it) {
+      GURL url(*it);
+      base::FilePath file_path;
+      if (url.SchemeIsFile() && net::FileURLToFilePath(url, &file_path)) {
+        filenames->push_back(OSExchangeData::FileInfo(file_path,
+                                                      base::FilePath()));
+      }
+    }
+  }
+
+  return !filenames->empty();
 }
 
 bool OSExchangeDataProviderAuraX11::GetPickledData(
@@ -268,11 +299,56 @@ bool OSExchangeDataProviderAuraX11::HasURL() const {
   std::vector< ::Atom> url_atoms = ui::GetURLAtomsFrom(&atom_cache_);
   std::vector< ::Atom> requested_types;
   ui::GetAtomIntersection(url_atoms, GetTargets(), &requested_types);
-  return !requested_types.empty();
+
+  if (requested_types.empty())
+    return false;
+
+  // The Linux desktop doesn't differentiate between files and URLs like
+  // Windows does and stuffs all the data into one mime type.
+  ui::SelectionData data(format_map_.GetFirstOf(requested_types));
+  if (data.IsValid()) {
+    if (data.GetType() == atom_cache_.GetAtom(kMimeTypeMozillaURL)) {
+      // File managers shouldn't be using this type, so this is a URL.
+      return true;
+    } else if (data.GetType() == atom_cache_.GetAtom(
+        ui::Clipboard::kMimeTypeURIList)) {
+      std::vector<std::string> tokens = ui::ParseURIList(data);
+      for (std::vector<std::string>::const_iterator it = tokens.begin();
+           it != tokens.end(); ++it) {
+        if (!GURL(*it).SchemeIsFile())
+          return true;
+      }
+
+      return false;
+    }
+  }
+
+  return false;
 }
 
 bool OSExchangeDataProviderAuraX11::HasFile() const {
-  // On X11, files are passed by URL and aren't separate.
+  std::vector< ::Atom> url_atoms = ui::GetURIListAtomsFrom(&atom_cache_);
+  std::vector< ::Atom> requested_types;
+  ui::GetAtomIntersection(url_atoms, GetTargets(), &requested_types);
+
+  if (requested_types.empty())
+    return false;
+
+  // To actually answer whether we have a file, we need to look through the
+  // contents of the kMimeTypeURIList type, and see if any of them are file://
+  // URIs.
+  ui::SelectionData data(format_map_.GetFirstOf(requested_types));
+  if (data.IsValid()) {
+    std::vector<std::string> tokens = ui::ParseURIList(data);
+    for (std::vector<std::string>::const_iterator it = tokens.begin();
+         it != tokens.end(); ++it) {
+      GURL url(*it);
+      base::FilePath file_path;
+      if (url.SchemeIsFile() && net::FileURLToFilePath(url, &file_path))
+        return true;
+    }
+  }
+
   return false;
 }
 

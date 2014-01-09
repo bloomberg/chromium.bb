@@ -8,6 +8,7 @@
 
 #include "base/i18n/icu_string_conversions.h"
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/x/x11_util.h"
@@ -43,6 +44,12 @@ std::vector< ::Atom> GetURLAtomsFrom(const X11AtomCache* atom_cache) {
   return atoms;
 }
 
+std::vector< ::Atom> GetURIListAtomsFrom(const X11AtomCache* atom_cache) {
+  std::vector< ::Atom> atoms;
+  atoms.push_back(atom_cache->GetAtom(Clipboard::kMimeTypeURIList));
+  return atoms;
+}
+
 void GetAtomIntersection(const std::vector< ::Atom>& desired,
                          const std::vector< ::Atom>& offered,
                          std::vector< ::Atom>* output) {
@@ -60,6 +67,16 @@ void AddString16ToVector(const base::string16& str,
   const unsigned char* front =
       reinterpret_cast<const unsigned char*>(str.data());
   bytes->insert(bytes->end(), front, front + (str.size() * 2));
+}
+
+std::vector<std::string> ParseURIList(const SelectionData& data) {
+  // uri-lists are newline separated file lists in URL encoding.
+  std::string unparsed;
+  data.AssignTo(&unparsed);
+
+  std::vector<std::string> tokens;
+  Tokenize(unparsed, "\n", &tokens);
+  return tokens;
 }
 
 std::string RefCountedMemoryToString(
