@@ -37,13 +37,10 @@ namespace {
 
 class SyncFileSystemApiTest : public ExtensionApiTest {
  public:
-  SyncFileSystemApiTest() {}
+  SyncFileSystemApiTest()
+      : mock_remote_service_(NULL), real_default_quota_(0) {}
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    mock_remote_service_ = new ::testing::NiceMock<MockRemoteFileSyncService>;
-    SyncFileSystemServiceFactory::GetInstance()->set_mock_remote_file_service(
-        scoped_ptr<RemoteFileSyncService>(mock_remote_service_));
-
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
     // TODO(calvinlo): Update test code after default quota is made const
     // (http://crbug.com/155488).
@@ -54,6 +51,16 @@ class SyncFileSystemApiTest : public ExtensionApiTest {
   virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
     quota::QuotaManager::kSyncableStorageDefaultHostQuota = real_default_quota_;
     ExtensionApiTest::TearDownInProcessBrowserTestFixture();
+  }
+
+  virtual void SetUpOnMainThread() OVERRIDE {
+    // Must happen after the browser process is created because instantiating
+    // the factory will instantiate ExtensionSystemFactory which depends on
+    // ExtensionsBrowserClient setup in BrowserProcessImpl.
+    mock_remote_service_ = new ::testing::NiceMock<MockRemoteFileSyncService>;
+    SyncFileSystemServiceFactory::GetInstance()->set_mock_remote_file_service(
+        scoped_ptr<RemoteFileSyncService>(mock_remote_service_));
+    ExtensionApiTest::SetUpOnMainThread();
   }
 
   ::testing::NiceMock<MockRemoteFileSyncService>* mock_remote_service() {

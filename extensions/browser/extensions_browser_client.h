@@ -5,8 +5,11 @@
 #ifndef EXTENSIONS_BROWSER_EXTENSIONS_BROWSER_CLIENT_H_
 #define EXTENSIONS_BROWSER_EXTENSIONS_BROWSER_CLIENT_H_
 
+#include <vector>
+
 #include "base/memory/scoped_ptr.h"
 
+class BrowserContextKeyedServiceFactory;
 class CommandLine;
 class PrefService;
 
@@ -18,6 +21,7 @@ class JavaScriptDialogManager;
 namespace extensions {
 
 class AppSorting;
+class ExtensionSystem;
 
 // Interface to allow the extensions module to make browser-process-specific
 // queries of the embedder. Should be Set() once in the browser process.
@@ -86,6 +90,14 @@ class ExtensionsBrowserClient {
   // Returns the embedder's JavaScriptDialogManager or NULL if the embedder
   // does not support JavaScript dialogs.
   virtual content::JavaScriptDialogManager* GetJavaScriptDialogManager() = 0;
+
+  // Returns the dependencies of ExtensionSystem. May return an empty list.
+  virtual std::vector<BrowserContextKeyedServiceFactory*>
+      GetExtensionSystemDependencies() = 0;
+
+  // Creates a new ExtensionSystem for |context|.
+  virtual ExtensionSystem* CreateExtensionSystem(
+      content::BrowserContext* context) = 0;
 
   // Returns the single instance of |this|.
   static ExtensionsBrowserClient* Get();

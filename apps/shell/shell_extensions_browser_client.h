@@ -10,18 +10,17 @@
 
 class PrefService;
 
-namespace apps {
+namespace extensions {
 
 // An ExtensionsBrowserClient that supports a single content::BrowserContent
 // with no related incognito context.
-class ShellExtensionsBrowserClient
-    : public extensions::ExtensionsBrowserClient {
+class ShellExtensionsBrowserClient : public ExtensionsBrowserClient {
  public:
   // |context| is the single BrowserContext used for IsValidContext() below.
   explicit ShellExtensionsBrowserClient(content::BrowserContext* context);
   virtual ~ShellExtensionsBrowserClient();
 
-  // extensions::ExtensionsBrowserClient overrides:
+  // ExtensionsBrowserClient overrides:
   virtual bool IsShuttingDown() OVERRIDE;
   virtual bool AreExtensionsDisabled(const CommandLine& command_line,
                                      content::BrowserContext* context) OVERRIDE;
@@ -41,10 +40,14 @@ class ShellExtensionsBrowserClient
   virtual bool IsBackgroundPageAllowed(content::BrowserContext* context)
       const OVERRIDE;
   virtual bool DidVersionUpdate(content::BrowserContext* context) OVERRIDE;
-  virtual scoped_ptr<extensions::AppSorting> CreateAppSorting() OVERRIDE;
+  virtual scoped_ptr<AppSorting> CreateAppSorting() OVERRIDE;
   virtual bool IsRunningInForcedAppMode() OVERRIDE;
   virtual content::JavaScriptDialogManager* GetJavaScriptDialogManager()
       OVERRIDE;
+  virtual std::vector<BrowserContextKeyedServiceFactory*>
+      GetExtensionSystemDependencies() OVERRIDE;
+  virtual ExtensionSystem* CreateExtensionSystem(
+      content::BrowserContext* context) OVERRIDE;
 
  private:
   // The single BrowserContext for app_shell. Not owned.
@@ -56,6 +59,6 @@ class ShellExtensionsBrowserClient
   DISALLOW_COPY_AND_ASSIGN(ShellExtensionsBrowserClient);
 };
 
-}  // namespace apps
+}  // namespace extensions
 
 #endif  // APPS_SHELL_SHELL_EXTENSIONS_BROWSER_CLIENT_H_

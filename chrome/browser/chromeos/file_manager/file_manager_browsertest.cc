@@ -42,6 +42,8 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
 
+using drive::DriveIntegrationServiceFactory;
+
 namespace file_manager {
 namespace {
 
@@ -270,14 +272,17 @@ class DriveTestVolume {
   }
 
   // Sends request to add this volume to the file system as Google drive.
-  // This method must be calld at SetUp method of FileManagerBrowserTestBase.
+  // This method must be called at SetUp method of FileManagerBrowserTestBase.
   // Returns true on success.
   bool SetUp() {
     if (!test_cache_root_.CreateUniqueTempDir())
       return false;
-    drive::DriveIntegrationServiceFactory::SetFactoryForTest(
+    create_drive_integration_service_ =
         base::Bind(&DriveTestVolume::CreateDriveIntegrationService,
-                   base::Unretained(this)));
+                   base::Unretained(this));
+    service_factory_for_test_.reset(
+        new DriveIntegrationServiceFactory::ScopedFactoryForTest(
+            &create_drive_integration_service_));
     return true;
   }
 
@@ -414,6 +419,10 @@ class DriveTestVolume {
   base::ScopedTempDir test_cache_root_;
   drive::FakeDriveService* fake_drive_service_;
   drive::DriveIntegrationService* integration_service_;
+  DriveIntegrationServiceFactory::FactoryCallback
+      create_drive_integration_service_;
+  scoped_ptr<DriveIntegrationServiceFactory::ScopedFactoryForTest>
+      service_factory_for_test_;
 };
 
 // Listener to obtain the test relative messages synchronously.

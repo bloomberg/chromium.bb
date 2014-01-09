@@ -21,6 +21,7 @@ struct MainFunctionParams;
 }
 
 namespace extensions {
+class ShellExtensionsBrowserClient;
 class ShellExtensionSystem;
 }
 
@@ -31,7 +32,6 @@ class WMTestHelper;
 namespace apps {
 
 class ShellBrowserContext;
-class ShellExtensionsBrowserClient;
 class ShellExtensionsClient;
 
 // Handles initialization of AppShell.
@@ -71,7 +71,8 @@ class ShellBrowserMainParts : public content::BrowserMainParts,
 
   scoped_ptr<ShellBrowserContext> browser_context_;
   scoped_ptr<ShellExtensionsClient> extensions_client_;
-  scoped_ptr<ShellExtensionsBrowserClient> extensions_browser_client_;
+  scoped_ptr<extensions::ShellExtensionsBrowserClient>
+      extensions_browser_client_;
 
   // Enable a minimal set of views::corewm to be initialized.
   scoped_ptr<wm::WMTestHelper> wm_test_helper_;

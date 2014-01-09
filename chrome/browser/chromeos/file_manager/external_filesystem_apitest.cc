@@ -43,6 +43,7 @@
 // - Doing searches on drive file system from file browser extension (using
 //   fileBrowserPrivate API).
 
+using drive::DriveIntegrationServiceFactory;
 using extensions::Extension;
 
 namespace file_manager {
@@ -298,10 +299,13 @@ class DriveFileSystemExtensionApiTest : public FileSystemExtensionApiTestBase {
     // initialized by EventRouter.
     ASSERT_TRUE(test_cache_root_.CreateUniqueTempDir());
 
-    drive::DriveIntegrationServiceFactory::SetFactoryForTest(
-        base::Bind(
-            &DriveFileSystemExtensionApiTest::CreateDriveIntegrationService,
-            base::Unretained(this)));
+    // This callback will get called during Profile creation.
+    create_drive_integration_service_ = base::Bind(
+        &DriveFileSystemExtensionApiTest::CreateDriveIntegrationService,
+        base::Unretained(this));
+    service_factory_for_test_.reset(
+        new DriveIntegrationServiceFactory::ScopedFactoryForTest(
+            &create_drive_integration_service_));
   }
 
   // FileSystemExtensionApiTestBase OVERRIDE.
@@ -326,6 +330,10 @@ class DriveFileSystemExtensionApiTest : public FileSystemExtensionApiTestBase {
 
   base::ScopedTempDir test_cache_root_;
   drive::FakeDriveService* fake_drive_service_;
+  DriveIntegrationServiceFactory::FactoryCallback
+      create_drive_integration_service_;
+  scoped_ptr<DriveIntegrationServiceFactory::ScopedFactoryForTest>
+      service_factory_for_test_;
 };
 
 //

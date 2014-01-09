@@ -52,8 +52,7 @@ ExtensionSystemSharedFactory::BuildServiceInstanceFor(
 content::BrowserContext* ExtensionSystemSharedFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
   // Redirected in incognito.
-  return extensions::ExtensionsBrowserClient::Get()->
-      GetOriginalContext(context);
+  return ExtensionsBrowserClient::Get()->GetOriginalContext(context);
 }
 
 // ExtensionSystemFactory
@@ -72,24 +71,21 @@ ExtensionSystemFactory* ExtensionSystemFactory::GetInstance() {
 ExtensionSystemFactory::ExtensionSystemFactory()
     : BrowserContextKeyedServiceFactory(
         "ExtensionSystem",
-        BrowserContextDependencyManager::GetInstance()),
-      custom_instance_(NULL) {
-  DependsOn(ExtensionSystemSharedFactory::GetInstance());
+        BrowserContextDependencyManager::GetInstance()) {
+  DCHECK(ExtensionsBrowserClient::Get())
+      << "ExtensionSystemFactory must be initialized after BrowserProcess";
+  std::vector<BrowserContextKeyedServiceFactory*> dependencies =
+      ExtensionsBrowserClient::Get()->GetExtensionSystemDependencies();
+  for (size_t i = 0; i < dependencies.size(); ++i)
+    DependsOn(dependencies[i]);
 }
 
 ExtensionSystemFactory::~ExtensionSystemFactory() {
 }
 
-void ExtensionSystemFactory::SetCustomInstance(
-    ExtensionSystem* extension_system) {
-  custom_instance_ = extension_system;
-}
-
 BrowserContextKeyedService* ExtensionSystemFactory::BuildServiceInstanceFor(
-    content::BrowserContext* profile) const {
-  if (custom_instance_)
-    return custom_instance_;
-  return new ExtensionSystemImpl(static_cast<Profile*>(profile));
+    content::BrowserContext* context) const {
+  return ExtensionsBrowserClient::Get()->CreateExtensionSystem(context);
 }
 
 content::BrowserContext* ExtensionSystemFactory::GetBrowserContextToUse(

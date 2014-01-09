@@ -55,6 +55,10 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
   virtual bool IsRunningInForcedAppMode() OVERRIDE;
   virtual content::JavaScriptDialogManager* GetJavaScriptDialogManager()
       OVERRIDE;
+  virtual std::vector<BrowserContextKeyedServiceFactory*>
+      GetExtensionSystemDependencies() OVERRIDE;
+  virtual ExtensionSystem* CreateExtensionSystem(
+      content::BrowserContext* context) OVERRIDE;
 
  private:
   friend struct base::DefaultLazyInstanceTraits<ChromeExtensionsBrowserClient>;

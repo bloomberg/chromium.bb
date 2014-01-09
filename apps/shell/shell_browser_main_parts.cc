@@ -13,9 +13,10 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "chrome/browser/extensions/extension_system_factory.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/common/chrome_paths.h"
 #include "chromeos/chromeos_paths.h"
+#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "content/public/common/result_codes.h"
 #include "extensions/common/extension_paths.h"
 #include "ui/aura/env.h"
@@ -27,8 +28,18 @@
 
 using content::BrowserContext;
 using extensions::Extension;
+using extensions::ExtensionSystem;
+using extensions::ShellExtensionSystem;
 
 namespace apps {
+namespace {
+
+void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
+  // TODO(jamescook): Register additional BrowserContextKeyedService factories
+  // here. See ChromeBrowserMainExtraPartsProfiles for details.
+}
+
+}  // namespace
 
 ShellBrowserMainParts::ShellBrowserMainParts(
     const content::MainFunctionParams& parameters)
@@ -77,15 +88,16 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   extensions::ExtensionsClient::Set(extensions_client_.get());
 
   extensions_browser_client_.reset(
-      new ShellExtensionsBrowserClient(browser_context_.get()));
+      new extensions::ShellExtensionsBrowserClient(browser_context_.get()));
   extensions::ExtensionsBrowserClient::Set(extensions_browser_client_.get());
 
-  // TODO(jamescook): Initialize policy::ProfilePolicyConnector.
-
+  // Create our custom ExtensionSystem first because other
+  // BrowserContextKeyedServices depend on it.
   CreateExtensionSystem();
 
-  // TODO(jamescook): Create the rest of the services using
-  // BrowserContextDependencyManager::CreateBrowserContextServices.
+  EnsureBrowserContextKeyedServiceFactoriesBuilt();
+  BrowserContextDependencyManager::GetInstance()->CreateBrowserContextServices(
+      browser_context_.get());
 
   CreateRootWindow();
 
@@ -111,16 +123,13 @@ bool ShellBrowserMainParts::MainMessageLoopRun(int* result_code)  {
 
 void ShellBrowserMainParts::PostMainMessageLoopRun() {
   DestroyRootWindow();
-  // TODO(jamescook): Destroy the rest of the services with
-  // BrowserContextDependencyManager::DestroyBrowserContextServices.
+  BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(
+      browser_context_.get());
+  extension_system_ = NULL;
   extensions::ExtensionsBrowserClient::Set(NULL);
   extensions_browser_client_.reset();
   browser_context_.reset();
   aura::Env::DeleteInstance();
-
-  LOG(WARNING) << "-----------------------------------";
-  LOG(WARNING) << "app_shell is expected to crash now.";
-  LOG(WARNING) << "-----------------------------------";
 }
 
 void ShellBrowserMainParts::OnWindowTreeHostCloseRequested(
@@ -149,12 +158,8 @@ void ShellBrowserMainParts::DestroyRootWindow() {
 
 void ShellBrowserMainParts::CreateExtensionSystem() {
   DCHECK(browser_context_);
-  extension_system_ =
-      new extensions::ShellExtensionSystem(browser_context_.get());
-  extensions::ExtensionSystemFactory::GetInstance()->SetCustomInstance(
-      extension_system_);
-  // Must occur after setting the instance above, as it will end up calling
-  // ExtensionSystem::Get().
+  extension_system_ = static_cast<ShellExtensionSystem*>(
+      ExtensionSystem::GetForBrowserContext(browser_context_.get()));
   extension_system_->InitForRegularProfile(true);
 }
 

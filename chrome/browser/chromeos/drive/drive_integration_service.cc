@@ -540,6 +540,18 @@ void DriveIntegrationService::AvoidDriveAsDownloadDirecotryPreference() {
 
 //===================== DriveIntegrationServiceFactory =======================
 
+DriveIntegrationServiceFactory::FactoryCallback*
+    DriveIntegrationServiceFactory::factory_for_test_ = NULL;
+
+DriveIntegrationServiceFactory::ScopedFactoryForTest::ScopedFactoryForTest(
+    FactoryCallback* factory_for_test) {
+  factory_for_test_ = factory_for_test;
+}
+
+DriveIntegrationServiceFactory::ScopedFactoryForTest::~ScopedFactoryForTest() {
+  factory_for_test_ = NULL;
+}
+
 // static
 DriveIntegrationService* DriveIntegrationServiceFactory::GetForProfile(
     Profile* profile) {
@@ -573,12 +585,6 @@ DriveIntegrationServiceFactory* DriveIntegrationServiceFactory::GetInstance() {
   return Singleton<DriveIntegrationServiceFactory>::get();
 }
 
-// static
-void DriveIntegrationServiceFactory::SetFactoryForTest(
-    const FactoryCallback& factory_for_test) {
-  GetInstance()->factory_for_test_ = factory_for_test;
-}
-
 DriveIntegrationServiceFactory::DriveIntegrationServiceFactory()
     : BrowserContextKeyedServiceFactory(
         "DriveIntegrationService",
@@ -597,7 +603,7 @@ DriveIntegrationServiceFactory::BuildServiceInstanceFor(
   Profile* profile = Profile::FromBrowserContext(context);
 
   DriveIntegrationService* service = NULL;
-  if (factory_for_test_.is_null()) {
+  if (!factory_for_test_) {
     DriveIntegrationService::PreferenceWatcher* preference_watcher = NULL;
     if (chromeos::IsProfileAssociatedWithGaiaAccount(profile)) {
       // Drive File System can be enabled.
@@ -608,7 +614,7 @@ DriveIntegrationServiceFactory::BuildServiceInstanceFor(
     service = new DriveIntegrationService(profile, preference_watcher,
                                           NULL, base::FilePath(), NULL);
   } else {
-    service = factory_for_test_.Run(profile);
+    service = factory_for_test_->Run(profile);
   }
 
   return service;

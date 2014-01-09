@@ -188,6 +188,14 @@ class DriveIntegrationServiceFactory
   typedef base::Callback<DriveIntegrationService*(Profile* profile)>
       FactoryCallback;
 
+  // Sets and resets a factory function for tests. See below for why we can't
+  // use BrowserContextKeyedServiceFactory::SetTestingFactory().
+  class ScopedFactoryForTest {
+   public:
+    explicit ScopedFactoryForTest(FactoryCallback* factory_for_test);
+    ~ScopedFactoryForTest();
+  };
+
   // Returns the DriveIntegrationService for |profile|, creating it if it is
   // not yet created.
   static DriveIntegrationService* GetForProfile(Profile* profile);
@@ -207,9 +215,6 @@ class DriveIntegrationServiceFactory
   // Returns the DriveIntegrationServiceFactory instance.
   static DriveIntegrationServiceFactory* GetInstance();
 
-  // Sets a factory function for tests.
-  static void SetFactoryForTest(const FactoryCallback& factory_for_test);
-
  private:
   friend struct DefaultSingletonTraits<DriveIntegrationServiceFactory>;
 
@@ -220,7 +225,12 @@ class DriveIntegrationServiceFactory
   virtual BrowserContextKeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const OVERRIDE;
 
-  FactoryCallback factory_for_test_;
+  // This is static so it can be set without instantiating the factory. This
+  // allows factory creation to be delayed until it normally happens (on profile
+  // creation) rather than when tests are set up. DriveIntegrationServiceFactory
+  // transitively depends on ExtensionSystemFactory which crashes if created too
+  // soon (i.e. before the BrowserProcess exists).
+  static FactoryCallback* factory_for_test_;
 };
 
 }  // namespace drive

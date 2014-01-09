@@ -10,6 +10,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/chrome_app_sorting.h"
 #include "chrome/browser/extensions/extension_prefs.h"
+#include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_manager.h"
@@ -152,6 +154,18 @@ bool ChromeExtensionsBrowserClient::IsRunningInForcedAppMode() {
 content::JavaScriptDialogManager*
 ChromeExtensionsBrowserClient::GetJavaScriptDialogManager() {
   return GetJavaScriptDialogManagerInstance();
+}
+
+std::vector<BrowserContextKeyedServiceFactory*>
+ChromeExtensionsBrowserClient::GetExtensionSystemDependencies() {
+  std::vector<BrowserContextKeyedServiceFactory*> dependencies;
+  dependencies.push_back(ExtensionSystemSharedFactory::GetInstance());
+  return dependencies;
+}
+
+ExtensionSystem* ChromeExtensionsBrowserClient::CreateExtensionSystem(
+    content::BrowserContext* context) {
+  return new ExtensionSystemImpl(static_cast<Profile*>(context));
 }
 
 }  // namespace extensions

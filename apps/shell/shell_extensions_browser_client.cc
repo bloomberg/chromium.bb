@@ -5,26 +5,28 @@
 #include "apps/shell/shell_extensions_browser_client.h"
 
 #include "apps/shell/shell_app_sorting.h"
+#include "apps/shell/shell_extension_system.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/pref_service_factory.h"
 #include "base/prefs/testing_pref_store.h"
 #include "chrome/browser/extensions/extension_prefs.h"
+#include "chrome/browser/extensions/extension_prefs_factory.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "components/user_prefs/user_prefs.h"
 #include "extensions/browser/app_sorting.h"
 
 using content::BrowserContext;
 
+namespace extensions {
 namespace {
 
 // See chrome::RegisterProfilePrefs() in chrome/browser/prefs/browser_prefs.cc
 void RegisterPrefs(user_prefs::PrefRegistrySyncable* registry) {
-  extensions::ExtensionPrefs::RegisterProfilePrefs(registry);
+  ExtensionPrefs::RegisterProfilePrefs(registry);
 }
 
 }  // namespace
 
-namespace apps {
 
 ShellExtensionsBrowserClient::ShellExtensionsBrowserClient(
     BrowserContext* context)
@@ -101,9 +103,8 @@ bool ShellExtensionsBrowserClient::DidVersionUpdate(BrowserContext* context) {
   return false;
 }
 
-scoped_ptr<extensions::AppSorting>
-ShellExtensionsBrowserClient::CreateAppSorting() {
-  return scoped_ptr<extensions::AppSorting>(new ShellAppSorting).Pass();
+scoped_ptr<AppSorting> ShellExtensionsBrowserClient::CreateAppSorting() {
+  return scoped_ptr<AppSorting>(new apps::ShellAppSorting).Pass();
 }
 
 bool ShellExtensionsBrowserClient::IsRunningInForcedAppMode() {
@@ -118,4 +119,16 @@ ShellExtensionsBrowserClient::GetJavaScriptDialogManager() {
   return NULL;
 }
 
-}  // namespace apps
+std::vector<BrowserContextKeyedServiceFactory*>
+ShellExtensionsBrowserClient::GetExtensionSystemDependencies() {
+  std::vector<BrowserContextKeyedServiceFactory*> depends_on;
+  depends_on.push_back(ExtensionPrefsFactory::GetInstance());
+  return depends_on;
+}
+
+ExtensionSystem* ShellExtensionsBrowserClient::CreateExtensionSystem(
+    BrowserContext* context) {
+  return new ShellExtensionSystem(context);
+}
+
+}  // namespace extensions

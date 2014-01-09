@@ -4,25 +4,14 @@
 
 #include "apps/shell/shell_browser_context.h"
 
-#include "apps/app_load_service_factory.h"
-
-namespace {
-
-// See ChromeBrowserMainExtraPartsProfiles for details.
-void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
-  apps::AppLoadServiceFactory::GetInstance();
-}
-
-}  // namespace
-
 namespace apps {
 
-// TODO(jamescook): Should this be an off-the-record context?
-// TODO(jamescook): Could initialize NetLog here to get logs from the networking
-// stack.
+// Create a normal recording browser context. If we used an incognito context
+// then app_shell would also have to create a normal context and manage both.
 ShellBrowserContext::ShellBrowserContext()
     : content::ShellBrowserContext(false, NULL) {
-  EnsureBrowserContextKeyedServiceFactoriesBuilt();
+  // TODO(jamescook): Could initialize NetLog here to get logs from the
+  // networking stack.
 }
 
 ShellBrowserContext::~ShellBrowserContext() {
