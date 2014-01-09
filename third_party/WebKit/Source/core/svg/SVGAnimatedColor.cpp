@@ -40,21 +40,27 @@ PassOwnPtr<SVGAnimatedType> SVGAnimatedColorAnimator::constructFromString(const 
     return animtedType.release();
 }
 
-void SVGAnimatedColorAnimator::addAnimatedTypes(SVGAnimatedType* from, SVGAnimatedType* to)
-{
-    ASSERT(from->type() == AnimatedColor);
-    ASSERT(from->type() == to->type());
-    to->color() = ColorDistance::addColors(from->color(), to->color());
-}
-
 static inline void adjustForCurrentColor(SVGElement* targetElement, Color& color)
 {
     ASSERT(targetElement);
+    if (color.isValid())
+        return;
 
     if (RenderObject* targetRenderer = targetElement->renderer())
         color = targetRenderer->style()->visitedDependentColor(CSSPropertyColor);
     else
         color = Color();
+}
+
+void SVGAnimatedColorAnimator::addAnimatedTypes(SVGAnimatedType* from, SVGAnimatedType* to)
+{
+    ASSERT(from->type() == AnimatedColor);
+    ASSERT(from->type() == to->type());
+    Color fromColor = from->color();
+    Color toColor = to->color();
+    adjustForCurrentColor(m_contextElement, fromColor);
+    adjustForCurrentColor(m_contextElement, toColor);
+    to->color() = ColorDistance::addColors(fromColor, toColor);
 }
 
 static Color parseColorFromString(SVGAnimationElement*, const String& string)
@@ -69,7 +75,7 @@ void SVGAnimatedColorAnimator::calculateAnimatedValue(float percentage, unsigned
 
     Color fromColor = m_animationElement->animationMode() == ToAnimation ? animated->color() : from->color();
     Color toColor = to->color();
-    const Color& toAtEndOfDurationColor = toAtEndOfDuration->color();
+    Color toAtEndOfDurationColor = toAtEndOfDuration->color();
     Color& animatedColor = animated->color();
 
     // Apply CSS inheritance rules.
@@ -77,10 +83,9 @@ void SVGAnimatedColorAnimator::calculateAnimatedValue(float percentage, unsigned
     m_animationElement->adjustForInheritance<Color>(parseColorFromString, m_animationElement->toPropertyValueType(), toColor, m_contextElement);
 
     // Apply <animateColor> rules.
-    if (m_animationElement->fromPropertyValueType() == CurrentColorValue)
-        adjustForCurrentColor(m_contextElement, fromColor);
-    if (m_animationElement->toPropertyValueType() == CurrentColorValue)
-        adjustForCurrentColor(m_contextElement, toColor);
+    adjustForCurrentColor(m_contextElement, fromColor);
+    adjustForCurrentColor(m_contextElement, toColor);
+    adjustForCurrentColor(m_contextElement, toAtEndOfDurationColor);
 
     float animatedRed = animatedColor.red();
     m_animationElement->animateAdditiveNumber(percentage, repeatCount, fromColor.red(), toColor.red(), toAtEndOfDurationColor.red(), animatedRed);

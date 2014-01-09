@@ -43,11 +43,10 @@ enum AnimationMode {
     PathAnimation // Used by AnimateMotion.
 };
 
-// If we have 'currentColor' or 'inherit' as animation value, we need to grab
-// the value during the animation since the value can be animated itself.
+// If we have 'inherit' as animation value, we need to grab the value
+// during the animation since the value can be animated itself.
 enum AnimatedPropertyValueType {
     RegularPropertyValue,
-    CurrentColorValue,
     InheritValue
 };
 
@@ -171,7 +170,7 @@ protected:
     SVGAnimationElement(const QualifiedName&, Document&);
 
     void computeCSSPropertyValue(SVGElement*, CSSPropertyID, String& value);
-    virtual void determinePropertyValueTypes(const String& from, const String& to);
+    void determinePropertyValueTypes(const String& from, const String& to);
 
     bool isSupportedAttribute(const QualifiedName&);
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;

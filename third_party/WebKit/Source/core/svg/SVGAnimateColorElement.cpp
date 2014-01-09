@@ -40,19 +40,4 @@ PassRefPtr<SVGAnimateColorElement> SVGAnimateColorElement::create(Document& docu
     return adoptRef(new SVGAnimateColorElement(document));
 }
 
-static bool attributeValueIsCurrentColor(const String& value)
-{
-    DEFINE_STATIC_LOCAL(const AtomicString, currentColor, ("currentColor", AtomicString::ConstructFromLiteral));
-    return value == currentColor;
-}
-
-void SVGAnimateColorElement::determinePropertyValueTypes(const String& from, const String& to)
-{
-    SVGAnimateElement::determinePropertyValueTypes(from, to);
-    if (attributeValueIsCurrentColor(from))
-        m_fromPropertyValueType = CurrentColorValue;
-    if (attributeValueIsCurrentColor(to))
-        m_toPropertyValueType = CurrentColorValue;
-}
-
 }
