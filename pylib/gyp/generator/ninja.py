@@ -1557,7 +1557,9 @@ def GetDefaultConcurrentLinks():
 
     mem_limit = max(1, stat.ullTotalPhys / (4 * (2 ** 30)))  # total / 4GB
     hard_cap = max(1, int(os.getenv('GYP_LINK_CONCURRENCY_MAX', 2**32)))
-    return min(mem_limit, hard_cap)
+    # return min(mem_limit, hard_cap)
+    # TODO(scottmg): Temporary speculative fix for OOM on builders
+    return 2
   elif sys.platform.startswith('linux'):
     with open("/proc/meminfo") as meminfo:
       memtotal_re = re.compile(r'^MemTotal:\s*(\d*)\s*kB')
