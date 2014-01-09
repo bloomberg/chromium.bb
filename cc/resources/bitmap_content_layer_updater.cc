@@ -91,12 +91,11 @@ void BitmapContentLayerUpdater::UpdateTexture(ResourceUpdateQueue* queue,
                                               gfx::Vector2d dest_offset,
                                               bool partial_update) {
   CHECK(canvas_);
-  ResourceUpdate upload =
-      ResourceUpdate::CreateFromCanvas(texture,
-                                       canvas_,
-                                       content_rect(),
-                                       source_rect,
-                                       dest_offset);
+  ResourceUpdate upload = ResourceUpdate::Create(texture,
+                                                 &bitmap_backing_,
+                                                 content_rect(),
+                                                 source_rect,
+                                                 dest_offset);
   if (partial_update)
     queue->AppendPartialUpload(upload);
   else

@@ -5,14 +5,11 @@
 #ifndef CC_RESOURCES_RESOURCE_UPDATE_H_
 #define CC_RESOURCES_RESOURCE_UPDATE_H_
 
-#include "base/memory/ref_counted.h"
 #include "cc/base/cc_export.h"
-#include "skia/ext/refptr.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/vector2d.h"
 
 class SkBitmap;
-class SkCanvas;
 
 namespace cc {
 
@@ -24,18 +21,12 @@ struct CC_EXPORT ResourceUpdate {
                                gfx::Rect content_rect,
                                gfx::Rect source_rect,
                                gfx::Vector2d dest_offset);
-  static ResourceUpdate CreateFromCanvas(PrioritizedResource* resource,
-                                         const skia::RefPtr<SkCanvas>& canvas,
-                                         gfx::Rect content_rect,
-                                         gfx::Rect source_rect,
-                                         gfx::Vector2d dest_offset);
 
   ResourceUpdate();
   virtual ~ResourceUpdate();
 
   PrioritizedResource* texture;
   const SkBitmap* bitmap;
-  skia::RefPtr<SkCanvas> canvas;
   gfx::Rect content_rect;
   gfx::Rect source_rect;
   gfx::Vector2d dest_offset;
