@@ -35,7 +35,7 @@
 
 namespace WebCore {
 
-class HiddenInputType : public InputType {
+class HiddenInputType FINAL : public InputType {
 public:
     static PassRefPtr<InputType> create(HTMLInputElement&);
 

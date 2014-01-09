@@ -39,7 +39,7 @@ namespace WebCore {
 class SearchFieldCancelButtonElement;
 class SearchFieldDecorationElement;
 
-class SearchInputType : public BaseTextInputType {
+class SearchInputType FINAL : public BaseTextInputType {
 public:
     static PassRefPtr<InputType> create(HTMLInputElement&);
 

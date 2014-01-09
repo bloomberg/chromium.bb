@@ -37,7 +37,7 @@ namespace WebCore {
 
 class ExceptionState;
 
-class NumberInputType : public TextFieldInputType {
+class NumberInputType FINAL : public TextFieldInputType {
 public:
     static PassRefPtr<InputType> create(HTMLInputElement&);
 

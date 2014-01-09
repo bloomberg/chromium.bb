@@ -35,7 +35,7 @@
 
 namespace WebCore {
 
-class RadioInputType : public BaseCheckableInputType {
+class RadioInputType FINAL : public BaseCheckableInputType {
 public:
     static PassRefPtr<InputType> create(HTMLInputElement&);
 

@@ -44,7 +44,7 @@ typedef BaseMultipleFieldsDateAndTimeInputType BaseDateTimeLocalInputType;
 typedef BaseChooserOnlyDateAndTimeInputType BaseDateTimeLocalInputType;
 #endif
 
-class DateTimeLocalInputType : public BaseDateTimeLocalInputType {
+class DateTimeLocalInputType FINAL : public BaseDateTimeLocalInputType {
 public:
     static PassRefPtr<InputType> create(HTMLInputElement&);
 

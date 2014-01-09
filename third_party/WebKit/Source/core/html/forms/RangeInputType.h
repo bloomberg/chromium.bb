@@ -38,7 +38,7 @@ namespace WebCore {
 class ExceptionState;
 class SliderThumbElement;
 
-class RangeInputType : public InputType {
+class RangeInputType FINAL : public InputType {
 public:
     static PassRefPtr<InputType> create(HTMLInputElement&);
 

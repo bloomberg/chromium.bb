@@ -50,15 +50,15 @@ protected:
 
 protected:
     virtual bool needsContainer() const;
-    virtual bool shouldHaveSpinButton() const;
+    bool shouldHaveSpinButton() const;
     virtual void createShadowSubtree() OVERRIDE;
     virtual void destroyShadowSubtree() OVERRIDE;
     virtual void attributeChanged() OVERRIDE;
     virtual void disabledAttributeChanged() OVERRIDE;
     virtual void readonlyAttributeChanged() OVERRIDE;
     virtual bool supportsReadOnly() const OVERRIDE;
-    virtual void handleFocusEvent(Element* oldFocusedNode, FocusDirection) OVERRIDE;
-    virtual void handleBlurEvent() OVERRIDE;
+    virtual void handleFocusEvent(Element* oldFocusedNode, FocusDirection) OVERRIDE FINAL;
+    virtual void handleBlurEvent() OVERRIDE FINAL;
     virtual void setValue(const String&, bool valueChanged, TextFieldEventBehavior) OVERRIDE;
     virtual void updateView() OVERRIDE;
 
@@ -72,27 +72,27 @@ protected:
     Element* containerElement() const;
 
 private:
-    virtual bool shouldShowFocusRingOnMouseFocus() const OVERRIDE;
-    virtual bool isTextField() const OVERRIDE;
+    virtual bool shouldShowFocusRingOnMouseFocus() const OVERRIDE FINAL;
+    virtual bool isTextField() const OVERRIDE FINAL;
     virtual bool valueMissing(const String&) const OVERRIDE;
     virtual void handleBeforeTextInsertedEvent(BeforeTextInsertedEvent*) OVERRIDE;
-    virtual void forwardEvent(Event*) OVERRIDE;
-    virtual bool shouldSubmitImplicitly(Event*) OVERRIDE;
+    virtual void forwardEvent(Event*) OVERRIDE FINAL;
+    virtual bool shouldSubmitImplicitly(Event*) OVERRIDE FINAL;
     virtual RenderObject* createRenderer(RenderStyle*) const OVERRIDE;
     virtual bool shouldUseInputMethod() const OVERRIDE;
     virtual String sanitizeValue(const String&) const OVERRIDE;
     virtual bool shouldRespectListAttribute() OVERRIDE;
     virtual void listAttributeTargetChanged() OVERRIDE;
-    virtual void updatePlaceholderText() OVERRIDE;
+    virtual void updatePlaceholderText() OVERRIDE FINAL;
     virtual bool appendFormData(FormDataList&, bool multipart) const OVERRIDE;
-    virtual void subtreeHasChanged() OVERRIDE;
+    virtual void subtreeHasChanged() OVERRIDE FINAL;
 
     // SpinButtonElement::SpinButtonOwner functions.
-    virtual void focusAndSelectSpinButtonOwner() OVERRIDE;
-    virtual bool shouldSpinButtonRespondToMouseEvents() OVERRIDE;
-    virtual bool shouldSpinButtonRespondToWheelEvents() OVERRIDE;
-    virtual void spinButtonStepDown() OVERRIDE;
-    virtual void spinButtonStepUp() OVERRIDE;
+    virtual void focusAndSelectSpinButtonOwner() OVERRIDE FINAL;
+    virtual bool shouldSpinButtonRespondToMouseEvents() OVERRIDE FINAL;
+    virtual bool shouldSpinButtonRespondToWheelEvents() OVERRIDE FINAL;
+    virtual void spinButtonStepDown() OVERRIDE FINAL;
+    virtual void spinButtonStepUp() OVERRIDE FINAL;
 
     SpinButtonElement* spinButtonElement() const;
 };

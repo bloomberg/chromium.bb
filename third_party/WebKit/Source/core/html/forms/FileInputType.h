@@ -41,7 +41,7 @@ namespace WebCore {
 class DragData;
 class FileList;
 
-class FileInputType : public BaseClickableWithKeyInputType, private FileChooserClient {
+class FileInputType FINAL : public BaseClickableWithKeyInputType, private FileChooserClient {
 public:
     static PassRefPtr<InputType> create(HTMLInputElement&);
     static Vector<FileChooserFileInfo> filesFromFormControlState(const FormControlState&);

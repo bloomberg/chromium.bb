@@ -42,16 +42,16 @@ protected:
     virtual void handleKeydownEvent(KeyboardEvent*);
 
 private:
-    virtual FormControlState saveFormControlState() const OVERRIDE;
-    virtual void restoreFormControlState(const FormControlState&) OVERRIDE;
-    virtual bool appendFormData(FormDataList&, bool) const OVERRIDE;
-    virtual void handleKeypressEvent(KeyboardEvent*) OVERRIDE;
-    virtual bool canSetStringValue() const OVERRIDE;
-    virtual void accessKeyAction(bool sendMouseEvents) OVERRIDE;
-    virtual String fallbackValue() const OVERRIDE;
-    virtual bool storesValueSeparateFromAttribute() OVERRIDE;
-    virtual void setValue(const String&, bool, TextFieldEventBehavior) OVERRIDE;
-    virtual bool isCheckable() OVERRIDE;
+    virtual FormControlState saveFormControlState() const OVERRIDE FINAL;
+    virtual void restoreFormControlState(const FormControlState&) OVERRIDE FINAL;
+    virtual bool appendFormData(FormDataList&, bool) const OVERRIDE FINAL;
+    virtual void handleKeypressEvent(KeyboardEvent*) OVERRIDE FINAL;
+    virtual bool canSetStringValue() const OVERRIDE FINAL;
+    virtual void accessKeyAction(bool sendMouseEvents) OVERRIDE FINAL;
+    virtual String fallbackValue() const OVERRIDE FINAL;
+    virtual bool storesValueSeparateFromAttribute() OVERRIDE FINAL;
+    virtual void setValue(const String&, bool, TextFieldEventBehavior) OVERRIDE FINAL;
+    virtual bool isCheckable() OVERRIDE FINAL;
 };
 
 } // namespace WebCore

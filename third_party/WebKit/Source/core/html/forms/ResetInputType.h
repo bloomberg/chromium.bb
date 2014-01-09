@@ -35,7 +35,7 @@
 
 namespace WebCore {
 
-class ResetInputType : public BaseButtonInputType {
+class ResetInputType FINAL : public BaseButtonInputType {
 public:
     static PassRefPtr<InputType> create(HTMLInputElement&);
 

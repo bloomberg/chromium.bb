@@ -38,7 +38,7 @@
 
 namespace WebCore {
 
-class ImageInputType : public BaseButtonInputType {
+class ImageInputType FINAL : public BaseButtonInputType {
 public:
     static PassRefPtr<InputType> create(HTMLInputElement&);
 
