@@ -33,6 +33,7 @@
       ],
       'variables': {
         'jni_gen_package': 'example',
+        'jni_generator_ptr_type': 'long',
       },
       'includes': [ '../../../build/jni_generator.gypi' ],
     },
