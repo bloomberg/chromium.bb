@@ -1381,13 +1381,30 @@ void LayerImpl::AsValueInto(base::DictionaryValue* state) const {
     std::string str;
     debug_info_->AppendAsTraceFormat(&str);
     base::JSONReader json_reader;
-    // Parsing the JSON and re-encoding it is not very efficient,
-    // but it's the simplest way to achieve the desired effect, which
-    // is to output:
-    // {..., layout_rects: [{geometry_rect: ...}, ...], ...}
-    // rather than:
-    // {layout_rects: "[{geometry_rect: ...}, ...]", ...}
-    state->Set("layout_rects", json_reader.ReadToValue(str));
+    scoped_ptr<base::Value> debug_info_value(json_reader.ReadToValue(str));
+
+    // TODO(vollick): The TYPE_LIST code below is brittle; it assumes the only
+    // debug info is the layout rects. In future, this will be generalized, and
+    // debug info will return a dictionary to be merged into state. Until then,
+    // we unfortunately have to support both situations. Once we've migrated,
+    // the TYPE_LIST branch will be deleted.
+    if (debug_info_value->IsType(base::Value::TYPE_LIST)) {
+      // Parsing the JSON and re-encoding it is not very efficient,
+      // but it's the simplest way to achieve the desired effect, which
+      // is to output:
+      // {..., layout_rects: [{geometry_rect: ...}, ...], ...}
+      // rather than:
+      // {layout_rects: "[{geometry_rect: ...}, ...]", ...}
+      state->Set("layout_rects", debug_info_value.release());
+    } else if (debug_info_value->IsType(base::Value::TYPE_DICTIONARY)) {
+      base::DictionaryValue* dictionary_value = NULL;
+      bool converted_to_dictionary =
+          debug_info_value->GetAsDictionary(&dictionary_value);
+      DCHECK(converted_to_dictionary);
+      state->MergeDictionary(dictionary_value);
+    } else {
+      NOTREACHED();
+    }
   }
 }
 
