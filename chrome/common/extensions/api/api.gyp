@@ -123,6 +123,7 @@
               # WebRTC-specific bits and as such does not belong in
               # the enable_webrtc=0 section below.
               'webrtc_audio_private.idl',
+              'webrtc_logging_private.idl',
               'webstore_private.json',
               'webview.json',
               'windows.json',
@@ -169,7 +170,6 @@
               'cast_streaming_rtp_stream.idl',
               'cast_streaming_session.idl',
               'cast_streaming_udp_transport.idl',
-              'webrtc_logging_private.idl',
             ],
           }],
         ],
