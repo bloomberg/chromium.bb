@@ -830,6 +830,7 @@
       'text/TextCheckerClient.h',
       'text/TextChecking.h',
       'text/TextDecoration.h',
+      'text/TextPath.h',
       'text/TextEncodingDetector.cpp',
       'text/TextEncodingDetector.h',
       'text/TextRun.cpp',

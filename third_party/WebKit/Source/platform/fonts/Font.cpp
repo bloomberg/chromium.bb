@@ -78,7 +78,7 @@ static const UChar32 cjkIsolatedSymbolsArray[] = {
     0x1F100
 };
 
-Font::CodePath Font::s_codePath = Auto;
+CodePath Font::s_codePath = AutoPath;
 
 TypesettingFeatures Font::s_defaultTypesettingFeatures = 0;
 
@@ -177,10 +177,10 @@ void Font::drawText(GraphicsContext* context, const TextRunPaintInfo& runInfo, c
 
     CodePath codePathToUse = codePath(runInfo.run);
     // FIXME: Use the fast code path once it handles partial runs with kerning and ligatures. See http://webkit.org/b/100050
-    if (codePathToUse != Complex && typesettingFeatures() && (runInfo.from || runInfo.to != runInfo.run.length()))
-        codePathToUse = Complex;
+    if (codePathToUse != ComplexPath && typesettingFeatures() && (runInfo.from || runInfo.to != runInfo.run.length()))
+        codePathToUse = ComplexPath;
 
-    if (codePathToUse != Complex)
+    if (codePathToUse != ComplexPath)
         return drawSimpleText(context, runInfo, point);
 
     return drawComplexText(context, runInfo, point);
@@ -193,10 +193,10 @@ void Font::drawEmphasisMarks(GraphicsContext* context, const TextRunPaintInfo& r
 
     CodePath codePathToUse = codePath(runInfo.run);
     // FIXME: Use the fast code path once it handles partial runs with kerning and ligatures. See http://webkit.org/b/100050
-    if (codePathToUse != Complex && typesettingFeatures() && (runInfo.from || runInfo.to != runInfo.run.length()))
-        codePathToUse = Complex;
+    if (codePathToUse != ComplexPath && typesettingFeatures() && (runInfo.from || runInfo.to != runInfo.run.length()))
+        codePathToUse = ComplexPath;
 
-    if (codePathToUse != Complex)
+    if (codePathToUse != ComplexPath)
         drawEmphasisMarksForSimpleText(context, runInfo, mark, point);
     else
         drawEmphasisMarksForComplexText(context, runInfo, mark, point);
@@ -205,12 +205,12 @@ void Font::drawEmphasisMarks(GraphicsContext* context, const TextRunPaintInfo& r
 float Font::width(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts, GlyphOverflow* glyphOverflow) const
 {
     CodePath codePathToUse = codePath(run);
-    if (codePathToUse != Complex) {
+    if (codePathToUse != ComplexPath) {
         // The complex path is more restrictive about returning fallback fonts than the simple path, so we need an explicit test to make their behaviors match.
         if (!canReturnFallbackFontsForComplexText())
             fallbackFonts = 0;
         // The simple path can optimize the case where glyph overflow is not observable.
-        if (codePathToUse != SimpleWithGlyphOverflow && (glyphOverflow && !glyphOverflow->computeBounds))
+        if (codePathToUse != SimpleWithGlyphOverflowPath && (glyphOverflow && !glyphOverflow->computeBounds))
             glyphOverflow = 0;
     }
 
@@ -221,7 +221,7 @@ float Font::width(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFo
         return *cacheEntry;
 
     float result;
-    if (codePathToUse == Complex)
+    if (codePathToUse == ComplexPath)
         result = floatWidthForComplexText(run, fallbackFonts, glyphOverflow);
     else
         result = floatWidthForSimpleText(run, fallbackFonts, glyphOverflow);
@@ -269,10 +269,10 @@ FloatRect Font::selectionRectForText(const TextRun& run, const FloatPoint& point
 
     CodePath codePathToUse = codePath(run);
     // FIXME: Use the fast code path once it handles partial runs with kerning and ligatures. See http://webkit.org/b/100050
-    if (codePathToUse != Complex && typesettingFeatures() && (from || to != run.length()))
-        codePathToUse = Complex;
+    if (codePathToUse != ComplexPath && typesettingFeatures() && (from || to != run.length()))
+        codePathToUse = ComplexPath;
 
-    if (codePathToUse != Complex)
+    if (codePathToUse != ComplexPath)
         return selectionRectForSimpleText(run, point, h, from, to);
 
     return selectionRectForComplexText(run, point, h, from, to);
@@ -281,7 +281,7 @@ FloatRect Font::selectionRectForText(const TextRun& run, const FloatPoint& point
 int Font::offsetForPosition(const TextRun& run, float x, bool includePartialGlyphs) const
 {
     // FIXME: Use the fast code path once it handles partial runs with kerning and ligatures. See http://webkit.org/b/100050
-    if (codePath(run) != Complex && !typesettingFeatures())
+    if (codePath(run) != ComplexPath && !typesettingFeatures())
         return offsetForPositionForSimpleText(run, x, includePartialGlyphs);
 
     return offsetForPositionForComplexText(run, x, includePartialGlyphs);
@@ -327,7 +327,7 @@ void Font::setCodePath(CodePath p)
     s_codePath = p;
 }
 
-Font::CodePath Font::codePath()
+CodePath Font::codePath()
 {
     return s_codePath;
 }
@@ -342,27 +342,27 @@ TypesettingFeatures Font::defaultTypesettingFeatures()
     return s_defaultTypesettingFeatures;
 }
 
-Font::CodePath Font::codePath(const TextRun& run) const
+CodePath Font::codePath(const TextRun& run) const
 {
-    if (s_codePath != Auto)
+    if (s_codePath != AutoPath)
         return s_codePath;
 
 #if ENABLE(SVG_FONTS)
     if (run.renderingContext())
-        return Simple;
+        return SimplePath;
 #endif
 
     if (m_fontDescription.featureSettings() && m_fontDescription.featureSettings()->size() > 0)
-        return Complex;
+        return ComplexPath;
 
     if (run.length() > 1 && !WidthIterator::supportsTypesettingFeatures(*this))
-        return Complex;
+        return ComplexPath;
 
     if (!run.characterScanForCodePath())
-        return Simple;
+        return SimplePath;
 
     if (run.is8Bit())
-        return Simple;
+        return SimplePath;
 
     // Start from 0 since drawing and highlighting also measure the characters before run->from.
     return characterRangeCodePath(run.characters16(), run.length());
@@ -378,7 +378,7 @@ bool valueInIntervalList(const T (&intervalList)[size], const T& value)
     return bound > intervalList && *(bound - 1) == value;
 }
 
-Font::CodePath Font::characterRangeCodePath(const UChar* characters, unsigned len)
+CodePath Font::characterRangeCodePath(const UChar* characters, unsigned len)
 {
     static const UChar complexCodePathRanges[] = {
         // U+02E5 through U+02E9 (Modifier Letters : Tone letters)
@@ -429,7 +429,7 @@ Font::CodePath Font::characterRangeCodePath(const UChar* characters, unsigned le
         0xFE20, 0xFE2F
     };
 
-    CodePath result = Simple;
+    CodePath result = SimplePath;
     for (unsigned i = 0; i < len; i++) {
         const UChar c = characters[i];
 
@@ -439,7 +439,7 @@ Font::CodePath Font::characterRangeCodePath(const UChar* characters, unsigned le
 
         // U+1E00 through U+2000 characters with diacritics and stacked diacritics
         if (c >= 0x1E00 && c <= 0x2000) {
-            result = SimpleWithGlyphOverflow;
+            result = SimpleWithGlyphOverflowPath;
             continue;
         }
 
@@ -457,12 +457,12 @@ Font::CodePath Font::characterRangeCodePath(const UChar* characters, unsigned le
             if (supplementaryCharacter < 0x1F1E6) // U+1F1E6 through U+1F1FF Regional Indicator Symbols
                 continue;
             if (supplementaryCharacter <= 0x1F1FF)
-                return Complex;
+                return ComplexPath;
 
             if (supplementaryCharacter < 0xE0100) // U+E0100 through U+E01EF Unicode variation selectors.
                 continue;
             if (supplementaryCharacter <= 0xE01EF)
-                return Complex;
+                return ComplexPath;
 
             // FIXME: Check for Brahmi (U+11000 block), Kaithi (U+11080 block) and other complex scripts
             // in plane 1 or higher.
@@ -472,7 +472,7 @@ Font::CodePath Font::characterRangeCodePath(const UChar* characters, unsigned le
 
         // Search for other Complex cases
         if (valueInIntervalList(complexCodePathRanges, c))
-            return Complex;
+            return ComplexPath;
     }
 
     return result;

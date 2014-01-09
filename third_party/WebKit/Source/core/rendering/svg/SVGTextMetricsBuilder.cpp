@@ -23,6 +23,7 @@
 
 #include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/rendering/svg/RenderSVGText.h"
+#include "platform/text/TextPath.h"
 
 namespace WebCore {
 
@@ -101,7 +102,7 @@ void SVGTextMetricsBuilder::initializeMeasurementWithTextRenderer(RenderSVGInlin
 
     const Font& scaledFont = text->scaledFont();
     m_run = SVGTextMetrics::constructTextRun(text, 0, text->textLength());
-    m_isComplexText = scaledFont.codePath(m_run) == Font::Complex;
+    m_isComplexText = scaledFont.codePath(m_run) == ComplexPath;
 
     if (m_isComplexText)
         m_simpleWidthIterator.clear();

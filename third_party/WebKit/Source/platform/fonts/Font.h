@@ -31,6 +31,7 @@
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/TypesettingFeatures.h"
 #include "platform/text/TextDirection.h"
+#include "platform/text/TextPath.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/MathExtras.h"
@@ -162,9 +163,8 @@ public:
     static void setShouldUseSmoothing(bool);
     static bool shouldUseSmoothing();
 
-    enum CodePath { Auto, Simple, Complex, SimpleWithGlyphOverflow };
     CodePath codePath(const TextRun&) const;
-    static CodePath characterRangeCodePath(const LChar*, unsigned) { return Simple; }
+    static CodePath characterRangeCodePath(const LChar*, unsigned) { return SimplePath; }
     static CodePath characterRangeCodePath(const UChar*, unsigned len);
 
 private:

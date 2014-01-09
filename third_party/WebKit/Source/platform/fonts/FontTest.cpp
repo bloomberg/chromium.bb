@@ -47,17 +47,17 @@ static void TestSpecificUCharRange(UChar rangeStart, UChar rangeEnd)
     end[0] = rangeEnd;
     above[0] = rangeEnd + 1;
 
-    EXPECT_EQ(Font::Simple, Font::characterRangeCodePath(below, 1));
-    EXPECT_EQ(Font::Complex, Font::characterRangeCodePath(start, 1));
-    EXPECT_EQ(Font::Complex, Font::characterRangeCodePath(midway, 1));
-    EXPECT_EQ(Font::Complex, Font::characterRangeCodePath(end, 1));
-    EXPECT_EQ(Font::Simple, Font::characterRangeCodePath(above, 1));
+    EXPECT_EQ(SimplePath, Font::characterRangeCodePath(below, 1));
+    EXPECT_EQ(ComplexPath, Font::characterRangeCodePath(start, 1));
+    EXPECT_EQ(ComplexPath, Font::characterRangeCodePath(midway, 1));
+    EXPECT_EQ(ComplexPath, Font::characterRangeCodePath(end, 1));
+    EXPECT_EQ(SimplePath, Font::characterRangeCodePath(above, 1));
 }
 
 TEST(FontTest, TestCharacterRangeCodePath)
 {
     static UChar c1[] = { 0x0 };
-    EXPECT_EQ(Font::Simple, Font::characterRangeCodePath(c1, 1));
+    EXPECT_EQ(SimplePath, Font::characterRangeCodePath(c1, 1));
 
     TestSpecificUCharRange(0x2E5, 0x2E9);
     TestSpecificUCharRange(0x300, 0x36F);
@@ -72,19 +72,19 @@ TEST(FontTest, TestCharacterRangeCodePath)
     TestSpecificUCharRange(0x1A00, 0x1CFF);
 
     static UChar c2[] = { 0x1DBF };
-    EXPECT_EQ(Font::Simple, Font::characterRangeCodePath(c2, 1));
+    EXPECT_EQ(SimplePath, Font::characterRangeCodePath(c2, 1));
     static UChar c3[] = { 0x1DC0 };
-    EXPECT_EQ(Font::Complex, Font::characterRangeCodePath(c3, 1));
+    EXPECT_EQ(ComplexPath, Font::characterRangeCodePath(c3, 1));
     static UChar c4[] = { 0x1DD0 };
-    EXPECT_EQ(Font::Complex, Font::characterRangeCodePath(c4, 1));
+    EXPECT_EQ(ComplexPath, Font::characterRangeCodePath(c4, 1));
     static UChar c5[] = { 0x1DFF };
-    EXPECT_EQ(Font::Complex, Font::characterRangeCodePath(c5, 1));
+    EXPECT_EQ(ComplexPath, Font::characterRangeCodePath(c5, 1));
     static UChar c6[] = { 0x1E00 };
-    EXPECT_EQ(Font::SimpleWithGlyphOverflow, Font::characterRangeCodePath(c6, 1));
+    EXPECT_EQ(SimpleWithGlyphOverflowPath, Font::characterRangeCodePath(c6, 1));
     static UChar c7[] = { 0x2000 };
-    EXPECT_EQ(Font::SimpleWithGlyphOverflow, Font::characterRangeCodePath(c7, 1));
+    EXPECT_EQ(SimpleWithGlyphOverflowPath, Font::characterRangeCodePath(c7, 1));
     static UChar c8[] = { 0x2001 };
-    EXPECT_EQ(Font::Simple, Font::characterRangeCodePath(c8, 1));
+    EXPECT_EQ(SimplePath, Font::characterRangeCodePath(c8, 1));
 
     TestSpecificUCharRange(0x20D0, 0x20FF);
     TestSpecificUCharRange(0x2CEF, 0x2CF1);
@@ -107,75 +107,75 @@ TEST(FontTest, TestCharacterRangeCodePathSurrogate1)
 
     /* The following 5 should all be Simple because they are not surrogate. */
     static UChar c1[] = { 0xD800, 0xDBFE };
-    EXPECT_EQ(Font::Simple, Font::characterRangeCodePath(c1, 2));
+    EXPECT_EQ(SimplePath, Font::characterRangeCodePath(c1, 2));
     static UChar c2[] = { 0xD800, 0xE000 };
-    EXPECT_EQ(Font::Simple, Font::characterRangeCodePath(c2, 2));
+    EXPECT_EQ(SimplePath, Font::characterRangeCodePath(c2, 2));
     static UChar c3[] = { 0xDBFF, 0xDBFE };
-    EXPECT_EQ(Font::Simple, Font::characterRangeCodePath(c3, 2));
+    EXPECT_EQ(SimplePath, Font::characterRangeCodePath(c3, 2));
     static UChar c4[] = { 0xDBFF, 0xE000 };
-    EXPECT_EQ(Font::Simple, Font::characterRangeCodePath(c4, 2));
+    EXPECT_EQ(SimplePath, Font::characterRangeCodePath(c4, 2));
     static UChar c5[] = { 0xDC00, 0xDBFF };
-    EXPECT_EQ(Font::Simple, Font::characterRangeCodePath(c5, 2));
+    EXPECT_EQ(SimplePath, Font::characterRangeCodePath(c5, 2));
 
     /* To be Complex, the Supplementary Character must be in either */
     /* U+1F1E6 through U+1F1FF or U+E0100 through U+E01EF. */
     /* That is, a lead of 0xD83C with trail 0xDDE6 .. 0xDDFF or */
     /* a lead of 0xDB40 with trail 0xDD00 .. 0xDDEF. */
     static UChar c6[] = { 0xD83C, 0xDDE5 };
-    EXPECT_EQ(Font::Simple, Font::characterRangeCodePath(c6, 2));
+    EXPECT_EQ(SimplePath, Font::characterRangeCodePath(c6, 2));
     static UChar c7[] = { 0xD83C, 0xDDE6 };
-    EXPECT_EQ(Font::Complex, Font::characterRangeCodePath(c7, 2));
+    EXPECT_EQ(ComplexPath, Font::characterRangeCodePath(c7, 2));
     static UChar c8[] = { 0xD83C, 0xDDF0 };
-    EXPECT_EQ(Font::Complex, Font::characterRangeCodePath(c8, 2));
+    EXPECT_EQ(ComplexPath, Font::characterRangeCodePath(c8, 2));
     static UChar c9[] = { 0xD83C, 0xDDFF };
-    EXPECT_EQ(Font::Complex, Font::characterRangeCodePath(c9, 2));
+    EXPECT_EQ(ComplexPath, Font::characterRangeCodePath(c9, 2));
     static UChar c10[] = { 0xD83C, 0xDE00 };
-    EXPECT_EQ(Font::Simple, Font::characterRangeCodePath(c10, 2));
+    EXPECT_EQ(SimplePath, Font::characterRangeCodePath(c10, 2));
 
     static UChar c11[] = { 0xDB40, 0xDCFF };
-    EXPECT_EQ(Font::Simple, Font::characterRangeCodePath(c11, 2));
+    EXPECT_EQ(SimplePath, Font::characterRangeCodePath(c11, 2));
     static UChar c12[] = { 0xDB40, 0xDD00 };
-    EXPECT_EQ(Font::Complex, Font::characterRangeCodePath(c12, 2));
+    EXPECT_EQ(ComplexPath, Font::characterRangeCodePath(c12, 2));
     static UChar c13[] = { 0xDB40, 0xDDED };
-    EXPECT_EQ(Font::Complex, Font::characterRangeCodePath(c13, 2));
+    EXPECT_EQ(ComplexPath, Font::characterRangeCodePath(c13, 2));
     static UChar c14[] = { 0xDB40, 0xDDEF };
-    EXPECT_EQ(Font::Complex, Font::characterRangeCodePath(c14, 2));
+    EXPECT_EQ(ComplexPath, Font::characterRangeCodePath(c14, 2));
     static UChar c15[] = { 0xDB40, 0xDDF0 };
-    EXPECT_EQ(Font::Simple, Font::characterRangeCodePath(c15, 2));
+    EXPECT_EQ(SimplePath, Font::characterRangeCodePath(c15, 2));
 }
 
 TEST(FontTest, TestCharacterRangeCodePathString)
 {
     // Simple-Simple is still simple
     static UChar c1[] = { 0x2FF, 0x2FF };
-    EXPECT_EQ(Font::Simple, Font::characterRangeCodePath(c1, 2));
+    EXPECT_EQ(SimplePath, Font::characterRangeCodePath(c1, 2));
     // Complex-Simple is Complex
     static UChar c2[] = { 0x300, 0x2FF };
-    EXPECT_EQ(Font::Complex, Font::characterRangeCodePath(c2, 2));
+    EXPECT_EQ(ComplexPath, Font::characterRangeCodePath(c2, 2));
     // Simple-Complex is Complex
     static UChar c3[] = { 0x2FF, 0x330 };
-    EXPECT_EQ(Font::Complex, Font::characterRangeCodePath(c3, 2));
+    EXPECT_EQ(ComplexPath, Font::characterRangeCodePath(c3, 2));
     // Complex-Complex is Complex
     static UChar c4[] = { 0x36F, 0x330 };
-    EXPECT_EQ(Font::Complex, Font::characterRangeCodePath(c4, 2));
+    EXPECT_EQ(ComplexPath, Font::characterRangeCodePath(c4, 2));
     // SimpleWithGlyphOverflow-Simple is SimpleWithGlyphOverflow
     static UChar c5[] = { 0x1E00, 0x2FF };
-    EXPECT_EQ(Font::SimpleWithGlyphOverflow, Font::characterRangeCodePath(c5, 2));
+    EXPECT_EQ(SimpleWithGlyphOverflowPath, Font::characterRangeCodePath(c5, 2));
     // Simple-SimpleWithGlyphOverflow is SimpleWithGlyphOverflow
     static UChar c6[] = { 0x2FF, 0x2000 };
-    EXPECT_EQ(Font::SimpleWithGlyphOverflow, Font::characterRangeCodePath(c6, 2));
+    EXPECT_EQ(SimpleWithGlyphOverflowPath, Font::characterRangeCodePath(c6, 2));
     // SimpleWithGlyphOverflow-Complex is Complex
     static UChar c7[] = { 0x1E00, 0x330 };
-    EXPECT_EQ(Font::Complex, Font::characterRangeCodePath(c7, 2));
+    EXPECT_EQ(ComplexPath, Font::characterRangeCodePath(c7, 2));
     // Complex-SimpleWithGlyphOverflow is Complex
     static UChar c8[] = { 0x330, 0x2000 };
-    EXPECT_EQ(Font::Complex, Font::characterRangeCodePath(c8, 2));
+    EXPECT_EQ(ComplexPath, Font::characterRangeCodePath(c8, 2));
     // Surrogate-Complex is Complex
     static UChar c9[] = { 0xD83C, 0xDDE5, 0x330 };
-    EXPECT_EQ(Font::Complex, Font::characterRangeCodePath(c9, 3));
+    EXPECT_EQ(ComplexPath, Font::characterRangeCodePath(c9, 3));
     // Complex-Surrogate is Complex
     static UChar c10[] = { 0x330, 0xD83C, 0xDDE5 };
-    EXPECT_EQ(Font::Complex, Font::characterRangeCodePath(c10, 3));
+    EXPECT_EQ(ComplexPath, Font::characterRangeCodePath(c10, 3));
 }
 
 static void TestSpecificUChar32RangeIdeograph(UChar32 rangeStart, UChar32 rangeEnd)

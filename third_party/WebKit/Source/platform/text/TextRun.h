@@ -27,6 +27,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/text/TextDirection.h"
+#include "platform/text/TextPath.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 

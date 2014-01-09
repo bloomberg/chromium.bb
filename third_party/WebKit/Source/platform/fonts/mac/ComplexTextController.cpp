@@ -41,7 +41,7 @@ class TextLayout {
 public:
     static bool isNeeded(const TextRun& run, const Font& font)
     {
-        return font.codePath(run) == Font::Complex;
+        return font.codePath(run) == ComplexPath;
     }
 
     TextLayout(const TextRun& run, unsigned textLength, const Font& font, float xPos)
