@@ -418,6 +418,8 @@
         'browser/chrome_browser_main_win.h',
         'browser/chrome_content_browser_client.cc',
         'browser/chrome_content_browser_client.h',
+        'browser/chrome_elf_init_win.cc',
+        'browser/chrome_elf_init_win.h',
         'browser/chrome_notification_types.h',
         'browser/chrome_page_zoom.cc',
         'browser/chrome_page_zoom.h',
@@ -3315,6 +3317,7 @@
           'dependencies': [
             'chrome_process_finder',
             'installer_util_strings',
+            '../chrome_elf/chrome_elf.gyp:blacklist',
             '../google_update/google_update.gyp:google_update',
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             '../third_party/isimpledom/isimpledom.gyp:isimpledom',

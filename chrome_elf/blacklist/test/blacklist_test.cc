@@ -14,6 +14,7 @@
 #include "chrome_elf/blacklist/blacklist.h"
 #include "chrome_elf/blacklist/test/blacklist_test_main_dll.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "version.h"  // NOLINT
 
 const wchar_t kTestDllName1[] = L"blacklist_test_dll_1.dll";
 const wchar_t kTestDllName2[] = L"blacklist_test_dll_2.dll";
@@ -37,9 +38,6 @@ class BlacklistTest : public testing::Test {
   virtual void SetUp() {
     // Force an import from blacklist_test_main_dll.
     InitBlacklistTestDll();
-
-    // Ensure that the beacon state starts off cleared.
-    blacklist::ClearBeacon();
   }
 
   virtual void TearDown() {
@@ -52,17 +50,50 @@ TEST_F(BlacklistTest, Beacon) {
   registry_util::RegistryOverrideManager override_manager;
   override_manager.OverrideRegistry(HKEY_CURRENT_USER, L"beacon_test");
 
-  // First call should succeed as the beacon is newly created.
-  EXPECT_TRUE(blacklist::CreateBeacon());
+  // Ensure that the beacon state starts off enabled for this version.
+  DWORD blacklist_state = blacklist::BLACKLIST_ENABLED;
+  LONG result = ::RegSetKeyValue(HKEY_CURRENT_USER,
+                                 blacklist::kRegistryBeaconPath,
+                                 blacklist::kBeaconState,
+                                 REG_DWORD,
+                                 &blacklist_state,
+                                 sizeof(blacklist_state));
+  ASSERT_EQ(result, ERROR_SUCCESS);
 
-  // Second call should fail indicating the beacon already existed.
-  EXPECT_FALSE(blacklist::CreateBeacon());
+  result = ::RegSetKeyValue(HKEY_CURRENT_USER,
+                            blacklist::kRegistryBeaconPath,
+                            blacklist::kBeaconVersion,
+                            REG_SZ,
+                            TEXT(CHROME_VERSION_STRING),
+                            sizeof(TEXT(CHROME_VERSION_STRING)));
+  ASSERT_EQ(result, ERROR_SUCCESS);
 
-  // First call should find the beacon and delete it.
-  EXPECT_TRUE(blacklist::ClearBeacon());
+  // First call should find the beacon and reset it.
+  EXPECT_TRUE(blacklist::ResetBeacon());
 
-  // Second call should fail to find the beacon and delete it.
-  EXPECT_FALSE(blacklist::ClearBeacon());
+  // First call should succeed as the beacon is enabled.
+  EXPECT_TRUE(blacklist::LeaveSetupBeacon());
+
+  // Second call should fail indicating the beacon wasn't set as enabled.
+  EXPECT_FALSE(blacklist::LeaveSetupBeacon());
+
+  // Resetting the beacon should work when setup beacon is present.
+  EXPECT_TRUE(blacklist::ResetBeacon());
+
+  // Change the version and ensure that the setup fails due to the version
+  // mismatch.
+  base::string16 different_version(L"other_version");
+  ASSERT_NE(different_version, TEXT(CHROME_VERSION_STRING));
+
+  result = ::RegSetKeyValue(HKEY_CURRENT_USER,
+                            blacklist::kRegistryBeaconPath,
+                            blacklist::kBeaconVersion,
+                            REG_SZ,
+                            different_version.c_str(),
+                            sizeof(different_version));
+  ASSERT_EQ(result, ERROR_SUCCESS);
+
+  EXPECT_FALSE(blacklist::LeaveSetupBeacon());
 }
 
 TEST_F(BlacklistTest, AddAndRemoveModules) {

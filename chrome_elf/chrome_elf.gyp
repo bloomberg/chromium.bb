@@ -49,6 +49,7 @@
       ],
       'include_dirs': [
         '..',
+        '<(SHARED_INTERMEDIATE_DIR)',
       ],
       'dependencies': [
         'chrome_elf_lib',
