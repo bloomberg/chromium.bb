@@ -168,19 +168,8 @@ void SpellcheckService::InitForRenderer(content::RenderProcessHost* process) {
 
   if (hunspell_dictionary_->GetDictionaryFile() !=
       base::kInvalidPlatformFileValue) {
-#if defined(OS_POSIX)
-    file = base::FileDescriptor(hunspell_dictionary_->GetDictionaryFile(),
-                                false);
-#elif defined(OS_WIN)
-    BOOL ok = ::DuplicateHandle(::GetCurrentProcess(),
-                                hunspell_dictionary_->GetDictionaryFile(),
-                                process->GetHandle(),
-                                &file,
-                                0,
-                                false,
-                                DUPLICATE_SAME_ACCESS);
-    DCHECK(ok) << ::GetLastError();
-#endif
+    file = IPC::GetFileHandleForProcess(
+        hunspell_dictionary_->GetDictionaryFile(), process->GetHandle(), false);
   }
 
   process->Send(new SpellCheckMsg_Init(
