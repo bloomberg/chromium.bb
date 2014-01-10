@@ -13,7 +13,10 @@
   },
   "content_scripts" : [
     {
-      "matches" : [ "http://*/*" ],
+      "matches" : [ 
+         "http://*/*",
+         "https://*/*"
+      ],
       "js" : [ "contentscript.js" ],
       "run_at" : "document_idle",
       "all_frames" : false
