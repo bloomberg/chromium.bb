@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/nacl/loader/nonsfi/elf_loader.h"
+#include "components/nacl/loader/nonsfi/irt_interfaces.h"
 #include "native_client/src/include/elf_auxv.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/public/secure_service.h"
@@ -55,6 +56,8 @@ void LoadModuleRpc(struct NaClSrpcRpc* rpc,
     0,  // argc.
     0,  // Null terminate for argv.
     0,  // Null terminate for envv.
+    AT_SYSINFO,
+    reinterpret_cast<uintptr_t>(&NaClIrtInterface),
     AT_NULL,
     0,  // Null terminate for auxv.
   };
