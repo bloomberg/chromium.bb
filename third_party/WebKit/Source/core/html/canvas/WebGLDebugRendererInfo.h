@@ -32,7 +32,7 @@
 
 namespace WebCore {
 
-class WebGLDebugRendererInfo : public WebGLExtension, public ScriptWrappable {
+class WebGLDebugRendererInfo FINAL : public WebGLExtension, public ScriptWrappable {
 public:
     enum EnumType {
         UNMASKED_VENDOR_WEBGL = 0x9245,
@@ -44,7 +44,7 @@ public:
     static const char* extensionName();
 
     virtual ~WebGLDebugRendererInfo();
-    virtual ExtensionName name() const;
+    virtual ExtensionName name() const OVERRIDE;
 
 private:
     WebGLDebugRendererInfo(WebGLRenderingContext*);

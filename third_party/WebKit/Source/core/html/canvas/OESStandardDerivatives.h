@@ -32,14 +32,14 @@
 
 namespace WebCore {
 
-class OESStandardDerivatives : public WebGLExtension, public ScriptWrappable {
+class OESStandardDerivatives FINAL : public WebGLExtension, public ScriptWrappable {
 public:
     static PassRefPtr<OESStandardDerivatives> create(WebGLRenderingContext*);
     static bool supported(WebGLRenderingContext*);
     static const char* extensionName();
 
     virtual ~OESStandardDerivatives();
-    virtual ExtensionName name() const;
+    virtual ExtensionName name() const OVERRIDE;
 
 private:
     OESStandardDerivatives(WebGLRenderingContext*);

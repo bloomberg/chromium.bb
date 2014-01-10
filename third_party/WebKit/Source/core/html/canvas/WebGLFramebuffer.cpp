@@ -39,24 +39,24 @@ namespace {
         return object ? object->object() : 0;
     }
 
-    class WebGLRenderbufferAttachment : public WebGLFramebuffer::WebGLAttachment {
+    class WebGLRenderbufferAttachment FINAL : public WebGLFramebuffer::WebGLAttachment {
     public:
         static PassRefPtr<WebGLFramebuffer::WebGLAttachment> create(WebGLRenderbuffer*);
 
     private:
         WebGLRenderbufferAttachment(WebGLRenderbuffer*);
-        virtual GLsizei width() const;
-        virtual GLsizei height() const;
-        virtual GLenum format() const;
-        virtual GLenum type() const;
-        virtual WebGLSharedObject* object() const;
-        virtual bool isSharedObject(WebGLSharedObject*) const;
-        virtual bool valid() const;
-        virtual bool initialized() const;
-        virtual void setInitialized();
-        virtual void onDetached(GraphicsContext3D*);
-        virtual void attach(GraphicsContext3D*, GLenum attachment);
-        virtual void unattach(GraphicsContext3D*, GLenum attachment);
+        virtual GLsizei width() const OVERRIDE;
+        virtual GLsizei height() const OVERRIDE;
+        virtual GLenum format() const OVERRIDE;
+        virtual GLenum type() const OVERRIDE;
+        virtual WebGLSharedObject* object() const OVERRIDE;
+        virtual bool isSharedObject(WebGLSharedObject*) const OVERRIDE;
+        virtual bool valid() const OVERRIDE;
+        virtual bool initialized() const OVERRIDE;
+        virtual void setInitialized() OVERRIDE;
+        virtual void onDetached(GraphicsContext3D*) OVERRIDE;
+        virtual void attach(GraphicsContext3D*, GLenum attachment) OVERRIDE;
+        virtual void unattach(GraphicsContext3D*, GLenum attachment) OVERRIDE;
 
         WebGLRenderbufferAttachment() { };
 
@@ -152,24 +152,24 @@ namespace {
         return 0;
     }
 
-    class WebGLTextureAttachment : public WebGLFramebuffer::WebGLAttachment {
+    class WebGLTextureAttachment FINAL : public WebGLFramebuffer::WebGLAttachment {
     public:
         static PassRefPtr<WebGLFramebuffer::WebGLAttachment> create(WebGLTexture*, GLenum target, GLint level);
 
     private:
         WebGLTextureAttachment(WebGLTexture*, GLenum target, GLint level);
-        virtual GLsizei width() const;
-        virtual GLsizei height() const;
-        virtual GLenum format() const;
-        virtual GLenum type() const;
-        virtual WebGLSharedObject* object() const;
-        virtual bool isSharedObject(WebGLSharedObject*) const;
-        virtual bool valid() const;
-        virtual bool initialized() const;
-        virtual void setInitialized();
-        virtual void onDetached(GraphicsContext3D*);
-        virtual void attach(GraphicsContext3D*, GLenum attachment);
-        virtual void unattach(GraphicsContext3D*, GLenum attachment);
+        virtual GLsizei width() const OVERRIDE;
+        virtual GLsizei height() const OVERRIDE;
+        virtual GLenum format() const OVERRIDE;
+        virtual GLenum type() const OVERRIDE;
+        virtual WebGLSharedObject* object() const OVERRIDE;
+        virtual bool isSharedObject(WebGLSharedObject*) const OVERRIDE;
+        virtual bool valid() const OVERRIDE;
+        virtual bool initialized() const OVERRIDE;
+        virtual void setInitialized() OVERRIDE;
+        virtual void onDetached(GraphicsContext3D*) OVERRIDE;
+        virtual void attach(GraphicsContext3D*, GLenum attachment) OVERRIDE;
+        virtual void unattach(GraphicsContext3D*, GLenum attachment) OVERRIDE;
 
         WebGLTextureAttachment() { };
 

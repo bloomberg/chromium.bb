@@ -32,7 +32,7 @@
 
 namespace WebCore {
 
-class WebGLShader : public WebGLSharedObject, public ScriptWrappable {
+class WebGLShader FINAL : public WebGLSharedObject, public ScriptWrappable {
 public:
     virtual ~WebGLShader();
 
@@ -46,9 +46,9 @@ public:
 private:
     WebGLShader(WebGLRenderingContext*, GLenum);
 
-    virtual void deleteObjectImpl(GraphicsContext3D*, Platform3DObject);
+    virtual void deleteObjectImpl(GraphicsContext3D*, Platform3DObject) OVERRIDE;
 
-    virtual bool isShader() const { return true; }
+    virtual bool isShader() const OVERRIDE { return true; }
 
     GLenum m_type;
     String m_source;

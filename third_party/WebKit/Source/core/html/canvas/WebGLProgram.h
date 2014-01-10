@@ -34,7 +34,7 @@
 
 namespace WebCore {
 
-class WebGLProgram : public WebGLSharedObject, public ScriptWrappable {
+class WebGLProgram FINAL : public WebGLSharedObject, public ScriptWrappable {
 public:
     virtual ~WebGLProgram();
 
@@ -63,10 +63,10 @@ public:
 protected:
     WebGLProgram(WebGLRenderingContext*);
 
-    virtual void deleteObjectImpl(GraphicsContext3D*, Platform3DObject);
+    virtual void deleteObjectImpl(GraphicsContext3D*, Platform3DObject) OVERRIDE;
 
 private:
-    virtual bool isProgram() const { return true; }
+    virtual bool isProgram() const OVERRIDE { return true; }
 
     void cacheActiveAttribLocations(GraphicsContext3D*);
     void cacheInfoIfNeeded();

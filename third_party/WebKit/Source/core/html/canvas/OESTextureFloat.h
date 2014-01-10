@@ -32,14 +32,14 @@
 
 namespace WebCore {
 
-class OESTextureFloat : public WebGLExtension, public ScriptWrappable {
+class OESTextureFloat FINAL : public WebGLExtension, public ScriptWrappable {
 public:
     static PassRefPtr<OESTextureFloat> create(WebGLRenderingContext*);
     static bool supported(WebGLRenderingContext*);
     static const char* extensionName();
 
     virtual ~OESTextureFloat();
-    virtual ExtensionName name() const;
+    virtual ExtensionName name() const OVERRIDE;
 
 private:
     OESTextureFloat(WebGLRenderingContext*);

@@ -33,7 +33,7 @@
 
 namespace WebCore {
 
-class WebGLTexture : public WebGLSharedObject, public ScriptWrappable {
+class WebGLTexture FINAL : public WebGLSharedObject, public ScriptWrappable {
 public:
     enum TextureExtensionFlag {
         NoTextureExtensionEnabled = 0,
@@ -78,7 +78,7 @@ public:
 protected:
     WebGLTexture(WebGLRenderingContext*);
 
-    virtual void deleteObjectImpl(GraphicsContext3D*, Platform3DObject);
+    virtual void deleteObjectImpl(GraphicsContext3D*, Platform3DObject) OVERRIDE;
 
 private:
     class LevelInfo {
@@ -108,7 +108,7 @@ private:
         GLenum type;
     };
 
-    virtual bool isTexture() const { return true; }
+    virtual bool isTexture() const OVERRIDE { return true; }
 
     void update();
 

@@ -36,7 +36,7 @@
 
 namespace WebCore {
 
-class DOMPath : public RefCounted<DOMPath>, public CanvasPathMethods, public ScriptWrappable {
+class DOMPath FINAL : public RefCounted<DOMPath>, public CanvasPathMethods, public ScriptWrappable {
     WTF_MAKE_NONCOPYABLE(DOMPath); WTF_MAKE_FAST_ALLOCATED;
 public:
     static PassRefPtr<DOMPath> create() { return adoptRef(new DOMPath); }

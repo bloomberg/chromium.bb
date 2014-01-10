@@ -34,7 +34,7 @@
 
 namespace WebCore {
 
-class WebGLContextAttributes : public CanvasContextAttributes, public ScriptWrappable {
+class WebGLContextAttributes FINAL : public CanvasContextAttributes, public ScriptWrappable {
 public:
     virtual ~WebGLContextAttributes();
 

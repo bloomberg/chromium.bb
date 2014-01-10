@@ -92,13 +92,13 @@ class WebGLVertexArrayObjectOES;
 class WebGLRenderingContextLostCallback;
 class WebGLRenderingContextErrorMessageCallback;
 
-class WebGLRenderingContext : public CanvasRenderingContext, public ActiveDOMObject, private Page::MultisamplingChangedObserver {
+class WebGLRenderingContext FINAL : public CanvasRenderingContext, public ActiveDOMObject, private Page::MultisamplingChangedObserver {
 public:
     static PassOwnPtr<WebGLRenderingContext> create(HTMLCanvasElement*, WebGLContextAttributes*);
     virtual ~WebGLRenderingContext();
 
     virtual bool is3d() const { return true; }
-    virtual bool isAccelerated() const { return true; }
+    virtual bool isAccelerated() const OVERRIDE { return true; }
 
     int drawingBufferWidth() const;
     int drawingBufferHeight() const;
@@ -321,13 +321,13 @@ public:
     blink::WebGraphicsContext3D* webGraphicsContext3D() const { return m_context.get(); }
     GraphicsContext3D* graphicsContext3D() const { return m_contextSupport.get(); }
     WebGLContextGroup* contextGroup() const { return m_contextGroup.get(); }
-    virtual blink::WebLayer* platformLayer() const;
+    virtual blink::WebLayer* platformLayer() const OVERRIDE;
 
     void reshape(int width, int height);
 
     void markLayerComposited();
-    virtual void paintRenderingResultsToCanvas();
-    virtual PassRefPtr<ImageData> paintRenderingResultsToImageData();
+    virtual void paintRenderingResultsToCanvas() OVERRIDE;
+    PassRefPtr<ImageData> paintRenderingResultsToImageData();
 
     void removeSharedObject(WebGLSharedObject*);
     void removeContextObject(WebGLContextObject*);
@@ -335,8 +335,8 @@ public:
     unsigned maxVertexAttribs() const { return m_maxVertexAttribs; }
 
     // ActiveDOMObject notifications
-    virtual bool hasPendingActivity() const;
-    virtual void stop();
+    virtual bool hasPendingActivity() const OVERRIDE;
+    virtual void stop() OVERRIDE;
 
   private:
     friend class WebGLDrawBuffers;
@@ -607,7 +607,7 @@ public:
     };
 
     template <typename T>
-    class TypedExtensionTracker : public ExtensionTracker {
+    class TypedExtensionTracker FINAL : public ExtensionTracker {
     public:
         TypedExtensionTracker(RefPtr<T>& extensionField, ExtensionFlags flags, const char* const* prefixes)
             : ExtensionTracker(flags, prefixes)
@@ -623,7 +623,7 @@ public:
             }
         }
 
-        virtual PassRefPtr<WebGLExtension> getExtension(WebGLRenderingContext* context) const
+        virtual PassRefPtr<WebGLExtension> getExtension(WebGLRenderingContext* context) const OVERRIDE
         {
             if (!m_extensionField)
                 m_extensionField = T::create(context);
@@ -631,17 +631,17 @@ public:
             return m_extensionField;
         }
 
-        virtual bool supported(WebGLRenderingContext* context) const
+        virtual bool supported(WebGLRenderingContext* context) const OVERRIDE
         {
             return T::supported(context);
         }
 
-        virtual const char* extensionName() const
+        virtual const char* extensionName() const OVERRIDE
         {
             return T::extensionName();
         }
 
-        virtual void loseExtension()
+        virtual void loseExtension() OVERRIDE
         {
             if (m_extensionField) {
                 m_extensionField->lose(false);
@@ -905,7 +905,7 @@ public:
     void restoreCurrentFramebuffer();
     void restoreCurrentTexture2D();
 
-    virtual void multisamplingChanged(bool);
+    virtual void multisamplingChanged(bool) OVERRIDE;
 
     void findNewMaxEnabledAttribIndex();
     void findNewMaxNonDefaultTextureUnit();

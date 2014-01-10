@@ -32,14 +32,14 @@
 
 namespace WebCore {
 
-class WebGLCompressedTexturePVRTC : public WebGLExtension, public ScriptWrappable {
+class WebGLCompressedTexturePVRTC FINAL : public WebGLExtension, public ScriptWrappable {
 public:
     static PassRefPtr<WebGLCompressedTexturePVRTC> create(WebGLRenderingContext*);
     static bool supported(WebGLRenderingContext*);
     static const char* extensionName();
 
     virtual ~WebGLCompressedTexturePVRTC();
-    virtual ExtensionName name() const;
+    virtual ExtensionName name() const OVERRIDE;
 
 private:
     WebGLCompressedTexturePVRTC(WebGLRenderingContext*);

@@ -34,14 +34,12 @@ namespace WebCore {
 
 class ExceptionState;
 
-class DataView : public ArrayBufferView, public ScriptWrappable {
+class DataView FINAL : public ArrayBufferView, public ScriptWrappable {
 public:
     static PassRefPtr<DataView> create(unsigned length);
     static PassRefPtr<DataView> create(PassRefPtr<ArrayBuffer>, unsigned byteOffset, unsigned byteLength);
 
-    virtual unsigned length() const { return m_byteLength; }
-    virtual unsigned byteLength() const { return m_byteLength; }
-    virtual PassRefPtr<ArrayBufferView> slice(int, int) const { return 0; }
+    virtual unsigned byteLength() const OVERRIDE { return m_byteLength; }
 
     int8_t getInt8(unsigned byteOffset, ExceptionState&);
     uint8_t getUint8(unsigned byteOffset, ExceptionState&);
@@ -73,13 +71,13 @@ public:
     void setFloat64(unsigned byteOffset, double value, ExceptionState& ec) { setFloat64(byteOffset, value, false, ec); }
     void setFloat64(unsigned byteOffset, double value, bool littleEndian, ExceptionState&);
 
-    virtual ViewType getType() const
+    virtual ViewType getType() const OVERRIDE
     {
         return TypeDataView;
     }
 
 protected:
-    virtual void neuter();
+    virtual void neuter() OVERRIDE;
 
 private:
     DataView(PassRefPtr<ArrayBuffer>, unsigned byteOffset, unsigned byteLength);

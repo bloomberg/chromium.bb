@@ -34,15 +34,15 @@ namespace WebCore {
 
 class WebGLRenderingContext;
 
-class WebGLLoseContext : public WebGLExtension, public ScriptWrappable {
+class WebGLLoseContext FINAL : public WebGLExtension, public ScriptWrappable {
 public:
     static PassRefPtr<WebGLLoseContext> create(WebGLRenderingContext*);
     static bool supported(WebGLRenderingContext*);
     static const char* extensionName();
 
     virtual ~WebGLLoseContext();
-    virtual ExtensionName name() const;
-    virtual void lose(bool);
+    virtual ExtensionName name() const OVERRIDE;
+    virtual void lose(bool) OVERRIDE;
 
     void loseContext();
     void restoreContext();

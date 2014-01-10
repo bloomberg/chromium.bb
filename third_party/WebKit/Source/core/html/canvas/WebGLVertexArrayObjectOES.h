@@ -33,7 +33,7 @@
 
 namespace WebCore {
 
-class WebGLVertexArrayObjectOES : public WebGLContextObject, public ScriptWrappable {
+class WebGLVertexArrayObjectOES FINAL : public WebGLContextObject, public ScriptWrappable {
 public:
     enum VaoType {
         VaoTypeDefault,
@@ -87,9 +87,7 @@ public:
 private:
     WebGLVertexArrayObjectOES(WebGLRenderingContext*, VaoType);
 
-    virtual void deleteObjectImpl(GraphicsContext3D*, Platform3DObject);
-
-    virtual bool isVertexArray() const { return true; }
+    virtual void deleteObjectImpl(GraphicsContext3D*, Platform3DObject) OVERRIDE;
 
     VaoType m_type;
     bool m_hasEverBeenBound;

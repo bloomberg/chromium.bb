@@ -32,7 +32,7 @@
 
 namespace WebCore {
 
-class WebGLRenderbuffer : public WebGLSharedObject, public ScriptWrappable {
+class WebGLRenderbuffer FINAL : public WebGLSharedObject, public ScriptWrappable {
 public:
     virtual ~WebGLRenderbuffer();
 
@@ -67,10 +67,10 @@ public:
 protected:
     WebGLRenderbuffer(WebGLRenderingContext*);
 
-    virtual void deleteObjectImpl(GraphicsContext3D*, Platform3DObject);
+    virtual void deleteObjectImpl(GraphicsContext3D*, Platform3DObject) OVERRIDE;
 
 private:
-    virtual bool isRenderbuffer() const { return true; }
+    virtual bool isRenderbuffer() const OVERRIDE { return true; }
 
     GLenum m_internalFormat;
     bool m_initialized;

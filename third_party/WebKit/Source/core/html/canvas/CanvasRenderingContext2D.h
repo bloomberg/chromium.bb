@@ -62,7 +62,7 @@ class TextMetrics;
 
 typedef HashMap<String, RefPtr<MutableStylePropertySet> > MutableStylePropertyMap;
 
-class CanvasRenderingContext2D : public CanvasRenderingContext, public CanvasPathMethods {
+class CanvasRenderingContext2D FINAL : public CanvasRenderingContext, public CanvasPathMethods {
 public:
     static PassOwnPtr<CanvasRenderingContext2D> create(HTMLCanvasElement* canvas, const Canvas2DContextAttributes* attrs, bool usesCSSCompatibilityParseMode)
     {
@@ -240,7 +240,7 @@ public:
     bool drawCustomFocusRing(Element*);
 
 private:
-    struct State : FontSelectorClient {
+    struct State FINAL : FontSelectorClient {
         State();
         virtual ~State();
 
@@ -326,7 +326,7 @@ private:
     virtual bool isAccelerated() const OVERRIDE;
     virtual bool hasAlpha() const OVERRIDE { return m_hasAlpha; }
 
-    virtual bool isTransformInvertible() const { return state().m_invertibleCTM; }
+    virtual bool isTransformInvertible() const OVERRIDE { return state().m_invertibleCTM; }
 
     virtual blink::WebLayer* platformLayer() const OVERRIDE;
 

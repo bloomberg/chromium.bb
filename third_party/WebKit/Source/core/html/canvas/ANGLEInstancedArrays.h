@@ -38,14 +38,14 @@ namespace WebCore {
 
 class WebGLRenderingContext;
 
-class ANGLEInstancedArrays : public WebGLExtension, public ScriptWrappable {
+class ANGLEInstancedArrays FINAL : public WebGLExtension, public ScriptWrappable {
 public:
     static PassRefPtr<ANGLEInstancedArrays> create(WebGLRenderingContext*);
     static bool supported(WebGLRenderingContext*);
     static const char* extensionName();
 
     virtual ~ANGLEInstancedArrays();
-    virtual ExtensionName name() const;
+    virtual ExtensionName name() const OVERRIDE;
 
     void drawArraysInstancedANGLE(GLenum mode, GLint first, GLsizei count, GLsizei primcount);
     void drawElementsInstancedANGLE(GLenum mode, GLsizei count, GLenum type, GLintptr offset, GLsizei primcount);

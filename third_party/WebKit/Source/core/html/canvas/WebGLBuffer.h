@@ -33,7 +33,7 @@
 
 namespace WebCore {
 
-class WebGLBuffer : public WebGLSharedObject, public ScriptWrappable {
+class WebGLBuffer FINAL : public WebGLSharedObject, public ScriptWrappable {
 public:
     virtual ~WebGLBuffer();
 
@@ -47,10 +47,10 @@ public:
 protected:
     WebGLBuffer(WebGLRenderingContext*);
 
-    virtual void deleteObjectImpl(GraphicsContext3D*, Platform3DObject);
+    virtual void deleteObjectImpl(GraphicsContext3D*, Platform3DObject) OVERRIDE;
 
 private:
-    virtual bool isBuffer() const { return true; }
+    virtual bool isBuffer() const OVERRIDE { return true; }
 
     GLenum m_target;
 };

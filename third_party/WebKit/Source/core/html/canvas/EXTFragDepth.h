@@ -32,14 +32,14 @@
 
 namespace WebCore {
 
-class EXTFragDepth : public WebGLExtension, public ScriptWrappable {
+class EXTFragDepth FINAL : public WebGLExtension, public ScriptWrappable {
 public:
     static PassRefPtr<EXTFragDepth> create(WebGLRenderingContext*);
     static bool supported(WebGLRenderingContext*);
     static const char* extensionName();
 
     virtual ~EXTFragDepth();
-    virtual ExtensionName name() const;
+    virtual ExtensionName name() const OVERRIDE;
 
 private:
     explicit EXTFragDepth(WebGLRenderingContext*);

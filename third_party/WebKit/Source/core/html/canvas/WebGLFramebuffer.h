@@ -37,7 +37,7 @@ namespace WebCore {
 class WebGLRenderbuffer;
 class WebGLTexture;
 
-class WebGLFramebuffer : public WebGLContextObject, public ScriptWrappable {
+class WebGLFramebuffer FINAL : public WebGLContextObject, public ScriptWrappable {
 public:
     class WebGLAttachment : public RefCounted<WebGLAttachment> {
     public:
@@ -108,11 +108,9 @@ public:
 protected:
     WebGLFramebuffer(WebGLRenderingContext*);
 
-    virtual void deleteObjectImpl(GraphicsContext3D*, Platform3DObject);
+    virtual void deleteObjectImpl(GraphicsContext3D*, Platform3DObject) OVERRIDE;
 
 private:
-    virtual bool isFramebuffer() const { return true; }
-
     WebGLAttachment* getAttachment(GLenum) const;
     bool isAttachmentComplete(WebGLAttachment* attachedObject, GLenum attachment, const char** reason) const;
 

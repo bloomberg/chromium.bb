@@ -32,14 +32,14 @@
 
 namespace WebCore {
 
-class EXTTextureFilterAnisotropic : public WebGLExtension, public ScriptWrappable {
+class EXTTextureFilterAnisotropic FINAL : public WebGLExtension, public ScriptWrappable {
 public:
     static PassRefPtr<EXTTextureFilterAnisotropic> create(WebGLRenderingContext*);
     static bool supported(WebGLRenderingContext*);
     static const char* extensionName();
 
     virtual ~EXTTextureFilterAnisotropic();
-    virtual ExtensionName name() const;
+    virtual ExtensionName name() const OVERRIDE;
 
 private:
     EXTTextureFilterAnisotropic(WebGLRenderingContext*);
