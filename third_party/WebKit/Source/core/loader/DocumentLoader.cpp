@@ -74,7 +74,6 @@ DocumentLoader::DocumentLoader(const ResourceRequest& req, const SubstituteData&
     , m_fetcher(ResourceFetcher::create(this))
     , m_originalRequest(req)
     , m_substituteData(substituteData)
-    , m_originalRequestCopy(req)
     , m_request(req)
     , m_committed(false)
     , m_isClientRedirect(false)
@@ -121,30 +120,20 @@ const ResourceRequest& DocumentLoader::originalRequest() const
     return m_originalRequest;
 }
 
-const ResourceRequest& DocumentLoader::originalRequestCopy() const
-{
-    return m_originalRequestCopy;
-}
-
 const ResourceRequest& DocumentLoader::request() const
-{
-    return m_request;
-}
-
-ResourceRequest& DocumentLoader::request()
 {
     return m_request;
 }
 
 const KURL& DocumentLoader::url() const
 {
-    return request().url();
+    return m_request.url();
 }
 
 void DocumentLoader::updateForSameDocumentNavigation(const KURL& newURL)
 {
     KURL oldURL = m_request.url();
-    m_originalRequestCopy.setURL(newURL);
+    m_originalRequest.setURL(newURL);
     m_request.setURL(newURL);
     clearRedirectChain();
     if (m_isClientRedirect)
@@ -203,7 +192,7 @@ void DocumentLoader::stopLoading()
     if (!loading)
         return;
 
-    if (isLoadingMainResource()) {
+    if (m_loadingMainResource) {
         // Stop the main resource loader and let it send the cancelled message.
         cancelMainResourceLoad(ResourceError::cancelledError(m_request.url()));
     } else if (m_fetcher->isFetching()) {
@@ -232,7 +221,7 @@ bool DocumentLoader::isLoading() const
     if (document() && document()->hasActiveParser())
         return true;
 
-    return isLoadingMainResource() || m_fetcher->isFetching();
+    return m_loadingMainResource || m_fetcher->isFetching();
 }
 
 void DocumentLoader::notifyFinished(Resource* resource)
@@ -499,7 +488,7 @@ void DocumentLoader::ensureWriter(const AtomicString& mimeType, const KURL& over
         return;
 
     const AtomicString& encoding = overrideEncoding().isNull() ? response().textEncodingName() : overrideEncoding();
-    m_writer = createWriterFor(m_frame, 0, requestURL(), mimeType, encoding, false, false);
+    m_writer = createWriterFor(m_frame, 0, url(), mimeType, encoding, false, false);
     m_writer->setDocumentWasLoadedAsPartOfNavigation();
     // This should be set before receivedFirstData().
     if (!overridingURL.isEmpty())
@@ -607,7 +596,7 @@ bool DocumentLoader::isLoadingInAPISense() const
     // but we still need to consider subframes.
     if (frameLoader()->state() != FrameStateComplete) {
         Document* doc = m_frame->document();
-        if ((isLoadingMainResource() || !m_frame->document()->loadEventFinished()) && isLoading())
+        if ((m_loadingMainResource || !m_frame->document()->loadEventFinished()) && isLoading())
             return true;
         if (m_fetcher->requestCount())
             return true;
@@ -701,12 +690,7 @@ bool DocumentLoader::scheduleArchiveLoad(Resource* cachedResource, const Resourc
 
 const KURL& DocumentLoader::originalURL() const
 {
-    return m_originalRequestCopy.url();
-}
-
-const KURL& DocumentLoader::requestURL() const
-{
-    return request().url();
+    return m_originalRequest.url();
 }
 
 const AtomicString& DocumentLoader::responseMIMEType() const

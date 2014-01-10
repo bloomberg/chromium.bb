@@ -75,8 +75,6 @@ namespace WebCore {
 
         void detachFromFrame();
 
-        FrameLoader* frameLoader() const;
-
         unsigned long mainResourceIdentifier() const;
 
         void replaceDocument(const String& source, Document*);
@@ -86,27 +84,22 @@ namespace WebCore {
         void setUserChosenEncoding(const String& charset);
 
         const ResourceRequest& originalRequest() const;
-        const ResourceRequest& originalRequestCopy() const;
 
         const ResourceRequest& request() const;
-        ResourceRequest& request();
 
         ResourceFetcher* fetcher() const { return m_fetcher.get(); }
 
         const SubstituteData& substituteData() const { return m_substituteData; }
 
-        // FIXME: This is the same as requestURL(). We should remove one of them.
         const KURL& url() const;
         const KURL& unreachableURL() const;
         bool isURLValidForNewHistoryEntry() const;
 
         const KURL& originalURL() const;
-        const KURL& requestURL() const;
         const AtomicString& responseMIMEType() const;
 
         void updateForSameDocumentNavigation(const KURL&);
         void stopLoading();
-        void setCommitted(bool committed) { m_committed = committed; }
         bool isCommitted() const { return m_committed; }
         bool isLoading() const;
         const ResourceResponse& response() const { return m_response; }
@@ -135,14 +128,7 @@ namespace WebCore {
         void startLoadingMainResource();
         void cancelMainResourceLoad(const ResourceError&);
 
-        bool isLoadingMainResource() const { return m_loadingMainResource; }
-
-        void stopLoadingSubresources();
-
-        void subresourceLoaderFinishedLoadingOnePart(ResourceLoader*);
-
         DocumentLoadTiming* timing() { return &m_documentLoadTiming; }
-        void resetTiming() { m_documentLoadTiming = DocumentLoadTiming(); }
 
         ApplicationCacheHost* applicationCacheHost() const { return m_applicationCacheHost.get(); }
 
@@ -164,6 +150,7 @@ namespace WebCore {
         void endWriting(DocumentWriter*);
 
         Document* document() const;
+        FrameLoader* frameLoader() const;
 
         void commitIfReady();
         void commitData(const char* bytes, size_t length);
@@ -201,16 +188,11 @@ namespace WebCore {
         RefPtr<DocumentWriter> m_writer;
 
         // A reference to actual request used to create the data source.
-        // This should only be used by the resourceLoadDelegate's
-        // identifierForInitialRequest:fromDatasource: method. It is
-        // not guaranteed to remain unchanged, as requests are mutable.
+        // The only part of this request that should change is the url, and
+        // that only in the case of a same-document navigation.
         ResourceRequest m_originalRequest;
 
         SubstituteData m_substituteData;
-
-        // A copy of the original request used to create the data source.
-        // We have to copy the request because requests are mutable.
-        ResourceRequest m_originalRequestCopy;
 
         // The 'working' request. It may be mutated
         // several times from the original request to include additional

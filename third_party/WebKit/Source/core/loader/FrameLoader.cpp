@@ -304,7 +304,7 @@ void FrameLoader::setHistoryItemStateForCommit(HistoryItemPolicy historyItemPoli
     else if (!isPushOrReplaceState)
         m_currentItem->generateNewSequenceNumbers();
     const KURL& unreachableURL = m_documentLoader->unreachableURL();
-    const KURL& url = unreachableURL.isEmpty() ? m_documentLoader->requestURL() : unreachableURL;
+    const KURL& url = unreachableURL.isEmpty() ? m_documentLoader->url() : unreachableURL;
     const KURL& originalURL = unreachableURL.isEmpty() ? m_documentLoader->originalURL() : unreachableURL;
     m_currentItem->setURL(url);
     m_currentItem->setTarget(m_frame->tree().uniqueName());
