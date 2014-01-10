@@ -122,7 +122,7 @@ class StartupBrowserCreatorTest : public ExtensionBrowserTest {
                         extensions::LaunchType launch_type) {
     ExtensionService* service = extensions::ExtensionSystem::Get(
         browser()->profile())->extension_service();
-    extensions::SetLaunchType(service->extension_prefs(), app_id, launch_type);
+    extensions::SetLaunchType(service, app_id, launch_type);
   }
 
   Browser* FindOneOtherBrowserForProfile(Profile* profile,

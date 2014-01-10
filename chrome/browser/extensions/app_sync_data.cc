@@ -27,10 +27,12 @@ AppSyncData::AppSyncData(const Extension& extension,
                          bool enabled,
                          bool incognito_enabled,
                          const syncer::StringOrdinal& app_launch_ordinal,
-                         const syncer::StringOrdinal& page_ordinal)
+                         const syncer::StringOrdinal& page_ordinal,
+                         extensions::LaunchType launch_type)
     : extension_sync_data_(extension, enabled, incognito_enabled),
       app_launch_ordinal_(app_launch_ordinal),
-      page_ordinal_(page_ordinal) {
+      page_ordinal_(page_ordinal),
+      launch_type_(launch_type) {
 }
 
 AppSyncData::~AppSyncData() {}
@@ -51,11 +53,21 @@ syncer::SyncChange AppSyncData::GetSyncChange(
 
 void AppSyncData::PopulateAppSpecifics(sync_pb::AppSpecifics* specifics) const {
   DCHECK(specifics);
-  // Only sync the ordinal values if they are valid.
+  // Only sync the ordinal values and launch type if they are valid.
   if (app_launch_ordinal_.IsValid())
     specifics->set_app_launch_ordinal(app_launch_ordinal_.ToInternalValue());
   if (page_ordinal_.IsValid())
     specifics->set_page_ordinal(page_ordinal_.ToInternalValue());
+
+  sync_pb::AppSpecifics::LaunchType sync_launch_type =
+      static_cast<sync_pb::AppSpecifics::LaunchType>(launch_type_);
+
+  // The corresponding validation of this value during processing of an
+  // AppSyncData is in ExtensionSyncService::ProcessAppSyncData.
+  if (launch_type_ >= LAUNCH_TYPE_FIRST && launch_type_ < NUM_LAUNCH_TYPES &&
+      sync_pb::AppSpecifics_LaunchType_IsValid(sync_launch_type)) {
+    specifics->set_launch_type(sync_launch_type);
+  }
 
   extension_sync_data_.PopulateExtensionSpecifics(
       specifics->mutable_extension());
@@ -67,6 +79,10 @@ void AppSyncData::PopulateFromAppSpecifics(
 
   app_launch_ordinal_ = syncer::StringOrdinal(specifics.app_launch_ordinal());
   page_ordinal_ = syncer::StringOrdinal(specifics.page_ordinal());
+
+  launch_type_ = specifics.has_launch_type()
+      ? static_cast<extensions::LaunchType>(specifics.launch_type())
+      : LAUNCH_TYPE_INVALID;
 }
 
 void AppSyncData::PopulateFromSyncData(const syncer::SyncData& sync_data) {

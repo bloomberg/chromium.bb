@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_prefs.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -32,7 +33,6 @@ const char kPrefLaunchType[] = "launchType";
 
 LaunchType GetLaunchType(const ExtensionPrefs* prefs,
                          const Extension* extension) {
-  int value = -1;
   LaunchType result = LAUNCH_TYPE_DEFAULT;
 
   // Launch hosted apps as windows by default for streamlined hosted apps.
@@ -42,13 +42,10 @@ LaunchType GetLaunchType(const ExtensionPrefs* prefs,
     result = LAUNCH_TYPE_WINDOW;
   }
 
-  if (prefs->ReadPrefAsInteger(extension->id(), kPrefLaunchType, &value) &&
-      (value == LAUNCH_TYPE_PINNED ||
-       value == LAUNCH_TYPE_REGULAR ||
-       value == LAUNCH_TYPE_FULLSCREEN ||
-       value == LAUNCH_TYPE_WINDOW)) {
+  int value = GetLaunchTypePrefValue(prefs, extension->id());
+  if (value >= LAUNCH_TYPE_FIRST && value < NUM_LAUNCH_TYPES)
     result = static_cast<LaunchType>(value);
-  }
+
 #if defined(OS_MACOSX)
     // App windows are not yet supported on mac.  Pref sync could make
     // the launch type LAUNCH_TYPE_WINDOW, even if there is no UI to set it
@@ -66,11 +63,27 @@ LaunchType GetLaunchType(const ExtensionPrefs* prefs,
   return result;
 }
 
-void SetLaunchType(ExtensionPrefs* prefs,
+LaunchType GetLaunchTypePrefValue(const ExtensionPrefs* prefs,
+                                  const std::string& extension_id) {
+  int value = LAUNCH_TYPE_INVALID;
+  return prefs->ReadPrefAsInteger(extension_id, kPrefLaunchType, &value)
+      ? static_cast<LaunchType>(value) : LAUNCH_TYPE_INVALID;
+}
+
+void SetLaunchType(ExtensionService* service,
                    const std::string& extension_id,
                    LaunchType launch_type) {
-  prefs->UpdateExtensionPref(extension_id, kPrefLaunchType,
+  DCHECK(launch_type >= LAUNCH_TYPE_FIRST && launch_type < NUM_LAUNCH_TYPES);
+
+  service->extension_prefs()->UpdateExtensionPref(extension_id, kPrefLaunchType,
       new base::FundamentalValue(static_cast<int>(launch_type)));
+
+  // Sync the launch type.
+  const Extension* extension = service->GetInstalledExtension(extension_id);
+  if (extension) {
+    ExtensionSyncService::Get(service->profile())->
+        SyncExtensionChangeIfNeeded(*extension);
+  }
 }
 
 LaunchContainer GetLaunchContainer(const ExtensionPrefs* prefs,

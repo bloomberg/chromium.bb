@@ -819,7 +819,7 @@ void ChromeLauncherController::SetLaunchType(
   if (!HasItemController(id))
     return;
 
-  extensions::SetLaunchType(profile_->GetExtensionService()->extension_prefs(),
+  extensions::SetLaunchType(profile_->GetExtensionService(),
                             id_to_item_controller_map_[id]->app_id(),
                             launch_type);
 }

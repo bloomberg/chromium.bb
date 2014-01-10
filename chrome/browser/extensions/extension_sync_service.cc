@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/extensions/extension_sync_service_factory.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
 #include "chrome/browser/sync/sync_prefs.h"
@@ -241,7 +242,9 @@ extensions::AppSyncData ExtensionSyncService::GetAppSyncData(
       extension_service_->IsExtensionEnabled(extension.id()),
       extension_util::IsIncognitoEnabled(extension.id(), extension_service_),
       extension_prefs_->app_sorting()->GetAppLaunchOrdinal(extension.id()),
-      extension_prefs_->app_sorting()->GetPageOrdinal(extension.id()));
+      extension_prefs_->app_sorting()->GetPageOrdinal(extension.id()),
+      extensions::GetLaunchTypePrefValue(extension_prefs_, extension.id()));
+
 }
 
 std::vector<extensions::ExtensionSyncData>
@@ -309,6 +312,14 @@ bool ExtensionSyncService::ProcessAppSyncData(
     extension_prefs_->app_sorting()->SetPageOrdinal(
         id,
         app_sync_data.page_ordinal());
+  }
+
+  // The corresponding validation of this value during AppSyncData population
+  // is in AppSyncData::PopulateAppSpecifics.
+  if (app_sync_data.launch_type() >= extensions::LAUNCH_TYPE_FIRST &&
+      app_sync_data.launch_type() < extensions::NUM_LAUNCH_TYPES) {
+    extensions::SetLaunchType(extension_service_, id,
+                              app_sync_data.launch_type());
   }
 
   if (!ProcessExtensionSyncDataHelper(app_sync_data.extension_sync_data(),

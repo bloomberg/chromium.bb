@@ -4346,8 +4346,7 @@ void TestingAutomationProvider::SetAppLaunchType(
     return;
   }
 
-  extensions::SetLaunchType(
-      service->extension_prefs(), extension->id(), launch_type);
+  extensions::SetLaunchType(service, extension->id(), launch_type);
   reply.SendSuccess(NULL);
 }
 

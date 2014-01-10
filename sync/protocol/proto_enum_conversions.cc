@@ -170,6 +170,18 @@ const char* GetActionString(sync_pb::SyncEnums::Action action) {
 
 }
 
+const char* GetLaunchTypeString(sync_pb::AppSpecifics::LaunchType launch_type) {
+  ASSERT_ENUM_BOUNDS(sync_pb::AppSpecifics, LaunchType, PINNED, WINDOW);
+  switch (launch_type) {
+    ENUM_CASE(sync_pb::AppSpecifics, PINNED);
+    ENUM_CASE(sync_pb::AppSpecifics, REGULAR);
+    ENUM_CASE(sync_pb::AppSpecifics, FULLSCREEN);
+    ENUM_CASE(sync_pb::AppSpecifics, WINDOW);
+  }
+  NOTREACHED();
+  return "";
+}
+
 const char* GetDeviceTypeString(
     sync_pb::SyncEnums::DeviceType device_type) {
   ASSERT_ENUM_BOUNDS(sync_pb::SyncEnums, DeviceType, TYPE_WIN, TYPE_TABLET);

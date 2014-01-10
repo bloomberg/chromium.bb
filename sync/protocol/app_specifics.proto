@@ -47,7 +47,7 @@ message AppSpecifics {
   optional ExtensionSpecifics extension = 1;
 
   // Notification settings.
-  optional AppNotificationSettings notification_settings = 2; 
+  optional AppNotificationSettings notification_settings = 2;
 
   // This controls where on a page this application icon will appear.
   optional string app_launch_ordinal = 3;
@@ -56,5 +56,16 @@ message AppSpecifics {
   // This values only provide the order within the application pages, not within
   // all of the panels in the NTP.
   optional string page_ordinal = 4;
-}
 
+  // The possible launch types for an app.
+  // This enum should be kept in sync with extensions::LaunchType.
+  enum LaunchType {
+    PINNED = 0;
+    REGULAR = 1;
+    FULLSCREEN = 2;
+    WINDOW = 3;
+  }
+
+  // This describes how the extension should be launched.
+  optional LaunchType launch_type = 5;
+}

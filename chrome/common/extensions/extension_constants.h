@@ -322,10 +322,13 @@ namespace extensions {
   // Do not remove items or re-order this enum as it is used in preferences
   // and histograms.
   enum LaunchType {
-    LAUNCH_TYPE_PINNED,
-    LAUNCH_TYPE_REGULAR,
-    LAUNCH_TYPE_FULLSCREEN,
-    LAUNCH_TYPE_WINDOW,
+    LAUNCH_TYPE_INVALID = -1,
+    LAUNCH_TYPE_FIRST = 0,
+    LAUNCH_TYPE_PINNED = LAUNCH_TYPE_FIRST,
+    LAUNCH_TYPE_REGULAR = 1,
+    LAUNCH_TYPE_FULLSCREEN = 2,
+    LAUNCH_TYPE_WINDOW = 3,
+    NUM_LAUNCH_TYPES,
 
     // Launch an app in the in the way a click on the NTP would,
     // if no user pref were set.  Update this constant to change

@@ -148,7 +148,7 @@ void AppListControllerDelegate::SetExtensionLaunchType(
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   extensions::SetLaunchType(
-      service->extension_prefs(), extension_id, launch_type);
+      service, extension_id, launch_type);
 }
 
 bool AppListControllerDelegate::IsExtensionInstalled(

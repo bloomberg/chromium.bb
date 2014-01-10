@@ -4,6 +4,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/test/integration/apps_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
@@ -418,6 +419,75 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, UpdateCWSOrdinals) {
   verifier()->GetExtensionService()->extension_prefs()->
       app_sorting()->SetPageOrdinal(extension_misc::kWebStoreAppId,
                                     cws_page_ordinal.CreateAfter());
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
+}
+
+// Adjust the launch type on the first client and sync. Both clients should
+// have the same launch type values for the CWS.
+IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, UpdateLaunchType) {
+  ASSERT_TRUE(SetupSync());
+  ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
+
+  // Change the launch type to window.
+  extensions::SetLaunchType(GetProfile(1)->GetExtensionService(),
+                            extension_misc::kWebStoreAppId,
+                            extensions::LAUNCH_TYPE_WINDOW);
+  extensions::SetLaunchType(verifier()->GetExtensionService(),
+                            extension_misc::kWebStoreAppId,
+                            extensions::LAUNCH_TYPE_WINDOW);
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
+
+  // Change the launch type to regular tab.
+  extensions::SetLaunchType(GetProfile(1)->GetExtensionService(),
+                            extension_misc::kWebStoreAppId,
+                            extensions::LAUNCH_TYPE_REGULAR);
+  ASSERT_FALSE(HasSameAppsAsVerifier(1));
+  extensions::SetLaunchType(verifier()->GetExtensionService(),
+                            extension_misc::kWebStoreAppId,
+                            extensions::LAUNCH_TYPE_REGULAR);
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
+}
+
+IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, UnexpectedLaunchType) {
+  ASSERT_TRUE(SetupSync());
+  ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
+
+  extensions::SetLaunchType(GetProfile(1)->GetExtensionService(),
+                            extension_misc::kWebStoreAppId,
+                            extensions::LAUNCH_TYPE_REGULAR);
+  extensions::SetLaunchType(verifier()->GetExtensionService(),
+                            extension_misc::kWebStoreAppId,
+                            extensions::LAUNCH_TYPE_REGULAR);
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
+
+  const extensions::Extension* extension =
+      GetProfile(1)->GetExtensionService()->
+          GetInstalledExtension(extension_misc::kWebStoreAppId);
+  ASSERT_TRUE(extension);
+
+  ExtensionSyncService* extension_sync_service =
+      ExtensionSyncService::Get(GetProfile(1));
+
+  extensions::AppSyncData original_data(
+      extension_sync_service->GetAppSyncData(*extension));
+
+  // Create an invalid launch type and ensure it doesn't get down-synced. This
+  // simulates the case of a future launch type being added which old versions
+  // don't yet understand.
+  extensions::AppSyncData invalid_launch_type_data(
+      *extension,
+      original_data.extension_sync_data().enabled(),
+      original_data.extension_sync_data().incognito_enabled(),
+      original_data.app_launch_ordinal(),
+      original_data.page_ordinal(),
+      extensions::NUM_LAUNCH_TYPES);
+  extension_sync_service->ProcessAppSyncData(invalid_launch_type_data);
+
+  // The launch type should remain the same.
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
 }

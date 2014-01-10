@@ -204,6 +204,9 @@ base::string16 LauncherContextMenu::GetLabelForCommandId(int command_id) const {
       case extensions::LAUNCH_TYPE_FULLSCREEN:
       case extensions::LAUNCH_TYPE_WINDOW:
         return l10n_util::GetStringUTF16(IDS_LAUNCHER_CONTEXT_MENU_NEW_WINDOW);
+      default:
+        NOTREACHED();
+        return base::string16();
     }
   }
   NOTREACHED();
