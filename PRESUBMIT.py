@@ -1453,7 +1453,7 @@ def GetPreferredTrySlaves(project, change):
 
   # Experimental recipe-based Chromium trybots. To avoid possible capacity
   # problems, only enable for a small percentage of try runs.
-  if random.random() < 0.1:
+  if random.random() < 0.25:
     trybots.extend(GetDefaultTryConfigs([
         'linux_chromium_dbg',
         'linux_chromium_rel',
