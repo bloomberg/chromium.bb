@@ -885,7 +885,10 @@ void DOMWindow::postMessageTimerFired(PassOwnPtr<PostMessageTimer> t)
 {
     OwnPtr<PostMessageTimer> timer(t);
 
-    if (!document() || !isCurrentlyDisplayedInFrame())
+    // FIXME: The frame()->host() check really does not belong here. We should
+    // move it up into isCurrentlyDisplayedInFrame(); however, doing so breaks a
+    // number of window properties like window.toolbar.
+    if (!isCurrentlyDisplayedInFrame() || !frame()->host())
         return;
 
     RefPtr<MessageEvent> event = timer->event();

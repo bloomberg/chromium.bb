@@ -625,6 +625,21 @@ TEST_F(WebFrameTest, DispatchMessageEventWithOriginCheck)
     EXPECT_EQ(std::string::npos, content.find("Message 2."));
 }
 
+TEST_F(WebFrameTest, PostMessageThenDetach)
+{
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad("about:blank");
+
+    RefPtr<WebCore::Frame> frame = webViewHelper.webViewImpl()->page()->mainFrame();
+    WebCore::NonThrowableExceptionState exceptionState;
+    frame->domWindow()->postMessage(WebCore::SerializedScriptValue::create("message"), 0, "*", frame->domWindow(), exceptionState);
+    webViewHelper.reset();
+    EXPECT_FALSE(exceptionState.hadException());
+
+    // Success is not crashing.
+    runPendingTasks();
+}
+
 class FixedLayoutTestWebViewClient : public WebViewClient {
  public:
     virtual WebScreenInfo screenInfo() OVERRIDE { return m_screenInfo; }
