@@ -39,6 +39,7 @@ import v8_attributes
 from v8_globals import includes
 import v8_methods
 import v8_types
+from v8_types import inherits_interface
 import v8_utilities
 from v8_utilities import capitalize, conditional_string, cpp_name, has_extended_attribute, has_extended_attribute_value, runtime_enabled_function_name
 
@@ -159,9 +160,9 @@ def generate_interface(interface):
             interface, 'ConstructorCallWith', 'ExecutionContext'),  # [ConstructorCallWith=ExeuctionContext]
         'is_constructor_raises_exception': extended_attributes.get('RaisesException') == 'Constructor',  # [RaisesException=Constructor]
         'is_dependent_lifetime': 'DependentLifetime' in extended_attributes,  # [DependentLifetime]
-        'is_event_target': inherits_interface(interface, 'EventTarget'),
+        'is_event_target': inherits_interface(interface.name, 'EventTarget'),
         'is_exception': interface.is_exception,
-        'is_node': inherits_interface(interface, 'Node'),
+        'is_node': inherits_interface(interface.name, 'Node'),
         'measure_as': v8_utilities.measure_as(interface),  # [MeasureAs]
         'named_constructor': named_constructor,
         'parent_interface': parent_interface,
@@ -430,9 +431,3 @@ def interface_length(interface, constructors):
         return 0
     return min(constructor['number_of_required_arguments']
                for constructor in constructors)
-
-
-# Interface dependencies
-
-def inherits_interface(interface, ancestor):
-    return ancestor == interface.name or ancestor in interface.ancestors

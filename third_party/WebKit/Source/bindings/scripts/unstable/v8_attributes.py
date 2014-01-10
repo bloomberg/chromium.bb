@@ -225,8 +225,8 @@ def is_keep_alive_for_gc(interface, attribute):
          # There are some exceptions, however:
          not(
              # Node lifetime is managed by object grouping.
-             v8_types.is_dom_node_type(interface.name) or
-             v8_types.is_dom_node_type(idl_type) or
+             v8_types.inherits_interface(interface.name, 'Node') or
+             v8_types.inherits_interface(idl_type, 'Node') or
              # A self-reference is unnecessary.
              attribute.name == 'self' or
              # FIXME: Remove these hard-coded hacks.

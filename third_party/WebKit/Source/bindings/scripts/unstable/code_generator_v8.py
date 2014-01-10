@@ -100,6 +100,10 @@ class CodeGeneratorV8:
         v8_types.set_callback_functions(definitions.callback_functions.keys())
         v8_types.set_enums((enum.name, enum.values)
                            for enum in definitions.enumerations.values())
+        v8_types.set_ancestors(dict(
+            (interface_name, interface_info['ancestors'])
+            for interface_name, interface_info in interfaces_info.iteritems()
+            if 'ancestors' in interface_info))
         v8_types.set_callback_interfaces(set(
             interface_name
             for interface_name, interface_info in interfaces_info.iteritems()
@@ -108,9 +112,6 @@ class CodeGeneratorV8:
             (interface_name, interface_info['implemented_as'])
             for interface_name, interface_info in interfaces_info.iteritems()
             if 'implemented_as' in interface_info))
-
-        interface_info = interfaces_info[interface_name]
-        self.interface.ancestors = interface_info.get('ancestors', [])
 
     def write_dummy_header_and_cpp(self):
         # FIXME: fix GYP so these files aren't needed and remove this method

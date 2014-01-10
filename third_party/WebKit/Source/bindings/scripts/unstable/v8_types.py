@@ -77,6 +77,7 @@ INTEGER_TYPES = set([
 ])
 BASIC_TYPES.update(INTEGER_TYPES)
 
+ancestors = {}  # interface_name -> ancestors
 callback_functions = set()
 callback_interfaces = set()
 enums = {}  # name -> values
@@ -134,6 +135,15 @@ def set_enums(new_enums):
     enums.update(new_enums)
 
 
+def inherits_interface(interface_name, ancestor_name):
+    return (interface_name == ancestor_name or
+            ancestor_name in ancestors.get(interface_name, []))
+
+
+def set_ancestors(new_ancestors):
+    ancestors.update(new_ancestors)
+
+
 def is_interface_type(idl_type):
     # Anything that is not another type is an interface type.
     # http://www.w3.org/TR/WebIDL/#idl-types
@@ -160,26 +170,6 @@ def is_union_type(idl_type):
 # V8-specific type handling
 ################################################################################
 
-DOM_NODE_TYPES = set([
-    'Attr',
-    'CDATASection',
-    'CharacterData',
-    'Comment',
-    'Document',
-    'DocumentFragment',
-    'DocumentType',
-    'Element',
-    'Entity',
-    'HTMLDocument',
-    'Node',
-    'Notation',
-    'ProcessingInstruction',
-    'ShadowRoot',
-    'SVGDocument',
-    'Text',
-    'TestNode',
-    'TestInterfaceNode',
-])
 NON_WRAPPER_TYPES = set([
     'CompareHow',
     'Dictionary',
@@ -205,13 +195,6 @@ TYPED_ARRAYS = {
 
 def constructor_type(idl_type):
     return strip_suffix(idl_type, 'Constructor')
-
-
-def is_dom_node_type(idl_type):
-    # FIXME: replace with checking inheritance
-    return (idl_type in DOM_NODE_TYPES or
-            (idl_type.startswith(('HTML', 'SVG')) and
-             idl_type.endswith('Element')))
 
 
 def is_typed_array_type(idl_type):
