@@ -59,9 +59,9 @@
             ],
           },
           'dependencies': [
-            '<(DEPTH)/third_party/icu/icu_untrusted.gyp:icudata_untrusted',
-            '<(DEPTH)/third_party/icu/icu_untrusted.gyp:icui18n_untrusted',
-            '<(DEPTH)/third_party/icu/icu_untrusted.gyp:icuuc_untrusted',
+            '<(DEPTH)/third_party/icu/icu_nacl.gyp:icudata_nacl',
+            '<(DEPTH)/third_party/icu/icu_nacl.gyp:icui18n_nacl',
+            '<(DEPTH)/third_party/icu/icu_nacl.gyp:icuuc_nacl',
             '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
           ],
         },
