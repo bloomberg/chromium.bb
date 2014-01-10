@@ -46,67 +46,6 @@
     ],
     'targets': [
         {
-            'target_name': 'TestRunner_resources',
-            'type': 'none',
-            'dependencies': [
-                'copy_TestNetscapePlugIn',
-            ],
-            'conditions': [
-                ['OS=="win"', {
-                    'dependencies': [
-                        'LayoutTestHelper',
-                    ],
-                    'copies': [{
-                        'destination': '<(PRODUCT_DIR)',
-                        'files': ['<(ahem_path)'],
-                    }],
-                }],
-                ['OS=="mac"', {
-                    'dependencies': [
-                        'LayoutTestHelper',
-                    ],
-                    'all_dependent_settings': {
-                        'mac_bundle_resources': [
-                            '<(ahem_path)',
-                            '<(SHARED_INTERMEDIATE_DIR)/webkit/missingImage.png',
-                            '<(SHARED_INTERMEDIATE_DIR)/webkit/textAreaResizeCorner.png',
-                        ],
-                    },
-                }],
-                # The test plugin relies on X11.
-                ['OS=="linux" and use_x11==0', {
-                    'dependencies!': [
-                        'copy_TestNetscapePlugIn',
-                    ],
-                }],
-                ['use_x11 == 1', {
-                    'dependencies': [
-                        '<(DEPTH)/tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
-                    ],
-                    'copies': [{
-                        'destination': '<(PRODUCT_DIR)',
-                        'files': [
-                            '<(ahem_path)',
-                            '<(source_dir)/testing/data/fonts/fonts.conf',
-                        ]
-                    }],
-                }],
-                ['OS=="android"', {
-                    'dependencies!': [
-                        'copy_TestNetscapePlugIn',
-                    ],
-                    'copies': [{
-                        'destination': '<(PRODUCT_DIR)',
-                        'files': [
-                            '<(ahem_path)',
-                            '<(source_dir)/testing/data/fonts/android_main_fonts.xml',
-                            '<(source_dir)/testing/data/fonts/android_fallback_fonts.xml',
-                        ]
-                    }],
-                }],
-            ],
-        },
-        {
             'target_name': 'TestNetscapePlugIn',
             'type': 'loadable_module',
             'sources': [ '<@(test_plugin_files)' ],

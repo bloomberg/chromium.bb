@@ -30,16 +30,6 @@
 {
     'targets': [
         {
-            'target_name': 'blink_test_runner_resources',
-            'type': 'none',
-            'dependencies': [
-                '../Source/testing/testing.gyp:TestRunner_resources',
-            ],
-            'export_dependent_settings': [
-                '../Source/testing/testing.gyp:TestRunner_resources',
-            ],
-        },
-        {
             'target_name': 'blink_test_support',
             'type': 'none',
             'dependencies': [

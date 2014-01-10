@@ -36,7 +36,6 @@
             'target_name': 'all_blink',
             'type': 'none',
             'dependencies': [
-                '../Source/testing/testing.gyp:TestRunner_resources',
                 '../Source/heap/blink_heap_tests.gyp:blink_heap_unittests',
                 '../Source/platform/blink_platform_tests.gyp:blink_platform_unittests',
                 '../Source/web/web_tests.gyp:webkit_unit_tests',
