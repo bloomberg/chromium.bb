@@ -562,7 +562,13 @@ TEST_F(ResourceBundleImageTest, GetImageNamedFallback1xRounding) {
 }
 #endif
 
-TEST_F(ResourceBundleImageTest, FallbackToNone) {
+#if defined(OS_IOS)
+// Fails on devices that have non-100P scaling. See crbug.com/298406
+#define MAYBE_FallbackToNone DISABLED_FallbackToNone
+#else
+#define MAYBE_FallbackToNone FallbackToNone
+#endif
+TEST_F(ResourceBundleImageTest, MAYBE_FallbackToNone) {
   base::FilePath data_default_path = dir_path().AppendASCII("sample.pak");
 
   // Create the pak files.
