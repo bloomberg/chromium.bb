@@ -388,7 +388,7 @@ Contains settings for the weston terminal application (weston-terminal). It
 allows to customize the font and shell of the command line interface.
 .TP 7
 .BI "font=" "DejaVu Sans Mono"
-sets the font of the terminal (string). For a good experience it is recommend
+sets the font of the terminal (string). For a good experience it is recommended
 to use monospace fonts. In case the font is not found, the default one is used.
 .RE
 .RE
