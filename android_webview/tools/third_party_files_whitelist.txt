@@ -56,15 +56,6 @@ chrome/utility/importer/nss_decryptor_system_nss.cc
 # Copyright Netscape Communications Corporation; MPL, GPL v2 or LGPL v2
 # license. Not used on Android.
 chrome/utility/importer/nss_decryptor_win.h
-# Copyright Google Inc; no license. Example code only.
-chrome_frame/cfinstall/examples/jquery.html
-# Copyright Google Inc; no license. Example code only.
-chrome_frame/cfinstall/examples/local_testing.html
-# Copyright Google Inc; no license. Example code only.
-chrome_frame/cfinstall/examples/simple.html
-# Copyright The Chromium Authors and The Dojo Foundation; BSD license. Not used
-# on Android.
-chrome_frame/CFInstance.js
 # Copyright Google Inc; BSD license. Test code only.
 chrome/tools/test/generate_mime_tests.pl
 # Copyright Alf Watt; BSD license. Not used on Android.

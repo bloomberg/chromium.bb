@@ -147,9 +147,6 @@
                   'webkit/renderer/compositor_bindings/|'\
                   'content/common/cc_messages'
     },
-    'chrome_frame': {
-      'filepath': 'chrome_frame/',
-    },
     'chrome_views': {
       'filepath': 'chrome/browser/ui/views',
     },
@@ -372,7 +369,6 @@
       'filepath': 'base/metrics/'\
                   '|chrome/browser/metrics/'\
                   '|chrome/common/metrics/'\
-                  '|chrome_frame/metrics'\
                   '|chrome/browser/chromeos/external_metrics'\
                   '|chrome/browser/extensions/api/metrics/metrics'\
                   '|chrome/browser/ui/webui/metrics_handler'\
@@ -698,8 +694,6 @@
              'miu+watch@chromium.org',
              'pwestin+watch@google.com'],
     'cc': ['cc-bugs@chromium.org'],
-    'chrome_frame': ['amit@chromium.org', 'grt+watch@chromium.org',
-                     'robertshield@chromium.org'],
     'chrome_views': ['tfarina@chromium.org'],
     'chromedriver': ['chrisgao@chromium.org', 'frankf@chromium.org'],
     'chromeos' : ['oshima+watch@chromium.org',
