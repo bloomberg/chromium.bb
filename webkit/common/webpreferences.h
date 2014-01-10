@@ -95,6 +95,7 @@ struct WEBKIT_COMMON_EXPORT WebPreferences {
   bool allow_file_access_from_file_urls;
   bool webaudio_enabled;
   bool experimental_webgl_enabled;
+  bool pepper_3d_enabled;
   bool flash_3d_enabled;
   bool flash_stage3d_enabled;
   bool flash_stage3d_baseline_enabled;

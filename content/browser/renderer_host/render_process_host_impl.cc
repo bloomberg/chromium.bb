@@ -1126,7 +1126,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     cc::switches::kTraceOverdraw,
 #if defined(ENABLE_PLUGINS)
     switches::kEnablePepperTesting,
-    switches::kDisablePepper3d,
 #endif
 #if defined(ENABLE_WEBRTC)
     switches::kEnableAudioTrackProcessing,

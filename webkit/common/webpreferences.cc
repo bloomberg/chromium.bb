@@ -48,6 +48,7 @@ WebPreferences::WebPreferences()
       allow_file_access_from_file_urls(false),
       webaudio_enabled(false),
       experimental_webgl_enabled(false),
+      pepper_3d_enabled(false),
       flash_3d_enabled(true),
       flash_stage3d_enabled(false),
       flash_stage3d_baseline_enabled(false),

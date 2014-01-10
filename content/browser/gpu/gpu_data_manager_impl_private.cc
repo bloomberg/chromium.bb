@@ -650,10 +650,6 @@ void GpuDataManagerImplPrivate::AppendRendererCommandLine(
     CommandLine* command_line) const {
   DCHECK(command_line);
 
-  if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL)) {
-    if (!command_line->HasSwitch(switches::kDisablePepper3d))
-      command_line->AppendSwitch(switches::kDisablePepper3d);
-  }
   if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING) &&
       !command_line->HasSwitch(switches::kDisableAcceleratedCompositing))
     command_line->AppendSwitch(switches::kDisableAcceleratedCompositing);
@@ -671,10 +667,8 @@ void GpuDataManagerImplPrivate::AppendRendererCommandLine(
     command_line->AppendSwitch(switches::kEnableSoftwareCompositing);
 
 #if defined(USE_AURA)
-  if (!CanUseGpuBrowserCompositor()) {
+  if (!CanUseGpuBrowserCompositor())
     command_line->AppendSwitch(switches::kDisableGpuCompositing);
-    command_line->AppendSwitch(switches::kDisablePepper3d);
-  }
 #endif
 }
 
@@ -776,8 +770,10 @@ void GpuDataManagerImplPrivate::UpdateRendererWebPrefs(
 
   if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING))
     prefs->accelerated_compositing_enabled = false;
-  if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL))
+  if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL)) {
     prefs->experimental_webgl_enabled = false;
+    prefs->pepper_3d_enabled = false;
+  }
   if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_FLASH3D))
     prefs->flash_3d_enabled = false;
   if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_FLASH_STAGE3D)) {
@@ -800,12 +796,13 @@ void GpuDataManagerImplPrivate::UpdateRendererWebPrefs(
     prefs->accelerated_compositing_for_video_enabled = false;
 
   // Accelerated video and animation are slower than regular when using
-  // SwiftShader. 3D CSS may also be too slow to be worthwhile.
+  // SwiftShader. 3D CSS or Pepper 3D may also be too slow to be worthwhile.
   if (ShouldUseSwiftShader()) {
     prefs->accelerated_compositing_for_video_enabled = false;
     prefs->accelerated_compositing_for_animation_enabled = false;
     prefs->accelerated_compositing_for_3d_transforms_enabled = false;
     prefs->accelerated_compositing_for_plugins_enabled = false;
+    prefs->pepper_3d_enabled = false;
   }
 
   if (use_software_compositor_) {
@@ -817,8 +814,10 @@ void GpuDataManagerImplPrivate::UpdateRendererWebPrefs(
   }
 
 #if defined(USE_AURA)
-  if (!CanUseGpuBrowserCompositor())
+  if (!CanUseGpuBrowserCompositor()) {
     prefs->accelerated_2d_canvas_enabled = false;
+    prefs->pepper_3d_enabled = false;
+  }
 #endif
 }
 
