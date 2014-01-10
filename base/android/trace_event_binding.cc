@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/android/trace_event_binding.h"
+#include "base/android/trace_event_binding.h"
 
 #include <jni.h>
 
@@ -11,6 +11,9 @@
 #include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
 #include "jni/TraceEvent_jni.h"
+
+namespace base {
+namespace android {
 
 namespace {
 
@@ -133,3 +136,6 @@ static void FinishAsync(JNIEnv* env, jclass clazz,
 bool RegisterTraceEvent(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
+
+}  // namespace android
+}  // namespace base

@@ -1234,6 +1234,7 @@
             'android/java/src/org/chromium/base/SystemMessageHandler.java',
             'android/java/src/org/chromium/base/SysUtils.java',
             'android/java/src/org/chromium/base/ThreadUtils.java',
+            'android/java/src/org/chromium/base/TraceEvent.java',
           ],
           'conditions': [
             ['google_tv==1', {

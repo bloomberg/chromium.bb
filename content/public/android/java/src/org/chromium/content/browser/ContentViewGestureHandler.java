@@ -13,12 +13,12 @@ import android.view.MotionEvent;
 import android.view.ViewConfiguration;
 
 import org.chromium.base.CommandLine;
+import org.chromium.base.TraceEvent;
 import org.chromium.content.browser.LongPressDetector.LongPressDelegate;
 import org.chromium.content.browser.third_party.GestureDetector;
 import org.chromium.content.browser.third_party.GestureDetector.OnDoubleTapListener;
 import org.chromium.content.browser.third_party.GestureDetector.OnGestureListener;
 import org.chromium.content.common.ContentSwitches;
-import org.chromium.content.common.TraceEvent;
 
 import java.util.ArrayDeque;
 import java.util.Deque;

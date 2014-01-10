@@ -9,9 +9,9 @@ import android.util.Log;
 import org.chromium.base.CommandLine;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.SysUtils;
+import org.chromium.base.TraceEvent;
 import org.chromium.content.common.ProcessInitException;
 import org.chromium.content.common.ResultCodes;
-import org.chromium.content.common.TraceEvent;
 
 /**
  * This class provides functionality to load and register the native libraries.

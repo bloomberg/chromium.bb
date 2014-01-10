@@ -10,6 +10,7 @@ import android.os.Message;
 import android.util.Log;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.TraceEvent;
 
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;

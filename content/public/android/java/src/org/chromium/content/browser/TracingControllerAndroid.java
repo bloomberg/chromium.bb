@@ -15,8 +15,8 @@ import android.widget.Toast;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.base.TraceEvent;
 import org.chromium.content.R;
-import org.chromium.content.common.TraceEvent;
 
 import java.io.File;
 import java.text.SimpleDateFormat;

@@ -18,7 +18,7 @@ import android.widget.FrameLayout;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
-import org.chromium.content.common.TraceEvent;
+import org.chromium.base.TraceEvent;
 import org.chromium.ui.base.WindowAndroid;
 
 /***

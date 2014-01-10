@@ -15,12 +15,12 @@ import android.util.Log;
 
 import org.chromium.base.CpuFeatures;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.TraceEvent;
 import org.chromium.content.app.ChildProcessService;
 import org.chromium.content.app.Linker;
 import org.chromium.content.app.LinkerParams;
 import org.chromium.content.common.IChildProcessCallback;
 import org.chromium.content.common.IChildProcessService;
-import org.chromium.content.common.TraceEvent;
 
 import java.io.IOException;
 

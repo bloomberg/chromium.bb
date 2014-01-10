@@ -23,7 +23,7 @@ import android.widget.FrameLayout;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import org.chromium.content.common.TraceEvent;
+import org.chromium.base.TraceEvent;
 import org.chromium.ui.base.WindowAndroid;
 
 /**

@@ -119,8 +119,6 @@
     'common/android/hash_set.h',
     'common/android/surface_texture_peer.cc',
     'common/android/surface_texture_peer.h',
-    'common/android/trace_event_binding.cc',
-    'common/android/trace_event_binding.h',
     'common/appcache_messages.h',
     'common/browser_plugin/browser_plugin_constants.cc',
     'common/browser_plugin/browser_plugin_constants.h',

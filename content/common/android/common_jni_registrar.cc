@@ -8,14 +8,12 @@
 #include "base/android/jni_registrar.h"
 #include "content/common/android/device_telephony_info.h"
 #include "content/common/android/hash_set.h"
-#include "content/common/android/trace_event_binding.h"
 
 namespace {
 base::android::RegistrationMethod kContentRegisteredMethods[] = {
   { "DeviceTelephonyInfo",
         content::DeviceTelephonyInfo::RegisterDeviceTelephonyInfo },
   { "HashSet", content::RegisterHashSet },
-  { "TraceEvent", RegisterTraceEvent },
 };
 
 }  // namespace

@@ -18,6 +18,7 @@
 #include "base/android/path_utils.h"
 #include "base/android/sys_utils.h"
 #include "base/android/thread_utils.h"
+#include "base/android/trace_event_binding.h"
 #include "base/basictypes.h"
 #include "base/debug/trace_event.h"
 #include "base/message_loop/message_pump_android.h"
@@ -50,6 +51,7 @@ static RegistrationMethod kBaseRegisteredMethods[] = {
   { "SysUtils", base::android::SysUtils::Register },
   { "PowerMonitor", base::RegisterPowerMonitor },
   { "ThreadUtils", base::RegisterThreadUtils },
+  { "TraceEvent", base::android::RegisterTraceEvent },
 };
 
 bool RegisterJni(JNIEnv* env) {

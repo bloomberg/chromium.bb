@@ -10,7 +10,7 @@ import android.os.Handler;
 import android.view.Choreographer;
 import android.view.WindowManager;
 
-import org.chromium.content.common.TraceEvent;
+import org.chromium.base.TraceEvent;
 
 /**
  * Notifies clients of the default displays's vertical sync pulses.
@@ -26,6 +26,9 @@ public class VSyncMonitor {
     private static final long NANOSECONDS_PER_MICROSECOND = 1000;
     public static final int MAX_AUTO_ONVSYNC_COUNT = 5;
 
+    /**
+     * VSync listener class
+     */
     public interface Listener {
         /**
          * Called very soon after the start of the display's vertical sync period.

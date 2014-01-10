@@ -18,6 +18,9 @@ public abstract class BaseSwitches {
     // Overrides low-end device detection, enabling low-end device optimizations.
     public static final String ENABLE_LOW_END_DEVICE_MODE = "enable-low-end-device-mode";
 
+    // Adds additional thread idle time information into the trace event output.
+    public static final String ENABLE_IDLE_TRACING = "enable-idle-tracing";
+
     // Prevent instantiation.
     private BaseSwitches() {}
 }

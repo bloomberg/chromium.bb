@@ -72,6 +72,8 @@
           'android/sys_utils.cc',
           'android/sys_utils.h',
           'android/thread_utils.h',
+          'android/trace_event_binding.cc',
+          'android/trace_event_binding.h',
           'at_exit.cc',
           'at_exit.h',
           'atomic_ref_count.h',
