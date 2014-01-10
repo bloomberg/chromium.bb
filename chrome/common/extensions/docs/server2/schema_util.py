@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 from collections import defaultdict, Mapping
+import traceback
 
 from third_party.json_schema_compiler import json_parse, idl_schema, idl_parser
 
@@ -111,7 +112,11 @@ def ProcessSchema(path, file_data):
     # Wrap the result in a list so that it behaves like JSON API data.
     return [trim_and_inline(idl.process()[0], is_idl=True)]
 
-  schemas = json_parse.Parse(file_data)
+  try:
+    schemas = json_parse.Parse(file_data)
+  except:
+    raise ValueError('Cannot parse "%s" as JSON:\n%s' %
+                     (path, traceback.format_exc()))
   for schema in schemas:
     # Schemas could consist of one API schema (data for a specific API file)
     # or multiple (data from extension_api.json).
