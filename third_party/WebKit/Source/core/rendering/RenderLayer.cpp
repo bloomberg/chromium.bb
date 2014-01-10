@@ -362,23 +362,6 @@ void RenderLayer::dirtyAncestorChainHasOutOfFlowPositionedDescendantStatus()
     }
 }
 
-bool RenderLayer::acceleratedCompositingForOverflowScrollEnabled() const
-{
-    const Settings* settings = renderer()->document().settings();
-    return settings && settings->acceleratedCompositingForOverflowScrollEnabled();
-}
-
-// FIXME: This is a temporary flag and should be removed once accelerated
-// overflow scroll is ready (crbug.com/254111).
-bool RenderLayer::compositorDrivenAcceleratedScrollingEnabled() const
-{
-    if (!acceleratedCompositingForOverflowScrollEnabled())
-        return false;
-
-    const Settings* settings = renderer()->document().settings();
-    return settings && settings->compositorDrivenAcceleratedScrollingEnabled();
-}
-
 bool RenderLayer::scrollsWithRespectTo(const RenderLayer* other) const
 {
     const EPosition position = renderer()->style()->position();
@@ -1091,7 +1074,7 @@ RenderLayer* RenderLayer::enclosingCompositingLayerForRepaint(IncludeSelfOrNot i
 
 RenderLayer* RenderLayer::ancestorCompositedScrollingLayer() const
 {
-    if (!acceleratedCompositingForOverflowScrollEnabled())
+    if (!renderer()->acceleratedCompositingForOverflowScrollEnabled())
         return 0;
 
     RenderObject* containingBlock = renderer()->containingBlock();
@@ -1627,7 +1610,7 @@ void RenderLayer::convertToLayerCoords(const RenderLayer* ancestorLayer, LayoutR
 
 RenderLayer* RenderLayer::scrollParent() const
 {
-    if (!compositorDrivenAcceleratedScrollingEnabled())
+    if (!renderer()->compositorDrivenAcceleratedScrollingEnabled())
         return 0;
 
     // Normal flow elements will be parented under the main scrolling layer, so

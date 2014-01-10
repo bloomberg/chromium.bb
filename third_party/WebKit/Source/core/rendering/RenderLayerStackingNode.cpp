@@ -154,7 +154,7 @@ void RenderLayerStackingNode::dirtyZOrderLists()
     if (!renderer()->documentBeingDestroyed()) {
         compositor()->setNeedsUpdateCompositingRequirementsState();
         compositor()->setCompositingLayersNeedRebuild();
-        if (layer()->acceleratedCompositingForOverflowScrollEnabled())
+        if (renderer()->acceleratedCompositingForOverflowScrollEnabled())
             compositor()->setNeedsToRecomputeCompositingRequirements();
     }
 }
@@ -195,7 +195,7 @@ void RenderLayerStackingNode::dirtyNormalFlowList()
 
     if (!renderer()->documentBeingDestroyed()) {
         compositor()->setCompositingLayersNeedRebuild();
-        if (layer()->acceleratedCompositingForOverflowScrollEnabled())
+        if (renderer()->acceleratedCompositingForOverflowScrollEnabled())
             compositor()->setNeedsToRecomputeCompositingRequirements();
     }
 }
@@ -457,11 +457,10 @@ void RenderLayerStackingNode::updateDescendantsAreContiguousInStackingOrder()
 {
     TRACE_EVENT0("blink_rendering,comp-scroll", "RenderLayerStackingNode::updateDescendantsAreContiguousInStackingOrder");
 
-    const RenderLayer* currentLayer = layer();
-    if (isStackingContext() || !m_descendantsAreContiguousInStackingOrderDirty || !currentLayer->acceleratedCompositingForOverflowScrollEnabled())
+    if (isStackingContext() || !m_descendantsAreContiguousInStackingOrderDirty || !renderer()->acceleratedCompositingForOverflowScrollEnabled())
         return;
 
-    if (!currentLayer->scrollsOverflow())
+    if (!layer()->scrollsOverflow())
         return;
 
     RenderLayerStackingNode* stackingNode = ancestorStackingNode();
@@ -623,8 +622,8 @@ bool RenderLayerStackingNode::setNeedsToBeStackingContainer(bool needsToBeStacki
     // Count the total number of RenderLayers which need to be stacking
     // containers some point. This should be recorded at most once per
     // RenderLayer, so we check m_needsToBeStackingContainerHasBeenRecorded.
-    if (layer()->acceleratedCompositingForOverflowScrollEnabled() && !m_needsToBeStackingContainerHasBeenRecorded) {
-        blink::Platform::current()->histogramEnumeration("Renderer.CompositedScrolling", RenderLayer::NeedsToBeStackingContainerBucket, RenderLayer::CompositedScrollingHistogramMax);
+    if (renderer()->acceleratedCompositingForOverflowScrollEnabled() && !m_needsToBeStackingContainerHasBeenRecorded) {
+        blink::Platform::current()->histogramEnumeration("Renderer.CompositedScrolling", NeedsToBeStackingContainerBucket, CompositedScrollingHistogramMax);
         m_needsToBeStackingContainerHasBeenRecorded = true;
     }
 

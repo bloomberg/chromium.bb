@@ -77,6 +77,13 @@ class TransformationMatrix;
 enum BorderRadiusClippingRule { IncludeSelfForBorderRadius, DoNotIncludeSelfForBorderRadius };
 enum IncludeSelfOrNot { IncludeSelf, ExcludeSelf };
 
+enum CompositedScrollingHistogramBuckets {
+    IsScrollableAreaBucket = 0,
+    NeedsToBeStackingContainerBucket = 1,
+    WillUseCompositedScrollingBucket = 2,
+    CompositedScrollingHistogramMax = 3
+};
+
 class RenderLayer {
 public:
     friend class RenderReplica;
@@ -436,6 +443,8 @@ public:
     void setOffsetFromSquashingLayerOrigin(IntSize offset) { m_compositingProperties.offsetFromSquashingLayerOrigin = offset; }
     IntSize offsetFromSquashingLayerOrigin() const { return m_compositingProperties.offsetFromSquashingLayerOrigin; }
 
+    bool scrollsOverflow() const;
+
 private:
     bool hasOverflowControls() const;
 
@@ -446,11 +455,6 @@ private:
 
     void setAncestorChainHasOutOfFlowPositionedDescendant();
     void dirtyAncestorChainHasOutOfFlowPositionedDescendantStatus();
-
-    bool acceleratedCompositingForOverflowScrollEnabled() const;
-    // FIXME: This is a temporary flag and should be removed once accelerated
-    // overflow scroll is ready (crbug.com/254111).
-    bool compositorDrivenAcceleratedScrollingEnabled() const;
 
     void clipToRect(RenderLayer* rootLayer, GraphicsContext*, const LayoutRect& paintDirtyRect, const ClipRect&,
                     BorderRadiusClippingRule = IncludeSelfForBorderRadius);
@@ -553,10 +557,6 @@ private:
     // but for now, we are always allocating it for RenderBox as it's safer.
     bool requiresScrollableArea() const { return renderBox(); }
     void updateScrollableArea();
-
-    // Returns true our scrollable area is in the FrameView's collection of scrollable areas. This can
-    // only happen if we're both scrollable, and we do in fact overflow.
-    bool scrollsOverflow() const;
 
     void dirtyAncestorChainVisibleDescendantStatus();
     void setAncestorChainHasVisibleDescendant();
@@ -711,13 +711,6 @@ protected:
     CompositingProperties m_compositingProperties;
 
 private:
-    enum CompositedScrollingHistogramBuckets {
-        IsScrollableAreaBucket = 0,
-        NeedsToBeStackingContainerBucket = 1,
-        WillUseCompositedScrollingBucket = 2,
-        CompositedScrollingHistogramMax = 3
-    };
-
     IntRect m_blockSelectionGapsBounds;
 
     OwnPtr<CompositedLayerMapping> m_compositedLayerMapping;

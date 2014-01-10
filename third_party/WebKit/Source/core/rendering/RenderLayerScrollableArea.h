@@ -167,6 +167,9 @@ public:
 
     LayoutRect exposeRect(const LayoutRect&, const ScrollAlignment& alignX, const ScrollAlignment& alignY);
 
+    // Returns true our scrollable area is in the FrameView's collection of scrollable areas. This can
+    // only happen if we're both scrollable, and we do in fact overflow. This means that overflow: hidden
+    // layers never get added to the FrameView's collection.
     bool scrollsOverflow() const;
 
     // Rectangle encompassing the scroll corner and resizer rect.

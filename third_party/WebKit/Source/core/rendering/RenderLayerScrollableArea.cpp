@@ -1346,14 +1346,14 @@ void RenderLayerScrollableArea::updateScrollableAreaSet(bool hasOverflow)
         // Count the total number of RenderLayers that are scrollable areas for
         // any period. We only want to record this at most once per RenderLayer.
         if (requiresScrollableArea && !m_isScrollableAreaHasBeenRecorded) {
-            blink::Platform::current()->histogramEnumeration("Renderer.CompositedScrolling", RenderLayer::IsScrollableAreaBucket, RenderLayer::CompositedScrollingHistogramMax);
+            blink::Platform::current()->histogramEnumeration("Renderer.CompositedScrolling", IsScrollableAreaBucket, CompositedScrollingHistogramMax);
             m_isScrollableAreaHasBeenRecorded = true;
         }
 
         // We always want composited scrolling if compositor driven accelerated
         // scrolling is enabled. Since we will not update needs composited scrolling
         // in this case, we must force our state to update.
-        if (layer()->compositorDrivenAcceleratedScrollingEnabled())
+        if (m_box->compositorDrivenAcceleratedScrollingEnabled())
             layer()->didUpdateNeedsCompositedScrolling();
         else if (requiresScrollableArea)
             m_box->view()->compositor()->setNeedsUpdateCompositingRequirementsState();
@@ -1370,20 +1370,20 @@ void RenderLayerScrollableArea::updateNeedsCompositedScrolling()
     layer()->updateDescendantDependentFlags();
 
     ASSERT(scrollsOverflow());
-    const bool needsToBeStackingContainer = layer()->acceleratedCompositingForOverflowScrollEnabled()
+    const bool needsToBeStackingContainer = m_box->acceleratedCompositingForOverflowScrollEnabled()
         && layer()->stackingNode()->descendantsAreContiguousInStackingOrder()
         && !layer()->hasUnclippedDescendant();
 
     const bool needsToBeStackingContainerDidChange = layer()->stackingNode()->setNeedsToBeStackingContainer(needsToBeStackingContainer);
 
     const bool needsCompositedScrolling = needsToBeStackingContainer
-        || layer()->compositorDrivenAcceleratedScrollingEnabled();
+        || m_box->compositorDrivenAcceleratedScrollingEnabled();
 
     // We gather a boolean value for use with Google UMA histograms to
     // quantify the actual effects of a set of patches attempting to
     // relax composited scrolling requirements, thereby increasing the
     // number of composited overflow divs.
-    if (layer()->acceleratedCompositingForOverflowScrollEnabled())
+    if (m_box->acceleratedCompositingForOverflowScrollEnabled())
         blink::Platform::current()->histogramEnumeration("Renderer.NeedsCompositedScrolling", needsCompositedScrolling, 2);
 
     const bool needsCompositedScrollingDidChange = setNeedsCompositedScrolling(needsCompositedScrolling);
@@ -1405,8 +1405,8 @@ bool RenderLayerScrollableArea::setNeedsCompositedScrolling(bool needsComposited
     // Count the total number of RenderLayers which need composited scrolling at
     // some point. This should be recorded at most once per RenderLayer, so we
     // check m_willUseCompositedScrollingHasBeenRecorded.
-    if (layer()->acceleratedCompositingForOverflowScrollEnabled() && !m_willUseCompositedScrollingHasBeenRecorded) {
-        blink::Platform::current()->histogramEnumeration("Renderer.CompositedScrolling", RenderLayer::WillUseCompositedScrollingBucket, RenderLayer::CompositedScrollingHistogramMax);
+    if (m_box->acceleratedCompositingForOverflowScrollEnabled() && !m_willUseCompositedScrollingHasBeenRecorded) {
+        blink::Platform::current()->histogramEnumeration("Renderer.CompositedScrolling", WillUseCompositedScrollingBucket, CompositedScrollingHistogramMax);
         m_willUseCompositedScrollingHasBeenRecorded = true;
     }
 

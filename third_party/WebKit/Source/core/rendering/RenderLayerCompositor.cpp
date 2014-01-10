@@ -322,7 +322,7 @@ void RenderLayerCompositor::updateCompositingRequirementsState()
 
     m_needsUpdateCompositingRequirementsState = false;
 
-    if (!rootRenderLayer() || !rootRenderLayer()->acceleratedCompositingForOverflowScrollEnabled())
+    if (!rootRenderLayer() || !m_renderView->acceleratedCompositingForOverflowScrollEnabled())
         return;
 
     for (HashSet<RenderLayer*>::iterator it = m_outOfFlowPositionedLayers.begin(); it != m_outOfFlowPositionedLayers.end(); ++it)
@@ -815,7 +815,7 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
     // used, we must assume we overlap if there is anything composited behind us in paint-order.
     CompositingReasons overlapCompositingReason = currentRecursionData.m_subtreeIsCompositing ? CompositingReasonAssumedOverlap : CompositingReasonNone;
 
-    if (rootRenderLayer()->compositorDrivenAcceleratedScrollingEnabled()) {
+    if (m_renderView->compositorDrivenAcceleratedScrollingEnabled()) {
         Vector<size_t> unclippedDescendantsToRemove;
         for (size_t i = 0; i < unclippedDescendants.size(); i++) {
             RenderLayer* unclippedDescendant = unclippedDescendants.at(i);
@@ -1937,7 +1937,7 @@ bool RenderLayerCompositor::requiresCompositingForOverflowScrollingParent(const 
 
 bool RenderLayerCompositor::requiresCompositingForOutOfFlowClipping(const RenderLayer* layer) const
 {
-    return layer->compositorDrivenAcceleratedScrollingEnabled() && layer->isUnclippedDescendant();
+    return m_renderView->compositorDrivenAcceleratedScrollingEnabled() && layer->isUnclippedDescendant();
 }
 
 static bool isViewportConstrainedFixedOrStickyLayer(const RenderLayer* layer)
