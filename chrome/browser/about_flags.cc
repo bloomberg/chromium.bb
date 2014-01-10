@@ -1853,14 +1853,6 @@ const Experiment kExperiments[] = {
     // Java-only switch: CommandLine.DISABLE_CLICK_DELAY
     SINGLE_VALUE_TYPE("disable-click-delay")
   },
-  {
-    "low-end-device-mode",
-     IDS_FLAGS_LOW_END_DEVICE_MODE_NAME,
-     IDS_FLAGS_LOW_END_DEVICE_MODE_DESCRIPTION,
-     kOsAndroid,
-     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableLowEndDeviceMode,
-                               switches::kDisableLowEndDeviceMode)
-  },
 #endif
 #if defined(OS_CHROMEOS)
   {
