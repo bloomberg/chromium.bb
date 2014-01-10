@@ -2059,7 +2059,7 @@ create_output_for_connector(struct drm_compositor *ec,
 	weston_log("Output %s, (connector %d, crtc %d)\n",
 		   output->base.name, output->connector_id, output->crtc_id);
 	wl_list_for_each(m, &output->base.mode_list, link)
-		weston_log_continue("  mode %dx%d@%.1f%s%s%s\n",
+		weston_log_continue(STAMP_SPACE "mode %dx%d@%.1f%s%s%s\n",
 				    m->width, m->height, m->refresh / 1000.0,
 				    m->flags & WL_OUTPUT_MODE_PREFERRED ?
 				    ", preferred" : "",
