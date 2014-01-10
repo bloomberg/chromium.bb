@@ -50,6 +50,7 @@
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "gpu/config/gpu_info.h"
+#include "ui/events/event_utils.h"
 #include "ui/gfx/screen.h"
 #include "url/gurl.h"
 
@@ -66,6 +67,7 @@ extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "ui/events/x/touch_factory_x11.h"
 #endif
 
 using content::GpuDataManager;
@@ -379,6 +381,19 @@ PairedDevice::Type AsBluetoothDeviceType(
 
   NOTREACHED();
   return PairedDevice::DEVICE_UNKNOWN;
+}
+
+void WriteExternalTouchscreensProto(SystemProfileProto::Hardware* hardware) {
+  std::set<std::pair<int, int> > touchscreen_ids =
+      ui::TouchFactory::GetInstance()->GetTouchscreenIds();
+  for (std::set<std::pair<int, int> >::iterator it = touchscreen_ids.begin();
+       it != touchscreen_ids.end();
+       ++it) {
+    SystemProfileProto::Hardware::TouchScreen* touchscreen =
+        hardware->add_external_touchscreen();
+    touchscreen->set_vendor_id(it->first);
+    touchscreen->set_product_id(it->second);
+  }
 }
 #endif  // defined(OS_CHROMEOS)
 
@@ -801,6 +816,9 @@ void MetricsLog::RecordEnvironment(
     uma_proto()->add_perf_data()->Swap(&perf_data_proto);
 
   WriteBluetoothProto(hardware);
+  hardware->set_internal_display_supports_touch(
+      ui::InternalDisplaySupportsTouch());
+  WriteExternalTouchscreensProto(hardware);
   UpdateMultiProfileUserCount();
 #endif
 
