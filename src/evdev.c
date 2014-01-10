@@ -658,6 +658,7 @@ evdev_device_destroy(struct evdev_device *device)
 	close(device->fd);
 	free(device->devname);
 	free(device->devnode);
+	free(device->output_name);
 	free(device);
 }
 

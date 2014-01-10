@@ -55,6 +55,7 @@ struct evdev_device {
 	struct evdev_dispatch *dispatch;
 	char *devnode;
 	char *devname;
+	char *output_name;
 	int fd;
 	struct {
 		int min_x, max_x, min_y, max_y;

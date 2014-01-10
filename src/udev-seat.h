@@ -32,6 +32,7 @@
 struct udev_seat {
 	struct weston_seat base;
 	struct wl_list devices_list;
+	struct wl_listener output_create_listener;
 };
 
 struct udev_input {
@@ -41,7 +42,6 @@ struct udev_input {
 	struct weston_compositor *compositor;
 	int enabled;
 };
-
 
 int udev_input_enable(struct udev_input *input, struct udev *udev);
 void udev_input_disable(struct udev_input *input);
