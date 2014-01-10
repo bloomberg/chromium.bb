@@ -228,8 +228,10 @@ void SigninManagerAndroid::LogInSignedInUser(JNIEnv* env, jobject obj) {
     // Old code path that doesn't depend on the new Account Reconcilor.
     // We manually login.
 
+    ProfileOAuth2TokenService* token_service =
+        ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
     merge_session_helper_.reset(new GoogleAutoLoginHelper(profile_, this));
-    merge_session_helper_->LogIn();
+    merge_session_helper_->LogIn(token_service->GetPrimaryAccountId());
   }
 }
 

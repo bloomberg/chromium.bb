@@ -7,8 +7,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/signin/profile_oauth2_token_service.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "content/public/browser/notification_service.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -22,12 +20,6 @@ GoogleAutoLoginHelper::GoogleAutoLoginHelper(Profile* profile,
 
 GoogleAutoLoginHelper::~GoogleAutoLoginHelper() {
   DCHECK(accounts_.empty());
-}
-
-void GoogleAutoLoginHelper::LogIn() {
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
-  LogIn(token_service->GetPrimaryAccountId());
 }
 
 void GoogleAutoLoginHelper::LogIn(const std::string& account_id) {

@@ -16,6 +16,8 @@
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/ubertoken_fetcher.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/common/chrome_switches.h"
@@ -84,9 +86,12 @@ AutoLoginRedirector::AutoLoginRedirector(
     const std::string& args)
     : content::WebContentsObserver(web_contents),
       args_(args) {
-  ubertoken_fetcher_.reset(new UbertokenFetcher(
-      Profile::FromBrowserContext(web_contents->GetBrowserContext()), this));
-  ubertoken_fetcher_->StartFetchingToken();
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  ProfileOAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
+  ubertoken_fetcher_.reset(new UbertokenFetcher(profile, this));
+  ubertoken_fetcher_->StartFetchingToken(token_service->GetPrimaryAccountId());
 }
 
 AutoLoginRedirector::~AutoLoginRedirector() {

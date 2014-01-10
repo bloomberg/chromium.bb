@@ -39,7 +39,6 @@ class GoogleAutoLoginHelper : public GaiaAuthConsumer,
   GoogleAutoLoginHelper(Profile* profile, Observer* observer);
   virtual ~GoogleAutoLoginHelper();
 
-  void LogIn();
   void LogIn(const std::string& account_id);
 
   // Add or remove observers of this helper.

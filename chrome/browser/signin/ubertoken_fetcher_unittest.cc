@@ -9,7 +9,6 @@
 #include "chrome/browser/signin/fake_signin_manager.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -82,7 +81,7 @@ TEST_F(UbertokenFetcherTest, Basic) {
 TEST_F(UbertokenFetcherTest, Success) {
   ProfileOAuth2TokenServiceFactory::GetForProfile(profile())->
       UpdateCredentials(kTestAccountId, "refreshToken");
-  fetcher_->StartFetchingToken();
+  fetcher_->StartFetchingToken(kTestAccountId);
   fetcher_->OnGetTokenSuccess(NULL, "accessToken", base::Time());
   fetcher_->OnUberAuthTokenSuccess("uberToken");
   EXPECT_EQ(0, consumer_.nb_error_);
@@ -91,7 +90,7 @@ TEST_F(UbertokenFetcherTest, Success) {
 }
 
 TEST_F(UbertokenFetcherTest, NoRefreshToken) {
-  fetcher_->StartFetchingToken();
+  fetcher_->StartFetchingToken(kTestAccountId);
   GoogleServiceAuthError error(GoogleServiceAuthError::USER_NOT_SIGNED_UP);
   fetcher_->OnGetTokenFailure(NULL, error);
   EXPECT_EQ(1, consumer_.nb_error_);
@@ -103,7 +102,7 @@ TEST_F(UbertokenFetcherTest, FailureToGetAccessToken) {
 
   ProfileOAuth2TokenServiceFactory::GetForProfile(profile())->
       UpdateCredentials(kTestAccountId, "refreshToken");
-  fetcher_->StartFetchingToken();
+  fetcher_->StartFetchingToken(kTestAccountId);
   fetcher_->OnGetTokenFailure(NULL, error);
 
   EXPECT_EQ(1, consumer_.nb_error_);
@@ -116,7 +115,7 @@ TEST_F(UbertokenFetcherTest, FailureToGetUberToken) {
 
   ProfileOAuth2TokenServiceFactory::GetForProfile(profile())->
       UpdateCredentials(kTestAccountId, "refreshToken");
-  fetcher_->StartFetchingToken();
+  fetcher_->StartFetchingToken(kTestAccountId);
   fetcher_->OnGetTokenSuccess(NULL, "accessToken", base::Time());
   fetcher_->OnUberAuthTokenFailure(error);
 

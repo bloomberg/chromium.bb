@@ -14,6 +14,7 @@
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "google_apis/gaia/oauth2_token_service.h"
 
 UbertokenFetcher::UbertokenFetcher(Profile* profile,
                                    UbertokenConsumer* consumer)
@@ -26,16 +27,10 @@ UbertokenFetcher::UbertokenFetcher(Profile* profile,
 UbertokenFetcher::~UbertokenFetcher() {
 }
 
-void UbertokenFetcher::StartFetchingToken() {
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
-  StartFetchingToken(token_service->GetPrimaryAccountId());
-}
-
 void UbertokenFetcher::StartFetchingToken(const std::string& account_id) {
   OAuth2TokenService::ScopeSet scopes;
   scopes.insert(GaiaUrls::GetInstance()->oauth1_login_scope());
-  ProfileOAuth2TokenService* token_service =
+  OAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
   access_token_request_ = token_service->StartRequest(account_id, scopes, this);
 }

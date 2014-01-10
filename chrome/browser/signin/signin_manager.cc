@@ -590,7 +590,7 @@ void SigninManager::CompletePendingSignin() {
   temp_oauth_login_tokens_ = ClientOAuthResult();
 
   if (do_merge_session_in_signin_manager)
-    merge_session_helper_->LogIn();
+    merge_session_helper_->LogIn(GetAuthenticatedUsername());
 }
 
 void SigninManager::OnExternalSigninCompleted(const std::string& username) {
