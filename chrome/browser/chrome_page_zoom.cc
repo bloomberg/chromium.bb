@@ -65,14 +65,13 @@ std::vector<double> PresetZoomLevels(double custom_level) {
 }
 
 void Zoom(content::WebContents* web_contents, content::PageZoom zoom) {
-  content::RenderViewHost* host = web_contents->GetRenderViewHost();
   double current_zoom_level = web_contents->GetZoomLevel();
   double default_zoom_level =
       Profile::FromBrowserContext(web_contents->GetBrowserContext())->
           GetPrefs()->GetDouble(prefs::kDefaultZoomLevel);
 
   if (zoom == content::PAGE_ZOOM_RESET) {
-    host->SetZoomLevel(default_zoom_level);
+    web_contents->SetZoomLevel(default_zoom_level);
     content::RecordAction(UserMetricsAction("ZoomNormal"));
     return;
   }
@@ -90,7 +89,7 @@ void Zoom(content::WebContents* web_contents, content::PageZoom zoom) {
       if (content::ZoomValuesEqual(zoom_level, current_zoom_level))
         continue;
       if (zoom_level < current_zoom_level) {
-        host->SetZoomLevel(zoom_level);
+        web_contents->SetZoomLevel(zoom_level);
         content::RecordAction(UserMetricsAction("ZoomMinus"));
         return;
       }
@@ -105,7 +104,7 @@ void Zoom(content::WebContents* web_contents, content::PageZoom zoom) {
       if (content::ZoomValuesEqual(zoom_level, current_zoom_level))
         continue;
       if (zoom_level > current_zoom_level) {
-        host->SetZoomLevel(zoom_level);
+        web_contents->SetZoomLevel(zoom_level);
         content::RecordAction(UserMetricsAction("ZoomPlus"));
         return;
       }

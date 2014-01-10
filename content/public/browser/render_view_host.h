@@ -231,9 +231,6 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
   virtual void SetWebUIProperty(const std::string& name,
                                 const std::string& value) = 0;
 
-  // Set the zoom level for the current main frame
-  virtual void SetZoomLevel(double level) = 0;
-
   // Changes the zoom level for the current main frame.
   virtual void Zoom(PageZoom zoom) = 0;
 

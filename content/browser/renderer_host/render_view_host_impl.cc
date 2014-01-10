@@ -2031,10 +2031,6 @@ void RenderViewHostImpl::ClearFocusedNode() {
   Send(new ViewMsg_ClearFocusedNode(GetRoutingID()));
 }
 
-void RenderViewHostImpl::SetZoomLevel(double level) {
-  Send(new ViewMsg_SetZoomLevel(GetRoutingID(), level));
-}
-
 void RenderViewHostImpl::Zoom(PageZoom zoom) {
   Send(new ViewMsg_Zoom(GetRoutingID(), zoom));
 }

@@ -219,7 +219,7 @@ void ZoomBubbleGtk::OnSetDefaultLinkClick(GtkWidget* widget) {
   double default_zoom_level = Profile::FromBrowserContext(
       web_contents_->GetBrowserContext())->GetPrefs()->GetDouble(
           prefs::kDefaultZoomLevel);
-  web_contents_->GetRenderViewHost()->SetZoomLevel(default_zoom_level);
+  web_contents_->SetZoomLevel(default_zoom_level);
 }
 
 gboolean ZoomBubbleGtk::OnMouseEnter(GtkWidget* widget,

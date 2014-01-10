@@ -286,6 +286,7 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void Find(int request_id,
                     const base::string16& search_text,
                     const blink::WebFindOptions& options) OVERRIDE;
+  virtual void SetZoomLevel(double level) OVERRIDE;
   virtual void StopFinding(StopFindAction action) OVERRIDE;
 #if defined(OS_ANDROID)
   virtual base::android::ScopedJavaLocalRef<jobject> GetJavaWebContents()

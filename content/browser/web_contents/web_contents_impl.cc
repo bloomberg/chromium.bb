@@ -2132,6 +2132,13 @@ bool WebContentsImpl::IsSubframe() const {
   return is_subframe_;
 }
 
+void WebContentsImpl::SetZoomLevel(double level) {
+  Send(new ViewMsg_SetZoomLevel(GetRoutingID(), level));
+  BrowserPluginEmbedder* embedder = GetBrowserPluginEmbedder();
+  if (embedder)
+    embedder->SetZoomLevel(level);
+}
+
 void WebContentsImpl::Find(int request_id,
                            const base::string16& search_text,
                            const blink::WebFindOptions& options) {

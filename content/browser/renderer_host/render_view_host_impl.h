@@ -199,7 +199,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   virtual void SetAltErrorPageURL(const GURL& url) OVERRIDE;
   virtual void SetWebUIProperty(const std::string& name,
                                 const std::string& value) OVERRIDE;
-  virtual void SetZoomLevel(double level) OVERRIDE;
   virtual void Zoom(PageZoom zoom) OVERRIDE;
   virtual void SyncRendererPrefs() OVERRIDE;
   virtual void ToggleSpeechInput() OVERRIDE;

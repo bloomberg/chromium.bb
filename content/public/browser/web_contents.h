@@ -487,6 +487,10 @@ class WebContents : public PageNavigator,
   // removed since we can then embed iframes in different processes.
   virtual bool IsSubframe() const = 0;
 
+  // Sets the zoom level for the current page and all BrowserPluginGuests
+  // within the page.
+  virtual void SetZoomLevel(double level) = 0;
+
   // Finds text on a page.
   virtual void Find(int request_id,
                     const base::string16& search_text,

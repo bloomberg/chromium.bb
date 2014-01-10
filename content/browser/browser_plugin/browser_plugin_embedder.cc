@@ -119,6 +119,22 @@ bool BrowserPluginEmbedder::HandleKeyboardEvent(
       event));
 }
 
+bool BrowserPluginEmbedder::SetZoomLevelCallback(
+    double level, BrowserPluginGuest* guest) {
+  guest->GetWebContents()->SetZoomLevel(level);
+  // Not handled => Iterate over all guests.
+  return false;
+}
+
+void BrowserPluginEmbedder::SetZoomLevel(double level) {
+  WebContentsImpl* embedder =
+      static_cast<WebContentsImpl*>(web_contents());
+  GetBrowserPluginGuestManager()->ForEachGuest(embedder, base::Bind(
+      &BrowserPluginEmbedder::SetZoomLevelCallback,
+      base::Unretained(this),
+      level));
+}
+
 void BrowserPluginEmbedder::RenderProcessGone(base::TerminationStatus status) {
   CleanUp();
 }
