@@ -671,7 +671,7 @@ void PasswordAutofillAgent::FillFormOnPasswordRecieved(
   if (IsElementAutocompletable(username_element) &&
       username_element.value().isEmpty()) {
     // TODO(tkent): Check maxlength and pattern.
-    username_element.setValue(fill_data.basic_data.fields[0].value);
+    username_element.setValue(fill_data.basic_data.fields[0].value, true);
   }
 
   // Fill if we have an exact match for the username. Note that this sets
@@ -742,7 +742,7 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
 
   // Input matches the username, fill in required values.
   if (IsElementAutocompletable(*username_element)) {
-    username_element->setValue(username);
+    username_element->setValue(username, true);
     SetElementAutofilled(username_element, true);
 
     if (set_selection) {
@@ -763,9 +763,12 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
     gesture_handler_->addElement(*password_element);
     password_element->setSuggestedValue(password);
   } else {
-    password_element->setValue(password);
+    password_element->setValue(password, true);
   }
-  SetElementAutofilled(password_element, true);
+  // Note: Don't call SetElementAutofilled() here, as that dispatches an
+  // onChange event in JavaScript, which is not appropriate for the password
+  // element if a user gesture has not yet occured.
+  password_element->setAutofilled(true);
   return true;
 }
 
@@ -843,7 +846,7 @@ void PasswordAutofillAgent::AutofillWebUserGestureHandler::onGesture() {
   std::vector<blink::WebInputElement>::iterator iter;
   for (iter = elements_.begin(); iter != elements_.end(); ++iter) {
     if (!iter->isNull() && !iter->suggestedValue().isNull())
-      iter->setValue(iter->suggestedValue());
+      iter->setValue(iter->suggestedValue(), true);
   }
 
   elements_.clear();

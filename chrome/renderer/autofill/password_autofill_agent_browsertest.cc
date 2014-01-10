@@ -144,6 +144,18 @@ const char kJavaScriptClick[] =
     "form.dispatchEvent(event);"
     "console.log('clicked!');";
 
+const char kOnChangeDetectionScript[] =
+    "<script>"
+    "  usernameOnchangeCalled = false;"
+    "  passwordOnchangeCalled = false;"
+    "  document.getElementById('username').onchange = function() {"
+    "    usernameOnchangeCalled = true;"
+    "  };"
+    "  document.getElementById('password').onchange = function() {"
+    "    passwordOnchangeCalled = true;"
+    "  };"
+    "</script>";
+
 }  // namespace
 
 namespace autofill {
@@ -200,14 +212,27 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
 
     // We need to set the origin so it matches the frame URL and the action so
     // it matches the form action, otherwise we won't autocomplete.
-    std::string origin("data:text/html;charset=utf-8,");
-    origin += kFormHTML;
-    fill_data_.basic_data.origin = GURL(origin);
+    UpdateOriginForHTML(kFormHTML);
     fill_data_.basic_data.action = GURL("http://www.bidule.com");
 
     LoadHTML(kFormHTML);
 
-    // Now retrieves the input elements so the test can access them.
+    // Now retrieve the input elements so the test can access them.
+    UpdateUsernameAndPasswordElements();
+  }
+
+  virtual void TearDown() {
+    username_element_.reset();
+    password_element_.reset();
+    ChromeRenderViewTest::TearDown();
+  }
+
+  void UpdateOriginForHTML(const std::string& html) {
+    std::string origin = "data:text/html;charset=utf-8," + html;
+    fill_data_.basic_data.origin = GURL(origin);
+  }
+
+  void UpdateUsernameAndPasswordElements() {
     WebDocument document = GetMainFrame()->document();
     WebElement element =
         document.getElementById(WebString::fromUTF8(kUsernameName));
@@ -216,12 +241,6 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     element = document.getElementById(WebString::fromUTF8(kPasswordName));
     ASSERT_FALSE(element.isNull());
     password_element_ = element.to<blink::WebInputElement>();
-  }
-
-  virtual void TearDown() {
-    username_element_.reset();
-    password_element_.reset();
-    ChromeRenderViewTest::TearDown();
   }
 
   void ClearUsernameAndPasswordFields() {
@@ -402,10 +421,8 @@ TEST_F(PasswordAutofillAgentTest, InitialAutocompleteForEmptyAction) {
   password_element_ = element.to<blink::WebInputElement>();
 
   // Set the expected form origin and action URLs.
-  std::string origin("data:text/html;charset=utf-8,");
-  origin += kEmptyActionFormHTML;
-  fill_data_.basic_data.origin = GURL(origin);
-  fill_data_.basic_data.action = GURL(origin);
+  UpdateOriginForHTML(kEmptyActionFormHTML);
+  fill_data_.basic_data.action = fill_data_.basic_data.origin;
 
   // Simulate the browser sending back the login info, it triggers the
   // autocomplete.
@@ -507,9 +524,7 @@ TEST_F(PasswordAutofillAgentTest, NoAutocompleteForTextFieldPasswords) {
   password_element_ = element.to<blink::WebInputElement>();
 
   // Set the expected form origin URL.
-  std::string origin("data:text/html;charset=utf-8,");
-  origin += kTextFieldPasswordFormHTML;
-  fill_data_.basic_data.origin = GURL(origin);
+  UpdateOriginForHTML(kTextFieldPasswordFormHTML);
 
   SimulateOnFillPasswordForm(fill_data_);
 
@@ -537,9 +552,7 @@ TEST_F(PasswordAutofillAgentTest, NoAutocompleteForPasswordFieldUsernames) {
   password_element_ = element.to<blink::WebInputElement>();
 
   // Set the expected form origin URL.
-  std::string origin("data:text/html;charset=utf-8,");
-  origin += kPasswordFieldUsernameFormHTML;
-  fill_data_.basic_data.origin = GURL(origin);
+  UpdateOriginForHTML(kPasswordFieldUsernameFormHTML);
 
   SimulateOnFillPasswordForm(fill_data_);
 
@@ -812,7 +825,7 @@ TEST_F(PasswordAutofillAgentTest, GestureRequiredTest) {
   // However, it should only have completed with the suggested value, as tested
   // above, and it should not have completed into the DOM accessible value for
   // the password field.
-  CheckTextFieldsDOMState(kAliceUsername, true, "", true);
+  CheckTextFieldsDOMState(kAliceUsername, true, std::string(), true);
 
   // Simulate a user click so that the password field's real value is filled.
   SimulateElementClick(kUsernameName);
@@ -868,7 +881,7 @@ TEST_F(PasswordAutofillAgentTest, SelectUsernameWithPasswordAutofillOff) {
   password_element_.setAttribute(WebString::fromUTF8("autocomplete"),
                                  WebString::fromUTF8("off"));
 
-  // Simulate the user changing the username to some known username.
+ // Simulate the user changing the username to some known username.
   SimulateUsernameChange(kAliceUsername, true);
 
   ExpectNoSuggestionsPopup();
@@ -888,6 +901,98 @@ TEST_F(PasswordAutofillAgentTest,
   SimulateUsernameChange("foo", true);
 
   ExpectNoSuggestionsPopup();
+}
+
+// Verifies that password autofill triggers onChange events in JavaScript for
+// forms that are filled on page load.
+TEST_F(PasswordAutofillAgentTest,
+       PasswordAutofillTriggersOnChangeEventsOnLoad) {
+  std::string html = std::string(kFormHTML) + kOnChangeDetectionScript;
+  LoadHTML(html.c_str());
+  UpdateOriginForHTML(html);
+  UpdateUsernameAndPasswordElements();
+
+  // Simulate the browser sending back the login info, it triggers the
+  // autocomplete.
+  SimulateOnFillPasswordForm(fill_data_);
+
+  // The username and password should have been autocompleted...
+  CheckTextFieldsState(kAliceUsername, true, kAlicePassword, true);
+  // ... but since there hasn't been a user gesture yet, the autocompleted
+  // password should only be visible to the user.
+  CheckTextFieldsDOMState(kAliceUsername, true, std::string(), true);
+
+  // A JavaScript onChange event should have been triggered for the username,
+  // but not yet for the password.
+  int username_onchange_called = -1;
+  int password_onchange_called = -1;
+  ASSERT_TRUE(
+      ExecuteJavaScriptAndReturnIntValue(
+          ASCIIToUTF16("usernameOnchangeCalled ? 1 : 0"),
+          &username_onchange_called));
+  EXPECT_EQ(1, username_onchange_called);
+  ASSERT_TRUE(
+      ExecuteJavaScriptAndReturnIntValue(
+          ASCIIToUTF16("passwordOnchangeCalled ? 1 : 0"),
+          &password_onchange_called));
+  // TODO(isherman): Re-enable this check once http://crbug.com/333144 is fixed.
+  // EXPECT_EQ(0, password_onchange_called);
+
+  // Simulate a user click so that the password field's real value is filled.
+  SimulateElementClick(kUsernameName);
+  CheckTextFieldsDOMState(kAliceUsername, true, kAlicePassword, true);
+
+  // Now, a JavaScript onChange event should have been triggered for the
+  // password as well.
+  ASSERT_TRUE(
+      ExecuteJavaScriptAndReturnIntValue(
+          ASCIIToUTF16("passwordOnchangeCalled ? 1 : 0"),
+          &password_onchange_called));
+  EXPECT_EQ(1, password_onchange_called);
+}
+
+// Verifies that password autofill triggers onChange events in JavaScript for
+// forms that are filled after page load.
+TEST_F(PasswordAutofillAgentTest,
+       PasswordAutofillTriggersOnChangeEventsWaitForUsername) {
+  std::string html = std::string(kFormHTML) + kOnChangeDetectionScript;
+  LoadHTML(html.c_str());
+  UpdateOriginForHTML(html);
+  UpdateUsernameAndPasswordElements();
+
+  // Simulate the browser sending back the login info, it triggers the
+  // autocomplete.
+  fill_data_.wait_for_username = true;
+  SimulateOnFillPasswordForm(fill_data_);
+
+  // The username and password should not yet have been autocompleted.
+  CheckTextFieldsState(std::string(), false, std::string(), false);
+
+  // Simulate a click just to force a user gesture, since the username value is
+  // set directly.
+  SimulateElementClick(kUsernameName);
+
+  // Simulate the user entering her username.
+  username_element_.setValue(ASCIIToUTF16(kAliceUsername), true);
+  autofill_agent_->textFieldDidEndEditing(username_element_);
+
+  // The username and password should now have been autocompleted.
+  CheckTextFieldsDOMState(kAliceUsername, true, kAlicePassword, true);
+
+  // JavaScript onChange events should have been triggered both for the username
+  // and for the password.
+  int username_onchange_called = -1;
+  int password_onchange_called = -1;
+  ASSERT_TRUE(
+      ExecuteJavaScriptAndReturnIntValue(
+          ASCIIToUTF16("usernameOnchangeCalled ? 1 : 0"),
+          &username_onchange_called));
+  EXPECT_EQ(1, username_onchange_called);
+  ASSERT_TRUE(
+      ExecuteJavaScriptAndReturnIntValue(
+          ASCIIToUTF16("passwordOnchangeCalled ? 1 : 0"),
+          &password_onchange_called));
+  EXPECT_EQ(1, password_onchange_called);
 }
 
 }  // namespace autofill

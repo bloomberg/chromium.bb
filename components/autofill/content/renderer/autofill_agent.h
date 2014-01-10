@@ -230,6 +230,9 @@ class AutofillAgent : public content::RenderViewObserver,
   FRIEND_TEST_ALL_PREFIXES(PasswordAutofillAgentTest, WaitUsername);
   FRIEND_TEST_ALL_PREFIXES(PasswordAutofillAgentTest, SuggestionAccept);
   FRIEND_TEST_ALL_PREFIXES(PasswordAutofillAgentTest, SuggestionSelect);
+  FRIEND_TEST_ALL_PREFIXES(
+      PasswordAutofillAgentTest,
+      PasswordAutofillTriggersOnChangeEventsWaitForUsername);
 
   DISALLOW_COPY_AND_ASSIGN(AutofillAgent);
 };
