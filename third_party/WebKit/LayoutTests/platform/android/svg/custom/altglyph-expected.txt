@@ -1,23 +1,26 @@
-layer at (0,0) size 808x613
+layer at (0,0) size 808x605
   RenderView at (0,0) size 785x585
 layer at (0,0) size 785x585
   RenderBlock {html} at (0,0) size 785x585
     RenderBody {body} at (8,16) size 769x589
       RenderBlock {p} at (0,0) size 769x40
-        RenderText {#text} at (0,0) size 759x39
-          text run at (0,0) width 759: "The left edges of the black boxes below should line up with the left edges of their containing red or green boxes. In addition, all"
-          text run at (0,20) width 200: "the assertions below should pass."
+        RenderText {#text} at (0,0) size 763x39
+          text run at (0,0) width 763: "The left edges of the black boxes below should line up with the left edges of their containing orange or green boxes. In addition,"
+          text run at (0,20) width 217: "all the assertions below should pass."
       RenderBlock {div} at (0,56) size 800x200
-        RenderSVGRoot {svg} at (8,72) size 450x200
-          RenderSVGRect {rect} at (8,82) size 70x160 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=10.00] [width=70.00] [height=160.00]
+        RenderSVGRoot {svg} at (8,72) size 590x200
+          RenderSVGRect {rect} at (8,82) size 70x160 [fill={[type=SOLID] [color=#FFA500]}] [x=0.00] [y=10.00] [width=70.00] [height=160.00]
           RenderSVGRect {rect} at (78,82) size 100x150 [fill={[type=SOLID] [color=#008000]}] [x=70.00] [y=10.00] [width=100.00] [height=150.00]
-          RenderSVGRect {rect} at (178,82) size 70x140 [fill={[type=SOLID] [color=#FF0000]}] [x=170.00] [y=10.00] [width=70.00] [height=140.00]
+          RenderSVGRect {rect} at (178,82) size 70x140 [fill={[type=SOLID] [color=#FFA500]}] [x=170.00] [y=10.00] [width=70.00] [height=140.00]
           RenderSVGRect {rect} at (248,82) size 70x130 [fill={[type=SOLID] [color=#008000]}] [x=240.00] [y=10.00] [width=70.00] [height=130.00]
-          RenderSVGRect {rect} at (318,82) size 80x120 [fill={[type=SOLID] [color=#FF0000]}] [x=310.00] [y=10.00] [width=80.00] [height=120.00]
+          RenderSVGRect {rect} at (318,82) size 80x120 [fill={[type=SOLID] [color=#FFA500]}] [x=310.00] [y=10.00] [width=80.00] [height=120.00]
           RenderSVGRect {rect} at (398,82) size 60x110 [fill={[type=SOLID] [color=#008000]}] [x=390.00] [y=10.00] [width=60.00] [height=110.00]
-          RenderSVGText {text} at (0,-90) size 450x600 contains 1 chunk(s)
-            RenderSVGInlineText {#text} at (0,0) size 450x600
-              chunk 1 text run 1 at (0.00,10.00) startOffset 0 endOffset 10 width 450.00: "GGDGGBBBDB"
+          RenderSVGText {text} at (0,-90) size 590x600 contains 1 chunk(s)
+            RenderSVGInlineText {#text} at (0,0) size 390x600
+              chunk 1 text run 1 at (0.00,10.00) startOffset 0 endOffset 9 width 390.00: "GGDGGBBBD"
+            RenderSVGTSpan {altGlyph} at (0,0) size 200x600
+              RenderSVGInlineText {#text} at (390,0) size 200x600
+                chunk 1 text run 1 at (390.00,10.00) startOffset 0 endOffset 1 width 200.00: "X"
         RenderText {#text} at (0,0) size 0x0
       RenderBlock {pre} at (0,269) size 769x320
         RenderInline {span} at (0,0) size 312x16
@@ -172,11 +175,11 @@ layer at (0,0) size 785x585
             RenderText {#text} at (32,288) size 440x16
               text run at (32,288) width 440: " t.getEndPositionOfChar(8).x is 70 + 100 + 70 + 70 + 80"
           RenderBR {br} at (472,288) size 0x16
-        RenderInline {span} at (0,0) size 512x16
-          RenderInline {span} at (0,0) size 512x16
+        RenderInline {span} at (0,0) size 520x16
+          RenderInline {span} at (0,0) size 520x16
             RenderInline {span} at (0,0) size 32x16
               RenderText {#text} at (0,304) size 32x16
                 text run at (0,304) width 32: "PASS"
-            RenderText {#text} at (32,304) size 480x16
-              text run at (32,304) width 480: " t.getEndPositionOfChar(9).x is 70 + 100 + 70 + 70 + 80 + 60"
-          RenderBR {br} at (512,304) size 0x16
+            RenderText {#text} at (32,304) size 488x16
+              text run at (32,304) width 488: " t.getEndPositionOfChar(9).x is 70 + 100 + 70 + 70 + 80 + 200"
+          RenderBR {br} at (520,304) size 0x16

@@ -761,25 +761,6 @@ crbug.com/313338 inspector/debugger/debugger-proto-property.html [ Pass Timeout 
 crbug.com/312925 inspector-protocol/heap-profiler/heap-snapshot-with-detached-dom-tree.html [ Failure Pass ]
 crbug.com/313783 [ Debug ] fast/css/getComputedStyle/getComputedStyle-resolved-values.html [ Crash Pass ]
 
-# Uncomment after crbug.com/331619 is finished.
-# crbug.com/313846 [ Mac Win ] http/tests/images/webp-partial-load.html [ ImageOnlyFailure Timeout Pass ]
-
-crbug.com/320743 compositing/overflow/do-not-opt-non-stacking-context-descendants-into-composited-scrolling.html [ NeedsRebaseline ]
-crbug.com/320743 compositing/overflow/opt-in-all-layers-after-unclipped-descendant.html [ NeedsRebaseline ]
-crbug.com/320743 fast/borders/border-image-rotate-transform.html [ NeedsRebaseline ]
-crbug.com/320743 fast/borders/border-image-scale-transform.html [ NeedsRebaseline ]
-crbug.com/320743 fast/forms/form-hides-table.html [ NeedsRebaseline ]
-crbug.com/320743 svg/custom/altglyph.svg [ NeedsRebaseline ]
-crbug.com/320743 svg/text/multichar-glyph.svg [ NeedsRebaseline ]
-crbug.com/320743 svg/transforms/animated-path-inside-transformed-html.xhtml [ NeedsRebaseline ]
-crbug.com/320743 svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ NeedsRebaseline ]
-crbug.com/320743 tables/mozilla_expected_failures/bugs/bug2479-5.html [ NeedsRebaseline ]
-crbug.com/320743 virtual/gpu/compositedscrolling/overflow/do-not-opt-non-stacking-context-descendants-into-composited-scrolling.html [ NeedsRebaseline ]
-crbug.com/320743 virtual/gpu/compositedscrolling/overflow/opt-in-all-layers-after-unclipped-descendant.html [ NeedsRebaseline ]
-crbug.com/320743 css2.1/20110323/abspos-containing-block-initial-001.htm [ NeedsRebaseline ]
-crbug.com/320743 virtual/softwarecompositing/overflow/do-not-opt-non-stacking-context-descendants-into-composited-scrolling.html [ NeedsRebaseline ]
-crbug.com/320743 virtual/softwarecompositing/overflow/opt-in-all-layers-after-unclipped-descendant.html [ NeedsRebaseline ]
-
 crbug.com/316150 inspector/timeline/timeline-network-received-data.html [ Failure Pass ]
 
 crbug.com/315514 [ Linux ] fast/workers/storage/test-authorizer-sync.html [ Failure ]
