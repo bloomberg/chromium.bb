@@ -170,9 +170,10 @@ void LauncherContextMenu::Init() {
   // the type of fullscreen. Do not show the auto-hide menu item while in
   // fullscreen because it is confusing when the preference appears not to
   // apply.
-  if (!IsFullScreenMode()) {
+  if (!IsFullScreenMode() &&
+        controller_->CanUserModifyShelfAutoHideBehavior(root_window_)) {
     AddCheckItemWithStringId(MENU_AUTO_HIDE,
-                             IDS_ASH_SHELF_CONTEXT_MENU_AUTO_HIDE);
+                              IDS_ASH_SHELF_CONTEXT_MENU_AUTO_HIDE);
   }
   if (ash::ShelfWidget::ShelfAlignmentAllowed()) {
     AddSubMenuWithStringId(MENU_ALIGNMENT_MENU,
