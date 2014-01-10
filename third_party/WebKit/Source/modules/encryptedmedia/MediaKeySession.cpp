@@ -48,28 +48,15 @@ MediaKeySession::MediaKeySession(ExecutionContext* context, ContentDecryptionMod
     , m_asyncEventQueue(GenericEventQueue::create(this))
     , m_session(cdm->createSession(this))
     , m_keys(keys)
-    , m_keyRequestTimer(this, &MediaKeySession::keyRequestTimerFired)
+    , m_initializeNewSessionTimer(this, &MediaKeySession::initializeNewSessionTimerFired)
     , m_updateTimer(this, &MediaKeySession::updateTimerFired)
 {
     ScriptWrappable::init(this);
+    ASSERT(m_session);
 }
 
 MediaKeySession::~MediaKeySession()
 {
-    close();
-}
-
-void MediaKeySession::setError(MediaKeyError* error)
-{
-    m_error = error;
-}
-
-void MediaKeySession::close()
-{
-    ASSERT(!m_keys == !m_session);
-
-    if (m_session)
-        m_session->close();
     m_session.clear();
     m_asyncEventQueue->cancelAllEvents();
 
@@ -78,35 +65,35 @@ void MediaKeySession::close()
     m_keys = 0;
 }
 
+void MediaKeySession::setError(MediaKeyError* error)
+{
+    m_error = error;
+}
+
+void MediaKeySession::release(ExceptionState& exceptionState)
+{
+    m_session->release();
+}
+
 String MediaKeySession::sessionId() const
 {
     return m_session->sessionId();
 }
 
-void MediaKeySession::generateKeyRequest(const String& mimeType, Uint8Array* initData)
+void MediaKeySession::initializeNewSession(const String& mimeType, Uint8Array* initData)
 {
-    m_pendingKeyRequests.append(PendingKeyRequest(mimeType, initData));
-    // FIXME: Eliminate timers. Asynchronicity will be handled in Chromium.
-    m_keyRequestTimer.startOneShot(0);
+    m_pendingInitializeNewSessionData.append(InitializeNewSessionData(mimeType, initData));
+    m_initializeNewSessionTimer.startOneShot(0);
 }
 
-void MediaKeySession::keyRequestTimerFired(Timer<MediaKeySession>*)
+void MediaKeySession::initializeNewSessionTimerFired(Timer<MediaKeySession>*)
 {
-    ASSERT(m_pendingKeyRequests.size());
-    if (!m_session)
-        return;
+    ASSERT(m_pendingInitializeNewSessionData.size());
 
-    while (!m_pendingKeyRequests.isEmpty()) {
-        PendingKeyRequest request = m_pendingKeyRequests.takeFirst();
-
-        // NOTE: Continued from step 5 in MediaKeys::createSession().
-        // The user agent will asynchronously execute the following steps in the task:
-
-        // 1. Let cdm be the cdm loaded in the MediaKeys constructor.
-        // 2. Let destinationURL be null.
-
-        // 3. Use cdm to generate a key request and follow the steps for the first matching condition from the following list:
-        m_session->generateKeyRequest(request.mimeType, *request.initData);
+    while (!m_pendingInitializeNewSessionData.isEmpty()) {
+        InitializeNewSessionData data = m_pendingInitializeNewSessionData.takeFirst();
+        // FIXME: Refer to the spec to see what needs to be done in blink.
+        m_session->initializeNewSession(data.mimeType, *data.initData);
     }
 }
 
@@ -131,8 +118,6 @@ void MediaKeySession::update(Uint8Array* response, ExceptionState& exceptionStat
 void MediaKeySession::updateTimerFired(Timer<MediaKeySession>*)
 {
     ASSERT(m_pendingKeys.size());
-    if (!m_session)
-        return;
 
     while (!m_pendingKeys.isEmpty()) {
         RefPtr<Uint8Array> pendingKey = m_pendingKeys.takeFirst();

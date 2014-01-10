@@ -55,9 +55,9 @@ String ContentDecryptionModuleSession::sessionId() const
     return m_session->sessionId();
 }
 
-void ContentDecryptionModuleSession::generateKeyRequest(const String& mimeType, const Uint8Array& initData)
+void ContentDecryptionModuleSession::initializeNewSession(const String& mimeType, const Uint8Array& initData)
 {
-    m_session->generateKeyRequest(mimeType, initData.data(), initData.length());
+    m_session->initializeNewSession(mimeType, initData.data(), initData.length());
 }
 
 void ContentDecryptionModuleSession::update(const Uint8Array& response)
@@ -65,9 +65,9 @@ void ContentDecryptionModuleSession::update(const Uint8Array& response)
     m_session->update(response.data(), response.length());
 }
 
-void ContentDecryptionModuleSession::close()
+void ContentDecryptionModuleSession::release()
 {
-    m_session->close();
+    m_session->release();
 }
 
 void ContentDecryptionModuleSession::keyAdded()

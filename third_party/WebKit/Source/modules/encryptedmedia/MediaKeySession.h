@@ -64,9 +64,9 @@ public:
     void setError(MediaKeyError*);
     MediaKeyError* error() { return m_error.get(); }
 
-    void generateKeyRequest(const String& mimeType, Uint8Array* initData);
+    void initializeNewSession(const String& mimeType, Uint8Array* initData);
     void update(Uint8Array* response, ExceptionState&);
-    void close();
+    void release(ExceptionState&);
 
     void enqueueEvent(PassRefPtr<Event>);
 
@@ -79,7 +79,7 @@ public:
 
 private:
     MediaKeySession(ExecutionContext*, ContentDecryptionModule*, MediaKeys*);
-    void keyRequestTimerFired(Timer<MediaKeySession>*);
+    void initializeNewSessionTimerFired(Timer<MediaKeySession>*);
     void updateTimerFired(Timer<MediaKeySession>*);
 
     // ContentDecryptionModuleSessionClient
@@ -94,13 +94,15 @@ private:
     // Used to remove the reference from the parent MediaKeys when close()'d.
     MediaKeys* m_keys;
 
-    struct PendingKeyRequest {
-        PendingKeyRequest(const String& mimeType, Uint8Array* initData) : mimeType(mimeType), initData(initData) { }
+    // FIXME: Check whether |initData| can be changed by JS. Maybe we should not pass it as a pointer.
+    // FIXME: Move the queue and timer to MediaKeys.
+    struct InitializeNewSessionData {
+        InitializeNewSessionData(const String& mimeType, Uint8Array* initData) : mimeType(mimeType), initData(initData) { }
         String mimeType;
         RefPtr<Uint8Array> initData;
     };
-    Deque<PendingKeyRequest> m_pendingKeyRequests;
-    Timer<MediaKeySession> m_keyRequestTimer;
+    Deque<InitializeNewSessionData> m_pendingInitializeNewSessionData;
+    Timer<MediaKeySession> m_initializeNewSessionTimer;
 
     Deque<RefPtr<Uint8Array> > m_pendingKeys;
     Timer<MediaKeySession> m_updateTimer;

@@ -35,7 +35,7 @@
 
     // session operations
     [RaisesException] void update(Uint8Array response);
-    void close();
+    [RaisesException] void release();
 
     // EventHandlers
     [RuntimeEnabled=EncryptedMedia] attribute EventHandler onwebkitkeyadded;

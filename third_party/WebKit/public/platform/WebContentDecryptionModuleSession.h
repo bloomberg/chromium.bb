@@ -58,9 +58,9 @@ public:
     virtual ~WebContentDecryptionModuleSession();
 
     virtual WebString sessionId() const = 0;
-    virtual void generateKeyRequest(const WebString& mimeType, const unsigned char* initData, size_t initDataLength) = 0;
+    virtual void initializeNewSession(const WebString& mimeType, const unsigned char* initData, size_t initDataLength) = 0;
     virtual void update(const unsigned char* response, size_t responseLength) = 0;
-    virtual void close() = 0;
+    virtual void release() = 0;
 };
 
 } // namespace blink

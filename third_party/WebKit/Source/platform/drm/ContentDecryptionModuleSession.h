@@ -63,9 +63,9 @@ public:
     ~ContentDecryptionModuleSession();
 
     String sessionId() const;
-    void generateKeyRequest(const String& mimeType, const Uint8Array& initData);
+    void initializeNewSession(const String& mimeType, const Uint8Array& initData);
     void update(const Uint8Array& response);
-    void close();
+    void release();
 
 private:
     // blink::WebContentDecryptionModuleSession::Client
