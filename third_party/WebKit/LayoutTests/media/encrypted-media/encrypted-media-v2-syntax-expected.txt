@@ -2,14 +2,14 @@ This tests the basic API of MediaKeys and MediaKeySession.
 
 Test MediaKeys.
 EXPECTED (typeof window.MediaKeys == 'function') OK
-TEST(new MediaKeys("")) THROWS(DOMException.INVALID_ACCESS_ERR) OK
-TEST(new MediaKeys("unsupported")) THROWS(DOMException.NOT_SUPPORTED_ERR) OK
+TEST(new MediaKeys("")) THROWS(DOMException.INVALID_ACCESS_ERR: Failed to construct 'MediaKeys': The key system provided is invalid.) OK
+TEST(new MediaKeys("unsupported")) THROWS(DOMException.NOT_SUPPORTED_ERR: Failed to construct 'MediaKeys': The 'unsupported' key system is not supported.) OK
 RUN(mediaKeys = new MediaKeys("org.w3.clearkey"))
 EXPECTED (typeof mediaKeys == 'object') OK
 EXPECTED (mediaKeys.keySystem == 'org.w3.clearkey') OK
 EXPECTED (typeof mediaKeys.createSession == 'function') OK
-TEST(mediaKeys.createSession("", new Uint8Array(1))) THROWS(DOMException.INVALID_ACCESS_ERR) OK
-TEST(mediaKeys.createSession("unsupported/type")) THROWS(DOMException.NOT_SUPPORTED_ERR) OK
+TEST(mediaKeys.createSession("", new Uint8Array(1))) THROWS(DOMException.INVALID_ACCESS_ERR: Failed to execute 'createSession' on 'MediaKeys': The type provided is empty, but initData is not empty.) OK
+TEST(mediaKeys.createSession("unsupported/type")) THROWS(DOMException.NOT_SUPPORTED_ERR: Failed to execute 'createSession' on 'MediaKeys': The type provided ('unsupported/type') is unsupported.) OK
 
 Test MediaKeySession.
 RUN(mediaKeySession = mediaKeys.createSession("video/webm", initData))
@@ -22,6 +22,6 @@ EXPECTED (mediaKeySession.sessionId != 'null') OK
 EXPECTED (mediaKeySession.onwebkitkeyadded == 'null') OK
 EXPECTED (mediaKeySession.onwebkitkeyerror == 'null') OK
 EXPECTED (mediaKeySession.onwebkitkeymessage == 'null') OK
-TEST(mediaKeySession.update(null)) THROWS(DOMException.INVALID_ACCESS_ERR) OK
+TEST(mediaKeySession.update(null)) THROWS(DOMException.INVALID_ACCESS_ERR: Failed to execute 'update' on 'MediaKeySession': The response argument provided is invalid.) OK
 END OF TEST
 

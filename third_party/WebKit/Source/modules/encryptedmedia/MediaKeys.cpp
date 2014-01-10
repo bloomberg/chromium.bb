@@ -44,13 +44,13 @@ PassRefPtr<MediaKeys> MediaKeys::create(const String& keySystem, ExceptionState&
 
     // 1. If keySystem is null or an empty string, throw an InvalidAccessError exception and abort these steps.
     if (keySystem.isEmpty()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
+        exceptionState.throwDOMException(InvalidAccessError, "The key system provided is invalid.");
         return 0;
     }
 
     // 2. If keySystem is not one of the user agent's supported Key Systems, throw a NotSupportedError and abort these steps.
     if (!ContentDecryptionModule::supportsKeySystem(keySystem)) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwDOMException(NotSupportedError, "The '" + keySystem + "' key system is not supported.");
         return 0;
     }
 
@@ -58,7 +58,7 @@ PassRefPtr<MediaKeys> MediaKeys::create(const String& keySystem, ExceptionState&
     // 4. Load cdm if necessary.
     OwnPtr<ContentDecryptionModule> cdm = ContentDecryptionModule::create(keySystem);
     if (!cdm) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwDOMException(NotSupportedError, "A content decryption module could not be loaded for the '" + keySystem + "' key system.");
         return 0;
     }
 
@@ -93,7 +93,7 @@ PassRefPtr<MediaKeySession> MediaKeys::createSession(ExecutionContext* context, 
     // 1. If type is null or an empty string and initData is not null or an empty string, throw an
     // InvalidAccessError exception and abort these steps.
     if ((type.isEmpty()) && (!initData || initData->length())) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
+        exceptionState.throwDOMException(InvalidAccessError, "The type provided is empty, but initData is not empty.");
         return 0;
     }
 
@@ -101,7 +101,7 @@ PassRefPtr<MediaKeySession> MediaKeys::createSession(ExecutionContext* context, 
     // a NotSupportedError exception and abort these steps.
     ASSERT(!type.isEmpty());
     if (type.isEmpty() || !m_cdm->supportsMIMEType(type)) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwDOMException(NotSupportedError, "The type provided ('" + type + "') is unsupported.");
         return 0;
     }
 

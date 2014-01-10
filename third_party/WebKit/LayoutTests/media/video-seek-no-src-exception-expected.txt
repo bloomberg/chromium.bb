@@ -2,6 +2,6 @@ Test that seeking video with no 'src' attribute throws an INVALID_STATE_ERR exce
 
 EXPECTED (video.networkState == '0') OK
 EXPECTED (video.readyState == '0') OK
-TEST(video.currentTime = 1.1) THROWS(DOMException.INVALID_STATE_ERR) OK
+TEST(video.currentTime = 1.1) THROWS(DOMException.INVALID_STATE_ERR: An attempt was made to use an object that is not, or is no longer, usable.) OK
 END OF TEST
 

@@ -3,17 +3,17 @@ Test that the methods throw INVALID_STATE_ERR when the media element has not loa
 EXPECTED (video.networkState == '0') OK
 EXPECTED (video.currentSrc == '') OK
 No 'src'. Verify that all methods except canPlayType() throw INVALID_STATE_ERR.
-TEST(video.webkitGenerateKeyRequest('webkit-org.w3.clearkey')) THROWS(DOMException.INVALID_STATE_ERR) OK
-TEST(video.webkitAddKey('webkit-org.w3.clearkey', key)) THROWS(DOMException.INVALID_STATE_ERR) OK
-TEST(video.webkitCancelKeyRequest('webkit-org.w3.clearkey')) THROWS(DOMException.INVALID_STATE_ERR) OK
+TEST(video.webkitGenerateKeyRequest('webkit-org.w3.clearkey')) THROWS(DOMException.INVALID_STATE_ERR: An attempt was made to use an object that is not, or is no longer, usable.) OK
+TEST(video.webkitAddKey('webkit-org.w3.clearkey', key)) THROWS(DOMException.INVALID_STATE_ERR: An attempt was made to use an object that is not, or is no longer, usable.) OK
+TEST(video.webkitCancelKeyRequest('webkit-org.w3.clearkey')) THROWS(DOMException.INVALID_STATE_ERR: An attempt was made to use an object that is not, or is no longer, usable.) OK
 RUN(video.canPlayType('audio/wav', 'webkit-org.w3.clearkey'))
 
 'src' has been set, but loading has not yet started. Verify that all methods except canPlayType() throw INVALID_STATE_ERR.
 EXPECTED (video.networkState == '3') OK
 EXPECTED (video.currentSrc == '') OK
-TEST(video.webkitGenerateKeyRequest('webkit-org.w3.clearkey')) THROWS(DOMException.INVALID_STATE_ERR) OK
-TEST(video.webkitAddKey('webkit-org.w3.clearkey', key)) THROWS(DOMException.INVALID_STATE_ERR) OK
-TEST(video.webkitCancelKeyRequest('webkit-org.w3.clearkey')) THROWS(DOMException.INVALID_STATE_ERR) OK
+TEST(video.webkitGenerateKeyRequest('webkit-org.w3.clearkey')) THROWS(DOMException.INVALID_STATE_ERR: An attempt was made to use an object that is not, or is no longer, usable.) OK
+TEST(video.webkitAddKey('webkit-org.w3.clearkey', key)) THROWS(DOMException.INVALID_STATE_ERR: An attempt was made to use an object that is not, or is no longer, usable.) OK
+TEST(video.webkitCancelKeyRequest('webkit-org.w3.clearkey')) THROWS(DOMException.INVALID_STATE_ERR: An attempt was made to use an object that is not, or is no longer, usable.) OK
 RUN(video.canPlayType('audio/wav', 'webkit-org.w3.clearkey'))
 
 EVENT(loadstart)

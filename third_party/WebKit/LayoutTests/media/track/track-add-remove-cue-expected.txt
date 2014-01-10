@@ -73,7 +73,7 @@ EXPECTED (cues[1].startTime == '31') OK
 EXPECTED (cues[2].startTime == '121') OK
 
 *** Try to remove the cue again.
-TEST(testTrack.track.removeCue(textCue)) THROWS(DOMException.NOT_FOUND_ERR) OK
+TEST(testTrack.track.removeCue(textCue)) THROWS(DOMException.NOT_FOUND_ERR: Failed to execute 'removeCue' on 'TextTrack': The specified cue is not listed in the TextTrack's list of cues.) OK
 
 *** Add a cue before all the existing cues.
 RUN(testTrack.track.addCue(new VTTCue(0, 31, 'I am first')))

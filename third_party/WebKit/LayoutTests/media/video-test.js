@@ -216,7 +216,7 @@ function testDOMException(testString, exceptionString)
         var exception = ex;
     }
     logResult(exception instanceof DOMException && exception.code === eval(exceptionString),
-        "TEST(" + testString + ") THROWS(" + exceptionString + ")");
+        "TEST(" + testString + ") THROWS(" + exceptionString + ": " + exception.message + ")");
 }
 
 function testException(testString, exceptionString) {

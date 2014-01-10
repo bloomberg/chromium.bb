@@ -116,7 +116,7 @@ void MediaKeySession::update(Uint8Array* response, ExceptionState& exceptionStat
     // The update(response) method must run the following steps:
     // 1. If the argument is null or an empty array, throw an INVALID_ACCESS_ERR.
     if (!response || !response->length()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
+        exceptionState.throwDOMException(InvalidAccessError, String::format("The response argument provided is %s.", response ? "an empty array" : "invalid"));
         return;
     }
 

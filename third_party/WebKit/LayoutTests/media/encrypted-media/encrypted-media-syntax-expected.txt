@@ -9,28 +9,28 @@ TEST(video.webkitCancelKeyRequest()) THROWS("TypeError: Failed to execute 'webki
 Verify invalid key system parameter is caught before checking whether loading has started.
 EXPECTED (video.networkState == '0') OK
 EXPECTED (video.currentSrc == '') OK
-TEST(video.webkitGenerateKeyRequest('')) THROWS(DOMException.SYNTAX_ERR) OK
-TEST(video.webkitGenerateKeyRequest(null)) THROWS(DOMException.SYNTAX_ERR) OK
-TEST(video.webkitGenerateKeyRequest(undefined)) THROWS(DOMException.SYNTAX_ERR) OK
-TEST(video.webkitAddKey('', key)) THROWS(DOMException.SYNTAX_ERR) OK
-TEST(video.webkitAddKey(null, key)) THROWS(DOMException.SYNTAX_ERR) OK
-TEST(video.webkitAddKey(undefined, key)) THROWS(DOMException.SYNTAX_ERR) OK
-TEST(video.webkitCancelKeyRequest('')) THROWS(DOMException.SYNTAX_ERR) OK
-TEST(video.webkitCancelKeyRequest(null)) THROWS(DOMException.SYNTAX_ERR) OK
-TEST(video.webkitCancelKeyRequest(undefined)) THROWS(DOMException.SYNTAX_ERR) OK
+TEST(video.webkitGenerateKeyRequest('')) THROWS(DOMException.SYNTAX_ERR: An invalid or illegal string was specified.) OK
+TEST(video.webkitGenerateKeyRequest(null)) THROWS(DOMException.SYNTAX_ERR: An invalid or illegal string was specified.) OK
+TEST(video.webkitGenerateKeyRequest(undefined)) THROWS(DOMException.SYNTAX_ERR: An invalid or illegal string was specified.) OK
+TEST(video.webkitAddKey('', key)) THROWS(DOMException.SYNTAX_ERR: An invalid or illegal string was specified.) OK
+TEST(video.webkitAddKey(null, key)) THROWS(DOMException.SYNTAX_ERR: An invalid or illegal string was specified.) OK
+TEST(video.webkitAddKey(undefined, key)) THROWS(DOMException.SYNTAX_ERR: An invalid or illegal string was specified.) OK
+TEST(video.webkitCancelKeyRequest('')) THROWS(DOMException.SYNTAX_ERR: An invalid or illegal string was specified.) OK
+TEST(video.webkitCancelKeyRequest(null)) THROWS(DOMException.SYNTAX_ERR: An invalid or illegal string was specified.) OK
+TEST(video.webkitCancelKeyRequest(undefined)) THROWS(DOMException.SYNTAX_ERR: An invalid or illegal string was specified.) OK
 
 null key is caught before load state is checked.
-TEST(video.webkitAddKey('webkit-org.w3.clearkey', '')) THROWS(DOMException.SYNTAX_ERR) OK
-TEST(video.webkitAddKey('webkit-org.w3.clearkey', null)) THROWS(DOMException.SYNTAX_ERR) OK
-TEST(video.webkitAddKey('webkit-org.w3.clearkey', undefined)) THROWS(DOMException.SYNTAX_ERR) OK
+TEST(video.webkitAddKey('webkit-org.w3.clearkey', '')) THROWS(DOMException.SYNTAX_ERR: An invalid or illegal string was specified.) OK
+TEST(video.webkitAddKey('webkit-org.w3.clearkey', null)) THROWS(DOMException.SYNTAX_ERR: An invalid or illegal string was specified.) OK
+TEST(video.webkitAddKey('webkit-org.w3.clearkey', undefined)) THROWS(DOMException.SYNTAX_ERR: An invalid or illegal string was specified.) OK
 
 0-length key is caught before load state is checked.
-TEST(video.webkitAddKey('webkit-org.w3.clearkey', new Uint8Array())) THROWS(DOMException.TYPE_MISMATCH_ERR) OK
+TEST(video.webkitAddKey('webkit-org.w3.clearkey', new Uint8Array())) THROWS(DOMException.TYPE_MISMATCH_ERR: The type of an object was incompatible with the expected type of the parameter associated to the object.) OK
 
 Key system validity is not checked before loading.
-TEST(video.webkitGenerateKeyRequest('com.example.invalid')) THROWS(DOMException.INVALID_STATE_ERR) OK
-TEST(video.webkitAddKey('com.example.invalid', key)) THROWS(DOMException.INVALID_STATE_ERR) OK
-TEST(video.webkitCancelKeyRequest('com.example.invalid')) THROWS(DOMException.INVALID_STATE_ERR) OK
+TEST(video.webkitGenerateKeyRequest('com.example.invalid')) THROWS(DOMException.INVALID_STATE_ERR: An attempt was made to use an object that is not, or is no longer, usable.) OK
+TEST(video.webkitAddKey('com.example.invalid', key)) THROWS(DOMException.INVALID_STATE_ERR: An attempt was made to use an object that is not, or is no longer, usable.) OK
+TEST(video.webkitCancelKeyRequest('com.example.invalid')) THROWS(DOMException.INVALID_STATE_ERR: An attempt was made to use an object that is not, or is no longer, usable.) OK
 
 EVENT(loadstart)
 Verify valid syntaxes do not throw.
@@ -46,8 +46,8 @@ RUN(video.webkitCancelKeyRequest('webkit-org.w3.clearkey'))
 RUN(video.webkitCancelKeyRequest('webkit-org.w3.clearkey', 'session'))
 
 Unsupported key systems result in NOT_SUPPORTED_ERR.
-TEST(video.webkitGenerateKeyRequest('com.example.invalid')) THROWS(DOMException.NOT_SUPPORTED_ERR) OK
-TEST(video.webkitAddKey('com.example.invalid', key)) THROWS(DOMException.NOT_SUPPORTED_ERR) OK
-TEST(video.webkitCancelKeyRequest('com.example.invalid')) THROWS(DOMException.NOT_SUPPORTED_ERR) OK
+TEST(video.webkitGenerateKeyRequest('com.example.invalid')) THROWS(DOMException.NOT_SUPPORTED_ERR: The implementation did not support the requested type of object or operation.) OK
+TEST(video.webkitAddKey('com.example.invalid', key)) THROWS(DOMException.NOT_SUPPORTED_ERR: The implementation did not support the requested type of object or operation.) OK
+TEST(video.webkitCancelKeyRequest('com.example.invalid')) THROWS(DOMException.NOT_SUPPORTED_ERR: The implementation did not support the requested type of object or operation.) OK
 END OF TEST
 
