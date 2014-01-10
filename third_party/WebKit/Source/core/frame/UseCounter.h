@@ -218,8 +218,8 @@ public:
         SVGFontInCSS,
         ScrollTopBodyNotQuirksMode,
         ScrollLeftBodyNotQuirksMode,
-        AttributeIsId, // Removed in DOM4.
-        AttributeOwnerElement, // Removed in DOM4.
+        UnusedSlot07, // Removed, was Attr.isId.
+        UnusedSlot08, // Removed, was Attr.ownerElement.
         AttributeSetPrefix, // Attribute prefix is readonly in DOM4.
         AttributeSpecified, // Removed in DOM4.
         BeforeLoadEventInIsolatedWorld,

@@ -187,11 +187,6 @@ void Attr::childrenChanged(bool, Node*, Node*, int)
         m_element->attributeChanged(qualifiedName(), newValue);
 }
 
-bool Attr::isId() const
-{
-    return qualifiedName().matches(HTMLNames::idAttr);
-}
-
 const AtomicString& Attr::value() const
 {
     if (m_element)

@@ -138,11 +138,6 @@ outresult = evaluator.evaluate(expression,contextNode,resolver,xpathType,inresul
        parent = outNode.parentNode;
 
       assertNull("S1.2.2-Attribute-Nodes-parentNode",parent);
-    owner = outNode.ownerElement;
-
-      ownerType = owner.nodeType;
-
-      assertEquals("S1.2.2-Attribute-Nodes-owner-nodeType",1,ownerType);
        outNode = outresult.iterateNext();
       
 	}

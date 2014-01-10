@@ -56,8 +56,6 @@ public:
 
     const QualifiedName& qualifiedName() const { return m_name; }
 
-    bool isId() const;
-
     void attachToElement(Element*);
     void detachFromElementWithValue(const AtomicString&);
 
