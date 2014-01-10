@@ -52,10 +52,13 @@ struct GraphicsLayerPaintInfo {
 
     LayoutRect compositedBounds;
 
-    // A temporary offset used for squashing layers, when the origin of the
-    // squashing layer is not yet known.
-    IntSize offsetFromBackingRoot;
+    // At first, the m_squashingLayer's bounds/location are not known. The value offsetFromSquashingCLM is
+    // an intermediate offset for a squashed RenderLayer, described with respect to the CompositedLayerMapping's
+    // owning layer that would eventually have the m_squashingLayer. Once the shared GraphicsLayer's bounds are
+    // known, then we can trivially convert this offset to m_squashingLayer's space.
+    IntSize offsetFromSquashingCLM;
 
+    // Offset describing where this squashed RenderLayer paints into the shared GraphicsLayer backing.
     IntSize offsetFromRenderer;
 
     GraphicsLayerPaintingPhase paintingPhase;
@@ -118,7 +121,8 @@ public:
 
     GraphicsLayer* parentForSublayers() const;
     GraphicsLayer* childForSuperlayers() const;
-
+    // localRootForOwningLayer does not include the m_squashingContainmentLayer, which is technically not associated with this CLM's owning layer.
+    GraphicsLayer* localRootForOwningLayer() const;
     GraphicsLayer* squashingLayer() const { return m_squashingLayer.get(); }
 
     // Returns true for a composited layer that has no backing store of its own, so
@@ -158,7 +162,7 @@ public:
     void positionOverflowControlsLayers(const IntSize& offsetFromRoot);
     bool hasUnpositionedOverflowControlsLayers() const;
 
-    void addRenderLayerToSquashingGraphicsLayer(RenderLayer*, IntSize offsetFromTargetBacking, size_t nextSquashedLayerIndex);
+    void addRenderLayerToSquashingGraphicsLayer(RenderLayer*, IntSize offsetFromSquashingCLM, size_t nextSquashedLayerIndex);
     void finishAccumulatingSquashingLayers(size_t nextSquashedLayerIndex);
 
     // GraphicsLayerClient interface

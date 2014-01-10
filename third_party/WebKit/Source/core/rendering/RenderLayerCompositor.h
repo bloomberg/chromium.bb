@@ -233,14 +233,15 @@ private:
             , hasMostRecentMapping(false)
             , nextSquashedLayerIndex(0) { }
 
-        void updateSquashingStateForNewMapping(CompositedLayerMappingPtr, bool hasNewCompositedLayerMapping, IntPoint newOffsetFromAbsolute);
+        void updateSquashingStateForNewMapping(CompositedLayerMappingPtr, bool hasNewCompositedLayerMapping, IntPoint newOffsetFromAbsoluteForSquashingCLM);
 
         // The most recent composited backing that the layer should squash onto if needed.
         CompositedLayerMappingPtr mostRecentMapping;
         bool hasMostRecentMapping;
 
-        // Offset in absolute coordinates of the compositedLayerMapping's owning layer.
-        IntPoint offsetFromAbsolute;
+        // Absolute coordinates of the compositedLayerMapping's owning layer. This is used for computing the correct
+        // positions of renderlayers when they paint into the squashing layer.
+        IntPoint offsetFromAbsoluteForSquashingCLM;
 
         // Counter that tracks what index the next RenderLayer would be if it gets squashed to the current squashing layer.
         size_t nextSquashedLayerIndex;

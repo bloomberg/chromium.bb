@@ -200,7 +200,7 @@ void ScrollingCoordinator::updateLayerPositionConstraint(RenderLayer* layer)
 {
     ASSERT(layer->hasCompositedLayerMapping());
     CompositedLayerMappingPtr compositedLayerMapping = layer->compositedLayerMapping();
-    GraphicsLayer* mainLayer = compositedLayerMapping->childForSuperlayers();
+    GraphicsLayer* mainLayer = compositedLayerMapping->localRootForOwningLayer();
 
     // Avoid unnecessary commits
     clearPositionConstraintExceptForLayer(compositedLayerMapping->ancestorClippingLayer(), mainLayer);

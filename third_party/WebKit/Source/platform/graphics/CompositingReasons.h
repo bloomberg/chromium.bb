@@ -61,6 +61,7 @@ const uint64_t CompositingReasonOutOfFlowClipping                      = UINT64_
 
 const uint64_t CompositingReasonLayerForVideoOverlay                   = UINT64_C(1) << 34;
 const uint64_t CompositingReasonIsolateCompositedDescendants           = UINT64_C(1) << 35;
+const uint64_t CompositingReasonOverlapsWithoutSquashingTarget         = UINT64_C(1) << 36;
 
 // Note: if you add more reasons here, you will need to update WebCompositingReasons as well.
 
@@ -93,7 +94,7 @@ const uint64_t CompositingReasonComboReasonsThatRequireOwnBacking =
     | CompositingReasonIsolateCompositedDescendants
     | CompositingReasonPreserve3D; // preserve-3d has to create backing store to ensure that 3d-transformed elements intersect.
 
-const uint64_t CompositingReasonComboAllOverlapReasons =
+const uint64_t CompositingReasonComboSquashableReasons =
     CompositingReasonOverlap
     | CompositingReasonAssumedOverlap;
 
