@@ -166,10 +166,6 @@ const char kCheckForUpdateIntervalSec[]     = "check-for-update-interval";
 const char kCheckCloudPrintConnectorPolicy[] =
     "check-cloud-print-connector-policy";
 
-// Tells chrome to load the specified version of chrome.dll on Windows. If this
-// version cannot be loaded, Chrome will exit.
-const char kChromeVersion[]                 = "chrome-version";
-
 // Comma-separated list of SSL cipher suites to disable.
 const char kCipherSuiteBlacklist[]          = "cipher-suite-blacklist";
 

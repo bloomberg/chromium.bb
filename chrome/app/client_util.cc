@@ -219,10 +219,7 @@ MainDllLoader::~MainDllLoader() {
 // Loading chrome is an interesting affair. First we try loading from the
 // current directory to support run-what-you-compile and other development
 // scenarios.
-// If that fails then we look at the --chrome-version command line flag to
-// determine if we should stick with an older dll version even if a new one is
-// available to support upgrade-in-place scenarios.
-// If that fails then finally we look at the version resource in the current
+// If that fails then we look at the version resource in the current
 // module. This is the expected path for chrome.exe browser instances in an
 // installed build.
 HMODULE MainDllLoader::Load(base::string16* out_version,
@@ -232,24 +229,9 @@ HMODULE MainDllLoader::Load(base::string16* out_version,
   *out_file = dir;
   HMODULE dll = LoadChromeWithDirectory(out_file);
   if (!dll) {
-    // Loading from same directory (for developers) failed.
-    base::string16 version_string;
-    if (cmd_line.HasSwitch(switches::kChromeVersion)) {
-      // This is used to support Chrome Frame, see http://crbug.com/88589.
-      version_string = cmd_line.GetSwitchValueNative(switches::kChromeVersion);
-
-      if (!Version(WideToASCII(version_string)).IsValid()) {
-        // If a bogus command line flag was given, then abort.
-        LOG(ERROR) << "Invalid command line version: " << version_string;
-        return NULL;
-      }
-    }
-
-    // If no version on the command line, then look at the version resource in
-    // the current module and try loading that.
-    if (version_string.empty())
-      version_string = GetCurrentModuleVersion();
-
+    // Loading from same directory (for developers) failed. Look at the version
+    // resource in the current module and try loading that.
+    base::string16 version_string(GetCurrentModuleVersion());
     if (version_string.empty()) {
       LOG(ERROR) << "No valid Chrome version found";
       return NULL;

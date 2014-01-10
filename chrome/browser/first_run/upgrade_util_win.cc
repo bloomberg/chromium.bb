@@ -225,29 +225,6 @@ bool SwapNewChromeExeIfPresent() {
   base::win::RegKey key;
   if (key.Open(reg_root, dist->GetVersionKey().c_str(),
                KEY_QUERY_VALUE) == ERROR_SUCCESS) {
-
-    // Having just ascertained that we can swap, now check that we should: if
-    // we are given an explicit --chrome-version flag, don't rename unless the
-    // specified version matches the "pv" value. In practice, this is used to
-    // defer Chrome Frame updates until the current version of the Chrome Frame
-    // DLL component is loaded.
-    const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
-    if (cmd_line.HasSwitch(switches::kChromeVersion)) {
-      std::string version_string =
-          cmd_line.GetSwitchValueASCII(switches::kChromeVersion);
-      Version cmd_version(version_string);
-
-      std::wstring pv_value;
-      if (key.ReadValue(google_update::kRegVersionField,
-                        &pv_value) == ERROR_SUCCESS) {
-        Version pv_version(WideToASCII(pv_value));
-        if (cmd_version.IsValid() && pv_version.IsValid() &&
-            !cmd_version.Equals(pv_version)) {
-          return false;
-        }
-      }
-    }
-
     // First try to rename exe by launching rename command ourselves.
     std::wstring rename_cmd;
     if (key.ReadValue(google_update::kRegRenameCmdField,
