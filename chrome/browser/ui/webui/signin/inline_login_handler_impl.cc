@@ -66,10 +66,12 @@ void InlineLoginHandlerImpl::SetExtraInitParams(base::DictionaryValue& params) {
   params.SetString("continueUrl",
       signin::GetLandingURL("source", static_cast<int>(source)).spec());
 
-  std::string last_email = Profile::FromWebUI(web_ui())->GetPrefs()->GetString(
-      prefs::kGoogleServicesLastUsername);
-  if (!last_email.empty())
-    params.SetString("email", last_email);
+  if (source != signin::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT) {
+    std::string last_email = Profile::FromWebUI(web_ui())->GetPrefs()->
+        GetString(prefs::kGoogleServicesLastUsername);
+    if (!last_email.empty())
+      params.SetString("email", last_email);
+  }
 
   std::string frame_url;
   net::GetValueForKeyInQuery(current_url, "frameUrl", &frame_url);
