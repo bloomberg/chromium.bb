@@ -238,6 +238,15 @@ public:
         mark(t.raw());
     }
 
+    // WeakMember version of the templated trace method. It doesn't keep
+    // the traced thing alive, but will write null to the WeakMember later
+    // if the pointed-to object is dead.
+    template<typename T>
+    void trace(const WeakMember<T>& t)
+    {
+        registerWeakCell(t.cell());
+    }
+
     // Fallback trace method for part objects to allow individual
     // trace methods to trace through a part object with
     // visitor->trace(m_partObject).

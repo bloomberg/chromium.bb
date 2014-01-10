@@ -499,6 +499,73 @@ private:
 int RefCountedAndGarbageCollected::s_destructorCalls = 0;
 
 
+class Weak : public Bar {
+public:
+    static Weak* create(Bar* strong, Bar* weak)
+    {
+        return new Weak(strong, weak);
+    }
+
+    virtual void trace(Visitor* visitor)
+    {
+        visitor->trace(m_strongBar);
+        visitor->registerWeakMembers(this, zapWeakMembers);
+    }
+
+    static void zapWeakMembers(Visitor* visitor, void* self)
+    {
+        reinterpret_cast<Weak*>(self)->zapWeakMembers(visitor);
+    }
+
+    bool strongIsThere() { return !!m_strongBar; }
+    bool weakIsThere() { return !!m_weakBar; }
+
+private:
+    Weak(Bar* strongBar, Bar* weakBar)
+        : Bar()
+        , m_strongBar(strongBar)
+        , m_weakBar(weakBar)
+    {
+    }
+
+    void zapWeakMembers(Visitor* visitor)
+    {
+        if (m_weakBar && !visitor->isAlive(m_weakBar))
+            m_weakBar = 0;
+    }
+
+    Member<Bar> m_strongBar;
+    Bar* m_weakBar;
+};
+
+class WithWeakMember : public Bar {
+public:
+    static WithWeakMember* create(Bar* strong, Bar* weak)
+    {
+        return new WithWeakMember(strong, weak);
+    }
+
+    virtual void trace(Visitor* visitor)
+    {
+        visitor->trace(m_strongBar);
+        visitor->trace(m_weakBar);
+    }
+
+    bool strongIsThere() { return !!m_strongBar; }
+    bool weakIsThere() { return !!m_weakBar; }
+
+private:
+    WithWeakMember(Bar* strongBar, Bar* weakBar)
+        : Bar()
+        , m_strongBar(strongBar)
+        , m_weakBar(weakBar)
+    {
+    }
+
+    Member<Bar> m_strongBar;
+    WeakMember<Bar> m_weakBar;
+};
+
 TEST(HeapTest, Threading)
 {
     Heap::init(0);
@@ -910,6 +977,53 @@ TEST(HeapTest, RefCountedGarbageCollected)
     // object can be collected.
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
     EXPECT_EQ(2, RefCountedAndGarbageCollected::s_destructorCalls);
+
+    Heap::shutdown();
+}
+
+TEST(HeapTest, WeakMembers)
+{
+    // FIXME: init and shutdown should be called via Blink
+    // initialization in the test runner.
+    Heap::init(0);
+
+    Bar::s_live = 0;
+    {
+        Persistent<Bar> h1(Bar::create());
+        Persistent<Weak> h4;
+        Persistent<WithWeakMember> h5;
+        Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+        ASSERT_EQ(1u, Bar::s_live); // h1 is live.
+        {
+            // FIXME: Change both persistents below to on stack pointers when
+            // supporting conservative scanning.
+            Persistent<Bar> h2(Bar::create());
+            Persistent<Bar> h3(Bar::create());
+            h4 = Weak::create(h2, h3);
+            h5 = WithWeakMember::create(h2, h3);
+            // FIXME: Change to HeapPointersOnStack when changing above to
+            // on-stack pointers.
+            Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+            EXPECT_EQ(5u, Bar::s_live); // The on-stack pointer keeps h3 alive.
+            EXPECT_TRUE(h4->strongIsThere());
+            EXPECT_TRUE(h4->weakIsThere());
+            EXPECT_TRUE(h5->strongIsThere());
+            EXPECT_TRUE(h5->weakIsThere());
+        }
+        Heap::collectGarbage(ThreadState::NoHeapPointersOnStack); // h3 is collected, weak pointers from h4 and h5 don't keep it alive.
+        EXPECT_EQ(4u, Bar::s_live);
+        EXPECT_TRUE(h4->strongIsThere());
+        EXPECT_FALSE(h4->weakIsThere()); // h3 is gone from weak pointer.
+        EXPECT_TRUE(h5->strongIsThere());
+        EXPECT_FALSE(h5->weakIsThere()); // h3 is gone from weak pointer.
+        h1.clear(); // Zero out h1.
+        Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+        EXPECT_EQ(3u, Bar::s_live); // Only h4, h5 and h2 are left.
+        EXPECT_TRUE(h4->strongIsThere()); // h2 is still pointed to from h4.
+        EXPECT_TRUE(h5->strongIsThere()); // h2 is still pointed to from h5.
+    }
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack); // h4 and h5 have gone out of scope now and they were keeping h2 alive.
+    EXPECT_EQ(0u, Bar::s_live); // All gone.
 
     Heap::shutdown();
 }

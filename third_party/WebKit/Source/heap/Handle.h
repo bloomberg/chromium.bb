@@ -374,8 +374,7 @@ protected:
     template<typename U> friend struct WTF::PtrHash;
     // FIXME: Uncomment when HeapObjectHash is moved.
     // friend struct HeapObjectHash<T>;
-    // FIXME: Uncomment when ObjectAliveTrait (weak pointer support) is moved.
-    // friend struct ObjectAliveTrait<Member<T> >;
+    friend struct ObjectAliveTrait<Member<T> >;
     template<bool x, bool y, bool z, typename U, typename V> friend struct CollectionBackingTraceTrait;
     template<typename U, typename V> friend bool operator==(const Member<U>&, const Persistent<V>&);
     template<typename U, typename V> friend bool operator!=(const Member<U>&, const Persistent<V>&);
@@ -394,7 +393,70 @@ public:
     }
 };
 
-// Comparison operators between Members and Persistents
+// WeakMember is similar to Member in that it is used to point to other oilpan
+// heap allocated objects.
+// However instead of creating a strong pointer to the object, the WeakMember creates
+// a weak pointer, which does not keep the pointee alive. Hence if all pointers to
+// to a heap allocated object are weak the object will be garbage collected. At the
+// time of GC the weak pointers will automatically be set to null.
+template<typename T>
+class WeakMember : public Member<T> {
+public:
+    WeakMember() : Member<T>() { }
+
+    WeakMember(T* raw) : Member<T>(raw) { }
+
+    WeakMember(std::nullptr_t) : Member<T>(nullptr) { }
+
+    WeakMember(WTF::HashTableDeletedValueType x) : Member<T>(x) { }
+
+    template<typename U>
+    WeakMember(const Persistent<U>& other) : Member<T>(other) { }
+
+    template<typename U>
+    WeakMember(const Member<U>& other) : Member<T>(other) { }
+
+    WeakMember& operator=(std::nullptr_t)
+    {
+        this->m_raw = 0;
+        return *this;
+    }
+
+    template<typename U>
+    WeakMember& operator=(const Persistent<U>& other)
+    {
+        this->m_raw = other;
+        return *this;
+    }
+
+    template<typename U>
+    WeakMember& operator=(const Member<U>& other)
+    {
+        this->m_raw = other;
+        return *this;
+    }
+
+    template<typename U>
+    WeakMember& operator=(U* other)
+    {
+        this->m_raw = other;
+        return *this;
+    }
+
+private:
+    T** cell() const { return const_cast<T**>(&this->m_raw); }
+
+    template<typename U> friend class Member;
+    template<typename U> friend class WeakMember;
+    template<typename U> friend class Persistent;
+    friend class Visitor;
+    template<typename U> friend struct WTF::PtrHash;
+    // FIXME: Uncomment when moving HeapObjectHash to trunk.
+    // friend struct HeapObjectHash<T>;
+    friend struct ObjectAliveTrait<WeakMember<T> >;
+};
+
+// Comparison operators between (Weak)Members and Persistents
 template<typename T, typename U> inline bool operator==(const Member<T>& a, const Member<U>& b) { return a.m_raw == b.m_raw; }
 template<typename T, typename U> inline bool operator!=(const Member<T>& a, const Member<U>& b) { return a.m_raw != b.m_raw; }
 template<typename T, typename U> inline bool operator==(const Member<T>& a, const Persistent<U>& b) { return a.m_raw == b.m_raw; }

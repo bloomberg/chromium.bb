@@ -1160,7 +1160,7 @@ void CallbackStack::assertIsEmpty()
     ASSERT(!m_next);
 }
 
-bool CallbackStack::popAndInvokeCallback(CallbackStack** first, Visitor* visitor, CallbackTrampoline trampoline)
+bool CallbackStack::popAndInvokeCallback(CallbackStack** first, Visitor* visitor)
 {
     if (m_current == &(m_buffer[0])) {
         if (!m_next) {
@@ -1172,10 +1172,12 @@ bool CallbackStack::popAndInvokeCallback(CallbackStack** first, Visitor* visitor
         CallbackStack* nextStack = m_next;
         *first = nextStack;
         delete this;
-        return nextStack->popAndInvokeCallback(first, visitor, trampoline);
+        return nextStack->popAndInvokeCallback(first, visitor);
     }
     Item* item = --m_current;
-    trampoline(item->callback(), visitor, item->object());
+
+    VisitorCallback callback = item->callback();
+    callback(visitor, item->object());
 
     return true;
 }
@@ -1217,8 +1219,7 @@ public:
 
     virtual void registerWeakMembers(const void* containingObject, WeakPointerCallback callback)
     {
-        // FIXME: Implement.
-        ASSERT_NOT_REACHED();
+        Heap::pushWeakCallback(const_cast<void*>(containingObject), callback);
     }
 
     virtual bool isMarked(const void* objectPointer)
@@ -1249,12 +1250,14 @@ void Heap::init(intptr_t* startOfStack)
 {
     ThreadState::init(startOfStack);
     CallbackStack::init(&s_markingStack);
+    CallbackStack::init(&s_weakCallbackStack);
 }
 
 void Heap::shutdown()
 {
     ThreadState::shutdown();
     CallbackStack::shutdown(&s_markingStack);
+    CallbackStack::shutdown(&s_weakCallbackStack);
 }
 
 bool Heap::contains(Address address)
@@ -1268,14 +1271,27 @@ bool Heap::contains(Address address)
     return false;
 }
 
-static void markingTrampoline(VisitorCallback callback, Visitor* visitor, void* object)
+void Heap::pushTraceCallback(void* object, TraceCallback callback)
 {
-    callback(visitor, object);
+    ASSERT(Heap::contains(object));
+    CallbackStack::Item* slot = s_markingStack->allocateEntry(&s_markingStack);
+    *slot = CallbackStack::Item(object, callback);
 }
 
 bool Heap::popAndInvokeTraceCallback(Visitor* visitor)
 {
-    return s_markingStack->popAndInvokeCallback(&s_markingStack, visitor, markingTrampoline);
+    return s_markingStack->popAndInvokeCallback(&s_markingStack, visitor);
+}
+
+void Heap::pushWeakCallback(void* object, WeakPointerCallback callback)
+{
+    CallbackStack::Item* slot = s_weakCallbackStack->allocateEntry(&s_weakCallbackStack);
+    *slot = CallbackStack::Item(object, callback);
+}
+
+bool Heap::popAndInvokeWeakPointerCallback(Visitor* visitor)
+{
+    return s_weakCallbackStack->popAndInvokeCallback(&s_weakCallbackStack, visitor);
 }
 
 void Heap::prepareForGC()
@@ -1307,13 +1323,6 @@ void Heap::collectGarbage(ThreadState::StackState stackState, GCType gcType)
     // It is not permitted to trace pointers of live objects in the weak
     // callback phase, so the marking stack should still be empty here.
     s_markingStack->assertIsEmpty();
-}
-
-void Heap::pushTraceCallback(void* object, TraceCallback callback)
-{
-    ASSERT(Heap::contains(object));
-    CallbackStack::Item* slot = s_markingStack->allocateEntry(&s_markingStack);
-    *slot = CallbackStack::Item(object, callback);
 }
 
 void Heap::getStats(HeapStats* stats)
@@ -1353,4 +1362,5 @@ template class ThreadHeap<FinalizedHeapObjectHeader>;
 template class ThreadHeap<HeapObjectHeader>;
 
 CallbackStack* Heap::s_markingStack;
+CallbackStack* Heap::s_weakCallbackStack;
 }

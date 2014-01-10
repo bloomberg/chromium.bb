@@ -570,8 +570,6 @@ private:
     friend class ThreadState;
 };
 
-typedef void (*CallbackTrampoline)(VisitorCallback, Visitor*, void*);
-
 // The CallbackStack contains all the visitor callbacks used to trace and mark
 // objects. A specific CallbackStack instance contains at most bufferSize elements.
 // If more space is needed a new CallbackStack instance is created and chained
@@ -615,7 +613,7 @@ public:
 
     static void init(CallbackStack** first);
     static void shutdown(CallbackStack** first);
-    bool popAndInvokeCallback(CallbackStack** first, Visitor*, CallbackTrampoline);
+    bool popAndInvokeCallback(CallbackStack** first, Visitor*);
 
     Item* allocateEntry(CallbackStack** first)
     {
@@ -813,17 +811,16 @@ public:
     // Push a trace callback on the marking stack.
     static void pushTraceCallback(void* containerObject, TraceCallback);
 
+    // Push a weak pointer callback on the weak callback stack.
+    static void pushWeakCallback(void* containerObject, WeakPointerCallback);
+
     // Pop the top of the marking stack and call the callback with the visitor
     // and the object. Returns false when there is nothing more to do.
     static bool popAndInvokeTraceCallback(Visitor*);
 
     // Pop the top of the weak callback stack and call the callback with the visitor
     // and the object. Returns false when there is nothing more to do.
-    static bool popAndInvokeWeakPointerCallback(Visitor*)
-    {
-        // FIXME: Change when moving weak pointers to trunk.
-        return false;
-    }
+    static bool popAndInvokeWeakPointerCallback(Visitor*);
 
     template<typename T> static Address allocate(size_t);
     template<typename T> static Address reallocate(void* previous, size_t);
@@ -841,6 +838,7 @@ public:
     static void makeConsistentForGC();
 
     static CallbackStack* s_markingStack;
+    static CallbackStack* s_weakCallbackStack;
 };
 
 // The NoAllocationScope class is used in debug mode to catch unwanted
