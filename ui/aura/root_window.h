@@ -103,6 +103,12 @@ class AURA_EXPORT RootWindow : public ui::EventProcessor,
 
   WindowTreeHostDelegate* AsWindowTreeHostDelegate();
 
+  // Gets/sets the size of the host window.
+  void SetHostSize(const gfx::Size& size_in_pixel);
+
+  // Sets the bounds of the host window.
+  void SetHostBounds(const gfx::Rect& size_in_pizel);
+
   // Sets the currently-displayed cursor. If the cursor was previously hidden
   // via ShowCursor(false), it will remain hidden until ShowCursor(true) is
   // called, at which point the cursor that was last set via SetCursor() will be

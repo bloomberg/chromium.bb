@@ -68,7 +68,7 @@ void VirtualKeyboardWindowController::UpdateWindow(
     aura::RootWindow* root_window = root_window_controller_->dispatcher();
     GetRootWindowSettings(root_window->window())->display_id =
         display_info.id();
-    root_window->host()->SetBounds(display_info.bounds_in_native());
+    root_window->SetHostBounds(display_info.bounds_in_native());
   }
 }
 

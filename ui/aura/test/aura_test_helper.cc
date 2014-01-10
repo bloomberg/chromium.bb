@@ -93,7 +93,7 @@ void AuraTestHelper::SetUp(bool allow_test_contexts) {
 
   root_window()->Show();
   // Ensure width != height so tests won't confuse them.
-  dispatcher()->host()->SetBounds(gfx::Rect(800, 600));
+  dispatcher()->SetHostSize(gfx::Size(800, 600));
 }
 
 void AuraTestHelper::TearDown() {

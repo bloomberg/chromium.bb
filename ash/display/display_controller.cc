@@ -616,7 +616,7 @@ void DisplayController::OnDisplayBoundsChanged(const gfx::Display& display) {
   DCHECK(!display_info.bounds_in_native().IsEmpty());
   aura::WindowEventDispatcher* dispatcher =
       root_windows_[display.id()]->GetDispatcher();
-  dispatcher->host()->SetBounds(display_info.bounds_in_native());
+  dispatcher->SetHostBounds(display_info.bounds_in_native());
   SetDisplayPropertiesOnHostWindow(dispatcher, display);
 }
 
@@ -632,7 +632,7 @@ void DisplayController::OnDisplayAdded(const gfx::Display& display) {
         GetDisplayManager()->GetDisplayInfo(display.id());
     aura::WindowEventDispatcher* dispatcher =
         root_windows_[display.id()]->GetDispatcher();
-    dispatcher->host()->SetBounds(display_info.bounds_in_native());
+    dispatcher->SetHostBounds(display_info.bounds_in_native());
     SetDisplayPropertiesOnHostWindow(dispatcher, display);
   } else {
     if (primary_display_id == gfx::Display::kInvalidDisplayID)

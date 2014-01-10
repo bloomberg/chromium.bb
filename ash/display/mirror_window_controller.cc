@@ -204,7 +204,7 @@ void MirrorWindowController::UpdateWindow(const DisplayInfo& display_info) {
   } else {
     GetRootWindowSettings(root_window_->window())->display_id =
         display_info.id();
-    root_window_->host()->SetBounds(display_info.bounds_in_native());
+    root_window_->SetHostBounds(display_info.bounds_in_native());
   }
 
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
