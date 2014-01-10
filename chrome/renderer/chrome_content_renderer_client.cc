@@ -937,7 +937,9 @@ bool ChromeContentRendererClient::HasErrorPage(int http_status_code,
   return true;
 }
 
-bool ChromeContentRendererClient::ShouldSuppressErrorPage(const GURL& url) {
+bool ChromeContentRendererClient::ShouldSuppressErrorPage(
+    content::RenderFrame* render_frame,
+    const GURL& url) {
   // Do not flash an error page if the Instant new tab page fails to load.
   return search_bouncer_.get() && search_bouncer_->IsNewTabPage(url);
 }

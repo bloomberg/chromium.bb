@@ -81,7 +81,8 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
       const base::FilePath& plugin_path) OVERRIDE;
   virtual bool HasErrorPage(int http_status_code,
                             std::string* error_domain) OVERRIDE;
-  virtual bool ShouldSuppressErrorPage(const GURL& url) OVERRIDE;
+  virtual bool ShouldSuppressErrorPage(content::RenderFrame* render_frame,
+                                       const GURL& url) OVERRIDE;
   virtual void GetNavigationErrorStrings(
       blink::WebFrame* frame,
       const blink::WebURLRequest& failed_request,

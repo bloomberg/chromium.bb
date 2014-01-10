@@ -982,7 +982,7 @@ void RenderFrameImpl::didFailProvisionalLoad(
   }
 
   // Allow the embedder to suppress an error page.
-  if (GetContentClient()->renderer()->ShouldSuppressErrorPage(
+  if (GetContentClient()->renderer()->ShouldSuppressErrorPage(this,
           error.unreachableURL)) {
     return;
   }

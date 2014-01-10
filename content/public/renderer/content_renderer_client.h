@@ -106,8 +106,9 @@ class CONTENT_EXPORT ContentRendererClient {
                             std::string* error_domain);
 
   // Returns true if the embedder prefers not to show an error page for a failed
-  // navigation to |url|.
-  virtual bool ShouldSuppressErrorPage(const GURL& url);
+  // navigation to |url| in |render_frame|.
+  virtual bool ShouldSuppressErrorPage(RenderFrame* render_frame,
+                                       const GURL& url);
 
   // Returns the information to display when a navigation error occurs.
   // If |error_html| is not null then it may be set to a HTML page containing

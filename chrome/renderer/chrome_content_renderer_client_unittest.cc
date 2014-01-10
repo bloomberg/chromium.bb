@@ -396,6 +396,8 @@ TEST_F(ChromeContentRendererClientTest, ShouldSuppressErrorPage) {
   client.search_bouncer_.reset(new SearchBouncer);
   client.search_bouncer_->OnSetSearchURLs(
       std::vector<GURL>(), GURL("http://example.com/n"));
-  EXPECT_FALSE(client.ShouldSuppressErrorPage(GURL("http://example.com")));
-  EXPECT_TRUE(client.ShouldSuppressErrorPage(GURL("http://example.com/n")));
+  EXPECT_FALSE(client.ShouldSuppressErrorPage(NULL,
+                                              GURL("http://example.com")));
+  EXPECT_TRUE(client.ShouldSuppressErrorPage(NULL,
+                                             GURL("http://example.com/n")));
 }
