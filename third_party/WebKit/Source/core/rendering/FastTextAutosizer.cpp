@@ -88,13 +88,16 @@ void FastTextAutosizer::inflate(RenderBlock* block)
         return;
     Cluster* cluster = m_clusterStack.last();
 
-    applyMultiplier(block, cluster->m_multiplier);
+    // localMultiplier is used to prevent inflation of some containers such as a row of links.
+    float localMultiplier = TextAutosizer::containerShouldBeAutosized(block) ? cluster->m_multiplier : 1;
+
+    applyMultiplier(block, localMultiplier);
 
     // FIXME: Add an optimization to not do this walk if it's not needed.
     for (InlineWalker walker(block); !walker.atEnd(); walker.advance()) {
         RenderObject* inlineObj = walker.current();
         if (inlineObj->isText())
-            applyMultiplier(inlineObj, cluster->m_multiplier);
+            applyMultiplier(inlineObj, localMultiplier);
     }
 }
 
@@ -213,8 +216,8 @@ float FastTextAutosizer::computeMultiplier(RenderBlock* block)
     // Block width, in CSS pixels.
     float blockWidth = block->contentLogicalWidth();
 
-    // FIXME: incorporate font scale factor.
-    // FIXME: incorporate device scale adjustment.
+    // FIXME(crbug.com/333124): incorporate font scale factor.
+    // FIXME(crbug.com/333124): incorporate device scale adjustment.
     return max(min(blockWidth, (float) m_layoutWidth) / m_windowWidth, 1.0f);
 }
 
