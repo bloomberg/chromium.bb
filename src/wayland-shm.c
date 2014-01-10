@@ -550,7 +550,7 @@ wl_shm_buffer_end_access(struct wl_shm_buffer *buffer)
 	struct wl_shm_sigbus_data *sigbus_data =
 		pthread_getspecific(wl_shm_sigbus_data_key);
 
-	assert(sigbus_data->access_count >= 1);
+	assert(sigbus_data && sigbus_data->access_count >= 1);
 
 	if (--sigbus_data->access_count == 0) {
 		if (sigbus_data->fallback_mapping_used) {
