@@ -45,30 +45,32 @@ class ProfileManager : public base::NonThreadSafe,
   // Physically remove deleted profile directories from disk.
   static void NukeDeletedProfilesFromDisk();
 
-  // Only to be used in ChromeOS:
-  // This is a temporary solution to get rid of the DEPRICATED GetDefaultProfile
-  // functions below. Going forward we will do architectural changes to reduce
-  // the Profile to get the browser context instead and by moving it into ash,
-  // but for the short time fix we add these two functions here, enabling us to
-  // get rid of GetDefaultProfile as a first step.
-  // TODO(skuhne): Move into ash's new user management function.
+  // Same as instance method but provides the default user_data_dir as well.
+  // If the Profile is going to be used to open a new window then consider using
+  // GetLastUsedProfileAllowedByPolicy() instead.
+  static Profile* GetLastUsedProfile();
+
+  // Same as GetLastUsedProfile() but returns the incognito Profile if
+  // incognito mode is forced. This should be used if the last used Profile
+  // will be used to open new browser windows.
+  static Profile* GetLastUsedProfileAllowedByPolicy();
+
+  // Same as instance method but provides the default user_data_dir as well.
+  static std::vector<Profile*> GetLastOpenedProfiles();
 
   // Get the profile for the user which created the current session.
   // Note that in case of a guest account this will return a 'suitable' profile.
+  // This function is temporary and will soon be moved to ash. As such avoid
+  // using it at all cost.
+  // TODO(skuhne): Move into ash's new user management function.
   static Profile* GetPrimaryUserProfile();
 
   // Get the profile for the currently active user.
   // Note that in case of a guest account this will return a 'suitable' profile.
+  // This function is temporary and will soon be moved to ash. As such avoid
+  // using it at all cost.
+  // TODO(skuhne): Move into ash's new user management function.
   static Profile* GetActiveUserProfile();
-
-  // DEPRECATED: DO NOT USE. Function will be removed soon (crbug.com/322682).
-  // Use GetPrimaryUserProfile or GetActiveUserProfile instead.
-  // Returns the default profile. This adds the profile to the
-  // ProfileManager if it doesn't already exist. This method returns NULL if
-  // the profile doesn't exist and we can't create it.
-  // The profile used can be overridden by using --login-profile on cros.
-  // Note that in case of a guest account this will return a 'suitable' profile.
-  static Profile* GetDefaultProfile();
 
   // Returns a profile for a specific profile directory within the user data
   // dir. This will return an existing profile it had already been created,
@@ -100,16 +102,6 @@ class ProfileManager : public base::NonThreadSafe,
   // stored in Local State, hand back the Default profile.
   Profile* GetLastUsedProfile(const base::FilePath& user_data_dir);
 
-  // Same as instance method but provides the default user_data_dir as well.
-  // If the Profile is going to be used to open a new window then consider using
-  // GetLastUsedProfileAllowedByPolicy() instead.
-  static Profile* GetLastUsedProfile();
-
-  // Same as GetLastUsedProfile() but returns the incognito Profile if
-  // incognito mode is forced. This should be used if the last used Profile
-  // will be used to open new browser windows.
-  static Profile* GetLastUsedProfileAllowedByPolicy();
-
   // Get the path of the last used profile, or if that's undefined, the default
   // profile.
   base::FilePath GetLastUsedProfileDir(const base::FilePath& user_data_dir);
@@ -122,32 +114,14 @@ class ProfileManager : public base::NonThreadSafe,
   std::vector<Profile*> GetLastOpenedProfiles(
       const base::FilePath& user_data_dir);
 
-  // Same as instance method but provides the default user_data_dir as well.
-  static std::vector<Profile*> GetLastOpenedProfiles();
-
   // Returns created profiles. Note, profiles order is NOT guaranteed to be
   // related with the creation order.
   std::vector<Profile*> GetLoadedProfiles() const;
-
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
 
   // If a profile with the given path is currently managed by this object,
   // return a pointer to the corresponding Profile object;
   // otherwise return NULL.
   Profile* GetProfileByPath(const base::FilePath& path) const;
-
-  // Profile::Delegate implementation:
-  virtual void OnProfileCreated(Profile* profile,
-                                bool success,
-                                bool is_new_profile) OVERRIDE;
-
-  // Add or remove a profile launcher to/from the list of launchers waiting for
-  // new profiles to be created from the multi-profile menu.
-  void AddProfileLauncher(NewProfileLauncher* profile_launcher);
-  void RemoveProfileLauncher(NewProfileLauncher* profile_launcher);
 
   // Creates a new profile in the next available multiprofile directory.
   // Directories are named "profile_1", "profile_2", etc., in sequence of
@@ -196,9 +170,6 @@ class ProfileManager : public base::NonThreadSafe,
   // Autoloads profiles if they are running background apps.
   void AutoloadProfiles();
 
-  // Sign-Out a profile against use until re-authentication.
-  void SignOutProfile(Profile* profile);
-
   // Initializes user prefs of |profile|. This includes profile name and
   // avatar values.
   void InitProfileUserPrefs(Profile* profile);
@@ -216,6 +187,16 @@ class ProfileManager : public base::NonThreadSafe,
 
   // For ChromeOS, determines if the user has logged in to a real profile.
   bool IsLoggedIn() const { return logged_in_; }
+
+  // content::NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
+  // Profile::Delegate implementation:
+  virtual void OnProfileCreated(Profile* profile,
+                                bool success,
+                                bool is_new_profile) OVERRIDE;
 
  protected:
   // Does final initial actions.
@@ -284,14 +265,6 @@ class ProfileManager : public base::NonThreadSafe,
   // RegisterProfile.
   ProfileInfo* GetProfileInfoByPath(const base::FilePath& path) const;
 
-  typedef std::pair<base::FilePath, base::string16> ProfilePathAndName;
-  typedef std::vector<ProfilePathAndName> ProfilePathAndNames;
-  ProfilePathAndNames GetSortedProfilesFromDirectoryMap();
-
-  static bool CompareProfilePathAndName(
-      const ProfileManager::ProfilePathAndName& pair1,
-      const ProfileManager::ProfilePathAndName& pair2);
-
   // Adds |profile| to the profile info cache if it hasn't been added yet.
   void AddProfileToCache(Profile* profile);
 
@@ -304,41 +277,6 @@ class ProfileManager : public base::NonThreadSafe,
   void RunCallbacks(const std::vector<CreateCallback>& callbacks,
                     Profile* profile,
                     Profile::CreateStatus status);
-
-  // If the |loaded_profile| has been loaded succesfully (according to |status|)
-  // and isn't already scheduled for deletion, then finishes adding
-  // |profile_to_delete_dir| to the queue of profiles to be deleted, and updates
-  // the kProfileLastUsed preference based on |last_non_managed_profile_path|.
-  void OnNewActiveProfileLoaded(
-      const base::FilePath& profile_to_delete_path,
-      const base::FilePath& last_non_managed_profile_path,
-      const CreateCallback& original_callback,
-      Profile* loaded_profile,
-      Profile::CreateStatus status);
-
-  content::NotificationRegistrar registrar_;
-
-  // The path to the user data directory (DIR_USER_DATA).
-  const base::FilePath user_data_dir_;
-
-  // Indicates that a user has logged in and that the profile specified
-  // in the --login-profile command line argument should be used as the
-  // default.
-  bool logged_in_;
-
-  // Maps profile path to ProfileInfo (if profile has been created). Use
-  // RegisterProfile() to add into this map. This map owns all loaded profile
-  // objects in a running instance of Chrome.
-  typedef std::map<base::FilePath, linked_ptr<ProfileInfo> > ProfilesInfoMap;
-  ProfilesInfoMap profiles_info_;
-
-  // Object to cache various information about profiles. Contains information
-  // about every profile which has been created for this instance of Chrome,
-  // if it has not been explicitly deleted.
-  scoped_ptr<ProfileInfoCache> profile_info_cache_;
-
-  // Manages the process of creating, deleteing and updating Desktop shortcuts.
-  scoped_ptr<ProfileShortcutManager> profile_shortcut_manager_;
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   class BrowserListObserver : public chrome::BrowserListObserver {
@@ -355,9 +293,48 @@ class ProfileManager : public base::NonThreadSafe,
     ProfileManager* profile_manager_;
     DISALLOW_COPY_AND_ASSIGN(BrowserListObserver);
   };
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
+#if defined(OS_MACOSX)
+  // If the |loaded_profile| has been loaded successfully (according to
+  // |status|) and isn't already scheduled for deletion, then finishes adding
+  // |profile_to_delete_dir| to the queue of profiles to be deleted, and updates
+  // the kProfileLastUsed preference based on |last_non_managed_profile_path|.
+  void OnNewActiveProfileLoaded(
+      const base::FilePath& profile_to_delete_path,
+      const base::FilePath& last_non_managed_profile_path,
+      const CreateCallback& original_callback,
+      Profile* loaded_profile,
+      Profile::CreateStatus status);
+#endif
+
+  content::NotificationRegistrar registrar_;
+
+  // The path to the user data directory (DIR_USER_DATA).
+  const base::FilePath user_data_dir_;
+
+  // Indicates that a user has logged in and that the profile specified
+  // in the --login-profile command line argument should be used as the
+  // default.
+  bool logged_in_;
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
   BrowserListObserver browser_list_observer_;
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
+
+  // Maps profile path to ProfileInfo (if profile has been created). Use
+  // RegisterProfile() to add into this map. This map owns all loaded profile
+  // objects in a running instance of Chrome.
+  typedef std::map<base::FilePath, linked_ptr<ProfileInfo> > ProfilesInfoMap;
+  ProfilesInfoMap profiles_info_;
+
+  // Object to cache various information about profiles. Contains information
+  // about every profile which has been created for this instance of Chrome,
+  // if it has not been explicitly deleted.
+  scoped_ptr<ProfileInfoCache> profile_info_cache_;
+
+  // Manages the process of creating, deleteing and updating Desktop shortcuts.
+  scoped_ptr<ProfileShortcutManager> profile_shortcut_manager_;
 
   // For keeping track of the last active profiles.
   std::map<Profile*, int> browser_counts_;
