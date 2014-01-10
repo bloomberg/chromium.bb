@@ -179,11 +179,30 @@ Error KernelObject::AcquireHandle(int fd, ScopedKernelHandle* out_handle) {
   return EBADF;
 }
 
-int KernelObject::AllocateFD(const ScopedKernelHandle& handle) {
+Error KernelObject::AcquireHandleAndPath(int fd, ScopedKernelHandle* out_handle,
+                                         std::string* out_path){
+  out_handle->reset(NULL);
+
+  AUTO_LOCK(handle_lock_);
+  if (fd < 0 || fd >= static_cast<int>(handle_map_.size()))
+    return EBADF;
+
+  *out_handle = handle_map_[fd].handle;
+  if (!out_handle)
+    return EBADF;
+
+  *out_path = handle_map_[fd].path;
+
+  return 0;
+}
+
+int KernelObject::AllocateFD(const ScopedKernelHandle& handle,
+                             const std::string& path) {
   AUTO_LOCK(handle_lock_);
   int id;
 
-  Descriptor_t descriptor(handle);
+  std::string abs_path = GetAbsParts(path).Join();
+  Descriptor_t descriptor(handle, abs_path);
 
   // If we can recycle and FD, use that first
   if (free_fds_.size()) {
@@ -196,10 +215,12 @@ int KernelObject::AllocateFD(const ScopedKernelHandle& handle) {
     id = handle_map_.size();
     handle_map_.push_back(descriptor);
   }
+
   return id;
 }
 
-void KernelObject::FreeAndReassignFD(int fd, const ScopedKernelHandle& handle) {
+void KernelObject::FreeAndReassignFD(int fd, const ScopedKernelHandle& handle,
+                                     const std::string& path) {
   if (NULL == handle) {
     FreeFD(fd);
   } else {
@@ -209,7 +230,8 @@ void KernelObject::FreeAndReassignFD(int fd, const ScopedKernelHandle& handle) {
     if (fd >= (int)handle_map_.size())
       handle_map_.resize(fd + 1);
 
-    handle_map_[fd] = Descriptor_t(handle);
+    // This path will be from an existing handle, and absolute.
+    handle_map_[fd] = Descriptor_t(handle, path);
   }
 }
 
@@ -221,6 +243,7 @@ void KernelObject::FreeFD(int fd) {
 
   // Force lower numbered FD to be available first.
   std::push_heap(free_fds_.begin(), free_fds_.end(), std::greater<int>());
+  //
 }
 
 }  // namespace nacl_io

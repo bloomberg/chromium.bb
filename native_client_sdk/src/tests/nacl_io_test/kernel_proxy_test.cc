@@ -282,6 +282,62 @@ TEST_F(KernelProxyTest, WorkingDirectory) {
   EXPECT_STREQ("/foo", text);
 }
 
+TEST_F(KernelProxyTest, FDPathMapping) {
+  char text[1024];
+
+  int fd1, fd2, fd3, fd4, fd5;
+
+  EXPECT_EQ(0, ki_mkdir("/foo", S_IREAD | S_IWRITE));
+  EXPECT_EQ(0, ki_mkdir("/foo/bar", S_IREAD | S_IWRITE));
+  EXPECT_EQ(0, ki_mkdir("/example", S_IREAD | S_IWRITE));
+  ki_chdir("/foo");
+
+  fd1 = ki_open("/example", O_RDONLY);
+  EXPECT_NE(-1, fd1);
+  EXPECT_EQ(ki_fchdir(fd1), 0);
+  EXPECT_EQ(text, ki_getcwd(text, sizeof(text)));
+  EXPECT_STREQ("/example", text);
+
+  EXPECT_EQ(0, ki_chdir("/foo"));
+  fd2 = ki_open("../example", O_RDONLY);
+  EXPECT_NE(-1, fd2);
+  EXPECT_EQ(0, ki_fchdir(fd2));
+  EXPECT_EQ(text, ki_getcwd(text, sizeof(text)));
+  EXPECT_STREQ("/example", text);
+
+  EXPECT_EQ(0, ki_chdir("/foo"));
+  fd3 = ki_open("../test", O_CREAT | O_RDWR);
+  EXPECT_NE(-1, fd3);
+  EXPECT_EQ(-1, ki_fchdir(fd3));
+  EXPECT_EQ(ENOTDIR, errno);
+
+  EXPECT_EQ(0, ki_chdir("/foo"));
+  fd4 = ki_open("bar", O_RDONLY);
+  EXPECT_EQ(0, ki_fchdir(fd4));
+  EXPECT_EQ(text, ki_getcwd(text, sizeof(text)));
+  EXPECT_STREQ("/foo/bar", text);
+  EXPECT_EQ(0, ki_chdir("/example"));
+  EXPECT_EQ(0, ki_fchdir(fd4));
+  EXPECT_EQ(text, ki_getcwd(text, sizeof(text)));
+  EXPECT_STREQ("/foo/bar", text);
+
+  EXPECT_EQ(0, ki_chdir("/example"));
+  fd5 = ki_dup(fd4);
+  ASSERT_GT(fd5, -1);
+  ASSERT_NE(fd4, fd5);
+  EXPECT_EQ(0, ki_fchdir(fd5));
+  EXPECT_EQ(text, ki_getcwd(text, sizeof(text)));
+  EXPECT_STREQ("/foo/bar", text);
+
+  fd5 = 123;
+
+  EXPECT_EQ(0, ki_chdir("/example"));
+  EXPECT_EQ(fd5, ki_dup2(fd4, fd5));
+  EXPECT_EQ(0, ki_fchdir(fd5));
+  EXPECT_EQ(text, ki_getcwd(text, sizeof(text)));
+  EXPECT_STREQ("/foo/bar", text);
+}
+
 TEST_F(KernelProxyTest, MemMountIO) {
   char text[1024];
   int fd1, fd2, fd3;

@@ -172,7 +172,7 @@ int KernelProxy::open_resource(const char* path) {
     return -1;
   }
 
-  return AllocateFD(handle);
+  return AllocateFD(handle, path);
 }
 
 int KernelProxy::open(const char* path, int open_flags) {
@@ -192,7 +192,7 @@ int KernelProxy::open(const char* path, int open_flags) {
     return -1;
   }
 
-  return AllocateFD(handle);
+  return AllocateFD(handle, path);
 }
 
 int KernelProxy::pipe(int pipefds[2]) {
@@ -233,13 +233,13 @@ int KernelProxy::close(int fd) {
 
 int KernelProxy::dup(int oldfd) {
   ScopedKernelHandle handle;
-  Error error = AcquireHandle(oldfd, &handle);
+  std::string path;
+  Error error = AcquireHandleAndPath(oldfd, &handle, &path);
   if (error) {
     errno = error;
     return -1;
   }
-
-  return AllocateFD(handle);
+  return AllocateFD(handle, path);
 }
 
 int KernelProxy::dup2(int oldfd, int newfd) {
@@ -248,13 +248,14 @@ int KernelProxy::dup2(int oldfd, int newfd) {
     return newfd;
 
   ScopedKernelHandle old_handle;
-  Error error = AcquireHandle(oldfd, &old_handle);
+  std::string old_path;
+  Error error = AcquireHandleAndPath(oldfd, &old_handle, &old_path);
   if (error) {
     errno = error;
     return -1;
   }
 
-  FreeAndReassignFD(newfd, old_handle);
+  FreeAndReassignFD(newfd, old_handle, old_path);
   return newfd;
 }
 
@@ -509,8 +510,31 @@ int KernelProxy::getdents(int fd, void* buf, unsigned int count) {
 }
 
 int KernelProxy::fchdir(int fd) {
-  errno = ENOSYS;
-  return -1;
+  ScopedKernelHandle handle;
+  std::string path;
+  Error error = AcquireHandleAndPath(fd, &handle, &path);
+  if (error) {
+    errno = error;
+    return -1;
+  }
+
+  if (!handle->node()->IsaDir()) {
+    errno = ENOTDIR;
+    return -1;
+  }
+
+  if (path.empty()) {
+    errno = EBADF;
+    return -1;
+  }
+
+  error = SetCWD(path);
+  if (error) {
+    // errno is return value from SetCWD
+    errno = error;
+    return -1;
+  }
+  return 0;
 }
 
 int KernelProxy::ftruncate(int fd, off_t length) {

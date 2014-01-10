@@ -95,13 +95,13 @@ TEST_F(KernelObjectTest, Referencing) {
 
   // Allocating an FD should cause the KernelProxy to ref the handle and
   // the node and filesystem should be unchanged.
-  int fd1 = proxy.AllocateFD(handle_a);
+  int fd1 = proxy.AllocateFD(handle_a, "/example");
   EXPECT_EQ(3, handle_a->RefCount());
   EXPECT_EQ(2, fs->RefCount());
   EXPECT_EQ(2, node->RefCount());
 
   // If we "dup" the handle, we should bump the ref count on the handle
-  int fd2 = proxy.AllocateFD(handle_b);
+  int fd2 = proxy.AllocateFD(handle_b, "");
   EXPECT_EQ(4, handle_a->RefCount());
   EXPECT_EQ(2, fs->RefCount());
   EXPECT_EQ(2, node->RefCount());
@@ -165,15 +165,16 @@ TEST_F(KernelObjectTest, FreeAndReassignFD) {
   EXPECT_EQ(2, node->RefCount());
   EXPECT_EQ(1, raw_handle->RefCount());
 
-  proxy.AllocateFD(handle);
+  proxy.AllocateFD(handle, "/example");
   EXPECT_EQ(2, fs->RefCount());
   EXPECT_EQ(2, node->RefCount());
   EXPECT_EQ(2, raw_handle->RefCount());
 
-  proxy.FreeAndReassignFD(5, handle);
+  proxy.FreeAndReassignFD(5, handle, "/example");
   EXPECT_EQ(2, fs->RefCount());
   EXPECT_EQ(2, node->RefCount());
   EXPECT_EQ(3, raw_handle->RefCount());
+
 
   handle.reset();
   EXPECT_EQ(2, raw_handle->RefCount());
