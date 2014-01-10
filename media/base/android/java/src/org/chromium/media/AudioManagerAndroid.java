@@ -384,7 +384,9 @@ class AudioManagerAndroid {
         // quality platform echo cancellation.
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN &&
                AcousticEchoCanceler.isAvailable() &&
-               (Build.MODEL.equals("Nexus 5") ||
+               (Build.MODEL.equals("GT-I9500") ||  // Galaxy S4
+                Build.MODEL.equals("Nexus 4") ||
+                Build.MODEL.equals("Nexus 5") ||
                 Build.MODEL.equals("Nexus 7"));
     }
 
