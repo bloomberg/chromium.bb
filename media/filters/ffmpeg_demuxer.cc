@@ -20,7 +20,7 @@
 #include "base/task_runner_util.h"
 #include "base/time/time.h"
 #include "media/base/audio_decoder_config.h"
-#include "media/base/bind_to_loop.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
 #include "media/base/limits.h"

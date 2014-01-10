@@ -24,7 +24,7 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "grit/content_resources.h"
 #include "media/base/android/media_player_android.h"
-#include "media/base/bind_to_loop.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_frame.h"
 #include "net/base/mime_util.h"

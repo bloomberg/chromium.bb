@@ -15,7 +15,7 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/time/time.h"
 #include "content/renderer/media/rtc_video_decoder_factory_tv.h"
-#include "media/base/bind_to_loop.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
 #include "third_party/libjingle/source/talk/base/ratetracker.h"
 

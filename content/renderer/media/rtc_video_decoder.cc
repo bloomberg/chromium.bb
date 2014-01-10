@@ -14,7 +14,7 @@
 #include "base/task_runner_util.h"
 #include "content/child/child_thread.h"
 #include "content/renderer/media/native_handle_impl.h"
-#include "media/base/bind_to_loop.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/filters/gpu_video_accelerator_factories.h"
 #include "third_party/webrtc/common_video/interface/texture_video_frame.h"
 #include "third_party/webrtc/system_wrappers/interface/ref_count.h"

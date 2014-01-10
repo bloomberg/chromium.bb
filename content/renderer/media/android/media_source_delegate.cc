@@ -14,7 +14,7 @@
 #include "content/renderer/media/webmediaplayer_util.h"
 #include "content/renderer/media/webmediasource_impl.h"
 #include "media/base/android/demuxer_stream_player_params.h"
-#include "media/base/bind_to_loop.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_log.h"
 #include "media/filters/chunk_demuxer.h"

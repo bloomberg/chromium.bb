@@ -8,7 +8,7 @@
 #include "base/location.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "content/renderer/media/webinbandtexttrack_impl.h"
-#include "media/base/bind_to_loop.h"
+#include "media/base/bind_to_current_loop.h"
 #include "third_party/WebKit/public/platform/WebInbandTextTrackClient.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayerClient.h"
 

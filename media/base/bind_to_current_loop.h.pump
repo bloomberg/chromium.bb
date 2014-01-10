@@ -12,8 +12,8 @@ $var MAX_ARITY = 7
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_BASE_BIND_TO_LOOP_H_
-#define MEDIA_BASE_BIND_TO_LOOP_H_
+#ifndef MEDIA_BASE_BIND_TO_CURRENT_LOOP_H_
+#define MEDIA_BASE_BIND_TO_CURRENT_LOOP_H_
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -78,8 +78,6 @@ $for ARG , [[internal::TrampolineForward(a$(ARG))]]));
 
 }  // namespace internal
 
-// TODO(scherkus): Rename me to something that emphasizes the asynchrony
-// http://crbug.com/167240
 template<typename T>
 static base::Callback<T> BindToCurrentLoop(
     const base::Callback<T>& cb) {
@@ -89,4 +87,4 @@ static base::Callback<T> BindToCurrentLoop(
 
 }  // namespace media
 
-#endif  // MEDIA_BASE_BIND_TO_LOOP_H_
+#endif  // MEDIA_BASE_BIND_TO_CURRENT_LOOP_H_

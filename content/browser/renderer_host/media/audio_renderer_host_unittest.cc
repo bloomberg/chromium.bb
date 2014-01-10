@@ -15,7 +15,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "ipc/ipc_message_utils.h"
 #include "media/audio/audio_manager.h"
-#include "media/base/bind_to_loop.h"
+#include "media/base/bind_to_current_loop.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

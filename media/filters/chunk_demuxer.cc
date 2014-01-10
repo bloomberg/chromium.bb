@@ -15,7 +15,7 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/stl_util.h"
 #include "media/base/audio_decoder_config.h"
-#include "media/base/bind_to_loop.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/base/stream_parser_buffer.h"
 #include "media/base/video_decoder_config.h"
 #include "media/filters/stream_parser_factory.h"

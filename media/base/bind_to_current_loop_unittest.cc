@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/base/bind_to_loop.h"
+#include "media/base/bind_to_current_loop.h"
 
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
@@ -37,12 +37,12 @@ void BoundIntegersSet(int* a_var, int* b_var, int a_val, int b_val) {
 
 // Various tests that check that the bound function is only actually executed
 // on the message loop, not during the original Run.
-class BindToLoopTest : public ::testing::Test {
+class BindToCurrentLoopTest : public ::testing::Test {
  protected:
   base::MessageLoop loop_;
 };
 
-TEST_F(BindToLoopTest, Closure) {
+TEST_F(BindToCurrentLoopTest, Closure) {
   // Test the closure is run inside the loop, not outside it.
   base::WaitableEvent waiter(false, false);
   base::Closure cb = BindToCurrentLoop(base::Bind(
@@ -53,7 +53,7 @@ TEST_F(BindToLoopTest, Closure) {
   EXPECT_TRUE(waiter.IsSignaled());
 }
 
-TEST_F(BindToLoopTest, Bool) {
+TEST_F(BindToCurrentLoopTest, Bool) {
   bool bool_var = false;
   base::Callback<void(bool)> cb = BindToCurrentLoop(base::Bind(
       &BoundBoolSet, &bool_var));
@@ -63,7 +63,7 @@ TEST_F(BindToLoopTest, Bool) {
   EXPECT_TRUE(bool_var);
 }
 
-TEST_F(BindToLoopTest, BoundScopedPtrBool) {
+TEST_F(BindToCurrentLoopTest, BoundScopedPtrBool) {
   bool bool_val = false;
   scoped_ptr<bool> scoped_ptr_bool(new bool(true));
   base::Closure cb = BindToCurrentLoop(base::Bind(
@@ -74,7 +74,7 @@ TEST_F(BindToLoopTest, BoundScopedPtrBool) {
   EXPECT_TRUE(bool_val);
 }
 
-TEST_F(BindToLoopTest, PassedScopedPtrBool) {
+TEST_F(BindToCurrentLoopTest, PassedScopedPtrBool) {
   bool bool_val = false;
   scoped_ptr<bool> scoped_ptr_bool(new bool(true));
   base::Callback<void(scoped_ptr<bool>)> cb = BindToCurrentLoop(base::Bind(
@@ -85,7 +85,7 @@ TEST_F(BindToLoopTest, PassedScopedPtrBool) {
   EXPECT_TRUE(bool_val);
 }
 
-TEST_F(BindToLoopTest, BoundScopedArrayBool) {
+TEST_F(BindToCurrentLoopTest, BoundScopedArrayBool) {
   bool bool_val = false;
   scoped_ptr<bool[]> scoped_array_bool(new bool[1]);
   scoped_array_bool[0] = true;
@@ -98,7 +98,7 @@ TEST_F(BindToLoopTest, BoundScopedArrayBool) {
   EXPECT_TRUE(bool_val);
 }
 
-TEST_F(BindToLoopTest, PassedScopedArrayBool) {
+TEST_F(BindToCurrentLoopTest, PassedScopedArrayBool) {
   bool bool_val = false;
   scoped_ptr<bool[]> scoped_array_bool(new bool[1]);
   scoped_array_bool[0] = true;
@@ -110,7 +110,7 @@ TEST_F(BindToLoopTest, PassedScopedArrayBool) {
   EXPECT_TRUE(bool_val);
 }
 
-TEST_F(BindToLoopTest, BoundScopedPtrMallocBool) {
+TEST_F(BindToCurrentLoopTest, BoundScopedPtrMallocBool) {
   bool bool_val = false;
   scoped_ptr_malloc<bool> scoped_ptr_malloc_bool(
       static_cast<bool*>(malloc(sizeof(bool))));
@@ -124,7 +124,7 @@ TEST_F(BindToLoopTest, BoundScopedPtrMallocBool) {
   EXPECT_TRUE(bool_val);
 }
 
-TEST_F(BindToLoopTest, PassedScopedPtrMallocBool) {
+TEST_F(BindToCurrentLoopTest, PassedScopedPtrMallocBool) {
   bool bool_val = false;
   scoped_ptr_malloc<bool> scoped_ptr_malloc_bool(
       static_cast<bool*>(malloc(sizeof(bool))));
@@ -137,7 +137,7 @@ TEST_F(BindToLoopTest, PassedScopedPtrMallocBool) {
   EXPECT_TRUE(bool_val);
 }
 
-TEST_F(BindToLoopTest, BoolConstRef) {
+TEST_F(BindToCurrentLoopTest, BoolConstRef) {
   bool bool_var = false;
   bool true_var = true;
   const bool& true_ref = true_var;
@@ -149,7 +149,7 @@ TEST_F(BindToLoopTest, BoolConstRef) {
   EXPECT_TRUE(bool_var);
 }
 
-TEST_F(BindToLoopTest, Integers) {
+TEST_F(BindToCurrentLoopTest, Integers) {
   int a = 0;
   int b = 0;
   base::Callback<void(int, int)> cb = BindToCurrentLoop(base::Bind(

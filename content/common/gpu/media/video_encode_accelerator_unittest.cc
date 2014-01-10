@@ -15,7 +15,7 @@
 #include "content/common/gpu/media/exynos_video_encode_accelerator.h"
 #include "content/common/gpu/media/h264_parser.h"
 #include "content/common/gpu/media/video_accelerator_unittest_helpers.h"
-#include "media/base/bind_to_loop.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/video/video_encode_accelerator.h"
 #include "testing/gtest/include/gtest/gtest.h"

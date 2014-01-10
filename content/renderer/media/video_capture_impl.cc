@@ -8,7 +8,7 @@
 #include "base/stl_util.h"
 #include "content/child/child_process.h"
 #include "content/common/media/video_capture_messages.h"
-#include "media/base/bind_to_loop.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/base/limits.h"
 #include "media/base/video_frame.h"
 

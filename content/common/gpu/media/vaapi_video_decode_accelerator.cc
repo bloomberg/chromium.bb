@@ -12,7 +12,7 @@
 #include "content/child/child_thread.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/media/vaapi_video_decode_accelerator.h"
-#include "media/base/bind_to_loop.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/video/picture.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/scoped_binders.h"

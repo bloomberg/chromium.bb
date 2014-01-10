@@ -21,7 +21,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "content/public/browser/browser_thread.h"
-#include "media/base/bind_to_loop.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "media/video/capture/video_capture_types.h"

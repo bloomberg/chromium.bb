@@ -9,7 +9,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/media/video_capture_impl.h"
 #include "content/renderer/media/video_capture_message_filter.h"
-#include "media/base/bind_to_loop.h"
+#include "media/base/bind_to_current_loop.h"
 
 namespace content {
 

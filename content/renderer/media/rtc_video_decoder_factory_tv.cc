@@ -7,7 +7,7 @@
 #include "base/callback_helpers.h"
 #include "content/renderer/media/rtc_video_decoder_bridge_tv.h"
 #include "media/base/audio_decoder_config.h"
-#include "media/base/bind_to_loop.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/video_decoder_config.h"
 #include "third_party/libjingle/source/talk/base/ratetracker.h"
