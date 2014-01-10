@@ -34,6 +34,9 @@
 // Maximum width that the bubble will occupy, regardless of message size.
 - (CGFloat)maxWidth;
 
+// Update the current text with |message|.
+- (void)setMessage:(NSString*)message;
+
 @end
 
 

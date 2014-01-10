@@ -18,6 +18,12 @@ const CGFloat kMaxLabelWidth =
 
 }  // namespace
 
+@interface AutofillBubbleController ()
+
+// Update the current message, keeping arrow location in place.
+- (void)updateMessage:(NSString*)message display:(BOOL)display;
+
+@end
 
 @implementation AutofillBubbleController
 
@@ -51,25 +57,43 @@ const CGFloat kMaxLabelWidth =
     [label_ setEditable:NO];
     [label_ setBordered:NO];
     [label_ setDrawsBackground:NO];
-    [label_ setStringValue:message];
-    NSRect labelFrame = NSMakeRect(inset.width, inset.height, 0, 0);
-    labelFrame.size = [[label_ cell] cellSizeForBounds:
-        NSMakeRect(0, 0, kMaxLabelWidth, CGFLOAT_MAX)];
-    [label_ setFrame:labelFrame];
     [[self bubble] addSubview:label_];
 
-    NSRect windowFrame = [[self window] frame];
-    windowFrame.size = NSMakeSize(
-        NSMaxX([label_ frame]),
-        NSHeight([label_ frame]) + info_bubble::kBubbleArrowHeight);
-    windowFrame = NSInsetRect(windowFrame, -inset.width, -inset.height);
-    [[self window] setFrame:windowFrame display:NO];
+    [self updateMessage:message display:NO];
   }
   return self;
 }
 
 - (CGFloat)maxWidth {
   return kMaxLabelWidth + 2 * inset_.width;
+}
+
+- (void)setMessage:(NSString*)message {
+  if ([[label_ stringValue] isEqualToString:message])
+    return;
+  [self updateMessage:message display:YES];
+}
+
+- (void)updateMessage:(NSString*)message display:(BOOL)display {
+  [label_ setStringValue:message];
+
+  NSRect labelFrame = NSMakeRect(inset_.width, inset_.height, 0, 0);
+  labelFrame.size = [[label_ cell] cellSizeForBounds:
+      NSMakeRect(0, 0, kMaxLabelWidth, CGFLOAT_MAX)];
+  [label_ setFrame:labelFrame];
+
+  // Update window's size, but ensure the origin is maintained so that the arrow
+  // still points at the same location.
+  NSRect windowFrame = [[self window] frame];
+  NSPoint origin = windowFrame.origin;
+  origin.y += NSHeight(windowFrame);
+  windowFrame.size = NSMakeSize(
+      NSMaxX([label_ frame]),
+      NSHeight([label_ frame]) + info_bubble::kBubbleArrowHeight);
+  windowFrame = NSInsetRect(windowFrame, -inset_.width, -inset_.height);
+  origin.y -= NSHeight(windowFrame);
+  windowFrame.origin = origin;
+  [[self window] setFrame:windowFrame display:display];
 }
 
 @end

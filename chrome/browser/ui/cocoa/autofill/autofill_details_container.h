@@ -36,6 +36,9 @@ class AutofillDialogViewDelegate;
 
   AutofillBubbleController* errorBubbleController_;
 
+  // The view the current error bubble is anchored to.
+  NSView* errorBubbleAnchorView_;
+
   autofill::AutofillDialogViewDelegate* delegate_;  // Not owned.
 }
 
