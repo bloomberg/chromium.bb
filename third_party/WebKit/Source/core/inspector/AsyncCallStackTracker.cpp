@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/inspector/AsyncCallStackTracker.h"
 
+#include "bindings/v8/V8RecursionScope.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/events/EventTarget.h"
@@ -355,15 +356,6 @@ void AsyncCallStackTracker::willDeliverMutationRecords(ExecutionContext* context
 {
     ASSERT(context);
     ASSERT(isEnabled());
-
-    // FIXME: Check Microtask::isPerformingCheckpoint() after http://crrev.com/120933002
-
-    // If we are at a Microtask checkpoint, any current AsyncCallChain is no longer valid,
-    // but it may not have been cleaned up yet, since the checkpoint may run before the
-    // corresponding instrumentation callback (e.g. didFireTimer).
-    m_currentAsyncCallChain.clear();
-    m_nestedAsyncCallCount = 0;
-
     if (ExecutionContextData* data = m_executionContextDataMap.get(context))
         setCurrentAsyncCallChain(data->m_mutationObserverCallChains.take(observer));
     else
@@ -385,11 +377,13 @@ PassRefPtr<AsyncCallStackTracker::AsyncCallChain> AsyncCallStackTracker::createA
 
 void AsyncCallStackTracker::setCurrentAsyncCallChain(PassRefPtr<AsyncCallChain> chain)
 {
-    if (m_currentAsyncCallChain) {
-        ++m_nestedAsyncCallCount;
-    } else if (chain) {
+    if (V8RecursionScope::recursionLevel()) {
+        if (m_currentAsyncCallChain)
+            ++m_nestedAsyncCallCount;
+    } else {
+        // Current AsyncCallChain corresponds to the bottommost JS call frame.
         m_currentAsyncCallChain = chain;
-        m_nestedAsyncCallCount = 1;
+        m_nestedAsyncCallCount = m_currentAsyncCallChain ? 1 : 0;
     }
 }
 

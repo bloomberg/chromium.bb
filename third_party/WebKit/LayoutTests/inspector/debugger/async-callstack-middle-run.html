@@ -17,8 +17,21 @@ function timeoutOffCapturing()
     images[2].addEventListener("click", clickedOffCapturing, false);
     images[0].addEventListener("error", imageErrorOffCapturing, false);
     images[2].addEventListener("error", imageErrorOffCapturing, false);
+    setTimeout(timeoutOffCapturing2, 0);
     debugger; // Will start capturing async stacks from this point.
     setTimeout(timeoutOnCapturing, 0);
+}
+
+function timeoutOffCapturing2()
+{
+    function shouldBeNoAsyncStack()
+    {
+        debugger;
+    }
+
+    var node = document.createElement("div");
+    node.addEventListener("click", shouldBeNoAsyncStack, false);
+    node.click();
 }
 
 function timeoutOnCapturing()
@@ -88,7 +101,7 @@ function setImageNonExistingSrc(imgIndex)
 
 var test = function()
 {
-    var totalDebuggerStatements = 6;
+    var totalDebuggerStatements = 7;
     var maxAsyncCallStackDepth = 4;
 
     InspectorTest.setQuiet(true);
