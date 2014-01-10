@@ -76,10 +76,6 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
  private:
   friend class WorkspaceWindowResizerTest;
 
-  // Returns the final bounds to place the window at. This differs from
-  // the current when snapping.
-  gfx::Rect GetFinalBounds(const gfx::Rect& bounds) const;
-
   // Lays out the attached windows. |bounds| is the bounds of the main window.
   void LayoutAttachedWindows(gfx::Rect* bounds);
 

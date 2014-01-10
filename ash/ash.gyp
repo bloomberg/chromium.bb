@@ -874,6 +874,7 @@
         'wm/window_util_unittest.cc',
         'wm/workspace/magnetism_matcher_unittest.cc',
         'wm/workspace/multi_window_resize_controller_unittest.cc',
+        'wm/workspace/phantom_window_controller_unittest.cc',
         'wm/workspace/snap_sizer_unittest.cc',
         'wm/workspace/workspace_event_handler_test_helper.cc',
         'wm/workspace/workspace_event_handler_test_helper.h',

@@ -6,6 +6,7 @@
 #define ASH_WM_GESTURES_SYSTEM_PINCH_HANDLER_H_
 
 #include "ash/wm/workspace/phantom_window_controller.h"
+#include "base/memory/scoped_ptr.h"
 
 namespace aura {
 class Window;
@@ -64,7 +65,7 @@ class SystemPinchHandler {
 
   // A phantom window is used to provide visual cues for
   // pinch-to-resize/maximize/minimize gestures.
-  PhantomWindowController phantom_;
+  scoped_ptr<PhantomWindowController> phantom_;
 
   // When the phantom window is in minimized or maximized state, moving the
   // target window should not move the phantom window. So |phantom_state_| is
