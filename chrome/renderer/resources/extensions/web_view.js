@@ -958,6 +958,9 @@ function registerWebViewElement() {
   };
 
   proto.attributeChangedCallback = function(name, oldValue, newValue) {
+    if (!this.internal_) {
+      return;
+    }
     var internal = this.internal_(secret);
     internal.handleWebviewAttributeMutation_(name, oldValue, newValue);
   };
