@@ -202,24 +202,24 @@ pixelShouldBe(9, 9, [0, 128,0,255]);
 
 
 shouldThrow("context.putImageData({}, 0, 0)", '"TypeError: Failed to execute \'putImageData\' on \'CanvasRenderingContext2D\': No function was found that matched the signature provided."');
-shouldThrow("context.putImageData(buffer, NaN, 0, 0, 0, 0, 0)", "'NotSupportedError: The implementation did not support the requested type of object or operation.'");
-shouldThrow("context.putImageData(buffer, 0, NaN, 0, 0, 0, 0)", "'NotSupportedError: The implementation did not support the requested type of object or operation.'");
-shouldThrow("context.putImageData(buffer, 0, 0, NaN, 0, 0, 0)", "'NotSupportedError: The implementation did not support the requested type of object or operation.'");
-shouldThrow("context.putImageData(buffer, 0, 0, 0, NaN, 0, 0)", "'NotSupportedError: The implementation did not support the requested type of object or operation.'");
-shouldThrow("context.putImageData(buffer, 0, 0, 0, 0, NaN, 0)", "'NotSupportedError: The implementation did not support the requested type of object or operation.'");
-shouldThrow("context.putImageData(buffer, 0, 0, 0, 0, 0, NaN)", "'NotSupportedError: The implementation did not support the requested type of object or operation.'");
-shouldThrow("context.putImageData(buffer, Infinity, 0, 0, 0, 0, 0)", "'NotSupportedError: The implementation did not support the requested type of object or operation.'");
-shouldThrow("context.putImageData(buffer, 0, Infinity, 0, 0, 0, 0)", "'NotSupportedError: The implementation did not support the requested type of object or operation.'");
-shouldThrow("context.putImageData(buffer, 0, 0, Infinity, 0, 0, 0)", "'NotSupportedError: The implementation did not support the requested type of object or operation.'");
-shouldThrow("context.putImageData(buffer, 0, 0, 0, Infinity, 0, 0)", "'NotSupportedError: The implementation did not support the requested type of object or operation.'");
-shouldThrow("context.putImageData(buffer, 0, 0, 0, 0, Infinity, 0)", "'NotSupportedError: The implementation did not support the requested type of object or operation.'");
-shouldThrow("context.putImageData(buffer, 0, 0, 0, 0, 0, Infinity)", "'NotSupportedError: The implementation did not support the requested type of object or operation.'");
-shouldThrow("context.putImageData(buffer, undefined, 0, 0, 0, 0, 0)", "'NotSupportedError: The implementation did not support the requested type of object or operation.'");
-shouldThrow("context.putImageData(buffer, 0, undefined, 0, 0, 0, 0)", "'NotSupportedError: The implementation did not support the requested type of object or operation.'");
-shouldThrow("context.putImageData(buffer, 0, 0, undefined, 0, 0, 0)", "'NotSupportedError: The implementation did not support the requested type of object or operation.'");
-shouldThrow("context.putImageData(buffer, 0, 0, 0, undefined, 0, 0)", "'NotSupportedError: The implementation did not support the requested type of object or operation.'");
-shouldThrow("context.putImageData(buffer, 0, 0, 0, 0, undefined, 0)", "'NotSupportedError: The implementation did not support the requested type of object or operation.'");
-shouldThrow("context.putImageData(buffer, 0, 0, 0, 0, 0, undefined)", "'NotSupportedError: The implementation did not support the requested type of object or operation.'");
+shouldThrow("context.putImageData(buffer, NaN, 0, 0, 0, 0, 0)");
+shouldThrow("context.putImageData(buffer, 0, NaN, 0, 0, 0, 0)");
+shouldThrow("context.putImageData(buffer, 0, 0, NaN, 0, 0, 0)");
+shouldThrow("context.putImageData(buffer, 0, 0, 0, NaN, 0, 0)");
+shouldThrow("context.putImageData(buffer, 0, 0, 0, 0, NaN, 0)");
+shouldThrow("context.putImageData(buffer, 0, 0, 0, 0, 0, NaN)");
+shouldThrow("context.putImageData(buffer, Infinity, 0, 0, 0, 0, 0)");
+shouldThrow("context.putImageData(buffer, 0, Infinity, 0, 0, 0, 0)");
+shouldThrow("context.putImageData(buffer, 0, 0, Infinity, 0, 0, 0)");
+shouldThrow("context.putImageData(buffer, 0, 0, 0, Infinity, 0, 0)");
+shouldThrow("context.putImageData(buffer, 0, 0, 0, 0, Infinity, 0)");
+shouldThrow("context.putImageData(buffer, 0, 0, 0, 0, 0, Infinity)");
+shouldThrow("context.putImageData(buffer, undefined, 0, 0, 0, 0, 0)");
+shouldThrow("context.putImageData(buffer, 0, undefined, 0, 0, 0, 0)");
+shouldThrow("context.putImageData(buffer, 0, 0, undefined, 0, 0, 0)");
+shouldThrow("context.putImageData(buffer, 0, 0, 0, undefined, 0, 0)");
+shouldThrow("context.putImageData(buffer, 0, 0, 0, 0, undefined, 0)");
+shouldThrow("context.putImageData(buffer, 0, 0, 0, 0, 0, undefined)");
 
 // Ensure we don't mess up bounds clipping checks
 var rectcanvas = document.createElement("canvas");

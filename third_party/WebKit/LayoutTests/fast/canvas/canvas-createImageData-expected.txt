@@ -3,7 +3,7 @@ Test canvas createImageData()
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS ctx.createImageData(null) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
+PASS ctx.createImageData(null) threw exception NotSupportedError: Failed to execute 'createImageData' on 'CanvasRenderingContext2D': The ImageData provided is invalid..
 PASS imageData.width is 100
 PASS imageData.height is 50
 PASS imageData.data[32] is 255

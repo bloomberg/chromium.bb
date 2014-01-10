@@ -34,6 +34,7 @@
 #include "core/html/canvas/CanvasRenderingContext2D.h"
 
 #include "CSSPropertyNames.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/accessibility/AXObjectCache.h"
@@ -1289,7 +1290,7 @@ void CanvasRenderingContext2D::drawImageInternal(Image* image, const FloatRect& 
 void CanvasRenderingContext2D::drawImage(ImageBitmap* bitmap, float x, float y, ExceptionState& exceptionState)
 {
     if (!bitmap) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        exceptionState.throwDOMException(TypeMismatchError, "The element provided is invalid.");
         return;
     }
     drawImage(bitmap, x, y, bitmap->width(), bitmap->height(), exceptionState);
@@ -1299,7 +1300,7 @@ void CanvasRenderingContext2D::drawImage(ImageBitmap* bitmap,
     float x, float y, float width, float height, ExceptionState& exceptionState)
 {
     if (!bitmap) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        exceptionState.throwDOMException(TypeMismatchError, "The element provided is invalid.");
         return;
     }
     if (!bitmap->bitmapRect().width() || !bitmap->bitmapRect().height())
@@ -1313,7 +1314,7 @@ void CanvasRenderingContext2D::drawImage(ImageBitmap* bitmap,
     float dx, float dy, float dw, float dh, ExceptionState& exceptionState)
 {
     if (!bitmap) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        exceptionState.throwDOMException(TypeMismatchError, "The element provided is invalid.");
         return;
     }
 
@@ -1328,7 +1329,7 @@ void CanvasRenderingContext2D::drawImage(ImageBitmap* bitmap,
     if (!dstRect.width() || !dstRect.height())
         return;
     if (!srcRect.width() || !srcRect.height()) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwDOMException(IndexSizeError, String::format("The source %s is 0.", srcRect.width() ? "height" : "width"));
         return;
     }
 
@@ -1364,7 +1365,7 @@ void CanvasRenderingContext2D::drawImage(ImageBitmap* bitmap,
 void CanvasRenderingContext2D::drawImage(HTMLImageElement* image, float x, float y, ExceptionState& exceptionState)
 {
     if (!image) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        exceptionState.throwDOMException(TypeMismatchError, "The image element provided is invalid.");
         return;
     }
     LayoutSize destRectSize = sizeFor(image, ImageSizeAfterDevicePixelRatio);
@@ -1375,7 +1376,7 @@ void CanvasRenderingContext2D::drawImage(HTMLImageElement* image,
     float x, float y, float width, float height, ExceptionState& exceptionState)
 {
     if (!image) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        exceptionState.throwDOMException(TypeMismatchError, "The image element provided is invalid.");
         return;
     }
     LayoutSize sourceRectSize = sizeFor(image, ImageSizeBeforeDevicePixelRatio);
@@ -1397,7 +1398,7 @@ void CanvasRenderingContext2D::drawImage(HTMLImageElement* image, const FloatRec
 void CanvasRenderingContext2D::drawImage(HTMLImageElement* image, const FloatRect& srcRect, const FloatRect& dstRect, const CompositeOperator& op, const blink::WebBlendMode& blendMode, ExceptionState& exceptionState)
 {
     if (!image) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        exceptionState.throwDOMException(TypeMismatchError, "The image element provided is invalid.");
         return;
     }
 
@@ -1411,7 +1412,7 @@ void CanvasRenderingContext2D::drawImage(HTMLImageElement* image, const FloatRec
 
     LayoutSize size = sizeFor(image, ImageSizeBeforeDevicePixelRatio);
     if (!size.width() || !size.height()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        exceptionState.throwDOMException(InvalidStateError, String::format("The source %s is 0.", size.width() ? "height" : "width"));
         return;
     }
 
@@ -1423,7 +1424,7 @@ void CanvasRenderingContext2D::drawImage(HTMLImageElement* image, const FloatRec
 
     FloatRect imageRect = FloatRect(FloatPoint(), size);
     if (!srcRect.width() || !srcRect.height()) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwDOMException(IndexSizeError, String::format("The source %s is 0.", srcRect.width() ? "height" : "width"));
         return;
     }
     if (!imageRect.intersects(normalizedSrcRect))
@@ -1466,19 +1467,19 @@ void CanvasRenderingContext2D::drawImage(HTMLCanvasElement* sourceCanvas, const 
     const FloatRect& dstRect, ExceptionState& exceptionState)
 {
     if (!sourceCanvas) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        exceptionState.throwDOMException(TypeMismatchError, "The canvas element provided is invalid.");
         return;
     }
 
     FloatRect srcCanvasRect = FloatRect(FloatPoint(), sourceCanvas->size());
 
     if (!srcCanvasRect.width() || !srcCanvasRect.height()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        exceptionState.throwDOMException(InvalidStateError, String::format("The source canvas %s is 0.", srcCanvasRect.width() ? "height" : "width"));
         return;
     }
 
     if (!srcRect.width() || !srcRect.height()) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwDOMException(IndexSizeError, String::format("The source %s is 0.", srcRect.width() ? "height" : "width"));
         return;
     }
 
@@ -1540,7 +1541,7 @@ void CanvasRenderingContext2D::drawImage(HTMLCanvasElement* sourceCanvas, const 
 void CanvasRenderingContext2D::drawImage(HTMLVideoElement* video, float x, float y, ExceptionState& exceptionState)
 {
     if (!video) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        exceptionState.throwDOMException(TypeMismatchError, "The video element provided is invalid.");
         return;
     }
     IntSize size = sizeFor(video);
@@ -1551,7 +1552,7 @@ void CanvasRenderingContext2D::drawImage(HTMLVideoElement* video,
     float x, float y, float width, float height, ExceptionState& exceptionState)
 {
     if (!video) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        exceptionState.throwDOMException(TypeMismatchError, "The video element provided is invalid.");
         return;
     }
     IntSize size = sizeFor(video);
@@ -1568,7 +1569,7 @@ void CanvasRenderingContext2D::drawImage(HTMLVideoElement* video,
 void CanvasRenderingContext2D::drawImage(HTMLVideoElement* video, const FloatRect& srcRect, const FloatRect& dstRect, ExceptionState& exceptionState)
 {
     if (!video) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        exceptionState.throwDOMException(TypeMismatchError, "The video element provided is invalid.");
         return;
     }
 
@@ -1577,7 +1578,7 @@ void CanvasRenderingContext2D::drawImage(HTMLVideoElement* video, const FloatRec
 
     FloatRect videoRect = FloatRect(FloatPoint(), sizeFor(video));
     if (!srcRect.width() || !srcRect.height()) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+        exceptionState.throwDOMException(IndexSizeError, String::format("The source %s is 0.", srcRect.width() ? "height" : "width"));
         return;
     }
 
@@ -1700,10 +1701,17 @@ template<class T> void CanvasRenderingContext2D::fullCanvasCompositedFill(const 
 
 PassRefPtr<CanvasGradient> CanvasRenderingContext2D::createLinearGradient(float x0, float y0, float x1, float y1, ExceptionState& exceptionState)
 {
-    if (!std::isfinite(x0) || !std::isfinite(y0) || !std::isfinite(x1) || !std::isfinite(y1)) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+    if (!std::isfinite(x0))
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(x0, "x0"));
+    else if (!std::isfinite(y0))
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(y0, "y0"));
+    else if (!std::isfinite(x1))
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(x1, "x1"));
+    else if (!std::isfinite(y1))
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(y1, "y1"));
+
+    if (exceptionState.hadException())
         return 0;
-    }
 
     RefPtr<CanvasGradient> gradient = CanvasGradient::create(FloatPoint(x0, y0), FloatPoint(x1, y1));
     return gradient.release();
@@ -1711,15 +1719,23 @@ PassRefPtr<CanvasGradient> CanvasRenderingContext2D::createLinearGradient(float 
 
 PassRefPtr<CanvasGradient> CanvasRenderingContext2D::createRadialGradient(float x0, float y0, float r0, float x1, float y1, float r1, ExceptionState& exceptionState)
 {
-    if (!std::isfinite(x0) || !std::isfinite(y0) || !std::isfinite(r0) || !std::isfinite(x1) || !std::isfinite(y1) || !std::isfinite(r1)) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
-        return 0;
-    }
+    if (!std::isfinite(x0))
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(x0, "x0"));
+    else if (!std::isfinite(y0))
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(y0, "y0"));
+    else if (!std::isfinite(r0))
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(r0, "r0"));
+    else if (!std::isfinite(x1))
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(x1, "x1"));
+    else if (!std::isfinite(y1))
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(y1, "y1"));
+    else if (!std::isfinite(r1))
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(r1, "r1"));
+    else if (r0 < 0 || r1 < 0)
+        exceptionState.throwDOMException(IndexSizeError, String::format("The %s provided is less than 0.", r0 < 0 ? "r0" : "r1"));
 
-    if (r0 < 0 || r1 < 0) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+    if (exceptionState.hadException())
         return 0;
-    }
 
     RefPtr<CanvasGradient> gradient = CanvasGradient::create(FloatPoint(x0, y0), r0, FloatPoint(x1, y1), r1);
     return gradient.release();
@@ -1729,7 +1745,7 @@ PassRefPtr<CanvasPattern> CanvasRenderingContext2D::createPattern(HTMLImageEleme
     const String& repetitionType, ExceptionState& exceptionState)
 {
     if (!image) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        exceptionState.throwDOMException(TypeMismatchError, "The image element provided is invalid.");
         return 0;
     }
     bool repeatX, repeatY;
@@ -1756,14 +1772,13 @@ PassRefPtr<CanvasPattern> CanvasRenderingContext2D::createPattern(HTMLImageEleme
 PassRefPtr<CanvasPattern> CanvasRenderingContext2D::createPattern(HTMLCanvasElement* canvas,
     const String& repetitionType, ExceptionState& exceptionState)
 {
-    if (!canvas) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+    if (!canvas)
+        exceptionState.throwDOMException(TypeMismatchError, "The canvas element provided is invalid.");
+    else if (!canvas->width() || !canvas->height())
+        exceptionState.throwDOMException(InvalidStateError, String::format("The canvas %s is 0.", canvas->width() ? "height" : "width"));
+
+    if (exceptionState.hadException())
         return 0;
-    }
-    if (!canvas->width() || !canvas->height()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
-        return 0;
-    }
 
     bool repeatX, repeatY;
     CanvasPattern::parseRepetitionType(repetitionType, repeatX, repeatY, exceptionState);
@@ -1841,7 +1856,7 @@ static PassRefPtr<ImageData> createEmptyImageData(const IntSize& size)
 PassRefPtr<ImageData> CanvasRenderingContext2D::createImageData(PassRefPtr<ImageData> imageData, ExceptionState& exceptionState) const
 {
     if (!imageData) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwDOMException(NotSupportedError, "The ImageData provided is invalid.");
         return 0;
     }
 
@@ -1850,14 +1865,15 @@ PassRefPtr<ImageData> CanvasRenderingContext2D::createImageData(PassRefPtr<Image
 
 PassRefPtr<ImageData> CanvasRenderingContext2D::createImageData(float sw, float sh, ExceptionState& exceptionState) const
 {
-    if (!sw || !sh) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+    if (!sw || !sh)
+        exceptionState.throwDOMException(IndexSizeError, String::format("The source %s is 0.", sw ? "height" : "width"));
+    else if (!std::isfinite(sw))
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(sw, "source width"));
+    else if (!std::isfinite(sh))
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(sh, "source height"));
+
+    if (exceptionState.hadException())
         return 0;
-    }
-    if (!std::isfinite(sw) || !std::isfinite(sh)) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
-        return 0;
-    }
 
     FloatSize logicalSize(fabs(sw), fabs(sh));
     if (!logicalSize.isExpressibleAsIntSize())
@@ -1879,19 +1895,21 @@ PassRefPtr<ImageData> CanvasRenderingContext2D::webkitGetImageDataHD(float sx, f
 
 PassRefPtr<ImageData> CanvasRenderingContext2D::getImageData(float sx, float sy, float sw, float sh, ExceptionState& exceptionState) const
 {
-    if (!canvas()->originClean()) {
+    if (!canvas()->originClean())
         exceptionState.throwSecurityError("The canvas has been tainted by cross-origin data.");
-        return 0;
-    }
+    else if (!sw || !sh)
+        exceptionState.throwDOMException(IndexSizeError, String::format("The source %s is 0.", sw ? "height" : "width"));
+    else if (!std::isfinite(sx))
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(sx, "source X"));
+    else if (!std::isfinite(sy))
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(sy, "source Y"));
+    else if (!std::isfinite(sw))
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(sw, "source width"));
+    else if (!std::isfinite(sh))
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(sh, "source height"));
 
-    if (!sw || !sh) {
-        exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
+    if (exceptionState.hadException())
         return 0;
-    }
-    if (!std::isfinite(sx) || !std::isfinite(sy) || !std::isfinite(sw) || !std::isfinite(sh)) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
-        return 0;
-    }
 
     if (sw < 0) {
         sx += sw;
@@ -1925,7 +1943,7 @@ PassRefPtr<ImageData> CanvasRenderingContext2D::getImageData(float sx, float sy,
 void CanvasRenderingContext2D::putImageData(ImageData* data, float dx, float dy, ExceptionState& exceptionState)
 {
     if (!data) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        exceptionState.throwDOMException(TypeMismatchError, "The ImageData provided is invalid.");
         return;
     }
     putImageData(data, dx, dy, 0, 0, data->width(), data->height(), exceptionState);
@@ -1934,14 +1952,23 @@ void CanvasRenderingContext2D::putImageData(ImageData* data, float dx, float dy,
 void CanvasRenderingContext2D::putImageData(ImageData* data, float dx, float dy, float dirtyX, float dirtyY,
     float dirtyWidth, float dirtyHeight, ExceptionState& exceptionState)
 {
-    if (!data) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+    if (!data)
+        exceptionState.throwDOMException(TypeMismatchError, "The ImageData provided is invalid.");
+    else if (!std::isfinite(dx))
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(dx, "dx"));
+    else if (!std::isfinite(dy))
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(dy, "dy"));
+    else if (!std::isfinite(dirtyX))
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(dirtyX, "dirtyX"));
+    else if (!std::isfinite(dirtyY))
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(dirtyY, "dirtyY"));
+    else if (!std::isfinite(dirtyWidth))
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(dirtyWidth, "dirtyWidth"));
+    else if (!std::isfinite(dirtyHeight))
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(dirtyHeight, "dirtyHeight"));
+
+    if (exceptionState.hadException())
         return;
-    }
-    if (!std::isfinite(dx) || !std::isfinite(dy) || !std::isfinite(dirtyX) || !std::isfinite(dirtyY) || !std::isfinite(dirtyWidth) || !std::isfinite(dirtyHeight)) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
-        return;
-    }
 
     ImageBuffer* buffer = canvas()->buffer();
     if (!buffer)

@@ -2,7 +2,7 @@ description("Test canvas createImageData()");
 
 ctx = document.createElement('canvas').getContext('2d');
 
-shouldThrow("ctx.createImageData(null)", '"NotSupportedError: The implementation did not support the requested type of object or operation."');
+shouldThrow("ctx.createImageData(null)");
 
 // create a 100x50 imagedata and fill it with white pixels
 
