@@ -734,6 +734,13 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
 
     bool isSVGText = renderText->isSVGInlineText();
 
+    // If we have left a no-wrap inline and entered an autowrap inline while ignoring spaces
+    // then we need to mark the start of the autowrap inline as a potential linebreak now.
+    if (m_autoWrap && !RenderStyle::autoWrap(m_lastWS) && m_ignoringSpaces) {
+        m_width.commit();
+        m_lineBreak.moveToStartOf(m_current.object());
+    }
+
     if (renderText->style()->hasTextCombine() && m_current.object()->isCombineText() && !toRenderCombineText(m_current.object())->isCombined()) {
         RenderCombineText* combineRenderer = toRenderCombineText(m_current.object());
         combineRenderer->combineText();
