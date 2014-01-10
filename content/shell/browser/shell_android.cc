@@ -30,10 +30,6 @@ void Shell::PlatformExit() {
 }
 
 void Shell::PlatformCleanUp() {
-  JNIEnv* env = AttachCurrentThread();
-  if (java_object_.is_null())
-    return;
-  Java_Shell_onNativeDestroyed(env, java_object_.obj());
 }
 
 void Shell::PlatformEnableUIControl(UIControl control, bool is_enabled) {
@@ -87,19 +83,14 @@ bool Shell::PlatformIsFullscreenForTabOrPending(
 }
 
 void Shell::Close() {
-  RemoveShellView(java_object_.obj());
+  CloseShellView(java_object_.obj());
+  java_object_.Reset();
   delete this;
 }
 
 // static
 bool Shell::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);
-}
-
-// static
-void CloseShell(JNIEnv* env, jclass clazz, jlong shellPtr) {
-  Shell* shell = reinterpret_cast<Shell*>(shellPtr);
-  shell->Close();
 }
 
 }  // namespace content

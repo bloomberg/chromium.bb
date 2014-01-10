@@ -11,7 +11,6 @@ import android.widget.FrameLayout;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
-import org.chromium.base.ThreadUtils;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewRenderView;
 import org.chromium.ui.base.WindowAndroid;
@@ -83,7 +82,6 @@ public class ShellManager extends FrameLayout {
      * @param url The URL the shell should load upon creation.
      */
     public void launchShell(String url) {
-        ThreadUtils.assertOnUiThread();
         nativeLaunchShell(url);
     }
 
@@ -98,14 +96,14 @@ public class ShellManager extends FrameLayout {
 
     @SuppressWarnings("unused")
     @CalledByNative
-    private Object createShell(long nativeShellPtr) {
+    private Object createShell() {
         assert mContentViewRenderView != null;
         LayoutInflater inflater =
                 (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         Shell shellView = (Shell) inflater.inflate(R.layout.shell_view, null);
-        shellView.initialize(nativeShellPtr, mWindow);
+        shellView.setWindow(mWindow);
 
-        if (mActiveShell != null) mActiveShell.close();
+        if (mActiveShell != null) closeShell(mActiveShell);
 
         shellView.setContentViewRenderView(mContentViewRenderView);
         addView(shellView, new FrameLayout.LayoutParams(
@@ -122,11 +120,12 @@ public class ShellManager extends FrameLayout {
 
     @SuppressWarnings("unused")
     @CalledByNative
-    private void removeShell(Shell shellView) {
+    private void closeShell(Shell shellView) {
         if (shellView == mActiveShell) mActiveShell = null;
         ContentView contentView = shellView.getContentView();
         if (contentView != null) contentView.onHide();
         shellView.setContentViewRenderView(null);
+        shellView.setWindow(null);
         removeView(shellView);
     }
 

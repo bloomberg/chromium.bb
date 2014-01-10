@@ -34,16 +34,13 @@ namespace content {
 jobject CreateShellView(Shell* shell) {
   JNIEnv* env = base::android::AttachCurrentThread();
   jobject j_shell_manager = g_global_state.Get().j_shell_manager.obj();
-  return Java_ShellManager_createShell(
-      env,
-      j_shell_manager,
-      reinterpret_cast<intptr_t>(shell)).Release();
+  return Java_ShellManager_createShell(env, j_shell_manager).Release();
 }
 
-void RemoveShellView(jobject shell_view) {
+void CloseShellView(jobject shell_view) {
   JNIEnv* env = base::android::AttachCurrentThread();
   jobject j_shell_manager = g_global_state.Get().j_shell_manager.obj();
-  Java_ShellManager_removeShell(env, j_shell_manager, shell_view);
+  Java_ShellManager_closeShell(env, j_shell_manager, shell_view);
 }
 
 // Register native methods
