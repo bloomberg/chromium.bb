@@ -696,8 +696,7 @@ const char kLogGpuControlListDecisions[]    = "log-gpu-control-list-decisions";
 // INFO = 0, WARNING = 1, LOG_ERROR = 2, LOG_FATAL = 3.
 const char kLoggingLevel[]                  = "log-level";
 
-// Enables displaying net log events on the command line, or writing the events
-// to a separate file if a file name is given.
+// Enables saving net log events to a file and sets the file name to use.
 const char kLogNetLog[]                     = "log-net-log";
 
 // Make plugin processes log their sent and received messages to VLOG(1).
