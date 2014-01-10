@@ -27,6 +27,9 @@ class WebrtcAecDumpBrowserTest : public ContentBrowserTest {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(CreateTemporaryFileInDir(temp_dir_.path(), &dump_file_));
 
+    // These tests expect pixel output.
+    UseRealGLContexts();
+
     ContentBrowserTest::SetUp();
   }
 
@@ -37,10 +40,6 @@ class WebrtcAecDumpBrowserTest : public ContentBrowserTest {
         switches::kUseFakeDeviceForMediaStream));
     ASSERT_TRUE(CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kUseFakeUIForMediaStream));
-
-    // The video playback will not work without a GPU, so force its use here.
-    // This may not be available on all VMs though.
-    command_line->AppendSwitch(switches::kUseGpuInTests);
 
     // Enable AEC dump with the command line flag.
     command_line->AppendSwitchPath(switches::kEnableWebRtcAecRecordings,

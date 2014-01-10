@@ -59,6 +59,9 @@
 #elif defined(ARCH_CPU_X86_FAMILY)
 #include "content/common/gpu/media/vaapi_video_decode_accelerator.h"
 #include "content/common/gpu/media/vaapi_wrapper.h"
+#if defined(USE_X11)
+#include "ui/gl/gl_implementation.h"
+#endif  // USE_X11
 #endif  // ARCH_CPU_ARMEL
 #else
 #error The VideoAccelerator tests are not supported on this platform.
@@ -553,6 +556,8 @@ void GLRenderingVDAClient::CreateAndStartDecoder() {
       base::Bind(&DoNothingReturnTrue),
       base::MessageLoopProxy::current()));
 #elif defined(ARCH_CPU_X86_FAMILY)
+  CHECK_EQ(gfx::kGLImplementationDesktopGL, gfx::GetGLImplementation())
+      << "Hardware video decode does not work with OSMesa";
   decoder_.reset(new VaapiVideoDecodeAccelerator(
       static_cast<Display*>(rendering_helper_->GetGLDisplay()),
       client,

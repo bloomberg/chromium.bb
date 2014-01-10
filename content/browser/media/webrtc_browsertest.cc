@@ -88,6 +88,12 @@ class WebrtcBrowserTest: public ContentBrowserTest {
   WebrtcBrowserTest() {}
   virtual ~WebrtcBrowserTest() {}
 
+  virtual void SetUp() OVERRIDE {
+    // These tests require pixel output.
+    UseRealGLContexts();
+    ContentBrowserTest::SetUp();
+  }
+
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     // We need fake devices in this test since we want to run on naked VMs. We
     // assume these switches are set by default in content_browsertests.
@@ -95,10 +101,6 @@ class WebrtcBrowserTest: public ContentBrowserTest {
         switches::kUseFakeDeviceForMediaStream));
     ASSERT_TRUE(CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kUseFakeUIForMediaStream));
-
-    // The video playback will not work without a GPU, so force its use here.
-    // This may not be available on all VMs though.
-    command_line->AppendSwitch(switches::kUseGpuInTests);
   }
 
   void DumpChromeTraceCallback(
