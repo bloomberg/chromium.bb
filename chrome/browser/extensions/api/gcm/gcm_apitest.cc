@@ -24,7 +24,6 @@ class GcmApiTest : public ExtensionApiTest {
   GcmApiTest() : fake_gcm_profile_service_(NULL) {}
 
  protected:
-  virtual void SetUp() OVERRIDE;
   virtual void SetUpOnMainThread() OVERRIDE;
 
   void StartCollecting();
@@ -33,17 +32,11 @@ class GcmApiTest : public ExtensionApiTest {
                                      const std::string& page_name);
 
   gcm::FakeGCMProfileService* service() const;
+  bool ShouldSkipTest() const;
 
  private:
   gcm::FakeGCMProfileService* fake_gcm_profile_service_;
 };
-
-void GcmApiTest::SetUp() {
-  // TODO(jianli): Once the GCM API enters stable, remove |channel|.
-  ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_UNKNOWN);
-
-  ExtensionApiTest::SetUp();
-}
 
 void GcmApiTest::SetUpOnMainThread() {
   gcm::GCMProfileServiceFactory::GetInstance()->SetTestingFactory(
@@ -65,6 +58,9 @@ gcm::FakeGCMProfileService* GcmApiTest::service() const {
 const Extension* GcmApiTest::LoadTestExtension(
     const std::string& extension_path,
     const std::string& page_name) {
+  // TODO(jianli): Once the GCM API enters stable, remove |channel|.
+  ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_UNKNOWN);
+
   const Extension* extension =
       LoadExtension(test_data_dir_.AppendASCII(extension_path));
   if (extension) {
@@ -74,11 +70,27 @@ const Extension* GcmApiTest::LoadTestExtension(
   return extension;
 }
 
+bool GcmApiTest::ShouldSkipTest() const {
+  // TODO(jianli): Remove this once the GCM API enters stable.
+#if defined(OS_WIN)
+  return chrome::VersionInfo::GetChannel() ==
+      chrome::VersionInfo::CHANNEL_STABLE;
+#else
+  return false;
+#endif
+}
+
 IN_PROC_BROWSER_TEST_F(GcmApiTest, RegisterValidation) {
+  if (ShouldSkipTest())
+    return;
+
   ASSERT_TRUE(RunExtensionTest("gcm/functions/register_validation"));
 }
 
 IN_PROC_BROWSER_TEST_F(GcmApiTest, Register) {
+  if (ShouldSkipTest())
+    return;
+
   StartCollecting();
   ASSERT_TRUE(RunExtensionTest("gcm/functions/register"));
 
@@ -94,10 +106,16 @@ IN_PROC_BROWSER_TEST_F(GcmApiTest, Register) {
 }
 
 IN_PROC_BROWSER_TEST_F(GcmApiTest, SendValidation) {
+  if (ShouldSkipTest())
+    return;
+
   ASSERT_TRUE(RunExtensionTest("gcm/functions/send"));
 }
 
 IN_PROC_BROWSER_TEST_F(GcmApiTest, SendMessageData) {
+  if (ShouldSkipTest())
+    return;
+
   StartCollecting();
   ASSERT_TRUE(RunExtensionTest("gcm/functions/send_message_data"));
 
