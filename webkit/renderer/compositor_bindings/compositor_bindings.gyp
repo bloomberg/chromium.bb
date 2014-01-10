@@ -49,7 +49,6 @@
         'web_animation_curve_common.h',
         'web_animation_impl.cc',
         'web_animation_impl.h',
-        'web_compositing_reasons.cc',
         'web_content_layer_impl.cc',
         'web_content_layer_impl.h',
         'web_external_bitmap_impl.cc',

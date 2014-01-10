@@ -13,7 +13,6 @@
 #include "third_party/WebKit/public/platform/WebAnimation.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebColor.h"
-#include "third_party/WebKit/public/platform/WebCompositingReasons.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebLayer.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
@@ -98,7 +97,6 @@ class WebLayerImpl : public blink::WebLayer, public cc::LayerClient {
   virtual blink::WebColor backgroundColor() const;
   virtual void setFilters(const blink::WebFilterOperations& filters);
   virtual void setBackgroundFilters(const blink::WebFilterOperations& filters);
-  virtual void setCompositingReasons(blink::WebCompositingReasons);
   virtual void setAnimationDelegate(blink::WebAnimationDelegate* delegate);
   virtual bool addAnimation(blink::WebAnimation* animation);
   virtual void removeAnimation(int animation_id);

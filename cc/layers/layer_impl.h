@@ -18,7 +18,6 @@
 #include "cc/base/region.h"
 #include "cc/base/scoped_ptr_vector.h"
 #include "cc/input/input_handler.h"
-#include "cc/layers/compositing_reasons.h"
 #include "cc/layers/draw_properties.h"
 #include "cc/layers/layer_lists.h"
 #include "cc/layers/layer_position_constraint.h"
@@ -276,14 +275,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   // Debug layer name.
   void SetDebugName(const std::string& debug_name) { debug_name_ = debug_name; }
   std::string debug_name() const { return debug_name_; }
-
-  void SetCompositingReasons(CompositingReasons reasons) {
-      compositing_reasons_ = reasons;
-  }
-
-  CompositingReasons compositing_reasons() const {
-      return compositing_reasons_;
-  }
 
   bool ShowDebugBorders() const;
 
@@ -632,7 +623,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
 
   // Debug layer name.
   std::string debug_name_;
-  CompositingReasons compositing_reasons_;
 
   FilterOperations filters_;
   FilterOperations background_filters_;

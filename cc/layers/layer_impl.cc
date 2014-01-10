@@ -63,7 +63,6 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       opacity_(1.0),
       blend_mode_(SkXfermode::kSrcOver_Mode),
       draw_depth_(0.f),
-      compositing_reasons_(kCompositingReasonUnknown),
       current_draw_mode_(DRAW_MODE_NONE),
       horizontal_scrollbar_layer_(NULL),
       vertical_scrollbar_layer_(NULL) {
@@ -505,7 +504,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->SetContentBounds(content_bounds());
   layer->SetContentsScale(contents_scale_x(), contents_scale_y());
   layer->SetDebugName(debug_name_);
-  layer->SetCompositingReasons(compositing_reasons_);
   layer->SetDoubleSided(double_sided_);
   layer->SetDrawCheckerboardForMissingTiles(
       draw_checkerboard_for_missing_tiles_);
@@ -1193,132 +1191,6 @@ void LayerImpl::SetVerticalScrollbarLayer(
     vertical_scrollbar_layer_->set_scroll_layer_id(id());
 }
 
-static scoped_ptr<base::Value>
-CompositingReasonsAsValue(CompositingReasons reasons) {
-  scoped_ptr<base::ListValue> reason_list(new base::ListValue());
-
-  if (reasons == kCompositingReasonUnknown) {
-    reason_list->AppendString("No reasons given");
-    return reason_list.PassAs<base::Value>();
-  }
-
-  if (reasons & kCompositingReason3DTransform)
-    reason_list->AppendString("Has a 3d Transform");
-
-  if (reasons & kCompositingReasonVideo)
-    reason_list->AppendString("Is accelerated video");
-
-  if (reasons & kCompositingReasonCanvas)
-    reason_list->AppendString("Is accelerated canvas");
-
-  if (reasons & kCompositingReasonPlugin)
-    reason_list->AppendString("Is accelerated plugin");
-
-  if (reasons & kCompositingReasonIFrame)
-    reason_list->AppendString("Is accelerated iframe");
-
-  if (reasons & kCompositingReasonBackfaceVisibilityHidden)
-    reason_list->AppendString("Has backface-visibility: hidden");
-
-  if (reasons & kCompositingReasonAnimation)
-    reason_list->AppendString("Has accelerated animation or transition");
-
-  if (reasons & kCompositingReasonFilters)
-    reason_list->AppendString("Has accelerated filters");
-
-  if (reasons & kCompositingReasonPositionFixed)
-    reason_list->AppendString("Is fixed position");
-
-  if (reasons & kCompositingReasonPositionSticky)
-    reason_list->AppendString("Is sticky position");
-
-  if (reasons & kCompositingReasonOverflowScrollingTouch)
-    reason_list->AppendString("Is a scrollable overflow element");
-
-  if (reasons & kCompositingReasonAssumedOverlap)
-    reason_list->AppendString("Might overlap a composited animation");
-
-  if (reasons & kCompositingReasonOverlap)
-    reason_list->AppendString("Overlaps other composited content");
-
-  if (reasons & kCompositingReasonNegativeZIndexChildren) {
-    reason_list->AppendString("Might overlap negative z-index "
-                              "composited content");
-  }
-
-  if (reasons & kCompositingReasonTransformWithCompositedDescendants) {
-    reason_list->AppendString("Has transform needed by a "
-                              "composited descendant");
-  }
-
-  if (reasons & kCompositingReasonOpacityWithCompositedDescendants)
-    reason_list->AppendString("Has opacity needed by a composited descendant");
-
-  if (reasons & kCompositingReasonMaskWithCompositedDescendants)
-    reason_list->AppendString("Has a mask needed by a composited descendant");
-
-  if (reasons & kCompositingReasonReflectionWithCompositedDescendants)
-    reason_list->AppendString("Has a reflection with a composited descendant");
-
-  if (reasons & kCompositingReasonFilterWithCompositedDescendants)
-    reason_list->AppendString("Has filter effect with a composited descendant");
-
-  if (reasons & kCompositingReasonBlendingWithCompositedDescendants)
-    reason_list->AppendString("Has a blend mode with a composited descendant");
-
-  if (reasons & kCompositingReasonClipsCompositingDescendants)
-    reason_list->AppendString("Clips a composited descendant");
-
-  if (reasons & kCompositingReasonPerspective) {
-    reason_list->AppendString("Has a perspective transform needed by a "
-                              "composited 3d descendant");
-  }
-
-  if (reasons & kCompositingReasonPreserve3D) {
-    reason_list->AppendString("Has preserves-3d style with composited "
-                              "3d descendant");
-  }
-
-  if (reasons & kCompositingReasonReflectionOfCompositedParent)
-    reason_list->AppendString("Is the reflection of a composited layer");
-
-  if (reasons & kCompositingReasonRoot)
-    reason_list->AppendString("Is the root");
-
-  if (reasons & kCompositingReasonLayerForClip)
-    reason_list->AppendString("Convenience layer, to clip subtree");
-
-  if (reasons & kCompositingReasonLayerForScrollbar)
-    reason_list->AppendString("Convenience layer for rendering scrollbar");
-
-  if (reasons & kCompositingReasonLayerForScrollingContainer)
-    reason_list->AppendString("Convenience layer, the scrolling container");
-
-  if (reasons & kCompositingReasonLayerForForeground) {
-    reason_list->AppendString("Convenience layer, foreground when main layer "
-                              "has negative z-index composited content");
-  }
-
-  if (reasons & kCompositingReasonLayerForBackground) {
-    reason_list->AppendString("Convenience layer, background when main layer "
-                              "has a composited background");
-  }
-
-  if (reasons & kCompositingReasonLayerForMask)
-    reason_list->AppendString("Is a mask layer");
-
-  if (reasons & kCompositingReasonOverflowScrollingParent)
-    reason_list->AppendString("Scroll parent is not an ancestor");
-
-  if (reasons & kCompositingReasonOutOfFlowClipping)
-    reason_list->AppendString("Has clipping ancestor");
-
-  if (reasons & kCompositingReasonIsolateCompositedDescendants)
-    reason_list->AppendString("Should isolate composited descendants");
-
-  return reason_list.PassAs<base::Value>();
-}
-
 void LayerImpl::AsValueInto(base::DictionaryValue* state) const {
   TracedValue::MakeDictIntoImplicitSnapshot(state, LayerTypeAsString(), this);
   state->SetInteger("layer_id", id());
@@ -1326,8 +1198,6 @@ void LayerImpl::AsValueInto(base::DictionaryValue* state) const {
   state->Set("bounds", MathUtil::AsValue(bounds()).release());
   state->SetInteger("draws_content", DrawsContent());
   state->SetInteger("gpu_memory_usage", GPUMemoryUsageInBytes());
-  state->Set("compositing_reasons",
-             CompositingReasonsAsValue(compositing_reasons_).release());
 
   bool clipped;
   gfx::QuadF layer_quad = MathUtil::MapQuad(
@@ -1383,20 +1253,7 @@ void LayerImpl::AsValueInto(base::DictionaryValue* state) const {
     base::JSONReader json_reader;
     scoped_ptr<base::Value> debug_info_value(json_reader.ReadToValue(str));
 
-    // TODO(vollick): The TYPE_LIST code below is brittle; it assumes the only
-    // debug info is the layout rects. In future, this will be generalized, and
-    // debug info will return a dictionary to be merged into state. Until then,
-    // we unfortunately have to support both situations. Once we've migrated,
-    // the TYPE_LIST branch will be deleted.
-    if (debug_info_value->IsType(base::Value::TYPE_LIST)) {
-      // Parsing the JSON and re-encoding it is not very efficient,
-      // but it's the simplest way to achieve the desired effect, which
-      // is to output:
-      // {..., layout_rects: [{geometry_rect: ...}, ...], ...}
-      // rather than:
-      // {layout_rects: "[{geometry_rect: ...}, ...]", ...}
-      state->Set("layout_rects", debug_info_value.release());
-    } else if (debug_info_value->IsType(base::Value::TYPE_DICTIONARY)) {
+    if (debug_info_value->IsType(base::Value::TYPE_DICTIONARY)) {
       base::DictionaryValue* dictionary_value = NULL;
       bool converted_to_dictionary =
           debug_info_value->GetAsDictionary(&dictionary_value);

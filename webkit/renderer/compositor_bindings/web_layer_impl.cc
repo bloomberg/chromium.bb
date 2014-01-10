@@ -14,7 +14,6 @@
 #include "cc/base/switches.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_position_constraint.h"
-#include "third_party/WebKit/public/platform/WebCompositingReasons.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
 #include "third_party/WebKit/public/platform/WebGraphicsLayerDebugInfo.h"
@@ -215,11 +214,6 @@ void WebLayerImpl::setBackgroundFilters(const WebFilterOperations& filters) {
   const WebFilterOperationsImpl& filters_impl =
       static_cast<const WebFilterOperationsImpl&>(filters);
   layer_->SetBackgroundFilters(filters_impl.AsFilterOperations());
-}
-
-void WebLayerImpl::setCompositingReasons(
-    blink::WebCompositingReasons reasons) {
-  layer_->SetCompositingReasons(reasons);
 }
 
 void WebLayerImpl::setAnimationDelegate(

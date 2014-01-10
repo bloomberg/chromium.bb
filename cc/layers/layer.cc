@@ -57,7 +57,6 @@ Layer::Layer()
       force_render_surface_(false),
       anchor_point_(0.5f, 0.5f),
       background_color_(0),
-      compositing_reasons_(kCompositingReasonUnknown),
       opacity_(1.f),
       blend_mode_(SkXfermode::kSrcOver_Mode),
       anchor_point_z_(0.f),
@@ -883,7 +882,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
     layer->SetDebugName(std::string());
   }
 
-  layer->SetCompositingReasons(compositing_reasons_);
   layer->SetDoubleSided(double_sided_);
   layer->SetDrawCheckerboardForMissingTiles(
       draw_checkerboard_for_missing_tiles_);
@@ -1044,11 +1042,6 @@ scoped_refptr<base::debug::ConvertableToTraceFormat> Layer::TakeDebugInfo() {
     return client_->TakeDebugInfo();
   else
     return NULL;
-}
-
-
-void Layer::SetCompositingReasons(CompositingReasons reasons) {
-  compositing_reasons_ = reasons;
 }
 
 void Layer::CreateRenderSurface() {
