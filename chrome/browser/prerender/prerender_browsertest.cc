@@ -2969,20 +2969,14 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   GoBackToPageBeforePrerender();
 }
 
-#if defined(OS_MACOSX)
-// http://crbug.com/142535 - Times out on Chrome Mac release builder
-#define MAYBE_ControlGroup DISABLED_ControlGroup
-#else
-#define MAYBE_ControlGroup ControlGroup
-#endif
-// Checks that the control group works.  A JS alert cannot be detected in the
+// Checks that the control group works.  An XHR PUT cannot be detected in the
 // control group.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MAYBE_ControlGroup) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, ControlGroup) {
   RestorePrerenderMode restore_prerender_mode;
   PrerenderManager::SetMode(
       PrerenderManager::PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP);
   DisableJavascriptCalls();
-  PrerenderTestURL("files/prerender/prerender_alert_before_onload.html",
+  PrerenderTestURL("files/prerender/prerender_xhr_put.html",
                    FINAL_STATUS_WOULD_HAVE_BEEN_USED, 0);
   NavigateToDestURL();
 }
@@ -2991,18 +2985,12 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MAYBE_ControlGroup) {
 // a prerender is cancelled because of a script, a dummy must be created to
 // account for the MatchComplete case, and it must have a final status of
 // FINAL_STATUS_WOULD_HAVE_BEEN_USED.
-#if defined(OS_MACOSX)
-// http://crbug.com/142912 - Times out on Chrome Mac release builder
-#define MAYBE_MatchCompleteDummy DISABLED_MatchCompleteDummy
-#else
-#define MAYBE_MatchCompleteDummy MatchCompleteDummy
-#endif
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MAYBE_MatchCompleteDummy) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MatchCompleteDummy) {
   std::deque<FinalStatus> expected_final_status_queue;
-  expected_final_status_queue.push_back(FINAL_STATUS_JAVASCRIPT_ALERT);
+  expected_final_status_queue.push_back(FINAL_STATUS_INVALID_HTTP_METHOD);
   expected_final_status_queue.push_back(FINAL_STATUS_WOULD_HAVE_BEEN_USED);
-  PrerenderTestURL("files/prerender/prerender_alert_before_onload.html",
-                   expected_final_status_queue, 0);
+  PrerenderTestURL("files/prerender/prerender_xhr_put.html",
+                   expected_final_status_queue, 1);
   NavigateToDestURL();
 }
 
