@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/signin/signin_manager_delegate.h"
+#include "components/signin/core/signin_manager_delegate.h"
 
 class CookieSettings;
 class Profile;

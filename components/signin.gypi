@@ -17,6 +17,7 @@
         '..',
       ],
       'sources': [
+        'signin/core/signin_manager_delegate.h',
         'signin/core/webdata/token_service_table.cc',
         'signin/core/webdata/token_service_table.h',
         'signin/core/webdata/token_web_data.cc',

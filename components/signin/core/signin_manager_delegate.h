@@ -1,12 +1,12 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SIGNIN_SIGNIN_MANAGER_DELEGATE_H_
-#define CHROME_BROWSER_SIGNIN_SIGNIN_MANAGER_DELEGATE_H_
+#ifndef COMPONENTS_SIGNIN_CORE_SIGNIN_MANAGER_DELEGATE_H_
+#define COMPONENTS_SIGNIN_CORE_SIGNIN_MANAGER_DELEGATE_H_
 
-// A delegate interface that needs to be supplied to SigninManager by
-// the embedder.
+// A delegate interface that needs to be supplied to the Signin component by
+// its embedder.
 class SigninManagerDelegate {
  public:
   virtual ~SigninManagerDelegate() {}
@@ -16,4 +16,4 @@ class SigninManagerDelegate {
   virtual bool AreSigninCookiesAllowed() = 0;
 };
 
-#endif  // CHROME_BROWSER_SIGNIN_SIGNIN_MANAGER_DELEGATE_H_
+#endif  // COMPONENTS_SIGNIN_CORE_SIGNIN_MANAGER_DELEGATE_H_
