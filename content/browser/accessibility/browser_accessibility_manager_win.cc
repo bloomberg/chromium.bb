@@ -119,8 +119,6 @@ BrowserAccessibilityManagerWin::BrowserAccessibilityManagerWin(
       parent_hwnd_(parent_hwnd),
       parent_iaccessible_(parent_iaccessible),
       tracked_scroll_object_(NULL),
-      is_chrome_frame_(
-          CommandLine::ForCurrentProcess()->HasSwitch("chrome-frame")),
       accessible_hwnd_(NULL) {
 }
 
@@ -156,7 +154,6 @@ void BrowserAccessibilityManagerWin::MaybeCallNotifyWinEvent(DWORD event,
   // enabled, create a fake child HWND to use as the root of the
   // accessibility tree. See comments above AccessibleHWND for details.
   if (BrowserAccessibilityStateImpl::GetInstance()->IsAccessibleBrowser() &&
-      !is_chrome_frame_ &&
       !accessible_hwnd_) {
     accessible_hwnd_ = new AccessibleHWND(parent_hwnd_, this);
     parent_hwnd_ = accessible_hwnd_->hwnd();

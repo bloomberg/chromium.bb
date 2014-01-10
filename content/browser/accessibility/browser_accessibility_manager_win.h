@@ -80,8 +80,6 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   // browser process) to renderer ids within this page.
   base::hash_map<long, int32> unique_id_to_renderer_id_map_;
 
-  bool is_chrome_frame_;
-
   // Owned by its parent; OnAccessibleHwndDeleted gets called upon deletion.
   AccessibleHWND* accessible_hwnd_;
 
