@@ -17,7 +17,7 @@ namespace {
 
 class LayerTreeHostMasksPixelTest : public LayerTreePixelTest {};
 
-class MaskContentLayerClient : public cc::ContentLayerClient {
+class MaskContentLayerClient : public ContentLayerClient {
  public:
   MaskContentLayerClient() {}
   virtual ~MaskContentLayerClient() {}
@@ -25,7 +25,7 @@ class MaskContentLayerClient : public cc::ContentLayerClient {
   virtual void DidChangeLayerCanUseLCDText() OVERRIDE {}
 
   virtual void PaintContents(SkCanvas* canvas,
-                             gfx::Rect rect,
+                             const gfx::Rect& rect,
                              gfx::RectF* opaque_rect) OVERRIDE {
     SkPaint paint;
     paint.setStyle(SkPaint::kStroke_Style);
@@ -33,12 +33,14 @@ class MaskContentLayerClient : public cc::ContentLayerClient {
     paint.setColor(SK_ColorWHITE);
 
     canvas->clear(SK_ColorTRANSPARENT);
-    while (!rect.IsEmpty()) {
-      rect.Inset(3, 3, 2, 2);
+    gfx::Rect inset_rect(rect);
+    while (!inset_rect.IsEmpty()) {
+      inset_rect.Inset(3, 3, 2, 2);
       canvas->drawRect(
-          SkRect::MakeXYWH(rect.x(), rect.y(), rect.width(), rect.height()),
+          SkRect::MakeXYWH(inset_rect.x(), inset_rect.y(),
+                           inset_rect.width(), inset_rect.height()),
           paint);
-      rect.Inset(3, 3, 2, 2);
+      inset_rect.Inset(3, 3, 2, 2);
     }
   }
 };

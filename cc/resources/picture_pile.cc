@@ -151,7 +151,7 @@ bool PicturePile::Update(
     SkColor background_color,
     bool contents_opaque,
     const Region& invalidation,
-    gfx::Rect visible_layer_rect,
+    const gfx::Rect& visible_layer_rect,
     int frame_number,
     RenderingStatsInstrumentation* stats_instrumentation) {
   background_color_ = background_color;

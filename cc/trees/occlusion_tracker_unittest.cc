@@ -39,7 +39,7 @@ class TestContentLayer : public Layer {
       return gfx::IntersectRects(opaque_contents_rect_, visible_content_rect());
     return Layer::VisibleContentOpaqueRegion();
   }
-  void SetOpaqueContentsRect(gfx::Rect opaque_contents_rect) {
+  void SetOpaqueContentsRect(const gfx::Rect& opaque_contents_rect) {
     override_opaque_contents_rect_ = true;
     opaque_contents_rect_ = opaque_contents_rect;
   }
@@ -63,7 +63,7 @@ class TestContentLayerImpl : public LayerImpl {
       return gfx::IntersectRects(opaque_contents_rect_, visible_content_rect());
     return LayerImpl::VisibleContentOpaqueRegion();
   }
-  void SetOpaqueContentsRect(gfx::Rect opaque_contents_rect) {
+  void SetOpaqueContentsRect(const gfx::Rect& opaque_contents_rect) {
     override_opaque_contents_rect_ = true;
     opaque_contents_rect_ = opaque_contents_rect;
   }
@@ -84,17 +84,17 @@ template <typename LayerType, typename RenderSurfaceType>
 class TestOcclusionTrackerWithClip
     : public TestOcclusionTrackerBase<LayerType, RenderSurfaceType> {
  public:
-  TestOcclusionTrackerWithClip(gfx::Rect viewport_rect,
+  TestOcclusionTrackerWithClip(const gfx::Rect& viewport_rect,
                                bool record_metrics_for_frame)
       : TestOcclusionTrackerBase<LayerType, RenderSurfaceType>(
             viewport_rect,
             record_metrics_for_frame) {}
-  explicit TestOcclusionTrackerWithClip(gfx::Rect viewport_rect)
+  explicit TestOcclusionTrackerWithClip(const gfx::Rect& viewport_rect)
       : TestOcclusionTrackerBase<LayerType, RenderSurfaceType>(viewport_rect,
                                                                false) {}
 
   bool OccludedLayer(const LayerType* layer,
-                     gfx::Rect content_rect) const {
+                     const gfx::Rect& content_rect) const {
     DCHECK(layer->visible_content_rect().Contains(content_rect));
     return this->Occluded(layer->render_target(),
                           content_rect,
@@ -105,7 +105,7 @@ class TestOcclusionTrackerWithClip
   // Gives an unoccluded sub-rect of |content_rect| in the content space of the
   // layer. Simple wrapper around UnoccludedContentRect.
   gfx::Rect UnoccludedLayerContentRect(const LayerType* layer,
-                                       gfx::Rect content_rect) const {
+                                       const gfx::Rect& content_rect) const {
     DCHECK(layer->visible_content_rect().Contains(content_rect));
     return this->UnoccludedContentRect(
         layer->render_target(),

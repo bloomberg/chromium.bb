@@ -263,7 +263,7 @@ void TiledLayerImpl::PushTileProperties(
     int i,
     int j,
     ResourceProvider::ResourceId resource_id,
-    gfx::Rect opaque_rect,
+    const gfx::Rect& opaque_rect,
     bool contents_swizzled) {
   DrawableTile* tile = TileAt(i, j);
   if (!tile)

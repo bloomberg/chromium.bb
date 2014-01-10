@@ -196,7 +196,7 @@ class MockContentLayerClient : public ContentLayerClient {
   MockContentLayerClient() {}
   virtual ~MockContentLayerClient() {}
   virtual void PaintContents(SkCanvas* canvas,
-                             gfx::Rect clip,
+                             const gfx::Rect& clip,
                              gfx::RectF* opaque) OVERRIDE {}
   virtual void DidChangeLayerCanUseLCDText() OVERRIDE {}
 };

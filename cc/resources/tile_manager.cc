@@ -969,8 +969,8 @@ void TileManager::OnRasterTaskCompleted(
 
 scoped_refptr<Tile> TileManager::CreateTile(PicturePileImpl* picture_pile,
                                             gfx::Size tile_size,
-                                            gfx::Rect content_rect,
-                                            gfx::Rect opaque_rect,
+                                            const gfx::Rect& content_rect,
+                                            const gfx::Rect& opaque_rect,
                                             float contents_scale,
                                             int layer_id,
                                             int source_frame_number,

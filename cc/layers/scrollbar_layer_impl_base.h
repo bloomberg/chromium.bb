@@ -53,7 +53,7 @@ class CC_EXPORT ScrollbarLayerImplBase : public LayerImpl {
                          bool is_left_side_vertical_scrollbar);
   virtual ~ScrollbarLayerImplBase() {}
 
-  gfx::Rect ScrollbarLayerRectToContentRect(gfx::RectF layer_rect) const;
+  gfx::Rect ScrollbarLayerRectToContentRect(const gfx::RectF& layer_rect) const;
 
   float visible_to_total_length_ratio() const {
     return visible_to_total_length_ratio_;

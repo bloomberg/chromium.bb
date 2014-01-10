@@ -56,7 +56,7 @@ gfx::Rect FakeScrollbar::TrackRect() const {
 
 void FakeScrollbar::PaintPart(SkCanvas* canvas,
                              ScrollbarPart part,
-                             gfx::Rect content_rect) {
+                             const gfx::Rect& content_rect) {
   if (!paint_)
     return;
 

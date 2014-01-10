@@ -24,8 +24,8 @@ class Layer;
 
 class CC_EXPORT LayerTreeHostCommon {
  public:
-  static gfx::Rect CalculateVisibleRect(gfx::Rect target_surface_rect,
-                                        gfx::Rect layer_bound_rect,
+  static gfx::Rect CalculateVisibleRect(const gfx::Rect& target_surface_rect,
+                                        const gfx::Rect& layer_bound_rect,
                                         const gfx::Transform& transform);
 
   template <typename LayerType, typename RenderSurfaceLayerListType>

@@ -79,8 +79,8 @@ class CC_EXPORT PrioritizedResource {
   // the backing if needed.
   void SetPixels(ResourceProvider* resource_provider,
                  const uint8_t* image,
-                 gfx::Rect image_rect,
-                 gfx::Rect source_rect,
+                 const gfx::Rect& image_rect,
+                 const gfx::Rect& source_rect,
                  gfx::Vector2d dest_offset);
 
   ResourceProvider::ResourceId resource_id() const {

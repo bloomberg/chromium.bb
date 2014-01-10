@@ -69,8 +69,8 @@ int PriorityCalculator::LingeringPriority(int previous_priority) {
 }
 
 // static
-int PriorityCalculator::PriorityFromDistance(gfx::Rect visible_rect,
-                                             gfx::Rect texture_rect,
+int PriorityCalculator::PriorityFromDistance(const gfx::Rect& visible_rect,
+                                             const gfx::Rect& texture_rect,
                                              bool draws_to_root_surface) {
   int distance = visible_rect.ManhattanInternalDistance(texture_rect);
   if (!distance)

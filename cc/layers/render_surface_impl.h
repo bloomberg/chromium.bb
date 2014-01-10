@@ -101,7 +101,7 @@ class CC_EXPORT RenderSurfaceImpl {
   void SetIsClipped(bool is_clipped) { is_clipped_ = is_clipped; }
   bool is_clipped() const { return is_clipped_; }
 
-  void SetClipRect(gfx::Rect clip_rect);
+  void SetClipRect(const gfx::Rect& clip_rect);
   gfx::Rect clip_rect() const { return clip_rect_; }
 
   // When false, the RenderSurface does not contribute to another target
@@ -117,7 +117,7 @@ class CC_EXPORT RenderSurfaceImpl {
 
   bool ContentsChanged() const;
 
-  void SetContentRect(gfx::Rect content_rect);
+  void SetContentRect(const gfx::Rect& content_rect);
   gfx::Rect content_rect() const { return content_rect_; }
 
   LayerImplList& layer_list() { return layer_list_; }

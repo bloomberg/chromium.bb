@@ -127,7 +127,7 @@ ThreadProxy::~ThreadProxy() {
   DCHECK(!started_);
 }
 
-bool ThreadProxy::CompositeAndReadback(void* pixels, gfx::Rect rect) {
+bool ThreadProxy::CompositeAndReadback(void* pixels, const gfx::Rect& rect) {
   TRACE_EVENT0("cc", "ThreadProxy::CompositeAndReadback");
   DCHECK(IsMainThread());
   DCHECK(layer_tree_host());
@@ -508,7 +508,7 @@ void ThreadProxy::SendManagedMemoryStats() {
 
 bool ThreadProxy::IsInsideDraw() { return inside_draw_; }
 
-void ThreadProxy::SetNeedsRedraw(gfx::Rect damage_rect) {
+void ThreadProxy::SetNeedsRedraw(const gfx::Rect& damage_rect) {
   DCHECK(IsMainThread());
   TRACE_EVENT0("cc", "ThreadProxy::SetNeedsRedraw");
   Proxy::ImplThreadTaskRunner()->PostTask(
@@ -563,7 +563,7 @@ void ThreadProxy::SetNeedsManageTilesOnImplThread() {
   scheduler_on_impl_thread_->SetNeedsManageTiles();
 }
 
-void ThreadProxy::SetNeedsRedrawRectOnImplThread(gfx::Rect damage_rect) {
+void ThreadProxy::SetNeedsRedrawRectOnImplThread(const gfx::Rect& damage_rect) {
   DCHECK(IsImplThread());
   layer_tree_host_impl_->SetViewportDamage(damage_rect);
   SetNeedsRedrawOnImplThread();

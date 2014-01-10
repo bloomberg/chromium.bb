@@ -26,7 +26,7 @@ class TestContextSupport : public gpu::ContextSupport {
   virtual void SendManagedMemoryStats(const gpu::ManagedMemoryStats& stats)
     OVERRIDE;
   virtual void Swap() OVERRIDE;
-  virtual void PartialSwapBuffers(gfx::Rect sub_buffer) OVERRIDE;
+  virtual void PartialSwapBuffers(const gfx::Rect& sub_buffer) OVERRIDE;
   virtual void SetSwapBuffersCompleteCallback(
       const base::Closure& callback) OVERRIDE;
 

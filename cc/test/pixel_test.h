@@ -61,7 +61,7 @@ class PixelTest : public testing::Test, RendererClient {
 
   void ForceExpandedViewport(gfx::Size surface_expansion);
   void ForceViewportOffset(gfx::Vector2d viewport_offset);
-  void ForceDeviceClip(gfx::Rect clip);
+  void ForceDeviceClip(const gfx::Rect& clip);
   void EnableExternalStencilTest();
 
   // RendererClient implementation.

@@ -42,7 +42,7 @@ void SoftwareOutputDeviceWin::Resize(gfx::Size viewport_size) {
                           &bitmap_info_.bmiHeader);
 }
 
-SkCanvas* SoftwareOutputDeviceWin::BeginPaint(gfx::Rect damage_rect) {
+SkCanvas* SoftwareOutputDeviceWin::BeginPaint(const gfx::Rect& damage_rect) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(contents_);
 
@@ -93,7 +93,7 @@ void SoftwareOutputDeviceWin::EndPaint(cc::SoftwareFrameData* frame_data) {
 }
 
 void SoftwareOutputDeviceWin::CopyToBitmap(
-    gfx::Rect rect, SkBitmap* output) {
+    const gfx::Rect& rect, SkBitmap* output) {
   DCHECK(contents_);
   SkBaseDevice* device = contents_->sk_canvas()->getDevice();
   const SkBitmap& bitmap = device->accessBitmap(false);

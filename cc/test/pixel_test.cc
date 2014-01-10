@@ -151,7 +151,7 @@ void PixelTest::ForceViewportOffset(gfx::Vector2d viewport_offset) {
   external_device_viewport_offset_ = viewport_offset;
 }
 
-void PixelTest::ForceDeviceClip(gfx::Rect clip) {
+void PixelTest::ForceDeviceClip(const gfx::Rect& clip) {
   external_device_clip_rect_ = clip;
 }
 

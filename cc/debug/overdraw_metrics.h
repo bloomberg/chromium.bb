@@ -27,15 +27,15 @@ class OverdrawMetrics {
 
   // Record pixels painted by WebKit into the texture updater, but does not mean
   // the pixels were rasterized in main memory.
-  void DidPaint(gfx::Rect painted_rect);
+  void DidPaint(const gfx::Rect& painted_rect);
   // Records that an invalid tile was culled and did not need to be
   // painted/uploaded, and did not contribute to other tiles needing to be
   // painted.
   void DidCullTilesForUpload(int count);
   // Records pixels that were uploaded to texture memory.
   void DidUpload(const gfx::Transform& transform_to_target,
-                 gfx::Rect upload_rect,
-                 gfx::Rect opaque_rect);
+                 const gfx::Rect& upload_rect,
+                 const gfx::Rect& opaque_rect);
   // Record contents texture(s) behind present using the given number of bytes.
   void DidUseContentsTextureMemoryBytes(size_t contents_texture_use_bytes);
   // Record RenderSurfaceImpl texture(s) being present using the given number of
@@ -46,12 +46,12 @@ class OverdrawMetrics {
 
   // Record pixels that were not drawn to screen.
   void DidCullForDrawing(const gfx::Transform& transform_to_target,
-                         gfx::Rect before_cull_rect,
-                         gfx::Rect after_cull_rect);
+                         const gfx::Rect& before_cull_rect,
+                         const gfx::Rect& after_cull_rect);
   // Record pixels that were drawn to screen.
   void DidDraw(const gfx::Transform& transform_to_target,
-               gfx::Rect after_cull_rect,
-               gfx::Rect opaque_rect);
+               const gfx::Rect& after_cull_rect,
+               const gfx::Rect& opaque_rect);
 
   void RecordMetrics(const LayerTreeHost* layer_tree_host) const;
   void RecordMetrics(const LayerTreeHostImpl* layer_tree_host_impl) const;

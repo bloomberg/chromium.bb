@@ -57,7 +57,7 @@ class CC_EXPORT TiledLayer : public ContentsScalingLayer {
   virtual void CreateUpdaterIfNeeded() = 0;
 
   // Set invalidations to be potentially repainted during Update().
-  void InvalidateContentRect(gfx::Rect content_rect);
+  void InvalidateContentRect(const gfx::Rect& content_rect);
 
   // Reset state on tiles that will be used for updating the layer.
   void ResetUpdateState();
@@ -110,8 +110,8 @@ class CC_EXPORT TiledLayer : public ContentsScalingLayer {
                           int right,
                           int bottom,
                           bool ignore_occlusions);
-  void UpdateTileTextures(gfx::Rect update_rect,
-                          gfx::Rect paint_rect,
+  void UpdateTileTextures(const gfx::Rect& update_rect,
+                          const gfx::Rect& paint_rect,
                           int left,
                           int top,
                           int right,

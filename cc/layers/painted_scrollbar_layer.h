@@ -62,7 +62,7 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerInterface,
   void UpdateThumbAndTrackGeometry();
 
  private:
-  gfx::Rect ScrollbarLayerRectToContentRect(gfx::Rect layer_rect) const;
+  gfx::Rect ScrollbarLayerRectToContentRect(const gfx::Rect& layer_rect) const;
   gfx::Rect OriginThumbRect() const;
 
   template<typename T> void UpdateProperty(T value, T* prop) {
@@ -75,7 +75,7 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerInterface,
   int MaxTextureSize();
   float ClampScaleToMaxTextureSize(float scale);
 
-  UIResourceBitmap RasterizeScrollbarPart(gfx::Rect rect,
+  UIResourceBitmap RasterizeScrollbarPart(const gfx::Rect& rect,
                                           ScrollbarPart part);
 
   scoped_ptr<Scrollbar> scrollbar_;

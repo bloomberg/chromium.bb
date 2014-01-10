@@ -75,8 +75,9 @@ bool ResourcesMatch(ReturnedResourceArray actual,
 // These tests deal with delegated renderer layers.
 class LayerTreeHostDelegatedTest : public LayerTreeTest {
  protected:
-  scoped_ptr<DelegatedFrameData> CreateFrameData(gfx::Rect root_output_rect,
-                                                 gfx::Rect root_damage_rect) {
+  scoped_ptr<DelegatedFrameData> CreateFrameData(
+      const gfx::Rect& root_output_rect,
+      const gfx::Rect& root_damage_rect) {
     scoped_ptr<DelegatedFrameData> frame(new DelegatedFrameData);
 
     scoped_ptr<RenderPass> root_pass(RenderPass::Create());
@@ -89,8 +90,8 @@ class LayerTreeHostDelegatedTest : public LayerTreeTest {
   }
 
   scoped_ptr<DelegatedFrameData> CreateInvalidFrameData(
-      gfx::Rect root_output_rect,
-      gfx::Rect root_damage_rect) {
+      const gfx::Rect& root_output_rect,
+      const gfx::Rect& root_damage_rect) {
     scoped_ptr<DelegatedFrameData> frame(new DelegatedFrameData);
 
     scoped_ptr<RenderPass> root_pass(RenderPass::Create());
@@ -160,8 +161,8 @@ class LayerTreeHostDelegatedTest : public LayerTreeTest {
 
   void AddRenderPass(DelegatedFrameData* frame,
                      RenderPass::Id id,
-                     gfx::Rect output_rect,
-                     gfx::Rect damage_rect,
+                     const gfx::Rect& output_rect,
+                     const gfx::Rect& damage_rect,
                      const FilterOperations& filters,
                      const FilterOperations& background_filters) {
     for (size_t i = 0; i < frame->render_pass_list.size(); ++i)

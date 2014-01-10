@@ -148,7 +148,7 @@ void PaintedScrollbarLayer::SetLayerTreeHost(LayerTreeHost* host) {
 }
 
 gfx::Rect PaintedScrollbarLayer::ScrollbarLayerRectToContentRect(
-    gfx::Rect layer_rect) const {
+    const gfx::Rect& layer_rect) const {
   // Don't intersect with the bounds as in LayerRectToContentRect() because
   // layer_rect here might be in coordinates of the containing layer.
   gfx::Rect expanded_rect = gfx::ScaleToEnclosingRect(
@@ -217,7 +217,7 @@ bool PaintedScrollbarLayer::Update(ResourceUpdateQueue* queue,
 }
 
 UIResourceBitmap PaintedScrollbarLayer::RasterizeScrollbarPart(
-    gfx::Rect rect,
+    const gfx::Rect& rect,
     ScrollbarPart part) {
   DCHECK(!rect.size().IsEmpty());
 

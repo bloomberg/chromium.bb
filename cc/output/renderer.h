@@ -41,8 +41,8 @@ class CC_EXPORT Renderer {
   virtual void DrawFrame(RenderPassList* render_passes_in_draw_order,
                          ContextProvider* offscreen_context_provider,
                          float device_scale_factor,
-                         gfx::Rect device_viewport_rect,
-                         gfx::Rect device_clip_rect,
+                         const gfx::Rect& device_viewport_rect,
+                         const gfx::Rect& device_clip_rect,
                          bool allow_partial_swap,
                          bool disable_picture_quad_image_filtering) = 0;
 
@@ -55,7 +55,7 @@ class CC_EXPORT Renderer {
   virtual void SwapBuffers(const CompositorFrameMetadata& metadata) = 0;
   virtual void ReceiveSwapBuffersAck(const CompositorFrameAck& ack) {}
 
-  virtual void GetFramebufferPixels(void* pixels, gfx::Rect rect) = 0;
+  virtual void GetFramebufferPixels(void* pixels, const gfx::Rect& rect) = 0;
 
   virtual bool IsContextLost();
 

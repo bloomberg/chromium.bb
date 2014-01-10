@@ -56,7 +56,8 @@ SingleThreadProxy::~SingleThreadProxy() {
   DCHECK(!layer_tree_host_impl_);
 }
 
-bool SingleThreadProxy::CompositeAndReadback(void* pixels, gfx::Rect rect) {
+bool SingleThreadProxy::CompositeAndReadback(void* pixels,
+                                             const gfx::Rect& rect) {
   TRACE_EVENT0("cc", "SingleThreadProxy::CompositeAndReadback");
   DCHECK(Proxy::IsMainThread());
 
@@ -242,7 +243,7 @@ void SingleThreadProxy::SetNeedsCommit() {
   client_->ScheduleComposite();
 }
 
-void SingleThreadProxy::SetNeedsRedraw(gfx::Rect damage_rect) {
+void SingleThreadProxy::SetNeedsRedraw(const gfx::Rect& damage_rect) {
   SetNeedsRedrawRectOnImplThread(damage_rect);
   client_->ScheduleComposite();
 }
@@ -297,7 +298,8 @@ void SingleThreadProxy::SetNeedsManageTilesOnImplThread() {
   NOTREACHED();
 }
 
-void SingleThreadProxy::SetNeedsRedrawRectOnImplThread(gfx::Rect damage_rect) {
+void SingleThreadProxy::SetNeedsRedrawRectOnImplThread(
+    const gfx::Rect& damage_rect) {
   // TODO(brianderson): Once we move render_widget scheduling into this class,
   // we can treat redraw requests more efficiently than CommitAndRedraw
   // requests.
@@ -425,7 +427,7 @@ void SingleThreadProxy::ForceSerializeOnSwapBuffers() {
 
 bool SingleThreadProxy::CommitAndComposite(
     base::TimeTicks frame_begin_time,
-    gfx::Rect device_viewport_damage_rect,
+    const gfx::Rect& device_viewport_damage_rect,
     bool for_readback,
     LayerTreeHostImpl::FrameData* frame) {
   DCHECK(Proxy::IsMainThread());
@@ -488,7 +490,7 @@ void SingleThreadProxy::UpdateBackgroundAnimateTicking() {
 bool SingleThreadProxy::DoComposite(
     scoped_refptr<ContextProvider> offscreen_context_provider,
     base::TimeTicks frame_begin_time,
-    gfx::Rect device_viewport_damage_rect,
+    const gfx::Rect& device_viewport_damage_rect,
     bool for_readback,
     LayerTreeHostImpl::FrameData* frame) {
   DCHECK(!layer_tree_host_->output_surface_lost());

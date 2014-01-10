@@ -2061,7 +2061,7 @@ void GLRenderer::DrawQuadGeometry(const DrawingFrame* frame,
 
 void GLRenderer::CopyTextureToFramebuffer(const DrawingFrame* frame,
                                           int texture_id,
-                                          gfx::Rect rect,
+                                          const gfx::Rect& rect,
                                           const gfx::Transform& draw_matrix,
                                           bool flip_vertically) {
   TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
@@ -2171,7 +2171,7 @@ void GLRenderer::EnsureBackbuffer() {
   is_backbuffer_discarded_ = false;
 }
 
-void GLRenderer::GetFramebufferPixels(void* pixels, gfx::Rect rect) {
+void GLRenderer::GetFramebufferPixels(void* pixels, const gfx::Rect& rect) {
   if (!pixels || rect.IsEmpty())
     return;
 
@@ -2190,7 +2190,7 @@ void GLRenderer::GetFramebufferPixels(void* pixels, gfx::Rect rect) {
 }
 
 void GLRenderer::GetFramebufferPixelsAsync(
-    gfx::Rect rect,
+    const gfx::Rect& rect,
     scoped_ptr<CopyOutputRequest> request) {
   DCHECK(!request->IsEmpty());
   if (request->IsEmpty())
@@ -2288,7 +2288,7 @@ void GLRenderer::GetFramebufferPixelsAsync(
 
 void GLRenderer::DoGetFramebufferPixels(
     uint8* dest_pixels,
-    gfx::Rect window_rect,
+    const gfx::Rect& window_rect,
     const AsyncGetFramebufferPixelsCleanupCallback& cleanup_callback) {
   DCHECK_GE(window_rect.x(), 0);
   DCHECK_GE(window_rect.y(), 0);
@@ -2471,7 +2471,7 @@ void GLRenderer::PassOnSkBitmap(scoped_ptr<SkBitmap> bitmap,
 
 void GLRenderer::GetFramebufferTexture(unsigned texture_id,
                                        ResourceFormat texture_format,
-                                       gfx::Rect window_rect) {
+                                       const gfx::Rect& window_rect) {
   DCHECK(texture_id);
   DCHECK_GE(window_rect.x(), 0);
   DCHECK_GE(window_rect.y(), 0);
@@ -2493,7 +2493,7 @@ void GLRenderer::GetFramebufferTexture(unsigned texture_id,
 
 bool GLRenderer::UseScopedTexture(DrawingFrame* frame,
                                   const ScopedResource* texture,
-                                  gfx::Rect viewport_rect) {
+                                  const gfx::Rect& viewport_rect) {
   DCHECK(texture->id());
   frame->current_render_pass = NULL;
   frame->current_texture = texture;
@@ -2515,7 +2515,7 @@ void GLRenderer::BindFramebufferToOutputSurface(DrawingFrame* frame) {
 
 bool GLRenderer::BindFramebufferToTexture(DrawingFrame* frame,
                                           const ScopedResource* texture,
-                                          gfx::Rect target_rect) {
+                                          const gfx::Rect& target_rect) {
   DCHECK(texture->id());
 
   current_framebuffer_lock_.reset();
@@ -2539,7 +2539,7 @@ bool GLRenderer::BindFramebufferToTexture(DrawingFrame* frame,
   return true;
 }
 
-void GLRenderer::SetScissorTestRect(gfx::Rect scissor_rect) {
+void GLRenderer::SetScissorTestRect(const gfx::Rect& scissor_rect) {
   EnsureScissorTestEnabled();
 
   // Don't unnecessarily ask the context to change the scissor, because it
@@ -2558,7 +2558,7 @@ void GLRenderer::SetScissorTestRect(gfx::Rect scissor_rect) {
   scissor_rect_needs_reset_ = false;
 }
 
-void GLRenderer::SetDrawViewport(gfx::Rect window_space_viewport) {
+void GLRenderer::SetDrawViewport(const gfx::Rect& window_space_viewport) {
   viewport_ = window_space_viewport;
   GLC(gl_,
       gl_->Viewport(window_space_viewport.x(),

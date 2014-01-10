@@ -131,7 +131,8 @@ void CompositorSoftwareOutputDevice::DiscardBackbuffer() {
 void CompositorSoftwareOutputDevice::EnsureBackbuffer() {
 }
 
-SkCanvas* CompositorSoftwareOutputDevice::BeginPaint(gfx::Rect damage_rect) {
+SkCanvas* CompositorSoftwareOutputDevice::BeginPaint(
+    const gfx::Rect& damage_rect) {
   DCHECK(CalledOnValidThread());
 
   Buffer* previous = NULL;

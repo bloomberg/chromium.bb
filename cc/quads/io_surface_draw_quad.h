@@ -22,16 +22,16 @@ class CC_EXPORT IOSurfaceDrawQuad : public DrawQuad {
   static scoped_ptr<IOSurfaceDrawQuad> Create();
 
   void SetNew(const SharedQuadState* shared_quad_state,
-              gfx::Rect rect,
-              gfx::Rect opaque_rect,
+              const gfx::Rect& rect,
+              const gfx::Rect& opaque_rect,
               gfx::Size io_surface_size,
               unsigned io_surface_resource_id,
               Orientation orientation);
 
   void SetAll(const SharedQuadState* shared_quad_state,
-              gfx::Rect rect,
-              gfx::Rect opaque_rect,
-              gfx::Rect visible_rect,
+              const gfx::Rect& rect,
+              const gfx::Rect& opaque_rect,
+              const gfx::Rect& visible_rect,
               bool needs_blending,
               gfx::Size io_surface_size,
               unsigned io_surface_resource_id,

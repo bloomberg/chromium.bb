@@ -28,10 +28,10 @@ class FakeScrollbar : public Scrollbar {
   virtual gfx::Rect TrackRect() const OVERRIDE;
   virtual void PaintPart(SkCanvas* canvas,
                          ScrollbarPart part,
-                         gfx::Rect content_rect) OVERRIDE;
+                         const gfx::Rect& content_rect) OVERRIDE;
 
   void set_location(gfx::Point location) { location_ = location; }
-  void set_track_rect(gfx::Rect track_rect) { track_rect_ = track_rect; }
+  void set_track_rect(const gfx::Rect& track_rect) { track_rect_ = track_rect; }
   void set_thumb_thickness(int thumb_thickness) {
       thumb_thickness_ = thumb_thickness;
   }

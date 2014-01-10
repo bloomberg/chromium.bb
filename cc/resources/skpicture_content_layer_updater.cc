@@ -22,7 +22,7 @@ SkPictureContentLayerUpdater::SkPictureContentLayerUpdater(
 SkPictureContentLayerUpdater::~SkPictureContentLayerUpdater() {}
 
 void SkPictureContentLayerUpdater::PrepareToUpdate(
-    gfx::Rect content_rect,
+    const gfx::Rect& content_rect,
     gfx::Size,
     float contents_width_scale,
     float contents_height_scale,

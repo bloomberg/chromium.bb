@@ -19,7 +19,7 @@ namespace cc {
 
 template <typename LayerType, typename RenderSurfaceType>
 OcclusionTrackerBase<LayerType, RenderSurfaceType>::OcclusionTrackerBase(
-    gfx::Rect screen_space_clip_rect, bool record_metrics_for_frame)
+    const gfx::Rect& screen_space_clip_rect, bool record_metrics_for_frame)
     : screen_space_clip_rect_(screen_space_clip_rect),
       overdraw_metrics_(OverdrawMetrics::Create(record_metrics_for_frame)),
       occluding_screen_space_rects_(NULL),
@@ -54,7 +54,8 @@ void OcclusionTrackerBase<LayerType, RenderSurfaceType>::LeaveLayer(
 
 template <typename RenderSurfaceType>
 static gfx::Rect ScreenSpaceClipRectInTargetSurface(
-    const RenderSurfaceType* target_surface, gfx::Rect screen_space_clip_rect) {
+    const RenderSurfaceType* target_surface,
+    const gfx::Rect& screen_space_clip_rect) {
   gfx::Transform inverse_screen_space_transform(
       gfx::Transform::kSkipInitialization);
   if (!target_surface->screen_space_transform().GetInverse(
@@ -66,10 +67,11 @@ static gfx::Rect ScreenSpaceClipRectInTargetSurface(
 }
 
 template <typename RenderSurfaceType>
-static Region TransformSurfaceOpaqueRegion(const Region& region,
-                                           bool have_clip_rect,
-                                           gfx::Rect clip_rect_in_new_target,
-                                           const gfx::Transform& transform) {
+static Region TransformSurfaceOpaqueRegion(
+    const Region& region,
+    bool have_clip_rect,
+    const gfx::Rect& clip_rect_in_new_target,
+    const gfx::Transform& transform) {
   if (region.IsEmpty())
     return Region();
 
@@ -239,7 +241,7 @@ void OcclusionTrackerBase<LayerType, RenderSurfaceType>::FinishedRenderTarget(
 
 template <typename LayerType>
 static void ReduceOcclusionBelowSurface(LayerType* contributing_layer,
-                                        gfx::Rect surface_rect,
+                                        const gfx::Rect& surface_rect,
                                         const gfx::Transform& surface_transform,
                                         LayerType* render_target,
                                         Region* occlusion_from_inside_target) {
@@ -497,7 +499,7 @@ void OcclusionTrackerBase<LayerType, RenderSurfaceType>::
 template <typename LayerType, typename RenderSurfaceType>
 bool OcclusionTrackerBase<LayerType, RenderSurfaceType>::Occluded(
     const LayerType* render_target,
-    gfx::Rect content_rect,
+    const gfx::Rect& content_rect,
     const gfx::Transform& draw_transform,
     bool impl_draw_transform_is_unknown) const {
   DCHECK(!stack_.empty());
@@ -546,7 +548,7 @@ template <typename LayerType, typename RenderSurfaceType>
 gfx::Rect OcclusionTrackerBase<LayerType, RenderSurfaceType>::
     UnoccludedContentRect(
         const LayerType* render_target,
-        gfx::Rect content_rect,
+        const gfx::Rect& content_rect,
         const gfx::Transform& draw_transform,
         bool impl_draw_transform_is_unknown) const {
   DCHECK(!stack_.empty());
@@ -598,7 +600,7 @@ gfx::Rect OcclusionTrackerBase<LayerType, RenderSurfaceType>::
     UnoccludedContributingSurfaceContentRect(
         const LayerType* layer,
         bool for_replica,
-        gfx::Rect content_rect) const {
+        const gfx::Rect& content_rect) const {
   DCHECK(!stack_.empty());
   // The layer is a contributing render_target so it should have a surface.
   DCHECK(layer->render_surface());

@@ -17,7 +17,7 @@ scoped_ptr<SolidColorDrawQuad> SolidColorDrawQuad::Create() {
 }
 
 void SolidColorDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
-                                gfx::Rect rect,
+                                const gfx::Rect& rect,
                                 SkColor color,
                                 bool force_anti_aliasing_off) {
   gfx::Rect opaque_rect = SkColorGetA(color) == 255 ? rect : gfx::Rect();
@@ -30,9 +30,9 @@ void SolidColorDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
 }
 
 void SolidColorDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
-                                gfx::Rect rect,
-                                gfx::Rect opaque_rect,
-                                gfx::Rect visible_rect,
+                                const gfx::Rect& rect,
+                                const gfx::Rect& opaque_rect,
+                                const gfx::Rect& visible_rect,
                                 bool needs_blending,
                                 SkColor color,
                                 bool force_anti_aliasing_off) {

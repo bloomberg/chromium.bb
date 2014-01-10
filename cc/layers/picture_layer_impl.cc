@@ -468,7 +468,7 @@ void PictureLayerImpl::SetShouldUseGpuRasterization(
 }
 
 scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling* tiling,
-                                                 gfx::Rect content_rect) {
+                                               const gfx::Rect& content_rect) {
   if (!pile_->CanRaster(tiling->contents_scale(), content_rect))
     return scoped_refptr<Tile>();
 
@@ -779,7 +779,7 @@ bool PictureLayerImpl::MarkVisibleTilesAsRequired(
     PictureLayerTiling* tiling,
     const PictureLayerTiling* optional_twin_tiling,
     float contents_scale,
-    gfx::Rect rect,
+    const gfx::Rect& rect,
     const Region& missing_region) const {
   bool twin_had_missing_tile = false;
   for (PictureLayerTiling::CoverageIterator iter(tiling,

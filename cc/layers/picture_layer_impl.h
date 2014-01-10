@@ -53,8 +53,9 @@ class CC_EXPORT PictureLayerImpl
   virtual skia::RefPtr<SkPicture> GetPicture() OVERRIDE;
 
   // PictureLayerTilingClient overrides.
-  virtual scoped_refptr<Tile> CreateTile(PictureLayerTiling* tiling,
-                                         gfx::Rect content_rect) OVERRIDE;
+  virtual scoped_refptr<Tile> CreateTile(
+    PictureLayerTiling* tiling,
+    const gfx::Rect& content_rect) OVERRIDE;
   virtual void UpdatePile(Tile* tile) OVERRIDE;
   virtual gfx::Size CalculateTileSize(
       gfx::Size content_bounds) const OVERRIDE;
@@ -100,7 +101,7 @@ class CC_EXPORT PictureLayerImpl
       PictureLayerTiling* tiling,
       const PictureLayerTiling* optional_twin_tiling,
       float contents_scale,
-      gfx::Rect rect,
+      const gfx::Rect& rect,
       const Region& missing_region) const;
 
   void DoPostCommitInitializationIfNeeded() {

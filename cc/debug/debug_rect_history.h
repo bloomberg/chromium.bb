@@ -57,7 +57,7 @@ enum DebugRectType {
 };
 
 struct DebugRect {
-  DebugRect(DebugRectType new_type, gfx::RectF new_rect)
+  DebugRect(DebugRectType new_type, const gfx::RectF& new_rect)
       : type(new_type), rect(new_rect) {}
 
   DebugRectType type;

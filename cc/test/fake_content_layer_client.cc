@@ -17,7 +17,7 @@ FakeContentLayerClient::~FakeContentLayerClient() {
 }
 
 void FakeContentLayerClient::PaintContents(SkCanvas* canvas,
-    gfx::Rect paint_rect, gfx::RectF* opaque_rect) {
+    const gfx::Rect& paint_rect, gfx::RectF* opaque_rect) {
   if (paint_all_opaque_)
     *opaque_rect = paint_rect;
 

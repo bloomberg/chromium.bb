@@ -18,8 +18,8 @@ class PrioritizedResource;
 struct CC_EXPORT ResourceUpdate {
   static ResourceUpdate Create(PrioritizedResource* resource,
                                const SkBitmap* bitmap,
-                               gfx::Rect content_rect,
-                               gfx::Rect source_rect,
+                               const gfx::Rect& content_rect,
+                               const gfx::Rect& source_rect,
                                gfx::Vector2d dest_offset);
 
   ResourceUpdate();

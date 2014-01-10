@@ -104,7 +104,8 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     }
   }
 
-  virtual bool PrepareToDraw(FrameData* frame, gfx::Rect damage_rect) OVERRIDE {
+  virtual bool PrepareToDraw(FrameData* frame,
+                             const gfx::Rect& damage_rect) OVERRIDE {
     bool result = LayerTreeHostImpl::PrepareToDraw(frame, damage_rect);
     if (!test_hooks_->PrepareToDrawOnThread(this, frame, result))
       result = false;
@@ -439,7 +440,8 @@ void LayerTreeTest::PostSetNeedsRedrawToMainThread() {
                                          main_thread_weak_ptr_));
 }
 
-void LayerTreeTest::PostSetNeedsRedrawRectToMainThread(gfx::Rect damage_rect) {
+void LayerTreeTest::PostSetNeedsRedrawRectToMainThread(
+    const gfx::Rect& damage_rect) {
   main_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&LayerTreeTest::DispatchSetNeedsRedrawRect,
@@ -583,7 +585,7 @@ void LayerTreeTest::DispatchSetNeedsRedraw() {
     layer_tree_host_->SetNeedsRedraw();
 }
 
-void LayerTreeTest::DispatchSetNeedsRedrawRect(gfx::Rect damage_rect) {
+void LayerTreeTest::DispatchSetNeedsRedrawRect(const gfx::Rect& damage_rect) {
   DCHECK(!proxy() || proxy()->IsMainThread());
 
   if (layer_tree_host_)

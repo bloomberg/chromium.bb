@@ -623,7 +623,7 @@ void Layer::RequestCopyOfOutput(scoped_ptr<cc::CopyOutputRequest> request) {
 }
 
 void Layer::PaintContents(SkCanvas* sk_canvas,
-                          gfx::Rect clip,
+                          const gfx::Rect& clip,
                           gfx::RectF* opaque) {
   TRACE_EVENT0("ui", "Layer::PaintContents");
   scoped_ptr<gfx::Canvas> canvas(gfx::Canvas::CreateCanvasWithoutScaling(

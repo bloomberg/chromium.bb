@@ -27,7 +27,8 @@ class SingleThreadProxy : public Proxy, LayerTreeHostImplClient {
   virtual ~SingleThreadProxy();
 
   // Proxy implementation
-  virtual bool CompositeAndReadback(void* pixels, gfx::Rect rect) OVERRIDE;
+  virtual bool CompositeAndReadback(void* pixels,
+                                    const gfx::Rect& rect) OVERRIDE;
   virtual void FinishAllRendering() OVERRIDE;
   virtual bool IsStarted() const OVERRIDE;
   virtual void SetLayerTreeHostClientReady() OVERRIDE;
@@ -37,7 +38,7 @@ class SingleThreadProxy : public Proxy, LayerTreeHostImplClient {
   virtual void SetNeedsAnimate() OVERRIDE;
   virtual void SetNeedsUpdateLayers() OVERRIDE;
   virtual void SetNeedsCommit() OVERRIDE;
-  virtual void SetNeedsRedraw(gfx::Rect damage_rect) OVERRIDE;
+  virtual void SetNeedsRedraw(const gfx::Rect& damage_rect) OVERRIDE;
   virtual void SetNextCommitWaitsForActivation() OVERRIDE;
   virtual void NotifyInputThrottledUntilCommit() OVERRIDE {}
   virtual void SetDeferCommits(bool defer_commits) OVERRIDE;
@@ -61,7 +62,8 @@ class SingleThreadProxy : public Proxy, LayerTreeHostImplClient {
   virtual void OnCanDrawStateChanged(bool can_draw) OVERRIDE;
   virtual void NotifyReadyToActivate() OVERRIDE;
   virtual void SetNeedsRedrawOnImplThread() OVERRIDE;
-  virtual void SetNeedsRedrawRectOnImplThread(gfx::Rect dirty_rect) OVERRIDE;
+  virtual void SetNeedsRedrawRectOnImplThread(
+      const gfx::Rect& dirty_rect) OVERRIDE;
   virtual void SetNeedsManageTilesOnImplThread() OVERRIDE;
   virtual void DidInitializeVisibleTileOnImplThread() OVERRIDE;
   virtual void SetNeedsCommitOnImplThread() OVERRIDE;
@@ -88,13 +90,13 @@ class SingleThreadProxy : public Proxy, LayerTreeHostImplClient {
 
   void OnOutputSurfaceInitializeAttempted(bool success);
   bool CommitAndComposite(base::TimeTicks frame_begin_time,
-                          gfx::Rect device_viewport_damage_rect,
+                          const gfx::Rect& device_viewport_damage_rect,
                           bool for_readback,
                           LayerTreeHostImpl::FrameData* frame);
   void DoCommit(scoped_ptr<ResourceUpdateQueue> queue);
   bool DoComposite(scoped_refptr<ContextProvider> offscreen_context_provider,
                    base::TimeTicks frame_begin_time,
-                   gfx::Rect device_viewport_damage_rect,
+                   const gfx::Rect& device_viewport_damage_rect,
                    bool for_readback,
                    LayerTreeHostImpl::FrameData* frame);
   void DidSwapFrame();

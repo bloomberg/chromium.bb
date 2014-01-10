@@ -26,22 +26,22 @@ class TestRenderPass;
 TestRenderPass* AddRenderPass(
     RenderPassList* pass_list,
     RenderPass::Id id,
-    gfx::Rect output_rect,
+    const gfx::Rect& output_rect,
     const gfx::Transform& root_transform);
 
 // Adds a solid quad to a given render pass.
 SolidColorDrawQuad* AddQuad(TestRenderPass* pass,
-                            gfx::Rect rect,
+                            const gfx::Rect& rect,
                             SkColor color);
 
 // Adds a solid quad to a given render pass and sets is_clipped=true.
 SolidColorDrawQuad* AddClippedQuad(TestRenderPass* pass,
-                                   gfx::Rect rect,
+                                   const gfx::Rect& rect,
                                    SkColor color);
 
 // Adds a solid quad with a transform to a given render pass.
 SolidColorDrawQuad* AddTransformedQuad(TestRenderPass* pass,
-                                       gfx::Rect rect,
+                                       const gfx::Rect& rect,
                                        SkColor color,
                                        const gfx::Transform& transform);
 

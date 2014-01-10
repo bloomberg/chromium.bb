@@ -70,7 +70,7 @@ PicturePileImpl* PicturePileImpl::GetCloneForDrawingOnThread(
 
 void PicturePileImpl::RasterDirect(
     SkCanvas* canvas,
-    gfx::Rect canvas_rect,
+    const gfx::Rect& canvas_rect,
     float contents_scale,
     RenderingStatsInstrumentation* rendering_stats_instrumentation) {
   RasterCommon(canvas,
@@ -83,7 +83,7 @@ void PicturePileImpl::RasterDirect(
 
 void PicturePileImpl::RasterForAnalysis(
     skia::AnalysisCanvas* canvas,
-    gfx::Rect canvas_rect,
+    const gfx::Rect& canvas_rect,
     float contents_scale,
     RenderingStatsInstrumentation* stats_instrumentation) {
   RasterCommon(
@@ -92,7 +92,7 @@ void PicturePileImpl::RasterForAnalysis(
 
 void PicturePileImpl::RasterToBitmap(
     SkCanvas* canvas,
-    gfx::Rect canvas_rect,
+    const gfx::Rect& canvas_rect,
     float contents_scale,
     RenderingStatsInstrumentation* rendering_stats_instrumentation) {
   if (clear_canvas_with_debug_color_) {
@@ -145,8 +145,8 @@ void PicturePileImpl::RasterToBitmap(
                false);
 }
 
-void PicturePileImpl::CoalesceRasters(gfx::Rect canvas_rect,
-                                      gfx::Rect content_rect,
+void PicturePileImpl::CoalesceRasters(const gfx::Rect& canvas_rect,
+                                      const gfx::Rect& content_rect,
                                       float contents_scale,
                                       PictureRegionMap* results) {
   DCHECK(results);
@@ -207,7 +207,7 @@ void PicturePileImpl::CoalesceRasters(gfx::Rect canvas_rect,
 void PicturePileImpl::RasterCommon(
     SkCanvas* canvas,
     SkDrawPictureCallback* callback,
-    gfx::Rect canvas_rect,
+    const gfx::Rect& canvas_rect,
     float contents_scale,
     RenderingStatsInstrumentation* rendering_stats_instrumentation,
     bool is_analysis) {
@@ -309,14 +309,14 @@ skia::RefPtr<SkPicture> PicturePileImpl::GetFlattenedPicture() {
 }
 
 void PicturePileImpl::AnalyzeInRect(
-    gfx::Rect content_rect,
+    const gfx::Rect& content_rect,
     float contents_scale,
     PicturePileImpl::Analysis* analysis) {
   AnalyzeInRect(content_rect, contents_scale, analysis, NULL);
 }
 
 void PicturePileImpl::AnalyzeInRect(
-    gfx::Rect content_rect,
+    const gfx::Rect& content_rect,
     float contents_scale,
     PicturePileImpl::Analysis* analysis,
     RenderingStatsInstrumentation* stats_instrumentation) {
@@ -350,7 +350,7 @@ PicturePileImpl::Analysis::~Analysis() {
 }
 
 PicturePileImpl::PixelRefIterator::PixelRefIterator(
-    gfx::Rect content_rect,
+    const gfx::Rect& content_rect,
     float contents_scale,
     const PicturePileImpl* picture_pile)
     : picture_pile_(picture_pile),

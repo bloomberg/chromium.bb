@@ -43,8 +43,8 @@ class CC_EXPORT TextureUploader {
   // image be a buffer for content_rect. This function will copy the region
   // corresponding to source_rect to dest_offset in this sub-image.
   void Upload(const uint8* image,
-              gfx::Rect content_rect,
-              gfx::Rect source_rect,
+              const gfx::Rect& content_rect,
+              const gfx::Rect& source_rect,
               gfx::Vector2d dest_offset,
               ResourceFormat format,
               gfx::Size size);
@@ -92,13 +92,13 @@ class CC_EXPORT TextureUploader {
   void ProcessQueries();
 
   void UploadWithTexSubImage(const uint8* image,
-                             gfx::Rect image_rect,
-                             gfx::Rect source_rect,
+                             const gfx::Rect& image_rect,
+                             const gfx::Rect& source_rect,
                              gfx::Vector2d dest_offset,
                              ResourceFormat format);
   void UploadWithMapTexSubImage(const uint8* image,
-                                gfx::Rect image_rect,
-                                gfx::Rect source_rect,
+                                const gfx::Rect& image_rect,
+                                const gfx::Rect& source_rect,
                                 gfx::Vector2d dest_offset,
                                 ResourceFormat format);
   void UploadWithTexImageETC1(const uint8* image, gfx::Size size);

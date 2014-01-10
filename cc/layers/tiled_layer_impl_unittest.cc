@@ -72,7 +72,7 @@ class TiledLayerImplTest : public testing::Test {
                 gfx::Size tile_size,
                 gfx::Size layer_size,
                 LayerTilingData::BorderTexelOption border_texel_option,
-                gfx::Rect visible_content_rect) {
+                const gfx::Rect& visible_content_rect) {
     scoped_ptr<TiledLayerImpl> layer =
         CreateLayer(tile_size, layer_size, border_texel_option);
     layer->draw_properties().visible_content_rect = visible_content_rect;

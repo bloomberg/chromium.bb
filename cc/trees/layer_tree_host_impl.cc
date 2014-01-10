@@ -601,7 +601,7 @@ static void AppendQuadsForRenderSurfaceLayer(
 static void AppendQuadsToFillScreen(
     ResourceProvider::ResourceId overhang_resource_id,
     gfx::SizeF overhang_resource_scaled_size,
-    gfx::Rect root_scroll_layer_rect,
+    const gfx::Rect& root_scroll_layer_rect,
     RenderPass* target_render_pass,
     LayerImpl* root_layer,
     SkColor screen_background_color,
@@ -960,7 +960,7 @@ void LayerTreeHostImpl::DidAnimateScrollOffset() {
   client_->RenewTreePriority();
 }
 
-void LayerTreeHostImpl::SetViewportDamage(gfx::Rect damage_rect) {
+void LayerTreeHostImpl::SetViewportDamage(const gfx::Rect& damage_rect) {
   viewport_damage_rect_.Union(damage_rect);
 }
 
@@ -1077,7 +1077,7 @@ void LayerTreeHostImpl::RemoveRenderPasses(RenderPassCuller culler,
 }
 
 bool LayerTreeHostImpl::PrepareToDraw(FrameData* frame,
-                                      gfx::Rect device_viewport_damage_rect) {
+                                      const gfx::Rect& damage_rect) {
   TRACE_EVENT1("cc",
                "LayerTreeHostImpl::PrepareToDraw",
                "SourceFrameNumber",
@@ -1098,6 +1098,7 @@ bool LayerTreeHostImpl::PrepareToDraw(FrameData* frame,
   frame->contains_incomplete_tile = false;
   frame->has_no_damage = false;
 
+  gfx::Rect device_viewport_damage_rect(damage_rect);
   if (active_tree_->root_layer()) {
     device_viewport_damage_rect.Union(viewport_damage_rect_);
     viewport_damage_rect_ = gfx::Rect();
@@ -1246,8 +1247,8 @@ void LayerTreeHostImpl::SetManagedMemoryPolicy(
 
 void LayerTreeHostImpl::SetExternalDrawConstraints(
     const gfx::Transform& transform,
-    gfx::Rect viewport,
-    gfx::Rect clip,
+    const gfx::Rect& viewport,
+    const gfx::Rect& clip,
     bool valid_for_tile_management) {
   external_transform_ = transform;
   external_viewport_ = viewport;
@@ -1255,7 +1256,7 @@ void LayerTreeHostImpl::SetExternalDrawConstraints(
   device_viewport_valid_for_tile_management_ = valid_for_tile_management;
 }
 
-void LayerTreeHostImpl::SetNeedsRedrawRect(gfx::Rect damage_rect) {
+void LayerTreeHostImpl::SetNeedsRedrawRect(const gfx::Rect& damage_rect) {
   if (damage_rect.IsEmpty())
     return;
   NotifySwapPromiseMonitorsOfSetNeedsRedraw();
@@ -1500,7 +1501,7 @@ void LayerTreeHostImpl::DidLoseOutputSurface() {
 }
 
 void LayerTreeHostImpl::Readback(void* pixels,
-                                 gfx::Rect rect_in_device_viewport) {
+                                 const gfx::Rect& rect_in_device_viewport) {
   DCHECK(renderer_);
   renderer_->GetFramebufferPixels(pixels, rect_in_device_viewport);
 }

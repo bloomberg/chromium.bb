@@ -44,8 +44,8 @@ static gfx::RectF NormalizedRect(float x,
                     height / total_height);
 }
 
-void NinePatchLayerImpl::SetLayout(gfx::Rect aperture,
-                                   gfx::Rect border,
+void NinePatchLayerImpl::SetLayout(const gfx::Rect& aperture,
+                                   const gfx::Rect& border,
                                    bool fill_center) {
   // This check imposes an ordering on the call sequence.  An UIResource must
   // exist before SetLayout can be called.

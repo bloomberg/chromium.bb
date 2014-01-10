@@ -117,7 +117,8 @@ class LayerTreeHostImplTest : public testing::Test,
   virtual void SetNeedsRedrawOnImplThread() OVERRIDE {
     did_request_redraw_ = true;
   }
-  virtual void SetNeedsRedrawRectOnImplThread(gfx::Rect damage_rect) OVERRIDE {
+  virtual void SetNeedsRedrawRectOnImplThread(
+      const gfx::Rect& damage_rect) OVERRIDE {
     did_request_redraw_ = true;
   }
   virtual void SetNeedsManageTilesOnImplThread() OVERRIDE {
@@ -2786,9 +2787,11 @@ class BlendStateCheckLayer : public LayerImpl {
 
   bool quads_appended() const { return quads_appended_; }
 
-  void SetQuadRect(gfx::Rect rect) { quad_rect_ = rect; }
-  void SetQuadVisibleRect(gfx::Rect rect) { quad_visible_rect_ = rect; }
-  void SetOpaqueContentRect(gfx::Rect rect) { opaque_content_rect_ = rect; }
+  void SetQuadRect(const gfx::Rect& rect) { quad_rect_ = rect; }
+  void SetQuadVisibleRect(const gfx::Rect& rect) { quad_visible_rect_ = rect; }
+  void SetOpaqueContentRect(const gfx::Rect& rect) {
+    opaque_content_rect_ = rect;
+  }
 
  private:
   BlendStateCheckLayer(LayerTreeImpl* tree_impl,
@@ -4814,7 +4817,7 @@ class CountingSoftwareDevice : public SoftwareOutputDevice {
  public:
   CountingSoftwareDevice() : frames_began_(0), frames_ended_(0) {}
 
-  virtual SkCanvas* BeginPaint(gfx::Rect damage_rect) OVERRIDE {
+  virtual SkCanvas* BeginPaint(const gfx::Rect& damage_rect) OVERRIDE {
     ++frames_began_;
     return SoftwareOutputDevice::BeginPaint(damage_rect);
   }

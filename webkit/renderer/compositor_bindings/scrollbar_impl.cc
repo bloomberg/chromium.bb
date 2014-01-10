@@ -63,7 +63,8 @@ gfx::Rect ScrollbarImpl::TrackRect() const {
 }
 
 void ScrollbarImpl::PaintPart(
-    SkCanvas* canvas, cc::ScrollbarPart part, gfx::Rect content_rect) {
+    SkCanvas* canvas, cc::ScrollbarPart part,
+    const gfx::Rect& content_rect) {
   if (part == cc::THUMB) {
     painter_.paintThumb(canvas, content_rect);
     return;

@@ -66,7 +66,7 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
  public:
   RasterWorkerPoolTaskImpl(const Resource* resource,
                            PicturePileImpl* picture_pile,
-                           gfx::Rect content_rect,
+                           const gfx::Rect& content_rect,
                            float contents_scale,
                            RasterMode raster_mode,
                            TileResolution tile_resolution,
@@ -518,7 +518,7 @@ RasterWorkerPool::RasterTask::~RasterTask() {
 RasterWorkerPool::RasterTask RasterWorkerPool::CreateRasterTask(
     const Resource* resource,
     PicturePileImpl* picture_pile,
-    gfx::Rect content_rect,
+    const gfx::Rect& content_rect,
     float contents_scale,
     RasterMode raster_mode,
     TileResolution tile_resolution,

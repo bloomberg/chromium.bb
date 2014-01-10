@@ -294,7 +294,7 @@ void TiledLayer::SetNeedsDisplayRect(const gfx::RectF& dirty_rect) {
   ContentsScalingLayer::SetNeedsDisplayRect(dirty_rect);
 }
 
-void TiledLayer::InvalidateContentRect(gfx::Rect content_rect) {
+void TiledLayer::InvalidateContentRect(const gfx::Rect& content_rect) {
   UpdateBounds();
   if (tiler_->is_empty() || content_rect.IsEmpty() || skips_draw_)
     return;
@@ -468,8 +468,8 @@ void TiledLayer::MarkTilesForUpdate(gfx::Rect* update_rect,
   }
 }
 
-void TiledLayer::UpdateTileTextures(gfx::Rect update_rect,
-                                    gfx::Rect paint_rect,
+void TiledLayer::UpdateTileTextures(const gfx::Rect& update_rect,
+                                    const gfx::Rect& paint_rect,
                                     int left,
                                     int top,
                                     int right,
@@ -593,8 +593,8 @@ namespace {
 // TODO(epenner): Remove this and make this based on distance once distance can
 // be calculated for offscreen layers. For now, prioritize all small animated
 // layers after 512 pixels of pre-painting.
-void SetPriorityForTexture(gfx::Rect visible_rect,
-                           gfx::Rect tile_rect,
+void SetPriorityForTexture(const gfx::Rect& visible_rect,
+                           const gfx::Rect& tile_rect,
                            bool draws_to_root,
                            bool is_small_animated_layer,
                            PrioritizedResource* texture) {
@@ -684,7 +684,7 @@ void TiledLayer::ResetUpdateState() {
 }
 
 namespace {
-gfx::Rect ExpandRectByDelta(gfx::Rect rect, gfx::Vector2d delta) {
+gfx::Rect ExpandRectByDelta(const gfx::Rect& rect, gfx::Vector2d delta) {
   int width = rect.width() + std::abs(delta.x());
   int height = rect.height() + std::abs(delta.y());
   int x = rect.x() + ((delta.x() < 0) ? delta.x() : 0);

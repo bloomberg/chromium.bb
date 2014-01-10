@@ -53,8 +53,8 @@ class CC_EXPORT NinePatchLayerImpl : public UIResourceLayerImpl {
   // |image_aperture| = (X, Y, P, Q)
   // |border| = (A, C, A + B, C + D)
   // |fill_center| indicates whether to draw the center quad or not.
-  void SetLayout(gfx::Rect image_aperture,
-                 gfx::Rect border,
+  void SetLayout(const gfx::Rect& image_aperture,
+                 const gfx::Rect& border,
                  bool fill_center);
 
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)

@@ -20,7 +20,7 @@ namespace {
 class MockContentLayerClient : public ContentLayerClient {
  public:
   virtual void PaintContents(SkCanvas* canvas,
-                             gfx::Rect clip,
+                             const gfx::Rect& clip,
                              gfx::RectF* opaque) OVERRIDE {}
   virtual void DidChangeLayerCanUseLCDText() OVERRIDE {}
 };

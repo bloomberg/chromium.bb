@@ -81,11 +81,11 @@ bool DecodeBitmap(const void* buffer, size_t size, SkBitmap* bm) {
 
 }  // namespace
 
-scoped_refptr<Picture> Picture::Create(gfx::Rect layer_rect) {
+scoped_refptr<Picture> Picture::Create(const gfx::Rect& layer_rect) {
   return make_scoped_refptr(new Picture(layer_rect));
 }
 
-Picture::Picture(gfx::Rect layer_rect)
+Picture::Picture(const gfx::Rect& layer_rect)
   : layer_rect_(layer_rect),
     cell_size_(layer_rect.size()) {
   // Instead of recording a trace event for object creation here, we wait for
@@ -152,8 +152,8 @@ scoped_refptr<Picture> Picture::CreateFromValue(const base::Value* raw_value) {
 }
 
 Picture::Picture(SkPicture* picture,
-                 gfx::Rect layer_rect,
-                 gfx::Rect opaque_rect) :
+                 const gfx::Rect& layer_rect,
+                 const gfx::Rect& opaque_rect) :
     layer_rect_(layer_rect),
     opaque_rect_(opaque_rect),
     picture_(skia::AdoptRef(picture)),
@@ -161,8 +161,8 @@ Picture::Picture(SkPicture* picture,
 }
 
 Picture::Picture(const skia::RefPtr<SkPicture>& picture,
-                 gfx::Rect layer_rect,
-                 gfx::Rect opaque_rect,
+                 const gfx::Rect& layer_rect,
+                 const gfx::Rect& opaque_rect,
                  const PixelRefMap& pixel_refs) :
     layer_rect_(layer_rect),
     opaque_rect_(opaque_rect),
@@ -385,7 +385,7 @@ Picture::PixelRefIterator::PixelRefIterator()
 }
 
 Picture::PixelRefIterator::PixelRefIterator(
-    gfx::Rect query_rect,
+    const gfx::Rect& rect,
     const Picture* picture)
     : picture_(picture),
       current_pixel_refs_(empty_pixel_refs_.Pointer()),
@@ -394,6 +394,7 @@ Picture::PixelRefIterator::PixelRefIterator(
   gfx::Size cell_size = picture->cell_size_;
   DCHECK(!cell_size.IsEmpty());
 
+  gfx::Rect query_rect(rect);
   // Early out if the query rect doesn't intersect this picture.
   if (!query_rect.Intersects(layer_rect)) {
     min_point_ = gfx::Point(0, 0);

@@ -28,7 +28,7 @@ class FakeContentLayerClient : public ContentLayerClient {
   virtual ~FakeContentLayerClient();
 
   virtual void PaintContents(SkCanvas* canvas,
-                             gfx::Rect rect,
+                             const gfx::Rect& rect,
                              gfx::RectF* opaque_rect) OVERRIDE;
   virtual void DidChangeLayerCanUseLCDText() OVERRIDE {}
 

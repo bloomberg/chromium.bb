@@ -27,14 +27,14 @@ scoped_ptr<LayerImpl> NinePatchLayer::CreateLayerImpl(
   return NinePatchLayerImpl::Create(tree_impl, id()).PassAs<LayerImpl>();
 }
 
-void NinePatchLayer::SetBorder(gfx::Rect border) {
+void NinePatchLayer::SetBorder(const gfx::Rect& border) {
   if (border == border_)
     return;
   border_ = border;
   SetNeedsCommit();
 }
 
-void NinePatchLayer::SetAperture(gfx::Rect aperture) {
+void NinePatchLayer::SetAperture(const gfx::Rect& aperture) {
   if (image_aperture_ == aperture)
     return;
 

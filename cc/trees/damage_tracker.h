@@ -32,12 +32,14 @@ class CC_EXPORT DamageTracker {
   ~DamageTracker();
 
   void DidDrawDamagedArea() { current_damage_rect_ = gfx::RectF(); }
-  void AddDamageNextUpdate(gfx::RectF dmg) { current_damage_rect_.Union(dmg); }
+  void AddDamageNextUpdate(const gfx::RectF& dmg) {
+    current_damage_rect_.Union(dmg);
+  }
   void UpdateDamageTrackingState(
       const LayerImplList& layer_list,
       int target_surface_layer_id,
       bool target_surface_property_changed_only_from_descendant,
-      gfx::Rect target_surface_content_rect,
+      const gfx::Rect& target_surface_content_rect,
       LayerImpl* target_surface_mask_layer,
       const FilterOperations& filters);
 

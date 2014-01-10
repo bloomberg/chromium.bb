@@ -47,7 +47,7 @@ void WebContentLayerImpl::setDrawCheckerboardForMissingTiles(bool enable) {
 }
 
 void WebContentLayerImpl::PaintContents(SkCanvas* canvas,
-                                        gfx::Rect clip,
+                                        const gfx::Rect& clip,
                                         gfx::RectF* opaque) {
   if (!client_)
     return;

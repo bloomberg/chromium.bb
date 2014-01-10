@@ -17,13 +17,13 @@ class CC_EXPORT CheckerboardDrawQuad : public DrawQuad {
   static scoped_ptr<CheckerboardDrawQuad> Create();
 
   void SetNew(const SharedQuadState* shared_quad_state,
-              gfx::Rect rect,
+              const gfx::Rect& rect,
               SkColor color);
 
   void SetAll(const SharedQuadState* shared_quad_state,
-              gfx::Rect rect,
-              gfx::Rect opaque_rect,
-              gfx::Rect visible_rect,
+              const gfx::Rect& rect,
+              const gfx::Rect& opaque_rect,
+              const gfx::Rect& visible_rect,
               bool needs_blending,
               SkColor color);
 

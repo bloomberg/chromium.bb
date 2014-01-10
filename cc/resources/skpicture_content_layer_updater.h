@@ -24,7 +24,7 @@ class SkPictureContentLayerUpdater : public ContentLayerUpdater {
       int layer_id);
   virtual ~SkPictureContentLayerUpdater();
 
-  virtual void PrepareToUpdate(gfx::Rect content_rect,
+  virtual void PrepareToUpdate(const gfx::Rect& content_rect,
                                gfx::Size tile_size,
                                float contents_width_scale,
                                float contents_height_scale,

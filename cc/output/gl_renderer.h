@@ -64,7 +64,8 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   virtual void DoNoOp() OVERRIDE;
   virtual void SwapBuffers(const CompositorFrameMetadata& metadata) OVERRIDE;
 
-  virtual void GetFramebufferPixels(void* pixels, gfx::Rect rect) OVERRIDE;
+  virtual void GetFramebufferPixels(void* pixels,
+                                    const gfx::Rect& rect) OVERRIDE;
 
   virtual bool IsContextLost() OVERRIDE;
 
@@ -95,11 +96,11 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
     return shared_geometry_.get();
   }
 
-  void GetFramebufferPixelsAsync(gfx::Rect rect,
+  void GetFramebufferPixelsAsync(const gfx::Rect& rect,
                                  scoped_ptr<CopyOutputRequest> request);
   void GetFramebufferTexture(unsigned texture_id,
                              ResourceFormat texture_format,
-                             gfx::Rect device_rect);
+                             const gfx::Rect& device_rect);
   void ReleaseRenderPassTextures();
 
   void SetStencilEnabled(bool enabled);
@@ -110,9 +111,9 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   virtual void BindFramebufferToOutputSurface(DrawingFrame* frame) OVERRIDE;
   virtual bool BindFramebufferToTexture(DrawingFrame* frame,
                                         const ScopedResource* resource,
-                                        gfx::Rect target_rect) OVERRIDE;
-  virtual void SetDrawViewport(gfx::Rect window_space_viewport) OVERRIDE;
-  virtual void SetScissorTestRect(gfx::Rect scissor_rect) OVERRIDE;
+                                        const gfx::Rect& target_rect) OVERRIDE;
+  virtual void SetDrawViewport(const gfx::Rect& window_space_viewport) OVERRIDE;
+  virtual void SetScissorTestRect(const gfx::Rect& scissor_rect) OVERRIDE;
   virtual void DiscardPixels(bool has_external_stencil_test,
                              bool draw_rect_covers_full_surface) OVERRIDE;
   virtual void ClearFramebuffer(DrawingFrame* frame,
@@ -184,13 +185,13 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
 
   void CopyTextureToFramebuffer(const DrawingFrame* frame,
                                 int texture_id,
-                                gfx::Rect rect,
+                                const gfx::Rect& rect,
                                 const gfx::Transform& draw_matrix,
                                 bool flip_vertically);
 
   bool UseScopedTexture(DrawingFrame* frame,
                         const ScopedResource* resource,
-                        gfx::Rect viewport_rect);
+                        const gfx::Rect& viewport_rect);
 
   bool MakeContextCurrent();
 
@@ -202,7 +203,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
       AsyncGetFramebufferPixelsCleanupCallback;
   void DoGetFramebufferPixels(
       uint8* pixels,
-      gfx::Rect window_rect,
+      const gfx::Rect& window_rect,
       const AsyncGetFramebufferPixelsCleanupCallback& cleanup_callback);
   void FinishedReadback(
       const AsyncGetFramebufferPixelsCleanupCallback& cleanup_callback,

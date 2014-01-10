@@ -20,7 +20,7 @@ namespace cc {
 
 TestRenderPass* AddRenderPass(RenderPassList* pass_list,
                               RenderPass::Id id,
-                              gfx::Rect output_rect,
+                              const gfx::Rect& output_rect,
                               const gfx::Transform& root_transform) {
   scoped_ptr<TestRenderPass> pass(TestRenderPass::Create());
   pass->SetNew(id, output_rect, output_rect, root_transform);
@@ -30,7 +30,7 @@ TestRenderPass* AddRenderPass(RenderPassList* pass_list,
 }
 
 SolidColorDrawQuad* AddQuad(TestRenderPass* pass,
-                            gfx::Rect rect,
+                            const gfx::Rect& rect,
                             SkColor color) {
   MockQuadCuller quad_sink(&pass->quad_list, &pass->shared_quad_state_list);
   AppendQuadsData data(pass->id);
@@ -51,7 +51,7 @@ SolidColorDrawQuad* AddQuad(TestRenderPass* pass,
 }
 
 SolidColorDrawQuad* AddClippedQuad(TestRenderPass* pass,
-                                   gfx::Rect rect,
+                                   const gfx::Rect& rect,
                                    SkColor color) {
   MockQuadCuller quad_sink(&pass->quad_list, &pass->shared_quad_state_list);
   AppendQuadsData data(pass->id);
@@ -72,7 +72,7 @@ SolidColorDrawQuad* AddClippedQuad(TestRenderPass* pass,
 }
 
 SolidColorDrawQuad* AddTransformedQuad(TestRenderPass* pass,
-                                       gfx::Rect rect,
+                                       const gfx::Rect& rect,
                                        SkColor color,
                                        const gfx::Transform& transform) {
   MockQuadCuller quad_sink(&pass->quad_list, &pass->shared_quad_state_list);

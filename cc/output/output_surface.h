@@ -175,7 +175,7 @@ class CC_EXPORT OutputSurface : public FrameRateControllerClient {
 
   // Forwarded to OutputSurfaceClient but threaded through OutputSurface
   // first so OutputSurface has a chance to update the FrameRateController
-  void SetNeedsRedrawRect(gfx::Rect damage_rect);
+  void SetNeedsRedrawRect(const gfx::Rect& damage_rect);
   void BeginImplFrame(const BeginFrameArgs& args);
   void DidSwapBuffers();
   void OnSwapBuffersComplete();
@@ -183,8 +183,8 @@ class CC_EXPORT OutputSurface : public FrameRateControllerClient {
   void DidLoseOutputSurface();
   void SetExternalStencilTest(bool enabled);
   void SetExternalDrawConstraints(const gfx::Transform& transform,
-                                  gfx::Rect viewport,
-                                  gfx::Rect clip,
+                                  const gfx::Rect& viewport,
+                                  const gfx::Rect& clip,
                                   bool valid_for_tile_management);
 
   // virtual for testing.

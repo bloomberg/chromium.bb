@@ -89,7 +89,7 @@ class CC_EXPORT TilingData {
   // Iterate through all indices whose bounds + border intersect with |rect|.
   class CC_EXPORT Iterator : public BaseIterator {
    public:
-    Iterator(const TilingData* tiling_data, gfx::Rect rect);
+    Iterator(const TilingData* tiling_data, const gfx::Rect& tiling_rect);
     Iterator& operator++();
 
    private:
@@ -104,8 +104,8 @@ class CC_EXPORT TilingData {
    public:
     DifferenceIterator(
       const TilingData* tiling_data,
-      gfx::Rect consider,
-      gfx::Rect ignore);
+      const gfx::Rect& consider_rect,
+      const gfx::Rect& ignore_rect);
     DifferenceIterator& operator++();
 
    private:

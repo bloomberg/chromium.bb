@@ -81,8 +81,8 @@ void DirectRenderer::QuadRectTransform(gfx::Transform* quad_rect_transform,
 }
 
 void DirectRenderer::InitializeViewport(DrawingFrame* frame,
-                                        gfx::Rect draw_rect,
-                                        gfx::Rect viewport_rect,
+                                        const gfx::Rect& draw_rect,
+                                        const gfx::Rect& viewport_rect,
                                         gfx::Size surface_size) {
   bool flip_y = FlippedFramebuffer();
 
@@ -195,8 +195,8 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
 void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
                                ContextProvider* offscreen_context_provider,
                                float device_scale_factor,
-                               gfx::Rect device_viewport_rect,
-                               gfx::Rect device_clip_rect,
+                               const gfx::Rect& device_viewport_rect,
+                               const gfx::Rect& device_clip_rect,
                                bool allow_partial_swap,
                                bool disable_picture_quad_image_filtering) {
   TRACE_EVENT0("cc", "DirectRenderer::DrawFrame");
@@ -317,8 +317,9 @@ void DirectRenderer::SetScissorStateForQuadWithRenderPassScissor(
   SetScissorTestRectInDrawSpace(frame, quad_scissor_rect);
 }
 
-void DirectRenderer::SetScissorTestRectInDrawSpace(const DrawingFrame* frame,
-                                                   gfx::RectF draw_space_rect) {
+void DirectRenderer::SetScissorTestRectInDrawSpace(
+    const DrawingFrame* frame,
+    const gfx::RectF& draw_space_rect) {
   gfx::Rect window_space_rect = MoveFromDrawToWindowSpace(draw_space_rect);
   if (NeedDeviceClip(frame))
     window_space_rect.Intersect(DeviceClipRectInWindowSpace(frame));

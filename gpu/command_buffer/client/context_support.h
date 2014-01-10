@@ -28,7 +28,7 @@ class ContextSupport {
   virtual void SendManagedMemoryStats(const ManagedMemoryStats& stats) = 0;
 
   virtual void Swap() = 0;
-  virtual void PartialSwapBuffers(gfx::Rect sub_buffer) = 0;
+  virtual void PartialSwapBuffers(const gfx::Rect& sub_buffer) = 0;
 
   virtual void SetSwapBuffersCompleteCallback(
       const base::Closure& callback) = 0;

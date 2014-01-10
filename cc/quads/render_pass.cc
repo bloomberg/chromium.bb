@@ -112,8 +112,8 @@ void RenderPass::CopyAll(const ScopedPtrVector<RenderPass>& in,
 }
 
 void RenderPass::SetNew(Id id,
-                        gfx::Rect output_rect,
-                        gfx::RectF damage_rect,
+                        const gfx::Rect& output_rect,
+                        const gfx::RectF& damage_rect,
                         const gfx::Transform& transform_to_root_target) {
   DCHECK_GT(id.layer_id, 0);
   DCHECK_GE(id.index, 0);
@@ -128,8 +128,8 @@ void RenderPass::SetNew(Id id,
 }
 
 void RenderPass::SetAll(Id id,
-                        gfx::Rect output_rect,
-                        gfx::RectF damage_rect,
+                        const gfx::Rect& output_rect,
+                        const gfx::RectF& damage_rect,
                         const gfx::Transform& transform_to_root_target,
                         bool has_transparent_background) {
   DCHECK_GT(id.layer_id, 0);

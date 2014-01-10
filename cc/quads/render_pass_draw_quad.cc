@@ -36,12 +36,12 @@ scoped_ptr<RenderPassDrawQuad> RenderPassDrawQuad::Copy(
 
 void RenderPassDrawQuad::SetNew(
     const SharedQuadState* shared_quad_state,
-    gfx::Rect rect,
+    const gfx::Rect& rect,
     RenderPass::Id render_pass_id,
     bool is_replica,
     ResourceProvider::ResourceId mask_resource_id,
-    gfx::Rect contents_changed_since_last_frame,
-    gfx::RectF mask_uv_rect,
+    const gfx::Rect& contents_changed_since_last_frame,
+    const gfx::RectF& mask_uv_rect,
     const FilterOperations& filters,
     const FilterOperations& background_filters) {
   DCHECK_GT(render_pass_id.layer_id, 0);
@@ -58,15 +58,15 @@ void RenderPassDrawQuad::SetNew(
 
 void RenderPassDrawQuad::SetAll(
     const SharedQuadState* shared_quad_state,
-    gfx::Rect rect,
-    gfx::Rect opaque_rect,
-    gfx::Rect visible_rect,
+    const gfx::Rect& rect,
+    const gfx::Rect& opaque_rect,
+    const gfx::Rect& visible_rect,
     bool needs_blending,
     RenderPass::Id render_pass_id,
     bool is_replica,
     ResourceProvider::ResourceId mask_resource_id,
-    gfx::Rect contents_changed_since_last_frame,
-    gfx::RectF mask_uv_rect,
+    const gfx::Rect& contents_changed_since_last_frame,
+    const gfx::RectF& mask_uv_rect,
     const FilterOperations& filters,
     const FilterOperations& background_filters) {
   DCHECK_GT(render_pass_id.layer_id, 0);

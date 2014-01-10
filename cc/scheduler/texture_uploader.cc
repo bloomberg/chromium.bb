@@ -129,8 +129,8 @@ void TextureUploader::EndQuery() {
 }
 
 void TextureUploader::Upload(const uint8* image,
-                             gfx::Rect image_rect,
-                             gfx::Rect source_rect,
+                             const gfx::Rect& image_rect,
+                             const gfx::Rect& source_rect,
                              gfx::Vector2d dest_offset,
                              ResourceFormat format,
                              gfx::Size size) {
@@ -173,8 +173,8 @@ void TextureUploader::ReleaseCachedQueries() {
 }
 
 void TextureUploader::UploadWithTexSubImage(const uint8* image,
-                                            gfx::Rect image_rect,
-                                            gfx::Rect source_rect,
+                                            const gfx::Rect& image_rect,
+                                            const gfx::Rect& source_rect,
                                             gfx::Vector2d dest_offset,
                                             ResourceFormat format) {
   TRACE_EVENT0("cc", "TextureUploader::UploadWithTexSubImage");
@@ -227,8 +227,8 @@ void TextureUploader::UploadWithTexSubImage(const uint8* image,
 }
 
 void TextureUploader::UploadWithMapTexSubImage(const uint8* image,
-                                               gfx::Rect image_rect,
-                                               gfx::Rect source_rect,
+                                               const gfx::Rect& image_rect,
+                                               const gfx::Rect& source_rect,
                                                gfx::Vector2d dest_offset,
                                                ResourceFormat format) {
   TRACE_EVENT0("cc", "TextureUploader::UploadWithMapTexSubImage");

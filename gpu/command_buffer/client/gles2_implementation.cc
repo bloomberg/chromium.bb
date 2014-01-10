@@ -2781,7 +2781,7 @@ void GLES2Implementation::Swap() {
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void GLES2Implementation::PartialSwapBuffers(gfx::Rect sub_buffer) {
+void GLES2Implementation::PartialSwapBuffers(const gfx::Rect& sub_buffer) {
   PostSubBufferCHROMIUM(sub_buffer.x(),
                         sub_buffer.y(),
                         sub_buffer.width(),

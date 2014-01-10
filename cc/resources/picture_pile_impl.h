@@ -39,7 +39,7 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
   // measured value over all runs.
   void RasterDirect(
       SkCanvas* canvas,
-      gfx::Rect canvas_rect,
+      const gfx::Rect& canvas_rect,
       float contents_scale,
       RenderingStatsInstrumentation* rendering_stats_instrumentation);
 
@@ -48,7 +48,7 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
   // that itself will then be blended and thus that a canvas clear is required.
   void RasterToBitmap(
       SkCanvas* canvas,
-      gfx::Rect canvas_rect,
+      const gfx::Rect& canvas_rect,
       float contents_scale,
       RenderingStatsInstrumentation* stats_instrumentation);
 
@@ -56,7 +56,7 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
   // SkDrawPictureCallback, which allows us to early out from analysis.
   void RasterForAnalysis(
       skia::AnalysisCanvas* canvas,
-      gfx::Rect canvas_rect,
+      const gfx::Rect& canvas_rect,
       float contents_scale,
       RenderingStatsInstrumentation* stats_instrumentation);
 
@@ -71,18 +71,18 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
     SkColor solid_color;
   };
 
-  void AnalyzeInRect(gfx::Rect content_rect,
+  void AnalyzeInRect(const gfx::Rect& content_rect,
                      float contents_scale,
                      Analysis* analysis);
 
-  void AnalyzeInRect(gfx::Rect content_rect,
+  void AnalyzeInRect(const gfx::Rect& content_rect,
                      float contents_scale,
                      Analysis* analysis,
                      RenderingStatsInstrumentation* stats_instrumentation);
 
   class CC_EXPORT PixelRefIterator {
    public:
-    PixelRefIterator(gfx::Rect content_rect,
+    PixelRefIterator(const gfx::Rect& content_rect,
                      float contents_scale,
                      const PicturePileImpl* picture_pile);
     ~PixelRefIterator();
@@ -129,15 +129,15 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
 
  private:
   typedef std::map<Picture*, Region> PictureRegionMap;
-  void CoalesceRasters(gfx::Rect canvas_rect,
-                       gfx::Rect content_rect,
+  void CoalesceRasters(const gfx::Rect& canvas_rect,
+                       const gfx::Rect& content_rect,
                        float contents_scale,
                        PictureRegionMap* result);
 
   void RasterCommon(
       SkCanvas* canvas,
       SkDrawPictureCallback* callback,
-      gfx::Rect canvas_rect,
+      const gfx::Rect& canvas_rect,
       float contents_scale,
       RenderingStatsInstrumentation* rendering_stats_instrumentation,
       bool is_analysis);

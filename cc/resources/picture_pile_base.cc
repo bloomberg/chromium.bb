@@ -188,7 +188,8 @@ bool PicturePileBase::HasRecordingAt(int x, int y) {
   return !!found->second.GetPicture();
 }
 
-bool PicturePileBase::CanRaster(float contents_scale, gfx::Rect content_rect) {
+bool PicturePileBase::CanRaster(float contents_scale,
+                                const gfx::Rect& content_rect) {
   if (tiling_.total_size().IsEmpty())
     return false;
   gfx::Rect layer_rect = gfx::ScaleToEnclosingRect(
@@ -202,7 +203,7 @@ gfx::Rect PicturePileBase::PaddedRect(const PictureMapKey& key) {
   return PadRect(tile);
 }
 
-gfx::Rect PicturePileBase::PadRect(gfx::Rect rect) {
+gfx::Rect PicturePileBase::PadRect(const gfx::Rect& rect) {
   gfx::Rect padded_rect = rect;
   padded_rect.Inset(
       -buffer_pixels(), -buffer_pixels(), -buffer_pixels(), -buffer_pixels());

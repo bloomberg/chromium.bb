@@ -21,7 +21,8 @@ class FakeProxy : public Proxy {
 
   void SetLayerTreeHost(LayerTreeHost* host);
 
-  virtual bool CompositeAndReadback(void* pixels, gfx::Rect rect) OVERRIDE;
+  virtual bool CompositeAndReadback(void* pixels,
+                                    const gfx::Rect& rect) OVERRIDE;
   virtual void FinishAllRendering() OVERRIDE {}
   virtual bool IsStarted() const OVERRIDE;
   virtual void SetLayerTreeHostClientReady() OVERRIDE {}
@@ -31,7 +32,7 @@ class FakeProxy : public Proxy {
   virtual void SetNeedsAnimate() OVERRIDE {}
   virtual void SetNeedsUpdateLayers() OVERRIDE {}
   virtual void SetNeedsCommit() OVERRIDE {}
-  virtual void SetNeedsRedraw(gfx::Rect damage_rect) OVERRIDE {}
+  virtual void SetNeedsRedraw(const gfx::Rect& damage_rect) OVERRIDE {}
   virtual void SetNextCommitWaitsForActivation() OVERRIDE {}
   virtual void NotifyInputThrottledUntilCommit() OVERRIDE {}
   virtual void SetDeferCommits(bool defer_commits) OVERRIDE {}

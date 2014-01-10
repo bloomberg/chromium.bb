@@ -272,7 +272,8 @@ TilingData::BaseIterator::BaseIterator(const TilingData* tiling_data)
       index_y_(-1) {
 }
 
-TilingData::Iterator::Iterator(const TilingData* tiling_data, gfx::Rect rect)
+TilingData::Iterator::Iterator(const TilingData* tiling_data,
+                               const gfx::Rect& tiling_rect)
     : BaseIterator(tiling_data),
       left_(-1),
       right_(-1),
@@ -282,6 +283,7 @@ TilingData::Iterator::Iterator(const TilingData* tiling_data, gfx::Rect rect)
     return;
   }
 
+  gfx::Rect rect(tiling_rect);
   rect.Intersect(gfx::Rect(tiling_data_->total_size()));
   index_x_ = tiling_data_->FirstBorderTileXIndexFromSrcCoord(rect.x());
   index_y_ = tiling_data_->FirstBorderTileYIndexFromSrcCoord(rect.y());
@@ -313,8 +315,8 @@ TilingData::Iterator& TilingData::Iterator::operator++() {
 
 TilingData::DifferenceIterator::DifferenceIterator(
     const TilingData* tiling_data,
-    gfx::Rect consider,
-    gfx::Rect ignore)
+    const gfx::Rect& consider_rect,
+    const gfx::Rect& ignore_rect)
     : BaseIterator(tiling_data),
       consider_left_(-1),
       consider_top_(-1),
@@ -330,6 +332,8 @@ TilingData::DifferenceIterator::DifferenceIterator(
   }
 
   gfx::Rect bounds(tiling_data_->total_size());
+  gfx::Rect consider(consider_rect);
+  gfx::Rect ignore(ignore_rect);
   consider.Intersect(bounds);
   ignore.Intersect(bounds);
   if (consider.IsEmpty()) {

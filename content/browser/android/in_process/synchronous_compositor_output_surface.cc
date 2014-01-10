@@ -78,7 +78,7 @@ class SynchronousCompositorOutputSurface::SoftwareDevice
   virtual void Resize(gfx::Size size) OVERRIDE {
     // Intentional no-op: canvas size is controlled by the embedder.
   }
-  virtual SkCanvas* BeginPaint(gfx::Rect damage_rect) OVERRIDE {
+  virtual SkCanvas* BeginPaint(const gfx::Rect& damage_rect) OVERRIDE {
     if (!surface_->current_sw_canvas_) {
       NOTREACHED() << "BeginPaint with no canvas set";
       return &null_canvas_;
@@ -89,7 +89,7 @@ class SynchronousCompositorOutputSurface::SoftwareDevice
   }
   virtual void EndPaint(cc::SoftwareFrameData* frame_data) OVERRIDE {
   }
-  virtual void CopyToBitmap(gfx::Rect rect, SkBitmap* output) OVERRIDE {
+  virtual void CopyToBitmap(const gfx::Rect& rect, SkBitmap* output) OVERRIDE {
     NOTIMPLEMENTED();
   }
 

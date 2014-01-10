@@ -1843,7 +1843,7 @@ class TrackingLayerPainter : public LayerPainter {
   }
 
   virtual void Paint(SkCanvas* canvas,
-                     gfx::Rect content_rect,
+                     const gfx::Rect& content_rect,
                      gfx::RectF* opaque) OVERRIDE {
     painted_rect_ = content_rect;
   }

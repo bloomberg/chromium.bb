@@ -34,8 +34,8 @@ class CC_EXPORT DirectRenderer : public Renderer {
   virtual void DrawFrame(RenderPassList* render_passes_in_draw_order,
                          ContextProvider* offscreen_context_provider,
                          float device_scale_factor,
-                         gfx::Rect device_viewport_rect,
-                         gfx::Rect device_clip_rect,
+                         const gfx::Rect& device_viewport_rect,
+                         const gfx::Rect& device_clip_rect,
                          bool allow_partial_swap,
                          bool disable_picture_quad_image_filtering) OVERRIDE;
 
@@ -72,8 +72,8 @@ class CC_EXPORT DirectRenderer : public Renderer {
                                 const gfx::Transform& quad_transform,
                                 const gfx::RectF& quad_rect);
   void InitializeViewport(DrawingFrame* frame,
-                          gfx::Rect draw_rect,
-                          gfx::Rect viewport_rect,
+                          const gfx::Rect& draw_rect,
+                          const gfx::Rect& viewport_rect,
                           gfx::Size surface_size);
   gfx::Rect MoveFromDrawToWindowSpace(const gfx::RectF& draw_rect) const;
 
@@ -87,7 +87,7 @@ class CC_EXPORT DirectRenderer : public Renderer {
       const gfx::RectF& render_pass_scissor,
       bool* should_skip_quad);
   void SetScissorTestRectInDrawSpace(const DrawingFrame* frame,
-                                     gfx::RectF draw_space_rect);
+                                     const gfx::RectF& draw_space_rect);
 
   static gfx::Size RenderPassTextureSize(const RenderPass* render_pass);
 
@@ -99,9 +99,9 @@ class CC_EXPORT DirectRenderer : public Renderer {
   virtual void BindFramebufferToOutputSurface(DrawingFrame* frame) = 0;
   virtual bool BindFramebufferToTexture(DrawingFrame* frame,
                                         const ScopedResource* resource,
-                                        gfx::Rect target_rect) = 0;
-  virtual void SetDrawViewport(gfx::Rect window_space_viewport) = 0;
-  virtual void SetScissorTestRect(gfx::Rect scissor_rect) = 0;
+                                        const gfx::Rect& target_rect) = 0;
+  virtual void SetDrawViewport(const gfx::Rect& window_space_viewport) = 0;
+  virtual void SetScissorTestRect(const gfx::Rect& scissor_rect) = 0;
   virtual void DiscardPixels(bool has_external_stencil_test,
                              bool draw_rect_covers_full_surface) = 0;
   virtual void ClearFramebuffer(DrawingFrame* frame,

@@ -14,14 +14,14 @@ Region::Region(const Region& region)
     : skregion_(region.skregion_) {
 }
 
-Region::Region(gfx::Rect rect)
+Region::Region(const gfx::Rect& rect)
     : skregion_(gfx::RectToSkIRect(rect)) {
 }
 
 Region::~Region() {
 }
 
-const Region& Region::operator=(gfx::Rect rect) {
+const Region& Region::operator=(const gfx::Rect& rect) {
   skregion_ = SkRegion(gfx::RectToSkIRect(rect));
   return *this;
 }
@@ -51,7 +51,7 @@ bool Region::Contains(gfx::Point point) const {
   return skregion_.contains(point.x(), point.y());
 }
 
-bool Region::Contains(gfx::Rect rect) const {
+bool Region::Contains(const gfx::Rect& rect) const {
   if (rect.IsEmpty())
     return true;
   return skregion_.contains(gfx::RectToSkIRect(rect));
@@ -63,7 +63,7 @@ bool Region::Contains(const Region& region) const {
   return skregion_.contains(region.skregion_);
 }
 
-bool Region::Intersects(gfx::Rect rect) const {
+bool Region::Intersects(const gfx::Rect& rect) const {
   return skregion_.intersects(gfx::RectToSkIRect(rect));
 }
 
@@ -71,7 +71,7 @@ bool Region::Intersects(const Region& region) const {
   return skregion_.intersects(region.skregion_);
 }
 
-void Region::Subtract(gfx::Rect rect) {
+void Region::Subtract(const gfx::Rect& rect) {
   skregion_.op(gfx::RectToSkIRect(rect), SkRegion::kDifference_Op);
 }
 
@@ -79,7 +79,7 @@ void Region::Subtract(const Region& region) {
   skregion_.op(region.skregion_, SkRegion::kDifference_Op);
 }
 
-void Region::Union(gfx::Rect rect) {
+void Region::Union(const gfx::Rect& rect) {
   skregion_.op(gfx::RectToSkIRect(rect), SkRegion::kUnion_Op);
 }
 
@@ -87,7 +87,7 @@ void Region::Union(const Region& region) {
   skregion_.op(region.skregion_, SkRegion::kUnion_Op);
 }
 
-void Region::Intersect(gfx::Rect rect) {
+void Region::Intersect(const gfx::Rect& rect) {
   skregion_.op(gfx::RectToSkIRect(rect), SkRegion::kIntersect_Op);
 }
 

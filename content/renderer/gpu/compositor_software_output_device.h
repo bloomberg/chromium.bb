@@ -28,7 +28,7 @@ public:
 
   virtual void Resize(gfx::Size size) OVERRIDE;
 
-  virtual SkCanvas* BeginPaint(gfx::Rect damage_rect) OVERRIDE;
+  virtual SkCanvas* BeginPaint(const gfx::Rect& damage_rect) OVERRIDE;
   virtual void EndPaint(cc::SoftwareFrameData* frame_data) OVERRIDE;
   virtual void EnsureBackbuffer() OVERRIDE;
   virtual void DiscardBackbuffer() OVERRIDE;

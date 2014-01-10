@@ -135,8 +135,8 @@ class CC_EXPORT ResourceProvider {
   // the resource).
   void SetPixels(ResourceId id,
                  const uint8_t* image,
-                 gfx::Rect image_rect,
-                 gfx::Rect source_rect,
+                 const gfx::Rect& image_rect,
+                 const gfx::Rect& source_rect,
                  gfx::Vector2d dest_offset);
 
   // Check upload status.

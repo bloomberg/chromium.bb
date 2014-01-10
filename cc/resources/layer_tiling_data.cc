@@ -66,7 +66,7 @@ LayerTilingData::Tile* LayerTilingData::TileAt(int i, int j) const {
   return tiles_.get(std::make_pair(i, j));
 }
 
-void LayerTilingData::ContentRectToTileIndices(gfx::Rect content_rect,
+void LayerTilingData::ContentRectToTileIndices(const gfx::Rect& content_rect,
                                                int* left,
                                                int* top,
                                                int* right,
@@ -90,7 +90,7 @@ gfx::Rect LayerTilingData::TileRect(const Tile* tile) const {
 }
 
 Region LayerTilingData::OpaqueRegionInContentRect(
-    gfx::Rect content_rect) const {
+    const gfx::Rect& content_rect) const {
   if (content_rect.IsEmpty())
     return Region();
 

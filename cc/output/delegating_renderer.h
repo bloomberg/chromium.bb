@@ -31,8 +31,8 @@ class CC_EXPORT DelegatingRenderer : public Renderer {
   virtual void DrawFrame(RenderPassList* render_passes_in_draw_order,
                          ContextProvider* offscreen_context_provider,
                          float device_scale_factor,
-                         gfx::Rect device_viewport_rect,
-                         gfx::Rect device_clip_rect,
+                         const gfx::Rect& device_viewport_rect,
+                         const gfx::Rect& device_clip_rect,
                          bool allow_partial_swap,
                          bool disable_picture_quad_image_filtering) OVERRIDE;
 
@@ -41,7 +41,8 @@ class CC_EXPORT DelegatingRenderer : public Renderer {
   virtual void SwapBuffers(const CompositorFrameMetadata& metadata) OVERRIDE;
   virtual void ReceiveSwapBuffersAck(const CompositorFrameAck&) OVERRIDE;
 
-  virtual void GetFramebufferPixels(void* pixels, gfx::Rect rect) OVERRIDE;
+  virtual void GetFramebufferPixels(void* pixels,
+                                    const gfx::Rect& rect) OVERRIDE;
 
   virtual bool IsContextLost() OVERRIDE;
 

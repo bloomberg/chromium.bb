@@ -29,7 +29,9 @@ class CC_EXPORT RenderSurface {
   // reflection.
   gfx::RectF DrawableContentRect() const;
 
-  void SetContentRect(gfx::Rect content_rect) { content_rect_ = content_rect; }
+  void SetContentRect(const gfx::Rect& content_rect) {
+      content_rect_ = content_rect;
+  }
   gfx::Rect content_rect() const { return content_rect_; }
 
   void SetDrawOpacity(float opacity) { draw_opacity_ = opacity; }
@@ -84,7 +86,7 @@ class CC_EXPORT RenderSurface {
   void SetIsClipped(bool is_clipped) { is_clipped_ = is_clipped; }
 
   gfx::Rect clip_rect() const { return clip_rect_; }
-  void SetClipRect(gfx::Rect clip_rect) { clip_rect_ = clip_rect; }
+  void SetClipRect(const gfx::Rect& clip_rect) { clip_rect_ = clip_rect; }
 
   // When false, the RenderSurface does not contribute to another target
   // RenderSurface that is being drawn for the current frame. It could still be

@@ -64,7 +64,7 @@ int RenderSurfaceImpl::OwningLayerId() const {
 }
 
 
-void RenderSurfaceImpl::SetClipRect(gfx::Rect clip_rect) {
+void RenderSurfaceImpl::SetClipRect(const gfx::Rect& clip_rect) {
   if (clip_rect_ == clip_rect)
     return;
 
@@ -76,7 +76,7 @@ bool RenderSurfaceImpl::ContentsChanged() const {
   return !damage_tracker_->current_damage_rect().IsEmpty();
 }
 
-void RenderSurfaceImpl::SetContentRect(gfx::Rect content_rect) {
+void RenderSurfaceImpl::SetContentRect(const gfx::Rect& content_rect) {
   if (content_rect_ == content_rect)
     return;
 

@@ -17,8 +17,8 @@ class CC_EXPORT TextureDrawQuad : public DrawQuad {
   static scoped_ptr<TextureDrawQuad> Create();
 
   void SetNew(const SharedQuadState* shared_quad_state,
-              gfx::Rect rect,
-              gfx::Rect opaque_rect,
+              const gfx::Rect& rect,
+              const gfx::Rect& opaque_rect,
               unsigned resource_id,
               bool premultiplied_alpha,
               gfx::PointF uv_top_left,
@@ -28,9 +28,9 @@ class CC_EXPORT TextureDrawQuad : public DrawQuad {
               bool flipped);
 
   void SetAll(const SharedQuadState* shared_quad_state,
-              gfx::Rect rect,
-              gfx::Rect opaque_rect,
-              gfx::Rect visible_rect,
+              const gfx::Rect& rect,
+              const gfx::Rect& opaque_rect,
+              const gfx::Rect& visible_rect,
               bool needs_blending,
               unsigned resource_id,
               bool premultiplied_alpha,

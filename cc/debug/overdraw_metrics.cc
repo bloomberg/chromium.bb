@@ -55,7 +55,7 @@ static inline float AreaOfMappedQuad(const gfx::Transform& transform,
   return PolygonArea(clipped_quad, num_vertices_in_clipped_quad);
 }
 
-void OverdrawMetrics::DidPaint(gfx::Rect painted_rect) {
+void OverdrawMetrics::DidPaint(const gfx::Rect& painted_rect) {
   if (!record_metrics_for_frame_)
     return;
 
@@ -69,8 +69,8 @@ void OverdrawMetrics::DidCullTilesForUpload(int count) {
 }
 
 void OverdrawMetrics::DidUpload(const gfx::Transform& transform_to_target,
-                                gfx::Rect upload_rect,
-                                gfx::Rect opaque_rect) {
+                                const gfx::Rect& upload_rect,
+                                const gfx::Rect& opaque_rect) {
   if (!record_metrics_for_frame_)
     return;
 
@@ -103,8 +103,8 @@ void OverdrawMetrics::DidUseRenderSurfaceTextureMemoryBytes(
 
 void OverdrawMetrics::DidCullForDrawing(
     const gfx::Transform& transform_to_target,
-    gfx::Rect before_cull_rect,
-    gfx::Rect after_cull_rect) {
+    const gfx::Rect& before_cull_rect,
+    const gfx::Rect& after_cull_rect) {
   if (!record_metrics_for_frame_)
     return;
 
@@ -117,8 +117,8 @@ void OverdrawMetrics::DidCullForDrawing(
 }
 
 void OverdrawMetrics::DidDraw(const gfx::Transform& transform_to_target,
-                              gfx::Rect after_cull_rect,
-                              gfx::Rect opaque_rect) {
+                              const gfx::Rect& after_cull_rect,
+                              const gfx::Rect& opaque_rect) {
   if (!record_metrics_for_frame_)
     return;
 

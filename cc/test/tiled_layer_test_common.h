@@ -29,7 +29,7 @@ class FakeLayerUpdater : public LayerUpdater {
     virtual ~Resource();
 
     virtual void Update(ResourceUpdateQueue* queue,
-                        gfx::Rect source_rect,
+                        const gfx::Rect& source_rect,
                         gfx::Vector2d dest_offset,
                         bool partial_update) OVERRIDE;
 
@@ -45,14 +45,14 @@ class FakeLayerUpdater : public LayerUpdater {
   virtual scoped_ptr<LayerUpdater::Resource> CreateResource(
       PrioritizedResourceManager* resource) OVERRIDE;
 
-  virtual void PrepareToUpdate(gfx::Rect content_rect,
+  virtual void PrepareToUpdate(const gfx::Rect& content_rect,
                                gfx::Size tile_size,
                                float contents_width_scale,
                                float contents_height_scale,
                                gfx::Rect* resulting_opaque_rect) OVERRIDE;
   // Sets the rect to invalidate during the next call to PrepareToUpdate().
   // After the next call to PrepareToUpdate() the rect is reset.
-  void SetRectToInvalidate(gfx::Rect rect, FakeTiledLayer* layer);
+  void SetRectToInvalidate(const gfx::Rect& rect, FakeTiledLayer* layer);
   // Last rect passed to PrepareToUpdate().
   gfx::Rect last_update_rect() const { return last_update_rect_; }
 
@@ -65,7 +65,7 @@ class FakeLayerUpdater : public LayerUpdater {
   void ClearUpdateCount() { update_count_ = 0; }
   void Update() { update_count_++; }
 
-  void SetOpaquePaintRect(gfx::Rect opaque_paint_rect) {
+  void SetOpaquePaintRect(const gfx::Rect& opaque_paint_rect) {
     opaque_paint_rect_ = opaque_paint_rect;
   }
 

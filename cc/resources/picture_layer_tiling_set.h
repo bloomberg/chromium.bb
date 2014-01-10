@@ -57,8 +57,8 @@ class CC_EXPORT PictureLayerTilingSet {
   void UpdateTilePriorities(
       WhichTree tree,
       gfx::Size device_viewport,
-      gfx::Rect viewport_in_content_space,
-      gfx::Rect visible_content_rect,
+      const gfx::Rect& viewport_in_content_space,
+      const gfx::Rect& visible_content_rect,
       gfx::Size last_layer_bounds,
       gfx::Size current_layer_bounds,
       float last_layer_contents_scale,
@@ -80,7 +80,7 @@ class CC_EXPORT PictureLayerTilingSet {
    public:
     CoverageIterator(const PictureLayerTilingSet* set,
       float contents_scale,
-      gfx::Rect content_rect,
+      const gfx::Rect& content_rect,
       float ideal_contents_scale);
     ~CoverageIterator();
 

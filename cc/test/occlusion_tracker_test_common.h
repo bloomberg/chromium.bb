@@ -16,7 +16,7 @@ template <typename LayerType, typename RenderSurfaceType>
 class TestOcclusionTrackerBase
     : public OcclusionTrackerBase<LayerType, RenderSurfaceType> {
  public:
-  TestOcclusionTrackerBase(gfx::Rect screen_scissor_rect,
+  TestOcclusionTrackerBase(const gfx::Rect& screen_scissor_rect,
                            bool record_metrics_for_frame)
       : OcclusionTrackerBase<LayerType, RenderSurfaceType>(
             screen_scissor_rect,

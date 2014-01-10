@@ -16,7 +16,7 @@ scoped_ptr<CheckerboardDrawQuad> CheckerboardDrawQuad::Create() {
 }
 
 void CheckerboardDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
-                                  gfx::Rect rect,
+                                  const gfx::Rect& rect,
                                   SkColor color) {
   gfx::Rect opaque_rect = SkColorGetA(color) == 255 ? rect : gfx::Rect();
   gfx::Rect visible_rect = rect;
@@ -27,9 +27,9 @@ void CheckerboardDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
 }
 
 void CheckerboardDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
-                                  gfx::Rect rect,
-                                  gfx::Rect opaque_rect,
-                                  gfx::Rect visible_rect,
+                                  const gfx::Rect& rect,
+                                  const gfx::Rect& opaque_rect,
+                                  const gfx::Rect& visible_rect,
                                   bool needs_blending,
                                   SkColor color) {
   DrawQuad::SetAll(shared_quad_state, DrawQuad::CHECKERBOARD, rect, opaque_rect,

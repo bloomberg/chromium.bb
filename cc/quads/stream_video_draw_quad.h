@@ -17,15 +17,15 @@ class CC_EXPORT StreamVideoDrawQuad : public DrawQuad {
   static scoped_ptr<StreamVideoDrawQuad> Create();
 
   void SetNew(const SharedQuadState* shared_quad_state,
-              gfx::Rect rect,
-              gfx::Rect opaque_rect,
+              const gfx::Rect& rect,
+              const gfx::Rect& opaque_rect,
               unsigned resource_id,
               const gfx::Transform& matrix);
 
   void SetAll(const SharedQuadState* shared_quad_state,
-              gfx::Rect rect,
-              gfx::Rect opaque_rect,
-              gfx::Rect visible_rect,
+              const gfx::Rect& rect,
+              const gfx::Rect& opaque_rect,
+              const gfx::Rect& visible_rect,
               bool needs_blending,
               unsigned resource_id,
               const gfx::Transform& matrix);

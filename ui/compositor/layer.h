@@ -316,7 +316,7 @@ class COMPOSITOR_EXPORT Layer
 
   // ContentLayerClient
   virtual void PaintContents(
-      SkCanvas* canvas, gfx::Rect clip, gfx::RectF* opaque) OVERRIDE;
+      SkCanvas* canvas, const gfx::Rect& clip, gfx::RectF* opaque) OVERRIDE;
   virtual void DidChangeLayerCanUseLCDText() OVERRIDE {}
 
   cc::Layer* cc_layer() { return cc_layer_; }

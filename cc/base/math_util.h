@@ -100,7 +100,7 @@ class CC_EXPORT MathUtil {
   // These functions return the axis-aligned rect that encloses the correctly
   // clipped, transformed polygon.
   static gfx::Rect MapClippedRect(const gfx::Transform& transform,
-                                  gfx::Rect rect);
+                                  const gfx::Rect& rect);
   static gfx::RectF MapClippedRect(const gfx::Transform& transform,
                                    const gfx::RectF& rect);
   static gfx::RectF ProjectClippedRect(const gfx::Transform& transform,
@@ -167,7 +167,7 @@ class CC_EXPORT MathUtil {
   // Conversion to value.
   static scoped_ptr<base::Value> AsValue(gfx::Size s);
   static scoped_ptr<base::Value> AsValue(gfx::SizeF s);
-  static scoped_ptr<base::Value> AsValue(gfx::Rect r);
+  static scoped_ptr<base::Value> AsValue(const gfx::Rect& r);
   static bool FromValue(const base::Value*, gfx::Rect* out_rect);
   static scoped_ptr<base::Value> AsValue(gfx::PointF q);
   static scoped_ptr<base::Value> AsValue(const gfx::QuadF& q);

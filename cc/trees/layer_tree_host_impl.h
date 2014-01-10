@@ -67,7 +67,7 @@ class LayerTreeHostImplClient {
   // Please call these 2 functions through
   // LayerTreeHostImpl's SetNeedsRedraw() and SetNeedsRedrawRect().
   virtual void SetNeedsRedrawOnImplThread() = 0;
-  virtual void SetNeedsRedrawRectOnImplThread(gfx::Rect damage_rect) = 0;
+  virtual void SetNeedsRedrawRectOnImplThread(const gfx::Rect& damage_rect) = 0;
   virtual void DidInitializeVisibleTileOnImplThread() = 0;
   virtual void SetNeedsCommitOnImplThread() = 0;
   virtual void SetNeedsManageTilesOnImplThread() = 0;
@@ -170,7 +170,7 @@ class CC_EXPORT LayerTreeHostImpl
   void MainThreadHasStoppedFlinging();
   void UpdateBackgroundAnimateTicking(bool should_background_tick);
   void DidAnimateScrollOffset();
-  void SetViewportDamage(gfx::Rect damage_rect);
+  void SetViewportDamage(const gfx::Rect& damage_rect);
 
   virtual void ManageTiles();
 
@@ -179,7 +179,7 @@ class CC_EXPORT LayerTreeHostImpl
   // must also be called, regardless of whether DrawLayers is called between the
   // two.
   virtual bool PrepareToDraw(FrameData* frame,
-                             gfx::Rect device_viewport_damage_rect);
+                             const gfx::Rect& damage_rect);
   virtual void DrawLayers(FrameData* frame, base::TimeTicks frame_begin_time);
   // Must be called if and only if PrepareToDraw was called.
   void DidDrawAllLayers(const FrameData& frame);
@@ -220,12 +220,12 @@ class CC_EXPORT LayerTreeHostImpl
   virtual bool DeferredInitialize(
       scoped_refptr<ContextProvider> offscreen_context_provider) OVERRIDE;
   virtual void ReleaseGL() OVERRIDE;
-  virtual void SetNeedsRedrawRect(gfx::Rect rect) OVERRIDE;
+  virtual void SetNeedsRedrawRect(const gfx::Rect& rect) OVERRIDE;
   virtual void BeginImplFrame(const BeginFrameArgs& args) OVERRIDE;
   virtual void SetExternalDrawConstraints(
       const gfx::Transform& transform,
-      gfx::Rect viewport,
-      gfx::Rect clip,
+      const gfx::Rect& viewport,
+      const gfx::Rect& clip,
       bool valid_for_tile_management) OVERRIDE;
   virtual void DidLoseOutputSurface() OVERRIDE;
   virtual void DidSwapBuffers() OVERRIDE;
@@ -263,7 +263,7 @@ class CC_EXPORT LayerTreeHostImpl
   void SetNeedsBeginImplFrame(bool enable);
   void DidModifyTilePriorities();
 
-  void Readback(void* pixels, gfx::Rect rect_in_device_viewport);
+  void Readback(void* pixels, const gfx::Rect& rect_in_device_viewport);
 
   LayerTreeImpl* active_tree() { return active_tree_.get(); }
   const LayerTreeImpl* active_tree() const { return active_tree_.get(); }

@@ -200,7 +200,7 @@ class CC_EXPORT RasterWorkerPool : public WorkerPool {
   static RasterTask CreateRasterTask(
       const Resource* resource,
       PicturePileImpl* picture_pile,
-      gfx::Rect content_rect,
+      const gfx::Rect& content_rect,
       float contents_scale,
       RasterMode raster_mode,
       TileResolution tile_resolution,

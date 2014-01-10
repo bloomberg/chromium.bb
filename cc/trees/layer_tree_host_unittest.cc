@@ -1236,7 +1236,8 @@ class TestOpacityChangeLayerDelegate : public ContentLayerClient {
 
   void SetTestLayer(Layer* test_layer) { test_layer_ = test_layer; }
 
-  virtual void PaintContents(SkCanvas*, gfx::Rect, gfx::RectF*) OVERRIDE {
+  virtual void PaintContents(SkCanvas*, const gfx::Rect&,
+                             gfx::RectF*) OVERRIDE {
     // Set layer opacity to 0.
     if (test_layer_)
       test_layer_->SetOpacity(0.f);
@@ -2513,7 +2514,7 @@ class LayerTreeHostTestLCDNotification : public LayerTreeHostTest {
     int lcd_notification_count() const { return lcd_notification_count_; }
 
     virtual void PaintContents(SkCanvas* canvas,
-                               gfx::Rect clip,
+                               const gfx::Rect& clip,
                                gfx::RectF* opaque) OVERRIDE {
       ++paint_count_;
     }
@@ -2756,7 +2757,7 @@ class LayerTreeHostTestChangeLayerPropertiesInPaintContents
     void set_layer(Layer* layer) { layer_ = layer; }
 
     virtual void PaintContents(SkCanvas* canvas,
-                               gfx::Rect clip,
+                               const gfx::Rect& clip,
                                gfx::RectF* opaque) OVERRIDE {
       layer_->SetBounds(gfx::Size(2, 2));
     }

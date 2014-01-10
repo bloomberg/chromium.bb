@@ -64,9 +64,9 @@ static gfx::Vector2dF GetEffectiveTotalScrollOffset(LayerType* layer) {
 }
 
 inline gfx::Rect CalculateVisibleRectWithCachedLayerRect(
-    gfx::Rect target_surface_rect,
-    gfx::Rect layer_bound_rect,
-    gfx::Rect layer_rect_in_target_space,
+    const gfx::Rect& target_surface_rect,
+    const gfx::Rect& layer_bound_rect,
+    const gfx::Rect& layer_rect_in_target_space,
     const gfx::Transform& transform) {
   if (layer_rect_in_target_space.IsEmpty())
     return gfx::Rect();
@@ -104,8 +104,8 @@ inline gfx::Rect CalculateVisibleRectWithCachedLayerRect(
 }
 
 gfx::Rect LayerTreeHostCommon::CalculateVisibleRect(
-    gfx::Rect target_surface_rect,
-    gfx::Rect layer_bound_rect,
+    const gfx::Rect& target_surface_rect,
+    const gfx::Rect& layer_bound_rect,
     const gfx::Transform& transform) {
   gfx::Rect layer_in_surface_space =
       MathUtil::MapClippedRect(transform, layer_bound_rect);
@@ -154,7 +154,7 @@ enum TranslateRectDirection {
 template <typename LayerType>
 static gfx::Rect TranslateRectToTargetSpace(const LayerType& ancestor_layer,
                                             const LayerType& descendant_layer,
-                                            gfx::Rect rect,
+                                            const gfx::Rect& rect,
                                             TranslateRectDirection direction) {
   gfx::Vector2dF translation = ComputeChangeOfBasisTranslation<LayerType>(
       ancestor_layer, descendant_layer);
@@ -240,7 +240,7 @@ struct AccumulatedSurfaceState {
 template <typename LayerType>
 void UpdateAccumulatedSurfaceState(
     LayerType* layer,
-    gfx::Rect drawable_content_rect,
+    const gfx::Rect& drawable_content_rect,
     std::vector<AccumulatedSurfaceState<LayerType> >*
         accumulated_surface_state) {
   if (IsRootLayer(layer))
@@ -383,8 +383,8 @@ static inline bool LayerClipsSubtree(LayerType* layer) {
 template <typename LayerType>
 static gfx::Rect CalculateVisibleContentRect(
     LayerType* layer,
-    gfx::Rect clip_rect_of_target_surface_in_target_space,
-    gfx::Rect layer_rect_in_target_space) {
+    const gfx::Rect& clip_rect_of_target_surface_in_target_space,
+    const gfx::Rect& layer_rect_in_target_space) {
   DCHECK(layer->render_target());
 
   // Nothing is visible if the layer bounds are empty.
@@ -2247,7 +2247,7 @@ void LayerTreeHostCommon::CalculateDrawProperties(
 static bool PointHitsRect(
     gfx::PointF screen_space_point,
     const gfx::Transform& local_space_to_screen_space_transform,
-    gfx::RectF local_space_rect) {
+    const gfx::RectF& local_space_rect) {
   // If the transform is not invertible, then assume that this point doesn't hit
   // this rect.
   gfx::Transform inverse_local_space_to_screen_space(

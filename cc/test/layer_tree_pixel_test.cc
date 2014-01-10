@@ -119,7 +119,7 @@ void LayerTreePixelTest::AfterTest() {
 }
 
 scoped_refptr<SolidColorLayer> LayerTreePixelTest::CreateSolidColorLayer(
-    gfx::Rect rect, SkColor color) {
+    const gfx::Rect& rect, SkColor color) {
   scoped_refptr<SolidColorLayer> layer = SolidColorLayer::Create();
   layer->SetIsDrawable(true);
   layer->SetAnchorPoint(gfx::PointF());
@@ -150,7 +150,8 @@ void LayerTreePixelTest::TryEndTest() {
 
 scoped_refptr<SolidColorLayer> LayerTreePixelTest::
     CreateSolidColorLayerWithBorder(
-        gfx::Rect rect, SkColor color, int border_width, SkColor border_color) {
+        const gfx::Rect& rect, SkColor color,
+        int border_width, SkColor border_color) {
   scoped_refptr<SolidColorLayer> layer = CreateSolidColorLayer(rect, color);
   scoped_refptr<SolidColorLayer> border_top = CreateSolidColorLayer(
       gfx::Rect(0, 0, rect.width(), border_width), border_color);
@@ -177,7 +178,7 @@ scoped_refptr<SolidColorLayer> LayerTreePixelTest::
 }
 
 scoped_refptr<TextureLayer> LayerTreePixelTest::CreateTextureLayer(
-    gfx::Rect rect, const SkBitmap& bitmap) {
+    const gfx::Rect& rect, const SkBitmap& bitmap) {
   scoped_refptr<TextureLayer> layer = TextureLayer::CreateForMailbox(NULL);
   layer->SetIsDrawable(true);
   layer->SetAnchorPoint(gfx::PointF());

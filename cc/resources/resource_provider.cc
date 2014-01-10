@@ -584,8 +584,8 @@ ResourceProvider::ResourceType ResourceProvider::GetResourceType(
 
 void ResourceProvider::SetPixels(ResourceId id,
                                  const uint8_t* image,
-                                 gfx::Rect image_rect,
-                                 gfx::Rect source_rect,
+                                 const gfx::Rect& image_rect,
+                                 const gfx::Rect& source_rect,
                                  gfx::Vector2d dest_offset) {
   Resource* resource = GetResource(id);
   DCHECK(!resource->locked_for_write);

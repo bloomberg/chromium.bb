@@ -45,7 +45,7 @@ void SoftwareOutputDeviceOzone::Resize(gfx::Size viewport_size) {
   device_ = skia::SharePtr(canvas_->getDevice());
 }
 
-SkCanvas* SoftwareOutputDeviceOzone::BeginPaint(gfx::Rect damage_rect) {
+SkCanvas* SoftwareOutputDeviceOzone::BeginPaint(const gfx::Rect& damage_rect) {
   DCHECK(gfx::Rect(viewport_size_).Contains(damage_rect));
 
   canvas_->clipRect(gfx::RectToSkRect(damage_rect), SkRegion::kReplace_Op);

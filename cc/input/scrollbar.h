@@ -33,7 +33,7 @@ class Scrollbar {
   virtual gfx::Rect TrackRect() const = 0;
   virtual void PaintPart(SkCanvas* canvas,
                          ScrollbarPart part,
-                         gfx::Rect content_rect) = 0;
+                         const gfx::Rect& content_rect) = 0;
 };
 
 }  // namespace cc

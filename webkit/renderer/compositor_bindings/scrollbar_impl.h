@@ -35,7 +35,7 @@ class ScrollbarImpl : public cc::Scrollbar {
   virtual gfx::Rect TrackRect() const OVERRIDE;
   virtual void PaintPart(SkCanvas* canvas,
                          cc::ScrollbarPart part,
-                         gfx::Rect content_rect) OVERRIDE;
+                         const gfx::Rect& content_rect) OVERRIDE;
 
  private:
   scoped_ptr<blink::WebScrollbar> scrollbar_;

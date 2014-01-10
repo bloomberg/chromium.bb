@@ -1754,7 +1754,8 @@ class MockOutputSurfaceTest : public GLRendererTest {
 
   void SwapBuffers() { renderer_->SwapBuffers(CompositorFrameMetadata()); }
 
-  void DrawFrame(float device_scale_factor, gfx::Rect device_viewport_rect) {
+  void DrawFrame(float device_scale_factor,
+                 const gfx::Rect& device_viewport_rect) {
     RenderPass::Id render_pass_id(1, 0);
     TestRenderPass* render_pass = AddRenderPass(&render_passes_in_draw_order_,
                                                 render_pass_id,

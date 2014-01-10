@@ -22,7 +22,7 @@ BitmapContentLayerUpdater::Resource::Resource(
 BitmapContentLayerUpdater::Resource::~Resource() {}
 
 void BitmapContentLayerUpdater::Resource::Update(ResourceUpdateQueue* queue,
-                                                 gfx::Rect source_rect,
+                                                 const gfx::Rect& source_rect,
                                                  gfx::Vector2d dest_offset,
                                                  bool partial_update) {
   updater_->UpdateTexture(
@@ -54,7 +54,7 @@ scoped_ptr<LayerUpdater::Resource> BitmapContentLayerUpdater::CreateResource(
 }
 
 void BitmapContentLayerUpdater::PrepareToUpdate(
-    gfx::Rect content_rect,
+    const gfx::Rect& content_rect,
     gfx::Size tile_size,
     float contents_width_scale,
     float contents_height_scale,
@@ -87,7 +87,7 @@ void BitmapContentLayerUpdater::PrepareToUpdate(
 
 void BitmapContentLayerUpdater::UpdateTexture(ResourceUpdateQueue* queue,
                                               PrioritizedResource* texture,
-                                              gfx::Rect source_rect,
+                                              const gfx::Rect& source_rect,
                                               gfx::Vector2d dest_offset,
                                               bool partial_update) {
   CHECK(canvas_);

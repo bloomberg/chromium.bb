@@ -22,7 +22,7 @@ class FakeOutputSurfaceClient : public OutputSurfaceClient {
   virtual bool DeferredInitialize(
       scoped_refptr<ContextProvider> offscreen_context_provider) OVERRIDE;
   virtual void ReleaseGL() OVERRIDE {}
-  virtual void SetNeedsRedrawRect(gfx::Rect damage_rect) OVERRIDE {}
+  virtual void SetNeedsRedrawRect(const gfx::Rect& damage_rect) OVERRIDE {}
   virtual void BeginImplFrame(const BeginFrameArgs& args) OVERRIDE;
   virtual void DidSwapBuffers() OVERRIDE {}
   virtual void OnSwapBuffersComplete() OVERRIDE {}
@@ -30,8 +30,8 @@ class FakeOutputSurfaceClient : public OutputSurfaceClient {
   virtual void DidLoseOutputSurface() OVERRIDE;
   virtual void SetExternalDrawConstraints(
       const gfx::Transform& transform,
-      gfx::Rect viewport,
-      gfx::Rect clip,
+      const gfx::Rect& viewport,
+      const gfx::Rect& clip,
       bool valid_for_tile_management) OVERRIDE {}
   virtual void SetMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE;
   virtual void SetTreeActivationCallback(const base::Closure&) OVERRIDE {}

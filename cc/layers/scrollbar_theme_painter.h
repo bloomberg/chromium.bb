@@ -19,16 +19,24 @@ class CC_EXPORT ScrollbarThemePainter {
  public:
   virtual ~ScrollbarThemePainter() {}
 
-  virtual void PaintScrollbarBackground(SkCanvas* canvas, gfx::Rect rect) = 0;
-  virtual void PaintTrackBackground(SkCanvas* canvas, gfx::Rect rect) = 0;
-  virtual void PaintBackTrackPart(SkCanvas* canvas, gfx::Rect rect) = 0;
-  virtual void PaintForwardTrackPart(SkCanvas* canvas, gfx::Rect rect) = 0;
-  virtual void PaintBackButtonStart(SkCanvas* canvas, gfx::Rect rect) = 0;
-  virtual void PaintBackButtonEnd(SkCanvas* canvas, gfx::Rect rect) = 0;
-  virtual void PaintForwardButtonStart(SkCanvas* canvas, gfx::Rect rect) = 0;
-  virtual void PaintForwardButtonEnd(SkCanvas* canvas, gfx::Rect rect) = 0;
-  virtual void PaintTickmarks(SkCanvas* canvas, gfx::Rect rect) = 0;
-  virtual void PaintThumb(SkCanvas* canvas, gfx::Rect rect) = 0;
+  virtual void PaintScrollbarBackground(SkCanvas* canvas,
+                                        const gfx::Rect& rect) = 0;
+  virtual void PaintTrackBackground(SkCanvas* canvas,
+                                    const gfx::Rect& rect) = 0;
+  virtual void PaintBackTrackPart(SkCanvas* canvas,
+                                  const gfx::Rect& rect) = 0;
+  virtual void PaintForwardTrackPart(SkCanvas* canvas,
+                                     const gfx::Rect& rect) = 0;
+  virtual void PaintBackButtonStart(SkCanvas* canvas,
+                                    const gfx::Rect& rect) = 0;
+  virtual void PaintBackButtonEnd(SkCanvas* canvas,
+                                  const gfx::Rect& rect) = 0;
+  virtual void PaintForwardButtonStart(SkCanvas* canvas,
+                                       const gfx::Rect& rect) = 0;
+  virtual void PaintForwardButtonEnd(SkCanvas* canvas,
+                                     const gfx::Rect& rect) = 0;
+  virtual void PaintTickmarks(SkCanvas* canvas, const gfx::Rect& rect) = 0;
+  virtual void PaintThumb(SkCanvas* canvas, const gfx::Rect& rect) = 0;
 };
 
 }  // namespace cc

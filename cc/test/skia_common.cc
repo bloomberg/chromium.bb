@@ -32,7 +32,7 @@ SkPixelRef* TestPixelRef::deepCopy(
 
 
 void DrawPicture(unsigned char* buffer,
-                 gfx::Rect layer_rect,
+                 const gfx::Rect& layer_rect,
                  scoped_refptr<Picture> picture) {
   SkBitmap bitmap;
   bitmap.setConfig(SkBitmap::kARGB_8888_Config,

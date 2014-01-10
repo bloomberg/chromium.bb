@@ -42,7 +42,7 @@ FakePictureLayerTilingClient::~FakePictureLayerTilingClient() {
 
 scoped_refptr<Tile> FakePictureLayerTilingClient::CreateTile(
     PictureLayerTiling*,
-    gfx::Rect rect) {
+    const gfx::Rect& rect) {
   if (!allow_create_tile_)
     return scoped_refptr<Tile>();
   return tile_manager_->CreateTile(

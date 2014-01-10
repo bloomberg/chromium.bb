@@ -146,7 +146,8 @@ class CC_EXPORT LayerTreeHost {
   // Composites and attempts to read back the result into the provided
   // buffer. If it wasn't possible, e.g. due to context lost, will return
   // false.
-  bool CompositeAndReadback(void* pixels, gfx::Rect rect_in_device_viewport);
+  bool CompositeAndReadback(void* pixels,
+                            const gfx::Rect& rect_in_device_viewport);
 
   void FinishAllRendering();
 
@@ -172,7 +173,7 @@ class CC_EXPORT LayerTreeHost {
   virtual void SetNeedsCommit();
   virtual void SetNeedsFullTreeSync();
   void SetNeedsRedraw();
-  void SetNeedsRedrawRect(gfx::Rect damage_rect);
+  void SetNeedsRedrawRect(const gfx::Rect& damage_rect);
   bool CommitRequested() const;
   bool BeginMainFrameRequested() const;
 

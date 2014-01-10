@@ -35,7 +35,7 @@ ScrollbarLayerImplBase* ScrollbarLayerImplBase::ToScrollbarLayer() {
 }
 
 gfx::Rect ScrollbarLayerImplBase::ScrollbarLayerRectToContentRect(
-    gfx::RectF layer_rect) const {
+    const gfx::RectF& layer_rect) const {
   // Don't intersect with the bounds as in LayerRectToContentRect() because
   // layer_rect here might be in coordinates of the containing layer.
   gfx::RectF content_rect = gfx::ScaleRect(layer_rect,

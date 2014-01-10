@@ -157,7 +157,7 @@ void SoftwareRenderer::BindFramebufferToOutputSurface(DrawingFrame* frame) {
 bool SoftwareRenderer::BindFramebufferToTexture(
     DrawingFrame* frame,
     const ScopedResource* texture,
-    gfx::Rect target_rect) {
+    const gfx::Rect& target_rect) {
   current_framebuffer_lock_.reset();
   current_framebuffer_lock_ = make_scoped_ptr(
       new ResourceProvider::ScopedWriteLockSoftware(
@@ -170,13 +170,13 @@ bool SoftwareRenderer::BindFramebufferToTexture(
   return true;
 }
 
-void SoftwareRenderer::SetScissorTestRect(gfx::Rect scissor_rect) {
+void SoftwareRenderer::SetScissorTestRect(const gfx::Rect& scissor_rect) {
   is_scissor_enabled_ = true;
   scissor_rect_ = scissor_rect;
   SetClipRect(scissor_rect);
 }
 
-void SoftwareRenderer::SetClipRect(gfx::Rect rect) {
+void SoftwareRenderer::SetClipRect(const gfx::Rect& rect) {
   // Skia applies the current matrix to clip rects so we reset it temporary.
   SkMatrix current_matrix = current_canvas_->getTotalMatrix();
   current_canvas_->resetMatrix();
@@ -209,7 +209,8 @@ void SoftwareRenderer::ClearFramebuffer(DrawingFrame* frame,
   }
 }
 
-void SoftwareRenderer::SetDrawViewport(gfx::Rect window_space_viewport) {}
+void SoftwareRenderer::SetDrawViewport(
+    const gfx::Rect& window_space_viewport) {}
 
 bool SoftwareRenderer::IsSoftwareResource(
     ResourceProvider::ResourceId resource_id) const {
@@ -587,14 +588,16 @@ void SoftwareRenderer::EnsureBackbuffer() {
   is_backbuffer_discarded_ = false;
 }
 
-void SoftwareRenderer::GetFramebufferPixels(void* pixels, gfx::Rect rect) {
+void SoftwareRenderer::GetFramebufferPixels(void* pixels,
+                                            const gfx::Rect& rect) {
   TRACE_EVENT0("cc", "SoftwareRenderer::GetFramebufferPixels");
   SkBitmap subset_bitmap;
-  rect += current_viewport_rect_.OffsetFromOrigin();
-  output_device_->CopyToBitmap(rect, &subset_bitmap);
+  gfx::Rect frame_rect(rect);
+  frame_rect += current_viewport_rect_.OffsetFromOrigin();
+  output_device_->CopyToBitmap(frame_rect, &subset_bitmap);
   subset_bitmap.copyPixelsTo(pixels,
-                             4 * rect.width() * rect.height(),
-                             4 * rect.width());
+                             4 * frame_rect.width() * frame_rect.height(),
+                             4 * frame_rect.width());
 }
 
 void SoftwareRenderer::SetVisible(bool visible) {

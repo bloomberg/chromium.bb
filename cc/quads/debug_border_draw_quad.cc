@@ -19,7 +19,7 @@ scoped_ptr<DebugBorderDrawQuad> DebugBorderDrawQuad::Create() {
 }
 
 void DebugBorderDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
-                                 gfx::Rect rect,
+                                 const gfx::Rect& rect,
                                  SkColor color,
                                  int width) {
   gfx::Rect opaque_rect;
@@ -32,9 +32,9 @@ void DebugBorderDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
 }
 
 void DebugBorderDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
-                                 gfx::Rect rect,
-                                 gfx::Rect opaque_rect,
-                                 gfx::Rect visible_rect,
+                                 const gfx::Rect& rect,
+                                 const gfx::Rect& opaque_rect,
+                                 const gfx::Rect& visible_rect,
                                  bool needs_blending,
                                  SkColor color,
                                  int width) {

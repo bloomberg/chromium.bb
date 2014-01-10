@@ -136,7 +136,7 @@ void OutputSurface::FrameRateControllerTick(bool throttled,
 }
 
 // Forwarded to OutputSurfaceClient
-void OutputSurface::SetNeedsRedrawRect(gfx::Rect damage_rect) {
+void OutputSurface::SetNeedsRedrawRect(const gfx::Rect& damage_rect) {
   TRACE_EVENT0("cc", "OutputSurface::SetNeedsRedrawRect");
   client_->SetNeedsRedrawRect(damage_rect);
 }
@@ -242,8 +242,8 @@ void OutputSurface::SetExternalStencilTest(bool enabled) {
 }
 
 void OutputSurface::SetExternalDrawConstraints(const gfx::Transform& transform,
-                                               gfx::Rect viewport,
-                                               gfx::Rect clip,
+                                               const gfx::Rect& viewport,
+                                               const gfx::Rect& clip,
                                                bool valid_for_tile_management) {
   client_->SetExternalDrawConstraints(
       transform, viewport, clip, valid_for_tile_management);

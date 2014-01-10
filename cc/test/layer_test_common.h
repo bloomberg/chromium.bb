@@ -29,7 +29,7 @@ class LayerTestCommon {
   static const char* quad_string;
 
   static void VerifyQuadsExactlyCoverRect(const QuadList& quads,
-                                          gfx::Rect rect);
+                                          const gfx::Rect& rect);
 };
 
 }  // namespace cc

@@ -26,7 +26,7 @@ void InvalidationRegion::Clear() {
   region_.Clear();
 }
 
-void InvalidationRegion::Union(gfx::Rect rect) {
+void InvalidationRegion::Union(const gfx::Rect& rect) {
   region_.Union(rect);
   SimplifyIfNeeded();
 }

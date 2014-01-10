@@ -17,11 +17,11 @@ namespace {
 
 class MockContentLayerClient : public ContentLayerClient {
  public:
-  explicit MockContentLayerClient(gfx::Rect opaque_layer_rect)
+  explicit MockContentLayerClient(const gfx::Rect& opaque_layer_rect)
       : opaque_layer_rect_(opaque_layer_rect) {}
 
   virtual void PaintContents(SkCanvas* canvas,
-                             gfx::Rect clip,
+                             const gfx::Rect& clip,
                              gfx::RectF* opaque) OVERRIDE {
     *opaque = gfx::RectF(opaque_layer_rect_);
   }

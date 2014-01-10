@@ -20,8 +20,8 @@ class CC_EXPORT PriorityCalculator {
   static int VisiblePriority(bool draws_to_root_surface);
   static int RenderSurfacePriority();
   static int LingeringPriority(int previous_priority);
-  static int PriorityFromDistance(gfx::Rect visible_rect,
-                                  gfx::Rect texture_rect,
+  static int PriorityFromDistance(const gfx::Rect& visible_rect,
+                                  const gfx::Rect& texture_rect,
                                   bool draws_to_root_surface);
   static int SmallAnimatedLayerMinPriority();
 

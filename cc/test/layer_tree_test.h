@@ -122,7 +122,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   void PostReadbackToMainThread();
   void PostAcquireLayerTextures();
   void PostSetNeedsRedrawToMainThread();
-  void PostSetNeedsRedrawRectToMainThread(gfx::Rect damage_rect);
+  void PostSetNeedsRedrawRectToMainThread(const gfx::Rect& damage_rect);
   void PostSetVisibleToMainThread(bool visible);
   void PostSetNextCommitForcesRedrawToMainThread();
 
@@ -145,7 +145,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   void DispatchReadback();
   void DispatchAcquireLayerTextures();
   void DispatchSetNeedsRedraw();
-  void DispatchSetNeedsRedrawRect(gfx::Rect damage_rect);
+  void DispatchSetNeedsRedrawRect(const gfx::Rect& damage_rect);
   void DispatchSetVisible(bool visible);
   void DispatchSetNextCommitForcesRedraw();
   void DispatchComposite();

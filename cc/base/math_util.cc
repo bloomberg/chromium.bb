@@ -102,7 +102,7 @@ static inline void AddVertexToClippedQuad(gfx::PointF new_vertex,
 }
 
 gfx::Rect MathUtil::MapClippedRect(const gfx::Transform& transform,
-                                   gfx::Rect src_rect) {
+                                   const gfx::Rect& src_rect) {
   return gfx::ToEnclosingRect(MapClippedRect(transform, gfx::RectF(src_rect)));
 }
 
@@ -521,7 +521,7 @@ scoped_ptr<base::Value> MathUtil::AsValue(gfx::SizeF s) {
   return res.PassAs<base::Value>();
 }
 
-scoped_ptr<base::Value> MathUtil::AsValue(gfx::Rect r) {
+scoped_ptr<base::Value> MathUtil::AsValue(const gfx::Rect& r) {
   scoped_ptr<base::ListValue> res(new base::ListValue());
   res->AppendInteger(r.x());
   res->AppendInteger(r.y());

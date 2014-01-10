@@ -28,7 +28,7 @@ class CC_EXPORT NinePatchLayer : public UIResourceLayer {
   // size of the left and top boundary, respectively.
   // |border.width()-border.x()| and |border.height()-border.y()| are the size
   // of the right and bottom boundary, respectively.
-  void SetBorder(gfx::Rect border);
+  void SetBorder(const gfx::Rect& border);
 
   // aperture is in the pixel space of the bitmap resource and refers to
   // the center patch of the ninepatch (which is unused in this
@@ -36,7 +36,7 @@ class CC_EXPORT NinePatchLayer : public UIResourceLayer {
   // on the edges of the layer. The corners are unscaled, the top and bottom
   // rects are x-stretched to fit, and the left and right rects are
   // y-stretched to fit.
-  void SetAperture(gfx::Rect aperture);
+  void SetAperture(const gfx::Rect& aperture);
   void SetFillCenter(bool fill_center);
 
  private:

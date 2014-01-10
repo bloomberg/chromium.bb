@@ -40,7 +40,7 @@ class CC_EXPORT PicturePileBase : public base::RefCounted<PicturePileBase> {
   int num_tiles_y() const { return tiling_.num_tiles_y(); }
   gfx::Rect tile_bounds(int x, int y) const { return tiling_.TileBounds(x, y); }
   bool HasRecordingAt(int x, int y);
-  bool CanRaster(float contents_scale, gfx::Rect content_rect);
+  bool CanRaster(float contents_scale, const gfx::Rect& content_rect);
 
   static void ComputeTileGridInfo(gfx::Size tile_grid_size,
                                   SkTileGridPicture::TileGridInfo* info);
@@ -93,7 +93,7 @@ class CC_EXPORT PicturePileBase : public base::RefCounted<PicturePileBase> {
   void Clear();
 
   gfx::Rect PaddedRect(const PictureMapKey& key);
-  gfx::Rect PadRect(gfx::Rect rect);
+  gfx::Rect PadRect(const gfx::Rect& rect);
 
   // A picture pile is a tiled set of pictures. The picture map is a map of tile
   // indices to picture infos.

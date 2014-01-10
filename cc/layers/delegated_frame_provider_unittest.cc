@@ -20,8 +20,9 @@ class DelegatedFrameProviderTest
  protected:
   DelegatedFrameProviderTest() : resources_available_(false) {}
 
-  scoped_ptr<DelegatedFrameData> CreateFrameData(gfx::Rect root_output_rect,
-                                                 gfx::Rect root_damage_rect) {
+  scoped_ptr<DelegatedFrameData> CreateFrameData(
+          const gfx::Rect& root_output_rect,
+          const gfx::Rect& root_damage_rect) {
     scoped_ptr<DelegatedFrameData> frame(new DelegatedFrameData);
 
     scoped_ptr<RenderPass> root_pass(RenderPass::Create());

@@ -10,8 +10,8 @@ namespace cc {
 
 ResourceUpdate ResourceUpdate::Create(PrioritizedResource* resource,
                                       const SkBitmap* bitmap,
-                                      gfx::Rect content_rect,
-                                      gfx::Rect source_rect,
+                                      const gfx::Rect& content_rect,
+                                      const gfx::Rect& source_rect,
                                       gfx::Vector2d dest_offset) {
   CHECK(content_rect.Contains(source_rect));
   ResourceUpdate update;

@@ -217,7 +217,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation
 
   // ContextSupport implementation.
   virtual void Swap() OVERRIDE;
-  virtual void PartialSwapBuffers(gfx::Rect sub_buffer) OVERRIDE;
+  virtual void PartialSwapBuffers(const gfx::Rect& sub_buffer) OVERRIDE;
   virtual void SetSwapBuffersCompleteCallback(
       const base::Closure& swap_buffers_complete_callback)
           OVERRIDE;

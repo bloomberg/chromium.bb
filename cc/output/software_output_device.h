@@ -42,7 +42,7 @@ class CC_EXPORT SoftwareOutputDevice {
   // SkCanvas. The |SoftwareOutputDevice| implementation needs to provide a
   // valid SkCanvas of at least size |damage_rect|. This class retains ownership
   // of the SkCanvas.
-  virtual SkCanvas* BeginPaint(gfx::Rect damage_rect);
+  virtual SkCanvas* BeginPaint(const gfx::Rect& damage_rect);
 
   // Called on FinishDrawingFrame. The compositor will no longer mutate the the
   // SkCanvas instance returned by |BeginPaint| and should discard any reference
@@ -51,12 +51,12 @@ class CC_EXPORT SoftwareOutputDevice {
 
   // Copies pixels inside |rect| from the current software framebuffer to
   // |output|. Fails if there is no current softwareframebuffer.
-  virtual void CopyToBitmap(gfx::Rect rect, SkBitmap* output);
+  virtual void CopyToBitmap(const gfx::Rect& rect, SkBitmap* output);
 
   // Blit the pixel content of the SoftwareOutputDevice by |delta| with the
   // write clipped to |clip_rect|.
   virtual void Scroll(gfx::Vector2d delta,
-                      gfx::Rect clip_rect);
+                      const gfx::Rect& clip_rect);
 
   // Discard the backing buffer in the surface provided by this instance.
   virtual void DiscardBackbuffer() {}

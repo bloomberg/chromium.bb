@@ -22,7 +22,7 @@ class FakePictureLayerTilingClient : public PictureLayerTilingClient {
 
   // PictureLayerTilingClient implementation.
   virtual scoped_refptr<Tile> CreateTile(
-      PictureLayerTiling* tiling, gfx::Rect rect) OVERRIDE;
+      PictureLayerTiling* tiling, const gfx::Rect& rect) OVERRIDE;
   virtual void UpdatePile(Tile* tile) OVERRIDE {}
   virtual gfx::Size CalculateTileSize(
       gfx::Size content_bounds) const OVERRIDE;
@@ -37,7 +37,7 @@ class FakePictureLayerTilingClient : public PictureLayerTilingClient {
       const PictureLayerTiling* tiling) const OVERRIDE;
 
   void set_twin_tiling(PictureLayerTiling* tiling) { twin_tiling_ = tiling; }
-  void set_text_rect(gfx::Rect rect) { text_rect_ = rect; }
+  void set_text_rect(const gfx::Rect& rect) { text_rect_ = rect; }
   void set_allow_create_tile(bool allow) { allow_create_tile_ = allow; }
   void set_invalidation(const Region& region) { invalidation_ = region; }
 

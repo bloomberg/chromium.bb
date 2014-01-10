@@ -43,7 +43,7 @@ class CC_EXPORT Picture
   typedef std::vector<SkPixelRef*> PixelRefs;
   typedef base::hash_map<PixelRefMapKey, PixelRefs> PixelRefMap;
 
-  static scoped_refptr<Picture> Create(gfx::Rect layer_rect);
+  static scoped_refptr<Picture> Create(const gfx::Rect& layer_rect);
   static scoped_refptr<Picture> CreateFromValue(const base::Value* value);
   static scoped_refptr<Picture> CreateFromSkpValue(const base::Value* value);
 
@@ -84,7 +84,7 @@ class CC_EXPORT Picture
   class CC_EXPORT PixelRefIterator {
    public:
     PixelRefIterator();
-    PixelRefIterator(gfx::Rect layer_rect, const Picture* picture);
+    PixelRefIterator(const gfx::Rect& layer_rect, const Picture* picture);
     ~PixelRefIterator();
 
     SkPixelRef* operator->() const {
@@ -120,17 +120,17 @@ class CC_EXPORT Picture
   bool WillPlayBackBitmaps() const { return picture_->willPlayBackBitmaps(); }
 
  private:
-  explicit Picture(gfx::Rect layer_rect);
+  explicit Picture(const gfx::Rect& layer_rect);
   // This constructor assumes SkPicture is already ref'd and transfers
   // ownership to this picture.
   Picture(const skia::RefPtr<SkPicture>&,
-          gfx::Rect layer_rect,
-          gfx::Rect opaque_rect,
+          const gfx::Rect& layer_rect,
+          const gfx::Rect& opaque_rect,
           const PixelRefMap& pixel_refs);
   // This constructor will call AdoptRef on the SkPicture.
   Picture(SkPicture*,
-          gfx::Rect layer_rect,
-          gfx::Rect opaque_rect);
+          const gfx::Rect& layer_rect,
+          const gfx::Rect& opaque_rect);
   ~Picture();
 
   gfx::Rect layer_rect_;

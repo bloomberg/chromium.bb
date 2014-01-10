@@ -35,7 +35,7 @@ class TestPixelRef : public SkPixelRef {
 };
 
 void DrawPicture(unsigned char* buffer,
-                 gfx::Rect layer_rect,
+                 const gfx::Rect& layer_rect,
                  scoped_refptr<Picture> picture);
 
 void CreateBitmap(gfx::Size size, const char* uri, SkBitmap* bitmap);

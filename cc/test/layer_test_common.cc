@@ -19,7 +19,7 @@ namespace cc {
 // Align with expected and actual output.
 const char* LayerTestCommon::quad_string = "    Quad: ";
 
-static bool CanRectFBeSafelyRoundedToRect(gfx::RectF r) {
+static bool CanRectFBeSafelyRoundedToRect(const gfx::RectF& r) {
   // Ensure that range of float values is not beyond integer range.
   if (!r.IsExpressibleAsRect())
     return false;
@@ -33,7 +33,7 @@ static bool CanRectFBeSafelyRoundedToRect(gfx::RectF r) {
 }
 
 void LayerTestCommon::VerifyQuadsExactlyCoverRect(const QuadList& quads,
-                                                  gfx::Rect rect) {
+                                                  const gfx::Rect& rect) {
   Region remaining = rect;
 
   for (size_t i = 0; i < quads.size(); ++i) {

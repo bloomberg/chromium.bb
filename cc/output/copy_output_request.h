@@ -46,7 +46,7 @@ class CC_EXPORT CopyOutputRequest {
   // By default copy requests copy the entire layer's subtree output. If an
   // area is given, then the intersection of this rect (in layer space) with
   // the layer's subtree output will be returned.
-  void set_area(gfx::Rect area) {
+  void set_area(const gfx::Rect& area) {
     has_area_ = true;
     area_ = area;
   }

@@ -63,7 +63,7 @@ void TestContextSupport::Swap() {
                             weak_ptr_factory_.GetWeakPtr()));
 }
 
-void TestContextSupport::PartialSwapBuffers(gfx::Rect sub_buffer) {
+void TestContextSupport::PartialSwapBuffers(const gfx::Rect& sub_buffer) {
   last_swap_type_ = PARTIAL_SWAP;
   last_partial_swap_rect_ = sub_buffer;
   base::MessageLoop::current()->PostTask(

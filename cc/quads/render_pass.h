@@ -76,13 +76,13 @@ class CC_EXPORT RenderPass {
                       ScopedPtrVector<RenderPass>* out);
 
   void SetNew(Id id,
-              gfx::Rect output_rect,
-              gfx::RectF damage_rect,
+              const gfx::Rect& output_rect,
+              const gfx::RectF& damage_rect,
               const gfx::Transform& transform_to_root_target);
 
   void SetAll(Id id,
-              gfx::Rect output_rect,
-              gfx::RectF damage_rect,
+              const gfx::Rect& output_rect,
+              const gfx::RectF& damage_rect,
               const gfx::Transform& transform_to_root_target,
               bool has_transparent_background);
 

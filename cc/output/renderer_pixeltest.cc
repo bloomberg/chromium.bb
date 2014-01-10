@@ -25,7 +25,7 @@ namespace {
 
 #if !defined(OS_ANDROID)
 scoped_ptr<RenderPass> CreateTestRootRenderPass(RenderPass::Id id,
-                                                gfx::Rect rect) {
+                                                const gfx::Rect& rect) {
   scoped_ptr<RenderPass> pass = RenderPass::Create();
   const gfx::Rect output_rect = rect;
   const gfx::RectF damage_rect = rect;
@@ -36,7 +36,7 @@ scoped_ptr<RenderPass> CreateTestRootRenderPass(RenderPass::Id id,
 
 scoped_ptr<RenderPass> CreateTestRenderPass(
     RenderPass::Id id,
-    gfx::Rect rect,
+    const gfx::Rect& rect,
     const gfx::Transform& transform_to_root_target) {
   scoped_ptr<RenderPass> pass = RenderPass::Create();
   const gfx::Rect output_rect = rect;
@@ -46,7 +46,7 @@ scoped_ptr<RenderPass> CreateTestRenderPass(
 }
 
 scoped_ptr<SharedQuadState> CreateTestSharedQuadState(
-    gfx::Transform content_to_target_transform, gfx::Rect rect) {
+    gfx::Transform content_to_target_transform, const gfx::Rect& rect) {
   const gfx::Size content_bounds = rect.size();
   const gfx::Rect visible_content_rect = rect;
   const gfx::Rect clip_rect = rect;
@@ -66,8 +66,8 @@ scoped_ptr<SharedQuadState> CreateTestSharedQuadState(
 
 scoped_ptr<SharedQuadState> CreateTestSharedQuadStateClipped(
     gfx::Transform content_to_target_transform,
-    gfx::Rect rect,
-    gfx::Rect clip_rect) {
+    const gfx::Rect& rect,
+    const gfx::Rect& clip_rect) {
   const gfx::Size content_bounds = rect.size();
   const gfx::Rect visible_content_rect = clip_rect;
   const bool is_clipped = true;
@@ -85,7 +85,9 @@ scoped_ptr<SharedQuadState> CreateTestSharedQuadStateClipped(
 }
 
 scoped_ptr<DrawQuad> CreateTestRenderPassDrawQuad(
-    SharedQuadState* shared_state, gfx::Rect rect, RenderPass::Id pass_id) {
+    SharedQuadState* shared_state,
+    const gfx::Rect& rect,
+    RenderPass::Id pass_id) {
   scoped_ptr<RenderPassDrawQuad> quad = RenderPassDrawQuad::Create();
   quad->SetNew(shared_state,
                rect,
@@ -101,7 +103,7 @@ scoped_ptr<DrawQuad> CreateTestRenderPassDrawQuad(
 }
 
 scoped_ptr<TextureDrawQuad> CreateTestTextureDrawQuad(
-    gfx::Rect rect,
+    const gfx::Rect& rect,
     SkColor texel_color,
     SkColor background_color,
     bool premultiplied_alpha,

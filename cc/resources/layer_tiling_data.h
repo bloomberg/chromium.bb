@@ -64,7 +64,9 @@ class CC_EXPORT LayerTilingData {
     }
 
     gfx::Rect opaque_rect() const { return opaque_rect_; }
-    void set_opaque_rect(gfx::Rect opaque_rect) { opaque_rect_ = opaque_rect; }
+    void set_opaque_rect(const gfx::Rect& opaque_rect) {
+      opaque_rect_ = opaque_rect;
+    }
    private:
     int i_;
     int j_;
@@ -82,14 +84,14 @@ class CC_EXPORT LayerTilingData {
   void SetBounds(gfx::Size size);
   gfx::Size bounds() const { return tiling_data_.total_size(); }
 
-  void ContentRectToTileIndices(gfx::Rect rect,
+  void ContentRectToTileIndices(const gfx::Rect& rect,
                                 int* left,
                                 int* top,
                                 int* right,
                                 int* bottom) const;
   gfx::Rect TileRect(const Tile* tile) const;
 
-  Region OpaqueRegionInContentRect(gfx::Rect rect) const;
+  Region OpaqueRegionInContentRect(const gfx::Rect& rect) const;
 
   void reset() { tiles_.clear(); }
 

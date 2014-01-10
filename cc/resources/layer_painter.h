@@ -20,7 +20,7 @@ class CC_EXPORT LayerPainter {
  public:
   virtual ~LayerPainter() {}
   virtual void Paint(SkCanvas* canvas,
-                     gfx::Rect content_rect,
+                     const gfx::Rect& content_rect,
                      gfx::RectF* opaque) = 0;
 };
 

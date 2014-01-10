@@ -10,7 +10,7 @@ void FakeProxy::SetLayerTreeHost(LayerTreeHost* host) {
   layer_tree_host_ = host;
 }
 
-bool FakeProxy::CompositeAndReadback(void* pixels, gfx::Rect rect) {
+bool FakeProxy::CompositeAndReadback(void* pixels, const gfx::Rect& rect) {
   return true;
 }
 

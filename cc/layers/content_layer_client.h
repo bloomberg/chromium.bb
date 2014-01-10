@@ -19,7 +19,7 @@ namespace cc {
 class CC_EXPORT ContentLayerClient {
  public:
   virtual void PaintContents(SkCanvas* canvas,
-                             gfx::Rect clip,
+                             const gfx::Rect& clip,
                              gfx::RectF* opaque) = 0;
 
   // Called by the content layer during the update phase.

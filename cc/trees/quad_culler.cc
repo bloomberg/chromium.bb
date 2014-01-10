@@ -42,7 +42,7 @@ SharedQuadState* QuadCuller::UseSharedQuadState(
 
 static inline bool AppendQuadInternal(
     scoped_ptr<DrawQuad> draw_quad,
-    gfx::Rect culled_rect,
+    const gfx::Rect& culled_rect,
     QuadList* quad_list,
     const OcclusionTrackerImpl& occlusion_tracker,
     const LayerImpl* layer,

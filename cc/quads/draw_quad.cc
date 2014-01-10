@@ -36,9 +36,9 @@ DrawQuad::DrawQuad()
 
 void DrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                       Material material,
-                      gfx::Rect rect,
-                      gfx::Rect opaque_rect,
-                      gfx::Rect visible_rect,
+                      const gfx::Rect& rect,
+                      const gfx::Rect& opaque_rect,
+                      const gfx::Rect& visible_rect,
                       bool needs_blending) {
   DCHECK(rect.Contains(visible_rect)) << "rect: " << rect.ToString()
                                       << " visible_rect: "
