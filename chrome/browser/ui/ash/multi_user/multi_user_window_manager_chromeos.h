@@ -16,6 +16,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/aura/window_observer.h"
+#include "ui/views/corewm/transient_window_observer.h"
 
 class Browser;
 class MultiUserNotificationBlockerChromeOS;
@@ -44,11 +45,13 @@ class AppObserver;
 //   visibility changes from the owning user. This way the visibility can be
 //   changed back to its requested state upon showing by us - or when the window
 //   gets detached from its current owning parent.
-class MultiUserWindowManagerChromeOS : public MultiUserWindowManager,
-                                       public ash::SessionStateObserver,
-                                       public aura::WindowObserver,
-                                       public content::NotificationObserver,
-                                       public ash::wm::WindowStateObserver {
+class MultiUserWindowManagerChromeOS
+    : public MultiUserWindowManager,
+      public ash::SessionStateObserver,
+      public ash::wm::WindowStateObserver,
+      public aura::WindowObserver,
+      public content::NotificationObserver,
+      public views::corewm::TransientWindowObserver {
  public:
   // Create the manager and use |active_user_id| as the active user.
   explicit MultiUserWindowManagerChromeOS(const std::string& active_user_id);
@@ -78,10 +81,12 @@ class MultiUserWindowManagerChromeOS : public MultiUserWindowManager,
                                           bool visible) OVERRIDE;
   virtual void OnWindowVisibilityChanged(aura::Window* window,
                                          bool visible) OVERRIDE;
-  virtual void OnAddTransientChild(aura::Window* window,
-                                   aura::Window* transient) OVERRIDE;
-  virtual void OnRemoveTransientChild(aura::Window* window,
-                                      aura::Window* transient) OVERRIDE;
+
+  // TransientWindowObserver overrides:
+  virtual void OnTransientChildAdded(aura::Window* window,
+                                     aura::Window* transient) OVERRIDE;
+  virtual void OnTransientChildRemoved(aura::Window* window,
+                                       aura::Window* transient) OVERRIDE;
 
   // Window .. overrides:
   virtual void OnWindowShowTypeChanged(

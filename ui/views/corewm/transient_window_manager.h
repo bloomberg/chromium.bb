@@ -7,11 +7,14 @@
 
 #include <vector>
 
+#include "base/observer_list.h"
 #include "ui/aura/window_observer.h"
 #include "ui/views/views_export.h"
 
 namespace views {
 namespace corewm {
+
+class TransientWindowObserver;
 
 // TransientWindowManager manages the set of transient children for a window
 // along with the transient parent. Transient children get the following
@@ -36,6 +39,9 @@ class VIEWS_EXPORT TransientWindowManager : public aura::WindowObserver {
   // Returns the TransientWindowManager for |window| only if it already exists.
   // WARNING: this may return NULL.
   static const TransientWindowManager* Get(const aura::Window* window);
+
+  void AddObserver(TransientWindowObserver* observer);
+  void RemoveObserver(TransientWindowObserver* observer);
 
   // Adds or removes a transient child.
   void AddTransientChild(aura::Window* child);
@@ -86,6 +92,8 @@ class VIEWS_EXPORT TransientWindowManager : public aura::WindowObserver {
   // If non-null we're actively restacking transient as the result of a
   // transient ancestor changing. This is a pointer to a value on the stack.
   StackingPair* stacking_pair_;
+
+  ObserverList<TransientWindowObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(TransientWindowManager);
 };

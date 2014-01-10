@@ -38,6 +38,7 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/events/event.h"
 #include "ui/message_center/message_center.h"
+#include "ui/views/corewm/transient_window_manager.h"
 #include "ui/views/corewm/window_util.h"
 
 namespace {
@@ -239,9 +240,10 @@ void MultiUserWindowManagerChromeOS::SetWindowOwner(
   // Remember the initial visibility of the window.
   window_to_entry_[window]->set_show(window->IsVisible());
 
-  // Set the window and the state observer.
+  // Add observers to track state changes.
   window->AddObserver(this);
   ash::wm::GetWindowState(window)->AddObserver(this);
+  views::corewm::TransientWindowManager::Get(window)->AddObserver(this);
 
   // Check if this window was created due to a user interaction. If it was,
   // transfer it to the current user.
@@ -440,8 +442,8 @@ void MultiUserWindowManagerChromeOS::OnWindowDestroyed(aura::Window* window) {
     RemoveTransientOwnerRecursive(window);
     return;
   }
-  // Remove the state and the window observer.
   ash::wm::GetWindowState(window)->RemoveObserver(this);
+  views::corewm::TransientWindowManager::Get(window)->RemoveObserver(this);
   // Remove the window from the owners list.
   delete window_to_entry_[window];
   window_to_entry_.erase(window);
@@ -489,7 +491,7 @@ void MultiUserWindowManagerChromeOS::OnWindowVisibilityChanged(
     SetWindowVisibility(window, false);
 }
 
-void MultiUserWindowManagerChromeOS::OnAddTransientChild(
+void MultiUserWindowManagerChromeOS::OnTransientChildAdded(
     aura::Window* window,
     aura::Window* transient_window) {
   if (!GetWindowOwner(window).empty()) {
@@ -504,7 +506,7 @@ void MultiUserWindowManagerChromeOS::OnAddTransientChild(
   AddTransientOwnerRecursive(transient_window, owned_parent);
 }
 
-void MultiUserWindowManagerChromeOS::OnRemoveTransientChild(
+void MultiUserWindowManagerChromeOS::OnTransientChildRemoved(
     aura::Window* window,
     aura::Window* transient_window) {
   // Remove the transient child if the window itself is owned, or one of the
@@ -632,8 +634,9 @@ void MultiUserWindowManagerChromeOS::AddTransientOwnerRecursive(
              transient_window_to_visibility_.end());
   transient_window_to_visibility_[window] = window->IsVisible();
 
-  // Add a window observer to make sure that we catch status changes.
+  // Add observers to track state changes.
   window->AddObserver(this);
+  views::corewm::TransientWindowManager::Get(window)->AddObserver(this);
 
   // Hide the window if it should not be shown. Note that this hide operation
   // will hide recursively this and all children - but we have already collected
@@ -656,8 +659,8 @@ void MultiUserWindowManagerChromeOS::RemoveTransientOwnerRecursive(
       transient_window_to_visibility_.find(window);
   DCHECK(visibility_item != transient_window_to_visibility_.end());
 
-  // Remove the window observer.
   window->RemoveObserver(this);
+  views::corewm::TransientWindowManager::Get(window)->RemoveObserver(this);
 
   bool unowned_view_state = visibility_item->second;
   transient_window_to_visibility_.erase(visibility_item);

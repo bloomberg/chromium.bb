@@ -11,6 +11,7 @@
 #include "base/stl_util.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
+#include "ui/views/corewm/transient_window_observer.h"
 #include "ui/views/corewm/transient_window_stacking_client.h"
 #include "ui/views/corewm/window_util.h"
 
@@ -40,6 +41,14 @@ const TransientWindowManager* TransientWindowManager::Get(
   return window->GetProperty(kPropertyKey);
 }
 
+void TransientWindowManager::AddObserver(TransientWindowObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void TransientWindowManager::RemoveObserver(TransientWindowObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 void TransientWindowManager::AddTransientChild(Window* child) {
   // TransientWindowStackingClient does the stacking of transient windows. If it
   // isn't installed stacking is going to be wrong.
@@ -52,8 +61,8 @@ void TransientWindowManager::AddTransientChild(Window* child) {
                    child) == transient_children_.end());
   transient_children_.push_back(child);
   child_manager->transient_parent_ = window_;
-  FOR_EACH_OBSERVER(WindowObserver, window_->observers_,
-                    OnAddTransientChild(window_, child));
+  FOR_EACH_OBSERVER(TransientWindowObserver, observers_,
+                    OnTransientChildAdded(window_, child));
 }
 
 void TransientWindowManager::RemoveTransientChild(Window* child) {
@@ -64,8 +73,8 @@ void TransientWindowManager::RemoveTransientChild(Window* child) {
   TransientWindowManager* child_manager = Get(child);
   DCHECK_EQ(window_, child_manager->transient_parent_);
   child_manager->transient_parent_ = NULL;
-  FOR_EACH_OBSERVER(WindowObserver, window_->observers_,
-                    OnRemoveTransientChild(window_, child));
+  FOR_EACH_OBSERVER(TransientWindowObserver, observers_,
+                    OnTransientChildRemoved(window_, child));
 }
 
 bool TransientWindowManager::IsStackingTransient(

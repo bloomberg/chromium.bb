@@ -13,6 +13,7 @@
 #include "ui/aura/window_observer.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/animation/animation_delegate.h"
+#include "ui/views/corewm/transient_window_observer.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -40,9 +41,9 @@ namespace ash {
 class ASH_EXPORT ImmersiveFullscreenController
     : public gfx::AnimationDelegate,
       public ui::EventHandler,
+      public views::corewm::TransientWindowObserver,
       public views::FocusChangeListener,
       public views::WidgetObserver,
-      public aura::WindowObserver,
       public ImmersiveRevealedLock::Delegate {
  public:
   // The enum is used for an enumerated histogram. New items should be only
@@ -142,11 +143,11 @@ class ASH_EXPORT ImmersiveFullscreenController
   virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
   virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
 
-  // aura::WindowObserver overrides:
-  virtual void OnAddTransientChild(aura::Window* window,
-                                   aura::Window* transient) OVERRIDE;
-  virtual void OnRemoveTransientChild(aura::Window* window,
-                                      aura::Window* transient) OVERRIDE;
+  // views::corewm::TransientWindowObserver overrides:
+  virtual void OnTransientChildAdded(aura::Window* window,
+                                     aura::Window* transient) OVERRIDE;
+  virtual void OnTransientChildRemoved(aura::Window* window,
+                                       aura::Window* transient) OVERRIDE;
 
   // ash::ImmersiveRevealedLock::Delegate overrides:
   virtual void LockRevealedState(AnimateReveal animate_reveal) OVERRIDE;

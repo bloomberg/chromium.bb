@@ -41,12 +41,6 @@ class Layer;
 class Texture;
 }
 
-// TODO(sky): nuke. Temporary while moving transients out of Window.
-namespace views {
-namespace corewm {
-class TransientWindowManager;
-}
-}
 namespace aura {
 
 class LayoutManager;
@@ -369,8 +363,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
 
  private:
   friend class test::WindowTestApi;
-  // TODO(sky): temporary until TransientWindowManager gets its own observer.
-  friend class views::corewm::TransientWindowManager;
   friend class LayoutManager;
   friend class RootWindow;
   friend class WindowTargeter;

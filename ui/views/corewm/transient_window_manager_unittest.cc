@@ -9,6 +9,7 @@
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
+#include "ui/views/corewm/transient_window_observer.h"
 #include "ui/views/corewm/window_util.h"
 #include "ui/views/test/views_test_base.h"
 
@@ -19,6 +20,34 @@ using aura::test::CreateTestWindowWithId;
 
 namespace views {
 namespace corewm {
+
+class TestTransientWindowObserver : public TransientWindowObserver {
+ public:
+  TestTransientWindowObserver() : add_count_(0), remove_count_(0) {
+  }
+
+  virtual ~TestTransientWindowObserver() {
+  }
+
+  int add_count() const { return add_count_; }
+  int remove_count() const { return remove_count_; }
+
+  // TransientWindowObserver overrides:
+  virtual void OnTransientChildAdded(Window* window,
+                                     Window* transient) OVERRIDE {
+    add_count_++;
+  }
+  virtual void OnTransientChildRemoved(Window* window,
+                                       Window* transient) OVERRIDE {
+    remove_count_++;
+  }
+
+ private:
+  int add_count_;
+  int remove_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestTransientWindowObserver);
+};
 
 class TransientWindowManagerTest : public views::ViewsTestBase {
  public:
@@ -571,6 +600,25 @@ TEST_F(TransientWindowManagerTest, StackOverClosingTransient) {
   EXPECT_EQ(root->layer()->children()[1], transient2->layer());
   EXPECT_EQ(root->layer()->children()[2], window1->layer());
   EXPECT_EQ(root->layer()->children()[3], window3->layer());
+}
+
+// Verifies TransientWindowObserver is notified appropriately.
+TEST_F(TransientWindowManagerTest, TransientWindowObserverNotified) {
+  scoped_ptr<Window> parent(CreateTestWindowWithId(0, GetContext()));
+  scoped_ptr<Window> w1(CreateTestWindowWithId(1, parent.get()));
+
+  TestTransientWindowObserver test_observer;
+  TransientWindowManager::Get(parent.get())->AddObserver(&test_observer);
+
+  AddTransientChild(parent.get(), w1.get());
+  EXPECT_EQ(1, test_observer.add_count());
+  EXPECT_EQ(0, test_observer.remove_count());
+
+  RemoveTransientChild(parent.get(), w1.get());
+  EXPECT_EQ(1, test_observer.add_count());
+  EXPECT_EQ(1, test_observer.remove_count());
+
+  TransientWindowManager::Get(parent.get())->RemoveObserver(&test_observer);
 }
 
 }  // namespace corewm

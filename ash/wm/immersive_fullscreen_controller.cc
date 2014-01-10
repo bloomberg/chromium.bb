@@ -23,6 +23,7 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/bubble/bubble_delegate.h"
+#include "ui/views/corewm/transient_window_manager.h"
 #include "ui/views/corewm/window_util.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -473,7 +474,7 @@ void ImmersiveFullscreenController::AnimationProgressed(
 ////////////////////////////////////////////////////////////////////////////////
 // aura::WindowObserver overrides:
 
-void ImmersiveFullscreenController::OnAddTransientChild(
+void ImmersiveFullscreenController::OnTransientChildAdded(
     aura::Window* window,
     aura::Window* transient) {
   views::BubbleDelegateView* bubble_delegate = AsBubbleDelegate(transient);
@@ -487,7 +488,7 @@ void ImmersiveFullscreenController::OnAddTransientChild(
   }
 }
 
-void ImmersiveFullscreenController::OnRemoveTransientChild(
+void ImmersiveFullscreenController::OnTransientChildRemoved(
     aura::Window* window,
     aura::Window* transient) {
   bubble_manager_->StopObserving(transient);
@@ -527,14 +528,16 @@ void ImmersiveFullscreenController::EnableWindowObservers(bool enable) {
     widget_->AddObserver(this);
     focus_manager->AddFocusChangeListener(this);
     Shell::GetInstance()->AddPreTargetHandler(this);
-    native_window_->AddObserver(this);
+    views::corewm::TransientWindowManager::Get(native_window_)->
+        AddObserver(this);
 
     RecreateBubbleManager();
   } else {
     widget_->RemoveObserver(this);
     focus_manager->RemoveFocusChangeListener(this);
     Shell::GetInstance()->RemovePreTargetHandler(this);
-    native_window_->RemoveObserver(this);
+    views::corewm::TransientWindowManager::Get(native_window_)->
+        RemoveObserver(this);
 
     // We have stopped observing whether transient children are added or removed
     // to |native_window_|. The set of bubbles that BubbleManager is observing

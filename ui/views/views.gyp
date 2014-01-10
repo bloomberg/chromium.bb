@@ -267,6 +267,7 @@
         'corewm/transient_window_controller.h',
         'corewm/transient_window_manager.cc',
         'corewm/transient_window_manager.h',
+        'corewm/transient_window_observer.h',
         'corewm/transient_window_stacking_client.cc',
         'corewm/transient_window_stacking_client.h',
         'corewm/visibility_controller.cc',
