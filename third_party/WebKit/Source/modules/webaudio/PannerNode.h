@@ -33,6 +33,7 @@
 #include "modules/webaudio/AudioNode.h"
 #include "modules/webaudio/AudioParam.h"
 #include "platform/geometry/FloatPoint3D.h"
+#include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
 
 namespace WebCore {
@@ -137,7 +138,7 @@ private:
 
     // Notifies any AudioBufferSourceNodes connected to us either directly or indirectly about our existence.
     // This is in order to handle the pitch change necessary for the doppler shift.
-    void notifyAudioSourcesConnectedToNode(AudioNode*);
+    void notifyAudioSourcesConnectedToNode(AudioNode*, HashMap<AudioNode*, bool> &visitedNodes);
 
     OwnPtr<Panner> m_panner;
     unsigned m_panningModel;

@@ -85,8 +85,12 @@ void PannerNode::pullInputs(size_t framesToProcess)
     if (m_connectionCount != context()->connectionCount()) {
         m_connectionCount = context()->connectionCount();
 
-        // Recursively go through all nodes connected to us.
-        notifyAudioSourcesConnectedToNode(this);
+        // A map for keeping track if we have visited a node or not. This prevents feedback loops
+        // from recursing infinitely. See crbug.com/331446.
+        HashMap<AudioNode*, bool> visitedNodes;
+
+        // Recursively go through all nodes connected to us
+        notifyAudioSourcesConnectedToNode(this, visitedNodes);
     }
 
     AudioNode::pullInputs(framesToProcess);
@@ -386,7 +390,7 @@ float PannerNode::distanceConeGain()
     return float(distanceGain * coneGain);
 }
 
-void PannerNode::notifyAudioSourcesConnectedToNode(AudioNode* node)
+void PannerNode::notifyAudioSourcesConnectedToNode(AudioNode* node, HashMap<AudioNode*, bool>& visitedNodes)
 {
     ASSERT(node);
     if (!node)
@@ -405,7 +409,14 @@ void PannerNode::notifyAudioSourcesConnectedToNode(AudioNode* node)
             for (unsigned j = 0; j < input->numberOfRenderingConnections(); ++j) {
                 AudioNodeOutput* connectedOutput = input->renderingOutput(j);
                 AudioNode* connectedNode = connectedOutput->node();
-                notifyAudioSourcesConnectedToNode(connectedNode); // recurse
+                HashMap<AudioNode*, bool>::iterator iterator = visitedNodes.find(connectedNode);
+
+                // If we've seen this node already, we don't need to process it again. Otherwise,
+                // mark it as visited and recurse through the node looking for sources.
+                if (iterator == visitedNodes.end()) {
+                    visitedNodes.set(connectedNode, true);
+                    notifyAudioSourcesConnectedToNode(connectedNode, visitedNodes); // recurse
+                }
             }
         }
     }
