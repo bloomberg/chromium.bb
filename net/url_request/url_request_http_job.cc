@@ -414,9 +414,6 @@ void URLRequestHttpJob::StartTransactionInternal() {
     rv = request_->context()->http_transaction_factory()->CreateTransaction(
         priority_, &transaction_);
 
-    transaction_->SetBeforeNetworkStartCallback(base::Bind(
-        &URLRequestHttpJob::NotifyBeforeNetworkStart, base::Unretained(this)));
-
     if (rv == OK && request_info_.url.SchemeIsWSOrWSS()) {
       // TODO(ricea): Implement WebSocket throttling semantics as defined in
       // RFC6455 Section 4.1.
@@ -431,6 +428,10 @@ void URLRequestHttpJob::StartTransactionInternal() {
     }
 
     if (rv == OK) {
+      transaction_->SetBeforeNetworkStartCallback(
+          base::Bind(&URLRequestHttpJob::NotifyBeforeNetworkStart,
+                     base::Unretained(this)));
+
       if (!throttling_entry_.get() ||
           !throttling_entry_->ShouldRejectRequest(*request_)) {
         rv = transaction_->Start(
