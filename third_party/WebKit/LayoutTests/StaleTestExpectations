@@ -81,8 +81,6 @@ webkit.org/b/112610 [ Win ] fast/text/word-space-with-kerning-3.html [ WontFix ]
 webkit.org/b/78830 [ Mac ] svg/custom/mask-invalidation.svg [ WontFix ]
 webkit.org/b/42798 [ XP ] fast/notifications/notifications-cancel-request-permission.html [ WontFix ]
 webkit.org/b/91183 [ Win ] http/tests/w3c/webperf/approved/HighResolutionTime/test_cross_frame_start.html [ WontFix ]
-webkit.org/b/106238 [ Mac ] svg/dynamic-updates/SVGUseElement-dom-href1-attr.html [ WontFix ]
-webkit.org/b/106238 [ Mac ] svg/dynamic-updates/SVGUseElement-svgdom-href1-prop.html [ WontFix ]
 
 # IETC imported test suites
 webkit.org/b/83912 ietestcenter/css3/grid/grid-items-002.htm [ WontFix ]
