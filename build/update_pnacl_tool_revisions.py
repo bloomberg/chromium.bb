@@ -298,7 +298,11 @@ def FmtOut(tr_recent, tr_points_at, pnacl_changes, err=[], msg=[]):
           ('\n\n' if err or msg else '') +
           ('Update TOOL_REVISIONS for PNaCl r%s->r%s\n\n'
            'Pull the following PNaCl changes into NaCl:\n%s\n\n'
-           '%s\nR= %s\nTEST=git try\n' %
+           '%s\n'
+           'R= %s\n'
+           'TEST=git try\n'
+           'NOTRY=true\n'
+           '(Please LGTM this change and tick the "commit" box)\n' %
            (old_svn_id, new_svn_id, changes, bugs, reviewers)))
 
 
