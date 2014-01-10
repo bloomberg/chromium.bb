@@ -693,6 +693,7 @@ struct pipe_arg {
 	uint32_t crtc_id;
 	char mode_str[64];
 	char format_str[5];
+	unsigned int vrefresh;
 	unsigned int fourcc;
 	drmModeModeInfo *mode;
 	struct crtc *crtc;
@@ -714,7 +715,8 @@ struct plane_arg {
 };
 
 static drmModeModeInfo *
-connector_find_mode(struct device *dev, uint32_t con_id, const char *mode_str)
+connector_find_mode(struct device *dev, uint32_t con_id, const char *mode_str,
+        const unsigned int vrefresh)
 {
 	drmModeConnector *connector;
 	drmModeModeInfo *mode;
@@ -726,8 +728,16 @@ connector_find_mode(struct device *dev, uint32_t con_id, const char *mode_str)
 
 	for (i = 0; i < connector->count_modes; i++) {
 		mode = &connector->modes[i];
-		if (!strcmp(mode->name, mode_str))
-			return mode;
+		if (!strcmp(mode->name, mode_str)) {
+			/* If the vertical refresh frequency is not specified then return the
+			 * first mode that match with the name. Else, return the mode that match
+			 * the name and the specified vertical refresh frequency.
+			 */
+			if (vrefresh == 0)
+				return mode;
+			else if (mode->vrefresh == vrefresh)
+				return mode;
+		}
 	}
 
 	return NULL;
@@ -789,7 +799,7 @@ static int pipe_find_crtc_and_mode(struct device *dev, struct pipe_arg *pipe)
 
 	for (i = 0; i < (int)pipe->num_cons; i++) {
 		mode = connector_find_mode(dev, pipe->con_ids[i],
-					   pipe->mode_str);
+					   pipe->mode_str, pipe->vrefresh);
 		if (mode == NULL) {
 			fprintf(stderr,
 				"failed to find mode \"%s\" for connector %u\n",
@@ -1059,8 +1069,8 @@ static void set_mode(struct device *dev, struct pipe_arg *pipes, unsigned int co
 		if (pipe->mode == NULL)
 			continue;
 
-		printf("setting mode %s@%s on connectors ",
-		       pipe->mode_str, pipe->format_str);
+		printf("setting mode %s-%dHz@%s on connectors ",
+		       pipe->mode_str, pipe->mode->vrefresh, pipe->format_str);
 		for (j = 0; j < pipe->num_cons; ++j)
 			printf("%u, ", pipe->con_ids[j]);
 		printf("crtc %d\n", pipe->crtc->crtc->crtc_id);
@@ -1192,6 +1202,7 @@ static int parse_connector(struct pipe_arg *pipe, const char *arg)
 	const char *p;
 	char *endp;
 
+	pipe->vrefresh = 0;
 	pipe->crtc_id = (uint32_t)-1;
 	strcpy(pipe->format_str, "XR24");
 
@@ -1226,10 +1237,18 @@ static int parse_connector(struct pipe_arg *pipe, const char *arg)
 
 	arg = endp + 1;
 
-	p = strchrnul(arg, '@');
+	/* Search for the vertical refresh or the format. */
+	p = strpbrk(arg, "-@");
+	if (p == NULL)
+		p = arg + strlen(arg);
 	len = min(sizeof pipe->mode_str - 1, (unsigned int)(p - arg));
 	strncpy(pipe->mode_str, arg, len);
 	pipe->mode_str[len] = '\0';
+
+	if (*p == '-') {
+		pipe->vrefresh = strtoul(p + 1, &endp, 10);
+		p = endp;
+	}
 
 	if (*p == '@') {
 		strncpy(pipe->format_str, p + 1, 4);
@@ -1323,7 +1342,7 @@ static void usage(char *name)
 
 	fprintf(stderr, "\n Test options:\n\n");
 	fprintf(stderr, "\t-P <crtc_id>:<w>x<h>[+<x>+<y>][*<scale>][@<format>]\tset a plane\n");
-	fprintf(stderr, "\t-s <connector_id>[,<connector_id>][@<crtc_id>]:<mode>[@<format>]\tset a mode\n");
+	fprintf(stderr, "\t-s <connector_id>[,<connector_id>][@<crtc_id>]:<mode>[-<vrefresh>][@<format>]\tset a mode\n");
 	fprintf(stderr, "\t-v\ttest vsynced page flipping\n");
 	fprintf(stderr, "\t-w <obj_id>:<prop_name>:<value>\tset property\n");
 
