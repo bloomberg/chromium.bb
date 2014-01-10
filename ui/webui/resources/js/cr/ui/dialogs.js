@@ -91,9 +91,7 @@ cr.define('cr.ui.dialogs', function() {
 
   BaseDialog.prototype.onContainerKeyDown_ = function(event) {
     // Handle Escape.
-    if (event.keyCode == 27 &&
-        !this.cancelButton_.disabled &&
-        !this.cancelButton_.hidden) {
+    if (event.keyCode == 27 && !this.cancelButton_.disabled) {
       this.onCancelClick_(event);
       event.stopPropagation();
       // Prevent the event from being handled by the container of the dialog.
@@ -244,8 +242,7 @@ cr.define('cr.ui.dialogs', function() {
    */
   function AlertDialog(parentNode) {
     BaseDialog.apply(this, [parentNode]);
-    this.cancelButton_.hidden = true;
-    this.closeButton_.hidden = true;
+    this.cancelButton_.style.display = 'none';
   }
 
   AlertDialog.prototype = {__proto__: BaseDialog.prototype};
