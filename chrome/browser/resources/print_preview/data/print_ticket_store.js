@@ -423,10 +423,11 @@ cr.define('print_preview', function() {
         cr.dispatchSimpleEvent(this, PrintTicketStore.EventType.INITIALIZE);
       } else {
         // Reset user selection for certain ticket items.
-        this.customMargins_.updateValue(null);
-
         if (this.marginsType_.getValue() ==
-            print_preview.ticket_items.MarginsType.Value.CUSTOM) {
+            print_preview.ticket_items.MarginsType.Value.CUSTOM &&
+            !this.customMargins_.wouldValueBeValid(
+                 this.customMargins_.getValue())) {
+          this.customMargins_.updateValue(null);
           this.marginsType_.updateValue(
               print_preview.ticket_items.MarginsType.Value.DEFAULT);
         }
