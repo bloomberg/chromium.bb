@@ -302,7 +302,7 @@ class ProjectCheckout(dict):
     """Get the path to the checkout.
 
     Args:
-      absolute:  If True, return an absolute path. If False,
+      absolute: If True, return an absolute path. If False,
         return a path relative to the repo root.
     """
     return self['local_path'] if absolute else self['path']
@@ -1190,6 +1190,18 @@ def PushWithRetry(branch, git_repo, dryrun=False, retries=5):
   cros_build_lib.Info("Successfully pushed %s to %s:%s", git_repo, branch, ref)
 
 
+def CleanAndDetachHead(git_repo):
+  """Remove all local changes and checkout a detached head.
+
+  Args:
+    git_repo: Directory of git repository.
+  """
+  RunGit(git_repo, ['am', '--abort'], error_code_ok=True)
+  RunGit(git_repo, ['rebase', '--abort'], error_code_ok=True)
+  RunGit(git_repo, ['clean', '-dfx'])
+  RunGit(git_repo, ['checkout', '--detach', '-f', 'HEAD'])
+
+
 def CleanAndCheckoutUpstream(git_repo, refresh_upstream=True):
   """Remove all local changes and checkout the latest origin.
 
@@ -1202,12 +1214,9 @@ def CleanAndCheckoutUpstream(git_repo, refresh_upstream=True):
   """
   remote, local_upstream = GetTrackingBranch(git_repo,
                                              for_push=refresh_upstream)
-  RunGit(git_repo, ['am', '--abort'], error_code_ok=True)
-  RunGit(git_repo, ['rebase', '--abort'], error_code_ok=True)
+  CleanAndDetachHead(git_repo)
   if refresh_upstream:
     RunGit(git_repo, ['remote', 'update', remote])
-  RunGit(git_repo, ['clean', '-dfx'])
-  RunGit(git_repo, ['reset', '--hard', 'HEAD'])
   RunGit(git_repo, ['checkout', local_upstream])
 
 

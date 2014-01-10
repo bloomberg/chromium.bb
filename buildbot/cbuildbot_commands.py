@@ -175,7 +175,7 @@ def BuildRootGitCleanup(buildroot):
 
       try:
         if os.path.isdir(cwd):
-          git.CleanAndCheckoutUpstream(cwd, False)
+          git.CleanAndDetachHead(cwd)
       except cros_build_lib.RunCommandError as e:
         result = e.result
         cros_build_lib.PrintBuildbotStepWarnings()
