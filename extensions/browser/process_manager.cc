@@ -443,8 +443,11 @@ void ProcessManager::KeepaliveImpulse(const Extension* extension) {
     }
   }
 
-  if (!keepalive_impulse_callback_for_testing_.is_null())
-    keepalive_impulse_callback_for_testing_.Run(extension->id());
+  if (!keepalive_impulse_callback_for_testing_.is_null()) {
+    ImpulseCallbackForTesting callback_may_clear_callbacks_reentrantly =
+      keepalive_impulse_callback_for_testing_;
+    callback_may_clear_callbacks_reentrantly.Run(extension->id());
+  }
 }
 
 // DecrementLazyKeepaliveCount is called when no calls to KeepaliveImpulse
@@ -459,8 +462,11 @@ void ProcessManager::OnKeepaliveImpulseCheck() {
        ++i) {
     if (i->second.previous_keepalive_impulse && !i->second.keepalive_impulse) {
       DecrementLazyKeepaliveCount(i->first);
-      if (!keepalive_impulse_decrement_callback_for_testing_.is_null())
-        keepalive_impulse_decrement_callback_for_testing_.Run(i->first);
+      if (!keepalive_impulse_decrement_callback_for_testing_.is_null()) {
+        ImpulseCallbackForTesting callback_may_clear_callbacks_reentrantly =
+          keepalive_impulse_decrement_callback_for_testing_;
+        callback_may_clear_callbacks_reentrantly.Run(i->first);
+      }
     }
 
     i->second.previous_keepalive_impulse = i->second.keepalive_impulse;

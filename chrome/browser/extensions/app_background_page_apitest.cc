@@ -156,9 +156,11 @@ class AppBackgroundPageNaClTest : public AppBackgroundPageApiTest {
 // that will match a specified goal and can be waited on.
 class ImpulseCallbackCounter {
  public:
-  explicit ImpulseCallbackCounter(const std::string& extension_id)
+  explicit ImpulseCallbackCounter(extensions::ProcessManager* manager,
+                                  const std::string& extension_id)
       : observed_(0),
         goal_(0),
+        manager_(manager),
         extension_id_(extension_id) {
   }
 
@@ -183,6 +185,11 @@ class ImpulseCallbackCounter {
       const std::string& extension_id_from_manager) {
     if (extension_id_from_test == extension_id_from_manager) {
       if (++observed_ >= goal_) {
+        // Clear callback to free reference to message loop.
+        manager_->SetKeepaliveImpulseCallbackForTesting(
+            extensions::ProcessManager::ImpulseCallbackForTesting());
+        manager_->SetKeepaliveImpulseDecrementCallbackForTesting(
+            extensions::ProcessManager::ImpulseCallbackForTesting());
         quit_callback.Run();
       }
     }
@@ -190,6 +197,7 @@ class ImpulseCallbackCounter {
 
   int observed_;
   int goal_;
+  extensions::ProcessManager* manager_;
   const std::string extension_id_;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 };
@@ -597,17 +605,13 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageNaClTest, BackgroundKeepaliveActive) {
   LaunchTestingApp();
   extensions::ProcessManager* manager =
     extensions::ExtensionSystem::Get(browser()->profile())->process_manager();
-  ImpulseCallbackCounter active_impulse_counter(extension()->id());
+  ImpulseCallbackCounter active_impulse_counter(manager, extension()->id());
   EXPECT_TRUE(nacl_modules_loaded.WaitUntilSatisfied());
 
   // Target .5 seconds: .5 seconds / 50ms throttle * 2 embeds == 20 impulses.
   manager->SetKeepaliveImpulseCallbackForTesting(
       active_impulse_counter.SetGoalAndGetCallback(20));
   active_impulse_counter.Wait();
-
-  // Clear callback to free reference to message loop in ImpulseCallbackCounter.
-  manager->SetKeepaliveImpulseCallbackForTesting(
-      extensions::ProcessManager::ImpulseCallbackForTesting());
 }
 
 // Verify that nacl modules that go idle will not send keepalive impulses.
@@ -625,16 +629,12 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageNaClTest,
   LaunchTestingApp();
   extensions::ProcessManager* manager =
     extensions::ExtensionSystem::Get(browser()->profile())->process_manager();
-  ImpulseCallbackCounter idle_impulse_counter(extension()->id());
+  ImpulseCallbackCounter idle_impulse_counter(manager, extension()->id());
   EXPECT_TRUE(nacl_modules_loaded.WaitUntilSatisfied());
 
   manager->SetKeepaliveImpulseDecrementCallbackForTesting(
       idle_impulse_counter.SetGoalAndGetCallback(1));
   nacl_modules_loaded.Reply("be idle");
   idle_impulse_counter.Wait();
-
-  // Clear callback to free reference to message loop in ImpulseCallbackCounter.
-  manager->SetKeepaliveImpulseDecrementCallbackForTesting(
-      extensions::ProcessManager::ImpulseCallbackForTesting());
 }
 
