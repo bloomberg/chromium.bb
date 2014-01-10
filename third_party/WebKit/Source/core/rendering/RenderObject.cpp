@@ -340,7 +340,7 @@ void RenderObject::addChild(RenderObject* newChild, RenderObject* beforeChild)
     // SVG creates renderers for <g display="none">, as SVG requires children of hidden
     // <g>s to have renderers - at least that's how our implementation works. Consider:
     // <g display="none"><foreignObject><body style="position: relative">FOO...
-    // - requiresLayer() would return true for the <body>, creating a new RenderLayer
+    // - layerTypeRequired() would return true for the <body>, creating a new RenderLayer
     // - when the document is painted, both layers are painted. The <body> layer doesn't
     //   know that it's inside a "hidden SVG subtree", and thus paints, even if it shouldn't.
     // To avoid the problem alltogether, detect early if we're inside a hidden SVG subtree
@@ -1846,11 +1846,12 @@ StyleDifference RenderObject::adjustStyleDifference(StyleDifference diff, unsign
             diff = StyleDifferenceRecompositeLayer;
     }
 
-    // The answer to requiresLayer() for plugins, iframes, and canvas can change without the actual
+    // The answer to layerTypeRequired() for plugins, iframes, and canvas can change without the actual
     // style changing, since it depends on whether we decide to composite these elements. When the
     // layer status of one of these elements changes, we need to force a layout.
     if (diff == StyleDifferenceEqual && style() && isLayerModelObject()) {
-        if (hasLayer() != toRenderLayerModelObject(this)->requiresLayer())
+        bool requiresLayer = toRenderLayerModelObject(this)->layerTypeRequired() != NoLayer;
+        if (hasLayer() != requiresLayer)
             diff = StyleDifferenceLayout;
     }
 

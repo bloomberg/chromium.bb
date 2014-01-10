@@ -53,7 +53,7 @@ public:
 
     virtual bool isRenderView() const OVERRIDE { return true; }
 
-    virtual bool requiresLayer() const OVERRIDE { return true; }
+    virtual LayerType layerTypeRequired() const OVERRIDE { return NormalLayer; }
 
     virtual bool isChildAllowed(RenderObject*, RenderStyle*) const OVERRIDE;
 

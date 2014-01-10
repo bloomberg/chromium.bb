@@ -44,13 +44,17 @@ RenderHTMLCanvas::RenderHTMLCanvas(HTMLCanvasElement* element)
     view()->frameView()->setIsVisuallyNonEmpty();
 }
 
-bool RenderHTMLCanvas::requiresLayer() const
+LayerType RenderHTMLCanvas::layerTypeRequired() const
 {
-    if (RenderReplaced::requiresLayer())
-        return true;
+    LayerType type = RenderReplaced::layerTypeRequired();
+    if (type != NoLayer)
+        return type;
 
     HTMLCanvasElement* canvas = toHTMLCanvasElement(node());
-    return canvas && canvas->renderingContext() && canvas->renderingContext()->isAccelerated();
+    if (canvas && canvas->renderingContext() && canvas->renderingContext()->isAccelerated())
+        return NormalLayer;
+
+    return NoLayer;
 }
 
 void RenderHTMLCanvas::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintOffset)

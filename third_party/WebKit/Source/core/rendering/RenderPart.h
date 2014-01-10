@@ -44,7 +44,7 @@ public:
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) OVERRIDE;
 
 protected:
-    virtual bool requiresLayer() const;
+    virtual LayerType layerTypeRequired() const OVERRIDE;
 
 private:
     virtual bool isRenderPart() const OVERRIDE FINAL { return true; }

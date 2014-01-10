@@ -3587,16 +3587,9 @@ void RenderLayer::setParent(RenderLayer* parent)
 
 bool RenderLayer::shouldBeSelfPaintingLayer() const
 {
-    return !m_stackingNode->isNormalFlowOnly()
+    return !m_isOverflowOnlyLayer
         || (m_scrollableArea && m_scrollableArea->hasOverlayScrollbars())
-        || needsCompositedScrolling()
-        || renderer()->hasReflection()
-        || renderer()->hasMask()
-        || renderer()->isTableRow()
-        || renderer()->isCanvas()
-        || renderer()->isVideo()
-        || renderer()->isEmbeddedObject()
-        || renderer()->isRenderIFrame();
+        || needsCompositedScrolling();
 }
 
 void RenderLayer::updateSelfPaintingLayer()

@@ -41,7 +41,7 @@ public:
 
     virtual const char* renderName() const { return "RenderReplica"; }
 
-    virtual bool requiresLayer() const { return true; }
+    virtual LayerType layerTypeRequired() const OVERRIDE { return NormalLayer; }
 
     virtual void layout();
 

@@ -65,7 +65,7 @@ private:
     virtual bool nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint& pointInParent, HitTestAction);
     virtual PositionWithAffinity positionForPoint(const LayoutPoint&) OVERRIDE FINAL;
 
-    virtual bool requiresLayer() const { return false; }
+    virtual LayerType layerTypeRequired() const OVERRIDE { return NoLayer; }
     virtual void layout();
 
     virtual void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const;

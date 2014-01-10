@@ -39,7 +39,7 @@ public:
     virtual LayoutRect clippedOverflowRectForRepaint(const RenderLayerModelObject* repaintContainer) const OVERRIDE;
     virtual void computeFloatRectForRepaint(const RenderLayerModelObject* repaintContainer, FloatRect&, bool fixed = false) const OVERRIDE;
 
-    virtual bool requiresLayer() const { return false; }
+    virtual LayerType layerTypeRequired() const OVERRIDE { return NoLayer; }
     virtual void layout();
 
     virtual FloatRect objectBoundingBox() const { return FloatRect(FloatPoint(), m_viewport.size()); }

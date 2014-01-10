@@ -67,7 +67,7 @@ private:
     void paintSnapshotImage(PaintInfo&, const LayoutPoint&, Image*);
     virtual void paintContents(PaintInfo&, const LayoutPoint&) OVERRIDE FINAL;
 
-    virtual bool requiresLayer() const OVERRIDE FINAL;
+    virtual LayerType layerTypeRequired() const OVERRIDE FINAL;
 
     virtual void viewCleared() OVERRIDE FINAL;
 

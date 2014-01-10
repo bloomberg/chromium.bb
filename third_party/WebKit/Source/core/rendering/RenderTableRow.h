@@ -103,7 +103,16 @@ private:
     virtual LayoutRect clippedOverflowRectForRepaint(const RenderLayerModelObject* repaintContainer) const;
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) OVERRIDE;
 
-    virtual bool requiresLayer() const OVERRIDE { return hasOverflowClip() || hasTransform() || hasHiddenBackface() || hasClipPath() || createsGroup(); }
+    virtual LayerType layerTypeRequired() const OVERRIDE
+    {
+        if (hasTransform() || hasHiddenBackface() || hasClipPath() || createsGroup())
+            return NormalLayer;
+
+        if (hasOverflowClip())
+            return OverflowClipLayer;
+
+        return NoLayer;
+    }
 
     virtual void paint(PaintInfo&, const LayoutPoint&);
 

@@ -65,12 +65,13 @@ void RenderPart::viewCleared()
 {
 }
 
-bool RenderPart::requiresLayer() const
+LayerType RenderPart::layerTypeRequired() const
 {
-    if (RenderWidget::requiresLayer())
-        return true;
+    LayerType type = RenderWidget::layerTypeRequired();
+    if (type != NoLayer)
+        return type;
 
-    return requiresAcceleratedCompositing();
+    return requiresAcceleratedCompositing() ? NormalLayer : NoLayer;
 }
 
 bool RenderPart::requiresAcceleratedCompositing() const

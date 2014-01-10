@@ -50,7 +50,7 @@ void RenderSVGBlock::updateFromStyle()
 
     // RenderSVGlock, used by Render(SVGText|ForeignObject), is not allowed to call setHasOverflowClip(true).
     // RenderBlock assumes a layer to be present when the overflow clip functionality is requested. Both
-    // Render(SVGText|ForeignObject) return 'false' on 'requiresLayer'. Fine for RenderSVGText.
+    // Render(SVGText|ForeignObject) return 'NoLayer' on 'layerTypeRequired'. Fine for RenderSVGText.
     //
     // If we want to support overflow rules for <foreignObject> we can choose between two solutions:
     // a) make RenderSVGForeignObject require layers and SVG layer aware

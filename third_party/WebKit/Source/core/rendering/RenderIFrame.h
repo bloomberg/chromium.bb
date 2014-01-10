@@ -51,7 +51,7 @@ private:
 
     virtual const char* renderName() const OVERRIDE { return "RenderPartObject"; } // Lying for now to avoid breaking tests
 
-    virtual bool requiresLayer() const OVERRIDE;
+    virtual LayerType layerTypeRequired() const OVERRIDE;
 
     void layoutSeamlessly();
 

@@ -32,6 +32,12 @@ class RenderLayer;
 class CompositedLayerMapping;
 class ScrollableArea;
 
+enum LayerType {
+    NoLayer,
+    OverflowClipLayer,
+    NormalLayer
+};
+
 class RenderLayerModelObject : public RenderObject {
 public:
     explicit RenderLayerModelObject(ContainerNode*);
@@ -48,7 +54,7 @@ public:
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
     virtual void updateFromStyle() { }
 
-    virtual bool requiresLayer() const = 0;
+    virtual LayerType layerTypeRequired() const = 0;
 
     // Returns true if the background is painted opaque in the given rect.
     // The query rect is given in local coordinate system.

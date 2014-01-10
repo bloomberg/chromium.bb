@@ -41,7 +41,7 @@ public:
 
     virtual const char* renderName() const { return "RenderScrollbarPart"; }
 
-    virtual bool requiresLayer() const { return false; }
+    virtual LayerType layerTypeRequired() const OVERRIDE { return NoLayer; }
 
     virtual void layout();
 

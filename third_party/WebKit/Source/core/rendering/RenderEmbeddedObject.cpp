@@ -64,12 +64,13 @@ RenderEmbeddedObject::~RenderEmbeddedObject()
 {
 }
 
-bool RenderEmbeddedObject::requiresLayer() const
+LayerType RenderEmbeddedObject::layerTypeRequired() const
 {
-    if (RenderPart::requiresLayer())
-        return true;
+    LayerType type = RenderPart::layerTypeRequired();
+    if (type != NoLayer)
+        return type;
 
-    return allowsAcceleratedCompositing();
+    return allowsAcceleratedCompositing() ? NormalLayer : NoLayer;
 }
 
 bool RenderEmbeddedObject::allowsAcceleratedCompositing() const

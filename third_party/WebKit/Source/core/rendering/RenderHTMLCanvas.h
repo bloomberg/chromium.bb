@@ -37,7 +37,7 @@ public:
     explicit RenderHTMLCanvas(HTMLCanvasElement*);
 
     virtual bool isCanvas() const { return true; }
-    virtual bool requiresLayer() const;
+    virtual LayerType layerTypeRequired() const OVERRIDE;
 
     void canvasSizeChanged();
 

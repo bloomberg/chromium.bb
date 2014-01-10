@@ -90,7 +90,7 @@ private:
 
     virtual bool isChildAllowed(RenderObject*, RenderStyle*) const;
     virtual bool canHaveChildren() const;
-    virtual bool requiresLayer() const { return false; }
+    virtual LayerType layerTypeRequired() const OVERRIDE { return NoLayer; }
 
     virtual LayoutRect clippedOverflowRectForRepaint(const RenderLayerModelObject* repaintContainer) const OVERRIDE;
     virtual void imageChanged(WrappedImagePtr, const IntRect* = 0);

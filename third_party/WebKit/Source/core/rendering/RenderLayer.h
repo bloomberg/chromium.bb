@@ -108,6 +108,9 @@ public:
 
     bool isSelfPaintingLayer() const { return m_isSelfPaintingLayer; }
 
+    bool isOverflowOnlyLayer() const { return m_isOverflowOnlyLayer; }
+    void setIsOverflowOnlyLayer(bool isOverflowOnlyLayer) { m_isOverflowOnlyLayer = isOverflowOnlyLayer; }
+
     bool cannotBlitToWindow() const;
 
     bool isTransparent() const;
@@ -597,7 +600,11 @@ private:
     friend class RenderLayerModelObject;
 
 protected:
+    // Self-painting layer is an optimization where we avoid the heavy RenderLayer painting
+    // machinery for a RenderLayer allocated only to handle the overflow clip case.
+    // FIXME(crbug.com/332791): Self-painting layer should be merged into the overflow-only concept.
     unsigned m_isSelfPaintingLayer : 1;
+    unsigned m_isOverflowOnlyLayer : 1;
 
     // If have no self-painting descendants, we don't have to walk our children during painting. This can lead to
     // significant savings, especially if the tree has lots of non-self-painting layers grouped together (e.g. table cells).
