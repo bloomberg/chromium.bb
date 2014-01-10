@@ -116,7 +116,6 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
   virtual MojoWaitFlags ConsumerSatisfiableFlagsNoLock() = 0;
 
   // Thread-safe and fast (they don't take the lock):
-  // TODO(vtl): FIXME -- "may discard" not respected
   bool may_discard() const { return may_discard_; }
   size_t element_num_bytes() const { return element_num_bytes_; }
   size_t capacity_num_bytes() const { return capacity_num_bytes_; }
