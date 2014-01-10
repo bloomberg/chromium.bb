@@ -2842,19 +2842,6 @@ void RenderObject::scheduleRelayout()
     }
 }
 
-void RenderObject::layout()
-{
-    ASSERT(needsLayout());
-    LayoutRectRecorder recorder(*this);
-    RenderObject* child = firstChild();
-    while (child) {
-        child->layoutIfNeeded();
-        ASSERT(!child->needsLayout());
-        child = child->nextSibling();
-    }
-    clearNeedsLayout();
-}
-
 void RenderObject::didLayout(ResourceLoadPriorityOptimizer& priorityModifier)
 {
     for (RenderObject* child = firstChild(); child; child = child->nextSibling())

@@ -665,8 +665,9 @@ public:
 
     virtual void paint(PaintInfo&, const LayoutPoint&);
 
-    // Recursive function that computes the size and position of this object and all its descendants.
-    virtual void layout();
+    // Subclasses must reimplement this method to compute the size and position
+    // of this object and all its descendants.
+    virtual void layout() = 0;
     virtual void didLayout(ResourceLoadPriorityOptimizer&);
     virtual void didScroll(ResourceLoadPriorityOptimizer&);
 
