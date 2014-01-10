@@ -1367,20 +1367,13 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   browser_process_->intranet_redirect_detector();
   GoogleSearchCounter::RegisterForNotifications();
 
+  // Disable SDCH filtering if switches::kEnableSdch is 0.
+  int sdch_enabled = 1;
   if (parsed_command_line().HasSwitch(switches::kEnableSdch)) {
-    // SDCH options via switches::kEnableSdch include:
-    const int kSdchDisabled = 0;
-    const int kSdchOverHttpEnabled = 1;
-    const int kSdchOverBothHttpAndHttpsEnabled = 2;
-    int sdch_enabled = kSdchOverHttpEnabled;
-    if (base::StringToInt(parsed_command_line().GetSwitchValueASCII(
-            switches::kEnableSdch), &sdch_enabled)) {
-      if (sdch_enabled == kSdchDisabled) {
-        net::SdchManager::EnableSdchSupport(false);
-      } else if (sdch_enabled == kSdchOverBothHttpAndHttpsEnabled) {
-        net::SdchManager::EnableSecureSchemeSupport(true);
-      }
-    }
+    base::StringToInt(parsed_command_line().GetSwitchValueASCII(
+        switches::kEnableSdch), &sdch_enabled);
+    if (!sdch_enabled)
+      net::SdchManager::EnableSdchSupport(false);
   }
 
   if (parsed_command_line().HasSwitch(switches::kEnableWatchdog))
