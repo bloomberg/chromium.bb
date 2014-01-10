@@ -218,6 +218,7 @@ v8.log
 /third_party/googlemac
 /third_party/gperf
 /third_party/guava/src
+/third_party/html_office
 /third_party/httpcomponents-client
 /third_party/httpcomponents-core
 /third_party/hunspell
