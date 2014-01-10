@@ -270,11 +270,6 @@ int KernelProxy::chdir(const char* path) {
 char* KernelProxy::getcwd(char* buf, size_t size) {
   std::string cwd = GetCWD();
 
-  if (size <= 0) {
-    errno = EINVAL;
-    return NULL;
-  }
-
   // If size is 0, allocate as much as we need.
   if (size == 0) {
     size = cwd.size() + 1;
