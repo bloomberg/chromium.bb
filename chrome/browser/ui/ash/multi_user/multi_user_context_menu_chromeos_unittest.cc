@@ -69,8 +69,8 @@ void MultiUserContextMenuChromeOSTest::SetUp() {
 void MultiUserContextMenuChromeOSTest::TearDown() {
   delete window_;
 
-  AshTestBase::TearDown();
   chrome::MultiUserWindowManager::DeleteInstance();
+  AshTestBase::TearDown();
 }
 
 // Check that an unowned window will never create a menu.

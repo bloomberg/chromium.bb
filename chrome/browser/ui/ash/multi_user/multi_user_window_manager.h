@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_ASH_MULTI_USER_MULTI_USER_WINDOW_MANAGER_H_
 
 #include <map>
+#include <set>
 #include <string>
 
 class Browser;
@@ -89,6 +90,9 @@ class MultiUserWindowManager {
 
   // Returns true when windows are shared among users.
   virtual bool AreWindowsSharedAmongUsers() = 0;
+
+  // Get the owners for the visible windows and set them to |user_ids|.
+  virtual void GetOwnersOfVisibleWindows(std::set<std::string>* user_ids) = 0;
 
   // A query call for a given window to see if it is on the given user's
   // desktop.

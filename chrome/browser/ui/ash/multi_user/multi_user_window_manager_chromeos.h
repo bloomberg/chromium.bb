@@ -11,12 +11,15 @@
 #include "ash/session_state_observer.h"
 #include "ash/wm/window_state_observer.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/aura/window_observer.h"
 
 class Browser;
+class MultiUserNotificationBlockerChromeOS;
+class MultiUserNotificationBlockerChromeOSTest;
 class Profile;
 
 namespace aura {
@@ -58,6 +61,8 @@ class MultiUserWindowManagerChromeOS : public MultiUserWindowManager,
   virtual void ShowWindowForUser(
       aura::Window* window, const std::string& user_id) OVERRIDE;
   virtual bool AreWindowsSharedAmongUsers() OVERRIDE;
+  virtual void GetOwnersOfVisibleWindows(
+      std::set<std::string>* user_ids) OVERRIDE;
   virtual bool IsWindowOnDesktopOfUser(aura::Window* window,
                                        const std::string& user_id) OVERRIDE;
   virtual const std::string& GetUserPresentingWindow(
@@ -89,6 +94,8 @@ class MultiUserWindowManagerChromeOS : public MultiUserWindowManager,
                const content::NotificationDetails& details) OVERRIDE;
 
  private:
+  friend class ::MultiUserNotificationBlockerChromeOSTest;
+
   class WindowEntry {
    public:
     explicit WindowEntry(const std::string& user_id)
@@ -174,6 +181,10 @@ class MultiUserWindowManagerChromeOS : public MultiUserWindowManager,
   // visibility state in various cases. The state is stored here instead of
   // being read from the user manager to be in sync while a switch occurs.
   std::string current_user_id_;
+
+  // The blocker which controls the desktop notification visibility based on the
+  // current multi-user status.
+  scoped_ptr<MultiUserNotificationBlockerChromeOS> notification_blocker_;
 
   // The notification registrar to track the creation of browser windows.
   content::NotificationRegistrar registrar_;

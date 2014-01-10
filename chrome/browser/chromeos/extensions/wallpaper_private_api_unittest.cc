@@ -218,8 +218,8 @@ void WallpaperPrivateApiMultiUserUnittest::SetUp() {
 }
 
 void WallpaperPrivateApiMultiUserUnittest::TearDown() {
-  AshTestBase::TearDown();
   chrome::MultiUserWindowManager::DeleteInstance();
+  AshTestBase::TearDown();
 }
 
 void WallpaperPrivateApiMultiUserUnittest::SetUpMultiUserWindowManager(

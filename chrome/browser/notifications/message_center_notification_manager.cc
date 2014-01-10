@@ -33,7 +33,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/notifications/login_state_notification_blocker_chromeos.h"
-#include "chrome/browser/notifications/multi_user_notification_blocker_chromeos.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #endif
 
@@ -66,7 +65,6 @@ MessageCenterNotificationManager::MessageCenterNotificationManager(
 #if defined(OS_CHROMEOS)
   blockers_.push_back(
       new LoginStateNotificationBlockerChromeOS(message_center));
-  blockers_.push_back(new MultiUserNotificationBlockerChromeOS(message_center));
 #else
   blockers_.push_back(new ScreenLockNotificationBlocker(message_center));
 #endif

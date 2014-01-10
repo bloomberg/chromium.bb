@@ -1,36 +1,36 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/notifications/multi_user_notification_blocker_chromeos.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_notification_blocker_chromeos.h"
 
 #include "ash/shell.h"
+#include "ash/shell_window_ids.h"
 #include "ash/system/system_notifier.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
+#include "ui/aura/window.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notifier_settings.h"
 
 MultiUserNotificationBlockerChromeOS::MultiUserNotificationBlockerChromeOS(
-    message_center::MessageCenter* message_center)
+    message_center::MessageCenter* message_center,
+    chrome::MultiUserWindowManager* multi_user_window_manager)
     : NotificationBlocker(message_center),
-      observing_(false) {
-  // UserManager may not be initialized in unit tests.
-  if (!chromeos::UserManager::IsInitialized())
-    return;
-
-  // This class is created in the ctor of NotificationUIManager which is created
-  // when a notification is created, so ash::Shell should be initialized.
-  ash::Shell::GetInstance()->AddShellObserver(this);
-  chromeos::UserManager::Get()->AddSessionStateObserver(this);
-  observing_ = true;
+      multi_user_window_manager_(multi_user_window_manager) {
+  UpdateWindowOwners();
 }
 
 MultiUserNotificationBlockerChromeOS::~MultiUserNotificationBlockerChromeOS() {
-  if (observing_) {
-    if (ash::Shell::HasInstance())
-      ash::Shell::GetInstance()->RemoveShellObserver(this);
-    chromeos::UserManager::Get()->RemoveSessionStateObserver(this);
+}
+
+void MultiUserNotificationBlockerChromeOS::UpdateWindowOwners() {
+  std::set<std::string> new_ids;
+  multi_user_window_manager_->GetOwnersOfVisibleWindows(&new_ids);
+
+  if (current_user_ids_ != new_ids) {
+    current_user_ids_.swap(new_ids);
+    NotifyBlockingStateChanged();
   }
 }
 
@@ -47,33 +47,29 @@ bool MultiUserNotificationBlockerChromeOS::ShouldShowNotification(
 
 bool MultiUserNotificationBlockerChromeOS::ShouldShowNotificationAsPopup(
     const message_center::NotifierId& notifier_id) const {
-  return ShouldShowNotification(notifier_id);
-}
-
-void MultiUserNotificationBlockerChromeOS::OnAppTerminating() {
-  ash::Shell::GetInstance()->RemoveShellObserver(this);
-  chromeos::UserManager::Get()->RemoveSessionStateObserver(this);
-  observing_ = false;
+  return (current_user_ids_.find(notifier_id.profile_id) !=
+          current_user_ids_.end()) ||
+      ShouldShowNotification(notifier_id);
 }
 
 void MultiUserNotificationBlockerChromeOS::ActiveUserChanged(
-    const chromeos::User* active_user) {
-  const std::string& new_user_id = active_user->email();
-  if (active_user_id_ == new_user_id)
+    const std::string& user_id) {
+  if (active_user_id_ == user_id)
     return;
 
   quiet_modes_[active_user_id_] = message_center()->IsQuietMode();
-  active_user_id_ = active_user->email();
+  active_user_id_ = user_id;
   std::map<std::string, bool>::const_iterator iter =
       quiet_modes_.find(active_user_id_);
   if (iter != quiet_modes_.end() &&
       iter->second != message_center()->IsQuietMode()) {
     message_center()->SetQuietMode(iter->second);
   }
+  UpdateWindowOwners();
   NotifyBlockingStateChanged();
 }
 
 bool MultiUserNotificationBlockerChromeOS::IsActive() const {
-  return observing_ && chrome::MultiUserWindowManager::GetMultiProfileMode() ==
+  return chrome::MultiUserWindowManager::GetMultiProfileMode() ==
       chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_SEPARATED;
 }

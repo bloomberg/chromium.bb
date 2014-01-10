@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_notification_blocker_chromeos.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -36,6 +37,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/events/event.h"
+#include "ui/message_center/message_center.h"
 #include "ui/views/corewm/window_util.h"
 
 namespace {
@@ -177,6 +179,8 @@ class AppObserver : public apps::ShellWindowRegistry::Observer {
 MultiUserWindowManagerChromeOS::MultiUserWindowManagerChromeOS(
     const std::string& current_user_id)
     : current_user_id_(current_user_id),
+      notification_blocker_(new MultiUserNotificationBlockerChromeOS(
+          message_center::MessageCenter::Get(), this)),
       suppress_visibility_changes_(false) {
   // Add a session state observer to be able to monitor session changes.
   if (ash::Shell::HasInstance())
@@ -248,6 +252,11 @@ void MultiUserWindowManagerChromeOS::SetWindowOwner(
   // will add the children but not the owner to the transient children map.
   AddTransientOwnerRecursive(window, window);
 
+  // Right now only |notification_blocker_| needs to know when the list of
+  // owners may change.
+  // TODO(skuhne): replace this by observer when another one needs this event.
+  notification_blocker_->UpdateWindowOwners();
+
   if (!IsWindowOnDesktopOfUser(window, current_user_id_))
     SetWindowVisibility(window, false);
 }
@@ -295,6 +304,9 @@ void MultiUserWindowManagerChromeOS::ShowWindowForUser(
   } else {
     SetWindowVisibility(window, false);
   }
+
+  // TODO(skuhne): replace this by observer when another one needs this event.
+  notification_blocker_->UpdateWindowOwners();
 }
 
 bool MultiUserWindowManagerChromeOS::AreWindowsSharedAmongUsers() {
@@ -304,6 +316,15 @@ bool MultiUserWindowManagerChromeOS::AreWindowsSharedAmongUsers() {
       return true;
   }
   return false;
+}
+
+void MultiUserWindowManagerChromeOS::GetOwnersOfVisibleWindows(
+    std::set<std::string>* user_ids) {
+  for (WindowToEntryMap::iterator it = window_to_entry_.begin();
+       it != window_to_entry_.end(); ++it) {
+    if (it->first->IsVisible())
+      user_ids->insert(it->second->owner());
+  }
 }
 
 bool MultiUserWindowManagerChromeOS::IsWindowOnDesktopOfUser(
@@ -406,6 +427,10 @@ void MultiUserWindowManagerChromeOS::ActiveUserChanged(
         client->ActivateWindow(window);
     }
   }
+
+  // This is called directly here to make sure notification_blocker will see the
+  // new window status.
+  notification_blocker_->ActiveUserChanged(user_id);
 }
 
 void MultiUserWindowManagerChromeOS::OnWindowDestroyed(aura::Window* window) {
@@ -420,6 +445,8 @@ void MultiUserWindowManagerChromeOS::OnWindowDestroyed(aura::Window* window) {
   // Remove the window from the owners list.
   delete window_to_entry_[window];
   window_to_entry_.erase(window);
+  // TODO(skuhne): replace this by observer when another one needs this event.
+  notification_blocker_->UpdateWindowOwners();
 }
 
 void MultiUserWindowManagerChromeOS::OnWindowVisibilityChanging(

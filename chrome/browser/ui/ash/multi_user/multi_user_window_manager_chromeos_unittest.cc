@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
 #include "chrome/common/chrome_switches.h"
@@ -62,6 +63,9 @@ class MultiUserWindowManagerChromeOSTest : public AshTestBase {
   // or "S[B,A], .." would mean that window#0 is shown, belongs to B but is
   // shown by A, and "D,..." would mean that window#0 is deleted.
   std::string GetStatus();
+
+  // Returns a test-friendly string format of GetOwnersOfVisibleWindows().
+  std::string GetOwnersOfVisibleWindowsAsString();
 
   TestSessionStateDelegate* session_state_delegate() {
     return session_state_delegate_;
@@ -116,8 +120,8 @@ void MultiUserWindowManagerChromeOSTest::TearDown() {
     window_.erase(window_.begin());
   }
 
-  AshTestBase::TearDown();
   chrome::MultiUserWindowManager::DeleteInstance();
+  AshTestBase::TearDown();
 }
 
 std::string MultiUserWindowManagerChromeOSTest::GetStatus() {
@@ -142,6 +146,16 @@ std::string MultiUserWindowManagerChromeOSTest::GetStatus() {
     s += "]";
   }
   return s;
+}
+
+std::string
+MultiUserWindowManagerChromeOSTest::GetOwnersOfVisibleWindowsAsString() {
+  std::set<std::string> owners;
+  multi_user_window_manager_->GetOwnersOfVisibleWindows(&owners);
+
+  std::vector<std::string> owner_list;
+  owner_list.insert(owner_list.begin(), owners.begin(), owners.end());
+  return JoinString(owner_list, ' ');
 }
 
 // Testing basic assumptions like default state and existence of manager.
@@ -226,6 +240,7 @@ TEST_F(MultiUserWindowManagerChromeOSTest, CloseWindowTests) {
   multi_user_window_manager()->ShowWindowForUser(window(0), "A");
   EXPECT_EQ("S[B,A]", GetStatus());
   EXPECT_TRUE(multi_user_window_manager()->AreWindowsSharedAmongUsers());
+  EXPECT_EQ("B", GetOwnersOfVisibleWindowsAsString());
 
   aura::Window* to_be_deleted = window(0);
 
@@ -240,6 +255,7 @@ TEST_F(MultiUserWindowManagerChromeOSTest, CloseWindowTests) {
   delete_window_at(0);
 
   EXPECT_EQ("D", GetStatus());
+  EXPECT_EQ("", GetOwnersOfVisibleWindowsAsString());
   // There should be no owner anymore for that window and the shared windows
   // should be gone as well.
   EXPECT_EQ(std::string(),
@@ -260,6 +276,7 @@ TEST_F(MultiUserWindowManagerChromeOSTest, SharedWindowTests) {
   multi_user_window_manager()->SetWindowOwner(window(4), "C");
   EXPECT_EQ("S[A], S[A], H[B], H[B], H[C]", GetStatus());
   EXPECT_FALSE(multi_user_window_manager()->AreWindowsSharedAmongUsers());
+  EXPECT_EQ("A", GetOwnersOfVisibleWindowsAsString());
 
   // For all following tests we override window 2 to be shown by user B.
   multi_user_window_manager()->ShowWindowForUser(window(1), "B");
@@ -269,31 +286,39 @@ TEST_F(MultiUserWindowManagerChromeOSTest, SharedWindowTests) {
   multi_user_window_manager()->ShowWindowForUser(window(2), "A");
   EXPECT_EQ("S[A], H[A,B], S[B,A], H[B], H[C]", GetStatus());
   EXPECT_TRUE(multi_user_window_manager()->AreWindowsSharedAmongUsers());
+  EXPECT_EQ("A B", GetOwnersOfVisibleWindowsAsString());
   multi_user_window_manager()->ShowWindowForUser(window(2), "C");
   EXPECT_EQ("S[A], H[A,B], H[B,C], H[B], H[C]", GetStatus());
   EXPECT_TRUE(multi_user_window_manager()->AreWindowsSharedAmongUsers());
+  EXPECT_EQ("A", GetOwnersOfVisibleWindowsAsString());
 
   // Switch the users and see that the results are correct.
   multi_user_window_manager()->ActiveUserChanged("B");
   EXPECT_EQ("H[A], S[A,B], H[B,C], S[B], H[C]", GetStatus());
+  EXPECT_EQ("A B", GetOwnersOfVisibleWindowsAsString());
   multi_user_window_manager()->ActiveUserChanged("C");
   EXPECT_EQ("H[A], H[A,B], S[B,C], H[B], S[C]", GetStatus());
+  EXPECT_EQ("B C", GetOwnersOfVisibleWindowsAsString());
 
   // Showing on the desktop of the already owning user should have no impact.
   multi_user_window_manager()->ShowWindowForUser(window(4), "C");
   EXPECT_EQ("H[A], H[A,B], S[B,C], H[B], S[C]", GetStatus());
+  EXPECT_EQ("B C", GetOwnersOfVisibleWindowsAsString());
 
   // Changing however a shown window back to the original owner should hide it.
   multi_user_window_manager()->ShowWindowForUser(window(2), "B");
   EXPECT_EQ("H[A], H[A,B], H[B], H[B], S[C]", GetStatus());
   EXPECT_TRUE(multi_user_window_manager()->AreWindowsSharedAmongUsers());
+  EXPECT_EQ("C", GetOwnersOfVisibleWindowsAsString());
 
   // And the change should be "permanent" - switching somewhere else and coming
   // back.
   multi_user_window_manager()->ActiveUserChanged("B");
   EXPECT_EQ("H[A], S[A,B], S[B], S[B], H[C]", GetStatus());
+  EXPECT_EQ("A B", GetOwnersOfVisibleWindowsAsString());
   multi_user_window_manager()->ActiveUserChanged("C");
   EXPECT_EQ("H[A], H[A,B], H[B], H[B], S[C]", GetStatus());
+  EXPECT_EQ("C", GetOwnersOfVisibleWindowsAsString());
 
   // After switching window 2 back to its original desktop, all desktops should
   // be "clean" again.

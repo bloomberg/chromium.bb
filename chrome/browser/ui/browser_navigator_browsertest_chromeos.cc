@@ -43,6 +43,8 @@ class TestMultiUserWindowManager : public chrome::MultiUserWindowManager {
   virtual void ShowWindowForUser(
       aura::Window* window, const std::string& user_id) OVERRIDE;
   virtual bool AreWindowsSharedAmongUsers() OVERRIDE;
+  virtual void GetOwnersOfVisibleWindows(
+      std::set<std::string>* user_ids) OVERRIDE;
   virtual bool IsWindowOnDesktopOfUser(aura::Window* window,
                                        const std::string& user_id) OVERRIDE;
   virtual const std::string& GetUserPresentingWindow(
@@ -110,6 +112,10 @@ void TestMultiUserWindowManager::ShowWindowForUser(
 
 bool TestMultiUserWindowManager::AreWindowsSharedAmongUsers() {
   return browser_owner_ != desktop_owner_;
+}
+
+void TestMultiUserWindowManager::GetOwnersOfVisibleWindows(
+    std::set<std::string>* user_ids) {
 }
 
 bool TestMultiUserWindowManager::IsWindowOnDesktopOfUser(

@@ -28,6 +28,10 @@ bool MultiUserWindowManagerStub::AreWindowsSharedAmongUsers() {
   return false;
 }
 
+void MultiUserWindowManagerStub::GetOwnersOfVisibleWindows(
+    std::set<std::string>* user_ids) {
+}
+
 bool MultiUserWindowManagerStub::IsWindowOnDesktopOfUser(
     aura::Window* window,
     const std::string& user_id) {

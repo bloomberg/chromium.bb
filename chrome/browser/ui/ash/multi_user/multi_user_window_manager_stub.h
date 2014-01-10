@@ -34,6 +34,8 @@ class MultiUserWindowManagerStub : public MultiUserWindowManager {
   virtual void ShowWindowForUser(
       aura::Window* window, const std::string& user_id) OVERRIDE;
   virtual bool AreWindowsSharedAmongUsers() OVERRIDE;
+  virtual void GetOwnersOfVisibleWindows(
+      std::set<std::string>* user_ids) OVERRIDE;
   virtual bool IsWindowOnDesktopOfUser(aura::Window* window,
                                        const std::string& user_id) OVERRIDE;
   virtual const std::string& GetUserPresentingWindow(

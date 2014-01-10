@@ -1,25 +1,19 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/system/system_notifier.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_shell_delegate.h"
-#include "chrome/browser/chromeos/login/fake_user_manager.h"
-#include "chrome/browser/notifications/multi_user_notification_blocker_chromeos.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
+#include "ash/wm/window_state.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_notification_blocker_chromeos.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
-
-namespace {
-
-// This value should be same as the one in fake_user_manager.cc
-static const char kUserIdHashSuffix[] = "-hash";
-
-}
 
 class MultiUserNotificationBlockerChromeOSTest
     : public ash::test::AshTestBase,
@@ -28,7 +22,8 @@ class MultiUserNotificationBlockerChromeOSTest
   MultiUserNotificationBlockerChromeOSTest()
       : state_changed_count_(0),
         is_logged_in_(false),
-        testing_profile_manager_(TestingBrowserProcess::GetGlobal()) {}
+        testing_profile_manager_(TestingBrowserProcess::GetGlobal()),
+        window_id_(0) {}
   virtual ~MultiUserNotificationBlockerChromeOSTest() {}
 
   // ash::test::AshTestBase overrides:
@@ -36,17 +31,17 @@ class MultiUserNotificationBlockerChromeOSTest
     ash::test::AshTestBase::SetUp();
     ASSERT_TRUE(testing_profile_manager_.SetUp());
 
-    // Initialize the UserManager singleton to a fresh FakeUserManager instance.
-    user_manager_enabler_.reset(
-        new chromeos::ScopedUserManagerEnabler(new chromeos::FakeUserManager));
-    blocker_.reset(new MultiUserNotificationBlockerChromeOS(
-        message_center::MessageCenter::Get()));
-    blocker_->AddObserver(this);
+    ash::test::TestShellDelegate* shell_delegate =
+        static_cast<ash::test::TestShellDelegate*>(
+            ash::Shell::GetInstance()->delegate());
+    shell_delegate->set_multi_profiles_enabled(true);
+    chrome::MultiUserWindowManager::CreateInstance();
+
+    GetMultiUserWindowManager()->notification_blocker_->AddObserver(this);
   }
 
   virtual void TearDown() OVERRIDE {
-    blocker_->RemoveObserver(this);
-    blocker_.reset();
+    GetMultiUserWindowManager()->notification_blocker_->RemoveObserver(this);
     if (chrome::MultiUserWindowManager::GetInstance())
       chrome::MultiUserWindowManager::DeleteInstance();
     ash::test::AshTestBase::TearDown();
@@ -59,18 +54,17 @@ class MultiUserNotificationBlockerChromeOSTest
   }
 
  protected:
-  void SetupMultiUserMode(bool enabled) {
-    ash::test::TestShellDelegate* shell_delegate =
-        static_cast<ash::test::TestShellDelegate*>(
-            ash::Shell::GetInstance()->delegate());
-    shell_delegate->set_multi_profiles_enabled(enabled);
-    chrome::MultiUserWindowManager::CreateInstance();
+  chrome::MultiUserWindowManagerChromeOS* GetMultiUserWindowManager() {
+    return static_cast<chrome::MultiUserWindowManagerChromeOS*>(
+        chrome::MultiUserWindowManager::GetInstance());
+  }
+
+  const message_center::NotificationBlocker* blocker() {
+    return GetMultiUserWindowManager()->notification_blocker_.get();
   }
 
   void CreateProfile(const std::string& name) {
     testing_profile_manager_.CreateTestingProfile(name);
-    GetFakeUserManager()->AddUser(name);
-    GetFakeUserManager()->UserLoggedIn(name, name + kUserIdHashSuffix, false);
     if (!is_logged_in_) {
       SwitchActiveUser(name);
       is_logged_in_ = true;
@@ -78,8 +72,13 @@ class MultiUserNotificationBlockerChromeOSTest
   }
 
   void SwitchActiveUser(const std::string& name) {
-    GetFakeUserManager()->SwitchActiveUser(name);
-    blocker_->ActiveUserChanged(GetFakeUserManager()->GetActiveUser());
+    ash::Shell::GetInstance()->session_state_delegate()->SwitchActiveUser(name);
+    if (chrome::MultiUserWindowManager::GetMultiProfileMode() ==
+        chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_SEPARATED) {
+      static_cast<chrome::MultiUserWindowManagerChromeOS*>(
+          chrome::MultiUserWindowManager::GetInstance())->ActiveUserChanged(
+              name);
+    }
   }
 
   int GetStateChangedCountAndReset() {
@@ -93,7 +92,7 @@ class MultiUserNotificationBlockerChromeOSTest
       const std::string profile_id) {
     message_center::NotifierId id_with_profile = notifier_id;
     id_with_profile.profile_id = profile_id;
-    return blocker_->ShouldShowNotificationAsPopup(id_with_profile);
+    return blocker()->ShouldShowNotificationAsPopup(id_with_profile);
   }
 
   bool ShouldShowNotification(
@@ -101,26 +100,25 @@ class MultiUserNotificationBlockerChromeOSTest
       const std::string profile_id) {
     message_center::NotifierId id_with_profile = notifier_id;
     id_with_profile.profile_id = profile_id;
-    return blocker_->ShouldShowNotification(id_with_profile);
+    return blocker()->ShouldShowNotification(id_with_profile);
+  }
+
+  aura::Window* CreateWindowForProfile(const std::string& name) {
+    aura::Window* window = CreateTestWindowInShellWithId(window_id_++);
+    chrome::MultiUserWindowManager::GetInstance()->SetWindowOwner(window, name);
+    return window;
   }
 
  private:
-  chromeos::FakeUserManager* GetFakeUserManager() {
-    return static_cast<chromeos::FakeUserManager*>(
-        chromeos::UserManager::Get());
-  }
-
   int state_changed_count_;
   bool is_logged_in_;
   TestingProfileManager testing_profile_manager_;
-  scoped_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
-  scoped_ptr<MultiUserNotificationBlockerChromeOS> blocker_;
+  int window_id_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiUserNotificationBlockerChromeOSTest);
 };
 
 TEST_F(MultiUserNotificationBlockerChromeOSTest, Basic) {
-  SetupMultiUserMode(true);
   ASSERT_EQ(chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_SEPARATED,
             chrome::MultiUserWindowManager::GetMultiProfileMode());
 
@@ -217,41 +215,87 @@ TEST_F(MultiUserNotificationBlockerChromeOSTest, Basic) {
                                       "test2@example.com"));
 }
 
-TEST_F(MultiUserNotificationBlockerChromeOSTest, SingleUser) {
-  SetupMultiUserMode(false);
-  ASSERT_EQ(chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_OFF,
+TEST_F(MultiUserNotificationBlockerChromeOSTest, TeleportedWindows) {
+  ASSERT_EQ(chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_SEPARATED,
             chrome::MultiUserWindowManager::GetMultiProfileMode());
+
+  std::string u1 = "test@example.com";
+  std::string u2 = "test2@example.com";
+  std::string u3 = "test3@example.com";
+  CreateProfile(u1);
+  CreateProfile(u2);
+  CreateProfile(u3);
+
+  chrome::MultiUserWindowManager* multi_user_window_manager =
+      chrome::MultiUserWindowManager::GetInstance();
 
   message_center::NotifierId notifier_id(
       message_center::NotifierId::APPLICATION, "test-app");
-  // Only allowed the system notifier.
-  message_center::NotifierId ash_system_notifier(
-      message_center::NotifierId::SYSTEM_COMPONENT,
-      ash::system_notifier::kNotifierDisplay);
-  // Other system notifiers should be treated as same as a normal notifier.
-  message_center::NotifierId random_system_notifier(
-      message_center::NotifierId::SYSTEM_COMPONENT, "random_system_component");
 
-  // Nothing is created, active_user_id_ should be empty.
-  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id, ""));
-  EXPECT_TRUE(ShouldShowNotificationAsPopup(ash_system_notifier, ""));
-  EXPECT_TRUE(ShouldShowNotificationAsPopup(random_system_notifier, ""));
-  EXPECT_TRUE(ShouldShowNotification(notifier_id, ""));
-  EXPECT_TRUE(ShouldShowNotification(ash_system_notifier, ""));
-  EXPECT_TRUE(ShouldShowNotification(random_system_notifier, ""));
-
-  CreateProfile("test@example.com");
+  // Initial status: only notifications for u1 should be shown.
   EXPECT_EQ(1, GetStateChangedCountAndReset());
-  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id, ""));
-  EXPECT_TRUE(ShouldShowNotificationAsPopup(ash_system_notifier, ""));
-  EXPECT_TRUE(ShouldShowNotificationAsPopup(random_system_notifier, ""));
-  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id, "test@example.com"));
-  EXPECT_TRUE(ShouldShowNotificationAsPopup(random_system_notifier,
-                                            "test@example.com"));
-  EXPECT_TRUE(ShouldShowNotification(notifier_id, ""));
-  EXPECT_TRUE(ShouldShowNotification(ash_system_notifier, ""));
-  EXPECT_TRUE(ShouldShowNotification(random_system_notifier, ""));
-  EXPECT_TRUE(ShouldShowNotification(notifier_id, "test@example.com"));
-  EXPECT_TRUE(ShouldShowNotification(random_system_notifier,
-                                     "test@example.com"));
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id, u1));
+  EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id, u2));
+  EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id, u3));
+
+  // Create a new window in u2.
+  SwitchActiveUser(u2);
+  scoped_ptr<aura::Window> w2(CreateWindowForProfile(u2));
+  EXPECT_EQ(2, GetStateChangedCountAndReset());
+  EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id, u1));
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id, u2));
+  EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id, u3));
+
+  // Moves w2 to u1 desktop.
+  multi_user_window_manager->ShowWindowForUser(w2.get(), u1);
+  EXPECT_EQ(1, GetStateChangedCountAndReset());
+  EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id, u1));
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id, u2));
+  EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id, u3));
+
+  // Switch back to u1 desktop. Notification for u2 should be shown as a popup
+  // because w2 is visiting to u1.
+  SwitchActiveUser(u1);
+  EXPECT_EQ(2, GetStateChangedCountAndReset());
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id, u1));
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id, u2));
+  EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id, u3));
+
+  // Notifications for u2 is not shown in the center.
+  EXPECT_TRUE(ShouldShowNotification(notifier_id, u1));
+  EXPECT_FALSE(ShouldShowNotification(notifier_id, u2));
+  EXPECT_FALSE(ShouldShowNotification(notifier_id, u3));
+
+  // Moves w2 back.
+  multi_user_window_manager->ShowWindowForUser(w2.get(), u2);
+  EXPECT_EQ(1, GetStateChangedCountAndReset());
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id, u1));
+  EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id, u2));
+  EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id, u3));
+
+  // Close/remove the visiting window.
+  scoped_ptr<aura::Window> w22(CreateWindowForProfile(u2));
+  multi_user_window_manager->ShowWindowForUser(w22.get(), u1);
+  EXPECT_EQ(1, GetStateChangedCountAndReset());
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id, u1));
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id, u2));
+  EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id, u3));
+
+  w22.reset();
+  EXPECT_EQ(1, GetStateChangedCountAndReset());
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id, u1));
+  EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id, u2));
+  EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id, u3));
+
+  // Minimize the visiting window.
+  scoped_ptr<aura::Window> w23(CreateWindowForProfile(u2));
+  multi_user_window_manager->ShowWindowForUser(w23.get(), u1);
+  EXPECT_EQ(1, GetStateChangedCountAndReset());
+
+  ash::wm::GetWindowState(w23.get())->Minimize();
+  EXPECT_EQ(u2, multi_user_window_manager->GetUserPresentingWindow(w23.get()));
+  EXPECT_EQ(1, GetStateChangedCountAndReset());
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id, u1));
+  EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id, u2));
+  EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id, u3));
 }

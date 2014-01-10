@@ -324,6 +324,8 @@
         'browser/ui/ash/multi_user/multi_user_context_menu.cc',
         'browser/ui/ash/multi_user/multi_user_context_menu.h',
         'browser/ui/ash/multi_user/multi_user_context_menu_chromeos.cc',
+        'browser/ui/ash/multi_user/multi_user_notification_blocker_chromeos.cc',
+        'browser/ui/ash/multi_user/multi_user_notification_blocker_chromeos.h',
         'browser/ui/ash/multi_user/multi_user_util.cc',
         'browser/ui/ash/multi_user/multi_user_util.h',
         'browser/ui/ash/multi_user/multi_user_window_manager.cc',
