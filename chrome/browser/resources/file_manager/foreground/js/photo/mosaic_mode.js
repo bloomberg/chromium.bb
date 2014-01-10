@@ -9,13 +9,16 @@
  * @param {cr.ui.ArrayDataModel} dataModel Data model.
  * @param {cr.ui.ListSelectionModel} selectionModel Selection model.
  * @param {MetadataCache} metadataCache Metadata cache.
+ * @param {VolumeManagerWrapper} volumeManager Volume manager.
  * @param {function} toggleMode Function to switch to the Slide mode.
  * @constructor
  */
 function MosaicMode(
-    container, dataModel, selectionModel, metadataCache, toggleMode) {
+    container, dataModel, selectionModel, metadataCache, volumeManager,
+    toggleMode) {
   this.mosaic_ = new Mosaic(
-      container.ownerDocument, dataModel, selectionModel, metadataCache);
+      container.ownerDocument, dataModel, selectionModel, metadataCache,
+      volumeManager);
   container.appendChild(this.mosaic_);
 
   this.toggleMode_ = toggleMode;
@@ -73,12 +76,15 @@ MosaicMode.prototype.onKeyDown = function(event) {
  * @param {cr.ui.ArrayDataModel} dataModel Data model.
  * @param {cr.ui.ListSelectionModel} selectionModel Selection model.
  * @param {MetadataCache} metadataCache Metadata cache.
+ * @param {VolumeManagerWrapper} volumeManager Volume manager.
  * @return {Element} Mosaic element.
  * @constructor
  */
-function Mosaic(document, dataModel, selectionModel, metadataCache) {
+function Mosaic(document, dataModel, selectionModel, metadataCache,
+    volumeManager) {
   var self = document.createElement('div');
-  Mosaic.decorate(self, dataModel, selectionModel, metadataCache);
+  Mosaic.decorate(
+      self, dataModel, selectionModel, metadataCache, volumeManager);
   return self;
 }
 
@@ -109,14 +115,17 @@ Mosaic.ANIMATED_SCROLL_DURATION = 500;
  * @param {cr.ui.ArrayDataModel} dataModel Data model.
  * @param {cr.ui.ListSelectionModel} selectionModel Selection model.
  * @param {MetadataCache} metadataCache Metadata cache.
+ * @param {VolumeManagerWrapper} volumeManager Volume manager.
  */
-Mosaic.decorate = function(self, dataModel, selectionModel, metadataCache) {
+Mosaic.decorate = function(
+    self, dataModel, selectionModel, metadataCache, volumeManager) {
   self.__proto__ = Mosaic.prototype;
   self.className = 'mosaic';
 
   self.dataModel_ = dataModel;
   self.selectionModel_ = selectionModel;
   self.metadataCache_ = metadataCache;
+  self.volumeManager_ = volumeManager;
 
   // Initialization is completed lazily on the first call to |init|.
 };
@@ -135,8 +144,12 @@ Mosaic.prototype.init = function() {
       new Mosaic.SelectionController(this.selectionModel_, this.layoutModel_);
 
   this.tiles_ = [];
-  for (var i = 0; i !== this.dataModel_.length; i++)
-    this.tiles_.push(new Mosaic.Tile(this, this.dataModel_.item(i)));
+  for (var i = 0; i !== this.dataModel_.length; i++) {
+    var locationInfo =
+        this.volumeManager_.getLocationInfo(this.dataModel_.item(i).getEntry());
+    this.tiles_.push(
+        new Mosaic.Tile(this, this.dataModel_.item(i), locationInfo));
+  }
 
   this.selectionModel_.selectedIndexes.forEach(function(index) {
     this.tiles_[index].select(true);
@@ -1622,12 +1635,13 @@ Mosaic.Row.prototype.layout = function(left, top, width, height) {
  *
  * @param {Element} container Container element.
  * @param {Gallery.Item} item Gallery item associated with this tile.
+ * @param {EntryLocation} locationInfo Location information for the tile.
  * @return {Element} The new tile element.
  * @constructor
  */
-Mosaic.Tile = function(container, item) {
+Mosaic.Tile = function(container, item, locationInfo) {
   var self = container.ownerDocument.createElement('div');
-  Mosaic.Tile.decorate(self, container, item);
+  Mosaic.Tile.decorate(self, container, item, locationInfo);
   return self;
 };
 
@@ -1635,14 +1649,16 @@ Mosaic.Tile = function(container, item) {
  * @param {Element} self Self pointer.
  * @param {Element} container Container element.
  * @param {Gallery.Item} item Gallery item associated with this tile.
+ * @param {EntryLocation} locationInfo Location info for the tile image.
  */
-Mosaic.Tile.decorate = function(self, container, item) {
+Mosaic.Tile.decorate = function(self, container, item, locationInfo) {
   self.__proto__ = Mosaic.Tile.prototype;
   self.className = 'mosaic-tile';
 
   self.container_ = container;
   self.item_ = item;
   self.left_ = null; // Mark as not laid out.
+  self.hidpiEmbedded_ = locationInfo && locationInfo.isDriveBased;
 };
 
 /**
@@ -1777,21 +1793,18 @@ Mosaic.Tile.prototype.init = function(metadata, onImageMeasured) {
   var priority = this.getAttribute('selected') ? 2 : 3;
 
   // Use embedded thumbnails on Drive, since they have higher resolution.
-  // TODO(mtomasz): Use Entry instead of paths.
-  var hidpiEmbedded =
-      PathUtil.isDriveBasedPath(this.getItem().getEntry().fullPath);
   this.thumbnailLoader_ = new ThumbnailLoader(
       this.getItem().getEntry(),
       ThumbnailLoader.LoaderType.CANVAS,
       metadata,
       undefined,  // Media type.
-      hidpiEmbedded ? ThumbnailLoader.UseEmbedded.USE_EMBEDDED :
-                      ThumbnailLoader.UseEmbedded.NO_EMBEDDED,
+      this.hidpiEmbedded_ ? ThumbnailLoader.UseEmbedded.USE_EMBEDDED :
+                            ThumbnailLoader.UseEmbedded.NO_EMBEDDED,
       priority);
 
   // If no hidpi embedded thumbnail available, then use the low resolution
   // for preloading.
-  if (!hidpiEmbedded) {
+  if (!this.hidpiEmbedded_) {
     this.thumbnailPreloader_ = new ThumbnailLoader(
         this.getItem().getEntry(),
         ThumbnailLoader.LoaderType.CANVAS,

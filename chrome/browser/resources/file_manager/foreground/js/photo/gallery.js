@@ -219,6 +219,7 @@ Gallery.prototype.initDom_ = function() {
                                     this.dataModel_,
                                     this.selectionModel_,
                                     this.metadataCache_,
+                                    this.volumeManager_,
                                     this.toggleMode_.bind(this, null));
 
   this.slideMode_ = new SlideMode(this.container_,
