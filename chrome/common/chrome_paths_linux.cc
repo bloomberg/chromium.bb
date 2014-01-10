@@ -97,19 +97,6 @@ void GetUserCacheDirectory(const base::FilePath& profile_dir,
   *result = cache_dir;
 }
 
-bool GetChromeFrameUserDataDirectory(base::FilePath* result) {
-  scoped_ptr<base::Environment> env(base::Environment::Create());
-  base::FilePath config_dir(GetXDGDirectory(env.get(),
-                                      kXdgConfigHomeEnvVar,
-                                      kDotConfigDir));
-#if defined(GOOGLE_CHROME_BUILD)
-  *result = config_dir.Append("google-chrome-frame");
-#else
-  *result = config_dir.Append("chrome-frame");
-#endif
-  return true;
-}
-
 bool GetUserDocumentsDirectory(base::FilePath* result) {
   *result = GetXDGUserDirectory("DOCUMENTS", "Documents");
   return true;

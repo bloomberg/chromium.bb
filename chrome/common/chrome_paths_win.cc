@@ -51,16 +51,6 @@ bool GetDefaultUserDataDirectory(base::FilePath* result) {
   return true;
 }
 
-bool GetChromeFrameUserDataDirectory(base::FilePath* result) {
-  if (!PathService::Get(base::DIR_LOCAL_APP_DATA, result))
-    return false;
-  BrowserDistribution* dist = BrowserDistribution::GetSpecificDistribution(
-      BrowserDistribution::CHROME_FRAME);
-  *result = result->Append(dist->GetInstallSubDir());
-  *result = result->Append(chrome::kUserDataDirname);
-  return true;
-}
-
 void GetUserCacheDirectory(const base::FilePath& profile_dir,
                            base::FilePath* result) {
   // This function does more complicated things on Mac/Linux.

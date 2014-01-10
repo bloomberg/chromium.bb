@@ -27,11 +27,6 @@ namespace chrome {
 // DIR_USER_DATA has been overridden by a command-line option.
 bool GetDefaultUserDataDirectory(base::FilePath* result);
 
-// This returns the base directory in which Chrome Frame stores user profiles.
-// Note that this cannot be wrapped in a preprocessor define since
-// CF and Google Chrome want to share the same binaries.
-bool GetChromeFrameUserDataDirectory(base::FilePath* result);
-
 // Get the path to the user's cache directory.  This is normally the
 // same as the profile directory, but on Linux it can also be
 // $XDG_CACHE_HOME and on Mac it can be under ~/Library/Caches.
