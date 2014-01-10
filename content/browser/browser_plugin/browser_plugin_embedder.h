@@ -52,6 +52,9 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
       int y,
       const WebContents::GetRenderViewHostCallback& callback);
 
+  // Returns this embedder's WebContentsImpl.
+  WebContentsImpl* GetWebContents();
+
   // Called when embedder's |rwh| has sent screen rects to renderer.
   void DidSendScreenRects();
 
