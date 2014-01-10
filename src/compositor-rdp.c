@@ -27,6 +27,14 @@
 #include <errno.h>
 #include <linux/input.h>
 
+#if HAVE_FREERDP_VERSION_H
+#include <freerdp/version.h>
+#else
+/* assume it's a early 1.1 version */
+#define FREERDP_VERSION_MAJOR 1
+#define FREERDP_VERSION_MINOR 1
+#endif
+
 #include <freerdp/freerdp.h>
 #include <freerdp/listener.h>
 #include <freerdp/update.h>
@@ -571,7 +579,11 @@ rdp_peer_context_new(freerdp_peer* client, RdpPeerContext* context)
 	context->item.peer = client;
 	context->item.flags = RDP_PEER_OUTPUT_ENABLED;
 
+#if FREERDP_VERSION_MAJOR == 1 && FREERDP_VERSION_MINOR == 1
 	context->rfx_context = rfx_context_new();
+#else
+	context->rfx_context = rfx_context_new(TRUE);
+#endif
 	context->rfx_context->mode = RLGR3;
 	context->rfx_context->width = client->settings->DesktopWidth;
 	context->rfx_context->height = client->settings->DesktopHeight;
