@@ -29,7 +29,7 @@ class CustomSkBitmapDevice : public SkBitmapDevice {
   CustomSkBitmapDevice(const SkBitmap& bitmap) : SkBitmapDevice(bitmap) {}
   virtual ~CustomSkBitmapDevice() {}
 
-  void SetPixelRef(SkPixelRef* pixel_ref) { setPixelRef(pixel_ref, 0); }
+  void SetPixelRef(SkPixelRef* pixel_ref) { setPixelRef(pixel_ref); }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CustomSkBitmapDevice);
