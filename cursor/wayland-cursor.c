@@ -261,6 +261,11 @@ load_default_theme(struct wl_cursor_theme *theme)
 	theme->cursor_count = ARRAY_LENGTH(cursor_metadata);
 	theme->cursors = malloc(theme->cursor_count * sizeof(*theme->cursors));
 
+	if (theme->cursors == NULL) {
+		theme->cursor_count = 0;
+		return;
+	}
+
 	for (i = 0; i < theme->cursor_count; ++i) {
 		theme->cursors[i] =
 			wl_cursor_create_from_data(&cursor_metadata[i], theme);
@@ -295,6 +300,8 @@ wl_cursor_create_from_xcursor_images(XcursorImages *images,
 
 	for (i = 0; i < images->nimage; i++) {
 		image = malloc(sizeof *image);
+		if (image == NULL)
+			break;
 
 		image->theme = theme;
 		image->buffer = NULL;
@@ -349,7 +356,12 @@ load_callback(XcursorImages *images, void *data)
 			realloc(theme->cursors,
 				theme->cursor_count * sizeof theme->cursors[0]);
 
-		theme->cursors[theme->cursor_count - 1] = cursor;
+		if (theme->cursors == NULL) {
+			theme->cursor_count--;
+			free(cursor);
+		} else {
+			theme->cursors[theme->cursor_count - 1] = cursor;
+		}
 	}
 
 	XcursorImagesDestroy(images);
