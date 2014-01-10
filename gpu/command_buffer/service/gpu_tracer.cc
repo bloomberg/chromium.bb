@@ -69,11 +69,11 @@ class GPUTracerImpl
     : public GPUTracer,
       public base::SupportsWeakPtr<GPUTracerImpl> {
  public:
-  GPUTracerImpl()
-      : gpu_category_enabled_(
-        TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED("gpu")),
-        process_posted_(false) {
-  }
+  explicit GPUTracerImpl(gles2::GLES2Decoder* decoder)
+      : GPUTracer(decoder),
+        gpu_category_enabled_(
+            TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED("gpu")),
+        process_posted_(false) {}
   virtual ~GPUTracerImpl() {}
 
   // Implementation of gpu::gles2::GPUTracer
@@ -103,7 +103,7 @@ class GPUTracerImpl
 
 class GPUTracerARBTimerQuery : public GPUTracerImpl {
  public:
-  GPUTracerARBTimerQuery();
+  explicit GPUTracerARBTimerQuery(gles2::GLES2Decoder* decoder);
   virtual ~GPUTracerARBTimerQuery();
 
   // Implementation of GPUTracerImpl
@@ -204,6 +204,13 @@ bool GPUTracerImpl::End() {
 void GPUTracerImpl::Process() {
   process_posted_ = false;
 
+  // Make owning decoder's GL context current
+  if (!decoder_->MakeCurrent()) {
+    // Skip subsequent GL calls if MakeCurrent fails
+    traces_.clear();
+    return;
+  }
+
   while (!traces_.empty() && traces_.front()->IsAvailable()) {
     traces_.front()->Process();
     traces_.pop_front();
@@ -233,10 +240,8 @@ void GPUTracerImpl::IssueProcessTask() {
       base::TimeDelta::FromMilliseconds(kProcessInterval));
 }
 
-GPUTracerARBTimerQuery::GPUTracerARBTimerQuery()
-    : GPUTracerImpl(),
-      timer_offset_(0),
-      last_offset_check_(0) {
+GPUTracerARBTimerQuery::GPUTracerARBTimerQuery(gles2::GLES2Decoder* decoder)
+    : GPUTracerImpl(decoder), timer_offset_(0), last_offset_check_(0) {
   CalculateTimerOffset();
   outputter_ = TraceOutputter::Create("GL_ARB_timer_query");
 }
@@ -278,11 +283,15 @@ void GPUTracerARBTimerQuery::CalculateTimerOffset() {
   last_offset_check_ = system_now.ToInternalValue();
 }
 
-scoped_ptr<GPUTracer> GPUTracer::Create() {
+GPUTracer::GPUTracer(gles2::GLES2Decoder* decoder) : decoder_(decoder) {}
+
+GPUTracer::~GPUTracer() {}
+
+scoped_ptr<GPUTracer> GPUTracer::Create(gles2::GLES2Decoder* decoder) {
   if (gfx::g_driver_gl.ext.b_GL_ARB_timer_query) {
-    return scoped_ptr<GPUTracer>(new GPUTracerARBTimerQuery());
+    return scoped_ptr<GPUTracer>(new GPUTracerARBTimerQuery(decoder));
   }
-  return scoped_ptr<GPUTracer>(new GPUTracerImpl());
+  return scoped_ptr<GPUTracer>(new GPUTracerImpl(decoder));
 }
 
 }  // namespace gles2

@@ -2216,7 +2216,7 @@ bool GLES2DecoderImpl::Initialize(
   DCHECK(!context_.get());
 
   set_initialized();
-  gpu_tracer_ = GPUTracer::Create();
+  gpu_tracer_ = GPUTracer::Create(this);
   gpu_state_tracer_ = GPUStateTracer::Create(&state_);
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(

@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
+#include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/gpu_export.h"
 #include "ui/gl/gl_bindings.h"
 
@@ -21,10 +22,10 @@ namespace gles2 {
 // Traces GPU Commands.
 class GPUTracer {
  public:
-  static scoped_ptr<GPUTracer> Create();
+  static scoped_ptr<GPUTracer> Create(gles2::GLES2Decoder* decoder);
 
-  GPUTracer() {}
-  virtual ~GPUTracer() {}
+  explicit GPUTracer(gles2::GLES2Decoder* decoder);
+  virtual ~GPUTracer();
 
   // Begin a trace.
   virtual bool Begin(const std::string& name) = 0;
@@ -35,6 +36,8 @@ class GPUTracer {
   // Retrieve the name of the current open trace.
   // Returns empty string if no current open trace.
   virtual const std::string& CurrentName() const = 0;
+
+  gles2::GLES2Decoder* decoder_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GPUTracer);
