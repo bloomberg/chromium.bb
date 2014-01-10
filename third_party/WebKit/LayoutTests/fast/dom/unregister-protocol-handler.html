@@ -24,10 +24,11 @@ invalid_protocols.forEach(function (protocol) {
         window.navigator.unregisterProtocolHandler(protocol, "invalid protocol %s", "title");
     } catch (e) {
         succeeded = 'SecurityError' == e.name;
+        errorMessage = e.message;
     }
 
     if (succeeded)
-        debug('Pass: Invalid protocol "' + protocol + '" threw SecurityError exception.');
+        debug('Pass: Invalid protocol "' + protocol + '" threw SecurityError exception: "' + errorMessage + '".');
     else
         debug('Fail: Invalid protocol "' + protocol + '" allowed.');
 });
@@ -54,11 +55,12 @@ invalid_urls.forEach(function (url) {
    try {
         window.navigator.unregisterProtocolHandler('web+myprotocol', url, 'title');
     } catch (e) {
-        succeeded = 'SYNTAX_ERR' == e.name;
+        succeeded = 'SyntaxError' == e.name;
+        errorMessage = e.message;
     }
 
     if (succeeded)
-        debug('Pass: Invalid url "' + url + '" threw SYNTAX_ERR exception.');
+        debug('Pass: Invalid url "' + url + '" threw SyntaxError exception.' + errorMessage + '".');
     else
         debug('Fail: Invalid url "' + url + '" allowed.');
 });

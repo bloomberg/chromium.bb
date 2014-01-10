@@ -1,10 +1,10 @@
 This test makes sure that navigator.unregisterProtocolHandler throws the proper exceptions and has no-op default implementation.
 
 Pass: window.navigator.unregisterProtocolHandler is defined.
-Pass: Invalid protocol "http" threw SecurityError exception.
-Pass: Invalid protocol "https" threw SecurityError exception.
-Pass: Invalid protocol "file" threw SecurityError exception.
-Pass: Invalid protocol "web+" threw SecurityError exception.
+Pass: Invalid protocol "http" threw SecurityError exception: "Failed to execute 'unregisterProtocolHandler' on 'Navigator': The scheme 'http' doesn't belong to the protocol whitelist. Please prefix non-whitelisted schemes with the string 'web+'.".
+Pass: Invalid protocol "https" threw SecurityError exception: "Failed to execute 'unregisterProtocolHandler' on 'Navigator': The scheme 'https' doesn't belong to the protocol whitelist. Please prefix non-whitelisted schemes with the string 'web+'.".
+Pass: Invalid protocol "file" threw SecurityError exception: "Failed to execute 'unregisterProtocolHandler' on 'Navigator': The scheme 'file' doesn't belong to the protocol whitelist. Please prefix non-whitelisted schemes with the string 'web+'.".
+Pass: Invalid protocol "web+" threw SecurityError exception: "Failed to execute 'unregisterProtocolHandler' on 'Navigator': The scheme 'web+' is less than five characters long.".
 Pass: Valid protocol "bitcoin" allowed.
 Pass: Valid protocol "geo" allowed.
 Pass: Valid protocol "im" allowed.
@@ -24,7 +24,7 @@ Pass: Valid protocol "urn" allowed.
 Pass: Valid protocol "webcal" allowed.
 Pass: Valid protocol "wtai" allowed.
 Pass: Valid protocol "xmpp" allowed.
-Fail: Invalid url "" allowed.
-Fail: Invalid url "%S" allowed.
+Pass: Invalid url "" threw SyntaxError exception.Failed to execute 'unregisterProtocolHandler' on 'Navigator': The url provided ('') does not contain '%s'.".
+Pass: Invalid url "%S" threw SyntaxError exception.Failed to execute 'unregisterProtocolHandler' on 'Navigator': The url provided ('%S') does not contain '%s'.".
 Pass: Valid call succeeded.
 
