@@ -41,8 +41,8 @@ class Host(cr.Plugin, cr.Plugin.Type):
         return host
 
   def _Execute(self, context, command,
-               shell=False, capture=False, ignore_dry_run=False,
-               return_status=False):
+               shell=False, capture=False, silent=False,
+               ignore_dry_run=False, return_status=False):
     """This is the only method that launches external programs.
 
     It is a thin wrapper around subprocess.Popen that handles cr specific
@@ -78,6 +78,8 @@ class Host(cr.Plugin, cr.Plugin.Type):
       out = None
       if capture:
         out = subprocess.PIPE
+      elif silent:
+        out = open(os.devnull, "w")
       try:
         p = subprocess.Popen(
             command, shell=shell,
@@ -97,6 +99,9 @@ class Host(cr.Plugin, cr.Plugin.Type):
         p.terminate()
         p.wait()
         exit(1)
+      finally:
+        if silent:
+          out.close()
       if return_status:
         return p.returncode
       if p.returncode != 0:
@@ -113,6 +118,10 @@ class Host(cr.Plugin, cr.Plugin.Type):
   @cr.Plugin.activemethod
   def Execute(self, context, *command):
     return self._Execute(context, command, shell=False)
+
+  @cr.Plugin.activemethod
+  def ExecuteSilently(self, context, *command):
+    return self._Execute(context, command, shell=False, silent=True)
 
   @cr.Plugin.activemethod
   def CaptureShell(self, context, *command):
