@@ -33,6 +33,11 @@
     },
   },
   'variables': {
+    # Make sure asm_sources is always defined even if an arch doesn't have any
+    # asm sources (e.g. mips or x86 with forcefully disabled asm).
+    'asm_sources': [
+    ],
+
     # Allow overriding the selection of which FFmpeg binaries to copy via an
     # environment variable.  Affects the ffmpeg_binaries target.
     'conditions': [
@@ -41,10 +46,6 @@
         'ffmpeg_config%': 'arm-neon',
       }, {
         'ffmpeg_config%': '<(target_arch)',
-      }],
-      ['target_arch == "mipsel"', {
-        'asm_sources': [
-        ],
       }],
       ['OS == "win" and (MSVS_VERSION == "2013" or MSVS_VERSION == "2013e")', {
         'os_config%': 'win-vs2013',

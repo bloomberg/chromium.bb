@@ -75,7 +75,7 @@ LIBAVFORMAT_VERSION_MAJOR=55
 LIBAVUTIL_VERSION_MAJOR=52
 
 case $(uname -sm) in
-  Linux\ i386)
+  Linux\ i?86)
     HOST_OS=linux
     HOST_ARCH=ia32
     JOBS=$(grep processor /proc/cpuinfo | wc -l)
@@ -83,6 +83,11 @@ case $(uname -sm) in
   Linux\ x86_64)
     HOST_OS=linux
     HOST_ARCH=x64
+    JOBS=$(grep processor /proc/cpuinfo | wc -l)
+    ;;
+  Linux\ arm*)
+    HOST_OS=linux
+    HOST_ARCH=arm
     JOBS=$(grep processor /proc/cpuinfo | wc -l)
     ;;
   Darwin\ i386)
@@ -116,14 +121,6 @@ echo "TARGET_ARCH = $TARGET_ARCH"
 echo "JOBS        = $JOBS"
 echo "LD          = $(ld --version | head -n1)"
 echo
-
-# As of this writing gold 2.20.1-system.20100303 is unable to link FFmpeg.
-if ld --version | grep -q gold; then
-  echo "gold is unable to link FFmpeg"
-  echo
-  echo "Switch /usr/bin/ld to the regular binutils ld and try again"
-  exit 1
-fi
 
 # We want to use a sufficiently recent version of yasm on Windows.
 if [[ "$TARGET_OS" == "win" || "$TARGET_OS" == "win-vs2013" ]]; then
@@ -292,14 +289,16 @@ if [ "$TARGET_OS" = "linux" ]; then
     add_flag_common --extra-cflags=-m32
     add_flag_common --extra-ldflags=-m32
   elif [ "$TARGET_ARCH" = "arm" ]; then
-    # This if-statement essentially is for chroot tegra2.
-    add_flag_common --enable-cross-compile
+    if [ "$HOST_ARCH" != "arm" ]; then
+      # This if-statement essentially is for chroot tegra2.
+      add_flag_common --enable-cross-compile
 
-    # Location is for CrOS chroot. If you want to use this, enter chroot
-    # and copy ffmpeg to a location that is reachable.
-    add_flag_common --cross-prefix=/usr/bin/armv7a-cros-linux-gnueabi-
-    add_flag_common --target-os=linux
-    add_flag_common --arch=arm
+      # Location is for CrOS chroot. If you want to use this, enter chroot
+      # and copy ffmpeg to a location that is reachable.
+      add_flag_common --cross-prefix=/usr/bin/armv7a-cros-linux-gnueabi-
+      add_flag_common --target-os=linux
+      add_flag_common --arch=arm
+    fi
 
     # TODO(ihf): ARM compile flags are tricky. The final options
     # overriding everything live in chroot /build/*/etc/make.conf
@@ -322,11 +321,13 @@ if [ "$TARGET_OS" = "linux" ]; then
     # NOTE: softfp/hardfp selected at gyp time.
     add_flag_common --extra-cflags=-mfloat-abi=hard
   elif [ "$TARGET_ARCH" = "arm-neon" ]; then
-    # This if-statement is for chroot arm-generic.
-    add_flag_common --enable-cross-compile
-    add_flag_common --cross-prefix=/usr/bin/armv7a-cros-linux-gnueabi-
-    add_flag_common --target-os=linux
-    add_flag_common --arch=arm
+    if [ "$HOST_ARCH" != "arm" ]; then
+      # This if-statement is for chroot arm-generic.
+      add_flag_common --enable-cross-compile
+      add_flag_common --cross-prefix=/usr/bin/armv7a-cros-linux-gnueabi-
+      add_flag_common --target-os=linux
+      add_flag_common --arch=arm
+    fi
     add_flag_common --enable-armv6
     add_flag_common --enable-armv6t2
     add_flag_common --enable-vfp
