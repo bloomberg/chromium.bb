@@ -32,8 +32,8 @@
 #include "core/dom/custom/CustomElementCallbackDispatcher.h"
 
 #include "core/dom/custom/CustomElementCallbackQueue.h"
-#include "core/dom/custom/CustomElementCallbackScheduler.h"
 #include "core/dom/custom/CustomElementPendingImport.h"
+#include "core/dom/custom/CustomElementScheduler.h"
 #include "core/html/HTMLImport.h"
 #include "wtf/MainThread.h"
 
@@ -58,7 +58,7 @@ bool CustomElementCallbackDispatcher::dispatch()
 
     bool didWork = m_baseElementQueue.dispatch(baseElementQueue());
     if (m_baseElementQueue.isEmpty())
-        CustomElementCallbackScheduler::clearElementCallbackQueueMap();
+        CustomElementScheduler::clearElementCallbackQueueMap();
     return didWork;
 }
 
@@ -90,7 +90,7 @@ void CustomElementCallbackDispatcher::processElementQueueAndPop(size_t start, si
     s_elementQueueEnd = start;
 
     if (start == kNumSentinels && m_baseElementQueue.isEmpty())
-        CustomElementCallbackScheduler::clearElementCallbackQueueMap();
+        CustomElementScheduler::clearElementCallbackQueueMap();
 }
 
 inline CustomElementBaseElementQueue& CustomElementCallbackDispatcher::queueFor(CustomElementCallbackQueue* callbackQueue)

@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/dom/custom/CustomElementCallbackScheduler.h"
+#include "core/dom/custom/CustomElementScheduler.h"
 
 #include "core/dom/Element.h"
 #include "core/dom/custom/CustomElementCallbackDispatcher.h"
@@ -41,7 +41,7 @@
 
 namespace WebCore {
 
-void CustomElementCallbackScheduler::scheduleAttributeChangedCallback(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue)
+void CustomElementScheduler::scheduleAttributeChangedCallback(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue)
 {
     if (!callbacks->hasAttributeChangedCallback())
         return;
@@ -50,7 +50,7 @@ void CustomElementCallbackScheduler::scheduleAttributeChangedCallback(PassRefPtr
     queue->append(CustomElementCallbackInvocation::createAttributeChangedInvocation(callbacks, name, oldValue, newValue));
 }
 
-void CustomElementCallbackScheduler::scheduleAttachedCallback(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element)
+void CustomElementScheduler::scheduleAttachedCallback(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element)
 {
     if (!callbacks->hasAttachedCallback())
         return;
@@ -59,7 +59,7 @@ void CustomElementCallbackScheduler::scheduleAttachedCallback(PassRefPtr<CustomE
     queue->append(CustomElementCallbackInvocation::createInvocation(callbacks, CustomElementLifecycleCallbacks::Attached));
 }
 
-void CustomElementCallbackScheduler::scheduleDetachedCallback(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element)
+void CustomElementScheduler::scheduleDetachedCallback(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element)
 {
     if (!callbacks->hasDetachedCallback())
         return;
@@ -68,20 +68,20 @@ void CustomElementCallbackScheduler::scheduleDetachedCallback(PassRefPtr<CustomE
     queue->append(CustomElementCallbackInvocation::createInvocation(callbacks, CustomElementLifecycleCallbacks::Detached));
 }
 
-void CustomElementCallbackScheduler::scheduleResolutionStep(const CustomElementDescriptor& descriptor, PassRefPtr<Element> element)
+void CustomElementScheduler::scheduleResolutionStep(const CustomElementDescriptor& descriptor, PassRefPtr<Element> element)
 {
     RefPtr<CustomElementRegistrationContext> context = element->document().registrationContext();
     CustomElementCallbackQueue* queue = instance().schedule(element);
     queue->append(CustomElementResolutionStep::create(context.release(), descriptor));
 }
 
-CustomElementCallbackScheduler& CustomElementCallbackScheduler::instance()
+CustomElementScheduler& CustomElementScheduler::instance()
 {
-    DEFINE_STATIC_LOCAL(CustomElementCallbackScheduler, instance, ());
+    DEFINE_STATIC_LOCAL(CustomElementScheduler, instance, ());
     return instance;
 }
 
-CustomElementCallbackQueue* CustomElementCallbackScheduler::ensureCallbackQueue(PassRefPtr<Element> element)
+CustomElementCallbackQueue* CustomElementScheduler::ensureCallbackQueue(PassRefPtr<Element> element)
 {
     Element* key = element.get();
     ElementCallbackQueueMap::iterator it = m_elementCallbackQueueMap.find(key);
@@ -90,18 +90,18 @@ CustomElementCallbackQueue* CustomElementCallbackScheduler::ensureCallbackQueue(
     return it->value.get();
 }
 
-void CustomElementCallbackScheduler::clearElementCallbackQueueMap()
+void CustomElementScheduler::clearElementCallbackQueueMap()
 {
     ElementCallbackQueueMap emptyMap;
     instance().m_elementCallbackQueueMap.swap(emptyMap);
 }
 
-void CustomElementCallbackScheduler::appendPendingImport(CustomElementPendingImport* pendingImport)
+void CustomElementScheduler::appendPendingImport(CustomElementPendingImport* pendingImport)
 {
     CustomElementCallbackDispatcher::instance().enqueue(pendingImport);
 }
 
-void CustomElementCallbackScheduler::removePendingImport(PassOwnPtr<CustomElementPendingImport> pendingImport)
+void CustomElementScheduler::removePendingImport(PassOwnPtr<CustomElementPendingImport> pendingImport)
 {
     CustomElementCallbackDispatcher::instance().removeAndDeleteLater(pendingImport);
 }
@@ -110,7 +110,7 @@ void CustomElementCallbackScheduler::removePendingImport(PassOwnPtr<CustomElemen
 // createdCallback has not finished running, the callback queue is not
 // moved to the top-of-stack. Otherwise like
 // scheduleInCurrentElementQueue.
-CustomElementCallbackQueue* CustomElementCallbackScheduler::schedule(PassRefPtr<Element> element)
+CustomElementCallbackQueue* CustomElementScheduler::schedule(PassRefPtr<Element> element)
 {
     CustomElementCallbackQueue* callbackQueue = ensureCallbackQueue(element);
     if (!callbackQueue->inCreatedCallback())
@@ -123,7 +123,7 @@ CustomElementCallbackQueue* CustomElementCallbackScheduler::schedule(PassRefPtr<
 // its owner is set to the element queue on the top of the processing
 // stack. Because callback queues are processed exhaustively, this
 // effectively moves the callback queue to the top of the stack.
-CustomElementCallbackQueue* CustomElementCallbackScheduler::scheduleInCurrentElementQueue(PassRefPtr<Element> element)
+CustomElementCallbackQueue* CustomElementScheduler::scheduleInCurrentElementQueue(PassRefPtr<Element> element)
 {
     CustomElementCallbackQueue* callbackQueue = ensureCallbackQueue(element);
     CustomElementCallbackDispatcher::instance().enqueue(callbackQueue);

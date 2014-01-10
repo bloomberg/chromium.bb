@@ -38,9 +38,8 @@
 namespace WebCore {
 
 class CustomElementCallbackQueue;
-class CustomElementCallbackScheduler;
 class CustomElementPendingImport;
-
+class CustomElementScheduler;
 
 class CustomElementCallbackDispatcher {
     WTF_MAKE_NONCOPYABLE(CustomElementCallbackDispatcher);
@@ -73,7 +72,7 @@ public:
     bool dispatch();
 
 protected:
-    friend class CustomElementCallbackScheduler;
+    friend class CustomElementScheduler;
     void enqueue(CustomElementCallbackQueue*);
     void enqueue(CustomElementPendingImport*);
     void removeAndDeleteLater(PassOwnPtr<CustomElementPendingImport>);

@@ -36,9 +36,9 @@
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/Element.h"
 #include "core/dom/custom/CustomElement.h"
-#include "core/dom/custom/CustomElementCallbackScheduler.h"
 #include "core/dom/custom/CustomElementDefinition.h"
 #include "core/dom/custom/CustomElementPendingImport.h"
+#include "core/dom/custom/CustomElementScheduler.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLUnknownElement.h"
 #include "core/svg/SVGUnknownElement.h"
@@ -95,7 +95,7 @@ void CustomElementRegistrationContext::scheduleResolution(Element* element, cons
 
     CustomElementDescriptor descriptor(type, element->namespaceURI(), element->localName());
     ASSERT(element->customElementState() == Element::WaitingForUpgrade);
-    CustomElementCallbackScheduler::scheduleResolutionStep(descriptor, element);
+    CustomElementScheduler::scheduleResolutionStep(descriptor, element);
 }
 
 void CustomElementRegistrationContext::resolve(Element* element, const CustomElementDescriptor& descriptor)
@@ -147,12 +147,12 @@ void CustomElementRegistrationContext::setTypeExtension(Element* element, const 
 
 void CustomElementRegistrationContext::didStartLoadingImport(CustomElementPendingImport* pendingImport)
 {
-    CustomElementCallbackScheduler::appendPendingImport(pendingImport);
+    CustomElementScheduler::appendPendingImport(pendingImport);
 }
 
 void CustomElementRegistrationContext::didFinishLoadingImport(PassOwnPtr<CustomElementPendingImport> pendingImport)
 {
-    CustomElementCallbackScheduler::removePendingImport(pendingImport);
+    CustomElementScheduler::removePendingImport(pendingImport);
 }
 
 } // namespace WebCore

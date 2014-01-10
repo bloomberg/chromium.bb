@@ -36,8 +36,8 @@
 #include "RuntimeEnabledFeatures.h"
 #include "SVGNames.h"
 #include "core/dom/Element.h"
-#include "core/dom/custom/CustomElementCallbackScheduler.h"
 #include "core/dom/custom/CustomElementObserver.h"
+#include "core/dom/custom/CustomElementScheduler.h"
 
 namespace WebCore {
 
@@ -102,7 +102,10 @@ void CustomElement::define(Element* element, PassRefPtr<CustomElementDefinition>
     case Element::WaitingForUpgrade:
         definitions().add(element, definition);
         if (element->inDocument() && element->document().domWindow())
-            CustomElementCallbackScheduler::scheduleAttachedCallback(definition->callbacks(), element);
+            CustomElementScheduler::scheduleAttachedCallback(definition->callbacks(), element);
+        // FIXME: Push this through the callback scheduler. That
+        // design makes resolve and define robust to being called
+        // during other operations.
         definition->callbacks()->created(element);
         break;
     }
@@ -118,7 +121,7 @@ CustomElementDefinition* CustomElement::definitionFor(Element* element)
 void CustomElement::attributeDidChange(Element* element, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue)
 {
     ASSERT(element->customElementState() == Element::Upgraded);
-    CustomElementCallbackScheduler::scheduleAttributeChangedCallback(definitionFor(element)->callbacks(), element, name, oldValue, newValue);
+    CustomElementScheduler::scheduleAttributeChangedCallback(definitionFor(element)->callbacks(), element, name, oldValue, newValue);
 }
 
 void CustomElement::didEnterDocument(Element* element, const Document& document)
@@ -126,7 +129,7 @@ void CustomElement::didEnterDocument(Element* element, const Document& document)
     ASSERT(element->customElementState() == Element::Upgraded);
     if (!document.domWindow())
         return;
-    CustomElementCallbackScheduler::scheduleAttachedCallback(definitionFor(element)->callbacks(), element);
+    CustomElementScheduler::scheduleAttachedCallback(definitionFor(element)->callbacks(), element);
 }
 
 void CustomElement::didLeaveDocument(Element* element, const Document& document)
@@ -134,7 +137,7 @@ void CustomElement::didLeaveDocument(Element* element, const Document& document)
     ASSERT(element->customElementState() == Element::Upgraded);
     if (!document.domWindow())
         return;
-    CustomElementCallbackScheduler::scheduleDetachedCallback(definitionFor(element)->callbacks(), element);
+    CustomElementScheduler::scheduleDetachedCallback(definitionFor(element)->callbacks(), element);
 }
 
 void CustomElement::wasDestroyed(Element* element)

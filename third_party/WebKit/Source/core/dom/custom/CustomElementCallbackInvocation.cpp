@@ -32,7 +32,7 @@
 #include "core/dom/custom/CustomElementCallbackInvocation.h"
 
 #include "core/dom/Element.h"
-#include "core/dom/custom/CustomElementCallbackScheduler.h"
+#include "core/dom/custom/CustomElementScheduler.h"
 
 namespace WebCore {
 

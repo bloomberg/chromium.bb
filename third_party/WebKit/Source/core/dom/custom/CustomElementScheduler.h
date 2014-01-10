@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CustomElementCallbackScheduler_h
-#define CustomElementCallbackScheduler_h
+#ifndef CustomElementScheduler_h
+#define CustomElementScheduler_h
 
 #include "core/dom/custom/CustomElementCallbackQueue.h"
 #include "wtf/HashMap.h"
@@ -45,7 +45,7 @@ class CustomElementLifecycleCallbacks;
 class CustomElementPendingImport;
 class Element;
 
-class CustomElementCallbackScheduler {
+class CustomElementScheduler {
 public:
     static void scheduleAttributeChangedCallback(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue);
     static void scheduleAttachedCallback(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>);
@@ -59,9 +59,9 @@ protected:
     static void clearElementCallbackQueueMap();
 
 private:
-    CustomElementCallbackScheduler() { }
+    CustomElementScheduler() { }
 
-    static CustomElementCallbackScheduler& instance();
+    static CustomElementScheduler& instance();
 
     CustomElementCallbackQueue* ensureCallbackQueue(PassRefPtr<Element>);
     CustomElementCallbackQueue* schedule(PassRefPtr<Element>);
@@ -73,4 +73,4 @@ private:
 
 }
 
-#endif // CustomElementCallbackScheduler_h
+#endif // CustomElementScheduler_h
