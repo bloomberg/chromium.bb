@@ -47,7 +47,7 @@
         '../net/net.gyp:net_resources',
         '../skia/skia.gyp:skia',
         '../third_party/WebKit/public/blink.gyp:blink',
-        '../third_party/WebKit/public/blink_test_runner.gyp:blink_test_runner_resources',
+        '../third_party/WebKit/public/blink_test_plugin.gyp:blink_test_plugin',
         '../third_party/WebKit/public/blink_test_runner.gyp:blink_test_support',
         '../ui/events/events.gyp:events_base',
         '../ui/gfx/gfx.gyp:gfx',
@@ -286,9 +286,17 @@
             '../build/linux/system.gyp:fontconfig',
           ],
         }],
+        ['use_x11 == 1', {
+          'dependencies': [
+            '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
+          ],
+        }],
         ['OS=="android"', {
           'dependencies': [
             'content_shell_jni_headers',
+          ],
+          'dependencies!': [
+            '../third_party/WebKit/public/blink_test_plugin.gyp:blink_test_plugin',
           ],
         }, {  # else: OS!="android"
           'dependencies': [
@@ -340,6 +348,12 @@
             ['exclude', 'shell/browser/shell_views.cc'],
           ],
         }],  # use_aura==1
+        # The test plugin relies on X11.
+        ['OS=="linux" and use_x11==0', {
+          'dependencies!': [
+            '../third_party/WebKit/public/blink_test_plugin.gyp:blink_test_plugin',
+          ],
+        }],
         ['chromeos==1', {
           'dependencies': [
             '../chromeos/chromeos.gyp:chromeos',
@@ -376,6 +390,42 @@
             '<(SHARED_INTERMEDIATE_DIR)/content/shell_resources.pak'
           ],
         },
+      ],
+      'conditions': [
+        ['OS=="win"', {
+          'copies': [{
+            'destination': '<(PRODUCT_DIR)',
+            'files': ['shell/renderer/test_runner/resources/fonts/AHEM____.TTF'],
+          }],
+        }],
+        ['OS=="mac"', {
+          'all_dependent_settings': {
+            'mac_bundle_resources': [
+              'shell/renderer/test_runner/resources/fonts/AHEM____.TTF',
+              '<(SHARED_INTERMEDIATE_DIR)/webkit/missingImage.png',
+              '<(SHARED_INTERMEDIATE_DIR)/webkit/textAreaResizeCorner.png',
+            ],
+          },
+        }],
+        ['use_x11 == 1', {
+          'copies': [{
+            'destination': '<(PRODUCT_DIR)',
+            'files': [
+              'shell/renderer/test_runner/resources/fonts/AHEM____.TTF',
+              'shell/renderer/test_runner/resources/fonts/fonts.conf',
+            ]
+          }],
+        }],
+        ['OS=="android"', {
+          'copies': [{
+            'destination': '<(PRODUCT_DIR)',
+            'files': [
+              'shell/renderer/test_runner/resources/fonts/AHEM____.TTF',
+              'shell/renderer/test_runner/resources/fonts/android_main_fonts.xml',
+              'shell/renderer/test_runner/resources/fonts/android_fallback_fonts.xml',
+            ]
+          }],
+        }],
       ],
     },
     {
