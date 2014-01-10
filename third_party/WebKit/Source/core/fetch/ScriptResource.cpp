@@ -72,7 +72,7 @@ const String& ScriptResource::script()
 
     if (!m_script && m_data) {
         String script = m_decoder->decode(m_data->data(), encodedSize());
-        script.append(m_decoder->flush());
+        script = script + m_decoder->flush();
         m_data.clear();
         // We lie a it here and claim that script counts as encoded data (even though it's really decoded data).
         // That's because the MemoryCache thinks that it can clear out decoded data by calling destroyDecodedData(),

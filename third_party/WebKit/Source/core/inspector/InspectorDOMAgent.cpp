@@ -1457,10 +1457,8 @@ PassRefPtr<TypeBuilder::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node* n
     case Node::COMMENT_NODE:
     case Node::CDATA_SECTION_NODE:
         nodeValue = node->nodeValue();
-        if (nodeValue.length() > maxTextSize) {
-            nodeValue = nodeValue.left(maxTextSize);
-            nodeValue.append(ellipsisUChar);
-        }
+        if (nodeValue.length() > maxTextSize)
+            nodeValue = nodeValue.left(maxTextSize) + ellipsisUChar;
         break;
     case Node::ATTRIBUTE_NODE:
         localName = node->localName();

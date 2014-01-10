@@ -68,8 +68,7 @@ void WorkerThreadableLoader::loadResourceSynchronously(WorkerGlobalScope* worker
     WorkerRunLoop& runLoop = workerGlobalScope->thread()->runLoop();
 
     // Create a unique mode just for this synchronous resource load.
-    String mode = loadResourceSynchronouslyMode;
-    mode.append(String::number(runLoop.createUniqueId()));
+    String mode = loadResourceSynchronouslyMode + String::number(runLoop.createUniqueId());
 
     RefPtr<WorkerThreadableLoader> loader = WorkerThreadableLoader::create(workerGlobalScope, &client, mode, request, options);
     MessageQueueWaitResult result = MessageQueueMessageReceived;

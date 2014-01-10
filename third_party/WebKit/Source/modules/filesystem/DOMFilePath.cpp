@@ -33,6 +33,7 @@
 
 #include "wtf/Vector.h"
 #include "wtf/text/CString.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 
@@ -46,11 +47,8 @@ String DOMFilePath::append(const String& base, const String& components)
 
 String DOMFilePath::ensureDirectoryPath(const String& path)
 {
-    if (!DOMFilePath::endsWithSeparator(path)) {
-        String newPath = path;
-        newPath.append(DOMFilePath::separator);
-        return newPath;
-    }
+    if (!DOMFilePath::endsWithSeparator(path))
+        return path + DOMFilePath::separator;
     return path;
 }
 
@@ -103,12 +101,12 @@ String DOMFilePath::removeExtraParentReferences(const String& path)
     }
     if (canonicalized.isEmpty())
         return DOMFilePath::root;
-    String result;
+    StringBuilder result;
     for (size_t i = 0; i < canonicalized.size(); ++i) {
         result.append(DOMFilePath::separator);
         result.append(canonicalized[i]);
     }
-    return result;
+    return result.toString();
 }
 
 bool DOMFilePath::isValidPath(const String& path)

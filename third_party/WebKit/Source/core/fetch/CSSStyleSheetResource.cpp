@@ -89,7 +89,7 @@ const String CSSStyleSheetResource::sheetText(bool enforceMIMEType, bool* hasVal
 
     // Don't cache the decoded text, regenerating is cheap and it can use quite a bit of memory
     String sheetText = m_decoder->decode(m_data->data(), m_data->size());
-    sheetText.append(m_decoder->flush());
+    sheetText = sheetText + m_decoder->flush();
     return sheetText;
 }
 

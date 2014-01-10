@@ -70,7 +70,7 @@ void XSLStyleSheetResource::checkNotify()
 {
     if (m_data.get()) {
         m_sheet = m_decoder->decode(m_data->data(), encodedSize());
-        m_sheet.append(m_decoder->flush());
+        m_sheet = m_sheet + m_decoder->flush();
     }
 
     ResourceClientWalker<StyleSheetResourceClient> w(m_clients);
