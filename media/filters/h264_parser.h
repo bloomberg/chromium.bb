@@ -1,25 +1,25 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
 // This file contains an implementation of an H264 Annex-B video stream parser.
 
-#ifndef CONTENT_COMMON_GPU_MEDIA_H264_PARSER_H_
-#define CONTENT_COMMON_GPU_MEDIA_H264_PARSER_H_
+#ifndef MEDIA_FILTERS_H264_PARSER_H_
+#define MEDIA_FILTERS_H264_PARSER_H_
 
 #include <sys/types.h>
 
 #include <map>
 
 #include "base/basictypes.h"
-#include "content/common/content_export.h"
-#include "content/common/gpu/media/h264_bit_reader.h"
+#include "media/base/media_export.h"
+#include "media/filters/h264_bit_reader.h"
 
-namespace content {
+namespace media {
 
 // For explanations of each struct and its members, see H.264 specification
 // at http://www.itu.int/rec/T-REC-H.264.
-struct CONTENT_EXPORT H264NALU {
+struct MEDIA_EXPORT H264NALU {
   H264NALU();
 
   enum Type {
@@ -43,9 +43,12 @@ struct CONTENT_EXPORT H264NALU {
   int nal_unit_type;
 };
 
-enum { kH264ScalingList4x4Length = 16, kH264ScalingList8x8Length = 64, };
+enum {
+  kH264ScalingList4x4Length = 16,
+  kH264ScalingList8x8Length = 64,
+};
 
-struct CONTENT_EXPORT H264SPS {
+struct MEDIA_EXPORT H264SPS {
   H264SPS();
 
   int profile_idc;
@@ -70,7 +73,7 @@ struct CONTENT_EXPORT H264SPS {
   int offset_for_non_ref_pic;
   int offset_for_top_to_bottom_field;
   int num_ref_frames_in_pic_order_cnt_cycle;
-  int expected_delta_per_pic_order_cnt_cycle; // calculated
+  int expected_delta_per_pic_order_cnt_cycle;  // calculated
   int offset_for_ref_frame[255];
   int max_num_ref_frames;
   bool gaps_in_frame_num_value_allowed_flag;
@@ -88,7 +91,7 @@ struct CONTENT_EXPORT H264SPS {
   int chroma_array_type;
 };
 
-struct CONTENT_EXPORT H264PPS {
+struct MEDIA_EXPORT H264PPS {
   H264PPS();
 
   int pic_parameter_set_id;
@@ -116,7 +119,7 @@ struct CONTENT_EXPORT H264PPS {
   int second_chroma_qp_index_offset;
 };
 
-struct CONTENT_EXPORT H264ModificationOfPicNum {
+struct MEDIA_EXPORT H264ModificationOfPicNum {
   int modification_of_pic_nums_idc;
   union {
     int abs_diff_pic_num_minus1;
@@ -124,7 +127,7 @@ struct CONTENT_EXPORT H264ModificationOfPicNum {
   };
 };
 
-struct CONTENT_EXPORT H264WeightingFactors {
+struct MEDIA_EXPORT H264WeightingFactors {
   bool luma_weight_flag;
   bool chroma_weight_flag;
   int luma_weight[32];
@@ -133,7 +136,7 @@ struct CONTENT_EXPORT H264WeightingFactors {
   int chroma_offset[32][2];
 };
 
-struct CONTENT_EXPORT H264DecRefPicMarking {
+struct MEDIA_EXPORT H264DecRefPicMarking {
   int memory_mgmnt_control_operation;
   int difference_of_pic_nums_minus1;
   int long_term_pic_num;
@@ -141,7 +144,7 @@ struct CONTENT_EXPORT H264DecRefPicMarking {
   int max_long_term_frame_idx_plus1;
 };
 
-struct CONTENT_EXPORT H264SliceHeader {
+struct MEDIA_EXPORT H264SliceHeader {
   H264SliceHeader();
 
   enum {
@@ -163,11 +166,11 @@ struct CONTENT_EXPORT H264SliceHeader {
   bool IsSPSlice() const;
   bool IsSISlice() const;
 
-  bool idr_pic_flag;  // from NAL header
-  int nal_ref_idc;  // from NAL header
+  bool idr_pic_flag;       // from NAL header
+  int nal_ref_idc;         // from NAL header
   const uint8* nalu_data;  // from NAL header
-  off_t nalu_size;  // from NAL header
-  off_t header_bit_size;  // calculated
+  off_t nalu_size;         // from NAL header
+  off_t header_bit_size;   // calculated
 
   int first_mb_in_slice;
   int slice_type;
@@ -224,7 +227,7 @@ struct H264SEIRecoveryPoint {
   int changing_slice_group_idc;
 };
 
-struct CONTENT_EXPORT H264SEIMessage {
+struct MEDIA_EXPORT H264SEIMessage {
   H264SEIMessage();
 
   enum Type {
@@ -242,13 +245,13 @@ struct CONTENT_EXPORT H264SEIMessage {
 
 // Class to parse an Annex-B H.264 stream,
 // as specified in chapters 7 and Annex B of the H.264 spec.
-class CONTENT_EXPORT H264Parser {
+class MEDIA_EXPORT H264Parser {
  public:
   enum Result {
     kOk,
-    kInvalidStream,     // error in stream
-    kUnsupportedStream, // stream not supported by the parser
-    kEOStream,          // end of stream
+    kInvalidStream,      // error in stream
+    kUnsupportedStream,  // stream not supported by the parser
+    kEOStream,           // end of stream
   };
 
   H264Parser();
@@ -331,7 +334,7 @@ class CONTENT_EXPORT H264Parser {
                                H264WeightingFactors* w_facts);
 
   // Parse decoded reference picture marking information (see spec).
-  Result ParseDecRefPicMarking(H264SliceHeader *shdr);
+  Result ParseDecRefPicMarking(H264SliceHeader* shdr);
 
   // Pointer to the current NALU in the stream.
   const uint8* stream_;
@@ -350,6 +353,6 @@ class CONTENT_EXPORT H264Parser {
   DISALLOW_COPY_AND_ASSIGN(H264Parser);
 };
 
-}  // namespace content
+}  // namespace media
 
-#endif  // CONTENT_COMMON_GPU_MEDIA_H264_PARSER_H_
+#endif  // MEDIA_FILTERS_H264_PARSER_H_

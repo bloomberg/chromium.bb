@@ -18,8 +18,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/posix/eintr_wrapper.h"
-#include "content/common/gpu/media/h264_parser.h"
 #include "content/common/gpu/media/v4l2_video_decode_accelerator.h"
+#include "media/filters/h264_parser.h"
 #include "ui/gl/scoped_binders.h"
 
 namespace content {
@@ -330,7 +330,7 @@ bool V4L2VideoDecodeAccelerator::Initialize(
   // Initialize format-specific bits.
   if (video_profile_ >= media::H264PROFILE_MIN &&
       video_profile_ <= media::H264PROFILE_MAX) {
-    decoder_h264_parser_.reset(new content::H264Parser());
+    decoder_h264_parser_.reset(new media::H264Parser());
   }
 
   if (!decoder_thread_.Start()) {
@@ -652,8 +652,8 @@ bool V4L2VideoDecodeAccelerator::AdvanceFrameFragment(
     // For H264, we need to feed HW one frame at a time.  This is going to take
     // some parsing of our input stream.
     decoder_h264_parser_->SetStream(data, size);
-    content::H264NALU nalu;
-    content::H264Parser::Result result;
+    media::H264NALU nalu;
+    media::H264Parser::Result result;
     *endpos = 0;
 
     // Keep on peeking the next NALs while they don't indicate a frame
@@ -661,17 +661,17 @@ bool V4L2VideoDecodeAccelerator::AdvanceFrameFragment(
     for (;;) {
       bool end_of_frame = false;
       result = decoder_h264_parser_->AdvanceToNextNALU(&nalu);
-      if (result == content::H264Parser::kInvalidStream ||
-          result == content::H264Parser::kUnsupportedStream)
+      if (result == media::H264Parser::kInvalidStream ||
+          result == media::H264Parser::kUnsupportedStream)
         return false;
-      if (result == content::H264Parser::kEOStream) {
+      if (result == media::H264Parser::kEOStream) {
         // We've reached the end of the buffer before finding a frame boundary.
         decoder_partial_frame_pending_ = true;
         return true;
       }
       switch (nalu.nal_unit_type) {
-        case content::H264NALU::kNonIDRSlice:
-        case content::H264NALU::kIDRSlice:
+        case media::H264NALU::kNonIDRSlice:
+        case media::H264NALU::kIDRSlice:
           if (nalu.size < 1)
             return false;
           // For these two, if the "first_mb_in_slice" field is zero, start a
@@ -684,10 +684,10 @@ bool V4L2VideoDecodeAccelerator::AdvanceFrameFragment(
             break;
           }
           break;
-        case content::H264NALU::kSPS:
-        case content::H264NALU::kPPS:
-        case content::H264NALU::kEOSeq:
-        case content::H264NALU::kEOStream:
+        case media::H264NALU::kSPS:
+        case media::H264NALU::kPPS:
+        case media::H264NALU::kEOSeq:
+        case media::H264NALU::kEOStream:
           // These unconditionally signal a frame boundary.
           end_of_frame = true;
           break;
@@ -1415,7 +1415,7 @@ void V4L2VideoDecodeAccelerator::ResetDoneTask() {
   // Reset format-specific bits.
   if (video_profile_ >= media::H264PROFILE_MIN &&
       video_profile_ <= media::H264PROFILE_MAX) {
-    decoder_h264_parser_.reset(new content::H264Parser());
+    decoder_h264_parser_.reset(new media::H264Parser());
   }
 
   // Jobs drained, we're finished resetting.

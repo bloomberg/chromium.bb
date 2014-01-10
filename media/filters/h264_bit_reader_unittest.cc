@@ -1,12 +1,11 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/filters/h264_bit_reader.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#include "content/common/gpu/media/h264_bit_reader.h"
-
-using content::H264BitReader;
+namespace media {
 
 TEST(H264BitReaderTest, ReadStreamWithoutEscapeAndTrailingZeroBytes) {
   H264BitReader reader;
@@ -70,3 +69,5 @@ TEST(H264BitReaderTest, StopBitOccupyFullByte) {
   EXPECT_EQ(reader.NumBitsLeft(), 8);
   EXPECT_FALSE(reader.HasMoreRBSPData());
 }
+
+}  // namespace media

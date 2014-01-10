@@ -13,10 +13,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "content/common/gpu/media/exynos_video_encode_accelerator.h"
-#include "content/common/gpu/media/h264_parser.h"
 #include "content/common/gpu/media/video_accelerator_unittest_helpers.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/bitstream_buffer.h"
+#include "media/filters/h264_parser.h"
 #include "media/video/video_encode_accelerator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -181,7 +181,7 @@ class VEAClient : public VideoEncodeAccelerator::Client {
   // Byte size of the encoded stream (for bitrate calculation).
   size_t encoded_stream_size_;
 
-  content::H264Parser h264_parser_;
+  media::H264Parser h264_parser_;
 
   // All methods of this class should be run on the same thread.
   base::ThreadChecker thread_checker_;
@@ -319,17 +319,17 @@ void VEAClient::BitstreamBufferReady(int32 bitstream_buffer_id,
   bool seen_idr_in_this_buffer = false;
 
   while (1) {
-    content::H264NALU nalu;
-    content::H264Parser::Result result;
+    media::H264NALU nalu;
+    media::H264Parser::Result result;
 
     result = h264_parser_.AdvanceToNextNALU(&nalu);
-    if (result == content::H264Parser::kEOStream)
+    if (result == media::H264Parser::kEOStream)
       break;
 
-    ASSERT_EQ(result, content::H264Parser::kOk);
+    ASSERT_EQ(result, media::H264Parser::kOk);
 
     switch (nalu.nal_unit_type) {
-      case content::H264NALU::kIDRSlice:
+      case media::H264NALU::kIDRSlice:
         ASSERT_TRUE(seen_sps_);
         ASSERT_TRUE(seen_pps_);
         seen_idr_ = seen_idr_in_this_buffer = true;
@@ -337,7 +337,7 @@ void VEAClient::BitstreamBufferReady(int32 bitstream_buffer_id,
         // got a frame in time or not.
         keyframe_requested_at_ = kMaxFrameNum;
         // fallthrough
-      case content::H264NALU::kNonIDRSlice:
+      case media::H264NALU::kNonIDRSlice:
         ASSERT_TRUE(seen_idr_);
         ++num_encoded_slices_;
 
@@ -354,10 +354,10 @@ void VEAClient::BitstreamBufferReady(int32 bitstream_buffer_id,
         EXPECT_LE(num_encoded_slices_,
                   keyframe_requested_at_ + kMaxKeyframeDelay);
         break;
-      case content::H264NALU::kSPS:
+      case media::H264NALU::kSPS:
         seen_sps_ = true;
         break;
-      case content::H264NALU::kPPS:
+      case media::H264NALU::kPPS:
         ASSERT_TRUE(seen_sps_);
         seen_pps_ = true;
         break;

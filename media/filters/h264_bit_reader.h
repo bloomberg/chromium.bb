@@ -1,24 +1,24 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
 // This file contains an implementation of an H264 Annex-B video stream parser.
 
-#ifndef CONTENT_COMMON_GPU_MEDIA_H264_BIT_READER_H_
-#define CONTENT_COMMON_GPU_MEDIA_H264_BIT_READER_H_
+#ifndef MEDIA_FILTERS_H264_BIT_READER_H_
+#define MEDIA_FILTERS_H264_BIT_READER_H_
 
 #include <sys/types.h>
 
 #include "base/basictypes.h"
-#include "content/common/content_export.h"
+#include "media/base/media_export.h"
 
-namespace content {
+namespace media {
 
 // A class to provide bit-granularity reading of H.264 streams.
 // This is not a generic bit reader class, as it takes into account
 // H.264 stream-specific constraints, such as skipping emulation-prevention
 // bytes and stop bits. See spec for more details.
-class CONTENT_EXPORT H264BitReader {
+class MEDIA_EXPORT H264BitReader {
  public:
   H264BitReader();
   ~H264BitReader();
@@ -35,7 +35,7 @@ class CONTENT_EXPORT H264BitReader {
   // |num_bits| may be 1-32, inclusive.
   // Return false if the given number of bits cannot be read (not enough
   // bits in the stream), true otherwise.
-  bool ReadBits(int num_bits, int *out);
+  bool ReadBits(int num_bits, int* out);
 
   // Return the number of bits left in the stream.
   off_t NumBitsLeft();
@@ -74,6 +74,6 @@ class CONTENT_EXPORT H264BitReader {
   DISALLOW_COPY_AND_ASSIGN(H264BitReader);
 };
 
-}  // namespace content
+}  // namespace media
 
-#endif  // CONTENT_COMMON_GPU_MEDIA_H264_BIT_READER_H_
+#endif  // MEDIA_FILTERS_H264_BIT_READER_H_

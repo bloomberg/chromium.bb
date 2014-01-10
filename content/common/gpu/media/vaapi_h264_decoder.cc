@@ -219,10 +219,10 @@ void VaapiH264Decoder::UnassignSurfaceFromPoC(int poc) {
 }
 
 bool VaapiH264Decoder::SendPPS() {
-  const H264PPS* pps = parser_.GetPPS(curr_pps_id_);
+  const media::H264PPS* pps = parser_.GetPPS(curr_pps_id_);
   DCHECK(pps);
 
-  const H264SPS* sps = parser_.GetSPS(pps->seq_parameter_set_id);
+  const media::H264SPS* sps = parser_.GetSPS(pps->seq_parameter_set_id);
   DCHECK(sps);
 
   DCHECK(curr_pic_.get());
@@ -306,7 +306,7 @@ bool VaapiH264Decoder::SendPPS() {
 }
 
 bool VaapiH264Decoder::SendIQMatrix() {
-  const H264PPS* pps = parser_.GetPPS(curr_pps_id_);
+  const media::H264PPS* pps = parser_.GetPPS(curr_pps_id_);
   DCHECK(pps);
 
   VAIQMatrixBufferH264 iq_matrix_buf;
@@ -323,7 +323,7 @@ bool VaapiH264Decoder::SendIQMatrix() {
         iq_matrix_buf.ScalingList8x8[i][j] = pps->scaling_list8x8[i][j];
     }
   } else {
-    const H264SPS* sps = parser_.GetSPS(pps->seq_parameter_set_id);
+    const media::H264SPS* sps = parser_.GetSPS(pps->seq_parameter_set_id);
     DCHECK(sps);
     for (int i = 0; i < 6; ++i) {
       for (int j = 0; j < 16; ++j)
@@ -341,11 +341,11 @@ bool VaapiH264Decoder::SendIQMatrix() {
                                       &iq_matrix_buf);
 }
 
-bool VaapiH264Decoder::SendVASliceParam(H264SliceHeader* slice_hdr) {
-  const H264PPS* pps = parser_.GetPPS(slice_hdr->pic_parameter_set_id);
+bool VaapiH264Decoder::SendVASliceParam(media::H264SliceHeader* slice_hdr) {
+  const media::H264PPS* pps = parser_.GetPPS(slice_hdr->pic_parameter_set_id);
   DCHECK(pps);
 
-  const H264SPS* sps = parser_.GetSPS(pps->seq_parameter_set_id);
+  const media::H264SPS* sps = parser_.GetSPS(pps->seq_parameter_set_id);
   DCHECK(sps);
 
   VASliceParameterBufferH264 slice_param;
@@ -440,7 +440,7 @@ bool VaapiH264Decoder::SendSliceData(const uint8* ptr, size_t size) {
                                       non_const_ptr);
 }
 
-bool VaapiH264Decoder::PrepareRefPicLists(H264SliceHeader* slice_hdr) {
+bool VaapiH264Decoder::PrepareRefPicLists(media::H264SliceHeader* slice_hdr) {
   ref_pic_list0_.clear();
   ref_pic_list1_.clear();
 
@@ -459,7 +459,7 @@ bool VaapiH264Decoder::PrepareRefPicLists(H264SliceHeader* slice_hdr) {
   return true;
 }
 
-bool VaapiH264Decoder::QueueSlice(H264SliceHeader* slice_hdr) {
+bool VaapiH264Decoder::QueueSlice(media::H264SliceHeader* slice_hdr) {
   DCHECK(curr_pic_.get());
 
   if (!PrepareRefPicLists(slice_hdr))
@@ -495,8 +495,7 @@ bool VaapiH264Decoder::DecodePicture() {
   return true;
 }
 
-
-bool VaapiH264Decoder::InitCurrPicture(H264SliceHeader* slice_hdr) {
+bool VaapiH264Decoder::InitCurrPicture(media::H264SliceHeader* slice_hdr) {
   DCHECK(curr_pic_.get());
 
   memset(curr_pic_.get(), 0, sizeof(H264Picture));
@@ -541,9 +540,10 @@ bool VaapiH264Decoder::InitCurrPicture(H264SliceHeader* slice_hdr) {
   return true;
 }
 
-bool VaapiH264Decoder::CalculatePicOrderCounts(H264SliceHeader* slice_hdr) {
+bool VaapiH264Decoder::CalculatePicOrderCounts(
+    media::H264SliceHeader* slice_hdr) {
   DCHECK_NE(curr_sps_id_, -1);
-  const H264SPS* sps = parser_.GetSPS(curr_sps_id_);
+  const media::H264SPS* sps = parser_.GetSPS(curr_sps_id_);
 
   int pic_order_cnt_lsb = slice_hdr->pic_order_cnt_lsb;
   curr_pic_->pic_order_cnt_lsb = pic_order_cnt_lsb;
@@ -750,7 +750,8 @@ struct LongTermPicNumAscCompare {
   }
 };
 
-void VaapiH264Decoder::ConstructReferencePicListsP(H264SliceHeader* slice_hdr) {
+void VaapiH264Decoder::ConstructReferencePicListsP(
+    media::H264SliceHeader* slice_hdr) {
   // RefPicList0 (8.2.4.2.1) [[1] [2]], where:
   // [1] shortterm ref pics sorted by descending pic_num,
   // [2] longterm ref pics by ascending long_term_pic_num.
@@ -783,7 +784,8 @@ struct POCDescCompare {
   }
 };
 
-void VaapiH264Decoder::ConstructReferencePicListsB(H264SliceHeader* slice_hdr) {
+void VaapiH264Decoder::ConstructReferencePicListsB(
+    media::H264SliceHeader* slice_hdr) {
   // RefPicList0 (8.2.4.2.3) [[1] [2] [3]], where:
   // [1] shortterm ref pics with POC < curr_pic's POC sorted by descending POC,
   // [2] shortterm ref pics with POC > curr_pic's POC by ascending POC,
@@ -886,11 +888,11 @@ static void ShiftRightAndInsert(H264Picture::PtrVector *v,
   (*v)[from] = pic;
 }
 
-bool VaapiH264Decoder::ModifyReferencePicList(H264SliceHeader *slice_hdr,
+bool VaapiH264Decoder::ModifyReferencePicList(media::H264SliceHeader* slice_hdr,
                                               int list) {
   int num_ref_idx_lX_active_minus1;
   H264Picture::PtrVector* ref_pic_listx;
-  H264ModificationOfPicNum* list_mod;
+  media::H264ModificationOfPicNum* list_mod;
 
   // This can process either ref_pic_list0 or ref_pic_list1, depending on
   // the list argument. Set up pointers to proper list to be processed here.
@@ -922,7 +924,7 @@ bool VaapiH264Decoder::ModifyReferencePicList(H264SliceHeader *slice_hdr,
   int pic_num_lx;
   bool done = false;
   H264Picture* pic;
-  for (int i = 0; i < H264SliceHeader::kRefListModSize && !done; ++i) {
+  for (int i = 0; i < media::H264SliceHeader::kRefListModSize && !done; ++i) {
     switch (list_mod->modification_of_pic_nums_idc) {
       case 0:
       case 1:
@@ -954,7 +956,7 @@ bool VaapiH264Decoder::ModifyReferencePicList(H264SliceHeader *slice_hdr,
           pic_num_lx = pic_num_lx_no_wrap;
 
         DCHECK_LT(num_ref_idx_lX_active_minus1 + 1,
-                  H264SliceHeader::kRefListModSize);
+                  media::H264SliceHeader::kRefListModSize);
         pic = dpb_.GetShortRefPicByPicNum(pic_num_lx);
         if (!pic) {
           DVLOG(1) << "Malformed stream, no pic num " << pic_num_lx;
@@ -974,7 +976,7 @@ bool VaapiH264Decoder::ModifyReferencePicList(H264SliceHeader *slice_hdr,
       case 2:
         // Modify long term reference picture position.
         DCHECK_LT(num_ref_idx_lX_active_minus1 + 1,
-                  H264SliceHeader::kRefListModSize);
+                  media::H264SliceHeader::kRefListModSize);
         pic = dpb_.GetLongRefPicByLongTermPicNum(list_mod->long_term_pic_num);
         if (!pic) {
           DVLOG(1) << "Malformed stream, no pic num "
@@ -1074,7 +1076,7 @@ bool VaapiH264Decoder::Flush() {
   return true;
 }
 
-bool VaapiH264Decoder::StartNewFrame(H264SliceHeader* slice_hdr) {
+bool VaapiH264Decoder::StartNewFrame(media::H264SliceHeader* slice_hdr) {
   // TODO posciak: add handling of max_num_ref_frames per spec.
 
   // If the new frame is an IDR, output what's left to output and clear DPB
@@ -1120,7 +1122,8 @@ bool VaapiH264Decoder::HandleMemoryManagementOps() {
   // 8.2.5.4
   for (unsigned int i = 0; i < arraysize(curr_pic_->ref_pic_marking); ++i) {
     // Code below does not support interlaced stream (per-field pictures).
-    H264DecRefPicMarking* ref_pic_marking = &curr_pic_->ref_pic_marking[i];
+    media::H264DecRefPicMarking* ref_pic_marking =
+        &curr_pic_->ref_pic_marking[i];
     H264Picture* to_mark;
     int pic_num_x;
 
@@ -1397,7 +1400,7 @@ static int LevelToMaxDpbMbs(int level) {
 }
 
 bool VaapiH264Decoder::ProcessSPS(int sps_id, bool* need_new_buffers) {
-  const H264SPS* sps = parser_.GetSPS(sps_id);
+  const media::H264SPS* sps = parser_.GetSPS(sps_id);
   DCHECK(sps);
   DVLOG(4) << "Processing SPS";
 
@@ -1461,7 +1464,7 @@ bool VaapiH264Decoder::ProcessSPS(int sps_id, bool* need_new_buffers) {
 }
 
 bool VaapiH264Decoder::ProcessPPS(int pps_id) {
-  const H264PPS* pps = parser_.GetPPS(pps_id);
+  const media::H264PPS* pps = parser_.GetPPS(pps_id);
   DCHECK(pps);
 
   curr_pps_id_ = pps->pic_parameter_set_id;
@@ -1480,7 +1483,7 @@ bool VaapiH264Decoder::FinishPrevFrameIfPresent() {
   return true;
 }
 
-bool VaapiH264Decoder::ProcessSlice(H264SliceHeader* slice_hdr) {
+bool VaapiH264Decoder::ProcessSlice(media::H264SliceHeader* slice_hdr) {
   prev_frame_num_ = frame_num_;
   frame_num_ = slice_hdr->frame_num;
 
@@ -1530,8 +1533,8 @@ void VaapiH264Decoder::SetStream(uint8* ptr, size_t size, int32 input_id) {
 }
 
 VaapiH264Decoder::DecResult VaapiH264Decoder::Decode() {
-  H264Parser::Result par_res;
-  H264NALU nalu;
+  media::H264Parser::Result par_res;
+  media::H264NALU nalu;
   DCHECK_NE(state_, kError);
 
   while (1) {
@@ -1547,20 +1550,20 @@ VaapiH264Decoder::DecResult VaapiH264Decoder::Decode() {
     }
 
     par_res = parser_.AdvanceToNextNALU(&nalu);
-    if (par_res == H264Parser::kEOStream)
+    if (par_res == media::H264Parser::kEOStream)
       return kRanOutOfStreamData;
-    else if (par_res != H264Parser::kOk)
+    else if (par_res != media::H264Parser::kOk)
       SET_ERROR_AND_RETURN();
 
     DVLOG(4) << "NALU found: " << static_cast<int>(nalu.nal_unit_type);
 
     switch (nalu.nal_unit_type) {
-      case H264NALU::kNonIDRSlice:
+      case media::H264NALU::kNonIDRSlice:
         // We can't resume from a non-IDR slice.
         if (state_ != kDecoding)
           break;
         // else fallthrough
-      case H264NALU::kIDRSlice: {
+      case media::H264NALU::kIDRSlice: {
         // TODO(posciak): the IDR may require an SPS that we don't have
         // available. For now we'd fail if that happens, but ideally we'd like
         // to keep going until the next SPS in the stream.
@@ -1570,10 +1573,10 @@ VaapiH264Decoder::DecResult VaapiH264Decoder::Decode() {
         }
 
         // If after reset, we should be able to recover from an IDR.
-        H264SliceHeader slice_hdr;
+        media::H264SliceHeader slice_hdr;
 
         par_res = parser_.ParseSliceHeader(nalu, &slice_hdr);
-        if (par_res != H264Parser::kOk)
+        if (par_res != media::H264Parser::kOk)
           SET_ERROR_AND_RETURN();
 
         if (!ProcessSlice(&slice_hdr))
@@ -1583,14 +1586,14 @@ VaapiH264Decoder::DecResult VaapiH264Decoder::Decode() {
         break;
       }
 
-      case H264NALU::kSPS: {
+      case media::H264NALU::kSPS: {
         int sps_id;
 
         if (!FinishPrevFrameIfPresent())
           SET_ERROR_AND_RETURN();
 
         par_res = parser_.ParseSPS(&sps_id);
-        if (par_res != H264Parser::kOk)
+        if (par_res != media::H264Parser::kOk)
           SET_ERROR_AND_RETURN();
 
         bool need_new_buffers = false;
@@ -1609,7 +1612,7 @@ VaapiH264Decoder::DecResult VaapiH264Decoder::Decode() {
         break;
       }
 
-      case H264NALU::kPPS: {
+      case media::H264NALU::kPPS: {
         if (state_ != kDecoding)
           break;
 
@@ -1619,7 +1622,7 @@ VaapiH264Decoder::DecResult VaapiH264Decoder::Decode() {
           SET_ERROR_AND_RETURN();
 
         par_res = parser_.ParsePPS(&pps_id);
-        if (par_res != H264Parser::kOk)
+        if (par_res != media::H264Parser::kOk)
           SET_ERROR_AND_RETURN();
 
         if (!ProcessPPS(pps_id))

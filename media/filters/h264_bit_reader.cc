@@ -1,17 +1,19 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/gpu/media/h264_bit_reader.h"
 #include "base/logging.h"
+#include "media/filters/h264_bit_reader.h"
 
-namespace content {
+namespace media {
 
 H264BitReader::H264BitReader()
-    : data_(NULL), bytes_left_(0), curr_byte_(0),
-      num_remaining_bits_in_curr_byte_(0), prev_two_bytes_(0),
-      emulation_prevention_bytes_(0) {
-}
+    : data_(NULL),
+      bytes_left_(0),
+      curr_byte_(0),
+      num_remaining_bits_in_curr_byte_(0),
+      prev_two_bytes_(0),
+      emulation_prevention_bytes_(0) {}
 
 H264BitReader::~H264BitReader() {}
 
@@ -62,7 +64,7 @@ bool H264BitReader::UpdateCurrByte() {
 // Read |num_bits| (1 to 31 inclusive) from the stream and return them
 // in |out|, with first bit in the stream as MSB in |out| at position
 // (|num_bits| - 1).
-bool H264BitReader::ReadBits(int num_bits, int *out) {
+bool H264BitReader::ReadBits(int num_bits, int* out) {
   int bits_left = num_bits;
   *out = 0;
   DCHECK(num_bits <= 31);
@@ -91,7 +93,7 @@ bool H264BitReader::HasMoreRBSPData() {
   // Make sure we have more bits, if we are at 0 bits in current byte
   // and updating current byte fails, we don't have more data anyway.
   if (num_remaining_bits_in_curr_byte_ == 0 && !UpdateCurrByte())
-      return false;
+    return false;
 
   // On last byte?
   if (bytes_left_)
@@ -104,9 +106,8 @@ bool H264BitReader::HasMoreRBSPData() {
           ((1 << (num_remaining_bits_in_curr_byte_ - 1)) - 1)) != 0;
 }
 
-size_t H264BitReader::NumEmulationPreventionBytesRead()
-{
+size_t H264BitReader::NumEmulationPreventionBytesRead() {
   return emulation_prevention_bytes_;
 }
 
-}  // namespace content
+}  // namespace media

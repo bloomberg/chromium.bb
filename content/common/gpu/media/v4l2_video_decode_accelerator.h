@@ -26,11 +26,13 @@
 
 namespace base {
 class MessageLoopProxy;
-}
+}  // namespace base
+
+namespace media {
+class H264Parser;
+}  // namespace media
 
 namespace content {
-class H264Parser;
-
 // This class handles video accelerators directly through a V4L2 device exported
 // by the hardware blocks.
 //
@@ -350,7 +352,7 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
   std::queue<linked_ptr<BitstreamBufferRef> > decoder_input_queue_;
   // For H264 decode, hardware requires that we send it frame-sized chunks.
   // We'll need to parse the stream.
-  scoped_ptr<content::H264Parser> decoder_h264_parser_;
+  scoped_ptr<media::H264Parser> decoder_h264_parser_;
   // Set if the decoder has a pending incomplete frame in an input buffer.
   bool decoder_partial_frame_pending_;
 

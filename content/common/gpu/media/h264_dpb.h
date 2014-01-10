@@ -12,7 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_vector.h"
-#include "content/common/gpu/media/h264_parser.h"
+#include "media/filters/h264_parser.h"
 
 namespace content {
 
@@ -55,7 +55,8 @@ struct H264Picture {
   // memory management after finishing this picture.
   bool long_term_reference_flag;
   bool adaptive_ref_pic_marking_mode_flag;
-  H264DecRefPicMarking ref_pic_marking[H264SliceHeader::kRefListSize];
+  media::H264DecRefPicMarking
+      ref_pic_marking[media::H264SliceHeader::kRefListSize];
 
   typedef std::vector<H264Picture*> PtrVector;
 };

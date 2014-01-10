@@ -1,29 +1,26 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-#include "testing/gtest/include/gtest/gtest.h"
 
 #include "base/command_line.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
+#include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
-#include "content/common/gpu/media/h264_parser.h"
+#include "media/base/test_data_util.h"
+#include "media/filters/h264_parser.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
-using content::H264Parser;
-using content::H264NALU;
-
-const base::FilePath::CharType* test_stream_filename =
-    FILE_PATH_LITERAL("content/common/gpu/testdata/test-25fps.h264");
-// Number of NALUs in the stream to be parsed.
-int num_nalus = 759;
+namespace media {
 
 TEST(H264ParserTest, StreamFileParsing) {
-  base::FilePath fp(test_stream_filename);
+  base::FilePath file_path = GetTestDataFilePath("test-25fps.h264");
+  // Number of NALUs in the test stream to be parsed.
+  int num_nalus = 759;
+
   base::MemoryMappedFile stream;
-  CHECK(stream.Initialize(fp)) << "Couldn't open stream file: "
-                               << test_stream_filename;
-  DVLOG(1) << "Parsing file: " << test_stream_filename;
+  ASSERT_TRUE(stream.Initialize(file_path))
+      << "Couldn't open stream file: " << file_path.MaybeAsASCII();
 
   H264Parser parser;
   parser.SetStream(stream.data(), stream.length());
@@ -31,8 +28,8 @@ TEST(H264ParserTest, StreamFileParsing) {
   // Parse until the end of stream/unsupported stream/error in stream is found.
   int num_parsed_nalus = 0;
   while (true) {
-    content::H264SliceHeader shdr;
-    content::H264SEIMessage sei_msg;
+    media::H264SliceHeader shdr;
+    media::H264SEIMessage sei_msg;
     H264NALU nalu;
     H264Parser::Result res = parser.AdvanceToNextNALU(&nalu);
     if (res == H264Parser::kEOStream) {
@@ -72,22 +69,4 @@ TEST(H264ParserTest, StreamFileParsing) {
   }
 }
 
-int main(int argc, char **argv) {
-  ::testing::InitGoogleTest(&argc, argv);
-  CommandLine::Init(argc, argv);
-
-  const CommandLine::SwitchMap& switches =
-      CommandLine::ForCurrentProcess()->GetSwitches();
-  for (CommandLine::SwitchMap::const_iterator it = switches.begin();
-       it != switches.end(); ++it) {
-    if (it->first == "test_stream") {
-      test_stream_filename = it->second.c_str();
-    } else if (it->first == "num_nalus") {
-      CHECK(base::StringToInt(it->second, &num_nalus));
-    } else {
-      LOG(FATAL) << "Unexpected switch: " << it->first << ":" << it->second;
-    }
-  }
-
-  return RUN_ALL_TESTS();
-}
+}  // namespace media

@@ -1321,30 +1321,6 @@
         },
       ]
     }],
-    ['chromeos == 1 or OS == "linux"', {
-      'targets': [
-        {
-          'target_name': 'h264_parser_unittest',
-          'type': 'executable',
-          'dependencies': [
-            'content.gyp:content_common',
-            '../base/base.gyp:base',
-            '../testing/gtest.gyp:gtest',
-          ],
-          'sources': [
-            'common/gpu/media/h264_bit_reader_unittest.cc',
-            'common/gpu/media/h264_parser_unittest.cc',
-          ],
-          'conditions': [
-            ['linux_use_tcmalloc==1', {
-              'dependencies': [
-                '../base/allocator/allocator.gyp:allocator',
-              ],
-            }],
-          ],
-        }
-      ],
-    }],
     # Special target to wrap a gtest_target_type==shared_library
     # content_unittests into an android apk for execution.
     # See base.gyp for TODO(jrg)s about this strategy.

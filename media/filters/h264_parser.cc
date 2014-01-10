@@ -1,14 +1,14 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-#include "content/common/gpu/media/h264_parser.h"
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 
-namespace content {
+#include "media/filters/h264_parser.h"
+
+namespace media {
 
 bool H264SliceHeader::IsPSlice() const {
   return (slice_type % 5 == kPSlice);
@@ -50,59 +50,61 @@ H264SEIMessage::H264SEIMessage() {
   memset(this, 0, sizeof(*this));
 }
 
-#define READ_BITS_OR_RETURN(num_bits, out)                                    \
-do {                                                                          \
-  int _out;                                                                   \
-  if (!br_.ReadBits(num_bits, &_out)) {                                       \
-    DVLOG(1) << "Error in stream: unexpected EOS while trying to read " #out; \
-    return kInvalidStream;                                                    \
-  }                                                                           \
-  *out = _out;                                                                \
-} while (0)
+#define READ_BITS_OR_RETURN(num_bits, out)                                 \
+  do {                                                                     \
+    int _out;                                                              \
+    if (!br_.ReadBits(num_bits, &_out)) {                                  \
+      DVLOG(1)                                                             \
+          << "Error in stream: unexpected EOS while trying to read " #out; \
+      return kInvalidStream;                                               \
+    }                                                                      \
+    *out = _out;                                                           \
+  } while (0)
 
-#define READ_BOOL_OR_RETURN(out)                                              \
-do {                                                                          \
-  int _out;                                                                   \
-  if (!br_.ReadBits(1, &_out)) {                                              \
-    DVLOG(1) << "Error in stream: unexpected EOS while trying to read " #out; \
-    return kInvalidStream;                                                    \
-  }                                                                           \
-  *out = _out != 0;                                                           \
-} while (0)
+#define READ_BOOL_OR_RETURN(out)                                           \
+  do {                                                                     \
+    int _out;                                                              \
+    if (!br_.ReadBits(1, &_out)) {                                         \
+      DVLOG(1)                                                             \
+          << "Error in stream: unexpected EOS while trying to read " #out; \
+      return kInvalidStream;                                               \
+    }                                                                      \
+    *out = _out != 0;                                                      \
+  } while (0)
 
-#define READ_UE_OR_RETURN(out)                                               \
-do {                                                                         \
-  if (ReadUE(out) != kOk) {                                                  \
-    DVLOG(1) << "Error in stream: invalid value while trying to read " #out; \
-    return kInvalidStream;                                                   \
-  }                                                                          \
-} while (0)
+#define READ_UE_OR_RETURN(out)                                                 \
+  do {                                                                         \
+    if (ReadUE(out) != kOk) {                                                  \
+      DVLOG(1) << "Error in stream: invalid value while trying to read " #out; \
+      return kInvalidStream;                                                   \
+    }                                                                          \
+  } while (0)
 
-#define READ_SE_OR_RETURN(out)                                               \
-do {                                                                         \
-  if (ReadSE(out) != kOk) {                                                  \
-    DVLOG(1) << "Error in stream: invalid value while trying to read " #out; \
-    return kInvalidStream;                                                   \
-  }                                                                          \
-} while (0)
+#define READ_SE_OR_RETURN(out)                                                 \
+  do {                                                                         \
+    if (ReadSE(out) != kOk) {                                                  \
+      DVLOG(1) << "Error in stream: invalid value while trying to read " #out; \
+      return kInvalidStream;                                                   \
+    }                                                                          \
+  } while (0)
 
-#define IN_RANGE_OR_RETURN(val, min, max)                                 \
-do {                                                                      \
-  if ((val) < (min) || (val) > (max)) {                                   \
-    DVLOG(1) << "Error in stream: invalid value, expected " #val " to be" \
-             << " in range [" << (min) << ":" << (max) << "]"             \
-             << " found " << (val) << " instead";                         \
-    return kInvalidStream;                                                \
-  }                                                                       \
-} while (0)
+#define IN_RANGE_OR_RETURN(val, min, max)                                   \
+  do {                                                                      \
+    if ((val) < (min) || (val) > (max)) {                                   \
+      DVLOG(1) << "Error in stream: invalid value, expected " #val " to be" \
+               << " in range [" << (min) << ":" << (max) << "]"             \
+               << " found " << (val) << " instead";                         \
+      return kInvalidStream;                                                \
+    }                                                                       \
+  } while (0)
 
-#define TRUE_OR_RETURN(a)                                          \
-do {                                                               \
-  if (!(a)) {                                                      \
-    DVLOG(1) << "Error in stream: invalid value, expected " << #a; \
-    return kInvalidStream;                                         \
-  }                                                                \
-} while (0)
+#define TRUE_OR_RETURN(a)                                            \
+  do {                                                               \
+    if (!(a)) {                                                      \
+      DVLOG(1) << "Error in stream: invalid value, expected " << #a; \
+      return kInvalidStream;                                         \
+    }                                                                \
+  } while (0)
 
 H264Parser::H264Parser() {
   Reset();
@@ -248,7 +250,7 @@ H264Parser::Result H264Parser::ReadSE(int* val) {
   return kOk;
 }
 
-H264Parser::Result H264Parser::AdvanceToNextNALU(H264NALU *nalu) {
+H264Parser::Result H264Parser::AdvanceToNextNALU(H264NALU* nalu) {
   int data;
   off_t off_to_nalu_start;
 
@@ -291,22 +293,22 @@ H264Parser::Result H264Parser::AdvanceToNextNALU(H264NALU *nalu) {
 
 // Default scaling lists (per spec).
 static const int kDefault4x4Intra[kH264ScalingList4x4Length] = {
-  6, 13, 13, 20, 20, 20, 28, 28, 28, 28, 32, 32, 32, 37, 37, 42, };
+    6, 13, 13, 20, 20, 20, 28, 28, 28, 28, 32, 32, 32, 37, 37, 42, };
 
 static const int kDefault4x4Inter[kH264ScalingList4x4Length] = {
-  10, 14, 14, 20, 20, 20, 24, 24, 24, 24, 27, 27, 27, 30, 30, 34, };
+    10, 14, 14, 20, 20, 20, 24, 24, 24, 24, 27, 27, 27, 30, 30, 34, };
 
 static const int kDefault8x8Intra[kH264ScalingList8x8Length] = {
-  6, 10, 10, 13, 11, 13, 16, 16, 16, 16, 18, 18, 18, 18, 18, 23,
-  23, 23, 23, 23, 23, 25, 25, 25, 25, 25, 25, 25, 27, 27, 27, 27,
-  27, 27, 27, 27, 29, 29, 29, 29, 29, 29, 29, 31, 31, 31, 31, 31,
-  31, 33, 33, 33, 33, 33, 36, 36, 36, 36, 38, 38, 38, 40, 40, 42, };
+    6,  10, 10, 13, 11, 13, 16, 16, 16, 16, 18, 18, 18, 18, 18, 23,
+    23, 23, 23, 23, 23, 25, 25, 25, 25, 25, 25, 25, 27, 27, 27, 27,
+    27, 27, 27, 27, 29, 29, 29, 29, 29, 29, 29, 31, 31, 31, 31, 31,
+    31, 33, 33, 33, 33, 33, 36, 36, 36, 36, 38, 38, 38, 40, 40, 42, };
 
 static const int kDefault8x8Inter[kH264ScalingList8x8Length] = {
-  9, 13, 13, 15, 13, 15, 17, 17, 17, 17, 19, 19, 19, 19, 19, 21,
-  21, 21, 21, 21, 21, 22, 22, 22, 22, 22, 22, 22, 24, 24, 24, 24,
-  24, 24, 24, 24, 25, 25, 25, 25, 25, 25, 25, 27, 27, 27, 27, 27,
-  27, 28, 28, 28, 28, 28, 30, 30, 30, 30, 32, 32, 32, 33, 33, 35, };
+    9,  13, 13, 15, 13, 15, 17, 17, 17, 17, 19, 19, 19, 19, 19, 21,
+    21, 21, 21, 21, 21, 22, 22, 22, 22, 22, 22, 22, 24, 24, 24, 24,
+    24, 24, 24, 24, 25, 25, 25, 25, 25, 25, 25, 27, 27, 27, 27, 27,
+    27, 28, 28, 28, 28, 28, 30, 30, 30, 30, 32, 32, 32, 33, 33, 35, };
 
 static inline void DefaultScalingList4x4(
     int i,
@@ -335,8 +337,8 @@ static void FallbackScalingList4x4(
     const int default_scaling_list_intra[],
     const int default_scaling_list_inter[],
     int scaling_list4x4[][kH264ScalingList4x4Length]) {
-  static const int kScalingList4x4ByteSize = sizeof(scaling_list4x4[0][0]) *
-      kH264ScalingList4x4Length;
+  static const int kScalingList4x4ByteSize =
+      sizeof(scaling_list4x4[0][0]) * kH264ScalingList4x4Length;
 
   switch (i) {
     case 0:
@@ -345,13 +347,11 @@ static void FallbackScalingList4x4(
       break;
 
     case 1:
-      memcpy(scaling_list4x4[i], scaling_list4x4[0],
-             kScalingList4x4ByteSize);
+      memcpy(scaling_list4x4[i], scaling_list4x4[0], kScalingList4x4ByteSize);
       break;
 
     case 2:
-      memcpy(scaling_list4x4[i], scaling_list4x4[1],
-             kScalingList4x4ByteSize);
+      memcpy(scaling_list4x4[i], scaling_list4x4[1], kScalingList4x4ByteSize);
       break;
 
     case 3:
@@ -360,13 +360,11 @@ static void FallbackScalingList4x4(
       break;
 
     case 4:
-      memcpy(scaling_list4x4[i], scaling_list4x4[3],
-             kScalingList4x4ByteSize);
+      memcpy(scaling_list4x4[i], scaling_list4x4[3], kScalingList4x4ByteSize);
       break;
 
     case 5:
-      memcpy(scaling_list4x4[i], scaling_list4x4[4],
-             kScalingList4x4ByteSize);
+      memcpy(scaling_list4x4[i], scaling_list4x4[4], kScalingList4x4ByteSize);
       break;
 
     default:
@@ -380,8 +378,8 @@ static void FallbackScalingList8x8(
     const int default_scaling_list_intra[],
     const int default_scaling_list_inter[],
     int scaling_list8x8[][kH264ScalingList8x8Length]) {
-  static const int kScalingList8x8ByteSize = sizeof(scaling_list8x8[0][0]) *
-      kH264ScalingList8x8Length;
+  static const int kScalingList8x8ByteSize =
+      sizeof(scaling_list8x8[0][0]) * kH264ScalingList8x8Length;
 
   switch (i) {
     case 0:
@@ -395,23 +393,19 @@ static void FallbackScalingList8x8(
       break;
 
     case 2:
-      memcpy(scaling_list8x8[i], scaling_list8x8[0],
-             kScalingList8x8ByteSize);
+      memcpy(scaling_list8x8[i], scaling_list8x8[0], kScalingList8x8ByteSize);
       break;
 
     case 3:
-      memcpy(scaling_list8x8[i], scaling_list8x8[1],
-             kScalingList8x8ByteSize);
+      memcpy(scaling_list8x8[i], scaling_list8x8[1], kScalingList8x8ByteSize);
       break;
 
     case 4:
-      memcpy(scaling_list8x8[i], scaling_list8x8[2],
-             kScalingList8x8ByteSize);
+      memcpy(scaling_list8x8[i], scaling_list8x8[2], kScalingList8x8ByteSize);
       break;
 
     case 5:
-      memcpy(scaling_list8x8[i], scaling_list8x8[3],
-             kScalingList8x8ByteSize);
+      memcpy(scaling_list8x8[i], scaling_list8x8[3], kScalingList8x8ByteSize);
       break;
 
     default:
@@ -461,7 +455,8 @@ H264Parser::Result H264Parser::ParseSPSScalingLists(H264SPS* sps) {
 
     if (seq_scaling_list_present_flag) {
       res = ParseScalingList(arraysize(sps->scaling_list4x4[i]),
-                             sps->scaling_list4x4[i], &use_default);
+                             sps->scaling_list4x4[i],
+                             &use_default);
       if (res != kOk)
         return res;
 
@@ -469,8 +464,8 @@ H264Parser::Result H264Parser::ParseSPSScalingLists(H264SPS* sps) {
         DefaultScalingList4x4(i, sps->scaling_list4x4);
 
     } else {
-        FallbackScalingList4x4(i, kDefault4x4Intra, kDefault4x4Inter,
-                               sps->scaling_list4x4);
+      FallbackScalingList4x4(
+          i, kDefault4x4Intra, kDefault4x4Inter, sps->scaling_list4x4);
     }
   }
 
@@ -480,7 +475,8 @@ H264Parser::Result H264Parser::ParseSPSScalingLists(H264SPS* sps) {
 
     if (seq_scaling_list_present_flag) {
       res = ParseScalingList(arraysize(sps->scaling_list8x8[i]),
-                             sps->scaling_list8x8[i], &use_default);
+                             sps->scaling_list8x8[i],
+                             &use_default);
       if (res != kOk)
         return res;
 
@@ -488,8 +484,8 @@ H264Parser::Result H264Parser::ParseSPSScalingLists(H264SPS* sps) {
         DefaultScalingList8x8(i, sps->scaling_list8x8);
 
     } else {
-        FallbackScalingList8x8(i, kDefault8x8Intra, kDefault8x8Inter,
-                              sps->scaling_list8x8);
+      FallbackScalingList8x8(
+          i, kDefault8x8Intra, kDefault8x8Inter, sps->scaling_list8x8);
     }
   }
 
@@ -508,7 +504,8 @@ H264Parser::Result H264Parser::ParsePPSScalingLists(const H264SPS& sps,
 
     if (pic_scaling_list_present_flag) {
       res = ParseScalingList(arraysize(pps->scaling_list4x4[i]),
-                             pps->scaling_list4x4[i], &use_default);
+                             pps->scaling_list4x4[i],
+                             &use_default);
       if (res != kOk)
         return res;
 
@@ -518,12 +515,14 @@ H264Parser::Result H264Parser::ParsePPSScalingLists(const H264SPS& sps,
     } else {
       if (sps.seq_scaling_matrix_present_flag) {
         // Table 7-2 fallback rule A in spec.
-        FallbackScalingList4x4(i, kDefault4x4Intra, kDefault4x4Inter,
-                               pps->scaling_list4x4);
+        FallbackScalingList4x4(
+            i, kDefault4x4Intra, kDefault4x4Inter, pps->scaling_list4x4);
       } else {
         // Table 7-2 fallback rule B in spec.
-        FallbackScalingList4x4(i, sps.scaling_list4x4[0],
-                               sps.scaling_list4x4[3], pps->scaling_list4x4);
+        FallbackScalingList4x4(i,
+                               sps.scaling_list4x4[0],
+                               sps.scaling_list4x4[3],
+                               pps->scaling_list4x4);
       }
     }
   }
@@ -534,7 +533,8 @@ H264Parser::Result H264Parser::ParsePPSScalingLists(const H264SPS& sps,
 
       if (pic_scaling_list_present_flag) {
         res = ParseScalingList(arraysize(pps->scaling_list8x8[i]),
-                               pps->scaling_list8x8[i], &use_default);
+                               pps->scaling_list8x8[i],
+                               &use_default);
         if (res != kOk)
           return res;
 
@@ -544,12 +544,14 @@ H264Parser::Result H264Parser::ParsePPSScalingLists(const H264SPS& sps,
       } else {
         if (sps.seq_scaling_matrix_present_flag) {
           // Table 7-2 fallback rule A in spec.
-          FallbackScalingList8x8(i, kDefault8x8Intra,
-                                 kDefault8x8Inter, pps->scaling_list8x8);
+          FallbackScalingList8x8(
+              i, kDefault8x8Intra, kDefault8x8Inter, pps->scaling_list8x8);
         } else {
           // Table 7-2 fallback rule B in spec.
-          FallbackScalingList8x8(i, sps.scaling_list8x8[0],
-                                 sps.scaling_list8x8[1], pps->scaling_list8x8);
+          FallbackScalingList8x8(i,
+                                 sps.scaling_list8x8[0],
+                                 sps.scaling_list8x8[1],
+                                 pps->scaling_list8x8);
         }
       }
     }
@@ -585,8 +587,8 @@ H264Parser::Result H264Parser::ParseSPS(int* sps_id) {
 
   if (sps->profile_idc == 100 || sps->profile_idc == 110 ||
       sps->profile_idc == 122 || sps->profile_idc == 244 ||
-      sps->profile_idc ==  44 || sps->profile_idc ==  83 ||
-      sps->profile_idc ==  86 || sps->profile_idc == 118 ||
+      sps->profile_idc == 44 || sps->profile_idc == 83 ||
+      sps->profile_idc == 86 || sps->profile_idc == 118 ||
       sps->profile_idc == 128) {
     READ_UE_OR_RETURN(&sps->chroma_format_idc);
     TRUE_OR_RETURN(sps->chroma_format_idc < 4);
@@ -897,7 +899,7 @@ H264Parser::Result H264Parser::ParsePredWeightTable(const H264SPS& sps,
   return kOk;
 }
 
-H264Parser::Result H264Parser::ParseDecRefPicMarking(H264SliceHeader *shdr) {
+H264Parser::Result H264Parser::ParseDecRefPicMarking(H264SliceHeader* shdr) {
   if (shdr->idr_pic_flag) {
     READ_BOOL_OR_RETURN(&shdr->no_output_of_prior_pics_flag);
     READ_BOOL_OR_RETURN(&shdr->long_term_reference_flag);
@@ -973,8 +975,7 @@ H264Parser::Result H264Parser::ParseSliceHeader(const H264NALU& nalu,
     return kUnsupportedStream;
   }
 
-  READ_BITS_OR_RETURN(sps->log2_max_frame_num_minus4 + 4,
-                      &shdr->frame_num);
+  READ_BITS_OR_RETURN(sps->log2_max_frame_num_minus4 + 4, &shdr->frame_num);
   if (!sps->frame_mbs_only_flag) {
     READ_BOOL_OR_RETURN(&shdr->field_pic_flag);
     if (shdr->field_pic_flag) {
@@ -1053,8 +1054,8 @@ H264Parser::Result H264Parser::ParseSliceHeader(const H264NALU& nalu,
       return res;
   }
 
-  if (pps->entropy_coding_mode_flag &&
-      !shdr->IsISlice() && !shdr->IsSISlice()) {
+  if (pps->entropy_coding_mode_flag && !shdr->IsISlice() &&
+      !shdr->IsSISlice()) {
     READ_UE_OR_RETURN(&shdr->cabac_init_idc);
     TRUE_OR_RETURN(shdr->cabac_init_idc < 3);
   }
@@ -1118,8 +1119,7 @@ H264Parser::Result H264Parser::ParseSEI(H264SEIMessage* sei_msg) {
       READ_UE_OR_RETURN(&sei_msg->recovery_point.recovery_frame_cnt);
       READ_BOOL_OR_RETURN(&sei_msg->recovery_point.exact_match_flag);
       READ_BOOL_OR_RETURN(&sei_msg->recovery_point.broken_link_flag);
-      READ_BITS_OR_RETURN(2,
-          &sei_msg->recovery_point.changing_slice_group_idc);
+      READ_BITS_OR_RETURN(2, &sei_msg->recovery_point.changing_slice_group_idc);
       break;
 
     default:
@@ -1130,4 +1130,4 @@ H264Parser::Result H264Parser::ParseSEI(H264SEIMessage* sei_msg) {
   return kOk;
 }
 
-}  // namespace content
+}  // namespace media
