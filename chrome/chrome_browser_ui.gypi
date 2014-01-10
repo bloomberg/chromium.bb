@@ -433,6 +433,8 @@
         'browser/ui/browser.h',
         'browser/ui/browser_commands.cc',
         'browser/ui/browser_commands.h',
+        'browser/ui/browser_commands_chromeos.cc',
+        'browser/ui/browser_commands_chromeos.h',
         'browser/ui/browser_commands_mac.cc',
         'browser/ui/browser_commands_mac.h',
         'browser/ui/browser_command_controller.cc',

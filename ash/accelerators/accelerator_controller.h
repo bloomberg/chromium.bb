@@ -111,6 +111,9 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   BrightnessControlDelegate* brightness_control_delegate() const {
     return brightness_control_delegate_.get();
   }
+  ScreenshotDelegate* screenshot_delegate() {
+    return screenshot_delegate_.get();
+  }
 
   // Provides access to an object holding contextual information.
   AcceleratorControllerContext* context() {

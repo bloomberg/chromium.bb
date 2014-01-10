@@ -64,6 +64,7 @@
 #include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
+#include "chrome/browser/ui/browser_commands_chromeos.h"
 #endif
 
 using content::NavigationEntry;
@@ -686,6 +687,11 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_TASK_MANAGER:
       OpenTaskManager(browser_);
       break;
+#if defined(OS_CHROMEOS)
+    case IDC_TAKE_SCREENSHOT:
+      TakeScreenshot();
+      break;
+#endif
 #if defined(GOOGLE_CHROME_BUILD)
     case IDC_FEEDBACK:
       OpenFeedbackDialog(browser_);
@@ -962,6 +968,9 @@ void BrowserCommandController::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_RECENT_TABS_MENU,
                                         !profile()->IsGuestSession() &&
                                         !profile()->IsOffTheRecord());
+#if defined(OS_CHROMEOS)
+  command_updater_.UpdateCommandEnabled(IDC_TAKE_SCREENSHOT, true);
+#endif
 
   UpdateShowSyncState(true);
 
