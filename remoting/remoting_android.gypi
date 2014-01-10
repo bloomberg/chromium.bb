@@ -14,6 +14,7 @@
           ],
           'variables': {
             'jni_gen_package': 'remoting',
+            'jni_generator_ptr_type': 'long',
           },
           'includes': [ '../build/jni_generator.gypi' ],
         },  # end of target 'remoting_jni_headers'
