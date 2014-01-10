@@ -13,14 +13,7 @@ ChromeStorageImpl::ChromeStorageImpl(WriteablePrefStore* store)
   scoped_observer_.Add(backing_store_);
 }
 
-ChromeStorageImpl::~ChromeStorageImpl() {
-  // TODO(estade): this shouldn't be necessary.
-  for (std::vector<Request*>::iterator iter =
-           outstanding_requests_.begin();
-       iter != outstanding_requests_.end(); ++iter) {
-    (*(*iter)->callback)(false, (*iter)->key, std::string());
-  }
-}
+ChromeStorageImpl::~ChromeStorageImpl() {}
 
 void ChromeStorageImpl::Put(const std::string& key, const std::string& data) {
   backing_store_->SetValue(key, new base::StringValue(data));
