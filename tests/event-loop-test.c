@@ -48,10 +48,12 @@ TEST(event_loop_post_dispatch_check)
 	int dispatch_ran = 0;
 	int p[2];
 
+	assert(loop);
 	assert(pipe(p) == 0);
 
 	source = wl_event_loop_add_fd(loop, p[0], WL_EVENT_READABLE,
 				      fd_dispatch, &dispatch_ran);
+	assert(source);
 	wl_event_source_check(source);
 
 	wl_event_loop_dispatch(loop, 0);
@@ -104,6 +106,8 @@ TEST(event_loop_free_source_with_data)
 	 * that frees the other source and check that only one of them
 	 * run (and that we don't crash, of course).
 	 */
+
+	assert(loop);
 
 	context.count = 0;
 	assert(pipe(context.p1) == 0);
@@ -184,6 +188,7 @@ TEST(event_loop_timer)
 	int got_it = 0;
 
 	source = wl_event_loop_add_timer(loop, timer_callback, &got_it);
+	assert(source);
 	wl_event_source_timer_update(source, 10);
 	wl_event_loop_dispatch(loop, 0);
 	assert(!got_it);
