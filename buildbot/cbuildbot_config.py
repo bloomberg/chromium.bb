@@ -1348,6 +1348,8 @@ internal_paladin.add_config('link-tot-paladin',
   paladin_builder_name='link ToT paladin',
   do_not_apply_cq_patches=True,
   prebuilts=False,
+  hw_tests=HWTestConfig.DefaultListCQ(),
+  upload_hw_test_artifacts=True,
 )
 
 internal_paladin.add_config('x86-mario-paladin',
@@ -1417,6 +1419,11 @@ internal_paladin.add_config('leon-paladin',
 internal_paladin.add_config('link-paladin',
   boards=['link'],
   paladin_builder_name='link paladin',
+  # Bump down the priority of the link-paladin HWTest, because we will
+  # be running link-tot-paladin at nearly the same time (slightly earlier)
+  # and want to avoid provision-thrashing back and forth between these
+  # two images.
+  hw_tests=HWTestConfig.DefaultListCQ(priority=constants.HWTEST_PFQ_PRIORITY),
   upload_hw_test_artifacts=True,
 )
 
