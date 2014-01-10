@@ -941,28 +941,73 @@ bool OutputConfigurator::EnterState(
 
   // Finally, apply the desired changes.
   DCHECK_EQ(cached_outputs_.size(), updated_outputs.size());
+  bool all_succeeded = true;
   if (!updated_outputs.empty()) {
     delegate_->CreateFrameBuffer(width, height, updated_outputs);
     for (size_t i = 0; i < updated_outputs.size(); ++i) {
       const OutputSnapshot& output = updated_outputs[i];
-      if (delegate_->ConfigureCrtc(output.crtc, output.current_mode,
-                                   output.output, output.x, output.y)) {
-        if (output.touch_device_id)
-          delegate_->ConfigureCTM(output.touch_device_id, output.transform);
-        cached_outputs_[i] = updated_outputs[i];
-      } else {
+      bool configure_succeeded =false;
+
+      while (true) {
+        if (delegate_->ConfigureCrtc(output.crtc, output.current_mode,
+                                       output.output, output.x, output.y)) {
+          configure_succeeded = true;
+          break;
+        }
+
         LOG(WARNING) << "Unable to configure CRTC " << output.crtc << ":"
                      << " mode=" << output.current_mode
                      << " output=" << output.output
                      << " x=" << output.x
                      << " y=" << output.y;
+
+        const ModeInfo* mode_info = GetModeInfo(output, output.current_mode);
+        if (!mode_info)
+          break;
+
+        // Find the mode with the next-best resolution and see if that can
+        // be set.
+        int best_mode_pixels = 0;
+
+        int current_mode_pixels = mode_info->width * mode_info->height;
+        for (ModeInfoMap::const_iterator it = output.mode_infos.begin();
+             it != output.mode_infos.end(); it++) {
+          int pixel_count = it->second.width * it->second.height;
+          if ((pixel_count < current_mode_pixels) &&
+              (pixel_count > best_mode_pixels)) {
+            updated_outputs[i].current_mode = it->first;
+            best_mode_pixels = pixel_count;
+          }
+        }
+
+        if (best_mode_pixels == 0)
+          break;
       }
+
+      if (configure_succeeded) {
+        if (output.touch_device_id)
+          delegate_->ConfigureCTM(output.touch_device_id, output.transform);
+        cached_outputs_[i] = updated_outputs[i];
+      } else {
+        all_succeeded = false;
+      }
+
+      // If we are trying to set mirror mode and one of the modesets fails,
+      // then the two monitors will be mis-matched.  In this case, return
+      // false to let the observers be aware.
+      if (output_state == STATE_DUAL_MIRROR &&
+          output_power[i] &&
+          output.current_mode != output.mirror_mode)
+        all_succeeded = false;
+
     }
   }
 
-  output_state_ = output_state;
-  power_state_ = power_state;
-  return true;
+  if (all_succeeded)  {
+    output_state_ = output_state;
+    power_state_ = power_state;
+  }
+  return all_succeeded;
 }
 
 OutputState OutputConfigurator::ChooseOutputState(
