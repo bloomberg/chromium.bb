@@ -1,0 +1,25 @@
+<html>
+<!--
+This test checks to make sure that the prerendered page was loaded with the
+correct sessionStorage namespace.
+-->
+<head>
+<title>Prerender Page</title>
+
+<script>
+var pageWasPrerendered = false;
+
+function DidPrerenderPass() {
+  pageWasPrerendered = true;
+  return true;
+}
+
+// Verify the sessionStorage value was set.
+function DidDisplayPass() {
+  return pageWasPrerendered && sessionStorage.value === "hello";
+}
+</script>
+
+</head>
+<body></body>
+</html>

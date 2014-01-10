@@ -892,18 +892,6 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     NavigateToDestURLWithDisposition(CURRENT_TAB, true);
   }
 
-  void NavigateToDestURLInNewTab() const {
-    // First, open a new tab.
-    ui_test_utils::NavigateToURLWithDisposition(
-        current_browser(), GURL(content::kAboutBlankURL),
-        NEW_FOREGROUND_TAB,
-        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-    // Next, navigate to the destination URL. The swap-in will not succeed,
-    // due to session storage namespace mismatch. The merge is only kicked off
-    // asynchronously.
-    NavigateToDestURLWithDisposition(CURRENT_TAB, false);
-  }
-
   // Opens the url in a new tab, with no opener.
   void NavigateToDestURLWithDisposition(
       WindowOpenDisposition disposition,
@@ -3452,8 +3440,47 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNewNavigationEntry) {
 // Attempt a swap-in in a new tab, verifying that session storage namespace
 // merging works.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPageNewTab) {
-  PrerenderTestURL("files/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
-  NavigateToDestURLInNewTab();
+  PrerenderTestURL("files/prerender/prerender_session_storage.html",
+                   FINAL_STATUS_USED, 1);
+
+  // Open a new tab to navigate in.
+  ui_test_utils::NavigateToURLWithDisposition(
+      current_browser(),
+      test_server()->GetURL("files/prerender/init_session_storage.html"),
+      NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  // Now navigate in the new tab. Set expect_swap_to_succeed to false because
+  // the swap does not occur synchronously.
+  //
+  // TODO(davidben): When all swaps become asynchronous, remove the OpenURL
+  // return value assertion and let this go through the usual successful-swap
+  // codepath.
+  NavigateToDestURLWithDisposition(CURRENT_TAB, false);
+
+  // Verify DidDisplayPass manually since the previous call skipped it.
+  EXPECT_TRUE(DidDisplayPass(
+      current_browser()->tab_strip_model()->GetActiveWebContents()));
+}
+
+// Verify that session storage conflicts don't merge.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSessionStorageConflict) {
+  PrerenderTestURL("files/prerender/prerender_session_storage_conflict.html",
+                   FINAL_STATUS_APP_TERMINATING, 1);
+
+  // Open a new tab to navigate in.
+  ui_test_utils::NavigateToURLWithDisposition(
+      current_browser(),
+      test_server()->GetURL("files/prerender/init_session_storage.html"),
+      NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  // Now navigate in the new tab.
+  NavigateToDestURLWithDisposition(CURRENT_TAB, false);
+
+  // Verify DidDisplayPass in the new tab.
+  EXPECT_TRUE(DidDisplayPass(
+      current_browser()->tab_strip_model()->GetActiveWebContents()));
 }
 
 // Checks that prerenders honor |should_replace_current_entry|.

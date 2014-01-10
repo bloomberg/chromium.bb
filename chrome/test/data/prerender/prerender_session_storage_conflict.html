@@ -1,0 +1,26 @@
+<html>
+<!--
+This is a test of a page whose sessionStorage namespace cannot be merged.
+-->
+<head>
+<title>Prerender Page</title>
+
+<script>
+var pageWasPrerendered = false;
+// Read sessionStorage.value. This should make the merge invalid.
+var sessionStorageValue = sessionStorage.value;
+
+function DidPrerenderPass() {
+  pageWasPrerendered = true;
+  return true;
+}
+
+// Verify the sessionStorage value didn't change.
+function DidDisplayPass() {
+  return !pageWasPrerendered && sessionStorageValue === sessionStorage.value;
+}
+</script>
+
+</head>
+<body></body>
+</html>
