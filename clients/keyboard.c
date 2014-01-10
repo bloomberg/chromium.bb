@@ -384,12 +384,13 @@ resize_handler(struct widget *widget,
 static char *
 insert_text(const char *text, uint32_t offset, const char *insert)
 {
-	char *new_text = xmalloc(strlen(text) + strlen(insert) + 1);
+	int tlen = strlen(text), ilen = strlen(insert);
+	char *new_text = xmalloc(tlen + ilen + 1);
 
-	strncat(new_text, text, offset);
-	new_text[offset] = '\0';
-	strcat(new_text, insert);
-	strcat(new_text, text + offset);
+	memcpy(new_text, text, offset);
+	memcpy(new_text + offset, insert, ilen);
+	memcpy(new_text + offset + ilen, text + offset, tlen - offset);
+	new_text[tlen + ilen] = '\0';
 
 	return new_text;
 }
