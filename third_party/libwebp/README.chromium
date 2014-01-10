@@ -1,14 +1,14 @@
 Name: WebP image encoder/decoder
 Short Name: libwebp
 URL: http://developers.google.com/speed/webp
-Version: v0.3.1
+Version: v0.4.0
 License: BSD
 License File: LICENSE
 Security Critical: Yes
 
 Description:
 Source archive:
-  http://code.google.com/p/webp/downloads/detail?name=libwebp-0.3.1.tar.gz
+  https://code.google.com/p/webp/downloads/detail?name=libwebp-0.4.0.tar.gz
 
 WebP is an image format that does both lossy and lossless compression of
 digital photographic images. WebP consists of a codec based on VP8, that Google
@@ -21,13 +21,4 @@ Local changes:
    the contents of src/ less mux/ which is unused.
  * Merged COPYING/PATENTS to LICENSE
 Cherry-picks:
-  f626fe2 Detect canvas and image size mismatch in decoder.
-  f5fbdee demux: stricter image bounds check
-  a03c351 Demux: WebPIterator now also denotes if the frame has alpha.
-  6284854b Support for "Do not blend" in mux and demux libraries
-  40ae352 Fix memleak in WebPIDelete()
-  92d47e4 improve VP8L signature detection by checking the version bits too
-  dde91fd Demux: Correct the extended format validation
-  96ad0e0 VPLBitReader: Catch error if bit_pos > LBITS.
-  e18e667 demux: strictly enforce the animation flag
-  61cb884 demux: (non-exp) fail if the fragmented flag is set
+  Revert patch f7fc4bc: dec/webp.c: don't wait for data before reporting w/h

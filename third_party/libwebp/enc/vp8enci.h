@@ -20,7 +20,7 @@
 #include "../utils/bit_writer.h"
 #include "../utils/thread.h"
 
-#if defined(__cplusplus) || defined(c_plusplus)
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -29,8 +29,8 @@ extern "C" {
 
 // version numbers
 #define ENC_MAJ_VERSION 0
-#define ENC_MIN_VERSION 3
-#define ENC_REV_VERSION 1
+#define ENC_MIN_VERSION 4
+#define ENC_REV_VERSION 0
 
 // intra prediction modes
 enum { B_DC_PRED = 0,   // 4x4 modes
@@ -74,7 +74,7 @@ typedef enum {   // Rate-distortion optimization levels
 // The predicted blocks can be accessed using offsets to yuv_p_ and
 // the arrays VP8*ModeOffsets[];
 //         +----+      YUV Samples area. See VP8Scan[] for accessing the blocks.
-//  Y_OFF  |YYYY| <- original samples  (enc->yuv_in_)
+//  Y_OFF  |YYYY| <- original samples  ('yuv_in_')
 //         |YYYY|
 //         |YYYY|
 //         |YYYY|
@@ -248,16 +248,19 @@ typedef struct {
   int beta_;       // filter-susceptibility, range [0,255].
   int quant_;      // final segment quantizer.
   int fstrength_;  // final in-loop filtering strength
+  int max_edge_;   // max edge delta (for filtering strength)
+  int min_disto_;  // minimum distortion required to trigger filtering record
   // reactivities
   int lambda_i16_, lambda_i4_, lambda_uv_;
   int lambda_mode_, lambda_trellis_, tlambda_;
   int lambda_trellis_i16_, lambda_trellis_i4_, lambda_trellis_uv_;
 } VP8SegmentInfo;
 
-// Handy transcient struct to accumulate score and info during RD-optimization
+// Handy transient struct to accumulate score and info during RD-optimization
 // and mode evaluation.
 typedef struct {
-  score_t D, SD, R, score;    // Distortion, spectral distortion, rate, score.
+  score_t D, SD;              // Distortion, spectral distortion
+  score_t H, R, score;        // header bits, rate, score.
   int16_t y_dc_levels[16];    // Quantized levels for luma-DC, luma-AC, chroma.
   int16_t y_ac_levels[16][16];
   int16_t uv_levels[4 + 4][16];
@@ -271,12 +274,11 @@ typedef struct {
 // right neighbouring data (samples, predictions, contexts, ...)
 typedef struct {
   int x_, y_;                      // current macroblock
-  int y_offset_, uv_offset_;       // offset to the luma / chroma planes
   int y_stride_, uv_stride_;       // respective strides
-  uint8_t*      yuv_in_;           // borrowed from enc_ (for now)
-  uint8_t*      yuv_out_;          // ''
-  uint8_t*      yuv_out2_;         // ''
-  uint8_t*      yuv_p_;            // ''
+  uint8_t*      yuv_in_;           // input samples
+  uint8_t*      yuv_out_;          // output samples
+  uint8_t*      yuv_out2_;         // secondary buffer swapped with yuv_out_.
+  uint8_t*      yuv_p_;            // scratch buffer for prediction
   VP8Encoder*   enc_;              // back-pointer
   VP8MBInfo*    mb_;               // current macroblock
   VP8BitWriter* bw_;               // current bit-writer
@@ -292,24 +294,43 @@ typedef struct {
   uint64_t      uv_bits_;          // macroblock bit-cost for chroma
   LFStats*      lf_stats_;         // filter stats (borrowed from enc_)
   int           do_trellis_;       // if true, perform extra level optimisation
-  int           done_;             // true when scan is finished
+  int           count_down_;       // number of mb still to be processed
+  int           count_down0_;      // starting counter value (for progress)
   int           percent0_;         // saved initial progress percent
+
+  uint8_t* y_left_;    // left luma samples (addressable from index -1 to 15).
+  uint8_t* u_left_;    // left u samples (addressable from index -1 to 7)
+  uint8_t* v_left_;    // left v samples (addressable from index -1 to 7)
+
+  uint8_t* y_top_;     // top luma samples at position 'x_'
+  uint8_t* uv_top_;    // top u/v samples at position 'x_', packed as 16 bytes
+
+  // memory for storing y/u/v_left_ and yuv_in_/out_*
+  uint8_t yuv_left_mem_[17 + 16 + 16 + 8 + ALIGN_CST];     // memory for *_left_
+  uint8_t yuv_mem_[3 * YUV_SIZE + PRED_SIZE + ALIGN_CST];  // memory for yuv_*
 } VP8EncIterator;
 
   // in iterator.c
-// must be called first.
+// must be called first
 void VP8IteratorInit(VP8Encoder* const enc, VP8EncIterator* const it);
-// restart a scan.
+// restart a scan
 void VP8IteratorReset(VP8EncIterator* const it);
-// import samples from source
-void VP8IteratorImport(const VP8EncIterator* const it);
+// reset iterator position to row 'y'
+void VP8IteratorSetRow(VP8EncIterator* const it, int y);
+// set count down (=number of iterations to go)
+void VP8IteratorSetCountDown(VP8EncIterator* const it, int count_down);
+// return true if iteration is finished
+int VP8IteratorIsDone(const VP8EncIterator* const it);
+// Import uncompressed samples from source.
+// If tmp_32 is not NULL, import boundary samples too.
+// tmp_32 is a 32-bytes scratch buffer that must be aligned in memory.
+void VP8IteratorImport(VP8EncIterator* const it, uint8_t* tmp_32);
 // export decimated samples
 void VP8IteratorExport(const VP8EncIterator* const it);
-// go to next macroblock. Returns !done_. If *block_to_save is non-null, will
-// save the boundary values to top_/left_ arrays. block_to_save can be
-// it->yuv_out_ or it->yuv_in_.
-int VP8IteratorNext(VP8EncIterator* const it,
-                    const uint8_t* const block_to_save);
+// go to next macroblock. Returns false if not finished.
+int VP8IteratorNext(VP8EncIterator* const it);
+// save the yuv_out_ boundary values to top_/left_ arrays for next iterations.
+void VP8IteratorSaveBoundary(VP8EncIterator* const it);
 // Report progression based on macroblock rows. Return 0 for user-abort request.
 int VP8IteratorProgress(const VP8EncIterator* const it,
                         int final_delta_percent);
@@ -359,6 +380,9 @@ int VP8EmitTokens(VP8TBuffer* const b, VP8BitWriter* const bw,
 int VP8RecordCoeffTokens(int ctx, int coeff_type, int first, int last,
                          const int16_t* const coeffs,
                          VP8TBuffer* const tokens);
+
+// Estimate the final coded size given a set of 'probas'.
+size_t VP8EstimateTokenSize(VP8TBuffer* const b, const uint8_t* const probas);
 
 // unused for now
 void VP8TokenToStats(const VP8TBuffer* const b, proba_t* const stats);
@@ -435,17 +459,9 @@ struct VP8Encoder {
   VP8MBInfo* mb_info_;   // contextual macroblock infos (mb_w_ + 1)
   uint8_t*   preds_;     // predictions modes: (4*mb_w+1) * (4*mb_h+1)
   uint32_t*  nz_;        // non-zero bit context: mb_w+1
-  uint8_t*   yuv_in_;    // input samples
-  uint8_t*   yuv_out_;   // output samples
-  uint8_t*   yuv_out2_;  // secondary scratch out-buffer. swapped with yuv_out_.
-  uint8_t*   yuv_p_;     // scratch buffer for prediction
   uint8_t   *y_top_;     // top luma samples.
   uint8_t   *uv_top_;    // top u/v samples.
-                         // U and V are packed into 16 pixels (8 U + 8 V)
-  uint8_t   *y_left_;    // left luma samples (adressable from index -1 to 15).
-  uint8_t   *u_left_;    // left u samples (adressable from index -1 to 7)
-  uint8_t   *v_left_;    // left v samples (adressable from index -1 to 7)
-
+                         // U and V are packed into 16 bytes (8 U + 8 V)
   LFStats   *lf_stats_;  // autofilter stats (if NULL, autofilter is off)
 };
 
@@ -541,9 +557,13 @@ void VP8InitFilter(VP8EncIterator* const it);
 void VP8StoreFilterStats(VP8EncIterator* const it);
 void VP8AdjustFilterStrength(VP8EncIterator* const it);
 
+// returns the approximate filtering strength needed to smooth a edge
+// step of 'delta', given a sharpness parameter 'sharpness'.
+int VP8FilterStrengthFromDelta(int sharpness, int delta);
+
 //------------------------------------------------------------------------------
 
-#if defined(__cplusplus) || defined(c_plusplus)
+#ifdef __cplusplus
 }    // extern "C"
 #endif
 
