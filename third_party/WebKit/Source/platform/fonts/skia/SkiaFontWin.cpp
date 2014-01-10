@@ -169,7 +169,7 @@ void paintSkiaText(GraphicsContext* context,
     const SkRect& textRect)
 {
     int size;
-    int paintTextFlags = data->paintTextFlags();
+    int paintTextFlags = data.paintTextFlags();
 
     // Ensure font load for printing, because PDF device needs it.
     if (context->isPrintingDevice())
