@@ -1087,7 +1087,6 @@ private:
     void addMutationEventListenerTypeIfEnabled(ListenerType);
 
     void didAssociateFormControlsTimerFired(Timer<Document>*);
-    void styleResolverThrowawayTimerFired(Timer<Document>*);
 
     void processHttpEquivDefaultStyle(const AtomicString& content);
     void processHttpEquivRefresh(const AtomicString& content);
