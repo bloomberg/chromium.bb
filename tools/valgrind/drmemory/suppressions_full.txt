@@ -1359,10 +1359,3 @@ name=bug_329339_b
 net.dll!net::ProxyScriptDecider::*
 net.dll!net::ProxyScriptDecider::DoLoop
 net.dll!net::ProxyScriptDecider::*
-
-UNINITIALIZED READ
-name=bug_330105
-*!testing::internal::CmpHelperEQ<int,int>
-*!testing::internal::EqHelper<0>::Compare<int,int>
-*!extensions::BlacklistTest_GetBlacklistStates_Test::TestBody
-*!testing::internal::HandleExceptionsInMethodIfSupported<testing::Test,void>
