@@ -104,7 +104,6 @@ public:
     }
     virtual int firstLineBoxBaseline() const OVERRIDE { return RenderBlock::firstLineBoxBaseline(); }
     virtual int inlineBlockBaseline(LineDirectionMode direction) const OVERRIDE { return lastLineBoxBaseline(direction); }
-    virtual bool supportsPartialLayout() const OVERRIDE { return false; }
 };
 
 

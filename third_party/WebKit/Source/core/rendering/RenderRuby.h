@@ -65,7 +65,6 @@ protected:
 private:
     virtual bool isRuby() const { return true; }
     virtual const char* renderName() const { return "RenderRuby (inline)"; }
-    virtual bool supportsPartialLayout() const OVERRIDE { return false; }
     virtual bool createsAnonymousWrapper() const { return true; }
     virtual void removeLeftoverAnonymousBlock(RenderBlock*) { ASSERT_NOT_REACHED(); }
 };
