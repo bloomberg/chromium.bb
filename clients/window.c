@@ -5575,3 +5575,9 @@ xstrdup(const char *s)
 {
 	return fail_on_null(strdup(s));
 }
+
+void *
+xrealloc(char *p, size_t s)
+{
+	return fail_on_null(realloc(p, s));
+}

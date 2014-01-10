@@ -490,6 +490,21 @@ delete_before_cursor(struct virtual_keyboard *keyboard)
 		memmove(keyboard->surrounding_text + keyboard->surrounding_cursor, end, strlen(end));
 }
 
+static char *
+append(char *s1, const char *s2)
+{
+	int len1, len2;
+	char *s;
+
+	len1 = strlen(s1);
+	len2 = strlen(s2);
+	s = xrealloc(s1, len1 + len2 + 1);
+	memcpy(s + len1, s2, len2);
+	s[len1 + len2] = '\0';
+
+	return s;
+}
+
 static void
 keyboard_handle_key(struct keyboard *keyboard, uint32_t time, const struct key *key, struct input *input, enum wl_pointer_button_state state)
 {
@@ -502,8 +517,9 @@ keyboard_handle_key(struct keyboard *keyboard, uint32_t time, const struct key *
 			if (state != WL_POINTER_BUTTON_STATE_PRESSED)
 				break;
 
-			keyboard->keyboard->preedit_string = strcat(keyboard->keyboard->preedit_string,
-								    label);
+			keyboard->keyboard->preedit_string =
+				append(keyboard->keyboard->preedit_string,
+				       label);
 			virtual_keyboard_send_preedit(keyboard->keyboard, -1);
 			break;
 		case keytype_backspace:
@@ -527,8 +543,8 @@ keyboard_handle_key(struct keyboard *keyboard, uint32_t time, const struct key *
 		case keytype_space:
 			if (state != WL_POINTER_BUTTON_STATE_PRESSED)
 				break;
-			keyboard->keyboard->preedit_string = strcat(keyboard->keyboard->preedit_string,
-								    " ");
+			keyboard->keyboard->preedit_string =
+				append(keyboard->keyboard->preedit_string, " ");
 			virtual_keyboard_commit_preedit(keyboard->keyboard);
 			break;
 		case keytype_switch:
