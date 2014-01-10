@@ -51,6 +51,9 @@ struct DriveAppInfo {
   GURL create_url;
 };
 
+// Callback type for UninstallApp().
+typedef base::Callback<void(google_apis::GDataErrorCode)> UninstallCallback;
+
 // Keeps the track of installed drive applications in-memory.
 class DriveAppRegistry {
  public:
@@ -63,6 +66,19 @@ class DriveAppRegistry {
                       const std::string& mime_type,
                       std::vector<DriveAppInfo>* apps) const;
 
+  // Returns the list of all Drive apps installed.
+  void GetAppList(std::vector<DriveAppInfo>* apps) const;
+
+  // Uninstalls the app specified by |app_id|. This method sends requests to the
+  // remote server, and returns the result to |callback| asynchronously.
+  // |callback| must not be null.
+  void UninstallApp(const std::string& app_id,
+                    const UninstallCallback& callback);
+
+  // Checks whether UinstallApp is supported. The feature is available only for
+  // clients with whitelisted API keys (like Official Google Chrome build).
+  static bool IsAppUninstallSupported();
+
   // Updates this registry by fetching the data from the server.
   void Update();
 
@@ -74,6 +90,11 @@ class DriveAppRegistry {
   // data from the server.
   void UpdateAfterGetAppList(google_apis::GDataErrorCode gdata_error,
                              scoped_ptr<google_apis::AppList> app_list);
+
+  // Part of UninstallApp(). Receives the response from the server.
+  void OnAppUninstalled(const std::string& app_id,
+                        const UninstallCallback& callback,
+                        google_apis::GDataErrorCode error);
 
   // Map of application id to each app's info.
   std::map<std::string, DriveAppInfo> all_apps_;

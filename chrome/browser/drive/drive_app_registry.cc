@@ -35,6 +35,16 @@ void FindAppsForSelector(const std::string& selector,
     matched_apps->push_back(it->second);
 }
 
+void RemoveAppFromSelector(const std::string& app_id,
+                           std::multimap<std::string, std::string>* map) {
+  typedef std::multimap<std::string, std::string>::iterator iterator;
+  for (iterator it = map->begin(); it != map->end(); ) {
+    iterator now = it++;
+    if (now->second == app_id)
+      map->erase(now);
+  }
+}
+
 }  // namespace
 
 namespace drive {
@@ -92,6 +102,16 @@ void DriveAppRegistry::GetAppsForFile(
       DCHECK(it != all_apps_.end());
       apps->push_back(it->second);
     }
+  }
+}
+
+void DriveAppRegistry::GetAppList(std::vector<DriveAppInfo>* apps) const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  apps->clear();
+  for (std::map<std::string, DriveAppInfo>::const_iterator
+          it = all_apps_.begin(); it != all_apps_.end(); ++it) {
+    apps->push_back(it->second);
   }
 }
 
@@ -158,6 +178,37 @@ void DriveAppRegistry::UpdateFromAppList(const google_apis::AppList& app_list) {
     AddAppSelectorList(app.primary_file_extensions(), id, &extension_map_);
     AddAppSelectorList(app.secondary_file_extensions(), id, &extension_map_);
   }
+}
+
+void DriveAppRegistry::UninstallApp(const std::string& app_id,
+                                    const UninstallCallback& callback) {
+  DCHECK(!callback.is_null());
+
+  drive_service_->UninstallApp(app_id,
+                               base::Bind(&DriveAppRegistry::OnAppUninstalled,
+                                          weak_ptr_factory_.GetWeakPtr(),
+                                          app_id,
+                                          callback));
+}
+
+void DriveAppRegistry::OnAppUninstalled(const std::string& app_id,
+                                        const UninstallCallback& callback,
+                                        google_apis::GDataErrorCode error) {
+  if (error == google_apis::HTTP_SUCCESS) {
+    all_apps_.erase(app_id);
+    RemoveAppFromSelector(app_id, &mimetype_map_);
+    RemoveAppFromSelector(app_id, &extension_map_);
+  }
+  callback.Run(error);
+}
+
+// static
+bool DriveAppRegistry::IsAppUninstallSupported() {
+#ifdef USE_OFFICIAL_GOOGLE_API_KEYS
+  return true;
+#else
+  return false;
+#endif
 }
 
 namespace util {

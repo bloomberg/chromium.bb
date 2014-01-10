@@ -267,7 +267,12 @@ bool FakeDriveService::LoadAccountMetadataForWapi(
 bool FakeDriveService::LoadAppListForDriveApi(
     const std::string& relative_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  app_info_value_ = test_util::LoadJSONFile(relative_path);
+
+  // Load JSON data, which must be a dictionary.
+  scoped_ptr<base::Value> value = test_util::LoadJSONFile(relative_path);
+  CHECK_EQ(base::Value::TYPE_DICTIONARY, value->GetType());
+  app_info_value_.reset(
+      static_cast<base::DictionaryValue*>(value.release()));
   return app_info_value_;
 }
 
@@ -1261,6 +1266,29 @@ CancelCallback FakeDriveService::UninstallApp(
     const google_apis::EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
+
+  // Find app_id from app_info_value_ and delete.
+  google_apis::GDataErrorCode error = google_apis::HTTP_NOT_FOUND;
+  if (offline_) {
+    error = google_apis::GDATA_NO_CONNECTION;
+  } else {
+    base::ListValue* items = NULL;
+    if (app_info_value_->GetList("items", &items)) {
+      for (size_t i = 0; i < items->GetSize(); ++i) {
+        base::DictionaryValue* item = NULL;
+        std::string id;
+        if (items->GetDictionary(i, &item) && item->GetString("id", &id) &&
+            id == app_id) {
+          if (items->Remove(i, NULL))
+            error = google_apis::HTTP_SUCCESS;
+          break;
+        }
+      }
+    }
+  }
+
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+                                         base::Bind(callback, error));
   return CancelCallback();
 }
 

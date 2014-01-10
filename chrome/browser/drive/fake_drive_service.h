@@ -299,7 +299,7 @@ class FakeDriveService : public DriveServiceInterface {
 
   scoped_ptr<base::DictionaryValue> resource_list_value_;
   scoped_ptr<base::DictionaryValue> account_metadata_value_;
-  scoped_ptr<base::Value> app_info_value_;
+  scoped_ptr<base::DictionaryValue> app_info_value_;
   std::map<GURL, UploadSession> upload_sessions_;
   int64 largest_changestamp_;
   int64 published_date_seq_;
