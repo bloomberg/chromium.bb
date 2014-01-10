@@ -191,6 +191,7 @@ private:
     void notifyLoadedFromMemoryCache(Resource*);
 
     void garbageCollectDocumentResourcesTimerFired(Timer<ResourceFetcher>*);
+    void scheduleDocumentResourcesGC();
     void performPostLoadActions();
 
     bool clientDefersImage(const KURL&) const;

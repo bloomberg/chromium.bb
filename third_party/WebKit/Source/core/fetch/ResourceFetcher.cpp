@@ -294,8 +294,10 @@ void ResourceFetcher::preCacheDataURIImage(const FetchRequest& request)
     if (memoryCache()->resourceForURL(url))
         return;
 
-    if (Resource* resource = resourceFromDataURIRequest(request.resourceRequest(), request.options()))
+    if (Resource* resource = resourceFromDataURIRequest(request.resourceRequest(), request.options())) {
         memoryCache()->add(resource);
+        scheduleDocumentResourcesGC();
+    }
 }
 
 ResourcePtr<FontResource> ResourceFetcher::fetchFont(FetchRequest& request)
@@ -1008,7 +1010,11 @@ void ResourceFetcher::didLoadResource(Resource* resource)
     if (frame())
         frame()->loader().loadDone();
     performPostLoadActions();
+    scheduleDocumentResourcesGC();
+}
 
+void ResourceFetcher::scheduleDocumentResourcesGC()
+{
     if (!m_garbageCollectDocumentResourcesTimer.isActive())
         m_garbageCollectDocumentResourcesTimer.startOneShot(0);
 }
