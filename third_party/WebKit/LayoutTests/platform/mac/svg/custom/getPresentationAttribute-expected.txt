@@ -1,3 +1,4 @@
+CONSOLE WARNING: CSSValue and SVGElement.getPresentationAttribute are deprecated. Please use getPropertyValue and parse the return value instead.
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600

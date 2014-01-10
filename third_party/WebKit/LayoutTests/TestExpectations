@@ -844,8 +844,6 @@ crbug.com/329904 fast/text-autosizing/forum-comments-autosizing.html [ ImageOnly
 # Started failing after r162755.
 crbug.com/324177 [ Linux Win ] virtual/softwarecompositing/webgl/webgl-with-accelerated-background-color.html [ ImageOnlyFailure ]
 
-crbug.com/331608 [ Mac ] svg/custom/getPresentationAttribute.svg [ NeedsRebaseline ]
-
 # Started failing after r162705.
 crbug.com/324369 compositing/video/video-reflection.html [ Failure ]
 crbug.com/324369 virtual/softwarecompositing/video/video-reflection.html [ Failure ]
