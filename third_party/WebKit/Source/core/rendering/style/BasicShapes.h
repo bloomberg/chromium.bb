@@ -261,6 +261,7 @@ public:
     const BasicShapeCenterCoordinate& centerY() const { return m_centerY; }
     const BasicShapeRadius& radiusX() const { return m_radiusX; }
     const BasicShapeRadius& radiusY() const { return m_radiusY; }
+    float floatValueForRadiusInBox(const BasicShapeRadius&, float center, float boxWidthOrHeight) const;
 
     void setCenterX(BasicShapeCenterCoordinate centerX) { m_centerX = centerX; }
     void setCenterY(BasicShapeCenterCoordinate centerY) { m_centerY = centerY; }

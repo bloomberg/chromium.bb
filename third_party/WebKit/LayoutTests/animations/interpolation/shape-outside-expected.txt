@@ -16,22 +16,22 @@ PASS: shape-outside from [circle(100% at 0% 0%)] to [circle(50% at 25% 25%)] was
 PASS: shape-outside from [circle(100% at 0% 0%)] to [circle(50% at 25% 25%)] was [circle(70% at 15% 15%)] at 0.6
 PASS: shape-outside from [circle(100% at 0% 0%)] to [circle(50% at 25% 25%)] was [circle(50% at 25% 25%)] at 1
 PASS: shape-outside from [circle(100% at 0% 0%)] to [circle(50% at 25% 25%)] was [circle(25% at 37.5% 37.5%)] at 1.5
-PASS: shape-outside from [ellipse(0%, 0%, 100%, 100%)] to [ellipse(25%, 25%, 50%, 50%)] was [ellipse(-7.5%, -7.5%, 115%, 115%)] at -0.3
-PASS: shape-outside from [ellipse(0%, 0%, 100%, 100%)] to [ellipse(25%, 25%, 50%, 50%)] was [ellipse(0%, 0%, 100%, 100%)] at 0
-PASS: shape-outside from [ellipse(0%, 0%, 100%, 100%)] to [ellipse(25%, 25%, 50%, 50%)] was [ellipse(7.5%, 7.5%, 85%, 85%)] at 0.3
-PASS: shape-outside from [ellipse(0%, 0%, 100%, 100%)] to [ellipse(25%, 25%, 50%, 50%)] was [ellipse(15%, 15%, 70%, 70%)] at 0.6
-PASS: shape-outside from [ellipse(0%, 0%, 100%, 100%)] to [ellipse(25%, 25%, 50%, 50%)] was [ellipse(25%, 25%, 50%, 50%)] at 1
-PASS: shape-outside from [ellipse(0%, 0%, 100%, 100%)] to [ellipse(25%, 25%, 50%, 50%)] was [ellipse(37.5%, 37.5%, 25%, 25%)] at 1.5
+PASS: shape-outside from [ellipse(100% 100% at 0% 0%)] to [ellipse(50% 50% at 25% 25%)] was [ellipse(115% 115% at -7.5% -7.5%)] at -0.3
+PASS: shape-outside from [ellipse(100% 100% at 0% 0%)] to [ellipse(50% 50% at 25% 25%)] was [ellipse(100% 100% at 0% 0%)] at 0
+PASS: shape-outside from [ellipse(100% 100% at 0% 0%)] to [ellipse(50% 50% at 25% 25%)] was [ellipse(85% 85% at 7.5% 7.5%)] at 0.3
+PASS: shape-outside from [ellipse(100% 100% at 0% 0%)] to [ellipse(50% 50% at 25% 25%)] was [ellipse(70% 70% at 15% 15%)] at 0.6
+PASS: shape-outside from [ellipse(100% 100% at 0% 0%)] to [ellipse(50% 50% at 25% 25%)] was [ellipse(50% 50% at 25% 25%)] at 1
+PASS: shape-outside from [ellipse(100% 100% at 0% 0%)] to [ellipse(50% 50% at 25% 25%)] was [ellipse(25% 25% at 37.5% 37.5%)] at 1.5
 PASS: shape-outside from [polygon(nonzero, 0px 0px, 25px 25px, 50px 50px)] to [polygon(nonzero, 25px 25px, 50px 50px, 75px 75px)] was [polygon(nonzero, -7.5px -7.5px, 17.5px 17.5px, 42.5px 42.5px)] at -0.3
 PASS: shape-outside from [polygon(nonzero, 0px 0px, 25px 25px, 50px 50px)] to [polygon(nonzero, 25px 25px, 50px 50px, 75px 75px)] was [polygon(nonzero, 0px 0px, 25px 25px, 50px 50px)] at 0
 PASS: shape-outside from [polygon(nonzero, 0px 0px, 25px 25px, 50px 50px)] to [polygon(nonzero, 25px 25px, 50px 50px, 75px 75px)] was [polygon(nonzero, 7.5px 7.5px, 32.5px 32.5px, 57.5px 57.5px)] at 0.3
 PASS: shape-outside from [polygon(nonzero, 0px 0px, 25px 25px, 50px 50px)] to [polygon(nonzero, 25px 25px, 50px 50px, 75px 75px)] was [polygon(nonzero, 15px 15px, 40px 40px, 65px 65px)] at 0.6
 PASS: shape-outside from [polygon(nonzero, 0px 0px, 25px 25px, 50px 50px)] to [polygon(nonzero, 25px 25px, 50px 50px, 75px 75px)] was [polygon(nonzero, 25px 25px, 50px 50px, 75px 75px)] at 1
 PASS: shape-outside from [polygon(nonzero, 0px 0px, 25px 25px, 50px 50px)] to [polygon(nonzero, 25px 25px, 50px 50px, 75px 75px)] was [polygon(nonzero, 37.5px 37.5px, 62.5px 62.5px, 87.5px 87.5px)] at 1.5
-PASS: shape-outside from [auto] to [ellipse(0%, 0%, 100%, 100%)] was [auto] at -0.3
-PASS: shape-outside from [auto] to [ellipse(0%, 0%, 100%, 100%)] was [auto] at 0
-PASS: shape-outside from [auto] to [ellipse(0%, 0%, 100%, 100%)] was [auto] at 0.3
-PASS: shape-outside from [auto] to [ellipse(0%, 0%, 100%, 100%)] was [ellipse(0%, 0%, 100%, 100%)] at 0.6
-PASS: shape-outside from [auto] to [ellipse(0%, 0%, 100%, 100%)] was [ellipse(0%, 0%, 100%, 100%)] at 1
-PASS: shape-outside from [auto] to [ellipse(0%, 0%, 100%, 100%)] was [ellipse(0%, 0%, 100%, 100%)] at 1.5
+PASS: shape-outside from [auto] to [ellipse(100% 100% at 0% 0%)] was [auto] at -0.3
+PASS: shape-outside from [auto] to [ellipse(100% 100% at 0% 0%)] was [auto] at 0
+PASS: shape-outside from [auto] to [ellipse(100% 100% at 0% 0%)] was [auto] at 0.3
+PASS: shape-outside from [auto] to [ellipse(100% 100% at 0% 0%)] was [ellipse(100% 100% at 0% 0%)] at 0.6
+PASS: shape-outside from [auto] to [ellipse(100% 100% at 0% 0%)] was [ellipse(100% 100% at 0% 0%)] at 1
+PASS: shape-outside from [auto] to [ellipse(100% 100% at 0% 0%)] was [ellipse(100% 100% at 0% 0%)] at 1.5
 

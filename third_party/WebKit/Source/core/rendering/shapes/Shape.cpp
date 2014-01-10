@@ -178,8 +178,13 @@ PassOwnPtr<Shape> Shape::createShape(const BasicShape* basicShape, const LayoutS
     }
 
     case BasicShape::BasicShapeEllipseType: {
-        // FIXME implement layout.
-        shape = createRectangleShape(FloatRect(0, 0, boxWidth, boxHeight), FloatSize(0, 0));
+        const BasicShapeEllipse* ellipse = static_cast<const BasicShapeEllipse*>(basicShape);
+        FloatPoint center = floatPointForCenterCoordinate(ellipse->centerX(), ellipse->centerY(), FloatSize(boxWidth, boxHeight));
+        float radiusX = ellipse->floatValueForRadiusInBox(ellipse->radiusX(), center.x(), boxWidth);
+        float radiusY = ellipse->floatValueForRadiusInBox(ellipse->radiusY(), center.y(), boxHeight);
+        FloatPoint logicalCenter = physicalPointToLogical(center, logicalBoxSize.height(), writingMode);
+
+        shape = createEllipseShape(logicalCenter, FloatSize(radiusX, radiusY));
         break;
     }
 

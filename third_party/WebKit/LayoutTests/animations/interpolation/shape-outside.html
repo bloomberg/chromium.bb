@@ -44,15 +44,15 @@ assertInterpolation({
 
 assertInterpolation({
   property: 'shape-outside',
-  from: 'ellipse(0%, 0%, 100%, 100%)',
-  to: 'ellipse(25%, 25%, 50%, 50%)',
+  from: 'ellipse(100% 100% at 0% 0%)',
+  to: 'ellipse(50% 50% at 25% 25%)',
 }, [
-  {at: -0.3, is: 'ellipse(-7.5%, -7.5%, 115%, 115%)'},
-  {at: 0, is: 'ellipse(0%, 0%, 100%, 100%)'},
-  {at: 0.3, is: 'ellipse(7.5%, 7.5%, 85%, 85%)'},
-  {at: 0.6, is: 'ellipse(15%, 15%, 70%, 70%)'},
-  {at: 1, is: 'ellipse(25%, 25%, 50%, 50%)'},
-  {at: 1.5, is: 'ellipse(37.5%, 37.5%, 25%, 25%)'}
+  {at: -0.3, is: 'ellipse(115% 115% at -7.5% -7.5%)'},
+  {at: 0, is: 'ellipse(100% 100% at 0% 0%)'},
+  {at: 0.3, is: 'ellipse(85% 85% at 7.5% 7.5%)'},
+  {at: 0.6, is: 'ellipse(70% 70% at 15% 15%)'},
+  {at: 1, is: 'ellipse(50% 50% at 25% 25%)'},
+  {at: 1.5, is: 'ellipse(25% 25% at 37.5% 37.5%)'}
 ]);
 
 assertInterpolation({
@@ -71,14 +71,14 @@ assertInterpolation({
 assertInterpolation({
   property: 'shape-outside',
   from: 'auto',
-  to: 'ellipse(0%, 0%, 100%, 100%)',
+  to: 'ellipse(100% 100% at 0% 0%)',
 }, [
   {at: -0.3, is: 'auto'},
   {at: 0, is: 'auto'},
   {at: 0.3, is: 'auto'},
-  {at: 0.6, is: 'ellipse(0%, 0%, 100%, 100%)'},
-  {at: 1, is: 'ellipse(0%, 0%, 100%, 100%)'},
-  {at: 1.5, is: 'ellipse(0%, 0%, 100%, 100%)'}
+  {at: 0.6, is: 'ellipse(100% 100% at 0% 0%)'},
+  {at: 1, is: 'ellipse(100% 100% at 0% 0%)'},
+  {at: 1.5, is: 'ellipse(100% 100% at 0% 0%)'}
 ]);
 </script>
 </body>
