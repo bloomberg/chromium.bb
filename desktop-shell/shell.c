@@ -2853,6 +2853,8 @@ static const struct wl_shell_surface_interface shell_surface_implementation = {
 static void
 destroy_shell_surface(struct shell_surface *shsurf)
 {
+	struct shell_surface *child, *next;
+
 	wl_signal_emit(&shsurf->destroy_signal, shsurf);
 
 	if (!wl_list_empty(&shsurf->popup.grab_link)) {
@@ -2877,6 +2879,10 @@ destroy_shell_surface(struct shell_surface *shsurf)
 	weston_view_destroy(shsurf->view);
 
 	wl_list_remove(&shsurf->children_link);
+	wl_list_for_each_safe(child, next, &shsurf->children_list, children_link) {
+		wl_list_remove(&child->children_link);
+		child->parent = NULL;
+	}
 
 	wl_list_remove(&shsurf->link);
 	free(shsurf);
