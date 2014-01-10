@@ -342,6 +342,10 @@ bool TestLauncher::Run(int argc, char** argv) {
   if (!Init())
     return false;
 
+  // Value of |cycles_| changes after each iteration. Keep track of the
+  // original value.
+  int requested_cycles = cycles_;
+
 #if defined(OS_POSIX)
   CHECK_EQ(0, pipe(g_shutdown_pipe));
 
@@ -374,7 +378,7 @@ bool TestLauncher::Run(int argc, char** argv) {
 
   MessageLoop::current()->Run();
 
-  if (cycles_ != 1)
+  if (requested_cycles != 1)
     results_tracker_.PrintSummaryOfAllIterations();
 
   MaybeSaveSummaryAsJSON();
@@ -860,22 +864,19 @@ void TestLauncher::OnLaunchTestProcessFinished(
 }
 
 void TestLauncher::OnTestIterationFinished() {
-  // The current iteration is done.
-  fprintf(stdout, "%" PRIuS " test%s run\n",
-          test_finished_count_,
-          test_finished_count_ > 1 ? "s" : "");
-  fflush(stdout);
-
-  results_tracker_.PrintSummaryOfCurrentIteration();
-
   // When we retry tests, success is determined by having nothing more
   // to retry (everything eventually passed), as opposed to having
   // no failures at all.
-  if (!tests_to_retry_.empty()) {
+  if (tests_to_retry_.empty()) {
+    fprintf(stdout, "SUCCESS: all tests passed.\n");
+    fflush(stdout);
+  } else {
     // Signal failure, but continue to run all requested test iterations.
     // With the summary of all iterations at the end this is a good default.
     run_result_ = false;
   }
+
+  results_tracker_.PrintSummaryOfCurrentIteration();
 
   // Kick off the next iteration.
   MessageLoop::current()->PostTask(

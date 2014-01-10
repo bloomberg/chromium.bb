@@ -229,7 +229,7 @@ void TestResultsTracker::PrintSummaryOfAllIterations() const {
     }
   }
 
-  fprintf(stdout, "Summary of all itest iterations:\n");
+  fprintf(stdout, "Summary of all test iterations:\n");
   fflush(stdout);
 
   PrintTests(tests_by_status[TestResult::TEST_FAILURE].begin(),
