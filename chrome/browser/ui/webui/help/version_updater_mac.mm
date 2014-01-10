@@ -57,8 +57,9 @@ VersionUpdater* VersionUpdater::Create() {
   return new VersionUpdaterMac;
 }
 
-VersionUpdaterMac::VersionUpdaterMac() {
-  keystone_observer_.reset([[KeystoneObserver alloc] initWithUpdater:this]);
+VersionUpdaterMac::VersionUpdaterMac()
+    : show_promote_button_(false),
+      keystone_observer_([[KeystoneObserver alloc] initWithUpdater:this]) {
 }
 
 VersionUpdaterMac::~VersionUpdaterMac() {
