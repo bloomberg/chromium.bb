@@ -44,7 +44,6 @@ namespace WebCore {
 
 class CustomElementConstructorBuilder;
 class CustomElementDefinition;
-class CustomElementPendingImport;
 class Document;
 class Element;
 class ExceptionState;
@@ -63,9 +62,6 @@ public:
     static void setTypeExtension(Element*, const AtomicString& type);
 
     void resolve(Element*, const CustomElementDescriptor&);
-
-    void didStartLoadingImport(CustomElementPendingImport*);
-    void didFinishLoadingImport(PassOwnPtr<CustomElementPendingImport>);
 
 protected:
     CustomElementRegistrationContext() { }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2014 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -28,23 +28,33 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CustomElementBaseElementQueueItem_h
-#define CustomElementBaseElementQueueItem_h
+#ifndef CustomElementMicrotaskElementStep_h
+#define CustomElementMicrotaskElementStep_h
 
+#include "core/dom/custom/CustomElementMicrotaskStep.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 
-class CustomElementBaseElementQueueItem {
-    WTF_MAKE_NONCOPYABLE(CustomElementBaseElementQueueItem);
-public:
-    typedef int ElementQueue;
+class CustomElementCallbackQueue;
 
-    CustomElementBaseElementQueueItem() { }
-    virtual ~CustomElementBaseElementQueueItem() { }
-    virtual bool process(ElementQueue) = 0;
+// Runs a per-element schedule of work in the context of a microtask
+// step by thunking from CustomElementMicrotask::process to
+// CustomElementCallbackQueue::dispatch.
+class CustomElementMicrotaskElementStep : public CustomElementMicrotaskStep {
+    WTF_MAKE_NONCOPYABLE(CustomElementMicrotaskElementStep);
+public:
+    static PassOwnPtr<CustomElementMicrotaskElementStep> create(CustomElementCallbackQueue*);
+    virtual ~CustomElementMicrotaskElementStep() { }
+
+private:
+    CustomElementMicrotaskElementStep(CustomElementCallbackQueue*);
+    virtual Result process() OVERRIDE FINAL;
+
+    CustomElementCallbackQueue* m_queue;
 };
 
 }
 
-#endif // CustomElementBaseElementQueueItem_h
+#endif // CustomElementMicrotaskElementStep_h

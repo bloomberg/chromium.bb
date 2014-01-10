@@ -28,37 +28,44 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CustomElementPendingImport_h
-#define CustomElementPendingImport_h
+#ifndef CustomElementMicrotaskImportStep_h
+#define CustomElementMicrotaskImportStep_h
 
-#include "core/dom/custom/CustomElementBaseElementQueue.h"
-#include "core/dom/custom/CustomElementBaseElementQueueItem.h"
+#include "core/dom/custom/CustomElementMicrotaskQueue.h"
+#include "core/dom/custom/CustomElementMicrotaskStep.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
-class HTMLImportChild;
-
-class CustomElementPendingImport : public CustomElementBaseElementQueueItem {
-    WTF_MAKE_NONCOPYABLE(CustomElementPendingImport);
+// Processes the Custom Elements in an HTML Import. This is a
+// composite step which processes the Custom Elements created by
+// parsing the import, and its sub-imports.
+//
+// This step blocks further Custom Element microtask processing if its
+// import isn't "ready" (finished parsing and running script.)
+class CustomElementMicrotaskImportStep : public CustomElementMicrotaskStep {
+    WTF_MAKE_NONCOPYABLE(CustomElementMicrotaskImportStep);
 public:
-    static PassOwnPtr<CustomElementPendingImport> create(HTMLImportChild*);
+    static PassOwnPtr<CustomElementMicrotaskImportStep> create();
+    virtual ~CustomElementMicrotaskImportStep() { }
 
-    virtual ~CustomElementPendingImport();
-    virtual bool process(ElementQueue) OVERRIDE;
+    // API for CustomElementScheduler
+    void enqueue(PassOwnPtr<CustomElementMicrotaskStep>);
 
-    CustomElementBaseElementQueue& baseElementQueue() { return m_baseElementQueue; }
-    CustomElementBaseElementQueue* parentBaseElementQueue() const;
+    // API for HTML Imports
+    void importDidFinish();
 
-protected:
-    CustomElementPendingImport(HTMLImportChild*);
+private:
+    CustomElementMicrotaskImportStep() : m_importFinished(false) { }
 
-    HTMLImportChild* m_import;
-    CustomElementBaseElementQueue m_baseElementQueue;
+    // CustomElementMicrotaskStep
+    virtual Result process() OVERRIDE FINAL;
+
+    bool m_importFinished;
+    CustomElementMicrotaskQueue m_queue;
 };
 
 }
 
-#endif // CustomElementPendingImport_h
+#endif // CustomElementMicrotaskImportStep_h

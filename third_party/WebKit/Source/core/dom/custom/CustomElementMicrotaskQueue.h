@@ -28,43 +28,31 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "core/dom/custom/CustomElementPendingImport.h"
+#ifndef CustomElementMicrotaskQueue_h
+#define CustomElementMicrotaskQueue_h
 
-#include "core/html/HTMLImportChild.h"
-#include "core/html/HTMLLinkElement.h"
+#include "core/dom/custom/CustomElementMicrotaskStep.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 
-PassOwnPtr<CustomElementPendingImport> CustomElementPendingImport::create(HTMLImportChild* import)
-{
-    return adoptPtr(new CustomElementPendingImport(import));
+class CustomElementMicrotaskQueue {
+    WTF_MAKE_NONCOPYABLE(CustomElementMicrotaskQueue);
+public:
+    CustomElementMicrotaskQueue() { }
+
+    bool isEmpty() { return m_queue.isEmpty(); }
+    void enqueue(PassOwnPtr<CustomElementMicrotaskStep>);
+
+    typedef CustomElementMicrotaskStep::Result Result;
+    Result dispatch();
+
+private:
+    Vector<OwnPtr<CustomElementMicrotaskStep> > m_queue;
+};
+
 }
 
-CustomElementPendingImport::CustomElementPendingImport(HTMLImportChild* import)
-    : m_import(import)
-{
-}
-
-CustomElementPendingImport::~CustomElementPendingImport()
-{
-    // Remaining tasks in m_baseElementQueue will be discarded.
-    // Such a case only happens when the frame is closed
-    // while loading the import.
-}
-
-bool CustomElementPendingImport::process(ElementQueue baseQueueId)
-{
-    m_baseElementQueue.dispatch(baseQueueId);
-    return false;
-}
-
-CustomElementBaseElementQueue* CustomElementPendingImport::parentBaseElementQueue() const
-{
-    CustomElementPendingImport* parentPendingImport = m_import->parent()->pendingImport();
-    if (!parentPendingImport)
-        return 0;
-    return &parentPendingImport->baseElementQueue();
-}
-
-} // namespace WebCore
+#endif // CustomElementMicrotaskQueue_h

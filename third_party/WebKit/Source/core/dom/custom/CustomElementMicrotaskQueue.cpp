@@ -29,28 +29,39 @@
  */
 
 #include "config.h"
-#include "core/dom/Microtask.h"
+#include "core/dom/custom/CustomElementMicrotaskQueue.h"
 
-#include "core/dom/MutationObserver.h"
-#include "core/dom/custom/CustomElementScheduler.h"
-#include "wtf/Vector.h"
+#include "core/dom/custom/CustomElementCallbackDispatcher.h"
 
 namespace WebCore {
 
-void Microtask::performCheckpoint()
+void CustomElementMicrotaskQueue::enqueue(PassOwnPtr<CustomElementMicrotaskStep> step)
 {
-    static bool performingCheckpoint = false;
-    if (performingCheckpoint)
-        return;
-    performingCheckpoint = true;
+    m_queue.append(step);
+}
 
-    bool anyWorkDone;
-    do {
-        MutationObserver::deliverAllMutations();
-        anyWorkDone = CustomElementScheduler::dispatchMicrotaskProcessingSteps();
-    } while (anyWorkDone);
+CustomElementMicrotaskStep::Result CustomElementMicrotaskQueue::dispatch()
+{
+    Result result = Result(0);
 
-    performingCheckpoint = false;
+    unsigned i;
+    for (i = 0; i < m_queue.size(); ++i) {
+        // The created callback may schedule entered document
+        // callbacks.
+        CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+        result = Result(result | m_queue[i]->process());
+
+        if (result & CustomElementMicrotaskStep::ShouldStop)
+            break;
+    }
+
+    bool wasStopped = i < m_queue.size();
+    if (wasStopped)
+        m_queue.remove(0, i);
+    else
+        m_queue.resize(0);
+
+    return result;
 }
 
 } // namespace WebCore

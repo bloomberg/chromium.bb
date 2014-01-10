@@ -41,6 +41,11 @@
 
 namespace WebCore {
 
+CustomElementMicrotaskImportStep* CustomElement::didCreateImport(HTMLImportChild* import)
+{
+    return CustomElementScheduler::scheduleImport(import);
+}
+
 Vector<AtomicString>& CustomElement::embedderCustomElementNames()
 {
     DEFINE_STATIC_LOCAL(Vector<AtomicString>, names, ());

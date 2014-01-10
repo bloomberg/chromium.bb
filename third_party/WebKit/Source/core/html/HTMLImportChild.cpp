@@ -32,8 +32,8 @@
 #include "core/html/HTMLImportChild.h"
 
 #include "core/dom/Document.h"
-#include "core/dom/custom/CustomElementPendingImport.h"
-#include "core/dom/custom/CustomElementRegistrationContext.h"
+#include "core/dom/custom/CustomElement.h"
+#include "core/dom/custom/CustomElementMicrotaskImportStep.h"
 #include "core/html/HTMLImportChildClient.h"
 #include "core/html/HTMLImportLoader.h"
 
@@ -42,6 +42,7 @@ namespace WebCore {
 HTMLImportChild::HTMLImportChild(const KURL& url, bool createdByParser)
     : HTMLImport(WaitingLoaderOrChildren, createdByParser)
     , m_url(url)
+    , m_customElementMicrotaskStep(0)
     , m_traversingClients(false)
 {
 }
@@ -50,6 +51,13 @@ HTMLImportChild::~HTMLImportChild()
 {
     // importDestroyed() should be called before the destruction.
     ASSERT(!m_loader);
+
+    if (m_customElementMicrotaskStep) {
+        // if Custom Elements were blocked, must unblock them before death
+        m_customElementMicrotaskStep->importDidFinish();
+        m_customElementMicrotaskStep = 0;
+    }
+
     for (size_t i = 0; i < m_clients.size(); ++i) {
         TemporaryChange<bool> traversing(m_traversingClients, true);
         m_clients[i]->importWillBeDestroyed();
@@ -71,8 +79,8 @@ void HTMLImportChild::startLoading(const ResourcePtr<RawResource>& resource)
     ASSERT(!m_loader);
 
     if (isCreatedByParser()) {
-        m_pendingImport = CustomElementPendingImport::create(this);
-        master()->registrationContext()->didStartLoadingImport(m_pendingImport.get());
+        ASSERT(!m_customElementMicrotaskStep);
+        m_customElementMicrotaskStep = CustomElement::didCreateImport(this);
     }
 
     HTMLImportResourceOwner::setResource(resource);
@@ -95,8 +103,10 @@ void HTMLImportChild::didFinish()
         m_clients[i]->didFinish();
     }
 
-    if (m_pendingImport)
-        master()->registrationContext()->didFinishLoadingImport(m_pendingImport.release());
+    if (m_customElementMicrotaskStep) {
+        m_customElementMicrotaskStep->importDidFinish();
+        m_customElementMicrotaskStep = 0;
+    }
 }
 
 void HTMLImportChild::didFinishLoading()

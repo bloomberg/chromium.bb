@@ -32,6 +32,7 @@
 #define CustomElementScheduler_h
 
 #include "core/dom/custom/CustomElementCallbackQueue.h"
+#include "core/dom/custom/CustomElementMicrotaskQueue.h"
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -42,8 +43,9 @@ namespace WebCore {
 
 class CustomElementDescriptor;
 class CustomElementLifecycleCallbacks;
-class CustomElementPendingImport;
+class CustomElementMicrotaskImportStep;
 class Element;
+class HTMLImport;
 
 class CustomElementScheduler {
 public:
@@ -51,12 +53,9 @@ public:
     static void scheduleAttachedCallback(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>);
     static void scheduleDetachedCallback(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>);
     static void scheduleResolutionStep(const CustomElementDescriptor&, PassRefPtr<Element>);
-    static void appendPendingImport(CustomElementPendingImport*);
-    static void removePendingImport(PassOwnPtr<CustomElementPendingImport>);
+    static CustomElementMicrotaskImportStep* scheduleImport(HTMLImportChild*);
 
-protected:
-    friend class CustomElementCallbackDispatcher;
-    static void clearElementCallbackQueueMap();
+    static bool dispatchMicrotaskProcessingSteps() { return instance().dispatch(); }
 
 private:
     CustomElementScheduler() { }
@@ -65,10 +64,14 @@ private:
 
     CustomElementCallbackQueue* ensureCallbackQueue(PassRefPtr<Element>);
     CustomElementCallbackQueue* schedule(PassRefPtr<Element>);
-    CustomElementCallbackQueue* scheduleInCurrentElementQueue(PassRefPtr<Element>);
+
+    bool dispatch();
+    void clearElementCallbackQueueMap();
 
     typedef HashMap<Element*, OwnPtr<CustomElementCallbackQueue> > ElementCallbackQueueMap;
     ElementCallbackQueueMap m_elementCallbackQueueMap;
+
+    CustomElementMicrotaskQueue m_baseMicrotaskQueue;
 };
 
 }

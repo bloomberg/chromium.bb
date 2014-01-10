@@ -46,9 +46,10 @@ CustomElementCallbackQueue::CustomElementCallbackQueue(PassRefPtr<Element> eleme
 {
 }
 
-bool CustomElementCallbackQueue::process(ElementQueue caller)
+bool CustomElementCallbackQueue::processInElementQueue(ElementQueueId caller)
 {
     ASSERT(!m_inCreatedCallback);
+    bool didWork = false;
 
     while (m_index < m_queue.size() && owner() == caller) {
         m_inCreatedCallback = m_queue[m_index]->isCreated();
@@ -58,6 +59,7 @@ bool CustomElementCallbackQueue::process(ElementQueue caller)
         // detects this recursion and cedes processing.
         m_queue[m_index++]->dispatch(m_element.get());
         m_inCreatedCallback = false;
+        didWork = true;
     }
 
     if (owner() == caller && m_index == m_queue.size()) {
@@ -67,7 +69,7 @@ bool CustomElementCallbackQueue::process(ElementQueue caller)
         m_owner = -1;
     }
 
-    return true;
+    return didWork;
 }
 
 } // namespace WebCore

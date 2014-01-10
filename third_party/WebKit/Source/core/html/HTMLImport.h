@@ -36,13 +36,13 @@
 
 namespace WebCore {
 
+class CustomElementMicrotaskImportStep;
 class Document;
 class Frame;
 class HTMLImportChild;
 class HTMLImportRoot;
 class HTMLImportsController;
 class KURL;
-class CustomElementPendingImport;
 
 //
 // # Basic Data Structure and Algorithms of HTML Imports implemenation.
@@ -152,7 +152,7 @@ public:
     virtual void didFinishParsing() = 0;
     virtual bool isDone() const = 0; // FIXME: Should be renamed to haveFinishedLoading()
     virtual bool ownsLoader() const { return false; }
-    virtual CustomElementPendingImport* pendingImport() const { return 0; }
+    virtual CustomElementMicrotaskImportStep* customElementMicrotaskStep() const { return 0; }
 
 protected:
     enum State {

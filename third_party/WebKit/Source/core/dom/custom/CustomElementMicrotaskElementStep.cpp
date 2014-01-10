@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2014 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -29,58 +29,29 @@
  */
 
 #include "config.h"
-#include "core/dom/custom/CustomElementBaseElementQueue.h"
+#include "core/dom/custom/CustomElementMicrotaskElementStep.h"
 
-#include "core/dom/custom/CustomElementCallbackDispatcher.h"
 #include "core/dom/custom/CustomElementCallbackQueue.h"
 
 namespace WebCore {
 
-void CustomElementBaseElementQueue::enqueue(CustomElementBaseElementQueue::Item* item)
+PassOwnPtr<CustomElementMicrotaskElementStep> CustomElementMicrotaskElementStep::create(CustomElementCallbackQueue* queue)
 {
-    m_queue.append(item);
+    ASSERT(queue);
+    return adoptPtr(new CustomElementMicrotaskElementStep(queue));
 }
 
-void CustomElementBaseElementQueue::remove(Item* item)
+static const CustomElementCallbackQueue::ElementQueueId kMicrotaskQueueId = 0;
+
+CustomElementMicrotaskElementStep::CustomElementMicrotaskElementStep(CustomElementCallbackQueue* queue)
+    : m_queue(queue)
 {
-    size_t found = m_queue.find(item);
-    if (found != kNotFound)
-        m_queue.remove(found);
+    m_queue->setOwner(kMicrotaskQueueId);
 }
 
-void CustomElementBaseElementQueue::removeAndDeleteLater(PassOwnPtr<Item> item)
+CustomElementMicrotaskStep::Result CustomElementMicrotaskElementStep::process()
 {
-    size_t found = m_queue.find(item.get());
-    if (found != kNotFound)
-        m_queue.remove(found);
-    m_dyingItems.append(item);
-}
-
-bool CustomElementBaseElementQueue::dispatch(ElementQueue baseQueueId)
-{
-    ASSERT(!m_inDispatch);
-    m_inDispatch = true;
-
-    unsigned i;
-    for (i = 0; i < m_queue.size(); ++i) {
-        // The created callback may schedule entered document
-        // callbacks.
-        CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
-        // The task can be blocked by pending imports.
-        if (!m_queue[i]->process(baseQueueId))
-            break;
-    }
-
-    bool didWork = 0 < m_queue.size() && 0 < i;
-    if (i < m_queue.size())
-        m_queue.remove(0, i);
-    else
-        m_queue.resize(0);
-
-    m_dyingItems.clear();
-    m_inDispatch = 0;
-
-    return didWork;
+    return m_queue->processInElementQueue(kMicrotaskQueueId) ? DidWork : Result(0);
 }
 
 } // namespace WebCore

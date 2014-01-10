@@ -31,13 +31,18 @@
 #include "config.h"
 #include "core/dom/custom/CustomElementScheduler.h"
 
+#include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/custom/CustomElementCallbackDispatcher.h"
 #include "core/dom/custom/CustomElementCallbackInvocation.h"
 #include "core/dom/custom/CustomElementLifecycleCallbacks.h"
-#include "core/dom/custom/CustomElementPendingImport.h"
+#include "core/dom/custom/CustomElementMicrotaskElementStep.h"
+#include "core/dom/custom/CustomElementMicrotaskImportStep.h"
 #include "core/dom/custom/CustomElementRegistrationContext.h"
 #include "core/dom/custom/CustomElementResolutionStep.h"
+#include "core/html/HTMLImport.h"
+#include "core/html/HTMLImportChild.h"
+#include "wtf/MainThread.h"
 
 namespace WebCore {
 
@@ -75,6 +80,24 @@ void CustomElementScheduler::scheduleResolutionStep(const CustomElementDescripto
     queue->append(CustomElementResolutionStep::create(context.release(), descriptor));
 }
 
+CustomElementMicrotaskImportStep* CustomElementScheduler::scheduleImport(HTMLImportChild* import)
+{
+    ASSERT(!import->isDone());
+    ASSERT(import->parent());
+
+    OwnPtr<CustomElementMicrotaskImportStep> step = CustomElementMicrotaskImportStep::create();
+    CustomElementMicrotaskImportStep* rawStep = step.get();
+
+    // Ownership of the new step is transferred to the parent
+    // processing step, or the base queue.
+    if (CustomElementMicrotaskImportStep* parentStep = import->parent()->customElementMicrotaskStep())
+        parentStep->enqueue(step.release());
+    else
+        instance().m_baseMicrotaskQueue.enqueue(step.release());
+
+    return rawStep;
+}
+
 CustomElementScheduler& CustomElementScheduler::instance()
 {
     DEFINE_STATIC_LOCAL(CustomElementScheduler, instance, ());
@@ -96,38 +119,51 @@ void CustomElementScheduler::clearElementCallbackQueueMap()
     instance().m_elementCallbackQueueMap.swap(emptyMap);
 }
 
-void CustomElementScheduler::appendPendingImport(CustomElementPendingImport* pendingImport)
+// Finds or creates the callback queue for element.
+CustomElementCallbackQueue* CustomElementScheduler::schedule(PassRefPtr<Element> passElement)
 {
-    CustomElementCallbackDispatcher::instance().enqueue(pendingImport);
-}
+    RefPtr<Element> element(passElement);
 
-void CustomElementScheduler::removePendingImport(PassOwnPtr<CustomElementPendingImport> pendingImport)
-{
-    CustomElementCallbackDispatcher::instance().removeAndDeleteLater(pendingImport);
-}
-
-// Finds or creates the callback queue for element. If the
-// createdCallback has not finished running, the callback queue is not
-// moved to the top-of-stack. Otherwise like
-// scheduleInCurrentElementQueue.
-CustomElementCallbackQueue* CustomElementScheduler::schedule(PassRefPtr<Element> element)
-{
     CustomElementCallbackQueue* callbackQueue = ensureCallbackQueue(element);
-    if (!callbackQueue->inCreatedCallback())
+    if (callbackQueue->inCreatedCallback()) {
+        // Don't move it. Authors use the createdCallback like a
+        // constructor. By not moving it, the createdCallback
+        // completes before any other callbacks are entered for this
+        // element.
+        return callbackQueue;
+    }
+
+    if (CustomElementCallbackDispatcher::inCallbackDeliveryScope()) {
+        // The processing stack is active.
         CustomElementCallbackDispatcher::instance().enqueue(callbackQueue);
+        return callbackQueue;
+    }
+
+    HTMLImport* import = element->document().import();
+    if (import && import->customElementMicrotaskStep()) {
+        // The base element queue is active, but the element is in a
+        // parser-created import.
+        import->customElementMicrotaskStep()->enqueue(CustomElementMicrotaskElementStep::create(callbackQueue));
+        return callbackQueue;
+    }
+
+    // The base element queue is active. The element is not in a
+    // parser-created import.
+    m_baseMicrotaskQueue.enqueue(CustomElementMicrotaskElementStep::create(callbackQueue));
     return callbackQueue;
 }
 
-// Finds or creates the callback queue for element. If the element's
-// callback queue is scheduled in an earlier processing stack frame,
-// its owner is set to the element queue on the top of the processing
-// stack. Because callback queues are processed exhaustively, this
-// effectively moves the callback queue to the top of the stack.
-CustomElementCallbackQueue* CustomElementScheduler::scheduleInCurrentElementQueue(PassRefPtr<Element> element)
+bool CustomElementScheduler::dispatch()
 {
-    CustomElementCallbackQueue* callbackQueue = ensureCallbackQueue(element);
-    CustomElementCallbackDispatcher::instance().enqueue(callbackQueue);
-    return callbackQueue;
+    ASSERT(isMainThread());
+    if (CustomElementCallbackDispatcher::inCallbackDeliveryScope())
+        return false;
+
+    CustomElementMicrotaskStep::Result result = m_baseMicrotaskQueue.dispatch();
+    if (m_baseMicrotaskQueue.isEmpty())
+        clearElementCallbackQueueMap();
+
+    return result & CustomElementMicrotaskStep::DidWork;
 }
 
 } // namespace WebCore

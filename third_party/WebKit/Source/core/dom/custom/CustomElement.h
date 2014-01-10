@@ -41,8 +41,10 @@
 
 namespace WebCore {
 
+class CustomElementMicrotaskImportStep;
 class Document;
 class Element;
+class HTMLImportChild;
 
 class CustomElement {
 public:
@@ -54,6 +56,9 @@ public:
     static bool isValidName(const AtomicString& name, NameSet validNames = AllNames);
     static void addEmbedderCustomElementName(const AtomicString& name);
 
+    // API to notify of document-level changes
+    static CustomElementMicrotaskImportStep* didCreateImport(HTMLImportChild*);
+
     // API for registration contexts
     static void define(Element*, PassRefPtr<CustomElementDefinition>);
 
@@ -62,7 +67,6 @@ public:
 
     // API for Element to kick off changes
 
-    static void didFinishParsingChildren(Element*);
     static void attributeDidChange(Element*, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue);
     static void didEnterDocument(Element*, const Document&);
     static void didLeaveDocument(Element*, const Document&);

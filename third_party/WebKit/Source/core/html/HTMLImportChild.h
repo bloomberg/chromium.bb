@@ -39,7 +39,7 @@
 
 namespace WebCore {
 
-class CustomElementPendingImport;
+class CustomElementMicrotaskImportStep;
 class HTMLImportLoader;
 class HTMLImportChildClient;
 
@@ -73,7 +73,7 @@ public:
     virtual bool ownsLoader() const OVERRIDE;
     virtual void didUnblockFromCreatingDocument() OVERRIDE;
     virtual void didBecomeReady() OVERRIDE;
-    virtual CustomElementPendingImport* pendingImport() const OVERRIDE { return m_pendingImport.get(); }
+    virtual CustomElementMicrotaskImportStep* customElementMicrotaskStep() const OVERRIDE FINAL { return m_customElementMicrotaskStep; }
 
     void addClient(HTMLImportChildClient*);
     void removeClient(HTMLImportChildClient*);
@@ -95,7 +95,7 @@ private:
     void ensureLoader();
 
     KURL m_url;
-    OwnPtr<CustomElementPendingImport> m_pendingImport;
+    CustomElementMicrotaskImportStep* m_customElementMicrotaskStep;
     RefPtr<HTMLImportLoader> m_loader;
     Vector<HTMLImportChildClient*> m_clients;
     bool m_traversingClients;

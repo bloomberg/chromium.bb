@@ -32,9 +32,6 @@
 #include "core/dom/custom/CustomElementCallbackDispatcher.h"
 
 #include "core/dom/custom/CustomElementCallbackQueue.h"
-#include "core/dom/custom/CustomElementPendingImport.h"
-#include "core/dom/custom/CustomElementScheduler.h"
-#include "core/html/HTMLImport.h"
 #include "wtf/MainThread.h"
 
 namespace WebCore {
@@ -50,18 +47,6 @@ CustomElementCallbackDispatcher& CustomElementCallbackDispatcher::instance()
     return instance;
 }
 
-bool CustomElementCallbackDispatcher::dispatch()
-{
-    ASSERT(isMainThread());
-    if (inCallbackDeliveryScope())
-        return false;
-
-    bool didWork = m_baseElementQueue.dispatch(baseElementQueue());
-    if (m_baseElementQueue.isEmpty())
-        CustomElementScheduler::clearElementCallbackQueueMap();
-    return didWork;
-}
-
 // Dispatches callbacks when popping the processing stack.
 void CustomElementCallbackDispatcher::processElementQueueAndPop()
 {
@@ -71,14 +56,14 @@ void CustomElementCallbackDispatcher::processElementQueueAndPop()
 void CustomElementCallbackDispatcher::processElementQueueAndPop(size_t start, size_t end)
 {
     ASSERT(isMainThread());
-    ElementQueue thisQueue = currentElementQueue();
+    CustomElementCallbackQueue::ElementQueueId thisQueue = currentElementQueue();
 
     for (size_t i = start; i < end; i++) {
         {
             // The created callback may schedule entered document
             // callbacks.
             CallbackDeliveryScope deliveryScope;
-            m_flattenedProcessingStack[i]->process(thisQueue);
+            m_flattenedProcessingStack[i]->processInElementQueue(thisQueue);
         }
 
         ASSERT(start == s_elementQueueStart);
@@ -88,52 +73,19 @@ void CustomElementCallbackDispatcher::processElementQueueAndPop(size_t start, si
     // Pop the element queue from the processing stack
     m_flattenedProcessingStack.resize(start);
     s_elementQueueEnd = start;
-
-    if (start == kNumSentinels && m_baseElementQueue.isEmpty())
-        CustomElementScheduler::clearElementCallbackQueueMap();
-}
-
-inline CustomElementBaseElementQueue& CustomElementCallbackDispatcher::queueFor(CustomElementCallbackQueue* callbackQueue)
-{
-    if (HTMLImport* import = callbackQueue->element()->document().import()) {
-        if (CustomElementPendingImport* pending = import->pendingImport())
-            return pending->baseElementQueue();
-    }
-
-    return m_baseElementQueue;
-}
-
-inline CustomElementBaseElementQueue& CustomElementCallbackDispatcher::queueFor(CustomElementPendingImport* pendingImport)
-{
-    if (CustomElementBaseElementQueue* parentQueue = pendingImport->parentBaseElementQueue())
-        return *parentQueue;
-    return m_baseElementQueue;
 }
 
 void CustomElementCallbackDispatcher::enqueue(CustomElementCallbackQueue* callbackQueue)
 {
+    ASSERT(inCallbackDeliveryScope());
+
     if (callbackQueue->owner() == currentElementQueue())
         return;
 
     callbackQueue->setOwner(currentElementQueue());
 
-    if (inCallbackDeliveryScope()) {
-        m_flattenedProcessingStack.append(callbackQueue);
-        ++s_elementQueueEnd;
-    } else {
-        queueFor(callbackQueue).enqueue(callbackQueue);
-    }
-}
-
-void CustomElementCallbackDispatcher::enqueue(CustomElementPendingImport* pendingImport)
-{
-    queueFor(pendingImport).enqueue(pendingImport);
-}
-
-void CustomElementCallbackDispatcher::removeAndDeleteLater(PassOwnPtr<CustomElementPendingImport> pendingImport)
-{
-    CustomElementBaseElementQueue& queue = queueFor(pendingImport.get());
-    queue.removeAndDeleteLater(pendingImport);
+    m_flattenedProcessingStack.append(callbackQueue);
+    ++s_elementQueueEnd;
 }
 
 } // namespace WebCore

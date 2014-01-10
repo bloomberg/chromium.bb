@@ -28,36 +28,27 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CustomElementBaseElementQueue_h
-#define CustomElementBaseElementQueue_h
+#ifndef CustomElementMicrotaskStep_h
+#define CustomElementMicrotaskStep_h
 
-#include "core/dom/custom/CustomElementBaseElementQueueItem.h"
-#include "wtf/PassOwnPtr.h"
-#include "wtf/Vector.h"
+#include "wtf/Noncopyable.h"
 
 namespace WebCore {
 
-class CustomElementBaseElementQueue {
-    WTF_MAKE_NONCOPYABLE(CustomElementBaseElementQueue);
+class CustomElementMicrotaskStep {
+    WTF_MAKE_NONCOPYABLE(CustomElementMicrotaskStep);
 public:
-    typedef CustomElementBaseElementQueueItem Item;
+    CustomElementMicrotaskStep() { }
+    virtual ~CustomElementMicrotaskStep() { }
 
-    CustomElementBaseElementQueue() : m_inDispatch(false) { }
+    enum Result {
+        DidWork    = 1 << 0,
+        ShouldStop = 1 << 1
+    };
 
-    bool isEmpty() const { return m_queue.isEmpty(); }
-    void enqueue(Item*);
-    void remove(Item*);
-    void removeAndDeleteLater(PassOwnPtr<Item>);
-
-    typedef int ElementQueue;
-    bool dispatch(ElementQueue baseQueueId);
-
-private:
-    bool m_inDispatch;
-    Vector<Item*> m_queue;
-    Vector<OwnPtr<Item> > m_dyingItems;
+    virtual Result process() = 0;
 };
 
 }
 
-#endif // CustomElementBaseElementQueue_h
+#endif // CustomElementMicrotaskStep_h

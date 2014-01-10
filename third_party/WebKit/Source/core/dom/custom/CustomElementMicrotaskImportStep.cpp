@@ -29,28 +29,36 @@
  */
 
 #include "config.h"
-#include "core/dom/Microtask.h"
-
-#include "core/dom/MutationObserver.h"
-#include "core/dom/custom/CustomElementScheduler.h"
-#include "wtf/Vector.h"
+#include "core/dom/custom/CustomElementMicrotaskImportStep.h"
 
 namespace WebCore {
 
-void Microtask::performCheckpoint()
+PassOwnPtr<CustomElementMicrotaskImportStep> CustomElementMicrotaskImportStep::create()
 {
-    static bool performingCheckpoint = false;
-    if (performingCheckpoint)
-        return;
-    performingCheckpoint = true;
+    return adoptPtr(new CustomElementMicrotaskImportStep());
+}
 
-    bool anyWorkDone;
-    do {
-        MutationObserver::deliverAllMutations();
-        anyWorkDone = CustomElementScheduler::dispatchMicrotaskProcessingSteps();
-    } while (anyWorkDone);
+void CustomElementMicrotaskImportStep::enqueue(PassOwnPtr<CustomElementMicrotaskStep> step)
+{
+    // work should not be being created after the import is done
+    // because the parser is done
+    ASSERT(!m_importFinished);
+    m_queue.enqueue(step);
+}
 
-    performingCheckpoint = false;
+void CustomElementMicrotaskImportStep::importDidFinish()
+{
+    // imports should only "finish" once
+    ASSERT(!m_importFinished);
+    m_importFinished = true;
+}
+
+CustomElementMicrotaskStep::Result CustomElementMicrotaskImportStep::process()
+{
+    Result result = m_queue.dispatch();
+    if (!m_importFinished)
+        result = Result(result | ShouldStop);
+    return result;
 }
 
 } // namespace WebCore
