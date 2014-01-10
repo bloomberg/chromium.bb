@@ -23,17 +23,43 @@ Cursors:
 import json
 import os
 
+from metrics import memory
+from metrics import v8_object_stats
 from telemetry import test
 from telemetry.core import util
 from telemetry.page import page_measurement
 from telemetry.page import page_set
 
+_V8_COUNTER_NAMES = [
+    'V8.OsMemoryAllocated',
+  ]
 
 class _IndexedDbMeasurement(page_measurement.PageMeasurement):
-  def MeasurePage(self, _, tab, results):
+  def __init__(self, *args, **kwargs):
+    super(_IndexedDbMeasurement, self).__init__(*args, **kwargs)
+    self._memory_metric = None
+    self._v8_object_stats_metric = None
+
+  def DidStartBrowser(self, browser):
+    """Initialize metrics once right after the browser has been launched."""
+    self._memory_metric = memory.MemoryMetric(browser)
+    self._v8_object_stats_metric = \
+      v8_object_stats.V8ObjectStatsMetric(_V8_COUNTER_NAMES)
+
+  def DidNavigateToPage(self, page, tab):
+    self._memory_metric.Start(page, tab)
+    self._v8_object_stats_metric.Start(page, tab)
+
+  def MeasurePage(self, page, tab, results):
     tab.WaitForDocumentReadyStateToBeComplete()
     tab.WaitForJavaScriptExpression(
         'window.document.cookie.indexOf("__done=1") >= 0', 600)
+
+    self._memory_metric.Stop(page, tab)
+    self._v8_object_stats_metric.Stop(page, tab)
+
+    self._memory_metric.AddResults(tab, results)
+    self._v8_object_stats_metric.AddResults(tab, results)
 
     js_get_results = "JSON.stringify(automation.getResults());"
     result_dict = json.loads(tab.EvaluateJavaScript(js_get_results))
@@ -44,7 +70,11 @@ class _IndexedDbMeasurement(page_measurement.PageMeasurement):
       msec = float(result_dict[key])
       results.Add(key, 'ms', msec, data_type='unimportant')
       total += msec
-    results.Add('Total', 'ms', total)
+    results.Add('Total Perf', 'ms', total)
+
+  def CustomizeBrowserOptions(self, options):
+    memory.MemoryMetric.CustomizeBrowserOptions(options)
+    v8_object_stats.V8ObjectStatsMetric.CustomizeBrowserOptions(options)
 
 class IndexedDb(test.Test):
   """Chromium's IndexedDB Performance tests."""
