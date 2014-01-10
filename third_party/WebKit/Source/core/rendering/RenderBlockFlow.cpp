@@ -63,6 +63,7 @@ class MarginInfo {
     bool m_canCollapseWithChildren : 1;
     bool m_canCollapseMarginBeforeWithChildren : 1;
     bool m_canCollapseMarginAfterWithChildren : 1;
+    bool m_canCollapseMarginAfterWithLastChild: 1;
 
     // Whether or not we are a quirky container, i.e., do we collapse away top and bottom
     // margins in our container. Table cells and the body are the common examples. We
@@ -120,6 +121,7 @@ public:
 
     void setMargin(LayoutUnit p, LayoutUnit n) { ASSERT(!m_discardMargin); m_positiveMargin = p; m_negativeMargin = n; }
     void setCanCollapseMarginAfterWithChildren(bool collapse) { m_canCollapseMarginAfterWithChildren = collapse; }
+    void setCanCollapseMarginAfterWithLastChild(bool collapse) { m_canCollapseMarginAfterWithLastChild = collapse; }
     void setDiscardMargin(bool value) { m_discardMargin = value; }
 
     bool atBeforeSideOfBlock() const { return m_atBeforeSideOfBlock; }
@@ -127,6 +129,7 @@ public:
     bool canCollapseWithMarginAfter() const { return m_atAfterSideOfBlock && m_canCollapseMarginAfterWithChildren; }
     bool canCollapseMarginBeforeWithChildren() const { return m_canCollapseMarginBeforeWithChildren; }
     bool canCollapseMarginAfterWithChildren() const { return m_canCollapseMarginAfterWithChildren; }
+    bool canCollapseMarginAfterWithLastChild() const { return m_canCollapseMarginAfterWithLastChild; }
     bool quirkContainer() const { return m_quirkContainer; }
     bool determinedMarginBeforeQuirk() const { return m_determinedMarginBeforeQuirk; }
     bool hasMarginBeforeQuirk() const { return m_hasMarginBeforeQuirk; }
@@ -136,7 +139,6 @@ public:
     bool discardMargin() const { return m_discardMargin; }
     LayoutUnit margin() const { return m_positiveMargin - m_negativeMargin; }
 };
-
 static bool inNormalFlow(RenderBox* child)
 {
     RenderBlock* curr = child->containingBlock();
@@ -501,6 +503,13 @@ void RenderBlockFlow::layoutBlockChild(RenderBox* child, MarginInfo& marginInfo,
         child->layoutIfNeeded();
     }
 
+    // If we previously encountered a self-collapsing sibling of this child that had clearance then
+    // we set this bit to ensure we would not collapse the child's margins, and those of any subsequent
+    // self-collapsing siblings, with our parent. If this child is not self-collapsing then it can
+    // collapse its margins with the parent so reset the bit.
+    if (!marginInfo.canCollapseMarginAfterWithLastChild() && !child->isSelfCollapsingBlock())
+        marginInfo.setCanCollapseMarginAfterWithLastChild(true);
+
     // We are no longer at the top of the block if we encounter a non-empty child.
     // This has to be done after checking for clear, so that margins can be reset if a clear occurred.
     if (marginInfo.atBeforeSideOfBlock() && !child->isSelfCollapsingBlock())
@@ -833,7 +842,8 @@ void RenderBlockFlow::layoutBlockChildren(bool relayoutChildren, LayoutUnit& max
 
 // Our MarginInfo state used when laying out block children.
 MarginInfo::MarginInfo(RenderBlockFlow* blockFlow, LayoutUnit beforeBorderPadding, LayoutUnit afterBorderPadding)
-    : m_atBeforeSideOfBlock(true)
+    : m_canCollapseMarginAfterWithLastChild(true)
+    , m_atBeforeSideOfBlock(true)
     , m_atAfterSideOfBlock(false)
     , m_hasMarginBeforeQuirk(false)
     , m_hasMarginAfterQuirk(false)
@@ -1164,15 +1174,9 @@ LayoutUnit RenderBlockFlow::clearFloatsIfNeeded(RenderBox* child, MarginInfo& ma
         // CSS2.1 states:
         // "If the top and bottom margins of an element with clearance are adjoining, its margins collapse with
         // the adjoining margins of following siblings but that resulting margin does not collapse with the bottom margin of the parent block."
-        // So the parent's bottom margin cannot collapse through this block or any subsequent self-collapsing blocks. Check subsequent siblings
-        // for a block with height - if none is found then don't allow the margins to collapse with the parent.
-        bool wouldCollapseMarginsWithParent = marginInfo.canCollapseMarginAfterWithChildren();
-        for (RenderBox* curr = child->nextSiblingBox(); curr && wouldCollapseMarginsWithParent; curr = curr->nextSiblingBox()) {
-            if (!curr->isFloatingOrOutOfFlowPositioned() && !curr->isSelfCollapsingBlock())
-                wouldCollapseMarginsWithParent = false;
-        }
-        if (wouldCollapseMarginsWithParent)
-            marginInfo.setCanCollapseMarginAfterWithChildren(false);
+        // So the parent's bottom margin cannot collapse through this block or any subsequent self-collapsing blocks. Set a bit to ensure
+        // this happens; it will get reset if we encounter an in-flow sibling that is not self-collapsing.
+        marginInfo.setCanCollapseMarginAfterWithLastChild(false);
 
         // For now set the border-top of |child| flush with the bottom border-edge of the float so it can layout any floating or positioned children of
         // its own at the correct vertical position. If subsequent siblings attempt to collapse with |child|'s margins in |collapseMargins| we will
@@ -1376,6 +1380,9 @@ void RenderBlockFlow::handleAfterSideOfBlock(LayoutUnit beforeSide, LayoutUnit a
     RenderObject* child = lastChild();
     if (child && child->isRenderBlockFlow() && toRenderBlockFlow(child)->isSelfCollapsingBlock())
         setLogicalHeight(logicalHeight() - toRenderBlockFlow(child)->marginOffsetForSelfCollapsingBlock());
+
+    if (marginInfo.canCollapseMarginAfterWithChildren() && !marginInfo.canCollapseMarginAfterWithLastChild())
+        marginInfo.setCanCollapseMarginAfterWithChildren(false);
 
     // If we can't collapse with children then go ahead and add in the bottom margin.
     if (!marginInfo.discardMargin() && (!marginInfo.canCollapseWithMarginAfter() && !marginInfo.canCollapseWithMarginBefore()
