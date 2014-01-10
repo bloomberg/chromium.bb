@@ -366,12 +366,12 @@ void RenderTable::layoutCaption(RenderTableCaption* caption)
     if (caption->needsLayout()) {
         // The margins may not be available but ensure the caption is at least located beneath any previous sibling caption
         // so that it does not mistakenly think any floats in the previous caption intrude into it.
-        caption->setLogicalLocation(LayoutPoint(caption->marginStart(), caption->marginBefore() + logicalHeight()));
+        caption->setLogicalLocation(LayoutPoint(caption->marginStart(), collapsedMarginBeforeForChild(caption) + logicalHeight()));
         // If RenderTableCaption ever gets a layout() function, use it here.
         caption->layoutIfNeeded();
     }
     // Apply the margins to the location now that they are definitely available from layout
-    LayoutUnit captionLogicalTop = caption->marginBefore() + logicalHeight();
+    LayoutUnit captionLogicalTop = collapsedMarginBeforeForChild(caption) + logicalHeight();
     if (view()->layoutState()->isPaginated()) {
         captionLogicalTop += caption->paginationStrut();
         caption->setPaginationStrut(0);
@@ -381,7 +381,7 @@ void RenderTable::layoutCaption(RenderTableCaption* caption)
     if (!selfNeedsLayout() && caption->checkForRepaintDuringLayout())
         caption->repaintDuringLayoutIfMoved(captionRect);
 
-    setLogicalHeight(logicalHeight() + caption->logicalHeight() + caption->marginBefore() + caption->marginAfter());
+    setLogicalHeight(logicalHeight() + caption->logicalHeight() + collapsedMarginBeforeForChild(caption) + collapsedMarginAfterForChild(caption));
 }
 
 void RenderTable::distributeExtraLogicalHeight(int extraLogicalHeight)
