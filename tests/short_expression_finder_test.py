@@ -135,6 +135,14 @@ class Tests(unittest.TestCase):
     # 23,127,843,459,154,899,464,880,444,632,250 partitions up front.
     self.assertEqual(501, len(tuple(partitions(1000, 1))))
 
+  def test_nones(self):
+    # Test that nothing breaks even if None.
+    v = [('CHROMEOS', set(['1', None])), ('OS', set([None, 'abc']))]
+    # TODO(maruel): This is wrong.
+    with self.assertRaises(TypeError):
+      s = ShortExpressionFinder(v)
+      self.assertEqual([], s.get_expr(('1', None)))
+
 
 if __name__ == '__main__':
   VERBOSE = '-v' in sys.argv

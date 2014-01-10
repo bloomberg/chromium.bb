@@ -556,6 +556,110 @@ class IsolateFormatTest(unittest.TestCase):
         isolate_format.load_isolate_as_config(FAKE_DIR, win, None)).flatten()
     self.assertEqual(expected, configs)
 
+  def test_load_multi_variables(self):
+    # Load an .isolate with different condition on different variables.
+    data = {
+      'conditions': [
+        ['OS=="abc"', {
+          'variables': {
+            'command': ['bar'],
+          },
+        }],
+        ['CHROMEOS=="1"', {
+          'variables': {
+            'command': ['foo'],
+          },
+        }],
+      ],
+    }
+    configs = isolate_format.load_isolate_as_config(FAKE_DIR, data, None)
+    self.assertEqual(('CHROMEOS', 'OS'), configs.config_variables)
+    flatten = dict((k, v.flatten()) for k, v in configs.by_config.iteritems())
+    expected = {
+        (('1', 'abc')): {'command': ['bar']},
+    }
+    self.assertEqual(expected, flatten)
+
+  def test_union_multi_variables(self):
+    data1 = {
+      'conditions': [
+        ['OS=="abc"', {
+          'variables': {
+            'command': ['bar'],
+          },
+        }],
+      ],
+    }
+    data2 = {
+      'conditions': [
+        ['CHROMEOS=="1"', {
+          'variables': {
+            'command': ['foo'],
+          },
+        }],
+      ],
+    }
+    configs1 = isolate_format.load_isolate_as_config(FAKE_DIR, data1, None)
+    configs2 = isolate_format.load_isolate_as_config(FAKE_DIR, data2, None)
+    with self.assertRaises(isolate_format.isolateserver.ConfigError):
+      # TODO(maruel): This is wrong.
+      configs = configs1.union(configs2)
+      self.assertEqual(('CHROMEOS', 'OS'), configs.config_variables)
+      flatten = dict((k, v.flatten()) for k, v in configs.by_config.iteritems())
+      expected = {
+          (None, 'abc'): {'command': ['bar']},
+          ('1', None): {'command': ['foo']},
+      }
+      self.assertEqual(expected, flatten)
+
+  def test_make_isolate_multi_variables(self):
+    config = isolate_format.Configs(None)
+    config.config_variables = ('CHROMEOS', 'OS')
+    config.by_config[(('0', 'linux'))] = isolate_format.ConfigSettings(
+        {'command': ['bar']})
+    config.by_config[(('1', 'linux'))] = isolate_format.ConfigSettings(
+        {'command': ['foo']})
+    expected = {
+      'conditions': [
+        ['CHROMEOS=="0" and OS=="linux"', {
+          'variables': {
+            'command': ['bar'],
+          },
+        }],
+        ['CHROMEOS=="1" and OS=="linux"', {
+          'variables': {
+            'command': ['foo'],
+          },
+        }],
+      ],
+    }
+    self.assertEqual(expected, config.make_isolate_file())
+
+  def test_make_isolate_multi_variables_missing(self):
+    config = isolate_format.Configs(None)
+    config.config_variables = ('CHROMEOS', 'OS')
+    config.by_config[((None, 'abc'))] = isolate_format.ConfigSettings(
+        {'command': ['bar']})
+    config.by_config[(('1', None))] = isolate_format.ConfigSettings(
+        {'command': ['foo']})
+    expected = {
+      'conditions': [
+        ['CHROMEOS=="1"', {
+          'variables': {
+            'command': ['foo'],
+          },
+        }],
+        ['OS=="abc"', {
+          'variables': {
+            'command': ['bar'],
+          },
+        }],
+      ],
+    }
+    # TODO(maruel): This is wrong.
+    with self.assertRaises(TypeError):
+      self.assertEqual(expected, config.make_isolate_file())
+
   def test_merge_three_conditions(self):
     values = {
       ('linux',): {

@@ -452,8 +452,7 @@ class ConfigSettings(object):
   """Represents the dependency variables for a single build configuration.
   The structure is immutable.
   """
-  def __init__(self, config, values):
-    self.config = config
+  def __init__(self, values):
     verify_variables(values)
     self.touched = sorted(values.get(KEY_TOUCHED, []))
     self.tracked = sorted(values.get(KEY_TRACKED, []))
@@ -466,7 +465,6 @@ class ConfigSettings(object):
 
     self has priority over rhs for 'command' variable.
     """
-    assert not (self.config and rhs.config) or (self.config == rhs.config)
     var = {
       KEY_TOUCHED: sorted(self.touched + rhs.touched),
       KEY_TRACKED: sorted(self.tracked + rhs.tracked),
@@ -474,7 +472,7 @@ class ConfigSettings(object):
       'command': self.command or rhs.command,
       'read_only': rhs.read_only if self.read_only is None else self.read_only,
     }
-    return ConfigSettings(self.config or rhs.config, var)
+    return ConfigSettings(var)
 
   def flatten(self):
     out = {}
@@ -495,21 +493,23 @@ class Configs(object):
   """Represents a processed .isolate file.
 
   Stores the file in a processed way, split by configuration.
+
+  At this point, we don't know all the possibilities. So mount a partial view
+  that we have.
   """
   def __init__(self, file_comment):
     self.file_comment = file_comment
-    # The keys of by_config are tuples of values for the configuration
-    # variables. The names of the variables (which must be the same for
-    # every by_config key) are kept in config_variables. Initially by_config
-    # is empty and we don't know what configuration variables will be used,
-    # so config_variables also starts out empty. It will be set by the first
-    # call to union() or merge_dependencies().
-    self.by_config = {}
+    # Contains the names of the config variables seen while processing
+    # .isolate file(s). The order is important since the same order is used for
+    # keys in self.by_config.
     self.config_variables = ()
+    # The keys of by_config are tuples of values for each of the items in
+    # self.config_variables. A None item in the list of the key means the value
+    # is unbounded.
+    self.by_config = {}
 
   def union(self, rhs):
-    """Adds variables from rhs (a Configs) to the existing variables.
-    """
+    """Adds variables from rhs (a Configs) to the existing variables."""
     config_variables = self.config_variables
     if not config_variables:
       config_variables = rhs.config_variables
@@ -529,32 +529,6 @@ class Configs(object):
       out.by_config[config] = union(
           self.by_config.get(config), rhs.by_config.get(config))
     return out
-
-  def merge_dependencies(self, values, config_variables, configs):
-    """Adds new dependencies to this object for the given configurations.
-    Arguments:
-      values: A variables dict as found in a .isolate file, e.g.,
-          {KEY_TOUCHED: [...], 'command': ...}.
-      config_variables: An ordered list of configuration variables, e.g.,
-          ["OS", "chromeos"]. If this object already contains any dependencies,
-          the configuration variables must match.
-      configs: a list of tuples of values of the configuration variables,
-          e.g., [("mac", 0), ("linux", 1)]. The dependencies in |values|
-          are added to all of these configurations, and other configurations
-          are unchanged.
-    """
-    if not values:
-      return
-
-    if not self.config_variables:
-      self.config_variables = config_variables
-    else:
-      # See comment in Configs.union().
-      assert self.config_variables == config_variables
-
-    for config in configs:
-      self.by_config[config] = union(
-          self.by_config.get(config), ConfigSettings(config, values))
 
   def flatten(self):
     """Returns a flat dictionary representation of the configuration.
@@ -655,7 +629,7 @@ def load_isolate_as_config(isolate_dir, value, file_comment):
         *sorted(variables_and_values.iteritems()))
     all_configs = list(itertools.product(*config_values))
   else:
-    config_variables = None
+    config_variables = ()
     all_configs = []
 
   isolate = Configs(file_comment)
@@ -663,7 +637,11 @@ def load_isolate_as_config(isolate_dir, value, file_comment):
   # Add configuration-specific variables.
   for expr, then in value.get('conditions', []):
     configs = match_configs(expr, config_variables, all_configs)
-    isolate.merge_dependencies(then['variables'], config_variables, configs)
+    new = Configs(None)
+    new.config_variables = config_variables
+    for config in configs:
+      new.by_config[config] = ConfigSettings(then['variables'])
+    isolate = isolate.union(new)
 
   # Load the includes. Process them in reverse so the last one take precedence.
   for include in reversed(value.get('includes', [])):

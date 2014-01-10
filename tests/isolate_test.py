@@ -837,6 +837,57 @@ class IsolateCommand(IsolateBase):
       actual_isolated_state = f.read()
     self.assertEqual(expected_isolated_state, actual_isolated_state)
 
+  def test_CMDcheck_new_variables(self):
+    isolate_file = os.path.join(self.cwd, 'x.isolate')
+    isolated_file = os.path.join(self.cwd, 'x.isolated')
+    cmd = [
+        '-i', isolate_file, '-v', '-v',
+        '-s', isolated_file,
+        '--config-variable', 'OS=dendy',
+    ]
+    if False:
+      with open(isolate_file, 'wb') as f:
+        f.write(
+            '# Foo\n'
+            '{'
+            '  \'conditions\':['
+            '    [\'OS=="dendy"\', {'
+            '      \'variables\': {'
+            '        \'command\': [\'foo\'],'
+            '      },'
+            '    }],'
+            '  ],'
+            '}')
+
+      self.mock(sys, 'stdout', cStringIO.StringIO())
+      self.assertEqual(0, isolate.CMDcheck(isolate.OptionParserIsolate(), cmd))
+
+    # Now add a new config variable.
+    with open(isolate_file, 'wb') as f:
+      f.write(
+          '# Foo\n'
+          '{'
+          '  \'conditions\':['
+          '    [\'OS=="dendy"\', {'
+          '      \'variables\': {'
+          '        \'command\': [\'foo\'],'
+          '      },'
+          '    }],'
+          '    [\'foo=="baz"\', {'
+          '      \'variables\': {'
+          '        \'command\': [\'foo\'],'
+          '      },'
+          '    }],'
+          '  ],'
+          '}')
+    # TODO(maruel): This is wrong.
+    with self.assertRaises(isolate.isolateserver.ConfigError):
+      self.assertEqual(
+          0,
+          isolate.CMDcheck(
+              isolate.OptionParserIsolate(),
+              cmd + ['--config-variable', 'foo=bar']))
+
   def test_CMDrewrite(self):
     isolate_file = os.path.join(self.cwd, 'x.isolate')
     data = (
