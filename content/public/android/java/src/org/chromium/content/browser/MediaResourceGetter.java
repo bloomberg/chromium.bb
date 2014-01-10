@@ -55,7 +55,8 @@ class MediaResourceGetter {
     }
 
     @CalledByNative
-    private static MediaMetadata extractMediaMetadata(Context context, String url, String cookies) {
+    private static MediaMetadata extractMediaMetadata(Context context, String url, String cookies,
+            String userAgent) {
         int durationInMilliseconds = 0;
         int width = 0;
         int height = 0;
@@ -108,6 +109,9 @@ class MediaResourceGetter {
                 HashMap<String, String> headersMap = new HashMap<String, String>();
                 if (!TextUtils.isEmpty(cookies)) {
                     headersMap.put("Cookie", cookies);
+                }
+                if (!TextUtils.isEmpty(userAgent)) {
+                    headersMap.put("User-Agent", userAgent);
                 }
                 retriever.setDataSource(url, headersMap);
             }

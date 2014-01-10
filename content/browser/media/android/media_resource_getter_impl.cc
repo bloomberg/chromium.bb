@@ -22,6 +22,9 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
+using base::android::ConvertUTF8ToJavaString;
+using base::android::ScopedJavaLocalRef;
+
 namespace content {
 
 static void ReturnResultOnUIThread(
@@ -35,17 +38,21 @@ static void ReturnResultOnUIThread(
 // thread to run the callback function.
 static void GetMediaMetadata(
     const std::string& url, const std::string& cookies,
+    const std::string& user_agent,
     const media::MediaResourceGetter::ExtractMediaMetadataCB& callback) {
   JNIEnv* env = base::android::AttachCurrentThread();
 
-  base::android::ScopedJavaLocalRef<jstring> j_url_string =
-      base::android::ConvertUTF8ToJavaString(env, url);
-  base::android::ScopedJavaLocalRef<jstring> j_cookies =
-      base::android::ConvertUTF8ToJavaString(env, cookies);
+  ScopedJavaLocalRef<jstring> j_url_string = ConvertUTF8ToJavaString(env, url);
+  ScopedJavaLocalRef<jstring> j_cookies = ConvertUTF8ToJavaString(env, cookies);
   jobject j_context = base::android::GetApplicationContext();
-  base::android::ScopedJavaLocalRef<jobject> j_metadata =
-      Java_MediaResourceGetter_extractMediaMetadata(
-          env, j_context, j_url_string.obj(), j_cookies.obj());
+  ScopedJavaLocalRef<jstring> j_user_agent = ConvertUTF8ToJavaString(
+      env, user_agent);
+  ScopedJavaLocalRef<jobject> j_metadata =
+      Java_MediaResourceGetter_extractMediaMetadata(env,
+                                                    j_context,
+                                                    j_url_string.obj(),
+                                                    j_cookies.obj(),
+                                                    j_user_agent.obj());
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(callback, base::TimeDelta::FromMilliseconds(
@@ -261,11 +268,12 @@ void MediaResourceGetterImpl::GetPlatformPathCallback(
 
 void MediaResourceGetterImpl::ExtractMediaMetadata(
     const std::string& url, const std::string& cookies,
-    const ExtractMediaMetadataCB& callback) {
+    const std::string& user_agent, const ExtractMediaMetadataCB& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
   pool->PostWorkerTask(
-      FROM_HERE, base::Bind(&GetMediaMetadata, url, cookies, callback));
+      FROM_HERE,
+      base::Bind(&GetMediaMetadata, url, cookies, user_agent, callback));
 }
 
 // static

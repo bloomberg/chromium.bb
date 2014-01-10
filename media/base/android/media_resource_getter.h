@@ -40,6 +40,7 @@ class MEDIA_EXPORT MediaResourceGetter {
   virtual void ExtractMediaMetadata(
       const std::string& url,
       const std::string& cookies,
+      const std::string& user_agent,
       const ExtractMediaMetadataCB& callback) = 0;
 };
 

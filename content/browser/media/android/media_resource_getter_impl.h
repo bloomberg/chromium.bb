@@ -49,6 +49,7 @@ class MediaResourceGetterImpl : public media::MediaResourceGetter {
       const GetPlatformPathCB& callback) OVERRIDE;
   virtual void ExtractMediaMetadata(
       const std::string& url, const std::string& cookies,
+      const std::string& user_agent,
       const ExtractMediaMetadataCB& callback) OVERRIDE;
 
   static bool RegisterMediaResourceGetter(JNIEnv* env);

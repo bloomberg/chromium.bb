@@ -137,11 +137,12 @@ public class MediaPlayerBridge {
 
     @CalledByNative
     protected boolean setDataSource(
-            Context context, String url, String cookies, boolean hideUrlLog) {
+            Context context, String url, String cookies, String userAgent, boolean hideUrlLog) {
         Uri uri = Uri.parse(url);
         HashMap<String, String> headersMap = new HashMap<String, String>();
         if (hideUrlLog) headersMap.put("x-hide-urls-from-log", "true");
         if (!TextUtils.isEmpty(cookies)) headersMap.put("Cookie", cookies);
+        if (!TextUtils.isEmpty(userAgent)) headersMap.put("User-Agent", userAgent);
         try {
             getLocalPlayer().setDataSource(context, uri, headersMap);
             return true;

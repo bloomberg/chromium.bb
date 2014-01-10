@@ -45,6 +45,7 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
   MediaPlayerBridge(int player_id,
                     const GURL& url,
                     const GURL& first_party_for_cookies,
+                    const std::string& user_agent,
                     bool hide_url_log,
                     MediaPlayerManager* manager);
   virtual ~MediaPlayerBridge();
@@ -139,6 +140,9 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
 
   // First party url for cookies.
   GURL first_party_for_cookies_;
+
+  // User agent string to be used for media player.
+  const std::string user_agent_;
 
   // Hide url log from media player.
   bool hide_url_log_;

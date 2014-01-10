@@ -18,6 +18,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "media/base/android/media_drm_bridge.h"
 #include "media/base/android/media_player_bridge.h"
@@ -76,8 +77,14 @@ MediaPlayerAndroid* BrowserMediaPlayerManager::CreateMediaPlayer(
     BrowserDemuxerAndroid* demuxer) {
   switch (type) {
     case MEDIA_PLAYER_TYPE_URL: {
+      const std::string user_agent = GetUserAgent(url);
       MediaPlayerBridge* media_player_bridge = new MediaPlayerBridge(
-          player_id, url, first_party_for_cookies, hide_url_log, manager);
+          player_id,
+          url,
+          first_party_for_cookies,
+          user_agent,
+          hide_url_log,
+          manager);
       BrowserMediaPlayerManager* browser_media_player_manager =
           static_cast<BrowserMediaPlayerManager*>(manager);
       ContentViewCoreImpl* content_view_core_impl =
