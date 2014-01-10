@@ -19,19 +19,20 @@ class FakeDataFetcherImplAndroid : public DataFetcherImplAndroid {
   FakeDataFetcherImplAndroid() { }
   virtual ~FakeDataFetcherImplAndroid() { }
 
-  virtual bool Start(DeviceData::Type event_type) OVERRIDE {
-    return true;
-  }
-
-  virtual void Stop(DeviceData::Type event_type) OVERRIDE {
-  }
-
   virtual int GetNumberActiveDeviceMotionSensors() OVERRIDE {
     return number_active_sensors_;
   }
 
   void SetNumberActiveDeviceMotionSensors(int number_active_sensors) {
     number_active_sensors_ = number_active_sensors;
+  }
+
+ protected:
+  virtual bool Start(EventType event_type) OVERRIDE {
+    return true;
+  }
+
+  virtual void Stop(EventType event_type) OVERRIDE {
   }
 
  private:

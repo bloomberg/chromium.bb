@@ -410,7 +410,6 @@
     'browser/device_orientation/data_fetcher_shared_memory_default.cc',
     'browser/device_orientation/data_fetcher_shared_memory_mac.cc',
     'browser/device_orientation/data_fetcher_shared_memory_win.cc',
-    'browser/device_orientation/device_data.h',
     'browser/device_orientation/device_inertial_sensor_service.cc',
     'browser/device_orientation/device_inertial_sensor_service.h',
     'browser/device_orientation/device_motion_message_filter.cc',

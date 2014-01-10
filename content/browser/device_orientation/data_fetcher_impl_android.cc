@@ -135,7 +135,7 @@ void DataFetcherImplAndroid::GotRotationRate(
   }
 }
 
-bool DataFetcherImplAndroid::Start(DeviceData::Type event_type) {
+bool DataFetcherImplAndroid::Start(EventType event_type) {
   DCHECK(!device_orientation_.is_null());
   return Java_DeviceMotionAndOrientation_start(
       AttachCurrentThread(), device_orientation_.obj(),
@@ -143,7 +143,7 @@ bool DataFetcherImplAndroid::Start(DeviceData::Type event_type) {
       kInertialSensorIntervalMillis);
 }
 
-void DataFetcherImplAndroid::Stop(DeviceData::Type event_type) {
+void DataFetcherImplAndroid::Stop(EventType event_type) {
   DCHECK(!device_orientation_.is_null());
   Java_DeviceMotionAndOrientation_stop(
       AttachCurrentThread(), device_orientation_.obj(),
@@ -169,7 +169,7 @@ bool DataFetcherImplAndroid::StartFetchingDeviceMotionData(
     device_motion_buffer_ = buffer;
     ClearInternalMotionBuffers();
   }
-  bool success = Start(DeviceData::kTypeMotion);
+  bool success = Start(kTypeMotion);
 
   // If no motion data can ever be provided, the number of active device motion
   // sensors will be zero. In that case flag the shared memory buffer
@@ -183,7 +183,7 @@ bool DataFetcherImplAndroid::StartFetchingDeviceMotionData(
 }
 
 void DataFetcherImplAndroid::StopFetchingDeviceMotionData() {
-  Stop(DeviceData::kTypeMotion);
+  Stop(kTypeMotion);
   {
     base::AutoLock autolock(motion_buffer_lock_);
     if (device_motion_buffer_) {
@@ -245,7 +245,7 @@ bool DataFetcherImplAndroid::StartFetchingDeviceOrientationData(
     base::AutoLock autolock(orientation_buffer_lock_);
     device_orientation_buffer_ = buffer;
   }
-  bool success = Start(DeviceData::kTypeOrientation);
+  bool success = Start(kTypeOrientation);
 
   {
     base::AutoLock autolock(orientation_buffer_lock_);
@@ -261,7 +261,7 @@ bool DataFetcherImplAndroid::StartFetchingDeviceOrientationData(
 }
 
 void DataFetcherImplAndroid::StopFetchingDeviceOrientationData() {
-  Stop(DeviceData::kTypeOrientation);
+  Stop(kTypeOrientation);
   {
     base::AutoLock autolock(orientation_buffer_lock_);
     if (device_orientation_buffer_) {

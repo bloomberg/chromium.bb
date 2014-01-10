@@ -8,7 +8,6 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
-#include "content/browser/device_orientation/device_data.h"
 #include "content/common/content_export.h"
 #include "content/common/device_orientation/device_motion_hardware_buffer.h"
 #include "content/common/device_orientation/device_orientation_hardware_buffer.h"
@@ -43,9 +42,6 @@ class CONTENT_EXPORT DataFetcherImplAndroid {
   void GotRotationRate(JNIEnv*, jobject,
                        double alpha, double beta, double gamma);
 
-  virtual bool Start(DeviceData::Type event_type);
-  virtual void Stop(DeviceData::Type event_type);
-
   // Shared memory related methods.
   bool StartFetchingDeviceMotionData(DeviceMotionHardwareBuffer* buffer);
   void StopFetchingDeviceMotionData();
@@ -55,19 +51,23 @@ class CONTENT_EXPORT DataFetcherImplAndroid {
   void StopFetchingDeviceOrientationData();
 
  protected:
+  enum EventType {
+    // These constants should match DEVICE_ORIENTATION and DEVICE_MOTION
+    // constants in content/public/android/java/src/org/chromium/content/
+    // browser/DeviceMotionAndOrientation.java
+    kTypeOrientation = 0,
+    kTypeMotion = 1
+  };
+
   DataFetcherImplAndroid();
   virtual ~DataFetcherImplAndroid();
 
+  virtual bool Start(EventType event_type);
+  virtual void Stop(EventType event_type);
   virtual int GetNumberActiveDeviceMotionSensors();
 
  private:
   friend struct DefaultSingletonTraits<DataFetcherImplAndroid>;
-
-  void CheckMotionBufferReadyToRead();
-  void SetMotionBufferReadyStatus(bool ready);
-  void ClearInternalMotionBuffers();
-
-  void SetOrientationBufferReadyStatus(bool ready);
 
   enum {
     RECEIVED_MOTION_DATA_ACCELERATION = 0,
@@ -75,6 +75,12 @@ class CONTENT_EXPORT DataFetcherImplAndroid {
     RECEIVED_MOTION_DATA_ROTATION_RATE = 2,
     RECEIVED_MOTION_DATA_MAX = 3,
   };
+
+  void CheckMotionBufferReadyToRead();
+  void SetMotionBufferReadyStatus(bool ready);
+  void ClearInternalMotionBuffers();
+
+  void SetOrientationBufferReadyStatus(bool ready);
 
   // The Java provider of orientation info.
   base::android::ScopedJavaGlobalRef<jobject> device_orientation_;
