@@ -104,8 +104,6 @@ public class Shell extends LinearLayout {
     private void onNativeDestroyed() {
         mWindow = null;
         mNativeShell = 0;
-        assert !mContentView.isAttachedToWindow()
-                : "Attempting to destroy the content view while attached to the view hierarchy.";
         mContentView.destroy();
     }
 
