@@ -54,11 +54,11 @@ PROCESSED_FILE=0
 declare -a THROBBER_STR=('-' '\\' '|' '/')
 THROBBER_COUNT=0
 
-SUBPROCESS=0
+VERBOSE=0
 
-# NoOp in subprocess, echo otherwise.
+# Echo only if verbose option is set.
 function info {
-  if [ $SUBPROCESS -eq 0 ]; then
+  if [ $VERBOSE -eq 1 ]; then
     echo $@
   fi
 }
@@ -384,8 +384,7 @@ Options:
   -r<revision> If this is specified, the script processes only png files
                changed since this revision. The <dir> options will be used
                to narrow down the files under specific directories.
-  -s  Run as subprocess. This may be used to parallelize execution.
-      Usage: find <dir> -name \"*.png\" | xargs -n1 -P16 $program -s -o2
+  -v  Shows optimization process for each file.
   -h  Print this help text."
   exit 1
 }
@@ -403,7 +402,7 @@ fi
 
 OPTIMIZE_LEVEL=1
 # Parse options
-while getopts o:r:h:s opts
+while getopts o:r:h:v opts
 do
   case $opts in
     r)
@@ -419,8 +418,8 @@ do
       fi
       OPTIMIZE_LEVEL=$OPTARG
       ;;
-    s)
-      let SUBPROCESS=1
+    v)
+      let VERBOSE=1
       ;;
     [h?])
       show_help;;
@@ -479,7 +478,7 @@ else
   for d in $DIRS; do
     info "Optimizing png files in $d"
     optimize_dir $d
-    echo
+    info ""
   done
 fi
 
