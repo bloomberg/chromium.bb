@@ -540,7 +540,6 @@ static bool LogContainsSSLConnectEndEvent(
          LogContainsEvent(
              log, i, NetLog::TYPE_SOCKET_BYTES_SENT, NetLog::PHASE_NONE);
 }
-;
 
 TEST_F(SSLClientSocketTest, Connect) {
   SpawnedTestServer test_server(SpawnedTestServer::TYPE_HTTPS,
