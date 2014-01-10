@@ -1653,10 +1653,8 @@ widget_destroy(struct widget *widget)
 	if (surface->widget == widget && surface->subsurface)
 		surface_destroy(widget->surface);
 
-	if (widget->tooltip) {
-		free(widget->tooltip);
-		widget->tooltip = NULL;
-	}
+	if (widget->tooltip)
+		widget_destroy_tooltip(widget);
 
 	wl_list_for_each(input, &display->input_list, link) {
 		if (input->focus_widget == widget)
