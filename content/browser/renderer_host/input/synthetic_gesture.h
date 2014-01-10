@@ -9,7 +9,6 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/common/input/synthetic_gesture_params.h"
-#include "third_party/WebKit/public/web/WebInputEvent.h"
 
 namespace content {
 

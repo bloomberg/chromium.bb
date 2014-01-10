@@ -11,7 +11,6 @@
 #include "content/browser/renderer_host/input/synthetic_smooth_scroll_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_tap_gesture.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
-#include "content/common/input/input_event.h"
 #include "content/common/input/synthetic_pinch_gesture_params.h"
 #include "content/common/input/synthetic_smooth_scroll_gesture_params.h"
 #include "content/common/input/synthetic_tap_gesture_params.h"
@@ -24,6 +23,11 @@
 #include "ui/gfx/point_f.h"
 #include "ui/gfx/vector2d.h"
 #include "ui/gfx/vector2d_f.h"
+
+using blink::WebInputEvent;
+using blink::WebMouseEvent;
+using blink::WebMouseWheelEvent;
+using blink::WebTouchEvent;
 
 namespace content {
 
@@ -74,7 +78,8 @@ class MockSyntheticGestureTarget : public SyntheticGestureTarget {
   virtual ~MockSyntheticGestureTarget() {}
 
   // SyntheticGestureTarget:
-  virtual void DispatchInputEventToPlatform(const InputEvent& event) OVERRIDE {}
+  virtual void DispatchInputEventToPlatform(
+      const WebInputEvent& event) OVERRIDE {}
 
   virtual void OnSyntheticGestureCompleted(
       SyntheticGesture::Result result) OVERRIDE {
@@ -144,13 +149,13 @@ class MockSyntheticSmoothScrollMouseTarget
   MockSyntheticSmoothScrollMouseTarget() {}
   virtual ~MockSyntheticSmoothScrollMouseTarget() {}
 
-  virtual void DispatchInputEventToPlatform(const InputEvent& event) OVERRIDE {
-    const blink::WebInputEvent* web_event = event.web_event.get();
-    ASSERT_EQ(web_event->type, blink::WebInputEvent::MouseWheel);
-    const blink::WebMouseWheelEvent* mouse_wheel_event =
-        static_cast<const blink::WebMouseWheelEvent*>(web_event);
-    scroll_distance_ -= gfx::Vector2dF(mouse_wheel_event->deltaX,
-                                       mouse_wheel_event->deltaY);
+  virtual void DispatchInputEventToPlatform(
+      const WebInputEvent& event) OVERRIDE {
+    ASSERT_EQ(event.type, WebInputEvent::MouseWheel);
+    const WebMouseWheelEvent& mouse_wheel_event =
+        static_cast<const WebMouseWheelEvent&>(event);
+    scroll_distance_ -= gfx::Vector2dF(mouse_wheel_event.deltaX,
+                                       mouse_wheel_event.deltaY);
   }
 };
 
@@ -161,27 +166,26 @@ class MockSyntheticSmoothScrollTouchTarget
       : started_(false) {}
   virtual ~MockSyntheticSmoothScrollTouchTarget() {}
 
-  virtual void DispatchInputEventToPlatform(const InputEvent& event) OVERRIDE {
-    const blink::WebInputEvent* web_event = event.web_event.get();
-    ASSERT_TRUE(blink::WebInputEvent::isTouchEventType(web_event->type));
-    const blink::WebTouchEvent* touch_event =
-        static_cast<const blink::WebTouchEvent*>(web_event);
-    ASSERT_EQ(touch_event->touchesLength, (unsigned int)1);
+  virtual void DispatchInputEventToPlatform(
+      const WebInputEvent& event) OVERRIDE {
+    ASSERT_TRUE(WebInputEvent::isTouchEventType(event.type));
+    const WebTouchEvent& touch_event = static_cast<const WebTouchEvent&>(event);
+    ASSERT_EQ(touch_event.touchesLength, 1U);
 
     if (!started_) {
-      ASSERT_EQ(touch_event->type, blink::WebInputEvent::TouchStart);
-      anchor_.SetPoint(touch_event->touches[0].position.x,
-                       touch_event->touches[0].position.y);
+      ASSERT_EQ(touch_event.type, WebInputEvent::TouchStart);
+      anchor_.SetPoint(touch_event.touches[0].position.x,
+                       touch_event.touches[0].position.y);
       started_ = true;
     } else {
-      ASSERT_NE(touch_event->type, blink::WebInputEvent::TouchStart);
-      ASSERT_NE(touch_event->type, blink::WebInputEvent::TouchCancel);
+      ASSERT_NE(touch_event.type, WebInputEvent::TouchStart);
+      ASSERT_NE(touch_event.type, WebInputEvent::TouchCancel);
       // Ignore move events.
 
-      if (touch_event->type == blink::WebInputEvent::TouchEnd)
+      if (touch_event.type == WebInputEvent::TouchEnd)
         scroll_distance_ =
-            anchor_ - gfx::PointF(touch_event->touches[0].position.x,
-                                  touch_event->touches[0].position.y);
+            anchor_ - gfx::PointF(touch_event.touches[0].position.x,
+                                  touch_event.touches[0].position.y);
     }
   }
 
@@ -205,27 +209,26 @@ class MockSyntheticPinchTouchTarget : public MockSyntheticGestureTarget {
         started_(false) {}
   virtual ~MockSyntheticPinchTouchTarget() {}
 
-  virtual void DispatchInputEventToPlatform(const InputEvent& event) OVERRIDE {
-    const blink::WebInputEvent* web_event = event.web_event.get();
-    ASSERT_TRUE(blink::WebInputEvent::isTouchEventType(web_event->type));
-    const blink::WebTouchEvent* touch_event =
-        static_cast<const blink::WebTouchEvent*>(web_event);
-    ASSERT_EQ(touch_event->touchesLength, (unsigned int)2);
+  virtual void DispatchInputEventToPlatform(
+      const WebInputEvent& event) OVERRIDE {
+    ASSERT_TRUE(WebInputEvent::isTouchEventType(event.type));
+    const WebTouchEvent& touch_event = static_cast<const WebTouchEvent&>(event);
+    ASSERT_EQ(touch_event.touchesLength, 2U);
 
     if (!started_) {
-      ASSERT_EQ(touch_event->type, blink::WebInputEvent::TouchStart);
+      ASSERT_EQ(touch_event.type, WebInputEvent::TouchStart);
 
-      start_0_ = gfx::Point(touch_event->touches[0].position);
-      start_1_ = gfx::Point(touch_event->touches[1].position);
+      start_0_ = gfx::Point(touch_event.touches[0].position);
+      start_1_ = gfx::Point(touch_event.touches[1].position);
       last_pointer_distance_ = (start_0_ - start_1_).Length();
 
       started_ = true;
     } else {
-      ASSERT_NE(touch_event->type, blink::WebInputEvent::TouchStart);
-      ASSERT_NE(touch_event->type, blink::WebInputEvent::TouchCancel);
+      ASSERT_NE(touch_event.type, WebInputEvent::TouchStart);
+      ASSERT_NE(touch_event.type, WebInputEvent::TouchCancel);
 
-      gfx::PointF current_0 = gfx::Point(touch_event->touches[0].position);
-      gfx::PointF current_1 = gfx::Point(touch_event->touches[1].position);
+      gfx::PointF current_0 = gfx::Point(touch_event.touches[0].position);
+      gfx::PointF current_1 = gfx::Point(touch_event.touches[1].position);
 
       total_num_pixels_covered_ =
           (current_0 - start_0_).Length() + (current_1 - start_1_).Length();
@@ -291,26 +294,25 @@ class MockSyntheticTapTouchTarget : public MockSyntheticTapGestureTarget {
   MockSyntheticTapTouchTarget() {}
   virtual ~MockSyntheticTapTouchTarget() {}
 
-  virtual void DispatchInputEventToPlatform(const InputEvent& event) OVERRIDE {
-    const blink::WebInputEvent* web_event = event.web_event.get();
-    ASSERT_TRUE(blink::WebInputEvent::isTouchEventType(web_event->type));
-    const blink::WebTouchEvent* touch_event =
-        static_cast<const blink::WebTouchEvent*>(web_event);
-    ASSERT_EQ(touch_event->touchesLength, (unsigned int)1);
+  virtual void DispatchInputEventToPlatform(
+        const WebInputEvent& event) OVERRIDE {
+    ASSERT_TRUE(WebInputEvent::isTouchEventType(event.type));
+    const WebTouchEvent& touch_event = static_cast<const WebTouchEvent&>(event);
+    ASSERT_EQ(touch_event.touchesLength, 1U);
 
     switch (state_) {
       case NOT_STARTED:
-        EXPECT_EQ(touch_event->type, blink::WebInputEvent::TouchStart);
-        position_ = gfx::Point(touch_event->touches[0].position);
+        EXPECT_EQ(touch_event.type, WebInputEvent::TouchStart);
+        position_ = gfx::Point(touch_event.touches[0].position);
         start_time_ = base::TimeDelta::FromMilliseconds(
-            static_cast<int64>(touch_event->timeStampSeconds * 1000));
+            static_cast<int64>(touch_event.timeStampSeconds * 1000));
         state_ = STARTED;
         break;
       case STARTED:
-        EXPECT_EQ(touch_event->type, blink::WebInputEvent::TouchEnd);
-        EXPECT_EQ(position_, gfx::Point(touch_event->touches[0].position));
+        EXPECT_EQ(touch_event.type, WebInputEvent::TouchEnd);
+        EXPECT_EQ(position_, gfx::Point(touch_event.touches[0].position));
         stop_time_ = base::TimeDelta::FromMilliseconds(
-            static_cast<int64>(touch_event->timeStampSeconds * 1000));
+            static_cast<int64>(touch_event.timeStampSeconds * 1000));
         state_ = FINISHED;
         break;
       case FINISHED:
@@ -325,29 +327,28 @@ class MockSyntheticTapMouseTarget : public MockSyntheticTapGestureTarget {
   MockSyntheticTapMouseTarget() {}
   virtual ~MockSyntheticTapMouseTarget() {}
 
-  virtual void DispatchInputEventToPlatform(const InputEvent& event) OVERRIDE {
-    const blink::WebInputEvent* web_event = event.web_event.get();
-    ASSERT_TRUE(blink::WebInputEvent::isMouseEventType(web_event->type));
-    const blink::WebMouseEvent* mouse_event =
-        static_cast<const blink::WebMouseEvent*>(web_event);
+  virtual void DispatchInputEventToPlatform(
+        const WebInputEvent& event) OVERRIDE {
+    ASSERT_TRUE(WebInputEvent::isMouseEventType(event.type));
+    const WebMouseEvent& mouse_event = static_cast<const WebMouseEvent&>(event);
 
     switch (state_) {
       case NOT_STARTED:
-        EXPECT_EQ(mouse_event->type, blink::WebInputEvent::MouseDown);
-        EXPECT_EQ(mouse_event->button, blink::WebMouseEvent::ButtonLeft);
-        EXPECT_EQ(mouse_event->clickCount, 1);
-        position_ = gfx::Point(mouse_event->x, mouse_event->y);
+        EXPECT_EQ(mouse_event.type, WebInputEvent::MouseDown);
+        EXPECT_EQ(mouse_event.button, WebMouseEvent::ButtonLeft);
+        EXPECT_EQ(mouse_event.clickCount, 1);
+        position_ = gfx::Point(mouse_event.x, mouse_event.y);
         start_time_ = base::TimeDelta::FromMilliseconds(
-            static_cast<int64>(mouse_event->timeStampSeconds * 1000));
+            static_cast<int64>(mouse_event.timeStampSeconds * 1000));
         state_ = STARTED;
         break;
       case STARTED:
-        EXPECT_EQ(mouse_event->type, blink::WebInputEvent::MouseUp);
-        EXPECT_EQ(mouse_event->button, blink::WebMouseEvent::ButtonLeft);
-        EXPECT_EQ(mouse_event->clickCount, 1);
-        EXPECT_EQ(position_, gfx::Point(mouse_event->x, mouse_event->y));
+        EXPECT_EQ(mouse_event.type, WebInputEvent::MouseUp);
+        EXPECT_EQ(mouse_event.button, WebMouseEvent::ButtonLeft);
+        EXPECT_EQ(mouse_event.clickCount, 1);
+        EXPECT_EQ(position_, gfx::Point(mouse_event.x, mouse_event.y));
         stop_time_ = base::TimeDelta::FromMilliseconds(
-            static_cast<int64>(mouse_event->timeStampSeconds * 1000));
+            static_cast<int64>(mouse_event.timeStampSeconds * 1000));
         state_ = FINISHED;
         break;
       case FINISHED:

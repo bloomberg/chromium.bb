@@ -7,7 +7,6 @@
 #include <cmath>
 
 #include "base/logging.h"
-#include "content/common/input/input_event.h"
 #include "ui/events/latency_info.h"
 
 namespace content {
@@ -111,8 +110,7 @@ void SyntheticPinchGesture::ReleaseTouchPoints(
 void SyntheticPinchGesture::ForwardTouchEvent(
     SyntheticGestureTarget* target, const base::TimeTicks& timestamp) {
   touch_event_.timeStampSeconds = ConvertTimestampToSeconds(timestamp);
-  target->DispatchInputEventToPlatform(
-      InputEvent(touch_event_, ui::LatencyInfo(), false));
+  target->DispatchInputEventToPlatform(touch_event_);
 }
 
 void SyntheticPinchGesture::SetupCoordinatesAndStopTime(

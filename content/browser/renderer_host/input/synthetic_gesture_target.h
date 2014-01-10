@@ -10,9 +10,11 @@
 #include "content/common/content_export.h"
 #include "content/common/input/synthetic_gesture_params.h"
 
-namespace content {
+namespace blink {
+class WebInputEvent;
+}
 
-class InputEvent;
+namespace content {
 
 // Interface between the synthetic gesture controller and the RenderWidgetHost.
 class CONTENT_EXPORT SyntheticGestureTarget {
@@ -23,7 +25,8 @@ class CONTENT_EXPORT SyntheticGestureTarget {
   // Allows synthetic gestures to insert input events in the highest level of
   // input processing on the target platform (e.g. Java on Android), so that
   // the event traverses the entire input processing stack.
-  virtual void DispatchInputEventToPlatform(const InputEvent& event) = 0;
+  virtual void DispatchInputEventToPlatform(
+      const blink::WebInputEvent& event) = 0;
 
   // Called by SyntheticGestureController when a gesture has finished.
   virtual void OnSyntheticGestureCompleted(

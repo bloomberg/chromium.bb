@@ -5,8 +5,6 @@
 #include "content/browser/renderer_host/input/synthetic_smooth_scroll_gesture.h"
 
 #include "base/logging.h"
-#include "content/common/input/input_event.h"
-#include "ui/events/latency_info.h"
 #include "ui/gfx/point_f.h"
 
 namespace content {
@@ -154,8 +152,7 @@ void SyntheticSmoothScrollGesture::ForwardTouchEvent(
     SyntheticGestureTarget* target, const base::TimeTicks& timestamp) {
   touch_event_.timeStampSeconds = ConvertTimestampToSeconds(timestamp);
 
-  target->DispatchInputEventToPlatform(
-      InputEvent(touch_event_, ui::LatencyInfo(), false));
+  target->DispatchInputEventToPlatform(touch_event_);
 }
 
 void SyntheticSmoothScrollGesture::ForwardMouseWheelEvent(
@@ -170,8 +167,7 @@ void SyntheticSmoothScrollGesture::ForwardMouseWheelEvent(
 
   mouse_wheel_event.timeStampSeconds = ConvertTimestampToSeconds(timestamp);
 
-  target->DispatchInputEventToPlatform(
-      InputEvent(mouse_wheel_event, ui::LatencyInfo(), false));
+  target->DispatchInputEventToPlatform(mouse_wheel_event);
 }
 
 void SyntheticSmoothScrollGesture::PressTouchPoint(

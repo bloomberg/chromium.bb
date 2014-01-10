@@ -20,8 +20,6 @@ class ScreenPositionClient;
 
 namespace content {
 
-class InputEvent;
-
 // SyntheticGestureTarget implementation for aura
 class SyntheticGestureTargetAura : public SyntheticGestureTargetBase {
  public:

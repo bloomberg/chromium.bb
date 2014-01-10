@@ -5,20 +5,10 @@
 #include "content/browser/renderer_host/input/synthetic_tap_gesture.h"
 
 #include "base/logging.h"
-#include "content/common/input/input_event.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/events/latency_info.h"
 
 namespace content {
-namespace {
-
-void DispatchEventToPlatform(SyntheticGestureTarget* target,
-                             const blink::WebInputEvent& event) {
-  target->DispatchInputEventToPlatform(
-      InputEvent(event, ui::LatencyInfo(), false));
-}
-
-}  // namespace
 
 SyntheticTapGesture::SyntheticTapGesture(
     const SyntheticTapGestureParams& params)
@@ -86,7 +76,7 @@ void SyntheticTapGesture::Press(SyntheticGestureTarget* target,
   if (gesture_source_type_ == SyntheticGestureParams::TOUCH_INPUT) {
     touch_event_.PressPoint(params_.position.x(), params_.position.y());
     touch_event_.timeStampSeconds = ConvertTimestampToSeconds(timestamp);
-    DispatchEventToPlatform(target, touch_event_);
+    target->DispatchInputEventToPlatform(touch_event_);
   } else if (gesture_source_type_ == SyntheticGestureParams::MOUSE_INPUT) {
     blink::WebMouseEvent mouse_event =
         SyntheticWebMouseEventBuilder::Build(blink::WebInputEvent::MouseDown,
@@ -95,7 +85,7 @@ void SyntheticTapGesture::Press(SyntheticGestureTarget* target,
                                              0);
     mouse_event.clickCount = 1;
     mouse_event.timeStampSeconds = ConvertTimestampToSeconds(timestamp);
-    DispatchEventToPlatform(target, mouse_event);
+    target->DispatchInputEventToPlatform(mouse_event);
   } else {
     NOTREACHED() << "Invalid gesture source type for synthetic tap gesture.";
   }
@@ -106,7 +96,7 @@ void SyntheticTapGesture::Release(SyntheticGestureTarget* target,
   if (gesture_source_type_ == SyntheticGestureParams::TOUCH_INPUT) {
     touch_event_.ReleasePoint(0);
     touch_event_.timeStampSeconds = ConvertTimestampToSeconds(timestamp);
-    DispatchEventToPlatform(target, touch_event_);
+    target->DispatchInputEventToPlatform(touch_event_);
   } else if (gesture_source_type_ == SyntheticGestureParams::MOUSE_INPUT) {
     blink::WebMouseEvent mouse_event =
         SyntheticWebMouseEventBuilder::Build(blink::WebInputEvent::MouseUp,
@@ -115,7 +105,7 @@ void SyntheticTapGesture::Release(SyntheticGestureTarget* target,
                                              0);
     mouse_event.clickCount = 1;
     mouse_event.timeStampSeconds = ConvertTimestampToSeconds(timestamp);
-    DispatchEventToPlatform(target, mouse_event);
+    target->DispatchInputEventToPlatform(mouse_event);
   } else {
     NOTREACHED() << "Invalid gesture source type for synthetic tap gesture.";
   }

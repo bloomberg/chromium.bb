@@ -40,7 +40,8 @@ class SyntheticGestureTargetBase : public SyntheticGestureTarget {
       const ui::LatencyInfo& latency_info);
 
   // SyntheticGestureTarget:
-  virtual void DispatchInputEventToPlatform(const InputEvent& event) OVERRIDE;
+  virtual void DispatchInputEventToPlatform(
+    const blink::WebInputEvent& event) OVERRIDE;
 
   virtual void OnSyntheticGestureCompleted(
       SyntheticGesture::Result result) OVERRIDE;
