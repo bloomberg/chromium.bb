@@ -2169,13 +2169,13 @@ TEST_F(GestureRecognizerTest, GestureEventTouchLockSelectsCorrectWindow) {
 
   // Touches should now be associated with the closest touch within
   // ui::GestureConfiguration::max_separation_for_gesture_touches_in_pixels
-  target = gesture_recognizer->GetTargetForLocation(gfx::Point(11, 11));
+  target = gesture_recognizer->GetTargetForLocation(gfx::Point(11, 11), -1);
   EXPECT_EQ("0", WindowIDAsString(target));
-  target = gesture_recognizer->GetTargetForLocation(gfx::Point(511, 11));
+  target = gesture_recognizer->GetTargetForLocation(gfx::Point(511, 11), -1);
   EXPECT_EQ("1", WindowIDAsString(target));
-  target = gesture_recognizer->GetTargetForLocation(gfx::Point(11, 511));
+  target = gesture_recognizer->GetTargetForLocation(gfx::Point(11, 511), -1);
   EXPECT_EQ("2", WindowIDAsString(target));
-  target = gesture_recognizer->GetTargetForLocation(gfx::Point(511, 511));
+  target = gesture_recognizer->GetTargetForLocation(gfx::Point(511, 511), -1);
   EXPECT_EQ("3", WindowIDAsString(target));
 
   // Add a touch in the middle associated with windows[2]
@@ -2186,20 +2186,20 @@ TEST_F(GestureRecognizerTest, GestureEventTouchLockSelectsCorrectWindow) {
                       kNumWindows, tes.Now());
   dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move);
 
-  target = gesture_recognizer->GetTargetForLocation(gfx::Point(250, 250));
+  target = gesture_recognizer->GetTargetForLocation(gfx::Point(250, 250), -1);
   EXPECT_EQ("2", WindowIDAsString(target));
 
   // Make sure that ties are broken by distance to a current touch
   // Closer to the point in the bottom right.
-  target = gesture_recognizer->GetTargetForLocation(gfx::Point(380, 380));
+  target = gesture_recognizer->GetTargetForLocation(gfx::Point(380, 380), -1);
   EXPECT_EQ("3", WindowIDAsString(target));
 
   // This touch is closer to the point in the middle
-  target = gesture_recognizer->GetTargetForLocation(gfx::Point(300, 300));
+  target = gesture_recognizer->GetTargetForLocation(gfx::Point(300, 300), -1);
   EXPECT_EQ("2", WindowIDAsString(target));
 
   // A touch too far from other touches won't be locked to anything
-  target = gesture_recognizer->GetTargetForLocation(gfx::Point(1000, 1000));
+  target = gesture_recognizer->GetTargetForLocation(gfx::Point(1000, 1000), -1);
   EXPECT_TRUE(target == NULL);
 
   // Move a touch associated with windows[2] to 1000, 1000
@@ -2207,7 +2207,7 @@ TEST_F(GestureRecognizerTest, GestureEventTouchLockSelectsCorrectWindow) {
                        kNumWindows, tes.Now());
   dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&move2);
 
-  target = gesture_recognizer->GetTargetForLocation(gfx::Point(1000, 1000));
+  target = gesture_recognizer->GetTargetForLocation(gfx::Point(1000, 1000), -1);
   EXPECT_EQ("2", WindowIDAsString(target));
 
   for (int i = 0; i < kNumWindows; ++i) {
@@ -2215,6 +2215,36 @@ TEST_F(GestureRecognizerTest, GestureEventTouchLockSelectsCorrectWindow) {
     delete windows[i];
     delete delegates[i];
   }
+}
+
+// Check that a touch's target will not be effected by a touch on a different
+// screen.
+TEST_F(GestureRecognizerTest, GestureEventTouchLockIgnoresOtherScreens) {
+  scoped_ptr<GestureEventConsumeDelegate> delegate(
+      new GestureEventConsumeDelegate());
+  gfx::Rect bounds(0, 0, 10, 10);
+  scoped_ptr<aura::Window> window(
+      CreateTestWindowWithDelegate(delegate.get(), 0, bounds, root_window()));
+
+  const int kTouchId1 = 8;
+  const int kTouchId2 = 2;
+  TimedEvents tes;
+
+  ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(5, 5),
+                        kTouchId1, tes.Now());
+  press1.set_source_device_id(1);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press1);
+
+  ui::TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(20, 20),
+                        kTouchId2, tes.Now());
+  press2.set_source_device_id(2);
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(&press2);
+
+  // The second press should not have been locked to the same target as the
+  // first, as they occured on different displays.
+  EXPECT_NE(
+      ui::GestureRecognizer::Get()->GetTouchLockedTarget(press1),
+      ui::GestureRecognizer::Get()->GetTouchLockedTarget(press2));
 }
 
 // Check that touch events outside the root window are still handled
