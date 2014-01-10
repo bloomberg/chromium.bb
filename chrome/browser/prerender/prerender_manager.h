@@ -170,12 +170,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
       content::SessionStorageNamespace* session_storage_namespace,
       const gfx::Size& size);
 
-  // If |process_id| and |view_id| refer to a running prerender, destroy
-  // it with |final_status|.
-  virtual void DestroyPrerenderForRenderView(int process_id,
-                                             int view_id,
-                                             FinalStatus final_status);
-
   // Cancels all active prerenders.
   void CancelAllPrerenders();
 

@@ -666,22 +666,6 @@ void PrerenderContents::Destroy(FinalStatus final_status) {
   if (prerendering_has_been_cancelled_)
     return;
 
-  if (child_id_ != -1 && route_id_ != -1) {
-    // Cancel the prerender in the PrerenderTracker.  This is needed
-    // because destroy may be called directly from the UI thread without calling
-    // TryCancel().  This is difficult to completely avoid, since prerendering
-    // can be cancelled before a RenderView is created.
-    bool is_cancelled = prerender_manager()->prerender_tracker()->TryCancel(
-        child_id_, route_id_, final_status);
-    CHECK(is_cancelled);
-
-    // A different final status may have been set already from another thread.
-    // If so, use it instead.
-    if (!prerender_manager()->prerender_tracker()->
-            GetFinalStatus(child_id_, route_id_, &final_status)) {
-      NOTREACHED();
-    }
-  }
   SetFinalStatus(final_status);
 
   prerendering_has_been_cancelled_ = true;

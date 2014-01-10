@@ -18,24 +18,6 @@ using content::BrowserThread;
 
 namespace prerender {
 
-namespace {
-
-void DestroyPrerenderForRenderViewOnUI(
-    const base::WeakPtr<PrerenderManager>& prerender_manager_weak_ptr,
-    int render_process_id,
-    int render_view_id,
-    FinalStatus final_status) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  PrerenderManager* prerender_manager = prerender_manager_weak_ptr.get();
-  if (!prerender_manager)
-    return;
-
-  prerender_manager->DestroyPrerenderForRenderView(
-      render_process_id, render_view_id, final_status);
-}
-
-}  // namespace
-
 struct RenderViewInfo {
   explicit RenderViewInfo(PrerenderManager* prerender_manager)
       : final_status(FINAL_STATUS_MAX),
@@ -52,51 +34,6 @@ PrerenderTracker::PrerenderTracker() {
 }
 
 PrerenderTracker::~PrerenderTracker() {
-  DCHECK(final_status_map_.empty());
-}
-
-bool PrerenderTracker::TryUse(int child_id, int route_id) {
-  DCHECK(CalledOnValidThread());
-  return SetFinalStatus(child_id, route_id, FINAL_STATUS_USED, NULL);
-}
-
-bool PrerenderTracker::TryCancel(
-    int child_id,
-    int route_id,
-    FinalStatus final_status) {
-  DCHECK_NE(FINAL_STATUS_USED, final_status);
-  DCHECK(final_status >= 0 && final_status < FINAL_STATUS_MAX);
-
-  FinalStatus actual_final_status;
-  SetFinalStatus(child_id, route_id, final_status, &actual_final_status);
-  return actual_final_status != FINAL_STATUS_USED &&
-         actual_final_status != FINAL_STATUS_MAX;
-}
-
-bool PrerenderTracker::TryCancelOnIOThread(
-    int child_id,
-    int route_id,
-    FinalStatus final_status) {
-  DCHECK_NE(FINAL_STATUS_USED, final_status);
-  DCHECK_LE(0, final_status);
-  DCHECK_GT(FINAL_STATUS_MAX, final_status);
-
-  if (!IsPrerenderingOnIOThread(child_id, route_id))
-    return false;
-  return TryCancel(child_id, route_id, final_status);
-}
-
-bool PrerenderTracker::GetFinalStatus(int child_id, int route_id,
-                                      FinalStatus* final_status) const {
-  ChildRouteIdPair child_route_id_pair(child_id, route_id);
-
-  base::AutoLock lock(final_status_map_lock_);
-  FinalStatusMap::const_iterator final_status_it =
-      final_status_map_.find(child_route_id_pair);
-  if (final_status_it == final_status_map_.end())
-    return false;
-  *final_status = final_status_it->second.final_status;
-  return true;
 }
 
 void PrerenderTracker::OnPrerenderStart(
@@ -113,14 +50,6 @@ void PrerenderTracker::OnPrerenderStart(
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&AddPrerenderOnIOThreadTask, child_route_id_pair));
-
-  base::AutoLock lock(final_status_map_lock_);
-  // The RenderView should not already be prerendering.
-  DCHECK_EQ(0u, final_status_map_.count(child_route_id_pair));
-
-  final_status_map_.insert(
-      std::make_pair(child_route_id_pair,
-                     RenderViewInfo(prerender_contents->prerender_manager())));
 }
 
 void PrerenderTracker::OnPrerenderStop(
@@ -139,48 +68,6 @@ void PrerenderTracker::OnPrerenderStop(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&RemovePrerenderOnIOThreadTask, child_route_id_pair,
                  prerender_contents->final_status()));
-
-  base::AutoLock lock(final_status_map_lock_);
-  size_t num_erased = final_status_map_.erase(child_route_id_pair);
-  DCHECK_EQ(1u, num_erased);
-}
-
-bool PrerenderTracker::SetFinalStatus(int child_id, int route_id,
-                                      FinalStatus desired_final_status,
-                                      FinalStatus* actual_final_status) {
-  DCHECK(desired_final_status >= FINAL_STATUS_USED &&
-         desired_final_status < FINAL_STATUS_MAX);
-
-  ChildRouteIdPair child_route_id_pair(child_id, route_id);
-
-  base::AutoLock lock(final_status_map_lock_);
-  FinalStatusMap::iterator final_status_it =
-      final_status_map_.find(child_route_id_pair);
-  if (final_status_it == final_status_map_.end()) {
-    // The RenderView has already been either used or destroyed.
-    if (actual_final_status)
-      *actual_final_status = FINAL_STATUS_MAX;
-    return false;
-  }
-
-  if (final_status_it->second.final_status == FINAL_STATUS_MAX) {
-    final_status_it->second.final_status = desired_final_status;
-    if (desired_final_status != FINAL_STATUS_USED) {
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          base::Bind(&DestroyPrerenderForRenderViewOnUI,
-                     final_status_it->second.prerender_manager, child_id,
-                     route_id, desired_final_status));
-    }
-
-    if (actual_final_status)
-      *actual_final_status = desired_final_status;
-    return true;
-  }
-
-  if (actual_final_status)
-    *actual_final_status = final_status_it->second.final_status;
-  return false;
 }
 
 bool PrerenderTracker::IsPrerenderingOnIOThread(int child_id,

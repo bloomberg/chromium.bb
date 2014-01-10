@@ -413,15 +413,6 @@ PrerenderHandle* PrerenderManager::AddPrerenderForInstant(
                       session_storage_namespace);
 }
 
-void PrerenderManager::DestroyPrerenderForRenderView(
-    int process_id, int view_id, FinalStatus final_status) {
-  DCHECK(CalledOnValidThread());
-  if (PrerenderData* prerender_data =
-          FindPrerenderDataForChildAndRoute(process_id, view_id)) {
-    prerender_data->contents()->Destroy(final_status);
-  }
-}
-
 void PrerenderManager::CancelAllPrerenders() {
   DCHECK(CalledOnValidThread());
   while (!active_prerenders_.empty()) {
@@ -599,12 +590,6 @@ WebContents* PrerenderManager::SwapInternal(
   int child_id, route_id;
   CHECK(prerender_data->contents()->GetChildId(&child_id));
   CHECK(prerender_data->contents()->GetRouteId(&route_id));
-
-  // Try to set the prerendered page as used, so any subsequent attempts to
-  // cancel on other threads will fail.  If this fails because the prerender
-  // was already cancelled, possibly on another thread, fail.
-  if (!prerender_tracker_->TryUse(child_id, route_id))
-    return NULL;
 
   // At this point, we've determined that we will use the prerender.
   if (prerender_data->pending_swap())
@@ -1281,14 +1266,21 @@ void PrerenderManager::PendingSwap::OnMergeCompleted(
   }
 
   RecordEvent(PRERENDER_EVENT_MERGE_RESULT_SWAPPING_IN);
-  // Note that SwapInternal, on success, will delete |prerender_data_| and
-  // |this|. Pass in a new GURL object rather than a reference to |url_|.
-  //
-  // TODO(davidben): See about deleting PrerenderData asynchronously so this
-  // behavior is more reasonable.
-  WebContents* new_web_contents =
-      manager_->SwapInternal(GURL(url_), target_contents_, prerender_data_,
-                             should_replace_current_entry_);
+
+  WebContents* new_web_contents = NULL;
+  // Ensure that the prerendering hasn't been destroyed in the meantime.
+  if (prerender_data_->contents()->final_status() == FINAL_STATUS_MAX) {
+    // Note that SwapInternal, on success, will delete |prerender_data_| and
+    // |this|. Pass in a new GURL object rather than a reference to |url_|.
+    //
+    // TODO(davidben): See about deleting PrerenderData asynchronously so this
+    // behavior is more reasonable.
+
+    new_web_contents =  manager_->SwapInternal(
+        GURL(url_), target_contents_, prerender_data_,
+        should_replace_current_entry_);
+  }
+
   if (!new_web_contents) {
     RecordEvent(PRERENDER_EVENT_MERGE_RESULT_SWAPIN_FAILED);
     prerender_data_->ClearPendingSwap();
