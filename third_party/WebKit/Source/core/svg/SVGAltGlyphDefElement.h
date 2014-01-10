@@ -21,6 +21,7 @@
 #define SVGAltGlyphDefElement_h
 
 #if ENABLE(SVG_FONTS)
+#include "SVGNames.h"
 #include "core/svg/SVGElement.h"
 #include "wtf/Vector.h"
 
@@ -37,6 +38,8 @@ private:
 
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
 };
+
+DEFINE_NODE_TYPE_CASTS(SVGAltGlyphDefElement, hasTagName(SVGNames::altGlyphDefTag));
 
 }
 

@@ -47,6 +47,8 @@ private:
     SVGTransform::SVGTransformType m_type;
 };
 
+DEFINE_NODE_TYPE_CASTS(SVGAnimateTransformElement, hasTagName(SVGNames::animateTransformTag));
+
 } // namespace WebCore
 
 #endif // SVGAnimateTransformElement_h

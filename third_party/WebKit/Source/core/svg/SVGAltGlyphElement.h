@@ -23,6 +23,7 @@
 #define SVGAltGlyphElement_h
 
 #if ENABLE(SVG_FONTS)
+#include "SVGNames.h"
 #include "core/svg/SVGTextPositioningElement.h"
 #include "core/svg/SVGURIReference.h"
 #include "wtf/Vector.h"
@@ -54,6 +55,8 @@ private:
         DECLARE_ANIMATED_STRING(Href, href)
     END_DECLARE_ANIMATED_PROPERTIES
 };
+
+DEFINE_NODE_TYPE_CASTS(SVGAltGlyphElement, hasTagName(SVGNames::altGlyphTag));
 
 } // namespace WebCore
 

@@ -99,7 +99,7 @@ bool SVGAltGlyphElement::hasValidGlyphElements(Vector<AtomicString>& glyphNames)
     }
 
     if (element->hasTagName(SVGNames::altGlyphDefTag)
-        && static_cast<SVGAltGlyphDefElement*>(element)->hasValidGlyphElements(glyphNames))
+        && toSVGAltGlyphDefElement(element)->hasValidGlyphElements(glyphNames))
         return true;
 
     return false;

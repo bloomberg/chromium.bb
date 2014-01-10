@@ -109,7 +109,7 @@ bool SVGAltGlyphDefElement::hasValidGlyphElements(Vector<AtomicString>& glyphNam
 
             // As the spec says "The first 'altGlyphItem' in which all referenced glyphs
             // are available is chosen."
-            if (static_cast<SVGAltGlyphItemElement*>(child)->hasValidGlyphElements(glyphNames) && !glyphNames.isEmpty())
+            if (toSVGAltGlyphItemElement(child)->hasValidGlyphElements(glyphNames) && !glyphNames.isEmpty())
                 return true;
         }
     }

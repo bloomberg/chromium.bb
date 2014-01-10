@@ -42,7 +42,7 @@ static inline SVGCursorElement* resourceReferencedByCursorElement(const String& 
 {
     Element* element = SVGURIReference::targetElementFromIRIString(url, document);
     if (element && element->hasTagName(SVGNames::cursorTag))
-        return static_cast<SVGCursorElement*>(element);
+        return toSVGCursorElement(element);
 
     return 0;
 }

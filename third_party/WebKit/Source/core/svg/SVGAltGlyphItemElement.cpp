@@ -22,7 +22,6 @@
 #if ENABLE(SVG_FONTS)
 #include "core/svg/SVGAltGlyphItemElement.h"
 
-#include "SVGNames.h"
 #include "core/svg/SVGGlyphRefElement.h"
 
 namespace WebCore {
