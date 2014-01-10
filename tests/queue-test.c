@@ -79,6 +79,7 @@ client_test_proxy_destroy(void)
 	client_assert(display);
 
 	registry = wl_display_get_registry(display);
+	assert(registry != NULL);
 	wl_registry_add_listener(registry, &registry_listener,
 				 &counter);
 	wl_display_roundtrip(display);
@@ -137,10 +138,12 @@ client_test_multiple_queues(void)
 
 	state.done = false;
 	callback1 = wl_display_sync(state.display);
+	assert(callback1 != NULL);
 	wl_callback_add_listener(callback1, &sync_listener, &state);
 	wl_proxy_set_queue((struct wl_proxy *) callback1, queue);
 
 	state.callback2 = wl_display_sync(state.display);
+	assert(state.callback2 != NULL);
 	wl_callback_add_listener(state.callback2, &sync_listener, NULL);
 	wl_proxy_set_queue((struct wl_proxy *) state.callback2, queue);
 
