@@ -33,7 +33,7 @@ namespace WebCore {
 
 class XSLStyleSheetResource;
 
-class XSLImportRule : private StyleSheetResourceClient {
+class XSLImportRule FINAL : private StyleSheetResourceClient {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     static PassOwnPtr<XSLImportRule> create(XSLStyleSheet* parentSheet, const String& href)
@@ -56,7 +56,7 @@ public:
 private:
     XSLImportRule(XSLStyleSheet* parentSheet, const String& href);
 
-    virtual void setXSLStyleSheet(const String& href, const KURL& baseURL, const String& sheet);
+    virtual void setXSLStyleSheet(const String& href, const KURL& baseURL, const String& sheet) OVERRIDE;
 
     XSLStyleSheet* m_parentStyleSheet;
     String m_strHref;

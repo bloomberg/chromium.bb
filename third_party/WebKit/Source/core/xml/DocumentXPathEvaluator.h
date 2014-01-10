@@ -36,7 +36,7 @@ class ExceptionState;
 class XPathExpression;
 class XPathResult;
 
-class DocumentXPathEvaluator : public DocumentSupplement {
+class DocumentXPathEvaluator FINAL : public DocumentSupplement {
 public:
     virtual ~DocumentXPathEvaluator();
 

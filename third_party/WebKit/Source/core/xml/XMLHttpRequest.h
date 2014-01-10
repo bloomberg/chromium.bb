@@ -53,12 +53,12 @@ class ThreadableLoader;
 
 typedef int ExceptionCode;
 
-class XMLHttpRequest : public ScriptWrappable, public RefCounted<XMLHttpRequest>, public XMLHttpRequestEventTarget, private ThreadableLoaderClient, public ActiveDOMObject {
+class XMLHttpRequest FINAL : public ScriptWrappable, public RefCounted<XMLHttpRequest>, public XMLHttpRequestEventTarget, private ThreadableLoaderClient, public ActiveDOMObject {
     WTF_MAKE_FAST_ALLOCATED;
     REFCOUNTED_EVENT_TARGET(XMLHttpRequest);
 public:
     static PassRefPtr<XMLHttpRequest> create(ExecutionContext*, PassRefPtr<SecurityOrigin> = 0);
-    ~XMLHttpRequest();
+    virtual ~XMLHttpRequest();
 
     // These exact numeric values are important because JS expects them.
     enum State {
@@ -84,10 +84,10 @@ public:
         DropProtectionAsync,
     };
 
-    virtual void contextDestroyed();
-    virtual void suspend();
-    virtual void resume();
-    virtual void stop();
+    virtual void contextDestroyed() OVERRIDE;
+    virtual void suspend() OVERRIDE;
+    virtual void resume() OVERRIDE;
+    virtual void stop() OVERRIDE;
 
     virtual const AtomicString& interfaceName() const OVERRIDE;
     virtual ExecutionContext* executionContext() const OVERRIDE;
@@ -149,15 +149,15 @@ private:
     Document* document() const;
     SecurityOrigin* securityOrigin() const;
 
-    virtual void didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent);
-    virtual void didReceiveResponse(unsigned long identifier, const ResourceResponse&);
-    virtual void didReceiveData(const char* data, int dataLength);
+    virtual void didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent) OVERRIDE;
+    virtual void didReceiveResponse(unsigned long identifier, const ResourceResponse&) OVERRIDE;
+    virtual void didReceiveData(const char* data, int dataLength) OVERRIDE;
     // When "blob" is specified as the responseType attribute, didDownloadData
     // is called instead of didReceiveData.
-    virtual void didDownloadData(int dataLength);
-    virtual void didFinishLoading(unsigned long identifier, double finishTime);
-    virtual void didFail(const ResourceError&);
-    virtual void didFailRedirectCheck();
+    virtual void didDownloadData(int dataLength) OVERRIDE;
+    virtual void didFinishLoading(unsigned long identifier, double finishTime) OVERRIDE;
+    virtual void didFail(const ResourceError&) OVERRIDE;
+    virtual void didFailRedirectCheck() OVERRIDE;
 
     AtomicString responseMIMEType() const;
     bool responseIsXML() const;

@@ -44,7 +44,7 @@ namespace WebCore {
 class ExecutionContext;
 class XMLHttpRequest;
 
-class XMLHttpRequestUpload : public ScriptWrappable, public XMLHttpRequestEventTarget {
+class XMLHttpRequestUpload FINAL : public ScriptWrappable, public XMLHttpRequestEventTarget {
 public:
     static PassOwnPtr<XMLHttpRequestUpload> create(XMLHttpRequest* xmlHttpRequest)
     {

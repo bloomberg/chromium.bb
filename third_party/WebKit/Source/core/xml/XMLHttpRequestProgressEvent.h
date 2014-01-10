@@ -32,7 +32,7 @@
 
 namespace WebCore {
 
-class XMLHttpRequestProgressEvent : public ProgressEvent {
+class XMLHttpRequestProgressEvent FINAL : public ProgressEvent {
 public:
     static PassRefPtr<XMLHttpRequestProgressEvent> create()
     {
@@ -47,7 +47,7 @@ public:
     unsigned long long position() const { return loaded(); }
     unsigned long long totalSize() const { return total(); }
 
-    virtual const AtomicString& interfaceName() const { return EventNames::XMLHttpRequestProgressEvent; }
+    virtual const AtomicString& interfaceName() const OVERRIDE { return EventNames::XMLHttpRequestProgressEvent; }
 
 private:
     XMLHttpRequestProgressEvent()

@@ -33,7 +33,7 @@ namespace WebCore {
 
 class Node;
 
-class NativeXPathNSResolver : public XPathNSResolver {
+class NativeXPathNSResolver FINAL : public XPathNSResolver {
 public:
     static PassRefPtr<NativeXPathNSResolver> create(PassRefPtr<Node> node) { return adoptRef(new NativeXPathNSResolver(node)); }
     virtual ~NativeXPathNSResolver();

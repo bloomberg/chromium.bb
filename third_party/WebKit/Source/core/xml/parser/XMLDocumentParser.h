@@ -63,7 +63,7 @@ class Text;
         xmlParserCtxtPtr m_context;
     };
 
-    class XMLDocumentParser : public ScriptableDocumentParser, public ResourceClient {
+    class XMLDocumentParser FINAL : public ScriptableDocumentParser, public ResourceClient {
         WTF_MAKE_FAST_ALLOCATED;
     public:
         static PassRefPtr<XMLDocumentParser> create(Document* document, FrameView* view)
@@ -75,7 +75,7 @@ class Text;
             return adoptRef(new XMLDocumentParser(fragment, element, parserContentPolicy));
         }
 
-        ~XMLDocumentParser();
+        virtual ~XMLDocumentParser();
 
         // Exposed for callbacks:
         void handleError(XMLErrors::ErrorType, const char* message, TextPosition);
@@ -88,9 +88,9 @@ class Text;
         static bool parseDocumentFragment(const String&, DocumentFragment*, Element* parent = 0, ParserContentPolicy = AllowScriptingContent);
 
         // Used by the XMLHttpRequest to check if the responseXML was well formed.
-        virtual bool wellFormed() const { return !m_sawError; }
+        virtual bool wellFormed() const OVERRIDE { return !m_sawError; }
 
-        TextPosition textPosition() const;
+        virtual TextPosition textPosition() const OVERRIDE;
 
         static bool supportsXMLVersion(const String&);
 
@@ -105,17 +105,17 @@ class Text;
         XMLDocumentParser(DocumentFragment*, Element*, ParserContentPolicy);
 
         // From DocumentParser
-        virtual void insert(const SegmentedString&);
-        virtual void append(PassRefPtr<StringImpl>);
-        virtual void finish();
-        virtual bool isWaitingForScripts() const;
-        virtual void stopParsing();
-        virtual void detach();
-        virtual OrdinalNumber lineNumber() const;
+        virtual void insert(const SegmentedString&) OVERRIDE;
+        virtual void append(PassRefPtr<StringImpl>) OVERRIDE;
+        virtual void finish() OVERRIDE;
+        virtual bool isWaitingForScripts() const OVERRIDE;
+        virtual void stopParsing() OVERRIDE;
+        virtual void detach() OVERRIDE;
+        virtual OrdinalNumber lineNumber() const OVERRIDE;
         OrdinalNumber columnNumber() const;
 
         // from ResourceClient
-        virtual void notifyFinished(Resource*);
+        virtual void notifyFinished(Resource*) OVERRIDE;
 
         void end();
 

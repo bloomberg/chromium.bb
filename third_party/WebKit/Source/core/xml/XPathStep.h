@@ -38,7 +38,7 @@ namespace XPath {
 
 class Predicate;
 
-class Step : public ParseNode {
+class Step FINAL : public ParseNode {
     WTF_MAKE_NONCOPYABLE(Step);
     WTF_MAKE_FAST_ALLOCATED;
 public:
@@ -94,7 +94,7 @@ public:
 
     Step(Axis, const NodeTest&);
     Step(Axis, const NodeTest&, Vector<OwnPtr<Predicate> >&);
-    ~Step();
+    virtual ~Step();
 
     void optimize();
 

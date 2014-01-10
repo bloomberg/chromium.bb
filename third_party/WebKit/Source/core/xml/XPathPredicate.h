@@ -34,73 +34,73 @@ namespace WebCore {
 
     namespace XPath {
 
-        class Number : public Expression {
+        class Number FINAL : public Expression {
         public:
             explicit Number(double);
         private:
-            virtual Value evaluate() const;
-            virtual Value::Type resultType() const { return Value::NumberValue; }
+            virtual Value evaluate() const OVERRIDE;
+            virtual Value::Type resultType() const OVERRIDE { return Value::NumberValue; }
 
             Value m_value;
         };
 
-        class StringExpression : public Expression {
+        class StringExpression FINAL : public Expression {
         public:
             explicit StringExpression(const String&);
         private:
-            virtual Value evaluate() const;
-            virtual Value::Type resultType() const { return Value::StringValue; }
+            virtual Value evaluate() const OVERRIDE;
+            virtual Value::Type resultType() const OVERRIDE { return Value::StringValue; }
 
             Value m_value;
         };
 
-        class Negative : public Expression {
+        class Negative FINAL : public Expression {
         private:
-            virtual Value evaluate() const;
-            virtual Value::Type resultType() const { return Value::NumberValue; }
+            virtual Value evaluate() const OVERRIDE;
+            virtual Value::Type resultType() const OVERRIDE { return Value::NumberValue; }
         };
 
-        class NumericOp : public Expression {
+        class NumericOp FINAL : public Expression {
         public:
             enum Opcode {
                 OP_Add, OP_Sub, OP_Mul, OP_Div, OP_Mod
             };
             NumericOp(Opcode, PassOwnPtr<Expression> lhs, PassOwnPtr<Expression> rhs);
         private:
-            virtual Value evaluate() const;
-            virtual Value::Type resultType() const { return Value::NumberValue; }
+            virtual Value evaluate() const OVERRIDE;
+            virtual Value::Type resultType() const OVERRIDE { return Value::NumberValue; }
 
             Opcode m_opcode;
         };
 
-        class EqTestOp : public Expression {
+        class EqTestOp FINAL : public Expression {
         public:
             enum Opcode { OP_EQ, OP_NE, OP_GT, OP_LT, OP_GE, OP_LE };
             EqTestOp(Opcode, PassOwnPtr<Expression> lhs, PassOwnPtr<Expression> rhs);
-            virtual Value evaluate() const;
+            virtual Value evaluate() const OVERRIDE;
         private:
-            virtual Value::Type resultType() const { return Value::BooleanValue; }
+            virtual Value::Type resultType() const OVERRIDE { return Value::BooleanValue; }
             bool compare(const Value&, const Value&) const;
 
             Opcode m_opcode;
         };
 
-        class LogicalOp : public Expression {
+        class LogicalOp FINAL : public Expression {
         public:
             enum Opcode { OP_And, OP_Or };
             LogicalOp(Opcode, PassOwnPtr<Expression> lhs, PassOwnPtr<Expression> rhs);
         private:
-            virtual Value::Type resultType() const { return Value::BooleanValue; }
+            virtual Value::Type resultType() const OVERRIDE { return Value::BooleanValue; }
             bool shortCircuitOn() const;
-            virtual Value evaluate() const;
+            virtual Value evaluate() const OVERRIDE;
 
             Opcode m_opcode;
         };
 
-        class Union : public Expression {
+        class Union FINAL : public Expression {
         private:
-            virtual Value evaluate() const;
-            virtual Value::Type resultType() const { return Value::NodeSetValue; }
+            virtual Value evaluate() const OVERRIDE;
+            virtual Value::Type resultType() const OVERRIDE { return Value::NodeSetValue; }
         };
 
         class Predicate {

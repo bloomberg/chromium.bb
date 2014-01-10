@@ -33,12 +33,12 @@ namespace WebCore {
     namespace XPath {
 
         // Variable references are not used with XPathEvaluator.
-        class VariableReference : public Expression {
+        class VariableReference FINAL : public Expression {
         public:
             explicit VariableReference(const String& name);
         private:
-            virtual Value evaluate() const;
-            virtual Value::Type resultType() const { ASSERT_NOT_REACHED(); return Value::NumberValue; }
+            virtual Value evaluate() const OVERRIDE;
+            virtual Value::Type resultType() const OVERRIDE { ASSERT_NOT_REACHED(); return Value::NumberValue; }
             String m_name;
         };
 
