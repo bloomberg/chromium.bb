@@ -28,7 +28,6 @@ PepperPlatformVideoCapture::PepperPlatformVideoCapture(
       handler_proxy_(new media::VideoCaptureHandlerProxy(
           this, base::MessageLoopProxy::current())),
       handler_(handler),
-      video_capture_(NULL),
       unbalanced_start_(false),
       pending_open_device_(false),
       pending_open_device_id_(-1) {
@@ -83,12 +82,7 @@ void PepperPlatformVideoCapture::DetachEventHandler() {
   handler_ = NULL;
   StopCapture(NULL);
 
-  if (video_capture_) {
-    VideoCaptureImplManager* manager =
-        RenderThreadImpl::current()->video_capture_impl_manager();
-    manager->RemoveDevice(session_id_, handler_proxy_.get());
-    video_capture_ = NULL;
-  }
+  video_capture_.reset();
 
   if (render_view_.get()) {
     if (!label_.empty()) {
@@ -147,7 +141,7 @@ PepperPlatformVideoCapture::~PepperPlatformVideoCapture() {
 void PepperPlatformVideoCapture::Initialize() {
   VideoCaptureImplManager* manager =
       RenderThreadImpl::current()->video_capture_impl_manager();
-  video_capture_ = manager->AddDevice(session_id_, handler_proxy_.get());
+  video_capture_ = manager->UseDevice(session_id_);
 }
 
 void PepperPlatformVideoCapture::OnDeviceOpened(int request_id,

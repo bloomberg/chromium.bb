@@ -12,7 +12,6 @@
 #include "third_party/libjingle/source/talk/media/base/videocapturer.h"
 
 namespace content {
-class VideoCaptureImplManager;
 
 // RtcVideoCapturer implements a simple cricket::VideoCapturer that is used for
 // VideoCapturing in libJingle and especially in PeerConnections.
@@ -24,7 +23,6 @@ class RtcVideoCapturer
     : public cricket::VideoCapturer {
  public:
   RtcVideoCapturer(const media::VideoCaptureSessionId id,
-                   VideoCaptureImplManager* vc_manager,
                    bool is_screencast);
   virtual ~RtcVideoCapturer();
 

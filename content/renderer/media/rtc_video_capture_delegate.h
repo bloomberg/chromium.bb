@@ -8,10 +8,11 @@
 #include "base/callback.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "content/common/media/video_capture.h"
-#include "content/renderer/media/video_capture_impl_manager.h"
 #include "media/video/capture/video_capture.h"
 
 namespace content {
+
+class VideoCaptureHandle;
 
 // Implements a simple reference counted video capturer that guarantees that
 // methods in RtcVideoCaptureDelegateEventHandler is only called from when
@@ -33,16 +34,17 @@ class RtcVideoCaptureDelegate
       FrameCapturedCallback;
   typedef base::Callback<void(CaptureState)> StateChangeCallback;
 
-  RtcVideoCaptureDelegate(const media::VideoCaptureSessionId id,
-                          VideoCaptureImplManager* vc_manager);
+  RtcVideoCaptureDelegate(const media::VideoCaptureSessionId id);
 
   void StartCapture(const media::VideoCaptureParams& params,
                     const FrameCapturedCallback& captured_callback,
                     const StateChangeCallback& state_callback);
   void StopCapture();
 
+ protected:
   // media::VideoCapture::EventHandler implementation.
-  // These functions are called from a thread owned by |vc_manager_|.
+  // These functions are called on the IO thread (same as where
+  // |capture_engine_| runs).
   virtual void OnStarted(media::VideoCapture* capture) OVERRIDE;
   virtual void OnStopped(media::VideoCapture* capture) OVERRIDE;
   virtual void OnPaused(media::VideoCapture* capture) OVERRIDE;
@@ -66,9 +68,7 @@ class RtcVideoCaptureDelegate
   // The id identifies which video capture device is used for this video
   // capture session.
   media::VideoCaptureSessionId session_id_;
-  // The video capture manager handles open/close of video capture devices.
-  scoped_refptr<VideoCaptureImplManager> vc_manager_;
-  media::VideoCapture* capture_engine_;
+  scoped_ptr<VideoCaptureHandle> capture_engine_;
 
   // Accessed on the thread where StartCapture is called.
   bool got_first_frame_;

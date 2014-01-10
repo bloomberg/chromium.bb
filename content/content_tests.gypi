@@ -541,6 +541,7 @@
         'renderer/media/media_stream_video_source_unittest.cc',
         'renderer/media/test_response_generator.cc',
         'renderer/media/test_response_generator.h',
+        'renderer/media/video_capture_impl_manager_unittest.cc',
         'renderer/media/video_capture_impl_unittest.cc',
         'renderer/media/video_capture_message_filter_unittest.cc',
         'renderer/media/video_destination_handler_unittest.cc',
