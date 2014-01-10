@@ -10,18 +10,15 @@
 #ifndef MEDIA_AUDIO_LINUX_CRAS_UNIFIED_H_
 #define MEDIA_AUDIO_LINUX_CRAS_UNIFIED_H_
 
-#include <alsa/asoundlib.h>
 #include <cras_client.h>
 
 #include "base/compiler_specific.h"
-#include "base/gtest_prod_util.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_parameters.h"
 
 namespace media {
 
 class AudioManagerCras;
-class AudioParameters;
 
 // Implementation of AudioOuputStream for Chrome OS using the Chrome OS audio
 // server.

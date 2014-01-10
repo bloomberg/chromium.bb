@@ -10,8 +10,6 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "media/audio/agc_audio_stream.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_parameters.h"
@@ -105,4 +103,4 @@ class CrasInputStream : public AgcAudioStream<AudioInputStream> {
 
 }  // namespace media
 
-#endif  // MEDIA_AUDIO_CRAS_ALSA_INPUT_H_
+#endif  // MEDIA_AUDIO_CRAS_CRAS_INPUT_H_

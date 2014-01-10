@@ -7,10 +7,8 @@
 #include <math.h>
 
 #include "base/basictypes.h"
-#include "base/bind.h"
 #include "base/logging.h"
 #include "base/time/time.h"
-#include "media/audio/alsa/alsa_util.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/cras/audio_manager_cras.h"
 
@@ -54,7 +52,7 @@ bool CrasInputStream::Open() {
   }
 
   snd_pcm_format_t pcm_format =
-      alsa_util::BitsToFormat(params_.bits_per_sample());
+      AudioManagerCras::BitsToFormat(params_.bits_per_sample());
   if (pcm_format == SND_PCM_FORMAT_UNKNOWN) {
     DLOG(WARNING) << "Unsupported bits/sample: " << params_.bits_per_sample();
     return false;
@@ -114,7 +112,7 @@ void CrasInputStream::Start(AudioInputCallback* callback) {
   // Prepare |audio_format| and |stream_params| for the stream we
   // will create.
   cras_audio_format* audio_format = cras_audio_format_create(
-      alsa_util::BitsToFormat(params_.bits_per_sample()),
+      AudioManagerCras::BitsToFormat(params_.bits_per_sample()),
       params_.sample_rate(),
       params_.channels());
   if (!audio_format) {

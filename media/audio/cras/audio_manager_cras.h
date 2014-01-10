@@ -5,6 +5,8 @@
 #ifndef MEDIA_AUDIO_CRAS_AUDIO_MANAGER_CRAS_H_
 #define MEDIA_AUDIO_CRAS_AUDIO_MANAGER_CRAS_H_
 
+#include <cras_types.h>
+
 #include <string>
 
 #include "base/compiler_specific.h"
@@ -39,6 +41,8 @@ class MEDIA_EXPORT AudioManagerCras : public AudioManagerBase {
       const AudioParameters& params, const std::string& device_id) OVERRIDE;
   virtual AudioInputStream* MakeLowLatencyInputStream(
       const AudioParameters& params, const std::string& device_id) OVERRIDE;
+
+  static snd_pcm_format_t BitsToFormat(int bits_per_sample);
 
  protected:
   virtual ~AudioManagerCras();
