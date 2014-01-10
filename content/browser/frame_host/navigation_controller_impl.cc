@@ -308,6 +308,7 @@ void NavigationControllerImpl::ReloadInternal(bool check_for_repost,
     // POST wasn't involved; the latter case avoids issues with sending data to
     // the wrong page.
     entry->SetURL(entry->GetOriginalRequestURL());
+    entry->SetReferrer(Referrer());
   }
 
   if (g_check_for_repost && check_for_repost &&
@@ -1056,6 +1057,7 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
 
   // The URL may have changed due to redirects.
   entry->SetURL(params.url);
+  entry->SetReferrer(params.referrer);
   if (entry->update_virtual_url_with_url())
     UpdateVirtualURLToURL(entry, params.url);
 
@@ -1109,6 +1111,7 @@ void NavigationControllerImpl::RendererDidNavigateToSamePage(
   if (existing_entry->update_virtual_url_with_url())
     UpdateVirtualURLToURL(existing_entry, params.url);
   existing_entry->SetURL(params.url);
+  existing_entry->SetReferrer(params.referrer);
 
   // The page may have been requested with a different HTTP method.
   existing_entry->SetHasPostData(params.is_post);

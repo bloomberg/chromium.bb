@@ -1176,7 +1176,6 @@ void RenderFrameImpl::willSendRequest(
   blink::WebReferrerPolicy referrer_policy;
   if (internal_data->is_referrer_policy_set()) {
     referrer_policy = internal_data->referrer_policy();
-    internal_data->clear_referrer_policy();
   } else {
     referrer_policy = frame->document().referrerPolicy();
   }

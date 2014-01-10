@@ -1963,9 +1963,7 @@ void RenderViewImpl::UpdateURL(WebFrame* frame) {
       params.transition = static_cast<PageTransition>(
           params.transition | PAGE_TRANSITION_CLIENT_REDIRECT);
     } else {
-      // Bug 654101: the referrer will be empty on https->http transitions. It
-      // would be nice if we could get the real referrer from somewhere.
-      params.referrer = GetReferrerFromRequest(frame, original_request);
+      params.referrer = GetReferrerFromRequest(frame, ds->request());
     }
 
     base::string16 method = request.httpMethod();
@@ -3587,6 +3585,7 @@ void RenderViewImpl::didCommitProvisionalLoad(WebFrame* frame,
     internal_data->set_must_reset_scroll_and_scale_state(false);
   }
   internal_data->set_use_error_page(false);
+  internal_data->clear_referrer_policy();
 
   if (is_new_navigation) {
     // When we perform a new navigation, we need to update the last committed
