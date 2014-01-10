@@ -40,7 +40,7 @@ struct BeforeLoadEventInit : public EventInit {
     String url;
 };
 
-class BeforeLoadEvent : public Event {
+class BeforeLoadEvent FINAL : public Event {
 public:
     static PassRefPtr<BeforeLoadEvent> create()
     {
@@ -59,7 +59,7 @@ public:
 
     const String& url() const { return m_url; }
 
-    virtual const AtomicString& interfaceName() const { return EventNames::BeforeLoadEvent; }
+    virtual const AtomicString& interfaceName() const OVERRIDE { return EventNames::BeforeLoadEvent; }
 
 private:
     BeforeLoadEvent()

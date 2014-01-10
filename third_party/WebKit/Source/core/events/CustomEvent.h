@@ -34,7 +34,7 @@ class SerializedScriptValue;
 
 typedef EventInit CustomEventInit;
 
-class CustomEvent : public Event {
+class CustomEvent FINAL : public Event {
 public:
     virtual ~CustomEvent();
 
@@ -50,7 +50,7 @@ public:
 
     void initCustomEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<SerializedScriptValue>);
 
-    virtual const AtomicString& interfaceName() const;
+    virtual const AtomicString& interfaceName() const OVERRIDE;
 
     SerializedScriptValue* serializedDetail() { return m_serializedDetail.get(); }
 

@@ -47,7 +47,7 @@ struct MessageEventInit : public EventInit {
     MessagePortArray ports;
 };
 
-class MessageEvent : public Event {
+class MessageEvent FINAL : public Event {
 public:
     static PassRefPtr<MessageEvent> create()
     {
@@ -90,7 +90,7 @@ public:
     MessagePortArray ports() const { return m_ports ? *m_ports : MessagePortArray(); }
     MessagePortChannelArray* channels() const { return m_channels ? m_channels.get() : 0; }
 
-    virtual const AtomicString& interfaceName() const;
+    virtual const AtomicString& interfaceName() const OVERRIDE;
 
     enum DataType {
         DataTypeScriptValue,

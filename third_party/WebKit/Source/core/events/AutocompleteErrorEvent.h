@@ -34,7 +34,7 @@ struct AutocompleteErrorEventInit : public EventInit {
     String reason;
 };
 
-class AutocompleteErrorEvent : public Event {
+class AutocompleteErrorEvent FINAL : public Event {
 public:
     static PassRefPtr<AutocompleteErrorEvent> create()
     {
@@ -53,7 +53,7 @@ public:
 
     const String& reason() const { return m_reason; }
 
-    virtual const AtomicString& interfaceName() const { return EventNames::AutocompleteErrorEvent; }
+    virtual const AtomicString& interfaceName() const OVERRIDE { return EventNames::AutocompleteErrorEvent; }
 
 private:
     AutocompleteErrorEvent()

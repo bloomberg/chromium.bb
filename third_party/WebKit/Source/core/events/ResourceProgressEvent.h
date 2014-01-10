@@ -42,7 +42,7 @@ namespace WebCore {
 // (and translate in the case of PNaCl) multiple binary files. It is not
 // constructable by web content at all, and so does not provide the usual
 // EventInit pattern for Event construction.
-class ResourceProgressEvent : public ProgressEvent {
+class ResourceProgressEvent FINAL : public ProgressEvent {
 public:
     static PassRefPtr<ResourceProgressEvent> create()
     {
@@ -55,7 +55,7 @@ public:
 
     const String& url() const;
 
-    virtual const AtomicString& interfaceName() const;
+    virtual const AtomicString& interfaceName() const OVERRIDE;
 
 protected:
     ResourceProgressEvent();

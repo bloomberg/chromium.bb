@@ -39,7 +39,7 @@ struct FocusEventInit : public UIEventInit {
     RefPtr<EventTarget> relatedTarget;
 };
 
-class FocusEvent : public UIEvent {
+class FocusEvent FINAL : public UIEvent {
 public:
     static PassRefPtr<FocusEvent> create()
     {
@@ -60,8 +60,8 @@ public:
     EventTarget* relatedTarget(bool& isNull) const { isNull = !m_relatedTarget; return m_relatedTarget.get(); }
     void setRelatedTarget(EventTarget* relatedTarget) { m_relatedTarget = relatedTarget; }
 
-    virtual const AtomicString& interfaceName() const;
-    virtual bool isFocusEvent() const;
+    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual bool isFocusEvent() const OVERRIDE;
 
 private:
     FocusEvent();
@@ -73,7 +73,7 @@ private:
 
 DEFINE_EVENT_TYPE_CASTS(FocusEvent);
 
-class FocusEventDispatchMediator : public EventDispatchMediator {
+class FocusEventDispatchMediator FINAL : public EventDispatchMediator {
 public:
     static PassRefPtr<FocusEventDispatchMediator> create(PassRefPtr<FocusEvent>);
 private:
@@ -82,7 +82,7 @@ private:
     virtual bool dispatchEvent(EventDispatcher*) const OVERRIDE;
 };
 
-class BlurEventDispatchMediator : public EventDispatchMediator {
+class BlurEventDispatchMediator FINAL : public EventDispatchMediator {
 public:
     static PassRefPtr<BlurEventDispatchMediator> create(PassRefPtr<FocusEvent>);
 private:
@@ -91,7 +91,7 @@ private:
     virtual bool dispatchEvent(EventDispatcher*) const OVERRIDE;
 };
 
-class FocusInEventDispatchMediator : public EventDispatchMediator {
+class FocusInEventDispatchMediator FINAL : public EventDispatchMediator {
 public:
     static PassRefPtr<FocusInEventDispatchMediator> create(PassRefPtr<FocusEvent>);
 private:
@@ -100,7 +100,7 @@ private:
     virtual bool dispatchEvent(EventDispatcher*) const OVERRIDE;
 };
 
-class FocusOutEventDispatchMediator : public EventDispatchMediator {
+class FocusOutEventDispatchMediator FINAL : public EventDispatchMediator {
 public:
     static PassRefPtr<FocusOutEventDispatchMediator> create(PassRefPtr<FocusEvent>);
 private:

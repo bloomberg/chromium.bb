@@ -30,7 +30,7 @@
 
 namespace WebCore {
 
-class BeforeTextInsertedEvent : public Event {
+class BeforeTextInsertedEvent FINAL : public Event {
 public:
     virtual ~BeforeTextInsertedEvent();
 
@@ -39,8 +39,8 @@ public:
         return adoptRef(new BeforeTextInsertedEvent(text));
     }
 
-    virtual const AtomicString& interfaceName() const;
-    virtual bool isBeforeTextInsertedEvent() const { return true; }
+    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual bool isBeforeTextInsertedEvent() const OVERRIDE { return true; }
 
     const String& text() const { return m_text; }
     void setText(const String& s) { m_text = s; }

@@ -29,7 +29,7 @@
 
 namespace WebCore {
 
-    class MutationEvent : public Event {
+    class MutationEvent FINAL : public Event {
     public:
         virtual ~MutationEvent();
 
@@ -60,7 +60,7 @@ namespace WebCore {
         String attrName() const { return m_attrName; }
         unsigned short attrChange() const { return m_attrChange; }
 
-        virtual const AtomicString& interfaceName() const;
+        virtual const AtomicString& interfaceName() const OVERRIDE;
 
     private:
         MutationEvent();

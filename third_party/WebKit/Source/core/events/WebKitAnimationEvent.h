@@ -40,7 +40,7 @@ struct WebKitAnimationEventInit : public EventInit {
     double elapsedTime;
 };
 
-class WebKitAnimationEvent : public Event {
+class WebKitAnimationEvent FINAL : public Event {
 public:
     static PassRefPtr<WebKitAnimationEvent> create()
     {
@@ -60,7 +60,7 @@ public:
     const String& animationName() const;
     double elapsedTime() const;
 
-    virtual const AtomicString& interfaceName() const;
+    virtual const AtomicString& interfaceName() const OVERRIDE;
 
 private:
     WebKitAnimationEvent();

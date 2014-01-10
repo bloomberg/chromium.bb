@@ -32,7 +32,7 @@
 
 namespace WebCore {
 
-class GestureEvent : public MouseRelatedEvent {
+class GestureEvent FINAL : public MouseRelatedEvent {
 public:
     virtual ~GestureEvent() { }
 
@@ -43,7 +43,7 @@ public:
 
     virtual bool isGestureEvent() const OVERRIDE;
 
-    virtual const AtomicString& interfaceName() const;
+    virtual const AtomicString& interfaceName() const OVERRIDE;
 
     float deltaX() const { return m_deltaX; }
     float deltaY() const { return m_deltaY; }
@@ -56,7 +56,7 @@ private:
     float m_deltaY;
 };
 
-class GestureEventDispatchMediator : public EventDispatchMediator {
+class GestureEventDispatchMediator FINAL : public EventDispatchMediator {
 public:
     static PassRefPtr<GestureEventDispatchMediator> create(PassRefPtr<GestureEvent> gestureEvent)
     {

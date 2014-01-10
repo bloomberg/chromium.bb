@@ -44,7 +44,7 @@ struct WheelEventInit : public MouseEventInit {
     unsigned deltaMode;
 };
 
-class WheelEvent : public MouseEvent {
+class WheelEvent FINAL : public MouseEvent {
 public:
     enum { TickMultiplier = 120 };
 
@@ -93,7 +93,7 @@ public:
 
     bool webkitDirectionInvertedFromDevice() const { return m_directionInvertedFromDevice; }
 
-    virtual const AtomicString& interfaceName() const;
+    virtual const AtomicString& interfaceName() const OVERRIDE;
     virtual bool isMouseEvent() const OVERRIDE;
     virtual bool isWheelEvent() const OVERRIDE;
 
@@ -114,7 +114,7 @@ private:
 
 DEFINE_EVENT_TYPE_CASTS(WheelEvent);
 
-class WheelEventDispatchMediator : public EventDispatchMediator {
+class WheelEventDispatchMediator FINAL : public EventDispatchMediator {
 public:
     static PassRefPtr<WheelEventDispatchMediator> create(const PlatformWheelEvent&, PassRefPtr<AbstractView>);
 private:

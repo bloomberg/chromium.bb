@@ -47,7 +47,7 @@ struct ErrorEventInit : public EventInit {
     unsigned colno;
 };
 
-class ErrorEvent : public Event {
+class ErrorEvent FINAL : public Event {
 public:
     static PassRefPtr<ErrorEvent> create()
     {
@@ -76,7 +76,7 @@ public:
     // 'messageForConsole' is not exposed to JavaScript, and prefers 'm_unsanitizedMessage'.
     const String& messageForConsole() const { return !m_unsanitizedMessage.isEmpty() ? m_unsanitizedMessage : m_sanitizedMessage; }
 
-    virtual const AtomicString& interfaceName() const;
+    virtual const AtomicString& interfaceName() const OVERRIDE;
 
     PassRefPtr<DOMWrapperWorld> world() const { return m_world; }
 

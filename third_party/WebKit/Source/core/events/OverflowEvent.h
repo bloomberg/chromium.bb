@@ -38,7 +38,7 @@ struct OverflowEventInit : public EventInit {
     bool verticalOverflow;
 };
 
-class OverflowEvent : public Event {
+class OverflowEvent FINAL : public Event {
 public:
     enum orientType {
         HORIZONTAL = 0,
@@ -65,7 +65,7 @@ public:
     bool horizontalOverflow() const { return m_horizontalOverflow; }
     bool verticalOverflow() const { return m_verticalOverflow; }
 
-    virtual const AtomicString& interfaceName() const;
+    virtual const AtomicString& interfaceName() const OVERRIDE;
 
 private:
     OverflowEvent();

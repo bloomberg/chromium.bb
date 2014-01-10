@@ -36,7 +36,7 @@ class SerializedScriptValue;
 
 typedef EventInit PopStateEventInit;
 
-class PopStateEvent : public Event {
+class PopStateEvent FINAL : public Event {
 public:
     virtual ~PopStateEvent();
     static PassRefPtr<PopStateEvent> create();
@@ -51,7 +51,7 @@ public:
     }
     History* history() const { return m_history.get(); }
 
-    virtual const AtomicString& interfaceName() const;
+    virtual const AtomicString& interfaceName() const OVERRIDE;
 
 private:
     PopStateEvent();

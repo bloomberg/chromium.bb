@@ -36,7 +36,7 @@ struct PageTransitionEventInit : public EventInit {
     bool persisted;
 };
 
-class PageTransitionEvent : public Event {
+class PageTransitionEvent FINAL : public Event {
 public:
     static PassRefPtr<PageTransitionEvent> create()
     {
@@ -53,7 +53,7 @@ public:
 
     virtual ~PageTransitionEvent();
 
-    virtual const AtomicString& interfaceName() const;
+    virtual const AtomicString& interfaceName() const OVERRIDE;
 
     bool persisted() const { return m_persisted; }
 

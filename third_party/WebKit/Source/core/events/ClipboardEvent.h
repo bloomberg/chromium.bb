@@ -30,7 +30,7 @@ namespace WebCore {
 
     class Clipboard;
 
-    class ClipboardEvent : public Event {
+    class ClipboardEvent FINAL : public Event {
     public:
         virtual ~ClipboardEvent();
 
@@ -43,7 +43,7 @@ namespace WebCore {
             return adoptRef(new ClipboardEvent(type, canBubbleArg, cancelableArg, clipboardArg));
         }
 
-        Clipboard* clipboard() const { return m_clipboard.get(); }
+        virtual Clipboard* clipboard() const OVERRIDE { return m_clipboard.get(); }
 
     private:
         ClipboardEvent();

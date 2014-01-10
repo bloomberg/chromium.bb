@@ -61,8 +61,8 @@ public:
     AbstractView* view(bool& isNull) const { isNull = !m_view; return m_view.get(); }
     int detail() const { return m_detail; }
 
-    virtual const AtomicString& interfaceName() const;
-    virtual bool isUIEvent() const;
+    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual bool isUIEvent() const OVERRIDE FINAL;
 
     virtual int keyCode() const;
     virtual int charCode() const;

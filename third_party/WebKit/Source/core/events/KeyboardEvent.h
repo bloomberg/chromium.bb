@@ -45,7 +45,7 @@ struct KeyboardEventInit : public UIEventInit {
     bool repeat;
 };
 
-class KeyboardEvent : public UIEventWithKeyState {
+class KeyboardEvent FINAL : public UIEventWithKeyState {
 public:
     enum KeyLocationCode {
         DOM_KEY_LOCATION_STANDARD   = 0x00,
@@ -92,13 +92,13 @@ public:
 
     const PlatformKeyboardEvent* keyEvent() const { return m_keyEvent.get(); }
 
-    int keyCode() const; // key code for keydown and keyup, character for keypress
-    int charCode() const; // character code for keypress, 0 for keydown and keyup
+    virtual int keyCode() const OVERRIDE; // key code for keydown and keyup, character for keypress
+    virtual int charCode() const OVERRIDE; // character code for keypress, 0 for keydown and keyup
     bool repeat() const { return m_isAutoRepeat; }
 
-    virtual const AtomicString& interfaceName() const;
-    virtual bool isKeyboardEvent() const;
-    virtual int which() const;
+    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual bool isKeyboardEvent() const OVERRIDE;
+    virtual int which() const OVERRIDE;
 
 private:
     KeyboardEvent();

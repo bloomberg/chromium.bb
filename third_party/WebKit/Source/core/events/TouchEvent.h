@@ -33,7 +33,7 @@
 
 namespace WebCore {
 
-class TouchEvent : public MouseRelatedEvent {
+class TouchEvent FINAL : public MouseRelatedEvent {
 public:
     virtual ~TouchEvent();
 
@@ -68,7 +68,7 @@ public:
 
     virtual bool isTouchEvent() const OVERRIDE;
 
-    virtual const AtomicString& interfaceName() const;
+    virtual const AtomicString& interfaceName() const OVERRIDE;
 
 private:
     TouchEvent();
@@ -83,7 +83,7 @@ private:
     RefPtr<TouchList> m_changedTouches;
 };
 
-class TouchEventDispatchMediator : public EventDispatchMediator {
+class TouchEventDispatchMediator FINAL : public EventDispatchMediator {
 public:
     static PassRefPtr<TouchEventDispatchMediator> create(PassRefPtr<TouchEvent>);
 

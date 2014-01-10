@@ -35,7 +35,7 @@ struct HashChangeEventInit : public EventInit {
     String newURL;
 };
 
-class HashChangeEvent : public Event {
+class HashChangeEvent FINAL : public Event {
 public:
     static PassRefPtr<HashChangeEvent> create()
     {
@@ -66,7 +66,7 @@ public:
     const String& oldURL() const { return m_oldURL; }
     const String& newURL() const { return m_newURL; }
 
-    virtual const AtomicString& interfaceName() const { return EventNames::HashChangeEvent; }
+    virtual const AtomicString& interfaceName() const OVERRIDE { return EventNames::HashChangeEvent; }
 
 private:
     HashChangeEvent()

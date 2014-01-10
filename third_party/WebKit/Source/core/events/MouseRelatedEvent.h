@@ -42,14 +42,14 @@ namespace WebCore {
         int webkitMovementX() const { return m_movementDelta.x(); }
         int webkitMovementY() const { return m_movementDelta.y(); }
         const LayoutPoint& clientLocation() const { return m_clientLocation; }
-        int layerX();
-        int layerY();
+        virtual int layerX() OVERRIDE FINAL;
+        virtual int layerY() OVERRIDE FINAL;
         int offsetX();
         int offsetY();
         bool isSimulated() const { return m_isSimulated; }
-        virtual int pageX() const;
-        virtual int pageY() const;
-        virtual const LayoutPoint& pageLocation() const;
+        virtual int pageX() const OVERRIDE FINAL;
+        virtual int pageY() const OVERRIDE FINAL;
+        const LayoutPoint& pageLocation() const;
         int x() const;
         int y() const;
 
@@ -67,7 +67,7 @@ namespace WebCore {
 
         void initCoordinates();
         void initCoordinates(const LayoutPoint& clientLocation);
-        virtual void receivedTarget();
+        virtual void receivedTarget() OVERRIDE FINAL;
 
         void computePageLocation();
         void computeRelativePosition();

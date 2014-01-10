@@ -38,7 +38,7 @@ struct CompositionEventInit : UIEventInit {
     String data;
 };
 
-class CompositionEvent : public UIEvent {
+class CompositionEvent FINAL : public UIEvent {
 public:
     static PassRefPtr<CompositionEvent> create()
     {
@@ -69,7 +69,7 @@ public:
     int activeSegmentEnd() const { return m_activeSegmentEnd; }
     const Vector<unsigned>& getSegments() const { return m_segments; }
 
-    virtual const AtomicString& interfaceName() const;
+    virtual const AtomicString& interfaceName() const OVERRIDE;
 
 private:
     CompositionEvent();

@@ -47,7 +47,7 @@ struct SecurityPolicyViolationEventInit : public EventInit {
     int statusCode;
 };
 
-class SecurityPolicyViolationEvent : public Event {
+class SecurityPolicyViolationEvent FINAL : public Event {
 public:
     static PassRefPtr<SecurityPolicyViolationEvent> create()
     {
@@ -70,7 +70,7 @@ public:
     int columnNumber() const { return m_columnNumber; }
     int statusCode() const { return m_statusCode; }
 
-    virtual const AtomicString& interfaceName() const { return EventNames::SecurityPolicyViolationEvent; }
+    virtual const AtomicString& interfaceName() const OVERRIDE { return EventNames::SecurityPolicyViolationEvent; }
 
 private:
     SecurityPolicyViolationEvent()

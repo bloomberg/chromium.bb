@@ -41,7 +41,7 @@ class DOMWindowEventQueueTimer;
 class Node;
 class ExecutionContext;
 
-class DOMWindowEventQueue : public RefCounted<DOMWindowEventQueue>, public EventQueue {
+class DOMWindowEventQueue FINAL : public RefCounted<DOMWindowEventQueue>, public EventQueue {
 public:
     static PassRefPtr<DOMWindowEventQueue> create(ExecutionContext*);
     virtual ~DOMWindowEventQueue();

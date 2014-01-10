@@ -39,7 +39,7 @@ struct TransitionEventInit : public EventInit {
     String pseudoElement;
 };
 
-class TransitionEvent : public Event {
+class TransitionEvent FINAL : public Event {
 public:
     static PassRefPtr<TransitionEvent> create()
     {
@@ -60,7 +60,7 @@ public:
     double elapsedTime() const;
     const String& pseudoElement() const;
 
-    virtual const AtomicString& interfaceName() const;
+    virtual const AtomicString& interfaceName() const OVERRIDE;
 
 private:
     TransitionEvent();
