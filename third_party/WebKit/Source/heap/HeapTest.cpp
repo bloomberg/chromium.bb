@@ -286,7 +286,6 @@ private:
     SimpleFinalizedObject() { }
 };
 
-DEFINE_GC_INFO(SimpleFinalizedObject);
 int SimpleFinalizedObject::s_destructorCalls = 0;
 
 class TestTypedHeapClass : public GarbageCollected<TestTypedHeapClass> {
@@ -332,7 +331,6 @@ protected:
     }
 };
 
-DEFINE_GC_INFO(Bar);
 unsigned Bar::s_live = 0;
 
 class Baz : public GarbageCollected<Baz> {
@@ -358,8 +356,6 @@ private:
 
     Member<Bar> m_bar;
 };
-
-DEFINE_GC_INFO(Baz);
 
 class Foo : public Bar {
 public:
@@ -448,8 +444,6 @@ private:
     Member<IntWrapper> m_intWrapper;
 };
 
-DEFINE_GC_INFO(ConstructorAllocation);
-
 class LargeObject : public GarbageCollectedFinalized<LargeObject> {
     DECLARE_GC_INFO
 public:
@@ -478,7 +472,32 @@ private:
 };
 
 int LargeObject::s_destructorCalls = 0;
-DEFINE_GC_INFO(LargeObject);
+
+class RefCountedAndGarbageCollected : public RefCountedGarbageCollected<RefCountedAndGarbageCollected> {
+    DECLARE_GC_INFO
+public:
+    static PassRefPtr<RefCountedAndGarbageCollected> create()
+    {
+        return adoptRef(new RefCountedAndGarbageCollected());
+    }
+
+    ~RefCountedAndGarbageCollected()
+    {
+        ++s_destructorCalls;
+    }
+
+    void trace(Visitor*) { }
+
+    static int s_destructorCalls;
+
+private:
+    RefCountedAndGarbageCollected()
+    {
+    }
+};
+
+int RefCountedAndGarbageCollected::s_destructorCalls = 0;
+
 
 TEST(HeapTest, Threading)
 {
@@ -858,11 +877,53 @@ TEST(HeapTest, LargeObjects)
     Heap::shutdown();
 }
 
+TEST(HeapTest, RefCountedGarbageCollected)
+{
+    // FIXME: init and shutdown should be called via Blink
+    // initialization in the test runner.
+    Heap::init(0);
+
+    RefCountedAndGarbageCollected::s_destructorCalls = 0;
+    {
+        RefPtr<RefCountedAndGarbageCollected> refPtr3;
+        {
+            Persistent<RefCountedAndGarbageCollected> persistent;
+            {
+                RefPtr<RefCountedAndGarbageCollected> refPtr1 = RefCountedAndGarbageCollected::create();
+                RefPtr<RefCountedAndGarbageCollected> refPtr2 = RefCountedAndGarbageCollected::create();
+                Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+                EXPECT_EQ(0, RefCountedAndGarbageCollected::s_destructorCalls);
+                persistent = refPtr1.get();
+            }
+            // Reference count is zero for both objects but one of
+            // them is kept alive by a persistent handle.
+            Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+            EXPECT_EQ(1, RefCountedAndGarbageCollected::s_destructorCalls);
+            refPtr3 = persistent;
+        }
+        // The persistent handle is gone but the ref count has been
+        // increased to 1.
+        Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+        EXPECT_EQ(1, RefCountedAndGarbageCollected::s_destructorCalls);
+    }
+    // Both persistent handle is gone and ref count is zero so the
+    // object can be collected.
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+    EXPECT_EQ(2, RefCountedAndGarbageCollected::s_destructorCalls);
+
+    Heap::shutdown();
+}
+
+DEFINE_GC_INFO(Bar);
+DEFINE_GC_INFO(Baz);
 DEFINE_GC_INFO(ClassWithMember);
+DEFINE_GC_INFO(ConstructorAllocation);
 DEFINE_GC_INFO(HeapAllocatedArray);
 DEFINE_GC_INFO(IntWrapper);
+DEFINE_GC_INFO(LargeObject);
+DEFINE_GC_INFO(RefCountedAndGarbageCollected);
+DEFINE_GC_INFO(SimpleFinalizedObject);
 DEFINE_GC_INFO(TestTypedHeapClass);
 DEFINE_GC_INFO(TraceCounter);
-
 
 } // namespace
