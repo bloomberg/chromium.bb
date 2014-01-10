@@ -1261,7 +1261,6 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     PrerenderManager* prerender_manager = GetPrerenderManager();
     ASSERT_TRUE(prerender_manager);
     prerender_manager->mutable_config().rate_limit_enabled = false;
-    prerender_manager->mutable_config().https_allowed = true;
     ASSERT_TRUE(prerender_contents_factory_ == NULL);
     prerender_contents_factory_ =
         new WaitForLoadPrerenderContentsFactory(

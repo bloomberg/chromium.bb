@@ -46,9 +46,6 @@ struct Config {
   // before they were going to be used.
   base::TimeDelta abandon_time_to_live;
 
-  // Is https allowed?
-  bool https_allowed;
-
   // The default tab bounds used as the prerenderer tab size when the active tab
   // cannot be accessed.
   gfx::Rect default_tab_bounds;

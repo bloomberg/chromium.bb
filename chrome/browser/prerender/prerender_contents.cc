@@ -523,16 +523,9 @@ bool PrerenderContents::OnMessageReceived(const IPC::Message& message) {
 }
 
 bool PrerenderContents::CheckURL(const GURL& url) {
-  const bool http = url.SchemeIs(content::kHttpScheme);
-  const bool https = url.SchemeIs(content::kHttpsScheme);
-  if (!http && !https) {
+  if (!url.SchemeIsHTTPOrHTTPS()) {
     DCHECK_NE(MATCH_COMPLETE_REPLACEMENT_PENDING, match_complete_status_);
     Destroy(FINAL_STATUS_UNSUPPORTED_SCHEME);
-    return false;
-  }
-  if (https && !prerender_manager_->config().https_allowed) {
-    DCHECK_NE(MATCH_COMPLETE_REPLACEMENT_PENDING, match_complete_status_);
-    Destroy(FINAL_STATUS_HTTPS);
     return false;
   }
   if (match_complete_status_ != MATCH_COMPLETE_REPLACEMENT_PENDING &&
