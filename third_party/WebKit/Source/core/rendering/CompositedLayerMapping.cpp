@@ -1710,6 +1710,7 @@ bool CompositedLayerMapping::updateRequiresOwnBackingStoreForIntrinsicReasons()
     m_requiresOwnBackingStoreForIntrinsicReasons = m_owningLayer->isRootLayer()
         || (m_owningLayer->compositingReasons() & CompositingReasonComboReasonsThatRequireOwnBacking)
         || m_owningLayer->transform()
+        || m_owningLayer->clipsCompositingDescendantsWithBorderRadius() // FIXME: Revisit this if the paintsIntoCompositedAncestor state is removed.
         || renderer->isTransparent()
         || renderer->hasMask()
         || renderer->hasReflection()

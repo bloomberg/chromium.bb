@@ -341,6 +341,8 @@ public:
     bool hasCompositedClippingMask() const;
     bool needsCompositedScrolling() const { return m_scrollableArea && m_scrollableArea->needsCompositedScrolling(); }
 
+    bool clipsCompositingDescendantsWithBorderRadius() const;
+
     RenderLayer* scrollParent() const;
     RenderLayer* clipParent() const;
 
