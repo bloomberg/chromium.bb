@@ -420,29 +420,42 @@ def convert_map_to_isolate_dict(values, config_variables):
       then = conditions.setdefault(frozenset(configs), {})
       variables = then.setdefault('variables', {})
 
-      if isinstance(item, int):
-        # One-off for read_only.
+      if key == 'read_only':
+        if not isinstance(item, int):
+          raise isolateserver.ConfigError(
+              'Unexpected entry type %r for key %s' % (item, key))
         variables[key] = item
+      elif key == 'command':
+        if not isinstance(item, tuple):
+          raise isolateserver.ConfigError(
+              'Unexpected entry type %r for key %s' % (item, key))
+        if key in variables:
+          raise isolateserver.ConfigError('Unexpected duplicate key %s' % key)
+        if not item:
+          raise isolateserver.ConfigError(
+              'Expected non empty entry in %s' % key)
+        variables[key] = list(item)
+      elif key in (KEY_TOUCHED, KEY_TRACKED, KEY_UNTRACKED):
+        if not isinstance(item, basestring):
+          raise isolateserver.ConfigError('Unexpected entry type %r' % item)
+        if not item:
+          raise isolateserver.ConfigError(
+              'Expected non empty entry in %s' % key)
+        # The list of items (files or dirs). Append the new item and keep
+        # the list sorted.
+        l = variables.setdefault(key, [])
+        l.append(item)
+        l.sort()
       else:
-        assert item
-        if isinstance(item, tuple):
-          # One-off for command.
-          # Do not merge lists and do not sort!
-          # Note that item is a tuple.
-          assert key not in variables
-          variables[key] = list(item)
-        else:
-          # The list of items (files or dirs). Append the new item and keep
-          # the list sorted.
-          l = variables.setdefault(key, [])
-          l.append(item)
-          l.sort()
+        raise isolateserver.ConfigError('Unexpected key %s' % key)
 
   if all_mentioned_configs:
     config_values = map(set, zip(*all_mentioned_configs))
     sef = short_expression_finder.ShortExpressionFinder(
         zip(config_variables, config_values))
 
+  # TODO(maruel): This code is broken in the case all_mentioned_configs is not
+  # set.
   conditions = sorted(
       [sef.get_expr(configs), then] for configs, then in conditions.iteritems())
   return {'conditions': conditions}

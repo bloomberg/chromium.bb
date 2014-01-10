@@ -11,7 +11,12 @@ import unittest
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
+from utils import short_expression_finder
 from utils.short_expression_finder import ShortExpressionFinder, partitions
+
+
+# Access to a protected member XXX of a client class
+# pylint: disable=W0212
 
 
 def matching_configs(expr, variables_and_values):
@@ -142,6 +147,55 @@ class Tests(unittest.TestCase):
     with self.assertRaises(TypeError):
       s = ShortExpressionFinder(v)
       self.assertEqual([], s.get_expr(('1', None)))
+
+
+class TestPrivateCode(unittest.TestCase):
+  # Tests the non-exported functions.
+  def test_calculate_cost_simple(self):
+    values = ([17],)
+    self.assertEqual(
+        {2: {1: (1,)}}, short_expression_finder._calculate_costs(values, 1, 1))
+
+  def test_calculate_cost_1_x_0(self):
+    # Degenerative case.
+    values = ([17], [])
+    self.assertEqual({}, short_expression_finder._calculate_costs(values, 1, 1))
+
+  def test_calculate_cost_1_x_2(self):
+    values = ([1, 2], [3])
+    expected = {
+      3: {
+        1: (1, 1),
+        2: (2, 1),
+      },
+      5: {
+        3: (3, 1),
+      },
+    }
+    self.assertEqual(
+        expected, short_expression_finder._calculate_costs(values, 1, 1))
+
+  def test_calculate_cost_2_x_2(self):
+    values = ([1, 2], [3, 4])
+    expected = {
+      3: {
+        1: (1, 1),
+        2: (2, 1),
+        4: (1, 2),
+        8: (2, 2),
+      },
+      5: {
+        3: (3, 1),
+        5: (1, 3),
+        10: (2, 3),
+        12: (3, 2),
+      },
+      7: {
+        15: (3, 3),
+      },
+    }
+    self.assertEqual(
+        expected, short_expression_finder._calculate_costs(values, 1, 1))
 
 
 if __name__ == '__main__':
