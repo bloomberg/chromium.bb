@@ -34,10 +34,17 @@ class WebContentDecryptionModuleSessionImpl
 
   // blink::WebContentDecryptionModuleSession implementation.
   virtual blink::WebString sessionId() const;
+  virtual void initializeNewSession(const blink::WebString& mime_type,
+                                    const uint8* init_data,
+                                    size_t init_data_length);
+  virtual void update(const uint8* response, size_t response_length);
+  virtual void release();
+
+  // TODO(xhwang): Drop generateKeyRequest() and close() after blink side is
+  // updated.
   virtual void generateKeyRequest(const blink::WebString& mime_type,
                                   const uint8* init_data,
                                   size_t init_data_length);
-  virtual void update(const uint8* response, size_t response_length);
   virtual void close();
 
   // Callbacks.

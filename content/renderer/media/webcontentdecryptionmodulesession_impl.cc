@@ -31,7 +31,7 @@ blink::WebString WebContentDecryptionModuleSessionImpl::sessionId() const {
   return web_session_id_;
 }
 
-void WebContentDecryptionModuleSessionImpl::generateKeyRequest(
+void WebContentDecryptionModuleSessionImpl::initializeNewSession(
     const blink::WebString& mime_type,
     const uint8* init_data, size_t init_data_length) {
   // TODO(ddorwin): Guard against this in supported types check and remove this.
@@ -46,14 +46,24 @@ void WebContentDecryptionModuleSessionImpl::generateKeyRequest(
       session_id_, UTF16ToASCII(mime_type), init_data, init_data_length);
 }
 
+void WebContentDecryptionModuleSessionImpl::generateKeyRequest(
+    const blink::WebString& mime_type,
+    const uint8* init_data, size_t init_data_length) {
+  initializeNewSession(mime_type, init_data, init_data_length);
+}
+
 void WebContentDecryptionModuleSessionImpl::update(const uint8* response,
                                                    size_t response_length) {
   DCHECK(response);
   media_keys_->UpdateSession(session_id_, response, response_length);
 }
 
-void WebContentDecryptionModuleSessionImpl::close() {
+void WebContentDecryptionModuleSessionImpl::release() {
   media_keys_->ReleaseSession(session_id_);
+}
+
+void WebContentDecryptionModuleSessionImpl::close() {
+  release();
 }
 
 void WebContentDecryptionModuleSessionImpl::OnSessionCreated(
