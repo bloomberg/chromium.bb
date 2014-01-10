@@ -113,8 +113,10 @@ void LinkImport::didFinish()
     m_owner->scheduleEvent();
 }
 
-void LinkImport::importWillBeDestroyed()
+void LinkImport::importChildWasDestroyed(HTMLImportChild* child)
 {
+    ASSERT(m_child == child);
+    m_child = 0;
     clear();
 }
 

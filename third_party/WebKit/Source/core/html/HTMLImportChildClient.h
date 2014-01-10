@@ -33,11 +33,13 @@
 
 namespace WebCore {
 
+class HTMLImportChild;
+
 class HTMLImportChildClient {
 public:
     virtual ~HTMLImportChildClient() { }
     virtual void didFinish() = 0;
-    virtual void importWillBeDestroyed() = 0;
+    virtual void importChildWasDestroyed(HTMLImportChild*) = 0;
     virtual bool isCreatedByParser() const = 0;
 };
 

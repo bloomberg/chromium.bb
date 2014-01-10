@@ -60,7 +60,7 @@ HTMLImportChild::~HTMLImportChild()
 
     for (size_t i = 0; i < m_clients.size(); ++i) {
         TemporaryChange<bool> traversing(m_traversingClients, true);
-        m_clients[i]->importWillBeDestroyed();
+        m_clients[i]->importChildWasDestroyed(this);
     }
 }
 
