@@ -16,6 +16,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_manager.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
@@ -108,6 +109,11 @@ bool ChromeExtensionsBrowserClient::IsBackgroundPageAllowed(
   }
 #endif
   return true;
+}
+
+void ChromeExtensionsBrowserClient::OnExtensionHostCreated(
+    content::WebContents* web_contents) {
+  PrefsTabHelper::CreateForWebContents(web_contents);
 }
 
 bool ChromeExtensionsBrowserClient::DidVersionUpdate(

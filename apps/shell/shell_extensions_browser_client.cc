@@ -98,6 +98,10 @@ bool ShellExtensionsBrowserClient::IsBackgroundPageAllowed(
   return true;
 }
 
+void ShellExtensionsBrowserClient::OnExtensionHostCreated(
+    content::WebContents* web_contents) {
+}
+
 bool ShellExtensionsBrowserClient::DidVersionUpdate(BrowserContext* context) {
   // TODO(jamescook): We might want to tell extensions when app_shell updates.
   return false;

@@ -21,7 +21,6 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_web_contents_observer.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
-#include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_messages.h"
@@ -142,7 +141,6 @@ ExtensionHost::ExtensionHost(const Extension* extension,
   SetViewType(host_contents_.get(), host_type);
 
   ExtensionWebContentsObserver::CreateForWebContents(host_contents());
-  PrefsTabHelper::CreateForWebContents(host_contents());
 
   render_view_host_ = host_contents_->GetRenderViewHost();
 
@@ -150,6 +148,8 @@ ExtensionHost::ExtensionHost(const Extension* extension,
   // be the same extension that this points to.
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  content::Source<BrowserContext>(browser_context_));
+
+  ExtensionsBrowserClient::Get()->OnExtensionHostCreated(host_contents());
 }
 
 ExtensionHost::~ExtensionHost() {

@@ -16,6 +16,7 @@ class PrefService;
 namespace content {
 class BrowserContext;
 class JavaScriptDialogManager;
+class WebContents;
 }
 
 namespace extensions {
@@ -74,6 +75,10 @@ class ExtensionsBrowserClient {
 
   virtual bool IsBackgroundPageAllowed(
       content::BrowserContext* context) const = 0;
+
+  // Called after the hosting |web_contents| for an extension is created. The
+  // implementation may wish to add preference observers to |web_contents|.
+  virtual void OnExtensionHostCreated(content::WebContents* web_contents) = 0;
 
   // Returns true if the client version has updated since the last run. Called
   // once each time the extensions system is loaded per browser_context. The

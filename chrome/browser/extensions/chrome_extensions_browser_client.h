@@ -50,6 +50,8 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
       content::BrowserContext* context) const OVERRIDE;
   virtual bool IsBackgroundPageAllowed(
       content::BrowserContext* context) const OVERRIDE;
+  virtual void OnExtensionHostCreated(content::WebContents* web_contents)
+      OVERRIDE;
   virtual bool DidVersionUpdate(content::BrowserContext* context) OVERRIDE;
   virtual scoped_ptr<AppSorting> CreateAppSorting() OVERRIDE;
   virtual bool IsRunningInForcedAppMode() OVERRIDE;
