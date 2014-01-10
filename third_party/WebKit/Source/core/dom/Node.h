@@ -832,8 +832,6 @@ private:
 
     virtual RenderStyle* virtualComputedStyle(PseudoId = NOPSEUDO);
 
-    Element* ancestorElement() const;
-
     void trackForDebugging();
 
     Vector<OwnPtr<MutationObserverRegistration> >* mutationObserverRegistry();

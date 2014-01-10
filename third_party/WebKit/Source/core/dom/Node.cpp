@@ -1453,8 +1453,8 @@ bool Node::isDefaultNamespace(const AtomicString& namespaceURIMaybeEmpty) const
                 }
             }
 
-            if (Element* ancestor = ancestorElement())
-                return ancestor->isDefaultNamespace(namespaceURI);
+            if (Element* parent = parentElement())
+                return parent->isDefaultNamespace(namespaceURI);
 
             return false;
         }
@@ -1472,8 +1472,8 @@ bool Node::isDefaultNamespace(const AtomicString& namespaceURIMaybeEmpty) const
             return false;
         }
         default:
-            if (Element* ancestor = ancestorElement())
-                return ancestor->isDefaultNamespace(namespaceURI);
+            if (Element* parent = parentElement())
+                return parent->isDefaultNamespace(namespaceURI);
             return false;
     }
 }
@@ -1503,8 +1503,8 @@ const AtomicString& Node::lookupPrefix(const AtomicString& namespaceURI) const
             return nullAtom;
         }
         default:
-            if (Element* ancestor = ancestorElement())
-                return ancestor->lookupPrefix(namespaceURI);
+            if (Element* parent = parentElement())
+                return parent->lookupPrefix(namespaceURI);
             return nullAtom;
     }
 }
@@ -1541,8 +1541,8 @@ const AtomicString& Node::lookupNamespaceURI(const String& prefix) const
                     }
                 }
             }
-            if (Element* ancestor = ancestorElement())
-                return ancestor->lookupNamespaceURI(prefix);
+            if (Element* parent = parentElement())
+                return parent->lookupNamespaceURI(prefix);
             return nullAtom;
         }
         case DOCUMENT_NODE:
@@ -1560,8 +1560,8 @@ const AtomicString& Node::lookupNamespaceURI(const String& prefix) const
                 return nullAtom;
         }
         default:
-            if (Element* ancestor = ancestorElement())
-                return ancestor->lookupNamespaceURI(prefix);
+            if (Element* parent = parentElement())
+                return parent->lookupNamespaceURI(prefix);
             return nullAtom;
     }
 }
@@ -1586,8 +1586,8 @@ const AtomicString& Node::lookupNamespacePrefix(const AtomicString& _namespaceUR
         }
     }
 
-    if (Element* ancestor = ancestorElement())
-        return ancestor->lookupNamespacePrefix(_namespaceURI, originalElement);
+    if (Element* parent = parentElement())
+        return parent->lookupNamespacePrefix(_namespaceURI, originalElement);
     return nullAtom;
 }
 
@@ -1662,16 +1662,6 @@ void Node::setTextContent(const String& text)
             return;
     }
     ASSERT_NOT_REACHED();
-}
-
-Element* Node::ancestorElement() const
-{
-    // In theory, there can be EntityReference nodes between elements, but this is currently not supported.
-    for (ContainerNode* n = parentNode(); n; n = n->parentNode()) {
-        if (n->isElementNode())
-            return toElement(n);
-    }
-    return 0;
 }
 
 bool Node::offsetInCharacters() const
@@ -1814,8 +1804,7 @@ FloatPoint Node::convertToPage(const FloatPoint& p) const
         return renderer()->localToAbsolute(p, UseTransforms);
 
     // Otherwise go up the tree looking for a renderer
-    Element *parent = ancestorElement();
-    if (parent)
+    if (Element* parent = parentElement())
         return parent->convertToPage(p);
 
     // No parent - no conversion needed
@@ -1829,8 +1818,7 @@ FloatPoint Node::convertFromPage(const FloatPoint& p) const
         return renderer()->absoluteToLocal(p, UseTransforms);
 
     // Otherwise go up the tree looking for a renderer
-    Element *parent = ancestorElement();
-    if (parent)
+    if (Element* parent = parentElement())
         return parent->convertFromPage(p);
 
     // No parent - no conversion needed
