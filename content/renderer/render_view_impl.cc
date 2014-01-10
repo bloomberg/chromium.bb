@@ -949,7 +949,7 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
   main_render_frame_.reset(
       RenderFrameImpl::Create(this, params->main_frame_routing_id));
   // The main frame WebFrame object is closed by
-  // RenderViewImpl::frameDetached().
+  // RenderFrameImpl::frameDetached().
   webview()->setMainFrame(WebFrame::create(main_render_frame_.get()));
   main_render_frame_->MainWebFrameCreated(webview()->mainFrame());
   main_render_frame_->SetWebFrame(webview()->mainFrame());
@@ -3081,6 +3081,10 @@ void RenderViewImpl::didDisownOpener(blink::WebFrame* frame) {
 }
 
 void RenderViewImpl::frameDetached(WebFrame* frame) {
+  // NOTE: We may get here for either the main frame or for subframes.  The
+  // RenderFrameImpl will be deleted immediately after this call for subframes
+  // but not for the main frame, which is owned by |main_render_frame_|.
+
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, FrameDetached(frame));
 }
 

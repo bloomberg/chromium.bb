@@ -110,9 +110,10 @@ RenderFrameHostImpl* FrameTree::AddFrame(int frame_routing_id,
   scoped_ptr<FrameTreeNode> node(new FrameTreeNode(
       this, parent->navigator(), render_frame_delegate_, render_view_delegate_,
       render_widget_delegate_, manager_delegate_, frame_id, frame_name));
-  RenderFrameHostImpl* render_frame = node->current_frame_host();
+  FrameTreeNode* node_ptr = node.get();
+  // AddChild is what creates the RenderFrameHost.
   parent->AddChild(node.Pass(), frame_routing_id);
-  return render_frame;
+  return node_ptr->current_frame_host();
 }
 
 void FrameTree::RemoveFrame(RenderFrameHostImpl* render_frame_host,

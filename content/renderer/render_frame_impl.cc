@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/debug/alias.h"
 #include "base/i18n/char_iterator.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -96,7 +97,7 @@ namespace content {
 namespace {
 
 typedef std::map<blink::WebFrame*, RenderFrameImpl*> FrameMap;
-base::LazyInstance<FrameMap> g_child_frame_map = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<FrameMap> g_frame_map = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -116,8 +117,8 @@ RenderFrameImpl* RenderFrameImpl::Create(RenderViewImpl* render_view,
 
 RenderFrameImpl* RenderFrameImpl::FindByWebFrame(blink::WebFrame* web_frame) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess)) {
-    FrameMap::iterator iter = g_child_frame_map.Get().find(web_frame);
-    if (iter != g_child_frame_map.Get().end())
+    FrameMap::iterator iter = g_frame_map.Get().find(web_frame);
+    if (iter != g_frame_map.Get().end())
       return iter->second;
   }
 
@@ -154,7 +155,18 @@ RenderFrameImpl::~RenderFrameImpl() {
   RenderThread::Get()->RemoveRoute(routing_id_);
 }
 
+// TODO(nasko): Overload the delete operator to overwrite the freed
+// RenderFrameImpl object and help detect potential use-after-free bug.
+// See https://crbug.com/245126#c34.
+void RenderFrameImpl::operator delete(void* ptr) {
+  memset(ptr, 0xAF, sizeof(RenderFrameImpl));
+}
+
 void RenderFrameImpl::MainWebFrameCreated(blink::WebFrame* frame) {
+  std::pair<FrameMap::iterator, bool> result = g_frame_map.Get().insert(
+      std::make_pair(frame, this));
+  CHECK(result.second) << "Inserting a duplicate item.";
+
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_,
                     WebFrameCreated(frame));
 }
@@ -664,32 +676,32 @@ void RenderFrameImpl::didAccessInitialDocument(blink::WebFrame* frame) {
 blink::WebFrame* RenderFrameImpl::createChildFrame(
     blink::WebFrame* parent,
     const blink::WebString& name) {
-  RenderFrameImpl* child_render_frame = this;
   long long child_frame_identifier = WebFrame::generateEmbedderIdentifier();
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess)) {
-    // Synchronously notify the browser of a child frame creation to get the
-    // routing_id for the RenderFrame.
-    int routing_id;
-    Send(new FrameHostMsg_CreateChildFrame(routing_id_,
-                                           parent->identifier(),
-                                           child_frame_identifier,
-                                           base::UTF16ToUTF8(name),
-                                           &routing_id));
-    child_render_frame = RenderFrameImpl::Create(render_view_, routing_id);
-  }
-
+  // Synchronously notify the browser of a child frame creation to get the
+  // routing_id for the RenderFrame.
+  int routing_id = MSG_ROUTING_NONE;
+  Send(new FrameHostMsg_CreateChildFrame(routing_id_,
+                                         parent->identifier(),
+                                         child_frame_identifier,
+                                         base::UTF16ToUTF8(name),
+                                         &routing_id));
+  CHECK_NE(routing_id, MSG_ROUTING_NONE);
+  RenderFrameImpl* child_render_frame = RenderFrameImpl::Create(render_view_,
+                                                                routing_id);
+  // TODO(nasko): Over-conservative check for debugging.
+  CHECK(child_render_frame);
   blink::WebFrame* web_frame = WebFrame::create(child_render_frame,
                                                 child_frame_identifier);
+  // TODO(nasko): Over-conservative check for debugging.
+  CHECK(web_frame);
+  child_render_frame->SetWebFrame(web_frame);
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess)) {
-    child_render_frame->SetWebFrame(web_frame);
-    g_child_frame_map.Get().insert(
-        std::make_pair(web_frame, child_render_frame));
-  } else {
-    FOR_EACH_OBSERVER(RenderFrameObserver, observers_,
-                      WebFrameCreated(web_frame));
-  }
+  std::pair<FrameMap::iterator, bool> result = g_frame_map.Get().insert(
+      std::make_pair(web_frame, child_render_frame));
+  CHECK(result.second) << "Inserting a duplicate item.";
 
+  FOR_EACH_OBSERVER(RenderFrameObserver, observers_,
+                    WebFrameCreated(web_frame));
   return web_frame;
 }
 
@@ -702,46 +714,45 @@ void RenderFrameImpl::frameDetached(blink::WebFrame* frame) {
   // the parent frame.  This is different from createChildFrame() which is
   // called on the parent frame.
   CHECK(!is_detaching_);
+  // TODO(nasko): Remove all debug::Alias lines after diagnosing failures.
+  base::debug::Alias(frame);
+
+  bool is_subframe = !!frame->parent();
+  base::debug::Alias(&is_subframe);
 
   int64 parent_frame_id = -1;
-  if (frame->parent())
+  base::debug::Alias(&parent_frame_id);
+  if (is_subframe)
     parent_frame_id = frame->parent()->identifier();
 
   Send(new FrameHostMsg_Detach(routing_id_, parent_frame_id,
                                frame->identifier()));
 
-  // Currently multiple WebCore::Frames can send frameDetached to a single
-  // RenderFrameImpl. This is legacy behavior from when RenderViewImpl served
-  // as a shared WebFrameClient for multiple Webcore::Frame objects. It also
-  // prevents this class from entering the |is_detaching_| state because
-  // even though one WebCore::Frame may have detached itself, others will
-  // still need to use this object.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess)) {
-    // The |is_detaching_| flag disables Send(). FrameHostMsg_Detach must be
-    // sent before setting |is_detaching_| to true. In contrast, Observers
-    // should only be notified afterwards so they cannot call back into and
-    // have IPCs fired off.
-    is_detaching_ = true;
-  }
+  // The |is_detaching_| flag disables Send(). FrameHostMsg_Detach must be
+  // sent before setting |is_detaching_| to true. In contrast, Observers
+  // should only be notified afterwards so they cannot call back into here and
+  // have IPCs fired off.
+  is_detaching_ = true;
 
   // Call back to RenderViewImpl for observers to be notified.
   // TODO(nasko): Remove once we have RenderFrameObserver.
   render_view_->frameDetached(frame);
 
+  // We need to clean up subframes by removing them from the map and deleting
+  // the RenderFrameImpl.  In contrast, the main frame is owned by its
+  // containing RenderViewHost (so that they have the same lifetime), so only
+  // removal from the map is needed and no deletion.
+  FrameMap::iterator it = g_frame_map.Get().find(frame);
+  CHECK(it != g_frame_map.Get().end());
+  CHECK_EQ(it->second, this);
+  g_frame_map.Get().erase(it);
+
+  // |frame| is invalid after here.
   frame->close();
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess)) {
-    // If the frame does not have a parent, it is the main frame. The main
-    // frame is owned by the containing RenderViewHost so it does not require
-    // any cleanup here.
-    if (frame->parent()) {
-      FrameMap::iterator it = g_child_frame_map.Get().find(frame);
-      DCHECK(it != g_child_frame_map.Get().end());
-      DCHECK_EQ(it->second, this);
-      g_child_frame_map.Get().erase(it);
-      delete this;
-      // Object is invalid after this point.
-    }
+  if (is_subframe) {
+    delete this;
+    // Object is invalid after this point.
   }
 }
 

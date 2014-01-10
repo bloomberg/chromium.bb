@@ -26,7 +26,13 @@ bool ChromeRenderFrameObserver::OnMessageReceived(const IPC::Message& message) {
 
 void ChromeRenderFrameObserver::OnSetIsPrerendering(bool is_prerendering) {
   if (is_prerendering) {
-    DCHECK(!prerender::PrerenderHelper::Get(render_frame()));
+    // If the PrerenderHelper for this frame already exists, don't create it. It
+    // can already be created for subframes during handling of
+    // RenderFrameCreated, if the parent frame was prerendering at time of
+    // subframe creation.
+    if (prerender::PrerenderHelper::Get(render_frame()))
+      return;
+
     // The PrerenderHelper will destroy itself either after recording histograms
     // or on destruction of the RenderView.
     new prerender::PrerenderHelper(render_frame());
