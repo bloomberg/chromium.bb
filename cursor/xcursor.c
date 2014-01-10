@@ -488,6 +488,8 @@ _XcursorReadImage (XcursorFile		*file,
 
     /* Create the image and initialize it */
     image = XcursorImageCreate (head.width, head.height);
+    if (image == NULL)
+	    return NULL;
     if (chunkHeader.version < image->version)
 	image->version = chunkHeader.version;
     image->size = chunkHeader.subtype;
