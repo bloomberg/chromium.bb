@@ -40,6 +40,7 @@
 // sizes" of any underlying allocator that implements standard bucketing.
 // This currently includes tcmalloc, Windows LFH and PartitionAlloc.
 
+#include "wtf/Assertions.h"
 #include "wtf/WTFExport.h"
 #include <limits.h>
 
@@ -66,8 +67,11 @@ public:
 
     static void init();
 
-    static size_t quantizedSize(size_t size)
+    template<typename T>
+    static size_t quantizedSize(size_t count)
     {
+        RELEASE_ASSERT(count <= kMaxUnquantizedAllocation / sizeof(T));
+        size_t size = count * sizeof(T);
         size_t roundToLessOne;
         if (UNLIKELY(size >= kMaxAllocation))
             roundToLessOne = kMaxRounding - 1;

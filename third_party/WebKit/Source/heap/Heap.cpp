@@ -442,7 +442,7 @@ ThreadHeap<Header>::~ThreadHeap()
 template<typename Header>
 Address ThreadHeap<Header>::outOfLineAllocate(size_t size, const GCInfo* gcInfo)
 {
-    size_t allocationSize = allocationSizeFromSize<Header>(size);
+    size_t allocationSize = allocationSizeFromSize(size);
     if (threadState()->shouldGC()) {
         // FIXME: Add back below collection once we support conservative stack
         // scanning. Until then we cannot do the collection since it causes our
@@ -1087,9 +1087,9 @@ void HeapContainsCache::flush()
         m_entries[i] = Entry();
 }
 
-int HeapContainsCache::hash(Address address)
+size_t HeapContainsCache::hash(Address address)
 {
-    uintptr_t value = (reinterpret_cast<uintptr_t>(address) >> blinkPageSizeLog2);
+    size_t value = (reinterpret_cast<size_t>(address) >> blinkPageSizeLog2);
     value ^= value >> numberOfEntriesLog2;
     value ^= value >> (numberOfEntriesLog2 * 2);
     value &= numberOfEntries - 1;
@@ -1099,7 +1099,7 @@ int HeapContainsCache::hash(Address address)
 bool HeapContainsCache::lookup(Address address, BaseHeapPage** page)
 {
     ASSERT(page);
-    int index = hash(address);
+    size_t index = hash(address);
     ASSERT(!(index & 1));
     Address cachePage = roundToBlinkPageStart(address);
     if (m_entries[index].address() == cachePage) {
@@ -1116,7 +1116,7 @@ bool HeapContainsCache::lookup(Address address, BaseHeapPage** page)
 
 void HeapContainsCache::addEntry(Address address, BaseHeapPage* page)
 {
-    int index = hash(address);
+    size_t index = hash(address);
     ASSERT(!(index & 1));
     Address cachePage = roundToBlinkPageStart(address);
     m_entries[index + 1] = m_entries[index];
@@ -1150,7 +1150,7 @@ CallbackStack::~CallbackStack()
 void CallbackStack::clearUnused()
 {
     ASSERT(m_current == &(m_buffer[0]));
-    for (int i = 0; i < bufferSize; i++)
+    for (size_t i = 0; i < bufferSize; i++)
         m_buffer[i] = Item(0, 0);
 }
 
@@ -1213,6 +1213,12 @@ public:
             return;
         FinalizedHeapObjectHeader* header = FinalizedHeapObjectHeader::fromPayload(objectPointer);
         visitHeader(header, header->payload(), callback);
+    }
+
+    virtual void registerWeakMembers(const void* containingObject, WeakPointerCallback callback)
+    {
+        // FIXME: Implement.
+        ASSERT_NOT_REACHED();
     }
 
     virtual bool isMarked(const void* objectPointer)

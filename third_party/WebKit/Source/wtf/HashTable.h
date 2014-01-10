@@ -61,6 +61,8 @@ namespace WTF {
     class HashTableIterator;
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
     class HashTableConstIterator;
+    template<bool x, typename T, typename U, typename V, typename W, typename X, typename Y, typename Z>
+    struct WeakProcessingHashTableHelper;
 
     typedef enum { HashItemKnownGood } HashItemKnownGoodTag;
 
@@ -332,11 +334,7 @@ namespace WTF {
         ValueType* lookup(KeyPeekInType key) { return lookup<IdentityTranslatorType>(key); }
         template<typename HashTranslator, typename T> ValueType* lookup(const T&);
 
-        void trace(typename Allocator::Visitor*)
-        {
-            // FIXME: Implement.
-            ASSERT_NOT_REACHED();
-        }
+        void trace(typename Allocator::Visitor*);
 
     private:
         static ValueType* allocateTable(unsigned size);
@@ -384,6 +382,8 @@ namespace WTF {
     public:
         mutable OwnPtr<Stats> m_stats;
 #endif
+
+        template<bool x, typename T, typename U, typename V, typename W, typename X, typename Y, typename Z> friend struct WeakProcessingHashTableHelper;
     };
 
     // Set all the bits to one after the most significant bit: 00110101010 -> 00111111111.
@@ -455,10 +455,10 @@ namespace WTF {
         if (!table)
             return 0;
 
-        int k = 0;
-        int sizeMask = m_tableSizeMask;
+        size_t k = 0;
+        size_t sizeMask = m_tableSizeMask;
         unsigned h = HashTranslator::hash(key);
-        int i = h & sizeMask;
+        size_t i = h & sizeMask;
 
 #if DUMP_HASHTABLE_STATS
         atomicIncrement(&HashTableStats::numAccesses);
@@ -509,11 +509,11 @@ namespace WTF {
     {
         ASSERT(m_table);
 
-        int k = 0;
+        size_t k = 0;
         ValueType* table = m_table;
-        int sizeMask = m_tableSizeMask;
+        size_t sizeMask = m_tableSizeMask;
         unsigned h = HashTranslator::hash(key);
-        int i = h & sizeMask;
+        size_t i = h & sizeMask;
 
 #if DUMP_HASHTABLE_STATS
         atomicIncrement(&HashTableStats::numAccesses);
@@ -571,11 +571,11 @@ namespace WTF {
     {
         ASSERT(m_table);
 
-        int k = 0;
+        size_t k = 0;
         ValueType* table = m_table;
-        int sizeMask = m_tableSizeMask;
+        size_t sizeMask = m_tableSizeMask;
         unsigned h = HashTranslator::hash(key);
-        int i = h & sizeMask;
+        size_t i = h & sizeMask;
 
 #if DUMP_HASHTABLE_STATS
         atomicIncrement(&HashTableStats::numAccesses);
@@ -661,11 +661,11 @@ namespace WTF {
 
         ASSERT(m_table);
 
-        int k = 0;
+        size_t k = 0;
         ValueType* table = m_table;
-        int sizeMask = m_tableSizeMask;
+        size_t sizeMask = m_tableSizeMask;
         unsigned h = HashTranslator::hash(key);
-        int i = h & sizeMask;
+        size_t i = h & sizeMask;
 
 #if DUMP_HASHTABLE_STATS
         atomicIncrement(&HashTableStats::numAccesses);
@@ -972,25 +972,25 @@ namespace WTF {
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
     void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::swap(HashTable& other)
     {
-        ValueType* tmp_table = m_table;
+        ValueType* tmpTable = m_table;
         m_table = other.m_table;
-        other.m_table = tmp_table;
+        other.m_table = tmpTable;
 
-        int tmp_tableSize = m_tableSize;
+        size_t tmpTableSize = m_tableSize;
         m_tableSize = other.m_tableSize;
-        other.m_tableSize = tmp_tableSize;
+        other.m_tableSize = tmpTableSize;
 
-        int tmp_tableSizeMask = m_tableSizeMask;
+        size_t tmpTableSizeMask = m_tableSizeMask;
         m_tableSizeMask = other.m_tableSizeMask;
-        other.m_tableSizeMask = tmp_tableSizeMask;
+        other.m_tableSizeMask = tmpTableSizeMask;
 
-        int tmp_keyCount = m_keyCount;
+        size_t tmpKeyCount = m_keyCount;
         m_keyCount = other.m_keyCount;
-        other.m_keyCount = tmp_keyCount;
+        other.m_keyCount = tmpKeyCount;
 
-        int tmp_deletedCount = m_deletedCount;
+        size_t tmpDeletedCount = m_deletedCount;
         m_deletedCount = other.m_deletedCount;
-        other.m_deletedCount = tmp_deletedCount;
+        other.m_deletedCount = tmpDeletedCount;
 
 #if DUMP_HASHTABLE_STATS_PER_TABLE
         m_stats.swap(other.m_stats);
@@ -1003,6 +1003,74 @@ namespace WTF {
         HashTable tmp(other);
         swap(tmp);
         return *this;
+    }
+
+    template<bool isWeak, typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
+    struct WeakProcessingHashTableHelper;
+
+    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
+    struct WeakProcessingHashTableHelper<false, Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator> {
+        static void process(typename Allocator::Visitor* visitor, void* closure) { }
+    };
+
+    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
+    struct WeakProcessingHashTableHelper<true, Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator> {
+        static void process(typename Allocator::Visitor* visitor, void* closure)
+        {
+            typedef HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator> HashTableType;
+            HashTableType* table = reinterpret_cast<HashTableType*>(closure);
+            if (table->m_table) {
+                // This just marks it live and does not push anything onto the
+                // marking stack.
+                Allocator::markNoTracing(visitor, table->m_table);
+                // Now perform weak processing (this is a no-op if the backing
+                // was accessible through an iterator and was already marked
+                // strongly).
+                for (typename HashTableType::ValueType* element = table->m_table + table->m_tableSize - 1; element >= table->m_table; element--) {
+                    if (!HashTableType::isEmptyOrDeletedBucket(*element)) {
+                        if (Allocator::hasDeadMember(visitor, *element)) {
+                            HashTableType::deleteBucket(*element); // Also calls the destructor.
+                            table->m_deletedCount++;
+                            table->m_keyCount--;
+                            // We don't rehash the backing until the next add
+                            // or delete, because that would cause allocation
+                            // during GC.
+                        }
+                    }
+                }
+            }
+        }
+    };
+
+    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
+    void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::trace(typename Allocator::Visitor* visitor)
+    {
+        // If someone else already marked the backing and queued up the trace
+        // and/or weak callback then we are done.
+        if (!m_table || visitor->isAlive(m_table))
+            return;
+        // Normally, we mark the backing store without performing trace. This
+        // means it is marked live, but the pointers inside it are not marked.
+        // Instead we will mark the pointers below. However, for backing
+        // stores that contain weak pointers the handling is rather different.
+        // We don't mark the backing store here, so the marking GC will leave
+        // the backing unmarked. If the backing is found in any other way than
+        // through its HashTable (ie from an iterator) then the mark bit will
+        // be set and the pointers will be marked strongly, avoiding problems
+        // with iterating over things that disappear due to weak processing
+        // while we are iterating over them. The weakProcessing callback will
+        // mark the backing as a void pointer, and will perform weak processing
+        // if needed.
+        if (!Traits::isWeak)
+            Allocator::markNoTracing(visitor, m_table);
+        else
+            Allocator::registerWeakMembers(visitor, this, WeakProcessingHashTableHelper<Traits::isWeak, Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::process);
+        if (Traits::needsTracing) {
+            for (ValueType* element = m_table + m_tableSize - 1; element >= m_table; element--) {
+                if (!isEmptyOrDeletedBucket(*element))
+                    Allocator::template mark<ValueType, Traits>(visitor, *element);
+            }
+        }
     }
 
     // iterator adapters

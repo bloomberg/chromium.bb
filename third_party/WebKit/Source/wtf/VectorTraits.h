@@ -56,8 +56,9 @@ namespace WTF {
         static const bool canCompareWithMemcmp = true;
     };
 
-    // we know OwnPtr and RefPtr are simple enough that initializing to 0 and moving with memcpy
-    // (and then not destructing the original) will totally work
+    // We know OwnPtr and RefPtr are simple enough that initializing to 0 and
+    // moving with memcpy (and then not destructing the original) will totally
+    // work.
     template<typename P>
     struct VectorTraits<RefPtr<P> > : SimpleClassVectorTraits { };
 

@@ -280,7 +280,6 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         {
             typedef typename Allocator::template VectorBackingHelper<T, VectorTraits<T> >::Type VectorBacking;
             ASSERT(newCapacity);
-            RELEASE_ASSERT(newCapacity <= Allocator::Quantizer::kMaxUnquantizedAllocation / sizeof(T));
             size_t sizeToAllocate = allocationSize(newCapacity);
             m_buffer = Allocator::template backingMalloc<T*, VectorBacking>(sizeToAllocate);
             m_capacity = sizeToAllocate / sizeof(T);
@@ -288,7 +287,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
 
         size_t allocationSize(size_t capacity) const
         {
-            return Allocator::Quantizer::quantizedSize(capacity * sizeof(T));
+            return Allocator::Quantizer::template quantizedSize<T>(capacity);
         }
 
         T* buffer() { return m_buffer; }
@@ -1147,7 +1146,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
                 Allocator::template visitWith<T, VectorTraits<T> >(visitor, *const_cast<T*>(bufferEntry));
         }
         if (this->hasOutOfLineBuffer())
-            Allocator::visitHeapPointer(visitor, buffer());
+            Allocator::markUsingGCInfo(visitor, buffer());
     }
 
 } // namespace WTF

@@ -34,6 +34,12 @@
 #include "heap/HeapExport.h"
 #include "heap/ThreadState.h"
 #include "wtf/Assertions.h"
+#include "wtf/Deque.h"
+#include "wtf/Forward.h"
+#include "wtf/HashMap.h"
+#include "wtf/HashSet.h"
+#include "wtf/HashTraits.h"
+#include "wtf/ListHashSet.h"
 #include "wtf/OwnPtr.h"
 
 #ifndef NDEBUG
@@ -48,7 +54,10 @@ class FinalizedHeapObjectHeader;
 template<typename T> class GarbageCollectedFinalized;
 class HeapObjectHeader;
 template<typename T> class Member;
+template<typename T> class WeakMember;
 class Visitor;
+
+template<bool needsTracing, bool isWeak, bool markWeakMembersStrongly, typename T, typename Traits> struct CollectionBackingTraceTrait;
 
 typedef void (*FinalizationCallback)(void*);
 typedef void (*VisitorCallback)(Visitor*, void* self);
@@ -186,6 +195,16 @@ public:
 
 template<typename T> class TraceTrait<const T> : public TraceTrait<T> { };
 
+template<typename T>
+struct ObjectAliveTrait {
+    static bool isAlive(Visitor*, T);
+};
+
+template<typename T>
+struct ObjectAliveTrait<Member<T> > {
+    static bool isAlive(Visitor*, const Member<T>&);
+};
+
 // Visitor is used to traverse the Blink object graph. Used for the
 // marking phase of the mark-sweep garbage collector.
 //
@@ -248,7 +267,42 @@ public:
     virtual void mark(HeapObjectHeader*, TraceCallback) = 0;
     virtual void mark(FinalizedHeapObjectHeader*, TraceCallback) = 0;
 
+    // If the object calls this during the regular trace callback, then the
+    // WeakPointerCallback argument may be called later, when the strong roots
+    // have all been found. The WeakPointerCallback will normally use isAlive
+    // to find out whether some pointers are pointing to dying objects. When
+    // the WeakPointerCallback is done the object must have purged all pointers
+    // to objects where isAlive returned false. In the weak callback it is not
+    // allowed to touch other objects (except using isAlive) or to allocate on
+    // the GC heap. Note that even removing things from HeapHashSet or
+    // HeapHashMap can cause an allocation if the backing store resizes, but
+    // these collections know to remove WeakMember elements safely.
+    virtual void registerWeakMembers(const void*, WeakPointerCallback) = 0;
+
+    template<typename T, void (T::*method)(Visitor*)>
+    void registerWeakMembers(const T* obj)
+    {
+        registerWeakMembers(obj, &TraceMethodDelegate<T, method>::trampoline);
+    }
+
+    // For simple cases where you just want to zero out a cell when the thing
+    // it is pointing at is garbage, you can use this. This will register a
+    // callback for each cell that needs to be zeroed, so if you have a lot of
+    // weak cells in your object you should still consider using
+    // registerWeakMembers above.
+    template<typename T>
+    void registerWeakCell(T** cell)
+    {
+        registerWeakMembers(reinterpret_cast<const void*>(cell), &handleWeakCell<T>);
+    }
+
     virtual bool isMarked(const void*) = 0;
+
+    template<typename T> inline bool isAlive(T obj) { return ObjectAliveTrait<T>::isAlive(this, obj); }
+    template<typename T> inline bool isAlive(const Member<T>& member)
+    {
+        return isAlive(member.raw());
+    }
 
 #ifndef NDEBUG
     void checkTypeMarker(const void*, const char* marker);
@@ -262,7 +316,56 @@ public:
 
     FOR_EACH_TYPED_HEAP(DECLARE_VISITOR_METHODS)
 #undef DECLARE_VISITOR_METHODS
+
+private:
+    template<typename T>
+    static void handleWeakCell(Visitor* self, void* obj)
+    {
+        T** cell = reinterpret_cast<T**>(obj);
+        if (*cell && !self->isAlive(*cell))
+            *cell = 0;
+    }
 };
+
+template<typename T, typename Traits = WTF::VectorTraits<T> >
+class HeapVectorBacking;
+template<typename Key, typename Value, typename Extractor, typename Traits, typename KeyTraits>
+class HeapHashTableBacking;
+
+// Non-class types like char don't have an trace method, so we provide a more
+// specialized template instantiation here that will be selected in preference
+// to the default. Most of them do nothing, since the type in question cannot
+// point to other heap allocated objects.
+#define ITERATE_DO_NOTHING_TYPES(f)                            \
+    f(uint8_t)                                                 \
+    f(void)
+
+#define DECLARE_DO_NOTHING_TRAIT(type)                         \
+    template<>                                                 \
+    class TraceTrait<type> {                                   \
+    public:                                                    \
+        static void checkTypeMarker(Visitor*, const void*) { } \
+        static void mark(Visitor* v, const type* p) {          \
+            v->mark(p, reinterpret_cast<TraceCallback>(0));    \
+        }                                                      \
+    };                                                         \
+    template<>                                                 \
+    struct FinalizerTrait<type> {                              \
+        static void finalize(void*) { }                        \
+        static const bool nonTrivialFinalizer = false;         \
+    };                                                         \
+    template<>                                                 \
+    struct GCInfoTrait<type> {                                 \
+        static const GCInfo* get()                             \
+        {                                                      \
+            return &info;                                      \
+        }                                                      \
+        static const GCInfo info;                              \
+    };
+
+ITERATE_DO_NOTHING_TYPES(DECLARE_DO_NOTHING_TRAIT)
+
+#undef DECLARE_DO_NOTHING_TRAIT
 
 #ifndef NDEBUG
 template<typename T> void TraceTrait<T>::checkTypeMarker(Visitor* visitor, const T* t)
@@ -278,6 +381,15 @@ template<typename T> void TraceTrait<T>::mark(Visitor* visitor, const T* t)
     // of the trait, which by default calls the instance method
     // trace(Visitor*) on the object.
     visitor->mark(const_cast<T*>(t), &trace);
+}
+
+template<typename T> bool ObjectAliveTrait<T>::isAlive(Visitor* visitor, T obj)
+{
+    return visitor->isMarked(obj);
+}
+template<typename T> bool ObjectAliveTrait<Member<T> >::isAlive(Visitor* visitor, const Member<T>& obj)
+{
+    return visitor->isMarked(obj.raw());
 }
 
 }

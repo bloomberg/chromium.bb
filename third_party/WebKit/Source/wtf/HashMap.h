@@ -76,7 +76,7 @@ namespace WTF {
     private:
         typedef typename MappedTraits::PassInType MappedPassInType;
         typedef typename MappedTraits::PassOutType MappedPassOutType;
-        typedef typename MappedTraits::PeekType MappedPeekType;
+        typedef typename MappedTraits::PeekOutType MappedPeekType;
 
         typedef typename ReferenceTypeMaker<MappedPassInType>::ReferenceType MappedPassInReferenceType;
 

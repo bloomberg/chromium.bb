@@ -63,6 +63,12 @@ private:
     ThreadState::SafePointScope m_safePointScope;
 };
 
+static void getHeapStats(HeapStats* stats)
+{
+    TestGCScope scope(ThreadState::NoHeapPointersOnStack);
+    Heap::getStats(stats);
+}
+
 class HeapAllocatedArray : public GarbageCollected<HeapAllocatedArray> {
     DECLARE_GC_INFO
 public:
@@ -80,7 +86,19 @@ private:
     int8_t m_array[s_arraySize];
 };
 
-DEFINE_GC_INFO(HeapAllocatedArray);
+// Do several GCs to make sure that later GCs don't free up old memory from
+// previously run tests in this process.
+static void clearOutOldGarbage(HeapStats* heapStats)
+{
+    while (true) {
+        getHeapStats(heapStats);
+        size_t used = heapStats->totalObjectSpace();
+        Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+        getHeapStats(heapStats);
+        if (heapStats->totalObjectSpace() >= used)
+            break;
+    }
+}
 
 class IntWrapper : public GarbageCollectedFinalized<IntWrapper> {
     DECLARE_GC_INFO
@@ -96,10 +114,12 @@ public:
     }
 
     static int s_destructorCalls;
+    static void trace(Visitor*) { }
 
-    void trace(Visitor*) { }
     int value() const { return m_x; }
+
     bool operator==(const IntWrapper& other) const { return other.value() == value(); }
+
     unsigned hash() { return IntHash<int>::hash(m_x); }
 
 protected:
@@ -110,7 +130,6 @@ private:
     int m_x;
 };
 
-DEFINE_GC_INFO(IntWrapper);
 USED_FROM_MULTIPLE_THREADS(IntWrapper);
 
 int IntWrapper::s_destructorCalls = 0;
@@ -186,26 +205,6 @@ private:
     volatile int m_threadsToFinish;
 };
 
-static void getHeapStats(HeapStats* stats)
-{
-    TestGCScope scope(ThreadState::NoHeapPointersOnStack);
-    Heap::getStats(stats);
-}
-
-// Do several GCs to make sure that later GCs don't free up old memory from
-// previously run tests in this process.
-static void clearOutOldGarbage(HeapStats* heapStats)
-{
-    while (true) {
-        getHeapStats(heapStats);
-        size_t used = heapStats->totalObjectSpace();
-        Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
-        getHeapStats(heapStats);
-        if (heapStats->totalObjectSpace() >= used)
-            break;
-    }
-}
-
 // The accounting for memory includes the memory used by rounding up object
 // sizes. This is done in a different way on 32 bit and 64 bit, so we have to
 // have some slack in the tests.
@@ -237,8 +236,6 @@ private:
     int m_traceCount;
 };
 
-DEFINE_GC_INFO(TraceCounter);
-
 class ClassWithMember : public GarbageCollected<ClassWithMember> {
     DECLARE_GC_INFO
 public:
@@ -267,8 +264,6 @@ private:
 
     Member<TraceCounter> m_traceCounter;
 };
-
-DEFINE_GC_INFO(ClassWithMember);
 
 class SimpleFinalizedObject : public GarbageCollectedFinalized<SimpleFinalizedObject> {
     DECLARE_GC_INFO
@@ -307,8 +302,6 @@ public:
 private:
     TestTypedHeapClass() { }
 };
-
-DEFINE_GC_INFO(TestTypedHeapClass);
 
 class Bar : public GarbageCollectedFinalized<Bar> {
     DECLARE_GC_INFO
@@ -696,6 +689,102 @@ TEST(HeapTest, WideTest)
     Heap::shutdown();
 }
 
+TEST(HeapTest, HashMapOfMembers)
+{
+    // FIXME: init and shutdown should be called via Blink
+    // initialization in the test runner.
+    Heap::init(0);
+
+    HeapStats initialHeapSize;
+    IntWrapper::s_destructorCalls = 0;
+
+    clearOutOldGarbage(&initialHeapSize);
+    {
+        typedef HashMap<
+            Member<IntWrapper>,
+            Member<IntWrapper>,
+            DefaultHash<Member<IntWrapper> >::Hash,
+            HashTraits<Member<IntWrapper> >,
+            HashTraits<Member<IntWrapper> >,
+            HeapAllocator> HeapObjectIdentityMap;
+
+        HeapObjectIdentityMap* map(new HeapObjectIdentityMap());
+
+        map->clear();
+        HeapStats afterSetWasCreated;
+        getHeapStats(&afterSetWasCreated);
+        EXPECT_TRUE(afterSetWasCreated.totalObjectSpace() > initialHeapSize.totalObjectSpace());
+
+        // FIXME: Activate this when stack scanning works.
+        // Heap::collectGarbage(ThreadState::HeapPointersOnStack);
+        HeapStats afterGC;
+        getHeapStats(&afterGC);
+        EXPECT_EQ(afterGC.totalObjectSpace(), afterSetWasCreated.totalObjectSpace());
+
+        IntWrapper* one(IntWrapper::create(1));
+        IntWrapper* anotherOne(IntWrapper::create(1));
+        map->add(one, one);
+        HeapStats afterOneAdd;
+        getHeapStats(&afterOneAdd);
+        EXPECT_TRUE(afterOneAdd.totalObjectSpace() > afterGC.totalObjectSpace());
+
+        HeapObjectIdentityMap::iterator it(map->begin());
+        HeapObjectIdentityMap::iterator it2(map->begin());
+        ++it;
+        ++it2;
+
+        map->add(anotherOne, one);
+
+        EXPECT_EQ(map->size(), 2u); // Two different wrappings of '1' are distinct.
+
+        // FIXME: Activate this when stack scanning works.
+        // Heap::collectGarbage(ThreadState::HeapPointersOnStack);
+        EXPECT_TRUE(map->contains(one));
+        EXPECT_TRUE(map->contains(anotherOne));
+
+        IntWrapper* gotten(map->get(one));
+        EXPECT_EQ(gotten->value(), one->value());
+        EXPECT_EQ(gotten, one);
+
+        HeapStats afterGC2;
+        getHeapStats(&afterGC2);
+        EXPECT_EQ(afterGC2.totalObjectSpace(), afterOneAdd.totalObjectSpace());
+
+        IntWrapper* dozen = 0;
+
+        for (int i = 1; i < 1000; i++) { // 999 iterations.
+            IntWrapper* iWrapper(IntWrapper::create(i));
+            IntWrapper* iSquared(IntWrapper::create(i * i));
+            map->add(iWrapper, iSquared);
+            if (i == 12)
+                dozen = iWrapper;
+        }
+        HeapStats afterAdding1000;
+        getHeapStats(&afterAdding1000);
+        EXPECT_TRUE(afterAdding1000.totalObjectSpace() > afterGC2.totalObjectSpace());
+
+        IntWrapper* gross(map->get(dozen));
+        EXPECT_EQ(gross->value(), 144);
+
+        // This should clear out junk created by all the adds.
+        // FIXME: Activate this when stack scanning works.
+        // Heap::collectGarbage(ThreadState::HeapPointersOnStack);
+        HeapStats afterGC3;
+        getHeapStats(&afterGC3);
+        // FIXME: Reactivate when we sweep.
+        // EXPECT_TRUE(afterGC3.totalObjectSpace() < afterAdding1000.totalObjectSpace());
+    }
+
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+    // The objects 'one', anotherOne, and the 999 other pairs.
+    EXPECT_EQ(IntWrapper::s_destructorCalls, 2000);
+    HeapStats afterGC4;
+    getHeapStats(&afterGC4);
+    EXPECT_EQ(afterGC4.totalObjectSpace(), initialHeapSize.totalObjectSpace());
+
+    Heap::shutdown();
+}
+
 TEST(HeapTest, NestedAllocation)
 {
     // FIXME: init and shutdown should be called via Blink
@@ -768,5 +857,12 @@ TEST(HeapTest, LargeObjects)
 
     Heap::shutdown();
 }
+
+DEFINE_GC_INFO(ClassWithMember);
+DEFINE_GC_INFO(HeapAllocatedArray);
+DEFINE_GC_INFO(IntWrapper);
+DEFINE_GC_INFO(TestTypedHeapClass);
+DEFINE_GC_INFO(TraceCounter);
+
 
 } // namespace

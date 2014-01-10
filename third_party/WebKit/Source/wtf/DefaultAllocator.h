@@ -45,10 +45,12 @@
 
 namespace WTF {
 
+class DefaultAllocatorDummyVisitor;
+
 class DefaultAllocator {
 public:
     typedef WTF::QuantizedAllocation Quantizer;
-    typedef void* Visitor;
+    typedef DefaultAllocatorDummyVisitor Visitor;
     static const bool isGarbageCollected = false;
     template<typename T, typename Traits>
     struct VectorBackingHelper {
@@ -92,6 +94,33 @@ public:
     deleteArray(void* ptr)
     {
         free(ptr); // Not the system free, the one from this class.
+    }
+
+    static void markNoTracing(...)
+    {
+        ASSERT_NOT_REACHED();
+    }
+
+    static void registerWeakMembers(...)
+    {
+        ASSERT_NOT_REACHED();
+    }
+
+    template<typename T, typename Traits>
+    static void mark(...)
+    {
+        ASSERT_NOT_REACHED();
+    }
+};
+
+// The Windows compiler seems to be very eager to instantiate things it won't
+// need, so unless we have this class we get compile errors.
+class DefaultAllocatorDummyVisitor {
+public:
+    template<typename T> inline bool isAlive(T obj)
+    {
+        ASSERT_NOT_REACHED();
+        return false;
     }
 };
 

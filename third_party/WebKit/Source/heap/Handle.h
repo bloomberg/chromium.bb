@@ -376,6 +376,7 @@ protected:
     // friend struct HeapObjectHash<T>;
     // FIXME: Uncomment when ObjectAliveTrait (weak pointer support) is moved.
     // friend struct ObjectAliveTrait<Member<T> >;
+    template<bool x, bool y, bool z, typename U, typename V> friend struct CollectionBackingTraceTrait;
     template<typename U, typename V> friend bool operator==(const Member<U>&, const Persistent<V>&);
     template<typename U, typename V> friend bool operator!=(const Member<U>&, const Persistent<V>&);
     template<typename U, typename V> friend bool operator==(const Persistent<U>&, const Member<V>&);
@@ -403,6 +404,114 @@ template<typename T, typename U> inline bool operator!=(const Persistent<T>& a, 
 template<typename T, typename U> inline bool operator==(const Persistent<T>& a, const Persistent<U>& b) { return a.m_raw == b.m_raw; }
 template<typename T, typename U> inline bool operator!=(const Persistent<T>& a, const Persistent<U>& b) { return a.m_raw != b.m_raw; }
 
-}
+} // namespace WebCore
+
+namespace WTF {
+
+template <typename T> struct VectorTraits<WebCore::Member<T> > : VectorTraitsBase<false, WebCore::Member<T> > {
+    static const bool needsDestruction = false;
+    static const bool canInitializeWithMemset = true;
+    static const bool canMoveWithMemcpy = true;
+};
+
+template <typename T> struct VectorTraits<WebCore::WeakMember<T> > : VectorTraitsBase<false, WebCore::WeakMember<T> > {
+    static const bool needsDestruction = false;
+    static const bool canInitializeWithMemset = true;
+    static const bool canMoveWithMemcpy = true;
+};
+
+template<typename T> struct HashTraits<WebCore::Member<T> > : SimpleClassHashTraits<WebCore::Member<T> > {
+    static const bool needsDestruction = false;
+    // FIXME: The distinction between PeekInType and PassInType is there for
+    // the sake of the reference counting handles. When they are gone the two
+    // types can be merged into PassInType.
+    // FIXME: Implement proper const'ness for iterator types. Requires support
+    // in the marking Visitor.
+    typedef T* PeekInType;
+    typedef T* PassInType;
+    typedef T* IteratorGetType;
+    typedef T* IteratorConstGetType;
+    typedef T* IteratorReferenceType;
+    typedef T* IteratorConstReferenceType;
+    static IteratorConstGetType getToConstGetConversion(const WebCore::Member<T>* x) { return x->raw(); }
+    static IteratorReferenceType getToReferenceConversion(IteratorGetType x) { return x; }
+    static IteratorConstReferenceType getToReferenceConstConversion(IteratorConstGetType x) { return x; }
+    // FIXME: Similarly, there is no need for a distinction between PeekOutType
+    // and PassOutType without reference counting.
+    typedef T* PeekOutType;
+    typedef T* PassOutType;
+
+    template<typename U>
+    static void store(const U& value, WebCore::Member<T>& storage) { storage = value; }
+
+    static PeekOutType peek(const WebCore::Member<T>& value) { return value; }
+    static PassOutType passOut(const WebCore::Member<T>& value) { return value; }
+};
+
+template<typename T> struct HashTraits<WebCore::WeakMember<T> > : SimpleClassHashTraits<WebCore::WeakMember<T> > {
+    static const bool needsDestruction = false;
+    // FIXME: The distinction between PeekInType and PassInType is there for
+    // the sake of the reference counting handles. When they are gone the two
+    // types can be merged into PassInType.
+    // FIXME: Implement proper const'ness for iterator types. Requires support
+    // in the marking Visitor.
+    typedef T* PeekInType;
+    typedef T* PassInType;
+    typedef T* IteratorGetType;
+    typedef T* IteratorConstGetType;
+    typedef T* IteratorReferenceType;
+    typedef T* IteratorConstReferenceType;
+    static IteratorConstGetType getToConstGetConversion(const WebCore::WeakMember<T>* x) { return x->raw(); }
+    static IteratorReferenceType getToReferenceConversion(IteratorGetType x) { return x; }
+    static IteratorConstReferenceType getToReferenceConstConversion(IteratorConstGetType x) { return x; }
+    // FIXME: Similarly, there is no need for a distinction between PeekOutType
+    // and PassOutType without reference counting.
+    typedef T* PeekOutType;
+    typedef T* PassOutType;
+
+    template<typename U>
+    static void store(const U& value, WebCore::WeakMember<T>& storage) { storage = value; }
+
+    static PeekOutType peek(const WebCore::WeakMember<T>& value) { return value; }
+    static PassOutType passOut(const WebCore::WeakMember<T>& value) { return value; }
+};
+
+template<typename T> struct PtrHash<WebCore::Member<T> > : PtrHash<T*> {
+    template<typename U>
+    static unsigned hash(const U& key) { return PtrHash<T*>::hash(key); }
+    static bool equal(T* a, const WebCore::Member<T>& b) { return a == b; }
+    static bool equal(const WebCore::Member<T>& a, T* b) { return a == b; }
+    template<typename U, typename V>
+    static bool equal(const U& a, const V& b) { return a == b; }
+};
+
+template<typename T> struct PtrHash<WebCore::WeakMember<T> > : PtrHash<WebCore::Member<T> > {
+};
+
+// PtrHash is the default hash for hash tables with members.
+template<typename T> struct DefaultHash<WebCore::Member<T> > {
+    typedef PtrHash<WebCore::Member<T> > Hash;
+};
+
+template<typename T> struct DefaultHash<WebCore::WeakMember<T> > {
+    typedef PtrHash<WebCore::WeakMember<T> > Hash;
+};
+
+template<typename T>
+struct NeedsTracing<WebCore::Member<T> > {
+    static const bool value = true;
+};
+
+template<typename T>
+struct IsWeak<WebCore::WeakMember<T> > {
+    static const bool value = true;
+};
+
+template<typename Key, typename Value, typename Extractor, typename Traits, typename KeyTraits>
+struct IsWeak<WebCore::HeapHashTableBacking<Key, Value, Extractor, Traits, KeyTraits> > {
+    static const bool value = Traits::isWeak;
+};
+
+} // namespace WTF
 
 #endif

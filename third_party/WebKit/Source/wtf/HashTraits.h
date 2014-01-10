@@ -99,8 +99,8 @@ namespace WTF {
         // Type for return value of functions that do not transfer ownership, such as get.
         // FIXME: We could change this type to const T& for better performance if we figured out
         // a way to handle the return value from emptyValue, which is a temporary.
-        typedef T PeekType;
-        static PeekType peek(const T& value) { return value; }
+        typedef T PeekOutType;
+        static PeekOutType peek(const T& value) { return value; }
     };
 
     template<typename T> struct HashTraits : GenericHashTraits<T> { };
@@ -156,9 +156,9 @@ namespace WTF {
         static PassOwnPtr<P> passOut(OwnPtr<P>& value) { return value.release(); }
         static PassOwnPtr<P> passOut(std::nullptr_t) { return nullptr; }
 
-        typedef typename OwnPtr<P>::PtrType PeekType;
-        static PeekType peek(const OwnPtr<P>& value) { return value.get(); }
-        static PeekType peek(std::nullptr_t) { return 0; }
+        typedef typename OwnPtr<P>::PtrType PeekOutType;
+        static PeekOutType peek(const OwnPtr<P>& value) { return value.get(); }
+        static PeekOutType peek(std::nullptr_t) { return 0; }
     };
 
     template<typename P> struct HashTraits<RefPtr<P> > : SimpleClassHashTraits<RefPtr<P> > {
@@ -179,9 +179,9 @@ namespace WTF {
         static PassRefPtr<P> passOut(RefPtr<P>& value) { return value.release(); }
         static PassRefPtr<P> passOut(P* value) { return value; }
 
-        typedef P* PeekType;
-        static PeekType peek(const RefPtr<P>& value) { return value.get(); }
-        static PeekType peek(P* value) { return value; }
+        typedef P* PeekOutType;
+        static PeekOutType peek(const RefPtr<P>& value) { return value.get(); }
+        static PeekOutType peek(P* value) { return value; }
     };
 
     template<> struct HashTraits<String> : SimpleClassHashTraits<String> {

@@ -140,6 +140,8 @@ inline Address blinkPageAddress(Address address)
     return reinterpret_cast<Address>(reinterpret_cast<uintptr_t>(address) & blinkPageBaseMask);
 }
 
+#ifndef NDEBUG
+
 // Sanity check for a page header address: the address of the page
 // header should be OS page size away from being Blink page size
 // aligned.
@@ -147,6 +149,7 @@ inline bool isPageHeaderAddress(Address address)
 {
     return !((reinterpret_cast<uintptr_t>(address) & blinkPageOffsetMask) - osPageSize());
 }
+#endif
 
 // Mask an address down to the enclosing oilpan heap page base address.
 // All oilpan heap pages are aligned at blinkPageBase plus an OS page size.
@@ -325,7 +328,7 @@ public:
     void zapMagic();
 
     static void finalize(const GCInfo*, Address, size_t);
-    static HeapObjectHeader* fromPayload(const void*);
+    HEAP_EXPORT static HeapObjectHeader* fromPayload(const void*);
 
     static const intptr_t magic = 0xc0de247;
     static const intptr_t zappedMagic = 0xC0DEdead;
@@ -369,7 +372,7 @@ public:
     NO_SANITIZE_ADDRESS
     inline bool hasFinalizer() { return m_gcInfo->hasFinalizer(); }
 
-    static FinalizedHeapObjectHeader* fromPayload(const void*);
+    HEAP_EXPORT static FinalizedHeapObjectHeader* fromPayload(const void*);
 
 private:
     const GCInfo* m_gcInfo;
@@ -559,7 +562,7 @@ private:
     static const int numberOfEntriesLog2 = 12;
     static const int numberOfEntries = 1 << numberOfEntriesLog2;
 
-    static int hash(Address);
+    static size_t hash(Address);
 
     WTF::OwnPtr<HeapContainsCache::Entry[]> m_entries;
 
@@ -621,7 +624,7 @@ public:
     }
 
 private:
-    static const int bufferSize = 8000;
+    static const size_t bufferSize = 8000;
     Item m_buffer[bufferSize];
     Item* m_limit;
     Item* m_current;
@@ -719,6 +722,10 @@ public:
     inline Address allocate(size_t, const GCInfo*);
     void addToFreeList(Address, size_t);
     void addPageToPool(HeapPage<Header>*);
+    inline size_t roundedAllocationSize(size_t size)
+    {
+        return allocationSizeFromSize(size) - sizeof(Header);
+    }
 
 private:
     // Once pages have been used for one thread heap they will never
@@ -746,6 +753,7 @@ private:
     };
 
     HEAP_EXPORT Address outOfLineAllocate(size_t, const GCInfo*);
+    size_t allocationSizeFromSize(size_t);
     void addPageToHeap(const GCInfo*);
     HEAP_EXPORT Address allocateLargeObject(size_t, const GCInfo*);
     Address currentAllocationPoint() const { return m_currentAllocationPoint; }
@@ -985,7 +993,7 @@ size_t FinalizedHeapObjectHeader::payloadSize()
 }
 
 template<typename Header>
-size_t allocationSizeFromSize(size_t size)
+size_t ThreadHeap<Header>::allocationSizeFromSize(size_t size)
 {
     // Check the size before computing the actual allocation size. The
     // allocation size calculation can overflow for large sizes and
@@ -1003,7 +1011,7 @@ size_t allocationSizeFromSize(size_t size)
 template<typename Header>
 Address ThreadHeap<Header>::allocate(size_t size, const GCInfo* gcInfo)
 {
-    size_t allocationSize = allocationSizeFromSize<Header>(size);
+    size_t allocationSize = allocationSizeFromSize(size);
     bool isLargeObject = allocationSize > blinkPageSize / 2;
     if (isLargeObject)
         return allocateLargeObject(allocationSize, gcInfo);
@@ -1068,6 +1076,477 @@ Address Heap::reallocate(void* previous, size_t size)
         copySize = size;
     memcpy(address, previous, copySize);
     return address;
+}
+
+class HeapAllocatorQuantizer {
+public:
+    template<typename T>
+    static size_t quantizedSize(size_t count)
+    {
+        RELEASE_ASSERT(count <= kMaxUnquantizedAllocation / sizeof(T));
+        return typename HeapTrait<T>::HeapType::roundedAllocationSize(count * sizeof(T));
+    }
+    static const size_t kMaxUnquantizedAllocation = maxHeapObjectSize;
+};
+
+class HeapAllocator {
+public:
+    typedef HeapAllocatorQuantizer Quantizer;
+    typedef WebCore::Visitor Visitor;
+    static const bool isGarbageCollected = true;
+
+    template <typename Return, typename Metadata>
+    static Return backingMalloc(size_t size)
+    {
+        return malloc<Return, Metadata>(size);
+    }
+    template <typename Return, typename Metadata>
+    static Return zeroedBackingMalloc(size_t size)
+    {
+        return malloc<Return, Metadata>(size);
+    }
+    template <typename Return, typename Metadata>
+    static Return malloc(size_t size)
+    {
+        return reinterpret_cast<Return>(Heap::allocate<Metadata>(size));
+    }
+    static void backingFree(void* address) { }
+    static void free(void* address) { }
+    template<typename T>
+    static void* newArray(size_t bytes)
+    {
+        ASSERT_NOT_REACHED();
+        return nullptr;
+    }
+
+    static void deleteArray(void* ptr)
+    {
+        ASSERT_NOT_REACHED();
+    }
+
+    static void markUsingGCInfo(Visitor* visitor, const void* buffer)
+    {
+        visitor->mark(buffer, FinalizedHeapObjectHeader::fromPayload(buffer)->traceCallback());
+    }
+
+    static void markNoTracing(Visitor* visitor, const void* t)
+    {
+        visitor->mark(t);
+    }
+
+    template<typename T, typename Traits>
+    static void mark(Visitor* visitor, T& t)
+    {
+        CollectionBackingTraceTrait<Traits::needsTracing, Traits::isWeak, false, T, Traits>::mark(visitor, t);
+    }
+
+    template<typename T>
+    static bool hasDeadMember(Visitor*, const T&)
+    {
+        return false;
+    }
+
+    template<typename T>
+    static bool hasDeadMember(Visitor* visitor, const Member<T>& t)
+    {
+        ASSERT(visitor->isAlive(t));
+        return false;
+    }
+
+    template<typename T>
+    static bool hasDeadMember(Visitor* visitor, const WeakMember<T>& t)
+    {
+        return !visitor->isAlive(t);
+    }
+
+    template<typename T, typename U>
+    static bool hasDeadMember(Visitor* visitor, const WTF::KeyValuePair<T, U>& t)
+    {
+        return hasDeadMember(visitor, t.key) || hasDeadMember(visitor, t.value);
+    }
+
+    static void registerWeakMembers(Visitor* visitor, const void* object, WeakPointerCallback callback)
+    {
+        visitor->registerWeakMembers(object, callback);
+    }
+
+    template<typename T>
+    struct ResultType {
+        typedef T* Type;
+    };
+
+    // The WTF classes use Allocator::VectorBackingHelper in order to find a
+    // class to template their backing allocation operation on. For off-heap
+    // allocations the VectorBackingHelper is a dummy class, since the class is
+    // not used during allocation of backing. For on-heap allocations this
+    // typedef ensures that the allocation is done with the correct templated
+    // instantiation of the allocation function. This ensures the correct GC
+    // map is written when backing allocations take place.
+    template<typename T, typename Traits>
+    struct VectorBackingHelper {
+        typedef HeapVectorBacking<T, Traits> Type;
+    };
+
+    // Like the VectorBackingHelper, but this type is used for HashSet and
+    // HashMap, both of which are implemented using HashTable.
+    template<typename T, typename U, typename V, typename W, typename X>
+    struct HashTableBackingHelper {
+        typedef HeapHashTableBacking<T, U, V, W, X> Type;
+    };
+
+    template<typename T>
+    struct OtherType {
+        typedef T* Type;
+    };
+
+    template<typename T>
+    static T& getOther(T* other)
+    {
+        return *(other);
+    }
+
+private:
+    template<typename T, size_t u, typename V> friend class WTF::Vector;
+    template<typename T, typename U, typename V, typename W> friend class WTF::HashSet;
+    template<typename T, typename U, typename V, typename W, typename X, typename Y> friend class WTF::HashMap;
+};
+
+// The standard implementation of GCInfoTrait<T>::get() just returns a static
+// from the class T, but we can't do that for HashMap, HashSet and Vector
+// because they are in WTF and know nothing of GCInfos. Instead we have a
+// specialization of GCInfoTrait for these three classes here.
+
+template<typename Key, typename Value, typename T, typename U, typename V>
+struct GCInfoTrait<HashMap<Key, Value, T, U, V, HeapAllocator> > {
+    static const GCInfo* get() { return &info; }
+    static const GCInfo info;
+};
+
+template<typename Key, typename Value, typename T, typename U, typename V>
+const GCInfo GCInfoTrait<HashMap<Key, Value, T, U, V, HeapAllocator> >::info = {
+    "HashMap",
+    TraceTrait<HashMap<Key, Value, T, U, V, HeapAllocator> >::trace,
+    0,
+    false, // HashMap needs no finalizer.
+};
+
+template<typename T, typename U, typename V>
+struct GCInfoTrait<HashSet<T, U, V, HeapAllocator> > {
+    static const GCInfo* get() { return &info; }
+    static const GCInfo info;
+};
+
+template<typename T, typename U, typename V>
+const GCInfo GCInfoTrait<HashSet<T, U, V, HeapAllocator> >::info = {
+    "HashSet",
+    TraceTrait<HashSet<T, U, V, HeapAllocator> >::trace,
+    0,
+    false, // HashSet needs no finalizer.
+};
+
+template<typename T>
+struct GCInfoTrait<Vector<T, 0, HeapAllocator> > {
+    static const GCInfo* get() { return &info; }
+    static const GCInfo info;
+};
+
+template<typename T>
+const GCInfo GCInfoTrait<Vector<T, 0, HeapAllocator> >::info = {
+    "Vector",
+    TraceTrait<Vector<T, 0, HeapAllocator> >::trace,
+    0,
+    false, // Vector needs no finalizer if it has no inline capacity.
+};
+
+template<typename T, size_t inlineCapacity>
+struct GCInfoTrait<Vector<T, inlineCapacity, HeapAllocator> > {
+    static const GCInfo* get() { return &info; }
+    static const GCInfo info;
+};
+
+template<typename T, size_t inlineCapacity>
+struct FinalizerTrait<Vector<T, inlineCapacity, HeapAllocator> > : public FinalizerTraitImpl<Vector<T, inlineCapacity, HeapAllocator>, true> { };
+
+template<typename T, size_t inlineCapacity>
+const GCInfo GCInfoTrait<Vector<T, inlineCapacity, HeapAllocator> >::info = {
+    "Vector",
+    TraceTrait<Vector<T, inlineCapacity, HeapAllocator> >::trace,
+    FinalizerTrait<Vector<T, inlineCapacity, HeapAllocator> >::finalize,
+    // Finalizer is needed to destruct things stored in the inline capacity.
+    inlineCapacity && VectorTraits<T>::needsDestruction,
+};
+
+template<typename T, typename Traits>
+struct GCInfoTrait<HeapVectorBacking<T, Traits> > {
+    static const GCInfo* get() { return &info; }
+    static const GCInfo info;
+};
+
+template<typename T, typename Traits>
+const GCInfo GCInfoTrait<HeapVectorBacking<T, Traits> >::info = {
+    "VectorBacking",
+    TraceTrait<HeapVectorBacking<T, Traits> >::trace,
+    FinalizerTrait<HeapVectorBacking<T, Traits> >::finalize,
+    Traits::needsDestruction,
+};
+
+template<typename T, typename U, typename V, typename W, typename X>
+struct GCInfoTrait<HeapHashTableBacking<T, U, V, W, X> > {
+    static const GCInfo* get() { return &info; }
+    static const GCInfo info;
+};
+
+template<typename T, typename U, typename V, typename Traits, typename W>
+const GCInfo GCInfoTrait<HeapHashTableBacking<T, U, V, Traits, W> >::info = {
+    "HashTableBacking",
+    TraceTrait<HeapHashTableBacking<T, U, V, Traits, W> >::trace,
+    FinalizerTrait<HeapHashTableBacking<T, U, V, Traits, W> >::finalize,
+    Traits::needsDestruction,
+};
+
+template<bool markWeakMembersStrongly, typename T, typename Traits>
+struct BaseVisitVectorBackingTrait {
+    static void mark(WebCore::Visitor* visitor, void* self)
+    {
+        // The allocator can oversize the allocation a little, according to
+        // the allocation granularity. The extra size is included in the
+        // payloadSize call below, since there is nowhere to store the
+        // originally allocated memory. This assert ensures that visiting the
+        // last bit of memory can't cause trouble.
+        COMPILE_ASSERT(!Traits::needsTracing || sizeof(T) > allocationGranularity || Traits::canInitializeWithMemset, HeapOverallocationCanCauseSpuriousVisits);
+
+        T* array = reinterpret_cast<T*>(self);
+        WebCore::FinalizedHeapObjectHeader* header = WebCore::FinalizedHeapObjectHeader::fromPayload(self);
+        // Use the payload size as recorded by the heap to determine how many
+        // elements to mark.
+        size_t length = header->payloadSize() / sizeof(T);
+        for (size_t i = 0; i < length; i++)
+            CollectionBackingTraceTrait<Traits::needsTracing, Traits::isWeak, markWeakMembersStrongly, T, Traits>::mark(visitor, array[i]);
+    }
+};
+
+template<bool markWeakMembersStrongly, typename Key, typename Value, typename Extractor, typename Traits, typename KeyTraits>
+struct BaseVisitHashTableBackingTrait {
+    static void mark(WebCore::Visitor* visitor, void* self)
+    {
+        Value* array = reinterpret_cast<Value*>(self);
+        WebCore::FinalizedHeapObjectHeader* header = WebCore::FinalizedHeapObjectHeader::fromPayload(self);
+        size_t length = header->payloadSize() / sizeof(Value);
+        for (size_t i = 0; i < length; i++) {
+            if (!WTF::HashTableHelper<Value, Extractor, KeyTraits>::isEmptyOrDeletedBucket(array[i]))
+                CollectionBackingTraceTrait<Traits::needsTracing, Traits::isWeak, markWeakMembersStrongly, Value, Traits>::mark(visitor, array[i]);
+        }
+    }
+};
+
+template<bool markWeakMembersStrongly, typename Key, typename Value, typename Traits>
+struct BaseVisitKeyValuePairTrait {
+    static void mark(WebCore::Visitor* visitor, WTF::KeyValuePair<Key, Value>& self)
+    {
+        ASSERT(Traits::needsTracing || (Traits::isWeak && markWeakMembersStrongly));
+        CollectionBackingTraceTrait<Traits::KeyTraits::needsTracing, Traits::KeyTraits::isWeak, markWeakMembersStrongly, Key, typename Traits::KeyTraits>::mark(visitor, self.key);
+        CollectionBackingTraceTrait<Traits::ValueTraits::needsTracing, Traits::ValueTraits::isWeak, markWeakMembersStrongly, Value, typename Traits::ValueTraits>::mark(visitor, self.value);
+    }
+};
+
+// FFX - Things that don't need marking and have no weak pointers.
+template<bool markWeakMembersStrongly, typename T, typename U>
+struct CollectionBackingTraceTrait<false, false, markWeakMembersStrongly, T, U> {
+    static void mark(Visitor*, const T&) { }
+    static void mark(Visitor*, const void*) { }
+};
+
+// FTF - Things that don't need marking. They have weak pointers, but we are
+// not marking weak pointers in this object in this GC.
+template<typename T, typename U>
+struct CollectionBackingTraceTrait<false, true, false, T, U> {
+    static void mark(Visitor*, const T&) { }
+    static void mark(Visitor*, const void*) { }
+};
+
+// For each type that we understand we have the FTT case and the TXX case. The
+// FTT case is where we would not normally need to mark it, but it has weak
+// pointers, and we are marking them as strong. The TXX case is the regular
+// case for things that need marking.
+
+// FTT (vector)
+template<typename T, typename Traits>
+struct CollectionBackingTraceTrait<false, true, true, HeapVectorBacking<T, Traits>, void> : public BaseVisitVectorBackingTrait<true, T, Traits> {
+};
+
+// TXX (vector)
+template<bool isWeak, bool markWeakMembersStrongly, typename T, typename Traits>
+struct CollectionBackingTraceTrait<true, isWeak, markWeakMembersStrongly, HeapVectorBacking<T, Traits>, void> : public BaseVisitVectorBackingTrait<markWeakMembersStrongly, T, Traits> {
+};
+
+// FTT (hash table)
+template<typename Key, typename Value, typename Extractor, typename Traits, typename KeyTraits>
+struct CollectionBackingTraceTrait<false, true, true, HeapHashTableBacking<Key, Value, Extractor, Traits, KeyTraits>, void> : public BaseVisitHashTableBackingTrait<true, Key, Value, Extractor, Traits, KeyTraits> {
+};
+
+// TXX (hash table)
+template<bool isWeak, bool markWeakMembersStrongly, typename Key, typename Value, typename Extractor, typename Traits, typename KeyTraits>
+struct CollectionBackingTraceTrait<true, isWeak, markWeakMembersStrongly, HeapHashTableBacking<Key, Value, Extractor, Traits, KeyTraits>, void> : public BaseVisitHashTableBackingTrait<markWeakMembersStrongly, Key, Value, Extractor, Traits, KeyTraits> {
+};
+
+// FTT (key value pair)
+template<typename Key, typename Value, typename Traits>
+struct CollectionBackingTraceTrait<false, true, true, WTF::KeyValuePair<Key, Value>, Traits> : public BaseVisitKeyValuePairTrait<true, Key, Value, Traits> {
+};
+
+// TXX (key value pair)
+template<bool isWeak, bool markWeakMembersStrongly, typename Key, typename Value, typename Traits>
+struct CollectionBackingTraceTrait<true, isWeak, markWeakMembersStrongly, WTF::KeyValuePair<Key, Value>, Traits> : public BaseVisitKeyValuePairTrait<markWeakMembersStrongly, Key, Value, Traits> {
+};
+
+
+// TFX (member)
+template<bool markWeakMembersStrongly, typename T, typename Traits>
+struct CollectionBackingTraceTrait<true, false, markWeakMembersStrongly, Member<T>, Traits> {
+    static void mark(WebCore::Visitor* visitor, Member<T> self)
+    {
+        visitor->mark(self.raw());
+    }
+};
+
+// FTT (weak member)
+template<typename T, typename Traits>
+struct CollectionBackingTraceTrait<false, true, true, WeakMember<T>, Traits> {
+    static void mark(WebCore::Visitor* visitor, WeakMember<T> self)
+    {
+        // This can mark weak members as if they were strong. The reason we
+        // need this is that we don't do weak processing unless we reach the
+        // backing only through the hash table. Reaching it in any other way
+        // makes it impossible to update the size and deleted slot count of the
+        // table, and exposes us to weak processing during iteration issues.
+        visitor->mark(self.raw());
+    }
+};
+
+// Catch-all for things that have a way to trace. For things that contain weak
+// pointers they will generally be visited weakly even if
+// markWeakMembersStrongly is true. This is what you want.
+template<bool isWeak, bool markWeakMembersStrongly, typename T, typename Traits>
+struct CollectionBackingTraceTrait<true, isWeak, markWeakMembersStrongly, T, Traits> {
+    static void mark(WebCore::Visitor* visitor, T& t)
+    {
+        TraceTrait<T>::trace(visitor, reinterpret_cast<void*>(&t));
+    }
+};
+
+template<typename T, typename Traits>
+struct TraceTrait<HeapVectorBacking<T, Traits> > {
+    typedef HeapVectorBacking<T, Traits> Backing;
+    static void trace(WebCore::Visitor* visitor, void* self)
+    {
+        COMPILE_ASSERT(!Traits::isWeak, WeDontSupportWeaknessInHeapVectors);
+        if (Traits::needsTracing)
+            CollectionBackingTraceTrait<Traits::needsTracing, false, false, HeapVectorBacking<T, Traits>, void>::mark(visitor, self);
+    }
+    static void mark(Visitor* visitor, const Backing* backing)
+    {
+        visitor->mark(backing, &trace);
+    }
+    static void checkTypeMarker(Visitor* visitor, const Backing* backing)
+    {
+#ifndef NDEBUG
+        visitor->checkTypeMarker(const_cast<Backing*>(backing), getTypeMarker<Backing>());
+#endif
+    }
+};
+
+// The trace trait for the heap hashtable backing is used when we find a
+// direct pointer to the backing from the conservative stack scanner. This
+// normally indicates that there is an ongoing iteration over the table, and so
+// we disable weak processing of table entries. When the backing is found
+// through the owning hash table we mark differently, in order to do weak
+// processing.
+template<typename Key, typename Value, typename Extractor, typename Traits, typename KeyTraits>
+struct TraceTrait<HeapHashTableBacking<Key, Value, Extractor, Traits, KeyTraits> > {
+    typedef HeapHashTableBacking<Key, Value, Extractor, Traits, KeyTraits> Backing;
+    static const bool needsTracing = (Traits::needsTracing || Traits::isWeak);
+    static void trace(WebCore::Visitor* visitor, void* self)
+    {
+        if (needsTracing)
+            CollectionBackingTraceTrait<Traits::needsTracing, Traits::isWeak, true, HeapHashTableBacking<Key, Value, Extractor, Traits, KeyTraits>, void>::mark(visitor, self);
+    }
+    static void mark(Visitor* visitor, const Backing* backing)
+    {
+        if (needsTracing)
+            visitor->mark(backing, &trace);
+        else
+            visitor->mark(backing, 0);
+    }
+    static void checkTypeMarker(Visitor* visitor, const Backing* backing)
+    {
+#ifndef NDEBUG
+        visitor->checkTypeMarker(const_cast<Backing*>(backing), getTypeMarker<Backing>());
+#endif
+    }
+};
+
+template<typename T>
+struct IfWeakMember;
+
+template<typename T>
+struct IfWeakMember {
+    template<typename U>
+    static bool isDead(Visitor*, const U&) { return false; }
+};
+
+template<typename T>
+struct IfWeakMember<WeakMember<T> > {
+    static bool isDead(Visitor* visitor, const WeakMember<T>& t) { return !visitor->isAlive(t.raw()); }
+};
+
+template<typename K, typename V, typename HashFunctions, typename KeyTraits, typename ValueTraits>
+void processWeakOffHeapHashMap(Visitor* visitor, void* self)
+{
+    typedef HashMap<K, V, WTF::DefaultAllocator, HashFunctions, KeyTraits, ValueTraits> Map;
+    Map* map = reinterpret_cast<Map*>(self);
+    // Collect up keys here because we can't modify a hash map while iterating
+    // over it.
+    Vector<K> deletionKeys;
+    ASSERT(KeyTraits::isWeak || ValueTraits::isWeak);
+    typedef typename Map::iterator Iterator;
+    Iterator endIterator(map->end());
+    for (Iterator it = map->begin(); it != endIterator; ++it) {
+        if (IfWeakMember<K>::isDead(visitor, it->key))
+            deletionKeys.append(it->key);
+        else if (IfWeakMember<V>::isDead(visitor, it->value))
+            deletionKeys.append(it->key);
+    }
+    size_t size = deletionKeys.size();
+    if (size == map->size()) {
+        map->clear();
+        return;
+    }
+    for (size_t i = 0; i < size; i++)
+        map->remove(deletionKeys[i]);
+}
+
+template<typename T, typename HashFunctions, typename Traits>
+void processWeakOffHeapHashSet(Visitor* visitor, void* self)
+{
+    typedef HashSet<T, WTF::DefaultAllocator, HashFunctions, Traits> Set;
+    Set* set = reinterpret_cast<Set*>(self);
+    ASSERT(Traits::isWeak);
+    // Collect up keys here because we can't modify a hash set while iterating
+    // over it.
+    Vector<T> deletionKeys;
+    typedef typename Set::iterator Iterator;
+    Iterator endIterator(set->end());
+    for (Iterator it = set->begin(); it != endIterator; ++it) {
+        if (IfWeakMember<T>::isDead(visitor, *it))
+            deletionKeys.append(*it);
+    }
+    size_t size = deletionKeys.size();
+    if (size == set->size()) {
+        set->clear();
+        return;
+    }
+    for (size_t i = 0; i < size; i++)
+        set->remove(deletionKeys[i]);
 }
 
 #if COMPILER(CLANG)
