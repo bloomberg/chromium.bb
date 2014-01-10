@@ -325,7 +325,8 @@ def main(args):
   parser.add_option('-g', '--config', action='store_true',
                     help='Alias for "gsutil config".  Run this if you want '
                          'to initialize your saved Google Storage '
-                         'credentials.')
+                         'credentials.  This will create a read-only '
+                         'credentials file in ~/.boto.depot_tools.')
   parser.add_option('-n', '--no_auth', action='store_true',
                     help='Skip auth checking.  Use if it\'s known that the '
                          'target bucket is a public bucket.')
@@ -361,7 +362,8 @@ def main(args):
 
   # Passing in -g/--config will run our copy of GSUtil, then quit.
   if options.config:
-    return gsutil.call('config')
+    return gsutil.call('config', '-r', '-o',
+                       os.path.expanduser('~/.boto.depot_tools'))
 
   if not args:
     parser.error('Missing target.')
