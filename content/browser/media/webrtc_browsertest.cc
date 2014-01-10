@@ -450,14 +450,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MAYBE_CanSetupAudioAndVideoCall) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MANUAL_CanSetupCallAndSendDtmf) {
-  // Don't force iSAC on Android for this test: iSAC doesn't work with DTMF.
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
-
-  GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
-  NavigateToURL(shell(), url);
-
-  ASSERT_TRUE(ExecuteJavascript("callAndSendDtmf(\'123,abc\');"));
-  ExpectTitle("OK");
+  MakeTypicalPeerConnectionCall("callAndSendDtmf(\'123,abc\');");
 }
 
 // TODO(phoglund): this test fails because the peer connection state will be
