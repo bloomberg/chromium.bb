@@ -261,6 +261,19 @@ struct keyboard {
 	enum keyboard_state state;
 };
 
+static void __attribute__ ((format (printf, 1, 2)))
+dbg(const char *fmt, ...)
+{
+#ifdef DEBUG
+	int l;
+	va_list argp;
+
+	va_start(argp, fmt);
+	l = vfprintf(stderr, fmt, argp);
+	va_end(argp);
+#endif
+}
+
 static const char *
 label_from_key(struct keyboard *keyboard,
 	       const struct key *key)
@@ -463,14 +476,14 @@ delete_before_cursor(struct virtual_keyboard *keyboard)
 	const char *start, *end;
 
 	if (!keyboard->surrounding_text) {
-		fprintf(stderr, "delete_before_cursor: No surrounding text available\n");
+		dbg("delete_before_cursor: No surrounding text available\n");
 		return;
 	}
 
 	start = prev_utf8_char(keyboard->surrounding_text,
 			       keyboard->surrounding_text + keyboard->surrounding_cursor);
 	if (!start) {
-		fprintf(stderr, "delete_before_cursor: No previous character to delete\n");
+		dbg("delete_before_cursor: No previous character to delete\n");
 		return;
 	}
 
@@ -715,7 +728,7 @@ handle_reset(void *data,
 {
 	struct virtual_keyboard *keyboard = data;
 
-	fprintf(stderr, "Reset pre-edit buffer\n");
+	dbg("Reset pre-edit buffer\n");
 
 	if (strlen(keyboard->preedit_string)) {
 		free(keyboard->preedit_string);
@@ -762,7 +775,7 @@ handle_commit_state(void *data,
 	layout = get_current_layout(keyboard);
 
 	if (keyboard->surrounding_text)
-		fprintf(stderr, "Surrounding text updated: %s\n", keyboard->surrounding_text);
+		dbg("Surrounding text updated: %s\n", keyboard->surrounding_text);
 
 	window_schedule_resize(keyboard->keyboard->window,
 			       layout->columns * key_width,

@@ -121,8 +121,6 @@ input_panel_configure(struct weston_surface *surface, int32_t sx, int32_t sy)
 	if (surface->width == 0)
 		return;
 
-	fprintf(stderr, "%s panel: %d, output: %p\n", __FUNCTION__, ip_surface->panel, ip_surface->output);
-
 	if (ip_surface->panel) {
 		x = get_default_view(shell->text_input.surface)->geometry.x + shell->text_input.cursor_rectangle.x2;
 		y = get_default_view(shell->text_input.surface)->geometry.y + shell->text_input.cursor_rectangle.y2;
