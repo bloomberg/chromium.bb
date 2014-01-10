@@ -4,10 +4,14 @@
 
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "gin/modules/console.h"
 #include "gin/modules/module_registry.h"
+#include "gin/modules/timer.h"
 #include "gin/test/file_runner.h"
 #include "gin/test/gtest.h"
 #include "mojo/apps/js/bindings/core.h"
+#include "mojo/apps/js/bindings/monotonic_clock.h"
+#include "mojo/apps/js/bindings/threading.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -17,14 +21,19 @@ namespace {
 class TestRunnerDelegate : public gin::FileRunnerDelegate {
  public:
   TestRunnerDelegate() {
+  AddBuiltinModule(gin::Console::kModuleName, gin::Console::GetModule);
     AddBuiltinModule(Core::kModuleName, Core::GetModule);
+    AddBuiltinModule(gin::TimerModule::kName, gin::TimerModule::GetModule);
+    AddBuiltinModule(apps::MonotonicClock::kModuleName,
+                     apps::MonotonicClock::GetModule);
+    AddBuiltinModule(apps::Threading::kModuleName, apps::Threading::GetModule);
   }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestRunnerDelegate);
 };
 
-void RunTest(std::string test) {
+void RunTest(std::string test, bool run_until_idle) {
   base::FilePath path;
   PathService::Get(base::DIR_SOURCE_ROOT, &path);
   path = path.AppendASCII("mojo")
@@ -33,16 +42,16 @@ void RunTest(std::string test) {
              .AppendASCII("bindings")
              .AppendASCII(test);
   TestRunnerDelegate delegate;
-  gin::RunTestFromFile(path, &delegate);
+  gin::RunTestFromFile(path, &delegate, run_until_idle);
 }
 
 // TODO(abarth): Should we autogenerate these stubs from GYP?
 TEST(JSTest, core) {
-  RunTest("core_unittests.js");
+  RunTest("core_unittests.js", true);
 }
 
 TEST(JSTest, codec) {
-  RunTest("codec_unittests.js");
+  RunTest("codec_unittests.js", true);
 }
 
 TEST(JSTest, sample_test) {
@@ -58,7 +67,11 @@ TEST(JSTest, sample_test) {
 }
 
 TEST(JSTest, connector) {
-  RunTest("connector_unittests.js");
+  RunTest("connector_unittests.js", true);
+}
+
+TEST(JSTest, monotonic_clock) {
+  RunTest("monotonic_clock_unittests.js", false);
 }
 
 }  // namespace

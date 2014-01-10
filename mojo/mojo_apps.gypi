@@ -37,6 +37,8 @@
         'apps/js/bindings/gl/module.h',
         'apps/js/bindings/handle.cc',
         'apps/js/bindings/handle.h',
+        'apps/js/bindings/monotonic_clock.cc',
+        'apps/js/bindings/monotonic_clock.h',
         'apps/js/bindings/support.cc',
         'apps/js/bindings/support.h',
         'apps/js/bindings/waiting_callback.cc',

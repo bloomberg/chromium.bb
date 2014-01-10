@@ -29,7 +29,8 @@ class FileRunnerDelegate : public ModuleRunnerDelegate {
   DISALLOW_COPY_AND_ASSIGN(FileRunnerDelegate);
 };
 
-void RunTestFromFile(const base::FilePath& path, FileRunnerDelegate* delegate);
+void RunTestFromFile(const base::FilePath& path, FileRunnerDelegate* delegate,
+                     bool run_until_idle = true);
 
 }  // namespace gin
 

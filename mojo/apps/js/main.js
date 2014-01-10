@@ -4,6 +4,7 @@
 
 define([
     'console',
+    'monotonic_clock',
     'timer',
     'mojo/apps/js/bindings/connector',
     'mojo/apps/js/bindings/core',
@@ -13,6 +14,7 @@ define([
     'mojom/gles2',
     'mojom/shell',
 ], function(console,
+            monotonicClock,
             timer,
             connector,
             core,
@@ -313,7 +315,7 @@ define([
 
   function GLES2ClientImpl(remote) {
     this.remote_ = remote;
-    this.lastTime_ = Date.now();
+    this.lastTime_ = monotonicClock.seconds();
     this.angle_ = 45;
   }
   GLES2ClientImpl.prototype =
@@ -354,11 +356,11 @@ define([
   };
 
   GLES2ClientImpl.prototype.handleTimer = function() {
-    var now = Date.now();
-    var timeDelta = Date.now() - this.lastTime_;
+    var now = monotonicClock.seconds();
+    var secondsDelta = now - this.lastTime_;
     this.lastTime_ = now;
 
-    this.angle_ += this.getRotationForTimeDelgate(timeDelta);
+    this.angle_ += this.getRotationForTimeDelta(secondsDelta);
     this.angle_ = this.angle_ % 360;
 
     var aspect = this.width_ / this.height_;
@@ -377,8 +379,8 @@ define([
     this.drawCube();
   };
 
-  GLES2ClientImpl.prototype.getRotationForTimeDelgate = function(timeDelta) {
-    return timeDelta * .04;
+  GLES2ClientImpl.prototype.getRotationForTimeDelta = function(secondsDelta) {
+    return secondsDelta * 40;
   };
 
   GLES2ClientImpl.prototype.contextLost = function() {

@@ -13,6 +13,7 @@
 #include "gin/try_catch.h"
 #include "mojo/apps/js/bindings/core.h"
 #include "mojo/apps/js/bindings/gl/module.h"
+#include "mojo/apps/js/bindings/monotonic_clock.h"
 #include "mojo/apps/js/bindings/support.h"
 #include "mojo/apps/js/bindings/threading.h"
 
@@ -51,6 +52,7 @@ MojoRunnerDelegate::MojoRunnerDelegate()
   AddBuiltinModule(js::Core::kModuleName, js::Core::GetModule);
   AddBuiltinModule(js::Support::kModuleName, js::Support::GetModule);
   AddBuiltinModule(mojo::js::gl::kModuleName, mojo::js::gl::GetModule);
+  AddBuiltinModule(MonotonicClock::kModuleName, MonotonicClock::GetModule);
   AddBuiltinModule(Threading::kModuleName, Threading::GetModule);
 }
 

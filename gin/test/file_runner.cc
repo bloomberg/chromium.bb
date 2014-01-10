@@ -44,7 +44,8 @@ void FileRunnerDelegate::UnhandledException(Runner* runner,
   FAIL() << try_catch.GetStackTrace();
 }
 
-void RunTestFromFile(const base::FilePath& path, FileRunnerDelegate* delegate) {
+void RunTestFromFile(const base::FilePath& path, FileRunnerDelegate* delegate,
+                     bool run_until_idle) {
   ASSERT_TRUE(base::PathExists(path)) << path.LossyDisplayName();
   std::string source;
   ASSERT_TRUE(ReadFileToString(path, &source));
@@ -58,7 +59,11 @@ void RunTestFromFile(const base::FilePath& path, FileRunnerDelegate* delegate) {
     v8::V8::SetCaptureStackTraceForUncaughtExceptions(true);
     runner.Run(source, path.AsUTF8Unsafe());
 
-    message_loop.RunUntilIdle();
+    if (run_until_idle) {
+      message_loop.RunUntilIdle();
+    } else {
+      message_loop.Run();
+    }
 
     v8::Handle<v8::Value> result = runner.context()->Global()->Get(
         StringToSymbol(runner.isolate(), "result"));
