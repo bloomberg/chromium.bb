@@ -71,8 +71,7 @@ public:
     void load(ExecutionContext* loadingContext, const KURL& scriptURL, const Closure& callback)
     {
         m_callback = callback;
-        // FIXME: Use TargetIsServiceWorker when chromium side becomes ready.
-        m_scriptLoader->setTargetType(ResourceRequest::TargetIsSharedWorker);
+        m_scriptLoader->setTargetType(ResourceRequest::TargetIsServiceWorker);
         m_scriptLoader->loadAsynchronously(
             loadingContext, scriptURL, DenyCrossOriginRequests, this);
     }
