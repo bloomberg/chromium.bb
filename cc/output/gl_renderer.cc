@@ -166,7 +166,6 @@ GLRenderer::GLRenderer(RendererClient* client,
     : DirectRenderer(client, settings, output_surface, resource_provider),
       offscreen_framebuffer_id_(0),
       shared_geometry_quad_(gfx::RectF(-0.5f, -0.5f, 1.0f, 1.0f)),
-      context_(output_surface->context_provider()->Context3d()),
       gl_(output_surface->context_provider()->ContextGL()),
       context_support_(output_surface->context_provider()->ContextSupport()),
       texture_mailbox_deleter_(texture_mailbox_deleter),
@@ -225,8 +224,6 @@ GLRenderer::~GLRenderer() {
 const RendererCapabilities& GLRenderer::Capabilities() const {
   return capabilities_;
 }
-
-WebGraphicsContext3D* GLRenderer::Context() { return context_; }
 
 void GLRenderer::DebugGLCall(GLES2Interface* gl,
                              const char* command,

@@ -13,7 +13,7 @@ namespace cc {
 
 // WebGraphicsContext3D base class for use in unit tests.
 // All operations are no-ops (returning 0 if necessary).
-class FakeWebGraphicsContext3D : public blink::WebGraphicsContext3D {
+class FakeWebGraphicsContext3D {
  public:
   FakeWebGraphicsContext3D();
   virtual ~FakeWebGraphicsContext3D();
@@ -199,6 +199,7 @@ class FakeWebGraphicsContext3D : public blink::WebGraphicsContext3D {
   virtual void enableVertexAttribArray(blink::WGC3Duint index) {}
   virtual void finish() {}
   virtual void flush() {}
+  virtual void shallowFlushCHROMIUM() {}
   virtual void framebufferRenderbuffer(
       blink::WGC3Denum target,
       blink::WGC3Denum attachment,
@@ -215,11 +216,11 @@ class FakeWebGraphicsContext3D : public blink::WebGraphicsContext3D {
 
   virtual bool getActiveAttrib(
       blink::WebGLId program,
-      blink::WGC3Duint index, ActiveInfo&);
+      blink::WGC3Duint index, blink::WebGraphicsContext3D::ActiveInfo&);
   virtual bool getActiveUniform(
       blink::WebGLId program,
       blink::WGC3Duint index,
-      ActiveInfo&);
+      blink::WebGraphicsContext3D::ActiveInfo&);
   virtual void getAttachedShaders(
       blink::WebGLId program,
       blink::WGC3Dsizei max_count,
@@ -235,7 +236,6 @@ class FakeWebGraphicsContext3D : public blink::WebGraphicsContext3D {
       blink::WGC3Denum target,
       blink::WGC3Denum pname,
       blink::WGC3Dint* value) {}
-  virtual Attributes getContextAttributes();
   virtual blink::WGC3Denum getError();
   virtual void getFloatv(
       blink::WGC3Denum pname,
@@ -578,7 +578,7 @@ class FakeWebGraphicsContext3D : public blink::WebGraphicsContext3D {
       blink::WGC3Duint* params);
 
   virtual void setContextLostCallback(
-      WebGraphicsContextLostCallback* callback);
+      blink::WebGraphicsContext3D::WebGraphicsContextLostCallback* callback);
 
   virtual void loseContextCHROMIUM(blink::WGC3Denum current,
                                    blink::WGC3Denum other);

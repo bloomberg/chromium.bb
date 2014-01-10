@@ -567,13 +567,12 @@ void RasterWorkerPool::RunGpuRasterTasks(const RasterTaskVector& tasks) {
   if (tasks.empty())
     return;
 
-  blink::WebGraphicsContext3D* context = context_provider_->Context3d();
-  if (!context->makeContextCurrent())
-    return;
+  context_provider_->MakeGrContextCurrent();
 
   GrContext* gr_context = context_provider_->GrContext();
   // TODO(alokp): Implement TestContextProvider::GrContext().
-  if (gr_context) gr_context->resetContext();
+  if (gr_context)
+    gr_context->resetContext();
 
   for (RasterTaskVector::const_iterator it = tasks.begin();
        it != tasks.end(); ++it) {
@@ -586,7 +585,8 @@ void RasterWorkerPool::RunGpuRasterTasks(const RasterTaskVector& tasks) {
   }
 
   // TODO(alokp): Implement TestContextProvider::GrContext().
-  if (gr_context) gr_context->flush();
+  if (gr_context)
+    gr_context->flush();
 }
 
 scoped_refptr<internal::WorkerPoolTask>

@@ -333,8 +333,8 @@ class LayerTreeHostDelegatedTestCreateChildId
     FakeDelegatedRendererLayerImpl* delegated_impl =
         static_cast<FakeDelegatedRendererLayerImpl*>(root_impl->children()[0]);
 
-    ContextProvider* context_provider =
-        host_impl->output_surface()->context_provider();
+    TestContextProvider* context_provider = static_cast<TestContextProvider*>(
+        host_impl->output_surface()->context_provider().get());
 
     ++num_activates_;
     switch (num_activates_) {
@@ -342,7 +342,7 @@ class LayerTreeHostDelegatedTestCreateChildId
         EXPECT_TRUE(delegated_impl->ChildId());
         EXPECT_FALSE(did_reset_child_id_);
 
-        context_provider->Context3d()->loseContextCHROMIUM(
+        context_provider->TestContext3d()->loseContextCHROMIUM(
             GL_GUILTY_CONTEXT_RESET_ARB,
             GL_INNOCENT_CONTEXT_RESET_ARB);
         break;
@@ -413,13 +413,13 @@ class LayerTreeHostDelegatedTestInvalidFrameAfterContextLost
     if (host_impl->active_tree()->source_frame_number() < 1)
       return;
 
-    ContextProvider* context_provider =
-        host_impl->output_surface()->context_provider();
+    TestContextProvider* context_provider = static_cast<TestContextProvider*>(
+        host_impl->output_surface()->context_provider().get());
 
     ++num_activates_;
     switch (num_activates_) {
       case 2:
-        context_provider->Context3d()->loseContextCHROMIUM(
+        context_provider->TestContext3d()->loseContextCHROMIUM(
             GL_GUILTY_CONTEXT_RESET_ARB,
             GL_INNOCENT_CONTEXT_RESET_ARB);
         break;

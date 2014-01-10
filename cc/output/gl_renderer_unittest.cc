@@ -179,12 +179,12 @@ class FakeRendererGL : public GLRenderer {
 class GLRendererWithDefaultHarnessTest : public GLRendererTest {
  protected:
   GLRendererWithDefaultHarnessTest() {
-    output_surface_ = FakeOutputSurface::Create3d(
-        TestWebGraphicsContext3D::Create()).Pass();
+    output_surface_ =
+        FakeOutputSurface::Create3d(TestWebGraphicsContext3D::Create()).Pass();
     CHECK(output_surface_->BindToClient(&output_surface_client_));
 
     resource_provider_ = ResourceProvider::Create(
-        output_surface_.get(), NULL, 0, false, 1).Pass();
+                             output_surface_.get(), NULL, 0, false, 1).Pass();
     renderer_ = make_scoped_ptr(new FakeRendererGL(&renderer_client_,
                                                    &settings_,
                                                    output_surface_.get(),
@@ -213,7 +213,7 @@ class GLRendererShaderTest : public GLRendererTest {
     CHECK(output_surface_->BindToClient(&output_surface_client_));
 
     resource_provider_ = ResourceProvider::Create(
-        output_surface_.get(), NULL, 0, false, 1).Pass();
+                             output_surface_.get(), NULL, 0, false, 1).Pass();
     renderer_.reset(new FakeRendererGL(&renderer_client_,
                                        &settings_,
                                        output_surface_.get(),
@@ -410,50 +410,51 @@ class ForbidSynchronousCallContext : public TestWebGraphicsContext3D {
 
   virtual bool getActiveAttrib(WebGLId program,
                                WGC3Duint index,
-                               ActiveInfo& info) {
+                               blink::WebGraphicsContext3D::ActiveInfo& info)
+      OVERRIDE {
     ADD_FAILURE();
     return false;
   }
   virtual bool getActiveUniform(WebGLId program,
                                 WGC3Duint index,
-                                ActiveInfo& info) {
+                                blink::WebGraphicsContext3D::ActiveInfo& info)
+      OVERRIDE {
     ADD_FAILURE();
     return false;
   }
   virtual void getAttachedShaders(WebGLId program,
                                   WGC3Dsizei max_count,
                                   WGC3Dsizei* count,
-                                  WebGLId* shaders) {
+                                  WebGLId* shaders) OVERRIDE {
     ADD_FAILURE();
   }
-  virtual WGC3Dint getAttribLocation(WebGLId program, const WGC3Dchar* name) {
+  virtual WGC3Dint getAttribLocation(WebGLId program,
+                                     const WGC3Dchar* name) OVERRIDE {
     ADD_FAILURE();
     return 0;
   }
-  virtual void getBooleanv(WGC3Denum pname, WGC3Dboolean* value) {
+  virtual void getBooleanv(WGC3Denum pname, WGC3Dboolean* value) OVERRIDE {
     ADD_FAILURE();
   }
   virtual void getBufferParameteriv(WGC3Denum target,
                                     WGC3Denum pname,
-                                    WGC3Dint* value) {
+                                    WGC3Dint* value) OVERRIDE {
     ADD_FAILURE();
   }
-  virtual Attributes getContextAttributes() {
-    ADD_FAILURE();
-    return attributes_;
-  }
-  virtual WGC3Denum getError() {
+  virtual WGC3Denum getError() OVERRIDE {
     ADD_FAILURE();
     return 0;
   }
-  virtual void getFloatv(WGC3Denum pname, WGC3Dfloat* value) { ADD_FAILURE(); }
+  virtual void getFloatv(WGC3Denum pname, WGC3Dfloat* value) OVERRIDE {
+    ADD_FAILURE();
+  }
   virtual void getFramebufferAttachmentParameteriv(WGC3Denum target,
                                                    WGC3Denum attachment,
                                                    WGC3Denum pname,
-                                                   WGC3Dint* value) {
+                                                   WGC3Dint* value) OVERRIDE {
     ADD_FAILURE();
   }
-  virtual void getIntegerv(WGC3Denum pname, WGC3Dint* value) {
+  virtual void getIntegerv(WGC3Denum pname, WGC3Dint* value) OVERRIDE {
     if (pname == GL_MAX_TEXTURE_SIZE) {
       // MAX_TEXTURE_SIZE is cached client side, so it's OK to query.
       *value = 1024;
@@ -464,7 +465,9 @@ class ForbidSynchronousCallContext : public TestWebGraphicsContext3D {
 
   // We allow querying the shader compilation and program link status in debug
   // mode, but not release.
-  virtual void getProgramiv(WebGLId program, WGC3Denum pname, WGC3Dint* value) {
+  virtual void getProgramiv(WebGLId program,
+                            WGC3Denum pname,
+                            WGC3Dint* value) OVERRIDE {
 #ifndef NDEBUG
     *value = 1;
 #else
@@ -472,7 +475,9 @@ class ForbidSynchronousCallContext : public TestWebGraphicsContext3D {
 #endif
   }
 
-  virtual void getShaderiv(WebGLId shader, WGC3Denum pname, WGC3Dint* value) {
+  virtual void getShaderiv(WebGLId shader,
+                           WGC3Denum pname,
+                           WGC3Dint* value) OVERRIDE {
 #ifndef NDEBUG
     *value = 1;
 #else
@@ -480,76 +485,76 @@ class ForbidSynchronousCallContext : public TestWebGraphicsContext3D {
 #endif
   }
 
-  virtual WebString getString(WGC3Denum name) {
+  virtual WebString getString(WGC3Denum name) OVERRIDE {
     ADD_FAILURE() << name;
     return WebString();
   }
 
-  virtual WebString getProgramInfoLog(WebGLId program) {
+  virtual WebString getProgramInfoLog(WebGLId program) OVERRIDE {
     ADD_FAILURE();
     return WebString();
   }
   virtual void getRenderbufferParameteriv(WGC3Denum target,
                                           WGC3Denum pname,
-                                          WGC3Dint* value) {
+                                          WGC3Dint* value) OVERRIDE {
     ADD_FAILURE();
   }
 
-  virtual WebString getShaderInfoLog(WebGLId shader) {
+  virtual WebString getShaderInfoLog(WebGLId shader) OVERRIDE {
     ADD_FAILURE();
     return WebString();
   }
   virtual void getShaderPrecisionFormat(WGC3Denum shadertype,
                                         WGC3Denum precisiontype,
                                         WGC3Dint* range,
-                                        WGC3Dint* precision) {
+                                        WGC3Dint* precision) OVERRIDE {
     ADD_FAILURE();
   }
-  virtual WebString getShaderSource(WebGLId shader) {
+  virtual WebString getShaderSource(WebGLId shader) OVERRIDE {
     ADD_FAILURE();
     return WebString();
   }
   virtual void getTexParameterfv(WGC3Denum target,
                                  WGC3Denum pname,
-                                 WGC3Dfloat* value) {
+                                 WGC3Dfloat* value) OVERRIDE {
     ADD_FAILURE();
   }
   virtual void getTexParameteriv(WGC3Denum target,
                                  WGC3Denum pname,
-                                 WGC3Dint* value) {
+                                 WGC3Dint* value) OVERRIDE {
     ADD_FAILURE();
   }
   virtual void getUniformfv(WebGLId program,
                             WGC3Dint location,
-                            WGC3Dfloat* value) {
+                            WGC3Dfloat* value) OVERRIDE {
     ADD_FAILURE();
   }
   virtual void getUniformiv(WebGLId program,
                             WGC3Dint location,
-                            WGC3Dint* value) {
+                            WGC3Dint* value) OVERRIDE {
     ADD_FAILURE();
   }
-  virtual WGC3Dint getUniformLocation(WebGLId program, const WGC3Dchar* name) {
+  virtual WGC3Dint getUniformLocation(WebGLId program,
+                                      const WGC3Dchar* name) OVERRIDE {
     ADD_FAILURE();
     return 0;
   }
   virtual void getVertexAttribfv(WGC3Duint index,
                                  WGC3Denum pname,
-                                 WGC3Dfloat* value) {
+                                 WGC3Dfloat* value) OVERRIDE {
     ADD_FAILURE();
   }
   virtual void getVertexAttribiv(WGC3Duint index,
                                  WGC3Denum pname,
-                                 WGC3Dint* value) {
+                                 WGC3Dint* value) OVERRIDE {
     ADD_FAILURE();
   }
   virtual WGC3Dsizeiptr getVertexAttribOffset(WGC3Duint index,
-                                              WGC3Denum pname) {
+                                              WGC3Denum pname) OVERRIDE {
     ADD_FAILURE();
     return 0;
   }
 };
-
 TEST_F(GLRendererTest, InitializationDoesNotMakeSynchronousCalls) {
   FakeOutputSurfaceClient output_surface_client;
   scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
@@ -745,19 +750,17 @@ class VisibilityChangeIsLastCallTrackingContext
       : last_call_was_set_visibility_(false) {}
 
   // WebGraphicsContext3D methods.
-  virtual void flush() {
+  virtual void flush() OVERRIDE { last_call_was_set_visibility_ = false; }
+  virtual void deleteTexture(WebGLId) OVERRIDE {
     last_call_was_set_visibility_ = false;
   }
-  virtual void deleteTexture(WebGLId) {
+  virtual void deleteFramebuffer(WebGLId) OVERRIDE {
     last_call_was_set_visibility_ = false;
   }
-  virtual void deleteFramebuffer(WebGLId) {
+  virtual void deleteQueryEXT(WebGLId) OVERRIDE {
     last_call_was_set_visibility_ = false;
   }
-  virtual void deleteQueryEXT(WebGLId) {
-    last_call_was_set_visibility_ = false;
-  }
-  virtual void deleteRenderbuffer(WebGLId) {
+  virtual void deleteRenderbuffer(WebGLId) OVERRIDE {
     last_call_was_set_visibility_ = false;
   }
 
@@ -787,8 +790,8 @@ TEST_F(GLRendererTest, VisibilityChangeIsLastCall) {
       base::Unretained(context)));
 
   FakeOutputSurfaceClient output_surface_client;
-  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
-        provider));
+  scoped_ptr<OutputSurface> output_surface(
+      FakeOutputSurface::Create3d(provider));
   CHECK(output_surface->BindToClient(&output_surface_client));
 
   scoped_ptr<ResourceProvider> resource_provider(
@@ -1008,14 +1011,14 @@ class ScissorTestOnClearCheckingContext : public TestWebGraphicsContext3D {
  public:
   ScissorTestOnClearCheckingContext() : scissor_enabled_(false) {}
 
-  virtual void clear(WGC3Dbitfield) { EXPECT_FALSE(scissor_enabled_); }
+  virtual void clear(WGC3Dbitfield) OVERRIDE { EXPECT_FALSE(scissor_enabled_); }
 
-  virtual void enable(WGC3Denum cap) {
+  virtual void enable(WGC3Denum cap) OVERRIDE {
     if (cap == GL_SCISSOR_TEST)
       scissor_enabled_ = true;
   }
 
-  virtual void disable(WGC3Denum cap) {
+  virtual void disable(WGC3Denum cap) OVERRIDE {
     if (cap == GL_SCISSOR_TEST)
       scissor_enabled_ = false;
   }
@@ -1092,7 +1095,7 @@ class DiscardCheckingContext : public TestWebGraphicsContext3D {
 
   virtual void discardFramebufferEXT(WGC3Denum target,
                                      WGC3Dsizei numAttachments,
-                                     const WGC3Denum* attachments) {
+                                     const WGC3Denum* attachments) OVERRIDE {
     ++discarded_;
   }
 
@@ -1306,7 +1309,8 @@ class FlippedScissorAndViewportContext : public TestWebGraphicsContext3D {
     EXPECT_TRUE(did_call_scissor_);
   }
 
-  virtual void viewport(GLint x, GLint y, GLsizei width, GLsizei height) {
+  virtual void viewport(GLint x, GLint y, GLsizei width, GLsizei height)
+      OVERRIDE {
     EXPECT_EQ(10, x);
     EXPECT_EQ(390, y);
     EXPECT_EQ(100, width);
@@ -1314,7 +1318,8 @@ class FlippedScissorAndViewportContext : public TestWebGraphicsContext3D {
     did_call_viewport_ = true;
   }
 
-  virtual void scissor(GLint x, GLint y, GLsizei width, GLsizei height) {
+  virtual void scissor(GLint x, GLint y, GLsizei width, GLsizei height)
+      OVERRIDE {
     EXPECT_EQ(30, x);
     EXPECT_EQ(450, y);
     EXPECT_EQ(20, width);
@@ -1699,9 +1704,7 @@ TEST_F(GLRendererShaderTest, DrawSolidColorShader) {
 
 class OutputSurfaceMockContext : public TestWebGraphicsContext3D {
  public:
-  OutputSurfaceMockContext() {
-    test_capabilities_.post_sub_buffer = true;
-  }
+  OutputSurfaceMockContext() { test_capabilities_.post_sub_buffer = true; }
 
   // Specifically override methods even if they are unused (used in conjunction
   // with StrictMock). We need to make sure that GLRenderer does not issue
@@ -1782,7 +1785,8 @@ class MockOutputSurfaceTest : public GLRendererTest {
 
   OutputSurfaceMockContext* Context() {
     return static_cast<OutputSurfaceMockContext*>(
-        output_surface_.context_provider()->Context3d());
+        static_cast<TestContextProvider*>(
+            output_surface_.context_provider().get())->TestContext3d());
   }
 
   LayerTreeSettings settings_;

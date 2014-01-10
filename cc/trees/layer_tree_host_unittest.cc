@@ -1479,8 +1479,8 @@ class LayerTreeHostTestDirectRendererAtomicCommit : public LayerTreeHostTest {
   virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) OVERRIDE {
     ASSERT_EQ(0u, layer_tree_host()->settings().max_partial_texture_updates);
 
-    TestWebGraphicsContext3D* context = static_cast<TestWebGraphicsContext3D*>(
-        impl->output_surface()->context_provider()->Context3d());
+    TestWebGraphicsContext3D* context = static_cast<TestContextProvider*>(
+        impl->output_surface()->context_provider().get())->TestContext3d();
 
     switch (impl->active_tree()->source_frame_number()) {
       case 0:
@@ -1521,8 +1521,8 @@ class LayerTreeHostTestDirectRendererAtomicCommit : public LayerTreeHostTest {
   }
 
   virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
-    TestWebGraphicsContext3D* context = static_cast<TestWebGraphicsContext3D*>(
-        impl->output_surface()->context_provider()->Context3d());
+    TestWebGraphicsContext3D* context = static_cast<TestContextProvider*>(
+        impl->output_surface()->context_provider().get())->TestContext3d();
 
     if (drew_frame_ == impl->active_tree()->source_frame_number()) {
       EXPECT_EQ(0u, context->NumUsedTextures()) << "For frame " << drew_frame_;
@@ -1558,8 +1558,8 @@ class LayerTreeHostTestDelegatingRendererAtomicCommit
   virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) OVERRIDE {
     ASSERT_EQ(0u, layer_tree_host()->settings().max_partial_texture_updates);
 
-    TestWebGraphicsContext3D* context = static_cast<TestWebGraphicsContext3D*>(
-        impl->output_surface()->context_provider()->Context3d());
+    TestWebGraphicsContext3D* context = static_cast<TestContextProvider*>(
+        impl->output_surface()->context_provider().get())->TestContext3d();
 
     switch (impl->active_tree()->source_frame_number()) {
       case 0:
@@ -1681,8 +1681,8 @@ class LayerTreeHostTestAtomicCommitWithPartialUpdate
   virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
     ASSERT_EQ(1u, layer_tree_host()->settings().max_partial_texture_updates);
 
-    TestWebGraphicsContext3D* context = static_cast<TestWebGraphicsContext3D*>(
-        impl->output_surface()->context_provider()->Context3d());
+    TestWebGraphicsContext3D* context = static_cast<TestContextProvider*>(
+        impl->output_surface()->context_provider().get())->TestContext3d();
 
     switch (impl->active_tree()->source_frame_number()) {
       case 0:
@@ -1772,8 +1772,8 @@ class LayerTreeHostTestAtomicCommitWithPartialUpdate
   virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
     EXPECT_LT(impl->active_tree()->source_frame_number(), 5);
 
-    TestWebGraphicsContext3D* context = static_cast<TestWebGraphicsContext3D*>(
-        impl->output_surface()->context_provider()->Context3d());
+    TestWebGraphicsContext3D* context = static_cast<TestContextProvider*>(
+        impl->output_surface()->context_provider().get())->TestContext3d();
 
     // Number of textures used for drawing should one per layer except for
     // frame 3 where the viewport only contains one layer.
@@ -3156,8 +3156,8 @@ class LayerTreeHostTestUIResource : public LayerTreeHostTest {
   }
 
   void PerformTest(LayerTreeHostImpl* impl) {
-    TestWebGraphicsContext3D* context = static_cast<TestWebGraphicsContext3D*>(
-        impl->output_surface()->context_provider()->Context3d());
+    TestWebGraphicsContext3D* context = static_cast<TestContextProvider*>(
+        impl->output_surface()->context_provider().get())->TestContext3d();
 
     int frame = num_commits_;
     switch (frame) {
@@ -4264,8 +4264,8 @@ class LayerTreeHostTestMaxTransferBufferUsageBytes : public LayerTreeHostTest {
   }
 
   virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) OVERRIDE {
-    TestWebGraphicsContext3D* context = static_cast<TestWebGraphicsContext3D*>(
-        impl->output_surface()->context_provider()->Context3d());
+    TestWebGraphicsContext3D* context = static_cast<TestContextProvider*>(
+        impl->output_surface()->context_provider().get())->TestContext3d();
 
     // Expect that the transfer buffer memory used is equal to the
     // MaxTransferBufferUsageBytes value set in CreateOutputSurface.

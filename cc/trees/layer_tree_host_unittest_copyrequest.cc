@@ -803,9 +803,10 @@ class LayerTreeHostCopyRequestTestProvideTexture
             &LayerTreeHostCopyRequestTestProvideTexture::CopyOutputCallback,
             base::Unretained(this)));
 
+    gpu::gles2::GLES2Interface* gl = external_context_provider_->ContextGL();
     gpu::Mailbox mailbox;
-    external_context_provider_->Context3d()->genMailboxCHROMIUM(mailbox.name);
-    sync_point_ = external_context_provider_->Context3d()->insertSyncPoint();
+    gl->GenMailboxCHROMIUM(mailbox.name);
+    sync_point_ = gl->InsertSyncPointCHROMIUM();
     request->SetTextureMailbox(TextureMailbox(mailbox, sync_point_));
     EXPECT_TRUE(request->has_texture_mailbox());
 

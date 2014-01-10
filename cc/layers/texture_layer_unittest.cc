@@ -1198,8 +1198,8 @@ TEST_F(TextureLayerImplWithMailboxTest, TestWillDraw) {
     impl_layer->SetDrawsContent(true);
     ContextProvider* context_provider =
         host_impl_.output_surface()->context_provider();
-    unsigned texture =
-        context_provider->Context3d()->createTexture();
+    GLuint texture = 0;
+    context_provider->ContextGL()->GenTextures(1, &texture);
     impl_layer->set_texture_id(texture);
     EXPECT_TRUE(WillDraw(impl_layer.get(), DRAW_MODE_HARDWARE));
   }
@@ -1249,8 +1249,8 @@ TEST_F(TextureLayerImplWithMailboxTest, TestWillDraw) {
     impl_layer->SetDrawsContent(true);
     ContextProvider* context_provider =
         host_impl_.output_surface()->context_provider();
-    unsigned texture =
-        context_provider->Context3d()->createTexture();
+    GLuint texture = 0;
+    context_provider->ContextGL()->GenTextures(1, &texture);
     impl_layer->set_texture_id(texture);
     EXPECT_FALSE(WillDraw(impl_layer.get(), DRAW_MODE_SOFTWARE));
   }
@@ -1280,8 +1280,8 @@ TEST_F(TextureLayerImplWithMailboxTest, TestWillDraw) {
     impl_layer->SetDrawsContent(true);
     ContextProvider* context_provider =
         host_impl_.output_surface()->context_provider();
-    unsigned texture =
-        context_provider->Context3d()->createTexture();
+    GLuint texture = 0;
+    context_provider->ContextGL()->GenTextures(1, &texture);
     impl_layer->set_texture_id(texture);
     EXPECT_FALSE(WillDraw(impl_layer.get(), DRAW_MODE_RESOURCELESS_SOFTWARE));
   }
@@ -1491,8 +1491,8 @@ class TextureLayerClientTest
 
  private:
   TestWebGraphicsContext3D* ContextForImplThread(LayerTreeHostImpl* host_impl) {
-    return static_cast<TestWebGraphicsContext3D*>(
-        host_impl->output_surface()->context_provider()->Context3d());
+    return static_cast<TestContextProvider*>(
+        host_impl->output_surface()->context_provider().get())->TestContext3d();
   }
 
   scoped_refptr<TextureLayer> texture_layer_;
@@ -1653,8 +1653,8 @@ class TextureLayerChangeInvisibleTest
 
  private:
   TestWebGraphicsContext3D* ContextForImplThread(LayerTreeHostImpl* host_impl) {
-    return static_cast<TestWebGraphicsContext3D*>(
-        host_impl->output_surface()->context_provider()->Context3d());
+    return static_cast<TestContextProvider*>(
+        host_impl->output_surface()->context_provider().get())->TestContext3d();
   }
 
   scoped_refptr<SolidColorLayer> solid_layer_;

@@ -132,7 +132,8 @@ void TestSoftwareOutputDevice::EnsureBackbuffer() {
 }
 
 TEST(OutputSurfaceTest, ClientPointerIndicatesBindToClientSuccess) {
-  TestOutputSurface output_surface(TestContextProvider::Create());
+  scoped_refptr<TestContextProvider> provider = TestContextProvider::Create();
+  TestOutputSurface output_surface(provider);
   EXPECT_FALSE(output_surface.HasClient());
 
   FakeOutputSurfaceClient client;
@@ -142,7 +143,7 @@ TEST(OutputSurfaceTest, ClientPointerIndicatesBindToClientSuccess) {
 
   // Verify DidLoseOutputSurface callback is hooked up correctly.
   EXPECT_FALSE(client.did_lose_output_surface_called());
-  output_surface.context_provider()->Context3d()->loseContextCHROMIUM(
+  provider->TestContext3d()->loseContextCHROMIUM(
       GL_GUILTY_CONTEXT_RESET_ARB, GL_INNOCENT_CONTEXT_RESET_ARB);
   EXPECT_TRUE(client.did_lose_output_surface_called());
 }
@@ -197,7 +198,7 @@ TEST_F(OutputSurfaceTestInitializeNewContext3d, Success) {
   EXPECT_EQ(context_provider_, output_surface_.context_provider());
 
   EXPECT_FALSE(client_.did_lose_output_surface_called());
-  context_provider_->Context3d()->loseContextCHROMIUM(
+  context_provider_->TestContext3d()->loseContextCHROMIUM(
       GL_GUILTY_CONTEXT_RESET_ARB, GL_INNOCENT_CONTEXT_RESET_ARB);
   EXPECT_TRUE(client_.did_lose_output_surface_called());
 

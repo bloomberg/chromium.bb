@@ -19,7 +19,8 @@ TEST(TextureMailboxDeleterTest, Destroy) {
       TestContextProvider::Create();
   context_provider->BindToCurrentThread();
 
-  unsigned texture_id = context_provider->Context3d()->createTexture();
+  GLuint texture_id = 0u;
+  context_provider->ContextGL()->GenTextures(1, &texture_id);
 
   EXPECT_TRUE(context_provider->HasOneRef());
   EXPECT_EQ(1u, context_provider->TestContext3d()->NumTextures());

@@ -23,8 +23,8 @@
 #include "cc/quads/yuv_video_draw_quad.h"
 #include "cc/resources/resource_provider.h"
 #include "gpu/command_buffer/client/context_support.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
-#include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 
 using blink::WebGraphicsContext3D;
@@ -155,7 +155,7 @@ void DelegatingRenderer::SetVisible(bool visible) {
     TRACE_EVENT0("cc", "DelegatingRenderer::SetVisible dropping resources");
     resource_provider_->ReleaseCachedData();
     if (context_provider)
-      context_provider->Context3d()->flush();
+      context_provider->ContextGL()->Flush();
   }
   // We loop visibility to the GPU process, since that's what manages memory.
   // That will allow it to feed us with memory allocations that we can act

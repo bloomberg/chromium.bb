@@ -42,9 +42,9 @@ class WebGraphicsContext3DForUploadTest : public TestWebGraphicsContext3D {
                              GLenum format,
                              GLenum type,
                              const void* pixels) OVERRIDE;
-  virtual GrGLInterface* createGrGLInterface() OVERRIDE { return NULL; }
 
-  virtual void getQueryObjectuivEXT(GLuint id, GLenum pname, GLuint* value);
+  virtual void getQueryObjectuivEXT(GLuint id, GLenum pname, GLuint* value)
+      OVERRIDE;
 
  private:
   ResourceUpdateControllerTest* test_;

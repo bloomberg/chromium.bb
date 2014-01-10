@@ -93,10 +93,7 @@ ContextProvider::Capabilities TestContextProvider::ContextCapabilities() {
 }
 
 blink::WebGraphicsContext3D* TestContextProvider::Context3d() {
-  DCHECK(bound_);
-  DCHECK(context_thread_checker_.CalledOnValidThread());
-
-  return context3d_.get();
+  return NULL;
 }
 
 gpu::gles2::GLES2Interface* TestContextProvider::ContextGL() {

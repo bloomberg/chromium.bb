@@ -15,12 +15,9 @@ using blink::WebGraphicsContext3D;
 
 namespace cc {
 
-FakeWebGraphicsContext3D::FakeWebGraphicsContext3D()
-    : blink::WebGraphicsContext3D() {
-}
+FakeWebGraphicsContext3D::FakeWebGraphicsContext3D() {}
 
-FakeWebGraphicsContext3D::~FakeWebGraphicsContext3D() {
-}
+FakeWebGraphicsContext3D::~FakeWebGraphicsContext3D() {}
 
 bool FakeWebGraphicsContext3D::makeContextCurrent() {
   return true;
@@ -71,14 +68,14 @@ WGC3Denum FakeWebGraphicsContext3D::checkFramebufferStatus(
 bool FakeWebGraphicsContext3D::getActiveAttrib(
     WebGLId program,
     blink::WGC3Duint index,
-    ActiveInfo&) {
+    WebGraphicsContext3D::ActiveInfo&) {
   return false;
 }
 
 bool FakeWebGraphicsContext3D::getActiveUniform(
     WebGLId program,
     blink::WGC3Duint index,
-    ActiveInfo&) {
+    WebGraphicsContext3D::ActiveInfo&) {
   return false;
 }
 
@@ -86,11 +83,6 @@ blink::WGC3Dint FakeWebGraphicsContext3D::getAttribLocation(
     WebGLId program,
     const blink::WGC3Dchar* name) {
   return 0;
-}
-
-WebGraphicsContext3D::Attributes
-    FakeWebGraphicsContext3D::getContextAttributes() {
-  return WebGraphicsContext3D::Attributes();
 }
 
 WGC3Denum FakeWebGraphicsContext3D::getError() {
@@ -348,7 +340,7 @@ void FakeWebGraphicsContext3D::getQueryObjectuivEXT(
 }
 
 void FakeWebGraphicsContext3D::setContextLostCallback(
-    WebGraphicsContextLostCallback* callback) {
+    WebGraphicsContext3D::WebGraphicsContextLostCallback* callback) {
 }
 
 void FakeWebGraphicsContext3D::loseContextCHROMIUM(WGC3Denum current,

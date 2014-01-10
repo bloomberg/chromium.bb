@@ -41,7 +41,6 @@
 #include "media/base/media.h"
 
 using media::VideoFrame;
-using blink::WebGraphicsContext3D;
 
 namespace cc {
 namespace {
@@ -426,7 +425,7 @@ class LayerTreeHostContextTestLostContextSucceedsWithContent
     ContextProvider* contexts = host_impl->offscreen_context_provider();
     if (use_surface_) {
       ASSERT_TRUE(contexts);
-      EXPECT_TRUE(contexts->Context3d());
+      EXPECT_TRUE(contexts->ContextGL());
       // TODO(danakj): Make a fake GrContext.
       // EXPECT_TRUE(contexts->GrContext());
     } else {
@@ -966,8 +965,8 @@ class LayerTreeHostContextTestDontUseLostResources
   static void EmptyReleaseCallback(unsigned sync_point, bool lost) {}
 
   virtual void SetupTree() OVERRIDE {
-    blink::WebGraphicsContext3D* context3d =
-        child_output_surface_->context_provider()->Context3d();
+    gpu::gles2::GLES2Interface* gl =
+        child_output_surface_->context_provider()->ContextGL();
 
     scoped_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
 
@@ -1004,8 +1003,8 @@ class LayerTreeHostContextTestDontUseLostResources
                                              resource);
 
     gpu::Mailbox mailbox;
-    context3d->genMailboxCHROMIUM(mailbox.name);
-    unsigned sync_point = context3d->insertSyncPoint();
+    gl->GenMailboxCHROMIUM(mailbox.name);
+    GLuint sync_point = gl->InsertSyncPointCHROMIUM();
 
     scoped_refptr<Layer> root = Layer::Create();
     root->SetBounds(gfx::Size(10, 10));
@@ -1899,8 +1898,8 @@ class UIResourceLostEviction : public UIResourceLostTestSimple {
 
   virtual void DidSetVisibleOnImplTree(LayerTreeHostImpl* impl,
                                        bool visible) OVERRIDE {
-    TestWebGraphicsContext3D* context = static_cast<TestWebGraphicsContext3D*>(
-        impl->output_surface()->context_provider()->Context3d());
+    TestWebGraphicsContext3D* context = static_cast<TestContextProvider*>(
+        impl->output_surface()->context_provider().get())->TestContext3d();
     if (!visible) {
       // All resources should have been evicted.
       ASSERT_EQ(0u, context->NumTextures());
@@ -1916,8 +1915,8 @@ class UIResourceLostEviction : public UIResourceLostTestSimple {
   }
 
   virtual void StepCompleteOnImplThread(LayerTreeHostImpl* impl) OVERRIDE {
-    TestWebGraphicsContext3D* context = static_cast<TestWebGraphicsContext3D*>(
-        impl->output_surface()->context_provider()->Context3d());
+    TestWebGraphicsContext3D* context = static_cast<TestContextProvider*>(
+        impl->output_surface()->context_provider().get())->TestContext3d();
     LayerTreeHostContextTest::CommitCompleteOnThread(impl);
     switch (time_step_) {
       case 1:

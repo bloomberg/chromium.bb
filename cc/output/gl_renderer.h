@@ -58,8 +58,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
 
   virtual const RendererCapabilities& Capabilities() const OVERRIDE;
 
-  blink::WebGraphicsContext3D* Context();
-
   // Waits for rendering to finish.
   virtual void Finish() OVERRIDE;
 
@@ -399,7 +397,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   SolidColorProgram solid_color_program_;
   SolidColorProgramAA solid_color_program_aa_;
 
-  blink::WebGraphicsContext3D* context_;
   gpu::gles2::GLES2Interface* gl_;
   gpu::ContextSupport* context_support_;
 

@@ -31,128 +31,159 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
 
   virtual ~TestWebGraphicsContext3D();
 
-  virtual void reshapeWithScaleFactor(
-      int width, int height, float scale_factor);
+  virtual void reshapeWithScaleFactor(int width,
+                                      int height,
+                                      float scale_factor);
 
-  virtual bool isContextLost();
+  virtual bool isContextLost() OVERRIDE;
 
-  virtual void attachShader(blink::WebGLId program, blink::WebGLId shader);
-  virtual void bindFramebuffer(
-      blink::WGC3Denum target, blink::WebGLId framebuffer);
-  virtual void bindRenderbuffer(
-      blink::WGC3Denum target, blink::WebGLId renderbuffer);
-  virtual void bindTexture(
-      blink::WGC3Denum target,
-      blink::WebGLId texture_id);
+  virtual void attachShader(blink::WebGLId program,
+                            blink::WebGLId shader) OVERRIDE;
+  virtual void bindFramebuffer(blink::WGC3Denum target,
+                               blink::WebGLId framebuffer) OVERRIDE;
+  virtual void bindRenderbuffer(blink::WGC3Denum target,
+                                blink::WebGLId renderbuffer) OVERRIDE;
+  virtual void bindTexture(blink::WGC3Denum target,
+                           blink::WebGLId texture_id) OVERRIDE;
 
   virtual void texParameteri(blink::WGC3Denum target,
                              blink::WGC3Denum pname,
-                             blink::WGC3Dint param);
+                             blink::WGC3Dint param) OVERRIDE;
   virtual void getTexParameteriv(blink::WGC3Denum target,
                                  blink::WGC3Denum pname,
-                                 blink::WGC3Dint* value);
+                                 blink::WGC3Dint* value) OVERRIDE;
+  virtual void asyncTexImage2DCHROMIUM(GLenum target,
+                                       GLint level,
+                                       GLenum internalformat,
+                                       GLsizei width,
+                                       GLsizei height,
+                                       GLint border,
+                                       GLenum format,
+                                       GLenum type,
+                                       const void* pixels) {}
+  virtual void asyncTexSubImage2DCHROMIUM(GLenum target,
+                                          GLint level,
+                                          GLint xoffset,
+                                          GLint yoffset,
+                                          GLsizei width,
+                                          GLsizei height,
+                                          GLenum format,
+                                          GLenum type,
+                                          const void* pixels) {}
+  virtual void waitAsyncTexImage2DCHROMIUM(GLenum target) {}
+  virtual void releaseTexImage2DCHROMIUM(GLenum target, GLint image_id) {}
 
-  virtual blink::WGC3Denum checkFramebufferStatus(blink::WGC3Denum target);
+  virtual blink::WGC3Denum checkFramebufferStatus(blink::WGC3Denum target)
+      OVERRIDE;
 
-  virtual Attributes getContextAttributes();
+  virtual blink::WebString getString(blink::WGC3Denum name) OVERRIDE;
+  virtual blink::WGC3Dint getUniformLocation(blink::WebGLId program,
+                                             const blink::WGC3Dchar* name)
+      OVERRIDE;
+  virtual blink::WGC3Dsizeiptr getVertexAttribOffset(blink::WGC3Duint index,
+                                                     blink::WGC3Denum pname)
+      OVERRIDE;
 
-  virtual blink::WebString getString(blink::WGC3Denum name);
-  virtual blink::WGC3Dint getUniformLocation(
-      blink::WebGLId program,
-      const blink::WGC3Dchar* name);
-  virtual blink::WGC3Dsizeiptr getVertexAttribOffset(
-      blink::WGC3Duint index,
-      blink::WGC3Denum pname);
+  virtual blink::WGC3Dboolean isBuffer(blink::WebGLId buffer) OVERRIDE;
+  virtual blink::WGC3Dboolean isEnabled(blink::WGC3Denum cap) OVERRIDE;
+  virtual blink::WGC3Dboolean isFramebuffer(blink::WebGLId framebuffer)
+      OVERRIDE;
+  virtual blink::WGC3Dboolean isProgram(blink::WebGLId program) OVERRIDE;
+  virtual blink::WGC3Dboolean isRenderbuffer(blink::WebGLId renderbuffer)
+      OVERRIDE;
+  virtual blink::WGC3Dboolean isShader(blink::WebGLId shader) OVERRIDE;
+  virtual blink::WGC3Dboolean isTexture(blink::WebGLId texture) OVERRIDE;
 
-  virtual blink::WGC3Dboolean isBuffer(blink::WebGLId buffer);
-  virtual blink::WGC3Dboolean isEnabled(blink::WGC3Denum cap);
-  virtual blink::WGC3Dboolean isFramebuffer(blink::WebGLId framebuffer);
-  virtual blink::WGC3Dboolean isProgram(blink::WebGLId program);
-  virtual blink::WGC3Dboolean isRenderbuffer(blink::WebGLId renderbuffer);
-  virtual blink::WGC3Dboolean isShader(blink::WebGLId shader);
-  virtual blink::WGC3Dboolean isTexture(blink::WebGLId texture);
+  virtual void useProgram(blink::WebGLId program) OVERRIDE;
 
-  virtual void useProgram(blink::WebGLId program);
+  virtual void genBuffers(blink::WGC3Dsizei count,
+                          blink::WebGLId* ids) OVERRIDE;
+  virtual void genFramebuffers(blink::WGC3Dsizei count,
+                               blink::WebGLId* ids) OVERRIDE;
+  virtual void genRenderbuffers(blink::WGC3Dsizei count,
+                                blink::WebGLId* ids) OVERRIDE;
+  virtual void genTextures(blink::WGC3Dsizei count,
+                           blink::WebGLId* ids) OVERRIDE;
 
-  virtual void genBuffers(blink::WGC3Dsizei count, blink::WebGLId* ids);
-  virtual void genFramebuffers(blink::WGC3Dsizei count, blink::WebGLId* ids);
-  virtual void genRenderbuffers(blink::WGC3Dsizei count, blink::WebGLId* ids);
-  virtual void genTextures(blink::WGC3Dsizei count, blink::WebGLId* ids);
+  virtual void deleteBuffers(blink::WGC3Dsizei count,
+                             blink::WebGLId* ids) OVERRIDE;
+  virtual void deleteFramebuffers(blink::WGC3Dsizei count,
+                                  blink::WebGLId* ids) OVERRIDE;
+  virtual void deleteRenderbuffers(blink::WGC3Dsizei count,
+                                   blink::WebGLId* ids) OVERRIDE;
+  virtual void deleteTextures(blink::WGC3Dsizei count,
+                              blink::WebGLId* ids) OVERRIDE;
 
-  virtual void deleteBuffers(blink::WGC3Dsizei count, blink::WebGLId* ids);
-  virtual void deleteFramebuffers(
-      blink::WGC3Dsizei count, blink::WebGLId* ids);
-  virtual void deleteRenderbuffers(
-      blink::WGC3Dsizei count, blink::WebGLId* ids);
-  virtual void deleteTextures(blink::WGC3Dsizei count, blink::WebGLId* ids);
+  virtual blink::WebGLId createBuffer() OVERRIDE;
+  virtual blink::WebGLId createFramebuffer() OVERRIDE;
+  virtual blink::WebGLId createRenderbuffer() OVERRIDE;
+  virtual blink::WebGLId createTexture() OVERRIDE;
 
-  virtual blink::WebGLId createBuffer();
-  virtual blink::WebGLId createFramebuffer();
-  virtual blink::WebGLId createRenderbuffer();
-  virtual blink::WebGLId createTexture();
+  virtual void deleteBuffer(blink::WebGLId id) OVERRIDE;
+  virtual void deleteFramebuffer(blink::WebGLId id) OVERRIDE;
+  virtual void deleteRenderbuffer(blink::WebGLId id) OVERRIDE;
+  virtual void deleteTexture(blink::WebGLId id) OVERRIDE;
 
-  virtual void deleteBuffer(blink::WebGLId id);
-  virtual void deleteFramebuffer(blink::WebGLId id);
-  virtual void deleteRenderbuffer(blink::WebGLId id);
-  virtual void deleteTexture(blink::WebGLId id);
-
-  virtual blink::WebGLId createProgram();
-  virtual blink::WebGLId createShader(blink::WGC3Denum);
+  virtual blink::WebGLId createProgram() OVERRIDE;
+  virtual blink::WebGLId createShader(blink::WGC3Denum) OVERRIDE;
   virtual blink::WebGLId createExternalTexture();
 
-  virtual void deleteProgram(blink::WebGLId id);
-  virtual void deleteShader(blink::WebGLId id);
+  virtual void deleteProgram(blink::WebGLId id) OVERRIDE;
+  virtual void deleteShader(blink::WebGLId id) OVERRIDE;
 
-  virtual void endQueryEXT(blink::WGC3Denum target);
-  virtual void getQueryObjectuivEXT(
-      blink::WebGLId query,
-      blink::WGC3Denum pname,
-      blink::WGC3Duint* params);
+  virtual void endQueryEXT(blink::WGC3Denum target) OVERRIDE;
+  virtual void getQueryObjectuivEXT(blink::WebGLId query,
+                                    blink::WGC3Denum pname,
+                                    blink::WGC3Duint* params) OVERRIDE;
 
-  virtual void getIntegerv(
-      blink::WGC3Denum pname,
-      blink::WGC3Dint* value);
+  virtual void getIntegerv(blink::WGC3Denum pname,
+                           blink::WGC3Dint* value) OVERRIDE;
 
   virtual void genMailboxCHROMIUM(blink::WGC3Dbyte* mailbox);
   virtual void produceTextureCHROMIUM(blink::WGC3Denum target,
-                                      const blink::WGC3Dbyte* mailbox) { }
+                                      const blink::WGC3Dbyte* mailbox) {}
   virtual void consumeTextureCHROMIUM(blink::WGC3Denum target,
-                                      const blink::WGC3Dbyte* mailbox) { }
+                                      const blink::WGC3Dbyte* mailbox) {}
 
   virtual void setContextLostCallback(
-      WebGraphicsContextLostCallback* callback);
+      blink::WebGraphicsContext3D::WebGraphicsContextLostCallback* callback)
+      OVERRIDE;
 
   virtual void loseContextCHROMIUM(blink::WGC3Denum current,
-                                   blink::WGC3Denum other);
+                                   blink::WGC3Denum other) OVERRIDE;
 
-  virtual void finish();
-  virtual void flush();
+  virtual void finish() OVERRIDE;
+  virtual void flush() OVERRIDE;
 
-  virtual void bindBuffer(blink::WGC3Denum target, blink::WebGLId buffer);
+  virtual void bindBuffer(blink::WGC3Denum target,
+                          blink::WebGLId buffer) OVERRIDE;
   virtual void bufferData(blink::WGC3Denum target,
                           blink::WGC3Dsizeiptr size,
                           const void* data,
-                          blink::WGC3Denum usage);
+                          blink::WGC3Denum usage) OVERRIDE;
   virtual void* mapBufferCHROMIUM(blink::WGC3Denum target,
                                   blink::WGC3Denum access);
   virtual blink::WGC3Dboolean unmapBufferCHROMIUM(blink::WGC3Denum target);
 
-  virtual blink::WGC3Duint createImageCHROMIUM(
-      blink::WGC3Dsizei width,
-      blink::WGC3Dsizei height,
-      blink::WGC3Denum internalformat);
-  virtual void destroyImageCHROMIUM(blink::WGC3Duint image_id);
-  virtual void getImageParameterivCHROMIUM(
-      blink::WGC3Duint image_id,
-      blink::WGC3Denum pname,
-      blink::WGC3Dint* params);
-  virtual void* mapImageCHROMIUM(
-      blink::WGC3Duint image_id,
-      blink::WGC3Denum access);
-  virtual void unmapImageCHROMIUM(blink::WGC3Duint image_id);
+  virtual blink::WGC3Duint createImageCHROMIUM(blink::WGC3Dsizei width,
+                                               blink::WGC3Dsizei height,
+                                               blink::WGC3Denum internalformat)
+      OVERRIDE;
+  virtual void destroyImageCHROMIUM(blink::WGC3Duint image_id) OVERRIDE;
+  virtual void getImageParameterivCHROMIUM(blink::WGC3Duint image_id,
+                                           blink::WGC3Denum pname,
+                                           blink::WGC3Dint* params) OVERRIDE;
+  virtual void* mapImageCHROMIUM(blink::WGC3Duint image_id,
+                                 blink::WGC3Denum access) OVERRIDE;
+  virtual void unmapImageCHROMIUM(blink::WGC3Duint image_id) OVERRIDE;
+  virtual void texImageIOSurface2DCHROMIUM(GLenum target,
+                                           GLsizei width,
+                                           GLsizei height,
+                                           GLuint io_surface_id,
+                                           GLuint plane) {}
 
-  virtual unsigned insertSyncPoint() OVERRIDE;
-  virtual void waitSyncPoint(unsigned sync_point) OVERRIDE;
+  virtual unsigned insertSyncPoint();
+  virtual void waitSyncPoint(unsigned sync_point);
 
   unsigned last_waited_sync_point() const { return last_waited_sync_point_; }
 
@@ -210,7 +241,7 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   }
 
   // When this context is lost, all contexts in its share group are also lost.
-  void add_share_group_context(blink::WebGraphicsContext3D* context3d) {
+  void add_share_group_context(TestWebGraphicsContext3D* context3d) {
     shared_contexts_.push_back(context3d);
   }
 
@@ -250,9 +281,7 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
 
   gfx::Rect update_rect() const { return update_rect_; }
 
-  UpdateType last_update_type() {
-    return last_update_type_;
-  }
+  UpdateType last_update_type() { return last_update_type_; }
 
  protected:
   struct TextureTargets {
@@ -317,7 +346,6 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   void CheckTextureIsBound(blink::WGC3Denum target);
 
   unsigned context_id_;
-  Attributes attributes_;
   ContextProvider::Capabilities test_capabilities_;
   int times_bind_texture_succeeds_;
   int times_end_query_succeeds_;
@@ -325,13 +353,14 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   bool context_lost_;
   int times_map_image_chromium_succeeds_;
   int times_map_buffer_chromium_succeeds_;
-  WebGraphicsContextLostCallback* context_lost_callback_;
+  blink::WebGraphicsContext3D::WebGraphicsContextLostCallback*
+      context_lost_callback_;
   base::hash_set<unsigned> used_textures_;
   unsigned next_program_id_;
   base::hash_set<unsigned> program_set_;
   unsigned next_shader_id_;
   base::hash_set<unsigned> shader_set_;
-  std::vector<blink::WebGraphicsContext3D*> shared_contexts_;
+  std::vector<TestWebGraphicsContext3D*> shared_contexts_;
   int max_texture_size_;
   bool reshape_called_;
   int width_;

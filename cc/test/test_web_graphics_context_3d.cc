@@ -91,16 +91,12 @@ TestWebGraphicsContext3D::~TestWebGraphicsContext3D() {
 }
 
 void TestWebGraphicsContext3D::CreateNamespace() {
-  if (attributes_.shareResources) {
-    base::AutoLock lock(g_shared_namespace_lock.Get());
-    if (shared_namespace_) {
-      namespace_ = shared_namespace_;
-    } else {
-      namespace_ = new Namespace;
-      shared_namespace_ = namespace_.get();
-    }
+  base::AutoLock lock(g_shared_namespace_lock.Get());
+  if (shared_namespace_) {
+    namespace_ = shared_namespace_;
   } else {
     namespace_ = new Namespace;
+    shared_namespace_ = namespace_.get();
   }
 }
 
@@ -121,11 +117,6 @@ WGC3Denum TestWebGraphicsContext3D::checkFramebufferStatus(
   if (context_lost_)
     return GL_FRAMEBUFFER_UNDEFINED_OES;
   return GL_FRAMEBUFFER_COMPLETE;
-}
-
-WebGraphicsContext3D::Attributes
-    TestWebGraphicsContext3D::getContextAttributes() {
-  return attributes_;
 }
 
 blink::WebString TestWebGraphicsContext3D::getString(WGC3Denum name) {
@@ -418,7 +409,7 @@ void TestWebGraphicsContext3D::genMailboxCHROMIUM(blink::WGC3Dbyte* mailbox) {
 }
 
 void TestWebGraphicsContext3D::setContextLostCallback(
-    WebGraphicsContextLostCallback* callback) {
+    blink::WebGraphicsContext3D::WebGraphicsContextLostCallback* callback) {
   context_lost_callback_ = callback;
 }
 
