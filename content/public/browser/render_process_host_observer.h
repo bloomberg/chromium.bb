@@ -20,6 +20,8 @@ class CONTENT_EXPORT RenderProcessHostObserver {
   // This method is invoked when a render process exited (either normally or
   // with a crash). To determine if the process closed normally or crashed,
   // examine the |status| parameter.
+  //
+  // Note that this is equivalent to WebContentsObserver::RenderProcessGone().
   virtual void RenderProcessExited(RenderProcessHost* host,
                                    base::ProcessHandle handle,
                                    base::TerminationStatus status,
