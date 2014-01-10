@@ -40,14 +40,16 @@ class MultiprocessTestBase : public base::MultiProcessTest {
   static void ChildSetup();
 
   // For use in the main process:
-  scoped_ptr<system::PlatformServerChannel> platform_server_channel;
+  scoped_ptr<system::PlatformChannel> server_platform_channel;
 
   // For use (and only valid) in the child process:
-  static scoped_ptr<system::PlatformClientChannel> platform_client_channel;
+  static scoped_ptr<system::PlatformChannel> client_platform_channel;
 
  private:
   virtual CommandLine MakeCmdLine(const std::string& procname,
                                   bool debug_on_start) OVERRIDE;
+
+  scoped_ptr<system::PlatformChannelPair> platform_channel_pair_;
 
   // Valid after |StartChild()| and before |WaitForChildShutdown()|.
   base::ProcessHandle test_child_handle_;

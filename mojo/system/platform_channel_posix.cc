@@ -10,7 +10,6 @@
 #include <unistd.h>
 
 #include "base/command_line.h"
-#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/posix/global_descriptors.h"
 #include "base/strings/string_number_conversions.h"
@@ -32,58 +31,40 @@ bool IsTargetDescriptorUsed(
   return false;
 }
 
-class PlatformServerChannelPosix : public PlatformServerChannel {
- public:
-  PlatformServerChannelPosix(const std::string& name);
-  virtual ~PlatformServerChannelPosix();
+}  // namespace
 
-  // |PlatformServerChannel| implementation:
-  virtual scoped_ptr<PlatformClientChannel> CreateClientChannel() OVERRIDE;
-  virtual void GetDataNeededToPassClientChannelToChildProcess(
-      CommandLine* command_line,
-      base::FileHandleMappingVector* file_handle_mapping) const OVERRIDE;
-  virtual void ChildProcessLaunched() OVERRIDE;
-
- private:
-  PlatformChannelHandle client_handle_;
-
-  DISALLOW_COPY_AND_ASSIGN(PlatformServerChannelPosix);
-};
-
-PlatformServerChannelPosix::PlatformServerChannelPosix(
-    const std::string& name)
-    : PlatformServerChannel(name) {
+PlatformChannelPair::PlatformChannelPair() {
   // Create the Unix domain socket and set the ends to nonblocking.
   int fds[2];
+  // TODO(vtl): Maybe fail gracefully if |socketpair()| fails.
   PCHECK(socketpair(AF_UNIX, SOCK_STREAM, 0, fds) == 0);
   PCHECK(fcntl(fds[0], F_SETFL, O_NONBLOCK) == 0);
   PCHECK(fcntl(fds[1], F_SETFL, O_NONBLOCK) == 0);
 
-  mutable_handle()->fd = fds[0];
-  DCHECK(is_valid());
+  server_handle_.fd = fds[0];
+  DCHECK(server_handle_.is_valid());
   client_handle_.fd = fds[1];
   DCHECK(client_handle_.is_valid());
 }
 
-PlatformServerChannelPosix::~PlatformServerChannelPosix() {
-  client_handle_.CloseIfNecessary();
-}
-
-scoped_ptr<PlatformClientChannel>
-    PlatformServerChannelPosix::CreateClientChannel() {
-  if (!client_handle_.is_valid()) {
-    NOTREACHED();
-    return scoped_ptr<PlatformClientChannel>();
+// static
+scoped_ptr<PlatformChannel>
+PlatformChannelPair::CreateClientChannelFromParentProcess(
+    const CommandLine& command_line) {
+  std::string client_fd_string =
+      command_line.GetSwitchValueASCII(kMojoChannelDescriptorSwitch);
+  int client_fd = -1;
+  if (client_fd_string.empty() ||
+      !base::StringToInt(client_fd_string, &client_fd) ||
+      client_fd < base::GlobalDescriptors::kBaseDescriptor) {
+    LOG(ERROR) << "Missing or invalid --" << kMojoChannelDescriptorSwitch;
+    return scoped_ptr<PlatformChannel>();
   }
 
-  scoped_ptr<PlatformClientChannel> rv =
-      PlatformClientChannel::CreateFromHandle(client_handle_);
-  DCHECK(rv->is_valid());
-  client_handle_ = PlatformChannelHandle();
-  return rv.Pass();
+  return PlatformChannel::CreateFromHandle(PlatformChannelHandle(client_fd));
 }
 
-void PlatformServerChannelPosix::GetDataNeededToPassClientChannelToChildProcess(
+void PlatformChannelPair::PrepareToPassClientChannelToChildProcess(
     CommandLine* command_line,
     base::FileHandleMappingVector* file_handle_mapping) const {
   DCHECK(command_line);
@@ -116,41 +97,9 @@ void PlatformServerChannelPosix::GetDataNeededToPassClientChannelToChildProcess(
                                   base::IntToString(target_fd));
 }
 
-void PlatformServerChannelPosix::ChildProcessLaunched() {
+void PlatformChannelPair::ChildProcessLaunched() {
   DCHECK(client_handle_.is_valid());
   client_handle_.CloseIfNecessary();
-}
-
-}  // namespace
-
-// -----------------------------------------------------------------------------
-
-// Static factory method declared in platform_channel.h.
-// static
-scoped_ptr<PlatformServerChannel> PlatformServerChannel::Create(
-    const std::string& name) {
-  return scoped_ptr<PlatformServerChannel>(
-      new PlatformServerChannelPosix(name));
-}
-
-// -----------------------------------------------------------------------------
-
-// Static factory method declared in platform_channel.h.
-// static
-scoped_ptr<PlatformClientChannel>
-    PlatformClientChannel::CreateFromParentProcess(
-        const CommandLine& command_line) {
-  std::string client_fd_string =
-      command_line.GetSwitchValueASCII(kMojoChannelDescriptorSwitch);
-  int client_fd = -1;
-  if (client_fd_string.empty() ||
-      !base::StringToInt(client_fd_string, &client_fd) ||
-      client_fd < base::GlobalDescriptors::kBaseDescriptor) {
-    LOG(ERROR) << "Missing or invalid --" << kMojoChannelDescriptorSwitch;
-    return scoped_ptr<PlatformClientChannel>();
-  }
-
-  return CreateFromHandle(PlatformChannelHandle(client_fd));
 }
 
 }  // namespace system

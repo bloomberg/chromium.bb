@@ -122,7 +122,7 @@ class MultiprocessMessagePipeTest : public mojo::test::MultiprocessTestBase {
   }
 
   void Init(scoped_refptr<MessagePipe> mp) {
-    io_thread_wrapper_.Init(platform_server_channel.get(), mp);
+    io_thread_wrapper_.Init(server_platform_channel.get(), mp);
   }
 
  private:
@@ -152,14 +152,14 @@ MojoResult WaitIfNecessary(scoped_refptr<MessagePipe> mp, MojoWaitFlags flags) {
 // not including any "quitquitquit" message, modulo 100.
 MOJO_MULTIPROCESS_TEST_CHILD_MAIN(EchoEcho) {
   IOThreadWrapper io_thread_wrapper;
-  PlatformClientChannel* const platform_client_channel =
-      MultiprocessMessagePipeTest::platform_client_channel.get();
-  CHECK(platform_client_channel);
-  CHECK(platform_client_channel->is_valid());
+  PlatformChannel* const client_platform_channel =
+      MultiprocessMessagePipeTest::client_platform_channel.get();
+  CHECK(client_platform_channel);
+  CHECK(client_platform_channel->is_valid());
   scoped_refptr<MessagePipe> mp(new MessagePipe(
       scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint()),
       scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint())));
-  io_thread_wrapper.Init(platform_client_channel, mp);
+  io_thread_wrapper.Init(client_platform_channel, mp);
 
   const std::string quitquitquit("quitquitquit");
   int rv = 0;

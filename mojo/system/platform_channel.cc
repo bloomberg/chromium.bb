@@ -13,6 +13,15 @@ PlatformChannel::~PlatformChannel() {
   handle_.CloseIfNecessary();
 }
 
+// static
+scoped_ptr<PlatformChannel> PlatformChannel::CreateFromHandle(
+    const PlatformChannelHandle& handle) {
+  DCHECK(handle.is_valid());
+  scoped_ptr<PlatformChannel> rv(new PlatformChannel());
+  *rv->mutable_handle() = handle;
+  return rv.Pass();
+}
+
 PlatformChannelHandle PlatformChannel::PassHandle() {
   DCHECK(is_valid());
   PlatformChannelHandle rv = handle_;
@@ -23,18 +32,34 @@ PlatformChannelHandle PlatformChannel::PassHandle() {
 PlatformChannel::PlatformChannel() {
 }
 
-PlatformServerChannel::PlatformServerChannel(const std::string& name)
-    : name_(name) {
-  DCHECK(!name_.empty());
+// -----------------------------------------------------------------------------
+
+PlatformChannelPair::~PlatformChannelPair() {
+  server_handle_.CloseIfNecessary();
+  client_handle_.CloseIfNecessary();
 }
 
-// Static factory method.
-// static
-scoped_ptr<PlatformClientChannel> PlatformClientChannel::CreateFromHandle(
-      const PlatformChannelHandle& handle) {
-  DCHECK(handle.is_valid());
-  scoped_ptr<PlatformClientChannel> rv(new PlatformClientChannel());
-  *rv->mutable_handle() = handle;
+scoped_ptr<PlatformChannel> PlatformChannelPair::CreateServerChannel() {
+  if (!server_handle_.is_valid()) {
+    LOG(WARNING) << "Server handle invalid";
+    return scoped_ptr<PlatformChannel>();
+  }
+
+  scoped_ptr<PlatformChannel> rv =
+      PlatformChannel::CreateFromHandle(server_handle_);
+  server_handle_ = PlatformChannelHandle();
+  return rv.Pass();
+}
+
+scoped_ptr<PlatformChannel> PlatformChannelPair::CreateClientChannel() {
+  if (!client_handle_.is_valid()) {
+    LOG(WARNING) << "Client handle invalid";
+    return scoped_ptr<PlatformChannel>();
+  }
+
+  scoped_ptr<PlatformChannel> rv =
+      PlatformChannel::CreateFromHandle(client_handle_);
+  client_handle_ = PlatformChannelHandle();
   return rv.Pass();
 }
 

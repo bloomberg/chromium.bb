@@ -91,17 +91,13 @@ class RemoteMessagePipeTest : public testing::Test {
   void SetUpOnIOThread() {
     CHECK_EQ(base::MessageLoop::current(), io_thread_message_loop());
 
-    scoped_ptr<PlatformServerChannel> server_channel(
-        PlatformServerChannel::Create("channel"));
-    CHECK(server_channel.get());
-    CHECK(server_channel->is_valid());
-    scoped_ptr<PlatformClientChannel> client_channel(
-        server_channel->CreateClientChannel());
-    CHECK(client_channel.get());
-    CHECK(client_channel->is_valid());
-
-    platform_channels_[0] = server_channel.PassAs<PlatformChannel>();
-    platform_channels_[1] = client_channel.PassAs<PlatformChannel>();
+    PlatformChannelPair channel_pair;
+    platform_channels_[0] = channel_pair.CreateServerChannel();
+    CHECK(platform_channels_[0].get());
+    CHECK(platform_channels_[0]->is_valid());
+    platform_channels_[1] = channel_pair.CreateClientChannel();
+    CHECK(platform_channels_[1].get());
+    CHECK(platform_channels_[1]->is_valid());
   }
 
   void CreateAndInitChannel(unsigned channel_index) {

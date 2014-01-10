@@ -29,21 +29,22 @@ void MultiprocessTestBase::SetUp() {
 
 // TODO(vtl): Not implemented on Windows yet.
 #if defined(OS_POSIX)
-  platform_server_channel =
-      system::PlatformServerChannel::Create("TestChannel");
+  platform_channel_pair_.reset(new system::PlatformChannelPair());
+  server_platform_channel = platform_channel_pair_->CreateServerChannel();
 #endif
 }
 
 void MultiprocessTestBase::TearDown() {
   CHECK_EQ(test_child_handle_, base::kNullProcessHandle);
 
-  platform_server_channel.reset();
+  server_platform_channel.reset();
+  platform_channel_pair_.reset();
 
   MultiProcessTest::TearDown();
 }
 
 void MultiprocessTestBase::StartChild(const std::string& test_child_name) {
-  CHECK(platform_server_channel.get());
+  CHECK(platform_channel_pair_.get());
   CHECK(!test_child_name.empty());
   CHECK_EQ(test_child_handle_, base::kNullProcessHandle);
 
@@ -52,8 +53,8 @@ void MultiprocessTestBase::StartChild(const std::string& test_child_name) {
 #if defined(OS_POSIX)
   CommandLine unused(CommandLine::NO_PROGRAM);
   base::FileHandleMappingVector fds_to_map;
-  platform_server_channel->GetDataNeededToPassClientChannelToChildProcess(
-      &unused, &fds_to_map);
+  platform_channel_pair_->PrepareToPassClientChannelToChildProcess(&unused,
+                                                                   &fds_to_map);
   test_child_handle_ = SpawnChild(test_child_main, fds_to_map, false);
 #elif defined(OS_WIN)
   test_child_handle_  = SpawnChild(test_child_main, false);
@@ -62,7 +63,7 @@ void MultiprocessTestBase::StartChild(const std::string& test_child_name) {
 #endif
 // TODO(vtl): Not implemented on Windows yet.
 #if defined(OS_POSIX)
-  platform_server_channel->ChildProcessLaunched();
+  platform_channel_pair_->ChildProcessLaunched();
 #endif
 
   CHECK_NE(test_child_handle_, base::kNullProcessHandle);
@@ -82,14 +83,14 @@ int MultiprocessTestBase::WaitForChildShutdown() {
 
 CommandLine MultiprocessTestBase::MakeCmdLine(const std::string& procname,
                                               bool debug_on_start) {
-  CHECK(platform_server_channel.get());
+  CHECK(platform_channel_pair_.get());
 
   CommandLine command_line =
       base::MultiProcessTest::MakeCmdLine(procname, debug_on_start);
 // TODO(vtl): Not implemented on Windows yet.
 #if defined(OS_POSIX)
   base::FileHandleMappingVector unused;
-  platform_server_channel->GetDataNeededToPassClientChannelToChildProcess(
+  platform_channel_pair_->PrepareToPassClientChannelToChildProcess(
       &command_line, &unused);
 #endif
   return command_line;
@@ -100,16 +101,16 @@ void MultiprocessTestBase::ChildSetup() {
   CHECK(CommandLine::InitializedForCurrentProcess());
 // TODO(vtl): Not implemented on Windows yet.
 #if defined(OS_POSIX)
-  platform_client_channel =
-      system::PlatformClientChannel::CreateFromParentProcess(
+  client_platform_channel =
+      system::PlatformChannelPair::CreateClientChannelFromParentProcess(
           *CommandLine::ForCurrentProcess());
-  CHECK(platform_client_channel.get());
+  CHECK(client_platform_channel.get());
 #endif
 }
 
 // static
-scoped_ptr<system::PlatformClientChannel>
-    MultiprocessTestBase::platform_client_channel;
+scoped_ptr<system::PlatformChannel>
+    MultiprocessTestBase::client_platform_channel;
 
 }  // namespace test
 }  // namespace mojo

@@ -24,8 +24,8 @@ class MultiprocessTestBaseTest : public test::MultiprocessTestBase {
 TEST_F(MultiprocessTestBaseTest, RunChild) {
 // TODO(vtl): Not implemented on Windows yet.
 #if defined(OS_POSIX)
-  EXPECT_TRUE(platform_server_channel.get());
-  EXPECT_TRUE(platform_server_channel->is_valid());
+  EXPECT_TRUE(server_platform_channel.get());
+  EXPECT_TRUE(server_platform_channel->is_valid());
 #endif
   StartChild("RunChild");
   EXPECT_EQ(123, WaitForChildShutdown());
@@ -34,8 +34,8 @@ TEST_F(MultiprocessTestBaseTest, RunChild) {
 MOJO_MULTIPROCESS_TEST_CHILD_MAIN(RunChild) {
 // TODO(vtl): Not implemented on Windows yet.
 #if defined(OS_POSIX)
-  CHECK(MultiprocessTestBaseTest::platform_client_channel.get());
-  CHECK(MultiprocessTestBaseTest::platform_client_channel->is_valid());
+  CHECK(MultiprocessTestBaseTest::client_platform_channel.get());
+  CHECK(MultiprocessTestBaseTest::client_platform_channel->is_valid());
 #endif
   return 123;
 }
@@ -50,14 +50,14 @@ TEST_F(MultiprocessTestBaseTest, TestChildMainNotFound) {
 
 #if defined(OS_POSIX)
 TEST_F(MultiprocessTestBaseTest, PassedChannelPosix) {
-  EXPECT_TRUE(platform_server_channel.get());
-  EXPECT_TRUE(platform_server_channel->is_valid());
+  EXPECT_TRUE(server_platform_channel.get());
+  EXPECT_TRUE(server_platform_channel->is_valid());
   StartChild("PassedChannelPosix");
 
   // Take ownership of the FD.
   mojo::system::PlatformChannelHandle channel =
-      platform_server_channel->PassHandle();
-  platform_server_channel.reset();
+      server_platform_channel->PassHandle();
+  server_platform_channel.reset();
   int fd = channel.fd;
 
   // The FD should be non-blocking. Check this.
@@ -81,13 +81,13 @@ TEST_F(MultiprocessTestBaseTest, PassedChannelPosix) {
 }
 
 MOJO_MULTIPROCESS_TEST_CHILD_MAIN(PassedChannelPosix) {
-  CHECK(MultiprocessTestBaseTest::platform_client_channel.get());
-  CHECK(MultiprocessTestBaseTest::platform_client_channel->is_valid());
+  CHECK(MultiprocessTestBaseTest::client_platform_channel.get());
+  CHECK(MultiprocessTestBaseTest::client_platform_channel->is_valid());
 
   // Take ownership of the FD.
   mojo::system::PlatformChannelHandle channel =
-      MultiprocessTestBaseTest::platform_client_channel->PassHandle();
-  MultiprocessTestBaseTest::platform_client_channel.reset();
+      MultiprocessTestBaseTest::client_platform_channel->PassHandle();
+  MultiprocessTestBaseTest::client_platform_channel.reset();
   int fd = channel.fd;
 
   // The FD should still be non-blocking. Check this.

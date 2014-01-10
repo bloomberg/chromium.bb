@@ -5,9 +5,6 @@
 #ifndef MOJO_SYSTEM_PLATFORM_CHANNEL_H_
 #define MOJO_SYSTEM_PLATFORM_CHANNEL_H_
 
-#include <string>
-#include <utility>
-
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/launch.h"
@@ -22,6 +19,11 @@ namespace system {
 class MOJO_SYSTEM_IMPL_EXPORT PlatformChannel {
  public:
   virtual ~PlatformChannel();
+
+  // Creates a channel if you already have the underlying handle for it, taking
+  // ownership of |handle|.
+  static scoped_ptr<PlatformChannel> CreateFromHandle(
+      const PlatformChannelHandle& handle);
 
   // Returns the channel's handle, passing ownership.
   PlatformChannelHandle PassHandle();
@@ -39,71 +41,57 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformChannel {
   DISALLOW_COPY_AND_ASSIGN(PlatformChannel);
 };
 
-class PlatformClientChannel;
-
-// A server channel has an "implicit" client channel created with it. This may
-// be a real channel (in the case of POSIX, in which case there's an actual FD
-// for it) or fake.
-//  - That client channel may then be used in-process (e.g., for single process
-//    tests) by getting a |PlatformClientChannel| using |CreateClientChannel()|.
-//  - Or it may be "passed" to a new child process using
-//    |GetDataNeededToPassClientChannelToChildProcess()|, etc. (see below). The
-//    child process would then get a |PlatformClientChannel| by using
-//    |PlatformClientChannel::CreateFromParentProcess()|.
-//  - In both these cases, "ownership" of the client channel is transferred (to
-//    the |PlatformClientChannel| or the child process).
-// TODO(vtl): Add ways of passing it to other existing processes.
-class MOJO_SYSTEM_IMPL_EXPORT PlatformServerChannel : public PlatformChannel {
+// This is used to create a pair of connected |PlatformChannel|s. The resulting
+// channels can then be used in the same process (e.g., in tests) or between
+// processes. (The "server" channel is the one that will be used in the process
+// that created the pair, whereas the "client" channel is the one that will be
+// used in a different process.)
+//
+// This class provides facilities for passing the client channel to a child
+// process. The parent should call |PrepareToPassClientChannelToChildProcess()|
+// to get the data needed to do this, spawn the child using that data, and then
+// call |ChildProcessLaunched()|. Note that on Windows this facility (will) only
+// work on Vista and later (TODO(vtl)).
+//
+// Note: |PlatformChannelPair()|, |CreateClientChannelFromParentProcess()|,
+// |PrepareToPassClientChannelToChildProcess()|, and |ChildProcessLaunched()|
+// have platform-specific implementations.
+class MOJO_SYSTEM_IMPL_EXPORT PlatformChannelPair {
  public:
-  virtual ~PlatformServerChannel() {}
+  PlatformChannelPair();
+  ~PlatformChannelPair();
 
-  static scoped_ptr<PlatformServerChannel> Create(const std::string& name);
+  // This transfers ownership of the server channel to the caller. Returns null
+  // on failure.
+  scoped_ptr<PlatformChannel> CreateServerChannel();
 
-  // For in-process use, from a server channel you can make a corresponding
-  // client channel.
-  virtual scoped_ptr<PlatformClientChannel> CreateClientChannel() = 0;
+  // For in-process use (e.g., in tests). This transfers ownership of the client
+  // channel to the caller. Returns null on failure.
+  scoped_ptr<PlatformChannel> CreateClientChannel();
+
+  // To be called in the child process, after the parent process called
+  // |PrepareToPassClientChannelToChildProcess()| and launched the child (using
+  // the provided data), to create a client channel connected to the server
+  // channel (in the parent process). Returns null on failure.
+  static scoped_ptr<PlatformChannel> CreateClientChannelFromParentProcess(
+      const CommandLine& command_line);
 
   // Prepares to pass the client channel to a new child process, to be launched
   // using |LaunchProcess()| (from base/launch.h). Modifies |*command_line| and
   // |*file_handle_mapping| as needed. (|file_handle_mapping| may be null on
   // platforms that don't need it, like Windows.)
-  virtual void GetDataNeededToPassClientChannelToChildProcess(
+  void PrepareToPassClientChannelToChildProcess(
       CommandLine* command_line,
-      base::FileHandleMappingVector* file_handle_mapping) const = 0;
+      base::FileHandleMappingVector* file_handle_mapping) const;
   // To be called once the child process has been successfully launched, to do
   // any cleanup necessary.
-  virtual void ChildProcessLaunched() = 0;
-
-  const std::string& name() const { return name_; }
-
- protected:
-  explicit PlatformServerChannel(const std::string& name);
+  void ChildProcessLaunched();
 
  private:
-  const std::string name_;
+  PlatformChannelHandle server_handle_;
+  PlatformChannelHandle client_handle_;
 
-  DISALLOW_COPY_AND_ASSIGN(PlatformServerChannel);
-};
-
-class MOJO_SYSTEM_IMPL_EXPORT PlatformClientChannel : public PlatformChannel {
- public:
-  virtual ~PlatformClientChannel() {}
-
-  // Creates a client channel if you already have the underlying handle for it.
-  // Note: This takes ownership of |handle|.
-  static scoped_ptr<PlatformClientChannel> CreateFromHandle(
-      const PlatformChannelHandle& handle);
-
-  // To be called to get a client channel passed from the parent process, using
-  // |PlatformServerChannel::GetDataNeededToPassClientChannelToChildProcess()|,
-  // etc. Returns null on failure.
-  static scoped_ptr<PlatformClientChannel> CreateFromParentProcess(
-      const CommandLine& command_line);
-
- private:
-  PlatformClientChannel() {}
-
-  DISALLOW_COPY_AND_ASSIGN(PlatformClientChannel);
+  DISALLOW_COPY_AND_ASSIGN(PlatformChannelPair);
 };
 
 }  // namespace system

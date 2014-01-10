@@ -77,12 +77,13 @@ class RawChannelPosixTest : public testing::Test {
     io_thread_.StartWithOptions(
         base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
 
-    scoped_ptr<PlatformServerChannel> server_channel(
-        PlatformServerChannel::Create("channel"));
+    PlatformChannelPair channel_pair;
+    scoped_ptr<PlatformChannel> server_channel(
+        channel_pair.CreateServerChannel());
     CHECK(server_channel.get());
     CHECK(server_channel->is_valid());
-    scoped_ptr<PlatformClientChannel> client_channel(
-        server_channel->CreateClientChannel());
+    scoped_ptr<PlatformChannel> client_channel(
+        channel_pair.CreateClientChannel());
     CHECK(client_channel.get());
     CHECK(client_channel->is_valid());
 
