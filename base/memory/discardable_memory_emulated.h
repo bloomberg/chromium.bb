@@ -15,6 +15,9 @@ class DiscardableMemoryEmulated : public DiscardableMemory {
   explicit DiscardableMemoryEmulated(size_t size);
   virtual ~DiscardableMemoryEmulated();
 
+  static void RegisterMemoryPressureListeners();
+  static void UnregisterMemoryPressureListeners();
+
   static void PurgeForTesting();
 
   bool Initialize();

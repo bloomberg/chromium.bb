@@ -29,6 +29,21 @@ DiscardableMemoryEmulated::~DiscardableMemoryEmulated() {
   g_provider.Pointer()->Unregister(this);
 }
 
+// static
+void DiscardableMemoryEmulated::RegisterMemoryPressureListeners() {
+  g_provider.Pointer()->RegisterMemoryPressureListener();
+}
+
+// static
+void DiscardableMemoryEmulated::UnregisterMemoryPressureListeners() {
+  g_provider.Pointer()->UnregisterMemoryPressureListener();
+}
+
+// static
+void DiscardableMemoryEmulated::PurgeForTesting() {
+  g_provider.Pointer()->PurgeAll();
+}
+
 bool DiscardableMemoryEmulated::Initialize() {
   return Lock() == DISCARDABLE_MEMORY_LOCK_STATUS_PURGED;
 }
@@ -55,11 +70,6 @@ void DiscardableMemoryEmulated::Unlock() {
 void* DiscardableMemoryEmulated::Memory() const {
   DCHECK(memory_);
   return memory_.get();
-}
-
-// static
-void DiscardableMemoryEmulated::PurgeForTesting() {
-  g_provider.Pointer()->PurgeAll();
 }
 
 }  // namespace internal

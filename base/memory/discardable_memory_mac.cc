@@ -89,6 +89,16 @@ class DiscardableMemoryMac : public DiscardableMemory {
 }  // namespace
 
 // static
+void DiscardableMemory::RegisterMemoryPressureListeners() {
+  internal::DiscardableMemoryEmulated::RegisterMemoryPressureListeners();
+}
+
+// static
+void DiscardableMemory::UnregisterMemoryPressureListeners() {
+  internal::DiscardableMemoryEmulated::UnregisterMemoryPressureListeners();
+}
+
+// static
 void DiscardableMemory::GetSupportedTypes(
     std::vector<DiscardableMemoryType>* types) {
   const DiscardableMemoryType supported_types[] = {
