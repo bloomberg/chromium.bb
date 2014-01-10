@@ -31,7 +31,6 @@
 #include "config.h"
 #include "bindings/v8/custom/V8ArrayBufferCustom.h"
 
-#include "bindings/v8/ScriptPromiseResolver.h"
 #include "bindings/v8/V8Binding.h"
 #include "wtf/ArrayBuffer.h"
 #include "wtf/StdLibExtras.h"
