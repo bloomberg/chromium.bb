@@ -82,7 +82,7 @@ typedef uint64_t LinkHash;
 
 float deviceScaleFactor(Frame*);
 
-class Page : public Supplementable<Page>, public LifecycleContext<Page>, public SettingsDelegate {
+class Page FINAL : public Supplementable<Page>, public LifecycleContext<Page>, public SettingsDelegate {
     WTF_MAKE_NONCOPYABLE(Page);
     friend class Settings;
 public:
@@ -105,7 +105,7 @@ public:
     };
 
     explicit Page(PageClients&);
-    ~Page();
+    virtual ~Page();
 
     FrameHost& frameHost() { return *m_frameHost; }
 

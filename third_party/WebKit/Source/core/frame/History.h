@@ -41,7 +41,7 @@ class KURL;
 class ExecutionContext;
 class ExceptionState;
 
-class History : public ScriptWrappable, public RefCounted<History>, public DOMWindowProperty {
+class History FINAL : public ScriptWrappable, public RefCounted<History>, public DOMWindowProperty {
 public:
     static PassRefPtr<History> create(Frame* frame) { return adoptRef(new History(frame)); }
 

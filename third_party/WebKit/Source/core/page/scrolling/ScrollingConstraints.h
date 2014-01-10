@@ -73,7 +73,7 @@ protected:
     AnchorEdges m_anchorEdges;
 };
 
-class FixedPositionViewportConstraints : public ViewportConstraints {
+class FixedPositionViewportConstraints FINAL : public ViewportConstraints {
 public:
     FixedPositionViewportConstraints()
         : ViewportConstraints()
@@ -104,13 +104,13 @@ public:
     bool operator!=(const FixedPositionViewportConstraints& other) const { return !(*this == other); }
 
 private:
-    virtual ConstraintType constraintType() const OVERRIDE { return FixedPositionConstaint; };
+    virtual ConstraintType constraintType() const OVERRIDE { return FixedPositionConstaint; }
 
     FloatRect m_viewportRectAtLastLayout;
     FloatPoint m_layerPositionAtLastLayout;
 };
 
-class StickyPositionViewportConstraints : public ViewportConstraints {
+class StickyPositionViewportConstraints FINAL : public ViewportConstraints {
 public:
     StickyPositionViewportConstraints()
         : m_leftOffset(0)
@@ -172,7 +172,7 @@ public:
     bool operator!=(const StickyPositionViewportConstraints& other) const { return !(*this == other); }
 
 private:
-    virtual ConstraintType constraintType() const OVERRIDE { return StickyPositionConstraint; };
+    virtual ConstraintType constraintType() const OVERRIDE { return StickyPositionConstraint; }
 
     float m_leftOffset;
     float m_rightOffset;

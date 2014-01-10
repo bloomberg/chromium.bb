@@ -53,9 +53,9 @@ struct DateTimeChooserParameters;
 struct ViewportDescription;
 struct WindowFeatures;
 
-class Chrome : public HostWindow {
+class Chrome FINAL : public HostWindow {
 public:
-    ~Chrome();
+    virtual ~Chrome();
 
     static PassOwnPtr<Chrome> create(Page*, ChromeClient*);
 

@@ -39,12 +39,12 @@ class DOMWindow;
 class PagePopupClient;
 class PagePopupController;
 
-class DOMWindowPagePopup : public Supplement<DOMWindow> {
+class DOMWindowPagePopup FINAL : public Supplement<DOMWindow> {
 public:
     static PagePopupController* pagePopupController(DOMWindow*);
     static void install(DOMWindow*, PagePopupClient*);
     static void uninstall(DOMWindow*);
-    ~DOMWindowPagePopup();
+    virtual ~DOMWindowPagePopup();
 
 private:
     explicit DOMWindowPagePopup(PagePopupClient*);

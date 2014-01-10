@@ -37,13 +37,13 @@ class ContentSecurityPolicy;
 class DOMStringList;
 class Frame;
 
-class DOMSecurityPolicy : public RefCounted<DOMSecurityPolicy>, public ScriptWrappable, public ContextLifecycleObserver {
+class DOMSecurityPolicy FINAL : public RefCounted<DOMSecurityPolicy>, public ScriptWrappable, public ContextLifecycleObserver {
 public:
     static PassRefPtr<DOMSecurityPolicy> create(ExecutionContext* context)
     {
         return adoptRef(new DOMSecurityPolicy(context));
     }
-    ~DOMSecurityPolicy();
+    virtual ~DOMSecurityPolicy();
 
     bool isActive() const;
     PassRefPtr<DOMStringList> reportURIs() const;

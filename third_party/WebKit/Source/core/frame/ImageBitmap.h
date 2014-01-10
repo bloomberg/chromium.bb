@@ -18,7 +18,7 @@ class HTMLCanvasElement;
 class HTMLVideoElement;
 class ImageData;
 
-class ImageBitmap : public RefCounted<ImageBitmap>, public ScriptWrappable, public ImageLoaderClient {
+class ImageBitmap FINAL : public RefCounted<ImageBitmap>, public ScriptWrappable, public ImageLoaderClient {
 
 public:
     static PassRefPtr<ImageBitmap> create(HTMLImageElement*, const IntRect&);
@@ -49,8 +49,8 @@ private:
     ImageBitmap(Image*, const IntRect&);
 
     // ImageLoaderClient
-    virtual void notifyImageSourceChanged();
-    virtual bool requestsHighLiveResourceCachePriority() { return true; }
+    virtual void notifyImageSourceChanged() OVERRIDE;
+    virtual bool requestsHighLiveResourceCachePriority() OVERRIDE { return true; }
 
     // ImageBitmaps constructed from HTMLImageElements hold a reference to the HTMLImageElement until
     // the image source changes.

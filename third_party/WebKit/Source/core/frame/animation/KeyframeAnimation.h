@@ -39,15 +39,15 @@ class RenderStyle;
 
 // A KeyframeAnimation tracks the state of an explicit animation
 // for a single RenderObject.
-class KeyframeAnimation : public AnimationBase {
+class KeyframeAnimation FINAL : public AnimationBase {
 public:
     static PassRefPtr<KeyframeAnimation> create(const CSSAnimationData* animation, RenderObject& renderer, int index, CompositeAnimation* compositeAnimation, RenderStyle& unanimatedStyle)
     {
         return adoptRef(new KeyframeAnimation(animation, renderer, index, compositeAnimation, unanimatedStyle));
-    };
+    }
 
-    virtual void animate(CompositeAnimation*, RenderObject*, const RenderStyle* currentStyle, RenderStyle* targetStyle, RefPtr<RenderStyle>& animatedStyle);
-    virtual void getAnimatedStyle(RefPtr<RenderStyle>& animatedStyle);
+    virtual void animate(CompositeAnimation*, RenderObject*, const RenderStyle* currentStyle, RenderStyle* targetStyle, RefPtr<RenderStyle>& animatedStyle) OVERRIDE;
+    virtual void getAnimatedStyle(RefPtr<RenderStyle>& animatedStyle) OVERRIDE;
 
     const AtomicString& name() const { return m_keyframes.animationName(); }
     int index() const { return m_index; }
@@ -58,23 +58,23 @@ public:
     void setUnanimatedStyle(PassRefPtr<RenderStyle> style) { m_unanimatedStyle = style; }
     RenderStyle* unanimatedStyle() const { return m_unanimatedStyle.get(); }
 
-    virtual double timeToNextService();
+    virtual double timeToNextService() OVERRIDE;
 
 protected:
-    virtual void onAnimationStart(double elapsedTime);
-    virtual void onAnimationIteration(double elapsedTime);
-    virtual void onAnimationEnd(double elapsedTime);
-    virtual void startAnimation(double timeOffset);
-    virtual void pauseAnimation(double timeOffset);
-    virtual void endAnimation();
+    virtual void onAnimationStart(double elapsedTime) OVERRIDE;
+    virtual void onAnimationIteration(double elapsedTime) OVERRIDE;
+    virtual void onAnimationEnd(double elapsedTime) OVERRIDE;
+    virtual void startAnimation(double timeOffset) OVERRIDE;
+    virtual void pauseAnimation(double timeOffset) OVERRIDE;
+    virtual void endAnimation() OVERRIDE;
 
-    virtual void overrideAnimations();
-    virtual void resumeOverriddenAnimations();
+    virtual void overrideAnimations() OVERRIDE;
+    virtual void resumeOverriddenAnimations() OVERRIDE;
 
     bool shouldSendEventForListener(Document::ListenerType inListenerType) const;
     bool sendAnimationEvent(const AtomicString&, double elapsedTime);
 
-    virtual bool affectsProperty(CSSPropertyID) const;
+    virtual bool affectsProperty(CSSPropertyID) const OVERRIDE;
 
     void validateTransformFunctionList();
     void checkForMatchingFilterFunctionLists();

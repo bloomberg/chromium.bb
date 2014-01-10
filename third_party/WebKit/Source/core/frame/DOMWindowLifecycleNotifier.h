@@ -36,7 +36,7 @@ namespace WebCore {
 
 class DOMWindow;
 
-class DOMWindowLifecycleNotifier : public LifecycleNotifier<DOMWindow> {
+class DOMWindowLifecycleNotifier FINAL : public LifecycleNotifier<DOMWindow> {
 public:
     static PassOwnPtr<DOMWindowLifecycleNotifier> create(DOMWindow*);
 

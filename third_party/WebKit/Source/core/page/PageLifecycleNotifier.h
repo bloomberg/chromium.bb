@@ -36,7 +36,7 @@ namespace WebCore {
 class Page;
 class Frame;
 
-class PageLifecycleNotifier : public LifecycleNotifier<Page> {
+class PageLifecycleNotifier FINAL : public LifecycleNotifier<Page> {
 public:
     static PassOwnPtr<PageLifecycleNotifier> create(Page*);
 

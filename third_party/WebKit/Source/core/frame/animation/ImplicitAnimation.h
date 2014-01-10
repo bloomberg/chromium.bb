@@ -37,7 +37,7 @@ namespace WebCore {
 
 // An ImplicitAnimation tracks the state of a transition of a specific CSS property
 // for a single RenderObject.
-class ImplicitAnimation : public AnimationBase {
+class ImplicitAnimation FINAL : public AnimationBase {
 public:
     static PassRefPtr<ImplicitAnimation> create(const CSSAnimationData* animation, CSSPropertyID animatingProperty, RenderObject& renderer, CompositeAnimation* compositeAnimation, RenderStyle* fromStyle)
     {
@@ -47,19 +47,19 @@ public:
     CSSPropertyID transitionProperty() const { return m_transitionProperty; }
     CSSPropertyID animatingProperty() const { return m_animatingProperty; }
 
-    virtual void onAnimationEnd(double elapsedTime);
-    virtual void startAnimation(double timeOffset);
-    virtual void pauseAnimation(double /*timeOffset*/);
-    virtual void endAnimation();
+    virtual void onAnimationEnd(double elapsedTime) OVERRIDE;
+    virtual void startAnimation(double timeOffset) OVERRIDE;
+    virtual void pauseAnimation(double /*timeOffset*/) OVERRIDE;
+    virtual void endAnimation() OVERRIDE;
 
-    virtual void animate(CompositeAnimation*, RenderObject*, const RenderStyle* currentStyle, RenderStyle* targetStyle, RefPtr<RenderStyle>& animatedStyle);
-    virtual void getAnimatedStyle(RefPtr<RenderStyle>& animatedStyle);
-    virtual void reset(RenderStyle* to);
+    virtual void animate(CompositeAnimation*, RenderObject*, const RenderStyle* currentStyle, RenderStyle* targetStyle, RefPtr<RenderStyle>& animatedStyle) OVERRIDE;
+    virtual void getAnimatedStyle(RefPtr<RenderStyle>& animatedStyle) OVERRIDE;
+    void reset(RenderStyle* to);
 
     void setOverridden(bool);
-    virtual bool overridden() const { return m_overridden; }
+    virtual bool overridden() const OVERRIDE { return m_overridden; }
 
-    virtual bool affectsProperty(CSSPropertyID) const;
+    virtual bool affectsProperty(CSSPropertyID) const OVERRIDE;
 
     bool hasStyle() const { return m_fromStyle && m_toStyle; }
 
@@ -67,7 +67,7 @@ public:
 
     void blendPropertyValueInStyle(CSSPropertyID, RenderStyle*);
 
-    virtual double timeToNextService();
+    virtual double timeToNextService() OVERRIDE;
 
     bool active() const { return m_active; }
     void setActive(bool b) { m_active = b; }

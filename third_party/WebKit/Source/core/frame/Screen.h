@@ -39,7 +39,7 @@ namespace WebCore {
 
     class Frame;
 
-    class Screen : public ScriptWrappable, public RefCounted<Screen>, public DOMWindowProperty {
+    class Screen FINAL : public ScriptWrappable, public RefCounted<Screen>, public DOMWindowProperty {
     public:
         static PassRefPtr<Screen> create(Frame *frame) { return adoptRef(new Screen(frame)); }
 

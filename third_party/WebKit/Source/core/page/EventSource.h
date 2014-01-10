@@ -50,7 +50,7 @@ class ResourceResponse;
 class TextResourceDecoder;
 class ThreadableLoader;
 
-class EventSource : public RefCounted<EventSource>, public ScriptWrappable, public EventTargetWithInlineData, private ThreadableLoaderClient, public ActiveDOMObject {
+class EventSource FINAL : public RefCounted<EventSource>, public ScriptWrappable, public EventTargetWithInlineData, private ThreadableLoaderClient, public ActiveDOMObject {
     WTF_MAKE_FAST_ALLOCATED;
     REFCOUNTED_EVENT_TARGET(EventSource);
 public:
@@ -89,12 +89,12 @@ public:
 private:
     EventSource(ExecutionContext*, const KURL&, const Dictionary&);
 
-    virtual void didReceiveResponse(unsigned long, const ResourceResponse&);
-    virtual void didReceiveData(const char*, int);
-    virtual void didFinishLoading(unsigned long, double);
-    virtual void didFail(const ResourceError&);
-    virtual void didFailAccessControlCheck(const ResourceError&);
-    virtual void didFailRedirectCheck();
+    virtual void didReceiveResponse(unsigned long, const ResourceResponse&) OVERRIDE;
+    virtual void didReceiveData(const char*, int) OVERRIDE;
+    virtual void didFinishLoading(unsigned long, double) OVERRIDE;
+    virtual void didFail(const ResourceError&) OVERRIDE;
+    virtual void didFailAccessControlCheck(const ResourceError&) OVERRIDE;
+    virtual void didFailRedirectCheck() OVERRIDE;
 
     void scheduleInitialConnect();
     void connect();

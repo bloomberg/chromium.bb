@@ -47,7 +47,7 @@ class Range;
 class TreeScope;
 class VisibleSelection;
 
-class DOMSelection : public RefCounted<DOMSelection>, public ScriptWrappable, public DOMWindowProperty {
+class DOMSelection FINAL : public RefCounted<DOMSelection>, public ScriptWrappable, public DOMWindowProperty {
 public:
     static PassRefPtr<DOMSelection> create(const TreeScope* treeScope) { return adoptRef(new DOMSelection(treeScope)); }
 

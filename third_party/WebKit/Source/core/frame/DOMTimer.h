@@ -38,7 +38,7 @@ namespace WebCore {
 
 class ExecutionContext;
 
-class DOMTimer : public SuspendableTimer {
+class DOMTimer FINAL : public SuspendableTimer {
 public:
     // Creates a new timer owned by the ExecutionContext, starts it and returns its ID.
     static int install(ExecutionContext*, PassOwnPtr<ScheduledAction>, int timeout, bool singleShot);
@@ -66,10 +66,10 @@ private:
     }
 
     DOMTimer(ExecutionContext*, PassOwnPtr<ScheduledAction>, int interval, bool singleShot, int timeoutID);
-    virtual void fired();
+    virtual void fired() OVERRIDE;
 
     // Retuns timer fire time rounded to the next multiple of timer alignment interval.
-    virtual double alignedFireTime(double) const;
+    virtual double alignedFireTime(double) const OVERRIDE;
 
     int m_timeoutID;
     int m_nestingLevel;

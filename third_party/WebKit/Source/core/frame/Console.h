@@ -44,7 +44,7 @@ class MemoryInfo;
 class Page;
 class ScriptArguments;
 
-class Console : public RefCounted<Console>, public ConsoleBase, public ScriptWrappable, public DOMWindowProperty {
+class Console FINAL : public RefCounted<Console>, public ConsoleBase, public ScriptWrappable, public DOMWindowProperty {
 public:
     using RefCounted<Console>::ref;
     using RefCounted<Console>::deref;
@@ -55,14 +55,14 @@ public:
     PassRefPtr<MemoryInfo> memory() const;
 
 protected:
-    virtual ExecutionContext* context();
+    virtual ExecutionContext* context() OVERRIDE;
     virtual void reportMessageToClient(MessageLevel, const String& message, PassRefPtr<ScriptCallStack>) OVERRIDE;
 
 private:
     explicit Console(Frame*);
 
-    virtual void refConsole() { ref(); }
-    virtual void derefConsole() { deref(); }
+    virtual void refConsole() OVERRIDE { ref(); }
+    virtual void derefConsole() OVERRIDE { deref(); }
 };
 
 } // namespace WebCore

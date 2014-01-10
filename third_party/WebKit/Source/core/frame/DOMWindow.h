@@ -89,7 +89,7 @@ enum PageshowEventPersistence {
 
     enum SetLocationLocking { LockHistoryBasedOnGestureState, LockHistoryAndBackForwardList };
 
-    class DOMWindow : public RefCounted<DOMWindow>, public ScriptWrappable, public EventTargetWithInlineData, public FrameDestructionObserver, public Supplementable<DOMWindow>, public LifecycleContext<DOMWindow> {
+    class DOMWindow FINAL : public RefCounted<DOMWindow>, public ScriptWrappable, public EventTargetWithInlineData, public FrameDestructionObserver, public Supplementable<DOMWindow>, public LifecycleContext<DOMWindow> {
         REFCOUNTED_EVENT_TARGET(DOMWindow);
     public:
         static PassRefPtr<Document> createDocument(const String& mimeType, const DocumentInit&, bool forceXHTML);
@@ -101,7 +101,7 @@ enum PageshowEventPersistence {
         virtual const AtomicString& interfaceName() const OVERRIDE;
         virtual ExecutionContext* executionContext() const OVERRIDE;
 
-        virtual DOMWindow* toDOMWindow();
+        virtual DOMWindow* toDOMWindow() OVERRIDE;
 
         void registerProperty(DOMWindowProperty*);
         void unregisterProperty(DOMWindowProperty*);
