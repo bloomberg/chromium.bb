@@ -312,7 +312,8 @@ class FileIoInstance : public pp::Instance {
     }
     pp::FileRef ref(file_system_, dir_name.c_str());
 
-    int32_t result = ref.MakeDirectory(pp::BlockUntilComplete());
+    int32_t result = ref.MakeDirectory(
+        PP_MAKEDIRECTORYFLAG_NONE, pp::BlockUntilComplete());
     if (result != PP_OK) {
       ShowErrorMessage("Make directory failed", result);
       return;

@@ -87,8 +87,21 @@ int32_t MakeDirectory(PP_Resource directory_ref,
   EnterFileRef enter(directory_ref, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->MakeDirectory(make_ancestors,
-                                                       enter.callback()));
+  int32_t flag = make_ancestors ? PP_MAKEDIRECTORYFLAG_WITH_ANCESTORS
+                                : PP_MAKEDIRECTORYFLAG_NONE;
+  return enter.SetResult(enter.object()->MakeDirectory(
+      flag, enter.callback()));
+}
+
+int32_t MakeDirectory_1_2(PP_Resource directory_ref,
+                          int32_t make_directory_flags,
+                          PP_CompletionCallback callback) {
+  VLOG(4) << "PPB_FileRef::MakeDirectory()";
+  EnterFileRef enter(directory_ref, callback, true);
+  if (enter.failed())
+    return enter.retval();
+  return enter.SetResult(enter.object()->MakeDirectory(
+      make_directory_flags, enter.callback()));
 }
 
 int32_t Touch(PP_Resource file_ref,
@@ -180,6 +193,21 @@ const PPB_FileRef_1_1 g_ppb_file_ref_thunk_1_1 = {
   &ReadDirectoryEntries
 };
 
+const PPB_FileRef_1_2 g_ppb_file_ref_thunk_1_2 = {
+  &Create,
+  &IsFileRef,
+  &GetFileSystemType,
+  &GetName,
+  &GetPath,
+  &GetParent,
+  &MakeDirectory_1_2,
+  &Touch,
+  &Delete,
+  &Rename,
+  &Query,
+  &ReadDirectoryEntries
+};
+
 const PPB_FileRefPrivate g_ppb_file_ref_private_thunk = {
   &GetAbsolutePath
 };
@@ -192,6 +220,10 @@ const PPB_FileRef_1_0* GetPPB_FileRef_1_0_Thunk() {
 
 const PPB_FileRef_1_1* GetPPB_FileRef_1_1_Thunk() {
   return &g_ppb_file_ref_thunk_1_1;
+}
+
+const PPB_FileRef_1_2* GetPPB_FileRef_1_2_Thunk() {
+  return &g_ppb_file_ref_thunk_1_2;
 }
 
 const PPB_FileRefPrivate_0_1* GetPPB_FileRefPrivate_0_1_Thunk() {

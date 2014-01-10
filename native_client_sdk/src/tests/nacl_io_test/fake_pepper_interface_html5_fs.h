@@ -136,7 +136,7 @@ class FakeFileRefInterface : public nacl_io::FileRefInterface {
   virtual PP_Resource Create(PP_Resource file_system, const char* path);
   virtual PP_Var GetName(PP_Resource file_ref);
   virtual int32_t MakeDirectory(PP_Resource directory_ref,
-                                PP_Bool make_ancestors,
+                                int32_t make_directory_flags,
                                 PP_CompletionCallback callback);
   virtual int32_t Delete(PP_Resource file_ref, PP_CompletionCallback callback);
   virtual int32_t Query(PP_Resource file_ref,

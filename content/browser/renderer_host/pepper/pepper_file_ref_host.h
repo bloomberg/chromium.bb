@@ -29,7 +29,7 @@ class PepperFileRefBackend {
   virtual ~PepperFileRefBackend();
 
   virtual int32_t MakeDirectory(ppapi::host::ReplyMessageContext context,
-                                bool make_ancestors) = 0;
+                                int32_t make_directory_flags) = 0;
   virtual int32_t Touch(ppapi::host::ReplyMessageContext context,
                         PP_Time last_accessed_time,
                         PP_Time last_modified_time) = 0;
@@ -89,7 +89,7 @@ class CONTENT_EXPORT PepperFileRefHost
 
  private:
   int32_t OnMakeDirectory(ppapi::host::HostMessageContext* context,
-                          bool make_ancestors);
+                          int32_t make_directory_flags);
   int32_t OnTouch(ppapi::host::HostMessageContext* context,
                   PP_Time last_access_time,
                   PP_Time last_modified_time);

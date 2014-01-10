@@ -298,41 +298,59 @@ std::string TestFileRef::TestMakeDirectory() {
   CHECK_CALLBACK_BEHAVIOR(callback);
   ASSERT_EQ(PP_OK, callback.result());
 
-  // MakeDirectory.
-  pp::FileRef dir_ref(file_system, "/test_dir_make_directory");
-  callback.WaitForResult(dir_ref.MakeDirectory(callback.GetCallback()));
+  // Make a directory.
+  pp::FileRef dir_ref(file_system, "/dir_make_dir");
+  callback.WaitForResult(
+      dir_ref.MakeDirectory(PP_MAKEDIRECTORYFLAG_NONE, callback.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(callback);
   ASSERT_EQ(PP_OK, callback.result());
 
-  // MakeDirectory aborted.
+  // Make a directory on the existing path without exclusive flag.
+  callback.WaitForResult(
+      dir_ref.MakeDirectory(PP_MAKEDIRECTORYFLAG_NONE, callback.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(callback);
+  ASSERT_EQ(PP_OK, callback.result());
+
+  // Making a directory should be aborted.
   int32_t rv = PP_ERROR_FAILED;
   {
-    rv = pp::FileRef(file_system, "/test_dir_make_abort")
-        .MakeDirectory(callback.GetCallback());
+    rv = pp::FileRef(file_system, "/dir_make_dir_abort")
+        .MakeDirectory(PP_MAKEDIRECTORYFLAG_NONE, callback.GetCallback());
   }
   callback.WaitForAbortResult(rv);
   CHECK_CALLBACK_BEHAVIOR(callback);
 
-  // MakeDirectoryIncludingAncestors.
-  dir_ref = pp::FileRef(file_system, "/dir_make_dir_1/dir_make_dir_2");
+  // Make nested directories.
+  dir_ref = pp::FileRef(file_system, "/dir_make_nested_dir_1/dir");
   callback.WaitForResult(
-      dir_ref.MakeDirectoryIncludingAncestors(callback.GetCallback()));
+      dir_ref.MakeDirectory(PP_MAKEDIRECTORYFLAG_WITH_ANCESTORS,
+                            callback.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(callback);
   ASSERT_EQ(PP_OK, callback.result());
 
-  // MakeDirectoryIncludingAncestors aborted.
-  {
-    rv = pp::FileRef(file_system, "/dir_make_abort_1/dir_make_abort_2")
-        .MakeDirectoryIncludingAncestors(callback.GetCallback());
-  }
-  callback.WaitForAbortResult(rv);
+  dir_ref = pp::FileRef(file_system, "/dir_make_nested_dir_2/dir");
+  callback.WaitForResult(
+      dir_ref.MakeDirectory(PP_MAKEDIRECTORYFLAG_NONE, callback.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(callback);
+  ASSERT_EQ(PP_ERROR_FILENOTFOUND, callback.result());
 
-  // MakeDirectory with nested path should fail.
-  dir_ref = pp::FileRef(file_system, "/dir_make_dir_3/dir_make_dir_4");
-  callback.WaitForResult(dir_ref.MakeDirectory(callback.GetCallback()));
+  // Ensure there is no directory on the path to test exclusive cases.
+  dir_ref = pp::FileRef(file_system, "/dir_make_dir_exclusive");
+  rv = DeleteDirectoryRecursively(&dir_ref);
+  ASSERT_TRUE(rv == PP_OK || rv == PP_ERROR_FILENOTFOUND);
+
+  // Make a directory exclusively.
+  callback.WaitForResult(
+      dir_ref.MakeDirectory(PP_MAKEDIRECTORYFLAG_EXCLUSIVE,
+                            callback.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(callback);
-  ASSERT_NE(PP_OK, callback.result());
+  ASSERT_EQ(PP_OK, callback.result());
+
+  callback.WaitForResult(
+      dir_ref.MakeDirectory(PP_MAKEDIRECTORYFLAG_EXCLUSIVE,
+                            callback.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(callback);
+  ASSERT_EQ(PP_ERROR_FILEEXISTS, callback.result());
 
   PASS();
 }
@@ -432,7 +450,8 @@ std::string TestFileRef::TestDeleteFileAndDirectory() {
   ASSERT_EQ(PP_OK, callback.result());
 
   pp::FileRef dir_ref(file_system, "/dir_delete");
-  callback.WaitForResult(dir_ref.MakeDirectory(callback.GetCallback()));
+  callback.WaitForResult(dir_ref.MakeDirectory(
+      PP_MAKEDIRECTORYFLAG_NONE, callback.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(callback);
   ASSERT_EQ(PP_OK, callback.result());
 
@@ -442,7 +461,8 @@ std::string TestFileRef::TestDeleteFileAndDirectory() {
 
   pp::FileRef nested_dir_ref(file_system, "/dir_delete_1/dir_delete_2");
   callback.WaitForResult(
-      nested_dir_ref.MakeDirectoryIncludingAncestors(callback.GetCallback()));
+      nested_dir_ref.MakeDirectory(PP_MAKEDIRECTORYFLAG_WITH_ANCESTORS,
+                                   callback.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(callback);
   ASSERT_EQ(PP_OK, callback.result());
 
@@ -496,7 +516,8 @@ std::string TestFileRef::TestRenameFileAndDirectory() {
   ASSERT_EQ(PP_OK, callback.result());
 
   pp::FileRef dir_ref(file_system, "/dir_rename");
-  callback.WaitForResult(dir_ref.MakeDirectory(callback.GetCallback()));
+  callback.WaitForResult(dir_ref.MakeDirectory(
+      PP_MAKEDIRECTORYFLAG_NONE, callback.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(callback);
   ASSERT_EQ(PP_OK, callback.result());
 
@@ -508,7 +529,8 @@ std::string TestFileRef::TestRenameFileAndDirectory() {
 
   pp::FileRef nested_dir_ref(file_system, "/dir_rename_1/dir_rename_2");
   callback.WaitForResult(
-      nested_dir_ref.MakeDirectoryIncludingAncestors(callback.GetCallback()));
+      nested_dir_ref.MakeDirectory(PP_MAKEDIRECTORYFLAG_WITH_ANCESTORS,
+                                   callback.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(callback);
   ASSERT_EQ(PP_OK, callback.result());
 
@@ -615,7 +637,8 @@ std::string TestFileRef::TestFileNameEscaping() {
   std::string test_dir_path = "/dir_for_escaping_test";
   // Create a directory in which to test.
   pp::FileRef test_dir_ref(file_system, test_dir_path.c_str());
-  callback.WaitForResult(test_dir_ref.MakeDirectory(callback.GetCallback()));
+  callback.WaitForResult(test_dir_ref.MakeDirectory(
+      PP_MAKEDIRECTORYFLAG_NONE, callback.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(callback);
   ASSERT_EQ(PP_OK, callback.result());
 
@@ -663,7 +686,8 @@ std::string TestFileRef::TestReadDirectoryEntries() {
   int32_t rv = DeleteDirectoryRecursively(&test_dir);
   ASSERT_TRUE(rv == PP_OK || rv == PP_ERROR_FILENOTFOUND);
 
-  callback.WaitForResult(test_dir.MakeDirectory(callback.GetCallback()));
+  callback.WaitForResult(test_dir.MakeDirectory(
+      PP_MAKEDIRECTORYFLAG_NONE, callback.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(callback);
   ASSERT_EQ(PP_OK, callback.result());
 
@@ -690,7 +714,8 @@ std::string TestFileRef::TestReadDirectoryEntries() {
     buffer << test_dir_name << '/' << dir_prefix << i;
     pp::FileRef file_ref(file_system, buffer.str().c_str());
 
-    callback.WaitForResult(file_ref.MakeDirectory(callback.GetCallback()));
+    callback.WaitForResult(file_ref.MakeDirectory(
+        PP_MAKEDIRECTORYFLAG_NONE, callback.GetCallback()));
     CHECK_CALLBACK_BEHAVIOR(callback);
     ASSERT_EQ(PP_OK, callback.result());
 

@@ -548,7 +548,8 @@ Then the ``pp::FileRef::MakeDirectory`` function is called.
 
 .. naclcode::
 
-  int32_t result = ref.MakeDirectory(pp::BlockUntilComplete());
+  int32_t result = ref.MakeDirectory(
+      PP_MAKEDIRECTORYFLAG_NONE, pp::BlockUntilComplete());
   if (result != PP_OK) {
     ShowErrorMessage("Make directory failed", result);
     return;

@@ -145,6 +145,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileIO_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileIO_1_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileRef_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileRef_1_1;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileRef_1_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileSystem_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Graphics2D_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Graphics2D_1_1;
@@ -530,6 +531,70 @@ static int32_t Pnacl_M28_PPB_FileRef_ReadDirectoryEntries(PP_Resource file_ref, 
 }
 
 /* End wrapper methods for PPB_FileRef_1_1 */
+
+/* Begin wrapper methods for PPB_FileRef_1_2 */
+
+static PP_Resource Pnacl_M34_PPB_FileRef_Create(PP_Resource file_system, const char* path) {
+  const struct PPB_FileRef_1_2 *iface = Pnacl_WrapperInfo_PPB_FileRef_1_2.real_iface;
+  return iface->Create(file_system, path);
+}
+
+static PP_Bool Pnacl_M34_PPB_FileRef_IsFileRef(PP_Resource resource) {
+  const struct PPB_FileRef_1_2 *iface = Pnacl_WrapperInfo_PPB_FileRef_1_2.real_iface;
+  return iface->IsFileRef(resource);
+}
+
+static PP_FileSystemType Pnacl_M34_PPB_FileRef_GetFileSystemType(PP_Resource file_ref) {
+  const struct PPB_FileRef_1_2 *iface = Pnacl_WrapperInfo_PPB_FileRef_1_2.real_iface;
+  return iface->GetFileSystemType(file_ref);
+}
+
+static void Pnacl_M34_PPB_FileRef_GetName(struct PP_Var* _struct_result, PP_Resource file_ref) {
+  const struct PPB_FileRef_1_2 *iface = Pnacl_WrapperInfo_PPB_FileRef_1_2.real_iface;
+  *_struct_result = iface->GetName(file_ref);
+}
+
+static void Pnacl_M34_PPB_FileRef_GetPath(struct PP_Var* _struct_result, PP_Resource file_ref) {
+  const struct PPB_FileRef_1_2 *iface = Pnacl_WrapperInfo_PPB_FileRef_1_2.real_iface;
+  *_struct_result = iface->GetPath(file_ref);
+}
+
+static PP_Resource Pnacl_M34_PPB_FileRef_GetParent(PP_Resource file_ref) {
+  const struct PPB_FileRef_1_2 *iface = Pnacl_WrapperInfo_PPB_FileRef_1_2.real_iface;
+  return iface->GetParent(file_ref);
+}
+
+static int32_t Pnacl_M34_PPB_FileRef_MakeDirectory(PP_Resource directory_ref, int32_t make_directory_flags, struct PP_CompletionCallback* callback) {
+  const struct PPB_FileRef_1_2 *iface = Pnacl_WrapperInfo_PPB_FileRef_1_2.real_iface;
+  return iface->MakeDirectory(directory_ref, make_directory_flags, *callback);
+}
+
+static int32_t Pnacl_M34_PPB_FileRef_Touch(PP_Resource file_ref, PP_Time last_access_time, PP_Time last_modified_time, struct PP_CompletionCallback* callback) {
+  const struct PPB_FileRef_1_2 *iface = Pnacl_WrapperInfo_PPB_FileRef_1_2.real_iface;
+  return iface->Touch(file_ref, last_access_time, last_modified_time, *callback);
+}
+
+static int32_t Pnacl_M34_PPB_FileRef_Delete(PP_Resource file_ref, struct PP_CompletionCallback* callback) {
+  const struct PPB_FileRef_1_2 *iface = Pnacl_WrapperInfo_PPB_FileRef_1_2.real_iface;
+  return iface->Delete(file_ref, *callback);
+}
+
+static int32_t Pnacl_M34_PPB_FileRef_Rename(PP_Resource file_ref, PP_Resource new_file_ref, struct PP_CompletionCallback* callback) {
+  const struct PPB_FileRef_1_2 *iface = Pnacl_WrapperInfo_PPB_FileRef_1_2.real_iface;
+  return iface->Rename(file_ref, new_file_ref, *callback);
+}
+
+static int32_t Pnacl_M34_PPB_FileRef_Query(PP_Resource file_ref, struct PP_FileInfo* info, struct PP_CompletionCallback* callback) {
+  const struct PPB_FileRef_1_2 *iface = Pnacl_WrapperInfo_PPB_FileRef_1_2.real_iface;
+  return iface->Query(file_ref, info, *callback);
+}
+
+static int32_t Pnacl_M34_PPB_FileRef_ReadDirectoryEntries(PP_Resource file_ref, struct PP_ArrayOutput* output, struct PP_CompletionCallback* callback) {
+  const struct PPB_FileRef_1_2 *iface = Pnacl_WrapperInfo_PPB_FileRef_1_2.real_iface;
+  return iface->ReadDirectoryEntries(file_ref, *output, *callback);
+}
+
+/* End wrapper methods for PPB_FileRef_1_2 */
 
 /* Begin wrapper methods for PPB_FileSystem_1_0 */
 
@@ -4143,6 +4208,21 @@ static struct PPB_FileRef_1_1 Pnacl_Wrappers_PPB_FileRef_1_1 = {
     .ReadDirectoryEntries = (int32_t (*)(PP_Resource file_ref, struct PP_ArrayOutput output, struct PP_CompletionCallback callback))&Pnacl_M28_PPB_FileRef_ReadDirectoryEntries
 };
 
+static struct PPB_FileRef_1_2 Pnacl_Wrappers_PPB_FileRef_1_2 = {
+    .Create = (PP_Resource (*)(PP_Resource file_system, const char* path))&Pnacl_M34_PPB_FileRef_Create,
+    .IsFileRef = (PP_Bool (*)(PP_Resource resource))&Pnacl_M34_PPB_FileRef_IsFileRef,
+    .GetFileSystemType = (PP_FileSystemType (*)(PP_Resource file_ref))&Pnacl_M34_PPB_FileRef_GetFileSystemType,
+    .GetName = (struct PP_Var (*)(PP_Resource file_ref))&Pnacl_M34_PPB_FileRef_GetName,
+    .GetPath = (struct PP_Var (*)(PP_Resource file_ref))&Pnacl_M34_PPB_FileRef_GetPath,
+    .GetParent = (PP_Resource (*)(PP_Resource file_ref))&Pnacl_M34_PPB_FileRef_GetParent,
+    .MakeDirectory = (int32_t (*)(PP_Resource directory_ref, int32_t make_directory_flags, struct PP_CompletionCallback callback))&Pnacl_M34_PPB_FileRef_MakeDirectory,
+    .Touch = (int32_t (*)(PP_Resource file_ref, PP_Time last_access_time, PP_Time last_modified_time, struct PP_CompletionCallback callback))&Pnacl_M34_PPB_FileRef_Touch,
+    .Delete = (int32_t (*)(PP_Resource file_ref, struct PP_CompletionCallback callback))&Pnacl_M34_PPB_FileRef_Delete,
+    .Rename = (int32_t (*)(PP_Resource file_ref, PP_Resource new_file_ref, struct PP_CompletionCallback callback))&Pnacl_M34_PPB_FileRef_Rename,
+    .Query = (int32_t (*)(PP_Resource file_ref, struct PP_FileInfo* info, struct PP_CompletionCallback callback))&Pnacl_M34_PPB_FileRef_Query,
+    .ReadDirectoryEntries = (int32_t (*)(PP_Resource file_ref, struct PP_ArrayOutput output, struct PP_CompletionCallback callback))&Pnacl_M34_PPB_FileRef_ReadDirectoryEntries
+};
+
 static struct PPB_FileSystem_1_0 Pnacl_Wrappers_PPB_FileSystem_1_0 = {
     .Create = (PP_Resource (*)(PP_Instance instance, PP_FileSystemType type))&Pnacl_M14_PPB_FileSystem_Create,
     .IsFileSystem = (PP_Bool (*)(PP_Resource resource))&Pnacl_M14_PPB_FileSystem_IsFileSystem,
@@ -5175,6 +5255,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileRef_1_1 = {
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileRef_1_2 = {
+  .iface_macro = PPB_FILEREF_INTERFACE_1_2,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_FileRef_1_2,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileSystem_1_0 = {
   .iface_macro = PPB_FILESYSTEM_INTERFACE_1_0,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_FileSystem_1_0,
@@ -5752,6 +5838,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_FileIO_1_1,
   &Pnacl_WrapperInfo_PPB_FileRef_1_0,
   &Pnacl_WrapperInfo_PPB_FileRef_1_1,
+  &Pnacl_WrapperInfo_PPB_FileRef_1_2,
   &Pnacl_WrapperInfo_PPB_FileSystem_1_0,
   &Pnacl_WrapperInfo_PPB_Graphics2D_1_0,
   &Pnacl_WrapperInfo_PPB_Graphics2D_1_1,
