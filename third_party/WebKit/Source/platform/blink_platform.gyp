@@ -130,9 +130,6 @@
       'blink_prerequisites',
       '<(DEPTH)/gpu/gpu.gyp:gles2_c_lib',
       '<(DEPTH)/skia/skia.gyp:skia',
-      # FIXME: This dependency exists for CSS Custom Filters, via the file ANGLEPlatformBridge
-      # The code touching ANGLE should really be moved into the ANGLE directory.
-      '<(angle_path)/src/build_angle.gyp:translator',
       '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
       '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
       '<(DEPTH)/third_party/libpng/libpng.gyp:libpng',
@@ -153,9 +150,6 @@
       '<(DEPTH)/third_party/ots/ots.gyp:ots',
       '<(DEPTH)/third_party/qcms/qcms.gyp:qcms',
       '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
-      # FIXME: This dependency exists for CSS Custom Filters, via the file ANGLEPlatformBridge
-      # The code touching ANGLE should really be moved into the ANGLE directory.
-      '<(angle_path)/src/build_angle.gyp:translator',
       '<(DEPTH)/url/url.gyp:url_lib',
       '<(DEPTH)/third_party/iccjpeg/iccjpeg.gyp:iccjpeg',
       '<(libjpeg_gyp_path):libjpeg',

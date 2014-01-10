@@ -78,7 +78,6 @@
 #include "core/frame/FrameView.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/style/KeyframeList.h"
-#include "core/rendering/style/StyleCustomFilterProgramCache.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGFontFaceElement.h"

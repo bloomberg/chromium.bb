@@ -47,11 +47,9 @@
 #include "core/css/CSSInheritedValue.h"
 #include "core/css/CSSInitialValue.h"
 #include "core/css/CSSLineBoxContainValue.h"
-#include "core/css/CSSMixFunctionValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSReflectValue.h"
 #include "core/css/CSSSVGDocumentValue.h"
-#include "core/css/CSSShaderValue.h"
 #include "core/css/CSSShadowValue.h"
 #include "core/css/CSSTimingFunctionValue.h"
 #include "core/css/CSSTransformValue.h"
@@ -198,10 +196,6 @@ bool CSSValue::equals(const CSSValue& other) const
             return compareCSSValues<CSSFilterValue>(*this, other);
         case CSSArrayFunctionValueClass:
             return compareCSSValues<CSSArrayFunctionValue>(*this, other);
-        case CSSMixFunctionValueClass:
-            return compareCSSValues<CSSMixFunctionValue>(*this, other);
-        case CSSShaderClass:
-            return compareCSSValues<CSSShaderValue>(*this, other);
         case VariableClass:
             return compareCSSValues<CSSVariableValue>(*this, other);
         case SVGColorClass:
@@ -288,10 +282,6 @@ String CSSValue::cssText() const
         return toCSSFilterValue(this)->customCSSText();
     case CSSArrayFunctionValueClass:
         return toCSSArrayFunctionValue(this)->customCSSText();
-    case CSSMixFunctionValueClass:
-        return toCSSMixFunctionValue(this)->customCSSText();
-    case CSSShaderClass:
-        return toCSSShaderValue(this)->customCSSText();
     case VariableClass:
         return toCSSVariableValue(this)->value();
     case SVGColorClass:
@@ -418,12 +408,6 @@ void CSSValue::destroy()
     case CSSArrayFunctionValueClass:
         delete toCSSArrayFunctionValue(this);
         return;
-    case CSSMixFunctionValueClass:
-        delete toCSSMixFunctionValue(this);
-        return;
-    case CSSShaderClass:
-        delete toCSSShaderValue(this);
-        return;
     case VariableClass:
         delete toCSSVariableValue(this);
         return;
@@ -454,8 +438,6 @@ PassRefPtr<CSSValue> CSSValue::cloneForCSSOM() const
         return toCSSFilterValue(this)->cloneForCSSOM();
     case CSSArrayFunctionValueClass:
         return toCSSArrayFunctionValue(this)->cloneForCSSOM();
-    case CSSMixFunctionValueClass:
-        return toCSSMixFunctionValue(this)->cloneForCSSOM();
     case CSSTransformClass:
         return toCSSTransformValue(this)->cloneForCSSOM();
     case ImageSetClass:

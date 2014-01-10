@@ -27,29 +27,22 @@
 #include "core/css/CSSCursorImageValue.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSSVGDocumentValue.h"
-#include "core/css/CSSShaderValue.h"
 #include "core/css/resolver/ElementStyleResources.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/rendering/style/ContentData.h"
 #include "core/rendering/style/CursorList.h"
 #include "core/rendering/style/FillLayer.h"
 #include "core/rendering/style/RenderStyle.h"
-#include "core/rendering/style/StyleCustomFilterProgram.h"
-#include "core/rendering/style/StyleCustomFilterProgramCache.h"
 #include "core/rendering/style/StyleFetchedImage.h"
 #include "core/rendering/style/StyleFetchedImageSet.h"
-#include "core/rendering/style/StyleFetchedShader.h"
 #include "core/rendering/style/StyleGeneratedImage.h"
 #include "core/rendering/style/StylePendingImage.h"
-#include "core/rendering/style/StylePendingShader.h"
 #include "core/rendering/svg/ReferenceFilterBuilder.h"
-#include "platform/graphics/filters/custom/CustomFilterOperation.h"
 
 namespace WebCore {
 
 StyleResourceLoader::StyleResourceLoader(ResourceFetcher* fetcher)
-    : m_customFilterProgramCache(StyleCustomFilterProgramCache::create())
-    , m_fetcher(fetcher)
+    : m_fetcher(fetcher)
 {
 }
 
@@ -202,48 +195,10 @@ void StyleResourceLoader::loadPendingImages(RenderStyle* style, const ElementSty
     }
 }
 
-void StyleResourceLoader::loadPendingShaders(RenderStyle* style, const ElementStyleResources& elementStyleResources)
-{
-    if (!style->hasFilter() || !elementStyleResources.hasNewCustomFilterProgram())
-        return;
-
-    Vector<RefPtr<FilterOperation> >& filterOperations = style->mutableFilter().operations();
-    for (unsigned i = 0; i < filterOperations.size(); ++i) {
-        RefPtr<FilterOperation> filterOperation = filterOperations.at(i);
-        if (filterOperation->type() == FilterOperation::CUSTOM) {
-            CustomFilterOperation* customFilter = toCustomFilterOperation(filterOperation.get());
-            ASSERT(customFilter->program());
-            StyleCustomFilterProgram* program = static_cast<StyleCustomFilterProgram*>(customFilter->program());
-            // Note that the StylePendingShaders could be already resolved to StyleFetchedShaders. That's because the rule was matched before.
-            // However, the StyleCustomFilterProgram that was initially created could have been removed from the cache in the meanwhile,
-            // meaning that we get a new StyleCustomFilterProgram here that is not yet in the cache, but already has loaded StyleShaders.
-            if (!program->hasPendingShaders() && program->inCache())
-                continue;
-            RefPtr<StyleCustomFilterProgram> styleProgram = m_customFilterProgramCache->lookup(program);
-            if (styleProgram.get()) {
-                customFilter->setProgram(styleProgram.release());
-            } else {
-                if (program->vertexShader() && program->vertexShader()->isPendingShader()) {
-                    CSSShaderValue* shaderValue = static_cast<StylePendingShader*>(program->vertexShader())->cssShaderValue();
-                    program->setVertexShader(shaderValue->resource(m_fetcher));
-                }
-                if (program->fragmentShader() && program->fragmentShader()->isPendingShader()) {
-                    CSSShaderValue* shaderValue = static_cast<StylePendingShader*>(program->fragmentShader())->cssShaderValue();
-                    program->setFragmentShader(shaderValue->resource(m_fetcher));
-                }
-                m_customFilterProgramCache->add(program);
-            }
-        }
-    }
-}
-
 void StyleResourceLoader::loadPendingResources(RenderStyle* renderStyle, ElementStyleResources& elementStyleResources)
 {
     // Start loading images referenced by this style.
     loadPendingImages(renderStyle, elementStyleResources);
-
-    // Start loading the shaders referenced by this style.
-    loadPendingShaders(renderStyle, elementStyleResources);
 
     // Start loading the SVG Documents referenced by this style.
     loadPendingSVGDocuments(renderStyle, elementStyleResources);

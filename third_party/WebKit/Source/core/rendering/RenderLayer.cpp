@@ -84,10 +84,6 @@
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/filters/ReferenceFilter.h"
 #include "platform/graphics/filters/SourceGraphic.h"
-#include "platform/graphics/filters/custom/CustomFilterGlobalContext.h"
-#include "platform/graphics/filters/custom/CustomFilterOperation.h"
-#include "platform/graphics/filters/custom/CustomFilterValidatedProgram.h"
-#include "platform/graphics/filters/custom/ValidatedCustomFilterOperation.h"
 #include "platform/transforms/ScaleTransformOperation.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "platform/transforms/TranslateTransformOperation.h"
@@ -3850,13 +3846,6 @@ bool RenderLayer::scrollsOverflow() const
     return false;
 }
 
-bool RenderLayer::isCSSCustomFilterEnabled() const
-{
-    // We only want to enable shaders if WebGL is also enabled on this platform.
-    const Settings* settings = renderer()->document().settings();
-    return settings && RuntimeEnabledFeatures::cssCustomFilterEnabled() && settings->webGLEnabled();
-}
-
 FilterOperations RenderLayer::computeFilterOperations(const RenderStyle* style)
 {
     const FilterOperations& filters = style->filter();
@@ -3876,40 +3865,7 @@ FilterOperations RenderLayer::computeFilterOperations(const RenderStyle* style)
         }
     }
 
-    if (!filters.hasCustomFilter())
-        return filters;
-
-    if (!isCSSCustomFilterEnabled()) {
-        // CSS Custom filters should not parse at all in this case, but there might be
-        // remaining styles that were parsed when the flag was enabled. Reproduces in DumpRenderTree
-        // because it resets the flag while the previous test is still loaded.
-        return FilterOperations();
-    }
-
-    FilterOperations outputFilters;
-    for (size_t i = 0; i < filters.size(); ++i) {
-        RefPtr<FilterOperation> filterOperation = filters.operations().at(i);
-        if (filterOperation->type() == FilterOperation::CUSTOM) {
-            // We have to wait until the program of CSS Shaders is loaded before setting it on the layer.
-            // Note that we will handle the loading of the shaders and repainting of the layer in updateOrRemoveFilterClients.
-            const CustomFilterOperation* customOperation = toCustomFilterOperation(filterOperation.get());
-            RefPtr<CustomFilterProgram> program = customOperation->program();
-            if (!program->isLoaded())
-                continue;
-
-            CustomFilterGlobalContext* globalContext = renderer()->view()->customFilterGlobalContext();
-            RefPtr<CustomFilterValidatedProgram> validatedProgram = globalContext->getValidatedProgram(program->programInfo());
-            if (!validatedProgram->isInitialized())
-                continue;
-
-            RefPtr<ValidatedCustomFilterOperation> validatedOperation = ValidatedCustomFilterOperation::create(validatedProgram.release(),
-                customOperation->parameters(), customOperation->meshRows(), customOperation->meshColumns(), customOperation->meshType());
-            outputFilters.operations().append(validatedOperation.release());
-            continue;
-        }
-        outputFilters.operations().append(filterOperation.release());
-    }
-    return outputFilters;
+    return filters;
 }
 
 void RenderLayer::updateOrRemoveFilterClients()
@@ -3918,11 +3874,6 @@ void RenderLayer::updateOrRemoveFilterClients()
         removeFilterInfoIfNeeded();
         return;
     }
-
-    if (renderer()->style()->filter().hasCustomFilter())
-        ensureFilterInfo()->updateCustomFilterClients(renderer()->style()->filter());
-    else if (hasFilterInfo())
-        filterInfo()->removeCustomFilterClients();
 
     if (renderer()->style()->filter().hasReferenceFilter())
         ensureFilterInfo()->updateReferenceFilterClients(renderer()->style()->filter());

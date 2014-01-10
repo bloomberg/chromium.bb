@@ -34,9 +34,7 @@
 #include "V8CSSPrimitiveValue.h"
 #include "V8CSSValueList.h"
 #include "V8WebKitCSSFilterValue.h"
-#include "V8WebKitCSSMixFunctionValue.h"
 #include "V8WebKitCSSTransformValue.h"
-#include "core/css/CSSMixFunctionValue.h"
 
 namespace WebCore {
 
@@ -45,8 +43,6 @@ v8::Handle<v8::Object> wrap(CSSValue* impl, v8::Handle<v8::Object> creationConte
     ASSERT(impl);
     if (impl->isTransformValue())
         return wrap(toCSSTransformValue(impl), creationContext, isolate);
-    if (impl->isMixFunctionValue())
-        return wrap(toCSSMixFunctionValue(impl), creationContext, isolate);
     if (impl->isFilterValue())
         return wrap(toCSSFilterValue(impl), creationContext, isolate);
     if (impl->isValueList())

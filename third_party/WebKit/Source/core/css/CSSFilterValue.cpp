@@ -31,14 +31,9 @@
 namespace WebCore {
 
 CSSFilterValue::CSSFilterValue(FilterOperationType operationType)
-    : CSSValueList(CSSFilterClass, typeUsesSpaceSeparator(operationType) ? SpaceSeparator : CommaSeparator)
+    : CSSValueList(CSSFilterClass, CommaSeparator)
     , m_type(operationType)
 {
-}
-
-bool CSSFilterValue::typeUsesSpaceSeparator(FilterOperationType operationType)
-{
-    return operationType != CustomFilterOperation;
 }
 
 String CSSFilterValue::customCSSText() const
@@ -77,9 +72,6 @@ String CSSFilterValue::customCSSText() const
         break;
     case DropShadowFilterOperation:
         result = "drop-shadow(";
-        break;
-    case CustomFilterOperation:
-        result = "custom(";
         break;
     default:
         break;

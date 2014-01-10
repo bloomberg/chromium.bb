@@ -195,7 +195,6 @@ inline static CSSParserValue makeIdentValue(CSSParserString string)
 %token KEYFRAMES_SYM
 %token WEBKIT_KEYFRAMES_SYM
 %token WEBKIT_REGION_RULE_SYM
-%token WEBKIT_FILTER_RULE_SYM
 %token <marginBox> TOPLEFTCORNER_SYM
 %token <marginBox> TOPLEFT_SYM
 %token <marginBox> TOPCENTER_SYM
@@ -296,7 +295,6 @@ inline static CSSParserValue makeIdentValue(CSSParserString string)
 %type <rule> region
 %type <rule> supports
 %type <rule> viewport
-%type <rule> filter
 %type <boolean> keyframes_rule_start
 
 %type <string> maybe_ns_prefix
@@ -514,7 +512,6 @@ valid_rule:
   | region
   | supports
   | viewport
-  | filter
   ;
 
 before_rule:
@@ -584,7 +581,6 @@ region_block_valid_rule:
   | keyframes
   | supports
   | viewport
-  | filter
   ;
 
 block_valid_rule:
@@ -595,7 +591,6 @@ block_valid_rule:
   | keyframes
   | supports
   | viewport
-  | filter
   | namespace
   | region
   ;
@@ -1107,21 +1102,6 @@ region:
         $$ = parser->createRegionRule($4, $9);
     }
 ;
-
-before_filter_rule:
-    /* empty */ {
-        parser->startRuleHeader(CSSRuleSourceData::FILTER_RULE);
-        parser->m_inFilterRule = true;
-    }
-    ;
-
-filter:
-    before_filter_rule WEBKIT_FILTER_RULE_SYM maybe_space IDENT at_rule_header_end_maybe_space
-    '{' at_rule_body_start maybe_space_before_declaration declaration_list closing_brace {
-        parser->m_inFilterRule = false;
-        $$ = parser->createFilterRule($4);
-    }
-    ;
 
 combinator:
     '+' maybe_space { $$ = CSSSelector::DirectAdjacent; }
@@ -1906,7 +1886,6 @@ regular_invalid_at_rule_header:
   | before_viewport_rule VIEWPORT_RULE_SYM at_rule_header_recovery {
         parser->markViewportRuleBodyEnd();
     }
-  | before_filter_rule WEBKIT_FILTER_RULE_SYM at_rule_header_recovery
   | import_rule_start at_rule_header_recovery
   | NAMESPACE_SYM at_rule_header_recovery
   | before_region_rule WEBKIT_REGION_RULE_SYM at_rule_header_recovery

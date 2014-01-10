@@ -43,7 +43,6 @@
 namespace WebCore {
 
 class ShaderResource;
-class CustomFilterProgram;
 class Document;
 class GraphicsContext;
 class RenderLayer;

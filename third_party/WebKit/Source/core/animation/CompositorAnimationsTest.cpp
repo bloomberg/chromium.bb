@@ -214,26 +214,6 @@ public:
 
 };
 
-class CustomFilterOperationMock : public FilterOperation {
-public:
-    virtual bool operator==(const FilterOperation&) const OVERRIDE FINAL {
-        ASSERT_NOT_REACHED();
-        return false;
-    }
-
-    MOCK_CONST_METHOD2(blend, PassRefPtr<FilterOperation>(const FilterOperation*, double));
-
-    static PassRefPtr<CustomFilterOperationMock> create()
-    {
-        return adoptRef(new CustomFilterOperationMock());
-    }
-
-    CustomFilterOperationMock()
-        : FilterOperation(FilterOperation::CUSTOM)
-    {
-    }
-};
-
 // -----------------------------------------------------------------------
 // -----------------------------------------------------------------------
 
@@ -268,18 +248,6 @@ TEST_F(AnimationCompositorAnimationsTest, isNotCandidateForCompositorAnimationTr
     ops2.operations().append(TranslateTransformOperation::create(calcLength, Length(0, WebCore::Fixed), TransformOperation::TranslateX));
     RefPtr<Keyframe> badKeyframe2 = createReplaceOpKeyframe(CSSPropertyWebkitTransform, AnimatableTransform::create(ops2).get());
     EXPECT_FALSE(isCandidateHelperForSingleKeyframe(badKeyframe2.get()));
-}
-
-TEST_F(AnimationCompositorAnimationsTest, isNotCandidateForCompositorAnimationCustomFilter)
-{
-    FilterOperations ops;
-    ops.operations().append(BasicColorMatrixFilterOperation::create(0.5, FilterOperation::SATURATE));
-    RefPtr<Keyframe> goodKeyframe = createReplaceOpKeyframe(CSSPropertyWebkitFilter, AnimatableFilterOperations::create(ops).get());
-    EXPECT_TRUE(isCandidateHelperForSingleKeyframe(goodKeyframe.get()));
-
-    ops.operations().append(CustomFilterOperationMock::create());
-    RefPtr<Keyframe> badKeyframe = createReplaceOpKeyframe(CSSPropertyFilter, AnimatableFilterOperations::create(ops).get());
-    EXPECT_FALSE(isCandidateHelperForSingleKeyframe(badKeyframe.get()));
 }
 
 TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorKeyframeEffectModelMultipleFramesOkay)

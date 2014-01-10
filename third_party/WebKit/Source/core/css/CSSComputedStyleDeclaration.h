@@ -34,8 +34,6 @@ namespace WebCore {
 class CSSPrimitiveValue;
 class CSSValueList;
 class Color;
-class CustomFilterNumberParameter;
-class CustomFilterParameter;
 class ExceptionState;
 class MutableStylePropertySet;
 class Node;

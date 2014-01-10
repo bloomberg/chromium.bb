@@ -47,7 +47,6 @@ public:
         ContrastFilterOperation,
         BlurFilterOperation,
         DropShadowFilterOperation,
-        CustomFilterOperation
     };
 
     static bool typeUsesSpaceSeparator(FilterOperationType);

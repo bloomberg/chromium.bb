@@ -365,8 +365,6 @@ public:
     bool containsDirtyOverlayScrollbars() const { return m_containsDirtyOverlayScrollbars; }
     void setContainsDirtyOverlayScrollbars(bool dirtyScrollbars) { m_containsDirtyOverlayScrollbars = dirtyScrollbars; }
 
-    bool isCSSCustomFilterEnabled() const;
-
     FilterOperations computeFilterOperations(const RenderStyle*);
     bool paintsWithFilters() const;
     bool requiresFullLayerImageForFilters() const;

@@ -439,7 +439,6 @@ WebKitAnimationEvent
 WebKitCSSFilterRule
 WebKitCSSFilterValue
 WebKitCSSMatrix
-WebKitCSSMixFunctionValue
 WebKitCSSTransformValue
 WebKitMediaSource
 WebKitMutationObserver

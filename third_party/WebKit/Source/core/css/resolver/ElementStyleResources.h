@@ -60,9 +60,6 @@ public:
     const PendingImagePropertyMap& pendingImageProperties() const { return m_pendingImageProperties; }
     const PendingSVGDocumentMap& pendingSVGDocuments() const { return m_pendingSVGDocuments; }
 
-    void setHasNewCustomFilterProgram(bool hasNewCustomFilterProgram) { m_hasNewCustomFilterProgram = hasNewCustomFilterProgram; }
-    bool hasNewCustomFilterProgram() const { return m_hasNewCustomFilterProgram; }
-
     float deviceScaleFactor() const { return m_deviceScaleFactor; }
     void setDeviceScaleFactor(float deviceScaleFactor) { m_deviceScaleFactor = deviceScaleFactor; }
 
@@ -71,7 +68,6 @@ public:
 private:
     PendingImagePropertyMap m_pendingImageProperties;
     PendingSVGDocumentMap m_pendingSVGDocuments;
-    bool m_hasNewCustomFilterProgram;
     float m_deviceScaleFactor;
 };
 

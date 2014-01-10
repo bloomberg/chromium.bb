@@ -33,8 +33,7 @@
 namespace WebCore {
 
 ElementStyleResources::ElementStyleResources()
-    : m_hasNewCustomFilterProgram(false)
-    , m_deviceScaleFactor(1)
+    : m_deviceScaleFactor(1)
 {
 }
 

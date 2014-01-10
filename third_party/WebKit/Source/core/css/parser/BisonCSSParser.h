@@ -49,10 +49,8 @@ namespace WebCore {
 class AnimationParseContext;
 class CSSArrayFunctionValue;
 class CSSBorderImageSliceValue;
-class CSSMixFunctionValue;
 class CSSPrimitiveValue;
 class CSSSelectorList;
-class CSSShaderValue;
 class CSSValue;
 class CSSValueList;
 class CSSBasicShape;
@@ -253,15 +251,6 @@ public:
 
     PassRefPtr<CSSValueList> parseFilter();
     PassRefPtr<CSSFilterValue> parseBuiltinFilterArguments(CSSParserValueList*, CSSFilterValue::FilterOperationType);
-    PassRefPtr<CSSMixFunctionValue> parseMixFunction(CSSParserValue*);
-    PassRefPtr<CSSArrayFunctionValue> parseCustomFilterArrayFunction(CSSParserValue*);
-    PassRefPtr<CSSValueList> parseCustomFilterTransform(CSSParserValueList*);
-    PassRefPtr<CSSValueList> parseCustomFilterParameters(CSSParserValueList*);
-    PassRefPtr<CSSFilterValue> parseCustomFilterFunctionWithAtRuleReferenceSyntax(CSSParserValue*);
-    PassRefPtr<CSSFilterValue> parseCustomFilterFunctionWithInlineSyntax(CSSParserValue*);
-    PassRefPtr<CSSFilterValue> parseCustomFilterFunction(CSSParserValue*);
-    bool parseFilterRuleSrc();
-    PassRefPtr<CSSShaderValue> parseFilterRuleSrcUriAndFormat(CSSParserValueList*);
 
     static bool isBlendMode(CSSValueID);
     static bool isCompositeOperator(CSSValueID);
@@ -330,7 +319,6 @@ public:
     void markSupportsRuleHeaderEnd();
     PassRefPtr<CSSRuleSourceData> popSupportsRuleData();
     StyleRuleBase* createHostRule(RuleList* rules);
-    StyleRuleBase* createFilterRule(const CSSParserString&);
 
     void startDeclarationsForMarginBox();
     void endDeclarationsForMarginBox();
@@ -393,8 +381,6 @@ public:
     bool m_hadSyntacticallyValidCSSRule;
     bool m_logErrors;
     bool m_ignoreErrors;
-
-    bool m_inFilterRule;
 
     AtomicString m_defaultNamespace;
 

@@ -104,9 +104,6 @@ media/stable [ WontFix ]
 # Only run fake-Android tests on Linux
 [ Mac Win ] virtual/android [ WontFix ]
 
-# We only run it through the virtual stable test suite.
-webexposed/stableOnly [ WontFix ]
-
 # We only run it through the virtual linux-subpixel test suite.
 platform/linux/fast/text/subpixel/chromium-linux-text-subpixel-positioning.html [ WontFix ]
 

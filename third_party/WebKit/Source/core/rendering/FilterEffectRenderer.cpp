@@ -45,10 +45,6 @@
 #include "platform/graphics/filters/FEComponentTransfer.h"
 #include "platform/graphics/filters/FEDropShadow.h"
 #include "platform/graphics/filters/FEGaussianBlur.h"
-#include "platform/graphics/filters/custom/CustomFilterGlobalContext.h"
-#include "platform/graphics/filters/custom/CustomFilterValidatedProgram.h"
-#include "platform/graphics/filters/custom/FECustomFilter.h"
-#include "platform/graphics/filters/custom/ValidatedCustomFilterOperation.h"
 #include "platform/graphics/gpu/AcceleratedImageBufferSurface.h"
 #include "wtf/MathExtras.h"
 #include <algorithm>
@@ -76,20 +72,6 @@ inline bool isFilterSizeValid(FloatRect rect)
         || rect.height() < 0 || rect.height() > kMaxFilterSize)
         return false;
     return true;
-}
-
-static PassRefPtr<FECustomFilter> createCustomFilterEffect(Filter* filter, Document* document, ValidatedCustomFilterOperation* operation)
-{
-    if (!document)
-        return 0;
-
-    CustomFilterGlobalContext* globalContext = document->renderView()->customFilterGlobalContext();
-    globalContext->prepareContextIfNeeded();
-    if (!globalContext->context())
-        return 0;
-
-    return FECustomFilter::create(filter, globalContext->context(), operation->validatedProgram(), operation->parameters(),
-        operation->meshRows(), operation->meshColumns(),  operation->meshType());
 }
 
 FilterEffectRenderer::FilterEffectRenderer()
@@ -256,18 +238,6 @@ bool FilterEffectRenderer::build(RenderObject* renderer, const FilterOperations&
             effect = FEDropShadow::create(this, stdDeviation, stdDeviation, x, y, dropShadowOperation->color(), 1);
             break;
         }
-        case FilterOperation::CUSTOM:
-            // CUSTOM operations are always converted to VALIDATED_CUSTOM before getting here.
-            // The conversion happens in RenderLayer::computeFilterOperations.
-            ASSERT_NOT_REACHED();
-            break;
-        case FilterOperation::VALIDATED_CUSTOM: {
-            Document* document = renderer ? &renderer->document() : 0;
-            effect = createCustomFilterEffect(this, document, toValidatedCustomFilterOperation(filterOperation));
-            if (effect)
-                m_hasCustomShaderFilter = true;
-            break;
-        }
         default:
             break;
         }
@@ -283,7 +253,7 @@ bool FilterEffectRenderer::build(RenderObject* renderer, const FilterOperations&
         }
     }
 
-    // We need to keep the old effects alive until this point, so that filters like FECustomFilter
+    // We need to keep the old effects alive until this point, so that SVG reference filters
     // can share cached resources across frames.
     m_lastEffect = previousEffect;
 

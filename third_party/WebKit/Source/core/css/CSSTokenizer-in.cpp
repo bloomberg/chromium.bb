@@ -1013,10 +1013,6 @@ inline void CSSTokenizer::detectAtToken(int length, bool hasEscape)
             if (LIKELY(!hasEscape))
                 m_token = WEBKIT_REGION_RULE_SYM;
         }
-        CASE("-webkit-filter") {
-            if (LIKELY(!hasEscape))
-                m_token = WEBKIT_FILTER_RULE_SYM;
-        }
         CASE("-internal-decls") {
             if (LIKELY(!hasEscape && m_internal))
                 m_token = INTERNAL_DECLS_SYM;

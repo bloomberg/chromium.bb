@@ -41,7 +41,6 @@
 #include "core/css/CSSGridLineNamesValue.h"
 #include "core/css/CSSGridTemplateValue.h"
 #include "core/css/CSSLineBoxContainValue.h"
-#include "core/css/CSSMixFunctionValue.h"
 #include "core/css/parser/BisonCSSParser.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
@@ -69,13 +68,7 @@
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/ShadowList.h"
 #include "core/rendering/style/ShapeValue.h"
-#include "core/rendering/style/StyleCustomFilterProgram.h"
 #include "platform/fonts/FontFeatureSettings.h"
-#include "platform/graphics/filters/custom/CustomFilterArrayParameter.h"
-#include "platform/graphics/filters/custom/CustomFilterNumberParameter.h"
-#include "platform/graphics/filters/custom/CustomFilterOperation.h"
-#include "platform/graphics/filters/custom/CustomFilterParameter.h"
-#include "platform/graphics/filters/custom/CustomFilterTransformParameter.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
@@ -791,51 +784,6 @@ static PassRefPtr<CSSValue> computedTransform(RenderObject* renderer, const Rend
     return list.release();
 }
 
-static PassRefPtr<CSSValue> valueForCustomFilterArrayParameter(const CustomFilterArrayParameter* arrayParameter)
-{
-    RefPtr<CSSArrayFunctionValue> arrayParameterValue = CSSArrayFunctionValue::create();
-    for (unsigned i = 0, size = arrayParameter->size(); i < size; ++i)
-        arrayParameterValue->append(cssValuePool().createValue(arrayParameter->valueAt(i), CSSPrimitiveValue::CSS_NUMBER));
-    return arrayParameterValue.release();
-}
-
-static PassRefPtr<CSSValue> valueForCustomFilterNumberParameter(const CustomFilterNumberParameter* numberParameter)
-{
-    RefPtr<CSSValueList> numberParameterValue = CSSValueList::createSpaceSeparated();
-    for (unsigned i = 0; i < numberParameter->size(); ++i)
-        numberParameterValue->append(cssValuePool().createValue(numberParameter->valueAt(i), CSSPrimitiveValue::CSS_NUMBER));
-    return numberParameterValue.release();
-}
-
-static PassRefPtr<CSSValue> valueForCustomFilterTransformParameter(const RenderObject* renderer, const RenderStyle& style, const CustomFilterTransformParameter* transformParameter)
-{
-    IntSize size;
-    if (renderer && renderer->isBox())
-        size = pixelSnappedIntRect(toRenderBox(renderer)->borderBoxRect()).size();
-
-    TransformationMatrix transform;
-    transformParameter->applyTransform(transform, size);
-    // FIXME: Need to print out individual functions (https://bugs.webkit.org/show_bug.cgi?id=23924)
-    return valueForMatrixTransform(transform, style);
-}
-
-static PassRefPtr<CSSValue> valueForCustomFilterParameter(const RenderObject* renderer, const RenderStyle& style, const CustomFilterParameter* parameter)
-{
-    // FIXME: Add here computed style for the other types: boolean, transform, matrix, texture.
-    ASSERT(parameter);
-    switch (parameter->parameterType()) {
-    case CustomFilterParameter::Array:
-        return valueForCustomFilterArrayParameter(static_cast<const CustomFilterArrayParameter*>(parameter));
-    case CustomFilterParameter::Number:
-        return valueForCustomFilterNumberParameter(static_cast<const CustomFilterNumberParameter*>(parameter));
-    case CustomFilterParameter::Transform:
-        return valueForCustomFilterTransformParameter(renderer, style, static_cast<const CustomFilterTransformParameter*>(parameter));
-    }
-
-    ASSERT_NOT_REACHED();
-    return 0;
-}
-
 PassRefPtr<CSSValue> CSSComputedStyleDeclaration::valueForFilter(const RenderObject* renderer, const RenderStyle& style) const
 {
     if (style.filter().operations().isEmpty())
@@ -895,68 +843,6 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::valueForFilter(const RenderObj
             // We want our computed style to look like that of a text shadow (has neither spread nor inset style).
             ShadowData shadow(dropShadowOperation->location(), dropShadowOperation->stdDeviation(), 0, Normal, dropShadowOperation->color());
             filterValue->append(valueForShadowData(shadow, style, false));
-            break;
-        }
-        case FilterOperation::VALIDATED_CUSTOM:
-            // ValidatedCustomFilterOperation is not supposed to end up in the RenderStyle.
-            ASSERT_NOT_REACHED();
-            break;
-        case FilterOperation::CUSTOM: {
-            CustomFilterOperation* customOperation = toCustomFilterOperation(filterOperation);
-            filterValue = CSSFilterValue::create(CSSFilterValue::CustomFilterOperation);
-
-            // The output should be verbose, even if the values are the default ones.
-
-            ASSERT(customOperation->program());
-            StyleCustomFilterProgram* program = static_cast<StyleCustomFilterProgram*>(customOperation->program());
-
-            RefPtr<CSSValueList> shadersList = CSSValueList::createSpaceSeparated();
-            if (program->vertexShader())
-                shadersList->append(program->vertexShader()->cssValue());
-            else
-                shadersList->append(cssValuePool().createIdentifierValue(CSSValueNone));
-
-            const CustomFilterProgramMixSettings mixSettings = program->mixSettings();
-            if (program->fragmentShader()) {
-                if (program->programType() == ProgramTypeBlendsElementTexture) {
-                    RefPtr<CSSMixFunctionValue> mixFunction = CSSMixFunctionValue::create();
-                    mixFunction->append(program->fragmentShader()->cssValue());
-                    mixFunction->append(cssValuePool().createValue(mixSettings.blendMode));
-                    mixFunction->append(cssValuePool().createValue(mixSettings.compositeOperator));
-                    shadersList->append(mixFunction.release());
-                } else
-                    shadersList->append(program->fragmentShader()->cssValue());
-            }
-            else
-                shadersList->append(cssValuePool().createIdentifierValue(CSSValueNone));
-
-            filterValue->append(shadersList.release());
-
-            RefPtr<CSSValueList> meshParameters = CSSValueList::createSpaceSeparated();
-            meshParameters->append(cssValuePool().createValue(customOperation->meshColumns(), CSSPrimitiveValue::CSS_NUMBER));
-            meshParameters->append(cssValuePool().createValue(customOperation->meshRows(), CSSPrimitiveValue::CSS_NUMBER));
-
-            // FIXME: The specification doesn't have any "attached" identifier. Should we add one?
-            // https://bugs.webkit.org/show_bug.cgi?id=72700
-            if (customOperation->meshType() == MeshTypeDetached)
-                meshParameters->append(cssValuePool().createIdentifierValue(CSSValueDetached));
-
-            filterValue->append(meshParameters.release());
-
-            const CustomFilterParameterList& parameters = customOperation->parameters();
-            size_t parametersSize = parameters.size();
-            if (!parametersSize)
-                break;
-            RefPtr<CSSValueList> parametersCSSValue = CSSValueList::createCommaSeparated();
-            for (size_t i = 0; i < parametersSize; ++i) {
-                const CustomFilterParameter* parameter = parameters.at(i).get();
-                RefPtr<CSSValueList> parameterCSSNameAndValue = CSSValueList::createSpaceSeparated();
-                parameterCSSNameAndValue->append(cssValuePool().createValue(parameter->name(), CSSPrimitiveValue::CSS_STRING));
-                parameterCSSNameAndValue->append(valueForCustomFilterParameter(renderer, style, parameter));
-                parametersCSSValue->append(parameterCSSNameAndValue.release());
-            }
-
-            filterValue->append(parametersCSSValue.release());
             break;
         }
         default:

@@ -90,16 +90,6 @@ bool FilterOperations::canInterpolateWith(const FilterOperations& other) const
     return true;
 }
 
-bool FilterOperations::hasCustomFilter() const
-{
-    for (size_t i = 0; i < m_operations.size(); ++i) {
-        FilterOperation::OperationType type = m_operations.at(i)->type();
-        if (type == FilterOperation::CUSTOM || type == FilterOperation::VALIDATED_CUSTOM)
-            return true;
-    }
-    return false;
-}
-
 bool FilterOperations::hasReferenceFilter() const
 {
     for (size_t i = 0; i < m_operations.size(); ++i) {

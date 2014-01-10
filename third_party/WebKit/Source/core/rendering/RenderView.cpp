@@ -45,7 +45,6 @@
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/TransformState.h"
 #include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/filters/custom/CustomFilterGlobalContext.h"
 
 namespace WebCore {
 
@@ -1136,13 +1135,6 @@ void RenderView::setIsInWindow(bool isInWindow)
 {
     if (m_compositor)
         m_compositor->setIsInWindow(isInWindow);
-}
-
-CustomFilterGlobalContext* RenderView::customFilterGlobalContext()
-{
-    if (!m_customFilterGlobalContext)
-        m_customFilterGlobalContext = adoptPtr(new CustomFilterGlobalContext());
-    return m_customFilterGlobalContext.get();
 }
 
 void RenderView::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)

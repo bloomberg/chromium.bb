@@ -70,7 +70,6 @@ public:
     bool hasFilterThatAffectsOpacity() const;
     bool hasFilterThatMovesPixels() const;
 
-    bool hasCustomFilter() const;
     bool hasReferenceFilter() const;
 private:
     Vector<RefPtr<FilterOperation> > m_operations;

@@ -57,7 +57,6 @@
 #include "platform/fonts/FontCache.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsContext3D.h"
-#include "platform/graphics/filters/custom/CustomFilterOperation.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/text/StringBuilder.h"
 

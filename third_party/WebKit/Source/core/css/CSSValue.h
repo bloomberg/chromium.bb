@@ -98,8 +98,6 @@ public:
     bool isCalcValue() const {return m_classType == CalculationClass; }
     bool isFilterValue() const { return m_classType == CSSFilterClass; }
     bool isArrayFunctionValue() const { return m_classType == CSSArrayFunctionValueClass; }
-    bool isMixFunctionValue() const { return m_classType == CSSMixFunctionValueClass; }
-    bool isShaderValue() const { return m_classType == CSSShaderClass; }
     bool isVariableValue() const { return m_classType == VariableClass; }
     bool isGridTemplateValue() const { return m_classType == GridTemplateClass; }
     bool isSVGColor() const { return m_classType == SVGColorClass || m_classType == SVGPaintClass; }
@@ -156,7 +154,6 @@ protected:
         UnicodeRangeClass,
         LineBoxContainClass,
         CalculationClass,
-        CSSShaderClass,
         VariableClass,
         GridTemplateClass,
 
@@ -170,7 +167,6 @@ protected:
         ImageSetClass,
         CSSFilterClass,
         CSSArrayFunctionValueClass,
-        CSSMixFunctionValueClass,
         CSSTransformClass,
         GridLineNamesClass,
         // Do not append non-list class types here.

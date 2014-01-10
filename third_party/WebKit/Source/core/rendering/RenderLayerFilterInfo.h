@@ -34,7 +34,6 @@
 #include "core/fetch/DocumentResource.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/filters/FilterOperation.h"
-#include "platform/graphics/filters/custom/CustomFilterProgramClient.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
@@ -48,7 +47,7 @@ class RenderLayerFilterInfo;
 
 typedef HashMap<const RenderLayer*, RenderLayerFilterInfo*> RenderLayerFilterInfoMap;
 
-class RenderLayerFilterInfo : public CustomFilterProgramClient, public DocumentResourceClient {
+class RenderLayerFilterInfo : public DocumentResourceClient {
 public:
     static RenderLayerFilterInfo* filterInfoForRenderLayer(const RenderLayer*);
     static RenderLayerFilterInfo* createFilterInfoForRenderLayerIfNeeded(RenderLayer*);
@@ -60,12 +59,6 @@ public:
 
     FilterEffectRenderer* renderer() const { return m_renderer.get(); }
     void setRenderer(PassRefPtr<FilterEffectRenderer>);
-
-    // Implementation of the CustomFilterProgramClient interface.
-    virtual void notifyCustomFilterProgramLoaded(CustomFilterProgram*);
-
-    void updateCustomFilterClients(const FilterOperations&);
-    void removeCustomFilterClients();
 
     void updateReferenceFilterClients(const FilterOperations&);
     virtual void notifyFinished(Resource*);
@@ -79,9 +72,6 @@ private:
 
     RefPtr<FilterEffectRenderer> m_renderer;
     LayoutRect m_dirtySourceRect;
-
-    typedef Vector<RefPtr<CustomFilterProgram> > CustomFilterProgramList;
-    CustomFilterProgramList m_cachedCustomFilterPrograms;
 
     static RenderLayerFilterInfoMap* s_filterMap;
     Vector<RefPtr<Element> > m_internalSVGReferences;
