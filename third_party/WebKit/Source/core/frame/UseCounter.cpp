@@ -685,6 +685,9 @@ String UseCounter::deprecationMessage(Feature feature)
     case AttributeSpecified:
         return "Attr.specified is deprecated. Its value is always true.";
 
+    case SVGElementGetPresentationAttribute:
+        return "CSSValue and SVGElement.getPresentationAttribute are deprecated. Please use getPropertyValue and parse the return value instead.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();

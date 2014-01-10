@@ -1,1 +1,2 @@
+CONSOLE WARNING: CSSValue and SVGElement.getPresentationAttribute are deprecated. Please use getPropertyValue and parse the return value instead.
 PASSED -- WebKit did not crash!
