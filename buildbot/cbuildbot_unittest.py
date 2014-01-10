@@ -40,6 +40,7 @@ class TestFailedException(Exception):
 
 
 class RunBuildStagesTest(cros_test_lib.MoxTempDirTestCase):
+  """Test BuildStages functionality."""
 
   def setUp(self):
     self.buildroot = os.path.join(self.tempdir, 'buildroot')
@@ -203,22 +204,26 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
   def testRunStagesDefaultBuild(self):
     """Verify RunStages for standard board builders"""
     builder_run = self._initConfig('x86-generic-full')
+    builder_run.attrs.chrome_version = 'TheChromeVersion'
     cbuildbot.SimpleBuilder(builder_run).RunStages()
 
   def testRunStagesDefaultBuildCompileCheck(self):
     """Verify RunStages for standard board builders (compile only)"""
     extra_argv = ['--compilecheck']
     builder_run = self._initConfig('x86-generic-full', extra_argv=extra_argv)
+    builder_run.attrs.chrome_version = 'TheChromeVersion'
     cbuildbot.SimpleBuilder(builder_run).RunStages()
 
   def testRunStagesDefaultBuildHwTests(self):
     """Verify RunStages for boards w/hwtests"""
     extra_argv = ['--hwtest']
     builder_run = self._initConfig('lumpy-release', extra_argv=extra_argv)
+    builder_run.attrs.chrome_version = 'TheChromeVersion'
     cbuildbot.SimpleBuilder(builder_run).RunStages()
 
 
 class LogTest(cros_test_lib.MoxTestCase):
+  """Test logging functionality."""
 
   def _generateLogs(self, num):
     """Generates cbuildbot.log and num backups."""
@@ -262,6 +267,7 @@ class LogTest(cros_test_lib.MoxTestCase):
 
 
 class InterfaceTest(cros_test_lib.MoxTestCase, cros_test_lib.LoggingTestCase):
+  """Test the command line interface."""
 
   _X86_PREFLIGHT = 'x86-generic-paladin'
   _BUILD_ROOT = '/b/test_build1'

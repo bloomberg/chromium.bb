@@ -2289,6 +2289,14 @@ class SyncChromeStage(bs.BuilderStage):
       cros_build_lib.Info('Chrome already uprevved')
       sys.exit(0)
 
+  def _Finish(self):
+    """Provide chrome_version to the rest of the run."""
+    # Even if the stage failed, a None value for chrome_version still
+    # means something.  In other words, this stage tried to run.
+    self._run.attrs.chrome_version = self.chrome_version
+
+    super(SyncChromeStage, self)._Finish()
+
 
 class PatchChromeStage(bs.BuilderStage):
   """Stage that applies Chrome patches if needed."""

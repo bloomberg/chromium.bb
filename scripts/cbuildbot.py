@@ -226,7 +226,7 @@ class Builder(object):
     of the running chromite checkout.
 
     Args:
-      sync_instance:  Instance of the sync stage that was run to sync.
+      sync_instance: Instance of the sync stage that was run to sync.
 
     Returns:
       True if the Build succeeded.
@@ -494,13 +494,7 @@ class SimpleBuilder(Builder):
     self._RunStage(stages.InitSDKStage)
     self._RunStage(stages.UprevStage)
     self._RunStage(stages.SetupBoardStage)
-
-    # We need a handle to this stage to extract info from it.
-    # TODO(mtennant): Just have _RunStage return the stage object, since
-    # nothing uses the return value of _RunStage now, and the Run method
-    # of stage objects does not appear to return anything, either.
-    sync_chrome_stage = self._GetStageInstance(stages.SyncChromeStage)
-    sync_chrome_stage.Run()
+    self._RunStage(stages.SyncChromeStage)
     self._RunStage(stages.PatchChromeStage)
 
     # Prepare stages to run in background.  If child_configs exist then
@@ -515,7 +509,7 @@ class SimpleBuilder(Builder):
       for board in builder_run.config.boards:
         archive_stage = self._GetStageInstance(
             stages.ArchiveStage, board, builder_run=builder_run,
-            chrome_version=sync_chrome_stage.chrome_version)
+            chrome_version=self._run.attrs.chrome_version)
         board_config = BoardConfig(board, builder_run.config.name)
         self.archive_stages[board_config] = archive_stage
         tasks.append((builder_run, board, archive_stage))

@@ -24,6 +24,7 @@ class RunAttributes(object):
   # co-subprocess stages).
 
   __slots__ = (
+      'chrome_version',   # Set by SyncChromeStage, if it runs.
       'manifest_manager', # Set by ManifestVersionedSyncStage.
       'release_tag',      # Set by cbuildbot after sync stage.
   )
@@ -73,6 +74,10 @@ class BuilderRun(object):
     self.buildroot = self.options.buildroot
     self.buildnumber = self.options.buildnumber
     self.manifest_branch = self.options.branch
+
+    # Certain run attributes have sensible defaults which can be set here.
+    # This allows all code to safely assume that the run attribute exists.
+    attrs.chrome_version = None
 
   @property
   def attrs(self):
