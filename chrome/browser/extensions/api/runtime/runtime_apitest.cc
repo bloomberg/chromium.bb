@@ -27,7 +27,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ChromeRuntimeUnprivileged) {
   EXPECT_TRUE(catcher.GetNextResult()) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ChromeRuntimeUninstallUrl) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ChromeRuntimeUninstallURL) {
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("runtime").AppendASCII("uninstall_url").
           AppendASCII("sets_uninstall_url")));

@@ -44,7 +44,7 @@ void ExtensionFunctionRegistry::ResetFunctions() {
 
   // Runtime
   RegisterFunction<extensions::RuntimeGetBackgroundPageFunction>();
-  RegisterFunction<extensions::RuntimeSetUninstallUrlFunction>();
+  RegisterFunction<extensions::RuntimeSetUninstallURLFunction>();
   RegisterFunction<extensions::RuntimeReloadFunction>();
   RegisterFunction<extensions::RuntimeRequestUpdateCheckFunction>();
   RegisterFunction<extensions::RuntimeRestartFunction>();

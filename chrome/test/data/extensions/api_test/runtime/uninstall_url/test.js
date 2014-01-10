@@ -3,14 +3,14 @@
 // found in the LICENSE file.
 
 // extension api test
-// browser_tests.exe --gtest_filter=ExtensionApiTest.ChromeRuntimeUninstallUrl
+// browser_tests.exe --gtest_filter=ExtensionApiTest.ChromeRuntimeUninstallURL
 
 var pass = chrome.test.callbackPass;
 var uninstall_url = 'http://www.google.com/';
 var sets_uninstall_url = 'Sets Uninstall Url';
 var uninstalled = false;
 chrome.test.runTests([
-  function uninstallUrl() {
+  function uninstallURL() {
     chrome.management.getAll(function(results) {
       for(var i = 0;i<results.length;i++)
       {

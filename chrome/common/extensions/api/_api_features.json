@@ -550,7 +550,7 @@
     "contexts": "all",
     "matches": ["<all_urls>"]
   },
-  "runtime.setUninstallUrl": {
+  "runtime.setUninstallURL": {
     "channel": "dev",
     "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
   },

@@ -118,7 +118,7 @@ void DispatchOnStartupEventImpl(BrowserContext* browser_context,
   system->event_router()->DispatchEventToExtension(extension_id, event.Pass());
 }
 
-void SetUninstallUrl(ExtensionPrefs* prefs,
+void SetUninstallURL(ExtensionPrefs* prefs,
                      const std::string& extension_id,
                      const std::string& url_string) {
   prefs->UpdateExtensionPref(extension_id,
@@ -127,7 +127,7 @@ void SetUninstallUrl(ExtensionPrefs* prefs,
 }
 
 #if defined(ENABLE_EXTENSIONS)
-std::string GetUninstallUrl(ExtensionPrefs* prefs,
+std::string GetUninstallURL(ExtensionPrefs* prefs,
                             const std::string& extension_id) {
   std::string url_string;
   prefs->ReadPrefAsString(extension_id, kUninstallUrl, &url_string);
@@ -348,7 +348,7 @@ void RuntimeEventRouter::OnExtensionUninstalled(
     Profile* profile,
     const std::string& extension_id) {
 #if defined(ENABLE_EXTENSIONS)
-  GURL uninstall_url(GetUninstallUrl(ExtensionPrefs::Get(profile),
+  GURL uninstall_url(GetUninstallURL(ExtensionPrefs::Get(profile),
                                      extension_id));
 
   if (uninstall_url.is_empty())
@@ -397,7 +397,7 @@ void RuntimeGetBackgroundPageFunction::OnPageLoaded(ExtensionHost* host) {
   }
 }
 
-bool RuntimeSetUninstallUrlFunction::RunImpl() {
+bool RuntimeSetUninstallURLFunction::RunImpl() {
   std::string url_string;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &url_string));
 
@@ -407,7 +407,7 @@ bool RuntimeSetUninstallUrlFunction::RunImpl() {
     return false;
   }
 
-  SetUninstallUrl(
+  SetUninstallURL(
       ExtensionPrefs::Get(GetProfile()), extension_id(), url_string);
   return true;
 }

@@ -113,13 +113,13 @@ class RuntimeGetBackgroundPageFunction : public ChromeAsyncExtensionFunction {
   void OnPageLoaded(ExtensionHost*);
 };
 
-class RuntimeSetUninstallUrlFunction : public ChromeSyncExtensionFunction {
+class RuntimeSetUninstallURLFunction : public ChromeSyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("runtime.setUninstallUrl",
+  DECLARE_EXTENSION_FUNCTION("runtime.setUninstallURL",
                              RUNTIME_SETUNINSTALLURL)
 
  protected:
-  virtual ~RuntimeSetUninstallUrlFunction() {}
+  virtual ~RuntimeSetUninstallURLFunction() {}
   virtual bool RunImpl() OVERRIDE;
 };
 

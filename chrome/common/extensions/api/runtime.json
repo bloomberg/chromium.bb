@@ -111,7 +111,7 @@
         }
       },
       {
-        "name": "setUninstallUrl",
+        "name": "setUninstallURL",
         "type": "function",
         "unpriviledged": true,
         "description": "Sets the URL to be visited upon uninstallation. This may be used to clean up server-side data, do analytics, and implement surveys. Maximum 255 characters.",
