@@ -132,8 +132,6 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   virtual void RemoveObserver(RenderProcessObserver* observer) OVERRIDE;
   virtual void SetResourceDispatcherDelegate(
       ResourceDispatcherDelegate* delegate) OVERRIDE;
-  virtual void WidgetHidden() OVERRIDE;
-  virtual void WidgetRestored() OVERRIDE;
   virtual void EnsureWebKitInitialized() OVERRIDE;
   virtual void RecordAction(const UserMetricsAction& action) OVERRIDE;
   virtual void RecordComputedAction(const std::string& action) OVERRIDE;
@@ -344,6 +342,13 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   // This is the first argument to RenderWidgetHost::FromID. Ideally
   // this would be available on all platforms via base::Process.
   base::ProcessId renderer_process_id() const;
+
+  // Called by a RenderWidget when it is created or destroyed. This
+  // allows the process to know when there are no visible widgets.
+  void WidgetCreated();
+  void WidgetDestroyed();
+  void WidgetHidden();
+  void WidgetRestored();
 
  private:
   // ChildThread

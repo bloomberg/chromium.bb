@@ -8,6 +8,7 @@
 #include "content/common/frame_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/renderer/render_process_observer.h"
+#include "content/renderer/render_view_impl.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_sync_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -88,17 +89,9 @@ scoped_refptr<base::MessageLoopProxy>
 }
 
 void MockRenderThread::AddRoute(int32 routing_id, IPC::Listener* listener) {
-  // We may hear this for views created from OnCreateWindow as well,
-  // in which case we don't want to track the new widget.
-  if (routing_id_ == routing_id)
-    widget_ = listener;
 }
 
 void MockRenderThread::RemoveRoute(int32 routing_id) {
-  // We may hear this for views created from OnCreateWindow as well,
-  // in which case we don't want to track the new widget.
-  if (routing_id_ == routing_id)
-    widget_ = NULL;
 }
 
 int MockRenderThread::GenerateRoutingID() {
@@ -135,12 +128,6 @@ void MockRenderThread::RemoveObserver(RenderProcessObserver* observer) {
 
 void MockRenderThread::SetResourceDispatcherDelegate(
     ResourceDispatcherDelegate* delegate) {
-}
-
-void MockRenderThread::WidgetHidden() {
-}
-
-void MockRenderThread::WidgetRestored() {
 }
 
 void MockRenderThread::EnsureWebKitInitialized() {
@@ -207,7 +194,7 @@ void MockRenderThread::ReleaseCachedFonts() {
 
 void MockRenderThread::SendCloseMessage() {
   ViewMsg_Close msg(routing_id_);
-  widget_->OnMessageReceived(msg);
+  RenderViewImpl::FromRoutingID(routing_id_)->OnMessageReceived(msg);
 }
 
 // The Widget expects to be returned valid route_id.

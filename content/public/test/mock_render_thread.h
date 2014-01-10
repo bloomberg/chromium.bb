@@ -55,8 +55,6 @@ class MockRenderThread : public RenderThread {
   virtual void RemoveObserver(RenderProcessObserver* observer) OVERRIDE;
   virtual void SetResourceDispatcherDelegate(
       ResourceDispatcherDelegate* delegate) OVERRIDE;
-  virtual void WidgetHidden() OVERRIDE;
-  virtual void WidgetRestored() OVERRIDE;
   virtual void EnsureWebKitInitialized() OVERRIDE;
   virtual void RecordAction(const UserMetricsAction& action) OVERRIDE;
   virtual void RecordComputedAction(const std::string& action) OVERRIDE;
@@ -90,10 +88,6 @@ class MockRenderThread : public RenderThread {
 
   int32 opener_id() const {
     return opener_id_;
-  }
-
-  bool has_widget() const {
-    return (widget_ != NULL);
   }
 
   void set_new_window_routing_id(int32 id) {
@@ -155,11 +149,6 @@ class MockRenderThread : public RenderThread {
 
   // Opener id reported by the Widget.
   int32 opener_id_;
-
-  // We only keep track of one Widget, we learn its pointer when it
-  // adds a new route.  We do not keep track of Widgets created with
-  // OnCreateWindow.
-  IPC::Listener* widget_;
 
   // Routing id that will be assigned to a CreateWindow Widget.
   int32 new_window_routing_id_;

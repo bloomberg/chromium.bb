@@ -604,15 +604,12 @@ scoped_refptr<base::MessageLoopProxy>
 }
 
 void RenderThreadImpl::AddRoute(int32 routing_id, IPC::Listener* listener) {
-  widget_count_++;
-  return ChildThread::AddRoute(routing_id, listener);
+  ChildThread::AddRoute(routing_id, listener);
 }
 
 void RenderThreadImpl::RemoveRoute(int32 routing_id) {
-  widget_count_--;
-  return ChildThread::RemoveRoute(routing_id);
+  ChildThread::RemoveRoute(routing_id);
 }
-
 int RenderThreadImpl::GenerateRoutingID() {
   int routing_id = MSG_ROUTING_NONE;
   Send(new ViewHostMsg_GenerateRoutingID(&routing_id));
@@ -638,33 +635,6 @@ void RenderThreadImpl::RemoveObserver(RenderProcessObserver* observer) {
 void RenderThreadImpl::SetResourceDispatcherDelegate(
     ResourceDispatcherDelegate* delegate) {
   resource_dispatcher()->set_delegate(delegate);
-}
-
-void RenderThreadImpl::WidgetHidden() {
-  DCHECK_LT(hidden_widget_count_, widget_count_);
-  hidden_widget_count_++;
-
-  if (widget_count_ && hidden_widget_count_ == widget_count_) {
-#if !defined(SYSTEM_NATIVELY_SIGNALS_MEMORY_PRESSURE)
-    // TODO(vollick): Remove this this heavy-handed approach once we're polling
-    // the real system memory pressure.
-    base::MemoryPressureListener::NotifyMemoryPressure(
-        base::MemoryPressureListener::MEMORY_PRESSURE_MODERATE);
-#endif
-    if (GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden())
-      ScheduleIdleHandler(kInitialIdleHandlerDelayMs);
-  }
-}
-
-void RenderThreadImpl::WidgetRestored() {
-  DCHECK_GT(hidden_widget_count_, 0);
-  hidden_widget_count_--;
-
-  if (!GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden()) {
-    return;
-  }
-
-  ScheduleIdleHandler(kLongIdleHandlerDelayMs);
 }
 
 void RenderThreadImpl::EnsureWebKitInitialized() {
@@ -1401,6 +1371,41 @@ void RenderThreadImpl::SampleGamepads(blink::WebGamepads* data) {
 
 base::ProcessId RenderThreadImpl::renderer_process_id() const {
   return renderer_process_id_;
+}
+
+void RenderThreadImpl::WidgetCreated() {
+  widget_count_++;
+}
+
+void RenderThreadImpl::WidgetDestroyed() {
+  widget_count_--;
+}
+
+void RenderThreadImpl::WidgetHidden() {
+  DCHECK_LT(hidden_widget_count_, widget_count_);
+  hidden_widget_count_++;
+
+  if (widget_count_ && hidden_widget_count_ == widget_count_) {
+#if !defined(SYSTEM_NATIVELY_SIGNALS_MEMORY_PRESSURE)
+    // TODO(vollick): Remove this this heavy-handed approach once we're polling
+    // the real system memory pressure.
+    base::MemoryPressureListener::NotifyMemoryPressure(
+        base::MemoryPressureListener::MEMORY_PRESSURE_MODERATE);
+#endif
+    if (GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden())
+      ScheduleIdleHandler(kInitialIdleHandlerDelayMs);
+  }
+}
+
+void RenderThreadImpl::WidgetRestored() {
+  DCHECK_GT(hidden_widget_count_, 0);
+  hidden_widget_count_--;
+
+  if (!GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden()) {
+    return;
+  }
+
+  ScheduleIdleHandler(kLongIdleHandlerDelayMs);
 }
 
 }  // namespace content

@@ -465,8 +465,11 @@ bool RenderWidget::DoInit(int32 opener_id,
     // Take a reference on behalf of the RenderThread.  This will be balanced
     // when we receive ViewMsg_Close.
     AddRef();
-    if (is_hidden_)
-      RenderThread::Get()->WidgetHidden();
+    if (RenderThreadImpl::current()) {
+      RenderThreadImpl::current()->WidgetCreated();
+      if (is_hidden_)
+        RenderThreadImpl::current()->WidgetHidden();
+    }
     return true;
   } else {
     // The above Send can fail when the tab is closing.
@@ -722,6 +725,8 @@ void RenderWidget::OnClose() {
 
   // Browser correspondence is no longer needed at this point.
   if (routing_id_ != MSG_ROUTING_NONE) {
+    if (RenderThreadImpl::current())
+      RenderThreadImpl::current()->WidgetDestroyed();
     RenderThread::Get()->RemoveRoute(routing_id_);
     SetHidden(false);
   }
@@ -2383,9 +2388,9 @@ void RenderWidget::SetHidden(bool hidden) {
   // The status has changed.  Tell the RenderThread about it.
   is_hidden_ = hidden;
   if (is_hidden_)
-    RenderThread::Get()->WidgetHidden();
+    RenderThreadImpl::current()->WidgetHidden();
   else
-    RenderThread::Get()->WidgetRestored();
+    RenderThreadImpl::current()->WidgetRestored();
 }
 
 void RenderWidget::WillToggleFullscreen() {

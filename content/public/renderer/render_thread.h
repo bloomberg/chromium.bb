@@ -71,10 +71,6 @@ class CONTENT_EXPORT RenderThread : public IPC::Sender {
   virtual void SetResourceDispatcherDelegate(
       ResourceDispatcherDelegate* delegate) = 0;
 
-  // Called by a RenderWidget when it is hidden or restored.
-  virtual void WidgetHidden() = 0;
-  virtual void WidgetRestored() = 0;
-
   // We initialize WebKit as late as possible. Call this to force
   // initialization.
   virtual void EnsureWebKitInitialized() = 0;
