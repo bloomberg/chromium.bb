@@ -812,7 +812,7 @@ public:
     static void pushTraceCallback(void* containerObject, TraceCallback);
 
     // Push a weak pointer callback on the weak callback stack.
-    static void pushWeakCallback(void* containerObject, WeakPointerCallback);
+    static void pushWeakPointerCallback(void* containerObject, WeakPointerCallback);
 
     // Pop the top of the marking stack and call the callback with the visitor
     // and the object. Returns false when there is nothing more to do.

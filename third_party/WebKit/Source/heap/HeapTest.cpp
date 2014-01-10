@@ -989,7 +989,7 @@ TEST(HeapTest, WeakMembers)
 
     Bar::s_live = 0;
     {
-        Persistent<Bar> h1(Bar::create());
+        Persistent<Bar> h1 = Bar::create();
         Persistent<Weak> h4;
         Persistent<WithWeakMember> h5;
         Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
@@ -997,8 +997,8 @@ TEST(HeapTest, WeakMembers)
         {
             // FIXME: Change both persistents below to on stack pointers when
             // supporting conservative scanning.
-            Persistent<Bar> h2(Bar::create());
-            Persistent<Bar> h3(Bar::create());
+            Persistent<Bar> h2 = Bar::create();
+            Persistent<Bar> h3 = Bar::create();
             h4 = Weak::create(h2, h3);
             h5 = WithWeakMember::create(h2, h3);
             // FIXME: Change to HeapPointersOnStack when changing above to
@@ -1010,7 +1010,8 @@ TEST(HeapTest, WeakMembers)
             EXPECT_TRUE(h5->strongIsThere());
             EXPECT_TRUE(h5->weakIsThere());
         }
-        Heap::collectGarbage(ThreadState::NoHeapPointersOnStack); // h3 is collected, weak pointers from h4 and h5 don't keep it alive.
+        // h3 is collected, weak pointers from h4 and h5 don't keep it alive.
+        Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
         EXPECT_EQ(4u, Bar::s_live);
         EXPECT_TRUE(h4->strongIsThere());
         EXPECT_FALSE(h4->weakIsThere()); // h3 is gone from weak pointer.
@@ -1022,7 +1023,8 @@ TEST(HeapTest, WeakMembers)
         EXPECT_TRUE(h4->strongIsThere()); // h2 is still pointed to from h4.
         EXPECT_TRUE(h5->strongIsThere()); // h2 is still pointed to from h5.
     }
-    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack); // h4 and h5 have gone out of scope now and they were keeping h2 alive.
+    // h4 and h5 have gone out of scope now and they were keeping h2 alive.
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
     EXPECT_EQ(0u, Bar::s_live); // All gone.
 
     Heap::shutdown();

@@ -1219,7 +1219,7 @@ public:
 
     virtual void registerWeakMembers(const void* containingObject, WeakPointerCallback callback)
     {
-        Heap::pushWeakCallback(const_cast<void*>(containingObject), callback);
+        Heap::pushWeakPointerCallback(const_cast<void*>(containingObject), callback);
     }
 
     virtual bool isMarked(const void* objectPointer)
@@ -1283,8 +1283,9 @@ bool Heap::popAndInvokeTraceCallback(Visitor* visitor)
     return s_markingStack->popAndInvokeCallback(&s_markingStack, visitor);
 }
 
-void Heap::pushWeakCallback(void* object, WeakPointerCallback callback)
+void Heap::pushWeakPointerCallback(void* object, WeakPointerCallback callback)
 {
+    ASSERT(Heap::contains(object));
     CallbackStack::Item* slot = s_weakCallbackStack->allocateEntry(&s_weakCallbackStack);
     *slot = CallbackStack::Item(object, callback);
 }

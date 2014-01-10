@@ -159,37 +159,19 @@ private:
 template<typename T>
 class Persistent : public PersistentBase<ThreadingTrait<T>::Affinity, Persistent<T> > {
 public:
-    Persistent()
-        : m_raw(0)
-    {
-    }
+    Persistent() : m_raw(0) { }
 
-    Persistent(T* raw)
-        : m_raw(raw)
-    {
-    }
+    Persistent(T* raw) : m_raw(raw) { }
 
-    Persistent(std::nullptr_t)
-        : m_raw(0)
-    {
-    }
+    Persistent(std::nullptr_t) : m_raw(0) { }
 
-    Persistent(const Persistent& other)
-        : m_raw(other)
-    {
-    }
+    Persistent(const Persistent& other) : m_raw(other) { }
 
     template<typename U>
-    Persistent(const Persistent<U>& other)
-        : m_raw(other)
-    {
-    }
+    Persistent(const Persistent<U>& other) : m_raw(other) { }
 
     template<typename U>
-    Persistent(const Member<U>& other)
-        : m_raw(other)
-    {
-    }
+    Persistent(const Member<U>& other) : m_raw(other) { }
 
     template<typename U>
     Persistent& operator=(U* other)
@@ -266,47 +248,23 @@ private:
 template<typename T>
 class Member {
 public:
-    Member()
-        : m_raw(0)
-    {
-    }
+    Member() : m_raw(0) { }
 
-    Member(T* raw)
-        : m_raw(raw)
-    {
-    }
+    Member(T* raw) : m_raw(raw) { }
 
-    Member(std::nullptr_t)
-        : m_raw(0)
-    {
-    }
+    Member(std::nullptr_t) : m_raw(0) { }
 
-    Member(WTF::HashTableDeletedValueType)
-        : m_raw(reinterpret_cast<T*>(-1))
-    {
-    }
+    Member(WTF::HashTableDeletedValueType) : m_raw(reinterpret_cast<T*>(-1)) { }
 
-    bool isHashTableDeletedValue() const
-    {
-        return m_raw == reinterpret_cast<T*>(-1);
-    }
+    bool isHashTableDeletedValue() const { return m_raw == reinterpret_cast<T*>(-1); }
 
     template<typename U>
-    Member(const Persistent<U>& other)
-        : m_raw(other)
-    {
-    }
+    Member(const Persistent<U>& other) : m_raw(other) { }
 
-    Member(const Member& other)
-        : m_raw(other)
-    {
-    }
+    Member(const Member& other) : m_raw(other) { }
 
     template<typename U>
-    Member(const Member<U>& other)
-        : m_raw(other)
-    {
-    }
+    Member(const Member<U>& other) : m_raw(other) { }
 
     T* clear()
     {
