@@ -21,15 +21,12 @@
         'media_use_ffmpeg%': 1,
         'media_use_libvpx%': 1,
       }],
-      # ALSA usage.
-      ['(OS=="linux" or OS=="freebsd" or OS=="solaris") and embedded!=1', {
+      # Enable ALSA and Pulse for runtime selection.
+      ['(OS=="linux" or OS=="freebsd" or OS=="solaris") and embedded!=1 and use_cras==0', {
         'use_alsa%': 1,
-      }, {
-        'use_alsa%': 0,
-      }],
-      ['os_posix==1 and OS!="mac" and OS!="android" and chromeos!=1 and embedded!=1', {
         'use_pulseaudio%': 1,
       }, {
+        'use_alsa%': 0,
         'use_pulseaudio%': 0,
       }],
     ],
