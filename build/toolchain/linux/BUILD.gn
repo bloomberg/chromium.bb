@@ -13,9 +13,9 @@ if (is_gyp) {
   # any given build.
   if (is_clang) {
     # Set the GYP header for all toolchains when running under Clang.
-    gyp_header = make_clang_global_settings
+    make_global_settings = make_clang_global_settings
   } else {
-    gyp_header = ""
+    make_global_settings = ""
   }
 
   if (use_goma) {
@@ -27,15 +27,14 @@ if (is_gyp) {
     # GYP will interpret the file once for each generator, so we have to write
     # this condition into the GYP file since the user could have more than one
     # generator set.
-    if (gyp_header == "") {
-      gyp_header +=
-        "'conditions':" +
-        "['\"<(GENERATOR)\"==\"ninja\"', {" +
-        make_goma_global_settings +
-        "}],"
-    } else {
-      gyp_header += make_goma_global_settings
-    }
+    gyp_header =
+      "'conditions':" +
+      "['\"<(GENERATOR)\"==\"ninja\"', { 'make_global_settings': [" +
+      make_global_settings +
+      make_goma_global_settings +
+      "]}],"
+  } else {
+    gyp_header = "'make_global_settings': [" + make_global_settings + "],"
   }
 }
 

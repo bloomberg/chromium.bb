@@ -25,11 +25,10 @@ if (is_clang) {
     make_clang_dir = "third_party/llvm-build/Release+Asserts"
   }
 
+  # This includes the array values but not the 'make_global_settings' name.
   make_clang_global_settings =
-    "'make_global_settings': [" +
     "['CC', '$make_clang_dir/bin/clang']," +
     "['CXX', '$make_clang_dir/bin/clang++']," +
     "['CC.host', '\$(CC)']," +
-    "['CXX.host', '\$(CXX)']," +
-    "],"
+    "['CXX.host', '\$(CXX)'],"
 }

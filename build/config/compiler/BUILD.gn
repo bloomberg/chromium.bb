@@ -173,8 +173,11 @@ config("compiler") {
       "-ffunction-sections",
       "-funwind-tables",
       "-fno-short-enums",
-      "-finline-limit=64",
     ]
+    if (!is_clang) {
+      # Clang doesn't support this one.
+      cflags += [ "-finline-limit=64" ]
+    }
     if (is_android_webview_build) {
       # Android predefines this as 1; undefine it here so Chromium can redefine
       # it later to be 2 for chromium code and unset for third party code. This
