@@ -23,8 +23,8 @@ void {{proxy_name}}::{{method.name}}({{params_list(method)}}) {
 {#--- Computes #}
 {%-   for param in method.parameters %}
 {%-     if param.kind|is_object_kind %}
-  payload_size += mojo::internal::ComputeSizeOf(
-      mojo::internal::Unwrap({{param.name}}));
+  if (!{{param.name}}.is_null())
+    payload_size += mojo::internal::Unwrap({{param.name}})->ComputeSize();
 {%-     endif %}
 {%-   endfor %}
 
@@ -36,9 +36,9 @@ void {{proxy_name}}::{{method.name}}({{params_list(method)}}) {
 {#--- Sets #}
 {%   for param in method.parameters %}
 {%-     if param.kind|is_object_kind %}
-  params->set_{{param.name}}(
-      mojo::internal::Clone(mojo::internal::Unwrap({{param.name}}),
-                            builder.buffer()));
+  if (!{{param.name}}.is_null())
+    params->set_{{param.name}}(
+        mojo::internal::Unwrap({{param.name}})->Clone(builder.buffer()));
 {%-     elif param.kind|is_handle_kind %}
   params->set_{{param.name}}({{param.name}}.release());
 {%-     else %}
@@ -47,7 +47,7 @@ void {{proxy_name}}::{{method.name}}({{params_list(method)}}) {
 {%-   endfor %}
 
   mojo::Message message;
-  mojo::internal::EncodePointersAndHandles(params, &message.handles);
+  params->EncodePointersAndHandles(&message.handles);
 
   message.data = builder.Finish();
 
@@ -81,10 +81,10 @@ bool {{class_name}}Stub::Accept(mojo::Message* message) {
           reinterpret_cast<internal::{{class_name}}_{{method.name}}_Params_Data*>(
               message->data->payload);
 
-      if (!mojo::internal::DecodePointersAndHandles(params, message))
+      if (!params->DecodePointersAndHandles(message))
         return false;
       sink_->{{method.name}}({{params(method)}});
-      mojo::internal::CloseHandles(params);
+      params->CloseHandles();
       break;
     }
 {%- endfor %}

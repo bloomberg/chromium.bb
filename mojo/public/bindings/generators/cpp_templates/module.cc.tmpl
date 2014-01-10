@@ -4,6 +4,7 @@
 
 #include "./{{module_name|camel_to_underscores}}.h"
 
+#include "mojo/public/bindings/lib/bindings_serialization.h"
 #include "mojo/public/bindings/lib/message_builder.h"
 
 namespace {{namespace}} {
@@ -29,14 +30,14 @@ namespace {
 
 }  // namespace
 
-{#--- Struct definitions #}
-{%  for struct in structs %}
-{%-   include "struct_definition.tmpl" %}
-{%- endfor %}
-
 {#--- Struct destructors #}
 {%- for struct in structs %}
 {%-   include "struct_destructor.tmpl" %}
+{%- endfor %}
+
+{#--- Struct definitions #}
+{%  for struct in structs %}
+{%-   include "struct_definition.tmpl" %}
 {%- endfor %}
 
 }  // namespace internal
@@ -51,22 +52,3 @@ namespace {
 {%-   include "interface_definition.tmpl" %}
 {%- endfor %}
 }  // namespace {{namespace}}
-
-namespace mojo {
-namespace internal {
-
-{#--- Struct serialization definitions #}
-{%- for struct in structs %}
-{%-   include "struct_serialization_definition.tmpl" %}
-{%- endfor %}
-
-{#--- Interface serialization definitions #}
-{%- for interface in interfaces %}
-{%-   for method in interface.methods %}
-{%-     set struct = interface|struct_from_method(method) %}
-{%-     include "params_serialization.tmpl" %}
-{%-   endfor %}
-{%- endfor %}
-
-}  // namespace internal
-}  // namespace mojo

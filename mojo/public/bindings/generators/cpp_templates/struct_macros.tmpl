@@ -61,22 +61,22 @@
 {%-   endif %}
 {%- endmacro %}
 
-{%- macro encodes(struct, param_name) -%}
+{%- macro encodes(struct) -%}
 {%-   for pf in struct.packed.packed_fields if pf.field.kind|is_object_kind -%}
-Encode(&{{param_name}}->{{pf.field.name}}_, handles);
+mojo::internal::Encode(&{{pf.field.name}}_, handles);
 {%    endfor %}
 {%-   for pf in struct.packed.packed_fields if pf.field.kind|is_handle_kind -%}
-EncodeHandle(&{{param_name}}->{{pf.field.name}}_, handles);
+mojo::internal::EncodeHandle(&{{pf.field.name}}_, handles);
 {%    endfor %}
 {%- endmacro -%}
 
-{%- macro decodes(struct, param_name) -%}
+{%- macro decodes(struct) -%}
 {%-   for pf in struct.packed.packed_fields if pf.field.kind|is_object_kind -%}
-if (!Decode(&{{param_name}}->{{pf.field.name}}_, message))
+if (!mojo::internal::Decode(&{{pf.field.name}}_, message))
   return false;
 {%    endfor %}
 {%-   for pf in struct.packed.packed_fields if pf.field.kind|is_handle_kind -%}
-if (!DecodeHandle(&{{param_name}}->{{pf.field.name}}_, &message->handles))
+if (!mojo::internal::DecodeHandle(&{{pf.field.name}}_, &message->handles))
   return false;
 {%    endfor %}
 {%- endmacro -%}

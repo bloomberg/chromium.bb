@@ -6,6 +6,8 @@
 
 #include <assert.h>
 
+#include "mojo/public/bindings/lib/bindings_internal.h"
+
 namespace mojo {
 namespace internal {
 
@@ -64,27 +66,6 @@ bool DecodeHandle(Handle* handle, std::vector<Handle>* handles) {
     return false;
   // Just leave holes in the vector so we don't screw up other indices.
   *handle = FetchAndReset(&handles->at(handle->value()));
-  return true;
-}
-
-// static
-void ArrayHelper<Handle>::EncodePointersAndHandles(
-    const ArrayHeader* header,
-    ElementType* elements,
-    std::vector<Handle>* handles) {
-  for (uint32_t i = 0; i < header->num_elements; ++i)
-    EncodeHandle(&elements[i], handles);
-}
-
-// static
-bool ArrayHelper<Handle>::DecodePointersAndHandles(
-    const ArrayHeader* header,
-    ElementType* elements,
-    Message* message) {
-  for (uint32_t i = 0; i < header->num_elements; ++i) {
-    if (!DecodeHandle(&elements[i], &message->handles))
-      return false;
-  }
   return true;
 }
 

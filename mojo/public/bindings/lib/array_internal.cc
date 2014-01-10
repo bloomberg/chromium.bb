@@ -34,5 +34,26 @@ ArrayDataTraits<bool>::BitRef::operator bool() const {
   return (*storage_ & mask_) != 0;
 }
 
+// static
+void ArraySerializationHelper<Handle>::EncodePointersAndHandles(
+    const ArrayHeader* header,
+    ElementType* elements,
+    std::vector<Handle>* handles) {
+  for (uint32_t i = 0; i < header->num_elements; ++i)
+    EncodeHandle(&elements[i], handles);
+}
+
+// static
+bool ArraySerializationHelper<Handle>::DecodePointersAndHandles(
+    const ArrayHeader* header,
+    ElementType* elements,
+    Message* message) {
+  for (uint32_t i = 0; i < header->num_elements; ++i) {
+    if (!DecodeHandle(&elements[i], &message->handles))
+      return false;
+  }
+  return true;
+}
+
 }  // namespace internal
 }  // namespace mojo

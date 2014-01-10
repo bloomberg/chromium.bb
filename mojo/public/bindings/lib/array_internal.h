@@ -8,6 +8,7 @@
 #include <new>
 
 #include "mojo/public/bindings/lib/bindings_internal.h"
+#include "mojo/public/bindings/lib/bindings_serialization.h"
 #include "mojo/public/bindings/lib/buffer.h"
 #include "mojo/public/bindings/lib/passable.h"
 #include "mojo/public/system/core_cpp.h"
@@ -92,6 +93,100 @@ struct ArrayDataTraits<bool> {
   }
 };
 
+// What follows is code to support the serialization of Array_Data<T>. There
+// are two interesting cases: arrays of primitives and arrays of objects.
+// Arrays of objects are represented as arrays of pointers to objects.
+
+template <typename T>
+struct ArraySerializationHelper {
+  typedef T ElementType;
+
+  static size_t ComputeSizeOfElements(const ArrayHeader* header,
+                                      const ElementType* elements) {
+    return 0;
+  }
+
+  static void CloneElements(const ArrayHeader* header,
+                            ElementType* elements,
+                            Buffer* buf) {
+  }
+
+  static void EncodePointersAndHandles(const ArrayHeader* header,
+                                       ElementType* elements,
+                                       std::vector<Handle>* handles) {
+  }
+
+  static bool DecodePointersAndHandles(const ArrayHeader* header,
+                                       ElementType* elements,
+                                       Message* message) {
+    return true;
+  }
+};
+
+template <>
+struct ArraySerializationHelper<Handle> {
+  typedef Handle ElementType;
+
+  static size_t ComputeSizeOfElements(const ArrayHeader* header,
+                                      const ElementType* elements) {
+    return 0;
+  }
+
+  static void CloneElements(const ArrayHeader* header,
+                            ElementType* elements,
+                            Buffer* buf) {
+  }
+
+  static void EncodePointersAndHandles(const ArrayHeader* header,
+                                       ElementType* elements,
+                                       std::vector<Handle>* handles);
+
+  static bool DecodePointersAndHandles(const ArrayHeader* header,
+                                       ElementType* elements,
+                                       Message* message);
+};
+
+template <typename P>
+struct ArraySerializationHelper<P*> {
+  typedef StructPointer<P> ElementType;
+
+  static size_t ComputeSizeOfElements(const ArrayHeader* header,
+                                      const ElementType* elements) {
+    size_t result = 0;
+    for (uint32_t i = 0; i < header->num_elements; ++i) {
+      if (elements[i].ptr)
+        result += elements[i].ptr->ComputeSize();
+    }
+    return result;
+  }
+
+  static void CloneElements(const ArrayHeader* header,
+                            ElementType* elements,
+                            Buffer* buf) {
+    for (uint32_t i = 0; i < header->num_elements; ++i) {
+      if (elements[i].ptr)
+        elements[i].ptr = elements[i].ptr->Clone(buf);
+    }
+  }
+
+  static void EncodePointersAndHandles(const ArrayHeader* header,
+                                       ElementType* elements,
+                                       std::vector<Handle>* handles) {
+    for (uint32_t i = 0; i < header->num_elements; ++i)
+      Encode(&elements[i], handles);
+  }
+
+  static bool DecodePointersAndHandles(const ArrayHeader* header,
+                                       ElementType* elements,
+                                       Message* message) {
+    for (uint32_t i = 0; i < header->num_elements; ++i) {
+      if (!Decode(&elements[i], message))
+        return false;
+    }
+    return true;
+  }
+};
+
 template <typename T>
 class Array_Data {
  public:
@@ -130,9 +225,38 @@ class Array_Data {
         reinterpret_cast<const char*>(this) + sizeof(*this));
   }
 
- private:
-  friend class internal::ObjectTraits<Array_Data<T> >;
+  size_t ComputeSize() const {
+    return Align(header_.num_bytes) +
+        ArraySerializationHelper<T>::ComputeSizeOfElements(&header_, storage());
+  }
 
+  Array_Data<T>* Clone(Buffer* buf) const {
+    Array_Data<T>* clone = New(header_.num_elements, buf);
+    memcpy(clone->storage(),
+           storage(),
+           header_.num_bytes - sizeof(Array_Data<T>));
+
+    ArraySerializationHelper<T>::CloneElements(&clone->header_,
+                                               clone->storage(), buf);
+    return clone;
+  }
+
+  void CloseHandles() {
+    // TODO(darin): Implement!
+  }
+
+  void EncodePointersAndHandles(std::vector<Handle>* handles) {
+    ArraySerializationHelper<T>::EncodePointersAndHandles(&header_, storage(),
+                                                          handles);
+  }
+
+  bool DecodePointersAndHandles(Message* message) {
+    return ArraySerializationHelper<T>::DecodePointersAndHandles(&header_,
+                                                                 storage(),
+                                                                 message);
+  }
+
+ private:
   Array_Data(size_t num_bytes, size_t num_elements) {
     header_.num_bytes = static_cast<uint32_t>(num_bytes);
     header_.num_elements = static_cast<uint32_t>(num_elements);

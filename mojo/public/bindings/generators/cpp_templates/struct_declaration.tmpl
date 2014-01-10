@@ -18,9 +18,13 @@ class {{class_name}} {
 {#--- Getters -#}
 {{ struct_macros.getters(struct) }}
 
- private:
-  friend class mojo::internal::ObjectTraits<{{class_name}}>;
+  size_t ComputeSize() const;
+  {{class_name}}* Clone(mojo::Buffer* buf) const;
+  void CloseHandles();
+  void EncodePointersAndHandles(std::vector<mojo::Handle>* handles);
+  bool DecodePointersAndHandles(mojo::Message* message);
 
+ private:
   {{class_name}}();
   ~{{class_name}}();  // NOT IMPLEMENTED
 

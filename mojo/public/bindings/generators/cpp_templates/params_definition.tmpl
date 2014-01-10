@@ -15,9 +15,23 @@ class {{class_name}} {
 {#--- Getters -#}
 {{ struct_macros.getters(struct) }}
 
- private:
-  friend class mojo::internal::ObjectTraits<{{class_name}}>;
+  void CloseHandles() {
+{%- for pf in struct.packed.packed_fields if pf.field.kind|is_object_kind %}
+    if ({{pf.field.name}}_.ptr)
+      {{pf.field.name}}_.ptr->CloseHandles();
+{%- endfor %}
+  }
 
+  void EncodePointersAndHandles(std::vector<mojo::Handle>* handles) {
+    {{ struct_macros.encodes(struct)|indent(4) }}
+  }
+
+  bool DecodePointersAndHandles(mojo::Message* message) {
+    {{ struct_macros.decodes(struct)|indent(4) }}
+    return true;
+  }
+
+ private:
   {{class_name}}() {
     _header_.num_bytes = sizeof(*this);
     _header_.num_fields = 3;

@@ -1,3 +1,4 @@
+{%- import "struct_macros.tmpl" as struct_macros %}
 {%- set class_name = struct.name ~ "_Data" %}
 // static
 {{class_name}}* {{class_name}}::New(mojo::Buffer* buf, mojo::Buffer::Destructor dtor) {
@@ -7,4 +8,46 @@
 {{class_name}}::{{class_name}}() {
   _header_.num_bytes = sizeof(*this);
   _header_.num_fields = {{struct.packed.packed_fields|length}};
+}
+
+size_t {{class_name}}::ComputeSize() const {
+  size_t result = sizeof(*this);
+{%- for pf in struct.packed.packed_fields if pf.field.kind|is_object_kind %}
+  if ({{pf.field.name}}_.ptr)
+    result += {{pf.field.name}}_.ptr->ComputeSize();
+{%- endfor %}
+  return result;
+}
+
+{{class_name}}* {{class_name}}::Clone(mojo::Buffer* buf) const {
+  {{class_name}}* clone = New(buf);
+  memcpy(clone, this, sizeof(*this));
+{%- for pf in struct.packed.packed_fields if pf.field.kind|is_object_kind %}
+  if ({{pf.field.name}}_.ptr)
+    clone->set_{{pf.field.name}}({{pf.field.name}}_.ptr->Clone(buf));
+{%- endfor %}
+{%- for pf in struct.packed.packed_fields if pf.field.kind|is_handle_kind %}
+  mojo::internal::ResetIfNonNull({{pf.field.name}}());
+{%- endfor %}
+  return clone;
+}
+
+void {{class_name}}::CloseHandles() {
+{%- for pf in struct.packed.packed_fields if pf.field.kind|is_object_kind %}
+  if ({{pf.field.name}}_.ptr)
+    {{pf.field.name}}_.ptr->CloseHandles();
+{%- endfor %}
+{%- if struct|is_struct_with_handles %}
+  {{struct.name}}_Data_Destructor(this);
+{%- endif %}
+}
+
+void {{class_name}}::EncodePointersAndHandles(
+    std::vector<mojo::Handle>* handles) {
+  {{ struct_macros.encodes(struct)|indent(2) }}
+}
+
+bool {{class_name}}::DecodePointersAndHandles(mojo::Message* message) {
+  {{ struct_macros.decodes(struct)|indent(2) }}
+  return true;
 }
