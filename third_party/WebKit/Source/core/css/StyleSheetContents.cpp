@@ -234,7 +234,12 @@ bool StyleSheetContents::wrapperInsertRule(PassRefPtr<StyleRuleBase> rule, unsig
         // Inserting non-import rule before @import is not allowed.
         if (!rule->isImportRule())
             return false;
-        m_importRules.insert(childVectorIndex, toStyleRuleImport(rule.get()));
+
+        StyleRuleImport* importRule = toStyleRuleImport(rule.get());
+        if (importRule->mediaQueries())
+            setHasMediaQueries();
+
+        m_importRules.insert(childVectorIndex, importRule);
         m_importRules[childVectorIndex]->setParentStyleSheet(this);
         m_importRules[childVectorIndex]->requestStyleSheet();
         // FIXME: Stylesheet doesn't actually change meaningfully before the imported sheets are loaded.
@@ -243,6 +248,10 @@ bool StyleSheetContents::wrapperInsertRule(PassRefPtr<StyleRuleBase> rule, unsig
     // Inserting @import rule after a non-import rule is not allowed.
     if (rule->isImportRule())
         return false;
+
+    if (rule->isMediaRule())
+        setHasMediaQueries();
+
     childVectorIndex -= m_importRules.size();
 
     m_childRules.insert(childVectorIndex, rule);
