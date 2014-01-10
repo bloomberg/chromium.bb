@@ -1027,7 +1027,7 @@
     'emma_filter%': '',
 
     # Set to 1 to enable running Android lint on java/class files.
-    'android_lint%': 1,
+    'android_lint%': 0,
 
     # Set to 1 to force Visual C++ to use legacy debug information format /Z7.
     # This is useful for parallel compilation tools which can't support /Zi.
