@@ -37,6 +37,7 @@ namespace WebCore {
 
 PointerLockController::PointerLockController(Page* page)
     : m_page(page)
+    , m_lockPending(false)
 {
 }
 
