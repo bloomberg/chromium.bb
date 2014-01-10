@@ -247,16 +247,45 @@ void ApplyAndroidWorkarounds(const gpu::GPUInfo& gpu_info,
   gfx::DeviceDisplayInfo info;
   int default_tile_size = 256;
 
-  // For very high resolution displays (eg. Nexus 10), set the default
-  // tile size to be 512. This should be removed in favour of a generic
-  // hueristic that works across all platforms and devices, once that
-  // exists: http://crbug.com/159524. This switches to 512 for screens
-  // containing 40 or more 256x256 tiles, such that 1080p devices do
-  // not use 512x512 tiles (eg. 1920x1280 requires 37.5 tiles)
-  int numTiles = (info.GetDisplayWidth() *
-                  info.GetDisplayHeight()) / (256 * 256);
-  if (numTiles >= 40)
-    default_tile_size = 512;
+  // TODO(epenner): Now that this is somewhat generic, maybe we can
+  // unify this for all platforms (http://crbug.com/159524)
+
+  bool real_size_supported = true;
+  int display_width = info.GetPhysicalDisplayWidth();
+  int display_height = info.GetPhysicalDisplayHeight();
+  if (display_width == 0 || display_height == 0) {
+    real_size_supported = false;
+    display_width = info.GetDisplayWidth();
+    display_height = info.GetDisplayHeight();
+  }
+
+  int portrait_width = std::min(display_width, display_height);
+  int landscape_width = std::max(display_width, display_height);
+
+  if (real_size_supported) {
+    // Maximum HD dimensions should be 768x1280
+    // Maximum FHD dimensions should be 1200x1920
+    if (portrait_width > 768 || landscape_width > 1280)
+       default_tile_size = 384;
+    if (portrait_width > 1200 || landscape_width > 1920)
+       default_tile_size = 512;
+
+    // Adjust for some resolutions that barely straddle an extra
+    // tile when in portrait mode. This helps worst case scroll/raster
+    // by not needing a full extra tile for each row.
+    if (default_tile_size == 256 && portrait_width == 768)
+      default_tile_size += 32;
+    if (default_tile_size == 384 && portrait_width == 1200)
+      default_tile_size += 32;
+  } else {
+    // We don't know the exact resolution due to screen controls etc.
+    // So this just estimates the values above using tile counts.
+    int numTiles = (display_width * display_height) / (256 * 256);
+    if (numTiles > 16)
+      default_tile_size = 384;
+    if (numTiles >= 40)
+      default_tile_size = 512;
+  }
 
   // IMG: Fast async texture uploads only work with non-power-of-two,
   // but still multiple-of-eight sizes.
