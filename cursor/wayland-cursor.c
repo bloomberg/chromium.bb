@@ -413,6 +413,7 @@ wl_cursor_theme_destroy(struct wl_cursor_theme *theme)
 
 	shm_pool_destroy(theme->pool);
 
+	free(theme->name);
 	free(theme->cursors);
 	free(theme);
 }
