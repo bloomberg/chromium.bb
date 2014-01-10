@@ -112,6 +112,7 @@ def generate_attribute(interface, attribute):
             is_setter_raises_exception or has_strict_type_checking or
             v8_types.is_integer_type(idl_type)),
         'is_static': attribute.is_static,
+        'is_url': 'URL' in extended_attributes,
         'is_unforgeable': 'Unforgeable' in extended_attributes,
         'measure_as': v8_utilities.measure_as(attribute),  # [MeasureAs]
         'name': attribute.name,

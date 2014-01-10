@@ -8,8 +8,8 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 const v8::PropertyCallbackInfo<v8::Value>& info
 {%- endif %})
 {
-    {% if attribute.is_reflect and attribute.idl_type == 'DOMString' and
-          is_node %}
+    {% if attribute.is_reflect and not attribute.is_url and
+          attribute.idl_type == 'DOMString' and is_node %}
     {% set cpp_class, v8_class = 'Element', 'V8Element' %}
     {# FIXME: Perl skips most of function, but this seems unnecessary #}
     {% endif %}

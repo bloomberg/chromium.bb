@@ -171,6 +171,34 @@ static void reflectStringAttributeAttributeSetterCallback(v8::Local<v8::String>,
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void reflectUrlStringAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestInterfaceNode* imp = V8TestInterfaceNode::toNative(info.Holder());
+    v8SetReturnValueString(info, imp->getURLAttribute(HTMLNames::reflecturlstringattributeAttr), info.GetIsolate());
+}
+
+static void reflectUrlStringAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestInterfaceNodeV8Internal::reflectUrlStringAttributeAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void reflectUrlStringAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    Element* imp = V8Element::toNative(info.Holder());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
+    imp->setAttribute(HTMLNames::reflecturlstringattributeAttr, cppValue);
+}
+
+static void reflectUrlStringAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    TestInterfaceNodeV8Internal::reflectUrlStringAttributeAttributeSetter(jsValue, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 } // namespace TestInterfaceNodeV8Internal
 
 static const V8DOMConfiguration::AttributeConfiguration V8TestInterfaceNodeAttributes[] = {
@@ -178,6 +206,7 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestInterfaceNodeAttri
     {"readonlyTestInterfaceEmptyAttribute", TestInterfaceNodeV8Internal::readonlyTestInterfaceEmptyAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"eventHandlerAttribute", TestInterfaceNodeV8Internal::eventHandlerAttributeAttributeGetterCallback, TestInterfaceNodeV8Internal::eventHandlerAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"reflectStringAttribute", TestInterfaceNodeV8Internal::reflectStringAttributeAttributeGetterCallback, TestInterfaceNodeV8Internal::reflectStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"reflectUrlStringAttribute", TestInterfaceNodeV8Internal::reflectUrlStringAttributeAttributeGetterCallback, TestInterfaceNodeV8Internal::reflectUrlStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 };
 
 static void configureV8TestInterfaceNodeTemplate(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate, WrapperWorldType currentWorldType)
