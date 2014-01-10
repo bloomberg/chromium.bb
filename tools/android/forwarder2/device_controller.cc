@@ -141,17 +141,18 @@ void DeviceController::AcceptHostCommandInternal() {
 void DeviceController::DeleteListenerOnError(
       const base::WeakPtr<DeviceController>& device_controller_ptr,
       scoped_ptr<DeviceListener> device_listener) {
+  DeviceListener* const listener = device_listener.release();
   DeviceController* const controller = device_controller_ptr.get();
   if (!controller) {
-    // |device_listener| was already deleted by the controller that did have
-    // its ownership.
-    ignore_result(device_listener.release());
+    // |listener| was already deleted by the controller that did have its
+    // ownership.
     return;
   }
   DCHECK(controller->construction_task_runner_->RunsTasksOnCurrentThread());
   bool listener_did_exist = DeleteRefCountedValueInMap(
-      device_listener->listener_port(), &controller->listeners_);
+      listener->listener_port(), &controller->listeners_);
   DCHECK(listener_did_exist);
+  // Note that |listener| was deleted by DeleteRefCountedValueInMap().
 }
 
 }  // namespace forwarder
