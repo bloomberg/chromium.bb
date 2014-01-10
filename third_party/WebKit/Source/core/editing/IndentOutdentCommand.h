@@ -31,7 +31,7 @@
 
 namespace WebCore {
 
-class IndentOutdentCommand : public ApplyBlockElementCommand {
+class IndentOutdentCommand FINAL : public ApplyBlockElementCommand {
 public:
     enum EIndentType { Indent, Outdent };
     static PassRefPtr<IndentOutdentCommand> create(Document& document, EIndentType type)
@@ -39,12 +39,12 @@ public:
         return adoptRef(new IndentOutdentCommand(document, type));
     }
 
-    virtual bool preservesTypingStyle() const { return true; }
+    virtual bool preservesTypingStyle() const OVERRIDE { return true; }
 
 private:
     IndentOutdentCommand(Document&, EIndentType);
 
-    virtual EditAction editingAction() const { return m_typeOfAction == Indent ? EditActionIndent : EditActionOutdent; }
+    virtual EditAction editingAction() const OVERRIDE { return m_typeOfAction == Indent ? EditActionIndent : EditActionOutdent; }
 
     void indentRegion(const VisiblePosition&, const VisiblePosition&);
     void outdentRegion(const VisiblePosition&, const VisiblePosition&);
@@ -52,8 +52,8 @@ private:
     bool tryIndentingAsListItem(const Position&, const Position&);
     void indentIntoBlockquote(const Position&, const Position&, RefPtr<Element>&);
 
-    void formatSelection(const VisiblePosition& startOfSelection, const VisiblePosition& endOfSelection);
-    void formatRange(const Position& start, const Position& end, const Position& endOfSelection, RefPtr<Element>& blockquoteForNextIndent);
+    virtual void formatSelection(const VisiblePosition& startOfSelection, const VisiblePosition& endOfSelection) OVERRIDE;
+    virtual void formatRange(const Position& start, const Position& end, const Position& endOfSelection, RefPtr<Element>& blockquoteForNextIndent) OVERRIDE;
 
     EIndentType m_typeOfAction;
 };

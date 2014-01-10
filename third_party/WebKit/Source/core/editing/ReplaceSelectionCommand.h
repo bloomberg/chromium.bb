@@ -34,7 +34,7 @@ namespace WebCore {
 class DocumentFragment;
 class ReplacementFragment;
 
-class ReplaceSelectionCommand : public CompositeEditCommand {
+class ReplaceSelectionCommand FINAL : public CompositeEditCommand {
 public:
     enum CommandOption {
         SelectReplacement = 1 << 0,
@@ -55,8 +55,8 @@ public:
 private:
     ReplaceSelectionCommand(Document&, PassRefPtr<DocumentFragment>, CommandOptions, EditAction);
 
-    virtual void doApply();
-    virtual EditAction editingAction() const;
+    virtual void doApply() OVERRIDE;
+    virtual EditAction editingAction() const OVERRIDE;
 
     class InsertedNodes {
     public:

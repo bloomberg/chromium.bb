@@ -32,7 +32,7 @@ namespace WebCore {
 
 class Text;
 
-class InsertIntoTextNodeCommand : public SimpleEditCommand {
+class InsertIntoTextNodeCommand FINAL : public SimpleEditCommand {
 public:
     static PassRefPtr<InsertIntoTextNodeCommand> create(PassRefPtr<Text> node, unsigned offset, const String& text)
     {

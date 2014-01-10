@@ -30,7 +30,7 @@
 
 namespace WebCore {
 
-class RemoveNodeCommand : public SimpleEditCommand {
+class RemoveNodeCommand FINAL : public SimpleEditCommand {
 public:
     static PassRefPtr<RemoveNodeCommand> create(PassRefPtr<Node> node, ShouldAssumeContentIsAlwaysEditable shouldAssumeContentIsAlwaysEditable)
     {

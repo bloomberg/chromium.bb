@@ -30,7 +30,7 @@
 
 namespace WebCore {
 
-class MergeIdenticalElementsCommand : public SimpleEditCommand {
+class MergeIdenticalElementsCommand FINAL : public SimpleEditCommand {
 public:
     static PassRefPtr<MergeIdenticalElementsCommand> create(PassRefPtr<Element> element1, PassRefPtr<Element> element2)
     {

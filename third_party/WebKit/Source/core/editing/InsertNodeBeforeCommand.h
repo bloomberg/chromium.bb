@@ -30,7 +30,7 @@
 
 namespace WebCore {
 
-class InsertNodeBeforeCommand : public SimpleEditCommand {
+class InsertNodeBeforeCommand FINAL : public SimpleEditCommand {
 public:
     static PassRefPtr<InsertNodeBeforeCommand> create(PassRefPtr<Node> childToInsert, PassRefPtr<Node> childToInsertBefore,
         ShouldAssumeContentIsAlwaysEditable shouldAssumeContentIsAlwaysEditable)

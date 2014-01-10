@@ -32,7 +32,7 @@ namespace WebCore {
 
 class Text;
 
-class DeleteFromTextNodeCommand : public SimpleEditCommand {
+class DeleteFromTextNodeCommand FINAL : public SimpleEditCommand {
 public:
     static PassRefPtr<DeleteFromTextNodeCommand> create(PassRefPtr<Text> node, unsigned offset, unsigned count)
     {

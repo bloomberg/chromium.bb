@@ -32,7 +32,7 @@ namespace WebCore {
 
 class HTMLElement;
 
-class WrapContentsInDummySpanCommand : public SimpleEditCommand {
+class WrapContentsInDummySpanCommand FINAL : public SimpleEditCommand {
 public:
     static PassRefPtr<WrapContentsInDummySpanCommand> create(PassRefPtr<Element> element)
     {

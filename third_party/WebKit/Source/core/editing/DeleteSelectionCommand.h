@@ -32,7 +32,7 @@ namespace WebCore {
 
 class EditingStyle;
 
-class DeleteSelectionCommand : public CompositeEditCommand {
+class DeleteSelectionCommand FINAL : public CompositeEditCommand {
 public:
     static PassRefPtr<DeleteSelectionCommand> create(Document& document, bool smartDelete = false, bool mergeBlocksAfterDelete = true, bool expandForSpecialElements = false, bool sanitizeMarkup = true)
     {
@@ -47,10 +47,10 @@ private:
     DeleteSelectionCommand(Document&, bool smartDelete, bool mergeBlocksAfterDelete, bool expandForSpecialElements, bool santizeMarkup);
     DeleteSelectionCommand(const VisibleSelection&, bool smartDelete, bool mergeBlocksAfterDelete, bool expandForSpecialElements, bool sanitizeMarkup);
 
-    virtual void doApply();
-    virtual EditAction editingAction() const;
+    virtual void doApply() OVERRIDE;
+    virtual EditAction editingAction() const OVERRIDE;
 
-    virtual bool preservesTypingStyle() const;
+    virtual bool preservesTypingStyle() const OVERRIDE;
 
     void initializeStartEnd(Position&, Position&);
     void setStartingSelectionOnSmartDelete(const Position&, const Position&);
@@ -66,8 +66,8 @@ private:
     void calculateTypingStyleAfterDelete();
     void clearTransientState();
     void makeStylingElementsDirectChildrenOfEditableRootToPreventStyleLoss();
-    virtual void removeNode(PassRefPtr<Node>, ShouldAssumeContentIsAlwaysEditable = DoNotAssumeContentIsAlwaysEditable);
-    virtual void deleteTextFromNode(PassRefPtr<Text>, unsigned, unsigned);
+    virtual void removeNode(PassRefPtr<Node>, ShouldAssumeContentIsAlwaysEditable = DoNotAssumeContentIsAlwaysEditable) OVERRIDE;
+    virtual void deleteTextFromNode(PassRefPtr<Text>, unsigned, unsigned) OVERRIDE;
     void removeRedundantBlocks();
 
     bool m_hasSelectionToDelete;

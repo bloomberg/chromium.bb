@@ -32,7 +32,7 @@ namespace WebCore {
 
 class DocumentFragment;
 
-class MoveSelectionCommand : public CompositeEditCommand {
+class MoveSelectionCommand FINAL : public CompositeEditCommand {
 public:
     static PassRefPtr<MoveSelectionCommand> create(PassRefPtr<DocumentFragment> fragment, const Position& position, bool smartInsert = false, bool smartDelete = false)
     {
@@ -42,8 +42,8 @@ public:
 private:
     MoveSelectionCommand(PassRefPtr<DocumentFragment>, const Position&, bool smartInsert, bool smartDelete);
 
-    virtual void doApply();
-    virtual EditAction editingAction() const;
+    virtual void doApply() OVERRIDE;
+    virtual EditAction editingAction() const OVERRIDE;
 
     RefPtr<DocumentFragment> m_fragment;
     Position m_position;

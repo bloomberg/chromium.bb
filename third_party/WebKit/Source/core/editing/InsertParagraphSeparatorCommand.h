@@ -32,7 +32,7 @@ namespace WebCore {
 
 class EditingStyle;
 
-class InsertParagraphSeparatorCommand : public CompositeEditCommand {
+class InsertParagraphSeparatorCommand FINAL : public CompositeEditCommand {
 public:
     static PassRefPtr<InsertParagraphSeparatorCommand> create(Document& document, bool useDefaultParagraphElement = false, bool pasteBlockqutoeIntoUnquotedArea = false)
     {
@@ -42,7 +42,7 @@ public:
 private:
     InsertParagraphSeparatorCommand(Document&, bool useDefaultParagraphElement, bool pasteBlockqutoeIntoUnquotedArea);
 
-    virtual void doApply();
+    virtual void doApply() OVERRIDE;
 
     void calculateStyleBeforeInsertion(const Position&);
     void applyStyleAfterInsertion(Node* originalEnclosingBlock);
@@ -51,7 +51,7 @@ private:
 
     bool shouldUseDefaultParagraphElement(Node*) const;
 
-    virtual bool preservesTypingStyle() const;
+    virtual bool preservesTypingStyle() const OVERRIDE;
 
     RefPtr<EditingStyle> m_style;
 

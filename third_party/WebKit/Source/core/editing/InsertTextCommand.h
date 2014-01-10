@@ -41,7 +41,7 @@ protected:
     TextInsertionMarkerSupplier() { }
 };
 
-class InsertTextCommand : public CompositeEditCommand {
+class InsertTextCommand FINAL : public CompositeEditCommand {
 public:
     enum RebalanceType {
         RebalanceLeadingAndTrailingWhitespaces,
@@ -66,7 +66,7 @@ private:
 
     void deleteCharacter();
 
-    virtual void doApply();
+    virtual void doApply() OVERRIDE;
 
     Position positionInsideTextNode(const Position&);
     Position insertTab(const Position&);

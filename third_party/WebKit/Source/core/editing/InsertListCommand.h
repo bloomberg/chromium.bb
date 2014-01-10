@@ -32,7 +32,7 @@ namespace WebCore {
 
 class HTMLElement;
 
-class InsertListCommand : public CompositeEditCommand {
+class InsertListCommand FINAL : public CompositeEditCommand {
 public:
     enum Type { OrderedList, UnorderedList };
 
@@ -43,13 +43,13 @@ public:
 
     static PassRefPtr<HTMLElement> insertList(Document&, Type);
 
-    virtual bool preservesTypingStyle() const { return true; }
+    virtual bool preservesTypingStyle() const OVERRIDE { return true; }
 
 private:
     InsertListCommand(Document&, Type);
 
-    virtual void doApply();
-    virtual EditAction editingAction() const { return EditActionInsertList; }
+    virtual void doApply() OVERRIDE;
+    virtual EditAction editingAction() const OVERRIDE { return EditActionInsertList; }
 
     HTMLElement* fixOrphanedListChild(Node*);
     bool selectionHasListOfType(const VisibleSelection& selection, const QualifiedName&);

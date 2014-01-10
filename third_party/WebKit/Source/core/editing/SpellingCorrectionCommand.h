@@ -31,7 +31,7 @@
 
 namespace WebCore {
 
-class SpellingCorrectionCommand : public CompositeEditCommand {
+class SpellingCorrectionCommand FINAL : public CompositeEditCommand {
 public:
     static PassRefPtr<SpellingCorrectionCommand> create(PassRefPtr<Range> rangeToBeCorrected, const String& correction)
     {
@@ -39,8 +39,8 @@ public:
     }
 private:
     SpellingCorrectionCommand(PassRefPtr<Range> rangeToBeCorrected, const String& correction);
-    virtual void doApply();
-    virtual bool shouldRetainAutocorrectionIndicator() const;
+    virtual void doApply() OVERRIDE;
+    virtual bool shouldRetainAutocorrectionIndicator() const OVERRIDE;
 
     RefPtr<Range> m_rangeToBeCorrected;
     VisibleSelection m_selectionToBeCorrected;

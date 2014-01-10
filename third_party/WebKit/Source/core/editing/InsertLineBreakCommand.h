@@ -30,7 +30,7 @@
 
 namespace WebCore {
 
-class InsertLineBreakCommand : public CompositeEditCommand {
+class InsertLineBreakCommand FINAL : public CompositeEditCommand {
 public:
     static PassRefPtr<InsertLineBreakCommand> create(Document& document)
     {
@@ -40,9 +40,9 @@ public:
 private:
     explicit InsertLineBreakCommand(Document&);
 
-    virtual void doApply();
+    virtual void doApply() OVERRIDE;
 
-    virtual bool preservesTypingStyle() const;
+    virtual bool preservesTypingStyle() const OVERRIDE;
 
     void insertNodeAfterPosition(Node*, const Position&);
     void insertNodeBeforePosition(Node*, const Position&);

@@ -41,7 +41,7 @@ enum ShouldIncludeTypingStyle {
     IgnoreTypingStyle
 };
 
-class ApplyStyleCommand : public CompositeEditCommand {
+class ApplyStyleCommand FINAL : public CompositeEditCommand {
 public:
     enum EPropertyLevel { PropertyDefault, ForceBlockProperties };
     enum InlineStyleRemovalMode { RemoveIfNeeded, RemoveAlways, RemoveNone };
@@ -71,8 +71,8 @@ private:
     ApplyStyleCommand(PassRefPtr<Element>, bool removeOnly, EditAction);
     ApplyStyleCommand(Document&, const EditingStyle*, bool (*isInlineElementToRemove)(const Element*), EditAction);
 
-    virtual void doApply();
-    virtual EditAction editingAction() const;
+    virtual void doApply() OVERRIDE;
+    virtual EditAction editingAction() const OVERRIDE;
 
     // style-removal helpers
     bool isStyledInlineElementToRemove(Element*) const;

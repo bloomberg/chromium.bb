@@ -30,7 +30,7 @@
 
 namespace WebCore {
 
-class BreakBlockquoteCommand : public CompositeEditCommand {
+class BreakBlockquoteCommand FINAL : public CompositeEditCommand {
 public:
     static PassRefPtr<BreakBlockquoteCommand> create(Document& document)
     {
@@ -39,7 +39,7 @@ public:
 
 private:
     explicit BreakBlockquoteCommand(Document&);
-    virtual void doApply();
+    virtual void doApply() OVERRIDE;
 };
 
 } // namespace WebCore

@@ -42,11 +42,11 @@ protected:
     void insertSiblingNodeRangeAfter(Node* startNode, Node* endNode, Node* refNode);
 
 private:
-    virtual bool preservesTypingStyle() const;
+    virtual bool preservesTypingStyle() const OVERRIDE FINAL;
 };
 
 // IncreaseSelectionListLevelCommand moves the selected list items one level deeper.
-class IncreaseSelectionListLevelCommand : public ModifySelectionListLevelCommand {
+class IncreaseSelectionListLevelCommand FINAL : public ModifySelectionListLevelCommand {
 public:
     static bool canIncreaseSelectionListLevel(Document&);
     static PassRefPtr<Node> increaseSelectionListLevel(Document&);
@@ -64,14 +64,14 @@ private:
 
     IncreaseSelectionListLevelCommand(Document&, Type);
 
-    virtual void doApply();
+    virtual void doApply() OVERRIDE;
 
     Type m_listType;
     RefPtr<Node> m_listElement;
 };
 
 // DecreaseSelectionListLevelCommand moves the selected list items one level shallower.
-class DecreaseSelectionListLevelCommand : public ModifySelectionListLevelCommand {
+class DecreaseSelectionListLevelCommand FINAL : public ModifySelectionListLevelCommand {
 public:
     static bool canDecreaseSelectionListLevel(Document&);
     static void decreaseSelectionListLevel(Document&);
@@ -84,7 +84,7 @@ private:
 
     explicit DecreaseSelectionListLevelCommand(Document&);
 
-    virtual void doApply();
+    virtual void doApply() OVERRIDE;
 };
 
 } // namespace WebCore

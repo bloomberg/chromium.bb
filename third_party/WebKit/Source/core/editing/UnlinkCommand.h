@@ -30,7 +30,7 @@
 
 namespace WebCore {
 
-class UnlinkCommand : public CompositeEditCommand {
+class UnlinkCommand FINAL : public CompositeEditCommand {
 public:
     static PassRefPtr<UnlinkCommand> create(Document& document)
     {
@@ -40,8 +40,8 @@ public:
 private:
     explicit UnlinkCommand(Document&);
 
-    virtual void doApply();
-    virtual EditAction editingAction() const { return EditActionUnlink; }
+    virtual void doApply() OVERRIDE;
+    virtual EditAction editingAction() const OVERRIDE { return EditActionUnlink; }
 };
 
 } // namespace WebCore

@@ -43,7 +43,7 @@ class Node;
 class SpellCheckRequester;
 class TextCheckerClient;
 
-class SpellCheckRequest : public TextCheckingRequest {
+class SpellCheckRequest FINAL : public TextCheckingRequest {
 public:
     static PassRefPtr<SpellCheckRequest> create(TextCheckingTypeMask, TextCheckingProcessType, PassRefPtr<Range> checkingRange, PassRefPtr<Range> paragraphRange, int requestNumber = 0);
     virtual ~SpellCheckRequest();

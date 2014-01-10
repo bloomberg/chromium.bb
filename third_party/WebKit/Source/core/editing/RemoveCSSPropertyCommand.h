@@ -33,7 +33,7 @@ namespace WebCore {
 
 class Element;
 
-class RemoveCSSPropertyCommand : public SimpleEditCommand {
+class RemoveCSSPropertyCommand FINAL : public SimpleEditCommand {
 public:
     static PassRefPtr<RemoveCSSPropertyCommand> create(Document& document, PassRefPtr<Element> element, CSSPropertyID property)
     {
@@ -42,7 +42,7 @@ public:
 
 private:
     RemoveCSSPropertyCommand(Document&, PassRefPtr<Element>, CSSPropertyID);
-    ~RemoveCSSPropertyCommand();
+    virtual ~RemoveCSSPropertyCommand();
 
     virtual void doApply() OVERRIDE;
     virtual void doUnapply() OVERRIDE;

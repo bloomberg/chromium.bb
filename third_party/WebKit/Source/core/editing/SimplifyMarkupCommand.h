@@ -30,7 +30,7 @@
 
 namespace WebCore {
 
-class SimplifyMarkupCommand : public CompositeEditCommand {
+class SimplifyMarkupCommand FINAL : public CompositeEditCommand {
 public:
     static PassRefPtr<SimplifyMarkupCommand> create(Document& document, Node* firstNode, Node* nodeAfterLast)
     {
@@ -40,7 +40,7 @@ public:
 private:
     SimplifyMarkupCommand(Document&, Node* firstNode, Node* nodeAfterLast);
 
-    virtual void doApply();
+    virtual void doApply() OVERRIDE;
     int pruneSubsequentAncestorsToRemove(Vector<RefPtr<Node> >& nodesToRemove, size_t startNodeIndex);
 
     RefPtr<Node> m_firstNode;

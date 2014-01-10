@@ -46,7 +46,7 @@ protected:
     const QualifiedName tagName() const { return m_tagName; }
 
 private:
-    virtual void doApply();
+    virtual void doApply() OVERRIDE FINAL;
     virtual void formatRange(const Position& start, const Position& end, const Position& endOfSelection, RefPtr<Element>&) = 0;
     void rangeForParagraphSplittingTextNodesIfNeeded(const VisiblePosition&, Position&, Position&);
     VisiblePosition endOfNextParagrahSplittingTextNodesIfNeeded(VisiblePosition&, Position&, Position&);

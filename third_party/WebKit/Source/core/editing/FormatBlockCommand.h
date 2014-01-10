@@ -38,14 +38,14 @@ class Position;
 class Range;
 class VisiblePosition;
 
-class FormatBlockCommand : public ApplyBlockElementCommand {
+class FormatBlockCommand FINAL : public ApplyBlockElementCommand {
 public:
     static PassRefPtr<FormatBlockCommand> create(Document& document, const QualifiedName& tagName)
     {
         return adoptRef(new FormatBlockCommand(document, tagName));
     }
 
-    virtual bool preservesTypingStyle() const { return true; }
+    virtual bool preservesTypingStyle() const OVERRIDE { return true; }
 
     static Element* elementForFormatBlockCommand(Range*);
     bool didApply() const { return m_didApply; }
@@ -53,9 +53,9 @@ public:
 private:
     FormatBlockCommand(Document&, const QualifiedName& tagName);
 
-    void formatSelection(const VisiblePosition& startOfSelection, const VisiblePosition& endOfSelection);
-    void formatRange(const Position& start, const Position& end, const Position& endOfSelection, RefPtr<Element>&);
-    EditAction editingAction() const { return EditActionFormatBlock; }
+    virtual void formatSelection(const VisiblePosition& startOfSelection, const VisiblePosition& endOfSelection) OVERRIDE;
+    virtual void formatRange(const Position& start, const Position& end, const Position& endOfSelection, RefPtr<Element>&) OVERRIDE;
+    virtual EditAction editingAction() const OVERRIDE { return EditActionFormatBlock; }
 
     bool m_didApply;
 };

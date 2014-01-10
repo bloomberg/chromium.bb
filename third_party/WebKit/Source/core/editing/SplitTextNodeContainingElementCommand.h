@@ -30,7 +30,7 @@
 
 namespace WebCore {
 
-class SplitTextNodeContainingElementCommand : public CompositeEditCommand {
+class SplitTextNodeContainingElementCommand FINAL : public CompositeEditCommand {
 public:
     static PassRefPtr<SplitTextNodeContainingElementCommand> create(PassRefPtr<Text> node, int offset)
     {
@@ -40,7 +40,7 @@ public:
 private:
     SplitTextNodeContainingElementCommand(PassRefPtr<Text>, int offset);
 
-    virtual void doApply();
+    virtual void doApply() OVERRIDE;
 
     RefPtr<Text> m_text;
     int m_offset;

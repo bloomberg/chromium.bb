@@ -30,7 +30,7 @@
 
 namespace WebCore {
 
-class RemoveNodePreservingChildrenCommand : public CompositeEditCommand {
+class RemoveNodePreservingChildrenCommand FINAL : public CompositeEditCommand {
 public:
     static PassRefPtr<RemoveNodePreservingChildrenCommand> create(PassRefPtr<Node> node, ShouldAssumeContentIsAlwaysEditable shouldAssumeContentIsAlwaysEditable)
     {
@@ -40,7 +40,7 @@ public:
 private:
     explicit RemoveNodePreservingChildrenCommand(PassRefPtr<Node>, ShouldAssumeContentIsAlwaysEditable);
 
-    virtual void doApply();
+    virtual void doApply() OVERRIDE;
 
     RefPtr<Node> m_node;
     ShouldAssumeContentIsAlwaysEditable m_shouldAssumeContentIsAlwaysEditable;

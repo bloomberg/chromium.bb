@@ -30,7 +30,7 @@
 
 namespace WebCore {
 
-class AppendNodeCommand : public SimpleEditCommand {
+class AppendNodeCommand FINAL : public SimpleEditCommand {
 public:
     static PassRefPtr<AppendNodeCommand> create(PassRefPtr<ContainerNode> parent, PassRefPtr<Node> node)
     {

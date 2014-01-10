@@ -130,7 +130,7 @@ private:
     String renderedText(const Node*, const Range*);
     String stringValueForRange(const Node*, const Range*);
     void appendElement(StringBuilder& out, Element*, bool addDisplayInline, RangeFullySelectsNode);
-    void appendElement(StringBuilder& out, Element* element, Namespaces*) OVERRIDE { appendElement(out, element, false, DoesFullySelectNode); }
+    virtual void appendElement(StringBuilder& out, Element* element, Namespaces*) OVERRIDE { appendElement(out, element, false, DoesFullySelectNode); }
 
     enum NodeTraversalMode { EmitString, DoNotEmitString };
     Node* traverseNodesForSerialization(Node* startNode, Node* pastEnd, NodeTraversalMode);

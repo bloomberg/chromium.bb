@@ -32,7 +32,7 @@ namespace WebCore {
 
 class Text;
 
-class SplitTextNodeCommand : public SimpleEditCommand {
+class SplitTextNodeCommand FINAL : public SimpleEditCommand {
 public:
     static PassRefPtr<SplitTextNodeCommand> create(PassRefPtr<Text> node, int offset)
     {

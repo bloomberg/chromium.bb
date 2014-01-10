@@ -30,20 +30,20 @@
 
 namespace WebCore {
 
-class CreateLinkCommand : public CompositeEditCommand {
+class CreateLinkCommand FINAL : public CompositeEditCommand {
 public:
     static PassRefPtr<CreateLinkCommand> create(Document& document, const String& linkURL)
     {
         return adoptRef(new CreateLinkCommand(document, linkURL));
     }
 
-    bool isCreateLinkCommand() const { return true; }
+    bool isCreateLinkCommand() const OVERRIDE { return true; }
 
 private:
     CreateLinkCommand(Document&, const String& linkURL);
 
-    virtual void doApply();
-    virtual EditAction editingAction() const { return EditActionCreateLink; }
+    virtual void doApply() OVERRIDE;
+    virtual EditAction editingAction() const OVERRIDE { return EditActionCreateLink; }
 
     String m_url;
 };

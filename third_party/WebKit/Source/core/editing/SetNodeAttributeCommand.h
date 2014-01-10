@@ -31,7 +31,7 @@
 
 namespace WebCore {
 
-class SetNodeAttributeCommand : public SimpleEditCommand {
+class SetNodeAttributeCommand FINAL : public SimpleEditCommand {
 public:
     static PassRefPtr<SetNodeAttributeCommand> create(PassRefPtr<Element> element, const QualifiedName& attribute, const AtomicString& value)
     {

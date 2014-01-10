@@ -31,7 +31,7 @@
 
 namespace WebCore {
 
-class SetSelectionCommand : public SimpleEditCommand {
+class SetSelectionCommand FINAL : public SimpleEditCommand {
 public:
     static PassRefPtr<SetSelectionCommand> create(const VisibleSelection& selection, FrameSelection::SetSelectionOptions options)
     {
