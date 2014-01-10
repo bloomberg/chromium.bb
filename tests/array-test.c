@@ -61,6 +61,7 @@ TEST(array_add)
 	/* add some data */
 	for (i = 0; i < iterations; i++) {
 		struct mydata* ptr = wl_array_add(&array, datasize);
+		assert(ptr);
 		assert((i + 1) * datasize == array.size);
 
 		ptr->a = i * 3;
@@ -95,6 +96,7 @@ TEST(array_copy)
 	/* add some data */
 	for (i = 0; i < iterations; i++) {
 		int *p = wl_array_add(&source, sizeof(int));
+		assert(p);
 		*p = i * 2 + i;
 	}
 
@@ -126,6 +128,7 @@ TEST(array_for_each)
 	wl_array_init(&array);
 	for (i = 0; i < 5; i++) {
 		p = wl_array_add(&array, sizeof *p);
+		assert(p);
 		*p = elements[i];
 	}
 
