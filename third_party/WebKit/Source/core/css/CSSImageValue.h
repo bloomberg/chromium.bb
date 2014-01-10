@@ -28,14 +28,15 @@
 namespace WebCore {
 
 class Element;
+class KURL;
 class StyleFetchedImage;
 class StyleImage;
 class RenderObject;
 
 class CSSImageValue : public CSSValue {
 public:
-    static PassRefPtr<CSSImageValue> create(const String& url) { return adoptRef(new CSSImageValue(url)); }
-    static PassRefPtr<CSSImageValue> create(const String& url, StyleImage* image) { return adoptRef(new CSSImageValue(url, image)); }
+    static PassRefPtr<CSSImageValue> create(const KURL& url) { return adoptRef(new CSSImageValue(url)); }
+    static PassRefPtr<CSSImageValue> create(const KURL& url, StyleImage* image) { return adoptRef(new CSSImageValue(url, image)); }
     ~CSSImageValue();
 
     StyleFetchedImage* cachedImage(ResourceFetcher*, const ResourceLoaderOptions&, CORSEnabled);
@@ -58,8 +59,8 @@ public:
     void setInitiator(const AtomicString& name) { m_initiatorName = name; }
 
 private:
-    explicit CSSImageValue(const String& url);
-    CSSImageValue(const String& url, StyleImage*);
+    explicit CSSImageValue(const KURL&);
+    CSSImageValue(const KURL&, StyleImage*);
 
     String m_url;
     RefPtr<StyleImage> m_image;

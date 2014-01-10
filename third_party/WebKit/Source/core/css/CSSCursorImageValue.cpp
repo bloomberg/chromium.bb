@@ -133,7 +133,7 @@ StyleImage* CSSCursorImageValue::cachedImage(ResourceFetcher* loader, float devi
             RefPtr<CSSImageValue> imageValue = toCSSImageValue(m_imageValue.get());
             // FIXME: This will fail if the <cursor> element is in a shadow DOM (bug 59827)
             if (SVGCursorElement* cursorElement = resourceReferencedByCursorElement(imageValue->url(), *loader->document())) {
-                RefPtr<CSSImageValue> svgImageValue = CSSImageValue::create(cursorElement->hrefCurrentValue());
+                RefPtr<CSSImageValue> svgImageValue = CSSImageValue::create(loader->document()->completeURL(cursorElement->hrefCurrentValue()));
                 StyleFetchedImage* cachedImage = svgImageValue->cachedImage(loader);
                 m_image = cachedImage;
                 return cachedImage;

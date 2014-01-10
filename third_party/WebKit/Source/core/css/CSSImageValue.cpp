@@ -29,19 +29,20 @@
 #include "core/fetch/ImageResource.h"
 #include "core/rendering/style/StyleFetchedImage.h"
 #include "core/rendering/style/StylePendingImage.h"
+#include "platform/weborigin/KURL.h"
 
 namespace WebCore {
 
-CSSImageValue::CSSImageValue(const String& url)
+CSSImageValue::CSSImageValue(const KURL& url)
     : CSSValue(ImageClass)
-    , m_url(url)
+    , m_url(url.string())
     , m_accessedImage(false)
 {
 }
 
-CSSImageValue::CSSImageValue(const String& url, StyleImage* image)
+CSSImageValue::CSSImageValue(const KURL& url, StyleImage* image)
     : CSSValue(ImageClass)
-    , m_url(url)
+    , m_url(url.string())
     , m_image(image)
     , m_accessedImage(true)
 {
@@ -66,7 +67,7 @@ StyleFetchedImage* CSSImageValue::cachedImage(ResourceFetcher* fetcher, const Re
     if (!m_accessedImage) {
         m_accessedImage = true;
 
-        FetchRequest request(ResourceRequest(fetcher->document()->completeURL(m_url)), m_initiatorName.isEmpty() ? FetchInitiatorTypeNames::css : m_initiatorName, options);
+        FetchRequest request(ResourceRequest(m_url), m_initiatorName.isEmpty() ? FetchInitiatorTypeNames::css : m_initiatorName, options);
 
         if (corsEnabled == PotentiallyCORSEnabled)
             updateRequestForAccessControl(request.mutableResourceRequest(), fetcher->document()->securityOrigin(), options.allowCredentials);
