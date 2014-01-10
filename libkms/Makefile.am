@@ -31,6 +31,11 @@ if HAVE_RADEON
 libkms_la_SOURCES += radeon.c
 endif
 
+if HAVE_EXYNOS
+libkms_la_SOURCES += exynos.c
+AM_CFLAGS += -I$(top_srcdir)/exynos
+endif
+
 libkmsincludedir = ${includedir}/libkms
 libkmsinclude_HEADERS = libkms.h
 

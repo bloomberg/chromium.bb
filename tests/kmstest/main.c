@@ -61,6 +61,7 @@ char *drivers[] = {
 	"radeon",
 	"nouveau",
 	"vmwgfx",
+	"exynos",
 	NULL
 };
 

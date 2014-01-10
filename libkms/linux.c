@@ -115,6 +115,10 @@ linux_from_sysfs(int fd, struct kms_driver **out)
 	else if (!strcmp(name, "radeon"))
 		ret = radeon_create(fd, out);
 #endif
+#ifdef HAVE_EXYNOS
+	else if (!strcmp(name, "exynos"))
+		ret = exynos_create(fd, out);
+#endif
 	else
 		ret = -ENOSYS;
 
