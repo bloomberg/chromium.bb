@@ -9,7 +9,7 @@ from measurements import startup
 class StartWithUrlCold(test.Test):
   """Measure time to start Chrome cold with startup URLs"""
   tag = 'cold'
-  test = startup.Startup
+  test = startup.StartWithUrl
   page_set = 'page_sets/startup_pages.json'
   options = {'cold': True,
              'pageset_repeat_iters': 5}
@@ -17,7 +17,7 @@ class StartWithUrlCold(test.Test):
 class StartWithUrlWarm(test.Test):
   """Measure time to start Chrome warm with startup URLs"""
   tag = 'warm'
-  test = startup.Startup
+  test = startup.StartWithUrl
   page_set = 'page_sets/startup_pages.json'
   options = {'warm': True,
              'pageset_repeat_iters': 10}

@@ -8,7 +8,8 @@ from measurements import session_restore
 class SessionRestoreWithUrl(session_restore.SessionRestore):
 
   def __init__(self):
-    super(SessionRestoreWithUrl, self).__init__()
+    super(SessionRestoreWithUrl, self).__init__(
+        action_name_to_run='navigate_steps')
 
   def CanRunForPage(self, page):
     # Run for every page in the page set that has a startup url.

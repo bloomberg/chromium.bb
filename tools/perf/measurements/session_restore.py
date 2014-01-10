@@ -15,8 +15,8 @@ class SessionRestore(startup.Startup):
   see startup.py for details.
   """
 
-  def __init__(self):
-    super(SessionRestore, self).__init__()
+  def __init__(self, action_name_to_run = ''):
+    super(SessionRestore, self).__init__(action_name_to_run=action_name_to_run)
     self.close_tabs_before_run = False
     self._cpu_metric = None
 
