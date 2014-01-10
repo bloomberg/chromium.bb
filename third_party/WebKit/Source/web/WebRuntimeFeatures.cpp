@@ -280,6 +280,16 @@ bool WebRuntimeFeatures::isNavigatorContentUtilsEnabled()
     return RuntimeEnabledFeatures::navigatorContentUtilsEnabled();
 }
 
+void WebRuntimeFeatures::enableOrientationEvent(bool enable)
+{
+    RuntimeEnabledFeatures::setOrientationEventEnabled(enable);
+}
+
+bool WebRuntimeFeatures::isOrientationEventEnabled()
+{
+    return RuntimeEnabledFeatures::orientationEventEnabled();
+}
+
 void WebRuntimeFeatures::enablePagePopup(bool enable)
 {
     RuntimeEnabledFeatures::setPagePopupEnabled(enable);

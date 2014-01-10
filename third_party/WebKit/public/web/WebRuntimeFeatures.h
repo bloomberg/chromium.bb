@@ -110,6 +110,9 @@ public:
     BLINK_EXPORT static void enableNavigatorContentUtils(bool);
     BLINK_EXPORT static bool isNavigatorContentUtilsEnabled();
 
+    BLINK_EXPORT static void enableOrientationEvent(bool);
+    BLINK_EXPORT static bool isOrientationEventEnabled();
+
     BLINK_EXPORT static void enablePagePopup(bool);
     BLINK_EXPORT static bool isPagePopupEnabled();
 
