@@ -296,8 +296,10 @@ void RawChannelPosix::OnFileCanReadWithoutBlocking(int fd) {
 
   // Move data back to start.
   if (read_buffer_start > 0) {
-    memmove(&read_buffer_[0], &read_buffer_[read_buffer_start],
-            read_buffer_num_valid_bytes_);
+    if (read_buffer_num_valid_bytes_ > 0) {
+      memmove(&read_buffer_[0], &read_buffer_[read_buffer_start],
+              read_buffer_num_valid_bytes_);
+    }
     read_buffer_start = 0;
   }
 }
