@@ -873,7 +873,8 @@ PassRefPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionSt
         if (importedNode->isShadowRoot()) {
             // ShadowRoot nodes should not be explicitly importable.
             // Either they are imported along with their host node, or created implicitly.
-            break;
+            exceptionState.throwDOMException(NotSupportedError, "The node provided is a shadow root, which may not be imported.");
+            return 0;
         }
         DocumentFragment* oldFragment = toDocumentFragment(importedNode);
         RefPtr<DocumentFragment> newFragment = createDocumentFragment();
@@ -891,10 +892,11 @@ PassRefPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionSt
         return newFragment.release();
     }
     case DOCUMENT_NODE:
-        break;
+        exceptionState.throwDOMException(NotSupportedError, "The node provided is a document, which may not be imported.");
+        return 0;
     }
-    Element* el = toElement(importedNode);
-    exceptionState.throwDOMException(NotSupportedError, "The node to import is of type '" + el->tagName() + "', which may not be imported.");
+
+    ASSERT_NOT_REACHED();
     return 0;
 }
 
