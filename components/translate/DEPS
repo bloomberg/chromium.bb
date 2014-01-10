@@ -1,5 +1,6 @@
 include_rules = [
   "+components/language_usage_metrics",
+  "+net",
 
   # Translate is a layered component; subdirectories must explicitly introduce
   # the ability to use the content layer as appropriate.

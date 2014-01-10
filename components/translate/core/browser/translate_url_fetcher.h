@@ -1,14 +1,16 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TRANSLATE_TRANSLATE_URL_FETCHER_H_
-#define CHROME_BROWSER_TRANSLATE_TRANSLATE_URL_FETCHER_H_
+#ifndef COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_URL_FETCHER_H_
+#define COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_URL_FETCHER_H_
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
+
+class TranslateDelegate;
 
 class TranslateURLFetcher : public net::URLFetcherDelegate {
  public:
@@ -23,7 +25,8 @@ class TranslateURLFetcher : public net::URLFetcherDelegate {
     FAILED,      // The last fetch request was finished with a failure.
   };
 
-  explicit TranslateURLFetcher(int id);
+  // |delegate| is expected to outlive the TranslateURLFetcher.
+  explicit TranslateURLFetcher(int id, TranslateDelegate* delegate);
   virtual ~TranslateURLFetcher();
 
   int max_retry_on_5xx() {
@@ -59,6 +62,9 @@ class TranslateURLFetcher : public net::URLFetcherDelegate {
   // ID which is assigned to the URLFetcher.
   const int id_;
 
+  // Used to get information from the embedder of Translate.
+  TranslateDelegate* translate_delegate_;
+
   // Internal state.
   enum State state_;
 
@@ -81,4 +87,4 @@ class TranslateURLFetcher : public net::URLFetcherDelegate {
   DISALLOW_COPY_AND_ASSIGN(TranslateURLFetcher);
 };
 
-#endif  // CHROME_BROWSER_TRANSLATE_TRANSLATE_URL_FETCHER_H_
+#endif  // COMPONENTS_TRANSLATE_CORE_BROWSER_TRANSLATE_URL_FETCHER_H_

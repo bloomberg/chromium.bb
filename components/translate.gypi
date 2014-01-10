@@ -20,9 +20,12 @@
         'translate/core/browser/page_translated_details.h',
         'translate/core/browser/translate_browser_metrics.cc',
         'translate/core/browser/translate_browser_metrics.h',
+        'translate/core/browser/translate_delegate.h',
         'translate/core/browser/translate_error_details.h',
         'translate/core/browser/translate_event_details.cc',
         'translate/core/browser/translate_event_details.h',
+        'translate/core/browser/translate_url_fetcher.cc',
+        'translate/core/browser/translate_url_fetcher.h',
        ],
     },
     {

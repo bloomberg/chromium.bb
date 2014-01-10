@@ -1,10 +1,10 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/translate/translate_url_fetcher.h"
+#include "components/translate/core/browser/translate_url_fetcher.h"
 
-#include "chrome/browser/browser_process.h"
+#include "components/translate/core/browser/translate_delegate.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
@@ -17,8 +17,9 @@ const int kMaxRetry = 16;
 
 }  // namespace
 
-TranslateURLFetcher::TranslateURLFetcher(int id)
+TranslateURLFetcher::TranslateURLFetcher(int id, TranslateDelegate* delegate)
     : id_(id),
+      translate_delegate_(delegate),
       state_(IDLE),
       retry_count_(0) {
 }
@@ -51,7 +52,7 @@ bool TranslateURLFetcher::Request(
       this));
   fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                          net::LOAD_DO_NOT_SAVE_COOKIES);
-  fetcher_->SetRequestContext(g_browser_process->system_request_context());
+  fetcher_->SetRequestContext(translate_delegate_->GetURLRequestContext());
   // Set retry parameter for HTTP status code 5xx. This doesn't work against
   // 106 (net::ERR_INTERNET_DISCONNECTED) and so on.
   // TranslateLanguageList handles network status, and implements retry.
