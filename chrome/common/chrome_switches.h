@@ -59,7 +59,6 @@ extern const char kCancelFirstRun[];
 extern const char kCertificateTransparencyLog[];
 extern const char kCheckForUpdateIntervalSec[];
 extern const char kCheckCloudPrintConnectorPolicy[];
-extern const char kChromeFrame[];
 extern const char kChromeVersion[];
 extern const char kCipherSuiteBlacklist[];
 extern const char kClearTokenService[];
