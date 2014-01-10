@@ -838,7 +838,6 @@ crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/form-controls-a
 crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/form-controls-autosizing-radio-input-element.html [ ImageOnlyFailure ]
 crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/form-controls-autosizing-select-element.html [ ImageOnlyFailure ]
 crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/form-controls-autosizing-textfield-input-elements.html [ ImageOnlyFailure ]
-crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/hackernews-comments.html [ NeedsRebaseline ]
 crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/header-li-links-autosizing.html [ ImageOnlyFailure ]
 crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/header-links-autosizing-different-fontsize.html [ ImageOnlyFailure ]
 crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/header-links-autosizing.html [ ImageOnlyFailure ]
