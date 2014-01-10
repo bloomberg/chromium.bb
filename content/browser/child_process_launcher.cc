@@ -469,6 +469,9 @@ base::TerminationStatus ChildProcessLauncher::GetChildTerminationStatus(
   if (context_->zygote_) {
     context_->termination_status_ = ZygoteHostImpl::GetInstance()->
         GetTerminationStatus(handle, known_dead, &context_->exit_code_);
+  } else if (known_dead) {
+    context_->termination_status_ =
+        base::GetKnownDeadTerminationStatus(handle, &context_->exit_code_);
   } else {
 #elif defined(OS_MACOSX)
   if (known_dead) {
