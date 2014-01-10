@@ -554,6 +554,11 @@ void RemoteDesktopBrowserTest::ParseCommandLine() {
     // One and only one of these two arguments should be provided.
     ASSERT_NE(webapp_crx_.empty(), webapp_unpacked_.empty());
   }
+
+  // Run with "enable-web-based-signin" flag to enforce web-based sign-in,
+  // rather than inline signin. This ensures we use the same authentication
+  // page, regardless of whether we are testing the v1 or v2 web-app.
+  command_line->AppendSwitch(switches::kEnableWebBasedSignin);
 }
 
 void RemoteDesktopBrowserTest::ExecuteScript(const std::string& script) {
