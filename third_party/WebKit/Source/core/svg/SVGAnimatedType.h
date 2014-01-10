@@ -22,8 +22,6 @@
 
 #include "core/svg/SVGAngle.h"
 #include "core/svg/SVGColor.h"
-#include "core/svg/SVGLength.h"
-#include "core/svg/SVGLengthList.h"
 #include "core/svg/SVGNumberList.h"
 #include "core/svg/SVGPointList.h"
 #include "core/svg/SVGPreserveAspectRatio.h"
@@ -47,8 +45,6 @@ public:
     static PassOwnPtr<SVGAnimatedType> createEnumeration(unsigned*);
     static PassOwnPtr<SVGAnimatedType> createInteger(int*);
     static PassOwnPtr<SVGAnimatedType> createIntegerOptionalInteger(std::pair<int, int>*);
-    static PassOwnPtr<SVGAnimatedType> createLength(SVGLength*);
-    static PassOwnPtr<SVGAnimatedType> createLengthList(SVGLengthList*);
     static PassOwnPtr<SVGAnimatedType> createNumber(float*);
     static PassOwnPtr<SVGAnimatedType> createNumberList(SVGNumberList*);
     static PassOwnPtr<SVGAnimatedType> createNumberOptionalNumber(std::pair<float, float>*);
@@ -98,18 +94,6 @@ public:
     {
         ASSERT(m_type == AnimatedIntegerOptionalInteger);
         return *m_data.integerOptionalInteger;
-    }
-
-    SVGLength& length()
-    {
-        ASSERT(m_type == AnimatedLength);
-        return *m_data.length;
-    }
-
-    SVGLengthList& lengthList()
-    {
-        ASSERT(m_type == AnimatedLengthList);
-        return *m_data.lengthList;
     }
 
     float& number()
@@ -182,7 +166,6 @@ private:
 
     union DataUnion {
         DataUnion()
-            : length(0)
         {
         }
 
@@ -192,8 +175,6 @@ private:
         unsigned* enumeration;
         int* integer;
         std::pair<int, int>* integerOptionalInteger;
-        SVGLength* length;
-        SVGLengthList* lengthList;
         float* number;
         SVGNumberList* numberList;
         std::pair<float, float>* numberOptionalNumber;

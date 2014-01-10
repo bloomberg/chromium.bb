@@ -52,12 +52,6 @@ SVGAnimatedType::~SVGAnimatedType()
     case AnimatedIntegerOptionalInteger:
         delete m_data.integerOptionalInteger;
         break;
-    case AnimatedLength:
-        delete m_data.length;
-        break;
-    case AnimatedLengthList:
-        delete m_data.lengthList;
-        break;
     case AnimatedNumber:
         delete m_data.number;
         break;
@@ -84,6 +78,10 @@ SVGAnimatedType::~SVGAnimatedType()
         break;
     case AnimatedTransformList:
         delete m_data.transformList;
+        break;
+    case AnimatedLength:
+    case AnimatedLengthList:
+        // handled by RefPtr
         break;
     case AnimatedUnknown:
         ASSERT_NOT_REACHED();
@@ -136,22 +134,6 @@ PassOwnPtr<SVGAnimatedType> SVGAnimatedType::createIntegerOptionalInteger(pair<i
     ASSERT(integerOptionalInteger);
     OwnPtr<SVGAnimatedType> animatedType = adoptPtr(new SVGAnimatedType(AnimatedIntegerOptionalInteger));
     animatedType->m_data.integerOptionalInteger = integerOptionalInteger;
-    return animatedType.release();
-}
-
-PassOwnPtr<SVGAnimatedType> SVGAnimatedType::createLength(SVGLength* length)
-{
-    ASSERT(length);
-    OwnPtr<SVGAnimatedType> animatedType = adoptPtr(new SVGAnimatedType(AnimatedLength));
-    animatedType->m_data.length = length;
-    return animatedType.release();
-}
-
-PassOwnPtr<SVGAnimatedType> SVGAnimatedType::createLengthList(SVGLengthList* lengthList)
-{
-    ASSERT(lengthList);
-    OwnPtr<SVGAnimatedType> animatedType = adoptPtr(new SVGAnimatedType(AnimatedLengthList));
-    animatedType->m_data.lengthList = lengthList;
     return animatedType.release();
 }
 
@@ -241,12 +223,6 @@ String SVGAnimatedType::valueAsString()
     case AnimatedColor:
         ASSERT(m_data.color);
         return m_data.color->serializedAsCSSComponentValue();
-    case AnimatedLength:
-        ASSERT(m_data.length);
-        return m_data.length->valueAsString();
-    case AnimatedLengthList:
-        ASSERT(m_data.lengthList);
-        return m_data.lengthList->valueAsString();
     case AnimatedNumber:
         ASSERT(m_data.number);
         return String::number(*m_data.number);
@@ -257,6 +233,11 @@ String SVGAnimatedType::valueAsString()
     case AnimatedString:
         ASSERT(m_data.string);
         return *m_data.string;
+
+    // Below properties have migrated to new property implementation.
+    case AnimatedLength:
+    case AnimatedLengthList:
+        return m_newProperty->valueAsString();
 
     // These types don't appear in the table in SVGElement::cssPropertyToTypeMap() and thus don't need valueAsString() support.
     case AnimatedAngle:
@@ -286,16 +267,6 @@ bool SVGAnimatedType::setValueAsString(const QualifiedName& attrName, const Stri
         ASSERT(m_data.color);
         *m_data.color = value.isEmpty() ? Color() : SVGColor::colorFromRGBColorString(value);
         break;
-    case AnimatedLength: {
-        ASSERT(m_data.length);
-        TrackExceptionState exceptionState;
-        m_data.length->setValueAsString(value, SVGLength::lengthModeForAnimatedLengthAttribute(attrName), exceptionState);
-        return !exceptionState.hadException();
-    }
-    case AnimatedLengthList:
-        ASSERT(m_data.lengthList);
-        m_data.lengthList->parse(value, SVGLength::lengthModeForAnimatedLengthAttribute(attrName));
-        break;
     case AnimatedNumber:
         ASSERT(m_data.number);
         parseNumberFromString(value, *m_data.number);
@@ -308,6 +279,12 @@ bool SVGAnimatedType::setValueAsString(const QualifiedName& attrName, const Stri
         ASSERT(m_data.string);
         *m_data.string = value;
         break;
+
+    // Below properties have migrated to new property implementation.
+    case AnimatedLength:
+    case AnimatedLengthList:
+        // Always use createForAnimation call path for these implementations.
+        return false;
 
     // These types don't appear in the table in SVGElement::cssPropertyToTypeMap() and thus don't need setValueAsString() support.
     case AnimatedAngle:

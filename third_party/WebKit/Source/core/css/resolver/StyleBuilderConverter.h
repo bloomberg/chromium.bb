@@ -53,7 +53,7 @@ public:
     static PassRefPtr<ShadowList> convertShadow(StyleResolverState&, CSSValue*);
     static float convertSpacing(StyleResolverState&, CSSValue*);
     template <CSSValueID IdForNone> static AtomicString convertString(StyleResolverState&, CSSValue*);
-    static SVGLength convertSVGLength(StyleResolverState&, CSSValue*);
+    static PassRefPtr<SVGLength> convertSVGLength(StyleResolverState&, CSSValue*);
 };
 
 template <typename T>

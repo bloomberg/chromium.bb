@@ -233,10 +233,13 @@ my %svgAttributesInHTMLHash = ("class" => 1, "id" => 1, "onabort" => 1, "onclick
                                "onmouseup" => 1, "onresize" => 1, "onscroll" => 1,
                                "onunload" => 1);
 
+my %svgTypeNewPropertyImplementation = (
+    "SVGLength" => 1,
+    "SVGLengthList" => 1,
+);
+
 my %svgTypeNeedingTearOff = (
     "SVGAngle" => "SVGPropertyTearOff<SVGAngle>",
-    "SVGLength" => "SVGPropertyTearOff<SVGLength>",
-    "SVGLengthList" => "SVGListPropertyTearOff<SVGLengthList>",
     "SVGMatrix" => "SVGMatrixTearOff",
     "SVGNumber" => "SVGPropertyTearOff<SVGNumber>",
     "SVGNumberList" => "SVGListPropertyTearOff<SVGNumberList>",
@@ -6033,6 +6036,8 @@ sub GetSVGWrappedTypeNeedingTearOff
 sub IsSVGAnimatedType
 {
     my $type = shift;
+
+    return 0 if $svgTypeNewPropertyImplementation{$type};
 
     return $type =~ /^SVGAnimated/;
 }

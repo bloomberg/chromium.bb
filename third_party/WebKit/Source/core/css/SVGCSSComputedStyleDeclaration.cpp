@@ -46,14 +46,17 @@ static PassRefPtr<CSSPrimitiveValue> glyphOrientationToCSSPrimitiveValue(EGlyphO
     }
 }
 
-static PassRefPtr<CSSValue> strokeDashArrayToCSSValueList(const Vector<SVGLength>& dashes)
+static PassRefPtr<CSSValue> strokeDashArrayToCSSValueList(PassRefPtr<SVGLengthList> passDashes)
 {
-    if (dashes.isEmpty())
+    RefPtr<SVGLengthList> dashes = passDashes;
+
+    if (dashes->isEmpty())
         return CSSPrimitiveValue::createIdentifier(CSSValueNone);
 
     RefPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
-    const Vector<SVGLength>::const_iterator end = dashes.end();
-    for (Vector<SVGLength>::const_iterator it = dashes.begin(); it != end; ++it)
+    SVGLengthList::ConstIterator it = dashes->begin();
+    SVGLengthList::ConstIterator itEnd = dashes->end();
+    for (; it != itEnd; ++it)
         list->append(SVGLength::toCSSPrimitiveValue(*it));
 
     return list.release();

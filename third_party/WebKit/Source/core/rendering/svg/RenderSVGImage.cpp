@@ -64,7 +64,7 @@ bool RenderSVGImage::updateImageViewport()
     bool updatedViewport = false;
 
     SVGLengthContext lengthContext(image);
-    m_objectBoundingBox = FloatRect(image->xCurrentValue().value(lengthContext), image->yCurrentValue().value(lengthContext), image->widthCurrentValue().value(lengthContext), image->heightCurrentValue().value(lengthContext));
+    m_objectBoundingBox = FloatRect(image->x()->currentValue()->value(lengthContext), image->y()->currentValue()->value(lengthContext), image->width()->currentValue()->value(lengthContext), image->height()->currentValue()->value(lengthContext));
 
     // Images with preserveAspectRatio=none should force non-uniform scaling. This can be achieved
     // by setting the image's container size to its intrinsic size.

@@ -56,7 +56,7 @@ Path RenderSVGTextPath::layoutPath() const
 
 float RenderSVGTextPath::startOffset() const
 {
-    return toSVGTextPathElement(node())->startOffsetCurrentValue().valueAsPercentage();
+    return toSVGTextPathElement(node())->startOffset()->currentValue()->valueAsPercentage();
 }
 
 }

@@ -1388,12 +1388,12 @@ public:
     void setStrokePaintColor(const Color& c) { accessSVGStyle()->setStrokePaint(SVGPaint::SVG_PAINTTYPE_RGBCOLOR, c, ""); }
     float strokeOpacity() const { return svgStyle()->strokeOpacity(); }
     void setStrokeOpacity(float f) { accessSVGStyle()->setStrokeOpacity(f); }
-    SVGLength strokeWidth() const { return svgStyle()->strokeWidth(); }
-    void setStrokeWidth(SVGLength w) { accessSVGStyle()->setStrokeWidth(w); }
-    Vector<SVGLength> strokeDashArray() const { return svgStyle()->strokeDashArray(); }
-    void setStrokeDashArray(Vector<SVGLength> array) { accessSVGStyle()->setStrokeDashArray(array); }
-    SVGLength strokeDashOffset() const { return svgStyle()->strokeDashOffset(); }
-    void setStrokeDashOffset(SVGLength d) { accessSVGStyle()->setStrokeDashOffset(d); }
+    PassRefPtr<SVGLength> strokeWidth() const { return svgStyle()->strokeWidth(); }
+    void setStrokeWidth(PassRefPtr<SVGLength> w) { accessSVGStyle()->setStrokeWidth(w); }
+    PassRefPtr<SVGLengthList> strokeDashArray() const { return svgStyle()->strokeDashArray(); }
+    void setStrokeDashArray(PassRefPtr<SVGLengthList> array) { accessSVGStyle()->setStrokeDashArray(array); }
+    PassRefPtr<SVGLength> strokeDashOffset() const { return svgStyle()->strokeDashOffset(); }
+    void setStrokeDashOffset(PassRefPtr<SVGLength> d) { accessSVGStyle()->setStrokeDashOffset(d); }
     float strokeMiterLimit() const { return svgStyle()->strokeMiterLimit(); }
     void setStrokeMiterLimit(float f) { accessSVGStyle()->setStrokeMiterLimit(f); }
 
@@ -1407,10 +1407,10 @@ public:
     void setFloodColor(const Color& c) { accessSVGStyle()->setFloodColor(c); }
     void setLightingColor(const Color& c) { accessSVGStyle()->setLightingColor(c); }
 
-    SVGLength baselineShiftValue() const { return svgStyle()->baselineShiftValue(); }
-    void setBaselineShiftValue(SVGLength s) { accessSVGStyle()->setBaselineShiftValue(s); }
-    SVGLength kerning() const { return svgStyle()->kerning(); }
-    void setKerning(SVGLength k) { accessSVGStyle()->setKerning(k); }
+    PassRefPtr<SVGLength> baselineShiftValue() const { return svgStyle()->baselineShiftValue(); }
+    void setBaselineShiftValue(PassRefPtr<SVGLength> s) { accessSVGStyle()->setBaselineShiftValue(s); }
+    PassRefPtr<SVGLength> kerning() const { return svgStyle()->kerning(); }
+    void setKerning(PassRefPtr<SVGLength> k) { accessSVGStyle()->setKerning(k); }
 
     void setShapeInside(PassRefPtr<ShapeValue> value)
     {

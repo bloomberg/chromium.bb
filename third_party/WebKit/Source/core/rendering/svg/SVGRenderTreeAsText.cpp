@@ -267,14 +267,15 @@ static void writeStyle(TextStream& ts, const RenderObject& object)
             writeSVGPaintingResource(ts, strokePaintingResource);
 
             SVGLengthContext lengthContext(shape.element());
-            double dashOffset = svgStyle->strokeDashOffset().value(lengthContext);
-            double strokeWidth = svgStyle->strokeWidth().value(lengthContext);
-            const Vector<SVGLength>& dashes = svgStyle->strokeDashArray();
+            double dashOffset = svgStyle->strokeDashOffset()->value(lengthContext);
+            double strokeWidth = svgStyle->strokeWidth()->value(lengthContext);
+            RefPtr<SVGLengthList> dashes = svgStyle->strokeDashArray();
 
             DashArray dashArray;
-            const Vector<SVGLength>::const_iterator end = dashes.end();
-            for (Vector<SVGLength>::const_iterator it = dashes.begin(); it != end; ++it)
-                dashArray.append((*it).value(lengthContext));
+            SVGLengthList::ConstIterator it = dashes->begin();
+            SVGLengthList::ConstIterator itEnd = dashes->end();
+            for (; it != itEnd; ++it)
+                dashArray.append(it->value(lengthContext));
 
             writeIfNotDefault(ts, "opacity", svgStyle->strokeOpacity(), 1.0f);
             writeIfNotDefault(ts, "stroke width", strokeWidth, 1.0);
@@ -321,27 +322,27 @@ static TextStream& operator<<(TextStream& ts, const RenderSVGShape& shape)
 
     if (svgElement->hasTagName(SVGNames::rectTag)) {
         SVGRectElement* element = toSVGRectElement(svgElement);
-        writeNameValuePair(ts, "x", element->xCurrentValue().value(lengthContext));
-        writeNameValuePair(ts, "y", element->yCurrentValue().value(lengthContext));
-        writeNameValuePair(ts, "width", element->widthCurrentValue().value(lengthContext));
-        writeNameValuePair(ts, "height", element->heightCurrentValue().value(lengthContext));
+        writeNameValuePair(ts, "x", element->x()->currentValue()->value(lengthContext));
+        writeNameValuePair(ts, "y", element->y()->currentValue()->value(lengthContext));
+        writeNameValuePair(ts, "width", element->width()->currentValue()->value(lengthContext));
+        writeNameValuePair(ts, "height", element->height()->currentValue()->value(lengthContext));
     } else if (svgElement->hasTagName(SVGNames::lineTag)) {
         SVGLineElement* element = toSVGLineElement(svgElement);
-        writeNameValuePair(ts, "x1", element->x1CurrentValue().value(lengthContext));
-        writeNameValuePair(ts, "y1", element->y1CurrentValue().value(lengthContext));
-        writeNameValuePair(ts, "x2", element->x2CurrentValue().value(lengthContext));
-        writeNameValuePair(ts, "y2", element->y2CurrentValue().value(lengthContext));
+        writeNameValuePair(ts, "x1", element->x1()->currentValue()->value(lengthContext));
+        writeNameValuePair(ts, "y1", element->y1()->currentValue()->value(lengthContext));
+        writeNameValuePair(ts, "x2", element->x2()->currentValue()->value(lengthContext));
+        writeNameValuePair(ts, "y2", element->y2()->currentValue()->value(lengthContext));
     } else if (svgElement->hasTagName(SVGNames::ellipseTag)) {
         SVGEllipseElement* element = toSVGEllipseElement(svgElement);
-        writeNameValuePair(ts, "cx", element->cxCurrentValue().value(lengthContext));
-        writeNameValuePair(ts, "cy", element->cyCurrentValue().value(lengthContext));
-        writeNameValuePair(ts, "rx", element->rxCurrentValue().value(lengthContext));
-        writeNameValuePair(ts, "ry", element->ryCurrentValue().value(lengthContext));
+        writeNameValuePair(ts, "cx", element->cx()->currentValue()->value(lengthContext));
+        writeNameValuePair(ts, "cy", element->cy()->currentValue()->value(lengthContext));
+        writeNameValuePair(ts, "rx", element->rx()->currentValue()->value(lengthContext));
+        writeNameValuePair(ts, "ry", element->ry()->currentValue()->value(lengthContext));
     } else if (svgElement->hasTagName(SVGNames::circleTag)) {
         SVGCircleElement* element = toSVGCircleElement(svgElement);
-        writeNameValuePair(ts, "cx", element->cxCurrentValue().value(lengthContext));
-        writeNameValuePair(ts, "cy", element->cyCurrentValue().value(lengthContext));
-        writeNameValuePair(ts, "r", element->rCurrentValue().value(lengthContext));
+        writeNameValuePair(ts, "cx", element->cx()->currentValue()->value(lengthContext));
+        writeNameValuePair(ts, "cy", element->cy()->currentValue()->value(lengthContext));
+        writeNameValuePair(ts, "r", element->r()->currentValue()->value(lengthContext));
     } else if (svgElement->hasTagName(SVGNames::polygonTag) || svgElement->hasTagName(SVGNames::polylineTag)) {
         writeNameAndQuotedValue(ts, "points", toSVGPolyElement(svgElement)->pointsCurrentValue().valueAsString());
     } else if (svgElement->hasTagName(SVGNames::pathTag)) {

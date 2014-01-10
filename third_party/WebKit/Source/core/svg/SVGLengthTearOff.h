@@ -28,53 +28,51 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGLengthList_h
-#define SVGLengthList_h
+#ifndef SVGLengthTearOff_h
+#define SVGLengthTearOff_h
 
-#include "bindings/v8/ScriptWrappable.h"
 #include "core/svg/SVGLength.h"
-#include "core/svg/properties/NewSVGListPropertyHelper.h"
+#include "core/svg/properties/NewSVGPropertyTearOff.h"
 
 namespace WebCore {
 
-class SVGLengthListTearOff;
-
-class SVGLengthList : public NewSVGListPropertyHelper<SVGLengthList, SVGLength> {
+class SVGLengthTearOff : public NewSVGPropertyTearOff<SVGLength>, public ScriptWrappable {
 public:
-    typedef SVGLengthListTearOff TearOffType;
+    // Forward declare these enums in the w3c naming scheme, for IDL generation
+    enum {
+        SVG_LENGTHTYPE_UNKNOWN = LengthTypeUnknown,
+        SVG_LENGTHTYPE_NUMBER = LengthTypeNumber,
+        SVG_LENGTHTYPE_PERCENTAGE = LengthTypePercentage,
+        SVG_LENGTHTYPE_EMS = LengthTypeEMS,
+        SVG_LENGTHTYPE_EXS = LengthTypeEXS,
+        SVG_LENGTHTYPE_PX = LengthTypePX,
+        SVG_LENGTHTYPE_CM = LengthTypeCM,
+        SVG_LENGTHTYPE_MM = LengthTypeMM,
+        SVG_LENGTHTYPE_IN = LengthTypeIN,
+        SVG_LENGTHTYPE_PT = LengthTypePT,
+        SVG_LENGTHTYPE_PC = LengthTypePC
+    };
 
-    static PassRefPtr<SVGLengthList> create(SVGLengthMode mode = LengthModeOther)
+    static PassRefPtr<SVGLengthTearOff> create(PassRefPtr<SVGLength> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = nullQName())
     {
-        return adoptRef(new SVGLengthList(mode));
+        return adoptRef(new SVGLengthTearOff(target, contextElement, propertyIsAnimVal, attributeName));
     }
 
-    ~SVGLengthList();
-
-    PassRefPtr<SVGLengthList> clone();
-
+    SVGLengthType unitType();
+    SVGLengthMode unitMode();
+    float value(ExceptionState&);
+    void setValue(float value, ExceptionState&);
+    float valueInSpecifiedUnits();
+    void setValueInSpecifiedUnits(float value, ExceptionState&);
+    String valueAsString();
     void setValueAsString(const String&, ExceptionState&);
-
-    // NewSVGPropertyBase:
-    virtual PassRefPtr<NewSVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
-    virtual String valueAsString() const OVERRIDE;
-
-    virtual void add(PassRefPtr<NewSVGPropertyBase>, SVGElement*) OVERRIDE;
-    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<NewSVGPropertyBase> fromValue, PassRefPtr<NewSVGPropertyBase> toValue, PassRefPtr<NewSVGPropertyBase> toAtEndOfDurationValue, SVGElement*) OVERRIDE;
-    virtual float calculateDistance(PassRefPtr<NewSVGPropertyBase> to, SVGElement*) OVERRIDE;
-
-    static AnimatedPropertyType classType() { return AnimatedLengthList; }
+    void newValueSpecifiedUnits(unsigned short unitType, float valueInSpecifiedUnits, ExceptionState&);
+    void convertToSpecifiedUnits(unsigned short unitType, ExceptionState&);
 
 private:
-    explicit SVGLengthList(SVGLengthMode);
-
-    bool adjustFromToListValues(PassRefPtr<SVGLengthList> fromList, PassRefPtr<SVGLengthList> toList, float percentage, bool isToAnimation, bool resizeAnimatedListIfNeeded);
-
-    template <typename CharType>
-    void parseInternal(const CharType*& ptr, const CharType* end, ExceptionState&);
-
-    SVGLengthMode m_mode;
+    SVGLengthTearOff(PassRefPtr<SVGLength>, SVGElement* contextElement, PropertyIsAnimValType, const QualifiedName& attributeName = nullQName());
 };
 
 } // namespace WebCore
 
-#endif // SVGLengthList_h
+#endif // SVGLengthTearOff_h_

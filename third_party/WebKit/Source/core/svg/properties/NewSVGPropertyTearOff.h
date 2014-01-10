@@ -61,7 +61,7 @@ public:
         return m_ownerList;
     }
 
-    void setBelongingList(NewSVGPropertyTearOffBase* ownerList)
+    void setOwnerList(NewSVGPropertyTearOffBase* ownerList)
     {
         m_ownerList = ownerList;
     }
@@ -92,6 +92,8 @@ public:
     {
         return m_attributeName;
     }
+
+    virtual AnimatedPropertyType type() const = 0;
 
 protected:
     NewSVGPropertyTearOffBase(SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = nullQName())
@@ -124,6 +126,11 @@ public:
     void setTarget(PassRefPtr<Property> target)
     {
         m_target = target;
+    }
+
+    virtual AnimatedPropertyType type() const OVERRIDE
+    {
+        return Property::classType();
     }
 
 protected:

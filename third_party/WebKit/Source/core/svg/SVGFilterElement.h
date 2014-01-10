@@ -43,6 +43,11 @@ public:
     void addClient(Node*);
     void removeClient(Node*);
 
+    SVGAnimatedLength* x() const { return m_x.get(); }
+    SVGAnimatedLength* y() const { return m_y.get(); }
+    SVGAnimatedLength* width() const { return m_width.get(); }
+    SVGAnimatedLength* height() const { return m_height.get(); }
+
 private:
     explicit SVGFilterElement(Document&);
 
@@ -61,13 +66,13 @@ private:
     static const AtomicString& filterResXIdentifier();
     static const AtomicString& filterResYIdentifier();
 
+    RefPtr<SVGAnimatedLength> m_x;
+    RefPtr<SVGAnimatedLength> m_y;
+    RefPtr<SVGAnimatedLength> m_width;
+    RefPtr<SVGAnimatedLength> m_height;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFilterElement)
         DECLARE_ANIMATED_ENUMERATION(FilterUnits, filterUnits, SVGUnitTypes::SVGUnitType)
         DECLARE_ANIMATED_ENUMERATION(PrimitiveUnits, primitiveUnits, SVGUnitTypes::SVGUnitType)
-        DECLARE_ANIMATED_LENGTH(X, x)
-        DECLARE_ANIMATED_LENGTH(Y, y)
-        DECLARE_ANIMATED_LENGTH(Width, width)
-        DECLARE_ANIMATED_LENGTH(Height, height)
         DECLARE_ANIMATED_INTEGER(FilterResX, filterResX)
         DECLARE_ANIMATED_INTEGER(FilterResY, filterResY)
         DECLARE_ANIMATED_STRING(Href, href)

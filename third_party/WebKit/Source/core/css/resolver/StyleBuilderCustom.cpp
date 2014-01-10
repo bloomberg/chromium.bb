@@ -2092,7 +2092,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
 
         CSSValueList* dashes = toCSSValueList(value);
 
-        Vector<SVGLength> array;
+        RefPtr<SVGLengthList> array = SVGLengthList::create();
         size_t length = dashes->length();
         for (size_t i = 0; i < length; ++i) {
             CSSValue* currValue = dashes->itemWithoutBoundsCheck(i);
@@ -2100,10 +2100,10 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
                 continue;
 
             CSSPrimitiveValue* dash = toCSSPrimitiveValue(dashes->itemWithoutBoundsCheck(i));
-            array.append(SVGLength::fromCSSPrimitiveValue(dash));
+            array->append(SVGLength::fromCSSPrimitiveValue(dash));
         }
 
-        state.style()->accessSVGStyle()->setStrokeDashArray(array);
+        state.style()->accessSVGStyle()->setStrokeDashArray(array.release());
         break;
     }
     case CSSPropertyStopColor:

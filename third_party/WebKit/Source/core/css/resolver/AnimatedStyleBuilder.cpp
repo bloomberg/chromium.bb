@@ -134,12 +134,12 @@ void setFillSize(FillLayer* fillLayer, const AnimatableValue* value, const Style
         state.styleMap().mapFillSize(property, fillLayer, toAnimatableUnknown(value)->toCSSValue().get());
 }
 
-SVGLength animatableValueToNonNegativeSVGLength(const AnimatableValue* value)
+PassRefPtr<SVGLength> animatableValueToNonNegativeSVGLength(const AnimatableValue* value)
 {
-    SVGLength length = toAnimatableSVGLength(value)->toSVGLength();
-    if (length.valueInSpecifiedUnits() < 0)
-        length.setValueInSpecifiedUnits(0);
-    return length;
+    RefPtr<SVGLength> length = toAnimatableSVGLength(value)->toSVGLength();
+    if (length->valueInSpecifiedUnits() < 0)
+        length->setValueInSpecifiedUnits(0);
+    return length.release();
 }
 
 template <CSSPropertyID property>
@@ -444,7 +444,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setStopOpacity(clampTo<float>(toAnimatableDouble(value)->toDouble(), 0, 1));
         return;
     case CSSPropertyStrokeDasharray:
-        style->setStrokeDashArray(toAnimatableStrokeDasharrayList(value)->toSVGLengthVector());
+        style->setStrokeDashArray(toAnimatableStrokeDasharrayList(value)->toSVGLengthList());
         return;
     case CSSPropertyStrokeDashoffset:
         style->setStrokeDashOffset(toAnimatableSVGLength(value)->toSVGLength());

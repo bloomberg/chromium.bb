@@ -63,10 +63,6 @@ public:
             return adoptPtr(new SVGAnimatedIntegerAnimator(animationElement, contextElement));
         case AnimatedIntegerOptionalInteger:
             return adoptPtr(new SVGAnimatedIntegerOptionalIntegerAnimator(animationElement, contextElement));
-        case AnimatedLength:
-            return adoptPtr(new SVGAnimatedLengthAnimator(animationElement, contextElement));
-        case AnimatedLengthList:
-            return adoptPtr(new SVGAnimatedLengthListAnimator(animationElement, contextElement));
         case AnimatedNumber:
             return adoptPtr(new SVGAnimatedNumberAnimator(animationElement, contextElement));
         case AnimatedNumberList:
@@ -85,6 +81,10 @@ public:
             return adoptPtr(new SVGAnimatedStringAnimator(animationElement, contextElement));
         case AnimatedTransformList:
             return adoptPtr(new SVGAnimatedTransformListAnimator(animationElement, contextElement));
+        // Below properties have migrated to new property implementation.
+        case AnimatedLength:
+        case AnimatedLengthList:
+            return adoptPtr(new SVGAnimatedNewPropertyAnimator(attributeType, animationElement, contextElement));
         case AnimatedUnknown:
             break;
         }

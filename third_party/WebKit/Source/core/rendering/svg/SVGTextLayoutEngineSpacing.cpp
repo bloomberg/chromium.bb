@@ -82,12 +82,12 @@ float SVGTextLayoutEngineSpacing::calculateSVGKerning(bool isVerticalText, const
 float SVGTextLayoutEngineSpacing::calculateCSSKerningAndSpacing(const SVGRenderStyle* style, SVGElement* contextElement, UChar currentCharacter)
 {
     float kerning = 0;
-    SVGLength kerningLength = style->kerning();
-    if (kerningLength.unitType() == LengthTypePercentage)
-        kerning = kerningLength.valueAsPercentage() * m_font.pixelSize();
+    RefPtr<SVGLength> kerningLength = style->kerning();
+    if (kerningLength->unitType() == LengthTypePercentage)
+        kerning = kerningLength->valueAsPercentage() * m_font.pixelSize();
     else {
         SVGLengthContext lengthContext(contextElement);
-        kerning = kerningLength.value(lengthContext);
+        kerning = kerningLength->value(lengthContext);
     }
 
     UChar lastCharacter = m_lastCharacter;

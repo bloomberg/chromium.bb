@@ -164,7 +164,7 @@ float StyleBuilderConverter::convertSpacing(StyleResolverState& state, CSSValue*
     return primitiveValue->computeLength<float>(state.cssToLengthConversionData());
 }
 
-SVGLength StyleBuilderConverter::convertSVGLength(StyleResolverState&, CSSValue* value)
+PassRefPtr<SVGLength> StyleBuilderConverter::convertSVGLength(StyleResolverState&, CSSValue* value)
 {
     return SVGLength::fromCSSPrimitiveValue(toCSSPrimitiveValue(value));
 }

@@ -48,6 +48,11 @@ public:
 
     RenderObject* rendererClipChild() const;
 
+    SVGAnimatedLength* x() const { return m_x.get(); }
+    SVGAnimatedLength* y() const { return m_y.get(); }
+    SVGAnimatedLength* width() const { return m_width.get(); }
+    SVGAnimatedLength* height() const { return m_height.get(); }
+
 private:
     SVGUseElement(Document&, bool wasInsertedByParser);
 
@@ -95,11 +100,11 @@ private:
     void transferUseAttributesToReplacedElement(SVGElement* from, SVGElement* to) const;
     void transferEventListenersToShadowTree(SVGElementInstance* target);
 
+    RefPtr<SVGAnimatedLength> m_x;
+    RefPtr<SVGAnimatedLength> m_y;
+    RefPtr<SVGAnimatedLength> m_width;
+    RefPtr<SVGAnimatedLength> m_height;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGUseElement)
-        DECLARE_ANIMATED_LENGTH(X, x)
-        DECLARE_ANIMATED_LENGTH(Y, y)
-        DECLARE_ANIMATED_LENGTH(Width, width)
-        DECLARE_ANIMATED_LENGTH(Height, height)
         DECLARE_ANIMATED_STRING(Href, href)
     END_DECLARE_ANIMATED_PROPERTIES
 

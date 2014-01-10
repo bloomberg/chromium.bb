@@ -32,6 +32,10 @@ class SVGCircleElement FINAL : public SVGGeometryElement {
 public:
     static PassRefPtr<SVGCircleElement> create(Document&);
 
+    SVGAnimatedLength* cx() const { return m_cx.get(); }
+    SVGAnimatedLength* cy() const { return m_cy.get(); }
+    SVGAnimatedLength* r() const { return m_r.get(); }
+
 private:
     explicit SVGCircleElement(Document&);
 
@@ -46,10 +50,10 @@ private:
 
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
 
+    RefPtr<SVGAnimatedLength> m_cx;
+    RefPtr<SVGAnimatedLength> m_cy;
+    RefPtr<SVGAnimatedLength> m_r;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGCircleElement)
-        DECLARE_ANIMATED_LENGTH(Cx, cx)
-        DECLARE_ANIMATED_LENGTH(Cy, cy)
-        DECLARE_ANIMATED_LENGTH(R, r)
     END_DECLARE_ANIMATED_PROPERTIES
 };
 

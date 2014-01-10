@@ -31,29 +31,27 @@
 namespace WebCore {
 
 // Animated property definitions
-DEFINE_ANIMATED_LENGTH(SVGForeignObjectElement, SVGNames::xAttr, X, x)
-DEFINE_ANIMATED_LENGTH(SVGForeignObjectElement, SVGNames::yAttr, Y, y)
-DEFINE_ANIMATED_LENGTH(SVGForeignObjectElement, SVGNames::widthAttr, Width, width)
-DEFINE_ANIMATED_LENGTH(SVGForeignObjectElement, SVGNames::heightAttr, Height, height)
 DEFINE_ANIMATED_STRING(SVGForeignObjectElement, XLinkNames::hrefAttr, Href, href)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGForeignObjectElement)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(x)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(y)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(width)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(height)
     REGISTER_LOCAL_ANIMATED_PROPERTY(href)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGraphicsElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGForeignObjectElement::SVGForeignObjectElement(Document& document)
     : SVGGraphicsElement(SVGNames::foreignObjectTag, document)
-    , m_x(LengthModeWidth)
-    , m_y(LengthModeHeight)
-    , m_width(LengthModeWidth)
-    , m_height(LengthModeHeight)
+    , m_x(SVGAnimatedLength::create(this, SVGNames::xAttr, SVGLength::create(LengthModeWidth)))
+    , m_y(SVGAnimatedLength::create(this, SVGNames::yAttr, SVGLength::create(LengthModeHeight)))
+    , m_width(SVGAnimatedLength::create(this, SVGNames::widthAttr, SVGLength::create(LengthModeWidth)))
+    , m_height(SVGAnimatedLength::create(this, SVGNames::heightAttr, SVGLength::create(LengthModeHeight)))
 {
     ScriptWrappable::init(this);
+
+    addToPropertyMap(m_x);
+    addToPropertyMap(m_y);
+    addToPropertyMap(m_width);
+    addToPropertyMap(m_height);
+
     registerAnimatedPropertiesForSVGForeignObjectElement();
 }
 
@@ -81,13 +79,13 @@ void SVGForeignObjectElement::parseAttribute(const QualifiedName& name, const At
     if (!isSupportedAttribute(name))
         SVGGraphicsElement::parseAttribute(name, value);
     else if (name == SVGNames::xAttr)
-        setXBaseValue(SVGLength::construct(LengthModeWidth, value, parseError));
+        m_x->setBaseValueAsString(value, AllowNegativeLengths, parseError);
     else if (name == SVGNames::yAttr)
-        setYBaseValue(SVGLength::construct(LengthModeHeight, value, parseError));
+        m_y->setBaseValueAsString(value, AllowNegativeLengths, parseError);
     else if (name == SVGNames::widthAttr)
-        setWidthBaseValue(SVGLength::construct(LengthModeWidth, value, parseError));
+        m_width->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
     else if (name == SVGNames::heightAttr)
-        setHeightBaseValue(SVGLength::construct(LengthModeHeight, value, parseError));
+        m_height->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
     else
         ASSERT_NOT_REACHED();
 
@@ -150,10 +148,10 @@ bool SVGForeignObjectElement::rendererIsNeeded(const RenderStyle& style)
 
 bool SVGForeignObjectElement::selfHasRelativeLengths() const
 {
-    return xCurrentValue().isRelative()
-        || yCurrentValue().isRelative()
-        || widthCurrentValue().isRelative()
-        || heightCurrentValue().isRelative();
+    return m_x->currentValue()->isRelative()
+        || m_y->currentValue()->isRelative()
+        || m_width->currentValue()->isRelative()
+        || m_height->currentValue()->isRelative();
 }
 
 }

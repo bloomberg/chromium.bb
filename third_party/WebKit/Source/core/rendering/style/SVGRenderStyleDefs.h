@@ -29,6 +29,7 @@
 #define SVGRenderStyleDefs_h
 
 #include "core/svg/SVGLength.h"
+#include "core/svg/SVGLengthList.h"
 #include "core/svg/SVGPaint.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -146,9 +147,9 @@ namespace WebCore {
         float opacity;
         float miterLimit;
 
-        SVGLength width;
-        SVGLength dashOffset;
-        Vector<SVGLength> dashArray;
+        RefPtr<SVGLength> width;
+        RefPtr<SVGLength> dashOffset;
+        RefPtr<SVGLengthList> dashArray;
 
         SVGPaint::SVGPaintType paintType;
         Color paintColor;
@@ -192,7 +193,7 @@ namespace WebCore {
             return !(*this == other);
         }
 
-        SVGLength kerning;
+        RefPtr<SVGLength> kerning;
 
     private:
         StyleTextData();
@@ -216,7 +217,7 @@ namespace WebCore {
         Color lightingColor;
 
         // non-inherited text stuff lives here not in StyleTextData.
-        SVGLength baselineShiftValue;
+        RefPtr<SVGLength> baselineShiftValue;
 
     private:
         StyleMiscData();

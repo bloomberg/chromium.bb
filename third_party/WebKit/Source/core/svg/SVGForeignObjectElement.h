@@ -32,6 +32,11 @@ class SVGForeignObjectElement FINAL : public SVGGraphicsElement {
 public:
     static PassRefPtr<SVGForeignObjectElement> create(Document&);
 
+    SVGAnimatedLength* x() const { return m_x.get(); }
+    SVGAnimatedLength* y() const { return m_y.get(); }
+    SVGAnimatedLength* width() const { return m_width.get(); }
+    SVGAnimatedLength* height() const { return m_height.get(); }
+
 private:
     explicit SVGForeignObjectElement(Document&);
 
@@ -46,11 +51,11 @@ private:
 
     virtual bool selfHasRelativeLengths() const;
 
+    RefPtr<SVGAnimatedLength> m_x;
+    RefPtr<SVGAnimatedLength> m_y;
+    RefPtr<SVGAnimatedLength> m_width;
+    RefPtr<SVGAnimatedLength> m_height;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGForeignObjectElement)
-        DECLARE_ANIMATED_LENGTH(X, x)
-        DECLARE_ANIMATED_LENGTH(Y, y)
-        DECLARE_ANIMATED_LENGTH(Width, width)
-        DECLARE_ANIMATED_LENGTH(Height, height)
         DECLARE_ANIMATED_STRING(Href, href)
     END_DECLARE_ANIMATED_PROPERTIES
 };

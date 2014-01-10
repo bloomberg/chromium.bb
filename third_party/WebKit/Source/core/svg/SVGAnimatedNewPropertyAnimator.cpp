@@ -69,8 +69,39 @@ PassRefPtr<NewSVGPropertyBase> SVGAnimatedNewPropertyAnimator::createPropertyFor
     // Create a basic instance of the corresponding SVG property.
     // The instance will not have full context info. (e.g. SVGLengthMode)
 
-    // FIXME: add impls here for NewSVGProperty migrated property impls.
-    // http://crbug.com/308818
+    switch (m_type) {
+    case AnimatedLength: {
+        RefPtr<SVGLength> property = SVGLength::create(LengthModeOther);
+        property->setValueAsString(value, IGNORE_EXCEPTION);
+        return property.release();
+    }
+    case AnimatedLengthList: {
+        RefPtr<SVGLengthList> property = SVGLengthList::create(LengthModeOther);
+        property->setValueAsString(value, IGNORE_EXCEPTION);
+        return property.release();
+    }
+
+    // These properties are not yet migrated to NewProperty implementation. see http://crbug.com/308818
+    case AnimatedAngle:
+    case AnimatedBoolean:
+    case AnimatedColor:
+    case AnimatedEnumeration:
+    case AnimatedInteger:
+    case AnimatedIntegerOptionalInteger:
+    case AnimatedNumber:
+    case AnimatedNumberList:
+    case AnimatedNumberOptionalNumber:
+    case AnimatedPath:
+    case AnimatedPoints:
+    case AnimatedPreserveAspectRatio:
+    case AnimatedRect:
+    case AnimatedString:
+    case AnimatedTransformList:
+        ASSERT_NOT_REACHED();
+
+    case AnimatedUnknown:
+        ASSERT_NOT_REACHED();
+    };
 
     ASSERT_NOT_REACHED();
     return 0;

@@ -21,11 +21,13 @@
 #ifndef SVGLength_h
 #define SVGLength_h
 
-#include "bindings/v8/ExceptionState.h"
+#include "bindings/v8/ExceptionMessages.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "bindings/v8/ScriptWrappable.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/svg/SVGLengthContext.h"
 #include "core/svg/SVGParsingError.h"
-#include "core/svg/properties/SVGPropertyTraits.h"
-#include "platform/animation/AnimationUtilities.h"
+#include "core/svg/properties/NewSVGProperty.h"
 
 namespace WebCore {
 
@@ -38,58 +40,51 @@ enum SVGLengthNegativeValuesMode {
     ForbidNegativeLengths
 };
 
-class SVGLength {
-    WTF_MAKE_FAST_ALLOCATED;
+class SVGLengthTearOff;
+
+class SVGLength : public NewSVGPropertyBase {
 public:
-    // Forward declare these enums in the w3c naming scheme, for IDL generation
-    enum {
-        SVG_LENGTHTYPE_UNKNOWN = LengthTypeUnknown,
-        SVG_LENGTHTYPE_NUMBER = LengthTypeNumber,
-        SVG_LENGTHTYPE_PERCENTAGE = LengthTypePercentage,
-        SVG_LENGTHTYPE_EMS = LengthTypeEMS,
-        SVG_LENGTHTYPE_EXS = LengthTypeEXS,
-        SVG_LENGTHTYPE_PX = LengthTypePX,
-        SVG_LENGTHTYPE_CM = LengthTypeCM,
-        SVG_LENGTHTYPE_MM = LengthTypeMM,
-        SVG_LENGTHTYPE_IN = LengthTypeIN,
-        SVG_LENGTHTYPE_PT = LengthTypePT,
-        SVG_LENGTHTYPE_PC = LengthTypePC
-    };
+    typedef SVGLengthTearOff TearOffType;
 
-    SVGLength(SVGLengthMode = LengthModeOther, const String& valueAsString = String());
-    SVGLength(const SVGLengthContext&, float, SVGLengthMode = LengthModeOther, SVGLengthType = LengthTypeNumber);
-    SVGLength(const SVGLength&);
+    static PassRefPtr<SVGLength> create(SVGLengthMode mode = LengthModeOther)
+    {
+        return adoptRef(new SVGLength(mode));
+    }
 
-    SVGLengthType unitType() const;
-    SVGLengthMode unitMode() const;
+    PassRefPtr<SVGLength> clone() const;
+    virtual PassRefPtr<NewSVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
+
+    SVGLengthType unitType() const { return static_cast<SVGLengthType>(m_unitType); }
+    void setUnitType(SVGLengthType);
+    SVGLengthMode unitMode() const { return static_cast<SVGLengthMode>(m_unitMode); }
 
     bool operator==(const SVGLength&) const;
-    bool operator!=(const SVGLength&) const;
+    bool operator!=(const SVGLength& other) const { return !operator==(other); }
 
-    static SVGLength construct(SVGLengthMode, const String&, SVGParsingError&, SVGLengthNegativeValuesMode = AllowNegativeLengths);
-
-    float value(const SVGLengthContext&) const;
+    float value(const SVGLengthContext& context) const
+    {
+        return value(context, IGNORE_EXCEPTION);
+    }
     float value(const SVGLengthContext&, ExceptionState&) const;
     void setValue(float, const SVGLengthContext&, ExceptionState&);
-    void setValue(const SVGLengthContext&, float, SVGLengthMode, SVGLengthType, ExceptionState&);
 
     float valueInSpecifiedUnits() const { return m_valueInSpecifiedUnits; }
     void setValueInSpecifiedUnits(float value) { m_valueInSpecifiedUnits = value; }
 
     float valueAsPercentage() const;
 
-    String valueAsString() const;
+    virtual String valueAsString() const OVERRIDE;
     void setValueAsString(const String&, ExceptionState&);
-    void setValueAsString(const String&, SVGLengthMode, ExceptionState&);
 
-    void newValueSpecifiedUnits(unsigned short, float valueInSpecifiedUnits, ExceptionState&);
-    void convertToSpecifiedUnits(unsigned short, const SVGLengthContext&, ExceptionState&);
+    void newValueSpecifiedUnits(SVGLengthType, float valueInSpecifiedUnits);
+    void convertToSpecifiedUnits(SVGLengthType, const SVGLengthContext&, ExceptionState&);
 
     // Helper functions
     inline bool isRelative() const
     {
-        SVGLengthType type = unitType();
-        return type == LengthTypePercentage || type == LengthTypeEMS || type == LengthTypeEXS;
+        return m_unitType == LengthTypePercentage
+            || m_unitType == LengthTypeEMS
+            || m_unitType == LengthTypeEXS;
     }
 
     bool isZero() const
@@ -97,77 +92,33 @@ public:
         return !m_valueInSpecifiedUnits;
     }
 
-    static SVGLength fromCSSPrimitiveValue(CSSPrimitiveValue*);
-    static PassRefPtr<CSSPrimitiveValue> toCSSPrimitiveValue(const SVGLength&);
+    static PassRefPtr<SVGLength> fromCSSPrimitiveValue(CSSPrimitiveValue*);
+    static PassRefPtr<CSSPrimitiveValue> toCSSPrimitiveValue(PassRefPtr<SVGLength>);
     static SVGLengthMode lengthModeForAnimatedLengthAttribute(const QualifiedName&);
 
-    SVGLength blend(const SVGLength& from, float progress) const
-    {
-        SVGLengthType toType = unitType();
-        SVGLengthType fromType = from.unitType();
-        if ((from.isZero() && isZero())
-            || fromType == LengthTypeUnknown
-            || toType == LengthTypeUnknown
-            || (!from.isZero() && fromType != LengthTypePercentage && toType == LengthTypePercentage)
-            || (!isZero() && fromType == LengthTypePercentage && toType != LengthTypePercentage)
-            || (!from.isZero() && !isZero() && (fromType == LengthTypeEMS || fromType == LengthTypeEXS) && fromType != toType))
-            return *this;
+    PassRefPtr<SVGLength> blend(PassRefPtr<SVGLength> from, float progress) const;
 
-        SVGLength length;
-        TrackExceptionState exceptionState;
+    virtual void add(PassRefPtr<NewSVGPropertyBase>, SVGElement*) OVERRIDE;
+    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<NewSVGPropertyBase> from, PassRefPtr<NewSVGPropertyBase> to, PassRefPtr<NewSVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) OVERRIDE;
+    virtual float calculateDistance(PassRefPtr<NewSVGPropertyBase> to, SVGElement* contextElement) OVERRIDE;
 
-        if (fromType == LengthTypePercentage || toType == LengthTypePercentage) {
-            float fromPercent = from.valueAsPercentage() * 100;
-            float toPercent = valueAsPercentage() * 100;
-            length.newValueSpecifiedUnits(LengthTypePercentage, WebCore::blend(fromPercent, toPercent, progress), exceptionState);
-            if (exceptionState.hadException())
-                return SVGLength();
-            return length;
-        }
-
-        if (fromType == toType || from.isZero() || isZero() || fromType == LengthTypeEMS || fromType == LengthTypeEXS) {
-            float fromValue = from.valueInSpecifiedUnits();
-            float toValue = valueInSpecifiedUnits();
-            if (isZero())
-                length.newValueSpecifiedUnits(fromType, WebCore::blend(fromValue, toValue, progress), exceptionState);
-            else
-                length.newValueSpecifiedUnits(toType, WebCore::blend(fromValue, toValue, progress), exceptionState);
-            if (exceptionState.hadException())
-                return SVGLength();
-            return length;
-        }
-
-        ASSERT(!isRelative());
-        ASSERT(!from.isRelative());
-
-        SVGLengthContext nonRelativeLengthContext(0);
-        float fromValueInUserUnits = nonRelativeLengthContext.convertValueToUserUnits(from.valueInSpecifiedUnits(), from.unitMode(), fromType, exceptionState);
-        if (exceptionState.hadException())
-            return SVGLength();
-
-        float fromValue = nonRelativeLengthContext.convertValueFromUserUnits(fromValueInUserUnits, unitMode(), toType, exceptionState);
-        if (exceptionState.hadException())
-            return SVGLength();
-
-        float toValue = valueInSpecifiedUnits();
-        length.newValueSpecifiedUnits(toType, WebCore::blend(fromValue, toValue, progress), exceptionState);
-
-        if (exceptionState.hadException())
-            return SVGLength();
-        return length;
-    }
+    static AnimatedPropertyType classType() { return AnimatedLength; }
 
 private:
+    SVGLength(SVGLengthMode);
+    SVGLength(const SVGLength&);
+
     float m_valueInSpecifiedUnits;
-    unsigned int m_unit;
+    unsigned m_unitMode : 2;
+    unsigned m_unitType : 4;
 };
 
-template<>
-struct SVGPropertyTraits<SVGLength> {
-    static SVGLength initialValue() { return SVGLength(); }
-    static String toString(const SVGLength& type) { return type.valueAsString(); }
-};
-
+inline PassRefPtr<SVGLength> toSVGLength(PassRefPtr<NewSVGPropertyBase> passBase)
+{
+    RefPtr<NewSVGPropertyBase> base = passBase;
+    ASSERT(base->type() == SVGLength::classType());
+    return static_pointer_cast<SVGLength>(base.release());
+}
 
 } // namespace WebCore
 

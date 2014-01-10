@@ -35,6 +35,13 @@ public:
 
     bool collectGradientAttributes(RadialGradientAttributes&);
 
+    SVGAnimatedLength* cx() const { return m_cx.get(); }
+    SVGAnimatedLength* cy() const { return m_cy.get(); }
+    SVGAnimatedLength* r() const { return m_r.get(); }
+    SVGAnimatedLength* fx() const { return m_fx.get(); }
+    SVGAnimatedLength* fy() const { return m_fy.get(); }
+    SVGAnimatedLength* fr() const { return m_fr.get(); }
+
 private:
     explicit SVGRadialGradientElement(Document&);
 
@@ -46,13 +53,13 @@ private:
 
     virtual bool selfHasRelativeLengths() const;
 
+    RefPtr<SVGAnimatedLength> m_cx;
+    RefPtr<SVGAnimatedLength> m_cy;
+    RefPtr<SVGAnimatedLength> m_r;
+    RefPtr<SVGAnimatedLength> m_fx;
+    RefPtr<SVGAnimatedLength> m_fy;
+    RefPtr<SVGAnimatedLength> m_fr;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGRadialGradientElement)
-        DECLARE_ANIMATED_LENGTH(Cx, cx)
-        DECLARE_ANIMATED_LENGTH(Cy, cy)
-        DECLARE_ANIMATED_LENGTH(R, r)
-        DECLARE_ANIMATED_LENGTH(Fx, fx)
-        DECLARE_ANIMATED_LENGTH(Fy, fy)
-        DECLARE_ANIMATED_LENGTH(Fr, fr)
     END_DECLARE_ANIMATED_PROPERTIES
 };
 

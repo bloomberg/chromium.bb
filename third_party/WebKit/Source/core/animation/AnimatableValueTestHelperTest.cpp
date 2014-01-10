@@ -114,9 +114,14 @@ TEST_F(AnimationAnimatableValueTestHelperTest, PrintTo)
         ::std::string("AnimatableRepeatable(AnimatableLength(3rem), AnimatableLength(4pt))"),
         PrintToString(AnimatableRepeatable::create(v1)));
 
+    RefPtr<SVGLength> length1cm = SVGLength::create(LengthModeOther);
+    RefPtr<SVGLength> length2cm = SVGLength::create(LengthModeOther);
+    length1cm->setValueAsString("1cm", ASSERT_NO_EXCEPTION);
+    length2cm->setValueAsString("2cm", ASSERT_NO_EXCEPTION);
+
     EXPECT_EQ(
         ::std::string("AnimatableSVGLength(1cm)"),
-        PrintToString(AnimatableSVGLength::create(SVGLength(LengthModeOther, "1cm"))));
+        PrintToString(AnimatableSVGLength::create(length1cm)));
 
     EXPECT_EQ(
         ::std::string("AnimatableSVGPaint(#ff0000)"),
@@ -130,12 +135,12 @@ TEST_F(AnimationAnimatableValueTestHelperTest, PrintTo)
         PrintToString(AnimatableShapeValue::create(ShapeValue::createShapeValue(BasicShapeCircle::create().get()).get())),
         testing::StartsWith("AnimatableShapeValue@"));
 
-    Vector<SVGLength> v2;
-    v2.append(SVGLength(LengthModeOther, "1cm"));
-    v2.append(SVGLength(LengthModeOther, "2cm"));
+    RefPtr<SVGLengthList> l2 = SVGLengthList::create();
+    l2->append(length1cm);
+    l2->append(length2cm);
     EXPECT_EQ(
         ::std::string("AnimatableStrokeDasharrayList(1cm, 2cm)"),
-        PrintToString(AnimatableStrokeDasharrayList::create(v2)));
+        PrintToString(AnimatableStrokeDasharrayList::create(l2)));
 
     TransformOperations operations1;
     operations1.operations().append(TranslateTransformOperation::create(Length(2, WebCore::Fixed), Length(0, WebCore::Fixed), TransformOperation::TranslateX));

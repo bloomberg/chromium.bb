@@ -66,7 +66,7 @@ public:
     }
 
 protected:
-    NewSVGPropertyBase(AnimatedPropertyType type)
+    explicit NewSVGPropertyBase(AnimatedPropertyType type)
         : m_type(type)
     {
     }

@@ -39,9 +39,9 @@ static void updatePathFromCircleElement(SVGElement* element, Path& path)
     SVGCircleElement* circle = toSVGCircleElement(element);
 
     SVGLengthContext lengthContext(element);
-    float r = circle->rCurrentValue().value(lengthContext);
+    float r = circle->r()->currentValue()->value(lengthContext);
     if (r > 0)
-        path.addEllipse(FloatRect(circle->cxCurrentValue().value(lengthContext) - r, circle->cyCurrentValue().value(lengthContext) - r, r * 2, r * 2));
+        path.addEllipse(FloatRect(circle->cx()->currentValue()->value(lengthContext) - r, circle->cy()->currentValue()->value(lengthContext) - r, r * 2, r * 2));
 }
 
 static void updatePathFromEllipseElement(SVGElement* element, Path& path)
@@ -49,13 +49,13 @@ static void updatePathFromEllipseElement(SVGElement* element, Path& path)
     SVGEllipseElement* ellipse = toSVGEllipseElement(element);
 
     SVGLengthContext lengthContext(element);
-    float rx = ellipse->rxCurrentValue().value(lengthContext);
+    float rx = ellipse->rx()->currentValue()->value(lengthContext);
     if (rx <= 0)
         return;
-    float ry = ellipse->ryCurrentValue().value(lengthContext);
+    float ry = ellipse->ry()->currentValue()->value(lengthContext);
     if (ry <= 0)
         return;
-    path.addEllipse(FloatRect(ellipse->cxCurrentValue().value(lengthContext) - rx, ellipse->cyCurrentValue().value(lengthContext) - ry, rx * 2, ry * 2));
+    path.addEllipse(FloatRect(ellipse->cx()->currentValue()->value(lengthContext) - rx, ellipse->cy()->currentValue()->value(lengthContext) - ry, rx * 2, ry * 2));
 }
 
 static void updatePathFromLineElement(SVGElement* element, Path& path)
@@ -63,8 +63,8 @@ static void updatePathFromLineElement(SVGElement* element, Path& path)
     SVGLineElement* line = toSVGLineElement(element);
 
     SVGLengthContext lengthContext(element);
-    path.moveTo(FloatPoint(line->x1CurrentValue().value(lengthContext), line->y1CurrentValue().value(lengthContext)));
-    path.addLineTo(FloatPoint(line->x2CurrentValue().value(lengthContext), line->y2CurrentValue().value(lengthContext)));
+    path.moveTo(FloatPoint(line->x1()->currentValue()->value(lengthContext), line->y1()->currentValue()->value(lengthContext)));
+    path.addLineTo(FloatPoint(line->x2()->currentValue()->value(lengthContext), line->y2()->currentValue()->value(lengthContext)));
 }
 
 static void updatePathFromPathElement(SVGElement* element, Path& path)
@@ -105,19 +105,19 @@ static void updatePathFromRectElement(SVGElement* element, Path& path)
     SVGRectElement* rect = toSVGRectElement(element);
 
     SVGLengthContext lengthContext(element);
-    float width = rect->widthCurrentValue().value(lengthContext);
+    float width = rect->width()->currentValue()->value(lengthContext);
     if (width <= 0)
         return;
-    float height = rect->heightCurrentValue().value(lengthContext);
+    float height = rect->height()->currentValue()->value(lengthContext);
     if (height <= 0)
         return;
-    float x = rect->xCurrentValue().value(lengthContext);
-    float y = rect->yCurrentValue().value(lengthContext);
-    bool hasRx = rect->rxCurrentValue().value(lengthContext) > 0;
-    bool hasRy = rect->ryCurrentValue().value(lengthContext) > 0;
+    float x = rect->x()->currentValue()->value(lengthContext);
+    float y = rect->y()->currentValue()->value(lengthContext);
+    bool hasRx = rect->rx()->currentValue()->value(lengthContext) > 0;
+    bool hasRy = rect->ry()->currentValue()->value(lengthContext) > 0;
     if (hasRx || hasRy) {
-        float rx = rect->rxCurrentValue().value(lengthContext);
-        float ry = rect->ryCurrentValue().value(lengthContext);
+        float rx = rect->rx()->currentValue()->value(lengthContext);
+        float ry = rect->ry()->currentValue()->value(lengthContext);
         if (!hasRx)
             rx = ry;
         else if (!hasRy)

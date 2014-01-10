@@ -40,14 +40,14 @@ class AnimatableSVGLength FINAL : public AnimatableValue {
 public:
     virtual ~AnimatableSVGLength() { }
 
-    static PassRefPtr<AnimatableSVGLength> create(const SVGLength& length)
+    static PassRefPtr<AnimatableSVGLength> create(PassRefPtr<SVGLength> length)
     {
         return adoptRef(new AnimatableSVGLength(length));
     }
 
-    const SVGLength& toSVGLength() const
+    SVGLength* toSVGLength() const
     {
-        return m_length;
+        return m_length.get();
     }
 
 protected:
@@ -55,7 +55,7 @@ protected:
     virtual PassRefPtr<AnimatableValue> addWith(const AnimatableValue*) const OVERRIDE;
 
 private:
-    AnimatableSVGLength(const SVGLength& length)
+    AnimatableSVGLength(PassRefPtr<SVGLength> length)
         : m_length(length)
     {
     }
@@ -63,7 +63,7 @@ private:
     virtual AnimatableType type() const OVERRIDE { return TypeSVGLength; }
     virtual bool equalTo(const AnimatableValue*) const OVERRIDE;
 
-    SVGLength m_length;
+    RefPtr<SVGLength> m_length;
 };
 
 DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableSVGLength, isSVGLength());

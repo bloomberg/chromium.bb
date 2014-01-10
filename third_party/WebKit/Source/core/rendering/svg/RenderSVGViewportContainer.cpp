@@ -63,7 +63,7 @@ void RenderSVGViewportContainer::calcViewport()
     FloatRect oldViewport = m_viewport;
 
     SVGLengthContext lengthContext(element);
-    m_viewport = FloatRect(svg->xCurrentValue().value(lengthContext), svg->yCurrentValue().value(lengthContext), svg->widthCurrentValue().value(lengthContext), svg->heightCurrentValue().value(lengthContext));
+    m_viewport = FloatRect(svg->x()->currentValue()->value(lengthContext), svg->y()->currentValue()->value(lengthContext), svg->width()->currentValue()->value(lengthContext), svg->height()->currentValue()->value(lengthContext));
 
     SVGElement* correspondingElement = svg->correspondingElement();
     if (correspondingElement && svg->isInShadowTree()) {
@@ -97,17 +97,19 @@ void RenderSVGViewportContainer::calcViewport()
 
         SVGLengthContext lengthContext(element);
         if (useElement->hasAttribute(SVGNames::widthAttr))
-            m_viewport.setWidth(useElement->widthCurrentValue().value(lengthContext));
+            m_viewport.setWidth(useElement->width()->currentValue()->value(lengthContext));
         else if (isSymbolElement && svg->hasAttribute(SVGNames::widthAttr)) {
-            SVGLength containerWidth(LengthModeWidth, "100%");
-            m_viewport.setWidth(containerWidth.value(lengthContext));
+            RefPtr<SVGLength> containerWidth = SVGLength::create(LengthModeWidth);
+            containerWidth->setValueAsString("100%", ASSERT_NO_EXCEPTION);
+            m_viewport.setWidth(containerWidth->value(lengthContext));
         }
 
         if (useElement->hasAttribute(SVGNames::heightAttr))
-            m_viewport.setHeight(useElement->heightCurrentValue().value(lengthContext));
+            m_viewport.setHeight(useElement->height()->currentValue()->value(lengthContext));
         else if (isSymbolElement && svg->hasAttribute(SVGNames::heightAttr)) {
-            SVGLength containerHeight(LengthModeHeight, "100%");
-            m_viewport.setHeight(containerHeight.value(lengthContext));
+            RefPtr<SVGLength> containerHeight = SVGLength::create(LengthModeHeight);
+            containerHeight->setValueAsString("100%", ASSERT_NO_EXCEPTION);
+            m_viewport.setHeight(containerHeight->value(lengthContext));
         }
     }
 

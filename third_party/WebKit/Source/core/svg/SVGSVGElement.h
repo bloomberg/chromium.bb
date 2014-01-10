@@ -27,6 +27,7 @@
 #include "core/svg/SVGAnimatedRect.h"
 #include "core/svg/SVGFitToViewBox.h"
 #include "core/svg/SVGGraphicsElement.h"
+#include "core/svg/SVGLengthTearOff.h"
 #include "core/svg/SVGZoomAndPan.h"
 #include "wtf/WeakPtr.h"
 
@@ -109,7 +110,7 @@ public:
     void deselectAll();
 
     static float createSVGNumber();
-    static SVGLength createSVGLength();
+    static PassRefPtr<SVGLengthTearOff> createSVGLength();
     static SVGAngle createSVGAngle();
     static SVGPoint createSVGPoint();
     static SVGMatrix createSVGMatrix();
@@ -130,6 +131,11 @@ public:
     void setZoomAndPan(unsigned short zoomAndPan) { m_zoomAndPan = SVGZoomAndPan::parseFromNumber(zoomAndPan); }
 
     bool hasEmptyViewBox() const { return viewBoxCurrentValue().isValid() && viewBoxCurrentValue().isEmpty(); }
+
+    SVGAnimatedLength* x() const { return m_x.get(); }
+    SVGAnimatedLength* y() const { return m_y.get(); }
+    SVGAnimatedLength* width() const { return m_width.get(); }
+    SVGAnimatedLength* height() const { return m_height.get(); }
 
 private:
     explicit SVGSVGElement(Document&);
@@ -158,11 +164,11 @@ private:
 
     PassRefPtr<NodeList> collectIntersectionOrEnclosureList(const SVGRect&, SVGElement*, CollectIntersectionOrEnclosure) const;
 
+    RefPtr<SVGAnimatedLength> m_x;
+    RefPtr<SVGAnimatedLength> m_y;
+    RefPtr<SVGAnimatedLength> m_width;
+    RefPtr<SVGAnimatedLength> m_height;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGSVGElement)
-        DECLARE_ANIMATED_LENGTH(X, x)
-        DECLARE_ANIMATED_LENGTH(Y, y)
-        DECLARE_ANIMATED_LENGTH(Width, width)
-        DECLARE_ANIMATED_LENGTH(Height, height)
         DECLARE_ANIMATED_RECT(ViewBox, viewBox)
         DECLARE_ANIMATED_PRESERVEASPECTRATIO(PreserveAspectRatio, preserveAspectRatio)
     END_DECLARE_ANIMATED_PROPERTIES

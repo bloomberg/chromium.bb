@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, Google Inc. All rights reserved.
+ * Copyright (C) 2014 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,41 +28,31 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "core/animation/AnimatableStrokeDasharrayList.h"
+#ifndef SVGLengthListTearOff_h
+#define SVGLengthListTearOff_h
 
-#include "core/svg/SVGLength.h"
+#include "core/svg/SVGLengthList.h"
+#include "core/svg/properties/NewSVGListPropertyTearOffHelper.h"
 
-#include <gtest/gtest.h>
+namespace WebCore {
 
-using namespace WebCore;
+class SVGLengthListTearOff :
+    public NewSVGListPropertyTearOffHelper<SVGLengthListTearOff, SVGLengthList>,
+    public ScriptWrappable {
+public:
+    static PassRefPtr<SVGLengthListTearOff> create(PassRefPtr<SVGLengthList> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = nullQName())
+    {
+        return adoptRef(new SVGLengthListTearOff(target, contextElement, propertyIsAnimVal, attributeName));
+    }
 
-namespace {
+private:
+    SVGLengthListTearOff(PassRefPtr<SVGLengthList> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = nullQName())
+        : NewSVGListPropertyTearOffHelper<SVGLengthListTearOff, SVGLengthList>(target, contextElement, propertyIsAnimVal, attributeName)
+    {
+        ScriptWrappable::init(this);
+    }
+};
 
-PassRefPtr<SVGLengthList> createSVGLengthList(size_t length)
-{
-    RefPtr<SVGLengthList> list = SVGLengthList::create();
-    for (size_t i = 0; i < length; ++i)
-        list->append(SVGLength::create());
-    return list.release();
-}
+} // namespace WebCore
 
-TEST(AnimationAnimatableStrokeDasharrayListTest, EqualTo)
-{
-    RefPtr<SVGLengthList> svgListA = createSVGLengthList(4);
-    RefPtr<SVGLengthList> svgListB = createSVGLengthList(4);
-    RefPtr<AnimatableStrokeDasharrayList> listA = AnimatableStrokeDasharrayList::create(svgListA);
-    RefPtr<AnimatableStrokeDasharrayList> listB = AnimatableStrokeDasharrayList::create(svgListB);
-    EXPECT_TRUE(listA->equals(listB.get()));
-
-    TrackExceptionState exceptionState;
-    svgListB->at(3)->newValueSpecifiedUnits(LengthTypePX, 50);
-    listB = AnimatableStrokeDasharrayList::create(svgListB);
-    EXPECT_FALSE(listA->equals(listB.get()));
-
-    svgListB = createSVGLengthList(5);
-    listB = AnimatableStrokeDasharrayList::create(svgListB);
-    EXPECT_FALSE(listA->equals(listB.get()));
-}
-
-} // namespace
+#endif // SVGLengthListTearOff_h_

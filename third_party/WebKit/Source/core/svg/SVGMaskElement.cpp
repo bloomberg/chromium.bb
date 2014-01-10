@@ -33,34 +33,37 @@ namespace WebCore {
 // Animated property definitions
 DEFINE_ANIMATED_ENUMERATION(SVGMaskElement, SVGNames::maskUnitsAttr, MaskUnits, maskUnits, SVGUnitTypes::SVGUnitType)
 DEFINE_ANIMATED_ENUMERATION(SVGMaskElement, SVGNames::maskContentUnitsAttr, MaskContentUnits, maskContentUnits, SVGUnitTypes::SVGUnitType)
-DEFINE_ANIMATED_LENGTH(SVGMaskElement, SVGNames::xAttr, X, x)
-DEFINE_ANIMATED_LENGTH(SVGMaskElement, SVGNames::yAttr, Y, y)
-DEFINE_ANIMATED_LENGTH(SVGMaskElement, SVGNames::widthAttr, Width, width)
-DEFINE_ANIMATED_LENGTH(SVGMaskElement, SVGNames::heightAttr, Height, height)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGMaskElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(maskUnits)
     REGISTER_LOCAL_ANIMATED_PROPERTY(maskContentUnits)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(x)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(y)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(width)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(height)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGElement)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGTests)
 END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGMaskElement::SVGMaskElement(Document& document)
     : SVGElement(SVGNames::maskTag, document)
+    , m_x(SVGAnimatedLength::create(this, SVGNames::xAttr, SVGLength::create(LengthModeWidth)))
+    , m_y(SVGAnimatedLength::create(this, SVGNames::yAttr, SVGLength::create(LengthModeHeight)))
+    , m_width(SVGAnimatedLength::create(this, SVGNames::widthAttr, SVGLength::create(LengthModeWidth)))
+    , m_height(SVGAnimatedLength::create(this, SVGNames::heightAttr, SVGLength::create(LengthModeHeight)))
     , m_maskUnits(SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX)
     , m_maskContentUnits(SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE)
-    , m_x(LengthModeWidth, "-10%")
-    , m_y(LengthModeHeight, "-10%")
-    , m_width(LengthModeWidth, "120%")
-    , m_height(LengthModeHeight, "120%")
 {
-    // Spec: If the x/y attribute is not specified, the effect is as if a value of "-10%" were specified.
-    // Spec: If the width/height attribute is not specified, the effect is as if a value of "120%" were specified.
     ScriptWrappable::init(this);
+
+    // Spec: If the x/y attribute is not specified, the effect is as if a value of "-10%" were specified.
+    m_x->setDefaultValueAsString("-10%");
+    m_y->setDefaultValueAsString("-10%");
+
+    // Spec: If the width/height attribute is not specified, the effect is as if a value of "120%" were specified.
+    m_width->setDefaultValueAsString("120%");
+    m_height->setDefaultValueAsString("120%");
+
+    addToPropertyMap(m_x);
+    addToPropertyMap(m_y);
+    addToPropertyMap(m_width);
+    addToPropertyMap(m_height);
     registerAnimatedPropertiesForSVGMaskElement();
 }
 
@@ -101,13 +104,13 @@ void SVGMaskElement::parseAttribute(const QualifiedName& name, const AtomicStrin
             setMaskContentUnitsBaseValue(propertyValue);
         return;
     } else if (name == SVGNames::xAttr)
-        setXBaseValue(SVGLength::construct(LengthModeWidth, value, parseError));
+        m_x->setBaseValueAsString(value, AllowNegativeLengths, parseError);
     else if (name == SVGNames::yAttr)
-        setYBaseValue(SVGLength::construct(LengthModeHeight, value, parseError));
+        m_y->setBaseValueAsString(value, AllowNegativeLengths, parseError);
     else if (name == SVGNames::widthAttr)
-        setWidthBaseValue(SVGLength::construct(LengthModeWidth, value, parseError));
+        m_width->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
     else if (name == SVGNames::heightAttr)
-        setHeightBaseValue(SVGLength::construct(LengthModeHeight, value, parseError));
+        m_height->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
     else if (SVGTests::parseAttribute(name, value)) {
     } else
         ASSERT_NOT_REACHED();
@@ -153,10 +156,10 @@ RenderObject* SVGMaskElement::createRenderer(RenderStyle*)
 
 bool SVGMaskElement::selfHasRelativeLengths() const
 {
-    return xCurrentValue().isRelative()
-        || yCurrentValue().isRelative()
-        || widthCurrentValue().isRelative()
-        || heightCurrentValue().isRelative();
+    return m_x->currentValue()->isRelative()
+        || m_y->currentValue()->isRelative()
+        || m_width->currentValue()->isRelative()
+        || m_height->currentValue()->isRelative();
 }
 
 }

@@ -127,7 +127,10 @@ void SVGTextChunkBuilder::addTextChunk(Vector<SVGInlineTextBox*>& lineLayoutBoxe
     float desiredTextLength = 0;
     if (SVGTextContentElement* textContentElement = SVGTextContentElement::elementFromRenderer(textRenderer->parent())) {
         SVGLengthContext lengthContext(textContentElement);
-        desiredTextLength = textContentElement->specifiedTextLength().value(lengthContext);
+        if (textContentElement->textLengthIsSpecifiedByUser())
+            desiredTextLength = textContentElement->textLength()->currentValue()->value(lengthContext);
+        else
+            desiredTextLength = 0;
 
         switch (textContentElement->lengthAdjustCurrentValue()) {
         case SVGLengthAdjustUnknown:

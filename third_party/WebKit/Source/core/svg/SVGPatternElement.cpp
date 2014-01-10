@@ -32,10 +32,6 @@
 namespace WebCore {
 
 // Animated property definitions
-DEFINE_ANIMATED_LENGTH(SVGPatternElement, SVGNames::xAttr, X, x)
-DEFINE_ANIMATED_LENGTH(SVGPatternElement, SVGNames::yAttr, Y, y)
-DEFINE_ANIMATED_LENGTH(SVGPatternElement, SVGNames::widthAttr, Width, width)
-DEFINE_ANIMATED_LENGTH(SVGPatternElement, SVGNames::heightAttr, Height, height)
 DEFINE_ANIMATED_ENUMERATION(SVGPatternElement, SVGNames::patternUnitsAttr, PatternUnits, patternUnits, SVGUnitTypes::SVGUnitType)
 DEFINE_ANIMATED_ENUMERATION(SVGPatternElement, SVGNames::patternContentUnitsAttr, PatternContentUnits, patternContentUnits, SVGUnitTypes::SVGUnitType)
 DEFINE_ANIMATED_TRANSFORM_LIST(SVGPatternElement, SVGNames::patternTransformAttr, PatternTransform, patternTransform)
@@ -44,10 +40,6 @@ DEFINE_ANIMATED_RECT(SVGPatternElement, SVGNames::viewBoxAttr, ViewBox, viewBox)
 DEFINE_ANIMATED_PRESERVEASPECTRATIO(SVGPatternElement, SVGNames::preserveAspectRatioAttr, PreserveAspectRatio, preserveAspectRatio)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGPatternElement)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(x)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(y)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(width)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(height)
     REGISTER_LOCAL_ANIMATED_PROPERTY(patternUnits)
     REGISTER_LOCAL_ANIMATED_PROPERTY(patternContentUnits)
     REGISTER_LOCAL_ANIMATED_PROPERTY(patternTransform)
@@ -60,14 +52,19 @@ END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGPatternElement::SVGPatternElement(Document& document)
     : SVGElement(SVGNames::patternTag, document)
-    , m_x(LengthModeWidth)
-    , m_y(LengthModeHeight)
-    , m_width(LengthModeWidth)
-    , m_height(LengthModeHeight)
+    , m_x(SVGAnimatedLength::create(this, SVGNames::xAttr, SVGLength::create(LengthModeWidth)))
+    , m_y(SVGAnimatedLength::create(this, SVGNames::yAttr, SVGLength::create(LengthModeHeight)))
+    , m_width(SVGAnimatedLength::create(this, SVGNames::widthAttr, SVGLength::create(LengthModeWidth)))
+    , m_height(SVGAnimatedLength::create(this, SVGNames::heightAttr, SVGLength::create(LengthModeHeight)))
     , m_patternUnits(SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX)
     , m_patternContentUnits(SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE)
 {
     ScriptWrappable::init(this);
+
+    addToPropertyMap(m_x);
+    addToPropertyMap(m_y);
+    addToPropertyMap(m_width);
+    addToPropertyMap(m_height);
     registerAnimatedPropertiesForSVGPatternElement();
 }
 
@@ -117,13 +114,13 @@ void SVGPatternElement::parseAttribute(const QualifiedName& name, const AtomicSt
         setPatternTransformBaseValue(newList);
         return;
     } else if (name == SVGNames::xAttr)
-        setXBaseValue(SVGLength::construct(LengthModeWidth, value, parseError));
+        m_x->setBaseValueAsString(value, AllowNegativeLengths, parseError);
     else if (name == SVGNames::yAttr)
-        setYBaseValue(SVGLength::construct(LengthModeHeight, value, parseError));
+        m_y->setBaseValueAsString(value, AllowNegativeLengths, parseError);
     else if (name == SVGNames::widthAttr)
-        setWidthBaseValue(SVGLength::construct(LengthModeWidth, value, parseError, ForbidNegativeLengths));
+        m_width->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
     else if (name == SVGNames::heightAttr)
-        setHeightBaseValue(SVGLength::construct(LengthModeHeight, value, parseError, ForbidNegativeLengths));
+        m_height->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
     else if (SVGURIReference::parseAttribute(name, value)
              || SVGTests::parseAttribute(name, value)
              || SVGFitToViewBox::parseAttribute(this, name, value)) {
@@ -176,16 +173,16 @@ void SVGPatternElement::collectPatternAttributes(PatternAttributes& attributes) 
     const SVGPatternElement* current = this;
     while (current) {
         if (!attributes.hasX() && current->hasAttribute(SVGNames::xAttr))
-            attributes.setX(current->xCurrentValue());
+            attributes.setX(current->x()->currentValue());
 
         if (!attributes.hasY() && current->hasAttribute(SVGNames::yAttr))
-            attributes.setY(current->yCurrentValue());
+            attributes.setY(current->y()->currentValue());
 
         if (!attributes.hasWidth() && current->hasAttribute(SVGNames::widthAttr))
-            attributes.setWidth(current->widthCurrentValue());
+            attributes.setWidth(current->width()->currentValue());
 
         if (!attributes.hasHeight() && current->hasAttribute(SVGNames::heightAttr))
-            attributes.setHeight(current->heightCurrentValue());
+            attributes.setHeight(current->height()->currentValue());
 
         if (!attributes.hasViewBox() && current->hasAttribute(SVGNames::viewBoxAttr) && current->viewBoxCurrentValue().isValid())
             attributes.setViewBox(current->viewBoxCurrentValue());
@@ -234,10 +231,10 @@ AffineTransform SVGPatternElement::localCoordinateSpaceTransform(SVGElement::CTM
 
 bool SVGPatternElement::selfHasRelativeLengths() const
 {
-    return xCurrentValue().isRelative()
-        || yCurrentValue().isRelative()
-        || widthCurrentValue().isRelative()
-        || heightCurrentValue().isRelative();
+    return m_x->currentValue()->isRelative()
+        || m_y->currentValue()->isRelative()
+        || m_width->currentValue()->isRelative()
+        || m_height->currentValue()->isRelative();
 }
 
 }

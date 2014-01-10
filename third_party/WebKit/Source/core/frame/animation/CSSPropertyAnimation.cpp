@@ -197,19 +197,22 @@ static inline LengthBox blendFunc(const AnimationBase* anim, const LengthBox& fr
     return result;
 }
 
-static inline SVGLength blendFunc(const AnimationBase*, const SVGLength& from, const SVGLength& to, double progress)
+static inline PassRefPtr<SVGLength> blendFunc(const AnimationBase*, PassRefPtr<SVGLength> from, PassRefPtr<SVGLength> to, double progress)
 {
-    return to.blend(from, narrowPrecisionToFloat(progress));
+    return to->blend(from, narrowPrecisionToFloat(progress));
 }
 
-static inline Vector<SVGLength> blendFunc(const AnimationBase*, const Vector<SVGLength>& from, const Vector<SVGLength>& to, double progress)
+static inline PassRefPtr<SVGLengthList> blendFunc(const AnimationBase*, PassRefPtr<SVGLengthList> passFrom, PassRefPtr<SVGLengthList> passTo, double progress)
 {
-    size_t fromLength = from.size();
-    size_t toLength = to.size();
+    RefPtr<SVGLengthList> from = passFrom;
+    RefPtr<SVGLengthList> to = passTo;
+
+    size_t fromLength = from->numberOfItems();
+    size_t toLength = to->numberOfItems();
     if (!fromLength)
-        return !progress ? from : to;
+        return !progress ? from->clone() : to->clone();
     if (!toLength)
-        return progress == 1 ? from : to;
+        return progress == 1 ? from->clone() : to->clone();
 
     size_t resultLength = fromLength;
     if (fromLength != toLength) {
@@ -220,9 +223,9 @@ static inline Vector<SVGLength> blendFunc(const AnimationBase*, const Vector<SVG
         else
             resultLength = fromLength * toLength;
     }
-    Vector<SVGLength> result(resultLength);
+    RefPtr<SVGLengthList> result = SVGLengthList::create();
     for (size_t i = 0; i < resultLength; ++i)
-        result[i] = to[i % toLength].blend(from[i % fromLength], narrowPrecisionToFloat(progress));
+        result->append(to->at(i % toLength)->blend(from->at(i % fromLength), narrowPrecisionToFloat(progress)));
     return result;
 }
 
@@ -899,6 +902,41 @@ private:
     void (RenderStyle::*m_setter)(const Color&);
 };
 
+template <typename T>
+class RefCountedSVGPropertyWrapper : public AnimationPropertyWrapperBase {
+public:
+    RefCountedSVGPropertyWrapper(CSSPropertyID prop, PassRefPtr<T> (RenderStyle::*getter)() const, void (RenderStyle::*setter)(PassRefPtr<T>))
+        : AnimationPropertyWrapperBase(prop)
+        , m_getter(getter)
+        , m_setter(setter)
+    {
+    }
+
+    virtual void blend(const AnimationBase* anim, RenderStyle* dst, const RenderStyle* a, const RenderStyle* b, double progress) const
+    {
+        (dst->*m_setter)(blendFunc(anim, (a->*m_getter)(), (b->*m_getter)(), progress));
+    }
+
+    virtual bool equals(const RenderStyle* a, const RenderStyle* b) const OVERRIDE
+    {
+        if (a == b)
+            return true;
+        if (!a || !b)
+            return false;
+        RefPtr<T> aValue = (a->*this->m_getter)();
+        RefPtr<T> bValue = (b->*this->m_getter)();
+        if (aValue == bValue)
+            return true;
+        if (!aValue || !bValue)
+            return false;
+        return *aValue == *bValue;
+    }
+
+protected:
+    PassRefPtr<T> (RenderStyle::*m_getter)() const;
+    void (RenderStyle::*m_setter)(PassRefPtr<T>);
+};
+
 static void addShorthandProperties()
 {
     static const CSSPropertyID animatableShorthandProperties[] = {
@@ -1064,9 +1102,9 @@ void CSSPropertyAnimation::ensurePropertyMap()
 
     gPropertyWrappers->append(new PropertyWrapperSVGPaint(CSSPropertyStroke, &RenderStyle::strokePaintType, &RenderStyle::strokePaintColor, &RenderStyle::setStrokePaintColor));
     gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyStrokeOpacity, &RenderStyle::strokeOpacity, &RenderStyle::setStrokeOpacity));
-    gPropertyWrappers->append(new PropertyWrapper<SVGLength>(CSSPropertyStrokeWidth, &RenderStyle::strokeWidth, &RenderStyle::setStrokeWidth));
-    gPropertyWrappers->append(new PropertyWrapper< Vector<SVGLength> >(CSSPropertyStrokeDasharray, &RenderStyle::strokeDashArray, &RenderStyle::setStrokeDashArray));
-    gPropertyWrappers->append(new PropertyWrapper<SVGLength>(CSSPropertyStrokeDashoffset, &RenderStyle::strokeDashOffset, &RenderStyle::setStrokeDashOffset));
+    gPropertyWrappers->append(new RefCountedSVGPropertyWrapper<SVGLength>(CSSPropertyStrokeWidth, &RenderStyle::strokeWidth, &RenderStyle::setStrokeWidth));
+    gPropertyWrappers->append(new RefCountedSVGPropertyWrapper<SVGLengthList>(CSSPropertyStrokeDasharray, &RenderStyle::strokeDashArray, &RenderStyle::setStrokeDashArray));
+    gPropertyWrappers->append(new RefCountedSVGPropertyWrapper<SVGLength>(CSSPropertyStrokeDashoffset, &RenderStyle::strokeDashOffset, &RenderStyle::setStrokeDashOffset));
     gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyStrokeMiterlimit, &RenderStyle::strokeMiterLimit, &RenderStyle::setStrokeMiterLimit));
 
     gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyFloodOpacity, &RenderStyle::floodOpacity, &RenderStyle::setFloodOpacity));
@@ -1077,8 +1115,8 @@ void CSSPropertyAnimation::ensurePropertyMap()
 
     gPropertyWrappers->append(new PropertyWrapperMaybeInvalidColor(CSSPropertyLightingColor, &RenderStyle::lightingColor, &RenderStyle::setLightingColor));
 
-    gPropertyWrappers->append(new PropertyWrapper<SVGLength>(CSSPropertyBaselineShift, &RenderStyle::baselineShiftValue, &RenderStyle::setBaselineShiftValue));
-    gPropertyWrappers->append(new PropertyWrapper<SVGLength>(CSSPropertyKerning, &RenderStyle::kerning, &RenderStyle::setKerning));
+    gPropertyWrappers->append(new RefCountedSVGPropertyWrapper<SVGLength>(CSSPropertyBaselineShift, &RenderStyle::baselineShiftValue, &RenderStyle::setBaselineShiftValue));
+    gPropertyWrappers->append(new RefCountedSVGPropertyWrapper<SVGLength>(CSSPropertyKerning, &RenderStyle::kerning, &RenderStyle::setKerning));
 
     if (RuntimeEnabledFeatures::webAnimationsCSSEnabled()) {
         gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyFlexGrow, &RenderStyle::flexGrow, &RenderStyle::setFlexGrow));

@@ -425,13 +425,13 @@ void RenderSVGShape::updateRepaintBoundingBox()
 float RenderSVGShape::strokeWidth() const
 {
     SVGLengthContext lengthContext(element());
-    return style()->svgStyle()->strokeWidth().value(lengthContext);
+    return style()->svgStyle()->strokeWidth()->value(lengthContext);
 }
 
 bool RenderSVGShape::hasSmoothStroke() const
 {
     const SVGRenderStyle* svgStyle = style()->svgStyle();
-    return svgStyle->strokeDashArray().isEmpty()
+    return svgStyle->strokeDashArray()->isEmpty()
         && svgStyle->strokeMiterLimit() == svgStyle->initialStrokeMiterLimit()
         && svgStyle->joinStyle() == svgStyle->initialJoinStyle()
         && svgStyle->capStyle() == svgStyle->initialCapStyle();

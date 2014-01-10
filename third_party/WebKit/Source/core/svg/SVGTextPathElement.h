@@ -111,6 +111,8 @@ public:
 
     static PassRefPtr<SVGTextPathElement> create(Document&);
 
+    SVGAnimatedLength* startOffset() const { return m_startOffset.get(); }
+
 private:
     explicit SVGTextPathElement(Document&);
 
@@ -132,8 +134,8 @@ private:
 
     virtual bool selfHasRelativeLengths() const;
 
+    RefPtr<SVGAnimatedLength> m_startOffset;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGTextPathElement)
-        DECLARE_ANIMATED_LENGTH(StartOffset, startOffset)
         DECLARE_ANIMATED_ENUMERATION(Method, method, SVGTextPathMethodType)
         DECLARE_ANIMATED_ENUMERATION(Spacing, spacing, SVGTextPathSpacingType)
         DECLARE_ANIMATED_STRING(Href, href)

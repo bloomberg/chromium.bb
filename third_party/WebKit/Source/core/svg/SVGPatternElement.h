@@ -49,6 +49,11 @@ public:
 
     virtual AffineTransform localCoordinateSpaceTransform(SVGElement::CTMScope) const;
 
+    SVGAnimatedLength* x() const { return m_x.get(); }
+    SVGAnimatedLength* y() const { return m_y.get(); }
+    SVGAnimatedLength* width() const { return m_width.get(); }
+    SVGAnimatedLength* height() const { return m_height.get(); }
+
 private:
     explicit SVGPatternElement(Document&);
 
@@ -64,11 +69,11 @@ private:
 
     virtual bool selfHasRelativeLengths() const;
 
+    RefPtr<SVGAnimatedLength> m_x;
+    RefPtr<SVGAnimatedLength> m_y;
+    RefPtr<SVGAnimatedLength> m_width;
+    RefPtr<SVGAnimatedLength> m_height;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGPatternElement)
-        DECLARE_ANIMATED_LENGTH(X, x)
-        DECLARE_ANIMATED_LENGTH(Y, y)
-        DECLARE_ANIMATED_LENGTH(Width, width)
-        DECLARE_ANIMATED_LENGTH(Height, height)
         DECLARE_ANIMATED_ENUMERATION(PatternUnits, patternUnits, SVGUnitTypes::SVGUnitType)
         DECLARE_ANIMATED_ENUMERATION(PatternContentUnits, patternContentUnits, SVGUnitTypes::SVGUnitType)
         DECLARE_ANIMATED_TRANSFORM_LIST(PatternTransform, patternTransform)

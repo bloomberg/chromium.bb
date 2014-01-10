@@ -219,7 +219,6 @@
             'v8/custom/V8SQLTransactionCustom.cpp',
             'v8/custom/V8SQLTransactionSyncCustom.cpp',
             'v8/custom/V8SVGElementCustom.cpp',
-            'v8/custom/V8SVGLengthCustom.cpp',
             'v8/custom/V8SVGPathSegCustom.cpp',
             'v8/custom/V8StyleSheetCustom.cpp',
             'v8/custom/V8TextCustom.cpp',

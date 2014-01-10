@@ -25,9 +25,12 @@
 namespace WebCore {
 struct RadialGradientAttributes : GradientAttributes {
     RadialGradientAttributes()
-        : m_cx(LengthModeWidth, "50%")
-        , m_cy(LengthModeWidth, "50%")
-        , m_r(LengthModeWidth, "50%")
+        : m_cx(SVGLength::create(LengthModeWidth))
+        , m_cy(SVGLength::create(LengthModeHeight))
+        , m_r(SVGLength::create(LengthModeOther))
+        , m_fx(SVGLength::create(LengthModeWidth))
+        , m_fy(SVGLength::create(LengthModeHeight))
+        , m_fr(SVGLength::create(LengthModeOther))
         , m_cxSet(false)
         , m_cySet(false)
         , m_rSet(false)
@@ -35,21 +38,24 @@ struct RadialGradientAttributes : GradientAttributes {
         , m_fySet(false)
         , m_frSet(false)
     {
+        m_cx->setValueAsString("50%", IGNORE_EXCEPTION);
+        m_cy->setValueAsString("50%", IGNORE_EXCEPTION);
+        m_r->setValueAsString("50%", IGNORE_EXCEPTION);
     }
 
-    SVGLength cx() const { return m_cx; }
-    SVGLength cy() const { return m_cy; }
-    SVGLength r() const { return m_r; }
-    SVGLength fx() const { return m_fx; }
-    SVGLength fy() const { return m_fy; }
-    SVGLength fr() const { return m_fr; }
+    SVGLength* cx() const { return m_cx.get(); }
+    SVGLength* cy() const { return m_cy.get(); }
+    SVGLength* r() const { return m_r.get(); }
+    SVGLength* fx() const { return m_fx.get(); }
+    SVGLength* fy() const { return m_fy.get(); }
+    SVGLength* fr() const { return m_fr.get(); }
 
-    void setCx(const SVGLength& value) { m_cx = value; m_cxSet = true; }
-    void setCy(const SVGLength& value) { m_cy = value; m_cySet = true; }
-    void setR(const SVGLength& value) { m_r = value; m_rSet = true; }
-    void setFx(const SVGLength& value) { m_fx = value; m_fxSet = true; }
-    void setFy(const SVGLength& value) { m_fy = value; m_fySet = true; }
-    void setFr(const SVGLength& value) { m_fr = value; m_frSet = true; }
+    void setCx(PassRefPtr<SVGLength> value) { m_cx = value; m_cxSet = true; }
+    void setCy(PassRefPtr<SVGLength> value) { m_cy = value; m_cySet = true; }
+    void setR(PassRefPtr<SVGLength> value) { m_r = value; m_rSet = true; }
+    void setFx(PassRefPtr<SVGLength> value) { m_fx = value; m_fxSet = true; }
+    void setFy(PassRefPtr<SVGLength> value) { m_fy = value; m_fySet = true; }
+    void setFr(PassRefPtr<SVGLength> value) { m_fr = value; m_frSet = true; }
 
     bool hasCx() const { return m_cxSet; }
     bool hasCy() const { return m_cySet; }
@@ -60,12 +66,12 @@ struct RadialGradientAttributes : GradientAttributes {
 
 private:
     // Properties
-    SVGLength m_cx;
-    SVGLength m_cy;
-    SVGLength m_r;
-    SVGLength m_fx;
-    SVGLength m_fy;
-    SVGLength m_fr;
+    RefPtr<SVGLength> m_cx;
+    RefPtr<SVGLength> m_cy;
+    RefPtr<SVGLength> m_r;
+    RefPtr<SVGLength> m_fx;
+    RefPtr<SVGLength> m_fy;
+    RefPtr<SVGLength> m_fr;
 
     // Property states
     bool m_cxSet : 1;

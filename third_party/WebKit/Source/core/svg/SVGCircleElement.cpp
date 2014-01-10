@@ -30,24 +30,21 @@
 namespace WebCore {
 
 // Animated property definitions
-DEFINE_ANIMATED_LENGTH(SVGCircleElement, SVGNames::cxAttr, Cx, cx)
-DEFINE_ANIMATED_LENGTH(SVGCircleElement, SVGNames::cyAttr, Cy, cy)
-DEFINE_ANIMATED_LENGTH(SVGCircleElement, SVGNames::rAttr, R, r)
-
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGCircleElement)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(cx)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(cy)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(r)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGraphicsElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGCircleElement::SVGCircleElement(Document& document)
     : SVGGeometryElement(SVGNames::circleTag, document)
-    , m_cx(LengthModeWidth)
-    , m_cy(LengthModeHeight)
-    , m_r(LengthModeOther)
+    , m_cx(SVGAnimatedLength::create(this, SVGNames::cxAttr, SVGLength::create(LengthModeWidth)))
+    , m_cy(SVGAnimatedLength::create(this, SVGNames::cyAttr, SVGLength::create(LengthModeHeight)))
+    , m_r(SVGAnimatedLength::create(this, SVGNames::rAttr, SVGLength::create(LengthModeOther)))
 {
     ScriptWrappable::init(this);
+
+    addToPropertyMap(m_cx);
+    addToPropertyMap(m_cy);
+    addToPropertyMap(m_r);
     registerAnimatedPropertiesForSVGCircleElement();
 }
 
@@ -74,11 +71,11 @@ void SVGCircleElement::parseAttribute(const QualifiedName& name, const AtomicStr
     if (!isSupportedAttribute(name))
         SVGGeometryElement::parseAttribute(name, value);
     else if (name == SVGNames::cxAttr)
-        setCxBaseValue(SVGLength::construct(LengthModeWidth, value, parseError));
+        m_cx->setBaseValueAsString(value, AllowNegativeLengths, parseError);
     else if (name == SVGNames::cyAttr)
-        setCyBaseValue(SVGLength::construct(LengthModeHeight, value, parseError));
+        m_cy->setBaseValueAsString(value, AllowNegativeLengths, parseError);
     else if (name == SVGNames::rAttr)
-        setRBaseValue(SVGLength::construct(LengthModeOther, value, parseError, ForbidNegativeLengths));
+        m_r->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
     else
         ASSERT_NOT_REACHED();
 
@@ -116,9 +113,9 @@ void SVGCircleElement::svgAttributeChanged(const QualifiedName& attrName)
 
 bool SVGCircleElement::selfHasRelativeLengths() const
 {
-    return cxCurrentValue().isRelative()
-        || cyCurrentValue().isRelative()
-        || rCurrentValue().isRelative();
+    return m_cx->currentValue()->isRelative()
+        || m_cy->currentValue()->isRelative()
+        || m_r->currentValue()->isRelative();
 }
 
 RenderObject* SVGCircleElement::createRenderer(RenderStyle*)

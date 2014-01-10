@@ -52,27 +52,19 @@
 namespace WebCore {
 
 // Animated property definitions
-DEFINE_ANIMATED_LENGTH(SVGUseElement, SVGNames::xAttr, X, x)
-DEFINE_ANIMATED_LENGTH(SVGUseElement, SVGNames::yAttr, Y, y)
-DEFINE_ANIMATED_LENGTH(SVGUseElement, SVGNames::widthAttr, Width, width)
-DEFINE_ANIMATED_LENGTH(SVGUseElement, SVGNames::heightAttr, Height, height)
 DEFINE_ANIMATED_STRING(SVGUseElement, XLinkNames::hrefAttr, Href, href)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGUseElement)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(x)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(y)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(width)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(height)
     REGISTER_LOCAL_ANIMATED_PROPERTY(href)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGraphicsElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGUseElement::SVGUseElement(Document& document, bool wasInsertedByParser)
     : SVGGraphicsElement(SVGNames::useTag, document)
-    , m_x(LengthModeWidth)
-    , m_y(LengthModeHeight)
-    , m_width(LengthModeWidth)
-    , m_height(LengthModeHeight)
+    , m_x(SVGAnimatedLength::create(this, SVGNames::xAttr, SVGLength::create(LengthModeWidth)))
+    , m_y(SVGAnimatedLength::create(this, SVGNames::yAttr, SVGLength::create(LengthModeHeight)))
+    , m_width(SVGAnimatedLength::create(this, SVGNames::widthAttr, SVGLength::create(LengthModeWidth)))
+    , m_height(SVGAnimatedLength::create(this, SVGNames::heightAttr, SVGLength::create(LengthModeHeight)))
     , m_wasInsertedByParser(wasInsertedByParser)
     , m_haveFiredLoadEvent(false)
     , m_needsShadowTreeRecreation(false)
@@ -80,6 +72,11 @@ inline SVGUseElement::SVGUseElement(Document& document, bool wasInsertedByParser
 {
     ASSERT(hasCustomStyleCallbacks());
     ScriptWrappable::init(this);
+
+    addToPropertyMap(m_x);
+    addToPropertyMap(m_y);
+    addToPropertyMap(m_width);
+    addToPropertyMap(m_height);
     registerAnimatedPropertiesForSVGUseElement();
 }
 
@@ -136,13 +133,13 @@ void SVGUseElement::parseAttribute(const QualifiedName& name, const AtomicString
     if (!isSupportedAttribute(name))
         SVGGraphicsElement::parseAttribute(name, value);
     else if (name == SVGNames::xAttr)
-        setXBaseValue(SVGLength::construct(LengthModeWidth, value, parseError));
+        m_x->setBaseValueAsString(value, AllowNegativeLengths, parseError);
     else if (name == SVGNames::yAttr)
-        setYBaseValue(SVGLength::construct(LengthModeHeight, value, parseError));
+        m_y->setBaseValueAsString(value, AllowNegativeLengths, parseError);
     else if (name == SVGNames::widthAttr)
-        setWidthBaseValue(SVGLength::construct(LengthModeWidth, value, parseError, ForbidNegativeLengths));
+        m_width->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
     else if (name == SVGNames::heightAttr)
-        setHeightBaseValue(SVGLength::construct(LengthModeHeight, value, parseError, ForbidNegativeLengths));
+        m_height->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
     else if (SVGURIReference::parseAttribute(name, value)) {
     } else
         ASSERT_NOT_REACHED();
@@ -546,7 +543,7 @@ void SVGUseElement::toClipPath(Path& path)
             toSVGGraphicsElement(n)->toClipPath(path);
             // FIXME: Avoid manual resolution of x/y here. Its potentially harmful.
             SVGLengthContext lengthContext(this);
-            path.translate(FloatSize(xCurrentValue().value(lengthContext), yCurrentValue().value(lengthContext)));
+            path.translate(FloatSize(m_x->currentValue()->value(lengthContext), m_y->currentValue()->value(lengthContext)));
             path.transform(animatedLocalTransform());
         }
     }
@@ -917,10 +914,10 @@ void SVGUseElement::transferUseAttributesToReplacedElement(SVGElement* from, SVG
 
 bool SVGUseElement::selfHasRelativeLengths() const
 {
-    if (xCurrentValue().isRelative()
-        || yCurrentValue().isRelative()
-        || widthCurrentValue().isRelative()
-        || heightCurrentValue().isRelative())
+    if (m_x->currentValue()->isRelative()
+        || m_y->currentValue()->isRelative()
+        || m_width->currentValue()->isRelative()
+        || m_height->currentValue()->isRelative())
         return true;
 
     if (!m_targetElementInstance)

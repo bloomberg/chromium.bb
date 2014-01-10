@@ -42,6 +42,9 @@ public:
     void removeClient(SVGElement*);
     void removeReferencedElement(SVGElement*);
 
+    SVGAnimatedLength* x() const { return m_x.get(); }
+    SVGAnimatedLength* y() const { return m_y.get(); }
+
 private:
     explicit SVGCursorElement(Document&);
 
@@ -53,9 +56,9 @@ private:
 
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
 
+    RefPtr<SVGAnimatedLength> m_x;
+    RefPtr<SVGAnimatedLength> m_y;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGCursorElement)
-        DECLARE_ANIMATED_LENGTH(X, x)
-        DECLARE_ANIMATED_LENGTH(Y, y)
         DECLARE_ANIMATED_STRING(Href, href)
     END_DECLARE_ANIMATED_PROPERTIES
 

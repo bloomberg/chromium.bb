@@ -1,62 +1,58 @@
 /*
- * Copyright (C) Research In Motion Limited 2010. All rights reserved.
+ * Copyright (C) 2014 Google Inc. All rights reserved.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Library General Public
- * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Library General Public License for more details.
+ *     * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ * copyright notice, this list of conditions and the following disclaimer
+ * in the documentation and/or other materials provided with the
+ * distribution.
+ *     * Neither the name of Google Inc. nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
  *
- * You should have received a copy of the GNU Library General Public License
- * along with this library; see the file COPYING.LIB.  If not, write to
- * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
- * Boston, MA 02110-1301, USA.
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef SVGAnimatedLength_h
 #define SVGAnimatedLength_h
 
-#include "core/svg/SVGAnimatedTypeAnimator.h"
-#include "core/svg/SVGLength.h"
-#include "core/svg/properties/SVGAnimatedPropertyTearOff.h"
+#include "core/svg/SVGLengthTearOff.h"
+#include "core/svg/properties/NewSVGAnimatedProperty.h"
 
 namespace WebCore {
 
-typedef SVGAnimatedPropertyTearOff<SVGLength> SVGAnimatedLength;
-
-// Helper macros to declare/define a SVGAnimatedLength object
-#define DECLARE_ANIMATED_LENGTH(UpperProperty, LowerProperty) \
-DECLARE_ANIMATED_PROPERTY(SVGAnimatedLength, SVGLength, UpperProperty, LowerProperty)
-
-#define DEFINE_ANIMATED_LENGTH(OwnerType, DOMAttribute, UpperProperty, LowerProperty) \
-DEFINE_ANIMATED_PROPERTY(AnimatedLength, OwnerType, DOMAttribute, DOMAttribute.localName(), UpperProperty, LowerProperty, SVGAnimatedLength, SVGLength)
-
-class SVGAnimationElement;
-
-class SVGAnimatedLengthAnimator : public SVGAnimatedTypeAnimator {
+class SVGAnimatedLength : public NewSVGAnimatedProperty<SVGLength> {
 public:
-    SVGAnimatedLengthAnimator(SVGAnimationElement*, SVGElement*);
-    virtual ~SVGAnimatedLengthAnimator() { }
+    static PassRefPtr<SVGAnimatedLength> create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<SVGLength> initialValue)
+    {
+        return adoptRef(new SVGAnimatedLength(contextElement, attributeName, initialValue));
+    }
 
-    virtual PassOwnPtr<SVGAnimatedType> constructFromString(const String&);
-    virtual PassOwnPtr<SVGAnimatedType> startAnimValAnimation(const SVGElementAnimatedPropertyList&);
-    virtual void stopAnimValAnimation(const SVGElementAnimatedPropertyList&);
-    virtual void resetAnimValToBaseVal(const SVGElementAnimatedPropertyList&, SVGAnimatedType*);
-    virtual void animValWillChange(const SVGElementAnimatedPropertyList&);
-    virtual void animValDidChange(const SVGElementAnimatedPropertyList&);
+    void setDefaultValueAsString(const String&);
+    void setBaseValueAsString(const String&, SVGLengthNegativeValuesMode, SVGParsingError&);
 
-    virtual void addAnimatedTypes(SVGAnimatedType*, SVGAnimatedType*);
-    virtual void calculateAnimatedValue(float percentage, unsigned repeatCount, SVGAnimatedType*, SVGAnimatedType*, SVGAnimatedType*, SVGAnimatedType*);
-    virtual float calculateDistance(const String& fromString, const String& toString);
-
-private:
-    SVGLengthMode m_lengthMode;
+protected:
+    SVGAnimatedLength(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<SVGLength> initialValue)
+        : NewSVGAnimatedProperty<SVGLength>(contextElement, attributeName, initialValue)
+    {
+    }
 };
 
 } // namespace WebCore
 
-#endif
+#endif // SVGAnimatedLength_h

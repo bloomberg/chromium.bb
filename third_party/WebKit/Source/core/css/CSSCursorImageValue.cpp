@@ -99,10 +99,10 @@ bool CSSCursorImageValue::updateIfSVGCursorIsUsed(Element* element)
         // FIXME: This will override hot spot specified in CSS, which is probably incorrect.
         SVGLengthContext lengthContext(0);
         m_hasHotSpot = true;
-        float x = roundf(cursorElement->xCurrentValue().value(lengthContext));
+        float x = roundf(cursorElement->x()->currentValue()->value(lengthContext));
         m_hotSpot.setX(static_cast<int>(x));
 
-        float y = roundf(cursorElement->yCurrentValue().value(lengthContext));
+        float y = roundf(cursorElement->y()->currentValue()->value(lengthContext));
         m_hotSpot.setY(static_cast<int>(y));
 
         if (cachedImageURL() != element->document().completeURL(cursorElement->hrefCurrentValue()))

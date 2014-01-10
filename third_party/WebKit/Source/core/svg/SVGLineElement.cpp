@@ -29,27 +29,23 @@
 namespace WebCore {
 
 // Animated property definitions
-DEFINE_ANIMATED_LENGTH(SVGLineElement, SVGNames::x1Attr, X1, x1)
-DEFINE_ANIMATED_LENGTH(SVGLineElement, SVGNames::y1Attr, Y1, y1)
-DEFINE_ANIMATED_LENGTH(SVGLineElement, SVGNames::x2Attr, X2, x2)
-DEFINE_ANIMATED_LENGTH(SVGLineElement, SVGNames::y2Attr, Y2, y2)
-
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGLineElement)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(x1)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(y1)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(x2)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(y2)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGraphicsElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGLineElement::SVGLineElement(Document& document)
     : SVGGeometryElement(SVGNames::lineTag, document)
-    , m_x1(LengthModeWidth)
-    , m_y1(LengthModeHeight)
-    , m_x2(LengthModeWidth)
-    , m_y2(LengthModeHeight)
+    , m_x1(SVGAnimatedLength::create(this, SVGNames::x1Attr, SVGLength::create(LengthModeWidth)))
+    , m_y1(SVGAnimatedLength::create(this, SVGNames::y1Attr, SVGLength::create(LengthModeHeight)))
+    , m_x2(SVGAnimatedLength::create(this, SVGNames::x2Attr, SVGLength::create(LengthModeWidth)))
+    , m_y2(SVGAnimatedLength::create(this, SVGNames::y2Attr, SVGLength::create(LengthModeHeight)))
 {
     ScriptWrappable::init(this);
+
+    addToPropertyMap(m_x1);
+    addToPropertyMap(m_y1);
+    addToPropertyMap(m_x2);
+    addToPropertyMap(m_y2);
     registerAnimatedPropertiesForSVGLineElement();
 }
 
@@ -77,13 +73,13 @@ void SVGLineElement::parseAttribute(const QualifiedName& name, const AtomicStrin
     if (!isSupportedAttribute(name))
         SVGGeometryElement::parseAttribute(name, value);
     else if (name == SVGNames::x1Attr)
-        setX1BaseValue(SVGLength::construct(LengthModeWidth, value, parseError));
+        m_x1->setBaseValueAsString(value, AllowNegativeLengths, parseError);
     else if (name == SVGNames::y1Attr)
-        setY1BaseValue(SVGLength::construct(LengthModeHeight, value, parseError));
+        m_y1->setBaseValueAsString(value, AllowNegativeLengths, parseError);
     else if (name == SVGNames::x2Attr)
-        setX2BaseValue(SVGLength::construct(LengthModeWidth, value, parseError));
+        m_x2->setBaseValueAsString(value, AllowNegativeLengths, parseError);
     else if (name == SVGNames::y2Attr)
-        setY2BaseValue(SVGLength::construct(LengthModeHeight, value, parseError));
+        m_y2->setBaseValueAsString(value, AllowNegativeLengths, parseError);
     else
         ASSERT_NOT_REACHED();
 
@@ -122,10 +118,10 @@ void SVGLineElement::svgAttributeChanged(const QualifiedName& attrName)
 
 bool SVGLineElement::selfHasRelativeLengths() const
 {
-    return x1CurrentValue().isRelative()
-        || y1CurrentValue().isRelative()
-        || x2CurrentValue().isRelative()
-        || y2CurrentValue().isRelative();
+    return m_x1->currentValue()->isRelative()
+        || m_y1->currentValue()->isRelative()
+        || m_x2->currentValue()->isRelative()
+        || m_y2->currentValue()->isRelative();
 }
 
 }

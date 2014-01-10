@@ -1,122 +1,56 @@
 /*
- * Copyright (C) Research In Motion Limited 2011. All rights reserved.
+ * Copyright (C) 2014 Google Inc. All rights reserved.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Library General Public
- * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Library General Public License for more details.
+ *     * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ * copyright notice, this list of conditions and the following disclaimer
+ * in the documentation and/or other materials provided with the
+ * distribution.
+ *     * Neither the name of Google Inc. nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
  *
- * You should have received a copy of the GNU Library General Public License
- * along with this library; see the file COPYING.LIB.  If not, write to
- * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
- * Boston, MA 02110-1301, USA.
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "config.h"
-#include "core/svg/SVGAnimatedLength.h"
 
-#include "bindings/v8/ExceptionStatePlaceholder.h"
-#include "core/svg/SVGAnimateElement.h"
-#include "core/svg/SVGAnimatedNumber.h"
+#include "core/svg/SVGAnimatedLength.h"
 
 namespace WebCore {
 
-SVGAnimatedLengthAnimator::SVGAnimatedLengthAnimator(SVGAnimationElement* animationElement, SVGElement* contextElement)
-    : SVGAnimatedTypeAnimator(AnimatedLength, animationElement, contextElement)
-    , m_lengthMode(SVGLength::lengthModeForAnimatedLengthAttribute(animationElement->attributeName()))
+void SVGAnimatedLength::setDefaultValueAsString(const String& value)
 {
+    baseValue()->setValueAsString(value, ASSERT_NO_EXCEPTION);
 }
 
-static inline SVGLength& sharedSVGLength(SVGLengthMode mode, const String& valueAsString)
+void SVGAnimatedLength::setBaseValueAsString(const String& value, SVGLengthNegativeValuesMode mode, SVGParsingError& parseError)
 {
-    DEFINE_STATIC_LOCAL(SVGLength, sharedLength, ());
-    sharedLength.setValueAsString(valueAsString, mode, ASSERT_NO_EXCEPTION);
-    return sharedLength;
-}
+    TrackExceptionState es;
 
-PassOwnPtr<SVGAnimatedType> SVGAnimatedLengthAnimator::constructFromString(const String& string)
-{
-    return SVGAnimatedType::createLength(new SVGLength(m_lengthMode, string));
-}
+    baseValue()->setValueAsString(value, es);
 
-PassOwnPtr<SVGAnimatedType> SVGAnimatedLengthAnimator::startAnimValAnimation(const SVGElementAnimatedPropertyList& animatedTypes)
-{
-    return SVGAnimatedType::createLength(constructFromBaseValue<SVGAnimatedLength>(animatedTypes));
-}
-
-void SVGAnimatedLengthAnimator::stopAnimValAnimation(const SVGElementAnimatedPropertyList& animatedTypes)
-{
-    stopAnimValAnimationForType<SVGAnimatedLength>(animatedTypes);
-}
-
-void SVGAnimatedLengthAnimator::resetAnimValToBaseVal(const SVGElementAnimatedPropertyList& animatedTypes, SVGAnimatedType* type)
-{
-    resetFromBaseValue<SVGAnimatedLength>(animatedTypes, type, &SVGAnimatedType::length);
-}
-
-void SVGAnimatedLengthAnimator::animValWillChange(const SVGElementAnimatedPropertyList& animatedTypes)
-{
-    animValWillChangeForType<SVGAnimatedLength>(animatedTypes);
-}
-
-void SVGAnimatedLengthAnimator::animValDidChange(const SVGElementAnimatedPropertyList& animatedTypes)
-{
-    animValDidChangeForType<SVGAnimatedLength>(animatedTypes);
-}
-
-void SVGAnimatedLengthAnimator::addAnimatedTypes(SVGAnimatedType* from, SVGAnimatedType* to)
-{
-    ASSERT(from->type() == AnimatedLength);
-    ASSERT(from->type() == to->type());
-
-    SVGLengthContext lengthContext(m_contextElement);
-    const SVGLength& fromLength = from->length();
-    SVGLength& toLength = to->length();
-
-    toLength.setValue(toLength.value(lengthContext) + fromLength.value(lengthContext), lengthContext, ASSERT_NO_EXCEPTION);
-}
-
-static SVGLength parseLengthFromString(SVGAnimationElement* animationElement, const String& string)
-{
-    return sharedSVGLength(SVGLength::lengthModeForAnimatedLengthAttribute(animationElement->attributeName()), string);
-}
-
-void SVGAnimatedLengthAnimator::calculateAnimatedValue(float percentage, unsigned repeatCount, SVGAnimatedType* from, SVGAnimatedType* to, SVGAnimatedType* toAtEndOfDuration, SVGAnimatedType* animated)
-{
-    ASSERT(m_animationElement);
-    ASSERT(m_contextElement);
-
-    SVGLength fromSVGLength = m_animationElement->animationMode() == ToAnimation ? animated->length() : from->length();
-    SVGLength toSVGLength = to->length();
-    const SVGLength& toAtEndOfDurationSVGLength = toAtEndOfDuration->length();
-    SVGLength& animatedSVGLength = animated->length();
-
-    // Apply CSS inheritance rules.
-    m_animationElement->adjustForInheritance<SVGLength>(parseLengthFromString, m_animationElement->fromPropertyValueType(), fromSVGLength, m_contextElement);
-    m_animationElement->adjustForInheritance<SVGLength>(parseLengthFromString, m_animationElement->toPropertyValueType(), toSVGLength, m_contextElement);
-
-    SVGLengthContext lengthContext(m_contextElement);
-    float animatedNumber = animatedSVGLength.value(lengthContext);
-    SVGLengthType unitType = percentage < 0.5 ? fromSVGLength.unitType() : toSVGLength.unitType();
-    m_animationElement->animateAdditiveNumber(percentage, repeatCount, fromSVGLength.value(lengthContext), toSVGLength.value(lengthContext), toAtEndOfDurationSVGLength.value(lengthContext), animatedNumber);
-
-    animatedSVGLength.setValue(lengthContext, animatedNumber, m_lengthMode, unitType, ASSERT_NO_EXCEPTION);
-}
-
-float SVGAnimatedLengthAnimator::calculateDistance(const String& fromString, const String& toString)
-{
-    ASSERT(m_animationElement);
-    ASSERT(m_contextElement);
-    SVGLengthMode lengthMode = SVGLength::lengthModeForAnimatedLengthAttribute(m_animationElement->attributeName());
-    SVGLength from = SVGLength(lengthMode, fromString);
-    SVGLength to = SVGLength(lengthMode, toString);
-    SVGLengthContext lengthContext(m_contextElement);
-    return fabsf(to.value(lengthContext) - from.value(lengthContext));
+    if (es.hadException()) {
+        parseError = ParsingAttributeFailedError;
+        baseValue()->newValueSpecifiedUnits(LengthTypeNumber, 0);
+    } else if (mode == ForbidNegativeLengths && baseValue()->valueInSpecifiedUnits() < 0) {
+        parseError = NegativeValueForbiddenError;
+    }
 }
 
 }

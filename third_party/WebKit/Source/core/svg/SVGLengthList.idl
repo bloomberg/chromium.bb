@@ -24,7 +24,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface SVGLengthList {
+[
+    ImplementedAs=SVGLengthListTearOff,
+    SetReference(SVGElement contextElement)
+] interface SVGLengthList {
     readonly attribute unsigned long numberOfItems;
 
     [RaisesException] void clear();

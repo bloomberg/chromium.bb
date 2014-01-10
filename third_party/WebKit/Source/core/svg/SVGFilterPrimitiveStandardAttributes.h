@@ -43,6 +43,11 @@ public:
     // Returns true, if the new value is different from the old one.
     virtual bool setFilterEffectAttribute(FilterEffect*, const QualifiedName&);
 
+    SVGAnimatedLength* x() const { return m_x.get(); }
+    SVGAnimatedLength* y() const { return m_y.get(); }
+    SVGAnimatedLength* width() const { return m_width.get(); }
+    SVGAnimatedLength* height() const { return m_height.get(); }
+
 protected:
     SVGFilterPrimitiveStandardAttributes(const QualifiedName&, Document&);
 
@@ -66,11 +71,11 @@ private:
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE;
     virtual bool childShouldCreateRenderer(const Node& child) const OVERRIDE { return false; }
 
+    RefPtr<SVGAnimatedLength> m_x;
+    RefPtr<SVGAnimatedLength> m_y;
+    RefPtr<SVGAnimatedLength> m_width;
+    RefPtr<SVGAnimatedLength> m_height;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFilterPrimitiveStandardAttributes)
-        DECLARE_ANIMATED_LENGTH(X, x)
-        DECLARE_ANIMATED_LENGTH(Y, y)
-        DECLARE_ANIMATED_LENGTH(Width, width)
-        DECLARE_ANIMATED_LENGTH(Height, height)
         DECLARE_ANIMATED_STRING(Result, result)
     END_DECLARE_ANIMATED_PROPERTIES
 };

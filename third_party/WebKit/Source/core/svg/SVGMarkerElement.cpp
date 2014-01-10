@@ -45,20 +45,12 @@ const SVGPropertyInfo* SVGMarkerElement::orientTypePropertyInfo()
 }
 
 // Animated property definitions
-DEFINE_ANIMATED_LENGTH(SVGMarkerElement, SVGNames::refXAttr, RefX, refX)
-DEFINE_ANIMATED_LENGTH(SVGMarkerElement, SVGNames::refYAttr, RefY, refY)
-DEFINE_ANIMATED_LENGTH(SVGMarkerElement, SVGNames::markerWidthAttr, MarkerWidth, markerWidth)
-DEFINE_ANIMATED_LENGTH(SVGMarkerElement, SVGNames::markerHeightAttr, MarkerHeight, markerHeight)
 DEFINE_ANIMATED_ENUMERATION(SVGMarkerElement, SVGNames::markerUnitsAttr, MarkerUnits, markerUnits, SVGMarkerUnitsType)
 DEFINE_ANIMATED_ANGLE_AND_ENUMERATION(SVGMarkerElement, SVGNames::orientAttr, orientAngleIdentifier(), OrientAngle, orientAngle)
 DEFINE_ANIMATED_RECT(SVGMarkerElement, SVGNames::viewBoxAttr, ViewBox, viewBox)
 DEFINE_ANIMATED_PRESERVEASPECTRATIO(SVGMarkerElement, SVGNames::preserveAspectRatioAttr, PreserveAspectRatio, preserveAspectRatio)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGMarkerElement)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(refX)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(refY)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(markerWidth)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(markerHeight)
     REGISTER_LOCAL_ANIMATED_PROPERTY(markerUnits)
     REGISTER_LOCAL_ANIMATED_PROPERTY(orientAngle)
     REGISTER_LOCAL_ANIMATED_PROPERTY(orientType)
@@ -69,15 +61,24 @@ END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGMarkerElement::SVGMarkerElement(Document& document)
     : SVGElement(SVGNames::markerTag, document)
+    , m_refX(SVGAnimatedLength::create(this, SVGNames::refXAttr, SVGLength::create(LengthModeWidth)))
+    , m_refY(SVGAnimatedLength::create(this, SVGNames::refXAttr, SVGLength::create(LengthModeWidth)))
+    , m_markerWidth(SVGAnimatedLength::create(this, SVGNames::markerWidthAttr, SVGLength::create(LengthModeWidth)))
+    , m_markerHeight(SVGAnimatedLength::create(this, SVGNames::markerHeightAttr, SVGLength::create(LengthModeHeight)))
     , m_orientType(SVGMarkerOrientAngle)
-    , m_refX(LengthModeWidth)
-    , m_refY(LengthModeHeight)
-    , m_markerWidth(LengthModeWidth, "3")
-    , m_markerHeight(LengthModeHeight, "3")
     , m_markerUnits(SVGMarkerUnitsStrokeWidth)
 {
-    // Spec: If the markerWidth/markerHeight attribute is not specified, the effect is as if a value of "3" were specified.
     ScriptWrappable::init(this);
+
+    // Spec: If the markerWidth/markerHeight attribute is not specified, the effect is as if a value of "3" were specified.
+    m_markerWidth->setDefaultValueAsString("3");
+    m_markerHeight->setDefaultValueAsString("3");
+
+    addToPropertyMap(m_refX);
+    addToPropertyMap(m_refY);
+    addToPropertyMap(m_markerWidth);
+    addToPropertyMap(m_markerHeight);
+
     registerAnimatedPropertiesForSVGMarkerElement();
 }
 
@@ -129,13 +130,13 @@ void SVGMarkerElement::parseAttribute(const QualifiedName& name, const AtomicStr
         if (propertyValue > 0)
             setMarkerUnitsBaseValue(propertyValue);
     } else if (name == SVGNames::refXAttr)
-        setRefXBaseValue(SVGLength::construct(LengthModeWidth, value, parseError));
+        m_refX->setBaseValueAsString(value, AllowNegativeLengths, parseError);
     else if (name == SVGNames::refYAttr)
-        setRefYBaseValue(SVGLength::construct(LengthModeHeight, value, parseError));
+        m_refY->setBaseValueAsString(value, AllowNegativeLengths, parseError);
     else if (name == SVGNames::markerWidthAttr)
-        setMarkerWidthBaseValue(SVGLength::construct(LengthModeWidth, value, parseError));
+        m_markerWidth->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
     else if (name == SVGNames::markerHeightAttr)
-        setMarkerHeightBaseValue(SVGLength::construct(LengthModeHeight, value, parseError));
+        m_markerHeight->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
     else if (name == SVGNames::orientAttr) {
         SVGAngle angle;
         SVGMarkerOrientType orientType = SVGPropertyTraits<SVGMarkerOrientType>::fromString(value, angle);
@@ -212,10 +213,10 @@ RenderObject* SVGMarkerElement::createRenderer(RenderStyle*)
 
 bool SVGMarkerElement::selfHasRelativeLengths() const
 {
-    return refXCurrentValue().isRelative()
-        || refYCurrentValue().isRelative()
-        || markerWidthCurrentValue().isRelative()
-        || markerHeightCurrentValue().isRelative();
+    return m_refX->currentValue()->isRelative()
+        || m_refY->currentValue()->isRelative()
+        || m_markerWidth->currentValue()->isRelative()
+        || m_markerHeight->currentValue()->isRelative();
 }
 
 void SVGMarkerElement::synchronizeOrientType(SVGElement* contextElement)

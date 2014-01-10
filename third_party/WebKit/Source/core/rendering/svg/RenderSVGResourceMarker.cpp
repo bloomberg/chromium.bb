@@ -105,7 +105,7 @@ FloatPoint RenderSVGResourceMarker::referencePoint() const
     ASSERT(marker);
 
     SVGLengthContext lengthContext(marker);
-    return FloatPoint(marker->refXCurrentValue().value(lengthContext), marker->refYCurrentValue().value(lengthContext));
+    return FloatPoint(marker->refX()->currentValue()->value(lengthContext), marker->refY()->currentValue()->value(lengthContext));
 }
 
 float RenderSVGResourceMarker::angle() const
@@ -181,8 +181,8 @@ void RenderSVGResourceMarker::calcViewport()
     ASSERT(marker);
 
     SVGLengthContext lengthContext(marker);
-    float w = marker->markerWidthCurrentValue().value(lengthContext);
-    float h = marker->markerHeightCurrentValue().value(lengthContext);
+    float w = marker->markerWidth()->currentValue()->value(lengthContext);
+    float h = marker->markerHeight()->currentValue()->value(lengthContext);
     m_viewport = FloatRect(0, 0, w, h);
 }
 

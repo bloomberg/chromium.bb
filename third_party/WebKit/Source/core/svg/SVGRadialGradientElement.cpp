@@ -33,34 +33,36 @@
 namespace WebCore {
 
 // Animated property definitions
-DEFINE_ANIMATED_LENGTH(SVGRadialGradientElement, SVGNames::cxAttr, Cx, cx)
-DEFINE_ANIMATED_LENGTH(SVGRadialGradientElement, SVGNames::cyAttr, Cy, cy)
-DEFINE_ANIMATED_LENGTH(SVGRadialGradientElement, SVGNames::rAttr, R, r)
-DEFINE_ANIMATED_LENGTH(SVGRadialGradientElement, SVGNames::fxAttr, Fx, fx)
-DEFINE_ANIMATED_LENGTH(SVGRadialGradientElement, SVGNames::fyAttr, Fy, fy)
-DEFINE_ANIMATED_LENGTH(SVGRadialGradientElement, SVGNames::frAttr, Fr, fr)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGRadialGradientElement)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(cx)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(cy)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(r)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(fx)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(fy)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(fr)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGradientElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGRadialGradientElement::SVGRadialGradientElement(Document& document)
     : SVGGradientElement(SVGNames::radialGradientTag, document)
-    , m_cx(LengthModeWidth, "50%")
-    , m_cy(LengthModeHeight, "50%")
-    , m_r(LengthModeOther, "50%")
-    , m_fx(LengthModeWidth)
-    , m_fy(LengthModeHeight)
-    , m_fr(LengthModeOther, "0%")
+    , m_cx(SVGAnimatedLength::create(this, SVGNames::cxAttr, SVGLength::create(LengthModeWidth)))
+    , m_cy(SVGAnimatedLength::create(this, SVGNames::cyAttr, SVGLength::create(LengthModeHeight)))
+    , m_r(SVGAnimatedLength::create(this, SVGNames::rAttr, SVGLength::create(LengthModeOther)))
+    , m_fx(SVGAnimatedLength::create(this, SVGNames::fxAttr, SVGLength::create(LengthModeWidth)))
+    , m_fy(SVGAnimatedLength::create(this, SVGNames::fyAttr, SVGLength::create(LengthModeHeight)))
+    , m_fr(SVGAnimatedLength::create(this, SVGNames::frAttr, SVGLength::create(LengthModeOther)))
 {
-    // Spec: If the cx/cy/r/fr attribute is not specified, the effect is as if a value of "50%" were specified.
     ScriptWrappable::init(this);
+
+    // Spec: If the cx/cy/r attribute is not specified, the effect is as if a value of "50%" were specified.
+    m_cx->setDefaultValueAsString("50%");
+    m_cy->setDefaultValueAsString("50%");
+    m_r->setDefaultValueAsString("50%");
+
+    // SVG2-Draft Spec: If the fr attributed is not specified, the effect is as if a value of "0%" were specified.
+    m_fr->setDefaultValueAsString("0%");
+
+    addToPropertyMap(m_cx);
+    addToPropertyMap(m_cy);
+    addToPropertyMap(m_r);
+    addToPropertyMap(m_fx);
+    addToPropertyMap(m_fy);
+    addToPropertyMap(m_fr);
     registerAnimatedPropertiesForSVGRadialGradientElement();
 }
 
@@ -90,17 +92,17 @@ void SVGRadialGradientElement::parseAttribute(const QualifiedName& name, const A
     if (!isSupportedAttribute(name))
         SVGGradientElement::parseAttribute(name, value);
     else if (name == SVGNames::cxAttr)
-        setCxBaseValue(SVGLength::construct(LengthModeWidth, value, parseError));
+        m_cx->setBaseValueAsString(value, AllowNegativeLengths, parseError);
     else if (name == SVGNames::cyAttr)
-        setCyBaseValue(SVGLength::construct(LengthModeHeight, value, parseError));
+        m_cy->setBaseValueAsString(value, AllowNegativeLengths, parseError);
     else if (name == SVGNames::rAttr)
-        setRBaseValue(SVGLength::construct(LengthModeOther, value, parseError, ForbidNegativeLengths));
+        m_r->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
     else if (name == SVGNames::fxAttr)
-        setFxBaseValue(SVGLength::construct(LengthModeWidth, value, parseError));
+        m_fx->setBaseValueAsString(value, AllowNegativeLengths, parseError);
     else if (name == SVGNames::fyAttr)
-        setFyBaseValue(SVGLength::construct(LengthModeHeight, value, parseError));
+        m_fy->setBaseValueAsString(value, AllowNegativeLengths, parseError);
     else if (name == SVGNames::frAttr)
-        setFrBaseValue(SVGLength::construct(LengthModeOther, value, parseError, ForbidNegativeLengths));
+        m_fr->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
     else
         ASSERT_NOT_REACHED();
 
@@ -161,22 +163,22 @@ bool SVGRadialGradientElement::collectGradientAttributes(RadialGradientAttribute
             SVGRadialGradientElement* radial = toSVGRadialGradientElement(current);
 
             if (!attributes.hasCx() && current->hasAttribute(SVGNames::cxAttr))
-                attributes.setCx(radial->cxCurrentValue());
+                attributes.setCx(radial->cx()->currentValue());
 
             if (!attributes.hasCy() && current->hasAttribute(SVGNames::cyAttr))
-                attributes.setCy(radial->cyCurrentValue());
+                attributes.setCy(radial->cy()->currentValue());
 
             if (!attributes.hasR() && current->hasAttribute(SVGNames::rAttr))
-                attributes.setR(radial->rCurrentValue());
+                attributes.setR(radial->r()->currentValue());
 
             if (!attributes.hasFx() && current->hasAttribute(SVGNames::fxAttr))
-                attributes.setFx(radial->fxCurrentValue());
+                attributes.setFx(radial->fx()->currentValue());
 
             if (!attributes.hasFy() && current->hasAttribute(SVGNames::fyAttr))
-                attributes.setFy(radial->fyCurrentValue());
+                attributes.setFy(radial->fy()->currentValue());
 
             if (!attributes.hasFr() && current->hasAttribute(SVGNames::frAttr))
-                attributes.setFr(radial->frCurrentValue());
+                attributes.setFr(radial->fr()->currentValue());
         }
 
         processedGradients.add(current);
@@ -208,12 +210,12 @@ bool SVGRadialGradientElement::collectGradientAttributes(RadialGradientAttribute
 
 bool SVGRadialGradientElement::selfHasRelativeLengths() const
 {
-    return cxCurrentValue().isRelative()
-        || cyCurrentValue().isRelative()
-        || rCurrentValue().isRelative()
-        || fxCurrentValue().isRelative()
-        || fyCurrentValue().isRelative()
-        || frCurrentValue().isRelative();
+    return m_cx->currentValue()->isRelative()
+        || m_cy->currentValue()->isRelative()
+        || m_r->currentValue()->isRelative()
+        || m_fx->currentValue()->isRelative()
+        || m_fy->currentValue()->isRelative()
+        || m_fr->currentValue()->isRelative();
 }
 
 }

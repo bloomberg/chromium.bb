@@ -35,10 +35,6 @@ namespace WebCore {
 // Animated property definitions
 DEFINE_ANIMATED_ENUMERATION(SVGFilterElement, SVGNames::filterUnitsAttr, FilterUnits, filterUnits, SVGUnitTypes::SVGUnitType)
 DEFINE_ANIMATED_ENUMERATION(SVGFilterElement, SVGNames::primitiveUnitsAttr, PrimitiveUnits, primitiveUnits, SVGUnitTypes::SVGUnitType)
-DEFINE_ANIMATED_LENGTH(SVGFilterElement, SVGNames::xAttr, X, x)
-DEFINE_ANIMATED_LENGTH(SVGFilterElement, SVGNames::yAttr, Y, y)
-DEFINE_ANIMATED_LENGTH(SVGFilterElement, SVGNames::widthAttr, Width, width)
-DEFINE_ANIMATED_LENGTH(SVGFilterElement, SVGNames::heightAttr, Height, height)
 DEFINE_ANIMATED_INTEGER_MULTIPLE_WRAPPERS(SVGFilterElement, SVGNames::filterResAttr, filterResXIdentifier(), FilterResX, filterResX)
 DEFINE_ANIMATED_INTEGER_MULTIPLE_WRAPPERS(SVGFilterElement, SVGNames::filterResAttr, filterResYIdentifier(), FilterResY, filterResY)
 DEFINE_ANIMATED_STRING(SVGFilterElement, XLinkNames::hrefAttr, Href, href)
@@ -46,10 +42,6 @@ DEFINE_ANIMATED_STRING(SVGFilterElement, XLinkNames::hrefAttr, Href, href)
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFilterElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(filterUnits)
     REGISTER_LOCAL_ANIMATED_PROPERTY(primitiveUnits)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(x)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(y)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(width)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(height)
     REGISTER_LOCAL_ANIMATED_PROPERTY(filterResX)
     REGISTER_LOCAL_ANIMATED_PROPERTY(filterResY)
     REGISTER_LOCAL_ANIMATED_PROPERTY(href)
@@ -57,16 +49,26 @@ END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGFilterElement::SVGFilterElement(Document& document)
     : SVGElement(SVGNames::filterTag, document)
+    , m_x(SVGAnimatedLength::create(this, SVGNames::xAttr, SVGLength::create(LengthModeWidth)))
+    , m_y(SVGAnimatedLength::create(this, SVGNames::yAttr, SVGLength::create(LengthModeHeight)))
+    , m_width(SVGAnimatedLength::create(this, SVGNames::widthAttr, SVGLength::create(LengthModeWidth)))
+    , m_height(SVGAnimatedLength::create(this, SVGNames::heightAttr, SVGLength::create(LengthModeHeight)))
     , m_filterUnits(SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX)
     , m_primitiveUnits(SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE)
-    , m_x(LengthModeWidth, "-10%")
-    , m_y(LengthModeHeight, "-10%")
-    , m_width(LengthModeWidth, "120%")
-    , m_height(LengthModeHeight, "120%")
 {
+    ScriptWrappable::init(this);
+
     // Spec: If the x/y attribute is not specified, the effect is as if a value of "-10%" were specified.
     // Spec: If the width/height attribute is not specified, the effect is as if a value of "120%" were specified.
-    ScriptWrappable::init(this);
+    m_x->setDefaultValueAsString("-10%");
+    m_y->setDefaultValueAsString("-10%");
+    m_width->setDefaultValueAsString("120%");
+    m_height->setDefaultValueAsString("120%");
+
+    addToPropertyMap(m_x);
+    addToPropertyMap(m_y);
+    addToPropertyMap(m_width);
+    addToPropertyMap(m_height);
     registerAnimatedPropertiesForSVGFilterElement();
 }
 
@@ -128,13 +130,13 @@ void SVGFilterElement::parseAttribute(const QualifiedName& name, const AtomicStr
         if (propertyValue > 0)
             setPrimitiveUnitsBaseValue(propertyValue);
     } else if (name == SVGNames::xAttr)
-        setXBaseValue(SVGLength::construct(LengthModeWidth, value, parseError));
+        m_x->setBaseValueAsString(value, AllowNegativeLengths, parseError);
     else if (name == SVGNames::yAttr)
-        setYBaseValue(SVGLength::construct(LengthModeHeight, value, parseError));
+        m_y->setBaseValueAsString(value, AllowNegativeLengths, parseError);
     else if (name == SVGNames::widthAttr)
-        setWidthBaseValue(SVGLength::construct(LengthModeWidth, value, parseError));
+        m_width->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
     else if (name == SVGNames::heightAttr)
-        setHeightBaseValue(SVGLength::construct(LengthModeHeight, value, parseError));
+        m_height->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
     else if (name == SVGNames::filterResAttr) {
         float x, y;
         if (parseNumberOptionalNumber(value, x, y)) {
@@ -232,10 +234,10 @@ bool SVGFilterElement::childShouldCreateRenderer(const Node& child) const
 
 bool SVGFilterElement::selfHasRelativeLengths() const
 {
-    return xCurrentValue().isRelative()
-        || yCurrentValue().isRelative()
-        || widthCurrentValue().isRelative()
-        || heightCurrentValue().isRelative();
+    return m_x->currentValue()->isRelative()
+        || m_y->currentValue()->isRelative()
+        || m_width->currentValue()->isRelative()
+        || m_height->currentValue()->isRelative();
 }
 
 void SVGFilterElement::addClient(Node* client)

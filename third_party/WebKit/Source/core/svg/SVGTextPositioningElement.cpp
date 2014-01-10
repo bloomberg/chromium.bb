@@ -32,25 +32,26 @@
 namespace WebCore {
 
 // Animated property definitions
-DEFINE_ANIMATED_LENGTH_LIST(SVGTextPositioningElement, SVGNames::xAttr, X, x)
-DEFINE_ANIMATED_LENGTH_LIST(SVGTextPositioningElement, SVGNames::yAttr, Y, y)
-DEFINE_ANIMATED_LENGTH_LIST(SVGTextPositioningElement, SVGNames::dxAttr, Dx, dx)
-DEFINE_ANIMATED_LENGTH_LIST(SVGTextPositioningElement, SVGNames::dyAttr, Dy, dy)
 DEFINE_ANIMATED_NUMBER_LIST(SVGTextPositioningElement, SVGNames::rotateAttr, Rotate, rotate)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGTextPositioningElement)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(x)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(y)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(dx)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(dy)
     REGISTER_LOCAL_ANIMATED_PROPERTY(rotate)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGTextContentElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
 SVGTextPositioningElement::SVGTextPositioningElement(const QualifiedName& tagName, Document& document)
     : SVGTextContentElement(tagName, document)
+    , m_x(SVGAnimatedLengthList::create(this, SVGNames::xAttr, SVGLengthList::create(LengthModeWidth)))
+    , m_y(SVGAnimatedLengthList::create(this, SVGNames::yAttr, SVGLengthList::create(LengthModeHeight)))
+    , m_dx(SVGAnimatedLengthList::create(this, SVGNames::dxAttr, SVGLengthList::create(LengthModeWidth)))
+    , m_dy(SVGAnimatedLengthList::create(this, SVGNames::dyAttr, SVGLengthList::create(LengthModeHeight)))
 {
     ScriptWrappable::init(this);
+
+    addToPropertyMap(m_x);
+    addToPropertyMap(m_y);
+    addToPropertyMap(m_dx);
+    addToPropertyMap(m_dy);
     registerAnimatedPropertiesForSVGTextPositioningElement();
 }
 
@@ -74,47 +75,27 @@ void SVGTextPositioningElement::parseAttribute(const QualifiedName& name, const 
         return;
     }
 
+    SVGParsingError parseError = NoError;
+
     if (name == SVGNames::xAttr) {
-        SVGLengthList newList;
-        newList.parse(value, LengthModeWidth);
-        detachAnimatedXListWrappers(newList.size());
-        setXBaseValue(newList);
-        return;
-    }
-
-    if (name == SVGNames::yAttr) {
-        SVGLengthList newList;
-        newList.parse(value, LengthModeHeight);
-        detachAnimatedYListWrappers(newList.size());
-        setYBaseValue(newList);
-        return;
-    }
-
-    if (name == SVGNames::dxAttr) {
-        SVGLengthList newList;
-        newList.parse(value, LengthModeWidth);
-        detachAnimatedDxListWrappers(newList.size());
-        setDxBaseValue(newList);
-        return;
-    }
-
-    if (name == SVGNames::dyAttr) {
-        SVGLengthList newList;
-        newList.parse(value, LengthModeHeight);
-        detachAnimatedDyListWrappers(newList.size());
-        setDyBaseValue(newList);
-        return;
-    }
-
-    if (name == SVGNames::rotateAttr) {
+        m_x->setBaseValueAsString(value, parseError);
+    } else if (name == SVGNames::yAttr) {
+        m_y->setBaseValueAsString(value, parseError);
+    } else if (name == SVGNames::dxAttr) {
+        m_dx->setBaseValueAsString(value, parseError);
+    } else if (name == SVGNames::dyAttr) {
+        m_dy->setBaseValueAsString(value, parseError);
+    } else if (name == SVGNames::rotateAttr) {
         SVGNumberList newList;
         newList.parse(value);
         detachAnimatedRotateListWrappers(newList.size());
         setRotateBaseValue(newList);
         return;
+    } else {
+        ASSERT_NOT_REACHED();
     }
 
-    ASSERT_NOT_REACHED();
+    reportAttributeParsingError(parseError, name, value);
 }
 
 void SVGTextPositioningElement::svgAttributeChanged(const QualifiedName& attrName)

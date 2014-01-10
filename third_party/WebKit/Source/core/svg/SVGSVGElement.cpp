@@ -61,18 +61,10 @@
 namespace WebCore {
 
 // Animated property definitions
-DEFINE_ANIMATED_LENGTH(SVGSVGElement, SVGNames::xAttr, X, x)
-DEFINE_ANIMATED_LENGTH(SVGSVGElement, SVGNames::yAttr, Y, y)
-DEFINE_ANIMATED_LENGTH(SVGSVGElement, SVGNames::widthAttr, Width, width)
-DEFINE_ANIMATED_LENGTH(SVGSVGElement, SVGNames::heightAttr, Height, height)
 DEFINE_ANIMATED_PRESERVEASPECTRATIO(SVGSVGElement, SVGNames::preserveAspectRatioAttr, PreserveAspectRatio, preserveAspectRatio)
 DEFINE_ANIMATED_RECT(SVGSVGElement, SVGNames::viewBoxAttr, ViewBox, viewBox)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGSVGElement)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(x)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(y)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(width)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(height)
     REGISTER_LOCAL_ANIMATED_PROPERTY(viewBox)
     REGISTER_LOCAL_ANIMATED_PROPERTY(preserveAspectRatio)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGraphicsElement)
@@ -80,16 +72,24 @@ END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGSVGElement::SVGSVGElement(Document& doc)
     : SVGGraphicsElement(SVGNames::svgTag, doc)
-    , m_x(LengthModeWidth)
-    , m_y(LengthModeHeight)
-    , m_width(LengthModeWidth, "100%")
-    , m_height(LengthModeHeight, "100%")
+    , m_x(SVGAnimatedLength::create(this, SVGNames::xAttr, SVGLength::create(LengthModeWidth)))
+    , m_y(SVGAnimatedLength::create(this, SVGNames::yAttr, SVGLength::create(LengthModeHeight)))
+    , m_width(SVGAnimatedLength::create(this, SVGNames::widthAttr, SVGLength::create(LengthModeWidth)))
+    , m_height(SVGAnimatedLength::create(this, SVGNames::heightAttr, SVGLength::create(LengthModeHeight)))
     , m_useCurrentView(false)
     , m_zoomAndPan(SVGZoomAndPanMagnify)
     , m_timeContainer(SMILTimeContainer::create(this))
     , m_weakFactory(this)
 {
     ScriptWrappable::init(this);
+
+    m_width->setDefaultValueAsString("100%");
+    m_height->setDefaultValueAsString("100%");
+
+    addToPropertyMap(m_x);
+    addToPropertyMap(m_y);
+    addToPropertyMap(m_width);
+    addToPropertyMap(m_height);
     registerAnimatedPropertiesForSVGSVGElement();
 
     UseCounter::count(doc, UseCounter::SVGSVGElement);
@@ -247,15 +247,15 @@ void SVGSVGElement::parseAttribute(const QualifiedName& name, const AtomicString
     else if (name == HTMLNames::onerrorAttr)
         document().setWindowAttributeEventListener(EventTypeNames::error, createAttributeEventListener(document().frame(), name, value));
     else if (name == SVGNames::xAttr)
-        setXBaseValue(SVGLength::construct(LengthModeWidth, value, parseError));
+        m_x->setBaseValueAsString(value, AllowNegativeLengths, parseError);
     else if (name == SVGNames::yAttr)
-        setYBaseValue(SVGLength::construct(LengthModeHeight, value, parseError));
+        m_y->setBaseValueAsString(value, AllowNegativeLengths, parseError);
     else if (name == SVGNames::widthAttr)
-        setWidthBaseValue(SVGLength::construct(LengthModeWidth, value, parseError, ForbidNegativeLengths));
+        m_width->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
     else if (name == SVGNames::heightAttr)
-        setHeightBaseValue(SVGLength::construct(LengthModeHeight, value, parseError, ForbidNegativeLengths));
+        m_height->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
     else if (SVGFitToViewBox::parseAttribute(this, name, value)
-             || SVGZoomAndPan::parseAttribute(this, name, value)) {
+            || SVGZoomAndPan::parseAttribute(this, name, value)) {
     } else
         SVGGraphicsElement::parseAttribute(name, value);
 
@@ -378,9 +378,9 @@ float SVGSVGElement::createSVGNumber()
     return 0.0f;
 }
 
-SVGLength SVGSVGElement::createSVGLength()
+PassRefPtr<SVGLengthTearOff> SVGSVGElement::createSVGLength()
 {
-    return SVGLength();
+    return SVGLengthTearOff::create(SVGLength::create(), 0, PropertyIsNotAnimVal);
 }
 
 SVGAngle SVGSVGElement::createSVGAngle()
@@ -424,7 +424,7 @@ AffineTransform SVGSVGElement::localCoordinateSpaceTransform(SVGElement::CTMScop
     AffineTransform transform;
     if (!isOutermostSVGSVGElement()) {
         SVGLengthContext lengthContext(this);
-        transform.translate(xCurrentValue().value(lengthContext), yCurrentValue().value(lengthContext));
+        transform.translate(m_x->currentValue()->value(lengthContext), m_y->currentValue()->value(lengthContext));
     } else if (mode == SVGElement::ScreenScope) {
         if (RenderObject* renderer = this->renderer()) {
             FloatPoint location;
@@ -536,10 +536,10 @@ void SVGSVGElement::setCurrentTime(float seconds)
 
 bool SVGSVGElement::selfHasRelativeLengths() const
 {
-    return xCurrentValue().isRelative()
-        || yCurrentValue().isRelative()
-        || widthCurrentValue().isRelative()
-        || heightCurrentValue().isRelative()
+    return m_x->currentValue()->isRelative()
+        || m_y->currentValue()->isRelative()
+        || m_width->currentValue()->isRelative()
+        || m_height->currentValue()->isRelative()
         || hasAttribute(SVGNames::viewBoxAttr);
 }
 
@@ -636,11 +636,11 @@ bool SVGSVGElement::heightAttributeEstablishesViewport() const
 Length SVGSVGElement::intrinsicWidth(ConsiderCSSMode mode) const
 {
     if (widthAttributeEstablishesViewport() || mode == IgnoreCSSProperties) {
-        if (widthCurrentValue().unitType() == LengthTypePercentage)
-            return Length(widthCurrentValue().valueAsPercentage() * 100, Percent);
+        if (m_width->currentValue()->unitType() == LengthTypePercentage)
+            return Length(m_width->currentValue()->valueAsPercentage() * 100, Percent);
 
         SVGLengthContext lengthContext(this);
-        return Length(widthCurrentValue().value(lengthContext), Fixed);
+        return Length(m_width->currentValue()->value(lengthContext), Fixed);
     }
 
     ASSERT(renderer());
@@ -650,11 +650,11 @@ Length SVGSVGElement::intrinsicWidth(ConsiderCSSMode mode) const
 Length SVGSVGElement::intrinsicHeight(ConsiderCSSMode mode) const
 {
     if (heightAttributeEstablishesViewport() || mode == IgnoreCSSProperties) {
-        if (heightCurrentValue().unitType() == LengthTypePercentage)
-            return Length(heightCurrentValue().valueAsPercentage() * 100, Percent);
+        if (m_height->currentValue()->unitType() == LengthTypePercentage)
+            return Length(m_height->currentValue()->valueAsPercentage() * 100, Percent);
 
         SVGLengthContext lengthContext(this);
-        return Length(heightCurrentValue().value(lengthContext), Fixed);
+        return Length(m_height->currentValue()->value(lengthContext), Fixed);
     }
 
     ASSERT(renderer());

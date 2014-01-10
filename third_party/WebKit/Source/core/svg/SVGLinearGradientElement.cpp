@@ -34,28 +34,26 @@
 namespace WebCore {
 
 // Animated property definitions
-DEFINE_ANIMATED_LENGTH(SVGLinearGradientElement, SVGNames::x1Attr, X1, x1)
-DEFINE_ANIMATED_LENGTH(SVGLinearGradientElement, SVGNames::y1Attr, Y1, y1)
-DEFINE_ANIMATED_LENGTH(SVGLinearGradientElement, SVGNames::x2Attr, X2, x2)
-DEFINE_ANIMATED_LENGTH(SVGLinearGradientElement, SVGNames::y2Attr, Y2, y2)
-
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGLinearGradientElement)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(x1)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(y1)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(x2)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(y2)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGradientElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGLinearGradientElement::SVGLinearGradientElement(Document& document)
     : SVGGradientElement(SVGNames::linearGradientTag, document)
-    , m_x1(LengthModeWidth)
-    , m_y1(LengthModeHeight)
-    , m_x2(LengthModeWidth, "100%")
-    , m_y2(LengthModeHeight)
+    , m_x1(SVGAnimatedLength::create(this, SVGNames::x1Attr, SVGLength::create(LengthModeWidth)))
+    , m_y1(SVGAnimatedLength::create(this, SVGNames::y1Attr, SVGLength::create(LengthModeHeight)))
+    , m_x2(SVGAnimatedLength::create(this, SVGNames::x2Attr, SVGLength::create(LengthModeWidth)))
+    , m_y2(SVGAnimatedLength::create(this, SVGNames::y2Attr, SVGLength::create(LengthModeHeight)))
 {
-    // Spec: If the x2 attribute is not specified, the effect is as if a value of "100%" were specified.
     ScriptWrappable::init(this);
+
+    // Spec: If the x2 attribute is not specified, the effect is as if a value of "100%" were specified.
+    m_x2->setDefaultValueAsString("100%");
+
+    addToPropertyMap(m_x1);
+    addToPropertyMap(m_y1);
+    addToPropertyMap(m_x2);
+    addToPropertyMap(m_y2);
     registerAnimatedPropertiesForSVGLinearGradientElement();
 }
 
@@ -83,13 +81,13 @@ void SVGLinearGradientElement::parseAttribute(const QualifiedName& name, const A
     if (!isSupportedAttribute(name))
         SVGGradientElement::parseAttribute(name, value);
     else if (name == SVGNames::x1Attr)
-        setX1BaseValue(SVGLength::construct(LengthModeWidth, value, parseError));
+        m_x1->setBaseValueAsString(value, AllowNegativeLengths, parseError);
     else if (name == SVGNames::y1Attr)
-        setY1BaseValue(SVGLength::construct(LengthModeHeight, value, parseError));
+        m_y1->setBaseValueAsString(value, AllowNegativeLengths, parseError);
     else if (name == SVGNames::x2Attr)
-        setX2BaseValue(SVGLength::construct(LengthModeWidth, value, parseError));
+        m_x2->setBaseValueAsString(value, AllowNegativeLengths, parseError);
     else if (name == SVGNames::y2Attr)
-        setY2BaseValue(SVGLength::construct(LengthModeHeight, value, parseError));
+        m_y2->setBaseValueAsString(value, AllowNegativeLengths, parseError);
     else
         ASSERT_NOT_REACHED();
 
@@ -150,16 +148,16 @@ bool SVGLinearGradientElement::collectGradientAttributes(LinearGradientAttribute
             SVGLinearGradientElement* linear = toSVGLinearGradientElement(current);
 
             if (!attributes.hasX1() && current->hasAttribute(SVGNames::x1Attr))
-                attributes.setX1(linear->x1CurrentValue());
+                attributes.setX1(linear->x1()->currentValue());
 
             if (!attributes.hasY1() && current->hasAttribute(SVGNames::y1Attr))
-                attributes.setY1(linear->y1CurrentValue());
+                attributes.setY1(linear->y1()->currentValue());
 
             if (!attributes.hasX2() && current->hasAttribute(SVGNames::x2Attr))
-                attributes.setX2(linear->x2CurrentValue());
+                attributes.setX2(linear->x2()->currentValue());
 
             if (!attributes.hasY2() && current->hasAttribute(SVGNames::y2Attr))
-                attributes.setY2(linear->y2CurrentValue());
+                attributes.setY2(linear->y2()->currentValue());
         }
 
         processedGradients.add(current);
@@ -185,10 +183,10 @@ bool SVGLinearGradientElement::collectGradientAttributes(LinearGradientAttribute
 
 bool SVGLinearGradientElement::selfHasRelativeLengths() const
 {
-    return x1CurrentValue().isRelative()
-        || y1CurrentValue().isRelative()
-        || x2CurrentValue().isRelative()
-        || y2CurrentValue().isRelative();
+    return m_x1->currentValue()->isRelative()
+        || m_y1->currentValue()->isRelative()
+        || m_x2->currentValue()->isRelative()
+        || m_y2->currentValue()->isRelative();
 }
 
 }

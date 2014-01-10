@@ -55,7 +55,7 @@ public:
     void clear(ExceptionState& exceptionState)
     {
         if (toDerived()->isImmutable()) {
-            exceptionState.throwDOMException(NoModificationAllowedError, ExceptionMessages::failedToExecute("clear", Derived::propertyTypeName(), "The object is read-only."));
+            exceptionState.throwDOMException(NoModificationAllowedError, "The object is read-only.");
             return;
         }
 
@@ -67,7 +67,7 @@ public:
         RefPtr<ItemTearOffType> item = passItem;
 
         if (toDerived()->isImmutable()) {
-            exceptionState.throwDOMException(NoModificationAllowedError, ExceptionMessages::failedToExecute("initialize", Derived::propertyTypeName(), "The object is read-only."));
+            exceptionState.throwDOMException(NoModificationAllowedError, "The object is read-only.");
             return 0;
         }
 
@@ -83,6 +83,7 @@ public:
             ownerList = Derived::upcastFrom(item->ownerList())->target();
 
         RefPtr<ItemPropertyType> value = toDerived()->target()->initialize(item->target(), ownerList);
+        item->setOwnerList(this);
         toDerived()->commitChange();
 
         return createItemTearOff(value.release());
@@ -99,12 +100,12 @@ public:
         RefPtr<ItemTearOffType> item = passItem;
 
         if (toDerived()->isImmutable()) {
-            exceptionState.throwDOMException(NoModificationAllowedError, ExceptionMessages::failedToExecute("insertItemBefore", Derived::propertyTypeName(), "The object is read-only."));
+            exceptionState.throwDOMException(NoModificationAllowedError, "The object is read-only.");
             return 0;
         }
 
         if (!item) {
-            exceptionState.throwTypeError(ExceptionMessages::failedToExecute("insertItemBefore", Derived::propertyTypeName(), "An invalid item cannot be inserted to a list."));
+            exceptionState.throwTypeError("An invalid item cannot be inserted to a list.");
             return 0;
         }
 
@@ -115,6 +116,7 @@ public:
             ownerList = Derived::upcastFrom(item->ownerList())->target();
 
         RefPtr<ItemPropertyType> value = toDerived()->target()->insertItemBefore(item->target(), ownerList, index);
+        item->setOwnerList(this);
         toDerived()->commitChange();
 
         return createItemTearOff(value.release());
@@ -125,12 +127,12 @@ public:
         RefPtr<ItemTearOffType> item = passItem;
 
         if (toDerived()->isImmutable()) {
-            exceptionState.throwDOMException(NoModificationAllowedError, ExceptionMessages::failedToExecute("replaceItem", Derived::propertyTypeName(), "The object is read-only."));
+            exceptionState.throwDOMException(NoModificationAllowedError, "The object is read-only.");
             return 0;
         }
 
         if (!item) {
-            exceptionState.throwTypeError(ExceptionMessages::failedToExecute("replaceItem", Derived::propertyTypeName(), "An invalid item cannot be replaced with an existing list item."));
+            exceptionState.throwTypeError("An invalid item cannot be replaced with an existing list item.");
             return 0;
         }
 
@@ -141,6 +143,7 @@ public:
             ownerList = Derived::upcastFrom(item->ownerList())->target();
 
         RefPtr<ItemPropertyType> value = toDerived()->target()->replaceItem(item->target(), ownerList, index, exceptionState);
+        item->setOwnerList(this);
         toDerived()->commitChange();
 
         return createItemTearOff(value.release());
@@ -151,7 +154,7 @@ public:
         RefPtr<ItemPropertyType> value = toDerived()->target()->removeItem(index, exceptionState);
         toDerived()->commitChange();
 
-        return createItemTearOff(value.release());
+        return createItemTearOff(value.release(), false);
     }
 
     PassRefPtr<ItemTearOffType> appendItem(PassRefPtr<ItemTearOffType> passItem, ExceptionState& exceptionState)
@@ -159,12 +162,12 @@ public:
         RefPtr<ItemTearOffType> item = passItem;
 
         if (toDerived()->isImmutable()) {
-            exceptionState.throwDOMException(NoModificationAllowedError, ExceptionMessages::failedToExecute("appendItem", Derived::propertyTypeName(), "The object is read-only."));
+            exceptionState.throwDOMException(NoModificationAllowedError, "The object is read-only.");
             return 0;
         }
 
         if (!item) {
-            exceptionState.throwTypeError(ExceptionMessages::failedToExecute("appendItem", Derived::propertyTypeName(), "An invalid item cannot be appended to a list."));
+            exceptionState.throwTypeError("An invalid item cannot be appended to a list.");
             return 0;
         }
 
@@ -175,6 +178,7 @@ public:
             ownerList = Derived::upcastFrom(item->ownerList())->target();
 
         RefPtr<ItemPropertyType> value = toDerived()->target()->appendItem(item->target(), ownerList);
+        item->setOwnerList(this);
         toDerived()->commitChange();
 
         return createItemTearOff(value.release());
@@ -206,18 +210,26 @@ protected:
         return newItem.release();
     }
 
-    PassRefPtr<ItemTearOffType> createItemTearOff(PassRefPtr<ItemPropertyType> value)
+    PassRefPtr<ItemTearOffType> createItemTearOff(PassRefPtr<ItemPropertyType> value, bool setOwnerList = true)
     {
         if (!value)
             return 0;
 
         RefPtr<ItemTearOffType> tearoff = ItemTearOffType::create(value, toDerived()->contextElement(), toDerived()->propertyIsAnimVal(), toDerived()->attributeName());
-        tearoff->setBelongingList(this);
+        if (setOwnerList)
+            tearoff->setOwnerList(this);
         return tearoff.release();
     }
 
 private:
     Derived* toDerived() { return static_cast<Derived*>(this); }
+
+    static PassRefPtr<Derived> upcastFrom(PassRefPtr<NewSVGPropertyTearOffBase> passBase)
+    {
+        RefPtr<NewSVGPropertyTearOffBase> base = passBase;
+        ASSERT(base->type() == ListPropertyType::classType());
+        return static_pointer_cast<Derived>(base.release());
+    }
 };
 
 }

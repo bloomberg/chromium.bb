@@ -33,18 +33,10 @@
 namespace WebCore {
 
 // Animated property definitions
-DEFINE_ANIMATED_LENGTH(SVGImageElement, SVGNames::xAttr, X, x)
-DEFINE_ANIMATED_LENGTH(SVGImageElement, SVGNames::yAttr, Y, y)
-DEFINE_ANIMATED_LENGTH(SVGImageElement, SVGNames::widthAttr, Width, width)
-DEFINE_ANIMATED_LENGTH(SVGImageElement, SVGNames::heightAttr, Height, height)
 DEFINE_ANIMATED_PRESERVEASPECTRATIO(SVGImageElement, SVGNames::preserveAspectRatioAttr, PreserveAspectRatio, preserveAspectRatio)
 DEFINE_ANIMATED_STRING(SVGImageElement, XLinkNames::hrefAttr, Href, href)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGImageElement)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(x)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(y)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(width)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(height)
     REGISTER_LOCAL_ANIMATED_PROPERTY(preserveAspectRatio)
     REGISTER_LOCAL_ANIMATED_PROPERTY(href)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGraphicsElement)
@@ -52,13 +44,19 @@ END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGImageElement::SVGImageElement(Document& document)
     : SVGGraphicsElement(SVGNames::imageTag, document)
-    , m_x(LengthModeWidth)
-    , m_y(LengthModeHeight)
-    , m_width(LengthModeWidth)
-    , m_height(LengthModeHeight)
+    , m_x(SVGAnimatedLength::create(this, SVGNames::xAttr, SVGLength::create(LengthModeWidth)))
+    , m_y(SVGAnimatedLength::create(this, SVGNames::yAttr, SVGLength::create(LengthModeHeight)))
+    , m_width(SVGAnimatedLength::create(this, SVGNames::widthAttr, SVGLength::create(LengthModeWidth)))
+    , m_height(SVGAnimatedLength::create(this, SVGNames::heightAttr, SVGLength::create(LengthModeHeight)))
     , m_imageLoader(this)
 {
     ScriptWrappable::init(this);
+
+    addToPropertyMap(m_x);
+    addToPropertyMap(m_y);
+    addToPropertyMap(m_width);
+    addToPropertyMap(m_height);
+
     registerAnimatedPropertiesForSVGImageElement();
 }
 
@@ -117,18 +115,18 @@ void SVGImageElement::parseAttribute(const QualifiedName& name, const AtomicStri
     if (!isSupportedAttribute(name))
         SVGGraphicsElement::parseAttribute(name, value);
     else if (name == SVGNames::xAttr)
-        setXBaseValue(SVGLength::construct(LengthModeWidth, value, parseError));
+        m_x->setBaseValueAsString(value, AllowNegativeLengths, parseError);
     else if (name == SVGNames::yAttr)
-        setYBaseValue(SVGLength::construct(LengthModeHeight, value, parseError));
+        m_y->setBaseValueAsString(value, AllowNegativeLengths, parseError);
+    else if (name == SVGNames::widthAttr)
+        m_width->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
+    else if (name == SVGNames::heightAttr)
+        m_height->setBaseValueAsString(value, ForbidNegativeLengths, parseError);
     else if (name == SVGNames::preserveAspectRatioAttr) {
         SVGPreserveAspectRatio preserveAspectRatio;
         preserveAspectRatio.parse(value);
         setPreserveAspectRatioBaseValue(preserveAspectRatio);
-    } else if (name == SVGNames::widthAttr)
-        setWidthBaseValue(SVGLength::construct(LengthModeWidth, value, parseError, ForbidNegativeLengths));
-    else if (name == SVGNames::heightAttr)
-        setHeightBaseValue(SVGLength::construct(LengthModeHeight, value, parseError, ForbidNegativeLengths));
-    else if (SVGURIReference::parseAttribute(name, value)) {
+    } else if (SVGURIReference::parseAttribute(name, value)) {
     } else
         ASSERT_NOT_REACHED();
 
@@ -177,10 +175,10 @@ void SVGImageElement::svgAttributeChanged(const QualifiedName& attrName)
 
 bool SVGImageElement::selfHasRelativeLengths() const
 {
-    return xCurrentValue().isRelative()
-        || yCurrentValue().isRelative()
-        || widthCurrentValue().isRelative()
-        || heightCurrentValue().isRelative();
+    return m_x->currentValue()->isRelative()
+        || m_y->currentValue()->isRelative()
+        || m_width->currentValue()->isRelative()
+        || m_height->currentValue()->isRelative();
 }
 
 RenderObject* SVGImageElement::createRenderer(RenderStyle*)

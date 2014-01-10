@@ -32,6 +32,13 @@ class SVGRectElement FINAL : public SVGGeometryElement {
 public:
     static PassRefPtr<SVGRectElement> create(Document&);
 
+    SVGAnimatedLength* x() const { return m_x.get(); }
+    SVGAnimatedLength* y() const { return m_y.get(); }
+    SVGAnimatedLength* width() const { return m_width.get(); }
+    SVGAnimatedLength* height() const { return m_height.get(); }
+    SVGAnimatedLength* rx() const { return m_rx.get(); }
+    SVGAnimatedLength* ry() const { return m_ry.get(); }
+
 private:
     explicit SVGRectElement(Document&);
 
@@ -46,13 +53,13 @@ private:
 
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
 
+    RefPtr<SVGAnimatedLength> m_x;
+    RefPtr<SVGAnimatedLength> m_y;
+    RefPtr<SVGAnimatedLength> m_width;
+    RefPtr<SVGAnimatedLength> m_height;
+    RefPtr<SVGAnimatedLength> m_rx;
+    RefPtr<SVGAnimatedLength> m_ry;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGRectElement)
-        DECLARE_ANIMATED_LENGTH(X, x)
-        DECLARE_ANIMATED_LENGTH(Y, y)
-        DECLARE_ANIMATED_LENGTH(Width, width)
-        DECLARE_ANIMATED_LENGTH(Height, height)
-        DECLARE_ANIMATED_LENGTH(Rx, rx)
-        DECLARE_ANIMATED_LENGTH(Ry, ry)
     END_DECLARE_ANIMATED_PROPERTIES
 };
 

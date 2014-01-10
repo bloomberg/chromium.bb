@@ -158,11 +158,19 @@ function isMinusZero(n)
     return n === 0 && 1/n < 0;
 }
 
+function isNewSVGTearOffType(v)
+{
+    return ['[object SVGLength]', '[object SVGLengthList]'].indexOf(""+v) != -1;
+}
+
 function isResultCorrect(actual, expected)
 {
     if (expected === 0)
         return actual === expected && (1/actual) === (1/expected);
     if (actual === expected)
+        return true;
+    // http://crbug.com/308818 : The new implementation of SVGListProperties do not necessary return the same wrapper object, so === operator would not work. We compare for their string representation instead.
+    if (isNewSVGTearOffType(expected) && typeof(expected) == typeof(actual) && actual.valueAsString == expected.valueAsString)
         return true;
     if (typeof(expected) == "number" && isNaN(expected))
         return typeof(actual) == "number" && isNaN(actual);
@@ -173,6 +181,8 @@ function isResultCorrect(actual, expected)
 
 function stringify(v)
 {
+    if (isNewSVGTearOffType(v))
+        return v.valueAsString;
     if (v === 0 && 1/v < 0)
         return "-0";
     else return "" + v;

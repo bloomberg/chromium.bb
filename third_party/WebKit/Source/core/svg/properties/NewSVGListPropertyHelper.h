@@ -45,6 +45,11 @@ class NewSVGListPropertyHelper : public NewSVGPropertyBase {
 public:
     typedef ItemProperty ItemPropertyType;
 
+    NewSVGListPropertyHelper()
+        : NewSVGPropertyBase(Derived::classType())
+    {
+    }
+
     // used from Blink C++ code:
 
     ItemPropertyType* at(size_t index)
@@ -56,6 +61,38 @@ public:
     const ItemPropertyType* at(size_t index) const
     {
         return const_cast<NewSVGListPropertyHelper<Derived, ItemProperty>*>(this)->at(index);
+    }
+
+    class ConstIterator {
+    private:
+        typedef typename Vector<RefPtr<ItemPropertyType> >::const_iterator WrappedType;
+
+    public:
+        ConstIterator(WrappedType it)
+            : m_it(it)
+        {
+        }
+
+        ConstIterator& operator++() { ++m_it; return *this; }
+
+        bool operator==(const ConstIterator& o) const { return m_it == o.m_it; }
+        bool operator!=(const ConstIterator& o) const { return m_it != o.m_it; }
+
+        PassRefPtr<ItemPropertyType> operator*() { return *m_it; }
+        PassRefPtr<ItemPropertyType> operator->() { return *m_it; }
+
+    private:
+        WrappedType m_it;
+    };
+
+    ConstIterator begin() const
+    {
+        return ConstIterator(m_values.begin());
+    }
+
+    ConstIterator end() const
+    {
+        return ConstIterator(m_values.end());
     }
 
     void append(PassRefPtr<ItemPropertyType> newItem)
@@ -98,7 +135,7 @@ protected:
     inline bool checkIndexBound(size_t, ExceptionState&);
     bool removeFromOldOwnerListAndAdjustIndex(PassRefPtr<ItemPropertyType>, PassRefPtr<Derived>, size_t* indexToModify);
     size_t findItem(PassRefPtr<ItemPropertyType>);
-    void deepCopy(const Derived&);
+    void deepCopy(PassRefPtr<Derived>);
 
     Vector<RefPtr<ItemPropertyType> > m_values;
 };
@@ -269,11 +306,15 @@ size_t NewSVGListPropertyHelper<Derived, ItemProperty>::findItem(PassRefPtr<Item
 }
 
 template<typename Derived, typename ItemProperty>
-void NewSVGListPropertyHelper<Derived, ItemProperty>::deepCopy(const Derived& from)
+void NewSVGListPropertyHelper<Derived, ItemProperty>::deepCopy(PassRefPtr<Derived> passFrom)
 {
+    RefPtr<Derived> from = passFrom;
+
     m_values.clear();
-    for (size_t i = 0; i < from.m_values.size(); ++i) {
-        m_values.append(from.m_values[i]->clone());
+    typename Vector<RefPtr<ItemPropertyType> >::const_iterator it = from->m_values.begin();
+    typename Vector<RefPtr<ItemPropertyType> >::const_iterator itEnd = from->m_values.end();
+    for (; it != itEnd; ++it) {
+        m_values.append((*it)->clone());
     }
 }
 
