@@ -61,6 +61,7 @@
       'c/ppb_var_array.h',
       'c/ppb_var_array_buffer.h',
       'c/ppb_var_dictionary.h',
+      'c/ppb_video_frame.h',
       'c/ppb_view.h',
       'c/ppb_websocket.h',
       'c/ppp.h',

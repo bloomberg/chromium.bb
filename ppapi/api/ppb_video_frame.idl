@@ -6,6 +6,9 @@
 /**
  * Defines the <code>PPB_VideoFrame</code> interface.
  */
+
+[generate_thunk]
+
 label Chrome {
   [channel=dev] M34 = 0.1
 };
@@ -62,6 +65,7 @@ interface PPB_VideoFrame {
    * @return A <code>PP_TimeDelta</code> containing the timestamp of the video
    * frame. Given in seconds since the start of the containing video stream.
    */
+  [on_failure=0.0]
   PP_TimeDelta GetTimestamp([in] PP_Resource frame);
 
   /**
@@ -85,6 +89,7 @@ interface PPB_VideoFrame {
    * @return A <code>PP_VideoFrame_Format</code> containing the format of the
    * video frame.
    */
+  [on_failure=PP_VIDEOFRAME_FORMAT_UNKNOWN]
   PP_VideoFrame_Format GetFormat([in] PP_Resource frame);
 
   /**

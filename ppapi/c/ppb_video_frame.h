@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_video_frame.idl modified Fri Dec 27 17:21:52 2013. */
+/* From ppb_video_frame.idl modified Wed Jan  8 14:06:25 2014. */
 
 #ifndef PPAPI_C_PPB_VIDEO_FRAME_H_
 #define PPAPI_C_PPB_VIDEO_FRAME_H_

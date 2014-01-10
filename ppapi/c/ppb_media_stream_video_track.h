@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_media_stream_video_track.idl modified Fri Dec 27 17:28:11 2013. */
+/* From ppb_media_stream_video_track.idl modified Thu Jan  9 14:02:56 2014. */
 
 #ifndef PPAPI_C_PPB_MEDIA_STREAM_VIDEO_TRACK_H_
 #define PPAPI_C_PPB_MEDIA_STREAM_VIDEO_TRACK_H_
@@ -87,11 +87,8 @@ struct PPB_MediaStreamVideoTrack_0_1 { /* dev */
    * a spot for another frame to be buffered.
    * If there are no frames in the input buffer,
    * <code>PP_OK_COMPLETIONPENDING</code> will be returned immediately and the
-   * <code>callback</code> will be called, when a new frame is received or an
+   * <code>callback</code> will be called when a new frame is received or an
    * error happens.
-   * If the caller holds a frame returned by the previous call of
-   * <code>GetFrame()</code>, <code>PP_ERROR_INPROGRESS</code> will be returned.
-   * The caller should recycle the previous frame before getting the next frame.
    *
    * @param[in] video_track A <code>PP_Resource</code> corresponding to a video
    * resource.

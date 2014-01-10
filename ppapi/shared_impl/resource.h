@@ -53,6 +53,7 @@
   F(PPB_InputEvent_API) \
   F(PPB_IsolatedFileSystem_Private_API) \
   F(PPB_LayerCompositor_API) \
+  F(PPB_MediaStreamVideoTrack_API) \
   F(PPB_MessageLoop_API) \
   F(PPB_NetAddress_API) \
   F(PPB_NetworkList_API) \
@@ -77,6 +78,7 @@
   F(PPB_VideoCapture_API) \
   F(PPB_VideoDecoder_API) \
   F(PPB_VideoDestination_Private_API) \
+  F(PPB_VideoFrame_API) \
   F(PPB_VideoLayer_API) \
   F(PPB_VideoSource_Private_API) \
   F(PPB_View_API) \

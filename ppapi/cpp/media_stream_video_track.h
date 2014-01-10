@@ -76,12 +76,8 @@ class MediaStreamVideoTrack : public Resource {
   /// a spot for another frame to be buffered.
   /// If there are no frames in the input buffer,
   /// <code>PP_OK_COMPLETIONPENDING</code> will be returned immediately and the
-  /// <code>callback</code> will be called, when a new frame is received or some
+  /// <code>callback</code> will be called when a new frame is received or some
   /// error happens.
-  /// If the caller holds a frame returned by the previous call of
-  /// <code>GetFrame()</code>, <code>PP_ERROR_INPROGRESS</code> will be
-  /// returned. The caller should recycle the previous frame before getting
-  /// the next frame.
   ///
   /// @param[in] callback A <code>PP_CompletionCallback</code> to be called upon
   /// completion of <code>GetFrame()</code>. If success, a VideoFrame will be
