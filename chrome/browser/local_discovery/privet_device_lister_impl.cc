@@ -13,59 +13,6 @@
 
 namespace local_discovery {
 
-namespace {
-
-
-DeviceDescription::ConnectionState
-ConnectionStateFromString(const std::string& str) {
-  if (LowerCaseEqualsASCII(str, kPrivetConnectionStatusOnline)) {
-    return DeviceDescription::ONLINE;
-  } else if (LowerCaseEqualsASCII(str, kPrivetConnectionStatusOffline)) {
-    return DeviceDescription::OFFLINE;
-  } else if (LowerCaseEqualsASCII(str, kPrivetConnectionStatusConnecting)) {
-    return DeviceDescription::CONNECTING;
-  } else if (LowerCaseEqualsASCII(str, kPrivetConnectionStatusNotConfigured)) {
-    return DeviceDescription::NOT_CONFIGURED;
-  }
-
-  return DeviceDescription::UNKNOWN;
-}
-
-void FillDeviceDescription(const ServiceDescription& service_description,
-                           DeviceDescription* device_description) {
-  device_description->address = service_description.address;
-  device_description->ip_address = service_description.ip_address;
-  device_description->last_seen = service_description.last_seen;
-
-  for (std::vector<std::string>::const_iterator i =
-           service_description.metadata.begin();
-       i != service_description.metadata.end();
-       i++) {
-    size_t equals_pos = i->find_first_of('=');
-    if (equals_pos == std::string::npos)
-      continue;  // We do not parse non key-value TXT records
-
-    std::string key = i->substr(0, equals_pos);
-    std::string value = i->substr(equals_pos + 1);
-
-    if (LowerCaseEqualsASCII(key, kPrivetTxtKeyName)) {
-      device_description->name = value;
-    } else if (LowerCaseEqualsASCII(key, kPrivetTxtKeyDescription)) {
-      device_description->description = value;
-    } else if (LowerCaseEqualsASCII(key, kPrivetTxtKeyURL)) {
-      device_description->url = value;
-    } else if (LowerCaseEqualsASCII(key, kPrivetTxtKeyType)) {
-      device_description->type = value;
-    } else if (LowerCaseEqualsASCII(key, kPrivetTxtKeyID)) {
-      device_description->id = value;
-    } else if (LowerCaseEqualsASCII(key, kPrivetTxtKeyConnectionState)) {
-      device_description->connection_state = ConnectionStateFromString(value);
-    }
-  }
-}
-
-}  // namespace
-
 PrivetDeviceListerImpl::PrivetDeviceListerImpl(
     ServiceDiscoveryClient* service_discovery_client,
     PrivetDeviceLister::Delegate* delegate)
@@ -101,7 +48,7 @@ void PrivetDeviceListerImpl::OnDeviceChanged(
     return;
 
   DeviceDescription device_description;
-  FillDeviceDescription(service_description, &device_description);
+  device_description.FillFromServiceDescription(service_description);
 
   delegate_->DeviceChanged(
       added, service_description.service_name, device_description);

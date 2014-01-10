@@ -965,6 +965,8 @@
         'browser/local_discovery/cloud_print_base_api_flow.h',
         'browser/local_discovery/cloud_print_printer_list.cc',
         'browser/local_discovery/cloud_print_printer_list.h',
+        'browser/local_discovery/device_description.cc',
+        'browser/local_discovery/device_description.h',
         'browser/local_discovery/privet_confirm_api_flow.cc',
         'browser/local_discovery/privet_confirm_api_flow.h',
         'browser/local_discovery/privet_constants.cc',
