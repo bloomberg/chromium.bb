@@ -93,6 +93,12 @@ IPC_MESSAGE_ROUTED4(FrameHostMsg_DidStartProvisionalLoadForFrame,
 IPC_MESSAGE_ROUTED1(FrameHostMsg_DidFailProvisionalLoadWithError,
                     FrameHostMsg_DidFailProvisionalLoadWithError_Params)
 
+// Sent when a provisional load on the main frame redirects.
+IPC_MESSAGE_ROUTED3(FrameHostMsg_DidRedirectProvisionalLoad,
+                    int /* page_id */,
+                    GURL /* source_url*/,
+                    GURL /* target_url */)
+
 // Sent to the browser when the renderer detects it is blocked on a pepper
 // plugin message for too long. This is also sent when it becomes unhung
 // (according to the value of is_hung). The browser can give the user the

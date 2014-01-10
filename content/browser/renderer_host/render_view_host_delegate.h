@@ -148,17 +148,6 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // RenderView is going to be destroyed
   virtual void RenderViewDeleted(RenderViewHost* render_view_host) {}
 
-  // The RenderView processed a redirect during a provisional load.
-  //
-  // TODO(creis): Remove this method and have the pre-rendering code listen to
-  // WebContentsObserver::DidGetRedirectForResourceRequest instead.
-  // See http://crbug.com/78512.
-  virtual void DidRedirectProvisionalLoad(
-      RenderViewHost* render_view_host,
-      int32 page_id,
-      const GURL& source_url,
-      const GURL& target_url) {}
-
   // The RenderView was navigated to a different page.
   virtual void DidNavigate(RenderViewHost* render_view_host,
                            const ViewHostMsg_FrameNavigate_Params& params) {}

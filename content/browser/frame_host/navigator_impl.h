@@ -31,6 +31,11 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
       RenderFrameHostImpl* render_frame_host,
       const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params)
       OVERRIDE;
+  virtual void DidRedirectProvisionalLoad(
+      RenderFrameHostImpl* render_frame_host,
+      int32 page_id,
+      const GURL& source_url,
+      const GURL& target_url) OVERRIDE;
 
  private:
   virtual ~NavigatorImpl() {}

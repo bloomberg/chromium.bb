@@ -177,7 +177,7 @@ PrerenderTabHelper::~PrerenderTabHelper() {
 
 void PrerenderTabHelper::ProvisionalChangeToMainFrameUrl(
     const GURL& url,
-    content::RenderViewHost* render_view_host) {
+    content::RenderFrameHost* render_frame_host) {
   url_ = url;
   RecordEvent(EVENT_MAINFRAME_CHANGE);
   RecordEventIfLoggedInURL(EVENT_MAINFRAME_CHANGE_DOMAIN_LOGGED_IN, url);

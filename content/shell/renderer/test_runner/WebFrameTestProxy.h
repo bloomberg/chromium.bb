@@ -49,6 +49,7 @@ public:
     }
     virtual void didReceiveServerRedirectForProvisionalLoad(blink::WebFrame* frame)
     {
+        m_baseProxy->didReceiveServerRedirectForProvisionalLoad(frame);
         Base::didReceiveServerRedirectForProvisionalLoad(frame);
     }
     virtual void didFailProvisionalLoad(blink::WebFrame* frame, const blink::WebURLError& error)

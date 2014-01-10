@@ -508,9 +508,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnRunModal(int opener_id, IPC::Message* reply_msg);
   void OnRenderViewReady();
   void OnRenderProcessGone(int status, int error_code);
-  void OnDidRedirectProvisionalLoad(int32 page_id,
-                                    const GURL& source_url,
-                                    const GURL& target_url);
   void OnNavigate(const IPC::Message& msg);
   void OnUpdateState(int32 page_id, const PageState& state);
   void OnUpdateTitle(int32 page_id,

@@ -180,7 +180,7 @@ void ManagedModeNavigationObserver::WarnInfoBarDismissed() {
 
 void ManagedModeNavigationObserver::ProvisionalChangeToMainFrameUrl(
     const GURL& url,
-    content::RenderViewHost* render_view_host) {
+    content::RenderFrameHost* render_frame_host) {
   ManagedModeURLFilter::FilteringBehavior behavior =
       url_filter_->GetFilteringBehaviorForURL(url);
 

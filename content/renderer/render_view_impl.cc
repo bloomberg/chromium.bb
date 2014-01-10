@@ -372,20 +372,6 @@ const size_t kContentIntentDelayMilliseconds = 700;
 static RenderViewImpl* (*g_create_render_view_impl)(RenderViewImplParams*) =
     NULL;
 
-static void GetRedirectChain(WebDataSource* ds, std::vector<GURL>* result) {
-  // Replace any occurrences of swappedout:// with about:blank.
-  const WebURL& blank_url = GURL(kAboutBlankURL);
-  WebVector<WebURL> urls;
-  ds->redirectChain(urls);
-  result->reserve(urls.size());
-  for (size_t i = 0; i < urls.size(); ++i) {
-    if (urls[i] != GURL(kSwappedOutURL))
-      result->push_back(urls[i]);
-    else
-      result->push_back(blank_url);
-  }
-}
-
 // If |data_source| is non-null and has an InternalDocumentStateData associated
 // with it, the AltErrorPageResourceFetcher is reset.
 static void StopAltErrorPageFetcher(WebDataSource* data_source) {
@@ -403,6 +389,22 @@ static bool IsReload(const ViewMsg_Navigate_Params& params) {
       params.navigation_type == ViewMsg_Navigate_Type::RELOAD_IGNORING_CACHE ||
       params.navigation_type ==
           ViewMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL;
+}
+
+// static
+void RenderViewImpl::GetRedirectChain(WebDataSource* ds,
+                                      std::vector<GURL>* result) {
+  // Replace any occurrences of swappedout:// with about:blank.
+  const WebURL& blank_url = GURL(kAboutBlankURL);
+  WebVector<WebURL> urls;
+  ds->redirectChain(urls);
+  result->reserve(urls.size());
+  for (size_t i = 0; i < urls.size(); ++i) {
+    if (urls[i] != GURL(kSwappedOutURL))
+      result->push_back(urls[i]);
+    else
+      result->push_back(blank_url);
+  }
 }
 
 // static
@@ -3539,25 +3541,6 @@ void RenderViewImpl::ProcessViewLayoutFlags(const CommandLine& command_line) {
 
 // TODO(nasko): Remove this method once WebTestProxy in Blink is fixed.
 void RenderViewImpl::didStartProvisionalLoad(WebFrame* frame) {
-}
-
-void RenderViewImpl::didReceiveServerRedirectForProvisionalLoad(
-    WebFrame* frame) {
-  if (frame->parent())
-    return;
-  // Received a redirect on the main frame.
-  WebDataSource* data_source = frame->provisionalDataSource();
-  if (!data_source) {
-    // Should only be invoked when we have a data source.
-    NOTREACHED();
-    return;
-  }
-  std::vector<GURL> redirects;
-  GetRedirectChain(data_source, &redirects);
-  if (redirects.size() >= 2) {
-    Send(new ViewHostMsg_DidRedirectProvisionalLoad(routing_id_, page_id_,
-        redirects[redirects.size() - 2], redirects.back()));
-  }
 }
 
 void RenderViewImpl::didFailProvisionalLoad(WebFrame* frame,

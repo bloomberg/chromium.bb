@@ -434,7 +434,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
     // content::WebContentsObserver implementation.
     virtual void ProvisionalChangeToMainFrameUrl(
         const GURL& url,
-        content::RenderViewHost* render_view_host) OVERRIDE;
+        content::RenderFrameHost* render_frame_host) OVERRIDE;
     virtual void DidCommitProvisionalLoadForFrame(
         int64 frame_id,
         const base::string16& frame_unique_name,

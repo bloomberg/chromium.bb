@@ -53,7 +53,7 @@ class PrerenderTabHelper
   // content::WebContentsObserver implementation.
   virtual void ProvisionalChangeToMainFrameUrl(
       const GURL& url,
-      content::RenderViewHost* render_view_host) OVERRIDE;
+      content::RenderFrameHost* render_frame_host) OVERRIDE;
   virtual void DidStopLoading(
       content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidStartProvisionalLoadForFrame(

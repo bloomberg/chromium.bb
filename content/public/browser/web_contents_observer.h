@@ -127,7 +127,7 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   // WebContentsObserver::DidGetRedirectForResourceRequest instead.
   virtual void ProvisionalChangeToMainFrameUrl(
       const GURL& url,
-      RenderViewHost* render_view_host) {}
+      RenderFrameHost* render_frame_host) {}
 
   // This method is invoked when the provisional load was successfully
   // committed. The |render_view_host| is now the current RenderViewHost of the

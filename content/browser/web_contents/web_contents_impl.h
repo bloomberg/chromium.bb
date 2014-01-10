@@ -326,11 +326,6 @@ class CONTENT_EXPORT WebContentsImpl
                                     base::TerminationStatus status,
                                     int error_code) OVERRIDE;
   virtual void RenderViewDeleted(RenderViewHost* render_view_host) OVERRIDE;
-  virtual void DidRedirectProvisionalLoad(
-      RenderViewHost* render_view_host,
-      int32 page_id,
-      const GURL& source_url,
-      const GURL& target_url) OVERRIDE;
   virtual void DidNavigate(
       RenderViewHost* render_view_host,
       const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
@@ -465,6 +460,9 @@ class CONTENT_EXPORT WebContentsImpl
       RenderFrameHostImpl* render_frame_host,
       const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params)
       OVERRIDE;
+  virtual void DidRedirectProvisionalLoad(
+      RenderFrameHostImpl* render_frame_host,
+      const GURL& validated_target_url) OVERRIDE;
   virtual void NotifyChangedNavigationState(
       InvalidateTypes changed_flags) OVERRIDE;
 

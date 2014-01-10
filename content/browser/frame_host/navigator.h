@@ -38,6 +38,17 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       RenderFrameHostImpl* render_frame_host,
       const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params) {};
 
+  // The RenderFrameHostImpl processed a redirect during a provisional load.
+  //
+  // TODO(creis): Remove this method and have the pre-rendering code listen to
+  // WebContentsObserver::DidGetRedirectForResourceRequest instead.
+  // See http://crbug.com/78512.
+  virtual void DidRedirectProvisionalLoad(
+      RenderFrameHostImpl* render_frame_host,
+      int32 page_id,
+      const GURL& source_url,
+      const GURL& target_url) {}
+
  protected:
   friend class base::RefCounted<Navigator>;
   virtual ~Navigator() {}

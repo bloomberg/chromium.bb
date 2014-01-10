@@ -1021,11 +1021,11 @@ TEST_F(NavigationControllerTest, LoadURL_RedirectAbortDoesntShowPendingURL) {
 
   // Now the navigation redirects.
   const GURL kRedirectURL("http://foo/see");
-  test_rvh()->OnMessageReceived(
-      ViewHostMsg_DidRedirectProvisionalLoad(0,  // routing_id
-                                             -1,  // pending page_id
-                                             kNewURL,  // old url
-                                             kRedirectURL));  // new url
+  main_test_rfh()->OnMessageReceived(
+      FrameHostMsg_DidRedirectProvisionalLoad(0,  // routing_id
+                                              -1,  // pending page_id
+                                              kNewURL,  // old url
+                                              kRedirectURL));  // new url
 
   // We don't want to change the NavigationEntry's url, in case it cancels.
   // Prevents regression of http://crbug.com/77786.

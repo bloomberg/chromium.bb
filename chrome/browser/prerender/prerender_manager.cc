@@ -1170,7 +1170,7 @@ void PrerenderManager::PendingSwap::BeginSwap() {
 
 void PrerenderManager::PendingSwap::ProvisionalChangeToMainFrameUrl(
         const GURL& url,
-        content::RenderViewHost* render_view_host) {
+        content::RenderFrameHost* render_frame_host) {
   // We must only cancel the pending swap if the |url| navigated to is not
   // the URL being attempted to be swapped in. That's because in the normal
   // flow, a ProvisionalChangeToMainFrameUrl will happen for the URL attempted

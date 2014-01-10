@@ -31,6 +31,11 @@ class NavigatorDelegate {
       RenderFrameHostImpl* render_frame_host,
       const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params) {}
 
+  // A redirect was processed in |render_frame_host| during a provisional load.
+  virtual void DidRedirectProvisionalLoad(
+      RenderFrameHostImpl* render_frame_host,
+      const GURL& validated_target_url) {}
+
   // Notification to the Navigator embedder that navigation state has
   // changed. This method corresponds to
   // WebContents::NotifyNavigationStateChanged.

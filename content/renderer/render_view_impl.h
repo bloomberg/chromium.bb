@@ -539,8 +539,6 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void didCreateDataSource(blink::WebFrame* frame,
                                    blink::WebDataSource* datasource);
   virtual void didStartProvisionalLoad(blink::WebFrame* frame);
-  virtual void didReceiveServerRedirectForProvisionalLoad(
-      blink::WebFrame* frame);
   virtual void didFailProvisionalLoad(blink::WebFrame* frame,
                                       const blink::WebURLError& error);
   virtual void didCommitProvisionalLoad(blink::WebFrame* frame,
@@ -813,6 +811,9 @@ class CONTENT_EXPORT RenderViewImpl
     HTTP_404,
     CONNECTION_ERROR,
   };
+
+  static void GetRedirectChain(blink::WebDataSource* ds,
+                               std::vector<GURL>* result);
 
   static blink::WebReferrerPolicy GetReferrerPolicyFromRequest(
       blink::WebFrame* frame,

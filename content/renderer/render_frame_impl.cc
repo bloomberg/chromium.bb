@@ -918,9 +918,24 @@ void RenderFrameImpl::didStartProvisionalLoad(blink::WebFrame* frame) {
 
 void RenderFrameImpl::didReceiveServerRedirectForProvisionalLoad(
     blink::WebFrame* frame) {
-  // TODO(nasko): Move implementation here. Needed state:
-  // * page_id_
-  render_view_->didReceiveServerRedirectForProvisionalLoad(frame);
+  if (frame->parent())
+    return;
+  // Received a redirect on the main frame.
+  WebDataSource* data_source = frame->provisionalDataSource();
+  if (!data_source) {
+    // Should only be invoked when we have a data source.
+    NOTREACHED();
+    return;
+  }
+  std::vector<GURL> redirects;
+  RenderViewImpl::GetRedirectChain(data_source, &redirects);
+  if (redirects.size() >= 2) {
+    Send(new FrameHostMsg_DidRedirectProvisionalLoad(
+        routing_id_,
+        render_view_->page_id_,
+        redirects[redirects.size() - 2],
+        redirects.back()));
+  }
 }
 
 void RenderFrameImpl::didFailProvisionalLoad(

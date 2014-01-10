@@ -102,6 +102,9 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
                                          const GURL& url);
   void OnDidFailProvisionalLoadWithError(
       const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params);
+  void OnDidRedirectProvisionalLoad(int32 page_id,
+                                    const GURL& source_url,
+                                    const GURL& target_url);
   void OnSwapOutACK();
 
   // For now, RenderFrameHosts indirectly keep RenderViewHosts alive via a
