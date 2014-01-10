@@ -24,6 +24,7 @@
 #include "base/values.h"
 #include "google_apis/gcm/base/mcs_message.h"
 #include "google_apis/gcm/base/mcs_util.h"
+#include "google_apis/gcm/engine/checkin_request.h"
 #include "google_apis/gcm/engine/connection_factory_impl.h"
 #include "google_apis/gcm/engine/gcm_store_impl.h"
 #include "google_apis/gcm/engine/mcs_client.h"
@@ -49,6 +50,10 @@
 // prints out any events.
 namespace gcm {
 namespace {
+
+// Default values used to communicate with the check-in server.
+const char kChromeVersion[] = "Chrome MCS Probe";
+const int64 kUserSerialNumber = 1;
 
 // The default server to communicate with.
 const char kMCSServerHost[] = "mtalk.google.com";
@@ -166,12 +171,14 @@ class MCSProbe {
   uint64 secret() const { return secret_; }
 
  private:
+  void CheckIn();
   void InitializeNetworkState();
   void BuildNetworkSession();
 
   void InitializationCallback(bool success,
                               uint64 restored_android_id,
                               uint64 restored_security_token);
+  void OnCheckInCompleted(uint64 android_id, uint64 secret);
 
   base::DefaultClock clock_;
 
@@ -201,6 +208,7 @@ class MCSProbe {
 
   scoped_ptr<GCMStore> gcm_store_;
   scoped_ptr<MCSClient> mcs_client_;
+  scoped_ptr<CheckinRequest> checkin_request_;
 
   scoped_ptr<ConnectionFactoryImpl> connection_factory_;
 
@@ -340,11 +348,50 @@ void MCSProbe::InitializationCallback(bool success,
                                       uint64 restored_security_token) {
   LOG(INFO) << "Initialization " << (success ? "success!" : "failure!");
   if (restored_android_id && restored_security_token) {
+    LOG(INFO) << "Restored device check-in info.";
     android_id_ = restored_android_id;
     secret_ = restored_security_token;
   }
-  if (success)
-    mcs_client_->Login(android_id_, secret_);
+  if (!success)
+    return;
+
+  if (!android_id_ || !secret_) {
+    CheckIn();
+    return;
+  }
+
+  LOG(INFO) << "MCS login initiated.";
+  mcs_client_->Login(android_id_, secret_);
+}
+
+void MCSProbe::CheckIn() {
+  LOG(INFO) << "Check-in request initiated.";
+  checkin_proto::ChromeBuildProto chrome_build_proto;
+  chrome_build_proto.set_platform(
+      checkin_proto::ChromeBuildProto::PLATFORM_LINUX);
+  chrome_build_proto.set_channel(
+      checkin_proto::ChromeBuildProto::CHANNEL_CANARY);
+  chrome_build_proto.set_chrome_version(kChromeVersion);
+  checkin_request_.reset(new CheckinRequest(
+      base::Bind(&MCSProbe::OnCheckInCompleted, base::Unretained(this)),
+      chrome_build_proto,
+      kUserSerialNumber,
+      0,
+      0,
+      url_request_context_getter_.get()));
+  checkin_request_->Start();
+}
+
+void MCSProbe::OnCheckInCompleted(uint64 android_id, uint64 secret) {
+  LOG(INFO) << "Check-in request completion "
+            << (android_id ? "success!" : "failure!");
+  if (!android_id || !secret)
+    return;
+  android_id_ = android_id;
+  secret_ = secret;
+
+  LOG(INFO) << "MCS login initiated.";
+  mcs_client_->Login(android_id_, secret_);
 }
 
 int MCSProbeMain(int argc, char* argv[]) {

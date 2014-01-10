@@ -99,7 +99,6 @@ ConnectionHandler* ConnectionFactoryImpl::GetConnectionHandler() const {
 
 void ConnectionFactoryImpl::Connect() {
   DCHECK(connection_handler_);
-  DCHECK(!IsEndpointReachable());
 
   connecting_ = true;
   if (backoff_entry_->ShouldRejectRequest()) {
@@ -166,8 +165,6 @@ void ConnectionFactoryImpl::OnIPAddressChanged() {
 }
 
 void ConnectionFactoryImpl::ConnectImpl() {
-  DCHECK(!IsEndpointReachable());
-
   if (socket_handle_.socket() && socket_handle_.socket()->IsConnected())
     socket_handle_.socket()->Disconnect();
   socket_handle_.Reset();
