@@ -144,6 +144,8 @@ class WebstorePrivateBeginInstallWithManifest3Function
   // SigninTracker::Observer override.
   virtual void SigninFailed(const GoogleServiceAuthError& error) OVERRIDE;
   virtual void SigninSuccess() OVERRIDE;
+  virtual void MergeSessionComplete(
+      const GoogleServiceAuthError& error) OVERRIDE;
 
   // Called when signin is complete or not needed.
   void SigninCompletedOrNotNeeded();

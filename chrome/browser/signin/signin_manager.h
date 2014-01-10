@@ -31,6 +31,7 @@
 #include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_member.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/google_auto_login_helper.h"
 #include "chrome/browser/signin/signin_internals_util.h"
 #include "chrome/browser/signin/signin_manager_base.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
@@ -185,6 +186,10 @@ class SigninManager : public SigninManagerBase,
   bool IsSigninProcess(int host_id) const;
   bool HasSigninProcess() const;
 
+  // Add or remove observers for the merge session notification.
+  void AddMergeSessionObserver(GoogleAutoLoginHelper::Observer* observer);
+  void RemoveMergeSessionObserver(GoogleAutoLoginHelper::Observer* observer);
+
  protected:
   // Flag saying whether signing out is allowed.
   bool prohibit_signout_;
@@ -290,6 +295,9 @@ class SigninManager : public SigninManagerBase,
 
   // Helper object to listen for changes to the signin allowed preference.
   BooleanPrefMember signin_allowed_;
+
+  // Helper to merge signed in account into the content area.
+  scoped_ptr<GoogleAutoLoginHelper> merge_session_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninManager);
 };

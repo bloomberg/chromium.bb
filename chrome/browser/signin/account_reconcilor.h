@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "chrome/browser/signin/google_auto_login_helper.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -19,16 +20,20 @@ class Profile;
 struct ChromeCookieDetails;
 
 class AccountReconcilor : public BrowserContextKeyedService,
-                                 content::NotificationObserver,
-                                 GaiaAuthConsumer,
-                                 OAuth2TokenService::Consumer,
-                                 OAuth2TokenService::Observer {
+                          public content::NotificationObserver,
+                          public GaiaAuthConsumer,
+                          public OAuth2TokenService::Consumer,
+                          public OAuth2TokenService::Observer {
  public:
   explicit AccountReconcilor(Profile* profile);
   virtual ~AccountReconcilor();
 
   // BrowserContextKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
+
+  // Add or remove observers for the merge session notification.
+  void AddMergeSessionObserver(GoogleAutoLoginHelper::Observer* observer);
+  void RemoveMergeSessionObserver(GoogleAutoLoginHelper::Observer* observer);
 
   Profile* profile() { return profile_; }
 
@@ -126,6 +131,7 @@ class AccountReconcilor : public BrowserContextKeyedService,
   Profile* profile_;
   content::NotificationRegistrar registrar_;
   base::RepeatingTimer<AccountReconcilor> reconciliation_timer_;
+  GoogleAutoLoginHelper merge_session_helper_;
   bool registered_with_token_service_;
 
   // Used during reconcile action.

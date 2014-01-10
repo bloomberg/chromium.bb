@@ -274,4 +274,3 @@ TEST_F(AccountReconcilorTest, StartReconcileAction) {
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(reconcilor->AreAllRefreshTokensChecked());
 }
-

@@ -451,6 +451,13 @@ void WebstorePrivateBeginInstallWithManifest3Function::SigninSuccess() {
   SigninCompletedOrNotNeeded();
 }
 
+void WebstorePrivateBeginInstallWithManifest3Function::MergeSessionComplete(
+    const GoogleServiceAuthError& error) {
+  // TODO(rogerta): once the embeded inline flow is enabled, the code in
+  // WebstorePrivateBeginInstallWithManifest3Function::SigninSuccess()
+  // should move to here.
+}
+
 void WebstorePrivateBeginInstallWithManifest3Function::
     SigninCompletedOrNotNeeded() {
   content::WebContents* web_contents = GetAssociatedWebContents();

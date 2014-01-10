@@ -10,7 +10,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/google_auto_login_helper.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
@@ -79,9 +78,9 @@ void AccountReconcilor::UserIdFetcher::OnNetworkError(int response_code) {
 AccountReconcilor::AccountReconcilor(Profile* profile)
     : OAuth2TokenService::Consumer("account_reconcilor"),
       profile_(profile),
+      merge_session_helper_(profile, NULL),
       registered_with_token_service_(false),
-      are_gaia_accounts_set_(false),
-      requests_(NULL) {
+      are_gaia_accounts_set_(false),requests_(NULL) {
   DVLOG(1) << "AccountReconcilor::AccountReconcilor";
   RegisterWithSigninManager();
   RegisterWithCookieMonster();
@@ -105,11 +104,22 @@ AccountReconcilor::~AccountReconcilor() {
 
 void AccountReconcilor::Shutdown() {
   DVLOG(1) << "AccountReconcilor::Shutdown";
+  merge_session_helper_.CancelAll();
   DeleteAccessTokenRequestsAndUserIdFetchers();
   UnregisterWithSigninManager();
   UnregisterWithTokenService();
   UnregisterWithCookieMonster();
   StopPeriodicReconciliation();
+}
+
+void AccountReconcilor::AddMergeSessionObserver(
+    GoogleAutoLoginHelper::Observer* observer) {
+  merge_session_helper_.AddObserver(observer);
+}
+
+void AccountReconcilor::RemoveMergeSessionObserver(
+    GoogleAutoLoginHelper::Observer* observer) {
+  merge_session_helper_.RemoveObserver(observer);
 }
 
 void AccountReconcilor::DeleteAccessTokenRequestsAndUserIdFetchers() {
@@ -237,9 +247,7 @@ void AccountReconcilor::OnRefreshTokenRevoked(const std::string& account_id) {
 void AccountReconcilor::OnRefreshTokensLoaded() {}
 
 void AccountReconcilor::PerformMergeAction(const std::string& account_id) {
-  // GoogleAutoLoginHelper deletes itself upon success / failure.
-  GoogleAutoLoginHelper* helper = new GoogleAutoLoginHelper(profile_);
-  helper->LogIn(account_id);
+  merge_session_helper_.LogIn(account_id);
 }
 
 void AccountReconcilor::PerformRemoveAction(const std::string& account_id) {

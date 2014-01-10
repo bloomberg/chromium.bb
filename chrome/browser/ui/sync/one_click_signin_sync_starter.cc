@@ -35,6 +35,7 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/webui/signin/profile_signin_confirmation_dialog.h"
+#include "chrome/common/profile_management_switches.h"
 #include "chrome/common/url_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -366,6 +367,15 @@ void OneClickSigninSyncStarter::SigninFailed(
 }
 
 void OneClickSigninSyncStarter::SigninSuccess() {
+  if (switches::IsEnableWebBasedSignin())
+    MergeSessionComplete(GoogleServiceAuthError(GoogleServiceAuthError::NONE));
+}
+
+void OneClickSigninSyncStarter::MergeSessionComplete(
+    const GoogleServiceAuthError& error) {
+  // Regardless of whether the merge session completed sucessfully or not,
+  // continue with sync starting.
+
   if (!sync_setup_completed_callback_.is_null())
     sync_setup_completed_callback_.Run(SYNC_SETUP_SUCCESS);
 

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SIGNIN_SIGNIN_TRACKER_H_
 #define CHROME_BROWSER_SIGNIN_SIGNIN_TRACKER_H_
 
+#include "base/memory/scoped_ptr.h"
+#include "chrome/browser/signin/google_auto_login_helper.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
@@ -47,7 +49,8 @@ class Profile;
 // sync, and provides an Observer interface to notify the UI layer of changes
 // in sync state so they can be reflected in the UI.
 class SigninTracker : public content::NotificationObserver,
-                      public OAuth2TokenService::Observer {
+                      public OAuth2TokenService::Observer,
+                      public GoogleAutoLoginHelper::Observer {
  public:
   class Observer {
    public:
@@ -56,6 +59,10 @@ class SigninTracker : public content::NotificationObserver,
 
     // The signin attempt succeeded.
     virtual void SigninSuccess() = 0;
+
+    // The signed in account has been merged into the content area cookie jar.
+    // This will be called only after a call to SigninSuccess().
+    virtual void MergeSessionComplete(const GoogleServiceAuthError& error) = 0;
   };
 
   // Creates a SigninTracker that tracks the signin status on the passed
@@ -76,6 +83,11 @@ class SigninTracker : public content::NotificationObserver,
  private:
   // Initializes this by adding notifications and observers.
   void Initialize();
+
+  // GoogleAutoLoginHelper::Observer implementation.
+  virtual void MergeSessionCompleted(
+      const std::string& account_id,
+      const GoogleServiceAuthError& error) OVERRIDE;
 
   // The profile whose signin status we are tracking.
   Profile* profile_;

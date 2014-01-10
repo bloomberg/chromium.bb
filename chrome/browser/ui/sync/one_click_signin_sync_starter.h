@@ -112,6 +112,8 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
   // SigninTracker::Observer override.
   virtual void SigninFailed(const GoogleServiceAuthError& error) OVERRIDE;
   virtual void SigninSuccess() OVERRIDE;
+  virtual void MergeSessionComplete(
+      const GoogleServiceAuthError& error) OVERRIDE;
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
   // User input handler for the signin confirmation dialog.

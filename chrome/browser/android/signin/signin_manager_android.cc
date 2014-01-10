@@ -18,7 +18,6 @@
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/android_profile_oauth2_token_service.h"
-#include "chrome/browser/signin/google_auto_login_helper.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
@@ -206,6 +205,12 @@ void SigninManagerAndroid::OnBrowsingDataRemoverDone() {
                                         java_signin_manager_.obj());
 }
 
+void SigninManagerAndroid::MergeSessionCompleted(
+    const std::string& account_id,
+    const GoogleServiceAuthError& error) {
+  merge_session_helper_.reset();
+}
+
 void SigninManagerAndroid::LogInSignedInUser(JNIEnv* env, jobject obj) {
   if (switches::IsNewProfileManagement()) {
     // New Mirror code path that just fires the events and let the
@@ -223,9 +228,8 @@ void SigninManagerAndroid::LogInSignedInUser(JNIEnv* env, jobject obj) {
     // Old code path that doesn't depend on the new Account Reconcilor.
     // We manually login.
 
-    // AutoLogin deletes itself.
-    GoogleAutoLoginHelper* autoLogin = new GoogleAutoLoginHelper(profile_);
-    autoLogin->LogIn();
+    merge_session_helper_.reset(new GoogleAutoLoginHelper(profile_, this));
+    merge_session_helper_->LogIn();
   }
 }
 
