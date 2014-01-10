@@ -37,50 +37,50 @@ namespace WebCore {
         class Predicate;
         class Step;
 
-        class Filter : public Expression {
+        class Filter FINAL : public Expression {
         public:
             Filter(PassOwnPtr<Expression>, Vector<OwnPtr<Predicate> >&);
             virtual ~Filter();
 
-            virtual Value evaluate() const;
+            virtual Value evaluate() const OVERRIDE;
 
         private:
-            virtual Value::Type resultType() const { return Value::NodeSetValue; }
+            virtual Value::Type resultType() const OVERRIDE { return Value::NodeSetValue; }
 
             OwnPtr<Expression> m_expr;
             Vector<OwnPtr<Predicate> > m_predicates;
         };
 
-        class LocationPath : public Expression {
+        class LocationPath FINAL : public Expression {
         public:
             LocationPath();
             virtual ~LocationPath();
             void setAbsolute(bool value) { m_absolute = value; setIsContextNodeSensitive(!m_absolute); }
 
-            virtual Value evaluate() const;
+            virtual Value evaluate() const OVERRIDE;
             void evaluate(NodeSet& nodes) const; // nodes is an input/output parameter
 
             void appendStep(Step* step);
             void insertFirstStep(Step* step);
 
         private:
-            virtual Value::Type resultType() const { return Value::NodeSetValue; }
+            virtual Value::Type resultType() const OVERRIDE { return Value::NodeSetValue; }
 
             Vector<Step*> m_steps;
             bool m_absolute;
         };
 
-        class Path : public Expression {
+        class Path FINAL : public Expression {
         public:
-            Path(Filter*, LocationPath*);
+            Path(Expression*, LocationPath*);
             virtual ~Path();
 
-            virtual Value evaluate() const;
+            virtual Value evaluate() const OVERRIDE;
 
         private:
-            virtual Value::Type resultType() const { return Value::NodeSetValue; }
+            virtual Value::Type resultType() const OVERRIDE { return Value::NodeSetValue; }
 
-            Filter* m_filter;
+            Expression* m_filter;
             LocationPath* m_path;
         };
 

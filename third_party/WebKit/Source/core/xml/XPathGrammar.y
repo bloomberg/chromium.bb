@@ -429,7 +429,7 @@ PathExpr:
     FilterExpr '/' RelativeLocationPath
     {
         $3->setAbsolute(true);
-        $$ = new Path(static_cast<Filter*>($1), $3);
+        $$ = new Path($1, $3);
         parser->unregisterParseNode($1);
         parser->unregisterParseNode($3);
         parser->registerParseNode($$);
@@ -439,7 +439,7 @@ PathExpr:
     {
         $3->insertFirstStep($2);
         $3->setAbsolute(true);
-        $$ = new Path(static_cast<Filter*>($1), $3);
+        $$ = new Path($1, $3);
         parser->unregisterParseNode($1);
         parser->unregisterParseNode($2);
         parser->unregisterParseNode($3);

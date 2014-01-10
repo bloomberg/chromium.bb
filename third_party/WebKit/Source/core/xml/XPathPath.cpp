@@ -185,7 +185,7 @@ void LocationPath::insertFirstStep(Step* step)
     m_steps.insert(0, step);
 }
 
-Path::Path(Filter* filter, LocationPath* path)
+Path::Path(Expression* filter, LocationPath* path)
     : m_filter(filter)
     , m_path(path)
 {
