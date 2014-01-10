@@ -156,6 +156,7 @@ TEST(create_resource_with_same_id)
 
 	/* this one should replace the old one */
 	res2 = wl_resource_create(client, &wl_display_interface, 1, id);
+	assert(res2 != NULL);
 	assert(wl_client_get_object(client, id) == res2);
 
 	wl_resource_destroy(res2);
