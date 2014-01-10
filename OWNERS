@@ -1,6 +1,8 @@
 darin@chromium.org
 ben@chromium.org
 per-file .gitignore=*
+per-file .gn=brettw@chromium.org
+per-file BUILD.gn=brettw@chromium.org
 per-file DEPS=*
 per-file AUTHORS=*
 per-file WATCHLISTS=*
