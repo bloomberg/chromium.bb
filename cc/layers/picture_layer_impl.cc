@@ -945,8 +945,9 @@ void PictureLayerImpl::ManageTilings(bool animating_transform_to_screen) {
   // prevents wastefully creating a paired low res tiling for every new high res
   // tiling during a pinch or a CSS animation.
   bool is_pinching = layer_tree_impl()->PinchGestureActive();
-  if (!is_pinching && !animating_transform_to_screen && !low_res &&
-      low_res != high_res)
+  if (ShouldHaveLowResTiling() && !is_pinching &&
+      !animating_transform_to_screen &&
+      !low_res && low_res != high_res)
     low_res = AddTiling(low_res_raster_contents_scale_);
 
   // Set low-res if we have one.
@@ -1092,8 +1093,8 @@ void PictureLayerImpl::CleanUpTilingsOnActiveLayer(
         tiling->contents_scale() <= max_acceptable_high_res_scale)
       continue;
 
-    // Low resolution can't activate, so only keep one around.
-    if (tiling->resolution() == LOW_RESOLUTION)
+    // Keep low resolution tilings, if the layer should have them.
+    if (tiling->resolution() == LOW_RESOLUTION && ShouldHaveLowResTiling())
       continue;
 
     // Don't remove tilings that are being used (and thus would cause a flash.)
