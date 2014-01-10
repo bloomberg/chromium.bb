@@ -1859,6 +1859,7 @@ _arm_release = _release.derive(arm)
 
 _arm_release.add_config('beaglebone-release',
   boards=['beaglebone'],
+  sync_chrome=False,
   chrome_sdk=False,
   build_tests=False,
   dev_installer_prebuilts=False,
