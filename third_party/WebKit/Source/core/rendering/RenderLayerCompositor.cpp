@@ -365,6 +365,8 @@ void RenderLayerCompositor::finishCompositingUpdateForFrameTree(Frame* frame)
 
 void RenderLayerCompositor::updateCompositingLayers(CompositingUpdateType updateType)
 {
+    TRACE_EVENT0("blink_rendering", "RenderLayerCompositor::updateCompositingLayers");
+
     // Avoid updating the layers with old values. Compositing layers will be updated after the layout is finished.
     if (m_renderView->needsLayout())
         return;
@@ -480,6 +482,7 @@ void RenderLayerCompositor::updateCompositingLayers(CompositingUpdateType update
     } else if (needGeometryUpdate) {
         // We just need to do a geometry update. This is only used for position:fixed scrolling;
         // most of the time, geometry is updated via RenderLayer::styleChanged().
+        TRACE_EVENT0("blink_rendering", "RenderLayerCompositor::updateLayerTreeGeometry");
         updateLayerTreeGeometry(updateRoot);
     }
 

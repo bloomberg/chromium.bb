@@ -852,6 +852,8 @@ inline void FrameView::forceLayoutParentViewIfNeeded()
 
 void FrameView::performPreLayoutTasks()
 {
+    TRACE_EVENT0("webkit", "FrameView::performPreLayoutTasks");
+
     // Don't schedule more layouts, we're in one.
     TemporaryChange<bool> changeSchedulingEnabled(m_layoutSchedulingEnabled, false);
 
@@ -889,6 +891,8 @@ void FrameView::performPreLayoutTasks()
 
 void FrameView::performLayout(RenderObject* rootForThisLayout, bool inSubtreeLayout)
 {
+    TRACE_EVENT0("webkit", "FrameView::performLayout");
+
     // performLayout is the actual guts of layout().
     // FIXME: The 300 other lines in layout() probably belong in other helper functions
     // so that a single human could understand what layout() is actually doing.
