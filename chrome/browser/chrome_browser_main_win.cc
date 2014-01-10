@@ -22,7 +22,6 @@
 #include "base/win/windows_version.h"
 #include "base/win/wrapped_window_proc.h"
 #include "chrome/browser/browser_util_win.h"
-#include "chrome/browser/chrome_elf_init_win.h"
 #include "chrome/browser/install_verification/win/install_verification.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
@@ -253,8 +252,6 @@ void ChromeBrowserMainPartsWin::PostBrowserStart() {
           FROM_HERE,
           base::Bind(&VerifyInstallation),
           base::TimeDelta::FromSeconds(45));
-
-  InitializeChromeElf();
 }
 
 // static

@@ -3,7 +3,6 @@ include_rules = [
   "+ash",
   "+chrome/app",
   "+chrome/installer",
-  "+chrome_elf/blacklist",
   "+chromeos",
   "+components/autofill/content/browser",
   "+components/autofill/content/common",

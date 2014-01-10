@@ -1268,15 +1268,6 @@ other types of suffix sets.
   </summary>
 </histogram>
 
-<histogram name="Blacklist.Setup" enum="BlacklistSetup">
-  <summary>
-    Records the successes and failures when running the browser blacklist setup
-    code. Used to determine if the blacklist is working as intended during
-    startup(since the blacklist runs before crash reporting is set up).  This
-    only occurs on Windows.
-  </summary>
-</histogram>
-
 <histogram name="Bluetooth.ConnectedDeviceCount" units="devices">
   <summary>
     Counts the number of simulataneously connected Bluetooth devices. Used to
@@ -22194,12 +22185,6 @@ other types of suffix sets.
   <int value="0" label="Read"/>
   <int value="1" label="Good"/>
   <int value="2" label="Bad"/>
-</enum>
-
-<enum name="BlacklistSetup" type="int">
-  <int value="0" label="Blacklist enabled"/>
-  <int value="1" label="Blacklist ran successfully."/>
-  <int value="2" label="Blacklist failed."/>
 </enum>
 
 <enum name="BluetoothPairingMethod" type="int">

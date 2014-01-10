@@ -6,9 +6,6 @@
     {
       'target_name': 'blacklist',
       'type': 'static_library',
-      'include_dirs': [
-        '<(SHARED_INTERMEDIATE_DIR)',
-      ],
       'sources': [
         'blacklist/blacklist.cc',
         'blacklist/blacklist.h',
@@ -20,8 +17,7 @@
         # as that would risk pulling in base's link-time dependencies which
         # chrome_elf cannot do.
         '../base/base.gyp:base_static',
-        '../chrome/chrome.gyp:chrome_version_header',
-        '../sandbox/sandbox.gyp:sandbox',        
+        '../sandbox/sandbox.gyp:sandbox',
       ],
     },
     {

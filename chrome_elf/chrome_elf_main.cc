@@ -10,7 +10,7 @@
 #include "chrome_elf/ntdll_cache.h"
 
 void SignalChromeElf() {
-  blacklist::ResetBeacon();
+  blacklist::ClearBeacon();
 }
 
 BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID reserved) {
