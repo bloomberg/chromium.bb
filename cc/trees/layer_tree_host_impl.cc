@@ -2010,15 +2010,6 @@ LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
       potentially_scrolling_layer_impl = scroll_layer_impl;
   }
 
-  // When hiding top controls is enabled and the controls are hidden or
-  // overlaying the content, force scrolls to be enabled on the root layer to
-  // allow bringing the top controls back into view.
-  if (!potentially_scrolling_layer_impl && top_controls_manager_ &&
-      top_controls_manager_->content_top_offset() !=
-      settings_.top_controls_height) {
-    potentially_scrolling_layer_impl = RootScrollLayer();
-  }
-
   return potentially_scrolling_layer_impl;
 }
 
@@ -2050,8 +2041,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
     return ScrollOnMainThread;
   }
 
-  // If we want to send a DidOverscroll for this scroll it can't be ignored.
-  if (!potentially_scrolling_layer_impl && settings_.always_overscroll)
+  if (!potentially_scrolling_layer_impl)
     potentially_scrolling_layer_impl = RootScrollLayer();
 
   if (potentially_scrolling_layer_impl) {
@@ -2160,7 +2150,9 @@ bool LayerTreeHostImpl::ScrollBy(gfx::Point viewport_point,
   bool did_scroll_x = false;
   bool did_scroll_y = false;
   bool consume_by_top_controls = top_controls_manager_ &&
-      (CurrentlyScrollingLayer() == RootScrollLayer() || scroll_delta.y() < 0);
+      (scroll_delta.y() < 0 ||
+       (RootScrollLayer() && CurrentlyScrollingLayer() == RootScrollLayer() &&
+        RootScrollLayer()->max_scroll_offset().y() > 0));
 
   for (LayerImpl* layer_impl = CurrentlyScrollingLayer();
        layer_impl;
@@ -2171,7 +2163,7 @@ bool LayerTreeHostImpl::ScrollBy(gfx::Point viewport_point,
     if (layer_impl == RootScrollLayer()) {
       // Only allow bubble scrolling when the scroll is in the direction to make
       // the top controls visible.
-      if (consume_by_top_controls && layer_impl == RootScrollLayer()) {
+      if (consume_by_top_controls) {
         pending_delta = top_controls_manager_->ScrollBy(pending_delta);
         UpdateMaxScrollOffset();
       }

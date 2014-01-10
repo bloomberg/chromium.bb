@@ -1780,13 +1780,15 @@ TEST_F(LayerTreeHostImplTest, ScrollNonScrollableRootWithTopControls) {
   host_impl_->active_tree()->FindRootScrollLayer();
   DrawFrame();
 
-  EXPECT_EQ(InputHandler::ScrollIgnored,
+  EXPECT_EQ(InputHandler::ScrollStarted,
             host_impl_->ScrollBegin(gfx::Point(), InputHandler::Gesture));
 
   host_impl_->top_controls_manager()->ScrollBegin();
   host_impl_->top_controls_manager()->ScrollBy(gfx::Vector2dF(0.f, 50.f));
   host_impl_->top_controls_manager()->ScrollEnd();
   EXPECT_EQ(host_impl_->top_controls_manager()->content_top_offset(), 0.f);
+
+  host_impl_->ScrollEnd();
 
   EXPECT_EQ(InputHandler::ScrollStarted,
             host_impl_->ScrollBegin(gfx::Point(),
@@ -2722,7 +2724,6 @@ TEST_F(LayerTreeHostImplTest, OverscrollChildEventBubbling) {
 
 TEST_F(LayerTreeHostImplTest, OverscrollAlways) {
   LayerTreeSettings settings;
-  settings.always_overscroll = true;
   CreateHostImpl(settings, CreateOutputSurface());
 
   SetupScrollAndContentsLayers(gfx::Size(50, 50));

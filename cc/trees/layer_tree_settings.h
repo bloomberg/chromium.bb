@@ -68,7 +68,6 @@ class CC_EXPORT LayerTreeSettings {
   bool use_map_image;
   bool ignore_root_layer_flings;
   bool use_rgba_4444_textures;
-  bool always_overscroll;
   bool touch_hit_testing;
   size_t texture_id_allocation_chunk_size;
 
