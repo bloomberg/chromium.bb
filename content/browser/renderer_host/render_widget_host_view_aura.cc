@@ -323,13 +323,14 @@ void SendCompositorFrameAck(
   ack.gl_frame_data.reset(new cc::GLFrameData());
   DCHECK(!texture_to_produce.get() || !skip_frame);
   if (texture_to_produce.get()) {
+    GLHelper* gl_helper = ImageTransportFactory::GetInstance()->GetGLHelper();
     std::string mailbox_name = texture_to_produce->Produce();
     std::copy(mailbox_name.data(),
               mailbox_name.data() + mailbox_name.length(),
               reinterpret_cast<char*>(ack.gl_frame_data->mailbox.name));
     ack.gl_frame_data->size = texture_to_produce->size();
     ack.gl_frame_data->sync_point =
-        content::ImageTransportFactory::GetInstance()->InsertSyncPoint();
+        gl_helper ? gl_helper->InsertSyncPoint() : 0;
   } else if (skip_frame) {
     // Skip the frame, i.e. tell the producer to reuse the same buffer that
     // we just received.
@@ -351,9 +352,9 @@ void AcknowledgeBufferForGpu(
   uint32 sync_point = 0;
   DCHECK(!texture_to_produce.get() || !skip_frame);
   if (texture_to_produce.get()) {
+    GLHelper* gl_helper = ImageTransportFactory::GetInstance()->GetGLHelper();
     ack.mailbox_name = texture_to_produce->Produce();
-    sync_point =
-        content::ImageTransportFactory::GetInstance()->InsertSyncPoint();
+    sync_point = gl_helper ? gl_helper->InsertSyncPoint() : 0;
   } else if (skip_frame) {
     ack.mailbox_name = received_mailbox;
     ack.sync_point = 0;
@@ -1646,8 +1647,8 @@ void RenderWidgetHostViewAura::OnSwapCompositorFrame(
     return;
   }
 
-  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  factory->WaitSyncPoint(frame->gl_frame_data->sync_point);
+  GLHelper* gl_helper = ImageTransportFactory::GetInstance()->GetGLHelper();
+  gl_helper->WaitSyncPoint(frame->gl_frame_data->sync_point);
 
   std::string mailbox_name(
       reinterpret_cast<const char*>(frame->gl_frame_data->mailbox.name),

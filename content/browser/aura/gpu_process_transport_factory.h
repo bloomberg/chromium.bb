@@ -61,8 +61,6 @@ class GpuProcessTransportFactory
       float device_scale_factor,
       unsigned int texture_id) OVERRIDE;
   virtual GLHelper* GetGLHelper() OVERRIDE;
-  virtual uint32 InsertSyncPoint() OVERRIDE;
-  virtual void WaitSyncPoint(uint32 sync_point) OVERRIDE;
   virtual void AddObserver(ImageTransportFactoryObserver* observer) OVERRIDE;
   virtual void RemoveObserver(
       ImageTransportFactoryObserver* observer) OVERRIDE;

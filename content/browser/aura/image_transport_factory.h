@@ -91,12 +91,6 @@ class CONTENT_EXPORT ImageTransportFactory {
   // (ImageTransportFactoryObserver::OnLostResources is called).
   virtual GLHelper* GetGLHelper() = 0;
 
-  // Inserts a SyncPoint into the shared context.
-  virtual uint32 InsertSyncPoint() = 0;
-
-  // Blocks waiting for the sync point on the service side.
-  virtual void WaitSyncPoint(uint32 sync_point) = 0;
-
   virtual void AddObserver(ImageTransportFactoryObserver* observer) = 0;
   virtual void RemoveObserver(ImageTransportFactoryObserver* observer) = 0;
 };

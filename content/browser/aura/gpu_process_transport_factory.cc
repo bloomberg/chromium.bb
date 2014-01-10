@@ -344,22 +344,6 @@ GLHelper* GpuProcessTransportFactory::GetGLHelper() {
   return gl_helper_.get();
 }
 
-uint32 GpuProcessTransportFactory::InsertSyncPoint() {
-  scoped_refptr<cc::ContextProvider> provider =
-      SharedMainThreadContextProvider();
-  if (!provider.get())
-    return 0;
-  return provider->ContextGL()->InsertSyncPointCHROMIUM();
-}
-
-void GpuProcessTransportFactory::WaitSyncPoint(uint32 sync_point) {
-  scoped_refptr<cc::ContextProvider> provider =
-      SharedMainThreadContextProvider();
-  if (!provider.get())
-    return;
-  provider->ContextGL()->WaitSyncPointCHROMIUM(sync_point);
-}
-
 void GpuProcessTransportFactory::AddObserver(
     ImageTransportFactoryObserver* observer) {
   observer_list_.AddObserver(observer);

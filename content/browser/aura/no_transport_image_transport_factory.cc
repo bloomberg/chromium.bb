@@ -83,10 +83,6 @@ GLHelper* NoTransportImageTransportFactory::GetGLHelper() {
   return gl_helper_.get();
 }
 
-uint32 NoTransportImageTransportFactory::InsertSyncPoint() { return 0; }
-
-void NoTransportImageTransportFactory::WaitSyncPoint(uint32 sync_point) {}
-
 // We don't generate lost context events, so we don't need to keep track of
 // observers
 void NoTransportImageTransportFactory::AddObserver(
