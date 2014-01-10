@@ -27,17 +27,12 @@ class ASH_EXPORT PanelWindowResizer : public WindowResizer {
   // returned object. The ownership of |next_window_resizer| is taken by the
   // returned object. Returns NULL if not resizable.
   static PanelWindowResizer* Create(WindowResizer* next_window_resizer,
-                                    aura::Window* window,
-                                    const gfx::Point& location,
-                                    int window_component,
-                                    aura::client::WindowMoveSource source);
+                                    wm::WindowState* window_state);
 
   // WindowResizer:
   virtual void Drag(const gfx::Point& location, int event_flags) OVERRIDE;
   virtual void CompleteDrag() OVERRIDE;
   virtual void RevertDrag() OVERRIDE;
-  virtual aura::Window* GetTarget() OVERRIDE;
-  virtual const gfx::Point& GetInitialLocation() const OVERRIDE;
 
  private:
   // Creates PanelWindowResizer that adds the ability to attach / detach panel
@@ -45,7 +40,7 @@ class ASH_EXPORT PanelWindowResizer : public WindowResizer {
   // |next_window_resizer|. This object takes ownership of
   // |next_window_resizer|.
   PanelWindowResizer(WindowResizer* next_window_resizer,
-                     const Details& details);
+                     wm::WindowState* window_state);
 
   // Checks if the provided window bounds should attach to the launcher. If true
   // the offset gives the necessary adjustment to snap to the launcher.
@@ -61,8 +56,6 @@ class ASH_EXPORT PanelWindowResizer : public WindowResizer {
 
   // Updates the dragged panel's index in the launcher.
   void UpdateLauncherPosition();
-
-  const Details details_;
 
   // Last pointer location in screen coordinates.
   gfx::Point last_location_;
@@ -80,9 +73,6 @@ class ASH_EXPORT PanelWindowResizer : public WindowResizer {
 
   // True if the window started attached to the launcher.
   const bool was_attached_;
-
-  // True if the window should attach to the launcher after releasing.
-  bool should_attach_;
 
   base::WeakPtrFactory<PanelWindowResizer> weak_ptr_factory_;
 

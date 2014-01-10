@@ -532,8 +532,12 @@ bool DockedWindowLayoutManager::CanDockWindow(aura::Window* window,
   if (!switches::UseDockedWindows())
     return false;
   // Don't allow interactive docking of windows with transient parents such as
-  // modal browser dialogs.
-  if (IsPopupOrTransient(window))
+  // modal browser dialogs. Prevent docking of panels attached to shelf during
+  // the drag.
+  wm::WindowState* window_state = wm::GetWindowState(window);
+  bool should_attach_to_shelf = window_state->drag_details() &&
+      window_state->drag_details()->should_attach_to_shelf;
+  if (IsPopupOrTransient(window) || should_attach_to_shelf)
     return false;
   // If a window is wide and cannot be resized down to maximum width allowed
   // then it cannot be docked.
@@ -541,7 +545,7 @@ bool DockedWindowLayoutManager::CanDockWindow(aura::Window* window,
   // they are docked. The size will take effect only once a window is undocked.
   // See http://crbug.com/307792.
   if (window->bounds().width() > kMaxDockWidth &&
-      (!wm::GetWindowState(window)->CanResize() ||
+      (!window_state->CanResize() ||
        (window->delegate() &&
         window->delegate()->GetMinimumSize().width() != 0 &&
         window->delegate()->GetMinimumSize().width() > kMaxDockWidth))) {

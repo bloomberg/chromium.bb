@@ -466,6 +466,8 @@
         'wm/dock/docked_window_layout_manager_observer.h',
         'wm/dock/docked_window_resizer.cc',
         'wm/dock/docked_window_resizer.h',
+        'wm/drag_details.cc',
+        'wm/drag_details.h',
         'wm/drag_window_controller.cc',
         'wm/drag_window_controller.h',
         'wm/drag_window_resizer.cc',

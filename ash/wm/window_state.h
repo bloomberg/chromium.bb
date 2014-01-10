@@ -6,6 +6,7 @@
 #define ASH_WM_WINDOW_STATE_H_
 
 #include "ash/ash_export.h"
+#include "ash/wm/drag_details.h"
 #include "ash/wm/wm_types.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -173,7 +174,9 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   void RemoveObserver(WindowStateObserver* observer);
 
   // Whether the window is being dragged.
-  bool is_dragged() const { return !!window_resizer_; }
+  bool is_dragged() const {
+    return drag_details_ && drag_details_->window_resizer;
+  }
 
   // Whether or not the window's position can be managed by the
   // auto management logic.
@@ -229,17 +232,27 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
     top_row_keys_are_function_keys_ = value;
   }
 
-  // Returns or sets a pointer to WindowResizer when resizing is active.
-  // The pointer to a WindowResizer that is returned is set when a resizer gets
-  // created and cleared when it gets destroyed. WindowState does not own the
-  // |window_resizer_| instance and the resizer's lifetime is controlled
-  // externally. It can be used to avoid creating multiple instances of a
-  // WindowResizer for the same window.
-  WindowResizer* window_resizer() const {
-    return window_resizer_;
-  }
-  void set_window_resizer_(WindowResizer* window_resizer) {
-    window_resizer_ = window_resizer;
+  // Creates and takes ownership of a pointer to DragDetails when resizing is
+  // active. This should be done before a resizer gets created. Returns true
+  // if |window| is resizable based on |window_component|, false otherwise.
+  bool CreateDragDetails(aura::Window* window,
+                         const gfx::Point& point_in_parent,
+                         int window_component,
+                         aura::client::WindowMoveSource source);
+
+  // Deletes and clears a pointer to DragDetails. This should be done when the
+  // resizer gets destroyed.
+  void DeleteDragDetails();
+
+  // Returns a pointer to DragDetails during drag operations.
+  const DragDetails* drag_details() const { return drag_details_.get(); }
+  DragDetails* drag_details() { return drag_details_.get(); }
+
+  // Returns a pointer to WindowResizer when resizing is active.
+  // It can be used to avoid creating multiple instances of a WindowResizer for
+  // the same window.
+  WindowResizer* window_resizer() {
+    return drag_details_ ? drag_details_->window_resizer : NULL;
   }
 
   // aura::WindowObserver overrides:
@@ -266,7 +279,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   bool ignored_by_shelf_;
   bool can_consume_system_keys_;
   bool top_row_keys_are_function_keys_;
-  WindowResizer* window_resizer_;
+  scoped_ptr<DragDetails> drag_details_;
 
   bool always_restores_to_restore_bounds_;
   bool hide_shelf_when_fullscreen_;

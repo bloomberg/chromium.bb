@@ -35,24 +35,19 @@ class ASH_EXPORT DockedWindowResizer : public WindowResizer {
   // returned object. The ownership of |next_window_resizer| is taken by the
   // returned object. Returns NULL if not resizable.
   static DockedWindowResizer* Create(WindowResizer* next_window_resizer,
-                                     aura::Window* window,
-                                     const gfx::Point& location,
-                                     int window_component,
-                                     aura::client::WindowMoveSource source);
+                                     wm::WindowState* window_state);
 
   // WindowResizer:
   virtual void Drag(const gfx::Point& location, int event_flags) OVERRIDE;
   virtual void CompleteDrag() OVERRIDE;
   virtual void RevertDrag() OVERRIDE;
-  virtual aura::Window* GetTarget() OVERRIDE;
-  virtual const gfx::Point& GetInitialLocation() const OVERRIDE;
 
  private:
   // Creates DockWindowResizer that adds the ability to attach / detach
   // windows to / from the dock. This object takes ownership of
   // |next_window_resizer|.
   DockedWindowResizer(WindowResizer* next_window_resizer,
-                      const Details& details);
+                      wm::WindowState* window_state);
 
   // If the provided window bounds should snap to the side of a screen,
   // returns the offset that gives the necessary adjustment to snap.
@@ -74,8 +69,6 @@ class ASH_EXPORT DockedWindowResizer : public WindowResizer {
   // end of the drag.
   DockedAction MaybeReparentWindowOnDragCompletion(bool is_resized,
                                                    bool is_attached_panel);
-
-  const Details details_;
 
   gfx::Point last_location_;
 

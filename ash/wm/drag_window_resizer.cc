@@ -59,8 +59,8 @@ aura::Window* GetAnotherRootWindow(aura::Window* root_window) {
 DragWindowResizer* DragWindowResizer::instance_ = NULL;
 
 DragWindowResizer::~DragWindowResizer() {
-  if (GetTarget())
-    wm::GetWindowState(GetTarget())->set_window_resizer_(NULL);
+  if (window_state_)
+    window_state_->DeleteDragDetails();
   Shell* shell = Shell::GetInstance();
   shell->mouse_cursor_filter()->set_mouse_warp_mode(
       MouseCursorEventFilter::WARP_ALWAYS);
@@ -72,13 +72,8 @@ DragWindowResizer::~DragWindowResizer() {
 // static
 DragWindowResizer* DragWindowResizer::Create(
     WindowResizer* next_window_resizer,
-    aura::Window* window,
-    const gfx::Point& location,
-    int window_component,
-    aura::client::WindowMoveSource source) {
-  Details details(window, location, window_component, source);
-  return details.is_resizable ?
-      new DragWindowResizer(next_window_resizer, details) : NULL;
+    wm::WindowState* window_state) {
+  return new DragWindowResizer(next_window_resizer, window_state);
 }
 
 void DragWindowResizer::Drag(const gfx::Point& location, int event_flags) {
@@ -88,7 +83,7 @@ void DragWindowResizer::Drag(const gfx::Point& location, int event_flags) {
   // temporarily back to where it was initially and make it semi-transparent.
   GetTarget()->layer()->SetOpacity(
       GetTrayUserItemAtPoint(location) ? kOpacityWhenDraggedOverUserIcon :
-                                         details_.initial_opacity);
+                                         details().initial_opacity);
 
   next_window_resizer_->Drag(location, event_flags);
 
@@ -114,7 +109,7 @@ void DragWindowResizer::CompleteDrag() {
 
   next_window_resizer_->CompleteDrag();
 
-  GetTarget()->layer()->SetOpacity(details_.initial_opacity);
+  GetTarget()->layer()->SetOpacity(details().initial_opacity);
   drag_window_controller_.reset();
 
   // Check if the destination is another display.
@@ -161,21 +156,13 @@ void DragWindowResizer::RevertDrag() {
   next_window_resizer_->RevertDrag();
 
   drag_window_controller_.reset();
-  GetTarget()->layer()->SetOpacity(details_.initial_opacity);
-}
-
-aura::Window* DragWindowResizer::GetTarget() {
-  return next_window_resizer_->GetTarget();
-}
-
-const gfx::Point& DragWindowResizer::GetInitialLocation() const {
-  return details_.initial_location_in_parent;
+  GetTarget()->layer()->SetOpacity(details().initial_opacity);
 }
 
 DragWindowResizer::DragWindowResizer(WindowResizer* next_window_resizer,
-                                     const Details& details)
-    : next_window_resizer_(next_window_resizer),
-      details_(details),
+                                     wm::WindowState* window_state)
+    : WindowResizer(window_state),
+      next_window_resizer_(next_window_resizer),
       weak_ptr_factory_(this) {
   // The pointer should be confined in one display during resizing a window
   // because the window cannot span two displays at the same time anyway. The
@@ -187,16 +174,14 @@ DragWindowResizer::DragWindowResizer(WindowResizer* next_window_resizer,
   mouse_cursor_filter->set_mouse_warp_mode(
       ShouldAllowMouseWarp() ?
       MouseCursorEventFilter::WARP_DRAG : MouseCursorEventFilter::WARP_NONE);
-  if (ShouldAllowMouseWarp()) {
-    mouse_cursor_filter->ShowSharedEdgeIndicator(
-        details.window->GetRootWindow());
-  }
+  if (ShouldAllowMouseWarp())
+    mouse_cursor_filter->ShowSharedEdgeIndicator(GetTarget()->GetRootWindow());
   instance_ = this;
 }
 
 void DragWindowResizer::UpdateDragWindow(const gfx::Rect& bounds,
                                          bool in_original_root) {
-  if (details_.window_component != HTCAPTION || !ShouldAllowMouseWarp())
+  if (details().window_component != HTCAPTION || !ShouldAllowMouseWarp())
     return;
 
   // It's available. Show a phantom window on the display if needed.
@@ -236,7 +221,7 @@ void DragWindowResizer::UpdateDragWindow(const gfx::Rect& bounds,
 }
 
 bool DragWindowResizer::ShouldAllowMouseWarp() {
-  return (details_.window_component == HTCAPTION) &&
+  return (details().window_component == HTCAPTION) &&
       !views::corewm::GetTransientParent(GetTarget()) &&
       (GetTarget()->type() == ui::wm::WINDOW_TYPE_NORMAL ||
        GetTarget()->type() == ui::wm::WINDOW_TYPE_PANEL);
@@ -249,7 +234,7 @@ TrayUser* DragWindowResizer::GetTrayUserItemAtPoint(
     return NULL;
 
   // Check that this is a drag move operation from a suitable window.
-  if (details_.window_component != HTCAPTION ||
+  if (details().window_component != HTCAPTION ||
       views::corewm::GetTransientParent(GetTarget()) ||
       (GetTarget()->type() != ui::wm::WINDOW_TYPE_NORMAL &&
        GetTarget()->type() != ui::wm::WINDOW_TYPE_PANEL &&
@@ -258,7 +243,7 @@ TrayUser* DragWindowResizer::GetTrayUserItemAtPoint(
 
   // We only allow to drag the window onto a tray of it's own RootWindow.
   SystemTray* tray = internal::GetRootWindowController(
-      details_.window->GetRootWindow())->GetSystemTray();
+      GetTarget()->GetRootWindow())->GetSystemTray();
 
   // Again - unit tests might not have a tray.
   if (!tray)
@@ -289,8 +274,8 @@ bool DragWindowResizer::TryDraggingToNewUser() {
   // it's thing and return the transparency to its original value.
   int old_opacity = GetTarget()->layer()->opacity();
   GetTarget()->layer()->SetOpacity(0);
-  GetTarget()->SetBounds(details_.initial_bounds_in_parent);
-  if (!tray_user->TransferWindowToUser(details_.window)) {
+  GetTarget()->SetBounds(details().initial_bounds_in_parent);
+  if (!tray_user->TransferWindowToUser(GetTarget())) {
     GetTarget()->layer()->SetOpacity(old_opacity);
     return false;
   }

@@ -182,6 +182,17 @@ class WorkspaceWindowResizerTest : public test::AshTestBase {
     workspace_resizer_ = WorkspaceWindowResizer::instance_;
     return resizer;
   }
+  WorkspaceWindowResizer* CreateWorkspaceResizerForTest(
+      aura::Window* window,
+      const gfx::Point& point_in_parent,
+      int window_component,
+      aura::client::WindowMoveSource source,
+      const std::vector<aura::Window*>& attached_windows) {
+    wm::WindowState* window_state = wm::GetWindowState(window);
+    window_state->CreateDragDetails(
+        window, point_in_parent, window_component, source);
+    return WorkspaceWindowResizer::Create(window_state, attached_windows);
+  }
 
   PhantomWindowController* snap_phantom_window_controller() const {
     return workspace_resizer_->snap_phantom_window_controller_.get();
@@ -265,7 +276,7 @@ TEST_F(WorkspaceWindowResizerTest, AttachedResize_RIGHT_2) {
 
   std::vector<aura::Window*> windows;
   windows.push_back(window2_.get());
-  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+  scoped_ptr<WorkspaceWindowResizer> resizer(CreateWorkspaceResizerForTest(
       window_.get(), gfx::Point(), HTRIGHT,
       aura::client::WINDOW_MOVE_SOURCE_MOUSE, windows));
   ASSERT_TRUE(resizer.get());
@@ -299,7 +310,7 @@ TEST_F(WorkspaceWindowResizerTest, AttachedResize_RIGHT_Compress) {
 
   std::vector<aura::Window*> windows;
   windows.push_back(window2_.get());
-  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+  scoped_ptr<WorkspaceWindowResizer> resizer(CreateWorkspaceResizerForTest(
       window_.get(), gfx::Point(), HTRIGHT,
       aura::client::WINDOW_MOVE_SOURCE_MOUSE, windows));
   ASSERT_TRUE(resizer.get());
@@ -337,7 +348,7 @@ TEST_F(WorkspaceWindowResizerTest, AttachedResize_RIGHT_3) {
   std::vector<aura::Window*> windows;
   windows.push_back(window2_.get());
   windows.push_back(window3_.get());
-  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+  scoped_ptr<WorkspaceWindowResizer> resizer(CreateWorkspaceResizerForTest(
       window_.get(), gfx::Point(), HTRIGHT,
       aura::client::WINDOW_MOVE_SOURCE_MOUSE, windows));
   ASSERT_TRUE(resizer.get());
@@ -378,7 +389,7 @@ TEST_F(WorkspaceWindowResizerTest, AttachedResize_RIGHT_3_Compress) {
   std::vector<aura::Window*> windows;
   windows.push_back(window2_.get());
   windows.push_back(window3_.get());
-  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+  scoped_ptr<WorkspaceWindowResizer> resizer(CreateWorkspaceResizerForTest(
       window_.get(), gfx::Point(), HTRIGHT,
       aura::client::WINDOW_MOVE_SOURCE_MOUSE, windows));
   ASSERT_TRUE(resizer.get());
@@ -408,7 +419,7 @@ TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_Compress) {
 
   std::vector<aura::Window*> windows;
   windows.push_back(window2_.get());
-  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+  scoped_ptr<WorkspaceWindowResizer> resizer(CreateWorkspaceResizerForTest(
       window_.get(), gfx::Point(), HTBOTTOM,
       aura::client::WINDOW_MOVE_SOURCE_MOUSE, windows));
   ASSERT_TRUE(resizer.get());
@@ -442,7 +453,7 @@ TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_2) {
 
   std::vector<aura::Window*> windows;
   windows.push_back(window2_.get());
-  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+  scoped_ptr<WorkspaceWindowResizer> resizer(CreateWorkspaceResizerForTest(
       window_.get(), gfx::Point(), HTBOTTOM,
       aura::client::WINDOW_MOVE_SOURCE_MOUSE, windows));
   ASSERT_TRUE(resizer.get());
@@ -492,7 +503,7 @@ TEST_F(WorkspaceWindowResizerTest, MAYBE_AttachedResize_BOTTOM_3) {
   std::vector<aura::Window*> windows;
   windows.push_back(window2_.get());
   windows.push_back(window3_.get());
-  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+  scoped_ptr<WorkspaceWindowResizer> resizer(CreateWorkspaceResizerForTest(
       window_.get(), gfx::Point(), HTBOTTOM,
       aura::client::WINDOW_MOVE_SOURCE_MOUSE, windows));
   ASSERT_TRUE(resizer.get());
@@ -533,7 +544,7 @@ TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_3_Compress) {
   std::vector<aura::Window*> windows;
   windows.push_back(window2_.get());
   windows.push_back(window3_.get());
-  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+  scoped_ptr<WorkspaceWindowResizer> resizer(CreateWorkspaceResizerForTest(
       window_.get(), gfx::Point(), HTBOTTOM,
       aura::client::WINDOW_MOVE_SOURCE_MOUSE, windows));
   ASSERT_TRUE(resizer.get());
@@ -570,7 +581,7 @@ TEST_F(WorkspaceWindowResizerTest, MouseMoveWithTouchDrag) {
 
   std::vector<aura::Window*> windows;
   windows.push_back(window2_.get());
-  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+  scoped_ptr<WorkspaceWindowResizer> resizer(CreateWorkspaceResizerForTest(
       window_.get(), gfx::Point(), HTRIGHT,
       aura::client::WINDOW_MOVE_SOURCE_TOUCH, windows));
   ASSERT_TRUE(resizer.get());
@@ -726,7 +737,7 @@ TEST_F(WorkspaceWindowResizerTest, RestackAttached) {
   {
     std::vector<aura::Window*> windows;
     windows.push_back(window2_.get());
-    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+    scoped_ptr<WorkspaceWindowResizer> resizer(CreateWorkspaceResizerForTest(
         window_.get(), gfx::Point(), HTRIGHT,
         aura::client::WINDOW_MOVE_SOURCE_MOUSE, windows));
     ASSERT_TRUE(resizer.get());
@@ -740,7 +751,7 @@ TEST_F(WorkspaceWindowResizerTest, RestackAttached) {
   {
     std::vector<aura::Window*> windows;
     windows.push_back(window3_.get());
-    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+    scoped_ptr<WorkspaceWindowResizer> resizer(CreateWorkspaceResizerForTest(
         window2_.get(), gfx::Point(), HTRIGHT,
         aura::client::WINDOW_MOVE_SOURCE_MOUSE, windows));
     ASSERT_TRUE(resizer.get());
@@ -1546,7 +1557,7 @@ TEST_F(WorkspaceWindowResizerTest, DontRewardRightmostWindowForOverflows) {
   windows.push_back(window2_.get());
   windows.push_back(window3_.get());
   windows.push_back(window4_.get());
-  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+  scoped_ptr<WorkspaceWindowResizer> resizer(CreateWorkspaceResizerForTest(
       window_.get(), gfx::Point(), HTRIGHT,
       aura::client::WINDOW_MOVE_SOURCE_MOUSE, windows));
   ASSERT_TRUE(resizer.get());
@@ -1578,7 +1589,7 @@ TEST_F(WorkspaceWindowResizerTest, DontExceedMaxWidth) {
   windows.push_back(window2_.get());
   windows.push_back(window3_.get());
   windows.push_back(window4_.get());
-  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+  scoped_ptr<WorkspaceWindowResizer> resizer(CreateWorkspaceResizerForTest(
       window_.get(), gfx::Point(), HTRIGHT,
       aura::client::WINDOW_MOVE_SOURCE_MOUSE, windows));
   ASSERT_TRUE(resizer.get());
@@ -1607,7 +1618,7 @@ TEST_F(WorkspaceWindowResizerTest, DontExceedMaxHeight) {
   windows.push_back(window2_.get());
   windows.push_back(window3_.get());
   windows.push_back(window4_.get());
-  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+  scoped_ptr<WorkspaceWindowResizer> resizer(CreateWorkspaceResizerForTest(
       window_.get(), gfx::Point(), HTBOTTOM,
       aura::client::WINDOW_MOVE_SOURCE_MOUSE, windows));
   ASSERT_TRUE(resizer.get());
@@ -1643,7 +1654,7 @@ TEST_F(WorkspaceWindowResizerTest, MAYBE_DontExceedMinHeight) {
   windows.push_back(window2_.get());
   windows.push_back(window3_.get());
   windows.push_back(window4_.get());
-  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+  scoped_ptr<WorkspaceWindowResizer> resizer(CreateWorkspaceResizerForTest(
       window_.get(), gfx::Point(), HTBOTTOM,
       aura::client::WINDOW_MOVE_SOURCE_MOUSE, windows));
   ASSERT_TRUE(resizer.get());
@@ -1670,7 +1681,7 @@ TEST_F(WorkspaceWindowResizerTest, DontExpandRightmostPastMaxWidth) {
   windows.push_back(window2_.get());
   windows.push_back(window3_.get());
   windows.push_back(window4_.get());
-  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+  scoped_ptr<WorkspaceWindowResizer> resizer(CreateWorkspaceResizerForTest(
       window_.get(), gfx::Point(), HTRIGHT,
       aura::client::WINDOW_MOVE_SOURCE_MOUSE, windows));
   ASSERT_TRUE(resizer.get());
@@ -1697,7 +1708,7 @@ TEST_F(WorkspaceWindowResizerTest, MoveAttachedWhenGrownToMaxSize) {
   windows.push_back(window2_.get());
   windows.push_back(window3_.get());
   windows.push_back(window4_.get());
-  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+  scoped_ptr<WorkspaceWindowResizer> resizer(CreateWorkspaceResizerForTest(
       window_.get(), gfx::Point(), HTRIGHT,
       aura::client::WINDOW_MOVE_SOURCE_MOUSE, windows));
   ASSERT_TRUE(resizer.get());
@@ -1730,7 +1741,7 @@ TEST_F(WorkspaceWindowResizerTest, MAYBE_MainWindowHonoursMaxWidth) {
   windows.push_back(window2_.get());
   windows.push_back(window3_.get());
   windows.push_back(window4_.get());
-  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+  scoped_ptr<WorkspaceWindowResizer> resizer(CreateWorkspaceResizerForTest(
       window_.get(), gfx::Point(), HTRIGHT,
       aura::client::WINDOW_MOVE_SOURCE_MOUSE, windows));
   ASSERT_TRUE(resizer.get());
@@ -1756,7 +1767,7 @@ TEST_F(WorkspaceWindowResizerTest, MainWindowHonoursMinWidth) {
   std::vector<aura::Window*> windows;
   windows.push_back(window2_.get());
   windows.push_back(window3_.get());
-  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+  scoped_ptr<WorkspaceWindowResizer> resizer(CreateWorkspaceResizerForTest(
       window_.get(), gfx::Point(), HTRIGHT,
       aura::client::WINDOW_MOVE_SOURCE_MOUSE, windows));
   ASSERT_TRUE(resizer.get());

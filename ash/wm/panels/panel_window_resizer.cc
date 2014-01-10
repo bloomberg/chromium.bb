@@ -47,13 +47,8 @@ PanelWindowResizer::~PanelWindowResizer() {
 // static
 PanelWindowResizer*
 PanelWindowResizer::Create(WindowResizer* next_window_resizer,
-                           aura::Window* window,
-                           const gfx::Point& location,
-                           int window_component,
-                           aura::client::WindowMoveSource source) {
-  Details details(window, location, window_component, source);
-  return details.is_resizable ?
-      new PanelWindowResizer(next_window_resizer, details) : NULL;
+                           wm::WindowState* window_state) {
+  return new PanelWindowResizer(next_window_resizer, window_state);
 }
 
 void PanelWindowResizer::Drag(const gfx::Point& location, int event_flags) {
@@ -88,8 +83,11 @@ void PanelWindowResizer::Drag(const gfx::Point& location, int event_flags) {
       GetPanelLayoutManager(panel_container_)->StartDragging(GetTarget());
   }
   gfx::Point offset;
-  gfx::Rect bounds(CalculateBoundsForDrag(details_, location));
-  should_attach_ = AttachToLauncher(bounds, &offset);
+  gfx::Rect bounds(CalculateBoundsForDrag(location));
+  if (!(details().bounds_change & WindowResizer::kBoundsChange_Resizes)) {
+    window_state_->drag_details()->should_attach_to_shelf =
+        AttachToLauncher(bounds, &offset);
+  }
   gfx::Point modified_location(location.x() + offset.x(),
                                location.y() + offset.y());
 
@@ -98,8 +96,8 @@ void PanelWindowResizer::Drag(const gfx::Point& location, int event_flags) {
   if (!resizer)
     return;
 
-  if (should_attach_ &&
-      !(details_.bounds_change & WindowResizer::kBoundsChange_Resizes)) {
+  if (details().should_attach_to_shelf &&
+      !(details().bounds_change & WindowResizer::kBoundsChange_Resizes)) {
     UpdateLauncherPosition();
   }
 }
@@ -112,31 +110,22 @@ void PanelWindowResizer::CompleteDrag() {
 
 void PanelWindowResizer::RevertDrag() {
   next_window_resizer_->RevertDrag();
-  should_attach_ = was_attached_;
+  window_state_->drag_details()->should_attach_to_shelf = was_attached_;
   FinishDragging();
 }
 
-aura::Window* PanelWindowResizer::GetTarget() {
-  return next_window_resizer_->GetTarget();
-}
-
-const gfx::Point& PanelWindowResizer::GetInitialLocation() const {
-  return details_.initial_location_in_parent;
-}
-
 PanelWindowResizer::PanelWindowResizer(WindowResizer* next_window_resizer,
-                                       const Details& details)
-    : details_(details),
+                                       wm::WindowState* window_state)
+    : WindowResizer(window_state),
       next_window_resizer_(next_window_resizer),
       panel_container_(NULL),
       initial_panel_container_(NULL),
       did_move_or_resize_(false),
-      was_attached_(wm::GetWindowState(GetTarget())->panel_attached()),
-      should_attach_(was_attached_),
+      was_attached_(window_state->panel_attached()),
       weak_ptr_factory_(this) {
-  DCHECK(details_.is_resizable);
+  DCHECK(details().is_resizable);
   panel_container_ = Shell::GetContainer(
-      details.window->GetRootWindow(),
+      GetTarget()->GetRootWindow(),
       internal::kShellWindowId_PanelContainer);
   initial_panel_container_ = panel_container_;
 }
@@ -192,8 +181,8 @@ void PanelWindowResizer::StartedDragging() {
     GetPanelLayoutManager(panel_container_)->StartDragging(GetTarget());
   if (!was_attached_) {
     // Attach the panel while dragging placing it in front of other panels.
-    wm::GetWindowState(GetTarget())->set_continue_drag_after_reparent(true);
-    wm::GetWindowState(GetTarget())->set_panel_attached(true);
+    window_state_->set_continue_drag_after_reparent(true);
+    window_state_->set_panel_attached(true);
     // We use root window coordinates to ensure that during the drag the panel
     // is reparented to a container in the root window that has that window.
     aura::Window* target = GetTarget();
@@ -208,10 +197,8 @@ void PanelWindowResizer::StartedDragging() {
 void PanelWindowResizer::FinishDragging() {
   if (!did_move_or_resize_)
     return;
-  if (details_.bounds_change & WindowResizer::kBoundsChange_Resizes)
-    should_attach_ = was_attached_;
-  if (wm::GetWindowState(GetTarget())->panel_attached() != should_attach_) {
-    wm::GetWindowState(GetTarget())->set_panel_attached(should_attach_);
+  if (window_state_->panel_attached() != details().should_attach_to_shelf) {
+    window_state_->set_panel_attached(details().should_attach_to_shelf);
     // We use last known location to ensure that after the drag the panel
     // is reparented to a container in the root window that has that location.
     aura::Window* target = GetTarget();

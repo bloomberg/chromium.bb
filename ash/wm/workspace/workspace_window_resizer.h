@@ -55,10 +55,7 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   virtual ~WorkspaceWindowResizer();
 
   static WorkspaceWindowResizer* Create(
-      aura::Window* window,
-      const gfx::Point& location_in_parent,
-      int window_component,
-      aura::client::WindowMoveSource source,
+      wm::WindowState* window_state,
       const std::vector<aura::Window*>& attached_windows);
 
   // WindowResizer:
@@ -66,11 +63,9 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
                     int event_flags) OVERRIDE;
   virtual void CompleteDrag() OVERRIDE;
   virtual void RevertDrag() OVERRIDE;
-  virtual aura::Window* GetTarget() OVERRIDE;
-  virtual const gfx::Point& GetInitialLocation() const OVERRIDE;
 
  private:
-  WorkspaceWindowResizer(const Details& details,
+  WorkspaceWindowResizer(wm::WindowState* window_state,
                          const std::vector<aura::Window*>& attached_windows);
 
  private:
@@ -163,11 +158,7 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   // Undocks the window if |should_dock| is false.
   void SetDraggedWindowDocked(bool should_dock);
 
-  aura::Window* window() const { return details_.window; }
-
-  wm::WindowState* window_state() { return details_.window_state; }
-
-  const Details details_;
+  wm::WindowState* window_state() { return window_state_; }
 
   const std::vector<aura::Window*> attached_windows_;
 

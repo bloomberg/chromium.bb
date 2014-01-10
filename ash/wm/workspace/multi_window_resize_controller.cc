@@ -433,12 +433,12 @@ void MultiWindowResizeController::StartResize(
     windows.push_back(windows_.other_windows[i]);
   }
   int component = windows_.direction == LEFT_RIGHT ? HTRIGHT : HTBOTTOM;
-  window_resizer_.reset(WorkspaceWindowResizer::Create(
-      windows_.window1,
-      location_in_parent,
-      component,
-      aura::client::WINDOW_MOVE_SOURCE_MOUSE,
-      windows));
+  wm::WindowState* window_state = wm::GetWindowState(windows_.window1);
+  window_state->CreateDragDetails(windows_.window1,
+                                  location_in_parent,
+                                  component,
+                                  aura::client::WINDOW_MOVE_SOURCE_MOUSE);
+  window_resizer_.reset(WorkspaceWindowResizer::Create(window_state, windows));
 }
 
 void MultiWindowResizeController::Resize(const gfx::Point& location_in_screen,
@@ -460,6 +460,7 @@ void MultiWindowResizeController::Resize(const gfx::Point& location_in_screen,
 
 void MultiWindowResizeController::CompleteResize() {
   window_resizer_->CompleteDrag();
+  wm::GetWindowState(window_resizer_->GetTarget())->DeleteDragDetails();
   window_resizer_.reset();
 
   // Mouse may still be over resizer, if not hide.
@@ -480,6 +481,7 @@ void MultiWindowResizeController::CancelResize() {
   if (!window_resizer_)
     return;  // Happens if window was destroyed and we nuked the WindowResizer.
   window_resizer_->RevertDrag();
+  wm::GetWindowState(window_resizer_->GetTarget())->DeleteDragDetails();
   window_resizer_.reset();
   Hide();
 }

@@ -33,7 +33,6 @@ WindowState::WindowState(aura::Window* window)
       ignored_by_shelf_(false),
       can_consume_system_keys_(false),
       top_row_keys_are_function_keys_(false),
-      window_resizer_(NULL),
       always_restores_to_restore_bounds_(false),
       hide_shelf_when_fullscreen_(true),
       animate_to_fullscreen_(true),
@@ -250,6 +249,22 @@ void WindowState::AddObserver(WindowStateObserver* observer) {
 
 void WindowState::RemoveObserver(WindowStateObserver* observer) {
   observer_list_.RemoveObserver(observer);
+}
+
+bool WindowState::CreateDragDetails(aura::Window* window,
+                                    const gfx::Point& point_in_parent,
+                                    int window_component,
+                                    aura::client::WindowMoveSource source) {
+  scoped_ptr<DragDetails> details(new DragDetails(
+        window, point_in_parent, window_component, source));
+  if (!details->is_resizable)
+    return false;
+  drag_details_ = details.Pass();
+  return true;
+}
+
+void WindowState::DeleteDragDetails() {
+  drag_details_.reset();
 }
 
 void WindowState::OnWindowPropertyChanged(aura::Window* window,
