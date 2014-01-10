@@ -1589,17 +1589,6 @@ void IndexedDBDatabase::DeleteDatabaseFinal(
     factory_->DatabaseDeleted(identifier_);
 }
 
-void IndexedDBDatabase::ForceClose() {
-  // IndexedDBConnection::ForceClose() may delete this database, so hold ref.
-  scoped_refptr<IndexedDBDatabase> protect(this);
-  ConnectionSet::const_iterator it = connections_.begin();
-  while (it != connections_.end()) {
-    IndexedDBConnection* connection = *it++;
-    connection->ForceClose();
-  }
-  DCHECK(connections_.empty());
-}
-
 void IndexedDBDatabase::Close(IndexedDBConnection* connection, bool forced) {
   DCHECK(connections_.count(connection));
   DCHECK(connection->IsConnected());

@@ -116,43 +116,34 @@ TEST_F(IndexedDBTest, SetForceKeepSessionState) {
   EXPECT_TRUE(base::DirectoryExists(session_only_path));
 }
 
-class ForceCloseDBCallbacks : public IndexedDBCallbacks {
+class MockConnection : public IndexedDBConnection {
  public:
-  ForceCloseDBCallbacks(scoped_refptr<IndexedDBContextImpl> idb_context,
-                        const GURL& origin_url)
-      : IndexedDBCallbacks(NULL, 0, 0),
-        idb_context_(idb_context),
-        origin_url_(origin_url),
-        connection_(NULL) {}
+  explicit MockConnection(bool expect_force_close)
+      : IndexedDBConnection(NULL, NULL),
+        expect_force_close_(expect_force_close),
+        force_close_called_(false) {}
 
-  virtual void OnSuccess() OVERRIDE {}
-  virtual void OnSuccess(const std::vector<base::string16>&) OVERRIDE {}
-  virtual void OnSuccess(scoped_ptr<IndexedDBConnection> connection,
-                         const IndexedDBDatabaseMetadata& metadata) OVERRIDE {
-    connection_ = connection.release();
-    idb_context_->ConnectionOpened(origin_url_, connection_);
+  virtual ~MockConnection() {
+    EXPECT_TRUE(force_close_called_ == expect_force_close_);
   }
 
-  IndexedDBConnection* connection() { return connection_; }
+  virtual void ForceClose() OVERRIDE {
+    ASSERT_TRUE(expect_force_close_);
+    force_close_called_ = true;
+  }
 
- protected:
-  virtual ~ForceCloseDBCallbacks() {}
+  virtual bool IsConnected() OVERRIDE {
+    return !force_close_called_;
+  }
 
  private:
-  scoped_refptr<IndexedDBContextImpl> idb_context_;
-  GURL origin_url_;
-  IndexedDBConnection* connection_;
-  DISALLOW_COPY_AND_ASSIGN(ForceCloseDBCallbacks);
+  bool expect_force_close_;
+  bool force_close_called_;
 };
 
 TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-
-  scoped_refptr<MockIndexedDBDatabaseCallbacks> open_db_callbacks(
-      new MockIndexedDBDatabaseCallbacks());
-  scoped_refptr<MockIndexedDBDatabaseCallbacks> closed_db_callbacks(
-      new MockIndexedDBDatabaseCallbacks());
 
   base::FilePath test_path;
 
@@ -165,33 +156,33 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
     scoped_refptr<IndexedDBContextImpl> idb_context = new IndexedDBContextImpl(
         temp_dir.path(), special_storage_policy_, NULL, task_runner_);
 
-    scoped_refptr<ForceCloseDBCallbacks> open_callbacks =
-        new ForceCloseDBCallbacks(idb_context, kTestOrigin);
-
-    scoped_refptr<ForceCloseDBCallbacks> closed_callbacks =
-        new ForceCloseDBCallbacks(idb_context, kTestOrigin);
-
-    IndexedDBFactory* factory = idb_context->GetIDBFactory();
-
     test_path = idb_context->GetFilePathForTesting(
         webkit_database::GetIdentifierFromOrigin(kTestOrigin));
+    ASSERT_TRUE(base::CreateDirectory(test_path));
 
-    factory->Open(base::ASCIIToUTF16("opendb"),
-                  0,
-                  0,
-                  open_callbacks,
-                  open_db_callbacks,
-                  kTestOrigin,
-                  idb_context->data_path());
-    factory->Open(base::ASCIIToUTF16("closeddb"),
-                  0,
-                  0,
-                  closed_callbacks,
-                  closed_db_callbacks,
-                  kTestOrigin,
-                  idb_context->data_path());
+    const bool kExpectForceClose = true;
 
-    closed_callbacks->connection()->Close();
+    MockConnection connection1(kExpectForceClose);
+    idb_context->TaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(&IndexedDBContextImpl::ConnectionOpened,
+                   idb_context,
+                   kTestOrigin,
+                   &connection1));
+
+    MockConnection connection2(!kExpectForceClose);
+    idb_context->TaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(&IndexedDBContextImpl::ConnectionOpened,
+                   idb_context,
+                   kTestOrigin,
+                   &connection2));
+    idb_context->TaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(&IndexedDBContextImpl::ConnectionClosed,
+                   idb_context,
+                   kTestOrigin,
+                   &connection2));
 
     idb_context->TaskRunner()->PostTask(
         FROM_HERE,
@@ -204,8 +195,6 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
   // Make sure we wait until the destructor has run.
   message_loop_.RunUntilIdle();
 
-  EXPECT_TRUE(open_db_callbacks->forced_close_called());
-  EXPECT_FALSE(closed_db_callbacks->forced_close_called());
   EXPECT_FALSE(base::DirectoryExists(test_path));
 }
 
