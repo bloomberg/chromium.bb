@@ -497,37 +497,43 @@ class Configs(object):
   At this point, we don't know all the possibilities. So mount a partial view
   that we have.
   """
-  def __init__(self, file_comment):
+  def __init__(self, file_comment, config_variables):
     self.file_comment = file_comment
     # Contains the names of the config variables seen while processing
     # .isolate file(s). The order is important since the same order is used for
     # keys in self.by_config.
-    self.config_variables = ()
+    assert isinstance(config_variables, tuple)
+    self._config_variables = config_variables
     # The keys of by_config are tuples of values for each of the items in
-    # self.config_variables. A None item in the list of the key means the value
+    # self._config_variables. A None item in the list of the key means the value
     # is unbounded.
     self.by_config = {}
 
+  @property
+  def config_variables(self):
+    return self._config_variables
+
   def union(self, rhs):
     """Adds variables from rhs (a Configs) to the existing variables."""
-    config_variables = self.config_variables
-    if not config_variables:
-      config_variables = rhs.config_variables
-    else:
-      # We can't proceed if this isn't true since we don't know the correct
-      # default values for extra variables. The variables are sorted so we
-      # don't need to worry about permutations.
-      if rhs.config_variables and rhs.config_variables != config_variables:
-        raise isolateserver.ConfigError(
-            'Variables in merged .isolate files do not match: %r and %r' % (
-                config_variables, rhs.config_variables))
-
     # Takes the first file comment, prefering lhs.
-    out = Configs(self.file_comment or rhs.file_comment)
-    out.config_variables = config_variables
-    for config in set(self.by_config) | set(rhs.by_config):
-      out.by_config[config] = union(
-          self.by_config.get(config), rhs.by_config.get(config))
+    comment = self.file_comment or rhs.file_comment
+    if not self.config_variables:
+      assert not self.by_config
+      out = Configs(comment, rhs.config_variables)
+    elif not rhs.config_variables:
+      assert not rhs.by_config
+      out = Configs(comment, self.config_variables)
+    elif rhs.config_variables == self.config_variables:
+      out = Configs(comment, self.config_variables)
+    else:
+      # TODO(maruel): Fix this.
+      raise isolateserver.ConfigError(
+          'Variables in merged .isolate files do not match: %r and %r' % (
+              self.config_variables, rhs.config_variables))
+
+    for key in set(self.by_config) | set(rhs.by_config):
+      out.by_config[key] = union(
+          self.by_config.get(key), rhs.by_config.get(key))
     return out
 
   def flatten(self):
@@ -632,13 +638,12 @@ def load_isolate_as_config(isolate_dir, value, file_comment):
     config_variables = ()
     all_configs = []
 
-  isolate = Configs(file_comment)
+  isolate = Configs(file_comment, config_variables)
 
   # Add configuration-specific variables.
   for expr, then in value.get('conditions', []):
     configs = match_configs(expr, config_variables, all_configs)
-    new = Configs(None)
-    new.config_variables = config_variables
+    new = Configs(None, config_variables)
     for config in configs:
       new.by_config[config] = ConfigSettings(then['variables'])
     isolate = isolate.union(new)

@@ -444,7 +444,7 @@ class IsolateFormatTest(unittest.TestCase):
     # pylint: disable=E1103
     actual = isolate_format.union(
         isolate_format.union(
-          isolate_format.Configs(None),
+          isolate_format.Configs(None, ()),
           isolate_format.load_isolate_as_config(FAKE_DIR, {}, None)),
         isolate_format.load_isolate_as_config(FAKE_DIR, {}, None)).flatten()
     self.assertEqual({}, actual)
@@ -492,7 +492,7 @@ class IsolateFormatTest(unittest.TestCase):
     # pylint: disable=E1103
     configs = isolate_format.union(
         isolate_format.union(
-          isolate_format.Configs(None),
+          isolate_format.Configs(None, ()),
           isolate_format.load_isolate_as_config(FAKE_DIR, linux, None)),
         isolate_format.load_isolate_as_config(FAKE_DIR, mac, None)).flatten()
     self.assertEqual(expected, configs)
@@ -550,7 +550,7 @@ class IsolateFormatTest(unittest.TestCase):
     configs = isolate_format.union(
         isolate_format.union(
           isolate_format.union(
-            isolate_format.Configs(None),
+            isolate_format.Configs(None, ()),
             isolate_format.load_isolate_as_config(FAKE_DIR, linux, None)),
           isolate_format.load_isolate_as_config(FAKE_DIR, mac, None)),
         isolate_format.load_isolate_as_config(FAKE_DIR, win, None)).flatten()
@@ -613,8 +613,7 @@ class IsolateFormatTest(unittest.TestCase):
       self.assertEqual(expected, flatten)
 
   def test_make_isolate_multi_variables(self):
-    config = isolate_format.Configs(None)
-    config.config_variables = ('CHROMEOS', 'OS')
+    config = isolate_format.Configs(None, ('CHROMEOS', 'OS'))
     config.by_config[(('0', 'linux'))] = isolate_format.ConfigSettings(
         {'command': ['bar']})
     config.by_config[(('1', 'linux'))] = isolate_format.ConfigSettings(
@@ -636,8 +635,7 @@ class IsolateFormatTest(unittest.TestCase):
     self.assertEqual(expected, config.make_isolate_file())
 
   def test_make_isolate_multi_variables_missing(self):
-    config = isolate_format.Configs(None)
-    config.config_variables = ('CHROMEOS', 'OS')
+    config = isolate_format.Configs(None, ('CHROMEOS', 'OS'))
     config.by_config[((None, 'abc'))] = isolate_format.ConfigSettings(
         {'command': ['bar']})
     config.by_config[(('1', None))] = isolate_format.ConfigSettings(

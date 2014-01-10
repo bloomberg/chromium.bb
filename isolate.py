@@ -358,8 +358,7 @@ def generate_isolate(
       relative_cwd, trace_blacklist)
   config_variable_names, config_values = zip(
       *sorted(config_variables.iteritems()))
-  out = isolate_format.Configs(None)
-  out.config_variables = config_variable_names
+  out = isolate_format.Configs(None, config_variable_names)
   out.by_config[config_values] = isolate_format.ConfigSettings(dependencies)
   return out.make_isolate_file()
 
