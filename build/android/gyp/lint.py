@@ -110,7 +110,8 @@ def _RunLint(lint_path, config_path, processed_config_path, manifest_path,
                                            'lint', 'suppress.py')),
               _RelativizePath(result_path)))
       print >> sys.stderr, msg
-      return 1
+      # Lint errors do not fail the build.
+      return 0
 
   return 0
 
