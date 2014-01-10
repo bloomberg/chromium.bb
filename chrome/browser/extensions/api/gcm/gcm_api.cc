@@ -85,8 +85,9 @@ bool GcmApiFunction::RunImpl() {
 }
 
 bool GcmApiFunction::IsGcmApiEnabled() const {
-  return gcm::GCMProfileService::IsGCMEnabled() &&
-      !GetExtension()->public_key().empty();
+  return gcm::GCMProfileService::IsGCMEnabled(
+             Profile::FromBrowserContext(context())) &&
+         !GetExtension()->public_key().empty();
 }
 
 gcm::GCMProfileService* GcmApiFunction::GCMProfileService() const {

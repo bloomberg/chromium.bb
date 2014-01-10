@@ -55,7 +55,7 @@ class GCMProfileService : public BrowserContextKeyedService,
   };
 
   // Returns true if the GCM support is enabled.
-  static bool IsGCMEnabled();
+  static bool IsGCMEnabled(Profile* profile);
 
   // Register profile-specific prefs for GCM.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);

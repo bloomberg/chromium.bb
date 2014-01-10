@@ -30,7 +30,6 @@ class GcmApiTest : public ExtensionApiTest {
 
   const Extension* LoadTestExtension(const std::string& extension_path,
                                      const std::string& page_name);
-
   gcm::FakeGCMProfileService* service() const;
   bool ShouldSkipTest() const;
 
@@ -183,6 +182,21 @@ IN_PROC_BROWSER_TEST_F(GcmApiTest, OnSendError) {
       gcm::GCMClient::TTL_EXCEEDED);
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+IN_PROC_BROWSER_TEST_F(GcmApiTest, Incognito) {
+  if (ShouldSkipTest())
+    return;
+
+  ResultCatcher catcher;
+  catcher.RestrictToProfile(profile());
+  ResultCatcher incognito_catcher;
+  incognito_catcher.RestrictToProfile(profile()->GetOffTheRecordProfile());
+
+  ASSERT_TRUE(RunExtensionTestIncognito("gcm/functions/incognito"));
+
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+  EXPECT_TRUE(incognito_catcher.GetNextResult()) << incognito_catcher.message();
 }
 
 }  // namespace extensions

@@ -297,6 +297,20 @@ void GCMEventRouterMock::OnSendError(const std::string& app_id,
   test_->SignalCompleted();
 }
 
+TEST_F(GCMProfileServiceTest, Incognito) {
+  EXPECT_TRUE(GCMProfileServiceFactory::GetForProfile(profile()));
+
+  // Create an incognito profile.
+  TestingProfile::Builder incognito_profile_builder;
+  incognito_profile_builder.SetIncognito();
+  scoped_ptr<TestingProfile> incognito_profile =
+      incognito_profile_builder.Build();
+  incognito_profile->SetOriginalProfile(profile());
+
+  EXPECT_FALSE(GCMProfileServiceFactory::GetForProfile(
+      incognito_profile.get()));
+}
+
 TEST_F(GCMProfileServiceTest, CheckIn) {
   EXPECT_TRUE(checkin_info_.IsValid());
 

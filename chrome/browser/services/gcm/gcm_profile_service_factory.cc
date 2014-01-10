@@ -13,7 +13,7 @@ namespace gcm {
 
 // static
 GCMProfileService* GCMProfileServiceFactory::GetForProfile(Profile* profile) {
-  if (!gcm::GCMProfileService::IsGCMEnabled())
+  if (!gcm::GCMProfileService::IsGCMEnabled(profile))
     return NULL;
 
   return static_cast<GCMProfileService*>(
@@ -35,9 +35,10 @@ GCMProfileServiceFactory::~GCMProfileServiceFactory() {
 }
 
 BrowserContextKeyedService* GCMProfileServiceFactory::BuildServiceInstanceFor(
-    content::BrowserContext* profile) const {
-  return gcm::GCMProfileService::IsGCMEnabled() ?
-      new GCMProfileService(static_cast<Profile*>(profile)) : NULL;
+    content::BrowserContext* context) const {
+  Profile* profile = static_cast<Profile*>(context);
+  return gcm::GCMProfileService::IsGCMEnabled(profile) ?
+      new GCMProfileService(profile) : NULL;
 }
 
 content::BrowserContext* GCMProfileServiceFactory::GetBrowserContextToUse(

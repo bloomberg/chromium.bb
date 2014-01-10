@@ -38,8 +38,12 @@ class GCMProfileService::DelayedTaskController {
   DelayedTaskController();
   ~DelayedTaskController();
 
-  // Adds an app to non-ready list that queue all tasks to invoke until ready.
+  // Adds an app to the tracking list. It will be first marked as not ready.
+  // Tasks will be queued for delay execution until the app is marked as ready.
   void AddApp(const std::string& app_id);
+
+  // Removes the app from the tracking list.
+  void RemoveApp(const std::string& app_id);
 
   // Adds a task that will be invoked once we're ready.
   void AddTask(const std::string& app_id, base::Closure task);
@@ -52,6 +56,9 @@ class GCMProfileService::DelayedTaskController {
 
   // Returns true if it is ready to perform operations for an app.
   bool CanRunTaskWithoutDelay(const std::string& app_id) const;
+
+  // Returns true if the app has been tracked for readiness.
+  bool IsAppTracked(const std::string& app_id) const;
 
  private:
   struct AppTaskQueue {
@@ -98,6 +105,11 @@ void GCMProfileService::DelayedTaskController::AddApp(
     const std::string& app_id) {
   DCHECK(delayed_task_map_.find(app_id) == delayed_task_map_.end());
   delayed_task_map_[app_id] = new AppTaskQueue;
+}
+
+void GCMProfileService::DelayedTaskController::RemoveApp(
+    const std::string& app_id) {
+  delayed_task_map_.erase(app_id);
 }
 
 void GCMProfileService::DelayedTaskController::AddTask(
@@ -147,6 +159,11 @@ bool GCMProfileService::DelayedTaskController::CanRunTaskWithoutDelay(
   if (iter == delayed_task_map_.end())
     return true;
   return iter->second->ready;
+}
+
+bool GCMProfileService::DelayedTaskController::IsAppTracked(
+    const std::string& app_id) const {
+  return delayed_task_map_.find(app_id) != delayed_task_map_.end();
 }
 
 void GCMProfileService::DelayedTaskController::RunTasks(
@@ -415,7 +432,11 @@ bool GCMProfileService::RegistrationInfo::IsValid() const {
 bool GCMProfileService::enable_gcm_for_testing_ = false;
 
 // static
-bool GCMProfileService::IsGCMEnabled() {
+bool GCMProfileService::IsGCMEnabled(Profile* profile) {
+  // GCM is not enabled in incognito mode.
+  if (profile->IsOffTheRecord())
+    return false;
+
   if (enable_gcm_for_testing_)
     return true;
 
@@ -443,6 +464,7 @@ GCMProfileService::GCMProfileService(Profile* profile)
     : profile_(profile),
       testing_delegate_(NULL),
       weak_ptr_factory_(this) {
+  DCHECK(!profile->IsOffTheRecord());
   Init();
 }
 
@@ -725,6 +747,9 @@ void GCMProfileService::Unregister(const std::string& app_id) {
   // Remove the persisted registration info.
   DeleteRegistrationInfo(app_id);
 
+  // No need to track the app any more.
+  delayed_task_controller_->RemoveApp(app_id);
+
   // Ask the server to unregister it. There could be a small chance that the
   // unregister request fails. If this occurs, it does not bring any harm since
   // we simply reject the messages/events received from the server.
@@ -887,12 +912,16 @@ void GCMProfileService::WriteRegistrationInfo(const std::string& app_id) {
 }
 
 void GCMProfileService::ReadRegistrationInfo(const std::string& app_id) {
-  extensions::StateStore* storage =
-      extensions::ExtensionSystem::Get(profile_)->state_store();
-  DCHECK(storage);
+  // This function can be called more than once when the app is allowed in
+  // incognito and the extension service reloads the app.
+  if (delayed_task_controller_->IsAppTracked(app_id))
+    return;
 
   delayed_task_controller_->AddApp(app_id);
 
+  extensions::StateStore* storage =
+      extensions::ExtensionSystem::Get(profile_)->state_store();
+  DCHECK(storage);
   storage->GetExtensionValue(
       app_id,
       kRegistrationKey,
