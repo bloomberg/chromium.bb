@@ -6,7 +6,6 @@ package org.chromium.mojo;
 
 import android.app.Activity;
 import android.content.Context;
-import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
@@ -15,10 +14,13 @@ import android.view.SurfaceView;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 
+/**
+ * Exposes SurfaceView to native code.
+ */
 @JNINamespace("mojo::services")
 public class NativeViewportAndroid extends SurfaceView {
 
-    private int mNativeMojoViewport;
+    private long mNativeMojoViewport;
     private final SurfaceHolder.Callback mSurfaceCallback;
 
     @SuppressWarnings("unused")
@@ -27,7 +29,7 @@ public class NativeViewportAndroid extends SurfaceView {
         activity.setContentView(new NativeViewportAndroid(activity, nativeViewport));
     }
 
-    public NativeViewportAndroid(Context context, int nativeViewport) {
+    public NativeViewportAndroid(Context context, long nativeViewport) {
         super(context);
 
         mNativeMojoViewport = nativeViewport;
@@ -72,16 +74,16 @@ public class NativeViewportAndroid extends SurfaceView {
                                 event.getEventTime());
     }
 
-    private static native void nativeDestroy(int nativeNativeViewportAndroid);
+    private static native void nativeDestroy(long nativeNativeViewportAndroid);
     private static native void nativeSurfaceCreated(
-        int nativeNativeViewportAndroid, Surface surface);
+        long nativeNativeViewportAndroid, Surface surface);
     private static native void nativeSurfaceDestroyed(
-        int nativeNativeViewportAndroid);
+        long nativeNativeViewportAndroid);
     private static native void nativeSurfaceSetSize(
-        int nativeNativeViewportAndroid,
+        long nativeNativeViewportAndroid,
         int width, int height);
     private static native boolean nativeTouchEvent(
-        int nativeNativeViewportAndroid,
+        long nativeNativeViewportAndroid,
         int pointerId,
         int action,
         float x, float y,

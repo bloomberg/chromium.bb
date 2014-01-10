@@ -363,6 +363,7 @@
           'type': 'none',
           'variables': {
             'jni_gen_package': 'mojo',
+            'jni_generator_ptr_type': 'long',
             'input_java_class': 'java/util/HashSet.class',
           },
           'includes': [ '../build/jar_file_jni_generator.gypi' ],
@@ -378,8 +379,9 @@
             'shell/android/apk/src/org/chromium/mojo_shell_apk/MojoMain.java',
           ],
           'variables': {
-            'jni_gen_package': 'mojo'
-          },
+            'jni_gen_package': 'mojo',
+            'jni_generator_ptr_type': 'long',
+         },
           'includes': [ '../build/jni_generator.gypi' ],
         },
         {
