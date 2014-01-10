@@ -418,6 +418,7 @@ marshal_demarshal(struct marshal_data *data,
 	object.id = msg[0];
 	closure = wl_connection_demarshal(data->read_connection,
 					  size, &objects, &message);
+	assert(closure);
 	wl_closure_invoke(closure, WL_CLOSURE_INVOKE_SERVER, &object, 0, data);
 	wl_closure_destroy(closure);
 }
