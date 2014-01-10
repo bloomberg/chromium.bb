@@ -19,6 +19,8 @@
 #ifndef I18N_ADDRESSINPUT_ADDRESS_DATA_H_
 #define I18N_ADDRESSINPUT_ADDRESS_DATA_H_
 
+#include <libaddressinput/address_field.h>
+
 #include <string>
 #include <vector>
 
@@ -31,14 +33,16 @@ namespace addressinput {
 //    address.address_lines.push_back("1098 Alta Ave");
 //    address.administrative_area = "CA";
 //    address.locality = "Mountain View";
-//    address.dependent_locality = "";
 //    address.postal_code = "94043";
-//    address.sorting_code = "";
 //    address.organization = "Google";
 //    address.recipient = "Chen-Kang Yang";
 //    address.language_code = "en";
 //    Process(address);
 struct AddressData {
+  // Returns the value of the |field|. The parameter should not be
+  // STREET_ADDRESS, which comprises multiple fields.
+  const std::string& GetField(AddressField field) const;
+
   // The BCP 47 language code used to guide how the address is formatted for
   // display. The same address may have different representations in different
   // languages.

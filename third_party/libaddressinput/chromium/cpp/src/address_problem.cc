@@ -15,9 +15,17 @@
 #include <libaddressinput/address_problem.h>
 
 #include <ostream>
+#include <string>
 
 namespace i18n {
 namespace addressinput {
+
+AddressProblem::AddressProblem(AddressField field,
+                               Type type,
+                               const std::string& description)
+    : field(field), type(type), description(description) {}
+
+AddressProblem::~AddressProblem() {}
 
 std::ostream& operator<<(std::ostream& o, AddressProblem::Type problem_type) {
   switch (problem_type) {

@@ -59,6 +59,9 @@ struct AddressProblem {
     MISMATCHING_VALUE
   };
 
+  AddressProblem(AddressField field, Type type, const std::string& description);
+  ~AddressProblem();
+
   // The address field that has the problem.
   AddressField field;
 

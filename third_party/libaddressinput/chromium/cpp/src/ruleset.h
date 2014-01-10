@@ -15,6 +15,7 @@
 #ifndef I18N_ADDRESSINPUT_RULESET_H_
 #define I18N_ADDRESSINPUT_RULESET_H_
 
+#include <libaddressinput/address_field.h>
 #include <libaddressinput/util/basictypes.h>
 #include <libaddressinput/util/scoped_ptr.h>
 
@@ -42,26 +43,49 @@ class Rule;
 // language version.
 class Ruleset {
  public:
-  // Builds a ruleset with a region-wide |rule| in the default language of the
-  // country. The |rule| should not be NULL.
-  explicit Ruleset(scoped_ptr<Rule> rule);
+  // Builds a ruleset for |field| with a region-wide |rule| in the default
+  // language of the country. The |field| should be between COUNTRY and
+  // DEPENDENT_LOCALITY (inclusively). The |rule| should not be NULL.
+  Ruleset(AddressField field, scoped_ptr<Rule> rule);
 
   ~Ruleset();
 
-  // Returns the region-wide rule in the default language of the country.
-  const Rule& rule() const { return *rule_.get(); }
+  // Returns the field type for this ruleset.
+  AddressField field() const { return field_; }
 
-  // Adds and the |ruleset| for |sub_region|.
+  // Returns the region-wide rule for this ruleset in the default language of
+  // the country.
+  const Rule& rule() const { return *rule_; }
+
+  // Adds the |ruleset| for |sub_region|. A |sub_region| should be added at most
+  // once. The |ruleset| should not be NULL.
+  //
+  // The field of the |ruleset| parameter must be exactly one smaller than the
+  // field of this ruleset. For example, a COUNTRY ruleset can contain
+  // ADMIN_AREA rulesets, but should not contain COUNTRY or LOCALITY rulesets.
   void AddSubRegionRuleset(const std::string& sub_region,
                            scoped_ptr<Ruleset> ruleset);
 
-  // Adds a language-specific |rule| for |language_code| for this region.
+  // Adds a language-specific |rule| for |language_code| for this region. A
+  // |language_code| should be added at most once. The |rule| should not be
+  // NULL.
   void AddLanguageCodeRule(const std::string& language_code,
                            scoped_ptr<Rule> rule);
 
+  // Returns the set of rules for |sub_region|. The result is NULL if there's no
+  // such |sub_region|. The caller does not own the result.
+  Ruleset* GetSubRegionRuleset(const std::string& sub_region) const;
+
+  // If there's a language-specific rule for |language_code|, then returns this
+  // rule. Otherwise returns the rule in the default language of the country.
+  const Rule& GetLanguageCodeRule(const std::string& language_code) const;
+
  private:
+  // The field of this ruleset.
+  const AddressField field_;
+
   // The region-wide rule in the default language of the country.
-  scoped_ptr<const Rule> rule_;
+  const scoped_ptr<const Rule> rule_;
 
   // Owned rulesets for sub-regions.
   std::map<std::string, Ruleset*> sub_regions_;

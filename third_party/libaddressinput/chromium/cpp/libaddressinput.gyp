@@ -31,6 +31,7 @@
       'target_name': 'libaddressinput',
       'type': '<(component)',
       'sources': [
+        'src/address_data.cc',
         'src/address_field.cc',
         'src/address_problem.cc',
         'src/address_ui.cc',

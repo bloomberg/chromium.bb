@@ -143,11 +143,11 @@ void CountryRulesAggregator::OnDataReady(bool success,
     default_language_ = rule->GetLanguage();
     languages_ = rule->GetLanguages();
 
-    root_.reset(new Ruleset(rule.Pass()));
+    root_.reset(new Ruleset(request.level, rule.Pass()));
     ruleset = root_.get();
   } else {
     assert(request.parent != NULL);
-    ruleset = new Ruleset(rule.Pass());
+    ruleset = new Ruleset(request.level, rule.Pass());
     request.parent->AddSubRegionRuleset(
         request.id, scoped_ptr<Ruleset>(ruleset));
   }

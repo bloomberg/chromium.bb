@@ -71,8 +71,12 @@ TEST(RuleTest, CopyOverwritesRule) {
   EXPECT_NE(rule.GetPostalCodeFormat(), copy.GetPostalCodeFormat());
   EXPECT_NE(rule.GetAdminAreaNameMessageId(),
             copy.GetAdminAreaNameMessageId());
+  EXPECT_NE(rule.GetInvalidAdminAreaMessageId(),
+            copy.GetInvalidAdminAreaMessageId());
   EXPECT_NE(rule.GetPostalCodeNameMessageId(),
             copy.GetPostalCodeNameMessageId());
+  EXPECT_NE(rule.GetInvalidPostalCodeMessageId(),
+            copy.GetInvalidPostalCodeMessageId());
 
   copy.CopyFrom(rule);
   EXPECT_EQ(rule.GetFormat(), copy.GetFormat());
@@ -83,8 +87,12 @@ TEST(RuleTest, CopyOverwritesRule) {
   EXPECT_EQ(rule.GetPostalCodeFormat(), copy.GetPostalCodeFormat());
   EXPECT_EQ(rule.GetAdminAreaNameMessageId(),
             copy.GetAdminAreaNameMessageId());
+  EXPECT_EQ(rule.GetInvalidAdminAreaMessageId(),
+            copy.GetInvalidAdminAreaMessageId());
   EXPECT_EQ(rule.GetPostalCodeNameMessageId(),
             copy.GetPostalCodeNameMessageId());
+  EXPECT_EQ(rule.GetInvalidPostalCodeMessageId(),
+            copy.GetInvalidPostalCodeMessageId());
 }
 
 TEST(RuleTest, ParseOverwritesRule) {
@@ -108,8 +116,12 @@ TEST(RuleTest, ParseOverwritesRule) {
   EXPECT_FALSE(rule.GetPostalCodeFormat().empty());
   EXPECT_EQ(IDS_LIBADDRESSINPUT_I18N_AREA,
             rule.GetAdminAreaNameMessageId());
+  EXPECT_EQ(IDS_LIBADDRESSINPUT_I18N_INVALID_AREA,
+            rule.GetInvalidAdminAreaMessageId());
   EXPECT_EQ(IDS_LIBADDRESSINPUT_I18N_POSTAL_CODE_LABEL,
             rule.GetPostalCodeNameMessageId());
+  EXPECT_EQ(IDS_LIBADDRESSINPUT_I18N_INVALID_POSTAL_CODE_LABEL,
+            rule.GetInvalidPostalCodeMessageId());
 
   ASSERT_TRUE(rule.ParseSerializedRule(
       "{"
@@ -130,8 +142,12 @@ TEST(RuleTest, ParseOverwritesRule) {
   EXPECT_TRUE(rule.GetPostalCodeFormat().empty());
   EXPECT_EQ(IDS_LIBADDRESSINPUT_I18N_DO_SI,
             rule.GetAdminAreaNameMessageId());
+  EXPECT_EQ(IDS_LIBADDRESSINPUT_I18N_INVALID_DO_SI,
+            rule.GetInvalidAdminAreaMessageId());
   EXPECT_EQ(IDS_LIBADDRESSINPUT_I18N_ZIP_CODE_LABEL,
             rule.GetPostalCodeNameMessageId());
+  EXPECT_EQ(IDS_LIBADDRESSINPUT_I18N_INVALID_ZIP_CODE_LABEL,
+            rule.GetInvalidPostalCodeMessageId());
 }
 
 TEST(RuleTest, ParseEmptyDataDoesNotOverwriteRule) {
@@ -160,8 +176,12 @@ TEST(RuleTest, ParseEmptyDataDoesNotOverwriteRule) {
   EXPECT_EQ(rule.GetPostalCodeFormat(), copy.GetPostalCodeFormat());
   EXPECT_EQ(rule.GetAdminAreaNameMessageId(),
             copy.GetAdminAreaNameMessageId());
+  EXPECT_EQ(rule.GetInvalidAdminAreaMessageId(),
+            copy.GetInvalidAdminAreaMessageId());
   EXPECT_EQ(rule.GetPostalCodeNameMessageId(),
             copy.GetPostalCodeNameMessageId());
+  EXPECT_EQ(rule.GetInvalidPostalCodeMessageId(),
+            copy.GetInvalidPostalCodeMessageId());
 }
 
 TEST(RuleTest, ParseFormatWithNewLines) {
@@ -288,67 +308,93 @@ TEST(RuleTest, EmptyDictionaryIsValid) {
   EXPECT_TRUE(rule.ParseSerializedRule("{}"));
 }
 
+struct LabelData {
+  LabelData(const std::string& data, int name_id, int error_id)
+      : data(data), name_id(name_id), error_id(error_id) {}
+
+  ~LabelData() {}
+
+  std::string data;
+  int name_id;
+  int error_id;
+};
+
 // Tests for parsing the postal code name.
-class PostalCodeNameParseTest
-    : public testing::TestWithParam<std::pair<std::string, int> > {
+class PostalCodeNameParseTest : public testing::TestWithParam<LabelData> {
  protected:
   Rule rule_;
 };
 
 // Verifies that a postal code name is parsed correctly.
 TEST_P(PostalCodeNameParseTest, ParsedCorrectly) {
-  ASSERT_TRUE(rule_.ParseSerializedRule(GetParam().first));
-  EXPECT_EQ(GetParam().second, rule_.GetPostalCodeNameMessageId());
+  ASSERT_TRUE(rule_.ParseSerializedRule(GetParam().data));
+  EXPECT_EQ(GetParam().name_id, rule_.GetPostalCodeNameMessageId());
+  EXPECT_EQ(GetParam().error_id, rule_.GetInvalidPostalCodeMessageId());
+  EXPECT_EQ(GetParam().error_id, rule_.GetInvalidFieldMessageId(POSTAL_CODE));
 }
 
 // Test parsing all postal code names.
 INSTANTIATE_TEST_CASE_P(
     AllPostalCodeNames, PostalCodeNameParseTest,
     testing::Values(
-        std::make_pair("{\"zip_name_type\":\"postal\"}",
-                       IDS_LIBADDRESSINPUT_I18N_POSTAL_CODE_LABEL),
-        std::make_pair("{\"zip_name_type\":\"zip\"}",
-                       IDS_LIBADDRESSINPUT_I18N_ZIP_CODE_LABEL)));
+        LabelData("{\"zip_name_type\":\"postal\"}",
+                  IDS_LIBADDRESSINPUT_I18N_POSTAL_CODE_LABEL,
+                  IDS_LIBADDRESSINPUT_I18N_INVALID_POSTAL_CODE_LABEL),
+        LabelData("{\"zip_name_type\":\"zip\"}",
+                  IDS_LIBADDRESSINPUT_I18N_ZIP_CODE_LABEL,
+                  IDS_LIBADDRESSINPUT_I18N_INVALID_ZIP_CODE_LABEL)));
 
 // Tests for parsing the administrative area name.
-class AdminAreaNameParseTest
-    : public testing::TestWithParam<std::pair<std::string, int> > {
+class AdminAreaNameParseTest : public testing::TestWithParam<LabelData> {
  protected:
   Rule rule_;
 };
 
 // Verifies that an administrative area name is parsed correctly.
 TEST_P(AdminAreaNameParseTest, ParsedCorrectly) {
-  ASSERT_TRUE(rule_.ParseSerializedRule(GetParam().first));
-  EXPECT_EQ(GetParam().second, rule_.GetAdminAreaNameMessageId());
+  ASSERT_TRUE(rule_.ParseSerializedRule(GetParam().data));
+  EXPECT_EQ(GetParam().name_id, rule_.GetAdminAreaNameMessageId());
+  EXPECT_EQ(GetParam().error_id, rule_.GetInvalidAdminAreaMessageId());
+  EXPECT_EQ(GetParam().error_id, rule_.GetInvalidFieldMessageId(ADMIN_AREA));
 }
 
 // Test parsing all administrative area names.
 INSTANTIATE_TEST_CASE_P(
     AllAdminAreaNames, AdminAreaNameParseTest,
     testing::Values(
-        std::make_pair("{\"state_name_type\":\"area\"}",
-                       IDS_LIBADDRESSINPUT_I18N_AREA),
-        std::make_pair("{\"state_name_type\":\"county\"}",
-                       IDS_LIBADDRESSINPUT_I18N_COUNTY_LABEL),
-        std::make_pair("{\"state_name_type\":\"department\"}",
-                       IDS_LIBADDRESSINPUT_I18N_DEPARTMENT),
-        std::make_pair("{\"state_name_type\":\"district\"}",
-                       IDS_LIBADDRESSINPUT_I18N_DEPENDENT_LOCALITY_LABEL),
-        std::make_pair("{\"state_name_type\":\"do_si\"}",
-                       IDS_LIBADDRESSINPUT_I18N_DO_SI),
-        std::make_pair("{\"state_name_type\":\"emirate\"}",
-                       IDS_LIBADDRESSINPUT_I18N_EMIRATE),
-        std::make_pair("{\"state_name_type\":\"island\"}",
-                       IDS_LIBADDRESSINPUT_I18N_ISLAND),
-        std::make_pair("{\"state_name_type\":\"parish\"}",
-                       IDS_LIBADDRESSINPUT_I18N_PARISH),
-        std::make_pair("{\"state_name_type\":\"prefecture\"}",
-                       IDS_LIBADDRESSINPUT_I18N_PREFECTURE),
-        std::make_pair("{\"state_name_type\":\"province\"}",
-                       IDS_LIBADDRESSINPUT_I18N_PROVINCE),
-        std::make_pair("{\"state_name_type\":\"state\"}",
-                       IDS_LIBADDRESSINPUT_I18N_STATE_LABEL)));
+        LabelData("{\"state_name_type\":\"area\"}",
+                  IDS_LIBADDRESSINPUT_I18N_AREA,
+                  IDS_LIBADDRESSINPUT_I18N_INVALID_AREA),
+        LabelData("{\"state_name_type\":\"county\"}",
+                  IDS_LIBADDRESSINPUT_I18N_COUNTY_LABEL,
+                  IDS_LIBADDRESSINPUT_I18N_INVALID_COUNTY_LABEL),
+        LabelData("{\"state_name_type\":\"department\"}",
+                  IDS_LIBADDRESSINPUT_I18N_DEPARTMENT,
+                  IDS_LIBADDRESSINPUT_I18N_INVALID_DEPARTMENT),
+        LabelData("{\"state_name_type\":\"district\"}",
+                  IDS_LIBADDRESSINPUT_I18N_DEPENDENT_LOCALITY_LABEL,
+                  IDS_LIBADDRESSINPUT_I18N_INVALID_DEPENDENT_LOCALITY_LABEL),
+        LabelData("{\"state_name_type\":\"do_si\"}",
+                  IDS_LIBADDRESSINPUT_I18N_DO_SI,
+                  IDS_LIBADDRESSINPUT_I18N_INVALID_DO_SI),
+        LabelData("{\"state_name_type\":\"emirate\"}",
+                  IDS_LIBADDRESSINPUT_I18N_EMIRATE,
+                  IDS_LIBADDRESSINPUT_I18N_INVALID_EMIRATE),
+        LabelData("{\"state_name_type\":\"island\"}",
+                  IDS_LIBADDRESSINPUT_I18N_ISLAND,
+                  IDS_LIBADDRESSINPUT_I18N_INVALID_ISLAND),
+        LabelData("{\"state_name_type\":\"parish\"}",
+                  IDS_LIBADDRESSINPUT_I18N_PARISH,
+                  IDS_LIBADDRESSINPUT_I18N_INVALID_PARISH),
+        LabelData("{\"state_name_type\":\"prefecture\"}",
+                  IDS_LIBADDRESSINPUT_I18N_PREFECTURE,
+                  IDS_LIBADDRESSINPUT_I18N_INVALID_PREFECTURE),
+        LabelData("{\"state_name_type\":\"province\"}",
+                  IDS_LIBADDRESSINPUT_I18N_PROVINCE,
+                  IDS_LIBADDRESSINPUT_I18N_INVALID_PROVINCE),
+        LabelData("{\"state_name_type\":\"state\"}",
+                  IDS_LIBADDRESSINPUT_I18N_STATE_LABEL,
+                  IDS_LIBADDRESSINPUT_I18N_INVALID_STATE_LABEL)));
 
 // Tests for rule parsing.
 class RuleParseTest : public testing::TestWithParam<std::string> {

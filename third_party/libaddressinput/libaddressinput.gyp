@@ -68,6 +68,7 @@
         '<(libaddressinput_dir)/cpp/include/libaddressinput/util/internal/scoped_ptr.h',
         '<(libaddressinput_dir)/cpp/include/libaddressinput/util/internal/template_util.h',
         '<(libaddressinput_dir)/cpp/include/libaddressinput/util/scoped_ptr.h',
+        '<(libaddressinput_dir)/cpp/src/address_data.cc',
         '<(libaddressinput_dir)/cpp/src/address_field.cc',
         '<(libaddressinput_dir)/cpp/src/address_problem.cc',
         '<(libaddressinput_dir)/cpp/src/address_ui.cc',

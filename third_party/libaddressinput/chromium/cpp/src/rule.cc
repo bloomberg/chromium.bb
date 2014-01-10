@@ -111,49 +111,62 @@ void ParseAddressFieldsRequired(const std::string& required,
   }
 }
 
-int GetAdminAreaMessageId(const std::string& admin_area_type) {
+int GetAdminAreaMessageId(const std::string& admin_area_type, bool error) {
   if (admin_area_type == "area") {
-    return IDS_LIBADDRESSINPUT_I18N_AREA;
+    return error ? IDS_LIBADDRESSINPUT_I18N_INVALID_AREA
+                 : IDS_LIBADDRESSINPUT_I18N_AREA;
   }
   if (admin_area_type == "county") {
-    return IDS_LIBADDRESSINPUT_I18N_COUNTY_LABEL;
+    return error ? IDS_LIBADDRESSINPUT_I18N_INVALID_COUNTY_LABEL
+                 : IDS_LIBADDRESSINPUT_I18N_COUNTY_LABEL;
   }
   if (admin_area_type == "department") {
-    return IDS_LIBADDRESSINPUT_I18N_DEPARTMENT;
+    return error ? IDS_LIBADDRESSINPUT_I18N_INVALID_DEPARTMENT
+                 : IDS_LIBADDRESSINPUT_I18N_DEPARTMENT;
   }
   if (admin_area_type == "district") {
-    return IDS_LIBADDRESSINPUT_I18N_DEPENDENT_LOCALITY_LABEL;
+    return error ? IDS_LIBADDRESSINPUT_I18N_INVALID_DEPENDENT_LOCALITY_LABEL
+                 : IDS_LIBADDRESSINPUT_I18N_DEPENDENT_LOCALITY_LABEL;
   }
   if (admin_area_type == "do_si") {
-    return IDS_LIBADDRESSINPUT_I18N_DO_SI;
+    return error ? IDS_LIBADDRESSINPUT_I18N_INVALID_DO_SI
+                 : IDS_LIBADDRESSINPUT_I18N_DO_SI;
   }
   if (admin_area_type == "emirate") {
-    return IDS_LIBADDRESSINPUT_I18N_EMIRATE;
+    return error ? IDS_LIBADDRESSINPUT_I18N_INVALID_EMIRATE
+                 : IDS_LIBADDRESSINPUT_I18N_EMIRATE;
   }
   if (admin_area_type == "island") {
-    return IDS_LIBADDRESSINPUT_I18N_ISLAND;
+    return error ? IDS_LIBADDRESSINPUT_I18N_INVALID_ISLAND
+                 : IDS_LIBADDRESSINPUT_I18N_ISLAND;
   }
   if (admin_area_type == "parish") {
-    return IDS_LIBADDRESSINPUT_I18N_PARISH;
+    return error ? IDS_LIBADDRESSINPUT_I18N_INVALID_PARISH
+                 : IDS_LIBADDRESSINPUT_I18N_PARISH;
   }
   if (admin_area_type == "prefecture") {
-    return IDS_LIBADDRESSINPUT_I18N_PREFECTURE;
+    return error ? IDS_LIBADDRESSINPUT_I18N_INVALID_PREFECTURE
+                 : IDS_LIBADDRESSINPUT_I18N_PREFECTURE;
   }
   if (admin_area_type == "province") {
-    return IDS_LIBADDRESSINPUT_I18N_PROVINCE;
+    return error ? IDS_LIBADDRESSINPUT_I18N_INVALID_PROVINCE
+                 : IDS_LIBADDRESSINPUT_I18N_PROVINCE;
   }
   if (admin_area_type == "state") {
-    return IDS_LIBADDRESSINPUT_I18N_STATE_LABEL;
+    return error ? IDS_LIBADDRESSINPUT_I18N_INVALID_STATE_LABEL
+                 : IDS_LIBADDRESSINPUT_I18N_STATE_LABEL;
   }
   return INVALID_MESSAGE_ID;
 }
 
-int GetPostalCodeMessageId(const std::string& postal_code_type) {
+int GetPostalCodeMessageId(const std::string& postal_code_type, bool error) {
   if (postal_code_type == "postal") {
-    return IDS_LIBADDRESSINPUT_I18N_POSTAL_CODE_LABEL;
+    return error ? IDS_LIBADDRESSINPUT_I18N_INVALID_POSTAL_CODE_LABEL
+                 : IDS_LIBADDRESSINPUT_I18N_POSTAL_CODE_LABEL;
   }
   if (postal_code_type == "zip") {
-    return IDS_LIBADDRESSINPUT_I18N_ZIP_CODE_LABEL;
+    return error ? IDS_LIBADDRESSINPUT_I18N_INVALID_ZIP_CODE_LABEL
+                 : IDS_LIBADDRESSINPUT_I18N_ZIP_CODE_LABEL;
   }
   return INVALID_MESSAGE_ID;
 }
@@ -192,7 +205,9 @@ void Rule::CopyFrom(const Rule& rule) {
   language_ = rule.language_;
   postal_code_format_ = rule.postal_code_format_;
   admin_area_name_message_id_ = rule.admin_area_name_message_id_;
+  invalid_admin_area_message_id_ = rule.invalid_admin_area_message_id_;
   postal_code_name_message_id_ = rule.postal_code_name_message_id_;
+  invalid_postal_code_message_id_ = rule.invalid_postal_code_message_id_;
 }
 
 bool Rule::ParseSerializedRule(const std::string& serialized_rule) {
@@ -230,14 +245,31 @@ bool Rule::ParseSerializedRule(const std::string& serialized_rule) {
   }
 
   if (json->GetStringValueForKey("state_name_type", &value)) {
-    admin_area_name_message_id_ = GetAdminAreaMessageId(value);
+    admin_area_name_message_id_ = GetAdminAreaMessageId(value, false);
+    invalid_admin_area_message_id_ = GetAdminAreaMessageId(value, true);
   }
 
   if (json->GetStringValueForKey("zip_name_type", &value)) {
-    postal_code_name_message_id_ = GetPostalCodeMessageId(value);
+    postal_code_name_message_id_ = GetPostalCodeMessageId(value, false);
+    invalid_postal_code_message_id_ = GetPostalCodeMessageId(value, true);
   }
 
   return true;
+}
+
+int Rule::GetInvalidFieldMessageId(AddressField field) const {
+  switch (field) {
+    case ADMIN_AREA:
+      return invalid_admin_area_message_id_;
+    case LOCALITY:
+      return IDS_LIBADDRESSINPUT_I18N_INVALID_LOCALITY_LABEL;
+    case DEPENDENT_LOCALITY:
+      return IDS_LIBADDRESSINPUT_I18N_INVALID_DEPENDENT_LOCALITY_LABEL;
+    case POSTAL_CODE:
+      return invalid_postal_code_message_id_;
+    default:
+      return IDS_LIBADDRESSINPUT_I18N_INVALID_ENTRY;
+  }
 }
 
 }  // namespace addressinput
