@@ -136,6 +136,59 @@
       "smoothness": { "action": "wait", "seconds": 5 }
     },
     {
+      "url": "file://key_silk_cases/inbox_app.html?swipe_to_dismiss",
+      "navigate_steps" : [
+        { "action": "navigate" },
+        { "action": "wait", "seconds": 2 }
+      ],
+      "smoothness": {
+        "action": "swipe_to_dismiss"
+      },
+      "swipe_to_dismiss": [
+        {
+          "action": "swipe",
+          "element_function": "function(callback) { callback(document.getElementsByClassName('message')[2]); }",
+          "distance": 200,
+          "direction": "left",
+          "left_start_percentage": 0.8,
+          "top_start_percentage": 0.2,
+          "wait_after": {
+            "javascript": "document.getElementsByClassName('message').length < 18"
+          }
+        }
+      ]
+    },
+    {
+      "url": "file://key_silk_cases/inbox_app.html?stress_hidey_bars",
+      "navigate_steps" : [
+        { "action": "navigate" },
+        { "action": "wait", "seconds": 2 }
+      ],
+      "smoothness": {
+        "action": "stress_hidey_bars"
+      },
+      "stress_hidey_bars": [
+        {
+          "action": "scroll",
+          "scrollable_element_function": "function(callback) { callback(document.getElementById('messages')); }",
+          "direction": "down",
+          "speed": 200
+        },
+        {
+          "action": "scroll",
+          "scrollable_element_function": "function(callback) { callback(document.getElementById('messages')); }",
+          "direction": "up",
+          "speed": 200
+        },
+        {
+          "action": "scroll",
+          "scrollable_element_function": "function(callback) { callback(document.getElementById('messages')); }",
+          "direction": "down",
+          "speed": 200
+        }
+      ]
+    },
+    {
       "url": "file://key_silk_cases/inbox_app.html?toggle_drawer",
       "navigate_steps" : [
         { "action": "navigate" },
@@ -154,7 +207,7 @@
       ]
     },
     {
-      "url": "file://key_silk_cases/inbox_app.html?slide_drawer",
+      "url": "file://key_silk_cases/old_inbox_app.html?slide_drawer",
       "navigate_steps" : [
         { "action": "navigate" },
         { "action": "wait", "seconds": 2 }

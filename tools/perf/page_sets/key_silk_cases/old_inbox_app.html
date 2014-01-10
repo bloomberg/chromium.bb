@@ -91,14 +91,6 @@ Polymer={},"function"==typeof window.Polymer&&(Polymer={}),function(a){function 
 
 (function(exports) {
 
-function sign(number) {
-    if (number < 0)
-        return -1;
-    if (number > 0)
-        return 1;
-    return 0;
-}
-
 function Animator(delegate) {
     this.delegate = delegate;
     this.startTimeStamp = 0;
@@ -571,39 +563,8 @@ DismissController.prototype.onAnimation = function(timeStamp) {
     return false;
 };
 
-function ScrollAreaToolbarController(options) {
-    this.moveCallback = options.onMove;
-    this.target = options.target;
-    this.scrollArea = options.scrollArea;
-
-    this.scrollArea.addEventListener("scroll", this.onScroll.bind(this));
-    this.scrollBase = 0;
-    this.previousScrollTop = 0;
-};
-
-ScrollAreaToolbarController.prototype.restrictToBounds = function(position) {
-    return Math.min(Math.max(position, 0), this.height);
-};
-
-ScrollAreaToolbarController.prototype.onScroll = function(e) {
-    if (!this.height)
-        this.height = this.target.offsetHeight;
-
-    var scrollTop = this.scrollArea.scrollTop;
-    var scrollDelta = scrollTop - this.scrollBase;
-    var scrollDeltaFromPrevious = scrollTop - this.previousScrollTop;
-    this.previousScrollTop = scrollTop;
-    var position = this.restrictToBounds(scrollDelta, 0);
-
-    if (sign(scrollDelta) != sign(scrollDeltaFromPrevious))
-        this.scrollBase = scrollTop - position;
-
-    this.moveCallback.call(this.target, position);
-};
-
 exports.DrawerController = DrawerController;
 exports.DismissController = DismissController;
-exports.ScrollAreaToolbarController = ScrollAreaToolbarController;
 
 })(window);
 </script>
@@ -642,14 +603,11 @@ body {
     <style>
       :host {
         position: relative;
-        overflow: hidden;
+        overflow-x: hidden;
+        overflow-y: auto;
         display: flex;
         flex-direction: column;
         flex: 1;
-        flex-shrink: 0;
-      }
-      :host([scrollable]) {
-        overflow-y: auto;
       }
     </style>
     <content></content>
@@ -684,7 +642,7 @@ body {
         -webkit-transform: translate3d(0,0,0);
       }
     </style>
-    <div id="mask" on-tap="{{ toggle }}"></div>
+    <div id="mask"></div>
     <div id="content">
       <content></content>
     </div>
@@ -749,50 +707,6 @@ body {
             onDismiss: function(direction) {
               this.remove();
             },
-        });
-      },
-    });
-  </script>
-</polymer-element>
-<polymer-element name="app-scrollarea-toolbar" attributes="location for" assetpath="/">
-  <template>
-    <style>
-      :host {
-        display: block;
-        position: absolute;
-        left: 0;
-        right: 0;
-        -webkit-transform: translate3d(0,0,0);
-        flex-shrink: 0;
-      }
-    </style>
-    <content></content>
-  </template>
-  <script>
-    function findParentTreeScope(node) {
-      while(node.parentNode)
-        node = node.parentNode;
-      return node;
-    }
-
-    Polymer('app-scrollarea-toolbar', {
-      'for': null,
-      location: 'top',
-      enteredView: function() {
-        if (this.location == 'top')
-          this.style.top = 0;
-        else
-          this.style.bottom = 0;
-
-        var scrollArea = findParentTreeScope(this).getElementById(this['for']);
-
-        this.controller = new ScrollAreaToolbarController({
-          target: this,
-          scrollArea: scrollArea,
-          onMove: function(position) {
-            var translateY = this.location == 'top' ? -position : position;
-            this.style.WebkitTransform = 'translate3d(0,' + translateY +'px,0)';
-          },
         });
       },
     });
@@ -2694,7 +2608,7 @@ polymer-ui-icon {
         background-color: white;
         border-bottom: 1px solid lightgray;
       }
-      #messages {
+      .messages {
         background-color: darkgrey;
       }
     </style>
@@ -2708,40 +2622,6 @@ polymer-ui-icon {
         <polymer-ui-icon-button icon="add"></polymer-ui-icon-button>
       </polymer-ui-toolbar>
       <app-column>
-        <app-column id="messages" scrollable="">
-          <app-dismissable-item class="message">Lorem ipsum 1</app-dismissable-item>
-          <app-dismissable-item class="message">Lorem ipsum 2</app-dismissable-item>
-          <app-dismissable-item class="message">Lorem ipsum 3</app-dismissable-item>
-          <app-dismissable-item class="message">Lorem ipsum 4</app-dismissable-item>
-          <app-dismissable-item class="message">Lorem ipsum 5</app-dismissable-item>
-          <app-dismissable-item class="message">Lorem ipsum 6</app-dismissable-item>
-          <app-dismissable-item class="message">Lorem ipsum 7</app-dismissable-item>
-          <app-dismissable-item class="message">Lorem ipsum 8</app-dismissable-item>
-          <app-dismissable-item class="message">Lorem ipsum 9</app-dismissable-item>
-          <app-dismissable-item class="message">Lorem ipsum 10</app-dismissable-item>
-          <app-dismissable-item class="message">Lorem ipsum 11</app-dismissable-item>
-          <app-dismissable-item class="message">Lorem ipsum 12</app-dismissable-item>
-          <app-dismissable-item class="message">Lorem ipsum 13</app-dismissable-item>
-          <app-dismissable-item class="message">Lorem ipsum 14</app-dismissable-item>
-          <app-dismissable-item class="message">Lorem ipsum 15</app-dismissable-item>
-          <app-dismissable-item class="message">Lorem ipsum 16</app-dismissable-item>
-          <app-dismissable-item class="message">Lorem ipsum 17</app-dismissable-item>
-          <app-dismissable-item class="message">Lorem ipsum 18</app-dismissable-item>
-        </app-column>
-        <app-scrollarea-toolbar for="messages">
-          <polymer-ui-toolbar theme="polymer-ui-dark-theme">
-            <polymer-ui-icon-button icon="add" flex=""></polymer-ui-icon-button>
-            <polymer-ui-icon-button icon="sort" flex=""></polymer-ui-icon-button>
-            <polymer-ui-icon-button icon="gplus" flex=""></polymer-ui-icon-button>
-          </polymer-ui-toolbar>
-        </app-scrollarea-toolbar>
-        <app-scrollarea-toolbar for="messages" location="bottom">
-          <polymer-ui-toolbar theme="polymer-ui-dark-theme">
-            <polymer-ui-icon-button icon="add" flex=""></polymer-ui-icon-button>
-            <polymer-ui-icon-button icon="sort" flex=""></polymer-ui-icon-button>
-            <polymer-ui-icon-button icon="gplus" flex=""></polymer-ui-icon-button>
-          </polymer-ui-toolbar>
-        </app-scrollarea-toolbar>
         <app-drawer id="nav-drawer">
           <polymer-ui-menu selected="0" theme="polymer-ui-light-theme" active="false">
             <polymer-ui-menu-item icon="settings" label="Settings"></polymer-ui-menu-item>
@@ -2777,7 +2657,10 @@ polymer-ui-icon {
       </app-column>
     </app-frame>
     <script>
-      // document.addEventListener('WebComponentsReady', function() {
+      document.addEventListener('WebComponentsReady', function() {
+        document.getElementById('nav-drawer').toggle();
+      });
+
       document.getElementById('menu-button').addEventListener('click', function() {
         document.getElementById('nav-drawer').toggle();
       });
