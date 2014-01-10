@@ -111,6 +111,7 @@ bool IsSharedByGroup(int col_id) {
     case IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN:
     case IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN:
     case IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN:
+    case IDS_TASK_MANAGER_NACL_DEBUG_STUB_PORT_COLUMN:
       return true;
     default:
       return false;
@@ -188,7 +189,9 @@ class TaskManagerModelGpuDataManagerObserver
 };
 
 TaskManagerModel::PerResourceValues::PerResourceValues()
-    : is_title_valid(false),
+    : is_nacl_debug_stub_port_valid(false),
+      nacl_debug_stub_port(0),
+      is_title_valid(false),
       is_profile_name_valid(false),
       network_usage(0),
       is_process_id_valid(false),
@@ -278,6 +281,15 @@ int TaskManagerModel::ResourceCount() const {
 
 int TaskManagerModel::GroupCount() const {
   return group_map_.size();
+}
+
+int TaskManagerModel::GetNaClDebugStubPort(int index) const {
+  PerResourceValues& values(GetPerResourceValues(index));
+  if (!values.is_nacl_debug_stub_port_valid) {
+    values.is_nacl_debug_stub_port_valid = true;
+    values.nacl_debug_stub_port = GetResource(index)->GetNaClDebugStubPort();
+  }
+  return values.nacl_debug_stub_port;
 }
 
 int64 TaskManagerModel::GetNetworkUsage(int index) const {
@@ -373,6 +385,9 @@ base::string16 TaskManagerModel::GetResourceById(int index, int col_id) const {
     case IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN:
       return GetResourceV8MemoryAllocatedSize(index);
 
+    case IDS_TASK_MANAGER_NACL_DEBUG_STUB_PORT_COLUMN:
+      return GetResourceNaClDebugStubPort(index);
+
     default:
       NOTREACHED();
       return base::string16();
@@ -396,6 +411,15 @@ const base::string16& TaskManagerModel::GetResourceProfileName(
     values.profile_name = GetResource(index)->GetProfileName();
   }
   return values.profile_name;
+}
+
+base::string16 TaskManagerModel::GetResourceNaClDebugStubPort(int index) const {
+  int port = GetNaClDebugStubPort(index);
+  if (port == 0) {
+    return base::ASCIIToUTF16("N/A");
+  } else {
+    return base::IntToString16(port);
+  }
 }
 
 base::string16 TaskManagerModel::GetResourceNetworkUsage(int index) const {
@@ -847,6 +871,10 @@ int TaskManagerModel::CompareValues(int row1, int row2, int col_id) const {
     case IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN:
       return ValueCompareMember(
           this, &TaskManagerModel::GetPhysicalMemory, row1, row2);
+
+    case IDS_TASK_MANAGER_NACL_DEBUG_STUB_PORT_COLUMN:
+      return ValueCompare(GetNaClDebugStubPort(row1),
+                          GetNaClDebugStubPort(row2));
 
     case IDS_TASK_MANAGER_PROCESS_ID_COLUMN:
       return ValueCompare(GetProcessId(row1), GetProcessId(row2));

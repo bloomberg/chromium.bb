@@ -3451,6 +3451,9 @@ Make sure you do not expose any sensitive information.
         <message name="IDS_TASK_MANAGER_TASK_COLUMN" desc="The text of the task column">
           Task
         </message>
+        <message name="IDS_TASK_MANAGER_NACL_DEBUG_STUB_PORT_COLUMN" desc="The text of the NativeClient debug stub port column">
+          NaCl Debug Port
+        </message>
         <message name="IDS_TASK_MANAGER_NET_COLUMN" desc="The text of the network usage column">
           Network
         </message>
@@ -3515,6 +3518,9 @@ Make sure you do not expose any sensitive information.
         </message>
         <message name="IDS_TASK_MANAGER_USER_HANDLES_COLUMN" desc="The title for Task Manager USER handles column.">
           USER Handles
+        </message>
+        <message name="IDS_TASK_MANAGER_NACL_DEBUG_STUB_PORT_COLUMN" desc="The text of the NativeClient debug stub port column">
+          NaCl Debug Port
         </message>
         <message name="IDS_TASK_MANAGER_TASK_COLUMN" desc="The text of the task column">
           Task

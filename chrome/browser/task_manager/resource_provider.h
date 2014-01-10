@@ -80,6 +80,8 @@ class Resource {
   virtual size_t GetV8MemoryAllocated() const;
   virtual size_t GetV8MemoryUsed() const;
 
+  virtual int GetNaClDebugStubPort() const;
+
   // Returns true if this resource can be inspected using developer tools.
   virtual bool CanInspect() const;
 

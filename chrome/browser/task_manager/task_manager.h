@@ -153,6 +153,7 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   int GroupCount() const;
 
   // Methods to return raw resource information.
+  int GetNaClDebugStubPort(int index) const;
   int64 GetNetworkUsage(int index) const;
   double GetCPUUsage(int index) const;
   base::ProcessId GetProcessId(int index) const;
@@ -169,6 +170,7 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   // Methods to return formatted resource information.
   const base::string16& GetResourceTitle(int index) const;
   const base::string16& GetResourceProfileName(int index) const;
+  base::string16 GetResourceNaClDebugStubPort(int index) const;
   base::string16 GetResourceNetworkUsage(int index) const;
   base::string16 GetResourceCPUUsage(int index) const;
   base::string16 GetResourcePrivateMemory(int index) const;
@@ -357,6 +359,9 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   struct PerResourceValues {
     PerResourceValues();
     ~PerResourceValues();
+
+    bool is_nacl_debug_stub_port_valid;
+    int nacl_debug_stub_port;
 
     bool is_title_valid;
     base::string16 title;

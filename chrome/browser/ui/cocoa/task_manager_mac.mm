@@ -62,6 +62,8 @@ const struct ColumnWidth {
       arraysize("800 kB") * kCharWidth, -1 },
   { IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN,
       arraysize("2000.0K (2000.0 live)") * kCharWidth, -1 },
+  { IDS_TASK_MANAGER_NACL_DEBUG_STUB_PORT_COLUMN,
+      arraysize("32767") * kCharWidth, -1 },
   { IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN,
       arraysize("15 ") * kCharWidth, -1 },
 };
@@ -303,6 +305,8 @@ class SortHelper {
   [self addColumnWithId:IDS_TASK_MANAGER_VIDEO_MEMORY_COLUMN visible:NO];
   [self addColumnWithId:IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN visible:NO];
   [self addColumnWithId:IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN
+                visible:NO];
+  [self addColumnWithId:IDS_TASK_MANAGER_NACL_DEBUG_STUB_PORT_COLUMN
                 visible:NO];
   [self addColumnWithId:IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN visible:NO];
 }

@@ -70,6 +70,7 @@ enum TaskManagerColumn {
   kTaskManagerVideoMemory,
   kTaskManagerFPS,
   kTaskManagerSqliteMemoryUsed,
+  kTaskManagerNaClDebugStubPort,
   kTaskManagerGoatsTeleported,
   kTaskManagerColumnCount,
 };
@@ -107,6 +108,8 @@ TaskManagerColumn TaskManagerResourceIDToColumnID(int id) {
       return kTaskManagerFPS;
     case IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN:
       return kTaskManagerSqliteMemoryUsed;
+    case IDS_TASK_MANAGER_NACL_DEBUG_STUB_PORT_COLUMN:
+      return kTaskManagerNaClDebugStubPort;
     case IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN:
       return kTaskManagerGoatsTeleported;
     default:
@@ -145,6 +148,8 @@ int TaskManagerColumnIDToResourceID(int id) {
       return IDS_TASK_MANAGER_FPS_COLUMN;
     case kTaskManagerSqliteMemoryUsed:
       return IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN;
+    case kTaskManagerNaClDebugStubPort:
+      return IDS_TASK_MANAGER_NACL_DEBUG_STUB_PORT_COLUMN;
     case kTaskManagerGoatsTeleported:
       return IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN;
     default:
@@ -565,7 +570,7 @@ void TaskManagerGtk::CreateTaskManagerTreeview() {
       GDK_TYPE_PIXBUF, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
       G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
       G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-      G_TYPE_STRING, G_TYPE_STRING);
+      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 
   // Support sorting on all columns.
   process_list_sort_ = gtk_tree_model_sort_new_with_model(
@@ -613,6 +618,9 @@ void TaskManagerGtk::CreateTaskManagerTreeview() {
                                   kTaskManagerSqliteMemoryUsed,
                                   CompareSqliteMemoryUsed, this, NULL);
   gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(process_list_sort_),
+                                  kTaskManagerNaClDebugStubPort,
+                                  CompareNaClDebugStubPort, this, NULL);
+  gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(process_list_sort_),
                                   kTaskManagerGoatsTeleported,
                                   CompareGoatsTeleported, this, NULL);
   treeview_ = gtk_tree_view_new_with_model(process_list_sort_);
@@ -634,6 +642,7 @@ void TaskManagerGtk::CreateTaskManagerTreeview() {
   TreeViewInsertColumn(treeview_, IDS_TASK_MANAGER_VIDEO_MEMORY_COLUMN);
   TreeViewInsertColumn(treeview_, IDS_TASK_MANAGER_FPS_COLUMN);
   TreeViewInsertColumn(treeview_, IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN);
+  TreeViewInsertColumn(treeview_, IDS_TASK_MANAGER_NACL_DEBUG_STUB_PORT_COLUMN);
   TreeViewInsertColumn(treeview_, IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN);
 
   // Hide some columns by default.
@@ -645,6 +654,7 @@ void TaskManagerGtk::CreateTaskManagerTreeview() {
   TreeViewColumnSetVisible(treeview_, kTaskManagerWebCoreCssCache, false);
   TreeViewColumnSetVisible(treeview_, kTaskManagerVideoMemory, false);
   TreeViewColumnSetVisible(treeview_, kTaskManagerSqliteMemoryUsed, false);
+  TreeViewColumnSetVisible(treeview_, kTaskManagerNaClDebugStubPort, false);
   TreeViewColumnSetVisible(treeview_, kTaskManagerGoatsTeleported, false);
 
   g_object_unref(process_list_);
@@ -713,6 +723,11 @@ void TaskManagerGtk::SetRowDataFromModel(int row, GtkTreeIter* iter) {
     sqlite_memory =
         GetModelText(row, IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN);
   }
+  std::string nacl_debug_stub_port;
+  if (TreeViewColumnIsVisible(treeview_, kTaskManagerNaClDebugStubPort)) {
+    nacl_debug_stub_port =
+        GetModelText(row, IDS_TASK_MANAGER_NACL_DEBUG_STUB_PORT_COLUMN);
+  }
 
   std::string goats =
       GetModelText(row, IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN);
@@ -733,6 +748,8 @@ void TaskManagerGtk::SetRowDataFromModel(int row, GtkTreeIter* iter) {
                      kTaskManagerVideoMemory, video_memory.c_str(),
                      kTaskManagerFPS, fps.c_str(),
                      kTaskManagerSqliteMemoryUsed, sqlite_memory.c_str(),
+                     kTaskManagerNaClDebugStubPort,
+                     nacl_debug_stub_port.c_str(),
                      kTaskManagerGoatsTeleported, goats.c_str(),
                      -1);
   g_object_unref(icon);

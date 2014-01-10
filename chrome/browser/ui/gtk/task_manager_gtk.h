@@ -204,6 +204,13 @@ class TaskManagerGtk : public TaskManagerModelObserver {
         CompareImpl(model, a, b, IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN);
   }
 
+  // NaCl Debug Stub Port sorting callback.
+  static gint CompareNaClDebugStubPort(GtkTreeModel* model, GtkTreeIter* a,
+                                       GtkTreeIter* b, gpointer task_manager) {
+    return reinterpret_cast<TaskManagerGtk*>(task_manager)->
+        CompareImpl(model, a, b, IDS_TASK_MANAGER_NACL_DEBUG_STUB_PORT_COLUMN);
+  }
+
   // Goats Teleported sorting callback.
   static gint CompareGoatsTeleported(GtkTreeModel* model, GtkTreeIter* a,
                                      GtkTreeIter* b, gpointer task_manager) {

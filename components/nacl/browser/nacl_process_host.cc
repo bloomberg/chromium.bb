@@ -667,26 +667,33 @@ void NaClProcessHost::SendMessageToRenderer(
 }
 
 // TCP port we chose for NaCl debug stub. It can be any other number.
-static const int kDebugStubPort = 4014;
+static const int kInitialDebugStubPort = 4014;
 
 #if defined(OS_POSIX)
 net::SocketDescriptor NaClProcessHost::GetDebugStubSocketHandle() {
   NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
   net::SocketDescriptor s = net::kInvalidSocket;
-  // We allocate currently unused TCP port for debug stub tests. The port
-  // number is passed to the test via debug stub port listener.
-  if (nacl_browser->HasGdbDebugStubPortListener()) {
-    int port;
+  // We always try to allocate the default port first. If this fails, we then
+  // allocate any available port.
+  // On success, if the test system has register a handler
+  // (GdbDebugStubPortListener), we fire a notification.
+  int port = kInitialDebugStubPort;
+  s = net::TCPListenSocket::CreateAndBind("127.0.0.1", port);
+  if (s == net::kInvalidSocket) {
     s = net::TCPListenSocket::CreateAndBindAnyPort("127.0.0.1", &port);
-    if (s != net::kInvalidSocket) {
+  }
+  if (s != net::kInvalidSocket) {
+    if (nacl_browser->HasGdbDebugStubPortListener()) {
       nacl_browser->FireGdbDebugStubPortOpened(port);
     }
-  } else {
-    s = net::TCPListenSocket::CreateAndBind("127.0.0.1", kDebugStubPort);
   }
+  // Set debug stub port on the process object.
+  process_->SetNaClDebugStubPort(port);
   if (s == net::kInvalidSocket) {
     LOG(ERROR) << "failed to open socket for debug stub";
     return net::kInvalidSocket;
+  } else {
+    LOG(WARNING) << "debug stub on port " << port;
   }
   if (listen(s, 1)) {
     LOG(ERROR) << "listen() failed on debug stub socket";
