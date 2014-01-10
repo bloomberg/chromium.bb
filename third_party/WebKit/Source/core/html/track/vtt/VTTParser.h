@@ -95,7 +95,7 @@ public:
     }
     static unsigned collectDigitsToInt(const String& input, unsigned* position, int& number);
     static String collectWord(const String&, unsigned*);
-    static bool collectTimeStamp(const String&, unsigned*, double& timeStamp);
+    static bool collectTimeStamp(const String&, double& timeStamp);
 
     // Useful functions for parsing percentage settings.
     static bool parseFloatPercentageValue(const String&, float&);

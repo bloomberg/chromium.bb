@@ -440,9 +440,9 @@ void VTTParser::createNewRegion(const String& headerValue)
     m_regionList.append(region);
 }
 
-bool VTTParser::collectTimeStamp(const String& line, unsigned* position, double& timeStamp)
+bool VTTParser::collectTimeStamp(const String& line, double& timeStamp)
 {
-    VTTLegacyScanner input(line, position);
+    VTTScanner input(line);
     return collectTimeStamp(input, timeStamp);
 }
 
@@ -583,10 +583,9 @@ void VTTTreeBuilder::constructTreeFromToken(Document& document)
         break;
     }
     case VTTTokenTypes::TimestampTag: {
-        unsigned position = 0;
         String charactersString = m_token.characters();
         double parsedTimeStamp;
-        if (VTTParser::collectTimeStamp(charactersString, &position, parsedTimeStamp))
+        if (VTTParser::collectTimeStamp(charactersString, parsedTimeStamp))
             m_currentNode->parserAppendChild(ProcessingInstruction::create(document, "timestamp", charactersString));
         break;
     }

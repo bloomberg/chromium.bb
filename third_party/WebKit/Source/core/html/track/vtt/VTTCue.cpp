@@ -675,10 +675,8 @@ void VTTCue::markFutureAndPastNodes(ContainerNode* root, double previousTimestam
 
     for (Node* child = root->firstChild(); child; child = NodeTraversal::next(*child, root)) {
         if (child->nodeName() == timestampTag) {
-            unsigned position = 0;
-            String timestamp = child->nodeValue();
             double currentTimestamp;
-            bool check = VTTParser::collectTimeStamp(timestamp, &position, currentTimestamp);
+            bool check = VTTParser::collectTimeStamp(child->nodeValue(), currentTimestamp);
             ASSERT_UNUSED(check, check);
 
             if (currentTimestamp > movieTime)
