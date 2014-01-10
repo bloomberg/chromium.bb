@@ -1744,9 +1744,13 @@ class BranchUtilStage(bs.BuilderStage):
     Args:
       checkout: A dictionary of checkout manifest attributes.
       src_ref: The source local ref to push to the remote.
-      dest_ref: The destination ref name.
+      dest_ref: The local remote ref that correspond to destination ref name.
       force: Whether to override non-fastforward checks.
     """
+    # Convert local tracking ref to refs/heads/* on a remote:
+    # refs/remotes/<remote name>/<branch> to refs/heads/<branch>.
+    # If dest_ref is already refs/heads/<branch> it's a noop.
+    dest_ref = git.NormalizeRef(git.StripRefs(dest_ref))
     push_to = git.RemoteRef(checkout['push_remote'], dest_ref)
     git.GitPush(checkout['local_path'], src_ref, push_to, dryrun=self.dryrun,
                 force=force)

@@ -2402,15 +2402,18 @@ class BranchUtilStageTest(AbstractStageTest, cros_test_lib.LoggingTestCase):
       delete: If set, |new_branch| is being deleted.
     """
     # Pushes all operate on remote branch refs.
-    new_branch = git.NormalizeRemoteRef('cros', new_branch)
+    new_branch = git.NormalizeRef(new_branch)
 
     # Calculate source and destination revisions.
     suffixes = ['', '-new-special-branch', '-old-special-branch']
     if delete:
       src_revs = [''] * len(suffixes)
     elif rename_from is not None:
-      rename_from = git.NormalizeRemoteRef('cros', rename_from)
-      src_revs = ['%s%s' % (rename_from, suffix) for suffix in suffixes]
+      rename_from = git.NormalizeRef(rename_from)
+      rename_from_tracking = git.NormalizeRemoteRef('cros', rename_from)
+      src_revs = [
+          '%s%s' % (rename_from_tracking, suffix) for suffix in suffixes
+      ]
     else:
       src_revs = [CHROMITE_REVISION, SPECIAL_REVISION1, SPECIAL_REVISION2]
     dest_revs = ['%s%s' % (new_branch, suffix) for suffix in suffixes]
@@ -2420,7 +2423,7 @@ class BranchUtilStageTest(AbstractStageTest, cros_test_lib.LoggingTestCase):
       cmd = ['push', '%s:%s' % (src_rev, dest_rev)]
       self.rc_mock.assertCommandContains(cmd)
       if rename_from is not None:
-        cmd = ['push', ':%s' % (src_rev,)]
+        cmd = ['push', ':%s' % (rename_from,)]
         self.rc_mock.assertCommandContains(cmd)
 
   def testRelease(self):
