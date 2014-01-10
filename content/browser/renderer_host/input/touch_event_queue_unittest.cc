@@ -35,6 +35,7 @@ class TouchEventQueueTest : public testing::Test,
   // testing::Test
   virtual void SetUp() OVERRIDE {
     queue_.reset(new TouchEventQueue(this));
+    queue_->OnHasTouchEventHandlers(true);
   }
 
   virtual void TearDown() OVERRIDE {
@@ -145,16 +146,14 @@ class TouchEventQueueTest : public testing::Test,
     return queue_->IsPendingAckTouchStart();
   }
 
-  void Flush() {
-    queue_->FlushQueue();
-  }
-
-  void SetEnableTouchForwarding(bool enabled) {
-    queue_->no_touch_to_renderer_ = !enabled;
+  void OnHasTouchEventHandlers(bool has_handlers) {
+    queue_->OnHasTouchEventHandlers(has_handlers);
   }
 
   bool WillForwardTouchEvents() {
-    return !queue_->no_touch_to_renderer_ && !queue_->HasTimeoutEvent();
+    return queue_->has_handlers_ &&
+           !queue_->scroll_in_progress_ &&
+           !queue_->HasTimeoutEvent();
   }
 
   bool IsTimeoutRunning() {
@@ -179,14 +178,6 @@ class TouchEventQueueTest : public testing::Test,
 
   InputEventAckState acked_event_state() const {
     return last_acked_event_state_;
-  }
-
-  void set_no_touch_to_renderer(bool no_touch) {
-    queue_->no_touch_to_renderer_ = no_touch;
-  }
-
-  bool no_touch_to_renderer() const {
-    return queue_->no_touch_to_renderer_;
   }
 
  private:
@@ -237,8 +228,8 @@ TEST_F(TouchEventQueueTest, Basic) {
 
 // Tests that the touch-queue is emptied if a page stops listening for touch
 // events.
-TEST_F(TouchEventQueueTest, Flush) {
-  Flush();
+TEST_F(TouchEventQueueTest, QueueFlushedWhenHandlersRemoved) {
+  OnHasTouchEventHandlers(true);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_EQ(0U, GetAndResetSentEventCount());
 
@@ -267,10 +258,56 @@ TEST_F(TouchEventQueueTest, Flush) {
 
   // Flush the queue. The touch-event queue should now be emptied, but none of
   // the queued touch-events should be sent to the renderer.
-  Flush();
+  OnHasTouchEventHandlers(false);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(31U, GetAndResetAckedEventCount());
+}
+
+// Tests that removal of a touch handler during a touch sequence will prevent
+// the remaining sequence from being forwarded, even if another touch handler is
+// registered during the same touch sequence.
+TEST_F(TouchEventQueueTest, ActiveSequenceDroppedWhenHandlersRemoved) {
+  // Send a touch-press event.
+  PressTouchPoint(1, 1);
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, queued_event_count());
+
+  // Queue a touch-move event.
+  MoveTouchPoint(0, 5, 5);
+  EXPECT_EQ(2U, queued_event_count());
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
+  EXPECT_EQ(0U, GetAndResetSentEventCount());
+
+  // Touch handle deregistration should flush the queue.
+  OnHasTouchEventHandlers(false);
+  EXPECT_EQ(2U, GetAndResetAckedEventCount());
+  EXPECT_EQ(0U, queued_event_count());
+
+  // The ack should be ignored as the touch queue is now empty.
+  SendTouchEventACK(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
+  EXPECT_EQ(0U, queued_event_count());
+
+  // Events should be dropped while there is no touch handler.
+  MoveTouchPoint(0, 10, 10);
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  EXPECT_EQ(0U, GetAndResetSentEventCount());
+
+  // Simulate touch handler registration in the middle of a touch sequence.
+  OnHasTouchEventHandlers(true);
+
+  // The touch end for the interrupted sequence should be dropped.
+  ReleaseTouchPoint(0);
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  EXPECT_EQ(0U, GetAndResetSentEventCount());
+
+  // A new touch sequence should be forwarded properly.
+  PressTouchPoint(1, 1);
+  EXPECT_EQ(1U, queued_event_count());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
 }
 
 // Tests that touch-events are coalesced properly in the queue.
@@ -393,7 +430,7 @@ TEST_F(TouchEventQueueTest, AckAfterQueueFlushed) {
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, queued_event_count());
 
-  Flush();
+  OnHasTouchEventHandlers(false);
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(0U, queued_event_count());
 
@@ -685,7 +722,7 @@ TEST_F(TouchEventQueueTest, ImmediateAckWithFollowupEvents) {
 // Tests basic TouchEvent forwarding suppression.
 TEST_F(TouchEventQueueTest, NoTouchBasic) {
   // Disable TouchEvent forwarding.
-  SetEnableTouchForwarding(false);
+  OnHasTouchEventHandlers(false);
   MoveTouchPoint(0, 30, 5);
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
@@ -706,7 +743,7 @@ TEST_F(TouchEventQueueTest, NoTouchBasic) {
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
   // Enable TouchEvent forwarding.
-  SetEnableTouchForwarding(true);
+  OnHasTouchEventHandlers(true);
 
   PressTouchPoint(80, 10);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
@@ -974,6 +1011,19 @@ TEST_F(TouchEventQueueTest, NoTouchTimeoutIfAckIsSynchronous) {
   SetSyncAckResult(INPUT_EVENT_ACK_STATE_CONSUMED);
   ASSERT_FALSE(IsTimeoutRunning());
   PressTouchPoint(0, 1);
+  EXPECT_FALSE(IsTimeoutRunning());
+}
+
+// Tests that the timeout is disabled if the touch handler disappears.
+TEST_F(TouchEventQueueTest, TouchTimeoutStoppedIfTouchHandlerRemoved) {
+  SetUpForTimeoutTesting(kDefaultTouchTimeoutDelayMs);
+
+  // Queue a TouchStart.
+  PressTouchPoint(0, 1);
+  ASSERT_TRUE(IsTimeoutRunning());
+
+  // Unload the touch handler.
+  OnHasTouchEventHandlers(false);
   EXPECT_FALSE(IsTimeoutRunning());
 }
 

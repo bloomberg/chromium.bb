@@ -100,7 +100,6 @@ InputRouterImpl::InputRouterImpl(IPC::Sender* sender,
       move_caret_pending_(false),
       mouse_move_pending_(false),
       mouse_wheel_pending_(false),
-      has_touch_handler_(false),
       touch_ack_timeout_enabled_(false),
       touch_ack_timeout_delay_ms_(std::numeric_limits<size_t>::max()),
       current_ack_source_(ACK_SOURCE_NONE),
@@ -259,11 +258,8 @@ const NativeWebKeyboardEvent* InputRouterImpl::GetLastKeyboardEvent() const {
 }
 
 bool InputRouterImpl::ShouldForwardTouchEvent() const {
-  // Always send a touch event if the renderer has a touch-event handler. It is
-  // possible that a renderer stops listening to touch-events while there are
-  // still events in the touch-queue. In such cases, the new events should still
-  // get into the queue.
-  return has_touch_handler_ || !touch_event_queue_->empty();
+  // Always send a touch event if the renderer has a touch-event handler.
+  return touch_event_queue_->has_handlers();
 }
 
 void InputRouterImpl::OnViewUpdated(int view_flags) {
@@ -502,11 +498,9 @@ void InputRouterImpl::OnSelectRangeAck() {
 }
 
 void InputRouterImpl::OnHasTouchEventHandlers(bool has_handlers) {
- if (has_touch_handler_ == has_handlers)
+  if (has_handlers == touch_event_queue_->has_handlers())
     return;
-  has_touch_handler_ = has_handlers;
-  if (!has_handlers)
-    touch_event_queue_->FlushQueue();
+  touch_event_queue_->OnHasTouchEventHandlers(has_handlers);
   client_->OnHasTouchEventHandlers(has_handlers);
 }
 

@@ -58,9 +58,8 @@ class CONTENT_EXPORT TouchEventQueue {
   // resume the normal flow of sending touch events to the renderer.
   void OnGestureScrollEvent(const GestureEventWithLatencyInfo& gesture_event);
 
-  // Empties the queue of touch events. This may result in any number of gesture
-  // events being sent to the renderer.
-  void FlushQueue();
+  // Notifies the queue whether the renderer has at least one touch handler.
+  void OnHasTouchEventHandlers(bool has_handlers);
 
   // Returns whether the currently pending touch event (waiting ACK) is for
   // a touch start event.
@@ -82,6 +81,10 @@ class CONTENT_EXPORT TouchEventQueue {
     return ack_timeout_enabled_;
   }
 
+  bool has_handlers() const {
+    return has_handlers_;
+  }
+
  private:
   class TouchTimeoutHandler;
   friend class TouchTimeoutHandler;
@@ -90,6 +93,10 @@ class CONTENT_EXPORT TouchEventQueue {
   bool HasTimeoutEvent() const;
   bool IsTimeoutRunningForTesting() const;
   const TouchEventWithLatencyInfo& GetLatestEventForTesting() const;
+
+  // Empties the queue of touch events. This may result in any number of gesture
+  // events being sent to the renderer.
+  void FlushQueue();
 
   // Walks the queue, checking each event for |ShouldForwardToRenderer()|.
   // If true, forwards the touch event and stops processing further events.
@@ -126,8 +133,11 @@ class CONTENT_EXPORT TouchEventQueue {
   // ack after forwarding a touch event to the client.
   bool dispatching_touch_;
 
+  // Whether there are any registered touch handlers. Defaults to false.
+  bool has_handlers_;
+
   // Don't send touch events to the renderer while scrolling.
-  bool no_touch_to_renderer_;
+  bool scroll_in_progress_;
 
   // Whether an event in the current (multi)touch sequence was consumed by the
   // renderer.  The touch timeout will never be activated when this is true.

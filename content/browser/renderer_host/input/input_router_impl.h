@@ -230,11 +230,6 @@ private:
   // back to whatever unhandled handler instead of the returned version.
   KeyQueue key_queue_;
 
-  // Keeps track of whether the webpage has any touch event handler. If it does,
-  // then touch events are sent to the renderer. Otherwise, the touch events are
-  // not sent to the renderer.
-  bool has_touch_handler_;
-
   // Whether touch ack timeout handling has been enabled via the command line.
   bool touch_ack_timeout_enabled_;
   size_t touch_ack_timeout_delay_ms_;

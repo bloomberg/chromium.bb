@@ -269,6 +269,11 @@ class InputRouterImplTest : public testing::Test {
     return input_router()->touch_event_queue_->ack_timeout_enabled();
   }
 
+  void OnHasTouchEventHandlers(bool has_handlers) {
+    input_router_->OnMessageReceived(
+        ViewHostMsg_HasTouchEventHandlers(0, has_handlers));
+  }
+
   size_t GetSentMessageCountAndResetSink() {
     size_t count = process_->sink().message_count();
     process_->sink().ClearMessages();
@@ -529,6 +534,8 @@ TEST_F(InputRouterImplTest,
 
 // Tests that touch-events are queued properly.
 TEST_F(InputRouterImplTest, TouchEventQueue) {
+  OnHasTouchEventHandlers(true);
+
   PressTouchPoint(1, 1);
   SendTouchEvent();
   EXPECT_TRUE(client_->GetAndResetFilterEventCalled());
@@ -563,7 +570,7 @@ TEST_F(InputRouterImplTest, TouchEventQueue) {
 // Tests that the touch-queue is emptied if a page stops listening for touch
 // events.
 TEST_F(InputRouterImplTest, TouchEventQueueFlush) {
-  input_router_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, true));
+  OnHasTouchEventHandlers(true);
   EXPECT_TRUE(client_->has_touch_handler());
   EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
   EXPECT_TRUE(TouchEventQueueEmpty());
@@ -579,7 +586,7 @@ TEST_F(InputRouterImplTest, TouchEventQueueFlush) {
   // The page stops listening for touch-events. The touch-event queue should now
   // be emptied, but none of the queued touch-events should be sent to the
   // renderer.
-  input_router_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, false));
+  OnHasTouchEventHandlers(false);
   EXPECT_FALSE(client_->has_touch_handler());
   EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
   EXPECT_TRUE(TouchEventQueueEmpty());
@@ -702,6 +709,8 @@ TEST_F(InputRouterImplTest, UnhandledWheelEvent) {
 }
 
 TEST_F(InputRouterImplTest, TouchTypesIgnoringAck) {
+  OnHasTouchEventHandlers(true);
+
   int start_type = static_cast<int>(WebInputEvent::TouchStart);
   int end_type = static_cast<int>(WebInputEvent::TouchCancel);
   ASSERT_LT(start_type, end_type);
