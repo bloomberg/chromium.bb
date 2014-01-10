@@ -878,6 +878,6 @@ crbug.com/331189 fast/forms/date-multiple-fields/date-multiple-fields-keyboard-e
 crbug.com/331189 fast/forms/datetimelocal-multiple-fields/datetimelocal-multiple-fields-keyboard-events.html [ Failure ]
 crbug.com/331189 fast/forms/week-multiple-fields/week-multiple-fields-keyboard-events.html [ Failure ]
 
-crbug.com/333242 [ XP Release ] svg/W3C-SVG-1.1/interact-events-01-b.svg [ ImageOnlyFailure ]
+crbug.com/333242 svg/W3C-SVG-1.1/interact-events-01-b.svg [ NeedsRebaseline ]
 crbug.com/333242 svg/dynamic-updates/SVGUseElement-dom-href1-attr.html [ Pass ImageOnlyFailure ]
 crbug.com/333242 svg/dynamic-updates/SVGUseElement-svgdom-href1-prop.html [ Pass ImageOnlyFailure ]
