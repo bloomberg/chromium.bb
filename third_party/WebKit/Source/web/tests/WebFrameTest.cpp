@@ -1844,6 +1844,26 @@ TEST_F(WebFrameTest, NoUserScalableQuirkIgnoresViewportScaleForWideViewport)
     EXPECT_NEAR(1.0f, webViewHelper.webView()->pageScaleFactor(), 0.01f);
 }
 
+TEST_F(WebFrameTest, DesktopPageCanBeZoomedInWhenWideViewportIsTurnedOff)
+{
+    UseMockScrollbarSettings mockScrollbarSettings;
+    registerMockedHttpURLLoad("no_viewport_tag.html");
+
+    FixedLayoutTestWebViewClient client;
+    int viewportWidth = 640;
+    int viewportHeight = 480;
+
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "no_viewport_tag.html", true, 0, &client, enableViewportSettings);
+    webViewHelper.webView()->settings()->setWideViewportQuirkEnabled(true);
+    webViewHelper.webView()->settings()->setUseWideViewport(false);
+    webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
+
+    EXPECT_NEAR(1.0f, webViewHelper.webView()->pageScaleFactor(), 0.01f);
+    EXPECT_NEAR(1.0f, webViewHelper.webView()->minimumPageScaleFactor(), 0.01f);
+    EXPECT_NEAR(5.0f, webViewHelper.webView()->maximumPageScaleFactor(), 0.01f);
+}
+
 class WebFrameResizeTest : public WebFrameTest {
 protected:
 

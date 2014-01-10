@@ -160,8 +160,10 @@ void PageScaleConstraintsSet::adjustForAndroidWebViewQuirks(const ViewportDescri
         targetDensityDPIFactor = computeDeprecatedTargetDensityDPIFactor(description, deviceScaleFactor);
         if (m_pageDefinedConstraints.initialScale != -1)
             m_pageDefinedConstraints.initialScale *= targetDensityDPIFactor;
-        m_pageDefinedConstraints.minimumScale *= targetDensityDPIFactor;
-        m_pageDefinedConstraints.maximumScale *= targetDensityDPIFactor;
+        if (m_pageDefinedConstraints.minimumScale != -1)
+            m_pageDefinedConstraints.minimumScale *= targetDensityDPIFactor;
+        if (m_pageDefinedConstraints.maximumScale != -1)
+            m_pageDefinedConstraints.maximumScale *= targetDensityDPIFactor;
         if (wideViewportQuirkEnabled && (!useWideViewport || description.maxWidth.type() == DeviceWidth)) {
             adjustedLayoutSizeWidth /= targetDensityDPIFactor;
             adjustedLayoutSizeHeight /= targetDensityDPIFactor;
@@ -183,8 +185,10 @@ void PageScaleConstraintsSet::adjustForAndroidWebViewQuirks(const ViewportDescri
             adjustedLayoutSizeHeight = computeHeightByAspectRatio(adjustedLayoutSizeWidth, viewSize);
             if (description.zoom < 1) {
                 m_pageDefinedConstraints.initialScale = newInitialScale;
-                m_pageDefinedConstraints.minimumScale = std::min<float>(m_pageDefinedConstraints.minimumScale, m_pageDefinedConstraints.initialScale);
-                m_pageDefinedConstraints.maximumScale = std::max<float>(m_pageDefinedConstraints.maximumScale, m_pageDefinedConstraints.initialScale);
+                if (m_pageDefinedConstraints.minimumScale != -1)
+                    m_pageDefinedConstraints.minimumScale = std::min<float>(m_pageDefinedConstraints.minimumScale, m_pageDefinedConstraints.initialScale);
+                if (m_pageDefinedConstraints.maximumScale != -1)
+                    m_pageDefinedConstraints.maximumScale = std::max<float>(m_pageDefinedConstraints.maximumScale, m_pageDefinedConstraints.initialScale);
             }
         }
     }
