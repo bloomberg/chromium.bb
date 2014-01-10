@@ -333,6 +333,10 @@ void HTMLMetaElement::processViewportKeyValuePair(const String& keyString, const
             reportViewportWarning(TargetDensityDpiUnsupported, String(), String());
             return;
         }
+        CASE("minimal-ui") {
+            // Ignore vendor-specific argument.
+            return;
+        }
     }
     reportViewportWarning(UnrecognizedViewportArgumentKeyError, keyString, String());
 }
@@ -355,11 +359,10 @@ static MessageLevel viewportErrorMessageLevel(ViewportErrorCode errorCode)
     switch (errorCode) {
     case TruncatedViewportArgumentValueError:
     case TargetDensityDpiUnsupported:
-        return WarningMessageLevel;
     case UnrecognizedViewportArgumentKeyError:
     case UnrecognizedViewportArgumentValueError:
     case MaximumScaleTooLargeError:
-        return ErrorMessageLevel;
+        return WarningMessageLevel;
     }
 
     ASSERT_NOT_REACHED();
