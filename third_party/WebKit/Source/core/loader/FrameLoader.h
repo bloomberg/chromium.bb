@@ -218,8 +218,6 @@ private:
 
     SubstituteData defaultSubstituteDataForURL(const KURL&);
 
-    void checkNavigationPolicyAndContinueFragmentScroll(const NavigationAction&, bool isNewNavigation, ClientRedirectPolicy);
-
     bool shouldPerformFragmentNavigation(bool isFormSubmission, const String& httpMethod, FrameLoadType, const KURL&);
     void scrollToFragmentWithParentBoundary(const KURL&);
 
@@ -240,7 +238,7 @@ private:
     };
     void setHistoryItemStateForCommit(HistoryItemPolicy, bool isPushOrReplaceState = false, PassRefPtr<SerializedScriptValue> = 0);
 
-    void loadInSameDocument(const KURL&, PassRefPtr<SerializedScriptValue> stateObject, bool isNewNavigation, ClientRedirectPolicy);
+    void loadInSameDocument(const KURL&, PassRefPtr<SerializedScriptValue> stateObject, UpdateBackForwardListPolicy, ClientRedirectPolicy);
 
     void scheduleCheckCompleted();
     void startCheckCompleteTimer();

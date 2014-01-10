@@ -560,10 +560,19 @@ void FrameLoader::updateForSameDocumentNavigation(const KURL& newURL, SameDocume
         m_client->postProgressFinishedNotification();
 }
 
-void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScriptValue> stateObject, bool isNewNavigation, ClientRedirectPolicy clientRedirect)
+void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScriptValue> stateObject, UpdateBackForwardListPolicy updateBackForwardList, ClientRedirectPolicy clientRedirect)
 {
     // If we have a state object, we cannot also be a new navigation.
-    ASSERT(!stateObject || (stateObject && !isNewNavigation));
+    ASSERT(!stateObject || updateBackForwardList == DoNotUpdateBackForwardList);
+
+    // If we have a provisional request for a different document, a fragment scroll should cancel it.
+    if (m_provisionalDocumentLoader) {
+        m_provisionalDocumentLoader->stopLoading();
+        if (m_provisionalDocumentLoader)
+            m_provisionalDocumentLoader->detachFromFrame();
+        m_provisionalDocumentLoader = 0;
+    }
+    saveDocumentAndScrollState();
 
     KURL oldURL = m_frame->document()->url();
     // If we were in the autoscroll/panScroll mode we want to stop it before following the link to the anchor
@@ -572,9 +581,8 @@ void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScrip
         m_frame->eventHandler().stopAutoscroll();
         m_frame->domWindow()->enqueueHashchangeEvent(oldURL, url);
     }
-    m_documentLoader->setIsClientRedirect((clientRedirect == ClientRedirect && !isNewNavigation) || !UserGestureIndicator::processingUserGesture());
-    m_documentLoader->setReplacesCurrentHistoryItem(!isNewNavigation);
-    UpdateBackForwardListPolicy updateBackForwardList = isNewNavigation && !shouldTreatURLAsSameAsCurrent(url) && !stateObject ? UpdateBackForwardList : DoNotUpdateBackForwardList;
+    m_documentLoader->setIsClientRedirect(clientRedirect == ClientRedirect);
+    m_documentLoader->setReplacesCurrentHistoryItem(updateBackForwardList == DoNotUpdateBackForwardList);
     updateForSameDocumentNavigation(url, SameDocumentNavigationDefault, 0, updateBackForwardList);
 
     // It's important to model this as a load that starts and immediately finishes.
@@ -715,11 +723,13 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
         return;
     }
 
-    if (shouldPerformFragmentNavigation(request.formState(), request.resourceRequest().httpMethod(), newLoadType, request.resourceRequest().url())) {
-        checkNavigationPolicyAndContinueFragmentScroll(action, newLoadType != FrameLoadTypeRedirectWithLockedBackForwardList, request.clientRedirect());
+    const KURL& url = request.resourceRequest().url();
+    if (shouldPerformFragmentNavigation(request.formState(), request.resourceRequest().httpMethod(), newLoadType, url)) {
+        m_documentLoader->setTriggeringAction(action);
+        loadInSameDocument(url, 0, newLoadType == FrameLoadTypeStandard ? UpdateBackForwardList : DoNotUpdateBackForwardList, request.clientRedirect());
         return;
     }
-    bool sameURL = shouldTreatURLAsSameAsCurrent(request.resourceRequest().url());
+    bool sameURL = shouldTreatURLAsSameAsCurrent(url);
     loadWithNavigationAction(action, newLoadType, request.formState(), request.substituteData(), request.clientRedirect());
     // Example of this case are sites that reload the same URL with a different cookie
     // driving the generated content, or a master frame with links that drive a target
@@ -1158,25 +1168,6 @@ void FrameLoader::receivedMainResourceError(const ResourceError& error)
         checkLoadComplete();
 }
 
-void FrameLoader::checkNavigationPolicyAndContinueFragmentScroll(const NavigationAction& action, bool isNewNavigation, ClientRedirectPolicy clientRedirect)
-{
-    m_documentLoader->setTriggeringAction(action);
-
-    const ResourceRequest& request = action.resourceRequest();
-    if (!m_documentLoader->shouldContinueForNavigationPolicy(request, DocumentLoader::PolicyCheckFragment))
-        return;
-
-    // If we have a provisional request for a different document, a fragment scroll should cancel it.
-    if (m_provisionalDocumentLoader && !equalIgnoringFragmentIdentifier(m_provisionalDocumentLoader->request().url(), request.url())) {
-        m_provisionalDocumentLoader->stopLoading();
-        if (m_provisionalDocumentLoader)
-            m_provisionalDocumentLoader->detachFromFrame();
-        m_provisionalDocumentLoader = 0;
-    }
-    saveDocumentAndScrollState();
-    loadInSameDocument(request.url(), 0, isNewNavigation, clientRedirect);
-}
-
 bool FrameLoader::shouldPerformFragmentNavigation(bool isFormSubmission, const String& httpMethod, FrameLoadType loadType, const KURL& url)
 {
     ASSERT(loadType != FrameLoadTypeReloadFromOrigin);
@@ -1286,7 +1277,7 @@ void FrameLoader::loadWithNavigationAction(const NavigationAction& action, Frame
 
     // stopAllLoaders can detach the Frame, so protect it.
     RefPtr<Frame> protect(m_frame);
-    if ((!m_policyDocumentLoader->shouldContinueForNavigationPolicy(request, DocumentLoader::PolicyCheckStandard) || !shouldClose()) && m_policyDocumentLoader) {
+    if ((!m_policyDocumentLoader->shouldContinueForNavigationPolicy(request) || !shouldClose()) && m_policyDocumentLoader) {
         m_policyDocumentLoader->detachFromFrame();
         m_policyDocumentLoader = 0;
         return;
@@ -1419,7 +1410,7 @@ void FrameLoader::loadHistoryItem(HistoryItem* item, HistoryLoadType historyLoad
 {
     m_provisionalItem = item;
     if (historyLoadType == HistorySameDocumentLoad) {
-        loadInSameDocument(item->url(), item->stateObject(), false, NotClientRedirect);
+        loadInSameDocument(item->url(), item->stateObject(), DoNotUpdateBackForwardList, NotClientRedirect);
         restoreScrollPositionAndViewState(ForcedRestoreForSameDocumentHistoryNavigation);
         return;
     }

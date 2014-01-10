@@ -291,7 +291,7 @@ bool DocumentLoader::isRedirectAfterPost(const ResourceRequest& newRequest, cons
     return false;
 }
 
-bool DocumentLoader::shouldContinueForNavigationPolicy(const ResourceRequest& request, PolicyCheckLoadType policyCheckLoadType)
+bool DocumentLoader::shouldContinueForNavigationPolicy(const ResourceRequest& request)
 {
     // Don't ask if we are loading an empty URL.
     if (request.url().isEmpty() || m_substituteData.isValid())
@@ -303,8 +303,7 @@ bool DocumentLoader::shouldContinueForNavigationPolicy(const ResourceRequest& re
         return false;
 
     NavigationPolicy policy = m_triggeringAction.policy();
-    if (policyCheckLoadType != PolicyCheckFragment)
-        policy = frameLoader()->client()->decidePolicyForNavigation(request, this, policy);
+    policy = frameLoader()->client()->decidePolicyForNavigation(request, this, policy);
     if (policy == NavigationPolicyCurrentTab)
         return true;
     if (policy == NavigationPolicyIgnore)
@@ -383,7 +382,7 @@ void DocumentLoader::willSendRequest(ResourceRequest& newRequest, const Resource
 
     appendRedirect(newRequest.url());
     frameLoader()->client()->dispatchDidReceiveServerRedirectForProvisionalLoad();
-    if (!shouldContinueForNavigationPolicy(newRequest, PolicyCheckStandard))
+    if (!shouldContinueForNavigationPolicy(newRequest))
         cancelMainResourceLoad(ResourceError::cancelledError(m_request.url()));
 }
 

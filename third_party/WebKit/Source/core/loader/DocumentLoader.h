@@ -113,11 +113,7 @@ namespace WebCore {
 
         bool scheduleArchiveLoad(Resource*, const ResourceRequest&);
 
-        enum PolicyCheckLoadType {
-            PolicyCheckStandard,
-            PolicyCheckFragment
-        };
-        bool shouldContinueForNavigationPolicy(const ResourceRequest&, PolicyCheckLoadType);
+        bool shouldContinueForNavigationPolicy(const ResourceRequest&);
         const NavigationAction& triggeringAction() const { return m_triggeringAction; }
         void setTriggeringAction(const NavigationAction& action) { m_triggeringAction = action; }
 

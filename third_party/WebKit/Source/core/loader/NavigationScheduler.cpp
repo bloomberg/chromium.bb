@@ -310,7 +310,8 @@ void NavigationScheduler::scheduleLocationChange(Document* originDocument, const
         if (parsedURL.hasFragmentIdentifier() && equalIgnoringFragmentIdentifier(m_frame->document()->url(), parsedURL)) {
             FrameLoadRequest request(originDocument, ResourceRequest(m_frame->document()->completeURL(url), AtomicString(referrer)), "_self");
             request.setLockBackForwardList(lockBackForwardList);
-            request.setClientRedirect(ClientRedirect);
+            if (lockBackForwardList)
+                request.setClientRedirect(ClientRedirect);
             m_frame->loader().load(request);
             return;
         }
