@@ -13,6 +13,7 @@
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/drag_window_controller.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_util.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
@@ -149,6 +150,9 @@ void DragWindowResizer::CompleteDrag() {
         dst_bounds.set_x(
             last_mouse_location_in_screen.x() - dst_bounds.width());
     }
+    ash::wm::AdjustBoundsToEnsureMinimumWindowVisibility(
+        dst_display.bounds(), &dst_bounds);
+
     GetTarget()->SetBoundsInScreen(dst_bounds, dst_display);
   }
 }
