@@ -92,7 +92,7 @@ class SmoothnessMetric(Metric):
     # Are we hitting 60 fps for 95 percent of all frames?
     # We use 19ms as a somewhat looser threshold, instead of 1000.0/60.0.
     percentile_95 = statistics.Percentile(self._stats.frame_times, 95.0)
-    results.Add('mostly_smooth', '', 1.0 if percentile_95 < 19.0 else 0.0)
+    results.Add('mostly_smooth', 'score', 1.0 if percentile_95 < 19.0 else 0.0)
 
     if tab.browser.platform.IsRawDisplayFrameRateSupported():
       for r in tab.browser.platform.GetRawDisplayFrameRateMeasurements():
