@@ -11,6 +11,23 @@ var blobNatives = requireNative('blob_natives');
 
 var mediaGalleriesMetadata = {};
 
+function createFileSystemObjectsAndUpdateMetadata(response) {
+  var result = null;
+  mediaGalleriesMetadata = {};  // Clear any previous metadata.
+  if (response) {
+    result = [];
+    for (var i = 0; i < response.length; i++) {
+      var filesystem = mediaGalleriesNatives.GetMediaFileSystemObject(
+          response[i].fsid);
+      $Array.push(result, filesystem);
+      var metadata = response[i];
+      delete metadata.fsid;
+      mediaGalleriesMetadata[filesystem.name] = metadata;
+    }
+  }
+  return result;
+}
+
 binding.registerCustomHook(function(bindingsAPI, extensionId) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
@@ -18,21 +35,29 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
   // return an array of file system objects.
   apiFunctions.setCustomCallback('getMediaFileSystems',
                                  function(name, request, response) {
-    var result = null;
-    mediaGalleriesMetadata = {};  // Clear any previous metadata.
-    if (response) {
-      result = [];
-      for (var i = 0; i < response.length; i++) {
-        var filesystem = mediaGalleriesNatives.GetMediaFileSystemObject(
-            response[i].fsid);
-        $Array.push(result, filesystem);
-        var metadata = response[i];
-        delete metadata.fsid;
-        mediaGalleriesMetadata[filesystem.name] = metadata;
+    var result = createFileSystemObjectsAndUpdateMetadata(response);
+    if (request.callback)
+      request.callback(result);
+    request.callback = null;
+  });
+
+  // addUserSelectedFolder uses a custom callback so that it can instantiate
+  // and return an array of file system objects.
+  apiFunctions.setCustomCallback('addUserSelectedFolder',
+                                 function(name, request, response) {
+    var fileSystems = [];
+    var selectedFileSystemName = "";
+    if (response && 'mediaFileSystems' in response &&
+        'selectedFileSystemIndex' in response) {
+      fileSystems = createFileSystemObjectsAndUpdateMetadata(
+          response['mediaFileSystems']);
+      var selectedFileSystemIndex = response['selectedFileSystemIndex'];
+      if (selectedFileSystemIndex >= 0) {
+        selectedFileSystemName = fileSystems[selectedFileSystemIndex].name;
       }
     }
     if (request.callback)
-      request.callback(result);
+      request.callback(fileSystems, selectedFileSystemName);
     request.callback = null;
   });
 

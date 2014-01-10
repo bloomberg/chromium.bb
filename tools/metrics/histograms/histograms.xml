@@ -24537,6 +24537,7 @@ other types of suffix sets.
   <int value="649" label="MEDIAGALLERIES_GETMETADATA"/>
   <int value="650" label="INPUT_IME_SENDKEYEVENTS"/>
   <int value="651" label="INPUT_IME_HIDEINPUTVIEW"/>
+  <int value="652" label="MEDIAGALLERIES_ADDUSERSELECTEDFOLDER"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">
@@ -27205,6 +27206,7 @@ other types of suffix sets.
   <int value="9" label="Preferences initialized"/>
   <int value="10" label="Preferences initialization failed"/>
   <int value="11" label="GetAllMediaFileSystemMetadata API invocations"/>
+  <int value="12" label="AddUserSelectedFolder API invocations"/>
 </enum>
 
 <enum name="MediaKeyError" type="int">
