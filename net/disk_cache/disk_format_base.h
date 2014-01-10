@@ -33,6 +33,7 @@ const uint32 kBlockCurrentVersion = 0x30000;  // Version 3.0.
 const uint32 kBlockMagic = 0xC104CAC3;
 const int kBlockHeaderSize = 8192;  // Two pages: almost 64k entries
 const int kMaxBlocks = (kBlockHeaderSize - 80) * 8;
+const int kNumExtraBlocks = 1024;  // How fast files grow.
 
 // Bitmap to track used blocks on a block-file.
 typedef uint32 AllocBitmap[kMaxBlocks / 32];

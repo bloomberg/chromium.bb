@@ -37,6 +37,10 @@
 // internal structures are modified, so it is possible to detect (most of the
 // time) when the process dies in the middle of an update. There are dedicated
 // backup files for cache bitmaps, used to detect entries out of date.
+//
+// Although cache files are to be consumed on the same machine that creates
+// them, if files are to be moved accross machines, little endian storage is
+// assumed.
 
 #ifndef NET_DISK_CACHE_V3_DISK_FORMAT_V3_H_
 #define NET_DISK_CACHE_V3_DISK_FORMAT_V3_H_
@@ -46,14 +50,15 @@
 
 namespace disk_cache {
 
-const int kBaseTableLen = 0x10000;
+const int kBaseTableLen = 0x400;
 const uint32 kIndexMagicV3 = 0xC103CAC3;
 const uint32 kVersion3 = 0x30000;  // Version 3.0.
 
 // Flags for a given cache.
 enum CacheFlags {
-  CACHE_EVICTION_2 = 1,      // Keep multiple lists for eviction.
-  CACHE_EVICTED = 1 << 1     // Already evicted at least one entry.
+  SMALL_CACHE = 1 << 0,       // See IndexCell.
+  CACHE_EVICTION_2 = 1 << 1,  // Keep multiple lists for eviction.
+  CACHE_EVICTED = 1 << 2      // Already evicted at least one entry.
 };
 
 // Header for the master index file.
@@ -119,30 +124,81 @@ COMPILE_ASSERT(ENTRY_USED <= 7, group_uses_3_bits);
 struct IndexCell {
   void Clear() { memset(this, 0, sizeof(*this)); }
 
-  uint64      address : 22;
-  uint64      hash : 18;
-  uint64      timestamp : 20;
-  uint64      reuse : 4;
-  uint8       state : 3;
-  uint8       group : 3;
-  uint8       sum : 2;
+  // A cell is a 9 byte bit-field that stores 7 values:
+  //   location : 22 bits
+  //   id : 18 bits
+  //   timestamp : 20 bits
+  //   reuse : 4 bits
+  //   state : 3 bits
+  //   group : 3 bits
+  //   sum : 2 bits
+  // The id is derived from the full hash of the entry.
+  //
+  // The actual layout is as follows:
+  //
+  // first_part (low order 32 bits):
+  //   0000 0000 0011 1111 1111 1111 1111 1111 : location
+  //   1111 1111 1100 0000 0000 0000 0000 0000 : id
+  //
+  // first_part (high order 32 bits):
+  //   0000 0000 0000 0000 0000 0000 1111 1111 : id
+  //   0000 1111 1111 1111 1111 1111 0000 0000 : timestamp
+  //   1111 0000 0000 0000 0000 0000 0000 0000 : reuse
+  //
+  // last_part:
+  //   0000 0111 : state
+  //   0011 1000 : group
+  //   1100 0000 : sum
+  //
+  // The small-cache version of the format moves some bits from the location to
+  // the id fileds, like so:
+  //   location : 16 bits
+  //   id : 24 bits
+  //
+  // first_part (low order 32 bits):
+  //   0000 0000 0000 0000 1111 1111 1111 1111 : location
+  //   1111 1111 1111 1111 0000 0000 0000 0000 : id
+  //
+  // The actual bit distribution between location and id is determined by the
+  // table size (IndexHeaderV3.table_len). Tables smaller than 65536 entries
+  // use the small-cache version; after that size, caches should have the
+  // SMALL_CACHE flag cleared.
+  //
+  // To locate a given entry after recovering the location from the cell, the
+  // file type and file number are appended (see disk_cache/addr.h). For a large
+  // table only the file type is implied; for a small table, the file number
+  // is also implied, and it should be the first file for that type of entry,
+  // as determined by the EntryGroup (two files in total, one for active entries
+  // and another one for evicted entries).
+  //
+  // For example, a small table may store something like 0x1234 as the location
+  // field. That means it stores the entry number 0x1234. If that record belongs
+  // to a deleted entry, the regular cache address may look something like
+  //     BLOCK_EVICTED + 1 block + file number 6 + entry number 0x1234
+  //     so Addr = 0xf0061234
+  //
+  // If that same Addr is stored on a large table, the location field would be
+  // 0x61234
+
+  uint64      first_part;
+  uint8       last_part;
 };
 COMPILE_ASSERT(sizeof(IndexCell) == 9, bad_IndexCell);
 
+const int kCellsPerBucket = 4;
 struct IndexBucket {
-  IndexCell   cells[4];
+  IndexCell   cells[kCellsPerBucket];
   int32       next;
-  uint32      hash : 24;      // The last byte is only defined for buckets of
-  uint32      reserved : 8;   // the extra table.
+  uint32      hash;  // The high order byte is reserved (should be zero).
 };
 COMPILE_ASSERT(sizeof(IndexBucket) == 44, bad_IndexBucket);
-const int kBytesPerCell = 44 / 4;
+const int kBytesPerCell = 44 / kCellsPerBucket;
 
 // The main cache index. Backed by a file named index_tb1.
 // The extra table (index_tb2) has a similar format, but different size.
 struct Index {
   // Default size. Actual size controlled by header.table_len.
-  IndexBucket table[kBaseTableLen / 4];
+  IndexBucket table[kBaseTableLen / kCellsPerBucket];
 };
 #pragma pack(pop)
 

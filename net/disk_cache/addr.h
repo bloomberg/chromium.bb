@@ -54,6 +54,18 @@ const int kFirstAdditionalBlockFileV3 = 7;
 //   0000 0011 0000 0000 0000 0000 0000 0000 : number of contiguous blocks 1-4
 //   0000 0000 1111 1111 0000 0000 0000 0000 : file selector 0 - 255
 //   0000 0000 0000 0000 1111 1111 1111 1111 : block#  0 - 65,535 (2^16)
+//
+// Note that an Addr can be used to "point" to a variety of different objects,
+// from a given type of entry to random blobs of data. Conceptually, an Addr is
+// just a number that someone can inspect to find out how to locate the desired
+// record. Most users will not care about the specific bits inside Addr, for
+// example, what parts of it point to a file number; only the code that has to
+// select a specific file would care about those specific bits.
+//
+// From a general point of view, an Addr has a total capacity of 2^24 entities,
+// in that it has 24 bits that can identify individual records. Note that the
+// address space is bigger for independent files (2^28), but that would not be
+// the general case.
 class NET_EXPORT_PRIVATE Addr {
  public:
   Addr() : value_(0) {}
@@ -106,14 +118,6 @@ class NET_EXPORT_PRIVATE Addr {
 
   bool operator!=(Addr other) const {
     return value_ != other.value_;
-  }
-
-  static Addr FromEntryAddress(uint32 value) {
-    return Addr(kInitializedMask + (BLOCK_ENTRIES << kFileTypeOffset) + value);
-  }
-
-  static Addr FromEvictedAddress(uint32 value) {
-    return Addr(kInitializedMask + (BLOCK_EVICTED << kFileTypeOffset) + value);
   }
 
   static int BlockSizeForFileType(FileType file_type) {
