@@ -49,6 +49,7 @@ public class Shell extends LinearLayout {
 
     private ClipDrawable mProgressDrawable;
 
+    private long mNativeShell;
     private ContentViewRenderView mContentViewRenderView;
     private WindowAndroid mWindow;
 
@@ -80,10 +81,40 @@ public class Shell extends LinearLayout {
     }
 
     /**
+     * Initializes the Shell for use.
+     *
+     * @param nativeShell The pointer to the native Shell object.
      * @param window The owning window for this shell.
      */
-    public void setWindow(WindowAndroid window) {
+    public void initialize(long nativeShell, WindowAndroid window) {
+        mNativeShell = nativeShell;
         mWindow = window;
+    }
+
+    /**
+     * Closes the shell and cleans up the native instance, which will handle destroying all
+     * dependencies.
+     */
+    public void close() {
+        if (mNativeShell == 0) return;
+        nativeCloseShell(mNativeShell);
+    }
+
+    @CalledByNative
+    private void onNativeDestroyed() {
+        mWindow = null;
+        mNativeShell = 0;
+        assert !mContentView.isAttachedToWindow()
+                : "Attempting to destroy the content view while attached to the view hierarchy.";
+        mContentView.destroy();
+    }
+
+    /**
+     * @return Whether the Shell has been destroyed.
+     * @see #onNativeDestroyed()
+     */
+    public boolean isDestroyed() {
+        return mNativeShell == 0;
     }
 
     /**
@@ -242,4 +273,6 @@ public class Shell extends LinearLayout {
             imm.hideSoftInputFromWindow(mUrlTextView.getWindowToken(), 0);
         }
     }
+
+    private static native void nativeCloseShell(long shellPtr);
 }
