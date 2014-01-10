@@ -5,8 +5,9 @@
 module sample {
 
 enum BarType {
-  BAR_VERTICAL = 1,
-  BAR_HORIZONTAL = 2,
+  BAR_VERTICAL = 1 << 0,
+  BAR_HORIZONTAL = (1 << 1) + 0,
+  BAR_BOTH = BAR_VERTICAL | BAR_HORIZONTAL,
   BAR_INVALID
 };
 
