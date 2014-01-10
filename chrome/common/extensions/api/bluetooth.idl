@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // Use the <code>chrome.bluetooth</code> API to connect to a Bluetooth
-// device.
+// device. All functions report failures via chrome.runtime.lastError.
 namespace bluetooth {
   dictionary AdapterState {
     // The address of the adapter, in the format 'XX:XX:XX:XX:XX:XX'.
@@ -233,9 +233,11 @@ namespace bluetooth {
     static void disconnect(DisconnectOptions options,
                            optional ResultCallback callback);
 
-    // Read data from a Bluetooth connection.
+    // Read data from a Bluetooth connection. The |callback| will be called
+    // with the current data in the buffer even if it is empty. This function
+    // should be polled to read incoming data.
     // |options|  : The options for this function.
-    // |callback| : Called with the data when it is available.
+    // |callback| : Called with the data read from the socket buffer.
     static void read(ReadOptions options,
                      DataCallback callback);
 
