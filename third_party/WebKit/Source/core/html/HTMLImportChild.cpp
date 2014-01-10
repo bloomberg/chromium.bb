@@ -189,14 +189,14 @@ void HTMLImportChild::shareLoader(HTMLImportChild* loader)
     root()->blockerGone();
 }
 
-bool HTMLImportChild::isProcessing() const
-{
-    return m_loader && m_loader->isOwnedBy(this) && !m_loader->isDone();
-}
-
 bool HTMLImportChild::isDone() const
 {
     return m_loader && m_loader->isDone();
+}
+
+bool HTMLImportChild::ownsLoader() const
+{
+    return m_loader->isOwnedBy(this);
 }
 
 bool HTMLImportChild::loaderHasError() const

@@ -69,8 +69,8 @@ public:
     virtual Document* document() const OVERRIDE;
     virtual void wasDetachedFromDocument() OVERRIDE;
     virtual void didFinishParsing() OVERRIDE;
-    virtual bool isProcessing() const OVERRIDE;
     virtual bool isDone() const OVERRIDE;
+    virtual bool ownsLoader() const OVERRIDE;
     virtual void didUnblockFromCreatingDocument() OVERRIDE;
     virtual void didBecomeReady() OVERRIDE;
     virtual CustomElementPendingImport* pendingImport() const OVERRIDE { return m_pendingImport.get(); }

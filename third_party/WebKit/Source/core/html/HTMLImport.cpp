@@ -136,7 +136,7 @@ void HTMLImport::didUnblockFromRunningScript()
 
 void HTMLImport::didBecomeReady()
 {
-    ASSERT(!isProcessing());
+    ASSERT(isDone());
 }
 
 void HTMLImport::didUnblockFromCreatingDocument()
@@ -159,7 +159,15 @@ void HTMLImport::loaderDidFinish()
 
 inline bool HTMLImport::isBlockingFollowersFromRunningScript() const
 {
-    return (isBlockedFromRunningScript() || isProcessing()) && isCreatedByParser();
+    if (!isCreatedByParser())
+        return false;
+    if (isBlockedFromRunningScript())
+        return true;
+    // Blocking here can result dead lock if the node doesn't own loader and has shared loader.
+    // Because the shared loader can point its ascendant and forms a cycle.
+    if (!ownsLoader())
+        return false;
+    return !isDone();
 }
 
 inline bool HTMLImport::isBlockingFollowersFromCreatingDocument() const
@@ -181,7 +189,7 @@ bool HTMLImport::unblock(HTMLImport* import)
     }
 
     import->unblockFromRunningScript();
-    if (!import->isProcessing())
+    if (import->isDone())
         import->becomeReady();
 
     return !import->isBlockingFollowersFromRunningScript();

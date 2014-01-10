@@ -143,11 +143,6 @@ void HTMLImportsController::didFinishParsing()
 {
 }
 
-bool HTMLImportsController::isProcessing() const
-{
-    return m_master->parsing();
-}
-
 bool HTMLImportsController::isDone() const
 {
     return !m_master->parsing();

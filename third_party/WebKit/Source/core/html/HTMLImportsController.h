@@ -61,7 +61,6 @@ public:
     virtual Document* document() const OVERRIDE;
     virtual void wasDetachedFromDocument() OVERRIDE;
     virtual void didFinishParsing() OVERRIDE;
-    virtual bool isProcessing() const OVERRIDE;
     virtual bool isDone() const OVERRIDE;
 
     // HTMLImportRoot

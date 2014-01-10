@@ -150,8 +150,8 @@ public:
     virtual Document* document() const = 0;
     virtual void wasDetachedFromDocument() = 0;
     virtual void didFinishParsing() = 0;
-    virtual bool isProcessing() const = 0;
     virtual bool isDone() const = 0; // FIXME: Should be renamed to haveFinishedLoading()
+    virtual bool ownsLoader() const { return false; }
     virtual CustomElementPendingImport* pendingImport() const { return 0; }
 
 protected:
