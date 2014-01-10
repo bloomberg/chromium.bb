@@ -35,15 +35,8 @@ class CastStreamingApiTest : public ExtensionApiTest {
   }
 };
 
-// Disabled on OSX due to http://crbug.com/332427
-#if defined(OS_MACOSX)
-#define MAYBE_Basics DISABLED_Basics
-#else
-#define MAYBE_Basics Basics
-#endif
-
 // Test running the test extension for Cast Mirroring API.
-IN_PROC_BROWSER_TEST_F(CastStreamingApiTest, MAYBE_Basics) {
+IN_PROC_BROWSER_TEST_F(CastStreamingApiTest, Basics) {
   ASSERT_TRUE(RunExtensionSubtest("cast_streaming", "basics.html"));
 }
 

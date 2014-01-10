@@ -4,9 +4,19 @@
 
 #include "media/cast/cast_environment.h"
 
+#include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
 
 using base::TaskRunner;
+
+namespace {
+
+void DeleteLoggingOnMainThread(scoped_ptr<media::cast::LoggingImpl> logging) {
+  logging.reset();
+}
+
+}  // namespace
 
 namespace media {
 namespace cast {
@@ -31,7 +41,16 @@ CastEnvironment::CastEnvironment(
   DCHECK(main_thread_proxy) << "Main thread required";
 }
 
-CastEnvironment::~CastEnvironment() {}
+CastEnvironment::~CastEnvironment() {
+  // Logging must be deleted on the main thread.
+  if (main_thread_proxy_->RunsTasksOnCurrentThread()) {
+    logging_.reset();
+  } else {
+    main_thread_proxy_->PostTask(
+        FROM_HERE,
+        base::Bind(&DeleteLoggingOnMainThread, base::Passed(&logging_)));
+  }
+}
 
 bool CastEnvironment::PostTask(ThreadId identifier,
                                const tracked_objects::Location& from_here,
