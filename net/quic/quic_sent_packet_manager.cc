@@ -550,11 +550,17 @@ bool QuicSentPacketManager::OnPacketSent(
     TransmissionType transmission_type,
     HasRetransmittableData has_retransmittable_data) {
   DCHECK_LT(0u, sequence_number);
-  DCHECK(ContainsKey(unacked_packets_, sequence_number));
+  // In some edge cases, on some platforms (such as Windows), it is possible
+  // that we were write-blocked when we tried to send a packet, and then decided
+  // not to send the packet (such as when the encryption key changes, and we
+  // "discard" the unsent packet).  In that rare case, we may indeed
+  // asynchronously (later) send the packet, calling this method, but the
+  // sequence number may already be erased from unacked_packets_ map. In that
+  // case, we can just return false since the packet will not be tracked for
+  // retransmission.
+  if (!ContainsKey(unacked_packets_, sequence_number))
+    return false;
   DCHECK(!unacked_packets_[sequence_number].pending);
-  if (has_retransmittable_data == HAS_RETRANSMITTABLE_DATA) {
-    DCHECK(unacked_packets_[sequence_number].retransmittable_frames);
-  }
   UnackedPacketMap::iterator it = unacked_packets_.find(sequence_number);
 
   // Only track packets the send algorithm wants us to track.
