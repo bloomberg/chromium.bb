@@ -285,11 +285,15 @@ void AesDecryptor::UpdateSession(uint32 session_id,
     }
   }
 
-  if (!new_audio_key_cb_.is_null())
-    new_audio_key_cb_.Run();
+  {
+    base::AutoLock auto_lock(new_key_cb_lock_);
 
-  if (!new_video_key_cb_.is_null())
-    new_video_key_cb_.Run();
+    if (!new_audio_key_cb_.is_null())
+      new_audio_key_cb_.Run();
+
+    if (!new_video_key_cb_.is_null())
+      new_video_key_cb_.Run();
+  }
 
   session_ready_cb_.Run(session_id);
 }
@@ -310,6 +314,8 @@ Decryptor* AesDecryptor::GetDecryptor() {
 
 void AesDecryptor::RegisterNewKeyCB(StreamType stream_type,
                                     const NewKeyCB& new_key_cb) {
+  base::AutoLock auto_lock(new_key_cb_lock_);
+
   switch (stream_type) {
     case kAudio:
       new_audio_key_cb_ = new_key_cb;

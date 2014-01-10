@@ -135,6 +135,10 @@ class MEDIA_EXPORT AesDecryptor : public MediaKeys, public Decryptor {
   NewKeyCB new_audio_key_cb_;
   NewKeyCB new_video_key_cb_;
 
+  // Protect |new_audio_key_cb_| and |new_video_key_cb_| as they are set on the
+  // main thread but called on the media thread.
+  mutable base::Lock new_key_cb_lock_;
+
   DISALLOW_COPY_AND_ASSIGN(AesDecryptor);
 };
 

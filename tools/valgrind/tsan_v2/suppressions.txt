@@ -161,9 +161,6 @@ race:blink::currentTimeFunction
 # http://crbug.com/329460
 race:extensions::InfoMap::AddExtension
 
-# http://crbug.com/329530
-race:media::AesDecryptor::UpdateSession
-
 # http://crbug.com/330528
 race:v8::internal::MarkCompactCollector::SweepInParallel
 
