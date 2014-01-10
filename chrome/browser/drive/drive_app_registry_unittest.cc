@@ -137,37 +137,4 @@ TEST(DriveAppRegistryUtilTest, FindPreferredIcon_) {
             util::FindPreferredIcon(icons, kMediumSize + 3).spec());
 }
 
-TEST_F(DriveAppRegistryTest, UninstallDriveApp) {
-  apps_registry_->Update();
-  base::RunLoop().RunUntilIdle();
-
-  std::vector<DriveAppInfo> apps;
-  apps_registry_->GetAppList(&apps);
-  size_t original_count = apps.size();
-
-  // Uninstall an existing app.
-  google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
-  apps_registry_->UninstallApp(
-      "123456788192",
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(error, google_apis::HTTP_SUCCESS);
-
-  // Check that the number of apps is decreased by one.
-  apps_registry_->GetAppList(&apps);
-  EXPECT_EQ(original_count - 1, apps.size());
-
-  // Try to uninstall a non-existing app.
-  error = google_apis::GDATA_OTHER_ERROR;
-  apps_registry_->UninstallApp(
-      "non-existing-app-id",
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(error, google_apis::HTTP_NOT_FOUND);
-
-  // Check that the number is not changed this time.
-  apps_registry_->GetAppList(&apps);
-  EXPECT_EQ(original_count - 1, apps.size());
-}
-
 }  // namespace drive
