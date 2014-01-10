@@ -598,6 +598,7 @@
           'threading/thread_id_name_manager.h',
           'threading/thread_local.h',
           'threading/thread_local_posix.cc',
+          'threading/thread_local_storage.cc',
           'threading/thread_local_storage.h',
           'threading/thread_local_storage_posix.cc',
           'threading/thread_local_storage_win.cc',
