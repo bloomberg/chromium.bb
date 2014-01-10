@@ -187,16 +187,17 @@ base::ListValue* IndexedDBContextImpl::GetAllOriginsDetails() {
     // origins in the outer loop.
 
     if (factory_) {
-      std::vector<IndexedDBDatabase*> databases =
+      std::pair<IndexedDBFactory::OriginDBMapIterator,
+                IndexedDBFactory::OriginDBMapIterator> range =
           factory_->GetOpenDatabasesForOrigin(origin_url);
       // TODO(jsbell): Sort by name?
       scoped_ptr<base::ListValue> database_list(new base::ListValue());
 
-      for (std::vector<IndexedDBDatabase*>::iterator it = databases.begin();
-           it != databases.end();
+      for (IndexedDBFactory::OriginDBMapIterator it = range.first;
+           it != range.second;
            ++it) {
 
-        const IndexedDBDatabase* db = *it;
+        const IndexedDBDatabase* db = it->second;
         scoped_ptr<base::DictionaryValue> db_info(new base::DictionaryValue());
 
         db_info->SetString("name", db->name());
@@ -336,21 +337,9 @@ void IndexedDBContextImpl::ForceClose(const GURL origin_url) {
   if (data_path_.empty() || !IsInOriginSet(origin_url))
     return;
 
-  if (connections_.find(origin_url) != connections_.end()) {
-    ConnectionSet& connections = connections_[origin_url];
-    ConnectionSet::iterator it = connections.begin();
-    while (it != connections.end()) {
-      // Remove before closing so callbacks don't double-erase
-      IndexedDBConnection* connection = *it;
-      DCHECK(connection->IsConnected());
-      connections.erase(it++);
-      connection->ForceClose();
-    }
-    DCHECK_EQ(connections_[origin_url].size(), 0UL);
-    connections_.erase(origin_url);
-  }
   if (factory_)
     factory_->ForceClose(origin_url);
+  DCHECK_EQ(0UL, GetConnectionCount(origin_url));
 }
 
 size_t IndexedDBContextImpl::GetConnectionCount(const GURL& origin_url) {
@@ -358,10 +347,10 @@ size_t IndexedDBContextImpl::GetConnectionCount(const GURL& origin_url) {
   if (data_path_.empty() || !IsInOriginSet(origin_url))
     return 0;
 
-  if (connections_.find(origin_url) == connections_.end())
+  if (!factory_)
     return 0;
 
-  return connections_[origin_url].size();
+  return factory_->GetConnectionCount(origin_url);
 }
 
 base::FilePath IndexedDBContextImpl::GetFilePath(const GURL& origin_url) const {
@@ -383,14 +372,12 @@ void IndexedDBContextImpl::SetTaskRunnerForTesting(
 void IndexedDBContextImpl::ConnectionOpened(const GURL& origin_url,
                                             IndexedDBConnection* connection) {
   DCHECK(TaskRunner()->RunsTasksOnCurrentThread());
-  DCHECK_EQ(connections_[origin_url].count(connection), 0UL);
   if (quota_manager_proxy()) {
     quota_manager_proxy()->NotifyStorageAccessed(
         quota::QuotaClient::kIndexedDatabase,
         origin_url,
         quota::kStorageTypeTemporary);
   }
-  connections_[origin_url].insert(connection);
   if (AddToOriginSet(origin_url)) {
     // A newly created db, notify the quota system.
     QueryDiskAndUpdateQuotaUsage(origin_url);
@@ -403,26 +390,18 @@ void IndexedDBContextImpl::ConnectionOpened(const GURL& origin_url,
 void IndexedDBContextImpl::ConnectionClosed(const GURL& origin_url,
                                             IndexedDBConnection* connection) {
   DCHECK(TaskRunner()->RunsTasksOnCurrentThread());
-  // May not be in the map if connection was forced to close
-  if (connections_.find(origin_url) == connections_.end() ||
-      connections_[origin_url].count(connection) != 1)
-    return;
   if (quota_manager_proxy()) {
     quota_manager_proxy()->NotifyStorageAccessed(
         quota::QuotaClient::kIndexedDatabase,
         origin_url,
         quota::kStorageTypeTemporary);
   }
-  connections_[origin_url].erase(connection);
-  if (connections_[origin_url].size() == 0) {
+  if (factory_ && factory_->GetConnectionCount(origin_url) == 0)
     QueryDiskAndUpdateQuotaUsage(origin_url);
-    connections_.erase(origin_url);
-  }
 }
 
 void IndexedDBContextImpl::TransactionComplete(const GURL& origin_url) {
-  DCHECK(connections_.find(origin_url) != connections_.end() &&
-         connections_[origin_url].size() > 0);
+  DCHECK(!factory_ || factory_->GetConnectionCount(origin_url) > 0);
   QueryDiskAndUpdateQuotaUsage(origin_url);
   QueryAvailableQuota(origin_url);
 }
