@@ -62,6 +62,14 @@ There is further complication when toolchain builds are merged.
                       help="Email address to send errors to.")
   parser.add_argument('--commits-since', metavar='N', type=int, default=0,
                       help="Commits to wait between TOOL_REVISIONS updates.")
+  parser.add_argument('--svn-id', metavar='SVN_ID', type=int, default=0,
+                      help="Update to a specific SVN ID instead of the most "
+                      "recent SVN ID with a PNaCl change. This value must "
+                      "be more recent than the one in the current "
+                      "TOOL_REVISIONS. This option is useful when multiple "
+                      "changelists' toolchain builds were merged, or when "
+                      "too many PNaCl changes would be pulled in at the "
+                      "same time.")
   parser.add_argument('--dry-run', default=False, action='store_true',
                       help="Print the changelist that would be sent, but "
                       "don't actually send anything to review.")
@@ -372,6 +380,12 @@ def Main():
     tr_points_at['commits since'] = len(recent_commits)
     assert len(recent_commits) > 1
 
+    if args.svn_id and args.svn_id <= int(tr_points_at['git svn id']):
+      Done(FmtOut(tr_recent, tr_points_at, pnacl_changes,
+                  err=["Can't update to SVN ID r%s, the current "
+                       "TOOL_REVISIONS' SVN ID (r%s) is more recent." %
+                       (args.svn_id, tr_points_at['git svn id'])]))
+
     # Find the commits changing PNaCl files that follow the previous
     # TOOL_REVISIONS PNaCl pointer.
     pnacl_pathes = ['pnacl/', 'toolchain_build/']
@@ -380,9 +394,6 @@ def Main():
         [[cl for cl in recent_commits[:-1] if
           GitChangesPath(cl, path)] for
          path in pnacl_pathes])))
-    if len(pnacl_hashes) == 0:
-      Done(FmtOut(tr_recent, tr_points_at, pnacl_changes,
-                  msg=['No PNaCl change since.']))
     for hash in pnacl_hashes:
       cl = CLInfo('PNaCl change ' + hash)
       cl['hash'] = hash
@@ -396,6 +407,15 @@ def Main():
     # The PNaCl hashes weren't ordered chronologically, make sure the
     # changes are.
     pnacl_changes.sort(key=lambda x: int(x['git svn id']))
+
+    if args.svn_id:
+      pnacl_changes = [cl for cl in pnacl_changes if
+                       int(cl['git svn id']) <= args.svn_id]
+
+    if len(pnacl_changes) == 0:
+      Done(FmtOut(tr_recent, tr_points_at, pnacl_changes,
+                  msg=['No PNaCl change since r%s.' %
+                       tr_points_at['git svn id']]))
 
     current_versions['PNACL_VERSION'] = pnacl_changes[-1]['git svn id']
 
