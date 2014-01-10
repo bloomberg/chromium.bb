@@ -38,7 +38,7 @@ class CaptureControllerTest : public aura::test::AuraTestBase {
         aura::RootWindow::CreateParams(gfx::Rect(0, 0, 800, 600))));
     second_root_->Init();
     second_root_->window()->Show();
-    second_root_->SetHostSize(gfx::Size(800, 600));
+    second_root_->host()->SetBounds(gfx::Rect(800, 600));
     second_capture_controller_.reset(
         new corewm::ScopedCaptureClient(second_root_->window()));
 

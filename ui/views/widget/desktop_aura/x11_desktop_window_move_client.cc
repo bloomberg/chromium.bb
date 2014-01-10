@@ -93,7 +93,7 @@ void X11DesktopWindowMoveClient::EndMoveLoop() {
 // DesktopWindowTreeHostLinux, private:
 
 void X11DesktopWindowMoveClient::SetHostBounds(const gfx::Rect& rect) {
-  root_window_->SetHostBounds(rect);
+  root_window_->host()->SetBounds(rect);
 }
 
 }  // namespace views
