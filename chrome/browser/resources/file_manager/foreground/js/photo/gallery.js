@@ -640,10 +640,12 @@ Gallery.prototype.updateSelectionAndState_ = function() {
   var path;
   var displayName = '';
 
+  // TODO(mtomasz): Migrate fullPath to toURL().
   var selectedItems = this.getSelectedItems();
   if (selectedItems.length === 1) {
     var item = selectedItems[0];
     var entry = item.getEntry();
+    path = entry.fullPath;
     window.top.document.title = entry.name;
     displayName = ImageUtil.getDisplayNameFromName(entry.name);
   } else if (selectedItems.length > 1 && this.context_.curDirEntry) {

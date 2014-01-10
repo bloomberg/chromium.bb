@@ -1592,33 +1592,25 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         return;
 
       var task = null;
-      if (opt_suggestedName) {
-        // Non-existent file or a directory.
-        if (this.params_.gallery) {
+      // Handle restoring after crash.
+      if (this.params_.gallery) {
+        if (!opt_selectionEntry) {
+          // Non-existent file or a directory.
           // Reloading while the Gallery is open with empty or multiple
           // selection. Open the Gallery when the directory is scanned.
           task = function() {
             new FileTasks(this, this.params_).openGallery([]);
           }.bind(this);
-        }
-      } else if (opt_selectionEntry) {
-        // There is a file to be selected. It means, that we are recovering
-        // the Files app.
-        // We call the appropriate methods of FileTasks directly as we do
-        // not need any of the preparations that |execute| method does.
-        // TODO(mtomasz): Change Entry.fullPath to Entry.
-        var mediaType = FileType.getMediaType(opt_selectionEntry);
-        if (mediaType === 'image' || mediaType === 'video') {
+        } else {
+          // The file or the directory exists.
           task = function() {
             // TODO(mtomasz): Replace the url with an entry.
             new FileTasks(this, this.params_).openGallery([opt_selectionEntry]);
           }.bind(this);
-        } else if (mediaType === 'archive') {
-          task = function() {
-            new FileTasks(this, this.params_).mountArchives(
-                [opt_selectionEntry]);
-          }.bind(this);
         }
+      } else {
+        // TODO(mtomasz): Implement remounting archives after crash.
+        //                See: crbug.com/333139
       }
 
       // If there is a task to be run, run it after the scan is completed.
@@ -2279,7 +2271,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     // TODO(mtomasz): Use Entry.toURL() instead of fullPath.
     util.updateAppState(
         this.getCurrentDirectoryEntry() &&
-        this.getCurrentDirectoryEntry().fullPath);
+        this.getCurrentDirectoryEntry().fullPath, '' /* opt_param */);
 
     // If the current directory is moved from the device's volume, do not
     // automatically close the window on device removal.
