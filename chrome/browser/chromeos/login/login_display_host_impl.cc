@@ -1119,7 +1119,10 @@ void ShowLoginWizard(const std::string& first_screen_name) {
       chromeos::WizardController::ShouldAutoStartEnrollment() &&
       !g_browser_process->browser_policy_connector()->IsEnterpriseManaged();
   if (should_show_enrollment_screen) {
-    display_host->StartWizard(chromeos::WizardController::kEnrollmentScreenName,
+    // Shows networks screen instead of enrollment screen to resume the
+    // interrupted auto start enrollment flow because enrollment screen does
+    // not handle flaky network. See http://crbug.com/332572
+    display_host->StartWizard(chromeos::WizardController::kNetworkScreenName,
                               scoped_ptr<base::DictionaryValue>());
     return;
   }

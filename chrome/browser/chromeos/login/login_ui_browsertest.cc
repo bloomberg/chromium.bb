@@ -43,17 +43,17 @@ IN_PROC_BROWSER_TEST_F(LoginUITest, LoginUIVisible) {
            ".user.emailAddress == '" + std::string(kTestUser2) + "'");
 }
 
-IN_PROC_BROWSER_TEST_F(LoginUITest, PRE_ShowEnrollmentFirst) {
+IN_PROC_BROWSER_TEST_F(LoginUITest, PRE_InterruptedAutoStartEnrollment) {
   StartupUtils::MarkOobeCompleted();
 
   PrefService* prefs = g_browser_process->local_state();
   prefs->SetBoolean(prefs::kDeviceEnrollmentAutoStart, true);
 }
 
-// Tests that the default first screen is the enrollment screen after OOBE
+// Tests that the default first screen is the network screen after OOBE
 // when auto enrollment is enabled and device is not yet enrolled.
-IN_PROC_BROWSER_TEST_F(LoginUITest, ShowEnrollmentFirst) {
-  OobeScreenWaiter(OobeDisplay::SCREEN_OOBE_ENROLLMENT).Wait();
+IN_PROC_BROWSER_TEST_F(LoginUITest, InterruptedAutoStartEnrollment) {
+  OobeScreenWaiter(OobeDisplay::SCREEN_OOBE_NETWORK).Wait();
 }
 
 }  // namespace chromeos
