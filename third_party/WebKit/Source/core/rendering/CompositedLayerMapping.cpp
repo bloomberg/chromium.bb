@@ -794,7 +794,7 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry()
             bool scrollingCoordinatorHandlesOffset = compositor()->scrollingLayerDidChange(m_owningLayer);
 
             if (scrollingCoordinatorHandlesOffset)
-                m_scrollingContentsLayer->setPosition(-m_owningLayer->scrollableArea()->scrollOrigin());
+                m_scrollingContentsLayer->setPosition(FloatPoint());
             else
                 m_scrollingContentsLayer->setPosition(FloatPoint(-adjustedScrollOffset));
         }
