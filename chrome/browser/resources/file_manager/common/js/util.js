@@ -1106,11 +1106,14 @@ util.createFileError = function(code) {
 util.isSameEntry = function(entry1, entry2) {
   // Currently, we can assume there is only one root.
   // When we support multi-file system, we need to look at filesystem, too.
-  return (entry1 && entry2 && entry1.fullPath === entry2.fullPath) ||
+  return (entry1 && entry2 && entry1.toURL() === entry2.toURL()) ||
       (!entry1 && !entry2);
 };
 
 /**
+ * TODO(mtomasz, yoshiki): Deprecated. Only used in directory_tree.js. Will
+ *     be removed soon.
+ *
  * @param {Entry|Object} parent The parent entry. Can be a fake.
  * @param {Entry|Object} child The child entry. Can be a fake.
  * @return {boolean} True if parent entry is actualy the parent of the child

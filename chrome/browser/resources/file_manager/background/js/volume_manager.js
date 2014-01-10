@@ -42,25 +42,29 @@ function VolumeInfo(
       fullPath: RootDirectory.DRIVE + '/' + DriveSubRootDirectory.ROOT,
       isDirectory: true,
       rootType: RootType.DRIVE,
-      label: PathUtil.getRootLabel(RootType.DRIVE)
+      label: PathUtil.getRootLabel(RootType.DRIVE),
+      toURL: function() { return 'fake-entry://' + this.fullPath; }
     };
     this.fakeEntries[RootType.DRIVE_OFFLINE] = {
       fullPath: RootDirectory.DRIVE_OFFLINE,
       isDirectory: true,
       rootType: RootType.DRIVE_OFFLINE,
-      label: PathUtil.getRootLabel(RootType.DRIVE_OFFLINE)
+      label: PathUtil.getRootLabel(RootType.DRIVE_OFFLINE),
+      toURL: function() { return 'fake-entry://' + this.fullPath; }
     };
     this.fakeEntries[RootType.DRIVE_SHARED_WITH_ME] = {
       fullPath: RootDirectory.DRIVE_SHARED_WITH_ME,
       isDirectory: true,
       rootType: RootType.DRIVE_SHARED_WITH_ME,
-      label: PathUtil.getRootLabel(RootType.DRIVE_SHARED_WITH_ME)
+      label: PathUtil.getRootLabel(RootType.DRIVE_SHARED_WITH_ME),
+      toURL: function() { return 'fake-entry://' + this.fullPath; }
     };
     this.fakeEntries[RootType.DRIVE_RECENT] = {
       fullPath: RootDirectory.DRIVE_RECENT,
       isDirectory: true,
       rootType: RootType.DRIVE_RECENT,
-      label: PathUtil.getRootLabel(RootType.DRIVE_RECENT)
+      label: PathUtil.getRootLabel(RootType.DRIVE_RECENT),
+      toURL: function() { return 'fake-entry://' + this.fullPath; }
     };
   }
 
