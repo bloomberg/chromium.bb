@@ -44,9 +44,9 @@
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderView.h"
 #include "platform/geometry/IntRect.h"
+#include "platform/graphics/CompositingReasons.h"
 #include "platform/graphics/GraphicsContextRecorder.h"
 #include "platform/transforms/TransformationMatrix.h"
-#include "public/platform/WebCompositingReasons.h"
 #include "public/platform/WebLayer.h"
 
 namespace WebCore {
@@ -308,7 +308,7 @@ void InspectorLayerTreeAgent::compositingReasons(ErrorString* errorString, const
     const GraphicsLayer* graphicsLayer = layerById(errorString, layerId);
     if (!graphicsLayer)
         return;
-    blink::WebCompositingReasons reasonsBitmask = graphicsLayer->compositingReasons();
+    CompositingReasons reasonsBitmask = graphicsLayer->compositingReasons();
     reasonStrings = TypeBuilder::Array<String>::create();
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(compositingReasonNames); ++i) {
         if (!(reasonsBitmask & compositingReasonNames[i].mask))

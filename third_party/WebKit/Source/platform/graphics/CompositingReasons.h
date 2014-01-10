@@ -63,8 +63,6 @@ const uint64_t CompositingReasonLayerForVideoOverlay                   = UINT64_
 const uint64_t CompositingReasonIsolateCompositedDescendants           = UINT64_C(1) << 35;
 const uint64_t CompositingReasonOverlapsWithoutSquashingTarget         = UINT64_C(1) << 36;
 
-// Note: if you add more reasons here, you will need to update WebCompositingReasons as well.
-
 // Various combinations of compositing reasons are defined here also, for more intutive and faster bitwise logic.
 const uint64_t CompositingReasonComboAllDirectReasons =
     CompositingReason3DTransform
@@ -99,7 +97,6 @@ const uint64_t CompositingReasonComboSquashableReasons =
     | CompositingReasonAssumedOverlap;
 
 typedef uint64_t CompositingReasons;
-
 
 } // namespace WebCore
 

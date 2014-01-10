@@ -30,7 +30,6 @@
 #include "WebBlendMode.h"
 #include "WebColor.h"
 #include "WebCommon.h"
-#include "WebCompositingReasons.h"
 #include "WebPoint.h"
 #include "WebRect.h"
 #include "WebString.h"
