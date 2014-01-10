@@ -218,6 +218,11 @@ void CSSToStyleMap::mapFillSize(CSSPropertyID, FillLayer* layer, CSSValue* value
 
 void CSSToStyleMap::mapFillXPosition(CSSPropertyID propertyID, FillLayer* layer, CSSValue* value) const
 {
+    if (value->isInitialValue()) {
+        layer->setXPosition(FillLayer::initialFillXPosition(layer->type()));
+        return;
+    }
+
     if (!value->isPrimitiveValue())
         return;
 
@@ -237,6 +242,11 @@ void CSSToStyleMap::mapFillXPosition(CSSPropertyID propertyID, FillLayer* layer,
 
 void CSSToStyleMap::mapFillYPosition(CSSPropertyID propertyID, FillLayer* layer, CSSValue* value) const
 {
+    if (value->isInitialValue()) {
+        layer->setYPosition(FillLayer::initialFillYPosition(layer->type()));
+        return;
+    }
+
     if (!value->isPrimitiveValue())
         return;
 
