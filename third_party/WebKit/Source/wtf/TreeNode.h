@@ -50,29 +50,29 @@ public:
     typedef T NodeType;
 
     TreeNode()
-        : m_nextSibling(0)
-        , m_previousSibling(0)
+        : m_next(0)
+        , m_previous(0)
         , m_parent(0)
         , m_firstChild(0)
         , m_lastChild(0)
     {
     }
 
-    NodeType* nextSibling() const { return m_nextSibling; }
-    NodeType* previousSibling() const { return m_previousSibling; }
+    NodeType* next() const { return m_next; }
+    NodeType* previous() const { return m_previous; }
     NodeType* parent() const { return m_parent; }
     NodeType* firstChild() const { return m_firstChild; }
     NodeType* lastChild() const { return m_lastChild; }
     NodeType* here() const { return static_cast<NodeType*>(const_cast<TreeNode*>(this)); }
 
-    bool orphan() const { return !m_parent && !m_nextSibling && !m_previousSibling && !m_firstChild && !m_lastChild; }
+    bool orphan() const { return !m_parent && !m_next && !m_previous && !m_firstChild && !m_lastChild; }
     bool hasChildren() const { return m_firstChild; }
 
     void insertBefore(NodeType* newChild, NodeType* refChild)
     {
         ASSERT(!newChild->parent());
-        ASSERT(!newChild->nextSibling());
-        ASSERT(!newChild->previousSibling());
+        ASSERT(!newChild->next());
+        ASSERT(!newChild->previous());
 
         ASSERT(!refChild || this == refChild->parent());
 
@@ -81,13 +81,13 @@ public:
             return;
         }
 
-        NodeType* newPrevious = refChild->previousSibling();
+        NodeType* newPrevious = refChild->previous();
         newChild->m_parent = here();
-        newChild->m_nextSibling = refChild;
-        newChild->m_previousSibling = newPrevious;
-        refChild->m_previousSibling = newChild;
+        newChild->m_next = refChild;
+        newChild->m_previous = newPrevious;
+        refChild->m_previous = newChild;
         if (newPrevious)
-            newPrevious->m_nextSibling = newChild;
+            newPrevious->m_next = newChild;
         else
             m_firstChild = newChild;
     }
@@ -95,8 +95,8 @@ public:
     void appendChild(NodeType* child)
     {
         ASSERT(!child->parent());
-        ASSERT(!child->nextSibling());
-        ASSERT(!child->previousSibling());
+        ASSERT(!child->next());
+        ASSERT(!child->previous());
 
         child->m_parent = here();
 
@@ -106,12 +106,12 @@ public:
             return;
         }
 
-        ASSERT(!m_lastChild->m_nextSibling);
+        ASSERT(!m_lastChild->m_next);
         NodeType* oldLast = m_lastChild;
         m_lastChild = child;
 
-        child->m_previousSibling = oldLast;
-        oldLast->m_nextSibling = child;
+        child->m_previous = oldLast;
+        oldLast->m_next = child;
     }
 
     NodeType* removeChild(NodeType* child)
@@ -119,137 +119,76 @@ public:
         ASSERT(child->parent() == this);
 
         if (m_firstChild == child)
-            m_firstChild = child->nextSibling();
+            m_firstChild = child->next();
         if (m_lastChild == child)
-            m_lastChild = child->previousSibling();
+            m_lastChild = child->previous();
 
-        NodeType* oldNext = child->nextSibling();
-        NodeType* oldPrevious = child->previousSibling();
-        child->m_parent = child->m_nextSibling = child->m_previousSibling = 0;
+        NodeType* oldNext = child->next();
+        NodeType* oldPrevious = child->previous();
+        child->m_parent = child->m_next = child->m_previous = 0;
 
         if (oldNext)
-            oldNext->m_previousSibling = oldPrevious;
+            oldNext->m_previous = oldPrevious;
         if (oldPrevious)
-            oldPrevious->m_nextSibling = oldNext;
+            oldPrevious->m_next = oldNext;
 
         return child;
     }
 
 private:
-    NodeType* m_nextSibling;
-    NodeType* m_previousSibling;
+    NodeType* m_next;
+    NodeType* m_previous;
     NodeType* m_parent;
     NodeType* m_firstChild;
     NodeType* m_lastChild;
 };
 
-/* non-recursive pre-order traversal */
-template<class NodeType, class ContainerType>
-inline NodeType* traverseNext(const ContainerType& current)
+template<class T>
+inline typename TreeNode<T>::NodeType* traverseNext(const TreeNode<T>* current, const TreeNode<T>* stayWithin = 0)
 {
-    if (NodeType* firstChild = current.firstChild())
-        return firstChild;
-    if (NodeType* nextSibling = current.nextSibling())
-        return nextSibling;
-    for (NodeType* parent = current.parent(); parent; parent = parent->parent()) {
-        if (NodeType* nextSibling = parent->nextSibling())
-            return nextSibling;
-    }
-
-    return 0;
-}
-
-template<class NodeType, class ContainerType>
-inline NodeType* traverseNext(const ContainerType& current, const NodeType* stayWithin)
-{
-    if (NodeType* firstChild = current.firstChild())
-        return firstChild;
-    if (&current == stayWithin)
+    if (typename TreeNode<T>::NodeType* next = current->firstChild())
+        return next;
+    if (current == stayWithin)
         return 0;
-    if (NodeType* nextSibling = current.nextSibling())
-        return nextSibling;
-    for (NodeType* parent = current.parent(); parent; parent = parent->parent()) {
+    if (typename TreeNode<T>::NodeType* next = current->next())
+        return next;
+    for (typename TreeNode<T>::NodeType* parent = current->parent(); parent; parent = parent->parent()) {
         if (parent == stayWithin)
             return 0;
-        if (NodeType* nextSibling = parent->nextSibling())
-            return nextSibling;
+        if (typename TreeNode<T>::NodeType* next = parent->next())
+            return next;
     }
 
     return 0;
 }
 
-/* non-recursive post-order traversal */
-template<class NodeType, class ContainerType>
-inline NodeType* traverseFirstPostOrder(const ContainerType& current)
+template<class T>
+inline typename TreeNode<T>::NodeType* traverseFirstPostOrder(const TreeNode<T>* current)
 {
-    NodeType* first = current.here();
+    typename TreeNode<T>::NodeType* first = current->here();
     while (first->firstChild())
         first = first->firstChild();
     return first;
 }
 
-template<class NodeType, class ContainerType>
-inline NodeType* traverseNextPostOrder(const ContainerType& current)
-{
-    NodeType* nextSibling = current.nextSibling();
-    if (!nextSibling)
-        return current.parent();
-    while (nextSibling->firstChild())
-        nextSibling = nextSibling->firstChild();
-    return nextSibling;
-}
-
-template<class NodeType, class ContainerType>
-inline NodeType* traverseNextPostOrder(const ContainerType& current, const NodeType* stayWithin)
-{
-    if (&current == stayWithin)
-        return 0;
-
-    NodeType* nextSibling = current.nextSibling();
-    if (!nextSibling)
-        return current.parent();
-    while (nextSibling->firstChild())
-        nextSibling = nextSibling->firstChild();
-    return nextSibling;
-}
-
-/* non-recursive traversal skipping children */
-template <class NodeType, class ContainerType>
-inline NodeType* traverseNextSkippingChildren(const ContainerType& current)
-{
-    if (current.nextSibling())
-        return current.nextSibling();
-    for (NodeType* parent = current.parent(); parent; parent = parent->parent()) {
-        if (NodeType* nextSibling = parent->nextSibling())
-            return nextSibling;
-    }
-
-    return 0;
-}
-
-template <class NodeType, class ContainerType>
-inline NodeType* traverseNextSkippingChildren(const ContainerType& current, const NodeType* stayWithin)
+template<class T>
+inline typename TreeNode<T>::NodeType* traverseNextPostOrder(const TreeNode<T>* current, const TreeNode<T>* stayWithin = 0)
 {
     if (current == stayWithin)
         return 0;
-    if (current.nextSibling())
-        return current.nextSibling();
-    for (NodeType* parent = current.parent(); parent; parent = parent->parent()) {
-        if (parent == stayWithin)
-            return 0;
-        if (NodeType* nextSibling = parent->nextSibling())
-            return nextSibling;
-    }
 
-    return 0;
+    typename TreeNode<T>::NodeType* next = current->next();
+    if (!next)
+        return current->parent();
+    while (next->firstChild())
+        next = next->firstChild();
+    return next;
 }
 
-} // namespace WTF
+}
 
 using WTF::TreeNode;
 using WTF::traverseNext;
-using WTF::traverseFirstPostOrder;
 using WTF::traverseNextPostOrder;
-using WTF::traverseNextSkippingChildren;
 
-#endif // TreeNode_h
+#endif

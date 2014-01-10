@@ -171,9 +171,6 @@ public:
     virtual String nodeValue() const;
     virtual void setNodeValue(const String&);
     virtual NodeType nodeType() const = 0;
-    // FIXME: We should get rid of parentNode() usage and replace with parent()
-    // to bring us inline with the API of other tree structures in the codebase.
-    ContainerNode* parent() const { return parentNode(); }
     ContainerNode* parentNode() const;
     Element* parentElement() const;
     Node* previousSibling() const { return m_previous; }

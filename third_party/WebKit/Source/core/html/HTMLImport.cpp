@@ -64,7 +64,7 @@ void HTMLImport::appendChild(HTMLImport* child)
 inline bool HTMLImport::isBlockedFromCreatingDocumentByPredecessors() const
 {
     ASSERT(isBlockedFromCreatingDocument());
-    HTMLImport* elder = previousSibling();
+    HTMLImport* elder = previous();
     return (elder && !elder->isDone());
 }
 
@@ -74,7 +74,7 @@ bool HTMLImport::isBlockedFromRunningScriptByPredecessors() const
     if (!parent)
         return false;
 
-    for (HTMLImport* sibling = parent->firstChild(); sibling; sibling = sibling->nextSibling()) {
+    for (HTMLImport* sibling = parent->firstChild(); sibling; sibling = sibling->next()) {
         if (sibling == this)
             break;
         if (sibling->isBlockingFollowersFromRunningScript())
@@ -183,7 +183,7 @@ bool HTMLImport::unblock(HTMLImport* import)
         return false;
     import->unblockFromCreatingDocument();
 
-    for (HTMLImport* child = import->firstChild(); child; child = child->nextSibling()) {
+    for (HTMLImport* child = import->firstChild(); child; child = child->next()) {
         if (!unblock(child))
             return false;
     }
@@ -197,7 +197,7 @@ bool HTMLImport::unblock(HTMLImport* import)
 
 void HTMLImport::block(HTMLImport* import)
 {
-    for (HTMLImport* child = import; child; child = traverseNext(*child, import))
+    for (HTMLImport* child = import; child; child = traverseNext(child, import))
         child->blockFromRunningScript();
 }
 
@@ -205,7 +205,7 @@ void HTMLImport::blockPredecessorsOf(HTMLImport* child)
 {
     ASSERT(child->parent() == this);
 
-    for (HTMLImport* sibling = lastChild(); sibling; sibling = sibling->previousSibling()) {
+    for (HTMLImport* sibling = lastChild(); sibling; sibling = sibling->previous()) {
         if (sibling == child)
             break;
         HTMLImport::block(sibling);
