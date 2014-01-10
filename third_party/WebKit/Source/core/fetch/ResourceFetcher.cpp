@@ -219,6 +219,7 @@ ResourceFetcher::ResourceFetcher(DocumentLoader* documentLoader)
     , m_documentLoader(documentLoader)
     , m_requestCount(0)
     , m_garbageCollectDocumentResourcesTimer(this, &ResourceFetcher::garbageCollectDocumentResourcesTimerFired)
+    , m_resourceTimingReportTimer(this, &ResourceFetcher::resourceTimingReportTimerFired)
     , m_autoLoadImages(true)
     , m_imagesEnabled(true)
     , m_allowStaleResources(false)
@@ -689,7 +690,9 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
         if (policy == Use && !m_validatedURLs.contains(request.resourceRequest().url())) {
             // Resources loaded from memory cache should be reported the first time they're used.
             RefPtr<ResourceTimingInfo> info = ResourceTimingInfo::create(request.options().initiatorInfo.name, monotonicallyIncreasingTime());
-            reportResourceTiming(info.get(), resource.get(), monotonicallyIncreasingTime(), document(), true);
+            m_scheduledResourceTimingReports.add(resource.get(), info);
+            if (!m_resourceTimingReportTimer.isActive())
+                m_resourceTimingReportTimer.startOneShot(0);
         }
 
         m_validatedURLs.add(request.resourceRequest().url());
@@ -698,6 +701,19 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
     ASSERT(resource->url() == url.string());
     m_documentResources.set(resource->url(), resource);
     return resource;
+}
+
+void ResourceFetcher::resourceTimingReportTimerFired(Timer<ResourceFetcher>* timer)
+{
+    ASSERT_UNUSED(timer, timer == &m_resourceTimingReportTimer);
+    ResourceTimingInfoMap timingReports;
+    timingReports.swap(m_scheduledResourceTimingReports);
+    ResourceTimingInfoMap::iterator end = timingReports.end();
+    for (ResourceTimingInfoMap::iterator it = timingReports.begin(); it != end; ++it) {
+        Resource* resource = it->key;
+        RefPtr<ResourceTimingInfo> info = it->value;
+        reportResourceTiming(info.get(), resource, info->initialTime(), document(), true);
+    }
 }
 
 void ResourceFetcher::determineTargetType(ResourceRequest& request, Resource::Type type)
