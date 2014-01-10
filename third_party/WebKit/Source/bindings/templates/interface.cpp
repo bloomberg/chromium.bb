@@ -676,7 +676,7 @@ EventTarget* {{v8_class}}::toEventTarget(v8::Handle<v8::Object> object)
 
 {##############################################################################}
 {% block wrap %}
-{% if special_wrap_for %}
+{% if special_wrap_for or is_document %}
 v8::Handle<v8::Object> wrap({{cpp_class}}* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);
@@ -685,6 +685,14 @@ v8::Handle<v8::Object> wrap({{cpp_class}}* impl, v8::Handle<v8::Object> creation
         return wrap(to{{special_wrap_interface}}(impl), creationContext, isolate);
     {% endfor %}
     v8::Handle<v8::Object> wrapper = {{v8_class}}::createWrapper(impl, creationContext, isolate);
+    {% if is_document %}
+    if (wrapper.IsEmpty())
+        return wrapper;
+    if (!isolatedWorldForEnteredContext(isolate)) {
+        if (Frame* frame = impl->frame())
+            frame->script().windowShell(mainThreadNormalWorld())->updateDocumentWrapper(wrapper);
+    }
+    {% endif %}
     return wrapper;
 }
 
@@ -706,6 +714,16 @@ v8::Handle<v8::Object> {{v8_class}}::createWrapper(PassRefPtr<{{cpp_class}}> imp
         RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(actualInfo->derefObjectFunction == wrapperTypeInfo.derefObjectFunction);
     }
 
+    {% if is_document %}
+    if (Frame* frame = impl->frame()) {
+        if (frame->script().initializeMainWorld()) {
+            // initializeMainWorld may have created a wrapper for the object, retry from the start.
+            v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapper<{{v8_class}}>(impl.get(), isolate);
+            if (!wrapper.IsEmpty())
+                return wrapper;
+        }
+    }
+    {% endif %}
     v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, &wrapperTypeInfo, toInternalPointer(impl.get()), isolate);
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;

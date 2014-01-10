@@ -219,6 +219,7 @@ my %domNodeTypes = ("Attr" => 1,
                     "SVGDocument" => 1,
                     "Text" => 1,
                     "TestNode" => 1,
+                    "TestInterfaceDocument" => 1,
                     "TestInterfaceNode" => 1,
                    );
 
@@ -918,7 +919,6 @@ public:
 };
 END
 
-    my $customWrap = NeedsSpecialWrap($interface);
     if ($customToV8) {
         $header{nameSpaceWebCore}->add(<<END);
 
@@ -944,7 +944,7 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, ${nativeType}
 }
 END
     } else {
-        if ($customWrap) {
+        if (NeedsSpecialWrap($interface)) {
             $header{nameSpaceWebCore}->add(<<END);
 
 v8::Handle<v8::Object> wrap(${nativeType}* impl, v8::Handle<v8::Object> creationContext, v8::Isolate*);

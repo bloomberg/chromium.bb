@@ -70,6 +70,12 @@ def generate_interface(interface):
         header_includes.update(v8_types.includes_for_type(parent_interface))
     extended_attributes = interface.extended_attributes
 
+    is_document = inherits_interface(interface.name, 'Document')
+    if is_document:
+        includes.update(['bindings/v8/ScriptController.h',
+                         'bindings/v8/V8WindowShell.h',
+                         'core/frame/Frame.h'])
+
     # [CheckSecurity]
     is_check_security = 'CheckSecurity' in extended_attributes
     if is_check_security:
@@ -160,6 +166,7 @@ def generate_interface(interface):
             interface, 'ConstructorCallWith', 'ExecutionContext'),  # [ConstructorCallWith=ExeuctionContext]
         'is_constructor_raises_exception': extended_attributes.get('RaisesException') == 'Constructor',  # [RaisesException=Constructor]
         'is_dependent_lifetime': 'DependentLifetime' in extended_attributes,  # [DependentLifetime]
+        'is_document': is_document,
         'is_event_target': inherits_interface(interface.name, 'EventTarget'),
         'is_exception': interface.is_exception,
         'is_node': inherits_interface(interface.name, 'Node'),
