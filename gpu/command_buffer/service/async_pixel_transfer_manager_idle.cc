@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
+#include "base/debug/trace_event_synthetic_delay.h"
 #include "base/lazy_instance.h"
 #include "base/memory/weak_ptr.h"
 #include "gpu/command_buffer/service/safe_shared_memory_pool.h"
@@ -98,6 +99,7 @@ void AsyncPixelTransferDelegateIdle::AsyncTexImage2D(
     const AsyncTexImage2DParams& tex_params,
     const AsyncMemoryParams& mem_params,
     const base::Closure& bind_callback) {
+  TRACE_EVENT_SYNTHETIC_DELAY_BEGIN("gpu.AsyncTexImage");
   DCHECK_EQ(static_cast<GLenum>(GL_TEXTURE_2D), tex_params.target);
   DCHECK(mem_params.shared_memory);
   DCHECK_LE(mem_params.shm_data_offset + mem_params.shm_data_size,
@@ -121,6 +123,7 @@ void AsyncPixelTransferDelegateIdle::AsyncTexImage2D(
 void AsyncPixelTransferDelegateIdle::AsyncTexSubImage2D(
     const AsyncTexSubImage2DParams& tex_params,
     const AsyncMemoryParams& mem_params) {
+  TRACE_EVENT_SYNTHETIC_DELAY_BEGIN("gpu.AsyncTexImage");
   DCHECK_EQ(static_cast<GLenum>(GL_TEXTURE_2D), tex_params.target);
   DCHECK(mem_params.shared_memory);
   DCHECK_LE(mem_params.shm_data_offset + mem_params.shm_data_size,
@@ -188,6 +191,7 @@ void AsyncPixelTransferDelegateIdle::PerformAsyncTexImage2D(
         data);
   }
 
+  TRACE_EVENT_SYNTHETIC_DELAY_END("gpu.AsyncTexImage");
   transfer_in_progress_ = false;
   shared_state_->texture_upload_count++;
   shared_state_->total_texture_upload_time +=
@@ -243,6 +247,7 @@ void AsyncPixelTransferDelegateIdle::PerformAsyncTexSubImage2D(
         data);
   }
 
+  TRACE_EVENT_SYNTHETIC_DELAY_END("gpu.AsyncTexImage");
   transfer_in_progress_ = false;
   shared_state_->texture_upload_count++;
   shared_state_->total_texture_upload_time +=

@@ -4,6 +4,7 @@
 
 #include "cc/resources/raster_worker_pool.h"
 
+#include "base/debug/trace_event_synthetic_delay.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram.h"
 #include "base/values.h"
@@ -37,6 +38,17 @@ class IdentityAllocator : public SkBitmap::Allocator {
 // Flag to indicate whether we should try and detect that
 // a tile is of solid color.
 const bool kUseColorEstimator = true;
+
+// Synthetic delay for raster tasks that are required for activation. Global to
+// avoid static initializer on critical path.
+struct RasterRequiredForActivationSyntheticDelayInitializer {
+  RasterRequiredForActivationSyntheticDelayInitializer()
+      : delay(base::debug::TraceEventSyntheticDelay::Lookup(
+                  "cc.RasterRequiredForActivation")) {}
+  base::debug::TraceEventSyntheticDelay* delay;
+};
+static base::LazyInstance<RasterRequiredForActivationSyntheticDelayInitializer>
+    g_raster_required_for_activation_delay = LAZY_INSTANCE_INITIALIZER;
 
 class DisableLCDTextFilter : public SkDrawFilter {
  public:
@@ -348,9 +360,10 @@ class RasterFinishedWorkerPoolTaskImpl : public internal::WorkerPoolTask {
   }
   virtual void CompleteOnOriginThread() OVERRIDE {}
 
- private:
+ protected:
   virtual ~RasterFinishedWorkerPoolTaskImpl() {}
 
+ private:
   void RunOnOriginThread() const {
     on_raster_finished_callback_.Run(this);
   }
@@ -359,6 +372,43 @@ class RasterFinishedWorkerPoolTaskImpl : public internal::WorkerPoolTask {
   const Callback on_raster_finished_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(RasterFinishedWorkerPoolTaskImpl);
+};
+
+class RasterRequiredForActivationFinishedWorkerPoolTaskImpl
+    : public RasterFinishedWorkerPoolTaskImpl {
+ public:
+  RasterRequiredForActivationFinishedWorkerPoolTaskImpl(
+      const Callback& on_raster_finished_callback,
+      size_t tasks_required_for_activation_count)
+      : RasterFinishedWorkerPoolTaskImpl(on_raster_finished_callback),
+        tasks_required_for_activation_count_(
+            tasks_required_for_activation_count) {
+    if (tasks_required_for_activation_count_) {
+      g_raster_required_for_activation_delay.Get().delay->BeginParallel(
+          &activation_delay_end_time_);
+    }
+  }
+
+  // Overridden from RasterFinishedWorkerPoolTaskImpl:
+  virtual void RunOnWorkerThread(unsigned thread_index) OVERRIDE {
+    TRACE_EVENT0("cc",
+                 "RasterRequiredForActivationFinishedWorkerPoolTaskImpl::"
+                 "RunOnWorkerThread");
+    if (tasks_required_for_activation_count_) {
+      g_raster_required_for_activation_delay.Get().delay->EndParallel(
+          activation_delay_end_time_);
+    }
+    RasterFinishedWorkerPoolTaskImpl::RunOnWorkerThread(thread_index);
+  }
+
+ private:
+  virtual ~RasterRequiredForActivationFinishedWorkerPoolTaskImpl() {}
+
+  base::TimeTicks activation_delay_end_time_;
+  const size_t tasks_required_for_activation_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(
+      RasterRequiredForActivationFinishedWorkerPoolTaskImpl);
 };
 
 const char* kWorkerThreadNamePrefix = "CompositorRaster";
@@ -598,11 +648,13 @@ scoped_refptr<internal::WorkerPoolTask>
 }
 
 scoped_refptr<internal::WorkerPoolTask>
-    RasterWorkerPool::CreateRasterRequiredForActivationFinishedTask() {
+    RasterWorkerPool::CreateRasterRequiredForActivationFinishedTask(
+       size_t tasks_required_for_activation_count) {
   return make_scoped_refptr(
-      new RasterFinishedWorkerPoolTaskImpl(
+      new RasterRequiredForActivationFinishedWorkerPoolTaskImpl(
           base::Bind(&RasterWorkerPool::OnRasterRequiredForActivationFinished,
-                     weak_ptr_factory_.GetWeakPtr())));
+                     weak_ptr_factory_.GetWeakPtr()),
+          tasks_required_for_activation_count));
 }
 
 void RasterWorkerPool::OnRasterFinished(

@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
+#include "base/debug/trace_event_synthetic_delay.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
@@ -1054,6 +1055,7 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
       WebInputEventTraits::GetName(input_event->type);
   TRACE_EVENT1("renderer", "RenderWidget::OnHandleInputEvent",
                "event", event_name);
+  TRACE_EVENT_SYNTHETIC_DELAY_BEGIN("blink.HandleInputEvent");
 
   scoped_ptr<cc::SwapPromiseMonitor> latency_info_swap_promise_monitor;
 
@@ -1197,6 +1199,7 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
     UpdateTextInputState(true, true);
 #endif
 
+  TRACE_EVENT_SYNTHETIC_DELAY_END("blink.HandleInputEvent");
   handling_input_event_ = false;
 
   if (!prevent_default) {

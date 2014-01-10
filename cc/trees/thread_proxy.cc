@@ -9,6 +9,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
+#include "base/debug/trace_event_synthetic_delay.h"
 #include "base/metrics/histogram.h"
 #include "cc/base/swap_promise.h"
 #include "cc/debug/benchmark_instrumentation.h"
@@ -758,6 +759,7 @@ void ThreadProxy::ScheduledActionSendBeginMainFrame() {
 void ThreadProxy::BeginMainFrame(
     scoped_ptr<BeginMainFrameAndCommitState> begin_main_frame_state) {
   TRACE_EVENT0("cc", "ThreadProxy::BeginMainFrame");
+  TRACE_EVENT_SYNTHETIC_DELAY_BEGIN("cc.BeginMainFrame");
   DCHECK(IsMainThread());
 
   if (!layer_tree_host())
@@ -839,6 +841,7 @@ void ThreadProxy::BeginMainFrame(
       layer_tree_host()->RecreateUIResources();
 
   layer_tree_host()->Layout();
+  TRACE_EVENT_SYNTHETIC_DELAY_END("cc.BeginMainFrame");
 
   // Clear the commit flag after updating animations and layout here --- objects
   // that only layout when painted will trigger another SetNeedsCommit inside
@@ -1077,6 +1080,7 @@ DrawSwapReadbackResult ThreadProxy::DrawSwapReadbackInternal(
     bool forced_draw,
     bool swap_requested,
     bool readback_requested) {
+  TRACE_EVENT_SYNTHETIC_DELAY("cc.DrawAndSwap");
   DrawSwapReadbackResult result;
   result.did_draw = false;
   result.did_swap = false;

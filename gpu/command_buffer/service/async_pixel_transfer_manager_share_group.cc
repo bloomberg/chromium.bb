@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
+#include "base/debug/trace_event_synthetic_delay.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -251,6 +252,7 @@ class TransferStateInternal
       const AsyncMemoryParams mem_params,
       scoped_refptr<AsyncPixelTransferUploadStats> texture_upload_stats,
       const base::Closure& bind_callback) {
+    TRACE_EVENT_SYNTHETIC_DELAY_BEGIN("gpu.AsyncTexImage");
     pending_upload_task_ = new PendingTask(base::Bind(
         &TransferStateInternal::PerformAsyncTexImage2D,
         this,
@@ -276,6 +278,7 @@ class TransferStateInternal
       AsyncTexSubImage2DParams tex_params,
       AsyncMemoryParams mem_params,
       scoped_refptr<AsyncPixelTransferUploadStats> texture_upload_stats) {
+    TRACE_EVENT_SYNTHETIC_DELAY_BEGIN("gpu.AsyncTexImage");
     pending_upload_task_ = new PendingTask(base::Bind(
         &TransferStateInternal::PerformAsyncTexSubImage2D,
         this,
@@ -328,6 +331,7 @@ class TransferStateInternal
                    tex_params.format,
                    tex_params.type,
                    data);
+      TRACE_EVENT_SYNTHETIC_DELAY_END("gpu.AsyncTexImage");
     }
 
     if (texture_upload_stats.get()) {
@@ -367,6 +371,7 @@ class TransferStateInternal
                       tex_params.format,
                       tex_params.type,
                       data);
+      TRACE_EVENT_SYNTHETIC_DELAY_END("gpu.AsyncTexImage");
     }
 
     if (texture_upload_stats.get()) {

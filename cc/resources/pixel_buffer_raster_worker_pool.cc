@@ -553,7 +553,8 @@ void PixelBufferRasterWorkerPool::ScheduleMoreTasks() {
       tasks_required_for_activation_.size() &&
       should_notify_client_if_no_tasks_required_for_activation_are_pending_) {
     new_raster_required_for_activation_finished_task =
-        CreateRasterRequiredForActivationFinishedTask();
+        CreateRasterRequiredForActivationFinishedTask(
+            tasks_required_for_activation_.size());
     raster_required_for_activation_finished_task_pending_ = true;
     internal::GraphNode* raster_required_for_activation_finished_node =
         CreateGraphNodeForTask(

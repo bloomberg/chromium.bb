@@ -87,7 +87,8 @@ void ImageRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
 
   scoped_refptr<internal::WorkerPoolTask>
       new_raster_required_for_activation_finished_task(
-          CreateRasterRequiredForActivationFinishedTask());
+          CreateRasterRequiredForActivationFinishedTask(
+              raster_tasks_required_for_activation().size()));
   internal::GraphNode* raster_required_for_activation_finished_node =
       CreateGraphNodeForTask(
           new_raster_required_for_activation_finished_task.get(),

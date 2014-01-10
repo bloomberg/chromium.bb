@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
+#include "base/debug/trace_event_synthetic_delay.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -234,10 +235,12 @@ class TransferStateInternal
   }
 
   void MarkAsTransferIsInProgress() {
+    TRACE_EVENT_SYNTHETIC_DELAY_BEGIN("gpu.AsyncTexImage");
     transfer_completion_.Reset();
   }
 
   void MarkAsCompleted() {
+    TRACE_EVENT_SYNTHETIC_DELAY_END("gpu.AsyncTexImage");
     transfer_completion_.Signal();
   }
 

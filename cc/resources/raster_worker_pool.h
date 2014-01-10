@@ -5,6 +5,7 @@
 #ifndef CC_RESOURCES_RASTER_WORKER_POOL_H_
 #define CC_RESOURCES_RASTER_WORKER_POOL_H_
 
+#include <deque>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
@@ -261,7 +262,8 @@ class CC_EXPORT RasterWorkerPool : public WorkerPool {
 
   scoped_refptr<internal::WorkerPoolTask> CreateRasterFinishedTask();
   scoped_refptr<internal::WorkerPoolTask>
-      CreateRasterRequiredForActivationFinishedTask();
+      CreateRasterRequiredForActivationFinishedTask(
+          size_t tasks_required_for_activation_count);
 
   scoped_ptr<base::Value> ScheduledStateAsValue() const;
 
