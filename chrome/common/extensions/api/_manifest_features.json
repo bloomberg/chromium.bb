@@ -385,7 +385,7 @@
     "extension_types": "all"
   },
   "url_handlers": {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": ["platform_app"]
   },
   "version": {
