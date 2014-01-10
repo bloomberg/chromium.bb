@@ -230,8 +230,10 @@ public:
     bool hasLocalName(const QualifiedName& other) const { return m_tagName.localName() == other.localName(); }
 
     virtual const AtomicString& localName() const OVERRIDE FINAL { return m_tagName.localName(); }
-    virtual const AtomicString& prefix() const OVERRIDE FINAL { return m_tagName.prefix(); }
+    const AtomicString& prefix() const { return m_tagName.prefix(); }
     virtual const AtomicString& namespaceURI() const OVERRIDE FINAL { return m_tagName.namespaceURI(); }
+
+    const AtomicString& locateNamespacePrefix(const AtomicString& namespaceURI) const;
 
     virtual KURL baseURI() const OVERRIDE FINAL;
 

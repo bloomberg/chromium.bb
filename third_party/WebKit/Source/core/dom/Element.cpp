@@ -1242,6 +1242,26 @@ void Element::setPrefix(const AtomicString& prefix, ExceptionState& exceptionSta
     m_tagName.setPrefix(prefix.isEmpty() ? AtomicString() : prefix);
 }
 
+const AtomicString& Element::locateNamespacePrefix(const AtomicString& namespaceToLocate) const
+{
+    if (!prefix().isNull() && namespaceURI() == namespaceToLocate)
+        return prefix();
+
+    if (hasAttributes()) {
+        for (unsigned i = 0; i < attributeCount(); i++) {
+            const Attribute* attr = attributeItem(i);
+
+            if (attr->prefix() == xmlnsAtom && attr->value() == namespaceToLocate)
+                return attr->localName();
+        }
+    }
+
+    if (Element* parent = parentElement())
+        return parent->locateNamespacePrefix(namespaceToLocate);
+
+    return nullAtom;
+}
+
 KURL Element::baseURI() const
 {
     const AtomicString& baseAttribute = getAttribute(baseAttr);

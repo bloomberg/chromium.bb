@@ -205,7 +205,6 @@ public:
     virtual PassRefPtr<Node> cloneNode(bool deep = false) = 0;
     virtual const AtomicString& localName() const;
     virtual const AtomicString& namespaceURI() const;
-    virtual const AtomicString& prefix() const;
     void normalize();
 
     bool isSameNode(Node* other) const { return this == other; }
@@ -213,7 +212,6 @@ public:
     bool isDefaultNamespace(const AtomicString& namespaceURI) const;
     const AtomicString& lookupPrefix(const AtomicString& namespaceURI) const;
     const AtomicString& lookupNamespaceURI(const String& prefix) const;
-    const AtomicString& lookupNamespacePrefix(const AtomicString& namespaceURI, const Element* originalElement) const;
 
     String textContent(bool convertBRsToNewlines = false) const;
     void setTextContent(const String&);

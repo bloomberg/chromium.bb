@@ -29,6 +29,7 @@
 #include "core/xml/XPathFunctions.h"
 
 #include "XMLNames.h"
+#include "core/dom/Attr.h"
 #include "core/dom/Element.h"
 #include "core/dom/ProcessingInstruction.h"
 #include "core/dom/TreeScope.h"
@@ -372,7 +373,19 @@ static inline String expandedNameLocalPart(Node* node)
 
 static inline String expandedName(Node* node)
 {
-    const AtomicString& prefix = node->prefix();
+    AtomicString prefix;
+
+    switch (node->nodeType()) {
+    case Node::ELEMENT_NODE:
+        prefix = toElement(node)->prefix();
+        break;
+    case Node::ATTRIBUTE_NODE:
+        prefix = toAttr(node)->prefix();
+        break;
+    default:
+        break;
+    }
+
     return prefix.isEmpty() ? expandedNameLocalPart(node) : prefix + ":" + expandedNameLocalPart(node);
 }
 

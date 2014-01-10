@@ -494,12 +494,6 @@ void Node::normalize()
     }
 }
 
-const AtomicString& Node::prefix() const
-{
-    // For nodes other than elements and attributes, the prefix is always null
-    return nullAtom;
-}
-
 const AtomicString& Node::localName() const
 {
     return nullAtom;
@@ -1391,9 +1385,6 @@ bool Node::isEqualNode(Node* other) const
     if (namespaceURI() != other->namespaceURI())
         return false;
 
-    if (prefix() != other->prefix())
-        return false;
-
     if (nodeValue() != other->nodeValue())
         return false;
 
@@ -1481,32 +1472,37 @@ bool Node::isDefaultNamespace(const AtomicString& namespaceURIMaybeEmpty) const
 const AtomicString& Node::lookupPrefix(const AtomicString& namespaceURI) const
 {
     // Implemented according to
-    // http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407/namespaces-algorithms.html#lookupNamespacePrefixAlgo
+    // http://dom.spec.whatwg.org/#dom-node-lookupprefix
 
-    if (namespaceURI.isEmpty())
+    if (namespaceURI.isEmpty() || namespaceURI.isNull())
         return nullAtom;
+
+    const Element* context;
 
     switch (nodeType()) {
         case ELEMENT_NODE:
-            return lookupNamespacePrefix(namespaceURI, toElement(this));
+            context = toElement(this);
+            break;
         case DOCUMENT_NODE:
-            if (Element* de = toDocument(this)->documentElement())
-                return de->lookupPrefix(namespaceURI);
-            return nullAtom;
+            context = toDocument(this)->documentElement();
+            break;
         case DOCUMENT_FRAGMENT_NODE:
         case DOCUMENT_TYPE_NODE:
-            return nullAtom;
-        case ATTRIBUTE_NODE: {
-            const Attr *attr = toAttr(this);
-            if (attr->ownerElement())
-                return attr->ownerElement()->lookupPrefix(namespaceURI);
-            return nullAtom;
-        }
+            context = 0;
+            break;
+        // FIXME: Remove this when Attr no longer extends Node (CR305105)
+        case ATTRIBUTE_NODE:
+            context = toAttr(this)->ownerElement();
+            break;
         default:
-            if (Element* parent = parentElement())
-                return parent->lookupPrefix(namespaceURI);
-            return nullAtom;
+            context = parentElement();
+            break;
     }
+
+    if (!context)
+        return nullAtom;
+
+    return context->locateNamespacePrefix(namespaceURI);
 }
 
 const AtomicString& Node::lookupNamespaceURI(const String& prefix) const
@@ -1564,31 +1560,6 @@ const AtomicString& Node::lookupNamespaceURI(const String& prefix) const
                 return parent->lookupNamespaceURI(prefix);
             return nullAtom;
     }
-}
-
-const AtomicString& Node::lookupNamespacePrefix(const AtomicString& _namespaceURI, const Element* originalElement) const
-{
-    if (_namespaceURI.isNull())
-        return nullAtom;
-
-    if (originalElement->lookupNamespaceURI(prefix()) == _namespaceURI)
-        return prefix();
-
-    ASSERT(isElementNode());
-    const Element* thisElement = toElement(this);
-    if (thisElement->hasAttributes()) {
-        for (unsigned i = 0; i < thisElement->attributeCount(); i++) {
-            const Attribute* attr = thisElement->attributeItem(i);
-
-            if (attr->prefix() == xmlnsAtom && attr->value() == _namespaceURI
-                    && originalElement->lookupNamespaceURI(attr->localName()) == _namespaceURI)
-                return attr->localName();
-        }
-    }
-
-    if (Element* parent = parentElement())
-        return parent->lookupNamespacePrefix(_namespaceURI, originalElement);
-    return nullAtom;
 }
 
 static void appendTextContent(const Node* node, bool convertBRsToNewlines, bool& isNullString, StringBuilder& content)

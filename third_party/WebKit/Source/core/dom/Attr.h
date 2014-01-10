@@ -61,7 +61,7 @@ public:
 
     virtual const AtomicString& localName() const OVERRIDE { return m_name.localName(); }
     virtual const AtomicString& namespaceURI() const OVERRIDE { return m_name.namespaceURI(); }
-    virtual const AtomicString& prefix() const OVERRIDE FINAL { return m_name.prefix(); }
+    const AtomicString& prefix() const { return m_name.prefix(); }
 
     void setPrefix(const AtomicString&, ExceptionState&);
 
