@@ -33,6 +33,7 @@
 #include "mojo/system/message_in_transit.h"
 #include "mojo/system/platform_channel.h"
 #include "mojo/system/platform_channel_handle.h"
+#include "mojo/system/platform_channel_pair.h"
 #include "mojo/system/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

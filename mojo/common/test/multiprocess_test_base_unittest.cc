@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "mojo/system/platform_channel.h"
 #include "mojo/system/platform_channel_handle.h"
 
 #if defined(OS_POSIX)

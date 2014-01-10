@@ -11,10 +11,15 @@
 #include "base/compiler_specific.h"
 #include "base/process/process_handle.h"
 #include "base/test/multiprocess_test.h"
-#include "mojo/system/platform_channel.h"
 #include "testing/multiprocess_func_list.h"
 
 namespace mojo {
+
+namespace system {
+class PlatformChannel;
+class PlatformChannelPair;
+}
+
 namespace test {
 
 class MultiprocessTestBase : public base::MultiProcessTest {

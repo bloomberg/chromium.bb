@@ -19,6 +19,7 @@
 #include "mojo/system/local_message_pipe_endpoint.h"
 #include "mojo/system/message_pipe.h"
 #include "mojo/system/platform_channel.h"
+#include "mojo/system/platform_channel_pair.h"
 #include "mojo/system/proxy_message_pipe_endpoint.h"
 #include "mojo/system/test_utils.h"
 #include "mojo/system/waiter.h"
