@@ -277,8 +277,15 @@ TestRunner.prototype = {
         continueWaiting = false;
         this.runNextTest();
       }
-    } else if (waitCondition.state = 'candidatePopupVisibility') {
+    } else if (waitCondition.state == 'candidatePopupVisibility') {
       var popup = keyset.querySelector('kb-altkey-container');
+      if (popup && popup.hidden == !waitCondition.value) {
+        continueWaiting = false;
+        this.runNextTest();
+      }
+    } else if (waitCondition.state == 'overlayVisibility') {
+      var popup =
+          $('keyboard').shadowRoot.querySelector('kb-keyboard-overlay');
       if (popup && popup.hidden == !waitCondition.value) {
         continueWaiting = false;
         this.runNextTest();
@@ -346,6 +353,8 @@ function setUp() {
                                     'sendKeyEvent');
 
   mockController.createFunctionMock(chrome.virtualKeyboardPrivate,
+                                    'lockKeyboard');
+  mockController.createFunctionMock(chrome.virtualKeyboardPrivate,
                                     'hideKeyboard');
   mockController.createFunctionMock(chrome.virtualKeyboardPrivate,
                                     'moveCursor');
@@ -370,15 +379,23 @@ function setUp() {
   };
   chrome.virtualKeyboardPrivate.sendKeyEvent.validateCall = validateSendCall;
 
+  var validateLockKeyboard = function(index, expected, observed) {
+    assertEquals(expected[0],
+                 observed[0],
+                 'Mismatched keyboard lock/unlock state.');
+  };
+  chrome.virtualKeyboardPrivate.lockKeyboard.validateCall =
+      validateLockKeyboard;
+
   chrome.virtualKeyboardPrivate.hideKeyboard.validateCall = function() {
     // hideKeyboard has one optional argument for error logging that does not
     // matter for the purpose of validating the call.
   };
 
   var validateMoveCursor = function(index, expected, observed) {
-    assertEquals(expected[0], observed[0], "Mismatched swipe directions.");
-    assertEquals(expected[1], observed[1], "Mismatched swipe flags.");
-  }
+    assertEquals(expected[0], observed[0], 'Mismatched swipe directions.');
+    assertEquals(expected[1], observed[1], 'Mismatched swipe flags.');
+  };
   chrome.virtualKeyboardPrivate.moveCursor.validateCall = validateMoveCursor;
 
   // TODO(kevers): Mock additional extension API calls as required.

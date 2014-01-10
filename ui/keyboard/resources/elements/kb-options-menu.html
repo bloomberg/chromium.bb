@@ -132,6 +132,13 @@
     Polymer('kb-keyboard-overlay', {
       up: function() {
         this.hidden = true;
+      },
+
+      hiddenChanged: function() {
+        this.fire('stateChange', {
+          state: 'overlayVisibility',
+          value: !!this.hidden
+        });
       }
     });
   </script>

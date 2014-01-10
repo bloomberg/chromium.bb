@@ -319,6 +319,7 @@ function testHideKeyboard(testDoneCallback) {
     assertTrue(!!hideKey, 'Unable to find key');
 
     chrome.virtualKeyboardPrivate.hideKeyboard.addExpectation();
+    chrome.virtualKeyboardPrivate.lockKeyboard.addExpectation(false);
 
     hideKey.down();
     hideKey.up();

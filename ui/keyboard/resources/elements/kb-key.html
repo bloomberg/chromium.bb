@@ -190,11 +190,10 @@
       longPressTimer: undefined,
 
       down: function(event) {
-         var self = this;
-         this.longPressTimer = this.asyncMethod(function() {
-           if (self.longPressTimer) {
-             clearTimeout(self.longPressTimer);
-             self.longPressTimer = undefined;
+         this.longPressTimer = this.async(function() {
+           if (this.longPressTimer) {
+             clearTimeout(this.longPressTimer);
+             this.longPressTimer = undefined;
              var details = {
                left: this.offsetLeft,
                top: this.offsetTop,

@@ -129,7 +129,7 @@
         },
 
         generateLongPressTimer: function() {
-          return this.asyncMethod(function() {
+          return this.async(function() {
             var detail = this.populateDetails();
             if (state == KEY_STATES.LOCKED) {
               // We don't care about the longpress if we are already
