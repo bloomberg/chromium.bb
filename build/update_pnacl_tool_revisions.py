@@ -140,16 +140,11 @@ def GitFilesChanged(commit_hash):
                        extra=['--name-only']).split('\n')
 
 
-def GitCommitsChangingPath(commit_hashes, path):
-  """Returns the commits changing a file under path."""
-  hashes = []
-  for commit_hash in reversed(commit_hashes):
-    files = GitFilesChanged(commit_hash)
-    for file in files:
-      if re.search('^' + path, file.strip()):
-        hashes.append(commit_hash)
-        break
-  return hashes
+def GitChangesPath(commit_hash, path):
+  """Returns True if the commit changes a file under the given path."""
+  return any([
+      re.search('^' + path, f.strip()) for f in
+      GitFilesChanged(commit_hash)])
 
 
 def GitBranchExists(name):
@@ -274,16 +269,37 @@ class CLInfo:
     assert key in self._vals.keys()
     self._vals[key] = str(val)
   def __str__(self):
-    return ('r' + self._vals['git svn id'] + ': (' +
+    """Changelist to string.
+
+    A short description of the change, e.g.:
+      r12345: (tom@example.com) Subject of the change.
+
+    If the change is itself pulling in other changes from
+    sub-repositories then take its relevant description and append it to
+    the string. These sub-directory updates are also script-generated
+    and therefore have a predictable format. e.g.:
+      r12345: (tom@example.com) Subject of the change.
+        | dead123: (dick@example.com) Other change in another repository.
+        | beef456: (harry@example.com) Yet another cross-repository change.
+    """
+    desc = ('  r' + self._vals['git svn id'] + ': (' +
             self._vals['author'] + ') ' +
             self._vals['subject'])
+    if GitChangesPath(self._vals['hash'], 'pnacl/COMPONENT_REVISIONS'):
+      git_hash_abbrev = '[0-9a-fA-F]{7}'
+      email = '[^@)]+@[^)]+\.[^)]+'
+      desc = '\n'.join([desc] + [
+          '    | ' + line for line in self._vals['body'].split('\n') if
+          re.match('^ *%s: \(%s\) .*$' % (git_hash_abbrev, email), line)])
+    return desc
+
 
 def FmtOut(tr_recent, tr_points_at, pnacl_changes, err=[], msg=[]):
   assert isinstance(err, list)
   assert isinstance(msg, list)
   old_svn_id = tr_points_at['git svn id']
   new_svn_id = pnacl_changes[-1]['git svn id'] if pnacl_changes else '?'
-  changes = '\n'.join(['  ' + str(cl) for cl in pnacl_changes])
+  changes = '\n'.join([str(cl) for cl in pnacl_changes])
   bugs = '\n'.join(list(set(
       ['BUG= ' + cl['bug'].strip() if cl['bug'] else '' for
        cl in pnacl_changes]) - set([''])))
@@ -356,10 +372,14 @@ def Main():
     tr_points_at['commits since'] = len(recent_commits)
     assert len(recent_commits) > 1
 
-    # Find the commits changing PNaCl files that follows the previous
+    # Find the commits changing PNaCl files that follow the previous
     # TOOL_REVISIONS PNaCl pointer.
-    pnacl_hashes = GitCommitsChangingPath(
-        recent_commits[:-1], 'pnacl/')
+    pnacl_pathes = ['pnacl/', 'toolchain_build/']
+    pnacl_hashes = list(set(reduce(
+        lambda acc, lst: acc + lst,
+        [[cl for cl in recent_commits[:-1] if
+          GitChangesPath(cl, path)] for
+         path in pnacl_pathes])))
     if len(pnacl_hashes) == 0:
       Done(FmtOut(tr_recent, tr_points_at, pnacl_changes,
                   msg=['No PNaCl change since.']))
@@ -372,6 +392,11 @@ def Main():
           GitCommitInfo(info='body', obj=hash, num=1)).iteritems():
         cl[k] = v
       pnacl_changes.append(cl)
+
+    # The PNaCl hashes weren't ordered chronologically, make sure the
+    # changes are.
+    pnacl_changes.sort(key=lambda x: int(x['git svn id']))
+
     current_versions['PNACL_VERSION'] = pnacl_changes[-1]['git svn id']
 
     new_branch_name = ('TOOL_REVISIONS-pnacl-update-to-%s' %
