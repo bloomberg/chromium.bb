@@ -34,6 +34,6 @@
     attribute DOMString stringAttribute;
     readonly attribute TestInterfaceEmpty readonlyTestInterfaceEmptyAttribute;
     attribute EventHandler eventHandlerAttribute;
-    // [Reflect] attribute DOMString reflectStringAttribute;
+    [Reflect] attribute DOMString reflectStringAttribute;
     // [Reflect, URL] attribute DOMString reflectUrlStringAttribute;
 };

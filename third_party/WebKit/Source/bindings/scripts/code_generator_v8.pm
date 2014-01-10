@@ -2030,9 +2030,9 @@ END
             my $mode = GetV8StringResourceMode($attribute->extendedAttributes);
             AddToImplIncludes("${namespace}.h");
             $code .= "    Element* imp = V8Element::toNative(info.Holder());\n";
-            $code .= "    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<$mode>, stringResource, jsValue);\n";
+            $code .= "    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<$mode>, cppValue, jsValue);\n";
             # Attr (not Attribute) used in content attributes
-            $code .= "    imp->setAttribute(${namespace}::${contentAttributeName}Attr, stringResource);\n";
+            $code .= "    imp->setAttribute(${namespace}::${contentAttributeName}Attr, cppValue);\n";
             $code .= "}\n";
             $code .= "#endif // ${conditionalString}\n" if $conditionalString;
             $code .= "\n";

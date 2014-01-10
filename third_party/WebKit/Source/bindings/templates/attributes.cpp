@@ -8,6 +8,11 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 const v8::PropertyCallbackInfo<v8::Value>& info
 {%- endif %})
 {
+    {% if attribute.is_reflect and attribute.idl_type == 'DOMString' and
+          is_node %}
+    {% set cpp_class, v8_class = 'Element', 'V8Element' %}
+    {# FIXME: Perl skips most of function, but this seems unnecessary #}
+    {% endif %}
     {% if attribute.is_unforgeable %}
     v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain({{v8_class}}::domTemplate(info.GetIsolate(), worldType(info.GetIsolate())));
     if (holder.IsEmpty())
@@ -124,6 +129,11 @@ v8::Local<v8::Value> jsValue, const v8::FunctionCallbackInfo<v8::Value>& info
 v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info
 {%- endif %})
 {
+    {% if attribute.is_reflect and attribute.idl_type == 'DOMString' and
+          is_node %}
+    {% set cpp_class, v8_class = 'Element', 'V8Element' %}
+    {# FIXME: Perl skips most of function, but this seems unnecessary #}
+    {% endif %}
     {% if attribute.has_setter_exception_state %}
     ExceptionState exceptionState(ExceptionState::SetterContext, "{{attribute.name}}", "{{interface_name}}", info.Holder(), info.GetIsolate());
     {% endif %}
@@ -154,7 +164,8 @@ v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info
     if (!({{attribute.enum_validation_expression}}))
         return;
     {% endif %}
-    {% if attribute.is_reflect %}
+    {% if attribute.is_reflect and
+          not(attribute.idl_type == 'DOMString' and is_node) %}
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     {% endif %}
     {% if attribute.is_call_with_execution_context %}
