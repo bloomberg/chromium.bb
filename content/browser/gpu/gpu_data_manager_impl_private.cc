@@ -1032,19 +1032,8 @@ void GpuDataManagerImplPrivate::InitializeImpl(
   UpdateGpuSwitchingManager(gpu_info);
   UpdatePreliminaryBlacklistedFeatures();
 
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  // We pass down the list to GPU command buffer through commandline
-  // switches at GPU process launch. However, in situations where we don't
-  // have a GPU process, we append the browser process commandline.
-  if (command_line->HasSwitch(switches::kSingleProcess) ||
-      command_line->HasSwitch(switches::kInProcessGPU)) {
-    if (!gpu_driver_bugs_.empty()) {
-      command_line->AppendSwitchASCII(switches::kGpuDriverBugWorkarounds,
-                                      IntSetToString(gpu_driver_bugs_));
-    }
-  }
 #if defined(OS_ANDROID)
-  ApplyAndroidWorkarounds(gpu_info, command_line);
+  ApplyAndroidWorkarounds(gpu_info, CommandLine::ForCurrentProcess());
 #endif  // OS_ANDROID
 }
 

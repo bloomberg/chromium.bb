@@ -578,8 +578,12 @@ bool GpuProcessHost::Init() {
 
   if (in_process_) {
     DCHECK(g_gpu_main_thread_factory);
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kDisableGpuWatchdog);
+    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    command_line->AppendSwitch(switches::kDisableGpuWatchdog);
+
+    GpuDataManagerImpl* gpu_data_manager = GpuDataManagerImpl::GetInstance();
+    DCHECK(gpu_data_manager);
+    gpu_data_manager->AppendGpuCommandLine(command_line);
 
     in_process_gpu_thread_.reset(g_gpu_main_thread_factory(channel_id));
     in_process_gpu_thread_->Start();
