@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
+#include "base/debug/trace_event_synthetic_delay.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ref_counted_memory.h"
@@ -2632,6 +2633,49 @@ TEST_F(TraceEventTestFixture, TimeOffset) {
     EXPECT_LE(timestamp, end_time);
     last_timestamp = timestamp;
   }
+}
+
+TEST_F(TraceEventTestFixture, ConfigureSyntheticDelays) {
+  BeginSpecificTrace("DELAY(test.Delay;0.05)");
+
+  base::TimeTicks start = base::TimeTicks::Now();
+  {
+    TRACE_EVENT_SYNTHETIC_DELAY("test.Delay");
+  }
+  base::TimeDelta duration = base::TimeTicks::Now() - start;
+  EXPECT_GE(duration.InMilliseconds(), 50);
+
+  EndTraceAndFlush();
+}
+
+TEST_F(TraceEventTestFixture, BadSyntheticDelayConfigurations) {
+  const char* configs[] = {
+    "",
+    "DELAY(",
+    "DELAY(;",
+    "DELAY(;)",
+    "DELAY(test.Delay)",
+    "DELAY(test.Delay;)"
+  };
+  for (size_t i = 0; i < arraysize(configs); i++) {
+    BeginSpecificTrace(configs[i]);
+    EndTraceAndFlush();
+    CategoryFilter filter = TraceLog::GetInstance()->GetCurrentCategoryFilter();
+    EXPECT_EQ(0u, filter.GetSyntheticDelayValues().size());
+  }
+}
+
+TEST_F(TraceEventTestFixture, SyntheticDelayConfigurationMerging) {
+  CategoryFilter filter1("DELAY(test.Delay1;16)");
+  CategoryFilter filter2("DELAY(test.Delay2;32)");
+  filter1.Merge(filter2);
+  EXPECT_EQ(2u, filter1.GetSyntheticDelayValues().size());
+}
+
+TEST_F(TraceEventTestFixture, SyntheticDelayConfigurationToString) {
+  const char config[] = "DELAY(test.Delay;16;oneshot)";
+  CategoryFilter filter(config);
+  EXPECT_EQ(config, filter.ToString());
 }
 
 }  // namespace debug

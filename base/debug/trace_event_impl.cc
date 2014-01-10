@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/debug/leak_annotations.h"
 #include "base/debug/trace_event.h"
+#include "base/debug/trace_event_synthetic_delay.h"
 #include "base/format_macros.h"
 #include "base/json/string_escape.h"
 #include "base/lazy_instance.h"
@@ -71,6 +72,8 @@ const int kThreadFlushTimeoutMs = 3000;
 
 // These categories will cause deadlock when ECHO_TO_CONSOLE. crbug.com/325575.
 const char kEchoToConsoleCategoryFilter[] = "-ipc,-task";
+
+const char kSyntheticDelayCategoryFilterPrefix[] = "DELAY(";
 
 #define MAX_CATEGORY_GROUPS 100
 
@@ -1209,6 +1212,31 @@ void TraceLog::UpdateCategoryGroupEnabledFlags() {
     UpdateCategoryGroupEnabledFlag(i);
 }
 
+void TraceLog::UpdateSyntheticDelaysFromCategoryFilter() {
+  ResetTraceEventSyntheticDelays();
+  const CategoryFilter::DelayValueList& delays =
+      category_filter_.GetSyntheticDelayValues();
+  CategoryFilter::DelayValueList::const_iterator ci;
+  for (ci = delays.begin(); ci != delays.end(); ++ci) {
+    TraceEventSyntheticDelay* delay =
+        TraceEventSyntheticDelay::Lookup(ci->first);
+    StringTokenizer tokens(ci->second, ";");
+    while (tokens.GetNext()) {
+      double target_duration;
+      if (StringToDouble(tokens.token(), &target_duration)) {
+        delay->SetTargetDuration(
+            TimeDelta::FromMicroseconds(target_duration * 1e6));
+      } else if (tokens.token() == "static") {
+        delay->SetMode(TraceEventSyntheticDelay::STATIC);
+      } else if (tokens.token() == "oneshot") {
+        delay->SetMode(TraceEventSyntheticDelay::ONE_SHOT);
+      } else if (tokens.token() == "alternating") {
+        delay->SetMode(TraceEventSyntheticDelay::ALTERNATING);
+      }
+    }
+  }
+}
+
 const unsigned char* TraceLog::GetCategoryGroupEnabledInternal(
     const char* category_group) {
   DCHECK(!strchr(category_group, '"')) <<
@@ -1303,6 +1331,7 @@ void TraceLog::SetEnabled(const CategoryFilter& category_filter,
 
     category_filter_ = CategoryFilter(category_filter);
     UpdateCategoryGroupEnabledFlags();
+    UpdateSyntheticDelaysFromCategoryFilter();
 
     if (options & ENABLE_SAMPLING) {
       sampling_thread_.reset(new TraceSamplingThread);
@@ -2176,7 +2205,8 @@ CategoryFilter::CategoryFilter(const std::string& filter_string) {
 CategoryFilter::CategoryFilter(const CategoryFilter& cf)
     : included_(cf.included_),
       disabled_(cf.disabled_),
-      excluded_(cf.excluded_) {
+      excluded_(cf.excluded_),
+      delays_(cf.delays_) {
 }
 
 CategoryFilter::~CategoryFilter() {
@@ -2189,6 +2219,7 @@ CategoryFilter& CategoryFilter::operator=(const CategoryFilter& rhs) {
   included_ = rhs.included_;
   disabled_ = rhs.disabled_;
   excluded_ = rhs.excluded_;
+  delays_ = rhs.delays_;
   return *this;
 }
 
@@ -2201,8 +2232,20 @@ void CategoryFilter::Initialize(const std::string& filter_string) {
     // Ignore empty categories.
     if (category.empty())
       continue;
-    // Excluded categories start with '-'.
-    if (category.at(0) == '-') {
+    // Synthetic delays are of the form 'DELAY(delay;option;option;...)'.
+    if (category.find(kSyntheticDelayCategoryFilterPrefix) == 0 &&
+        category.at(category.size() - 1) == ')') {
+      category = category.substr(
+          strlen(kSyntheticDelayCategoryFilterPrefix),
+          category.size() - strlen(kSyntheticDelayCategoryFilterPrefix) - 1);
+      size_t name_length = category.find(';');
+      if (name_length != std::string::npos && name_length > 0 &&
+          name_length != category.size() - 1) {
+        delays_.push_back(DelayValue(category.substr(0, name_length),
+                                     category.substr(name_length + 1)));
+      }
+    } else if (category.at(0) == '-') {
+      // Excluded categories start with '-'.
       // Remove '-' from category string.
       category = category.substr(1);
       excluded_.push_back(category);
@@ -2229,11 +2272,26 @@ void CategoryFilter::WriteString(const StringList& values,
   }
 }
 
+void CategoryFilter::WriteString(const DelayValueList& delays,
+                                 std::string* out) const {
+  bool prepend_comma = !out->empty();
+  int token_cnt = 0;
+  for (DelayValueList::const_iterator ci = delays.begin();
+       ci != delays.end(); ++ci) {
+    if (token_cnt > 0 || prepend_comma)
+      StringAppendF(out, ",");
+    StringAppendF(out, "%s%s;%s)", kSyntheticDelayCategoryFilterPrefix,
+                  ci->first.c_str(), ci->second.c_str());
+    ++token_cnt;
+  }
+}
+
 std::string CategoryFilter::ToString() const {
   std::string filter_string;
   WriteString(included_, &filter_string, true);
   WriteString(disabled_, &filter_string, true);
   WriteString(excluded_, &filter_string, false);
+  WriteString(delays_, &filter_string);
   return filter_string;
 }
 
@@ -2289,12 +2347,20 @@ void CategoryFilter::Merge(const CategoryFilter& nested_filter) {
   excluded_.insert(excluded_.end(),
                    nested_filter.excluded_.begin(),
                    nested_filter.excluded_.end());
+  delays_.insert(delays_.end(),
+                 nested_filter.delays_.begin(),
+                 nested_filter.delays_.end());
 }
 
 void CategoryFilter::Clear() {
   included_.clear();
   disabled_.clear();
   excluded_.clear();
+}
+
+const CategoryFilter::DelayValueList&
+    CategoryFilter::GetSyntheticDelayValues() const {
+  return delays_;
 }
 
 }  // namespace debug

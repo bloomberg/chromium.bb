@@ -190,8 +190,10 @@ base::TimeTicks TraceEventSyntheticDelayRegistry::Now() {
 void TraceEventSyntheticDelayRegistry::ResetAllDelays() {
   AutoLock lock(lock_);
   int delay_count = base::subtle::Acquire_Load(&delay_count_);
-  for (int i = 0; i < delay_count; ++i)
+  for (int i = 0; i < delay_count; ++i) {
     delays_[i].SetTargetDuration(base::TimeDelta());
+    delays_[i].SetClock(this);
+  }
 }
 
 void ResetTraceEventSyntheticDelays() {

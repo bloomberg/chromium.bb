@@ -283,6 +283,9 @@ class BASE_EXPORT TraceResultBuffer {
 
 class BASE_EXPORT CategoryFilter {
  public:
+  typedef std::pair<std::string, std::string> DelayValue;
+  typedef std::vector<DelayValue> DelayValueList;
+
   // The default category filter, used when none is provided.
   // Allows all categories through, except if they end in the suffix 'Debug' or
   // 'Test'.
@@ -298,6 +301,16 @@ class BASE_EXPORT CategoryFilter {
   // Example: CategoryFilter("-excluded_category1,-excluded_category2");
   // Example: CategoryFilter("-*,webkit"); would disable everything but webkit.
   // Example: CategoryFilter("-webkit"); would enable everything but webkit.
+  //
+  // Category filters can also be used to configure synthetic delays.
+  //
+  // Example: CategoryFilter("DELAY(gpu.SwapBuffers;16)"); would make swap
+  //          buffers always take at least 16 ms.
+  // Example: CategoryFilter("DELAY(gpu.SwapBuffers;16;oneshot)"); would
+  //          make swap buffers take at least 16 ms the first time it is called.
+  // Example: CategoryFilter("DELAY(gpu.SwapBuffers;16;alternating)"); would
+  //          make swap buffers take at least 16 ms every other time it is
+  //          called.
   explicit CategoryFilter(const std::string& filter_string);
 
   CategoryFilter(const CategoryFilter& cf);
@@ -316,6 +329,9 @@ class BASE_EXPORT CategoryFilter {
   // Determines whether category group would be enabled or
   // disabled by this category filter.
   bool IsCategoryGroupEnabled(const char* category_group) const;
+
+  // Return a list of the synthetic delays specified in this category filter.
+  const DelayValueList& GetSyntheticDelayValues() const;
 
   // Merges nested_filter with the current CategoryFilter
   void Merge(const CategoryFilter& nested_filter);
@@ -340,6 +356,7 @@ class BASE_EXPORT CategoryFilter {
   void WriteString(const StringList& values,
                    std::string* out,
                    bool included) const;
+  void WriteString(const DelayValueList& delays, std::string* out) const;
   bool HasIncludedPatterns() const;
 
   bool DoesCategoryGroupContainCategory(const char* category_group,
@@ -348,6 +365,7 @@ class BASE_EXPORT CategoryFilter {
   StringList included_;
   StringList disabled_;
   StringList excluded_;
+  DelayValueList delays_;
 };
 
 class TraceSamplingThread;
@@ -605,6 +623,10 @@ class BASE_EXPORT TraceLog {
   // event_callback_category_filter_ matches the category group.
   void UpdateCategoryGroupEnabledFlags();
   void UpdateCategoryGroupEnabledFlag(int category_index);
+
+  // Configure synthetic delays based on the values set in the current
+  // category filter.
+  void UpdateSyntheticDelaysFromCategoryFilter();
 
   class ThreadLocalEventBuffer;
   class OptionalAutoLock;
