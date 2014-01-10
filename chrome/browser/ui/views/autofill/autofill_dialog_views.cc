@@ -35,6 +35,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/point.h"
@@ -587,7 +588,9 @@ void AutofillDialogViews::OverlayView::UpdateState() {
   message_view_->SetVisible(!state.string.text.empty());
   message_view_->SetText(state.string.text);
   message_view_->SetFontList(gfx::FontList(state.string.font));
-  message_view_->SetEnabledColor(state.string.text_color);
+  message_view_->SetEnabledColor(GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_TextfieldReadOnlyColor));
+
   message_view_->set_border(
       views::Border::CreateEmptyBorder(kOverlayMessageVerticalPadding,
                                        kDialogEdgePadding,
@@ -650,11 +653,25 @@ void AutofillDialogViews::OverlayView::OnPaint(gfx::Canvas* canvas) {
     arrow.lineTo(rect.x() - 1, rect.bottom() + 1);
     arrow.close();
 
+    // The mocked alpha blends were 7 for background & 10 for the border against
+    // a very bright background. The eye perceives luminance differences of
+    // darker colors much less than lighter colors, so increase the alpha blend
+    // amount the darker the color (lower the luminance).
     SkPaint paint;
-    paint.setColor(kShadingColor);
+    SkColor background_color = background()->get_color();
+    int background_luminance =
+        color_utils::GetLuminanceForColor(background_color);
+    int background_alpha = static_cast<int>(
+        7 + 15 * (255 - background_luminance) / 255);
+    int subtle_border_alpha = static_cast<int>(
+        10 + 20 * (255 - background_luminance) / 255);
+
+    paint.setColor(color_utils::BlendTowardOppositeLuminance(
+        background_color, background_alpha));
     paint.setStyle(SkPaint::kFill_Style);
     canvas->DrawPath(arrow, paint);
-    paint.setColor(kSubtleBorderColor);
+    paint.setColor(color_utils::BlendTowardOppositeLuminance(
+        background_color, subtle_border_alpha));
     paint.setStyle(SkPaint::kStroke_Style);
     canvas->DrawPath(arrow, paint);
   }

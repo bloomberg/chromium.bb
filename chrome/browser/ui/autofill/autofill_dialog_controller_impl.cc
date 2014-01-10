@@ -800,7 +800,6 @@ DialogOverlayState AutofillDialogControllerImpl::GetDialogOverlay() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   DialogOverlayState state;
   state.string.font = rb.GetFont(ui::ResourceBundle::BaseFont).DeriveFont(3);
-  state.string.text_color = SK_ColorDKGRAY;
 
   const SkColor start_top_color = SkColorSetRGB(0xD6, 0xD6, 0xD6);
   const SkColor start_bottom_color = SkColorSetRGB(0x98, 0x98, 0x98);

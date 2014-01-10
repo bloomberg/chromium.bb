@@ -173,9 +173,6 @@ struct DialogOverlayString {
   // Text content of the message.
   base::string16 text;
 
-  // Color of the message's text.
-  SkColor text_color;
-
   // Font to render the message's text in.
   gfx::Font font;
 };
