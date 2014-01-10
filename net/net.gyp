@@ -2062,6 +2062,8 @@
         }],
         [ 'OS == "android"', {
           'sources!': [
+            # See bug 294367.
+            'disk_cache/v3/index_table_unittest.cc',
             # No res_ninit() et al on Android, so this doesn't make a lot of
             # sense.
             'dns/dns_config_service_posix_unittest.cc',
