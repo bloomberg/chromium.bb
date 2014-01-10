@@ -291,7 +291,7 @@ config("runtime_library") {
       # Work around incompatibilities between bionic and clang headers.
       defines += [
         "__compiler_offsetof=__builtin_offsetof",
-        "-Dnan=__builtin_nan",
+        "nan=__builtin_nan",
       ]
     }
 
