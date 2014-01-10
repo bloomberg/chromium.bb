@@ -9,7 +9,6 @@ import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.view.MotionEvent;
-import android.view.ViewConfiguration;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.ScalableTimeout;
@@ -109,36 +108,6 @@ public class LongPressDetectorTest extends InstrumentationTestCase {
         event = motionEvent(MotionEvent.ACTION_UP, downTime, eventTime + 1000);
         mLongPressDetector.cancelLongPressIfNeeded(event);
         assertTrue("Should still have a pending gesture", mLongPressDetector.hasPendingMessage());
-    }
-
-    /**
-     * Verify that the touch move threshold (slop) is working for events offered to native.
-     */
-    @SmallTest
-    @Feature({"AndroidWebView"})
-    public void testConfirmOfferMoveEventToNative() {
-        final int slop = ViewConfiguration.get(getInstrumentation().getTargetContext())
-                .getScaledTouchSlop();
-
-        long eventTime = SystemClock.uptimeMillis();
-        final MotionEvent downEvent = MotionEvent.obtain(
-                eventTime, eventTime, MotionEvent.ACTION_DOWN, FAKE_COORD_X, FAKE_COORD_Y, 0);
-
-        // Test a small move, where confirmOfferMoveEventToNative should return false.
-        mLongPressDetector.onOfferTouchEventToJavaScript(downEvent);
-        eventTime = SystemClock.uptimeMillis();
-        final MotionEvent smallMove = MotionEvent.obtain(
-                eventTime, eventTime, MotionEvent.ACTION_MOVE,
-                FAKE_COORD_X + slop / 2, FAKE_COORD_Y + slop / 2, 0);
-        assertFalse(mLongPressDetector.confirmOfferMoveEventToJavaScript(smallMove));
-
-        // Test a big move, where confirmOfferMoveEventToNative should return true.
-        mLongPressDetector.onOfferTouchEventToJavaScript(downEvent);
-        eventTime = SystemClock.uptimeMillis();
-        final MotionEvent largeMove = MotionEvent.obtain(
-                eventTime, eventTime, MotionEvent.ACTION_MOVE,
-                FAKE_COORD_X + slop * 2, FAKE_COORD_Y + slop * 2, 0);
-        assertTrue(mLongPressDetector.confirmOfferMoveEventToJavaScript(largeMove));
     }
 
     /**

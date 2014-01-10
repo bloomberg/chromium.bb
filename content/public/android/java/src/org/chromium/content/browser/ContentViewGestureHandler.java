@@ -189,6 +189,14 @@ class ContentViewGestureHandler implements LongPressDelegate {
     // action after a double tap.
     private long mLastDoubleTapTimeMs;
 
+    // Coordinates of the start of a touch sequence offered to native (i.e. the touchdown).
+    private float mTouchDownToNativeX;
+    private float mTouchDownToNativeY;
+
+    // True iff a (potential) touchmove offered to native has exceeded the touch slop distance
+    // OR it had multiple pointers.
+    private boolean mTouchMoveToNativeConfirmed;
+
     static final int GESTURE_SHOW_PRESSED_STATE = 0;
     static final int GESTURE_DOUBLE_TAP = 1;
     static final int GESTURE_SINGLE_TAP_UP = 2;
@@ -513,8 +521,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
 
                                     // Begin double tap drag zoom mode if the move distance is
                                     // further than the threshold.
-                                    if (distanceX * distanceX + distanceY * distanceY >
-                                            mScaledTouchSlopSquare) {
+                                    if (isDistanceGreaterThanTouchSlop(distanceX, distanceY)) {
                                         sendTapCancelIfNecessary(e);
                                         mExtraParamBundleScrollStart.putInt(DELTA_HINT_X,
                                                 (int) -distanceX);
@@ -587,9 +594,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
                      * @return true if the distance is too long to be considered a single tap
                      */
                     private boolean isDistanceBetweenDownAndUpTooLong(float x, float y) {
-                        double deltaX = mLastRawX - x;
-                        double deltaY = mLastRawY - y;
-                        return deltaX * deltaX + deltaY * deltaY > mScaledTouchSlopSquare;
+                        return isDistanceGreaterThanTouchSlop(mLastRawX - x, mLastRawY - y);
                     }
                 };
             mListener = listener;
@@ -847,6 +852,8 @@ class ContentViewGestureHandler implements LongPressDelegate {
         mZoomManager.processTouchEvent(me);
         me.recycle();
         mLongPressDetector.cancelLongPress();
+        if (mCurrentDownEvent != null) recycleEvent(mCurrentDownEvent);
+        mCurrentDownEvent = null;
     }
 
     /**
@@ -927,21 +934,29 @@ class ContentViewGestureHandler implements LongPressDelegate {
         // should always be offered to Javascript (when there is any touch handler).
         if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
             mTouchHandlingState = HAS_TOUCH_HANDLER;
-            if (mCurrentDownEvent != null) recycleEvent(mCurrentDownEvent);
-            mCurrentDownEvent = null;
+            mTouchMoveToNativeConfirmed = false;
+            mTouchDownToNativeX = event.getX();
+            mTouchDownToNativeY = event.getY();
         }
-
-        mLongPressDetector.onOfferTouchEventToJavaScript(event);
 
         if (mTouchHandlingState == NO_TOUCH_HANDLER_FOR_GESTURE) return EVENT_NOT_FORWARDED;
 
         if (event.getActionMasked() == MotionEvent.ACTION_MOVE) {
-            // If javascript has not yet prevent-defaulted the touch sequence,
-            // only send move events if the move has exceeded the slop threshold.
-            boolean moveEventConfirmed =
-                    mLongPressDetector.confirmOfferMoveEventToJavaScript(event);
+            if (!mTouchMoveToNativeConfirmed) {
+                if (event.getPointerCount() > 1) {
+                    mTouchMoveToNativeConfirmed = true;
+                } else {
+                    final float distanceX = event.getX() - mTouchDownToNativeX;
+                    final float distanceY = event.getY() - mTouchDownToNativeY;
+                    if (isDistanceGreaterThanTouchSlop(distanceX, distanceY)) {
+                        mTouchMoveToNativeConfirmed = true;
+                    }
+                }
+            }
+            // If javascript has not yet prevent-defaulted the touch sequence, only send move events
+            // if the move has exceeded the slop threshold OR there are multiple pointers.
             if (mTouchHandlingState != JAVASCRIPT_CONSUMING_GESTURE
-                    && !moveEventConfirmed) {
+                    && !mTouchMoveToNativeConfirmed) {
                 return EVENT_DROPPED;
             }
         }
@@ -958,27 +973,14 @@ class ContentViewGestureHandler implements LongPressDelegate {
     }
 
     private boolean processTouchEvent(MotionEvent event) {
-        boolean handled = false;
-        // The last "finger up" is an end to scrolling but may not be
-        // an end to movement (e.g. fling scroll).  We do not tell
-        // native code to end scrolling until we are sure we did not
-        // fling.
-        boolean possiblyEndMovement = false;
-        // "Last finger raised" could be an end to movement.  However,
-        // give the mSimpleTouchDetector a chance to continue
-        // scrolling with a fling.
-        if (event.getAction() == MotionEvent.ACTION_UP
-                || event.getAction() == MotionEvent.ACTION_CANCEL) {
-            if (mTouchScrolling) {
-                possiblyEndMovement = true;
-            }
-        }
+        final boolean wasTouchScrolling = mTouchScrolling;
 
         mLongPressDetector.cancelLongPressIfNeeded(event);
         mLongPressDetector.startLongPressTimerIfNeeded(event);
 
         // Use the framework's GestureDetector to detect pans and zooms not already
         // handled by the WebKit touch events gesture manager.
+        boolean handled = false;
         if (canHandle(event)) {
             handled |= mGestureDetector.onTouchEvent(event);
             if (event.getAction() == MotionEvent.ACTION_DOWN) {
@@ -988,8 +990,16 @@ class ContentViewGestureHandler implements LongPressDelegate {
 
         handled |= mZoomManager.processTouchEvent(event);
 
-        if (possiblyEndMovement && !handled) {
-            endTouchScrollIfNecessary(event.getEventTime(), true);
+        if (event.getAction() == MotionEvent.ACTION_UP
+                || event.getAction() == MotionEvent.ACTION_CANCEL) {
+            if (mCurrentDownEvent != null) recycleEvent(mCurrentDownEvent);
+            mCurrentDownEvent = null;
+
+            // "Last finger raised" could be an end to movement, but it should
+            // only terminate scrolling if the event did not cause a fling.
+            if (wasTouchScrolling && !handled) {
+                endTouchScrollIfNecessary(event.getEventTime(), true);
+            }
         }
 
         return handled;
@@ -1230,7 +1240,6 @@ class ContentViewGestureHandler implements LongPressDelegate {
         } else {
             mGestureDetector.setOnDoubleTapListener(mDoubleTapListener);
         }
-
     }
 
     private void reportDoubleTap() {
@@ -1273,5 +1282,9 @@ class ContentViewGestureHandler implements LongPressDelegate {
                     ContentViewCore.UMAActionAfterDoubleTap.NO_ACTION, !mDisableClickDelay);
             mLastDoubleTapTimeMs = 0;
         }
+    }
+
+    private boolean isDistanceGreaterThanTouchSlop(float distanceX, float distanceY) {
+        return distanceX * distanceX + distanceY * distanceY > mScaledTouchSlopSquare;
     }
 }

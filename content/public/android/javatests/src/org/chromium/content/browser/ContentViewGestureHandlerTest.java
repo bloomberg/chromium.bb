@@ -1541,6 +1541,83 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
                 TouchPoint.TOUCH_EVENT_TYPE_MOVE, mMockMotionEventDelegate.mLastTouchAction);
     }
 
+
+    /**
+     * Verify that touch moves are not deferred when the MotionEvent has multiple active pointers.
+     * @throws Exception
+     */
+    @SmallTest
+    @Feature({"Gestures"})
+    public void testTouchMoveNotDeferredWithMultiplePointers()
+            throws Exception {
+        Context context = getInstrumentation().getTargetContext();
+        final long downTime = SystemClock.uptimeMillis();
+        final long eventTime = SystemClock.uptimeMillis();
+        final int scaledTouchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
+        final int lessThanSlopScrollDelta = scaledTouchSlop / 2;
+
+        mGestureHandler.hasTouchEventHandlers(true);
+
+        final int secondaryCoordX = FAKE_COORD_X + 10 * scaledTouchSlop;
+        final int secondaryCoordY = FAKE_COORD_Y + 10 * scaledTouchSlop;
+
+        PointerProperties pp0 = new PointerProperties();
+        pp0.id = 0;
+        pp0.toolType = MotionEvent.TOOL_TYPE_FINGER;
+        PointerProperties pp1 = new PointerProperties();
+        pp1.id = 1;
+        pp1.toolType = MotionEvent.TOOL_TYPE_FINGER;
+
+        PointerCoords pc0 = new PointerCoords();
+        pc0.x = FAKE_COORD_X;
+        pc0.y = FAKE_COORD_Y;
+        pc0.pressure = 1;
+        pc0.size = 1;
+        PointerCoords pc1 = new PointerCoords();
+        pc1.x = secondaryCoordX;
+        pc1.y = secondaryCoordY;
+        pc1.pressure = 1;
+        pc1.size = 1;
+
+        MotionEvent event = MotionEvent.obtain(
+                eventTime, eventTime, MotionEvent.ACTION_DOWN,
+                1, new PointerProperties[] { pp0 }, new PointerCoords[] { pc0 },
+                0, 0, 1.0f, 1.0f, 0, 0, 0, 0);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertEquals(1, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+        assertEquals("The touch down should have been forwarded",
+                TouchPoint.TOUCH_EVENT_TYPE_START, mMockMotionEventDelegate.mLastTouchAction);
+
+        event = MotionEvent.obtain(
+                eventTime, eventTime, MotionEvent.ACTION_POINTER_DOWN,
+                2, new PointerProperties[] { pp0, pp1 }, new PointerCoords[] { pc0, pc1 },
+                0, 0, 1.0f, 1.0f, 0, 0, 0, 0);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertEquals(2, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+
+        mGestureHandler.confirmTouchEvent(
+                ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+        assertEquals(1, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+        assertEquals("The secondary touch down should have been forwarded",
+                TouchPoint.TOUCH_EVENT_TYPE_START, mMockMotionEventDelegate.mLastTouchAction);
+
+        pc1.x = secondaryCoordX + lessThanSlopScrollDelta;
+        pc1.y = secondaryCoordY + lessThanSlopScrollDelta;
+
+        event = MotionEvent.obtain(
+                eventTime, eventTime, MotionEvent.ACTION_MOVE,
+                2, new PointerProperties[] { pp0, pp1 }, new PointerCoords[] { pc0, pc1 },
+                0, 0, 1.0f, 1.0f, 0, 0, 0, 0);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertEquals(2, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+
+        mGestureHandler.confirmTouchEvent(
+                ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+        assertEquals(1, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+        assertEquals("The secondary touch move should have been forwarded",
+                TouchPoint.TOUCH_EVENT_TYPE_MOVE, mMockMotionEventDelegate.mLastTouchAction);
+    }
+
     private static void sendLastScrollByEvent(ContentViewGestureHandler handler) {
         final long downTime = SystemClock.uptimeMillis();
         final long eventTime = SystemClock.uptimeMillis();
