@@ -12,7 +12,8 @@ function test()
 
     function step1()
     {
-        WebInspector.resourceTreeModel._frameAttached("root1");
+        // Reset resourceTreeModel.
+        WebInspector.resourceTreeModel.mainFrame._remove();
 
         for (var eventName in WebInspector.ResourceTreeModel.EventTypes)
             WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes[eventName], eventHandler.bind(this, eventName));
@@ -21,11 +22,14 @@ function test()
         {
             switch (eventName) {
             case "FrameAdded":
-            case "FrameNavigated":
             case "FrameDetached":
-            case "MainFrameNavigated":
                 var frame = event.data;
                 InspectorTest.addResult("    " + eventName + " : " + frame.id);
+                break;
+            case "FrameNavigated":
+            case "MainFrameNavigated":
+                var frame = event.data;
+                InspectorTest.addResult("    " + eventName + " : " + frame.id + " : " + frame.loaderId);
                 break;
             case "SecurityOriginAdded":
             case "SecurityOriginRemoved":
@@ -37,6 +41,7 @@ function test()
 
         }
 
+        // Simulate navigation to new render view: do not attach root frame.
         InspectorTest.addResult("Navigating root frame");
         WebInspector.resourceTreeModel._frameNavigated(createFramePayload("root1"));
         InspectorTest.addResult("Navigating child frame 1");
