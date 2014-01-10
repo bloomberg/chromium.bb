@@ -853,6 +853,15 @@ class ExtensionService
                            InstallAppsWithUnlimtedStorage);
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            InstallAppsAndCheckStorageProtection);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest, SetUnsetBlacklistInPrefs);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
+                           BlacklistedExtensionWillNotInstall);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
+                           UnloadBlacklistedExtensionPolicy);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
+                           WillNotLoadBlacklistedExtensionsFromDirectory);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
+                           BlacklistedInPrefsFromStartup);
   DISALLOW_COPY_AND_ASSIGN(ExtensionService);
 };
 

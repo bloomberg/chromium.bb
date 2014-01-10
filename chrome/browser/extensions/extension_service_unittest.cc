@@ -56,6 +56,7 @@
 #include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/extensions/installed_loader.h"
 #include "chrome/browser/extensions/pack_extension_job.h"
+#include "chrome/browser/extensions/test_blacklist.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
@@ -3361,12 +3362,10 @@ TEST_F(ExtensionServiceTest, UpdatePendingExtensionAlreadyInstalled) {
 // Tests blacklisting then unblacklisting extensions after the service has been
 // initialized.
 TEST_F(ExtensionServiceTest, SetUnsetBlacklistInPrefs) {
-  scoped_refptr<FakeSafeBrowsingDatabaseManager> blacklist_db(
-      new FakeSafeBrowsingDatabaseManager(true));
-  Blacklist::ScopedDatabaseManagerForTest scoped_blacklist_db(blacklist_db);
-
+  extensions::TestBlacklist test_blacklist;
   // A profile with 3 extensions installed: good0, good1, and good2.
   InitializeGoodInstalledExtensionService();
+  test_blacklist.Attach(service_->blacklist_);
   service_->Init();
 
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile_.get());
@@ -3388,7 +3387,12 @@ TEST_F(ExtensionServiceTest, SetUnsetBlacklistInPrefs) {
   EXPECT_FALSE(IsPrefExist("invalid_id", "blacklist"));
 
   // Blacklist good0 and good1 (and an invalid extension ID).
-  blacklist_db->SetUnsafe(good0, good1, "invalid_id").NotifyUpdate();
+  test_blacklist.SetBlacklistState(
+      good0, extensions::BLACKLISTED_MALWARE, true);
+  test_blacklist.SetBlacklistState(
+      good1, extensions::BLACKLISTED_MALWARE, true);
+  test_blacklist.SetBlacklistState(
+      "invalid_id", extensions::BLACKLISTED_MALWARE, true);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(!enabled_extensions.Contains(good0) &&
@@ -3404,7 +3408,13 @@ TEST_F(ExtensionServiceTest, SetUnsetBlacklistInPrefs) {
   EXPECT_FALSE(IsPrefExist("invalid_id", "blacklist"));
 
   // Un-blacklist good1 and blacklist good2.
-  blacklist_db->SetUnsafe(good0, good2, "invalid_id").NotifyUpdate();
+  test_blacklist.Clear(false);
+  test_blacklist.SetBlacklistState(
+      good0, extensions::BLACKLISTED_MALWARE, true);
+  test_blacklist.SetBlacklistState(
+      good2, extensions::BLACKLISTED_MALWARE, true);
+  test_blacklist.SetBlacklistState(
+      "invalid_id", extensions::BLACKLISTED_MALWARE, true);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(!enabled_extensions.Contains(good0) &&
@@ -3447,12 +3457,11 @@ TEST_F(ExtensionServiceTest, BlacklistedExtensionWillNotInstall) {
 #if defined(ENABLE_BLACKLIST_TESTS)
 // Unload blacklisted extension on policy change.
 TEST_F(ExtensionServiceTest, UnloadBlacklistedExtensionPolicy) {
-  scoped_refptr<FakeSafeBrowsingDatabaseManager> blacklist_db(
-      new FakeSafeBrowsingDatabaseManager(true));
-  Blacklist::ScopedDatabaseManagerForTest scoped_blacklist_db(blacklist_db);
+  extensions::TestBlacklist test_blacklist;
 
   // A profile with no extensions installed.
   InitializeEmptyExtensionService();
+  test_blacklist.Attach(service_->blacklist_);
 
   base::FilePath path = data_dir_.AppendASCII("good.crx");
 
@@ -3466,7 +3475,8 @@ TEST_F(ExtensionServiceTest, UnloadBlacklistedExtensionPolicy) {
   whitelist.Append(new base::StringValue(good_crx));
   prefs->Set(prefs::kExtensionInstallAllowList, whitelist);
 
-  blacklist_db->SetUnsafe(good_crx).NotifyUpdate();
+  test_blacklist.SetBlacklistState(
+      good_crx, extensions::BLACKLISTED_MALWARE, true);
   base::RunLoop().RunUntilIdle();
 
   // The good_crx is blacklisted and the whitelist doesn't negate it.
@@ -3479,15 +3489,15 @@ TEST_F(ExtensionServiceTest, UnloadBlacklistedExtensionPolicy) {
 // Tests that a blacklisted extension is eventually unloaded on startup, if it
 // wasn't already.
 TEST_F(ExtensionServiceTest, WillNotLoadBlacklistedExtensionsFromDirectory) {
-  scoped_refptr<FakeSafeBrowsingDatabaseManager> blacklist_db(
-      new FakeSafeBrowsingDatabaseManager(true));
-  Blacklist::ScopedDatabaseManagerForTest scoped_blacklist_db(blacklist_db);
+  extensions::TestBlacklist test_blacklist;
 
   // A profile with 3 extensions installed: good0, good1, and good2.
   InitializeGoodInstalledExtensionService();
+  test_blacklist.Attach(service_->blacklist_);
 
   // Blacklist good1 before the service initializes.
-  blacklist_db->SetUnsafe(good1);
+  test_blacklist.SetBlacklistState(
+      good1, extensions::BLACKLISTED_MALWARE, false);
 
   // Load extensions.
   service_->Init();
@@ -3509,15 +3519,15 @@ TEST_F(ExtensionServiceTest, WillNotLoadBlacklistedExtensionsFromDirectory) {
 // Tests extensions blacklisted in prefs on startup; one still blacklisted by
 // safe browsing, the other not. The not-blacklisted one should recover.
 TEST_F(ExtensionServiceTest, BlacklistedInPrefsFromStartup) {
-  scoped_refptr<FakeSafeBrowsingDatabaseManager> blacklist_db(
-      new FakeSafeBrowsingDatabaseManager(true));
-  Blacklist::ScopedDatabaseManagerForTest scoped_blacklist_db(blacklist_db);
+  extensions::TestBlacklist test_blacklist;
 
   InitializeGoodInstalledExtensionService();
+  test_blacklist.Attach(service_->blacklist_);
   service_->extension_prefs()->SetExtensionBlacklisted(good0, true);
   service_->extension_prefs()->SetExtensionBlacklisted(good1, true);
 
-  blacklist_db->SetUnsafe(good1);
+  test_blacklist.SetBlacklistState(
+      good1, extensions::BLACKLISTED_MALWARE, false);
 
   service_->Init();
 

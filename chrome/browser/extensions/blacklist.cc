@@ -317,6 +317,10 @@ void Blacklist::SetBlacklistStateFetcherForTest(
   state_fetcher_.reset(fetcher);
 }
 
+BlacklistStateFetcher* Blacklist::ResetBlacklistStateFetcherForTest() {
+  return state_fetcher_.release();
+}
+
 void Blacklist::AddObserver(Observer* observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   observers_.AddObserver(observer);

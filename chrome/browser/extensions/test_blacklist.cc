@@ -9,13 +9,12 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "chrome/browser/extensions/blacklist.h"
+#include "chrome/browser/extensions/blacklist_state_fetcher.h"
+#include "chrome/browser/extensions/fake_safe_browsing_database_manager.h"
 
 namespace extensions {
-
-TestBlacklist::TestBlacklist(Blacklist* blacklist)
-    : blacklist_(blacklist) {
-}
 
 namespace {
 
@@ -25,6 +24,93 @@ void Assign(BlacklistState *out, BlacklistState in) {
 
 }  // namespace
 
+BlacklistStateFetcherMock::BlacklistStateFetcherMock() : request_count_(0) {}
+
+BlacklistStateFetcherMock::~BlacklistStateFetcherMock() {}
+
+void BlacklistStateFetcherMock::Request(const std::string& id,
+                                        const RequestCallback& callback) {
+  ++request_count_;
+
+  BlacklistState result = NOT_BLACKLISTED;
+  if (ContainsKey(states_, id))
+    result = states_[id];
+
+  base::MessageLoopProxy::current()->PostTask(FROM_HERE,
+                                              base::Bind(callback, result));
+}
+
+void BlacklistStateFetcherMock::SetState(const std::string& id,
+                                         BlacklistState state)  {
+  states_[id] = state;
+}
+
+void BlacklistStateFetcherMock::Clear() {
+  states_.clear();
+}
+
+
+TestBlacklist::TestBlacklist()
+    : blacklist_(NULL),
+      blacklist_db_(new FakeSafeBrowsingDatabaseManager(true)),
+      scoped_blacklist_db_(blacklist_db_) {
+}
+
+TestBlacklist::TestBlacklist(Blacklist* blacklist)
+    : blacklist_(NULL),
+      blacklist_db_(new FakeSafeBrowsingDatabaseManager(true)),
+      scoped_blacklist_db_(blacklist_db_) {
+  Attach(blacklist);
+}
+
+TestBlacklist::~TestBlacklist() {
+  Detach();
+}
+
+void TestBlacklist::Attach(Blacklist* blacklist) {
+  if (blacklist_)
+    Detach();
+
+  blacklist_ = blacklist;
+  blacklist_->SetBlacklistStateFetcherForTest(&state_fetcher_mock_);
+}
+
+void TestBlacklist::Detach() {
+  blacklist_->ResetBlacklistStateFetcherForTest();
+}
+
+void TestBlacklist::SetBlacklistState(const std::string& extension_id,
+                                      BlacklistState state,
+                                      bool notify) {
+  state_fetcher_mock_.SetState(extension_id, state);
+
+  switch (state) {
+    case NOT_BLACKLISTED:
+      blacklist_db_->RemoveUnsafe(extension_id);
+      break;
+
+    case BLACKLISTED_MALWARE:
+    case BLACKLISTED_SECURITY_VULNERABILITY:
+    case BLACKLISTED_CWS_POLICY_VIOLATION:
+    case BLACKLISTED_POTENTIALLY_UNWANTED:
+      blacklist_db_->AddUnsafe(extension_id);
+      break;
+
+    default:
+      break;
+  }
+
+  if (notify)
+    blacklist_db_->NotifyUpdate();
+}
+
+void TestBlacklist::Clear(bool notify) {
+  state_fetcher_mock_.Clear();
+  blacklist_db_->ClearUnsafe();
+  if (notify)
+    blacklist_db_->NotifyUpdate();
+}
+
 BlacklistState TestBlacklist::GetBlacklistState(
     const std::string& extension_id) {
   BlacklistState blacklist_state;
@@ -32,6 +118,18 @@ BlacklistState TestBlacklist::GetBlacklistState(
                             base::Bind(&Assign, &blacklist_state));
   base::RunLoop().RunUntilIdle();
   return blacklist_state;
+}
+
+void TestBlacklist::DisableSafeBrowsing() {
+  blacklist_db_->Disable();
+}
+
+void TestBlacklist::EnableSafeBrowsing() {
+  blacklist_db_->Enable();
+}
+
+void TestBlacklist::NotifyUpdate() {
+  blacklist_db_->NotifyUpdate();
 }
 
 }  // namespace extensions

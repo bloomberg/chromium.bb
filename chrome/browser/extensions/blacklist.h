@@ -93,8 +93,13 @@ class Blacklist : public content::NotificationObserver,
   void IsBlacklisted(const std::string& extension_id,
                      const IsBlacklistedCallback& callback);
 
-  // Used to mock BlacklistStateFetcher in unit tests.
+  // Used to mock BlacklistStateFetcher in unit tests. Blacklist owns the
+  // |fetcher|.
   void SetBlacklistStateFetcherForTest(BlacklistStateFetcher* fetcher);
+
+  // Reset the owned BlacklistStateFetcher to null and return the current
+  // BlacklistStateFetcher.
+  BlacklistStateFetcher* ResetBlacklistStateFetcherForTest();
 
   // Adds/removes an observer to the blacklist.
   void AddObserver(Observer* observer);

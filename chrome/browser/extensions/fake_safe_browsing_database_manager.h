@@ -28,6 +28,7 @@ class FakeSafeBrowsingDatabaseManager : public SafeBrowsingDatabaseManager {
 
   // Return |this| to chain together SetUnsafe(...).NotifyUpdate() conveniently.
   FakeSafeBrowsingDatabaseManager& Enable();
+  FakeSafeBrowsingDatabaseManager& Disable();
   FakeSafeBrowsingDatabaseManager& ClearUnsafe();
   FakeSafeBrowsingDatabaseManager& SetUnsafe(const std::string& a);
   FakeSafeBrowsingDatabaseManager& SetUnsafe(const std::string& a,
@@ -39,6 +40,8 @@ class FakeSafeBrowsingDatabaseManager : public SafeBrowsingDatabaseManager {
                                              const std::string& b,
                                              const std::string& c,
                                              const std::string& d);
+  FakeSafeBrowsingDatabaseManager& AddUnsafe(const std::string& a);
+  FakeSafeBrowsingDatabaseManager& RemoveUnsafe(const std::string& a);
 
   // Send the update notification.
   void NotifyUpdate();
