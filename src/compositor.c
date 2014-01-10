@@ -921,6 +921,9 @@ weston_view_assign_output(struct weston_view *ev)
 			      &ev->output_move_listener);
 		wl_signal_add(&new_output->destroy_signal,
 			      &ev->output_destroy_listener);
+	} else {
+		wl_list_init(&ev->output_move_listener.link);
+		wl_list_init(&ev->output_destroy_listener.link);
 	}
 
 	ev->output = new_output;
