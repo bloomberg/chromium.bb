@@ -77,5 +77,9 @@ message PowerSupplyProperties {
   // source just changed.
   optional bool is_calculating_battery_time = 12 [default = false];
 
-  // Next ID to use: 16
+  // The battery discharge rate measured in W. Positive if the battery is
+  // being discharged and negative if it's being charged.
+  optional double battery_discharge_rate = 16;
+
+  // Next ID to use: 17
 }
