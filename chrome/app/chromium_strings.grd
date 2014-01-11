@@ -238,9 +238,6 @@ be available for now. -->
         </message>
       </if>
       <if expr="is_win">
-        <message name="IDS_PRODUCT_FRAME_NAME" desc="The Chrome Frame application name">
-          Chromium Frame
-        </message>
         <message name="IDS_PRODUCT_APP_LAUNCHER_NAME" desc="The Chrome App Launcher application name">
           Chromium App Launcher
         </message>
@@ -258,30 +255,6 @@ be available for now. -->
         </message>
         <message name="IDS_PRODUCT_BINARIES_NAME" desc="The Chrome Binaries application name">
           Chromium Binaries
-        </message>
-        <message name="IDS_VERSIONMISMATCH_HEADER">
-          Chromium Frame Update.
-        </message>
-        <message name="IDS_VERSIONMISMATCH">
-          Chromium Frame has been updated. Please relaunch your browser. Chromium version: <ph name="TODO_0001">%ls<ex>TODO</ex></ph>, Chromium Frame version: <ph name="TODO_0002">%ls<ex>TODO</ex></ph>
-        </message>
-        <message name="IDS_VERSIONUNKNOWN">
-          Unknown version.
-        </message>
-        <message name="IDS_CHROME_FRAME_MENU_ABOUT" desc="About Chrome Frame label">
-          About Chromium Frame...
-        </message>
-        <message name="IDS_CHROME_FRAME_READY_MODE_LEARN_MORE_URL" desc="Link to knowledge-base article about Chromium Frame Ready Mode">
-          http://www.google.com/support/chrome/bin/answer.py?hl=[GRITLANGCODE]&amp;answer=161796
-        </message>
-        <message name="IDS_CHROME_FRAME_TURNDOWN_LEARN_MORE_URL" desc="Link to knowledge-base article about Chromium Frame's turndown">
-          http://support.google.com/chrome/?p=ib_chromeframe
-        </message>
-        <message name="IDS_CHROME_FRAME_TURNDOWN_TEXT_IE_OLDER" desc="Text of Chromium Frame turndown prompt for IE 6, 7, and 8">
-          This site is using the Chromium Frame plug-in which will soon be unsupported. Please uninstall it and upgrade to a modern browser.
-        </message>
-        <message name="IDS_CHROME_FRAME_TURNDOWN_TEXT_IE_NEWER" desc="Text of Chromium Frame turndown prompt for IE 9 and 10">
-          This site is using the Chromium Frame plug-in that will soon be unsupported. Please uninstall it and download a compatible browser.
         </message>
         <message name="IDS_SHORTCUT_NEW_WINDOW" desc="The text label of the New window shortcut context menu entry as of Windows 8">
           New window
@@ -519,9 +492,6 @@ Chromium is unable to recover your settings.
       <message name="IDS_INSTALL_HIGHER_VERSION_APP_LAUNCHER" desc="Error displayed when higher version of the Chromium App Launcher already exists.">
         This computer already has a more recent version of the Chromium components. Please use a more recent installer.
       </message>
-      <message name="IDS_INSTALL_SYSTEM_LEVEL_EXISTS" desc="Error displayed during user level install if system level Chromium Frame is already installed.">
-        Chromium Frame is already installed and available to all users of this computer. If you want to install Chromium Frame at the user level, you must first uninstall the system-level version installed by an administrator.
-      </message>
       <message name="IDS_INSTALL_FAILED" desc="Error displayed if installation fails due to some unknown error.">
         Installation failed due to unspecified error. If Chromium is currently running, please close it and try again.
       </message>
@@ -550,7 +520,7 @@ Chromium is unable to recover your settings.
         You do not have appropriate rights for system-level install. Try running the installer again as Administrator.
       </message>
       <message name="IDS_INSTALL_NO_PRODUCTS_TO_UPDATE" desc="Error displayed if the installer is not provided one or more products to install/update.">
-        No installation of Chromium or Chromium Frame found to update.
+        No installation of Chromium found to update.
       </message>
       <message name="IDS_UNINSTALL_COMPLETE" desc="Text displayed on dialog that is shown when uninstall is complete and no reboot is required.">
         Uninstallation complete.
@@ -558,14 +528,8 @@ Chromium is unable to recover your settings.
       <message name="IDS_INSTALL_DIR_IN_USE" desc="Error during install if Chromium version is missing from registry but the installation directory exists and can not be deleted.">
         Chromium installation directory seems to be in use. Please reboot your computer and try again.
       </message>
-      <message name="IDS_INSTALL_NON_MULTI_INSTALLATION_EXISTS" desc="Error during install if a single-install Chromium or Chromium Frame is present, thereby preventing the installation of a multi-install Chromium or Chromium Frame.">
-        A conflicting installation of Chromium or Chromium Frame was found on the system. Please uninstall it and try again.
-      </message>
-      <message name="IDS_INSTALL_MULTI_INSTALLATION_EXISTS" desc="Error during install if a multi-install Chromium or Chromium Frame is present, thereby preventing the installation of a single-install Chromium or Chromium Frame.">
-        A conflicting installation of Chromium or Chromium Frame was found on the system. Please uninstall it and try again.
-      </message>
-      <message name="IDS_INSTALL_READY_MODE_REQUIRES_CHROME" desc="Chrome Frame in ready mode requires Chrome.">
-        Invalid arguments. Chromium Frame cannot be installed in ready mode without also installing Chromium.
+      <message name="IDS_INSTALL_MULTI_INSTALLATION_EXISTS" desc="Error during install if a multi-install Chromium is present, thereby preventing the installation of a single-install Chromium.">
+        A conflicting installation of Chromium was found on the system. Please uninstall it and try again.
       </message>
       <message name="IDS_INSTALL_INCONSISTENT_UPDATE_POLICY" desc="This message does not apply to Chromium.">
       </message>

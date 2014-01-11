@@ -46,16 +46,18 @@ base::string16 ChromeFrameDistribution::GetBrowserProgIdDesc() {
   return base::string16();
 }
 
+base::string16 ChromeFrameDistribution::GetDisplayName() {
+#if defined(GOOGLE_CHROME_BUILD)
+  return L"Google Chrome Frame";
+#else
+  return L"Chromium Frame";
+#endif
+}
+
 base::string16 ChromeFrameDistribution::GetShortcutName(
     ShortcutType shortcut_type) {
-  switch (shortcut_type) {
-    case SHORTCUT_CHROME:
-    case SHORTCUT_CHROME_ALTERNATE:
-      return installer::GetLocalizedString(IDS_PRODUCT_FRAME_NAME_BASE);
-    default:
-      NOTREACHED();
-      return base::string16();
-  }
+  NOTREACHED();
+  return base::string16();
 }
 
 base::string16 ChromeFrameDistribution::GetInstallSubDir() {

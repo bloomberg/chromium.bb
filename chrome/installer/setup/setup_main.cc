@@ -581,10 +581,9 @@ bool CheckPreInstallConditions(const InstallationState& original_state,
             base::LaunchProcess(cmd, base::LaunchOptions(), NULL);
           }
         } else {
-          // Display an error message for other products.
-          *status = installer::SYSTEM_LEVEL_INSTALL_EXISTS;
-          installer_state->WriteInstallerResult(
-              *status, IDS_INSTALL_SYSTEM_LEVEL_EXISTS_BASE, NULL);
+          // It's no longer possible for |product| to be anything other than
+          // Chrome.
+          NOTREACHED();
         }
         return false;
       }

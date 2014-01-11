@@ -19,6 +19,8 @@ class ChromeFrameDistribution : public BrowserDistribution {
 
   virtual base::string16 GetBrowserProgIdDesc() OVERRIDE;
 
+  virtual base::string16 GetDisplayName() OVERRIDE;
+
   virtual base::string16 GetShortcutName(ShortcutType shortcut_type) OVERRIDE;
 
   virtual int GetIconIndex(ShortcutType shortcut_type) OVERRIDE;
