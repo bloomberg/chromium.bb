@@ -28,6 +28,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/renderer/input/input_handler_manager.h"
 #include "content/renderer/render_thread_impl.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/web/WebWidget.h"
 #include "ui/gl/gl_switches.h"
@@ -639,7 +640,7 @@ void RenderWidgetCompositor::DidAbortSwapBuffers() {
 void RenderWidgetCompositor::RateLimitSharedMainThreadContext() {
   cc::ContextProvider* provider =
       RenderThreadImpl::current()->SharedMainThreadContextProvider().get();
-  provider->Context3d()->rateLimitOffscreenContextCHROMIUM();
+  provider->ContextGL()->RateLimitOffscreenContextCHROMIUM();
 }
 
 }  // namespace content

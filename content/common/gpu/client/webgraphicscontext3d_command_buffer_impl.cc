@@ -542,9 +542,6 @@ void WebGraphicsContext3DCommandBufferImpl::copyTextureToParentTextureCHROMIUM(
   NOTIMPLEMENTED();
 }
 
-DELEGATE_TO_GL(rateLimitOffscreenContextCHROMIUM,
-               RateLimitOffscreenContextCHROMIUM)
-
 blink::WebString WebGraphicsContext3DCommandBufferImpl::
     getRequestableExtensionsCHROMIUM() {
   return blink::WebString::fromUTF8(

@@ -500,8 +500,6 @@ class WebGraphicsContext3DCommandBufferImpl
   virtual void copyTextureToParentTextureCHROMIUM(
       WebGLId texture, WebGLId parentTexture);
 
-  virtual void rateLimitOffscreenContextCHROMIUM();
-
   virtual blink::WebString getRequestableExtensionsCHROMIUM();
   virtual void requestExtensionCHROMIUM(const char*);
 

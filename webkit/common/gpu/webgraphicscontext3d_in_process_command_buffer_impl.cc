@@ -402,13 +402,6 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::
   NOTIMPLEMENTED();
 }
 
-void WebGraphicsContext3DInProcessCommandBufferImpl::
-    rateLimitOffscreenContextCHROMIUM() {
-  // TODO(gmam): See if we can comment this in.
-  // ClearContext();
-  gl_->RateLimitOffscreenContextCHROMIUM();
-}
-
 blink::WebString WebGraphicsContext3DInProcessCommandBufferImpl::
     getRequestableExtensionsCHROMIUM() {
   // TODO(gmam): See if we can comment this in.
