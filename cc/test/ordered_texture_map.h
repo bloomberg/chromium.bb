@@ -9,7 +9,7 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
-#include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
+#include "third_party/khronos/GLES2/gl2.h"
 
 namespace cc {
 
@@ -20,21 +20,21 @@ class OrderedTextureMap {
   OrderedTextureMap();
   ~OrderedTextureMap();
 
-  void Append(blink::WebGLId id, scoped_refptr<TestTexture> texture);
-  void Replace(blink::WebGLId id, scoped_refptr<TestTexture> texture);
-  void Remove(blink::WebGLId id);
+  void Append(GLuint id, scoped_refptr<TestTexture> texture);
+  void Replace(GLuint id, scoped_refptr<TestTexture> texture);
+  void Remove(GLuint id);
 
   size_t Size();
 
-  bool ContainsId(blink::WebGLId id);
+  bool ContainsId(GLuint id);
 
-  scoped_refptr<TestTexture> TextureForId(blink::WebGLId id);
-  blink::WebGLId IdAt(size_t index);
+  scoped_refptr<TestTexture> TextureForId(GLuint id);
+  GLuint IdAt(size_t index);
 
  private:
-  typedef base::hash_map<blink::WebGLId, scoped_refptr<TestTexture> >
+  typedef base::hash_map<GLuint, scoped_refptr<TestTexture> >
       TextureMap;
-  typedef std::vector<blink::WebGLId> TextureList;
+  typedef std::vector<GLuint> TextureList;
 
   TextureMap textures_;
   TextureList ordered_textures_;

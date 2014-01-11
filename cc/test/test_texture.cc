@@ -5,7 +5,6 @@
 #include "cc/test/test_texture.h"
 
 #include "gpu/GLES2/gl2extchromium.h"
-#include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 
 namespace cc {
@@ -35,7 +34,7 @@ void TestTexture::Reallocate(gfx::Size size, ResourceFormat format) {
   this->data.reset(new uint8_t[TextureSizeBytes(size, format)]);
 }
 
-bool TestTexture::IsValidParameter(blink::WGC3Denum pname) {
+bool TestTexture::IsValidParameter(GLenum pname) {
   return params.find(pname) != params.end();
 }
 

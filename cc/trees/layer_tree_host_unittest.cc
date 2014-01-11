@@ -2810,26 +2810,26 @@ class MockIOSurfaceWebGraphicsContext3D : public TestWebGraphicsContext3D {
     test_capabilities_.texture_rectangle = true;
   }
 
-  virtual blink::WebGLId createTexture() OVERRIDE {
+  virtual GLuint createTexture() OVERRIDE {
     return 1;
   }
 
-  MOCK_METHOD1(activeTexture, void(blink::WGC3Denum texture));
-  MOCK_METHOD2(bindTexture, void(blink::WGC3Denum target,
-                                 blink::WebGLId texture_id));
-  MOCK_METHOD3(texParameteri, void(blink::WGC3Denum target,
-                                   blink::WGC3Denum pname,
-                                   blink::WGC3Dint param));
-  MOCK_METHOD5(texImageIOSurface2DCHROMIUM, void(blink::WGC3Denum target,
-                                                 blink::WGC3Dint width,
-                                                 blink::WGC3Dint height,
-                                                 blink::WGC3Duint ioSurfaceId,
-                                                 blink::WGC3Duint plane));
-  MOCK_METHOD4(drawElements, void(blink::WGC3Denum mode,
-                                  blink::WGC3Dsizei count,
-                                  blink::WGC3Denum type,
-                                  blink::WGC3Dintptr offset));
-  MOCK_METHOD1(deleteTexture, void(blink::WGC3Denum texture));
+  MOCK_METHOD1(activeTexture, void(GLenum texture));
+  MOCK_METHOD2(bindTexture, void(GLenum target,
+                                 GLuint texture_id));
+  MOCK_METHOD3(texParameteri, void(GLenum target,
+                                   GLenum pname,
+                                   GLint param));
+  MOCK_METHOD5(texImageIOSurface2DCHROMIUM, void(GLenum target,
+                                                 GLint width,
+                                                 GLint height,
+                                                 GLuint ioSurfaceId,
+                                                 GLuint plane));
+  MOCK_METHOD4(drawElements, void(GLenum mode,
+                                  GLsizei count,
+                                  GLenum type,
+                                  GLintptr offset));
+  MOCK_METHOD1(deleteTexture, void(GLenum texture));
 };
 
 

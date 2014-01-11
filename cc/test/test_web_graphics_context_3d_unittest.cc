@@ -13,9 +13,9 @@ namespace cc {
 namespace {
 
 static bool check_parameter_value(TestWebGraphicsContext3D* context,
-                                  blink::WGC3Denum pname,
-                                  blink::WGC3Dint expected_value) {
-  blink::WGC3Dint actual_value = 0;
+                                  GLenum pname,
+                                  GLint expected_value) {
+  GLint actual_value = 0;
   context->getTexParameteriv(GL_TEXTURE_2D, pname, &actual_value);
   return expected_value == actual_value;
 }
@@ -35,7 +35,7 @@ TEST(TestWebGraphicsContext3DTest, GetDefaultTextureParameterValues) {
   scoped_ptr<TestWebGraphicsContext3D> context(
       TestWebGraphicsContext3D::Create());
 
-  blink::WebGLId texture = context->createTexture();
+  GLuint texture = context->createTexture();
   context->bindTexture(GL_TEXTURE_2D, texture);
 
   expect_default_parameter_values(context.get());
@@ -45,7 +45,7 @@ TEST(TestWebGraphicsContext3DTest, SetAndGetTextureParameter) {
   scoped_ptr<TestWebGraphicsContext3D> context(
       TestWebGraphicsContext3D::Create());
 
-  blink::WebGLId texture = context->createTexture();
+  GLuint texture = context->createTexture();
   context->bindTexture(GL_TEXTURE_2D, texture);
   context->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
@@ -59,7 +59,7 @@ TEST(TestWebGraphicsContext3DTest,
       TestWebGraphicsContext3D::Create());
 
   // Set and get non-default texture parameters on the first texture.
-  blink::WebGLId first_texture = context->createTexture();
+  GLuint first_texture = context->createTexture();
   context->bindTexture(GL_TEXTURE_2D, first_texture);
   context->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   context->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -71,7 +71,7 @@ TEST(TestWebGraphicsContext3DTest,
 
   // Set and get different, non-default texture parameters on the second
   // texture.
-  blink::WebGLId second_texture = context->createTexture();
+  GLuint second_texture = context->createTexture();
   context->bindTexture(GL_TEXTURE_2D, second_texture);
   context->texParameteri(
       GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);

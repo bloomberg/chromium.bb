@@ -40,18 +40,7 @@ using testing::InSequence;
 using testing::Mock;
 using testing::Return;
 using testing::StrictMock;
-using blink::WebGLId;
 using blink::WebString;
-using blink::WGC3Dbitfield;
-using blink::WGC3Dboolean;
-using blink::WGC3Dchar;
-using blink::WGC3Denum;
-using blink::WGC3Dfloat;
-using blink::WGC3Dint;
-using blink::WGC3Dintptr;
-using blink::WGC3Dsizei;
-using blink::WGC3Dsizeiptr;
-using blink::WGC3Duint;
 
 namespace cc {
 
@@ -408,53 +397,52 @@ class ForbidSynchronousCallContext : public TestWebGraphicsContext3D {
  public:
   ForbidSynchronousCallContext() {}
 
-  virtual bool getActiveAttrib(WebGLId program,
-                               WGC3Duint index,
+  virtual bool getActiveAttrib(GLuint program,
+                               GLuint index,
                                blink::WebGraphicsContext3D::ActiveInfo& info)
       OVERRIDE {
     ADD_FAILURE();
     return false;
   }
-  virtual bool getActiveUniform(WebGLId program,
-                                WGC3Duint index,
+  virtual bool getActiveUniform(GLuint program,
+                                GLuint index,
                                 blink::WebGraphicsContext3D::ActiveInfo& info)
       OVERRIDE {
     ADD_FAILURE();
     return false;
   }
-  virtual void getAttachedShaders(WebGLId program,
-                                  WGC3Dsizei max_count,
-                                  WGC3Dsizei* count,
-                                  WebGLId* shaders) OVERRIDE {
+  virtual void getAttachedShaders(GLuint program,
+                                  GLsizei max_count,
+                                  GLsizei* count,
+                                  GLuint* shaders) OVERRIDE {
     ADD_FAILURE();
   }
-  virtual WGC3Dint getAttribLocation(WebGLId program,
-                                     const WGC3Dchar* name) OVERRIDE {
-    ADD_FAILURE();
-    return 0;
-  }
-  virtual void getBooleanv(WGC3Denum pname, WGC3Dboolean* value) OVERRIDE {
-    ADD_FAILURE();
-  }
-  virtual void getBufferParameteriv(WGC3Denum target,
-                                    WGC3Denum pname,
-                                    WGC3Dint* value) OVERRIDE {
-    ADD_FAILURE();
-  }
-  virtual WGC3Denum getError() OVERRIDE {
+  virtual GLint getAttribLocation(GLuint program, const GLchar* name) OVERRIDE {
     ADD_FAILURE();
     return 0;
   }
-  virtual void getFloatv(WGC3Denum pname, WGC3Dfloat* value) OVERRIDE {
+  virtual void getBooleanv(GLenum pname, GLboolean* value) OVERRIDE {
     ADD_FAILURE();
   }
-  virtual void getFramebufferAttachmentParameteriv(WGC3Denum target,
-                                                   WGC3Denum attachment,
-                                                   WGC3Denum pname,
-                                                   WGC3Dint* value) OVERRIDE {
+  virtual void getBufferParameteriv(GLenum target,
+                                    GLenum pname,
+                                    GLint* value) OVERRIDE {
     ADD_FAILURE();
   }
-  virtual void getIntegerv(WGC3Denum pname, WGC3Dint* value) OVERRIDE {
+  virtual GLenum getError() OVERRIDE {
+    ADD_FAILURE();
+    return GL_NO_ERROR;
+  }
+  virtual void getFloatv(GLenum pname, GLfloat* value) OVERRIDE {
+    ADD_FAILURE();
+  }
+  virtual void getFramebufferAttachmentParameteriv(GLenum target,
+                                                   GLenum attachment,
+                                                   GLenum pname,
+                                                   GLint* value) OVERRIDE {
+    ADD_FAILURE();
+  }
+  virtual void getIntegerv(GLenum pname, GLint* value) OVERRIDE {
     if (pname == GL_MAX_TEXTURE_SIZE) {
       // MAX_TEXTURE_SIZE is cached client side, so it's OK to query.
       *value = 1024;
@@ -465,9 +453,9 @@ class ForbidSynchronousCallContext : public TestWebGraphicsContext3D {
 
   // We allow querying the shader compilation and program link status in debug
   // mode, but not release.
-  virtual void getProgramiv(WebGLId program,
-                            WGC3Denum pname,
-                            WGC3Dint* value) OVERRIDE {
+  virtual void getProgramiv(GLuint program,
+                            GLenum pname,
+                            GLint* value) OVERRIDE {
 #ifndef NDEBUG
     *value = 1;
 #else
@@ -475,9 +463,7 @@ class ForbidSynchronousCallContext : public TestWebGraphicsContext3D {
 #endif
   }
 
-  virtual void getShaderiv(WebGLId shader,
-                           WGC3Denum pname,
-                           WGC3Dint* value) OVERRIDE {
+  virtual void getShaderiv(GLuint shader, GLenum pname, GLint* value) OVERRIDE {
 #ifndef NDEBUG
     *value = 1;
 #else
@@ -485,72 +471,72 @@ class ForbidSynchronousCallContext : public TestWebGraphicsContext3D {
 #endif
   }
 
-  virtual WebString getString(WGC3Denum name) OVERRIDE {
+  virtual WebString getString(GLenum name) OVERRIDE {
     ADD_FAILURE() << name;
     return WebString();
   }
 
-  virtual WebString getProgramInfoLog(WebGLId program) OVERRIDE {
+  virtual WebString getProgramInfoLog(GLuint program) OVERRIDE {
     ADD_FAILURE();
     return WebString();
   }
-  virtual void getRenderbufferParameteriv(WGC3Denum target,
-                                          WGC3Denum pname,
-                                          WGC3Dint* value) OVERRIDE {
+  virtual void getRenderbufferParameteriv(GLenum target,
+                                          GLenum pname,
+                                          GLint* value) OVERRIDE {
     ADD_FAILURE();
   }
 
-  virtual WebString getShaderInfoLog(WebGLId shader) OVERRIDE {
+  virtual WebString getShaderInfoLog(GLuint shader) OVERRIDE {
     ADD_FAILURE();
     return WebString();
   }
-  virtual void getShaderPrecisionFormat(WGC3Denum shadertype,
-                                        WGC3Denum precisiontype,
-                                        WGC3Dint* range,
-                                        WGC3Dint* precision) OVERRIDE {
+  virtual void getShaderPrecisionFormat(GLenum shadertype,
+                                        GLenum precisiontype,
+                                        GLint* range,
+                                        GLint* precision) OVERRIDE {
     ADD_FAILURE();
   }
-  virtual WebString getShaderSource(WebGLId shader) OVERRIDE {
+  virtual WebString getShaderSource(GLuint shader) OVERRIDE {
     ADD_FAILURE();
     return WebString();
   }
-  virtual void getTexParameterfv(WGC3Denum target,
-                                 WGC3Denum pname,
-                                 WGC3Dfloat* value) OVERRIDE {
+  virtual void getTexParameterfv(GLenum target,
+                                 GLenum pname,
+                                 GLfloat* value) OVERRIDE {
     ADD_FAILURE();
   }
-  virtual void getTexParameteriv(WGC3Denum target,
-                                 WGC3Denum pname,
-                                 WGC3Dint* value) OVERRIDE {
+  virtual void getTexParameteriv(GLenum target,
+                                 GLenum pname,
+                                 GLint* value) OVERRIDE {
     ADD_FAILURE();
   }
-  virtual void getUniformfv(WebGLId program,
-                            WGC3Dint location,
-                            WGC3Dfloat* value) OVERRIDE {
+  virtual void getUniformfv(GLuint program,
+                            GLint location,
+                            GLfloat* value) OVERRIDE {
     ADD_FAILURE();
   }
-  virtual void getUniformiv(WebGLId program,
-                            WGC3Dint location,
-                            WGC3Dint* value) OVERRIDE {
+  virtual void getUniformiv(GLuint program,
+                            GLint location,
+                            GLint* value) OVERRIDE {
     ADD_FAILURE();
   }
-  virtual WGC3Dint getUniformLocation(WebGLId program,
-                                      const WGC3Dchar* name) OVERRIDE {
+  virtual GLint getUniformLocation(GLuint program,
+                                   const GLchar* name) OVERRIDE {
     ADD_FAILURE();
     return 0;
   }
-  virtual void getVertexAttribfv(WGC3Duint index,
-                                 WGC3Denum pname,
-                                 WGC3Dfloat* value) OVERRIDE {
+  virtual void getVertexAttribfv(GLuint index,
+                                 GLenum pname,
+                                 GLfloat* value) OVERRIDE {
     ADD_FAILURE();
   }
-  virtual void getVertexAttribiv(WGC3Duint index,
-                                 WGC3Denum pname,
-                                 WGC3Dint* value) OVERRIDE {
+  virtual void getVertexAttribiv(GLuint index,
+                                 GLenum pname,
+                                 GLint* value) OVERRIDE {
     ADD_FAILURE();
   }
-  virtual WGC3Dsizeiptr getVertexAttribOffset(WGC3Duint index,
-                                              WGC3Denum pname) OVERRIDE {
+  virtual GLsizeiptr getVertexAttribOffset(GLuint index,
+                                           GLenum pname) OVERRIDE {
     ADD_FAILURE();
     return 0;
   }
@@ -576,16 +562,14 @@ class LoseContextOnFirstGetContext : public TestWebGraphicsContext3D {
  public:
   LoseContextOnFirstGetContext() {}
 
-  virtual void getProgramiv(WebGLId program,
-                            WGC3Denum pname,
-                            WGC3Dint* value) OVERRIDE {
+  virtual void getProgramiv(GLuint program,
+                            GLenum pname,
+                            GLint* value) OVERRIDE {
     context_lost_ = true;
     *value = 0;
   }
 
-  virtual void getShaderiv(WebGLId shader,
-                           WGC3Denum pname,
-                           WGC3Dint* value) OVERRIDE {
+  virtual void getShaderiv(GLuint shader, GLenum pname, GLint* value) OVERRIDE {
     context_lost_ = true;
     *value = 0;
   }
@@ -613,10 +597,10 @@ class ClearCountingContext : public TestWebGraphicsContext3D {
   ClearCountingContext() { test_capabilities_.discard_framebuffer = true; }
 
   MOCK_METHOD3(discardFramebufferEXT,
-               void(WGC3Denum target,
-                    WGC3Dsizei numAttachments,
-                    const WGC3Denum* attachments));
-  MOCK_METHOD1(clear, void(WGC3Dbitfield mask));
+               void(GLenum target,
+                    GLsizei numAttachments,
+                    const GLenum* attachments));
+  MOCK_METHOD1(clear, void(GLbitfield mask));
 };
 
 TEST_F(GLRendererTest, OpaqueBackground) {
@@ -749,18 +733,18 @@ class VisibilityChangeIsLastCallTrackingContext
   VisibilityChangeIsLastCallTrackingContext()
       : last_call_was_set_visibility_(false) {}
 
-  // WebGraphicsContext3D methods.
+  // TestWebGraphicsContext3D methods.
   virtual void flush() OVERRIDE { last_call_was_set_visibility_ = false; }
-  virtual void deleteTexture(WebGLId) OVERRIDE {
+  virtual void deleteTexture(GLuint) OVERRIDE {
     last_call_was_set_visibility_ = false;
   }
-  virtual void deleteFramebuffer(WebGLId) OVERRIDE {
+  virtual void deleteFramebuffer(GLuint) OVERRIDE {
     last_call_was_set_visibility_ = false;
   }
-  virtual void deleteQueryEXT(WebGLId) OVERRIDE {
+  virtual void deleteQueryEXT(GLuint) OVERRIDE {
     last_call_was_set_visibility_ = false;
   }
-  virtual void deleteRenderbuffer(WebGLId) OVERRIDE {
+  virtual void deleteRenderbuffer(GLuint) OVERRIDE {
     last_call_was_set_visibility_ = false;
   }
 
@@ -833,23 +817,19 @@ class TextureStateTrackingContext : public TestWebGraphicsContext3D {
     test_capabilities_.egl_image_external = true;
   }
 
-  MOCK_METHOD3(texParameteri,
-               void(WGC3Denum target, WGC3Denum pname, WGC3Dint param));
+  MOCK_METHOD3(texParameteri, void(GLenum target, GLenum pname, GLint param));
   MOCK_METHOD4(drawElements,
-               void(WGC3Denum mode,
-                    WGC3Dsizei count,
-                    WGC3Denum type,
-                    WGC3Dintptr offset));
+               void(GLenum mode, GLsizei count, GLenum type, GLintptr offset));
 
-  virtual void activeTexture(WGC3Denum texture) {
+  virtual void activeTexture(GLenum texture) {
     EXPECT_NE(texture, active_texture_);
     active_texture_ = texture;
   }
 
-  WGC3Denum active_texture() const { return active_texture_; }
+  GLenum active_texture() const { return active_texture_; }
 
  private:
-  WGC3Denum active_texture_;
+  GLenum active_texture_;
 };
 
 TEST_F(GLRendererTest, ActiveTextureState) {
@@ -926,12 +906,9 @@ TEST_F(GLRendererTest, ActiveTextureState) {
 
 class NoClearRootRenderPassMockContext : public TestWebGraphicsContext3D {
  public:
-  MOCK_METHOD1(clear, void(WGC3Dbitfield mask));
+  MOCK_METHOD1(clear, void(GLbitfield mask));
   MOCK_METHOD4(drawElements,
-               void(WGC3Denum mode,
-                    WGC3Dsizei count,
-                    WGC3Denum type,
-                    WGC3Dintptr offset));
+               void(GLenum mode, GLsizei count, GLenum type, GLintptr offset));
 };
 
 TEST_F(GLRendererTest, ShouldClearRootRenderPass) {
@@ -1011,14 +988,14 @@ class ScissorTestOnClearCheckingContext : public TestWebGraphicsContext3D {
  public:
   ScissorTestOnClearCheckingContext() : scissor_enabled_(false) {}
 
-  virtual void clear(WGC3Dbitfield) OVERRIDE { EXPECT_FALSE(scissor_enabled_); }
+  virtual void clear(GLbitfield) OVERRIDE { EXPECT_FALSE(scissor_enabled_); }
 
-  virtual void enable(WGC3Denum cap) OVERRIDE {
+  virtual void enable(GLenum cap) OVERRIDE {
     if (cap == GL_SCISSOR_TEST)
       scissor_enabled_ = true;
   }
 
-  virtual void disable(WGC3Denum cap) OVERRIDE {
+  virtual void disable(GLenum cap) OVERRIDE {
     if (cap == GL_SCISSOR_TEST)
       scissor_enabled_ = false;
   }
@@ -1093,9 +1070,9 @@ class DiscardCheckingContext : public TestWebGraphicsContext3D {
     set_have_discard_framebuffer(true);
   }
 
-  virtual void discardFramebufferEXT(WGC3Denum target,
-                                     WGC3Dsizei numAttachments,
-                                     const WGC3Denum* attachments) OVERRIDE {
+  virtual void discardFramebufferEXT(GLenum target,
+                                     GLsizei numAttachments,
+                                     const GLenum* attachments) OVERRIDE {
     ++discarded_;
   }
 
@@ -1708,16 +1685,13 @@ class OutputSurfaceMockContext : public TestWebGraphicsContext3D {
 
   // Specifically override methods even if they are unused (used in conjunction
   // with StrictMock). We need to make sure that GLRenderer does not issue
-  // framebuffer-related GL calls directly. Instead these are supposed to go
+  // framebuffer-related GLuint calls directly. Instead these are supposed to go
   // through the OutputSurface abstraction.
-  MOCK_METHOD2(bindFramebuffer, void(WGC3Denum target, WebGLId framebuffer));
+  MOCK_METHOD2(bindFramebuffer, void(GLenum target, GLuint framebuffer));
   MOCK_METHOD3(reshapeWithScaleFactor,
                void(int width, int height, float scale_factor));
   MOCK_METHOD4(drawElements,
-               void(WGC3Denum mode,
-                    WGC3Dsizei count,
-                    WGC3Denum type,
-                    WGC3Dintptr offset));
+               void(GLenum mode, GLsizei count, GLenum type, GLintptr offset));
 };
 
 class MockOutputSurface : public OutputSurface {
