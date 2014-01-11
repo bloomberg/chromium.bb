@@ -862,3 +862,7 @@ crbug.com/331189 fast/forms/week-multiple-fields/week-multiple-fields-keyboard-e
 
 crbug.com/333242 svg/dynamic-updates/SVGUseElement-dom-href1-attr.html [ Pass ImageOnlyFailure ]
 crbug.com/333242 svg/dynamic-updates/SVGUseElement-svgdom-href1-prop.html [ Pass ImageOnlyFailure ]
+
+crbug.com/329543 [ Mac ] fast/text/international/text-spliced-font.html [ NeedsRebaseline ]
+crbug.com/329543 [ Mac ] fast/text/international/vertical-text-glyph-test.html [ NeedsRebaseline ]
+crbug.com/329543 [ Mac ] fast/writing-mode/text-orientation-basic.html [ NeedsRebaseline ]
