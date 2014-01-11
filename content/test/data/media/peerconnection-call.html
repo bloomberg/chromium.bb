@@ -172,6 +172,17 @@
     };
   }
 
+  // Test that we can negotiate a call with an SDP offer that includes a
+  // b=AS:XX line to control audio and video bandwidth
+  function negotiateOfferWithBLine() {
+    createConnections(null);
+    transformSdp = addBandwithControl;
+    navigator.webkitGetUserMedia({audio: true, video: true},
+        addStreamToBothConnectionsAndNegotiate, printGetUserMediaError); 
+    waitForVideo('remote-view-1');
+    waitForVideo('remote-view-2');
+  }
+
   // Test that we can setup call with legacy settings.
   function callWithLegacySdp() {
     transformSdp = function(sdp) {
@@ -684,6 +695,14 @@
     return offerSdp;
   }
 
+  function addBandwithControl(offerSdp) {
+    offerSdp = offerSdp.replace('a=mid:audio\r\n', 'a=mid:audio\r\n'+
+                                'b=AS:16\r\n');
+    offerSdp = offerSdp.replace('a=mid:video\r\n', 'a=mid:video\r\n'+
+                                'b=AS:512\r\n');
+    return offerSdp;
+  }
+  
   function removeBundle(sdp) {
     return sdp.replace(/a=group:BUNDLE .*\r\n/g, '');
   }

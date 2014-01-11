@@ -514,6 +514,12 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, NegotiateNonCryptoCall) {
   MakeTypicalPeerConnectionCall("negotiateNonCryptoCall();");
 }
 
+// This test can negotiate an SDP offer that includes a b=AS:xx to control
+// the bandwidth for audio and video
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, NegotiateOfferWithBLine) {
+  MakeTypicalPeerConnectionCall("negotiateOfferWithBLine();");
+}
+
 // This test will make a complete PeerConnection-based call using legacy SDP
 // settings: GIce, external SDES, and no BUNDLE.
 #if defined(OS_WIN) && defined(USE_AURA)
