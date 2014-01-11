@@ -33,7 +33,7 @@
 
 namespace WebCore {
 
-class AXARIAGridRow : public AXTableRow {
+class AXARIAGridRow FINAL : public AXTableRow {
 
 private:
     explicit AXARIAGridRow(RenderObject*);
@@ -47,7 +47,7 @@ public:
     virtual AXObject* headerObject() OVERRIDE;
 
 private:
-    virtual bool isARIATreeGridRow() const;
+    virtual bool isARIATreeGridRow() const OVERRIDE;
 };
 
 } // namespace WebCore

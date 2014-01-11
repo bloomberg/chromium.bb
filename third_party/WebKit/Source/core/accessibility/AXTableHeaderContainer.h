@@ -34,7 +34,7 @@
 
 namespace WebCore {
 
-class AXTableHeaderContainer : public AXMockObject {
+class AXTableHeaderContainer FINAL : public AXMockObject {
 
 private:
     AXTableHeaderContainer();

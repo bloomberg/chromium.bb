@@ -28,12 +28,12 @@ namespace WebCore {
 class HTMLProgressElement;
 class RenderProgress;
 
-class AXProgressIndicator : public AXRenderObject {
+class AXProgressIndicator FINAL : public AXRenderObject {
 public:
     static PassRefPtr<AXProgressIndicator> create(RenderProgress*);
 
 private:
-    virtual AccessibilityRole roleValue() const { return ProgressIndicatorRole; }
+    virtual AccessibilityRole roleValue() const OVERRIDE { return ProgressIndicatorRole; }
 
     virtual bool isProgressIndicator() const OVERRIDE { return true; }
 

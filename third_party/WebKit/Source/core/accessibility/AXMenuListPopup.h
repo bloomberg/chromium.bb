@@ -35,7 +35,7 @@ class AXMenuListOption;
 class HTMLElement;
 class HTMLSelectElement;
 
-class AXMenuListPopup : public AXMockObject {
+class AXMenuListPopup FINAL : public AXMockObject {
 public:
     static PassRefPtr<AXMenuListPopup> create() { return adoptRef(new AXMenuListPopup); }
 

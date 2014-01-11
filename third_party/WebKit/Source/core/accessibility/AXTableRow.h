@@ -41,11 +41,11 @@ public:
     static PassRefPtr<AXTableRow> create(RenderObject*);
     virtual ~AXTableRow();
 
-    virtual bool isTableRow() const OVERRIDE;
+    virtual bool isTableRow() const OVERRIDE FINAL;
 
     // retrieves the "row" header (a th tag in the rightmost column)
     virtual AXObject* headerObject();
-    virtual AXObject* parentTable() const;
+    AXObject* parentTable() const;
 
     void setRowIndex(int rowIndex) { m_rowIndex = rowIndex; }
     int rowIndex() const { return m_rowIndex; }
@@ -55,13 +55,13 @@ public:
     void appendChild(AXObject*);
 
 protected:
-    virtual AccessibilityRole determineAccessibilityRole() OVERRIDE;
+    virtual AccessibilityRole determineAccessibilityRole() OVERRIDE FINAL;
 
 private:
     int m_rowIndex;
 
-    virtual AXObject* observableObject() const OVERRIDE;
-    virtual bool computeAccessibilityIsIgnored() const OVERRIDE;
+    virtual AXObject* observableObject() const OVERRIDE FINAL;
+    virtual bool computeAccessibilityIsIgnored() const OVERRIDE FINAL;
 };
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXTableRow, isTableRow());

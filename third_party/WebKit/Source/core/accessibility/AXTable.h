@@ -45,15 +45,15 @@ public:
     static PassRefPtr<AXTable> create(RenderObject*);
     virtual ~AXTable();
 
-    virtual void init() OVERRIDE;
+    virtual void init() OVERRIDE FINAL;
 
-    virtual bool isAXTable() const OVERRIDE;
-    virtual bool isDataTable() const OVERRIDE;
+    virtual bool isAXTable() const OVERRIDE FINAL;
+    virtual bool isDataTable() const OVERRIDE FINAL;
 
-    virtual AccessibilityRole roleValue() const OVERRIDE;
+    virtual AccessibilityRole roleValue() const OVERRIDE FINAL;
 
     virtual void addChildren() OVERRIDE;
-    virtual void clearChildren() OVERRIDE;
+    virtual void clearChildren() OVERRIDE FINAL;
 
     // To be overridden by AXARIAGrid.
     virtual bool isAriaTable() const { return false; }
@@ -64,9 +64,9 @@ public:
 
     unsigned columnCount();
     unsigned rowCount();
-    virtual int tableLevel() const OVERRIDE;
+    virtual int tableLevel() const OVERRIDE FINAL;
 
-    virtual String title() const OVERRIDE;
+    virtual String title() const OVERRIDE FINAL;
 
     // all the cells in the table
     void cells(AccessibilityChildrenVector&);
@@ -86,7 +86,7 @@ protected:
 
     bool hasARIARole() const;
     virtual bool isTableExposableThroughAccessibility() const;
-    virtual bool computeAccessibilityIsIgnored() const OVERRIDE;
+    virtual bool computeAccessibilityIsIgnored() const OVERRIDE FINAL;
 };
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXTable, isAXTable());

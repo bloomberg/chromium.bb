@@ -33,7 +33,7 @@ namespace WebCore {
 class AXMenuListPopup;
 class HTMLElement;
 
-class AXMenuListOption : public AXMockObject {
+class AXMenuListOption FINAL : public AXMockObject {
 public:
     static PassRefPtr<AXMenuListOption> create() { return adoptRef(new AXMenuListOption); }
 

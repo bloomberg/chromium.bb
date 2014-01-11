@@ -34,7 +34,7 @@
 
 namespace WebCore {
 
-class AXInlineTextBox : public AXObject {
+class AXInlineTextBox FINAL : public AXObject {
 
 private:
     AXInlineTextBox(PassRefPtr<AbstractInlineTextBox>);

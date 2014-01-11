@@ -33,7 +33,7 @@
 
 namespace WebCore {
 
-class AXList : public AXRenderObject {
+class AXList FINAL : public AXRenderObject {
 
 private:
     explicit AXList(RenderObject*);
@@ -41,14 +41,14 @@ public:
     static PassRefPtr<AXList> create(RenderObject*);
     virtual ~AXList();
 
-    virtual bool isList() const { return true; }
+    virtual bool isList() const OVERRIDE { return true; }
     bool isUnorderedList() const;
     bool isOrderedList() const;
     bool isDescriptionList() const;
 
-    virtual AccessibilityRole roleValue() const { return ListRole; }
+    virtual AccessibilityRole roleValue() const OVERRIDE { return ListRole; }
 private:
-    virtual bool computeAccessibilityIsIgnored() const;
+    virtual bool computeAccessibilityIsIgnored() const OVERRIDE;
 };
 
 } // namespace WebCore

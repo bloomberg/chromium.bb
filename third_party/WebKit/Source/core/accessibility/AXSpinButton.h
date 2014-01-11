@@ -32,7 +32,7 @@
 
 namespace WebCore {
 
-class AXSpinButton : public AXMockObject {
+class AXSpinButton FINAL : public AXMockObject {
 public:
     static PassRefPtr<AXSpinButton> create();
     virtual ~AXSpinButton();
@@ -52,7 +52,7 @@ private:
     SpinButtonElement* m_spinButtonElement;
 };
 
-class AXSpinButtonPart : public AXMockObject {
+class AXSpinButtonPart FINAL : public AXMockObject {
 public:
     static PassRefPtr<AXSpinButtonPart> create();
     virtual ~AXSpinButtonPart() { }

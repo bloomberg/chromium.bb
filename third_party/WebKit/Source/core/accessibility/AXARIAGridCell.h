@@ -33,7 +33,7 @@
 
 namespace WebCore {
 
-class AXARIAGridCell : public AXTableCell {
+class AXARIAGridCell FINAL : public AXTableCell {
 
 private:
     explicit AXARIAGridCell(RenderObject*);
@@ -47,7 +47,7 @@ public:
     virtual void columnIndexRange(pair<unsigned, unsigned>& columnRange) OVERRIDE;
 
 protected:
-    virtual AXObject* parentTable() const;
+    virtual AXObject* parentTable() const OVERRIDE;
 };
 
 } // namespace WebCore

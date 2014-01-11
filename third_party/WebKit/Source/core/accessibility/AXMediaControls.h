@@ -43,19 +43,19 @@ public:
 
     virtual AccessibilityRole roleValue() const OVERRIDE;
 
-    virtual String title() const OVERRIDE;
+    virtual String title() const OVERRIDE FINAL;
     virtual String accessibilityDescription() const OVERRIDE;
     virtual String helpText() const OVERRIDE;
 
 protected:
     explicit AccessibilityMediaControl(RenderObject*);
     MediaControlElementType controlType() const;
-    virtual void accessibilityText(Vector<AccessibilityText>&) OVERRIDE;
+    virtual void accessibilityText(Vector<AccessibilityText>&) OVERRIDE FINAL;
     virtual bool computeAccessibilityIsIgnored() const OVERRIDE;
 };
 
 
-class AccessibilityMediaTimeline : public AXSlider {
+class AccessibilityMediaTimeline FINAL : public AXSlider {
 
 public:
     static PassRefPtr<AXObject> create(RenderObject*);
@@ -70,7 +70,7 @@ private:
 };
 
 
-class AXMediaControlsContainer : public AccessibilityMediaControl {
+class AXMediaControlsContainer FINAL : public AccessibilityMediaControl {
 
 public:
     static PassRefPtr<AXObject> create(RenderObject*);
@@ -88,7 +88,7 @@ private:
 };
 
 
-class AccessibilityMediaTimeDisplay : public AccessibilityMediaControl {
+class AccessibilityMediaTimeDisplay FINAL : public AccessibilityMediaControl {
 
 public:
     static PassRefPtr<AXObject> create(RenderObject*);

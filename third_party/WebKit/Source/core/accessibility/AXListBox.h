@@ -33,7 +33,7 @@
 
 namespace WebCore {
 
-class AXListBox : public AXRenderObject {
+class AXListBox FINAL : public AXRenderObject {
 
 private:
     explicit AXListBox(RenderObject*);

@@ -33,7 +33,7 @@
 
 namespace WebCore {
 
-class AXSVGRoot : public AXRenderObject {
+class AXSVGRoot FINAL : public AXRenderObject {
 
 protected:
     explicit AXSVGRoot(RenderObject*);

@@ -36,7 +36,7 @@ namespace WebCore {
 
 class RenderTableSection;
 
-class AXTableColumn : public AXMockObject {
+class AXTableColumn FINAL : public AXMockObject {
 
 private:
     AXTableColumn();

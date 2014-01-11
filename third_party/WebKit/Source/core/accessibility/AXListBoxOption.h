@@ -40,7 +40,7 @@ class Element;
 class HTMLElement;
 class HTMLSelectElement;
 
-class AXListBoxOption : public AXObject {
+class AXListBoxOption FINAL : public AXObject {
 
 private:
     AXListBoxOption();

@@ -37,7 +37,7 @@ namespace WebCore {
 class AXTableCell;
 class AXTableHeaderContainer;
 
-class AXARIAGrid : public AXTable {
+class AXARIAGrid FINAL : public AXTable {
 
 private:
     explicit AXARIAGrid(RenderObject*);

@@ -64,7 +64,7 @@ public:
     virtual ~AXRenderObject();
 
     // Public, overridden from AXObject.
-    virtual RenderObject* renderer() const OVERRIDE { return m_renderer; }
+    virtual RenderObject* renderer() const OVERRIDE FINAL { return m_renderer; }
     virtual LayoutRect elementRect() const OVERRIDE;
 
     void setRenderer(RenderObject*);
@@ -73,7 +73,7 @@ public:
     Document* topDocument() const;
     bool shouldNotifyActiveDescendant() const;
     bool needsToUpdateChildren() const { return m_childrenDirty; }
-    ScrollableArea* getScrollableAreaIfScrollable() const;
+    virtual ScrollableArea* getScrollableAreaIfScrollable() const OVERRIDE FINAL;
     virtual AccessibilityRole determineAccessibilityRole() OVERRIDE;
     void checkCachedElementRect() const;
     void updateCachedElementRect() const;

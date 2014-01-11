@@ -35,7 +35,7 @@ class AXMenuListPopup;
 class HTMLOptionElement;
 class RenderMenuList;
 
-class AXMenuList : public AXRenderObject {
+class AXMenuList FINAL : public AXRenderObject {
 public:
     static PassRefPtr<AXMenuList> create(RenderMenuList* renderer);
 

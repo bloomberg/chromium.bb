@@ -35,7 +35,7 @@
 
 namespace WebCore {
 
-class AXImageMapLink : public AXMockObject {
+class AXImageMapLink FINAL : public AXMockObject {
 
 private:
     AXImageMapLink();
@@ -57,7 +57,7 @@ public:
     virtual Element* anchorElement() const OVERRIDE;
     virtual Element* actionElement() const OVERRIDE;
     virtual KURL url() const OVERRIDE;
-    virtual bool isLink() const { return true; }
+    virtual bool isLink() const OVERRIDE { return true; }
     virtual bool isLinked() const OVERRIDE { return true; }
     virtual String title() const OVERRIDE;
     virtual String accessibilityDescription() const OVERRIDE;

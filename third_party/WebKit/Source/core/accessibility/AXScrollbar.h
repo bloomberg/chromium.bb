@@ -35,7 +35,7 @@ namespace WebCore {
 
 class Scrollbar;
 
-class AXScrollbar : public AXMockObject {
+class AXScrollbar FINAL : public AXMockObject {
 public:
     static PassRefPtr<AXScrollbar> create(Scrollbar*);
 
@@ -44,7 +44,7 @@ public:
 private:
     explicit AXScrollbar(Scrollbar*);
 
-    virtual void detachFromParent();
+    virtual void detachFromParent() OVERRIDE;
 
     virtual bool canSetValueAttribute() const OVERRIDE { return true; }
 

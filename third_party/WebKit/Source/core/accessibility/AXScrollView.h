@@ -34,10 +34,10 @@ class AXScrollbar;
 class Scrollbar;
 class ScrollView;
 
-class AXScrollView : public AXObject {
+class AXScrollView FINAL : public AXObject {
 public:
     static PassRefPtr<AXScrollView> create(ScrollView*);
-    virtual AccessibilityRole roleValue() const { return ScrollAreaRole; }
+    virtual AccessibilityRole roleValue() const OVERRIDE { return ScrollAreaRole; }
     ScrollView* scrollView() const { return m_scrollView; }
 
     virtual ~AXScrollView();

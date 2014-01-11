@@ -37,7 +37,7 @@ protected:
 public:
     virtual ~AXMockObject();
 
-    virtual void setParent(AXObject* parent) { m_parent = parent; };
+    virtual void setParent(AXObject* parent) { m_parent = parent; }
 
     // AXObject overrides.
     virtual AXObject* parentObject() const OVERRIDE { return m_parent; }
@@ -50,7 +50,7 @@ protected:
     virtual void detachFromParent() OVERRIDE { m_parent = 0; }
 
 private:
-    virtual bool isMockObject() const OVERRIDE { return true; }
+    virtual bool isMockObject() const OVERRIDE FINAL { return true; }
 
     virtual bool computeAccessibilityIsIgnored() const OVERRIDE;
 };

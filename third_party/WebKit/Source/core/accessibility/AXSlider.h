@@ -47,22 +47,22 @@ protected:
 
 private:
     HTMLInputElement* element() const;
-    virtual AXObject* elementAccessibilityHitTest(const IntPoint&) const OVERRIDE;
+    virtual AXObject* elementAccessibilityHitTest(const IntPoint&) const OVERRIDE FINAL;
 
     virtual AccessibilityRole roleValue() const OVERRIDE { return SliderRole; }
-    virtual bool isSlider() const OVERRIDE { return true; }
-    virtual bool isControl() const OVERRIDE { return true; }
+    virtual bool isSlider() const OVERRIDE FINAL { return true; }
+    virtual bool isControl() const OVERRIDE FINAL { return true; }
 
-    virtual void addChildren() OVERRIDE;
+    virtual void addChildren() OVERRIDE FINAL;
 
-    virtual bool canSetValueAttribute() const OVERRIDE { return true; }
+    virtual bool canSetValueAttribute() const OVERRIDE FINAL { return true; }
     const AtomicString& getAttribute(const QualifiedName& attribute) const;
 
-    virtual void setValue(const String&) OVERRIDE;
-    virtual AccessibilityOrientation orientation() const OVERRIDE;
+    virtual void setValue(const String&) OVERRIDE FINAL;
+    virtual AccessibilityOrientation orientation() const OVERRIDE FINAL;
 };
 
-class AXSliderThumb : public AXMockObject {
+class AXSliderThumb FINAL : public AXMockObject {
 
 public:
     static PassRefPtr<AXSliderThumb> create();

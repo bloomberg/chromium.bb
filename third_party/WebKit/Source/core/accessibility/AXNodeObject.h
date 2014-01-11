@@ -102,52 +102,52 @@ protected:
     virtual void init() OVERRIDE;
     virtual void detach() OVERRIDE;
     virtual bool isDetached() const OVERRIDE { return !m_node; }
-    virtual bool isAXNodeObject() const OVERRIDE { return true; }
+    virtual bool isAXNodeObject() const OVERRIDE FINAL { return true; }
 
     // Check object role or purpose.
-    virtual bool isAnchor() const OVERRIDE;
+    virtual bool isAnchor() const OVERRIDE FINAL;
     virtual bool isControl() const OVERRIDE;
-    virtual bool isFieldset() const OVERRIDE;
-    virtual bool isHeading() const OVERRIDE;
-    virtual bool isHovered() const OVERRIDE;
-    virtual bool isImage() const OVERRIDE;
+    virtual bool isFieldset() const OVERRIDE FINAL;
+    virtual bool isHeading() const OVERRIDE FINAL;
+    virtual bool isHovered() const OVERRIDE FINAL;
+    virtual bool isImage() const OVERRIDE FINAL;
     bool isImageButton() const;
-    virtual bool isInputImage() const OVERRIDE;
-    virtual bool isLink() const;
-    virtual bool isMenu() const OVERRIDE;
-    virtual bool isMenuButton() const OVERRIDE;
+    virtual bool isInputImage() const OVERRIDE FINAL;
+    virtual bool isLink() const OVERRIDE FINAL;
+    virtual bool isMenu() const OVERRIDE FINAL;
+    virtual bool isMenuButton() const OVERRIDE FINAL;
     virtual bool isMultiSelectable() const OVERRIDE;
     bool isNativeImage() const;
-    virtual bool isNativeTextControl() const OVERRIDE;
-    virtual bool isNonNativeTextControl() const OVERRIDE;
-    virtual bool isPasswordField() const OVERRIDE;
+    virtual bool isNativeTextControl() const OVERRIDE FINAL;
+    virtual bool isNonNativeTextControl() const OVERRIDE FINAL;
+    virtual bool isPasswordField() const OVERRIDE FINAL;
     virtual bool isProgressIndicator() const OVERRIDE;
     virtual bool isSlider() const OVERRIDE;
 
     // Check object state.
-    virtual bool isChecked() const OVERRIDE;
-    virtual bool isClickable() const OVERRIDE;
+    virtual bool isChecked() const OVERRIDE FINAL;
+    virtual bool isClickable() const OVERRIDE FINAL;
     virtual bool isEnabled() const OVERRIDE;
-    virtual bool isIndeterminate() const OVERRIDE;
-    virtual bool isPressed() const OVERRIDE;
+    virtual bool isIndeterminate() const OVERRIDE FINAL;
+    virtual bool isPressed() const OVERRIDE FINAL;
     virtual bool isReadOnly() const OVERRIDE;
-    virtual bool isRequired() const OVERRIDE;
+    virtual bool isRequired() const OVERRIDE FINAL;
 
     // Check whether certain properties can be modified.
     virtual bool canSetFocusAttribute() const OVERRIDE;
     virtual bool canSetValueAttribute() const OVERRIDE;
 
     // Properties of static elements.
-    virtual bool canvasHasFallbackContent() const OVERRIDE;
+    virtual bool canvasHasFallbackContent() const OVERRIDE FINAL;
     virtual bool exposesTitleUIElement() const OVERRIDE;
-    virtual int headingLevel() const OVERRIDE;
-    virtual unsigned hierarchicalLevel() const OVERRIDE;
+    virtual int headingLevel() const OVERRIDE FINAL;
+    virtual unsigned hierarchicalLevel() const OVERRIDE FINAL;
     virtual String text() const OVERRIDE;
     virtual AXObject* titleUIElement() const OVERRIDE;
 
     // Properties of interactive elements.
-    virtual AccessibilityButtonState checkboxOrRadioValue() const OVERRIDE;
-    virtual void colorValue(int& r, int& g, int& b) const OVERRIDE;
+    virtual AccessibilityButtonState checkboxOrRadioValue() const OVERRIDE FINAL;
+    virtual void colorValue(int& r, int& g, int& b) const OVERRIDE FINAL;
     virtual String valueDescription() const OVERRIDE;
     virtual float valueForRange() const OVERRIDE;
     virtual float maxValueForRange() const OVERRIDE;
@@ -155,9 +155,9 @@ protected:
     virtual String stringValue() const OVERRIDE;
 
     // ARIA attributes.
-    virtual String ariaDescribedByAttribute() const;
-    virtual String ariaLabeledByAttribute() const OVERRIDE;
-    virtual AccessibilityRole ariaRoleAttribute() const OVERRIDE;
+    virtual String ariaDescribedByAttribute() const OVERRIDE FINAL;
+    virtual String ariaLabeledByAttribute() const OVERRIDE FINAL;
+    virtual AccessibilityRole ariaRoleAttribute() const OVERRIDE FINAL;
 
     // Accessibility Text.
     virtual void accessibilityText(Vector<AccessibilityText>&) OVERRIDE;
@@ -184,21 +184,21 @@ protected:
     void insertChild(AXObject*, unsigned index);
 
     // DOM and Render tree access.
-    virtual Element* actionElement() const OVERRIDE;
+    virtual Element* actionElement() const OVERRIDE FINAL;
     virtual Element* anchorElement() const OVERRIDE;
     virtual Document* document() const OVERRIDE;
     virtual Node* node() const OVERRIDE { return m_node; }
 
     // Modify or take an action on an object.
-    virtual void setFocused(bool) OVERRIDE;
-    virtual void increment() OVERRIDE;
-    virtual void decrement() OVERRIDE;
+    virtual void setFocused(bool) OVERRIDE FINAL;
+    virtual void increment() OVERRIDE FINAL;
+    virtual void decrement() OVERRIDE FINAL;
 
     // Notifications that this object may have changed.
     virtual void childrenChanged() OVERRIDE;
-    virtual void selectionChanged() OVERRIDE;
+    virtual void selectionChanged() OVERRIDE FINAL;
     virtual void textChanged() OVERRIDE;
-    virtual void updateAccessibilityRole() OVERRIDE;
+    virtual void updateAccessibilityRole() OVERRIDE FINAL;
 
 private:
     Node* m_node;
