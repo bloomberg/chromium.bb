@@ -38,7 +38,6 @@ class PbufferImageTransportSurface
   virtual bool IsOffscreen() OVERRIDE;
   virtual bool SwapBuffers() OVERRIDE;
   virtual bool PostSubBuffer(int x, int y, int width, int height) OVERRIDE;
-  virtual std::string GetExtensions() OVERRIDE;
   virtual bool SetBackbufferAllocation(bool allocated) OVERRIDE;
   virtual void SetFrontbufferAllocation(bool allocated) OVERRIDE;
 
@@ -184,13 +183,6 @@ void PbufferImageTransportSurface::SetFrontbufferAllocation(bool allocation) {
 
 void PbufferImageTransportSurface::DestroySurface() {
   helper_->SendAcceleratedSurfaceRelease();
-}
-
-std::string PbufferImageTransportSurface::GetExtensions() {
-  std::string extensions = gfx::GLSurface::GetExtensions();
-  extensions += extensions.empty() ? "" : " ";
-  extensions += "GL_CHROMIUM_front_buffer_cached";
-  return extensions;
 }
 
 void PbufferImageTransportSurface::SendBuffersSwapped() {

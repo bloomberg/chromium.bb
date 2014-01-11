@@ -2575,13 +2575,7 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
   caps.iosurface = true;
 #endif
 
-  // TODO(boliu): Expose this directly from GLSurface.
-  std::vector<std::string> extension_list;
-  base::SplitString(surface_->GetExtensions(), ' ', &extension_list);
-  std::set<std::string> extension_set(extension_list.begin(),
-                                      extension_list.end());
-  caps.post_sub_buffer =
-      extension_set.count("GL_CHROMIUM_post_sub_buffer") > 0;
+  caps.post_sub_buffer = surface_->HasExtension("GL_CHROMIUM_post_sub_buffer");
 
   return caps;
 }

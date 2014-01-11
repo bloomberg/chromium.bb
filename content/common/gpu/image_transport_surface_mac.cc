@@ -283,7 +283,6 @@ bool IOSurfaceImageTransportSurface::PostSubBuffer(
 std::string IOSurfaceImageTransportSurface::GetExtensions() {
   std::string extensions = gfx::GLSurface::GetExtensions();
   extensions += extensions.empty() ? "" : " ";
-  extensions += "GL_CHROMIUM_front_buffer_cached ";
   extensions += "GL_CHROMIUM_post_sub_buffer";
   return extensions;
 }

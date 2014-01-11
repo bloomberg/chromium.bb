@@ -42,7 +42,6 @@ class ImageTransportSurfaceAndroid
   // gfx::GLSurface implementation.
   virtual bool Initialize() OVERRIDE;
   virtual bool SwapBuffers() OVERRIDE;
-  virtual std::string GetExtensions() OVERRIDE;
   virtual bool OnMakeCurrent(gfx::GLContext* context) OVERRIDE;
   virtual void WakeUpGpu() OVERRIDE;
 
@@ -100,13 +99,6 @@ bool ImageTransportSurfaceAndroid::Initialize() {
   }
 
   return true;
-}
-
-std::string ImageTransportSurfaceAndroid::GetExtensions() {
-  std::string extensions = gfx::GLSurface::GetExtensions();
-  extensions += extensions.empty() ? "" : " ";
-  extensions += "GL_CHROMIUM_front_buffer_cached ";
-  return extensions;
 }
 
 bool ImageTransportSurfaceAndroid::OnMakeCurrent(gfx::GLContext* context) {

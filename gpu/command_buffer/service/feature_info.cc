@@ -248,9 +248,6 @@ void FeatureInfo::InitializeFeatures() {
   AddExtensionString("GL_CHROMIUM_texture_mailbox");
   AddExtensionString("GL_EXT_debug_marker");
 
-  if (workarounds_.enable_chromium_fast_npot_mo8_textures)
-    AddExtensionString("GL_CHROMIUM_fast_NPOT_MO8_textures");
-
   feature_flags_.chromium_stream_texture = true;
 
   // OES_vertex_array_object is emulated if not present natively,

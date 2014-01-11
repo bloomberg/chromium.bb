@@ -607,11 +607,6 @@ typedef void (GL_APIENTRYP PFNGLGETPROGRAMINFOCHROMIUMPROC) (
    GLuint program, GLsizei bufsize, GLsizei* size, void* info);
 #endif  /* GL_CHROMIUM_get_multiple */
 
-/* GL_CHROMIUM_front_buffer_cached */
-#ifndef GL_CHROMIUM_front_buffer_cached
-#define GL_CHROMIUM_front_buffer_cached 1
-#endif  /* GL_CHROMIUM_front_buffer_cached */
-
 /* GL_CHROMIUM_sync_point */
 #ifndef GL_CHROMIUM_sync_point
 #define GL_CHROMIUM_sync_point 1
