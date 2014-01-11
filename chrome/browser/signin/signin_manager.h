@@ -21,6 +21,7 @@
 
 #else
 
+#include <set>
 #include <string>
 
 #include "base/compiler_specific.h"
@@ -35,8 +36,7 @@
 #include "chrome/browser/signin/signin_internals_util.h"
 #include "chrome/browser/signin/signin_manager_base.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/render_process_host_observer.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/cookies/canonical_cookie.h"
@@ -51,7 +51,7 @@ class SigninManagerDelegate;
 
 class SigninManager : public SigninManagerBase,
                       public GaiaAuthConsumer,
-                      public content::NotificationObserver {
+                      public content::RenderProcessHostObserver {
  public:
   // The callback invoked once the OAuth token has been fetched during signin,
   // but before the profile transitions to the "signed-in" state. This allows
@@ -156,10 +156,9 @@ class SigninManager : public SigninManagerBase,
   virtual void OnGetUserInfoFailure(
       const GoogleServiceAuthError& error) OVERRIDE;
 
-  // content::NotificationObserver
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // content::RenderProcessHostObserver
+  virtual void RenderProcessHostDestroyed(
+      content::RenderProcessHost* host) OVERRIDE;
 
   // Tells the SigninManager whether to prohibit signout for this profile.
   // If |prohibit_signout| is true, then signout will be prohibited.
@@ -258,9 +257,6 @@ class SigninManager : public SigninManagerBase,
   // Actual client login handler.
   scoped_ptr<GaiaAuthFetcher> client_login_;
 
-  // Registrar for notifications from the TokenService.
-  content::NotificationRegistrar registrar_;
-
   // OAuth revocation fetcher for sign outs.
   scoped_ptr<GaiaAuthFetcher> revoke_token_fetcher_;
 
@@ -282,6 +278,9 @@ class SigninManager : public SigninManagerBase,
   // See SetSigninProcess.  Tracks the currently active signin process
   // by ID, if there is one.
   int signin_host_id_;
+
+  // The RenderProcessHosts being observed.
+  std::set<content::RenderProcessHost*> signin_hosts_observed_;
 
   // Callback invoked during signin after an OAuth token has been fetched
   // but before signin is complete.

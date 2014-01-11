@@ -46,6 +46,7 @@ using namespace signin_internals_util;
 
 using content::BrowserThread;
 using content::ChildProcessHost;
+using content::RenderProcessHost;
 
 namespace {
 
@@ -97,12 +98,10 @@ void SigninManager::SetSigninProcess(int process_id) {
           signin_host_id_ != ChildProcessHost::kInvalidUniqueID)
       << "Replacing in-use signin process.";
   signin_host_id_ = process_id;
-  const content::RenderProcessHost* process =
-      content::RenderProcessHost::FromID(process_id);
-  DCHECK(process);
-  registrar_.Add(this,
-                 content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-                 content::Source<content::RenderProcessHost>(process));
+  RenderProcessHost* host = RenderProcessHost::FromID(process_id);
+  DCHECK(host);
+  host->AddObserver(this);
+  signin_hosts_observed_.insert(host);
 }
 
 void SigninManager::ClearSigninProcess() {
@@ -130,6 +129,12 @@ void SigninManager::RemoveMergeSessionObserver(
 }
 
 SigninManager::~SigninManager() {
+  std::set<RenderProcessHost*>::iterator i;
+  for (i = signin_hosts_observed_.begin();
+       i != signin_hosts_observed_.end();
+       ++i) {
+    (*i)->RemoveObserver(this);
+  }
 }
 
 void SigninManager::InitTokenService() {
@@ -627,22 +632,14 @@ void SigninManager::OnGetUserInfoFailure(const GoogleServiceAuthError& error) {
   OnClientLoginFailure(error);
 }
 
-void SigninManager::Observe(int type,
-                            const content::NotificationSource& source,
-                            const content::NotificationDetails& details) {
-  DCHECK_EQ(content::NOTIFICATION_RENDERER_PROCESS_TERMINATED, type);
-
-  // It's possible we're listening to a "stale" renderer because it was
-  // replaced with a new process by process-per-site. In either case,
-  // stop listening to it, but only reset signin_host_id_ tracking
-  // if this was from the current signin process.
-  registrar_.Remove(this,
-                    content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-                    source);
-  if (signin_host_id_ ==
-      content::Source<content::RenderProcessHost>(source)->GetID()) {
+void SigninManager::RenderProcessHostDestroyed(RenderProcessHost* host) {
+  // It's possible we're listening to a "stale" renderer because it was replaced
+  // with a new process by process-per-site. In either case, stop observing it,
+  // but only reset signin_host_id_ tracking if this was from the current signin
+  // process.
+  signin_hosts_observed_.erase(host);
+  if (signin_host_id_ == host->GetID())
     signin_host_id_ = ChildProcessHost::kInvalidUniqueID;
-  }
 }
 
 void SigninManager::ProhibitSignout(bool prohibit_signout) {
