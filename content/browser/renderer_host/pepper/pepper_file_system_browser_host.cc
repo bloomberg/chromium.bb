@@ -121,7 +121,7 @@ bool PepperFileSystemBrowserHost::IsFileSystemHost() {
 
 void PepperFileSystemBrowserHost::OpenQuotaFile(
     PepperFileIOHost* file_io_host,
-    const base::FilePath& file_path,
+    const fileapi::FileSystemURL& url,
     const OpenQuotaFileCallback& callback) {
   int32_t id = file_io_host->pp_resource();
   std::pair<FileMap::iterator, bool> insert_result =
@@ -133,7 +133,7 @@ void PepperFileSystemBrowserHost::OpenQuotaFile(
         base::Bind(&QuotaReservation::OpenFile,
                    quota_reservation_,
                    id,
-                   file_path),
+                   url),
         callback);
   } else {
     NOTREACHED();

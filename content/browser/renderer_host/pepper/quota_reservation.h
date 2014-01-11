@@ -15,11 +15,8 @@
 #include "url/gurl.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 
-namespace base {
-class FilePath;
-}
-
 namespace fileapi {
+class FileSystemURL;
 class OpenFileHandle;
 class QuotaReservation;
 }
@@ -44,7 +41,7 @@ class CONTENT_EXPORT QuotaReservation
       fileapi::FileSystemType file_system_type);
 
   // Opens a file with the given id and path and returns its current size.
-  int64_t OpenFile(int32_t id, const base::FilePath& file_path);
+  int64_t OpenFile(int32_t id, const fileapi::FileSystemURL& url);
   // Closes the file opened by OpenFile with the given id.
   void CloseFile(int32_t id, int64_t max_written_offset);
   // Refreshes the quota reservation to a new amount. A map that associates file

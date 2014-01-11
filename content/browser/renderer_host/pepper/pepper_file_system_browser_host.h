@@ -68,7 +68,7 @@ class CONTENT_EXPORT PepperFileSystemBrowserHost
   // callback.
   typedef base::Callback<void(int64_t)> OpenQuotaFileCallback;
   void OpenQuotaFile(PepperFileIOHost* file_io_host,
-                     const base::FilePath& file_path,
+                     const fileapi::FileSystemURL& url,
                      const OpenQuotaFileCallback& callback);
   // Closes the file. This must be called after OpenQuotaFile and before the
   // PepperFileIOHost is destroyed.

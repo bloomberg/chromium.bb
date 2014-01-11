@@ -82,8 +82,14 @@ class QuotaReservationTest : public testing::Test {
     reservation_manager_.reset();
   }
 
-  base::FilePath MakeFilePath(base::FilePath::StringType file_name) {
+  base::FilePath MakeFilePath(const base::FilePath::StringType& file_name) {
     return work_dir_.path().Append(file_name);
+  }
+
+  fileapi::FileSystemURL MakeFileSystemURL(
+      const base::FilePath::StringType& file_name) {
+    return fileapi::FileSystemURL::CreateForTest(
+        GURL(kOrigin), kType, MakeFilePath(file_name));
   }
 
   scoped_refptr<QuotaReservation> CreateQuotaReservation(
@@ -164,7 +170,8 @@ TEST_F(QuotaReservationTest, DISABLED_ReserveQuota) {
   // Open a file, refresh the reservation, extend the file, and close it.
   int64 file_size = 10;
   SetFileSize(file1_name, file_size);
-  int64 open_file_size = test->OpenFile(kFile1ID, MakeFilePath(file1_name));
+  int64 open_file_size = test->OpenFile(kFile1ID,
+                                        MakeFileSystemURL(file1_name));
   EXPECT_EQ(file_size, open_file_size);
 
   max_written_offsets[kFile1ID] = file_size;  // 1 file open.
@@ -196,15 +203,18 @@ TEST_F(QuotaReservationTest, DISABLED_MultipleFiles) {
   // Open some files of different sizes.
   int64 file1_size = 10;
   SetFileSize(file1_name, file1_size);
-  int64 open_file1_size = test->OpenFile(kFile1ID, MakeFilePath(file1_name));
+  int64 open_file1_size = test->OpenFile(kFile1ID,
+                                         MakeFileSystemURL(file1_name));
   EXPECT_EQ(file1_size, open_file1_size);
   int64 file2_size = 20;
   SetFileSize(file2_name, file2_size);
-  int64 open_file2_size = test->OpenFile(kFile2ID, MakeFilePath(file2_name));
+  int64 open_file2_size = test->OpenFile(kFile2ID,
+                                         MakeFileSystemURL(file2_name));
   EXPECT_EQ(file2_size, open_file2_size);
   int64 file3_size = 30;
   SetFileSize(file3_name, file3_size);
-  int64 open_file3_size = test->OpenFile(kFile3ID, MakeFilePath(file3_name));
+  int64 open_file3_size = test->OpenFile(kFile3ID,
+                                         MakeFileSystemURL(file3_name));
   EXPECT_EQ(file3_size, open_file3_size);
 
   // Reserve quota.

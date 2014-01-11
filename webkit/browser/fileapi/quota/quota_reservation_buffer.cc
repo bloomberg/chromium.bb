@@ -46,8 +46,13 @@ void QuotaReservationBuffer::CommitFileGrowth(int64 quota_consumption,
     return;
   reservation_manager_->CommitQuotaUsage(origin_, type_, usage_delta);
 
-  DCHECK_LE(quota_consumption, reserved_quota_);
   if (quota_consumption > 0) {
+    if (quota_consumption > reserved_quota_) {
+      LOG(ERROR) << "Detected over consumption of the storage quota beyond its"
+                 << " reservation";
+      quota_consumption = reserved_quota_;
+    }
+
     reserved_quota_ -= quota_consumption;
     reservation_manager_->ReleaseReservedQuota(
         origin_, type_, quota_consumption);

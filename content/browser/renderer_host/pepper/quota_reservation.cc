@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "content/public/browser/browser_thread.h"
+#include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/quota/open_file_handle.h"
 #include "webkit/browser/fileapi/quota/quota_reservation.h"
 #include "webkit/common/fileapi/file_system_util.h"
@@ -49,9 +50,23 @@ QuotaReservation::~QuotaReservation() {
 }
 
 int64_t QuotaReservation::OpenFile(int32_t id,
-                                   const base::FilePath& file_path) {
+                                   const fileapi::FileSystemURL& url) {
+  base::FilePath platform_file_path;
+  if (file_system_context_) {
+    base::PlatformFileError error =
+        file_system_context_->operation_runner()->SyncGetPlatformPath(
+            url, &platform_file_path);
+    if (error != base::PLATFORM_FILE_OK) {
+      NOTREACHED();
+      return 0;
+    }
+  } else {
+    // For test.
+    platform_file_path = url.path();
+  }
+
   scoped_ptr<fileapi::OpenFileHandle> file_handle =
-      quota_reservation_->GetOpenFileHandle(file_path);
+      quota_reservation_->GetOpenFileHandle(platform_file_path);
   std::pair<FileMap::iterator, bool> insert_result =
       files_.insert(std::make_pair(id, file_handle.get()));
   if (insert_result.second) {
@@ -68,6 +83,7 @@ void QuotaReservation::CloseFile(int32_t id,
   FileMap::iterator it = files_.find(id);
   if (it != files_.end()) {
     it->second->UpdateMaxWrittenOffset(max_written_offset);
+    delete it->second;
     files_.erase(it);
   } else {
     NOTREACHED();
