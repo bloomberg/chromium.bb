@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GL_ANDROID_UI_JNI_REGISTRAR_H_
-#define UI_GL_ANDROID_UI_JNI_REGISTRAR_H_
+#ifndef UI_GL_ANDROID_GL_JNI_REGISTRAR_H_
+#define UI_GL_ANDROID_GL_JNI_REGISTRAR_H_
 
 #include <jni.h>
 
@@ -20,4 +20,4 @@ GL_EXPORT bool RegisterJni(JNIEnv* env);
 }  // namespace gl
 }  // namespace ui
 
-#endif  // UI_GL_ANDROID_UI_JNI_REGISTRAR_H_
+#endif  // UI_GL_ANDROID_GL_JNI_REGISTRAR_H_

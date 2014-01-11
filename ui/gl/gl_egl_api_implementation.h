@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GL_EGL_API_IMPLEMENTATION_H_
-#define UI_GL_EGL_API_IMPLEMENTATION_H_
+#ifndef UI_GL_GL_EGL_API_IMPLEMENTATION_H_
+#define UI_GL_GL_EGL_API_IMPLEMENTATION_H_
 
 #include "base/compiler_specific.h"
 #include "gl_bindings.h"
@@ -60,7 +60,7 @@ class GL_EXPORT TraceEGLApi : public EGLApi {
 
 }  // namespace gfx
 
-#endif  // UI_GL_EGL_API_IMPLEMENTATION_H_
+#endif  // UI_GL_GL_EGL_API_IMPLEMENTATION_H_
 
 
 
