@@ -94,7 +94,7 @@ int GetOutputPower(
     output_power->resize(outputs.size());
 
   for (size_t i = 0; i < outputs.size(); ++i) {
-    bool internal = outputs[i].is_internal;
+    bool internal = outputs[i].type == OUTPUT_TYPE_INTERNAL;
     bool on = state == DISPLAY_POWER_ALL_ON ||
         (state == DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON && !internal) ||
         (state == DISPLAY_POWER_INTERNAL_ON_EXTERNAL_OFF && internal);
@@ -113,7 +113,7 @@ bool IsProjecting(
   bool has_internal_output = false;
   int connected_output_count = outputs.size();
   for (size_t i = 0; i < outputs.size(); ++i)
-    has_internal_output |= outputs[i].is_internal;
+    has_internal_output |= outputs[i].type == OUTPUT_TYPE_INTERNAL;
 
   // "Projecting" is defined as having more than 1 output connected while at
   // least one of them is an internal output.
@@ -154,7 +154,6 @@ OutputConfigurator::OutputSnapshot::OutputSnapshot()
       y(0),
       width_mm(0),
       height_mm(0),
-      is_internal(false),
       is_aspect_preserving_scaling(false),
       type(OUTPUT_TYPE_UNKNOWN),
       touch_device_id(0),
@@ -484,7 +483,8 @@ bool OutputConfigurator::SetDisplayPower(DisplayPowerState power_state,
   bool only_if_single_internal_display =
       flags & kSetDisplayPowerOnlyIfSingleInternalDisplay;
   bool single_internal_display =
-      cached_outputs_.size() == 1 && cached_outputs_[0].is_internal;
+      cached_outputs_.size() == 1 &&
+      cached_outputs_[0].type == OUTPUT_TYPE_INTERNAL;
   if (single_internal_display || !only_if_single_internal_display) {
     success = EnterStateOrFallBackToSoftwareMirroring(new_state, power_state);
     attempted_change = true;
@@ -665,8 +665,8 @@ void OutputConfigurator::UpdateCachedOutputs() {
 
   // Set |mirror_mode| fields.
   if (cached_outputs_.size() == 2) {
-    bool one_is_internal = cached_outputs_[0].is_internal;
-    bool two_is_internal = cached_outputs_[1].is_internal;
+    bool one_is_internal = cached_outputs_[0].type == OUTPUT_TYPE_INTERNAL;
+    bool two_is_internal = cached_outputs_[1].type == OUTPUT_TYPE_INTERNAL;
     int internal_outputs = (one_is_internal ? 1 : 0) +
         (two_is_internal ? 1 : 0);
     DCHECK_LT(internal_outputs, 2);

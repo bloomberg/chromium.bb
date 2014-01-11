@@ -390,7 +390,6 @@ class OutputConfiguratorTest : public testing::Test {
     o->crtc = 10;
     o->current_mode = kSmallModeId;
     o->native_mode = kSmallModeId;
-    o->is_internal = true;
     o->type = OUTPUT_TYPE_INTERNAL;
     o->is_aspect_preserving_scaling = true;
     o->mode_infos[kSmallModeId] = small_mode_info;
@@ -403,7 +402,6 @@ class OutputConfiguratorTest : public testing::Test {
     o->crtc = 11;
     o->current_mode = kBigModeId;
     o->native_mode = kBigModeId;
-    o->is_internal = false;
     o->type = OUTPUT_TYPE_HDMI;
     o->is_aspect_preserving_scaling = true;
     o->mode_infos[kSmallModeId] = small_mode_info;

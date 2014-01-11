@@ -277,13 +277,13 @@ RealOutputConfiguratorDelegate::InitOutputSnapshot(
   output.width_mm = info->mm_width;
   output.height_mm = info->mm_height;
   output.has_display_id = base::GetDisplayId(id, index, &output.display_id);
-  output.is_internal = IsInternalOutput(info);
   output.index = index;
+  bool is_internal = IsInternalOutput(info);
 
   // Use the index as a valid display ID even if the internal
   // display doesn't have valid EDID because the index
   // will never change.
-  if (!output.has_display_id && output.is_internal)
+  if (!output.has_display_id && is_internal)
     output.has_display_id = true;
 
   if (info->crtc) {
@@ -317,7 +317,7 @@ RealOutputConfiguratorDelegate::InitOutputSnapshot(
   }
 
   std::string name(info->name);
-  if (output.is_internal) {
+  if (is_internal) {
     output.type = OUTPUT_TYPE_INTERNAL;
   } else if (name.find(kOutputName_VGA) == 0) {
     output.type = OUTPUT_TYPE_VGA;
@@ -597,7 +597,7 @@ void RealOutputConfiguratorDelegate::GetTouchscreens(
        it != no_match_touchscreen.end();
        it++) {
     for (size_t i = 0; i < outputs->size(); i++) {
-      if ((*outputs)[i].is_internal == false &&
+      if ((*outputs)[i].type != OUTPUT_TYPE_INTERNAL &&
           (*outputs)[i].native_mode != None &&
           (*outputs)[i].touch_device_id == None ) {
         (*outputs)[i].touch_device_id = *it;

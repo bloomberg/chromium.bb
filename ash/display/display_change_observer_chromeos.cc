@@ -123,7 +123,7 @@ void DisplayChangeObserver::OnDisplayModeChanged(
   for (size_t i = 0; i < outputs.size(); ++i) {
     const OutputConfigurator::OutputSnapshot& output = outputs[i];
 
-    if (output.is_internal &&
+    if (output.type == chromeos::OUTPUT_TYPE_INTERNAL &&
         gfx::Display::InternalDisplayId() == gfx::Display::kInvalidDisplayID) {
       // Fall back to output index. crbug.com/180100
       gfx::Display::SetInternalDisplayId(
@@ -146,10 +146,10 @@ void DisplayChangeObserver::OnDisplayModeChanged(
         output.x, output.y, mode_info->width, mode_info->height);
 
     std::vector<Resolution> resolutions;
-    if (!output.is_internal)
+    if (output.type != chromeos::OUTPUT_TYPE_INTERNAL)
       resolutions = GetResolutionList(output);
 
-    std::string name = output.is_internal ?
+    std::string name = output.type == chromeos::OUTPUT_TYPE_INTERNAL ?
         l10n_util::GetStringUTF8(IDS_ASH_INTERNAL_DISPLAY_NAME) :
         chromeos::GetDisplayName(output.output);
     if (name.empty())

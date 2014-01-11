@@ -123,8 +123,6 @@ class CHROMEOS_EXPORT OutputConfigurator
     uint64 width_mm;
     uint64 height_mm;
 
-    // TODO(kcwu): Remove this. Check type == OUTPUT_TYPE_INTERNAL instead.
-    bool is_internal;
     bool is_aspect_preserving_scaling;
 
     // The type of output.
