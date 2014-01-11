@@ -79,6 +79,8 @@ class TestTextfield : public views::Textfield {
 
   void clear() { key_received_ = key_handled_ = false; }
 
+  bool focusable() const { return View::focusable(); }
+
  private:
   bool key_handled_;
   bool key_received_;

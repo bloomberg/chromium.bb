@@ -163,7 +163,7 @@ void ButtonExample::LabelButtonPressed(const ui::Event& event) {
     }
   } else if (event.IsShiftDown()) {
     if (event.IsAltDown()) {
-      label_button_->SetFocusable(!label_button_->focusable());
+      label_button_->SetFocusable(!label_button_->IsFocusable());
     } else {
       label_button_->SetStyle(static_cast<Button::ButtonStyle>(
           (label_button_->style() + 1) % Button::STYLE_COUNT));

@@ -231,6 +231,8 @@ class TestView : public View {
     views::View::Blur();
   }
 
+  bool focusable() const { return View::focusable(); }
+
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
   virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE;
@@ -3571,5 +3573,21 @@ TEST_F(ViewLayerTest, RecreateLayerZOrderWidgetParent) {
 }
 
 #endif  // USE_AURA
+
+TEST_F(ViewTest, FocusableAssertions) {
+  // View subclasses may change insets based on whether they are focusable,
+  // which effects the preferred size. To avoid preferred size changing around
+  // these Views need to key off the last value set to SetFocusable(), not
+  // whether the View is focusable right now. For this reason it's important
+  // that focusable() return the last value passed to SetFocusable and not
+  // whether the View is focusable right now.
+  TestView view;
+  view.SetFocusable(true);
+  EXPECT_TRUE(view.focusable());
+  view.SetEnabled(false);
+  EXPECT_TRUE(view.focusable());
+  view.SetFocusable(false);
+  EXPECT_FALSE(view.focusable());
+}
 
 }  // namespace views
