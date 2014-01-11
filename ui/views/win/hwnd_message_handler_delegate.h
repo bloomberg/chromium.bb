@@ -237,6 +237,10 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
                              WPARAM w_param,
                              LPARAM l_param) = 0;
 
+  // Called when a scroll event is received. Returns true if the event was
+  // handled by the delegate.
+  virtual bool HandleScrollEvent(const ui::ScrollEvent& event) = 0;
+
  protected:
   virtual ~HWNDMessageHandlerDelegate() {}
 };

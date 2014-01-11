@@ -236,6 +236,7 @@ class VIEWS_EXPORT NativeWidgetWin : public internal::NativeWidgetPrivate,
   virtual void PostHandleMSG(UINT message,
                              WPARAM w_param,
                              LPARAM l_param) OVERRIDE;
+  virtual bool HandleScrollEvent(const ui::ScrollEvent& event) OVERRIDE;
 
   // The TooltipManager. This is NULL if there is a problem creating the
   // underlying tooltip window.

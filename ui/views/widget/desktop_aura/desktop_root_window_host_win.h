@@ -210,6 +210,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   virtual void PostHandleMSG(UINT message,
                              WPARAM w_param,
                              LPARAM l_param) OVERRIDE;
+  virtual bool HandleScrollEvent(const ui::ScrollEvent& event) OVERRIDE;
 
   Widget* GetWidget();
   const Widget* GetWidget() const;

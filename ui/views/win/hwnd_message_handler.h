@@ -324,6 +324,10 @@ class VIEWS_EXPORT HWNDMessageHandler :
     MESSAGE_HANDLER_EX(WM_DEADCHAR, OnImeMessages)
     MESSAGE_HANDLER_EX(WM_SYSDEADCHAR, OnImeMessages)
 
+    // Scroll events
+    MESSAGE_HANDLER_EX(WM_VSCROLL, OnScrollMessage)
+    MESSAGE_HANDLER_EX(WM_HSCROLL, OnScrollMessage)
+
     // Touch Events.
     MESSAGE_HANDLER_EX(WM_TOUCH, OnTouchEvent)
 
@@ -410,6 +414,7 @@ class VIEWS_EXPORT HWNDMessageHandler :
   LRESULT OnNotify(int w_param, NMHDR* l_param);
   void OnPaint(HDC dc);
   LRESULT OnReflectedMessage(UINT message, WPARAM w_param, LPARAM l_param);
+  LRESULT OnScrollMessage(UINT message, WPARAM w_param, LPARAM l_param);
   LRESULT OnSetCursor(UINT message, WPARAM w_param, LPARAM l_param);
   void OnSetFocus(HWND last_focused_window);
   LRESULT OnSetIcon(UINT size_type, HICON new_icon);
@@ -533,6 +538,9 @@ class VIEWS_EXPORT HWNDMessageHandler :
 
   // Generates touch-ids for touch-events.
   ui::SequentialIDGenerator id_generator_;
+
+  // Indicates if the window has the WS_VSCROLL and WS_HSCROLL styles set.
+  bool scroll_styles_set_;
 
   DISALLOW_COPY_AND_ASSIGN(HWNDMessageHandler);
 };

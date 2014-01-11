@@ -2900,8 +2900,12 @@ void RenderWidgetHostViewAura::OnScrollEvent(ui::ScrollEvent* event) {
     return;
 
   if (event->type() == ui::ET_SCROLL) {
+#if !defined(OS_WIN)
+    // TODO(ananta)
+    // Investigate if this is true for Windows 8 Metro ASH as well.
     if (event->finger_count() != 2)
       return;
+#endif
     blink::WebGestureEvent gesture_event =
         MakeWebGestureEventFlingCancel();
     host_->ForwardGestureEvent(gesture_event);

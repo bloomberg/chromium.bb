@@ -769,7 +769,6 @@ bool NativeWidgetWin::HandleMouseEvent(const ui::MouseEvent& event) {
     delegate_->OnMouseEvent(&dpi_event);
     return dpi_event.handled();
   } else if (event.IsMouseEvent()) {
-    CHECK(!event.IsScrollEvent()); // Scroll events don't happen in Windows.
     ui::MouseEvent dpi_event(event);
     if (!(dpi_event.flags() & ui::EF_IS_NON_CLIENT))
       dpi_event.UpdateForRootTransform(scale_transform);
@@ -865,6 +864,11 @@ bool NativeWidgetWin::PreHandleMSG(UINT message,
 void NativeWidgetWin::PostHandleMSG(UINT message,
                                     WPARAM w_param,
                                     LPARAM l_param) {
+}
+
+bool NativeWidgetWin::HandleScrollEvent(const ui::ScrollEvent& event) {
+  delegate_->OnScrollEvent(const_cast<ui::ScrollEvent*>(&event));
+  return event.handled();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
