@@ -516,8 +516,8 @@ void HostProcess::CreateAuthenticatorFactory() {
 
   if (token_url_.is_empty() && token_validation_url_.is_empty()) {
     factory = protocol::Me2MeHostAuthenticatorFactory::CreateWithSharedSecret(
-        host_owner_, local_certificate, key_pair_, host_secret_hash_,
-        pairing_registry);
+        use_service_account_, host_owner_, local_certificate, key_pair_,
+        host_secret_hash_, pairing_registry);
 
   } else if (token_url_.is_valid() && token_validation_url_.is_valid()) {
     scoped_ptr<protocol::ThirdPartyHostAuthenticator::TokenValidatorFactory>
@@ -525,7 +525,7 @@ void HostProcess::CreateAuthenticatorFactory() {
             token_url_, token_validation_url_, key_pair_,
             context_->url_request_context_getter()));
     factory = protocol::Me2MeHostAuthenticatorFactory::CreateWithThirdPartyAuth(
-        host_owner_, local_certificate, key_pair_,
+        use_service_account_, host_owner_, local_certificate, key_pair_,
         token_validator_factory.Pass());
 
   } else {

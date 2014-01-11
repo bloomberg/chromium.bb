@@ -61,6 +61,7 @@ class RejectingAuthenticator : public Authenticator {
 // static
 scoped_ptr<AuthenticatorFactory>
 Me2MeHostAuthenticatorFactory::CreateWithSharedSecret(
+    bool use_service_account,
     const std::string& host_owner,
     const std::string& local_cert,
     scoped_refptr<RsaKeyPair> key_pair,
@@ -68,6 +69,7 @@ Me2MeHostAuthenticatorFactory::CreateWithSharedSecret(
     scoped_refptr<PairingRegistry> pairing_registry) {
   scoped_ptr<Me2MeHostAuthenticatorFactory> result(
       new Me2MeHostAuthenticatorFactory());
+  result->use_service_account_ = use_service_account;
   result->host_owner_ = host_owner;
   result->local_cert_ = local_cert;
   result->key_pair_ = key_pair;
@@ -80,6 +82,7 @@ Me2MeHostAuthenticatorFactory::CreateWithSharedSecret(
 // static
 scoped_ptr<AuthenticatorFactory>
 Me2MeHostAuthenticatorFactory::CreateWithThirdPartyAuth(
+    bool use_service_account,
     const std::string& host_owner,
     const std::string& local_cert,
     scoped_refptr<RsaKeyPair> key_pair,
@@ -87,6 +90,7 @@ Me2MeHostAuthenticatorFactory::CreateWithThirdPartyAuth(
         token_validator_factory) {
   scoped_ptr<Me2MeHostAuthenticatorFactory> result(
       new Me2MeHostAuthenticatorFactory());
+  result->use_service_account_ = use_service_account;
   result->host_owner_ = host_owner;
   result->local_cert_ = local_cert;
   result->key_pair_ = key_pair;
@@ -111,12 +115,29 @@ scoped_ptr<Authenticator> Me2MeHostAuthenticatorFactory::CreateAuthenticator(
     const std::string& remote_jid,
     const buzz::XmlElement* first_message) {
 
-  // Verify that the client's jid is an ASCII string, and then check
-  // that the client has the same bare jid as the host, i.e. client's
-  // full JID starts with host's bare jid. Comparison is case
-  // insensitive.
+  std::string remote_jid_prefix;
+
+  if (!use_service_account_) {
+    // JID prefixes may not match the host owner email, for example, in cases
+    // where the host owner account does not have an email associated with it.
+    // In those cases, the only guarantee we have is that JIDs for the same
+    // account will have the same prefix.
+    size_t slash_pos = local_jid.find('/');
+    if (slash_pos == std::string::npos) {
+      LOG(DFATAL) << "Invalid local JID:" << local_jid;
+      return scoped_ptr<Authenticator>(new RejectingAuthenticator());
+    }
+    remote_jid_prefix = local_jid.substr(0, slash_pos);
+  } else {
+    // TODO(rmsousa): This only works for cases where the JID prefix matches
+    // the host owner email. Figure out a way to verify the JID in other cases.
+    remote_jid_prefix = host_owner_;
+  }
+
+  // Verify that the client's jid is an ASCII string, and then check that the
+  // client JID has the expected prefix. Comparison is case insensitive.
   if (!IsStringASCII(remote_jid) ||
-      !StartsWithASCII(remote_jid, host_owner_ + '/', false)) {
+      !StartsWithASCII(remote_jid, remote_jid_prefix + '/', false)) {
     LOG(ERROR) << "Rejecting incoming connection from " << remote_jid;
     return scoped_ptr<Authenticator>(new RejectingAuthenticator());
   }
