@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
-#include "cc/output/context_provider.h"
+#include "webkit/common/gpu/context_provider_web_context.h"
 #include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 #include "webkit/common/gpu/webkit_gpu_export.h"
 
@@ -20,7 +20,7 @@ namespace gpu {
 class GrContextForWebGraphicsContext3D;
 
 class WEBKIT_GPU_EXPORT ContextProviderInProcess
-    : NON_EXPORTED_BASE(public cc::ContextProvider) {
+    : NON_EXPORTED_BASE(public ContextProviderWebContext) {
  public:
   static scoped_refptr<ContextProviderInProcess> Create(
       scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context3d,
@@ -30,6 +30,7 @@ class WEBKIT_GPU_EXPORT ContextProviderInProcess
   // context.
   static scoped_refptr<ContextProviderInProcess> CreateOffscreen();
 
+  virtual blink::WebGraphicsContext3D* WebContext3D() OVERRIDE;
   virtual bool BindToCurrentThread() OVERRIDE;
   virtual Capabilities ContextCapabilities() OVERRIDE;
   virtual blink::WebGraphicsContext3D* Context3d() OVERRIDE;

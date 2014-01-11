@@ -12,6 +12,8 @@
 #include "webkit/common/gpu/context_provider_in_process.h"
 #include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 
+using webkit::gpu::ContextProviderWebContext;
+
 namespace content {
 
 namespace {
@@ -73,7 +75,7 @@ SynchronousCompositorFactoryImpl::GetInputHandlerManagerClient() {
   return synchronous_input_event_filter();
 }
 
-scoped_refptr<cc::ContextProvider>
+scoped_refptr<ContextProviderWebContext>
 SynchronousCompositorFactoryImpl::GetOffscreenContextProviderForMainThread() {
   // This check only guarantees the main thread context is created after
   // a compositor did successfully initialize hardware draw in the past.

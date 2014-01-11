@@ -1,25 +1,28 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_COMMON_GPU_WEBGRAPHICSCONTEXT3D_PROVIDER_IMPL_H_
-#define WEBKIT_COMMON_GPU_WEBGRAPHICSCONTEXT3D_PROVIDER_IMPL_H_
+#ifndef CONTENT_RENDERER_WEBGRAPHICSCONTEXT3D_PROVIDER_IMPL_H_
+#define CONTENT_RENDERER_WEBGRAPHICSCONTEXT3D_PROVIDER_IMPL_H_
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3DProvider.h"
-#include "webkit/common/gpu/webkit_gpu_export.h"
-
-namespace cc { class ContextProvider; }
 
 namespace webkit {
 namespace gpu {
+class ContextProviderWebContext;
+}  // namespace webkit
+}  // namespace gpu
 
-class WEBKIT_GPU_EXPORT WebGraphicsContext3DProviderImpl
+namespace content {
+
+class CONTENT_EXPORT WebGraphicsContext3DProviderImpl
     : public NON_EXPORTED_BASE(blink::WebGraphicsContext3DProvider) {
  public:
   explicit WebGraphicsContext3DProviderImpl(
-      scoped_refptr<cc::ContextProvider> provider);
+      scoped_refptr<webkit::gpu::ContextProviderWebContext> provider);
   virtual ~WebGraphicsContext3DProviderImpl();
 
   // WebGraphicsContext3DProvider implementation.
@@ -27,10 +30,9 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DProviderImpl
   virtual GrContext* grContext() OVERRIDE;
 
  private:
-  scoped_refptr<cc::ContextProvider> provider_;
+  scoped_refptr<webkit::gpu::ContextProviderWebContext> provider_;
 };
 
-}  // namespace gpu
-}  // namespace webkit
+}  // namespace content
 
-#endif  // WEBKIT_COMMON_GPU_WEBGRAPHICSCONTEXT3D_PROVIDER_IMPL_H_
+#endif  // CONTENT_RENDERER_WEBGRAPHICSCONTEXT3D_PROVIDER_IMPL_H_
