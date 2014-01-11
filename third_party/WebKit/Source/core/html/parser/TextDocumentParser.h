@@ -30,7 +30,7 @@
 
 namespace WebCore {
 
-class TextDocumentParser : public HTMLDocumentParser {
+class TextDocumentParser FINAL : public HTMLDocumentParser {
 public:
     static PassRefPtr<TextDocumentParser> create(HTMLDocument* document)
     {
@@ -41,7 +41,7 @@ public:
 private:
     explicit TextDocumentParser(HTMLDocument*);
 
-    virtual void appendBytes(const char*, size_t) OVERRIDE FINAL;
+    virtual void appendBytes(const char*, size_t) OVERRIDE;
     void insertFakePreElement();
 
     bool m_haveInsertedFakePreElement;

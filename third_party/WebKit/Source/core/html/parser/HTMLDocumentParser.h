@@ -81,11 +81,11 @@ public:
 
     HTMLTokenizer* tokenizer() const { return m_tokenizer.get(); }
 
-    virtual TextPosition textPosition() const;
-    virtual OrdinalNumber lineNumber() const;
+    virtual TextPosition textPosition() const OVERRIDE FINAL;
+    virtual OrdinalNumber lineNumber() const OVERRIDE FINAL;
 
-    virtual void suspendScheduledTasks();
-    virtual void resumeScheduledTasks();
+    virtual void suspendScheduledTasks() OVERRIDE FINAL;
+    virtual void resumeScheduledTasks() OVERRIDE FINAL;
 
     struct ParsedChunk {
         OwnPtr<CompactHTMLTokenStream> tokens;
@@ -106,9 +106,9 @@ public:
     UseCounter* useCounter() { return UseCounter::getFrom(contextForParsingSession()); }
 
 protected:
-    virtual void insert(const SegmentedString&) OVERRIDE;
+    virtual void insert(const SegmentedString&) OVERRIDE FINAL;
     virtual void append(PassRefPtr<StringImpl>) OVERRIDE;
-    virtual void finish() OVERRIDE;
+    virtual void finish() OVERRIDE FINAL;
 
     HTMLDocumentParser(HTMLDocument*, bool reportErrors);
     HTMLDocumentParser(DocumentFragment*, Element* contextElement, ParserContentPolicy);
@@ -124,25 +124,25 @@ private:
     }
 
     // DocumentParser
-    virtual void pinToMainThread() OVERRIDE;
-    virtual void detach() OVERRIDE;
-    virtual bool hasInsertionPoint() OVERRIDE;
-    virtual bool processingData() const OVERRIDE;
-    virtual void prepareToStopParsing() OVERRIDE;
-    virtual void stopParsing() OVERRIDE;
-    virtual bool isWaitingForScripts() const OVERRIDE;
-    virtual bool isExecutingScript() const OVERRIDE;
-    virtual void executeScriptsWaitingForResources() OVERRIDE;
+    virtual void pinToMainThread() OVERRIDE FINAL;
+    virtual void detach() OVERRIDE FINAL;
+    virtual bool hasInsertionPoint() OVERRIDE FINAL;
+    virtual bool processingData() const OVERRIDE FINAL;
+    virtual void prepareToStopParsing() OVERRIDE FINAL;
+    virtual void stopParsing() OVERRIDE FINAL;
+    virtual bool isWaitingForScripts() const OVERRIDE FINAL;
+    virtual bool isExecutingScript() const OVERRIDE FINAL;
+    virtual void executeScriptsWaitingForResources() OVERRIDE FINAL;
 
     // HTMLScriptRunnerHost
-    virtual void watchForLoad(Resource*) OVERRIDE;
-    virtual void stopWatchingForLoad(Resource*) OVERRIDE;
-    virtual HTMLInputStream& inputStream() { return m_input; }
-    virtual bool hasPreloadScanner() const { return m_preloadScanner.get() && !shouldUseThreading(); }
-    virtual void appendCurrentInputStreamToPreloadScannerAndScan() OVERRIDE;
+    virtual void watchForLoad(Resource*) OVERRIDE FINAL;
+    virtual void stopWatchingForLoad(Resource*) OVERRIDE FINAL;
+    virtual HTMLInputStream& inputStream() OVERRIDE FINAL { return m_input; }
+    virtual bool hasPreloadScanner() const OVERRIDE FINAL { return m_preloadScanner.get() && !shouldUseThreading(); }
+    virtual void appendCurrentInputStreamToPreloadScannerAndScan() OVERRIDE FINAL;
 
     // ResourceClient
-    virtual void notifyFinished(Resource*);
+    virtual void notifyFinished(Resource*) OVERRIDE FINAL;
 
     void startBackgroundParser();
     void stopBackgroundParser();

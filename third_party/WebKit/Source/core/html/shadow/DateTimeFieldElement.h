@@ -92,7 +92,7 @@ protected:
 
 private:
     void defaultKeyboardEventHandler(KeyboardEvent*);
-    virtual bool isDateTimeFieldElement() const OVERRIDE;
+    virtual bool isDateTimeFieldElement() const OVERRIDE FINAL;
     bool isFieldOwnerDisabled() const;
     bool isFieldOwnerReadOnly() const;
     virtual bool supportsFocus() const OVERRIDE FINAL;

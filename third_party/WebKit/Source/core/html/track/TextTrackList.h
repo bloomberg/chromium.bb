@@ -41,14 +41,14 @@ class HTMLMediaElement;
 class TextTrack;
 class TextTrackList;
 
-class TextTrackList : public RefCounted<TextTrackList>, public ScriptWrappable, public EventTargetWithInlineData {
+class TextTrackList FINAL : public RefCounted<TextTrackList>, public ScriptWrappable, public EventTargetWithInlineData {
     REFCOUNTED_EVENT_TARGET(TextTrackList);
 public:
     static PassRefPtr<TextTrackList> create(HTMLMediaElement* owner)
     {
         return adoptRef(new TextTrackList(owner));
     }
-    ~TextTrackList();
+    virtual ~TextTrackList();
 
     unsigned length() const;
     int getTrackIndex(TextTrack*);

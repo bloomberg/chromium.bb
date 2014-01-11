@@ -35,7 +35,7 @@ namespace WebCore {
 class HTMLTrackElement;
 class LoadableTextTrack;
 
-class LoadableTextTrack : public TextTrack, private TextTrackLoaderClient {
+class LoadableTextTrack FINAL : public TextTrack, private TextTrackLoaderClient {
 public:
     static PassRefPtr<LoadableTextTrack> create(HTMLTrackElement* track)
     {

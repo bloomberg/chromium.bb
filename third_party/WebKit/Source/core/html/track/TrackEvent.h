@@ -37,7 +37,7 @@ struct TrackEventInit : public EventInit {
     RefPtr<TrackBase> track;
 };
 
-class TrackEvent : public Event {
+class TrackEvent FINAL : public Event {
 public:
     virtual ~TrackEvent();
 
@@ -51,7 +51,7 @@ public:
         return adoptRef(new TrackEvent(type, initializer));
     }
 
-    virtual const AtomicString& interfaceName() const;
+    virtual const AtomicString& interfaceName() const OVERRIDE;
 
     TrackBase* track() const { return m_track.get(); }
 

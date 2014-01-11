@@ -95,9 +95,9 @@ class MediaControls : public HTMLDivElement {
 protected:
     explicit MediaControls(Document&);
 
-    virtual void defaultEventHandler(Event*);
+    virtual void defaultEventHandler(Event*) OVERRIDE;
 
-    virtual bool containsRelatedTarget(Event*);
+    bool containsRelatedTarget(Event*);
 
     MediaControllerInterface* m_mediaController;
 
@@ -121,9 +121,9 @@ protected:
     bool m_isMouseOverControls;
 
 private:
-    virtual bool isMediaControls() const { return true; }
+    virtual bool isMediaControls() const OVERRIDE FINAL { return true; }
 
-    virtual const AtomicString& shadowPseudoId() const;
+    virtual const AtomicString& shadowPseudoId() const OVERRIDE;
 };
 
 DEFINE_NODE_TYPE_CASTS(MediaControls, isMediaControls());

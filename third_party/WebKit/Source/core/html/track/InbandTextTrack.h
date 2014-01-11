@@ -41,7 +41,7 @@ class Document;
 class MediaPlayer;
 class TextTrackCue;
 
-class InbandTextTrack : public TextTrack, public blink::WebInbandTextTrackClient {
+class InbandTextTrack FINAL : public TextTrack, public blink::WebInbandTextTrackClient {
 public:
     static PassRefPtr<InbandTextTrack> create(Document&, TextTrackClient*, blink::WebInbandTextTrack*);
     virtual ~InbandTextTrack();

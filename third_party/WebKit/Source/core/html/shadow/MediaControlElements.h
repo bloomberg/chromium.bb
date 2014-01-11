@@ -203,7 +203,7 @@ public:
 
     virtual bool willRespondToMouseClickEvents() OVERRIDE { return true; }
 
-    virtual void setIsFullscreen(bool);
+    void setIsFullscreen(bool);
 
 private:
     explicit MediaControlFullscreenButtonElement(Document&);
@@ -259,7 +259,7 @@ private:
     explicit MediaControlTextTrackContainerElement(Document&);
     virtual const AtomicString& shadowPseudoId() const OVERRIDE;
 
-    virtual RenderObject* createRenderer(RenderStyle*);
+    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
 
     IntRect m_videoDisplaySize;
     float m_fontSize;

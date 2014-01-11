@@ -46,10 +46,10 @@ class ExecutionContext;
 class InputMethodController;
 class Node;
 
-class InputMethodContext : public ScriptWrappable, public EventTargetWithInlineData {
+class InputMethodContext FINAL : public ScriptWrappable, public EventTargetWithInlineData {
 public:
     static PassOwnPtr<InputMethodContext> create(HTMLElement*);
-    ~InputMethodContext();
+    virtual ~InputMethodContext();
 
     void ref() { m_element->ref(); }
     void deref() { m_element->deref(); }

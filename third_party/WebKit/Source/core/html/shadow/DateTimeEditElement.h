@@ -136,14 +136,14 @@ private:
     virtual bool isDateTimeEditElement() const OVERRIDE;
 
     // DateTimeFieldElement::FieldOwner functions.
-    virtual void didBlurFromField() OVERRIDE FINAL;
-    virtual void didFocusOnField() OVERRIDE FINAL;
-    virtual void fieldValueChanged() OVERRIDE FINAL;
-    virtual bool focusOnNextField(const DateTimeFieldElement&) OVERRIDE FINAL;
-    virtual bool focusOnPreviousField(const DateTimeFieldElement&) OVERRIDE FINAL;
-    virtual bool isFieldOwnerDisabled() const OVERRIDE FINAL;
-    virtual bool isFieldOwnerReadOnly() const OVERRIDE FINAL;
-    virtual AtomicString localeIdentifier() const OVERRIDE FINAL;
+    virtual void didBlurFromField() OVERRIDE;
+    virtual void didFocusOnField() OVERRIDE;
+    virtual void fieldValueChanged() OVERRIDE;
+    virtual bool focusOnNextField(const DateTimeFieldElement&) OVERRIDE;
+    virtual bool focusOnPreviousField(const DateTimeFieldElement&) OVERRIDE;
+    virtual bool isFieldOwnerDisabled() const OVERRIDE;
+    virtual bool isFieldOwnerReadOnly() const OVERRIDE;
+    virtual AtomicString localeIdentifier() const OVERRIDE;
 
     Vector<DateTimeFieldElement*, maximumNumberOfFields> m_fields;
     EditControlOwner* m_editControlOwner;

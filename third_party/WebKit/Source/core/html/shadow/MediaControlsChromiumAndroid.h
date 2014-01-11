@@ -31,7 +31,7 @@
 
 namespace WebCore {
 
-class MediaControlsChromiumAndroid : public MediaControlsChromium {
+class MediaControlsChromiumAndroid FINAL : public MediaControlsChromium {
 public:
     static PassRefPtr<MediaControlsChromiumAndroid> createControls(Document&);
 
@@ -40,7 +40,7 @@ public:
     virtual void playbackStopped() OVERRIDE;
     virtual bool shouldHideControls() OVERRIDE { return true; }
 
-    void insertTextTrackContainer(PassRefPtr<MediaControlTextTrackContainerElement>) OVERRIDE;
+    virtual void insertTextTrackContainer(PassRefPtr<MediaControlTextTrackContainerElement>) OVERRIDE;
 
 private:
     explicit MediaControlsChromiumAndroid(Document&);

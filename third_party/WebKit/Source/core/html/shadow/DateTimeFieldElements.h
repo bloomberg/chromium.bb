@@ -42,9 +42,9 @@ private:
     DateTimeAMPMFieldElement(Document&, FieldOwner&, const Vector<String>&);
 
     // DateTimeFieldElement functions.
-    virtual void populateDateTimeFieldsState(DateTimeFieldsState&) OVERRIDE FINAL;
-    virtual void setValueAsDate(const DateComponents&) OVERRIDE FINAL;
-    virtual void setValueAsDateTimeFieldsState(const DateTimeFieldsState&) OVERRIDE FINAL;
+    virtual void populateDateTimeFieldsState(DateTimeFieldsState&) OVERRIDE;
+    virtual void setValueAsDate(const DateComponents&) OVERRIDE;
+    virtual void setValueAsDateTimeFieldsState(const DateTimeFieldsState&) OVERRIDE;
 };
 
 class DateTimeDayFieldElement FINAL : public DateTimeNumericFieldElement {
@@ -57,9 +57,9 @@ private:
     DateTimeDayFieldElement(Document&, FieldOwner&, const String& placeholder, const Range&);
 
     // DateTimeFieldElement functions.
-    virtual void populateDateTimeFieldsState(DateTimeFieldsState&) OVERRIDE FINAL;
-    virtual void setValueAsDate(const DateComponents&) OVERRIDE FINAL;
-    virtual void setValueAsDateTimeFieldsState(const DateTimeFieldsState&) OVERRIDE FINAL;
+    virtual void populateDateTimeFieldsState(DateTimeFieldsState&) OVERRIDE;
+    virtual void setValueAsDate(const DateComponents&) OVERRIDE;
+    virtual void setValueAsDateTimeFieldsState(const DateTimeFieldsState&) OVERRIDE;
 };
 
 class DateTimeHourFieldElementBase : public DateTimeNumericFieldElement {
@@ -71,8 +71,8 @@ protected:
 
 private:
     // DateTimeFieldElement functions.
-    virtual void setValueAsDate(const DateComponents&) OVERRIDE FINAL;
-    virtual void setValueAsDateTimeFieldsState(const DateTimeFieldsState&) OVERRIDE FINAL;
+    virtual void setValueAsDate(const DateComponents&) OVERRIDE;
+    virtual void setValueAsDateTimeFieldsState(const DateTimeFieldsState&) OVERRIDE;
 };
 
 class DateTimeHour11FieldElement FINAL : public DateTimeHourFieldElementBase {
@@ -85,8 +85,8 @@ private:
     DateTimeHour11FieldElement(Document&, FieldOwner&, const Range& hour23Range, const Step&);
 
     // DateTimeFieldElement functions.
-    virtual void populateDateTimeFieldsState(DateTimeFieldsState&) OVERRIDE FINAL;
-    virtual void setValueAsInteger(int, EventBehavior = DispatchNoEvent) OVERRIDE FINAL;
+    virtual void populateDateTimeFieldsState(DateTimeFieldsState&) OVERRIDE;
+    virtual void setValueAsInteger(int, EventBehavior = DispatchNoEvent) OVERRIDE;
 };
 
 class DateTimeHour12FieldElement FINAL : public DateTimeHourFieldElementBase {
@@ -99,8 +99,8 @@ private:
     DateTimeHour12FieldElement(Document&, FieldOwner&, const Range& hour23Range, const Step&);
 
     // DateTimeFieldElement functions.
-    virtual void populateDateTimeFieldsState(DateTimeFieldsState&) OVERRIDE FINAL;
-    virtual void setValueAsInteger(int, EventBehavior = DispatchNoEvent) OVERRIDE FINAL;
+    virtual void populateDateTimeFieldsState(DateTimeFieldsState&) OVERRIDE;
+    virtual void setValueAsInteger(int, EventBehavior = DispatchNoEvent) OVERRIDE;
 };
 
 class DateTimeHour23FieldElement FINAL : public DateTimeHourFieldElementBase {
@@ -113,8 +113,8 @@ private:
     DateTimeHour23FieldElement(Document&, FieldOwner&, const Range& hour23Range, const Step&);
 
     // DateTimeFieldElement functions.
-    virtual void populateDateTimeFieldsState(DateTimeFieldsState&) OVERRIDE FINAL;
-    virtual void setValueAsInteger(int, EventBehavior = DispatchNoEvent) OVERRIDE FINAL;
+    virtual void populateDateTimeFieldsState(DateTimeFieldsState&) OVERRIDE;
+    virtual void setValueAsInteger(int, EventBehavior = DispatchNoEvent) OVERRIDE;
 };
 
 class DateTimeHour24FieldElement FINAL : public DateTimeHourFieldElementBase {
@@ -127,8 +127,8 @@ private:
     DateTimeHour24FieldElement(Document&, FieldOwner&, const Range& hour23Range, const Step&);
 
     // DateTimeFieldElement functions.
-    virtual void populateDateTimeFieldsState(DateTimeFieldsState&) OVERRIDE FINAL;
-    virtual void setValueAsInteger(int, EventBehavior = DispatchNoEvent) OVERRIDE FINAL;
+    virtual void populateDateTimeFieldsState(DateTimeFieldsState&) OVERRIDE;
+    virtual void setValueAsInteger(int, EventBehavior = DispatchNoEvent) OVERRIDE;
 };
 
 class DateTimeMillisecondFieldElement FINAL : public DateTimeNumericFieldElement {
@@ -141,9 +141,9 @@ private:
     DateTimeMillisecondFieldElement(Document&, FieldOwner&, const Range&, const Step&);
 
     // DateTimeFieldElement functions.
-    virtual void populateDateTimeFieldsState(DateTimeFieldsState&) OVERRIDE FINAL;
-    virtual void setValueAsDate(const DateComponents&) OVERRIDE FINAL;
-    virtual void setValueAsDateTimeFieldsState(const DateTimeFieldsState&) OVERRIDE FINAL;
+    virtual void populateDateTimeFieldsState(DateTimeFieldsState&) OVERRIDE;
+    virtual void setValueAsDate(const DateComponents&) OVERRIDE;
+    virtual void setValueAsDateTimeFieldsState(const DateTimeFieldsState&) OVERRIDE;
 };
 
 class DateTimeMinuteFieldElement FINAL : public DateTimeNumericFieldElement {
@@ -156,9 +156,9 @@ private:
     DateTimeMinuteFieldElement(Document&, FieldOwner&, const Range&, const Step&);
 
     // DateTimeFieldElement functions.
-    virtual void populateDateTimeFieldsState(DateTimeFieldsState&) OVERRIDE FINAL;
-    virtual void setValueAsDate(const DateComponents&) OVERRIDE FINAL;
-    virtual void setValueAsDateTimeFieldsState(const DateTimeFieldsState&) OVERRIDE FINAL;
+    virtual void populateDateTimeFieldsState(DateTimeFieldsState&) OVERRIDE;
+    virtual void setValueAsDate(const DateComponents&) OVERRIDE;
+    virtual void setValueAsDateTimeFieldsState(const DateTimeFieldsState&) OVERRIDE;
 };
 
 class DateTimeMonthFieldElement FINAL : public DateTimeNumericFieldElement {
@@ -171,9 +171,9 @@ private:
     DateTimeMonthFieldElement(Document&, FieldOwner&, const String& placeholder, const Range&);
 
     // DateTimeFieldElement functions.
-    virtual void populateDateTimeFieldsState(DateTimeFieldsState&) OVERRIDE FINAL;
-    virtual void setValueAsDate(const DateComponents&) OVERRIDE FINAL;
-    virtual void setValueAsDateTimeFieldsState(const DateTimeFieldsState&) OVERRIDE FINAL;
+    virtual void populateDateTimeFieldsState(DateTimeFieldsState&) OVERRIDE;
+    virtual void setValueAsDate(const DateComponents&) OVERRIDE;
+    virtual void setValueAsDateTimeFieldsState(const DateTimeFieldsState&) OVERRIDE;
 };
 
 class DateTimeSecondFieldElement FINAL : public DateTimeNumericFieldElement {
@@ -186,9 +186,9 @@ private:
     DateTimeSecondFieldElement(Document&, FieldOwner&, const Range&, const Step&);
 
     // DateTimeFieldElement functions.
-    virtual void populateDateTimeFieldsState(DateTimeFieldsState&) OVERRIDE FINAL;
-    virtual void setValueAsDate(const DateComponents&) OVERRIDE FINAL;
-    virtual void setValueAsDateTimeFieldsState(const DateTimeFieldsState&) OVERRIDE FINAL;
+    virtual void populateDateTimeFieldsState(DateTimeFieldsState&) OVERRIDE;
+    virtual void setValueAsDate(const DateComponents&) OVERRIDE;
+    virtual void setValueAsDateTimeFieldsState(const DateTimeFieldsState&) OVERRIDE;
 };
 
 class DateTimeSymbolicMonthFieldElement FINAL : public DateTimeSymbolicFieldElement {
@@ -201,9 +201,9 @@ private:
     DateTimeSymbolicMonthFieldElement(Document&, FieldOwner&, const Vector<String>&, int minimum, int maximum);
 
     // DateTimeFieldElement functions.
-    virtual void populateDateTimeFieldsState(DateTimeFieldsState&) OVERRIDE FINAL;
-    virtual void setValueAsDate(const DateComponents&) OVERRIDE FINAL;
-    virtual void setValueAsDateTimeFieldsState(const DateTimeFieldsState&) OVERRIDE FINAL;
+    virtual void populateDateTimeFieldsState(DateTimeFieldsState&) OVERRIDE;
+    virtual void setValueAsDate(const DateComponents&) OVERRIDE;
+    virtual void setValueAsDateTimeFieldsState(const DateTimeFieldsState&) OVERRIDE;
 };
 
 class DateTimeWeekFieldElement FINAL : public DateTimeNumericFieldElement {
@@ -216,9 +216,9 @@ private:
     DateTimeWeekFieldElement(Document&, FieldOwner&, const Range&);
 
     // DateTimeFieldElement functions.
-    virtual void populateDateTimeFieldsState(DateTimeFieldsState&) OVERRIDE FINAL;
-    virtual void setValueAsDate(const DateComponents&) OVERRIDE FINAL;
-    virtual void setValueAsDateTimeFieldsState(const DateTimeFieldsState&) OVERRIDE FINAL;
+    virtual void populateDateTimeFieldsState(DateTimeFieldsState&) OVERRIDE;
+    virtual void setValueAsDate(const DateComponents&) OVERRIDE;
+    virtual void setValueAsDateTimeFieldsState(const DateTimeFieldsState&) OVERRIDE;
 };
 
 class DateTimeYearFieldElement FINAL : public DateTimeNumericFieldElement {
@@ -247,13 +247,13 @@ private:
     DateTimeYearFieldElement(Document&, FieldOwner&, const Parameters&);
 
     // DateTimeFieldElement functions.
-    virtual void populateDateTimeFieldsState(DateTimeFieldsState&) OVERRIDE FINAL;
-    virtual void setValueAsDate(const DateComponents&) OVERRIDE FINAL;
-    virtual void setValueAsDateTimeFieldsState(const DateTimeFieldsState&) OVERRIDE FINAL;
+    virtual void populateDateTimeFieldsState(DateTimeFieldsState&) OVERRIDE;
+    virtual void setValueAsDate(const DateComponents&) OVERRIDE;
+    virtual void setValueAsDateTimeFieldsState(const DateTimeFieldsState&) OVERRIDE;
 
     // DateTimeNumericFieldElement functions.
-    virtual int defaultValueForStepDown() const OVERRIDE FINAL;
-    virtual int defaultValueForStepUp() const OVERRIDE FINAL;
+    virtual int defaultValueForStepDown() const OVERRIDE;
+    virtual int defaultValueForStepUp() const OVERRIDE;
 
     bool m_minIsSpecified;
     bool m_maxIsSpecified;
