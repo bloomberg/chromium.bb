@@ -1428,9 +1428,9 @@ void RenderLayerScrollableArea::updateCompositingLayersAfterScroll()
         // repositioning, so we should be able to enqueue a partial update compositing layers from there.
         // this feature was overridden for now by deferred compositing updates.
         if (usesCompositedScrolling())
-            compositor->updateCompositingLayers(CompositingUpdateOnCompositedScroll);
+            compositor->setNeedsCompositingUpdate(CompositingUpdateOnCompositedScroll);
         else
-            compositor->updateCompositingLayers(CompositingUpdateOnScroll);
+            compositor->setNeedsCompositingUpdate(CompositingUpdateOnScroll);
     }
 }
 

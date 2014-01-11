@@ -362,20 +362,21 @@ void RenderLayerCompositor::finishCompositingUpdateForFrameTree(Frame* frame)
     if (frame && frame->contentRenderer()) {
         RenderLayerCompositor* frameCompositor = frame->contentRenderer()->compositor();
         if (frameCompositor && !frameCompositor->isMainFrame())
-            frame->contentRenderer()->compositor()->updateCompositingLayers(CompositingUpdateFinishAllDeferredWork);
+            frame->contentRenderer()->compositor()->updateCompositingLayers();
     }
 }
 
-void RenderLayerCompositor::updateCompositingLayers(CompositingUpdateType updateType)
+void RenderLayerCompositor::setNeedsCompositingUpdate(CompositingUpdateType updateType)
 {
-    TRACE_EVENT0("blink_rendering", "RenderLayerCompositor::updateCompositingLayers");
+    // FIXME: this code was historically part of updateCompositingLayers, and
+    // for now is kept totally equivalent to the previous implementation. We
+    // should carefully clean up the awkward early-exit semantics, balancing between
+    // skipping unnecessary compositing updates and not incorrectly skipping
+    // necessary updates.
 
     // Avoid updating the layers with old values. Compositing layers will be updated after the layout is finished.
     if (m_renderView->needsLayout())
         return;
-
-    if (updateType == CompositingUpdateFinishAllDeferredWork && isMainFrame() && m_renderView->frameView())
-        finishCompositingUpdateForFrameTree(&m_renderView->frameView()->frame());
 
     if (m_forceCompositingMode && !m_compositing)
         enableCompositingMode(true);
@@ -383,18 +384,6 @@ void RenderLayerCompositor::updateCompositingLayers(CompositingUpdateType update
     if (!m_needsToRecomputeCompositingRequirements && !m_compositing)
         return;
 
-    AnimationUpdateBlock animationUpdateBlock(m_renderView->frameView()->frame().animation());
-
-    TemporaryChange<bool> postLayoutChange(m_inPostLayoutUpdate, true);
-
-    bool needCompositingRequirementsUpdate = false;
-    bool needHierarchyAndGeometryUpdate = false;
-    bool needGeometryUpdate = false;
-    bool needsToUpdateScrollingCoordinator = false;
-
-    // CompositingUpdateFinishAllDeferredWork is the only updateType that will actually do any work in this
-    // function. All other updateTypes will simply mark that something needed updating, and defer the actual
-    // update. This way we only need to compute all compositing state once for every frame drawn (if needed).
     switch (updateType) {
     case CompositingUpdateAfterStyleChange:
     case CompositingUpdateAfterLayout:
@@ -407,18 +396,46 @@ void RenderLayerCompositor::updateCompositingLayers(CompositingUpdateType update
     case CompositingUpdateOnCompositedScroll:
         m_needsToUpdateLayerTreeGeometry = true;
         break;
-    case CompositingUpdateFinishAllDeferredWork:
-        needCompositingRequirementsUpdate = m_needsToRecomputeCompositingRequirements;
-        needHierarchyAndGeometryUpdate = m_compositingLayersNeedRebuild;
-        needGeometryUpdate = m_needsToUpdateLayerTreeGeometry;
-        needsToUpdateScrollingCoordinator = scrollingCoordinator() ? scrollingCoordinator()->needsToUpdateAfterCompositingChange() : false;
-        break;
     }
+
+    // FIXME: some senior devs are suggesting that we need to always schedule a frame here.
+    // but we do seem to reach this point in code when frames are unnecessary and
+    // we need to resolve those instances before initiating a frame here, otherwise
+    // performance will regress by forcing unnecessary frames.
+}
+
+void RenderLayerCompositor::updateCompositingLayers()
+{
+    TRACE_EVENT0("blink_rendering", "RenderLayerCompositor::updateCompositingLayers");
+
+    // FIXME: We should carefully clean up the awkward early-exit semantics, balancing
+    // between skipping unnecessary compositing updates and not incorrectly skipping
+    // necessary updates.
+
+    // Avoid updating the layers with old values. Compositing layers will be updated after the layout is finished.
+    if (m_renderView->needsLayout())
+        return;
+
+    if (isMainFrame() && m_renderView->frameView())
+        finishCompositingUpdateForFrameTree(&m_renderView->frameView()->frame());
+
+    if (m_forceCompositingMode && !m_compositing)
+        enableCompositingMode(true);
+
+    if (!m_needsToRecomputeCompositingRequirements && !m_compositing)
+        return;
+
+    AnimationUpdateBlock animationUpdateBlock(m_renderView->frameView()->frame().animation());
+
+    TemporaryChange<bool> postLayoutChange(m_inPostLayoutUpdate, true);
+
+    bool needCompositingRequirementsUpdate = m_needsToRecomputeCompositingRequirements;
+    bool needHierarchyAndGeometryUpdate = m_compositingLayersNeedRebuild;
+    bool needGeometryUpdate = m_needsToUpdateLayerTreeGeometry;
+    bool needsToUpdateScrollingCoordinator = scrollingCoordinator() ? scrollingCoordinator()->needsToUpdateAfterCompositingChange() : false;
 
     if (!needCompositingRequirementsUpdate && !needHierarchyAndGeometryUpdate && !needGeometryUpdate && !needsToUpdateScrollingCoordinator)
         return;
-
-    ASSERT(updateType == CompositingUpdateFinishAllDeferredWork);
 
     // Only clear the flags if we're updating the entire hierarchy.
     m_compositingLayersNeedRebuild = false;
@@ -1387,7 +1404,7 @@ bool RenderLayerCompositor::scrollingLayerDidChange(RenderLayer* layer)
 String RenderLayerCompositor::layerTreeAsText(LayerTreeFlags flags)
 {
     // Before dumping the layer tree, finish any pending compositing update.
-    updateCompositingLayers(CompositingUpdateFinishAllDeferredWork);
+    updateCompositingLayers();
 
     if (!m_rootContentLayer)
         return String();
@@ -2170,7 +2187,7 @@ void RenderLayerCompositor::resetTrackedRepaintRects()
 
 void RenderLayerCompositor::setTracksRepaints(bool tracksRepaints)
 {
-    updateCompositingLayers(CompositingUpdateFinishAllDeferredWork);
+    updateCompositingLayers();
     m_isTrackingRepaints = tracksRepaints;
 }
 

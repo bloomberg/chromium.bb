@@ -718,7 +718,7 @@ void FrameView::updateCompositingLayersAfterStyleChange()
     if (!needsLayout())
         renderView->compositor()->updateCompositingRequirementsState();
 
-    renderView->compositor()->updateCompositingLayers(CompositingUpdateAfterStyleChange);
+    renderView->compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterStyleChange);
 }
 
 void FrameView::updateCompositingLayersAfterLayout()
@@ -731,7 +731,7 @@ void FrameView::updateCompositingLayersAfterLayout()
     // This call will make sure the cached hasAcceleratedCompositing is updated from the pref
     renderView->compositor()->cacheAcceleratedCompositingFlags();
     renderView->compositor()->updateCompositingRequirementsState();
-    renderView->compositor()->updateCompositingLayers(CompositingUpdateAfterLayout);
+    renderView->compositor()->setNeedsCompositingUpdate(CompositingUpdateAfterLayout);
 }
 
 bool FrameView::usesCompositedScrolling() const
@@ -1748,7 +1748,7 @@ void FrameView::updateFixedElementsAfterScrolling()
 {
     if (m_nestedLayoutCount <= 1 && hasViewportConstrainedObjects()) {
         if (RenderView* renderView = this->renderView())
-            renderView->compositor()->updateCompositingLayers(CompositingUpdateOnScroll);
+            renderView->compositor()->setNeedsCompositingUpdate(CompositingUpdateOnScroll);
     }
 }
 

@@ -88,7 +88,7 @@ public:
     void forceFullCompositingUpdate()
     {
         RenderLayerCompositor* compositor = frame()->contentRenderer()->compositor();
-        compositor->updateCompositingLayers(CompositingUpdateFinishAllDeferredWork);
+        compositor->updateCompositingLayers();
     }
 
     void registerMockedHttpURLLoad(const std::string& fileName)

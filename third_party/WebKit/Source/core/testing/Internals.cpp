@@ -1913,7 +1913,7 @@ String Internals::mainThreadScrollingReasons(Document* document, ExceptionState&
     document->updateLayout();
     RenderView* view = document->renderView();
     if (view->compositor())
-        view->compositor()->updateCompositingLayers(CompositingUpdateFinishAllDeferredWork);
+        view->compositor()->updateCompositingLayers();
 
     Page* page = document->page();
     if (!page)
@@ -2352,7 +2352,7 @@ void Internals::forceCompositingUpdate(Document* document, ExceptionState& excep
 
     RenderView* view = document->renderView();
     if (view->compositor())
-        view->compositor()->updateCompositingLayers(CompositingUpdateFinishAllDeferredWork);
+        view->compositor()->updateCompositingLayers();
 }
 
 void Internals::setZoomFactor(float factor)
