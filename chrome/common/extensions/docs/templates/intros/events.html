@@ -29,6 +29,16 @@ an $ref:alarms.Alarm object
 that has details about the elapsed alarm.
 </p>
 
+Example APIs using Events:
+$ref:alarms,
+{{?is_apps}}
+$ref:app.runtime,
+$ref:app.window,
+{{/is_apps}}
+$ref:i18n,
+$ref:identity,
+$ref:runtime.
+Most <a href="api_index.html">chrome APIs</a> do.
 
 {{^is_apps}}
 <div class="doc-family extensions">
