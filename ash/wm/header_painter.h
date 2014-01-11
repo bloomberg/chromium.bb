@@ -10,13 +10,9 @@
 #include "base/compiler_specific.h"  // OVERRIDE
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/aura/window_observer.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/rect.h"
 
-namespace aura {
-class Window;
-}
 namespace gfx {
 class Canvas;
 class Font;
@@ -34,8 +30,7 @@ namespace ash {
 class FrameCaptionButtonContainerView;
 
 // Helper class for painting the window header.
-class ASH_EXPORT HeaderPainter : public aura::WindowObserver,
-                                 public gfx::AnimationDelegate {
+class ASH_EXPORT HeaderPainter : public gfx::AnimationDelegate {
  public:
   HeaderPainter();
   virtual ~HeaderPainter();
@@ -114,12 +109,6 @@ class ASH_EXPORT HeaderPainter : public aura::WindowObserver,
   // Called when the browser theme changes.
   void OnThemeChanged();
 
-  // aura::WindowObserver overrides:
-  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
-  virtual void OnWindowBoundsChanged(aura::Window* window,
-                                     const gfx::Rect& old_bounds,
-                                     const gfx::Rect& new_bounds) OVERRIDE;
-
   // Overridden from gfx::AnimationDelegate
   virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
 
@@ -141,10 +130,6 @@ class ASH_EXPORT HeaderPainter : public aura::WindowObserver,
   // Returns the radius of the header's top corners.
   int GetHeaderCornerRadius() const;
 
-  // Schedules a paint for the header. Used when transitioning from no header to
-  // a header (or other way around).
-  void SchedulePaintForHeader();
-
   // Get the bounds for the title. The provided |title_font| is used to
   // determine the correct dimensions.
   gfx::Rect GetTitleBounds(const gfx::Font& title_font);
@@ -154,7 +139,6 @@ class ASH_EXPORT HeaderPainter : public aura::WindowObserver,
   views::View* header_view_;
   views::View* window_icon_;  // May be NULL.
   FrameCaptionButtonContainerView* caption_button_container_;
-  aura::Window* window_;
 
   // The height of the header.
   int header_height_;

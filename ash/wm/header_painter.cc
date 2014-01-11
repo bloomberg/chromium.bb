@@ -140,7 +140,6 @@ HeaderPainter::HeaderPainter()
       header_view_(NULL),
       window_icon_(NULL),
       caption_button_container_(NULL),
-      window_(NULL),
       header_height_(0),
       top_left_corner_(NULL),
       top_edge_(NULL),
@@ -153,9 +152,6 @@ HeaderPainter::HeaderPainter()
       crossfade_theme_frame_overlay_id_(0) {}
 
 HeaderPainter::~HeaderPainter() {
-  // Sometimes we are destroyed before the window closes, so ensure we clean up.
-  if (window_)
-    window_->RemoveObserver(this);
 }
 
 void HeaderPainter::Init(
@@ -184,15 +180,6 @@ void HeaderPainter::Init(
       rb.GetImageNamed(IDR_AURA_WINDOW_HEADER_SHADE_LEFT).ToImageSkia();
   header_right_edge_ =
       rb.GetImageNamed(IDR_AURA_WINDOW_HEADER_SHADE_RIGHT).ToImageSkia();
-
-  window_ = frame->GetNativeWindow();
-
-  // Observer removes itself in OnWindowDestroying() below, or in the destructor
-  // if we go away before the window.
-  window_->AddObserver(this);
-
-  // Solo-window header updates are handled by the WorkspaceLayoutManager when
-  // this window is added to the desktop.
 }
 
 // static
@@ -334,13 +321,9 @@ void HeaderPainter::PaintHeader(gfx::Canvas* canvas,
   previous_theme_frame_id_ = theme_frame_id;
   previous_theme_frame_overlay_id_ = theme_frame_overlay_id;
 
-  // We don't need the extra lightness in the edges when we're at the top edge
-  // of the screen or when the header's corners are not rounded.
-  //
-  // TODO(sky): this isn't quite right. What we really want is a method that
-  // returns bounds ignoring transforms on certain windows (such as workspaces)
-  // and is relative to the root.
-  if (frame_->GetNativeWindow()->bounds().y() == 0 || corner_radius == 0)
+  // We don't need the extra lightness in the edges when the window is maximized
+  // or fullscreen.
+  if (frame_->IsMaximized() || frame_->IsFullscreen())
     return;
 
   // Draw the top corners and edge.
@@ -455,31 +438,6 @@ void HeaderPainter::OnThemeChanged() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// aura::WindowObserver overrides:
-
-void HeaderPainter::OnWindowDestroying(aura::Window* destroying) {
-  DCHECK_EQ(window_, destroying);
-
-  // Must be removed here and not in the destructor, as the aura::Window is
-  // already destroyed when our destructor runs.
-  window_->RemoveObserver(this);
-
-  window_ = NULL;
-}
-
-void HeaderPainter::OnWindowBoundsChanged(aura::Window* window,
-                                         const gfx::Rect& old_bounds,
-                                         const gfx::Rect& new_bounds) {
-  // TODO(sky): this isn't quite right. What we really want is a method that
-  // returns bounds ignoring transforms on certain windows (such as workspaces).
-  if ((!frame_->IsMaximized() && !frame_->IsFullscreen()) &&
-      ((old_bounds.y() == 0 && new_bounds.y() != 0) ||
-       (old_bounds.y() != 0 && new_bounds.y() == 0))) {
-    SchedulePaintForHeader();
-  }
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // gfx::AnimationDelegate overrides:
 
 void HeaderPainter::AnimationProgressed(const gfx::Animation* animation) {
@@ -508,14 +466,6 @@ int HeaderPainter::GetHeaderCornerRadius() const {
   bool square_corners = (frame_->IsMaximized() || frame_->IsFullscreen());
   const int kCornerRadius = 2;
   return square_corners ? 0 : kCornerRadius;
-}
-
-void HeaderPainter::SchedulePaintForHeader() {
-  int top_left_height = top_left_corner_->height();
-  int top_right_height = top_right_corner_->height();
-  header_view_->SchedulePaintInRect(
-      gfx::Rect(0, 0, header_view_->width(),
-                std::max(top_left_height, top_right_height)));
 }
 
 gfx::Rect HeaderPainter::GetTitleBounds(const gfx::Font& title_font) {
