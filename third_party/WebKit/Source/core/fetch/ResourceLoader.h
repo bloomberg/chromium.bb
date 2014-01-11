@@ -44,7 +44,7 @@ class ResourceError;
 class ResourceResponse;
 class ResourceLoaderHost;
 
-class ResourceLoader : public RefCounted<ResourceLoader>, protected blink::WebURLLoaderClient {
+class ResourceLoader FINAL : public RefCounted<ResourceLoader>, protected blink::WebURLLoaderClient {
 public:
     static PassRefPtr<ResourceLoader> create(ResourceLoaderHost*, Resource*, const ResourceRequest&, const ResourceLoaderOptions&);
     virtual ~ResourceLoader();

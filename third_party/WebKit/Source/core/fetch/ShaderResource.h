@@ -36,7 +36,7 @@ namespace WebCore {
 
 class TextResourceDecoder;
 
-class ShaderResource : public Resource {
+class ShaderResource FINAL : public Resource {
 public:
     typedef ResourceClient ClientType;
 

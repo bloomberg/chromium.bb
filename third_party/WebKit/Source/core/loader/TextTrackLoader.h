@@ -46,7 +46,7 @@ public:
     virtual void newRegionsAvailable(TextTrackLoader*) = 0;
 };
 
-class TextTrackLoader : public ResourceOwner<RawResource>, private VTTParserClient {
+class TextTrackLoader FINAL : public ResourceOwner<RawResource>, private VTTParserClient {
     WTF_MAKE_NONCOPYABLE(TextTrackLoader);
     WTF_MAKE_FAST_ALLOCATED;
 public:

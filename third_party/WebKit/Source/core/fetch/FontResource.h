@@ -40,20 +40,20 @@ class SVGDocument;
 class SVGFontElement;
 class FontCustomPlatformData;
 
-class FontResource : public Resource {
+class FontResource FINAL : public Resource {
 public:
     typedef ResourceClient ClientType;
 
     FontResource(const ResourceRequest&);
     virtual ~FontResource();
 
-    virtual void load(ResourceFetcher*, const ResourceLoaderOptions&);
+    virtual void load(ResourceFetcher*, const ResourceLoaderOptions&) OVERRIDE;
 
-    virtual void didAddClient(ResourceClient*);
+    virtual void didAddClient(ResourceClient*) OVERRIDE;
 
-    virtual void allClientsRemoved();
+    virtual void allClientsRemoved() OVERRIDE;
     void beginLoadIfNeeded(ResourceFetcher* dl);
-    bool stillNeedsLoad() const { return !m_loadInitiated; }
+    virtual bool stillNeedsLoad() const OVERRIDE { return !m_loadInitiated; }
 
     bool ensureCustomFontData();
     FontPlatformData platformDataFromCustomData(float size, bool bold, bool italic, FontOrientation = Horizontal, FontWidthVariant = RegularWidth);
@@ -64,7 +64,7 @@ public:
 #endif
 
 private:
-    virtual void checkNotify();
+    virtual void checkNotify() OVERRIDE;
     OwnPtr<FontCustomPlatformData> m_fontData;
     bool m_loadInitiated;
 
@@ -81,7 +81,7 @@ class FontResourceClient : public ResourceClient {
 public:
     virtual ~FontResourceClient() { }
     static ResourceClientType expectedType() { return FontType; }
-    virtual ResourceClientType resourceClientType() const { return expectedType(); }
+    virtual ResourceClientType resourceClientType() const OVERRIDE FINAL { return expectedType(); }
     virtual void fontLoaded(FontResource*) { }
     virtual void didStartFontLoad(FontResource*) { }
 };

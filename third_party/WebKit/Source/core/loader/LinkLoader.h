@@ -46,14 +46,14 @@ class LinkRelAttribute;
 class PrerenderHandle;
 
 // The LinkLoader can load link rel types icon, dns-prefetch, subresource, prefetch and prerender.
-class LinkLoader : public ResourceOwner<Resource, ResourceClient>, public PrerenderClient {
+class LinkLoader FINAL : public ResourceOwner<Resource, ResourceClient>, public PrerenderClient {
 
 public:
     explicit LinkLoader(LinkLoaderClient*);
     virtual ~LinkLoader();
 
     // from ResourceClient
-    virtual void notifyFinished(Resource*);
+    virtual void notifyFinished(Resource*) OVERRIDE;
 
     // from PrerenderClient
     virtual void didStartPrerender() OVERRIDE;

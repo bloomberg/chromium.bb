@@ -36,16 +36,16 @@ class ResourceClient;
 class StyleSheetContents;
 class TextResourceDecoder;
 
-class CSSStyleSheetResource : public StyleSheetResource {
+class CSSStyleSheetResource FINAL : public StyleSheetResource {
 public:
     CSSStyleSheetResource(const ResourceRequest&, const String& charset);
     virtual ~CSSStyleSheetResource();
 
     const String sheetText(bool enforceMIMEType = true, bool* hasValidMIMEType = 0) const;
 
-    virtual void didAddClient(ResourceClient*);
-    virtual void setEncoding(const String&);
-    virtual String encoding() const;
+    virtual void didAddClient(ResourceClient*) OVERRIDE;
+    virtual void setEncoding(const String&) OVERRIDE;
+    virtual String encoding() const OVERRIDE;
     virtual void destroyDecodedData() OVERRIDE;
 
     PassRefPtr<StyleSheetContents> restoreParsedStyleSheet(const CSSParserContext&);
@@ -53,9 +53,7 @@ public:
 
 private:
     bool canUseSheet(bool enforceMIMEType, bool* hasValidMIMEType) const;
-
-protected:
-    virtual void checkNotify();
+    virtual void checkNotify() OVERRIDE;
 
     OwnPtr<TextResourceDecoder> m_decoder;
     String m_decodedSheetText;

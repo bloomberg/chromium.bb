@@ -30,7 +30,7 @@ namespace WebCore {
 class RawResourceCallback;
 class RawResourceClient;
 
-class RawResource : public Resource {
+class RawResource FINAL : public Resource {
 public:
     typedef RawResourceClient ClientType;
 
@@ -39,21 +39,21 @@ public:
     // FIXME: AssociatedURLLoader shouldn't be a DocumentThreadableLoader and therefore shouldn't
     // use RawResource. However, it is, and it needs to be able to defer loading.
     // This can be fixed by splitting CORS preflighting out of DocumentThreacableLoader.
-    virtual void setDefersLoading(bool);
+    void setDefersLoading(bool);
 
-    virtual bool canReuse(const ResourceRequest&) const;
+    virtual bool canReuse(const ResourceRequest&) const OVERRIDE;
 
 private:
-    virtual void didAddClient(ResourceClient*);
+    virtual void didAddClient(ResourceClient*) OVERRIDE;
     virtual void appendData(const char*, int) OVERRIDE;
 
-    virtual bool shouldIgnoreHTTPStatusCodeErrors() const { return true; }
+    virtual bool shouldIgnoreHTTPStatusCodeErrors() const OVERRIDE { return true; }
 
-    virtual void willSendRequest(ResourceRequest&, const ResourceResponse&);
-    virtual void updateRequest(const ResourceRequest&);
-    virtual void responseReceived(const ResourceResponse&);
-    virtual void didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent);
-    virtual void didDownloadData(int);
+    virtual void willSendRequest(ResourceRequest&, const ResourceResponse&) OVERRIDE;
+    virtual void updateRequest(const ResourceRequest&) OVERRIDE;
+    virtual void responseReceived(const ResourceResponse&) OVERRIDE;
+    virtual void didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent) OVERRIDE;
+    virtual void didDownloadData(int) OVERRIDE;
 
     struct RedirectPair {
     public:
@@ -87,7 +87,7 @@ class RawResourceClient : public ResourceClient {
 public:
     virtual ~RawResourceClient() { }
     static ResourceClientType expectedType() { return RawResourceType; }
-    virtual ResourceClientType resourceClientType() const { return expectedType(); }
+    virtual ResourceClientType resourceClientType() const OVERRIDE FINAL { return expectedType(); }
 
     virtual void dataSent(Resource*, unsigned long long /* bytesSent */, unsigned long long /* totalBytesToBeSent */) { }
     virtual void responseReceived(Resource*, const ResourceResponse&) { }

@@ -74,7 +74,7 @@ enum CORSEnabled {
 // RefPtr<ResourceFetcher> for their lifetime (and will create one if they
 // are initialized without a Frame), so a Document can keep a ResourceFetcher
 // alive past detach if scripts still reference the Document.
-class ResourceFetcher : public RefCounted<ResourceFetcher>, public ResourceLoaderHost {
+class ResourceFetcher FINAL : public RefCounted<ResourceFetcher>, public ResourceLoaderHost {
     WTF_MAKE_NONCOPYABLE(ResourceFetcher); WTF_MAKE_FAST_ALLOCATED;
 friend class ImageLoader;
 friend class ResourceCacheValidationSuppressor;

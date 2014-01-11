@@ -85,7 +85,7 @@ public:
     void removeClient(ImageLoaderClient*);
 
 protected:
-    virtual void notifyFinished(Resource*);
+    virtual void notifyFinished(Resource*) OVERRIDE;
 
 private:
     virtual void dispatchLoadEvent() = 0;

@@ -172,8 +172,7 @@ public:
 
     virtual void didAssociateFormControls(const Vector<RefPtr<Element> >&) OVERRIDE { }
 
-    virtual void popupOpened(PopupContainer* popupContainer, const IntRect& bounds,
-                             bool handleExternal) { }
+    virtual void popupOpened(PopupContainer* popupContainer, const IntRect& bounds, bool handleExternal) OVERRIDE { }
     virtual void popupClosed(PopupContainer* popupContainer) OVERRIDE { }
 
     virtual void annotatedRegionsChanged() OVERRIDE { }
@@ -181,7 +180,7 @@ public:
     virtual String acceptLanguages() OVERRIDE;
 };
 
-class EmptyFrameLoaderClient : public FrameLoaderClient {
+class EmptyFrameLoaderClient FINAL : public FrameLoaderClient {
     WTF_MAKE_NONCOPYABLE(EmptyFrameLoaderClient); WTF_MAKE_FAST_ALLOCATED;
 public:
     EmptyFrameLoaderClient() { }
@@ -247,13 +246,13 @@ public:
     virtual void willReleaseScriptContext(v8::Handle<v8::Context>, int worldId) OVERRIDE { }
     virtual bool allowScriptExtension(const String& extensionName, int extensionGroup, int worldId) OVERRIDE { return false; }
 
-    virtual blink::WebCookieJar* cookieJar() const { return 0; }
+    virtual blink::WebCookieJar* cookieJar() const OVERRIDE { return 0; }
 
     virtual void didRequestAutocomplete(PassRefPtr<FormState>) OVERRIDE;
     virtual PassOwnPtr<blink::WebServiceWorkerProvider> createServiceWorkerProvider(PassOwnPtr<blink::WebServiceWorkerProviderClient>) OVERRIDE;
 };
 
-class EmptyTextCheckerClient : public TextCheckerClient {
+class EmptyTextCheckerClient FINAL : public TextCheckerClient {
 public:
     virtual bool shouldEraseMarkersAfterChangeSelection(TextCheckingType) const OVERRIDE { return true; }
     virtual void checkSpellingOfString(const String&, int*, int*) OVERRIDE { }
@@ -262,7 +261,7 @@ public:
     virtual void requestCheckingOfString(PassRefPtr<TextCheckingRequest>) OVERRIDE;
 };
 
-class EmptySpellCheckerClient : public SpellCheckerClient {
+class EmptySpellCheckerClient FINAL : public SpellCheckerClient {
     WTF_MAKE_NONCOPYABLE(EmptySpellCheckerClient); WTF_MAKE_FAST_ALLOCATED;
 public:
     EmptySpellCheckerClient() { }
@@ -272,7 +271,7 @@ public:
     virtual void toggleContinuousSpellChecking() OVERRIDE { }
     virtual bool isGrammarCheckingEnabled() OVERRIDE { return false; }
 
-    TextCheckerClient& textChecker() { return m_textCheckerClient; }
+    virtual TextCheckerClient& textChecker() OVERRIDE { return m_textCheckerClient; }
 
     virtual void updateSpellingUIWithMisspelledWord(const String&) OVERRIDE { }
     virtual void showSpellingUI(bool) OVERRIDE { }
@@ -282,7 +281,7 @@ private:
     EmptyTextCheckerClient m_textCheckerClient;
 };
 
-class EmptyEditorClient : public EditorClient {
+class EmptyEditorClient FINAL : public EditorClient {
     WTF_MAKE_NONCOPYABLE(EmptyEditorClient); WTF_MAKE_FAST_ALLOCATED;
 public:
     EmptyEditorClient() { }
@@ -298,7 +297,7 @@ public:
     virtual bool handleKeyboardEvent() OVERRIDE { return false; }
 };
 
-class EmptyContextMenuClient : public ContextMenuClient {
+class EmptyContextMenuClient FINAL : public ContextMenuClient {
     WTF_MAKE_NONCOPYABLE(EmptyContextMenuClient); WTF_MAKE_FAST_ALLOCATED;
 public:
     EmptyContextMenuClient() { }
@@ -307,7 +306,7 @@ public:
     virtual void clearContextMenu() OVERRIDE { }
 };
 
-class EmptyDragClient : public DragClient {
+class EmptyDragClient FINAL : public DragClient {
     WTF_MAKE_NONCOPYABLE(EmptyDragClient); WTF_MAKE_FAST_ALLOCATED;
 public:
     EmptyDragClient() { }
@@ -316,7 +315,7 @@ public:
     virtual void startDrag(DragImage*, const IntPoint&, const IntPoint&, Clipboard*, Frame*, bool) OVERRIDE { }
 };
 
-class EmptyInspectorClient : public InspectorClient {
+class EmptyInspectorClient FINAL : public InspectorClient {
     WTF_MAKE_NONCOPYABLE(EmptyInspectorClient); WTF_MAKE_FAST_ALLOCATED;
 public:
     EmptyInspectorClient() { }
@@ -326,7 +325,7 @@ public:
     virtual void hideHighlight() OVERRIDE { }
 };
 
-class EmptyBackForwardClient : public BackForwardClient {
+class EmptyBackForwardClient FINAL : public BackForwardClient {
 public:
     virtual int backListCount() OVERRIDE { return 0; }
     virtual int forwardListCount() OVERRIDE { return 0; }

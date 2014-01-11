@@ -41,7 +41,7 @@ class ExceptionState;
 class Frame;
 class KURL;
 
-class ApplicationCache : public ScriptWrappable, public RefCounted<ApplicationCache>, public EventTargetWithInlineData, public DOMWindowProperty {
+class ApplicationCache FINAL : public ScriptWrappable, public RefCounted<ApplicationCache>, public EventTargetWithInlineData, public DOMWindowProperty {
     REFCOUNTED_EVENT_TARGET(ApplicationCache);
 public:
     static PassRefPtr<ApplicationCache> create(Frame* frame) { return adoptRef(new ApplicationCache(frame)); }

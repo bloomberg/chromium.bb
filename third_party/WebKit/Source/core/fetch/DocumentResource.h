@@ -32,7 +32,7 @@ namespace WebCore {
 
 class Document;
 
-class DocumentResource : public Resource {
+class DocumentResource FINAL : public Resource {
 public:
     typedef ResourceClient ClientType;
 
@@ -41,8 +41,8 @@ public:
 
     Document* document() const { return m_document.get(); }
 
-    virtual void setEncoding(const String&);
-    virtual String encoding() const;
+    virtual void setEncoding(const String&) OVERRIDE;
+    virtual String encoding() const OVERRIDE;
     virtual void checkNotify() OVERRIDE;
 
 private:

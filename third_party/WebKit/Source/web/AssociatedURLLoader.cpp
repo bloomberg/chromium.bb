@@ -140,8 +140,6 @@ public:
     virtual void didFail(const ResourceError&);
     virtual void didFailRedirectCheck();
 
-    virtual bool isDocumentThreadableLoaderClient() { return true; }
-
     // Sets an error to be reported back to the client, asychronously.
     void setDelayedError(const ResourceError&);
 

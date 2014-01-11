@@ -31,7 +31,7 @@
 
 namespace WebCore {
 
-class DocumentResourceReference : public DocumentResourceClient {
+class DocumentResourceReference FINAL : public DocumentResourceClient {
 public:
     DocumentResourceReference(DocumentResource* document) : m_document(document) { m_document->addClient(this); }
     virtual ~DocumentResourceReference() { m_document->removeClient(this); }

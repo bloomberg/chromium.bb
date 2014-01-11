@@ -50,7 +50,7 @@ namespace WebCore {
     struct CrossThreadResourceResponseData;
     struct CrossThreadResourceRequestData;
 
-    class WorkerThreadableLoader : public RefCounted<WorkerThreadableLoader>, public ThreadableLoader {
+    class WorkerThreadableLoader FINAL : public RefCounted<WorkerThreadableLoader>, public ThreadableLoader {
         WTF_MAKE_FAST_ALLOCATED;
     public:
         static void loadResourceSynchronously(WorkerGlobalScope*, const ResourceRequest&, ThreadableLoaderClient&, const ThreadableLoaderOptions&);
@@ -59,7 +59,7 @@ namespace WebCore {
             return adoptRef(new WorkerThreadableLoader(workerGlobalScope, client, taskMode, request, options));
         }
 
-        ~WorkerThreadableLoader();
+        virtual ~WorkerThreadableLoader();
 
         virtual void cancel() OVERRIDE;
 
@@ -92,7 +92,7 @@ namespace WebCore {
         //    thread do "ThreadableLoaderClientWrapper::ref" (automatically inside of the cross thread copy
         //    done in createCallbackTask), so the ThreadableLoaderClientWrapper instance is there until all
         //    tasks are executed.
-        class MainThreadBridge : public ThreadableLoaderClient {
+        class MainThreadBridge FINAL : public ThreadableLoaderClient {
         public:
             // All executed on the worker context's thread.
             MainThreadBridge(PassRefPtr<ThreadableLoaderClientWrapper>, WorkerLoaderProxy&, const String& taskMode, const ResourceRequest&, const ThreadableLoaderOptions&, const String& outgoingReferrer);
@@ -105,7 +105,7 @@ namespace WebCore {
 
             // All executed on the main thread.
             static void mainThreadDestroy(ExecutionContext*, MainThreadBridge*);
-            ~MainThreadBridge();
+            virtual ~MainThreadBridge();
 
             static void mainThreadCreateLoader(ExecutionContext*, MainThreadBridge*, PassOwnPtr<CrossThreadResourceRequestData>, ThreadableLoaderOptions, const String& outgoingReferrer);
             static void mainThreadCancel(ExecutionContext*, MainThreadBridge*);

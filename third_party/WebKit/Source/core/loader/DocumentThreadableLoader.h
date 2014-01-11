@@ -51,22 +51,22 @@ class ResourceRequest;
 class SecurityOrigin;
 class ThreadableLoaderClient;
 
-class DocumentThreadableLoader : public RefCounted<DocumentThreadableLoader>, public ThreadableLoader, private ResourceOwner<RawResource>  {
+class DocumentThreadableLoader FINAL : public RefCounted<DocumentThreadableLoader>, public ThreadableLoader, private ResourceOwner<RawResource>  {
     WTF_MAKE_FAST_ALLOCATED;
     public:
         static void loadResourceSynchronously(Document*, const ResourceRequest&, ThreadableLoaderClient&, const ThreadableLoaderOptions&);
         static PassRefPtr<DocumentThreadableLoader> create(Document*, ThreadableLoaderClient*, const ResourceRequest&, const ThreadableLoaderOptions&);
         virtual ~DocumentThreadableLoader();
 
-        virtual void cancel();
-        virtual void setDefersLoading(bool);
+        virtual void cancel() OVERRIDE;
+        void setDefersLoading(bool);
 
         using RefCounted<DocumentThreadableLoader>::ref;
         using RefCounted<DocumentThreadableLoader>::deref;
 
     protected:
-        virtual void refThreadableLoader() { ref(); }
-        virtual void derefThreadableLoader() { deref(); }
+        virtual void refThreadableLoader() OVERRIDE { ref(); }
+        virtual void derefThreadableLoader() OVERRIDE { deref(); }
 
     private:
         enum BlockingBehavior {
@@ -77,12 +77,12 @@ class DocumentThreadableLoader : public RefCounted<DocumentThreadableLoader>, pu
         DocumentThreadableLoader(Document*, ThreadableLoaderClient*, BlockingBehavior, const ResourceRequest&, const ThreadableLoaderOptions&);
 
         // RawResourceClient
-        virtual void dataSent(Resource*, unsigned long long bytesSent, unsigned long long totalBytesToBeSent);
-        virtual void responseReceived(Resource*, const ResourceResponse&);
-        virtual void dataReceived(Resource*, const char* data, int dataLength);
-        virtual void redirectReceived(Resource*, ResourceRequest&, const ResourceResponse&);
-        virtual void notifyFinished(Resource*);
-        virtual void dataDownloaded(Resource*, int);
+        virtual void dataSent(Resource*, unsigned long long bytesSent, unsigned long long totalBytesToBeSent) OVERRIDE;
+        virtual void responseReceived(Resource*, const ResourceResponse&) OVERRIDE;
+        virtual void dataReceived(Resource*, const char* data, int dataLength) OVERRIDE;
+        virtual void redirectReceived(Resource*, ResourceRequest&, const ResourceResponse&) OVERRIDE;
+        virtual void notifyFinished(Resource*) OVERRIDE;
+        virtual void dataDownloaded(Resource*, int) OVERRIDE;
 
         void cancelWithError(const ResourceError&);
         void didReceiveResponse(unsigned long identifier, const ResourceResponse&);

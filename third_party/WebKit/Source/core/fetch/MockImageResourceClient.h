@@ -37,7 +37,7 @@
 
 namespace WebCore {
 
-class MockImageResourceClient : public WebCore::ImageResourceClient {
+class MockImageResourceClient FINAL : public WebCore::ImageResourceClient {
 public:
     MockImageResourceClient()
         : m_imageChangedCount(0)
@@ -46,12 +46,12 @@ public:
     }
 
     virtual ~MockImageResourceClient() { }
-    virtual void imageChanged(ImageResource*, const IntRect*)
+    virtual void imageChanged(ImageResource*, const IntRect*) OVERRIDE
     {
         m_imageChangedCount++;
     }
 
-    virtual void notifyFinished(Resource*)
+    virtual void notifyFinished(Resource*) OVERRIDE
     {
         ASSERT_FALSE(m_notifyFinishedCalled);
         m_notifyFinishedCalled = true;

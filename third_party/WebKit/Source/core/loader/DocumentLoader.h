@@ -164,11 +164,11 @@ namespace WebCore {
         void willSendRequest(ResourceRequest&, const ResourceResponse&);
         void finishedLoading(double finishTime);
         void mainReceivedError(const ResourceError&);
-        virtual void redirectReceived(Resource*, ResourceRequest&, const ResourceResponse&) OVERRIDE;
-        virtual void updateRequest(Resource*, const ResourceRequest&) OVERRIDE;
-        virtual void responseReceived(Resource*, const ResourceResponse&) OVERRIDE;
-        virtual void dataReceived(Resource*, const char* data, int length) OVERRIDE;
-        virtual void notifyFinished(Resource*) OVERRIDE;
+        virtual void redirectReceived(Resource*, ResourceRequest&, const ResourceResponse&) OVERRIDE FINAL;
+        virtual void updateRequest(Resource*, const ResourceRequest&) OVERRIDE FINAL;
+        virtual void responseReceived(Resource*, const ResourceResponse&) OVERRIDE FINAL;
+        virtual void dataReceived(Resource*, const char* data, int length) OVERRIDE FINAL;
+        virtual void notifyFinished(Resource*) OVERRIDE FINAL;
 
         bool maybeLoadEmpty();
 
