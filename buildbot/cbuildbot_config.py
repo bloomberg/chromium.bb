@@ -1572,7 +1572,7 @@ internal_incremental.add_config('mario-incremental',
 
 internal_arm_full = full.derive(internal, arm)
 
-internal_arm_full.add_config('lasercats-full',
+internal_arm_full.add_config('daisy_winter-full',
   boards=['daisy_winter'],
   build_tests=False,
   manifest='lasercats.xml',
