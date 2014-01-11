@@ -398,9 +398,6 @@ void BrowserMainLoop::EarlyInitialization() {
   crypto::EnsureNSPRInit();
 #endif  // !defined(USE_OPENSSL)
 
-  if (parsed_command_line_.HasSwitch(switches::kEnableSSLCachedInfo))
-    net::SSLConfigService::EnableCachedInfo();
-
 #if !defined(OS_IOS)
   if (parsed_command_line_.HasSwitch(switches::kRendererProcessLimit)) {
     std::string limit_string = parsed_command_line_.GetSwitchValueASCII(

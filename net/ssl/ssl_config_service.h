@@ -96,7 +96,6 @@ struct NET_EXPORT SSLConfig {
   // disable TLS_ECDH_ECDSA_WITH_RC4_128_SHA, specify 0xC002.
   std::vector<uint16> disabled_cipher_suites;
 
-  bool cached_info_enabled;  // True if TLS cached info extension is enabled.
   bool channel_id_enabled;   // True if TLS channel ID extension is enabled.
   bool false_start_enabled;  // True if we'll use TLS False Start.
   // True if the Certificate Transparency signed_certificate_timestamp
@@ -194,11 +193,6 @@ class NET_EXPORT SSLConfigService
   static void SetCRLSet(scoped_refptr<CRLSet> crl_set);
   static scoped_refptr<CRLSet> GetCRLSet();
 
-  // Enables the TLS cached info extension, which allows the server to send
-  // just a digest of its certificate chain.
-  static void EnableCachedInfo();
-  static bool cached_info_enabled();
-
   // Gets the default minimum protocol version.
   static uint16 default_version_min();
 
@@ -222,9 +216,6 @@ class NET_EXPORT SSLConfigService
   friend class base::RefCountedThreadSafe<SSLConfigService>;
 
   virtual ~SSLConfigService();
-
-  // SetFlags sets the values of several flags based on global configuration.
-  static void SetSSLConfigFlags(SSLConfig* ssl_config);
 
   // Process before/after config update.
   void ProcessConfigUpdate(const SSLConfig& orig_config,

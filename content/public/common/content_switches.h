@@ -166,7 +166,6 @@ CONTENT_EXPORT extern const char kEnableSmoothScrolling[];
 CONTENT_EXPORT extern const char kEnableSoftwareCompositing[];
 CONTENT_EXPORT extern const char kEnableSpatialNavigation[];
 CONTENT_EXPORT extern const char kEnableSpeechSynthesis[];
-extern const char kEnableSSLCachedInfo[];
 CONTENT_EXPORT extern const char kEnableStatsTable[];
 extern const char kEnableStrictSiteIsolation[];
 CONTENT_EXPORT extern const char kEnableServiceWorker[];

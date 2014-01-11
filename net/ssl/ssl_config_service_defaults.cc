@@ -11,7 +11,6 @@ SSLConfigServiceDefaults::SSLConfigServiceDefaults() {
 
 void SSLConfigServiceDefaults::GetSSLConfig(SSLConfig* config) {
   *config = default_config_;
-  SetSSLConfigFlags(config);
 }
 
 SSLConfigServiceDefaults::~SSLConfigServiceDefaults() {

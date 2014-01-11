@@ -40,7 +40,6 @@ SSLConfig::SSLConfig()
       rev_checking_required_local_anchors(false),
       version_min(g_default_version_min),
       version_max(g_default_version_max),
-      cached_info_enabled(false),
       channel_id_enabled(true),
       false_start_enabled(true),
       signed_cert_timestamps_enabled(true),
@@ -79,8 +78,6 @@ SSLConfigService::SSLConfigService()
     : observer_list_(ObserverList<Observer>::NOTIFY_EXISTING_ONLY) {
 }
 
-static bool g_cached_info_enabled = false;
-
 // GlobalCRLSet holds a reference to the global CRLSet. It simply wraps a lock
 // around a scoped_refptr so that getting a reference doesn't race with
 // updating the CRLSet.
@@ -114,15 +111,6 @@ scoped_refptr<CRLSet> SSLConfigService::GetCRLSet() {
   return g_crl_set.Get().Get();
 }
 
-void SSLConfigService::EnableCachedInfo() {
-  g_cached_info_enabled = true;
-}
-
-// static
-bool SSLConfigService::cached_info_enabled() {
-  return g_cached_info_enabled;
-}
-
 // static
 uint16 SSLConfigService::default_version_min() {
   return g_default_version_min;
@@ -146,11 +134,6 @@ void SSLConfigService::NotifySSLConfigChange() {
 }
 
 SSLConfigService::~SSLConfigService() {
-}
-
-// static
-void SSLConfigService::SetSSLConfigFlags(SSLConfig* ssl_config) {
-  ssl_config->cached_info_enabled = g_cached_info_enabled;
 }
 
 void SSLConfigService::ProcessConfigUpdate(const SSLConfig& orig_config,

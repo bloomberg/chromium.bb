@@ -306,7 +306,6 @@ void SSLConfigServiceManagerPref::GetSSLConfigFromPrefs(
   config->false_start_enabled = !ssl_record_splitting_disabled_.GetValue();
   config->unrestricted_ssl3_fallback_enabled =
       unrestricted_ssl3_fallback_enabled_.GetValue();
-  SSLConfigServicePref::SetSSLConfigFlags(config);
 }
 
 void SSLConfigServiceManagerPref::OnDisabledCipherSuitesChange(

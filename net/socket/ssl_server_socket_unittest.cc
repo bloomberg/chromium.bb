@@ -331,7 +331,6 @@ class SSLServerSocketTest : public PlatformTest {
         crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(key_vector));
 
     net::SSLConfig ssl_config;
-    ssl_config.cached_info_enabled = false;
     ssl_config.false_start_enabled = false;
     ssl_config.channel_id_enabled = false;
 

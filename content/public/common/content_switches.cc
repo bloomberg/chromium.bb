@@ -551,9 +551,6 @@ const char kEnableSpatialNavigation[]       = "enable-spatial-navigation";
 // Enables the synthesis part of the Web Speech API.
 const char kEnableSpeechSynthesis[]         = "enable-speech-synthesis";
 
-// Enables TLS cached info extension.
-const char kEnableSSLCachedInfo[]           = "enable-ssl-cached-info";
-
 // Enables StatsTable, logging statistics to a global named shared memory table.
 const char kEnableStatsTable[]              = "enable-stats-table";
 
