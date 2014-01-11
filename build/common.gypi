@@ -1113,7 +1113,8 @@
     # Strip the test binaries needed for Linux reliability tests.
     'linux_strip_reliability_tests%': 0,
     # If we want stack unwind support for backtrace().
-    'unwind_tables%': 1,
+    'debug_unwind_tables%': 1,
+    'release_unwind_tables%': 1,
 
     # Enable TCMalloc.
     'linux_use_tcmalloc%': 1,
@@ -1292,9 +1293,9 @@
           ['(branding=="Chrome" and buildtype=="Official")', {
             'linux_dump_symbols%': 1,
 
-            # Omit unwind support in official builds to save space. We can use
-            # breakpad for these builds.
-            'unwind_tables%': 0,
+            # Omit unwind support in official release builds to save space. We
+            # can use breakpad for these builds.
+            'release_unwind_tables%': 0,
           }],
         ],
       }],  # os_posix==1 and OS!="mac" and OS!="ios"
@@ -3012,6 +3013,11 @@
                   '-Wl,--no-as-needed',
                 ],
               }],
+              ['debug_unwind_tables==1', {
+                'cflags': ['-funwind-tables'],
+              }, {
+                'cflags': ['-fno-unwind-tables', '-fno-asynchronous-unwind-tables'],
+              }],
             ],
           },
           'Release_Base': {
@@ -3082,6 +3088,11 @@
                     ],
                   }],
                 ],
+              }],
+              ['release_unwind_tables==1', {
+                'cflags': ['-funwind-tables'],
+              }, {
+                'cflags': ['-fno-unwind-tables', '-fno-asynchronous-unwind-tables'],
               }],
             ],
           },
@@ -3559,11 +3570,6 @@
                 ],
               }],
             ],
-          }],
-          ['unwind_tables==1', {
-            'cflags': ['-funwind-tables'],
-          }, {
-            'cflags': ['-fno-unwind-tables', '-fno-asynchronous-unwind-tables'],
           }],
           ['linux_use_tcmalloc==0 and android_use_tcmalloc==0', {
             'defines': ['NO_TCMALLOC'],
