@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <string>
 
+#include "base/at_exit.h"
+#include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/common/bindings_support_impl.h"
 #include "mojo/examples/aura_demo/demo_screen.h"
@@ -192,6 +194,8 @@ class AuraDemo : public ShellClient {
 
 extern "C" AURA_DEMO_EXPORT MojoResult CDECL MojoMain(
     MojoHandle shell_handle) {
+  CommandLine::Init(0, NULL);
+  base::AtExitManager at_exit;
   base::MessageLoop loop;
   mojo::common::BindingsSupportImpl bindings_support_impl;
   mojo::BindingsSupport::Set(&bindings_support_impl);
