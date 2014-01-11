@@ -1212,10 +1212,10 @@ TEST_P(DockedWindowResizerTest, ResizeTwoWindows) {
                                                               HTLEFT));
   DragMove(-kResizeSpan1, 0);
   DragEnd();
-  // Only w2 should get wider since w1 was resized by a user.
+  // w2 should get wider since it was resized by a user.
   EXPECT_EQ(previous_width + kResizeSpan1, w2->bounds().width());
-  // w1 should stays same size as before since it was resized by a user.
-  EXPECT_EQ(previous_width, w1->bounds().width());
+  // w1 should stay as wide as w2 since both were flush with the dock edge.
+  EXPECT_EQ(w2->bounds().width(), w1->bounds().width());
   EXPECT_EQ(w2->bounds().width(), docked_width(manager));
 
   // Undock w2 and then dock it back.

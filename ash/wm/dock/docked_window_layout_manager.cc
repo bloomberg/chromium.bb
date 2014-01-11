@@ -16,6 +16,7 @@
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_properties.h"
+#include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller.h"
@@ -429,12 +430,30 @@ void DockedWindowLayoutManager::StartDragging(aura::Window* window) {
   DCHECK(!IsPopupOrTransient(window));
   // Start observing a window unless it is docked container's child in which
   // case it is already observed.
+  wm::WindowState* dragged_state = wm::GetWindowState(dragged_window_);
   if (dragged_window_->parent() != dock_container_) {
     dragged_window_->AddObserver(this);
-    wm::GetWindowState(dragged_window_)->AddObserver(this);
+    dragged_state->AddObserver(this);
   }
   is_dragged_from_dock_ = window->parent() == dock_container_;
   DCHECK(!is_dragged_window_docked_);
+
+  // Resize all windows that are flush with the dock edge together if one of
+  // them gets resized.
+  if (dragged_window_->bounds().width() == docked_width_ &&
+      (dragged_state->drag_details()->bounds_change &
+          WindowResizer::kBoundsChange_Resizes) &&
+      (dragged_state->drag_details()->size_change_direction &
+          WindowResizer::kBoundsChangeDirection_Horizontal)) {
+    for (size_t i = 0; i < dock_container_->children().size(); ++i) {
+      aura::Window* window1(dock_container_->children()[i]);
+      if (IsUsedByLayout(window1) &&
+          window1 != dragged_window_ &&
+          window1->bounds().width() == docked_width_) {
+        wm::GetWindowState(window1)->set_bounds_changed_by_user(false);
+      }
+    }
+  }
 }
 
 void DockedWindowLayoutManager::DockDraggedWindow(aura::Window* window) {
