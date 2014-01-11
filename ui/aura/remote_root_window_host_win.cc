@@ -142,6 +142,11 @@ void HandleActivateDesktop(const base::FilePath& shortcut,
                                                                    ash_exit);
 }
 
+void HandleMetroExit() {
+  DCHECK(aura::RemoteWindowTreeHostWin::Instance());
+  aura::RemoteWindowTreeHostWin::Instance()->HandleMetroExit();
+}
+
 RemoteWindowTreeHostWin* g_instance = NULL;
 
 RemoteWindowTreeHostWin* RemoteWindowTreeHostWin::Instance() {
@@ -247,6 +252,12 @@ void RemoteWindowTreeHostWin::HandleActivateDesktop(
   if (!host_)
     return;
   host_->Send(new MetroViewerHostMsg_ActivateDesktop(shortcut, ash_exit));
+}
+
+void RemoteWindowTreeHostWin::HandleMetroExit() {
+  if (!host_)
+    return;
+  host_->Send(new MetroViewerHostMsg_MetroExit());
 }
 
 void RemoteWindowTreeHostWin::HandleOpenFile(

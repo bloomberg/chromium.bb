@@ -157,6 +157,7 @@ class ChromeChannelListener : public IPC::Listener {
     IPC_BEGIN_MESSAGE_MAP(ChromeChannelListener, message)
       IPC_MESSAGE_HANDLER(MetroViewerHostMsg_ActivateDesktop,
                           OnActivateDesktop)
+      IPC_MESSAGE_HANDLER(MetroViewerHostMsg_MetroExit, OnMetroExit)
       IPC_MESSAGE_HANDLER(MetroViewerHostMsg_OpenURLOnDesktop,
                           OnOpenURLOnDesktop)
       IPC_MESSAGE_HANDLER(MetroViewerHostMsg_SetCursor, OnSetCursor)
@@ -192,6 +193,10 @@ class ChromeChannelListener : public IPC::Listener {
         base::Bind(&ChromeAppViewAsh::OnActivateDesktop,
         base::Unretained(app_view_),
         shortcut, ash_exit));
+  }
+
+  void OnMetroExit() {
+    MetroExit(app_view_->core_window_hwnd());
   }
 
   void OnOpenURLOnDesktop(const base::FilePath& shortcut,

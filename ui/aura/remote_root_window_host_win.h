@@ -86,13 +86,16 @@ AURA_EXPORT void HandleSelectFolder(const base::string16& title,
                                     const SelectFolderCompletion& on_success,
                                     const FileSelectionCanceled& on_failure);
 
-// Handles the activate desktop command for Metro Chrome Ash. The on_success
-// callback passed in is invoked when activation is completed.
-// The |ash_exit| parameter indicates whether the Ash process would be shutdown
-// after activating the desktop.
+// Handles the activate desktop command for Metro Chrome Ash.   The |ash_exit|
+// parameter indicates whether the Ash process would be shutdown after
+// activating the desktop.
 AURA_EXPORT void HandleActivateDesktop(
     const base::FilePath& shortcut,
     bool ash_exit);
+
+// Handles the metro exit command.  Notifies the metro viewer to shutdown
+// gracefully.
+AURA_EXPORT void HandleMetroExit();
 
 // WindowTreeHost implementaton that receives events from a different
 // process. In the case of Windows this is the Windows 8 (aka Metro)
@@ -121,9 +124,10 @@ class AURA_EXPORT RemoteWindowTreeHostWin
 
   // The |ash_exit| parameter indicates whether the Ash process would be
   // shutdown after activating the desktop.
-  void HandleActivateDesktop(
-      const base::FilePath& shortcut,
-      bool ash_exit);
+  void HandleActivateDesktop(const base::FilePath& shortcut, bool ash_exit);
+
+  // Notify the metro viewer that it should shut itself down.
+  void HandleMetroExit();
 
   void HandleOpenFile(const base::string16& title,
                       const base::FilePath& default_path,

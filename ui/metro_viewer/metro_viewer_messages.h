@@ -105,6 +105,9 @@ IPC_MESSAGE_CONTROL2(MetroViewerHostMsg_ActivateDesktop,
                      base::FilePath /* shortcut */,
                      bool           /* ash exit */);
 
+// Request the viewer to close itself gracefully.
+IPC_MESSAGE_CONTROL0(MetroViewerHostMsg_MetroExit);
+
 // Requests the viewer to open a URL in desktop mode.
 IPC_MESSAGE_CONTROL2(MetroViewerHostMsg_OpenURLOnDesktop,
                      base::FilePath,  /* shortcut */
