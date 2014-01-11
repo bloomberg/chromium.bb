@@ -98,18 +98,28 @@ def GetUnusedResources(grd_filepath):
       re.VERBOSE)
   # Use finditer over the file contents because there may be newlines between
   # the name and file attributes.
+  searched = set()
   for result in pattern.finditer(grd_data):
     # Extract the IDR resource id and file path.
     resource_id = result.group(1)
     filepath = result.group(2)
     filename = os.path.basename(filepath)
+    base_resource_id = GetBaseResourceId(resource_id)
+
+    # Do not bother repeating searches.
+    key = (base_resource_id, filename)
+    if key in searched:
+      continue
+    searched.add(key)
+
     # Print progress as we go along.
     print resource_id
+
     # Ensure the resource isn't used anywhere by checking both for the resource
     # id (which should appear in C++ code) and the raw filename (in case the
     # file is referenced in a script, test HTML file, etc.).
-    base_resource_id = GetBaseResourceId(resource_id)
     matching_files = FindFilesWithContents(base_resource_id, filename)
+
     # Each file is matched once in the resource file itself. If there are no
     # other matching files, it is unused.
     if len(matching_files) == 1:
