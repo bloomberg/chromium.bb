@@ -129,15 +129,6 @@ class SK_API AnalysisDevice : public SkBitmapDevice {
                               const SkPath& path,
                               const SkMatrix* matrix,
                               const SkPaint& paint) OVERRIDE;
-#ifdef SK_BUILD_FOR_ANDROID
-  virtual void drawPosTextOnPath(const SkDraw& draw,
-                                 const void* text,
-                                 size_t len,
-                                 const SkPoint pos[],
-                                 const SkPaint& paint,
-                                 const SkPath& path,
-                                 const SkMatrix* matrix) OVERRIDE;
-#endif
   virtual void drawVertices(const SkDraw& draw,
                             SkCanvas::VertexMode vertex_mode,
                             int vertex_count,

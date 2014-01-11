@@ -264,20 +264,6 @@ void AnalysisDevice::drawTextOnPath(const SkDraw& draw,
   has_text_ = true;
 }
 
-#ifdef SK_BUILD_FOR_ANDROID
-void AnalysisDevice::drawPosTextOnPath(const SkDraw& draw,
-                                       const void* text,
-                                       size_t len,
-                                       const SkPoint pos[],
-                                       const SkPaint& paint,
-                                       const SkPath& path,
-                                       const SkMatrix* matrix) {
-  is_solid_color_ = false;
-  is_transparent_ = false;
-  has_text_ = true;
-}
-#endif
-
 void AnalysisDevice::drawVertices(const SkDraw& draw,
                                   SkCanvas::VertexMode,
                                   int vertex_count,
