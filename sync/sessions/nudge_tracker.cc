@@ -44,9 +44,13 @@ bool NudgeTracker::IsSyncRequired() const {
   return false;
 }
 
-bool NudgeTracker::IsGetUpdatesRequired() const {
+bool NudgeTracker::IsGetUpdatesRequired(base::TimeTicks now) const {
   if (invalidations_out_of_sync_)
     return true;
+
+  if (IsRetryRequired(now))
+    return true;
+
   for (TypeTrackerMap::const_iterator it = type_trackers_.begin();
        it != type_trackers_.end(); ++it) {
     if (it->second.IsGetUpdatesRequired()) {
@@ -56,8 +60,16 @@ bool NudgeTracker::IsGetUpdatesRequired() const {
   return false;
 }
 
-void NudgeTracker::RecordSuccessfulSyncCycle() {
+bool NudgeTracker::IsRetryRequired(base::TimeTicks now) const {
+  return !next_retry_time_.is_null() && next_retry_time_ < now;
+}
+
+void NudgeTracker::RecordSuccessfulSyncCycle(base::TimeTicks now) {
   updates_source_ = sync_pb::GetUpdatesCallerInfo::UNKNOWN;
+  last_successful_sync_time_ = now;
+
+  if (next_retry_time_ < now)
+    next_retry_time_ = base::TimeTicks();
 
   // A successful cycle while invalidations are enabled puts us back into sync.
   invalidations_out_of_sync_ = !invalidations_enabled_;

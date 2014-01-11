@@ -584,10 +584,14 @@ message GetUpdatesMessage {
   // already created.  Should be set to true only by mobile clients.
   optional bool create_mobile_bookmarks_folder = 1000 [default = false];
 
-  // This value is an udpated version of the GetUpdatesCallerInfo's
+  // This value is an updated version of the GetUpdatesCallerInfo's
   // GetUpdatesSource.  It describes the reason for the GetUpdate request.
   // Introduced in M29.
   optional SyncEnums.GetUpdatesOrigin get_updates_origin = 9;
+
+  // Whether this GU also serves as a retry GU. Any GU that happens after
+  // retry timer timeout is a retry GU effectively.
+  optional bool is_retry = 10 [default = false];
 };
 
 message AuthenticateMessage {

@@ -47,11 +47,14 @@ void SimulateConnectionFailure(ModelTypeSet requested_types,
                                const sessions::NudgeTracker& nudge_tracker,
                                sessions::SyncSession* session);
 
-// Poll successes and failures.
-void SimulatePollSuccess(ModelTypeSet requested_types,
-                         sessions::SyncSession* session);
-void SimulatePollFailed(ModelTypeSet requested_types,
-                        sessions::SyncSession* session);
+// Poll/Retry successes and failures.
+void SimulatePollRetrySuccess(ModelTypeSet requested_types,
+                              sessions::SyncSession* session);
+void SimulatePollRetryFailed(ModelTypeSet requested_types,
+                             sessions::SyncSession* session);
+
+void SimulateGuRetryDelayCommandImpl(sessions::SyncSession* session,
+                                     base::TimeDelta delay);
 
 void SimulateThrottledImpl(sessions::SyncSession* session,
     const base::TimeDelta& delta);
@@ -88,6 +91,10 @@ ACTION_P(SimulatePollIntervalUpdate, poll) {
 
 ACTION_P(SimulateSessionsCommitDelayUpdate, poll) {
   SimulateSessionsCommitDelayUpdateImpl(arg0, arg1, arg2, poll);
+}
+
+ACTION_P(SimulateGuRetryDelayCommand, delay) {
+  SimulateGuRetryDelayCommandImpl(arg0, delay);
 }
 
 }  // namespace test_util

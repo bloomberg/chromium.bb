@@ -234,7 +234,8 @@ void SyncSchedulerImpl::Start(Mode mode) {
 
   if (old_mode != mode_ &&
       mode_ == NORMAL_MODE &&
-      nudge_tracker_.IsSyncRequired() &&
+      (nudge_tracker_.IsSyncRequired() ||
+          nudge_tracker_.IsRetryRequired(base::TimeTicks::Now())) &&
       CanRunNudgeJobNow(NORMAL_PRIORITY)) {
     // We just got back to normal mode.  Let's try to run the work that was
     // queued up while we were configuring.
@@ -469,7 +470,7 @@ void SyncSchedulerImpl::DoNudgeSyncSessionJob(JobPriority priority) {
   if (success) {
     // That cycle took care of any outstanding work we had.
     SDVLOG(2) << "Nudge succeeded.";
-    nudge_tracker_.RecordSuccessfulSyncCycle();
+    nudge_tracker_.RecordSuccessfulSyncCycle(base::TimeTicks::Now());
     scheduled_nudge_time_ = base::TimeTicks();
 
     // If we're here, then we successfully reached the server.  End all backoff.
@@ -549,18 +550,8 @@ void SyncSchedulerImpl::HandleFailure(
 void SyncSchedulerImpl::DoPollSyncSessionJob() {
   base::AutoReset<bool> protector(&no_scheduling_allowed_, true);
 
-  if (!CanRunJobNow(NORMAL_PRIORITY)) {
-    SDVLOG(2) << "Unable to run a poll job right now.";
-    return;
-  }
-
-  if (mode_ != NORMAL_MODE) {
-    SDVLOG(2) << "Not running poll job in configure mode.";
-    return;
-  }
-
   SDVLOG(2) << "Polling with types "
-            << ModelTypeSetToString(session_context_->enabled_types());
+            << ModelTypeSetToString(GetEnabledAndUnthrottledTypes());
   scoped_ptr<SyncSession> session(SyncSession::Build(session_context_, this));
   syncer_->PollSyncShare(
       GetEnabledAndUnthrottledTypes(),
@@ -573,6 +564,25 @@ void SyncSchedulerImpl::DoPollSyncSessionJob() {
     // The OnSilencedUntil() call set up the WaitInterval for us.  All we need
     // to do is start the timer.
     RestartWaiting();
+  }
+}
+
+void SyncSchedulerImpl::DoRetrySyncSessionJob() {
+  DCHECK(CalledOnValidThread());
+  DCHECK_EQ(mode_, NORMAL_MODE);
+
+  base::AutoReset<bool> protector(&no_scheduling_allowed_, true);
+
+  SDVLOG(2) << "Retrying with types "
+            << ModelTypeSetToString(GetEnabledAndUnthrottledTypes());
+  scoped_ptr<SyncSession> session(SyncSession::Build(session_context_, this));
+  if (syncer_->RetrySyncShare(GetEnabledAndUnthrottledTypes(),
+                              session.get()) &&
+      !sessions::HasSyncerError(
+          session->status_controller().model_neutral_state())) {
+    nudge_tracker_.RecordSuccessfulSyncCycle(base::TimeTicks::Now());
+  } else {
+    HandleFailure(session->status_controller().model_neutral_state());
   }
 }
 
@@ -683,11 +693,12 @@ void SyncSchedulerImpl::TrySyncSessionJobImpl() {
       SDVLOG(2) << "Found pending configure job";
       DoConfigurationSyncSessionJob(priority);
     }
-  } else {
-    DCHECK(mode_ == NORMAL_MODE);
-    if (nudge_tracker_.IsSyncRequired() && CanRunNudgeJobNow(priority)) {
+  } else if (CanRunNudgeJobNow(priority)) {
+    if (nudge_tracker_.IsSyncRequired()) {
       SDVLOG(2) << "Found pending nudge job";
       DoNudgeSyncSessionJob(priority);
+    } else if (nudge_tracker_.IsRetryRequired(base::TimeTicks::Now())) {
+      DoRetrySyncSessionJob();
     } else if (do_poll_after_credentials_updated_ ||
         ((base::TimeTicks::Now() - last_poll_reset_) >= GetPollInterval())) {
       DoPollSyncSessionJob();
@@ -734,6 +745,10 @@ void SyncSchedulerImpl::PollTimerCallback() {
     return;
   }
 
+  TrySyncSessionJob();
+}
+
+void SyncSchedulerImpl::RetryTimerCallback() {
   TrySyncSessionJob();
 }
 
@@ -888,6 +903,12 @@ void SyncSchedulerImpl::OnSyncProtocolError(
   }
   if (IsActionableError(snapshot.model_neutral_state().sync_protocol_error))
     OnActionableError(snapshot);
+}
+
+void SyncSchedulerImpl::OnReceivedGuRetryDelay(const base::TimeDelta& delay) {
+  nudge_tracker_.set_next_retry_time(base::TimeTicks::Now() + delay);
+  retry_timer_.Start(FROM_HERE, delay, this,
+                     &SyncSchedulerImpl::RetryTimerCallback);
 }
 
 void SyncSchedulerImpl::SetNotificationsEnabled(bool notifications_enabled) {

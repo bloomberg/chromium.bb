@@ -31,4 +31,7 @@ message ClientCommand {
 
   // Maximum number of local nudges to buffer per-type.
   optional int32 client_invalidation_hint_buffer_size = 6;
+
+  // Time to wait before issuing a retry GU.
+  optional int32 gu_retry_delay_seconds = 7;
 };

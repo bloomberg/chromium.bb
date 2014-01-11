@@ -433,6 +433,11 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
       session->delegate()->OnReceivedClientInvalidationHintBufferSize(
           command.client_invalidation_hint_buffer_size());
     }
+
+    if (command.has_gu_retry_delay_seconds()) {
+      session->delegate()->OnReceivedGuRetryDelay(
+          base::TimeDelta::FromSeconds(command.gu_retry_delay_seconds()));
+    }
   }
 
   // Now do any special handling for the error type and decide on the return

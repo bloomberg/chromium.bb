@@ -42,6 +42,7 @@ message GetUpdatesCallerInfo {
     DATATYPE_REFRESH = 11;    // A datatype has requested a refresh. This is
                               // typically used when datatype's have custom
                               // sync UI, e.g. sessions.
+    RETRY = 13;  // A follow-up GU to pick up updates missed by previous GU.
   }
 
   required GetUpdatesSource source = 1;

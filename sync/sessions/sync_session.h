@@ -81,6 +81,9 @@ class SYNC_EXPORT_PRIVATE SyncSession {
     // will buffer locally.
     virtual void OnReceivedClientInvalidationHintBufferSize(int size) = 0;
 
+    // Called when server wants to schedule a retry GU.
+    virtual void OnReceivedGuRetryDelay(const base::TimeDelta& delay) = 0;
+
    protected:
     virtual ~Delegate() {}
   };

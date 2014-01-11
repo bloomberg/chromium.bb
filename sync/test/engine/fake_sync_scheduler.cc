@@ -86,4 +86,8 @@ void FakeSyncScheduler::OnSyncProtocolError(
      const sessions::SyncSessionSnapshot& snapshot) {
 }
 
+void FakeSyncScheduler::OnReceivedGuRetryDelay(
+    const base::TimeDelta& delay) {
+}
+
 }  // namespace syncer

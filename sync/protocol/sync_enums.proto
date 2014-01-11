@@ -141,8 +141,10 @@ message SyncEnums {
                            // confused with FIRST_UPDATE.
     RECONFIGURATION = 10;  // The client is in configuration mode because the
                            // user opted to sync a different set of datatypes.
-    GU_TRIGGER = 12; // The client is in 'normal' mode.  It may have several
-                     // reasons for requesting an update.  See the per-type
-                     // GetUpdateTriggers message for more details.
+    GU_TRIGGER = 12;  // The client is in 'normal' mode.  It may have several
+                      // reasons for requesting an update.  See the per-type
+                      // GetUpdateTriggers message for more details.
+    RETRY = 13;  // A retry GU to pick up updates missed by last GU due to
+                 // replication delay, missing hints, etc.
   }
 }
