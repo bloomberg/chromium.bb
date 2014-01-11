@@ -571,6 +571,8 @@ void ResourceBundle::InitSharedInstance(Delegate* delegate) {
 #elif defined(OS_CHROMEOS)
   // TODO(oshima): Include 200P only if the device support 200P
   supported_scale_factors.push_back(SCALE_FACTOR_200P);
+#elif defined(OS_LINUX) && defined(ENABLE_HIDPI)
+  supported_scale_factors.push_back(SCALE_FACTOR_200P);
 #endif
   ui::SetSupportedScaleFactors(supported_scale_factors);
 #if defined(OS_WIN)
