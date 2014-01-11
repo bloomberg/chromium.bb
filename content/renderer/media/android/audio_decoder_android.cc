@@ -377,8 +377,8 @@ bool WAVEDecoder::DecodeWAVEFile(blink::WebAudioBus* destination_bus) {
       return CopyDataChunkToBus(destination_bus);
     } else {
       // Ignore these chunks that we don't know about.
-      VLOG(0) << "Ignoring WAVE chunk `" << chunk_id_ << "' size "
-              << chunk_size_;
+      DVLOG(0) << "Ignoring WAVE chunk `" << chunk_id_ << "' size "
+               << chunk_size_;
     }
 
     // Advance to next chunk.
