@@ -46,21 +46,6 @@ void PepperBrokerInfoBarDelegate::Create(
   TabSpecificContentSettings* tab_content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents);
 
-#if defined(OS_CHROMEOS)
-  // On ChromeOS, we're ok with granting broker access to the Netflix and
-  // Widevine plugins, since they can only come installed with the OS.
-  const char kWidevinePluginFileName[] = "libwidevinecdmadapter.so";
-  const char kNetflixDomain[] = "netflix.com";
-
-  base::FilePath plugin_file_name = plugin_path.BaseName();
-  if (plugin_file_name.value() == FILE_PATH_LITERAL(kWidevinePluginFileName) &&
-      url.DomainIs(kNetflixDomain)) {
-    tab_content_settings->SetPepperBrokerAllowed(true);
-    callback.Run(true);
-    return;
-  }
-#endif
-
 #if defined(GOOGLE_TV)
   // On GoogleTV, Netflix crypto/mdx plugin and DRM server adapter plugin can
   // only come pre-installed with the OS, so we're willing to auto-grant access
