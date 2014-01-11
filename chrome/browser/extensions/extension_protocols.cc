@@ -283,7 +283,8 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
                          const base::FilePath& directory_path,
                          const base::FilePath& relative_path,
                          const std::string& content_security_policy,
-                         bool send_cors_header)
+                         bool send_cors_header,
+                         bool follow_symlinks_anywhere)
     : net::URLRequestFileJob(
           request, network_delegate, base::FilePath(),
           BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
@@ -295,6 +296,9 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
       content_security_policy_(content_security_policy),
       send_cors_header_(send_cors_header),
       weak_factory_(this) {
+    if (follow_symlinks_anywhere) {
+      resource_.set_follow_symlinks_anywhere();
+    }
   }
 
   virtual void GetResponseInfo(net::HttpResponseInfo* info) OVERRIDE {
@@ -525,6 +529,7 @@ ExtensionProtocolHandler::MaybeCreateJob(
 
   std::string content_security_policy;
   bool send_cors_header = false;
+  bool follow_symlinks_anywhere = false;
   if (extension) {
     std::string resource_path = request->url().path();
     content_security_policy =
@@ -536,6 +541,10 @@ ExtensionProtocolHandler::MaybeCreateJob(
         extensions::WebAccessibleResourcesInfo::IsResourceWebAccessible(
             extension, resource_path))
       send_cors_header = true;
+
+    follow_symlinks_anywhere =
+        (extension->creation_flags() & Extension::FOLLOW_SYMLINKS_ANYWHERE)
+        != 0;
   }
 
   std::string path = request->url().path();
@@ -617,7 +626,8 @@ ExtensionProtocolHandler::MaybeCreateJob(
                                     directory_path,
                                     relative_path,
                                     content_security_policy,
-                                    send_cors_header);
+                                    send_cors_header,
+                                    follow_symlinks_anywhere);
 }
 
 }  // namespace
