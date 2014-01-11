@@ -122,7 +122,7 @@ TEST_F(SyncBackendRegistrarTest, ConstructorEmpty) {
   registrar_->SetInitialTypes(ModelTypeSet());
   EXPECT_FALSE(registrar_->IsNigoriEnabled());
   {
-    std::vector<syncer::ModelSafeWorker*> workers;
+    std::vector<scoped_refptr<syncer::ModelSafeWorker> > workers;
     registrar_->GetWorkers(&workers);
     EXPECT_EQ(4u, workers.size());
   }
@@ -135,7 +135,7 @@ TEST_F(SyncBackendRegistrarTest, ConstructorNonEmpty) {
   registrar_->SetInitialTypes(initial_types);
   EXPECT_TRUE(registrar_->IsNigoriEnabled());
   {
-    std::vector<syncer::ModelSafeWorker*> workers;
+    std::vector<scoped_refptr<syncer::ModelSafeWorker> > workers;
     registrar_->GetWorkers(&workers);
     EXPECT_EQ(4u, workers.size());
   }

@@ -47,16 +47,17 @@ class TestScopedSessionEventListener;
 
 class SYNC_EXPORT_PRIVATE SyncSessionContext {
  public:
-  SyncSessionContext(ServerConnectionManager* connection_manager,
-                     syncable::Directory* directory,
-                     const std::vector<ModelSafeWorker*>& workers,
-                     ExtensionsActivity* extensions_activity,
-                     const std::vector<SyncEngineEventListener*>& listeners,
-                     DebugInfoGetter* debug_info_getter,
-                     TrafficRecorder* traffic_recorder,
-                     bool keystore_encryption_enabled,
-                     bool client_enabled_pre_commit_update_avoidance,
-                     const std::string& invalidator_client_id);
+  SyncSessionContext(
+      ServerConnectionManager* connection_manager,
+      syncable::Directory* directory,
+      const std::vector<scoped_refptr<ModelSafeWorker> >& workers,
+      ExtensionsActivity* extensions_activity,
+      const std::vector<SyncEngineEventListener*>& listeners,
+      DebugInfoGetter* debug_info_getter,
+      TrafficRecorder* traffic_recorder,
+      bool keystore_encryption_enabled,
+      bool client_enabled_pre_commit_update_avoidance,
+      const std::string& invalidator_client_id);
 
   ~SyncSessionContext();
 

@@ -154,10 +154,6 @@ class SyncerTest : public testing::Test,
       const sessions::SyncSessionSnapshot& snapshot) OVERRIDE {
   }
 
-  void GetWorkers(std::vector<ModelSafeWorker*>* out) {
-    out->push_back(worker_.get());
-  }
-
   void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) {
     // We're just testing the sync engine here, so we shunt everything to
     // the SyncerThread.  Datatypes which aren't enabled aren't in the map.
@@ -215,19 +211,17 @@ class SyncerTest : public testing::Test,
     EnableDatatype(NIGORI);
     EnableDatatype(PREFERENCES);
     EnableDatatype(NIGORI);
-    worker_ = new FakeModelWorker(GROUP_PASSIVE);
+    workers_.push_back(scoped_refptr<ModelSafeWorker>(
+        new FakeModelWorker(GROUP_PASSIVE)));
     std::vector<SyncEngineEventListener*> listeners;
     listeners.push_back(this);
 
     ModelSafeRoutingInfo routing_info;
-    std::vector<ModelSafeWorker*> workers;
-
     GetModelSafeRoutingInfo(&routing_info);
-    GetWorkers(&workers);
 
     context_.reset(
         new SyncSessionContext(
-            mock_server_.get(), directory(), workers,
+            mock_server_.get(), directory(), workers_,
             extensions_activity_,
             listeners, debug_info_getter_.get(), &traffic_recorder_,
             true,  // enable keystore encryption
@@ -504,7 +498,7 @@ class SyncerTest : public testing::Test,
   base::TimeDelta last_long_poll_interval_received_;
   base::TimeDelta last_sessions_commit_delay_seconds_;
   int last_client_invalidation_hint_buffer_size_;
-  scoped_refptr<ModelSafeWorker> worker_;
+  std::vector<scoped_refptr<ModelSafeWorker> > workers_;
 
   ModelTypeSet enabled_datatypes_;
   TrafficRecorder traffic_recorder_;

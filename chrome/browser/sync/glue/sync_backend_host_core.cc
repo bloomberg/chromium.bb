@@ -50,7 +50,7 @@ DoInitializeOptions::DoInitializeOptions(
     base::MessageLoop* sync_loop,
     SyncBackendRegistrar* registrar,
     const syncer::ModelSafeRoutingInfo& routing_info,
-    const std::vector<syncer::ModelSafeWorker*>& workers,
+    const std::vector<scoped_refptr<syncer::ModelSafeWorker> >& workers,
     const scoped_refptr<syncer::ExtensionsActivity>& extensions_activity,
     const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
     const GURL& service_url,

@@ -91,7 +91,7 @@ void SyncBackendHostImpl::Initialize(
   DCHECK(frontend);
 
   syncer::ModelSafeRoutingInfo routing_info;
-  std::vector<syncer::ModelSafeWorker*> workers;
+  std::vector<scoped_refptr<syncer::ModelSafeWorker> > workers;
   registrar_->GetModelSafeRoutingInfo(&routing_info);
   registrar_->GetWorkers(&workers);
 

@@ -323,8 +323,8 @@ int SyncClientMain(int argc, char* argv[]) {
   }
   scoped_refptr<PassiveModelWorker> passive_model_safe_worker =
       new PassiveModelWorker(&sync_loop, NULL);
-  std::vector<ModelSafeWorker*> workers;
-  workers.push_back(passive_model_safe_worker.get());
+  std::vector<scoped_refptr<ModelSafeWorker> > workers;
+  workers.push_back(passive_model_safe_worker);
 
   // Set up sync manager.
   SyncManagerFactory sync_manager_factory;

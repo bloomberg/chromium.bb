@@ -51,14 +51,11 @@ class SyncSessionTest : public testing::Test,
     workers_.push_back(ui_worker);
     workers_.push_back(db_worker);
 
-    std::vector<ModelSafeWorker*> workers;
-    GetWorkers(&workers);
-
     context_.reset(
         new SyncSessionContext(
             NULL,
             NULL,
-            workers,
+            workers_,
             extensions_activity_.get(),
             std::vector<SyncEngineEventListener*>(),
             NULL,
@@ -109,13 +106,6 @@ class SyncSessionTest : public testing::Test,
     FailControllerInvocationIfDisabled("SyncProtocolError");
   }
 
-  void GetWorkers(std::vector<ModelSafeWorker*>* out) const {
-    out->clear();
-    for (std::vector<scoped_refptr<ModelSafeWorker> >::const_iterator it =
-             workers_.begin(); it != workers_.end(); ++it) {
-      out->push_back(it->get());
-    }
-  }
   void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) const {
     *out = routes_;
   }

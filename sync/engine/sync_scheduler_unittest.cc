@@ -125,17 +125,11 @@ class SyncSchedulerTest : public testing::Test {
     workers_.push_back(make_scoped_refptr(new FakeModelWorker(GROUP_DB)));
     workers_.push_back(make_scoped_refptr(new FakeModelWorker(GROUP_PASSIVE)));
 
-    std::vector<ModelSafeWorker*> workers;
-    for (std::vector<scoped_refptr<FakeModelWorker> >::iterator it =
-         workers_.begin(); it != workers_.end(); ++it) {
-      workers.push_back(it->get());
-    }
-
     connection_.reset(new MockConnectionManager(directory(),
                                                 &cancelation_signal_));
     connection_->SetServerReachable();
     context_.reset(new SyncSessionContext(
-            connection_.get(), directory(), workers,
+            connection_.get(), directory(), workers_,
             extensions_activity_.get(),
             std::vector<SyncEngineEventListener*>(), NULL, NULL,
             true,  // enable keystore encryption
@@ -229,7 +223,7 @@ class SyncSchedulerTest : public testing::Test {
   scoped_ptr<SyncSchedulerImpl> scheduler_;
   MockSyncer* syncer_;
   MockDelayProvider* delay_;
-  std::vector<scoped_refptr<FakeModelWorker> > workers_;
+  std::vector<scoped_refptr<ModelSafeWorker> > workers_;
   scoped_refptr<ExtensionsActivity> extensions_activity_;
   ModelSafeRoutingInfo routing_info_;
   base::WeakPtrFactory<SyncSchedulerTest> weak_ptr_factory_;

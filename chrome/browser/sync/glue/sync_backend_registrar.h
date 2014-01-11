@@ -109,7 +109,7 @@ class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate,
       const syncer::ImmutableChangeRecordList& changes) OVERRIDE;
   virtual void OnChangesComplete(syncer::ModelType model_type) OVERRIDE;
 
-  void GetWorkers(std::vector<syncer::ModelSafeWorker*>* out);
+  void GetWorkers(std::vector<scoped_refptr<syncer::ModelSafeWorker> >* out);
   void GetModelSafeRoutingInfo(syncer::ModelSafeRoutingInfo* out);
 
   // syncer::WorkerLoopDestructionObserver implementation.

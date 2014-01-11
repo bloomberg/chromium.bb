@@ -813,7 +813,7 @@ class SyncManagerTest : public testing::Test,
 
     EXPECT_FALSE(js_backend_.IsInitialized());
 
-    std::vector<ModelSafeWorker*> workers;
+    std::vector<scoped_refptr<ModelSafeWorker> > workers;
     ModelSafeRoutingInfo routing_info;
     GetModelSafeRoutingInfo(&routing_info);
 
@@ -821,7 +821,7 @@ class SyncManagerTest : public testing::Test,
     // If we had types in other groups, we would need additional workers
     // to support them.
     scoped_refptr<ModelSafeWorker> worker = new FakeModelWorker(GROUP_PASSIVE);
-    workers.push_back(worker.get());
+    workers.push_back(worker);
 
     // Takes ownership of |fake_invalidator_|.
     sync_manager_.Init(

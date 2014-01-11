@@ -263,7 +263,7 @@ void SyncBackendRegistrar::OnChangesComplete(syncer::ModelType model_type) {
 }
 
 void SyncBackendRegistrar::GetWorkers(
-    std::vector<syncer::ModelSafeWorker*>* out) {
+    std::vector<scoped_refptr<syncer::ModelSafeWorker> >* out) {
   base::AutoLock lock(lock_);
   out->clear();
   for (WorkerMap::const_iterator it = workers_.begin();
