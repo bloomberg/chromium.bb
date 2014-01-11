@@ -323,9 +323,9 @@ class _JSCModel(object):
       if len(dst_dict['enum_values']) > 0:
         dst_dict['enum_values'][-1]['last'] = True
     elif type_.instance_of is not None:
-      dst_dict['simple_type'] = type_.instance_of.lower()
+      dst_dict['simple_type'] = type_.instance_of
     else:
-      dst_dict['simple_type'] = type_.property_type.name.lower()
+      dst_dict['simple_type'] = type_.property_type.name
 
   def _GetIntroTableList(self):
     '''Create a generic data structure that can be traversed by the templates
