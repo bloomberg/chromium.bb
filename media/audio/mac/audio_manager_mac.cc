@@ -644,7 +644,7 @@ AudioInputStream* AudioManagerMac::MakeLowLatencyInputStream(
 AudioParameters AudioManagerMac::GetPreferredOutputStreamParameters(
     const std::string& output_device_id,
     const AudioParameters& input_params) {
-  AudioDeviceID device = GetAudioDeviceIdByUId(false, output_device_id);
+  const AudioDeviceID device = GetAudioDeviceIdByUId(false, output_device_id);
   if (device == kAudioObjectUnknown) {
     DLOG(ERROR) << "Invalid output device " << output_device_id;
     return input_params.IsValid() ? input_params : AudioParameters(
@@ -652,47 +652,42 @@ AudioParameters AudioManagerMac::GetPreferredOutputStreamParameters(
         kFallbackSampleRate, 16, ChooseBufferSize(kFallbackSampleRate));
   }
 
-  int hardware_channels = 2;
-  if (!GetDeviceChannels(device, kAudioDevicePropertyScopeOutput,
-                         &hardware_channels)) {
-    // Fallback to stereo.
-    hardware_channels = 2;
-  }
-
-  ChannelLayout channel_layout = GuessChannelLayout(hardware_channels);
-
+  const bool has_valid_input_params = input_params.IsValid();
   const int hardware_sample_rate = HardwareSampleRateForDevice(device);
   const int buffer_size = ChooseBufferSize(hardware_sample_rate);
 
-  int input_channels = 0;
-  if (input_params.IsValid()) {
-    input_channels = input_params.input_channels();
-
-    if (input_channels > 0) {
-      // TODO(xians): given the limitations of the AudioOutputStream
-      // back-ends used with synchronized I/O, we hard-code to stereo.
-      // Specifically, this is a limitation of AudioSynchronizedStream which
-      // can be removed as part of the work to consolidate these back-ends.
-      channel_layout = CHANNEL_LAYOUT_STEREO;
-    }
+  int hardware_channels;
+  if (!GetDeviceChannels(device, kAudioDevicePropertyScopeOutput,
+                         &hardware_channels)) {
+    hardware_channels = 2;
   }
 
-  if (channel_layout == CHANNEL_LAYOUT_UNSUPPORTED)
-    channel_layout = CHANNEL_LAYOUT_DISCRETE;
-  else
-    hardware_channels = ChannelLayoutToChannelCount(channel_layout);
+  // Use the input channel count and channel layout if possible.  Let OSX take
+  // care of remapping the channels; this lets user specified channel layouts
+  // work correctly.
+  int output_channels = input_params.channels();
+  ChannelLayout channel_layout = input_params.channel_layout();
+  if (!has_valid_input_params || output_channels > hardware_channels) {
+    output_channels = hardware_channels;
+    channel_layout = GuessChannelLayout(output_channels);
+    if (channel_layout == CHANNEL_LAYOUT_UNSUPPORTED)
+      channel_layout = CHANNEL_LAYOUT_DISCRETE;
+  }
 
-  AudioParameters params(
-      AudioParameters::AUDIO_PCM_LOW_LATENCY,
-      channel_layout,
-      hardware_channels,
-      input_channels,
-      hardware_sample_rate,
-      16,
-      buffer_size,
+  const int input_channels =
+      has_valid_input_params ? input_params.input_channels() : 0;
+  if (input_channels > 0) {
+    // TODO(xians): given the limitations of the AudioOutputStream
+    // back-ends used with synchronized I/O, we hard-code to stereo.
+    // Specifically, this is a limitation of AudioSynchronizedStream which
+    // can be removed as part of the work to consolidate these back-ends.
+    channel_layout = CHANNEL_LAYOUT_STEREO;
+  }
+
+  return AudioParameters(
+      AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout, output_channels,
+      input_channels, hardware_sample_rate, 16, buffer_size,
       AudioParameters::NO_EFFECTS);
-
-  return params;
 }
 
 void AudioManagerMac::CreateDeviceListener() {
