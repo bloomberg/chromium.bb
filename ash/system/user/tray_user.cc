@@ -1052,7 +1052,7 @@ bool UserView::SupportsMultiProfile() {
 }
 
 AddUserView::AddUserView(UserCard* owner, views::ButtonListener* listener)
-    : CustomButton(listener_),
+    : CustomButton(listener),
       add_user_(NULL),
       listener_(listener),
       owner_(owner),
