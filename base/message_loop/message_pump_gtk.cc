@@ -14,7 +14,7 @@ namespace base {
 
 namespace {
 
-const char* EventToTypeString(const GdkEvent* event) {
+ALLOW_UNUSED const char* EventToTypeString(const GdkEvent* event) {
   switch (event->type) {
     case GDK_NOTHING:           return "GDK_NOTHING";
     case GDK_DELETE:            return "GDK_DELETE";
