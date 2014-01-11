@@ -64,8 +64,8 @@ public:
             return adoptRef(new FastMallocAllocator);
         }
 
-        virtual void* allocate(size_t size) { return fastMalloc(size); }
-        virtual void free(void* ptr) { fastFree(ptr); }
+        virtual void* allocate(size_t size) OVERRIDE { return fastMalloc(size); }
+        virtual void free(void* ptr) OVERRIDE { fastFree(ptr); }
 
     protected:
         FastMallocAllocator() { }

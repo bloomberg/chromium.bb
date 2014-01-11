@@ -34,8 +34,8 @@ class PLATFORM_EXPORT AudioDelayDSPKernel : public AudioDSPKernel {
 public:
     AudioDelayDSPKernel(double maxDelayTime, float sampleRate);
 
-    virtual void process(const float* source, float* destination, size_t framesToProcess);
-    virtual void reset();
+    virtual void process(const float* source, float* destination, size_t framesToProcess) OVERRIDE;
+    virtual void reset() OVERRIDE;
 
     double maxDelayTime() const { return m_maxDelayTime; }
 

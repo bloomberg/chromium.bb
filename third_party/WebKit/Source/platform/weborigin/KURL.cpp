@@ -93,7 +93,7 @@ static bool isUnicodeEncoding(const WTF::TextEncoding* encoding)
 
 namespace {
 
-class KURLCharsetConverter : public url_canon::CharsetConverter {
+class KURLCharsetConverter FINAL : public url_canon::CharsetConverter {
 public:
     // The encoding parameter may be 0, but in this case the object must not be called.
     explicit KURLCharsetConverter(const WTF::TextEncoding* encoding)
@@ -101,7 +101,7 @@ public:
     {
     }
 
-    virtual void ConvertFromUTF16(const url_parse::UTF16Char* input, int inputLength, url_canon::CanonOutput* output)
+    virtual void ConvertFromUTF16(const url_parse::UTF16Char* input, int inputLength, url_canon::CanonOutput* output) OVERRIDE
     {
         CString encoded = m_encoding->normalizeAndEncode(String(input, inputLength), WTF::URLEncodedEntitiesForUnencodables);
         output->Append(encoded.data(), static_cast<int>(encoded.length()));

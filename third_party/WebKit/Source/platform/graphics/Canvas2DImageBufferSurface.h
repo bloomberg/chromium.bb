@@ -37,7 +37,7 @@
 namespace WebCore {
 
 // This shim necessary because ImageBufferSurfaces are not allowed to be RefCounted
-class Canvas2DImageBufferSurface : public ImageBufferSurface {
+class Canvas2DImageBufferSurface FINAL : public ImageBufferSurface {
 public:
     Canvas2DImageBufferSurface(const IntSize& size, OpacityMode opacityMode = NonOpaque, int msaaSampleCount = 1)
         : ImageBufferSurface(size, opacityMode)
@@ -58,7 +58,7 @@ public:
     virtual bool isValid() const OVERRIDE { return m_layerBridge && m_layerBridge->isValid(); }
     virtual blink::WebLayer* layer() const OVERRIDE { return m_layerBridge->layer(); }
     virtual Platform3DObject getBackingTexture() const OVERRIDE { return m_layerBridge->getBackingTexture(); }
-    virtual bool isAccelerated() const { return m_layerBridge->isAccelerated(); }
+    virtual bool isAccelerated() const OVERRIDE { return m_layerBridge->isAccelerated(); }
 
 private:
     RefPtr<Canvas2DLayerBridge> m_layerBridge;

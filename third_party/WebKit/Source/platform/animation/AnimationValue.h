@@ -60,7 +60,7 @@ private:
 };
 
 // Used to store one float value of an animation.
-class FloatAnimationValue : public AnimationValue {
+class FloatAnimationValue FINAL : public AnimationValue {
 public:
     FloatAnimationValue(double keyTime, float value, PassRefPtr<TimingFunction> timingFunction = 0)
         : AnimationValue(keyTime, timingFunction)
@@ -76,7 +76,7 @@ private:
 };
 
 // Used to store one transform value in a keyframe list.
-class TransformAnimationValue : public AnimationValue {
+class TransformAnimationValue FINAL : public AnimationValue {
 public:
     explicit TransformAnimationValue(double keyTime, const TransformOperations* value = 0, PassRefPtr<TimingFunction> timingFunction = 0)
         : AnimationValue(keyTime, timingFunction)
@@ -93,7 +93,7 @@ private:
 };
 
 // Used to store one filter value in a keyframe list.
-class FilterAnimationValue : public AnimationValue {
+class FilterAnimationValue FINAL : public AnimationValue {
 public:
     explicit FilterAnimationValue(double keyTime, const FilterOperations* value = 0, PassRefPtr<TimingFunction> timingFunction = 0)
         : AnimationValue(keyTime, timingFunction)

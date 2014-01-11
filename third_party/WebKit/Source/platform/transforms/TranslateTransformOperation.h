@@ -51,7 +51,7 @@ public:
     double z() const { return m_z; }
 
 private:
-    virtual bool isIdentity() const { return !floatValueForLength(m_x, 1) && !floatValueForLength(m_y, 1) && !m_z; }
+    virtual bool isIdentity() const OVERRIDE { return !floatValueForLength(m_x, 1) && !floatValueForLength(m_y, 1) && !m_z; }
 
     virtual OperationType type() const OVERRIDE { return m_type; }
 
@@ -63,12 +63,12 @@ private:
         return m_x == t->m_x && m_y == t->m_y && m_z == t->m_z;
     }
 
-    virtual void apply(TransformationMatrix& transform, const FloatSize& borderBoxSize) const
+    virtual void apply(TransformationMatrix& transform, const FloatSize& borderBoxSize) const OVERRIDE
     {
         transform.translate3d(x(borderBoxSize), y(borderBoxSize), z());
     }
 
-    virtual PassRefPtr<TransformOperation> blend(const TransformOperation* from, double progress, bool blendToIdentity = false);
+    virtual PassRefPtr<TransformOperation> blend(const TransformOperation* from, double progress, bool blendToIdentity = false) OVERRIDE;
 
     virtual bool dependsOnBoxSize() const OVERRIDE
     {

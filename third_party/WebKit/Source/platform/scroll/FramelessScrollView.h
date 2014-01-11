@@ -74,17 +74,17 @@ public:
     virtual IntRect scrollableAreaBoundingBox() const OVERRIDE;
 
     // Widget public methods:
-    virtual void invalidateRect(const IntRect&);
+    virtual void invalidateRect(const IntRect&) OVERRIDE;
 
     // ScrollView public methods:
-    virtual HostWindow* hostWindow() const;
-    virtual IntRect windowClipRect(bool clipToContents = true) const;
+    virtual HostWindow* hostWindow() const OVERRIDE;
+    virtual IntRect windowClipRect(bool clipToContents = true) const OVERRIDE;
 
 protected:
     // ScrollView protected methods:
-    virtual void paintContents(GraphicsContext*, const IntRect&);
-    virtual void contentsResized();
-    virtual void scrollbarExistenceDidChange();
+    virtual void paintContents(GraphicsContext*, const IntRect&) OVERRIDE;
+    virtual void contentsResized() OVERRIDE;
+    virtual void scrollbarExistenceDidChange() OVERRIDE;
 
 private:
     FramelessScrollViewClient* m_client;

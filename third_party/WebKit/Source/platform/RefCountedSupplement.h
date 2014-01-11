@@ -40,7 +40,7 @@ public:
     virtual ~RefCountedSupplement() { }
     virtual void hostDestroyed() { }
 
-    class Wrapper : public Supplement<T> {
+    class Wrapper FINAL : public Supplement<T> {
     public:
         explicit Wrapper(PassRefPtr<ThisType> wrapped) : m_wrapped(wrapped) { }
         virtual ~Wrapper() { m_wrapped->hostDestroyed();  }

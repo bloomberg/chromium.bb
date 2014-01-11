@@ -64,7 +64,7 @@ public:
     const FontDataRange& rangeAt(unsigned i) const { return m_ranges[i]; }
 
 #ifndef NDEBUG
-    virtual String description() const;
+    virtual String description() const OVERRIDE;
 #endif
 
 private:

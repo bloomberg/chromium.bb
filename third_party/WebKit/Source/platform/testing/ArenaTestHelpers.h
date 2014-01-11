@@ -37,21 +37,21 @@ namespace ArenaTestHelpers {
 
 // An allocator for the PODArena which tracks the regions which have
 // been allocated.
-class TrackedAllocator : public PODArena::FastMallocAllocator {
+class TrackedAllocator FINAL : public PODArena::FastMallocAllocator {
 public:
     static PassRefPtr<TrackedAllocator> create()
     {
         return adoptRef(new TrackedAllocator);
     }
 
-    virtual void* allocate(size_t size)
+    virtual void* allocate(size_t size) OVERRIDE
     {
         void* result = PODArena::FastMallocAllocator::allocate(size);
         m_allocatedRegions.append(result);
         return result;
     }
 
-    virtual void free(void* ptr)
+    virtual void free(void* ptr) OVERRIDE
     {
         size_t slot = m_allocatedRegions.find(ptr);
         ASSERT_NE(slot, kNotFound);

@@ -44,7 +44,7 @@ public:
     virtual ~OutputBuffer() { }
 };
 
-class CStringBuffer : public OutputBuffer {
+class CStringBuffer FINAL : public OutputBuffer {
 public:
     CStringBuffer(CString& buffer)
         : m_buffer(buffer)
@@ -52,14 +52,14 @@ public:
     }
     virtual ~CStringBuffer() { }
 
-    virtual char* allocate(size_t size)
+    virtual char* allocate(size_t size) OVERRIDE
     {
         char* ptr;
         m_buffer = CString::newUninitialized(size, ptr);
         return ptr;
     }
 
-    virtual void copy(const CString& source)
+    virtual void copy(const CString& source) OVERRIDE
     {
         m_buffer = source;
     }
@@ -70,7 +70,7 @@ private:
     CString m_buffer;
 };
 
-class VectorCharAppendBuffer : public OutputBuffer {
+class VectorCharAppendBuffer FINAL : public OutputBuffer {
 public:
     VectorCharAppendBuffer(Vector<char>& buffer)
         : m_buffer(buffer)
@@ -78,14 +78,14 @@ public:
     }
     virtual ~VectorCharAppendBuffer() { }
 
-    virtual char* allocate(size_t size)
+    virtual char* allocate(size_t size) OVERRIDE
     {
         size_t oldSize = m_buffer.size();
         m_buffer.grow(oldSize + size);
         return m_buffer.data() + oldSize;
     }
 
-    virtual void copy(const CString& source)
+    virtual void copy(const CString& source) OVERRIDE
     {
         m_buffer.append(source.data(), source.length());
     }

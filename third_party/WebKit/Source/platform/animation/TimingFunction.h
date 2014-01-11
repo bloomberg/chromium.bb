@@ -64,16 +64,16 @@ private:
     Type m_type;
 };
 
-class LinearTimingFunction : public TimingFunction {
+class LinearTimingFunction FINAL : public TimingFunction {
 public:
     static PassRefPtr<LinearTimingFunction> create()
     {
         return adoptRef(new LinearTimingFunction);
     }
 
-    ~LinearTimingFunction() { }
+    virtual ~LinearTimingFunction() { }
 
-    virtual double evaluate(double fraction, double) const
+    virtual double evaluate(double fraction, double) const OVERRIDE
     {
         ASSERT(RuntimeEnabledFeatures::webAnimationsCSSEnabled() || (fraction >= 0 && fraction <= 1));
         ASSERT_WITH_MESSAGE(!RuntimeEnabledFeatures::webAnimationsCSSEnabled() || (fraction >= 0 && fraction <= 1), "Web Animations not yet implemented: Timing function behavior outside the range [0, 1] is not yet specified");
@@ -91,7 +91,7 @@ private:
 // Forward declare so we can friend it below. Don't use in production code!
 class ChainedTimingFunctionTestHelper;
 
-class CubicBezierTimingFunction : public TimingFunction {
+class CubicBezierTimingFunction FINAL : public TimingFunction {
 public:
     enum SubType {
         Ease,
@@ -135,9 +135,9 @@ public:
         }
     }
 
-    ~CubicBezierTimingFunction() { }
+    virtual ~CubicBezierTimingFunction() { }
 
-    virtual double evaluate(double fraction, double accuracy) const
+    virtual double evaluate(double fraction, double accuracy) const OVERRIDE
     {
         ASSERT(RuntimeEnabledFeatures::webAnimationsCSSEnabled() || (fraction >= 0 && fraction <= 1));
         ASSERT_WITH_MESSAGE(!RuntimeEnabledFeatures::webAnimationsCSSEnabled() || (fraction >= 0 && fraction <= 1), "Web Animations not yet implemented: Timing function behavior outside the range [0, 1] is not yet specified");
@@ -172,7 +172,7 @@ private:
     mutable OwnPtr<UnitBezier> m_bezier;
 };
 
-class StepsTimingFunction : public TimingFunction {
+class StepsTimingFunction FINAL : public TimingFunction {
 public:
     enum SubType {
         Start,
@@ -205,9 +205,9 @@ public:
     }
 
 
-    ~StepsTimingFunction() { }
+    virtual ~StepsTimingFunction() { }
 
-    virtual double evaluate(double fraction, double) const
+    virtual double evaluate(double fraction, double) const OVERRIDE
     {
         ASSERT(RuntimeEnabledFeatures::webAnimationsCSSEnabled() || (fraction >= 0 && fraction <= 1));
         ASSERT_WITH_MESSAGE(!RuntimeEnabledFeatures::webAnimationsCSSEnabled() || (fraction >= 0 && fraction <= 1), "Web Animations not yet implemented: Timing function behavior outside the range [0, 1] is not yet specified");
@@ -233,7 +233,7 @@ private:
     SubType m_subType;
 };
 
-class ChainedTimingFunction : public TimingFunction {
+class ChainedTimingFunction FINAL : public TimingFunction {
 public:
     static PassRefPtr<ChainedTimingFunction> create()
     {
@@ -246,7 +246,7 @@ public:
         ASSERT(upperBound > max);
         m_segments.append(Segment(max, upperBound, timingFunction));
     }
-    virtual double evaluate(double fraction, double accuracy) const
+    virtual double evaluate(double fraction, double accuracy) const OVERRIDE
     {
         ASSERT_WITH_MESSAGE(fraction >= 0 && fraction <= 1, "Web Animations not yet implemented: Timing function behavior outside the range [0, 1] is not yet specified");
         ASSERT(!m_segments.isEmpty());

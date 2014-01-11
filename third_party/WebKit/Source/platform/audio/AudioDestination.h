@@ -61,10 +61,10 @@ public:
     float sampleRate() const { return m_sampleRate; }
 
     // blink::WebAudioDevice::RenderCallback
-    virtual void render(const blink::WebVector<float*>& sourceData, const blink::WebVector<float*>& audioData, size_t numberOfFrames);
+    virtual void render(const blink::WebVector<float*>& sourceData, const blink::WebVector<float*>& audioData, size_t numberOfFrames) OVERRIDE;
 
     // WebCore::AudioSourceProvider
-    virtual void provideInput(AudioBus*, size_t framesToProcess);
+    virtual void provideInput(AudioBus*, size_t framesToProcess) OVERRIDE;
 
     static float hardwareSampleRate();
 

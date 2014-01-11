@@ -40,7 +40,7 @@ public:
     double perspective() const { return m_p; }
 
 private:
-    virtual bool isIdentity() const { return !m_p; }
+    virtual bool isIdentity() const OVERRIDE { return !m_p; }
     virtual OperationType type() const OVERRIDE { return Perspective; }
 
     virtual bool operator==(const TransformOperation& o) const
@@ -51,12 +51,12 @@ private:
         return m_p == p->m_p;
     }
 
-    virtual void apply(TransformationMatrix& transform, const FloatSize&) const
+    virtual void apply(TransformationMatrix& transform, const FloatSize&) const OVERRIDE
     {
         transform.applyPerspective(m_p);
     }
 
-    virtual PassRefPtr<TransformOperation> blend(const TransformOperation* from, double progress, bool blendToIdentity = false);
+    virtual PassRefPtr<TransformOperation> blend(const TransformOperation* from, double progress, bool blendToIdentity = false) OVERRIDE;
 
     PerspectiveTransformOperation(double p)
         : m_p(p)

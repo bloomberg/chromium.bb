@@ -45,7 +45,7 @@ namespace WebCore {
 class ImageFrameGenerator;
 class ScaledImageFragment;
 
-class LazyDecodingPixelRef : public LazyPixelRef {
+class LazyDecodingPixelRef FINAL : public LazyPixelRef {
 public:
     LazyDecodingPixelRef(const SkImageInfo&, PassRefPtr<ImageFrameGenerator>, size_t index);
     virtual ~LazyDecodingPixelRef();
@@ -57,15 +57,15 @@ public:
 
     // Returns true if the image might already be decoded in the cache.
     // Optimistic version of PrepareToDecode; requires less locking.
-    virtual bool MaybeDecoded();
-    virtual bool PrepareToDecode(const LazyPixelRef::PrepareParams&);
-    virtual void Decode();
+    virtual bool MaybeDecoded() OVERRIDE;
+    virtual bool PrepareToDecode(const LazyPixelRef::PrepareParams&) OVERRIDE;
+    virtual void Decode() OVERRIDE;
 
 protected:
     // SkPixelRef implementation.
-    virtual void* onLockPixels(SkColorTable**);
-    virtual void onUnlockPixels();
-    virtual bool onLockPixelsAreWritable() const;
+    virtual void* onLockPixels(SkColorTable**) OVERRIDE;
+    virtual void onUnlockPixels() OVERRIDE;
+    virtual bool onLockPixelsAreWritable() const OVERRIDE;
 
     virtual SkData* onRefEncodedData() SK_OVERRIDE;
 

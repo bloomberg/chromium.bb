@@ -214,7 +214,7 @@ public:
     // For platforms that need to hit test scrollbars from within the engine's event handlers (like Win32).
     Scrollbar* scrollbarAtPoint(const IntPoint& windowPoint);
 
-    virtual IntPoint convertChildToSelf(const Widget* child, const IntPoint& point) const
+    virtual IntPoint convertChildToSelf(const Widget* child, const IntPoint& point) const OVERRIDE
     {
         IntPoint newPoint = point;
         if (!isScrollViewScrollbar(child))
@@ -223,7 +223,7 @@ public:
         return newPoint;
     }
 
-    virtual IntPoint convertSelfToChild(const Widget* child, const IntPoint& point) const
+    virtual IntPoint convertSelfToChild(const Widget* child, const IntPoint& point) const OVERRIDE
     {
         IntPoint newPoint = point;
         if (!isScrollViewScrollbar(child))
@@ -233,13 +233,13 @@ public:
     }
 
     // Widget override. Handles painting of the contents of the view as well as the scrollbars.
-    virtual void paint(GraphicsContext*, const IntRect&);
+    virtual void paint(GraphicsContext*, const IntRect&) OVERRIDE;
     void paintScrollbars(GraphicsContext*, const IntRect&);
 
     // Widget overrides to ensure that our children's visibility status is kept up to date when we get shown and hidden.
-    virtual void show();
-    virtual void hide();
-    virtual void setParentVisible(bool);
+    virtual void show() OVERRIDE;
+    virtual void hide() OVERRIDE;
+    virtual void setParentVisible(bool) OVERRIDE;
 
     // Pan scrolling.
     static const int noPanScrollRadius = 15;
@@ -261,7 +261,7 @@ public:
     void calculateAndPaintOverhangAreas(GraphicsContext*, const IntRect& dirtyRect);
     void calculateAndPaintOverhangBackground(GraphicsContext*, const IntRect& dirtyRect);
 
-    virtual bool isScrollView() const OVERRIDE { return true; }
+    virtual bool isScrollView() const OVERRIDE FINAL { return true; }
 
 protected:
     ScrollView();

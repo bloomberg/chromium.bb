@@ -85,8 +85,8 @@ private:
     Timer<ScrollAnimatorMac> m_sendContentAreaScrolledTimer;
     FloatSize m_contentAreaScrolledTimerScrollDelta;
 
-    virtual bool scroll(ScrollbarOrientation, ScrollGranularity, float step, float delta);
-    virtual void scrollToOffsetWithoutAnimation(const FloatPoint&);
+    virtual bool scroll(ScrollbarOrientation, ScrollGranularity, float step, float delta) OVERRIDE;
+    virtual void scrollToOffsetWithoutAnimation(const FloatPoint&) OVERRIDE;
 
 #if USE(RUBBER_BANDING)
     virtual bool handleWheelEvent(const PlatformWheelEvent&) OVERRIDE;
@@ -94,33 +94,33 @@ private:
 
     virtual void handleWheelEventPhase(PlatformWheelEventPhase) OVERRIDE;
 
-    virtual void cancelAnimations();
-    virtual void setIsActive();
+    virtual void cancelAnimations() OVERRIDE;
+    virtual void setIsActive() OVERRIDE;
 
-    virtual void notifyPositionChanged(const FloatSize& delta);
-    virtual void contentAreaWillPaint() const;
-    virtual void mouseEnteredContentArea() const;
-    virtual void mouseExitedContentArea() const;
-    virtual void mouseMovedInContentArea() const;
-    virtual void mouseEnteredScrollbar(Scrollbar*) const;
-    virtual void mouseExitedScrollbar(Scrollbar*) const;
-    virtual void willStartLiveResize();
-    virtual void contentsResized() const;
-    virtual void willEndLiveResize();
-    virtual void contentAreaDidShow() const;
-    virtual void contentAreaDidHide() const;
+    virtual void notifyPositionChanged(const FloatSize& delta) OVERRIDE;
+    virtual void contentAreaWillPaint() const OVERRIDE;
+    virtual void mouseEnteredContentArea() const OVERRIDE;
+    virtual void mouseExitedContentArea() const OVERRIDE;
+    virtual void mouseMovedInContentArea() const OVERRIDE;
+    virtual void mouseEnteredScrollbar(Scrollbar*) const OVERRIDE;
+    virtual void mouseExitedScrollbar(Scrollbar*) const OVERRIDE;
+    virtual void willStartLiveResize() OVERRIDE;
+    virtual void contentsResized() const OVERRIDE;
+    virtual void willEndLiveResize() OVERRIDE;
+    virtual void contentAreaDidShow() const OVERRIDE;
+    virtual void contentAreaDidHide() const OVERRIDE;
     void didBeginScrollGesture() const;
     void didEndScrollGesture() const;
     void mayBeginScrollGesture() const;
 
-    virtual void finishCurrentScrollAnimations();
+    virtual void finishCurrentScrollAnimations() OVERRIDE;
 
-    virtual void didAddVerticalScrollbar(Scrollbar*);
-    virtual void willRemoveVerticalScrollbar(Scrollbar*);
-    virtual void didAddHorizontalScrollbar(Scrollbar*);
-    virtual void willRemoveHorizontalScrollbar(Scrollbar*);
+    virtual void didAddVerticalScrollbar(Scrollbar*) OVERRIDE;
+    virtual void willRemoveVerticalScrollbar(Scrollbar*) OVERRIDE;
+    virtual void didAddHorizontalScrollbar(Scrollbar*) OVERRIDE;
+    virtual void willRemoveHorizontalScrollbar(Scrollbar*) OVERRIDE;
 
-    virtual bool shouldScrollbarParticipateInHitTesting(Scrollbar*);
+    virtual bool shouldScrollbarParticipateInHitTesting(Scrollbar*) OVERRIDE;
 
     virtual void notifyContentAreaScrolled(const FloatSize& delta) OVERRIDE;
 

@@ -153,8 +153,8 @@ protected:
     // changed.
     void checkForSolidColor();
 
-    virtual bool mayFillWithSolidColor();
-    virtual Color solidColor() const;
+    virtual bool mayFillWithSolidColor() OVERRIDE;
+    virtual Color solidColor() const OVERRIDE;
 
     ImageSource m_source;
     mutable IntSize m_size; // The size to use for the overall image (will just be the size of the first image).

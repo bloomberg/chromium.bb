@@ -54,17 +54,17 @@ PLATFORM_EXPORT void stopSharedTimer();
 
 class PLATFORM_EXPORT MainThreadSharedTimer : public SharedTimer {
 public:
-    virtual void setFiredFunction(void (*function)())
+    virtual void setFiredFunction(void (*function)()) OVERRIDE
     {
         setSharedTimerFiredFunction(function);
     }
 
-    virtual void setFireInterval(double interval)
+    virtual void setFireInterval(double interval) OVERRIDE
     {
         setSharedTimerFireInterval(interval);
     }
 
-    virtual void stop()
+    virtual void stop() OVERRIDE
     {
         stopSharedTimer();
     }

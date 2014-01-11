@@ -43,12 +43,12 @@ public:
         return adoptRef(new CrossfadeGeneratedImage(fromImage, toImage, percentage, crossfadeSize, size));
     }
 
-    virtual void setContainerSize(const IntSize&) { }
-    virtual bool usesContainerSize() const { return false; }
-    virtual bool hasRelativeWidth() const { return false; }
-    virtual bool hasRelativeHeight() const { return false; }
+    virtual void setContainerSize(const IntSize&) OVERRIDE { }
+    virtual bool usesContainerSize() const OVERRIDE { return false; }
+    virtual bool hasRelativeWidth() const OVERRIDE { return false; }
+    virtual bool hasRelativeHeight() const OVERRIDE { return false; }
 
-    virtual IntSize size() const { return m_crossfadeSize; }
+    virtual IntSize size() const OVERRIDE { return m_crossfadeSize; }
 
 protected:
     virtual void draw(GraphicsContext*, const FloatRect&, const FloatRect&,

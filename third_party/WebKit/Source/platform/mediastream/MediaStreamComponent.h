@@ -82,7 +82,7 @@ private:
     // AudioSourceProviderImpl wraps a WebAudioSourceProvider::provideInput()
     // calls into chromium to get a rendered audio stream.
 
-    class AudioSourceProviderImpl : public AudioSourceProvider {
+    class AudioSourceProviderImpl FINAL: public AudioSourceProvider {
     public:
         AudioSourceProviderImpl()
             : m_webAudioSourceProvider(0)
@@ -95,7 +95,7 @@ private:
         void wrap(blink::WebAudioSourceProvider*);
 
         // WebCore::AudioSourceProvider
-        virtual void provideInput(WebCore::AudioBus*, size_t framesToProcess);
+        virtual void provideInput(WebCore::AudioBus*, size_t framesToProcess) OVERRIDE;
 
     private:
         blink::WebAudioSourceProvider* m_webAudioSourceProvider;

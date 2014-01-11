@@ -70,7 +70,7 @@ private:
 // supports efficient (O(lg n)) insertion, removal and querying of
 // intervals in the tree.
 template<class T, class UserData = void*>
-class PODIntervalTree : public PODRedBlackTree<PODInterval<T, UserData> > {
+class PODIntervalTree FINAL : public PODRedBlackTree<PODInterval<T, UserData> > {
     WTF_MAKE_NONCOPYABLE(PODIntervalTree);
 public:
     // Typedef to reduce typing when declaring intervals to be stored in
@@ -131,7 +131,7 @@ public:
         return IntervalType(low, high, data);
     }
 
-    virtual bool checkInvariants() const
+    virtual bool checkInvariants() const OVERRIDE
     {
         if (!PODRedBlackTree<IntervalType>::checkInvariants())
             return false;
@@ -181,7 +181,7 @@ private:
             searchForOverlapsFrom<AdapterType>(node->right(), adapter);
     }
 
-    virtual bool updateNode(IntervalNode* node)
+    virtual bool updateNode(IntervalNode* node) OVERRIDE
     {
         // Would use const T&, but need to reassign this reference in this
         // function.

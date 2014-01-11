@@ -41,7 +41,7 @@ class PLATFORM_EXPORT DiscardablePixelRefAllocator : public SkBitmap::Allocator 
     // SkBitmap::Allocator implementation. The discardable memory allocated
     // after this call is locked and will not be purged until next
     // onUnlockPixels().
-    virtual bool allocPixelRef(SkBitmap*, SkColorTable*);
+    virtual bool allocPixelRef(SkBitmap*, SkColorTable*) OVERRIDE;
 };
 
 // PixelRef object whose memory can be discarded when pixels are unlocked.
@@ -57,8 +57,8 @@ public:
 
 protected:
     // SkPixelRef implementation.
-    virtual void* onLockPixels(SkColorTable**);
-    virtual void onUnlockPixels();
+    virtual void* onLockPixels(SkColorTable**) OVERRIDE;
+    virtual void onUnlockPixels() OVERRIDE;
 
 private:
     void* m_lockedMemory;

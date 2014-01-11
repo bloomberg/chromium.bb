@@ -106,7 +106,7 @@ private:
 };
 
 template <typename TimerFiredClass>
-class Timer : public TimerBase {
+class Timer FINAL : public TimerBase {
 public:
     typedef void (TimerFiredClass::*TimerFiredFunction)(Timer*);
 
@@ -114,7 +114,7 @@ public:
         : m_object(o), m_function(f) { }
 
 private:
-    virtual void fired() { (m_object->*m_function)(this); }
+    virtual void fired() OVERRIDE { (m_object->*m_function)(this); }
 
     TimerFiredClass* m_object;
     TimerFiredFunction m_function;
@@ -127,7 +127,7 @@ inline bool TimerBase::isActive() const
 }
 
 template <typename TimerFiredClass>
-class DeferrableOneShotTimer : private TimerBase {
+class DeferrableOneShotTimer FINAL : private TimerBase {
 public:
     typedef void (TimerFiredClass::*TimerFiredFunction)(DeferrableOneShotTimer*);
 
@@ -156,7 +156,7 @@ public:
     using TimerBase::isActive;
 
 private:
-    virtual void fired()
+    virtual void fired() OVERRIDE
     {
         if (m_shouldRestartWhenTimerFires) {
             m_shouldRestartWhenTimerFires = false;

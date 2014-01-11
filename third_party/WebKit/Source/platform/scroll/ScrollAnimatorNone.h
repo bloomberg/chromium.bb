@@ -48,15 +48,15 @@ public:
     explicit ScrollAnimatorNone(ScrollableArea*);
     virtual ~ScrollAnimatorNone();
 
-    virtual bool scroll(ScrollbarOrientation, ScrollGranularity, float step, float delta);
-    virtual void scrollToOffsetWithoutAnimation(const FloatPoint&);
+    virtual bool scroll(ScrollbarOrientation, ScrollGranularity, float step, float delta) OVERRIDE;
+    virtual void scrollToOffsetWithoutAnimation(const FloatPoint&) OVERRIDE;
 
-    virtual void cancelAnimations();
-    virtual void serviceScrollAnimations();
+    virtual void cancelAnimations() OVERRIDE;
+    virtual void serviceScrollAnimations() OVERRIDE;
 
-    virtual void willEndLiveResize();
-    virtual void didAddVerticalScrollbar(Scrollbar*);
-    virtual void didAddHorizontalScrollbar(Scrollbar*);
+    virtual void willEndLiveResize() OVERRIDE;
+    virtual void didAddVerticalScrollbar(Scrollbar*) OVERRIDE;
+    virtual void didAddHorizontalScrollbar(Scrollbar*) OVERRIDE;
 
     enum Curve {
         Linear,
