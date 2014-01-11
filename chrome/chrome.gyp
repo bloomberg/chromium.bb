@@ -288,6 +288,8 @@
             'utility/importer/nss_decryptor_win.h',
             'utility/importer/safari_importer.h',
             'utility/importer/safari_importer.mm',
+            'utility/media_galleries/ipc_data_source.cc',
+            'utility/media_galleries/ipc_data_source.h',
             'utility/media_galleries/itunes_pref_parser_win.cc',
             'utility/media_galleries/itunes_pref_parser_win.h',
             'utility/media_galleries/media_metadata_parser.cc',

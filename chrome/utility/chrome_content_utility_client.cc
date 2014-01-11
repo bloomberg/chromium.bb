@@ -11,7 +11,6 @@
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/scoped_native_library.h"
 #include "base/time/time.h"
@@ -60,6 +59,11 @@
 #include "chrome/utility/media_galleries/picasa_album_table_reader.h"
 #include "chrome/utility/media_galleries/picasa_albums_indexer.h"
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#include "chrome/utility/media_galleries/ipc_data_source.h"
+#include "chrome/utility/media_galleries/media_metadata_parser.h"
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
 #if defined(ENABLE_FULL_PRINTING)
 #include "chrome/common/crash_keys.h"
@@ -289,6 +293,14 @@ typedef PdfFunctionsWin PdfFunctions;
 typedef PdfFunctionsBase PdfFunctions;
 #endif  // OS_WIN
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+void SendMediaMetadataToHost(
+    scoped_ptr<extensions::api::media_galleries::MediaMetadata> metadata) {
+  Send(new ChromeUtilityHostMsg_ParseMediaMetadata_Finished(
+      true, *(metadata->ToValue().get())));
+}
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
+
 static base::LazyInstance<PdfFunctions> g_pdf_lib = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
@@ -342,6 +354,8 @@ bool ChromeContentUtilityClient::OnMessageReceived(
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_CheckMediaFile, OnCheckMediaFile)
+    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_ParseMediaMetadata,
+                        OnParseMediaMetadata)
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
 #if defined(OS_CHROMEOS)
@@ -758,6 +772,19 @@ void ChromeContentUtilityClient::OnCheckMediaFile(
       base::TimeDelta::FromMilliseconds(milliseconds_of_decoding));
   Send(new ChromeUtilityHostMsg_CheckMediaFile_Finished(check_success));
   ReleaseProcessIfNeeded();
+}
+
+void ChromeContentUtilityClient::OnParseMediaMetadata(
+    const std::string& mime_type,
+    int64 total_size) {
+  // Only one IPCDataSource may be created and added to the list of handlers.
+  CHECK(!media_metadata_parser_);
+  metadata::IPCDataSource* source = new metadata::IPCDataSource(total_size);
+  handlers_.push_back(source);
+
+  media_metadata_parser_.reset(new metadata::MediaMetadataParser(source,
+                                                                 mime_type));
+  media_metadata_parser_->Start(base::Bind(&SendMediaMetadataToHost));
 }
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 

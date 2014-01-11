@@ -1113,6 +1113,8 @@
         'browser/media_galleries/fileapi/picasa_finder_mac.mm',
         'browser/media_galleries/fileapi/safe_audio_video_checker.cc',
         'browser/media_galleries/fileapi/safe_audio_video_checker.h',
+        'browser/media_galleries/fileapi/safe_media_metadata_parser.cc',
+        'browser/media_galleries/fileapi/safe_media_metadata_parser.h',
         'browser/media_galleries/fileapi/supported_audio_video_checker.cc',
         'browser/media_galleries/fileapi/supported_audio_video_checker.h',
         'browser/media_galleries/fileapi/supported_image_type_validator.cc',

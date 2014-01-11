@@ -25,9 +25,8 @@ class MediaMetadataParser {
   typedef extensions::api::media_galleries::MediaMetadata MediaMetadata;
   typedef base::Callback<void(scoped_ptr<MediaMetadata>)> MetadataCallback;
 
-  // Does not take ownership of |source|. The MIME type is sniffed in the
-  // browser process, as it's faster (and safe enough). When the user wants
-  // more metadata than just the MIME type, this class provides it.
+  // Does not take ownership of |source|. Caller is responsible for ensuring
+  // that |source| outlives this object.
   MediaMetadataParser(media::DataSource* source, const std::string& mime_type);
 
   ~MediaMetadataParser();

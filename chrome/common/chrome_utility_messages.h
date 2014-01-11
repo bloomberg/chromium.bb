@@ -227,6 +227,14 @@ IPC_MESSAGE_CONTROL2(ChromeUtilityMsg_IndexPicasaAlbumsContents,
 IPC_MESSAGE_CONTROL2(ChromeUtilityMsg_CheckMediaFile,
                      int64 /* milliseconds_of_decoding */,
                      IPC::PlatformFileForTransit /* Media file to parse */)
+
+IPC_MESSAGE_CONTROL2(ChromeUtilityMsg_ParseMediaMetadata,
+                     std::string /* mime_type */,
+                     int64 /* total_size */)
+
+IPC_MESSAGE_CONTROL2(ChromeUtilityMsg_RequestBlobBytes_Finished,
+                     int64 /* request_id */,
+                     std::string /* bytes */)
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
 //------------------------------------------------------------------------------
@@ -372,4 +380,13 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_IndexPicasaAlbumsContents_Finished,
 // the file appears to be a well formed media file.
 IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_CheckMediaFile_Finished,
                      bool /* passed_checks */)
+
+IPC_MESSAGE_CONTROL2(ChromeUtilityHostMsg_ParseMediaMetadata_Finished,
+                     bool /* parse_success */,
+                     base::DictionaryValue /* metadata */)
+
+IPC_MESSAGE_CONTROL3(ChromeUtilityHostMsg_RequestBlobBytes,
+                     int64 /* request_id */,
+                     int64 /* start_byte */,
+                     int64 /* length */)
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
