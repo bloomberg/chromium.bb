@@ -231,6 +231,8 @@ v8.log
 /third_party/leveldatabase/src
 /third_party/leveldb
 /third_party/libaddressinput/src
+/third_party/libc++/trunk
+/third_party/libc++abi/trunk
 /third_party/libexif/sources
 /third_party/libjingle/source
 /third_party/libjingle/source_internal
@@ -297,6 +299,7 @@ v8.log
 /third_party/webdriver/pylib
 /third_party/webdriver/python/selenium
 /third_party/webgl
+/third_party/webgl/src
 /third_party/WebKit
 /third_party/webpagereplay/
 /third_party/webrtc
