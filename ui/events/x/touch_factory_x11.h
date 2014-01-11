@@ -7,7 +7,6 @@
 
 #include <bitset>
 #include <map>
-#include <set>
 #include <vector>
 
 #include "base/timer/timer.h"
@@ -73,11 +72,6 @@ class EVENTS_BASE_EXPORT TouchFactory {
   // Whether any touch device is currently present and enabled.
   bool IsTouchDevicePresent();
 
-  // Pairs of <vendor id, product id> of external touch screens.
-  const std::set<std::pair<int, int> >& GetTouchscreenIds() const {
-    return touchscreen_ids_;
-  }
-
   // Return maximum simultaneous touch points supported by device.
   int GetMaxTouchPoints() const;
 
@@ -94,8 +88,6 @@ class EVENTS_BASE_EXPORT TouchFactory {
  private:
   // Requirement for Singleton
   friend struct DefaultSingletonTraits<TouchFactory>;
-
-  void CacheTouchscreenIds(Display* display, int id);
 
   // NOTE: To keep track of touch devices, we currently maintain a lookup table
   // to quickly decide if a device is a touch device or not. We also maintain a
@@ -119,18 +111,12 @@ class EVENTS_BASE_EXPORT TouchFactory {
   // Indicates whether touch events are explicitly disabled.
   bool touch_events_disabled_;
 
-  // Indicates whether the device's internal display produces touch events.
-  bool internal_display_supports_touch_;
-
   // The list of touch devices. For testing/debugging purposes, a single-pointer
   // device (mouse or touch screen without sufficient X/driver support for MT)
   // can sometimes be treated as a touch device. The key in the map represents
   // the device id, and the value represents if the device is multi-touch
   // capable.
   std::map<int, bool> touch_device_list_;
-
-  // Touch screen <vid, pid>s.
-  std::set<std::pair<int, int> > touchscreen_ids_;
 
   // Maximum simultaneous touch points supported by device. In the case of
   // devices with multiple digitizers (e.g. multiple touchscreens), the value

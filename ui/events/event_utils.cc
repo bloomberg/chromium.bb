@@ -26,10 +26,6 @@ base::TimeDelta EventTimeForNow() {
 }
 
 bool ShouldDefaultToNaturalScroll() {
-  return InternalDisplaySupportsTouch();
-}
-
-bool InternalDisplaySupportsTouch() {
   gfx::Screen* screen = gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_NATIVE);
   if (!screen)
     return false;
