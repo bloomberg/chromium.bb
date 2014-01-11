@@ -215,6 +215,12 @@ struct MEDIA_EXPORT SampleDescription : Box {
   std::vector<AudioSampleEntry> audio_entries;
 };
 
+struct MEDIA_EXPORT SyncSample : Box {
+  DECLARE_BOX_METHODS(SyncSample);
+
+  bool is_present;
+};
+
 struct MEDIA_EXPORT SampleTable : Box {
   DECLARE_BOX_METHODS(SampleTable);
 
@@ -223,6 +229,7 @@ struct MEDIA_EXPORT SampleTable : Box {
   // includes the 'stts', 'stsc', and 'stco' boxes, which must contain no
   // samples in order to be compliant files.
   SampleDescription description;
+  SyncSample sync_sample;
 };
 
 struct MEDIA_EXPORT MediaHeader : Box {

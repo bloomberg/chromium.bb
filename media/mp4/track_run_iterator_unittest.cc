@@ -66,7 +66,8 @@ class TrackRunIteratorTest : public testing::Test {
     desc1.audio_entries.push_back(aud_desc);
     moov_.extends.tracks[0].track_id = 1;
     moov_.extends.tracks[0].default_sample_description_index = 1;
-
+    moov_.tracks[0].media.information.sample_table.sync_sample.is_present =
+        true;
     moov_.tracks[1].header.track_id = 2;
     moov_.tracks[1].media.header.timescale = kVideoScale;
     SampleDescription& desc2 =
@@ -78,6 +79,8 @@ class TrackRunIteratorTest : public testing::Test {
     desc2.video_entries.push_back(vid_desc);
     moov_.extends.tracks[1].track_id = 2;
     moov_.extends.tracks[1].default_sample_description_index = 1;
+    moov_.tracks[1].media.information.sample_table.sync_sample.is_present =
+        true;
 
     moov_.tracks[2].header.track_id = 3;
     moov_.tracks[2].media.information.sample_table.description.type = kHint;
@@ -432,6 +435,80 @@ TEST_F(TrackRunIteratorTest, UnexpectedOrderingTest) {
   EXPECT_TRUE(iter_->CacheAuxInfo(kAuxInfo, arraysize(kAuxInfo)));
   EXPECT_EQ(iter_->GetMaxClearOffset(), 10000);
 }
+
+TEST_F(TrackRunIteratorTest, MissingStssMakesAllSamplesKeyframes) {
+  iter_.reset(new TrackRunIterator(&moov_, log_cb_));
+  MovieFragment moof = CreateFragment();
+
+  // Test that runs are sorted correctly, and that properties of the initial
+  // sample of the first run are correct
+  ASSERT_TRUE(iter_->Init(moof));
+  EXPECT_TRUE(iter_->IsRunValid());
+
+  // Count the number of non-keyframes for each run with the default
+  // sync_sample info.
+
+  EXPECT_TRUE(moov_.tracks[0].media.information.sample_table.sync_sample.
+              is_present);
+  EXPECT_TRUE(moov_.tracks[1].media.information.sample_table.sync_sample.
+              is_present);
+
+  int first_run_non_keyframe_count = 0;
+  int second_run_non_keyframe_count = 0;
+
+  EXPECT_TRUE(iter_->IsRunValid());
+  while (iter_->IsSampleValid()) {
+    EXPECT_EQ(iter_->track_id(), 1u);
+
+    if (!iter_->is_keyframe())
+      first_run_non_keyframe_count++;
+
+    iter_->AdvanceSample();
+  }
+
+  iter_->AdvanceRun();
+
+  EXPECT_TRUE(iter_->IsRunValid());
+  while (iter_->IsSampleValid()) {
+    EXPECT_EQ(iter_->track_id(), 2u);
+
+    if (!iter_->is_keyframe())
+      second_run_non_keyframe_count++;
+
+    iter_->AdvanceSample();
+  }
+
+  EXPECT_EQ(0, first_run_non_keyframe_count);
+  EXPECT_EQ(9, second_run_non_keyframe_count);
+
+  // Update sync_sample info to reflect that the box is not present on
+  // both tracks.
+  moov_.tracks[0].media.information.sample_table.sync_sample.is_present =
+      false;
+  moov_.tracks[1].media.information.sample_table.sync_sample.is_present =
+      false;
+
+  // Reinitialize the iterator and verify that all samples are keyframes
+  // on both tracks now.
+
+  ASSERT_TRUE(iter_->Init(moof));
+  EXPECT_TRUE(iter_->IsRunValid());
+  while (iter_->IsSampleValid()) {
+    EXPECT_EQ(iter_->track_id(), 1u);
+    EXPECT_TRUE(iter_->is_keyframe());
+    iter_->AdvanceSample();
+  }
+
+  iter_->AdvanceRun();
+  EXPECT_TRUE(iter_->IsRunValid());
+
+  while (iter_->IsSampleValid()) {
+    EXPECT_EQ(iter_->track_id(), 2u);
+    EXPECT_TRUE(iter_->is_keyframe());
+    iter_->AdvanceSample();
+  }
+}
+
 
 }  // namespace mp4
 }  // namespace media

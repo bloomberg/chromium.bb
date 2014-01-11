@@ -205,7 +205,8 @@ bool TrackRunIterator::Init(const MovieFragment& moof) {
 
     int64 run_start_dts = traf.decode_time.decode_time;
     int sample_count_sum = 0;
-
+    bool is_sync_sample_box_present =
+        trak->media.information.sample_table.sync_sample.is_present;
     for (size_t j = 0; j < traf.runs.size(); j++) {
       const TrackFragmentRun& trun = traf.runs[j];
       TrackRunInfo tri;
@@ -268,6 +269,14 @@ bool TrackRunIterator::Init(const MovieFragment& moof) {
         PopulateSampleInfo(*trex, traf.header, trun, edit_list_offset,
                            k, &tri.samples[k], traf.sdtp.sample_depends_on(k));
         run_start_dts += tri.samples[k].duration;
+
+        // ISO-14496-12 Section 8.20.1 : If the sync sample box is not present,
+        // every sample is a random access point.
+        //
+        // NOTE: MPEG's "is random access point" concept is equivalent to this
+        // and downstream code's "is keyframe" concept.
+        if (!is_sync_sample_box_present)
+          tri.samples[k].is_keyframe = true;
       }
       runs_.push_back(tri);
       sample_count_sum += trun.sample_count;

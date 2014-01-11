@@ -245,13 +245,41 @@ bool SampleDescription::Parse(BoxReader* reader) {
   return true;
 }
 
+SyncSample::SyncSample() : is_present(false) {}
+SyncSample::~SyncSample() {}
+FourCC SyncSample::BoxType() const { return FOURCC_STSS; }
+
+bool SyncSample::Parse(BoxReader* reader) {
+  uint32 entry_count;
+  RCHECK(reader->ReadFullBoxHeader() &&
+         reader->Read4(&entry_count));
+
+  is_present = true;
+
+  if (entry_count == 0)
+    return true;
+
+  // Skip over the entries since we don't actually care about
+  // them right now. In most fragmented files with an stss, there
+  // aren't any entries anyways because the random access point info
+  // is signalled in the fragments.
+  int64 skip_size = 4 * entry_count;
+  if (skip_size > INT_MAX)
+    return false;
+
+  RCHECK(reader->SkipBytes(skip_size));
+
+  return true;
+}
+
 SampleTable::SampleTable() {}
 SampleTable::~SampleTable() {}
 FourCC SampleTable::BoxType() const { return FOURCC_STBL; }
 
 bool SampleTable::Parse(BoxReader* reader) {
   return reader->ScanChildren() &&
-         reader->ReadChild(&description);
+      reader->ReadChild(&description) &&
+      reader->MaybeReadChild(&sync_sample);
 }
 
 EditList::EditList() {}
