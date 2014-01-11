@@ -249,9 +249,11 @@ void TabContentsResourceProvider::StartUpdating() {
   // Add all the pages being background printed.
   printing::BackgroundPrintingManager* printing_manager =
       g_browser_process->background_printing_manager();
-  for (printing::BackgroundPrintingManager::WebContentsSet::iterator i =
-           printing_manager->begin();
-       i != printing_manager->end(); ++i) {
+  std::set<content::WebContents*> printing_contents =
+      printing_manager->CurrentContentSet();
+  for (std::set<content::WebContents*>::iterator i =
+           printing_contents.begin();
+       i != printing_contents.end(); ++i) {
     Add(*i);
   }
 #endif

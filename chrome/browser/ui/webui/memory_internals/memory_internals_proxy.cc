@@ -107,8 +107,7 @@ void GetAllWebContents(std::set<content::WebContents*>* web_contents) {
       continue;
     const std::vector<content::WebContents*> contentses =
         prerender_manager->GetAllPrerenderingContents();
-    for (size_t j = 0; j < contentses.size(); ++j)
-      web_contents->insert(contentses[j]);
+    web_contents->insert(contentses.begin(), contentses.end());
   }
   // Add all the Instant Extended prerendered NTPs.
   for (size_t i = 0; i < profiles.size(); ++i) {
@@ -121,11 +120,9 @@ void GetAllWebContents(std::set<content::WebContents*>* web_contents) {
   // Add all the pages being background printed.
   printing::BackgroundPrintingManager* printing_manager =
       g_browser_process->background_printing_manager();
-  for (printing::BackgroundPrintingManager::WebContentsSet::const_iterator
-           iter = printing_manager->begin();
-       iter != printing_manager->end(); ++iter) {
-    web_contents->insert(*iter);
-  }
+  std::set<content::WebContents*> printing_contents =
+      printing_manager->CurrentContentSet();
+  web_contents->insert(printing_contents.begin(), printing_contents.end());
 #endif
 }
 

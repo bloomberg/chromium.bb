@@ -27,7 +27,8 @@ namespace printing {
 class BackgroundPrintingManager : public base::NonThreadSafe,
                                   public content::NotificationObserver {
  public:
-  typedef std::set<content::WebContents*> WebContentsSet;
+  class Observer;
+  typedef std::map<content::WebContents*, Observer*> WebContentsObserverMap;
 
   BackgroundPrintingManager();
   virtual ~BackgroundPrintingManager();
@@ -37,12 +38,11 @@ class BackgroundPrintingManager : public base::NonThreadSafe,
   // and hides it from the user.
   void OwnPrintPreviewDialog(content::WebContents* preview_dialog);
 
-  // Returns true if |printing_contents_set_| contains |preview_dialog|.
+  // Returns true if |printing_contents_map_| contains |preview_dialog|.
   bool HasPrintPreviewDialog(content::WebContents* preview_dialog);
 
-  // Let others iterate over the list of background printing contents.
-  WebContentsSet::const_iterator begin();
-  WebContentsSet::const_iterator end();
+  // Let others see the list of background printing contents.
+  std::set<content::WebContents*> CurrentContentSet();
 
  private:
   // content::NotificationObserver overrides:
@@ -50,26 +50,12 @@ class BackgroundPrintingManager : public base::NonThreadSafe,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Notifications handlers.
-  void OnRendererProcessClosed(content::RenderProcessHost* rph);
-  void OnPrintJobReleased(content::WebContents* preview_contents);
-  void OnWebContentsDestroyed(content::WebContents* preview_contents);
-
-  // Add |preview_contents| to the pending deletion set and schedule deletion.
+  // Schedule deletion of |preview_contents|.
   void DeletePreviewContents(content::WebContents* preview_contents);
 
-  // Check if any of the WebContentses in |set| share a RenderProcessHost
-  // with |tab|, excluding |tab|.
-  bool HasSharedRenderProcessHost(const WebContentsSet& set,
-                                  content::WebContents* preview_contents);
-
-  // The set of print preview WebContentses managed by
-  // BackgroundPrintingManager.
-  WebContentsSet printing_contents_set_;
-
-  // The set of print preview Webcontents managed by BackgroundPrintingManager
-  // that are pending deletion.
-  WebContentsSet printing_contents_pending_deletion_set_;
+  // A map from print preview WebContentses (managed by
+  // BackgroundPrintingManager) to the Observers that observe them.
+  WebContentsObserverMap printing_contents_map_;
 
   content::NotificationRegistrar registrar_;
 
