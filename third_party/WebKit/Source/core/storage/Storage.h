@@ -39,10 +39,10 @@ namespace WebCore {
 class ExceptionState;
 class Frame;
 
-class Storage : public ScriptWrappable, public RefCounted<Storage>, public DOMWindowProperty {
+class Storage FINAL : public ScriptWrappable, public RefCounted<Storage>, public DOMWindowProperty {
 public:
     static PassRefPtr<Storage> create(Frame*, PassOwnPtr<StorageArea>);
-    ~Storage();
+    virtual ~Storage();
 
     unsigned length(ExceptionState& ec) const { return m_storageArea->length(ec, m_frame); }
     String key(unsigned index, ExceptionState& ec) const { return m_storageArea->key(index, ec, m_frame); }

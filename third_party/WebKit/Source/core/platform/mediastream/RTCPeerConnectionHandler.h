@@ -56,7 +56,7 @@ class RTCSessionDescriptionRequest;
 class RTCStatsRequest;
 class RTCVoidRequest;
 
-class RTCPeerConnectionHandler : public blink::WebRTCPeerConnectionHandlerClient {
+class RTCPeerConnectionHandler FINAL : public blink::WebRTCPeerConnectionHandlerClient {
 public:
     static PassOwnPtr<RTCPeerConnectionHandler> create(RTCPeerConnectionHandlerClient*);
     virtual ~RTCPeerConnectionHandler();

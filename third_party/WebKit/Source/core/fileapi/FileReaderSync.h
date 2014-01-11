@@ -43,14 +43,14 @@ class ExceptionState;
 class FileReaderLoader;
 class ExecutionContext;
 
-class FileReaderSync : public RefCounted<FileReaderSync>, public ScriptWrappable {
+class FileReaderSync FINAL : public RefCounted<FileReaderSync>, public ScriptWrappable {
 public:
     static PassRefPtr<FileReaderSync> create()
     {
         return adoptRef(new FileReaderSync());
     }
 
-    virtual ~FileReaderSync() { }
+    ~FileReaderSync() { }
 
     PassRefPtr<ArrayBuffer> readAsArrayBuffer(ExecutionContext*, Blob*, ExceptionState&);
     String readAsBinaryString(ExecutionContext*, Blob*, ExceptionState&);

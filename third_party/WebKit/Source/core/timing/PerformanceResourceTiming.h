@@ -45,7 +45,7 @@ class ResourceRequest;
 class ResourceResponse;
 class ResourceTimingInfo;
 
-class PerformanceResourceTiming : public PerformanceEntry {
+class PerformanceResourceTiming FINAL : public PerformanceEntry {
 public:
     static PassRefPtr<PerformanceResourceTiming> create(const ResourceTimingInfo& info, Document* requestingDocument, double startTime, double lastRedirectEndTime, bool m_allowTimingDetails, bool m_allowRedirectDetails)
     {
@@ -71,11 +71,11 @@ public:
     double responseStart() const;
     double responseEnd() const;
 
-    virtual bool isResource() { return true; }
+    virtual bool isResource() OVERRIDE { return true; }
 
 private:
     PerformanceResourceTiming(const ResourceTimingInfo&, Document* requestingDocument, double startTime, double lastRedirectEndTime, bool m_allowTimingDetails, bool m_allowRedirectDetails);
-    ~PerformanceResourceTiming();
+    virtual ~PerformanceResourceTiming();
 
     AtomicString m_initiatorType;
     RefPtr<ResourceLoadTiming> m_timing;

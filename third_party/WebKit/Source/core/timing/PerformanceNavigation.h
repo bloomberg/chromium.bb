@@ -40,7 +40,7 @@ namespace WebCore {
 
 class Frame;
 
-class PerformanceNavigation : public RefCounted<PerformanceNavigation>, public ScriptWrappable, public DOMWindowProperty {
+class PerformanceNavigation FINAL : public RefCounted<PerformanceNavigation>, public ScriptWrappable, public DOMWindowProperty {
 public:
     static PassRefPtr<PerformanceNavigation> create(Frame* frame) { return adoptRef(new PerformanceNavigation(frame)); }
 

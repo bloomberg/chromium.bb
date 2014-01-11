@@ -42,7 +42,7 @@ class Scrollbar;
 
 class PluginView : public Widget {
 public:
-    virtual bool isPluginView() const { return true; }
+    virtual bool isPluginView() const OVERRIDE FINAL { return true; }
 
     virtual blink::WebLayer* platformLayer() const { return 0; }
     virtual NPObject* scriptableObject() { return 0; }

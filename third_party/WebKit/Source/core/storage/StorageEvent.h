@@ -43,7 +43,7 @@ struct StorageEventInit : public EventInit {
     RefPtr<Storage> storageArea;
 };
 
-class StorageEvent : public Event {
+class StorageEvent FINAL : public Event {
 public:
     static PassRefPtr<StorageEvent> create();
     static PassRefPtr<StorageEvent> create(const AtomicString& type, const String& key, const String& oldValue, const String& newValue, const String& url, Storage* storageArea);
@@ -62,7 +62,7 @@ public:
     // Needed once we support init<blank>EventNS
     // void initStorageEventNS(in DOMString namespaceURI, in DOMString typeArg, in boolean canBubbleArg, in boolean cancelableArg, in DOMString keyArg, in DOMString oldValueArg, in DOMString newValueArg, in DOMString urlArg, Storage storageAreaArg);
 
-    virtual const AtomicString& interfaceName() const;
+    virtual const AtomicString& interfaceName() const OVERRIDE;
 
 private:
     StorageEvent();

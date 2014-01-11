@@ -72,7 +72,7 @@ public:
     virtual void appendTo(BlobData&) const;
 
     // URLRegistrable to support PublicURLs.
-    virtual URLRegistry& registry() const OVERRIDE;
+    virtual URLRegistry& registry() const OVERRIDE FINAL;
 
     static void clampSliceOffsets(long long size, long long& start, long long& end);
 protected:

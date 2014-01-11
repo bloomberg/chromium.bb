@@ -35,7 +35,7 @@ namespace WebCore {
 struct FileMetadata;
 class KURL;
 
-class File : public Blob {
+class File FINAL : public Blob {
 public:
     // AllContentTypes should only be used when the full path/name are trusted; otherwise, it could
     // allow arbitrary pages to determine what applications an user has installed.

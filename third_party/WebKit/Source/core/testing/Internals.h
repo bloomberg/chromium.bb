@@ -66,7 +66,7 @@ class SerializedScriptValue;
 class ShadowRoot;
 class TypeConversions;
 
-class Internals : public RefCounted<Internals>
+class Internals FINAL : public RefCounted<Internals>
     , public ContextLifecycleObserver {
 public:
     static PassRefPtr<Internals> create(Document*);

@@ -44,21 +44,21 @@ class InspectorBackendMessageQueue;
 class InspectorFrontendHost;
 class Page;
 
-class InspectorFrontendClientLocal : public InspectorFrontendClient {
+class InspectorFrontendClientLocal FINAL : public InspectorFrontendClient {
     WTF_MAKE_NONCOPYABLE(InspectorFrontendClientLocal); WTF_MAKE_FAST_ALLOCATED;
 public:
     InspectorFrontendClientLocal(InspectorController&, Page*);
     virtual ~InspectorFrontendClientLocal();
 
-    virtual void windowObjectCleared();
+    virtual void windowObjectCleared() OVERRIDE;
 
     virtual void inspectedURLChanged(const String&) OVERRIDE { }
 
-    virtual void sendMessageToBackend(const String& message);
+    virtual void sendMessageToBackend(const String& message) OVERRIDE;
 
     virtual void sendMessageToEmbedder(const String&) OVERRIDE { }
 
-    virtual bool isUnderTest() { return true; }
+    virtual bool isUnderTest() OVERRIDE { return true; }
 
 private:
     Page* m_frontendPage;

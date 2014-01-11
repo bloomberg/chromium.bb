@@ -32,11 +32,11 @@
 
 namespace WebCore {
 
-class PerformanceMark : public PerformanceEntry {
+class PerformanceMark FINAL : public PerformanceEntry {
 public:
     static PassRefPtr<PerformanceMark> create(const String& name, double startTime) { return adoptRef(new PerformanceMark(name, startTime)); }
 
-    virtual bool isMark() { return true; }
+    virtual bool isMark() OVERRIDE { return true; }
 
 private:
     PerformanceMark(const String& name, double startTime) : PerformanceEntry(name, "mark", startTime, startTime)
@@ -44,7 +44,7 @@ private:
         ScriptWrappable::init(this);
     }
 
-    ~PerformanceMark() { }
+    virtual ~PerformanceMark() { }
 };
 
 }

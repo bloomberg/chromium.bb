@@ -34,10 +34,10 @@ namespace WebCore {
 class Frame;
 class PluginData;
 
-class DOMMimeTypeArray : public ScriptWrappable, public RefCounted<DOMMimeTypeArray>, public DOMWindowProperty {
+class DOMMimeTypeArray FINAL : public ScriptWrappable, public RefCounted<DOMMimeTypeArray>, public DOMWindowProperty {
 public:
     static PassRefPtr<DOMMimeTypeArray> create(Frame* frame) { return adoptRef(new DOMMimeTypeArray(frame)); }
-    ~DOMMimeTypeArray();
+    virtual ~DOMMimeTypeArray();
 
     unsigned length() const;
     PassRefPtr<DOMMimeType> item(unsigned index);

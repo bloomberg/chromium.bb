@@ -53,11 +53,11 @@ class ResourceResponse;
 class ResourceTimingInfo;
 class UserTiming;
 
-class Performance : public ScriptWrappable, public RefCounted<Performance>, public DOMWindowProperty, public EventTargetWithInlineData {
+class Performance FINAL : public ScriptWrappable, public RefCounted<Performance>, public DOMWindowProperty, public EventTargetWithInlineData {
     REFCOUNTED_EVENT_TARGET(Performance);
 public:
     static PassRefPtr<Performance> create(Frame* frame) { return adoptRef(new Performance(frame)); }
-    ~Performance();
+    virtual ~Performance();
 
     virtual const AtomicString& interfaceName() const OVERRIDE;
     virtual ExecutionContext* executionContext() const OVERRIDE;

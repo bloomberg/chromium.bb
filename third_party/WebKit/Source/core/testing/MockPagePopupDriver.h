@@ -38,7 +38,7 @@ class MockPagePopup;
 class PagePopup;
 class PagePopupController;
 
-class MockPagePopupDriver : public PagePopupDriver {
+class MockPagePopupDriver FINAL : public PagePopupDriver {
 public:
     static PassOwnPtr<MockPagePopupDriver> create(Frame* mainFrame);
     virtual ~MockPagePopupDriver();

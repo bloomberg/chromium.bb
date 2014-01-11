@@ -42,7 +42,7 @@ namespace WebCore {
 
 class ExecutionContext;
 
-class Stream : public ScriptWrappable, public ActiveDOMObject, public RefCounted<Stream> {
+class Stream FINAL : public ScriptWrappable, public ActiveDOMObject, public RefCounted<Stream> {
 public:
     static PassRefPtr<Stream> create(ExecutionContext* context, const String& mediaType)
     {

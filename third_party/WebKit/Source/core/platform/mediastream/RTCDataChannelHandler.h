@@ -35,7 +35,7 @@ namespace WebCore {
 
 class RTCDataChannelHandlerClient;
 
-class RTCDataChannelHandler : public blink::WebRTCDataChannelHandlerClient {
+class RTCDataChannelHandler FINAL : public blink::WebRTCDataChannelHandlerClient {
 public:
     static PassOwnPtr<RTCDataChannelHandler> create(blink::WebRTCDataChannelHandler*);
     virtual ~RTCDataChannelHandler();

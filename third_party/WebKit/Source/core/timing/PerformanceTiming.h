@@ -44,7 +44,7 @@ struct DocumentTiming;
 class Frame;
 class ResourceLoadTiming;
 
-class PerformanceTiming : public RefCounted<PerformanceTiming>, public ScriptWrappable, public DOMWindowProperty {
+class PerformanceTiming FINAL : public RefCounted<PerformanceTiming>, public ScriptWrappable, public DOMWindowProperty {
 public:
     static PassRefPtr<PerformanceTiming> create(Frame* frame) { return adoptRef(new PerformanceTiming(frame)); }
 

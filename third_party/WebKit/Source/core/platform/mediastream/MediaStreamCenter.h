@@ -50,9 +50,9 @@ class MediaStreamComponent;
 class MediaStreamDescriptor;
 class MediaStreamTrackSourcesRequest;
 
-class MediaStreamCenter : public blink::WebMediaStreamCenterClient {
+class MediaStreamCenter FINAL : public blink::WebMediaStreamCenterClient {
 public:
-    ~MediaStreamCenter();
+    virtual ~MediaStreamCenter();
 
     static MediaStreamCenter& instance();
 

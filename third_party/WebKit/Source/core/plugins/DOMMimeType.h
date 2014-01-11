@@ -33,14 +33,14 @@ namespace WebCore {
 class DOMPlugin;
 class Frame;
 
-class DOMMimeType : public RefCounted<DOMMimeType>, public ScriptWrappable, public FrameDestructionObserver {
+class DOMMimeType FINAL : public RefCounted<DOMMimeType>, public ScriptWrappable, public FrameDestructionObserver {
 public:
     static PassRefPtr<DOMMimeType> create(PassRefPtr<PluginData> pluginData, Frame* frame, unsigned index) { return adoptRef(new DOMMimeType(pluginData, frame, index)); }
-    ~DOMMimeType();
+    virtual ~DOMMimeType();
 
-    const String &type() const;
+    const String& type() const;
     String suffixes() const;
-    const String &description() const;
+    const String& description() const;
     PassRefPtr<DOMPlugin> enabledPlugin() const;
 
 private:

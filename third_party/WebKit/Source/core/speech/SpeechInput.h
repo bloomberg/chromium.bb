@@ -48,7 +48,7 @@ class SpeechInputListener;
 // This class connects the input elements requiring speech input with the platform specific
 // speech recognition engine. It provides methods for the input elements to activate speech
 // recognition and methods for the speech recognition engine to return back the results.
-class SpeechInput : public SpeechInputListener, public Supplement<Page> {
+class SpeechInput FINAL : public SpeechInputListener, public Supplement<Page> {
     WTF_MAKE_NONCOPYABLE(SpeechInput);
 public:
     virtual ~SpeechInput();
@@ -71,9 +71,9 @@ public:
     void cancelRecognition(int);
 
     // SpeechInputListener methods.
-    virtual void didCompleteRecording(int);
-    virtual void didCompleteRecognition(int);
-    virtual void setRecognitionResult(int, const SpeechInputResultArray&);
+    virtual void didCompleteRecording(int) OVERRIDE;
+    virtual void didCompleteRecognition(int) OVERRIDE;
+    virtual void setRecognitionResult(int, const SpeechInputResultArray&) OVERRIDE;
 
 private:
     explicit SpeechInput(SpeechInputClient*);

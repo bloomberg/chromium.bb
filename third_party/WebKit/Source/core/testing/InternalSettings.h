@@ -42,7 +42,7 @@ class Frame;
 class Page;
 class Settings;
 
-class InternalSettings : public InternalSettingsGenerated {
+class InternalSettings FINAL : public InternalSettingsGenerated {
 public:
     class Backup {
     public:
