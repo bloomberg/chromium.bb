@@ -819,15 +819,8 @@ crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/wide-in-narrow-
 crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/cluster-with-narrow-lca-and-cluster.html [ ImageOnlyFailure ]
 crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/cluster-with-narrow-lca.html [ ImageOnlyFailure ]
 crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/form-controls-autosizing-button-input-elements.html [ ImageOnlyFailure ]
-crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/form-controls-autosizing-checkbox-input-element.html [ ImageOnlyFailure ]
-crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/form-controls-autosizing-radio-input-element.html [ ImageOnlyFailure ]
-crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/form-controls-autosizing-select-element.html [ ImageOnlyFailure ]
-crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/form-controls-autosizing-textfield-input-elements.html [ ImageOnlyFailure ]
-crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/header-li-links-autosizing.html [ ImageOnlyFailure ]
-crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/header-links-autosizing.html [ ImageOnlyFailure ]
 crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/positioned-out-of-flow.html [ ImageOnlyFailure ]
 crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/resize-window.html [ Failure ]
-crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/unwrappable-blocks.html [ ImageOnlyFailure ]
 crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/hackernews-comments.html [ NeedsRebaseline ]
 
 # FIXME(crbug.com/329904): Remove these when hash-based autosizer is deemed fast enough, aka second pass optimization.
