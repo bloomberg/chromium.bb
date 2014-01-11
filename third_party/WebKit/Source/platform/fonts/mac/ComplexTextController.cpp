@@ -37,65 +37,6 @@ using namespace std;
 
 namespace WebCore {
 
-class TextLayout {
-public:
-    static bool isNeeded(const TextRun& run, const Font& font)
-    {
-        return font.codePath(run) == ComplexPath;
-    }
-
-    TextLayout(const TextRun& run, unsigned textLength, const Font& font, float xPos)
-        : m_font(font)
-        , m_run(constructTextRun(run, textLength, font, xPos))
-        , m_controller(adoptPtr(new ComplexTextController(&m_font, m_run, true)))
-    {
-    }
-
-    float width(unsigned from, unsigned len, HashSet<const SimpleFontData*>* fallbackFonts)
-    {
-        m_controller->advance(from, 0, ByWholeGlyphs, fallbackFonts);
-        float beforeWidth = m_controller->runWidthSoFar();
-        if (m_font.wordSpacing() && from && Font::treatAsSpace(m_run[from]))
-            beforeWidth += m_font.wordSpacing();
-        m_controller->advance(from + len, 0, ByWholeGlyphs, fallbackFonts);
-        float afterWidth = m_controller->runWidthSoFar();
-        return afterWidth - beforeWidth;
-    }
-
-private:
-    static TextRun constructTextRun(const TextRun& textRun, unsigned textLength, const Font& font, float xPos)
-    {
-        TextRun run = textRun;
-        run.setCharactersLength(textLength);
-        ASSERT(run.charactersLength() >= run.length());
-
-        run.setXPos(xPos);
-        return run;
-    }
-
-    // ComplexTextController has only references to its Font and TextRun so they must be kept alive here.
-    Font m_font;
-    TextRun m_run;
-    OwnPtr<ComplexTextController> m_controller;
-};
-
-PassOwnPtr<TextLayout> Font::createLayoutForMacComplexText(const TextRun& run, unsigned textLength, float xPos, bool collapseWhiteSpace) const
-{
-    if (!collapseWhiteSpace || !TextLayout::isNeeded(run, *this))
-        return nullptr;
-    return adoptPtr(new TextLayout(run, textLength, *this, xPos));
-}
-
-void Font::deleteLayout(TextLayout* layout)
-{
-    delete layout;
-}
-
-float Font::width(TextLayout& layout, unsigned from, unsigned len, HashSet<const SimpleFontData*>* fallbackFonts)
-{
-    return layout.width(from, len, fallbackFonts);
-}
-
 static inline CGFloat roundCGFloat(CGFloat f)
 {
     if (sizeof(CGFloat) == sizeof(float))

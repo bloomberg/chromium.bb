@@ -50,7 +50,6 @@ struct BidiRun;
 struct PaintInfo;
 class LineInfo;
 class RenderRubyRun;
-class TextLayout;
 class WordMeasurement;
 
 template <class Iterator, class Run> class BidiResolver;

@@ -34,16 +34,6 @@
 using namespace WTF;
 using namespace Unicode;
 
-namespace WTF {
-
-// allow compilation of OwnPtr<TextLayout> in source files that don't have access to the TextLayout class definition
-void OwnedPtrDeleter<WebCore::TextLayout>::deletePtr(WebCore::TextLayout* ptr)
-{
-    WebCore::Font::deleteLayout(ptr);
-}
-
-}
-
 namespace WebCore {
 
 const uint8_t Font::s_roundingHackCharacterTable[256] = {
@@ -242,26 +232,6 @@ float Font::width(const TextRun& run, int& charsConsumed, String& glyphName) con
     glyphName = "";
     return width(run);
 }
-
-#if !OS(MACOSX)
-
-PassOwnPtr<TextLayout> Font::createLayoutForMacComplexText(const TextRun&, unsigned, float, bool) const
-{
-    ASSERT_NOT_REACHED();
-    return nullptr;
-}
-
-void Font::deleteLayout(TextLayout*)
-{
-}
-
-float Font::width(TextLayout&, unsigned, unsigned, HashSet<const SimpleFontData*>*)
-{
-    ASSERT_NOT_REACHED();
-    return 0;
-}
-
-#endif
 
 FloatRect Font::selectionRectForText(const TextRun& run, const FloatPoint& point, int h, int from, int to) const
 {
