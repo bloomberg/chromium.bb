@@ -213,9 +213,11 @@ void HistoryController::setDefersLoading(bool defer)
 void HistoryController::updateForInitialLoadInChildFrame(Frame* frame, HistoryItem* item)
 {
     ASSERT(frame->tree().parent());
-    if (!m_currentEntry || m_currentEntry->historyNodeForFrame(frame))
+    if (!m_currentEntry)
         return;
-    if (HistoryNode* parentHistoryNode = m_currentEntry->historyNodeForFrame(frame->tree().parent()))
+    if (HistoryNode* existingNode = m_currentEntry->historyNodeForFrame(frame))
+        existingNode->updateValue(item);
+    else if (HistoryNode* parentHistoryNode = m_currentEntry->historyNodeForFrame(frame->tree().parent()))
         parentHistoryNode->addChild(item);
 }
 
