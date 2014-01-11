@@ -800,16 +800,12 @@ crbug.com/321857 [ Win7 Debug ] fast/filesystem/workers/file-writer-events-share
 crbug.com/323858 [ XP ] fast/workers/storage/interrupt-database.html [ Pass Timeout ]
 
 # FIXME(crbug.com/302005): Remove these as expectations are updated or the fasttextautosizer improves.
-crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/cluster-inline-block-or-table.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/cluster-inline-grid-flex-box.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/cluster-list-item.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/cluster-narrow-in-wide.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/clusters-insufficient-text.html [ ImageOnlyFailure ]
-crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/clusters-insufficient-width.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/clusters-sufficient-text-except-in-root.html [ ImageOnlyFailure ]
-crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/clusters-sufficient-width.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/cluster-wide-in-narrow.html [ ImageOnlyFailure ]
-crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/cluster-with-wide-lca.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/font-scale-factor.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/forum-comments-autosizing.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/list-marker-numbered-with-autosizing.html [ ImageOnlyFailure ]
@@ -820,7 +816,6 @@ crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/narrow-descenda
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/oscillation-javascript-fontsize-change.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/wide-child.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/wide-in-narrow-overflow-scroll.html [ ImageOnlyFailure ]
-
 crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/cluster-with-narrow-lca-and-cluster.html [ ImageOnlyFailure ]
 crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/cluster-with-narrow-lca.html [ ImageOnlyFailure ]
 crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/form-controls-autosizing-button-input-elements.html [ ImageOnlyFailure ]
@@ -829,14 +824,11 @@ crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/form-controls-a
 crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/form-controls-autosizing-select-element.html [ ImageOnlyFailure ]
 crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/form-controls-autosizing-textfield-input-elements.html [ ImageOnlyFailure ]
 crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/header-li-links-autosizing.html [ ImageOnlyFailure ]
-crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/header-links-autosizing-different-fontsize.html [ ImageOnlyFailure ]
 crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/header-links-autosizing.html [ ImageOnlyFailure ]
-crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/nested-em-line-height.html [ ImageOnlyFailure ]
 crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/positioned-out-of-flow.html [ ImageOnlyFailure ]
 crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/resize-window.html [ Failure ]
-crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/span-child.html [ ImageOnlyFailure ]
 crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/unwrappable-blocks.html [ ImageOnlyFailure ]
-crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/unwrappable-inlines.html [ ImageOnlyFailure ]
+crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/hackernews-comments.html [ NeedsRebaseline ]
 
 # FIXME(crbug.com/329904): Remove these when hash-based autosizer is deemed fast enough, aka second pass optimization.
 crbug.com/329904 fast/text-autosizing/forum-comments-autosizing.html [ ImageOnlyFailure ]

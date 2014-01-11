@@ -91,13 +91,13 @@ void FastTextAutosizer::inflate(RenderBlock* block)
     // localMultiplier is used to prevent inflation of some containers such as a row of links.
     float localMultiplier = TextAutosizer::containerShouldBeAutosized(block) ? cluster->m_multiplier : 1;
 
-    applyMultiplier(block, localMultiplier);
-
     // FIXME: Add an optimization to not do this walk if it's not needed.
     for (InlineWalker walker(block); !walker.atEnd(); walker.advance()) {
         RenderObject* inlineObj = walker.current();
-        if (inlineObj->isText())
+        if (inlineObj->isText()) {
             applyMultiplier(inlineObj, localMultiplier);
+            applyMultiplier(inlineObj->parent(), localMultiplier); // Parent handles line spacing.
+        }
     }
 }
 
