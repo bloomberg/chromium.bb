@@ -592,6 +592,11 @@
             'base/cursor/cursor_android.cc'
           ],
         }],
+        ['OS=="android" and use_aura==1', {
+          'sources!': [
+            'base/clipboard/clipboard_aura.cc'
+          ],
+        }],
         ['OS=="android" or OS=="ios"', {
           'sources!': [
             'base/device_form_factor_desktop.cc'

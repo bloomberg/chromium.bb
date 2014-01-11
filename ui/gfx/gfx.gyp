@@ -408,6 +408,11 @@
             'path.cc',
           ],
         }],
+        ['OS=="android" and use_aura==1', {
+          'sources!': [
+            'screen_android.cc',
+          ],
+        }],
         ['OS=="android" and android_webview_build==0', {
           'dependencies': [
             '<(DEPTH)/base/base.gyp:base_java',
