@@ -45,20 +45,20 @@ public:
     FloatRect floatLinesBoundingBox() const;
 
 private:
-    virtual const char* renderName() const { return "RenderSVGInlineText"; }
+    virtual const char* renderName() const OVERRIDE { return "RenderSVGInlineText"; }
 
-    virtual void setTextInternal(PassRefPtr<StringImpl>);
-    virtual void styleDidChange(StyleDifference, const RenderStyle*);
+    virtual void setTextInternal(PassRefPtr<StringImpl>) OVERRIDE;
+    virtual void styleDidChange(StyleDifference, const RenderStyle*) OVERRIDE;
 
-    virtual FloatRect objectBoundingBox() const { return floatLinesBoundingBox(); }
+    virtual FloatRect objectBoundingBox() const OVERRIDE { return floatLinesBoundingBox(); }
 
-    virtual bool isSVGInlineText() const OVERRIDE FINAL { return true; }
-    virtual bool isSVG() const OVERRIDE FINAL { return true; }
+    virtual bool isSVGInlineText() const OVERRIDE { return true; }
+    virtual bool isSVG() const OVERRIDE { return true; }
 
-    virtual PositionWithAffinity positionForPoint(const LayoutPoint&) OVERRIDE FINAL;
-    virtual LayoutRect localCaretRect(InlineBox*, int caretOffset, LayoutUnit* extraWidthToEndOfLine = 0);
-    virtual IntRect linesBoundingBox() const;
-    virtual InlineTextBox* createTextBox();
+    virtual PositionWithAffinity positionForPoint(const LayoutPoint&) OVERRIDE;
+    virtual LayoutRect localCaretRect(InlineBox*, int caretOffset, LayoutUnit* extraWidthToEndOfLine = 0) OVERRIDE;
+    virtual IntRect linesBoundingBox() const OVERRIDE;
+    virtual InlineTextBox* createTextBox() OVERRIDE;
 
     float m_scalingFactor;
     Font m_scaledFont;

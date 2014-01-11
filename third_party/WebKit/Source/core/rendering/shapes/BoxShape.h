@@ -35,7 +35,7 @@
 
 namespace WebCore {
 
-class BoxShape : public Shape {
+class BoxShape FINAL : public Shape {
 public:
     BoxShape(const FloatRoundedRect& bounds)
         : Shape()

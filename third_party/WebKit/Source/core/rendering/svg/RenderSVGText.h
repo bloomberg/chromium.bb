@@ -37,12 +37,12 @@ public:
     explicit RenderSVGText(SVGTextElement*);
     virtual ~RenderSVGText();
 
-    virtual bool isChildAllowed(RenderObject*, RenderStyle*) const;
+    virtual bool isChildAllowed(RenderObject*, RenderStyle*) const OVERRIDE;
 
     void setNeedsPositioningValuesUpdate() { m_needsPositioningValuesUpdate = true; }
-    virtual void setNeedsTransformUpdate() { m_needsTransformUpdate = true; }
+    virtual void setNeedsTransformUpdate() OVERRIDE { m_needsTransformUpdate = true; }
     void setNeedsTextMetricsUpdate() { m_needsTextMetricsUpdate = true; }
-    virtual FloatRect repaintRectInLocalCoordinates() const;
+    virtual FloatRect repaintRectInLocalCoordinates() const OVERRIDE;
 
     static RenderSVGText* locateRenderSVGTextAncestor(RenderObject*);
     static const RenderSVGText* locateRenderSVGTextAncestor(const RenderObject*);
@@ -57,18 +57,18 @@ public:
     void subtreeTextDidChange(RenderSVGInlineText*);
 
 private:
-    virtual const char* renderName() const { return "RenderSVGText"; }
-    virtual bool isSVGText() const { return true; }
+    virtual const char* renderName() const OVERRIDE { return "RenderSVGText"; }
+    virtual bool isSVGText() const OVERRIDE { return true; }
 
-    virtual void paint(PaintInfo&, const LayoutPoint&);
+    virtual void paint(PaintInfo&, const LayoutPoint&) OVERRIDE;
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) OVERRIDE;
-    virtual bool nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint& pointInParent, HitTestAction);
-    virtual PositionWithAffinity positionForPoint(const LayoutPoint&) OVERRIDE FINAL;
+    virtual bool nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint& pointInParent, HitTestAction) OVERRIDE;
+    virtual PositionWithAffinity positionForPoint(const LayoutPoint&) OVERRIDE;
 
     virtual LayerType layerTypeRequired() const OVERRIDE { return NoLayer; }
-    virtual void layout();
+    virtual void layout() OVERRIDE;
 
-    virtual void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const;
+    virtual void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const OVERRIDE;
 
     virtual LayoutRect clippedOverflowRectForRepaint(const RenderLayerModelObject* repaintContainer) const OVERRIDE;
     virtual void computeRectForRepaint(const RenderLayerModelObject* repaintContainer, LayoutRect&, bool fixed = false) const OVERRIDE;
@@ -76,19 +76,19 @@ private:
 
     virtual void mapLocalToContainer(const RenderLayerModelObject* repaintContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0) const OVERRIDE;
     virtual const RenderObject* pushMappingToContainer(const RenderLayerModelObject* ancestorToStopAt, RenderGeometryMap&) const OVERRIDE;
-    virtual void addChild(RenderObject* child, RenderObject* beforeChild = 0);
+    virtual void addChild(RenderObject* child, RenderObject* beforeChild = 0) OVERRIDE;
     virtual void removeChild(RenderObject*) OVERRIDE;
     virtual void willBeDestroyed() OVERRIDE;
 
-    virtual FloatRect objectBoundingBox() const { return frameRect(); }
-    virtual FloatRect strokeBoundingBox() const;
+    virtual FloatRect objectBoundingBox() const OVERRIDE { return frameRect(); }
+    virtual FloatRect strokeBoundingBox() const OVERRIDE;
 
-    virtual const AffineTransform& localToParentTransform() const { return m_localTransform; }
-    virtual AffineTransform localTransform() const { return m_localTransform; }
-    virtual RootInlineBox* createRootInlineBox();
+    virtual const AffineTransform& localToParentTransform() const OVERRIDE { return m_localTransform; }
+    virtual AffineTransform localTransform() const OVERRIDE { return m_localTransform; }
+    virtual RootInlineBox* createRootInlineBox() OVERRIDE;
 
-    virtual RenderBlock* firstLineBlock() const;
-    virtual void updateFirstLetter();
+    virtual RenderBlock* firstLineBlock() const OVERRIDE;
+    virtual void updateFirstLetter() OVERRIDE;
 
     bool shouldHandleSubtreeMutations() const;
 

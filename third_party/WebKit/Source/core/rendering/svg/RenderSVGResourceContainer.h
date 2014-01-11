@@ -33,7 +33,7 @@ public:
     explicit RenderSVGResourceContainer(SVGElement*);
     virtual ~RenderSVGResourceContainer();
 
-    virtual void layout();
+    virtual void layout() OVERRIDE;
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE FINAL;
 
     virtual bool isSVGResourceContainer() const OVERRIDE FINAL { return true; }

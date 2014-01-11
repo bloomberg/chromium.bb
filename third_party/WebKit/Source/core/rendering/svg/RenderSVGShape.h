@@ -65,7 +65,7 @@ public:
 
 protected:
     virtual void updateShapeFromElement();
-    virtual bool isEmpty() const;
+    virtual bool isEmpty() const OVERRIDE;
     virtual bool shapeDependentStrokeContains(const FloatPoint&);
     virtual bool shapeDependentFillContains(const FloatPoint&, const WindRule) const;
     float strokeWidth() const;
@@ -89,7 +89,7 @@ private:
     virtual AffineTransform localTransform() const OVERRIDE FINAL { return m_localTransform; }
 
     virtual bool isSVGShape() const OVERRIDE FINAL { return true; }
-    virtual const char* renderName() const { return "RenderSVGShape"; }
+    virtual const char* renderName() const OVERRIDE { return "RenderSVGShape"; }
 
     virtual void layout() OVERRIDE FINAL;
     virtual void paint(PaintInfo&, const LayoutPoint&) OVERRIDE FINAL;

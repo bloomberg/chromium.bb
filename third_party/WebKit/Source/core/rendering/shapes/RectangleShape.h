@@ -39,7 +39,7 @@
 
 namespace WebCore {
 
-class RectangleShape : public Shape {
+class RectangleShape FINAL : public Shape {
 public:
     RectangleShape(const FloatRect& bounds, const FloatSize& radii)
         : Shape()

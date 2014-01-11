@@ -37,8 +37,8 @@ public:
     virtual ~RenderSVGImage();
 
     bool updateImageViewport();
-    virtual void setNeedsBoundariesUpdate() { m_needsBoundariesUpdate = true; }
-    virtual void setNeedsTransformUpdate() { m_needsTransformUpdate = true; }
+    virtual void setNeedsBoundariesUpdate() OVERRIDE { m_needsBoundariesUpdate = true; }
+    virtual void setNeedsTransformUpdate() OVERRIDE { m_needsTransformUpdate = true; }
 
     RenderImageResource* imageResource() { return m_imageResource.get(); }
 
@@ -46,27 +46,27 @@ public:
     void paintForeground(PaintInfo&);
 
 private:
-    virtual const char* renderName() const OVERRIDE FINAL { return "RenderSVGImage"; }
-    virtual bool isSVGImage() const OVERRIDE FINAL { return true; }
+    virtual const char* renderName() const OVERRIDE { return "RenderSVGImage"; }
+    virtual bool isSVGImage() const OVERRIDE { return true; }
 
-    virtual const AffineTransform& localToParentTransform() const { return m_localTransform; }
+    virtual const AffineTransform& localToParentTransform() const OVERRIDE { return m_localTransform; }
 
     virtual FloatRect objectBoundingBox() const { return m_objectBoundingBox; }
     virtual FloatRect strokeBoundingBox() const { return m_objectBoundingBox; }
-    virtual FloatRect repaintRectInLocalCoordinates() const { return m_repaintBoundingBox; }
+    virtual FloatRect repaintRectInLocalCoordinates() const OVERRIDE { return m_repaintBoundingBox; }
 
     virtual void addFocusRingRects(Vector<IntRect>&, const LayoutPoint& additionalOffset, const RenderLayerModelObject* paintContainer = 0) OVERRIDE;
 
-    virtual void imageChanged(WrappedImagePtr, const IntRect* = 0);
+    virtual void imageChanged(WrappedImagePtr, const IntRect* = 0) OVERRIDE;
 
-    virtual void layout();
-    virtual void paint(PaintInfo&, const LayoutPoint&);
+    virtual void layout() OVERRIDE;
+    virtual void paint(PaintInfo&, const LayoutPoint&) OVERRIDE;
 
     void invalidateBufferedForeground();
 
-    virtual bool nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint& pointInParent, HitTestAction);
+    virtual bool nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint& pointInParent, HitTestAction) OVERRIDE;
 
-    virtual AffineTransform localTransform() const { return m_localTransform; }
+    virtual AffineTransform localTransform() const OVERRIDE { return m_localTransform; }
 
     bool m_needsBoundariesUpdate : 1;
     bool m_needsTransformUpdate : 1;

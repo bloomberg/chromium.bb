@@ -34,27 +34,27 @@ class SVGInlineTextBox FINAL : public InlineTextBox {
 public:
     SVGInlineTextBox(RenderObject*);
 
-    virtual bool isSVGInlineTextBox() const { return true; }
+    virtual bool isSVGInlineTextBox() const OVERRIDE { return true; }
 
-    virtual float virtualLogicalHeight() const { return m_logicalHeight; }
+    virtual float virtualLogicalHeight() const OVERRIDE { return m_logicalHeight; }
     void setLogicalHeight(float height) { m_logicalHeight = height; }
 
-    virtual int offsetForPosition(float x, bool includePartialGlyphs = true) const;
-    virtual float positionForOffset(int offset) const;
+    virtual int offsetForPosition(float x, bool includePartialGlyphs = true) const OVERRIDE;
+    virtual float positionForOffset(int offset) const OVERRIDE;
 
     void paintSelectionBackground(PaintInfo&);
-    virtual void paint(PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom);
-    virtual LayoutRect localSelectionRect(int startPosition, int endPosition);
+    virtual void paint(PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom) OVERRIDE;
+    virtual LayoutRect localSelectionRect(int startPosition, int endPosition) OVERRIDE;
 
     bool mapStartEndPositionsIntoFragmentCoordinates(const SVGTextFragment&, int& startPosition, int& endPosition) const;
 
-    virtual FloatRect calculateBoundaries() const;
+    virtual FloatRect calculateBoundaries() const OVERRIDE;
 
     void clearTextFragments() { m_textFragments.clear(); }
     Vector<SVGTextFragment>& textFragments() { return m_textFragments; }
     const Vector<SVGTextFragment>& textFragments() const { return m_textFragments; }
 
-    virtual void dirtyLineBoxes() OVERRIDE FINAL;
+    virtual void dirtyLineBoxes() OVERRIDE;
 
     bool startsNewTextChunk() const { return m_startsNewTextChunk; }
     void setStartsNewTextChunk(bool newTextChunk) { m_startsNewTextChunk = newTextChunk; }

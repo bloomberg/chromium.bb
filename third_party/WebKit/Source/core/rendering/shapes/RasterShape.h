@@ -84,7 +84,7 @@ private:
     unsigned m_shapeMargin;
 };
 
-class RasterShape : public Shape {
+class RasterShape FINAL : public Shape {
     WTF_MAKE_NONCOPYABLE(RasterShape);
 public:
     RasterShape(PassOwnPtr<RasterShapeIntervals> intervals, const IntSize& imageSize)

@@ -35,7 +35,7 @@
 
 namespace WebCore {
 
-class OffsetPolygonEdge : public VertexPair {
+class OffsetPolygonEdge FINAL : public VertexPair {
 public:
     enum Basis {
         Edge,
@@ -79,7 +79,7 @@ private:
     Basis m_basis;
 };
 
-class PolygonShape : public Shape {
+class PolygonShape FINAL : public Shape {
     WTF_MAKE_NONCOPYABLE(PolygonShape);
 public:
     PolygonShape(PassOwnPtr<Vector<FloatPoint> > vertices, WindRule fillRule)

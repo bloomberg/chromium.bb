@@ -32,10 +32,10 @@ class RenderSVGHiddenContainer : public RenderSVGContainer {
 public:
     explicit RenderSVGHiddenContainer(SVGElement*);
 
-    virtual const char* renderName() const { return "RenderSVGHiddenContainer"; }
+    virtual const char* renderName() const OVERRIDE { return "RenderSVGHiddenContainer"; }
 
 protected:
-    virtual void layout();
+    virtual void layout() OVERRIDE;
 
 private:
     virtual bool isSVGHiddenContainer() const OVERRIDE FINAL { return true; }

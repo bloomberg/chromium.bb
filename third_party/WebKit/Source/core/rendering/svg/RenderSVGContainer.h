@@ -50,9 +50,9 @@ protected:
     virtual const RenderObjectChildList* virtualChildren() const OVERRIDE FINAL { return children(); }
 
     virtual bool isSVGContainer() const OVERRIDE FINAL { return true; }
-    virtual const char* renderName() const { return "RenderSVGContainer"; }
+    virtual const char* renderName() const OVERRIDE { return "RenderSVGContainer"; }
 
-    virtual void layout();
+    virtual void layout() OVERRIDE;
 
     virtual void addChild(RenderObject* child, RenderObject* beforeChild = 0) OVERRIDE FINAL;
     virtual void removeChild(RenderObject*) OVERRIDE FINAL;
@@ -62,7 +62,7 @@ protected:
     virtual FloatRect strokeBoundingBox() const OVERRIDE FINAL { return m_strokeBoundingBox; }
     virtual FloatRect repaintRectInLocalCoordinates() const OVERRIDE FINAL { return m_repaintBoundingBox; }
 
-    virtual bool nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint& pointInParent, HitTestAction);
+    virtual bool nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint& pointInParent, HitTestAction) OVERRIDE;
 
     // Allow RenderSVGTransformableContainer to hook in at the right time in layout()
     virtual bool calculateLocalTransform() { return false; }

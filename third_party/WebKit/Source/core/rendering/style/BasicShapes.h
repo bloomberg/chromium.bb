@@ -83,7 +83,7 @@ private:
 #define DEFINE_BASICSHAPE_TYPE_CASTS(thisType) \
     DEFINE_TYPE_CASTS(thisType, BasicShape, value, value->type() == BasicShape::thisType##Type, value.type() == BasicShape::thisType##Type)
 
-class BasicShapeRectangle : public BasicShape {
+class BasicShapeRectangle FINAL : public BasicShape {
 public:
     static PassRefPtr<BasicShapeRectangle> create() { return adoptRef(new BasicShapeRectangle); }
 
@@ -111,7 +111,7 @@ public:
     virtual PassRefPtr<BasicShape> blend(const BasicShape*, double) const OVERRIDE;
     virtual bool operator==(const BasicShape&) const OVERRIDE;
 
-    virtual Type type() const { return BasicShapeRectangleType; }
+    virtual Type type() const OVERRIDE { return BasicShapeRectangleType; }
 private:
     BasicShapeRectangle() { }
 
@@ -198,7 +198,7 @@ private:
 
 };
 
-class BasicShapeCircle : public BasicShape {
+class BasicShapeCircle FINAL : public BasicShape {
 public:
     static PassRefPtr<BasicShapeCircle> create() { return adoptRef(new BasicShapeCircle); }
 
@@ -215,7 +215,7 @@ public:
     virtual PassRefPtr<BasicShape> blend(const BasicShape*, double) const OVERRIDE;
     virtual bool operator==(const BasicShape&) const OVERRIDE;
 
-    virtual Type type() const { return BasicShapeCircleType; }
+    virtual Type type() const OVERRIDE { return BasicShapeCircleType; }
 private:
     BasicShapeCircle() { }
 
@@ -226,7 +226,7 @@ private:
 
 DEFINE_BASICSHAPE_TYPE_CASTS(BasicShapeCircle);
 
-class DeprecatedBasicShapeCircle : public BasicShape {
+class DeprecatedBasicShapeCircle FINAL : public BasicShape {
 public:
     static PassRefPtr<DeprecatedBasicShapeCircle> create() { return adoptRef(new DeprecatedBasicShapeCircle); }
 
@@ -242,7 +242,7 @@ public:
     virtual PassRefPtr<BasicShape> blend(const BasicShape*, double) const OVERRIDE;
     virtual bool operator==(const BasicShape&) const OVERRIDE;
 
-    virtual Type type() const { return DeprecatedBasicShapeCircleType; }
+    virtual Type type() const OVERRIDE { return DeprecatedBasicShapeCircleType; }
 private:
     DeprecatedBasicShapeCircle() { }
 
@@ -253,7 +253,7 @@ private:
 
 DEFINE_BASICSHAPE_TYPE_CASTS(DeprecatedBasicShapeCircle);
 
-class BasicShapeEllipse : public BasicShape {
+class BasicShapeEllipse FINAL : public BasicShape {
 public:
     static PassRefPtr<BasicShapeEllipse> create() { return adoptRef(new BasicShapeEllipse); }
 
@@ -272,7 +272,7 @@ public:
     virtual PassRefPtr<BasicShape> blend(const BasicShape*, double) const OVERRIDE;
     virtual bool operator==(const BasicShape&) const OVERRIDE;
 
-    virtual Type type() const { return BasicShapeEllipseType; }
+    virtual Type type() const OVERRIDE { return BasicShapeEllipseType; }
 private:
     BasicShapeEllipse() { }
 
@@ -284,7 +284,7 @@ private:
 
 DEFINE_BASICSHAPE_TYPE_CASTS(BasicShapeEllipse);
 
-class DeprecatedBasicShapeEllipse : public BasicShape {
+class DeprecatedBasicShapeEllipse FINAL : public BasicShape {
 public:
     static PassRefPtr<DeprecatedBasicShapeEllipse> create() { return adoptRef(new DeprecatedBasicShapeEllipse); }
 
@@ -302,7 +302,7 @@ public:
     virtual PassRefPtr<BasicShape> blend(const BasicShape*, double) const OVERRIDE;
     virtual bool operator==(const BasicShape&) const OVERRIDE;
 
-    virtual Type type() const { return DeprecatedBasicShapeEllipseType; }
+    virtual Type type() const OVERRIDE { return DeprecatedBasicShapeEllipseType; }
 private:
     DeprecatedBasicShapeEllipse() { }
 
@@ -314,7 +314,7 @@ private:
 
 DEFINE_BASICSHAPE_TYPE_CASTS(DeprecatedBasicShapeEllipse);
 
-class BasicShapePolygon : public BasicShape {
+class BasicShapePolygon FINAL : public BasicShape {
 public:
     static PassRefPtr<BasicShapePolygon> create() { return adoptRef(new BasicShapePolygon); }
 
@@ -329,9 +329,9 @@ public:
     virtual PassRefPtr<BasicShape> blend(const BasicShape*, double) const OVERRIDE;
     virtual bool operator==(const BasicShape&) const OVERRIDE;
 
-    virtual WindRule windRule() const { return m_windRule; }
+    virtual WindRule windRule() const OVERRIDE { return m_windRule; }
 
-    virtual Type type() const { return BasicShapePolygonType; }
+    virtual Type type() const OVERRIDE { return BasicShapePolygonType; }
 private:
     BasicShapePolygon()
         : m_windRule(RULE_NONZERO)
@@ -343,7 +343,7 @@ private:
 
 DEFINE_BASICSHAPE_TYPE_CASTS(BasicShapePolygon);
 
-class BasicShapeInsetRectangle : public BasicShape {
+class BasicShapeInsetRectangle FINAL : public BasicShape {
 public:
     static PassRefPtr<BasicShapeInsetRectangle> create() { return adoptRef(new BasicShapeInsetRectangle); }
 
@@ -371,7 +371,7 @@ public:
     virtual PassRefPtr<BasicShape> blend(const BasicShape*, double) const OVERRIDE;
     virtual bool operator==(const BasicShape&) const OVERRIDE;
 
-    virtual Type type() const { return BasicShapeInsetRectangleType; }
+    virtual Type type() const OVERRIDE { return BasicShapeInsetRectangleType; }
 private:
     BasicShapeInsetRectangle() { }
 

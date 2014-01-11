@@ -33,15 +33,15 @@ public:
     explicit RenderSVGResourceLinearGradient(SVGLinearGradientElement*);
     virtual ~RenderSVGResourceLinearGradient();
 
-    virtual const char* renderName() const { return "RenderSVGResourceLinearGradient"; }
+    virtual const char* renderName() const OVERRIDE { return "RenderSVGResourceLinearGradient"; }
 
-    virtual RenderSVGResourceType resourceType() const { return s_resourceType; }
+    virtual RenderSVGResourceType resourceType() const OVERRIDE { return s_resourceType; }
     static const RenderSVGResourceType s_resourceType;
 
-    virtual SVGUnitTypes::SVGUnitType gradientUnits() const { return m_attributes.gradientUnits(); }
-    virtual void calculateGradientTransform(AffineTransform& transform) { transform = m_attributes.gradientTransform(); }
-    virtual bool collectGradientAttributes(SVGGradientElement*);
-    virtual void buildGradient(GradientData*) const;
+    virtual SVGUnitTypes::SVGUnitType gradientUnits() const OVERRIDE { return m_attributes.gradientUnits(); }
+    virtual void calculateGradientTransform(AffineTransform& transform) OVERRIDE { transform = m_attributes.gradientTransform(); }
+    virtual bool collectGradientAttributes(SVGGradientElement*) OVERRIDE;
+    virtual void buildGradient(GradientData*) const OVERRIDE;
 
     FloatPoint startPoint(const LinearGradientAttributes&) const;
     FloatPoint endPoint(const LinearGradientAttributes&) const;

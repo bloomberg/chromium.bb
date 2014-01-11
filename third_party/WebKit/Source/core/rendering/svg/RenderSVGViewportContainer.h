@@ -35,25 +35,25 @@ public:
     FloatRect viewport() const { return m_viewport; }
 
     bool isLayoutSizeChanged() const { return m_isLayoutSizeChanged; }
-    virtual bool didTransformToRootUpdate() { return m_didTransformToRootUpdate; }
+    virtual bool didTransformToRootUpdate() OVERRIDE { return m_didTransformToRootUpdate; }
 
-    virtual void determineIfLayoutSizeChanged();
-    virtual void setNeedsTransformUpdate() { m_needsTransformUpdate = true; }
+    virtual void determineIfLayoutSizeChanged() OVERRIDE;
+    virtual void setNeedsTransformUpdate() OVERRIDE { m_needsTransformUpdate = true; }
 
     virtual void paint(PaintInfo&, const LayoutPoint&) OVERRIDE;
 
 private:
-    virtual bool isSVGViewportContainer() const { return true; }
-    virtual const char* renderName() const { return "RenderSVGViewportContainer"; }
+    virtual bool isSVGViewportContainer() const OVERRIDE { return true; }
+    virtual const char* renderName() const OVERRIDE { return "RenderSVGViewportContainer"; }
 
     AffineTransform viewportTransform() const;
-    virtual const AffineTransform& localToParentTransform() const { return m_localToParentTransform; }
+    virtual const AffineTransform& localToParentTransform() const OVERRIDE { return m_localToParentTransform; }
 
-    virtual void calcViewport();
-    virtual bool calculateLocalTransform();
+    virtual void calcViewport() OVERRIDE;
+    virtual bool calculateLocalTransform() OVERRIDE;
 
-    virtual void applyViewportClip(PaintInfo&);
-    virtual bool pointIsInsideViewportClip(const FloatPoint& pointInParent);
+    virtual void applyViewportClip(PaintInfo&) OVERRIDE;
+    virtual bool pointIsInsideViewportClip(const FloatPoint& pointInParent) OVERRIDE;
 
     FloatRect m_viewport;
     mutable AffineTransform m_localToParentTransform;

@@ -33,15 +33,15 @@ public:
     explicit RenderSVGResourceRadialGradient(SVGRadialGradientElement*);
     virtual ~RenderSVGResourceRadialGradient();
 
-    virtual const char* renderName() const { return "RenderSVGResourceRadialGradient"; }
+    virtual const char* renderName() const OVERRIDE { return "RenderSVGResourceRadialGradient"; }
 
-    virtual RenderSVGResourceType resourceType() const { return s_resourceType; }
+    virtual RenderSVGResourceType resourceType() const OVERRIDE { return s_resourceType; }
     static const RenderSVGResourceType s_resourceType;
 
-    virtual SVGUnitTypes::SVGUnitType gradientUnits() const { return m_attributes.gradientUnits(); }
-    virtual void calculateGradientTransform(AffineTransform& transform) { transform = m_attributes.gradientTransform(); }
-    virtual bool collectGradientAttributes(SVGGradientElement*);
-    virtual void buildGradient(GradientData*) const;
+    virtual SVGUnitTypes::SVGUnitType gradientUnits() const OVERRIDE { return m_attributes.gradientUnits(); }
+    virtual void calculateGradientTransform(AffineTransform& transform) OVERRIDE { transform = m_attributes.gradientTransform(); }
+    virtual bool collectGradientAttributes(SVGGradientElement*) OVERRIDE;
+    virtual void buildGradient(GradientData*) const OVERRIDE;
 
     FloatPoint centerPoint(const RadialGradientAttributes&) const;
     FloatPoint focalPoint(const RadialGradientAttributes&) const;

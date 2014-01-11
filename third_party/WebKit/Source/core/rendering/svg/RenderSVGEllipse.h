@@ -37,14 +37,14 @@ public:
     virtual ~RenderSVGEllipse();
 
 private:
-    virtual const char* renderName() const { return "RenderSVGEllipse"; }
+    virtual const char* renderName() const OVERRIDE { return "RenderSVGEllipse"; }
 
-    virtual void updateShapeFromElement();
-    virtual bool isEmpty() const { return m_usePathFallback ? RenderSVGShape::isEmpty() : m_fillBoundingBox.isEmpty(); };
-    virtual void fillShape(GraphicsContext*) const;
-    virtual void strokeShape(GraphicsContext*) const;
-    virtual bool shapeDependentStrokeContains(const FloatPoint&);
-    virtual bool shapeDependentFillContains(const FloatPoint&, const WindRule) const;
+    virtual void updateShapeFromElement() OVERRIDE;
+    virtual bool isEmpty() const OVERRIDE { return m_usePathFallback ? RenderSVGShape::isEmpty() : m_fillBoundingBox.isEmpty(); }
+    virtual void fillShape(GraphicsContext*) const OVERRIDE;
+    virtual void strokeShape(GraphicsContext*) const OVERRIDE;
+    virtual bool shapeDependentStrokeContains(const FloatPoint&) OVERRIDE;
+    virtual bool shapeDependentFillContains(const FloatPoint&, const WindRule) const OVERRIDE;
     void calculateRadiiAndCenter();
 
 private:

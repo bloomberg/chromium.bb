@@ -30,14 +30,14 @@ class RenderSVGTransformableContainer FINAL : public RenderSVGContainer {
 public:
     explicit RenderSVGTransformableContainer(SVGGraphicsElement*);
 
-    virtual bool isSVGTransformableContainer() const { return true; }
-    virtual const AffineTransform& localToParentTransform() const { return m_localTransform; }
-    virtual void setNeedsTransformUpdate() { m_needsTransformUpdate = true; }
-    virtual bool didTransformToRootUpdate() { return m_didTransformToRootUpdate; }
+    virtual bool isSVGTransformableContainer() const OVERRIDE { return true; }
+    virtual const AffineTransform& localToParentTransform() const OVERRIDE { return m_localTransform; }
+    virtual void setNeedsTransformUpdate() OVERRIDE { m_needsTransformUpdate = true; }
+    virtual bool didTransformToRootUpdate() OVERRIDE { return m_didTransformToRootUpdate; }
 
 private:
-    virtual bool calculateLocalTransform();
-    virtual AffineTransform localTransform() const { return m_localTransform; }
+    virtual bool calculateLocalTransform() OVERRIDE;
+    virtual AffineTransform localTransform() const OVERRIDE { return m_localTransform; }
 
     bool m_needsTransformUpdate : 1;
     bool m_didTransformToRootUpdate : 1;

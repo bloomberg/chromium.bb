@@ -34,22 +34,22 @@ public:
     explicit RenderSVGGradientStop(SVGStopElement*);
     virtual ~RenderSVGGradientStop();
 
-    virtual const char* renderName() const { return "RenderSVGGradientStop"; }
-    virtual bool isSVGGradientStop() const OVERRIDE FINAL { return true; }
-    virtual bool isSVG() const OVERRIDE FINAL { return true; }
+    virtual const char* renderName() const OVERRIDE { return "RenderSVGGradientStop"; }
+    virtual bool isSVGGradientStop() const OVERRIDE { return true; }
+    virtual bool isSVG() const OVERRIDE { return true; }
 
-    virtual void layout();
+    virtual void layout() OVERRIDE;
 
     // This overrides are needed to prevent ASSERTs on <svg><stop /></svg>
     // RenderObject's default implementations ASSERT_NOT_REACHED()
     // https://bugs.webkit.org/show_bug.cgi?id=20400
     virtual LayoutRect clippedOverflowRectForRepaint(const RenderLayerModelObject*) const OVERRIDE { return LayoutRect(); }
-    virtual FloatRect objectBoundingBox() const { return FloatRect(); }
-    virtual FloatRect strokeBoundingBox() const { return FloatRect(); }
-    virtual FloatRect repaintRectInLocalCoordinates() const { return FloatRect(); }
+    virtual FloatRect objectBoundingBox() const OVERRIDE { return FloatRect(); }
+    virtual FloatRect strokeBoundingBox() const OVERRIDE { return FloatRect(); }
+    virtual FloatRect repaintRectInLocalCoordinates() const OVERRIDE { return FloatRect(); }
 
 protected:
-    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle);
+    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
 
 private:
     SVGGradientElement* gradientElement() const;

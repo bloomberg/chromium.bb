@@ -28,7 +28,7 @@ namespace WebCore {
 class RenderSVGTSpan FINAL : public RenderSVGInline {
 public:
     explicit RenderSVGTSpan(Element*);
-    virtual const char* renderName() const { return "RenderSVGTSpan"; }
+    virtual const char* renderName() const OVERRIDE { return "RenderSVGTSpan"; }
 };
 }
 

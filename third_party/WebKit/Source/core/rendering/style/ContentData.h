@@ -66,7 +66,7 @@ private:
     OwnPtr<ContentData> m_next;
 };
 
-class ImageContentData : public ContentData {
+class ImageContentData FINAL : public ContentData {
     friend class ContentData;
 public:
     const StyleImage* image() const { return m_image.get(); }
@@ -89,7 +89,7 @@ private:
     {
     }
 
-    virtual PassOwnPtr<ContentData> cloneInternal() const
+    virtual PassOwnPtr<ContentData> cloneInternal() const OVERRIDE
     {
         RefPtr<StyleImage> image = const_cast<StyleImage*>(this->image());
         return create(image.release());
@@ -98,7 +98,7 @@ private:
     RefPtr<StyleImage> m_image;
 };
 
-class TextContentData : public ContentData {
+class TextContentData FINAL : public ContentData {
     friend class ContentData;
 public:
     const String& text() const { return m_text; }
@@ -120,12 +120,12 @@ private:
     {
     }
 
-    virtual PassOwnPtr<ContentData> cloneInternal() const { return create(text()); }
+    virtual PassOwnPtr<ContentData> cloneInternal() const OVERRIDE { return create(text()); }
 
     String m_text;
 };
 
-class CounterContentData : public ContentData {
+class CounterContentData FINAL : public ContentData {
     friend class ContentData;
 public:
     const CounterContent* counter() const { return m_counter.get(); }
@@ -140,7 +140,7 @@ private:
     {
     }
 
-    virtual PassOwnPtr<ContentData> cloneInternal() const
+    virtual PassOwnPtr<ContentData> cloneInternal() const OVERRIDE
     {
         OwnPtr<CounterContent> counterData = adoptPtr(new CounterContent(*counter()));
         return create(counterData.release());
@@ -156,7 +156,7 @@ private:
     OwnPtr<CounterContent> m_counter;
 };
 
-class QuoteContentData : public ContentData {
+class QuoteContentData FINAL : public ContentData {
     friend class ContentData;
 public:
     QuoteType quote() const { return m_quote; }
@@ -178,7 +178,7 @@ private:
     {
     }
 
-    virtual PassOwnPtr<ContentData> cloneInternal() const { return create(quote()); }
+    virtual PassOwnPtr<ContentData> cloneInternal() const OVERRIDE { return create(quote()); }
 
     QuoteType m_quote;
 };

@@ -38,10 +38,10 @@ public:
     {
     }
 
-    virtual void styleDidChange(StyleDifference, const RenderStyle*);
+    virtual void styleDidChange(StyleDifference, const RenderStyle*) OVERRIDE;
 
-    virtual const char* renderName() const { return "RenderSVGResourceFilterPrimitive"; }
-    virtual bool isSVGResourceFilterPrimitive() const { return true; }
+    virtual const char* renderName() const OVERRIDE { return "RenderSVGResourceFilterPrimitive"; }
+    virtual bool isSVGResourceFilterPrimitive() const OVERRIDE { return true; }
 
     inline void primitiveAttributeChanged(const QualifiedName& attribute)
     {

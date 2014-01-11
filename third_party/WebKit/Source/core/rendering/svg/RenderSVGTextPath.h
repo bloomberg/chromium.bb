@@ -32,10 +32,10 @@ public:
     Path layoutPath() const;
     float startOffset() const;
 
-    virtual bool isSVGTextPath() const { return true; }
+    virtual bool isSVGTextPath() const OVERRIDE { return true; }
 
 private:
-    virtual const char* renderName() const { return "RenderSVGTextPath"; }
+    virtual const char* renderName() const OVERRIDE { return "RenderSVGTextPath"; }
 
     Path m_layoutPath;
 };
