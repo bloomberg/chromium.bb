@@ -46,26 +46,26 @@ public:
 private:
     explicit SVGImageElement(Document&);
 
-    virtual bool isValid() const { return SVGTests::isValid(); }
-    virtual bool isStructurallyExternal() const { return !hrefCurrentValue().isNull(); }
+    virtual bool isValid() const OVERRIDE { return SVGTests::isValid(); }
+    virtual bool isStructurallyExternal() const OVERRIDE { return !hrefCurrentValue().isNull(); }
     virtual bool supportsFocus() const OVERRIDE { return hasFocusEventListeners(); }
 
     bool isSupportedAttribute(const QualifiedName&);
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
     virtual bool isPresentationAttribute(const QualifiedName&) const OVERRIDE;
     virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) OVERRIDE;
-    virtual void svgAttributeChanged(const QualifiedName&);
+    virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE;
 
     virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
 
-    virtual RenderObject* createRenderer(RenderStyle*);
+    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
 
     virtual const AtomicString imageSourceURL() const OVERRIDE;
 
-    virtual bool haveLoadedRequiredResources();
+    virtual bool haveLoadedRequiredResources() OVERRIDE;
 
-    virtual bool selfHasRelativeLengths() const;
+    virtual bool selfHasRelativeLengths() const OVERRIDE;
     virtual void didMoveToNewDocument(Document& oldDocument) OVERRIDE;
 
     RefPtr<SVGAnimatedLength> m_x;

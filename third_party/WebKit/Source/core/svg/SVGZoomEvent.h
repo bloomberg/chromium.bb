@@ -28,7 +28,7 @@
 
 namespace WebCore {
 
-class SVGZoomEvent : public UIEvent {
+class SVGZoomEvent FINAL : public UIEvent {
 public:
     static PassRefPtr<SVGZoomEvent> create() { return adoptRef(new SVGZoomEvent); }
 
@@ -45,7 +45,7 @@ public:
 
     SVGPoint newTranslate() const;
 
-    virtual const AtomicString& interfaceName() const;
+    virtual const AtomicString& interfaceName() const OVERRIDE;
 
 private:
     SVGZoomEvent();

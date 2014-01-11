@@ -26,7 +26,7 @@
 
 namespace WebCore {
 
-class SVGPathSegLinetoHorizontalAbs : public SVGPathSegLinetoHorizontal {
+class SVGPathSegLinetoHorizontalAbs FINAL : public SVGPathSegLinetoHorizontal {
 public:
     static PassRefPtr<SVGPathSegLinetoHorizontalAbs> create(SVGPathElement* element, SVGPathSegRole role, float x)
     {
@@ -40,8 +40,8 @@ private:
         ScriptWrappable::init(this);
     }
 
-    virtual unsigned short pathSegType() const { return PATHSEG_LINETO_HORIZONTAL_ABS; }
-    virtual String pathSegTypeAsLetter() const { return "H"; }
+    virtual unsigned short pathSegType() const OVERRIDE { return PATHSEG_LINETO_HORIZONTAL_ABS; }
+    virtual String pathSegTypeAsLetter() const OVERRIDE { return "H"; }
 };
 
 } // namespace WebCore

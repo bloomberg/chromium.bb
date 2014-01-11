@@ -51,28 +51,28 @@ private:
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
     virtual void didNotifySubtreeInsertionsToDocument() OVERRIDE;
-    virtual void childrenChanged(bool changedByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0);
+    virtual void childrenChanged(bool changedByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0) OVERRIDE;
 
-    virtual void svgAttributeChanged(const QualifiedName&);
+    virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE;
     virtual bool isURLAttribute(const Attribute&) const OVERRIDE;
-    virtual bool isStructurallyExternal() const { return hasSourceAttribute(); }
-    virtual void finishParsingChildren();
+    virtual bool isStructurallyExternal() const OVERRIDE { return hasSourceAttribute(); }
+    virtual void finishParsingChildren() OVERRIDE;
 
     virtual bool haveLoadedRequiredResources() OVERRIDE;
 
-    virtual String sourceAttributeValue() const;
-    virtual String charsetAttributeValue() const;
-    virtual String typeAttributeValue() const;
-    virtual String languageAttributeValue() const;
-    virtual String forAttributeValue() const;
-    virtual String eventAttributeValue() const;
-    virtual bool asyncAttributeValue() const;
-    virtual bool deferAttributeValue() const;
-    virtual bool hasSourceAttribute() const;
+    virtual String sourceAttributeValue() const OVERRIDE;
+    virtual String charsetAttributeValue() const OVERRIDE;
+    virtual String typeAttributeValue() const OVERRIDE;
+    virtual String languageAttributeValue() const OVERRIDE;
+    virtual String forAttributeValue() const OVERRIDE;
+    virtual String eventAttributeValue() const OVERRIDE;
+    virtual bool asyncAttributeValue() const OVERRIDE;
+    virtual bool deferAttributeValue() const OVERRIDE;
+    virtual bool hasSourceAttribute() const OVERRIDE;
 
-    virtual void dispatchLoadEvent();
+    virtual void dispatchLoadEvent() OVERRIDE;
 
-    virtual PassRefPtr<Element> cloneElementWithoutAttributesAndChildren();
+    virtual PassRefPtr<Element> cloneElementWithoutAttributesAndChildren() OVERRIDE;
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
 
     virtual Timer<SVGElement>* svgLoadEventTimer() OVERRIDE { return &m_svgLoadEventTimer; }

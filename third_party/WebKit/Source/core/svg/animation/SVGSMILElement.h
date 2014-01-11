@@ -126,7 +126,7 @@ protected:
     virtual void setAttributeName(const QualifiedName&);
 
 private:
-    void buildPendingResource();
+    void buildPendingResource() OVERRIDE;
     void clearResourceAndEventBaseReferences();
 
     virtual void startedActiveInterval() = 0;

@@ -33,16 +33,16 @@ class Document;
 class Image;
 class RenderObject;
 
-class FEImage : public FilterEffect {
+class FEImage FINAL : public FilterEffect {
 public:
     static PassRefPtr<FEImage> createWithImage(Filter*, PassRefPtr<Image>, const SVGPreserveAspectRatio&);
     static PassRefPtr<FEImage> createWithIRIReference(Filter*, Document&, const String&, const SVGPreserveAspectRatio&);
 
     virtual FloatRect determineAbsolutePaintRect(const FloatRect& requestedRect) OVERRIDE;
 
-    virtual FilterEffectType filterEffectType() const { return FilterEffectTypeImage; }
+    virtual FilterEffectType filterEffectType() const OVERRIDE { return FilterEffectTypeImage; }
 
-    virtual TextStream& externalRepresentation(TextStream&, int indention) const;
+    virtual TextStream& externalRepresentation(TextStream&, int indention) const OVERRIDE;
     virtual PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) OVERRIDE;
 
 private:

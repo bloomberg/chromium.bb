@@ -34,7 +34,7 @@ public:
 private:
     explicit SVGDescElement(Document&);
 
-    virtual bool rendererIsNeeded(const RenderStyle&) { return false; }
+    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
 };
 
 } // namespace WebCore

@@ -31,7 +31,7 @@ public:
 private:
     explicit SVGFEPointLightElement(Document&);
 
-    virtual PassRefPtr<LightSource> lightSource() const;
+    virtual PassRefPtr<LightSource> lightSource() const OVERRIDE;
 };
 
 } // namespace WebCore

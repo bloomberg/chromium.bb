@@ -41,14 +41,14 @@ protected:
     SVGPolyElement(const QualifiedName&, Document&);
 
 private:
-    virtual bool isValid() const { return SVGTests::isValid(); }
-    virtual bool supportsFocus() const OVERRIDE { return hasFocusEventListeners(); }
+    virtual bool isValid() const OVERRIDE FINAL { return SVGTests::isValid(); }
+    virtual bool supportsFocus() const OVERRIDE FINAL { return hasFocusEventListeners(); }
 
     bool isSupportedAttribute(const QualifiedName&);
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual void svgAttributeChanged(const QualifiedName&);
+    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE FINAL;
+    virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE FINAL;
 
-    virtual bool supportsMarkers() const { return true; }
+    virtual bool supportsMarkers() const OVERRIDE FINAL { return true; }
 
     // Custom 'points' property
     static void synchronizePoints(SVGElement* contextElement);

@@ -36,7 +36,7 @@
 
 namespace WebCore {
 
-class SVGLengthTearOff : public NewSVGPropertyTearOff<SVGLength>, public ScriptWrappable {
+class SVGLengthTearOff FINAL : public NewSVGPropertyTearOff<SVGLength>, public ScriptWrappable {
 public:
     // Forward declare these enums in the w3c naming scheme, for IDL generation
     enum {

@@ -32,9 +32,9 @@ public:
 private:
     explicit SVGTSpanElement(Document&);
 
-    virtual RenderObject* createRenderer(RenderStyle*);
-    virtual bool childShouldCreateRenderer(const Node& child) const;
-    virtual bool rendererIsNeeded(const RenderStyle&);
+    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
+    virtual bool childShouldCreateRenderer(const Node& child) const OVERRIDE;
+    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE;
 };
 
 } // namespace WebCore

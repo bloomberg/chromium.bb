@@ -228,9 +228,9 @@ private:
     END_DECLARE_ANIMATED_PROPERTIES
 
     // SVGTests
-    virtual void synchronizeRequiredFeatures() { SVGTests::synchronizeRequiredFeatures(this); }
-    virtual void synchronizeRequiredExtensions() { SVGTests::synchronizeRequiredExtensions(this); }
-    virtual void synchronizeSystemLanguage() { SVGTests::synchronizeSystemLanguage(this); }
+    virtual void synchronizeRequiredFeatures() OVERRIDE FINAL { SVGTests::synchronizeRequiredFeatures(this); }
+    virtual void synchronizeRequiredExtensions() OVERRIDE FINAL { SVGTests::synchronizeRequiredExtensions(this); }
+    virtual void synchronizeSystemLanguage() OVERRIDE FINAL { SVGTests::synchronizeSystemLanguage(this); }
 
     void setCalcMode(const AtomicString&);
 

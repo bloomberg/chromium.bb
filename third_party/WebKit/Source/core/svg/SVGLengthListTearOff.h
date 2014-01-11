@@ -36,7 +36,7 @@
 
 namespace WebCore {
 
-class SVGLengthListTearOff :
+class SVGLengthListTearOff FINAL :
     public NewSVGListPropertyTearOffHelper<SVGLengthListTearOff, SVGLengthList>,
     public ScriptWrappable {
 public:

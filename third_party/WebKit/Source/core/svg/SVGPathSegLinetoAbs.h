@@ -26,7 +26,7 @@
 
 namespace WebCore {
 
-class SVGPathSegLinetoAbs : public SVGPathSegSingleCoordinate {
+class SVGPathSegLinetoAbs FINAL : public SVGPathSegSingleCoordinate {
 public:
     static PassRefPtr<SVGPathSegLinetoAbs> create(SVGPathElement* element, SVGPathSegRole role, float x, float y)
     {
@@ -40,8 +40,8 @@ private:
         ScriptWrappable::init(this);
     }
 
-    virtual unsigned short pathSegType() const { return PATHSEG_LINETO_ABS; }
-    virtual String pathSegTypeAsLetter() const { return "L"; }
+    virtual unsigned short pathSegType() const OVERRIDE { return PATHSEG_LINETO_ABS; }
+    virtual String pathSegTypeAsLetter() const OVERRIDE { return "L"; }
 };
 
 } // namespace WebCore

@@ -49,7 +49,7 @@ public:
     using SVGGraphicsElement::ref;
     using SVGGraphicsElement::deref;
 
-    virtual bool isValid() const { return SVGTests::isValid(); }
+    virtual bool isValid() const OVERRIDE { return SVGTests::isValid(); }
     virtual bool supportsFocus() const OVERRIDE { return hasFocusEventListeners(); }
 
     // 'SVGSVGElement' functions
@@ -146,14 +146,14 @@ private:
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
 
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE;
-    virtual RenderObject* createRenderer(RenderStyle*);
+    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
 
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
     virtual void removedFrom(ContainerNode*) OVERRIDE;
 
-    virtual void svgAttributeChanged(const QualifiedName&);
+    virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE;
 
-    virtual bool selfHasRelativeLengths() const;
+    virtual bool selfHasRelativeLengths() const OVERRIDE;
 
     void inheritViewAttributes(SVGViewElement*);
 
@@ -173,7 +173,7 @@ private:
         DECLARE_ANIMATED_PRESERVEASPECTRATIO(PreserveAspectRatio, preserveAspectRatio)
     END_DECLARE_ANIMATED_PROPERTIES
 
-    virtual AffineTransform localCoordinateSpaceTransform(SVGElement::CTMScope) const;
+    virtual AffineTransform localCoordinateSpaceTransform(SVGElement::CTMScope) const OVERRIDE;
 
     bool m_useCurrentView;
     SVGZoomAndPanType m_zoomAndPan;

@@ -42,7 +42,7 @@ enum SVGLengthNegativeValuesMode {
 
 class SVGLengthTearOff;
 
-class SVGLength : public NewSVGPropertyBase {
+class SVGLength FINAL : public NewSVGPropertyBase {
 public:
     typedef SVGLengthTearOff TearOffType;
 

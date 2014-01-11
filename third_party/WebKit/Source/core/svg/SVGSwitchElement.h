@@ -33,12 +33,12 @@ public:
 private:
     explicit SVGSwitchElement(Document&);
 
-    virtual bool isValid() const { return SVGTests::isValid(); }
+    virtual bool isValid() const OVERRIDE { return SVGTests::isValid(); }
     virtual bool supportsFocus() const OVERRIDE { return hasFocusEventListeners(); }
 
-    virtual bool childShouldCreateRenderer(const Node& child) const;
+    virtual bool childShouldCreateRenderer(const Node& child) const OVERRIDE;
 
-    virtual RenderObject* createRenderer(RenderStyle*);
+    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
 
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGSwitchElement)
     END_DECLARE_ANIMATED_PROPERTIES

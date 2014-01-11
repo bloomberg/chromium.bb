@@ -26,7 +26,7 @@
 
 namespace WebCore {
 
-class SVGPathSegCurvetoCubicSmoothAbs : public SVGPathSegCurvetoCubicSmooth {
+class SVGPathSegCurvetoCubicSmoothAbs FINAL : public SVGPathSegCurvetoCubicSmooth {
 public:
     static PassRefPtr<SVGPathSegCurvetoCubicSmoothAbs> create(SVGPathElement* element, SVGPathSegRole role, float x, float y, float x2, float y2)
     {
@@ -40,8 +40,8 @@ private:
         ScriptWrappable::init(this);
     }
 
-    virtual unsigned short pathSegType() const { return PATHSEG_CURVETO_CUBIC_SMOOTH_ABS; }
-    virtual String pathSegTypeAsLetter() const { return "S"; }
+    virtual unsigned short pathSegType() const OVERRIDE { return PATHSEG_CURVETO_CUBIC_SMOOTH_ABS; }
+    virtual String pathSegTypeAsLetter() const OVERRIDE { return "S"; }
 };
 
 } // namespace WebCore

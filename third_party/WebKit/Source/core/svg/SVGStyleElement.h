@@ -38,13 +38,13 @@ public:
     bool disabled() const;
     void setDisabled(bool);
 
-    virtual const AtomicString& type() const;
+    virtual const AtomicString& type() const OVERRIDE;
     void setType(const AtomicString&);
 
-    virtual const AtomicString& media() const;
+    virtual const AtomicString& media() const OVERRIDE;
     void setMedia(const AtomicString&);
 
-    virtual String title() const;
+    virtual String title() const OVERRIDE;
     void setTitle(const AtomicString&);
 
 private:
@@ -55,14 +55,13 @@ private:
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
     virtual void didNotifySubtreeInsertionsToDocument() OVERRIDE;
     virtual void removedFrom(ContainerNode*) OVERRIDE;
-    virtual void childrenChanged(bool changedByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0);
+    virtual void childrenChanged(bool changedByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0) OVERRIDE;
 
-    virtual void finishParsingChildren();
+    virtual void finishParsingChildren() OVERRIDE;
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
 
-    virtual bool isLoading() const { return StyleElement::isLoading(); }
-    virtual bool sheetLoaded() { return StyleElement::sheetLoaded(document()); }
-    virtual void startLoadingDynamicSheet() { StyleElement::startLoadingDynamicSheet(document()); }
+    virtual bool sheetLoaded() OVERRIDE { return StyleElement::sheetLoaded(document()); }
+    virtual void startLoadingDynamicSheet() OVERRIDE { StyleElement::startLoadingDynamicSheet(document()); }
     virtual Timer<SVGElement>* svgLoadEventTimer() OVERRIDE { return &m_svgLoadEventTimer; }
 
     Timer<SVGElement> m_svgLoadEventTimer;

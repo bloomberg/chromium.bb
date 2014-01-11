@@ -44,10 +44,10 @@ public:
 private:
     explicit SVGMPathElement(Document&);
 
-    void buildPendingResource();
+    virtual void buildPendingResource() OVERRIDE;
     void clearResourceReferences();
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
-    void removedFrom(ContainerNode*);
+    virtual void removedFrom(ContainerNode*) OVERRIDE;
 
     bool isSupportedAttribute(const QualifiedName&);
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;

@@ -29,7 +29,7 @@
 
 namespace WebCore {
 
-class SVGPathSegListSource : public SVGPathSource {
+class SVGPathSegListSource FINAL : public SVGPathSource {
 public:
     static PassOwnPtr<SVGPathSegListSource> create(const SVGPathSegList& pathSegList)
     {
@@ -39,20 +39,20 @@ public:
 private:
     SVGPathSegListSource(const SVGPathSegList&);
 
-    virtual bool hasMoreData() const;
-    virtual bool moveToNextToken() { return true; }
-    virtual bool parseSVGSegmentType(SVGPathSegType&);
-    virtual SVGPathSegType nextCommand(SVGPathSegType);
+    virtual bool hasMoreData() const OVERRIDE;
+    virtual bool moveToNextToken() OVERRIDE { return true; }
+    virtual bool parseSVGSegmentType(SVGPathSegType&) OVERRIDE;
+    virtual SVGPathSegType nextCommand(SVGPathSegType) OVERRIDE;
 
-    virtual bool parseMoveToSegment(FloatPoint&);
-    virtual bool parseLineToSegment(FloatPoint&);
-    virtual bool parseLineToHorizontalSegment(float&);
-    virtual bool parseLineToVerticalSegment(float&);
-    virtual bool parseCurveToCubicSegment(FloatPoint&, FloatPoint&, FloatPoint&);
-    virtual bool parseCurveToCubicSmoothSegment(FloatPoint&, FloatPoint&);
-    virtual bool parseCurveToQuadraticSegment(FloatPoint&, FloatPoint&);
-    virtual bool parseCurveToQuadraticSmoothSegment(FloatPoint&);
-    virtual bool parseArcToSegment(float&, float&, float&, bool&, bool&, FloatPoint&);
+    virtual bool parseMoveToSegment(FloatPoint&) OVERRIDE;
+    virtual bool parseLineToSegment(FloatPoint&) OVERRIDE;
+    virtual bool parseLineToHorizontalSegment(float&) OVERRIDE;
+    virtual bool parseLineToVerticalSegment(float&) OVERRIDE;
+    virtual bool parseCurveToCubicSegment(FloatPoint&, FloatPoint&, FloatPoint&) OVERRIDE;
+    virtual bool parseCurveToCubicSmoothSegment(FloatPoint&, FloatPoint&) OVERRIDE;
+    virtual bool parseCurveToQuadraticSegment(FloatPoint&, FloatPoint&) OVERRIDE;
+    virtual bool parseCurveToQuadraticSmoothSegment(FloatPoint&) OVERRIDE;
+    virtual bool parseArcToSegment(float&, float&, float&, bool&, bool&, FloatPoint&) OVERRIDE;
 
     const SVGPathSegList& m_pathSegList;
     RefPtr<SVGPathSeg> m_segment;

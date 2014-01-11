@@ -38,7 +38,7 @@ namespace WebCore {
 class NewSVGAnimatedPropertyBase;
 
 // Bridges new SVGProperty impl. to existing SVG animation impl.
-class SVGAnimatedNewPropertyAnimator : public SVGAnimatedTypeAnimator {
+class SVGAnimatedNewPropertyAnimator FINAL : public SVGAnimatedTypeAnimator {
 public:
     SVGAnimatedNewPropertyAnimator(AnimatedPropertyType, SVGAnimationElement*, SVGElement*);
     virtual ~SVGAnimatedNewPropertyAnimator();

@@ -89,7 +89,7 @@ public:
 
     void pathSegListChanged(SVGPathSegRole, ListModification = ListModificationUnknown);
 
-    virtual SVGRect getBBox() OVERRIDE FINAL;
+    virtual SVGRect getBBox() OVERRIDE;
 
     static const SVGPropertyInfo* dPropertyInfo();
 
@@ -98,13 +98,13 @@ public:
 private:
     explicit SVGPathElement(Document&);
 
-    virtual bool isValid() const { return SVGTests::isValid(); }
+    virtual bool isValid() const OVERRIDE { return SVGTests::isValid(); }
     virtual bool supportsFocus() const OVERRIDE { return hasFocusEventListeners(); }
 
     bool isSupportedAttribute(const QualifiedName&);
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual void svgAttributeChanged(const QualifiedName&);
-    virtual bool supportsMarkers() const { return true; }
+    virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE;
+    virtual bool supportsMarkers() const OVERRIDE { return true; }
 
     // Custom 'd' property
     static void synchronizeD(SVGElement* contextElement);

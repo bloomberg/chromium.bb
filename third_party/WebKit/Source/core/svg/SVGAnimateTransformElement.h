@@ -39,7 +39,7 @@ public:
 private:
     explicit SVGAnimateTransformElement(Document&);
 
-    virtual bool hasValidAttributeType();
+    virtual bool hasValidAttributeType() OVERRIDE;
 
     bool isSupportedAttribute(const QualifiedName&);
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;

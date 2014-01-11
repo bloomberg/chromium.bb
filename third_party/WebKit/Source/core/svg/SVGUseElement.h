@@ -56,32 +56,32 @@ public:
 private:
     SVGUseElement(Document&, bool wasInsertedByParser);
 
-    virtual bool isValid() const { return SVGTests::isValid(); }
-    virtual bool isStructurallyExternal() const { return isExternalURIReference(hrefCurrentValue(), document()); }
+    virtual bool isValid() const OVERRIDE { return SVGTests::isValid(); }
+    virtual bool isStructurallyExternal() const OVERRIDE { return isExternalURIReference(hrefCurrentValue(), document()); }
     virtual bool supportsFocus() const OVERRIDE { return hasFocusEventListeners(); }
 
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
     virtual void removedFrom(ContainerNode*) OVERRIDE;
-    virtual void buildPendingResource();
+    virtual void buildPendingResource() OVERRIDE;
 
     bool isSupportedAttribute(const QualifiedName&);
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual void svgAttributeChanged(const QualifiedName&);
+    virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE;
 
     virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
     virtual void willRecalcStyle(StyleRecalcChange) OVERRIDE;
 
-    virtual RenderObject* createRenderer(RenderStyle*);
-    virtual void toClipPath(Path&);
+    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
+    virtual void toClipPath(Path&) OVERRIDE;
 
     void clearResourceReferences();
     void buildShadowAndInstanceTree(SVGElement* target);
     void detachInstance();
 
-    virtual bool haveLoadedRequiredResources() { return m_haveFiredLoadEvent; }
+    virtual bool haveLoadedRequiredResources() OVERRIDE { return m_haveFiredLoadEvent; }
 
-    virtual void finishParsingChildren();
-    virtual bool selfHasRelativeLengths() const;
+    virtual void finishParsingChildren() OVERRIDE;
+    virtual bool selfHasRelativeLengths() const OVERRIDE;
 
     // Instance tree handling
     void buildInstanceTree(SVGElement* target, SVGElementInstance* targetInstance, bool& foundCycle, bool foundUse);
@@ -111,7 +111,7 @@ private:
     bool resourceIsStillLoading();
     Document* externalDocument() const;
     bool instanceTreeIsLoading(SVGElementInstance*);
-    virtual void notifyFinished(Resource*);
+    virtual void notifyFinished(Resource*) OVERRIDE;
     Document* referencedDocument() const;
     void setDocumentResource(ResourcePtr<DocumentResource>);
 

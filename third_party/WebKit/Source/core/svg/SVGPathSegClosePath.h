@@ -25,7 +25,7 @@
 
 namespace WebCore {
 
-class SVGPathSegClosePath : public SVGPathSegWithContext {
+class SVGPathSegClosePath FINAL : public SVGPathSegWithContext {
 public:
     static PassRefPtr<SVGPathSegClosePath> create(SVGPathElement* element, SVGPathSegRole role)
     {
@@ -39,8 +39,8 @@ private:
         ScriptWrappable::init(this);
     }
 
-    virtual unsigned short pathSegType() const { return PATHSEG_CLOSEPATH; }
-    virtual String pathSegTypeAsLetter() const { return "Z"; }
+    virtual unsigned short pathSegType() const OVERRIDE { return PATHSEG_CLOSEPATH; }
+    virtual String pathSegTypeAsLetter() const OVERRIDE { return "Z"; }
 };
 
 } // namespace WebCore

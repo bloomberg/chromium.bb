@@ -36,28 +36,28 @@ public:
 private:
     explicit SVGAElement(Document&);
 
-    virtual bool isValid() const { return SVGTests::isValid(); }
+    virtual bool isValid() const OVERRIDE { return SVGTests::isValid(); }
 
-    virtual String title() const;
+    virtual String title() const OVERRIDE;
     virtual AtomicString target() const OVERRIDE { return AtomicString(svgTargetCurrentValue()); }
 
     bool isSupportedAttribute(const QualifiedName&);
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual void svgAttributeChanged(const QualifiedName&);
+    virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE;
 
-    virtual RenderObject* createRenderer(RenderStyle*);
+    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
 
-    virtual void defaultEventHandler(Event*);
+    virtual void defaultEventHandler(Event*) OVERRIDE;
 
     virtual bool supportsFocus() const OVERRIDE;
     virtual bool isMouseFocusable() const OVERRIDE;
     virtual bool isKeyboardFocusable() const OVERRIDE;
     virtual bool rendererIsFocusable() const OVERRIDE;
-    virtual bool isURLAttribute(const Attribute&) const;
+    virtual bool isURLAttribute(const Attribute&) const OVERRIDE;
 
-    virtual bool willRespondToMouseClickEvents() OVERRIDE FINAL;
+    virtual bool willRespondToMouseClickEvents() OVERRIDE;
 
-    virtual bool childShouldCreateRenderer(const Node& child) const;
+    virtual bool childShouldCreateRenderer(const Node& child) const OVERRIDE;
 
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGAElement)
         // This declaration used to define a non-virtual "String& target() const" method, that clashes with "virtual String Element::target() const".

@@ -38,7 +38,7 @@ class SVGElementInstanceList;
 class SVGUseElement;
 
 // SVGElementInstance mimics Node, but without providing all its functionality
-class SVGElementInstance : public EventTarget, public ScriptWrappable, public TreeShared<SVGElementInstance> {
+class SVGElementInstance FINAL : public EventTarget, public ScriptWrappable, public TreeShared<SVGElementInstance> {
     DEFINE_EVENT_TARGET_REFCOUNTING(TreeShared<SVGElementInstance>);
 public:
     static PassRefPtr<SVGElementInstance> create(SVGUseElement* correspondingUseElement, SVGUseElement* directUseElement, PassRefPtr<SVGElement> originalElement);
@@ -47,12 +47,12 @@ public:
 
     void setParentOrShadowHostNode(SVGElementInstance* instance) { m_parentInstance = instance; }
 
-    virtual const AtomicString& interfaceName() const;
-    virtual ExecutionContext* executionContext() const;
+    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual ExecutionContext* executionContext() const OVERRIDE;
 
-    virtual bool addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture);
-    virtual bool removeEventListener(const AtomicString& eventType, EventListener*, bool useCapture);
-    virtual void removeAllEventListeners();
+    virtual bool addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture) OVERRIDE;
+    virtual bool removeEventListener(const AtomicString& eventType, EventListener*, bool useCapture) OVERRIDE;
+    virtual void removeAllEventListeners() OVERRIDE;
 
     using EventTarget::dispatchEvent;
     virtual bool dispatchEvent(PassRefPtr<Event>) OVERRIDE;

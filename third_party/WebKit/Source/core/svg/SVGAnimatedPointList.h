@@ -30,21 +30,21 @@ typedef SVGAnimatedListPropertyTearOff<SVGPointList> SVGAnimatedPointList;
 
 class SVGAnimationElement;
 
-class SVGAnimatedPointListAnimator : public SVGAnimatedTypeAnimator {
+class SVGAnimatedPointListAnimator FINAL : public SVGAnimatedTypeAnimator {
 public:
     SVGAnimatedPointListAnimator(SVGAnimationElement*, SVGElement*);
     virtual ~SVGAnimatedPointListAnimator() { }
 
-    virtual PassOwnPtr<SVGAnimatedType> constructFromString(const String&);
-    virtual PassOwnPtr<SVGAnimatedType> startAnimValAnimation(const SVGElementAnimatedPropertyList&);
-    virtual void stopAnimValAnimation(const SVGElementAnimatedPropertyList&);
-    virtual void resetAnimValToBaseVal(const SVGElementAnimatedPropertyList&, SVGAnimatedType*);
-    virtual void animValWillChange(const SVGElementAnimatedPropertyList&);
-    virtual void animValDidChange(const SVGElementAnimatedPropertyList&);
+    virtual PassOwnPtr<SVGAnimatedType> constructFromString(const String&) OVERRIDE;
+    virtual PassOwnPtr<SVGAnimatedType> startAnimValAnimation(const SVGElementAnimatedPropertyList&) OVERRIDE;
+    virtual void stopAnimValAnimation(const SVGElementAnimatedPropertyList&) OVERRIDE;
+    virtual void resetAnimValToBaseVal(const SVGElementAnimatedPropertyList&, SVGAnimatedType*) OVERRIDE;
+    virtual void animValWillChange(const SVGElementAnimatedPropertyList&) OVERRIDE;
+    virtual void animValDidChange(const SVGElementAnimatedPropertyList&) OVERRIDE;
 
-    virtual void addAnimatedTypes(SVGAnimatedType*, SVGAnimatedType*);
-    virtual void calculateAnimatedValue(float percentage, unsigned repeatCount, SVGAnimatedType*, SVGAnimatedType*, SVGAnimatedType*, SVGAnimatedType*);
-    virtual float calculateDistance(const String& fromString, const String& toString);
+    virtual void addAnimatedTypes(SVGAnimatedType*, SVGAnimatedType*) OVERRIDE;
+    virtual void calculateAnimatedValue(float percentage, unsigned repeatCount, SVGAnimatedType*, SVGAnimatedType*, SVGAnimatedType*, SVGAnimatedType*) OVERRIDE;
+    virtual float calculateDistance(const String& fromString, const String& toString) OVERRIDE;
 };
 
 } // namespace WebCore

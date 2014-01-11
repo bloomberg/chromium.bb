@@ -39,7 +39,7 @@ namespace WebCore {
 
 class SVGLengthListTearOff;
 
-class SVGLengthList : public NewSVGListPropertyHelper<SVGLengthList, SVGLength> {
+class SVGLengthList FINAL : public NewSVGListPropertyHelper<SVGLengthList, SVGLength> {
 public:
     typedef SVGLengthListTearOff TearOffType;
 
@@ -48,7 +48,7 @@ public:
         return adoptRef(new SVGLengthList(mode));
     }
 
-    ~SVGLengthList();
+    virtual ~SVGLengthList();
 
     PassRefPtr<SVGLengthList> clone();
 

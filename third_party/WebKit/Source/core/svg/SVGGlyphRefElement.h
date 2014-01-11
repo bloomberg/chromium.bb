@@ -53,7 +53,7 @@ private:
     template<typename CharType>
     void parseAttributeInternal(const QualifiedName&, const AtomicString&);
 
-    virtual bool rendererIsNeeded(const RenderStyle&) { return false; }
+    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
 
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGGlyphRefElement)
         DECLARE_ANIMATED_STRING(Href, href)

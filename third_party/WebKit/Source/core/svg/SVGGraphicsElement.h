@@ -44,33 +44,33 @@ public:
 
     virtual AffineTransform localCoordinateSpaceTransform(SVGElement::CTMScope) const OVERRIDE { return animatedLocalTransform(); }
     virtual AffineTransform animatedLocalTransform() const;
-    virtual AffineTransform* supplementalTransform();
+    virtual AffineTransform* supplementalTransform() OVERRIDE;
 
     virtual SVGRect getBBox();
     SVGRect getStrokeBBox();
 
     // "base class" methods for all the elements which render as paths
     virtual void toClipPath(Path&);
-    virtual RenderObject* createRenderer(RenderStyle*);
+    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
 
 protected:
     SVGGraphicsElement(const QualifiedName&, Document&, ConstructionType = CreateSVGElement);
 
     bool isSupportedAttribute(const QualifiedName&);
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual void svgAttributeChanged(const QualifiedName&);
+    virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE;
 
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGGraphicsElement)
         DECLARE_ANIMATED_TRANSFORM_LIST(Transform, transform)
     END_DECLARE_ANIMATED_PROPERTIES
 
 private:
-    virtual bool isSVGGraphicsElement() const OVERRIDE { return true; }
+    virtual bool isSVGGraphicsElement() const OVERRIDE FINAL { return true; }
 
     // SVGTests
-    virtual void synchronizeRequiredFeatures() { SVGTests::synchronizeRequiredFeatures(this); }
-    virtual void synchronizeRequiredExtensions() { SVGTests::synchronizeRequiredExtensions(this); }
-    virtual void synchronizeSystemLanguage() { SVGTests::synchronizeSystemLanguage(this); }
+    virtual void synchronizeRequiredFeatures() OVERRIDE FINAL { SVGTests::synchronizeRequiredFeatures(this); }
+    virtual void synchronizeRequiredExtensions() OVERRIDE FINAL { SVGTests::synchronizeRequiredExtensions(this); }
+    virtual void synchronizeSystemLanguage() OVERRIDE FINAL { SVGTests::synchronizeSystemLanguage(this); }
 
     // Used by <animateMotion>
     OwnPtr<AffineTransform> m_supplementalTransform;

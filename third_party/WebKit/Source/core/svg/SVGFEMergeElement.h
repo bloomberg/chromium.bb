@@ -33,7 +33,7 @@ public:
 private:
     explicit SVGFEMergeElement(Document&);
 
-    virtual PassRefPtr<FilterEffect> build(SVGFilterBuilder*, Filter*);
+    virtual PassRefPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) OVERRIDE;
 };
 
 } // namespace WebCore

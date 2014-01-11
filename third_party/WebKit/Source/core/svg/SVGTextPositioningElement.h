@@ -40,8 +40,8 @@ protected:
     SVGTextPositioningElement(const QualifiedName&, Document&);
 
     bool isSupportedAttribute(const QualifiedName&);
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual void svgAttributeChanged(const QualifiedName&);
+    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE FINAL;
+    virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE FINAL;
 
     RefPtr<SVGAnimatedLengthList> m_x;
     RefPtr<SVGAnimatedLengthList> m_y;

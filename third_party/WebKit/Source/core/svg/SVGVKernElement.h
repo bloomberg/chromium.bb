@@ -39,7 +39,7 @@ private:
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
     virtual void removedFrom(ContainerNode*) OVERRIDE;
 
-    virtual bool rendererIsNeeded(const RenderStyle&) { return false; }
+    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
 };
 
 DEFINE_NODE_TYPE_CASTS(SVGVKernElement, hasTagName(SVGNames::vkernTag));

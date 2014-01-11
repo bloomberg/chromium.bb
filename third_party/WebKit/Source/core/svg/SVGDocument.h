@@ -45,12 +45,12 @@ public:
     void startPan(const FloatPoint& start);
     void updatePan(const FloatPoint& pos) const;
 
-    virtual PassRefPtr<Document> cloneDocumentWithoutChildren() OVERRIDE FINAL;
+    virtual PassRefPtr<Document> cloneDocumentWithoutChildren() OVERRIDE;
 
 private:
     explicit SVGDocument(const DocumentInit&);
 
-    virtual bool childShouldCreateRenderer(const Node& child) const;
+    virtual bool childShouldCreateRenderer(const Node& child) const OVERRIDE;
 
     FloatPoint m_translate;
 };

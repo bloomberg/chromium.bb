@@ -48,15 +48,15 @@ private:
 
     bool isSupportedAttribute(const QualifiedName&);
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual void svgAttributeChanged(const QualifiedName&);
-    virtual void notifyFinished(Resource*);
+    virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE;
+    virtual void notifyFinished(Resource*) OVERRIDE;
 
-    virtual PassRefPtr<FilterEffect> build(SVGFilterBuilder*, Filter*);
+    virtual PassRefPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) OVERRIDE;
 
     void clearResourceReferences();
     void fetchImageResource();
 
-    virtual void buildPendingResource();
+    virtual void buildPendingResource() OVERRIDE;
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
     virtual void removedFrom(ContainerNode*) OVERRIDE;
 

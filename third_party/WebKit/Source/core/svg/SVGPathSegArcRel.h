@@ -26,7 +26,7 @@
 
 namespace WebCore {
 
-class SVGPathSegArcRel : public SVGPathSegArc {
+class SVGPathSegArcRel FINAL : public SVGPathSegArc {
 public:
     static PassRefPtr<SVGPathSegArcRel> create(SVGPathElement* element, SVGPathSegRole role, float x, float y, float r1, float r2, float angle, bool largeArcFlag, bool sweepFlag)
     {
@@ -40,8 +40,8 @@ private:
         ScriptWrappable::init(this);
     }
 
-    virtual unsigned short pathSegType() const { return PATHSEG_ARC_REL; }
-    virtual String pathSegTypeAsLetter() const { return "a"; }
+    virtual unsigned short pathSegType() const OVERRIDE { return PATHSEG_ARC_REL; }
+    virtual String pathSegTypeAsLetter() const OVERRIDE { return "a"; }
 };
 
 } // namespace WebCore

@@ -26,7 +26,7 @@
 
 namespace WebCore {
 
-class SVGPathSegLinetoVerticalAbs : public SVGPathSegLinetoVertical {
+class SVGPathSegLinetoVerticalAbs FINAL : public SVGPathSegLinetoVertical {
 public:
     static PassRefPtr<SVGPathSegLinetoVerticalAbs> create(SVGPathElement* element, SVGPathSegRole role, float y)
     {
@@ -40,8 +40,8 @@ private:
         ScriptWrappable::init(this);
     }
 
-    virtual unsigned short pathSegType() const { return PATHSEG_LINETO_VERTICAL_ABS; }
-    virtual String pathSegTypeAsLetter() const { return "V"; }
+    virtual unsigned short pathSegType() const OVERRIDE { return PATHSEG_LINETO_VERTICAL_ABS; }
+    virtual String pathSegTypeAsLetter() const OVERRIDE { return "V"; }
 };
 
 } // namespace WebCore

@@ -33,7 +33,7 @@ public:
 private:
     explicit SVGMissingGlyphElement(Document&);
 
-    virtual bool rendererIsNeeded(const RenderStyle&) { return false; }
+    virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
 };
 
 DEFINE_NODE_TYPE_CASTS(SVGMissingGlyphElement, hasTagName(SVGNames::missing_glyphTag));

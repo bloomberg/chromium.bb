@@ -39,7 +39,7 @@ class RenderBox;
 class SVGImageChromeClient;
 class SVGImageForContainer;
 
-class SVGImage : public Image {
+class SVGImage FINAL : public Image {
 public:
     static PassRefPtr<SVGImage> create(ImageObserver* observer)
     {

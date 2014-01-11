@@ -53,7 +53,7 @@ public:
 
     bool isOutermostSVGSVGElement() const;
 
-    virtual String title() const;
+    virtual String title() const OVERRIDE;
     bool hasRelativeLengths() const { return !m_elementsWithRelativeLengths.isEmpty(); }
     virtual bool supportsMarkers() const { return false; }
     PassRefPtr<CSSValue> getPresentationAttribute(const AtomicString& name);
@@ -94,7 +94,7 @@ public:
 
     virtual void svgAttributeChanged(const QualifiedName&);
 
-    virtual void animatedPropertyTypeForAttribute(const QualifiedName&, Vector<AnimatedPropertyType>&);
+    void animatedPropertyTypeForAttribute(const QualifiedName&, Vector<AnimatedPropertyType>&);
     PassRefPtr<NewSVGAnimatedPropertyBase> propertyFromAttribute(const QualifiedName& attributeName);
 
     void sendSVGLoadEventIfPossible(bool sendParentLoadEvents = false);
@@ -120,7 +120,7 @@ public:
 
     void synchronizeAnimatedSVGAttribute(const QualifiedName&) const;
 
-    virtual PassRefPtr<RenderStyle> customStyleForRenderer() OVERRIDE;
+    virtual PassRefPtr<RenderStyle> customStyleForRenderer() OVERRIDE FINAL;
 
     static void synchronizeRequiredFeatures(SVGElement* contextElement);
     static void synchronizeRequiredExtensions(SVGElement* contextElement);
@@ -140,8 +140,8 @@ public:
 
     virtual bool haveLoadedRequiredResources();
 
-    virtual bool addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture) OVERRIDE;
-    virtual bool removeEventListener(const AtomicString& eventType, EventListener*, bool useCapture) OVERRIDE;
+    virtual bool addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture) OVERRIDE FINAL;
+    virtual bool removeEventListener(const AtomicString& eventType, EventListener*, bool useCapture) OVERRIDE FINAL;
 
     void invalidateRelativeLengthClients(SubtreeLayoutScope* = 0);
 
@@ -153,7 +153,7 @@ protected:
 
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
 
-    virtual void finishParsingChildren();
+    virtual void finishParsingChildren() OVERRIDE;
     virtual void attributeChanged(const QualifiedName&, const AtomicString&, AttributeModificationReason = ModifiedDirectly) OVERRIDE;
     virtual bool childShouldCreateRenderer(const Node& child) const OVERRIDE;
 
@@ -207,10 +207,10 @@ private:
 
     // FIXME: Author shadows should be allowed
     // https://bugs.webkit.org/show_bug.cgi?id=77938
-    virtual bool areAuthorShadowsAllowed() const OVERRIDE { return false; }
+    virtual bool areAuthorShadowsAllowed() const OVERRIDE FINAL { return false; }
 
     RenderStyle* computedStyle(PseudoId = NOPSEUDO);
-    virtual RenderStyle* virtualComputedStyle(PseudoId pseudoElementSpecifier = NOPSEUDO) { return computedStyle(pseudoElementSpecifier); }
+    virtual RenderStyle* virtualComputedStyle(PseudoId pseudoElementSpecifier = NOPSEUDO) OVERRIDE FINAL { return computedStyle(pseudoElementSpecifier); }
     virtual void willRecalcStyle(StyleRecalcChange) OVERRIDE;
     virtual bool isKeyboardFocusable() const OVERRIDE;
 

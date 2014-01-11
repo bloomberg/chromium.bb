@@ -30,15 +30,15 @@ class SVGTextElement FINAL : public SVGTextPositioningElement {
 public:
     static PassRefPtr<SVGTextElement> create(Document&);
 
-    virtual AffineTransform animatedLocalTransform() const;
+    virtual AffineTransform animatedLocalTransform() const OVERRIDE;
 
 private:
     explicit SVGTextElement(Document&);
 
     virtual bool supportsFocus() const OVERRIDE { return hasFocusEventListeners(); }
 
-    virtual RenderObject* createRenderer(RenderStyle*);
-    virtual bool childShouldCreateRenderer(const Node& child) const;
+    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
+    virtual bool childShouldCreateRenderer(const Node& child) const OVERRIDE;
 };
 
 DEFINE_NODE_TYPE_CASTS(SVGTextElement, hasTagName(SVGNames::textTag));

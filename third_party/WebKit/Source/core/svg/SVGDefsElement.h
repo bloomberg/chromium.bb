@@ -33,9 +33,9 @@ public:
 private:
     explicit SVGDefsElement(Document&);
 
-    virtual bool isValid() const;
+    virtual bool isValid() const OVERRIDE;
 
-    virtual RenderObject* createRenderer(RenderStyle*);
+    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
 
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGDefsElement)
     END_DECLARE_ANIMATED_PROPERTIES
