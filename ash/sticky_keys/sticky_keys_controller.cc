@@ -128,7 +128,6 @@ bool StickyKeysController::HandleKeyEvent(ui::KeyEvent* event) {
   return shift_sticky_key_->HandleKeyEvent(event) ||
       alt_sticky_key_->HandleKeyEvent(event) ||
       ctrl_sticky_key_->HandleKeyEvent(event);
-  return ctrl_sticky_key_->HandleKeyEvent(event);
 }
 
 bool StickyKeysController::HandleMouseEvent(ui::MouseEvent* event) {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_STICKY_KEYS_CONTROLLER_H_
-#define ASH_WM_STICKY_KEYS_CONTROLLER_H_
+#ifndef ASH_STICKY_KEYS_STICKY_KEYS_CONTROLLER_H_
+#define ASH_STICKY_KEYS_STICKY_KEYS_CONTROLLER_H_
 
 #include "ash/ash_export.h"
 #include "base/memory/scoped_ptr.h"
@@ -237,4 +237,4 @@ class ASH_EXPORT StickyKeysHandler {
 
 }  // namespace ash
 
-#endif  // ASH_WM_STICKY_KEYS_CONTROLLER_H_
+#endif  // ASH_STICKY_KEYS_STICKY_KEYS_CONTROLLER_H_
