@@ -2,8 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""
-Utilities for requesting information for a gerrit server via https.
+"""Utilities for requesting information for a gerrit server via https.
 
 https://gerrit-review.googlesource.com/Documentation/rest-api.html
 """
@@ -14,16 +13,20 @@ import json
 import logging
 import netrc
 import os
-import time
+import socket
 import urllib
 from cStringIO import StringIO
+
+from chromite.lib import retry_util
+
 
 try:
   NETRC = netrc.netrc()
 except (IOError, netrc.NetrcParseError):
   NETRC = netrc.netrc(os.devnull)
 LOGGER = logging.getLogger()
-TRY_LIMIT = 5
+TRY_LIMIT = 10
+SLEEP = 0.5
 
 # Controls the transport protocol used to communicate with gerrit.
 # This is parameterized primarily to enable cros_test_lib.GerritTestCase.
@@ -36,6 +39,10 @@ class GOBError(Exception):
     super(GOBError, self).__init__(*args, **kwargs)
     self.http_status = http_status
     self.message = '(%d) %s' % (self.http_status, self.message)
+
+
+class InternalGOBError(GOBError):
+  """Exception class for GOB errors with status >= 500"""
 
 
 def _QueryString(param_dict, first_param=None):
@@ -81,11 +88,17 @@ def CreateHttpConn(host, path, reqtype='GET', headers=None, body=None):
   return conn
 
 
-def ReadHttpResponse(conn, ignore_404=True):
-  """Reads an http response from a connection into a string buffer.
+def FetchUrl(host, path, reqtype='GET', headers=None, body=None,
+             ignore_404=True):
+  """Fetches the http response from the specified URL into a string buffer.
 
   Args:
-    conn: An HTTPSConnection created by CreateHttpConn, above.
+    host: The hostname of the Gerrit service.
+    path: The path on the Gerrit service. This will be prefixed with '/a'
+          automatically.
+    reqtype: The request type. Can be GET or POST.
+    headers: A mapping of extra HTTP headers to pass in with the request.
+    body: A string of data to send after the headers are finished.
     ignore_404: For many requests, gerrit-on-borg will return 404 if the request
                 doesn't match the database contents.  In most such cases, we
                 want the API to return None rather than raise an Exception.
@@ -93,42 +106,41 @@ def ReadHttpResponse(conn, ignore_404=True):
   Returns:
     A string buffer containing the connection's reply.
   """
+  def _FetchUrlHelper():
+    err_prefix = 'A transient error occured while querying %s:\n' % (host,)
+    try:
+      conn = CreateHttpConn(host, path, reqtype=reqtype, headers=headers,
+                            body=body)
+      response = conn.getresponse()
+    except socket.error as ex:
+      LOGGER.warn('%s%s' % (err_prefix, str(ex)))
+      raise
 
-  sleep_time = 0.5
-  for idx in range(TRY_LIMIT):
-    response = conn.getresponse()
-    # If response.status < 500 then the result is final; break retry loop.
-    if response.status < 500:
-      break
-    # A status >=500 is assumed to be a possible transient error; retry.
-    http_version = 'HTTP/%s' % ('1.1' if response.version == 11 else '1.0')
-    msg = (
-        'A transient error occured while querying %s:\n'
-        '%s %s %s\n'
-        '%s %d %s' % (
-            conn.host, conn.req_params['method'], conn.req_params['url'],
-            http_version, http_version, response.status, response.reason))
-    if TRY_LIMIT - idx > 1:
-      msg += '\n... will retry %d more times.' % (TRY_LIMIT - idx - 1)
-      time.sleep(sleep_time)
-      sleep_time = sleep_time * 2
-      req_host = conn.req_host
-      req_params = conn.req_params
-      conn = httplib.HTTPSConnection(req_host)
-      conn.req_host = req_host
-      conn.req_params = req_params
-      conn.request(**req_params)
-    LOGGER.warn(msg)
-  if ignore_404 and response.status == 404:
-    return StringIO()
-  if response.status != 200:
-    raise GOBError(response.status, response.reason)
-  return StringIO(response.read())
+    if response.status == 404 and ignore_404:
+      return StringIO()
+    elif response.status >= 500:
+      # A status >=500 is assumed to be a possible transient error; retry.
+      http_version = 'HTTP/%s' % ('1.1' if response.version == 11 else '1.0')
+      msg = ('%s %s %s\n'
+             '%s %d %s' % (reqtype, conn.req_params['url'], http_version,
+                           http_version, response.status, response.reason))
+      LOGGER.warn('%s%s' % (err_prefix, msg))
+      raise InternalGOBError(response.status, response.reason)
+    elif response.status != 200:
+      raise GOBError(response.status, response.reason)
+    else:
+      return StringIO(response.read())
+
+  return retry_util.RetryException((socket.error, InternalGOBError), TRY_LIMIT,
+                                   _FetchUrlHelper, sleep=SLEEP)
 
 
-def ReadHttpJsonResponse(conn, ignore_404=True):
-  """Parses an https response as json."""
-  fh = ReadHttpResponse(conn, ignore_404=ignore_404)
+def FetchUrlJson(*args, **kwargs):
+  """Fetch the specified URL and parse it as JSON.
+
+  See FetchUrl for arguments.
+  """
+  fh = FetchUrl(*args, **kwargs)
   # The first line of the response should always be: )]}'
   s = fh.readline()
   if s and s.rstrip() != ")]}'":
@@ -144,12 +156,16 @@ def QueryChanges(host, param_dict, first_param=None, limit=None, o_params=None,
   """Queries a gerrit-on-borg server for changes matching query terms.
 
   Args:
+    host: The Gerrit server hostname.
     param_dict: A dictionary of search parameters, as documented here:
         http://gerrit-documentation.googlecode.com/svn/Documentation/2.6/user-search.html
     first_param: A change identifier
     limit: Maximum number of results to return.
     o_params: A list of additional output specifiers, as documented here:
         https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#list-changes
+    sortkey: Positions the low level scan routine to start from this |sortkey|
+        and continue through changes from this point. This is most often used
+        for paginating result sets.
 
   Returns:
     A list of json-decoded query results.
@@ -165,7 +181,7 @@ def QueryChanges(host, param_dict, first_param=None, limit=None, o_params=None,
   if o_params:
     path = '%s&%s' % (path, '&'.join(['o=%s' % p for p in o_params]))
   # Don't ignore 404; a query should always return a list, even if it's empty.
-  return ReadHttpJsonResponse(CreateHttpConn(host, path), ignore_404=False)
+  return FetchUrlJson(host, path, ignore_404=False)
 
 
 def MultiQueryChanges(host, param_dict, change_list, limit=None, o_params=None,
@@ -185,7 +201,7 @@ def MultiQueryChanges(host, param_dict, change_list, limit=None, o_params=None,
     q.extend(['o=%s' % p for p in o_params])
   path = 'changes/?%s' % '&'.join(q)
   try:
-    result = ReadHttpJsonResponse(CreateHttpConn(host, path), ignore_404=False)
+    result = FetchUrlJson(host, path, ignore_404=False)
   except GOBError as e:
     msg = '%s:\n%s' % (e.message, path)
     raise GOBError(e.http_status, msg)
@@ -210,19 +226,19 @@ def GetChangeUrl(host, change):
 def GetChange(host, change):
   """Query a gerrit server for information about a single change."""
   path = 'changes/%s' % change
-  return ReadHttpJsonResponse(CreateHttpConn(host, path))
+  return FetchUrlJson(host, path)
 
 
 def GetChangeReview(host, change, revision='current'):
   """Get the current review information for a change."""
   path = 'changes/%s/revisions/%s/review' % (change, revision)
-  return ReadHttpJsonResponse(CreateHttpConn(host, path))
+  return FetchUrlJson(host, path)
 
 
 def GetChangeCommit(host, change, revision='current'):
   """Get the current review information for a change."""
   path = 'changes/%s/revisions/%s/commit' % (change, revision)
-  return ReadHttpJsonResponse(CreateHttpConn(host, path))
+  return FetchUrlJson(host, path)
 
 
 def GetChangeCurrentRevision(host, change):
@@ -237,43 +253,40 @@ def GetChangeDetail(host, change, o_params=None):
   path = 'changes/%s/detail' % change
   if o_params:
     path = '%s?%s' % (path, '&'.join(['o=%s' % p for p in o_params]))
-  return ReadHttpJsonResponse(CreateHttpConn(host, path))
+  return FetchUrlJson(host, path)
 
 
 def GetChangeReviewers(host, change):
   """Get information about all reviewers attached to a change."""
   path = 'changes/%s/reviewers' % change
-  return ReadHttpJsonResponse(CreateHttpConn(host, path))
+  return FetchUrlJson(host, path)
 
 
 def AbandonChange(host, change, msg=''):
   """Abandon a gerrit change."""
   path = 'changes/%s/abandon' % change
   body = {'message': msg} if msg else None
-  conn = CreateHttpConn(host, path, reqtype='POST', body=body)
-  return ReadHttpJsonResponse(conn, ignore_404=False)
+  return FetchUrlJson(host, path, reqtype='POST', body=body, ignore_404=False)
 
 
 def RestoreChange(host, change, msg=''):
   """Restore a previously abandoned change."""
   path = 'changes/%s/restore' % change
   body = {'message': msg} if msg else None
-  conn = CreateHttpConn(host, path, reqtype='POST', body=body)
-  return ReadHttpJsonResponse(conn, ignore_404=False)
+  return FetchUrlJson(host, path, reqtype='POST', body=body, ignore_404=False)
 
 
 def SubmitChange(host, change, wait_for_merge=True):
   """Submits a gerrit change via Gerrit."""
   path = 'changes/%s/submit' % change
   body = {'wait_for_merge': wait_for_merge}
-  conn = CreateHttpConn(host, path, reqtype='POST', body=body)
-  return ReadHttpJsonResponse(conn, ignore_404=False)
+  return FetchUrlJson(host, path, reqtype='POST', body=body, ignore_404=False)
 
 
 def GetReviewers(host, change):
   """Get information about all reviewers attached to a change."""
   path = 'changes/%s/reviewers' % change
-  return ReadHttpJsonResponse(CreateHttpConn(host, path))
+  return FetchUrlJson(host, path)
 
 
 def AddReviewers(host, change, add=None):
@@ -285,8 +298,7 @@ def AddReviewers(host, change, add=None):
   path = 'changes/%s/reviewers' % change
   for r in add:
     body = {'reviewer': r}
-    conn = CreateHttpConn(host, path, reqtype='POST', body=body)
-    jmsg = ReadHttpJsonResponse(conn, ignore_404=False)
+    jmsg = FetchUrlJson(host, path, reqtype='POST', body=body, ignore_404=False)
   return jmsg
 
 
@@ -298,9 +310,8 @@ def RemoveReviewers(host, change, remove=None):
     remove = (remove,)
   for r in remove:
     path = 'changes/%s/reviewers/%s' % (change, r)
-    conn = CreateHttpConn(host, path, reqtype='DELETE')
     try:
-      ReadHttpResponse(conn, ignore_404=False)
+      FetchUrl(host, path, reqtype='DELETE', ignore_404=False)
     except GOBError as e:
       # On success, gerrit returns status 204; anything else is an error.
       if e.http_status != 204:
@@ -324,8 +335,7 @@ def SetReview(host, change, revision='current', msg=None, labels=None,
     body['labels'] = labels
   if notify:
     body['notify'] = notify
-  conn = CreateHttpConn(host, path, reqtype='POST', body=body)
-  response = ReadHttpJsonResponse(conn)
+  response = FetchUrlJson(host, path, reqtype='POST', body=body)
   if labels:
     for key, val in labels.iteritems():
       if ('labels' not in response or key not in response['labels'] or
@@ -361,8 +371,7 @@ def ResetReviewLabels(host, change, label, value='0', revision='current',
       }
       if notify:
         body['notify'] = notify
-      conn = CreateHttpConn(host, path, reqtype='POST', body=body)
-      response = ReadHttpJsonResponse(conn)
+      response = FetchUrlJson(host, path, reqtype='POST', body=body)
       if str(response['labels'][label]) != value:
         username = review.get('email', jmsg.get('name', ''))
         raise GOBError(200, 'Unable to set %s label for user "%s"'

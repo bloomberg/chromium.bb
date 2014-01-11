@@ -2399,6 +2399,4 @@ class PaladinMessage():
     if dryrun:
       logging.info('Would have sent %r to %s', body, path)
       return
-    conn = gob_util.CreateHttpConn(
-        self.helper.host, path, reqtype='POST', body=body)
-    gob_util.ReadHttpResponse(conn)
+    gob_util.FetchUrl(self.helper.host, path, reqtype='POST', body=body)
