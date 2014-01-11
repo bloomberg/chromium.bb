@@ -621,7 +621,16 @@ TEST_F(HostResolverImplTest, EmptyHost) {
   EXPECT_EQ(ERR_NAME_NOT_RESOLVED, req->Resolve());
 }
 
-TEST_F(HostResolverImplTest, EmptyDotsHost) {
+#if defined(THREAD_SANITIZER)
+// There's a data race in this test that may lead to use-after-free.
+// If the test starts to crash without ThreadSanitizer it needs to be disabled
+// globally. See http://crbug.com/268946 (stacks for this test in
+// crbug.com/333567).
+#define MAYBE_EmptyDotsHost DISABLED_EmptyDotsHost
+#else
+#define MAYBE_EmptyDotsHost EmptyDotsHost
+#endif
+TEST_F(HostResolverImplTest, MAYBE_EmptyDotsHost) {
   for (int i = 0; i < 16; ++i) {
     Request* req = CreateRequest(std::string(i, '.'), 5555);
     EXPECT_EQ(ERR_NAME_NOT_RESOLVED, req->Resolve());
