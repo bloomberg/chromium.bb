@@ -5,103 +5,84 @@
 #include "content/renderer/media/video_capture_impl_manager.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
-#include "content/public/renderer/render_thread.h"
+#include "base/stl_util.h"
 #include "content/renderer/media/video_capture_impl.h"
 #include "content/renderer/media/video_capture_message_filter.h"
-#include "media/base/bind_to_current_loop.h"
 
 namespace content {
 
-VideoCaptureHandle::VideoCaptureHandle(
-    media::VideoCapture* impl, base::Closure destruction_cb)
-    : impl_(impl), destruction_cb_(destruction_cb) {
-}
-
-VideoCaptureHandle::~VideoCaptureHandle() {
-  destruction_cb_.Run();
-}
-
-void VideoCaptureHandle::StartCapture(
-    EventHandler* handler,
-    const media::VideoCaptureParams& params) {
-  impl_->StartCapture(handler, params);
-}
-
-void VideoCaptureHandle::StopCapture(EventHandler* handler) {
-  impl_->StopCapture(handler);
-}
-
-bool VideoCaptureHandle::CaptureStarted() {
-  return impl_->CaptureStarted();
-}
-
-int VideoCaptureHandle::CaptureFrameRate() {
-  return impl_->CaptureFrameRate();
-}
-
 VideoCaptureImplManager::VideoCaptureImplManager()
-    : filter_(new VideoCaptureMessageFilter()),
-      weak_factory_(this) {
+    : thread_("VC manager") {
+  thread_.Start();
+  message_loop_proxy_ = thread_.message_loop_proxy();
+  filter_ = new VideoCaptureMessageFilter();
 }
 
-VideoCaptureImplManager::~VideoCaptureImplManager() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-}
-
-scoped_ptr<VideoCaptureHandle> VideoCaptureImplManager::UseDevice(
-    media::VideoCaptureSessionId id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  VideoCaptureImpl* video_capture_device = NULL;
-  VideoCaptureDeviceMap::iterator it = devices_.find(id);
-  if (it == devices_.end()) {
-    video_capture_device = CreateVideoCaptureImpl(id, filter_.get());
-    devices_[id] =
-        std::make_pair(1, linked_ptr<VideoCaptureImpl>(video_capture_device));
-    video_capture_device->Init();
-  } else {
-    ++it->second.first;
-    video_capture_device = it->second.second.get();
-  }
-
-  // This callback ensures UnrefDevice() happens on the render thread.
-  return scoped_ptr<VideoCaptureHandle>(
-      new VideoCaptureHandle(
-          video_capture_device,
-          media::BindToCurrentLoop(
-              base::Bind(
-                  &VideoCaptureImplManager::UnrefDevice,
-                  weak_factory_.GetWeakPtr(),
-                  id))));
-}
-
-VideoCaptureImpl* VideoCaptureImplManager::CreateVideoCaptureImpl(
+media::VideoCapture* VideoCaptureImplManager::AddDevice(
     media::VideoCaptureSessionId id,
-    VideoCaptureMessageFilter* filter) const {
-  return new VideoCaptureImpl(id, filter);
-}
+    media::VideoCapture::EventHandler* handler) {
+  DCHECK(handler);
 
-void VideoCaptureImplManager::UnrefDevice(
-    media::VideoCaptureSessionId id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  VideoCaptureDeviceMap::iterator it = devices_.find(id);
-  DCHECK(it != devices_.end());
-
-  DCHECK(it->second.first);
-  --it->second.first;
-  if (!it->second.first) {
-    VideoCaptureImpl* impl = it->second.second.release();
-    devices_.erase(id);
-    impl->DeInit(base::Bind(&base::DeletePointer<VideoCaptureImpl>, impl));
+  base::AutoLock auto_lock(lock_);
+  Devices::iterator it = devices_.find(id);
+  if (it == devices_.end()) {
+    VideoCaptureImpl* vc =
+        new VideoCaptureImpl(id, message_loop_proxy_.get(), filter_.get());
+    devices_[id] = new Device(vc, handler);
+    vc->Init();
+    return vc;
   }
+
+  devices_[id]->clients.push_front(handler);
+  return it->second->vc;
 }
 
 void VideoCaptureImplManager::SuspendDevices(bool suspend) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  for (VideoCaptureDeviceMap::iterator it = devices_.begin();
-       it != devices_.end(); ++it)
-    it->second.second->SuspendCapture(suspend);
+  base::AutoLock auto_lock(lock_);
+  for (Devices::iterator it = devices_.begin(); it != devices_.end(); ++it)
+    it->second->vc->SuspendCapture(suspend);
 }
+
+void VideoCaptureImplManager::RemoveDevice(
+    media::VideoCaptureSessionId id,
+    media::VideoCapture::EventHandler* handler) {
+  DCHECK(handler);
+
+  base::AutoLock auto_lock(lock_);
+  Devices::iterator it = devices_.find(id);
+  if (it == devices_.end())
+    return;
+
+  size_t size = it->second->clients.size();
+  it->second->clients.remove(handler);
+
+  if (size == it->second->clients.size() || size > 1)
+    return;
+
+  devices_[id]->vc->DeInit(base::Bind(&VideoCaptureImplManager::FreeDevice,
+                                      this, devices_[id]->vc));
+  delete devices_[id];
+  devices_.erase(id);
+}
+
+void VideoCaptureImplManager::FreeDevice(VideoCaptureImpl* vc) {
+  delete vc;
+}
+
+VideoCaptureImplManager::~VideoCaptureImplManager() {
+  thread_.Stop();
+  // TODO(wjia): uncomment the line below after collecting enough info for
+  // crbug.com/152418.
+  // STLDeleteContainerPairSecondPointers(devices_.begin(), devices_.end());
+}
+
+VideoCaptureImplManager::Device::Device(
+    VideoCaptureImpl* device,
+    media::VideoCapture::EventHandler* handler)
+    : vc(device) {
+  clients.push_front(handler);
+}
+
+VideoCaptureImplManager::Device::~Device() {}
 
 }  // namespace content

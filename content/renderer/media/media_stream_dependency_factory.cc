@@ -20,6 +20,7 @@
 #include "content/renderer/media/rtc_video_capturer.h"
 #include "content/renderer/media/rtc_video_decoder_factory.h"
 #include "content/renderer/media/rtc_video_encoder_factory.h"
+#include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/media/webaudio_capturer_source.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "content/renderer/media/webrtc_local_audio_track.h"
@@ -240,11 +241,13 @@ class SourceStateObserver : public webrtc::ObserverInterface,
 };
 
 MediaStreamDependencyFactory::MediaStreamDependencyFactory(
+    VideoCaptureImplManager* vc_manager,
     P2PSocketDispatcher* p2p_socket_dispatcher)
     : network_manager_(NULL),
 #if defined(GOOGLE_TV)
       decoder_factory_tv_(NULL),
 #endif
+      vc_manager_(vc_manager),
       p2p_socket_dispatcher_(p2p_socket_dispatcher),
       signaling_thread_(NULL),
       worker_thread_(NULL),
@@ -727,7 +730,7 @@ MediaStreamDependencyFactory::CreateLocalVideoSource(
     bool is_screencast,
     const webrtc::MediaConstraintsInterface* constraints) {
   RtcVideoCapturer* capturer = new RtcVideoCapturer(
-      video_session_id, is_screencast);
+      video_session_id, vc_manager_.get(), is_screencast);
 
   // The video source takes ownership of |capturer|.
   scoped_refptr<webrtc::VideoSourceInterface> source =

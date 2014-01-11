@@ -2,104 +2,77 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// VideoCaptureImplManager owns VideoCaptureImpl objects. Clients who
-// want access to a video capture device call UseDevice() to get a handle
-// to VideoCaptureImpl.
-//
-// THREADING
-//
-// VideoCaptureImplManager lives only on the render thread. All methods
-// must be called on this thread.
-//
-// The handle returned by UseDevice() is thread-safe. It ensures
-// destruction is handled on the render thread.
+// VideoCaptureImplManager manages video capture devices in renderer process.
+// The video capture clients use AddDevice() to get a pointer to
+// video capture device. VideoCaputreImplManager supports multiple clients
+// accessing same device.
 
 #ifndef CONTENT_RENDERER_MEDIA_VIDEO_CAPTURE_IMPL_MANAGER_H_
 #define CONTENT_RENDERER_MEDIA_VIDEO_CAPTURE_IMPL_MANAGER_H_
 
+#include <list>
 #include <map>
 
-#include "base/callback.h"
-#include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/threading/thread.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "media/video/capture/video_capture.h"
 
 namespace content {
 
 class VideoCaptureImpl;
-class VideoCaptureImplManager;
 class VideoCaptureMessageFilter;
 
-// Thread-safe wrapper for a media::VideoCapture object. During
-// destruction |destruction_cb| is called. This mechanism is used
-// by VideoCaptureImplManager to ensure de-initialization and
-// destruction of the media::VideoCapture object happens on the render
-// thread.
-class CONTENT_EXPORT VideoCaptureHandle : media::VideoCapture {
- public:
-  virtual ~VideoCaptureHandle();
-
-  // media::VideoCapture implementations.
-  virtual void StartCapture(
-      EventHandler* handler,
-      const media::VideoCaptureParams& params) OVERRIDE;
-  virtual void StopCapture(EventHandler* handler) OVERRIDE;
-  virtual bool CaptureStarted() OVERRIDE;
-  virtual int CaptureFrameRate() OVERRIDE;
-
- private:
-  friend class VideoCaptureImplManager;
-
-  VideoCaptureHandle(media::VideoCapture* impl,
-                     base::Closure destruction_cb);
-
-  media::VideoCapture* impl_;
-  base::Closure destruction_cb_;
-
-  DISALLOW_COPY_AND_ASSIGN(VideoCaptureHandle);
-};
-
-class CONTENT_EXPORT VideoCaptureImplManager {
+class CONTENT_EXPORT VideoCaptureImplManager
+    : public base::RefCountedThreadSafe<VideoCaptureImplManager> {
  public:
   VideoCaptureImplManager();
-  virtual ~VideoCaptureImplManager();
 
-  // Returns a video capture device referenced by |id|.
-  scoped_ptr<VideoCaptureHandle> UseDevice(media::VideoCaptureSessionId id);
+  // Called by video capture client |handler| to add device referenced
+  // by |id| to VideoCaptureImplManager's list of opened device list.
+  // A pointer to VideoCapture is returned to client so that client can
+  // operate on that pointer, such as StartCaptrue, StopCapture.
+  virtual media::VideoCapture* AddDevice(
+      media::VideoCaptureSessionId id,
+      media::VideoCapture::EventHandler* handler);
+
+  // Called by video capture client |handler| to remove device referenced
+  // by |id| from VideoCaptureImplManager's list of opened device list.
+  virtual void RemoveDevice(media::VideoCaptureSessionId id,
+                            media::VideoCapture::EventHandler* handler);
 
   // Make all existing VideoCaptureImpl instances stop/resume delivering
   // video frames to their clients, depends on flag |suspend|.
-  void SuspendDevices(bool suspend);
+  virtual void SuspendDevices(bool suspend);
 
   VideoCaptureMessageFilter* video_capture_message_filter() const {
     return filter_.get();
   }
 
  protected:
-  // Used in tests to inject a mock VideoCaptureImpl.
-  virtual VideoCaptureImpl* CreateVideoCaptureImpl(
-      media::VideoCaptureSessionId id,
-      VideoCaptureMessageFilter* filter) const;
+  virtual ~VideoCaptureImplManager();
 
  private:
-  void UnrefDevice(media::VideoCaptureSessionId id);
+  friend class base::RefCountedThreadSafe<VideoCaptureImplManager>;
 
-  // The int is used to count clients of the corresponding VideoCaptureImpl.
-  typedef std::map<media::VideoCaptureSessionId,
-                   std::pair<int, linked_ptr<VideoCaptureImpl> > >
-      VideoCaptureDeviceMap;
-  VideoCaptureDeviceMap devices_;
+  struct Device {
+    Device(VideoCaptureImpl* device,
+           media::VideoCapture::EventHandler* handler);
+    ~Device();
 
+    VideoCaptureImpl* vc;
+    std::list<media::VideoCapture::EventHandler*> clients;
+  };
+
+  void FreeDevice(VideoCaptureImpl* vc);
+
+  typedef std::map<media::VideoCaptureSessionId, Device*> Devices;
+  Devices devices_;
+  base::Lock lock_;
   scoped_refptr<VideoCaptureMessageFilter> filter_;
-
-  // Following two members are bound to the render thread.
-  base::WeakPtrFactory<VideoCaptureImplManager> weak_factory_;
-  base::ThreadChecker thread_checker_;
+  base::Thread thread_;
+  scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureImplManager);
 };

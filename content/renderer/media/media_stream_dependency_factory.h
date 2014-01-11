@@ -46,6 +46,7 @@ namespace content {
 class IpcNetworkManager;
 class IpcPacketSocketFactory;
 class RTCMediaConstraints;
+class VideoCaptureImplManager;
 class WebAudioCapturerSource;
 class WebRtcAudioCapturer;
 class WebRtcAudioDeviceImpl;
@@ -66,6 +67,7 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   typedef base::Callback<void(blink::WebMediaStream* web_stream,
                               bool live)> MediaSourcesCreatedCallback;
   MediaStreamDependencyFactory(
+      VideoCaptureImplManager* vc_manager,
       P2PSocketDispatcher* p2p_socket_dispatcher);
   virtual ~MediaStreamDependencyFactory();
 
@@ -253,6 +255,7 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   RTCVideoDecoderFactoryTv* decoder_factory_tv_;
 #endif
 
+  scoped_refptr<VideoCaptureImplManager> vc_manager_;
   scoped_refptr<P2PSocketDispatcher> p2p_socket_dispatcher_;
   scoped_refptr<WebRtcAudioDeviceImpl> audio_device_;
 

@@ -11,9 +11,10 @@
 namespace content {
 
 RtcVideoCapturer::RtcVideoCapturer(const media::VideoCaptureSessionId id,
+                                   VideoCaptureImplManager* vc_manager,
                                    bool is_screencast)
     : is_screencast_(is_screencast),
-      delegate_(new RtcVideoCaptureDelegate(id)),
+      delegate_(new RtcVideoCaptureDelegate(id, vc_manager)),
       state_(VIDEO_CAPTURE_STATE_STOPPED) {}
 
 RtcVideoCapturer::~RtcVideoCapturer() {

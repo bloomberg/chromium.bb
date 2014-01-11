@@ -367,7 +367,7 @@ class MockIceCandidate : public IceCandidateInterface {
 };
 
 MockMediaStreamDependencyFactory::MockMediaStreamDependencyFactory()
-    : MediaStreamDependencyFactory(NULL),
+    : MediaStreamDependencyFactory(NULL, NULL),
       mock_pc_factory_created_(false) {
 }
 
