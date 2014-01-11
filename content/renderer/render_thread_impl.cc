@@ -430,10 +430,6 @@ void RenderThreadImpl::Init() {
 
   base::DiscardableMemory::SetPreferredType(type);
 
-  // Allow discardable memory implementations to register memory pressure
-  // listeners.
-  base::DiscardableMemory::RegisterMemoryPressureListeners();
-
   // AllocateGpuMemoryBuffer must be used exclusively on one thread but
   // it doesn't have to be the same thread RenderThreadImpl is created on.
   allocate_gpu_memory_buffer_thread_checker_.DetachFromThread();

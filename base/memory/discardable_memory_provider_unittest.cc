@@ -64,7 +64,6 @@ class DiscardableMemoryProviderTestBase {
   DiscardableMemoryProviderTestBase()
       : message_loop_(MessageLoop::TYPE_IO),
         provider_(new internal::DiscardableMemoryProvider) {
-    provider_->RegisterMemoryPressureListener();
   }
 
  protected:

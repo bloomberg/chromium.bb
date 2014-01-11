@@ -29,7 +29,10 @@ DiscardableMemoryProvider::DiscardableMemoryProvider()
       bytes_allocated_(0),
       discardable_memory_limit_(kDefaultDiscardableMemoryLimit),
       bytes_to_reclaim_under_moderate_pressure_(
-          kDefaultBytesToReclaimUnderModeratePressure) {
+          kDefaultBytesToReclaimUnderModeratePressure),
+      memory_pressure_listener_(
+          base::Bind(&DiscardableMemoryProvider::NotifyMemoryPressure,
+                     Unretained(this))) {
 }
 
 DiscardableMemoryProvider::~DiscardableMemoryProvider() {
@@ -37,20 +40,18 @@ DiscardableMemoryProvider::~DiscardableMemoryProvider() {
   DCHECK_EQ(0u, bytes_allocated_);
 }
 
-void DiscardableMemoryProvider::RegisterMemoryPressureListener() {
-  AutoLock lock(lock_);
-  DCHECK(base::MessageLoop::current());
-  DCHECK(!memory_pressure_listener_);
-  memory_pressure_listener_.reset(
-      new MemoryPressureListener(
-          base::Bind(&DiscardableMemoryProvider::OnMemoryPressure,
-                     Unretained(this))));
-}
+void DiscardableMemoryProvider::NotifyMemoryPressure(
+    MemoryPressureListener::MemoryPressureLevel pressure_level) {
+  switch (pressure_level) {
+    case MemoryPressureListener::MEMORY_PRESSURE_MODERATE:
+      Purge();
+      return;
+    case MemoryPressureListener::MEMORY_PRESSURE_CRITICAL:
+      PurgeAll();
+      return;
+  }
 
-void DiscardableMemoryProvider::UnregisterMemoryPressureListener() {
-  AutoLock lock(lock_);
-  DCHECK(memory_pressure_listener_);
-  memory_pressure_listener_.reset();
+  NOTREACHED();
 }
 
 void DiscardableMemoryProvider::SetDiscardableMemoryLimit(size_t bytes) {
@@ -68,9 +69,6 @@ void DiscardableMemoryProvider::SetBytesToReclaimUnderModeratePressure(
 void DiscardableMemoryProvider::Register(
     const DiscardableMemory* discardable, size_t bytes) {
   AutoLock lock(lock_);
-  // A registered memory listener is currently required. This DCHECK can be
-  // moved or removed if we decide that it's useful to relax this condition.
-  DCHECK(memory_pressure_listener_);
   DCHECK(allocations_.Peek(discardable) == allocations_.end());
   allocations_.Put(discardable, Allocation(bytes));
 }
@@ -169,20 +167,6 @@ bool DiscardableMemoryProvider::CanBePurgedForTest(
 size_t DiscardableMemoryProvider::GetBytesAllocatedForTest() const {
   AutoLock lock(lock_);
   return bytes_allocated_;
-}
-
-void DiscardableMemoryProvider::OnMemoryPressure(
-    MemoryPressureListener::MemoryPressureLevel pressure_level) {
-  switch (pressure_level) {
-    case MemoryPressureListener::MEMORY_PRESSURE_MODERATE:
-      Purge();
-      return;
-    case MemoryPressureListener::MEMORY_PRESSURE_CRITICAL:
-      PurgeAll();
-      return;
-  }
-
-  NOTREACHED();
 }
 
 void DiscardableMemoryProvider::Purge() {
