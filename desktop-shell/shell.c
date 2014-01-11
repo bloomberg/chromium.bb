@@ -5477,10 +5477,10 @@ shell_add_bindings(struct weston_compositor *ec, struct desktop_shell *shell)
 					  zoom_key_binding, NULL);
 	weston_compositor_add_key_binding(ec, KEY_PAGEDOWN, mod,
 					  zoom_key_binding, NULL);
-	weston_compositor_add_key_binding(ec, KEY_M, mod, maximize_binding,
-					  NULL);
-	weston_compositor_add_key_binding(ec, KEY_F, mod, fullscreen_binding,
-					  NULL);
+	weston_compositor_add_key_binding(ec, KEY_M, mod | MODIFIER_SHIFT,
+					  maximize_binding, NULL);
+	weston_compositor_add_key_binding(ec, KEY_F, mod | MODIFIER_SHIFT,
+					  fullscreen_binding, NULL);
 	weston_compositor_add_button_binding(ec, BTN_LEFT, mod, move_binding,
 					     shell);
 	weston_compositor_add_touch_binding(ec, mod, touch_move_binding, shell);

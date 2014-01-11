@@ -2934,6 +2934,7 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 	if (num_syms == 1)
 		sym = syms[0];
 
+
 	if (sym == XKB_KEY_F5 && input->modifiers == MOD_ALT_MASK) {
 		if (state == WL_KEYBOARD_KEY_STATE_PRESSED)
 			window_set_maximized(window,
