@@ -669,8 +669,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
   CloseDevToolsPopupWindow(devtools_window);
 }
 
-// FLaky on Windows bots: see crbug.com/323847
-#if defined(OS_WIN)
+// FLaky on Windows bots: see crbug.com/323847, Linux crbug.com/333554
+#if defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_TestDevToolsOnDevTools DISABLED_TestDevToolsOnDevTools
 #else
 #define MAYBE_TestDevToolsOnDevTools TestDevToolsOnDevTools
