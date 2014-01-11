@@ -53,6 +53,7 @@
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_known_logs.h"
 #include "net/cert/ct_verifier.h"
+#include "net/cookies/cookie_store.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/mapped_host_resolver.h"
@@ -594,7 +595,8 @@ void IOThread::InitAsync() {
   globals_->proxy_script_fetcher_proxy_service.reset(
       net::ProxyService::CreateDirectWithNetLog(net_log_));
   // In-memory cookie store.
-  globals_->system_cookie_store = content::CreateInMemoryCookieStore(NULL);
+  globals_->system_cookie_store =
+        content::CreateCookieStore(content::CookieStoreConfig());
   // In-memory server bound cert store.
   globals_->system_server_bound_cert_service.reset(
       new net::ServerBoundCertService(

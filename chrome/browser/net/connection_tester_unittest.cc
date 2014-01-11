@@ -5,6 +5,7 @@
 #include "chrome/browser/net/connection_tester.h"
 
 #include "base/prefs/testing_pref_service.h"
+#include "content/public/browser/cookie_store_factory.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "net/cert/mock_cert_verifier.h"
@@ -148,7 +149,7 @@ class ConnectionTesterTest : public PlatformTest {
         http_transaction_factory_.get());
     // In-memory cookie store.
     proxy_script_fetcher_context_->set_cookie_store(
-        content::CreateInMemoryCookieStore(NULL));
+        content::CreateCookieStore(content::CookieStoreConfig()));
   }
 };
 

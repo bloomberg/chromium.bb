@@ -127,7 +127,8 @@ TEST_F(WalletSigninHelperTest, PassiveSigninFailedSigninNo) {
 TEST_F(WalletSigninHelperTest, GetWalletCookieValueWhenPresent) {
   EXPECT_CALL(mock_delegate_, OnDidFetchWalletCookieValue("gdToken"));
   net::CookieMonster* cookie_monster =
-      content::CreateInMemoryCookieStore(NULL)->GetCookieMonster();
+      content::CreateCookieStore(content::CookieStoreConfig())->
+          GetCookieMonster();
   net::CookieOptions httponly_options;
   httponly_options.set_include_httponly();
   scoped_ptr<net::CanonicalCookie> cookie(
@@ -148,7 +149,8 @@ TEST_F(WalletSigninHelperTest, GetWalletCookieValueWhenPresent) {
 TEST_F(WalletSigninHelperTest, GetWalletCookieValueWhenMissing) {
   EXPECT_CALL(mock_delegate_, OnDidFetchWalletCookieValue(std::string()));
   net::CookieMonster* cookie_monster =
-      content::CreateInMemoryCookieStore(NULL)->GetCookieMonster();
+      content::CreateCookieStore(content::CookieStoreConfig())->
+          GetCookieMonster();
   net::CookieOptions httponly_options;
   httponly_options.set_include_httponly();
   scoped_ptr<net::CanonicalCookie> cookie(

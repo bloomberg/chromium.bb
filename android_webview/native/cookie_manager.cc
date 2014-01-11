@@ -185,16 +185,14 @@ void CookieManager::CreateCookieMonster(
       FROM_HERE,
       base::Bind(ImportLegacyCookieStore, cookie_store_path));
 
-  net::CookieStore* cookie_store = content::CreatePersistentCookieStore(
-    cookie_store_path,
-    true,
-    NULL,
-    NULL,
-    client_task_runner,
-    background_task_runner,
-    scoped_ptr<content::CookieCryptoDelegate>());
+  content::CookieStoreConfig cookie_config(
+      cookie_store_path,
+      content::CookieStoreConfig::RESTORED_SESSION_COOKIES,
+      NULL, NULL);
+  cookie_config.client_task_runner = client_task_runner;
+  cookie_config.background_task_runner = background_task_runner;
+  net::CookieStore* cookie_store = content::CreateCookieStore(cookie_config);
   cookie_monster_ = cookie_store->GetCookieMonster();
-  cookie_monster_->SetPersistSessionCookies(true);
   SetAcceptFileSchemeCookiesLocked(kDefaultFileSchemeAllowed);
 }
 

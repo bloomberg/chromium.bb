@@ -201,9 +201,13 @@ void OffTheRecordProfileIOData::InitializeInternal(
   set_server_bound_cert_service(server_bound_cert_service);
   main_context->set_server_bound_cert_service(server_bound_cert_service);
 
+  using content::CookieStoreConfig;
   main_context->set_cookie_store(
-      content::CreateInMemoryCookieStore(
-          profile_params->cookie_monster_delegate.get()));
+      CreateCookieStore(CookieStoreConfig(
+          base::FilePath(),
+          CookieStoreConfig::EPHEMERAL_SESSION_COOKIES,
+          NULL,
+          profile_params->cookie_monster_delegate.get())));
 
   net::HttpCache::BackendFactory* main_backend =
       net::HttpCache::DefaultBackend::InMemory(0);
@@ -254,7 +258,8 @@ void OffTheRecordProfileIOData::
   // All we care about for extensions is the cookie store. For incognito, we
   // use a non-persistent cookie store.
   net::CookieMonster* extensions_cookie_store =
-      content::CreateInMemoryCookieStore(NULL)->GetCookieMonster();
+      content::CreateCookieStore(content::CookieStoreConfig())->
+          GetCookieMonster();
   // Enable cookies for devtools and extension URLs.
   const char* schemes[] = {chrome::kChromeDevToolsScheme,
                            extensions::kExtensionScheme};
@@ -292,7 +297,8 @@ OffTheRecordProfileIOData::InitializeAppRequestContext(
   // Use a separate in-memory cookie store for the app.
   // TODO(creis): We should have a cookie delegate for notifying the cookie
   // extensions API, but we need to update it to understand isolated apps first.
-  context->SetCookieStore(content::CreateInMemoryCookieStore(NULL));
+  context->SetCookieStore(
+      content::CreateCookieStore(content::CookieStoreConfig()));
 
   // Use a separate in-memory cache for the app.
   net::HttpCache::BackendFactory* app_backend =

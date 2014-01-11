@@ -11,11 +11,16 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/profiles/profile_io_data.h"
+#include "content/public/browser/cookie_store_factory.h"
 
 namespace chrome_browser_net {
 class HttpServerPropertiesManager;
 class Predictor;
 }  // namespace chrome_browser_net
+
+namespace content {
+class CookieCryptoDelegate;
+}  // namespace content
 
 namespace net {
 class FtpTransactionFactory;
@@ -46,7 +51,8 @@ class ProfileImplIOData : public ProfileIOData {
               const base::FilePath& profile_path,
               const base::FilePath& infinite_cache_path,
               chrome_browser_net::Predictor* predictor,
-              bool restore_old_session_cookies,
+              content::CookieStoreConfig::SessionCookieMode
+                  session_cookie_mode,
               quota::SpecialStoragePolicy* special_storage_policy);
 
     // These Create*ContextGetter() functions are only exposed because the
@@ -137,7 +143,7 @@ class ProfileImplIOData : public ProfileIOData {
     int media_cache_max_size;
     base::FilePath extensions_cookie_path;
     base::FilePath infinite_cache_path;
-    bool restore_old_session_cookies;
+    content::CookieStoreConfig::SessionCookieMode session_cookie_mode;
     scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy;
   };
 

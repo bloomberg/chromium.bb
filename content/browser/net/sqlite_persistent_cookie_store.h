@@ -51,7 +51,7 @@ class CONTENT_EXPORT SQLitePersistentCookieStore
       const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
       bool restore_old_session_cookies,
       quota::SpecialStoragePolicy* special_storage_policy,
-      scoped_ptr<CookieCryptoDelegate> crypto_delegate);
+      CookieCryptoDelegate* crypto_delegate);
 
   // net::CookieMonster::PersistentCookieStore:
   virtual void Load(const LoadedCallback& loaded_callback) OVERRIDE;

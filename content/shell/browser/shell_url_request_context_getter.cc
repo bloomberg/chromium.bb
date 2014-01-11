@@ -102,7 +102,8 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
     url_request_context_->set_network_delegate(network_delegate_.get());
     storage_.reset(
         new net::URLRequestContextStorage(url_request_context_.get()));
-    storage_->set_cookie_store(CreateInMemoryCookieStore(NULL));
+    storage_->set_cookie_store(
+        content::CreateCookieStore(content::CookieStoreConfig()));
     storage_->set_server_bound_cert_service(new net::ServerBoundCertService(
         new net::DefaultServerBoundCertStore(NULL),
         base::WorkerPool::GetTaskRunner(true)));

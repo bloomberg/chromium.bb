@@ -306,12 +306,12 @@ void SafeBrowsingService::InitURLRequestContextOnIOThread(
   DCHECK(!url_request_context_.get());
 
   scoped_refptr<net::CookieStore> cookie_store(
-      content::CreatePersistentCookieStore(
-          CookieFilePath(),
-          false,
-          NULL,
-          NULL,
-          scoped_ptr<content::CookieCryptoDelegate>()));
+      content::CreateCookieStore(
+          content::CookieStoreConfig(
+              CookieFilePath(),
+              content::CookieStoreConfig::EPHEMERAL_SESSION_COOKIES,
+              NULL,
+              NULL)));
 
   url_request_context_.reset(new net::URLRequestContext);
   // |system_url_request_context_getter| may be NULL during tests.

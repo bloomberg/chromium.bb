@@ -613,9 +613,12 @@ void ProfileImpl::DoFinalInit() {
       StartupBrowserCreator::GetSessionStartupPref(
           *CommandLine::ForCurrentProcess(), this).type;
 #endif
-  bool restore_old_session_cookies =
-      (GetLastSessionExitType() == Profile::EXIT_CRASHED ||
-       startup_pref_type == SessionStartupPref::LAST);
+  content::CookieStoreConfig::SessionCookieMode session_cookie_mode =
+      content::CookieStoreConfig::PERSISTANT_SESSION_COOKIES;
+  if (GetLastSessionExitType() == Profile::EXIT_CRASHED ||
+      startup_pref_type == SessionStartupPref::LAST) {
+    session_cookie_mode = content::CookieStoreConfig::RESTORED_SESSION_COOKIES;
+  }
 
   InitHostZoomMap();
 
@@ -626,7 +629,7 @@ void ProfileImpl::DoFinalInit() {
                 cache_max_size, media_cache_path, media_cache_max_size,
                 extensions_cookie_path, GetPath(), infinite_cache_path,
                 predictor_,
-                restore_old_session_cookies,
+                session_cookie_mode,
                 GetSpecialStoragePolicy());
 
 #if defined(ENABLE_PLUGINS)

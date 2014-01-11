@@ -67,8 +67,7 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
         temp_dir_.path().Append(cookie_filename),
         client_task_runner(),
         background_task_runner(),
-        false, NULL,
-        scoped_ptr<content::CookieCryptoDelegate>());
+        false, NULL, NULL);
     std::vector<net::CanonicalCookie*> cookies;
     Load();
     ASSERT_EQ(0u, cookies_.size());
@@ -99,8 +98,7 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
         temp_dir_.path().Append(cookie_filename),
         client_task_runner(),
         background_task_runner(),
-        false, NULL,
-        scoped_ptr<content::CookieCryptoDelegate>());
+        false, NULL, NULL);
   }
 
   virtual void TearDown() OVERRIDE {

@@ -132,7 +132,8 @@ class ExperimentURLRequestContext : public net::URLRequestContext {
     storage_.set_http_transaction_factory(new net::HttpCache(
         network_session.get(), net::HttpCache::DefaultBackend::InMemory(0)));
     // In-memory cookie store.
-    storage_.set_cookie_store(content::CreateInMemoryCookieStore(NULL));
+    storage_.set_cookie_store(
+        content::CreateCookieStore(content::CookieStoreConfig()));
 
     return net::OK;
   }
