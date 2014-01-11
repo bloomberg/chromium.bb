@@ -1295,6 +1295,7 @@ def GetDefaultTryConfigs(bots=None):
       'linux_chromium_dbg': ['defaulttests'],
       'linux_chromium_rel': ['defaulttests'],
       'linux_clang': ['compile'],
+      'linux_nacl_sdk_build': ['compile'],
       'linux_rel': standard_tests + [
           'cc_unittests',
           'chromedriver_unittests',
@@ -1308,6 +1309,7 @@ def GetDefaultTryConfigs(bots=None):
       'mac': ['compile'],
       'mac_chromium_dbg': ['defaulttests'],
       'mac_chromium_rel': ['defaulttests'],
+      'mac_nacl_sdk_build': ['compile'],
       'mac_rel': standard_tests + [
           'app_list_unittests',
           'cc_unittests',
@@ -1321,6 +1323,7 @@ def GetDefaultTryConfigs(bots=None):
           'telemetry_unittests',
       ],
       'win': ['compile'],
+      'win_nacl_sdk_build': ['compile'],
       'win_rel': standard_tests + [
           'app_list_unittests',
           'ash_unittests',
@@ -1422,10 +1425,13 @@ def GetPreferredTrySlaves(project, change):
       'linux_asan',
       'linux_chromeos',
       'linux_clang',
+      'linux_nacl_sdk_build',
       'linux_rel',
       'mac',
+      'mac_nacl_sdk_build',
       'mac_rel',
       'win',
+      'win_nacl_sdk_build',
       'win_rel',
       'win_x64_rel',
   ])
