@@ -175,6 +175,13 @@ void OSExchangeDataProviderAuraX11::SetPickledData(
 }
 
 bool OSExchangeDataProviderAuraX11::GetString(base::string16* result) const {
+  if (HasFile()) {
+    // Various Linux file managers both pass a list of file:// URIs and set the
+    // string representation to the URI. We explicitly don't want to return use
+    // this representation.
+    return false;
+  }
+
   std::vector< ::Atom> text_atoms = ui::GetTextAtomsFrom(&atom_cache_);
   std::vector< ::Atom> requested_types;
   ui::GetAtomIntersection(text_atoms, GetTargets(), &requested_types);
@@ -292,7 +299,7 @@ bool OSExchangeDataProviderAuraX11::HasString() const {
   std::vector< ::Atom> text_atoms = ui::GetTextAtomsFrom(&atom_cache_);
   std::vector< ::Atom> requested_types;
   ui::GetAtomIntersection(text_atoms, GetTargets(), &requested_types);
-  return !requested_types.empty();
+  return !requested_types.empty() && !HasFile();
 }
 
 bool OSExchangeDataProviderAuraX11::HasURL() const {

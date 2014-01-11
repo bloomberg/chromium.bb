@@ -96,4 +96,24 @@ TEST_F(OSExchangeDataProviderAuraX11Test, URIListWithBoth) {
   EXPECT_EQ(kGoogleURL, out_gurl.spec());
 }
 
+TEST_F(OSExchangeDataProviderAuraX11Test, OnlyStringURLIsUnfiltered) {
+  const base::string16 file_url = base::UTF8ToUTF16(kFileURL);
+  provider.SetString(file_url);
+
+  EXPECT_TRUE(provider.HasString());
+  EXPECT_FALSE(provider.HasURL());
+}
+
+TEST_F(OSExchangeDataProviderAuraX11Test, StringAndURIListFilterString) {
+  const base::string16 file_url = base::UTF8ToUTF16(kFileURL);
+  provider.SetString(file_url);
+  AddURLList(kFileURL);
+
+  EXPECT_FALSE(provider.HasString());
+  base::string16 out_str;
+  EXPECT_FALSE(provider.GetString(&out_str));
+
+  EXPECT_TRUE(provider.HasFile());
+}
+
 }  // namespace ui
