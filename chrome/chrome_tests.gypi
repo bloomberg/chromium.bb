@@ -2090,7 +2090,6 @@
         'test/base/chrome_render_view_test.h',
         'test/perf/browser_perf_test.cc',
         'test/perf/browser_perf_test.h',
-        'test/perf/rendering/throughput_tests.cc',
       ],
       'rules': [
         {

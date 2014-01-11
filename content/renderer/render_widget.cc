@@ -1649,7 +1649,8 @@ void RenderWidget::DoDeferredUpdate() {
     }
 
     // Software FPS tick for performance tests. The accelerated path traces the
-    // frame events in didCommitAndDrawCompositorFrame. See throughput_tests.cc.
+    // frame events in didCommitAndDrawCompositorFrame. See
+    // tab_capture_performancetest.cc.
     // NOTE: Tests may break if this event is renamed or moved.
     UNSHIPPED_TRACE_EVENT_INSTANT0("test_fps", "TestFrameTickSW",
                                    TRACE_EVENT_SCOPE_THREAD);
@@ -1897,8 +1898,9 @@ void RenderWidget::DidCommitCompositorFrame() {
 
 void RenderWidget::didCommitAndDrawCompositorFrame() {
   TRACE_EVENT0("gpu", "RenderWidget::didCommitAndDrawCompositorFrame");
-  // Accelerated FPS tick for performance tests. See throughput_tests.cc.
-  // NOTE: Tests may break if this event is renamed or moved.
+  // Accelerated FPS tick for performance tests. See
+  // tab_capture_performancetest.cc.  NOTE: Tests may break if this event is
+  // renamed or moved.
   UNSHIPPED_TRACE_EVENT_INSTANT0("test_fps", "TestFrameTickGPU",
                                  TRACE_EVENT_SCOPE_THREAD);
   // Notify subclasses that we initiated the paint operation.
