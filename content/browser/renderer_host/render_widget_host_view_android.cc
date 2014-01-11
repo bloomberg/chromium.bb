@@ -110,6 +110,23 @@ bool UsingDelegatedRenderer() {
   return using_delegated_renderer;
 }
 
+ui::LatencyInfo CreateLatencyInfo(const blink::WebInputEvent event) {
+  ui::LatencyInfo latency_info;
+  // The latency number should only be added if the timestamp is valid.
+  if (event.timeStampSeconds) {
+    const int64 time_micros = static_cast<int64>(
+        event.timeStampSeconds * base::Time::kMicrosecondsPerSecond);
+    latency_info.AddLatencyNumberWithTimestamp(
+        ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
+        0,
+        0,
+        base::TimeTicks() + base::TimeDelta::FromMicroseconds(time_micros),
+        1,
+        false);
+  }
+  return latency_info;
+}
+
 }  // anonymous namespace
 
 RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
@@ -1178,7 +1195,7 @@ void RenderWidgetHostViewAndroid::SendKeyEvent(
 void RenderWidgetHostViewAndroid::SendTouchEvent(
     const blink::WebTouchEvent& event) {
   if (host_)
-    host_->ForwardTouchEventWithLatencyInfo(event, ui::LatencyInfo());
+    host_->ForwardTouchEventWithLatencyInfo(event, CreateLatencyInfo(event));
 }
 
 
@@ -1201,7 +1218,7 @@ void RenderWidgetHostViewAndroid::SendGestureEvent(
    overscroll_effect_->Enable();
 
   if (host_)
-    host_->ForwardGestureEvent(event);
+    host_->ForwardGestureEventWithLatencyInfo(event, CreateLatencyInfo(event));
 }
 
 void RenderWidgetHostViewAndroid::SelectRange(const gfx::Point& start,
