@@ -34,6 +34,10 @@
     RuntimeEnabled=MediaSource
 ] interface SourceBuffer : EventTarget {
 
+    // Gets or sets the AppendMode.
+    // FIXME: Remove MediaSourceExperimental once mode attribute is implemented and stabilized. See http://crbug.com/249422.
+    [RaisesException=Setter, RuntimeEnabled=MediaSourceExperimental] attribute DOMString mode;
+
     readonly attribute boolean updating;
 
     // Returns the time ranges buffered.

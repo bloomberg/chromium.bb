@@ -61,10 +61,14 @@ class SourceBuffer : public RefCounted<SourceBuffer>, public ActiveDOMObject, pu
     REFCOUNTED_EVENT_TARGET(SourceBuffer);
 public:
     static PassRefPtr<SourceBuffer> create(PassOwnPtr<blink::WebSourceBuffer>, MediaSource*, GenericEventQueue*);
+    static const AtomicString& segmentsKeyword();
+    static const AtomicString& sequenceKeyword();
 
     virtual ~SourceBuffer();
 
     // SourceBuffer.idl methods
+    const AtomicString& mode() const { return m_mode; }
+    void setMode(const AtomicString&, ExceptionState&);
     bool updating() const { return m_updating; }
     PassRefPtr<TimeRanges> buffered(ExceptionState&) const;
     double timestampOffset() const;
@@ -119,6 +123,7 @@ private:
     MediaSource* m_source;
     GenericEventQueue* m_asyncEventQueue;
 
+    AtomicString m_mode;
     bool m_updating;
     double m_timestampOffset;
     double m_appendWindowStart;

@@ -37,7 +37,15 @@ namespace blink {
 
 class WebSourceBuffer {
 public:
+    enum AppendMode {
+        AppendModeSegments,
+        AppendModeSequence
+    };
+
     virtual ~WebSourceBuffer() { }
+
+    // FIXME: Remove default implementation once Chromium setMode() implementation has landed. See http://crbug.com/249422.
+    virtual bool setMode(AppendMode) { return true; }
 
     virtual WebTimeRanges buffered() = 0;
     virtual void append(const unsigned char* data, unsigned length) = 0;

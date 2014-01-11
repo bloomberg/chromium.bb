@@ -65,6 +65,7 @@ SourceBuffer::SourceBuffer(PassOwnPtr<WebSourceBuffer> webSourceBuffer, MediaSou
     , m_webSourceBuffer(webSourceBuffer)
     , m_source(source)
     , m_asyncEventQueue(asyncEventQueue)
+    , m_mode(segmentsKeyword())
     , m_updating(false)
     , m_timestampOffset(0)
     , m_appendWindowStart(0)
@@ -87,6 +88,56 @@ SourceBuffer::~SourceBuffer()
     ASSERT(isRemoved());
     ASSERT(!m_loader);
     ASSERT(!m_stream);
+}
+
+const AtomicString& SourceBuffer::segmentsKeyword()
+{
+    DEFINE_STATIC_LOCAL(const AtomicString, segments, ("segments", AtomicString::ConstructFromLiteral));
+    return segments;
+}
+
+const AtomicString& SourceBuffer::sequenceKeyword()
+{
+    DEFINE_STATIC_LOCAL(const AtomicString, sequence, ("sequence", AtomicString::ConstructFromLiteral));
+    return sequence;
+}
+
+void SourceBuffer::setMode(const AtomicString& newMode, ExceptionState& exceptionState)
+{
+    // Section 3.1 On setting mode attribute steps.
+    // 1. Let new mode equal the new value being assigned to this attribute.
+    // 2. If new mode does not equal "segments" or "sequence", then throw an INVALID_ACCESS_ERR exception and abort
+    //    these steps.
+    if (newMode != segmentsKeyword() && newMode != sequenceKeyword()) {
+        exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
+        return;
+    }
+
+    // 3. If this object has been removed from the sourceBuffers attribute of the parent media source, then throw
+    //    an INVALID_STATE_ERR exception and abort these steps.
+    // 4. If the updating attribute equals true, then throw an INVALID_STATE_ERR exception and abort these steps.
+    if (isRemoved() || m_updating) {
+        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        return;
+    }
+
+    // 5. If the readyState attribute of the parent media source is in the "ended" state then run the following steps:
+    // 5.1 Set the readyState attribute of the parent media source to "open"
+    // 5.2 Queue a task to fire a simple event named sourceopen at the parent media source.
+    m_source->openIfInEndedState();
+
+    // 6. If the append state equals PARSING_MEDIA_SEGMENT, then throw an INVALID_STATE_ERR and abort these steps.
+    // 7. If the new mode equals "sequence", then set the group start timestamp to the highest presentation end timestamp.
+    WebSourceBuffer::AppendMode appendMode = WebSourceBuffer::AppendModeSegments;
+    if (newMode == sequenceKeyword())
+        appendMode = WebSourceBuffer::AppendModeSequence;
+    if (!m_webSourceBuffer->setMode(appendMode)) {
+        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
+        return;
+    }
+
+    // 8. Update the attribute to new mode.
+    m_mode = newMode;
 }
 
 PassRefPtr<TimeRanges> SourceBuffer::buffered(ExceptionState& exceptionState) const
@@ -125,10 +176,8 @@ void SourceBuffer::setTimestampOffset(double offset, ExceptionState& exceptionSt
     // 4.2 Queue a task to fire a simple event named sourceopen at the parent media source.
     m_source->openIfInEndedState();
 
-    // 5. If this object is waiting for the end of a media segment to be appended, then throw an InvalidStateError
-    // and abort these steps.
-    //
-    // FIXME: Add step 6 text when mode attribute is implemented.
+    // 5. If the append state equals PARSING_MEDIA_SEGMENT, then throw an INVALID_STATE_ERR and abort these steps.
+    // 6. If the mode attribute equals "sequence", then set the group start timestamp to new timestamp offset.
     if (!m_webSourceBuffer->setTimestampOffset(offset)) {
         exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;

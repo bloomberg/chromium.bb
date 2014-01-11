@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="/w3c/resources/testharness.js"></script>
+        <script src="/w3c/resources/testharnessreport.js"></script>
+        <script src="mediasource-util.js"></script>
+        <script src="/media/resources/media-source/webm/segment-info.js"></script>
+
+        <link rel='stylesheet' href='/w3c/resources/testharness.css'>
+    </head>
+    <body>
+        <div id="log"></div>
+        <script>
+          mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
+          {
+              assert_equals(sourceBuffer.mode, 'segments', 'default append mode should be \'segments\'');
+              test.done();
+          }, 'Test initial value of SourceBuffer.mode is "segments"');
+
+          mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
+          {
+              sourceBuffer.mode = 'sequence';
+              assert_equals(sourceBuffer.mode, 'sequence', 'mode after setting it to \'sequence\'');
+              sourceBuffer.mode = 'segments';
+              assert_equals(sourceBuffer.mode, 'segments', 'mode after setting it to \'segments\'');
+              assert_throws('InvalidAccessError',
+                  function() { sourceBuffer.mode = 'invalidmode'; },
+                  'Setting invalid sourceBuffer.mode should throw InvalidAccessError.');
+              test.done();
+          }, 'Test setting SourceBuffer.mode');
+
+          mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
+          {
+              mediaSource.removeSourceBuffer(sourceBuffer);
+              assert_throws('InvalidStateError',
+                  function() { sourceBuffer.mode = 'segments'; },
+                  'Setting valid sourceBuffer.mode on removed SourceBuffer should throw InvalidStateError.');
+              test.done();
+          }, 'Test setting a removed SourceBuffer\'s mode');
+
+          mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
+          {
+              sourceBuffer.appendBuffer(mediaData);
+              assert_true(sourceBuffer.updating, 'updating attribute is true');
+              assert_throws('InvalidStateError',
+                  function() { sourceBuffer.mode = 'segments'; },
+                  'Setting valid sourceBuffer.mode on updating SourceBuffer threw InvalidStateError.');
+              test.done();
+          }, 'Test setting SourceBuffer.mode while still updating');
+
+          mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
+          {
+              test.expectEvent(sourceBuffer, 'updateend', 'Append ended.');
+              sourceBuffer.appendBuffer(mediaData);
+
+              test.waitForExpectedEvents(function()
+              {
+                  assert_false(sourceBuffer.updating, 'updating attribute is false');
+
+                  test.expectEvent(mediaSource, 'sourceended', 'MediaSource sourceended event');
+                  mediaSource.endOfStream();
+                  assert_equals(mediaSource.readyState, 'ended', 'MediaSource readyState is \'ended\'');
+              });
+
+              test.waitForExpectedEvents(function()
+              {
+                  assert_equals(mediaSource.readyState, 'ended', 'MediaSource readyState is \'ended\'');
+
+                  test.expectEvent(mediaSource, 'sourceopen', 'MediaSource sourceopen event');
+                  sourceBuffer.mode = 'segments';
+
+                  assert_equals(mediaSource.readyState, 'open', 'MediaSource readyState is \'open\'');
+              });
+
+              test.waitForExpectedEvents(function()
+              {
+                  assert_equals(mediaSource.readyState, 'open', 'MediaSource readyState is \'open\'');
+                  test.done();
+              });
+          }, 'Test setting SourceBuffer.mode triggers parent MediaSource \'ended\' to \'open\' transition.');
+
+          // FIXME: Once enough Chromium implementation lands, add tests for at least confirming exception if append
+          // state is PARSING_MEDIA_SEGMENT (per 3.1 setting mode steps 6-7). See http://crbug.com/249422.
+        </script>
+    </body>
+</html>
