@@ -14,6 +14,11 @@
 #include "mojo/system/system_impl_export.h"
 
 namespace mojo {
+
+namespace embedder {
+void Init();  // So it can be friended.
+}
+
 namespace system {
 
 class CoreImpl;
@@ -23,10 +28,8 @@ namespace test {
 class CoreTestBase;
 }
 
-// |CoreImpl| is a singleton object that implements the Mojo system calls. With
-// the (obvious) exception of |Init()|, which must be called first (and the call
-// completed) before making any other calls, all the public methods are
-// thread-safe.
+// |CoreImpl| is a singleton object that implements the Mojo system calls. All
+// public methods are thread-safe.
 class MOJO_SYSTEM_IMPL_EXPORT CoreImpl : public Core {
  public:
   static void Init();
@@ -82,6 +85,7 @@ class MOJO_SYSTEM_IMPL_EXPORT CoreImpl : public Core {
                                  uint32_t num_bytes_read) OVERRIDE;
 
  private:
+  friend void embedder::Init();
   friend class test::CoreTestBase;
 
   // The |busy| member is used only to deal with functions (in particular
@@ -152,6 +156,7 @@ class MOJO_SYSTEM_IMPL_EXPORT CoreImpl : public Core {
 };
 
 }  // namespace system
+
 }  // namespace mojo
 
 #endif  // MOJO_SYSTEM_CORE_IMPL_H_

@@ -6,7 +6,7 @@
 
 #include "mojo/shell/dynamic_service_loader.h"
 #include "mojo/shell/network_delegate.h"
-#include "mojo/system/core_impl.h"
+#include "mojo/system/embedder.h"
 
 namespace mojo {
 namespace shell {
@@ -19,7 +19,7 @@ Context::Context()
               task_runners_.cache_runner(),
               scoped_ptr<net::NetworkDelegate>(new NetworkDelegate()),
               storage_.profile_path()) {
-  system::CoreImpl::Init();
+  embedder::Init();
   BindingsSupport::Set(&bindings_support_impl_);
   dynamic_service_loader_.reset(new DynamicServiceLoader(this));
   service_manager_.set_default_loader(dynamic_service_loader_.get());
