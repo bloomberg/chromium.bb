@@ -76,7 +76,7 @@ class RenderServletTest(unittest.TestCase):
     self.assertEqual('application/zip', response.headers['Content-Type'])
 
   def testStaticFile(self):
-    static_file = 'css/site.css'
+    static_file = 'css/out/site.css'
     response = self._Render('static/%s' % static_file)
     self.assertEqual(200, response.status)
     self.assertEqual('text/css; charset=utf-8',
