@@ -45,11 +45,11 @@ class FunctionWrapper;
 // Bound static functions:
 
 template<typename R>
-class FunctionWrapper<R (*)()> {
+class FunctionWrapper<R(*)()> {
 public:
     typedef R ResultType;
 
-    explicit FunctionWrapper(R (*function)())
+    explicit FunctionWrapper(R(*function)())
         : m_function(function)
     {
     }
@@ -60,15 +60,15 @@ public:
     }
 
 private:
-    R (*m_function)();
+    R(*m_function)();
 };
 
 template<typename R, typename P1>
-class FunctionWrapper<R (*)(P1)> {
+class FunctionWrapper<R(*)(P1)> {
 public:
     typedef R ResultType;
 
-    explicit FunctionWrapper(R (*function)(P1))
+    explicit FunctionWrapper(R(*function)(P1))
         : m_function(function)
     {
     }
@@ -79,15 +79,15 @@ public:
     }
 
 private:
-    R (*m_function)(P1);
+    R(*m_function)(P1);
 };
 
 template<typename R, typename P1, typename P2>
-class FunctionWrapper<R (*)(P1, P2)> {
+class FunctionWrapper<R(*)(P1, P2)> {
 public:
     typedef R ResultType;
 
-    explicit FunctionWrapper(R (*function)(P1, P2))
+    explicit FunctionWrapper(R(*function)(P1, P2))
         : m_function(function)
     {
     }
@@ -98,15 +98,15 @@ public:
     }
 
 private:
-    R (*m_function)(P1, P2);
+    R(*m_function)(P1, P2);
 };
 
 template<typename R, typename P1, typename P2, typename P3>
-class FunctionWrapper<R (*)(P1, P2, P3)> {
+class FunctionWrapper<R(*)(P1, P2, P3)> {
 public:
     typedef R ResultType;
 
-    explicit FunctionWrapper(R (*function)(P1, P2, P3))
+    explicit FunctionWrapper(R(*function)(P1, P2, P3))
         : m_function(function)
     {
     }
@@ -117,15 +117,15 @@ public:
     }
 
 private:
-    R (*m_function)(P1, P2, P3);
+    R(*m_function)(P1, P2, P3);
 };
 
 template<typename R, typename P1, typename P2, typename P3, typename P4>
-class FunctionWrapper<R (*)(P1, P2, P3, P4)> {
+class FunctionWrapper<R(*)(P1, P2, P3, P4)> {
 public:
     typedef R ResultType;
 
-    explicit FunctionWrapper(R (*function)(P1, P2, P3, P4))
+    explicit FunctionWrapper(R(*function)(P1, P2, P3, P4))
         : m_function(function)
     {
     }
@@ -136,15 +136,15 @@ public:
     }
 
 private:
-    R (*m_function)(P1, P2, P3, P4);
+    R(*m_function)(P1, P2, P3, P4);
 };
 
 template<typename R, typename P1, typename P2, typename P3, typename P4, typename P5>
-class FunctionWrapper<R (*)(P1, P2, P3, P4, P5)> {
+class FunctionWrapper<R(*)(P1, P2, P3, P4, P5)> {
 public:
     typedef R ResultType;
 
-    explicit FunctionWrapper(R (*function)(P1, P2, P3, P4, P5))
+    explicit FunctionWrapper(R(*function)(P1, P2, P3, P4, P5))
         : m_function(function)
     {
     }
@@ -155,17 +155,17 @@ public:
     }
 
 private:
-    R (*m_function)(P1, P2, P3, P4, P5);
+    R(*m_function)(P1, P2, P3, P4, P5);
 };
 
 // Bound member functions:
 
 template<typename R, typename C>
-class FunctionWrapper<R (C::*)()> {
+class FunctionWrapper<R(C::*)()> {
 public:
     typedef R ResultType;
 
-    explicit FunctionWrapper(R (C::*function)())
+    explicit FunctionWrapper(R(C::*function)())
         : m_function(function)
     {
     }
@@ -184,15 +184,15 @@ public:
     }
 
 private:
-    R (C::*m_function)();
+    R(C::*m_function)();
 };
 
 template<typename R, typename C, typename P1>
-class FunctionWrapper<R (C::*)(P1)> {
+class FunctionWrapper<R(C::*)(P1)> {
 public:
     typedef R ResultType;
 
-    explicit FunctionWrapper(R (C::*function)(P1))
+    explicit FunctionWrapper(R(C::*function)(P1))
         : m_function(function)
     {
     }
@@ -211,15 +211,15 @@ public:
     }
 
 private:
-    R (C::*m_function)(P1);
+    R(C::*m_function)(P1);
 };
 
 template<typename R, typename C, typename P1, typename P2>
-class FunctionWrapper<R (C::*)(P1, P2)> {
+class FunctionWrapper<R(C::*)(P1, P2)> {
 public:
     typedef R ResultType;
 
-    explicit FunctionWrapper(R (C::*function)(P1, P2))
+    explicit FunctionWrapper(R(C::*function)(P1, P2))
         : m_function(function)
     {
     }
@@ -238,15 +238,15 @@ public:
     }
 
 private:
-    R (C::*m_function)(P1, P2);
+    R(C::*m_function)(P1, P2);
 };
 
 template<typename R, typename C, typename P1, typename P2, typename P3>
-class FunctionWrapper<R (C::*)(P1, P2, P3)> {
+class FunctionWrapper<R(C::*)(P1, P2, P3)> {
 public:
     typedef R ResultType;
 
-    explicit FunctionWrapper(R (C::*function)(P1, P2, P3))
+    explicit FunctionWrapper(R(C::*function)(P1, P2, P3))
         : m_function(function)
     {
     }
@@ -265,15 +265,15 @@ public:
     }
 
 private:
-    R (C::*m_function)(P1, P2, P3);
+    R(C::*m_function)(P1, P2, P3);
 };
 
 template<typename R, typename C, typename P1, typename P2, typename P3, typename P4>
-class FunctionWrapper<R (C::*)(P1, P2, P3, P4)> {
+class FunctionWrapper<R(C::*)(P1, P2, P3, P4)> {
 public:
     typedef R ResultType;
 
-    explicit FunctionWrapper(R (C::*function)(P1, P2, P3, P4))
+    explicit FunctionWrapper(R(C::*function)(P1, P2, P3, P4))
         : m_function(function)
     {
     }
@@ -292,15 +292,15 @@ public:
     }
 
 private:
-    R (C::*m_function)(P1, P2, P3, P4);
+    R(C::*m_function)(P1, P2, P3, P4);
 };
 
 template<typename R, typename C, typename P1, typename P2, typename P3, typename P4, typename P5>
-class FunctionWrapper<R (C::*)(P1, P2, P3, P4, P5)> {
+class FunctionWrapper<R(C::*)(P1, P2, P3, P4, P5)> {
 public:
     typedef R ResultType;
 
-    explicit FunctionWrapper(R (C::*function)(P1, P2, P3, P4, P5))
+    explicit FunctionWrapper(R(C::*function)(P1, P2, P3, P4, P5))
         : m_function(function)
     {
     }
@@ -319,7 +319,7 @@ public:
     }
 
 private:
-    R (C::*m_function)(P1, P2, P3, P4, P5);
+    R(C::*m_function)(P1, P2, P3, P4, P5);
 };
 
 template<typename T> struct ParamStorageTraits {
@@ -361,7 +361,7 @@ template<typename>
 class FunctionImpl;
 
 template<typename R>
-class FunctionImpl<R ()> : public FunctionImplBase {
+class FunctionImpl<R()> : public FunctionImplBase {
 public:
     virtual R operator()() = 0;
 };
@@ -370,14 +370,14 @@ template<typename FunctionWrapper, typename FunctionType>
 class BoundFunctionImpl;
 
 template<typename FunctionWrapper, typename R>
-class BoundFunctionImpl<FunctionWrapper, R ()> : public FunctionImpl<typename FunctionWrapper::ResultType ()> {
+class BoundFunctionImpl<FunctionWrapper, R()> FINAL : public FunctionImpl<typename FunctionWrapper::ResultType()> {
 public:
     explicit BoundFunctionImpl(FunctionWrapper functionWrapper)
         : m_functionWrapper(functionWrapper)
     {
     }
 
-    virtual typename FunctionWrapper::ResultType operator()()
+    virtual typename FunctionWrapper::ResultType operator()() OVERRIDE
     {
         return m_functionWrapper();
     }
@@ -387,7 +387,7 @@ private:
 };
 
 template<typename FunctionWrapper, typename R, typename P1>
-class BoundFunctionImpl<FunctionWrapper, R (P1)> : public FunctionImpl<typename FunctionWrapper::ResultType ()> {
+class BoundFunctionImpl<FunctionWrapper, R(P1)> FINAL : public FunctionImpl<typename FunctionWrapper::ResultType()> {
 public:
     BoundFunctionImpl(FunctionWrapper functionWrapper, const P1& p1)
         : m_functionWrapper(functionWrapper)
@@ -395,7 +395,7 @@ public:
     {
     }
 
-    virtual typename FunctionWrapper::ResultType operator()()
+    virtual typename FunctionWrapper::ResultType operator()() OVERRIDE
     {
         return m_functionWrapper(ParamStorageTraits<P1>::unwrap(m_p1));
     }
@@ -406,7 +406,7 @@ private:
 };
 
 template<typename FunctionWrapper, typename R, typename P1, typename P2>
-class BoundFunctionImpl<FunctionWrapper, R (P1, P2)> : public FunctionImpl<typename FunctionWrapper::ResultType ()> {
+class BoundFunctionImpl<FunctionWrapper, R(P1, P2)> FINAL : public FunctionImpl<typename FunctionWrapper::ResultType()> {
 public:
     BoundFunctionImpl(FunctionWrapper functionWrapper, const P1& p1, const P2& p2)
         : m_functionWrapper(functionWrapper)
@@ -415,7 +415,7 @@ public:
     {
     }
 
-    virtual typename FunctionWrapper::ResultType operator()()
+    virtual typename FunctionWrapper::ResultType operator()() OVERRIDE
     {
         return m_functionWrapper(ParamStorageTraits<P1>::unwrap(m_p1), ParamStorageTraits<P2>::unwrap(m_p2));
     }
@@ -427,7 +427,7 @@ private:
 };
 
 template<typename FunctionWrapper, typename R, typename P1, typename P2, typename P3>
-class BoundFunctionImpl<FunctionWrapper, R (P1, P2, P3)> : public FunctionImpl<typename FunctionWrapper::ResultType ()> {
+class BoundFunctionImpl<FunctionWrapper, R(P1, P2, P3)> FINAL : public FunctionImpl<typename FunctionWrapper::ResultType()> {
 public:
     BoundFunctionImpl(FunctionWrapper functionWrapper, const P1& p1, const P2& p2, const P3& p3)
         : m_functionWrapper(functionWrapper)
@@ -437,7 +437,7 @@ public:
     {
     }
 
-    virtual typename FunctionWrapper::ResultType operator()()
+    virtual typename FunctionWrapper::ResultType operator()() OVERRIDE
     {
         return m_functionWrapper(ParamStorageTraits<P1>::unwrap(m_p1), ParamStorageTraits<P2>::unwrap(m_p2), ParamStorageTraits<P3>::unwrap(m_p3));
     }
@@ -450,7 +450,7 @@ private:
 };
 
 template<typename FunctionWrapper, typename R, typename P1, typename P2, typename P3, typename P4>
-class BoundFunctionImpl<FunctionWrapper, R (P1, P2, P3, P4)> : public FunctionImpl<typename FunctionWrapper::ResultType ()> {
+class BoundFunctionImpl<FunctionWrapper, R(P1, P2, P3, P4)> FINAL : public FunctionImpl<typename FunctionWrapper::ResultType()> {
 public:
     BoundFunctionImpl(FunctionWrapper functionWrapper, const P1& p1, const P2& p2, const P3& p3, const P4& p4)
         : m_functionWrapper(functionWrapper)
@@ -461,7 +461,7 @@ public:
     {
     }
 
-    virtual typename FunctionWrapper::ResultType operator()()
+    virtual typename FunctionWrapper::ResultType operator()() OVERRIDE
     {
         return m_functionWrapper(ParamStorageTraits<P1>::unwrap(m_p1), ParamStorageTraits<P2>::unwrap(m_p2), ParamStorageTraits<P3>::unwrap(m_p3), ParamStorageTraits<P4>::unwrap(m_p4));
     }
@@ -475,7 +475,7 @@ private:
 };
 
 template<typename FunctionWrapper, typename R, typename P1, typename P2, typename P3, typename P4, typename P5>
-class BoundFunctionImpl<FunctionWrapper, R (P1, P2, P3, P4, P5)> : public FunctionImpl<typename FunctionWrapper::ResultType ()> {
+class BoundFunctionImpl<FunctionWrapper, R(P1, P2, P3, P4, P5)> FINAL : public FunctionImpl<typename FunctionWrapper::ResultType()> {
 public:
     BoundFunctionImpl(FunctionWrapper functionWrapper, const P1& p1, const P2& p2, const P3& p3, const P4& p4, const P5& p5)
         : m_functionWrapper(functionWrapper)
@@ -487,7 +487,7 @@ public:
     {
     }
 
-    virtual typename FunctionWrapper::ResultType operator()()
+    virtual typename FunctionWrapper::ResultType operator()() OVERRIDE
     {
         return m_functionWrapper(ParamStorageTraits<P1>::unwrap(m_p1), ParamStorageTraits<P2>::unwrap(m_p2), ParamStorageTraits<P3>::unwrap(m_p3), ParamStorageTraits<P4>::unwrap(m_p4), ParamStorageTraits<P5>::unwrap(m_p5));
     }
@@ -502,7 +502,7 @@ private:
 };
 
 template<typename FunctionWrapper, typename R, typename P1, typename P2, typename P3, typename P4, typename P5, typename P6>
-class BoundFunctionImpl<FunctionWrapper, R (P1, P2, P3, P4, P5, P6)> : public FunctionImpl<typename FunctionWrapper::ResultType ()> {
+class BoundFunctionImpl<FunctionWrapper, R(P1, P2, P3, P4, P5, P6)> FINAL : public FunctionImpl<typename FunctionWrapper::ResultType()> {
 public:
     BoundFunctionImpl(FunctionWrapper functionWrapper, const P1& p1, const P2& p2, const P3& p3, const P4& p4, const P5& p5, const P6& p6)
         : m_functionWrapper(functionWrapper)
@@ -515,7 +515,7 @@ public:
     {
     }
 
-    virtual typename FunctionWrapper::ResultType operator()()
+    virtual typename FunctionWrapper::ResultType operator()() OVERRIDE
     {
         return m_functionWrapper(ParamStorageTraits<P1>::unwrap(m_p1), ParamStorageTraits<P2>::unwrap(m_p2), ParamStorageTraits<P3>::unwrap(m_p3), ParamStorageTraits<P4>::unwrap(m_p4), ParamStorageTraits<P5>::unwrap(m_p5), ParamStorageTraits<P6>::unwrap(m_p6));
     }
@@ -560,13 +560,13 @@ template<typename>
 class Function;
 
 template<typename R>
-class Function<R ()> : public FunctionBase {
+class Function<R()> : public FunctionBase {
 public:
     Function()
     {
     }
 
-    Function(PassRefPtr<FunctionImpl<R ()> > impl)
+    Function(PassRefPtr<FunctionImpl<R()> > impl)
         : FunctionBase(impl)
     {
     }
@@ -574,50 +574,50 @@ public:
     R operator()() const
     {
         ASSERT(!isNull());
-        return impl<R ()>()->operator()();
+        return impl<R()>()->operator()();
     }
 };
 
 template<typename FunctionType>
-Function<typename FunctionWrapper<FunctionType>::ResultType ()> bind(FunctionType function)
+Function<typename FunctionWrapper<FunctionType>::ResultType()> bind(FunctionType function)
 {
-    return Function<typename FunctionWrapper<FunctionType>::ResultType ()>(adoptRef(new BoundFunctionImpl<FunctionWrapper<FunctionType>, typename FunctionWrapper<FunctionType>::ResultType ()>(FunctionWrapper<FunctionType>(function))));
+    return Function<typename FunctionWrapper<FunctionType>::ResultType()>(adoptRef(new BoundFunctionImpl<FunctionWrapper<FunctionType>, typename FunctionWrapper<FunctionType>::ResultType()>(FunctionWrapper<FunctionType>(function))));
 }
 
 template<typename FunctionType, typename A1>
-Function<typename FunctionWrapper<FunctionType>::ResultType ()> bind(FunctionType function, const A1& a1)
+Function<typename FunctionWrapper<FunctionType>::ResultType()> bind(FunctionType function, const A1& a1)
 {
-    return Function<typename FunctionWrapper<FunctionType>::ResultType ()>(adoptRef(new BoundFunctionImpl<FunctionWrapper<FunctionType>, typename FunctionWrapper<FunctionType>::ResultType (A1)>(FunctionWrapper<FunctionType>(function), a1)));
+    return Function<typename FunctionWrapper<FunctionType>::ResultType()>(adoptRef(new BoundFunctionImpl<FunctionWrapper<FunctionType>, typename FunctionWrapper<FunctionType>::ResultType (A1)>(FunctionWrapper<FunctionType>(function), a1)));
 }
 
 template<typename FunctionType, typename A1, typename A2>
-Function<typename FunctionWrapper<FunctionType>::ResultType ()> bind(FunctionType function, const A1& a1, const A2& a2)
+Function<typename FunctionWrapper<FunctionType>::ResultType()> bind(FunctionType function, const A1& a1, const A2& a2)
 {
-    return Function<typename FunctionWrapper<FunctionType>::ResultType ()>(adoptRef(new BoundFunctionImpl<FunctionWrapper<FunctionType>, typename FunctionWrapper<FunctionType>::ResultType (A1, A2)>(FunctionWrapper<FunctionType>(function), a1, a2)));
+    return Function<typename FunctionWrapper<FunctionType>::ResultType()>(adoptRef(new BoundFunctionImpl<FunctionWrapper<FunctionType>, typename FunctionWrapper<FunctionType>::ResultType (A1, A2)>(FunctionWrapper<FunctionType>(function), a1, a2)));
 }
 
 template<typename FunctionType, typename A1, typename A2, typename A3>
-Function<typename FunctionWrapper<FunctionType>::ResultType ()> bind(FunctionType function, const A1& a1, const A2& a2, const A3& a3)
+Function<typename FunctionWrapper<FunctionType>::ResultType()> bind(FunctionType function, const A1& a1, const A2& a2, const A3& a3)
 {
-    return Function<typename FunctionWrapper<FunctionType>::ResultType ()>(adoptRef(new BoundFunctionImpl<FunctionWrapper<FunctionType>, typename FunctionWrapper<FunctionType>::ResultType (A1, A2, A3)>(FunctionWrapper<FunctionType>(function), a1, a2, a3)));
+    return Function<typename FunctionWrapper<FunctionType>::ResultType()>(adoptRef(new BoundFunctionImpl<FunctionWrapper<FunctionType>, typename FunctionWrapper<FunctionType>::ResultType (A1, A2, A3)>(FunctionWrapper<FunctionType>(function), a1, a2, a3)));
 }
 
 template<typename FunctionType, typename A1, typename A2, typename A3, typename A4>
-Function<typename FunctionWrapper<FunctionType>::ResultType ()> bind(FunctionType function, const A1& a1, const A2& a2, const A3& a3, const A4& a4)
+Function<typename FunctionWrapper<FunctionType>::ResultType()> bind(FunctionType function, const A1& a1, const A2& a2, const A3& a3, const A4& a4)
 {
-    return Function<typename FunctionWrapper<FunctionType>::ResultType ()>(adoptRef(new BoundFunctionImpl<FunctionWrapper<FunctionType>, typename FunctionWrapper<FunctionType>::ResultType (A1, A2, A3, A4)>(FunctionWrapper<FunctionType>(function), a1, a2, a3, a4)));
+    return Function<typename FunctionWrapper<FunctionType>::ResultType()>(adoptRef(new BoundFunctionImpl<FunctionWrapper<FunctionType>, typename FunctionWrapper<FunctionType>::ResultType (A1, A2, A3, A4)>(FunctionWrapper<FunctionType>(function), a1, a2, a3, a4)));
 }
 
 template<typename FunctionType, typename A1, typename A2, typename A3, typename A4, typename A5>
-Function<typename FunctionWrapper<FunctionType>::ResultType ()> bind(FunctionType function, const A1& a1, const A2& a2, const A3& a3, const A4& a4, const A5& a5)
+Function<typename FunctionWrapper<FunctionType>::ResultType()> bind(FunctionType function, const A1& a1, const A2& a2, const A3& a3, const A4& a4, const A5& a5)
 {
-    return Function<typename FunctionWrapper<FunctionType>::ResultType ()>(adoptRef(new BoundFunctionImpl<FunctionWrapper<FunctionType>, typename FunctionWrapper<FunctionType>::ResultType (A1, A2, A3, A4, A5)>(FunctionWrapper<FunctionType>(function), a1, a2, a3, a4, a5)));
+    return Function<typename FunctionWrapper<FunctionType>::ResultType()>(adoptRef(new BoundFunctionImpl<FunctionWrapper<FunctionType>, typename FunctionWrapper<FunctionType>::ResultType (A1, A2, A3, A4, A5)>(FunctionWrapper<FunctionType>(function), a1, a2, a3, a4, a5)));
 }
 
 template<typename FunctionType, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6>
-Function<typename FunctionWrapper<FunctionType>::ResultType ()> bind(FunctionType function, const A1& a1, const A2& a2, const A3& a3, const A4& a4, const A5& a5, const A6& a6)
+Function<typename FunctionWrapper<FunctionType>::ResultType()> bind(FunctionType function, const A1& a1, const A2& a2, const A3& a3, const A4& a4, const A5& a5, const A6& a6)
 {
-    return Function<typename FunctionWrapper<FunctionType>::ResultType ()>(adoptRef(new BoundFunctionImpl<FunctionWrapper<FunctionType>, typename FunctionWrapper<FunctionType>::ResultType (A1, A2, A3, A4, A5, A6)>(FunctionWrapper<FunctionType>(function), a1, a2, a3, a4, a5, a6)));
+    return Function<typename FunctionWrapper<FunctionType>::ResultType()>(adoptRef(new BoundFunctionImpl<FunctionWrapper<FunctionType>, typename FunctionWrapper<FunctionType>::ResultType (A1, A2, A3, A4, A5, A6)>(FunctionWrapper<FunctionType>(function), a1, a2, a3, a4, a5, a6)));
 }
 
 typedef Function<void()> Closure;

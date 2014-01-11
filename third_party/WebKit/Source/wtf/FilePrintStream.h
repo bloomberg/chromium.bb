@@ -32,7 +32,7 @@
 
 namespace WTF {
 
-class FilePrintStream : public PrintStream {
+class FilePrintStream FINAL : public PrintStream {
 public:
     enum AdoptionMode {
         Adopt,
@@ -46,8 +46,8 @@ public:
 
     FILE* file() { return m_file; }
 
-    void vprintf(const char* format, va_list) WTF_ATTRIBUTE_PRINTF(2, 0);
-    void flush();
+    virtual void vprintf(const char* format, va_list) WTF_ATTRIBUTE_PRINTF(2, 0) OVERRIDE;
+    virtual void flush() OVERRIDE;
 
 private:
     FILE* m_file;

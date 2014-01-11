@@ -32,7 +32,7 @@
 
 namespace WTF {
 
-class Float32Array : public TypedArrayBase<float> {
+class Float32Array FINAL : public TypedArrayBase<float> {
 public:
     static inline PassRefPtr<Float32Array> create(unsigned length);
     static inline PassRefPtr<Float32Array> create(const float* array, unsigned length);
@@ -54,7 +54,7 @@ public:
     inline PassRefPtr<Float32Array> subarray(int start) const;
     inline PassRefPtr<Float32Array> subarray(int start, int end) const;
 
-    virtual ViewType getType() const
+    virtual ViewType getType() const OVERRIDE
     {
         return TypeFloat32;
     }

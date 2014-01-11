@@ -30,7 +30,7 @@
 
 namespace WTF {
 
-class TextCodecUTF8 : public TextCodec {
+class TextCodecUTF8 FINAL : public TextCodec {
 public:
     static void registerEncodingNames(EncodingNameRegistrar);
     static void registerCodecs(TextCodecRegistrar);

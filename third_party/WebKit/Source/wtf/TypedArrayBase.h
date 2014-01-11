@@ -60,7 +60,7 @@ class TypedArrayBase : public ArrayBufferView {
         return m_length;
     }
 
-    virtual unsigned byteLength() const
+    virtual unsigned byteLength() const OVERRIDE FINAL
     {
         return m_length * sizeof(T);
     }
@@ -137,7 +137,7 @@ protected:
         return create<Subclass>(buffer(), offset, length);
     }
 
-    virtual void neuter()
+    virtual void neuter() OVERRIDE FINAL
     {
         ArrayBufferView::neuter();
         m_length = 0;
