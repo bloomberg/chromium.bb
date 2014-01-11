@@ -89,17 +89,17 @@ public:
     const BorderValue& borderAdjoiningEndCell(const RenderTableCell*) const;
 
 private:
-    virtual RenderObjectChildList* virtualChildren() { return children(); }
-    virtual const RenderObjectChildList* virtualChildren() const { return children(); }
+    virtual RenderObjectChildList* virtualChildren() OVERRIDE { return children(); }
+    virtual const RenderObjectChildList* virtualChildren() const OVERRIDE { return children(); }
 
-    virtual const char* renderName() const { return (isAnonymous() || isPseudoElement()) ? "RenderTableRow (anonymous)" : "RenderTableRow"; }
+    virtual const char* renderName() const OVERRIDE { return (isAnonymous() || isPseudoElement()) ? "RenderTableRow (anonymous)" : "RenderTableRow"; }
 
-    virtual bool isTableRow() const { return true; }
+    virtual bool isTableRow() const OVERRIDE { return true; }
 
     virtual void willBeRemovedFromTree() OVERRIDE;
 
-    virtual void addChild(RenderObject* child, RenderObject* beforeChild = 0);
-    virtual void layout();
+    virtual void addChild(RenderObject* child, RenderObject* beforeChild = 0) OVERRIDE;
+    virtual void layout() OVERRIDE;
     virtual LayoutRect clippedOverflowRectForRepaint(const RenderLayerModelObject* repaintContainer) const;
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) OVERRIDE;
 
@@ -114,11 +114,11 @@ private:
         return NoLayer;
     }
 
-    virtual void paint(PaintInfo&, const LayoutPoint&);
+    virtual void paint(PaintInfo&, const LayoutPoint&) OVERRIDE;
 
-    virtual void imageChanged(WrappedImagePtr, const IntRect* = 0);
+    virtual void imageChanged(WrappedImagePtr, const IntRect* = 0) OVERRIDE;
 
-    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle);
+    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
 
     RenderObjectChildList m_children;
     unsigned m_rowIndex : 31;

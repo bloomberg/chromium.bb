@@ -39,19 +39,19 @@ public:
 
     virtual ~RenderReplica();
 
-    virtual const char* renderName() const { return "RenderReplica"; }
+    virtual const char* renderName() const OVERRIDE { return "RenderReplica"; }
 
     virtual LayerType layerTypeRequired() const OVERRIDE { return NormalLayer; }
 
-    virtual void layout();
+    virtual void layout() OVERRIDE;
 
-    virtual void paint(PaintInfo&, const LayoutPoint&);
+    virtual void paint(PaintInfo&, const LayoutPoint&) OVERRIDE;
 
 private:
     RenderReplica();
 
-    virtual bool isReplica() const { return true; }
-    virtual void computePreferredLogicalWidths();
+    virtual bool isReplica() const OVERRIDE { return true; }
+    virtual void computePreferredLogicalWidths() OVERRIDE;
 
 };
 

@@ -57,7 +57,7 @@ enum CompositingUpdateType {
 //
 // There is one RenderLayerCompositor per RenderView.
 
-class RenderLayerCompositor : public GraphicsLayerClient {
+class RenderLayerCompositor FINAL : public GraphicsLayerClient {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     explicit RenderLayerCompositor(RenderView*);

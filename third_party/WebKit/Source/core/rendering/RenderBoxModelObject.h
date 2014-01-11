@@ -184,7 +184,7 @@ public:
 
     void highQualityRepaintTimerFired(Timer<RenderBoxModelObject>*);
 
-    virtual void setSelectionState(SelectionState s);
+    virtual void setSelectionState(SelectionState) OVERRIDE;
 
     bool canHaveBoxInfoInRegion() const { return !isFloating() && !isReplaced() && !isInline() && !hasColumns() && !isTableCell() && isRenderBlock() && !isRenderSVGBlock(); }
 
@@ -202,7 +202,7 @@ public:
     virtual void computeLayerHitTestRects(LayerHitTestRects&) const OVERRIDE;
 
 protected:
-    virtual void willBeDestroyed();
+    virtual void willBeDestroyed() OVERRIDE;
 
     class BackgroundImageGeometry {
     public:

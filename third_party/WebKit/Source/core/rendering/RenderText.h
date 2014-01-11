@@ -44,7 +44,7 @@ public:
     virtual ~RenderText();
 #endif
 
-    virtual const char* renderName() const;
+    virtual const char* renderName() const OVERRIDE;
 
     virtual bool isTextFragment() const;
     virtual bool isWordBreak() const;
@@ -109,10 +109,10 @@ public:
 
     virtual void transformText();
 
-    virtual bool canBeSelectionLeaf() const { return true; }
+    virtual bool canBeSelectionLeaf() const OVERRIDE { return true; }
     virtual void setSelectionState(SelectionState s) OVERRIDE FINAL;
     virtual LayoutRect selectionRectForRepaint(const RenderLayerModelObject* repaintContainer, bool clipToVisibleContent = true) OVERRIDE;
-    virtual LayoutRect localCaretRect(InlineBox*, int caretOffset, LayoutUnit* extraWidthToEndOfLine = 0);
+    virtual LayoutRect localCaretRect(InlineBox*, int caretOffset, LayoutUnit* extraWidthToEndOfLine = 0) OVERRIDE;
 
     LayoutUnit marginLeft() const { return minimumValueForLength(style()->marginLeft(), 0); }
     LayoutUnit marginRight() const { return minimumValueForLength(style()->marginRight(), 0); }
@@ -122,8 +122,8 @@ public:
     InlineTextBox* firstTextBox() const { return m_firstTextBox; }
     InlineTextBox* lastTextBox() const { return m_lastTextBox; }
 
-    virtual int caretMinOffset() const;
-    virtual int caretMaxOffset() const;
+    virtual int caretMinOffset() const OVERRIDE;
+    virtual int caretMaxOffset() const OVERRIDE;
     unsigned renderedTextLength() const;
 
     virtual int previousOffset(int current) const OVERRIDE FINAL;
@@ -150,10 +150,10 @@ public:
 
 protected:
     virtual void computePreferredLogicalWidths(float leadWidth);
-    virtual void willBeDestroyed();
+    virtual void willBeDestroyed() OVERRIDE;
 
     virtual void styleWillChange(StyleDifference, const RenderStyle*) OVERRIDE FINAL { }
-    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle);
+    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
 
     virtual void setTextInternal(PassRefPtr<StringImpl>);
     virtual UChar previousCharacter() const;

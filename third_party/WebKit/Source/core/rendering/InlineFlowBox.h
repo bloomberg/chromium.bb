@@ -114,7 +114,7 @@ public:
     void paintFillLayers(const PaintInfo&, const Color&, const FillLayer*, const LayoutRect&, CompositeOperator = CompositeSourceOver);
     void paintFillLayer(const PaintInfo&, const Color&, const FillLayer*, const LayoutRect&, CompositeOperator = CompositeSourceOver);
     void paintBoxShadow(const PaintInfo&, RenderStyle*, ShadowStyle, const LayoutRect&);
-    virtual void paint(PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom);
+    virtual void paint(PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom) OVERRIDE;
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit lineTop, LayoutUnit lineBottom) OVERRIDE;
 
     bool boxShadowCanBeAppliedToBackground(const FillLayer&) const;
@@ -199,7 +199,7 @@ public:
 
     void removeChild(InlineBox* child);
 
-    virtual RenderObject::SelectionState selectionState();
+    virtual RenderObject::SelectionState selectionState() OVERRIDE;
 
     virtual bool canAccommodateEllipsis(bool ltr, int blockEdge, int ellipsisWidth) const OVERRIDE FINAL;
     virtual float placeEllipsisBox(bool ltr, float blockLeftEdge, float blockRightEdge, float ellipsisWidth, float &truncatedWidth, bool&) OVERRIDE;

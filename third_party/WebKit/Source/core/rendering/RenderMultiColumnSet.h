@@ -120,7 +120,7 @@ private:
 
     virtual void collectLayerFragments(LayerFragments&, const LayoutRect& layerBoundingBox, const LayoutRect& dirtyRect) OVERRIDE;
 
-    virtual const char* renderName() const;
+    virtual const char* renderName() const OVERRIDE;
 
     void paintColumnRules(PaintInfo&, const LayoutPoint& paintOffset);
 

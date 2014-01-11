@@ -34,19 +34,19 @@ public:
     virtual ~RenderTextControlMultiLine();
 
 private:
-    virtual bool isTextArea() const { return true; }
+    virtual bool isTextArea() const OVERRIDE { return true; }
 
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) OVERRIDE;
 
-    virtual float getAvgCharWidth(AtomicString family);
-    virtual LayoutUnit preferredContentLogicalWidth(float charWidth) const;
+    virtual float getAvgCharWidth(AtomicString family) OVERRIDE;
+    virtual LayoutUnit preferredContentLogicalWidth(float charWidth) const OVERRIDE;
     virtual LayoutUnit computeControlLogicalHeight(LayoutUnit lineHeight, LayoutUnit nonContentHeight) const OVERRIDE;
     // We override the two baseline functions because we want our baseline to be the bottom of our margin box.
     virtual int baselinePosition(FontBaseline, bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const OVERRIDE;
     virtual int inlineBlockBaseline(LineDirectionMode) const OVERRIDE { return -1; }
 
-    virtual PassRefPtr<RenderStyle> createInnerTextStyle(const RenderStyle* startStyle) const;
-    virtual RenderObject* layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope&);
+    virtual PassRefPtr<RenderStyle> createInnerTextStyle(const RenderStyle* startStyle) const OVERRIDE;
+    virtual RenderObject* layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope&) OVERRIDE;
 };
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderTextControlMultiLine, isTextArea());

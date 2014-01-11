@@ -36,18 +36,18 @@ public:
     RenderBox* findLegend(FindLegendOption = IgnoreFloatingOrOutOfFlow) const;
 
 private:
-    virtual const char* renderName() const { return "RenderFieldSet"; }
-    virtual bool isFieldset() const { return true; }
+    virtual const char* renderName() const OVERRIDE { return "RenderFieldSet"; }
+    virtual bool isFieldset() const OVERRIDE { return true; }
 
-    virtual RenderObject* layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope&);
+    virtual RenderObject* layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope&) OVERRIDE;
 
-    virtual void computePreferredLogicalWidths();
-    virtual bool avoidsFloats() const { return true; }
+    virtual void computePreferredLogicalWidths() OVERRIDE;
+    virtual bool avoidsFloats() const OVERRIDE { return true; }
 
     virtual bool supportsPartialLayout() const OVERRIDE { return false; }
 
-    virtual void paintBoxDecorations(PaintInfo&, const LayoutPoint&);
-    virtual void paintMask(PaintInfo&, const LayoutPoint&);
+    virtual void paintBoxDecorations(PaintInfo&, const LayoutPoint&) OVERRIDE;
+    virtual void paintMask(PaintInfo&, const LayoutPoint&) OVERRIDE;
 };
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderFieldset, isFieldset());

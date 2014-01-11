@@ -65,7 +65,7 @@ public:
     // can easily avoid drawing the children directly.
     virtual LayerType layerTypeRequired() const OVERRIDE FINAL { return NormalLayer; }
 
-    virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) OVERRIDE;
+    virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) OVERRIDE FINAL;
 
     void removeFlowChildInfo(RenderObject*);
 #ifndef NDEBUG
@@ -182,7 +182,7 @@ protected:
     // no regions have been generated yet.
     virtual LayoutUnit initialLogicalWidth() const { return 0; };
 
-    virtual void mapLocalToContainer(const RenderLayerModelObject* repaintContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0) const OVERRIDE;
+    virtual void mapLocalToContainer(const RenderLayerModelObject* repaintContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0) const OVERRIDE FINAL;
 
     void updateRegionsFlowThreadPortionRect(const RenderRegion* = 0);
     bool shouldRepaint(const LayoutRect&) const;
@@ -291,7 +291,7 @@ protected:
     bool m_needsTwoPhasesLayout : 1;
 
 private:
-    virtual bool supportsPartialLayout() const OVERRIDE { return false; }
+    virtual bool supportsPartialLayout() const OVERRIDE FINAL { return false; }
 
 };
 

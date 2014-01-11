@@ -63,7 +63,7 @@ protected:
     OperationType m_type;
 };
 
-class ReferenceClipPathOperation : public ClipPathOperation {
+class ReferenceClipPathOperation FINAL : public ClipPathOperation {
 public:
     static PassRefPtr<ReferenceClipPathOperation> create(const String& url, const AtomicString& fragment)
     {
@@ -92,7 +92,7 @@ private:
 
 DEFINE_TYPE_CASTS(ReferenceClipPathOperation, ClipPathOperation, op, op->type() == ClipPathOperation::REFERENCE, op.type() == ClipPathOperation::REFERENCE);
 
-class ShapeClipPathOperation : public ClipPathOperation {
+class ShapeClipPathOperation FINAL : public ClipPathOperation {
 public:
     static PassRefPtr<ShapeClipPathOperation> create(PassRefPtr<BasicShape> shape)
     {

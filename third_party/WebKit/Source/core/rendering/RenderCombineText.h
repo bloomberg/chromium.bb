@@ -38,11 +38,11 @@ public:
     const Font& originalFont() const { return parent()->style()->font(); }
 
 private:
-    virtual bool isCombineText() const { return true; }
-    virtual float width(unsigned from, unsigned length, const Font&, float xPosition, TextDirection, HashSet<const SimpleFontData*>* fallbackFonts = 0, GlyphOverflow* = 0) const;
-    virtual const char* renderName() const { return "RenderCombineText"; }
-    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle);
-    virtual void setTextInternal(PassRefPtr<StringImpl>);
+    virtual bool isCombineText() const OVERRIDE { return true; }
+    virtual float width(unsigned from, unsigned length, const Font&, float xPosition, TextDirection, HashSet<const SimpleFontData*>* fallbackFonts = 0, GlyphOverflow* = 0) const OVERRIDE;
+    virtual const char* renderName() const OVERRIDE { return "RenderCombineText"; }
+    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
+    virtual void setTextInternal(PassRefPtr<StringImpl>) OVERRIDE;
 
     float m_combinedTextWidth;
     bool m_isCombined : 1;

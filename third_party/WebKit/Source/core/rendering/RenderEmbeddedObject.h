@@ -61,7 +61,7 @@ protected:
     virtual void layout() OVERRIDE FINAL;
 
 private:
-    virtual const char* renderName() const { return "RenderEmbeddedObject"; }
+    virtual const char* renderName() const OVERRIDE { return "RenderEmbeddedObject"; }
     virtual bool isEmbeddedObject() const OVERRIDE FINAL { return true; }
 
     void paintSnapshotImage(PaintInfo&, const LayoutPoint&, Image*);

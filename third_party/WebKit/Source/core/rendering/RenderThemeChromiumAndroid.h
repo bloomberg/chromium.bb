@@ -30,7 +30,7 @@
 
 namespace WebCore {
 
-class RenderThemeChromiumAndroid : public RenderThemeChromiumDefault {
+class RenderThemeChromiumAndroid FINAL : public RenderThemeChromiumDefault {
 public:
     static PassRefPtr<RenderTheme> create();
     virtual String extraDefaultStyleSheet() OVERRIDE;

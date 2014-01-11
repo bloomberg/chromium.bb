@@ -109,23 +109,23 @@ public:
 
     void setCellLogicalWidth(int constrainedLogicalWidth, SubtreeLayoutScope&);
 
-    virtual int borderLeft() const;
-    virtual int borderRight() const;
-    virtual int borderTop() const;
-    virtual int borderBottom() const;
-    virtual int borderStart() const;
-    virtual int borderEnd() const;
-    virtual int borderBefore() const;
-    virtual int borderAfter() const;
+    virtual int borderLeft() const OVERRIDE;
+    virtual int borderRight() const OVERRIDE;
+    virtual int borderTop() const OVERRIDE;
+    virtual int borderBottom() const OVERRIDE;
+    virtual int borderStart() const OVERRIDE;
+    virtual int borderEnd() const OVERRIDE;
+    virtual int borderBefore() const OVERRIDE;
+    virtual int borderAfter() const OVERRIDE;
 
     void collectBorderValues(RenderTable::CollapsedBorderValues&) const;
     static void sortBorderValues(RenderTable::CollapsedBorderValues&);
 
-    virtual void layout();
+    virtual void layout() OVERRIDE;
 
     virtual bool supportsPartialLayout() const OVERRIDE { return false; }
 
-    virtual void paint(PaintInfo&, const LayoutPoint&);
+    virtual void paint(PaintInfo&, const LayoutPoint&) OVERRIDE;
 
     void paintCollapsedBorders(PaintInfo&, const LayoutPoint&);
     void paintBackgroundsBehindCell(PaintInfo&, const LayoutPoint&, RenderObject* backgroundObject);
@@ -217,26 +217,26 @@ public:
     }
 #endif
 protected:
-    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle);
-    virtual void computePreferredLogicalWidths();
+    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
+    virtual void computePreferredLogicalWidths() OVERRIDE;
 
     virtual void addLayerHitTestRects(LayerHitTestRects&, const RenderLayer* currentCompositedLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const OVERRIDE;
 
 private:
-    virtual const char* renderName() const { return (isAnonymous() || isPseudoElement()) ? "RenderTableCell (anonymous)" : "RenderTableCell"; }
+    virtual const char* renderName() const OVERRIDE { return (isAnonymous() || isPseudoElement()) ? "RenderTableCell (anonymous)" : "RenderTableCell"; }
 
-    virtual bool isTableCell() const { return true; }
+    virtual bool isTableCell() const OVERRIDE { return true; }
 
     virtual void willBeRemovedFromTree() OVERRIDE;
 
     virtual void updateLogicalWidth() OVERRIDE;
 
-    virtual void paintBoxDecorations(PaintInfo&, const LayoutPoint&);
-    virtual void paintMask(PaintInfo&, const LayoutPoint&);
+    virtual void paintBoxDecorations(PaintInfo&, const LayoutPoint&) OVERRIDE;
+    virtual void paintMask(PaintInfo&, const LayoutPoint&) OVERRIDE;
 
     virtual bool boxShadowShouldBeAppliedToBackground(BackgroundBleedAvoidance, InlineFlowBox*) const OVERRIDE;
 
-    virtual LayoutSize offsetFromContainer(RenderObject*, const LayoutPoint&, bool* offsetDependsOnPoint = 0) const;
+    virtual LayoutSize offsetFromContainer(RenderObject*, const LayoutPoint&, bool* offsetDependsOnPoint = 0) const OVERRIDE;
     virtual LayoutRect clippedOverflowRectForRepaint(const RenderLayerModelObject* repaintContainer) const OVERRIDE;
     virtual void computeRectForRepaint(const RenderLayerModelObject* repaintContainer, LayoutRect&, bool fixed = false) const OVERRIDE;
 

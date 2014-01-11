@@ -92,7 +92,7 @@ public:
 
     // These two functions are overridden for inline-block.
     virtual LayoutUnit lineHeight(bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const OVERRIDE FINAL;
-    virtual int baselinePosition(FontBaseline, bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const;
+    virtual int baselinePosition(FontBaseline, bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const OVERRIDE;
 
     LayoutUnit minLineHeightForReplacedRenderer(bool isFirstLine, LayoutUnit replacedHeight) const;
 
@@ -322,13 +322,13 @@ public:
     // It is expected that the caller will call this function independent of the value of paintInfo.phase.
     static void paintAsInlineBlock(RenderObject*, PaintInfo&, const LayoutPoint&);
 protected:
-    virtual void willBeDestroyed();
+    virtual void willBeDestroyed() OVERRIDE;
 
     void dirtyForLayoutFromPercentageHeightDescendants(SubtreeLayoutScope&);
 
-    virtual void layout();
-    virtual void didLayout(ResourceLoadPriorityOptimizer&);
-    virtual void didScroll(ResourceLoadPriorityOptimizer&);
+    virtual void layout() OVERRIDE;
+    virtual void didLayout(ResourceLoadPriorityOptimizer&) OVERRIDE;
+    virtual void didScroll(ResourceLoadPriorityOptimizer&) OVERRIDE;
     void updateStyleImageLoadingPriorities(ResourceLoadPriorityOptimizer&);
 
     void layoutPositionedObjects(bool relayoutChildren, bool fixedPositionObjectsOnly = false);
@@ -338,8 +338,8 @@ protected:
 
     virtual bool supportsPartialLayout() const OVERRIDE { return true; };
 
-    virtual void paint(PaintInfo&, const LayoutPoint&);
-    virtual void paintObject(PaintInfo&, const LayoutPoint&);
+    virtual void paint(PaintInfo&, const LayoutPoint&) OVERRIDE;
+    virtual void paintObject(PaintInfo&, const LayoutPoint&) OVERRIDE;
     virtual void paintChildren(PaintInfo&, const LayoutPoint&);
     void paintChild(RenderBox*, PaintInfo&, const LayoutPoint&);
     void paintChildAsInlineBlock(RenderBox*, PaintInfo&, const LayoutPoint&);
@@ -352,7 +352,7 @@ protected:
     virtual void computePreferredLogicalWidths() OVERRIDE;
     void adjustIntrinsicLogicalWidthsForColumns(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const;
 
-    virtual int firstLineBoxBaseline() const;
+    virtual int firstLineBoxBaseline() const OVERRIDE;
     virtual int inlineBlockBaseline(LineDirectionMode) const OVERRIDE;
     int lastLineBoxBaseline(LineDirectionMode) const;
 
@@ -368,8 +368,8 @@ protected:
 
     void updateScrollInfoAfterLayout();
 
-    virtual void styleWillChange(StyleDifference, const RenderStyle* newStyle);
-    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle);
+    virtual void styleWillChange(StyleDifference, const RenderStyle* newStyle) OVERRIDE;
+    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
 
     virtual bool hasLineIfEmpty() const;
 
@@ -408,7 +408,7 @@ private:
     virtual RenderObjectChildList* virtualChildren() OVERRIDE FINAL { return children(); }
     virtual const RenderObjectChildList* virtualChildren() const OVERRIDE FINAL { return children(); }
 
-    virtual const char* renderName() const;
+    virtual const char* renderName() const OVERRIDE;
 
     virtual bool isRenderBlock() const OVERRIDE FINAL { return true; }
 
@@ -420,7 +420,7 @@ private:
     virtual void dirtyLinesFromChangedChild(RenderObject* child) OVERRIDE FINAL { m_lineBoxes.dirtyLinesFromChangedChild(this, child); }
 
     void addChildToContinuation(RenderObject* newChild, RenderObject* beforeChild);
-    void addChildIgnoringContinuation(RenderObject* newChild, RenderObject* beforeChild);
+    void addChildIgnoringContinuation(RenderObject* newChild, RenderObject* beforeChild) OVERRIDE;
     void addChildToAnonymousColumnBlocks(RenderObject* newChild, RenderObject* beforeChild);
 
     void addChildIgnoringAnonymousColumnBlocks(RenderObject* newChild, RenderObject* beforeChild = 0);
@@ -449,7 +449,7 @@ private:
     bool hasCaret() const { return hasCaret(CursorCaret) || hasCaret(DragCaret); }
     bool hasCaret(CaretType) const;
 
-    virtual bool avoidsFloats() const;
+    virtual bool avoidsFloats() const OVERRIDE;
 
     bool hitTestColumns(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction);
     bool hitTestContents(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction);
@@ -464,7 +464,7 @@ private:
 
     // Obtains the nearest enclosing block (including this block) that contributes a first-line style to our inline
     // children.
-    virtual RenderBlock* firstLineBlock() const;
+    virtual RenderBlock* firstLineBlock() const OVERRIDE;
 
     virtual LayoutRect rectWithOutlineForRepaint(const RenderLayerModelObject* repaintContainer, LayoutUnit outlineWidth) const OVERRIDE FINAL;
     virtual RenderStyle* outlineStyleForRepaint() const OVERRIDE FINAL;
@@ -491,8 +491,8 @@ private:
     // FIXME-BLOCKFLOW: Remove virtualizaion when all callers have moved to RenderBlockFlow
     virtual void clipOutFloatingObjects(RenderBlock*, const PaintInfo*, const LayoutPoint&, const LayoutSize&) { };
 
-    virtual void absoluteRects(Vector<IntRect>&, const LayoutPoint& accumulatedOffset) const;
-    virtual void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const;
+    virtual void absoluteRects(Vector<IntRect>&, const LayoutPoint& accumulatedOffset) const OVERRIDE;
+    virtual void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const OVERRIDE;
 
     LayoutUnit desiredColumnWidth() const;
 

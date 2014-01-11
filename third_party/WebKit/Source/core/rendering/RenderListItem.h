@@ -55,27 +55,27 @@ public:
     static unsigned itemCountForOrderedList(const HTMLOListElement*);
 
 private:
-    virtual const char* renderName() const { return "RenderListItem"; }
+    virtual const char* renderName() const OVERRIDE { return "RenderListItem"; }
 
-    virtual bool isListItem() const { return true; }
+    virtual bool isListItem() const OVERRIDE { return true; }
 
-    virtual void willBeDestroyed();
+    virtual void willBeDestroyed() OVERRIDE;
 
     virtual void insertedIntoTree() OVERRIDE;
     virtual void willBeRemovedFromTree() OVERRIDE;
 
-    virtual bool isEmpty() const;
-    virtual void paint(PaintInfo&, const LayoutPoint&);
+    virtual bool isEmpty() const OVERRIDE;
+    virtual void paint(PaintInfo&, const LayoutPoint&) OVERRIDE;
 
-    virtual void layout();
+    virtual void layout() OVERRIDE;
 
     virtual bool supportsPartialLayout() const OVERRIDE { return false; }
 
     void positionListMarker();
 
-    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle);
+    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
 
-    virtual void addOverflowFromChildren();
+    virtual void addOverflowFromChildren() OVERRIDE;
 
     inline int calcValue() const;
     void updateValueNow() const;

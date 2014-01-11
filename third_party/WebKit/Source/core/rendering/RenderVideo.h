@@ -44,35 +44,35 @@ public:
 
     bool supportsAcceleratedRendering() const;
 
-    virtual bool shouldDisplayVideo() const;
+    bool shouldDisplayVideo() const;
 
 private:
-    virtual void updateFromElement();
+    virtual void updateFromElement() OVERRIDE;
     inline HTMLVideoElement* videoElement() const;
 
-    virtual void intrinsicSizeChanged();
+    virtual void intrinsicSizeChanged() OVERRIDE;
     LayoutSize calculateIntrinsicSize();
     void updateIntrinsicSize();
 
-    virtual void imageChanged(WrappedImagePtr, const IntRect*);
+    virtual void imageChanged(WrappedImagePtr, const IntRect*) OVERRIDE;
 
-    virtual const char* renderName() const { return "RenderVideo"; }
+    virtual const char* renderName() const OVERRIDE { return "RenderVideo"; }
 
     virtual LayerType layerTypeRequired() const OVERRIDE { return NormalLayer; }
-    virtual bool isVideo() const { return true; }
+    virtual bool isVideo() const OVERRIDE { return true; }
 
-    virtual void paintReplaced(PaintInfo&, const LayoutPoint&);
+    virtual void paintReplaced(PaintInfo&, const LayoutPoint&) OVERRIDE;
 
-    virtual void layout();
+    virtual void layout() OVERRIDE;
 
     virtual LayoutUnit computeReplacedLogicalWidth(ShouldComputePreferred  = ComputeActual) const OVERRIDE;
-    virtual LayoutUnit computeReplacedLogicalHeight() const;
+    virtual LayoutUnit computeReplacedLogicalHeight() const OVERRIDE;
     virtual LayoutUnit minimumReplacedHeight() const OVERRIDE;
 
-    virtual LayoutUnit offsetLeft() const;
-    virtual LayoutUnit offsetTop() const;
-    virtual LayoutUnit offsetWidth() const;
-    virtual LayoutUnit offsetHeight() const;
+    virtual LayoutUnit offsetLeft() const OVERRIDE;
+    virtual LayoutUnit offsetTop() const OVERRIDE;
+    virtual LayoutUnit offsetWidth() const OVERRIDE;
+    virtual LayoutUnit offsetHeight() const OVERRIDE;
 
     void updatePlayer();
 

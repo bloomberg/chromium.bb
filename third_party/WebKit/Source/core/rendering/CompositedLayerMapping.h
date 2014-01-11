@@ -73,7 +73,7 @@ struct GraphicsLayerPaintInfo {
 //
 // Currently (Oct. 2013) there is one CompositedLayerMapping for each RenderLayer,
 // but this is likely to evolve soon.
-class CompositedLayerMapping : public GraphicsLayerClient {
+class CompositedLayerMapping FINAL : public GraphicsLayerClient {
     WTF_MAKE_NONCOPYABLE(CompositedLayerMapping); WTF_MAKE_FAST_ALLOCATED;
 public:
     explicit CompositedLayerMapping(RenderLayer*);
@@ -173,7 +173,7 @@ public:
     PassOwnPtr<Vector<FloatRect> > collectTrackedRepaintRects() const;
 
 #ifndef NDEBUG
-    virtual void verifyNotPainting();
+    virtual void verifyNotPainting() OVERRIDE;
 #endif
 
     LayoutRect contentsBox() const;

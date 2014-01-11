@@ -43,12 +43,12 @@ public:
     void updateCounter();
 
 protected:
-    virtual void willBeDestroyed();
+    virtual void willBeDestroyed() OVERRIDE;
 
 private:
-    virtual const char* renderName() const;
-    virtual bool isCounter() const;
-    virtual PassRefPtr<StringImpl> originalText() const;
+    virtual const char* renderName() const OVERRIDE;
+    virtual bool isCounter() const OVERRIDE;
+    virtual PassRefPtr<StringImpl> originalText() const OVERRIDE;
 
     // Removes the reference to the CounterNode associated with this renderer.
     // This is used to cause a counter display update when the CounterNode tree changes.

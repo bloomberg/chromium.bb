@@ -48,7 +48,7 @@ protected:
 
 private:
     virtual bool isRenderPart() const OVERRIDE FINAL { return true; }
-    virtual const char* renderName() const { return "RenderPart"; }
+    virtual const char* renderName() const OVERRIDE { return "RenderPart"; }
 };
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderPart, isRenderPart());

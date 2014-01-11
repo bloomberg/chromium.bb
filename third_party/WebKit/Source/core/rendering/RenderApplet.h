@@ -34,7 +34,7 @@ public:
     virtual ~RenderApplet();
 
 private:
-    virtual const char* renderName() const { return "RenderApplet"; }
+    virtual const char* renderName() const OVERRIDE { return "RenderApplet"; }
 };
 
 } // namespace WebCore

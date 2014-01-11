@@ -96,7 +96,7 @@ public:
     bool hitTestCulledInline(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset);
 
 protected:
-    virtual void willBeDestroyed();
+    virtual void willBeDestroyed() OVERRIDE;
 
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
 
@@ -108,7 +108,7 @@ private:
     const RenderObjectChildList* children() const { return &m_children; }
     RenderObjectChildList* children() { return &m_children; }
 
-    virtual const char* renderName() const;
+    virtual const char* renderName() const OVERRIDE;
 
     virtual bool isRenderInline() const OVERRIDE FINAL { return true; }
 
@@ -135,7 +135,7 @@ private:
 
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) OVERRIDE FINAL;
 
-    virtual LayerType layerTypeRequired() const { return isInFlowPositioned() || createsGroup() || hasClipPath() ? NormalLayer : NoLayer; }
+    virtual LayerType layerTypeRequired() const OVERRIDE { return isInFlowPositioned() || createsGroup() || hasClipPath() ? NormalLayer : NoLayer; }
 
     virtual LayoutUnit offsetLeft() const OVERRIDE FINAL;
     virtual LayoutUnit offsetTop() const OVERRIDE FINAL;

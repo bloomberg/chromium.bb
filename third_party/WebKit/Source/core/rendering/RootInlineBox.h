@@ -117,7 +117,7 @@ public:
     virtual int baselinePosition(FontBaseline baselineType) const OVERRIDE FINAL;
     virtual LayoutUnit lineHeight() const OVERRIDE FINAL;
 
-    virtual void paint(PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom);
+    virtual void paint(PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom) OVERRIDE;
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit lineTop, LayoutUnit lineBottom) OVERRIDE FINAL;
 
     using InlineBox::hasSelectedChildren;

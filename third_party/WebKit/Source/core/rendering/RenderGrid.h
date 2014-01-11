@@ -126,7 +126,7 @@ private:
 
     LayoutUnit gridAreaBreadthForChild(const RenderBox* child, GridTrackSizingDirection, const Vector<GridTrack>&) const;
 
-    virtual void paintChildren(PaintInfo&, const LayoutPoint&) OVERRIDE FINAL;
+    virtual void paintChildren(PaintInfo&, const LayoutPoint&) OVERRIDE;
     void paintChildrenSlowCase(PaintInfo&, const LayoutPoint&);
 
     bool gridIsDirty() const { return m_gridIsDirty; }

@@ -36,25 +36,25 @@ public:
     explicit RenderBR(Node*);
     virtual ~RenderBR();
 
-    virtual const char* renderName() const { return "RenderBR"; }
+    virtual const char* renderName() const OVERRIDE { return "RenderBR"; }
 
     virtual LayoutRect selectionRectForRepaint(const RenderLayerModelObject* /*repaintContainer*/, bool /*clipToVisibleContent*/) OVERRIDE { return LayoutRect(); }
 
-    virtual float width(unsigned /*from*/, unsigned /*len*/, const Font&, float /*xPos*/, TextDirection, HashSet<const SimpleFontData*>* = 0 /*fallbackFonts*/ , GlyphOverflow* = 0) const { return 0; }
-    virtual float width(unsigned /*from*/, unsigned /*len*/, float /*xpos*/, TextDirection, bool = false /*firstLine*/, HashSet<const SimpleFontData*>* = 0 /*fallbackFonts*/, GlyphOverflow* = 0) const { return 0; }
+    virtual float width(unsigned /*from*/, unsigned /*len*/, const Font&, float /*xPos*/, TextDirection, HashSet<const SimpleFontData*>* = 0 /*fallbackFonts*/ , GlyphOverflow* = 0) const OVERRIDE { return 0; }
+    virtual float width(unsigned /*from*/, unsigned /*len*/, float /*xpos*/, TextDirection, bool = false /*firstLine*/, HashSet<const SimpleFontData*>* = 0 /*fallbackFonts*/, GlyphOverflow* = 0) const OVERRIDE { return 0; }
 
     int lineHeight(bool firstLine) const;
 
     // overrides
-    virtual bool isBR() const { return true; }
+    virtual bool isBR() const OVERRIDE { return true; }
 
-    virtual int caretMinOffset() const;
-    virtual int caretMaxOffset() const;
+    virtual int caretMinOffset() const OVERRIDE;
+    virtual int caretMaxOffset() const OVERRIDE;
 
     virtual PositionWithAffinity positionForPoint(const LayoutPoint&) OVERRIDE FINAL;
 
 protected:
-    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle);
+    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
 
 private:
     mutable int m_lineHeight;

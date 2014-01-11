@@ -57,10 +57,10 @@ private:
     virtual bool canHaveGeneratedChildren() const OVERRIDE FINAL { return false; }
     virtual bool canHaveChildren() const OVERRIDE FINAL { return true; }
 
-    virtual const char* renderName() const { return "RenderMedia"; }
+    virtual const char* renderName() const OVERRIDE { return "RenderMedia"; }
     virtual bool isMedia() const OVERRIDE FINAL { return true; }
     virtual bool isImage() const OVERRIDE FINAL { return false; }
-    virtual void paintReplaced(PaintInfo&, const LayoutPoint&);
+    virtual void paintReplaced(PaintInfo&, const LayoutPoint&) OVERRIDE;
 
     RenderObjectChildList m_children;
 };

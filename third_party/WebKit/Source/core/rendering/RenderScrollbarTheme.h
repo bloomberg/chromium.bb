@@ -33,7 +33,7 @@ namespace WebCore {
 class PlatformMouseEvent;
 class Scrollbar;
 
-class RenderScrollbarTheme : public ScrollbarTheme {
+class RenderScrollbarTheme FINAL : public ScrollbarTheme {
 public:
     virtual ~RenderScrollbarTheme() { }
 

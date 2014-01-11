@@ -85,7 +85,7 @@ public:
     void repaintRectangleInViewAndCompositedLayers(const LayoutRect&);
     void repaintViewAndCompositedLayers();
 
-    virtual void paint(PaintInfo&, const LayoutPoint&);
+    virtual void paint(PaintInfo&, const LayoutPoint&) OVERRIDE;
     virtual void paintBoxDecorations(PaintInfo&, const LayoutPoint&) OVERRIDE;
 
     enum SelectionRepaintMode { RepaintNewXOROld, RepaintNewMinusOld, RepaintNothing };
@@ -98,8 +98,8 @@ public:
     void selectionStartEnd(int& startPos, int& endPos) const;
     void repaintSelection() const;
 
-    virtual void absoluteRects(Vector<IntRect>&, const LayoutPoint& accumulatedOffset) const;
-    virtual void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const;
+    virtual void absoluteRects(Vector<IntRect>&, const LayoutPoint& accumulatedOffset) const OVERRIDE;
+    virtual void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const OVERRIDE;
 
     void setMaximalOutlineSize(int o);
     int maximalOutlineSize() const { return m_maximalOutlineSize; }
@@ -152,7 +152,7 @@ public:
     bool layoutStateEnabled() const { return m_layoutStateDisableCount == 0 && m_layoutState; }
     LayoutState* layoutState() const { return m_layoutState; }
 
-    virtual void updateHitTestResult(HitTestResult&, const LayoutPoint&);
+    virtual void updateHitTestResult(HitTestResult&, const LayoutPoint&) OVERRIDE;
 
     LayoutUnit pageLogicalHeight() const { return m_pageLogicalHeight; }
     void setPageLogicalHeight(LayoutUnit height)
@@ -198,7 +198,7 @@ public:
 
     virtual void addChild(RenderObject* newChild, RenderObject* beforeChild = 0) OVERRIDE;
 
-    virtual bool backgroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect) const OVERRIDE FINAL;
+    virtual bool backgroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect) const OVERRIDE;
 
     double layoutViewportWidth() const;
     double layoutViewportHeight() const;
@@ -206,7 +206,7 @@ public:
 private:
     virtual void mapLocalToContainer(const RenderLayerModelObject* repaintContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0) const OVERRIDE;
     virtual const RenderObject* pushMappingToContainer(const RenderLayerModelObject* ancestorToStopAt, RenderGeometryMap&) const OVERRIDE;
-    virtual void mapAbsoluteToLocalPoint(MapCoordinatesFlags, TransformState&) const;
+    virtual void mapAbsoluteToLocalPoint(MapCoordinatesFlags, TransformState&) const OVERRIDE;
     virtual bool requiresColumns(int desiredColumnCount) const OVERRIDE;
     virtual void computeSelfHitTestRects(Vector<LayoutRect>&, const LayoutPoint& layerOffset) const OVERRIDE;
 

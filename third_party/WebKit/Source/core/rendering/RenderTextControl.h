@@ -45,7 +45,7 @@ protected:
     int scrollbarThickness() const;
     void adjustInnerTextStyle(RenderStyle* textBlockStyle) const;
 
-    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle);
+    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
 
     void hitInnerTextElement(HitTestResult&, const LayoutPoint& pointInContainer, const LayoutPoint& accumulatedOffset);
 
@@ -59,9 +59,9 @@ protected:
     virtual LayoutUnit preferredContentLogicalWidth(float charWidth) const = 0;
     virtual LayoutUnit computeControlLogicalHeight(LayoutUnit lineHeight, LayoutUnit nonContentHeight) const = 0;
 
-    virtual void updateFromElement();
+    virtual void updateFromElement() OVERRIDE;
     virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const OVERRIDE;
-    virtual RenderObject* layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope&);
+    virtual RenderObject* layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope&) OVERRIDE;
 
     // We need to override this function because we don't want overflow:hidden on an <input>
     // to affect the baseline calculation. This is necessary because we are an inline-block
@@ -69,20 +69,20 @@ protected:
     virtual int inlineBlockBaseline(LineDirectionMode direction) const OVERRIDE { return lastLineBoxBaseline(direction); }
 
 private:
-    virtual const char* renderName() const { return "RenderTextControl"; }
-    virtual bool isTextControl() const { return true; }
-    virtual bool supportsPartialLayout() const OVERRIDE { return false; }
-    virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const OVERRIDE;
-    virtual void computePreferredLogicalWidths() OVERRIDE;
-    virtual void removeLeftoverAnonymousBlock(RenderBlock*) { }
-    virtual bool avoidsFloats() const { return true; }
-    virtual bool canHaveGeneratedChildren() const OVERRIDE { return false; }
+    virtual const char* renderName() const OVERRIDE { return "RenderTextControl"; }
+    virtual bool isTextControl() const OVERRIDE FINAL { return true; }
+    virtual bool supportsPartialLayout() const OVERRIDE FINAL { return false; }
+    virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const OVERRIDE FINAL;
+    virtual void computePreferredLogicalWidths() OVERRIDE FINAL;
+    virtual void removeLeftoverAnonymousBlock(RenderBlock*) OVERRIDE FINAL { }
+    virtual bool avoidsFloats() const OVERRIDE FINAL { return true; }
+    virtual bool canHaveGeneratedChildren() const OVERRIDE FINAL { return false; }
 
     virtual void addChild(RenderObject* newChild, RenderObject* beforeChild = 0) OVERRIDE FINAL;
 
-    virtual void addFocusRingRects(Vector<IntRect>&, const LayoutPoint& additionalOffset, const RenderLayerModelObject* paintContainer = 0) OVERRIDE;
+    virtual void addFocusRingRects(Vector<IntRect>&, const LayoutPoint& additionalOffset, const RenderLayerModelObject* paintContainer = 0) OVERRIDE FINAL;
 
-    virtual bool canBeProgramaticallyScrolled() const { return true; }
+    virtual bool canBeProgramaticallyScrolled() const OVERRIDE FINAL { return true; }
 };
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderTextControl, isTextControl());

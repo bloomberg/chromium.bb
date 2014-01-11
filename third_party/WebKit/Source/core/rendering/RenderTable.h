@@ -52,33 +52,33 @@ public:
 
     bool collapseBorders() const { return style()->borderCollapse(); }
 
-    int borderStart() const { return m_borderStart; }
-    int borderEnd() const { return m_borderEnd; }
-    int borderBefore() const;
-    int borderAfter() const;
+    virtual int borderStart() const OVERRIDE { return m_borderStart; }
+    virtual int borderEnd() const OVERRIDE { return m_borderEnd; }
+    virtual int borderBefore() const OVERRIDE;
+    virtual int borderAfter() const OVERRIDE;
 
-    int borderLeft() const
+    virtual int borderLeft() const OVERRIDE
     {
         if (style()->isHorizontalWritingMode())
             return style()->isLeftToRightDirection() ? borderStart() : borderEnd();
         return style()->isFlippedBlocksWritingMode() ? borderAfter() : borderBefore();
     }
 
-    int borderRight() const
+    virtual int borderRight() const OVERRIDE
     {
         if (style()->isHorizontalWritingMode())
             return style()->isLeftToRightDirection() ? borderEnd() : borderStart();
         return style()->isFlippedBlocksWritingMode() ? borderBefore() : borderAfter();
     }
 
-    int borderTop() const
+    virtual int borderTop() const OVERRIDE
     {
         if (style()->isHorizontalWritingMode())
             return style()->isFlippedBlocksWritingMode() ? borderAfter() : borderBefore();
         return style()->isLeftToRightDirection() ? borderStart() : borderEnd();
     }
 
-    int borderBottom() const
+    virtual int borderBottom() const OVERRIDE
     {
         if (style()->isHorizontalWritingMode())
             return style()->isFlippedBlocksWritingMode() ? borderBefore() : borderAfter();
@@ -124,7 +124,7 @@ public:
     int calcBorderEnd() const;
     void recalcBordersInRowDirection();
 
-    virtual void addChild(RenderObject* child, RenderObject* beforeChild = 0);
+    virtual void addChild(RenderObject* child, RenderObject* beforeChild = 0) OVERRIDE;
 
     struct ColumnStruct {
         explicit ColumnStruct(unsigned initialSpan = 1)
@@ -263,21 +263,21 @@ public:
     void removeColumn(const RenderTableCol*);
 
 protected:
-    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle);
-    virtual void simplifiedNormalFlowLayout();
+    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
+    virtual void simplifiedNormalFlowLayout() OVERRIDE;
 
 private:
-    virtual const char* renderName() const { return "RenderTable"; }
+    virtual const char* renderName() const OVERRIDE { return "RenderTable"; }
 
-    virtual bool isTable() const { return true; }
+    virtual bool isTable() const OVERRIDE { return true; }
 
-    virtual bool avoidsFloats() const { return true; }
+    virtual bool avoidsFloats() const OVERRIDE { return true; }
 
-    virtual void paint(PaintInfo&, const LayoutPoint&);
-    virtual void paintObject(PaintInfo&, const LayoutPoint&);
-    virtual void paintBoxDecorations(PaintInfo&, const LayoutPoint&);
-    virtual void paintMask(PaintInfo&, const LayoutPoint&);
-    virtual void layout();
+    virtual void paint(PaintInfo&, const LayoutPoint&) OVERRIDE;
+    virtual void paintObject(PaintInfo&, const LayoutPoint&) OVERRIDE;
+    virtual void paintBoxDecorations(PaintInfo&, const LayoutPoint&) OVERRIDE;
+    virtual void paintMask(PaintInfo&, const LayoutPoint&) OVERRIDE;
+    virtual void layout() OVERRIDE;
     virtual bool supportsPartialLayout() const OVERRIDE { return false; }
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minWidth, LayoutUnit& maxWidth) const OVERRIDE;
     virtual void computePreferredLogicalWidths() OVERRIDE;
@@ -292,8 +292,8 @@ private:
     void updateColumnCache() const;
     void invalidateCachedColumns();
 
-    virtual RenderBlock* firstLineBlock() const;
-    virtual void updateFirstLetter();
+    virtual RenderBlock* firstLineBlock() const OVERRIDE;
+    virtual void updateFirstLetter() OVERRIDE;
 
     virtual void updateLogicalWidth() OVERRIDE;
 
@@ -302,7 +302,7 @@ private:
 
     virtual LayoutRect overflowClipRect(const LayoutPoint& location, RenderRegion*, OverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize);
 
-    virtual void addOverflowFromChildren();
+    virtual void addOverflowFromChildren() OVERRIDE;
 
     void subtractCaptionRect(LayoutRect&) const;
 

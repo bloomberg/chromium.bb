@@ -36,17 +36,17 @@ public:
 
     static RenderDeprecatedFlexibleBox* createAnonymous(Document*);
 
-    virtual const char* renderName() const;
+    virtual const char* renderName() const OVERRIDE;
 
     virtual void styleWillChange(StyleDifference, const RenderStyle* newStyle) OVERRIDE;
 
-    virtual void layoutBlock(bool relayoutChildren, LayoutUnit pageHeight = 0);
+    virtual void layoutBlock(bool relayoutChildren, LayoutUnit pageHeight = 0) OVERRIDE;
     void layoutHorizontalBox(bool relayoutChildren);
     void layoutVerticalBox(bool relayoutChildren);
 
-    virtual bool avoidsFloats() const { return true; }
-    virtual bool isDeprecatedFlexibleBox() const { return true; }
-    virtual bool isStretchingChildren() const { return m_stretchingChildren; }
+    virtual bool avoidsFloats() const OVERRIDE { return true; }
+    virtual bool isDeprecatedFlexibleBox() const OVERRIDE { return true; }
+    virtual bool isStretchingChildren() const OVERRIDE { return m_stretchingChildren; }
     virtual bool canCollapseAnonymousBlockChild() const OVERRIDE { return false; }
 
     void placeChild(RenderBox* child, const LayoutPoint& location);

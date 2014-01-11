@@ -43,17 +43,17 @@ public:
 
     static RenderRubyBase* createAnonymous(Document*);
 
-    virtual const char* renderName() const { return "RenderRubyBase (anonymous)"; }
+    virtual const char* renderName() const OVERRIDE { return "RenderRubyBase (anonymous)"; }
 
-    virtual bool isRubyBase() const { return true; }
+    virtual bool isRubyBase() const OVERRIDE { return true; }
 
-    virtual bool isChildAllowed(RenderObject*, RenderStyle*) const;
+    virtual bool isChildAllowed(RenderObject*, RenderStyle*) const OVERRIDE;
 
 private:
     RenderRubyBase();
 
-    virtual ETextAlign textAlignmentForLine(bool endsWithSoftBreak) const;
-    virtual void adjustInlineDirectionLineBounds(int expansionOpportunityCount, float& logicalLeft, float& logicalWidth) const;
+    virtual ETextAlign textAlignmentForLine(bool endsWithSoftBreak) const OVERRIDE;
+    virtual void adjustInlineDirectionLineBounds(int expansionOpportunityCount, float& logicalLeft, float& logicalWidth) const OVERRIDE;
 
     virtual bool supportsPartialLayout() const OVERRIDE { return false; }
 

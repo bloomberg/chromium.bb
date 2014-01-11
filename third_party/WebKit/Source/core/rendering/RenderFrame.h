@@ -37,12 +37,12 @@ public:
     FrameEdgeInfo edgeInfo() const;
 
 private:
-    virtual const char* renderName() const { return "RenderFrame"; }
-    virtual bool isFrame() const { return true; }
+    virtual const char* renderName() const OVERRIDE { return "RenderFrame"; }
+    virtual bool isFrame() const OVERRIDE { return true; }
 
-    virtual void updateFromElement();
+    virtual void updateFromElement() OVERRIDE;
 
-    virtual void viewCleared();
+    virtual void viewCleared() OVERRIDE;
 };
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderFrame, isFrame());

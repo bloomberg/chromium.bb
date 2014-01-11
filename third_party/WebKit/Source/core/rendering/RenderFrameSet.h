@@ -94,16 +94,16 @@ private:
         int m_splitResizeOffset;
     };
 
-    virtual RenderObjectChildList* virtualChildren() { return children(); }
-    virtual const RenderObjectChildList* virtualChildren() const { return children(); }
+    virtual RenderObjectChildList* virtualChildren() OVERRIDE { return children(); }
+    virtual const RenderObjectChildList* virtualChildren() const OVERRIDE { return children(); }
 
-    virtual const char* renderName() const { return "RenderFrameSet"; }
-    virtual bool isFrameSet() const { return true; }
+    virtual const char* renderName() const OVERRIDE { return "RenderFrameSet"; }
+    virtual bool isFrameSet() const OVERRIDE { return true; }
 
-    virtual void layout();
-    virtual void paint(PaintInfo&, const LayoutPoint&);
-    virtual bool isChildAllowed(RenderObject*, RenderStyle*) const;
-    virtual CursorDirective getCursor(const LayoutPoint&, Cursor&) const;
+    virtual void layout() OVERRIDE;
+    virtual void paint(PaintInfo&, const LayoutPoint&) OVERRIDE;
+    virtual bool isChildAllowed(RenderObject*, RenderStyle*) const OVERRIDE;
+    virtual CursorDirective getCursor(const LayoutPoint&, Cursor&) const OVERRIDE;
 
     inline HTMLFrameSetElement* frameSet() const;
 

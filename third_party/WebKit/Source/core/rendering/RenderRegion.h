@@ -46,7 +46,7 @@ class RenderRegion : public RenderBlockFlow {
 public:
     explicit RenderRegion(Element*, RenderFlowThread*);
 
-    virtual bool isRenderRegion() const OVERRIDE { return true; }
+    virtual bool isRenderRegion() const OVERRIDE FINAL { return true; }
 
     bool hitTestFlowThreadContents(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction);
 
@@ -139,8 +139,8 @@ public:
 
     virtual void collectLayerFragments(LayerFragments&, const LayoutRect&, const LayoutRect&) { }
 
-    virtual bool canHaveChildren() const OVERRIDE { return false; }
-    virtual bool canHaveGeneratedChildren() const OVERRIDE { return true; }
+    virtual bool canHaveChildren() const OVERRIDE FINAL { return false; }
+    virtual bool canHaveGeneratedChildren() const OVERRIDE FINAL { return true; }
 
     bool isElementBasedRegion() const;
 
@@ -153,7 +153,7 @@ protected:
     void setRegionObjectsRegionStyle();
     void restoreRegionObjectsOriginalStyle();
 
-    virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const OVERRIDE;
+    virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const OVERRIDE FINAL;
 
     LayoutRect overflowRectForFlowThreadPortion(const LayoutRect& flowThreadPortionRect, bool isFirstPortion, bool isLastPortion) const;
     void repaintFlowThreadContentRectangle(const LayoutRect& repaintRect, const LayoutRect& flowThreadPortionRect,
@@ -162,14 +162,14 @@ protected:
     virtual bool shouldHaveAutoLogicalHeight() const;
 
 private:
-    virtual void insertedIntoTree() OVERRIDE;
-    virtual void willBeRemovedFromTree() OVERRIDE;
+    virtual void insertedIntoTree() OVERRIDE FINAL;
+    virtual void willBeRemovedFromTree() OVERRIDE FINAL;
 
-    virtual void layoutBlock(bool relayoutChildren, LayoutUnit pageLogicalHeight = 0) OVERRIDE;
-    virtual bool supportsPartialLayout() const OVERRIDE { return false; }
+    virtual void layoutBlock(bool relayoutChildren, LayoutUnit pageLogicalHeight = 0) OVERRIDE FINAL;
+    virtual bool supportsPartialLayout() const OVERRIDE FINAL { return false; }
     virtual void paintObject(PaintInfo&, const LayoutPoint&) OVERRIDE;
 
-    virtual void updateLogicalHeight() OVERRIDE;
+    virtual void updateLogicalHeight() OVERRIDE FINAL;
 
     virtual void installFlowThread();
 

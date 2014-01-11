@@ -36,24 +36,24 @@ public:
     RenderFileUploadControl(HTMLInputElement*);
     virtual ~RenderFileUploadControl();
 
-    virtual bool isFileUploadControl() const { return true; }
+    virtual bool isFileUploadControl() const OVERRIDE { return true; }
 
     String buttonValue();
     String fileTextValue() const;
 
 private:
-    virtual const char* renderName() const { return "RenderFileUploadControl"; }
+    virtual const char* renderName() const OVERRIDE { return "RenderFileUploadControl"; }
 
-    virtual void updateFromElement();
+    virtual void updateFromElement() OVERRIDE;
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const OVERRIDE;
-    virtual void computePreferredLogicalWidths();
-    virtual void paintObject(PaintInfo&, const LayoutPoint&);
+    virtual void computePreferredLogicalWidths() OVERRIDE;
+    virtual void paintObject(PaintInfo&, const LayoutPoint&) OVERRIDE;
 
     virtual bool supportsPartialLayout() const OVERRIDE { return false; }
 
     int maxFilenameWidth() const;
 
-    virtual PositionWithAffinity positionForPoint(const LayoutPoint&) OVERRIDE FINAL;
+    virtual PositionWithAffinity positionForPoint(const LayoutPoint&) OVERRIDE;
 
     HTMLInputElement* uploadButton() const;
 

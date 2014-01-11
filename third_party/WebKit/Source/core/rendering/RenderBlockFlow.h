@@ -297,7 +297,7 @@ private:
     virtual bool hitTestFloats(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset) OVERRIDE FINAL;
 
     virtual void repaintOverhangingFloats(bool paintAllDescendants) OVERRIDE FINAL;
-    virtual void repaintOverflow() OVERRIDE;
+    virtual void repaintOverflow() OVERRIDE FINAL;
     virtual void paintFloats(PaintInfo&, const LayoutPoint&, bool preservePhase = false) OVERRIDE FINAL;
     virtual void clipOutFloatingObjects(RenderBlock*, const PaintInfo*, const LayoutPoint&, const LayoutSize&) OVERRIDE;
     void clearFloats(EClear);

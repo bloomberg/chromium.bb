@@ -40,19 +40,19 @@ public:
     RenderRubyText(Element*);
     virtual ~RenderRubyText();
 
-    virtual const char* renderName() const { return "RenderRubyText"; }
+    virtual const char* renderName() const OVERRIDE { return "RenderRubyText"; }
 
-    virtual bool isRubyText() const { return true; }
+    virtual bool isRubyText() const OVERRIDE { return true; }
 
-    virtual bool isChildAllowed(RenderObject*, RenderStyle*) const;
+    virtual bool isChildAllowed(RenderObject*, RenderStyle*) const OVERRIDE;
 
 private:
-    virtual bool avoidsFloats() const;
+    virtual bool avoidsFloats() const OVERRIDE;
 
     virtual bool supportsPartialLayout() const OVERRIDE { return false; }
 
-    virtual ETextAlign textAlignmentForLine(bool endsWithSoftBreak) const;
-    virtual void adjustInlineDirectionLineBounds(int expansionOpportunityCount, float& logicalLeft, float& logicalWidth) const;
+    virtual ETextAlign textAlignmentForLine(bool endsWithSoftBreak) const OVERRIDE;
+    virtual void adjustInlineDirectionLineBounds(int expansionOpportunityCount, float& logicalLeft, float& logicalWidth) const OVERRIDE;
 };
 
 } // namespace WebCore

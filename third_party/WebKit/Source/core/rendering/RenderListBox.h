@@ -60,45 +60,44 @@ public:
 private:
     HTMLSelectElement* selectElement() const;
 
-    virtual const char* renderName() const { return "RenderListBox"; }
+    virtual const char* renderName() const OVERRIDE { return "RenderListBox"; }
 
-    virtual bool isListBox() const { return true; }
+    virtual bool isListBox() const OVERRIDE { return true; }
     virtual bool isChildAllowed(RenderObject*, RenderStyle*) const OVERRIDE;
 
-    virtual void updateFromElement();
-    virtual bool hasControlClip() const { return true; }
-    virtual void paintObject(PaintInfo&, const LayoutPoint&);
-    virtual LayoutRect controlClipRect(const LayoutPoint&) const;
+    virtual void updateFromElement() OVERRIDE;
+    virtual bool hasControlClip() const OVERRIDE { return true; }
+    virtual void paintObject(PaintInfo&, const LayoutPoint&) OVERRIDE;
+    virtual LayoutRect controlClipRect(const LayoutPoint&) const OVERRIDE;
 
-    virtual bool isPointInOverflowControl(HitTestResult&, const LayoutPoint& locationInContainer, const LayoutPoint& accumulatedOffset);
+    virtual bool isPointInOverflowControl(HitTestResult&, const LayoutPoint& locationInContainer, const LayoutPoint& accumulatedOffset) OVERRIDE;
 
     virtual bool scroll(ScrollDirection, ScrollGranularity, float) OVERRIDE;
 
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const OVERRIDE;
     virtual void computePreferredLogicalWidths() OVERRIDE;
-    virtual int baselinePosition(FontBaseline, bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const;
+    virtual int baselinePosition(FontBaseline, bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const OVERRIDE;
     virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const OVERRIDE;
 
-    virtual void layout();
+    virtual void layout() OVERRIDE;
 
     virtual bool supportsPartialLayout() const OVERRIDE { return false; }
 
     virtual void addFocusRingRects(Vector<IntRect>&, const LayoutPoint& additionalOffset, const RenderLayerModelObject* paintContainer = 0) OVERRIDE;
 
-    virtual bool canBeProgramaticallyScrolled() const { return true; }
-    virtual void autoscroll(const IntPoint&);
-    virtual void stopAutoscroll();
+    virtual bool canBeProgramaticallyScrolled() const OVERRIDE { return true; }
+    virtual void autoscroll(const IntPoint&) OVERRIDE;
+    virtual void stopAutoscroll() OVERRIDE;
 
-    virtual bool shouldPanScroll() const { return true; }
-    virtual void panScroll(const IntPoint&);
+    virtual void panScroll(const IntPoint&) OVERRIDE;
 
-    virtual int verticalScrollbarWidth() const;
-    virtual int scrollLeft() const;
-    virtual int scrollTop() const;
-    virtual int scrollWidth() const;
-    virtual int scrollHeight() const;
-    virtual void setScrollLeft(int);
-    virtual void setScrollTop(int);
+    virtual int verticalScrollbarWidth() const OVERRIDE;
+    virtual int scrollLeft() const OVERRIDE;
+    virtual int scrollTop() const OVERRIDE;
+    virtual int scrollWidth() const OVERRIDE;
+    virtual int scrollHeight() const OVERRIDE;
+    virtual void setScrollLeft(int) OVERRIDE;
+    virtual void setScrollTop(int) OVERRIDE;
 
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) OVERRIDE;
 
@@ -126,9 +125,9 @@ private:
     virtual IntPoint maximumScrollPosition() const OVERRIDE;
     virtual bool userInputScrollable(ScrollbarOrientation) const OVERRIDE;
     virtual bool shouldPlaceVerticalScrollbarOnLeft() const OVERRIDE;
-    virtual int lineStep(ScrollbarOrientation) const;
-    virtual int pageStep(ScrollbarOrientation) const;
-    virtual float pixelStep(ScrollbarOrientation) const;
+    virtual int lineStep(ScrollbarOrientation) const OVERRIDE;
+    virtual int pageStep(ScrollbarOrientation) const OVERRIDE;
+    virtual float pixelStep(ScrollbarOrientation) const OVERRIDE;
 
 
     virtual ScrollableArea* enclosingScrollableArea() const OVERRIDE;

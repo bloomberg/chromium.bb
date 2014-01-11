@@ -33,7 +33,7 @@ public:
     virtual ~RenderReplaced();
 
     virtual LayoutUnit computeReplacedLogicalWidth(ShouldComputePreferred  = ComputeActual) const OVERRIDE;
-    virtual LayoutUnit computeReplacedLogicalHeight() const;
+    virtual LayoutUnit computeReplacedLogicalHeight() const OVERRIDE;
 
     bool hasReplacedLogicalWidth() const;
     bool hasReplacedLogicalHeight() const;
@@ -41,13 +41,13 @@ public:
     virtual bool needsPreferredWidthsRecalculation() const OVERRIDE;
 
 protected:
-    virtual void willBeDestroyed();
+    virtual void willBeDestroyed() OVERRIDE;
 
-    virtual void layout();
+    virtual void layout() OVERRIDE;
 
     virtual LayoutSize intrinsicSize() const OVERRIDE FINAL { return m_intrinsicSize; }
     LayoutRect replacedContentRect(const LayoutSize* overriddenIntrinsicSize = 0) const;
-    virtual void computeIntrinsicRatioInformation(FloatSize& intrinsicSize, double& intrinsicRatio, bool& isPercentageIntrinsicSize) const;
+    virtual void computeIntrinsicRatioInformation(FloatSize& intrinsicSize, double& intrinsicRatio, bool& isPercentageIntrinsicSize) const OVERRIDE;
 
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const OVERRIDE FINAL;
 
@@ -57,21 +57,21 @@ protected:
 
     bool isSelected() const;
 
-    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle);
+    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
 
     void setIntrinsicSize(const LayoutSize& intrinsicSize) { m_intrinsicSize = intrinsicSize; }
     virtual void intrinsicSizeChanged();
     virtual bool hasRelativeIntrinsicLogicalWidth() const { return false; }
 
-    virtual void paint(PaintInfo&, const LayoutPoint&);
+    virtual void paint(PaintInfo&, const LayoutPoint&) OVERRIDE;
     bool shouldPaint(PaintInfo&, const LayoutPoint&);
     LayoutRect localSelectionRect(bool checkWhetherSelected = true) const; // This is in local coordinates, but it's a physical rect (so the top left corner is physical top left).
 
 private:
     virtual RenderBox* embeddedContentBox() const { return 0; }
-    virtual const char* renderName() const { return "RenderReplaced"; }
+    virtual const char* renderName() const OVERRIDE { return "RenderReplaced"; }
 
-    virtual bool canHaveChildren() const { return false; }
+    virtual bool canHaveChildren() const OVERRIDE { return false; }
 
     virtual void computePreferredLogicalWidths() OVERRIDE FINAL;
     virtual void paintReplaced(PaintInfo&, const LayoutPoint&) { }
