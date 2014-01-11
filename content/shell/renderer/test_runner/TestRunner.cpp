@@ -1686,8 +1686,6 @@ void TestRunner::overridePreference(const CppArgumentList& arguments, CppVariant
         prefs->allowDisplayOfInsecureContent = cppVariantToBool(value);
     else if (key == "WebKitAllowRunningInsecureContent")
         prefs->allowRunningOfInsecureContent = cppVariantToBool(value);
-    else if (key == "WebKitCSSCustomFilterEnabled")
-        prefs->cssCustomFilterEnabled = cppVariantToBool(value);
     else if (key == "WebKitShouldRespectImageOrientation")
         prefs->shouldRespectImageOrientation = cppVariantToBool(value);
     else if (key == "WebKitWebAudioEnabled")

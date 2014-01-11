@@ -41,7 +41,6 @@ struct WebPreferences {
     bool tabsToLinks;
     bool hyperlinkAuditingEnabled;
     bool caretBrowsingEnabled;
-    bool cssCustomFilterEnabled;
     bool shouldRespectImageOrientation;
     bool asynchronousSpellCheckingEnabled;
 

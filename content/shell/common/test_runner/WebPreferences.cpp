@@ -48,7 +48,6 @@ void WebPreferences::reset()
 
     tabsToLinks = false;
     hyperlinkAuditingEnabled = false;
-    cssCustomFilterEnabled = false;
     shouldRespectImageOrientation = false;
     asynchronousSpellCheckingEnabled = false;
 }
