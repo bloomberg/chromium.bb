@@ -80,6 +80,25 @@ NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_Crash, {
   RunNaClIntegrationTest(FILE_PATH_LITERAL("ppapi_crash.html"));
 })
 
+// PNaCl version does not work.
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestNewlib, ManifestFile) {
+  RunNaClIntegrationTest(FILE_PATH_LITERAL("pm_manifest_file_test.html"));
+}
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestGLibc, ManifestFile) {
+  RunNaClIntegrationTest(FILE_PATH_LITERAL("pm_manifest_file_test.html"));
+}
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestNewlib, PreInitManifestFile) {
+  RunNaClIntegrationTest(FILE_PATH_LITERAL(
+      "pm_pre_init_manifest_file_test.html"));
+}
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestGLibc, PreInitManifestFile) {
+  RunNaClIntegrationTest(FILE_PATH_LITERAL(
+      "pm_pre_init_manifest_file_test.html"));
+}
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestNewlib, IrtManifestFile) {
+  RunNaClIntegrationTest(FILE_PATH_LITERAL("irt_manifest_file_test.html"));
+}
+
 NACL_BROWSER_TEST_F(NaClBrowserTest, Nameservice, {
   RunNaClIntegrationTest(FILE_PATH_LITERAL("pm_nameservice_test.html"));
 })

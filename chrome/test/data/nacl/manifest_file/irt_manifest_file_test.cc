@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Copyright 2014 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -45,9 +45,9 @@ void load_manifest(TYPE_nacl_irt_query *query_func) {
 
   str = "File Contents:\n";
 
-  FILE *iob = fdopen(desc, "r");
   char buffer[4096];
-  while (fgets(buffer, sizeof buffer, iob) != NULL) {
+  int len;
+  while ((len = read(desc, buffer, sizeof buffer - 1)) > 0) {
     // NB: fgets does not discard the newline nor any carriage return
     // character before that.
     //
@@ -76,10 +76,11 @@ void load_manifest(TYPE_nacl_irt_query *query_func) {
       buffer[len-2] = '\n';
       buffer[len-1] = '\0';
     }
+    // Null terminate.
+    buffer[len] = 0;
     str += buffer;
   }
   printf("file loaded: %s\n", str.c_str());
-  fclose(iob);  // closed desc
   return;
 }
 

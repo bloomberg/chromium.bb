@@ -90,6 +90,7 @@
             '--strip-all',
           ],
           'create_nmf': '<(DEPTH)/native_client_sdk/src/tools/create_nmf.py',
+          'create_nmf_args_portable%': [],
         },
         'target_conditions': [
           ['generate_nmf==1 and build_newlib==1', {
@@ -100,18 +101,22 @@
                 'outputs': ['>(nmf_newlib)'],
                 'action': [
                   'python',
-                  '>@(_inputs)',
+                  '>(create_nmf)',
                   '--output=>(nmf_newlib)',
+                  '>@(create_nmf_args_portable)',
                 ],
                 'target_conditions': [
                   ['enable_x86_64==1', {
                     'inputs': ['>(out_newlib64)'],
+                    'action': ['>(out_newlib64)'],
                   }],
                   ['enable_x86_32==1', {
                     'inputs': ['>(out_newlib32)'],
+                    'action': ['>(out_newlib32)'],
                   }],
                   ['enable_arm==1', {
                     'inputs': ['>(out_newlib_arm)'],
+                    'action': ['>(out_newlib_arm)'],
                   }],
                 ],
               },
@@ -135,16 +140,18 @@
                 'outputs': ['>(nmf_glibc)'],
                 'action': [
                   'python',
-                  '>@(_inputs)',
+                  '>(create_nmf)',
                   '--objdump=>(nacl_objdump)',
                   '--output=>(nmf_glibc)',
                   '--path-prefix=>(nexe_target)_libs',
                   '--stage-dependencies=<(nacl_glibc_out_dir)',
+                  '>@(create_nmf_args_portable)',
                 ],
                 'target_conditions': [
                   ['enable_x86_64==1', {
                     'inputs': ['>(out_glibc64)'],
                     'action': [
+                      '>(out_glibc64)',
                       '--library-path=>(libdir_glibc64)',
                       '--library-path=>(tc_lib_dir_glibc64)',
                     ],
@@ -152,6 +159,7 @@
                   ['enable_x86_32==1', {
                     'inputs': ['>(out_glibc32)'],
                     'action': [
+                      '>(out_glibc32)',
                       '--library-path=>(libdir_glibc32)',
                       '--library-path=>(tc_lib_dir_glibc32)',
                     ],
@@ -171,8 +179,10 @@
                 'outputs': ['>(nmf_pnacl_newlib)'],
                 'action': [
                   'python',
-                  '>@(_inputs)',
+                  '>(create_nmf)',
                   '--output=>(nmf_pnacl_newlib)',
+                  '>(out_pnacl_newlib)',
+                  '>@(create_nmf_args_portable)',
                 ],
               },
             ],
