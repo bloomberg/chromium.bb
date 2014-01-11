@@ -116,7 +116,7 @@ class BuilderRunPickleTest(cros_test_lib.MockTestCase):
     patch_after_sync = run1.ShouldPatchAfterSync()
 
     # Access the archive object before pickling, too.
-    upload_uri = run1.GetArchive().upload_uri
+    upload_url = run1.GetArchive().upload_url
 
     # Pickle and unpickle run1 into run2.
     run2 = cPickle.loads(cPickle.dumps(run1, cPickle.HIGHEST_PROTOCOL))
@@ -128,7 +128,7 @@ class BuilderRunPickleTest(cros_test_lib.MockTestCase):
     self.assertRaises(AttributeError, getattr, run1.attrs, 'manifest_manager')
     self.assertRaises(AttributeError, getattr, run2.attrs, 'manifest_manager')
     self.assertEquals(patch_after_sync, run2.ShouldPatchAfterSync())
-    self.assertEquals(upload_uri, run2.GetArchive().upload_uri)
+    self.assertEquals(upload_url, run2.GetArchive().upload_url)
 
     # The attrs objects should be identical.
     self.assertTrue(run1.attrs is run2.attrs)
@@ -216,10 +216,10 @@ class BuilderRunTest(cros_test_lib.TestCase):
                    DEFAULT_BOT_NAME, DEFAULT_VERSION))
       self.assertEqual(expected, archive.archive_path)
 
-      # Check archive.upload_uri.
+      # Check archive.upload_url.
       expected = '%s/%s/%s' % (DEFAULT_ARCHIVE_BASE, DEFAULT_BOT_NAME,
                                DEFAULT_VERSION)
-      self.assertEqual(expected, archive.upload_uri)
+      self.assertEqual(expected, archive.upload_url)
 
       # Check archive.download_url.
       expected = ('%s%s/%s/%s' %

@@ -49,6 +49,8 @@ class RunAttributes(object):
   )
 
 
+# TODO(mtennant): Consider renaming this _BuilderRunState, then renaming
+# _RealBuilderRun to _BuilderRunBase.
 class _BuilderRunBase(object):
   """Class to represent one run of a builder.
 
@@ -73,6 +75,7 @@ class _BuilderRunBase(object):
       # Some pre-computed run configuration values.
       'buildnumber',     # The build number for this run.
       'buildroot',       # The build root path for this run.
+      'debug',           # Boolean, represents "dry run" concept, really.
       'manifest_branch', # The manifest branch to build and test for this run.
 
       # Some attributes are available as properties.  In particular, attributes
@@ -108,6 +111,15 @@ class _BuilderRunBase(object):
     self.buildroot = self.options.buildroot
     self.buildnumber = self.options.buildnumber
     self.manifest_branch = self.options.branch
+
+    # For remote_trybot runs, options.debug is implied, but we want true dryrun
+    # mode only if --debug was actually specified (i.e. options.debug_forced).
+    # TODO(mtennant): Get rid of confusing debug and debug_forced, if at all
+    # possible.  Also, eventually use "dry_run" and "verbose" options instead to
+    # represent two distinct concepts.
+    self.debug = self.options.debug
+    if self.options.remote_trybot:
+      self.debug = self.options.debug_forced
 
     # Certain run attributes have sensible defaults which can be set here.
     # This allows all code to safely assume that the run attribute exists.
@@ -195,6 +207,10 @@ class _RealBuilderRun(object):
   sometimes it is a "child" config.  In either case, the config to use should
   override self.config for all cases.  This class provides a mechanism for
   overriding self.config access generally.
+
+  Also, methods that do more than access state for a BuilderRun should
+  live here.  In particular, any method that uses 'self' as an object
+  directly should be here rather than _BuilderRunBase.
   """
 
   __slots__ = _BuilderRunBase.__slots__ + (
@@ -249,6 +265,27 @@ class _RealBuilderRun(object):
 
     finally:
       run_base.config = None
+
+  def _GetChildren(self):
+    """Get ChildBuilderRun objects for child configs, if they exist.
+
+    Returns:
+      List of ChildBuilderRun objects if self.config has child_configs.  None
+        otherwise.
+    """
+    # If there are child configs, construct a list of ChildBuilderRun objects
+    # for those child configs and return that.
+    if self.config.child_configs:
+      return [ChildBuilderRun(self, ix)
+              for ix in range(len(self.config.child_configs))]
+
+  def GetUngroupedBuilderRuns(self):
+    """Same as _GetChildren, but defaults to [self] if no children exist.
+
+    Returns:
+      Result of self._GetChildren, if children exist, otherwise [self].
+    """
+    return self._GetChildren() or [self]
 
 
 class BuilderRun(_RealBuilderRun):

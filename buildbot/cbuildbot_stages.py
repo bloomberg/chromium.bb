@@ -175,10 +175,7 @@ class ArchivingStage(BoardSpecificBuilderStage):
     self.acl = self.GetUploadACL(self._run.config)
     self.archive_stage = archive_stage
 
-    if self._run.options.remote_trybot:
-      self.debug = self._run.options.debug_forced
-    else:
-      self.debug = self._run.options.debug
+    self.debug = self._run.debug
 
     self.archive = builder_run.GetArchive()
 
@@ -186,7 +183,7 @@ class ArchivingStage(BoardSpecificBuilderStage):
     self.version = self.archive.version
     self.archive_path = self.archive.archive_path
     self.bot_archive_root = os.path.dirname(self.archive_path)
-    self.upload_url = self.archive.upload_uri
+    self.upload_url = self.archive.upload_url
     self.base_upload_url = os.path.dirname(self.upload_url)
     self.download_url = self.archive.download_url
 
@@ -3635,68 +3632,93 @@ class ReportStage(bs.BuilderStage):
     acl = ArchivingStage.GetUploadACL(self._run.config)
     archive_urls = {}
 
-    for board_config, archive_stage in sorted(self._archive_stages.iteritems()):
-      board = board_config.board
-      head_data = {
-          'board': board,
-          'config': board_config.name,
-          'version': self._run.GetVersion(),
-      }
-      head = self._HTML_HEAD % head_data
+    debug = self._run.debug
 
-      url = archive_stage.download_url
-      path = archive_stage.archive_path
-      upload_url = archive_stage.upload_url
+    archive = self._run.GetArchive()
+    download_url = archive.download_url
+    archive_path = archive.archive_path
+    upload_url = archive.upload_url
 
-      # Generate the final metadata before we look at the uploaded list.
-      if results_lib.Results.BuildSucceededSoFar():
-        final_status = constants.FINAL_STATUS_PASSED
-      else:
-        final_status = constants.FINAL_STATUS_FAILED
-      archive_stage.UploadMetadata(final_status=final_status,
-                                   sync_instance=self._sync_instance,
-                                   completion_instance=
-                                   self._completion_instance)
+    for builder_run in self._run.GetUngroupedBuilderRuns():
+      config = builder_run.config
 
-      # If this was a Commit Queue build, update the streak counter
-      if (self._sync_instance and
-          isinstance(self._sync_instance, CommitQueueSyncStage)):
-        streak_value = self._UpdateStreakCounter(
-            final_status=final_status, counter_name=board_config.name,
-            dry_run=archive_stage.debug)
-        if (self._run.config['health_alert_recipients'] and
-            streak_value == -self._run.config['health_threshold']):
-          logging.info('Builder failed %i consecutive times, sending health '
-                       'alert email to %s.',
-                       self._run.config['health_threshold'],
-                       self._run.config['health_alert_recipients'])
-          alerts.SendEmail('%s health alert' % self._run.config['name'],
-                           self._run.config['health_alert_recipients'],
-                           message=self._HealthAlertMessage(),
-                           smtp_server=constants.GOLO_SMTP_SERVER,
-                           extra_fields={'X-cbuildbot-alert': 'cq-health'})
+      # Soon neither a board nor an archive stage will be strictly required
+      # to run the code below, but for now the requirement remains in place.
+      # TODO(mtennant): boards = config.boards or [None]
+      boards = config.boards
+      for board in boards:
+        # This is temporary.  We are almost done with the need to have access
+        # to the archive stage object, but for now fetch it.
+        archive_stage = None
+        for board_config in self._archive_stages:
+          if board_config.board == board and board_config.name == config.name:
+            archive_stage = self._archive_stages[board_config]
+        assert archive_stage, \
+            'No archive stage for board/config: %s/%s' % (board, config.name)
 
-      # Generate the index page needed for public reading.
-      uploaded = os.path.join(path, commands.UPLOADED_LIST_FILENAME)
-      if not os.path.exists(uploaded):
-        if (not self._run.config.compilecheck and
-            not self._run.options.compilecheck):
+        # TODO(mtennant): Move this block to new self.UploadMetadata, and
+        # move the logic from ArchiveStage.UploadMetadata there.
+        # Generate the final metadata before we look at the uploaded list.
+        if results_lib.Results.BuildSucceededSoFar():
+          final_status = constants.FINAL_STATUS_PASSED
+        else:
+          final_status = constants.FINAL_STATUS_FAILED
+        archive_stage.UploadMetadata(
+            final_status=final_status, sync_instance=self._sync_instance,
+            completion_instance=self._completion_instance)
+
+        # TODO(mtennant): Move this block to new self.UpdateStreak.
+        # If this was a Commit Queue build, update the streak counter
+        if (self._sync_instance and
+            isinstance(self._sync_instance, CommitQueueSyncStage)):
+          streak_value = self._UpdateStreakCounter(
+              final_status=final_status, counter_name=builder_run.config.name,
+              dry_run=debug)
+          if (builder_run.config['health_alert_recipients'] and
+              streak_value == -builder_run.config['health_threshold']):
+            logging.info('Builder failed %i consecutive times, sending health '
+                         'alert email to %s.',
+                         builder_run.config['health_threshold'],
+                         builder_run.config['health_alert_recipients'])
+            alerts.SendEmail('%s health alert' % builder_run.config['name'],
+                             builder_run.config['health_alert_recipients'],
+                             message=self._HealthAlertMessage(),
+                             smtp_server=constants.GOLO_SMTP_SERVER,
+                             extra_fields={'X-cbuildbot-alert': 'cq-health'})
+
+        # TODO(mtennant: Move the rest to new self.UploadArchiveIndex.
+        # Generate the index page needed for public reading.
+        uploaded = os.path.join(archive_path, commands.UPLOADED_LIST_FILENAME)
+        if not os.path.exists(uploaded):
           # UPLOADED doesn't exist.  Normal if buildboard failed.
-          logging.warning('board %s did not make it to the archive stage; '
-                          'skipping', board)
-        continue
+          if (board and not self._run.config.compilecheck and
+              not self._run.options.compilecheck):
+            logging.warning('Board %s did not make it to the archive stage; '
+                            'skipping', board)
 
-      files = osutils.ReadFile(uploaded).splitlines() + [
-          '.|Google Storage Index',
-          '..|',
-      ]
-      index = os.path.join(path, 'index.html')
-      commands.GenerateHtmlIndex(index, files, url_base=url, head=head)
-      commands.UploadArchivedFile(
-          path, upload_url, os.path.basename(index), debug=archive_stage.debug,
-          acl=acl)
+          # No HTML index is needed.
+          continue
 
-      archive_urls[board] = archive_stage.download_url + '/index.html'
+        # Prepare html head.
+        head_data = {
+            'board': board,
+            'config': builder_run.config.name,
+            'version': builder_run.GetVersion(),
+        }
+        head = self._HTML_HEAD % head_data
+
+        files = osutils.ReadFile(uploaded).splitlines() + [
+            '.|Google Storage Index',
+            '..|',
+        ]
+        index = os.path.join(archive_path, 'index.html')
+        commands.GenerateHtmlIndex(index, files, url_base=download_url,
+                                   head=head)
+        commands.UploadArchivedFile(
+            archive_path, upload_url, os.path.basename(index), debug=debug,
+            acl=acl)
+
+        archive_urls[board] = download_url + '/index.html'
 
     results_lib.Results.Report(sys.stdout, archive_urls=archive_urls,
                                current_version=self._version)

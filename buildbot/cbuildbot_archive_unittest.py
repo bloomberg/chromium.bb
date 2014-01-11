@@ -203,7 +203,7 @@ class ArchiveTest(cros_test_lib.TestCase):
     self.assertEqual(expected_value, value)
 
   def testUploadUri(self):
-    value = self._GetAttributeValue('upload_uri')
+    value = self._GetAttributeValue('upload_url')
     expected_value = '%s/%s/%s' % (DEFAULT_ARCHIVE_BASE,
                                    DEFAULT_BOT_NAME,
                                    self._VERSION)

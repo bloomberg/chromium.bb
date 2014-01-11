@@ -2009,13 +2009,9 @@ class ReportStageTest(AbstractStageTest):
 
   def ConstructStage(self):
     archive_stage = stages.ArchiveStage(self.run, self._current_board)
-    archive_stages = {
-        cbuildbot.BoardConfig('board', 'config1'): archive_stage,
-        cbuildbot.BoardConfig('zororororor', 'config1'): archive_stage,
-        cbuildbot.BoardConfig('mattress-man', 'config2'): archive_stage,
-    }
-    return stages.ReportStage(self.run,
-                              archive_stages, self.sync_stage)
+    archive_stages = dict((cbuildbot.BoardConfig(b, self.bot_id), archive_stage)
+                          for b in self._boards)
+    return stages.ReportStage(self.run, archive_stages, self.sync_stage)
 
   def testCheckResults(self):
     """Basic sanity check for results stage functionality"""

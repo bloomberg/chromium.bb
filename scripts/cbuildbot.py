@@ -495,10 +495,7 @@ class SimpleBuilder(Builder):
 
     # Prepare stages to run in background.  If child_configs exist then
     # run each of those here, otherwise use default config.
-    builder_runs = [self._run]
-    if self._run.config.child_configs:
-      builder_runs = [cbuildbot_run.ChildBuilderRun(self._run, ix)
-                      for ix in range(len(self._run.config.child_configs))]
+    builder_runs = self._run.GetUngroupedBuilderRuns()
 
     tasks = []
     for builder_run in builder_runs:

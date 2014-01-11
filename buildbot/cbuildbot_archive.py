@@ -57,7 +57,7 @@ class Archive(object):
   Attributes:
     archive_path: The full local path where output from this builder is stored.
     download_url: The URL where we can download artifacts.
-    upload_uri: The Google Storage location where we should upload artifacts.
+    upload_url: The Google Storage location where we should upload artifacts.
     version: The ChromeOS version for this archive.
   """
 
@@ -94,19 +94,19 @@ class Archive(object):
     return os.path.join(self.GetLocalArchiveRoot(), self.bot_id, self.version)
 
   @property
-  def upload_uri(self):
-    base_upload_uri = GetBaseUploadURI(
+  def upload_url(self):
+    base_upload_url = GetBaseUploadURI(
         self._config,
         archive_base=self._options.archive_base,
         bot_id=self.bot_id,
         remote_trybot=self._options.remote_trybot)
-    return '%s/%s' % (base_upload_uri, self.version)
+    return '%s/%s' % (base_upload_url, self.version)
 
   @property
   def download_url(self):
     if self._options.buildbot or self._options.remote_trybot:
       # Translate the gs:// URI to the URL for downloading the same files.
-      return self.upload_uri.replace('gs://', gs.PRIVATE_BASE_HTTPS_URL)
+      return self.upload_url.replace('gs://', gs.PRIVATE_BASE_HTTPS_URL)
     else:
       return self.archive_path
 
