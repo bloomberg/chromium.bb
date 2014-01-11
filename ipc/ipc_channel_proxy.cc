@@ -93,10 +93,6 @@ bool ChannelProxy::Context::OnMessageReceived(const Message& message) {
 
 // Called on the IPC::Channel thread
 bool ChannelProxy::Context::OnMessageReceivedNoFilter(const Message& message) {
-  // NOTE: This code relies on the listener's message loop not going away while
-  // this thread is active.  That should be a reasonable assumption, but it
-  // feels risky.  We may want to invent some more indirect way of referring to
-  // a MessageLoop if this becomes a problem.
   listener_task_runner_->PostTask(
       FROM_HERE, base::Bind(&Context::OnDispatchMessage, this, message));
   return true;
