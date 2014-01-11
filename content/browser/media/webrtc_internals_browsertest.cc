@@ -116,6 +116,26 @@ class PeerConnectionEntry {
   std::map<string, StatsMap> stats_;
 };
 
+class UserMediaRequestEntry {
+ public:
+  UserMediaRequestEntry(int pid,
+                        int rid,
+                        const std::string& origin,
+                        const std::string& audio_constraints,
+                        const std::string& video_constraints)
+      : pid(pid),
+        rid(rid),
+        origin(origin),
+        audio_constraints(audio_constraints),
+        video_constraints(video_constraints) {}
+
+  int pid;
+  int rid;
+  std::string origin;
+  std::string audio_constraints;
+  std::string video_constraints;
+};
+
 static const int64 FAKE_TIME_STAMP = 3600000;
 
 #if defined(OS_WIN)
@@ -166,6 +186,24 @@ class MAYBE_WebRTCInternalsBrowserTest: public ContentBrowserTest {
     ASSERT_TRUE(ExecuteJavascript("removePeerConnection(" + ss.str() + ");"));
   }
 
+  // Execute the javascript of addGetUserMedia.
+  void ExecuteAddGetUserMediaJs(const UserMediaRequestEntry& request) {
+    std::stringstream ss;
+    ss << "{pid:" << request.pid << ", rid:" << request.rid << ", origin:'"
+       << request.origin << "', audio:'" << request.audio_constraints
+       << "', video:'" << request.video_constraints << "'}";
+
+    ASSERT_TRUE(ExecuteJavascript("addGetUserMedia(" + ss.str() + ");"));
+  }
+
+  // Execute the javascript of removeGetUserMediaForRenderer.
+  void ExecuteRemoveGetUserMediaForRendererJs(int rid) {
+    std::stringstream ss;
+    ss << "{rid:" << rid << "}";
+    ASSERT_TRUE(
+        ExecuteJavascript("removeGetUserMediaForRenderer(" + ss.str() + ");"));
+  }
+
   // Verifies that the DOM element with id |id| exists.
   void VerifyElementWithId(const string& id) {
     bool result = false;
@@ -184,6 +222,42 @@ class MAYBE_WebRTCInternalsBrowserTest: public ContentBrowserTest {
         "window.domAutomationController.send($('" + id + "') == null);",
         &result));
     EXPECT_TRUE(result);
+  }
+
+  // Verifies the JS Array of userMediaRequests matches |requests|.
+  void VerifyUserMediaRequest(
+      const std::vector<UserMediaRequestEntry>& requests) {
+    string json_requests;
+    ASSERT_TRUE(ExecuteScriptAndExtractString(
+        shell()->web_contents(),
+        "window.domAutomationController.send("
+        "JSON.stringify(userMediaRequests));",
+        &json_requests));
+    scoped_ptr<base::Value> value_requests;
+    value_requests.reset(base::JSONReader::Read(json_requests));
+
+    EXPECT_EQ(base::Value::TYPE_LIST, value_requests->GetType());
+
+    base::ListValue* list_request =
+        static_cast<base::ListValue*>(value_requests.get());
+    EXPECT_EQ(requests.size(), list_request->GetSize());
+
+    for (size_t i = 0; i < requests.size(); ++i) {
+      base::DictionaryValue* dict = NULL;
+      ASSERT_TRUE(list_request->GetDictionary(i, &dict));
+      int pid, rid;
+      std::string origin, audio, video;
+      ASSERT_TRUE(dict->GetInteger("pid", &pid));
+      ASSERT_TRUE(dict->GetInteger("rid", &rid));
+      ASSERT_TRUE(dict->GetString("origin", &origin));
+      ASSERT_TRUE(dict->GetString("audio", &audio));
+      ASSERT_TRUE(dict->GetString("video", &video));
+      EXPECT_EQ(requests[i].pid, pid);
+      EXPECT_EQ(requests[i].rid, rid);
+      EXPECT_EQ(requests[i].origin, origin);
+      EXPECT_EQ(requests[i].audio_constraints, audio);
+      EXPECT_EQ(requests[i].video_constraints, video);
+    }
   }
 
   // Verifies that DOM for |pc| is correctly created with the right content.
@@ -715,4 +789,26 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRTCInternalsBrowserTest, CreatePageDump) {
   VerifyStatsDump(dump.get(), pc_0, type, id, stats);
 }
 
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRTCInternalsBrowserTest, UpdateGetUserMedia) {
+  GURL url("chrome://webrtc-internals");
+  NavigateToURL(shell(), url);
+
+  UserMediaRequestEntry request1(1, 1, "origin", "ac", "vc");
+  UserMediaRequestEntry request2(2, 2, "origin2", "ac2", "vc2");
+  ExecuteAddGetUserMediaJs(request1);
+  ExecuteAddGetUserMediaJs(request2);
+
+  std::vector<UserMediaRequestEntry> list;
+  list.push_back(request1);
+  list.push_back(request2);
+  VerifyUserMediaRequest(list);
+
+  ExecuteRemoveGetUserMediaForRendererJs(1);
+  list.erase(list.begin());
+  VerifyUserMediaRequest(list);
+
+  ExecuteRemoveGetUserMediaForRendererJs(2);
+  list.erase(list.begin());
+  VerifyUserMediaRequest(list);
+}
 }  // namespace content

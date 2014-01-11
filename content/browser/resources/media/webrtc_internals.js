@@ -9,6 +9,8 @@ var statsTable = null;
 var dumpCreator = null;
 /** A map from peer connection id to the PeerConnectionRecord. */
 var peerConnectionDataStore = {};
+/** A list of getUserMedia requests. */
+var userMediaRequests = [];
 
 /** A simple class to store the updates and stats data for a peer connection. */
 var PeerConnectionRecord = (function() {
@@ -248,10 +250,11 @@ function addStats(data) {
  * Adds a getUserMedia request.
  *
  * @param {!Object} data The object containing rid {number}, pid {number},
- *     origin {string}, audio {Object<string>}, video {Object<string>}.
+ *     origin {string}, audio {string}, video {string}.
  */
 function addGetUserMedia(data) {
   // TODO(jiayl): add the getUserMedia info to the tabbed UI.
+  userMediaRequests.push(data);
 }
 
 
@@ -262,6 +265,10 @@ function addGetUserMedia(data) {
  */
 function removeGetUserMediaForRenderer(data) {
   // TODO(jiayl): remove the getUserMedia info from the tabbed UI.
+  for (var i = userMediaRequests.length - 1; i >= 0; --i) {
+    if (userMediaRequests[i].rid == data.rid)
+      userMediaRequests.splice(i, 1);
+  }
 }
 
 /**

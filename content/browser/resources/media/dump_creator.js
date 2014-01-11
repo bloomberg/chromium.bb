@@ -58,10 +58,15 @@ var DumpCreator = (function() {
      * @private
      */
     onDownloadData_: function() {
-      var textBlob =
-          new Blob([JSON.stringify(peerConnectionDataStore, null, ' ')],
-                                   {type: 'octet/stream'});
+      var dump_object =
+      {
+        'getUserMedia': userMediaRequests,
+        'PeerConnections': peerConnectionDataStore,
+      };
+      var textBlob = new Blob([JSON.stringify(dump_object, null, ' ')],
+                              {type: 'octet/stream'});
       var URL = window.URL.createObjectURL(textBlob);
+
       this.root_.getElementsByTagName('a')[0].href = URL;
       // The default action of the anchor will download the URL.
     },
