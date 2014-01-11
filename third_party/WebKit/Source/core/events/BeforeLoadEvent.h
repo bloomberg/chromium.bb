@@ -27,6 +27,7 @@
 #ifndef BeforeLoadEvent_h
 #define BeforeLoadEvent_h
 
+#include "RuntimeEnabledFeatures.h"
 #include "core/events/Event.h"
 #include "core/events/ThreadLocalEventNames.h"
 
@@ -64,6 +65,7 @@ public:
 private:
     BeforeLoadEvent()
     {
+        RELEASE_ASSERT(RuntimeEnabledFeatures::beforeLoadEnabled());
         ScriptWrappable::init(this);
     }
 
@@ -71,6 +73,7 @@ private:
         : Event(EventTypeNames::beforeload, false, true)
         , m_url(url)
     {
+        RELEASE_ASSERT(RuntimeEnabledFeatures::beforeLoadEnabled());
         ScriptWrappable::init(this);
     }
 
@@ -78,6 +81,7 @@ private:
         : Event(type, initializer)
         , m_url(initializer.url)
     {
+        RELEASE_ASSERT(RuntimeEnabledFeatures::beforeLoadEnabled());
         ScriptWrappable::init(this);
     }
 

@@ -25,6 +25,7 @@
  */
 
 [
+    RuntimeEnabled=BeforeLoad,
     EventConstructor,
 ] interface BeforeLoadEvent : Event {
     [InitializedByEventConstructor] readonly attribute DOMString url;

@@ -19,7 +19,6 @@ AudioParam
 AudioProcessingEvent
 AutocompleteErrorEvent
 BarProp
-BeforeLoadEvent
 BeforeUnloadEvent
 BiquadFilterNode
 Blob

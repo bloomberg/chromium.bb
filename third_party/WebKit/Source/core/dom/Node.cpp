@@ -2362,6 +2362,9 @@ void Node::dispatchSimulatedClick(Event* underlyingEvent, SimulatedClickMouseEve
 
 bool Node::dispatchBeforeLoadEvent(const String& sourceURL)
 {
+    if (!RuntimeEnabledFeatures::beforeLoadEnabled())
+        return true;
+
     if (!document().hasListenerType(Document::BEFORELOAD_LISTENER))
         return true;
 
