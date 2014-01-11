@@ -90,6 +90,7 @@ class CONTENT_EXPORT IndexedDBDatabase
                          const std::vector<int64>& object_store_ids,
                          uint16 mode);
   void Close(IndexedDBConnection* connection, bool forced);
+  void ForceClose();
 
   void Commit(int64 transaction_id);
   void Abort(int64 transaction_id);
