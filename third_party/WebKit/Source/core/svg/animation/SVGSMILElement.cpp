@@ -565,9 +565,12 @@ void SVGSMILElement::svgAttributeChanged(const QualifiedName& attrName)
     animationAttributeChanged();
 }
 
-inline Element* SVGSMILElement::eventBaseFor(const Condition& condition)
+inline SVGElement* SVGSMILElement::eventBaseFor(const Condition& condition)
 {
-    return condition.m_baseID.isEmpty() ? targetElement() : treeScope().getElementById(AtomicString(condition.m_baseID));
+    Element* eventBase = condition.m_baseID.isEmpty() ? targetElement() : treeScope().getElementById(AtomicString(condition.m_baseID));
+    if (eventBase && eventBase->isSVGElement())
+        return toSVGElement(eventBase);
+    return 0;
 }
 
 void SVGSMILElement::connectSyncBaseConditions()
@@ -611,7 +614,7 @@ void SVGSMILElement::connectEventBaseConditions()
         Condition& condition = m_conditions[n];
         if (condition.m_type == Condition::EventBase) {
             ASSERT(!condition.m_syncbase);
-            Element* eventBase = eventBaseFor(condition);
+            SVGElement* eventBase = eventBaseFor(condition);
             if (!eventBase) {
                 if (!condition.m_baseID.isEmpty() && !document().accessSVGExtensions()->isElementPendingResource(this, AtomicString(condition.m_baseID)))
                     document().accessSVGExtensions()->addPendingResource(AtomicString(condition.m_baseID), this);
@@ -620,7 +623,7 @@ void SVGSMILElement::connectEventBaseConditions()
             ASSERT(!condition.m_eventListener);
             condition.m_eventListener = ConditionEventListener::create(this, &condition);
             eventBase->addEventListener(AtomicString(condition.m_name), condition.m_eventListener, false);
-            document().accessSVGExtensions()->addElementReferencingTarget(this, toSVGElement(eventBase));
+            document().accessSVGExtensions()->addElementReferencingTarget(this, eventBase);
         }
     }
 }
@@ -638,7 +641,7 @@ void SVGSMILElement::disconnectEventBaseConditions()
             // no guarantee that eventBaseFor() will be able to find our condition's
             // original eventBase. So, we also have to disconnect ourselves from
             // our condition event listener, in case it later fires.
-            Element* eventBase = eventBaseFor(condition);
+            SVGElement* eventBase = eventBaseFor(condition);
             if (eventBase)
                 eventBase->removeEventListener(AtomicString(condition.m_name), condition.m_eventListener.get(), false);
             condition.m_eventListener->disconnectAnimation();
