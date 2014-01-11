@@ -40,7 +40,7 @@ namespace WebCore {
 class ServiceWorkerThread;
 struct WorkerThreadStartupData;
 
-class ServiceWorkerGlobalScope : public WorkerGlobalScope {
+class ServiceWorkerGlobalScope FINAL : public WorkerGlobalScope {
 public:
     static PassRefPtr<ServiceWorkerGlobalScope> create(ServiceWorkerThread*, PassOwnPtr<WorkerThreadStartupData>);
 

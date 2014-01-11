@@ -47,10 +47,10 @@ namespace WebCore {
     // WorkerMessagingProxy on the worker object thread.
     //
     // Used only by Dedicated Worker.
-    class WorkerObjectProxy : public WorkerReportingProxy {
+    class WorkerObjectProxy FINAL : public WorkerReportingProxy {
     public:
         static PassOwnPtr<WorkerObjectProxy> create(ExecutionContext*, WorkerMessagingProxy*);
-        ~WorkerObjectProxy() { }
+        virtual ~WorkerObjectProxy() { }
 
         void postMessageToWorkerObject(PassRefPtr<SerializedScriptValue>, PassOwnPtr<MessagePortChannelArray>);
 

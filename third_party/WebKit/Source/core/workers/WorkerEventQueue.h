@@ -39,7 +39,7 @@ class Event;
 class Node;
 class ExecutionContext;
 
-class WorkerEventQueue : public EventQueue {
+class WorkerEventQueue FINAL : public EventQueue {
     WTF_MAKE_FAST_ALLOCATED;
 public:
 

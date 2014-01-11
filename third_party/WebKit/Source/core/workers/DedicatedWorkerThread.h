@@ -38,7 +38,7 @@ namespace WebCore {
 class WorkerObjectProxy;
 struct WorkerThreadStartupData;
 
-class DedicatedWorkerThread : public WorkerThread {
+class DedicatedWorkerThread FINAL : public WorkerThread {
 public:
     static PassRefPtr<DedicatedWorkerThread> create(WorkerLoaderProxy&, WorkerObjectProxy&, double timeOrigin, PassOwnPtr<WorkerThreadStartupData>);
     WorkerObjectProxy& workerObjectProxy() const { return m_workerObjectProxy; }

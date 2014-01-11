@@ -35,7 +35,7 @@
 
 namespace WebCore {
 
-class WorkerNavigator : public RefCounted<WorkerNavigator>, public ScriptWrappable, public NavigatorBase, public Supplementable<WorkerNavigator> {
+class WorkerNavigator FINAL : public RefCounted<WorkerNavigator>, public ScriptWrappable, public NavigatorBase, public Supplementable<WorkerNavigator> {
 public:
     static PassRefPtr<WorkerNavigator> create(const String& userAgent) { return adoptRef(new WorkerNavigator(userAgent)); }
     virtual ~WorkerNavigator();

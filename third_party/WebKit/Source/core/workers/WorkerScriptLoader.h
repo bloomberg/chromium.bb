@@ -45,7 +45,7 @@ namespace WebCore {
     class TextResourceDecoder;
     class WorkerScriptLoaderClient;
 
-    class WorkerScriptLoader : public RefCounted<WorkerScriptLoader>, public ThreadableLoaderClient {
+    class WorkerScriptLoader FINAL : public RefCounted<WorkerScriptLoader>, public ThreadableLoaderClient {
         WTF_MAKE_FAST_ALLOCATED;
     public:
         static PassRefPtr<WorkerScriptLoader> create()
@@ -82,7 +82,7 @@ namespace WebCore {
         friend class WTF::RefCounted<WorkerScriptLoader>;
 
         WorkerScriptLoader();
-        ~WorkerScriptLoader();
+        virtual ~WorkerScriptLoader();
 
         PassOwnPtr<ResourceRequest> createResourceRequest();
         void notifyFinished();

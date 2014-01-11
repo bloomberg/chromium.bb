@@ -51,7 +51,7 @@ class AbstractWorker : public RefCounted<AbstractWorker>, public EventTargetWith
     REFCOUNTED_EVENT_TARGET(AbstractWorker);
 public:
     // EventTarget APIs
-    virtual ExecutionContext* executionContext() const OVERRIDE { return ActiveDOMObject::executionContext(); }
+    virtual ExecutionContext* executionContext() const OVERRIDE FINAL { return ActiveDOMObject::executionContext(); }
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
 

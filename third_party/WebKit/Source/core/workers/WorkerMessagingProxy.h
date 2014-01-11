@@ -45,7 +45,7 @@ namespace WebCore {
     class Worker;
     class WorkerClients;
 
-    class WorkerMessagingProxy : public WorkerGlobalScopeProxy, public WorkerLoaderProxy {
+    class WorkerMessagingProxy FINAL : public WorkerGlobalScopeProxy, public WorkerLoaderProxy {
         WTF_MAKE_NONCOPYABLE(WorkerMessagingProxy); WTF_MAKE_FAST_ALLOCATED;
     public:
         WorkerMessagingProxy(Worker*, PassOwnPtr<WorkerClients>);

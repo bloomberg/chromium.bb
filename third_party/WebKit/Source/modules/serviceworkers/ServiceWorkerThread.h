@@ -37,7 +37,7 @@ namespace WebCore {
 
 struct WorkerThreadStartupData;
 
-class ServiceWorkerThread : public WorkerThread {
+class ServiceWorkerThread FINAL : public WorkerThread {
 public:
     static PassRefPtr<ServiceWorkerThread> create(WorkerLoaderProxy&, WorkerReportingProxy&, PassOwnPtr<WorkerThreadStartupData>);
     virtual ~ServiceWorkerThread();

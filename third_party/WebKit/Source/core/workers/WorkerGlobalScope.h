@@ -63,9 +63,9 @@ namespace WebCore {
     public:
         virtual ~WorkerGlobalScope();
 
-        virtual bool isWorkerGlobalScope() const OVERRIDE { return true; }
+        virtual bool isWorkerGlobalScope() const OVERRIDE FINAL { return true; }
 
-        virtual ExecutionContext* executionContext() const OVERRIDE;
+        virtual ExecutionContext* executionContext() const OVERRIDE FINAL;
 
         virtual bool isSharedWorkerGlobalScope() const { return false; }
         virtual bool isDedicatedWorkerGlobalScope() const { return false; }
@@ -74,8 +74,8 @@ namespace WebCore {
         const KURL& url() const { return m_url; }
         KURL completeURL(const String&) const;
 
-        virtual String userAgent(const KURL&) const;
-        virtual void disableEval(const String& errorMessage) OVERRIDE;
+        virtual String userAgent(const KURL&) const OVERRIDE FINAL;
+        virtual void disableEval(const String& errorMessage) OVERRIDE FINAL;
 
         WorkerScriptController* script() { return m_script.get(); }
         void clearScript() { m_script.clear(); }
@@ -83,7 +83,7 @@ namespace WebCore {
 
         WorkerThread* thread() const { return m_thread; }
 
-        virtual void postTask(PassOwnPtr<ExecutionContextTask>) OVERRIDE; // Executes the task on context's thread asynchronously.
+        virtual void postTask(PassOwnPtr<ExecutionContextTask>) OVERRIDE FINAL; // Executes the task on context's thread asynchronously.
 
         // WorkerGlobalScope
         WorkerGlobalScope* self() { return this; }
@@ -98,13 +98,13 @@ namespace WebCore {
         WorkerNavigator* navigator() const;
 
         // ExecutionContextClient
-        virtual WorkerEventQueue* eventQueue() const OVERRIDE;
-        virtual SecurityContext& securityContext() OVERRIDE { return *this; }
+        virtual WorkerEventQueue* eventQueue() const OVERRIDE FINAL;
+        virtual SecurityContext& securityContext() OVERRIDE FINAL { return *this; }
 
-        virtual bool isContextThread() const OVERRIDE;
-        virtual bool isJSExecutionForbidden() const OVERRIDE;
+        virtual bool isContextThread() const OVERRIDE FINAL;
+        virtual bool isJSExecutionForbidden() const OVERRIDE FINAL;
 
-        virtual double timerAlignmentInterval() const OVERRIDE;
+        virtual double timerAlignmentInterval() const OVERRIDE FINAL;
 
         WorkerInspectorController* workerInspectorController() { return m_workerInspectorController.get(); }
         // These methods are used for GC marking. See JSWorkerGlobalScope::visitChildrenVirtual(SlotVisitor&) in
@@ -148,17 +148,17 @@ namespace WebCore {
         void addMessageToWorkerConsole(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber, PassRefPtr<ScriptCallStack>, ScriptState*);
 
     private:
-        virtual void refExecutionContext() OVERRIDE { ref(); }
-        virtual void derefExecutionContext() OVERRIDE { deref(); }
+        virtual void refExecutionContext() OVERRIDE FINAL { ref(); }
+        virtual void derefExecutionContext() OVERRIDE FINAL { deref(); }
 
-        virtual const KURL& virtualURL() const OVERRIDE;
-        virtual KURL virtualCompleteURL(const String&) const;
+        virtual const KURL& virtualURL() const OVERRIDE FINAL;
+        virtual KURL virtualCompleteURL(const String&) const OVERRIDE FINAL;
 
-        virtual void reportBlockedScriptExecutionToInspector(const String& directiveText) OVERRIDE;
-        virtual void addMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber, ScriptState* = 0) OVERRIDE;
+        virtual void reportBlockedScriptExecutionToInspector(const String& directiveText) OVERRIDE FINAL;
+        virtual void addMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber, ScriptState* = 0) OVERRIDE FINAL;
 
-        virtual EventTarget* errorEventTarget() OVERRIDE;
-        virtual void didUpdateSecurityOrigin() OVERRIDE { }
+        virtual EventTarget* errorEventTarget() OVERRIDE FINAL;
+        virtual void didUpdateSecurityOrigin() OVERRIDE FINAL { }
 
         KURL m_url;
         String m_userAgent;

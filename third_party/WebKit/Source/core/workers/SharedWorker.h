@@ -39,7 +39,7 @@ namespace WebCore {
 
 class ExceptionState;
 
-class SharedWorker : public AbstractWorker, public ScriptWrappable, public Supplementable<SharedWorker> {
+class SharedWorker FINAL : public AbstractWorker, public ScriptWrappable, public Supplementable<SharedWorker> {
 public:
     static PassRefPtr<SharedWorker> create(ExecutionContext*, const String& url, const String& name, ExceptionState&);
     virtual ~SharedWorker();

@@ -45,7 +45,7 @@ namespace WebCore {
 class ExceptionState;
 class Navigator;
 
-class NavigatorServiceWorker : public Supplement<Navigator>, DOMWindowProperty {
+class NavigatorServiceWorker FINAL : public Supplement<Navigator>, DOMWindowProperty {
 public:
     virtual ~NavigatorServiceWorker();
     static NavigatorServiceWorker* from(Navigator*);

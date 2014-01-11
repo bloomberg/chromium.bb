@@ -43,7 +43,7 @@ namespace WebCore {
 
 class ScriptArguments;
 
-class WorkerConsole : public RefCounted<WorkerConsole>, public ConsoleBase, public ScriptWrappable {
+class WorkerConsole FINAL : public RefCounted<WorkerConsole>, public ConsoleBase, public ScriptWrappable {
 public:
     using RefCounted<WorkerConsole>::ref;
     using RefCounted<WorkerConsole>::deref;
@@ -52,14 +52,14 @@ public:
     virtual ~WorkerConsole();
 
 protected:
-    virtual ExecutionContext* context();
+    virtual ExecutionContext* context() OVERRIDE;
     virtual void reportMessageToClient(MessageLevel, const String& message, PassRefPtr<ScriptCallStack>) OVERRIDE;
 
 private:
     explicit WorkerConsole(WorkerGlobalScope*);
 
-    virtual void refConsole() { ref(); }
-    virtual void derefConsole() { deref(); }
+    virtual void refConsole() OVERRIDE { ref(); }
+    virtual void derefConsole() OVERRIDE { deref(); }
 
     WorkerGlobalScope* m_scope;
 };

@@ -40,7 +40,7 @@ namespace WebCore {
     class MessageEvent;
     class SharedWorkerThread;
 
-    class SharedWorkerGlobalScope : public WorkerGlobalScope {
+    class SharedWorkerGlobalScope FINAL : public WorkerGlobalScope {
     public:
         typedef WorkerGlobalScope Base;
         static PassRefPtr<SharedWorkerGlobalScope> create(const String& name, SharedWorkerThread*, PassOwnPtr<WorkerThreadStartupData>);

@@ -40,7 +40,7 @@ namespace WebCore {
 class DedicatedWorkerThread;
 struct WorkerThreadStartupData;
 
-class DedicatedWorkerGlobalScope : public WorkerGlobalScope {
+class DedicatedWorkerGlobalScope FINAL : public WorkerGlobalScope {
 public:
     typedef WorkerGlobalScope Base;
     static PassRefPtr<DedicatedWorkerGlobalScope> create(DedicatedWorkerThread*, PassOwnPtr<WorkerThreadStartupData>, double timeOrigin);
