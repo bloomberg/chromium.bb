@@ -476,16 +476,19 @@ TEST_F(ComponentUpdaterTest, InstallCrx) {
   // are important for backward compatibility with the version v2 of the update
   // protocol. In this case, inspect the <request>, which is the first element
   // after the xml declaration of the update request body.
-  // Expect to find the |os| and the |arch| attributes:
+  // Expect to find the |os|, |arch|, |prodchannel|, and |prodversion|
+  // attributes:
   // <?xml version="1.0" encoding="UTF-8"?>
-  // <request...os=...arch=...>
+  // <request... os=... arch=... prodchannel=... prodversion=...>
   // ...
   // </request>
   const std::string update_request(post_interceptor_->GetRequests()[0]);
   std::vector<base::StringPiece> elements;
   Tokenize(update_request, "<>", &elements);
-  EXPECT_NE(string::npos, elements[1].find("os="));
-  EXPECT_NE(string::npos, elements[1].find("arch="));
+  EXPECT_NE(string::npos, elements[1].find(" os="));
+  EXPECT_NE(string::npos, elements[1].find(" arch="));
+  EXPECT_NE(string::npos, elements[1].find(" prodchannel="));
+  EXPECT_NE(string::npos, elements[1].find(" prodversion="));
 
   component_updater()->Stop();
 }

@@ -42,12 +42,13 @@ std::string BuildProtocolRequest(const std::string& request_body,
   base::StringAppendF(
       &request,
       "version=\"%s-%s\" prodversion=\"%s\" "
-      "requestid=\"{%s}\" updaterchannel=\"%s\" "
+      "requestid=\"{%s}\" updaterchannel=\"%s\" prodchannel=\"%s\" "
       "os=\"%s\" arch=\"%s\" nacl_arch=\"%s\"",
       prod_id.c_str(), chrome_version.c_str(),        // "version"
       chrome_version.c_str(),                         // "prodversion"
       base::GenerateGUID().c_str(),                   // "requestid"
       chrome::OmahaQueryParams::GetChannelString(),   // "updaterchannel"
+      chrome::OmahaQueryParams::GetChannelString(),   // "prodchannel"
       chrome::OmahaQueryParams::getOS(),              // "os"
       chrome::OmahaQueryParams::getArch(),            // "arch"
       chrome::OmahaQueryParams::getNaclArch());       // "nacl_arch"
