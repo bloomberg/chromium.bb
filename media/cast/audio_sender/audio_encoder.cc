@@ -59,7 +59,7 @@ class AudioEncoder::ImplBase {
                    const base::TimeTicks& recorded_time,
                    const base::Closure& done_callback) {
     int src_pos = 0;
-    while (src_pos < audio_bus->frames()) {
+    while (audio_bus && src_pos < audio_bus->frames()) {
       const int num_samples_to_xfer =
           std::min(samples_per_10ms_ - buffer_fill_end_,
                    audio_bus->frames() - src_pos);
@@ -72,7 +72,8 @@ class AudioEncoder::ImplBase {
       if (src_pos == audio_bus->frames()) {
         cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
                                     done_callback);
-        // Note: |audio_bus| is now invalid..
+        // Note: |audio_bus| is invalid once done_callback is invoked.
+        audio_bus = NULL;
       }
 
       if (buffer_fill_end_ == samples_per_10ms_) {
