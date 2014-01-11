@@ -18,6 +18,10 @@
  * eh_frame_headers
  */
 
+/* This goes first to ensure that tls_params.h hasn't been #included before. */
+#define NACL_DEFINE_EXTERNAL_TLS_LAYOUT_FUNCS
+#include "native_client/src/untrusted/nacl/tls_params.h"
+
 #include <stdint.h>
 
 #include "native_client/pnacl/support/pnacl_irt.h"

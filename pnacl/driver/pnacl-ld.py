@@ -95,6 +95,11 @@ EXTRA_ENV = {
     '--allow-unresolved=memmove '
     '--allow-unresolved=setjmp '
     '--allow-unresolved=longjmp '
+    # These TLS layout functions are either defined by the ExpandTls
+    # pass or (for non-ABI-stable code only) by PNaCl's native support
+    # code.
+    '--allow-unresolved=__nacl_tp_tls_offset '
+    '--allow-unresolved=__nacl_tp_tdb_offset '
     '${CXX_EH_MODE==sjlj ? '
       # These symbols are defined by libsupc++ and the PNaClSjLjEH
       # pass generates references to them.

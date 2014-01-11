@@ -2450,7 +2450,8 @@ libs-support-native() {
   mkdir -p "${destdir}"
 
   local flags="--pnacl-allow-native --pnacl-allow-translate -Wall -Werror"
-  local cc_cmd="${PNACL_CC} -arch ${arch} ${flags} -I../../.."
+  local cc_cmd="${PNACL_CC} -arch ${arch} --pnacl-bias=${arch} ${flags} \
+      -I../../.."
 
   spushd "${PNACL_SUPPORT}"
 

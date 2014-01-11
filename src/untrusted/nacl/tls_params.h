@@ -112,7 +112,13 @@
 
 #include <stddef.h>
 
-#if defined(__pnacl__)
+#if defined(NACL_DEFINE_EXTERNAL_TLS_LAYOUT_FUNCS)
+# define NACL_TLS_LAYOUT_FUNC
+#else
+# define NACL_TLS_LAYOUT_FUNC static inline __attribute__((__unused__))
+#endif
+
+#if defined(__pnacl__) && !defined(NACL_DEFINE_EXTERNAL_TLS_LAYOUT_FUNCS)
 
 /*
  * These are compiler intrinsics in NaCl's variant of LLVM.
@@ -160,12 +166,12 @@ ptrdiff_t __nacl_tp_tdb_offset(size_t tdb_size) asm("llvm.nacl.tp.tdb.offset");
  * In x86-64, __nacl_read_tp() must be called; it returns the $tp address.
  */
 
-static inline __attribute__((__unused__))
+NACL_TLS_LAYOUT_FUNC
 ptrdiff_t __nacl_tp_tls_offset(size_t tls_size) {
   return -(ptrdiff_t) tls_size;
 }
 
-static inline __attribute__((__unused__))
+NACL_TLS_LAYOUT_FUNC
 ptrdiff_t __nacl_tp_tdb_offset(size_t tdb_size) {
   return 0;
 }
@@ -186,12 +192,33 @@ ptrdiff_t __nacl_tp_tdb_offset(size_t tdb_size) {
  * In NaCl, this is defined as register r9.
  */
 
-static inline __attribute__((__unused__))
+NACL_TLS_LAYOUT_FUNC
 ptrdiff_t __nacl_tp_tls_offset(size_t tls_size) {
   return 8;
 }
 
-static inline __attribute__((__unused__))
+NACL_TLS_LAYOUT_FUNC
+ptrdiff_t __nacl_tp_tdb_offset(size_t tdb_size) {
+  return -(ptrdiff_t) tdb_size;
+}
+
+#elif defined(__mips__)
+
+/*
+ *  +-----------+---------------+
+ *  |    TDB    | TLS data, bss |
+ *  +-----------+---------------+
+ *              ^
+ *              |
+ *              +--- $tp points here
+ */
+
+NACL_TLS_LAYOUT_FUNC
+ptrdiff_t __nacl_tp_tls_offset(size_t tls_size) {
+  return 0;
+}
+
+NACL_TLS_LAYOUT_FUNC
 ptrdiff_t __nacl_tp_tdb_offset(size_t tdb_size) {
   return -(ptrdiff_t) tdb_size;
 }
@@ -201,5 +228,7 @@ ptrdiff_t __nacl_tp_tdb_offset(size_t tdb_size) {
 #error "unknown platform"
 
 #endif
+
+#undef NACL_TLS_LAYOUT_FUNC
 
 #endif /* NATIVE_CLIENT_SRC_UNTRUSTED_NACL_TLS_PARAMS_H_ */
