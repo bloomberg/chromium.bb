@@ -133,7 +133,6 @@ class BrowserPluginManager;
 class DeviceOrientationDispatcher;
 class DevToolsAgent;
 class DocumentState;
-class DomAutomationController;
 class ExternalPopupMenu;
 class FaviconHelper;
 class GeolocationDispatcher;
@@ -1496,10 +1495,6 @@ class CONTENT_EXPORT RenderViewImpl
   // Allows to selectively disable partial buffer swap for this renderer's
   // compositor.
   bool allow_partial_swap_;
-
-  // Allows JS to access DOM automation. The JS object is only exposed when the
-  // DOM automation bindings are enabled.
-  scoped_ptr<DomAutomationController> dom_automation_controller_;
 
   // This field stores drag/drop related info for the event that is currently
   // being handled. If the current event results in starting a drag/drop

@@ -98,6 +98,7 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, Basic) {
       tab,
       "setInterval(function(){"
       "  if(document.body.bgColor == 'red'){"
+      "    window.domAutomationController.setAutomationId(0);"
       "    window.domAutomationController.send(true)}}, 100)",
       &result));
   ASSERT_TRUE(result);
@@ -111,6 +112,7 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, Basic) {
       tab,
       "setInterval(function(){"
       "  if(document.body.bgColor == 'blue'){"
+      "    window.domAutomationController.setAutomationId(0);"
       "    window.domAutomationController.send(true)}}, 100)",
       &result));
   ASSERT_TRUE(result);
@@ -158,6 +160,7 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, MAYBE_PageAction) {
       tab,
       "setInterval(function(){"
       "  if(document.body.bgColor == 'red'){"
+      "    window.domAutomationController.setAutomationId(0);"
       "    window.domAutomationController.send(true)}}, 100)",
       &result));
   ASSERT_TRUE(result);
@@ -229,6 +232,7 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, DontOverwriteSystemShortcuts) {
       tab,
       "setInterval(function() {"
       "  if (document.body.bgColor == 'blue') {"
+      "    window.domAutomationController.setAutomationId(0);"
       "    window.domAutomationController.send(true)}}, 100)",
       &result));
   ASSERT_TRUE(result);
