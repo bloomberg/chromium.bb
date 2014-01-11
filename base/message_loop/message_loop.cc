@@ -665,7 +665,8 @@ void MessageLoopForUI::Attach() {
 }
 #endif
 
-#if !defined(OS_MACOSX) && !defined(OS_NACL) && !defined(OS_ANDROID)
+#if !defined(OS_NACL) && (defined(TOOLKIT_GTK) || defined(USE_OZONE) || \
+                          defined(OS_WIN) || defined(USE_X11))
 void MessageLoopForUI::AddObserver(Observer* observer) {
   pump_ui()->AddObserver(observer);
 }
@@ -673,7 +674,6 @@ void MessageLoopForUI::AddObserver(Observer* observer) {
 void MessageLoopForUI::RemoveObserver(Observer* observer) {
   pump_ui()->RemoveObserver(observer);
 }
-
 #endif  //  !defined(OS_MACOSX) && !defined(OS_NACL) && !defined(OS_ANDROID)
 
 //------------------------------------------------------------------------------

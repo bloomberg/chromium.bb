@@ -580,12 +580,15 @@ class BASE_EXPORT MessageLoopForUI : public MessageLoop {
   // never be called. Instead use Start(), which will forward all the native UI
   // events to the Java message loop.
   void Start();
-#elif !defined(OS_MACOSX)
+#endif
 
+#if !defined(OS_NACL) && (defined(TOOLKIT_GTK) || defined(USE_OZONE) || \
+                          defined(OS_WIN) || defined(USE_X11))
   // Please see message_pump_win/message_pump_glib for definitions of these
   // methods.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
+#endif
 
 #if defined(OS_WIN)
   // Plese see MessagePumpForUI for definitions of this method.
@@ -602,11 +605,12 @@ class BASE_EXPORT MessageLoopForUI : public MessageLoop {
   friend class MessagePumpOzone;
 #endif
 
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
   // TODO(rvargas): Make this platform independent.
   MessagePumpForUI* pump_ui() {
     return static_cast<MessagePumpForUI*>(pump_.get());
   }
-#endif  // !defined(OS_MACOSX)
+#endif
 };
 
 // Do not add any member variables to MessageLoopForUI!  This is important b/c
