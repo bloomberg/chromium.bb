@@ -34,8 +34,8 @@ struct SameSizeAsFillLayer {
 
     LengthSize m_sizeLength;
 
-    unsigned m_bitfields: 32;
-    unsigned m_bitfields2: 1;
+    unsigned m_bitfields1;
+    unsigned m_bitfields2;
 };
 
 COMPILE_ASSERT(sizeof(FillLayer) == sizeof(SameSizeAsFillLayer), FillLayer_should_stay_small);
