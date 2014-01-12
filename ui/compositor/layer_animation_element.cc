@@ -219,7 +219,7 @@ class VisibilityTransition : public LayerAnimationElement {
 
  protected:
   virtual void OnStart(LayerAnimationDelegate* delegate) OVERRIDE {
-    start_ = delegate ? delegate->GetVisibilityForAnimation() : !target_;
+    start_ = delegate->GetVisibilityForAnimation();
   }
 
   virtual bool OnProgress(double t, LayerAnimationDelegate* delegate) OVERRIDE {
