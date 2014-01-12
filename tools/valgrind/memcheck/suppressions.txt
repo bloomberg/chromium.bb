@@ -6062,14 +6062,6 @@
    fun:_ZN7WebCore*V8InternalL*MethodCallbackERKN2v820FunctionCallbackInfoINS1_5ValueEEE
 }
 {
-   bug_293049
-   Memcheck:Uninitialized
-   fun:_ZNK7WebCore8Document24webkitPointerLockElementEv
-   fun:_ZN7WebCore18DocumentV8InternalL39webkitPointerLockElementAttributeGetter*
-   fun:_ZN7WebCore18DocumentV8InternalL47webkitPointerLockElementAttributeGetterCallback*
-   fun:_ZN2v88internal25PropertyCallbackArguments4CallEPFvNS_5LocalINS_6StringEEERKNS_20PropertyCallbackInfoINS_5ValueEEEES4_
-}
-{
    bug_293058_a
    Memcheck:Leak
    fun:_Znw*
