@@ -187,7 +187,8 @@ ProfileKeyedAPIFactory<MessageService>* MessageService::GetFactoryInstance() {
 }
 
 // static
-MessageService* MessageService::Get(Profile* profile) {
+MessageService* MessageService::Get(content::BrowserContext* context) {
+  Profile* profile = Profile::FromBrowserContext(context);
   return ProfileKeyedAPIFactory<MessageService>::GetForProfile(profile);
 }
 

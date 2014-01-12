@@ -7,7 +7,6 @@
 #include "chrome/browser/extensions/api/messaging/message_service.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/messaging/message.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/url_constants.h"
@@ -27,7 +26,7 @@ namespace extensions {
 ExtensionWebContentsObserver::ExtensionWebContentsObserver(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())) {
+      browser_context_(web_contents->GetBrowserContext()) {
 }
 
 ExtensionWebContentsObserver::~ExtensionWebContentsObserver() {
@@ -60,7 +59,8 @@ void ExtensionWebContentsObserver::RenderViewCreated(
   // Some extensions use file:// URLs.
   if (type == Manifest::TYPE_EXTENSION ||
       type == Manifest::TYPE_LEGACY_PACKAGED_APP) {
-    if (ExtensionPrefs::Get(profile_)->AllowFileAccess(extension->id())) {
+    ExtensionPrefs* prefs = ExtensionPrefs::Get(browser_context_);
+    if (prefs->AllowFileAccess(extension->id())) {
       content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(
           process->GetID(), content::kFileScheme);
     }
@@ -102,7 +102,7 @@ bool ExtensionWebContentsObserver::OnMessageReceived(
 
 void ExtensionWebContentsObserver::OnPostMessage(int port_id,
                                                  const Message& message) {
-  MessageService* message_service = MessageService::Get(profile_);
+  MessageService* message_service = MessageService::Get(browser_context_);
   if (message_service) {
     message_service->PostMessage(port_id, message);
   }
@@ -119,22 +119,21 @@ const Extension* ExtensionWebContentsObserver::GetExtension(
   if (!site.SchemeIs(kExtensionScheme))
     return NULL;
 
-  ExtensionService* service =
-      ExtensionSystem::Get(profile_)->extension_service();
-  if (!service)
-    return NULL;
+  std::string extension_id = site.host();
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context_);
 
   // Reload the extension if it has crashed.
   // TODO(yoz): This reload doesn't happen synchronously for unpacked
   //            extensions. It seems to be fast enough, but there is a race.
   //            We should delay loading until the extension has reloaded.
-  if (service->GetTerminatedExtension(site.host()))
-    service->ReloadExtension(site.host());
+  if (registry->GetExtensionById(extension_id, ExtensionRegistry::TERMINATED)) {
+    ExtensionSystem::GetForBrowserContext(browser_context_)->
+        extension_service()->ReloadExtension(extension_id);
+  }
 
   // May be null if the extension doesn't exist, for example if somebody typos
   // a chrome-extension:// URL.
-  return ExtensionRegistry::Get(profile_)->enabled_extensions().GetByID(
-      site.host());
+  return registry->enabled_extensions().GetByID(extension_id);
 }
 
 }  // namespace extensions

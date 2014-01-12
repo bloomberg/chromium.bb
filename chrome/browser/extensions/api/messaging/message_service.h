@@ -28,6 +28,7 @@ class DictionaryValue;
 }
 
 namespace content {
+class BrowserContext;
 class RenderProcessHost;
 class WebContents;
 }
@@ -114,8 +115,8 @@ class MessageService : public ProfileKeyedAPI,
   // ProfileKeyedAPI implementation.
   static ProfileKeyedAPIFactory<MessageService>* GetFactoryInstance();
 
-  // Convenience method to get the MessageService for a profile.
-  static MessageService* Get(Profile* profile);
+  // Convenience method to get the MessageService for a browser context.
+  static MessageService* Get(content::BrowserContext* profile);
 
   // Given an extension's ID, opens a channel between the given renderer "port"
   // and every listening context owned by that extension. |channel_name| is

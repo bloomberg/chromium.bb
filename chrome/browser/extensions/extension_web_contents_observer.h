@@ -8,14 +8,18 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
-class Profile;
+namespace content {
+class BrowserContext;
+}
 
 namespace extensions {
 class Extension;
 struct Message;
 
 // A web contents observer that's used for WebContents in renderer and extension
-// processes.
+// processes. Grants the renderer access to certain URL patterns for extensions,
+// notifies the renderer that the extension was loaded and routes messages to
+// the MessageService.
 class ExtensionWebContentsObserver
     : public content::WebContentsObserver,
       public content::WebContentsUserData<ExtensionWebContentsObserver> {
@@ -36,7 +40,8 @@ class ExtensionWebContentsObserver
   // Gets the extension or app (if any) that is associated with a RVH.
   const Extension* GetExtension(content::RenderViewHost* render_view_host);
 
-  Profile* profile_;
+  // The browser context for the web contents this is observing.
+  content::BrowserContext* browser_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionWebContentsObserver);
 };
