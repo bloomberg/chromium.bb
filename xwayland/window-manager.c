@@ -2214,7 +2214,7 @@ xserver_map_shell_surface(struct weston_wm *wm,
 					      window->x,
 					      window->y,
 					      WL_SHELL_SURFACE_TRANSIENT_INACTIVE);
-	} else if (window->transient_for) {
+	} else if (window->transient_for && window->transient_for->surface) {
 		parent = window->transient_for;
 		shell_interface->set_transient(window->shsurf,
 					       parent->surface,
