@@ -2218,8 +2218,8 @@ xserver_map_shell_surface(struct weston_wm *wm,
 		parent = window->transient_for;
 		shell_interface->set_transient(window->shsurf,
 					       parent->surface,
-					       parent->x - window->x,
-					       parent->y - window->y, 0);
+					       window->x - parent->x,
+					       window->y - parent->y, 0);
 	} else {
 		shell_interface->set_toplevel(window->shsurf);
 	}
