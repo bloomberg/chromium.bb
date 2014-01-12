@@ -1,7 +1,5 @@
-# TODO(darin): Move this folder out of mojo/public/.
+# TODO(darin): Eliminate the base dependency!
 include_rules = [
   "+base",
-  "+build",
   "+mojo",
-  "+testing",
 ]

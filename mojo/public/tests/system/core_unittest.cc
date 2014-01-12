@@ -13,13 +13,13 @@
 namespace mojo {
 namespace {
 
-TEST(SystemTest, GetTimeTicksNow) {
+TEST(CoreTest, GetTimeTicksNow) {
   const MojoTimeTicks start = MojoGetTimeTicksNow();
   EXPECT_NE(static_cast<MojoTimeTicks>(0), start)
       << "MojoGetTimeTicksNow should return nonzero value";
 }
 
-TEST(SystemTest, Basic) {
+TEST(CoreTest, Basic) {
   MojoHandle h_0;
   MojoWaitFlags wf;
   char buffer[10] = { 0 };

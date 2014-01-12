@@ -6,7 +6,7 @@
 #include <ostream>
 #include <string>
 
-#include "mojo/public/tests/simple_bindings_support.h"
+#include "mojo/public/tests/bindings/simple_bindings_support.h"
 #include "mojom/sample_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -25,9 +25,13 @@ class TypeConverter<sample::Bar, int32_t> {
 }  // namespace mojo
 
 namespace sample {
+namespace {
 
-// Set this variable to true to print the binary message in hex.
-bool g_dump_message_as_hex = true;
+// Set this variable to true to print the message in hex.
+bool g_dump_message_as_hex = false;
+
+// Set this variable to true to print the message in human readable form.
+bool g_dump_message_as_text = false;
 
 // Make a sample |Foo|.
 Foo MakeFoo() {
@@ -135,38 +139,38 @@ void CheckFoo(const Foo& foo) {
   EXPECT_EQ(2u, foo.output_streams().size());
 }
 
-static void PrintSpacer(int depth) {
+void PrintSpacer(int depth) {
   for (int i = 0; i < depth; ++i)
     std::cout << "   ";
 }
 
-static void Print(int depth, const char* name, bool value) {
+void Print(int depth, const char* name, bool value) {
   PrintSpacer(depth);
   std::cout << name << ": " << (value ? "true" : "false") << std::endl;
 }
 
-static void Print(int depth, const char* name, int32_t value) {
+void Print(int depth, const char* name, int32_t value) {
   PrintSpacer(depth);
   std::cout << name << ": " << value << std::endl;
 }
 
-static void Print(int depth, const char* name, uint8_t value) {
+void Print(int depth, const char* name, uint8_t value) {
   PrintSpacer(depth);
   std::cout << name << ": " << uint32_t(value) << std::endl;
 }
 
-static void Print(int depth, const char* name, mojo::Handle value) {
+void Print(int depth, const char* name, mojo::Handle value) {
   PrintSpacer(depth);
   std::cout << name << ": 0x" << std::hex << value.value() << std::endl;
 }
 
-static void Print(int depth, const char* name, const mojo::String& str) {
+void Print(int depth, const char* name, const mojo::String& str) {
   std::string s = str.To<std::string>();
   PrintSpacer(depth);
   std::cout << name << ": \"" << str.To<std::string>() << "\"" << std::endl;
 }
 
-static void Print(int depth, const char* name, const Bar& bar) {
+void Print(int depth, const char* name, const Bar& bar) {
   PrintSpacer(depth);
   std::cout << name << ":" << std::endl;
   if (!bar.is_null()) {
@@ -180,13 +184,13 @@ static void Print(int depth, const char* name, const Bar& bar) {
 }
 
 template <typename T>
-static void Print(int depth, const char* name,
+void Print(int depth, const char* name,
                   const mojo::Passable<T>& passable) {
   Print(depth, name, passable.get());
 }
 
 template <typename T>
-static void Print(int depth, const char* name, const mojo::Array<T>& array) {
+void Print(int depth, const char* name, const mojo::Array<T>& array) {
   PrintSpacer(depth);
   std::cout << name << ":" << std::endl;
   if (!array.is_null()) {
@@ -200,7 +204,7 @@ static void Print(int depth, const char* name, const mojo::Array<T>& array) {
   }
 }
 
-static void Print(int depth, const char* name, const Foo& foo) {
+void Print(int depth, const char* name, const Foo& foo) {
   PrintSpacer(depth);
   std::cout << name << ":" << std::endl;
   if (!foo.is_null()) {
@@ -221,7 +225,7 @@ static void Print(int depth, const char* name, const Foo& foo) {
   }
 }
 
-static void DumpHex(const uint8_t* bytes, uint32_t num_bytes) {
+void DumpHex(const uint8_t* bytes, uint32_t num_bytes) {
   for (uint32_t i = 0; i < num_bytes; ++i) {
     std::cout << std::setw(2) << std::setfill('0') << std::hex <<
         uint32_t(bytes[i]);
@@ -249,13 +253,14 @@ class ServiceImpl : public Service {
     CheckFoo(foo);
     EXPECT_EQ(BAZ_EXTRA, baz);
 
-    // Also dump the Foo structure and all of its members.
-    // TODO(vtl): Make it optional, so that the test spews less?
-    std::cout << "Frobinate:" << std::endl;
-    int depth = 1;
-    Print(depth, "foo", foo);
-    Print(depth, "baz", baz);
-    Print(depth, "port", port.get());
+    if (g_dump_message_as_text) {
+      // Also dump the Foo structure and all of its members.
+      std::cout << "Frobinate:" << std::endl;
+      int depth = 1;
+      Print(depth, "foo", foo);
+      Print(depth, "baz", baz);
+      Print(depth, "port", port.get());
+    }
   }
 };
 
@@ -277,6 +282,8 @@ class SimpleMessageReceiver : public mojo::MessageReceiver {
     return stub.Accept(message);
   }
 };
+
+}  // namespace
 
 TEST(BindingsSampleTest, Basic) {
   mojo::test::SimpleBindingsSupport bindings_support;

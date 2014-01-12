@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "mojo/common/bindings_support_impl.h"
 #include "mojo/common/common_type_converters.h"
-#include "mojo/public/tests/simple_bindings_support.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
+namespace common {
 namespace test {
 namespace {
 
@@ -24,7 +25,15 @@ void ExpectEqualsMojoString(const std::string& expected,
 
 class CommonTypeConvertersTest : public testing::Test {
  private:
-  SimpleBindingsSupport bindings_support_;
+  virtual void SetUp() OVERRIDE {
+    BindingsSupport::Set(&bindings_support_);
+  }
+
+  virtual void TearDown() OVERRIDE {
+    BindingsSupport::Set(NULL);
+  }
+
+  BindingsSupportImpl bindings_support_;
 };
 
 TEST_F(CommonTypeConvertersTest, StringPiece) {
@@ -48,4 +57,5 @@ TEST_F(CommonTypeConvertersTest, StringPiece) {
 }
 
 }  // namespace test
+}  // namespace common
 }  // namespace mojo

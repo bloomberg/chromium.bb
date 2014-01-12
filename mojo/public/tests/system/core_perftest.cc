@@ -14,10 +14,10 @@
 
 namespace {
 
-class SystemPerftest : public testing::Test {
+class CorePerftest : public testing::Test {
  public:
-  SystemPerftest() {}
-  virtual ~SystemPerftest() {}
+  CorePerftest() {}
+  virtual ~CorePerftest() {}
 
   void NoOp() {
   }
@@ -61,56 +61,56 @@ class SystemPerftest : public testing::Test {
   MojoHandle h_1_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(SystemPerftest);
+  DISALLOW_COPY_AND_ASSIGN(CorePerftest);
 };
 
 // A no-op test so we can compare performance.
-TEST_F(SystemPerftest, NoOp) {
+TEST_F(CorePerftest, NoOp) {
   mojo::test::IterateAndReportPerf(
       "NoOp",
-      base::Bind(&SystemPerftest::NoOp,
+      base::Bind(&CorePerftest::NoOp,
                  base::Unretained(this)));
 }
 
-TEST_F(SystemPerftest, MessagePipe_CreateAndClose) {
+TEST_F(CorePerftest, MessagePipe_CreateAndClose) {
   mojo::test::IterateAndReportPerf(
       "MessagePipe_CreateAndClose",
-      base::Bind(&SystemPerftest::MessagePipe_CreateAndClose,
+      base::Bind(&CorePerftest::MessagePipe_CreateAndClose,
                  base::Unretained(this)));
 }
 
-TEST_F(SystemPerftest, MessagePipe_WriteAndRead) {
+TEST_F(CorePerftest, MessagePipe_WriteAndRead) {
   CHECK_EQ(MojoCreateMessagePipe(&h_0_, &h_1_), MOJO_RESULT_OK);
   char buffer[10000] = { 0 };
   mojo::test::IterateAndReportPerf(
       "MessagePipe_WriteAndRead_10bytes",
-      base::Bind(&SystemPerftest::MessagePipe_WriteAndRead,
+      base::Bind(&CorePerftest::MessagePipe_WriteAndRead,
                  base::Unretained(this),
                  static_cast<void*>(buffer), static_cast<uint32_t>(10)));
   mojo::test::IterateAndReportPerf(
       "MessagePipe_WriteAndRead_100bytes",
-      base::Bind(&SystemPerftest::MessagePipe_WriteAndRead,
+      base::Bind(&CorePerftest::MessagePipe_WriteAndRead,
                  base::Unretained(this),
                  static_cast<void*>(buffer), static_cast<uint32_t>(100)));
   mojo::test::IterateAndReportPerf(
       "MessagePipe_WriteAndRead_1000bytes",
-      base::Bind(&SystemPerftest::MessagePipe_WriteAndRead,
+      base::Bind(&CorePerftest::MessagePipe_WriteAndRead,
                  base::Unretained(this),
                  static_cast<void*>(buffer), static_cast<uint32_t>(1000)));
   mojo::test::IterateAndReportPerf(
       "MessagePipe_WriteAndRead_10000bytes",
-      base::Bind(&SystemPerftest::MessagePipe_WriteAndRead,
+      base::Bind(&CorePerftest::MessagePipe_WriteAndRead,
                  base::Unretained(this),
                  static_cast<void*>(buffer), static_cast<uint32_t>(10000)));
   CHECK_EQ(MojoClose(h_0_), MOJO_RESULT_OK);
   CHECK_EQ(MojoClose(h_1_), MOJO_RESULT_OK);
 }
 
-TEST_F(SystemPerftest, MessagePipe_EmptyRead) {
+TEST_F(CorePerftest, MessagePipe_EmptyRead) {
   CHECK_EQ(MojoCreateMessagePipe(&h_0_, &h_1_), MOJO_RESULT_OK);
   mojo::test::IterateAndReportPerf(
       "MessagePipe_EmptyRead",
-      base::Bind(&SystemPerftest::MessagePipe_EmptyRead,
+      base::Bind(&CorePerftest::MessagePipe_EmptyRead,
                  base::Unretained(this)));
   CHECK_EQ(MojoClose(h_0_), MOJO_RESULT_OK);
   CHECK_EQ(MojoClose(h_1_), MOJO_RESULT_OK);

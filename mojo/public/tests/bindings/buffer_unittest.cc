@@ -4,7 +4,7 @@
 
 #include "mojo/public/bindings/lib/bindings_serialization.h"
 #include "mojo/public/bindings/lib/buffer.h"
-#include "mojo/public/tests/simple_bindings_support.h"
+#include "mojo/public/tests/bindings/simple_bindings_support.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {

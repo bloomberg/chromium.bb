@@ -48,9 +48,7 @@
 #ifndef MOJO_PUBLIC_UTILITY_THREAD_LOCAL_H_
 #define MOJO_PUBLIC_UTILITY_THREAD_LOCAL_H_
 
-#include "build/build_config.h"
-
-#if defined(OS_POSIX)
+#ifndef _WIN32
 #include <pthread.h>
 #endif
 
@@ -61,9 +59,9 @@ namespace internal {
 
 // Helper functions that abstract the cross-platform APIs.  Do not use directly.
 struct ThreadLocalPlatform {
-#if defined(OS_WIN)
+#ifdef _WIN32
   typedef unsigned long SlotType;
-#elif defined(OS_POSIX)
+#else
   typedef pthread_key_t SlotType;
 #endif
 

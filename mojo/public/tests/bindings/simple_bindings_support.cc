@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/tests/simple_bindings_support.h"
+#include "mojo/public/tests/bindings/simple_bindings_support.h"
 
 #include <stdlib.h>
 

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "mojo/public/bindings/lib/remote_ptr.h"
-#include "mojo/public/tests/simple_bindings_support.h"
+#include "mojo/public/tests/bindings/simple_bindings_support.h"
 #include "mojom/math_calculator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -79,13 +79,13 @@ class MathCalculatorUIImpl : public math::CalculatorUI {
   double output_;
 };
 
-class BindingsRemotePtrTest : public testing::Test {
+class RemotePtrTest : public testing::Test {
  public:
-  BindingsRemotePtrTest() {
+  RemotePtrTest() {
     CreateMessagePipe(&pipe0_, &pipe1_);
   }
 
-  virtual ~BindingsRemotePtrTest() {
+  virtual ~RemotePtrTest() {
   }
 
   void PumpMessages() {
@@ -100,7 +100,7 @@ class BindingsRemotePtrTest : public testing::Test {
   SimpleBindingsSupport bindings_support_;
 };
 
-TEST_F(BindingsRemotePtrTest, EndToEnd) {
+TEST_F(RemotePtrTest, EndToEnd) {
   // Suppose this is instantiated in a process that has pipe0_.
   MathCalculatorImpl calculator(pipe0_.Pass());
 
@@ -115,7 +115,7 @@ TEST_F(BindingsRemotePtrTest, EndToEnd) {
   EXPECT_EQ(10.0, calculator_ui.GetOutput());
 }
 
-TEST_F(BindingsRemotePtrTest, Movable) {
+TEST_F(RemotePtrTest, Movable) {
   RemotePtr<math::Calculator> a;
   RemotePtr<math::Calculator> b(pipe0_.Pass(), NULL);
 
@@ -128,7 +128,7 @@ TEST_F(BindingsRemotePtrTest, Movable) {
   EXPECT_TRUE(b.is_null());
 }
 
-TEST_F(BindingsRemotePtrTest, Resettable) {
+TEST_F(RemotePtrTest, Resettable) {
   RemotePtr<math::Calculator> a;
 
   EXPECT_TRUE(a.is_null());
@@ -147,7 +147,7 @@ TEST_F(BindingsRemotePtrTest, Resettable) {
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, CloseRaw(handle));
 }
 
-TEST_F(BindingsRemotePtrTest, EncounteredError) {
+TEST_F(RemotePtrTest, EncounteredError) {
   MathCalculatorImpl* calculator = new MathCalculatorImpl(pipe0_.Pass());
 
   MathCalculatorUIImpl calculator_ui(pipe1_.Pass());

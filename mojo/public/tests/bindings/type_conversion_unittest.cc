@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/tests/simple_bindings_support.h"
+#include "mojo/public/tests/bindings/simple_bindings_support.h"
 #include "mojom/test_structs.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -64,12 +64,12 @@ class TypeConverter<test_structs::NamedRegion, RedmondNamedRegion> {
 
 namespace test {
 
-class BindingsTypeConversionTest : public testing::Test {
+class TypeConversionTest : public testing::Test {
  private:
   SimpleBindingsSupport bindings_support_;
 };
 
-TEST_F(BindingsTypeConversionTest, String) {
+TEST_F(TypeConversionTest, String) {
   AllocationScope scope;
 
   const char kText[6] = "hello";
@@ -83,7 +83,7 @@ TEST_F(BindingsTypeConversionTest, String) {
   EXPECT_EQ(std::string(kText), c.To<std::string>());
 }
 
-TEST_F(BindingsTypeConversionTest, String_Null) {
+TEST_F(TypeConversionTest, String_Null) {
   String a;
   EXPECT_TRUE(a.is_null());
   EXPECT_EQ(std::string(), a.To<std::string>());
@@ -92,7 +92,7 @@ TEST_F(BindingsTypeConversionTest, String_Null) {
   EXPECT_TRUE(b.is_null());
 }
 
-TEST_F(BindingsTypeConversionTest, String_Empty) {
+TEST_F(TypeConversionTest, String_Empty) {
   AllocationScope scope;
   String a = String::Builder(0).Finish();
   EXPECT_EQ(std::string(), a.To<std::string>());
@@ -102,7 +102,7 @@ TEST_F(BindingsTypeConversionTest, String_Empty) {
   EXPECT_EQ(std::string(), b.To<std::string>());
 }
 
-TEST_F(BindingsTypeConversionTest, String_ShallowCopy) {
+TEST_F(TypeConversionTest, String_ShallowCopy) {
   AllocationScope scope;
 
   String a("hello");
@@ -112,7 +112,7 @@ TEST_F(BindingsTypeConversionTest, String_ShallowCopy) {
   EXPECT_EQ(a.To<std::string>(), b.To<std::string>());
 }
 
-TEST_F(BindingsTypeConversionTest, StringWithEmbeddedNull) {
+TEST_F(TypeConversionTest, StringWithEmbeddedNull) {
   AllocationScope scope;
 
   const std::string kText("hel\0lo", 6);
@@ -125,7 +125,7 @@ TEST_F(BindingsTypeConversionTest, StringWithEmbeddedNull) {
   EXPECT_EQ(std::string("hel"), b.To<std::string>());
 }
 
-TEST_F(BindingsTypeConversionTest, CustomTypeConverter) {
+TEST_F(TypeConversionTest, CustomTypeConverter) {
   AllocationScope scope;
 
   test_structs::Rect::Builder rect_builder;
@@ -148,7 +148,7 @@ TEST_F(BindingsTypeConversionTest, CustomTypeConverter) {
   EXPECT_EQ(rect.height(), rect2.height());
 }
 
-TEST_F(BindingsTypeConversionTest, CustomTypeConverter_Array_Null) {
+TEST_F(TypeConversionTest, CustomTypeConverter_Array_Null) {
   Array<test_structs::Rect> rects;
 
   std::vector<RedmondRect> redmond_rects =
@@ -157,7 +157,7 @@ TEST_F(BindingsTypeConversionTest, CustomTypeConverter_Array_Null) {
   EXPECT_TRUE(redmond_rects.empty());
 }
 
-TEST_F(BindingsTypeConversionTest, CustomTypeConverter_Array) {
+TEST_F(TypeConversionTest, CustomTypeConverter_Array) {
   AllocationScope scope;
 
   const RedmondRect kBase = { 10, 20, 30, 40 };
@@ -199,7 +199,7 @@ TEST_F(BindingsTypeConversionTest, CustomTypeConverter_Array) {
   }
 }
 
-TEST_F(BindingsTypeConversionTest, CustomTypeConverter_Nested) {
+TEST_F(TypeConversionTest, CustomTypeConverter_Nested) {
   AllocationScope scope;
 
   RedmondNamedRegion redmond_region;

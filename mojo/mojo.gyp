@@ -18,14 +18,15 @@
       'type': 'none',
       'dependencies': [
         'mojo_bindings',
-        'mojo_bindings_unittests',
         'mojo_common_lib',
         'mojo_common_unittests',
         'mojo_js',
         'mojo_js_unittests',
-        'mojo_public_perftests',
         'mojo_public_test_support',
-        'mojo_public_unittests',
+        'mojo_public_bindings_unittests',
+        'mojo_public_system_perftests',
+        'mojo_public_system_unittests',
+        'mojo_public_utility_unittests',
         'mojo_sample_app',
         'mojo_shell',
         'mojo_shell_lib',
@@ -34,7 +35,6 @@
         'mojo_system_impl',
         'mojo_system_unittests',
         'mojo_utility',
-        'mojo_utility_unittests',
       ],
       'conditions': [
         ['use_aura==1', {

@@ -9,7 +9,7 @@
 #include "mojo/public/bindings/lib/connector.h"
 #include "mojo/public/bindings/lib/message_queue.h"
 #include "mojo/public/system/macros.h"
-#include "mojo/public/tests/simple_bindings_support.h"
+#include "mojo/public/tests/bindings/simple_bindings_support.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -37,9 +37,9 @@ class MessageAccumulator : public MessageReceiver {
   MessageQueue queue_;
 };
 
-class BindingsConnectorTest : public testing::Test {
+class ConnectorTest : public testing::Test {
  public:
-  BindingsConnectorTest() {
+  ConnectorTest() {
   }
 
   virtual void SetUp() MOJO_OVERRIDE {
@@ -70,7 +70,7 @@ class BindingsConnectorTest : public testing::Test {
   SimpleBindingsSupport bindings_support_;
 };
 
-TEST_F(BindingsConnectorTest, Basic) {
+TEST_F(ConnectorTest, Basic) {
   internal::Connector connector0(handle0_.Pass());
   internal::Connector connector1(handle1_.Pass());
 
@@ -96,7 +96,7 @@ TEST_F(BindingsConnectorTest, Basic) {
                 reinterpret_cast<char*>(message_received.data->payload)));
 }
 
-TEST_F(BindingsConnectorTest, Basic_EarlyIncomingReceiver) {
+TEST_F(ConnectorTest, Basic_EarlyIncomingReceiver) {
   internal::Connector connector0(handle0_.Pass());
   internal::Connector connector1(handle1_.Pass());
 
@@ -122,7 +122,7 @@ TEST_F(BindingsConnectorTest, Basic_EarlyIncomingReceiver) {
                 reinterpret_cast<char*>(message_received.data->payload)));
 }
 
-TEST_F(BindingsConnectorTest, Basic_TwoMessages) {
+TEST_F(ConnectorTest, Basic_TwoMessages) {
   internal::Connector connector0(handle0_.Pass());
   internal::Connector connector1(handle1_.Pass());
 
@@ -152,7 +152,7 @@ TEST_F(BindingsConnectorTest, Basic_TwoMessages) {
   }
 }
 
-TEST_F(BindingsConnectorTest, WriteToClosedPipe) {
+TEST_F(ConnectorTest, WriteToClosedPipe) {
   // Leak this, so the closed handle isn't closed again.
   MojoHandle mojo_handle = handle0_.get().value();
   internal::Connector* connector0 = new internal::Connector(handle0_.Pass());
@@ -172,7 +172,7 @@ TEST_F(BindingsConnectorTest, WriteToClosedPipe) {
 }
 
 // Enable this test once MojoWriteMessage supports passing handles.
-TEST_F(BindingsConnectorTest, MessageWithHandles) {
+TEST_F(ConnectorTest, MessageWithHandles) {
   internal::Connector connector0(handle0_.Pass());
   internal::Connector connector1(handle1_.Pass());
 
