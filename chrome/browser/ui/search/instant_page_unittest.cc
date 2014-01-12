@@ -43,6 +43,7 @@ class FakePageDelegate : public InstantPage::Delegate {
                     content::PageTransition transition,
                     WindowOpenDisposition disposition,
                     bool is_search_type));
+  MOCK_METHOD1(InstantPageLoadFailed, void(content::WebContents* contents));
 };
 
 }  // namespace

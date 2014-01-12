@@ -24,17 +24,15 @@ class LocalNTPTest : public InProcessBrowserTest,
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     ASSERT_TRUE(https_test_server().Start());
     GURL instant_url = https_test_server().GetURL(
-        "files/instant_extended.html?strk=1&");
-    GURL ntp_url = https_test_server().GetURL(
         "files/local_ntp_browsertest.html?strk=1&");
-    InstantTestBase::Init(instant_url, ntp_url, false);
+    InstantTestBase::Init(instant_url, false);
   }
 };
 
 // Flaky: crbug.com/267117
 IN_PROC_BROWSER_TEST_F(LocalNTPTest, DISABLED_LocalNTPJavascriptTest) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmnibox();
+  FocusOmniboxAndWaitForInstantNTPSupport();
 
   ui_test_utils::NavigateToURLWithDisposition(
       browser(),
@@ -67,7 +65,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest,
 
   // Setup Instant.
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmnibox();
+  FocusOmniboxAndWaitForInstantNTPSupport();
 
   // Open a new tab.
   ui_test_utils::NavigateToURLWithDisposition(

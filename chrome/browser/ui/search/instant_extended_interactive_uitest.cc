@@ -46,6 +46,8 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
+#include "chrome/browser/ui/search/instant_ntp.h"
+#include "chrome/browser/ui/search/instant_ntp_prerenderer.h"
 #include "chrome/browser/ui/search/instant_tab.h"
 #include "chrome/browser/ui/search/instant_test_utils.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
@@ -151,9 +153,7 @@ class InstantExtendedTest : public InProcessBrowserTest,
     ASSERT_TRUE(https_test_server().Start());
     GURL instant_url = https_test_server().GetURL(
         "files/instant_extended.html?strk=1&");
-    GURL ntp_url = https_test_server().GetURL(
-        "files/instant_extended_ntp.html?strk=1&");
-    InstantTestBase::Init(instant_url, ntp_url, false);
+    InstantTestBase::Init(instant_url, false);
   }
 
   int64 GetHistogramCount(const char* name) {
@@ -165,6 +165,24 @@ class InstantExtendedTest : public InProcessBrowserTest,
       return 0;
     }
     return histogram->SnapshotSamples()->TotalCount();
+  }
+
+  void SendDownArrow() {
+    omnibox()->model()->OnUpOrDownKeyPressed(1);
+    // Wait for JavaScript to run the key handler by executing a blank script.
+    EXPECT_TRUE(ExecuteScript(std::string()));
+  }
+
+  void SendUpArrow() {
+    omnibox()->model()->OnUpOrDownKeyPressed(-1);
+    // Wait for JavaScript to run the key handler by executing a blank script.
+    EXPECT_TRUE(ExecuteScript(std::string()));
+  }
+
+  void SendEscape() {
+    omnibox()->model()->OnEscapeKeyPressed();
+    // Wait for JavaScript to run the key handler by executing a blank script.
+    EXPECT_TRUE(ExecuteScript(std::string()));
   }
 
   bool UpdateSearchState(content::WebContents* contents) WARN_UNUSED_RESULT {
@@ -261,15 +279,13 @@ class InstantExtendedPrefetchTest : public InstantExtendedTest {
     ASSERT_TRUE(https_test_server().Start());
     GURL instant_url = https_test_server().GetURL(
         "files/instant_extended.html?strk=1&");
-    GURL ntp_url = https_test_server().GetURL(
-        "files/instant_extended_ntp.html?strk=1&");
-    InstantTestBase::Init(instant_url, ntp_url, true);
+    InstantTestBase::Init(instant_url, true);
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitchASCII(
         switches::kForceFieldTrials,
-        "EmbeddedSearch/Group11 prefetch_results_srp:1/");
+        "EmbeddedSearch/Group11 prefetch_results_srp:1 use_cacheable_ntp:0/");
   }
 
   net::FakeURLFetcherFactory* fake_factory() { return fake_factory_.get(); }
@@ -319,9 +335,7 @@ class InstantPolicyTest : public ExtensionBrowserTest, public InstantTestBase {
     ASSERT_TRUE(https_test_server().Start());
     GURL instant_url = https_test_server().GetURL(
         "files/instant_extended.html?strk=1&");
-    GURL ntp_url = https_test_server().GetURL(
-        "files/instant_extended_ntp.html?strk=1&");
-    InstantTestBase::Init(instant_url, ntp_url, false);
+    InstantTestBase::Init(instant_url, false);
   }
 
   void InstallThemeSource() {
@@ -352,9 +366,84 @@ class InstantPolicyTest : public ExtensionBrowserTest, public InstantTestBase {
   DISALLOW_COPY_AND_ASSIGN(InstantPolicyTest);
 };
 
+IN_PROC_BROWSER_TEST_F(InstantExtendedNetworkTest, NTPReactsToNetworkChanges) {
+  // Setup Instant.
+  ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantNTPSupport();
+
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(browser()->profile());
+  ASSERT_NE(static_cast<InstantService*>(NULL), instant_service);
+
+  // The setup first initializes the platform specific NetworkChangeNotifier.
+  // The InstantExtendedNetworkTest replaces it with a fake, but by the time,
+  // InstantNTPPrerenderer has already registered itself. So the
+  // InstantNTPPrerenderer needs to register itself as NetworkChangeObserver
+  // again.
+  net::NetworkChangeNotifier::AddNetworkChangeObserver(
+      instant_service->ntp_prerenderer());
+
+  // The fake network change notifier will provide the network state to be
+  // offline, so the ntp will be local.
+  ASSERT_NE(static_cast<InstantNTP*>(NULL),
+            instant_service->ntp_prerenderer()->ntp());
+  EXPECT_TRUE(instant_service->ntp_prerenderer()->ntp()->IsLocal());
+
+  // Change the connect state, and wait for the notifications to be run, and NTP
+  // support to be determined.
+  SetConnectionType(net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  FocusOmniboxAndWaitForInstantNTPSupport();
+
+  // Verify the network state is fine, and InstantNTPPrerenderer doesn't want
+  // to switch to local NTP anymore.
+  EXPECT_FALSE(net::NetworkChangeNotifier::IsOffline());
+  EXPECT_FALSE(instant_service->ntp_prerenderer()->ShouldSwitchToLocalNTP());
+
+  // Open new tab.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL(chrome::kChromeUINewTabURL),
+      NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
+  content::WebContents* active_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Verify new NTP is not local.
+  EXPECT_TRUE(chrome::IsInstantNTP(active_tab));
+  EXPECT_NE(instant_service->ntp_prerenderer()->GetLocalInstantURL(),
+            active_tab->GetURL().spec());
+  ASSERT_NE(static_cast<InstantNTP*>(NULL),
+            instant_service->ntp_prerenderer()->ntp());
+  EXPECT_FALSE(instant_service->ntp_prerenderer()->ntp()->IsLocal());
+
+  SetConnectionType(net::NetworkChangeNotifier::CONNECTION_NONE);
+  FocusOmniboxAndWaitForInstantNTPSupport();
+
+  // Verify the network state is fine, and InstantNTPPrerenderer doesn't want
+  // to switch to local NTP anymore.
+  EXPECT_TRUE(net::NetworkChangeNotifier::IsOffline());
+  EXPECT_TRUE(instant_service->ntp_prerenderer()->ShouldSwitchToLocalNTP());
+
+  // Open new tab. Preloaded NTP contents should have been used.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL(chrome::kChromeUINewTabURL),
+      NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
+  active_tab = browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Verify new NTP is not local.
+  EXPECT_TRUE(chrome::IsInstantNTP(active_tab));
+  EXPECT_EQ(instant_service->ntp_prerenderer()->GetLocalInstantURL(),
+            active_tab->GetURL().spec());
+  ASSERT_NE(static_cast<InstantNTP*>(NULL),
+            instant_service->ntp_prerenderer()->ntp());
+  EXPECT_TRUE(instant_service->ntp_prerenderer()->ntp()->IsLocal());
+}
+
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, SearchReusesInstantTab) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmnibox();
+  FocusOmniboxAndWaitForInstantNTPSupport();
 
   content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_INSTANT_TAB_SUPPORT_DETERMINED,
@@ -383,7 +472,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, SearchReusesInstantTab) {
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
                        SearchDoesntReuseInstantTabWithoutSupport) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmnibox();
+  FocusOmniboxAndWaitForInstantNTPSupport();
 
   // Don't wait for the navigation to complete.
   SetOmniboxText("flowers");
@@ -401,7 +490,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
                        TypedSearchURLDoesntReuseInstantTab) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmnibox();
+  FocusOmniboxAndWaitForInstantNTPSupport();
 
   // Create an observer to wait for the instant tab to support Instant.
   content::WindowedNotificationObserver observer_1(
@@ -433,7 +522,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OmniboxMarginSetForSearchURLs) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmnibox();
+  FocusOmniboxAndWaitForInstantNTPSupport();
 
   // Create an observer to wait for the instant tab to support Instant.
   content::WindowedNotificationObserver observer(
@@ -456,14 +545,14 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, OmniboxMarginSetForSearchURLs) {
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NoMostVisitedChangedOnTabSwitch) {
   // Initialize Instant.
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantNTPSupport();
 
-  // Open new tab.
+  // Open new tab. Preloaded NTP contents should have been used.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(),
       GURL(chrome::kChromeUINewTabURL),
       NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
 
   // Make sure new tab received the onmostvisitedchanged event once.
@@ -488,6 +577,7 @@ IN_PROC_BROWSER_TEST_F(InstantPolicyTest, ThemeBackgroundAccess) {
   InstallThemeSource();
   ASSERT_NO_FATAL_FAILURE(InstallThemeAndVerify("theme", "camo theme"));
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantNTPSupport();
 
   // The "Instant" New Tab should have access to chrome-search: scheme but not
   // chrome: scheme.
@@ -495,8 +585,7 @@ IN_PROC_BROWSER_TEST_F(InstantPolicyTest, ThemeBackgroundAccess) {
       browser(),
       GURL(chrome::kChromeUINewTabURL),
       NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_NONE);
 
   content::RenderViewHost* rvh =
       browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost();
@@ -515,18 +604,18 @@ IN_PROC_BROWSER_TEST_F(InstantPolicyTest,
                        NoThemeBackgroundChangeEventOnTabSwitch) {
   InstallThemeSource();
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantNTPSupport();
 
   // Install a theme.
   ASSERT_NO_FATAL_FAILURE(InstallThemeAndVerify("theme", "camo theme"));
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
 
-  // Open new tab.
+  // Open new tab. Preloaded NTP contents should have been used.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(),
       GURL(chrome::kChromeUINewTabURL),
       NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_NONE);
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
 
   content::WebContents* active_tab =
@@ -564,17 +653,17 @@ IN_PROC_BROWSER_TEST_F(InstantPolicyTest,
                        MAYBE_SendThemeBackgroundChangedEvent) {
   InstallThemeSource();
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
+  FocusOmniboxAndWaitForInstantNTPSupport();
 
   // Install a theme.
   ASSERT_NO_FATAL_FAILURE(InstallThemeAndVerify("theme", "camo theme"));
 
-  // Open new tab.
+  // Open new tab. Preloaded NTP contents should have been used.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(),
       GURL(chrome::kChromeUINewTabURL),
       NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_NONE);
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
 
   // Make sure new tab received an onthemechanged event.
@@ -609,7 +698,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
 
   // Focus omnibox and confirm overlay isn't shown.
-  FocusOmnibox();
+  FocusOmniboxAndWaitForInstantNTPSupport();
 
   // Create an observer to wait for the instant tab to support Instant.
   content::WindowedNotificationObserver observer(
@@ -656,7 +745,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
 
   // Focus omnibox and confirm overlay isn't shown.
-  FocusOmnibox();
+  FocusOmniboxAndWaitForInstantNTPSupport();
 
   // Create an observer to wait for the instant tab to support Instant.
   content::WindowedNotificationObserver observer(
@@ -709,15 +798,14 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
 // Flaky on all bots since re-enabled in r208032, crbug.com/253092
 IN_PROC_BROWSER_TEST_F(InstantExtendedTest, DISABLED_NavigateBackToNTP) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmnibox();
+  FocusOmniboxAndWaitForInstantNTPSupport();
 
   // Open a new tab page.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(),
       GURL(chrome::kChromeUINewTabURL),
       NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
 
   content::WindowedNotificationObserver observer(
@@ -770,15 +858,14 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
                        DISABLED_DispatchMVChangeEventWhileNavigatingBackToNTP) {
   // Setup Instant.
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmnibox();
+  FocusOmniboxAndWaitForInstantNTPSupport();
 
-  // Open new tab.
+  // Open new tab. Preloaded NTP contents should have been used.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(),
       GURL(chrome::kChromeUINewTabURL),
       NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
 
   content::WebContents* active_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -812,7 +899,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest,
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedPrefetchTest, SetPrefetchQuery) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmnibox();
+  FocusOmniboxAndWaitForInstantNTPSupport();
 
   content::WindowedNotificationObserver new_tab_observer(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
@@ -872,7 +959,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedPrefetchTest, SetPrefetchQuery) {
 
 IN_PROC_BROWSER_TEST_F(InstantExtendedPrefetchTest, ClearPrefetchedResults) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmnibox();
+  FocusOmniboxAndWaitForInstantNTPSupport();
 
   content::WindowedNotificationObserver new_tab_observer(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
@@ -964,7 +1051,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, Referrer) {
   GURL result_url =
       test_server()->GetURL("files/referrer_policy/referrer-policy-log.html");
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
-  FocusOmnibox();
+  FocusOmniboxAndWaitForInstantNTPSupport();
 
   // Type a query and press enter to get results.
   SetOmniboxText("query");

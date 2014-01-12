@@ -378,6 +378,14 @@ bool SwapInPrerender(const GURL& url, chrome::NavigateParams* params) {
       prerender_manager->MaybeUsePrerenderedPage(url, params);
 }
 
+bool SwapInInstantNTP(chrome::NavigateParams* params,
+                      const GURL& url,
+                      content::WebContents* source_contents) {
+  BrowserInstantController* instant = params->browser->instant_controller();
+  return instant && instant->MaybeSwapInInstantNTPContents(
+      url, source_contents, &params->target_contents);
+}
+
 chrome::HostDesktopType GetHostDesktop(Browser* browser) {
   if (browser)
     return browser->host_desktop_type();
@@ -574,8 +582,8 @@ void Navigate(NavigateParams* params) {
   // Check if this is a singleton tab that already exists
   int singleton_index = chrome::GetIndexOfSingletonTab(params);
 
-  // Did we use a prerender?
-  bool swapped_in_prerender = false;
+  // Did we use Instant's NTP contents or a prerender?
+  bool swapped_in = false;
 
   // If no target WebContents was specified, we need to construct one if
   // we are supposed to target a new tab; unless it's a singleton that already
@@ -591,7 +599,9 @@ void Navigate(NavigateParams* params) {
     }
 
     if (params->disposition != CURRENT_TAB) {
-      params->target_contents = CreateTargetContents(*params, url);
+      swapped_in = SwapInInstantNTP(params, url, NULL);
+      if (!swapped_in)
+        params->target_contents = CreateTargetContents(*params, url);
 
       // This function takes ownership of |params->target_contents| until it
       // is added to a TabStripModel.
@@ -600,7 +610,9 @@ void Navigate(NavigateParams* params) {
       // ... otherwise if we're loading in the current tab, the target is the
       // same as the source.
       DCHECK(params->source_contents);
-      params->target_contents = params->source_contents;
+      swapped_in = SwapInInstantNTP(params, url, params->source_contents);
+      if (!swapped_in)
+        params->target_contents = params->source_contents;
       DCHECK(params->target_contents);
       // Prerender expects |params->target_contents| to be attached to a browser
       // window, so only call for CURRENT_TAB navigations. (Others are currently
@@ -613,13 +625,14 @@ void Navigate(NavigateParams* params) {
       // Therefore, we should swap in regardless of CURRENT_TAB, and instead,
       // check in the swapin function whether the WebContents is not in a
       // TabStrip model, in which case we must not swap in.
-      swapped_in_prerender = SwapInPrerender(url, params);
+      if (!swapped_in)
+        swapped_in = SwapInPrerender(url, params);
     }
 
     if (user_initiated)
       params->target_contents->UserGestureDone();
 
-    if (!swapped_in_prerender) {
+    if (!swapped_in) {
       // Try to handle non-navigational URLs that popup dialogs and such, these
       // should not actually navigate.
       if (!HandleNonNavigationAboutURL(url)) {
@@ -652,7 +665,7 @@ void Navigate(NavigateParams* params) {
     params->source_contents->GetView()->Focus();
 
   if (params->source_contents == params->target_contents ||
-      (swapped_in_prerender && params->disposition == CURRENT_TAB)) {
+      (swapped_in && params->disposition == CURRENT_TAB)) {
     // The navigation occurred in the source tab.
     params->browser->UpdateUIForNavigationInTab(params->target_contents,
                                                 params->transition,
