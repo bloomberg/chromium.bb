@@ -420,6 +420,11 @@ bool MediaGalleriesAddUserSelectedFolderFunction::RunImpl() {
 }
 
 void MediaGalleriesAddUserSelectedFolderFunction::OnPreferencesInit() {
+  if (!user_gesture()) {
+    OnDirectorySelected(base::FilePath());
+    return;
+  }
+
   Profile* profile = GetProfile();
   const std::string& app_id = GetExtension()->id();
   WebContents* contents = GetWebContents(render_view_host(), profile, app_id);
