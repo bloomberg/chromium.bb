@@ -51,6 +51,9 @@ GL_EXPORT bool InitializeGLExtensionBindings(GLImplementation implementation,
 // Initialize Debug logging wrappers for GL bindings.
 void InitializeDebugGLBindings();
 
+// Initialize stub methods for drawing operations in the GL bindings.
+void InitializeNullDrawGLBindings();
+
 GL_EXPORT void ClearGLBindings();
 
 // Set the current GL implementation.

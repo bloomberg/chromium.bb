@@ -22,6 +22,7 @@ class GLSurface;
 void InitializeGLBindingsGL();
 void InitializeGLExtensionBindingsGL(GLContext* context);
 void InitializeDebugGLBindingsGL();
+void InitializeNullDrawGLBindingsGL();
 void ClearGLBindingsGL();
 void SetGLToRealGLApi();
 void SetGLApi(GLApi* api);

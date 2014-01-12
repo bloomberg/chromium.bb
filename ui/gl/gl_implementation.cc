@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_gl_api_implementation.h"
 
 namespace gfx {
 
@@ -169,6 +170,12 @@ void* GetGLProcAddress(const char* name) {
   }
 
   return proc;
+}
+
+void InitializeNullDrawGLBindings() {
+  // This is platform independent, so it does not need to live in a platform
+  // specific implementation file.
+  InitializeNullDrawGLBindingsGL();
 }
 
 }  // namespace gfx

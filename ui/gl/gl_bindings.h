@@ -228,6 +228,7 @@ struct GL_EXPORT DriverGL {
   void Initialize();
   void InitializeExtensions(GLContext* context);
   void InitializeDebugBindings();
+  void InitializeNullDrawBindings();
   void ClearBindings();
   void UpdateDebugExtensionBindings();
 

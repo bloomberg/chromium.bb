@@ -761,6 +761,19 @@ GL_FUNCTIONS = [
       'const GLenum* attachments' },
 ]
 
+GL_NULLDRAW_FUNCTIONS = [
+{ 'return_type': 'void',
+  'names': ['glClear'],
+  'arguments': 'GLbitfield mask', },
+{ 'return_type': 'void',
+  'names': ['glDrawArrays'],
+  'arguments': 'GLenum mode, GLint first, GLsizei count', },
+{ 'return_type': 'void',
+  'names': ['glDrawElements'],
+  'arguments':
+      'GLenum mode, GLsizei count, GLenum type, const void* indices', },
+]
+
 OSMESA_FUNCTIONS = [
 { 'return_type': 'OSMesaContext',
   'names': ['OSMesaCreateContext'],
@@ -1191,7 +1204,7 @@ GLX_FUNCTIONS = [
 ]
 
 FUNCTION_SETS = [
-  [GL_FUNCTIONS, 'gl', [
+  [GL_FUNCTIONS, GL_NULLDRAW_FUNCTIONS, 'gl', [
       'GL/glext.h',
       'GLES2/gl2ext.h',
       # Files below are Chromium-specific and shipped with Chromium sources.
@@ -1199,8 +1212,8 @@ FUNCTION_SETS = [
       'GLES2/gl2chromium.h',
       'GLES2/gl2extchromium.h'
   ], []],
-  [OSMESA_FUNCTIONS, 'osmesa', [], []],
-  [EGL_FUNCTIONS, 'egl', [
+  [OSMESA_FUNCTIONS, [], 'osmesa', [], []],
+  [EGL_FUNCTIONS, [], 'egl', [
       'EGL/eglext.h',
       # Files below are Chromium-specific and shipped with Chromium sources.
       'EGL/eglextchromium.h',
@@ -1210,8 +1223,8 @@ FUNCTION_SETS = [
       'EGL_ANGLE_surface_d3d_texture_2d_share_handle',
     ],
   ],
-  [WGL_FUNCTIONS, 'wgl', ['GL/wglext.h'], []],
-  [GLX_FUNCTIONS, 'glx', ['GL/glx.h', 'GL/glxext.h'], []],
+  [WGL_FUNCTIONS, [], 'wgl', ['GL/wglext.h'], []],
+  [GLX_FUNCTIONS, [], 'glx', ['GL/glx.h', 'GL/glxext.h'], []],
 ]
 
 def GenerateHeader(file, functions, set_name, used_extension_functions):
@@ -1357,7 +1370,8 @@ def GenerateInterfaceHeader(
   file.write('\n')
 
 
-def GenerateSource(file, functions, set_name, used_extension_functions):
+def GenerateSource(
+  file, functions, nulldraw_functions, set_name, used_extension_functions):
   """Generates gl_bindings_autogen_x.cc"""
 
   # Write file header.
@@ -1432,6 +1446,17 @@ namespace gfx {
   file.write('    UpdateDebugExtensionBindings();\n')
   file.write('}\n')
   file.write('\n')
+
+  # Write empty stubs for functions that want one.
+  file.write('extern "C" {\n')
+  for func in nulldraw_functions:
+    names = func['names']
+    return_type = func['return_type']
+    arguments = func['arguments']
+    file.write('\n')
+    file.write('static %s GL_BINDING_CALL Stub_%s(%s) {}\n' %
+        (return_type, names[0], arguments))
+  file.write('}  // extern "C"\n')
 
   # Write logging wrappers for each function.
   file.write('extern "C" {\n')
@@ -1511,6 +1536,17 @@ namespace gfx {
     file.write('  }\n')
   file.write('  g_debugBindingsInitialized = true;\n')
   file.write('}\n')
+
+  # Write function to initialize the nulldraw function pointers.
+  if nulldraw_functions:
+    file.write('\n')
+    file.write('void Driver%s::InitializeNullDrawBindings() {\n' %
+               set_name.upper())
+
+    for func in nulldraw_functions:
+      first_name = func['names'][0]
+      file.write('  fn.%sFn = Stub_%s;\n' % (first_name, first_name))
+    file.write('}\n')
 
   # Write function to update the debug function pointers to extension functions
   # after the extensions have been initialized.
@@ -1796,7 +1832,7 @@ def main(argv):
   options, args = parser.parse_args(argv)
 
   if options.inputs:
-    for [_, _, headers, _] in FUNCTION_SETS:
+    for [_, _, _, headers, _] in FUNCTION_SETS:
       for header in headers:
         print ResolveHeader(header, options.header_paths)
     return 0
@@ -1806,7 +1842,11 @@ def main(argv):
   else:
     dir = '.'
 
-  for [functions, set_name, extension_headers, extensions] in FUNCTION_SETS:
+  for [functions,
+       nulldraw_functions,
+       set_name,
+       extension_headers,
+       extensions] in FUNCTION_SETS:
     extension_headers = [ResolveHeader(h, options.header_paths)
                          for h in extension_headers]
     used_extension_functions = GetUsedExtensionFunctions(
@@ -1825,7 +1865,11 @@ def main(argv):
 
     source_file = open(
         os.path.join(dir, 'gl_bindings_autogen_%s.cc' % set_name), 'wb')
-    GenerateSource(source_file, functions, set_name, used_extension_functions)
+    GenerateSource(source_file,
+                   functions,
+                   nulldraw_functions,
+                   set_name,
+                   used_extension_functions)
     source_file.close()
 
     header_file = open(

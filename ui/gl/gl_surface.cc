@@ -69,6 +69,9 @@ bool GLSurface::InitializeOneOff() {
     if (CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kEnableGPUServiceLogging))
       InitializeDebugGLBindings();
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableGLDrawingForTests))
+      InitializeNullDrawGLBindings();
   }
   return initialized;
 }

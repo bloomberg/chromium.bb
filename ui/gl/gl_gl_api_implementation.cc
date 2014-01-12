@@ -203,6 +203,10 @@ void InitializeDebugGLBindingsGL() {
   g_driver_gl.InitializeDebugBindings();
 }
 
+void InitializeNullDrawGLBindingsGL() {
+  g_driver_gl.InitializeNullDrawBindings();
+}
+
 void ClearGLBindingsGL() {
   if (g_real_gl) {
     delete g_real_gl;
