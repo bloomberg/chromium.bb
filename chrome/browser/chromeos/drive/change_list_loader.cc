@@ -574,26 +574,30 @@ void ChangeListLoader::LoadAfterGetAboutResource(
 
   FileError error = GDataToFileError(status);
   if (error != FILE_ERROR_OK) {
-    OnChangeListLoadComplete(error);
+    if (directory_fetch_info.empty() || is_initial_load)
+      OnChangeListLoadComplete(error);
+    else
+      OnDirectoryLoadComplete(directory_fetch_info, error);
     return;
   }
 
   DCHECK(about_resource);
 
   int64 remote_changestamp = about_resource->largest_change_id();
-  if (local_changestamp >= remote_changestamp) {
-    if (local_changestamp > remote_changestamp) {
-      LOG(WARNING) << "Local resource metadata is fresher than server, local = "
-                   << local_changestamp << ", server = " << remote_changestamp;
-    }
-
-    // No changes detected, tell the client that the loading was successful.
-    OnChangeListLoadComplete(FILE_ERROR_OK);
-    return;
-  }
-
   int64 start_changestamp = local_changestamp > 0 ? local_changestamp + 1 : 0;
   if (directory_fetch_info.empty()) {
+    if (local_changestamp >= remote_changestamp) {
+      if (local_changestamp > remote_changestamp) {
+        LOG(WARNING) << "Local resource metadata is fresher than server, "
+                     << "local = " << local_changestamp
+                     << ", server = " << remote_changestamp;
+      }
+
+      // No changes detected, tell the client that the loading was successful.
+      OnChangeListLoadComplete(FILE_ERROR_OK);
+      return;
+    }
+
     // If the caller is not interested in a particular directory, just start
     // loading the change list.
     LoadChangeListFromServer(start_changestamp);
