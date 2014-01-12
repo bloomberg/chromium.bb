@@ -175,10 +175,17 @@ class AutofillTest : public InProcessBrowserTest {
       js += "document.getElementById('" + i->first + "').value = '" +
             i->second + "';";
     }
-    js += "document.getElementById('testform').submit();";
+    js += "document.onclick = function() {"
+          "  document.getElementById('testform').submit();"
+          "};";
 
     WindowedPersonalDataManagerObserver observer(browser());
     ASSERT_TRUE(content::ExecuteScript(render_view_host(), js));
+    // Simulate a mouse click to submit the form because form submissions not
+    // triggered by user gestures are ignored.
+    content::SimulateMouseClick(
+        browser()->tab_strip_model()->GetActiveWebContents(), 0,
+        blink::WebMouseEvent::ButtonLeft);
     observer.Wait();
   }
 
