@@ -123,13 +123,19 @@ public class ContentShellActivity extends Activity {
                     @Override
                     public void onShowCustomView(View view) {
                         super.onShowCustomView(view);
-                        mShellManager.setOverlayVideoMode(true);
+                        if (CommandLine.getInstance().hasSwitch(
+                                ContentSwitches.ENABLE_OVERLAY_FULLSCREEN_VIDEO_SUBTITLE)) {
+                            mShellManager.setOverlayVideoMode(true);
+                        }
                     }
 
                     @Override
                     public void onDestroyContentVideoView() {
                         super.onDestroyContentVideoView();
-                        mShellManager.setOverlayVideoMode(false);
+                        if (CommandLine.getInstance().hasSwitch(
+                                ContentSwitches.ENABLE_OVERLAY_FULLSCREEN_VIDEO_SUBTITLE)) {
+                          mShellManager.setOverlayVideoMode(false);
+                        }
                     }
                 };
             }
