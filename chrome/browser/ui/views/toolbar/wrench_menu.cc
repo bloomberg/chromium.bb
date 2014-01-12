@@ -296,7 +296,8 @@ class MenuButtonBackground : public views::Background {
                       const views::View* view,
                       const gfx::Rect& bounds,
                       views::Button::ButtonState state) const {
-    if (state == views::Button::STATE_HOVERED) {
+    if (state == views::Button::STATE_HOVERED ||
+        state == views::Button::STATE_PRESSED) {
       view->GetNativeTheme()->Paint(canvas->sk_canvas(),
                                     ui::NativeTheme::kMenuItemBackground,
                                     ui::NativeTheme::kHovered,
@@ -648,10 +649,14 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
     fullscreen_button_->SetImage(ImageButton::STATE_NORMAL, full_screen_image);
     SkColor fg_color = native_theme->GetSystemColor(
         ui::NativeTheme::kColorId_SelectedMenuItemForegroundColor);
+    gfx::ImageSkia hovered_fullscreen_image(
+        new HoveredImageSource(*full_screen_image, fg_color),
+        full_screen_image->size());
     fullscreen_button_->SetImage(
-        ImageButton::STATE_HOVERED,
-        new gfx::ImageSkia(new HoveredImageSource(*full_screen_image, fg_color),
-                           full_screen_image->size()));
+        ImageButton::STATE_HOVERED, &hovered_fullscreen_image);
+    fullscreen_button_->SetImage(
+        ImageButton::STATE_PRESSED, &hovered_fullscreen_image);
+
     SkColor enabled_text_color = native_theme->GetSystemColor(
         ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor);
     zoom_label_->SetEnabledColor(enabled_text_color);
