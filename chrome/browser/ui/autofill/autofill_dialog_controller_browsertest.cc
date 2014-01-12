@@ -61,7 +61,9 @@
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#elif defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "chrome/browser/ui/cocoa/run_loop_testing.h"
@@ -1034,6 +1036,11 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
 
 // Simulates the user signing in to the dialog from the inline web contents.
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, SimulateSuccessfulSignIn) {
+#if defined(OS_WIN)
+  // TODO(msw): Fix potential flakiness on Windows XP; http://crbug.com/333641
+  if (base::win::GetVersion() <= base::win::VERSION_XP)
+    return;
+#endif
   browser()->profile()->GetPrefs()->SetBoolean(
       ::prefs::kAutofillDialogPayWithoutWallet,
       true);
