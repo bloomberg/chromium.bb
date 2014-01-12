@@ -60,7 +60,7 @@ bool MediaFileChecker::Start(base::TimeDelta check_time) {
       av_frame_alloc());
   int result = 0;
 
-  base::Time deadline = base::Time::Now() +
+  const base::TimeTicks deadline = base::TimeTicks::Now() +
       std::min(check_time,
                base::TimeDelta::FromSeconds(kMaxCheckTimeInSeconds));
   do {
@@ -99,7 +99,7 @@ bool MediaFileChecker::Start(base::TimeDelta check_time) {
                                      &packet);
     }
     av_free_packet(&packet);
-  } while (base::Time::Now() < deadline && read_ok && result >= 0);
+  } while (base::TimeTicks::Now() < deadline && read_ok && result >= 0);
 
   return read_ok && (result == AVERROR_EOF || result >= 0);
 }

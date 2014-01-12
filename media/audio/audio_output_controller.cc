@@ -13,7 +13,6 @@
 #include "build/build_config.h"
 #include "media/base/scoped_histogram_timer.h"
 
-using base::Time;
 using base::TimeDelta;
 
 namespace media {

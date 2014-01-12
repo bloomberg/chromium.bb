@@ -4,6 +4,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/rand_util.h"
 #include "base/time/time.h"
 #include "media/base/data_buffer.h"
 #include "media/base/seekable_buffer.h"
@@ -22,18 +23,13 @@ class SeekableBufferTest : public testing::Test {
   static const int kWriteSize = 512;
 
   virtual void SetUp() {
-    // Setup seed.
-    int seed = static_cast<int32>(base::Time::Now().ToInternalValue());
-    srand(seed);
-    VLOG(1) << "Random seed: " << seed;
-
-    // Creates a test data.
+    // Create random test data samples.
     for (int i = 0; i < kDataSize; i++)
-      data_[i] = static_cast<char>(rand());
+      data_[i] = static_cast<char>(base::RandInt(0, 255));
   }
 
   int GetRandomInt(int maximum) {
-    return rand() % maximum + 1;
+    return base::RandInt(0, maximum);
   }
 
   SeekableBuffer buffer_;
