@@ -92,8 +92,14 @@ extern "C" {
 typedef unsigned int  drmSize,     *drmSizePtr;	    /**< For mapped regions */
 typedef void          *drmAddress, **drmAddressPtr; /**< For mapped regions */
 
+#if (__GNUC__ >= 3)
+#define DRM_PRINTFLIKE(f, a) __attribute__ ((format(__printf__, f, a)))
+#else
+#define DRM_PRINTFLIKE(f, a)
+#endif
+
 typedef struct _drmServerInfo {
-  int (*debug_print)(const char *format, va_list ap);
+  int (*debug_print)(const char *format, va_list ap) DRM_PRINTFLIKE(1,0);
   int (*load_module)(const char *name);
   void (*get_perms)(gid_t *, mode_t *);
 } drmServerInfo, *drmServerInfoPtr;
