@@ -257,8 +257,6 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
      */
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        mActionBar.hide();
-
         synchronized (mRenderData) {
             mRenderData.screenWidth = width;
             mRenderData.screenHeight = height;

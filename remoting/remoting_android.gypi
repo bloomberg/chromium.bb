@@ -71,7 +71,6 @@
               'destination': '<(SHARED_INTERMEDIATE_DIR)/remoting/android/res/values',
               'files': [
                 'resources/strings.xml',
-                'resources/styles.xml',
               ],
             },
           ],
