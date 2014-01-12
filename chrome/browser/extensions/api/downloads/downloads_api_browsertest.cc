@@ -1943,7 +1943,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       content::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT,
       base::StringPrintf("[{\"danger\": \"safe\","
                          "  \"incognito\": false,"
-                         "  \"bytesReceived\": 0,"
+                         "  \"bytesReceived\": 0.0,"
+                         "  \"fileSize\": 0.0,"
                          "  \"mime\": \"\","
                          "  \"paused\": false,"
                          "  \"url\": \"%s\"}]",
@@ -1980,15 +1981,17 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 
   ASSERT_TRUE(WaitFor(api::OnCreated::kEventName,
       base::StringPrintf("[{\"danger\": \"safe\","
-                          "  \"incognito\": false,"
-                          "  \"mime\": \"text/html\","
-                          "  \"paused\": false,"
-                          "  \"url\": \"%s\"}]", download_url.c_str())));
+                         "  \"incognito\": false,"
+                         "  \"bytesReceived\": 0.0,"
+                         "  \"fileSize\": 0.0,"
+                         "  \"mime\": \"text/html\","
+                         "  \"paused\": false,"
+                         "  \"url\": \"%s\"}]", download_url.c_str())));
   ASSERT_TRUE(WaitFor(api::OnChanged::kEventName,
       base::StringPrintf("[{\"id\": %d,"
-                          "  \"state\": {"
-                          "    \"previous\": \"in_progress\","
-                          "    \"current\": \"complete\"}}]", result_id)));
+                         "  \"state\": {"
+                         "    \"previous\": \"in_progress\","
+                         "    \"current\": \"complete\"}}]", result_id)));
 }
 
 // Test that DownloadsDownloadFunction propagates the |method| and |body|

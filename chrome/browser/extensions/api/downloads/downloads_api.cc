@@ -258,8 +258,8 @@ scoped_ptr<base::DictionaryValue> DownloadItemToJSON(
   json->SetBoolean(kPausedKey, download_item->IsPaused());
   json->SetString(kMimeKey, download_item->GetMimeType());
   json->SetString(kStartTimeKey, TimeToISO8601(download_item->GetStartTime()));
-  json->SetInteger(kBytesReceivedKey, download_item->GetReceivedBytes());
-  json->SetInteger(kTotalBytesKey, download_item->GetTotalBytes());
+  json->SetDouble(kBytesReceivedKey, download_item->GetReceivedBytes());
+  json->SetDouble(kTotalBytesKey, download_item->GetTotalBytes());
   json->SetBoolean(kIncognitoKey, profile->IsOffTheRecord());
   if (download_item->GetState() == DownloadItem::INTERRUPTED) {
     json->SetString(kErrorKey, content::InterruptReasonDebugString(
@@ -290,7 +290,7 @@ scoped_ptr<base::DictionaryValue> DownloadItemToJSON(
       json->SetString(kByExtensionNameKey, extension->name());
   }
   // TODO(benjhayden): Implement fileSize.
-  json->SetInteger(kFileSizeKey, download_item->GetTotalBytes());
+  json->SetDouble(kFileSizeKey, download_item->GetTotalBytes());
   return scoped_ptr<base::DictionaryValue>(json);
 }
 

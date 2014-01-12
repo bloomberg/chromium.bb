@@ -189,14 +189,14 @@ namespace downloads {
 
     // Number of bytes received so far from the host, without considering file
     // compression.
-    long bytesReceived;
+    double bytesReceived;
 
     // Number of bytes in the whole file, without considering file compression,
     // or -1 if unknown.
-    long totalBytes;
+    double totalBytes;
 
     // Number of bytes in the whole file post-decompression, or -1 if unknown.
-    long fileSize;
+    double fileSize;
 
     // Whether the downloaded file still exists. This information may be out of
     // date because Chrome does not automatically watch for file removal. Call
@@ -244,11 +244,11 @@ namespace downloads {
 
     // Limits results to $ref:DownloadItem whose
     // <code>totalBytes</code> is greater than the given integer.
-    long? totalBytesGreater;
+    double? totalBytesGreater;
 
     // Limits results to $ref:DownloadItem whose
     // <code>totalBytes</code> is less than the given integer.
-    long? totalBytesLess;
+    double? totalBytesLess;
 
     // Limits results to $ref:DownloadItem whose
     // <code>filename</code> matches the given regular expression.
@@ -304,14 +304,14 @@ namespace downloads {
 
     // Number of bytes received so far from the host, without considering file
     // compression.
-    long? bytesReceived;
+    double? bytesReceived;
 
     // Number of bytes in the whole file, without considering file compression,
     // or -1 if unknown.
-    long? totalBytes;
+    double? totalBytes;
 
     // Number of bytes in the whole file post-decompression, or -1 if unknown.
-    long? fileSize;
+    double? fileSize;
 
     // Whether the downloaded file exists;
     boolean? exists;
@@ -322,9 +322,9 @@ namespace downloads {
     DOMString? current;
   };
 
-  dictionary LongDelta {
-    long? previous;
-    long? current;
+  dictionary DoubleDelta {
+    double? previous;
+    double? current;
   };
 
   dictionary BooleanDelta {
@@ -369,10 +369,10 @@ namespace downloads {
     StringDelta? error;
 
     // The change in <code>totalBytes</code>, if any.
-    LongDelta? totalBytes;
+    DoubleDelta? totalBytes;
 
     // The change in <code>fileSize</code>, if any.
-    LongDelta? fileSize;
+    DoubleDelta? fileSize;
 
     // The change in <code>exists</code>, if any.
     BooleanDelta? exists;
