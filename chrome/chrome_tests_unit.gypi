@@ -1695,7 +1695,6 @@
         'browser/ui/views/accelerator_table_unittest.cc',
         'browser/ui/views/accessibility/accessibility_event_router_views_unittest.cc',
         'browser/ui/views/autofill/autofill_dialog_views_unittest.cc',
-        'browser/ui/views/autofill/decorated_textfield_unittest.cc',
         'browser/ui/views/bookmarks/bookmark_bar_view_unittest.cc',
         'browser/ui/views/bookmarks/bookmark_bubble_view_unittest.cc',
         'browser/ui/views/bookmarks/bookmark_context_menu_test.cc',

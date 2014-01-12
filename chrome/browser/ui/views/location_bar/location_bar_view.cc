@@ -906,7 +906,9 @@ void LocationBarView::Layout() {
     }
   }
 
-  omnibox_view_->SetHorizontalMargins(0, omnibox_view_margin);
+  const gfx::Insets insets = omnibox_view_->GetInsets();
+  omnibox_view_->set_border(views::Border::CreateEmptyBorder(
+      insets.top(), insets.left(), insets.bottom(), omnibox_view_margin));
 
   // Layout |ime_inline_autocomplete_view_| next to the user input.
   if (ime_inline_autocomplete_view_->visible()) {

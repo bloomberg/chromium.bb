@@ -306,22 +306,18 @@ TextfieldViewsModel::~TextfieldViewsModel() {
   ClearComposition();
 }
 
-const base::string16& TextfieldViewsModel::GetText() const {
-  return render_text_->text();
-}
-
-bool TextfieldViewsModel::SetText(const base::string16& text) {
+bool TextfieldViewsModel::SetText(const base::string16& new_text) {
   bool changed = false;
   if (HasCompositionText()) {
     ConfirmCompositionText();
     changed = true;
   }
-  if (GetText() != text) {
+  if (text() != new_text) {
     if (changed)  // No need to remember composition.
       Undo();
     size_t old_cursor = GetCursorPosition();
     // SetText moves the cursor to the end.
-    size_t new_cursor = text.length();
+    size_t new_cursor = new_text.length();
     SelectAll(false);
     // If there is a composition text, don't merge with previous edit.
     // Otherwise, force merge the edits.
@@ -329,7 +325,7 @@ bool TextfieldViewsModel::SetText(const base::string16& text) {
         changed ? DO_NOT_MERGE : MERGE_WITH_PREVIOUS,
         old_cursor,
         new_cursor,
-        text,
+        new_text,
         0U);
     render_text_->SetCursorPosition(new_cursor);
   }
@@ -337,14 +333,14 @@ bool TextfieldViewsModel::SetText(const base::string16& text) {
   return changed;
 }
 
-void TextfieldViewsModel::Append(const base::string16& text) {
+void TextfieldViewsModel::Append(const base::string16& new_text) {
   if (HasCompositionText())
     ConfirmCompositionText();
   size_t save = GetCursorPosition();
   MoveCursor(gfx::LINE_BREAK,
              render_text_->GetVisualDirectionOfLogicalEnd(),
              false);
-  InsertText(text);
+  InsertText(new_text);
   render_text_->SetCursorPosition(save);
   ClearSelection();
 }
@@ -359,7 +355,7 @@ bool TextfieldViewsModel::Delete() {
     DeleteSelection();
     return true;
   }
-  if (GetText().length() > GetCursorPosition()) {
+  if (text().length() > GetCursorPosition()) {
     size_t cursor_position = GetCursorPosition();
     size_t next_grapheme_index = render_text_->IndexOfAdjacentGrapheme(
         cursor_position, gfx::CURSOR_FORWARD);
@@ -383,8 +379,7 @@ bool TextfieldViewsModel::Backspace() {
   size_t cursor_position = GetCursorPosition();
   if (cursor_position > 0) {
     // Delete one code point, which may be two UTF-16 words.
-    size_t previous_char =
-        gfx::UTF16OffsetToIndex(GetText(), cursor_position, -1);
+    size_t previous_char = gfx::UTF16OffsetToIndex(text(), cursor_position, -1);
     ExecuteAndRecordDelete(gfx::Range(cursor_position, previous_char), true);
     return true;
   }
@@ -424,8 +419,8 @@ bool TextfieldViewsModel::MoveCursorTo(const gfx::Point& point, bool select) {
 }
 
 base::string16 TextfieldViewsModel::GetSelectedText() const {
-  return GetText().substr(render_text_->selection().GetMin(),
-                          render_text_->selection().length());
+  return text().substr(render_text_->selection().GetMin(),
+                       render_text_->selection().length());
 }
 
 void TextfieldViewsModel::SelectRange(const gfx::Range& range) {
@@ -479,7 +474,7 @@ bool TextfieldViewsModel::Undo() {
   if (HasCompositionText())  // safe guard for release build.
     CancelCompositionText();
 
-  base::string16 old = GetText();
+  base::string16 old = text();
   size_t old_cursor = GetCursorPosition();
   (*current_edit_)->Commit();
   (*current_edit_)->Undo(this);
@@ -488,7 +483,7 @@ bool TextfieldViewsModel::Undo() {
     current_edit_ = edit_history_.end();
   else
     current_edit_--;
-  return old != GetText() || old_cursor != GetCursorPosition();
+  return old != text() || old_cursor != GetCursorPosition();
 }
 
 bool TextfieldViewsModel::Redo() {
@@ -502,10 +497,10 @@ bool TextfieldViewsModel::Redo() {
     current_edit_ = edit_history_.begin();
   else
     current_edit_ ++;
-  base::string16 old = GetText();
+  base::string16 old = text();
   size_t old_cursor = GetCursorPosition();
   (*current_edit_)->Redo(this);
-  return old != GetText() || old_cursor != GetCursorPosition();
+  return old != text() || old_cursor != GetCursorPosition();
 }
 
 bool TextfieldViewsModel::Cut() {
@@ -558,25 +553,26 @@ void TextfieldViewsModel::DeleteSelection() {
 }
 
 void TextfieldViewsModel::DeleteSelectionAndInsertTextAt(
-    const base::string16& text, size_t position) {
+    const base::string16& new_text,
+    size_t position) {
   if (HasCompositionText())
     CancelCompositionText();
   ExecuteAndRecordReplace(DO_NOT_MERGE,
                           GetCursorPosition(),
-                          position + text.length(),
-                          text,
+                          position + new_text.length(),
+                          new_text,
                           position);
 }
 
 base::string16 TextfieldViewsModel::GetTextFromRange(
     const gfx::Range& range) const {
-  if (range.IsValid() && range.GetMin() < GetText().length())
-    return GetText().substr(range.GetMin(), range.length());
+  if (range.IsValid() && range.GetMin() < text().length())
+    return text().substr(range.GetMin(), range.length());
   return base::string16();
 }
 
 void TextfieldViewsModel::GetTextRange(gfx::Range* range) const {
-  *range = gfx::Range(0, GetText().length());
+  *range = gfx::Range(0, text().length());
 }
 
 void TextfieldViewsModel::SetCompositionText(
@@ -590,7 +586,7 @@ void TextfieldViewsModel::SetCompositionText(
     return;
 
   size_t cursor = GetCursorPosition();
-  base::string16 new_text = GetText();
+  base::string16 new_text = text();
   render_text_->SetText(new_text.insert(cursor, composition.text));
   gfx::Range range(cursor, cursor + composition.text.length());
   render_text_->SetCompositionRange(range);
@@ -619,10 +615,10 @@ void TextfieldViewsModel::SetCompositionText(
 void TextfieldViewsModel::ConfirmCompositionText() {
   DCHECK(HasCompositionText());
   gfx::Range range = render_text_->GetCompositionRange();
-  base::string16 text = GetText().substr(range.start(), range.length());
+  base::string16 composition = text().substr(range.start(), range.length());
   // TODO(oshima): current behavior on ChromeOS is a bit weird and not
   // sure exactly how this should work. Find out and fix if necessary.
-  AddOrMergeEditHistory(new InsertEdit(false, text, range.start()));
+  AddOrMergeEditHistory(new InsertEdit(false, composition, range.start()));
   render_text_->SetCursorPosition(range.end());
   ClearComposition();
   if (delegate_)
@@ -633,7 +629,7 @@ void TextfieldViewsModel::CancelCompositionText() {
   DCHECK(HasCompositionText());
   gfx::Range range = render_text_->GetCompositionRange();
   ClearComposition();
-  base::string16 new_text = GetText();
+  base::string16 new_text = text();
   render_text_->SetText(new_text.erase(range.start(), range.length()));
   render_text_->SetCursorPosition(range.start());
   if (delegate_)
@@ -652,23 +648,28 @@ bool TextfieldViewsModel::HasCompositionText() const {
   return !render_text_->GetCompositionRange().is_empty();
 }
 
+void TextfieldViewsModel::ClearEditHistory() {
+  STLDeleteElements(&edit_history_);
+  current_edit_ = edit_history_.end();
+}
+
 /////////////////////////////////////////////////////////////////
 // TextfieldViewsModel: private
 
-void TextfieldViewsModel::InsertTextInternal(const base::string16& text,
+void TextfieldViewsModel::InsertTextInternal(const base::string16& new_text,
                                              bool mergeable) {
   if (HasCompositionText()) {
     CancelCompositionText();
-    ExecuteAndRecordInsert(text, mergeable);
+    ExecuteAndRecordInsert(new_text, mergeable);
   } else if (HasSelection()) {
     ExecuteAndRecordReplaceSelection(mergeable ? MERGEABLE : DO_NOT_MERGE,
-                                     text);
+                                     new_text);
   } else {
-    ExecuteAndRecordInsert(text, mergeable);
+    ExecuteAndRecordInsert(new_text, mergeable);
   }
 }
 
-void TextfieldViewsModel::ReplaceTextInternal(const base::string16& text,
+void TextfieldViewsModel::ReplaceTextInternal(const base::string16& new_text,
                                               bool mergeable) {
   if (HasCompositionText()) {
     CancelCompositionText();
@@ -676,7 +677,7 @@ void TextfieldViewsModel::ReplaceTextInternal(const base::string16& text,
     size_t cursor = GetCursorPosition();
     const gfx::SelectionModel& model = render_text_->selection_model();
     // When there is no selection, the default is to replace the next grapheme
-    // with |text|. So, need to find the index of next grapheme first.
+    // with |new_text|. So, need to find the index of next grapheme first.
     size_t next =
         render_text_->IndexOfAdjacentGrapheme(cursor, gfx::CURSOR_FORWARD);
     if (next == model.caret_pos())
@@ -685,12 +686,7 @@ void TextfieldViewsModel::ReplaceTextInternal(const base::string16& text,
       render_text_->SelectRange(gfx::Range(next, model.caret_pos()));
   }
   // Edit history is recorded in InsertText.
-  InsertTextInternal(text, mergeable);
-}
-
-void TextfieldViewsModel::ClearEditHistory() {
-  STLDeleteElements(&edit_history_);
-  current_edit_ = edit_history_.end();
+  InsertTextInternal(new_text, mergeable);
 }
 
 void TextfieldViewsModel::ClearRedoHistory() {
@@ -709,9 +705,9 @@ void TextfieldViewsModel::ClearRedoHistory() {
 void TextfieldViewsModel::ExecuteAndRecordDelete(gfx::Range range,
                                                  bool mergeable) {
   size_t old_text_start = range.GetMin();
-  const base::string16 text = GetText().substr(old_text_start, range.length());
+  const base::string16 old_text = text().substr(old_text_start, range.length());
   bool backward = range.is_reversed();
-  Edit* edit = new DeleteEdit(mergeable, text, old_text_start, backward);
+  Edit* edit = new DeleteEdit(mergeable, old_text, old_text_start, backward);
   bool delete_edit = AddOrMergeEditHistory(edit);
   edit->Redo(this);
   if (delete_edit)
@@ -719,7 +715,8 @@ void TextfieldViewsModel::ExecuteAndRecordDelete(gfx::Range range,
 }
 
 void TextfieldViewsModel::ExecuteAndRecordReplaceSelection(
-    MergeType merge_type, const base::string16& new_text) {
+    MergeType merge_type,
+    const base::string16& new_text) {
   size_t new_text_start = render_text_->selection().GetMin();
   size_t new_cursor_pos = new_text_start + new_text.length();
   ExecuteAndRecordReplace(merge_type,
@@ -751,9 +748,9 @@ void TextfieldViewsModel::ExecuteAndRecordReplace(
     delete edit;
 }
 
-void TextfieldViewsModel::ExecuteAndRecordInsert(const base::string16& text,
+void TextfieldViewsModel::ExecuteAndRecordInsert(const base::string16& new_text,
                                                  bool mergeable) {
-  Edit* edit = new InsertEdit(mergeable, text, GetCursorPosition());
+  Edit* edit = new InsertEdit(mergeable, new_text, GetCursorPosition());
   bool delete_edit = AddOrMergeEditHistory(edit);
   edit->Redo(this);
   if (delete_edit)
@@ -787,12 +784,12 @@ void TextfieldViewsModel::ModifyText(size_t delete_from,
                                      size_t new_text_insert_at,
                                      size_t new_cursor_pos) {
   DCHECK_LE(delete_from, delete_to);
-  base::string16 text = GetText();
+  base::string16 old_text = text();
   ClearComposition();
   if (delete_from != delete_to)
-    render_text_->SetText(text.erase(delete_from, delete_to - delete_from));
+    render_text_->SetText(old_text.erase(delete_from, delete_to - delete_from));
   if (!new_text.empty())
-    render_text_->SetText(text.insert(new_text_insert_at, new_text));
+    render_text_->SetText(old_text.insert(new_text_insert_at, new_text));
   render_text_->SetCursorPosition(new_cursor_pos);
   // TODO(oshima): mac selects the text that is just undone (but gtk doesn't).
   // This looks fine feature and we may want to do the same.

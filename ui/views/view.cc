@@ -1331,7 +1331,7 @@ void View::NotifyAccessibilityEvent(
   if (ViewsDelegate::views_delegate)
     ViewsDelegate::views_delegate->NotifyAccessibilityEvent(this, event_type);
 
-  if (send_native_event) {
+  if (send_native_event && GetWidget()) {
     if (!native_view_accessibility_)
       native_view_accessibility_ = NativeViewAccessibility::Create(this);
     if (native_view_accessibility_)

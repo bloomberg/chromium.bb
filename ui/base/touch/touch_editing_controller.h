@@ -38,7 +38,7 @@ class UI_BASE_EXPORT TouchEditable : public ui::SimpleMenuModel::Delegate {
   virtual gfx::Rect GetBounds() = 0;
 
   // Gets the NativeView hosting the client.
-  virtual gfx::NativeView GetNativeView() = 0;
+  virtual gfx::NativeView GetNativeView() const = 0;
 
   // Converts a point to/from screen coordinates from/to client view.
   virtual void ConvertPointToScreen(gfx::Point* point) = 0;

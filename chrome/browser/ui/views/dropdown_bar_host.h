@@ -11,7 +11,6 @@
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
-#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/focus/focus_manager.h"
 
 class BrowserView;

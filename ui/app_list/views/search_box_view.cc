@@ -63,8 +63,8 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
   AddChildView(menu_button_);
 #endif
 
-  search_box_->RemoveBorder();
-  search_box_->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
+  search_box_->set_border(NULL);
+  search_box_->SetFontList(rb.GetFontList(ui::ResourceBundle::MediumFont));
   search_box_->set_placeholder_text_color(kHintTextColor);
   search_box_->SetController(this);
   AddChildView(search_box_);

@@ -172,7 +172,7 @@ bool InputMethodBridge::IsCandidatePopupOpen() const {
 }
 
 // Overridden from TextInputClient. Forward an event from the system-wide IME
-// to the text input |client|, which is e.g. views::NativeTextfieldViews.
+// to the text input |client|, which is e.g. views::Textfield.
 void InputMethodBridge::SetCompositionText(
     const ui::CompositionText& composition) {
   TextInputClient* client = GetTextInputClient();
