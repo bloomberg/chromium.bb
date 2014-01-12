@@ -34,7 +34,8 @@ namespace gfx {
 // and operator= is used in RenderText::SetFontList().
 class GFX_EXPORT FontList {
  public:
-  // Creates a font list with a Font with default name and style.
+  // Creates a font list with default font names, size and style, which are
+  // specified by SetDefaultFontDescription().
   FontList();
 
   // Creates a font list from a string representing font names, styles, and

@@ -18,6 +18,11 @@ namespace {
 base::LazyInstance<std::string>::Leaky g_default_font_description =
     LAZY_INSTANCE_INITIALIZER;
 
+// The default instance of gfx::FontList, whose metrics are pre-calculated.
+// The default ctor of gfx::FontList copies the metrics so it won't need to
+// scan the whole font list to calculate the metrics.
+const gfx::FontList* g_default_font_list = NULL;
+
 // Parses font description into |font_names|, |font_style| and |font_size|.
 void ParseFontDescriptionString(const std::string& font_description_string,
                                 std::vector<std::string>* font_names,
@@ -85,9 +90,24 @@ FontList::FontList()
   DCHECK(!(g_default_font_description == NULL))  // != is not overloaded.
       << "SetDefaultFontDescription has not been called.";
 
-  font_description_string_ = g_default_font_description.Get();
-  if (font_description_string_.empty())
-    fonts_.push_back(Font());
+  // Allocate the global instance of FontList for |g_default_font_list| without
+  // calling the default ctor.
+  static FontList default_font_list((Font()));
+
+  if (!g_default_font_list) {
+    default_font_list = g_default_font_description.Get().empty() ?
+        FontList(Font()) : FontList(g_default_font_description.Get());
+    // Pre-calculate the metrics if the underlying PlatformFont is supported.
+    // Note that not all the platforms support PlatformFont.
+    if (default_font_list.GetPrimaryFont().platform_font()) {
+      default_font_list.CacheCommonFontHeightAndBaseline();
+      default_font_list.CacheFontStyleAndSize();
+    }
+    g_default_font_list = &default_font_list;
+  }
+
+  // Copy the default font list specification and its pre-calculated metrics.
+  *this = *g_default_font_list;
 }
 
 FontList::FontList(const std::string& font_description_string)
@@ -150,6 +170,7 @@ void FontList::SetDefaultFontDescription(const std::string& font_description) {
          EndsWith(font_description, "px", true));
 
   g_default_font_description.Get() = font_description;
+  g_default_font_list = NULL;
 }
 
 FontList FontList::DeriveFontList(int font_style) const {
