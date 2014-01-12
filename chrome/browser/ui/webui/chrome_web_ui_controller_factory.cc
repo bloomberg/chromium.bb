@@ -622,7 +622,6 @@ base::RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
 
   if (page_url.host() == chrome::kChromeUIComponentsHost)
     return ComponentsUI::GetFaviconResourceBytes(scale_factor);
-  return NULL;
 
 #if defined(OS_WIN)
   if (page_url.host() == chrome::kChromeUIConflictsHost)
@@ -667,4 +666,6 @@ base::RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
     return PluginsUI::GetFaviconResourceBytes(scale_factor);
 
 #endif
+
+  return NULL;
 }
