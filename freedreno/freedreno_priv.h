@@ -84,6 +84,8 @@ struct fd_device {
 	struct fd_bo_bucket cache_bucket[14 * 4];
 	int num_buckets;
 	time_t time;
+
+	int closefd;        /* call close(fd) upon destruction */
 };
 
 void fd_cleanup_bo_cache(struct fd_device *dev, time_t time);

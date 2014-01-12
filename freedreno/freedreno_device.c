@@ -135,6 +135,16 @@ struct fd_device * fd_device_new(int fd)
 	return dev;
 }
 
+/* like fd_device_new() but creates it's own private dup() of the fd
+ * which is close()d when the device is finalized.
+ */
+struct fd_device * fd_device_new_dup(int fd)
+{
+	struct fd_device *dev = fd_device_new(dup(fd));
+	dev->closefd = 1;
+	return dev;
+}
+
 struct fd_device * fd_device_ref(struct fd_device *dev)
 {
 	atomic_inc(&dev->refcnt);
@@ -147,6 +157,8 @@ static void fd_device_del_impl(struct fd_device *dev)
 	drmHashDestroy(dev->handle_table);
 	drmHashDestroy(dev->name_table);
 	drmHashDelete(dev_table, dev->fd);
+	if (dev->closefd)
+		close(dev->fd);
 	dev->funcs->destroy(dev);
 }
 
