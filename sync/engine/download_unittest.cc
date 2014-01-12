@@ -219,43 +219,6 @@ TEST_F(DownloadUpdatesTest, PollTest) {
   EXPECT_TRUE(proto_request_types().Equals(progress_types));
 }
 
-TEST_F(DownloadUpdatesTest, RetryTest) {
-  sync_pb::ClientToServerMessage msg;
-  download::BuildDownloadUpdatesForRetryImpl(
-      proto_request_types(),
-      update_handler_map(),
-      msg.mutable_get_updates());
-
-  const sync_pb::GetUpdatesMessage& gu_msg = msg.get_updates();
-
-  EXPECT_EQ(sync_pb::SyncEnums::RETRY, gu_msg.get_updates_origin());
-  EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::RETRY,
-            gu_msg.caller_info().source());
-  EXPECT_TRUE(gu_msg.is_retry());
-
-  ModelTypeSet progress_types;
-  for (int i = 0; i < gu_msg.from_progress_marker_size(); ++i) {
-    syncer::ModelType type = GetModelTypeFromSpecificsFieldNumber(
-        gu_msg.from_progress_marker(i).data_type_id());
-    progress_types.Put(type);
-  }
-  EXPECT_TRUE(proto_request_types().Equals(progress_types));
-}
-
-TEST_F(DownloadUpdatesTest, NudgeWithRetryTest) {
-  sessions::NudgeTracker nudge_tracker;
-  nudge_tracker.RecordLocalChange(ModelTypeSet(BOOKMARKS));
-  nudge_tracker.set_next_retry_time(
-      base::TimeTicks::Now() - base::TimeDelta::FromSeconds(1));
-
-  sync_pb::ClientToServerMessage msg;
-  download::BuildNormalDownloadUpdatesImpl(proto_request_types(),
-                                           update_handler_map(),
-                                           nudge_tracker,
-                                           msg.mutable_get_updates());
-  EXPECT_TRUE(msg.get_updates().is_retry());
-}
-
 // Verify that a bogus response message is detected.
 TEST_F(DownloadUpdatesTest, InvalidResponse) {
   sync_pb::GetUpdatesResponse gu_response;

@@ -36,14 +36,11 @@ class SYNC_EXPORT_PRIVATE NudgeTracker {
 
   // Returns true if there is a good reason for performing a get updates
   // request as part of the next sync cycle.
-  bool IsGetUpdatesRequired(base::TimeTicks now) const;
+  bool IsGetUpdatesRequired() const;
 
-  // Return true if should perform a sync cycle for GU retry.
-  bool IsRetryRequired(base::TimeTicks now) const;
-
-  // Tells this class that all required update fetching or committing has
+  // Tells this class that all required update fetching and committing has
   // completed successfully.
-  void RecordSuccessfulSyncCycle(base::TimeTicks now);
+  void RecordSuccessfulSyncCycle();
 
   // Takes note of a local change.
   void RecordLocalChange(ModelTypeSet types);
@@ -108,10 +105,6 @@ class SYNC_EXPORT_PRIVATE NudgeTracker {
   // Adjusts the number of hints that can be stored locally.
   void SetHintBufferSize(size_t size);
 
-  void set_next_retry_time(base::TimeTicks next_retry_time) {
-    next_retry_time_ = next_retry_time;
-  }
-
  private:
   typedef std::map<ModelType, DataTypeTracker> TypeTrackerMap;
 
@@ -136,11 +129,6 @@ class SYNC_EXPORT_PRIVATE NudgeTracker {
   bool invalidations_out_of_sync_;
 
   size_t num_payloads_per_type_;
-
-  base::TimeTicks last_successful_sync_time_;
-
-  // A retry GU should be issued after this time.
-  base::TimeTicks next_retry_time_;
 
   DISALLOW_COPY_AND_ASSIGN(NudgeTracker);
 };

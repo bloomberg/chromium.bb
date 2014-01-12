@@ -234,8 +234,6 @@ void BuildNormalDownloadUpdatesImpl(
 
   // Set the new and improved version of source, too.
   get_updates->set_get_updates_origin(sync_pb::SyncEnums::GU_TRIGGER);
-  get_updates->set_is_retry(
-      nudge_tracker.IsRetryRequired(base::TimeTicks::Now()));
 
   // Fill in the notification hints.
   for (int i = 0; i < get_updates->from_progress_marker_size(); ++i) {
@@ -331,44 +329,6 @@ void BuildDownloadUpdatesForPollImpl(
 
   // Set the new and improved version of source, too.
   get_updates->set_get_updates_origin(sync_pb::SyncEnums::PERIODIC);
-}
-
-void BuildDownloadUpdatesForRetry(
-    SyncSession* session,
-    bool create_mobile_bookmarks_folder,
-    ModelTypeSet request_types,
-    sync_pb::ClientToServerMessage* client_to_server_message) {
-  DVLOG(1) << "Retrying for types "
-           << ModelTypeSetToString(request_types);
-
-  InitDownloadUpdatesContext(
-      session,
-      create_mobile_bookmarks_folder,
-      client_to_server_message);
-  BuildDownloadUpdatesForRetryImpl(
-      Intersection(request_types, ProtocolTypes()),
-      session->context()->update_handler_map(),
-      client_to_server_message->mutable_get_updates());
-}
-
-void BuildDownloadUpdatesForRetryImpl(
-    ModelTypeSet proto_request_types,
-    UpdateHandlerMap* update_handler_map,
-    sync_pb::GetUpdatesMessage* get_updates) {
-  DCHECK(!proto_request_types.Empty());
-
-  InitDownloadUpdatesProgress(
-      proto_request_types,
-      update_handler_map,
-      get_updates);
-
-  // Set legacy GetUpdatesMessage.GetUpdatesCallerInfo information.
-  get_updates->mutable_caller_info()->set_source(
-      sync_pb::GetUpdatesCallerInfo::RETRY);
-
-  // Set the new and improved version of source, too.
-  get_updates->set_get_updates_origin(sync_pb::SyncEnums::RETRY);
-  get_updates->set_is_retry(true);
 }
 
 SyncerError ExecuteDownloadUpdates(

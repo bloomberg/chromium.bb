@@ -57,7 +57,7 @@ bool Syncer::NormalSyncShare(ModelTypeSet request_types,
                              SyncSession* session) {
   HandleCycleBegin(session);
   VLOG(1) << "Downloading types " << ModelTypeSetToString(request_types);
-  if (nudge_tracker.IsGetUpdatesRequired(base::TimeTicks::Now()) ||
+  if (nudge_tracker.IsGetUpdatesRequired() ||
       session->context()->ShouldFetchUpdatesBeforeCommit()) {
     if (!DownloadAndApplyUpdates(
             request_types,
@@ -107,20 +107,6 @@ bool Syncer::PollSyncShare(ModelTypeSet request_types,
                  kCreateMobileBookmarksFolder,
                  request_types));
   return HandleCycleEnd(session, sync_pb::GetUpdatesCallerInfo::PERIODIC);
-}
-
-bool Syncer::RetrySyncShare(ModelTypeSet request_types,
-                            SyncSession* session) {
-  HandleCycleBegin(session);
-  VLOG(1) << "Retrying types " << ModelTypeSetToString(request_types);
-  DownloadAndApplyUpdates(
-      request_types,
-      session,
-      base::Bind(&download::BuildDownloadUpdatesForRetry,
-                 session,
-                 kCreateMobileBookmarksFolder,
-                 request_types));
-  return HandleCycleEnd(session, sync_pb::GetUpdatesCallerInfo::RETRY);
 }
 
 void Syncer::ApplyUpdates(SyncSession* session) {

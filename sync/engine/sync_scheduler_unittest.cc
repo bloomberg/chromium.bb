@@ -34,7 +34,6 @@ using testing::Mock;
 using testing::Return;
 using testing::WithArg;
 using testing::WithArgs;
-using testing::WithoutArgs;
 
 namespace syncer {
 using sessions::SyncSession;
@@ -52,7 +51,6 @@ class MockSyncer : public Syncer {
                     sync_pb::GetUpdatesCallerInfo::GetUpdatesSource,
                     SyncSession*));
   MOCK_METHOD2(PollSyncShare, bool(ModelTypeSet, sessions::SyncSession*));
-  MOCK_METHOD2(RetrySyncShare, bool(ModelTypeSet, sessions::SyncSession*));
 };
 
 MockSyncer::MockSyncer()
@@ -210,11 +208,6 @@ class SyncSchedulerTest : public testing::Test {
 
   ModelTypeSet GetThrottledTypes() {
     return scheduler_->nudge_tracker_.GetThrottledTypes();
-  }
-
-  base::TimeDelta GetRetryTimerDelay() {
-    EXPECT_TRUE(scheduler_->retry_timer_.IsRunning());
-    return scheduler_->retry_timer_.GetCurrentDelay();
   }
 
  private:
@@ -546,9 +539,8 @@ TEST_F(SyncSchedulerTest, Polling) {
   SyncShareTimes times;
   TimeDelta poll_interval(TimeDelta::FromMilliseconds(30));
   EXPECT_CALL(*syncer(), PollSyncShare(_,_)).Times(AtLeast(kMinNumSamples))
-      .WillRepeatedly(
-          DoAll(Invoke(sessions::test_util::SimulatePollRetrySuccess),
-                RecordSyncShareMultiple(&times, kMinNumSamples)));
+      .WillRepeatedly(DoAll(Invoke(sessions::test_util::SimulatePollSuccess),
+           RecordSyncShareMultiple(&times, kMinNumSamples)));
 
   scheduler()->OnReceivedLongPollIntervalUpdate(poll_interval);
 
@@ -567,9 +559,8 @@ TEST_F(SyncSchedulerTest, PollNotificationsDisabled) {
   SyncShareTimes times;
   TimeDelta poll_interval(TimeDelta::FromMilliseconds(30));
   EXPECT_CALL(*syncer(), PollSyncShare(_,_)).Times(AtLeast(kMinNumSamples))
-      .WillRepeatedly(
-          DoAll(Invoke(sessions::test_util::SimulatePollRetrySuccess),
-                RecordSyncShareMultiple(&times, kMinNumSamples)));
+      .WillRepeatedly(DoAll(Invoke(sessions::test_util::SimulatePollSuccess),
+           RecordSyncShareMultiple(&times, kMinNumSamples)));
 
   scheduler()->OnReceivedShortPollIntervalUpdate(poll_interval);
   scheduler()->SetNotificationsEnabled(false);
@@ -596,7 +587,7 @@ TEST_F(SyncSchedulerTest, PollIntervalUpdate) {
               sessions::test_util::SimulatePollIntervalUpdate(poll2)),
           Return(true)))
       .WillRepeatedly(
-          DoAll(Invoke(sessions::test_util::SimulatePollRetrySuccess),
+          DoAll(Invoke(sessions::test_util::SimulatePollSuccess),
                 WithArg<1>(
                     RecordSyncShareMultiple(&times, kMinNumSamples))));
 
@@ -687,9 +678,8 @@ TEST_F(SyncSchedulerTest, ThrottlingExpiresFromPoll) {
           Return(true)))
       .RetiresOnSaturation();
   EXPECT_CALL(*syncer(), PollSyncShare(_,_))
-      .WillRepeatedly(
-          DoAll(Invoke(sessions::test_util::SimulatePollRetrySuccess),
-                RecordSyncShareMultiple(&times, kMinNumSamples)));
+      .WillRepeatedly(DoAll(Invoke(sessions::test_util::SimulatePollSuccess),
+           RecordSyncShareMultiple(&times, kMinNumSamples)));
 
   TimeTicks optimal_start = TimeTicks::Now() + poll + throttle1;
   StartSyncScheduler(SyncScheduler::NORMAL_MODE);
@@ -1121,7 +1111,7 @@ TEST_F(SyncSchedulerTest, BackoffRelief) {
   // Now let the Poll timer do its thing.
   EXPECT_CALL(*syncer(), PollSyncShare(_,_))
       .WillRepeatedly(DoAll(
-              Invoke(sessions::test_util::SimulatePollRetrySuccess),
+              Invoke(sessions::test_util::SimulatePollSuccess),
               RecordSyncShareMultiple(&times, kMinNumSamples)));
   RunLoop();
   Mock::VerifyAndClearExpectations(syncer());
@@ -1144,9 +1134,9 @@ TEST_F(SyncSchedulerTest, TransientPollFailure) {
   UseMockDelayProvider(); // Will cause test failure if backoff is initiated.
 
   EXPECT_CALL(*syncer(), PollSyncShare(_,_))
-      .WillOnce(DoAll(Invoke(sessions::test_util::SimulatePollRetryFailed),
+      .WillOnce(DoAll(Invoke(sessions::test_util::SimulatePollFailed),
                       RecordSyncShare(&times)))
-      .WillOnce(DoAll(Invoke(sessions::test_util::SimulatePollRetrySuccess),
+      .WillOnce(DoAll(Invoke(sessions::test_util::SimulatePollSuccess),
                       RecordSyncShare(&times)));
 
   StartSyncScheduler(SyncScheduler::NORMAL_MODE);
@@ -1279,9 +1269,8 @@ TEST_F(SyncSchedulerTest, PollFromCanaryAfterAuthError) {
 
   ::testing::InSequence seq;
   EXPECT_CALL(*syncer(), PollSyncShare(_,_))
-      .WillRepeatedly(
-          DoAll(Invoke(sessions::test_util::SimulatePollRetrySuccess),
-                RecordSyncShareMultiple(&times, kMinNumSamples)));
+      .WillRepeatedly(DoAll(Invoke(sessions::test_util::SimulatePollSuccess),
+           RecordSyncShareMultiple(&times, kMinNumSamples)));
 
   connection()->SetServerStatus(HttpResponse::SYNC_AUTH_ERROR);
   StartSyncScheduler(SyncScheduler::NORMAL_MODE);
@@ -1293,96 +1282,11 @@ TEST_F(SyncSchedulerTest, PollFromCanaryAfterAuthError) {
   // but after poll finished with auth error from poll timer it should retry
   // poll once more
   EXPECT_CALL(*syncer(), PollSyncShare(_,_))
-      .WillOnce(DoAll(Invoke(sessions::test_util::SimulatePollRetrySuccess),
+      .WillOnce(DoAll(Invoke(sessions::test_util::SimulatePollSuccess),
                       RecordSyncShare(&times)));
   scheduler()->OnCredentialsUpdated();
   connection()->SetServerStatus(HttpResponse::SERVER_CONNECTION_OK);
   RunLoop();
-  StopSyncScheduler();
-}
-
-TEST_F(SyncSchedulerTest, SuccessfulRetry) {
-  StartSyncScheduler(SyncScheduler::NORMAL_MODE);
-
-  SyncShareTimes times;
-  base::TimeDelta delay = base::TimeDelta::FromMilliseconds(1);
-  scheduler()->OnReceivedGuRetryDelay(delay);
-  EXPECT_EQ(delay, GetRetryTimerDelay());
-
-  EXPECT_CALL(*syncer(), RetrySyncShare(_,_))
-      .WillOnce(
-          DoAll(Invoke(sessions::test_util::SimulatePollRetrySuccess),
-                RecordSyncShare(&times)));
-
-  // Run to wait for retrying.
-  RunLoop();
-
-  StopSyncScheduler();
-}
-
-TEST_F(SyncSchedulerTest, FailedRetry) {
-  UseMockDelayProvider();
-  EXPECT_CALL(*delay(), GetDelay(_))
-      .WillRepeatedly(Return(TimeDelta::FromMilliseconds(1)));
-
-  StartSyncScheduler(SyncScheduler::NORMAL_MODE);
-
-  base::TimeDelta delay = base::TimeDelta::FromMilliseconds(1);
-  scheduler()->OnReceivedGuRetryDelay(delay);
-
-  EXPECT_CALL(*syncer(), RetrySyncShare(_,_))
-      .WillOnce(
-          DoAll(Invoke(sessions::test_util::SimulatePollRetryFailed),
-                QuitLoopNowAction()));
-
-  // Run to wait for retrying.
-  RunLoop();
-
-  EXPECT_TRUE(scheduler()->IsBackingOff());
-  EXPECT_CALL(*syncer(), RetrySyncShare(_,_))
-      .WillOnce(
-          DoAll(Invoke(sessions::test_util::SimulatePollRetrySuccess),
-                QuitLoopNowAction()));
-
-  // Run to wait for second retrying.
-  RunLoop();
-
-  StopSyncScheduler();
-}
-
-ACTION_P2(VerifyRetryTimerDelay, scheduler_test, expected_delay) {
-  EXPECT_EQ(expected_delay, scheduler_test->GetRetryTimerDelay());
-}
-
-TEST_F(SyncSchedulerTest, ReceiveNewRetryDelay) {
-  StartSyncScheduler(SyncScheduler::NORMAL_MODE);
-
-  SyncShareTimes times;
-  base::TimeDelta delay1 = base::TimeDelta::FromMilliseconds(10);
-  base::TimeDelta delay2 = base::TimeDelta::FromMilliseconds(20);
-
-  scheduler()->OnReceivedGuRetryDelay(delay1);
-  scheduler()->ScheduleLocalRefreshRequest(zero(), ModelTypeSet(BOOKMARKS),
-                                           FROM_HERE);
-
-  EXPECT_CALL(*syncer(), NormalSyncShare(_,_,_))
-      .WillOnce(DoAll(
-          WithoutArgs(VerifyRetryTimerDelay(this, delay1)),
-          WithArg<2>(sessions::test_util::SimulateGuRetryDelayCommand(delay2)),
-          WithoutArgs(VerifyRetryTimerDelay(this, delay2)),
-          RecordSyncShare(&times)));
-
-  // Run nudge GU.
-  RunLoop();
-
-  EXPECT_CALL(*syncer(), RetrySyncShare(_,_))
-      .WillOnce(
-          DoAll(Invoke(sessions::test_util::SimulatePollRetrySuccess),
-                RecordSyncShare(&times)));
-
-  // Run to wait for retrying.
-  RunLoop();
-
   StopSyncScheduler();
 }
 

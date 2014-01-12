@@ -89,10 +89,6 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
   virtual void OnReceivedClientInvalidationHintBufferSize(int size) OVERRIDE;
   virtual void OnSyncProtocolError(
       const sessions::SyncSessionSnapshot& snapshot) OVERRIDE;
-  virtual void OnReceivedGuRetryDelay(const base::TimeDelta& delay) OVERRIDE;
-
-  // Returns true if the client is currently in exponential backoff.
-  bool IsBackingOff() const;
 
  private:
   enum JobPriority {
@@ -171,9 +167,6 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
   // Invoke the Syncer to perform a poll job.
   void DoPollSyncSessionJob();
 
-  // Invoke the Syncer to perform a retry job.
-  void DoRetrySyncSessionJob();
-
   // Helper function to calculate poll interval.
   base::TimeDelta GetPollInterval();
 
@@ -197,6 +190,9 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
   void ScheduleNudgeImpl(
       const base::TimeDelta& delay,
       const tracked_objects::Location& nudge_location);
+
+  // Returns true if the client is currently in exponential backoff.
+  bool IsBackingOff() const;
 
   // Helper to signal all listeners registered with |session_context_|.
   void Notify(SyncEngineEvent::EventCause cause);
@@ -233,9 +229,6 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
 
   // Creates a session for a poll and performs the sync.
   void PollTimerCallback();
-
-  // Creates a session for a retry and performs the sync.
-  void RetryTimerCallback();
 
   // Returns the set of types that are enabled and not currently throttled.
   ModelTypeSet GetEnabledAndUnthrottledTypes();
@@ -342,9 +335,6 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
   // A second factory specially for weak_handle_this_, to allow the handle
   // to be const and alleviate threading concerns.
   base::WeakPtrFactory<SyncSchedulerImpl> weak_ptr_factory_for_weak_handle_;
-
-  // One-shot timer for scheduling GU retry according to delay set by server.
-  base::OneShotTimer<SyncSchedulerImpl> retry_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSchedulerImpl);
 };
