@@ -215,23 +215,23 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   void ResetUsedTextures() { used_textures_.clear(); }
 
   void set_have_extension_io_surface(bool have) {
-    test_capabilities_.iosurface = have;
-    test_capabilities_.texture_rectangle = have;
+    test_capabilities_.gpu.iosurface = have;
+    test_capabilities_.gpu.texture_rectangle = have;
   }
   void set_have_extension_egl_image(bool have) {
-    test_capabilities_.egl_image_external = have;
+    test_capabilities_.gpu.egl_image_external = have;
   }
   void set_have_post_sub_buffer(bool have) {
-    test_capabilities_.post_sub_buffer = have;
+    test_capabilities_.gpu.post_sub_buffer = have;
   }
   void set_have_discard_framebuffer(bool have) {
-    test_capabilities_.discard_framebuffer = have;
+    test_capabilities_.gpu.discard_framebuffer = have;
   }
   void set_support_compressed_texture_etc1(bool support) {
-    test_capabilities_.texture_format_etc1 = support;
+    test_capabilities_.gpu.texture_format_etc1 = support;
   }
   void set_support_texture_storage(bool support) {
-    test_capabilities_.texture_storage = support;
+    test_capabilities_.gpu.texture_storage = support;
   }
 
   // When this context is lost, all contexts in its share group are also lost.

@@ -2806,8 +2806,8 @@ SINGLE_THREAD_TEST_F(LayerTreeHostTestChangeLayerPropertiesInPaintContents);
 class MockIOSurfaceWebGraphicsContext3D : public TestWebGraphicsContext3D {
  public:
   MockIOSurfaceWebGraphicsContext3D() {
-    test_capabilities_.iosurface = true;
-    test_capabilities_.texture_rectangle = true;
+    test_capabilities_.gpu.iosurface = true;
+    test_capabilities_.gpu.texture_rectangle = true;
   }
 
   virtual GLuint createTexture() OVERRIDE {

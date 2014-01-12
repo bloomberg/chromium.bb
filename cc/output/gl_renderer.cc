@@ -185,11 +185,11 @@ GLRenderer::GLRenderer(RendererClient* client,
       output_surface_->context_provider()->ContextCapabilities();
 
   capabilities_.using_partial_swap =
-      settings_->partial_swap_enabled && context_caps.post_sub_buffer;
+      settings_->partial_swap_enabled && context_caps.gpu.post_sub_buffer;
 
-  DCHECK(!context_caps.iosurface || context_caps.texture_rectangle);
+  DCHECK(!context_caps.gpu.iosurface || context_caps.gpu.texture_rectangle);
 
-  capabilities_.using_egl_image = context_caps.egl_image_external;
+  capabilities_.using_egl_image = context_caps.gpu.egl_image_external;
 
   capabilities_.max_texture_size = resource_provider_->max_texture_size();
   capabilities_.best_texture_format = resource_provider_->best_texture_format();
@@ -199,14 +199,15 @@ GLRenderer::GLRenderer(RendererClient* client,
 
   // Check for texture fast paths. Currently we always use MO8 textures,
   // so we only need to avoid POT textures if we have an NPOT fast-path.
-  capabilities_.avoid_pow2_textures = context_caps.fast_npot_mo8_textures;
+  capabilities_.avoid_pow2_textures = context_caps.gpu.fast_npot_mo8_textures;
 
   capabilities_.using_offscreen_context3d = true;
 
   capabilities_.using_map_image =
-      settings_->use_map_image && context_caps.map_image;
+      settings_->use_map_image && context_caps.gpu.map_image;
 
-  capabilities_.using_discard_framebuffer = context_caps.discard_framebuffer;
+  capabilities_.using_discard_framebuffer =
+      context_caps.gpu.discard_framebuffer;
 
   InitializeSharedObjects();
 }

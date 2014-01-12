@@ -206,7 +206,8 @@ void ContextProviderCommandBuffer::OnMemoryAllocationChanged(
 }
 
 void ContextProviderCommandBuffer::InitializeCapabilities() {
-  Capabilities caps(context3d_->GetImplementation()->capabilities());
+  Capabilities caps;
+  caps.gpu = context3d_->GetImplementation()->capabilities();
 
   size_t mapped_memory_limit = context3d_->GetMappedMemoryLimit();
   caps.max_transfer_buffer_usage_bytes =

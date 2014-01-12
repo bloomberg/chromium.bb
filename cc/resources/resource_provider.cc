@@ -925,10 +925,10 @@ bool ResourceProvider::InitializeGL() {
   const ContextProvider::Capabilities& caps =
       output_surface_->context_provider()->ContextCapabilities();
 
-  bool use_bgra = caps.texture_format_bgra8888;
-  use_texture_storage_ext_ = caps.texture_storage;
-  use_texture_usage_hint_ = caps.texture_usage;
-  use_compressed_texture_etc1_ = caps.texture_format_etc1;
+  bool use_bgra = caps.gpu.texture_format_bgra8888;
+  use_texture_storage_ext_ = caps.gpu.texture_storage;
+  use_texture_usage_hint_ = caps.gpu.texture_usage;
+  use_compressed_texture_etc1_ = caps.gpu.texture_format_etc1;
 
   GLES2Interface* gl = ContextGL();
   DCHECK(gl);

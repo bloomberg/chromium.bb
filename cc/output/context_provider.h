@@ -36,25 +36,12 @@ class ContextProvider : public base::RefCountedThreadSafe<ContextProvider> {
   virtual void MakeGrContextCurrent() = 0;
 
   struct Capabilities {
-    bool egl_image_external : 1;
-    bool fast_npot_mo8_textures : 1;
-    bool iosurface : 1;
-    bool map_image : 1;
-    bool post_sub_buffer : 1;
-    bool texture_format_bgra8888 : 1;
-    bool texture_format_etc1 : 1;
-    bool texture_rectangle : 1;
-    bool texture_storage : 1;
-    bool texture_usage : 1;
-    bool discard_framebuffer : 1;
+    gpu::Capabilities gpu;
     size_t max_transfer_buffer_usage_bytes;
 
     CC_EXPORT Capabilities();
-
-    // TODO(boliu): Compose a gpu::Capabilities instead and remove this
-    // constructor.
-    explicit CC_EXPORT Capabilities(const gpu::Capabilities& gpu_capabilities);
   };
+
   // Returns the capabilities of the currently bound 3d context.
   virtual Capabilities ContextCapabilities() = 0;
 

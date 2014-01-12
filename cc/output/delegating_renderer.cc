@@ -70,10 +70,11 @@ bool DelegatingRenderer::Initialize() {
   const ContextProvider::Capabilities& caps =
       output_surface_->context_provider()->ContextCapabilities();
 
-  DCHECK(!caps.iosurface || caps.texture_rectangle);
+  DCHECK(!caps.gpu.iosurface || caps.gpu.texture_rectangle);
 
-  capabilities_.using_egl_image = caps.egl_image_external;
-  capabilities_.using_map_image = settings_->use_map_image && caps.map_image;
+  capabilities_.using_egl_image = caps.gpu.egl_image_external;
+  capabilities_.using_map_image =
+      settings_->use_map_image && caps.gpu.map_image;
 
   return true;
 }

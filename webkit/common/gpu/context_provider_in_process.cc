@@ -107,7 +107,7 @@ bool ContextProviderInProcess::BindToCurrentThread() {
 }
 
 void ContextProviderInProcess::InitializeCapabilities() {
-  capabilities_ = Capabilities(context3d_->GetImplementation()->capabilities());
+  capabilities_.gpu = context3d_->GetImplementation()->capabilities();
 }
 
 cc::ContextProvider::Capabilities
