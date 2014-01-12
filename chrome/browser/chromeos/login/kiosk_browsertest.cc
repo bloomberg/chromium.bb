@@ -810,6 +810,7 @@ IN_PROC_BROWSER_TEST_F(KioskEnterpriseTest, EnterpriseKioskApp) {
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       window->web_contents(),
       "chrome.identity.getAuthToken({ 'interactive': false }, function(token) {"
+      "    window.domAutomationController.setAutomationId(0);"
       "    window.domAutomationController.send(token);"
       "});",
       &result));
