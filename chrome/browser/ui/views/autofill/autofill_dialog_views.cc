@@ -208,9 +208,9 @@ class SectionRowView : public views::View {
     int end_x = bounds.width();
     views::View* decorated = child_at(2);
     if (decorated->visible()) {
-      const int preferred_width = decorated->GetPreferredSize().width();
-      decorated->SetBounds(bounds.width() - preferred_width, bounds.y(),
-                           preferred_width, bounds.height());
+      decorated->SizeToPreferredSize();
+      decorated->SetX(bounds.width() - decorated->bounds().width());
+      decorated->SetY(bounds.y());
       end_x = decorated->bounds().x() - kAroundTextPadding;
     }
 

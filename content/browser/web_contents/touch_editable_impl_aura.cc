@@ -251,7 +251,7 @@ gfx::Rect TouchEditableImplAura::GetBounds() {
   return rwhva_ ? rwhva_->GetNativeView()->bounds() : gfx::Rect();
 }
 
-gfx::NativeView TouchEditableImplAura::GetNativeView() const {
+gfx::NativeView TouchEditableImplAura::GetNativeView() {
   return rwhva_ ? rwhva_->GetNativeView()->GetRootWindow() : NULL;
 }
 

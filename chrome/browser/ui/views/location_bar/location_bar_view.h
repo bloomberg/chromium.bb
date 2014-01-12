@@ -59,7 +59,6 @@ struct SSLStatus;
 namespace views {
 class BubbleDelegateView;
 class ImageButton;
-class ImageView;
 class Label;
 class LabelButton;
 class Widget;

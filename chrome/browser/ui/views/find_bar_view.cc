@@ -28,7 +28,6 @@
 #include "ui/base/theme_provider.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
-#include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -86,10 +85,6 @@ FindBarView::FindBarView(FindBarHost* host)
   find_text_->set_default_width_in_chars(kDefaultCharWidth);
   find_text_->SetController(this);
   find_text_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_FIND));
-  // The find bar textfield has a background image instead of a border.
-  const gfx::Insets insets = find_text_->GetInsets();
-  find_text_->set_border(
-      views::Border::CreateEmptyBorder(insets.top(), 0, insets.bottom(), 2));
 
   AddChildView(find_text_);
 
@@ -342,6 +337,14 @@ void FindBarView::Layout() {
       find_text_edge, find_previous_button_->y(),
       find_previous_button_->x() - find_text_edge,
       find_previous_button_->height());
+}
+
+void FindBarView::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  if (details.is_add && details.child == this) {
+    find_text_->SetHorizontalMargins(0, 2);  // Left and Right margins.
+    find_text_->RemoveBorder();  // We draw our own border (a background image).
+  }
 }
 
 gfx::Size FindBarView::GetPreferredSize() {

@@ -128,7 +128,7 @@ void CookieInfoView::AddLabelRow(int layout_id, views::GridLayout* layout,
 
   // Now that the Textfield is in the view hierarchy, it can be initialized.
   text_field->SetReadOnly(true);
-  text_field->set_border(NULL);
+  text_field->RemoveBorder();
   // Color these borderless text areas the same as the containing dialog.
   text_field->SetBackgroundColor(GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_DialogBackground));

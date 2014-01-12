@@ -57,7 +57,7 @@ class CONTENT_EXPORT TouchEditableImplAura
   virtual void MoveCaretTo(const gfx::Point& point) OVERRIDE;
   virtual void GetSelectionEndPoints(gfx::Rect* p1, gfx::Rect* p2) OVERRIDE;
   virtual gfx::Rect GetBounds() OVERRIDE;
-  virtual gfx::NativeView GetNativeView() const OVERRIDE;
+  virtual gfx::NativeView GetNativeView() OVERRIDE;
   virtual void ConvertPointToScreen(gfx::Point* point) OVERRIDE;
   virtual void ConvertPointFromScreen(gfx::Point* point) OVERRIDE;
   virtual bool DrawsHandles() OVERRIDE;

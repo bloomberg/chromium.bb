@@ -68,12 +68,11 @@ FolderHeaderView::FolderHeaderView(FolderHeaderViewDelegate* delegate)
       views::ImageButton::ALIGN_MIDDLE);
   AddChildView(back_button_);
 
-  folder_name_view_->SetFontList(
-      rb.GetFontList(ui::ResourceBundle::MediumFont));
+  folder_name_view_->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
   folder_name_view_->set_placeholder_text_color(kHintTextColor);
   folder_name_view_->set_placeholder_text(
       rb.GetLocalizedString(IDS_APP_LIST_FOLDER_NAME_PLACEHOLDER));
-  folder_name_view_->set_border(NULL);
+  folder_name_view_->RemoveBorder();
   folder_name_view_->SetBackgroundColor(kContentsBackgroundColor);
   folder_name_view_->SetController(this);
   AddChildView(folder_name_view_);

@@ -68,6 +68,7 @@ TextfieldWrapper::TextfieldWrapper(views::Textfield* textfield,
                                    views::ImageButton* image_button)
     : textfield_(textfield),
       image_button_(image_button) {
+  textfield_->RemoveBorder();
   set_border(views::Border::CreateSolidBorder(kWrapperBorderSize,
                                               SK_ColorGRAY));
 

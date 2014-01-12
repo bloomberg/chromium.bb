@@ -11,7 +11,7 @@
 #include "ui/views/controls/textfield/textfield.h"
 
 namespace views {
-class ImageView;
+class FocusableBorder;
 class TextfieldController;
 }
 
@@ -36,7 +36,8 @@ class DecoratedTextfield : public views::Textfield {
   void SetEditable(bool editable);
   bool editable() const { return editable_; }
 
-  // Sets the icon to display inside the textfield at the end of the text.
+  // Sets the icon to be displayed inside the textfield at the end of the
+  // text.
   void SetIcon(const gfx::Image& icon);
 
   // Sets a tooltip for this field. This will override the icon set with
@@ -51,18 +52,28 @@ class DecoratedTextfield : public views::Textfield {
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual views::View* GetEventHandlerForRect(const gfx::Rect& rect) OVERRIDE;
+  virtual void OnFocus() OVERRIDE;
+  virtual void OnBlur() OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DecoratedTextfieldTest, HeightMatchesButton);
 
-  // Updates the background after its color may have changed.
+  // Updates the background of |this| after it may have changed. This is
+  // necessary for the sake of the padding around the native textfield.
   void UpdateBackground();
 
-  // Updates the border after its color or insets may have changed.
-  void UpdateBorder();
-
-  // Called to update the layout after SetIcon or SetTooltipIcon was called.
+  // Called to update the layout after SetIcon or SetTooltipIcon has been
+  // called.
   void IconChanged();
+
+  // This number corresponds to the number of pixels in the images that
+  // are used to draw a views button which are above or below the actual border.
+  // This number is encoded in the button assets themselves, so there's no other
+  // way to get it than to hardcode it here.
+  static const int kMagicInsetNumber;
+
+  // We draw the border.
+  views::FocusableBorder* border_;  // Weak.
 
   // The view that holds the icon at the end of the textfield.
   scoped_ptr<views::ImageView> icon_view_;

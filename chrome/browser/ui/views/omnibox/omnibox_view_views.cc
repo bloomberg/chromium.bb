@@ -44,6 +44,7 @@
 #include "ui/gfx/selection_model.h"
 #include "ui/views/border.h"
 #include "ui/views/button_drag_utils.h"
+#include "ui/views/controls/textfield/native_textfield_views.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/ime/input_method.h"
 #include "ui/views/layout/fill_layout.h"
@@ -142,7 +143,7 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
       ime_candidate_window_open_(false),
       select_all_on_mouse_release_(false),
       select_all_on_gesture_tap_(false) {
-  set_border(NULL);
+  RemoveBorder();
   set_id(VIEW_ID_OMNIBOX);
   SetFontList(font_list);
 }
@@ -175,7 +176,7 @@ void OmniboxViewViews::Init() {
 
   // Initialize the popup view using the same font.
   popup_view_.reset(OmniboxPopupContentsView::Create(
-      GetFontList(), this, model(), location_bar_view_));
+      font_list(), this, model(), location_bar_view_));
 
 #if defined(OS_CHROMEOS)
   chromeos::input_method::InputMethodManager::Get()->
@@ -191,14 +192,15 @@ const char* OmniboxViewViews::GetClassName() const {
 }
 
 void OmniboxViewViews::OnGestureEvent(ui::GestureEvent* event) {
+  views::Textfield::OnGestureEvent(event);
   if (!HasFocus() && event->type() == ui::ET_GESTURE_TAP_DOWN) {
     select_all_on_gesture_tap_ = true;
 
     // If we're trying to select all on tap, invalidate any saved selection lest
     // restoring it fights with the "select all" action.
     saved_selection_for_focus_change_ = gfx::Range::InvalidRange();
+    return;
   }
-
   if (select_all_on_gesture_tap_ && event->type() == ui::ET_GESTURE_TAP)
     SelectAll(false);
 
@@ -211,8 +213,6 @@ void OmniboxViewViews::OnGestureEvent(ui::GestureEvent* event) {
       event->type() == ui::ET_GESTURE_LONG_TAP) {
     select_all_on_gesture_tap_ = false;
   }
-
-  views::Textfield::OnGestureEvent(event);
 }
 
 void OmniboxViewViews::GetAccessibleState(ui::AccessibleViewState* state) {
@@ -674,9 +674,7 @@ base::string16 OmniboxViewViews::GetGrayTextAutocompletion() const {
 }
 
 int OmniboxViewViews::GetTextWidth() const {
-  // Returns the width necessary to display the current text, including any
-  // necessary space for the cursor or border/margin.
-  return GetRenderText()->GetContentWidth() + GetInsets().width();
+  return textfield_view_->GetWidthNeededForText();
 }
 
 int OmniboxViewViews::GetWidth() const {
@@ -694,54 +692,6 @@ bool OmniboxViewViews::IsImeShowingPopup() const {
   const views::InputMethod* input_method = this->GetInputMethod();
   return input_method && input_method->IsCandidatePopupOpen();
 #endif
-}
-
-bool OmniboxViewViews::IsCommandIdEnabled(int command_id) const {
-  if (command_id == IDS_APP_PASTE)
-    return !read_only() && !GetClipboardText().empty();
-  if (command_id == IDS_PASTE_AND_GO)
-    return !read_only() && model()->CanPasteAndGo(GetClipboardText());
-  if (command_id == IDS_SHOW_URL)
-    return controller()->GetToolbarModel()->WouldReplaceURL();
-  return Textfield::IsCommandIdEnabled(command_id) ||
-         command_updater()->IsCommandEnabled(command_id);
-}
-
-bool OmniboxViewViews::IsItemForCommandIdDynamic(int command_id) const {
-  return command_id == IDS_PASTE_AND_GO;
-}
-
-base::string16 OmniboxViewViews::GetLabelForCommandId(int command_id) const {
-  DCHECK_EQ(IDS_PASTE_AND_GO, command_id);
-  return l10n_util::GetStringUTF16(
-      model()->IsPasteAndSearch(GetClipboardText()) ?
-          IDS_PASTE_AND_SEARCH : IDS_PASTE_AND_GO);
-}
-
-void OmniboxViewViews::ExecuteCommand(int command_id, int event_flags) {
-  switch (command_id) {
-    // These commands don't invoke the popup via OnBefore/AfterPossibleChange().
-    case IDS_PASTE_AND_GO:
-      model()->PasteAndGo(GetClipboardText());
-      break;
-    case IDS_SHOW_URL:
-      ShowURL();
-      break;
-    case IDC_EDIT_SEARCH_ENGINES:
-      command_updater()->ExecuteCommand(command_id);
-      break;
-
-    default:
-      OnBeforePossibleChange();
-      if (command_id == IDS_APP_PASTE)
-        OnPaste();
-      else if (Textfield::IsCommandIdEnabled(command_id))
-        Textfield::ExecuteCommand(command_id, event_flags);
-      else
-        command_updater()->ExecuteCommand(command_id);
-      OnAfterPossibleChange();
-      break;
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -899,6 +849,56 @@ void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
   // on IDC_ for now.
   menu_contents->AddItemWithStringId(IDC_EDIT_SEARCH_ENGINES,
       IDS_EDIT_SEARCH_ENGINES);
+}
+
+bool OmniboxViewViews::IsCommandIdEnabled(int command_id) const {
+  if (command_id == IDS_APP_PASTE)
+    return !read_only() && !GetClipboardText().empty();
+  if (command_id == IDS_PASTE_AND_GO)
+    return !read_only() && model()->CanPasteAndGo(GetClipboardText());
+  if (command_id == IDS_SHOW_URL)
+    return controller()->GetToolbarModel()->WouldReplaceURL();
+  return command_updater()->IsCommandEnabled(command_id);
+}
+
+bool OmniboxViewViews::IsItemForCommandIdDynamic(int command_id) const {
+  return command_id == IDS_PASTE_AND_GO;
+}
+
+base::string16 OmniboxViewViews::GetLabelForCommandId(int command_id) const {
+  DCHECK_EQ(IDS_PASTE_AND_GO, command_id);
+  return l10n_util::GetStringUTF16(
+      model()->IsPasteAndSearch(GetClipboardText()) ?
+          IDS_PASTE_AND_SEARCH : IDS_PASTE_AND_GO);
+}
+
+bool OmniboxViewViews::HandlesCommand(int command_id) const {
+  // See description in OnPaste() for details on why we need to handle paste.
+  return command_id == IDS_APP_PASTE;
+}
+
+void OmniboxViewViews::ExecuteCommand(int command_id, int event_flags) {
+  switch (command_id) {
+    // These commands don't invoke the popup via OnBefore/AfterPossibleChange().
+    case IDS_PASTE_AND_GO:
+      model()->PasteAndGo(GetClipboardText());
+      break;
+    case IDS_SHOW_URL:
+      ShowURL();
+      break;
+    case IDC_EDIT_SEARCH_ENGINES:
+      command_updater()->ExecuteCommand(command_id);
+      break;
+
+    default:
+      OnBeforePossibleChange();
+      if (command_id == IDS_APP_PASTE)
+        OnPaste();
+      else
+        command_updater()->ExecuteCommand(command_id);
+      OnAfterPossibleChange();
+      break;
+  }
 }
 
 #if defined(OS_CHROMEOS)

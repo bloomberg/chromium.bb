@@ -10,6 +10,7 @@
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/focusable_border.h"
+#include "ui/views/controls/textfield/native_textfield_views.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 
 namespace {
@@ -24,28 +25,38 @@ namespace autofill {
 // static
 const char DecoratedTextfield::kViewClassName[] = "autofill/DecoratedTextfield";
 
+const int DecoratedTextfield::kMagicInsetNumber = 6;
+
 DecoratedTextfield::DecoratedTextfield(
     const base::string16& default_value,
     const base::string16& placeholder,
     views::TextfieldController* controller)
-    : invalid_(false),
+    : border_(new views::FocusableBorder()),
+      invalid_(false),
       editable_(true) {
   UpdateBackground();
-  UpdateBorder();
+
+  set_border(border_);
+  // Removes the border from |native_wrapper_|.
+  RemoveBorder();
 
   set_placeholder_text(placeholder);
   SetText(default_value);
   SetController(controller);
+  SetHorizontalMargins(0, 0);
 }
 
 DecoratedTextfield::~DecoratedTextfield() {}
 
 void DecoratedTextfield::SetInvalid(bool invalid) {
-  if (invalid_ == invalid)
+  invalid_ = invalid;
+  if (!editable_)
     return;
 
-  invalid_ = invalid;
-  UpdateBorder();
+  if (invalid)
+    border_->SetColor(kWarningColor);
+  else
+    border_->UseDefaultColor();
   SchedulePaint();
 }
 
@@ -54,7 +65,14 @@ void DecoratedTextfield::SetEditable(bool editable) {
     return;
 
   editable_ = editable;
-  UpdateBorder();
+  if (editable) {
+    SetInvalid(invalid_);
+    UseDefaultBackgroundColor();
+  } else {
+    border_->SetColor(SK_ColorTRANSPARENT);
+    SetBackgroundColor(SK_ColorTRANSPARENT);
+  }
+
   UpdateBackground();
   SetEnabled(editable);
   IconChanged();
@@ -93,7 +111,10 @@ void DecoratedTextfield::SetTooltipIcon(const base::string16& text) {
 }
 
 base::string16 DecoratedTextfield::GetPlaceholderText() const {
-  return editable_ ? views::Textfield::GetPlaceholderText() : base::string16();
+  if (!editable_)
+    return base::string16();
+
+  return views::Textfield::GetPlaceholderText();
 }
 
 const char* DecoratedTextfield::GetClassName() const {
@@ -104,14 +125,25 @@ views::View* DecoratedTextfield::GetEventHandlerForRect(const gfx::Rect& rect) {
   views::View* handler = views::Textfield::GetEventHandlerForRect(rect);
   if (handler->GetClassName() == TooltipIcon::kViewClassName)
     return handler;
-  return this;
+  return textfield_view_;
+}
+
+void DecoratedTextfield::OnFocus() {
+  views::Textfield::OnFocus();
+  SchedulePaint();
+}
+
+void DecoratedTextfield::OnBlur() {
+  views::Textfield::OnBlur();
+  SchedulePaint();
 }
 
 gfx::Size DecoratedTextfield::GetPreferredSize() {
-  static const int height =
-      views::LabelButton(NULL, base::string16()).GetPreferredSize().height();
-  const gfx::Size size = views::Textfield::GetPreferredSize();
-  return gfx::Size(size.width(), std::max(size.height(), height));
+  int w = views::Textfield::GetPreferredSize().width();
+  views::LabelButton button(NULL, base::string16());
+  button.SetStyle(views::Button::STYLE_BUTTON);
+  int h = button.GetPreferredSize().height();
+  return gfx::Size(w, h - kMagicInsetNumber);
 }
 
 void DecoratedTextfield::Layout() {
@@ -125,45 +157,29 @@ void DecoratedTextfield::Layout() {
         bounds.right() - icon_size.width() - kTextfieldIconPadding;
     // Vertically centered.
     int y = bounds.y() + (bounds.height() - icon_size.height()) / 2;
-    icon_view_->SetBounds(x, y, icon_size.width(), icon_size.height());
+    icon_view_->SetBounds(x,
+                          y,
+                          icon_size.width(),
+                          icon_size.height());
   }
 }
 
 void DecoratedTextfield::UpdateBackground() {
-  if (editable_)
-    UseDefaultBackgroundColor();
-  else
-    SetBackgroundColor(SK_ColorTRANSPARENT);
   set_background(
       views::Background::CreateSolidBackground(GetBackgroundColor()));
 }
 
-void DecoratedTextfield::UpdateBorder() {
-  views::FocusableBorder* border = new views::FocusableBorder();
-  if (invalid_)
-    border->SetColor(kWarningColor);
-  else if (!editable_)
-    border->SetColor(SK_ColorTRANSPARENT);
-
-  const gfx::Insets insets = GetInsets();
-  int left = icon_view_ ?
-      icon_view_->GetPreferredSize().width() + 2 * kTextfieldIconPadding : 0;
-  int right = 0;
-  if (base::i18n::IsRTL())
-    std::swap(left, right);
-  border->SetInsets(insets.top(), insets.left() + left, insets.bottom(),
-                    insets.right() + right);
-  set_border(border);
-}
-
 void DecoratedTextfield::IconChanged() {
   // Don't show the icon if nothing else is showing.
-  const bool visible = editable_ || !text().empty();
-  if (icon_view_->visible() == visible)
-    return;
+  icon_view_->SetVisible(editable_ || !text().empty());
 
-  icon_view_->SetVisible(visible);
-  UpdateBorder();
+  int icon_space = icon_view_ ?
+      icon_view_->GetPreferredSize().width() + 2 * kTextfieldIconPadding : 0;
+
+  bool is_rtl = base::i18n::IsRTL();
+  SetHorizontalMargins(is_rtl ? icon_space : 0, is_rtl ? 0 : icon_space);
+
+  Layout();
   SchedulePaint();
 }
 
