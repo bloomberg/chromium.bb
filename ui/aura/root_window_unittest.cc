@@ -668,7 +668,13 @@ TEST_F(RootWindowTest, MouseMovesHeld) {
   EXPECT_TRUE(filter->events().empty());
 }
 
-TEST_F(RootWindowTest, TouchMovesHeld) {
+#if defined(OS_CHROMEOS)
+// This test may be flaky on Chromium OS valgrind bots: http://crbug.com/333644
+#define MAYBE_TouchMovesHeld DISABLED_TouchMovesHeld
+#else
+#define MAYBE_TouchMovesHeld TouchMovesHeld
+#endif
+TEST_F(RootWindowTest, MAYBE_TouchMovesHeld) {
   EventFilterRecorder* filter = new EventFilterRecorder;
   root_window()->SetEventFilter(filter);  // passes ownership
 
