@@ -7,6 +7,7 @@
 # All this client does is echo the text it receives back at the extension.
 
 import os
+import platform
 import sys
 import struct
 
@@ -22,13 +23,26 @@ def WriteMessage(message):
 def Main():
   message_number = 0
 
+  caller_url = None
+  parent_window = None
+
   if len(sys.argv) < 2:
     sys.stderr.write("URL of the calling application is not specified.\n")
-    return;
+    return 1
+  # TODO(sergeyu): Use argparse module to parse the arguments (not available in
+  # Python 2.6).
   for arg in sys.argv[1:]:
-    if not arg.startswith('--'):
+    if arg.startswith('--'):
+      if arg.startswith('--parent-window='):
+        parent_window = long(arg[len('--parent-window='):])
+    elif caller_url == None:
       caller_url = arg
-      break
+
+  if platform.system() == 'Windows':
+    import win32gui
+    if parent_window and not win32gui.IsWindow(parent_window):
+      sys.stderr.write('Invalid --parent-window.\n')
+      return 1
 
   while 1:
     # Read the message type (first 4 bytes).
@@ -63,10 +77,10 @@ def Main():
 
     message_number += 1
 
-    if not WriteMessage(
-        '{{"id": {0}, "echo": {1}, "caller_url": "{2}"}}'.format(
-          message_number, text, caller_url).encode('utf-8')):
+    message = '{{"id": {0}, "echo": {1}, "caller_url": "{2}"}}'.format(
+          message_number, text, caller_url).encode('utf-8')
+    if not WriteMessage(message):
       break
 
 if __name__ == '__main__':
-  Main()
+  sys.exit(Main())

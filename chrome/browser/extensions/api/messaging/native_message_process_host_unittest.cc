@@ -263,7 +263,7 @@ TEST_F(NativeMessagingTest, EchoConnect) {
       switches::kNativeMessagingHosts, hosts_option);
 
   native_message_process_host_ = NativeMessageProcessHost::Create(
-      gfx::NativeView(), AsWeakPtr(), kTestNativeMessagingExtensionId,
+      NULL, AsWeakPtr(), kTestNativeMessagingExtensionId,
       kTestNativeMessagingHostName, 0);
   ASSERT_TRUE(native_message_process_host_.get());
 

@@ -20,6 +20,10 @@
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 
+#if defined(OS_WIN)
+#include "ui/views/win/hwnd_util.h"
+#endif
+
 namespace extensions {
 
 namespace {
@@ -56,7 +60,7 @@ base::FilePath GetHostManifestPathFromCommandLine(
 // Default implementation on NativeProcessLauncher interface.
 class NativeProcessLauncherImpl : public NativeProcessLauncher {
  public:
-  explicit NativeProcessLauncherImpl(gfx::NativeView native_view);
+  explicit NativeProcessLauncherImpl(intptr_t native_window);
   virtual ~NativeProcessLauncherImpl();
 
   virtual void Launch(const GURL& origin,
@@ -66,7 +70,7 @@ class NativeProcessLauncherImpl : public NativeProcessLauncher {
  private:
   class Core : public base::RefCountedThreadSafe<Core> {
    public:
-    explicit Core(gfx::NativeView native_view);
+    explicit Core(intptr_t native_window);
     void Launch(const GURL& origin,
                 const std::string& native_host_name,
                 LaunchedCallback callback);
@@ -92,8 +96,8 @@ class NativeProcessLauncherImpl : public NativeProcessLauncher {
 
     bool detached_;
 
-    // Handle of the native view corrsponding to the extension.
-    gfx::NativeView native_view_;
+    // Handle of the native window corresponding to the extension.
+    intptr_t window_handle_;
 
     DISALLOW_COPY_AND_ASSIGN(Core);
   };
@@ -103,9 +107,9 @@ class NativeProcessLauncherImpl : public NativeProcessLauncher {
   DISALLOW_COPY_AND_ASSIGN(NativeProcessLauncherImpl);
 };
 
-NativeProcessLauncherImpl::Core::Core(gfx::NativeView native_view)
+NativeProcessLauncherImpl::Core::Core(intptr_t window_handle)
     : detached_(false),
-      native_view_(native_view) {
+      window_handle_(window_handle) {
 }
 
 NativeProcessLauncherImpl::Core::~Core() {
@@ -196,9 +200,8 @@ void NativeProcessLauncherImpl::Core::DoLaunchOnThreadPool(
   // Pass handle of the native view window to the native messaging host. This
   // way the host will be able to create properly focused UI windows.
 #if defined(OS_WIN)
-  int64 window_handle = reinterpret_cast<intptr_t>(native_view_);
   command_line.AppendSwitchASCII(kParentWindowSwitchName,
-                                 base::Int64ToString(window_handle));
+                                 base::Int64ToString(window_handle_));
 #endif  // !defined(OS_WIN)
 
   base::ProcessHandle process_handle;
@@ -253,9 +256,8 @@ void NativeProcessLauncherImpl::Core::PostResult(
                  write_file));
 }
 
-NativeProcessLauncherImpl::NativeProcessLauncherImpl(
-    gfx::NativeView native_view)
-  : core_(new Core(native_view)) {
+NativeProcessLauncherImpl::NativeProcessLauncherImpl(intptr_t window_handle)
+  : core_(new Core(window_handle)) {
 }
 
 NativeProcessLauncherImpl::~NativeProcessLauncherImpl() {
@@ -273,8 +275,13 @@ void NativeProcessLauncherImpl::Launch(const GURL& origin,
 // static
 scoped_ptr<NativeProcessLauncher> NativeProcessLauncher::CreateDefault(
     gfx::NativeView native_view) {
+  intptr_t window_handle = 0;
+#if defined(OS_WIN)
+  window_handle = reinterpret_cast<intptr_t>(
+      views::HWNDForNativeView(native_view));
+#endif
   return scoped_ptr<NativeProcessLauncher>(
-      new NativeProcessLauncherImpl(native_view));
+      new NativeProcessLauncherImpl(window_handle));
 }
 
 }  // namespace extensions
