@@ -129,6 +129,10 @@ TEST_F(VideoSenderTest, ExternalEncoder) {
   video_sender_->InsertRawVideoFrame(video_frame, capture_time);
 
   task_runner_->RunTasks();
+
+  // We need to run the task to cleanup the GPU instance.
+  video_sender_.reset(NULL);
+  task_runner_->RunTasks();
 }
 
 TEST_F(VideoSenderTest, RtcpTimer) {

@@ -130,6 +130,9 @@ TEST_F(ExternalVideoEncoderTest, EncodePattern30fpsRunningOutOfAck) {
                                                  frame_encoded_callback));
     task_runner_->RunTasks();
   }
+  // We need to run the task to cleanup the GPU instance.
+  video_encoder_.reset(NULL);
+  task_runner_->RunTasks();
 }
 
 }  // namespace cast
