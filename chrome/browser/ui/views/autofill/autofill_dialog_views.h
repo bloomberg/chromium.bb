@@ -427,6 +427,9 @@ class AutofillDialogViews : public AutofillDialogView,
     void SetTextfield(const base::string16& placeholder_text,
                       const gfx::Image& icon);
 
+    // Calls SetLabelText() with the appropriate text based on current bounds.
+    void UpdateLabelText();
+
     // The state of |this|.
     SuggestionState state_;
 

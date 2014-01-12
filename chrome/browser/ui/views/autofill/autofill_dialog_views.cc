@@ -1108,10 +1108,7 @@ bool AutofillDialogViews::SuggestionView::CanUseVerticallyCompactText(
 
 void AutofillDialogViews::SuggestionView::OnBoundsChanged(
     const gfx::Rect& previous_bounds) {
-  int unused;
-  SetLabelText(CanUseVerticallyCompactText(width(), &unused) ?
-      state_.vertically_compact_text :
-      state_.horizontally_compact_text);
+  UpdateLabelText();
 }
 
 void AutofillDialogViews::SuggestionView::SetState(
@@ -1119,9 +1116,7 @@ void AutofillDialogViews::SuggestionView::SetState(
   calculated_heights_.clear();
   state_ = state;
   SetVisible(state_.visible);
-  // Set to the more compact text for now. |this| will optionally switch to
-  // the more vertically expanded view when the bounds are set.
-  SetLabelText(state_.vertically_compact_text);
+  UpdateLabelText();
   SetIcon(state_.icon);
   SetTextfield(state_.extra_text, state_.extra_icon);
   PreferredSizeChanged();
@@ -1154,6 +1149,13 @@ void AutofillDialogViews::SuggestionView::SetTextfield(
   decorated_->set_placeholder_text(placeholder_text);
   decorated_->SetIcon(icon);
   decorated_->SetVisible(!placeholder_text.empty());
+}
+
+void AutofillDialogViews::SuggestionView::UpdateLabelText() {
+  int unused;
+  SetLabelText(CanUseVerticallyCompactText(width(), &unused) ?
+      state_.vertically_compact_text :
+      state_.horizontally_compact_text);
 }
 
 // AutofillDialogView ----------------------------------------------------------
