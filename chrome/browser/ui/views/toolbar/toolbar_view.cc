@@ -13,6 +13,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/search.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
@@ -223,14 +224,22 @@ void ToolbarView::Init() {
   app_menu_->set_id(VIEW_ID_APP_MENU);
 
   // Always add children in order from left to right, for accessibility.
+  site_chip_view_ = new SiteChipView(this);
+  chrome::OriginChipPosition origin_chip_position =
+      chrome::GetOriginChipPosition();
   AddChildView(back_);
   AddChildView(forward_);
   AddChildView(reload_);
   AddChildView(home_);
+  if (origin_chip_position == chrome::ORIGIN_CHIP_LEADING_LOCATION_BAR)
+    AddChildView(site_chip_view_);
   AddChildView(location_bar_);
-  site_chip_view_ = new SiteChipView(this);
-  AddChildView(site_chip_view_);
+  if (origin_chip_position == chrome::ORIGIN_CHIP_TRAILING_LOCATION_BAR)
+    AddChildView(site_chip_view_);
   AddChildView(browser_actions_);
+  if (origin_chip_position == chrome::ORIGIN_CHIP_LEADING_MENU_BUTTON ||
+      origin_chip_position == chrome::ORIGIN_CHIP_DISABLED)
+    AddChildView(site_chip_view_);
   AddChildView(app_menu_);
 
   LoadImages();
@@ -554,29 +563,31 @@ void ToolbarView::Layout() {
     back_->SetBounds(kLeftEdgeSpacing, child_y, back_width, child_height);
     back_->SetLeadingMargin(0);
   }
-
   int button_spacing = GetButtonSpacing();
-  forward_->SetBounds(back_->x() + back_->width() + button_spacing,
-      child_y, forward_->GetPreferredSize().width(), child_height);
+  int next_element_x = back_->bounds().right() + button_spacing;
 
-  reload_->SetBounds(forward_->x() + forward_->width() + button_spacing,
-      child_y, reload_->GetPreferredSize().width(), child_height);
+  forward_->SetBounds(next_element_x, child_y,
+                      forward_->GetPreferredSize().width(), child_height);
+  next_element_x = forward_->bounds().right() + button_spacing;
+
+  reload_->SetBounds(next_element_x, child_y,
+                     reload_->GetPreferredSize().width(), child_height);
+  next_element_x = reload_->bounds().right();
 
   if (show_home_button_.GetValue()) {
     home_->SetVisible(true);
-    home_->SetBounds(reload_->x() + reload_->width() + button_spacing,
-                     child_y, home_->GetPreferredSize().width(), child_height);
+    home_->SetBounds(next_element_x + button_spacing, child_y,
+                     home_->GetPreferredSize().width(), child_height);
   } else {
     home_->SetVisible(false);
-    home_->SetBounds(reload_->x() + reload_->width(), child_y, 0, child_height);
+    home_->SetBounds(next_element_x, child_y, 0, child_height);
   }
+  next_element_x = home_->bounds().right() + kStandardSpacing;
 
   int browser_actions_width = browser_actions_->GetPreferredSize().width();
-
   int app_menu_width = app_menu_->GetPreferredSize().width();
-  int location_x = home_->x() + home_->width() + kStandardSpacing;
   int available_width = std::max(0, width() - kRightEdgeSpacing -
-      app_menu_width - browser_actions_width - location_x);
+      app_menu_width - browser_actions_width - next_element_x);
 
   // Cap site chip width at 1/2 the size available to the location bar.
   site_chip_view_->SetVisible(site_chip_view_->ShouldShow());
@@ -586,22 +597,29 @@ void ToolbarView::Layout() {
   if (site_chip_view_->visible())
     available_width -= site_chip_width + kStandardSpacing;
 
-  int location_height = location_bar_->GetPreferredSize().height();
-  int location_y = (height() - location_height + 1) / 2;
-  location_bar_->SetBounds(location_x, location_y, std::max(available_width, 0),
-                           location_height);
-  int browser_actions_x = location_bar_->bounds().right();
-
-  if (site_chip_view_->visible()) {
-    site_chip_view_->SetBounds(browser_actions_x + kStandardSpacing,
-                               child_y,
-                               site_chip_width,
-                               child_height);
-    browser_actions_x = site_chip_view_->bounds().right();
+  chrome::OriginChipPosition origin_chip_position =
+      chrome::GetOriginChipPosition();
+  if (origin_chip_position == chrome::ORIGIN_CHIP_LEADING_LOCATION_BAR) {
+    site_chip_view_->SetBounds(next_element_x, child_y,
+                               site_chip_width, child_height);
+    next_element_x = site_chip_view_->bounds().right() + kStandardSpacing;
   }
 
-  browser_actions_->SetBounds(browser_actions_x, 0,
+  int location_height = location_bar_->GetPreferredSize().height();
+  int location_y = (height() - location_height + 1) / 2;
+  location_bar_->SetBounds(next_element_x, location_y,
+                           std::max(available_width, 0), location_height);
+  next_element_x = location_bar_->bounds().right();
+
+  if (origin_chip_position == chrome::ORIGIN_CHIP_TRAILING_LOCATION_BAR) {
+    site_chip_view_->SetBounds(next_element_x + kStandardSpacing, child_y,
+                               site_chip_width, child_height);
+    next_element_x = site_chip_view_->bounds().right();
+  }
+
+  browser_actions_->SetBounds(next_element_x, 0,
                               browser_actions_width, height());
+  next_element_x = browser_actions_->bounds().right();
 
   // The browser actions need to do a layout explicitly, because when an
   // extension is loaded/unloaded/changed, BrowserActionContainer removes and
@@ -612,12 +630,17 @@ void ToolbarView::Layout() {
   //                required.
   browser_actions_->Layout();
 
+  if (origin_chip_position == chrome::ORIGIN_CHIP_LEADING_MENU_BUTTON) {
+    site_chip_view_->SetBounds(next_element_x, child_y,
+                               site_chip_width, child_height);
+    next_element_x = site_chip_view_->bounds().right() + kStandardSpacing;
+  }
+
   // Extend the app menu to the screen's right edge in maximized mode just like
   // we extend the back button to the left edge.
   if (maximized)
     app_menu_width += kRightEdgeSpacing;
-  app_menu_->SetBounds(browser_actions_->x() + browser_actions_width, child_y,
-                       app_menu_width, child_height);
+  app_menu_->SetBounds(next_element_x, child_y, app_menu_width, child_height);
 }
 
 bool ToolbarView::HitTestRect(const gfx::Rect& rect) const {

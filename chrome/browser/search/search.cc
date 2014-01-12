@@ -62,7 +62,7 @@ const char kHideVerbatimFlagName[] = "hide_verbatim";
 const char kPrefetchSearchResultsFlagName[] = "prefetch_results";
 const char kPrefetchSearchResultsOnSRP[] = "prefetch_results_srp";
 const char kDisplaySearchButtonFlagName[] = "display_search_button";
-const char kEnableOriginChipFlagName[] = "origin_chip";
+const char kOriginChipFlagName[] = "origin_chip";
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
 const char kEnableQueryExtractionFlagName[] = "query_extraction";
 #endif
@@ -511,16 +511,30 @@ DisplaySearchButtonConditions GetDisplaySearchButtonConditions() {
 }
 
 bool ShouldDisplayOriginChip() {
+  return GetOriginChipPosition() != ORIGIN_CHIP_DISABLED;
+}
+
+OriginChipPosition GetOriginChipPosition() {
   const CommandLine* cl = CommandLine::ForCurrentProcess();
   if (cl->HasSwitch(switches::kDisableOriginChip)) {
-    return false;
-  } else if (cl->HasSwitch(switches::kEnableOriginChip)) {
-    return true;
+    return ORIGIN_CHIP_DISABLED;
+  } else if (cl->HasSwitch(switches::kEnableOriginChipLeadingLocationBar)) {
+    return ORIGIN_CHIP_LEADING_LOCATION_BAR;
+  } else if (cl->HasSwitch(switches::kEnableOriginChip) ||
+             cl->HasSwitch(switches::kEnableOriginChipTrailingLocationBar)) {
+    return ORIGIN_CHIP_TRAILING_LOCATION_BAR;
+  } else if (cl->HasSwitch(switches::kEnableOriginChipLeadingMenuButton)) {
+    return ORIGIN_CHIP_LEADING_MENU_BUTTON;
   }
 
   FieldTrialFlags flags;
-  return GetFieldTrialInfo(&flags) && GetBoolValueForFlagWithDefault(
-      kEnableOriginChipFlagName, false, flags);
+  if (!GetFieldTrialInfo(&flags))
+    return ORIGIN_CHIP_DISABLED;
+  uint64 value =
+      GetUInt64ValueForFlagWithDefault(kOriginChipFlagName, 0, flags);
+  return (value < ORIGIN_CHIP_NUM_VALUES) ?
+      static_cast<OriginChipPosition>(value) :
+      ORIGIN_CHIP_DISABLED;
 }
 
 GURL GetEffectiveURLForInstant(const GURL& url, Profile* profile) {

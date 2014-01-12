@@ -6812,6 +6812,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ORIGIN_CHIP_DESCRIPTION" desc="Description of about:flags option to enable the display of the Origin Chip experiment.">
         Moves the URL out of the Omnibox and shows the hostname in the origin chip in the toolbar.
       </message>
+      <message name="IDS_FLAGS_ORIGIN_CHIP_LEADING_LOCATION_BAR" desc="Option in a drop-down menu to enable the display of the origin chip leading the location bar.">
+        Enabled and positioned leading the location bar
+      </message>
+      <message name="IDS_FLAGS_ORIGIN_CHIP_TRAILING_LOCATION_BAR" desc="Option in a drop-down menu to enable the display of the origin chip trailing the location bar.">
+        Enabled and positioned trailing the location bar
+      </message>
+      <message name="IDS_FLAGS_ORIGIN_CHIP_LEADING_MENU_BUTTON" desc="Option in a drop-down menu to enable the display of the origin chip leading the app menu button.">
+        Enabled and positioned leading the app menu button
+      </message>
       <message name="IDS_FLAGS_SEARCH_BUTTON_IN_OMNIBOX_NAME" desc="Name of about:flags option to enable the search button in omnibox experiment.">
         Enable search button in Omnibox
       </message>

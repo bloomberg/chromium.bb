@@ -693,8 +693,23 @@ const char kEnableOfflineAutoReload[]       = "enable-offline-auto-reload";
 const char kEnableOmniboxAutoCompletionForIme[] =
     "enable-omnibox-auto-completion-for-ime";
 
-// Enables the origin chip.
-const char kEnableOriginChip[]              = "enable-origin-chip";
+// Controls which branch of the origin chip experiment is enabled. The first
+// flag (enable-origin-chip) is equivalent to the third
+// (enable-origin-chip-trailing-location-bar) and exists for backwards
+// compatability with an earlier version of the experiment.
+//
+// We're using independent flags here (as opposed to a common flag with
+// different values) to be able to enable/disable the entire experience
+// associated with this feature server-side from the FieldTrial (the complete
+// experience includes other flag changes as well). It is not currently possible
+// to do that with "flag=value" flags.
+const char kEnableOriginChip[] = "enable-origin-chip";
+const char kEnableOriginChipLeadingLocationBar[] =
+    "enable-origin-chip-leading-location-bar";
+const char kEnableOriginChipTrailingLocationBar[] =
+    "enable-origin-chip-trailing-location-bar";
+const char kEnableOriginChipLeadingMenuButton[] =
+    "enable-origin-chip-leading-menu-button";
 
 // Enables panels (always on-top docked pop-up windows).
 const char kEnablePanels[]                  = "enable-panels";
@@ -737,12 +752,18 @@ const char kEnableSdch[]                    = "enable-sdch";
 
 // Controls which branch of the "search button in omnibox" experiment is
 // enabled.
+//
+// We're using independent flags here (as opposed to a common flag with
+// different values) to be able to enable/disable the entire experience
+// associated with this feature server-side from the FieldTrial (the complete
+// experience includes other flag changes as well). It is not currently possible
+// to do that with "flag=value" flags.
 const char kEnableSearchButtonInOmniboxAlways[] =
-        "enable-search-button-in-omnibox-always";
+    "enable-search-button-in-omnibox-always";
 const char kEnableSearchButtonInOmniboxForStr[] =
-        "enable-search-button-in-omnibox-for-str";
+    "enable-search-button-in-omnibox-for-str";
 const char kEnableSearchButtonInOmniboxForStrOrIip[] =
-        "enable-search-button-in-omnibox-for-str-or-iip";
+    "enable-search-button-in-omnibox-for-str-or-iip";
 
 // Enables support of sticky keys.
 const char kEnableStickyKeys[]              = "enable-sticky-keys";

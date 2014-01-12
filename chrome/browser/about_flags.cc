@@ -351,6 +351,19 @@ const Experiment::Choice kSearchButtonInOmniboxChoices[] = {
     switches::kEnableSearchButtonInOmniboxAlways, ""}
 };
 
+// See comment above for kSearchButtonInOmniboxChoices. The same reasoning
+// applies here.
+const Experiment::Choice kOriginChipChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED, switches::kDisableOriginChip, ""},
+  { IDS_FLAGS_ORIGIN_CHIP_LEADING_LOCATION_BAR,
+    switches::kEnableOriginChipLeadingLocationBar, ""},
+  { IDS_FLAGS_ORIGIN_CHIP_TRAILING_LOCATION_BAR,
+    switches::kEnableOriginChipTrailingLocationBar, ""},
+  { IDS_FLAGS_ORIGIN_CHIP_LEADING_MENU_BUTTON,
+    switches::kEnableOriginChipLeadingMenuButton, ""}
+};
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the experiment is the internal name. If you'd like to
@@ -1915,8 +1928,7 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ORIGIN_CHIP_NAME,
     IDS_FLAGS_ORIGIN_CHIP_DESCRIPTION,
     kOsCrOS | kOsWin,
-    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableOriginChip,
-                              switches::kDisableOriginChip)
+    MULTI_VALUE_TYPE(kOriginChipChoices)
   },
   {
     "search-button-in-omnibox",

@@ -865,33 +865,87 @@ TEST_F(OriginChipTest, NotSet) {
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "EmbeddedSearch", "Group1 espv:2"));
   EXPECT_FALSE(ShouldDisplayOriginChip());
+  EXPECT_EQ(ORIGIN_CHIP_DISABLED, GetOriginChipPosition());
 }
 
 TEST_F(OriginChipTest, NoOriginChip) {
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "EmbeddedSearch", "Group1 espv:2 origin_chip:0"));
   EXPECT_FALSE(ShouldDisplayOriginChip());
+  EXPECT_EQ(ORIGIN_CHIP_DISABLED, GetOriginChipPosition());
+}
+
+TEST_F(OriginChipTest, OriginChipLeadingLocationBar) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch", "Group1 espv:2 origin_chip:1"));
+  EXPECT_TRUE(ShouldDisplayOriginChip());
+  EXPECT_EQ(ORIGIN_CHIP_LEADING_LOCATION_BAR, GetOriginChipPosition());
+}
+
+TEST_F(OriginChipTest, OriginChipTrailingLocationBar) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch", "Group1 espv:2 origin_chip:2"));
+  EXPECT_TRUE(ShouldDisplayOriginChip());
+  EXPECT_EQ(ORIGIN_CHIP_TRAILING_LOCATION_BAR, GetOriginChipPosition());
+}
+
+TEST_F(OriginChipTest, OriginChipLeadingMenuButton) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch", "Group1 espv:2 origin_chip:3"));
+  EXPECT_TRUE(ShouldDisplayOriginChip());
+  EXPECT_EQ(ORIGIN_CHIP_LEADING_MENU_BUTTON, GetOriginChipPosition());
+}
+
+TEST_F(OriginChipTest, OriginChipInvalidValue) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch", "Group1 espv:2 origin_chip:4"));
+  EXPECT_FALSE(ShouldDisplayOriginChip());
+  EXPECT_EQ(ORIGIN_CHIP_DISABLED, GetOriginChipPosition());
 }
 
 TEST_F(OriginChipTest, CommandLineNoOriginChip) {
   CommandLine::ForCurrentProcess()->AppendSwitch(switches::kDisableOriginChip);
   EXPECT_FALSE(ShouldDisplayOriginChip());
+  EXPECT_EQ(ORIGIN_CHIP_DISABLED, GetOriginChipPosition());
 
   // Command-line disable should override Finch.
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "EmbeddedSearch", "Group1 espv:2 origin_chip:1"));
   EXPECT_FALSE(ShouldDisplayOriginChip());
-}
-
-TEST_F(OriginChipTest, OriginChip) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group1 espv:2 origin_chip:1"));
-  EXPECT_TRUE(ShouldDisplayOriginChip());
+  EXPECT_EQ(ORIGIN_CHIP_DISABLED, GetOriginChipPosition());
 }
 
 TEST_F(OriginChipTest, CommandLineOriginChip) {
   CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnableOriginChip);
   EXPECT_TRUE(ShouldDisplayOriginChip());
+  EXPECT_EQ(ORIGIN_CHIP_TRAILING_LOCATION_BAR, GetOriginChipPosition());
+
+  // Command-line enable should override Finch.
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch", "Group1 espv:2 origin_chip:0"));
+  EXPECT_TRUE(ShouldDisplayOriginChip());
+  EXPECT_EQ(ORIGIN_CHIP_TRAILING_LOCATION_BAR, GetOriginChipPosition());
+}
+
+TEST_F(OriginChipTest, CommandLineOriginChipLeadingLocationBar) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableOriginChipLeadingLocationBar);
+  EXPECT_TRUE(ShouldDisplayOriginChip());
+  EXPECT_EQ(ORIGIN_CHIP_LEADING_LOCATION_BAR, GetOriginChipPosition());
+}
+
+TEST_F(OriginChipTest, CommandLineOriginChipTrailingLocationBar) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableOriginChipTrailingLocationBar);
+  EXPECT_TRUE(ShouldDisplayOriginChip());
+  EXPECT_EQ(ORIGIN_CHIP_TRAILING_LOCATION_BAR, GetOriginChipPosition());
+}
+
+TEST_F(OriginChipTest, CommandLineOriginChipLeadingMenuButton) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableOriginChipLeadingMenuButton);
+  EXPECT_TRUE(ShouldDisplayOriginChip());
+  EXPECT_EQ(ORIGIN_CHIP_LEADING_MENU_BUTTON, GetOriginChipPosition());
 }
 
 }  // namespace chrome

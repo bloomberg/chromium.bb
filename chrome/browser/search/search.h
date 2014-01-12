@@ -48,6 +48,14 @@ enum DisplaySearchButtonConditions {
   DISPLAY_SEARCH_BUTTON_NUM_VALUES,
 };
 
+enum OriginChipPosition {
+  ORIGIN_CHIP_DISABLED,
+  ORIGIN_CHIP_LEADING_LOCATION_BAR,
+  ORIGIN_CHIP_TRAILING_LOCATION_BAR,
+  ORIGIN_CHIP_LEADING_MENU_BUTTON,
+  ORIGIN_CHIP_NUM_VALUES,
+};
+
 // Use this value for "start margin" to prevent the "es_sm" parameter from
 // being used.
 extern const int kDisableStartMargin;
@@ -152,9 +160,13 @@ bool ShouldHideTopVerbatimMatch();
 // ToolbarModel::WouldPerformSearchTermReplacement().
 DisplaySearchButtonConditions GetDisplaySearchButtonConditions();
 
-// Returns true if the origin chip should be shown next to the omnibox. This
+// Returns true if the origin chip should be shown in the toolbar. This
 // also includes the related changes to the omnibox.
 bool ShouldDisplayOriginChip();
+
+// Returns a value indicating where the origin chip should be positioned on the
+// toolbar.
+OriginChipPosition GetOriginChipPosition();
 
 // Transforms the input |url| into its "effective URL". The returned URL
 // facilitates grouping process-per-site. The |url| is transformed, for
