@@ -428,29 +428,28 @@ TEST_F(SearchTest, ProcessIsolation_RendererInitiated) {
 }
 
 const SearchTestCase kInstantNTPTestCases[] = {
-  {"https://foo.com/instant?strk",         true,  "Valid Instant URL"},
-  {"https://foo.com/instant#strk",         true,  "Valid Instant URL"},
-  {"https://foo.com/url?strk",             true,  "Valid search URL"},
-  {"https://foo.com/url#strk",             true,  "Valid search URL"},
-  {"https://foo.com/alt?strk",             true,  "Valid alternative URL"},
-  {"https://foo.com/alt#strk",             true,  "Valid alternative URL"},
-  {"https://foo.com/url?strk&bar=",        true,  "No query terms"},
-  {"https://foo.com/url?strk&q=abc",       true,  "No query terms key"},
-  {"https://foo.com/url?strk#bar=abc",     true,  "Query terms key in ref"},
+  {"https://foo.com/instant?strk",         false, "Valid Instant URL"},
+  {"https://foo.com/instant#strk",         false, "Valid Instant URL"},
+  {"https://foo.com/url?strk",             false, "Valid search URL"},
+  {"https://foo.com/url#strk",             false, "Valid search URL"},
+  {"https://foo.com/alt?strk",             false, "Valid alternative URL"},
+  {"https://foo.com/alt#strk",             false, "Valid alternative URL"},
+  {"https://foo.com/url?strk&bar=",        false, "No query terms"},
+  {"https://foo.com/url?strk&q=abc",       false, "No query terms key"},
+  {"https://foo.com/url?strk#bar=abc",     false, "Query terms key in ref"},
   {"https://foo.com/url?strk&bar=abc",     false, "Has query terms"},
   {"http://foo.com/instant?strk=1",        false, "Insecure URL"},
   {"https://foo.com/instant",              false, "No search term replacement"},
   {"chrome://blank/",                      false, "Chrome scheme"},
   {"chrome-search://foo",                  false, "Chrome-search scheme"},
-  {chrome::kChromeSearchLocalNtpUrl,       true,  "Local new tab page"},
   {"https://bar.com/instant?strk=1",       false, "Random non-search page"},
+  {chrome::kChromeSearchLocalNtpUrl,       true,  "Local new tab page"},
+  {"https://foo.com/newtab?strk",          true,  "New tab URL"},
+  {"http://foo.com/newtab?strk",           false, "Insecure New tab URL"},
 };
 
 TEST_F(SearchTest, InstantNTPExtendedEnabled) {
   EnableQueryExtractionForTesting();
-  // TODO(samarth): update test cases to use cacheable NTP URLs and remove this.
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "InstantExtended", "Group1 use_cacheable_ntp:0"));
   AddTab(browser(), GURL("chrome://blank"));
   for (size_t i = 0; i < arraysize(kInstantNTPTestCases); ++i) {
     const SearchTestCase& test = kInstantNTPTestCases[i];
@@ -464,9 +463,6 @@ TEST_F(SearchTest, InstantNTPExtendedEnabled) {
 
 TEST_F(SearchTest, InstantNTPCustomNavigationEntry) {
   EnableQueryExtractionForTesting();
-  // TODO(samarth): update test cases to use cacheable NTP URLs and remove this.
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "InstantExtended", "Group1 use_cacheable_ntp:0"));
   AddTab(browser(), GURL("chrome://blank"));
   for (size_t i = 0; i < arraysize(kInstantNTPTestCases); ++i) {
     const SearchTestCase& test = kInstantNTPTestCases[i];
@@ -491,9 +487,6 @@ TEST_F(SearchTest, InstantNTPCustomNavigationEntry) {
 }
 
 TEST_F(SearchTest, InstantCacheableNTPNavigationEntry) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group1 use_cacheable_ntp:1"));
-
   AddTab(browser(), GURL("chrome://blank"));
   content::WebContents* contents =
         browser()->tab_strip_model()->GetWebContentsAt(0);
@@ -514,8 +507,6 @@ TEST_F(SearchTest, InstantCacheableNTPNavigationEntry) {
 }
 
 TEST_F(SearchTest, InstantCacheableNTPNavigationEntryNewProfile) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group1 use_cacheable_ntp:1"));
   SetSearchProvider(false, false);
   AddTab(browser(), GURL(chrome::kChromeUINewTabURL));
   content::WebContents* contents =
@@ -531,15 +522,11 @@ TEST_F(SearchTest, InstantCacheableNTPNavigationEntryNewProfile) {
 }
 
 TEST_F(SearchTest, UseLocalNTPInIncognito) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group1 use_cacheable_ntp:1"));
   EXPECT_EQ(GURL(), chrome::GetNewTabPageURL(
       profile()->GetOffTheRecordProfile()));
 }
 
 TEST_F(SearchTest, UseLocalNTPIfNTPURLIsInsecure) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group1 use_cacheable_ntp:1"));
   // Set an insecure new tab page URL and verify that it's ignored.
   SetSearchProvider(true, true);
   EXPECT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl),
@@ -547,8 +534,6 @@ TEST_F(SearchTest, UseLocalNTPIfNTPURLIsInsecure) {
 }
 
 TEST_F(SearchTest, UseLocalNTPIfNTPURLIsNotSet) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group1 use_cacheable_ntp:1"));
   // Set an insecure new tab page URL and verify that it's ignored.
   SetSearchProvider(false, true);
   EXPECT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl),
@@ -556,9 +541,6 @@ TEST_F(SearchTest, UseLocalNTPIfNTPURLIsNotSet) {
 }
 
 TEST_F(SearchTest, UseLocalNTPIfNTPURLIsBlockedForSupervisedUser) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group1 use_cacheable_ntp:1"));
-
   // Block access to foo.com in the URL filter.
   ManagedUserService* managed_user_service =
       ManagedUserServiceFactory::GetForProfile(profile());
@@ -665,40 +647,10 @@ TEST_F(SearchTest, CommandLineOverrides) {
   EXPECT_EQ("http://www.bar.com/webhp?a=b&strk", instant_url.spec());
 }
 
-TEST_F(SearchTest, ShouldShowInstantNTP_Default) {
-  EXPECT_FALSE(ShouldShowInstantNTP());
-}
-
-TEST_F(SearchTest, ShouldShowInstantNTP_DisabledViaFinch) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group1 show_ntp:0"));
-  EXPECT_FALSE(ShouldShowInstantNTP());
-}
-
-TEST_F(SearchTest, ShouldShowInstantNTP_DisabledByUseCacheableNTPFinchFlag) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group1 use_cacheable_ntp:1"));
-  EXPECT_FALSE(ShouldShowInstantNTP());
-}
-
-TEST_F(SearchTest, ShouldUseCacheableNTP_Default) {
-  EXPECT_TRUE(ShouldUseCacheableNTP());
-}
-
-TEST_F(SearchTest, ShouldUseCacheableNTP_EnabledViaFinch) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group1 use_cacheable_ntp:1"));
-  EXPECT_TRUE(ShouldUseCacheableNTP());
-}
-
-TEST_F(SearchTest, ShouldPrefetchSearchResults_Default) {
-  EXPECT_FALSE(ShouldPrefetchSearchResults());
-}
-
 TEST_F(SearchTest, ShouldPrefetchSearchResults_InstantExtendedAPIEnabled) {
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "EmbeddedSearch",
-      "Group1 espv:2 use_cacheable_ntp:1 prefetch_results:1"));
+      "Group1 espv:2 prefetch_results:1"));
   EXPECT_TRUE(ShouldPrefetchSearchResults());
 #if defined(OS_IOS) || defined(OS_ANDROID)
   EXPECT_EQ(1ul, EmbeddedSearchPageVersion());
@@ -710,7 +662,7 @@ TEST_F(SearchTest, ShouldPrefetchSearchResults_InstantExtendedAPIEnabled) {
 TEST_F(SearchTest, ShouldPrefetchSearchResults_DisabledViaFinch) {
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "EmbeddedSearch",
-      "Group1 use_cacheable_ntp:1 espv:89 prefetch_results:0"));
+      "Group1 espv:89 prefetch_results:0"));
   EXPECT_FALSE(ShouldPrefetchSearchResults());
   EXPECT_EQ(89ul, EmbeddedSearchPageVersion());
 }
@@ -718,7 +670,7 @@ TEST_F(SearchTest, ShouldPrefetchSearchResults_DisabledViaFinch) {
 TEST_F(SearchTest, ShouldPrefetchSearchResults_EnabledViaFinch) {
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "EmbeddedSearch",
-      "Group1 espv:80 use_cacheable_ntp:1 prefetch_results:1"));
+      "Group1 espv:80 prefetch_results:1"));
   EXPECT_TRUE(ShouldPrefetchSearchResults());
   EXPECT_EQ(80ul, EmbeddedSearchPageVersion());
 }
@@ -763,7 +715,7 @@ TEST_F(SearchTest, GetSearchResultPrefetchBaseURL) {
   // "prefetch_results" flag is enabled via field trials.
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "EmbeddedSearch",
-      "Group1 espv:80 use_cacheable_ntp:1 prefetch_results:1"));
+      "Group1 espv:80 prefetch_results:1"));
   EXPECT_TRUE(ShouldPrefetchSearchResults());
 
   EXPECT_EQ(GURL("https://foo.com/instant?ion=1&foo=foo#foo=foo&strk"),

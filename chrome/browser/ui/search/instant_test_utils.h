@@ -39,7 +39,8 @@ class InstantTestBase {
 
  protected:
   void SetupInstant(Browser* browser);
-  void Init(const GURL& instant_url, bool init_suggestions_url);
+  void Init(const GURL& instant_url, const GURL& ntp_url,
+            bool init_suggestions_url);
 
   void SetInstantURL(const std::string& url);
 
@@ -66,7 +67,6 @@ class InstantTestBase {
   void KillInstantRenderView();
 
   void FocusOmnibox();
-  void FocusOmniboxAndWaitForInstantNTPSupport();
 
   void SetOmniboxText(const std::string& text);
 
@@ -81,7 +81,6 @@ class InstantTestBase {
   bool GetStringFromJS(content::WebContents* contents,
                        const std::string& script,
                        std::string* result) WARN_UNUSED_RESULT;
-  bool ExecuteScript(const std::string& script) WARN_UNUSED_RESULT;
   bool CheckVisibilityIs(content::WebContents* contents,
                          bool expected) WARN_UNUSED_RESULT;
 
@@ -99,6 +98,7 @@ class InstantTestBase {
 
  private:
   GURL instant_url_;
+  GURL ntp_url_;
 
   Browser* browser_;
 

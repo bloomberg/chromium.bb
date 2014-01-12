@@ -98,7 +98,6 @@ ExtensionProcessResource::ExtensionProcessResource(
       true,  // is_extension
       profile->IsOffTheRecord(),
       false,  // is_prerender
-      false,  // is_instant_overlay
       IsBackground());
   title_ = l10n_util::GetStringFUTF16(message_id, extension_name);
 }

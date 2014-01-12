@@ -20,12 +20,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
-#include "chrome/browser/search/instant_service.h"
-#include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/webui/memory_internals/memory_internals_handler.h"
@@ -108,13 +105,6 @@ void GetAllWebContents(std::set<content::WebContents*>* web_contents) {
     const std::vector<content::WebContents*> contentses =
         prerender_manager->GetAllPrerenderingContents();
     web_contents->insert(contentses.begin(), contentses.end());
-  }
-  // Add all the Instant Extended prerendered NTPs.
-  for (size_t i = 0; i < profiles.size(); ++i) {
-    const InstantService* instant_service =
-        InstantServiceFactory::GetForProfile(profiles[i]);
-    if (instant_service && instant_service->GetNTPContents())
-      web_contents->insert(instant_service->GetNTPContents());
   }
 #if defined(ENABLE_FULL_PRINTING)
   // Add all the pages being background printed.

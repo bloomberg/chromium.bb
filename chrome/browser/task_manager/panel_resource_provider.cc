@@ -62,7 +62,6 @@ PanelResource::PanelResource(Panel* panel)
       true,  // is_extension
       panel->profile()->IsOffTheRecord(),
       false,  // is_prerender
-      false,  // is_instant_overlay
       false);  // is_background
 }
 
