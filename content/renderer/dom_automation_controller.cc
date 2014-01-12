@@ -4,57 +4,52 @@
 
 #include "content/renderer/dom_automation_controller.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/metrics/histogram.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/strings/string_util.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/view_messages.h"
-#include "content/renderer/render_view_impl.h"
-#include "content/renderer/v8_value_converter_impl.h"
-#include "gin/handle.h"
-#include "gin/object_template_builder.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
-#include "third_party/WebKit/public/web/WebKit.h"
+
+using webkit_glue::CppArgumentList;
+using webkit_glue::CppVariant;
 
 namespace content {
 
-gin::WrapperInfo DomAutomationController::kWrapperInfo = {
-    gin::kEmbedderNativeGin};
+DomAutomationController::DomAutomationController()
+    : sender_(NULL),
+      routing_id_(MSG_ROUTING_NONE),
+      automation_id_(MSG_ROUTING_NONE) {
+  BindCallback("send", base::Bind(&DomAutomationController::Send,
+                                  base::Unretained(this)));
+  BindCallback("setAutomationId",
+               base::Bind(&DomAutomationController::SetAutomationId,
+                          base::Unretained(this)));
+  BindCallback("sendJSON", base::Bind(&DomAutomationController::SendJSON,
+                                      base::Unretained(this)));
+  BindCallback("sendWithId", base::Bind(&DomAutomationController::SendWithId,
+                                        base::Unretained(this)));
+}
 
-// static
-void DomAutomationController::Install(blink::WebFrame* frame) {
-  v8::Isolate* isolate = blink::mainThreadIsolate();
-  v8::HandleScope handle_scope(isolate);
-  v8::Handle<v8::Context> context = frame->mainWorldScriptContext();
-  if (context.IsEmpty())
+void DomAutomationController::Send(const CppArgumentList& args,
+                                   CppVariant* result) {
+  if (args.size() != 1) {
+    result->SetNull();
     return;
+  }
 
-  v8::Context::Scope context_scope(context);
+  if (automation_id_ == MSG_ROUTING_NONE) {
+    result->SetNull();
+    return;
+  }
 
-  gin::Handle<DomAutomationController> controller =
-      gin::CreateHandle(isolate, new DomAutomationController(frame));
-  v8::Handle<v8::Object> global = context->Global();
-  global->Set(gin::StringToV8(isolate, "domAutomationController"),
-              controller.ToV8());
-}
-
-DomAutomationController::DomAutomationController(blink::WebFrame* frame)
-    : frame_(frame), automation_id_(MSG_ROUTING_NONE) {}
-
-DomAutomationController::~DomAutomationController() {}
-
-gin::ObjectTemplateBuilder DomAutomationController::GetObjectTemplateBuilder(
-    v8::Isolate* isolate) {
-  return gin::Wrappable<DomAutomationController>::GetObjectTemplateBuilder(
-             isolate)
-      .SetMethod("send", &DomAutomationController::Send)
-      .SetMethod("setAutomationId", &DomAutomationController::SetAutomationId)
-      .SetMethod("sendJSON", &DomAutomationController::SendJSON)
-      .SetMethod("sendWithId", &DomAutomationController::SendWithId);
-}
-
-bool DomAutomationController::Send(const gin::Arguments& args) {
-  if (automation_id_ == MSG_ROUTING_NONE)
-    return false;
+  if (!sender_) {
+    NOTREACHED();
+    result->SetNull();
+    return;
+  }
 
   std::string json;
   JSONStringValueSerializer serializer(&json);
@@ -66,47 +61,114 @@ bool DomAutomationController::Send(const gin::Arguments& args) {
   // writer is lenient, and (b) on the receiving side we wrap the JSON string
   // in square brackets, converting it to an array, then parsing it and
   // grabbing the 0th element to get the value out.
-  if (args.PeekNext()->IsString() || args.PeekNext()->IsBoolean() ||
-      args.PeekNext()->IsNumber()) {
-    V8ValueConverterImpl conv;
-    value.reset(
-        conv.FromV8Value(args.PeekNext(), args.isolate()->GetCurrentContext()));
-  } else {
-    return false;
+  switch (args[0].type) {
+    case NPVariantType_String: {
+      value.reset(new base::StringValue(args[0].ToString()));
+      break;
+    }
+    case NPVariantType_Bool: {
+      value.reset(new base::FundamentalValue(args[0].ToBoolean()));
+      break;
+    }
+    case NPVariantType_Int32: {
+      value.reset(new base::FundamentalValue(args[0].ToInt32()));
+      break;
+    }
+    case NPVariantType_Double: {
+      // The value that is sent back is an integer while it is treated
+      // as a double in this binding. The reason being that KJS treats
+      // any number value as a double. Refer for more details,
+      // chrome/third_party/webkit/src/JavaScriptCore/bindings/c/c_utility.cpp
+      value.reset(new base::FundamentalValue(args[0].ToInt32()));
+      break;
+    }
+    default: {
+      result->SetNull();
+      return;
+    }
   }
 
-  if (!serializer.Serialize(*value))
-    return false;
+  if (!serializer.Serialize(*value)) {
+    result->SetNull();
+    return;
+  }
 
-  RenderViewImpl* render_view = RenderViewImpl::FromWebView(frame_->view());
-  bool succeeded = render_view->Send(new ViewHostMsg_DomOperationResponse(
-      render_view->GetRoutingID(), json, automation_id_));
-
-  automation_id_ = MSG_ROUTING_NONE;
-  return succeeded;
-}
-
-bool DomAutomationController::SendJSON(const std::string& json) {
-  if (automation_id_ == MSG_ROUTING_NONE)
-    return false;
-  RenderViewImpl* render_view = RenderViewImpl::FromWebView(frame_->view());
-  bool result = render_view->Send(new ViewHostMsg_DomOperationResponse(
-      render_view->GetRoutingID(), json, automation_id_));
+  bool succeeded = sender_->Send(
+      new ViewHostMsg_DomOperationResponse(routing_id_, json, automation_id_));
+  result->Set(succeeded);
 
   automation_id_ = MSG_ROUTING_NONE;
-  return result;
 }
 
-bool DomAutomationController::SendWithId(int automation_id,
-                                         const std::string& str) {
-  RenderViewImpl* render_view = RenderViewImpl::FromWebView(frame_->view());
-  return render_view->Send(new ViewHostMsg_DomOperationResponse(
-      render_view->GetRoutingID(), str, automation_id));
+void DomAutomationController::SendJSON(const CppArgumentList& args,
+                                       CppVariant* result) {
+  if (args.size() != 1) {
+    result->SetNull();
+    return;
+  }
+
+  if (automation_id_ == MSG_ROUTING_NONE) {
+    result->SetNull();
+    return;
+  }
+
+  if (!sender_) {
+    NOTREACHED();
+    result->SetNull();
+    return;
+  }
+
+  if (args[0].type != NPVariantType_String) {
+    result->SetNull();
+    return;
+  }
+
+  std::string json = args[0].ToString();
+  result->Set(sender_->Send(
+      new ViewHostMsg_DomOperationResponse(routing_id_, json, automation_id_)));
+
+  automation_id_ = MSG_ROUTING_NONE;
 }
 
-bool DomAutomationController::SetAutomationId(int automation_id) {
-  automation_id_ = automation_id;
-  return true;
+void DomAutomationController::SendWithId(const CppArgumentList& args,
+                                         CppVariant* result) {
+  if (args.size() != 2) {
+    result->SetNull();
+    return;
+  }
+
+  if (!sender_) {
+    NOTREACHED();
+    result->SetNull();
+    return;
+  }
+
+  if (!args[0].isNumber() || args[1].type != NPVariantType_String) {
+    result->SetNull();
+    return;
+  }
+
+  result->Set(sender_->Send(
+      new ViewHostMsg_DomOperationResponse(routing_id_, args[1].ToString(),
+                                           args[0].ToInt32())));
+}
+
+void DomAutomationController::SetAutomationId(
+    const CppArgumentList& args, CppVariant* result) {
+  if (args.size() != 1) {
+    result->SetNull();
+    return;
+  }
+
+  // The check here is for NumberType and not Int32 as
+  // KJS::JSType only defines a NumberType (no Int32)
+  if (!args[0].isNumber()) {
+    result->SetNull();
+    return;
+  }
+
+  automation_id_ = args[0].ToInt32();
+  result->Set(true);
 }
 
 }  // namespace content
