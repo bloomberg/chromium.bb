@@ -165,6 +165,11 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'UNKNOWN',
     ],
 
+    # http://crbug.com/333508
+    'third_party/clang_format/scripts': [
+        'UNKNOWN',
+    ],
+
     # Not used. http://crbug.com/156020
     # Using third_party/cros_dbus_cplusplus/cros_dbus_cplusplus.gyp instead.
     'third_party/cros_dbus_cplusplus/source/autogen.sh': [
