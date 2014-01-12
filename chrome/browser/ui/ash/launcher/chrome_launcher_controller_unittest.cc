@@ -1756,18 +1756,15 @@ TEST_F(ChromeLauncherControllerTest, RestoreDefaultAndLockedAppsResyncOrder) {
 
   // Going back to a status where there is no requirement for app 2 to be pinned
   // should convert it back to locked but not pinned and state. The position
-  // is determined by the |ShelfModel|'s weight system. Since at the moment
-  // the weight of a running app has the same as a shortcut, it will remain
-  // where it is. Surely note ideal, but since the sync process can shift around
-  // locations - as well as many other edge cases - this gets nearly impossible
-  // to get right.
-  // TODO(skuhne): Filed crbug.com/293761 to track of this.
+  // is determined by the |ShelfModel|'s weight system and since running
+  // applications are not allowed to be mixed with shortcuts, it should show up
+  // at the end of the list.
   base::ListValue policy_value2;
   InsertPrefValue(&policy_value2, 0, extension3_->id());
   InsertPrefValue(&policy_value2, 1, extension1_->id());
   profile()->GetTestingPrefService()->SetUserPref(prefs::kPinnedLauncherApps,
                                                   policy_value2.DeepCopy());
-  EXPECT_EQ("AppList, Chrome, App3, app2, App1, ", GetPinnedAppStatus());
+  EXPECT_EQ("AppList, Chrome, App3, App1, app2, ", GetPinnedAppStatus());
 
   // Removing an item should simply close it and everything should shift.
   base::ListValue policy_value3;
