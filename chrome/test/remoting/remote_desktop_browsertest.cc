@@ -19,6 +19,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
+#include "extensions/common/switches.h"
 #include "ui/base/window_open_disposition.h"
 
 namespace remoting {
@@ -127,8 +128,7 @@ void RemoteDesktopBrowserTest::VerifyChromotingLoaded(bool expected) {
     extension = *iter;
     // Is there a better way to recognize the chromoting extension
     // than name comparison?
-    if (extension->name() == "Chromoting" ||
-        extension->name() == "Chrome Remote Desktop") {
+    if (extension->name() == extension_name_) {
       installed = true;
       break;
     }
@@ -148,7 +148,7 @@ void RemoteDesktopBrowserTest::VerifyChromotingLoaded(bool expected) {
     EXPECT_TRUE(extension->ShouldDisplayInAppLauncher());
   }
 
-  EXPECT_EQ(installed, expected);
+  ASSERT_EQ(installed, expected);
 }
 
 void RemoteDesktopBrowserTest::LaunchChromotingApp() {
@@ -544,6 +544,7 @@ void RemoteDesktopBrowserTest::ParseCommandLine() {
   password_ = command_line->GetSwitchValueASCII(kkPassword);
   me2me_pin_ = command_line->GetSwitchValueASCII(kMe2MePin);
   remote_host_name_ = command_line->GetSwitchValueASCII(kRemoteHostName);
+  extension_name_ = command_line->GetSwitchValueASCII(kExtensionName);
 
   no_cleanup_ = command_line->HasSwitch(kNoCleanup);
   no_install_ = command_line->HasSwitch(kNoInstall);
@@ -559,6 +560,10 @@ void RemoteDesktopBrowserTest::ParseCommandLine() {
   // rather than inline signin. This ensures we use the same authentication
   // page, regardless of whether we are testing the v1 or v2 web-app.
   command_line->AppendSwitch(switches::kEnableWebBasedSignin);
+
+  // Enable experimental extensions; this is to allow adding the LG extensions
+  command_line->AppendSwitch(
+    extensions::switches::kEnableExperimentalExtensionApis);
 }
 
 void RemoteDesktopBrowserTest::ExecuteScript(const std::string& script) {

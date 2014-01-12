@@ -24,6 +24,7 @@ const char kUsername[] = "username";
 const char kkPassword[] = "password";
 const char kMe2MePin[] = "me2me-pin";
 const char kRemoteHostName[] = "remote-host-name";
+const char kExtensionName[] = "extension-name";
 
 // ASSERT_TRUE can only be used in void returning functions. This version
 // should be used in non-void-returning functions.
@@ -300,6 +301,7 @@ class RemoteDesktopBrowserTest : public extensions::PlatformAppBrowserTest {
   std::string password_;
   std::string me2me_pin_;
   std::string remote_host_name_;
+  std::string extension_name_;
 };
 
 }  // namespace remoting
