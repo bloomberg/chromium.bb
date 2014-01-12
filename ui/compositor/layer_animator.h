@@ -34,7 +34,7 @@ class ScopedLayerAnimationSettings;
 // When a property of layer needs to be changed it is set by way of
 // LayerAnimator. This enables LayerAnimator to animate property changes.
 // NB: during many tests, set_disable_animations_for_test is used and causes
-// all animations to complete immediately. The layer animation is ref counted
+// all animations to complete immediately. The layer animator is ref counted
 // so that if its owning layer is deleted (and the owning layer is only other
 // class that should ever hold a ref ptr to a LayerAnimator), the animator can
 // ensure that it is not disposed of until it finishes executing. It does this
