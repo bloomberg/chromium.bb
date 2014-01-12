@@ -54,14 +54,14 @@ void PowerMessageHandler::RegisterMessages() {
 }
 
 void PowerMessageHandler::OnGetBatteryChargeData(const base::ListValue* value) {
-  const std::vector<PowerDataCollector::PowerSupplySnapshot>& power_supply =
+  const std::deque<PowerDataCollector::PowerSupplySnapshot>& power_supply =
       PowerDataCollector::Get()->power_supply_data();
   base::ListValue data;
 
   for (unsigned int i = 0; i < power_supply.size(); ++i) {
     const PowerDataCollector::PowerSupplySnapshot& snapshot = power_supply[i];
     base::Time time = base::Time::Now() -
-        (base::TimeTicks::Now() - power_supply[i].time);
+        (base::TimeTicks::Now() - snapshot.time);
     scoped_ptr<base::DictionaryValue> element(new base::DictionaryValue);
     element->SetDouble("battery_percent", snapshot.battery_percent);
     element->SetBoolean("external_power", snapshot.external_power);

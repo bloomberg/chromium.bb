@@ -5,10 +5,11 @@
 #ifndef CHROMEOS_POWER_POWER_DATA_COLLECTOR_H_
 #define CHROMEOS_POWER_POWER_DATA_COLLECTOR_H_
 
-#include <vector>
+#include <deque>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/time/time.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/power_manager_client.h"
@@ -39,7 +40,7 @@ class CHROMEOS_EXPORT PowerDataCollector : public PowerManagerClient::Observer {
     double battery_percent;
   };
 
-  const std::vector<PowerSupplySnapshot>& power_supply_data() const {
+  const std::deque<PowerSupplySnapshot>& power_supply_data() const {
     return power_supply_data_;
   }
 
@@ -57,12 +58,22 @@ class CHROMEOS_EXPORT PowerDataCollector : public PowerManagerClient::Observer {
   virtual void PowerChanged(
       const power_manager::PowerSupplyProperties& prop) OVERRIDE;
 
+  // Only those power data samples which fall within the last
+  // |kSampleTimeLimitSec| are stored in memory.
+  static const int kSampleTimeLimitSec;
+
  private:
+  FRIEND_TEST_ALL_PREFIXES(PowerDataCollectorTest, AddSnapshot);
+
   PowerDataCollector();
 
   virtual ~PowerDataCollector();
 
-  std::vector<PowerSupplySnapshot> power_supply_data_;
+  // Adds a snapshot to |power_supply_data_|.
+  // It dumps snapshots |kSampleTimeLimitSec| or more older than |snapshot|.
+  void AddSnapshot(const PowerSupplySnapshot& snapshot);
+
+  std::deque<PowerSupplySnapshot> power_supply_data_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerDataCollector);
 };

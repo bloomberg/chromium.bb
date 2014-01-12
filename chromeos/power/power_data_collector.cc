@@ -17,6 +17,8 @@ PowerDataCollector* g_power_data_collector = NULL;
 
 }  // namespace
 
+const int PowerDataCollector::kSampleTimeLimitSec = 24 * 60 * 60;
+
 // static
 void PowerDataCollector::Initialize() {
   // Check that power data collector is initialized only after the
@@ -47,8 +49,7 @@ void PowerDataCollector::PowerChanged(
   snapshot.external_power = (prop.external_power() !=
       power_manager::PowerSupplyProperties::DISCONNECTED);
   snapshot.battery_percent = prop.battery_percent();
-
-  power_supply_data_.push_back(snapshot);
+  AddSnapshot(snapshot);
 }
 
 PowerDataCollector::PowerDataCollector() {
@@ -59,6 +60,19 @@ PowerDataCollector::~PowerDataCollector() {
   DBusThreadManager* dbus_manager = DBusThreadManager::Get();
   CHECK(dbus_manager);
   dbus_manager->GetPowerManagerClient()->RemoveObserver(this);
+}
+
+void PowerDataCollector::AddSnapshot(const PowerSupplySnapshot& snapshot) {
+  while (!power_supply_data_.empty()) {
+    const PowerSupplySnapshot& first = power_supply_data_.front();
+    if (snapshot.time - first.time >
+        base::TimeDelta::FromSeconds(kSampleTimeLimitSec)) {
+      power_supply_data_.pop_front();
+    } else {
+      break;
+    }
+  }
+  power_supply_data_.push_back(snapshot);
 }
 
 PowerDataCollector::PowerSupplySnapshot::PowerSupplySnapshot()

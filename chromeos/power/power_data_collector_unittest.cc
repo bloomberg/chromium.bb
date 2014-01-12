@@ -38,9 +38,8 @@ TEST_F(PowerDataCollectorTest, PowerChanged) {
 
   prop1.set_external_power(power_manager::PowerSupplyProperties::DISCONNECTED);
   prop1.set_battery_percent(20.00);
-
   power_data_collector_->PowerChanged(prop1);
-  const std::vector<PowerDataCollector::PowerSupplySnapshot>& data1 =
+  const std::deque<PowerDataCollector::PowerSupplySnapshot>& data1 =
       power_data_collector_->power_supply_data();
   ASSERT_EQ(static_cast<size_t>(1), data1.size());
   EXPECT_DOUBLE_EQ(prop1.battery_percent(), data1[0].battery_percent);
@@ -48,13 +47,31 @@ TEST_F(PowerDataCollectorTest, PowerChanged) {
 
   prop2.set_external_power(power_manager::PowerSupplyProperties::AC);
   prop2.set_battery_percent(100.00);
-
   power_data_collector_->PowerChanged(prop2);
-  const std::vector<PowerDataCollector::PowerSupplySnapshot>& data2 =
+  const std::deque<PowerDataCollector::PowerSupplySnapshot>& data2 =
       power_data_collector_->power_supply_data();
   ASSERT_EQ(static_cast<size_t>(2), data2.size());
-  EXPECT_DOUBLE_EQ(prop2.battery_percent(), data1[1].battery_percent);
+  EXPECT_DOUBLE_EQ(prop2.battery_percent(), data2[1].battery_percent);
   EXPECT_TRUE(data2[1].external_power);
+}
+
+TEST_F(PowerDataCollectorTest, AddSnapshot) {
+  PowerDataCollector::PowerSupplySnapshot snapshot1, snapshot2;
+
+  snapshot1.time = base::TimeTicks::FromInternalValue(1000);
+  snapshot2.time = snapshot1.time +
+      base::TimeDelta::FromSeconds(PowerDataCollector::kSampleTimeLimitSec + 1);
+
+  power_data_collector_->AddSnapshot(snapshot1);
+  const std::deque<PowerDataCollector::PowerSupplySnapshot>& data1 =
+      power_data_collector_->power_supply_data();
+  ASSERT_EQ(static_cast<size_t>(1), data1.size());
+
+  power_data_collector_->AddSnapshot(snapshot2);
+  const std::deque<PowerDataCollector::PowerSupplySnapshot>& data2 =
+      power_data_collector_->power_supply_data();
+  ASSERT_EQ(static_cast<size_t>(1), data2.size());
+  EXPECT_EQ(snapshot2.time.ToInternalValue(), data2[0].time.ToInternalValue());
 }
 
 }  // namespace chromeos
