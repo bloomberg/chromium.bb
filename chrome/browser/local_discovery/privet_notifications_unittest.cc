@@ -4,7 +4,10 @@
 
 #include "chrome/browser/local_discovery/privet_http_asynchronous_factory.h"
 
+#include "chrome/browser/local_discovery/privet_http_impl.h"
 #include "chrome/browser/local_discovery/privet_notifications.h"
+#include "net/url_request/test_url_fetcher_factory.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,6 +24,11 @@ const char kExampleDeviceName[] = "test._privet._tcp.local";
 const char kExampleDeviceHumanName[] = "Test device";
 const char kExampleDeviceDescription[] = "Testing testing";
 const char kExampleDeviceID[] = "__test__id";
+const char kDeviceInfoURL[] = "http://1.2.3.4:8080/privet/info";
+
+const char kInfoResponseUptime20[] = "{\"uptime\": 20}";
+const char kInfoResponseUptime3600[] = "{\"uptime\": 3600}";
+const char kInfoResponseNoUptime[] = "{}";
 
 class MockPrivetNotificationsListenerDeleagate
     : public PrivetNotificationsListener::Delegate {
@@ -29,97 +37,15 @@ class MockPrivetNotificationsListenerDeleagate
   MOCK_METHOD0(PrivetRemoveNotification, void());
 };
 
-// TODO(noamsml): Migrate this test to use a real privet info operation and a
-// fake URL fetcher.
-class MockPrivetInfoOperation : public PrivetInfoOperation {
- public:
-  class DelegateForTests {
-   public:
-    virtual ~DelegateForTests() {}
-    virtual void InfoOperationStarted(MockPrivetInfoOperation* operation) = 0;
-  };
-
-  MockPrivetInfoOperation(PrivetHTTPClient* client,
-                          DelegateForTests* delegate_for_tests,
-                          Delegate* delegate)
-      : client_(client),
-        delegate_for_tests_(delegate_for_tests),
-        delegate_(delegate) {
-  }
-
-  virtual ~MockPrivetInfoOperation() {
-  }
-
-  virtual void Start() OVERRIDE {
-    delegate_for_tests_->InfoOperationStarted(this);
-  }
-
-  virtual PrivetHTTPClient* GetHTTPClient() OVERRIDE {
-    return client_;
-  }
-
-  Delegate* delegate() { return delegate_; }
-
- private:
-  PrivetHTTPClient* client_;
-  DelegateForTests* delegate_for_tests_;
-  Delegate* delegate_;
-};
-
-class MockPrivetHTTPClient : public PrivetHTTPClient {
- public:
-  MockPrivetHTTPClient(
-      MockPrivetInfoOperation::DelegateForTests* delegate_for_tests,
-      const std::string& name) : delegate_for_tests_(delegate_for_tests),
-                                 name_(name) {
-  }
-
-  virtual scoped_ptr<PrivetRegisterOperation> CreateRegisterOperation(
-      const std::string& user,
-      PrivetRegisterOperation::Delegate* delegate) OVERRIDE {
-    return scoped_ptr<PrivetRegisterOperation>();
-  }
-
-  virtual scoped_ptr<PrivetInfoOperation> CreateInfoOperation(
-      PrivetInfoOperation::Delegate* delegate) OVERRIDE {
-    return scoped_ptr<PrivetInfoOperation>(new MockPrivetInfoOperation(
-        this, delegate_for_tests_, delegate));
-  }
-
-  virtual scoped_ptr<PrivetCapabilitiesOperation> CreateCapabilitiesOperation(
-      PrivetCapabilitiesOperation::Delegate* delegate) OVERRIDE {
-    NOTIMPLEMENTED();
-    return scoped_ptr<PrivetCapabilitiesOperation>();
-  }
-
-  virtual scoped_ptr<PrivetLocalPrintOperation> CreateLocalPrintOperation(
-      PrivetLocalPrintOperation::Delegate* delegate) OVERRIDE {
-    NOTIMPLEMENTED();
-    return scoped_ptr<PrivetLocalPrintOperation>();
-  }
-
-  virtual const std::string& GetName() OVERRIDE { return name_; }
-
-  virtual const base::DictionaryValue* GetCachedInfo() const OVERRIDE {
-    NOTIMPLEMENTED();
-    return NULL;
-  }
-
- private:
-  MockPrivetInfoOperation::DelegateForTests* delegate_for_tests_;
-  std::string name_;
-};
-
 class MockPrivetHttpFactory : public PrivetHTTPAsynchronousFactory {
  public:
   class MockResolution : public PrivetHTTPResolution {
    public:
     MockResolution(
         const std::string& name,
-        MockPrivetInfoOperation::DelegateForTests* delegate_for_tests,
+        net::URLRequestContextGetter* request_context,
         const ResultCallback& callback)
-        : name_(name), delegate_for_tests_(delegate_for_tests),
-          callback_(callback) {
+        : name_(name), request_context_(request_context), callback_(callback) {
     }
 
     virtual ~MockResolution() {
@@ -127,7 +53,10 @@ class MockPrivetHttpFactory : public PrivetHTTPAsynchronousFactory {
 
     virtual void Start() OVERRIDE {
       callback_.Run(scoped_ptr<PrivetHTTPClient>(
-          new MockPrivetHTTPClient(delegate_for_tests_, name_)));
+          new PrivetHTTPClientImpl(
+              name_,
+              net::HostPortPair("1.2.3.4", 8080),
+              request_context_)));
     }
 
     virtual const std::string& GetName() OVERRIDE {
@@ -136,13 +65,12 @@ class MockPrivetHttpFactory : public PrivetHTTPAsynchronousFactory {
 
    private:
     std::string name_;
-    MockPrivetInfoOperation::DelegateForTests* delegate_for_tests_;
+    scoped_refptr<net::URLRequestContextGetter> request_context_;
     ResultCallback callback_;
   };
 
-  MockPrivetHttpFactory(
-      MockPrivetInfoOperation::DelegateForTests* delegate_for_tests)
-      : delegate_for_tests_(delegate_for_tests) {
+  explicit MockPrivetHttpFactory(net::URLRequestContextGetter* request_context)
+      : request_context_(request_context) {
   }
 
   virtual scoped_ptr<PrivetHTTPResolution> CreatePrivetHTTP(
@@ -150,24 +78,20 @@ class MockPrivetHttpFactory : public PrivetHTTPAsynchronousFactory {
       const net::HostPortPair& address,
       const ResultCallback& callback) OVERRIDE {
     return scoped_ptr<PrivetHTTPResolution>(
-        new MockResolution(name, delegate_for_tests_, callback));
+        new MockResolution(name, request_context_, callback));
   }
 
  private:
-  MockPrivetInfoOperation::DelegateForTests* delegate_for_tests_;
-};
-
-class MockDelegateForTests : public MockPrivetInfoOperation::DelegateForTests {
- public:
-  MOCK_METHOD1(InfoOperationStarted, void(MockPrivetInfoOperation* operation));
+    scoped_refptr<net::URLRequestContextGetter> request_context_;
 };
 
 class PrivetNotificationsListenerTest : public ::testing::Test {
  public:
-  PrivetNotificationsListenerTest() {
+  PrivetNotificationsListenerTest() : request_context_(
+      new net::TestURLRequestContextGetter(base::MessageLoopProxy::current())) {
     notification_listener_.reset(new PrivetNotificationsListener(
         scoped_ptr<PrivetHTTPAsynchronousFactory>(
-            new MockPrivetHttpFactory(&mock_delegate_for_tests_)),
+            new MockPrivetHttpFactory(request_context_.get())),
         &mock_delegate_));
 
     description_.name = kExampleDeviceHumanName;
@@ -177,21 +101,32 @@ class PrivetNotificationsListenerTest : public ::testing::Test {
   virtual ~PrivetNotificationsListenerTest() {
   }
 
-  virtual void ExpectInfoOperation() {
-    EXPECT_CALL(mock_delegate_for_tests_, InfoOperationStarted(_))
-        .WillOnce(SaveArg<0>(&info_operation_));
+  bool SuccessfulResponseToInfo(const std::string& response) {
+    net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
+    EXPECT_TRUE(fetcher);
+    EXPECT_EQ(GURL(kDeviceInfoURL), fetcher->GetOriginalURL());
+
+    if (!fetcher || GURL(kDeviceInfoURL) != fetcher->GetOriginalURL())
+      return false;
+
+    fetcher->SetResponseString(response);
+    fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::SUCCESS,
+                                              net::OK));
+    fetcher->set_response_code(200);
+    fetcher->delegate()->OnURLFetchComplete(fetcher);
+    return true;
   }
 
  protected:
   StrictMock<MockPrivetNotificationsListenerDeleagate> mock_delegate_;
-  StrictMock<MockDelegateForTests> mock_delegate_for_tests_;
   scoped_ptr<PrivetNotificationsListener> notification_listener_;
-  MockPrivetInfoOperation* info_operation_;
+  base::MessageLoop message_loop_;
+  scoped_refptr<net::TestURLRequestContextGetter> request_context_;
+  net::TestURLFetcherFactory fetcher_factory_;
   DeviceDescription description_;
 };
 
 TEST_F(PrivetNotificationsListenerTest, DisappearReappearTest) {
-  ExpectInfoOperation();
 
   EXPECT_CALL(mock_delegate_, PrivetNotify(
       false,
@@ -202,12 +137,7 @@ TEST_F(PrivetNotificationsListenerTest, DisappearReappearTest) {
       kExampleDeviceName,
       description_);
 
-  base::DictionaryValue value;
-
-  value.SetInteger("uptime", 20);
-
-  info_operation_->delegate()->OnPrivetInfoDone(info_operation_,
-                                                200, &value);
+  SuccessfulResponseToInfo(kInfoResponseUptime20);
 
   EXPECT_CALL(mock_delegate_, PrivetRemoveNotification());
 
@@ -228,8 +158,6 @@ TEST_F(PrivetNotificationsListenerTest, DisappearReappearTest) {
 }
 
 TEST_F(PrivetNotificationsListenerTest, RegisterTest) {
-  ExpectInfoOperation();
-
   EXPECT_CALL(mock_delegate_, PrivetNotify(
       false,
       true));
@@ -239,12 +167,7 @@ TEST_F(PrivetNotificationsListenerTest, RegisterTest) {
       kExampleDeviceName,
       description_);
 
-  base::DictionaryValue value;
-
-  value.SetInteger("uptime", 20);
-
-  info_operation_->delegate()->OnPrivetInfoDone(info_operation_,
-                                                200, &value);
+  SuccessfulResponseToInfo(kInfoResponseUptime20);
 
   EXPECT_CALL(mock_delegate_, PrivetRemoveNotification());
 
@@ -257,19 +180,12 @@ TEST_F(PrivetNotificationsListenerTest, RegisterTest) {
 }
 
 TEST_F(PrivetNotificationsListenerTest, HighUptimeTest) {
-  ExpectInfoOperation();
-
   notification_listener_->DeviceChanged(
       true,
       kExampleDeviceName,
       description_);
 
-  base::DictionaryValue value;
-
-  value.SetInteger("uptime", 3600);
-
-  info_operation_->delegate()->OnPrivetInfoDone(info_operation_,
-                                                200, &value);
+  SuccessfulResponseToInfo(kInfoResponseUptime3600);
 
   description_.id = kExampleDeviceID;
 
@@ -280,30 +196,26 @@ TEST_F(PrivetNotificationsListenerTest, HighUptimeTest) {
 }
 
 TEST_F(PrivetNotificationsListenerTest, HTTPErrorTest) {
-  ExpectInfoOperation();
-
   notification_listener_->DeviceChanged(
       true,
       kExampleDeviceName,
       description_);
 
-  info_operation_->delegate()->OnPrivetInfoDone(info_operation_,
-                                                404, NULL);
+  net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
+
+  fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::SUCCESS,
+                                            net::OK));
+  fetcher->set_response_code(200);
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
 }
 
 TEST_F(PrivetNotificationsListenerTest, DictionaryErrorTest) {
-  ExpectInfoOperation();
-
   notification_listener_->DeviceChanged(
       true,
       kExampleDeviceName,
       description_);
 
-  base::DictionaryValue value;
-  value.SetString("error", "internal_error");
-
-  info_operation_->delegate()->OnPrivetInfoDone(info_operation_,
-                                                200, &value);
+  SuccessfulResponseToInfo(kInfoResponseNoUptime);
 }
 
 }  // namespace
