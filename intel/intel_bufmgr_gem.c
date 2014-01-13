@@ -391,7 +391,7 @@ drm_intel_gem_dump_validation_list(drm_intel_bufmgr_gem *bufmgr_gem)
 			    (unsigned long long)bo_gem->relocs[j].offset,
 			    target_gem->gem_handle,
 			    target_gem->name,
-			    target_bo->offset,
+			    target_bo->offset64,
 			    bo_gem->relocs[j].delta);
 		}
 	}
@@ -911,6 +911,7 @@ drm_intel_bo_gem_create_from_name(drm_intel_bufmgr *bufmgr,
 
 	bo_gem->bo.size = open_arg.size;
 	bo_gem->bo.offset = 0;
+	bo_gem->bo.offset64 = 0;
 	bo_gem->bo.virtual = NULL;
 	bo_gem->bo.bufmgr = bufmgr;
 	bo_gem->name = name;
@@ -1706,7 +1707,7 @@ do_bo_emit_reloc(drm_intel_bo *bo, uint32_t offset,
 	    target_bo_gem->gem_handle;
 	bo_gem->relocs[bo_gem->reloc_count].read_domains = read_domains;
 	bo_gem->relocs[bo_gem->reloc_count].write_domain = write_domain;
-	bo_gem->relocs[bo_gem->reloc_count].presumed_offset = target_bo->offset;
+	bo_gem->relocs[bo_gem->reloc_count].presumed_offset = target_bo->offset64;
 
 	bo_gem->reloc_target_info[bo_gem->reloc_count].bo = target_bo;
 	if (target_bo != bo)
@@ -1857,11 +1858,12 @@ drm_intel_update_buffer_offsets(drm_intel_bufmgr_gem *bufmgr_gem)
 		drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
 
 		/* Update the buffer offset */
-		if (bufmgr_gem->exec_objects[i].offset != bo->offset) {
+		if (bufmgr_gem->exec_objects[i].offset != bo->offset64) {
 			DBG("BO %d (%s) migrated: 0x%08lx -> 0x%08llx\n",
-			    bo_gem->gem_handle, bo_gem->name, bo->offset,
+			    bo_gem->gem_handle, bo_gem->name, bo->offset64,
 			    (unsigned long long)bufmgr_gem->exec_objects[i].
 			    offset);
+			bo->offset64 = bufmgr_gem->exec_objects[i].offset;
 			bo->offset = bufmgr_gem->exec_objects[i].offset;
 		}
 	}
@@ -1877,10 +1879,11 @@ drm_intel_update_buffer_offsets2 (drm_intel_bufmgr_gem *bufmgr_gem)
 		drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *)bo;
 
 		/* Update the buffer offset */
-		if (bufmgr_gem->exec2_objects[i].offset != bo->offset) {
+		if (bufmgr_gem->exec2_objects[i].offset != bo->offset64) {
 			DBG("BO %d (%s) migrated: 0x%08lx -> 0x%08llx\n",
-			    bo_gem->gem_handle, bo_gem->name, bo->offset,
+			    bo_gem->gem_handle, bo_gem->name, bo->offset64,
 			    (unsigned long long)bufmgr_gem->exec2_objects[i].offset);
+			bo->offset64 = bufmgr_gem->exec2_objects[i].offset;
 			bo->offset = bufmgr_gem->exec2_objects[i].offset;
 		}
 	}
@@ -2388,6 +2391,7 @@ drm_intel_gem_bo_pin(drm_intel_bo *bo, uint32_t alignment)
 	if (ret != 0)
 		return -errno;
 
+	bo->offset64 = pin.offset;
 	bo->offset = pin.offset;
 	return 0;
 }
