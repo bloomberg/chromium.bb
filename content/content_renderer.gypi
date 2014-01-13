@@ -26,7 +26,6 @@
     '../webkit/glue/webkit_glue.gyp:glue',
     '../webkit/renderer/compositor_bindings/compositor_bindings.gyp:webkit_compositor_bindings',
     '../webkit/renderer/compositor_bindings/compositor_bindings.gyp:webkit_compositor_support',
-    '../webkit/renderer/webkit_renderer.gyp:webkit_renderer',
     '../webkit/storage_common.gyp:webkit_storage_common',
   ],
   'include_dirs': [

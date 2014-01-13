@@ -230,7 +230,6 @@
             '../webkit/common/user_agent/webkit_user_agent.gyp:user_agent',
             '../webkit/glue/webkit_glue.gyp:glue',
             '../webkit/renderer/compositor_bindings/compositor_bindings.gyp:webkit_compositor_support',
-            '../webkit/renderer/webkit_renderer.gyp:webkit_renderer',
             '../webkit/storage_browser.gyp:webkit_storage_browser',
             '../webkit/storage_common.gyp:webkit_storage_common',
           ],
@@ -628,7 +627,6 @@
         '../webkit/browser/quota/quota_manager_unittest.cc',
         '../webkit/browser/quota/quota_temporary_storage_evictor_unittest.cc',
         '../webkit/browser/quota/usage_tracker_unittest.cc',
-        '../webkit/renderer/cpp_variant_unittest.cc',
       ],
       'conditions': [
         ['OS == "ios"', {
@@ -667,7 +665,6 @@
             '../webkit/common/webkit_common.gyp:webkit_common',
             '../webkit/glue/webkit_glue.gyp:glue',
             '../webkit/child/webkit_child.gyp:webkit_child',
-            '../webkit/renderer/webkit_renderer.gyp:webkit_renderer',
             '../webkit/storage_browser.gyp:webkit_storage_browser',
             '../webkit/storage_common.gyp:webkit_storage_common',
           ],
@@ -884,8 +881,6 @@
             'test/content_browser_test_utils.cc',
             'test/content_browser_test_utils.h',
             'test/content_browser_test_utils_mac.mm',
-            'test/cpp_binding_example.cc',
-            'test/cpp_binding_example.h',
           ],
         },
         {
@@ -927,7 +922,6 @@
             '../ui/ui.gyp:ui',
             '../webkit/child/webkit_child.gyp:webkit_child',
             '../webkit/glue/webkit_glue.gyp:glue',
-            '../webkit/renderer/webkit_renderer.gyp:webkit_renderer',
           ],
           'include_dirs': [
             '..',
@@ -1003,7 +997,6 @@
             'renderer/browser_plugin/mock_browser_plugin.h',
             'renderer/browser_plugin/mock_browser_plugin_manager.cc',
             'renderer/browser_plugin/mock_browser_plugin_manager.h',
-            'renderer/cpp_bound_class_unittest.cc',
             'renderer/dom_serializer_browsertest.cc',
             'renderer/gin_browsertest.cc',
             'renderer/mouse_lock_dispatcher_browsertest.cc',

@@ -35,7 +35,6 @@
         '../webkit/child/webkit_child.gyp:webkit_child',
         '../webkit/common/webkit_common.gyp:webkit_common',
         '../webkit/glue/webkit_glue.gyp:glue',
-        '../webkit/renderer/webkit_renderer.gyp:webkit_renderer',
         '../webkit/webkit_resources.gyp:webkit_resources',
       ],
       'include_dirs': [
