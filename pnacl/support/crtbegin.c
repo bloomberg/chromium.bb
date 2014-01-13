@@ -19,7 +19,8 @@
  */
 
 /* This goes first to ensure that tls_params.h hasn't been #included before. */
-#define NACL_DEFINE_EXTERNAL_TLS_LAYOUT_FUNCS
+#define NACL_DEFINE_EXTERNAL_NATIVE_SUPPORT_FUNCS
+#include "native_client/src/untrusted/nacl/pnacl.h"
 #include "native_client/src/untrusted/nacl/tls_params.h"
 
 #include <stdint.h>

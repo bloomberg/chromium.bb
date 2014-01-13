@@ -112,13 +112,13 @@
 
 #include <stddef.h>
 
-#if defined(NACL_DEFINE_EXTERNAL_TLS_LAYOUT_FUNCS)
+#if defined(NACL_DEFINE_EXTERNAL_NATIVE_SUPPORT_FUNCS)
 # define NACL_TLS_LAYOUT_FUNC
 #else
 # define NACL_TLS_LAYOUT_FUNC static inline __attribute__((__unused__))
 #endif
 
-#if defined(__pnacl__) && !defined(NACL_DEFINE_EXTERNAL_TLS_LAYOUT_FUNCS)
+#if defined(__pnacl__) && !defined(NACL_DEFINE_EXTERNAL_NATIVE_SUPPORT_FUNCS)
 
 /*
  * Signed offset from $tp to the beginning of TLS data.

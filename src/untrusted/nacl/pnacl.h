@@ -7,11 +7,11 @@
 #ifndef _NATIVE_CLIENT_SRC_UNTRUSTED_NACL_PNACLINTRIN_H_
 #define _NATIVE_CLIENT_SRC_UNTRUSTED_NACL_PNACLINTRIN_H_ 1
 
-#if !defined(__native_client__) || !defined(__pnacl__)
-#error "Not currently compiling using PNaCl"
-#else
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
-/* Enumeration values returned by __builtin_nacl_target_arch. */
+/* Enumeration values returned by __nacl_get_arch(). */
 enum PnaclTargetArchitecture {
   PnaclTargetArchitectureInvalid = 0,
   PnaclTargetArchitectureX86_32,
@@ -21,8 +21,51 @@ enum PnaclTargetArchitecture {
   PnaclTargetArchitectureMips_32
 };
 
-int __builtin_nacl_target_arch(void) asm("llvm.nacl.target.arch");
+#if defined(NACL_DEFINE_EXTERNAL_NATIVE_SUPPORT_FUNCS)
+# define NACL_GET_ARCH_FUNC
+#else
+# define NACL_GET_ARCH_FUNC static inline
+#endif
 
-#endif /* !defined(__native_client__) || !defined(__pnacl__) */
+#if defined(__i386__)
+NACL_GET_ARCH_FUNC int __nacl_get_arch(void) {
+  return PnaclTargetArchitectureX86_32;
+}
+#elif defined(__x86_64__)
+NACL_GET_ARCH_FUNC int __nacl_get_arch(void) {
+  return PnaclTargetArchitectureX86_64;
+}
+#elif defined(__arm__)
+NACL_GET_ARCH_FUNC int __nacl_get_arch(void) {
+  return PnaclTargetArchitectureARM_32;
+}
+#elif defined(__mips__)
+NACL_GET_ARCH_FUNC int __nacl_get_arch(void) {
+  return PnaclTargetArchitectureMips_32;
+}
+#elif defined(__pnacl__)
+/*
+ * This is defined by PNaCl's native support code, but it is not
+ * available to ABI-stable pexes.
+ */
+int __nacl_get_arch(void);
+#else
+# error "Unknown architecture for __nacl_get_arch()"
+#endif
+
+#undef NACL_GET_ARCH_FUNC
+
+/*
+ * This is a deprecated alias for __nacl_get_arch().  The name is
+ * misleading because this is not a compiler builtin.
+ * TODO(mseaborn): Remove this when the uses in pnacl-llvm are removed.
+ */
+static inline int __builtin_nacl_target_arch(void) {
+  return __nacl_get_arch();
+}
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif /* _NATIVE_CLIENT_SRC_UNTRUSTED_NACL_PNACLINTRIN_H_ */

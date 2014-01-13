@@ -100,6 +100,8 @@ EXTRA_ENV = {
     # code.
     '--allow-unresolved=__nacl_tp_tls_offset '
     '--allow-unresolved=__nacl_tp_tdb_offset '
+    # __nacl_get_arch() is for non-ABI-stable code only.
+    '--allow-unresolved=__nacl_get_arch '
     '${CXX_EH_MODE==sjlj ? '
       # These symbols are defined by libsupc++ and the PNaClSjLjEH
       # pass generates references to them.

@@ -1809,10 +1809,10 @@ llvm-sb-setup() {
   # not in the SDK. libsrpc should have already been built by the
   # build.sh sdk-private-libs step.
   # This is always statically linked.
-  # The LLVM sandboxed build uses the normally-disallowed
-  # llvm.nacl.target.arch intrinsic.  Allow that for now.
+  # The LLVM sandboxed build uses the normally-disallowed external
+  # function __nacl_get_arch().  Allow that for now.
   local flags="-static -I$(GetAbsolutePath ${NACL_ROOT}/..) \
-    --pnacl-allow-dev-intrinsics "
+    --pnacl-disable-abi-check "
 
   LLVM_SB_CONFIGURE_ENV=(
     AR="${PNACL_AR}" \
@@ -2083,12 +2083,12 @@ binutils-gold-sb-configure() {
   # The SRPC headers are included directly from the nacl tree, as they are
   # not in the SDK. libsrpc should have already been built by the
   # build.sh sdk-private-libs step
-  # The Gold sandboxed build uses the normally-disallowed
-  # llvm.nacl.target.arch intrinsic.  Allow that for now.
+  # The Gold sandboxed build uses the normally-disallowed external
+  # function __nacl_get_arch().  Allow that for now.
   #
   # TODO(jfb) Gold currently only builds with libstdc++.
   local flags="-static -I$(GetAbsolutePath ${NACL_ROOT}/..) \
-    -fno-exceptions -O3 --pnacl-allow-dev-intrinsics -stdlib=${LIB_STDCPP_NAME} "
+    -fno-exceptions -O3 --pnacl-disable-abi-check -stdlib=${LIB_STDCPP_NAME} "
   local configure_env=(
     AR="${PNACL_AR}" \
     AS="${PNACL_AS}" \
