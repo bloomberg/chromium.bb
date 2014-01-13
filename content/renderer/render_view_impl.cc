@@ -3655,7 +3655,7 @@ void RenderViewImpl::didClearWindowObject(WebFrame* frame, int world_id) {
                     DidClearWindowObject(frame, world_id));
 
   if ((enabled_bindings_ & BINDINGS_POLICY_DOM_AUTOMATION) && (world_id == 0))
-    DomAutomationController::Install(frame);
+    DomAutomationController::Install(this, frame);
 
   if (enabled_bindings_ & BINDINGS_POLICY_STATS_COLLECTION)
     StatsCollectionController::Install(frame);

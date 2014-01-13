@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_DOM_AUTOMATION_CONTROLLER_H_
 
 #include "base/basictypes.h"
+#include "content/public/renderer/render_view_observer.h"
 #include "gin/wrappable.h"
 
 /* DomAutomationController class:
@@ -80,17 +81,20 @@ class Arguments;
 
 namespace content {
 
-class DomAutomationController : public gin::Wrappable<DomAutomationController> {
+class RenderViewImpl;
+
+class DomAutomationController : public gin::Wrappable<DomAutomationController>,
+                                public RenderViewObserver {
  public:
   static gin::WrapperInfo kWrapperInfo;
 
-  static void Install(blink::WebFrame* frame);
+  static void Install(RenderViewImpl* render_view, blink::WebFrame* frame);
 
   // Makes the renderer send a javascript value to the app.
   // The value to be sent can be either of type String,
   // Number (double casted to int32) or Boolean. Any other type or no
   // argument at all is ignored.
-  bool Send(const gin::Arguments& args);
+  bool SendMsg(const gin::Arguments& args);
 
   // Makes the renderer send a javascript value to the app.
   // The value should be properly formed JSON.
@@ -102,14 +106,15 @@ class DomAutomationController : public gin::Wrappable<DomAutomationController> {
   bool SetAutomationId(int automation_id);
 
  private:
-  explicit DomAutomationController(blink::WebFrame* frame);
+  explicit DomAutomationController(RenderViewImpl* render_view);
   virtual ~DomAutomationController();
 
   // gin::WrappableBase
   virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
       v8::Isolate* isolate) OVERRIDE;
 
-  blink::WebFrame* frame_;
+  // RenderViewObserver
+  virtual void OnDestruct() OVERRIDE;
 
   int automation_id_;  // routing id to be used by the next channel.
 
