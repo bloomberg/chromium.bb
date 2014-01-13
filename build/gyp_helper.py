@@ -34,6 +34,7 @@ def apply_gyp_environment_from_file(file_path):
       'GYP_CROSSCOMPILE',
       'GYP_GENERATOR_OUTPUT',
       'GYP_GENERATORS',
+      'GYP_MSVS_VERSION',
   )
   for var in supported_vars:
     file_val = file_data.get(var)
