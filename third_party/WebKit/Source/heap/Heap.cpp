@@ -1246,9 +1246,9 @@ public:
 #undef DEFINE_VISITOR_METHODS
 };
 
-void Heap::init()
+void Heap::init(intptr_t* startOfStack)
 {
-    ThreadState::init();
+    ThreadState::init(startOfStack);
     CallbackStack::init(&s_markingStack);
     CallbackStack::init(&s_weakCallbackStack);
 }

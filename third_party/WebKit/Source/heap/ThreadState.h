@@ -208,7 +208,7 @@ public:
 
     // Initialize threading infrastructure. Should be called from the main
     // thread.
-    static void init();
+    static void init(intptr_t* startOfStack);
     static void shutdown();
 
     // Trace all GC roots, called when marking the managed heap objects.
@@ -217,7 +217,7 @@ public:
     // Associate ThreadState object with the current thread. After this
     // call thread can start using the garbage collected heap infrastructure.
     // It also has to periodically check for safepoints.
-    static void attach();
+    static void attach(intptr_t* startOfStack);
 
     // Disassociate attached ThreadState from the current thread. The thread
     // can no longer use the garbage collected heap after this call.
@@ -429,7 +429,7 @@ public:
     HeapStats& statsAfterLastGC() { return m_statsAfterLastGC; }
 
 private:
-    explicit ThreadState();
+    explicit ThreadState(intptr_t* startOfStack);
     ~ThreadState();
 
     friend class SafePointBarrier;
