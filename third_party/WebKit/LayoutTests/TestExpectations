@@ -874,3 +874,5 @@ crbug.com/333791 [ Linux Release ] svg/animations/repeatn-event-1b.svg [ Pass Im
 crbug.com/333791 [ Linux Release ] svg/animations/repeatn-event-1d.svg [ Pass ImageOnlyFailure ]
 crbug.com/333791 [ Linux Win7 Debug ] svg/animations/repeatn-event-1b.svg [ Pass ImageOnlyFailure ]
 crbug.com/333791 [ Linux Win7 Debug ] svg/animations/repeatn-event-1d.svg [ Pass ImageOnlyFailure ]
+
+crbug.com/330617 inspector/profiler/heap-snapshot-loader.html [ Pass Failure ]
