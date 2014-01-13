@@ -110,3 +110,8 @@ IPC_SYNC_MESSAGE_CONTROL2_1(AwViewHostMsg_ShouldOverrideUrlLoading,
                             int /* render_frame_id id */,
                             base::string16 /* in - url */,
                             bool /* out - result */)
+
+// Sent when a subframe is created.
+IPC_MESSAGE_CONTROL2(AwViewHostMsg_SubFrameCreated,
+                     int /* parent_render_frame_id */,
+                     int /* child_render_frame_id */)

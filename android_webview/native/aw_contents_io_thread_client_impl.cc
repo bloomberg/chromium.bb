@@ -166,6 +166,22 @@ AwContentsIoThreadClient::FromID(int render_process_id, int render_frame_id) {
 }
 
 // static
+void AwContentsIoThreadClient::SubFrameCreated(int render_process_id,
+                                               int parent_render_frame_id,
+                                               int child_render_frame_id) {
+  pair<int, int> parent_rfh_id(render_process_id, parent_render_frame_id);
+  pair<int, int> child_rfh_id(render_process_id, child_render_frame_id);
+  IoThreadClientData client_data;
+  if (!RfhToIoThreadClientMap::GetInstance()->Get(parent_rfh_id,
+                                                  &client_data)) {
+    NOTREACHED();
+    return;
+  }
+
+  RfhToIoThreadClientMap::GetInstance()->Set(child_rfh_id, client_data);
+}
+
+// static
 void AwContentsIoThreadClientImpl::RegisterPendingContents(
     WebContents* web_contents) {
   IoThreadClientData client_data;

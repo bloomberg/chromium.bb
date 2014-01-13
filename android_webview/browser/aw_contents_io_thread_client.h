@@ -62,6 +62,11 @@ class AwContentsIoThreadClient {
   static scoped_ptr<AwContentsIoThreadClient> FromID(int render_process_id,
                                                      int render_frame_id);
 
+  // Called on the IO thread when a subframe is created.
+  static void SubFrameCreated(int render_process_id,
+                              int parent_render_frame_id,
+                              int child_render_frame_id);
+
   // This method is called on the IO thread only.
   virtual scoped_ptr<InterceptedRequestData> ShouldInterceptRequest(
       const GURL& location,

@@ -7,6 +7,7 @@
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_browser_main_parts.h"
 #include "android_webview/browser/aw_contents_client_bridge_base.h"
+#include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "android_webview/browser/aw_cookie_access_policy.h"
 #include "android_webview/browser/aw_quota_permission_context.h"
 #include "android_webview/browser/aw_web_preferences_populater.h"
@@ -56,6 +57,7 @@ public:
   void OnShouldOverrideUrlLoading(int routing_id,
                                   const base::string16& url,
                                   bool* ignore_navigation);
+  void OnSubFrameCreated(int parent_render_frame_id, int child_render_frame_id);
 
 private:
   virtual ~AwContentsMessageFilter();
@@ -85,6 +87,7 @@ bool AwContentsMessageFilter::OnMessageReceived(const IPC::Message& message,
   IPC_BEGIN_MESSAGE_MAP_EX(AwContentsMessageFilter, message, *message_was_ok)
       IPC_MESSAGE_HANDLER(AwViewHostMsg_ShouldOverrideUrlLoading,
                           OnShouldOverrideUrlLoading)
+      IPC_MESSAGE_HANDLER(AwViewHostMsg_SubFrameCreated, OnSubFrameCreated)
       IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -104,6 +107,12 @@ void AwContentsMessageFilter::OnShouldOverrideUrlLoading(
     LOG(WARNING) << "Failed to find the associated render view host for url: "
                  << url;
   }
+}
+
+void AwContentsMessageFilter::OnSubFrameCreated(int parent_render_frame_id,
+                                                int child_render_frame_id) {
+  AwContentsIoThreadClient::SubFrameCreated(
+      process_id_, parent_render_frame_id, child_render_frame_id);
 }
 
 class AwAccessTokenStore : public content::AccessTokenStore {

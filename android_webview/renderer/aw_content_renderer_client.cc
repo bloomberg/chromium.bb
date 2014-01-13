@@ -21,6 +21,7 @@
 #include "content/public/renderer/navigation_state.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
+#include "content/public/renderer/render_view.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
@@ -116,6 +117,17 @@ bool AwContentRendererClient::HandleNavigation(
 void AwContentRendererClient::RenderFrameCreated(
     content::RenderFrame* render_frame) {
   new AwPermissionClient(render_frame);
+
+  // TODO(jam): when a RenderFrame is per WebFrame, this can be simplified by
+  // getting a RenderFrame's WebFrame and calling its parent() method.
+  content::RenderFrame* parent_frame =
+      render_frame->GetRenderView()->GetMainRenderFrame();
+  if (parent_frame && parent_frame != render_frame) {
+    // Avoid any race conditions from having the browser's UI thread tell the IO
+    // thread that a subframe was created.
+    RenderThread::Get()->Send(new AwViewHostMsg_SubFrameCreated(
+        parent_frame->GetRoutingID(), render_frame->GetRoutingID()));
+  }
 }
 
 void AwContentRendererClient::RenderViewCreated(
