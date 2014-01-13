@@ -352,6 +352,13 @@ bool URLRequest::GetFullRequestHeaders(HttpRequestHeaders* headers) const {
   return job_->GetFullRequestHeaders(headers);
 }
 
+int64 URLRequest::GetTotalReceivedBytes() const {
+  if (!job_.get())
+    return 0;
+
+  return job_->GetTotalReceivedBytes();
+}
+
 LoadStateWithParam URLRequest::GetLoadState() const {
   // The !blocked_by_.empty() check allows |this| to report it's blocked on a
   // delegate before it has been started.

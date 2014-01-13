@@ -1242,6 +1242,13 @@ bool URLRequestHttpJob::GetFullRequestHeaders(
   return transaction_->GetFullRequestHeaders(headers);
 }
 
+int64 URLRequestHttpJob::GetTotalReceivedBytes() const {
+  if (!transaction_)
+    return 0;
+
+  return transaction_->GetTotalReceivedBytes();
+}
+
 void URLRequestHttpJob::DoneReading() {
   if (transaction_.get())
     transaction_->DoneReading();

@@ -440,6 +440,10 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // 2. The OnResponseStarted callback is currently running or has run.
   bool GetFullRequestHeaders(HttpRequestHeaders* headers) const;
 
+  // Gets the total amount of data received from network after SSL decoding and
+  // proxy handling.
+  int64 GetTotalReceivedBytes() const;
+
   // Returns the current load state for the request. The returned value's
   // |param| field is an optional parameter describing details related to the
   // load state. Not all load states have a parameter.

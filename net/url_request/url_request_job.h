@@ -107,6 +107,9 @@ class NET_EXPORT URLRequestJob
 
   virtual bool GetFullRequestHeaders(HttpRequestHeaders* headers) const;
 
+  // Get the number of bytes received from network.
+  virtual int64 GetTotalReceivedBytes() const;
+
   // Called to fetch the current load state for the job.
   virtual LoadState GetLoadState() const;
 
