@@ -20,7 +20,7 @@ const char kReadFile[] = "read_file";
 const char kReadFile_Help[] =
     "read_file: Read a file into a variable.\n"
     "\n"
-    "  read_file(filename, how_to_read)\n"
+    "  read_file(filename, input_conversion)\n"
     "\n"
     "  Whitespace will be trimmed from the end of the file. Throws an error\n"
     "  if the file can not be opened.\n"

@@ -14,19 +14,35 @@ TEST(InputConversion, String) {
   EXPECT_FALSE(err.has_error());
   EXPECT_EQ(Value::STRING, result.type());
   EXPECT_EQ(input, result.string_value());
+
+  // Test with trimming.
+  result = ConvertInputToValue(input, NULL, Value(NULL, "trim string"), &err);
+  EXPECT_FALSE(err.has_error());
+  EXPECT_EQ(Value::STRING, result.type());
+  EXPECT_EQ("foo bar", result.string_value());
 }
 
 TEST(InputConversion, ListLines) {
   Err err;
-  std::string input("\nfoo\nbar  \n");
+  std::string input("\nfoo\nbar  \n\n");
   Value result = ConvertInputToValue(input, NULL, Value(NULL, "list lines"),
                                      &err);
   EXPECT_FALSE(err.has_error());
   EXPECT_EQ(Value::LIST, result.type());
-  ASSERT_EQ(3u, result.list_value().size());
+  ASSERT_EQ(4u, result.list_value().size());
   EXPECT_EQ("",    result.list_value()[0].string_value());
   EXPECT_EQ("foo", result.list_value()[1].string_value());
   EXPECT_EQ("bar", result.list_value()[2].string_value());
+  EXPECT_EQ("",    result.list_value()[3].string_value());
+
+  // Test with trimming.
+  result = ConvertInputToValue(input, NULL, Value(NULL, "trim list lines"),
+                               &err);
+  EXPECT_FALSE(err.has_error());
+  EXPECT_EQ(Value::LIST, result.type());
+  ASSERT_EQ(2u, result.list_value().size());
+  EXPECT_EQ("foo", result.list_value()[0].string_value());
+  EXPECT_EQ("bar", result.list_value()[1].string_value());
 }
 
 TEST(InputConversion, ValueString) {
@@ -60,7 +76,9 @@ TEST(InputConversion, ValueList) {
 
 TEST(InputConversion, ValueEmpty) {
   Err err;
-  ConvertInputToValue("", NULL, Value(NULL, "value"), &err);
+  Value result = ConvertInputToValue("", NULL, Value(NULL, "value"), &err);
+  EXPECT_FALSE(err.has_error());
+  EXPECT_EQ(Value::NONE, result.type());
 }
 
 TEST(InputConversion, ValueError) {
@@ -78,4 +96,17 @@ TEST(InputConversion, ValueError) {
   input = "print(5)";
   result = ConvertInputToValue(input, NULL, Value(NULL, "value"), &err);
   EXPECT_TRUE(err.has_error());
+}
+
+// Passing none or the empty string for input conversion should ignore the
+// result.
+TEST(InputConversion, Ignore) {
+  Err err;
+  Value result = ConvertInputToValue("foo", NULL, Value(), &err);
+  EXPECT_FALSE(err.has_error());
+  EXPECT_EQ(Value::NONE, result.type());
+
+  result = ConvertInputToValue("foo", NULL, Value(NULL, ""), &err);
+  EXPECT_FALSE(err.has_error());
+  EXPECT_EQ(Value::NONE, result.type());
 }

@@ -105,15 +105,51 @@ Value ParseList(const std::string& input,
   std::vector<std::string> as_lines;
   base::SplitString(input, '\n', &as_lines);
 
-  // Trim empty lines from the end.
-  // Do we want to make this configurable?
-  while (!as_lines.empty() && as_lines[as_lines.size() - 1].empty())
+  // Trim one empty line from the end since the last line might end in a
+  // newline. If the user wants more trimming, they'll specify "trim" in the
+  // input conversion options.
+  if (!as_lines.empty() && as_lines[as_lines.size() - 1].empty())
     as_lines.resize(as_lines.size() - 1);
 
   ret.list_value().reserve(as_lines.size());
   for (size_t i = 0; i < as_lines.size(); i++)
     ret.list_value().push_back(Value(origin, as_lines[i]));
   return ret;
+}
+
+// Backend for ConvertInputToValue, this takes the extracted string for the
+// input conversion so we can recursively call ourselves to handle the optional
+// "trim" prefix. This original value is also kept for the purposes of throwing
+// errors.
+Value DoConvertInputToValue(const std::string& input,
+                            const ParseNode* origin,
+                            const Value& original_input_conversion,
+                            const std::string& input_conversion,
+                            Err* err) {
+  if (input_conversion.empty())
+    return Value();  // Empty string means discard the result.
+
+  const char kTrimPrefix[] = "trim ";
+  if (StartsWithASCII(input_conversion, kTrimPrefix, true)) {
+    std::string trimmed;
+    TrimWhitespaceASCII(input, TRIM_ALL, &trimmed);
+
+    // Remove "trim" prefix from the input conversion and re-run.
+    return DoConvertInputToValue(
+        trimmed, origin, original_input_conversion,
+        input_conversion.substr(arraysize(kTrimPrefix) - 1), err);
+  }
+
+  if (input_conversion == "value")
+    return ParseString(input, origin, err);
+  if (input_conversion == "string")
+    return Value(origin, input);
+  if (input_conversion == "list lines")
+    return ParseList(input, origin, err);
+
+  *err = Err(original_input_conversion, "Not a valid input_conversion.",
+             "Have you considered a career in retail?");
+  return Value();
 }
 
 }  // namespace
@@ -125,10 +161,16 @@ extern const char kInputConversion_Help[] =
     "  specifies how the result of the read operation should be converted\n"
     "  into a variable.\n"
     "\n"
+    "  \"\" (the default)\n"
+    "      Discard the result and return None.\n"
+    "\n"
     "  \"list lines\"\n"
     "      Return the file contents as a list, with a string for each line.\n"
-    "      The newlines will not be present in the result. Empty newlines\n"
-    "      will be trimmed from the trailing end of the returned list.\n"
+    "      The newlines will not be present in the result. The last line may\n"
+    "      or may not end in a newline.\n"
+    "\n"
+    "      After splitting, each individual line will be trimmed of\n"
+    "      whitespace on both ends.\n"
     "\n"
     "  \"value\"\n"
     "      Parse the input as if it was a literal rvalue in a buildfile.\n"
@@ -143,24 +185,26 @@ extern const char kInputConversion_Help[] =
     "      which will produce an error if assigned to a variable.\n"
     "\n"
     "  \"string\"\n"
-    "      Return the file contents into a single string.\n";
+    "      Return the file contents into a single string.\n"
+    "\n"
+    "  \"trim ...\"\n"
+    "      Prefixing any of the other transformations with the word \"trim\"\n"
+    "      will result in whitespace being trimmed from the beginning and end\n"
+    "      of the result before processing.\n"
+    "\n"
+    "      Examples: \"trim string\" or \"trim list lines\"\n"
+    "\n"
+    "      Note that \"trim value\" is useless because the value parser skips\n"
+    "      whitespace anyway.\n";
 
 Value ConvertInputToValue(const std::string& input,
                           const ParseNode* origin,
                           const Value& input_conversion_value,
                           Err* err) {
+  if (input_conversion_value.type() == Value::NONE)
+    return Value();  // Allow null inputs to mean discard the result.
   if (!input_conversion_value.VerifyTypeIs(Value::STRING, err))
     return Value();
-  const std::string& input_conversion = input_conversion_value.string_value();
-
-  if (input_conversion == "value")
-    return ParseString(input, origin, err);
-  if (input_conversion == "string")
-    return Value(origin, input);
-  if (input_conversion == "list lines")
-    return ParseList(input, origin, err);
-
-  *err = Err(input_conversion_value, "Not a valid read file mode.",
-             "Have you considered a career in retail?");
-  return Value();
+  return DoConvertInputToValue(input, origin, input_conversion_value,
+                               input_conversion_value.string_value(), err);
 }
