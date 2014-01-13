@@ -714,7 +714,6 @@ GURL DevToolsWindow::GetDevToolsURL(Profile* profile,
       switches::kEnableDevToolsExperiments))
     url_string += "&experiments=true";
   url_string += "&updateAppcache";
-  url_string += "&overlayContents=true";
   return GURL(url_string);
 }
 
