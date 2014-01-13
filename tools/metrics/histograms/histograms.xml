@@ -5393,6 +5393,13 @@ other types of suffix sets.
   <summary>Net error results from GCM connection attempts.</summary>
 </histogram>
 
+<histogram name="GCM.NumThrottledApps">
+  <summary>
+    Number of applications hitting GCM per-app outstanding message limits at
+    startup time.
+  </summary>
+</histogram>
+
 <histogram name="GCM.NumUsers">
   <summary>
     Number of GCM users associated with this client at startup time.

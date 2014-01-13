@@ -237,11 +237,15 @@ void MCSClient::SendMessage(const MCSMessage& message) {
     packet_info->persistent_id = persistent_id;
     SetPersistentId(persistent_id,
                     packet_info->protobuf.get());
-    gcm_store_->AddOutgoingMessage(persistent_id,
-                                   MCSMessage(message.tag(),
-                                              *(packet_info->protobuf)),
-                                   base::Bind(&MCSClient::OnGCMUpdateFinished,
-                                              weak_ptr_factory_.GetWeakPtr()));
+    if (!gcm_store_->AddOutgoingMessage(
+            persistent_id,
+            MCSMessage(message.tag(),
+                       *(packet_info->protobuf)),
+            base::Bind(&MCSClient::OnGCMUpdateFinished,
+                       weak_ptr_factory_.GetWeakPtr()))) {
+      message_sent_callback_.Run("Message queue full.");
+      return;
+    }
   } else if (!connection_factory_->IsEndpointReachable()) {
     DVLOG(1) << "No active connection, dropping message.";
     message_sent_callback_.Run("TTL expired");

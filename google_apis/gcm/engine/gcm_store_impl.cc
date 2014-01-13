@@ -27,6 +27,9 @@ namespace gcm {
 
 namespace {
 
+// Limit to the number of outstanding messages per app.
+const int kMessagesPerAppLimit = 20;
+
 // ---- LevelDB keys. ----
 // Key for this device's android id.
 const char kDeviceAIDKey[] = "device_aid_key";
@@ -101,8 +104,10 @@ class GCMStoreImpl::Backend
   void AddOutgoingMessage(const std::string& persistent_id,
                           const MCSMessage& message,
                           const UpdateCallback& callback);
-  void RemoveOutgoingMessages(const PersistentIdList& persistent_ids,
-                              const UpdateCallback& callback);
+  void RemoveOutgoingMessages(
+      const PersistentIdList& persistent_ids,
+      const base::Callback<void(bool, const AppIdToMessageCountMap&)>
+          callback);
   void AddUserSerialNumber(const std::string& username,
                            int64 serial_number,
                            const UpdateCallback& callback);
@@ -137,6 +142,11 @@ GCMStoreImpl::Backend::~Backend() {}
 
 void GCMStoreImpl::Backend::Load(const LoadCallback& callback) {
   LoadResult result;
+  if (db_.get()) {
+    LOG(ERROR) << "Attempting to reload open database.";
+    foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, result));
+    return;
+  }
 
   leveldb::Options options;
   options.create_if_missing = true;
@@ -193,14 +203,15 @@ void GCMStoreImpl::Backend::Load(const LoadCallback& callback) {
 }
 
 void GCMStoreImpl::Backend::Destroy(const UpdateCallback& callback) {
-  DVLOG(1) << "Destroying RMQ store.";
+  DVLOG(1) << "Destroying GCM store.";
+  db_.reset();
   const leveldb::Status s =
       leveldb::DestroyDB(path_.AsUTF8Unsafe(), leveldb::Options());
   if (s.ok()) {
     foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, true));
     return;
   }
-  LOG(ERROR) << "Destroy failed.";
+  LOG(ERROR) << "Destroy failed: " << s.ToString();
   foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, false));
 }
 
@@ -209,6 +220,12 @@ void GCMStoreImpl::Backend::SetDeviceCredentials(
     uint64 device_security_token,
     const UpdateCallback& callback) {
   DVLOG(1) << "Saving device credentials with AID " << device_android_id;
+  if (!db_.get()) {
+    LOG(ERROR) << "GCMStore db doesn't exist.";
+    foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, false));
+    return;
+  }
+
   leveldb::WriteOptions write_options;
   write_options.sync = true;
 
@@ -234,6 +251,12 @@ void GCMStoreImpl::Backend::SetDeviceCredentials(
 void GCMStoreImpl::Backend::AddIncomingMessage(const std::string& persistent_id,
                                                const UpdateCallback& callback) {
   DVLOG(1) << "Saving incoming message with id " << persistent_id;
+  if (!db_.get()) {
+    LOG(ERROR) << "GCMStore db doesn't exist.";
+    foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, false));
+    return;
+  }
+
   leveldb::WriteOptions write_options;
   write_options.sync = true;
 
@@ -251,6 +274,11 @@ void GCMStoreImpl::Backend::AddIncomingMessage(const std::string& persistent_id,
 void GCMStoreImpl::Backend::RemoveIncomingMessages(
     const PersistentIdList& persistent_ids,
     const UpdateCallback& callback) {
+  if (!db_.get()) {
+    LOG(ERROR) << "GCMStore db doesn't exist.";
+    foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, false));
+    return;
+  }
   leveldb::WriteOptions write_options;
   write_options.sync = true;
 
@@ -275,6 +303,11 @@ void GCMStoreImpl::Backend::AddOutgoingMessage(const std::string& persistent_id,
                                                const MCSMessage& message,
                                                const UpdateCallback& callback) {
   DVLOG(1) << "Saving outgoing message with id " << persistent_id;
+  if (!db_.get()) {
+    LOG(ERROR) << "GCMStore db doesn't exist.";
+    foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, false));
+    return;
+  }
   leveldb::WriteOptions write_options;
   write_options.sync = true;
 
@@ -293,25 +326,59 @@ void GCMStoreImpl::Backend::AddOutgoingMessage(const std::string& persistent_id,
 
 void GCMStoreImpl::Backend::RemoveOutgoingMessages(
     const PersistentIdList& persistent_ids,
-    const UpdateCallback& callback) {
+    const base::Callback<void(bool, const AppIdToMessageCountMap&)>
+        callback) {
+  if (!db_.get()) {
+    LOG(ERROR) << "GCMStore db doesn't exist.";
+    foreground_task_runner_->PostTask(FROM_HERE,
+                                      base::Bind(callback,
+                                                 false,
+                                                 AppIdToMessageCountMap()));
+    return;
+  }
+  leveldb::ReadOptions read_options;
   leveldb::WriteOptions write_options;
   write_options.sync = true;
+
+  AppIdToMessageCountMap removed_message_counts;
 
   leveldb::Status s;
   for (PersistentIdList::const_iterator iter = persistent_ids.begin();
        iter != persistent_ids.end();
        ++iter) {
     DVLOG(1) << "Removing outgoing message with id " << *iter;
+    std::string outgoing_message;
+    leveldb::Slice key_slice = MakeSlice(MakeOutgoingKey(*iter));
+    s = db_->Get(read_options, key_slice, &outgoing_message);
+    if (!s.ok())
+      break;
+    mcs_proto::DataMessageStanza data_message;
+    // Skip the initial tag byte and parse the rest to extract the message.
+    if (data_message.ParseFromString(outgoing_message.substr(1))) {
+      DCHECK(!data_message.from().empty());
+      if (removed_message_counts.count(data_message.from()) != 0)
+        removed_message_counts[data_message.from()]++;
+      else
+        removed_message_counts[data_message.from()] = 1;
+    }
+    DVLOG(1) << "Removing outgoing message with id " << *iter;
+    // Have to create a new slice to perform the deletion.
     s = db_->Delete(write_options, MakeSlice(MakeOutgoingKey(*iter)));
     if (!s.ok())
       break;
   }
   if (s.ok()) {
-    foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, true));
+    foreground_task_runner_->PostTask(FROM_HERE,
+                                      base::Bind(callback,
+                                                 true,
+                                                 removed_message_counts));
     return;
   }
   LOG(ERROR) << "LevelDB remove failed: " << s.ToString();
-  foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, false));
+  foreground_task_runner_->PostTask(FROM_HERE,
+                                    base::Bind(callback,
+                                               false,
+                                               AppIdToMessageCountMap()));
 }
 
 void GCMStoreImpl::Backend::AddUserSerialNumber(
@@ -319,6 +386,11 @@ void GCMStoreImpl::Backend::AddUserSerialNumber(
     int64 serial_number,
     const UpdateCallback& callback) {
   DVLOG(1) << "Saving username to serial number mapping for user: " << username;
+  if (!db_.get()) {
+    LOG(ERROR) << "GCMStore db doesn't exist.";
+    foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, false));
+    return;
+  }
   leveldb::WriteOptions write_options;
   write_options.sync = true;
 
@@ -337,6 +409,11 @@ void GCMStoreImpl::Backend::AddUserSerialNumber(
 void GCMStoreImpl::Backend::RemoveUserSerialNumber(
     const std::string& username,
     const UpdateCallback& callback) {
+  if (!db_.get()) {
+    LOG(ERROR) << "GCMStore db doesn't exist.";
+    foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, false));
+    return;
+  }
   leveldb::WriteOptions write_options;
   write_options.sync = true;
 
@@ -354,6 +431,11 @@ void GCMStoreImpl::Backend::SetNextSerialNumber(
     const UpdateCallback& callback) {
   DVLOG(1) << "Updating the value of next user serial number to: "
            << next_serial_number;
+  if (!db_.get()) {
+    LOG(ERROR) << "GCMStore db doesn't exist.";
+    foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, false));
+    return;
+  }
   leveldb::WriteOptions write_options;
   write_options.sync = true;
 
@@ -512,13 +594,19 @@ GCMStoreImpl::GCMStoreImpl(
     const base::FilePath& path,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
     : backend_(new Backend(path, base::MessageLoopProxy::current())),
-      blocking_task_runner_(blocking_task_runner) {}
+      blocking_task_runner_(blocking_task_runner),
+      weak_ptr_factory_(this) {}
 
 GCMStoreImpl::~GCMStoreImpl() {}
 
 void GCMStoreImpl::Load(const LoadCallback& callback) {
   blocking_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&GCMStoreImpl::Backend::Load, backend_, callback));
+      FROM_HERE,
+      base::Bind(&GCMStoreImpl::Backend::Load,
+                 backend_,
+                 base::Bind(&GCMStoreImpl::LoadContinuation,
+                            weak_ptr_factory_.GetWeakPtr(),
+                            callback)));
 }
 
 void GCMStoreImpl::Destroy(const UpdateCallback& callback) {
@@ -570,16 +658,31 @@ void GCMStoreImpl::RemoveIncomingMessages(
                  callback));
 }
 
-void GCMStoreImpl::AddOutgoingMessage(const std::string& persistent_id,
+bool GCMStoreImpl::AddOutgoingMessage(const std::string& persistent_id,
                                       const MCSMessage& message,
                                       const UpdateCallback& callback) {
-  blocking_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&GCMStoreImpl::Backend::AddOutgoingMessage,
-                 backend_,
-                 persistent_id,
-                 message,
-                 callback));
+  DCHECK_EQ(message.tag(), kDataMessageStanzaTag);
+  std::string app_id = reinterpret_cast<const mcs_proto::DataMessageStanza*>(
+      &message.GetProtobuf())->from();
+  DCHECK(!app_id.empty());
+  if (app_message_counts_.count(app_id) == 0)
+    app_message_counts_[app_id] = 0;
+  if (app_message_counts_[app_id] < kMessagesPerAppLimit) {
+    app_message_counts_[app_id]++;
+
+    blocking_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&GCMStoreImpl::Backend::AddOutgoingMessage,
+                   backend_,
+                   persistent_id,
+                   message,
+                   base::Bind(&GCMStoreImpl::AddOutgoingMessageContinuation,
+                              weak_ptr_factory_.GetWeakPtr(),
+                              callback,
+                              app_id)));
+    return true;
+  }
+  return false;
 }
 
 void GCMStoreImpl::RemoveOutgoingMessage(const std::string& persistent_id,
@@ -589,7 +692,9 @@ void GCMStoreImpl::RemoveOutgoingMessage(const std::string& persistent_id,
       base::Bind(&GCMStoreImpl::Backend::RemoveOutgoingMessages,
                  backend_,
                  PersistentIdList(1, persistent_id),
-                 callback));
+                 base::Bind(&GCMStoreImpl::RemoveOutgoingMessagesContinuation,
+                            weak_ptr_factory_.GetWeakPtr(),
+                            callback)));
 }
 
 void GCMStoreImpl::RemoveOutgoingMessages(
@@ -600,7 +705,9 @@ void GCMStoreImpl::RemoveOutgoingMessages(
       base::Bind(&GCMStoreImpl::Backend::RemoveOutgoingMessages,
                  backend_,
                  persistent_ids,
-                 callback));
+                 base::Bind(&GCMStoreImpl::RemoveOutgoingMessagesContinuation,
+                            weak_ptr_factory_.GetWeakPtr(),
+                            callback)));
 }
 
 void GCMStoreImpl::SetNextSerialNumber(int64 next_serial_number,
@@ -633,6 +740,59 @@ void GCMStoreImpl::RemoveUserSerialNumber(const std::string& username,
                  backend_,
                  username,
                  callback));
+}
+
+void GCMStoreImpl::LoadContinuation(const LoadCallback& callback,
+                                    const LoadResult& result) {
+  if (!result.success) {
+    callback.Run(result);
+    return;
+  }
+  int num_throttled_apps = 0;
+  for (std::map<std::string, google::protobuf::MessageLite*>::const_iterator
+           iter = result.outgoing_messages.begin();
+       iter != result.outgoing_messages.end(); ++iter) {
+    const mcs_proto::DataMessageStanza* data_message =
+        reinterpret_cast<mcs_proto::DataMessageStanza*>(iter->second);
+    DCHECK(!data_message->from().empty());
+    if (app_message_counts_.count(data_message->from()) == 0)
+      app_message_counts_[data_message->from()] = 1;
+    else
+      app_message_counts_[data_message->from()]++;
+    if (app_message_counts_[data_message->from()] == kMessagesPerAppLimit)
+      num_throttled_apps++;
+  }
+  UMA_HISTOGRAM_COUNTS("GCM.NumThrottledApps", num_throttled_apps);
+  callback.Run(result);
+}
+
+void GCMStoreImpl::AddOutgoingMessageContinuation(
+    const UpdateCallback& callback,
+    const std::string& app_id,
+    bool success) {
+  if (!success) {
+    DCHECK(app_message_counts_[app_id] > 0);
+    app_message_counts_[app_id]--;
+  }
+  callback.Run(success);
+}
+
+void GCMStoreImpl::RemoveOutgoingMessagesContinuation(
+    const UpdateCallback& callback,
+    bool success,
+    const AppIdToMessageCountMap& removed_message_counts) {
+  if (!success) {
+    callback.Run(false);
+    return;
+  }
+  for (AppIdToMessageCountMap::const_iterator iter =
+           removed_message_counts.begin();
+       iter != removed_message_counts.end(); ++iter) {
+    DCHECK_NE(app_message_counts_.count(iter->first), 0U);
+    app_message_counts_[iter->first] -= iter->second;
+    DCHECK_GE(app_message_counts_[iter->first], 0);
+  }
+  callback.Run(true);
 }
 
 }  // namespace gcm

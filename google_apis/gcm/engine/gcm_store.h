@@ -71,7 +71,10 @@ class GCM_EXPORT GCMStore {
                                       const UpdateCallback& callback) = 0;
 
   // Unacknowledged outgoing messages handling.
-  virtual void AddOutgoingMessage(const std::string& persistent_id,
+  // Returns false if app has surpassed message limits, else returns true. Note
+  // that the message isn't persisted until |callback| is invoked with
+  // |success| == true.
+  virtual bool AddOutgoingMessage(const std::string& persistent_id,
                                   const MCSMessage& message,
                                   const UpdateCallback& callback) = 0;
   virtual void RemoveOutgoingMessage(const std::string& persistent_id,

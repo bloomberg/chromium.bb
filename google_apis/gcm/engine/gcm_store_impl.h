@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "google_apis/gcm/base/gcm_export.h"
 #include "google_apis/gcm/engine/gcm_store.h"
 
@@ -50,8 +51,7 @@ class GCM_EXPORT GCMStoreImpl : public GCMStore {
                                       const UpdateCallback& callback) OVERRIDE;
 
   // Unacknowledged outgoing messages handling.
-  // TODO(zea): implement per-app limits on the number of outgoing messages.
-  virtual void AddOutgoingMessage(const std::string& persistent_id,
+  virtual bool AddOutgoingMessage(const std::string& persistent_id,
                                   const MCSMessage& message,
                                   const UpdateCallback& callback) OVERRIDE;
   virtual void RemoveOutgoingMessage(const std::string& persistent_id,
@@ -69,10 +69,36 @@ class GCM_EXPORT GCMStoreImpl : public GCMStore {
                                       const UpdateCallback& callback) OVERRIDE;
 
  private:
+  typedef std::map<std::string, int> AppIdToMessageCountMap;
+
+  // Continuation to update the per-app message counts after a load.
+  void LoadContinuation(const LoadCallback& callback,
+                        const LoadResult& result);
+
+  // Continuation to update the per-app message counts when adding messages.
+  // In particular, if a message fails to add, the message count is decremented.
+  void AddOutgoingMessageContinuation(const UpdateCallback& callback,
+                                      const std::string& app_id,
+                                      bool success);
+
+  // Continuation to update the per-app message counts when removing messages.
+  // Note: if doing a read-then-write when removing messages proves expensive,
+  // an in-memory mapping of persisted message id to app could be maintained
+  // instead.
+  void RemoveOutgoingMessagesContinuation(
+      const UpdateCallback& callback,
+      bool success,
+      const std::map<std::string, int>& removed_message_counts);
+
   class Backend;
+
+  // Map of App ids to their message counts.
+  AppIdToMessageCountMap app_message_counts_;
 
   scoped_refptr<Backend> backend_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
+
+  base::WeakPtrFactory<GCMStoreImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GCMStoreImpl);
 };

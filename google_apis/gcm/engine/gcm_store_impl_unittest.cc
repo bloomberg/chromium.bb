@@ -27,6 +27,15 @@ namespace {
 // Number of persistent ids to use in tests.
 const int kNumPersistentIds = 10;
 
+// Number of per-app messages in tests.
+const int kNumMessagesPerApp = 20;
+
+// App name for testing.
+const char kAppName[] = "my_app";
+
+// Category name for testing.
+const char kCategoryName[] = "my_category";
+
 const uint64 kDeviceId = 22;
 const uint64 kDeviceToken = 55;
 
@@ -45,13 +54,15 @@ class GCMStoreImplTest : public testing::Test {
                     const GCMStore::LoadResult& result);
   void UpdateCallback(bool success);
 
- private:
+ protected:
   base::MessageLoop message_loop_;
   base::ScopedTempDir temp_directory_;
+  bool expected_success_;
   scoped_ptr<base::RunLoop> run_loop_;
 };
 
-GCMStoreImplTest::GCMStoreImplTest() {
+GCMStoreImplTest::GCMStoreImplTest()
+    : expected_success_(true) {
   EXPECT_TRUE(temp_directory_.CreateUniqueTempDir());
   run_loop_.reset(new base::RunLoop());
 
@@ -82,7 +93,9 @@ void GCMStoreImplTest::LoadCallback(GCMStore::LoadResult* result_dst,
   run_loop_.reset(new base::RunLoop());
 }
 
-void GCMStoreImplTest::UpdateCallback(bool success) { ASSERT_TRUE(success); }
+void GCMStoreImplTest::UpdateCallback(bool success) {
+  ASSERT_EQ(expected_success_, success);
+}
 
 // Verify creating a new database and loading it.
 TEST_F(GCMStoreImplTest, LoadNew) {
@@ -177,8 +190,8 @@ TEST_F(GCMStoreImplTest, OutgoingMessages) {
   for (int i = 0; i < kNumPersistentIds; ++i) {
     persistent_ids.push_back(GetNextPersistentId());
     mcs_proto::DataMessageStanza message;
-    message.set_from(persistent_ids.back());
-    message.set_category(persistent_ids.back());
+    message.set_from(kAppName + persistent_ids.back());
+    message.set_category(kCategoryName + persistent_ids.back());
     gcm_store->AddOutgoingMessage(
         persistent_ids.back(),
         MCSMessage(message),
@@ -199,8 +212,8 @@ TEST_F(GCMStoreImplTest, OutgoingMessages) {
     const mcs_proto::DataMessageStanza* message =
         reinterpret_cast<mcs_proto::DataMessageStanza*>(
             load_result.outgoing_messages[id]);
-    ASSERT_EQ(message->from(), id);
-    ASSERT_EQ(message->category(), id);
+    ASSERT_EQ(message->from(), kAppName + id);
+    ASSERT_EQ(message->category(), kCategoryName + id);
   }
 
   gcm_store->RemoveOutgoingMessages(
@@ -236,8 +249,8 @@ TEST_F(GCMStoreImplTest, IncomingAndOutgoingMessages) {
     PumpLoop();
 
     mcs_proto::DataMessageStanza message;
-    message.set_from(persistent_ids.back());
-    message.set_category(persistent_ids.back());
+    message.set_from(kAppName + persistent_ids.back());
+    message.set_category(kCategoryName + persistent_ids.back());
     gcm_store->AddOutgoingMessage(
         persistent_ids.back(),
         MCSMessage(message),
@@ -258,8 +271,8 @@ TEST_F(GCMStoreImplTest, IncomingAndOutgoingMessages) {
     const mcs_proto::DataMessageStanza* message =
         reinterpret_cast<mcs_proto::DataMessageStanza*>(
             load_result.outgoing_messages[id]);
-    ASSERT_EQ(message->from(), id);
-    ASSERT_EQ(message->category(), id);
+    ASSERT_EQ(message->from(), kAppName + id);
+    ASSERT_EQ(message->category(), kCategoryName + id);
   }
 
   gcm_store->RemoveIncomingMessages(
@@ -282,6 +295,7 @@ TEST_F(GCMStoreImplTest, IncomingAndOutgoingMessages) {
   ASSERT_TRUE(load_result.outgoing_messages.empty());
 }
 
+// Verify that the next serial number of persisted properly.
 TEST_F(GCMStoreImplTest, NextSerialNumber) {
   const int64 kNextSerialNumber = 77LL;
   scoped_ptr<GCMStore> gcm_store(BuildGCMStore());
@@ -303,6 +317,7 @@ TEST_F(GCMStoreImplTest, NextSerialNumber) {
   EXPECT_EQ(kNextSerialNumber, load_result.next_serial_number);
 }
 
+// Verify that user serial number mappings are persisted properly.
 TEST_F(GCMStoreImplTest, UserSerialNumberMappings) {
   scoped_ptr<GCMStore> gcm_store(BuildGCMStore());
   GCMStore::LoadResult load_result;
@@ -337,6 +352,113 @@ TEST_F(GCMStoreImplTest, UserSerialNumberMappings) {
   ASSERT_NE(load_result.user_serial_numbers.end(),
             load_result.user_serial_numbers.find(username2));
   EXPECT_EQ(serial_number2, load_result.user_serial_numbers[username2]);
+}
+
+// Test that per-app message limits are enforced, persisted across restarts,
+// and updated as messages are removed.
+TEST_F(GCMStoreImplTest, PerAppMessageLimits) {
+  scoped_ptr<GCMStore> gcm_store(BuildGCMStore());
+  GCMStore::LoadResult load_result;
+  gcm_store->Load(base::Bind(&GCMStoreImplTest::LoadCallback,
+                             base::Unretained(this),
+                             &load_result));
+
+  // Add the initial (below app limit) messages.
+  for (int i = 0; i < kNumMessagesPerApp; ++i) {
+    mcs_proto::DataMessageStanza message;
+    message.set_from(kAppName);
+    message.set_category(kCategoryName);
+    EXPECT_TRUE(gcm_store->AddOutgoingMessage(
+                    base::IntToString(i),
+                    MCSMessage(message),
+                    base::Bind(&GCMStoreImplTest::UpdateCallback,
+                               base::Unretained(this))));
+    PumpLoop();
+  }
+
+  // Attempting to add some more should fail.
+  for (int i = 0; i < kNumMessagesPerApp; ++i) {
+    mcs_proto::DataMessageStanza message;
+    message.set_from(kAppName);
+    message.set_category(kCategoryName);
+    EXPECT_FALSE(gcm_store->AddOutgoingMessage(
+                     base::IntToString(i + kNumMessagesPerApp),
+                     MCSMessage(message),
+                     base::Bind(&GCMStoreImplTest::UpdateCallback,
+                                base::Unretained(this))));
+    PumpLoop();
+  }
+
+  // Tear down and restore the database.
+  gcm_store = BuildGCMStore().Pass();
+  gcm_store->Load(base::Bind(&GCMStoreImplTest::LoadCallback,
+                             base::Unretained(this),
+                             &load_result));
+  PumpLoop();
+
+  // Adding more messages should still fail.
+  for (int i = 0; i < kNumMessagesPerApp; ++i) {
+    mcs_proto::DataMessageStanza message;
+    message.set_from(kAppName);
+    message.set_category(kCategoryName);
+    EXPECT_FALSE(gcm_store->AddOutgoingMessage(
+                     base::IntToString(i + kNumMessagesPerApp),
+                     MCSMessage(message),
+                     base::Bind(&GCMStoreImplTest::UpdateCallback,
+                                base::Unretained(this))));
+    PumpLoop();
+  }
+
+  // Remove the existing messages.
+  for (int i = 0; i < kNumMessagesPerApp; ++i) {
+    gcm_store->RemoveOutgoingMessage(
+        base::IntToString(i),
+        base::Bind(&GCMStoreImplTest::UpdateCallback,
+                   base::Unretained(this)));
+    PumpLoop();
+  }
+
+  // Successfully add new messages.
+  for (int i = 0; i < kNumMessagesPerApp; ++i) {
+    mcs_proto::DataMessageStanza message;
+    message.set_from(kAppName);
+    message.set_category(kCategoryName);
+    EXPECT_TRUE(gcm_store->AddOutgoingMessage(
+                    base::IntToString(i + kNumMessagesPerApp),
+                    MCSMessage(message),
+                    base::Bind(&GCMStoreImplTest::UpdateCallback,
+                               base::Unretained(this))));
+    PumpLoop();
+  }
+}
+
+// When the database is destroyed, all database updates should fail. At the
+// same time, they per-app message counts should not go up, as failures should
+// result in decrementing the counts.
+TEST_F(GCMStoreImplTest, AddMessageAfterDestroy) {
+  scoped_ptr<GCMStore> gcm_store(BuildGCMStore());
+  GCMStore::LoadResult load_result;
+  gcm_store->Load(base::Bind(&GCMStoreImplTest::LoadCallback,
+                             base::Unretained(this),
+                             &load_result));
+  PumpLoop();
+  gcm_store->Destroy(base::Bind(&GCMStoreImplTest::UpdateCallback,
+                               base::Unretained(this)));
+  PumpLoop();
+
+  expected_success_ = false;
+  for (int i = 0; i < kNumMessagesPerApp * 2; ++i) {
+    mcs_proto::DataMessageStanza message;
+    message.set_from(kAppName);
+    message.set_category(kCategoryName);
+    // Because all adds are failing, none should hit the per-app message limits.
+    EXPECT_TRUE(gcm_store->AddOutgoingMessage(
+                    base::IntToString(i),
+                    MCSMessage(message),
+                    base::Bind(&GCMStoreImplTest::UpdateCallback,
+                               base::Unretained(this))));
+    PumpLoop();
+  }
 }
 
 }  // namespace
