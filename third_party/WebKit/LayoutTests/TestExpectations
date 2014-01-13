@@ -815,7 +815,6 @@ crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/cluster-with-na
 crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/form-controls-autosizing-button-input-elements.html [ ImageOnlyFailure ]
 crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/positioned-out-of-flow.html [ ImageOnlyFailure ]
 crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/resize-window.html [ Failure ]
-crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/hackernews-comments.html [ NeedsRebaseline ]
 
 # FIXME(crbug.com/329904): Remove these when hash-based autosizer is deemed fast enough, aka second pass optimization.
 crbug.com/329904 fast/text-autosizing/forum-comments-autosizing.html [ ImageOnlyFailure ]

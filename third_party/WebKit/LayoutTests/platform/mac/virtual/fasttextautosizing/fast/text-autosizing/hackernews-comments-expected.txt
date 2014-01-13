@@ -43,25 +43,25 @@ layer at (0,0) size 785x823
                           RenderText {#text} at (0,0) size 53x16
                             text run at (0,0) width 53: "[image]"
                       RenderTableCell {TD} at (59,2) size 355x36 [r=0 c=1 rs=1 cs=1]
-                        RenderInline {A} at (0,0) size 219x16 [color=#0000EE]
-                          RenderText {#text} at (1,2) size 219x17
-                            text run at (1,2) width 219: "Chromium is the best browser"
+                        RenderInline {A} at (0,0) size 219x17 [color=#0000EE]
+                          RenderText {#text} at (1,1) size 219x17
+                            text run at (1,1) width 219: "Chromium is the best browser"
                         RenderText {#text} at (0,0) size 0x0
-                        RenderInline {SPAN} at (0,0) size 159x16
-                          RenderText {#text} at (1,19) size 159x17
-                            text run at (1,19) width 159: "(google.com/chrome)"
+                        RenderInline {SPAN} at (0,0) size 159x17
+                          RenderText {#text} at (1,18) size 159x17
+                            text run at (1,18) width 159: "(google.com/chrome)"
                         RenderText {#text} at (0,0) size 0x0
                     RenderTableRow {TR} at (0,40) size 416x19
                       RenderTableCell {TD} at (2,48) size 55x2 [r=1 c=0 rs=1 cs=1]
                       RenderTableCell {TD} at (59,40) size 355x19 [r=1 c=1 rs=1 cs=1]
-                        RenderInline {SPAN} at (0,0) size 76x16
-                          RenderText {#text} at (1,2) size 76x17
-                            text run at (1,2) width 76: "999 points"
+                        RenderInline {SPAN} at (0,0) size 76x17
+                          RenderText {#text} at (1,1) size 76x17
+                            text run at (1,1) width 76: "999 points"
                         RenderText {#text} at (77,1) size 27x17
                           text run at (77,1) width 27: " by "
-                        RenderInline {A} at (0,0) size 22x16 [color=#0000EE]
-                          RenderText {#text} at (104,2) size 22x17
-                            text run at (104,2) width 22: "pdr"
+                        RenderInline {A} at (0,0) size 22x17 [color=#0000EE]
+                          RenderText {#text} at (104,1) size 22x17
+                            text run at (104,1) width 22: "pdr"
                         RenderText {#text} at (126,1) size 206x17
                           text run at (126,1) width 96: " 4 hours ago "
                           text run at (222,1) width 110: "| 74 comments"
@@ -86,31 +86,31 @@ layer at (0,0) size 785x823
                                     text run at (0,0) width 53: "[image]"
                               RenderTableCell {TD} at (63,2) size 582x339 [r=0 c=2 rs=1 cs=1]
                                 RenderBlock {DIV} at (1,3) size 580x29
-                                  RenderInline {SPAN} at (0,0) size 376x16
-                                    RenderText {#text} at (0,11) size 376x29
-                                      text run at (0,11) width 316: "longcomment 3 hours ago "
-                                      text run at (316,11) width 60: "| link"
+                                  RenderInline {SPAN} at (0,0) size 376x29
+                                    RenderText {#text} at (0,0) size 376x29
+                                      text run at (0,0) width 316: "longcomment 3 hours ago "
+                                      text run at (316,0) width 60: "| link"
                                   RenderText {#text} at (0,0) size 0x0
                                 RenderBlock (anonymous) at (1,22) size 580x261
                                   RenderBR {BR} at (0,0) size 0x29
-                                  RenderInline {SPAN} at (0,0) size 572x219
+                                  RenderInline {SPAN} at (0,0) size 572x232
                                     RenderText {#text} at (0,0) size 0x0
-                                    RenderInline {FONT} at (0,0) size 572x219
-                                      RenderText {#text} at (0,40) size 572x232
-                                        text run at (0,40) width 542: "Contrary to popular belief, blah blah blah blah"
-                                        text run at (0,69) width 572: "blah blah blah blah blah blah blah blah blah blah"
-                                        text run at (0,98) width 572: "blah blah blah blah blah blah blah blah blah blah"
-                                        text run at (0,127) width 572: "blah blah blah blah blah blah blah blah blah blah"
-                                        text run at (0,156) width 572: "blah blah blah blah blah blah blah blah blah blah"
-                                        text run at (0,185) width 572: "blah blah blah blah blah blah blah blah blah blah"
-                                        text run at (0,214) width 572: "blah blah blah blah blah blah blah blah blah blah"
-                                        text run at (0,243) width 108: "blah blah"
+                                    RenderInline {FONT} at (0,0) size 572x232
+                                      RenderText {#text} at (0,29) size 572x232
+                                        text run at (0,29) width 542: "Contrary to popular belief, blah blah blah blah"
+                                        text run at (0,58) width 572: "blah blah blah blah blah blah blah blah blah blah"
+                                        text run at (0,87) width 572: "blah blah blah blah blah blah blah blah blah blah"
+                                        text run at (0,116) width 572: "blah blah blah blah blah blah blah blah blah blah"
+                                        text run at (0,145) width 572: "blah blah blah blah blah blah blah blah blah blah"
+                                        text run at (0,174) width 572: "blah blah blah blah blah blah blah blah blah blah"
+                                        text run at (0,203) width 572: "blah blah blah blah blah blah blah blah blah blah"
+                                        text run at (0,232) width 108: "blah blah"
                                     RenderText {#text} at (0,0) size 0x0
                                   RenderText {#text} at (0,0) size 0x0
                                 RenderBlock {P} at (1,296) size 580x29
-                                  RenderInline {FONT} at (0,0) size 34x16
-                                    RenderText {#text} at (0,11) size 34x29
-                                      text run at (0,11) width 34: "reply"
+                                  RenderInline {FONT} at (0,0) size 34x29
+                                    RenderText {#text} at (0,0) size 34x29
+                                      text run at (0,0) width 34: "reply"
                                   RenderText {#text} at (0,0) size 0x0
                     RenderTableRow {TR} at (0,349) size 653x90
                       RenderTableCell {TD} at (2,349) size 649x90 [r=1 c=0 rs=1 cs=1]
