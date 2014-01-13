@@ -15,12 +15,19 @@ from object_store_creator import ObjectStoreCreator
 from test_file_system import TestFileSystem
 from third_party.handlebar import Handlebar
 
-
 _REDIRECTS_JSON = json.dumps({
   'oldfile.html': 'storage.html',
   'index.html': 'https://developers.google.com/chrome',
 })
 
+
+_MARKDOWN_CONTENT = (
+  ('# Header 1 #', u'<h1 id="header-1">Header 1</h1>'),
+  ('1.  Foo\n', u'<ol>\n<li>Foo</li>\n</ol>'),
+  ('![alt text](/path/img.jpg "Title")\n',
+      '<p><img alt="alt text" src="/path/img.jpg" title="Title" /></p>'),
+  ('* Unordered item 1', u'<ul>\n<li>Unordered item 1</li>\n</ul>')
+)
 
 # Test file system data which exercises many different mimetypes.
 _TEST_DATA = {
@@ -46,6 +53,7 @@ _TEST_DATA = {
   'run.js': 'run.js content',
   'site.css': 'site.css content',
   'storage.html': 'storage.html content',
+  'markdown.md': '\n'.join(text[0] for text in _MARKDOWN_CONTENT)
 }
 
 
@@ -119,6 +127,13 @@ class ContentProviderUnittest(unittest.TestCase):
     self._assertContent(
         ['dir3/a.txt', 'dir3/b.txt', 'dir3/c/d.txt'], 'application/zip',
         content_and_type)
+
+  def testMarkdown(self):
+    content_and_type = self._content_provider.GetContentAndType(
+        'markdown.html').Get()
+    content_and_type.content = content_and_type.content.source
+    self._assertContent('\n'.join(text[1] for text in _MARKDOWN_CONTENT),
+        'text/html', content_and_type)
 
   def testNotFound(self):
     self.assertRaises(

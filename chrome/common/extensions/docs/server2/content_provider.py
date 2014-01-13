@@ -3,13 +3,15 @@
 # found in the LICENSE file.
 
 import mimetypes
-import os
+import posixpath
 
 from compiled_file_system import SingleFile
 from directory_zipper import DirectoryZipper
 from docs_server_utils import ToUnicode
+from file_system import FileNotFoundError
 from future import Gettable, Future
 from third_party.handlebar import Handlebar
+from third_party.markdown import markdown
 
 
 class ContentAndType(object):
@@ -55,7 +57,15 @@ class ContentProvider(object):
   def _CompileContent(self, path, text):
     assert text is not None, path
     mimetype = mimetypes.guess_type(path)[0]
-    if mimetype is None:
+    if posixpath.splitext(path)[1] == '.md':
+      # See http://pythonhosted.org/Markdown/extensions
+      # for details on "extensions=".
+      content = markdown(ToUnicode(text),
+                         extensions=('extra', 'headerid', 'sane_lists'))
+      if self._supports_templates:
+        content = Handlebar(content, name=path)
+      mimetype = 'text/html'
+    elif mimetype is None:
       content = text
       mimetype = 'text/plain'
     elif mimetype == 'text/html':
@@ -69,9 +79,24 @@ class ContentProvider(object):
       content = text
     return ContentAndType(content, mimetype)
 
+  def _MaybeMarkdown(self, path):
+    if posixpath.splitext(path)[1] != '.html':
+      return path
+
+    dirname, file_name = posixpath.split(path)
+    if dirname != '':
+      dirname = dirname + '/'
+    file_list = self.file_system.ReadSingle(dirname).Get()
+    if file_name in file_list:
+      return path
+
+    if posixpath.splitext(file_name)[0] + '.md' in file_list:
+      return posixpath.splitext(path)[0] + '.md'
+    return path
+
   def GetContentAndType(self, path):
     path = path.lstrip('/')
-    base, ext = os.path.splitext(path)
+    base, ext = posixpath.splitext(path)
 
     # Check for a zip file first, if zip is enabled.
     if self._directory_zipper and ext == '.zip':
@@ -79,7 +104,7 @@ class ContentProvider(object):
       return Future(delegate=Gettable(
           lambda: ContentAndType(zip_future.Get(), 'application/zip')))
 
-    return self._content_cache.GetFromFile(path)
+    return self._content_cache.GetFromFile(self._MaybeMarkdown(path))
 
   def Cron(self):
     # Running Refresh() on the file system is enough to pull GitHub content,
