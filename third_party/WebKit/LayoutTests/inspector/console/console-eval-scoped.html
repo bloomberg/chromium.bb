@@ -3,6 +3,10 @@
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../http/tests/inspector/console-test.js"></script>
 <script>
+
+Object.prototype.foo = "Object's foo";
+var foo = "bar";
+
 function test()
 {
     function snippet1() {
@@ -37,6 +41,11 @@ function test()
     }
 
     function step3()
+    {
+        InspectorTest.evaluateInConsole("foo", step4);
+    }
+
+    function step4()
     {
         InspectorTest.dumpConsoleMessages();
         InspectorTest.completeTest();

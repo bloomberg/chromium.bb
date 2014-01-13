@@ -608,7 +608,7 @@ InjectedScript.prototype = {
         try {
             if (injectCommandLineAPI && inspectedWindow.console) {
                 inspectedWindow.console._commandLineAPI = new CommandLineAPI(this._commandLineAPIImpl, isEvalOnCallFrame ? object : null);
-                expression = "with ((console && console._commandLineAPI) || {}) {\n" + expression + "\n}";
+                expression = "with ((console && console._commandLineAPI) || { __proto__: null }) {\n" + expression + "\n}";
             }
             var result = evalFunction.call(object, expression);
             if (objectGroup === "console")
@@ -1233,6 +1233,8 @@ function CommandLineAPI(commandLineAPIImpl, callFrame)
     }
 
     this.$_ = injectedScript._lastResult;
+
+    this.__proto__ = null;
 }
 
 // NOTE: Please keep the list of API methods below snchronized to that in WebInspector.RuntimeModel!
