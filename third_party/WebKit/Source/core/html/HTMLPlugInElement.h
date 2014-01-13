@@ -79,6 +79,8 @@ protected:
     bool requestObject(const String& url, const String& mimeType, const Vector<String>& paramNames, const Vector<String>& paramValues);
     bool shouldUsePlugin(const KURL&, const String& mimeType, bool hasFallback, bool& useFallback);
 
+    void dispatchErrorEvent();
+
     String m_serviceType;
     String m_url;
     KURL m_loadedUrl;

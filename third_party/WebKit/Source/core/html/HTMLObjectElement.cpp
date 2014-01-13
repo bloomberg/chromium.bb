@@ -270,14 +270,18 @@ void HTMLObjectElement::updateWidgetInternal()
     ASSERT(needsWidgetUpdate());
     setNeedsWidgetUpdate(false);
     // FIXME: This should ASSERT isFinishedParsingChildren() instead.
-    if (!isFinishedParsingChildren())
+    if (!isFinishedParsingChildren()) {
+        dispatchErrorEvent();
         return;
+    }
 
     // FIXME: I'm not sure it's ever possible to get into updateWidget during a
     // removal, but just in case we should avoid loading the frame to prevent
     // security bugs.
-    if (!SubframeLoadingDisabler::canLoadFrame(*this))
+    if (!SubframeLoadingDisabler::canLoadFrame(*this)) {
+        dispatchErrorEvent();
         return;
+    }
 
     String url = this->url();
     String serviceType = m_serviceType;
@@ -288,8 +292,10 @@ void HTMLObjectElement::updateWidgetInternal()
     parametersForPlugin(paramNames, paramValues, url, serviceType);
 
     // Note: url is modified above by parametersForPlugin.
-    if (!allowedToLoadFrameURL(url))
+    if (!allowedToLoadFrameURL(url)) {
+        dispatchErrorEvent();
         return;
+    }
 
     bool fallbackContent = hasFallbackContent();
     renderEmbeddedObject()->setHasFallbackContent(fallbackContent);
@@ -299,9 +305,12 @@ void HTMLObjectElement::updateWidgetInternal()
     if (!renderer()) // Do not load the plugin if beforeload removed this element or its renderer.
         return;
 
-    bool success = beforeLoadAllowedLoad && hasValidClassId() && requestObject(url, serviceType, paramNames, paramValues);
-    if (!success && fallbackContent)
-        renderFallbackContent();
+    if (!beforeLoadAllowedLoad || !hasValidClassId() || !requestObject(url, serviceType, paramNames, paramValues)) {
+        if (!url.isEmpty())
+            dispatchErrorEvent();
+        if (fallbackContent)
+            renderFallbackContent();
+    }
 }
 
 bool HTMLObjectElement::rendererIsNeeded(const RenderStyle& style)
