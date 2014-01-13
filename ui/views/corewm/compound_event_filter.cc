@@ -17,6 +17,10 @@
 #include "ui/base/hit_test.h"
 #include "ui/events/event.h"
 
+#if defined(OS_CHROMEOS) && defined(USE_X11)
+#include "ui/events/x/touch_factory_x11.h"
+#endif
+
 namespace views {
 namespace corewm {
 
@@ -71,8 +75,19 @@ bool ShouldHideCursorOnKeyEvent(const ui::KeyEvent& event) {
 }
 
 // Returns true if the cursor should be hidden on touch events.
-bool ShouldHideCursorOnTouch() {
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
+bool ShouldHideCursorOnTouch(const ui::TouchEvent& event) {
+#if defined(OS_WIN)
+  return true;
+#elif defined(OS_CHROMEOS)
+#if defined(USE_X11)
+  int device_id = event.source_device_id();
+  if (device_id >= 0 &&
+      !ui::TouchFactory::GetInstance()->IsMultiTouchDevice(device_id)) {
+    // If the touch event is coming from a mouse-device (i.e. not a real
+    // touch-device), then do not hide the cursor.
+    return false;
+  }
+#endif  // defined(USE_X11)
   return true;
 #else
   // Linux Aura does not hide the cursor on touch by default.
@@ -258,8 +273,8 @@ void CompoundEventFilter::OnScrollEvent(ui::ScrollEvent* event) {
 
 void CompoundEventFilter::OnTouchEvent(ui::TouchEvent* event) {
   FilterTouchEvent(event);
-  if (ShouldHideCursorOnTouch() && !event->handled() &&
-      event->type() == ui::ET_TOUCH_PRESSED &&
+  if (!event->handled() && event->type() == ui::ET_TOUCH_PRESSED &&
+      ShouldHideCursorOnTouch(*event) &&
       !aura::Env::GetInstance()->IsMouseButtonDown()) {
     SetMouseEventsEnableStateOnEvent(
         static_cast<aura::Window*>(event->target()), event, false);
