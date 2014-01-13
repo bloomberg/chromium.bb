@@ -115,6 +115,8 @@ public:
     void dispatchPendingEvent(SMILEventSender*);
     void dispatchRepeatEvents(unsigned);
 
+    virtual bool isSVGDiscardElement() const { return false; }
+
 protected:
     void addBeginTime(SMILTime eventTime, SMILTime endTime, SMILTimeWithOrigin::Origin = SMILTimeWithOrigin::ParserOrigin);
     void addEndTime(SMILTime eventTime, SMILTime endTime, SMILTimeWithOrigin::Origin = SMILTimeWithOrigin::ParserOrigin);
@@ -240,7 +242,7 @@ private:
 inline bool isSVGSMILElement(const Node& node)
 {
     return node.hasTagName(SVGNames::setTag) || node.hasTagName(SVGNames::animateTag) || node.hasTagName(SVGNames::animateMotionTag)
-        || node.hasTagName(SVGNames::animateTransformTag) || node.hasTagName(SVGNames::animateColorTag);
+        || node.hasTagName(SVGNames::animateTransformTag) || node.hasTagName(SVGNames::animateColorTag) || node.hasTagName((SVGNames::discardTag));
 }
 
 DEFINE_NODE_TYPE_CASTS_WITH_FUNCTION(SVGSMILElement);

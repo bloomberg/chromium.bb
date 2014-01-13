@@ -20,6 +20,7 @@ clipPath
 cursor
 defs
 desc
+discard
 ellipse
 feBlend
 feColorMatrix

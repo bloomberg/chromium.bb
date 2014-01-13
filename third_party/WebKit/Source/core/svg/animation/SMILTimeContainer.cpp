@@ -54,6 +54,8 @@ SMILTimeContainer::SMILTimeContainer(SVGSVGElement* owner)
 
 SMILTimeContainer::~SMILTimeContainer()
 {
+    m_timer.stop();
+    ASSERT(!m_timer.isActive());
 #ifndef NDEBUG
     ASSERT(!m_preventScheduledAnimationsChanges);
 #endif
@@ -264,7 +266,7 @@ void SMILTimeContainer::updateAnimations(SMILTime elapsed, bool seekToTime)
     m_preventScheduledAnimationsChanges = true;
 #endif
 
-    AnimationsVector animationsToApply;
+    Vector<RefPtr<SVGSMILElement> >  animationsToApply;
     GroupedAnimationsMap::iterator end = m_scheduledAnimations.end();
     for (GroupedAnimationsMap::iterator it = m_scheduledAnimations.begin(); it != end; ++it) {
         AnimationsVector* scheduled = it->value.get();
@@ -321,6 +323,22 @@ void SMILTimeContainer::updateAnimations(SMILTime elapsed, bool seekToTime)
 #endif
 
     startTimer(earliestFireTime, animationFrameDelay);
+
+    for (unsigned i = 0; i < animationsToApplySize; ++i) {
+        if (animationsToApply[i]->inDocument() && animationsToApply[i]->isSVGDiscardElement()) {
+            RefPtr<SVGSMILElement> animDiscard = animationsToApply[i];
+            RefPtr<SVGElement> targetElement = animDiscard->targetElement();
+            if (targetElement && targetElement->inDocument()) {
+                targetElement->remove(IGNORE_EXCEPTION);
+                ASSERT(!targetElement->inDocument());
+            }
+
+            if (animDiscard->inDocument()) {
+                animDiscard->remove(IGNORE_EXCEPTION);
+                ASSERT(!animDiscard->inDocument());
+            }
+        }
+    }
 }
 
 }
