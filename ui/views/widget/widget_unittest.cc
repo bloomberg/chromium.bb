@@ -2293,5 +2293,28 @@ TEST_F(WidgetTest, ShowAfterShowInactive) {
   widget->CloseNow();
 }
 
+#if defined(OS_WIN) && defined(USE_AURA)
+TEST_F(WidgetTest, InactiveWidgetDoesNotGrabActivation) {
+  Widget* widget = CreateTopLevelPlatformWidget();
+  widget->Show();
+  EXPECT_EQ(GetWidgetShowState(widget), ui::SHOW_STATE_NORMAL);
+
+  Widget widget2;
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  params.can_activate = false;
+  params.native_widget = new DesktopNativeWidgetAura(&widget2);
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  widget2.Init(params);
+  widget2.Show();
+
+  EXPECT_EQ(GetWidgetShowState(&widget2), ui::SHOW_STATE_INACTIVE);
+  EXPECT_EQ(GetWidgetShowState(widget), ui::SHOW_STATE_NORMAL);
+
+  widget->CloseNow();
+  widget2.CloseNow();
+}
+
+#endif
+
 }  // namespace test
 }  // namespace views

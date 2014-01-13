@@ -576,8 +576,14 @@ void HWNDMessageHandler::StackAtTop() {
 }
 
 void HWNDMessageHandler::Show() {
-  if (IsWindow(hwnd()))
-    ShowWindowWithState(ui::SHOW_STATE_NORMAL);
+  if (IsWindow(hwnd())) {
+    if (!(GetWindowLong(hwnd(), GWL_EXSTYLE) & WS_EX_TRANSPARENT) &&
+        !(GetWindowLong(hwnd(), GWL_EXSTYLE) & WS_EX_NOACTIVATE)) {
+      ShowWindowWithState(ui::SHOW_STATE_NORMAL);
+    } else {
+      ShowWindowWithState(ui::SHOW_STATE_INACTIVE);
+    }
+  }
 }
 
 void HWNDMessageHandler::ShowWindowWithState(ui::WindowShowState show_state) {
