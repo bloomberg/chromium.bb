@@ -192,9 +192,6 @@ private:
 
     void garbageCollectDocumentResourcesTimerFired(Timer<ResourceFetcher>*);
     void scheduleDocumentResourcesGC();
-
-    void resourceTimingReportTimerFired(Timer<ResourceFetcher>*);
-
     void performPostLoadActions();
 
     bool clientDefersImage(const KURL&) const;
@@ -216,11 +213,9 @@ private:
     Deque<PendingPreload> m_pendingPreloads;
 
     Timer<ResourceFetcher> m_garbageCollectDocumentResourcesTimer;
-    Timer<ResourceFetcher> m_resourceTimingReportTimer;
 
     typedef HashMap<Resource*, RefPtr<ResourceTimingInfo> > ResourceTimingInfoMap;
     ResourceTimingInfoMap m_resourceTimingInfoMap;
-    ResourceTimingInfoMap m_scheduledResourceTimingReports;
 
     OwnPtr<ResourceLoaderSet> m_loaders;
     OwnPtr<ResourceLoaderSet> m_multipartLoaders;
