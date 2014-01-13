@@ -614,21 +614,19 @@ void partitionFreeSlowPath(PartitionPage* page)
         // Ensure that the page is full. That's the only valid case if we
         // arrive here.
         ASSERT(page->numAllocatedSlots < 0);
+        page->numAllocatedSlots = -page->numAllocatedSlots - 2;
+        ASSERT(page->numAllocatedSlots == static_cast<int>(partitionBucketSlots(bucket) - 1));
         // Fully used page became partially used. It must be put back on the
         // non-full page list. Also make it the current page to increase the
         // chances of it being filled up again. The old current page will be
         // the next page.
-        page->numAllocatedSlots = -page->numAllocatedSlots - 2;
-        ASSERT(page->numAllocatedSlots == static_cast<int>(partitionBucketSlots(bucket) - 1));
-        // Special case: for a partition page with just a single slot, we want
-        // to bounce it straight to the free list.
-        if (UNLIKELY(page->numAllocatedSlots == 0)) {
-            partitionPutPageOnFreelist(page, bucket);
-        } else {
-            page->activePageNext = bucket->activePagesHead;
-            bucket->activePagesHead = page;
-        }
+        page->activePageNext = bucket->activePagesHead;
+        bucket->activePagesHead = page;
         --bucket->numFullPages;
+        // Special case: for a partition page with just a single slot, it may
+        // now be empty and we want to run it through the empty logic.
+        if (UNLIKELY(page->numAllocatedSlots == 0))
+            partitionFreeSlowPath(page);
         // Note: there's an opportunity here to look to see if the old active
         // page is now freeable.
     }
