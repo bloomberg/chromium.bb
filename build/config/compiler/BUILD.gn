@@ -101,6 +101,19 @@ config("compiler") {
       cflags += "-m32"
       ldflags += "-m32"
     }
+
+    defines += [ "_FILE_OFFSET_BITS=64" ]
+
+    # Omit unwind support in official builds to save space. We can use breakpad
+    # for these builds.
+    if (is_chrome_branded && is_official_build) {
+      cflags += [
+        "-fno-unwind-tables",
+        "-fno-asynchronous-unwind-tables",
+      ]
+    } else {
+      cflags += [ "-funwind-tables" ]
+    }
   }
 
   # Linux-specific compiler flags setup.
@@ -114,9 +127,14 @@ config("compiler") {
       cflags += [ "-pthread" ]
     }
 
-    # Use gold for linking on 64-bit Linux only (on 32-bit it runs out of
-    # address space, and it doesn't support cross-compiling).
     if (cpu_arch == "x64") {
+      # Enable libstdc++ debugging facilities to help catch problems early, see
+      # http://crbug.com/65151 .
+      # TODO(phajdan.jr): Should we enable this for all of POSIX?
+      defines += [ "__GLIBCXX_DEBUG=1" ]
+
+      # Use gold for linking on 64-bit Linux only (on 32-bit it runs out of
+      # address space, and it doesn't support cross-compiling).
       gold_path = rebase_path("//third_party/gold", ".", root_build_dir)
       ldflags += [
         "-B$gold_path",
@@ -163,6 +181,9 @@ config("compiler") {
   if (is_clang) {
     cflags += [
       "-fcolor-diagnostics",
+    ]
+    cflags_cc += [
+      "-std=gnu++11",
     ]
   }
 
