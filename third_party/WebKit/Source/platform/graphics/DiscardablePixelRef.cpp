@@ -52,7 +52,7 @@ bool DiscardablePixelRefAllocator::allocPixelRef(SkBitmap* dst, SkColorTable* ct
     if (!dst->asImageInfo(&info))
         return false;
 
-    SkAutoTUnref<DiscardablePixelRef> pixelRef(new DiscardablePixelRef(info, adoptPtr(new SkMutex())));
+    SkAutoTUnref<DiscardablePixelRef> pixelRef(new DiscardablePixelRef(info, dst->rowBytes(), adoptPtr(new SkMutex())));
     if (pixelRef->allocAndLockDiscardableMemory(sk_64_asS32(size))) {
         pixelRef->setURI(labelDiscardable);
         dst->setPixelRef(pixelRef.get());
@@ -68,10 +68,11 @@ bool DiscardablePixelRefAllocator::allocPixelRef(SkBitmap* dst, SkColorTable* ct
     return dst->allocPixels();
 }
 
-DiscardablePixelRef::DiscardablePixelRef(const SkImageInfo& info, PassOwnPtr<SkMutex> mutex)
+DiscardablePixelRef::DiscardablePixelRef(const SkImageInfo& info, size_t rowBytes, PassOwnPtr<SkMutex> mutex)
     : SkPixelRef(info, mutex.get())
     , m_lockedMemory(0)
     , m_mutex(mutex)
+    , m_rowBytes(rowBytes)
 {
 }
 
@@ -89,6 +90,7 @@ bool DiscardablePixelRef::allocAndLockDiscardableMemory(size_t bytes)
     return false;
 }
 
+#ifdef SK_SUPPORT_LEGACY_ONLOCKPIXELS
 void* DiscardablePixelRef::onLockPixels(SkColorTable** ctable)
 {
     if (!m_lockedMemory && m_discardable->lock())
@@ -96,6 +98,21 @@ void* DiscardablePixelRef::onLockPixels(SkColorTable** ctable)
 
     *ctable = 0;
     return m_lockedMemory;
+}
+#endif
+
+bool DiscardablePixelRef::onNewLockPixels(LockRec* rec)
+{
+    if (!m_lockedMemory && m_discardable->lock())
+        m_lockedMemory = m_discardable->data();
+
+    if (m_lockedMemory) {
+        rec->fPixels = m_lockedMemory;
+        rec->fColorTable = 0;
+        rec->fRowBytes = m_rowBytes;
+        return true;
+    }
+    return false;
 }
 
 void DiscardablePixelRef::onUnlockPixels()

@@ -63,11 +63,14 @@ public:
 
 protected:
     // SkPixelRef implementation.
+#ifdef SK_SUPPORT_LEGACY_ONLOCKPIXELS
     virtual void* onLockPixels(SkColorTable**) OVERRIDE;
+#endif
+    virtual bool onNewLockPixels(LockRec*) OVERRIDE;
     virtual void onUnlockPixels() OVERRIDE;
     virtual bool onLockPixelsAreWritable() const OVERRIDE;
 
-    virtual SkData* onRefEncodedData() SK_OVERRIDE;
+    virtual SkData* onRefEncodedData() OVERRIDE;
 
 private:
     RefPtr<ImageFrameGenerator> m_frameGenerator;

@@ -64,12 +64,25 @@ public:
 
 protected:
     // SkPixelRef implementation.
+#ifdef SK_SUPPORT_LEGACY_ONLOCKPIXELS
     virtual void* onLockPixels(SkColorTable**)
     {
         if (discarded)
             return 0;
         m_lockedMemory = &discarded;
         return m_lockedMemory;
+    }
+#endif
+
+    virtual bool onNewLockPixels(LockRec* rec)
+    {
+        if (discarded)
+            return false;
+        m_lockedMemory = &discarded;
+        rec->fPixels = m_lockedMemory;
+        rec->fColorTable = 0;
+        rec->fRowBytes = 1;
+        return true;
     }
 
     virtual void onUnlockPixels()
