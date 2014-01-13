@@ -64,13 +64,12 @@ namespace WebCore {
     class DocumentLoader : public RefCounted<DocumentLoader>, private RawResourceClient {
         WTF_MAKE_FAST_ALLOCATED;
     public:
-        static PassRefPtr<DocumentLoader> create(const ResourceRequest& request, const SubstituteData& data)
+        static PassRefPtr<DocumentLoader> create(Frame* frame, const ResourceRequest& request, const SubstituteData& data)
         {
-            return adoptRef(new DocumentLoader(request, data));
+            return adoptRef(new DocumentLoader(frame, request, data));
         }
         virtual ~DocumentLoader();
 
-        void setFrame(Frame*);
         Frame* frame() const { return m_frame; }
 
         void detachFromFrame();
@@ -135,7 +134,7 @@ namespace WebCore {
         void appendRedirect(const KURL&);
 
     protected:
-        DocumentLoader(const ResourceRequest&, const SubstituteData&);
+        DocumentLoader(Frame*, const ResourceRequest&, const SubstituteData&);
 
         Vector<KURL> m_redirectChain;
 

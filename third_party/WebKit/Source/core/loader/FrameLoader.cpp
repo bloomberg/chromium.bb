@@ -143,6 +143,7 @@ FrameLoader::FrameLoader(Frame* frame, FrameLoaderClient* client)
     : m_frame(frame)
     , m_client(client)
     , m_mixedContentChecker(frame)
+    , m_progressTracker(FrameProgressTracker::create(m_frame))
     , m_state(FrameStateProvisional)
     , m_loadType(FrameLoadTypeStandard)
     , m_fetchContext(FrameFetchContext::create(frame))
@@ -166,13 +167,10 @@ FrameLoader::~FrameLoader()
 
 void FrameLoader::init()
 {
-    // This somewhat odd set of steps gives the frame an initial empty document.
-    m_provisionalDocumentLoader = m_client->createDocumentLoader(ResourceRequest(KURL(ParsedURLString, emptyString())), SubstituteData());
-    m_provisionalDocumentLoader->setFrame(m_frame);
+    m_provisionalDocumentLoader = m_client->createDocumentLoader(m_frame, ResourceRequest(KURL(ParsedURLString, emptyString())), SubstituteData());
     m_provisionalDocumentLoader->startLoadingMainResource();
     m_frame->document()->cancelParsing();
     m_stateMachine.advanceTo(FrameLoaderStateMachine::DisplayingInitialEmptyDocument);
-    m_progressTracker = FrameProgressTracker::create(m_frame);
 }
 
 void FrameLoader::setDefersLoading(bool defers)
@@ -1262,8 +1260,7 @@ void FrameLoader::loadWithNavigationAction(const NavigationAction& action, Frame
         replacesCurrentHistoryItem = true;
     }
 
-    m_policyDocumentLoader = m_client->createDocumentLoader(request, substituteData.isValid() ? substituteData : defaultSubstituteDataForURL(request.url()));
-    m_policyDocumentLoader->setFrame(m_frame);
+    m_policyDocumentLoader = m_client->createDocumentLoader(m_frame, request, substituteData.isValid() ? substituteData : defaultSubstituteDataForURL(request.url()));
     m_policyDocumentLoader->setTriggeringAction(action);
     m_policyDocumentLoader->setReplacesCurrentHistoryItem(replacesCurrentHistoryItem);
     m_policyDocumentLoader->setIsClientRedirect(clientRedirect == ClientRedirect);

@@ -106,8 +106,7 @@ TEST(ImageResourceTest, CancelOnDetach)
 
     // Create enough of a mocked world to get a functioning ResourceLoader.
     OwnPtr<DummyPageHolder> dummyPageHolder = DummyPageHolder::create();
-    RefPtr<DocumentLoader> documentLoader = DocumentLoader::create(ResourceRequest(testURL), SubstituteData());
-    documentLoader->setFrame(&dummyPageHolder->frame());
+    RefPtr<DocumentLoader> documentLoader = DocumentLoader::create(&dummyPageHolder->frame(), ResourceRequest(testURL), SubstituteData());
 
     // Emulate starting a real load.
     ResourcePtr<ImageResource> cachedImage = new ImageResource(ResourceRequest(testURL));

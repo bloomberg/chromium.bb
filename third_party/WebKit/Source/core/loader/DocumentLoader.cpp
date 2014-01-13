@@ -69,8 +69,8 @@ static bool isArchiveMIMEType(const String& mimeType)
     return mimeType == "multipart/related";
 }
 
-DocumentLoader::DocumentLoader(const ResourceRequest& req, const SubstituteData& substituteData)
-    : m_frame(0)
+DocumentLoader::DocumentLoader(Frame* frame, const ResourceRequest& req, const SubstituteData& substituteData)
+    : m_frame(frame)
     , m_fetcher(ResourceFetcher::create(this))
     , m_originalRequest(req)
     , m_substituteData(substituteData)
@@ -549,15 +549,6 @@ void DocumentLoader::clearRedirectChain()
 void DocumentLoader::appendRedirect(const KURL& url)
 {
     m_redirectChain.append(url);
-}
-
-void DocumentLoader::setFrame(Frame* frame)
-{
-    if (m_frame == frame)
-        return;
-    ASSERT(frame && !m_frame);
-    ASSERT(!m_writer);
-    m_frame = frame;
 }
 
 void DocumentLoader::detachFromFrame()

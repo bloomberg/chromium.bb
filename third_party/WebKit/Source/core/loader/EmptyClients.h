@@ -219,7 +219,7 @@ public:
 
     virtual void loadURLExternally(const ResourceRequest&, NavigationPolicy, const String& = String()) OVERRIDE { }
 
-    virtual PassRefPtr<DocumentLoader> createDocumentLoader(const ResourceRequest&, const SubstituteData&) OVERRIDE;
+    virtual PassRefPtr<DocumentLoader> createDocumentLoader(Frame*, const ResourceRequest&, const SubstituteData&) OVERRIDE;
 
     virtual String userAgent(const KURL&) OVERRIDE { return ""; }
 

@@ -538,11 +538,9 @@ void FrameLoaderClientImpl::selectorMatchChanged(const Vector<String>& addedSele
         client->didMatchCSS(m_webFrame, WebVector<WebString>(addedSelectors), WebVector<WebString>(removedSelectors));
 }
 
-PassRefPtr<DocumentLoader> FrameLoaderClientImpl::createDocumentLoader(
-    const ResourceRequest& request,
-    const SubstituteData& data)
+PassRefPtr<DocumentLoader> FrameLoaderClientImpl::createDocumentLoader(Frame* frame, const ResourceRequest& request, const SubstituteData& data)
 {
-    RefPtr<WebDataSourceImpl> ds = WebDataSourceImpl::create(request, data);
+    RefPtr<WebDataSourceImpl> ds = WebDataSourceImpl::create(frame, request, data);
     if (m_webFrame->client())
         m_webFrame->client()->didCreateDataSource(m_webFrame, ds.get());
     return ds.release();

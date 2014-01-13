@@ -113,9 +113,9 @@ void EmptyFrameLoaderClient::dispatchWillSubmitForm(PassRefPtr<FormState>)
 {
 }
 
-PassRefPtr<DocumentLoader> EmptyFrameLoaderClient::createDocumentLoader(const ResourceRequest& request, const SubstituteData& substituteData)
+PassRefPtr<DocumentLoader> EmptyFrameLoaderClient::createDocumentLoader(Frame* frame, const ResourceRequest& request, const SubstituteData& substituteData)
 {
-    return DocumentLoader::create(request, substituteData);
+    return DocumentLoader::create(frame, request, substituteData);
 }
 
 PassRefPtr<Frame> EmptyFrameLoaderClient::createFrame(const KURL&, const AtomicString&, const String&, HTMLFrameOwnerElement*)
