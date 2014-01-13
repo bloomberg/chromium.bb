@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/profiles/profiles_state.h"
+#include "chrome/browser/signin/mutable_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
@@ -555,8 +556,9 @@ void ProfileChooserView::OnMenuButtonClicked(views::View* source,
       current_profile_accounts_map_.find(source);
   DCHECK(match != current_profile_accounts_map_.end());
 
-  ProfileOAuth2TokenService* oauth2_token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(browser_->profile());
+  MutableProfileOAuth2TokenService* oauth2_token_service =
+      ProfileOAuth2TokenServiceFactory::GetPlatformSpecificForProfile(
+          browser_->profile());
   if (oauth2_token_service)
     oauth2_token_service->RevokeCredentials(match->second);
 }

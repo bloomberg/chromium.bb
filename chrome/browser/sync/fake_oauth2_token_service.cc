@@ -24,6 +24,19 @@ void FakeOAuth2TokenService::FetchOAuth2Token(
       base::Time::Max()));
 }
 
+void FakeOAuth2TokenService::UpdateCredentials(
+    const std::string& account_id,
+    const std::string& refresh_token) {
+  account_id_ = account_id;
+  refresh_token_ = refresh_token;
+  FireRefreshTokenAvailable(account_id);
+}
+
+bool FakeOAuth2TokenService::RefreshTokenIsAvailable(
+    const std::string& account_id) {
+  return account_id_ == account_id && !refresh_token_.empty();
+}
+
 BrowserContextKeyedService* FakeOAuth2TokenService::BuildTokenService(
     content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);

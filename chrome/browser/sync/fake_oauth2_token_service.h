@@ -16,6 +16,12 @@ class FakeOAuth2TokenService : public ProfileOAuth2TokenService {
   static BrowserContextKeyedService* BuildTokenService(
       content::BrowserContext* context);
 
+  virtual bool RefreshTokenIsAvailable(
+      const std::string& account_id) OVERRIDE;
+
+  virtual void UpdateCredentials(const std::string& account_id,
+                                 const std::string& refresh_token) OVERRIDE;
+
  protected:
   virtual void FetchOAuth2Token(
       OAuth2TokenService::RequestImpl* request,
@@ -24,6 +30,10 @@ class FakeOAuth2TokenService : public ProfileOAuth2TokenService {
       const std::string& client_id,
       const std::string& client_secret,
       const OAuth2TokenService::ScopeSet& scopes) OVERRIDE;
+
+ private:
+  std::string account_id_;
+  std::string refresh_token_;
 };
 
 #endif  // CHROME_BROWSER_SYNC_FAKE_OAUTH2_TOKEN_SERVICE_H_
