@@ -152,7 +152,7 @@ class Breakpad {
   void RemoveKeyValue(NSString *key);
   NSArray *CrashReportsToUpload();
   NSString *NextCrashReportToUpload();
-  void UploadNextReport();
+  void UploadNextReport(NSDictionary *server_parameters);
   void UploadData(NSData *data, NSString *name,
                   NSDictionary *server_parameters);
   NSDictionary *GenerateReport(NSDictionary *server_parameters);
@@ -448,13 +448,18 @@ NSString *Breakpad::NextCrashReportToUpload() {
 }
 
 //=============================================================================
-void Breakpad::UploadNextReport() {
+void Breakpad::UploadNextReport(NSDictionary *server_parameters) {
   NSString *configFile = NextCrashReportToUpload();
   if (configFile) {
     Uploader *uploader = [[[Uploader alloc]
         initWithConfigFile:[configFile UTF8String]] autorelease];
-    if (uploader)
+    if (uploader) {
+      for (NSString *key in server_parameters) {
+        [uploader addServerParameter:[server_parameters objectForKey:key]
+                              forKey:key];
+      }
       [uploader report];
+    }
   }
 }
 
@@ -784,13 +789,14 @@ int BreakpadGetCrashReportCount(BreakpadRef ref) {
 }
 
 //=============================================================================
-void BreakpadUploadNextReport(BreakpadRef ref) {
+void BreakpadUploadNextReport(BreakpadRef ref,
+                              NSDictionary *server_parameters) {
   try {
     // Not called at exception time
     Breakpad *breakpad = (Breakpad *)ref;
 
     if (breakpad) {
-       breakpad->UploadNextReport();
+       breakpad->UploadNextReport(server_parameters);
     }
   } catch(...) {    // don't let exceptions leave this C API
     fprintf(stderr, "BreakpadUploadNextReport() : error\n");

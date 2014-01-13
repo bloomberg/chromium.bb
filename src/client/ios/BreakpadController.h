@@ -62,6 +62,10 @@
   // The interval to wait between two uploads. Value is 0 if no upload must be
   // done.
   int uploadIntervalInSeconds_;
+
+  // The dictionary that contains additional server parameters to send when
+  // uploading crash reports.
+  NSDictionary* uploadTimeParameters_;
 }
 
 // Singleton.
@@ -84,8 +88,11 @@
 // will prevent uploads.
 - (void)setUploadInterval:(int)intervalInSeconds;
 
-// Specify a parameter that will be uploaded to the crash server. See
-// |BreakpadAddUploadParameter|.
+// Set additional server parameters to send when uploading crash reports.
+- (void)setParametersToAddAtUploadTime:(NSDictionary*)uploadTimeParameters;
+
+// Specify an upload parameter that will be added to the crash report when a
+// crash report is generated. See |BreakpadAddUploadParameter|.
 - (void)addUploadParameter:(NSString*)value forKey:(NSString*)key;
 
 // Remove a previously-added parameter from the upload parameter set. See
