@@ -537,15 +537,6 @@ crbug.com/309184 crbug.com/303419 crbug.com/284782 http/tests/media/media-source
 # 323284 tracks Android-specific flaky failure
 crbug.com/323284 crbug.com/324120 http/tests/media/media-source/webkitmediasource-removesourcebuffer-texttrack.html [ Pass Crash Failure ]
 
-crbug.com/331619 http/tests/images/webp-partial-load.html [ NeedsRebaseline ]
-crbug.com/331619 http/tests/images/webp-progressive-load.html [ NeedsRebaseline ]
-crbug.com/331619 fast/canvas/canvas-toDataURL-webp.html [ NeedsRebaseline ]
-crbug.com/331619 fast/images/webp-color-profile-lossy.html [ NeedsRebaseline ]
-crbug.com/331619 fast/images/webp-color-profile-lossy-alpha.html [ NeedsRebaseline ]
-crbug.com/331619 virtual/gpu/fast/canvas/canvas-toDataURL-webp.html [ NeedsRebaseline ]
-crbug.com/331619 virtual/deferred/fast/images/webp-color-profile-lossy.html [ NeedsRebaseline ]
-crbug.com/331619 virtual/deferred/fast/images/webp-color-profile-lossy-alpha.html [ NeedsRebaseline ]
-
 crbug.com/323301 [ Android ] http/tests/media/media-source/mediasource-play-then-seek-back.html [ Pass Crash ]
 crbug.com/302729 [ Android ] http/tests/media/media-source/mediasource-seek-during-pending-seek.html [ Failure ]
 crbug.com/302729 [ Android ] http/tests/media/media-source/mediasource-seek-beyond-duration.html [ Failure ]
