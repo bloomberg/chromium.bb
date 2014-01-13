@@ -165,7 +165,8 @@ int HomeButton::OnDragUpdated(const ui::DropTargetEvent& event) {
 int HomeButton::OnPerformDrop(const ui::DropTargetEvent& event) {
   GURL new_homepage_url;
   base::string16 title;
-  if (event.data().GetURLAndTitle(&new_homepage_url, &title) &&
+  if (event.data().GetURLAndTitle(
+          ui::OSExchangeData::CONVERT_FILENAMES, &new_homepage_url, &title) &&
       new_homepage_url.is_valid()) {
     PrefService* prefs = browser_->profile()->GetPrefs();
     bool old_is_ntp = prefs->GetBoolean(prefs::kHomePageIsNewTabPage);

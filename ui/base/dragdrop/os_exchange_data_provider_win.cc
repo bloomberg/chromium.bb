@@ -386,10 +386,16 @@ bool OSExchangeDataProviderWin::GetString(base::string16* data) const {
   return ClipboardUtil::GetPlainText(source_object_, data);
 }
 
-bool OSExchangeDataProviderWin::GetURLAndTitle(GURL* url,
-                                               base::string16* title) const {
+bool OSExchangeDataProviderWin::GetURLAndTitle(
+    OSExchangeData::FilenameToURLPolicy policy,
+    GURL* url,
+    base::string16* title) const {
   base::string16 url_str;
-  bool success = ClipboardUtil::GetUrl(source_object_, &url_str, title, true);
+  bool success = ClipboardUtil::GetUrl(
+      source_object_,
+      &url_str,
+      title,
+      policy == OSExchangeData::CONVERT_FILENAMES ? true : false);
   if (success) {
     GURL test_url(url_str);
     if (test_url.is_valid()) {

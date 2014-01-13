@@ -65,7 +65,8 @@ TEST(OSExchangeDataWinTest, StringDataWritingViaCOM) {
   EXPECT_TRUE(data2.HasURL());
   GURL url_from_data;
   std::wstring title;
-  EXPECT_TRUE(data2.GetURLAndTitle(&url_from_data, &title));
+  EXPECT_TRUE(data2.GetURLAndTitle(
+      OSExchangeData::CONVERT_FILENAMES, &url_from_data, &title));
   GURL reference_url(input);
   EXPECT_EQ(reference_url.spec(), url_from_data.spec());
 }
@@ -116,7 +117,8 @@ TEST(OSExchangeDataWinTest, RemoveData) {
   EXPECT_TRUE(data2.HasURL());
   GURL url_from_data;
   std::wstring title;
-  EXPECT_TRUE(data2.GetURLAndTitle(&url_from_data, &title));
+  EXPECT_TRUE(data2.GetURLAndTitle(
+      OSExchangeData::CONVERT_FILENAMES, &url_from_data, &title));
   EXPECT_EQ(GURL(input2).spec(), url_from_data.spec());
 }
 
@@ -348,7 +350,8 @@ TEST(OSExchangeDataWinTest, ProvideURLForPlainTextURL) {
   ASSERT_TRUE(data2.HasURL());
   GURL read_url;
   std::wstring title;
-  EXPECT_TRUE(data2.GetURLAndTitle(&read_url, &title));
+  EXPECT_TRUE(data2.GetURLAndTitle(
+      OSExchangeData::CONVERT_FILENAMES, &read_url, &title));
   EXPECT_EQ(GURL("http://google.com"), read_url);
 }
 

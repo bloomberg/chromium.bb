@@ -62,8 +62,10 @@ bool OSExchangeData::GetString(base::string16* data) const {
   return provider_->GetString(data);
 }
 
-bool OSExchangeData::GetURLAndTitle(GURL* url, base::string16* title) const {
-  return provider_->GetURLAndTitle(url, title);
+bool OSExchangeData::GetURLAndTitle(FilenameToURLPolicy policy,
+                                    GURL* url,
+                                    base::string16* title) const {
+  return provider_->GetURLAndTitle(policy, url, title);
 }
 
 bool OSExchangeData::GetFilename(base::FilePath* path) const {

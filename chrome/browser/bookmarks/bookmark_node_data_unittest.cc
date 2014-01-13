@@ -128,7 +128,8 @@ TEST_F(BookmarkNodeDataTest, URL) {
   // Writing should also put the URL and title on the clipboard.
   GURL read_url;
   base::string16 read_title;
-  EXPECT_TRUE(data2.GetURLAndTitle(&read_url, &read_title));
+  EXPECT_TRUE(data2.GetURLAndTitle(
+      ui::OSExchangeData::CONVERT_FILENAMES, &read_url, &read_title));
   EXPECT_EQ(url, read_url);
   EXPECT_EQ(title, read_title);
 }

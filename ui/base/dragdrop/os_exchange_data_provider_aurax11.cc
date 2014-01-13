@@ -197,6 +197,7 @@ bool OSExchangeDataProviderAuraX11::GetString(base::string16* result) const {
 }
 
 bool OSExchangeDataProviderAuraX11::GetURLAndTitle(
+    OSExchangeData::FilenameToURLPolicy policy,
     GURL* url,
     base::string16* title) const {
   std::vector< ::Atom> url_atoms = ui::GetURLAtomsFrom(&atom_cache_);
@@ -231,7 +232,8 @@ bool OSExchangeDataProviderAuraX11::GetURLAndTitle(
       for (std::vector<std::string>::const_iterator it = tokens.begin();
            it != tokens.end(); ++it) {
         GURL test_url(*it);
-        if (!test_url.SchemeIsFile()) {
+        if (!test_url.SchemeIsFile() ||
+            policy == OSExchangeData::CONVERT_FILENAMES) {
           *url = test_url;
           *title = base::string16();
           return true;

@@ -35,7 +35,9 @@ class UI_BASE_EXPORT OSExchangeDataProviderAura
   virtual void SetPickledData(const OSExchangeData::CustomFormat& format,
                               const Pickle& data) OVERRIDE;
   virtual bool GetString(base::string16* data) const OVERRIDE;
-  virtual bool GetURLAndTitle(GURL* url, base::string16* title) const OVERRIDE;
+  virtual bool GetURLAndTitle(OSExchangeData::FilenameToURLPolicy policy,
+                              GURL* url,
+                              base::string16* title) const OVERRIDE;
   virtual bool GetFilename(base::FilePath* path) const OVERRIDE;
   virtual bool GetFilenames(
       std::vector<OSExchangeData::FileInfo>* filenames) const OVERRIDE;

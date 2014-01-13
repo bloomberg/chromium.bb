@@ -56,7 +56,8 @@ bool BookmarkNodeData::Read(const ui::OSExchangeData& data) {
     Element element;
     GURL url;
     base::string16 title;
-    if (data.GetURLAndTitle(&url, &title))
+    if (data.GetURLAndTitle(
+            ui::OSExchangeData::CONVERT_FILENAMES, &url, &title))
       ReadFromTuple(url, title);
   }
 

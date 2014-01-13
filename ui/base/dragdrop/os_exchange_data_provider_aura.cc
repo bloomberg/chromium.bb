@@ -73,8 +73,11 @@ bool OSExchangeDataProviderAura::GetString(base::string16* data) const {
   return true;
 }
 
-bool OSExchangeDataProviderAura::GetURLAndTitle(GURL* url,
-                                                base::string16* title) const {
+bool OSExchangeDataProviderAura::GetURLAndTitle(
+    OSExchangeData::FilenameToURLPolicy policy,
+    GURL* url,
+    base::string16* title) const {
+  // TODO(dcheng): implement filename conversion.
   if ((formats_ & OSExchangeData::URL) == 0) {
     title->clear();
     return GetPlainTextURL(url);

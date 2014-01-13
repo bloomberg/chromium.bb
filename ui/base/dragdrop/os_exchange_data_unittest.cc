@@ -29,7 +29,8 @@ TEST_F(OSExchangeDataTest, StringDataGetAndSet) {
   std::string url_spec = "http://www.goats.com/";
   GURL url(url_spec);
   base::string16 title;
-  EXPECT_FALSE(data2.GetURLAndTitle(&url, &title));
+  EXPECT_FALSE(
+      data2.GetURLAndTitle(OSExchangeData::CONVERT_FILENAMES, &url, &title));
   // No URLs in |data|, so url should be untouched.
   EXPECT_EQ(url_spec, url.spec());
 }
@@ -47,7 +48,8 @@ TEST_F(OSExchangeDataTest, TestURLExchangeFormats) {
   // URL spec and title should match
   GURL output_url;
   base::string16 output_title;
-  EXPECT_TRUE(data2.GetURLAndTitle(&output_url, &output_title));
+  EXPECT_TRUE(data2.GetURLAndTitle(
+      OSExchangeData::CONVERT_FILENAMES, &output_url, &output_title));
   EXPECT_EQ(url_spec, output_url.spec());
   EXPECT_EQ(url_title, output_title);
   base::string16 output_string;

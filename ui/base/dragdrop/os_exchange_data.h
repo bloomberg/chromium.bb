@@ -68,6 +68,10 @@ class UI_BASE_EXPORT OSExchangeData {
 #endif
   };
 
+  // Controls whether or not filenames should be converted to file: URLs when
+  // getting a URL.
+  enum FilenameToURLPolicy { CONVERT_FILENAMES, DO_NOT_CONVERT_FILENAMES, };
+
   // Encapsulates the info about a file to be downloaded.
   struct UI_BASE_EXPORT DownloadFileInfo {
     DownloadFileInfo(const base::FilePath& filename,
@@ -107,7 +111,9 @@ class UI_BASE_EXPORT OSExchangeData {
                                 const Pickle& data) = 0;
 
     virtual bool GetString(base::string16* data) const = 0;
-    virtual bool GetURLAndTitle(GURL* url, base::string16* title) const = 0;
+    virtual bool GetURLAndTitle(FilenameToURLPolicy policy,
+                                GURL* url,
+                                base::string16* title) const = 0;
     virtual bool GetFilename(base::FilePath* path) const = 0;
     virtual bool GetFilenames(
         std::vector<FileInfo>* file_names) const = 0;
@@ -183,7 +189,9 @@ class UI_BASE_EXPORT OSExchangeData {
   // not exist, the out parameter is not touched. The out parameter cannot be
   // NULL.
   bool GetString(base::string16* data) const;
-  bool GetURLAndTitle(GURL* url, base::string16* title) const;
+  bool GetURLAndTitle(FilenameToURLPolicy policy,
+                      GURL* url,
+                      base::string16* title) const;
   // Return the path of a file, if available.
   bool GetFilename(base::FilePath* path) const;
   bool GetFilenames(

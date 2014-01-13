@@ -372,7 +372,8 @@ void PrepareDropData(DropData* drop_data, const ui::OSExchangeData& data) {
 
   GURL url;
   base::string16 url_title;
-  data.GetURLAndTitle(&url, &url_title);
+  data.GetURLAndTitle(
+      ui::OSExchangeData::DO_NOT_CONVERT_FILENAMES, &url, &url_title);
   if (url.is_valid()) {
     drop_data->url = url;
     drop_data->url_title = url_title;

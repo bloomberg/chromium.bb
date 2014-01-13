@@ -161,7 +161,9 @@ class UI_BASE_EXPORT OSExchangeDataProviderWin
   virtual void SetHtml(const base::string16& html, const GURL& base_url);
 
   virtual bool GetString(base::string16* data) const;
-  virtual bool GetURLAndTitle(GURL* url, base::string16* title) const;
+  virtual bool GetURLAndTitle(OSExchangeData::FilenameToURLPolicy policy,
+                              GURL* url,
+                              base::string16* title) const;
   virtual bool GetFilename(base::FilePath* path) const;
   virtual bool GetFilenames(
       std::vector<OSExchangeData::FileInfo>* filenames) const;

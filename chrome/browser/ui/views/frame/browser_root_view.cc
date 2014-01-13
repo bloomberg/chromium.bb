@@ -96,7 +96,9 @@ int BrowserRootView::OnPerformDrop(const ui::DropTargetEvent& event) {
   GURL url;
   base::string16 title;
   ui::OSExchangeData mapped_data;
-  if (!event.data().GetURLAndTitle(&url, &title) || !url.is_valid()) {
+  if (!event.data().GetURLAndTitle(
+           ui::OSExchangeData::CONVERT_FILENAMES, &url, &title) ||
+      !url.is_valid()) {
     // The url isn't valid. Use the paste and go url.
     if (GetPasteAndGoURL(event.data(), &url))
       mapped_data.SetURL(url, base::string16());

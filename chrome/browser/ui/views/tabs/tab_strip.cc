@@ -1410,7 +1410,9 @@ void TabStrip::OnDragEntered(const DropTargetEvent& event) {
   base::string16 title;
 
   // Check whether the event data includes supported drop data.
-  if (event.data().GetURLAndTitle(&url, &title) && url.is_valid()) {
+  if (event.data().GetURLAndTitle(
+          ui::OSExchangeData::CONVERT_FILENAMES, &url, &title) &&
+      url.is_valid()) {
     drop_info_->url = url;
 
     // For file:// URLs, kick off a MIME type request in case they're dropped.
@@ -1450,7 +1452,9 @@ int TabStrip::OnPerformDrop(const DropTargetEvent& event) {
   GURL url;
   base::string16 title;
   if (!file_supported ||
-      !event.data().GetURLAndTitle(&url, &title) || !url.is_valid())
+      !event.data().GetURLAndTitle(
+           ui::OSExchangeData::CONVERT_FILENAMES, &url, &title) ||
+      !url.is_valid())
     return ui::DragDropTypes::DRAG_NONE;
 
   controller()->PerformDrop(drop_before, drop_index, url);
