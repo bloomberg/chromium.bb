@@ -36,9 +36,13 @@ var DumpCreator = (function() {
         '<p>A diagnostic audio recording is used for analyzing audio' +
         ' problems. It contains the audio played out from the speaker and' +
         ' recorded from the microphone and is saved to the local disk.' +
-        ' Checking this box will enable the recording for future WebRTC' +
-        ' calls. When the box is unchecked or this page is closed, this' +
-        ' recording functionality will be disabled.</p>';
+        ' Checking this box will enable the recording for an ongoing WebRTC' +
+        ' call and for future WebRTC calls. When the box is unchecked or this' +
+        ' page is closed, this recording functionality will be disabled for' +
+        ' future WebRTC calls, but an ongoing call will continue to record' +
+        ' until the call is ended. Only recording in one tab is supported.' +
+        ' If several tabs are running WebRTC calls, the resulting file will' +
+        ' be invalid.</p>';
 
     content.getElementsByTagName('a')[0].addEventListener(
         'click', this.onDownloadData_.bind(this));
