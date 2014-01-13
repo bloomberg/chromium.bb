@@ -2,10 +2,6 @@
 # This test can't just be rebaselined because it has absolute file paths in the output.
 crbug.com/257132 http/tests/inspector/network/network-xhr-replay.html [ Failure ]
 
-crbug.com/249087 [ Win Debug ] inspector/debugger/debugger-activation-crash2.html [ Pass Failure ]
-
-crbug.com/273119 [ Win ] inspector/styles/styles-new-API.html [ Pass Failure ]
-
 crbug.com/258949 fast/filesystem/workers/file-writer-truncate-extend.html [ Failure Pass ]
 
 crbug.com/307782 [ Win ] http/tests/cache/stopped-revalidation.html [ Pass Timeout ]
@@ -37,9 +33,8 @@ crbug.com/233124 http/tests/inspector/network/network-size.html [ Skip ]
 crbug.com/233124 http/tests/inspector/network/network-size-chunked.html [ Skip ]
 crbug.com/233124 http/tests/inspector/network/network-size-sync.html [ Skip ]
 
-# These tests are sensitive to the number of compositing updates between portions of the test.
+# This test is sensitive to the number of compositing updates between portions of the test.
 crbug.com/313922 [ Mac ] inspector/layer-tree-model.html [ Failure ]
-crbug.com/313922 [ Mac XP ] inspector-protocol/layers/get-layers.html [ Failure ]
 
 # -----------------------------------------------------------------
 # Plugin tests
@@ -390,7 +385,6 @@ crbug.com/331583 [ Mavericks ] fast/text/whitespace/018.html [ Pass ImageOnlyFai
 crbug.com/331583 [ Mavericks ] fast/transforms/shadows.html [ Pass ImageOnlyFailure ]
 crbug.com/331583 [ Mavericks ] ietestcenter/css3/multicolumn/column-block-formatting-context-001.htm [ Pass ImageOnlyFailure ]
 crbug.com/331583 [ Mavericks ] ietestcenter/css3/multicolumn/column-containing-block-003.htm [ Pass ImageOnlyFailure ]
-crbug.com/331583 [ Mavericks ] inspector/profiler/cpu-profiler-save-load.html [ Pass ImageOnlyFailure ]
 # Also svg/hixie/text/001.xml and fullscreen/parent-flow-inline-with-block-child.html but they have other lines in this file.
 
 # Gets a "Maximum call stack size exceeded" exception in debug that doesn't happen in release.
@@ -507,10 +501,8 @@ crbug.com/267206 [ Lion MountainLion Retina ] fast/scrolling/scrollbar-tickmarks
 
 crbug.com/267302 [ Win ] http/tests/htmlimports/import-script-block-crossorigin-dynamic.html [ Pass Failure ]
 
-crbug.com/268111 [ Win7 Release ] http/tests/inspector/appcache/appcache-swap.html [ Timeout ]
+crbug.com/268111 [ Win Release ] http/tests/inspector/appcache/appcache-swap.html [ Slow ]
 crbug.com/268111 [ Win7 Release ] http/tests/appcache/online-whitelist.html [ Failure ]
-
-# crbug.com/268246 http/tests/inspector/search/scripts-search-scope.html [ Pass Failure ]
 
 crbug.com/268588 [ Release ] http/tests/w3c/webperf/submission/Google/HighResolutionTime/worker-shared-basic.html [ Failure Pass ]
 crbug.com/316148 [ Win ] http/tests/w3c/webperf/approved/UserTiming/idlharness.html [ Pass Crash ]
@@ -521,14 +513,10 @@ crbug.com/268832 [ SnowLeopard Debug ] fast/multicol/newmulticol/direct-child-co
 
 crbug.com/271243 [ Win ] http/tests/misc/acid3.html [ Failure ]
 
-# crbug.com/277110 also makes this test fail.
-crbug.com/130260 inspector/profiler/canvas2d/canvas2d-api-changes.html [ Failure Timeout ]
-
 crbug.com/278497 [ SnowLeopard Debug ] http/tests/security/contentSecurityPolicy/1.1/plugintypes-invalid.html [ Failure Pass  ]
 
-crbug.com/280658  [ Win7 ] inspector-protocol/layers/get-layers.html [ Pass Failure ]
 crbug.com/280342 [ Linux Win ] http/tests/media/progress-events-generated-correctly.html [ Failure Pass ]
-crbug.com/280698 inspector/styles/multiple-imports-edit-crash.html [ Pass Failure ]
+crbug.com/280698 inspector/styles/multiple-imports-edit-crash.html [ Failure ]
 crbug.com/282081 [ Debug ] http/tests/security/contentSecurityPolicy/report-only-from-header.php [ Crash Pass ]
 crbug.com/282081 [ Win Release ] http/tests/security/contentSecurityPolicy/report-only-from-header.php [ Pass Timeout ]
 crbug.com/282082 inspector/debugger/live-edit.html [ Failure Timeout ]
@@ -631,7 +619,6 @@ crbug.com/307777 [ Android ] fast/inline/inline-body-with-scrollbar-crash.html [
 crbug.com/307777 [ Android ] fast/innerHTML/005.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] fast/innerHTML/innerHTML-case.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] fast/innerHTML/innerHTML-nbsp.xhtml [ Timeout Pass ]
-crbug.com/307777 [ Android ] fast/inspector-support/uncaught-dom8-exception.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] fast/invalid/009.html [ ImageOnlyFailure Timeout ]
 crbug.com/307777 [ Android ] fast/invalid/invalidSVGFont.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] fast/invalid/nestedh3s-rapidweaver.html [ Timeout Pass ]
@@ -643,7 +630,6 @@ crbug.com/307777 [ Android ] fast/multicol/huge-column-gap-crash.html [ Timeout 
 crbug.com/307777 [ Android ] fast/xsl/import-non-document-node.xhtml [ Timeout Pass ]
 crbug.com/307777 [ Android ] http/tests/download/inherited-encoding-form-submission-result.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] http/tests/security/no-javascript-refresh.php [ Timeout Pass ]
-crbug.com/307777 [ Android ] inspector-protocol/input/dispatchMouseEvent.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] storage/storagequota-query-usage.html [ Failure Timeout Pass ]
 crbug.com/307777 [ Android ] svg/foreignObject/absolute-position-foreign-object-child-crash.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] svg/in-html/svg-assert-failure-percentage.html [ Timeout Pass ]
@@ -674,10 +660,10 @@ crbug.com/298039 [ Mac ] compositing/overflow/clear-scroll-parent.html [ Failure
 crbug.com/298039 [ Mac ] virtual/gpu/compositedscrolling/overflow/clear-scroll-parent.html [ Failure ]
 
 crbug.com/298188 [ Win ] virtual/implsidepainting/inspector/timeline [ Skip ]
-crbug.com/298188 virtual/implsidepainting/inspector/timeline/timeline-paint.html [ Failure Pass ]
+crbug.com/298188 virtual/implsidepainting/inspector/timeline/timeline-paint.html [ Failure Pass Slow ]
 # Test results depends on image caching behavior in Blink/Skia. This is being
 # worked on actively. Rebaseline after impl-side painting becomes stable.
-crbug.com/24182 crbug.com/318490 virtual/implsidepainting/inspector/timeline/timeline-decode-resize.html [ Timeout Failure Pass ]
+crbug.com/24182 crbug.com/318490 virtual/implsidepainting/inspector/timeline/timeline-decode-resize.html [ Failure Pass Slow ]
 
 crbug.com/304993 fast/regions/auto-size/autoheight-regions-mark.html [ Failure Pass ]
 
@@ -693,7 +679,6 @@ crbug.com/231910 fast/dom/vertical-scrollbar-in-rtl.html [ Failure Pass ]
 
 # Win has no support for overlay scrollbars required for these tests to pass.
 # Mac has overlay scrollbars depending on external settings.
-crbug.com/304841 [ Win ] inspector/styles/override-screen-size.html [ Failure ]
 crbug.com/304841 [ Mac ] inspector/device-emulation/device-emulation-320-2x.html [ Failure ]
 crbug.com/304841 [ Mac ] inspector/device-emulation/device-emulation-320.html [ Failure ]
 crbug.com/304841 [ Mac ] inspector/device-emulation/device-emulation-980-2x.html [ Failure ]
@@ -747,7 +732,7 @@ crbug.com/311469 [ Mac ] svg/custom/getSubStringLength.html [ Failure Pass ]
 
 crbug.com/311487 [ Debug ] svg/custom/acid3-test-77.html [ Pass Timeout ]
 
-crbug.com/311524 [ Win ] http/tests/inspector/appcache/appcache-iframe-manifests.html [ Pass Timeout ]
+crbug.com/311524 [ Win ] http/tests/inspector/appcache/appcache-iframe-manifests.html [ Slow ]
 
 crbug.com/311532 [ Win ] fast/dom/Geolocation/timestamp.html [ Pass Failure ]
 
@@ -765,7 +750,7 @@ crbug.com/312910 webaudio/audiobuffersource-loop-points.html [ Crash Timeout Pas
 crbug.com/313217 fast/dom/node-iterator-document-moved-crash.html [ Crash Pass ]
 crbug.com/313219 traversal/tree-walker-005.html [ Crash Pass ]
 crbug.com/313219 traversal/node-iterator-004.html [ Crash Pass ]
-crbug.com/313338 inspector/debugger/debugger-proto-property.html [ Pass Timeout ]
+crbug.com/313338 inspector/debugger/debugger-proto-property.html [ Slow ]
 crbug.com/312925 inspector-protocol/heap-profiler/heap-snapshot-with-detached-dom-tree.html [ Failure Pass ]
 crbug.com/313783 [ Debug ] fast/css/getComputedStyle/getComputedStyle-resolved-values.html [ Crash Pass ]
 
@@ -846,8 +831,6 @@ crbug.com/328234 fast/css/mask-missing-image-crash.html [ Pass Failure ]
 
 crbug.com/331576 [ Mac ] fullscreen/parent-flow-inline-with-block-child.html [ Pass ImageOnlyFailure Crash ]
 
-crbug.com/328112 http/tests/inspector/resource-tree/resource-tree-reload.html [ Pass Failure ]
-
 crbug.com/326524 virtual/threaded/compositing/visibility/visibility-simple-video-layer.html [ Pass ImageOnlyFailure ]
 
 crbug.com/328749 virtual/threaded/transitions/position-background-transition.html [ ImageOnlyFailure ]
@@ -883,3 +866,4 @@ crbug.com/333791 [ Linux Win7 Debug ] svg/animations/repeatn-event-1b.svg [ Pass
 crbug.com/333791 [ Linux Win7 Debug ] svg/animations/repeatn-event-1d.svg [ Pass ImageOnlyFailure ]
 
 crbug.com/330617 inspector/profiler/heap-snapshot-loader.html [ Pass Failure ]
+crbug.com/333860 inspector/profiler/cpu-profiler-save-load.html [ Pass Failure ]
