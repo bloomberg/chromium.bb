@@ -113,6 +113,12 @@
             }, {
               'android_goma_dir%': ''
             }],
+
+            ['embedded==1', {
+              'use_system_fontconfig%': 0,
+            }, {
+              'use_system_fontconfig%': 1,
+            }],
           ],
         },
         # Copy conditionally-set variables out one scope.
@@ -124,6 +130,7 @@
         'use_ozone%': '<(use_ozone)',
         'embedded%': '<(embedded)',
         'use_openssl%': '<(use_openssl)',
+        'use_system_fontconfig%': '<(use_system_fontconfig)',
         'enable_viewport%': '<(enable_viewport)',
         'enable_hidpi%': '<(enable_hidpi)',
         'enable_touch_ui%': '<(enable_touch_ui)',
@@ -242,6 +249,7 @@
       'use_clipboard_aurax11%': '<(use_clipboard_aurax11)',
       'embedded%': '<(embedded)',
       'use_openssl%': '<(use_openssl)',
+      'use_system_fontconfig%': '<(use_system_fontconfig)',
       'enable_viewport%': '<(enable_viewport)',
       'enable_hidpi%': '<(enable_hidpi)',
       'enable_touch_ui%': '<(enable_touch_ui)',
@@ -887,6 +895,7 @@
     'use_ozone%': '<(use_ozone)',
     'use_ozone_evdev%': '<(use_ozone_evdev)',
     'use_clipboard_aurax11%': '<(use_clipboard_aurax11)',
+    'use_system_fontconfig%': '<(use_system_fontconfig)',
     'toolkit_uses_gtk%': '<(toolkit_uses_gtk)',
     'desktop_linux%': '<(desktop_linux)',
     'use_x11%': '<(use_x11)',

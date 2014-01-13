@@ -156,19 +156,30 @@
       'type': 'none',
       'conditions': [
         ['_toolset=="target"', {
-          'direct_dependent_settings': {
-            'cflags': [
-              '<!@(<(pkg-config) --cflags fontconfig)',
-            ],
-          },
-          'link_settings': {
-            'ldflags': [
-              '<!@(<(pkg-config) --libs-only-L --libs-only-other fontconfig)',
-            ],
-            'libraries': [
-              '<!@(<(pkg-config) --libs-only-l fontconfig)',
-            ],
-          },
+          'conditions': [
+            ['use_system_fontconfig==1', {
+              'direct_dependent_settings': {
+                'cflags': [
+                  '<!@(<(pkg-config) --cflags fontconfig)',
+                ],
+              },
+              'link_settings': {
+                'ldflags': [
+                  '<!@(<(pkg-config) --libs-only-L --libs-only-other fontconfig)',
+                ],
+                'libraries': [
+                  '<!@(<(pkg-config) --libs-only-l fontconfig)',
+                ],
+              },
+            }, {  # use_system_fontconfig==0
+              'dependencies': [
+                '../../third_party/fontconfig/fontconfig.gyp:fontconfig',
+              ],
+              'export_dependent_settings' : [
+                '../../third_party/fontconfig/fontconfig.gyp:fontconfig',
+              ],
+            }],
+          ],
         }],
       ],
     },
