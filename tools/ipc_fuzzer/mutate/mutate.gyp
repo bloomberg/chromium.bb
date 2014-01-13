@@ -43,5 +43,19 @@
         '../../..',
       ],
     },
+    {
+      'target_name': 'ipc_message_util',
+      'type': 'executable',
+      'dependencies': [
+        '../../../third_party/re2/re2.gyp:re2',
+        '../message_lib/message_lib.gyp:ipc_message_lib',
+      ],
+      'sources': [
+        'message_util.cc',
+      ],
+      'include_dirs': [
+        '../../..',
+      ],
+    },
   ],
 }
