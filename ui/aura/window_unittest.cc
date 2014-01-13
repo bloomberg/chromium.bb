@@ -1297,21 +1297,23 @@ TEST_F(WindowTest, MouseEnterExitWithDelete) {
   generator.MoveMouseToCenterOf(w1.get());
   EXPECT_TRUE(d1.entered());
   EXPECT_FALSE(d1.exited());
+  d1.ResetExpectations();
 
   MouseEnterExitWindowDelegate d2;
   {
     scoped_ptr<Window> w2(
         CreateTestWindowWithDelegate(&d2, 2, gfx::Rect(10, 10, 50, 50),
                                      root_window()));
-    // Enters / exits can be send asynchronously.
+    // Enters / exits can be sent asynchronously.
     RunAllPendingInMessageLoop();
-    EXPECT_TRUE(d1.entered());
+    EXPECT_FALSE(d1.entered());
     EXPECT_TRUE(d1.exited());
     EXPECT_TRUE(d2.entered());
     EXPECT_FALSE(d2.exited());
     d1.ResetExpectations();
+    d2.ResetExpectations();
   }
-  // Enters / exits can be send asynchronously.
+  // Enters / exits can be sent asynchronously.
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(d2.exited());
   EXPECT_TRUE(d1.entered());

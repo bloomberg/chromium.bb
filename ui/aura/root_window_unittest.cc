@@ -318,13 +318,14 @@ TEST_F(RootWindowTest, CanProcessEventsWithinSubtree) {
     test::EventGenerator generator(root_window());
     generator.PressKey(ui::VKEY_SPACE, 0);
     EXPECT_EQ(NULL, client::GetFocusClient(w1)->GetFocusedWindow());
+    EXPECT_FALSE(IsFocusedWindow(w1));
   }
 
   {
     // Events sent to a window not in the lock container will not be processed.
     // i.e. never sent to the non-lock container's event filter.
     test::EventGenerator generator(root_window(), w1);
-    generator.PressLeftButton();
+    generator.ClickLeftButton();
     EXPECT_EQ(0, nonlock_ef->num_mouse_events());
 
     // Events sent to a window in the lock container will be processed.
@@ -835,8 +836,8 @@ TEST_F(RootWindowTest, DispatchMouseExitWhenCursorHidden) {
   test::TestWindowDelegate delegate;
   gfx::Point window_origin(7, 18);
   scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
-      &delegate, 1234, gfx::Rect(window_origin,
-      gfx::Size(100, 100)), root_window()));
+      &delegate, 1234, gfx::Rect(window_origin, gfx::Size(100, 100)),
+      root_window()));
   window->Show();
 
   // Dispatch a mouse move event into the window.

@@ -13,6 +13,7 @@
 #include "ash/wm/immersive_fullscreen_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_delegate.h"
+#include "ash/wm/window_state_observer.h"
 #include "base/command_line.h"
 #include "grit/ash_resources.h"
 #include "ui/aura/client/aura_constants.h"

@@ -339,7 +339,7 @@ class AURA_EXPORT RootWindow : public ui::EventProcessor,
   scoped_ptr<ui::LocatedEvent> held_move_event_;
 
   // Allowing for reposting of events. Used when exiting context menus.
-  scoped_ptr<ui::LocatedEvent>  held_repostable_event_;
+  scoped_ptr<ui::LocatedEvent> held_repostable_event_;
 
   // Set when dispatching a held event.
   bool dispatching_held_event_;
