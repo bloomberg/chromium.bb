@@ -8,7 +8,6 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/debug/stack_trace.h"
 #include "base/lazy_instance.h"
 #include "base/memory/singleton.h"
@@ -703,8 +702,9 @@ void URLRequest::StartJob(URLRequestJob* job) {
   if (referrer_policy_ ==
           CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE &&
       GURL(referrer_).SchemeIsSecure() && !url().SchemeIsSecure()) {
-    DLOG(FATAL) << "Trying to send secure referrer for insecure load";
-    base::debug::DumpWithoutCrashing();
+#if !defined(OFFICIAL_BUILD)
+    LOG(FATAL) << "Trying to send secure referrer for insecure load";
+#endif
     referrer_.clear();
   }
 
