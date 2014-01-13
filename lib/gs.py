@@ -20,7 +20,7 @@ from chromite.lib import cache
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 from chromite.lib import retry_util
-
+from chromite.lib import timeout_util
 
 PUBLIC_BASE_HTTPS_URL = 'https://commondatastorage.googleapis.com/'
 PRIVATE_BASE_HTTPS_URL = 'https://storage.cloud.google.com/'
@@ -666,6 +666,30 @@ class GSContext(object):
       path: The path to the counter in Google Storage.
     """
     return GSCounter(self, path)
+
+  def WaitForGsPaths(self, paths, timeout, period=10):
+    """Wait until a list of files exist in GS.
+
+    Args:
+      paths: The list of files to wait for.
+      timeout: Max seconds to wait for file to appear.
+      period: How often to check for files while waiting.
+
+    Raises:
+      timeout_util.TimeoutError if the timeout is reached.
+    """
+    # Copy the list of URIs to wait for, so we don't modify the callers context.
+    pending_paths = paths[:]
+
+    def _CheckForExistence():
+      pending_paths[:] = [x for x in pending_paths if not self.Exists(x)]
+
+    def _Retry(_return_value):
+      # Retry, if there are any pending paths left.
+      return pending_paths
+
+    timeout_util.WaitForSuccess(_Retry, _CheckForExistence,
+                                timeout=timeout, period=period)
 
 
 @contextlib.contextmanager

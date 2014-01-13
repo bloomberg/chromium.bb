@@ -465,6 +465,22 @@ class GSContextTest(AbstractGSContextTest):
     gs.GSUTIL_URL = None
     gs.GSContext(cache_dir=self.tempdir)
 
+  def testWaitForGsPathsAllPresent(self):
+    ctx = gs.GSContext()
+    ctx.WaitForGsPaths(['/path1', '/path2'], 20)
+
+  # TODO(dgarrett): We should add a test that first fails then succeeds finding
+  # GS files, but I can't figure out how to make the Mock do that.
+
+  def testWaitForGsPathsTimeout(self):
+    self.gs_mock.AddCmdResult(['stat', '/path1'],
+                              returncode=1,
+                              error='GSResponseError code=NoSuchKey')
+    ctx = gs.GSContext()
+    self.assertRaises(gs.timeout_util.TimeoutError,
+                      ctx.WaitForGsPaths, ['/path1', '/path2'],
+                      timeout=1, period=0.02)
+
 
 class NetworkGSContextTest(cros_test_lib.TempDirTestCase):
   """Tests for GSContext that go over the network."""
