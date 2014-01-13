@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var overallTestStartTime = Date.now();
+var overallTestStartTime = window.performance.now();
 var kUseIndex = true;
 var kDontUseIndex = false;
 var kReadKeysOnly = true;
@@ -138,7 +138,7 @@ function runNextTest() {
 }
 
 function onAllTestsComplete() {
-  var overallDuration = Date.now() - overallTestStartTime;
+  var overallDuration = window.performance.now() - overallTestStartTime;
   automation.addResult("OverallTestDuration", overallDuration);
   automation.setDone();
 }
@@ -163,7 +163,7 @@ function testCreateAndDeleteDatabase(
   }
 
   automation.setStatus("Creating database.");
-  var startTime = Date.now();
+  var startTime = window.performance.now();
 
   createDatabase(testName, objectStoreNames, onCreated, onError);
 
@@ -182,7 +182,7 @@ function testCreateAndDeleteDatabase(
   }
 
   function onDeleted() {
-    var duration = Date.now() - startTime;
+    var duration = window.performance.now() - startTime;
     automation.addResult(testName, duration);
     automation.setStatus("Deleted database.");
     onTestComplete();
@@ -209,7 +209,8 @@ function testCreateKeysInStores(
   function onCreated(db) {
     automation.setStatus("Constructing transaction.");
     var completionFunc =
-        getCompletionFunc(db, testName, Date.now(), onTestComplete);
+        getCompletionFunc(db, testName, window.performance.now(),
+            onTestComplete);
     var transaction =
         getTransaction(db, objectStoreNames, "readwrite", completionFunc);
     putLinearValues(transaction, objectStoreNames, numKeys, null, getValue);
@@ -250,7 +251,8 @@ function testRandomReadsAndWrites(
   function onSetupComplete(db) {
     automation.setStatus("Setup complete.");
     var completionFunc =
-        getCompletionFunc(db, testName, Date.now(), onTestComplete);
+        getCompletionFunc(db, testName, window.performance.now(),
+            onTestComplete);
     var mode = "readonly";
     if (numWritesPerTransaction)
       mode = "readwrite";
@@ -307,7 +309,8 @@ function testReadCache(numTransactions, useIndexForReads, onTestComplete) {
   function onSetupComplete(db) {
     automation.setStatus("Setup complete.");
     completionFunc =
-        getCompletionFunc(db, testName, Date.now(), onTestComplete);
+        getCompletionFunc(db, testName, window.performance.now(),
+            onTestComplete);
     runTransactionBatch(db, numTransactions, batchFunc, objectStoreNames,
         "readonly", completionFunc);
   }
@@ -339,7 +342,7 @@ function testCreateAndDeleteIndex(numKeys, onTestComplete) {
   function onPopulated(db) {
     db.close();
     automation.setStatus("Building index.");
-    startTime = Date.now();
+    startTime = window.performance.now();
     var f = function(objectStore) {
       objectStore.createIndex("index", "firstName", {unique: true});
     };
@@ -349,7 +352,7 @@ function testCreateAndDeleteIndex(numKeys, onTestComplete) {
   var indexCreationCompleteTime;
   function onIndexCreated(db) {
     db.close();
-    indexCreationCompleteTime = Date.now();
+    indexCreationCompleteTime = window.performance.now();
     automation.addResult("testCreateIndex",
         indexCreationCompleteTime - startTime);
     var f = function(objectStore) {
@@ -360,7 +363,7 @@ function testCreateAndDeleteIndex(numKeys, onTestComplete) {
   }
 
   function onIndexDeleted(db) {
-    var duration = Date.now() - indexCreationCompleteTime;
+    var duration = window.performance.now() - indexCreationCompleteTime;
     // Ignore the cleanup time for this test.
     automation.addResult("testDeleteIndex", duration);
     automation.setStatus("Deleting database.");
@@ -431,7 +434,8 @@ function testCursorReadsAndRandomWrites(
   function onSetupComplete(db) {
     automation.setStatus("Setup complete.");
     var completionFunc =
-        getCompletionFunc(db, testName, Date.now(), onTestComplete);
+        getCompletionFunc(db, testName, window.performance.now(),
+            onTestComplete);
     var mode = "readonly";
     if (writeAlso)
       mode = "readwrite";
@@ -486,7 +490,8 @@ function testSporadicWrites(
   function onSetupComplete(db) {
     automation.setStatus("Setup complete.");
     completionFunc =
-        getCompletionFunc(db, testName, Date.now(), onTestComplete);
+        getCompletionFunc(db, testName, window.performance.now(),
+            onTestComplete);
     runOneBatch(db);
   }
 
@@ -557,7 +562,8 @@ function testWalkingMultipleCursors(numCursors, onTestComplete) {
   function onSetupComplete(db) {
     automation.setStatus("Setup complete.");
     completionFunc =
-        getCompletionFunc(db, testName, Date.now(), onTestComplete);
+        getCompletionFunc(db, testName, window.performance.now(),
+            onTestComplete);
     var transaction =
         getTransaction(db, objectStoreNames, "readonly", verifyComplete);
 
@@ -642,7 +648,8 @@ function testCursorSeeks(
   function onSetupComplete(db) {
     automation.setStatus("Setup complete.");
     var completionFunc =
-          getCompletionFunc(db, testName, Date.now(), onTestComplete);
+          getCompletionFunc(db, testName, window.performance.now(),
+              onTestComplete);
     var mode = "readonly";
     runTransactionBatch(db, numTransactions, batchFunc, objectStoreNames, mode,
         completionFunc);

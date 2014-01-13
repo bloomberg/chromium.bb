@@ -184,7 +184,7 @@ function getCompletionFunc(db, testName, startTime, onTestComplete) {
     onTestComplete();
   }
   return function() {
-    var duration = Date.now() - startTime;
+    var duration = window.performance.now() - startTime;
     // Ignore the cleanup time for this test.
     automation.addResult(testName, duration);
     automation.setStatus("Deleting database.");
