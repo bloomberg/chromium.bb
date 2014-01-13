@@ -138,6 +138,9 @@ race:PostponeInterruptsScope
 # http://crbug.com/296883
 race:net::URLFetcherCore::Stop
 
+# http://crbug.com/308590
+race:CustomThreadWatcher::~CustomThreadWatcher
+
 # http://crbug.com/310851
 race:net::ProxyResolverV8Tracing::Job::~Job
 
