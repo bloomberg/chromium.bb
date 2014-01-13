@@ -70,6 +70,7 @@ race:unixTempFileDir
 
 # http://crbug.com/244755
 race:v8::internal::Zone::NewExpand
+race:TooLateToEnableNow
 
 # http://crbug.com/244774
 race:webrtc::RTPReceiver::ProcessBitrate
@@ -172,3 +173,15 @@ race:DevToolsAdbBridge::RequestRemoteDevices
 
 # http://crbug.com/333244
 race:content::VideoCaptureImplTest::MockVideoCaptureImpl::~MockVideoCaptureImpl
+
+# http://crbug.com/333871
+race:v8::internal::Interface::NewValue()::value_interface
+race:v8::internal::IsMinusZero(double)::minus_zero
+race:v8::internal::FastCloneShallowObjectStub::InitializeInterfaceDescriptor
+race:v8::internal::KeyedLoadStubCompiler::registers
+race:v8::internal::KeyedStoreStubCompiler::registers()::registers
+race:v8::internal::KeyedLoadFastElementStub::InitializeInterfaceDescriptor
+race:v8::internal::KeyedStoreFastElementStub::InitializeInterfaceDescriptor
+race:v8::internal::LoadStubCompiler::registers
+race:v8::internal::StoreStubCompiler::registers
+race:v8::internal::HValue::LoopWeight
