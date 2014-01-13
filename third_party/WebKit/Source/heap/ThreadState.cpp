@@ -35,7 +35,54 @@
 #include "heap/Heap.h"
 #include "wtf/ThreadingPrimitives.h"
 
+#if OS(WIN)
+#include <stddef.h>
+#include <windows.h>
+#include <winnt.h>
+#elif defined(__GLIBC__)
+extern "C" void* __libc_stack_end;  // NOLINT
+#endif
+
 namespace WebCore {
+
+static void* getStackStart()
+{
+#if defined(__GLIBC__) || OS(ANDROID)
+    pthread_attr_t attr;
+    if (!pthread_getattr_np(pthread_self(), &attr)) {
+        void* base;
+        size_t size;
+        int error = pthread_attr_getstack(&attr, &base, &size);
+        RELEASE_ASSERT(!error);
+        pthread_attr_destroy(&attr);
+        return reinterpret_cast<Address>(base) + size;
+    }
+#if defined(__GLIBC__)
+    // pthread_getattr_np can fail for the main thread. In this case
+    // just like NaCl we rely on the __libc_stack_end to give us
+    // the start of the stack.
+    // See https://code.google.com/p/nativeclient/issues/detail?id=3431.
+    return __libc_stack_end;
+#else
+    ASSERT_UNREACHABLE();
+    return 0;
+#endif
+#elif OS(MACOSX)
+    return pthread_get_stackaddr_np(pthread_self());
+#elif OS(WIN) && COMPILER(MSVC)
+    // On Windows stack limits for the current thread are available in
+    // the thread information block (TIB). Its fields can be accessed through
+    // FS segment register on x86 and GS segment register on x86_64.
+#ifdef _WIN64
+    return reinterpret_cast<void*>(__readgsqword(offsetof(NT_TIB64, StackBase)));
+#else
+    return reinterpret_cast<void*>(__readfsdword(offsetof(NT_TIB, StackBase)));
+#endif
+#else
+#error Unsupported getStackStart on this platform.
+#endif
+}
+
 
 WTF::ThreadSpecific<ThreadState*>* ThreadState::s_threadSpecific = 0;
 uint8_t ThreadState::s_mainThreadStateStorage[sizeof(ThreadState)];
@@ -170,10 +217,10 @@ private:
     ThreadCondition m_resume;
 };
 
-ThreadState::ThreadState(intptr_t* startOfStack)
+ThreadState::ThreadState()
     : m_thread(currentThread())
-    , m_startOfStack(startOfStack)
-    , m_endOfStack(startOfStack)
+    , m_startOfStack(reinterpret_cast<intptr_t*>(getStackStart()))
+    , m_endOfStack(reinterpret_cast<intptr_t*>(getStackStart()))
     , m_safePointScopeMarker(0)
     , m_atSafePoint(false)
     , m_interruptor(0)
@@ -209,11 +256,11 @@ ThreadState::~ThreadState()
     **s_threadSpecific = 0;
 }
 
-void ThreadState::init(intptr_t* startOfStack)
+void ThreadState::init()
 {
     s_threadSpecific = new WTF::ThreadSpecific<ThreadState*>();
     s_safePointBarrier = new SafePointBarrier;
-    new(s_mainThreadStateStorage) ThreadState(startOfStack);
+    new(s_mainThreadStateStorage) ThreadState();
     attachedThreads().add(mainThreadState());
 }
 
@@ -222,10 +269,10 @@ void ThreadState::shutdown()
     mainThreadState()->~ThreadState();
 }
 
-void ThreadState::attach(intptr_t* startOfStack)
+void ThreadState::attach()
 {
     MutexLocker locker(threadAttachMutex());
-    ThreadState* state = new ThreadState(startOfStack);
+    ThreadState* state = new ThreadState();
     attachedThreads().add(state);
 }
 
