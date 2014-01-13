@@ -6395,3 +6395,10 @@
    fun:_ZN7WebCore12BidiResolverINS_15TextRunIteratorENS_16BidiCharacterRunEE21createBidiRunsForLineERKS1_NS_23VisualDirectionOverrideEbb
    fun:_ZN7WebCore10RenderText29computePreferredLogicalWidthsEfRN3WTF7HashSetIPKNS_14SimpleFontDataENS1_7PtrHashIS5_EENS1_10HashTraitsIS5_EENS1_16DefaultAllocatorEEERNS_13GlyphOverflowE
 }
+{
+   bug_333992
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7content12_GLOBAL__N_123CreateWebFrameTestProxyEPNS_14RenderViewImplEi
+   fun:_ZN7content15RenderFrameImpl6CreateEPNS_14RenderViewImplEi
+}
