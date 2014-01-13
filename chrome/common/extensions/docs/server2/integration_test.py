@@ -84,9 +84,11 @@ class IntegrationTest(unittest.TestCase):
     #    ('extensions/index.html', 'apps/about_apps.html'))
 
     #broken_links = link_error_detector.GetBrokenLinks()
-    #if broken_links and _VERBOSE:
-    #  print('The broken links are:')
-    #  print(StringifyBrokenLinks(broken_links))
+    #if broken_links:
+    #  print('Found %d broken links.' % (
+    #    len(broken_links)))
+    #  if _VERBOSE:
+    #    print(StringifyBrokenLinks(broken_links))
 
     #broken_links_set = set(broken_links)
 
@@ -103,28 +105,6 @@ class IntegrationTest(unittest.TestCase):
     #newly_broken_links = broken_links_set - known_broken_links
     #fixed_links = known_broken_links - broken_links_set
 
-    #if _REBASE:
-    #  print('Rebasing broken links with %s newly broken and %s fixed links.' %
-    #        (len(newly_broken_links), len(fixed_links)))
-    #  with open(known_broken_links_path, 'w') as f:
-    #    json.dump(broken_links, f,
-    #              indent=2, separators=(',', ': '), sort_keys=True)
-    #else:
-    #  if fixed_links or newly_broken_links:
-    #    print('Found %s broken links, and some have changed. '
-    #          'If this is acceptable or expected then run %s with the --rebase '
-    #          'option.' % (len(broken_links), os.path.split(__file__)[-1]))
-    #  elif broken_links:
-    #    print('Found %s broken links, but there were no changes.' %
-    #          len(broken_links))
-    #  if fixed_links:
-    #    print('%s broken links have been fixed:' % len(fixed_links))
-    #    print(StringifyBrokenLinks(fixed_links))
-    #  if newly_broken_links:
-    #    print('There are %s new broken links:' % len(newly_broken_links))
-    #    print(StringifyBrokenLinks(newly_broken_links))
-    #    self.fail('See logging for details.')
-
     #print('Took %s seconds.' % (time.time() - start_time))
 
     #print('Searching for orphaned pages...')
@@ -132,7 +112,7 @@ class IntegrationTest(unittest.TestCase):
     #orphaned_pages = link_error_detector.GetOrphanedPages()
     #if orphaned_pages:
     #  # TODO(jshumway): Test should fail when orphaned pages are detected.
-    #  print('Warning: Found %d orphaned pages:' % len(orphaned_pages))
+    #  print('Found %d orphaned pages:' % len(orphaned_pages))
     #  for page in orphaned_pages:
     #    print(page)
     #print('Took %s seconds.' % (time.time() - start_time))
@@ -179,6 +159,30 @@ class IntegrationTest(unittest.TestCase):
                 headers={'Accept-Language': '%s;q=0.8' % lang})).Get())
     finally:
       print('Took %s seconds' % (time.time() - start_time))
+
+    #if _REBASE:
+    #  print('Rebasing broken links with %s newly broken and %s fixed links.' %
+    #        (len(newly_broken_links), len(fixed_links)))
+    #  with open(known_broken_links_path, 'w') as f:
+    #    json.dump(broken_links, f,
+    #              indent=2, separators=(',', ': '), sort_keys=True)
+    #else:
+    #  if fixed_links or newly_broken_links:
+    #    print('**********************************************\n'
+    #          'CHANGE DETECTED IN BROKEN LINKS WITHOUT REBASE\n'
+    #          '**********************************************')
+    #    print('Found %s broken links, and some have changed. '
+    #          'If this is acceptable or expected then run %s with the --rebase '
+    #          'option.' % (len(broken_links), os.path.split(__file__)[-1]))
+    #  elif broken_links:
+    #    print('%s existing broken links' % len(broken_links))
+    #  if fixed_links:
+    #    print('%s broken links have been fixed:' % len(fixed_links))
+    #    print(StringifyBrokenLinks(fixed_links))
+    #  if newly_broken_links:
+    #    print('There are %s new broken links:' % len(newly_broken_links))
+    #    print(StringifyBrokenLinks(newly_broken_links))
+    #    self.fail('See logging for details.')
 
   # TODO(kalman): Move this test elsewhere, it's not an integration test.
   # Perhaps like "presubmit_tests" or something.
