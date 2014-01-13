@@ -170,7 +170,7 @@ class NET_EXPORT SdchManager : public NON_EXPORTED_BASE(base::NonThreadSafe) {
    private:
     friend class base::RefCounted<Dictionary>;
     friend class SdchManager;  // Only manager can construct an instance.
-    FRIEND_TEST_ALL_PREFIXES(SdchFilterTest, PathMatch);
+    FRIEND_TEST_ALL_PREFIXES(SdchManagerTest, PathMatch);
 
     // Construct a vc-diff usable dictionary from the dictionary_text starting
     // at the given offset.  The supplied client_hash should be used to

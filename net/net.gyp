@@ -1625,6 +1625,7 @@
         'base/priority_queue_unittest.cc',
         'base/registry_controlled_domains/registry_controlled_domain_unittest.cc',
         'base/sdch_filter_unittest.cc',
+        'base/sdch_manager_unittest.cc',
         'base/static_cookie_policy_unittest.cc',
         'base/test_completion_callback_unittest.cc',
         'base/upload_bytes_element_reader_unittest.cc',
