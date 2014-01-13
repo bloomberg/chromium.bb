@@ -737,6 +737,8 @@ crbug.com/313338 inspector/debugger/debugger-proto-property.html [ Slow ]
 crbug.com/312925 inspector-protocol/heap-profiler/heap-snapshot-with-detached-dom-tree.html [ Failure Pass ]
 crbug.com/313783 [ Debug ] fast/css/getComputedStyle/getComputedStyle-resolved-values.html [ Crash Pass ]
 
+crbug.com/313846 [ Mac Win ] http/tests/images/webp-partial-load.html [ ImageOnlyFailure Timeout Pass ]
+
 crbug.com/316150 inspector/timeline/timeline-network-received-data.html [ Failure Pass ]
 
 crbug.com/315514 [ Linux ] fast/workers/storage/test-authorizer-sync.html [ Failure ]
