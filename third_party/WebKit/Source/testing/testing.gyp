@@ -124,25 +124,6 @@
         },
     ], # targets
     'conditions': [
-        ['OS=="win"', {
-            'targets': [{
-                'target_name': 'LayoutTestHelper',
-                'type': 'executable',
-                'sources': ['helper/LayoutTestHelperWin.cpp'],
-            }],
-        }],
-        ['OS=="mac"', {
-            'targets': [{
-                'target_name': 'LayoutTestHelper',
-                'type': 'executable',
-                'sources': ['helper/LayoutTestHelperMac.mm'],
-                'link_settings': {
-                    'libraries': [
-                        '$(SDKROOT)/System/Library/Frameworks/AppKit.framework',
-                    ],
-                },
-            }],
-        }],
         ['gcc_version>=46', {
             'target_defaults': {
                 # Disable warnings about c++0x compatibility, as some names (such

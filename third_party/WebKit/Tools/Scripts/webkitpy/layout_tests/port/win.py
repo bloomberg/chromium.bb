@@ -174,7 +174,7 @@ class WinPort(base.Port):
         return self._build_path_with_configuration(configuration, binary_name)
 
     def _path_to_helper(self):
-        binary_name = 'LayoutTestHelper.exe'
+        binary_name = 'layout_test_helper.exe'
         return self._build_path(binary_name)
 
     def _path_to_crash_service(self):
