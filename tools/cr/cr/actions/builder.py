@@ -4,6 +4,8 @@
 
 """A module for the Builder base class."""
 
+import difflib
+
 import cr
 
 
@@ -55,6 +57,11 @@ class Builder(cr.Action, cr.Plugin.Type):
   def IsTarget(self, context, target_name):
     """Check if a target name is on the builder knows about."""
     return target_name in self.GetTargets(context)
+
+  @cr.Plugin.activemethod
+  def GuessTargets(self, context, target_name):
+    """Returns a list of closest matching targets for a named target."""
+    return difflib.get_close_matches(target_name, self.GetTargets(context))
 
 
 class SkipBuilder(Builder):

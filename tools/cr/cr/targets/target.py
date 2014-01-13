@@ -117,6 +117,11 @@ class Target(cr.Config, cr.AutoExport):
         if not target.valid:
           print 'Invalid target {0} as {1}'.format(
               target_name, target.build_target)
+          guesses = cr.Builder.GuessTargets(context, target_name)
+          if guesses:
+            print 'Did you mean {0}?'.format(
+                ', '.join(guesses[:-1]) + ' or ' + guesses[-1]
+                if len(guesses) > 1 else guesses[0])
           exit(1)
         return target
     print 'Unknown target {0}'.format(target_name)
