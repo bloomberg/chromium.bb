@@ -253,6 +253,18 @@ class Rietveld(object):
         ('send_mail', 'True'),
         ('no_redirect', 'True')])
 
+  def add_inline_comment(
+      self, issue, text, side, snapshot, patchset, patchid, lineno):
+    logging.info('add inline comment for issue %d' % issue)
+    return self.post('/inline_draft', [
+        ('issue', str(issue)),
+        ('text', text),
+        ('side', side),
+        ('snapshot', snapshot),
+        ('patchset', str(patchset)),
+        ('patch', str(patchid)),
+         ('lineno', str(lineno))])
+
   def set_flag(self, issue, patchset, flag, value):
     return self.post('/%d/edit_flags' % issue, [
         ('last_patchset', str(patchset)),
