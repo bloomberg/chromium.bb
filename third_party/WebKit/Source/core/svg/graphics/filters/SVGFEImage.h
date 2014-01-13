@@ -52,6 +52,7 @@ private:
     RenderObject* referencedRenderer() const;
 
     virtual void applySoftware() OVERRIDE;
+    PassRefPtr<SkImageFilter> createImageFilterForRenderer(RenderObject* rendererer, SkiaImageFilterBuilder*);
 
     RefPtr<Image> m_image;
 

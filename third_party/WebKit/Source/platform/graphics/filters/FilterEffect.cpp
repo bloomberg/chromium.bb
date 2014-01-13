@@ -536,7 +536,7 @@ PassRefPtr<SkImageFilter> FilterEffect::createImageFilter(SkiaImageFilterBuilder
 
 SkImageFilter::CropRect FilterEffect::getCropRect(const FloatSize& cropOffset) const
 {
-    SkRect rect = SkRect::MakeEmpty();
+    SkRect rect = filter()->filterRegion();
     uint32_t flags = 0;
     FloatRect boundaries = effectBoundaries();
     FloatSize resolution = filter()->filterResolution();

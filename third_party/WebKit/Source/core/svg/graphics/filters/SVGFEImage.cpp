@@ -26,12 +26,15 @@
 #include "core/svg/graphics/filters/SVGFEImage.h"
 
 #include "SkBitmapSource.h"
+#include "SkPictureImageFilter.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGURIReference.h"
+#include "platform/graphics/DisplayList.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/filters/Filter.h"
+#include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/text/TextStream.h"
 #include "platform/transforms/AffineTransform.h"
 
@@ -181,15 +184,65 @@ TextStream& FEImage::externalRepresentation(TextStream& ts, int indent) const
     return ts;
 }
 
+PassRefPtr<SkImageFilter> FEImage::createImageFilterForRenderer(RenderObject* renderer, SkiaImageFilterBuilder* builder)
+{
+    FloatRect dstRect = filterPrimitiveSubregion();
+
+    AffineTransform transform;
+    SVGElement* contextNode = toSVGElement(renderer->node());
+
+    if (contextNode->hasRelativeLengths()) {
+        SVGLengthContext lengthContext(contextNode);
+        FloatSize viewportSize;
+
+        // If we're referencing an element with percentage units, eg. <rect with="30%"> those values were resolved against the viewport.
+        // Build up a transformation that maps from the viewport space to the filter primitive subregion.
+        if (lengthContext.determineViewport(viewportSize))
+            transform = makeMapBetweenRects(FloatRect(FloatPoint(), viewportSize), dstRect);
+    } else {
+        transform.translate(dstRect.x(), dstRect.y());
+    }
+
+    GraphicsContext* context = builder->context();
+    if (!context)
+        return adoptRef(new SkBitmapSource(SkBitmap()));
+    AffineTransform contentTransformation;
+    context->save();
+    context->beginRecording(FloatRect(FloatPoint(), dstRect.size()));
+    context->concatCTM(transform);
+    SVGRenderingContext::renderSubtree(context, renderer, contentTransformation);
+    RefPtr<DisplayList> displayList = context->endRecording();
+    context->restore();
+    RefPtr<SkImageFilter> result = adoptRef(new SkPictureImageFilter(displayList->picture(), dstRect));
+    return result.release();
+}
+
 PassRefPtr<SkImageFilter> FEImage::createImageFilter(SkiaImageFilterBuilder* builder)
 {
-    if (!m_image)
-        return 0;
+    RenderObject* renderer = referencedRenderer();
+    if (!m_image && !renderer)
+        return adoptRef(new SkBitmapSource(SkBitmap()));
+
+    setOperatingColorSpace(ColorSpaceDeviceRGB);
+
+    if (renderer)
+        return createImageFilterForRenderer(renderer, builder);
+
+    FloatRect srcRect = FloatRect(FloatPoint(), m_image->size());
+    FloatRect dstRect = filterPrimitiveSubregion();
+
+    // FIXME: CSS image filters currently do not seem to set filter primitive
+    // subregion correctly if unspecified. So default to srcRect size if so.
+    if (dstRect.isEmpty())
+        dstRect = srcRect;
+
+    m_preserveAspectRatio.transformRect(dstRect, srcRect);
 
     if (!m_image->nativeImageForCurrentFrame())
-        return 0;
+        return adoptRef(new SkBitmapSource(SkBitmap()));
 
-    return adoptRef(new SkBitmapSource(m_image->nativeImageForCurrentFrame()->bitmap()));
+    RefPtr<SkImageFilter> result = adoptRef(new SkBitmapSource(m_image->nativeImageForCurrentFrame()->bitmap(), srcRect, dstRect));
+    return result.release();
 }
 
 } // namespace WebCore

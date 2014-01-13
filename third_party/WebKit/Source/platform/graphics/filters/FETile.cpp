@@ -99,11 +99,27 @@ void FETile::applySoftware()
     filterContext->fillRect(FloatRect(FloatPoint(), absolutePaintRect().size()));
 }
 
+static FloatRect getRect(FilterEffect* effect)
+{
+    FloatRect result = effect->filter()->filterRegion();
+    FloatRect boundaries = effect->effectBoundaries();
+    if (effect->hasX())
+        result.setX(boundaries.x());
+    if (effect->hasY())
+        result.setY(boundaries.y());
+    if (effect->hasWidth())
+        result.setWidth(boundaries.width());
+    if (effect->hasHeight())
+        result.setHeight(boundaries.height());
+    return result;
+}
+
 PassRefPtr<SkImageFilter> FETile::createImageFilter(SkiaImageFilterBuilder* builder)
 {
     RefPtr<SkImageFilter> input(builder->build(inputEffect(0), operatingColorSpace()));
-    FloatRect srcRect = inputEffect(0) ? inputEffect(0)->effectBoundaries() : FloatRect();
-    return adoptRef(new SkTileImageFilter(srcRect, effectBoundaries(), input.get()));
+    FloatRect srcRect = inputEffect(0) ? getRect(inputEffect(0)) : filter()->filterRegion();
+    FloatRect dstRect = getRect(this);
+    return adoptRef(new SkTileImageFilter(srcRect, dstRect, input.get()));
 }
 
 TextStream& FETile::externalRepresentation(TextStream& ts, int indent) const

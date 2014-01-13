@@ -50,6 +50,12 @@ PassRefPtr<SkImageFilter> createMatrixImageFilter(SkScalar matrix[20], SkImageFi
 namespace WebCore {
 
 SkiaImageFilterBuilder::SkiaImageFilterBuilder()
+    : m_context(0)
+{
+}
+
+SkiaImageFilterBuilder::SkiaImageFilterBuilder(GraphicsContext* context)
+    : m_context(context)
 {
 }
 

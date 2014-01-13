@@ -30,6 +30,7 @@
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
+#include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/graphics/filters/SourceAlpha.h"
 #include "platform/graphics/filters/SourceGraphic.h"
 #include "platform/graphics/gpu/AcceleratedImageBufferSurface.h"
@@ -38,6 +39,8 @@ using namespace std;
 
 namespace WebCore {
 
+// This is currently always off at runtime, but will be switched over once all the tests are passing with it on.
+bool RenderSVGResourceFilter::s_deferredFilterRendering = false;
 const RenderSVGResourceType RenderSVGResourceFilter::s_resourceType = FilterResourceType;
 
 RenderSVGResourceFilter::RenderSVGResourceFilter(SVGFilterElement* node)
@@ -151,11 +154,17 @@ bool RenderSVGResourceFilter::applyResource(RenderObject* object, RenderStyle*, 
 
     clearInvalidationMask();
 
-    if (m_filter.contains(object)) {
+    if (!s_deferredFilterRendering && m_filter.contains(object)) {
         FilterData* filterData = m_filter.get(object);
         if (filterData->state == FilterData::PaintingSource || filterData->state == FilterData::Applying)
             filterData->state = FilterData::CycleDetected;
         return false; // Already built, or we're in a cycle, or we're marked for removal. Regardless, just do nothing more now.
+    }
+
+    if (s_deferredFilterRendering) {
+        if (m_objects.contains(object))
+            return false; // We're in a cycle.
+        m_objects.set(object, true);
     }
 
     OwnPtr<FilterData> filterData(adoptPtr(new FilterData));
@@ -222,6 +231,14 @@ bool RenderSVGResourceFilter::applyResource(RenderObject* object, RenderStyle*, 
         lastEffect->determineFilterPrimitiveSubregion(ClipToFilterRegion);
     }
 
+    if (s_deferredFilterRendering) {
+        SkiaImageFilterBuilder builder(context);
+        RefPtr<ImageFilter> imageFilter = builder.build(lastEffect, ColorSpaceDeviceRGB);
+        FloatRect boundaries = enclosingIntRect(filterData->boundaries);
+        context->beginLayer(1, CompositeSourceOver, &boundaries, ColorFilterNone, imageFilter.get());
+        return true;
+    }
+
     // If the drawingRegion is empty, we have something like <g filter=".."/>.
     // Even if the target objectBoundingBox() is empty, we still have to draw the last effect result image in postApplyResource.
     if (filterData->drawingRegion.isEmpty()) {
@@ -267,6 +284,12 @@ void RenderSVGResourceFilter::postApplyResource(RenderObject* object, GraphicsCo
     ASSERT(object);
     ASSERT(context);
     ASSERT_UNUSED(resourceMode, resourceMode == ApplyToDefaultMode);
+
+    if (s_deferredFilterRendering) {
+        context->endLayer();
+        m_objects.remove(object);
+        return;
+    }
 
     FilterData* filterData = m_filter.get(object);
     if (!filterData)
@@ -341,6 +364,12 @@ FloatRect RenderSVGResourceFilter::resourceBoundingBox(RenderObject* object)
 
 void RenderSVGResourceFilter::primitiveAttributeChanged(RenderObject* object, const QualifiedName& attribute)
 {
+    if (s_deferredFilterRendering) {
+        markAllClientsForInvalidation(RepaintInvalidation);
+        markAllClientLayersForInvalidation();
+        return;
+    }
+
     FilterMap::iterator it = m_filter.begin();
     FilterMap::iterator end = m_filter.end();
     SVGFilterPrimitiveStandardAttributes* primitve = static_cast<SVGFilterPrimitiveStandardAttributes*>(object->node());
@@ -364,6 +393,11 @@ void RenderSVGResourceFilter::primitiveAttributeChanged(RenderObject* object, co
         markClientForInvalidation(it->key, RepaintInvalidation);
     }
     markAllClientLayersForInvalidation();
+}
+
+bool RenderSVGResourceFilter::isDeferred()
+{
+    return s_deferredFilterRendering;
 }
 
 FloatRect RenderSVGResourceFilter::drawingRegion(RenderObject* object) const

@@ -475,7 +475,7 @@ void GraphicsContext::beginTransparencyLayer(float opacity, const FloatRect* bou
     beginLayer(opacity, m_state->m_compositeOperator, bounds);
 }
 
-void GraphicsContext::beginLayer(float opacity, CompositeOperator op, const FloatRect* bounds, ColorFilter colorFilter)
+void GraphicsContext::beginLayer(float opacity, CompositeOperator op, const FloatRect* bounds, ColorFilter colorFilter, ImageFilter* imageFilter)
 {
     if (paintingDisabled())
         return;
@@ -490,6 +490,7 @@ void GraphicsContext::beginLayer(float opacity, CompositeOperator op, const Floa
     layerPaint.setAlpha(static_cast<unsigned char>(opacity * 255));
     layerPaint.setXfermode(WebCoreCompositeToSkiaComposite(op, m_state->m_blendMode).get());
     layerPaint.setColorFilter(WebCoreColorFilterToSkiaColorFilter(colorFilter).get());
+    layerPaint.setImageFilter(imageFilter);
 
     if (bounds) {
         SkRect skBounds = WebCoreFloatRectToSKRect(*bounds);

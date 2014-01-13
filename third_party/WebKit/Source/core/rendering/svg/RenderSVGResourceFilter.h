@@ -82,11 +82,16 @@ public:
     static const RenderSVGResourceType s_resourceType;
 
     FloatRect drawingRegion(RenderObject*) const;
+    static bool isDeferred();
 private:
     bool fitsInMaximumImageSize(const FloatSize&, FloatSize&);
 
     typedef HashMap<RenderObject*, OwnPtr<FilterData> > FilterMap;
     FilterMap m_filter;
+
+    HashMap<RenderObject*, bool> m_objects;
+
+    static bool s_deferredFilterRendering;
 };
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderSVGResourceFilter, isSVGResourceFilter());

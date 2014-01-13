@@ -57,6 +57,8 @@ class DisplayList;
 class ImageBuffer;
 class KURL;
 
+typedef SkImageFilter ImageFilter;
+
 class PLATFORM_EXPORT GraphicsContext {
     WTF_MAKE_NONCOPYABLE(GraphicsContext); WTF_MAKE_FAST_ALLOCATED;
 public:
@@ -301,7 +303,7 @@ public:
     void drawLineForDocumentMarker(const FloatPoint&, float width, DocumentMarkerLineStyle);
 
     void beginTransparencyLayer(float opacity, const FloatRect* = 0);
-    void beginLayer(float opacity, CompositeOperator, const FloatRect* = 0, ColorFilter = ColorFilterNone);
+    void beginLayer(float opacity, CompositeOperator, const FloatRect* = 0, ColorFilter = ColorFilterNone, ImageFilter* = 0);
     void endLayer();
 
     // Instead of being dispatched to the active canvas, draw commands following beginRecording()

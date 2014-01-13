@@ -183,7 +183,8 @@ void SVGRenderingContext::prepareToRenderSVGContent(RenderObject* object, PaintI
             // changes, we need to paint the whole filter region. Otherwise, elements not visible
             // at the time of the initial paint (due to scrolling, window size, etc.) will never
             // be drawn.
-            m_paintInfo->rect = IntRect(m_filter->drawingRegion(m_object));
+            if (!m_filter->isDeferred())
+                m_paintInfo->rect = IntRect(m_filter->drawingRegion(m_object));
         }
     }
 
