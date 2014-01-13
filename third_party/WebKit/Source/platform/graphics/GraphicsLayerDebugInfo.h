@@ -49,14 +49,17 @@ public:
 
     GraphicsLayerDebugInfo* clone() const;
 
-    Vector<LayoutRect>& currentLayoutRects() { return m_currentLayoutRects; }
+    void setDebugName(const String& name) { m_debugName = name; }
     CompositingReasons compositingReasons() const { return m_compositingReasons; }
     void setCompositingReasons(CompositingReasons reasons) { m_compositingReasons = reasons; }
+    Vector<LayoutRect>& currentLayoutRects() { return m_currentLayoutRects; }
 
 private:
     void appendLayoutRects(JSONObject*) const;
     void appendCompositingReasons(JSONObject*) const;
+    void appendDebugName(JSONObject*) const;
 
+    String m_debugName;
     CompositingReasons m_compositingReasons;
     Vector<LayoutRect> m_currentLayoutRects;
 };

@@ -90,6 +90,7 @@ public:
     // blink::WebLayerClient implementation.
     virtual blink::WebString debugName(blink::WebLayer*) OVERRIDE;
     virtual blink::WebGraphicsLayerDebugInfo* takeDebugInfo() OVERRIDE;
+    virtual blink::WebGraphicsLayerDebugInfo* takeDebugInfoFor(blink::WebLayer*) OVERRIDE;
 
     GraphicsLayerDebugInfo& debugInfo();
 

@@ -512,6 +512,13 @@ blink::WebGraphicsLayerDebugInfo* GraphicsLayer::takeDebugInfo()
     return m_debugInfo.clone();
 }
 
+blink::WebGraphicsLayerDebugInfo* GraphicsLayer::takeDebugInfoFor(WebLayer* layer)
+{
+    GraphicsLayerDebugInfo* clone = m_debugInfo.clone();
+    clone->setDebugName(debugName(layer));
+    return clone;
+}
+
 WebLayer* GraphicsLayer::contentsLayerIfRegistered()
 {
     clearContentsLayerIfUnregistered();

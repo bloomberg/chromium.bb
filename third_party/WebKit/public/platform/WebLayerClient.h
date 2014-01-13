@@ -44,7 +44,12 @@ public:
     // Returns a pointer to a debug info object, if one has been computed.
     // If not, returns 0. If the returned pointer is non-zero, the caller takes
     // ownership of the pointer.
+    // FIXME: delete this once cc migrates to takeDebugInfoFor.
     virtual WebGraphicsLayerDebugInfo* takeDebugInfo() = 0;
+
+    // Similar to takeDebugInfo, but returns WebLayer-specific information
+    // (only the debug name for now).
+    virtual WebGraphicsLayerDebugInfo* takeDebugInfoFor(WebLayer*) = 0;
 
 protected:
     virtual ~WebLayerClient() { }

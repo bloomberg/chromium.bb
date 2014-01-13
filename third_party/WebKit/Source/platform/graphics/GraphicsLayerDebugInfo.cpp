@@ -37,6 +37,7 @@ void GraphicsLayerDebugInfo::appendAsTraceFormat(blink::WebString* out) const
     RefPtr<JSONObject> jsonObject = JSONObject::create();
     appendLayoutRects(jsonObject.get());
     appendCompositingReasons(jsonObject.get());
+    appendDebugName(jsonObject.get());
     *out = jsonObject->toJSONString();
 }
 
@@ -178,6 +179,14 @@ void GraphicsLayerDebugInfo::appendCompositingReasons(JSONObject* jsonObject) co
         jsonArray->pushString("Should isolate composited descendants");
 
     jsonObject->setArray("compositing_reasons", jsonArray);
+}
+
+void GraphicsLayerDebugInfo::appendDebugName(JSONObject* jsonObject) const
+{
+    if (m_debugName.isEmpty())
+        return;
+
+    jsonObject->setString("layer_name", m_debugName);
 }
 
 } // namespace WebCore
