@@ -165,6 +165,7 @@ table_files = \
 	mt.ctb \
 	mun.ctb \
 	mwr.ctb \
+	ne.utb \
 	ne.ctb \
 	nemeth.ctb \
 	nemethdefs.cti \

@@ -58,6 +58,10 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
    - Fixes to the Norwegian tables thanks to Lars Bjørndal
      - Fixes for less than / greater than.
      - Add entries for URLs, domains and file names.
+   - Added ne.utb, an alternative Nepali braille table.
+     One of ne.utb or ne.ctb will be removed/merged in a future version.
+     Keeping both for the time being so that users can test and give feedback on which is most correct.
+     Thanks to Him Prasad Gautam, and Mesar Hameed
 
 ** Backwards incompatible changes
    - Delete the table chardefs-ueb.cti as these rules are now
