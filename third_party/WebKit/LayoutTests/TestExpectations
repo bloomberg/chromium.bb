@@ -847,8 +847,6 @@ crbug.com/328749 virtual/threaded/transitions/position-background-transition.htm
 
 Bug(dcarney) http/tests/security/naked-global-object.html [ NeedsManualRebaseline ]
 
-crbug.com/330617 inspector/profiler/heap-snapshot-loader.html [ Pass Failure ]
-
 crbug.com/331186 [ Debug ] css3/flexbox/position-absolute-child.html [ Slow ]
 
 crbug.com/331189 fast/forms/date-multiple-fields/date-multiple-fields-keyboard-events.html [ Failure ]

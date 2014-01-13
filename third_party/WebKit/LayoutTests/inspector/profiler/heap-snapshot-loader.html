@@ -56,7 +56,26 @@ function test()
     WebInspector.log = function(message) {
         InspectorTest.addResult("WebInspector.log: " + message);
     }
+
     InspectorTest.runTestSuite([
+        function clearHeapProfilerTempStorage(next)
+        {
+            function didFail(e)
+            {
+                InspectorTest.addResult("FAIL: " + e);
+                InspectorTest.completeTest();
+            }
+            function didGetFS(fs)
+            {
+                fs.root.getDirectory("heap-profiler", { create: false }, didGetDir, next);
+            }
+            function didGetDir(dir)
+            {
+                dir.removeRecursively(next, didFail);
+            }
+            window.webkitRequestFileSystem(window.TEMPORARY, 10, didGetFS, didFail);
+        },
+
         function heapSnapshotLoaderTest(next)
         {
             var loader = new WebInspector.HeapSnapshotLoader();
