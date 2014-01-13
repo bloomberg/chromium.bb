@@ -278,6 +278,11 @@ class WinTool(object):
     """Runs an action command line from a response file using the environment
     for |arch|. If |dir| is supplied, use that as the working directory."""
     env = self._GetEnv(arch)
+    # TODO(scottmg): This is a temporary hack to get some specific variables
+    # through to actions that are set after gyp-time. http://crbug.com/333738.
+    for k, v in os.environ.iteritems():
+      if k not in env:
+        env[k] = v
     args = open(rspfile).read()
     dir = dir[0] if dir else None
     return subprocess.call(args, shell=True, env=env, cwd=dir)
