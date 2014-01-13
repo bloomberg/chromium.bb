@@ -39,10 +39,10 @@ public:
     AudioBasicInspectorNode(AudioContext*, float sampleRate, unsigned outputChannelCount);
 
     // AudioNode
-    virtual void pullInputs(size_t framesToProcess);
-    virtual void connect(AudioNode*, unsigned outputIndex, unsigned inputIndex, ExceptionState&);
-    virtual void disconnect(unsigned outputIndex, ExceptionState&);
-    virtual void checkNumberOfChannelsForInput(AudioNodeInput*);
+    virtual void pullInputs(size_t framesToProcess) OVERRIDE FINAL;
+    virtual void connect(AudioNode*, unsigned outputIndex, unsigned inputIndex, ExceptionState&) OVERRIDE FINAL;
+    virtual void disconnect(unsigned outputIndex, ExceptionState&) OVERRIDE FINAL;
+    virtual void checkNumberOfChannelsForInput(AudioNodeInput*) OVERRIDE FINAL;
 
 private:
     void updatePullStatus();

@@ -34,7 +34,7 @@ namespace WebCore {
 class AudioContext;
 class ExceptionState;
 
-class DefaultAudioDestinationNode : public AudioDestinationNode {
+class DefaultAudioDestinationNode FINAL : public AudioDestinationNode {
 public:
     static PassRefPtr<DefaultAudioDestinationNode> create(AudioContext* context)
     {

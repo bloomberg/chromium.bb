@@ -34,7 +34,7 @@ namespace WebCore {
 
 class DOMWindow;
 
-class DOMWindowSpeechSynthesis : public Supplement<DOMWindow>, public DOMWindowProperty {
+class DOMWindowSpeechSynthesis FINAL : public Supplement<DOMWindow>, public DOMWindowProperty {
 public:
     virtual ~DOMWindowSpeechSynthesis();
 

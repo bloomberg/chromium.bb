@@ -36,16 +36,16 @@ namespace WebCore {
 
 class AudioContext;
 
-class ChannelMergerNode : public AudioNode {
+class ChannelMergerNode FINAL : public AudioNode {
 public:
     static PassRefPtr<ChannelMergerNode> create(AudioContext*, float sampleRate, unsigned numberOfInputs);
 
     // AudioNode
-    virtual void process(size_t framesToProcess);
-    virtual void reset();
+    virtual void process(size_t framesToProcess) OVERRIDE;
+    virtual void reset() OVERRIDE;
 
     // Called in the audio thread (pre-rendering task) when the number of channels for an input may have changed.
-    virtual void checkNumberOfChannelsForInput(AudioNodeInput*);
+    virtual void checkNumberOfChannelsForInput(AudioNodeInput*) OVERRIDE;
 
 private:
     unsigned m_desiredNumberOfOutputChannels;

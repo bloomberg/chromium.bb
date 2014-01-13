@@ -82,8 +82,8 @@ public:
     static const String& permissionString(NotificationClient::Permission);
 
     // EventTarget interface
-    virtual ExecutionContext* executionContext() const OVERRIDE { return ActiveDOMObject::executionContext(); }
-    virtual bool dispatchEvent(PassRefPtr<Event>) OVERRIDE;
+    virtual ExecutionContext* executionContext() const OVERRIDE FINAL { return ActiveDOMObject::executionContext(); }
+    virtual bool dispatchEvent(PassRefPtr<Event>) OVERRIDE FINAL;
 
     // ActiveDOMObject interface
     virtual void stop() OVERRIDE;

@@ -41,7 +41,7 @@
 
 namespace WebCore {
 
-class WebStorageQuotaCallbacksImpl : public blink::WebStorageQuotaCallbacks {
+class WebStorageQuotaCallbacksImpl FINAL : public blink::WebStorageQuotaCallbacks {
 public:
     // The class is self-destructed and thus we have leakedPtr constructors.
     static WebStorageQuotaCallbacksImpl* createLeakedPtr(PassOwnPtr<StorageUsageCallback> success, PassOwnPtr<StorageErrorCallback> error)
@@ -58,9 +58,9 @@ public:
 
     virtual ~WebStorageQuotaCallbacksImpl();
 
-    virtual void didQueryStorageUsageAndQuota(unsigned long long usageInBytes, unsigned long long quotaInBytes);
-    virtual void didGrantStorageQuota(unsigned long long grantedQuotaInBytes);
-    virtual void didFail(blink::WebStorageQuotaError);
+    virtual void didQueryStorageUsageAndQuota(unsigned long long usageInBytes, unsigned long long quotaInBytes) OVERRIDE;
+    virtual void didGrantStorageQuota(unsigned long long grantedQuotaInBytes) OVERRIDE;
+    virtual void didFail(blink::WebStorageQuotaError) OVERRIDE;
 
 private:
     WebStorageQuotaCallbacksImpl(PassOwnPtr<StorageUsageCallback>, PassOwnPtr<StorageErrorCallback>);

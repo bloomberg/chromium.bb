@@ -39,13 +39,14 @@ namespace WebCore {
 class RTCErrorCallback;
 class VoidCallback;
 
-class RTCVoidRequestImpl : public RTCVoidRequest, public ActiveDOMObject {
+class RTCVoidRequestImpl FINAL : public RTCVoidRequest, public ActiveDOMObject {
 public:
     static PassRefPtr<RTCVoidRequestImpl> create(ExecutionContext*, PassOwnPtr<VoidCallback>, PassOwnPtr<RTCErrorCallback>);
     virtual ~RTCVoidRequestImpl();
 
-    virtual void requestSucceeded();
-    virtual void requestFailed(const String& error);
+    // RTCVoidRequest
+    virtual void requestSucceeded() OVERRIDE;
+    virtual void requestFailed(const String& error) OVERRIDE;
 
     // ActiveDOMObject
     virtual void stop() OVERRIDE;

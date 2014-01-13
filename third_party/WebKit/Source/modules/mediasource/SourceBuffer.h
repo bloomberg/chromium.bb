@@ -57,7 +57,7 @@ class MediaSource;
 class Stream;
 class TimeRanges;
 
-class SourceBuffer : public RefCounted<SourceBuffer>, public ActiveDOMObject, public EventTargetWithInlineData, public ScriptWrappable, public FileReaderLoaderClient {
+class SourceBuffer FINAL : public RefCounted<SourceBuffer>, public ActiveDOMObject, public EventTargetWithInlineData, public ScriptWrappable, public FileReaderLoaderClient {
     REFCOUNTED_EVENT_TARGET(SourceBuffer);
 public:
     static PassRefPtr<SourceBuffer> create(PassOwnPtr<blink::WebSourceBuffer>, MediaSource*, GenericEventQueue*);

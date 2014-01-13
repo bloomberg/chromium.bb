@@ -41,7 +41,7 @@
 
 namespace WebCore {
 
-class CompressionMessageExtensionProcessor : public WebSocketExtensionProcessor {
+class CompressionMessageExtensionProcessor FINAL : public WebSocketExtensionProcessor {
     WTF_MAKE_FAST_ALLOCATED;
     WTF_MAKE_NONCOPYABLE(CompressionMessageExtensionProcessor);
 public:

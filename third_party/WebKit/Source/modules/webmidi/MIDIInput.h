@@ -39,7 +39,7 @@ namespace WebCore {
 class MIDIAccess;
 class ExecutionContext;
 
-class MIDIInput : public MIDIPort {
+class MIDIInput FINAL : public MIDIPort {
 public:
     static PassRefPtr<MIDIInput> create(MIDIAccess*, ExecutionContext*, const String& id, const String& manufacturer, const String& name, const String& version);
     virtual ~MIDIInput() { }

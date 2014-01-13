@@ -46,7 +46,7 @@ class GeolocationPosition;
 class Page;
 class ExecutionContext;
 
-class Geolocation : public ScriptWrappable, public RefCounted<Geolocation>, public ActiveDOMObject
+class Geolocation FINAL : public ScriptWrappable, public RefCounted<Geolocation>, public ActiveDOMObject
 {
 public:
     static PassRefPtr<Geolocation> create(ExecutionContext*);

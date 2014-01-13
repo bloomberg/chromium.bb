@@ -41,7 +41,7 @@ namespace WebCore {
 class SourceBuffer;
 class GenericEventQueue;
 
-class SourceBufferList : public RefCounted<SourceBufferList>, public ScriptWrappable, public EventTargetWithInlineData {
+class SourceBufferList FINAL : public RefCounted<SourceBufferList>, public ScriptWrappable, public EventTargetWithInlineData {
     REFCOUNTED_EVENT_TARGET(SourceBufferList);
 public:
     static PassRefPtr<SourceBufferList> create(ExecutionContext* context, GenericEventQueue* asyncEventQueue)

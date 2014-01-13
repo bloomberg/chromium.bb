@@ -50,7 +50,7 @@ class SQLTransactionErrorCallback;
 class SQLValue;
 class VoidCallback;
 
-class SQLTransaction : public SQLTransactionStateMachine<SQLTransaction>, public AbstractSQLTransaction, public ScriptWrappable {
+class SQLTransaction FINAL : public SQLTransactionStateMachine<SQLTransaction>, public AbstractSQLTransaction, public ScriptWrappable {
 public:
     static PassRefPtr<SQLTransaction> create(Database*, PassOwnPtr<SQLTransactionCallback>,
         PassOwnPtr<VoidCallback> successCallback, PassOwnPtr<SQLTransactionErrorCallback>,

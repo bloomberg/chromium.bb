@@ -32,7 +32,7 @@ namespace WebCore {
 
 class AudioParam;
 
-class BiquadFilterNode : public AudioBasicProcessorNode {
+class BiquadFilterNode FINAL : public AudioBasicProcessorNode {
 public:
     // These must be defined as in the .idl file and must match those in the BiquadProcessor class.
     enum {

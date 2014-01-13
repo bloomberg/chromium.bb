@@ -39,7 +39,7 @@ namespace WebCore {
 class Crypto;
 class DOMWindow;
 
-class DOMWindowCrypto : public Supplement<DOMWindow>, public DOMWindowProperty {
+class DOMWindowCrypto FINAL : public Supplement<DOMWindow>, public DOMWindowProperty {
 public:
     virtual ~DOMWindowCrypto();
     static DOMWindowCrypto* from(DOMWindow*);

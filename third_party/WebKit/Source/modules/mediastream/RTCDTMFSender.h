@@ -40,11 +40,11 @@ class MediaStreamTrack;
 class RTCDTMFSenderHandler;
 class RTCPeerConnectionHandler;
 
-class RTCDTMFSender : public RefCounted<RTCDTMFSender>, public ScriptWrappable, public EventTargetWithInlineData, public RTCDTMFSenderHandlerClient, public ActiveDOMObject {
+class RTCDTMFSender FINAL : public RefCounted<RTCDTMFSender>, public ScriptWrappable, public EventTargetWithInlineData, public RTCDTMFSenderHandlerClient, public ActiveDOMObject {
     REFCOUNTED_EVENT_TARGET(RTCDTMFSender);
 public:
     static PassRefPtr<RTCDTMFSender> create(ExecutionContext*, RTCPeerConnectionHandler*, PassRefPtr<MediaStreamTrack>, ExceptionState&);
-    ~RTCDTMFSender();
+    virtual ~RTCDTMFSender();
 
     bool canInsertDTMF() const;
     MediaStreamTrack* track() const;

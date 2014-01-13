@@ -34,7 +34,7 @@ namespace WebCore {
 class IDBFactory;
 class DOMWindow;
 
-class DOMWindowIndexedDatabase : public DOMWindowProperty, public Supplement<DOMWindow> {
+class DOMWindowIndexedDatabase FINAL : public DOMWindowProperty, public Supplement<DOMWindow> {
 public:
     virtual ~DOMWindowIndexedDatabase();
     static DOMWindowIndexedDatabase* from(DOMWindow*);

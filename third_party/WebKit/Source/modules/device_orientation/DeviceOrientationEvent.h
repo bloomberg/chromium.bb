@@ -32,7 +32,7 @@ namespace WebCore {
 
 class DeviceOrientationData;
 
-class DeviceOrientationEvent : public Event {
+class DeviceOrientationEvent FINAL : public Event {
 public:
     ~DeviceOrientationEvent();
     static PassRefPtr<DeviceOrientationEvent> create()
@@ -53,7 +53,7 @@ public:
     double gamma(bool& isNull) const;
     bool absolute(bool& isNull) const;
 
-    virtual const AtomicString& interfaceName() const;
+    virtual const AtomicString& interfaceName() const OVERRIDE;
 
 private:
     DeviceOrientationEvent();

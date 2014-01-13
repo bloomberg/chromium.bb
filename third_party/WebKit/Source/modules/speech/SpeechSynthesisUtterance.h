@@ -36,12 +36,12 @@
 
 namespace WebCore {
 
-class SpeechSynthesisUtterance : public PlatformSpeechSynthesisUtteranceClient, public ScriptWrappable, public RefCounted<SpeechSynthesisUtterance>, public ContextLifecycleObserver, public EventTargetWithInlineData {
+class SpeechSynthesisUtterance FINAL : public PlatformSpeechSynthesisUtteranceClient, public ScriptWrappable, public RefCounted<SpeechSynthesisUtterance>, public ContextLifecycleObserver, public EventTargetWithInlineData {
     REFCOUNTED_EVENT_TARGET(SpeechSynthesisUtterance);
 public:
     static PassRefPtr<SpeechSynthesisUtterance> create(ExecutionContext*, const String&);
 
-    ~SpeechSynthesisUtterance();
+    virtual ~SpeechSynthesisUtterance();
 
     const String& text() const { return m_platformUtterance->text(); }
     void setText(const String& text) { m_platformUtterance->setText(text); }
@@ -72,7 +72,7 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(mark);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(boundary);
 
-    virtual ExecutionContext* executionContext() const;
+    virtual ExecutionContext* executionContext() const OVERRIDE;
 
     PlatformSpeechSynthesisUtterance* platformUtterance() const { return m_platformUtterance.get(); }
 

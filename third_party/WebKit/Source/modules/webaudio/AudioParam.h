@@ -43,7 +43,7 @@ namespace WebCore {
 
 class AudioNodeOutput;
 
-class AudioParam : public RefCounted<AudioParam>, public ScriptWrappable, public AudioSummingJunction {
+class AudioParam FINAL : public RefCounted<AudioParam>, public ScriptWrappable, public AudioSummingJunction {
 public:
     static const double DefaultSmoothingConstant;
     static const double SnapThreshold;

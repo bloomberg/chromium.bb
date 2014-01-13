@@ -56,7 +56,7 @@ public:
     virtual void handleCommitFailedAfterPostflight(SQLTransactionBackend*) = 0;
 };
 
-class SQLTransactionBackend : public SQLTransactionStateMachine<SQLTransactionBackend>, public AbstractSQLTransactionBackend {
+class SQLTransactionBackend FINAL : public SQLTransactionStateMachine<SQLTransactionBackend>, public AbstractSQLTransactionBackend {
 public:
     static PassRefPtr<SQLTransactionBackend> create(DatabaseBackend*,
         PassRefPtr<AbstractSQLTransaction>, PassRefPtr<SQLTransactionWrapper>, bool readOnly);

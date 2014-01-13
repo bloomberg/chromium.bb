@@ -75,7 +75,7 @@ class DatabaseTask : public blink::WebThread::Task {
 public:
     virtual ~DatabaseTask();
 
-    virtual void run() OVERRIDE;
+    virtual void run() OVERRIDE FINAL;
 
     DatabaseBackend* database() const { return m_database.get(); }
 #ifndef NDEBUG
@@ -99,7 +99,7 @@ private:
 #endif
 };
 
-class DatabaseBackend::DatabaseOpenTask : public DatabaseTask {
+class DatabaseBackend::DatabaseOpenTask FINAL : public DatabaseTask {
 public:
     static PassOwnPtr<DatabaseOpenTask> create(DatabaseBackend* db, bool setVersionInNewDatabase, DatabaseTaskSynchronizer* synchronizer, DatabaseError& error, String& errorMessage, bool& success)
     {
@@ -109,9 +109,9 @@ public:
 private:
     DatabaseOpenTask(DatabaseBackend*, bool setVersionInNewDatabase, DatabaseTaskSynchronizer*, DatabaseError&, String& errorMessage, bool& success);
 
-    virtual void doPerformTask();
+    virtual void doPerformTask() OVERRIDE;
 #if !LOG_DISABLED
-    virtual const char* debugTaskName() const;
+    virtual const char* debugTaskName() const OVERRIDE;
 #endif
 
     bool m_setVersionInNewDatabase;
@@ -120,7 +120,7 @@ private:
     bool& m_success;
 };
 
-class DatabaseBackend::DatabaseCloseTask : public DatabaseTask {
+class DatabaseBackend::DatabaseCloseTask FINAL : public DatabaseTask {
 public:
     static PassOwnPtr<DatabaseCloseTask> create(DatabaseBackend* db, DatabaseTaskSynchronizer* synchronizer)
     {
@@ -130,13 +130,13 @@ public:
 private:
     DatabaseCloseTask(DatabaseBackend*, DatabaseTaskSynchronizer*);
 
-    virtual void doPerformTask();
+    virtual void doPerformTask() OVERRIDE;
 #if !LOG_DISABLED
-    virtual const char* debugTaskName() const;
+    virtual const char* debugTaskName() const OVERRIDE;
 #endif
 };
 
-class DatabaseBackend::DatabaseTransactionTask : public DatabaseTask {
+class DatabaseBackend::DatabaseTransactionTask FINAL : public DatabaseTask {
 public:
     virtual ~DatabaseTransactionTask();
 
@@ -151,16 +151,16 @@ public:
 private:
     explicit DatabaseTransactionTask(PassRefPtr<SQLTransactionBackend>);
 
-    virtual void doPerformTask();
-    virtual void taskCancelled();
+    virtual void doPerformTask() OVERRIDE;
+    virtual void taskCancelled() OVERRIDE;
 #if !LOG_DISABLED
-    virtual const char* debugTaskName() const;
+    virtual const char* debugTaskName() const OVERRIDE;
 #endif
 
     RefPtr<SQLTransactionBackend> m_transaction;
 };
 
-class DatabaseBackend::DatabaseTableNamesTask : public DatabaseTask {
+class DatabaseBackend::DatabaseTableNamesTask FINAL : public DatabaseTask {
 public:
     static PassOwnPtr<DatabaseTableNamesTask> create(DatabaseBackend* db, DatabaseTaskSynchronizer* synchronizer, Vector<String>& names)
     {
@@ -170,9 +170,9 @@ public:
 private:
     DatabaseTableNamesTask(DatabaseBackend*, DatabaseTaskSynchronizer*, Vector<String>& names);
 
-    virtual void doPerformTask();
+    virtual void doPerformTask() OVERRIDE;
 #if !LOG_DISABLED
-    virtual const char* debugTaskName() const;
+    virtual const char* debugTaskName() const OVERRIDE;
 #endif
 
     Vector<String>& m_tableNames;

@@ -104,7 +104,7 @@ public:
     PassOwnPtr<ErrorCallback> errorCallback() { return ErrorCallbackImpl::create(this); }
 
 private:
-    class SuccessCallbackImpl : public SuccessCallback {
+    class SuccessCallbackImpl FINAL : public SuccessCallback {
     public:
         static PassOwnPtr<SuccessCallbackImpl> create(HelperType* helper)
         {
@@ -129,14 +129,14 @@ private:
         HelperType* m_helper;
     };
 
-    class ErrorCallbackImpl : public ErrorCallback {
+    class ErrorCallbackImpl FINAL : public ErrorCallback {
     public:
         static PassOwnPtr<ErrorCallbackImpl> create(HelperType* helper)
         {
             return adoptPtr(new ErrorCallbackImpl(helper));
         }
 
-        virtual void handleEvent(FileError* error)
+        virtual void handleEvent(FileError* error) OVERRIDE
         {
             ASSERT(error);
             m_helper->setError(error->code());

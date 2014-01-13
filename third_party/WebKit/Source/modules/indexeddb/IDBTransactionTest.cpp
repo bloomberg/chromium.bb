@@ -65,7 +65,7 @@ private:
     RefPtr<Document> m_document;
 };
 
-class FakeWebIDBDatabase : public blink::WebIDBDatabase {
+class FakeWebIDBDatabase FINAL : public blink::WebIDBDatabase {
 public:
     static PassOwnPtr<FakeWebIDBDatabase> create() { return adoptPtr(new FakeWebIDBDatabase()); }
 
@@ -77,7 +77,7 @@ private:
     FakeWebIDBDatabase() { }
 };
 
-class FakeIDBDatabaseCallbacks : public IDBDatabaseCallbacks {
+class FakeIDBDatabaseCallbacks FINAL : public IDBDatabaseCallbacks {
 public:
     static PassRefPtr<FakeIDBDatabaseCallbacks> create() { return adoptRef(new FakeIDBDatabaseCallbacks()); }
     virtual void onVersionChange(int64_t oldVersion, int64_t newVersion) OVERRIDE { }

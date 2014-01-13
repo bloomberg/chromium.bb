@@ -42,12 +42,12 @@ public:
     virtual ~AudioDestinationNode();
 
     // AudioNode
-    virtual void process(size_t) { }; // we're pulled by hardware so this is never called
-    virtual void reset() { m_currentSampleFrame = 0; };
+    virtual void process(size_t) OVERRIDE FINAL { } // we're pulled by hardware so this is never called
+    virtual void reset() OVERRIDE FINAL { m_currentSampleFrame = 0; }
 
     // The audio hardware calls render() to get the next render quantum of audio into destinationBus.
     // It will optionally give us local/live audio input in sourceBus (if it's not 0).
-    virtual void render(AudioBus* sourceBus, AudioBus* destinationBus, size_t numberOfFrames);
+    virtual void render(AudioBus* sourceBus, AudioBus* destinationBus, size_t numberOfFrames) OVERRIDE FINAL;
 
     size_t currentSampleFrame() const { return m_currentSampleFrame; }
     double currentTime() const { return currentSampleFrame() / static_cast<double>(sampleRate()); }
@@ -64,7 +64,7 @@ public:
 protected:
     // LocalAudioInputProvider allows us to expose an AudioSourceProvider for local/live audio input.
     // If there is local/live audio input, we call set() with the audio input data every render quantum.
-    class LocalAudioInputProvider : public AudioSourceProvider {
+    class LocalAudioInputProvider FINAL : public AudioSourceProvider {
     public:
         LocalAudioInputProvider()
             : m_sourceBus(AudioBus::create(2, AudioNode::ProcessingSizeInFrames)) // FIXME: handle non-stereo local input.
@@ -78,7 +78,7 @@ protected:
         }
 
         // AudioSourceProvider.
-        virtual void provideInput(AudioBus* destinationBus, size_t numberOfFrames)
+        virtual void provideInput(AudioBus* destinationBus, size_t numberOfFrames) OVERRIDE
         {
             bool isGood = destinationBus && destinationBus->length() == numberOfFrames && m_sourceBus->length() == numberOfFrames;
             ASSERT(isGood);
@@ -90,8 +90,8 @@ protected:
         RefPtr<AudioBus> m_sourceBus;
     };
 
-    virtual double tailTime() const OVERRIDE { return 0; }
-    virtual double latencyTime() const OVERRIDE { return 0; }
+    virtual double tailTime() const OVERRIDE FINAL { return 0; }
+    virtual double latencyTime() const OVERRIDE FINAL { return 0; }
 
     // Counts the number of sample-frames processed by the destination.
     size_t m_currentSampleFrame;

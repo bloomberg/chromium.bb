@@ -39,7 +39,7 @@ namespace WebCore {
 class DOMWindow;
 class StorageInfo;
 
-class DOMWindowQuota : public Supplement<DOMWindow>, public DOMWindowProperty {
+class DOMWindowQuota FINAL : public Supplement<DOMWindow>, public DOMWindowProperty {
 public:
     virtual ~DOMWindowQuota();
     static DOMWindowQuota* from(DOMWindow*);

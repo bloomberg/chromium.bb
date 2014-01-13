@@ -50,13 +50,13 @@ class MediaKeys;
 // Because this object controls the lifetime of the ContentDecryptionModuleSession,
 // it may outlive any references to it as long as the MediaKeys object is alive.
 // The ContentDecryptionModuleSession has the same lifetime as this object.
-class MediaKeySession
+class MediaKeySession FINAL
     : public RefCounted<MediaKeySession>, public ScriptWrappable, public EventTargetWithInlineData, public ContextLifecycleObserver
     , private ContentDecryptionModuleSessionClient {
     REFCOUNTED_EVENT_TARGET(MediaKeySession);
 public:
     static PassRefPtr<MediaKeySession> create(ExecutionContext*, ContentDecryptionModule*, MediaKeys*);
-    ~MediaKeySession();
+    virtual ~MediaKeySession();
 
     const String& keySystem() const { return m_keySystem; }
     String sessionId() const;

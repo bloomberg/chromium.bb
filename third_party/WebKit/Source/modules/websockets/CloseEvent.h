@@ -48,7 +48,7 @@ struct CloseEventInit : public EventInit {
     String reason;
 };
 
-class CloseEvent : public Event {
+class CloseEvent FINAL : public Event {
 public:
     static PassRefPtr<CloseEvent> create()
     {

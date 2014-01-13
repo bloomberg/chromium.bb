@@ -43,13 +43,13 @@ class DirectoryReaderSync;
 class ExceptionState;
 class FileEntrySync;
 
-class DirectoryEntrySync : public EntrySync {
+class DirectoryEntrySync FINAL : public EntrySync {
 public:
     static PassRefPtr<DirectoryEntrySync> create(PassRefPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
     {
         return adoptRef(new DirectoryEntrySync(fileSystem, fullPath));
     }
-    virtual bool isDirectory() const { return true; }
+    virtual bool isDirectory() const OVERRIDE { return true; }
 
     PassRefPtr<DirectoryReaderSync> createReader();
     PassRefPtr<FileEntrySync> getFile(const String& path, const Dictionary&, ExceptionState&);

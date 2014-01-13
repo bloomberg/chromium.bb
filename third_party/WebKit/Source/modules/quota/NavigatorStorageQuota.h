@@ -40,7 +40,7 @@ class Frame;
 class StorageQuota;
 class Navigator;
 
-class NavigatorStorageQuota : public Supplement<Navigator>, public DOMWindowProperty {
+class NavigatorStorageQuota FINAL : public Supplement<Navigator>, public DOMWindowProperty {
 public:
     virtual ~NavigatorStorageQuota();
     static NavigatorStorageQuota* from(Navigator*);

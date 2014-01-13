@@ -45,13 +45,13 @@ class EntryCallback;
 class ErrorCallback;
 class VoidCallback;
 
-class DirectoryEntry : public Entry {
+class DirectoryEntry FINAL : public Entry {
 public:
     static PassRefPtr<DirectoryEntry> create(PassRefPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
     {
         return adoptRef(new DirectoryEntry(fileSystem, fullPath));
     }
-    virtual bool isDirectory() const { return true; }
+    virtual bool isDirectory() const OVERRIDE { return true; }
 
     PassRefPtr<DirectoryReader> createReader();
     void getFile(const String& path, const Dictionary&, PassOwnPtr<EntryCallback> = nullptr, PassOwnPtr<ErrorCallback> = nullptr);

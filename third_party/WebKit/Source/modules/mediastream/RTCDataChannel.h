@@ -42,12 +42,12 @@ class ExceptionState;
 class RTCDataChannelHandler;
 class RTCPeerConnectionHandler;
 
-class RTCDataChannel : public RefCounted<RTCDataChannel>, public ScriptWrappable, public EventTargetWithInlineData, public RTCDataChannelHandlerClient {
+class RTCDataChannel FINAL : public RefCounted<RTCDataChannel>, public ScriptWrappable, public EventTargetWithInlineData, public RTCDataChannelHandlerClient {
     REFCOUNTED_EVENT_TARGET(RTCDataChannel);
 public:
     static PassRefPtr<RTCDataChannel> create(ExecutionContext*, PassOwnPtr<RTCDataChannelHandler>);
     static PassRefPtr<RTCDataChannel> create(ExecutionContext*, RTCPeerConnectionHandler*, const String& label, const blink::WebRTCDataChannelInit&, ExceptionState&);
-    ~RTCDataChannel();
+    virtual ~RTCDataChannel();
 
     String label() const;
 

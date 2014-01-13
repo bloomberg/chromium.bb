@@ -36,7 +36,7 @@ namespace WebCore {
 class AudioBus;
 class AudioContext;
 
-class OfflineAudioDestinationNode : public AudioDestinationNode {
+class OfflineAudioDestinationNode FINAL : public AudioDestinationNode {
 public:
     static PassRefPtr<OfflineAudioDestinationNode> create(AudioContext* context, AudioBuffer* renderTarget)
     {
@@ -53,7 +53,7 @@ public:
     virtual void enableInput(const String&) OVERRIDE { }
     virtual void startRendering() OVERRIDE;
 
-    virtual float sampleRate()  const { return m_renderTarget->sampleRate(); }
+    virtual float sampleRate()  const OVERRIDE { return m_renderTarget->sampleRate(); }
 
 private:
     class OfflineRenderingTask;

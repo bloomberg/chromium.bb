@@ -35,7 +35,7 @@ namespace WebCore {
 class AudioBuffer;
 class Reverb;
 
-class ConvolverNode : public AudioNode {
+class ConvolverNode FINAL : public AudioNode {
 public:
     static PassRefPtr<ConvolverNode> create(AudioContext* context, float sampleRate)
     {
@@ -45,10 +45,10 @@ public:
     virtual ~ConvolverNode();
 
     // AudioNode
-    virtual void process(size_t framesToProcess);
-    virtual void reset();
-    virtual void initialize();
-    virtual void uninitialize();
+    virtual void process(size_t framesToProcess) OVERRIDE;
+    virtual void reset() OVERRIDE;
+    virtual void initialize() OVERRIDE;
+    virtual void uninitialize() OVERRIDE;
 
     // Impulse responses
     void setBuffer(AudioBuffer*);

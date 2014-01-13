@@ -60,7 +60,7 @@ public:
 
     // EventTarget
     virtual const AtomicString& interfaceName() const OVERRIDE { return EventTargetNames::MIDIPort; }
-    virtual ExecutionContext* executionContext() const OVERRIDE { return ActiveDOMObject::executionContext(); }
+    virtual ExecutionContext* executionContext() const OVERRIDE FINAL { return ActiveDOMObject::executionContext(); }
 
 protected:
     MIDIPort(ExecutionContext*, const String& id, const String& manufacturer, const String& name, MIDIPortTypeCode, const String& version);

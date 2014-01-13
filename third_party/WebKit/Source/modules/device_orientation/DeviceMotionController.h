@@ -37,7 +37,7 @@ namespace WebCore {
 class DeviceMotionData;
 class DOMWindow;
 
-class DeviceMotionController : public DeviceSensorEventController, public DocumentSupplement, public DOMWindowLifecycleObserver {
+class DeviceMotionController FINAL : public DeviceSensorEventController, public DocumentSupplement, public DOMWindowLifecycleObserver {
 
 public:
     virtual ~DeviceMotionController();

@@ -31,7 +31,7 @@
 namespace WebCore {
 class RTCIceCandidate;
 
-class RTCIceCandidateEvent : public Event {
+class RTCIceCandidateEvent FINAL : public Event {
 public:
     virtual ~RTCIceCandidateEvent();
 
@@ -40,7 +40,7 @@ public:
 
     RTCIceCandidate* candidate() const;
 
-    virtual const AtomicString& interfaceName() const;
+    virtual const AtomicString& interfaceName() const OVERRIDE;
 
 private:
     RTCIceCandidateEvent();

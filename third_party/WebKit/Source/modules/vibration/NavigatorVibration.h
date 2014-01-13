@@ -31,7 +31,7 @@ namespace WebCore {
 class Frame;
 class Navigator;
 
-class NavigatorVibration
+class NavigatorVibration FINAL
     : public Supplement<Page>
     , public PageLifecycleObserver {
 public:

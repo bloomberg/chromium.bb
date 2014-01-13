@@ -43,10 +43,10 @@ namespace WebCore {
 class Dictionary;
 class ExceptionState;
 
-class TextEncoder : public RefCounted<TextEncoder> {
+class TextEncoder FINAL : public RefCounted<TextEncoder> {
 public:
     static PassRefPtr<TextEncoder> create(const String& utfLabel, ExceptionState&);
-    virtual ~TextEncoder();
+    ~TextEncoder();
 
     // Implement the IDL
     String encoding() const;

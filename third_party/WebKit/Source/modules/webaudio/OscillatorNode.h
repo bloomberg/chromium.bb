@@ -40,7 +40,7 @@ class PeriodicWave;
 
 // OscillatorNode is an audio generator of periodic waveforms.
 
-class OscillatorNode : public AudioScheduledSourceNode {
+class OscillatorNode FINAL : public AudioScheduledSourceNode {
 public:
     // The waveform type.
     // These must be defined as in the .idl file.
@@ -57,8 +57,8 @@ public:
     virtual ~OscillatorNode();
 
     // AudioNode
-    virtual void process(size_t framesToProcess);
-    virtual void reset();
+    virtual void process(size_t framesToProcess) OVERRIDE;
+    virtual void reset() OVERRIDE;
 
     String type() const;
 

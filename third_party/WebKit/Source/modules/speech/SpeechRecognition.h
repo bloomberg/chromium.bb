@@ -44,11 +44,11 @@ class SpeechRecognitionError;
 class SpeechRecognitionResult;
 class SpeechRecognitionResultList;
 
-class SpeechRecognition : public RefCounted<SpeechRecognition>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData {
+class SpeechRecognition FINAL : public RefCounted<SpeechRecognition>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData {
     REFCOUNTED_EVENT_TARGET(SpeechRecognition);
 public:
     static PassRefPtr<SpeechRecognition> create(ExecutionContext*);
-    ~SpeechRecognition();
+    virtual ~SpeechRecognition();
 
     // Attributes.
     PassRefPtr<SpeechGrammarList> grammars() { return m_grammars; }

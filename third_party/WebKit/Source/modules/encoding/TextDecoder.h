@@ -42,10 +42,10 @@ namespace WebCore {
 
 class ExceptionState;
 
-class TextDecoder : public RefCounted<TextDecoder> {
+class TextDecoder FINAL : public RefCounted<TextDecoder> {
 public:
     static PassRefPtr<TextDecoder> create(const String& label, const Dictionary&, ExceptionState&);
-    virtual ~TextDecoder();
+    ~TextDecoder();
 
     // Implement the IDL
     String encoding() const;

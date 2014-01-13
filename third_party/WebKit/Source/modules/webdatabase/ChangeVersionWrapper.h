@@ -35,14 +35,14 @@ namespace WebCore {
 
 class SQLError;
 
-class ChangeVersionWrapper : public SQLTransactionWrapper {
+class ChangeVersionWrapper FINAL : public SQLTransactionWrapper {
 public:
     static PassRefPtr<ChangeVersionWrapper> create(const String& oldVersion, const String& newVersion) { return adoptRef(new ChangeVersionWrapper(oldVersion, newVersion)); }
 
-    virtual bool performPreflight(SQLTransactionBackend*);
-    virtual bool performPostflight(SQLTransactionBackend*);
-    virtual SQLError* sqlError() const { return m_sqlError.get(); }
-    virtual void handleCommitFailedAfterPostflight(SQLTransactionBackend*);
+    virtual bool performPreflight(SQLTransactionBackend*) OVERRIDE;
+    virtual bool performPostflight(SQLTransactionBackend*) OVERRIDE;
+    virtual SQLError* sqlError() const OVERRIDE { return m_sqlError.get(); }
+    virtual void handleCommitFailedAfterPostflight(SQLTransactionBackend*) OVERRIDE;
 
 private:
     ChangeVersionWrapper(const String& oldVersion, const String& newVersion);

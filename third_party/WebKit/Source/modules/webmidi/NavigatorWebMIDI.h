@@ -40,7 +40,7 @@ namespace WebCore {
 class MIDIAccessPromise;
 class Navigator;
 
-class NavigatorWebMIDI : public Supplement<Navigator>, public DOMWindowProperty {
+class NavigatorWebMIDI FINAL : public Supplement<Navigator>, public DOMWindowProperty {
 public:
     virtual ~NavigatorWebMIDI();
     static NavigatorWebMIDI* from(Navigator*);

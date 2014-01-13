@@ -50,12 +50,12 @@ class DOMError;
 class ExceptionState;
 class ExecutionContext;
 
-class IDBDatabase : public RefCounted<IDBDatabase>, public ScriptWrappable, public EventTargetWithInlineData, public ActiveDOMObject {
+class IDBDatabase FINAL : public RefCounted<IDBDatabase>, public ScriptWrappable, public EventTargetWithInlineData, public ActiveDOMObject {
     REFCOUNTED_EVENT_TARGET(IDBDatabase);
 
 public:
     static PassRefPtr<IDBDatabase> create(ExecutionContext*, PassOwnPtr<blink::WebIDBDatabase>, PassRefPtr<IDBDatabaseCallbacks>);
-    ~IDBDatabase();
+    virtual ~IDBDatabase();
 
     void setMetadata(const IDBDatabaseMetadata& metadata) { m_metadata = metadata; }
     void indexCreated(int64_t objectStoreId, const IDBIndexMetadata&);
@@ -82,9 +82,9 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(versionchange);
 
     // IDBDatabaseCallbacks
-    virtual void onVersionChange(int64_t oldVersion, int64_t newVersion);
-    virtual void onAbort(int64_t, PassRefPtr<DOMError>);
-    virtual void onComplete(int64_t);
+    void onVersionChange(int64_t oldVersion, int64_t newVersion);
+    void onAbort(int64_t, PassRefPtr<DOMError>);
+    void onComplete(int64_t);
 
     // ActiveDOMObject
     virtual bool hasPendingActivity() const OVERRIDE;

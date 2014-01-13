@@ -110,13 +110,13 @@ public:
     virtual void onSuccess(PassOwnPtr<blink::WebIDBDatabase>, const IDBDatabaseMetadata&) { ASSERT_NOT_REACHED(); }
 
     // ActiveDOMObject
-    virtual bool hasPendingActivity() const OVERRIDE;
-    virtual void stop() OVERRIDE;
+    virtual bool hasPendingActivity() const OVERRIDE FINAL;
+    virtual void stop() OVERRIDE FINAL;
 
     // EventTarget
     virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ExecutionContext* executionContext() const OVERRIDE;
-    virtual void uncaughtExceptionInEventHandler() OVERRIDE;
+    virtual ExecutionContext* executionContext() const OVERRIDE FINAL;
+    virtual void uncaughtExceptionInEventHandler() OVERRIDE FINAL;
 
     using EventTarget::dispatchEvent;
     virtual bool dispatchEvent(PassRefPtr<Event>) OVERRIDE;
@@ -126,7 +126,7 @@ public:
     // the upcoming "success" or "error").
     void transactionDidFinishAndDispatch();
 
-    virtual void deref() OVERRIDE
+    virtual void deref() OVERRIDE FINAL
     {
         if (derefBase())
             delete this;

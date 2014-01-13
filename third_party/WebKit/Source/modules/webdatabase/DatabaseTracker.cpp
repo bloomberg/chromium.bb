@@ -105,19 +105,19 @@ void DatabaseTracker::addOpenDatabase(DatabaseBackendBase* database)
     databaseSet->add(database);
 }
 
-class NotifyDatabaseObserverOnCloseTask : public ExecutionContextTask {
+class NotifyDatabaseObserverOnCloseTask FINAL : public ExecutionContextTask {
 public:
     static PassOwnPtr<NotifyDatabaseObserverOnCloseTask> create(PassRefPtr<DatabaseBackendBase> database)
     {
         return adoptPtr(new NotifyDatabaseObserverOnCloseTask(database));
     }
 
-    virtual void performTask(ExecutionContext* context)
+    virtual void performTask(ExecutionContext*) OVERRIDE
     {
         databaseClosed(m_database.get());
     }
 
-    virtual bool isCleanupTask() const
+    virtual bool isCleanupTask() const OVERRIDE
     {
         return true;
     }
@@ -219,14 +219,14 @@ void DatabaseTracker::interruptAllDatabasesForContext(const DatabaseContext* con
     }
 }
 
-class DatabaseTracker::CloseOneDatabaseImmediatelyTask : public ExecutionContextTask {
+class DatabaseTracker::CloseOneDatabaseImmediatelyTask FINAL : public ExecutionContextTask {
 public:
     static PassOwnPtr<CloseOneDatabaseImmediatelyTask> create(const String& originIdentifier, const String& name, DatabaseBackendBase* database)
     {
         return adoptPtr(new CloseOneDatabaseImmediatelyTask(originIdentifier, name, database));
     }
 
-    virtual void performTask(ExecutionContext* context)
+    virtual void performTask(ExecutionContext*) OVERRIDE
     {
         DatabaseTracker::tracker().closeOneDatabaseImmediately(m_originIdentifier, m_name, m_database);
     }

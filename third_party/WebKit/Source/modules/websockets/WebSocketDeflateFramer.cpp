@@ -38,7 +38,7 @@
 
 namespace WebCore {
 
-class WebSocketExtensionDeflateFrame : public WebSocketExtensionProcessor {
+class WebSocketExtensionDeflateFrame FINAL : public WebSocketExtensionProcessor {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     static PassOwnPtr<WebSocketExtensionDeflateFrame> create(WebSocketDeflateFramer* framer)

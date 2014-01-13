@@ -57,7 +57,7 @@ class SocketStreamHandle;
 class SocketStreamError;
 class WebSocketChannelClient;
 
-class MainThreadWebSocketChannel : public RefCounted<MainThreadWebSocketChannel>, public SocketStreamHandleClient, public WebSocketChannel, public FileReaderLoaderClient {
+class MainThreadWebSocketChannel FINAL : public RefCounted<MainThreadWebSocketChannel>, public SocketStreamHandleClient, public WebSocketChannel, public FileReaderLoaderClient {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     // You can specify the source file and the line number information
@@ -96,10 +96,10 @@ public:
     virtual void didFailSocketStream(SocketStreamHandle*, const SocketStreamError&) OVERRIDE;
 
     // FileReaderLoaderClient functions.
-    virtual void didStartLoading();
-    virtual void didReceiveData();
-    virtual void didFinishLoading();
-    virtual void didFail(FileError::ErrorCode);
+    virtual void didStartLoading() OVERRIDE;
+    virtual void didReceiveData() OVERRIDE;
+    virtual void didFinishLoading() OVERRIDE;
+    virtual void didFail(FileError::ErrorCode) OVERRIDE;
 
     using RefCounted<MainThreadWebSocketChannel>::ref;
     using RefCounted<MainThreadWebSocketChannel>::deref;

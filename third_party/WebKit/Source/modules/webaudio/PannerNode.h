@@ -45,7 +45,7 @@ namespace WebCore {
 // A cone effect will attenuate the gain as the orientation moves away from the listener.
 // All of these effects follow the OpenAL specification very closely.
 
-class PannerNode : public AudioNode {
+class PannerNode FINAL : public AudioNode {
 public:
     // These must be defined as in the .idl file and must match those in the Panner class.
     enum {
@@ -70,11 +70,11 @@ public:
     virtual ~PannerNode();
 
     // AudioNode
-    virtual void process(size_t framesToProcess);
-    virtual void pullInputs(size_t framesToProcess);
-    virtual void reset();
-    virtual void initialize();
-    virtual void uninitialize();
+    virtual void process(size_t framesToProcess) OVERRIDE;
+    virtual void pullInputs(size_t framesToProcess) OVERRIDE;
+    virtual void reset() OVERRIDE;
+    virtual void initialize() OVERRIDE;
+    virtual void uninitialize() OVERRIDE;
 
     // Listener
     AudioListener* listener();

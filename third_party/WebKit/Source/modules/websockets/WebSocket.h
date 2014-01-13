@@ -51,7 +51,7 @@ namespace WebCore {
 class Blob;
 class ExceptionState;
 
-class WebSocket : public RefCounted<WebSocket>, public ScriptWrappable, public EventTargetWithInlineData, public ActiveDOMObject, public WebSocketChannelClient {
+class WebSocket FINAL : public RefCounted<WebSocket>, public ScriptWrappable, public EventTargetWithInlineData, public ActiveDOMObject, public WebSocketChannelClient {
     REFCOUNTED_EVENT_TARGET(WebSocket);
 public:
     static const char* subProtocolSeperator();
@@ -126,10 +126,10 @@ public:
     virtual void didClose(unsigned long unhandledBufferedAmount, ClosingHandshakeCompletionStatus, unsigned short code, const String& reason) OVERRIDE;
 
 private:
-    class EventQueue : public RefCounted<EventQueue> {
+    class EventQueue FINAL : public RefCounted<EventQueue> {
     public:
         static PassRefPtr<EventQueue> create(EventTarget* target) { return adoptRef(new EventQueue(target)); }
-        virtual ~EventQueue();
+        ~EventQueue();
 
         // Dispatches the event if this queue is active.
         // Queues the event if this queue is suspended.

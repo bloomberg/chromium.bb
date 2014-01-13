@@ -39,9 +39,9 @@ namespace WebCore {
 class MIDIAccess;
 class MIDIClient;
 
-class MIDIController : public Supplement<Page> {
+class MIDIController FINAL : public Supplement<Page> {
 public:
-    ~MIDIController();
+    virtual ~MIDIController();
 
     void requestSysExPermission(PassRefPtr<MIDIAccess>);
     void cancelSysExPermissionRequest(MIDIAccess*);

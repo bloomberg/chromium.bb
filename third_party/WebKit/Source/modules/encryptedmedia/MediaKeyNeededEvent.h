@@ -37,7 +37,7 @@ struct MediaKeyNeededEventInit : public EventInit {
     RefPtr<Uint8Array> initData;
 };
 
-class MediaKeyNeededEvent : public Event {
+class MediaKeyNeededEvent FINAL : public Event {
 public:
     virtual ~MediaKeyNeededEvent();
 

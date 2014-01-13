@@ -77,7 +77,7 @@ PassRefPtr<DirectoryEntrySync> DOMFileSystemSync::root()
 
 namespace {
 
-class CreateFileHelper : public AsyncFileSystemCallbacks {
+class CreateFileHelper FINAL : public AsyncFileSystemCallbacks {
 public:
     class CreateFileResult : public RefCounted<CreateFileResult> {
       public:
@@ -108,7 +108,7 @@ public:
         return adoptPtr(static_cast<AsyncFileSystemCallbacks*>(new CreateFileHelper(result, name, url, type)));
     }
 
-    virtual void didFail(int code)
+    virtual void didFail(int code) OVERRIDE
     {
         m_result->m_failed = true;
         m_result->m_code = code;
@@ -118,7 +118,7 @@ public:
     {
     }
 
-    virtual void didCreateSnapshotFile(const FileMetadata& metadata, PassRefPtr<BlobDataHandle> snapshot)
+    virtual void didCreateSnapshotFile(const FileMetadata& metadata, PassRefPtr<BlobDataHandle> snapshot) OVERRIDE
     {
         // We can't directly use the snapshot blob data handle because the content type on it hasn't been set.
         // The |snapshot| param is here to provide a a chain of custody thru thread bridging that is held onto until
@@ -177,14 +177,14 @@ PassRefPtr<File> DOMFileSystemSync::createFile(const FileEntrySync* fileEntry, E
 
 namespace {
 
-class ReceiveFileWriterCallback : public FileWriterBaseCallback {
+class ReceiveFileWriterCallback FINAL : public FileWriterBaseCallback {
 public:
     static PassOwnPtr<ReceiveFileWriterCallback> create()
     {
         return adoptPtr(new ReceiveFileWriterCallback());
     }
 
-    void handleEvent(FileWriterBase*)
+    virtual void handleEvent(FileWriterBase*) OVERRIDE
     {
     }
 
@@ -194,14 +194,14 @@ private:
     }
 };
 
-class LocalErrorCallback : public ErrorCallback {
+class LocalErrorCallback FINAL : public ErrorCallback {
 public:
     static PassOwnPtr<LocalErrorCallback> create(FileError::ErrorCode& errorCode)
     {
         return adoptPtr(new LocalErrorCallback(errorCode));
     }
 
-    void handleEvent(FileError* error)
+    virtual void handleEvent(FileError* error) OVERRIDE
     {
         ASSERT(error->code() != FileError::OK);
         m_errorCode = error->code();

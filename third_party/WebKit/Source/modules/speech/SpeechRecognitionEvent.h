@@ -42,7 +42,7 @@ struct SpeechRecognitionEventInit : public EventInit {
     RefPtr<SpeechRecognitionResultList> results;
 };
 
-class SpeechRecognitionEvent : public Event {
+class SpeechRecognitionEvent FINAL : public Event {
 public:
     static PassRefPtr<SpeechRecognitionEvent> create();
     static PassRefPtr<SpeechRecognitionEvent> create(const AtomicString&, const SpeechRecognitionEventInit&);

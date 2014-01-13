@@ -49,7 +49,7 @@ class IDBObjectStore;
 class IDBOpenDBRequest;
 struct IDBObjectStoreMetadata;
 
-class IDBTransaction : public ScriptWrappable, public RefCounted<IDBTransaction>, public EventTargetWithInlineData, public ActiveDOMObject {
+class IDBTransaction FINAL : public ScriptWrappable, public RefCounted<IDBTransaction>, public EventTargetWithInlineData, public ActiveDOMObject {
     REFCOUNTED_EVENT_TARGET(IDBTransaction);
 
 public:
@@ -90,8 +90,8 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(complete);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
 
-    virtual void onAbort(PassRefPtr<DOMError>);
-    virtual void onComplete();
+    void onAbort(PassRefPtr<DOMError>);
+    void onComplete();
 
     // EventTarget
     virtual const AtomicString& interfaceName() const OVERRIDE;

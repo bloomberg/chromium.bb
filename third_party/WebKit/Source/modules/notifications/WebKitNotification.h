@@ -46,7 +46,7 @@ class NotificationCenter;
 
 // Implementation of the legacy notification API as specified the following page:
 // http://chromium.org/developers/design-documents/desktop-notifications/api-specification
-class WebKitNotification : public RefCounted<WebKitNotification>, public NotificationBase {
+class WebKitNotification FINAL : public RefCounted<WebKitNotification>, public NotificationBase {
     REFCOUNTED_EVENT_TARGET(WebKitNotification);
 
 public:

@@ -52,7 +52,7 @@ namespace WebCore {
 class NotificationClient;
 class VoidCallback;
 
-class NotificationCenter : public RefCounted<NotificationCenter>, public ScriptWrappable, public ActiveDOMObject {
+class NotificationCenter FINAL : public RefCounted<NotificationCenter>, public ScriptWrappable, public ActiveDOMObject {
 public:
     static PassRefPtr<NotificationCenter> create(ExecutionContext*, NotificationClient*);
 

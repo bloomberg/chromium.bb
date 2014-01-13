@@ -37,7 +37,7 @@ class NotificationCenter;
 class ExecutionContext;
 class WorkerGlobalScope;
 
-class WorkerGlobalScopeNotifications : public WorkerSupplement {
+class WorkerGlobalScopeNotifications FINAL : public WorkerSupplement {
 public:
     virtual ~WorkerGlobalScopeNotifications();
 

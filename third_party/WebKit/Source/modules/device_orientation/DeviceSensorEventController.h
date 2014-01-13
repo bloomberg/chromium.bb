@@ -56,7 +56,7 @@ protected:
 
 private:
     // Inherited from PageLifecycleObserver.
-    virtual void pageVisibilityChanged() OVERRIDE;
+    virtual void pageVisibilityChanged() OVERRIDE FINAL;
 
     void fireDeviceEvent(Timer<DeviceSensorEventController>*);
 

@@ -50,7 +50,7 @@ class DatabaseBackend : public DatabaseBackendBase {
 public:
     DatabaseBackend(PassRefPtr<DatabaseContext>, const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize);
 
-    virtual bool openAndVerifyVersion(bool setVersionInNewDatabase, DatabaseError&, String& errorMessage);
+    virtual bool openAndVerifyVersion(bool setVersionInNewDatabase, DatabaseError&, String& errorMessage) OVERRIDE FINAL;
     void close();
 
     PassRefPtr<SQLTransactionBackend> runTransaction(PassRefPtr<SQLTransaction>, bool readOnly, const ChangeVersionData*);
@@ -66,7 +66,7 @@ private:
     class DatabaseTransactionTask;
     class DatabaseTableNamesTask;
 
-    virtual bool performOpenAndVerify(bool setVersionInNewDatabase, DatabaseError&, String& errorMessage);
+    virtual bool performOpenAndVerify(bool setVersionInNewDatabase, DatabaseError&, String& errorMessage) OVERRIDE FINAL;
 
     void scheduleTransaction();
 

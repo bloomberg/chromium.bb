@@ -33,7 +33,7 @@ namespace WebCore {
 
 class ExceptionState;
 
-class AnalyserNode : public AudioBasicInspectorNode {
+class AnalyserNode FINAL : public AudioBasicInspectorNode {
 public:
     static PassRefPtr<AnalyserNode> create(AudioContext* context, float sampleRate)
     {
@@ -43,8 +43,8 @@ public:
     virtual ~AnalyserNode();
 
     // AudioNode
-    virtual void process(size_t framesToProcess);
-    virtual void reset();
+    virtual void process(size_t framesToProcess) OVERRIDE;
+    virtual void reset() OVERRIDE;
 
     // Javascript bindings
     unsigned fftSize() const { return m_analyser.fftSize(); }

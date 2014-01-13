@@ -381,7 +381,7 @@ WorkerThreadableWebSocketChannel::Bridge::~Bridge()
     disconnect();
 }
 
-class WorkerThreadableWebSocketChannel::WorkerGlobalScopeDidInitializeTask : public ExecutionContextTask {
+class WorkerThreadableWebSocketChannel::WorkerGlobalScopeDidInitializeTask FINAL : public ExecutionContextTask {
 public:
     static PassOwnPtr<ExecutionContextTask> create(WorkerThreadableWebSocketChannel::Peer* peer, WorkerLoaderProxy* loaderProxy, PassRefPtr<ThreadableWebSocketChannelClientWrapper> workerClientWrapper)
     {

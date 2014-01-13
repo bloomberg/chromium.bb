@@ -34,7 +34,7 @@ namespace WebCore {
 
 class AudioBuffer;
 
-class OfflineAudioCompletionEvent : public Event {
+class OfflineAudioCompletionEvent FINAL : public Event {
 public:
     static PassRefPtr<OfflineAudioCompletionEvent> create();
     static PassRefPtr<OfflineAudioCompletionEvent> create(PassRefPtr<AudioBuffer> renderedBuffer);
@@ -43,7 +43,7 @@ public:
 
     AudioBuffer* renderedBuffer() { return m_renderedBuffer.get(); }
 
-    virtual const AtomicString& interfaceName() const;
+    virtual const AtomicString& interfaceName() const OVERRIDE;
 
 private:
     OfflineAudioCompletionEvent();

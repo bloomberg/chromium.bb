@@ -37,7 +37,7 @@ class IDBAny;
 class IDBRequest;
 class IDBTransaction;
 
-class IDBCursorWithValue : public IDBCursor {
+class IDBCursorWithValue FINAL : public IDBCursor {
 public:
     static PassRefPtr<IDBCursorWithValue> create(PassOwnPtr<blink::WebIDBCursor>, IndexedDB::CursorDirection, IDBRequest*, IDBAny* source, IDBTransaction*);
     virtual ~IDBCursorWithValue();

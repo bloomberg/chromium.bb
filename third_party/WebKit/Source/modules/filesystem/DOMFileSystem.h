@@ -46,7 +46,7 @@ class FileCallback;
 class FileEntry;
 class FileWriterCallback;
 
-class DOMFileSystem : public DOMFileSystemBase, public ScriptWrappable, public ActiveDOMObject {
+class DOMFileSystem FINAL : public DOMFileSystemBase, public ScriptWrappable, public ActiveDOMObject {
 public:
     static PassRefPtr<DOMFileSystem> create(ExecutionContext*, const String& name, FileSystemType, const KURL& rootURL);
 
@@ -88,7 +88,7 @@ private:
 
     // A helper template to schedule a callback task.
     template <typename CB, typename CBArg>
-    class DispatchCallbacRefPtrArgTask : public ExecutionContextTask {
+    class DispatchCallbacRefPtrArgTask FINAL : public ExecutionContextTask {
     public:
         DispatchCallbacRefPtrArgTask(PassOwnPtr<CB> callback, PassRefPtr<CBArg> arg)
             : m_callback(callback)
@@ -96,7 +96,7 @@ private:
         {
         }
 
-        virtual void performTask(ExecutionContext*)
+        virtual void performTask(ExecutionContext*) OVERRIDE
         {
             m_callback->handleEvent(m_callbackArg.get());
         }
@@ -107,7 +107,7 @@ private:
     };
 
     template <typename CB, typename CBArg>
-    class DispatchCallbackNonPtrArgTask : public ExecutionContextTask {
+    class DispatchCallbackNonPtrArgTask FINAL : public ExecutionContextTask {
     public:
         DispatchCallbackNonPtrArgTask(PassOwnPtr<CB> callback, const CBArg& arg)
             : m_callback(callback)
@@ -115,7 +115,7 @@ private:
         {
         }
 
-        virtual void performTask(ExecutionContext*)
+        virtual void performTask(ExecutionContext*) OVERRIDE
         {
             m_callback->handleEvent(m_callbackArg);
         }

@@ -38,7 +38,7 @@ namespace WebCore {
 class DOMWindow;
 class NotificationCenter;
 
-class DOMWindowNotifications : public Supplement<DOMWindow>, public DOMWindowProperty {
+class DOMWindowNotifications FINAL : public Supplement<DOMWindow>, public DOMWindowProperty {
 public:
     virtual ~DOMWindowNotifications();
 

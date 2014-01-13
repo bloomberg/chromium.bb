@@ -42,14 +42,14 @@ class ExceptionState;
 class File;
 class FileWriterSync;
 
-class FileEntrySync : public EntrySync {
+class FileEntrySync FINAL : public EntrySync {
 public:
     static PassRefPtr<FileEntrySync> create(PassRefPtr<DOMFileSystemBase> fileSystem, const String& fullPath)
     {
         return adoptRef(new FileEntrySync(fileSystem, fullPath));
     }
 
-    virtual bool isFile() const { return true; }
+    virtual bool isFile() const OVERRIDE { return true; }
 
     PassRefPtr<File> file(ExceptionState&);
     PassRefPtr<FileWriterSync> createWriter(ExceptionState&);

@@ -41,7 +41,7 @@ namespace WebCore {
 class KURL;
 class MediaSourceBase;
 
-class MediaSourceRegistry : public URLRegistry {
+class MediaSourceRegistry FINAL : public URLRegistry {
 public:
     // Returns a single instance of MediaSourceRegistry.
     static MediaSourceRegistry& registry();

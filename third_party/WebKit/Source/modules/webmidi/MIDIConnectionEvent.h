@@ -45,7 +45,7 @@ struct MIDIConnectionEventInit : public EventInit {
     RefPtr<MIDIPort> port;
 };
 
-class MIDIConnectionEvent : public Event {
+class MIDIConnectionEvent FINAL : public Event {
 public:
     static PassRefPtr<MIDIConnectionEvent> create()
     {

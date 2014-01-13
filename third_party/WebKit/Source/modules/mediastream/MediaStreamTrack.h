@@ -43,7 +43,7 @@ class ExceptionState;
 class MediaStreamComponent;
 class MediaStreamTrackSourcesCallback;
 
-class MediaStreamTrack : public RefCounted<MediaStreamTrack>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData, public MediaStreamSource::Observer {
+class MediaStreamTrack FINAL : public RefCounted<MediaStreamTrack>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData, public MediaStreamSource::Observer {
     REFCOUNTED_EVENT_TARGET(MediaStreamTrack);
 public:
     static PassRefPtr<MediaStreamTrack> create(ExecutionContext*, MediaStreamComponent*);

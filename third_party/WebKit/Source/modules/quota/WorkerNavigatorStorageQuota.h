@@ -40,7 +40,7 @@ namespace WebCore {
 class StorageQuota;
 class WorkerNavigator;
 
-class WorkerNavigatorStorageQuota : public Supplement<WorkerNavigator> {
+class WorkerNavigatorStorageQuota FINAL : public Supplement<WorkerNavigator> {
 public:
     virtual ~WorkerNavigatorStorageQuota();
     static WorkerNavigatorStorageQuota* from(WorkerNavigator*);

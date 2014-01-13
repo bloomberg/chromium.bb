@@ -37,7 +37,7 @@ namespace WebCore {
 class ExecutionContext;
 class SharedWorker;
 
-class SharedWorkerPerformance : public Supplement<SharedWorker> {
+class SharedWorkerPerformance FINAL : public Supplement<SharedWorker> {
 public:
     virtual ~SharedWorkerPerformance();
     static SharedWorkerPerformance* from(SharedWorker*);

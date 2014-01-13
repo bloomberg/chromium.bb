@@ -32,19 +32,19 @@
 
 namespace WebCore {
 
-class PlatformSpeechSynthesizerMock : public PlatformSpeechSynthesizer {
+class PlatformSpeechSynthesizerMock FINAL : public PlatformSpeechSynthesizer {
 public:
     static PassOwnPtr<PlatformSpeechSynthesizerMock> create(PlatformSpeechSynthesizerClient*);
 
     virtual ~PlatformSpeechSynthesizerMock();
-    virtual void speak(PassRefPtr<PlatformSpeechSynthesisUtterance>);
-    virtual void pause();
-    virtual void resume();
-    virtual void cancel();
+    virtual void speak(PassRefPtr<PlatformSpeechSynthesisUtterance>) OVERRIDE;
+    virtual void pause() OVERRIDE;
+    virtual void resume() OVERRIDE;
+    virtual void cancel() OVERRIDE;
 
 private:
     explicit PlatformSpeechSynthesizerMock(PlatformSpeechSynthesizerClient*);
-    virtual void initializeVoiceList();
+    virtual void initializeVoiceList() OVERRIDE;
     void speakingFinished(Timer<PlatformSpeechSynthesizerMock>*);
 
     Timer<PlatformSpeechSynthesizerMock> m_speakingFinishedTimer;

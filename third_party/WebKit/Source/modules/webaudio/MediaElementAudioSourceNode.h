@@ -39,7 +39,7 @@ namespace WebCore {
 
 class AudioContext;
 
-class MediaElementAudioSourceNode : public AudioSourceNode, public AudioSourceProviderClient {
+class MediaElementAudioSourceNode FINAL : public AudioSourceNode, public AudioSourceProviderClient {
 public:
     static PassRefPtr<MediaElementAudioSourceNode> create(AudioContext*, HTMLMediaElement*);
 
@@ -48,11 +48,11 @@ public:
     HTMLMediaElement* mediaElement() { return m_mediaElement.get(); }
 
     // AudioNode
-    virtual void process(size_t framesToProcess);
-    virtual void reset();
+    virtual void process(size_t framesToProcess) OVERRIDE;
+    virtual void reset() OVERRIDE;
 
     // AudioSourceProviderClient
-    virtual void setFormat(size_t numberOfChannels, float sampleRate);
+    virtual void setFormat(size_t numberOfChannels, float sampleRate) OVERRIDE;
 
     void lock();
     void unlock();

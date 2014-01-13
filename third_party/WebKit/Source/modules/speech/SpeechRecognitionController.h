@@ -32,7 +32,7 @@
 
 namespace WebCore {
 
-class SpeechRecognitionController : public Supplement<Page> {
+class SpeechRecognitionController FINAL : public Supplement<Page> {
 public:
     virtual ~SpeechRecognitionController();
 

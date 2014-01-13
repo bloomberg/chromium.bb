@@ -41,7 +41,7 @@ class ExceptionState;
 class MIDIAccess;
 class ExecutionContext;
 
-class MIDIOutput : public MIDIPort {
+class MIDIOutput FINAL : public MIDIPort {
 public:
     static PassRefPtr<MIDIOutput> create(MIDIAccess*, unsigned portIndex, ExecutionContext*, const String& id, const String& manufacturer, const String& name, const String& version);
     virtual ~MIDIOutput();

@@ -33,9 +33,9 @@ namespace WebCore {
 
 class UserMediaRequest;
 
-class UserMediaController : public Supplement<Page> {
+class UserMediaController FINAL : public Supplement<Page> {
 public:
-    ~UserMediaController();
+    virtual ~UserMediaController();
 
     UserMediaClient* client() const { return m_client; }
     void requestUserMedia(PassRefPtr<UserMediaRequest>);

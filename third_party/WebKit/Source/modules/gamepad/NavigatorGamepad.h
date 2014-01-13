@@ -33,7 +33,7 @@ namespace WebCore {
 class GamepadList;
 class Navigator;
 
-class NavigatorGamepad : public Supplement<Navigator> {
+class NavigatorGamepad FINAL : public Supplement<Navigator> {
 public:
     virtual ~NavigatorGamepad();
     static NavigatorGamepad* from(Navigator*);

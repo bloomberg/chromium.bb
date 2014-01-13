@@ -41,7 +41,7 @@ using namespace WebCore;
 
 namespace {
 
-class NullEventQueue : public EventQueue {
+class NullEventQueue FINAL : public EventQueue {
 public:
     NullEventQueue() { }
     virtual ~NullEventQueue() { }
@@ -50,7 +50,7 @@ public:
     virtual void close() OVERRIDE { }
 };
 
-class NullExecutionContext : public ExecutionContext, public RefCounted<NullExecutionContext> {
+class NullExecutionContext FINAL : public ExecutionContext, public RefCounted<NullExecutionContext> {
 public:
     using RefCounted<NullExecutionContext>::ref;
     using RefCounted<NullExecutionContext>::deref;

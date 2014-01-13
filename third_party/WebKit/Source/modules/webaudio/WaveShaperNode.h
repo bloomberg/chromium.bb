@@ -34,7 +34,7 @@ namespace WebCore {
 
 class ExceptionState;
 
-class WaveShaperNode : public AudioBasicProcessorNode {
+class WaveShaperNode FINAL : public AudioBasicProcessorNode {
 public:
     static PassRefPtr<WaveShaperNode> create(AudioContext* context)
     {

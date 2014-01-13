@@ -41,7 +41,7 @@ namespace WebCore {
 
 class ExceptionState;
 
-class MediaSource : public MediaSourceBase, public ScriptWrappable {
+class MediaSource FINAL : public MediaSourceBase, public ScriptWrappable {
 public:
     static PassRefPtr<MediaSource> create(ExecutionContext*);
     virtual ~MediaSource();

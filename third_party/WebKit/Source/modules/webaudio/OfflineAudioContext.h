@@ -31,7 +31,7 @@ namespace WebCore {
 
 class ExceptionState;
 
-class OfflineAudioContext : public AudioContext {
+class OfflineAudioContext FINAL : public AudioContext {
 public:
     static PassRefPtr<OfflineAudioContext> create(ExecutionContext*, unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState&);
 

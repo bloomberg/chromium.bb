@@ -37,7 +37,7 @@ class AudioContext;
 // GainNode is an AudioNode with one input and one output which applies a gain (volume) change to the audio signal.
 // De-zippering (smoothing) is applied when the gain value is changed dynamically.
 
-class GainNode : public AudioNode {
+class GainNode FINAL : public AudioNode {
 public:
     static PassRefPtr<GainNode> create(AudioContext* context, float sampleRate)
     {
@@ -45,11 +45,11 @@ public:
     }
 
     // AudioNode
-    virtual void process(size_t framesToProcess);
-    virtual void reset();
+    virtual void process(size_t framesToProcess) OVERRIDE;
+    virtual void reset() OVERRIDE;
 
     // Called in the main thread when the number of channels for the input may have changed.
-    virtual void checkNumberOfChannelsForInput(AudioNodeInput*);
+    virtual void checkNumberOfChannelsForInput(AudioNodeInput*) OVERRIDE;
 
     // JavaScript interface
     AudioParam* gain() { return m_gain.get(); }

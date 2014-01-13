@@ -38,7 +38,7 @@ class ExceptionState;
 class Navigator;
 class Page;
 
-class NavigatorContentUtils : public RefCountedSupplement<Page, NavigatorContentUtils> {
+class NavigatorContentUtils FINAL : public RefCountedSupplement<Page, NavigatorContentUtils> {
 public:
     virtual ~NavigatorContentUtils();
 

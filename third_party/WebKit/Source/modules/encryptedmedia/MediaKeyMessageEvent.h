@@ -39,7 +39,7 @@ struct MediaKeyMessageEventInit : public EventInit {
     String destinationURL;
 };
 
-class MediaKeyMessageEvent : public Event {
+class MediaKeyMessageEvent FINAL : public Event {
 public:
     virtual ~MediaKeyMessageEvent();
 

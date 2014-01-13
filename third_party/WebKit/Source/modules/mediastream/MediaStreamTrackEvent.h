@@ -32,7 +32,7 @@ namespace WebCore {
 
 class MediaStreamTrack;
 
-class MediaStreamTrackEvent : public Event {
+class MediaStreamTrackEvent FINAL : public Event {
 public:
     virtual ~MediaStreamTrackEvent();
 

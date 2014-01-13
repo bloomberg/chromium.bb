@@ -33,7 +33,7 @@ namespace WebCore {
 
 class IDBDatabaseCallbacks;
 
-class IDBOpenDBRequest : public IDBRequest {
+class IDBOpenDBRequest FINAL : public IDBRequest {
 public:
     static PassRefPtr<IDBOpenDBRequest> create(ExecutionContext*, PassRefPtr<IDBDatabaseCallbacks>, int64_t transactionId, int64_t version);
     virtual ~IDBOpenDBRequest();
@@ -45,7 +45,7 @@ public:
     virtual void onSuccess(PassOwnPtr<blink::WebIDBDatabase>, const IDBDatabaseMetadata&) OVERRIDE;
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const;
+    virtual const AtomicString& interfaceName() const OVERRIDE;
     virtual bool dispatchEvent(PassRefPtr<Event>) OVERRIDE;
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(blocked);

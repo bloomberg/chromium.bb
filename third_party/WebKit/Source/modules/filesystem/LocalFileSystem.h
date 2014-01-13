@@ -42,7 +42,7 @@ class AsyncFileSystemCallbacks;
 class FileSystemClient;
 class ExecutionContext;
 
-class LocalFileSystem : public Supplement<Page>, public Supplement<WorkerClients> {
+class LocalFileSystem FINAL : public Supplement<Page>, public Supplement<WorkerClients> {
     WTF_MAKE_NONCOPYABLE(LocalFileSystem);
 public:
     static PassOwnPtr<LocalFileSystem> create(PassOwnPtr<FileSystemClient>);

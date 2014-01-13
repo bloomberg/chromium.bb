@@ -42,7 +42,7 @@ class DatabaseBackend;
 class SQLError;
 class SQLTransactionBackend;
 
-class SQLStatementBackend : public AbstractSQLStatementBackend {
+class SQLStatementBackend FINAL : public AbstractSQLStatementBackend {
 public:
     static PassRefPtr<SQLStatementBackend> create(PassOwnPtr<AbstractSQLStatement>,
         const String& sqlStatement, const Vector<SQLValue>& arguments, int permissions);
@@ -56,8 +56,8 @@ public:
     void setVersionMismatchedError(DatabaseBackend*);
 
     AbstractSQLStatement* frontend();
-    virtual PassRefPtr<SQLError> sqlError() const;
-    virtual PassRefPtr<SQLResultSet> sqlResultSet() const;
+    virtual PassRefPtr<SQLError> sqlError() const OVERRIDE;
+    virtual PassRefPtr<SQLResultSet> sqlResultSet() const OVERRIDE;
 
 private:
     SQLStatementBackend(PassOwnPtr<AbstractSQLStatement>, const String& statement,

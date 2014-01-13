@@ -33,7 +33,7 @@ namespace WebCore {
 class IDBFactoryBackendInterface;
 class PageGroup;
 
-class PageGroupIndexedDatabase : public Supplement<PageGroup> {
+class PageGroupIndexedDatabase FINAL : public Supplement<PageGroup> {
 public:
     virtual ~PageGroupIndexedDatabase();
     static PageGroupIndexedDatabase* from(PageGroup&);

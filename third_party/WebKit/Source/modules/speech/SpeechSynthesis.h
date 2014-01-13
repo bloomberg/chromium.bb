@@ -44,7 +44,7 @@ class ExceptionState;
 class PlatformSpeechSynthesizerClient;
 class SpeechSynthesisVoice;
 
-class SpeechSynthesis : public PlatformSpeechSynthesizerClient, public ScriptWrappable, public RefCounted<SpeechSynthesis>, public ContextLifecycleObserver, public EventTargetWithInlineData {
+class SpeechSynthesis FINAL : public PlatformSpeechSynthesizerClient, public ScriptWrappable, public RefCounted<SpeechSynthesis>, public ContextLifecycleObserver, public EventTargetWithInlineData {
     REFCOUNTED_EVENT_TARGET(SpeechSynthesis);
 public:
     static PassRefPtr<SpeechSynthesis> create(ExecutionContext*);
@@ -65,7 +65,7 @@ public:
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(voiceschanged);
 
-    virtual ExecutionContext* executionContext() const;
+    virtual ExecutionContext* executionContext() const OVERRIDE;
 
 private:
     explicit SpeechSynthesis(ExecutionContext*);

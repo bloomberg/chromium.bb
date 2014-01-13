@@ -41,7 +41,7 @@ class Dictionary;
 
 class ExceptionState;
 
-class MediaConstraintsImpl : public MediaConstraints {
+class MediaConstraintsImpl FINAL : public MediaConstraints {
 public:
     static PassRefPtr<MediaConstraintsImpl> create();
     static PassRefPtr<MediaConstraintsImpl> create(const Dictionary&, ExceptionState&);

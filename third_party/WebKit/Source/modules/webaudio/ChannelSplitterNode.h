@@ -32,13 +32,13 @@ namespace WebCore {
 
 class AudioContext;
 
-class ChannelSplitterNode : public AudioNode {
+class ChannelSplitterNode FINAL : public AudioNode {
 public:
     static PassRefPtr<ChannelSplitterNode> create(AudioContext*, float sampleRate, unsigned numberOfOutputs);
 
     // AudioNode
-    virtual void process(size_t framesToProcess);
-    virtual void reset();
+    virtual void process(size_t framesToProcess) OVERRIDE;
+    virtual void reset() OVERRIDE;
 
 private:
     virtual double tailTime() const OVERRIDE { return 0; }

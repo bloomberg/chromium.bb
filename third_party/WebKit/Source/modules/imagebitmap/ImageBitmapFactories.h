@@ -55,7 +55,7 @@ class ImageBitmap;
 class ImageData;
 class ExecutionContext;
 
-class ImageBitmapFactories : public Supplement<DOMWindow>, public WorkerSupplement {
+class ImageBitmapFactories FINAL : public Supplement<DOMWindow>, public WorkerSupplement {
 
 class ImageBitmapLoader;
 
@@ -80,7 +80,7 @@ public:
     virtual ~ImageBitmapFactories() { }
 
 private:
-    class ImageBitmapLoader : public RefCounted<ImageBitmapLoader>, public FileReaderLoaderClient {
+    class ImageBitmapLoader FINAL : public RefCounted<ImageBitmapLoader>, public FileReaderLoaderClient {
     public:
         static PassRefPtr<ImageBitmapLoader> create(ImageBitmapFactories* factory, PassRefPtr<ScriptPromiseResolver> resolver, const IntRect& cropRect)
         {
@@ -89,7 +89,7 @@ private:
 
         void loadBlobAsync(ExecutionContext*, Blob*);
 
-        ~ImageBitmapLoader() { }
+        virtual ~ImageBitmapLoader() { }
 
     private:
         ImageBitmapLoader(ImageBitmapFactories*, PassRefPtr<ScriptPromiseResolver>, const IntRect&);

@@ -35,7 +35,7 @@ class IDBFactory;
 class IDBFactoryBackendInterface;
 class ExecutionContext;
 
-class WorkerGlobalScopeIndexedDatabase : public WorkerSupplement {
+class WorkerGlobalScopeIndexedDatabase FINAL : public WorkerSupplement {
 public:
     virtual ~WorkerGlobalScopeIndexedDatabase();
     static WorkerGlobalScopeIndexedDatabase* from(WorkerSupplementable*);

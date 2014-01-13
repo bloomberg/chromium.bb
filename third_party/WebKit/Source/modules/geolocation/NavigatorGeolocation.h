@@ -29,7 +29,7 @@ class Frame;
 class Geolocation;
 class Navigator;
 
-class NavigatorGeolocation : public Supplement<Navigator>, public DOMWindowProperty {
+class NavigatorGeolocation FINAL : public Supplement<Navigator>, public DOMWindowProperty {
 public:
     virtual ~NavigatorGeolocation();
     static NavigatorGeolocation* from(Navigator*);

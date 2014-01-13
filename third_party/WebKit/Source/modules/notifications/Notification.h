@@ -45,7 +45,7 @@ class ExecutionContext;
 class NotificationClient;
 class NotificationPermissionCallback;
 
-class Notification : public RefCounted<Notification>, public NotificationBase {
+class Notification FINAL : public RefCounted<Notification>, public NotificationBase {
     REFCOUNTED_EVENT_TARGET(Notification);
 
 public:

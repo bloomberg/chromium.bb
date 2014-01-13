@@ -42,7 +42,7 @@ class ScriptPromiseResolver;
 
 // Wrapper around a Promise to notify completion of the crypto operation.
 // Platform cannot know about Promises which are declared in bindings.
-class CryptoResultImpl : public CryptoResult {
+class CryptoResultImpl FINAL : public CryptoResult {
 public:
     ~CryptoResultImpl();
 

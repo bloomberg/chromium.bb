@@ -40,7 +40,7 @@ namespace WebCore {
 
 class ExceptionState;
 
-class MediaStream : public RefCounted<MediaStream>, public ScriptWrappable, public URLRegistrable, public MediaStreamDescriptorClient, public EventTargetWithInlineData, public ContextLifecycleObserver {
+class MediaStream FINAL : public RefCounted<MediaStream>, public ScriptWrappable, public URLRegistrable, public MediaStreamDescriptorClient, public EventTargetWithInlineData, public ContextLifecycleObserver {
     REFCOUNTED_EVENT_TARGET(MediaStream);
 public:
     static PassRefPtr<MediaStream> create(ExecutionContext*);
@@ -85,7 +85,7 @@ protected:
     MediaStream(ExecutionContext*, PassRefPtr<MediaStreamDescriptor>);
 
     // ContextLifecycleObserver
-    virtual void contextDestroyed();
+    virtual void contextDestroyed() OVERRIDE;
 
 private:
     // MediaStreamDescriptorClient

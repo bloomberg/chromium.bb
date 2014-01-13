@@ -36,7 +36,7 @@ namespace WebCore {
 
 class DeviceOrientationData;
 
-class DeviceOrientationController : public DeviceSensorEventController, public DocumentSupplement, public DOMWindowLifecycleObserver {
+class DeviceOrientationController FINAL : public DeviceSensorEventController, public DocumentSupplement, public DOMWindowLifecycleObserver {
 
 public:
     virtual ~DeviceOrientationController();

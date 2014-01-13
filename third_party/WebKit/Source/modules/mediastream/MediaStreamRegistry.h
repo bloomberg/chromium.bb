@@ -36,7 +36,7 @@ class KURL;
 class MediaStream;
 class MediaStreamDescriptor;
 
-class MediaStreamRegistry : public URLRegistry {
+class MediaStreamRegistry FINAL : public URLRegistry {
 public:
     // Returns a single instance of MediaStreamRegistry.
     static MediaStreamRegistry& registry();

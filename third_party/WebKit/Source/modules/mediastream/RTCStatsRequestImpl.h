@@ -37,7 +37,7 @@ namespace WebCore {
 class MediaStreamTrack;
 class RTCStatsCallback;
 
-class RTCStatsRequestImpl : public RTCStatsRequest, public ActiveDOMObject {
+class RTCStatsRequestImpl FINAL : public RTCStatsRequest, public ActiveDOMObject {
 public:
     static PassRefPtr<RTCStatsRequestImpl> create(ExecutionContext*, PassOwnPtr<RTCStatsCallback>, PassRefPtr<MediaStreamTrack>);
     virtual ~RTCStatsRequestImpl();

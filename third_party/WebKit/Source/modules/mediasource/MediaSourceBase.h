@@ -64,14 +64,14 @@ public:
     bool isOpen() const;
 
     // HTMLMediaSource
-    virtual bool attachToElement(HTMLMediaElement*) OVERRIDE;
-    virtual void setWebMediaSourceAndOpen(PassOwnPtr<blink::WebMediaSource>) OVERRIDE;
-    virtual void close() OVERRIDE;
-    virtual bool isClosed() const OVERRIDE;
-    virtual double duration() const OVERRIDE;
-    virtual PassRefPtr<TimeRanges> buffered() const OVERRIDE;
-    virtual void refHTMLMediaSource() OVERRIDE { ref(); }
-    virtual void derefHTMLMediaSource() OVERRIDE { deref(); }
+    virtual bool attachToElement(HTMLMediaElement*) OVERRIDE FINAL;
+    virtual void setWebMediaSourceAndOpen(PassOwnPtr<blink::WebMediaSource>) OVERRIDE FINAL;
+    virtual void close() OVERRIDE FINAL;
+    virtual bool isClosed() const OVERRIDE FINAL;
+    virtual double duration() const OVERRIDE FINAL;
+    virtual PassRefPtr<TimeRanges> buffered() const OVERRIDE FINAL;
+    virtual void refHTMLMediaSource() OVERRIDE FINAL { ref(); }
+    virtual void derefHTMLMediaSource() OVERRIDE FINAL { deref(); }
 
     void setDuration(double, ExceptionState&);
     const AtomicString& readyState() const { return m_readyState; }
@@ -80,14 +80,14 @@ public:
 
 
     // ActiveDOMObject interface
-    virtual bool hasPendingActivity() const OVERRIDE;
-    virtual void stop() OVERRIDE;
+    virtual bool hasPendingActivity() const OVERRIDE FINAL;
+    virtual void stop() OVERRIDE FINAL;
 
     // EventTarget interface
-    virtual ExecutionContext* executionContext() const OVERRIDE;
+    virtual ExecutionContext* executionContext() const OVERRIDE FINAL;
 
     // URLRegistrable interface
-    virtual URLRegistry& registry() const OVERRIDE;
+    virtual URLRegistry& registry() const OVERRIDE FINAL;
 
 protected:
     explicit MediaSourceBase(ExecutionContext*);

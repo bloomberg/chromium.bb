@@ -41,7 +41,7 @@ namespace WebCore {
 class WebKitSourceBuffer;
 class GenericEventQueue;
 
-class WebKitSourceBufferList : public RefCounted<WebKitSourceBufferList>, public ScriptWrappable, public EventTargetWithInlineData {
+class WebKitSourceBufferList FINAL : public RefCounted<WebKitSourceBufferList>, public ScriptWrappable, public EventTargetWithInlineData {
     REFCOUNTED_EVENT_TARGET(WebKitSourceBufferList);
 public:
     static PassRefPtr<WebKitSourceBufferList> create(ExecutionContext* context, GenericEventQueue* asyncEventQueue)

@@ -40,7 +40,7 @@ namespace WebCore {
 class Frame;
 class Navigator;
 
-class NavigatorDoNotTrack : public Supplement<Navigator>, public DOMWindowProperty {
+class NavigatorDoNotTrack FINAL : public Supplement<Navigator>, public DOMWindowProperty {
 public:
     virtual ~NavigatorDoNotTrack();
     static NavigatorDoNotTrack* from(Navigator*);

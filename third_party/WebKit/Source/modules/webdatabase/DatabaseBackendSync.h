@@ -43,7 +43,7 @@ class DatabaseBackendSync : public DatabaseBackendBase {
 public:
     virtual ~DatabaseBackendSync();
 
-    virtual bool openAndVerifyVersion(bool setVersionInNewDatabase, DatabaseError&, String& errorMessage);
+    virtual bool openAndVerifyVersion(bool setVersionInNewDatabase, DatabaseError&, String& errorMessage) OVERRIDE FINAL;
 
 protected:
     DatabaseBackendSync(PassRefPtr<DatabaseContext>, const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize);

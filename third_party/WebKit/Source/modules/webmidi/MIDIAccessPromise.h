@@ -48,7 +48,7 @@ class ExecutionContext;
 
 struct MIDIOptions;
 
-class MIDIAccessPromise : public RefCounted<MIDIAccessPromise>, public ScriptWrappable, public ActiveDOMObject {
+class MIDIAccessPromise FINAL : public RefCounted<MIDIAccessPromise>, public ScriptWrappable, public ActiveDOMObject {
 public:
     static PassRefPtr<MIDIAccessPromise> create(ExecutionContext*, const Dictionary&);
     virtual ~MIDIAccessPromise();

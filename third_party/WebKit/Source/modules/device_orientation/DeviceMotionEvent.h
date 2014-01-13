@@ -34,7 +34,7 @@ class DeviceAcceleration;
 class DeviceMotionData;
 class DeviceRotationRate;
 
-class DeviceMotionEvent : public Event {
+class DeviceMotionEvent FINAL : public Event {
 public:
     ~DeviceMotionEvent();
     static PassRefPtr<DeviceMotionEvent> create()
@@ -55,7 +55,7 @@ public:
     DeviceRotationRate* rotationRate();
     double interval(bool& isNull) const;
 
-    virtual const AtomicString& interfaceName() const;
+    virtual const AtomicString& interfaceName() const OVERRIDE;
 
 private:
     DeviceMotionEvent();

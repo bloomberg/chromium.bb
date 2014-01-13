@@ -47,7 +47,7 @@ namespace WebCore {
 class ExecutionContext;
 class MIDIAccessPromise;
 
-class MIDIAccess : public RefCounted<MIDIAccess>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData, public MIDIAccessorClient {
+class MIDIAccess FINAL : public RefCounted<MIDIAccess>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData, public MIDIAccessorClient {
     REFCOUNTED_EVENT_TARGET(MIDIAccess);
 public:
     virtual ~MIDIAccess();
@@ -67,7 +67,7 @@ public:
     virtual ExecutionContext* executionContext() const OVERRIDE { return ActiveDOMObject::executionContext(); }
 
     // ActiveDOMObject
-    virtual void stop();
+    virtual void stop() OVERRIDE;
 
     // MIDIAccessorClient
     virtual void didAddInputPort(const String& id, const String& manufacturer, const String& name, const String& version) OVERRIDE;
@@ -82,7 +82,7 @@ private:
     MIDIAccess(ExecutionContext*, MIDIAccessPromise*);
 
     void startRequest();
-    virtual void permissionDenied();
+    void permissionDenied();
 
     MIDIInputVector m_inputs;
     MIDIOutputVector m_outputs;

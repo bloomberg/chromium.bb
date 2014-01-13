@@ -40,7 +40,7 @@ namespace WebCore {
 
 class MIDIAccessorClient;
 
-class MIDIAccessor : public blink::WebMIDIAccessorClient {
+class MIDIAccessor FINAL : public blink::WebMIDIAccessorClient {
 public:
     static PassOwnPtr<MIDIAccessor> create(MIDIAccessorClient*);
 

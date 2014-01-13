@@ -31,7 +31,7 @@
 
 namespace WebCore {
 
-class RTCDataChannelEvent : public Event {
+class RTCDataChannelEvent FINAL : public Event {
 public:
     virtual ~RTCDataChannelEvent();
 
@@ -40,7 +40,7 @@ public:
 
     RTCDataChannel* channel() const;
 
-    virtual const AtomicString& interfaceName() const;
+    virtual const AtomicString& interfaceName() const OVERRIDE;
 
 private:
     RTCDataChannelEvent();

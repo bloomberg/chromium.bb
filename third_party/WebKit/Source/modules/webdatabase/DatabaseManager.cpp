@@ -69,14 +69,14 @@ DatabaseManager::DatabaseManager()
     ASSERT(m_server); // We should always have a server to work with.
 }
 
-class DatabaseCreationCallbackTask : public ExecutionContextTask {
+class DatabaseCreationCallbackTask FINAL : public ExecutionContextTask {
 public:
     static PassOwnPtr<DatabaseCreationCallbackTask> create(PassRefPtr<Database> database, PassOwnPtr<DatabaseCallback> creationCallback)
     {
         return adoptPtr(new DatabaseCreationCallbackTask(database, creationCallback));
     }
 
-    virtual void performTask(ExecutionContext*)
+    virtual void performTask(ExecutionContext*) OVERRIDE
     {
         m_creationCallback->handleEvent(m_database.get());
     }

@@ -36,16 +36,16 @@
 
 namespace WebCore {
 
-class WebIDBDatabaseCallbacksImpl : public blink::WebIDBDatabaseCallbacks {
+class WebIDBDatabaseCallbacksImpl FINAL : public blink::WebIDBDatabaseCallbacks {
 public:
     static PassOwnPtr<WebIDBDatabaseCallbacksImpl> create(PassRefPtr<IDBDatabaseCallbacks>);
 
     virtual ~WebIDBDatabaseCallbacksImpl();
 
-    virtual void onForcedClose();
-    virtual void onVersionChange(long long oldVersion, long long newVersion);
-    virtual void onAbort(long long transactionId, const blink::WebIDBDatabaseError&);
-    virtual void onComplete(long long transactionId);
+    virtual void onForcedClose() OVERRIDE;
+    virtual void onVersionChange(long long oldVersion, long long newVersion) OVERRIDE;
+    virtual void onAbort(long long transactionId, const blink::WebIDBDatabaseError&) OVERRIDE;
+    virtual void onComplete(long long transactionId) OVERRIDE;
 
 private:
     explicit WebIDBDatabaseCallbacksImpl(PassRefPtr<IDBDatabaseCallbacks>);

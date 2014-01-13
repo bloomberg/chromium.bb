@@ -38,7 +38,7 @@ namespace WebCore {
 class WorkerCrypto;
 class ExecutionContext;
 
-class WorkerGlobalScopeCrypto : public WorkerSupplement {
+class WorkerGlobalScopeCrypto FINAL : public WorkerSupplement {
 public:
     virtual ~WorkerGlobalScopeCrypto();
     static WorkerGlobalScopeCrypto* from(WorkerSupplementable*);

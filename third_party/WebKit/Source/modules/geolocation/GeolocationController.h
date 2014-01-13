@@ -40,7 +40,7 @@ class GeolocationError;
 class GeolocationPosition;
 class Page;
 
-class GeolocationController : public Supplement<Page>, public PageLifecycleObserver {
+class GeolocationController FINAL : public Supplement<Page>, public PageLifecycleObserver {
     WTF_MAKE_NONCOPYABLE(GeolocationController);
 public:
     ~GeolocationController();

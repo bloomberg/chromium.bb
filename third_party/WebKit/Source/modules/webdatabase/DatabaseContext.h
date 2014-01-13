@@ -41,7 +41,7 @@ class DatabaseThread;
 class ExecutionContext;
 class SecurityOrigin;
 
-class DatabaseContext : public ThreadSafeRefCounted<DatabaseContext>, public ActiveDOMObject {
+class DatabaseContext FINAL : public ThreadSafeRefCounted<DatabaseContext>, public ActiveDOMObject {
 public:
     friend class DatabaseManager;
 
@@ -50,8 +50,8 @@ public:
     virtual ~DatabaseContext();
 
     // For life-cycle management (inherited from ActiveDOMObject):
-    virtual void contextDestroyed();
-    virtual void stop();
+    virtual void contextDestroyed() OVERRIDE;
+    virtual void stop() OVERRIDE;
 
     PassRefPtr<DatabaseContext> backend();
     DatabaseThread* databaseThread();

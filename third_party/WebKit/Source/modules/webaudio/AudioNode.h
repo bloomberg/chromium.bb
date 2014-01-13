@@ -181,8 +181,8 @@ public:
     AudioBus::ChannelInterpretation internalChannelInterpretation() const { return m_channelInterpretation; }
 
     // EventTarget
-    virtual const AtomicString& interfaceName() const OVERRIDE;
-    virtual ExecutionContext* executionContext() const OVERRIDE;
+    virtual const AtomicString& interfaceName() const OVERRIDE FINAL;
+    virtual ExecutionContext* executionContext() const OVERRIDE FINAL;
 
 protected:
     // Inputs and outputs must be created before the AudioNode is initialized.
@@ -220,8 +220,8 @@ private:
     static int s_nodeCount[NodeTypeEnd];
 #endif
 
-    virtual void refEventTarget() OVERRIDE { ref(); }
-    virtual void derefEventTarget() OVERRIDE { deref(); }
+    virtual void refEventTarget() OVERRIDE FINAL { ref(); }
+    virtual void derefEventTarget() OVERRIDE FINAL { deref(); }
 
 protected:
     unsigned m_channelCount;

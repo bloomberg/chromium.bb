@@ -51,7 +51,7 @@ using blink::WebSocketHandle;
 
 namespace WebCore {
 
-class NewWebSocketChannelImpl::BlobLoader : public FileReaderLoaderClient {
+class NewWebSocketChannelImpl::BlobLoader FINAL : public FileReaderLoaderClient {
 public:
     BlobLoader(PassRefPtr<BlobDataHandle>, NewWebSocketChannelImpl*);
     virtual ~BlobLoader() { }

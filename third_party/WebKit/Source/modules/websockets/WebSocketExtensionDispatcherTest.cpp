@@ -38,7 +38,7 @@ namespace {
 
 class WebSocketExtensionDispatcherTest;
 
-class MockWebSocketExtensionProcessor : public WebSocketExtensionProcessor {
+class MockWebSocketExtensionProcessor FINAL : public WebSocketExtensionProcessor {
 public:
     MockWebSocketExtensionProcessor(const String& name, WebSocketExtensionDispatcherTest* test)
         : WebSocketExtensionProcessor(name)

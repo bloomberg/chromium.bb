@@ -49,10 +49,10 @@ class MediaConstraintsImpl;
 class MediaStreamDescriptor;
 class UserMediaController;
 
-class UserMediaRequest : public RefCounted<UserMediaRequest>, public ContextLifecycleObserver {
+class UserMediaRequest FINAL : public RefCounted<UserMediaRequest>, public ContextLifecycleObserver {
 public:
     static PassRefPtr<UserMediaRequest> create(ExecutionContext*, UserMediaController*, const Dictionary& options, PassOwnPtr<NavigatorUserMediaSuccessCallback>, PassOwnPtr<NavigatorUserMediaErrorCallback>, ExceptionState&);
-    ~UserMediaRequest();
+    virtual ~UserMediaRequest();
 
     NavigatorUserMediaSuccessCallback* successCallback() const { return m_successCallback.get(); }
     NavigatorUserMediaErrorCallback* errorCallback() const { return m_errorCallback.get(); }
@@ -70,7 +70,7 @@ public:
     MediaConstraints* videoConstraints() const;
 
     // ContextLifecycleObserver
-    virtual void contextDestroyed();
+    virtual void contextDestroyed() OVERRIDE;
 
 private:
     UserMediaRequest(ExecutionContext*, UserMediaController*, PassRefPtr<MediaConstraintsImpl> audio, PassRefPtr<MediaConstraintsImpl> video, PassOwnPtr<NavigatorUserMediaSuccessCallback>, PassOwnPtr<NavigatorUserMediaErrorCallback>);

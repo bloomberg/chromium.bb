@@ -42,7 +42,7 @@ class FileEntrySync;
 class FileWriterSync;
 class ExceptionState;
 
-class DOMFileSystemSync : public DOMFileSystemBase, public ScriptWrappable {
+class DOMFileSystemSync FINAL : public DOMFileSystemBase, public ScriptWrappable {
 public:
     static PassRefPtr<DOMFileSystemSync> create(ExecutionContext* context, const String& name, FileSystemType type, const KURL& rootURL)
     {

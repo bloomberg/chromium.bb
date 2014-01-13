@@ -79,20 +79,20 @@ Database::Database(PassRefPtr<DatabaseContext> databaseContext,
     ASSERT(m_databaseContext->databaseThread());
 }
 
-class DerefContextTask : public ExecutionContextTask {
+class DerefContextTask FINAL : public ExecutionContextTask {
 public:
     static PassOwnPtr<DerefContextTask> create(PassRefPtr<ExecutionContext> context)
     {
         return adoptPtr(new DerefContextTask(context));
     }
 
-    virtual void performTask(ExecutionContext* context)
+    virtual void performTask(ExecutionContext* context) OVERRIDE
     {
         ASSERT_UNUSED(context, context == m_context);
         m_context.clear();
     }
 
-    virtual bool isCleanupTask() const { return true; }
+    virtual bool isCleanupTask() const OVERRIDE { return true; }
 
 private:
     DerefContextTask(PassRefPtr<ExecutionContext> context)
@@ -182,14 +182,14 @@ void Database::runTransaction(PassOwnPtr<SQLTransactionCallback> callback, PassO
     }
 }
 
-class DeliverPendingCallbackTask : public ExecutionContextTask {
+class DeliverPendingCallbackTask FINAL : public ExecutionContextTask {
 public:
     static PassOwnPtr<DeliverPendingCallbackTask> create(PassRefPtr<SQLTransaction> transaction)
     {
         return adoptPtr(new DeliverPendingCallbackTask(transaction));
     }
 
-    virtual void performTask(ExecutionContext*)
+    virtual void performTask(ExecutionContext*) OVERRIDE
     {
         m_transaction->performPendingCallback();
     }

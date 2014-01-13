@@ -46,7 +46,7 @@ struct MIDIMessageEventInit : public EventInit {
     RefPtr<Uint8Array> data;
 };
 
-class MIDIMessageEvent : public Event {
+class MIDIMessageEvent FINAL : public Event {
 public:
     static PassRefPtr<MIDIMessageEvent> create()
     {

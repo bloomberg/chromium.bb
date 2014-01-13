@@ -51,7 +51,7 @@ class SQLTransactionSyncCallback;
 class SecurityOrigin;
 
 // Instances of this class should be created and used only on the worker's context thread.
-class DatabaseSync : public DatabaseBase, public DatabaseBackendSync, public ScriptWrappable {
+class DatabaseSync FINAL : public DatabaseBase, public DatabaseBackendSync, public ScriptWrappable {
 public:
     virtual ~DatabaseSync();
 
@@ -59,7 +59,7 @@ public:
     void transaction(PassOwnPtr<SQLTransactionSyncCallback>, ExceptionState&);
     void readTransaction(PassOwnPtr<SQLTransactionSyncCallback>, ExceptionState&);
 
-    virtual void closeImmediately();
+    virtual void closeImmediately() OVERRIDE;
 
     const String& lastErrorMessage() const { return m_lastErrorMessage; }
     void setLastErrorMessage(const String& message) { m_lastErrorMessage = message; }

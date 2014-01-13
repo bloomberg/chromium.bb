@@ -48,12 +48,12 @@ class SQLTransactionCallback;
 class SQLTransactionErrorCallback;
 class VoidCallback;
 
-class Database : public DatabaseBase, public DatabaseBackend, public ScriptWrappable {
+class Database FINAL : public DatabaseBase, public DatabaseBackend, public ScriptWrappable {
 public:
     virtual ~Database();
 
     // Direct support for the DOM API
-    virtual String version() const;
+    virtual String version() const OVERRIDE;
     void changeVersion(const String& oldVersion, const String& newVersion, PassOwnPtr<SQLTransactionCallback>, PassOwnPtr<SQLTransactionErrorCallback>, PassOwnPtr<VoidCallback> successCallback);
     void transaction(PassOwnPtr<SQLTransactionCallback>, PassOwnPtr<SQLTransactionErrorCallback>, PassOwnPtr<VoidCallback> successCallback);
     void readTransaction(PassOwnPtr<SQLTransactionCallback>, PassOwnPtr<SQLTransactionErrorCallback>, PassOwnPtr<VoidCallback> successCallback);
@@ -64,9 +64,9 @@ public:
 
     Vector<String> tableNames();
 
-    virtual SecurityOrigin* securityOrigin() const;
+    virtual SecurityOrigin* securityOrigin() const OVERRIDE;
 
-    virtual void closeImmediately();
+    virtual void closeImmediately() OVERRIDE;
 
     void scheduleTransactionCallback(SQLTransaction*);
 

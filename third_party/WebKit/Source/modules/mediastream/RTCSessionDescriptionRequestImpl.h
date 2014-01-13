@@ -44,7 +44,7 @@ class RTCErrorCallback;
 class RTCPeerConnection;
 class RTCSessionDescriptionCallback;
 
-class RTCSessionDescriptionRequestImpl : public RTCSessionDescriptionRequest, public ActiveDOMObject {
+class RTCSessionDescriptionRequestImpl FINAL : public RTCSessionDescriptionRequest, public ActiveDOMObject {
 public:
     static PassRefPtr<RTCSessionDescriptionRequestImpl> create(ExecutionContext*, PassOwnPtr<RTCSessionDescriptionCallback>, PassOwnPtr<RTCErrorCallback>);
     virtual ~RTCSessionDescriptionRequestImpl();

@@ -47,7 +47,7 @@ class Blob;
 class ExceptionState;
 class ExecutionContext;
 
-class FileWriter : public ScriptWrappable, public FileWriterBase, public ActiveDOMObject, public EventTargetWithInlineData, public blink::WebFileWriterClient {
+class FileWriter FINAL : public ScriptWrappable, public FileWriterBase, public ActiveDOMObject, public EventTargetWithInlineData, public blink::WebFileWriterClient {
     DEFINE_EVENT_TARGET_REFCOUNTING(FileWriterBase);
 public:
     static PassRefPtr<FileWriter> create(ExecutionContext*);
@@ -71,7 +71,7 @@ public:
     virtual void didFail(blink::WebFileError) OVERRIDE;
 
     // ActiveDOMObject
-    virtual void stop();
+    virtual void stop() OVERRIDE;
 
     // EventTarget
     virtual const AtomicString& interfaceName() const OVERRIDE;
