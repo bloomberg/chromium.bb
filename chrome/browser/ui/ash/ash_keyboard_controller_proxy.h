@@ -39,6 +39,8 @@ class AshKeyboardControllerProxy
   virtual ~AshKeyboardControllerProxy();
 
  private:
+  friend class AshKeyboardControllerProxyTest;
+
   void OnRequest(const ExtensionHostMsg_Request_Params& params);
 
   // keyboard::KeyboardControllerProxy overrides
