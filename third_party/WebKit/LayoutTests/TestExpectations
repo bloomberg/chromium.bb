@@ -866,3 +866,5 @@ crbug.com/308818 [ XP ] svg/dynamic-updates/SVGFESpecularLightingElement-lightin
 crbug.com/329543 [ Mac ] fast/text/international/text-spliced-font.html [ NeedsRebaseline ]
 crbug.com/329543 [ Mac ] fast/text/international/vertical-text-glyph-test.html [ NeedsRebaseline ]
 crbug.com/329543 [ Mac ] fast/writing-mode/text-orientation-basic.html [ NeedsRebaseline ]
+
+crbug.com/333772 svg/animations/discard-check-removal-order.html [ Pass Failure ]
