@@ -39,17 +39,17 @@ namespace WebCore {
 
 namespace {
 
-class UndoableStateMark : public InspectorHistory::Action {
+class UndoableStateMark FINAL : public InspectorHistory::Action {
 public:
     UndoableStateMark() : InspectorHistory::Action("[UndoableState]") { }
 
-    virtual bool perform(ExceptionState&) { return true; }
+    virtual bool perform(ExceptionState&) OVERRIDE { return true; }
 
-    virtual bool undo(ExceptionState&) { return true; }
+    virtual bool undo(ExceptionState&) OVERRIDE { return true; }
 
-    virtual bool redo(ExceptionState&) { return true; }
+    virtual bool redo(ExceptionState&) OVERRIDE { return true; }
 
-    virtual bool isUndoableStateMark() { return true; }
+    virtual bool isUndoableStateMark() OVERRIDE { return true; }
 };
 
 }

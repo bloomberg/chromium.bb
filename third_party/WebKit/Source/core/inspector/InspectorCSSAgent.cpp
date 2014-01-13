@@ -243,7 +243,7 @@ protected:
     RefPtr<InspectorStyleSheet> m_styleSheet;
 };
 
-class InspectorCSSAgent::EnableResourceClient : public StyleSheetResourceClient {
+class InspectorCSSAgent::EnableResourceClient FINAL : public StyleSheetResourceClient {
 public:
     EnableResourceClient(InspectorCSSAgent*, const Vector<InspectorStyleSheet*>&, PassRefPtr<EnableCallback>);
 
@@ -284,7 +284,7 @@ void InspectorCSSAgent::EnableResourceClient::setCSSStyleSheet(const String&, co
     delete this;
 }
 
-class InspectorCSSAgent::SetStyleSheetTextAction : public InspectorCSSAgent::StyleSheetAction {
+class InspectorCSSAgent::SetStyleSheetTextAction FINAL : public InspectorCSSAgent::StyleSheetAction {
     WTF_MAKE_NONCOPYABLE(SetStyleSheetTextAction);
 public:
     SetStyleSheetTextAction(InspectorStyleSheet* styleSheet, const String& text)
@@ -293,14 +293,14 @@ public:
     {
     }
 
-    virtual bool perform(ExceptionState& exceptionState)
+    virtual bool perform(ExceptionState& exceptionState) OVERRIDE
     {
         if (!m_styleSheet->getText(&m_oldText))
             return false;
         return redo(exceptionState);
     }
 
-    virtual bool undo(ExceptionState& exceptionState)
+    virtual bool undo(ExceptionState& exceptionState) OVERRIDE
     {
         if (m_styleSheet->setText(m_oldText, exceptionState)) {
             m_styleSheet->reparseStyleSheet(m_oldText);
@@ -309,7 +309,7 @@ public:
         return false;
     }
 
-    virtual bool redo(ExceptionState& exceptionState)
+    virtual bool redo(ExceptionState& exceptionState) OVERRIDE
     {
         if (m_styleSheet->setText(m_text, exceptionState)) {
             m_styleSheet->reparseStyleSheet(m_text);
@@ -318,12 +318,12 @@ public:
         return false;
     }
 
-    virtual String mergeId()
+    virtual String mergeId() OVERRIDE
     {
         return String::format("SetStyleSheetText %s", m_styleSheet->id().utf8().data());
     }
 
-    virtual void merge(PassOwnPtr<Action> action)
+    virtual void merge(PassOwnPtr<Action> action) OVERRIDE
     {
         ASSERT(action->mergeId() == mergeId());
 
@@ -336,7 +336,7 @@ private:
     String m_oldText;
 };
 
-class InspectorCSSAgent::SetStyleTextAction : public InspectorCSSAgent::StyleSheetAction {
+class InspectorCSSAgent::SetStyleTextAction FINAL : public InspectorCSSAgent::StyleSheetAction {
     WTF_MAKE_NONCOPYABLE(SetStyleTextAction);
 public:
     SetStyleTextAction(InspectorStyleSheet* styleSheet, const InspectorCSSId& cssId, const String& text)
@@ -346,33 +346,33 @@ public:
     {
     }
 
-    virtual String toString()
+    virtual String toString() OVERRIDE
     {
         return mergeId() + ": " + m_oldText + " -> " + m_text;
     }
 
-    virtual bool perform(ExceptionState& exceptionState)
+    virtual bool perform(ExceptionState& exceptionState) OVERRIDE
     {
         return redo(exceptionState);
     }
 
-    virtual bool undo(ExceptionState& exceptionState)
+    virtual bool undo(ExceptionState& exceptionState) OVERRIDE
     {
         String placeholder;
         return m_styleSheet->setStyleText(m_cssId, m_oldText, &placeholder, exceptionState);
     }
 
-    virtual bool redo(ExceptionState& exceptionState)
+    virtual bool redo(ExceptionState& exceptionState) OVERRIDE
     {
         return m_styleSheet->setStyleText(m_cssId, m_text, &m_oldText, exceptionState);
     }
 
-    virtual String mergeId()
+    virtual String mergeId() OVERRIDE
     {
         return String::format("SetStyleText %s:%u", m_cssId.styleSheetId().utf8().data(), m_cssId.ordinal());
     }
 
-    virtual void merge(PassOwnPtr<Action> action)
+    virtual void merge(PassOwnPtr<Action> action) OVERRIDE
     {
         ASSERT(action->mergeId() == mergeId());
 
@@ -386,7 +386,7 @@ private:
     String m_oldText;
 };
 
-class InspectorCSSAgent::SetPropertyTextAction : public InspectorCSSAgent::StyleSheetAction {
+class InspectorCSSAgent::SetPropertyTextAction FINAL : public InspectorCSSAgent::StyleSheetAction {
     WTF_MAKE_NONCOPYABLE(SetPropertyTextAction);
 public:
     SetPropertyTextAction(InspectorStyleSheet* styleSheet, const InspectorCSSId& cssId, unsigned propertyIndex, const String& text, bool overwrite)
@@ -398,23 +398,23 @@ public:
     {
     }
 
-    virtual String toString()
+    virtual String toString() OVERRIDE
     {
         return mergeId() + ": " + m_oldText + " -> " + m_text;
     }
 
-    virtual bool perform(ExceptionState& exceptionState)
+    virtual bool perform(ExceptionState& exceptionState) OVERRIDE
     {
         return redo(exceptionState);
     }
 
-    virtual bool undo(ExceptionState& exceptionState)
+    virtual bool undo(ExceptionState& exceptionState) OVERRIDE
     {
         String placeholder;
         return m_styleSheet->setPropertyText(m_cssId, m_propertyIndex, m_overwrite ? m_oldText : "", true, &placeholder, exceptionState);
     }
 
-    virtual bool redo(ExceptionState& exceptionState)
+    virtual bool redo(ExceptionState& exceptionState) OVERRIDE
     {
         String oldText;
         bool result = m_styleSheet->setPropertyText(m_cssId, m_propertyIndex, m_text, m_overwrite, &oldText, exceptionState);
@@ -425,12 +425,12 @@ public:
         return result;
     }
 
-    virtual String mergeId()
+    virtual String mergeId() OVERRIDE
     {
         return String::format("SetPropertyText %s:%u:%s", m_styleSheet->id().utf8().data(), m_propertyIndex, m_overwrite ? "true" : "false");
     }
 
-    virtual void merge(PassOwnPtr<Action> action)
+    virtual void merge(PassOwnPtr<Action> action) OVERRIDE
     {
         ASSERT(action->mergeId() == mergeId());
 
@@ -446,7 +446,7 @@ private:
     bool m_overwrite;
 };
 
-class InspectorCSSAgent::TogglePropertyAction : public InspectorCSSAgent::StyleSheetAction {
+class InspectorCSSAgent::TogglePropertyAction FINAL : public InspectorCSSAgent::StyleSheetAction {
     WTF_MAKE_NONCOPYABLE(TogglePropertyAction);
 public:
     TogglePropertyAction(InspectorStyleSheet* styleSheet, const InspectorCSSId& cssId, unsigned propertyIndex, bool disable)
@@ -457,17 +457,17 @@ public:
     {
     }
 
-    virtual bool perform(ExceptionState& exceptionState)
+    virtual bool perform(ExceptionState& exceptionState) OVERRIDE
     {
         return redo(exceptionState);
     }
 
-    virtual bool undo(ExceptionState& exceptionState)
+    virtual bool undo(ExceptionState& exceptionState) OVERRIDE
     {
         return m_styleSheet->toggleProperty(m_cssId, m_propertyIndex, !m_disable, exceptionState);
     }
 
-    virtual bool redo(ExceptionState& exceptionState)
+    virtual bool redo(ExceptionState& exceptionState) OVERRIDE
     {
         return m_styleSheet->toggleProperty(m_cssId, m_propertyIndex, m_disable, exceptionState);
     }
@@ -478,7 +478,7 @@ private:
     bool m_disable;
 };
 
-class InspectorCSSAgent::SetRuleSelectorAction : public InspectorCSSAgent::StyleSheetAction {
+class InspectorCSSAgent::SetRuleSelectorAction FINAL : public InspectorCSSAgent::StyleSheetAction {
     WTF_MAKE_NONCOPYABLE(SetRuleSelectorAction);
 public:
     SetRuleSelectorAction(InspectorStyleSheet* styleSheet, const InspectorCSSId& cssId, const String& selector)
@@ -488,7 +488,7 @@ public:
     {
     }
 
-    virtual bool perform(ExceptionState& exceptionState)
+    virtual bool perform(ExceptionState& exceptionState) OVERRIDE
     {
         m_oldSelector = m_styleSheet->ruleSelector(m_cssId, exceptionState);
         if (exceptionState.hadException())
@@ -496,12 +496,12 @@ public:
         return redo(exceptionState);
     }
 
-    virtual bool undo(ExceptionState& exceptionState)
+    virtual bool undo(ExceptionState& exceptionState) OVERRIDE
     {
         return m_styleSheet->setRuleSelector(m_cssId, m_oldSelector, exceptionState);
     }
 
-    virtual bool redo(ExceptionState& exceptionState)
+    virtual bool redo(ExceptionState& exceptionState) OVERRIDE
     {
         return m_styleSheet->setRuleSelector(m_cssId, m_selector, exceptionState);
     }
@@ -512,7 +512,7 @@ private:
     String m_oldSelector;
 };
 
-class InspectorCSSAgent::AddRuleAction : public InspectorCSSAgent::StyleSheetAction {
+class InspectorCSSAgent::AddRuleAction FINAL : public InspectorCSSAgent::StyleSheetAction {
     WTF_MAKE_NONCOPYABLE(AddRuleAction);
 public:
     AddRuleAction(InspectorStyleSheet* styleSheet, const String& selector)
@@ -521,17 +521,17 @@ public:
     {
     }
 
-    virtual bool perform(ExceptionState& exceptionState)
+    virtual bool perform(ExceptionState& exceptionState) OVERRIDE
     {
         return redo(exceptionState);
     }
 
-    virtual bool undo(ExceptionState& exceptionState)
+    virtual bool undo(ExceptionState& exceptionState) OVERRIDE
     {
         return m_styleSheet->deleteRule(m_newId, exceptionState);
     }
 
-    virtual bool redo(ExceptionState& exceptionState)
+    virtual bool redo(ExceptionState& exceptionState) OVERRIDE
     {
         CSSStyleRule* cssStyleRule = m_styleSheet->addRule(m_selector, exceptionState);
         if (exceptionState.hadException())

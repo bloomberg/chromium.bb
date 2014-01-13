@@ -46,7 +46,7 @@ using namespace std;
 
 namespace WebCore {
 
-class DOMEditor::RemoveChildAction : public InspectorHistory::Action {
+class DOMEditor::RemoveChildAction FINAL : public InspectorHistory::Action {
     WTF_MAKE_NONCOPYABLE(RemoveChildAction);
 public:
     RemoveChildAction(Node* parentNode, Node* node)
@@ -56,19 +56,19 @@ public:
     {
     }
 
-    virtual bool perform(ExceptionState& exceptionState)
+    virtual bool perform(ExceptionState& exceptionState) OVERRIDE
     {
         m_anchorNode = m_node->nextSibling();
         return redo(exceptionState);
     }
 
-    virtual bool undo(ExceptionState& exceptionState)
+    virtual bool undo(ExceptionState& exceptionState) OVERRIDE
     {
         m_parentNode->insertBefore(m_node.get(), m_anchorNode.get(), exceptionState);
         return !exceptionState.hadException();
     }
 
-    virtual bool redo(ExceptionState& exceptionState)
+    virtual bool redo(ExceptionState& exceptionState) OVERRIDE
     {
         m_parentNode->removeChild(m_node.get(), exceptionState);
         return !exceptionState.hadException();
@@ -80,7 +80,7 @@ private:
     RefPtr<Node> m_anchorNode;
 };
 
-class DOMEditor::InsertBeforeAction : public InspectorHistory::Action {
+class DOMEditor::InsertBeforeAction FINAL : public InspectorHistory::Action {
     WTF_MAKE_NONCOPYABLE(InsertBeforeAction);
 public:
     InsertBeforeAction(Node* parentNode, PassRefPtr<Node> node, Node* anchorNode)
@@ -91,7 +91,7 @@ public:
     {
     }
 
-    virtual bool perform(ExceptionState& exceptionState)
+    virtual bool perform(ExceptionState& exceptionState) OVERRIDE
     {
         if (m_node->parentNode()) {
             m_removeChildAction = adoptPtr(new RemoveChildAction(m_node->parentNode(), m_node.get()));
@@ -102,7 +102,7 @@ public:
         return !exceptionState.hadException();
     }
 
-    virtual bool undo(ExceptionState& exceptionState)
+    virtual bool undo(ExceptionState& exceptionState) OVERRIDE
     {
         m_parentNode->removeChild(m_node.get(), exceptionState);
         if (exceptionState.hadException())
@@ -112,7 +112,7 @@ public:
         return true;
     }
 
-    virtual bool redo(ExceptionState& exceptionState)
+    virtual bool redo(ExceptionState& exceptionState) OVERRIDE
     {
         if (m_removeChildAction && !m_removeChildAction->redo(exceptionState))
             return false;
@@ -127,7 +127,7 @@ private:
     OwnPtr<RemoveChildAction> m_removeChildAction;
 };
 
-class DOMEditor::RemoveAttributeAction : public InspectorHistory::Action {
+class DOMEditor::RemoveAttributeAction FINAL : public InspectorHistory::Action {
     WTF_MAKE_NONCOPYABLE(RemoveAttributeAction);
 public:
     RemoveAttributeAction(Element* element, const AtomicString& name)
@@ -137,19 +137,19 @@ public:
     {
     }
 
-    virtual bool perform(ExceptionState& exceptionState)
+    virtual bool perform(ExceptionState& exceptionState) OVERRIDE
     {
         m_value = m_element->getAttribute(m_name);
         return redo(exceptionState);
     }
 
-    virtual bool undo(ExceptionState& exceptionState)
+    virtual bool undo(ExceptionState& exceptionState) OVERRIDE
     {
         m_element->setAttribute(m_name, m_value, exceptionState);
         return true;
     }
 
-    virtual bool redo(ExceptionState&)
+    virtual bool redo(ExceptionState&) OVERRIDE
     {
         m_element->removeAttribute(m_name);
         return true;
@@ -161,7 +161,7 @@ private:
     AtomicString m_value;
 };
 
-class DOMEditor::SetAttributeAction : public InspectorHistory::Action {
+class DOMEditor::SetAttributeAction FINAL : public InspectorHistory::Action {
     WTF_MAKE_NONCOPYABLE(SetAttributeAction);
 public:
     SetAttributeAction(Element* element, const AtomicString& name, const AtomicString& value)
@@ -173,7 +173,7 @@ public:
     {
     }
 
-    virtual bool perform(ExceptionState& exceptionState)
+    virtual bool perform(ExceptionState& exceptionState) OVERRIDE
     {
         m_hadAttribute = m_element->hasAttribute(m_name);
         if (m_hadAttribute)
@@ -181,7 +181,7 @@ public:
         return redo(exceptionState);
     }
 
-    virtual bool undo(ExceptionState& exceptionState)
+    virtual bool undo(ExceptionState& exceptionState) OVERRIDE
     {
         if (m_hadAttribute)
             m_element->setAttribute(m_name, m_oldValue, exceptionState);
@@ -190,7 +190,7 @@ public:
         return true;
     }
 
-    virtual bool redo(ExceptionState& exceptionState)
+    virtual bool redo(ExceptionState& exceptionState) OVERRIDE
     {
         m_element->setAttribute(m_name, m_value, exceptionState);
         return true;
@@ -204,7 +204,7 @@ private:
     AtomicString m_oldValue;
 };
 
-class DOMEditor::SetOuterHTMLAction : public InspectorHistory::Action {
+class DOMEditor::SetOuterHTMLAction FINAL : public InspectorHistory::Action {
     WTF_MAKE_NONCOPYABLE(SetOuterHTMLAction);
 public:
     SetOuterHTMLAction(Node* node, const String& html)
@@ -218,7 +218,7 @@ public:
     {
     }
 
-    virtual bool perform(ExceptionState& exceptionState)
+    virtual bool perform(ExceptionState& exceptionState) OVERRIDE
     {
         m_oldHTML = createMarkup(m_node.get());
         ASSERT(m_node->ownerDocument());
@@ -227,12 +227,12 @@ public:
         return !exceptionState.hadException();
     }
 
-    virtual bool undo(ExceptionState& exceptionState)
+    virtual bool undo(ExceptionState& exceptionState) OVERRIDE
     {
         return m_history->undo(exceptionState);
     }
 
-    virtual bool redo(ExceptionState& exceptionState)
+    virtual bool redo(ExceptionState& exceptionState) OVERRIDE
     {
         return m_history->redo(exceptionState);
     }
@@ -252,7 +252,7 @@ private:
     OwnPtr<DOMEditor> m_domEditor;
 };
 
-class DOMEditor::ReplaceWholeTextAction : public InspectorHistory::Action {
+class DOMEditor::ReplaceWholeTextAction FINAL : public InspectorHistory::Action {
     WTF_MAKE_NONCOPYABLE(ReplaceWholeTextAction);
 public:
     ReplaceWholeTextAction(Text* textNode, const String& text)
@@ -262,19 +262,19 @@ public:
     {
     }
 
-    virtual bool perform(ExceptionState& exceptionState)
+    virtual bool perform(ExceptionState& exceptionState) OVERRIDE
     {
         m_oldText = m_textNode->wholeText();
         return redo(exceptionState);
     }
 
-    virtual bool undo(ExceptionState&)
+    virtual bool undo(ExceptionState&) OVERRIDE
     {
         m_textNode->replaceWholeText(m_oldText);
         return true;
     }
 
-    virtual bool redo(ExceptionState&)
+    virtual bool redo(ExceptionState&) OVERRIDE
     {
         m_textNode->replaceWholeText(m_text);
         return true;
@@ -286,7 +286,7 @@ private:
     String m_oldText;
 };
 
-class DOMEditor::ReplaceChildNodeAction : public InspectorHistory::Action {
+class DOMEditor::ReplaceChildNodeAction FINAL : public InspectorHistory::Action {
     WTF_MAKE_NONCOPYABLE(ReplaceChildNodeAction);
 public:
     ReplaceChildNodeAction(Node* parentNode, PassRefPtr<Node> newNode, Node* oldNode)
@@ -297,18 +297,18 @@ public:
     {
     }
 
-    virtual bool perform(ExceptionState& exceptionState)
+    virtual bool perform(ExceptionState& exceptionState) OVERRIDE
     {
         return redo(exceptionState);
     }
 
-    virtual bool undo(ExceptionState& exceptionState)
+    virtual bool undo(ExceptionState& exceptionState) OVERRIDE
     {
         m_parentNode->replaceChild(m_oldNode, m_newNode.get(), exceptionState);
         return !exceptionState.hadException();
     }
 
-    virtual bool redo(ExceptionState& exceptionState)
+    virtual bool redo(ExceptionState& exceptionState) OVERRIDE
     {
         m_parentNode->replaceChild(m_newNode, m_oldNode.get(), exceptionState);
         return !exceptionState.hadException();
@@ -320,7 +320,7 @@ private:
     RefPtr<Node> m_oldNode;
 };
 
-class DOMEditor::SetNodeValueAction : public InspectorHistory::Action {
+class DOMEditor::SetNodeValueAction FINAL : public InspectorHistory::Action {
     WTF_MAKE_NONCOPYABLE(SetNodeValueAction);
 public:
     SetNodeValueAction(Node* node, const String& value)
@@ -330,19 +330,19 @@ public:
     {
     }
 
-    virtual bool perform(ExceptionState&)
+    virtual bool perform(ExceptionState&) OVERRIDE
     {
         m_oldValue = m_node->nodeValue();
         return redo(IGNORE_EXCEPTION);
     }
 
-    virtual bool undo(ExceptionState&)
+    virtual bool undo(ExceptionState&) OVERRIDE
     {
         m_node->setNodeValue(m_oldValue);
         return true;
     }
 
-    virtual bool redo(ExceptionState&)
+    virtual bool redo(ExceptionState&) OVERRIDE
     {
         m_node->setNodeValue(m_value);
         return true;

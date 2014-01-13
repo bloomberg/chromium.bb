@@ -144,7 +144,7 @@ void InspectorHeapProfilerAgent::HeapStatsUpdateTask::startTimer()
     m_timer.startRepeating(0.05);
 }
 
-class InspectorHeapProfilerAgent::HeapStatsStream : public ScriptProfiler::OutputStream {
+class InspectorHeapProfilerAgent::HeapStatsStream FINAL : public ScriptProfiler::OutputStream {
 public:
     HeapStatsStream(InspectorHeapProfilerAgent* heapProfilerAgent)
         : m_heapProfilerAgent(heapProfilerAgent)

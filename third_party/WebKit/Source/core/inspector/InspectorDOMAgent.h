@@ -83,7 +83,7 @@ struct EventListenerInfo {
     const EventListenerVector eventListenerVector;
 };
 
-class InspectorDOMAgent : public InspectorBaseAgent<InspectorDOMAgent>, public InspectorBackendDispatcher::DOMCommandHandler {
+class InspectorDOMAgent FINAL : public InspectorBaseAgent<InspectorDOMAgent>, public InspectorBackendDispatcher::DOMCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorDOMAgent);
 public:
     struct DOMListener {
@@ -102,54 +102,54 @@ public:
 
     static String toErrorString(ExceptionState&);
 
-    ~InspectorDOMAgent();
+    virtual ~InspectorDOMAgent();
 
-    virtual void setFrontend(InspectorFrontend*);
-    virtual void clearFrontend();
-    virtual void restore();
+    virtual void setFrontend(InspectorFrontend*) OVERRIDE;
+    virtual void clearFrontend() OVERRIDE;
+    virtual void restore() OVERRIDE;
 
     Vector<Document*> documents();
     void reset();
 
     // Methods called from the frontend for DOM nodes inspection.
-    virtual void querySelector(ErrorString*, int nodeId, const String& selectors, int* elementId);
-    virtual void querySelectorAll(ErrorString*, int nodeId, const String& selectors, RefPtr<TypeBuilder::Array<int> >& result);
-    virtual void getDocument(ErrorString*, RefPtr<TypeBuilder::DOM::Node>& root);
-    virtual void requestChildNodes(ErrorString*, int nodeId, const int* depth);
-    virtual void setAttributeValue(ErrorString*, int elementId, const String& name, const String& value);
-    virtual void setAttributesAsText(ErrorString*, int elementId, const String& text, const String* name);
-    virtual void removeAttribute(ErrorString*, int elementId, const String& name);
-    virtual void removeNode(ErrorString*, int nodeId);
-    virtual void setNodeName(ErrorString*, int nodeId, const String& name, int* newId);
-    virtual void getOuterHTML(ErrorString*, int nodeId, WTF::String* outerHTML);
-    virtual void setOuterHTML(ErrorString*, int nodeId, const String& outerHTML);
-    virtual void setNodeValue(ErrorString*, int nodeId, const String& value);
-    virtual void getEventListenersForNode(ErrorString*, int nodeId, const WTF::String* objectGroup, RefPtr<TypeBuilder::Array<TypeBuilder::DOM::EventListener> >& listenersArray);
-    virtual void performSearch(ErrorString*, const String& whitespaceTrimmedQuery, String* searchId, int* resultCount);
-    virtual void getSearchResults(ErrorString*, const String& searchId, int fromIndex, int toIndex, RefPtr<TypeBuilder::Array<int> >&);
-    virtual void discardSearchResults(ErrorString*, const String& searchId);
-    virtual void resolveNode(ErrorString*, int nodeId, const String* objectGroup, RefPtr<TypeBuilder::Runtime::RemoteObject>& result);
-    virtual void getAttributes(ErrorString*, int nodeId, RefPtr<TypeBuilder::Array<String> >& result);
-    virtual void setInspectModeEnabled(ErrorString*, bool enabled, const bool* inspectShadowDOM, const RefPtr<JSONObject>* highlightConfig);
-    virtual void requestNode(ErrorString*, const String& objectId, int* nodeId);
-    virtual void pushNodeByPathToFrontend(ErrorString*, const String& path, int* nodeId);
-    virtual void pushNodeByBackendIdToFrontend(ErrorString*, BackendNodeId, int* nodeId);
-    virtual void releaseBackendNodeIds(ErrorString*, const String& nodeGroup);
-    virtual void hideHighlight(ErrorString*);
-    virtual void highlightRect(ErrorString*, int x, int y, int width, int height, const RefPtr<JSONObject>* color, const RefPtr<JSONObject>* outlineColor);
-    virtual void highlightQuad(ErrorString*, const RefPtr<JSONArray>& quad, const RefPtr<JSONObject>* color, const RefPtr<JSONObject>* outlineColor);
-    virtual void highlightNode(ErrorString*, const RefPtr<JSONObject>& highlightConfig, const int* nodeId, const String* objectId);
-    virtual void highlightFrame(ErrorString*, const String& frameId, const RefPtr<JSONObject>* color, const RefPtr<JSONObject>* outlineColor);
+    virtual void querySelector(ErrorString*, int nodeId, const String& selectors, int* elementId) OVERRIDE;
+    virtual void querySelectorAll(ErrorString*, int nodeId, const String& selectors, RefPtr<TypeBuilder::Array<int> >& result) OVERRIDE;
+    virtual void getDocument(ErrorString*, RefPtr<TypeBuilder::DOM::Node>& root) OVERRIDE;
+    virtual void requestChildNodes(ErrorString*, int nodeId, const int* depth) OVERRIDE;
+    virtual void setAttributeValue(ErrorString*, int elementId, const String& name, const String& value) OVERRIDE;
+    virtual void setAttributesAsText(ErrorString*, int elementId, const String& text, const String* name) OVERRIDE;
+    virtual void removeAttribute(ErrorString*, int elementId, const String& name) OVERRIDE;
+    virtual void removeNode(ErrorString*, int nodeId) OVERRIDE;
+    virtual void setNodeName(ErrorString*, int nodeId, const String& name, int* newId) OVERRIDE;
+    virtual void getOuterHTML(ErrorString*, int nodeId, WTF::String* outerHTML) OVERRIDE;
+    virtual void setOuterHTML(ErrorString*, int nodeId, const String& outerHTML) OVERRIDE;
+    virtual void setNodeValue(ErrorString*, int nodeId, const String& value) OVERRIDE;
+    virtual void getEventListenersForNode(ErrorString*, int nodeId, const WTF::String* objectGroup, RefPtr<TypeBuilder::Array<TypeBuilder::DOM::EventListener> >& listenersArray) OVERRIDE;
+    virtual void performSearch(ErrorString*, const String& whitespaceTrimmedQuery, String* searchId, int* resultCount) OVERRIDE;
+    virtual void getSearchResults(ErrorString*, const String& searchId, int fromIndex, int toIndex, RefPtr<TypeBuilder::Array<int> >&) OVERRIDE;
+    virtual void discardSearchResults(ErrorString*, const String& searchId) OVERRIDE;
+    virtual void resolveNode(ErrorString*, int nodeId, const String* objectGroup, RefPtr<TypeBuilder::Runtime::RemoteObject>& result) OVERRIDE;
+    virtual void getAttributes(ErrorString*, int nodeId, RefPtr<TypeBuilder::Array<String> >& result) OVERRIDE;
+    virtual void setInspectModeEnabled(ErrorString*, bool enabled, const bool* inspectShadowDOM, const RefPtr<JSONObject>* highlightConfig) OVERRIDE;
+    virtual void requestNode(ErrorString*, const String& objectId, int* nodeId) OVERRIDE;
+    virtual void pushNodeByPathToFrontend(ErrorString*, const String& path, int* nodeId) OVERRIDE;
+    virtual void pushNodeByBackendIdToFrontend(ErrorString*, BackendNodeId, int* nodeId) OVERRIDE;
+    virtual void releaseBackendNodeIds(ErrorString*, const String& nodeGroup) OVERRIDE;
+    virtual void hideHighlight(ErrorString*) OVERRIDE;
+    virtual void highlightRect(ErrorString*, int x, int y, int width, int height, const RefPtr<JSONObject>* color, const RefPtr<JSONObject>* outlineColor) OVERRIDE;
+    virtual void highlightQuad(ErrorString*, const RefPtr<JSONArray>& quad, const RefPtr<JSONObject>* color, const RefPtr<JSONObject>* outlineColor) OVERRIDE;
+    virtual void highlightNode(ErrorString*, const RefPtr<JSONObject>& highlightConfig, const int* nodeId, const String* objectId) OVERRIDE;
+    virtual void highlightFrame(ErrorString*, const String& frameId, const RefPtr<JSONObject>* color, const RefPtr<JSONObject>* outlineColor) OVERRIDE;
 
-    virtual void moveTo(ErrorString*, int nodeId, int targetNodeId, const int* anchorNodeId, int* newNodeId);
-    virtual void undo(ErrorString*);
-    virtual void redo(ErrorString*);
-    virtual void markUndoableState(ErrorString*);
-    virtual void focus(ErrorString*, int nodeId);
-    virtual void setFileInputFiles(ErrorString*, int nodeId, const RefPtr<JSONArray>& files);
-    virtual void getBoxModel(ErrorString*, int nodeId, RefPtr<TypeBuilder::DOM::BoxModel>&);
-    virtual void getNodeForLocation(ErrorString*, int x, int y, int* nodeId);
-    virtual void getRelayoutBoundary(ErrorString*, int nodeId, int* relayoutBoundaryNodeId);
+    virtual void moveTo(ErrorString*, int nodeId, int targetNodeId, const int* anchorNodeId, int* newNodeId) OVERRIDE;
+    virtual void undo(ErrorString*) OVERRIDE;
+    virtual void redo(ErrorString*) OVERRIDE;
+    virtual void markUndoableState(ErrorString*) OVERRIDE;
+    virtual void focus(ErrorString*, int nodeId) OVERRIDE;
+    virtual void setFileInputFiles(ErrorString*, int nodeId, const RefPtr<JSONArray>& files) OVERRIDE;
+    virtual void getBoxModel(ErrorString*, int nodeId, RefPtr<TypeBuilder::DOM::BoxModel>&) OVERRIDE;
+    virtual void getNodeForLocation(ErrorString*, int x, int y, int* nodeId) OVERRIDE;
+    virtual void getRelayoutBoundary(ErrorString*, int nodeId, int* relayoutBoundaryNodeId) OVERRIDE;
 
     static void getEventListeners(Node*, Vector<EventListenerInfo>& listenersArray, bool includeAncestors);
 

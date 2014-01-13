@@ -68,7 +68,7 @@ void reportTransactionFailed(ExecuteSQLCallback* requestCallback, SQLError* erro
     requestCallback->sendSuccess(0, 0, errorObject.release());
 }
 
-class StatementCallback : public SQLStatementCallback {
+class StatementCallback FINAL : public SQLStatementCallback {
 public:
     static PassOwnPtr<StatementCallback> create(PassRefPtr<ExecuteSQLCallback> requestCallback)
     {
@@ -77,7 +77,7 @@ public:
 
     virtual ~StatementCallback() { }
 
-    virtual bool handleEvent(SQLTransaction*, SQLResultSet* resultSet)
+    virtual bool handleEvent(SQLTransaction*, SQLResultSet* resultSet) OVERRIDE
     {
         SQLResultSetRowList* rowList = resultSet->rows();
 
@@ -106,7 +106,7 @@ private:
     RefPtr<ExecuteSQLCallback> m_requestCallback;
 };
 
-class StatementErrorCallback : public SQLStatementErrorCallback {
+class StatementErrorCallback FINAL : public SQLStatementErrorCallback {
 public:
     static PassOwnPtr<StatementErrorCallback> create(PassRefPtr<ExecuteSQLCallback> requestCallback)
     {
@@ -115,7 +115,7 @@ public:
 
     virtual ~StatementErrorCallback() { }
 
-    virtual bool handleEvent(SQLTransaction*, SQLError* error)
+    virtual bool handleEvent(SQLTransaction*, SQLError* error) OVERRIDE
     {
         reportTransactionFailed(m_requestCallback.get(), error);
         return true;
@@ -127,7 +127,7 @@ private:
     RefPtr<ExecuteSQLCallback> m_requestCallback;
 };
 
-class TransactionCallback : public SQLTransactionCallback {
+class TransactionCallback FINAL : public SQLTransactionCallback {
 public:
     static PassOwnPtr<TransactionCallback> create(const String& sqlStatement, PassRefPtr<ExecuteSQLCallback> requestCallback)
     {
@@ -136,7 +136,7 @@ public:
 
     virtual ~TransactionCallback() { }
 
-    virtual bool handleEvent(SQLTransaction* transaction)
+    virtual bool handleEvent(SQLTransaction* transaction) OVERRIDE
     {
         if (!m_requestCallback->isActive())
             return true;
@@ -155,7 +155,7 @@ private:
     RefPtr<ExecuteSQLCallback> m_requestCallback;
 };
 
-class TransactionErrorCallback : public SQLTransactionErrorCallback {
+class TransactionErrorCallback FINAL : public SQLTransactionErrorCallback {
 public:
     static PassOwnPtr<TransactionErrorCallback> create(PassRefPtr<ExecuteSQLCallback> requestCallback)
     {
@@ -164,7 +164,7 @@ public:
 
     virtual ~TransactionErrorCallback() { }
 
-    virtual bool handleEvent(SQLError* error)
+    virtual bool handleEvent(SQLError* error) OVERRIDE
     {
         reportTransactionFailed(m_requestCallback.get(), error);
         return true;
@@ -175,7 +175,7 @@ private:
     RefPtr<ExecuteSQLCallback> m_requestCallback;
 };
 
-class TransactionSuccessCallback : public VoidCallback {
+class TransactionSuccessCallback FINAL : public VoidCallback {
 public:
     static PassOwnPtr<TransactionSuccessCallback> create()
     {
@@ -184,7 +184,7 @@ public:
 
     virtual ~TransactionSuccessCallback() { }
 
-    virtual void handleEvent() { }
+    virtual void handleEvent() OVERRIDE { }
 
 private:
     TransactionSuccessCallback() { }

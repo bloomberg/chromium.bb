@@ -46,23 +46,23 @@ class StorageArea;
 
 typedef String ErrorString;
 
-class InspectorDOMStorageAgent : public InspectorBaseAgent<InspectorDOMStorageAgent>, public InspectorBackendDispatcher::DOMStorageCommandHandler {
+class InspectorDOMStorageAgent FINAL : public InspectorBaseAgent<InspectorDOMStorageAgent>, public InspectorBackendDispatcher::DOMStorageCommandHandler {
 public:
     static PassOwnPtr<InspectorDOMStorageAgent> create(InstrumentingAgents* instrumentingAgents, InspectorPageAgent* pageAgent, InspectorCompositeState* state)
     {
         return adoptPtr(new InspectorDOMStorageAgent(instrumentingAgents, pageAgent, state));
     }
-    ~InspectorDOMStorageAgent();
+    virtual ~InspectorDOMStorageAgent();
 
-    virtual void setFrontend(InspectorFrontend*);
-    virtual void clearFrontend();
+    virtual void setFrontend(InspectorFrontend*) OVERRIDE;
+    virtual void clearFrontend() OVERRIDE;
 
     // Called from the front-end.
-    virtual void enable(ErrorString*);
-    virtual void disable(ErrorString*);
-    virtual void getDOMStorageItems(ErrorString*, const RefPtr<JSONObject>& storageId, RefPtr<TypeBuilder::Array<TypeBuilder::Array<String> > >& items);
-    virtual void setDOMStorageItem(ErrorString*, const RefPtr<JSONObject>& storageId, const String& key, const String& value);
-    virtual void removeDOMStorageItem(ErrorString*, const RefPtr<JSONObject>& storageId, const String& key);
+    virtual void enable(ErrorString*) OVERRIDE;
+    virtual void disable(ErrorString*) OVERRIDE;
+    virtual void getDOMStorageItems(ErrorString*, const RefPtr<JSONObject>& storageId, RefPtr<TypeBuilder::Array<TypeBuilder::Array<String> > >& items) OVERRIDE;
+    virtual void setDOMStorageItem(ErrorString*, const RefPtr<JSONObject>& storageId, const String& key, const String& value) OVERRIDE;
+    virtual void removeDOMStorageItem(ErrorString*, const RefPtr<JSONObject>& storageId, const String& key) OVERRIDE;
 
     // Called from the injected script.
     String storageId(Storage*);

@@ -59,34 +59,29 @@ namespace WebCore {
 
 namespace {
 
-class InspectorOverlayChromeClient: public EmptyChromeClient {
+class InspectorOverlayChromeClient FINAL: public EmptyChromeClient {
 public:
     InspectorOverlayChromeClient(ChromeClient& client, InspectorOverlay* overlay)
         : m_client(client)
         , m_overlay(overlay)
     { }
 
-    virtual void setCursor(const Cursor& cursor)
+    virtual void setCursor(const Cursor& cursor) OVERRIDE
     {
         m_client.setCursor(cursor);
     }
 
-    virtual void setToolTip(const String& tooltip, TextDirection direction)
+    virtual void setToolTip(const String& tooltip, TextDirection direction) OVERRIDE
     {
         m_client.setToolTip(tooltip, direction);
     }
 
-    virtual void invalidateRootView(const IntRect& rect)
+    virtual void invalidateContentsAndRootView(const IntRect&) OVERRIDE
     {
         m_overlay->invalidate();
     }
 
-    virtual void invalidateContentsAndRootView(const IntRect& rect)
-    {
-        m_overlay->invalidate();
-    }
-
-    virtual void invalidateContentsForSlowScroll(const IntRect& rect)
+    virtual void invalidateContentsForSlowScroll(const IntRect&) OVERRIDE
     {
         m_overlay->invalidate();
     }

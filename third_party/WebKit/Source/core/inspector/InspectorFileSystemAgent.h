@@ -41,7 +41,7 @@ class InspectorPageAgent;
 class ExecutionContext;
 class SecurityOrigin;
 
-class InspectorFileSystemAgent : public InspectorBaseAgent<InspectorFileSystemAgent>, public InspectorBackendDispatcher::FileSystemCommandHandler {
+class InspectorFileSystemAgent FINAL : public InspectorBaseAgent<InspectorFileSystemAgent>, public InspectorBackendDispatcher::FileSystemCommandHandler {
 public:
     static PassOwnPtr<InspectorFileSystemAgent> create(InstrumentingAgents*, InspectorPageAgent*, InspectorCompositeState*);
     virtual ~InspectorFileSystemAgent();

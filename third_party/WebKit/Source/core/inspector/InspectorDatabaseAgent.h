@@ -46,25 +46,25 @@ class InstrumentingAgents;
 
 typedef String ErrorString;
 
-class InspectorDatabaseAgent : public InspectorBaseAgent<InspectorDatabaseAgent>, public InspectorBackendDispatcher::DatabaseCommandHandler {
+class InspectorDatabaseAgent FINAL : public InspectorBaseAgent<InspectorDatabaseAgent>, public InspectorBackendDispatcher::DatabaseCommandHandler {
 public:
     static PassOwnPtr<InspectorDatabaseAgent> create(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* state)
     {
         return adoptPtr(new InspectorDatabaseAgent(instrumentingAgents, state));
     }
-    ~InspectorDatabaseAgent();
+    virtual ~InspectorDatabaseAgent();
 
-    virtual void setFrontend(InspectorFrontend*);
-    virtual void clearFrontend();
-    virtual void restore();
+    virtual void setFrontend(InspectorFrontend*) OVERRIDE;
+    virtual void clearFrontend() OVERRIDE;
+    virtual void restore() OVERRIDE;
 
     void didCommitLoad(Frame*, DocumentLoader*);
 
     // Called from the front-end.
-    virtual void enable(ErrorString*);
-    virtual void disable(ErrorString*);
-    virtual void getDatabaseTableNames(ErrorString*, const String& databaseId, RefPtr<TypeBuilder::Array<String> >& names);
-    virtual void executeSQL(ErrorString*, const String& databaseId, const String& query, PassRefPtr<ExecuteSQLCallback>);
+    virtual void enable(ErrorString*) OVERRIDE;
+    virtual void disable(ErrorString*) OVERRIDE;
+    virtual void getDatabaseTableNames(ErrorString*, const String& databaseId, RefPtr<TypeBuilder::Array<String> >& names) OVERRIDE;
+    virtual void executeSQL(ErrorString*, const String& databaseId, const String& query, PassRefPtr<ExecuteSQLCallback>) OVERRIDE;
 
     // Called from the injected script.
     String databaseId(Database*);

@@ -61,7 +61,7 @@ class StyleResolver;
 
 typedef String ErrorString;
 
-class InspectorPageAgent : public InspectorBaseAgent<InspectorPageAgent>, public InspectorBackendDispatcher::PageCommandHandler {
+class InspectorPageAgent FINAL : public InspectorBaseAgent<InspectorPageAgent>, public InspectorBackendDispatcher::PageCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorPageAgent);
 public:
     enum ResourceType {
@@ -87,41 +87,41 @@ public:
     static TypeBuilder::Page::ResourceType::Enum cachedResourceTypeJson(const Resource&);
 
     // Page API for InspectorFrontend
-    virtual void enable(ErrorString*);
-    virtual void disable(ErrorString*);
-    virtual void addScriptToEvaluateOnLoad(ErrorString*, const String& source, String* result);
-    virtual void removeScriptToEvaluateOnLoad(ErrorString*, const String& identifier);
-    virtual void reload(ErrorString*, const bool* optionalIgnoreCache, const String* optionalScriptToEvaluateOnLoad, const String* optionalScriptPreprocessor);
-    virtual void navigate(ErrorString*, const String& url);
-    virtual void getNavigationHistory(ErrorString*, int*, RefPtr<TypeBuilder::Array<TypeBuilder::Page::NavigationEntry> >&);
-    virtual void navigateToHistoryEntry(ErrorString*, int);
-    virtual void getCookies(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::Page::Cookie> >& cookies);
-    virtual void deleteCookie(ErrorString*, const String& cookieName, const String& url);
-    virtual void getResourceTree(ErrorString*, RefPtr<TypeBuilder::Page::FrameResourceTree>&);
-    virtual void getResourceContent(ErrorString*, const String& frameId, const String& url, String* content, bool* base64Encoded);
-    virtual void searchInResource(ErrorString*, const String& frameId, const String& url, const String& query, const bool* optionalCaseSensitive, const bool* optionalIsRegex, RefPtr<TypeBuilder::Array<TypeBuilder::Page::SearchMatch> >&);
-    virtual void setDocumentContent(ErrorString*, const String& frameId, const String& html);
-    virtual void setDeviceMetricsOverride(ErrorString*, int width, int height, double deviceScaleFactor, bool emulateViewport, bool fitWindow, const bool* optionalTextAutosizing, const double* optionalFontScaleFactor);
-    virtual void setShowPaintRects(ErrorString*, bool show);
-    virtual void setShowDebugBorders(ErrorString*, bool show);
-    virtual void setShowFPSCounter(ErrorString*, bool show);
-    virtual void setContinuousPaintingEnabled(ErrorString*, bool enabled);
-    virtual void setShowScrollBottleneckRects(ErrorString*, bool show);
-    virtual void getScriptExecutionStatus(ErrorString*, PageCommandHandler::Result::Enum*);
-    virtual void setScriptExecutionDisabled(ErrorString*, bool);
-    virtual void setGeolocationOverride(ErrorString*, const double*, const double*, const double*);
-    virtual void clearGeolocationOverride(ErrorString*);
-    virtual void setDeviceOrientationOverride(ErrorString*, double, double, double);
-    virtual void clearDeviceOrientationOverride(ErrorString*);
-    virtual void setTouchEmulationEnabled(ErrorString*, bool);
-    virtual void setEmulatedMedia(ErrorString*, const String&);
-    virtual void captureScreenshot(ErrorString*, const String* format, const int* quality, const int* maxWidth, const int* maxHeight, String* data, RefPtr<TypeBuilder::Page::ScreencastFrameMetadata>& out_metadata);
-    virtual void canScreencast(ErrorString*, bool*);
-    virtual void startScreencast(ErrorString*, const String* format, const int* quality, const int* maxWidth, const int* maxHeight);
-    virtual void stopScreencast(ErrorString*);
-    virtual void handleJavaScriptDialog(ErrorString*, bool accept, const String* promptText);
-    virtual void queryUsageAndQuota(WebCore::ErrorString*, const WTF::String&, WTF::RefPtr<WebCore::TypeBuilder::Page::Quota>&, WTF::RefPtr<WebCore::TypeBuilder::Page::Usage>&);
-    virtual void setShowViewportSizeOnResize(ErrorString*, bool show, const bool* showGrid);
+    virtual void enable(ErrorString*) OVERRIDE;
+    virtual void disable(ErrorString*) OVERRIDE;
+    virtual void addScriptToEvaluateOnLoad(ErrorString*, const String& source, String* result) OVERRIDE;
+    virtual void removeScriptToEvaluateOnLoad(ErrorString*, const String& identifier) OVERRIDE;
+    virtual void reload(ErrorString*, const bool* optionalIgnoreCache, const String* optionalScriptToEvaluateOnLoad, const String* optionalScriptPreprocessor) OVERRIDE;
+    virtual void navigate(ErrorString*, const String& url) OVERRIDE;
+    virtual void getNavigationHistory(ErrorString*, int*, RefPtr<TypeBuilder::Array<TypeBuilder::Page::NavigationEntry> >&) OVERRIDE;
+    virtual void navigateToHistoryEntry(ErrorString*, int) OVERRIDE;
+    virtual void getCookies(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::Page::Cookie> >& cookies) OVERRIDE;
+    virtual void deleteCookie(ErrorString*, const String& cookieName, const String& url) OVERRIDE;
+    virtual void getResourceTree(ErrorString*, RefPtr<TypeBuilder::Page::FrameResourceTree>&) OVERRIDE;
+    virtual void getResourceContent(ErrorString*, const String& frameId, const String& url, String* content, bool* base64Encoded) OVERRIDE;
+    virtual void searchInResource(ErrorString*, const String& frameId, const String& url, const String& query, const bool* optionalCaseSensitive, const bool* optionalIsRegex, RefPtr<TypeBuilder::Array<TypeBuilder::Page::SearchMatch> >&) OVERRIDE;
+    virtual void setDocumentContent(ErrorString*, const String& frameId, const String& html) OVERRIDE;
+    virtual void setDeviceMetricsOverride(ErrorString*, int width, int height, double deviceScaleFactor, bool emulateViewport, bool fitWindow, const bool* optionalTextAutosizing, const double* optionalFontScaleFactor) OVERRIDE;
+    virtual void setShowPaintRects(ErrorString*, bool show) OVERRIDE;
+    virtual void setShowDebugBorders(ErrorString*, bool show) OVERRIDE;
+    virtual void setShowFPSCounter(ErrorString*, bool show) OVERRIDE;
+    virtual void setContinuousPaintingEnabled(ErrorString*, bool enabled) OVERRIDE;
+    virtual void setShowScrollBottleneckRects(ErrorString*, bool show) OVERRIDE;
+    virtual void getScriptExecutionStatus(ErrorString*, PageCommandHandler::Result::Enum*) OVERRIDE;
+    virtual void setScriptExecutionDisabled(ErrorString*, bool) OVERRIDE;
+    virtual void setGeolocationOverride(ErrorString*, const double*, const double*, const double*) OVERRIDE;
+    virtual void clearGeolocationOverride(ErrorString*) OVERRIDE;
+    virtual void setDeviceOrientationOverride(ErrorString*, double, double, double) OVERRIDE;
+    virtual void clearDeviceOrientationOverride(ErrorString*) OVERRIDE;
+    virtual void setTouchEmulationEnabled(ErrorString*, bool) OVERRIDE;
+    virtual void setEmulatedMedia(ErrorString*, const String&) OVERRIDE;
+    virtual void captureScreenshot(ErrorString*, const String* format, const int* quality, const int* maxWidth, const int* maxHeight, String* data, RefPtr<TypeBuilder::Page::ScreencastFrameMetadata>& out_metadata) OVERRIDE;
+    virtual void canScreencast(ErrorString*, bool*) OVERRIDE;
+    virtual void startScreencast(ErrorString*, const String* format, const int* quality, const int* maxWidth, const int* maxHeight) OVERRIDE;
+    virtual void stopScreencast(ErrorString*) OVERRIDE;
+    virtual void handleJavaScriptDialog(ErrorString*, bool accept, const String* promptText) OVERRIDE;
+    virtual void queryUsageAndQuota(WebCore::ErrorString*, const WTF::String&, WTF::RefPtr<WebCore::TypeBuilder::Page::Quota>&, WTF::RefPtr<WebCore::TypeBuilder::Page::Usage>&) OVERRIDE;
+    virtual void setShowViewportSizeOnResize(ErrorString*, bool show, const bool* showGrid) OVERRIDE;
 
     // Geolocation override helper.
     GeolocationPosition* overrideGeolocationPosition(GeolocationPosition*);
@@ -155,9 +155,9 @@ public:
     void scriptsEnabled(bool isEnabled);
 
     // Inspector Controller API
-    virtual void setFrontend(InspectorFrontend*);
-    virtual void clearFrontend();
-    virtual void restore();
+    virtual void setFrontend(InspectorFrontend*) OVERRIDE;
+    virtual void clearFrontend() OVERRIDE;
+    virtual void restore() OVERRIDE;
 
     void webViewResized(const IntSize&);
 

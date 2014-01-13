@@ -42,18 +42,18 @@ class InspectorPageAgent;
 class Page;
 class SecurityOrigin;
 
-class PageRuntimeAgent : public InspectorRuntimeAgent {
+class PageRuntimeAgent FINAL : public InspectorRuntimeAgent {
 public:
     static PassOwnPtr<PageRuntimeAgent> create(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* state, InjectedScriptManager* injectedScriptManager, ScriptDebugServer* scriptDebugServer, Page* page, InspectorPageAgent* pageAgent)
     {
         return adoptPtr(new PageRuntimeAgent(instrumentingAgents, state, injectedScriptManager, scriptDebugServer, page, pageAgent));
     }
     virtual ~PageRuntimeAgent();
-    virtual void setFrontend(InspectorFrontend*);
-    virtual void clearFrontend();
-    virtual void restore();
-    virtual void enable(ErrorString*);
-    virtual void disable(ErrorString*);
+    virtual void setFrontend(InspectorFrontend*) OVERRIDE;
+    virtual void clearFrontend() OVERRIDE;
+    virtual void restore() OVERRIDE;
+    virtual void enable(ErrorString*) OVERRIDE;
+    virtual void disable(ErrorString*) OVERRIDE;
 
     void didClearWindowObjectInWorld(Frame*, DOMWrapperWorld*);
     void didCreateIsolatedContext(Frame*, ScriptState*, SecurityOrigin*);
@@ -61,9 +61,9 @@ public:
 private:
     PageRuntimeAgent(InstrumentingAgents*, InspectorCompositeState*, InjectedScriptManager*, ScriptDebugServer*, Page*, InspectorPageAgent*);
 
-    virtual InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId);
-    virtual void muteConsole();
-    virtual void unmuteConsole();
+    virtual InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId) OVERRIDE;
+    virtual void muteConsole() OVERRIDE;
+    virtual void unmuteConsole() OVERRIDE;
     void reportExecutionContextCreation();
     void notifyContextCreated(const String& frameId, ScriptState*, SecurityOrigin*, bool isPageContext);
 

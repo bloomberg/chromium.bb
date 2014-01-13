@@ -326,10 +326,10 @@ void InspectorConsoleAgent::addConsoleMessage(PassOwnPtr<ConsoleMessage> console
     }
 }
 
-class InspectableHeapObject : public InjectedScriptHost::InspectableObject {
+class InspectableHeapObject FINAL : public InjectedScriptHost::InspectableObject {
 public:
     explicit InspectableHeapObject(int heapObjectId) : m_heapObjectId(heapObjectId) { }
-    virtual ScriptValue get(ScriptState*)
+    virtual ScriptValue get(ScriptState*) OVERRIDE
     {
         return ScriptProfiler::objectByHeapObjectId(m_heapObjectId);
     }

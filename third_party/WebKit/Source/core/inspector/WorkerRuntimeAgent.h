@@ -38,7 +38,7 @@ namespace WebCore {
 
 class WorkerGlobalScope;
 
-class WorkerRuntimeAgent : public InspectorRuntimeAgent {
+class WorkerRuntimeAgent FINAL : public InspectorRuntimeAgent {
 public:
     static PassOwnPtr<WorkerRuntimeAgent> create(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* state, InjectedScriptManager* injectedScriptManager, ScriptDebugServer* scriptDebugServer, WorkerGlobalScope* context)
     {
@@ -47,15 +47,15 @@ public:
     virtual ~WorkerRuntimeAgent();
 
     // Protocol commands.
-    virtual void run(ErrorString*);
+    virtual void run(ErrorString*) OVERRIDE;
 
     void willEvaluateWorkerScript(WorkerGlobalScope*, int workerThreadStartMode);
 
 private:
     WorkerRuntimeAgent(InstrumentingAgents*, InspectorCompositeState*, InjectedScriptManager*, ScriptDebugServer*, WorkerGlobalScope*);
-    virtual InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId);
-    virtual void muteConsole();
-    virtual void unmuteConsole();
+    virtual InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId) OVERRIDE;
+    virtual void muteConsole() OVERRIDE;
+    virtual void unmuteConsole() OVERRIDE;
     WorkerGlobalScope* m_workerGlobalScope;
     bool m_paused;
 };

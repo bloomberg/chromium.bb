@@ -73,20 +73,20 @@ class WebSocketHandshakeResponse;
 
 typedef String ErrorString;
 
-class InspectorResourceAgent : public InspectorBaseAgent<InspectorResourceAgent>, public InspectorBackendDispatcher::NetworkCommandHandler {
+class InspectorResourceAgent FINAL : public InspectorBaseAgent<InspectorResourceAgent>, public InspectorBackendDispatcher::NetworkCommandHandler {
 public:
     static PassOwnPtr<InspectorResourceAgent> create(InstrumentingAgents* instrumentingAgents, InspectorPageAgent* pageAgent, InspectorClient* client, InspectorCompositeState* state)
     {
         return adoptPtr(new InspectorResourceAgent(instrumentingAgents, pageAgent, client, state));
     }
 
-    virtual void setFrontend(InspectorFrontend*);
-    virtual void clearFrontend();
-    virtual void restore();
+    virtual void setFrontend(InspectorFrontend*) OVERRIDE;
+    virtual void clearFrontend() OVERRIDE;
+    virtual void restore() OVERRIDE;
 
     static PassRefPtr<InspectorResourceAgent> restore(Page*, InspectorCompositeState*, InspectorFrontend*);
 
-    ~InspectorResourceAgent();
+    virtual ~InspectorResourceAgent();
 
     // Called from instrumentation.
     void willSendRequest(unsigned long identifier, DocumentLoader*, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo&);
@@ -131,21 +131,21 @@ public:
     void setResourcesDataSizeLimitsFromInternals(int maximumResourcesContentSize, int maximumSingleResourceContentSize);
 
     // Called from frontend
-    virtual void enable(ErrorString*);
-    virtual void disable(ErrorString*);
-    virtual void setUserAgentOverride(ErrorString*, const String& userAgent);
-    virtual void setExtraHTTPHeaders(ErrorString*, const RefPtr<JSONObject>&);
-    virtual void getResponseBody(ErrorString*, const String& requestId, String* content, bool* base64Encoded);
+    virtual void enable(ErrorString*) OVERRIDE;
+    virtual void disable(ErrorString*) OVERRIDE;
+    virtual void setUserAgentOverride(ErrorString*, const String& userAgent) OVERRIDE;
+    virtual void setExtraHTTPHeaders(ErrorString*, const RefPtr<JSONObject>&) OVERRIDE;
+    virtual void getResponseBody(ErrorString*, const String& requestId, String* content, bool* base64Encoded) OVERRIDE;
 
-    virtual void replayXHR(ErrorString*, const String& requestId);
+    virtual void replayXHR(ErrorString*, const String& requestId) OVERRIDE;
 
-    virtual void canClearBrowserCache(ErrorString*, bool*);
-    virtual void clearBrowserCache(ErrorString*);
-    virtual void canClearBrowserCookies(ErrorString*, bool*);
-    virtual void clearBrowserCookies(ErrorString*);
-    virtual void setCacheDisabled(ErrorString*, bool cacheDisabled);
+    virtual void canClearBrowserCache(ErrorString*, bool*) OVERRIDE;
+    virtual void clearBrowserCache(ErrorString*) OVERRIDE;
+    virtual void canClearBrowserCookies(ErrorString*, bool*) OVERRIDE;
+    virtual void clearBrowserCookies(ErrorString*) OVERRIDE;
+    virtual void setCacheDisabled(ErrorString*, bool cacheDisabled) OVERRIDE;
 
-    virtual void loadResourceForFrontend(ErrorString*, const String& frameId, const String& url, const RefPtr<JSONObject>* requestHeaders, PassRefPtr<LoadResourceForFrontendCallback>);
+    virtual void loadResourceForFrontend(ErrorString*, const String& frameId, const String& url, const RefPtr<JSONObject>* requestHeaders, PassRefPtr<LoadResourceForFrontendCallback>) OVERRIDE;
 
     // Called from other agents.
     bool fetchResourceContent(Frame*, const KURL&, String* content, bool* base64Encoded);

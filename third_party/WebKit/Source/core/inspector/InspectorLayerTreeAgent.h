@@ -51,30 +51,30 @@ struct LayerSnapshot;
 
 typedef String ErrorString;
 
-class InspectorLayerTreeAgent : public InspectorBaseAgent<InspectorLayerTreeAgent>, public InspectorBackendDispatcher::LayerTreeCommandHandler {
+class InspectorLayerTreeAgent FINAL : public InspectorBaseAgent<InspectorLayerTreeAgent>, public InspectorBackendDispatcher::LayerTreeCommandHandler {
 public:
     static PassOwnPtr<InspectorLayerTreeAgent> create(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* state, InspectorDOMAgent* domAgent, Page* page)
     {
         return adoptPtr(new InspectorLayerTreeAgent(instrumentingAgents, state, domAgent, page));
     }
-    ~InspectorLayerTreeAgent();
+    virtual ~InspectorLayerTreeAgent();
 
-    virtual void setFrontend(InspectorFrontend*);
-    virtual void clearFrontend();
-    virtual void restore();
+    virtual void setFrontend(InspectorFrontend*) OVERRIDE;
+    virtual void clearFrontend() OVERRIDE;
+    virtual void restore() OVERRIDE;
 
     // Called from InspectorInstrumentation
     void layerTreeDidChange();
     void didPaint(RenderObject*, const GraphicsLayer*, GraphicsContext*, const LayoutRect&);
 
     // Called from the front-end.
-    virtual void enable(ErrorString*);
-    virtual void disable(ErrorString*);
-    virtual void compositingReasons(ErrorString*, const String& layerId, RefPtr<TypeBuilder::Array<String> >&);
-    virtual void makeSnapshot(ErrorString*, const String& layerId, String* snapshotId);
-    virtual void releaseSnapshot(ErrorString*, const String& snapshotId);
-    virtual void replaySnapshot(ErrorString*, const String& snapshotId, const int* fromStep, const int* toStep, String* dataURL);
-    virtual void profileSnapshot(ErrorString*, const String& snapshotId, const int* minRepeatCount, const double* minDuration, RefPtr<TypeBuilder::Array<TypeBuilder::Array<double> > >&);
+    virtual void enable(ErrorString*) OVERRIDE;
+    virtual void disable(ErrorString*) OVERRIDE;
+    virtual void compositingReasons(ErrorString*, const String& layerId, RefPtr<TypeBuilder::Array<String> >&) OVERRIDE;
+    virtual void makeSnapshot(ErrorString*, const String& layerId, String* snapshotId) OVERRIDE;
+    virtual void releaseSnapshot(ErrorString*, const String& snapshotId) OVERRIDE;
+    virtual void replaySnapshot(ErrorString*, const String& snapshotId, const int* fromStep, const int* toStep, String* dataURL) OVERRIDE;
+    virtual void profileSnapshot(ErrorString*, const String& snapshotId, const int* minRepeatCount, const double* minDuration, RefPtr<TypeBuilder::Array<TypeBuilder::Array<double> > >&) OVERRIDE;
 
 private:
     static unsigned s_lastSnapshotId;

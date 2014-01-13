@@ -91,7 +91,7 @@ static PassRefPtr<JSONObject> buildObjectForHeaders(const HTTPHeaderMap& headers
     return headersObject;
 }
 
-class InspectorThreadableLoaderClient : public ThreadableLoaderClient {
+class InspectorThreadableLoaderClient FINAL : public ThreadableLoaderClient {
     WTF_MAKE_NONCOPYABLE(InspectorThreadableLoaderClient);
 public:
     InspectorThreadableLoaderClient(PassRefPtr<LoadResourceForFrontendCallback> callback)
@@ -100,7 +100,7 @@ public:
 
     virtual ~InspectorThreadableLoaderClient() { }
 
-    virtual void didReceiveResponse(unsigned long identifier, const ResourceResponse& response)
+    virtual void didReceiveResponse(unsigned long identifier, const ResourceResponse& response) OVERRIDE
     {
         WTF::TextEncoding textEncoding(response.textEncodingName());
         bool useDetector = false;
@@ -113,7 +113,7 @@ public:
         m_responseHeaders = response.httpHeaderFields();
     }
 
-    virtual void didReceiveData(const char* data, int dataLength)
+    virtual void didReceiveData(const char* data, int dataLength) OVERRIDE
     {
         if (!dataLength)
             return;
@@ -124,7 +124,7 @@ public:
         m_responseText = m_responseText.concatenateWith(m_decoder->decode(data, dataLength));
     }
 
-    virtual void didFinishLoading(unsigned long /*identifier*/, double /*finishTime*/)
+    virtual void didFinishLoading(unsigned long /*identifier*/, double /*finishTime*/) OVERRIDE
     {
         if (m_decoder)
             m_responseText = m_responseText.concatenateWith(m_decoder->flush());
@@ -132,13 +132,13 @@ public:
         dispose();
     }
 
-    virtual void didFail(const ResourceError&)
+    virtual void didFail(const ResourceError&) OVERRIDE
     {
         m_callback->sendFailure("Loading resource for inspector failed");
         dispose();
     }
 
-    virtual void didFailRedirectCheck()
+    virtual void didFailRedirectCheck() OVERRIDE
     {
         m_callback->sendFailure("Loading resource for inspector failed redirect check");
         dispose();

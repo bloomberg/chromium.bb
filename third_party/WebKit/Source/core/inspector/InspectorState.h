@@ -84,7 +84,7 @@ private:
     RefPtr<JSONObject> m_properties;
 };
 
-class InspectorCompositeState : public InspectorStateUpdateListener {
+class InspectorCompositeState FINAL : public InspectorStateUpdateListener {
 public:
     InspectorCompositeState(InspectorStateClient* inspectorClient)
         : m_client(inspectorClient)
@@ -104,7 +104,7 @@ private:
     typedef HashMap<String, OwnPtr<InspectorState> > InspectorStateMap;
 
     // From InspectorStateUpdateListener.
-    virtual void inspectorStateUpdated();
+    virtual void inspectorStateUpdated() OVERRIDE;
 
     InspectorStateClient* m_client;
     RefPtr<JSONObject> m_stateObject;

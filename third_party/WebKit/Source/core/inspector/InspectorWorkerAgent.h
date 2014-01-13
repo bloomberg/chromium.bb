@@ -44,14 +44,14 @@ class WorkerGlobalScopeProxy;
 
 typedef String ErrorString;
 
-class InspectorWorkerAgent : public InspectorBaseAgent<InspectorWorkerAgent>, public InspectorBackendDispatcher::WorkerCommandHandler {
+class InspectorWorkerAgent FINAL : public InspectorBaseAgent<InspectorWorkerAgent>, public InspectorBackendDispatcher::WorkerCommandHandler {
 public:
     static PassOwnPtr<InspectorWorkerAgent> create(InstrumentingAgents*, InspectorCompositeState*);
-    ~InspectorWorkerAgent();
+    virtual ~InspectorWorkerAgent();
 
-    virtual void setFrontend(InspectorFrontend*);
-    virtual void restore();
-    virtual void clearFrontend();
+    virtual void setFrontend(InspectorFrontend*) OVERRIDE;
+    virtual void restore() OVERRIDE;
+    virtual void clearFrontend() OVERRIDE;
 
     // Called from InspectorInstrumentation
     bool shouldPauseDedicatedWorkerOnStart();
@@ -59,13 +59,13 @@ public:
     void workerGlobalScopeTerminated(WorkerGlobalScopeProxy*);
 
     // Called from InspectorBackendDispatcher
-    virtual void enable(ErrorString*);
-    virtual void disable(ErrorString*);
-    virtual void canInspectWorkers(ErrorString*, bool*);
-    virtual void connectToWorker(ErrorString*, int workerId);
-    virtual void disconnectFromWorker(ErrorString*, int workerId);
-    virtual void sendMessageToWorker(ErrorString*, int workerId, const RefPtr<JSONObject>& message);
-    virtual void setAutoconnectToWorkers(ErrorString*, bool value);
+    virtual void enable(ErrorString*) OVERRIDE;
+    virtual void disable(ErrorString*) OVERRIDE;
+    virtual void canInspectWorkers(ErrorString*, bool*) OVERRIDE;
+    virtual void connectToWorker(ErrorString*, int workerId) OVERRIDE;
+    virtual void disconnectFromWorker(ErrorString*, int workerId) OVERRIDE;
+    virtual void sendMessageToWorker(ErrorString*, int workerId, const RefPtr<JSONObject>& message) OVERRIDE;
+    virtual void setAutoconnectToWorkers(ErrorString*, bool value) OVERRIDE;
 
 private:
     InspectorWorkerAgent(InstrumentingAgents*, InspectorCompositeState*);

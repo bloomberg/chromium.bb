@@ -49,7 +49,7 @@ static const char workerInspectionEnabled[] = "workerInspectionEnabled";
 static const char autoconnectToWorkers[] = "autoconnectToWorkers";
 };
 
-class InspectorWorkerAgent::WorkerFrontendChannel : public WorkerGlobalScopeProxy::PageInspector {
+class InspectorWorkerAgent::WorkerFrontendChannel FINAL : public WorkerGlobalScopeProxy::PageInspector {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     explicit WorkerFrontendChannel(InspectorFrontend* frontend, WorkerGlobalScopeProxy* proxy)
@@ -85,7 +85,7 @@ public:
 
 private:
     // WorkerGlobalScopeProxy::PageInspector implementation
-    virtual void dispatchMessageFromWorker(const String& message)
+    virtual void dispatchMessageFromWorker(const String& message) OVERRIDE
     {
         RefPtr<JSONValue> value = parseJSON(message);
         if (!value)

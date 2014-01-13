@@ -48,7 +48,7 @@ class Page;
 
 typedef String ErrorString;
 
-class InspectorAgent : public InspectorBaseAgent<InspectorAgent>, public InspectorBackendDispatcher::InspectorCommandHandler {
+class InspectorAgent FINAL : public InspectorBaseAgent<InspectorAgent>, public InspectorBackendDispatcher::InspectorCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorAgent);
 public:
     static PassOwnPtr<InspectorAgent> create(Page* page, InjectedScriptManager* injectedScriptManager, InstrumentingAgents* instrumentingAgents, InspectorCompositeState* state)
@@ -63,8 +63,8 @@ public:
     void disable(ErrorString*);
     void reset(ErrorString*);
 
-    virtual void setFrontend(InspectorFrontend*);
-    virtual void clearFrontend();
+    virtual void setFrontend(InspectorFrontend*) OVERRIDE;
+    virtual void clearFrontend() OVERRIDE;
 
     void didClearWindowObjectInWorld(Frame*, DOMWrapperWorld*);
 

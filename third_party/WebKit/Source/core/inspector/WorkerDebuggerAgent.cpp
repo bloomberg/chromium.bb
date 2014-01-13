@@ -55,13 +55,13 @@ WorkerDebuggerAgents& workerDebuggerAgents()
 }
 
 
-class RunInspectorCommandsTask : public ScriptDebugServer::Task {
+class RunInspectorCommandsTask FINAL : public ScriptDebugServer::Task {
 public:
     RunInspectorCommandsTask(WorkerThread* thread, WorkerGlobalScope* workerGlobalScope)
         : m_thread(thread)
         , m_workerGlobalScope(workerGlobalScope) { }
     virtual ~RunInspectorCommandsTask() { }
-    virtual void run()
+    virtual void run() OVERRIDE
     {
         // Process all queued debugger commands. It is safe to use m_workerGlobalScope here
         // because it is alive if RunWorkerLoop is not terminated, otherwise it will

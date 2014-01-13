@@ -84,7 +84,7 @@ static const char indexedDBAgentEnabled[] = "indexedDBAgentEnabled";
 
 namespace {
 
-class GetDatabaseNamesCallback : public EventListener {
+class GetDatabaseNamesCallback FINAL : public EventListener {
     WTF_MAKE_NONCOPYABLE(GetDatabaseNamesCallback);
 public:
     static PassRefPtr<GetDatabaseNamesCallback> create(PassRefPtr<RequestDatabaseNamesCallback> requestCallback, const String& securityOrigin)
@@ -144,7 +144,7 @@ private:
     ExecutionContext* m_context;
 };
 
-class OpenDatabaseCallback : public EventListener {
+class OpenDatabaseCallback FINAL : public EventListener {
 public:
     static PassRefPtr<OpenDatabaseCallback> create(ExecutableWithDatabase* executableWithDatabase)
     {
@@ -251,7 +251,7 @@ static PassRefPtr<KeyPath> keyPathFromIDBKeyPath(const IDBKeyPath& idbKeyPath)
     return keyPath.release();
 }
 
-class DatabaseLoader : public ExecutableWithDatabase {
+class DatabaseLoader FINAL : public ExecutableWithDatabase {
 public:
     static PassRefPtr<DatabaseLoader> create(ExecutionContext* context, PassRefPtr<RequestDatabaseCallback> requestCallback)
     {
@@ -260,7 +260,7 @@ public:
 
     virtual ~DatabaseLoader() { }
 
-    virtual void execute(PassRefPtr<IDBDatabase> prpDatabase)
+    virtual void execute(PassRefPtr<IDBDatabase> prpDatabase) OVERRIDE
     {
         RefPtr<IDBDatabase> idbDatabase = prpDatabase;
         if (!requestCallback()->isActive())
@@ -302,7 +302,7 @@ public:
         m_requestCallback->sendSuccess(result);
     }
 
-    virtual RequestCallback* requestCallback() { return m_requestCallback.get(); }
+    virtual RequestCallback* requestCallback() OVERRIDE { return m_requestCallback.get(); }
 private:
     DatabaseLoader(ExecutionContext* context, PassRefPtr<RequestDatabaseCallback> requestCallback)
         : ExecutableWithDatabase(context)
@@ -383,7 +383,7 @@ static PassRefPtr<IDBKeyRange> idbKeyRangeFromKeyRange(JSONObject* keyRange)
 
 class DataLoader;
 
-class OpenCursorCallback : public EventListener {
+class OpenCursorCallback FINAL : public EventListener {
 public:
     static PassRefPtr<OpenCursorCallback> create(InjectedScript injectedScript, PassRefPtr<RequestDataCallback> requestCallback, int skipCount, unsigned pageSize)
     {
@@ -471,7 +471,7 @@ private:
     RefPtr<Array<DataEntry> > m_result;
 };
 
-class DataLoader : public ExecutableWithDatabase {
+class DataLoader FINAL : public ExecutableWithDatabase {
 public:
     static PassRefPtr<DataLoader> create(ExecutionContext* context, PassRefPtr<RequestDataCallback> requestCallback, const InjectedScript& injectedScript, const String& objectStoreName, const String& indexName, PassRefPtr<IDBKeyRange> idbKeyRange, int skipCount, unsigned pageSize)
     {
@@ -480,7 +480,7 @@ public:
 
     virtual ~DataLoader() { }
 
-    virtual void execute(PassRefPtr<IDBDatabase> prpDatabase)
+    virtual void execute(PassRefPtr<IDBDatabase> prpDatabase) OVERRIDE
     {
         RefPtr<IDBDatabase> idbDatabase = prpDatabase;
         if (!requestCallback()->isActive())
@@ -513,7 +513,7 @@ public:
         idbRequest->addEventListener(EventTypeNames::success, openCursorCallback, false);
     }
 
-    virtual RequestCallback* requestCallback() { return m_requestCallback.get(); }
+    virtual RequestCallback* requestCallback() OVERRIDE { return m_requestCallback.get(); }
     DataLoader(ExecutionContext* executionContext, PassRefPtr<RequestDataCallback> requestCallback, const InjectedScript& injectedScript, const String& objectStoreName, const String& indexName, PassRefPtr<IDBKeyRange> idbKeyRange, int skipCount, unsigned pageSize)
         : ExecutableWithDatabase(executionContext)
         , m_requestCallback(requestCallback)
@@ -666,7 +666,7 @@ void InspectorIndexedDBAgent::requestData(ErrorString* errorString, const String
     dataLoader->start(idbFactory, document->securityOrigin(), databaseName);
 }
 
-class ClearObjectStoreListener : public EventListener {
+class ClearObjectStoreListener FINAL : public EventListener {
     WTF_MAKE_NONCOPYABLE(ClearObjectStoreListener);
 public:
     static PassRefPtr<ClearObjectStoreListener> create(PassRefPtr<ClearObjectStoreCallback> requestCallback)
@@ -703,7 +703,7 @@ private:
 };
 
 
-class ClearObjectStore : public ExecutableWithDatabase {
+class ClearObjectStore FINAL : public ExecutableWithDatabase {
 public:
     static PassRefPtr<ClearObjectStore> create(ExecutionContext* context, const String& objectStoreName, PassRefPtr<ClearObjectStoreCallback> requestCallback)
     {
@@ -717,7 +717,7 @@ public:
     {
     }
 
-    virtual void execute(PassRefPtr<IDBDatabase> prpDatabase)
+    virtual void execute(PassRefPtr<IDBDatabase> prpDatabase) OVERRIDE
     {
         RefPtr<IDBDatabase> idbDatabase = prpDatabase;
         if (!requestCallback()->isActive())
@@ -744,7 +744,7 @@ public:
         idbTransaction->addEventListener(EventTypeNames::complete, ClearObjectStoreListener::create(m_requestCallback), false);
     }
 
-    virtual RequestCallback* requestCallback() { return m_requestCallback.get(); }
+    virtual RequestCallback* requestCallback() OVERRIDE { return m_requestCallback.get(); }
 private:
     const String m_objectStoreName;
     RefPtr<ClearObjectStoreCallback> m_requestCallback;

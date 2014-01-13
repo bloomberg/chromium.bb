@@ -44,7 +44,7 @@ class Page;
 class PageScriptDebugServer;
 class ScriptSourceCode;
 
-class PageDebuggerAgent :
+class PageDebuggerAgent FINAL :
     public InspectorDebuggerAgent,
     public InspectorOverlayHost::Listener {
     WTF_MAKE_NONCOPYABLE(PageDebuggerAgent);
@@ -59,22 +59,22 @@ public:
     void didCommitLoad(Frame*, DocumentLoader*);
 
 protected:
-    virtual void enable();
-    virtual void disable();
+    virtual void enable() OVERRIDE;
+    virtual void disable() OVERRIDE;
 
 private:
-    virtual void startListeningScriptDebugServer();
-    virtual void stopListeningScriptDebugServer();
-    virtual PageScriptDebugServer& scriptDebugServer();
-    virtual void muteConsole();
-    virtual void unmuteConsole();
+    virtual void startListeningScriptDebugServer() OVERRIDE;
+    virtual void stopListeningScriptDebugServer() OVERRIDE;
+    virtual PageScriptDebugServer& scriptDebugServer() OVERRIDE;
+    virtual void muteConsole() OVERRIDE;
+    virtual void unmuteConsole() OVERRIDE;
 
     // InspectorOverlayHost::Listener implementation.
-    virtual void overlayResumed();
-    virtual void overlaySteppedOver();
+    virtual void overlayResumed() OVERRIDE;
+    virtual void overlaySteppedOver() OVERRIDE;
 
-    virtual InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId);
-    virtual void setOverlayMessage(ErrorString*, const String*);
+    virtual InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId) OVERRIDE;
+    virtual void setOverlayMessage(ErrorString*, const String*) OVERRIDE;
 
     PageDebuggerAgent(InstrumentingAgents*, InspectorCompositeState*, PageScriptDebugServer*, InspectorPageAgent*, InjectedScriptManager*, InspectorOverlay*);
     PageScriptDebugServer* m_pageScriptDebugServer;

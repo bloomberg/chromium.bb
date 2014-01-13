@@ -82,11 +82,11 @@ public:
 
     virtual ~InspectorDebuggerAgent();
 
-    virtual void canSetScriptSource(ErrorString*, bool* result) { *result = true; }
+    virtual void canSetScriptSource(ErrorString*, bool* result) OVERRIDE FINAL { *result = true; }
 
-    virtual void setFrontend(InspectorFrontend*);
-    virtual void clearFrontend();
-    virtual void restore();
+    virtual void setFrontend(InspectorFrontend*) OVERRIDE FINAL;
+    virtual void clearFrontend() OVERRIDE FINAL;
+    virtual void restore() OVERRIDE FINAL;
 
     bool isPaused();
     bool runningNestedMessageLoop();
@@ -97,45 +97,45 @@ public:
     PassOwnPtr<ScriptSourceCode> preprocess(Frame*, const ScriptSourceCode&);
 
     // Part of the protocol.
-    virtual void enable(ErrorString*);
-    virtual void disable(ErrorString*);
-    virtual void setBreakpointsActive(ErrorString*, bool active);
-    virtual void setSkipAllPauses(ErrorString*, bool skipped, const bool* untilReload);
+    virtual void enable(ErrorString*) OVERRIDE FINAL;
+    virtual void disable(ErrorString*) OVERRIDE FINAL;
+    virtual void setBreakpointsActive(ErrorString*, bool active) OVERRIDE FINAL;
+    virtual void setSkipAllPauses(ErrorString*, bool skipped, const bool* untilReload) OVERRIDE FINAL;
 
-    virtual void setBreakpointByUrl(ErrorString*, int lineNumber, const String* optionalURL, const String* optionalURLRegex, const int* optionalColumnNumber, const String* optionalCondition, const bool* isAntiBreakpoint, TypeBuilder::Debugger::BreakpointId*, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::Location> >& locations);
-    virtual void setBreakpoint(ErrorString*, const RefPtr<JSONObject>& location, const String* optionalCondition, TypeBuilder::Debugger::BreakpointId*, RefPtr<TypeBuilder::Debugger::Location>& actualLocation);
-    virtual void removeBreakpoint(ErrorString*, const String& breakpointId);
-    virtual void continueToLocation(ErrorString*, const RefPtr<JSONObject>& location, const bool* interstateLocationOpt);
-    virtual void getStepInPositions(ErrorString*, const String& callFrameId, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::Location> >& positions);
-    virtual void getBacktrace(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::CallFrame> >&, RefPtr<TypeBuilder::Debugger::StackTrace>&);
+    virtual void setBreakpointByUrl(ErrorString*, int lineNumber, const String* optionalURL, const String* optionalURLRegex, const int* optionalColumnNumber, const String* optionalCondition, const bool* isAntiBreakpoint, TypeBuilder::Debugger::BreakpointId*, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::Location> >& locations) OVERRIDE FINAL;
+    virtual void setBreakpoint(ErrorString*, const RefPtr<JSONObject>& location, const String* optionalCondition, TypeBuilder::Debugger::BreakpointId*, RefPtr<TypeBuilder::Debugger::Location>& actualLocation) OVERRIDE FINAL;
+    virtual void removeBreakpoint(ErrorString*, const String& breakpointId) OVERRIDE FINAL;
+    virtual void continueToLocation(ErrorString*, const RefPtr<JSONObject>& location, const bool* interstateLocationOpt) OVERRIDE FINAL;
+    virtual void getStepInPositions(ErrorString*, const String& callFrameId, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::Location> >& positions) OVERRIDE FINAL;
+    virtual void getBacktrace(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::CallFrame> >&, RefPtr<TypeBuilder::Debugger::StackTrace>&) OVERRIDE FINAL;
 
-    virtual void searchInContent(ErrorString*, const String& scriptId, const String& query, const bool* optionalCaseSensitive, const bool* optionalIsRegex, RefPtr<TypeBuilder::Array<TypeBuilder::Page::SearchMatch> >&);
-    virtual void setScriptSource(ErrorString*, RefPtr<TypeBuilder::Debugger::SetScriptSourceError>&, const String& scriptId, const String& newContent, const bool* preview, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::CallFrame> >& newCallFrames, RefPtr<JSONObject>& result, RefPtr<TypeBuilder::Debugger::StackTrace>& asyncStackTrace);
-    virtual void restartFrame(ErrorString*, const String& callFrameId, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::CallFrame> >& newCallFrames, RefPtr<JSONObject>& result, RefPtr<TypeBuilder::Debugger::StackTrace>& asyncStackTrace);
-    virtual void getScriptSource(ErrorString*, const String& scriptId, String* scriptSource);
-    virtual void getFunctionDetails(ErrorString*, const String& functionId, RefPtr<TypeBuilder::Debugger::FunctionDetails>&);
-    virtual void pause(ErrorString*);
-    virtual void resume(ErrorString*);
-    virtual void stepOver(ErrorString*, const String* callFrameId);
-    virtual void stepInto(ErrorString*);
-    virtual void stepOut(ErrorString*, const String* callFrameId);
-    virtual void setPauseOnExceptions(ErrorString*, const String& pauseState);
+    virtual void searchInContent(ErrorString*, const String& scriptId, const String& query, const bool* optionalCaseSensitive, const bool* optionalIsRegex, RefPtr<TypeBuilder::Array<TypeBuilder::Page::SearchMatch> >&) OVERRIDE FINAL;
+    virtual void setScriptSource(ErrorString*, RefPtr<TypeBuilder::Debugger::SetScriptSourceError>&, const String& scriptId, const String& newContent, const bool* preview, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::CallFrame> >& newCallFrames, RefPtr<JSONObject>& result, RefPtr<TypeBuilder::Debugger::StackTrace>& asyncStackTrace) OVERRIDE FINAL;
+    virtual void restartFrame(ErrorString*, const String& callFrameId, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::CallFrame> >& newCallFrames, RefPtr<JSONObject>& result, RefPtr<TypeBuilder::Debugger::StackTrace>& asyncStackTrace) OVERRIDE FINAL;
+    virtual void getScriptSource(ErrorString*, const String& scriptId, String* scriptSource) OVERRIDE FINAL;
+    virtual void getFunctionDetails(ErrorString*, const String& functionId, RefPtr<TypeBuilder::Debugger::FunctionDetails>&) OVERRIDE FINAL;
+    virtual void pause(ErrorString*) OVERRIDE FINAL;
+    virtual void resume(ErrorString*) OVERRIDE FINAL;
+    virtual void stepOver(ErrorString*, const String* callFrameId) OVERRIDE FINAL;
+    virtual void stepInto(ErrorString*) OVERRIDE FINAL;
+    virtual void stepOut(ErrorString*, const String* callFrameId) OVERRIDE FINAL;
+    virtual void setPauseOnExceptions(ErrorString*, const String& pauseState) OVERRIDE FINAL;
     virtual void evaluateOnCallFrame(ErrorString*,
-                             const String& callFrameId,
-                             const String& expression,
-                             const String* objectGroup,
-                             const bool* includeCommandLineAPI,
-                             const bool* doNotPauseOnExceptionsAndMuteConsole,
-                             const bool* returnByValue,
-                             const bool* generatePreview,
-                             RefPtr<TypeBuilder::Runtime::RemoteObject>& result,
-                             TypeBuilder::OptOutput<bool>* wasThrown);
+        const String& callFrameId,
+        const String& expression,
+        const String* objectGroup,
+        const bool* includeCommandLineAPI,
+        const bool* doNotPauseOnExceptionsAndMuteConsole,
+        const bool* returnByValue,
+        const bool* generatePreview,
+        RefPtr<TypeBuilder::Runtime::RemoteObject>& result,
+        TypeBuilder::OptOutput<bool>* wasThrown) OVERRIDE FINAL;
     void compileScript(ErrorString*, const String& expression, const String& sourceURL, TypeBuilder::OptOutput<TypeBuilder::Debugger::ScriptId>*, TypeBuilder::OptOutput<String>* syntaxErrorMessage);
     void runScript(ErrorString*, const TypeBuilder::Debugger::ScriptId&, const int* executionContextId, const String* objectGroup, const bool* doNotPauseOnExceptionsAndMuteConsole, RefPtr<TypeBuilder::Runtime::RemoteObject>& result, TypeBuilder::OptOutput<bool>* wasThrown);
-    virtual void setOverlayMessage(ErrorString*, const String*);
-    virtual void setVariableValue(ErrorString*, int in_scopeNumber, const String& in_variableName, const RefPtr<JSONObject>& in_newValue, const String* in_callFrame, const String* in_functionObjectId);
-    virtual void skipStackFrames(ErrorString*, const String* pattern);
-    virtual void setAsyncCallStackDepth(ErrorString*, int depth);
+    virtual void setOverlayMessage(ErrorString*, const String*) OVERRIDE;
+    virtual void setVariableValue(ErrorString*, int in_scopeNumber, const String& in_variableName, const RefPtr<JSONObject>& in_newValue, const String* in_callFrame, const String* in_functionObjectId) OVERRIDE FINAL;
+    virtual void skipStackFrames(ErrorString*, const String* pattern) OVERRIDE FINAL;
+    virtual void setAsyncCallStackDepth(ErrorString*, int depth) OVERRIDE FINAL;
 
     void schedulePauseOnNextStatement(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data);
     void didInstallTimer(ExecutionContext*, int timerId, int timeout, bool singleShot);
@@ -158,7 +158,7 @@ public:
     void didDeliverMutationRecords();
     bool canBreakProgram();
     void breakProgram(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data);
-    virtual void scriptExecutionBlockedByCSP(const String& directiveText);
+    void scriptExecutionBlockedByCSP(const String& directiveText);
 
     class Listener {
     public:
@@ -175,9 +175,9 @@ public:
     void setBreakpoint(const String& scriptId, int lineNumber, int columnNumber, BreakpointSource, const String& condition = String());
     void removeBreakpoint(const String& scriptId, int lineNumber, int columnNumber, BreakpointSource);
 
-    SkipPauseRequest shouldSkipExceptionPause(RefPtr<JavaScriptCallFrame>& topFrame);
-    SkipPauseRequest shouldSkipBreakpointPause(RefPtr<JavaScriptCallFrame>& topFrame);
-    SkipPauseRequest shouldSkipStepPause(RefPtr<JavaScriptCallFrame>& topFrame);
+    virtual SkipPauseRequest shouldSkipExceptionPause(RefPtr<JavaScriptCallFrame>& topFrame) OVERRIDE FINAL;
+    virtual SkipPauseRequest shouldSkipBreakpointPause(RefPtr<JavaScriptCallFrame>& topFrame) OVERRIDE FINAL;
+    virtual SkipPauseRequest shouldSkipStepPause(RefPtr<JavaScriptCallFrame>& topFrame) OVERRIDE FINAL;
 
 protected:
     InspectorDebuggerAgent(InstrumentingAgents*, InspectorCompositeState*, InjectedScriptManager*);
@@ -191,8 +191,8 @@ protected:
 
     virtual void enable();
     virtual void disable();
-    virtual void didPause(ScriptState*, const ScriptValue& callFrames, const ScriptValue& exception, const Vector<String>& hitBreakpoints);
-    virtual void didContinue();
+    virtual void didPause(ScriptState*, const ScriptValue& callFrames, const ScriptValue& exception, const Vector<String>& hitBreakpoints) OVERRIDE FINAL;
+    virtual void didContinue() OVERRIDE FINAL;
     void reset();
     void pageDidCommitLoad();
 
@@ -205,8 +205,8 @@ private:
     PassRefPtr<TypeBuilder::Array<TypeBuilder::Debugger::CallFrame> > currentCallFrames();
     PassRefPtr<TypeBuilder::Debugger::StackTrace> currentAsyncStackTrace();
 
-    virtual void didParseSource(const String& scriptId, const Script&);
-    virtual void failedToParseSource(const String& url, const String& data, int firstLine, int errorLine, const String& errorMessage);
+    virtual void didParseSource(const String& scriptId, const Script&) OVERRIDE FINAL;
+    virtual void failedToParseSource(const String& url, const String& data, int firstLine, int errorLine, const String& errorMessage) OVERRIDE FINAL;
 
     void setPauseOnExceptionsImpl(ErrorString*, int);
 

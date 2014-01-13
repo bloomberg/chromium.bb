@@ -109,7 +109,7 @@ private:
     double m_startOffset;
 };
 
-class InspectorTimelineAgent
+class InspectorTimelineAgent FINAL
     : public TraceEventTarget<InspectorTimelineAgent>
     , public InspectorBaseAgent<InspectorTimelineAgent>
     , public ScriptGCEventListener
@@ -138,16 +138,16 @@ public:
         return adoptPtr(new InspectorTimelineAgent(instrumentingAgents, pageAgent, domAgent, overlay, state, type, client));
     }
 
-    ~InspectorTimelineAgent();
+    virtual ~InspectorTimelineAgent();
 
-    virtual void setFrontend(InspectorFrontend*);
-    virtual void clearFrontend();
-    virtual void restore();
+    virtual void setFrontend(InspectorFrontend*) OVERRIDE;
+    virtual void clearFrontend() OVERRIDE;
+    virtual void restore() OVERRIDE;
 
-    virtual void enable(ErrorString*);
-    virtual void disable(ErrorString*);
-    virtual void start(ErrorString*, const int* maxCallStackDepth, const bool* bufferEvents, const bool* includeCounters, const bool* includeGPUEvents);
-    virtual void stop(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::Timeline::TimelineEvent> >& events);
+    virtual void enable(ErrorString*) OVERRIDE;
+    virtual void disable(ErrorString*) OVERRIDE;
+    virtual void start(ErrorString*, const int* maxCallStackDepth, const bool* bufferEvents, const bool* includeCounters, const bool* includeGPUEvents) OVERRIDE;
+    virtual void stop(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::Timeline::TimelineEvent> >& events) OVERRIDE;
 
     void setLayerTreeId(int layerTreeId) { m_layerTreeId = layerTreeId; }
     int id() const { return m_id; }
@@ -239,7 +239,7 @@ public:
     void processGPUEvent(const GPUEvent&);
 
     // ScriptGCEventListener methods.
-    virtual void didGC(double, double, size_t);
+    virtual void didGC(double, double, size_t) OVERRIDE;
 
     // PlatformInstrumentationClient methods.
     virtual void willDecodeImage(const String& imageType) OVERRIDE;

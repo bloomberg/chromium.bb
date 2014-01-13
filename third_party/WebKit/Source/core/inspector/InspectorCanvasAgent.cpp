@@ -260,7 +260,7 @@ InjectedScriptCanvasModule InspectorCanvasAgent::injectedScriptCanvasModule(Erro
 
 void InspectorCanvasAgent::findFramesWithUninstrumentedCanvases()
 {
-    class NodeVisitor : public WrappedNodeVisitor {
+    class NodeVisitor FINAL : public WrappedNodeVisitor {
     public:
         NodeVisitor(Page* page, FramesWithUninstrumentedCanvases& result)
             : m_page(page)

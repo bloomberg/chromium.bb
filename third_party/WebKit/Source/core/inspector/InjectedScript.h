@@ -45,10 +45,10 @@ class Node;
 class SerializedScriptValue;
 
 
-class InjectedScript : public InjectedScriptBase {
+class InjectedScript FINAL : public InjectedScriptBase {
 public:
     InjectedScript();
-    ~InjectedScript() { }
+    virtual ~InjectedScript() { }
 
     void evaluate(ErrorString*,
                   const String& expression,

@@ -55,7 +55,7 @@
 
 namespace WebCore {
 
-class FrontendMenuProvider : public ContextMenuProvider {
+class FrontendMenuProvider FINAL : public ContextMenuProvider {
 public:
     static PassRefPtr<FrontendMenuProvider> create(InspectorFrontendHost* frontendHost, ScriptObject frontendApiObject, const Vector<ContextMenuItem>& items)
     {
@@ -81,13 +81,13 @@ private:
         contextMenuCleared();
     }
 
-    virtual void populateContextMenu(ContextMenu* menu)
+    virtual void populateContextMenu(ContextMenu* menu) OVERRIDE
     {
         for (size_t i = 0; i < m_items.size(); ++i)
             menu->appendItem(m_items[i]);
     }
 
-    virtual void contextMenuItemSelected(const ContextMenuItem* item)
+    virtual void contextMenuItemSelected(const ContextMenuItem* item) OVERRIDE
     {
         if (m_frontendHost) {
             UserGestureIndicator gestureIndicator(DefinitelyProcessingNewUserGesture);
@@ -99,7 +99,7 @@ private:
         }
     }
 
-    virtual void contextMenuCleared()
+    virtual void contextMenuCleared() OVERRIDE
     {
         if (m_frontendHost) {
             ScriptFunctionCall function(m_frontendApiObject, "contextMenuCleared");

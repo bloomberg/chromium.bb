@@ -52,18 +52,18 @@ public:
     virtual ~InspectorRuntimeAgent();
 
     // Part of the protocol.
-    virtual void enable(ErrorString*) { m_enabled = true; }
-    virtual void disable(ErrorString*) { m_enabled = false; }
+    virtual void enable(ErrorString*) OVERRIDE { m_enabled = true; }
+    virtual void disable(ErrorString*) OVERRIDE { m_enabled = false; }
     virtual void evaluate(ErrorString*,
-                  const String& expression,
-                  const String* objectGroup,
-                  const bool* includeCommandLineAPI,
-                  const bool* doNotPauseOnExceptionsAndMuteConsole,
-                  const int* executionContextId,
-                  const bool* returnByValue,
-                  const bool* generatePreview,
-                  RefPtr<TypeBuilder::Runtime::RemoteObject>& result,
-                  TypeBuilder::OptOutput<bool>* wasThrown);
+        const String& expression,
+        const String* objectGroup,
+        const bool* includeCommandLineAPI,
+        const bool* doNotPauseOnExceptionsAndMuteConsole,
+        const int* executionContextId,
+        const bool* returnByValue,
+        const bool* generatePreview,
+        RefPtr<TypeBuilder::Runtime::RemoteObject>& result,
+        TypeBuilder::OptOutput<bool>* wasThrown) OVERRIDE FINAL;
     virtual void callFunctionOn(ErrorString*,
                         const String& objectId,
                         const String& expression,
@@ -72,11 +72,11 @@ public:
                         const bool* returnByValue,
                         const bool* generatePreview,
                         RefPtr<TypeBuilder::Runtime::RemoteObject>& result,
-                        TypeBuilder::OptOutput<bool>* wasThrown);
-    virtual void releaseObject(ErrorString*, const String& objectId);
-    virtual void getProperties(ErrorString*, const String& objectId, const bool* ownProperties, const bool* accessorPropertiesOnly, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::PropertyDescriptor> >& result, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::InternalPropertyDescriptor> >& internalProperties);
-    virtual void releaseObjectGroup(ErrorString*, const String& objectGroup);
-    virtual void run(ErrorString*);
+                        TypeBuilder::OptOutput<bool>* wasThrown) OVERRIDE FINAL;
+    virtual void releaseObject(ErrorString*, const String& objectId) OVERRIDE FINAL;
+    virtual void getProperties(ErrorString*, const String& objectId, const bool* ownProperties, const bool* accessorPropertiesOnly, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::PropertyDescriptor> >& result, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::InternalPropertyDescriptor> >& internalProperties) OVERRIDE FINAL;
+    virtual void releaseObjectGroup(ErrorString*, const String& objectGroup) OVERRIDE FINAL;
+    virtual void run(ErrorString*) OVERRIDE;
 
 protected:
     InspectorRuntimeAgent(InstrumentingAgents*, InspectorCompositeState*, InjectedScriptManager*, ScriptDebugServer*);

@@ -56,13 +56,13 @@ namespace WebCore {
 
 namespace {
 
-class PageInspectorProxy : public InspectorFrontendChannel {
+class PageInspectorProxy FINAL : public InspectorFrontendChannel {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     explicit PageInspectorProxy(WorkerGlobalScope* workerGlobalScope) : m_workerGlobalScope(workerGlobalScope) { }
     virtual ~PageInspectorProxy() { }
 private:
-    virtual bool sendMessageToFrontend(const String& message)
+    virtual bool sendMessageToFrontend(const String& message) OVERRIDE
     {
         m_workerGlobalScope->thread()->workerReportingProxy().postMessageToPageInspector(message);
         return true;
@@ -70,14 +70,14 @@ private:
     WorkerGlobalScope* m_workerGlobalScope;
 };
 
-class WorkerStateClient : public InspectorStateClient {
+class WorkerStateClient FINAL : public InspectorStateClient {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     WorkerStateClient(WorkerGlobalScope* context) : m_workerGlobalScope(context) { }
     virtual ~WorkerStateClient() { }
 
 private:
-    virtual void updateInspectorStateCookie(const String& cookie)
+    virtual void updateInspectorStateCookie(const String& cookie) OVERRIDE
     {
         m_workerGlobalScope->thread()->workerReportingProxy().updateInspectorStateCookie(cookie);
     }

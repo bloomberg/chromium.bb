@@ -50,7 +50,7 @@ class ScriptState;
 
 typedef String ErrorString;
 
-class InspectorProfilerAgent : public InspectorBaseAgent<InspectorProfilerAgent>, public InspectorBackendDispatcher::ProfilerCommandHandler {
+class InspectorProfilerAgent FINAL : public InspectorBaseAgent<InspectorProfilerAgent>, public InspectorBackendDispatcher::ProfilerCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorProfilerAgent); WTF_MAKE_FAST_ALLOCATED;
 public:
     static PassOwnPtr<InspectorProfilerAgent> create(InstrumentingAgents*, InspectorCompositeState*, InjectedScriptManager*, InspectorOverlay*);
@@ -59,15 +59,15 @@ public:
     void consoleProfile(const String& title, ScriptState*);
     void consoleProfileEnd(const String& title);
 
-    virtual void enable(ErrorString*);
-    virtual void disable(ErrorString*);
-    virtual void setSamplingInterval(ErrorString*, int);
-    virtual void start(ErrorString*);
-    virtual void stop(ErrorString*, RefPtr<TypeBuilder::Profiler::CPUProfile>&);
+    virtual void enable(ErrorString*) OVERRIDE;
+    virtual void disable(ErrorString*) OVERRIDE;
+    virtual void setSamplingInterval(ErrorString*, int) OVERRIDE;
+    virtual void start(ErrorString*) OVERRIDE;
+    virtual void stop(ErrorString*, RefPtr<TypeBuilder::Profiler::CPUProfile>&) OVERRIDE;
 
-    virtual void setFrontend(InspectorFrontend*);
-    virtual void clearFrontend();
-    virtual void restore();
+    virtual void setFrontend(InspectorFrontend*) OVERRIDE;
+    virtual void clearFrontend() OVERRIDE;
+    virtual void restore() OVERRIDE;
 
     void willProcessTask();
     void didProcessTask();

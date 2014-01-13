@@ -42,24 +42,24 @@ class InspectorPageAgent;
 
 typedef String ErrorString;
 
-class InspectorIndexedDBAgent : public InspectorBaseAgent<InspectorIndexedDBAgent>, public InspectorBackendDispatcher::IndexedDBCommandHandler {
+class InspectorIndexedDBAgent FINAL : public InspectorBaseAgent<InspectorIndexedDBAgent>, public InspectorBackendDispatcher::IndexedDBCommandHandler {
 public:
     static PassOwnPtr<InspectorIndexedDBAgent> create(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* state, InjectedScriptManager* injectedScriptManager, InspectorPageAgent* pageAgent)
     {
         return adoptPtr(new InspectorIndexedDBAgent(instrumentingAgents, state, injectedScriptManager, pageAgent));
     }
-    ~InspectorIndexedDBAgent();
+    virtual ~InspectorIndexedDBAgent();
 
-    virtual void clearFrontend();
-    virtual void restore();
+    virtual void clearFrontend() OVERRIDE;
+    virtual void restore() OVERRIDE;
 
     // Called from the front-end.
-    virtual void enable(ErrorString*);
-    virtual void disable(ErrorString*);
-    virtual void requestDatabaseNames(ErrorString*, const String& securityOrigin, PassRefPtr<RequestDatabaseNamesCallback>);
-    virtual void requestDatabase(ErrorString*, const String& securityOrigin, const String& databaseName, PassRefPtr<RequestDatabaseCallback>);
-    virtual void requestData(ErrorString*, const String& securityOrigin, const String& databaseName, const String& objectStoreName, const String& indexName, int skipCount, int pageSize, const RefPtr<JSONObject>* keyRange, PassRefPtr<RequestDataCallback>);
-    virtual void clearObjectStore(ErrorString*, const String& in_securityOrigin, const String& in_databaseName, const String& in_objectStoreName, PassRefPtr<ClearObjectStoreCallback>);
+    virtual void enable(ErrorString*) OVERRIDE;
+    virtual void disable(ErrorString*) OVERRIDE;
+    virtual void requestDatabaseNames(ErrorString*, const String& securityOrigin, PassRefPtr<RequestDatabaseNamesCallback>) OVERRIDE;
+    virtual void requestDatabase(ErrorString*, const String& securityOrigin, const String& databaseName, PassRefPtr<RequestDatabaseCallback>) OVERRIDE;
+    virtual void requestData(ErrorString*, const String& securityOrigin, const String& databaseName, const String& objectStoreName, const String& indexName, int skipCount, int pageSize, const RefPtr<JSONObject>* keyRange, PassRefPtr<RequestDataCallback>) OVERRIDE;
+    virtual void clearObjectStore(ErrorString*, const String& in_securityOrigin, const String& in_databaseName, const String& in_objectStoreName, PassRefPtr<ClearObjectStoreCallback>) OVERRIDE;
 
 private:
     InspectorIndexedDBAgent(InstrumentingAgents*, InspectorCompositeState*, InjectedScriptManager*, InspectorPageAgent*);

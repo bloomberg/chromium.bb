@@ -53,7 +53,7 @@ static const char enqueueMutationRecordName[] = "Mutation";
 
 namespace WebCore {
 
-class AsyncCallStackTracker::ExecutionContextData : public ContextLifecycleObserver {
+class AsyncCallStackTracker::ExecutionContextData FINAL : public ContextLifecycleObserver {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     typedef std::pair<RegisteredEventListener, RefPtr<AsyncCallChain> > EventListenerAsyncCallChain;

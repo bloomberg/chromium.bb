@@ -83,7 +83,7 @@ class InspectorBaseAgent : public InspectorBaseAgentInterface {
 public:
     virtual ~InspectorBaseAgent() { }
 
-    virtual void registerInDispatcher(InspectorBackendDispatcher* dispatcher)
+    virtual void registerInDispatcher(InspectorBackendDispatcher* dispatcher) OVERRIDE FINAL
     {
         dispatcher->registerAgent(static_cast<T*>(this));
     }

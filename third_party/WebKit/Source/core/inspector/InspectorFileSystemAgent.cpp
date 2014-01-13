@@ -80,7 +80,7 @@ static const char fileSystemAgentEnabled[] = "fileSystemAgentEnabled";
 namespace {
 
 template<typename BaseCallback, typename Handler, typename Argument>
-class CallbackDispatcher : public BaseCallback {
+class CallbackDispatcher FINAL : public BaseCallback {
 public:
     typedef bool (Handler::*HandlingMethod)(Argument);
 
@@ -178,7 +178,7 @@ bool FileSystemRootRequest::didGetEntry(Entry* entry)
     return true;
 }
 
-class DirectoryContentRequest : public RefCounted<DirectoryContentRequest> {
+class DirectoryContentRequest FINAL : public RefCounted<DirectoryContentRequest> {
     WTF_MAKE_NONCOPYABLE(DirectoryContentRequest);
 public:
     static PassRefPtr<DirectoryContentRequest> create(PassRefPtr<RequestDirectoryContentCallback> requestCallback, const String& url)
@@ -186,7 +186,7 @@ public:
         return adoptRef(new DirectoryContentRequest(requestCallback, url));
     }
 
-    virtual ~DirectoryContentRequest()
+    ~DirectoryContentRequest()
     {
         reportResult(FileError::ABORT_ERR);
     }
@@ -299,7 +299,7 @@ bool DirectoryContentRequest::didReadDirectoryEntries(const EntryVector& entries
     return true;
 }
 
-class MetadataRequest : public RefCounted<MetadataRequest> {
+class MetadataRequest FINAL : public RefCounted<MetadataRequest> {
     WTF_MAKE_NONCOPYABLE(MetadataRequest);
 public:
     static PassRefPtr<MetadataRequest> create(PassRefPtr<RequestMetadataCallback> requestCallback, const String& url)
@@ -307,7 +307,7 @@ public:
         return adoptRef(new MetadataRequest(requestCallback, url));
     }
 
-    virtual ~MetadataRequest()
+    ~MetadataRequest()
     {
         reportResult(FileError::ABORT_ERR);
     }
@@ -372,7 +372,7 @@ bool MetadataRequest::didGetMetadata(Metadata* metadata)
     return true;
 }
 
-class FileContentRequest : public EventListener {
+class FileContentRequest FINAL : public EventListener {
     WTF_MAKE_NONCOPYABLE(FileContentRequest);
 public:
     static PassRefPtr<FileContentRequest> create(PassRefPtr<RequestFileContentCallback> requestCallback, const String& url, bool readAsText, long long start, long long end, const String& charset)
@@ -496,14 +496,14 @@ void FileContentRequest::didRead()
     reportResult(static_cast<FileError::ErrorCode>(0), &result, &m_charset);
 }
 
-class DeleteEntryRequest : public RefCounted<DeleteEntryRequest> {
+class DeleteEntryRequest FINAL : public RefCounted<DeleteEntryRequest> {
 public:
     static PassRefPtr<DeleteEntryRequest> create(PassRefPtr<DeleteEntryCallback> requestCallback, const KURL& url)
     {
         return adoptRef(new DeleteEntryRequest(requestCallback, url));
     }
 
-    virtual ~DeleteEntryRequest()
+    ~DeleteEntryRequest()
     {
         reportResult(FileError::ABORT_ERR);
     }
@@ -512,7 +512,7 @@ public:
 
 private:
     // CallbackDispatcherFactory doesn't handle 0-arg handleEvent methods
-    class VoidCallbackImpl : public VoidCallback {
+    class VoidCallbackImpl FINAL : public VoidCallback {
     public:
         explicit VoidCallbackImpl(PassRefPtr<DeleteEntryRequest> handler)
             : m_handler(handler)

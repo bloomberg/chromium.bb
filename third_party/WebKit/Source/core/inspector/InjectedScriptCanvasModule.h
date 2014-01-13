@@ -41,11 +41,11 @@ class InjectedScriptManager;
 class ScriptObject;
 
 
-class InjectedScriptCanvasModule : public InjectedScriptModule {
+class InjectedScriptCanvasModule FINAL : public InjectedScriptModule {
 public:
     InjectedScriptCanvasModule();
 
-    virtual String source() const;
+    virtual String source() const OVERRIDE;
 
     static InjectedScriptCanvasModule moduleForState(InjectedScriptManager*, ScriptState*);
 

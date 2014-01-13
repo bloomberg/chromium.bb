@@ -65,15 +65,15 @@ public:
     InspectorConsoleAgent(InstrumentingAgents*, InspectorTimelineAgent*, InspectorCompositeState*, InjectedScriptManager*);
     virtual ~InspectorConsoleAgent();
 
-    virtual void enable(ErrorString*);
-    virtual void disable(ErrorString*);
+    virtual void enable(ErrorString*) OVERRIDE FINAL;
+    virtual void disable(ErrorString*) OVERRIDE FINAL;
     virtual void clearMessages(ErrorString*);
     bool enabled() { return m_enabled; }
     void reset();
 
-    virtual void setFrontend(InspectorFrontend*);
-    virtual void clearFrontend();
-    virtual void restore();
+    virtual void setFrontend(InspectorFrontend*) OVERRIDE FINAL;
+    virtual void clearFrontend() OVERRIDE FINAL;
+    virtual void restore() OVERRIDE FINAL;
 
     void addMessageToConsole(MessageSource, MessageType, MessageLevel, const String& message, ScriptState*, PassRefPtr<ScriptArguments>, unsigned long requestIdentifier = 0);
     void addMessageToConsole(MessageSource, MessageType, MessageLevel, const String& message, const String& scriptId, unsigned lineNumber, unsigned columnNumber = 0, ScriptState* = 0, unsigned long requestIdentifier = 0);
