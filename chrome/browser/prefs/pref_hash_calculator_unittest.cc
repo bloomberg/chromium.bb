@@ -71,25 +71,24 @@ TEST(PrefHashCalculatorTest, TestCurrentAlgorithm) {
 
 // Tests the output against a known value to catch unexpected algorithm changes.
 TEST(PrefHashCalculatorTest, CatchHashChanges) {
-  const char* kDeviceId = "test_device_id1";
+  static const char kSeed[] = "0123456789ABCDEF0123456789ABCDEF";
+  static const char kDeviceId[] = "test_device_id1";
   {
     static const char kExpectedValue[] =
-        "5CE37D7EBCBC9BE510F0F5E7C326CA92C1673713C3717839610AEA1A217D8BB8";
+        "D8137B8E767D3D910DCD3821CAC61D26ABB042E6EC406AEB0E347ED73A3A4EC1";
 
     base::ListValue list;
     list.Set(0, new base::FundamentalValue(true));
     list.Set(1, new base::FundamentalValue(100));
     list.Set(2, new base::FundamentalValue(1.0));
 
-    // 32 NULL bytes is the seed that was used to generate the hash in old
-    // tests. Use it again to ensure that we haven't altered the algorithm.
     EXPECT_EQ(PrefHashCalculator::VALID,
-              PrefHashCalculator(std::string(32u, 0), kDeviceId).Validate(
+              PrefHashCalculator(kSeed, kDeviceId).Validate(
                   "pref.path2", &list, kExpectedValue));
   }
   {
     static const char kExpectedValue[] =
-        "A50FE7EB31BFBC32B8A27E71730AF15421178A9B5815644ACE174B18966735B9";
+        "3F947A044DE9E421A735525385B4C789693682E6F6E3E4CB4741E58724B28F96";
 
     base::DictionaryValue dict;
     dict.Set("a", new base::StringValue("foo"));
@@ -97,18 +96,40 @@ TEST(PrefHashCalculatorTest, CatchHashChanges) {
     dict.Set("b", new base::StringValue("bar"));
     dict.Set("c", new base::StringValue("baz"));
 
-    // 32 NULL bytes is the seed that was used to generate the hash in old
-    // tests. Use it again to ensure that we haven't altered the algorithm.
     EXPECT_EQ(PrefHashCalculator::VALID,
-              PrefHashCalculator(std::string(32u, 0), kDeviceId).Validate(
+              PrefHashCalculator(kSeed, kDeviceId).Validate(
                   "pref.path1", &dict, kExpectedValue));
   }
 }
 
+TEST(PrefHashCalculatorTest, TestCompatibilityWithPrefMetricsService) {
+  static const char kSeed[] = {
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+    0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+    0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+    0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+    0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F
+  };
+  static const char kDeviceId[] =
+      "D730D9CBD98C734A4FB097A1922275FE9F7E026A4EA1BE0E84";
+  static const char kExpectedValue[] =
+      "845EF34663FF8D32BE6707F40258FBA531C2BFC532E3B014AFB3476115C2A9DE";
+
+  base::ListValue startup_urls;
+  startup_urls.Set(0, new base::StringValue("http://www.chromium.org/"));
+
+  EXPECT_EQ(PrefHashCalculator::VALID,
+            PrefHashCalculator(std::string(kSeed, arraysize(kSeed)), kDeviceId).
+            Validate("session.startup_urls", &startup_urls, kExpectedValue));
+}
+
 TEST(PrefHashCalculatorTest, TestLegacyAlgorithm) {
-  const char* kExpectedValue =
+  static const char kExpectedValue[] =
       "C503FB7C65EEFD5C07185F616A0AA67923C069909933F362022B1F187E73E9A2";
-  const char* kDeviceId = "deviceid";
+  static const char kDeviceId[] = "not_used";
 
   base::DictionaryValue dict;
   dict.Set("a", new base::StringValue("foo"));
@@ -120,5 +141,4 @@ TEST(PrefHashCalculatorTest, TestLegacyAlgorithm) {
   EXPECT_EQ(PrefHashCalculator::VALID_LEGACY,
             PrefHashCalculator(std::string(32u, 0), kDeviceId).Validate(
                 "pref.path1", &dict, kExpectedValue));
-
 }

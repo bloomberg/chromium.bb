@@ -39,10 +39,9 @@ class PrefHashCalculator {
                             const std::string& hash) const;
 
  private:
-  // Calculate a hash using a deprecated hash algorithm. For validating old
-  // hashes during migration.
-  std::string CalculateLegacyHash(const std::string& path,
-                                  const base::Value* value) const;
+  // Concatenates |device_id_|, |path|, and |value| to give the hash input.
+  std::string GetMessage(const std::string& path,
+                         const base::Value* value) const;
 
   std::string seed_;
   std::string device_id_;

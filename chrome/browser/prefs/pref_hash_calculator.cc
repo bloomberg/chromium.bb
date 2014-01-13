@@ -16,6 +16,32 @@
 
 namespace {
 
+// Calculates an HMAC of |message| using |key|, encoded as a hexadecimal string.
+std::string GetDigestString(const std::string& key,
+                            const std::string& message) {
+  crypto::HMAC hmac(crypto::HMAC::SHA256);
+  std::vector<uint8> digest(hmac.DigestLength());
+  if (!hmac.Init(key) || !hmac.Sign(message, &digest[0], digest.size())) {
+    NOTREACHED();
+    return std::string();
+  }
+  return base::HexEncode(&digest[0], digest.size());
+}
+
+// Verifies that |digest_string| is a valid HMAC of |message| using |key|.
+// |digest_string| must be encoded as a hexadecimal string.
+bool VerifyDigestString(const std::string& key,
+                        const std::string& message,
+                        const std::string& digest_string) {
+  crypto::HMAC hmac(crypto::HMAC::SHA256);
+  std::vector<uint8> digest;
+  return base::HexStringToBytes(digest_string, &digest) &&
+      hmac.Init(key) &&
+      hmac.Verify(message,
+                  base::StringPiece(reinterpret_cast<char*>(&digest[0]),
+                                    digest.size()));
+}
+
 // Renders |value| as a string. |value| may be NULL, in which case the result
 // is an empty string.
 std::string ValueAsString(const base::Value* value) {
@@ -38,53 +64,63 @@ std::string ValueAsString(const base::Value* value) {
 }
 
 // Common helper for all hash algorithms.
-std::string CalculateFromValueAndComponents(
-    const std::string& seed,
+std::string GetMessageFromValueAndComponents(
     const base::Value* value,
     const std::vector<std::string>& extra_components) {
-  static const size_t kSHA256DigestSize = 32;
+  return JoinString(extra_components, "") + ValueAsString(value);
+}
 
-  std::string message = JoinString(extra_components, "") + ValueAsString(value);
 
-  crypto::HMAC hmac(crypto::HMAC::SHA256);
-  unsigned char digest[kSHA256DigestSize];
-  if (!hmac.Init(seed) || !hmac.Sign(message, digest, arraysize(digest))) {
-    NOTREACHED();
+// Generates a device ID based on the input device ID. The derived device ID has
+// no useful properties beyond those of the input device ID except that it is
+// consistent with previous implementations.
+std::string GenerateDeviceIdLikePrefMetricsServiceDid(
+    const std::string& original_device_id) {
+  if (original_device_id.empty())
     return std::string();
-  }
+  return StringToLowerASCII(
+      GetDigestString(original_device_id, "PrefMetricsService"));
+}
 
-  return base::HexEncode(digest, arraysize(digest));
+// Verifies a hash using a deprecated hash algorithm. For validating old
+// hashes during migration.
+bool VerifyLegacyHash(const std::string& seed,
+                      const base::Value* value,
+                      const std::string& digest_string) {
+  return VerifyDigestString(
+      seed,
+      GetMessageFromValueAndComponents(value, std::vector<std::string>()),
+      digest_string);
 }
 
 }  // namespace
 
 PrefHashCalculator::PrefHashCalculator(const std::string& seed,
                                        const std::string& device_id)
-    : seed_(seed), device_id_(device_id) {}
+    : seed_(seed),
+      device_id_(GenerateDeviceIdLikePrefMetricsServiceDid(device_id)) {}
 
 std::string PrefHashCalculator::Calculate(const std::string& path,
                                           const base::Value* value) const {
-  std::vector<std::string> components;
-  if (!device_id_.empty())
-    components.push_back(device_id_);
-  components.push_back(path);
-  return CalculateFromValueAndComponents(seed_, value, components);
+  return GetDigestString(seed_, GetMessage(path, value));
 }
 
 PrefHashCalculator::ValidationResult PrefHashCalculator::Validate(
     const std::string& path,
     const base::Value* value,
-    const std::string& hash) const {
-  if (hash == Calculate(path, value))
+    const std::string& digest_string) const {
+  if (VerifyDigestString(seed_, GetMessage(path, value), digest_string))
     return VALID;
-  if (hash == CalculateLegacyHash(path, value))
+  if (VerifyLegacyHash(seed_, value, digest_string))
     return VALID_LEGACY;
   return INVALID;
 }
 
-std::string PrefHashCalculator::CalculateLegacyHash(
-    const std::string& path, const base::Value* value) const {
-  return CalculateFromValueAndComponents(seed_,
-                                         value,
-                                         std::vector<std::string>());
+std::string PrefHashCalculator::GetMessage(const std::string& path,
+                                           const base::Value* value) const {
+  std::vector<std::string> components;
+  if (!device_id_.empty())
+    components.push_back(device_id_);
+  components.push_back(path);
+  return GetMessageFromValueAndComponents(value, components);
 }
