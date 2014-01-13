@@ -136,8 +136,6 @@ cr.define('options', function() {
 
         // Create the DOM tree.
         var content = document.createElement('div');
-        content.className = 'controlled-setting-bubble-content';
-        content.setAttribute('controlled-by', this.controlledBy);
         content.textContent = text;
 
         if (this.controlledBy == 'hasRecommendation' && this.resetHandler_ &&

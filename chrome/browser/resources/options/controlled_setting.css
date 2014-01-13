@@ -53,34 +53,6 @@ input:-webkit-any([type='text'],[type='url'],:not([type])) +
   background-image: url('chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY');
 }
 
-.controlled-setting-bubble-content {
-  -webkit-padding-start: 30px;
-  background-repeat: no-repeat;
-  background-size: 22px;
-  min-height: 32px;
-}
-
-.controlled-setting-bubble-content[controlled-by='policy'] {
-  background-image: url('chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY');
-}
-
-.controlled-setting-bubble-content[controlled-by='owner'] {
-  background-image: url('chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY');
-}
-
-.controlled-setting-bubble-content[controlled-by='extension'] {
-  background-image: url('chrome://theme/IDR_CONTROLLED_SETTING_EXTENSION');
-}
-
-.controlled-setting-bubble-content:-webkit-any([controlled-by='recommended'],
-    [controlled-by='hasRecommendation']) {
-  background-image: url('chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY');
-}
-
-html[dir='rtl'] .controlled-setting-bubble-content {
-  background-position: right top;
-}
-
 .controlled-setting-bubble-action {
   padding: 0 !important;
 }
