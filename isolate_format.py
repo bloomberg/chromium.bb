@@ -217,18 +217,48 @@ def eval_content(content):
 
 
 def match_configs(expr, config_variables, all_configs):
-  """Returns the configs from |all_configs| that match the |expr|, where
-  the elements of |all_configs| are tuples of values for the |config_variables|.
-  Example:
-  >>> match_configs(expr = "(foo==1 or foo==2) and bar=='b'",
-                    config_variables = ["foo", "bar"],
-                    all_configs = [(1, 'a'), (1, 'b'), (2, 'a'), (2, 'b')])
-  [(1, 'b'), (2, 'b')]
+  """Returns the list of values from |values| that match the condition |expr|.
+
+  Arguments:
+    expr: string that is evaluatable with eval(). It is a GYP condition.
+    config_variables: list of the name of the variables.
+    all_configs: list of the list of possible values.
+
+  If a variable is not referenced at all, it is marked as unbounded (free) with
+  a value set to None.
   """
-  return [
-    config for config in all_configs
-    if eval(expr, dict(zip(config_variables, config)))
-  ]
+  # It is more than just eval'ing the variable, it needs to be double checked to
+  # see if the variable is referenced at all. If not, the variable is free
+  # (unbounded).
+  # TODO(maruel): Use the intelligent way by inspecting expr instead of doing
+  # trial and error to figure out which variable is bound.
+  combinations = []
+  for bound_variables in itertools.product(
+      (True, False), repeat=len(config_variables)):
+    # Add the combination of variables bound.
+    combinations.append(
+        (
+          [c for c, b in zip(config_variables, bound_variables) if b],
+          set(
+            tuple(v if b else None for v, b in zip(line, bound_variables))
+            for line in all_configs)
+        ))
+
+  out = []
+  for variables, configs in combinations:
+    # Strip variables and see if expr can still be evaluated.
+    for values in configs:
+      globs = {'__builtins__': None}
+      globs.update(zip(variables, (v for v in values if v is not None)))
+      try:
+        assertion = eval(expr, globs, {})
+      except NameError:
+        continue
+      if not isinstance(assertion, bool):
+        raise isolateserver.ConfigError('Invalid condition')
+      if assertion:
+        out.append(values)
+  return out
 
 
 def verify_variables(variables):
@@ -450,14 +480,15 @@ def convert_map_to_isolate_dict(values, config_variables):
         raise isolateserver.ConfigError('Unexpected key %s' % key)
 
   if all_mentioned_configs:
+    # Change [(1, 2), (3, 4)] to [set(1, 3), set(2, 4)]
     config_values = map(set, zip(*all_mentioned_configs))
+    for i in config_values:
+      i.discard(None)
     sef = short_expression_finder.ShortExpressionFinder(
         zip(config_variables, config_values))
-
-  # TODO(maruel): This code is broken in the case all_mentioned_configs is not
-  # set.
-  conditions = sorted(
-      [sef.get_expr(configs), then] for configs, then in conditions.iteritems())
+    conditions = sorted([sef.get_expr(c), v] for c, v in conditions.iteritems())
+  else:
+    conditions = []
   return {'conditions': conditions}
 
 
@@ -502,6 +533,31 @@ class ConfigSettings(object):
     return out
 
 
+def _safe_index(l, k):
+  try:
+    return l.index(k)
+  except ValueError:
+    return None
+
+
+def _get_map_keys(dest_keys, in_keys):
+  """Returns a tuple of the indexes of each item in in_keys found in dest_keys.
+
+  For example, if in_keys is ('A', 'C') and dest_keys is ('A', 'B', 'C'), the
+  return value will be (0, None, 1).
+  """
+  return tuple(_safe_index(in_keys, k) for k in dest_keys)
+
+
+def _map_keys(mapping, items):
+  """Returns a tuple with items placed at mapping index.
+
+  For example, if mapping is (1, None, 0) and items is ('a', 'b'), it will
+  return ('b', None, 'c').
+  """
+  return tuple(items[i] if i != None else None for i in mapping)
+
+
 class Configs(object):
   """Represents a processed .isolate file.
 
@@ -514,45 +570,70 @@ class Configs(object):
     self.file_comment = file_comment
     # Contains the names of the config variables seen while processing
     # .isolate file(s). The order is important since the same order is used for
-    # keys in self.by_config.
+    # keys in self._by_config.
     assert isinstance(config_variables, tuple)
     self._config_variables = config_variables
-    # The keys of by_config are tuples of values for each of the items in
+    # The keys of _by_config are tuples of values for each of the items in
     # self._config_variables. A None item in the list of the key means the value
     # is unbounded.
-    self.by_config = {}
+    self._by_config = {}
 
   @property
   def config_variables(self):
     return self._config_variables
 
+  def get_config(self, config):
+    """Returns all configs that matches this config as a single ConfigSettings.
+
+    Returns None if no matching configuration is found.
+    """
+    out = None
+    for k, v in self._by_config.iteritems():
+      if all(i == j or j is None for i, j in zip(config, k)):
+        out = out.union(v) if out else v
+    return out
+
   def union(self, rhs):
     """Adds variables from rhs (a Configs) to the existing variables."""
     # Takes the first file comment, prefering lhs.
+
+    # Default mapping of configs.
+    lhs_config = self._by_config
+    # pylint: disable=W0212
+    rhs_config = rhs._by_config
     comment = self.file_comment or rhs.file_comment
     if not self.config_variables:
-      assert not self.by_config
+      assert not self._by_config
       out = Configs(comment, rhs.config_variables)
     elif not rhs.config_variables:
-      assert not rhs.by_config
+      assert not rhs._by_config
       out = Configs(comment, self.config_variables)
     elif rhs.config_variables == self.config_variables:
       out = Configs(comment, self.config_variables)
     else:
-      # TODO(maruel): Fix this.
-      raise isolateserver.ConfigError(
-          'Variables in merged .isolate files do not match: %r and %r' % (
-              self.config_variables, rhs.config_variables))
+      # At that point, we need to merge the keys. By default, all the new
+      # variables will become unbounded. This requires realigning the keys.
+      config_variables = tuple(sorted(
+          set(self.config_variables) | set(rhs.config_variables)))
+      out = Configs(comment, config_variables)
 
-    for key in set(self.by_config) | set(rhs.by_config):
-      out.by_config[key] = union(
-          self.by_config.get(key), rhs.by_config.get(key))
+      mapping_lhs = _get_map_keys(out.config_variables, self.config_variables)
+      mapping_rhs = _get_map_keys(out.config_variables, rhs.config_variables)
+      lhs_config = dict(
+          (_map_keys(mapping_lhs, k), v)
+          for k, v in self._by_config.iteritems())
+      rhs_config = dict(
+          (_map_keys(mapping_rhs, k), v)
+          for k, v in rhs._by_config.iteritems())
+
+    for key in set(lhs_config) | set(rhs_config):
+      out._by_config[key] = union(lhs_config.get(key), rhs_config.get(key))
     return out
 
   def flatten(self):
     """Returns a flat dictionary representation of the configuration.
     """
-    return dict((k, v.flatten()) for k, v in self.by_config.iteritems())
+    return dict((k, v.flatten()) for k, v in self._by_config.iteritems())
 
   def make_isolate_file(self):
     """Returns a dictionary suitable for writing to a .isolate file.
@@ -563,13 +644,16 @@ class Configs(object):
                                        self.config_variables)
 
 
-# TODO(benrg): Remove this function when no old-format files are left.
 def convert_old_to_new_format(value):
   """Converts from the old .isolate format, which only has one variable (OS),
   always includes 'linux', 'mac' and 'win' in the set of valid values for OS,
   and allows conditions that depend on the set of all OSes, to the new format,
   which allows any set of variables, has no hardcoded values, and only allows
   explicit positive tests of variable values.
+
+  TODO(maruel): Formalize support for variables with a config with no variable
+  bound. This is sensible to keep them at the global level and not in a
+  condition.
   """
   conditions = value.get('conditions', [])
   if 'variables' not in value and all(len(cond) == 2 for cond in conditions):
@@ -658,7 +742,8 @@ def load_isolate_as_config(isolate_dir, value, file_comment):
     configs = match_configs(expr, config_variables, all_configs)
     new = Configs(None, config_variables)
     for config in configs:
-      new.by_config[config] = ConfigSettings(then['variables'])
+      # pylint: disable=W0212
+      new._by_config[config] = ConfigSettings(then['variables'])
     isolate = isolate.union(new)
 
   # Load the includes. Process them in reverse so the last one take precedence.
@@ -696,14 +781,18 @@ def load_isolate_for_config(isolate_dir, content, config_variables):
         'These configuration variables were missing from the command line: %s' %
         ', '.join(
             sorted(set(isolate.config_variables) - set(config_variables))))
-  config = isolate.by_config.get(config_name)
+
+  # A configuration is to be created with all the combinations of free
+  # variables.
+  config = isolate.get_config(config_name)
   if not config:
+    # pylint: disable=W0212
     raise isolateserver.ConfigError(
         'Failed to load configuration for variable \'%s\' for config(s) \'%s\''
         '\nAvailable configs: %s' %
         (', '.join(isolate.config_variables),
         ', '.join(config_name),
-        ', '.join(str(s) for s in isolate.by_config)))
+        ', '.join(str(s) for s in isolate._by_config.keys())))
   # Merge tracked and untracked variables, isolate.py doesn't care about the
   # trackability of the variables, only the build tool does.
   dependencies = [

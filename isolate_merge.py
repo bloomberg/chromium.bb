@@ -29,7 +29,8 @@ def load_isolates(items):
     files: dict(filename, set(OS where this filename is a dependency))
     dirs:  dict(dirame, set(OS where this dirname is a dependency))
     oses:  set(all the OSes referenced)
-    """
+  """
+  # pylint: disable=W0212
   configs = None
   for item in items:
     item = os.path.abspath(item)
@@ -43,9 +44,9 @@ def load_isolates(items):
         os.path.dirname(item),
         eval_content(content),
         extract_comment(content))
-    logging.debug('has configs: ' + ','.join(map(repr, new_config.by_config)))
+    logging.debug('has configs: ' + ','.join(map(repr, new_config._by_config)))
     configs = union(configs, new_config)
-  logging.debug('Total configs: ' + ','.join(map(repr, configs.by_config)))
+  logging.debug('Total configs: ' + ','.join(map(repr, configs._by_config)))
   return configs
 
 

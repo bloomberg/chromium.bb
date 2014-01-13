@@ -22,6 +22,10 @@ from utils import tools
 from isolate_format import KEY_TOUCHED, KEY_TRACKED, KEY_UNTRACKED
 
 
+# Access to a protected member XXX of a client class
+# pylint: disable=W0212
+
+
 class IsolateFormatTest(unittest.TestCase):
   def test_unknown_key(self):
     try:
@@ -553,8 +557,21 @@ class IsolateFormatTest(unittest.TestCase):
             isolate_format.Configs(None, ()),
             isolate_format.load_isolate_as_config(FAKE_DIR, linux, None)),
           isolate_format.load_isolate_as_config(FAKE_DIR, mac, None)),
-        isolate_format.load_isolate_as_config(FAKE_DIR, win, None)).flatten()
-    self.assertEqual(expected, configs)
+        isolate_format.load_isolate_as_config(FAKE_DIR, win, None))
+    self.assertEqual(expected, configs.flatten())
+
+  def test_safe_index(self):
+    self.assertEqual(1, isolate_format._safe_index(('a', 'b'), 'b'))
+    self.assertEqual(None, isolate_format._safe_index(('a', 'b'), 'c'))
+
+  def test_get_map_keys(self):
+    self.assertEqual(
+        (0, None, 1), isolate_format._get_map_keys(('a', 'b', 'c'), ('a', 'c')))
+
+  def test_map_keys(self):
+    self.assertEqual(
+        ('a', None, 'c'),
+        isolate_format._map_keys((0, None, 1), ('a', 'c')))
 
   def test_load_multi_variables(self):
     # Load an .isolate with different condition on different variables.
@@ -574,8 +591,11 @@ class IsolateFormatTest(unittest.TestCase):
     }
     configs = isolate_format.load_isolate_as_config(FAKE_DIR, data, None)
     self.assertEqual(('CHROMEOS', 'OS'), configs.config_variables)
-    flatten = dict((k, v.flatten()) for k, v in configs.by_config.iteritems())
+    flatten = dict((k, v.flatten()) for k, v in configs._by_config.iteritems())
     expected = {
+        ((None, 'abc')): {'command': ['bar']},
+        (('1', None)): {'command': ['foo']},
+        # TODO(maruel): It is a conflict.
         (('1', 'abc')): {'command': ['bar']},
     }
     self.assertEqual(expected, flatten)
@@ -601,22 +621,20 @@ class IsolateFormatTest(unittest.TestCase):
     }
     configs1 = isolate_format.load_isolate_as_config(FAKE_DIR, data1, None)
     configs2 = isolate_format.load_isolate_as_config(FAKE_DIR, data2, None)
-    with self.assertRaises(isolate_format.isolateserver.ConfigError):
-      # TODO(maruel): This is wrong.
-      configs = configs1.union(configs2)
-      self.assertEqual(('CHROMEOS', 'OS'), configs.config_variables)
-      flatten = dict((k, v.flatten()) for k, v in configs.by_config.iteritems())
-      expected = {
-          (None, 'abc'): {'command': ['bar']},
-          ('1', None): {'command': ['foo']},
-      }
-      self.assertEqual(expected, flatten)
+    configs = configs1.union(configs2)
+    self.assertEqual(('CHROMEOS', 'OS'), configs.config_variables)
+    flatten = dict((k, v.flatten()) for k, v in configs._by_config.iteritems())
+    expected = {
+        ((None, 'abc')): {'command': ['bar']},
+        ('1', None): {'command': ['foo']},
+    }
+    self.assertEqual(expected, flatten)
 
   def test_make_isolate_multi_variables(self):
     config = isolate_format.Configs(None, ('CHROMEOS', 'OS'))
-    config.by_config[(('0', 'linux'))] = isolate_format.ConfigSettings(
+    config._by_config[(('0', 'linux'))] = isolate_format.ConfigSettings(
         {'command': ['bar']})
-    config.by_config[(('1', 'linux'))] = isolate_format.ConfigSettings(
+    config._by_config[(('1', 'linux'))] = isolate_format.ConfigSettings(
         {'command': ['foo']})
     expected = {
       'conditions': [
@@ -636,9 +654,9 @@ class IsolateFormatTest(unittest.TestCase):
 
   def test_make_isolate_multi_variables_missing(self):
     config = isolate_format.Configs(None, ('CHROMEOS', 'OS'))
-    config.by_config[((None, 'abc'))] = isolate_format.ConfigSettings(
+    config._by_config[((None, 'abc'))] = isolate_format.ConfigSettings(
         {'command': ['bar']})
-    config.by_config[(('1', None))] = isolate_format.ConfigSettings(
+    config._by_config[(('1', None))] = isolate_format.ConfigSettings(
         {'command': ['foo']})
     expected = {
       'conditions': [
@@ -654,9 +672,47 @@ class IsolateFormatTest(unittest.TestCase):
         }],
       ],
     }
-    # TODO(maruel): This is wrong.
-    with self.assertRaises(TypeError):
-      self.assertEqual(expected, config.make_isolate_file())
+    self.assertEqual(expected, config.make_isolate_file())
+
+  def test_make_isolate_4_variables(self):
+    # Test multiple combinations of bound and free variables.
+    config = isolate_format.Configs(None, ('CHROMEOS', 'OS', 'BRAND', 'LIB'))
+    config._by_config = {
+        (0, 'linux', None, 's'): isolate_format.ConfigSettings(
+            {'command': ['bar']}),
+        (None, 'mac', None, 's'): isolate_format.ConfigSettings(
+            {'command': ['foo']}),
+        (None, 'win', None, 's'): isolate_format.ConfigSettings(
+            {'command': ['ziz']}),
+        (0, 'win', 'Chrome', 's'): isolate_format.ConfigSettings(
+            {'command': ['baz']}),
+    }
+    expected = {
+      'conditions': [
+        ['CHROMEOS==0 and OS=="linux" and LIB=="s"', {
+          'variables': {
+            'command': ['bar'],
+          },
+        }],
+        # TODO(maruel): Short by key name.
+        ['CHROMEOS==0 and OS=="win" and BRAND=="Chrome" and LIB=="s"', {
+          'variables': {
+            'command': ['baz'],
+          },
+        }],
+        ['OS=="mac" and LIB=="s"', {
+          'variables': {
+            'command': ['foo'],
+          },
+        }],
+        ['OS=="win" and LIB=="s"', {
+          'variables': {
+            'command': ['ziz'],
+          },
+        }],
+      ],
+    }
+    self.assertEqual(expected, config.make_isolate_file())
 
   def test_merge_three_conditions(self):
     values = {
@@ -939,6 +995,47 @@ class IsolateFormatTest(unittest.TestCase):
         expected_output,
         isolate_format.convert_old_to_new_format(
             isolate_with_default_variables))
+
+  def test_match_configs(self):
+    expectations = [
+        (
+          ('OS=="win"', ('OS',), [('win',), ('mac',), ('linux',)]),
+          [('win',)],
+        ),
+        (
+          (
+            '(foo==1 or foo==2) and bar=="b"',
+            ['foo', 'bar'],
+            [(1, 'a'), (1, 'b'), (2, 'a'), (2, 'b')],
+          ),
+          [(1, 'b'), (2, 'b')],
+        ),
+        (
+          (
+            'bar=="b"',
+            ['foo', 'bar'],
+            [(1, 'a'), (1, 'b'), (2, 'a'), (2, 'b')],
+          ),
+          # TODO(maruel): When a free variable match is found, it should not
+          # list all the bounded values in addition. The problem is when an
+          # intersection of two different bound variables that are tested singly
+          # in two different conditions.
+          [(1, 'b'), (2, 'b'), (None, 'b')],
+        ),
+        (
+          (
+            'foo==1 or bar=="b"',
+            ['foo', 'bar'],
+            [(1, 'a'), (1, 'b'), (2, 'a'), (2, 'b')],
+          ),
+          # TODO(maruel): (None, 'b') would match.
+          # It is hard in this case to realize that each of the variables 'foo'
+          # and 'bar' can be unbounded in a specific case.
+          [(1, 'a'), (1, 'b'), (2, 'b'), (1, None)],
+        ),
+    ]
+    for data, expected in expectations:
+      self.assertEqual(expected, isolate_format.match_configs(*data))
 
 
 class IsolateFormatTmpDirTest(unittest.TestCase):

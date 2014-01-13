@@ -141,12 +141,92 @@ class Tests(unittest.TestCase):
     self.assertEqual(501, len(tuple(partitions(1000, 1))))
 
   def test_nones(self):
-    # Test that nothing breaks even if None.
-    v = [('CHROMEOS', set(['1', None])), ('OS', set([None, 'abc']))]
-    # TODO(maruel): This is wrong.
+    ShortExpressionFinder([('foo', ('a',))])
     with self.assertRaises(TypeError):
-      s = ShortExpressionFinder(v)
-      self.assertEqual([], s.get_expr(('1', None)))
+      ShortExpressionFinder([('foo', ('a', None))])
+
+  def test_complex(self):
+    # An end-to-end test that looks at behavior with 4 degrees (variables).
+    variables = [
+        # For example component build vs static build.
+        ('lib', ('s', 'c')),
+        ('cros', (0, 1)),
+        ('OS', ('l', 'm', 'w')),
+        ('brand', ('C', 'GC', 'Y')),
+    ]
+    expectations = [
+        (
+          [('s', 0, 'l', 'C')],
+          'lib=="s" and cros==0 and OS=="l" and brand=="C"',
+        ),
+        (
+          [('s', 0, 'l', 'C'), ('s', 0, 'm', 'C')],
+          'lib=="s" and cros==0 and (OS=="l" or OS=="m") and brand=="C"',
+        ),
+        (
+          [('s', 0, 'l', 'C'), ('s', 0, 'm', 'C'), ('s', 0, 'm', 'GC')],
+          '(lib=="s" and cros==0 and OS=="l" and brand=="C") or '
+          '(lib=="s" and cros==0 and OS=="m" and (brand=="C" or brand=="GC"))'
+        ),
+        (
+          [('s', 0, 'l', 'C'), ('s', 0, 'm', 'C'), ('s', 0, 'w', 'C')],
+          'lib=="s" and cros==0 and (OS=="l" or OS=="m" or OS=="w") and '
+          'brand=="C"',
+        ),
+        (
+          [
+            ('s', 1, 'l', 'C'), ('s', 0, 'l', 'C'), ('s', 0, 'm', 'C'),
+            ('s', 0, 'w', 'C'),
+          ],
+          # TODO(maruel): Could have been written slightly more efficiently.
+          # 'lib=="s" and 'brand=="C" and (...)'
+          '(lib=="s" and cros==1 and OS=="l" and brand=="C") or '
+          '(lib=="s" and cros==0 and (OS=="l" or OS=="m" or OS=="w") and '
+          'brand=="C")'
+        ),
+        (
+          [('s', None, None, None)],
+          'lib=="s"',
+        ),
+        (
+          [('s', 1, None, None)],
+          'lib=="s" and cros==1',
+        ),
+        (
+          [(None, 1, None, None)],
+          'cros==1',
+        ),
+        (
+          [(None, 1, None, None), (None, 0, 'w', None), (None, 0, 'm', None)],
+          # Note the ordering of the specification is lost.
+          '(cros==0 and (OS=="m" or OS=="w")) or cros==1',
+        ),
+        (
+          [('s', 1, 'l', None), ('c', 0, 'w', None), ('s', 0, 'm', None)],
+          # TODO(maruel): Could have been written slightly more efficiently.
+          '(lib=="s" and cros==0 and OS=="m") or '
+          '(lib=="c" and cros==0 and OS=="w") or '
+          '(lib=="s" and cros==1 and OS=="l")',
+        ),
+        (
+          [('s', 1, 'l', None), ('c', 0, 'w', None), ('c', 0, 'm', None)],
+          '(lib=="s" and cros==1 and OS=="l") or '
+          '(lib=="c" and cros==0 and (OS=="m" or OS=="w"))',
+        ),
+        (
+          [
+            (None, 1, 'l', 'GC'), (None, 0, 'l', 'GC'), (None, None, 'm', 'GC'),
+            (None, None, 'w', 'GC'),
+          ],
+          '((cros==0 or cros==1) and OS=="l" and brand=="GC") or '
+          '((OS=="m" or OS=="w") and brand=="GC")',
+        ),
+    ]
+    for i, (data, expected) in enumerate(expectations):
+      s = short_expression_finder.ShortExpressionFinder(variables)
+      actual = s.get_expr(data)
+      self.assertEqual(
+          expected, actual, '\n%r\n%r\n%r\n%s' % (data, expected, actual, i))
 
 
 class TestPrivateCode(unittest.TestCase):
@@ -196,6 +276,229 @@ class TestPrivateCode(unittest.TestCase):
     }
     self.assertEqual(
         expected, short_expression_finder._calculate_costs(values, 1, 1))
+
+  def test_format_or(self):
+    values = ('linux', 'mac', 'win')
+    expectations = [
+        # No variable is bound. It's the 'global variable'.
+        (0, ('', 0)),
+        (1, ('OS=="linux"', 1)),
+        (2, ('OS=="mac"', 1)),
+        (3, ('OS=="linux" or OS=="mac"', 2)),
+        (4, ('OS=="win"', 1)),
+        (5, ('OS=="linux" or OS=="win"', 2)),
+        (6, ('OS=="mac" or OS=="win"', 2)),
+        (7, ('OS=="linux" or OS=="mac" or OS=="win"', 3)),
+    ]
+    for data, expected in expectations:
+      self.assertEqual(
+          expected, short_expression_finder._format_or('OS', values, data))
+
+  def test_format_and(self):
+    # Create a 2D matrix.
+    variables = ('chromeos', 'OS')
+    values = ((0, 1), ('linux', 'mac', 'win'))
+    expectations = [
+        # No variable is bound. It's the 'global variable'.
+        ((0, 0), ('', 0)),
+        ((0, 1), ('OS=="linux"', 1)),
+        ((0, 2), ('OS=="mac"', 1)),
+        ((0, 3), ('OS=="linux" or OS=="mac"', 1)),
+        ((1, 4), ('chromeos==0 and OS=="win"', 2)),
+        ((1, 5), ('chromeos==0 and (OS=="linux" or OS=="win")', 2)),
+        # _format_and() just renders what it receives.
+        (
+          (3, 5),
+          ('(chromeos==0 or chromeos==1) and (OS=="linux" or OS=="win")', 2),
+        ),
+    ]
+    for data, expected in expectations:
+      self.assertEqual(
+          expected,
+          short_expression_finder._format_and(variables, values, data))
+
+  def test_format_expr(self):
+    # Create a 2D matrix.
+    variables = ('chromeos', 'OS')
+    values = ((0, 1), ('linux', 'mac', 'win'))
+    expectations = [
+        (
+          # Unbounded variable has a 0 as its bitfield.
+          ((0, 0),),
+          ('', 0),
+        ),
+        (
+          # Unbounded variable has a 0 as its bitfield.
+          ((0, 1),),
+          ('OS=="linux"', 1),
+        ),
+        (
+          # The function expects already reduced and sorted equations. It won't
+          # reduce it on your behalf.
+          ((0, 1),(2, 1)),
+          ('OS=="linux" or (chromeos==1 and OS=="linux")', 2),
+        ),
+        (
+          ((2, 0),(0, 4)),
+          ('chromeos==1 or OS=="win"', 2),
+        ),
+        (
+          # Notice smart use of parenthesis.
+          ((1, 1),(0, 5)),
+          ('(chromeos==0 and OS=="linux") or OS=="linux" or OS=="win"', 2),
+        ),
+    ]
+    for data, expected in expectations:
+      self.assertEqual(
+          expected,
+          short_expression_finder._format_expr(variables, values, data))
+
+  def test_internal_guts_2_variables(self):
+    # chromeos can be: 0 or 1.
+    # OS can be: linux, mac or win.
+    variables = ('chromeos', 'OS')
+    values = ((0, 1), ('linux', 'mac', 'win'))
+
+    # 1. is input data to _get_expr. It is all the possibilities that should be
+    #    be matched for.
+    # 2. is (bits, values) output from _get_expr, that is input in
+    #    _find_reduced_cost.
+    # 3. is (assertions) output from _find_reduced_cost, that is input in
+    #    _format_expr.
+    # 4. is string output from _format_expr.
+    expectations = [
+        (
+          [(0, 'linux')],
+          1L,
+          ((1, 1),),
+          ('chromeos==0 and OS=="linux"', 2),
+        ),
+        (
+          [(1, 'linux'), (0, 'mac')],
+          6L,
+          ((2, 1), (1, 2)),
+          ('(chromeos==1 and OS=="linux") or (chromeos==0 and OS=="mac")', 2),
+        ),
+        (
+          [(1, 'linux'), (0, 'mac'), (0, 'win')],
+          22L,
+          ((2, 1), (1, 6)),
+          (
+            '(chromeos==1 and OS=="linux") or '
+            '(chromeos==0 and (OS=="mac" or OS=="win"))',
+            2,
+          ),
+        ),
+    ]
+    for line in expectations:
+      # Note that none of these functions support free variable. It's
+      # implemented by ShortExpressionFinder.get_expr(.
+      to_get_expr, bits, to_format_expr, final_expected = line
+      self.assertEqual(
+          bits,
+          short_expression_finder._get_expr(values, to_get_expr))
+      self.assertEqual(
+          to_format_expr,
+          short_expression_finder._find_reduced_cost(1, 1, values, bits))
+      self.assertEqual(
+          final_expected,
+          short_expression_finder._format_expr(
+            variables, values, to_format_expr))
+
+  def test_internal_guts_4_variables(self):
+    # Create a 4D matrix.
+    # See test_internal_guts_2_variables for the explanations.
+    variables = ('lib', 'cros', 'OS', 'brand')
+    values = (('s', 'c'), (0, 1), ('l', 'm', 'w'), ('C', 'GC', 'Y'))
+    expectations = [
+        (
+          [('s', 0, 'l', 'C')],
+          1L,
+          ((1, 1, 1, 1),),
+          ('lib=="s" and cros==0 and OS=="l" and brand=="C"', 4),
+        ),
+        (
+          # 2nd value for 1th variable.
+          [('c', 0, 'l', 'C')],
+          2L,
+          ((2, 1, 1, 1),),
+          ('lib=="c" and cros==0 and OS=="l" and brand=="C"', 4),
+        ),
+        (
+          # 2nd value for 2th variable.
+          [('s', 1, 'l', 'C')],
+          4L,
+          ((1, 2, 1, 1),),
+          ('lib=="s" and cros==1 and OS=="l" and brand=="C"', 4),
+        ),
+        (
+          # 2nd value for 3th variable.
+          [('s', 0, 'm', 'C')],
+          16L,
+          ((1, 1, 2, 1),),
+          ('lib=="s" and cros==0 and OS=="m" and brand=="C"', 4),
+        ),
+        (
+          # 3nd value for 3th variable.
+          [('s', 0, 'w', 'C')],
+          256L,
+          ((1, 1, 4, 1),),  # bitfields, not numbers.
+          ('lib=="s" and cros==0 and OS=="w" and brand=="C"', 4),
+        ),
+        (
+          # 2nd value for 4th variable.
+          [('s', 0, 'l', 'GC')],
+          4096L,
+          ((1, 1, 1, 2),),
+          ('lib=="s" and cros==0 and OS=="l" and brand=="GC"', 4),
+        ),
+        (
+          # Last bit that can be set, all values are the last.
+          # 100000000000000000000000000000000000 is 36th bit == 2*2*3*3.
+          [('c', 1, 'w', 'Y')],
+          34359738368L,
+          ((2, 2, 4, 4),),
+          ('lib=="c" and cros==1 and OS=="w" and brand=="Y"', 4),
+        ),
+        (
+          # Same condition twice doesn't affect the result.
+          [('s', 0, 'l', 'C'), ('s', 0, 'l', 'C')],
+          # One real condition, only one bit set.
+          1L,
+          ((1, 1, 1, 1),),
+          ('lib=="s" and cros==0 and OS=="l" and brand=="C"', 4),
+        ),
+        (
+          # All values for 1st variable.
+          [('s', 0, 'l', 'C'), ('c', 0, 'l', 'C')],
+          # It has 2 bits set.
+          3L,
+          ((3, 1, 1, 1),),
+          ('(lib=="s" or lib=="c") and cros==0 and OS=="l" and brand=="C"', 4),
+        ),
+        (
+          # All values for 2nd variable.
+          [('s', 0, 'l', 'C'), ('s', 1, 'l', 'C')],
+          # It has 2 bits set.
+          5L,
+          ((1, 3, 1, 1),),
+          ('lib=="s" and (cros==0 or cros==1) and OS=="l" and brand=="C"', 4),
+        ),
+    ]
+    for line in expectations:
+      # Note that none of these functions support free variable. It's
+      # implemented by ShortExpressionFinder.get_expr().
+      to_get_expr, bits, to_format_expr, final_expected = line
+      self.assertEqual(
+          bits,
+          short_expression_finder._get_expr(values, to_get_expr))
+      self.assertEqual(
+          to_format_expr,
+          short_expression_finder._find_reduced_cost(1, 1, values, bits))
+      self.assertEqual(
+          final_expected,
+          short_expression_finder._format_expr(
+            variables, values, to_format_expr))
 
 
 if __name__ == '__main__':
