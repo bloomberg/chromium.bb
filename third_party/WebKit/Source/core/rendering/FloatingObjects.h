@@ -84,6 +84,9 @@ public:
     void setIsInPlacedTree(bool value) { m_isInPlacedTree = value; }
 #endif
 
+    bool isOverhangingOrIntruding() const { return m_isOverhangingOrIntruding; }
+    void setIsOverhangingOrIntruding(bool value) { m_isOverhangingOrIntruding = value; }
+
     bool shouldPaint() const { return m_shouldPaint; }
     void setShouldPaint(bool shouldPaint) { m_shouldPaint = shouldPaint; }
     bool isDescendant() const { return m_isDescendant; }
@@ -109,6 +112,7 @@ private:
 #ifndef NDEBUG
     unsigned m_isInPlacedTree : 1;
 #endif
+    unsigned m_isOverhangingOrIntruding : 1;
 };
 
 struct FloatingObjectHashFunctions {
@@ -134,8 +138,10 @@ public:
     ~FloatingObjects();
 
     void clear();
+    void clearOverhangingAndIntrudingFloats();
     void moveAllToFloatInfoMap(RendererToFloatInfoMap&);
     FloatingObject* add(PassOwnPtr<FloatingObject>);
+    FloatingObject* addOverhangingOrIntrudingFloat(PassOwnPtr<FloatingObject>);
     void remove(FloatingObject*);
     void addPlacedObject(FloatingObject*);
     void removePlacedObject(FloatingObject*);
@@ -172,6 +178,7 @@ private:
     FloatingObjectInterval intervalForFloatingObject(FloatingObject*);
 
     FloatingObjectSet m_set;
+    FloatingObjectSet m_overhangingOrIntrudingSet;
     FloatingObjectTree m_placedFloatsTree;
     unsigned m_leftObjectsCount;
     unsigned m_rightObjectsCount;

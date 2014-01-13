@@ -1,0 +1,33 @@
+<style>
+    * {
+        float: left;
+    }
+    *:after {
+        content: url();
+        display: block;
+    }
+</style>
+<script>
+function domNodeRemovedFromDocumentHandler() {
+  document.removeEventListener("DOMNodeRemovedFromDocument", domNodeRemovedFromDocumentHandler, true);
+  var selection = window.getSelection();
+  selection.deleteFromDocument();
+  var range = selection.getRangeAt(81 % selection.rangeCount);
+  var elements = document.getElementsByTagName("*");
+  range.surroundContents(elements[1]);
+}
+document.addEventListener("DOMNodeRemovedFromDocument", domNodeRemovedFromDocumentHandler, true);
+window.onload = function() {
+  var selection = window.getSelection();
+  var body = document.getElementsByTagName("body")[0];
+  selection.collapse(body, 2);
+  selection.deleteFromDocument();
+};
+
+if (window.testRunner)
+    testRunner.dumpAsText();
+</script>
+PASS: This passes if it does not crash with an ASAN enabled build.
+<table>
+<caption>
+<col>

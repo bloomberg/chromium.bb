@@ -177,6 +177,9 @@ RenderBlockFlow* RenderBlockFlow::createAnonymousBlockFlow() const
 
 void RenderBlockFlow::willBeDestroyed()
 {
+    if (containsFloats())
+        m_floatingObjects->clearOverhangingAndIntrudingFloats();
+
     if (lineGridBox())
         lineGridBox()->destroy();
 
@@ -1832,8 +1835,7 @@ void RenderBlockFlow::moveAllChildrenIncludingFloatsTo(RenderBlock* toBlock, boo
         for (FloatingObjectSetIterator it = fromFloatingObjectSet.begin(); it != end; ++it) {
             FloatingObject* floatingObject = *it;
 
-            // Don't insert the object again if it's already in the list
-            if (toBlockFlow->containsFloat(floatingObject->renderer()))
+            if (floatingObject->isOverhangingOrIntruding() || toBlockFlow->containsFloat(floatingObject->renderer()))
                 continue;
 
             toBlockFlow->m_floatingObjects->add(floatingObject->unsafeClone());
@@ -2425,7 +2427,7 @@ void RenderBlockFlow::addIntrudingFloats(RenderBlockFlow* prev, LayoutUnit logic
                     ? LayoutSize(logicalLeftOffset - (prev != parent() ? prev->marginLeft() : LayoutUnit()), logicalTopOffset)
                     : LayoutSize(logicalTopOffset, logicalLeftOffset - (prev != parent() ? prev->marginTop() : LayoutUnit()));
 
-                m_floatingObjects->add(floatingObject->copyToNewContainer(offset));
+                m_floatingObjects->addOverhangingOrIntrudingFloat(floatingObject->copyToNewContainer(offset));
             }
         }
     }
@@ -2468,7 +2470,7 @@ LayoutUnit RenderBlockFlow::addOverhangingFloats(RenderBlockFlow* child, bool ma
                 if (!m_floatingObjects)
                     createFloatingObjects();
 
-                m_floatingObjects->add(floatingObject->copyToNewContainer(offset, shouldPaint, true));
+                m_floatingObjects->addOverhangingOrIntrudingFloat(floatingObject->copyToNewContainer(offset, shouldPaint, true));
             }
         } else {
             if (makeChildPaintOtherFloats && !floatingObject->shouldPaint() && !floatingObject->renderer()->hasSelfPaintingLayer()

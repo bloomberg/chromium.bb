@@ -1,0 +1,2 @@
+PASS: This passes if it does not crash with an ASAN enabled build.
+
