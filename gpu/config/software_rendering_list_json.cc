@@ -1037,6 +1037,89 @@ LONG_STRING_CONST(
       "features": [
         "webgl"
       ]
+    },
+    {
+      "id": 87,
+      "description": "Accelerated video decode on Intel driver 10.18.10.3308 is incompatible with the GPU sandbox",
+      "cr_bugs": [298968],
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x8086",
+      "driver_version": {
+        "op": "=",
+        "value": "10.18.10.3308"
+      },
+      "features": [
+        "accelerated_video_decode"
+      ]
+    },
+    {
+      "id": 88,
+      "description": "Accelerated video decode on AMD driver 13.152.1.8000 is incompatible with the GPU sandbox",
+      "cr_bugs": [298968],
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x1002",
+      "driver_version": {
+        "op": "=",
+        "value": "13.152.1.8000"
+      },
+      "features": [
+        "accelerated_video_decode"
+      ]
+    },
+    {
+      "id": 89,
+      "description": "Accelerated video decode interferes with GPU sandbox on certain AMD drivers",
+      "cr_bugs": [298968],
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x1002",
+      "driver_version": {
+        "op": "between",
+        "value": "8.810.4.5000",
+        "value2": "8.970.100.1100"
+      },
+      "features": [
+        "accelerated_video_decode"
+      ]
+    },
+    {
+      "id": 90,
+      "description": "Accelerated video decode interferes with GPU sandbox on certain NVIDIA drivers",
+      "cr_bugs": [298968],
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x10de",
+      "driver_version": {
+        "op": "between",
+        "value": "8.17.12.5729",
+        "value2": "8.17.12.8026"
+      },
+      "features": [
+        "accelerated_video_decode"
+      ]
+    },
+    {
+      "id": 91,
+      "description": "Accelerated video decode interferes with GPU sandbox on certain NVIDIA drivers",
+      "cr_bugs": [298968],
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x10de",
+      "driver_version": {
+        "op": "between",
+        "value": "9.18.13.783",
+        "value2": "9.18.13.1090"
+      },
+      "features": [
+        "accelerated_video_decode"
+      ]
     }
   ]
 }
