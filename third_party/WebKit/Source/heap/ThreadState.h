@@ -421,8 +421,15 @@ public:
     // List of persistent roots allocated on the given thread.
     PersistentNode* roots() const { return m_persistents; }
 
+    // Visit local thread stack and trace all pointers conservatively.
+    void visitStack(Visitor*);
+
     // Visit all persistents allocated on this thread.
     void visitPersistents(Visitor*);
+
+    // Checks a given address and if a pointer into the oilpan heap marks
+    // the object to which it points.
+    bool checkAndMarkPointer(Visitor*, Address);
 
     void getStats(HeapStats&);
     HeapStats& stats() { return m_stats; }

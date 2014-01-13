@@ -444,14 +444,9 @@ Address ThreadHeap<Header>::outOfLineAllocate(size_t size, const GCInfo* gcInfo)
 {
     size_t allocationSize = allocationSizeFromSize(size);
     if (threadState()->shouldGC()) {
-        // FIXME: Add back below collection once we support conservative stack
-        // scanning. Until then we cannot do the collection since it causes our
-        // tests to crash.
-#if 0
         if (threadState()->shouldForceConservativeGC())
             Heap::collectGarbage(ThreadState::HeapPointersOnStack);
         else
-#endif // 0
             threadState()->setGCRequested();
     }
     ensureCurrentAllocation(allocationSize, gcInfo);
@@ -1269,6 +1264,19 @@ bool Heap::contains(Address address)
             return true;
     }
     return false;
+}
+
+Address Heap::checkAndMarkPointer(Visitor* visitor, Address address)
+{
+    ASSERT(ThreadState::isAnyThreadInGC());
+    ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
+    for (ThreadState::AttachedThreadStateSet::iterator it = threads.begin(), end = threads.end(); it != end; ++it) {
+        if ((*it)->checkAndMarkPointer(visitor, address)) {
+            // Pointer found and marked.
+            return address;
+        }
+    }
+    return 0;
 }
 
 void Heap::pushTraceCallback(void* object, TraceCallback callback)

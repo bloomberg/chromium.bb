@@ -171,10 +171,7 @@ private:
         while (!done()) {
             ThreadState::current()->safePoint();
             {
-                // FIXME: Just use a raw pointer here when we know the
-                // start of the stack and can use conservative stack
-                // scanning.
-                Persistent<IntWrapper> wrapper;
+                IntWrapper* wrapper;
 
                 for (int i = 0; i < numberOfAllocations; i++) {
                     wrapper = IntWrapper::create(0x0bbac0de);
@@ -184,10 +181,7 @@ private:
                 }
 
                 if (gcCount < gcPerThread) {
-                    // FIXME: Use HeapPointersOnStack here when we
-                    // know the start of the stack and can use
-                    // conservative stack scanning.
-                    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+                    Heap::collectGarbage(ThreadState::HeapPointersOnStack);
                     gcCount++;
                     atomicIncrement(&m_gcCount);
                 }
@@ -720,15 +714,12 @@ TEST(HeapTest, DeepTest)
     // initialization in the test runner.
     Heap::init();
 
-    // FIXME: Increase depth to 100000 when conservative stack
-    // scanning is implemented. Allocating 100000 things here
-    // will lead to a forced conservative garbage collection.
-    const unsigned depth = 100;
+    const unsigned depth = 100000;
     Bar::s_live = 0;
     {
-        Persistent<Bar> bar = Bar::create();
+        Bar* bar = Bar::create();
         EXPECT_TRUE(ThreadState::current()->contains(bar));
-        Persistent<Foo> foo = Foo::create(bar);
+        Foo* foo = Foo::create(bar);
         EXPECT_TRUE(ThreadState::current()->contains(foo));
         EXPECT_EQ(2u, Bar::s_live);
         for (unsigned i = 0; i < depth; i++) {
@@ -737,7 +728,7 @@ TEST(HeapTest, DeepTest)
             EXPECT_TRUE(ThreadState::current()->contains(foo));
         }
         EXPECT_EQ(depth + 2, Bar::s_live);
-        Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+        Heap::collectGarbage(ThreadState::HeapPointersOnStack);
         EXPECT_EQ(depth + 2, Bar::s_live);
     }
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
@@ -754,14 +745,10 @@ TEST(HeapTest, WideTest)
 
     Bar::s_live = 0;
     {
-        // FIXME: Use raw pointer here when conservative stack
-        // scanning works.
-        Persistent<Bars> bars = Bars::create();
+        Bars* bars = Bars::create();
         unsigned width = Bars::width;
         EXPECT_EQ(width + 1, Bar::s_live);
-        // FIXME: Use HeapPointersOnStack here when conservative stack
-        // scanning works.
-        Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+        Heap::collectGarbage(ThreadState::HeapPointersOnStack);
         EXPECT_EQ(width + 1, Bar::s_live);
         // Use bars here to make sure that it will be on the stack
         // for the conservative stack scan to find.
@@ -800,8 +787,7 @@ TEST(HeapTest, HashMapOfMembers)
         getHeapStats(&afterSetWasCreated);
         EXPECT_TRUE(afterSetWasCreated.totalObjectSpace() > initialHeapSize.totalObjectSpace());
 
-        // FIXME: Activate this when stack scanning works.
-        // Heap::collectGarbage(ThreadState::HeapPointersOnStack);
+        Heap::collectGarbage(ThreadState::HeapPointersOnStack);
         HeapStats afterGC;
         getHeapStats(&afterGC);
         EXPECT_EQ(afterGC.totalObjectSpace(), afterSetWasCreated.totalObjectSpace());
@@ -822,8 +808,7 @@ TEST(HeapTest, HashMapOfMembers)
 
         EXPECT_EQ(map->size(), 2u); // Two different wrappings of '1' are distinct.
 
-        // FIXME: Activate this when stack scanning works.
-        // Heap::collectGarbage(ThreadState::HeapPointersOnStack);
+        Heap::collectGarbage(ThreadState::HeapPointersOnStack);
         EXPECT_TRUE(map->contains(one));
         EXPECT_TRUE(map->contains(anotherOne));
 
@@ -852,12 +837,10 @@ TEST(HeapTest, HashMapOfMembers)
         EXPECT_EQ(gross->value(), 144);
 
         // This should clear out junk created by all the adds.
-        // FIXME: Activate this when stack scanning works.
-        // Heap::collectGarbage(ThreadState::HeapPointersOnStack);
+        Heap::collectGarbage(ThreadState::HeapPointersOnStack);
         HeapStats afterGC3;
         getHeapStats(&afterGC3);
-        // FIXME: Reactivate when we sweep.
-        // EXPECT_TRUE(afterGC3.totalObjectSpace() < afterAdding1000.totalObjectSpace());
+        EXPECT_TRUE(afterGC3.totalObjectSpace() < afterAdding1000.totalObjectSpace());
     }
 
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
@@ -994,15 +977,11 @@ TEST(HeapTest, WeakMembers)
         Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
         ASSERT_EQ(1u, Bar::s_live); // h1 is live.
         {
-            // FIXME: Change both persistents below to on stack pointers when
-            // supporting conservative scanning.
-            Persistent<Bar> h2 = Bar::create();
-            Persistent<Bar> h3 = Bar::create();
+            Bar* h2 = Bar::create();
+            Bar* h3 = Bar::create();
             h4 = Weak::create(h2, h3);
             h5 = WithWeakMember::create(h2, h3);
-            // FIXME: Change to HeapPointersOnStack when changing above to
-            // on-stack pointers.
-            Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+            Heap::collectGarbage(ThreadState::HeapPointersOnStack);
             EXPECT_EQ(5u, Bar::s_live); // The on-stack pointer keeps h3 alive.
             EXPECT_TRUE(h4->strongIsThere());
             EXPECT_TRUE(h4->weakIsThere());

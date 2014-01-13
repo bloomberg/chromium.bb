@@ -291,6 +291,18 @@ void ThreadState::visitRoots(Visitor* visitor)
         (*it)->trace(visitor);
 }
 
+NO_SANITIZE_ADDRESS
+void ThreadState::visitStack(Visitor* visitor)
+{
+    Address* end = reinterpret_cast<Address*>(m_startOfStack);
+    for (Address* current = reinterpret_cast<Address*>(m_endOfStack); current < end; ++current) {
+        Heap::checkAndMarkPointer(visitor, *current);
+    }
+
+    for (Vector<Address>::iterator it = m_safePointStackCopy.begin(); it != m_safePointStackCopy.end(); ++it)
+        Heap::checkAndMarkPointer(visitor, *it);
+}
+
 void ThreadState::visitPersistents(Visitor* visitor)
 {
     for (PersistentNode* current = m_persistents->m_next; current != m_persistents; current = current->m_next) {
@@ -300,7 +312,22 @@ void ThreadState::visitPersistents(Visitor* visitor)
 
 void ThreadState::trace(Visitor* visitor)
 {
+    if (m_stackState == HeapPointersOnStack)
+        visitStack(visitor);
     visitPersistents(visitor);
+}
+
+bool ThreadState::checkAndMarkPointer(Visitor* visitor, Address address)
+{
+    BaseHeapPage* page = heapPageFromAddress(address);
+    if (page)
+        return page->checkAndMarkPointer(visitor, address);
+    // Not in heap pages, check large objects
+    for (int i = 0; i < NumberOfHeaps; i++) {
+        if (m_heaps[i]->checkAndMarkLargeHeapObject(visitor, address))
+            return true;
+    }
+    return false;
 }
 
 // Trigger garbage collection on a 50% increase in size, but not for

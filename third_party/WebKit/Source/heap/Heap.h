@@ -829,6 +829,10 @@ public:
 
     static void prepareForGC();
 
+    // Conservatively checks whether an address is a pointer in any of the thread
+    // heaps. If so marks the object pointed to as live.
+    static Address checkAndMarkPointer(Visitor*, Address);
+
     // Collect heap stats for all threads attached to the Blink
     // garbage collector. Should only be called during garbage
     // collection where threads are known to be at safe points.
