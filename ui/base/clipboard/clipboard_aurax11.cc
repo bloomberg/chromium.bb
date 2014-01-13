@@ -558,6 +558,10 @@ bool Clipboard::IsFormatAvailable(const FormatType& format,
   DCHECK(IsSupportedClipboardType(type));
 
   TargetList target_list = aurax11_details_->WaitAndGetTargetsList(type);
+  if (format.Equals(GetPlainTextFormatType()) ||
+      format.Equals(GetUrlFormatType())) {
+    return target_list.ContainsText();
+  }
   return target_list.ContainsFormat(format);
 }
 
