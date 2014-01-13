@@ -16,7 +16,6 @@ import os
 import pickle
 import sys
 import time
-import unittest
 
 import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
@@ -41,23 +40,6 @@ import mock
 
 
 _GetNumber = iter(itertools.count()).next
-
-class MockPatch(mox.MockObject):
-  """Helper class to mock Patch objects."""
-
-  owner = 'elmer.fudd@google.com'
-
-  def __str__(self):
-    return self.id
-
-  def __repr__(self):
-    return repr(self.id)
-
-  def __eq__(self, other):
-    return self.id == getattr(other, 'id')
-
-  def PatchLink(self):
-    return 'CL:%s' % (self.id,)
 
 
 def GetTestJson(change_id=None):
@@ -97,44 +79,37 @@ class Base(cros_test_lib.MockTestCase):
     self.PatchObject(timeout_util, 'IsTreeOpen', return_value=True)
     self.PatchObject(timeout_util, 'WaitForTreeStatus',
                      return_value=constants.TREE_OPEN)
+    self.PatchObject(cros_patch.GerritPatch, 'HasApproval', return_value=True)
 
   def MockPatch(self, change_id=None, patch_number=None, is_merged=False,
                 project='chromiumos/chromite', remote=constants.EXTERNAL_REMOTE,
-                tracking_branch='refs/heads/master', approval_timestamp=0,
-                patch=None):
-    # pylint: disable=W0201
-    if patch is None:
-      patch = MockPatch(cros_patch.GerritPatch)
-    patch.remote = remote
-    patch.internal = (remote == constants.INTERNAL_REMOTE)
+                tracking_branch='refs/heads/master'):
+    """Helper function to create mock GerritPatch objects."""
     if change_id is None:
       change_id = self._patch_counter()
-    patch.gerrit_number = str(change_id)
-    patch.gerrit_number_str = patch.gerrit_number
-    # Strip off the leading 0x, trailing 'l'
+    gerrit_number = str(change_id)
     change_id = hex(change_id)[2:].rstrip('L').lower()
-    patch.change_id = patch.id = 'I%s' % change_id.rjust(40, '0')
-    patch.patch_number = (patch_number if patch_number is not None else
-                          _GetNumber())
-    patch.url = 'fake_url/%s' % (change_id,)
-    patch.project = project
-    patch.sha1 = hex(_GetNumber())[2:].rstrip('L').lower().rjust(40, '0')
-    patch.status = 'NEW'
-    patch.revision = patch.sha1
-    patch.IsAlreadyMerged = lambda:is_merged
-    patch.LookupAliases = functools.partial(
-        self._LookupAliases, patch)
-    patch.tracking_branch = tracking_branch
-    patch.approval_timestamp = approval_timestamp
-    return patch
+    change_id = 'I%s' % change_id.rjust(40, '0')
+    sha1 = hex(_GetNumber())[2:].rstrip('L').lower().rjust(40, '0')
+    patch_number = (patch_number if patch_number is not None else _GetNumber())
+    fake_url = 'http://foo/bar'
+    current_patch_set = {
+      'number': patch_number,
+      'revision': sha1,
+    }
+    patch_dict = {
+      'currentPatchSet': current_patch_set,
+      'id': change_id,
+      'number': gerrit_number,
+      'project': project,
+      'branch': tracking_branch,
+      'owner': {'email': 'elmer.fudd@chromium.org'},
+      'remote': remote,
+      'status': 'MERGED' if is_merged else 'NEW',
+      'url': '%s/%s' % (fake_url, change_id)
+    }
 
-  @staticmethod
-  def _LookupAliases(patch):
-    aliases = [getattr(patch, x) for x in ('change_id', 'sha1', 'gerrit_number')
-               if hasattr(patch, x)]
-    if patch.internal:
-      aliases = ['*%s' % x for x in aliases]
-    return aliases
+    return cros_patch.GerritPatch(patch_dict, remote, fake_url)
 
   def GetPatches(self, how_many=1, always_use_list=False, **kwargs):
     """Get a sequential list of patches.
@@ -158,7 +133,6 @@ class MoxBase(Base, cros_test_lib.MoxTestCase):
 
   def setUp(self):
     self.mox.StubOutWithMock(validation_pool, '_RunCommand')
-    self.mox.StubOutWithMock(time, 'sleep')
     # Suppress all gerrit access; having this occur is generally a sign
     # the code is either misbehaving, or that the tests are bad.
     self.mox.StubOutWithMock(gerrit.GerritHelper, 'Query')
@@ -179,18 +153,6 @@ class MoxBase(Base, cros_test_lib.MoxTestCase):
       cros.version = '2.2'
     return validation_pool.HelperPool(cros_internal=cros_internal,
                                       cros=cros)
-
-  def MockPatch(self, *args, **kwargs):
-    # We use a custom mock class to fix a pymox bug where multiple mocks
-    # sometimes equal each other (depending on stubs used).
-    patch = MockPatch(cros_patch.GerritPatch)
-    # pylint: disable=W0201
-    patch.HasApproval = lambda _cat, _value: True
-    mox_ = getattr(self, 'mox', None)
-    if mox_:
-      mox_._mock_objects.append(patch)
-    kwargs['patch'] = patch
-    return Base.MockPatch(self, *args, **kwargs)
 
 
 class IgnoredStagesTest(Base):
@@ -260,6 +222,7 @@ class TestPatchSeries(MoxBase):
     return True
 
   def SetPatchApply(self, patch, trivial=True):
+    self.mox.StubOutWithMock(patch, 'ApplyAgainstManifest')
     return patch.ApplyAgainstManifest(
         mox.Func(self._ValidatePatchApplyManifest),
         trivial=trivial)
@@ -373,8 +336,7 @@ class TestPatchSeries(MoxBase):
     series = self.GetPatchSeries()
 
     patch1 = self.MockPatch()
-    del patch1.gerrit_number
-    del patch1.url
+    self.PatchObject(patch1, 'LookupAliases', return_value=[patch1.id])
     patch2 = self.MockPatch(change_id=int(patch1.change_id[1:]))
     patch3 = self.MockPatch()
 
@@ -411,7 +373,7 @@ class TestPatchSeries(MoxBase):
 
     self.SetPatchDeps(patch1, [patch3.id])
     self.SetPatchDeps(patch2)
-    self.SetPatchDeps(patch3, cq=['*%s' % patch2.id])
+    self.SetPatchDeps(patch3, cq=[patch2.id])
 
     if cros_internal:
       self.SetPatchApply(patch2)
@@ -727,7 +689,6 @@ class TestCoreLogic(MoxBase):
     self.PatchObject(validation_pool.ValidationPool, 'ReloadChanges',
                      side_effect=lambda x: x)
 
-
   def MakePool(self, *args, **kwargs):
     """Helper for creating ValidationPool objects for Mox tests."""
     handlers = kwargs.pop('handlers', False)
@@ -885,21 +846,6 @@ class TestCoreLogic(MoxBase):
 
     self.mox.ReplayAll()
     pool.SubmitNonManifestChanges()
-    self.mox.VerifyAll()
-
-  @unittest.skip('Broken by GoB transition')
-  def testGerritSubmit(self):
-    """Tests submission review string looks correct."""
-    pool = self.MakePool(dryrun=False)
-    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
-
-    patch = self.GetPatches(1)
-    # Force int conversion of gerrit_number to ensure the test is sane.
-    cmd = ('ssh -p 29418 gerrit.chromium.org gerrit review '
-           '--submit %i,%i' % (int(patch.gerrit_number), patch.patch_number))
-    cros_build_lib.RunCommand(cmd.split())
-    self.mox.ReplayAll()
-    pool._SubmitChange(patch)
     self.mox.VerifyAll()
 
   def testUnhandledExceptions(self):
@@ -1165,21 +1111,6 @@ class TestFindSuspects(MoxBase):
     self._AssertSuspects(changes, suspects)
 
 
-class SimplePatch(object):
-  """Helper class with minimal implementation of Patch."""
-
-  remote = constants.EXTERNAL_REMOTE
-  internal = False
-
-  def __init__(self):
-    self.id = _GetNumber()
-    self.change_id = "I%s" % str(self.id).rjust(40, "0")
-    self.gerrit_number_str = self.id
-
-  def __str__(self):
-    return str(self.id)
-
-
 class TestCreateValidationFailureMessage(Base):
   """Tests validation_pool.ValidationPool._CreateValidationFailureMessage"""
 
@@ -1301,7 +1232,9 @@ class TestCreateDisjointTransactions(Base):
 
   def testRecentUnresolvedPlan(self):
     """Test plan with recent approval_timestamp."""
-    changes = self.GetPatches(5, approval_timestamp=time.time())[1:]
+    changes = self.GetPatches(5)[1:]
+    for change in changes:
+      change.approval_timestamp = time.time()
     with cros_test_lib.LoggingCapturer():
       call_count = self.runUnresolvedPlan(changes)
     self.assertEqual(0, call_count)
