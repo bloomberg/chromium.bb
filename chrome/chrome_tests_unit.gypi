@@ -1875,7 +1875,7 @@
         'renderer/extensions/renderer_permissions_policy_delegate_unittest.cc',
         'renderer/extensions/safe_builtins_unittest.cc',
         'renderer/media/chrome_webrtc_log_message_delegate_unittest.cc',
-        'renderer/net/net_error_helper_unittest.cc',
+        'renderer/net/net_error_helper_core_unittest.cc',
         'renderer/net/predictor_queue_unittest.cc',
         'renderer/net/renderer_predictor_unittest.cc',
         'renderer/plugins/plugin_uma_unittest.cc',

@@ -196,7 +196,6 @@ class CONTENT_EXPORT RenderViewHostImpl
       const CustomContextMenuContext& context) OVERRIDE;
   virtual void NotifyMoveOrResizeStarted() OVERRIDE;
   virtual void ReloadFrame() OVERRIDE;
-  virtual void SetAltErrorPageURL(const GURL& url) OVERRIDE;
   virtual void SetWebUIProperty(const std::string& name,
                                 const std::string& value) OVERRIDE;
   virtual void Zoom(PageZoom zoom) OVERRIDE;

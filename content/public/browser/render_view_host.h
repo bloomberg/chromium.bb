@@ -223,9 +223,6 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
   // Reloads the current focused frame.
   virtual void ReloadFrame() = 0;
 
-  // Sets the alternate error page URL (link doctor) for the renderer process.
-  virtual void SetAltErrorPageURL(const GURL& url) = 0;
-
   // Sets a property with the given name and value on the Web UI binding object.
   // Must call AllowWebUIBindings() on this renderer first.
   virtual void SetWebUIProperty(const std::string& name,

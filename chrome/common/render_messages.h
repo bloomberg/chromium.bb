@@ -440,6 +440,10 @@ IPC_MESSAGE_ROUTED0(ChromeViewMsg_SetAsInterstitial)
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_NetErrorInfo,
                     int /* DNS probe status */)
 
+// Sets the alternate error page URL (Link Doctor) for the renderer process.
+// Handled by the NetErrorHelper.
+IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetAltErrorPageURL, GURL)
+
 //-----------------------------------------------------------------------------
 // Misc messages
 // These are messages sent from the renderer to the browser process.

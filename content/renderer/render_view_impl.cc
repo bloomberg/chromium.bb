@@ -83,7 +83,6 @@
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/drop_data_builder.h"
 #include "content/renderer/external_popup_menu.h"
-#include "content/renderer/fetchers/alt_error_page_resource_fetcher.h"
 #include "content/renderer/geolocation_dispatcher.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/renderer/idle_user_detector.h"
@@ -371,17 +370,6 @@ const size_t kContentIntentDelayMilliseconds = 700;
 
 static RenderViewImpl* (*g_create_render_view_impl)(RenderViewImplParams*) =
     NULL;
-
-// If |data_source| is non-null and has an InternalDocumentStateData associated
-// with it, the AltErrorPageResourceFetcher is reset.
-static void StopAltErrorPageFetcher(WebDataSource* data_source) {
-  if (data_source) {
-    InternalDocumentStateData* internal_data =
-        InternalDocumentStateData::FromDataSource(data_source);
-    if (internal_data)
-      internal_data->set_alt_error_page_fetcher(NULL);
-  }
-}
 
 static bool IsReload(const ViewMsg_Navigate_Params& params) {
   return
@@ -1278,7 +1266,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateTargetURL_ACK, OnUpdateTargetURLAck)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateWebPreferences, OnUpdateWebPreferences)
     IPC_MESSAGE_HANDLER(ViewMsg_TimezoneChange, OnUpdateTimezone)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetAltErrorPageURL, OnSetAltErrorPageURL)
     IPC_MESSAGE_HANDLER(ViewMsg_EnumerateDirectoryResponse,
                         OnEnumerateDirectoryResponse)
     IPC_MESSAGE_HANDLER(ViewMsg_RunFileChooserResponse, OnFileChooserResponse)
@@ -1569,17 +1556,11 @@ bool RenderViewImpl::IsBackForwardToStaleEntry(
   return false;
 }
 
-// Stop loading the current page
+// Stop loading the current page.
 void RenderViewImpl::OnStop() {
-  if (webview()) {
-    WebFrame* main_frame = webview()->mainFrame();
-    // Stop the alt error page fetcher. If we let it continue it may complete
-    // and cause RenderFrameHostManager to swap to this RenderView, even though
-    // it may no longer be active.
-    StopAltErrorPageFetcher(main_frame->provisionalDataSource());
-    StopAltErrorPageFetcher(main_frame->dataSource());
-    main_frame->stopLoading();
-  }
+  if (webview())
+    webview()->mainFrame()->stopLoading();
+  FOR_EACH_OBSERVER(RenderViewObserver, observers_, OnStop());
 }
 
 // Reload current focused frame.
@@ -2132,21 +2113,12 @@ void RenderViewImpl::LoadNavigationErrorPage(
     WebFrame* frame,
     const WebURLRequest& failed_request,
     const WebURLError& error,
-    const std::string& html,
     bool replace) {
-  std::string alt_html;
-  const std::string* error_html;
+  std::string error_html;
+  GetContentClient()->renderer()->GetNavigationErrorStrings(
+      this, frame, failed_request, error, &error_html, NULL);
 
-  if (!html.empty()) {
-    error_html = &html;
-  } else {
-    GetContentClient()->renderer()->GetNavigationErrorStrings(
-        frame, failed_request, error, renderer_preferences_.accept_languages,
-        &alt_html, NULL);
-    error_html = &alt_html;
-  }
-
-  frame->loadHTMLString(*error_html,
+  frame->loadHTMLString(error_html,
                         GURL(kUnreachableWebDataURL),
                         error.unreachableURL,
                         replace);
@@ -2308,10 +2280,6 @@ WebView* RenderViewImpl::createView(
 
   // Record whether the creator frame is trying to suppress the opener field.
   view->opener_suppressed_ = params.opener_suppressed;
-
-  // Copy over the alternate error page URL so we can have alt error pages in
-  // the new render view (we don't need the browser to send the URL back down).
-  view->alternate_error_page_url_ = alternate_error_page_url_;
 
   return view->webview();
 }
@@ -3724,10 +3692,10 @@ void RenderViewImpl::didFailLoad(WebFrame* frame, const WebURLError& error) {
   const WebURLRequest& failed_request = ds->request();
   base::string16 error_description;
   GetContentClient()->renderer()->GetNavigationErrorStrings(
+      this,
       frame,
       failed_request,
       error,
-      renderer_preferences_.accept_languages,
       NULL,
       &error_description);
   Send(new ViewHostMsg_DidFailLoadWithError(routing_id_,
@@ -3810,39 +3778,15 @@ void RenderViewImpl::didFinishResourceLoad(
     return;
 
   // Display error page, if appropriate.
+  std::string error_domain = "http";
   int http_status_code = internal_data->http_status_code();
-  if (http_status_code == 404) {
-    // On 404s, try a remote search page as a fallback.
-    const GURL& document_url = frame->document().url();
-
-    const GURL& error_page_url =
-        GetAlternateErrorPageURL(document_url, HTTP_404);
-    if (error_page_url.is_valid()) {
-      WebURLError original_error;
-      original_error.domain = "http";
-      original_error.reason = 404;
-      original_error.unreachableURL = document_url;
-
-      internal_data->set_alt_error_page_fetcher(
-          new AltErrorPageResourceFetcher(
-              error_page_url, frame, frame->dataSource()->request(),
-              original_error,
-              base::Bind(&RenderViewImpl::AltErrorPageFinished,
-                         base::Unretained(this))));
-      return;
-    }
-  }
-
-  std::string error_domain;
   if (GetContentClient()->renderer()->HasErrorPage(
           http_status_code, &error_domain)) {
     WebURLError error;
     error.unreachableURL = frame->document().url();
     error.domain = WebString::fromUTF8(error_domain);
     error.reason = http_status_code;
-
-    LoadNavigationErrorPage(
-        frame, frame->dataSource()->request(), error, std::string(), true);
+    LoadNavigationErrorPage(frame, frame->dataSource()->request(), error, true);
   }
 }
 
@@ -4398,65 +4342,6 @@ void RenderViewImpl::SyncSelectionIfRequired() {
   UpdateSelectionBounds();
 }
 
-GURL RenderViewImpl::GetAlternateErrorPageURL(const GURL& failed_url,
-                                              ErrorPageType error_type) {
-  if (failed_url.SchemeIsSecure()) {
-    // If the URL that failed was secure, then the embedding web page was not
-    // expecting a network attacker to be able to manipulate its contents.  As
-    // we fetch alternate error pages over HTTP, we would be allowing a network
-    // attacker to manipulate the contents of the response if we tried to use
-    // the link doctor here.
-    return GURL();
-  }
-
-  // Grab the base URL from the browser process.
-  if (!alternate_error_page_url_.is_valid())
-    return GURL();
-
-  // Strip query params from the failed URL.
-  GURL::Replacements remove_params;
-  remove_params.ClearUsername();
-  remove_params.ClearPassword();
-  remove_params.ClearQuery();
-  remove_params.ClearRef();
-  const GURL url_to_send = failed_url.ReplaceComponents(remove_params);
-  // TODO(yuusuke): change to net::FormatUrl when link doctor
-  // becomes unicode-capable.
-  std::string spec_to_send = url_to_send.spec();
-  // Notify link doctor of the url truncation by sending of "?" at the end.
-  if (failed_url.has_query())
-    spec_to_send.append("?");
-
-  // Construct the query params to send to link doctor.
-  std::string params(alternate_error_page_url_.query());
-  params.append("&url=");
-  params.append(net::EscapeQueryParamValue(spec_to_send, true));
-  params.append("&sourceid=chrome");
-  params.append("&error=");
-  switch (error_type) {
-    case DNS_ERROR:
-      params.append("dnserror");
-      break;
-
-    case HTTP_404:
-      params.append("http404");
-      break;
-
-    case CONNECTION_ERROR:
-      params.append("connectionfailure");
-      break;
-
-    default:
-      NOTREACHED() << "unknown ErrorPageType";
-  }
-
-  // OK, build the final url to return.
-  GURL::Replacements link_doctor_params;
-  link_doctor_params.SetQueryStr(params);
-  GURL url = alternate_error_page_url_.ReplaceComponents(link_doctor_params);
-  return url;
-}
-
 GURL RenderViewImpl::GetLoadingUrl(blink::WebFrame* frame) const {
   WebDataSource* ds = frame->dataSource();
   if (ds->hasUnreachableURL())
@@ -4924,10 +4809,6 @@ void RenderViewImpl::OnUpdateTimezone() {
     NotifyTimezoneChange(webview()->mainFrame());
 }
 
-void RenderViewImpl::OnSetAltErrorPageURL(const GURL& url) {
-  alternate_error_page_url_ = url;
-}
-
 void RenderViewImpl::OnCustomContextMenuAction(
     const CustomContextMenuContext& custom_context,
     unsigned action) {
@@ -5243,66 +5124,6 @@ void RenderViewImpl::OnThemeChanged() {
   // TODO(port): we don't support theming on non-Windows platforms yet
   NOTIMPLEMENTED();
 #endif
-}
-
-bool RenderViewImpl::MaybeLoadAlternateErrorPage(WebFrame* frame,
-                                                 const WebURLError& error,
-                                                 bool replace) {
-  // We only show alternate error pages in the main frame.  They are
-  // intended to assist the user when navigating, so there is not much
-  // value in showing them for failed subframes.  Ideally, we would be
-  // able to use the TYPED transition type for this, but that flag is
-  // not preserved across page reloads.
-  if (frame->parent())
-    return false;
-
-  // Use the alternate error page service if this is a DNS failure or
-  // connection failure.
-  int ec = error.reason;
-  if (ec != net::ERR_NAME_NOT_RESOLVED &&
-      ec != net::ERR_CONNECTION_FAILED &&
-      ec != net::ERR_CONNECTION_REFUSED &&
-      ec != net::ERR_ADDRESS_UNREACHABLE &&
-      ec != net::ERR_CONNECTION_TIMED_OUT) {
-    return false;
-  }
-
-  const GURL& error_page_url = GetAlternateErrorPageURL(error.unreachableURL,
-      ec == net::ERR_NAME_NOT_RESOLVED ? DNS_ERROR : CONNECTION_ERROR);
-  if (!error_page_url.is_valid())
-    return false;
-
-  WebDataSource* ds = frame->provisionalDataSource();
-  const WebURLRequest& failed_request = ds->request();
-
-  // Load an empty page first so there is an immediate response to the error,
-  // and then kick off a request for the alternate error page.
-  frame->loadHTMLString(std::string(),
-                        GURL(kUnreachableWebDataURL),
-                        error.unreachableURL,
-                        replace);
-
-  // Now, create a fetcher for the error page and associate it with the data
-  // source we just created via the LoadHTMLString call.  That way if another
-  // navigation occurs, the fetcher will get destroyed.
-  InternalDocumentStateData* internal_data =
-      InternalDocumentStateData::FromDataSource(frame->provisionalDataSource());
-  internal_data->set_alt_error_page_fetcher(
-      new AltErrorPageResourceFetcher(
-          error_page_url, frame, failed_request, error,
-          base::Bind(&RenderViewImpl::AltErrorPageFinished,
-                     base::Unretained(this))));
-  return true;
-}
-
-void RenderViewImpl::AltErrorPageFinished(WebFrame* frame,
-                                          const WebURLRequest& original_request,
-                                          const WebURLError& original_error,
-                                          const std::string& html) {
-  // Here, we replace the blank page we loaded previously.
-  // If we failed to download the alternate error page, LoadNavigationErrorPage
-  // will simply display a default error page.
-  LoadNavigationErrorPage(frame, original_request, original_error, html, true);
 }
 
 void RenderViewImpl::OnMoveOrResizeStarted() {

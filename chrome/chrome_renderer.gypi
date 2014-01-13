@@ -175,6 +175,8 @@
         'renderer/media/webrtc_logging_message_filter.h',
         'renderer/net/net_error_helper.cc',
         'renderer/net/net_error_helper.h',
+        'renderer/net/net_error_helper_core.cc',
+        'renderer/net/net_error_helper_core.h',
         'renderer/net/predictor_queue.cc',
         'renderer/net/predictor_queue.h',
         'renderer/net/prescient_networking_dispatcher.cc',

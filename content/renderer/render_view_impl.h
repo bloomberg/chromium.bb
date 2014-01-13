@@ -265,7 +265,6 @@ class CONTENT_EXPORT RenderViewImpl
       blink::WebFrame* frame,
       const blink::WebURLRequest& failed_request,
       const blink::WebURLError& error,
-      const std::string& html,
       bool replace);
 
 #if defined(OS_ANDROID)
@@ -952,7 +951,6 @@ class CONTENT_EXPORT RenderViewImpl
                            bool notify_result);
   void OnSetAccessibilityMode(AccessibilityMode new_mode);
   void OnSetActive(bool active);
-  void OnSetAltErrorPageURL(const GURL& gurl);
   void OnSetBackground(const SkBitmap& background);
   void OnSetCompositionFromExistingText(
       int start, int end,
@@ -1010,11 +1008,6 @@ class CONTENT_EXPORT RenderViewImpl
   void ZoomFactorHelper(PageZoom zoom, int zoom_center_x, int zoom_center_y,
                         float scaling_increment);
 
-  void AltErrorPageFinished(blink::WebFrame* frame,
-                            const blink::WebURLRequest& original_request,
-                            const blink::WebURLError& original_error,
-                            const std::string& html);
-
   // Check whether the preferred size has changed.
   void CheckPreferredSize();
 
@@ -1037,9 +1030,6 @@ class CONTENT_EXPORT RenderViewImpl
   // doesn't have a frame at the specified size, the first is returned.
   bool DownloadFavicon(int id, const GURL& image_url, int image_size);
 
-  GURL GetAlternateErrorPageURL(const GURL& failed_url,
-                                ErrorPageType error_type);
-
   // Locates a sub frame with given xpath
   blink::WebFrame* GetChildFrame(const base::string16& frame_xpath) const;
 
@@ -1053,10 +1043,6 @@ class CONTENT_EXPORT RenderViewImpl
   // cropped due to a recent navigation the browser did not know about.
   bool IsBackForwardToStaleEntry(const ViewMsg_Navigate_Params& params,
                                  bool is_reload);
-
-  bool MaybeLoadAlternateErrorPage(blink::WebFrame* frame,
-                                   const blink::WebURLError& error,
-                                   bool replace);
 
   // Make this RenderView show an empty, unscriptable page.
   void NavigateToSwappedOutURL(blink::WebFrame* frame);
@@ -1179,9 +1165,6 @@ class CONTENT_EXPORT RenderViewImpl
   // Bitwise-ORed set of extra bindings that have been enabled.  See
   // BindingsPolicy for details.
   int enabled_bindings_;
-
-  // The alternate error page URL, if one exists.
-  GURL alternate_error_page_url_;
 
   // If true, we send IPC messages when |preferred_size_| changes.
   bool send_preferred_size_changes_;

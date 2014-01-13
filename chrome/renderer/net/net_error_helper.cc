@@ -18,18 +18,23 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
+#include "content/public/renderer/resource_fetcher.h"
+#include "grit/renderer_resources.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
-#include "net/base/net_errors.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
+#include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
+#include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebView.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/base/webui/jstemplate_builder.h"
 #include "url/gurl.h"
 
 using base::JSONWriter;
 using chrome_common_net::DnsProbeStatus;
-using chrome_common_net::DnsProbeStatusIsFinished;
 using chrome_common_net::DnsProbeStatusToString;
 using content::RenderThread;
 using content::RenderView;
@@ -38,123 +43,49 @@ using content::kUnreachableWebDataURL;
 
 namespace {
 
-bool IsLoadingErrorPage(blink::WebFrame* frame) {
+// Number of seconds to wait for the alternate error page server.  If it takes
+// too long, just use the local error page.
+static const int kAlterErrorPageFetchTimeoutSec = 3000;
+
+NetErrorHelperCore::PageType GetLoadingPageType(const blink::WebFrame* frame) {
   GURL url = frame->provisionalDataSource()->request().url();
-  if (!url.is_valid())
-    return false;
-  return url.spec() == kUnreachableWebDataURL;
+  if (!url.is_valid() || url.spec() != kUnreachableWebDataURL)
+    return NetErrorHelperCore::NON_ERROR_PAGE;
+  return NetErrorHelperCore::ERROR_PAGE;
 }
 
-bool IsMainFrame(const blink::WebFrame* frame) {
-  return !frame->parent();
-}
-
-// Returns whether |net_error| is a DNS-related error (and therefore whether
-// the tab helper should start a DNS probe after receiving it.)
-bool IsDnsError(const blink::WebURLError& error) {
-  return std::string(error.domain.utf8()) == net::kErrorDomain &&
-         (error.reason == net::ERR_NAME_NOT_RESOLVED ||
-          error.reason == net::ERR_NAME_RESOLUTION_FAILED);
+NetErrorHelperCore::FrameType GetFrameType(const blink::WebFrame* frame) {
+  if (!frame->parent())
+    return NetErrorHelperCore::MAIN_FRAME;
+  return NetErrorHelperCore::SUB_FRAME;
 }
 
 }  // namespace
 
 NetErrorHelper::NetErrorHelper(RenderView* render_view)
     : RenderViewObserver(render_view),
-      last_probe_status_(chrome_common_net::DNS_PROBE_POSSIBLE),
-      last_start_was_error_page_(false),
-      last_fail_was_dns_error_(false),
-      forwarding_probe_results_(false),
-      is_failed_post_(false) {
+      content::RenderViewObserverTracker<NetErrorHelper>(render_view),
+      core_(this) {
 }
 
 NetErrorHelper::~NetErrorHelper() {
 }
 
 void NetErrorHelper::DidStartProvisionalLoad(blink::WebFrame* frame) {
-  OnStartLoad(IsMainFrame(frame), IsLoadingErrorPage(frame));
-}
-
-void NetErrorHelper::DidFailProvisionalLoad(blink::WebFrame* frame,
-                                            const blink::WebURLError& error) {
-  const bool main_frame = IsMainFrame(frame);
-  const bool dns_error = IsDnsError(error);
-
-  OnFailLoad(main_frame, dns_error);
-
-  if (main_frame && dns_error) {
-    last_error_ = error;
-
-    blink::WebDataSource* data_source = frame->provisionalDataSource();
-    const blink::WebURLRequest& failed_request = data_source->request();
-    is_failed_post_ = EqualsASCII(failed_request.httpMethod(), "POST");
-  }
+  core_.OnStartLoad(GetFrameType(frame), GetLoadingPageType(frame));
 }
 
 void NetErrorHelper::DidCommitProvisionalLoad(blink::WebFrame* frame,
                                               bool is_new_navigation) {
-  OnCommitLoad(IsMainFrame(frame));
+  core_.OnCommitLoad(GetFrameType(frame));
 }
 
 void NetErrorHelper::DidFinishLoad(blink::WebFrame* frame) {
-  OnFinishLoad(IsMainFrame(frame));
+  core_.OnFinishLoad(GetFrameType(frame));
 }
 
-void NetErrorHelper::OnStartLoad(bool is_main_frame, bool is_error_page) {
-  DVLOG(1) << "OnStartLoad(is_main_frame=" << is_main_frame
-           << ", is_error_page=" << is_error_page << ")";
-  if (!is_main_frame)
-    return;
-
-  last_start_was_error_page_ = is_error_page;
-}
-
-void NetErrorHelper::OnFailLoad(bool is_main_frame, bool is_dns_error) {
-  DVLOG(1) << "OnFailLoad(is_main_frame=" << is_main_frame
-           << ", is_dns_error=" << is_dns_error << ")";
-
-  if (!is_main_frame)
-    return;
-
-  last_fail_was_dns_error_ = is_dns_error;
-
-  if (is_dns_error) {
-    last_probe_status_ = chrome_common_net::DNS_PROBE_POSSIBLE;
-    // If the helper was forwarding probe results and another DNS error has
-    // occurred, stop forwarding probe results until the corresponding (new)
-    // error page loads.
-    forwarding_probe_results_ = false;
-  }
-}
-
-void NetErrorHelper::OnCommitLoad(bool is_main_frame) {
-  DVLOG(1) << "OnCommitLoad(is_main_frame=" << is_main_frame << ")";
-
-  if (!is_main_frame)
-    return;
-
-  // Stop forwarding results.  If the page is a DNS error page, forwarding
-  // will resume once the page is loaded; if not, it should stay stopped until
-  // the next DNS error page.
-  forwarding_probe_results_ = false;
-}
-
-void NetErrorHelper::OnFinishLoad(bool is_main_frame) {
-  DVLOG(1) << "OnFinishLoad(is_main_frame=" << is_main_frame << ")";
-
-  if (!is_main_frame)
-    return;
-
-  // If a DNS error page just finished loading, start forwarding probe results
-  // to it.
-  forwarding_probe_results_ =
-      last_fail_was_dns_error_ && last_start_was_error_page_;
-
-  if (forwarding_probe_results_ &&
-      last_probe_status_ != chrome_common_net::DNS_PROBE_POSSIBLE) {
-    DVLOG(1) << "Error page finished loading; sending saved status.";
-    UpdateErrorPage();
-  }
+void NetErrorHelper::OnStop() {
+  core_.OnStop();
 }
 
 bool NetErrorHelper::OnMessageReceived(const IPC::Message& message) {
@@ -162,63 +93,59 @@ bool NetErrorHelper::OnMessageReceived(const IPC::Message& message) {
 
   IPC_BEGIN_MESSAGE_MAP(NetErrorHelper, message)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_NetErrorInfo, OnNetErrorInfo)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetAltErrorPageURL, OnSetAltErrorPageURL);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
   return handled;
 }
 
-// static
-bool NetErrorHelper::GetErrorStringsForDnsProbe(
+void NetErrorHelper::GetErrorHTML(
     blink::WebFrame* frame,
     const blink::WebURLError& error,
     bool is_failed_post,
-    const std::string& locale,
-    const std::string& accept_languages,
-    base::DictionaryValue* error_strings) {
-  if (!IsMainFrame(frame))
-    return false;
-
-  if (!IsDnsError(error))
-    return false;
-
-  // Get the strings for a fake "DNS probe possible" error.
-  LocalizedError::GetStrings(
-      chrome_common_net::DNS_PROBE_POSSIBLE,
-      chrome_common_net::kDnsProbeErrorDomain,
-      error.unreachableURL,
-      is_failed_post, locale, accept_languages, error_strings);
-  return true;
+    std::string* error_html) {
+  core_.GetErrorHTML(GetFrameType(frame), error, is_failed_post, error_html);
 }
 
-void NetErrorHelper::OnNetErrorInfo(int status_num) {
-  DCHECK(status_num >= 0 && status_num < chrome_common_net::DNS_PROBE_MAX);
+void NetErrorHelper::GenerateLocalizedErrorPage(const blink::WebURLError& error,
+                                                bool is_failed_post,
+                                                std::string* error_html) const {
+  error_html->clear();
 
-  DVLOG(1) << "Received status " << DnsProbeStatusToString(status_num);
-
-  DnsProbeStatus status = static_cast<DnsProbeStatus>(status_num);
-  DCHECK_NE(chrome_common_net::DNS_PROBE_POSSIBLE, status);
-
-  if (!(last_fail_was_dns_error_ || forwarding_probe_results_)) {
-    DVLOG(1) << "Ignoring NetErrorInfo: no DNS error";
-    return;
+  int resource_id = IDR_NET_ERROR_HTML;
+  const base::StringPiece template_html(
+      ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id));
+  if (template_html.empty()) {
+    NOTREACHED() << "unable to load template.";
+  } else {
+    base::DictionaryValue error_strings;
+    LocalizedError::GetStrings(error.reason, error.domain.utf8(),
+                               error.unreachableURL, is_failed_post,
+                               RenderThread::Get()->GetLocale(),
+                               render_view()->GetAcceptLanguages(),
+                               &error_strings);
+    // "t" is the id of the template's root node.
+    *error_html = webui::GetTemplatesHtml(template_html, &error_strings, "t");
   }
-
-  last_probe_status_ = status;
-
-  if (forwarding_probe_results_)
-    UpdateErrorPage();
 }
 
-void NetErrorHelper::UpdateErrorPage() {
-  DCHECK(forwarding_probe_results_);
+void NetErrorHelper::LoadErrorPageInMainFrame(const std::string& html,
+                                              const GURL& failed_url) {
+  blink::WebView* web_view = render_view()->GetWebView();
+  if (!web_view)
+    return;
+  blink::WebFrame* frame = web_view->mainFrame();
+  frame->loadHTMLString(html, GURL(kUnreachableWebDataURL), failed_url, true);
+}
 
-  blink::WebURLError error = GetUpdatedError();
+void NetErrorHelper::UpdateErrorPage(const blink::WebURLError& error,
+                                     bool is_failed_post) {
   base::DictionaryValue error_strings;
   LocalizedError::GetStrings(error.reason,
                              error.domain.utf8(),
                              error.unreachableURL,
-                             is_failed_post_,
+                             is_failed_post,
                              RenderThread::Get()->GetLocale(),
                              render_view()->GetAcceptLanguages(),
                              &error_strings);
@@ -234,31 +161,54 @@ void NetErrorHelper::UpdateErrorPage() {
     return;
   }
 
-  DVLOG(1) << "Updating error page with status "
-           << chrome_common_net::DnsProbeStatusToString(last_probe_status_);
-  DVLOG(2) << "New strings: " << js;
-
   base::string16 frame_xpath;
   render_view()->EvaluateScript(frame_xpath, js16, 0, false);
-
-  UMA_HISTOGRAM_ENUMERATION("DnsProbe.ErrorPageUpdateStatus",
-                            last_probe_status_,
-                            chrome_common_net::DNS_PROBE_MAX);
 }
 
-blink::WebURLError NetErrorHelper::GetUpdatedError() const {
-  // If a probe didn't run or wasn't conclusive, restore the original error.
-  if (last_probe_status_ == chrome_common_net::DNS_PROBE_NOT_RUN ||
-      last_probe_status_ ==
-          chrome_common_net::DNS_PROBE_FINISHED_INCONCLUSIVE) {
-    return last_error_;
+void NetErrorHelper::FetchErrorPage(const GURL& url) {
+  DCHECK(!alt_error_page_fetcher_.get());
+
+  blink::WebView* web_view = render_view()->GetWebView();
+  if (!web_view)
+    return;
+  blink::WebFrame* frame = web_view->mainFrame();
+
+  alt_error_page_fetcher_.reset(
+      content::ResourceFetcher::Create(
+          url, frame, blink::WebURLRequest::TargetIsMainFrame,
+          base::Bind(&NetErrorHelper::OnAlternateErrorPageRetrieved,
+                     base::Unretained(this))));
+
+  alt_error_page_fetcher_->SetTimeout(
+      base::TimeDelta::FromSeconds(kAlterErrorPageFetchTimeoutSec));
+}
+
+void NetErrorHelper::CancelFetchErrorPage() {
+  alt_error_page_fetcher_.reset();
+}
+
+void NetErrorHelper::OnNetErrorInfo(int status_num) {
+  DCHECK(status_num >= 0 && status_num < chrome_common_net::DNS_PROBE_MAX);
+
+  DVLOG(1) << "Received status " << DnsProbeStatusToString(status_num);
+
+  core_.OnNetErrorInfo(static_cast<DnsProbeStatus>(status_num));
+}
+
+void NetErrorHelper::OnSetAltErrorPageURL(const GURL& alt_error_page_url) {
+  core_.set_alt_error_page_url(alt_error_page_url);
+}
+
+void NetErrorHelper::OnAlternateErrorPageRetrieved(
+    const blink::WebURLResponse& response,
+    const std::string& data) {
+  // The fetcher may only be deleted after |data| is passed to |core_|.  Move
+  // it to a temporary to prevent any potential re-entrancy issues.
+  scoped_ptr<content::ResourceFetcher> fetcher(
+      alt_error_page_fetcher_.release());
+  if (!response.isNull() && response.httpStatusCode() == 200) {
+    core_.OnAlternateErrorPageFetched(data);
+  } else {
+    core_.OnAlternateErrorPageFetched("");
   }
-
-  blink::WebURLError error;
-  error.domain = blink::WebString::fromUTF8(
-      chrome_common_net::kDnsProbeErrorDomain);
-  error.reason = last_probe_status_;
-  error.unreachableURL = last_error_.unreachableURL;
-
-  return error;
 }

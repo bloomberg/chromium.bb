@@ -152,10 +152,10 @@ bool AwContentRendererClient::HasErrorPage(int http_status_code,
 }
 
 void AwContentRendererClient::GetNavigationErrorStrings(
+    content::RenderView* /* render_view */,
     blink::WebFrame* /* frame */,
     const blink::WebURLRequest& failed_request,
     const blink::WebURLError& error,
-    const std::string& accept_languages,
     std::string* error_html,
     base::string16* error_description) {
   if (error_html) {

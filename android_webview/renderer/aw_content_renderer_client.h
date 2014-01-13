@@ -29,10 +29,10 @@ class AwContentRendererClient : public content::ContentRendererClient {
   virtual bool HasErrorPage(int http_status_code,
                             std::string* error_domain) OVERRIDE;
   virtual void GetNavigationErrorStrings(
+      content::RenderView* render_view,
       blink::WebFrame* frame,
       const blink::WebURLRequest& failed_request,
       const blink::WebURLError& error,
-      const std::string& accept_languages,
       std::string* error_html,
       base::string16* error_description) OVERRIDE;
   virtual unsigned long long VisitedLinkHash(const char* canonical_url,

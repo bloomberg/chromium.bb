@@ -1133,11 +1133,6 @@ IPC_MESSAGE_ROUTED2(ViewMsg_ExtendSelectionAndDelete,
 // to prevent target URLs spamming the browser.
 IPC_MESSAGE_ROUTED0(ViewMsg_UpdateTargetURL_ACK)
 
-
-// Sets the alternate error page URL (link doctor) for the renderer process.
-IPC_MESSAGE_ROUTED1(ViewMsg_SetAltErrorPageURL,
-                    GURL)
-
 // Notifies the color chooser client that the user selected a color.
 IPC_MESSAGE_ROUTED2(ViewMsg_DidChooseColorResponse, unsigned, SkColor)
 

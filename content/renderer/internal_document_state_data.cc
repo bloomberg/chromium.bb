@@ -53,9 +53,4 @@ InternalDocumentStateData* InternalDocumentStateData::FromDocumentState(
 InternalDocumentStateData::~InternalDocumentStateData() {
 }
 
-void InternalDocumentStateData::set_alt_error_page_fetcher(
-    AltErrorPageResourceFetcher* f) {
-  alt_error_page_fetcher_.reset(f);
-}
-
 }  // namespace content

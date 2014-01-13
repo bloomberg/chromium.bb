@@ -959,10 +959,10 @@ void RenderFrameImpl::didFailProvisionalLoad(
   params.is_main_frame = !frame->parent();
   params.error_code = error.reason;
   GetContentClient()->renderer()->GetNavigationErrorStrings(
+      render_view_,
       frame,
       failed_request,
       error,
-      render_view_->renderer_preferences_.accept_languages,
       NULL,
       &params.error_description);
   params.url = error.unreachableURL;
@@ -1031,13 +1031,9 @@ void RenderFrameImpl::didFailProvisionalLoad(
         replace;
   }
 
-  // Provide the user with a more helpful error page?
-  if (render_view_->MaybeLoadAlternateErrorPage(frame, error, replace))
-    return;
-
-  // Fallback to a local error page.
+  // Load an error page.
   render_view_->LoadNavigationErrorPage(
-      frame, failed_request, error, std::string(), replace);
+      frame, failed_request, error, replace);
 }
 
 void RenderFrameImpl::didCommitProvisionalLoad(blink::WebFrame* frame,

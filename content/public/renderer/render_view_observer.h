@@ -112,6 +112,8 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Listener,
   virtual void ClosePage() {}
   virtual void OrientationChangeEvent(int orientation) {}
 
+  virtual void OnStop() {}
+
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 

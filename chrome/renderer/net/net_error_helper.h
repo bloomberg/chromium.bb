@@ -8,34 +8,39 @@
 #include <string>
 
 #include "chrome/common/net/net_error_info.h"
+#include "chrome/renderer/net/net_error_helper_core.h"
 #include "content/public/renderer/render_view_observer.h"
-#include "third_party/WebKit/public/platform/WebURLError.h"
+#include "content/public/renderer/render_view_observer_tracker.h"
 
-namespace base {
-class DictionaryValue;
+class GURL;
+
+namespace content {
+class ResourceFetcher;
 }
 
 namespace blink {
 class WebFrame;
+class WebURLResponse;
+struct WebURLError;
 }
 
 // Listens for NetErrorInfo messages from the NetErrorTabHelper on the
 // browser side and updates the error page with more details (currently, just
 // DNS probe results) if/when available.
-class NetErrorHelper : public content::RenderViewObserver {
+class NetErrorHelper
+    : public content::RenderViewObserver,
+      public content::RenderViewObserverTracker<NetErrorHelper>,
+      public NetErrorHelperCore::Delegate {
  public:
   explicit NetErrorHelper(content::RenderView* render_view);
   virtual ~NetErrorHelper();
 
   // RenderViewObserver implementation.
   virtual void DidStartProvisionalLoad(blink::WebFrame* frame) OVERRIDE;
-  virtual void DidFailProvisionalLoad(
-      blink::WebFrame* frame,
-      const blink::WebURLError& error) OVERRIDE;
-  virtual void DidCommitProvisionalLoad(
-      blink::WebFrame* frame,
-      bool is_new_navigation) OVERRIDE;
+  virtual void DidCommitProvisionalLoad(blink::WebFrame* frame,
+                                        bool is_new_navigation) OVERRIDE;
   virtual void DidFinishLoad(blink::WebFrame* frame) OVERRIDE;
+  virtual void OnStop() OVERRIDE;
 
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -45,58 +50,35 @@ class NetErrorHelper : public content::RenderViewObserver {
   // |is_failed_post|, and |locale| with suitable strings and returns true.
   // If not, returns false, in which case the caller should look up error
   // strings directly using LocalizedError::GetNavigationErrorStrings.
-  static bool GetErrorStringsForDnsProbe(
-      blink::WebFrame* frame,
-      const blink::WebURLError& error,
-      bool is_failed_post,
-      const std::string& locale,
-      const std::string& accept_languages,
-      base::DictionaryValue* error_strings);
-
- protected:
-  // These methods handle tracking the actual state of the page; this allows
-  // unit-testing of the state tracking without having to mock out WebFrames
-  // and such.
-  void OnStartLoad(bool is_main_frame, bool is_error_page);
-  void OnFailLoad(bool is_main_frame, bool is_dns_error);
-  void OnCommitLoad(bool is_main_frame);
-  void OnFinishLoad(bool is_main_frame);
-
-  void OnNetErrorInfo(int status);
-
-  // |UpdateErrorPage| is virtual so it can be mocked out in the unittest.
-  virtual void UpdateErrorPage();
-
-  // The last DnsProbeStatus received from the browser.
-  chrome_common_net::DnsProbeStatus last_probe_status_;
+  //
+  // Updates the NetErrorHelper with the assumption the page will be loaded
+  // immediately.
+  void GetErrorHTML(blink::WebFrame* frame,
+                    const blink::WebURLError& error,
+                    bool is_failed_post,
+                    std::string* error_html);
 
  private:
-  blink::WebURLError GetUpdatedError() const;
+  // NetErrorHelperCore::Delegate implementation:
+  virtual void GenerateLocalizedErrorPage(const blink::WebURLError& error,
+                                          bool is_failed_post,
+                                          std::string* html) const OVERRIDE;
+  virtual void LoadErrorPageInMainFrame(const std::string& html,
+                                        const GURL& failed_url) OVERRIDE;
+  virtual void UpdateErrorPage(const blink::WebURLError& error,
+                               bool is_failed_post) OVERRIDE;
+  virtual void FetchErrorPage(const GURL& url) OVERRIDE;
+  virtual void CancelFetchErrorPage() OVERRIDE;
 
-  // Whether the last provisional load started was for an error page.
-  bool last_start_was_error_page_;
+  void OnNetErrorInfo(int status);
+  void OnSetAltErrorPageURL(const GURL& alternate_error_page_url);
 
-  // Whether the last provisional load failure failed with a DNS error.
-  bool last_fail_was_dns_error_;
+  void OnAlternateErrorPageRetrieved(const blink::WebURLResponse& response,
+                                     const std::string& data);
 
-  // Ideally, this would be simply "last_commit_was_dns_error_page_".
-  //
-  // Unfortunately, that breaks if two DNS errors occur in a row; after the
-  // second failure, but before the second page commits, the helper can receive
-  // probe results.  If all it knows is that the last commit was a DNS error
-  // page, it will cheerfully forward the results for the second probe to the
-  // first page.
-  //
-  // Thus, the semantics of this flag are a little weird.  It is set whenever
-  // a DNS error page commits, and cleared whenever any other page commits,
-  // but it is also cleared whenever a DNS error occurs, to prevent the race
-  // described above.
-  bool forwarding_probe_results_;
+  scoped_ptr<content::ResourceFetcher> alt_error_page_fetcher_;
 
-  // The last main frame error seen by the helper.
-  blink::WebURLError last_error_;
-
-  bool is_failed_post_;
+  NetErrorHelperCore core_;
 };
 
 #endif  // CHROME_RENDERER_NET_NET_ERROR_HELPER_H_

@@ -84,10 +84,10 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   virtual bool ShouldSuppressErrorPage(content::RenderFrame* render_frame,
                                        const GURL& url) OVERRIDE;
   virtual void GetNavigationErrorStrings(
+      content::RenderView* render_view,
       blink::WebFrame* frame,
       const blink::WebURLRequest& failed_request,
       const blink::WebURLError& error,
-      const std::string& accept_languages,
       std::string* error_html,
       base::string16* error_description) OVERRIDE;
   virtual void DeferMediaLoad(content::RenderFrame* render_frame,

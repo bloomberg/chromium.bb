@@ -2077,10 +2077,10 @@ class SuppressErrorPageTest : public RenderViewTest {
     }
 
     virtual void GetNavigationErrorStrings(
+        content::RenderView* render_view,
         blink::WebFrame* frame,
         const blink::WebURLRequest& failed_request,
         const blink::WebURLError& error,
-        const std::string& accept_languages,
         std::string* error_html,
         base::string16* error_description) OVERRIDE {
       if (error_html)

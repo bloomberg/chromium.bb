@@ -1980,10 +1980,6 @@ bool RenderViewHostImpl::CanCommitURL(const GURL& url) {
   return GetContentClient()->browser()->CanCommitURL(GetProcess(), url);
 }
 
-void RenderViewHostImpl::SetAltErrorPageURL(const GURL& url) {
-  Send(new ViewMsg_SetAltErrorPageURL(GetRoutingID(), url));
-}
-
 void RenderViewHostImpl::ExitFullscreen() {
   RejectMouseLockOrUnlockIfNecessary();
   // Notify delegate_ and renderer of fullscreen state change.

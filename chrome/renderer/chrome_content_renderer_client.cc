@@ -962,10 +962,10 @@ bool ChromeContentRendererClient::ShouldSuppressErrorPage(
 }
 
 void ChromeContentRendererClient::GetNavigationErrorStrings(
+    content::RenderView* render_view,
     blink::WebFrame* frame,
     const blink::WebURLRequest& failed_request,
     const blink::WebURLError& error,
-    const std::string& accept_languages,
     std::string* error_html,
     base::string16* error_description) {
   const GURL failed_url = error.unreachableURL;
@@ -981,36 +981,26 @@ void ChromeContentRendererClient::GetNavigationErrorStrings(
 
   if (error_html) {
     // Use a local error page.
-    int resource_id;
-    base::DictionaryValue error_strings;
     if (extension && !extension->from_bookmark()) {
-      LocalizedError::GetAppErrorStrings(failed_url, extension, &error_strings);
-
       // TODO(erikkay): Should we use a different template for different
       // error messages?
-      resource_id = IDR_ERROR_APP_HTML;
-    } else {
-      const std::string locale = RenderThread::Get()->GetLocale();
-      if (!NetErrorHelper::GetErrorStringsForDnsProbe(
-              frame, error, is_post, locale, accept_languages,
-              &error_strings)) {
-        // In most cases, the NetErrorHelper won't provide DNS-probe-specific
-        // error pages, so fall back to LocalizedError.
-        LocalizedError::GetStrings(error.reason, error.domain.utf8(),
-                                   error.unreachableURL, is_post, locale,
-                                   accept_languages, &error_strings);
+      int resource_id = IDR_ERROR_APP_HTML;
+      const base::StringPiece template_html(
+          ResourceBundle::GetSharedInstance().GetRawDataResource(
+              resource_id));
+      if (template_html.empty()) {
+        NOTREACHED() << "unable to load template. ID: " << resource_id;
+      } else {
+        base::DictionaryValue error_strings;
+        LocalizedError::GetAppErrorStrings(failed_url, extension,
+                                           &error_strings);
+        // "t" is the id of the template's root node.
+        *error_html = webui::GetTemplatesHtml(template_html, &error_strings,
+                                              "t");
       }
-      resource_id = IDR_NET_ERROR_HTML;
-    }
-
-    const base::StringPiece template_html(
-        ResourceBundle::GetSharedInstance().GetRawDataResource(
-            resource_id));
-    if (template_html.empty()) {
-      NOTREACHED() << "unable to load template. ID: " << resource_id;
     } else {
-      // "t" is the id of the templates root node.
-      *error_html = webui::GetTemplatesHtml(template_html, &error_strings, "t");
+      NetErrorHelper* helper = NetErrorHelper::Get(render_view);
+      helper->GetErrorHTML(frame, error, is_post, error_html);
     }
   }
 
