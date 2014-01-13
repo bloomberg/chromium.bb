@@ -2451,7 +2451,7 @@ libs-support-native() {
 
   local flags="--pnacl-allow-native --pnacl-allow-translate -Wall -Werror"
   local cc_cmd="${PNACL_CC} -arch ${arch} --pnacl-bias=${arch} ${flags} \
-      -I../../.."
+      -I../../.. -O3"
 
   spushd "${PNACL_SUPPORT}"
 
@@ -2474,14 +2474,14 @@ libs-support-native() {
   local tmpdir="${TC_BUILD}/libs-support-native"
   rm -rf "${tmpdir}"
   mkdir -p "${tmpdir}"
-  ${cc_cmd} -c pnacl_irt.c -O2 -o "${tmpdir}"/pnacl_irt.o
+  ${cc_cmd} -c pnacl_irt.c -o "${tmpdir}"/pnacl_irt.o
   ${cc_cmd} -c setjmp_${arch/-/_}.S -o "${tmpdir}"/setjmp.o
 
   # Some of the support code lives in third_party/ because it's based on code
   # from other open-source projects.
   ${cc_cmd} \
     -c "${NACL_SRC_THIRD_PARTY_MOD}/pnacl_native_newlib_subset/string.c" \
-    -O3 -std=c99 -o "${tmpdir}"/string.o
+    -std=c99 -o "${tmpdir}"/string.o
 
   # For ARM, also compile aeabi_read_tp.S
   if  [ ${arch} == arm ] ; then
