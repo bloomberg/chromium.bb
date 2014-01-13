@@ -867,4 +867,16 @@ crbug.com/333791 [ Linux Win7 Debug ] svg/animations/repeatn-event-1d.svg [ Pass
 
 crbug.com/330617 inspector/profiler/heap-snapshot-loader.html [ Pass Failure ]
 crbug.com/333860 inspector/profiler/cpu-profiler-save-load.html [ Pass Failure ]
+
+crbug.com/333882 [ Win ] inspector/editor/text-editor-autocomplete.html [ Pass Failure ]
+crbug.com/333882 [ Win ] inspector/editor/text-editor-enter-behaviour.html [ Pass Failure ]
+crbug.com/333882 [ Win ] inspector/editor/text-editor-formatter.html [ Pass Failure ]
+crbug.com/333882 [ Win ] inspector/editor/text-editor-home-button.html [ Pass Failure ]
+crbug.com/333882 [ Win ] inspector/editor/text-editor-selection-to-search.html [ Pass Failure ]
+crbug.com/333882 [ Win ] inspector/editor/text-editor-smart-braces.html [ Pass Failure ]
+crbug.com/333882 [ Win ] inspector/editor/text-editor-word-jumps.html [ Pass Timeout ]
+crbug.com/333882 [ Win ] inspector/elements/edit-trimmed-attribute-value.html [ Pass Failure ]
+crbug.com/333882 [ Win7 ] inspector/styles/styles-change-node-while-editing.html [ Pass Failure ]
+crbug.com/333882 [ Win ] inspector/styles/undo-add-rule-crash.html [ Pass Timeout ]
+
 crbug.com/333880 [ Win7 Debug ] media/W3C/video/events/event_order_loadstart_progress.html [ Pass Failure ]
