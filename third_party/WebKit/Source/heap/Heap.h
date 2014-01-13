@@ -801,7 +801,7 @@ public:
         ForcedForTesting
     };
 
-    static void init(intptr_t* startOfStack);
+    static void init();
     static void shutdown();
 
     static bool contains(Address);

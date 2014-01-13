@@ -160,13 +160,12 @@ private:
 
     static void threadFunc(void* data)
     {
-        intptr_t stackMarker;
-        reinterpret_cast<ThreadedHeapTester*>(data)->runThread(&stackMarker);
+        reinterpret_cast<ThreadedHeapTester*>(data)->runThread();
     }
 
-    void runThread(intptr_t* startOfStack)
+    void runThread()
     {
-        ThreadState::attach(startOfStack);
+        ThreadState::attach();
 
         int gcCount = 0;
         while (!done()) {
@@ -568,7 +567,7 @@ private:
 
 TEST(HeapTest, Threading)
 {
-    Heap::init(0);
+    Heap::init();
     ThreadedHeapTester::test();
     Heap::shutdown();
 }
@@ -578,7 +577,7 @@ TEST(HeapTest, Init)
     // FIXME: init and shutdown should be called via Blink
     // initialization in the test runner. This test can be removed
     // when that is done.
-    Heap::init(0);
+    Heap::init();
     Heap::shutdown();
 }
 
@@ -586,7 +585,7 @@ TEST(HeapTest, SimpleAllocation)
 {
     // FIXME: init and shutdown should be called via Blink
     // initialization in the test runner.
-    Heap::init(0);
+    Heap::init();
 
     // Get initial heap stats.
     HeapStats initialHeapStats;
@@ -612,7 +611,7 @@ TEST(HeapTest, SimplePersistent)
 {
     // FIXME: init and shutdown should be called via Blink
     // initialization in the test runner.
-    Heap::init(0);
+    Heap::init();
 
     {
         Persistent<TraceCounter> traceCounter = TraceCounter::create();
@@ -636,7 +635,7 @@ TEST(HeapTest, SimpleFinalization)
 {
     // FIXME: init and shutdown should be called via Blink
     // initialization in the test runner.
-    Heap::init(0);
+    Heap::init();
 
     {
         Persistent<SimpleFinalizedObject> finalized = SimpleFinalizedObject::create();
@@ -655,7 +654,7 @@ TEST(HeapTest, TypedHeapSanity)
 {
     // FIXME: init and shutdown should be called via Blink
     // initialization in the test runner.
-    Heap::init(0);
+    Heap::init();
 
     {
         // We use TraceCounter for allocating an object on the general heap.
@@ -672,7 +671,7 @@ TEST(HeapTest, NoAllocation)
 {
     // FIXME: init and shutdown should be called via Blink
     // initialization in the test runner.
-    Heap::init(0);
+    Heap::init();
 
     EXPECT_TRUE(ThreadState::current()->isAllocationAllowed());
     {
@@ -689,7 +688,7 @@ TEST(HeapTest, Members)
 {
     // FIXME: init and shutdown should be called via Blink
     // initialization in the test runner.
-    Heap::init(0);
+    Heap::init();
 
     Bar::s_live = 0;
     {
@@ -719,7 +718,7 @@ TEST(HeapTest, DeepTest)
 {
     // FIXME: init and shutdown should be called via Blink
     // initialization in the test runner.
-    Heap::init(0);
+    Heap::init();
 
     // FIXME: Increase depth to 100000 when conservative stack
     // scanning is implemented. Allocating 100000 things here
@@ -751,7 +750,7 @@ TEST(HeapTest, WideTest)
 {
     // FIXME: init and shutdown should be called via Blink
     // initialization in the test runner.
-    Heap::init(0);
+    Heap::init();
 
     Bar::s_live = 0;
     {
@@ -779,7 +778,7 @@ TEST(HeapTest, HashMapOfMembers)
 {
     // FIXME: init and shutdown should be called via Blink
     // initialization in the test runner.
-    Heap::init(0);
+    Heap::init();
 
     HeapStats initialHeapSize;
     IntWrapper::s_destructorCalls = 0;
@@ -875,7 +874,7 @@ TEST(HeapTest, NestedAllocation)
 {
     // FIXME: init and shutdown should be called via Blink
     // initialization in the test runner.
-    Heap::init(0);
+    Heap::init();
 
     HeapStats initialHeapSize;
     clearOutOldGarbage(&initialHeapSize);
@@ -893,7 +892,7 @@ TEST(HeapTest, LargeObjects)
 {
     // FIXME: init and shutdown should be called via Blink
     // initialization in the test runner.
-    Heap::init(0);
+    Heap::init();
 
     HeapStats initialHeapSize;
     clearOutOldGarbage(&initialHeapSize);
@@ -948,7 +947,7 @@ TEST(HeapTest, RefCountedGarbageCollected)
 {
     // FIXME: init and shutdown should be called via Blink
     // initialization in the test runner.
-    Heap::init(0);
+    Heap::init();
 
     RefCountedAndGarbageCollected::s_destructorCalls = 0;
     {
@@ -985,7 +984,7 @@ TEST(HeapTest, WeakMembers)
 {
     // FIXME: init and shutdown should be called via Blink
     // initialization in the test runner.
-    Heap::init(0);
+    Heap::init();
 
     Bar::s_live = 0;
     {
