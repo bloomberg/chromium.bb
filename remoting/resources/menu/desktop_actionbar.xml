@@ -9,6 +9,9 @@
             android:title="@string/actionbar_hide"
             android:icon="@android:drawable/ic_menu_close_clear_cancel"
             android:showAsAction="ifRoom|withText"/>
+    <item android:id="@+id/actionbar_send_ctrl_alt_del"
+            android:title="@string/actionbar_send_ctrl_alt_del"
+            android:showAsAction="withText"/>
     <item android:id="@+id/actionbar_disconnect"
             android:title="@string/actionbar_disconnect"
             android:showAsAction="withText"/>

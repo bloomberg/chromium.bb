@@ -23,6 +23,7 @@
     <string name="actionbar_disconnect">Disconnect</string>
     <string name="actionbar_hide">Hide</string>
     <string name="actionbar_keyboard">Keyboard</string>
+    <string name="actionbar_send_ctrl_alt_del">Send Ctrl-Alt-Del</string>
 
     <!--Informative messages-->
     <string name="msg_pin_canceled">No PIN was provided, so the connection attempt was canceled</string>
