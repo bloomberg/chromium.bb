@@ -169,9 +169,6 @@ void MockRenderThread::SetIdleNotificationDelayInMs(
     int64 idle_notification_delay_in_ms) {
 }
 
-void MockRenderThread::ToggleWebKitSharedTimer(bool suspend) {
-}
-
 void MockRenderThread::UpdateHistograms(int sequence_number) {
 }
 

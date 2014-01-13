@@ -847,17 +847,6 @@ void RenderThreadImpl::SetIdleNotificationDelayInMs(
   idle_notification_delay_in_ms_ = idle_notification_delay_in_ms;
 }
 
-void RenderThreadImpl::ToggleWebKitSharedTimer(bool suspend) {
-  if (suspend_webkit_shared_timer_) {
-    EnsureWebKitInitialized();
-    if (suspend) {
-      webkit_platform_support_->SuspendSharedTimer();
-    } else {
-      webkit_platform_support_->ResumeSharedTimer();
-    }
-  }
-}
-
 void RenderThreadImpl::UpdateHistograms(int sequence_number) {
   child_histogram_message_filter()->SendHistograms(sequence_number);
 }
@@ -1287,7 +1276,14 @@ void RenderThreadImpl::OnSetRendererProcessID(base::ProcessId process_id) {
 
 #if defined(OS_ANDROID)
 void RenderThreadImpl::OnSetWebKitSharedTimersSuspended(bool suspend) {
-  ToggleWebKitSharedTimer(suspend);
+  if (suspend_webkit_shared_timer_) {
+    EnsureWebKitInitialized();
+    if (suspend) {
+      webkit_platform_support_->SuspendSharedTimer();
+    } else {
+      webkit_platform_support_->ResumeSharedTimer();
+    }
+  }
 }
 #endif
 

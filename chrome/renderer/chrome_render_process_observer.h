@@ -62,7 +62,6 @@ class ChromeRenderProcessObserver : public content::RenderProcessObserver {
                             const std::string& group_name);
   void OnGetV8HeapStats();
   void OnPurgeMemory();
-  void OnToggleWebKitSharedTimer(bool suspend);
 
   static bool is_incognito_process_;
   scoped_ptr<content::ResourceDispatcherDelegate> resource_delegate_;

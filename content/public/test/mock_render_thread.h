@@ -66,7 +66,6 @@ class MockRenderThread : public RenderThread {
   virtual int64 GetIdleNotificationDelayInMs() const OVERRIDE;
   virtual void SetIdleNotificationDelayInMs(
       int64 idle_notification_delay_in_ms) OVERRIDE;
-  virtual void ToggleWebKitSharedTimer(bool suspend) OVERRIDE;
   virtual void UpdateHistograms(int sequence_number) OVERRIDE;
   virtual int PostTaskToAllWebWorkers(const base::Closure& closure) OVERRIDE;
   virtual bool ResolveProxy(const GURL& url, std::string* proxy_list) OVERRIDE;
