@@ -868,3 +868,9 @@ crbug.com/329543 [ Mac ] fast/text/international/vertical-text-glyph-test.html [
 crbug.com/329543 [ Mac ] fast/writing-mode/text-orientation-basic.html [ NeedsRebaseline ]
 
 crbug.com/333772 svg/animations/discard-check-removal-order.html [ Pass Failure ]
+
+# Linux Release below is actually referring LinuxASAN
+crbug.com/333791 [ Linux Release ] svg/animations/repeatn-event-1b.svg [ Pass ImageOnlyFailure ]
+crbug.com/333791 [ Linux Release ] svg/animations/repeatn-event-1d.svg [ Pass ImageOnlyFailure ]
+crbug.com/333791 [ Linux Win7 Debug ] svg/animations/repeatn-event-1b.svg [ Pass ImageOnlyFailure ]
+crbug.com/333791 [ Linux Win7 Debug ] svg/animations/repeatn-event-1d.svg [ Pass ImageOnlyFailure ]
