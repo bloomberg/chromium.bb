@@ -141,13 +141,6 @@ crbug.com/192172 [ Debug ] compositing/rtl/rtl-iframe-fixed-overflow-scrolled.ht
 crbug.com/192172 [ Debug ] virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Failure Pass ]
 crbug.com/192172 [ Debug ] compositing/rtl/rtl-iframe-fixed-overflow.html [ Failure Pass ]
 crbug.com/192172 [ Debug ] virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow.html [ Failure Pass ]
-# All the above are also flaky on LinuxASAN, so mark these as well:
-crbug.com/192172 [ Linux Release ] compositing/rtl/rtl-iframe-absolute-overflow.html [ Failure Pass ]
-crbug.com/192172 [ Linux Release ] virtual/softwarecompositing/rtl/rtl-iframe-absolute-overflow.html [ Failure Pass ]
-crbug.com/192172 [ Linux Release ] compositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Failure Pass ]
-crbug.com/192172 [ Linux Release ] virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Failure Pass ]
-crbug.com/192172 [ Linux Release ] compositing/rtl/rtl-iframe-fixed-overflow.html [ Failure Pass ]
-crbug.com/192172 [ Linux Release ] virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow.html [ Failure Pass ]
 
 crbug.com/239811 crbug.com/229113 http/tests/history/redirect-js-location-assign-0-seconds.html [ Failure Pass ]
 
@@ -847,9 +840,6 @@ crbug.com/333242 svg/dynamic-updates/SVGUseElement-svgdom-href1-prop.html [ Pass
 
 crbug.com/333772 svg/animations/discard-check-removal-order.html [ Pass Failure ]
 
-# Linux Release below is actually referring LinuxASAN
-crbug.com/333791 [ Linux Release ] svg/animations/repeatn-event-1b.svg [ Pass ImageOnlyFailure ]
-crbug.com/333791 [ Linux Release ] svg/animations/repeatn-event-1d.svg [ Pass ImageOnlyFailure ]
 crbug.com/333791 [ Linux Win7 Debug ] svg/animations/repeatn-event-1b.svg [ Pass ImageOnlyFailure ]
 crbug.com/333791 [ Linux Win7 Debug ] svg/animations/repeatn-event-1d.svg [ Pass ImageOnlyFailure ]
 
