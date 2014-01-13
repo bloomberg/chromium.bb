@@ -77,24 +77,11 @@ QualifiedName::QualifiedName(const AtomicString& p, const AtomicString& l, const
 {
     QualifiedNameComponents components = { p.impl(), l.impl(), n.isEmpty() ? nullAtom.impl() : n.impl() };
     QualifiedNameCache::AddResult addResult = qualifiedNameCache().add<QNameComponentsTranslator>(components);
-    m_impl = *addResult.iterator;
-    if (!addResult.isNewEntry)
-        m_impl->ref();
+    m_impl = addResult.isNewEntry ? adoptRef(*addResult.iterator) : *addResult.iterator;
 }
 
 QualifiedName::~QualifiedName()
 {
-    deref();
-}
-
-void QualifiedName::deref()
-{
-#ifdef QNAME_DEFAULT_CONSTRUCTOR
-    if (!m_impl)
-        return;
-#endif
-    ASSERT(!isHashTableDeletedValue());
-    m_impl->deref();
 }
 
 QualifiedName::QualifiedNameImpl::~QualifiedNameImpl()

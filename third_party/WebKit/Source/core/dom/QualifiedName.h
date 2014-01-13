@@ -67,15 +67,17 @@ public:
     };
 
     QualifiedName(const AtomicString& prefix, const AtomicString& localName, const AtomicString& namespaceURI);
-    QualifiedName(WTF::HashTableDeletedValueType) : m_impl(hashTableDeletedValue()) { }
-    bool isHashTableDeletedValue() const { return m_impl == hashTableDeletedValue(); }
     ~QualifiedName();
 #ifdef QNAME_DEFAULT_CONSTRUCTOR
-    QualifiedName() : m_impl(0) { }
+    QualifiedName() { }
 #endif
 
-    QualifiedName(const QualifiedName& other) : m_impl(other.m_impl) { ref(); }
-    const QualifiedName& operator=(const QualifiedName& other) { other.ref(); deref(); m_impl = other.m_impl; return *this; }
+    QualifiedName(const QualifiedName& other) : m_impl(other.m_impl) { }
+    const QualifiedName& operator=(const QualifiedName& other) { m_impl = other.m_impl; return *this; }
+
+    // Hash table deleted values, which are only constructed and never copied or destroyed.
+    QualifiedName(WTF::HashTableDeletedValueType) : m_impl(WTF::HashTableDeletedValue) { }
+    bool isHashTableDeletedValue() const { return m_impl.isHashTableDeletedValue(); }
 
     bool operator==(const QualifiedName& other) const { return m_impl == other.m_impl; }
     bool operator!=(const QualifiedName& other) const { return !(*this == other); }
@@ -96,18 +98,13 @@ public:
 
     String toString() const;
 
-    QualifiedNameImpl* impl() const { return m_impl; }
+    QualifiedNameImpl* impl() const { return m_impl.get(); }
 
     // Init routine for globals
     static void init();
 
 private:
-    void ref() const { m_impl->ref(); }
-    void deref();
-
-    static QualifiedNameImpl* hashTableDeletedValue() { return RefPtr<QualifiedNameImpl>::hashTableDeletedValue(); }
-
-    QualifiedNameImpl* m_impl;
+    RefPtr<QualifiedNameImpl> m_impl;
 };
 
 #ifndef WEBCORE_QUALIFIEDNAME_HIDE_GLOBALS
