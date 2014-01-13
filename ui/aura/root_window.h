@@ -335,6 +335,7 @@ class AURA_EXPORT RootWindow : public ui::EventProcessor,
   // How many move holds are outstanding. We try to defer dispatching
   // touch/mouse moves while the count is > 0.
   int move_hold_count_;
+  // The location of |held_move_event_| is in |window_|'s coordinate.
   scoped_ptr<ui::LocatedEvent> held_move_event_;
 
   // Allowing for reposting of events. Used when exiting context menus.

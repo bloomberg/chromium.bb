@@ -427,46 +427,46 @@ namespace {
 class EventFilterRecorder : public ui::EventHandler {
  public:
   typedef std::vector<ui::EventType> Events;
-  typedef std::vector<gfx::Point> MouseEventLocations;
+  typedef std::vector<gfx::Point> EventLocations;
 
   EventFilterRecorder() {}
 
-  Events& events() { return events_; }
+  const Events& events() const { return events_; }
 
-  MouseEventLocations& mouse_locations() { return mouse_locations_; }
+  const EventLocations& mouse_locations() const { return mouse_locations_; }
   gfx::Point mouse_location(int i) const { return mouse_locations_[i]; }
+  const EventLocations& touch_locations() const { return touch_locations_; }
 
-Events GetAndResetEvents() {
+  Events GetAndResetEvents() {
     Events events = events_;
-    events_.clear();
+    Reset();
     return events;
   }
 
+  void Reset() {
+    events_.clear();
+    mouse_locations_.clear();
+    touch_locations_.clear();
+  }
+
   // ui::EventHandler overrides:
-  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
+  virtual void OnEvent(ui::Event* event) OVERRIDE {
+    ui::EventHandler::OnEvent(event);
     events_.push_back(event->type());
   }
 
   virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
-    events_.push_back(event->type());
     mouse_locations_.push_back(event->location());
   }
 
-  virtual void OnScrollEvent(ui::ScrollEvent* event) OVERRIDE {
-    events_.push_back(event->type());
-  }
-
   virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
-    events_.push_back(event->type());
-  }
-
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
-    events_.push_back(event->type());
+    touch_locations_.push_back(event->location());
   }
 
  private:
   Events events_;
-  MouseEventLocations mouse_locations_;
+  EventLocations mouse_locations_;
+  EventLocations touch_locations_;
 
   DISALLOW_COPY_AND_ASSIGN(EventFilterRecorder);
 };
@@ -595,7 +595,7 @@ TEST_F(RootWindowTest, MouseMovesHeld) {
   dispatcher()->AsWindowTreeHostDelegate()->OnHostMouseEvent(
       &mouse_move_event);
   // Discard MOUSE_ENTER.
-  filter->events().clear();
+  filter->Reset();
 
   dispatcher()->HoldPointerMoves();
 
@@ -614,7 +614,7 @@ TEST_F(RootWindowTest, MouseMovesHeld) {
       &mouse_pressed_event);
   EXPECT_EQ("MOUSE_DRAGGED MOUSE_PRESSED",
             EventTypesToString(filter->events()));
-  filter->events().clear();
+  filter->Reset();
 
   // Check that we coalesce held MOUSE_DRAGGED events.
   ui::MouseEvent mouse_dragged_event2(ui::ET_MOUSE_DRAGGED, gfx::Point(1, 1),
@@ -628,7 +628,7 @@ TEST_F(RootWindowTest, MouseMovesHeld) {
       &mouse_pressed_event);
   EXPECT_EQ("MOUSE_DRAGGED MOUSE_PRESSED",
             EventTypesToString(filter->events()));
-  filter->events().clear();
+  filter->Reset();
 
   // Check that on ReleasePointerMoves, held events are not dispatched
   // immediately, but posted instead.
@@ -638,7 +638,7 @@ TEST_F(RootWindowTest, MouseMovesHeld) {
   EXPECT_TRUE(filter->events().empty());
   RunAllPendingInMessageLoop();
   EXPECT_EQ("MOUSE_DRAGGED", EventTypesToString(filter->events()));
-  filter->events().clear();
+  filter->Reset();
 
   // However if another message comes in before the dispatch of the posted
   // event, check that the posted event is dispatched before this new event.
@@ -650,7 +650,7 @@ TEST_F(RootWindowTest, MouseMovesHeld) {
       &mouse_pressed_event);
   EXPECT_EQ("MOUSE_DRAGGED MOUSE_PRESSED",
             EventTypesToString(filter->events()));
-  filter->events().clear();
+  filter->Reset();
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(filter->events().empty());
 
@@ -663,7 +663,7 @@ TEST_F(RootWindowTest, MouseMovesHeld) {
   dispatcher()->AsWindowTreeHostDelegate()->OnHostMouseEvent(
       &mouse_dragged_event2);
   EXPECT_EQ("MOUSE_DRAGGED", EventTypesToString(filter->events()));
-  filter->events().clear();
+  filter->Reset();
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(filter->events().empty());
 }
@@ -680,22 +680,23 @@ TEST_F(RootWindowTest, MAYBE_TouchMovesHeld) {
 
   test::TestWindowDelegate delegate;
   scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
-      &delegate, 1, gfx::Rect(0, 0, 100, 100), root_window()));
+      &delegate, 1, gfx::Rect(50, 50, 100, 100), root_window()));
 
+  const gfx::Point touch_location(60, 60);
   // Starting the touch and throwing out the first few events, since the system
   // is going to generate synthetic mouse events that are not relevant to the
   // test.
-  ui::TouchEvent touch_pressed_event(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0),
+  ui::TouchEvent touch_pressed_event(ui::ET_TOUCH_PRESSED, touch_location,
                                      0, base::TimeDelta());
   dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(
       &touch_pressed_event);
   RunAllPendingInMessageLoop();
-  filter->events().clear();
+  filter->Reset();
 
   dispatcher()->HoldPointerMoves();
 
   // Check that we don't immediately dispatch the TOUCH_MOVED event.
-  ui::TouchEvent touch_moved_event(ui::ET_TOUCH_MOVED, gfx::Point(0, 0),
+  ui::TouchEvent touch_moved_event(ui::ET_TOUCH_MOVED, touch_location,
                                    0, base::TimeDelta());
   dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(
       &touch_moved_event);
@@ -707,15 +708,16 @@ TEST_F(RootWindowTest, MAYBE_TouchMovesHeld) {
       &touch_moved_event);
   dispatcher()->ReleasePointerMoves();
   EXPECT_TRUE(filter->events().empty());
+
   RunAllPendingInMessageLoop();
   EXPECT_EQ("TOUCH_MOVED", EventTypesToString(filter->events()));
-  filter->events().clear();
+  filter->Reset();
 
   // If another touch event occurs then the held touch should be dispatched
   // immediately before it.
-  ui::TouchEvent touch_released_event(ui::ET_TOUCH_RELEASED, gfx::Point(0, 0),
+  ui::TouchEvent touch_released_event(ui::ET_TOUCH_RELEASED, touch_location,
                                       0, base::TimeDelta());
-  filter->events().clear();
+  filter->Reset();
   dispatcher()->HoldPointerMoves();
   dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(
       &touch_moved_event);
@@ -723,10 +725,71 @@ TEST_F(RootWindowTest, MAYBE_TouchMovesHeld) {
       &touch_released_event);
   EXPECT_EQ("TOUCH_MOVED TOUCH_RELEASED GESTURE_TAP_CANCEL GESTURE_END",
             EventTypesToString(filter->events()));
-  filter->events().clear();
+  filter->Reset();
   dispatcher()->ReleasePointerMoves();
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(filter->events().empty());
+}
+
+class HoldPointerOnScrollHandler : public test::TestEventHandler {
+ public:
+  HoldPointerOnScrollHandler(WindowEventDispatcher* dispatcher,
+                                  EventFilterRecorder* filter)
+      : dispatcher_(dispatcher),
+        filter_(filter),
+        holding_moves_(false) {
+  }
+  virtual ~HoldPointerOnScrollHandler() {}
+
+ private:
+  virtual void OnGestureEvent(ui::GestureEvent* gesture) OVERRIDE {
+    if (gesture->type() == ui::ET_GESTURE_SCROLL_UPDATE) {
+      CHECK(!holding_moves_);
+      holding_moves_ = true;
+      dispatcher_->HoldPointerMoves();
+      filter_->Reset();
+    } else if (gesture->type() == ui::ET_GESTURE_SCROLL_END) {
+      dispatcher_->ReleasePointerMoves();
+      holding_moves_ = false;
+    }
+  }
+
+  WindowEventDispatcher* dispatcher_;
+  EventFilterRecorder* filter_;
+  bool holding_moves_;
+
+  DISALLOW_COPY_AND_ASSIGN(HoldPointerOnScrollHandler);
+};
+
+// Tests that touch-move events don't contribute to an in-progress scroll
+// gesture if touch-move events are being held by the dispatcher.
+TEST_F(RootWindowTest, TouchMovesHeldOnScroll) {
+  EventFilterRecorder* filter = new EventFilterRecorder;
+  root_window()->SetEventFilter(filter);
+  test::TestWindowDelegate delegate;
+  HoldPointerOnScrollHandler handler(dispatcher(), filter);
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      &delegate, 1, gfx::Rect(50, 50, 100, 100), root_window()));
+  window->AddPreTargetHandler(&handler);
+
+  test::EventGenerator generator(root_window());
+  generator.GestureScrollSequence(
+      gfx::Point(60, 60), gfx::Point(10, 60),
+      base::TimeDelta::FromMilliseconds(100), 25);
+
+  // |handler| will have reset |filter| and started holding the touch-move
+  // events when scrolling started. At the end of the scroll (i.e. upon
+  // touch-release), the held touch-move event will have been dispatched first,
+  // along with the subsequent events (i.e. touch-release, scroll-end, and
+  // gesture-end).
+  const EventFilterRecorder::Events& events = filter->events();
+  EXPECT_EQ("TOUCH_MOVED TOUCH_RELEASED GESTURE_SCROLL_END GESTURE_END",
+            EventTypesToString(events));
+  ASSERT_EQ(2u, filter->touch_locations().size());
+  EXPECT_EQ(gfx::Point(-40, 10).ToString(),
+            filter->touch_locations()[0].ToString());
+  EXPECT_EQ(gfx::Point(-40, 10).ToString(),
+            filter->touch_locations()[1].ToString());
 }
 
 // Tests that synthetic mouse events are ignored when mouse
@@ -748,14 +811,14 @@ TEST_F(RootWindowTest, DispatchSyntheticMouseEvents) {
                         gfx::Point(10, 10), 0, 0);
   dispatcher()->AsWindowTreeHostDelegate()->OnHostMouseEvent(&mouse1);
   EXPECT_FALSE(filter->events().empty());
-  filter->events().clear();
+  filter->Reset();
 
   // Dispatch a synthetic mouse event when mouse events are enabled.
   ui::MouseEvent mouse2(ui::ET_MOUSE_MOVED, gfx::Point(10, 10),
                         gfx::Point(10, 10), ui::EF_IS_SYNTHESIZED, 0);
   dispatcher()->AsWindowTreeHostDelegate()->OnHostMouseEvent(&mouse2);
   EXPECT_FALSE(filter->events().empty());
-  filter->events().clear();
+  filter->Reset();
 
   // Dispatch a synthetic mouse event when mouse events are disabled.
   cursor_client.DisableMouseEvents();
@@ -783,7 +846,7 @@ TEST_F(RootWindowTest, DispatchMouseExitWhenCursorHidden) {
   EXPECT_TRUE(filter->events().empty());
   dispatcher()->AsWindowTreeHostDelegate()->OnHostMouseEvent(&mouse1);
   EXPECT_FALSE(filter->events().empty());
-  filter->events().clear();
+  filter->Reset();
 
   // Hide the cursor and verify a mouse exit was dispatched.
   dispatcher()->OnCursorVisibilityChanged(false);
@@ -1025,7 +1088,7 @@ TEST_F(RootWindowTest, RepostTapdownGestureTest) {
   // TODO(rbyers): Currently disabled - crbug.com/170987
   EXPECT_FALSE(EventTypesToString(filter->events()).find("GESTURE_TAP_DOWN") !=
               std::string::npos);
-  filter->events().clear();
+  filter->Reset();
 }
 
 // This class inherits from the EventFilterRecorder class which provides a
@@ -1046,7 +1109,7 @@ class RepostGestureEventRecorder : public EventFilterRecorder {
   virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
     if (reposted_ && event->type() == ui::ET_TOUCH_PRESSED) {
       done_cleanup_ = true;
-      events().clear();
+      Reset();
     }
     EventFilterRecorder::OnTouchEvent(event);
   }

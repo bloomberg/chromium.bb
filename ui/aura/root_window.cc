@@ -598,14 +598,17 @@ ui::EventDispatchDetails RootWindow::PostDispatchEvent(ui::EventTarget* target,
 #endif
 
   if (event.IsTouchEvent() && !details.target_destroyed) {
-    ui::TouchEvent orig_event(static_cast<const ui::TouchEvent&>(event),
-                              static_cast<Window*>(event.target()), window());
-    // Get the list of GestureEvents from GestureRecognizer.
-    scoped_ptr<ui::GestureRecognizer::Gestures> gestures;
-    gestures.reset(ui::GestureRecognizer::Get()->
-        ProcessTouchEventForGesture(orig_event, event.result(),
-                                    static_cast<Window*>(target)));
-    return ProcessGestures(gestures.get());
+    // Do not let 'held' touch events contribute to any gestures.
+    if (!held_move_event_ || !held_move_event_->IsTouchEvent()) {
+      ui::TouchEvent orig_event(static_cast<const ui::TouchEvent&>(event),
+                                static_cast<Window*>(event.target()), window());
+      // Get the list of GestureEvents from GestureRecognizer.
+      scoped_ptr<ui::GestureRecognizer::Gestures> gestures;
+      gestures.reset(ui::GestureRecognizer::Get()->
+          ProcessTouchEventForGesture(orig_event, event.result(),
+                                      static_cast<Window*>(target)));
+      return ProcessGestures(gestures.get());
+    }
   }
 
   return details;
@@ -742,9 +745,7 @@ ui::EventDispatchDetails RootWindow::OnHostMouseEventImpl(
     ui::MouseEvent* event) {
   if (IsEventCandidateForHold(*event)) {
     if (move_hold_count_) {
-      Window* null_window = static_cast<Window*>(NULL);
-      held_move_event_.reset(
-          new ui::MouseEvent(*event, null_window, null_window));
+      held_move_event_.reset(new ui::MouseEvent(*event));
       event->SetHandled();
       return DispatchDetails();
     } else {
@@ -981,7 +982,7 @@ void RootWindow::PreDispatchTouchEvent(Window* target,
 
     case ui::ET_TOUCH_MOVED:
       if (move_hold_count_) {
-        held_move_event_.reset(new ui::TouchEvent(*event));
+        held_move_event_.reset(new ui::TouchEvent(*event, target, window()));
         event->SetHandled();
         return;
       }
