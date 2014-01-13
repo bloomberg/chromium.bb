@@ -64,6 +64,7 @@ struct ChromeViewHostMsg_GetPluginInfo_Status {
   enum Value {
     kAllowed,
     kBlocked,
+    kBlockedByPolicy,
     kClickToPlay,
     kDisabled,
     kNotFound,
@@ -120,7 +121,8 @@ struct ParamTraits<ContentSettingsPattern> {
 
 #define IPC_MESSAGE_START ChromeMsgStart
 
-IPC_ENUM_TRAITS(ChromeViewHostMsg_GetPluginInfo_Status::Value)
+IPC_ENUM_TRAITS_MAX_VALUE(ChromeViewHostMsg_GetPluginInfo_Status::Value,
+                          ChromeViewHostMsg_GetPluginInfo_Status::kUnauthorized)
 IPC_ENUM_TRAITS(OmniboxFocusChangeReason)
 IPC_ENUM_TRAITS(OmniboxFocusState)
 IPC_ENUM_TRAITS(search_provider::OSDDType)

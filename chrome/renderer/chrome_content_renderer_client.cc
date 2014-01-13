@@ -795,6 +795,22 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         observer->DidBlockContentType(content_type);
         break;
       }
+      case ChromeViewHostMsg_GetPluginInfo_Status::kBlockedByPolicy: {
+        placeholder = ChromePluginPlaceholder::CreateBlockedPlugin(
+            render_frame,
+            frame,
+            params,
+            plugin,
+            identifier,
+            group_name,
+            IDR_BLOCKED_PLUGIN_HTML,
+            l10n_util::GetStringFUTF16(IDS_PLUGIN_BLOCKED, group_name));
+        placeholder->set_allow_loading(false);
+        RenderThread::Get()->RecordAction(
+            UserMetricsAction("Plugin_BlockedByPolicy"));
+        observer->DidBlockContentType(content_type);
+        break;
+      }
     }
   }
   placeholder->SetStatus(status);
