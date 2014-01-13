@@ -27,6 +27,7 @@
 #define CSSImageSetValue_h
 
 #include "core/css/CSSValueList.h"
+#include "core/fetch/ResourceFetcher.h"
 
 namespace WebCore {
 
@@ -43,6 +44,7 @@ public:
     }
     ~CSSImageSetValue();
 
+    StyleFetchedImageSet* cachedImageSet(ResourceFetcher*, float deviceScaleFactor, const ResourceLoaderOptions&, CORSEnabled);
     StyleFetchedImageSet* cachedImageSet(ResourceFetcher*, float deviceScaleFactor);
 
     // Returns a StyleFetchedImageSet if the best fit image has been cached already, otherwise a StylePendingImage.

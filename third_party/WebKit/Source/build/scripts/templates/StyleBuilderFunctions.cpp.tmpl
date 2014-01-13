@@ -502,7 +502,7 @@ namespace WebCore {
         else if (primitiveValue->isShape()) {
             {{ set_value(property) }}(ShapeValue::createShapeValue(basicShapeForValue(state, primitiveValue->getShapeValue())));
         }
-    } else if (value->isImageValue()) {
+    } else if (value->isImageValue() || value->isImageSetValue()) {
         {{ set_value(property) }}(ShapeValue::createImageValue(state.styleImage({{property_id}}, value)));
     }
 }

@@ -29,8 +29,8 @@
 namespace WebCore {
 
 class ElementStyleResources;
-class ResourceFetcher;
 class RenderStyle;
+class ResourceFetcher;
 class ShapeValue;
 class StyleImage;
 class StylePendingImage;
@@ -50,7 +50,7 @@ private:
 
     PassRefPtr<StyleImage> loadPendingImage(StylePendingImage*, float deviceScaleFactor);
     void loadPendingImages(RenderStyle*, const ElementStyleResources&);
-    void loadPendingShapeImage(RenderStyle*, ShapeValue*);
+    void loadPendingShapeImage(RenderStyle*, ShapeValue*, float deviceScaleFactor);
 
     ResourceFetcher* m_fetcher;
 };

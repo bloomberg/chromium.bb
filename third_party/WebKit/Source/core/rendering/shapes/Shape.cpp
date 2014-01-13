@@ -236,7 +236,7 @@ PassOwnPtr<Shape> Shape::createShape(const BasicShape* basicShape, const LayoutS
 
 PassOwnPtr<Shape> Shape::createShape(const StyleImage* styleImage, float threshold, const LayoutSize&, WritingMode writingMode, Length margin, Length padding)
 {
-    ASSERT(styleImage && styleImage->isImageResource() && styleImage->cachedImage() && styleImage->cachedImage()->image());
+    ASSERT(styleImage && styleImage->cachedImage() && styleImage->cachedImage()->hasImage());
 
     Image* image = styleImage->cachedImage()->image();
     const IntSize& imageSize = image->size();
