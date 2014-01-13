@@ -407,7 +407,6 @@
             '../chromeos/chromeos.gyp:chromeos',
           ],
           'sources': [
-            'browser/chromeos/accessibility/spoken_feedback_browsertest.cc',
             'browser/chromeos/accessibility/sticky_keys_browsertest.cc',
             'browser/chromeos/input_method/textinput_browsertest.cc',
             'browser/chromeos/input_method/textinput_surroundingtext_browsertest.cc',
