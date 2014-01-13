@@ -3261,6 +3261,11 @@
                           '-fuse-ld=gold',
                           '-Wno-psabi',
                         ],
+                        'cflags': [
+                          # TODO(hans) Enable integrated-as (crbug.com/124610).
+                          '-no-integrated-as',
+                        ],
+
                         'ldflags!': [
                           # Clang does not support the following options.
                           '-fuse-ld=gold',
