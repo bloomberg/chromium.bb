@@ -26,7 +26,6 @@ void *__nacl_read_tp(void) {
    * lot faster.
    */
   void *result;
-  /* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */
   __asm__("mov %%gs:0, %0" : "=r"(result));
   return result;
 #else

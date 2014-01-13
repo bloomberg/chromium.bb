@@ -37,7 +37,6 @@ void *nacl_tls_get(void) {
    * lot faster.
    */
   void *result;
-  /* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */
   __asm__("mov %%gs:4, %0" : "=r"(result));
   return result;
 #else

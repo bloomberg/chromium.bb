@@ -41,8 +41,27 @@ size_t __nacl_tls_combined_size(size_t tdb_size);
  */
 void *__nacl_tls_initialize_memory(void *combined_area, size_t tdb_size);
 
-/* Read the per-thread pointer.  */
+/*
+ * Read the per-thread pointer.  Note that callers should call
+ * __nacl_read_tp_inline() instead.
+ */
 void *__nacl_read_tp(void);
+
+#if defined(__pnacl__)
+/*
+ * Reading the thread pointer using PNaCl's LLVM intrinisic can be
+ * faster because the read can be inlined.
+ *
+ * Note that we can't add the __asm__ attribute below to the
+ * declaration of __nacl_read_tp() because that would interfere with
+ * definitions of __nacl_read_tp().
+ */
+void *__nacl_read_tp_inline(void) __asm__("llvm.nacl.read.tp");
+#else
+static inline void *__nacl_read_tp_inline(void) {
+  return __nacl_read_tp();
+}
+#endif
 
 /* Read the per-thread pointer and add an offset.  */
 void *__nacl_add_tp(ptrdiff_t);

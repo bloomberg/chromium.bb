@@ -105,7 +105,8 @@ static inline nc_thread_descriptor_t *nc_get_tdb(void) {
    * a wrapper around __libnacl_irt_tls.tls_get() but we don't use
    * that here so that the IRT build can override the definition.
    */
-  return (void *) ((char *) __nacl_read_tp() + __nacl_tp_tdb_offset(TDB_SIZE));
+  return (void *) ((char *) __nacl_read_tp_inline()
+                   + __nacl_tp_tdb_offset(TDB_SIZE));
 }
 
 static void nc_thread_starter(void) {

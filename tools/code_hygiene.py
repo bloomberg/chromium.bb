@@ -215,18 +215,6 @@ class TrailingWhiteSpaceChecker(GenericRegexChecker):
             '.table' not in props)
 
 
-class UntrustedAsmChecker(GenericRegexChecker):
-  """No inline assembler in untrusted code."""
-  def __init__(self):
-    # TODO(robertm): also cope with asm
-    GenericRegexChecker.__init__(self, r'__asm__')
-    return
-
-  def FileFilter(self, props):
-    if 'is_untrusted' not in props: return False
-    return '.c' in props or '.cc' in props or '.h' in props
-
-
 class CarriageReturnChecker(GenericRegexChecker):
   """Abolish windows style line terminators."""
   def __init__(self):
@@ -449,7 +437,6 @@ CHECKS = [# fatal checks
           (True, 'cpp_comment', CppCommentChecker()),
           (True, 'fixme', FixmeChecker()),
           (True, 'include', IncludeChecker()),
-          (True, 'untrusted_asm', UntrustedAsmChecker()),
           # Non fatal checks
           (False, 'carriage_return', CarriageReturnChecker()),
           (False, 'rewrite', RewriteChecker()),
