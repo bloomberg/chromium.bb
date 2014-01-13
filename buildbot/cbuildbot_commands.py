@@ -26,6 +26,7 @@ from chromite.lib import gs
 from chromite.lib import locking
 from chromite.lib import osutils
 from chromite.lib import parallel
+from chromite.lib import retry_util
 from chromite.lib import timeout_util
 from chromite.scripts import upload_symbols
 
@@ -1752,8 +1753,7 @@ def SyncChrome(build_root, chrome_root, useflags, tag=None, revision=None):
   cmd += ['--tag', tag] if tag is not None else []
   cmd += ['--revision', revision] if revision is not None else []
   cmd += [chrome_root]
-  cros_build_lib.RunCommandWithRetries(constants.SYNC_RETRIES, cmd,
-                                       cwd=build_root)
+  retry_util.RunCommandWithRetries(constants.SYNC_RETRIES, cmd, cwd=build_root)
 
 
 def CheckPGOData(architectures, cpv):

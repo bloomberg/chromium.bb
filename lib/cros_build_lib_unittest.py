@@ -30,6 +30,7 @@ from chromite.lib import git
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import partial_mock
+from chromite.lib import retry_util
 from chromite.lib import signals as cros_signals
 
 # pylint: disable=W0212,R0904
@@ -524,16 +525,16 @@ class TestRetries(cros_test_lib.MoxTestCase):
         raise ValueError()
       return val
     handler = lambda ex: isinstance(ex, ValueError)
-    self.assertRaises(ValueError, cros_build_lib.GenericRetry, handler, 3, f)
-    self.assertEqual(4, cros_build_lib.GenericRetry(handler, 1, f))
-    self.assertRaises(StopIteration, cros_build_lib.GenericRetry, handler, 3, f)
+    self.assertRaises(ValueError, retry_util.GenericRetry, handler, 3, f)
+    self.assertEqual(4, retry_util.GenericRetry(handler, 1, f))
+    self.assertRaises(StopIteration, retry_util.GenericRetry, handler, 3, f)
 
   def testRetryExceptionBadArgs(self):
     """Verify we reject non-classes or tuples of classes"""
-    self.assertRaises(TypeError, cros_build_lib.RetryException, '', 3, map)
-    self.assertRaises(TypeError, cros_build_lib.RetryException, 123, 3, map)
-    self.assertRaises(TypeError, cros_build_lib.RetryException, None, 3, map)
-    self.assertRaises(TypeError, cros_build_lib.RetryException, [None], 3, map)
+    self.assertRaises(TypeError, retry_util.RetryException, '', 3, map)
+    self.assertRaises(TypeError, retry_util.RetryException, 123, 3, map)
+    self.assertRaises(TypeError, retry_util.RetryException, None, 3, map)
+    self.assertRaises(TypeError, retry_util.RetryException, [None], 3, map)
 
   def testRetryException(self):
     """Verify we retry only when certain exceptions get thrown"""
@@ -546,12 +547,12 @@ class TestRetries(cros_test_lib.MoxTestCase):
       if val < 5:
         raise ValueError()
       return val
-    self.assertRaises(OSError, cros_build_lib.RetryException,
+    self.assertRaises(OSError, retry_util.RetryException,
                       (OSError, ValueError), 2, f)
-    self.assertRaises(ValueError, cros_build_lib.RetryException,
+    self.assertRaises(ValueError, retry_util.RetryException,
                       (OSError, ValueError), 1, f)
-    self.assertEqual(5, cros_build_lib.RetryException(ValueError, 1, f))
-    self.assertRaises(StopIteration, cros_build_lib.RetryException,
+    self.assertEqual(5, retry_util.RetryException(ValueError, 1, f))
+    self.assertRaises(StopIteration, retry_util.RetryException,
                       ValueError, 3, f)
 
   @osutils.TempDirDecorator
@@ -590,7 +591,7 @@ class TestRetries(cros_test_lib.MoxTestCase):
 
     self.assertEqual(cros_build_lib.RunCommand(command, **kwargs).output, '0\n')
 
-    func = cros_build_lib.RunCommandWithRetries
+    func = retry_util.RunCommandWithRetries
 
     _setup_counters(2, 2, 0, 0)
     self.assertEqual(func(0, command, sleep=0, **kwargs).output, '2\n')

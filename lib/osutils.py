@@ -13,6 +13,7 @@ import signal
 import cStringIO
 import tempfile
 from chromite.lib import cros_build_lib
+from chromite.lib import retry_util
 
 # Env vars that tempdir can be gotten from; minimally, this
 # needs to match python's tempfile module and match normal
@@ -548,7 +549,7 @@ def UmountDir(path, lazy=True, sudo=True, cleanup=True):
         # errno is bubbled up to us and we can detect it specifically without
         # potentially ignoring all other possible failures.
         return e.errno == errno.EBUSY
-    cros_build_lib.GenericRetry(_retry, 5, RmDir, path, sudo=sudo, sleep=1)
+    retry_util.GenericRetry(_retry, 5, RmDir, path, sudo=sudo, sleep=1)
 
 
 def SetEnvironment(env):

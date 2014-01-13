@@ -48,6 +48,7 @@ from chromite.lib import toolchain
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import patch as cros_patch
+from chromite.lib import retry_util
 from chromite.lib import timeout_util
 
 _FULL_BINHOST = 'FULL_BINHOST'
@@ -124,7 +125,7 @@ class RetryStage(object):
   def Run(self):
     """Retry the given stage multiple times to see if it passes."""
     self.attempt = 1
-    cros_build_lib.RetryException(
+    retry_util.RetryException(
         results_lib.RetriableStepFailure, self.max_retry, self._PerformStage)
 
 

@@ -19,6 +19,7 @@ from chromite.buildbot import constants
 from chromite.lib import cache
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
+from chromite.lib import retry_util
 
 
 PUBLIC_BASE_HTTPS_URL = 'https://commondatastorage.googleapis.com/'
@@ -427,7 +428,7 @@ class GSContext(object):
     Returns:
       True for exceptions thrown by a RunCommand gsutil that should be retried.
     """
-    if not cros_build_lib.ShouldRetryCommandCommon(e):
+    if not retry_util.ShouldRetryCommandCommon(e):
       return False
 
     # e is guaranteed by above filter to be a RunCommandError
@@ -516,10 +517,10 @@ class GSContext(object):
       logging.debug("%s: would've run: %s", self.__class__.__name__,
                     cros_build_lib.CmdToStr(cmd))
     else:
-      return cros_build_lib.GenericRetry(self._RetryFilter,
-                                         retries, cros_build_lib.RunCommand,
-                                         cmd, sleep=self._sleep_time,
-                                         extra_env=extra_env, **kwargs)
+      return retry_util.GenericRetry(self._RetryFilter,
+                                     retries, cros_build_lib.RunCommand,
+                                     cmd, sleep=self._sleep_time,
+                                     extra_env=extra_env, **kwargs)
 
   def Copy(self, src_path, dest_path, acl=None, version=None, **kwargs):
     """Copy to/from GS bucket.

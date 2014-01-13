@@ -24,6 +24,7 @@ sys.path.insert(0, _path)
 from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
+from chromite.lib import retry_util
 # Now restore it so that relative scripts don't get cranky.
 sys.path.pop(0)
 del _path
@@ -818,7 +819,7 @@ def RunGit(git_repo, cmd, retry=True, **kwargs):
   kwargs.setdefault('print_cmd', False)
   kwargs.setdefault('sleep', DEFAULT_RETRY_INTERVAL)
   kwargs.setdefault('cwd', git_repo)
-  return cros_build_lib.GenericRetry(
+  return retry_util.GenericRetry(
       _ShouldRetry, max_retry, cros_build_lib.RunCommandCaptureOutput,
       ['git'] + cmd, **kwargs)
 

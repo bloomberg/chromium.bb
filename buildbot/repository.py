@@ -14,6 +14,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import rewrite_git_alternates
+from chromite.lib import retry_util
 
 # File that marks a buildroot as being used by a trybot
 _TRYBOT_MARKER = '.trybot'
@@ -319,8 +320,8 @@ class RepoRepository(object):
       if not all_branches:
         cmd.append('-c')
       # Do the network half of the sync; retry as necessary to get the content.
-      cros_build_lib.RunCommandWithRetries(constants.SYNC_RETRIES, cmd + ['-n'],
-                                           cwd=self.directory)
+      retry_util.RunCommandWithRetries(constants.SYNC_RETRIES, cmd + ['-n'],
+                                       cwd=self.directory)
 
       if network_only:
         return

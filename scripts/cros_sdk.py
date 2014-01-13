@@ -19,6 +19,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import locking
 from chromite.lib import namespaces
 from chromite.lib import osutils
+from chromite.lib import retry_util
 from chromite.lib import toolchain
 
 cros_build_lib.STRICT_SUDO = True
@@ -91,7 +92,7 @@ def FetchRemoteTarballs(storage_dir, urls):
       continue
     content_length = 0
     print 'Attempting download: %s' % url
-    result = cros_build_lib.RunCurl(
+    result = retry_util.RunCurl(
           ['-I', url], redirect_stdout=True, redirect_stderr=True,
           print_cmd=False)
     successful = False
@@ -118,7 +119,7 @@ def FetchRemoteTarballs(storage_dir, urls):
       current_size = 0
 
   if current_size < content_length:
-    cros_build_lib.RunCurl(
+    retry_util.RunCurl(
         ['-f', '-L', '-y', '30', '-C', '-', '--output', tarball_dest, url],
         print_cmd=False)
 

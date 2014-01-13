@@ -12,6 +12,7 @@ import urlparse
 from chromite.lib import cros_build_lib
 from chromite.lib import locking
 from chromite.lib import osutils
+from chromite.lib import retry_util
 
 # pylint: disable=W0212
 
@@ -247,8 +248,7 @@ class TarballCache(DiskCache):
 
   def _Fetch(self, url, local_path):
     """Fetch a remote file."""
-    cros_build_lib.RunCurl([url, '-o', local_path],
-                           debug_level=logging.DEBUG)
+    retry_util.RunCurl([url, '-o', local_path], debug_level=logging.DEBUG)
 
   def _Insert(self, key, tarball_path):
     """Insert a tarball and its extracted contents into the cache.

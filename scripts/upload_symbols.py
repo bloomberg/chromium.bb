@@ -26,6 +26,7 @@ import urllib2
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import parallel
+from chromite.lib import retry_util
 from chromite.scripts import cros_generate_breakpad_symbols
 
 
@@ -249,7 +250,7 @@ def UploadSymbol(sym_file, upload_url, file_limit=DEFAULT_FILE_LIMIT,
     success = False
     try:
       cros_build_lib.TimedCommand(
-          cros_build_lib.RetryException,
+          retry_util.RetryException,
           (urllib2.HTTPError, urllib2.URLError), MAX_RETRIES, SymUpload,
           upload_file, upload_url, sleep=INITIAL_RETRY_DELAY,
           timed_log_msg='upload of %10i bytes took %%s: %s' %

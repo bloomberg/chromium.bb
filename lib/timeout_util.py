@@ -190,7 +190,7 @@ def WaitForSuccess(retry_check, func, timeout, period=1, side_effect_func=None,
 
   Continues to run given function until return value is accepted by retry check.
 
-  To retry based on raised exceptions see GenericRetry in cros_build_lib.
+  To retry based on raised exceptions see GenericRetry in retry_util.
 
   Args:
     retry_check: A functor that will be passed the return value of |func| as
