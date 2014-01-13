@@ -1192,6 +1192,34 @@ bool RenderLayerCompositor::canAccelerateVideoRendering(RenderVideo* o) const
     return o->supportsAcceleratedRendering();
 }
 
+void RenderLayerCompositor::updateGraphicsLayersMappedToRenderLayer(RenderLayer* layer)
+{
+    if (!layer->hasCompositedLayerMapping())
+        return;
+
+    CompositedLayerMappingPtr compositedLayerMapping = layer->compositedLayerMapping();
+
+    // Note carefully: here we assume that the compositing state of all descendants have been updated already,
+    // so it is legitimate to compute and cache the composited bounds for this layer.
+    compositedLayerMapping->updateCompositedBounds();
+
+    if (layer->reflectionInfo()) {
+        RenderLayer* reflectionLayer = layer->reflectionInfo()->reflectionLayer();
+        ASSERT(reflectionLayer);
+        if (reflectionLayer->hasCompositedLayerMapping())
+            reflectionLayer->compositedLayerMapping()->updateCompositedBounds();
+    }
+
+    compositedLayerMapping->updateGraphicsLayerConfiguration();
+    compositedLayerMapping->updateGraphicsLayerGeometry();
+
+    if (!layer->parent())
+        updateRootLayerPosition();
+
+    if (compositedLayerMapping->hasUnpositionedOverflowControlsLayers())
+        layer->scrollableArea()->positionOverflowControls();
+}
+
 void RenderLayerCompositor::rebuildCompositingLayerTree(RenderLayer* layer, Vector<GraphicsLayer*>& childLayersOfEnclosingLayer, int depth)
 {
     // Make the layer compositing if necessary, and set up clipping and content layers.
@@ -1212,26 +1240,11 @@ void RenderLayerCompositor::rebuildCompositingLayerTree(RenderLayer* layer, Vect
 
     const bool hasCompositedLayerMapping = layer->hasCompositedLayerMapping();
     CompositedLayerMappingPtr currentCompositedLayerMapping = layer->compositedLayerMapping();
+
+    updateGraphicsLayersMappedToRenderLayer(layer);
+
+    // Grab some stats for histograms.
     if (hasCompositedLayerMapping) {
-        // The compositing state of all our children has been updated already, so now
-        // we can compute and cache the composited bounds for this layer.
-        currentCompositedLayerMapping->updateCompositedBounds();
-
-        if (layer->reflectionInfo()) {
-            RenderLayer* reflectionLayer = layer->reflectionInfo()->reflectionLayer();
-            if (reflectionLayer->hasCompositedLayerMapping())
-                reflectionLayer->compositedLayerMapping()->updateCompositedBounds();
-        }
-
-        currentCompositedLayerMapping->updateGraphicsLayerConfiguration();
-        currentCompositedLayerMapping->updateGraphicsLayerGeometry();
-
-        if (!layer->parent())
-            updateRootLayerPosition();
-
-        if (currentCompositedLayerMapping->hasUnpositionedOverflowControlsLayers())
-            layer->scrollableArea()->positionOverflowControls();
-
         pixelsWithoutPromotingAllTransitions += layer->size().height() * layer->size().width();
     } else {
         if ((layer->renderer()->style()->transitionForProperty(CSSPropertyOpacity) ||
@@ -1462,24 +1475,7 @@ bool RenderLayerCompositor::parentFrameContentLayers(RenderPart* renderer)
 // This just updates layer geometry without changing the hierarchy.
 void RenderLayerCompositor::updateLayerTreeGeometry(RenderLayer* layer)
 {
-    if (layer->hasCompositedLayerMapping()) {
-        CompositedLayerMappingPtr compositedLayerMapping = layer->compositedLayerMapping();
-        // The compositing state of all our children has been updated already, so now
-        // we can compute and cache the composited bounds for this layer.
-        compositedLayerMapping->updateCompositedBounds();
-
-        if (layer->reflectionInfo()) {
-            RenderLayer* reflectionLayer = layer->reflectionInfo()->reflectionLayer();
-            if (reflectionLayer->hasCompositedLayerMapping())
-                reflectionLayer->compositedLayerMapping()->updateCompositedBounds();
-        }
-
-        compositedLayerMapping->updateGraphicsLayerConfiguration();
-        compositedLayerMapping->updateGraphicsLayerGeometry();
-
-        if (!layer->parent())
-            updateRootLayerPosition();
-    }
+    updateGraphicsLayersMappedToRenderLayer(layer);
 
 #if !ASSERT_DISABLED
     LayerListMutationDetector mutationChecker(layer->stackingNode());

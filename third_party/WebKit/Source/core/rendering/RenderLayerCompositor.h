@@ -260,6 +260,10 @@ private:
     void assignLayersToBackings(RenderLayer*, bool& layersChanged);
     void assignLayersToBackingsInternal(RenderLayer*, SquashingState&, bool& layersChanged);
 
+    // Allocates, sets up hierarchy, and sets appropriate properties for the GraphicsLayers that correspond to a given
+    // composited RenderLayer. Does nothing if the given RenderLayer does not have a CompositedLayerMapping.
+    void updateGraphicsLayersMappedToRenderLayer(RenderLayer*);
+
     // Recurses down the tree, parenting descendant compositing layers and collecting an array of child layers for the current compositing layer.
     void rebuildCompositingLayerTree(RenderLayer*, Vector<GraphicsLayer*>& childGraphicsLayersOfEnclosingLayer, int depth);
 
