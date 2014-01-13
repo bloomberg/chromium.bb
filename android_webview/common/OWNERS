@@ -1,9 +1,3 @@
-# Changes to IPC messages require a security review to avoid introducing
-# new sandbox escapes.
-per-file *_messages*.h=set noparent
-per-file *_messages*.h=cdn@chromium.org
-per-file *_messages*.h=cevans@chromium.org
-per-file *_messages*.h=jln@chromium.org
-per-file *_messages*.h=jschuh@chromium.org
-per-file *_messages*.h=palmer@chromium.org
-per-file *_messages*.h=tsepez@chromium.org
+# Unlike other message files, changes to IPC messages in android_webview
+# don't require a security review because anrdoid_webview is single-process
+# and there is no sandbox from which to escape.
