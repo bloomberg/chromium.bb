@@ -54,6 +54,7 @@ public:
     void disconnectClient();
 
     void setZoomFactor(float);
+    float zoomFactor();
     void inspectedURLChanged(const String&);
 
     void setInjectedScriptForOrigin(const String& origin, const String& script);
