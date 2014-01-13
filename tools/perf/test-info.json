@@ -180,6 +180,9 @@
       "chrome/src/tools/perf/benchmark/peacekeeper.py"
     ]
   },
+  "scheduler.tough_scheduling_cases":{
+    "description":"This test measures rendering statistics while interacting with pages that have challenging scheduling properties. Mainly affected by changes to the compositor scheduler or the graphics pipeline."
+  },
   "scirra":{
     "description":"The Scirra WebGL performance test measures the number of 2D triangles represented onscreen when the animation reaches the 30 FPS threshold. [Scirra demos](https://www.scirra.com/)",
     "code":[
