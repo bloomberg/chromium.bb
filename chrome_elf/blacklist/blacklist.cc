@@ -12,6 +12,7 @@
 #include "sandbox/win/src/internal_types.h"
 #include "sandbox/win/src/sandbox_utils.h"
 #include "sandbox/win/src/service_resolver.h"
+#include "version.h"  // NOLINT
 
 // http://blogs.msdn.com/oldnewthing/archive/2004/10/25/247180.aspx
 extern "C" IMAGE_DOS_HEADER __ImageBase;
@@ -22,6 +23,8 @@ const wchar_t* g_troublesome_dlls[kTroublesomeDllsMaxCount] = {};
 int g_troublesome_dlls_cur_index = 0;
 
 const wchar_t kRegistryBeaconPath[] = L"SOFTWARE\\Google\\Chrome\\BLBeacon";
+const wchar_t kBeaconVersion[] = L"version";
+const wchar_t kBeaconState[] = L"state";
 
 }  // namespace blacklist
 
@@ -140,27 +143,93 @@ bool IsNonBrowserProcess() {
 
 namespace blacklist {
 
-bool CreateBeacon() {
-  HKEY beacon_key = NULL;
+bool LeaveSetupBeacon() {
+  HKEY key = NULL;
   DWORD disposition = 0;
   LONG result = ::RegCreateKeyEx(HKEY_CURRENT_USER,
                                  kRegistryBeaconPath,
                                  0,
                                  NULL,
-                                 0,
-                                 KEY_WRITE,
+                                 REG_OPTION_NON_VOLATILE,
+                                 KEY_QUERY_VALUE | KEY_SET_VALUE,
                                  NULL,
-                                 &beacon_key,
+                                 &key,
                                  &disposition);
-  bool success = (result == ERROR_SUCCESS &&
-                  disposition != REG_OPENED_EXISTING_KEY);
-  if (result == ERROR_SUCCESS)
-    ::RegCloseKey(beacon_key);
-  return success;
+  if (result != ERROR_SUCCESS)
+    return false;
+
+  // Retrieve the current blacklist state.
+  DWORD blacklist_state = BLACKLIST_DISABLED;
+  DWORD blacklist_state_size = sizeof(blacklist_state);
+  DWORD type = 0;
+  result = ::RegQueryValueEx(key,
+                             kBeaconState,
+                             0,
+                             &type,
+                             reinterpret_cast<LPBYTE>(&blacklist_state),
+                             &blacklist_state_size);
+
+  if (blacklist_state != BLACKLIST_ENABLED ||
+      result != ERROR_SUCCESS || type != REG_DWORD) {
+    ::RegCloseKey(key);
+    return false;
+  }
+
+  // If the blacklist wasn't set as enabled for this version, don't
+  // use it.
+  wchar_t key_data[255] = {};
+  DWORD key_data_size = sizeof(key_data);
+  result = ::RegQueryValueEx(key,
+                             blacklist::kBeaconVersion,
+                             0,
+                             &type,
+                             reinterpret_cast<LPBYTE>(key_data),
+                             &key_data_size);
+
+  if (wcscmp(key_data, TEXT(CHROME_VERSION_STRING)) != 0 ||
+      result != ERROR_SUCCESS || type != REG_SZ) {
+    ::RegCloseKey(key);
+    return false;
+  }
+
+  // Mark the blacklist setup code as running so if it crashes the blacklist
+  // won't be enabled for the next run.
+  blacklist_state = BLACKLIST_SETUP_RUNNING;
+  result = ::RegSetValueEx(key,
+                           kBeaconState,
+                           0,
+                           REG_DWORD,
+                           reinterpret_cast<LPBYTE>(&blacklist_state),
+                           sizeof(blacklist_state));
+  ::RegCloseKey(key);
+
+  return (result == ERROR_SUCCESS);
 }
 
-bool ClearBeacon() {
-  LONG result = ::RegDeleteKey(HKEY_CURRENT_USER, kRegistryBeaconPath);
+bool ResetBeacon() {
+  HKEY key = NULL;
+  DWORD disposition = 0;
+  LONG result = ::RegCreateKeyEx(HKEY_CURRENT_USER,
+                                 kRegistryBeaconPath,
+                                 0,
+                                 NULL,
+                                 REG_OPTION_NON_VOLATILE,
+                                 KEY_QUERY_VALUE | KEY_SET_VALUE,
+                                 NULL,
+                                 &key,
+                                 &disposition);
+  if (result != ERROR_SUCCESS)
+    return false;
+
+  DWORD blacklist_state = BLACKLIST_ENABLED;
+  result = ::RegSetValueEx(key,
+                           kBeaconState,
+                           0,
+                           REG_DWORD,
+                           reinterpret_cast<LPBYTE>(&blacklist_state),
+                           sizeof(blacklist_state));
+  ::RegCloseKey(key);
+
   return (result == ERROR_SUCCESS);
 }
 
@@ -212,7 +281,7 @@ bool Initialize(bool force) {
     return false;
 
   // Check to see if a beacon is present, abort if so.
-  if (!force && !CreateBeacon())
+  if (!force && !LeaveSetupBeacon())
     return false;
 
   // Don't try blacklisting on unsupported OS versions.

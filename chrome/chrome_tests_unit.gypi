@@ -591,6 +591,7 @@
         'browser/captive_portal/testing_utils.cc',
         'browser/captive_portal/testing_utils.h',
         'browser/chrome_browser_application_mac_unittest.mm',
+        'browser/chrome_elf_init_unittest_win.cc',
         'browser/chrome_page_zoom_unittest.cc',
         'browser/chrome_process_singleton_win_unittest.cc',
         'browser/chromeos/accessibility/magnification_manager_unittest.cc',

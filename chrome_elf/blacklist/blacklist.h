@@ -16,20 +16,36 @@ extern const wchar_t* g_troublesome_dlls[kTroublesomeDllsMaxCount];
 // Cursor to the current last element in the blacklist.
 extern int g_troublesome_dlls_cur_index;
 
-// The registry path of the blacklist beacon. Exposed here for testing.
+// The registry path of the blacklist beacon.
 extern const wchar_t kRegistryBeaconPath[];
 
-// Attempts to create a beacon in the current user's registry hive.
-// If the beacon already exists or any other error occurs when creating the
-// beacon, returns false. Otherwise returns true.
+// The properties for the blacklist beacon.
+extern const wchar_t kBeaconVersion[];
+extern const wchar_t kBeaconState[];
+
+// The states for the blacklist setup code.
+enum BlacklistState {
+  BLACKLIST_DISABLED = 0,
+  BLACKLIST_ENABLED,
+  // The blacklist setup code is running. If this is still set at startup,
+  // it means the last setup crashed.
+  BLACKLIST_SETUP_RUNNING,
+  // Always keep this at the end.
+  BLACKLIST_STATE_MAX,
+};
+
+// Attempts to leave a beacon in the current user's registry hive.
+// If the blacklist beacon doesn't say it is enabled or there are any other
+// errors when creating the beacon, returns false. Otherwise returns true.
 // The intent of the beacon is to act as an extra failure mode protection
 // whereby if Chrome for some reason fails to start during blacklist setup,
 // it will skip blacklisting on the subsequent run.
-bool CreateBeacon();
+bool LeaveSetupBeacon();
 
-// Looks for the beacon that CreateBeacon() creates and attempts to delete it.
-// Returns true if the beacon was found and deleted.
-bool ClearBeacon();
+// Looks for the beacon that LeaveSetupBeacon() creates and resets it to
+// to show the setup was successful.
+// Returns true if the beacon was successfully set to BLACKLIST_ENABLED.
+bool ResetBeacon();
 
 // Adds the given dll name to the blacklist. Returns true if the dll name is in
 // the blacklist when this returns, false on error. Note that this will copy
