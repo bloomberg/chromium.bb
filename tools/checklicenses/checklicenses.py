@@ -144,9 +144,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/WebKit': [
         'UNKNOWN',
     ],
-    'third_party/active_doc': [  # http://crbug.com/98113
-        'UNKNOWN',
-    ],
 
     # http://code.google.com/p/angleproject/issues/detail?id=217
     'third_party/angle': [
