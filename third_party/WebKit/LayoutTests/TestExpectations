@@ -867,3 +867,4 @@ crbug.com/333791 [ Linux Win7 Debug ] svg/animations/repeatn-event-1d.svg [ Pass
 
 crbug.com/330617 inspector/profiler/heap-snapshot-loader.html [ Pass Failure ]
 crbug.com/333860 inspector/profiler/cpu-profiler-save-load.html [ Pass Failure ]
+crbug.com/333880 [ Win7 Debug ] media/W3C/video/events/event_order_loadstart_progress.html [ Pass Failure ]
