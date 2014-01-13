@@ -42,6 +42,7 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
   WebRuntimeFeatures::enableSharedWorker(false);
   // Android does not yet support NavigatorContentUtils.
   WebRuntimeFeatures::enableNavigatorContentUtils(false);
+  WebRuntimeFeatures::enableTouchIconLoading(true);
 #else
   WebRuntimeFeatures::enableNavigatorContentUtils(true);
 #endif  // defined(OS_ANDROID)
