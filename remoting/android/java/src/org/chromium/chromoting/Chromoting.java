@@ -412,6 +412,10 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
                 dismissProgress = true;
                 finishActivity(0);
                 break;
+
+            default:
+                // Unreachable, but required by Google Java style and findbugs.
+                assert false : "Unreached";
         }
 
         if (dismissProgress && mProgressIndicator != null) {
