@@ -36,7 +36,6 @@ shouldBeDefined("SVGSVGElement");
 shouldBeDefined("SVGGElement");
 shouldBeDefined("SVGDefsElement");
 shouldBeDefined("SVGDescElement");
-shouldBeDefined("SVGDiscardElement");
 shouldBeDefined("SVGTitleElement");
 shouldBeDefined("SVGSymbolElement");
 shouldBeDefined("SVGUseElement");
