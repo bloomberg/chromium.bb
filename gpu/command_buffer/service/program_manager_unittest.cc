@@ -1255,7 +1255,10 @@ TEST_F(ProgramManagerWithShaderTest, UniformsPrecisionMismatch) {
   EXPECT_TRUE(program->AttachShader(&shader_manager_, vshader));
   EXPECT_TRUE(program->AttachShader(&shader_manager_, fshader));
 
-  EXPECT_TRUE(program->DetectUniformsMismatch());
+  std::string conflicting_name;
+
+  EXPECT_TRUE(program->DetectUniformsMismatch(&conflicting_name));
+  EXPECT_EQ("a", conflicting_name);
   EXPECT_TRUE(LinkAsExpected(program, false));
 }
 
@@ -1269,7 +1272,10 @@ TEST_F(ProgramManagerWithShaderTest, VaryingTypeMismatch) {
   Program* program = SetupShaderVariableTest(
       &kVertexVarying, 1, &kFragmentVarying, 1);
 
-  EXPECT_TRUE(program->DetectVaryingsMismatch());
+  std::string conflicting_name;
+
+  EXPECT_TRUE(program->DetectVaryingsMismatch(&conflicting_name));
+  EXPECT_EQ("a", conflicting_name);
   EXPECT_TRUE(LinkAsExpected(program, false));
 }
 
@@ -1283,7 +1289,10 @@ TEST_F(ProgramManagerWithShaderTest, VaryingArraySizeMismatch) {
   Program* program = SetupShaderVariableTest(
       &kVertexVarying, 1, &kFragmentVarying, 1);
 
-  EXPECT_TRUE(program->DetectVaryingsMismatch());
+  std::string conflicting_name;
+
+  EXPECT_TRUE(program->DetectVaryingsMismatch(&conflicting_name));
+  EXPECT_EQ("a", conflicting_name);
   EXPECT_TRUE(LinkAsExpected(program, false));
 }
 
@@ -1297,7 +1306,10 @@ TEST_F(ProgramManagerWithShaderTest, VaryingPrecisionMismatch) {
   Program* program = SetupShaderVariableTest(
       &kVertexVarying, 1, &kFragmentVarying, 1);
 
-  EXPECT_FALSE(program->DetectVaryingsMismatch());
+  std::string conflicting_name;
+
+  EXPECT_FALSE(program->DetectVaryingsMismatch(&conflicting_name));
+  EXPECT_TRUE(conflicting_name.empty());
   EXPECT_TRUE(LinkAsExpected(program, true));
 }
 
@@ -1309,7 +1321,10 @@ TEST_F(ProgramManagerWithShaderTest, VaryingMissing) {
   Program* program = SetupShaderVariableTest(
       NULL, 0, &kFragmentVarying, 1);
 
-  EXPECT_TRUE(program->DetectVaryingsMismatch());
+  std::string conflicting_name;
+
+  EXPECT_TRUE(program->DetectVaryingsMismatch(&conflicting_name));
+  EXPECT_EQ("a", conflicting_name);
   EXPECT_TRUE(LinkAsExpected(program, false));
 }
 
@@ -1322,7 +1337,10 @@ TEST_F(ProgramManagerWithShaderTest, InactiveVarying) {
   Program* program = SetupShaderVariableTest(
       NULL, 0, &kFragmentVarying, 1);
 
-  EXPECT_FALSE(program->DetectVaryingsMismatch());
+  std::string conflicting_name;
+
+  EXPECT_FALSE(program->DetectVaryingsMismatch(&conflicting_name));
+  EXPECT_TRUE(conflicting_name.empty());
   EXPECT_TRUE(LinkAsExpected(program, true));
 }
 
@@ -1337,7 +1355,10 @@ TEST_F(ProgramManagerWithShaderTest, AttribUniformNameConflict) {
   Program* program = SetupShaderVariableTest(
       &kVertexAttribute, 1, &kFragmentUniform, 1);
 
-  EXPECT_TRUE(program->DetectGlobalNameConflicts());
+  std::string conflicting_name;
+
+  EXPECT_TRUE(program->DetectGlobalNameConflicts(&conflicting_name));
+  EXPECT_EQ("a", conflicting_name);
   EXPECT_TRUE(LinkAsExpected(program, false));
 }
 

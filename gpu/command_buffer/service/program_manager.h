@@ -188,15 +188,16 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
 
   // Detects if there are uniforms of the same name but different type
   // or precision in vertex/fragment shaders.
-  // Return true if such cases are detected.
-  bool DetectUniformsMismatch() const;
+  // Return true and set the first found conflicting hashed name to
+  // conflicting_name if such cases are detected.
+  bool DetectUniformsMismatch(std::string* conflicting_name) const;
 
   // Return true if a varying is statically used in fragment shader, but it
   // is not declared in vertex shader.
-  bool DetectVaryingsMismatch() const;
+  bool DetectVaryingsMismatch(std::string* conflicting_name) const;
 
   // Return true if an uniform and an attribute share the same name.
-  bool DetectGlobalNameConflicts() const;
+  bool DetectGlobalNameConflicts(std::string* conflicting_name) const;
 
   // Return false if varyings can't be packed into the max available
   // varying registers.

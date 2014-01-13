@@ -180,7 +180,7 @@ std::string Program::ProcessLogInfo(
   std::string prior_log;
   std::string hashed_name;
   while (RE2::Consume(&input,
-                      "(.*)(webgl_[0123456789abcdefABCDEF]+)",
+                      "(.*?)(webgl_[0123456789abcdefABCDEF]+)",
                       &prior_log,
                       &hashed_name)) {
     output += prior_log;
@@ -358,13 +358,13 @@ void Program::Update() {
 #if !defined(NDEBUG)
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableGPUServiceLoggingGPU)) {
-    DLOG(INFO) << "----: attribs for service_id: " << service_id();
+    DVLOG(1) << "----: attribs for service_id: " << service_id();
     for (size_t ii = 0; ii < attrib_infos_.size(); ++ii) {
       const VertexAttrib& info = attrib_infos_[ii];
-      DLOG(INFO) << ii << ": loc = " << info.location
-                 << ", size = " << info.size
-                 << ", type = " << GLES2Util::GetStringEnum(info.type)
-                 << ", name = " << info.name;
+      DVLOG(1) << ii << ": loc = " << info.location
+               << ", size = " << info.size
+               << ", type = " << GLES2Util::GetStringEnum(info.type)
+               << ", name = " << info.name;
     }
   }
 #endif
@@ -436,14 +436,14 @@ void Program::Update() {
 #if !defined(NDEBUG)
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableGPUServiceLoggingGPU)) {
-    DLOG(INFO) << "----: uniforms for service_id: " << service_id();
+    DVLOG(1) << "----: uniforms for service_id: " << service_id();
     for (size_t ii = 0; ii < uniform_infos_.size(); ++ii) {
       const UniformInfo& info = uniform_infos_[ii];
       if (info.IsValid()) {
-        DLOG(INFO) << ii << ": loc = " << info.element_locations[0]
-                   << ", size = " << info.size
-                   << ", type = " << GLES2Util::GetStringEnum(info.type)
-                   << ", name = " << info.name;
+        DVLOG(1) << ii << ": loc = " << info.element_locations[0]
+                 << ", size = " << info.size
+                 << ", type = " << GLES2Util::GetStringEnum(info.type)
+                 << ", name = " << info.name;
       }
     }
   }
@@ -533,18 +533,24 @@ bool Program::Link(ShaderManager* manager,
     set_log_info("glBindAttribLocation() conflicts");
     return false;
   }
-  if (DetectUniformsMismatch()) {
-    set_log_info("Uniforms with the same name but different type/precision");
+  std::string conflicting_name;
+  if (DetectUniformsMismatch(&conflicting_name)) {
+    std::string info_log = "Uniforms with the same name but different "
+                           "type/precision: " + conflicting_name;
+    set_log_info(ProcessLogInfo(info_log).c_str());
     return false;
   }
-  if (DetectVaryingsMismatch()) {
-    set_log_info("Varyings with the same name but different type, "
-                 "or statically used varyings in fragment shader are not "
-                 "declared in vertex shader");
+  if (DetectVaryingsMismatch(&conflicting_name)) {
+    std::string info_log = "Varyings with the same name but different type, "
+                           "or statically used varyings in fragment shader are "
+                           "not declared in vertex shader: " + conflicting_name;
+    set_log_info(ProcessLogInfo(info_log).c_str());
     return false;
   }
-  if (DetectGlobalNameConflicts()) {
-    set_log_info("Name conflicts between an uniform and an attribute");
+  if (DetectGlobalNameConflicts(&conflicting_name)) {
+    std::string info_log = "Name conflicts between an uniform and an "
+                           "attribute: " + conflicting_name;
+    set_log_info(ProcessLogInfo(info_log).c_str());
     return false;
   }
   if (!CheckVaryingsPacking()) {
@@ -1005,7 +1011,7 @@ bool Program::DetectAttribLocationBindingConflicts() const {
   return false;
 }
 
-bool Program::DetectUniformsMismatch() const {
+bool Program::DetectUniformsMismatch(std::string* conflicting_name) const {
   typedef std::map<std::string, UniformType> UniformMap;
   UniformMap uniform_map;
   for (int ii = 0; ii < kMaxAttachedShaders; ++ii) {
@@ -1024,6 +1030,7 @@ bool Program::DetectUniformsMismatch() const {
         // declared by other shader, then the type and precision must match.
         if (map_entry->second == type)
           continue;
+        *conflicting_name = name;
         return true;
       }
     }
@@ -1031,7 +1038,7 @@ bool Program::DetectUniformsMismatch() const {
   return false;
 }
 
-bool Program::DetectVaryingsMismatch() const {
+bool Program::DetectVaryingsMismatch(std::string* conflicting_name) const {
   DCHECK(attached_shaders_[0] &&
          attached_shaders_[0]->shader_type() == GL_VERTEX_SHADER &&
          attached_shaders_[1] &&
@@ -1051,20 +1058,24 @@ bool Program::DetectVaryingsMismatch() const {
     ShaderTranslator::VariableMap::const_iterator hit =
         vertex_varyings->find(name);
     if (hit == vertex_varyings->end()) {
-      if (iter->second.static_use)
+      if (iter->second.static_use) {
+        *conflicting_name = name;
         return true;
+      }
       continue;
     }
 
     if (hit->second.type != iter->second.type ||
-        hit->second.size != iter->second.size)
+        hit->second.size != iter->second.size) {
+      *conflicting_name = name;
       return true;
+    }
 
   }
   return false;
 }
 
-bool Program::DetectGlobalNameConflicts() const {
+bool Program::DetectGlobalNameConflicts(std::string* conflicting_name) const {
   DCHECK(attached_shaders_[0] &&
          attached_shaders_[0]->shader_type() == GL_VERTEX_SHADER &&
          attached_shaders_[1] &&
@@ -1078,8 +1089,10 @@ bool Program::DetectGlobalNameConflicts() const {
   for (ShaderTranslator::VariableMap::const_iterator iter =
            attribs->begin(); iter != attribs->end(); ++iter) {
     for (int ii = 0; ii < 2; ++ii) {
-      if (uniforms[ii]->find(iter->first) != uniforms[ii]->end())
+      if (uniforms[ii]->find(iter->first) != uniforms[ii]->end()) {
+        *conflicting_name = iter->first;
         return true;
+      }
     }
   }
   return false;
