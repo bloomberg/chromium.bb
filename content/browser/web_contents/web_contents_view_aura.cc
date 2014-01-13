@@ -1793,7 +1793,7 @@ int WebContentsViewAura::OnPerformDrop(const ui::DropTargetEvent& event) {
   if (drag_dest_delegate_)
     drag_dest_delegate_->OnDrop();
   current_drop_data_.reset();
-  return current_drag_op_;
+  return ConvertFromWeb(current_drag_op_);
 }
 
 }  // namespace content
