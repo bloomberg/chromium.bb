@@ -184,9 +184,7 @@ public:
     // The window object for the frame has been cleared of any extra
     // properties that may have been set by script from the previously
     // loaded document.
-    virtual void didClearWindowObject(WebFrame* frame, int worldId) { didClearWindowObject(frame); }
-    // FIXME: Remove.
-    virtual void didClearWindowObject(WebFrame*) { }
+    virtual void didClearWindowObject(WebFrame* frame, int worldId) { }
 
     // The document element has been created.
     virtual void didCreateDocumentElement(WebFrame*) { }
