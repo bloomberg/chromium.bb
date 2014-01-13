@@ -60,6 +60,9 @@ public class Desktop extends Activity {
             case R.id.actionbar_hide:
                 getActionBar().hide();
                 return true;
+            case R.id.actionbar_disconnect:
+                JniInterface.disconnectFromHost();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
