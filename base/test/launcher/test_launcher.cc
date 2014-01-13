@@ -770,14 +770,11 @@ void TestLauncher::RunTests() {
           continue;
       }
 
-      std::string filtering_test_name =
-          launcher_delegate_->GetTestNameForFiltering(test_case, test_info);
-
       // Skip the test that doesn't match the filter (if given).
       if (!positive_test_filter_.empty()) {
         bool found = false;
         for (size_t k = 0; k < positive_test_filter_.size(); ++k) {
-          if (MatchPattern(filtering_test_name, positive_test_filter_[k])) {
+          if (MatchPattern(test_name, positive_test_filter_[k])) {
             found = true;
             break;
           }
@@ -788,7 +785,7 @@ void TestLauncher::RunTests() {
       }
       bool excluded = false;
       for (size_t k = 0; k < negative_test_filter_.size(); ++k) {
-        if (MatchPattern(filtering_test_name, negative_test_filter_[k])) {
+        if (MatchPattern(test_name, negative_test_filter_[k])) {
           excluded = true;
           break;
         }
@@ -835,7 +832,6 @@ void TestLauncher::RunTestIteration() {
   retry_count_ = 0;
   tests_to_retry_.clear();
   results_tracker_.OnTestIterationStarting();
-  launcher_delegate_->OnTestIterationStarting();
 
   MessageLoop::current()->PostTask(
       FROM_HERE, Bind(&TestLauncher::RunTests, Unretained(this)));

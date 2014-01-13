@@ -41,18 +41,6 @@ extern const char kGTestOutputFlag[];
 // which tests and how are run.
 class TestLauncherDelegate {
  public:
-  // Called at the start of each test iteration.
-  virtual void OnTestIterationStarting() = 0;
-
-  // Called to get a test name for filtering purposes. Usually it's
-  // test case's name and test's name joined by a dot (e.g.
-  // "TestCaseName.TestName").
-  // TODO(phajdan.jr): Remove after transitioning away from run_test_cases.py,
-  // http://crbug.com/236893 .
-  virtual std::string GetTestNameForFiltering(
-      const testing::TestCase* test_case,
-      const testing::TestInfo* test_info) = 0;
-
   // Called before a test is considered for running. If it returns false,
   // the test is not run. If it returns true, the test will be run provided
   // it is part of the current shard.

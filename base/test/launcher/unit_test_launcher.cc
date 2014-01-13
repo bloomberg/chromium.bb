@@ -117,18 +117,6 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
     FilePath output_file;
   };
 
-  virtual void OnTestIterationStarting() OVERRIDE {
-    // Nothing to do.
-  }
-
-  virtual std::string GetTestNameForFiltering(
-      const testing::TestCase* test_case,
-      const testing::TestInfo* test_info) OVERRIDE {
-    DCHECK(thread_checker_.CalledOnValidThread());
-
-    return std::string(test_case->name()) + "." + test_info->name();
-  }
-
   virtual bool ShouldRunTest(const testing::TestCase* test_case,
                              const testing::TestInfo* test_info) OVERRIDE {
     DCHECK(thread_checker_.CalledOnValidThread());

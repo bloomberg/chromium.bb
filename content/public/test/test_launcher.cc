@@ -118,10 +118,6 @@ class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
   }
 
   // base::TestLauncherDelegate:
-  virtual void OnTestIterationStarting() OVERRIDE;
-  virtual std::string GetTestNameForFiltering(
-      const testing::TestCase* test_case,
-      const testing::TestInfo* test_info) OVERRIDE;
   virtual bool ShouldRunTest(const testing::TestCase* test_case,
                              const testing::TestInfo* test_info) OVERRIDE;
   virtual size_t RunTests(base::TestLauncher* test_launcher,
@@ -174,18 +170,6 @@ class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
   DISALLOW_COPY_AND_ASSIGN(WrapperTestLauncherDelegate);
 };
 
-void WrapperTestLauncherDelegate::OnTestIterationStarting() {
-  dependent_test_map_.clear();
-  user_data_dir_map_.clear();
-}
-
-std::string WrapperTestLauncherDelegate::GetTestNameForFiltering(
-    const testing::TestCase* test_case,
-    const testing::TestInfo* test_info) {
-  return RemoveAnyPrePrefixes(
-      std::string(test_case->name()) + "." + test_info->name());
-}
-
 bool WrapperTestLauncherDelegate::ShouldRunTest(
     const testing::TestCase* test_case,
     const testing::TestInfo* test_info) {
@@ -217,6 +201,10 @@ std::string GetPreTestName(const std::string& full_name) {
 size_t WrapperTestLauncherDelegate::RunTests(
     base::TestLauncher* test_launcher,
     const std::vector<std::string>& test_names) {
+  dependent_test_map_.clear();
+  reverse_dependent_test_map_.clear();
+  user_data_dir_map_.clear();
+
   // Number of additional tests to run because of dependencies.
   size_t additional_tests_to_run_count = 0;
 
