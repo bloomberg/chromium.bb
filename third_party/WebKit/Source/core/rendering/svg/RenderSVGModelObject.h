@@ -78,7 +78,7 @@ private:
     void node() const WTF_DELETED_FUNCTION;
 
     // This method should never be called, SVG uses a different nodeAtPoint method
-    bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) OVERRIDE FINAL;
+    virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) OVERRIDE FINAL;
     virtual void absoluteFocusRingQuads(Vector<FloatQuad>&) OVERRIDE FINAL;
 };
 

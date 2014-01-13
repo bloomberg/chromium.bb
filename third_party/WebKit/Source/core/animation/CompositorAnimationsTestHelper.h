@@ -131,7 +131,7 @@ private:
         virtual void cryptographicallyRandomValues(unsigned char* buffer, size_t length) { ASSERT_NOT_REACHED(); }
     private:
         WebCompositorSupportMock** m_compositor;
-        blink::WebCompositorSupport* compositorSupport() OVERRIDE { return *m_compositor; }
+        virtual blink::WebCompositorSupport* compositorSupport() OVERRIDE { return *m_compositor; }
     };
 
     WebCompositorSupportMock* m_mockCompositor;

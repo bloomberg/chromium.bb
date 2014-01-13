@@ -168,7 +168,7 @@ protected:
     Vector<RefPtr<EditCommand> > m_commands;
 
 private:
-    bool isCompositeEditCommand() const OVERRIDE FINAL { return true; }
+    virtual bool isCompositeEditCommand() const OVERRIDE FINAL { return true; }
 
     RefPtr<EditCommandComposition> m_composition;
 };

@@ -42,11 +42,11 @@ public:
 
     virtual void playbackStarted() OVERRIDE;
 
-    void changedMute() OVERRIDE;
+    virtual void changedMute() OVERRIDE;
 
     virtual void updateCurrentTimeDisplay() OVERRIDE;
 
-    void createTextTrackDisplay() OVERRIDE;
+    virtual void createTextTrackDisplay() OVERRIDE;
 
     virtual void insertTextTrackContainer(PassRefPtr<MediaControlTextTrackContainerElement>);
 

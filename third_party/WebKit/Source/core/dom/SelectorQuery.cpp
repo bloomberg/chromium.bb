@@ -49,9 +49,9 @@ class SingleNodeList FINAL : public SimpleNodeList {
 public:
     explicit SingleNodeList(Node* rootNode) : m_currentNode(rootNode) { }
 
-    bool isEmpty() const OVERRIDE { return !m_currentNode; }
+    virtual bool isEmpty() const OVERRIDE { return !m_currentNode; }
 
-    Node* next() OVERRIDE
+    virtual Node* next() OVERRIDE
     {
         Node* current = m_currentNode;
         m_currentNode = 0;
@@ -69,9 +69,9 @@ public:
         , m_rootNode(rootNode)
         , m_currentElement(nextInternal(ElementTraversal::firstWithin(m_rootNode))) { }
 
-    bool isEmpty() const OVERRIDE { return !m_currentElement; }
+    virtual bool isEmpty() const OVERRIDE { return !m_currentElement; }
 
-    Node* next() OVERRIDE
+    virtual Node* next() OVERRIDE
     {
         Node* current = m_currentElement;
         ASSERT(current);
@@ -101,9 +101,9 @@ public:
         , m_rootNode(rootNode)
         , m_currentElement(nextInternal(ElementTraversal::firstWithin(rootNode))) { }
 
-    bool isEmpty() const OVERRIDE { return !m_currentElement; }
+    virtual bool isEmpty() const OVERRIDE { return !m_currentElement; }
 
-    Node* next() OVERRIDE
+    virtual Node* next() OVERRIDE
     {
         Node* current = m_currentElement;
         ASSERT(current);

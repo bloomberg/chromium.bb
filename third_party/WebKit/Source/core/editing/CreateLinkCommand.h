@@ -37,7 +37,7 @@ public:
         return adoptRef(new CreateLinkCommand(document, linkURL));
     }
 
-    bool isCreateLinkCommand() const OVERRIDE { return true; }
+    virtual bool isCreateLinkCommand() const OVERRIDE { return true; }
 
 private:
     CreateLinkCommand(Document&, const String& linkURL);

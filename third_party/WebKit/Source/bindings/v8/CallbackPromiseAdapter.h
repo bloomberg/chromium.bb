@@ -75,7 +75,7 @@ public:
         DOMRequestState::Scope scope(m_requestState);
         m_resolver->resolve(S::from(result));
     }
-    void onError(typename T::WebType* error) OVERRIDE
+    virtual void onError(typename T::WebType* error) OVERRIDE
     {
         DOMRequestState::Scope scope(m_requestState);
         m_resolver->reject(T::from(error));

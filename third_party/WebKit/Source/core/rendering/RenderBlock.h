@@ -420,7 +420,7 @@ private:
     virtual void dirtyLinesFromChangedChild(RenderObject* child) OVERRIDE FINAL { m_lineBoxes.dirtyLinesFromChangedChild(this, child); }
 
     void addChildToContinuation(RenderObject* newChild, RenderObject* beforeChild);
-    void addChildIgnoringContinuation(RenderObject* newChild, RenderObject* beforeChild) OVERRIDE;
+    virtual void addChildIgnoringContinuation(RenderObject* newChild, RenderObject* beforeChild) OVERRIDE;
     void addChildToAnonymousColumnBlocks(RenderObject* newChild, RenderObject* beforeChild);
 
     void addChildIgnoringAnonymousColumnBlocks(RenderObject* newChild, RenderObject* beforeChild = 0);

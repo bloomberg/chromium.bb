@@ -84,7 +84,7 @@ public:
 
     virtual const AtomicString& interfaceName() const OVERRIDE;
     virtual ExecutionContext* executionContext() const OVERRIDE { return ActiveDOMObject::executionContext(); }
-    MessagePort* toMessagePort() OVERRIDE { return this; }
+    virtual MessagePort* toMessagePort() OVERRIDE { return this; }
 
     // ActiveDOMObject implementation.
     virtual bool hasPendingActivity() const OVERRIDE;

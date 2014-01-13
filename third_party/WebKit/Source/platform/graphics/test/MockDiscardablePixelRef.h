@@ -49,7 +49,7 @@ public:
 
     class Allocator : public SkBitmap::Allocator {
     public:
-        bool allocPixelRef(SkBitmap* dst, SkColorTable* ct) SK_OVERRIDE {
+        virtual bool allocPixelRef(SkBitmap* dst, SkColorTable* ct) SK_OVERRIDE {
             SkImageInfo info;
             if (!dst->asImageInfo(&info)) {
                 return false;

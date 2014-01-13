@@ -39,7 +39,7 @@ namespace {
 
 class TestTimedItemEventDelegate : public TimedItem::EventDelegate {
 public:
-    void onEventCondition(const TimedItem* timedItem, bool isFirstSample, TimedItem::Phase previousPhase, double previousIteration) OVERRIDE
+    virtual void onEventCondition(const TimedItem* timedItem, bool isFirstSample, TimedItem::Phase previousPhase, double previousIteration) OVERRIDE
     {
         m_eventTriggered = true;
         m_phaseChanged = previousPhase != timedItem->phase();
@@ -75,10 +75,10 @@ public:
         TimedItem::updateInheritedTime(time);
     }
 
-    bool updateChildrenAndEffects() const OVERRIDE { return false; }
+    virtual bool updateChildrenAndEffects() const OVERRIDE { return false; }
     void willDetach() { }
     TestTimedItemEventDelegate* eventDelegate() { return m_eventDelegate; }
-    double calculateTimeToEffectChange(double localTime, double timeToNextIteration) const OVERRIDE
+    virtual double calculateTimeToEffectChange(double localTime, double timeToNextIteration) const OVERRIDE
     {
         m_localTime = localTime;
         m_timeToNextIteration = timeToNextIteration;
