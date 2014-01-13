@@ -24,6 +24,9 @@ class CONTENT_EXPORT IndexedDBKey {
   typedef std::vector<IndexedDBKey> KeyArray;
 
   IndexedDBKey();  // Defaults to blink::WebIDBKeyTypeInvalid.
+  IndexedDBKey(const IndexedDBKey& other);
+  IndexedDBKey& operator=(const IndexedDBKey& other);
+
   IndexedDBKey(blink::WebIDBKeyType);  // must be Null or Invalid
   explicit IndexedDBKey(const KeyArray& array);
   explicit IndexedDBKey(const std::string& binary);

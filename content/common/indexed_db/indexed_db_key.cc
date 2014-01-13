@@ -50,6 +50,29 @@ IndexedDBKey::IndexedDBKey()
       number_(0),
       size_estimate_(kOverheadSize) {}
 
+IndexedDBKey::IndexedDBKey(const IndexedDBKey& other)
+    : type_(other.type_),
+      array_(other.array_),
+      binary_(other.binary_),
+      string_(other.string_),
+      date_(other.date_),
+      number_(other.number_),
+      size_estimate_(other.size_estimate_) {
+  DCHECK((!IsValid() && !other.IsValid()) || Compare(other) == 0);
+}
+
+IndexedDBKey& IndexedDBKey::operator=(const IndexedDBKey& other) {
+  type_ = other.type_;
+  array_ = other.array_;
+  binary_ = other.binary_;
+  string_ = other.string_;
+  date_ = other.date_;
+  number_ = other.number_;
+  size_estimate_ = other.size_estimate_;
+  DCHECK((!IsValid() && !other.IsValid()) || Compare(other) == 0);
+  return *this;
+}
+
 IndexedDBKey::IndexedDBKey(WebIDBKeyType type)
     : type_(type), date_(0), number_(0), size_estimate_(kOverheadSize) {
   DCHECK(type == WebIDBKeyTypeNull || type == WebIDBKeyTypeInvalid);
