@@ -38,6 +38,7 @@ namespace WebCore {
 class Document;
 class ExecutionContext;
 class VTTCue;
+class VTTScanner;
 
 class VTTCueBox FINAL : public HTMLDivElement {
 public:
@@ -162,7 +163,7 @@ private:
         Align,
         RegionId
     };
-    CueSetting settingName(const String&);
+    CueSetting settingName(VTTScanner&);
 
     String m_text;
     int m_linePosition;

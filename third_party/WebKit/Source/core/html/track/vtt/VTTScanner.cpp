@@ -66,16 +66,52 @@ bool VTTScanner::scan(const LChar* characters, size_t charactersCount)
     return matched;
 }
 
-String VTTScanner::restOfInputAsString()
+bool VTTScanner::scanRun(const Run& run, const String& toMatch)
 {
-    ASSERT(position() <= end());
+    ASSERT(run.start() == position());
+    ASSERT(run.start() <= end());
+    ASSERT(run.end() >= run.start());
+    ASSERT(run.end() <= end());
+    size_t matchLength = run.length();
+    if (toMatch.length() > matchLength)
+        return false;
+    bool matched;
+    if (m_is8Bit)
+        matched = WTF::equal(toMatch.impl(), m_data.characters8, matchLength);
+    else
+        matched = WTF::equal(toMatch.impl(), m_data.characters16, matchLength);
+    if (matched)
+        seekTo(run.end());
+    return matched;
+}
+
+void VTTScanner::skipRun(const Run& run)
+{
+    ASSERT(run.start() <= end());
+    ASSERT(run.end() >= run.start());
+    ASSERT(run.end() <= end());
+    seekTo(run.end());
+}
+
+String VTTScanner::extractString(const Run& run)
+{
+    ASSERT(run.start() == position());
+    ASSERT(run.start() <= end());
+    ASSERT(run.end() >= run.start());
+    ASSERT(run.end() <= end());
     String s;
     if (m_is8Bit)
-        s = String(m_data.characters8, m_end.characters8 - m_data.characters8);
+        s = String(m_data.characters8, run.length());
     else
-        s = String(m_data.characters16, m_end.characters16 - m_data.characters16);
-    seekTo(end());
+        s = String(m_data.characters16, run.length());
+    seekTo(run.end());
     return s;
+}
+
+String VTTScanner::restOfInputAsString()
+{
+    Run rest(position(), end(), m_is8Bit);
+    return extractString(rest);
 }
 
 unsigned VTTScanner::scanDigits(int& number)

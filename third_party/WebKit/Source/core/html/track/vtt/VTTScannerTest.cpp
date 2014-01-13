@@ -152,6 +152,88 @@ TEST(VTTScanner, PredicateScanning)
     TEST_WITH(scanWithPredicate, "badAbing");
 }
 
+void scanWithInvPredicate(const String& input)
+{
+    VTTScanner scanner(input);
+    EXPECT_FALSE(scanner.isAtEnd());
+    // Collect "BAD".
+    VTTScanner::Run ucRun = scanner.collectUntil<lowerCaseAlpha>();
+    // collectUntil doesn't move the scan position.
+    EXPECT_TRUE(scanner.match('B'));
+    // Consume "BAD".
+    scanner.skipRun(ucRun);
+    EXPECT_TRUE(scanner.match('a'));
+    EXPECT_TRUE(scanner.isAt(ucRun.end()));
+
+    // Consume "a".
+    EXPECT_TRUE(scanner.scan('a'));
+
+    // Collect "BING".
+    ucRun = scanner.collectUntil<lowerCaseAlpha>();
+    // collectUntil doesn't move the scan position.
+    EXPECT_FALSE(scanner.isAtEnd());
+    // Consume "BING".
+    scanner.skipRun(ucRun);
+    EXPECT_TRUE(scanner.isAt(ucRun.end()));
+    EXPECT_TRUE(scanner.isAtEnd());
+}
+
+// Tests collectUntil().
+TEST(VTTScanner, InversePredicateScanning)
+{
+    TEST_WITH(scanWithInvPredicate, "BADaBING");
+}
+
+void scanRuns(const String& input)
+{
+    String fooString("foo");
+    String barString("bar");
+    VTTScanner scanner(input);
+    EXPECT_FALSE(scanner.isAtEnd());
+    VTTScanner::Run word = scanner.collectWhile<lowerCaseAlpha>();
+    EXPECT_FALSE(scanner.scanRun(word, barString));
+    EXPECT_TRUE(scanner.scanRun(word, fooString));
+
+    EXPECT_TRUE(scanner.match(':'));
+    EXPECT_TRUE(scanner.scan(':'));
+
+    word = scanner.collectWhile<lowerCaseAlpha>();
+    EXPECT_FALSE(scanner.scanRun(word, fooString));
+    EXPECT_TRUE(scanner.scanRun(word, barString));
+    EXPECT_TRUE(scanner.isAtEnd());
+}
+
+// Tests scanRun/skipRun.
+TEST(VTTScanner, RunScanning)
+{
+    TEST_WITH(scanRuns, "foo:bar");
+}
+
+void scanRunsToStrings(const String& input)
+{
+    VTTScanner scanner(input);
+    EXPECT_FALSE(scanner.isAtEnd());
+    VTTScanner::Run word = scanner.collectWhile<lowerCaseAlpha>();
+    String fooString = scanner.extractString(word);
+    EXPECT_EQ(fooString, "foo");
+    EXPECT_TRUE(scanner.isAt(word.end()));
+
+    EXPECT_TRUE(scanner.match(':'));
+    EXPECT_TRUE(scanner.scan(':'));
+
+    word = scanner.collectWhile<lowerCaseAlpha>();
+    String barString = scanner.extractString(word);
+    EXPECT_EQ(barString, "bar");
+    EXPECT_TRUE(scanner.isAt(word.end()));
+    EXPECT_TRUE(scanner.isAtEnd());
+}
+
+// Tests extractString.
+TEST(VTTScanner, ExtractString)
+{
+    TEST_WITH(scanRunsToStrings, "foo:bar");
+}
+
 void tailStringExtract(const String& input)
 {
     VTTScanner scanner(input);

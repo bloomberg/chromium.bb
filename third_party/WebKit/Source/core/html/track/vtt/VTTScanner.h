@@ -58,6 +58,7 @@ public:
         Run(Position start, Position end, bool is8Bit)
             : m_start(start), m_end(end), m_is8Bit(is8Bit) { }
 
+        Position start() const { return m_start; }
         Position end() const { return m_end; }
 
         bool isEmpty() const { return m_start == m_end; }
@@ -95,6 +96,21 @@ public:
     // current input pointer.
     template<bool characterPredicate(UChar)>
     Run collectWhile();
+
+    // Like collectWhile, but using a negated predicate.
+    template<bool characterPredicate(UChar)>
+    Run collectUntil();
+
+    // Scan the string |toMatch|, using the specified |run| as the sequence to
+    // match against.
+    bool scanRun(const Run&, const String& toMatch);
+
+    // Skip to the end of the specified |run|.
+    void skipRun(const Run&);
+
+    // Return the String made up of the characters in |run|, and advance the
+    // input pointer to the end of the run.
+    String extractString(const Run&);
 
     // Return a String constructed from the rest of the input (between input
     // pointer and end of input), and advance the input pointer accordingly.
@@ -159,6 +175,19 @@ inline VTTScanner::Run VTTScanner::collectWhile()
     }
     const UChar* current = m_data.characters16;
     ::skipWhile<UChar, characterPredicate>(current, m_end.characters16);
+    return Run(position(), reinterpret_cast<Position>(current), m_is8Bit);
+}
+
+template<bool characterPredicate(UChar)>
+inline VTTScanner::Run VTTScanner::collectUntil()
+{
+    if (m_is8Bit) {
+        const LChar* current = m_data.characters8;
+        ::skipUntil<LChar, LCharPredicateAdapter<characterPredicate> >(current, m_end.characters8);
+        return Run(position(), current, m_is8Bit);
+    }
+    const UChar* current = m_data.characters16;
+    ::skipUntil<UChar, characterPredicate>(current, m_end.characters16);
     return Run(position(), reinterpret_cast<Position>(current), m_is8Bit);
 }
 
