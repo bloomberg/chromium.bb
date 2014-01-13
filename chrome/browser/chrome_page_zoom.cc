@@ -17,7 +17,7 @@
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/renderer_preferences.h"
 
-using content::UserMetricsAction;
+using base::UserMetricsAction;
 
 namespace chrome_page_zoom {
 

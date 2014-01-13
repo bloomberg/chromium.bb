@@ -34,7 +34,7 @@
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
-using content::UserMetricsAction;
+using base::UserMetricsAction;
 using content::WebContents;
 using content::WebUIMessageHandler;
 

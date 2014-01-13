@@ -582,7 +582,7 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
   render_view_message_source_ = NULL;
 
   if (!message_is_ok) {
-    RecordAction(UserMetricsAction("BadMessageTerminate_RVD"));
+    RecordAction(base::UserMetricsAction("BadMessageTerminate_RVD"));
     GetRenderProcessHost()->ReceivedBadMessage();
   }
 
@@ -1339,7 +1339,7 @@ void WebContentsImpl::CreateNewWindow(
         RenderProcessHost::FromID(render_process_id)->GetHandle();
     if (process_handle != base::kNullProcessHandle) {
       RecordAction(
-          UserMetricsAction("Terminate_ProcessMismatch_CreateNewWindow"));
+          base::UserMetricsAction("Terminate_ProcessMismatch_CreateNewWindow"));
       base::KillProcess(process_handle, content::RESULT_CODE_KILLED, false);
     }
     return;
@@ -1479,7 +1479,7 @@ void WebContentsImpl::CreateNewWidget(int render_process_id,
         RenderProcessHost::FromID(render_process_id)->GetHandle();
     if (process_handle != base::kNullProcessHandle) {
       RecordAction(
-          UserMetricsAction("Terminate_ProcessMismatch_CreateNewWidget"));
+          base::UserMetricsAction("Terminate_ProcessMismatch_CreateNewWidget"));
       base::KillProcess(process_handle, content::RESULT_CODE_KILLED, false);
     }
     return;
@@ -2262,7 +2262,7 @@ void WebContentsImpl::OnDidLoadResourceFromMemoryCache(
 }
 
 void WebContentsImpl::OnDidDisplayInsecureContent() {
-  RecordAction(UserMetricsAction("SSL.DisplayedInsecureContent"));
+  RecordAction(base::UserMetricsAction("SSL.DisplayedInsecureContent"));
   displayed_insecure_content_ = true;
   SSLManager::NotifySSLInternalStateChanged(
       GetController().GetBrowserContext());
@@ -2272,9 +2272,9 @@ void WebContentsImpl::OnDidRunInsecureContent(
     const std::string& security_origin, const GURL& target_url) {
   LOG(WARNING) << security_origin << " ran insecure content from "
                << target_url.possibly_invalid_spec();
-  RecordAction(UserMetricsAction("SSL.RanInsecureContent"));
+  RecordAction(base::UserMetricsAction("SSL.RanInsecureContent"));
   if (EndsWith(security_origin, kDotGoogleDotCom, false))
-    RecordAction(UserMetricsAction("SSL.RanInsecureContentGoogle"));
+    RecordAction(base::UserMetricsAction("SSL.RanInsecureContentGoogle"));
   controller_.ssl_manager()->DidRunInsecureContent(security_origin);
   displayed_insecure_content_ = true;
   SSLManager::NotifySSLInternalStateChanged(

@@ -71,9 +71,9 @@
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/image/image.h"
 
+using base::UserMetricsAction;
 using content::OpenURLParams;
 using content::Referrer;
-using content::UserMetricsAction;
 using content::WebContents;
 
 namespace {

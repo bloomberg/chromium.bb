@@ -89,7 +89,7 @@ base::LazyInstance<Static> g_global_io_data = LAZY_INSTANCE_INITIALIZER;
 // Kills the specified process because it sends us a malformed message.
 void KillBadMessageSender(base::ProcessHandle process) {
   NOTREACHED();
-  content::RecordAction(content::UserMetricsAction("BadMessageTerminate_EFD"));
+  content::RecordAction(base::UserMetricsAction("BadMessageTerminate_EFD"));
   if (process)
     base::KillProcess(process, content::RESULT_CODE_KILLED_BAD_MESSAGE, false);
 }

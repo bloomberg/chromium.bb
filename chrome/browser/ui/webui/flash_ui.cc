@@ -48,9 +48,9 @@
 #endif
 
 using base::ASCIIToUTF16;
+using base::UserMetricsAction;
 using content::GpuDataManager;
 using content::PluginService;
-using content::UserMetricsAction;
 using content::WebContents;
 using content::WebUIMessageHandler;
 

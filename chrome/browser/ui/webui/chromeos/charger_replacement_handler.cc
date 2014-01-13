@@ -239,7 +239,7 @@ void ChargerReplacementHandler::SetChargerStatusPref(
 void ChargerReplacementHandler::ConfirmSafeCharger(
     const base::ListValue* args) {
   content::RecordAction(
-        content::UserMetricsAction("ConfirmSafeSpringCharger"));
+        base::UserMetricsAction("ConfirmSafeSpringCharger"));
 
   SetChargerStatusPref(CONFIRM_SAFE_CHARGER);
   dialog_->set_can_close(true);
@@ -248,7 +248,7 @@ void ChargerReplacementHandler::ConfirmSafeCharger(
 void ChargerReplacementHandler::ConfirmNotOrderNewCharger(
     const base::ListValue* args) {
   content::RecordAction(
-        content::UserMetricsAction("ConfirmNotToOrderSpringCharger"));
+        base::UserMetricsAction("ConfirmNotToOrderSpringCharger"));
 
   SetChargerStatusPref(CONFIRM_NOT_ORDER_NEW_CHARGER);
   dialog_->set_can_close(true);
@@ -257,9 +257,9 @@ void ChargerReplacementHandler::ConfirmNotOrderNewCharger(
 void ChargerReplacementHandler::ConfirmChargerOrderedOnline(
     const base::ListValue* args) {
   content::RecordAction(
-        content::UserMetricsAction("ConfirmOrderSpringChargerOnline"));
+        base::UserMetricsAction("ConfirmOrderSpringChargerOnline"));
   content::RecordAction(
-        content::UserMetricsAction("ConfirmOrderSpringCharger"));
+        base::UserMetricsAction("ConfirmOrderSpringCharger"));
 
   SetChargerStatusPref(CONFIRM_NEW_CHARGER_ORDERED_ONLINE);
   dialog_->set_can_close(true);
@@ -268,9 +268,9 @@ void ChargerReplacementHandler::ConfirmChargerOrderedOnline(
 void ChargerReplacementHandler::ConfirmChargerOrderByPhone(
     const base::ListValue* args) {
   content::RecordAction(
-        content::UserMetricsAction("ConfirmOrderSpringChargerByPhone"));
+        base::UserMetricsAction("ConfirmOrderSpringChargerByPhone"));
   content::RecordAction(
-        content::UserMetricsAction("ConfirmOrderSpringCharger"));
+        base::UserMetricsAction("ConfirmOrderSpringCharger"));
 
   SetChargerStatusPref(CONFIRM_ORDER_NEW_CHARGER_BY_PHONE);
   dialog_->set_can_close(true);
@@ -279,7 +279,7 @@ void ChargerReplacementHandler::ConfirmChargerOrderByPhone(
 void ChargerReplacementHandler::ConfirmStillUseBadCharger(
     const base::ListValue* args) {
   content::RecordAction(
-      content::UserMetricsAction("ConfirmStillUseOriginalChargerAfterOrder"));
+      base::UserMetricsAction("ConfirmStillUseOriginalChargerAfterOrder"));
 
   if (GetChargerStatusPref() == CONFIRM_NEW_CHARGER_ORDERED_ONLINE) {
     SetChargerStatusPref(USE_BAD_CHARGER_AFTER_ORDER_ONLINE);

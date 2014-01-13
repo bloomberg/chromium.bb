@@ -62,7 +62,7 @@
 #include "win8/util/win8_util.h"
 #endif
 
-using content::UserMetricsAction;
+using base::UserMetricsAction;
 using ui::DropTargetEvent;
 
 namespace {

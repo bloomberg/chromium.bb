@@ -2912,14 +2912,14 @@ void RenderWidgetHostViewAura::OnScrollEvent(ui::ScrollEvent* event) {
     blink::WebMouseWheelEvent mouse_wheel_event =
         MakeWebMouseWheelEvent(event);
     host_->ForwardWheelEvent(mouse_wheel_event);
-    RecordAction(UserMetricsAction("TrackpadScroll"));
+    RecordAction(base::UserMetricsAction("TrackpadScroll"));
   } else if (event->type() == ui::ET_SCROLL_FLING_START ||
              event->type() == ui::ET_SCROLL_FLING_CANCEL) {
     blink::WebGestureEvent gesture_event =
         MakeWebGestureEvent(event);
     host_->ForwardGestureEvent(gesture_event);
     if (event->type() == ui::ET_SCROLL_FLING_START)
-      RecordAction(UserMetricsAction("TrackpadScrollFling"));
+      RecordAction(base::UserMetricsAction("TrackpadScrollFling"));
   }
 
   event->SetHandled();
@@ -2988,9 +2988,9 @@ void RenderWidgetHostViewAura::OnGestureEvent(ui::GestureEvent* event) {
     if (event->type() == ui::ET_GESTURE_SCROLL_BEGIN ||
         event->type() == ui::ET_GESTURE_SCROLL_UPDATE ||
         event->type() == ui::ET_GESTURE_SCROLL_END) {
-      RecordAction(UserMetricsAction("TouchscreenScroll"));
+      RecordAction(base::UserMetricsAction("TouchscreenScroll"));
     } else if (event->type() == ui::ET_SCROLL_FLING_START) {
-      RecordAction(UserMetricsAction("TouchscreenScrollFling"));
+      RecordAction(base::UserMetricsAction("TouchscreenScrollFling"));
     }
   }
 

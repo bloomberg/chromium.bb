@@ -29,7 +29,7 @@ VolumeController::~VolumeController() {
 
 bool VolumeController::HandleVolumeMute(const ui::Accelerator& accelerator) {
   if (accelerator.key_code() == ui::VKEY_VOLUME_MUTE)
-    content::RecordAction(content::UserMetricsAction("Accel_VolumeMute_F8"));
+    content::RecordAction(base::UserMetricsAction("Accel_VolumeMute_F8"));
 
   CrasAudioHandler::Get()->SetOutputMute(true);
   return true;
@@ -37,7 +37,7 @@ bool VolumeController::HandleVolumeMute(const ui::Accelerator& accelerator) {
 
 bool VolumeController::HandleVolumeDown(const ui::Accelerator& accelerator) {
   if (accelerator.key_code() == ui::VKEY_VOLUME_DOWN)
-    content::RecordAction(content::UserMetricsAction("Accel_VolumeDown_F9"));
+    content::RecordAction(base::UserMetricsAction("Accel_VolumeDown_F9"));
 
   CrasAudioHandler* audio_handler = CrasAudioHandler::Get();
   if (audio_handler->IsOutputMuted()) {
@@ -52,7 +52,7 @@ bool VolumeController::HandleVolumeDown(const ui::Accelerator& accelerator) {
 
 bool VolumeController::HandleVolumeUp(const ui::Accelerator& accelerator) {
   if (accelerator.key_code() == ui::VKEY_VOLUME_UP)
-    content::RecordAction(content::UserMetricsAction("Accel_VolumeUp_F10"));
+    content::RecordAction(base::UserMetricsAction("Accel_VolumeUp_F10"));
 
   CrasAudioHandler* audio_handler = CrasAudioHandler::Get();
   if (audio_handler->IsOutputMuted()) {

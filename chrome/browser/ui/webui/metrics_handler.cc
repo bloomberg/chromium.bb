@@ -21,7 +21,7 @@
 #include "content/public/browser/web_ui.h"
 
 using base::ListValue;
-using content::UserMetricsAction;
+using base::UserMetricsAction;
 using content::WebContents;
 
 MetricsHandler::MetricsHandler() {}

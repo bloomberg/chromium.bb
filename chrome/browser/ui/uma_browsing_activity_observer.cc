@@ -57,7 +57,7 @@ void UMABrowsingActivityObserver::Observe(
       content::Source<content::NavigationController>(source).ptr();
     // Track whether the page loaded is a search results page (SRP). Track
     // the non-SRP navigations as well so there is a control.
-    content::RecordAction(content::UserMetricsAction("NavEntryCommitted"));
+    content::RecordAction(base::UserMetricsAction("NavEntryCommitted"));
     // Attempting to determine the cause of a crash originating from
     // IsSearchResultsPageFromDefaultSearchProvider but manifesting in
     // TemplateURLRef::ExtractSearchTermsFromURL(...).
@@ -67,8 +67,7 @@ void UMABrowsingActivityObserver::Observe(
             Profile::FromBrowserContext(controller->GetBrowserContext()))->
             IsSearchResultsPageFromDefaultSearchProvider(
                 load.entry->GetURL())) {
-      content::RecordAction(
-          content::UserMetricsAction("NavEntryCommitted.SRP"));
+      content::RecordAction(base::UserMetricsAction("NavEntryCommitted.SRP"));
     }
 
     if (!load.is_navigation_to_different_page())

@@ -83,7 +83,7 @@
 #include "ui/native_theme/native_theme_aura.h"
 #endif
 
-using content::UserMetricsAction;
+using base::UserMetricsAction;
 using content::WebContents;
 
 namespace {

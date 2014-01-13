@@ -33,7 +33,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
 
-using content::UserMetricsAction;
+using base::UserMetricsAction;
 
 PanelHost::PanelHost(Panel* panel, Profile* profile)
     : panel_(panel),

@@ -107,6 +107,7 @@
 #endif  // defined(ENABLE_FULL_PRINTING)
 #endif  // defined(ENABLE_PRINTING)
 
+using base::UserMetricsAction;
 using blink::WebContextMenuData;
 using blink::WebMediaPlayerAction;
 using blink::WebPluginAction;
@@ -121,7 +122,6 @@ using content::NavigationEntry;
 using content::OpenURLParams;
 using content::RenderViewHost;
 using content::SSLStatus;
-using content::UserMetricsAction;
 using content::WebContents;
 using extensions::Extension;
 using extensions::MenuItem;

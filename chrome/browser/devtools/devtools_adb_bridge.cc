@@ -802,10 +802,10 @@ class AgentHostDelegate : public content::DevToolsExternalAgentProxyDelegate,
 
     if (socket_name.find(kWebViewSocketPrefix) == 0) {
       content::RecordAction(
-          content::UserMetricsAction("DevTools_InspectAndroidWebView"));
+          base::UserMetricsAction("DevTools_InspectAndroidWebView"));
     } else {
       content::RecordAction(
-          content::UserMetricsAction("DevTools_InspectAndroidPage"));
+          base::UserMetricsAction("DevTools_InspectAndroidPage"));
     }
   }
 

@@ -711,7 +711,7 @@ gboolean WebsiteSettingsPopupGtk::OnTabstripExpose(
 void WebsiteSettingsPopupGtk::OnCookiesLinkClicked(GtkWidget* widget) {
   // Count how often the Collected Cookies dialog is opened.
   content::RecordAction(
-      content::UserMetricsAction("WebsiteSettings_CookiesDialogOpened"));
+      base::UserMetricsAction("WebsiteSettings_CookiesDialogOpened"));
 
   new CollectedCookiesGtk(GTK_WINDOW(parent_), web_contents_);
   bubble_->Close();

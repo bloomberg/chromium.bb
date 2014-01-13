@@ -32,9 +32,9 @@
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/text_elider.h"
 
+using base::UserMetricsAction;
 using content::NavigationController;
 using content::NavigationEntry;
-using content::UserMetricsAction;
 using content::WebContents;
 
 const int BackForwardMenuModel::kMaxHistoryItems = 12;

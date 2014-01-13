@@ -62,7 +62,7 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "url/gurl.h"
 
-using content::UserMetricsAction;
+using base::UserMetricsAction;
 
 namespace {
 

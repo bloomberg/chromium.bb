@@ -286,7 +286,7 @@ void LocallyManagedUserCreationController::OnManagedUserFilesStored(
   timeout_timer_.Stop();
 
   content::RecordAction(
-      content::UserMetricsAction("ManagedMode_LocallyManagedUserCreated"));
+      base::UserMetricsAction("ManagedMode_LocallyManagedUserCreated"));
 
   if (!success) {
     if (consumer_)

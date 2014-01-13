@@ -34,8 +34,8 @@
 #include "chrome/common/pref_names.h"
 #endif
 
+using base::UserMetricsAction;
 using content::RenderViewHost;
-using content::UserMetricsAction;
 using content::WebContents;
 
 FullscreenController::FullscreenController(Browser* browser)

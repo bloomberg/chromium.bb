@@ -78,7 +78,7 @@ void PepperBrokerInfoBarDelegate::Create(
 
   if (setting == CONTENT_SETTING_ASK) {
     content::RecordAction(
-        content::UserMetricsAction("PPAPI.BrokerInfobarDisplayed"));
+        base::UserMetricsAction("PPAPI.BrokerInfobarDisplayed"));
     InfoBarService* infobar_service =
         InfoBarService::FromWebContents(web_contents);
     infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
@@ -91,8 +91,8 @@ void PepperBrokerInfoBarDelegate::Create(
 
   bool allowed = (setting == CONTENT_SETTING_ALLOW);
   content::RecordAction(allowed ?
-      content::UserMetricsAction("PPAPI.BrokerSettingAllow") :
-      content::UserMetricsAction("PPAPI.BrokerSettingDeny"));
+      base::UserMetricsAction("PPAPI.BrokerSettingAllow") :
+      base::UserMetricsAction("PPAPI.BrokerSettingDeny"));
   tab_content_settings->SetPepperBrokerAllowed(allowed);
   callback.Run(allowed);
 }
@@ -168,8 +168,8 @@ bool PepperBrokerInfoBarDelegate::LinkClicked(
 
 void PepperBrokerInfoBarDelegate::DispatchCallback(bool result) {
   content::RecordAction(result ?
-      content::UserMetricsAction("PPAPI.BrokerInfobarClickedAllow") :
-      content::UserMetricsAction("PPAPI.BrokerInfobarClickedDeny"));
+      base::UserMetricsAction("PPAPI.BrokerInfobarClickedAllow") :
+      base::UserMetricsAction("PPAPI.BrokerInfobarClickedDeny"));
   callback_.Run(result);
   callback_ = base::Callback<void(bool)>();
   content_settings_->SetContentSetting(

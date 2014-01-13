@@ -192,7 +192,7 @@ bool FileAPIMessageFilter::OnMessageReceived(
 FileAPIMessageFilter::~FileAPIMessageFilter() {}
 
 void FileAPIMessageFilter::BadMessageReceived() {
-  RecordAction(UserMetricsAction("BadMessageTerminate_FAMF"));
+  RecordAction(base::UserMetricsAction("BadMessageTerminate_FAMF"));
   BrowserMessageFilter::BadMessageReceived();
 }
 
@@ -201,9 +201,9 @@ void FileAPIMessageFilter::OnOpenFileSystem(int request_id,
                                             fileapi::FileSystemType type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (type == fileapi::kFileSystemTypeTemporary) {
-    RecordAction(UserMetricsAction("OpenFileSystemTemporary"));
+    RecordAction(base::UserMetricsAction("OpenFileSystemTemporary"));
   } else if (type == fileapi::kFileSystemTypePersistent) {
-    RecordAction(UserMetricsAction("OpenFileSystemPersistent"));
+    RecordAction(base::UserMetricsAction("OpenFileSystemPersistent"));
   }
   fileapi::OpenFileSystemMode mode =
       fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT;

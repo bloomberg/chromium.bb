@@ -164,9 +164,9 @@
 #endif
 
 using base::TimeDelta;
+using base::UserMetricsAction;
 using content::NativeWebKeyboardEvent;
 using content::SSLStatus;
-using content::UserMetricsAction;
 using content::WebContents;
 using views::ColumnSet;
 using views::GridLayout;

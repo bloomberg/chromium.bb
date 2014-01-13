@@ -7,56 +7,33 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/lazy_instance.h"
+#include "base/metrics/user_metrics.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace content {
-namespace {
 
-base::LazyInstance<std::vector<ActionCallback> > g_action_callbacks =
-    LAZY_INSTANCE_INITIALIZER;
-
-// Forward declare because of circular dependency.
-void CallRecordOnUI(const std::string& action);
-
-void Record(const char *action) {
+void RecordAction(const base::UserMetricsAction& action) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
-        base::Bind(&CallRecordOnUI, action));
+        base::Bind(&RecordAction, action));
     return;
   }
 
-  for (size_t i = 0; i < g_action_callbacks.Get().size(); i++)
-    g_action_callbacks.Get()[i].Run(action);
-}
-
-void CallRecordOnUI(const std::string& action) {
-  Record(action.c_str());
-}
-
-}  // namespace
-
-void RecordAction(const UserMetricsAction& action) {
-  Record(action.str_);
+  base::RecordAction(action);
 }
 
 void RecordComputedAction(const std::string& action) {
-  Record(action.c_str());
-}
-
-void AddActionCallback(const ActionCallback& callback) {
-  g_action_callbacks.Get().push_back(callback);
-}
-
-void RemoveActionCallback(const ActionCallback& callback) {
-  for (size_t i = 0; i < g_action_callbacks.Get().size(); i++) {
-    if (g_action_callbacks.Get()[i].Equals(callback)) {
-      g_action_callbacks.Get().erase(g_action_callbacks.Get().begin() + i);
-      return;
-    }
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&RecordComputedAction, action));
+    return;
   }
+
+  base::RecordComputedAction(action);
 }
 
 }  // namespace content

@@ -17,9 +17,9 @@
 #include "content/public/browser/web_contents.h"
 #include "win8/util/win8_util.h"
 
+using base::UserMetricsAction;
 using content::OpenURLParams;
 using content::PageNavigator;
-using content::UserMetricsAction;
 using content::WebContents;
 
 namespace {

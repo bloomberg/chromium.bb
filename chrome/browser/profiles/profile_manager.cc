@@ -82,8 +82,8 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #endif
 
+using base::UserMetricsAction;
 using content::BrowserThread;
-using content::UserMetricsAction;
 
 namespace {
 

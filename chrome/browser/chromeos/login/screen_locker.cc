@@ -54,8 +54,8 @@
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
+using base::UserMetricsAction;
 using content::BrowserThread;
-using content::UserMetricsAction;
 
 namespace {
 

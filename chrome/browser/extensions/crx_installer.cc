@@ -61,8 +61,8 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #endif
 
+using base::UserMetricsAction;
 using content::BrowserThread;
-using content::UserMetricsAction;
 using extensions::SharedModuleInfo;
 
 namespace extensions {

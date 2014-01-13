@@ -762,10 +762,10 @@ void SearchProvider::OnDeletionComplete(bool success,
 void SearchProvider::RecordDeletionResult(bool success) {
   if (success) {
     content::RecordAction(
-        content::UserMetricsAction("Omnibox.ServerSuggestDelete.Success"));
+        base::UserMetricsAction("Omnibox.ServerSuggestDelete.Success"));
   } else {
     content::RecordAction(
-        content::UserMetricsAction("Omnibox.ServerSuggestDelete.Failure"));
+        base::UserMetricsAction("Omnibox.ServerSuggestDelete.Failure"));
   }
 }
 

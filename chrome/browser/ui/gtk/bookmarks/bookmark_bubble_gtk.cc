@@ -36,7 +36,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas_paint_gtk.h"
 
-using content::UserMetricsAction;
+using base::UserMetricsAction;
 
 namespace {
 

@@ -166,7 +166,7 @@ void PeopleResult::OpenChat() {
       profile_)->event_router()->DispatchEventToExtension(
           hangouts_extension_id_, event.Pass());
 
-  content::RecordAction(content::UserMetricsAction("PeopleSearch_OpenChat"));
+  content::RecordAction(base::UserMetricsAction("PeopleSearch_OpenChat"));
 }
 
 void PeopleResult::SendEmail() {
@@ -176,7 +176,7 @@ void PeopleResult::SendEmail() {
   // If no window exists, this will open a new window this one tab.
   params.disposition = NEW_FOREGROUND_TAB;
   chrome::Navigate(&params);
-  content::RecordAction(content::UserMetricsAction("PeopleSearch_SendEmail"));
+  content::RecordAction(base::UserMetricsAction("PeopleSearch_SendEmail"));
 }
 
 void PeopleResult::RefreshHangoutsExtensionId() {

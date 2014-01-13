@@ -17,7 +17,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
-using content::UserMetricsAction;
+using base::UserMetricsAction;
 
 // The opacity of the bookmark button drag image.
 static const CGFloat kDragImageOpacity = 0.7;

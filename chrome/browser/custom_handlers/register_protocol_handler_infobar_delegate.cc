@@ -20,7 +20,7 @@ void RegisterProtocolHandlerInfoBarDelegate::Create(
     ProtocolHandlerRegistry* registry,
     const ProtocolHandler& handler) {
   content::RecordAction(
-      content::UserMetricsAction("RegisterProtocolHandler.InfoBar_Shown"));
+      base::UserMetricsAction("RegisterProtocolHandler.InfoBar_Shown"));
 
   scoped_ptr<InfoBar> infobar(ConfirmInfoBarDelegate::CreateInfoBar(
       scoped_ptr<ConfirmInfoBarDelegate>(
@@ -95,14 +95,14 @@ bool RegisterProtocolHandlerInfoBarDelegate::NeedElevation(
 
 bool RegisterProtocolHandlerInfoBarDelegate::Accept() {
   content::RecordAction(
-      content::UserMetricsAction("RegisterProtocolHandler.Infobar_Accept"));
+      base::UserMetricsAction("RegisterProtocolHandler.Infobar_Accept"));
   registry_->OnAcceptRegisterProtocolHandler(handler_);
   return true;
 }
 
 bool RegisterProtocolHandlerInfoBarDelegate::Cancel() {
   content::RecordAction(
-      content::UserMetricsAction("RegisterProtocolHandler.InfoBar_Deny"));
+      base::UserMetricsAction("RegisterProtocolHandler.InfoBar_Deny"));
   registry_->OnIgnoreRegisterProtocolHandler(handler_);
   return true;
 }
@@ -114,7 +114,7 @@ base::string16 RegisterProtocolHandlerInfoBarDelegate::GetLinkText() const {
 bool RegisterProtocolHandlerInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
   content::RecordAction(
-      content::UserMetricsAction("RegisterProtocolHandler.InfoBar_LearnMore"));
+      base::UserMetricsAction("RegisterProtocolHandler.InfoBar_LearnMore"));
   web_contents()->OpenURL(content::OpenURLParams(
       GURL(chrome::kLearnMoreRegisterProtocolHandlerURL), content::Referrer(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,

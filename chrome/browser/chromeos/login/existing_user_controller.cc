@@ -303,7 +303,7 @@ void ExistingUserController::CancelPasswordChangedFlow() {
 }
 
 void ExistingUserController::CreateAccount() {
-  content::RecordAction(content::UserMetricsAction("Login.CreateAccount"));
+  content::RecordAction(base::UserMetricsAction("Login.CreateAccount"));
   guest_mode_url_ =
       google_util::AppendGoogleLocaleParam(GURL(kCreateAccountURL));
   LoginAsGuest();

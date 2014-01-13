@@ -14,7 +14,7 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
-using content::UserMetricsAction;
+using base::UserMetricsAction;
 
 namespace importer {
 

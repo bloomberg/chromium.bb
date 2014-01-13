@@ -83,7 +83,7 @@ void AppResult::Open(int event_flags) {
 
   CoreAppLauncherHandler::RecordAppListSearchLaunch(extension);
   content::RecordAction(
-      content::UserMetricsAction("AppList_ClickOnAppFromSearch"));
+      base::UserMetricsAction("AppList_ClickOnAppFromSearch"));
 
   controller_->ActivateApp(
       profile_,

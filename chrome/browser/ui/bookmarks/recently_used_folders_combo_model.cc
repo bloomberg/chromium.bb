@@ -230,7 +230,7 @@ void RecentlyUsedFoldersComboModel::MaybeChangeParent(
   const BookmarkNode* new_parent = GetNodeAt(selected_index);
   if (new_parent != node->parent()) {
     content::RecordAction(
-        content::UserMetricsAction("BookmarkBubble_ChangeParent"));
+        base::UserMetricsAction("BookmarkBubble_ChangeParent"));
     bookmark_model_->Move(node, new_parent, new_parent->child_count());
   }
 }

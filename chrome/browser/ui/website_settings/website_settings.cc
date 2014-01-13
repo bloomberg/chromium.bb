@@ -162,7 +162,7 @@ WebsiteSettings::WebsiteSettings(
 
   // Every time the Website Settings UI is opened a |WebsiteSettings| object is
   // created. So this counts how ofter the Website Settings UI is opened.
-  content::RecordAction(content::UserMetricsAction("WebsiteSettings_Opened"));
+  content::RecordAction(base::UserMetricsAction("WebsiteSettings_Opened"));
 }
 
 WebsiteSettings::~WebsiteSettings() {

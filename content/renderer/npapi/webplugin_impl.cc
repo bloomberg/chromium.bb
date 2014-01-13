@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -955,7 +956,7 @@ void WebPluginImpl::didReceiveResponse(WebURLLoader* loader,
                                                    &instance_size);
     } else if (response.httpStatusCode() == kHttpResponseSuccessStatusCode) {
       RenderThreadImpl::current()->RecordAction(
-          UserMetricsAction("Plugin_200ForByteRange"));
+          base::UserMetricsAction("Plugin_200ForByteRange"));
       // If the client issued a byte range request and the server responds with
       // HTTP 200 OK, it indicates that the server does not support byte range
       // requests.

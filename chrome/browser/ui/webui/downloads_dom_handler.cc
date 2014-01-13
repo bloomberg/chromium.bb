@@ -51,9 +51,9 @@
 #include "ui/base/l10n/time_format.h"
 #include "ui/gfx/image/image.h"
 
+using base::UserMetricsAction;
 using content::BrowserContext;
 using content::BrowserThread;
-using content::UserMetricsAction;
 
 namespace {
 

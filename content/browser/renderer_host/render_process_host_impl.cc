@@ -1368,7 +1368,7 @@ bool RenderProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
       // The message had a handler, but its de-serialization failed.
       // We consider this a capital crime. Kill the renderer if we have one.
       LOG(ERROR) << "bad message " << msg.type() << " terminating renderer.";
-      RecordAction(UserMetricsAction("BadMessageTerminate_BRPH"));
+      RecordAction(base::UserMetricsAction("BadMessageTerminate_BRPH"));
       ReceivedBadMessage();
     }
     return true;
@@ -1591,7 +1591,7 @@ void RenderProcessHostImpl::FilterURL(RenderProcessHost* rph,
     // navigation to the home page. This is often a privileged page
     // (chrome://newtab/) which is exactly what we don't want.
     *url = GURL(kAboutBlankURL);
-    RecordAction(UserMetricsAction("FilterURLTermiate_Invalid"));
+    RecordAction(base::UserMetricsAction("FilterURLTermiate_Invalid"));
     return;
   }
 
@@ -1599,7 +1599,7 @@ void RenderProcessHostImpl::FilterURL(RenderProcessHost* rph,
     // The renderer treats all URLs in the about: scheme as being about:blank.
     // Canonicalize about: URLs to about:blank.
     *url = GURL(kAboutBlankURL);
-    RecordAction(UserMetricsAction("FilterURLTermiate_About"));
+    RecordAction(base::UserMetricsAction("FilterURLTermiate_About"));
   }
 
   // Do not allow browser plugin guests to navigate to non-web URLs, since they
@@ -1613,7 +1613,7 @@ void RenderProcessHostImpl::FilterURL(RenderProcessHost* rph,
     // later.
     VLOG(1) << "Blocked URL " << url->spec();
     *url = GURL(kAboutBlankURL);
-    RecordAction(UserMetricsAction("FilterURLTermiate_Blocked"));
+    RecordAction(base::UserMetricsAction("FilterURLTermiate_Blocked"));
   }
 }
 
@@ -1789,7 +1789,8 @@ RenderProcessHost* RenderProcessHostImpl::GetProcessHostForSite(
   if (host && !IsSuitableHost(host, browser_context, url)) {
     // The registered process does not have an appropriate set of bindings for
     // the url.  Remove it from the map so we can register a better one.
-    RecordAction(UserMetricsAction("BindingsMismatch_GetProcessHostPerSite"));
+    RecordAction(
+        base::UserMetricsAction("BindingsMismatch_GetProcessHostPerSite"));
     map->RemoveProcess(host);
     host = NULL;
   }

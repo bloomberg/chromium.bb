@@ -8,6 +8,7 @@
 #include "base/debug/crash_logging.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -119,8 +120,8 @@ using autofill::AutofillAgent;
 using autofill::PasswordAutofillAgent;
 using autofill::PasswordGenerationAgent;
 using base::ASCIIToUTF16;
+using base::UserMetricsAction;
 using content::RenderThread;
-using content::UserMetricsAction;
 using content::WebPluginInfo;
 using extensions::Extension;
 using blink::WebCache;

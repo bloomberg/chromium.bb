@@ -49,7 +49,8 @@ BrowserPluginGuest* BrowserPluginGuestManager::CreateGuest(
   // creation. If the validation fails, treat it as a bad message and kill the
   // renderer process.
   if (!IsStringUTF8(params.storage_partition_id)) {
-    content::RecordAction(UserMetricsAction("BadMessageTerminate_BPGM"));
+    content::RecordAction(
+        base::UserMetricsAction("BadMessageTerminate_BPGM"));
     base::KillProcess(
         embedder_process_host->GetHandle(),
         content::RESULT_CODE_KILLED_BAD_MESSAGE, false);
@@ -129,7 +130,8 @@ bool BrowserPluginGuestManager::CanEmbedderAccessInstanceIDMaybeKill(
     int instance_id) const {
   if (!CanEmbedderAccessInstanceID(embedder_render_process_id, instance_id)) {
     // The embedder process is trying to access a guest it does not own.
-    content::RecordAction(UserMetricsAction("BadMessageTerminate_BPGM"));
+    content::RecordAction(
+        base::UserMetricsAction("BadMessageTerminate_BPGM"));
     base::KillProcess(
         RenderProcessHost::FromID(embedder_render_process_id)->GetHandle(),
         content::RESULT_CODE_KILLED_BAD_MESSAGE, false);

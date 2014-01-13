@@ -305,7 +305,7 @@ ObjectType* IndexedDBDispatcherHost::GetOrTerminateProcess(
   if (!return_object) {
     NOTREACHED() << "Uh oh, couldn't find object with id "
                  << ipc_return_object_id;
-    RecordAction(UserMetricsAction("BadMessageTerminate_IDBMF"));
+    RecordAction(base::UserMetricsAction("BadMessageTerminate_IDBMF"));
     BadMessageReceived();
   }
   return return_object;
@@ -320,7 +320,7 @@ ObjectType* IndexedDBDispatcherHost::GetOrTerminateProcess(
   if (!return_object) {
     NOTREACHED() << "Uh oh, couldn't find object with id "
                  << ipc_return_object_id;
-    RecordAction(UserMetricsAction("BadMessageTerminate_IDBMF"));
+    RecordAction(base::UserMetricsAction("BadMessageTerminate_IDBMF"));
     BadMessageReceived();
   }
   return return_object;

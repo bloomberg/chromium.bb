@@ -83,7 +83,8 @@ class BrowserMessageFilter::Internal : public IPC::ChannelProxy::MessageFilter {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO) || rv) <<
         "Must handle messages that were dispatched to another thread!";
     if (!message_was_ok) {
-      content::RecordAction(UserMetricsAction("BadMessageTerminate_BMF"));
+      content::RecordAction(
+          base::UserMetricsAction("BadMessageTerminate_BMF"));
       filter_->BadMessageReceived();
     }
 

@@ -118,7 +118,7 @@ void SearchController::Stop() {
 
 void SearchController::OpenResult(SearchResult* result, int event_flags) {
   // Count AppList.Search here because it is composed of search + action.
-  content::RecordAction(content::UserMetricsAction("AppList_Search"));
+  content::RecordAction(base::UserMetricsAction("AppList_Search"));
 
   ChromeSearchResult* chrome_result =
       static_cast<app_list::ChromeSearchResult*>(result);

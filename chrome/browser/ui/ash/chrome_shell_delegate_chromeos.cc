@@ -210,7 +210,7 @@ void ChromeShellDelegate::PreInit() {
 }
 
 void ChromeShellDelegate::Shutdown() {
-  content::RecordAction(content::UserMetricsAction("Shutdown"));
+  content::RecordAction(base::UserMetricsAction("Shutdown"));
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
       RequestShutdown();
 }

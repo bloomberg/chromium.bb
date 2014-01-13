@@ -133,7 +133,7 @@ bool VirtualKeyboardPrivateKeyboardLoadedFunction::RunImpl() {
 #if defined(USE_ASH)
   keyboard::MarkKeyboardLoadFinished();
 
-  content::UserMetricsAction("VirtualKeyboardLoaded");
+  base::UserMetricsAction("VirtualKeyboardLoaded");
 
   return true;
 #endif

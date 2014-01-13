@@ -63,7 +63,7 @@ bool AppCacheDispatcherHost::OnMessageReceived(const IPC::Message& message,
 AppCacheDispatcherHost::~AppCacheDispatcherHost() {}
 
 void AppCacheDispatcherHost::BadMessageReceived() {
-  RecordAction(UserMetricsAction("BadMessageTerminate_ACDH"));
+  RecordAction(base::UserMetricsAction("BadMessageTerminate_ACDH"));
   BrowserMessageFilter::BadMessageReceived();
 }
 

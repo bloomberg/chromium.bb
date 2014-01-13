@@ -13,7 +13,7 @@ void RecordBookmarkLaunch(const BookmarkNode* node,
   if (location == BOOKMARK_LAUNCH_LOCATION_DETACHED_BAR ||
       location == BOOKMARK_LAUNCH_LOCATION_ATTACHED_BAR) {
     content::RecordAction(
-        content::UserMetricsAction("ClickedBookmarkBarURLButton"));
+        base::UserMetricsAction("ClickedBookmarkBarURLButton"));
   }
   UMA_HISTOGRAM_ENUMERATION(
       "Bookmarks.LaunchLocation", location, BOOKMARK_LAUNCH_LOCATION_LIMIT);
@@ -36,7 +36,7 @@ void RecordBookmarkFolderOpen(BookmarkLaunchLocation location) {
   if (location == BOOKMARK_LAUNCH_LOCATION_DETACHED_BAR ||
       location == BOOKMARK_LAUNCH_LOCATION_ATTACHED_BAR) {
     content::RecordAction(
-        content::UserMetricsAction("ClickedBookmarkBarFolder"));
+        base::UserMetricsAction("ClickedBookmarkBarFolder"));
   }
 }
 
@@ -44,6 +44,6 @@ void RecordBookmarkAppsPageOpen(BookmarkLaunchLocation location) {
   if (location == BOOKMARK_LAUNCH_LOCATION_DETACHED_BAR ||
       location == BOOKMARK_LAUNCH_LOCATION_ATTACHED_BAR) {
     content::RecordAction(
-        content::UserMetricsAction("ClickedBookmarkBarAppsShortcutButton"));
+        base::UserMetricsAction("ClickedBookmarkBarAppsShortcutButton"));
   }
 }

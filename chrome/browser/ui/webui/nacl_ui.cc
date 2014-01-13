@@ -44,9 +44,9 @@
 #endif
 
 using base::ASCIIToUTF16;
+using base::UserMetricsAction;
 using content::BrowserThread;
 using content::PluginService;
-using content::UserMetricsAction;
 using content::WebUIMessageHandler;
 
 namespace {

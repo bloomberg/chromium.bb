@@ -139,10 +139,10 @@
 
 using base::Time;
 using base::TimeDelta;
+using base::UserMetricsAction;
 using content::BrowserThread;
 using content::DownloadManagerDelegate;
 using content::HostZoomMap;
-using content::UserMetricsAction;
 
 namespace {
 

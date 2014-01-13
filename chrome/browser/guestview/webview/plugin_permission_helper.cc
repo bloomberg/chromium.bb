@@ -71,7 +71,7 @@ void PluginPermissionHelper::OnBlockedUnauthorizedPlugin(
                  identifier),
       true /* allowed_by_default */);
   content::RecordAction(
-      content::UserMetricsAction("WebView.Guest.PluginLoadRequest"));
+      base::UserMetricsAction("WebView.Guest.PluginLoadRequest"));
 }
 
 void PluginPermissionHelper::OnCouldNotLoadPlugin(

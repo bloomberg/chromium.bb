@@ -24,8 +24,8 @@
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/widget/widget.h"
 
+using base::UserMetricsAction;
 using content::PageNavigator;
-using content::UserMetricsAction;
 using views::MenuItemView;
 
 BookmarkMenuController::BookmarkMenuController(Browser* browser,

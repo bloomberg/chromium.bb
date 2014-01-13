@@ -36,7 +36,7 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using content::UserMetricsAction;
+using base::UserMetricsAction;
 
 namespace {
 // TODO(zork): Remove this blacklist when fonts are added to Chrome OS.

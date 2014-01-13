@@ -475,7 +475,7 @@ void SearchTabHelper::NavigateToURL(const GURL& url,
 
   if (is_most_visited_item_url) {
     content::RecordAction(
-        content::UserMetricsAction("InstantExtended.MostVisitedClicked"));
+        base::UserMetricsAction("InstantExtended.MostVisitedClicked"));
   }
 
   chrome::NavigateParams params(browser, url,

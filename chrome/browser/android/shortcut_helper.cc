@@ -184,15 +184,15 @@ void ShortcutHelper::AddShortcutInBackground(
   switch (shortcut_type) {
     case ShortcutBuilder::APP_SHORTCUT:
       content::RecordAction(
-          content::UserMetricsAction("webapps.AddShortcut.AppShortcut"));
+          base::UserMetricsAction("webapps.AddShortcut.AppShortcut"));
       break;
     case ShortcutBuilder::APP_SHORTCUT_APPLE:
       content::RecordAction(
-          content::UserMetricsAction("webapps.AddShortcut.AppShortcutApple"));
+          base::UserMetricsAction("webapps.AddShortcut.AppShortcutApple"));
       break;
     case ShortcutBuilder::BOOKMARK:
       content::RecordAction(
-          content::UserMetricsAction("webapps.AddShortcut.Bookmark"));
+          base::UserMetricsAction("webapps.AddShortcut.Bookmark"));
       break;
     default:
       NOTREACHED();

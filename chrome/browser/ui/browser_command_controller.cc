@@ -395,23 +395,23 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       NewIncognitoWindow(browser_);
       break;
     case IDC_CLOSE_WINDOW:
-      content::RecordAction(content::UserMetricsAction("CloseWindowByKey"));
+      content::RecordAction(base::UserMetricsAction("CloseWindowByKey"));
       CloseWindow(browser_);
       break;
     case IDC_NEW_TAB:
       NewTab(browser_);
       break;
     case IDC_CLOSE_TAB:
-      content::RecordAction(content::UserMetricsAction("CloseTabByKey"));
+      content::RecordAction(base::UserMetricsAction("CloseTabByKey"));
       CloseTab(browser_);
       break;
     case IDC_SELECT_NEXT_TAB:
-      content::RecordAction(content::UserMetricsAction("Accel_SelectNextTab"));
+      content::RecordAction(base::UserMetricsAction("Accel_SelectNextTab"));
       SelectNextTab(browser_);
       break;
     case IDC_SELECT_PREVIOUS_TAB:
       content::RecordAction(
-          content::UserMetricsAction("Accel_SelectPreviousTab"));
+          base::UserMetricsAction("Accel_SelectPreviousTab"));
       SelectPreviousTab(browser_);
       break;
     case IDC_TABPOSE:
@@ -459,7 +459,7 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       break;
     case IDC_MINIMIZE_WINDOW:
       content::RecordAction(
-          content::UserMetricsAction("Accel_Toggle_Minimized_M"));
+          base::UserMetricsAction("Accel_Toggle_Minimized_M"));
       ash::accelerators::ToggleMinimized();
       break;
     // If Ash needs many more commands here we should implement a general
@@ -496,7 +496,7 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
         break;
 
       chrome::AttemptRestartToDesktopMode();
-      content::RecordAction(content::UserMetricsAction("Win8DesktopRestart"));
+      content::RecordAction(base::UserMetricsAction("Win8DesktopRestart"));
       break;
     case IDC_WIN8_METRO_RESTART:
       if (!VerifyMetroSwitchForApps(window()->GetNativeWindow(), id))
@@ -504,7 +504,7 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
 
       // SwitchToMetroUIHandler deletes itself.
       new SwitchToMetroUIHandler;
-      content::RecordAction(content::UserMetricsAction("Win8MetroRestart"));
+      content::RecordAction(base::UserMetricsAction("Win8MetroRestart"));
       break;
 #endif
 
@@ -543,7 +543,7 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       Print(browser_);
       break;
     case IDC_ADVANCED_PRINT:
-      content::RecordAction(content::UserMetricsAction("Accel_Advanced_Print"));
+      content::RecordAction(base::UserMetricsAction("Accel_Advanced_Print"));
       AdvancedPrint(browser_);
       break;
     case IDC_PRINT_TO_DESTINATION:
@@ -630,15 +630,15 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
 
     // Focus various bits of UI
     case IDC_FOCUS_TOOLBAR:
-      content::RecordAction(content::UserMetricsAction("Accel_Focus_Toolbar"));
+      content::RecordAction(base::UserMetricsAction("Accel_Focus_Toolbar"));
       FocusToolbar(browser_);
       break;
     case IDC_FOCUS_LOCATION:
-      content::RecordAction(content::UserMetricsAction("Accel_Focus_Location"));
+      content::RecordAction(base::UserMetricsAction("Accel_Focus_Location"));
       FocusLocationBar(browser_);
       break;
     case IDC_FOCUS_SEARCH:
-      content::RecordAction(content::UserMetricsAction("Accel_Focus_Search"));
+      content::RecordAction(base::UserMetricsAction("Accel_Focus_Search"));
       FocusSearch(browser_);
       break;
     case IDC_FOCUS_MENU_BAR:
@@ -646,7 +646,7 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       break;
     case IDC_FOCUS_BOOKMARKS:
       content::RecordAction(
-          content::UserMetricsAction("Accel_Focus_Bookmarks"));
+          base::UserMetricsAction("Accel_Focus_Bookmarks"));
       FocusBookmarksToolbar(browser_);
       break;
     case IDC_FOCUS_INFOBARS:
@@ -708,7 +708,7 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       ShowBookmarkManager(browser_);
       break;
     case IDC_SHOW_APP_MENU:
-      content::RecordAction(content::UserMetricsAction("Accel_Show_App_Menu"));
+      content::RecordAction(base::UserMetricsAction("Accel_Show_App_Menu"));
       ShowAppMenu(browser_);
       break;
     case IDC_SHOW_AVATAR_MENU:

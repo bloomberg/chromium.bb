@@ -287,7 +287,7 @@ void DatabaseMessageFilter::OnDatabaseOpened(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   if (!DatabaseUtil::IsValidOriginIdentifier(origin_identifier)) {
-    RecordAction(UserMetricsAction("BadMessageTerminate_DBMF"));
+    RecordAction(base::UserMetricsAction("BadMessageTerminate_DBMF"));
     BadMessageReceived();
     return;
   }
@@ -306,7 +306,7 @@ void DatabaseMessageFilter::OnDatabaseModified(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (!database_connections_.IsDatabaseOpened(
           origin_identifier, database_name)) {
-    RecordAction(UserMetricsAction("BadMessageTerminate_DBMF"));
+    RecordAction(base::UserMetricsAction("BadMessageTerminate_DBMF"));
     BadMessageReceived();
     return;
   }
@@ -320,7 +320,7 @@ void DatabaseMessageFilter::OnDatabaseClosed(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (!database_connections_.IsDatabaseOpened(
           origin_identifier, database_name)) {
-    RecordAction(UserMetricsAction("BadMessageTerminate_DBMF"));
+    RecordAction(base::UserMetricsAction("BadMessageTerminate_DBMF"));
     BadMessageReceived();
     return;
   }
@@ -335,7 +335,7 @@ void DatabaseMessageFilter::OnHandleSqliteError(
     int error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (!DatabaseUtil::IsValidOriginIdentifier(origin_identifier)) {
-    RecordAction(UserMetricsAction("BadMessageTerminate_DBMF"));
+    RecordAction(base::UserMetricsAction("BadMessageTerminate_DBMF"));
     BadMessageReceived();
     return;
   }

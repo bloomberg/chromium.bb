@@ -133,7 +133,7 @@ void MockRenderThread::SetResourceDispatcherDelegate(
 void MockRenderThread::EnsureWebKitInitialized() {
 }
 
-void MockRenderThread::RecordAction(const UserMetricsAction& action) {
+void MockRenderThread::RecordAction(const base::UserMetricsAction& action) {
 }
 
 void MockRenderThread::RecordComputedAction(const std::string& action) {

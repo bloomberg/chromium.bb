@@ -18,7 +18,7 @@
 #include "content/public/browser/user_metrics.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 
-using content::UserMetricsAction;
+using base::UserMetricsAction;
 
 @interface BookmarkBarView (Private)
 - (void)themeDidChangeNotification:(NSNotification*)aNotification;

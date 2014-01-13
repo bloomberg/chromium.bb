@@ -239,12 +239,12 @@ void PlatformVerificationFlow::OnConsentResponse(
     }
     if (consent_response == CONSENT_RESPONSE_DENY) {
       content::RecordAction(
-          content::UserMetricsAction("PlatformVerificationRejected"));
+          base::UserMetricsAction("PlatformVerificationRejected"));
       ReportError(context.callback, USER_REJECTED);
       return;
     } else if (consent_response == CONSENT_RESPONSE_ALLOW) {
       content::RecordAction(
-          content::UserMetricsAction("PlatformVerificationAccepted"));
+          base::UserMetricsAction("PlatformVerificationAccepted"));
     }
   }
 

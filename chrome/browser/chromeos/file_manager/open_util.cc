@@ -38,9 +38,9 @@
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 
+using base::UserMetricsAction;
 using content::BrowserContext;
 using content::BrowserThread;
-using content::UserMetricsAction;
 using extensions::Extension;
 using extensions::app_file_handler_util::FindFileHandlersForFiles;
 using extensions::app_file_handler_util::PathAndMimeTypeSet;

@@ -9,6 +9,7 @@
 #include "base/debug/alias.h"
 #include "base/json/json_reader.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -103,6 +104,7 @@
 #include "chrome/renderer/extensions/cast_streaming_native_handler.h"
 #endif
 
+using base::UserMetricsAction;
 using blink::WebDataSource;
 using blink::WebDocument;
 using blink::WebFrame;
@@ -113,7 +115,6 @@ using blink::WebVector;
 using blink::WebView;
 using content::RenderThread;
 using content::RenderView;
-using content::UserMetricsAction;
 
 namespace extensions {
 

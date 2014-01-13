@@ -237,7 +237,7 @@ void InspectUI::Open(const std::string& source_id,
 }
 
 void InspectUI::InspectDevices(Browser* browser) {
-  content::RecordAction(content::UserMetricsAction("InspectDevices"));
+  content::RecordAction(base::UserMetricsAction("InspectDevices"));
   chrome::NavigateParams params(chrome::GetSingletonTabNavigateParams(
       browser, GURL(chrome::kChromeUIInspectURL)));
   params.path_behavior = chrome::NavigateParams::IGNORE_AND_NAVIGATE;

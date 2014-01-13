@@ -92,10 +92,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
+using base::UserMetricsAction;
 using content::BrowserContext;
 using content::BrowserThread;
 using content::DownloadManager;
-using content::UserMetricsAction;
 
 namespace {
 

@@ -902,7 +902,7 @@ NavigationType NavigationControllerImpl::ClassifyNavigation(
     // Because the unknown entry has committed, we risk showing the wrong URL in
     // release builds. Instead, we'll kill the renderer process to be safe.
     LOG(ERROR) << "terminating renderer for bad navigation: " << params.url;
-    RecordAction(UserMetricsAction("BadMessageTerminate_NC"));
+    RecordAction(base::UserMetricsAction("BadMessageTerminate_NC"));
 
     // Temporary code so we can get more information.  Format:
     //  http://url/foo.html#page1#max3#frame1#ids:2_Nx,1_1x,3_2

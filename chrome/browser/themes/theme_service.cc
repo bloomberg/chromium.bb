@@ -36,8 +36,8 @@
 #include "ui/base/win/shell.h"
 #endif
 
+using base::UserMetricsAction;
 using content::BrowserThread;
-using content::UserMetricsAction;
 using extensions::Extension;
 using extensions::UnloadedExtensionInfo;
 using ui::ResourceBundle;

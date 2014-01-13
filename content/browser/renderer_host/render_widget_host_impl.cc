@@ -512,7 +512,7 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
 
   if (!msg_is_ok) {
     // The message de-serialization failed. Kill the renderer process.
-    RecordAction(UserMetricsAction("BadMessageTerminate_RWH"));
+    RecordAction(base::UserMetricsAction("BadMessageTerminate_RWH"));
     GetProcess()->ReceivedBadMessage();
   }
   return handled;
@@ -1581,7 +1581,7 @@ void RenderWidgetHostImpl::OnUpdateRect(
     const size_t size = pixel_size.height() * pixel_size.width() * 4;
     if (dib->size() < size) {
       DLOG(WARNING) << "Transport DIB too small for given rectangle";
-      RecordAction(UserMetricsAction("BadMessageTerminate_RWH1"));
+      RecordAction(base::UserMetricsAction("BadMessageTerminate_RWH1"));
       GetProcess()->ReceivedBadMessage();
     } else {
       // Scroll the backing store.
@@ -1712,13 +1712,13 @@ void RenderWidgetHostImpl::OnQueueSyntheticGesture(
 
 void RenderWidgetHostImpl::OnFocus() {
   // Only RenderViewHost can deal with that message.
-  RecordAction(UserMetricsAction("BadMessageTerminate_RWH4"));
+  RecordAction(base::UserMetricsAction("BadMessageTerminate_RWH4"));
   GetProcess()->ReceivedBadMessage();
 }
 
 void RenderWidgetHostImpl::OnBlur() {
   // Only RenderViewHost can deal with that message.
-  RecordAction(UserMetricsAction("BadMessageTerminate_RWH5"));
+  RecordAction(base::UserMetricsAction("BadMessageTerminate_RWH5"));
   GetProcess()->ReceivedBadMessage();
 }
 
@@ -2062,7 +2062,7 @@ void RenderWidgetHostImpl::OnTouchEventAck(
 
 void RenderWidgetHostImpl::OnUnexpectedEventAck(UnexpectedEventAckType type) {
   if (type == BAD_ACK_MESSAGE) {
-    RecordAction(UserMetricsAction("BadMessageTerminate_RWH2"));
+    RecordAction(base::UserMetricsAction("BadMessageTerminate_RWH2"));
     process_->ReceivedBadMessage();
   } else if (type == UNEXPECTED_EVENT_TYPE) {
     suppress_next_char_events_ = false;
@@ -2167,55 +2167,55 @@ void RenderWidgetHostImpl::MoveCaret(const gfx::Point& point) {
 
 void RenderWidgetHostImpl::Undo() {
   Send(new InputMsg_Undo(GetRoutingID()));
-  RecordAction(UserMetricsAction("Undo"));
+  RecordAction(base::UserMetricsAction("Undo"));
 }
 
 void RenderWidgetHostImpl::Redo() {
   Send(new InputMsg_Redo(GetRoutingID()));
-  RecordAction(UserMetricsAction("Redo"));
+  RecordAction(base::UserMetricsAction("Redo"));
 }
 
 void RenderWidgetHostImpl::Cut() {
   Send(new InputMsg_Cut(GetRoutingID()));
-  RecordAction(UserMetricsAction("Cut"));
+  RecordAction(base::UserMetricsAction("Cut"));
 }
 
 void RenderWidgetHostImpl::Copy() {
   Send(new InputMsg_Copy(GetRoutingID()));
-  RecordAction(UserMetricsAction("Copy"));
+  RecordAction(base::UserMetricsAction("Copy"));
 }
 
 void RenderWidgetHostImpl::CopyToFindPboard() {
 #if defined(OS_MACOSX)
   // Windows/Linux don't have the concept of a find pasteboard.
   Send(new InputMsg_CopyToFindPboard(GetRoutingID()));
-  RecordAction(UserMetricsAction("CopyToFindPboard"));
+  RecordAction(base::UserMetricsAction("CopyToFindPboard"));
 #endif
 }
 
 void RenderWidgetHostImpl::Paste() {
   Send(new InputMsg_Paste(GetRoutingID()));
-  RecordAction(UserMetricsAction("Paste"));
+  RecordAction(base::UserMetricsAction("Paste"));
 }
 
 void RenderWidgetHostImpl::PasteAndMatchStyle() {
   Send(new InputMsg_PasteAndMatchStyle(GetRoutingID()));
-  RecordAction(UserMetricsAction("PasteAndMatchStyle"));
+  RecordAction(base::UserMetricsAction("PasteAndMatchStyle"));
 }
 
 void RenderWidgetHostImpl::Delete() {
   Send(new InputMsg_Delete(GetRoutingID()));
-  RecordAction(UserMetricsAction("DeleteSelection"));
+  RecordAction(base::UserMetricsAction("DeleteSelection"));
 }
 
 void RenderWidgetHostImpl::SelectAll() {
   Send(new InputMsg_SelectAll(GetRoutingID()));
-  RecordAction(UserMetricsAction("SelectAll"));
+  RecordAction(base::UserMetricsAction("SelectAll"));
 }
 
 void RenderWidgetHostImpl::Unselect() {
   Send(new InputMsg_Unselect(GetRoutingID()));
-  RecordAction(UserMetricsAction("Unselect"));
+  RecordAction(base::UserMetricsAction("Unselect"));
 }
 
 bool RenderWidgetHostImpl::GotResponseToLockMouseRequest(bool allowed) {

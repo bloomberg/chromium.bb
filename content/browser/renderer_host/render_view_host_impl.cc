@@ -1103,7 +1103,8 @@ void RenderViewHostImpl::SetWebUIProperty(const std::string& name,
   if (enabled_bindings_ & BINDINGS_POLICY_WEB_UI) {
     Send(new ViewMsg_SetWebUIProperty(GetRoutingID(), name, value));
   } else {
-    RecordAction(UserMetricsAction("BindingsMismatchTerminate_RVH_WebUI"));
+    RecordAction(
+        base::UserMetricsAction("BindingsMismatchTerminate_RVH_WebUI"));
     base::KillProcess(
         GetProcess()->GetHandle(), content::RESULT_CODE_KILLED, false);
   }
@@ -1290,7 +1291,7 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
   if (!msg_is_ok) {
     // The message had a handler, but its de-serialization failed.
     // Kill the renderer.
-    RecordAction(UserMetricsAction("BadMessageTerminate_RVH"));
+    RecordAction(base::UserMetricsAction("BadMessageTerminate_RVH"));
     GetProcess()->ReceivedBadMessage();
   }
 
@@ -1377,7 +1378,7 @@ void RenderViewHostImpl::OnRunModal(int opener_id, IPC::Message* reply_msg) {
   run_modal_reply_msg_ = reply_msg;
   run_modal_opener_id_ = opener_id;
 
-  RecordAction(UserMetricsAction("ShowModalDialog"));
+  RecordAction(base::UserMetricsAction("ShowModalDialog"));
 
   RenderViewHostImpl* opener =
       RenderViewHostImpl::FromID(GetProcess()->GetID(), run_modal_opener_id_);
@@ -1486,7 +1487,7 @@ void RenderViewHostImpl::OnNavigate(const IPC::Message& msg) {
   if (!CanCommitURL(validated_params.url)) {
     VLOG(1) << "Blocked URL " << validated_params.url.spec();
     validated_params.url = GURL(kAboutBlankURL);
-    RecordAction(UserMetricsAction("CanCommitURL_BlockedAndKilled"));
+    RecordAction(base::UserMetricsAction("CanCommitURL_BlockedAndKilled"));
     // Kills the process.
     process->ReceivedBadMessage();
   }

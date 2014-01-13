@@ -369,7 +369,7 @@ DevToolsWindow* DevToolsWindow::OpenDevToolsWindowForWorker(
 // static
 DevToolsWindow* DevToolsWindow::CreateDevToolsWindowForWorker(
     Profile* profile) {
-  content::RecordAction(content::UserMetricsAction("DevTools_InspectWorker"));
+  content::RecordAction(base::UserMetricsAction("DevTools_InspectWorker"));
   return Create(profile, GURL(), NULL, DEVTOOLS_DOCK_SIDE_UNDOCKED, true,
                 false, false);
 }
@@ -426,7 +426,7 @@ DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
         inspected_rvh->GetProcess()->GetBrowserContext());
     DevToolsDockSide dock_side = GetDockSideFromPrefs(profile);
     content::RecordAction(
-        content::UserMetricsAction("DevTools_InspectRenderer"));
+        base::UserMetricsAction("DevTools_InspectRenderer"));
     window = Create(profile, GURL(), inspected_rvh, dock_side, false, false,
         true);
     manager->RegisterDevToolsClientHostFor(agent.get(),

@@ -32,8 +32,8 @@
 
 using autofill::PasswordForm;
 using autofill::PasswordFormMap;
+using base::UserMetricsAction;
 using content::BrowserThread;
-using content::UserMetricsAction;
 using content::WebContents;
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(PasswordManager);

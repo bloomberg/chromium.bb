@@ -755,7 +755,7 @@ void WebsiteSettingsPopupView::HandleLinkClickedAsync(views::Link* source) {
   if (source == cookie_dialog_link_) {
     // Count how often the Collected Cookies dialog is opened.
     content::RecordAction(
-        content::UserMetricsAction("WebsiteSettings_CookiesDialogOpened"));
+        base::UserMetricsAction("WebsiteSettings_CookiesDialogOpened"));
     new CollectedCookiesViews(web_contents_);
   } else if (source == certificate_dialog_link_) {
     gfx::NativeWindow parent =

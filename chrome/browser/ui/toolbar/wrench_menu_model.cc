@@ -72,8 +72,8 @@
 #include "ash/shell.h"
 #endif
 
+using base::UserMetricsAction;
 using content::HostZoomMap;
-using content::UserMetricsAction;
 using content::WebContents;
 
 namespace {

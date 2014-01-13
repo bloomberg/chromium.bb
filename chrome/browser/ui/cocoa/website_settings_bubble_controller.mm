@@ -506,7 +506,7 @@ NSColor* IdentityVerifiedTextColor() {
 - (void)showCookiesAndSiteData:(id)sender {
   DCHECK(webContents_);
   content::RecordAction(
-      content::UserMetricsAction("WebsiteSettings_CookiesDialogOpened"));
+      base::UserMetricsAction("WebsiteSettings_CookiesDialogOpened"));
   chrome::ShowCollectedCookiesDialog(webContents_);
 }
 

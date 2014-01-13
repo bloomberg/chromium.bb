@@ -192,7 +192,7 @@ void ResetProfileSettingsHandler::ResetProfile(bool send_settings) {
       default_settings.Pass(),
       base::Bind(&ResetProfileSettingsHandler::OnResetProfileSettingsDone,
                  AsWeakPtr()));
-  content::RecordAction(content::UserMetricsAction("ResetProfile"));
+  content::RecordAction(base::UserMetricsAction("ResetProfile"));
   UMA_HISTOGRAM_BOOLEAN("ProfileReset.SendFeedback", send_settings);
 }
 

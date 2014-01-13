@@ -5,17 +5,18 @@
 #include "chrome/browser/ui/webui/user_actions/user_actions_ui_handler.h"
 
 #include "base/bind.h"
+#include "base/metrics/user_metrics.h"
 #include "base/values.h"
 #include "content/public/browser/web_ui.h"
 
 UserActionsUIHandler::UserActionsUIHandler()
     : action_callback_(base::Bind(&UserActionsUIHandler::OnUserAction,
                                   base::Unretained(this))) {
-  content::AddActionCallback(action_callback_);
+  base::AddActionCallback(action_callback_);
 }
 
 UserActionsUIHandler::~UserActionsUIHandler() {
-  content::RemoveActionCallback(action_callback_);
+  base::RemoveActionCallback(action_callback_);
 }
 
 void UserActionsUIHandler::RegisterMessages() {}

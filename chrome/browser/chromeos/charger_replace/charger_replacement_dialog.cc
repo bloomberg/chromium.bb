@@ -70,7 +70,7 @@ void ChargerReplacementDialog::SetFocusOnChargerDialogIfVisible() {
 
 void ChargerReplacementDialog::Show() {
   content::RecordAction(
-        content::UserMetricsAction("ShowChargerReplacementDialog"));
+        base::UserMetricsAction("ShowChargerReplacementDialog"));
 
   is_window_visible_ = true;
   // We show the dialog for the active user, so that the dialog will get

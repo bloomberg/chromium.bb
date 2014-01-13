@@ -94,12 +94,12 @@ namespace {
 const char kOsOverrideForTabletSite[] = "Linux; Android 4.0.3";
 }
 
+using base::UserMetricsAction;
 using content::NavigationController;
 using content::NavigationEntry;
 using content::OpenURLParams;
 using content::Referrer;
 using content::SSLStatus;
-using content::UserMetricsAction;
 using content::WebContents;
 using web_modal::WebContentsModalDialogManager;
 

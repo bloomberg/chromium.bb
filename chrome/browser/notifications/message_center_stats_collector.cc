@@ -124,11 +124,11 @@ void MessageCenterStatsCollector::OnCenterVisibilityChanged(
       break;
     case message_center::VISIBILITY_MESSAGE_CENTER:
       content::RecordAction(
-          content::UserMetricsAction("Notifications.ShowMessageCenter"));
+          base::UserMetricsAction("Notifications.ShowMessageCenter"));
       break;
     case message_center::VISIBILITY_SETTINGS:
       content::RecordAction(
-          content::UserMetricsAction("Notifications.ShowSettings"));
+          base::UserMetricsAction("Notifications.ShowSettings"));
       break;
   }
 }
@@ -136,10 +136,10 @@ void MessageCenterStatsCollector::OnCenterVisibilityChanged(
 void MessageCenterStatsCollector::OnQuietModeChanged(bool in_quiet_mode) {
   if (in_quiet_mode) {
     content::RecordAction(
-        content::UserMetricsAction("Notifications.Mute"));
+        base::UserMetricsAction("Notifications.Mute"));
   } else {
     content::RecordAction(
-        content::UserMetricsAction("Notifications.Unmute"));
+        base::UserMetricsAction("Notifications.Unmute"));
   }
 }
 

@@ -17,6 +17,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/user_metrics.h"
 #include "base/process/kill.h"
 #include "base/time/time.h"
 #include "chrome/browser/metrics/metrics_log.h"
@@ -474,7 +475,7 @@ class MetricsService
   void GetCurrentSyntheticFieldTrials(
       std::vector<chrome_variations::ActiveGroupId>* synthetic_trials);
 
-  content::ActionCallback action_callback_;
+  base::ActionCallback action_callback_;
 
   content::NotificationRegistrar registrar_;
 

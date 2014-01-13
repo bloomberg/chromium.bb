@@ -28,9 +28,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/jstemplate_builder.h"
 
-using content::RenderThread;
-using content::RenderView;
-using content::UserMetricsAction;
+using base::UserMetricsAction;
 using blink::WebDocument;
 using blink::WebElement;
 using blink::WebFrame;
@@ -39,6 +37,8 @@ using blink::WebNode;
 using blink::WebPlugin;
 using blink::WebPluginContainer;
 using blink::WebPluginParams;
+using content::RenderThread;
+using content::RenderView;
 
 namespace {
 const plugins::PluginPlaceholder* g_last_active_menu = NULL;

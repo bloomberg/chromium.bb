@@ -82,7 +82,7 @@ void MostVisitedIframeSource::StartDataRequest(
 
       // Records the action. This will be available as a time-stamped stream
       // server-side and can be used to compute time-to-long-dwell.
-      content::RecordAction(content::UserMetricsAction("MostVisited_Clicked"));
+      content::RecordAction(base::UserMetricsAction("MostVisited_Clicked"));
     }
     callback.Run(NULL);
   } else {

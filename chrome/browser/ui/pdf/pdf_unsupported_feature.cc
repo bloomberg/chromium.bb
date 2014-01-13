@@ -45,11 +45,11 @@
 #include "base/win/metro.h"
 #endif
 
+using base::UserMetricsAction;
 using content::InterstitialPage;
 using content::OpenURLParams;
 using content::PluginService;
 using content::Referrer;
-using content::UserMetricsAction;
 using content::WebContents;
 using content::WebPluginInfo;
 

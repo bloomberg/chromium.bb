@@ -1251,8 +1251,10 @@ bool ExtensionWebRequestEventRouter::AddEventListener(
   listener.ipc_sender = ipc_sender;
   listener.embedder_process_id = embedder_process_id;
   listener.webview_instance_id = webview_instance_id;
-  if (listener.webview_instance_id)
-    RecordAction(content::UserMetricsAction("WebView.WebRequest.AddListener"));
+  if (listener.webview_instance_id) {
+    content::RecordAction(
+        base::UserMetricsAction("WebView.WebRequest.AddListener"));
+  }
 
   if (listeners_[profile][event_name].count(listener) != 0u) {
     // This is likely an abuse of the API by a malicious extension.

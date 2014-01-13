@@ -7,10 +7,10 @@
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/screenshot_delegate.h"
 #include "ash/shell.h"
+#include "base/metrics/user_metrics_action.h"
 #include "content/public/browser/user_metrics.h"
-#include "content/public/common/user_metrics_action.h"
 
-using content::UserMetricsAction;
+using base::UserMetricsAction;
 
 namespace chrome {
 

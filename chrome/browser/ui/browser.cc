@@ -208,6 +208,7 @@
 #endif
 
 using base::TimeDelta;
+using base::UserMetricsAction;
 using content::NativeWebKeyboardEvent;
 using content::NavigationController;
 using content::NavigationEntry;
@@ -216,7 +217,6 @@ using content::PluginService;
 using content::Referrer;
 using content::RenderWidgetHostView;
 using content::SiteInstance;
-using content::UserMetricsAction;
 using content::WebContents;
 using extensions::Extension;
 using ui::WebDialogDelegate;

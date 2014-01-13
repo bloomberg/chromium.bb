@@ -25,8 +25,7 @@
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/re2/re2/re2.h"
 
-using content::RenderThread;
-using content::UserMetricsAction;
+using base::UserMetricsAction;
 using blink::WebElement;
 using blink::WebFrame;
 using blink::WebMouseEvent;
@@ -36,6 +35,7 @@ using blink::WebPluginContainer;
 using blink::WebPluginParams;
 using blink::WebScriptSource;
 using blink::WebURLRequest;
+using content::RenderThread;
 
 namespace plugins {
 

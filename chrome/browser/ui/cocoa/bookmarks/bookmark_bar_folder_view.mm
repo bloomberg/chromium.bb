@@ -11,7 +11,7 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "content/public/browser/user_metrics.h"
 
-using content::UserMetricsAction;
+using base::UserMetricsAction;
 
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 

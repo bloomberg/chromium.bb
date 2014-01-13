@@ -150,7 +150,8 @@ void RenderFrameHostManager::SetPendingWebUI(const NavigationEntryImpl& entry) {
   if (pending_web_ui_.get() &&
       entry.bindings() != NavigationEntryImpl::kInvalidBindings &&
       pending_web_ui_->GetBindings() != entry.bindings()) {
-    RecordAction(UserMetricsAction("ProcessSwapBindingsMismatch_RVHM"));
+    RecordAction(
+        base::UserMetricsAction("ProcessSwapBindingsMismatch_RVHM"));
     pending_web_ui_.reset();
   }
 }

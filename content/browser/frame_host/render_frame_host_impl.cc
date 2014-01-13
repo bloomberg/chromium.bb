@@ -125,7 +125,7 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
   if (!msg_is_ok) {
     // The message had a handler, but its de-serialization failed.
     // Kill the renderer.
-    RecordAction(UserMetricsAction("BadMessageTerminate_RFH"));
+    RecordAction(base::UserMetricsAction("BadMessageTerminate_RFH"));
     GetProcess()->ReceivedBadMessage();
   }
 

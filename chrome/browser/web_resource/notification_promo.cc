@@ -27,7 +27,7 @@
 #include "ui/base/device_form_factor.h"
 #include "url/gurl.h"
 
-using content::UserMetricsAction;
+using base::UserMetricsAction;
 
 namespace {
 

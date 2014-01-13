@@ -1673,7 +1673,7 @@ void RenderWidgetHostViewMac::OnSwapCompositorFrame(
   if (!frame->software_frame_data) {
     DLOG(ERROR) << "Received unexpected frame type.";
     RecordAction(
-        UserMetricsAction("BadMessageTerminate_UnexpectedFrameType"));
+        base::UserMetricsAction("BadMessageTerminate_UnexpectedFrameType"));
     render_widget_host_->GetProcess()->ReceivedBadMessage();
     return;
   }

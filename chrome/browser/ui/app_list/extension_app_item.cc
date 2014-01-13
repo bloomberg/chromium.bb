@@ -256,7 +256,7 @@ void ExtensionAppItem::Activate(int event_flags) {
   if (RunExtensionEnableFlow())
     return;
 
-  content::RecordAction(content::UserMetricsAction("AppList_ClickOnApp"));
+  content::RecordAction(base::UserMetricsAction("AppList_ClickOnApp"));
   CoreAppLauncherHandler::RecordAppListMainLaunch(extension);
   GetController()->ActivateApp(profile_,
                                extension,

@@ -958,7 +958,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
   // Reject invalid priority.
   if (request_data.priority < net::MINIMUM_PRIORITY ||
       request_data.priority > net::MAXIMUM_PRIORITY) {
-    RecordAction(UserMetricsAction("BadMessageTerminate_RDH"));
+    RecordAction(base::UserMetricsAction("BadMessageTerminate_RDH"));
     filter_->BadMessageReceived();
     return;
   }
@@ -986,7 +986,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
 
         deferred_loader->CompleteTransfer();
       } else {
-        RecordAction(UserMetricsAction("BadMessageTerminate_RDH"));
+        RecordAction(base::UserMetricsAction("BadMessageTerminate_RDH"));
         filter_->BadMessageReceived();
       }
       return;

@@ -27,8 +27,8 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using base::UserMetricsAction;
 using content::PageNavigator;
-using content::UserMetricsAction;
 
 BookmarkContextMenuController::BookmarkContextMenuController(
     gfx::NativeWindow parent_window,

@@ -38,7 +38,7 @@
 #include "ui/message_center/notifier_settings.h"
 #include "url/gurl.h"
 
-using content::UserMetricsAction;
+using base::UserMetricsAction;
 
 namespace notifier {
 

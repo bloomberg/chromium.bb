@@ -7,9 +7,9 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/metrics/user_metrics.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "components/variations/variations_associated_data.h"
-#include "content/public/browser/user_metrics.h"
 
 namespace {
 
@@ -70,7 +70,7 @@ class UserActionObserver {
 
   UserActionCountMap count_map_;
 
-  content::ActionCallback action_callback_;
+  base::ActionCallback action_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(UserActionObserver);
 };
@@ -78,11 +78,11 @@ class UserActionObserver {
 UserActionObserver::UserActionObserver()
     : action_callback_(base::Bind(&UserActionObserver::OnUserAction,
                                   base::Unretained(this))) {
-  content::AddActionCallback(action_callback_);
+  base::AddActionCallback(action_callback_);
 }
 
 UserActionObserver::~UserActionObserver() {
-  content::RemoveActionCallback(action_callback_);
+  base::RemoveActionCallback(action_callback_);
 }
 
 void UserActionObserver::OnUserAction(const std::string& action) {

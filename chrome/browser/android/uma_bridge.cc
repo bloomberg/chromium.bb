@@ -9,9 +9,9 @@
 #include "content/public/browser/user_metrics.h"
 #include "jni/UmaBridge_jni.h"
 
+using base::UserMetricsAction;
 using content::RecordAction;
 using content::RecordComputedAction;
-using content::UserMetricsAction;
 
 static void RecordMenuShow(JNIEnv*, jclass) {
   RecordAction(UserMetricsAction("MobileMenuShow"));

@@ -29,8 +29,8 @@
 #include "content/public/browser/user_metrics.h"
 #include "url/gurl.h"
 
+using base::UserMetricsAction;
 using content::BrowserThread;
-using content::UserMetricsAction;
 
 namespace {
 

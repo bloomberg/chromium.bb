@@ -19,9 +19,9 @@
 #import "ui/base/cocoa/cocoa_event_utils.h"
 #import "ui/base/cocoa/menu_controller.h"
 
+using base::UserMetricsAction;
 using content::OpenURLParams;
 using content::Referrer;
-using content::UserMetricsAction;
 
 namespace {
 

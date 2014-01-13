@@ -4,9 +4,9 @@
 
 #include "ash/system/chromeos/brightness/brightness_controller_chromeos.h"
 
+#include "base/metrics/user_metrics.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
-#include "content/public/browser/user_metrics.h"
 #include "ui/base/accelerators/accelerator.h"
 
 namespace ash {
@@ -15,8 +15,8 @@ namespace system {
 bool BrightnessControllerChromeos::HandleBrightnessDown(
     const ui::Accelerator& accelerator) {
   if (accelerator.key_code() == ui::VKEY_BRIGHTNESS_DOWN)
-    content::RecordAction(
-        content::UserMetricsAction("Accel_BrightnessDown_F6"));
+    base::RecordAction(
+        base::UserMetricsAction("Accel_BrightnessDown_F6"));
 
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
       DecreaseScreenBrightness(true);
@@ -26,7 +26,7 @@ bool BrightnessControllerChromeos::HandleBrightnessDown(
 bool BrightnessControllerChromeos::HandleBrightnessUp(
     const ui::Accelerator& accelerator) {
   if (accelerator.key_code() == ui::VKEY_BRIGHTNESS_UP)
-    content::RecordAction(content::UserMetricsAction("Accel_BrightnessUp_F7"));
+    base::RecordAction(base::UserMetricsAction("Accel_BrightnessUp_F7"));
 
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
       IncreaseScreenBrightness();

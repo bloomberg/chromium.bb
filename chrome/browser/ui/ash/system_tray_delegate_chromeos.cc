@@ -232,7 +232,7 @@ void ShowNetworkSettingsPage(const std::string& service_path) {
   std::string page = chrome::kInternetOptionsSubPage;
   page += "?servicePath=" + net::EscapeUrlEncodedData(service_path, true);
   content::RecordAction(
-      content::UserMetricsAction("OpenInternetOptionsDialog"));
+      base::UserMetricsAction("OpenInternetOptionsDialog"));
   ShowSettingsSubPageForAppropriateBrowser(
       page,
       ProfileManager::GetPrimaryUserProfile());
@@ -421,7 +421,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   virtual void ChangeProfilePicture() OVERRIDE {
     content::RecordAction(
-        content::UserMetricsAction("OpenChangeProfilePictureDialog"));
+        base::UserMetricsAction("OpenChangeProfilePictureDialog"));
     ShowSettingsSubPageForAppropriateBrowser(
         chrome::kChangeProfilePictureSubPage,
         ProfileManager::GetActiveUserProfile());
@@ -483,7 +483,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual void ShowDateSettings() OVERRIDE {
-    content::RecordAction(content::UserMetricsAction("ShowDateOptions"));
+    content::RecordAction(base::UserMetricsAction("ShowDateOptions"));
     std::string sub_page = std::string(chrome::kSearchSubPage) + "#" +
         l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_SECTION_TITLE_DATETIME);
     // Everybody can change the time zone (even though it is a device setting).
@@ -503,7 +503,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual void ShowDisplaySettings() OVERRIDE {
-    content::RecordAction(content::UserMetricsAction("ShowDisplayOptions"));
+    content::RecordAction(base::UserMetricsAction("ShowDisplayOptions"));
     ShowSettingsSubPageForAppropriateBrowser(
         kDisplaySettingsSubPageName,
         ProfileManager::GetActiveUserProfile());
@@ -554,7 +554,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   virtual void ShowIMESettings() OVERRIDE {
     content::RecordAction(
-        content::UserMetricsAction("OpenLanguageOptionsDialog"));
+        base::UserMetricsAction("OpenLanguageOptionsDialog"));
     ShowSettingsSubPageForAppropriateBrowser(
         chrome::kLanguageOptionsSubPage,
         ProfileManager::GetActiveUserProfile());
@@ -575,7 +575,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   virtual void ShowAccessibilitySettings() OVERRIDE {
     content::RecordAction(
-        content::UserMetricsAction("ShowAccessibilitySettings"));
+        base::UserMetricsAction("ShowAccessibilitySettings"));
     std::string sub_page = std::string(chrome::kSearchSubPage) + "#" +
         l10n_util::GetStringUTF8(
             IDS_OPTIONS_SETTINGS_SECTION_TITLE_ACCESSIBILITY);
@@ -804,7 +804,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   virtual void ManageBluetoothDevices() OVERRIDE {
     content::RecordAction(
-        content::UserMetricsAction("ShowBluetoothSettingsPage"));
+        base::UserMetricsAction("ShowBluetoothSettingsPage"));
     std::string sub_page = std::string(chrome::kSearchSubPage) + "#" +
         l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_SECTION_TITLE_BLUETOOTH);
     ShowSettingsSubPageForAppropriateBrowser(

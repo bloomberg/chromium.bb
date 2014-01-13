@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_USER_ACTIONS_USER_ACTIONS_UI_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_USER_ACTIONS_USER_ACTIONS_UI_HANDLER_H_
 
-#include "content/public/browser/user_metrics.h"
+#include "base/metrics/user_metrics.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 // UI Handler for chrome://user-actions/
@@ -23,7 +23,7 @@ class UserActionsUIHandler : public content::WebUIMessageHandler {
  private:
   void OnUserAction(const std::string& action);
 
-  content::ActionCallback action_callback_;
+  base::ActionCallback action_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(UserActionsUIHandler);
 };

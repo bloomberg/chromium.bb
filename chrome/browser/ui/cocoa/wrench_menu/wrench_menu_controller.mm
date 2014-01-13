@@ -34,8 +34,8 @@ namespace wrench_menu_controller {
 const CGFloat kWrenchBubblePointOffsetY = 6;
 }
 
+using base::UserMetricsAction;
 using content::HostZoomMap;
-using content::UserMetricsAction;
 
 @interface WrenchMenuController (Private)
 - (void)createModel;

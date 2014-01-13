@@ -501,7 +501,7 @@ void OmniboxEditModel::SetInputInProgress(bool in_progress) {
   user_input_in_progress_ = in_progress;
   if (user_input_in_progress_) {
     time_user_first_modified_omnibox_ = base::TimeTicks::Now();
-    content::RecordAction(content::UserMetricsAction("OmniboxInputInProgress"));
+    content::RecordAction(base::UserMetricsAction("OmniboxInputInProgress"));
     autocomplete_controller()->ResetSession();
     // Once the user starts editing, re-enable URL replacement, so that it will
     // kick in if applicable once the edit is committed or reverted. (While the
@@ -771,7 +771,7 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
         return;
       }
 
-      content::RecordAction(content::UserMetricsAction("AcceptedKeyword"));
+      content::RecordAction(base::UserMetricsAction("AcceptedKeyword"));
       TemplateURLServiceFactory::GetForProfile(profile_)->IncrementUsageCount(
           template_url);
     } else {
@@ -817,7 +817,7 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
     if (TemplateURLServiceFactory::GetForProfile(profile_)->
         IsSearchResultsPageFromDefaultSearchProvider(match.destination_url)) {
       content::RecordAction(
-          content::UserMetricsAction("OmniboxDestinationURLIsSearchOnDSP"));
+          base::UserMetricsAction("OmniboxDestinationURLIsSearchOnDSP"));
     }
 
     if (match.destination_url.is_valid()) {
@@ -856,7 +856,7 @@ bool OmniboxEditModel::AcceptKeyword(EnteredKeywordModeMethod entered_method) {
       DisplayTextFromUserText(CurrentMatch(NULL).fill_into_edit),
       save_original_selection, true);
 
-  content::RecordAction(content::UserMetricsAction("AcceptedKeywordHint"));
+  content::RecordAction(base::UserMetricsAction("AcceptedKeywordHint"));
   UMA_HISTOGRAM_ENUMERATION(kEnteredKeywordModeHistogram, entered_method,
                             ENTERED_KEYWORD_MODE_NUM_ITEMS);
 

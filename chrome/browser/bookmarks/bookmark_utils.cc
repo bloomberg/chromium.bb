@@ -332,7 +332,7 @@ void AddIfNotBookmarked(BookmarkModel* model,
   if (!bookmarks.empty())
     return;  // Nothing to do, a bookmark with that url already exists.
 
-  content::RecordAction(content::UserMetricsAction("BookmarkAdded"));
+  content::RecordAction(base::UserMetricsAction("BookmarkAdded"));
   const BookmarkNode* parent = model->GetParentForNewNodes();
   model->AddURL(parent, parent->child_count(), title, url);
 }

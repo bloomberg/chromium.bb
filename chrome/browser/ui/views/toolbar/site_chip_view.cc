@@ -468,7 +468,7 @@ void SiteChipView::ButtonPressed(views::Button* sender,
   }
 
   UMA_HISTOGRAM_COUNTS("SiteChip.Pressed", 1);
-  content::RecordAction(content::UserMetricsAction("SiteChipPress"));
+  content::RecordAction(base::UserMetricsAction("SiteChipPress"));
 
   toolbar_view_->location_bar()->GetOmniboxView()->SetFocus();
   toolbar_view_->location_bar()->GetOmniboxView()->model()->

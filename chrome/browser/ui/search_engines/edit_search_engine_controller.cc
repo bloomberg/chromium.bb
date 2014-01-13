@@ -14,7 +14,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "url/gurl.h"
 
-using content::UserMetricsAction;
+using base::UserMetricsAction;
 
 EditSearchEngineController::EditSearchEngineController(
     TemplateURL* template_url,

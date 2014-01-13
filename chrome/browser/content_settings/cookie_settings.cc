@@ -26,8 +26,8 @@
 #include "net/base/static_cookie_policy.h"
 #include "url/gurl.h"
 
+using base::UserMetricsAction;
 using content::BrowserThread;
-using content::UserMetricsAction;
 
 namespace {
 

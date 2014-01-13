@@ -559,7 +559,7 @@ void LocalDiscoveryUIHandler::OnCloudPrintPrefsChanged() {
 void LocalDiscoveryUIHandler::ShowCloudPrintSetupDialog(
     const base::ListValue* args) {
   content::RecordAction(
-      content::UserMetricsAction("Options_EnableCloudPrintProxy"));
+      base::UserMetricsAction("Options_EnableCloudPrintProxy"));
   // Open the connector enable page in the current tab.
   Profile* profile = Profile::FromWebUI(web_ui());
   content::OpenURLParams params(
@@ -572,7 +572,7 @@ void LocalDiscoveryUIHandler::ShowCloudPrintSetupDialog(
 void LocalDiscoveryUIHandler::HandleDisableCloudPrintConnector(
     const base::ListValue* args) {
   content::RecordAction(
-      content::UserMetricsAction("Options_DisableCloudPrintProxy"));
+      base::UserMetricsAction("Options_DisableCloudPrintProxy"));
   CloudPrintProxyServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()))->
       DisableForUser();
 }

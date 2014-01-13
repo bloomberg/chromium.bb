@@ -16,7 +16,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/page_transition_types.h"
 
-using content::UserMetricsAction;
+using base::UserMetricsAction;
 
 NavigationHandler::NavigationHandler() {}
 

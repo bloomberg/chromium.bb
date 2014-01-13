@@ -276,7 +276,7 @@ void ProfileMetrics::LogProfileLaunch(Profile* profile) {
 
   if (profile->IsManaged()) {
     content::RecordAction(
-        content::UserMetricsAction("ManagedMode_NewManagedUserWindow"));
+        base::UserMetricsAction("ManagedMode_NewManagedUserWindow"));
   }
 }
 

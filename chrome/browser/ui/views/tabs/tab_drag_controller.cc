@@ -64,8 +64,8 @@
 #include "ui/events/gestures/gesture_recognizer.h"
 #endif
 
+using base::UserMetricsAction;
 using content::OpenURLParams;
-using content::UserMetricsAction;
 using content::WebContents;
 
 static const int kHorizontalMoveThreshold = 16;  // Pixels.

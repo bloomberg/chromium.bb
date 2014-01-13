@@ -40,8 +40,8 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
 
+using base::UserMetricsAction;
 using content::RenderViewHost;
-using content::UserMetricsAction;
 
 namespace panel_internal {
 

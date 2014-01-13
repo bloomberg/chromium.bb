@@ -14,7 +14,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/user_metrics.h"
 
-using content::UserMetricsAction;
+using base::UserMetricsAction;
 
 KeywordEditorController::KeywordEditorController(Profile* profile)
     : profile_(profile) {

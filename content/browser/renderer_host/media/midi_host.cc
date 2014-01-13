@@ -120,7 +120,7 @@ void MIDIHost::OnSendData(uint32 port,
   // happens here in the browser process.
   if (!has_sys_ex_permission_ &&
       (std::find(data.begin(), data.end(), kSysExMessage) != data.end())) {
-    RecordAction(UserMetricsAction("BadMessageTerminate_MIDI"));
+    RecordAction(base::UserMetricsAction("BadMessageTerminate_MIDI"));
     BadMessageReceived();
     return;
   }

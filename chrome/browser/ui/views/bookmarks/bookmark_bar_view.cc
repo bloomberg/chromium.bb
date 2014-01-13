@@ -81,10 +81,10 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
 
+using base::UserMetricsAction;
 using content::OpenURLParams;
 using content::PageNavigator;
 using content::Referrer;
-using content::UserMetricsAction;
 using ui::DropTargetEvent;
 using views::CustomButton;
 using views::MenuButton;

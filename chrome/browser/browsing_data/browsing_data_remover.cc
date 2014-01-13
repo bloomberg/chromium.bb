@@ -82,10 +82,10 @@
 #include "webkit/browser/quota/special_storage_policy.h"
 #include "webkit/common/quota/quota_types.h"
 
+using base::UserMetricsAction;
 using content::BrowserContext;
 using content::BrowserThread;
 using content::DOMStorageContext;
-using content::UserMetricsAction;
 
 bool BrowsingDataRemover::is_removing_ = false;
 

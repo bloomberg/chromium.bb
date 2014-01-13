@@ -50,7 +50,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
-using content::UserMetricsAction;
+using base::UserMetricsAction;
 
 MostVisitedHandler::MostVisitedHandler()
     : got_first_most_visited_request_(false),

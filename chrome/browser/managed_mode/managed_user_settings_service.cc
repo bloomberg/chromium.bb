@@ -21,9 +21,9 @@
 
 using base::DictionaryValue;
 using base::JSONReader;
+using base::UserMetricsAction;
 using base::Value;
 using content::BrowserThread;
-using content::UserMetricsAction;
 using syncer::MANAGED_USER_SETTINGS;
 using syncer::ModelType;
 using syncer::SyncChange;

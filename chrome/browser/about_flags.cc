@@ -53,7 +53,7 @@
 #include "ui/app_list/app_list_switches.h"
 #endif
 
-using content::UserMetricsAction;
+using base::UserMetricsAction;
 
 namespace about_flags {
 

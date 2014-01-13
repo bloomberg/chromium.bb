@@ -56,7 +56,7 @@ class MockRenderThread : public RenderThread {
   virtual void SetResourceDispatcherDelegate(
       ResourceDispatcherDelegate* delegate) OVERRIDE;
   virtual void EnsureWebKitInitialized() OVERRIDE;
-  virtual void RecordAction(const UserMetricsAction& action) OVERRIDE;
+  virtual void RecordAction(const base::UserMetricsAction& action) OVERRIDE;
   virtual void RecordComputedAction(const std::string& action) OVERRIDE;
   virtual scoped_ptr<base::SharedMemory> HostAllocateSharedMemoryBuffer(
       size_t buffer_size) OVERRIDE;

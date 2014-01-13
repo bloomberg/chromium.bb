@@ -36,8 +36,8 @@
 #include "chrome/browser/guestview/webview/plugin_permission_helper.h"
 #endif
 
+using base::UserMetricsAction;
 using content::WebContents;
-using content::UserMetricsAction;
 
 namespace {
 
@@ -159,27 +159,27 @@ void WebViewGuest::RecordUserInitiatedUMA(const PermissionResponseInfo& info,
     // have geolocation access on its own.
     switch (info.permission_type) {
       case BROWSER_PLUGIN_PERMISSION_TYPE_DOWNLOAD:
-        RecordAction(
+        content::RecordAction(
             UserMetricsAction("BrowserPlugin.PermissionAllow.Download"));
         break;
       case BROWSER_PLUGIN_PERMISSION_TYPE_GEOLOCATION:
-        RecordAction(
+        content::RecordAction(
             UserMetricsAction("BrowserPlugin.PermissionAllow.Geolocation"));
         break;
       case BROWSER_PLUGIN_PERMISSION_TYPE_MEDIA:
-        RecordAction(
+        content::RecordAction(
             UserMetricsAction("BrowserPlugin.PermissionAllow.Media"));
         break;
       case BROWSER_PLUGIN_PERMISSION_TYPE_POINTER_LOCK:
-        RecordAction(
+        content::RecordAction(
             UserMetricsAction("BrowserPlugin.PermissionAllow.PointerLock"));
         break;
       case BROWSER_PLUGIN_PERMISSION_TYPE_NEW_WINDOW:
-        RecordAction(
+        content::RecordAction(
             UserMetricsAction("BrowserPlugin.PermissionAllow.NewWindow"));
         break;
       case BROWSER_PLUGIN_PERMISSION_TYPE_JAVASCRIPT_DIALOG:
-        RecordAction(
+        content::RecordAction(
             UserMetricsAction("BrowserPlugin.PermissionAllow.JSDialog"));
         break;
       case BROWSER_PLUGIN_PERMISSION_TYPE_UNKNOWN:
@@ -189,7 +189,7 @@ void WebViewGuest::RecordUserInitiatedUMA(const PermissionResponseInfo& info,
             static_cast<WebViewPermissionType>(info.permission_type);
         switch (webview_permission_type) {
           case WEB_VIEW_PERMISSION_TYPE_LOAD_PLUGIN:
-            RecordAction(
+            content::RecordAction(
                 UserMetricsAction("WebView.Guest.PermissionAllow.PluginLoad"));
             break;
           default:
@@ -200,27 +200,27 @@ void WebViewGuest::RecordUserInitiatedUMA(const PermissionResponseInfo& info,
   } else {
     switch (info.permission_type) {
       case BROWSER_PLUGIN_PERMISSION_TYPE_DOWNLOAD:
-        RecordAction(
+        content::RecordAction(
             UserMetricsAction("BrowserPlugin.PermissionDeny.Download"));
         break;
       case BROWSER_PLUGIN_PERMISSION_TYPE_GEOLOCATION:
-        RecordAction(
+        content::RecordAction(
             UserMetricsAction("BrowserPlugin.PermissionDeny.Geolocation"));
         break;
       case BROWSER_PLUGIN_PERMISSION_TYPE_MEDIA:
-        RecordAction(
+        content::RecordAction(
             UserMetricsAction("BrowserPlugin.PermissionDeny.Media"));
         break;
       case BROWSER_PLUGIN_PERMISSION_TYPE_POINTER_LOCK:
-        RecordAction(
+        content::RecordAction(
             UserMetricsAction("BrowserPlugin.PermissionDeny.PointerLock"));
         break;
       case BROWSER_PLUGIN_PERMISSION_TYPE_NEW_WINDOW:
-        RecordAction(
+        content::RecordAction(
             UserMetricsAction("BrowserPlugin.PermissionDeny.NewWindow"));
         break;
       case BROWSER_PLUGIN_PERMISSION_TYPE_JAVASCRIPT_DIALOG:
-        RecordAction(
+        content::RecordAction(
             UserMetricsAction("BrowserPlugin.PermissionDeny.JSDialog"));
         break;
       case BROWSER_PLUGIN_PERMISSION_TYPE_UNKNOWN:
@@ -230,7 +230,7 @@ void WebViewGuest::RecordUserInitiatedUMA(const PermissionResponseInfo& info,
             static_cast<WebViewPermissionType>(info.permission_type);
         switch (webview_permission_type) {
           case WEB_VIEW_PERMISSION_TYPE_LOAD_PLUGIN:
-            RecordAction(
+            content::RecordAction(
                 UserMetricsAction("WebView.Guest.PermissionDeny.PluginLoad"));
             break;
           default:

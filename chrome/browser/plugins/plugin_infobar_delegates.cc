@@ -44,7 +44,7 @@
 #endif
 #endif
 
-using content::UserMetricsAction;
+using base::UserMetricsAction;
 
 
 // PluginInfoBarDelegate ------------------------------------------------------

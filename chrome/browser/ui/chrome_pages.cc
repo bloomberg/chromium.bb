@@ -37,7 +37,7 @@
 #include "chromeos/chromeos_switches.h"
 #endif
 
-using content::UserMetricsAction;
+using base::UserMetricsAction;
 
 namespace chrome {
 namespace {

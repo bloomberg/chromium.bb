@@ -11,7 +11,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
 
-using content::UserMetricsAction;
+using base::UserMetricsAction;
 
 namespace chromeos {
 namespace options {

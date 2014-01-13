@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/memory/memory_pressure_listener.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/observer_list.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string16.h"
@@ -133,7 +134,7 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   virtual void SetResourceDispatcherDelegate(
       ResourceDispatcherDelegate* delegate) OVERRIDE;
   virtual void EnsureWebKitInitialized() OVERRIDE;
-  virtual void RecordAction(const UserMetricsAction& action) OVERRIDE;
+  virtual void RecordAction(const base::UserMetricsAction& action) OVERRIDE;
   virtual void RecordComputedAction(const std::string& action) OVERRIDE;
   virtual scoped_ptr<base::SharedMemory> HostAllocateSharedMemoryBuffer(
       size_t buffer_size) OVERRIDE;

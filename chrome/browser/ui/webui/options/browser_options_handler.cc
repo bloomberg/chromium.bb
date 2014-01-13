@@ -124,12 +124,12 @@
 #include "chrome/browser/local_discovery/privet_notifications.h"
 #endif
 
+using base::UserMetricsAction;
 using content::BrowserContext;
 using content::BrowserThread;
 using content::DownloadManager;
 using content::OpenURLParams;
 using content::Referrer;
-using content::UserMetricsAction;
 
 namespace options {
 

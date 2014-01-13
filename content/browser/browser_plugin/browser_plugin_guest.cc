@@ -69,7 +69,8 @@ class BrowserPluginGuest::PermissionRequest :
   }
  protected:
   PermissionRequest() {
-    RecordAction(UserMetricsAction("BrowserPlugin.Guest.PermissionRequest"));
+    RecordAction(
+        base::UserMetricsAction("BrowserPlugin.Guest.PermissionRequest"));
   }
   virtual ~PermissionRequest() {}
   // Friend RefCounted so that the dtor can be non-public.
@@ -81,7 +82,7 @@ class BrowserPluginGuest::DownloadRequest : public PermissionRequest {
   explicit DownloadRequest(base::Callback<void(bool)> callback)
       : callback_(callback) {
     RecordAction(
-        UserMetricsAction("BrowserPlugin.Guest.PermissionRequest.Download"));
+        base::UserMetricsAction("BrowserPlugin.Guest.PermissionRequest.Download"));
   }
   virtual void Respond(bool should_allow,
                        const std::string& user_input) OVERRIDE {
@@ -102,7 +103,7 @@ class BrowserPluginGuest::GeolocationRequest : public PermissionRequest {
                        bridge_id_(bridge_id),
                        weak_ptr_factory_(weak_ptr_factory) {
     RecordAction(
-        UserMetricsAction("BrowserPlugin.Guest.PermissionRequest.Geolocation"));
+        base::UserMetricsAction("BrowserPlugin.Guest.PermissionRequest.Geolocation"));
   }
 
   virtual void Respond(bool should_allow,
@@ -156,7 +157,7 @@ class BrowserPluginGuest::MediaRequest : public PermissionRequest {
                  callback_(callback),
                  guest_(guest) {
     RecordAction(
-        UserMetricsAction("BrowserPlugin.Guest.PermissionRequest.Media"));
+        base::UserMetricsAction("BrowserPlugin.Guest.PermissionRequest.Media"));
   }
 
   virtual void Respond(bool should_allow,
@@ -185,7 +186,7 @@ class BrowserPluginGuest::NewWindowRequest : public PermissionRequest {
       : instance_id_(instance_id),
         guest_(guest) {
     RecordAction(
-        UserMetricsAction("BrowserPlugin.Guest.PermissionRequest.NewWindow"));
+        base::UserMetricsAction("BrowserPlugin.Guest.PermissionRequest.NewWindow"));
   }
 
   virtual void Respond(bool should_allow,
@@ -216,7 +217,7 @@ class BrowserPluginGuest::JavaScriptDialogRequest : public PermissionRequest {
   JavaScriptDialogRequest(const DialogClosedCallback& callback)
       : callback_(callback) {
     RecordAction(
-        UserMetricsAction("BrowserPlugin.Guest.PermissionRequest.JSDialog"));
+        base::UserMetricsAction("BrowserPlugin.Guest.PermissionRequest.JSDialog"));
   }
 
   virtual void Respond(bool should_allow,
@@ -234,7 +235,7 @@ class BrowserPluginGuest::PointerLockRequest : public PermissionRequest {
   PointerLockRequest(BrowserPluginGuest* guest)
       : guest_(guest) {
     RecordAction(
-        UserMetricsAction("BrowserPlugin.Guest.PermissionRequest.PointerLock"));
+        base::UserMetricsAction("BrowserPlugin.Guest.PermissionRequest.PointerLock"));
   }
 
   virtual void Respond(bool should_allow,
@@ -653,7 +654,7 @@ BrowserPluginGuest* BrowserPluginGuest::Create(
     SiteInstance* guest_site_instance,
     WebContentsImpl* web_contents,
     scoped_ptr<base::DictionaryValue> extra_params) {
-  RecordAction(UserMetricsAction("BrowserPlugin.Guest.Create"));
+  RecordAction(base::UserMetricsAction("BrowserPlugin.Guest.Create"));
   BrowserPluginGuest* guest = NULL;
   if (factory_) {
     guest = factory_->CreateBrowserPluginGuest(instance_id, web_contents);
@@ -839,14 +840,14 @@ void BrowserPluginGuest::WebContentsCreated(WebContents* source_contents,
 }
 
 void BrowserPluginGuest::RendererUnresponsive(WebContents* source) {
-  RecordAction(UserMetricsAction("BrowserPlugin.Guest.Hung"));
+  RecordAction(base::UserMetricsAction("BrowserPlugin.Guest.Hung"));
   if (!delegate_)
     return;
   delegate_->RendererUnresponsive();
 }
 
 void BrowserPluginGuest::RendererResponsive(WebContents* source) {
-  RecordAction(UserMetricsAction("BrowserPlugin.Guest.Responsive"));
+  RecordAction(base::UserMetricsAction("BrowserPlugin.Guest.Responsive"));
   if (!delegate_)
     return;
   delegate_->RendererResponsive();
@@ -1065,7 +1066,7 @@ void BrowserPluginGuest::DidCommitProvisionalLoadForFrame(
     const GURL& url,
     PageTransition transition_type,
     RenderViewHost* render_view_host) {
-  RecordAction(UserMetricsAction("BrowserPlugin.Guest.DidNavigate"));
+  RecordAction(base::UserMetricsAction("BrowserPlugin.Guest.DidNavigate"));
 }
 
 void BrowserPluginGuest::DidStopLoading(RenderViewHost* render_view_host) {
@@ -1106,13 +1107,14 @@ void BrowserPluginGuest::RenderProcessGone(base::TerminationStatus status) {
   SendMessageToEmbedder(new BrowserPluginMsg_GuestGone(instance_id()));
   switch (status) {
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
-      RecordAction(UserMetricsAction("BrowserPlugin.Guest.Killed"));
+      RecordAction(base::UserMetricsAction("BrowserPlugin.Guest.Killed"));
       break;
     case base::TERMINATION_STATUS_PROCESS_CRASHED:
-      RecordAction(UserMetricsAction("BrowserPlugin.Guest.Crashed"));
+      RecordAction(base::UserMetricsAction("BrowserPlugin.Guest.Crashed"));
       break;
     case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:
-      RecordAction(UserMetricsAction("BrowserPlugin.Guest.AbnormalDeath"));
+      RecordAction(
+          base::UserMetricsAction("BrowserPlugin.Guest.AbnormalDeath"));
       break;
     default:
       break;
@@ -1253,7 +1255,7 @@ void BrowserPluginGuest::Attach(
 
   SendQueuedMessages();
 
-  RecordAction(UserMetricsAction("BrowserPlugin.Guest.Attached"));
+  RecordAction(base::UserMetricsAction("BrowserPlugin.Guest.Attached"));
 }
 
 void BrowserPluginGuest::OnCompositorFrameSwappedACK(
@@ -1527,7 +1529,8 @@ void BrowserPluginGuest::OnSetSize(
   if (auto_size_enabled_ && (!old_auto_size_enabled ||
                              (old_max_size != max_auto_size_) ||
                              (old_min_size != min_auto_size_))) {
-    RecordAction(UserMetricsAction("BrowserPlugin.Guest.EnableAutoResize"));
+    RecordAction(
+        base::UserMetricsAction("BrowserPlugin.Guest.EnableAutoResize"));
     GetWebContents()->GetRenderViewHost()->EnableAutoResize(
         min_auto_size_, max_auto_size_);
     // TODO(fsamuel): If we're changing autosize parameters, then we force

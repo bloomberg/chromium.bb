@@ -50,7 +50,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/point.h"
 
-using content::UserMetricsAction;
+using base::UserMetricsAction;
 using content::WebContents;
 
 namespace {

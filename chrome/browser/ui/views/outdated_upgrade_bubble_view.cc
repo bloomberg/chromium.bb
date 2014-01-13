@@ -60,7 +60,7 @@ void OutdatedUpgradeBubbleView::ShowBubble(views::View* anchor_view,
   views::BubbleDelegateView::CreateBubble(upgrade_bubble_);
   upgrade_bubble_->StartFade(true);
   content::RecordAction(
-      content::UserMetricsAction("OutdatedUpgradeBubble.Show"));
+      base::UserMetricsAction("OutdatedUpgradeBubble.Show"));
 }
 
 bool OutdatedUpgradeBubbleView::IsAvailable() {
@@ -192,7 +192,7 @@ void OutdatedUpgradeBubbleView::HandleButtonPressed(views::Button* sender) {
         "OutdatedUpgradeBubble.NumLaterPerReinstall", num_ignored_bubbles_,
         0, kMaxIgnored, kNumIgnoredBuckets);
     content::RecordAction(
-        content::UserMetricsAction("OutdatedUpgradeBubble.Reinstall"));
+        base::UserMetricsAction("OutdatedUpgradeBubble.Reinstall"));
     navigator_->OpenURL(content::OpenURLParams(GURL(kDownloadChromeUrl),
                                                content::Referrer(),
                                                NEW_FOREGROUND_TAB,
@@ -201,7 +201,7 @@ void OutdatedUpgradeBubbleView::HandleButtonPressed(views::Button* sender) {
   } else {
     DCHECK_EQ(later_button_, sender);
     content::RecordAction(
-        content::UserMetricsAction("OutdatedUpgradeBubble.Later"));
+        base::UserMetricsAction("OutdatedUpgradeBubble.Later"));
   }
   StartFade(false);
 }

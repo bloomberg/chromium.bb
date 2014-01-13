@@ -84,7 +84,7 @@ void CopyScreenshotToClipboard(scoped_refptr<base::RefCountedString> png_data) {
     html += kImageClipboardFormatSuffix;
     scw.WriteHTML(base::UTF8ToUTF16(html), std::string());
   }
-  content::RecordAction(content::UserMetricsAction("Screenshot_CopyClipboard"));
+  content::RecordAction(base::UserMetricsAction("Screenshot_CopyClipboard"));
 }
 
 void ReadFileAndCopyToClipboardLocal(const base::FilePath& screenshot_path) {
@@ -451,7 +451,7 @@ void ScreenshotTaker::HandleTakeScreenshotForAllRootWindows() {
           screenshot_path);
     }
   }
-  content::RecordAction(content::UserMetricsAction("Screenshot_TakeFull"));
+  content::RecordAction(base::UserMetricsAction("Screenshot_TakeFull"));
   last_screenshot_timestamp_ = base::Time::Now();
 }
 
@@ -493,7 +493,7 @@ void ScreenshotTaker::HandleTakePartialScreenshot(
         ScreenshotTakerObserver::SCREENSHOT_GRABWINDOW_PARTIAL_FAILED,
         screenshot_path);
   }
-  content::RecordAction(content::UserMetricsAction("Screenshot_TakePartial"));
+  content::RecordAction(base::UserMetricsAction("Screenshot_TakePartial"));
 }
 
 bool ScreenshotTaker::CanTakeScreenshot() {

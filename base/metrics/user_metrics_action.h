@@ -1,19 +1,18 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_COMMON_USER_METRICS_ACTION_H_
-#define CONTENT_PUBLIC_COMMON_USER_METRICS_ACTION_H_
+#ifndef BASE_METRICS_USER_METRICS_ACTION_H_
+#define BASE_METRICS_USER_METRICS_ACTION_H_
 
-namespace content {
+namespace base {
 
 // UserMetricsAction exists purely to standardize on the parameters passed to
 // UserMetrics. That way, our toolset can scan the source code reliable for
 // constructors and extract the associated string constants.
 // WARNING: When using UserMetricsAction, UserMetricsAction and a string literal
 // parameter must be on the same line, e.g.
-//   RecordAction(
-//       UserMetricsAction("my extremely long action name"));
+//   RecordAction(UserMetricsAction("my extremely long action name"));
 // or
 //   RenderThread::Get()->RecordAction(
 //       UserMetricsAction("my extremely long action name"));
@@ -24,6 +23,6 @@ struct UserMetricsAction {
   explicit UserMetricsAction(const char* str) : str_(str) {}
 };
 
-}  // namespace content
+}  // namespace base
 
-#endif  // CONTENT_PUBLIC_COMMON_USER_METRICS_ACTION_H_
+#endif  // BASE_METRICS_USER_METRICS_ACTION_H_

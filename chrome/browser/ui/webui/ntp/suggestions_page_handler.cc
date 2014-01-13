@@ -36,7 +36,7 @@
 #include "content/public/common/page_transition_types.h"
 #include "url/gurl.h"
 
-using content::UserMetricsAction;
+using base::UserMetricsAction;
 
 SuggestionsHandler::SuggestionsHandler()
     : got_first_suggestions_request_(false),

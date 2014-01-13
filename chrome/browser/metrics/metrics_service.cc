@@ -653,10 +653,10 @@ void MetricsService::EnableRecording() {
     OpenNewLog();
 
   SetUpNotifications(&registrar_, this);
-  content::RemoveActionCallback(action_callback_);
+  base::RemoveActionCallback(action_callback_);
   action_callback_ = base::Bind(&MetricsService::OnUserAction,
                                 base::Unretained(this));
-  content::AddActionCallback(action_callback_);
+  base::AddActionCallback(action_callback_);
 }
 
 void MetricsService::DisableRecording() {
@@ -666,7 +666,7 @@ void MetricsService::DisableRecording() {
     return;
   recording_active_ = false;
 
-  content::RemoveActionCallback(action_callback_);
+  base::RemoveActionCallback(action_callback_);
   registrar_.RemoveAll();
   PushPendingLogsToPersistentStorage();
   DCHECK(!log_manager_.has_staged_log());
@@ -1749,7 +1749,7 @@ void MetricsService::IncrementLongPrefsValue(const char* path) {
 }
 
 void MetricsService::LogLoadStarted(content::WebContents* web_contents) {
-  content::RecordAction(content::UserMetricsAction("PageLoad"));
+  content::RecordAction(base::UserMetricsAction("PageLoad"));
   HISTOGRAM_ENUMERATION("Chrome.UmaPageloadCounter", 1, 2);
   IncrementPrefValue(prefs::kStabilityPageLoadCount);
   IncrementLongPrefsValue(prefs::kUninstallMetricsPageLoadCount);

@@ -8,8 +8,8 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/shared_memory.h"
+#include "base/metrics/user_metrics_action.h"
 #include "content/common/content_export.h"
-#include "content/public/common/user_metrics_action.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sender.h"
 
@@ -75,17 +75,17 @@ class CONTENT_EXPORT RenderThread : public IPC::Sender {
   // initialization.
   virtual void EnsureWebKitInitialized() = 0;
 
-  // Sends over a UserMetricsAction to be recorded by user metrics as an action.
-  // Once a new user metric is added, run
+  // Sends over a base::UserMetricsAction to be recorded by user metrics as
+  // an action. Once a new user metric is added, run
   //   tools/metrics/actions/extract_actions.py --hash
   // to generate a new mapping of [action hashes -> metric names] and send it
   // out for review to be updated.
-  // WARNING: When using UserMetricsAction, UserMetricsAction and a string
-  // literal parameter must be on the same line, e.g.
+  // WARNING: When using base::UserMetricsAction, base::UserMetricsAction
+  // and a string literal parameter must be on the same line, e.g.
   //   RenderThread::Get()->RecordAction(
-  //       UserMetricsAction("my extremely long action name"));
+  //       base::UserMetricsAction("my extremely long action name"));
   // because otherwise our processing scripts won't pick up on new actions.
-  virtual void RecordAction(const UserMetricsAction& action) = 0;
+  virtual void RecordAction(const base::UserMetricsAction& action) = 0;
 
   // Sends over a string to be recorded by user metrics as a computed action.
   // When you use this you need to also update the rules for extracting known

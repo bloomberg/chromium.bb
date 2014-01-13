@@ -13,7 +13,7 @@
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/user_metrics.h"
 
-using content::UserMetricsAction;
+using base::UserMetricsAction;
 
 namespace {
 

@@ -336,7 +336,7 @@ bool WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
 
   if (!msg_is_ok) {
     NOTREACHED();
-    RecordAction(UserMetricsAction("BadMessageTerminate_WPH"));
+    RecordAction(base::UserMetricsAction("BadMessageTerminate_WPH"));
     base::KillProcess(
         process_->GetData().handle, RESULT_CODE_KILLED_BAD_MESSAGE, false);
   }
@@ -407,7 +407,7 @@ void WorkerProcessHost::OnForceKillWorkerProcess() {
     base::KillProcess(
           process_->GetData().handle, RESULT_CODE_NORMAL_EXIT, false);
   else
-    RecordAction(UserMetricsAction("WorkerProcess_BadProcessToKill"));
+    RecordAction(base::UserMetricsAction("WorkerProcess_BadProcessToKill"));
 }
 
 void WorkerProcessHost::RelayMessage(

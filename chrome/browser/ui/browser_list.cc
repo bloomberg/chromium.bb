@@ -25,7 +25,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #endif
 
-using content::UserMetricsAction;
+using base::UserMetricsAction;
 using content::WebContents;
 
 // static

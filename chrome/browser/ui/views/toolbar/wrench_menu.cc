@@ -61,8 +61,8 @@
 #include "ui/native_theme/native_theme_aura.h"
 #endif
 
+using base::UserMetricsAction;
 using content::HostZoomMap;
-using content::UserMetricsAction;
 using content::WebContents;
 using ui::MenuModel;
 using views::CustomButton;

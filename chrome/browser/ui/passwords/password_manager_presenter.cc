@@ -83,7 +83,7 @@ void PasswordManagerPresenter::RemoveSavedPassword(size_t index) {
     return;
   store->RemoveLogin(*password_list_[index]);
   content::RecordAction(
-      content::UserMetricsAction("PasswordManager_RemoveSavedPassword"));
+      base::UserMetricsAction("PasswordManager_RemoveSavedPassword"));
 }
 
 void PasswordManagerPresenter::RemovePasswordException(size_t index) {
@@ -93,7 +93,7 @@ void PasswordManagerPresenter::RemovePasswordException(size_t index) {
     return;
   store->RemoveLogin(*password_exception_list_[index]);
   content::RecordAction(
-      content::UserMetricsAction("PasswordManager_RemovePasswordException"));
+      base::UserMetricsAction("PasswordManager_RemovePasswordException"));
 }
 
 void PasswordManagerPresenter::RequestShowPassword(size_t index) {

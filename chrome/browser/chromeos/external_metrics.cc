@@ -32,8 +32,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/user_metrics.h"
 
+using base::UserMetricsAction;
 using content::BrowserThread;
-using content::UserMetricsAction;
 
 namespace chromeos {
 
