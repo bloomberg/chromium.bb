@@ -85,8 +85,16 @@
       # ForcedIncludeFiles is relative to include_dirs, cflags relative to the
       # build directory.
       'xcode_settings': { 'GCC_PREFIX_HEADER': '<(logging_path)' },
+      'msvs_system_include_dirs': [
+        '<(DEPTH)/build',
+      ],
       'msvs_settings': {
-        'VCCLCompilerTool': { 'ForcedIncludeFiles': [ 'sdch/<(logging_path)' ] }
+        'VCCLCompilerTool': {
+          'ForcedIncludeFiles': [
+            'intsafe_workaround.h',  # http://crbug.com/308740
+            'sdch/<(logging_path)',
+          ]
+        }
       },
       'cflags': [ '-include', '<(logging_dir)/sdch/<(logging_path)' ],
     },
