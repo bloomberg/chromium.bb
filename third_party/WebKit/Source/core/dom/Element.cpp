@@ -2811,14 +2811,9 @@ RenderObject* Element::pseudoElementRenderer(PseudoId pseudoId) const
     return 0;
 }
 
-bool Element::webkitMatchesSelector(const String& selector, ExceptionState& exceptionState)
+bool Element::matches(const String& selectors, ExceptionState& exceptionState)
 {
-    if (selector.isEmpty()) {
-        exceptionState.throwDOMException(SyntaxError, "The selector provided is empty.");
-        return false;
-    }
-
-    SelectorQuery* selectorQuery = document().selectorQueryCache().add(AtomicString(selector), document(), exceptionState);
+    SelectorQuery* selectorQuery = document().selectorQueryCache().add(AtomicString(selectors), document(), exceptionState);
     if (!selectorQuery)
         return false;
     return selectorQuery->matches(*this);
