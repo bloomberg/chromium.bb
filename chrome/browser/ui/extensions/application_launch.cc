@@ -12,6 +12,8 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
+#include "chrome/browser/apps/per_app_settings_service.h"
+#include "chrome/browser/apps/per_app_settings_service_factory.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -344,6 +346,10 @@ WebContents* OpenEnabledApplication(const AppLaunchParams& params) {
       "Extensions.AppLaunchContainer", params.container, 100);
 
   if (extension->is_platform_app()) {
+    // Remember what desktop the launch happened on so that when the app opens a
+    // window we can open them on the right desktop.
+    PerAppSettingsServiceFactory::GetForBrowserContext(profile)->
+        SetDesktopLastLaunchedFrom(extension->id(), params.desktop_type);
 #if !defined(OS_CHROMEOS)
     SigninManager* signin_manager =
         SigninManagerFactory::GetForProfile(profile);

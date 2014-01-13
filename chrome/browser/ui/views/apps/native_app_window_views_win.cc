@@ -7,6 +7,8 @@
 #include "apps/shell_window.h"
 #include "apps/shell_window_registry.h"
 #include "ash/shell.h"
+#include "chrome/browser/apps/per_app_settings_service.h"
+#include "chrome/browser/apps/per_app_settings_service_factory.h"
 #include "chrome/browser/metro_utils/metro_chrome_win.h"
 #include "chrome/browser/profiles/profile.h"
 #include "extensions/common/extension.h"
@@ -45,11 +47,15 @@ void NativeAppWindowViewsWin::OnBeforeWidgetInit(
     desktop_type = chrome::GetHostDesktopTypeForNativeWindow(
         any_existing_window->GetNativeWindow());
   } else {
-    // TODO(tapted): Ideally, when an OnLaunched event is dispatched from UI
-    // and immediately results in window creation, |desktop_type| here should
-    // match that UI. However, there is no guarantee that an app will create
-    // a window in its OnLaunched event handler, so linking these up is hard.
-    desktop_type = chrome::GetActiveDesktop();
+    PerAppSettingsService* settings =
+        PerAppSettingsServiceFactory::GetForBrowserContext(profile());
+    if (settings->HasDesktopLastLaunchedFrom(extension()->id())) {
+      desktop_type = settings->GetDesktopLastLaunchedFrom(extension()->id());
+    } else {
+      // We don't know what desktop this app was last launched from, so take our
+      // best guess as to what desktop the user is on.
+      desktop_type = chrome::GetActiveDesktop();
+    }
   }
   if (desktop_type == chrome::HOST_DESKTOP_TYPE_ASH)
     init_params->context = ash::Shell::GetPrimaryRootWindow();
