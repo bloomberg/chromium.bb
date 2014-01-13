@@ -476,9 +476,15 @@ if [ -n "$COMMIT" ] ; then
  done
 else
   for d in $DIRS; do
-    info "Optimizing png files in $d"
-    optimize_dir $d
-    info ""
+    if [ -d $d ] ; then
+      info "Optimizing png files in $d"
+      optimize_dir $d
+      info ""
+    elif [ -f $d ] ; then
+      optimize_file $d
+    else
+      echo "Not a file or directory: $d";
+    fi
   done
 fi
 
