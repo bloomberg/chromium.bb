@@ -1,12 +1,12 @@
 Tests that JavaScriptSourceSyntaxHighlighter detects the tokens.
 
 return'foo';: cm-js-keyword,cm-js-string,*
-/\//g: *,cm-js-variable,cm-js-comment
+/\//g: cm-js-string-2
 //ig';: cm-js-comment
 1 / 2 + /a/.test('a');: cm-js-number,*,cm-js-number,*,cm-js-string-2,*,cm-js-property,*,cm-js-string,*
 "\"/".length / 2: cm-js-string,*,cm-js-property,*,cm-js-number
 var foo = 1/*/***//2: cm-js-keyword,*,cm-js-variable,*,cm-js-number,cm-js-comment,*,cm-js-number
-/*comment*//.*/.test('a'): cm-js-comment,*,cm-js-string-2
+/*comment*//.*/.test('a'): cm-js-comment,cm-js-string-2,*,cm-js-property,*,cm-js-string,*
 'f\
 oo';: cm-js-string,,cm-js-string,*
 '\f\b\t';: cm-js-string,*
