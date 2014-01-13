@@ -62,7 +62,7 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Listener,
                                       const blink::WebURLError& error) {}
   virtual void DidCommitProvisionalLoad(blink::WebFrame* frame,
                                         bool is_new_navigation) {}
-  virtual void DidClearWindowObject(blink::WebFrame* frame) {}
+  virtual void DidClearWindowObject(blink::WebFrame* frame, int world_id) {}
   virtual void DidCreateDocumentElement(blink::WebFrame* frame) {}
   virtual void FrameCreated(blink::WebFrame* parent,
                             blink::WebFrame* frame) {}

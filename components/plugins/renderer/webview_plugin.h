@@ -118,7 +118,7 @@ class WebViewPlugin : public blink::WebPlugin,
   virtual void didChangeCursor(const blink::WebCursorInfo& cursor);
 
   // WebFrameClient methods:
-  virtual void didClearWindowObject(blink::WebFrame* frame);
+  virtual void didClearWindowObject(blink::WebFrame* frame, int world_id);
 
   // This method is defined in WebPlugin as well as in WebFrameClient, but with
   // different parameters. We only care about implementing the WebPlugin

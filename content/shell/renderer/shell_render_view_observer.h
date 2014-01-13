@@ -23,7 +23,8 @@ class ShellRenderViewObserver : public RenderViewObserver {
 
  private:
   // RenderViewObserver implementation.
-  virtual void DidClearWindowObject(blink::WebFrame* frame) OVERRIDE;
+  virtual void DidClearWindowObject(blink::WebFrame* frame,
+                                    int world_id) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(ShellRenderViewObserver);
 };

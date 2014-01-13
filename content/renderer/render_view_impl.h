@@ -543,7 +543,7 @@ class CONTENT_EXPORT RenderViewImpl
                                       const blink::WebURLError& error);
   virtual void didCommitProvisionalLoad(blink::WebFrame* frame,
                                         bool is_new_navigation);
-  virtual void didClearWindowObject(blink::WebFrame* frame);
+  virtual void didClearWindowObject(blink::WebFrame* frame, int world_id);
   virtual void didCreateDocumentElement(blink::WebFrame* frame);
   virtual void didReceiveTitle(blink::WebFrame* frame,
                                const blink::WebString& title,

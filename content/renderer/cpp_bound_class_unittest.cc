@@ -59,7 +59,8 @@ class TestObserver : public RenderViewObserver {
  public:
   explicit TestObserver(RenderView* render_view)
       : RenderViewObserver(render_view) {}
-  virtual void DidClearWindowObject(blink::WebFrame* frame) OVERRIDE {
+  virtual void DidClearWindowObject(blink::WebFrame* frame,
+                                    int world_id) OVERRIDE {
     example_bound_class_.BindToJavascript(frame, "example");
   }
   void set_fallback_method_enabled(bool use_fallback) {

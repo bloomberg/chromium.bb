@@ -51,7 +51,8 @@ bool JavaBridgeDispatcher::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-void JavaBridgeDispatcher::DidClearWindowObject(blink::WebFrame* web_frame) {
+void JavaBridgeDispatcher::DidClearWindowObject(blink::WebFrame* web_frame,
+                                                int world_id) {
   // Note that we have to (re)bind all objects, as they will have been unbound
   // when the window object was cleared.
   for (ObjectMap::const_iterator iter = objects_.begin();

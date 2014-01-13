@@ -542,7 +542,7 @@ void WebKitTestRunner::captureHistoryForWindow(
 
 // RenderViewObserver  --------------------------------------------------------
 
-void WebKitTestRunner::DidClearWindowObject(WebFrame* frame) {
+void WebKitTestRunner::DidClearWindowObject(WebFrame* frame, int world_id) {
   WebTestingSupport::injectInternalsObject(frame);
   ShellRenderProcessObserver::GetInstance()->test_interfaces()->bindTo(frame);
 }

@@ -30,7 +30,8 @@ class JavaBridgeDispatcher : public RenderViewObserver {
  private:
   // RenderViewObserver override:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void DidClearWindowObject(blink::WebFrame* frame) OVERRIDE;
+  virtual void DidClearWindowObject(blink::WebFrame* frame,
+                                    int world_id) OVERRIDE;
 
   // Message handlers
   void OnAddNamedObject(const base::string16& name,

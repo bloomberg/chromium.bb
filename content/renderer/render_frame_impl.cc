@@ -1058,12 +1058,13 @@ void RenderFrameImpl::didCommitProvisionalLoad(blink::WebFrame* frame,
                     DidCommitProvisionalLoad(frame, is_new_navigation));
 }
 
-void RenderFrameImpl::didClearWindowObject(blink::WebFrame* frame) {
+void RenderFrameImpl::didClearWindowObject(blink::WebFrame* frame,
+                                           int world_id) {
   // TODO(nasko): Move implementation here. Needed state:
   // * enabled_bindings_
   // * dom_automation_controller_
   // * stats_collection_controller_
-  render_view_->didClearWindowObject(frame);
+  render_view_->didClearWindowObject(frame, world_id);
 }
 
 void RenderFrameImpl::didCreateDocumentElement(blink::WebFrame* frame) {
