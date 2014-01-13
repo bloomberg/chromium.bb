@@ -3436,9 +3436,7 @@
       'type': 'string-enum',
       'schema': {
         'type': 'string',
-        'enum': [
-          'remove-lru',
-        ],
+        'enum': [ 'remove-lru', 'remove-lru-if-dormant' ],
       },
       'items': [
         {
