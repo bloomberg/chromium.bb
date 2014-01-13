@@ -373,12 +373,19 @@ cr.define('ntp', function() {
    * Layout the footer so that the nav dots stay centered.
    */
   function layoutFooter() {
-    var menu = $('footer-menu-container');
+    // We need the image to be loaded.
     var logo = $('logo-img');
-    if (menu.clientWidth > logo.clientWidth)
+    var logoImg = logo.querySelector('img');
+    if (!logoImg.complete) {
+      logoImg.onload = layoutFooter;
+      return;
+    }
+
+    var menu = $('footer-menu-container');
+    if (menu.clientWidth > logoImg.width)
       logo.style.WebkitFlex = '0 1 ' + menu.clientWidth + 'px';
     else
-      menu.style.WebkitFlex = '0 1 ' + logo.clientWidth + 'px';
+      menu.style.WebkitFlex = '0 1 ' + logoImg.width + 'px';
   }
 
   function themeChanged(opt_hasAttribution) {

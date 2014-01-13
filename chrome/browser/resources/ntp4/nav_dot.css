@@ -10,7 +10,7 @@
   -webkit-box-flex: 1;
   /* Center child dots. */
   -webkit-box-pack: center;
-  display: -webkit-box;
+  display: -webkit-flex;
   height: 100%;
   list-style-type: none;
   margin: 0;
@@ -22,7 +22,6 @@ html.starting-up #dot-list {
 }
 
 .dot {
-  -webkit-box-flex: 1;
   -webkit-margin-end: 10px;
   -webkit-padding-start: 2px;
   -webkit-transition: -webkit-margin-end 250ms, max-width 250ms, opacity 250ms;
