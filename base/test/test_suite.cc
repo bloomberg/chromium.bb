@@ -239,7 +239,10 @@ void TestSuite::UnitTestAssertHandler(const std::string& str) {
     fflush(stderr);
   }
 #endif  // defined(OS_ANDROID)
-  RAW_LOG(FATAL, str.c_str());
+
+  // The logging system actually prints the message before calling the assert
+  // handler. Just exit now to avoid printing too many stack traces.
+  _exit(1);
 }
 
 void TestSuite::SuppressErrorDialogs() {
