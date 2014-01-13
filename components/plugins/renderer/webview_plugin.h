@@ -42,6 +42,9 @@ class WebViewPlugin : public blink::WebPlugin,
 
     // Called upon a context menu event.
     virtual void ShowContextMenu(const blink::WebMouseEvent&) = 0;
+
+    // Called when the WebViewPlugin is destroyed.
+    virtual void PluginDestroyed() = 0;
   };
 
   explicit WebViewPlugin(Delegate* delegate);

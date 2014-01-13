@@ -107,8 +107,10 @@ bool WebViewPlugin::initialize(WebPluginContainer* container) {
 }
 
 void WebViewPlugin::destroy() {
-  if (delegate_)
+  if (delegate_) {
+    delegate_->PluginDestroyed();
     delegate_ = NULL;
+  }
   container_ = NULL;
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }

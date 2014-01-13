@@ -73,6 +73,7 @@ class PluginPlaceholder : public content::RenderFrameObserver,
  private:
   // WebViewPlugin::Delegate methods:
   virtual void ShowContextMenu(const blink::WebMouseEvent&) OVERRIDE;
+  virtual void PluginDestroyed() OVERRIDE;
 
   // RenderFrameObserver methods:
   virtual void OnDestruct() OVERRIDE;

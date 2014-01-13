@@ -88,7 +88,6 @@ void PluginPlaceholder::ReplacePlugin(WebPlugin* new_plugin) {
   // will be destroyed as soon as V8 garbage collects us.
   if (!element.pluginContainer()) {
     plugin_->destroy();
-    plugin_ = NULL;
     return;
   }
 
@@ -102,7 +101,6 @@ void PluginPlaceholder::ReplacePlugin(WebPlugin* new_plugin) {
   container->reportGeometry();
   plugin_->ReplayReceivedData(new_plugin);
   plugin_->destroy();
-  plugin_ = NULL;
 }
 
 void PluginPlaceholder::HidePlugin() {
@@ -172,6 +170,10 @@ void PluginPlaceholder::ShowContextMenu(const WebMouseEvent& event) {
   // Does nothing by default. Will be overridden if a specific browser wants
   // a context menu.
   return;
+}
+
+void PluginPlaceholder::PluginDestroyed() {
+  plugin_ = NULL;
 }
 
 void PluginPlaceholder::OnDestruct() {
