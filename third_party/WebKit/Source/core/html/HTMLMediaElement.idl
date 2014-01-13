@@ -34,7 +34,7 @@
     // network state
     [Reflect, URL, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute DOMString src;
     [URL, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] readonly attribute DOMString currentSrc;
-    [Reflect] attribute DOMString crossOrigin;
+    [Reflect, ReflectOnly="anonymous"|"use-credentials", ReflectEmpty="anonymous", ReflectInvalid="anonymous"] attribute DOMString crossOrigin;
 
     const unsigned short NETWORK_EMPTY = 0;
     const unsigned short NETWORK_IDLE = 1;

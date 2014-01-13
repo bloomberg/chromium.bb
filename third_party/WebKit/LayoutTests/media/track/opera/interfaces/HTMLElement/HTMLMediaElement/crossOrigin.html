@@ -15,17 +15,17 @@ test(function(){
 test(function(){
     var video = document.createElement('video');
     video.setAttribute('crossorigin', 'foo');
-    assert_equals(video.crossOrigin, 'foo');
+    assert_equals(video.crossOrigin, 'anonymous');
 }, document.title+', content attribute invalid value');
 test(function(){
     var video = document.createElement('video');
     video.setAttribute('crossorigin', '');
-    assert_equals(video.crossOrigin, '');
+    assert_equals(video.crossOrigin, 'anonymous');
 }, document.title+', content attribute empty string');
 test(function(){
     var video = document.createElement('video');
     video.setAttribute('crossorigin', 'ANONYMOUS');
-    assert_equals(video.crossOrigin, 'ANONYMOUS');
+    assert_equals(video.crossOrigin, 'anonymous');
 }, document.title+', content attribute uppercase ANONYMOUS');
 test(function(){
     var video = document.createElement('video');

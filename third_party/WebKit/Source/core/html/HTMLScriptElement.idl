@@ -26,6 +26,6 @@ interface HTMLScriptElement : HTMLElement {
     [Reflect] attribute boolean defer;
     [Reflect, URL, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute DOMString src;
     [Reflect] attribute DOMString type;
-    [Reflect] attribute DOMString crossOrigin;
+    [Reflect, ReflectOnly="anonymous"|"use-credentials", ReflectEmpty="anonymous", ReflectInvalid="anonymous"] attribute DOMString crossOrigin;
     [Reflect, RuntimeEnabled=ExperimentalContentSecurityPolicyFeatures] attribute DOMString nonce;
 };
