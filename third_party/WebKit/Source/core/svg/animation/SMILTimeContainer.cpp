@@ -286,6 +286,7 @@ void SMILTimeContainer::updateAnimations(SMILTime elapsed, bool seekToTime)
             ASSERT(animation->hasValidAttributeName());
 
             // Results are accumulated to the first animation that animates and contributes to a particular element/attribute pair.
+            // FIXME: we should ensure that resultElement is of an appropriate type.
             if (!resultElement) {
                 if (!animation->hasValidAttributeType())
                     continue;
