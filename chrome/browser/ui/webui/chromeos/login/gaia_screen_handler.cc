@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
@@ -66,6 +67,14 @@ void UpdateAuthParams(base::DictionaryValue* params, bool has_users) {
   if (!managed_users_can_create) {
     params->SetString("managedUsersRestrictionReason",
                       l10n_util::GetStringUTF16(message_id));
+  }
+
+  // Now check whether we're in multi-profiles user adding scenario and
+  // disable GAIA right panel features if that's the case.
+  if (UserAddingScreen::Get()->IsRunning()) {
+    params->SetBoolean("createAccount", false);
+    params->SetBoolean("guestSignin", false);
+    params->SetBoolean("managedUsersEnabled", false);
   }
 }
 
@@ -195,7 +204,7 @@ void GaiaScreenHandler::HandleFrameLoadingCompleted(int status) {
   }
   frame_error_ = frame_error;
   if (frame_error == net::OK) {
-    LOG(INFO) << "Gaia is loaded";
+    VLOG(1) << "Gaia is loaded";
     frame_state_ = FRAME_STATE_LOADED;
   } else {
     LOG(WARNING) << "Gaia frame error: " << frame_error_;
