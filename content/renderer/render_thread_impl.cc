@@ -949,7 +949,7 @@ RenderThreadImpl::OffscreenCompositorContextProvider() {
   return offscreen_compositor_contexts_;
 }
 
-scoped_refptr<webkit::gpu::ContextProviderWebContext>
+scoped_refptr<cc::ContextProvider>
 RenderThreadImpl::SharedMainThreadContextProvider() {
   DCHECK(IsMainThread());
 #if defined(OS_ANDROID)

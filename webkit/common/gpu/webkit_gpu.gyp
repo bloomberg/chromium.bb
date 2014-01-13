@@ -33,13 +33,14 @@
             # This list contains all .h and .cc in gpu except for test code.
             'context_provider_in_process.cc',
             'context_provider_in_process.h',
-            'context_provider_web_context.h',
             'grcontext_for_webgraphicscontext3d.cc',
             'grcontext_for_webgraphicscontext3d.h',
             'test_context_provider_factory.cc',
             'test_context_provider_factory.h',
             'webgraphicscontext3d_in_process_command_buffer_impl.cc',
             'webgraphicscontext3d_in_process_command_buffer_impl.h',
+            'webgraphicscontext3d_provider_impl.cc',
+            'webgraphicscontext3d_provider_impl.h',
           ],
           'defines': [
             'WEBKIT_GPU_IMPLEMENTATION',

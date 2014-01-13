@@ -9,7 +9,6 @@
 #include "content/browser/android/in_process/synchronous_input_event_filter.h"
 #include "content/renderer/android/synchronous_compositor_factory.h"
 #include "content/renderer/media/android/stream_texture_factory_android_synchronous_impl.h"
-#include "webkit/common/gpu/context_provider_web_context.h"
 
 namespace gpu {
 class GLInProcessContext;
@@ -34,7 +33,7 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
   virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface(int routing_id)
       OVERRIDE;
   virtual InputHandlerManagerClient* GetInputHandlerManagerClient() OVERRIDE;
-  virtual scoped_refptr<webkit::gpu::ContextProviderWebContext>
+  virtual scoped_refptr<cc::ContextProvider>
       GetOffscreenContextProviderForMainThread() OVERRIDE;
   // This is called on both renderer main thread (offscreen context creation
   // path shared between cross-process and in-process platforms) and renderer
@@ -67,8 +66,7 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
   // Only guards construction and destruction of
   // |offscreen_context_for_compositor_thread_|, not usage.
   base::Lock offscreen_context_for_compositor_thread_lock_;
-  scoped_refptr<webkit::gpu::ContextProviderWebContext>
-      offscreen_context_for_main_thread_;
+  scoped_refptr<cc::ContextProvider> offscreen_context_for_main_thread_;
   // This is a pointer to the context owned by
   // |offscreen_context_for_main_thread_|.
   gpu::GLInProcessContext* wrapped_gl_context_for_main_thread_;

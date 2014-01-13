@@ -58,7 +58,6 @@ class Extension;
 
 namespace webkit {
 namespace gpu {
-class ContextProviderWebContext;
 class GrContextForWebGraphicsContext3D;
 }
 }
@@ -264,8 +263,7 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   scoped_refptr<RendererGpuVideoAcceleratorFactories> GetGpuFactories();
 
   scoped_refptr<cc::ContextProvider> OffscreenCompositorContextProvider();
-  scoped_refptr<webkit::gpu::ContextProviderWebContext>
-      SharedMainThreadContextProvider();
+  scoped_refptr<cc::ContextProvider> SharedMainThreadContextProvider();
 
   // AudioRendererMixerManager instance which manages renderer side mixer
   // instances shared based on configured audio parameters.  Lazily created on

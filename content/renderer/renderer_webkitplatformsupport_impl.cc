@@ -48,7 +48,6 @@
 #include "content/renderer/renderer_clipboard_client.h"
 #include "content/renderer/webclipboard_impl.h"
 #include "content/renderer/webcrypto/webcrypto_impl.h"
-#include "content/renderer/webgraphicscontext3d_provider_impl.h"
 #include "content/renderer/webpublicsuffixlist_impl.h"
 #include "gpu/config/gpu_info.h"
 #include "ipc/ipc_sync_message_filter.h"
@@ -71,7 +70,7 @@
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "ui/gfx/color_profile.h"
 #include "url/gurl.h"
-#include "webkit/common/gpu/context_provider_web_context.h"
+#include "webkit/common/gpu/webgraphicscontext3d_provider_impl.h"
 #include "webkit/common/quota/quota_types.h"
 #include "webkit/glue/simple_webmimeregistry_impl.h"
 #include "webkit/glue/webfileutilities_impl.h"
@@ -969,11 +968,11 @@ RendererWebKitPlatformSupportImpl::createOffscreenGraphicsContext3D(
 
 blink::WebGraphicsContext3DProvider* RendererWebKitPlatformSupportImpl::
     createSharedOffscreenGraphicsContext3DProvider() {
-  scoped_refptr<webkit::gpu::ContextProviderWebContext> provider =
+  scoped_refptr<cc::ContextProvider> provider =
       RenderThreadImpl::current()->SharedMainThreadContextProvider();
   if (!provider)
     return NULL;
-  return new WebGraphicsContext3DProviderImpl(provider);
+  return new webkit::gpu::WebGraphicsContext3DProviderImpl(provider);
 }
 
 //------------------------------------------------------------------------------

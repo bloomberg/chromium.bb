@@ -519,8 +519,6 @@
     'renderer/webcrypto/webcrypto_impl_openssl.cc',
     'renderer/webcrypto/webcrypto_util.cc',
     'renderer/webcrypto/webcrypto_util.h',
-    'renderer/webgraphicscontext3d_provider_impl.cc',
-    'renderer/webgraphicscontext3d_provider_impl.h',
     'renderer/webpublicsuffixlist_impl.cc',
     'renderer/webpublicsuffixlist_impl.h',
     'renderer/websharedworker_proxy.cc',

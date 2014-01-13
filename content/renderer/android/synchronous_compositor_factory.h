@@ -17,12 +17,6 @@ class ContextProvider;
 class OutputSurface;
 }
 
-namespace webkit {
-namespace gpu {
-class ContextProviderWebContext;
-}
-}
-
 namespace content {
 
 class InputHandlerManagerClient;
@@ -47,7 +41,7 @@ class SynchronousCompositorFactory {
   // The factory maintains ownership of the returned interface.
   virtual InputHandlerManagerClient* GetInputHandlerManagerClient() = 0;
 
-  virtual scoped_refptr<webkit::gpu::ContextProviderWebContext>
+  virtual scoped_refptr<cc::ContextProvider>
       GetOffscreenContextProviderForMainThread() = 0;
   virtual scoped_refptr<cc::ContextProvider>
       GetOffscreenContextProviderForCompositorThread() = 0;
