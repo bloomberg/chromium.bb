@@ -11,10 +11,6 @@
 #include "media/base/media_export.h"
 #include "media/base/pipeline_status.h"
 
-namespace gfx {
-class Size;
-}
-
 namespace media {
 
 class DemuxerStream;
@@ -25,9 +21,6 @@ class MEDIA_EXPORT VideoRenderer {
   // Used to update the pipeline's clock time. The parameter is the time that
   // the clock should not exceed.
   typedef base::Callback<void(base::TimeDelta)> TimeCB;
-
-  // Executed when the natural size of the video has changed.
-  typedef base::Callback<void(const gfx::Size& size)> NaturalSizeChangedCB;
 
   // Used to query the current time or duration of the media.
   typedef base::Callback<base::TimeDelta()> TimeDeltaCB;
@@ -43,9 +36,6 @@ class MEDIA_EXPORT VideoRenderer {
   //
   // |time_cb| is executed whenever time has advanced by way of video rendering.
   //
-  // |size_changed_cb| is executed whenever the dimensions of the video has
-  // changed.
-  //
   // |ended_cb| is executed when video rendering has reached the end of stream.
   //
   // |error_cb| is executed if an error was encountered.
@@ -57,7 +47,6 @@ class MEDIA_EXPORT VideoRenderer {
                           const PipelineStatusCB& init_cb,
                           const StatisticsCB& statistics_cb,
                           const TimeCB& time_cb,
-                          const NaturalSizeChangedCB& size_changed_cb,
                           const base::Closure& ended_cb,
                           const PipelineStatusCB& error_cb,
                           const TimeDeltaCB& get_time_cb,
