@@ -62,6 +62,8 @@
         'engine/heartbeat_manager.h',
         'engine/mcs_client.cc',
         'engine/mcs_client.h',
+        'engine/registration_request.cc',
+        'engine/registration_request.h',
         'gcm_client.cc',
         'gcm_client.h',
         'gcm_client_impl.cc',
@@ -130,6 +132,7 @@
         'engine/gcm_store_impl_unittest.cc',
         'engine/heartbeat_manager_unittest.cc',
         'engine/mcs_client_unittest.cc',
+        'engine/registration_request_unittest.cc',
       ]
     },
   ],
