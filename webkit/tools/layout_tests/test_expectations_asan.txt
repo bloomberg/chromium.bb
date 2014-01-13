@@ -69,3 +69,12 @@ crbug.com/247466 [ Linux ] inspector/profiler/heap-snapshot-summary-sorting-fiel
 # These have been failing since at least chrome r203901, blink r151723 (no memory errors, just text failure):
 crbug.com/231357 [ Linux ] editing/execCommand/switch-list-type-with-orphaned-li.html [ Failure ]
 crbug.com/231357 [ Linux ] perf/mouse-event.html [ Crash ]
+
+crbug.com/333791 [ Linux ] svg/animations/repeatn-event-1b.svg [ Pass ImageOnlyFailure ]
+crbug.com/333791 [ Linux ] svg/animations/repeatn-event-1d.svg [ Pass ImageOnlyFailure ]
+crbug.com/192172 [ Linux ] compositing/rtl/rtl-iframe-absolute-overflow.html [ Failure Pass ]
+crbug.com/192172 [ Linux ] virtual/softwarecompositing/rtl/rtl-iframe-absolute-overflow.html [ Failure Pass ]
+crbug.com/192172 [ Linux ] compositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Failure Pass ]
+crbug.com/192172 [ Linux ] virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Failure Pass ]
+crbug.com/192172 [ Linux ] compositing/rtl/rtl-iframe-fixed-overflow.html [ Failure Pass ]
+crbug.com/192172 [ Linux ] virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow.html [ Failure Pass ]
