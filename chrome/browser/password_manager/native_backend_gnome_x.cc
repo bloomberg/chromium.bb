@@ -13,6 +13,8 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -20,6 +22,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
+#include "chrome/browser/password_manager/psl_matching_helper.h"
 #include "components/autofill/core/common/password_form.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -98,7 +101,7 @@ const char kGnomeKeyringAppString[] = "chrome";
 // Convert the attributes of a given keyring entry into a new PasswordForm.
 // Note: does *not* get the actual password, as that is not a key attribute!
 // Returns NULL if the attributes are for the wrong application.
-PasswordForm* FormFromAttributes(GnomeKeyringAttributeList* attrs) {
+scoped_ptr<PasswordForm> FormFromAttributes(GnomeKeyringAttributeList* attrs) {
   // Read the string and int attributes into the appropriate map.
   std::map<std::string, std::string> string_attr_map;
   std::map<std::string, uint32_t> uint_attr_map;
@@ -112,9 +115,9 @@ PasswordForm* FormFromAttributes(GnomeKeyringAttributeList* attrs) {
   // Check to make sure this is a password we care about.
   const std::string& app_value = string_attr_map["application"];
   if (!base::StringPiece(app_value).starts_with(kGnomeKeyringAppString))
-    return NULL;
+    return scoped_ptr<PasswordForm>();
 
-  PasswordForm* form = new PasswordForm();
+  scoped_ptr<PasswordForm> form(new PasswordForm());
   form->origin = GURL(string_attr_map["origin_url"]);
   form->action = GURL(string_attr_map["action_url"]);
   form->username_element = UTF8ToUTF16(string_attr_map["username_element"]);
@@ -132,30 +135,54 @@ PasswordForm* FormFromAttributes(GnomeKeyringAttributeList* attrs) {
   form->blacklisted_by_user = uint_attr_map["blacklisted_by_user"];
   form->scheme = static_cast<PasswordForm::Scheme>(uint_attr_map["scheme"]);
 
-  return form;
+  return form.Pass();
 }
 
 // Parse all the results from the given GList into a PasswordFormList, and free
 // the GList. PasswordForms are allocated on the heap, and should be deleted by
-// the consumer.
+// the consumer. If not empty, |filter_by_signon_realm| is used to filter out
+// results -- only credentials with signon realms passing the PSL matching
+// (done by |helper|) against |filter_by_signon_realm| will be kept.
 void ConvertFormList(GList* found,
+                     const std::string& filter_by_signon_realm,
+                     const PSLMatchingHelper& helper,
                      NativeBackendGnome::PasswordFormList* forms) {
+  PSLMatchingHelper::PSLDomainMatchMetric psl_domain_match_metric =
+      PSLMatchingHelper::PSL_DOMAIN_MATCH_NONE;
   for (GList* element = g_list_first(found); element != NULL;
        element = g_list_next(element)) {
     GnomeKeyringFound* data = static_cast<GnomeKeyringFound*>(element->data);
     GnomeKeyringAttributeList* attrs = data->attributes;
 
-    PasswordForm* form = FormFromAttributes(attrs);
+    scoped_ptr<PasswordForm> form(FormFromAttributes(attrs));
     if (form) {
+      if (!filter_by_signon_realm.empty() &&
+          form->signon_realm != filter_by_signon_realm) {
+        // This is not an exact match, we try PSL matching.
+        if (!(PSLMatchingHelper::IsPublicSuffixDomainMatch(
+                 filter_by_signon_realm, form->signon_realm))) {
+          continue;
+        }
+        psl_domain_match_metric = PSLMatchingHelper::PSL_DOMAIN_MATCH_FOUND;
+        form->original_signon_realm = form->signon_realm;
+      }
       if (data->secret) {
         form->password_value = UTF8ToUTF16(data->secret);
       } else {
         LOG(WARNING) << "Unable to access password from list element!";
       }
-      forms->push_back(form);
+      forms->push_back(form.release());
     } else {
       LOG(WARNING) << "Could not initialize PasswordForm from attributes!";
     }
+  }
+  if (!filter_by_signon_realm.empty()) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "PasswordManager.PslDomainMatchTriggering",
+        helper.IsMatchingEnabled()
+            ? psl_domain_match_metric
+            : PSLMatchingHelper::PSL_DOMAIN_MATCH_DISABLED,
+        PSLMatchingHelper::PSL_DOMAIN_MATCH_COUNT);
   }
 }
 
@@ -250,6 +277,12 @@ class GKRMethod : public GnomeKeyringLoader {
   base::WaitableEvent event_;
   GnomeKeyringResult result_;
   NativeBackendGnome::PasswordFormList forms_;
+  // Two additional arguments to OnOperationGetList:
+  // If the credential search is related to a particular form,
+  // |original_signon_realm_| contains the signon realm of that form. It is used
+  // to filter the relevant results out of all the found ones.
+  std::string original_signon_realm_;
+  const PSLMatchingHelper helper_;
 };
 
 void GKRMethod::AddLogin(const PasswordForm& form, const char* app_string) {
@@ -286,6 +319,7 @@ void GKRMethod::AddLogin(const PasswordForm& form, const char* app_string) {
 void GKRMethod::AddLoginSearch(const PasswordForm& form,
                                const char* app_string) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  original_signon_realm_ = form.signon_realm;
   // Search GNOME Keyring for matching passwords to update.
   ScopedAttributeList attrs(gnome_keyring_attribute_list_new());
   AppendString(&attrs, "origin_url", form.origin.spec());
@@ -305,6 +339,7 @@ void GKRMethod::AddLoginSearch(const PasswordForm& form,
 void GKRMethod::UpdateLoginSearch(const PasswordForm& form,
                                   const char* app_string) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  original_signon_realm_ = form.signon_realm;
   // Search GNOME Keyring for matching passwords to update.
   ScopedAttributeList attrs(gnome_keyring_attribute_list_new());
   AppendString(&attrs, "origin_url", form.origin.spec());
@@ -341,9 +376,14 @@ void GKRMethod::RemoveLogin(const PasswordForm& form, const char* app_string) {
 
 void GKRMethod::GetLogins(const PasswordForm& form, const char* app_string) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  original_signon_realm_ = form.signon_realm;
   // Search GNOME Keyring for matching passwords.
   ScopedAttributeList attrs(gnome_keyring_attribute_list_new());
-  AppendString(&attrs, "signon_realm", form.signon_realm);
+  if (!helper_.ShouldPSLDomainMatchingApply(
+           PSLMatchingHelper::GetRegistryControlledDomain(
+               GURL(form.signon_realm)))) {
+    AppendString(&attrs, "signon_realm", form.signon_realm);
+  }
   AppendString(&attrs, "application", app_string);
   gnome_keyring_find_items(GNOME_KEYRING_ITEM_GENERIC_SECRET,
                            attrs.get(),
@@ -355,6 +395,7 @@ void GKRMethod::GetLogins(const PasswordForm& form, const char* app_string) {
 void GKRMethod::GetLoginsList(uint32_t blacklisted_by_user,
                               const char* app_string) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  original_signon_realm_.clear();
   // Search GNOME Keyring for matching passwords.
   ScopedAttributeList attrs(gnome_keyring_attribute_list_new());
   AppendUint32(&attrs, "blacklisted_by_user", blacklisted_by_user);
@@ -368,6 +409,7 @@ void GKRMethod::GetLoginsList(uint32_t blacklisted_by_user,
 
 void GKRMethod::GetAllLogins(const char* app_string) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  original_signon_realm_.clear();
   // We need to search for something, otherwise we get no results - so
   // we search for the fixed application string.
   ScopedAttributeList attrs(gnome_keyring_attribute_list_new());
@@ -434,7 +476,9 @@ void GKRMethod::OnOperationGetList(GnomeKeyringResult result, GList* list,
   method->result_ = result;
   method->forms_.clear();
   // |list| will be freed after this callback returns, so convert it now.
-  ConvertFormList(list, &method->forms_);
+  ConvertFormList(
+      list, method->original_signon_realm_, method->helper_, &method->forms_);
+  method->original_signon_realm_.clear();
   method->event_.Signal();
 }
 

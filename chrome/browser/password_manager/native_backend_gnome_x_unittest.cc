@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/password_manager/native_backend_gnome_x.h"
+#include "chrome/browser/password_manager/psl_matching_helper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/common/password_form.h"
@@ -298,7 +299,16 @@ class NativeBackendGnomeTest : public testing::Test {
     form_google_.password_element = UTF8ToUTF16("pass");
     form_google_.password_value = UTF8ToUTF16("seekrit");
     form_google_.submit_element = UTF8ToUTF16("submit");
-    form_google_.signon_realm = "Google";
+    form_google_.signon_realm = "http://www.google.com/";
+
+    form_facebook_.origin = GURL("http://www.facebook.com/");
+    form_facebook_.action = GURL("http://www.facebook.com/login");
+    form_facebook_.username_element = UTF8ToUTF16("user");
+    form_facebook_.username_value = UTF8ToUTF16("a");
+    form_facebook_.password_element = UTF8ToUTF16("password");
+    form_facebook_.password_value = UTF8ToUTF16("b");
+    form_facebook_.submit_element = UTF8ToUTF16("submit");
+    form_facebook_.signon_realm = "http://www.facebook.com/";
 
     form_isc_.origin = GURL("http://www.isc.org/");
     form_isc_.action = GURL("http://www.isc.org/auth");
@@ -307,7 +317,7 @@ class NativeBackendGnomeTest : public testing::Test {
     form_isc_.password_element = UTF8ToUTF16("passwd");
     form_isc_.password_value = UTF8ToUTF16("ihazabukkit");
     form_isc_.submit_element = UTF8ToUTF16("login");
-    form_isc_.signon_realm = "ISC";
+    form_isc_.signon_realm = "http://www.isc.org/";
   }
 
   virtual void TearDown() {
@@ -383,6 +393,51 @@ class NativeBackendGnomeTest : public testing::Test {
     CheckStringAttribute(item, "application", app_string);
   }
 
+  // Checks (using EXPECT_* macros), that |credentials| are accessible for
+  // filling in for a page with |origin| iff
+  // |should_credential_be_available_to_url| is true.
+  void CheckCredentialAvailability(const PasswordForm& credentials,
+                                   const std::string& url,
+                                   bool should_credential_be_available_to_url) {
+    PSLMatchingHelper helper;
+    ASSERT_TRUE(helper.IsMatchingEnabled())
+        << "PSL matching needs to be enabled.";
+
+    NativeBackendGnome backend(321, profile_.GetPrefs());
+    backend.Init();
+
+    BrowserThread::PostTask(
+        BrowserThread::DB,
+        FROM_HERE,
+        base::Bind(base::IgnoreResult(&NativeBackendGnome::AddLogin),
+                   base::Unretained(&backend),
+                   credentials));
+
+    PasswordForm target_form;
+    target_form.origin = GURL(url);
+    target_form.signon_realm = url;
+    std::vector<PasswordForm*> form_list;
+    BrowserThread::PostTask(
+        BrowserThread::DB,
+        FROM_HERE,
+        base::Bind(base::IgnoreResult(&NativeBackendGnome::GetLogins),
+                   base::Unretained(&backend),
+                   target_form,
+                   &form_list));
+
+    RunBothThreads();
+
+    EXPECT_EQ(1u, mock_keyring_items.size());
+    if (mock_keyring_items.size() > 0)
+      CheckMockKeyringItem(&mock_keyring_items[0], credentials, "chrome-321");
+
+    if (should_credential_be_available_to_url)
+      EXPECT_EQ(1u, form_list.size());
+    else
+      EXPECT_EQ(0u, form_list.size());
+    STLDeleteElements(&form_list);
+  }
+
   base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
@@ -391,6 +446,7 @@ class NativeBackendGnomeTest : public testing::Test {
 
   // Provide some test forms to avoid having to set them up in each test.
   PasswordForm form_google_;
+  PasswordForm form_facebook_;
   PasswordForm form_isc_;
 };
 
@@ -441,6 +497,28 @@ TEST_F(NativeBackendGnomeTest, BasicListLogins) {
   EXPECT_EQ(1u, mock_keyring_items.size());
   if (mock_keyring_items.size() > 0)
     CheckMockKeyringItem(&mock_keyring_items[0], form_google_, "chrome-42");
+}
+
+// Save a password for www.facebook.com and see it suggested for m.facebook.com.
+TEST_F(NativeBackendGnomeTest, PSLMatchingPositive) {
+  CheckCredentialAvailability(form_facebook_,
+                              "http://m.facebook.com/",
+                              /*should_credential_be_available_to_url=*/true);
+}
+
+// Save a password for www.facebook.com and see it not suggested for
+// m-facebook.com.
+TEST_F(NativeBackendGnomeTest, PSLMatchingNegativeDomainMismatch) {
+  CheckCredentialAvailability(form_facebook_,
+                              "http://m-facebook.com/",
+                              /*should_credential_be_available_to_url=*/false);
+}
+
+// Test PSL matching is off for domains excluded from it.
+TEST_F(NativeBackendGnomeTest, PSLMatchingDisabledDomains) {
+  CheckCredentialAvailability(form_google_,
+                              "http://one.google.com/",
+                              /*should_credential_be_available_to_url=*/false);
 }
 
 TEST_F(NativeBackendGnomeTest, BasicRemoveLogin) {

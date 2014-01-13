@@ -55,7 +55,7 @@ void PSLMatchingHelper::EnablePublicSuffixDomainMatchingForTesting() {
 
 // static
 bool PSLMatchingHelper::DeterminePSLEnabled() {
-#if defined(OS_ANDROID) || defined(OS_WIN)
+#if defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_LINUX)
   // Default choice is "enabled", so we do not need to check for
   // kEnablePasswordAutofillPublicSuffixDomainMatching.
   bool enabled = true;
