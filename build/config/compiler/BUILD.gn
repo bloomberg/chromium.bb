@@ -131,7 +131,7 @@ config("compiler") {
       # Enable libstdc++ debugging facilities to help catch problems early, see
       # http://crbug.com/65151 .
       # TODO(phajdan.jr): Should we enable this for all of POSIX?
-      defines += [ "__GLIBCXX_DEBUG=1" ]
+      defines += [ "_GLIBCXX_DEBUG=1" ]
 
       # Use gold for linking on 64-bit Linux only (on 32-bit it runs out of
       # address space, and it doesn't support cross-compiling).
