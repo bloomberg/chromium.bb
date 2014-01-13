@@ -25,7 +25,10 @@ class TestPixelRef : public SkPixelRef {
   virtual ~TestPixelRef();
 
   virtual SkFlattenable::Factory getFactory() const OVERRIDE;
+#ifdef SK_SUPPORT_LEGACY_ONLOCKPIXELS
   virtual void* onLockPixels(SkColorTable** color_table) OVERRIDE;
+#endif
+  virtual bool onNewLockPixels(LockRec* rec) OVERRIDE;
   virtual void onUnlockPixels() OVERRIDE {}
   virtual SkPixelRef* deepCopy(
       SkBitmap::Config config,

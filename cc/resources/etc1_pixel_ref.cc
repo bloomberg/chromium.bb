@@ -11,16 +11,29 @@ namespace cc {
 
 // Takes ownership of pixels.
 ETC1PixelRef::ETC1PixelRef(const SkImageInfo& info,
+                           size_t rowBytes,
                            scoped_ptr<uint8_t[]> pixels)
-    : SkPixelRef(info), pixels_(pixels.Pass()) {
+    : SkPixelRef(info), rowBytes_(rowBytes), pixels_(pixels.Pass()) {
   setImmutable();
 }
 
 ETC1PixelRef::~ETC1PixelRef() {}
 
+#ifdef SK_SUPPORT_LEGACY_ONLOCKPIXELS
 void* ETC1PixelRef::onLockPixels(SkColorTable** color_table) {
   *color_table = NULL;
   return static_cast<void*>(pixels_.get());
+}
+#endif
+
+bool ETC1PixelRef::onNewLockPixels(LockRec* rec) {
+  if (pixels_.get()) {
+    rec->fPixels = pixels_.get();
+    rec->fColorTable = NULL;
+    rec->fRowBytes = rowBytes_;
+    return true;
+  }
+  return false;
 }
 
 void ETC1PixelRef::onUnlockPixels() {}

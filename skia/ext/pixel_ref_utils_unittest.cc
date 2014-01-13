@@ -30,7 +30,10 @@ class TestPixelRef : public SkPixelRef {
   virtual ~TestPixelRef();
 
   virtual SkFlattenable::Factory getFactory() const OVERRIDE;
+#ifdef SK_SUPPORT_LEGACY_ONLOCKPIXELS
   virtual void* onLockPixels(SkColorTable** color_table) OVERRIDE;
+#endif
+  virtual bool onNewLockPixels(LockRec* rec) OVERRIDE;
   virtual void onUnlockPixels() OVERRIDE {}
   virtual SkPixelRef* deepCopy(SkBitmap::Config config, const SkIRect* subset)
       OVERRIDE;
@@ -81,8 +84,20 @@ TestPixelRef::~TestPixelRef() {}
 
 SkFlattenable::Factory TestPixelRef::getFactory() const { return NULL; }
 
+#ifdef SK_SUPPORT_LEGACY_ONLOCKPIXELS
 void* TestPixelRef::onLockPixels(SkColorTable** color_table) {
   return pixels_.get();
+}
+#endif
+
+bool TestPixelRef::onNewLockPixels(LockRec* rec) {
+  if (pixels_.get()) {
+    rec->fPixels = pixels_.get();
+    rec->fColorTable = NULL;
+    rec->fRowBytes = 4 * info().fWidth;
+    return true;
+  }
+  return false;
 }
 
 SkPixelRef* TestPixelRef::deepCopy(SkBitmap::Config config,

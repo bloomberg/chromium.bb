@@ -19,8 +19,20 @@ TestPixelRef::~TestPixelRef() {}
 
 SkFlattenable::Factory TestPixelRef::getFactory() const { return NULL; }
 
+#ifdef SK_SUPPORT_LEGACY_ONLOCKPIXELS
 void* TestPixelRef::onLockPixels(SkColorTable** color_table) {
   return pixels_.get();
+}
+#endif
+
+bool TestPixelRef::onNewLockPixels(LockRec* rec) {
+    if (pixels_.get()) {
+        rec->fPixels = pixels_.get();
+        rec->fColorTable = NULL;
+        rec->fRowBytes = 4 * info().fWidth;
+        return true;
+    }
+    return false;
 }
 
 SkPixelRef* TestPixelRef::deepCopy(

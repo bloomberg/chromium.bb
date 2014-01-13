@@ -16,7 +16,8 @@ namespace cc {
 class CC_EXPORT ETC1PixelRef : public SkPixelRef {
  public:
   // Takes ownership of pixels.
-  ETC1PixelRef(const SkImageInfo& info, scoped_ptr<uint8_t[]> pixels);
+  ETC1PixelRef(const SkImageInfo& info, size_t rowBytes,
+               scoped_ptr<uint8_t[]> pixels);
   virtual ~ETC1PixelRef();
 
   // SK_DECLARE_UNFLATTENABLE_OBJECT
@@ -24,10 +25,14 @@ class CC_EXPORT ETC1PixelRef : public SkPixelRef {
 
  protected:
   // Implementation of SkPixelRef.
+#ifdef SK_SUPPORT_LEGACY_ONLOCKPIXELS
   virtual void* onLockPixels(SkColorTable** color_table) OVERRIDE;
+#endif
+  virtual bool onNewLockPixels(LockRec* rec) OVERRIDE;
   virtual void onUnlockPixels() OVERRIDE;
 
  private:
+  size_t rowBytes_;
   scoped_ptr<uint8_t[]> pixels_;
 
   DISALLOW_COPY_AND_ASSIGN(ETC1PixelRef);
