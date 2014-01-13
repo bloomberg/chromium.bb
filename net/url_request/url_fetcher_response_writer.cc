@@ -107,12 +107,16 @@ int URLFetcherFileWriter::Write(IOBuffer* buffer,
 }
 
 int URLFetcherFileWriter::Finish(const CompletionCallback& callback) {
-  int result = file_stream_->Close(base::Bind(
-      &URLFetcherFileWriter::CloseComplete,
-      weak_factory_.GetWeakPtr(), callback));
-  if (result != ERR_IO_PENDING)
-    file_stream_.reset();
-  return result;
+  // If the file_stream_ still exists at this point, close it.
+  if (file_stream_) {
+    int result = file_stream_->Close(base::Bind(
+        &URLFetcherFileWriter::CloseComplete,
+        weak_factory_.GetWeakPtr(), callback));
+    if (result != ERR_IO_PENDING)
+      file_stream_.reset();
+    return result;
+  }
+  return OK;
 }
 
 URLFetcherFileWriter* URLFetcherFileWriter::AsFileWriter() {
