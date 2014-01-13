@@ -80,6 +80,8 @@ TEST(MimeUtilTest, LookupTypes) {
 #if defined(OS_ANDROID)
   EXPECT_TRUE(IsSupportedNonImageMimeType("application/x-x509-ca-cert"));
   EXPECT_TRUE(IsSupportedNonImageMimeType("application/x-pkcs12"));
+  EXPECT_TRUE(IsSupportedMediaMimeType("application/vnd.apple.mpegurl"));
+  EXPECT_TRUE(IsSupportedMediaMimeType("application/x-mpegurl"));
 #endif
 
   EXPECT_TRUE(IsSupportedMimeType("image/jpeg"));

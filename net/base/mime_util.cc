@@ -281,6 +281,12 @@ static const char* const common_media_types[] = {
   // Wav.
   "audio/wav",
   "audio/x-wav",
+
+#if defined(OS_ANDROID)
+  // HLS. Supported by Android ICS and above.
+  "application/vnd.apple.mpegurl",
+  "application/x-mpegurl",
+#endif
 };
 
 // List of proprietary types only supported by Google Chrome.
