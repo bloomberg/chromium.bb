@@ -96,6 +96,7 @@ TEST_F(CompoundEventFilterTest, CursorVisibilityChange) {
   exit.set_flags(enter.flags() | ui::EF_IS_SYNTHESIZED);
   dispatcher()->AsWindowTreeHostDelegate()->OnHostMouseEvent(&exit);
   EXPECT_FALSE(cursor_client.IsCursorVisible());
+  aura::Env::GetInstance()->RemovePreTargetHandler(compound_filter.get());
 }
 #endif  // defined(OS_CHROMEOS)
 
@@ -173,7 +174,7 @@ TEST_F(CompoundEventFilterTest, FilterConsumedGesture) {
   EXPECT_FALSE(window->HasFocus());
 
   compound_filter->RemoveHandler(gesure_handler.get());
-  aura::Env::GetInstance()->AddPreTargetHandler(compound_filter.get());
+  aura::Env::GetInstance()->RemovePreTargetHandler(compound_filter.get());
 }
 
 // Verifies we don't attempt to hide the mouse when the mouse is down and a
