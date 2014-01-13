@@ -3,6 +3,8 @@
 # Use of this source code is governed under the Apache License, Version 2.0 that
 # can be found in the LICENSE file.
 
+# pylint: disable=R0201,W0613
+
 import logging
 import math
 import os
@@ -101,18 +103,21 @@ class HttpServiceTest(RetryLoopMockedTest):
   """Tests for HttpService class."""
 
   @staticmethod
-  def mocked_http_service(url='http://example.com', perform_request=None,
-                          authenticate=None):  # pylint: disable=R0201
+  def mocked_http_service(
+      url='http://example.com',
+      perform_request=None,
+      authorize=None,
+      login=None):
+
     class MockedAuthenticator(net.Authenticator):
-      def authenticate(self):
-        return authenticate() if authenticate else None
+      def authorize(self, request):
+        return authorize(request) if authorize else None
+      def login(self):
+        return login() if login else False
 
     class MockedRequestEngine(object):
-      def perform_request(self, request):  # pylint: disable=R0201
+      def perform_request(self, request):
         return perform_request(request) if perform_request else None
-
-      def reload_cookies(self):
-        pass
 
     return net.HttpService(
         url,
@@ -171,7 +176,6 @@ class HttpServiceTest(RetryLoopMockedTest):
         data=request_body, content_type=content_type, method='PUT')
     self.assertEqual(response.read(), response_body)
     self.assertAttempts(1, net.URL_OPEN_TIMEOUT)
-
 
   def test_request_success_after_failure(self):
     response = 'True'
@@ -253,23 +257,29 @@ class HttpServiceTest(RetryLoopMockedTest):
     self.assertAttempts(2, net.URL_OPEN_TIMEOUT)
 
   def test_auth_success(self):
-    count = []
+    calls = []
     response = 'response'
 
     def mock_perform_request(request):
-      if not count:
+      calls.append('request')
+      if 'login' not in calls:
         raise net.HttpError(403)
       return request.make_fake_response(response)
 
-    def mock_authenticate():
-      self.assertEqual(len(count), 0)
-      count.append(1)
+    def mock_authorize(request):
+      calls.append('authorize')
+
+    def mock_login():
+      calls.append('login')
       return True
 
-    service = self.mocked_http_service(perform_request=mock_perform_request,
-        authenticate=mock_authenticate)
+    service = self.mocked_http_service(
+        perform_request=mock_perform_request,
+        authorize=mock_authorize,
+        login=mock_login)
     self.assertEqual(service.request('/').read(), response)
-    self.assertEqual(len(count), 1)
+    self.assertEqual(
+        ['authorize', 'request', 'login', 'authorize', 'request'], calls)
     self.assertAttempts(2, net.URL_OPEN_TIMEOUT)
     self.assertSleeps(0)
 
@@ -279,31 +289,14 @@ class HttpServiceTest(RetryLoopMockedTest):
     def mock_perform_request(_request):
       raise net.HttpError(403)
 
-    def mock_authenticate():
+    def mock_login():
       count.append(1)
       return False
 
     service = self.mocked_http_service(perform_request=mock_perform_request,
-        authenticate=mock_authenticate)
+        login=mock_login)
     self.assertEqual(service.request('/'), None)
     self.assertEqual(len(count), 1)
-    self.assertAttempts(1, net.URL_OPEN_TIMEOUT)
-
-  def test_request_attempted_before_auth(self):
-    calls = []
-
-    def mock_perform_request(_request):
-      calls.append('perform_request')
-      raise net.HttpError(403)
-
-    def mock_authenticate():
-      calls.append('authenticate')
-      return False
-
-    service = self.mocked_http_service(perform_request=mock_perform_request,
-        authenticate=mock_authenticate)
-    self.assertEqual(service.request('/'), None)
-    self.assertEqual(calls, ['perform_request', 'authenticate'])
     self.assertAttempts(1, net.URL_OPEN_TIMEOUT)
 
   def test_url_read(self):
