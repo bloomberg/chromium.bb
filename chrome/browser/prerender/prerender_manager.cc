@@ -53,6 +53,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/session_storage_namespace.h"
@@ -67,6 +68,7 @@
 
 using content::BrowserThread;
 using content::RenderViewHost;
+using content::RenderFrameHost;
 using content::SessionStorageNamespace;
 using content::WebContents;
 using predictors::LoggedInPredictorTable;
@@ -1863,6 +1865,52 @@ void PrerenderManager::RecordEvent(PrerenderContents* contents,
   else
     histograms_->RecordEvent(contents->origin(), contents->experiment_id(),
                              event);
+}
+
+// static
+void PrerenderManager::RecordCookieEvent(int process_id,
+                                         int frame_id,
+                                         const GURL& url,
+                                         const GURL& frame_url,
+                                         PrerenderContents::CookieEvent event,
+                                         const net::CookieList* cookie_list) {
+  RenderFrameHost* rfh = RenderFrameHost::FromID(process_id, frame_id);
+  if (!rfh)
+    return;
+
+  WebContents* web_contents = WebContents::FromRenderFrameHost(rfh);
+  if (!web_contents)
+    return;
+
+  bool is_main_frame = (rfh == web_contents->GetMainFrame());
+
+  PrerenderContents* prerender_contents =
+      PrerenderContents::FromWebContents(web_contents);
+
+  if (!prerender_contents)
+    return;
+
+  base::Time earliest_create_date;
+  if (event == PrerenderContents::COOKIE_EVENT_SEND) {
+    if (!cookie_list || cookie_list->empty())
+      return;
+    for (size_t i = 0; i < cookie_list->size(); i++) {
+      if (earliest_create_date.is_null() ||
+          (*cookie_list)[i].CreationDate() < earliest_create_date) {
+        earliest_create_date = (*cookie_list)[i].CreationDate();
+      }
+    }
+  }
+
+  prerender_contents->RecordCookieEvent(event,
+                                        is_main_frame && url == frame_url,
+                                        earliest_create_date);
+}
+
+void PrerenderManager::RecordCookieStatus(Origin origin,
+                                          uint8 experiment_id,
+                                          int cookie_status) const {
+  histograms_->RecordCookieStatus(origin, experiment_id, cookie_status);
 }
 
 }  // namespace prerender

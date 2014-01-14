@@ -48,6 +48,26 @@ using content::WebContents;
 
 namespace prerender {
 
+namespace {
+
+// Internal cookie event.
+// Whenever a prerender interacts with the cookie store, either sending
+// existing cookies that existed before the prerender started, or when a cookie
+// is changed, we record these events for histogramming purposes.
+enum InternalCookieEvent {
+  INTERNAL_COOKIE_EVENT_MAIN_FRAME_SEND = 0,
+  INTERNAL_COOKIE_EVENT_MAIN_FRAME_CHANGE = 1,
+  INTERNAL_COOKIE_EVENT_OTHER_SEND = 2,
+  INTERNAL_COOKIE_EVENT_OTHER_CHANGE = 3,
+  INTERNAL_COOKIE_EVENT_MAX
+};
+
+}  // namespace
+
+// static
+const int PrerenderContents::kNumCookieStatuses =
+    (1 << INTERNAL_COOKIE_EVENT_MAX);
+
 class PrerenderContentsFactoryImpl : public PrerenderContents::Factory {
  public:
   virtual PrerenderContents* CreatePrerenderContents(
@@ -220,7 +240,8 @@ PrerenderContents::PrerenderContents(
       route_id_(-1),
       origin_(origin),
       experiment_id_(experiment_id),
-      creator_child_id_(-1) {
+      creator_child_id_(-1),
+      cookie_status_(0) {
   DCHECK(prerender_manager != NULL);
 }
 
@@ -283,6 +304,7 @@ void PrerenderContents::StartPrerendering(
 
   DCHECK(load_start_time_.is_null());
   load_start_time_ = base::TimeTicks::Now();
+  start_time_ = base::Time::Now();
 
   // Everything after this point sets up the WebContents object and associated
   // RenderView for the prerender page. Don't do this for members of the
@@ -390,7 +412,8 @@ PrerenderContents::~PrerenderContents() {
   DCHECK(
       prerendering_has_been_cancelled() || final_status() == FINAL_STATUS_USED);
   DCHECK_NE(ORIGIN_MAX, origin());
-
+  prerender_manager_->RecordCookieStatus(origin(), experiment_id(),
+                                         cookie_status_);
   prerender_manager_->RecordFinalStatusWithMatchCompleteStatus(
       origin(), experiment_id(), match_complete_status(), final_status());
 
@@ -767,6 +790,47 @@ SessionStorageNamespace* PrerenderContents::GetSessionStorageNamespace() const {
 
 void PrerenderContents::OnCancelPrerenderForPrinting() {
   Destroy(FINAL_STATUS_WINDOW_PRINT);
+}
+
+void PrerenderContents::RecordCookieEvent(CookieEvent event,
+                                          bool is_main_frame_http_request,
+                                          base::Time earliest_create_date) {
+  // We don't care about sent cookies that were created after this prerender
+  // started.
+  // The reason is that for the purpose of the histograms emitted, we only care
+  // about cookies that existed before the prerender was started, but not
+  // about cookies that were created as part of the prerender. Using the
+  // earliest creation timestamp of all cookies provided by the cookie monster
+  // is a heuristic that yields the desired result pretty closely.
+  // In particular, we pretend no other WebContents make changes to the cookies
+  // relevant to the prerender, which may not actually always be the case, but
+  // hopefully most of the times.
+  if (event == COOKIE_EVENT_SEND && earliest_create_date > start_time_)
+    return;
+
+  InternalCookieEvent internal_event = INTERNAL_COOKIE_EVENT_MAX;
+
+  if (is_main_frame_http_request) {
+    if (event == COOKIE_EVENT_SEND) {
+      internal_event = INTERNAL_COOKIE_EVENT_MAIN_FRAME_SEND;
+    } else {
+      internal_event = INTERNAL_COOKIE_EVENT_MAIN_FRAME_CHANGE;
+    }
+  } else {
+    if (event == COOKIE_EVENT_SEND) {
+      internal_event = INTERNAL_COOKIE_EVENT_OTHER_SEND;
+    } else {
+      internal_event = INTERNAL_COOKIE_EVENT_OTHER_CHANGE;
+    }
+  }
+
+  DCHECK_GE(internal_event, 0);
+  DCHECK_LT(internal_event, INTERNAL_COOKIE_EVENT_MAX);
+
+  cookie_status_ |= (1 << internal_event);
+
+  DCHECK_GE(cookie_status_, 0);
+  DCHECK_LT(cookie_status_, kNumCookieStatuses);
 }
 
 }  // namespace prerender

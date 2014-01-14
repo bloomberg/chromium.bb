@@ -20,6 +20,7 @@
 #include "chrome/browser/content_settings/content_settings_details.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
@@ -128,6 +129,13 @@ void TabSpecificContentSettings::CookiesRead(int render_process_id,
     settings->OnCookiesRead(url, frame_url, cookie_list,
                             blocked_by_policy);
   }
+  prerender::PrerenderManager::RecordCookieEvent(
+      render_process_id,
+      render_frame_id,
+      url,
+      frame_url,
+      prerender::PrerenderContents::COOKIE_EVENT_SEND,
+      &cookie_list);
 }
 
 // static
@@ -145,6 +153,13 @@ void TabSpecificContentSettings::CookieChanged(
   if (settings)
     settings->OnCookieChanged(url, frame_url, cookie_line, options,
                               blocked_by_policy);
+  prerender::PrerenderManager::RecordCookieEvent(
+      render_process_id,
+      render_frame_id,
+      url,
+      frame_url,
+      prerender::PrerenderContents::COOKIE_EVENT_CHANGE,
+      NULL);
 }
 
 // static

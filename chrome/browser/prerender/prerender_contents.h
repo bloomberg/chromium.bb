@@ -299,6 +299,22 @@ class PrerenderContents : public content::NotificationObserver,
 
   content::SessionStorageNamespace* GetSessionStorageNamespace() const;
 
+  // Cookie events
+  enum CookieEvent {
+    COOKIE_EVENT_SEND = 0,
+    COOKIE_EVENT_CHANGE = 1,
+    COOKIE_EVENT_MAX
+  };
+
+  // Record a cookie transaction for this prerender contents.
+  // In the event of cookies being sent, |earliest_create_date| contains
+  // the time that the earliest of the cookies sent was created.
+  void RecordCookieEvent(CookieEvent event,
+                         bool main_frame_http_request,
+                         base::Time earliest_create_date);
+
+  static const int kNumCookieStatuses;
+
  protected:
   PrerenderContents(PrerenderManager* prerender_manager,
                     Profile* profile,
@@ -347,6 +363,10 @@ class PrerenderContents : public content::NotificationObserver,
   // rather than get it from the RenderViewHost since in the control group
   // we won't have a RenderViewHost.
   int64 session_storage_namespace_id_;
+
+  // The time at which we started prerendering, for the purpose of comparing
+  // cookie creation times.
+  base::Time start_time_;
 
  private:
   class WebContentsDelegateImpl;
@@ -442,6 +462,10 @@ class PrerenderContents : public content::NotificationObserver,
   // The alias session storage namespace for this prerender.
   scoped_refptr<content::SessionStorageNamespace>
       alias_session_storage_namespace;
+
+  // Indicates what internal cookie events (see prerender_contents.cc) have
+  // occurred, using 1 bit for each possible InternalCookieEvent.
+  int cookie_status_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderContents);
 };

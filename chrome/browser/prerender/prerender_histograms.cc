@@ -103,6 +103,12 @@ bool OriginIsOmnibox(Origin origin) {
   /* Do not rename.  HISTOGRAM expects a local variable "name". */ \
   std::string name = GetHistogramName(origin, experiment, wash, \
                                       histogram_name); \
+  /* Usually, a browsing session should only have a single experiment. */ \
+  /* Therefore, when there is a second experiment ID other than the one */ \
+  /* being recorded, don't record anything. */ \
+  /* Furthermore, experiments only apply if the origin is GWS. Should there */ \
+  /* somehow be an experiment ID if the origin is not GWS, ignore the */ \
+  /* experiment ID. */ \
   static uint8 recording_experiment = kNoExperiment; \
   if (recording_experiment == kNoExperiment && experiment != kNoExperiment) \
     recording_experiment = experiment; \
@@ -393,6 +399,17 @@ void PrerenderHistograms::RecordEvent(Origin origin, uint8 experiment_id,
   PREFIXED_HISTOGRAM_ORIGIN_EXPERIMENT(
       "Event", origin, experiment_id,
       UMA_HISTOGRAM_ENUMERATION(name, event, PRERENDER_EVENT_MAX));
+}
+
+void PrerenderHistograms::RecordCookieStatus(Origin origin,
+                                             uint8 experiment_id,
+                                             int cookie_status) const {
+  DCHECK_GE(cookie_status, 0);
+  DCHECK_LT(cookie_status, PrerenderContents::kNumCookieStatuses);
+  PREFIXED_HISTOGRAM_ORIGIN_EXPERIMENT(
+      "CookieStatus", origin, experiment_id,
+      UMA_HISTOGRAM_ENUMERATION(name, cookie_status,
+                                PrerenderContents::kNumCookieStatuses));
 }
 
 uint8 PrerenderHistograms::GetCurrentExperimentId() const {

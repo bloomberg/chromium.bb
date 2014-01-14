@@ -14463,6 +14463,10 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Prerender.CookieStatus" enum="PrerenderCookieStatus">
+  <summary>Enumeration of what cookie actions a prerender caused.</summary>
+</histogram>
+
 <histogram name="Prerender.Event" enum="PrerenderEvent">
   <summary>
     Enumeration of what events related to prerendering have occurred.
@@ -28709,6 +28713,26 @@ other types of suffix sets.
   <int value="3" label="canceled in-flight"/>
 </enum>
 
+<enum name="PrerenderCookieStatus" type="int">
+  <int value="0" label="no action"/>
+  <int value="1" label="[main frame send]"/>
+  <int value="2" label="[main frame change]"/>
+  <int value="3" label="[main frame send, main frame change]"/>
+  <int value="4" label="[other send]"/>
+  <int value="5" label="[main frame send, other send]"/>
+  <int value="6" label="[main frame change, other send]"/>
+  <int value="7" label="[main frame send, main frame change, other send]"/>
+  <int value="8" label="[other change]"/>
+  <int value="9" label="[main frame send, other change]"/>
+  <int value="10" label="[main frame change, other change]"/>
+  <int value="11" label="[main frame send, main frame change, other change]"/>
+  <int value="12" label="[other send, other change]"/>
+  <int value="13" label="[main frame send, other send, other change]"/>
+  <int value="14" label="[main frame change, other send, other change]"/>
+  <int value="15"
+      label="[main frame send, main frame change, other send, other change]"/>
+</enum>
+
 <enum name="PrerenderEvent" type="int">
   <int value="0" label="Swapin no delegate"/>
   <int value="1" label="Swapin candidate"/>
@@ -33487,6 +33511,7 @@ other types of suffix sets.
   <group name="web" label="Link triggered prerender."/>
   <group name="webcross" label="Link triggered prerender, cross domain."/>
   <group name="websame" label="Link triggered prerender, same domain."/>
+  <affected-histogram name="Prerender.CookieStatus"/>
   <affected-histogram name="Prerender.Event"/>
   <affected-histogram name="Prerender.FinalStatus"/>
   <affected-histogram name="Prerender.FinalStatus_Prerender5minTTL"/>

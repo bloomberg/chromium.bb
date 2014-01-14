@@ -32,6 +32,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/session_storage_namespace.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_monster.h"
 #include "url/gurl.h"
 
@@ -292,6 +293,11 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
       PrerenderContents::MatchCompleteStatus mc_status,
       FinalStatus final_status) const;
 
+  // Record a cookie status histogram (see prerender_histograms.h).
+  void RecordCookieStatus(Origin origin,
+                          uint8 experiment_id,
+                          int cookie_status) const;
+
   // content::NotificationObserver
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -340,6 +346,16 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   PrerenderLocalPredictor* local_predictor() {
     return local_predictor_.get();
   }
+
+  // Notification that a cookie event happened on a render frame. Will record a
+  // cookie event for a given render frame, if it is being prerendered.
+  // If cookies were sent, all cookies must be supplied in |cookie_list|.
+  static void RecordCookieEvent(int process_id,
+                                int frame_id,
+                                const GURL& url,
+                                const GURL& frame_url,
+                                PrerenderContents::CookieEvent event,
+                                const net::CookieList* cookie_list);
 
  protected:
   class PendingSwap;
