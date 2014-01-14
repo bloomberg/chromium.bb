@@ -792,7 +792,7 @@ bool Node::shouldHaveFocusAppearance() const
 bool Node::isInert() const
 {
     const HTMLDialogElement* dialog = document().activeModalDialog();
-    if (dialog && this != document() && !dialog->containsIncludingShadowDOM(this))
+    if (dialog && !containsIncludingShadowDOM(dialog) && !dialog->containsIncludingShadowDOM(this))
         return true;
     return document().ownerElement() && document().ownerElement()->isInert();
 }

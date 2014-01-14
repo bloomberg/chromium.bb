@@ -24,8 +24,7 @@ none (crbug.com/147490).</p>
 <script>
 dialog = document.querySelector('dialog');
 dialog.show();
-selectable = document.querySelector('#selectable');
-window.getSelection().selectAllChildren(selectable);
+document.execCommand('SelectAll');
 </script>
 </body>
 </html>

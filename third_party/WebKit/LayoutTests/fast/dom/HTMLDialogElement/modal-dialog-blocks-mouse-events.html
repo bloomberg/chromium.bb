@@ -40,8 +40,17 @@ function clickOn(element)
 {
     if (!window.eventSender)
         return;
-    var rect = element.getBoundingClientRect();
-    eventSender.mouseMoveTo(rect.left + rect.width / 2, rect.top + rect.height / 2);
+
+    var absoluteTop = 0;
+    var absoluteLeft = 0;
+    for (var parentNode = element; parentNode; parentNode = parentNode.offsetParent) {
+      absoluteLeft += parentNode.offsetLeft;
+      absoluteTop += parentNode.offsetTop;
+    }
+
+    var x = absoluteLeft + element.offsetWidth / 2;
+    var y = absoluteTop + element.offsetHeight / 2;
+    eventSender.mouseMoveTo(x, y);
     eventSender.mouseDown();
     eventSender.mouseUp();
     eventSender.mouseMoveTo(0, 0);
@@ -52,46 +61,45 @@ if (window.testRunner)
 
 dialog.showModal();
 
-inertDivHandledEvent = false;
 inertDiv = document.getElementById('inert-div');
+inertDiv.firedOn = false;
 eventFiredOnInertNode = function(event) {
-    inertDivHandledEvent = true;
+    inertDiv.firedOn = true;
     inertDiv.style.backgroundColor = 'red';
 };
 
 events =  ['mousedown', 'mouseup', 'click', 'mousemove', 'mouseover', 'mouseout'];
 dialogDiv = document.getElementById('dialog-div');
-handledEvents = {};
-handledEvents.dialogDiv = {};
+dialogDiv.firedOnEvents = {};
 eventFiredOnDialog = function(event) {
-    handledEvents.dialogDiv[event.type] = true;
-    if (Object.keys(handledEvents.dialogDiv).length == events.length)
+    dialogDiv.firedOnEvents[event.type] = true;
+    if (Object.keys(dialogDiv.firedOnEvents).length == events.length)
         dialogDiv.style.backgroundColor = 'green';
 };
 
-handledEvents.document = {};
-expectedEventCountForDocument = events.length - 1; // document won't get 'mouseout'
-eventFiredOnDocument = function(event) {
-    handledEvents.document[event.type] = true;
-    if (Object.keys(handledEvents.document).length == document.expectedEventCount && !inertDivHandledEvent)
+body = document.body;
+body.firedOnEvents = {};
+eventFiredOnBody = function(event) {
+    body.firedOnEvents[event.type] = true;
+    if (Object.keys(body.firedOnEvents).length == events.length && !inertDiv.firedOn)
         inertDiv.style.backgroundColor = 'green';
 };
 
 for (var i = 0; i < events.length; ++i) {
     inertDiv.addEventListener(events[i], eventFiredOnInertNode);
     dialogDiv.addEventListener(events[i], eventFiredOnDialog);
-    document.addEventListener(events[i], eventFiredOnDocument);
+    document.body.addEventListener(events[i], eventFiredOnBody);
 }
 
 debug('Clicking on inert box');
 clickOn(inertDiv);
-shouldBeFalse('inertDivHandledEvent');
-shouldBe('Object.keys(handledEvents.document).length', 'expectedEventCountForDocument');
+shouldBeFalse('inertDiv.firedOn');
+shouldBe('Object.keys(body.firedOnEvents).length', 'events.length');
 
 debug('Clicking on non-inert box');
 clickOn(dialogDiv);
-shouldBeFalse('inertDivHandledEvent');
-shouldBe('Object.keys(handledEvents.dialogDiv).length', 'events.length');
+shouldBeFalse('inertDiv.firedOn');
+shouldBe('Object.keys(dialogDiv.firedOnEvents).length', 'events.length');
 </script>
 </body>
 </html>
