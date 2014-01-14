@@ -4,6 +4,7 @@
 
 #include "base/process/process_metrics.h"
 
+#include "base/logging.h"
 #include "base/values.h"
 
 namespace base {
@@ -49,5 +50,12 @@ double ProcessMetrics::GetPlatformIndependentCPUUsage() {
   return GetCPUUsage();
 #endif
 }
+
+#if !defined(OS_MACOSX)
+int ProcessMetrics::GetIdleWakeupsPerSecond() {
+  NOTIMPLEMENTED();  // http://crbug.com/20488
+  return 0;
+}
+#endif  // !defined(OS_MACOSX)
 
 }  // namespace base

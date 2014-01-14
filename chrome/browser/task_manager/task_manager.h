@@ -156,6 +156,7 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   int GetNaClDebugStubPort(int index) const;
   int64 GetNetworkUsage(int index) const;
   double GetCPUUsage(int index) const;
+  int GetIdleWakeupsPerSecond(int index) const;
   base::ProcessId GetProcessId(int index) const;
   base::ProcessHandle GetProcess(int index) const;
   int GetResourceUniqueId(int index) const;
@@ -185,6 +186,7 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   base::string16 GetResourceVideoMemory(int index) const;
   base::string16 GetResourceFPS(int index) const;
   base::string16 GetResourceSqliteMemoryUsed(int index) const;
+  base::string16 GetResourceIdleWakeupsPerSecond(int index) const;
   base::string16 GetResourceGoatsTeleported(int index) const;
   base::string16 GetResourceV8MemoryAllocatedSize(int index) const;
 
@@ -401,6 +403,9 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
     bool is_cpu_usage_valid;
     double cpu_usage;
 
+    bool is_idle_wakeups_valid;
+    int idle_wakeups;
+
     bool is_private_and_shared_valid;
     size_t private_bytes;
     size_t shared_bytes;
@@ -483,6 +488,10 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   // Returns the CPU usage (in %) that should be displayed for the passed
   // |resource|.
   double GetCPUUsage(task_manager::Resource* resource) const;
+
+  // Returns the idle wakeups that should be displayed for the passed
+  // |resource|.
+  int GetIdleWakeupsPerSecond(task_manager::Resource* resource) const;
 
   // Given a number, this function returns the formatted string that should be
   // displayed in the task manager's memory cell.

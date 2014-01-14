@@ -214,15 +214,15 @@ double ProcessMetrics::GetCPUUsage() {
                         processor_count_;
   int64 time = FileTimeToUTC(now);
 
-  if ((last_system_time_ == 0) || (last_time_ == 0)) {
+  if ((last_system_time_ == 0) || (last_cpu_time_ == 0)) {
     // First call, just set the last values.
     last_system_time_ = system_time;
-    last_time_ = time;
+    last_cpu_time_ = time;
     return 0;
   }
 
   int64 system_time_delta = system_time - last_system_time_;
-  int64 time_delta = time - last_time_;
+  int64 time_delta = time - last_cpu_time_;
   DCHECK_NE(0U, time_delta);
   if (time_delta == 0)
     return 0;
@@ -232,7 +232,7 @@ double ProcessMetrics::GetCPUUsage() {
                              time_delta);
 
   last_system_time_ = system_time;
-  last_time_ = time;
+  last_cpu_time_ = time;
 
   return cpu;
 }
@@ -269,7 +269,7 @@ bool ProcessMetrics::GetIOCounters(IoCounters* io_counters) const {
 ProcessMetrics::ProcessMetrics(ProcessHandle process)
     : process_(process),
       processor_count_(base::SysInfo::NumberOfProcessors()),
-      last_time_(0),
+      last_cpu_time_(0),
       last_system_time_(0) {
 }
 

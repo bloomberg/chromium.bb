@@ -14,6 +14,23 @@
 #include "base/mac/scoped_mach_port.h"
 #include "base/sys_info.h"
 
+#if !defined(TASK_POWER_INFO)
+// Doesn't exist in the 10.6 or 10.7 SDKs.
+#define TASK_POWER_INFO        21
+struct task_power_info {
+        uint64_t                total_user;
+        uint64_t                total_system;
+        uint64_t                task_interrupt_wakeups;
+        uint64_t                task_platform_idle_wakeups;
+        uint64_t                task_timer_wakeups_bin_1;
+        uint64_t                task_timer_wakeups_bin_2;
+};
+typedef struct task_power_info        task_power_info_data_t;
+typedef struct task_power_info        *task_power_info_t;
+#define TASK_POWER_INFO_COUNT        ((mach_msg_type_number_t) \
+                (sizeof (task_power_info_data_t) / sizeof (natural_t)))
+#endif
+
 namespace base {
 
 namespace {
@@ -258,23 +275,71 @@ double ProcessMetrics::GetCPUUsage() {
   int64 time = TimeValToMicroseconds(now);
   int64 task_time = TimeValToMicroseconds(task_timeval);
 
-  if ((last_system_time_ == 0) || (last_time_ == 0)) {
+  if (last_cpu_time_ == 0) {
     // First call, just set the last values.
+    last_cpu_time_ = time;
     last_system_time_ = task_time;
-    last_time_ = time;
     return 0;
   }
 
   int64 system_time_delta = task_time - last_system_time_;
-  int64 time_delta = time - last_time_;
+  int64 time_delta = time - last_cpu_time_;
   DCHECK_NE(0U, time_delta);
   if (time_delta == 0)
     return 0;
 
+  last_cpu_time_ = time;
   last_system_time_ = task_time;
-  last_time_ = time;
 
   return static_cast<double>(system_time_delta * 100.0) / time_delta;
+}
+
+int ProcessMetrics::GetIdleWakeupsPerSecond() {
+  mach_port_t task = TaskForPid(process_);
+  if (task == MACH_PORT_NULL)
+    return 0;
+
+  kern_return_t kr;
+
+  task_power_info power_info_data;
+  mach_msg_type_number_t power_info_count = TASK_POWER_INFO_COUNT;
+  kr = task_info(task,
+                 TASK_POWER_INFO,
+                 reinterpret_cast<task_info_t>(&power_info_data),
+                 &power_info_count);
+  if (kr != KERN_SUCCESS) {
+    // Most likely cause: |task| is a zombie, or this is on a pre-10.8 system
+    // where TASK_POWER_INFO isn't supported yet.
+    return 0;
+  }
+  uint64_t absolute_idle_wakeups = power_info_data.task_platform_idle_wakeups;
+
+  struct timeval now;
+  int retval = gettimeofday(&now, NULL);
+  if (retval)
+    return 0;
+
+  int64 time = TimeValToMicroseconds(now);
+
+  if (last_idle_wakeups_time_ == 0) {
+    // First call, just set the last values.
+    last_idle_wakeups_time_ = time;
+    last_absolute_idle_wakeups_ = absolute_idle_wakeups;
+    return 0;
+  }
+
+  int64 wakeups_delta = absolute_idle_wakeups - last_absolute_idle_wakeups_;
+  int64 time_delta = time - last_idle_wakeups_time_;
+  DCHECK_NE(0U, time_delta);
+  if (time_delta == 0)
+    return 0;
+
+  last_idle_wakeups_time_ = time;
+  last_absolute_idle_wakeups_ = absolute_idle_wakeups;
+
+  // Round to average wakeups per second.
+  const int kMicrosecondsPerSecond = 1000 * 1000;
+  return (wakeups_delta * kMicrosecondsPerSecond + time_delta/2) / time_delta;
 }
 
 bool ProcessMetrics::GetIOCounters(IoCounters* io_counters) const {
@@ -284,8 +349,10 @@ bool ProcessMetrics::GetIOCounters(IoCounters* io_counters) const {
 ProcessMetrics::ProcessMetrics(ProcessHandle process,
                                ProcessMetrics::PortProvider* port_provider)
     : process_(process),
-      last_time_(0),
+      last_cpu_time_(0),
       last_system_time_(0),
+      last_idle_wakeups_time_(0),
+      last_absolute_idle_wakeups_(0),
       port_provider_(port_provider) {
   processor_count_ = SysInfo::NumberOfProcessors();
 }

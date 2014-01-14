@@ -3478,6 +3478,9 @@ Make sure you do not expose any sensitive information.
         <message name="IDS_TASK_MANAGER_PROFILE_NAME_COLUMN" desc="The name of the column with the name of the profile in which the page is running, if any.">
           Profile
         </message>
+        <message name="IDS_TASK_MANAGER_IDLE_WAKEUPS_COLUMN" desc="Task manager idle processor wakeups column">
+          Idle wake ups
+        </message>
         <message name="IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN" desc="The goats teleported column">
           Goats teleported
         </message>
@@ -3548,6 +3551,9 @@ Make sure you do not expose any sensitive information.
         </message>
         <message name="IDS_TASK_MANAGER_PROFILE_NAME_COLUMN" desc="The name of the column with the name of the profile in which the page is running, if any.">
           Profile
+        </message>
+        <message name="IDS_TASK_MANAGER_IDLE_WAKEUPS_COLUMN" desc="Task manager idle processor wakeups column">
+          Idle Wake Ups
         </message>
         <message name="IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN" desc="The goats teleported column">
           Goats Teleported

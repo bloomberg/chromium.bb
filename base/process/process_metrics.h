@@ -168,6 +168,10 @@ class BASE_EXPORT ProcessMetrics {
   // CPU, this method returns 50.
   double GetCPUUsage();
 
+  // Returns the number of average idle cpu wakeups per second since the last
+  // call.
+  int GetIdleWakeupsPerSecond();
+
   // Same as GetCPUUsage(), but will return consistent values on all platforms
   // (cancelling the Windows exception mentioned above) by returning a value in
   // the range of 0 to (100 * numCPUCores) everywhere.
@@ -201,8 +205,12 @@ class BASE_EXPORT ProcessMetrics {
 
   // Used to store the previous times and CPU usage counts so we can
   // compute the CPU usage between calls.
-  int64 last_time_;
+  int64 last_cpu_time_;
   int64 last_system_time_;
+
+  // Same thing for idle wakeups.
+  int64 last_idle_wakeups_time_;
+  int64 last_absolute_idle_wakeups_;
 
 #if !defined(OS_IOS)
 #if defined(OS_MACOSX)
@@ -211,7 +219,7 @@ class BASE_EXPORT ProcessMetrics {
 
   PortProvider* port_provider_;
 #elif defined(OS_POSIX)
-  // Jiffie count at the last_time_ we updated.
+  // Jiffie count at the last_cpu_time_ we updated.
   int last_cpu_;
 #endif  // defined(OS_POSIX)
 #endif  // !defined(OS_IOS)

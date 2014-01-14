@@ -8,7 +8,7 @@ namespace base {
 
 ProcessMetrics::ProcessMetrics(ProcessHandle process)
     : process_(process),
-      last_time_(0),
+      last_cpu_time_(0),
       last_system_time_(0),
       last_cpu_(0) {
   processor_count_ = base::SysInfo::NumberOfProcessors();

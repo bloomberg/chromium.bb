@@ -205,15 +205,15 @@ TaskManagerModel::PerResourceValues::PerResourceValues()
       sqlite_memory_bytes(0),
       is_v8_memory_valid(false),
       v8_memory_allocated(0),
-      v8_memory_used(0) {
-}
+      v8_memory_used(0) {}
 
-TaskManagerModel::PerResourceValues::~PerResourceValues() {
-}
+TaskManagerModel::PerResourceValues::~PerResourceValues() {}
 
 TaskManagerModel::PerProcessValues::PerProcessValues()
     : is_cpu_usage_valid(false),
       cpu_usage(0),
+      is_idle_wakeups_valid(false),
+      idle_wakeups(0),
       is_private_and_shared_valid(false),
       private_bytes(0),
       shared_bytes(0),
@@ -227,11 +227,9 @@ TaskManagerModel::PerProcessValues::PerProcessValues()
       gdi_handles_peak(0),
       is_user_handles_valid(0),
       user_handles(0),
-      user_handles_peak(0) {
-}
+      user_handles_peak(0) {}
 
-TaskManagerModel::PerProcessValues::~PerProcessValues() {
-}
+TaskManagerModel::PerProcessValues::~PerProcessValues() {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // TaskManagerModel class
@@ -300,6 +298,10 @@ double TaskManagerModel::GetCPUUsage(int index) const {
   return GetCPUUsage(GetResource(index));
 }
 
+int TaskManagerModel::GetIdleWakeupsPerSecond(int index) const {
+  return GetIdleWakeupsPerSecond(GetResource(index));
+}
+
 base::ProcessId TaskManagerModel::GetProcessId(int index) const {
   PerResourceValues& values(GetPerResourceValues(index));
   if (!values.is_process_id_valid) {
@@ -360,6 +362,9 @@ base::string16 TaskManagerModel::GetResourceById(int index, int col_id) const {
 
     case IDS_TASK_MANAGER_USER_HANDLES_COLUMN:
       return GetResourceUSERHandles(index);
+
+    case IDS_TASK_MANAGER_IDLE_WAKEUPS_COLUMN:
+      return GetResourceIdleWakeupsPerSecond(index);
 
     case IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN:
       return GetResourceGoatsTeleported(index);
@@ -529,6 +534,11 @@ base::string16 TaskManagerModel::GetResourceSqliteMemoryUsed(int index) const {
   if (!GetSqliteMemoryUsedBytes(index, &bytes))
     return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NA_CELL_TEXT);
   return GetMemCellText(bytes);
+}
+
+base::string16 TaskManagerModel::GetResourceIdleWakeupsPerSecond(int index)
+    const {
+  return base::FormatNumber(GetIdleWakeupsPerSecond(GetResource(index)));
 }
 
 base::string16 TaskManagerModel::GetResourceGoatsTeleported(int index) const {
@@ -1185,17 +1195,23 @@ void TaskManagerModel::Refresh() {
   // lazily) as process_util::GetCPUUsage() returns the CPU usage since the last
   // time it was called, and not calling it everytime would skew the value the
   // next time it is retrieved (as it would be for more than 1 cycle).
+  // The same is true for idle wakeups.
   for (ResourceList::iterator iter = resources_.begin();
        iter != resources_.end(); ++iter) {
     base::ProcessHandle process = (*iter)->GetProcess();
     PerProcessValues& values(per_process_cache_[process]);
-    if (values.is_cpu_usage_valid)
+    if (values.is_cpu_usage_valid && values.is_idle_wakeups_valid)
       continue;
-
-    values.is_cpu_usage_valid = true;
     MetricsMap::iterator metrics_iter = metrics_map_.find(process);
     DCHECK(metrics_iter != metrics_map_.end());
-    values.cpu_usage = metrics_iter->second->GetCPUUsage();
+    if (!values.is_cpu_usage_valid) {
+      values.is_cpu_usage_valid = true;
+      values.cpu_usage = metrics_iter->second->GetCPUUsage();
+    }
+    if (!values.is_idle_wakeups_valid) {
+      values.is_idle_wakeups_valid = true;
+      values.idle_wakeups = metrics_iter->second->GetIdleWakeupsPerSecond();
+    }
   }
 
   // Send a request to refresh GPU memory consumption values
@@ -1432,6 +1448,12 @@ double TaskManagerModel::GetCPUUsage(Resource* resource) const {
   const PerProcessValues& values(per_process_cache_[resource->GetProcess()]);
   // Returns 0 if not valid, which is fine.
   return values.cpu_usage;
+}
+
+int TaskManagerModel::GetIdleWakeupsPerSecond(Resource* resource) const {
+  const PerProcessValues& values(per_process_cache_[resource->GetProcess()]);
+  // Returns 0 if not valid, which is fine.
+  return values.idle_wakeups;
 }
 
 base::string16 TaskManagerModel::GetMemCellText(int64 number) const {
