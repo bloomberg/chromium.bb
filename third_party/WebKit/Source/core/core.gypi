@@ -2678,6 +2678,7 @@
             'html/track/TextTrackCueList.cpp',
             'html/track/TextTrackCueList.h',
             'html/track/TextTrackList.cpp',
+            'html/track/TrackBase.cpp',
             'html/track/TrackBase.h',
             'html/track/TrackEvent.cpp',
             'html/track/vtt/BufferedLineReader.cpp',

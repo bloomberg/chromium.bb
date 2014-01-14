@@ -26,24 +26,42 @@
 #ifndef TrackBase_h
 #define TrackBase_h
 
-#include "core/events/EventTarget.h"
 #include "wtf/RefCounted.h"
+#include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 
-class TrackBase : public RefCounted<TrackBase>, public EventTargetWithInlineData {
-    REFCOUNTED_EVENT_TARGET(TrackBase);
+class TrackBase : public RefCounted<TrackBase> {
 public:
-    virtual ~TrackBase() { }
+    virtual ~TrackBase();
 
     enum Type { TextTrack, AudioTrack, VideoTrack };
     Type type() const { return m_type; }
 
+    const AtomicString& kind() const { return m_kind; }
+    virtual void setKind(const AtomicString&);
+
+    AtomicString label() const { return m_label; }
+    void setLabel(const AtomicString& label) { m_label = label; }
+
+    AtomicString language() const { return m_language; }
+    void setLanguage(const AtomicString& language) { m_language = language; }
+
+    AtomicString id() const { return m_id; }
+    void setId(const AtomicString& id) { m_id = id; }
+
 protected:
-    explicit TrackBase(Type type) : m_type(type) { }
+    TrackBase(Type, const AtomicString& label, const AtomicString& language, const AtomicString& id);
+
+    virtual bool isValidKind(const AtomicString&) const = 0;
+    virtual AtomicString defaultKind() const = 0;
 
 private:
     Type m_type;
+    AtomicString m_kind;
+    AtomicString m_label;
+    AtomicString m_language;
+    AtomicString m_id;
 };
 
 } // namespace WebCore

@@ -96,14 +96,11 @@ const AtomicString& TextTrack::showingKeyword()
 }
 
 TextTrack::TextTrack(Document& document, TextTrackClient* client, const AtomicString& kind, const AtomicString& label, const AtomicString& language, const AtomicString& id, TextTrackType type)
-    : TrackBase(TrackBase::TextTrack)
+    : TrackBase(TrackBase::TextTrack, label, language, id)
     , m_cues(0)
     , m_regions(0)
     , m_document(&document)
-    , m_mediaElement(0)
-    , m_label(label)
-    , m_language(language)
-    , m_id(id)
+    , m_trackList(0)
     , m_mode(disabledKeyword())
     , m_client(client)
     , m_trackType(type)
@@ -149,16 +146,12 @@ bool TextTrack::isValidKindKeyword(const AtomicString& value)
     return false;
 }
 
-void TextTrack::setKind(const AtomicString& kind)
+void TextTrack::setKind(const AtomicString& newKind)
 {
-    String oldKind = m_kind;
+    AtomicString oldKind = kind();
+    TrackBase::setKind(newKind);
 
-    if (isValidKindKeyword(kind))
-        m_kind = kind;
-    else
-        m_kind = subtitlesKeyword();
-
-    if (m_client && oldKind != m_kind)
+    if (m_client && oldKind != kind())
         m_client->textTrackKindChanged(this);
 }
 
@@ -376,10 +369,10 @@ void TextTrack::cueDidChange(TextTrackCue* cue)
 
 int TextTrack::trackIndex()
 {
-    ASSERT(m_mediaElement);
+    ASSERT(m_trackList);
 
     if (m_trackIndex == invalidTrackIndex)
-        m_trackIndex = m_mediaElement->textTracks()->getTrackIndex(this);
+        m_trackIndex = m_trackList->getTrackIndex(this);
 
     return m_trackIndex;
 }
@@ -392,7 +385,7 @@ void TextTrack::invalidateTrackIndex()
 
 bool TextTrack::isRendered()
 {
-    if (m_kind != captionsKeyword() && m_kind != subtitlesKeyword())
+    if (kind() != captionsKeyword() && kind() != subtitlesKeyword())
         return false;
 
     if (m_mode != showingKeyword())
@@ -411,10 +404,10 @@ TextTrackCueList* TextTrack::ensureTextTrackCueList()
 
 int TextTrack::trackIndexRelativeToRenderedTracks()
 {
-    ASSERT(m_mediaElement);
+    ASSERT(m_trackList);
 
     if (m_renderedTrackIndex == invalidTrackIndex)
-        m_renderedTrackIndex = m_mediaElement->textTracks()->getTrackIndexRelativeToRenderedTracks(this);
+        m_renderedTrackIndex = m_trackList->getTrackIndexRelativeToRenderedTracks(this);
 
     return m_renderedTrackIndex;
 }
