@@ -65,6 +65,7 @@
 #include "core/rendering/RenderScrollbarPart.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
+#include "core/rendering/RenderWidget.h"
 #include "core/rendering/TextAutosizer.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
@@ -952,8 +953,7 @@ void FrameView::scheduleOrPerformPostLayoutTasks()
 
     if (!m_inSynchronousPostLayout) {
         if (frame().document()->shouldDisplaySeamlesslyWithParent()) {
-            if (RenderView* renderView = this->renderView())
-                renderView->updateWidgetPositions();
+            updateWidgetPositions();
         } else {
             m_inSynchronousPostLayout = true;
             // Calls resumeScheduledEvents()
@@ -1261,6 +1261,31 @@ RenderBox* FrameView::embeddedContentBox() const
         return toRenderBox(firstChild);
 
     return 0;
+}
+
+
+void FrameView::addWidget(RenderWidget* object)
+{
+    m_widgets.add(object);
+}
+
+void FrameView::removeWidget(RenderWidget* object)
+{
+    m_widgets.remove(object);
+}
+
+void FrameView::updateWidgetPositions()
+{
+    Vector<RefPtr<RenderWidget> > widgets;
+    copyToVector(m_widgets, widgets);
+
+    // Script or plugins could detach the frame so abort processing if that happens.
+
+    for (size_t i = 0; i < widgets.size() && renderView(); ++i)
+        widgets[i]->updateWidgetPosition();
+
+    for (size_t i = 0; i < widgets.size() && renderView(); ++i)
+        widgets[i]->widgetPositionsUpdated();
 }
 
 void FrameView::addWidgetToUpdate(RenderEmbeddedObject& object)
@@ -1734,13 +1759,13 @@ void FrameView::scrollPositionChanged()
 
 void FrameView::repaintFixedElementsAfterScrolling()
 {
+    RefPtr<FrameView> protect(this);
     // For fixed position elements, update widget positions and compositing layers after scrolling,
     // but only if we're not inside of layout.
     if (!m_nestedLayoutCount && hasViewportConstrainedObjects()) {
-        if (RenderView* renderView = this->renderView()) {
-            renderView->updateWidgetPositions();
+        updateWidgetPositions();
+        if (RenderView* renderView = this->renderView())
             renderView->layer()->updateLayerPositionsAfterDocumentScroll();
-        }
     }
 }
 
@@ -2300,9 +2325,11 @@ void FrameView::performPostLayoutTasks()
 
     FontFaceSet::didLayout(m_frame->document());
 
-    RenderView* renderView = this->renderView();
-    if (renderView)
-        renderView->updateWidgetPositions();
+    updateWidgetPositions();
+
+    // Plugins could have torn down the page inside updateWidgetPositions().
+    if (!renderView())
+        return;
 
     if (!m_updateWidgetsTimer.isActive())
         m_updateWidgetsTimer.startOneShot(0);

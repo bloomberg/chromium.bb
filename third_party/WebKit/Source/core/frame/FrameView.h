@@ -50,6 +50,7 @@ class RenderEmbeddedObject;
 class RenderObject;
 class RenderScrollbarPart;
 class RenderStyle;
+class RenderWidget;
 
 Pagination::Mode paginationModeForRenderStyle(RenderStyle*);
 
@@ -210,6 +211,10 @@ public:
 
     bool safeToPropagateScrollToParent() const { return m_safeToPropagateScrollToParent; }
     void setSafeToPropagateScrollToParent(bool isSafe) { m_safeToPropagateScrollToParent = isSafe; }
+
+    void addWidget(RenderWidget*);
+    void removeWidget(RenderWidget*);
+    void updateWidgetPositions();
 
     void addWidgetToUpdate(RenderEmbeddedObject&);
 
@@ -457,6 +462,9 @@ private:
 
     typedef HashSet<RefPtr<RenderEmbeddedObject> > EmbeddedObjectSet;
     EmbeddedObjectSet m_widgetUpdateSet;
+
+    // FIXME: These are just "children" of the FrameView and should be RefPtr<Widget> instead.
+    HashSet<RefPtr<RenderWidget> > m_widgets;
 
     RefPtr<Frame> m_frame;
 

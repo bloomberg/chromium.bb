@@ -2902,7 +2902,7 @@ void WebViewImpl::updateMainFrameLayoutSize()
     if (m_fixedLayoutSizeLock || !mainFrameImpl())
         return;
 
-    FrameView* view = mainFrameImpl()->frameView();
+    RefPtr<FrameView> view = mainFrameImpl()->frameView();
     if (!view)
         return;
 
@@ -2998,7 +2998,7 @@ void WebViewImpl::setFixedLayoutSize(const WebSize& layoutSize)
     if (!frame)
         return;
 
-    FrameView* view = frame->view();
+    RefPtr<FrameView> view = frame->view();
     if (!view)
         return;
 

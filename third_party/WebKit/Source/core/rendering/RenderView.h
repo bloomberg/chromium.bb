@@ -35,7 +35,6 @@ namespace WebCore {
 class FlowThreadController;
 class RenderLayerCompositor;
 class RenderQuote;
-class RenderWidget;
 
 // The root of the render tree, corresponding to the CSS initial containing block.
 // It's dimensions match that of the logical viewport (which may be different from
@@ -108,10 +107,6 @@ public:
     int oldMaximalOutlineSize() const { return m_oldMaximalOutlineSize; }
 
     virtual LayoutRect viewRect() const OVERRIDE;
-
-    void updateWidgetPositions();
-    void addWidget(RenderWidget*);
-    void removeWidget(RenderWidget*);
 
     // layoutDelta is used transiently during layout to store how far an object has moved from its
     // last layout location, in order to repaint correctly.
@@ -258,9 +253,6 @@ private:
     void positionDialog(RenderBox*);
     void positionDialogs();
 
-    size_t getRetainedWidgets(Vector<RenderWidget*>&);
-    void releaseWidgets(Vector<RenderWidget*>&);
-
     void pushLayoutStateForCurrentFlowThread(const RenderObject*);
     void popLayoutStateForCurrentFlowThread();
 
@@ -279,9 +271,6 @@ private:
 
     int m_maximalOutlineSize; // Used to apply a fudge factor to dirty-rect checks on blocks/tables.
     int m_oldMaximalOutlineSize; // The fudge factor from the previous layout.
-
-    typedef HashSet<RenderWidget*> RenderWidgetSet;
-    RenderWidgetSet m_widgets;
 
     LayoutUnit m_pageLogicalHeight;
     bool m_pageLogicalHeightChanged;

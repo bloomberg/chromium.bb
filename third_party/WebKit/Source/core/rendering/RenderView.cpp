@@ -40,7 +40,6 @@
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderSelectionInfo.h"
-#include "core/rendering/RenderWidget.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/TransformState.h"
@@ -944,57 +943,6 @@ bool RenderView::shouldUsePrintingLayout() const
     if (!document().printing() || !m_frameView)
         return false;
     return m_frameView->frame().shouldUsePrintingLayout();
-}
-
-size_t RenderView::getRetainedWidgets(Vector<RenderWidget*>& renderWidgets)
-{
-    size_t size = m_widgets.size();
-
-    renderWidgets.reserveCapacity(size);
-
-    RenderWidgetSet::const_iterator end = m_widgets.end();
-    for (RenderWidgetSet::const_iterator it = m_widgets.begin(); it != end; ++it) {
-        renderWidgets.uncheckedAppend(*it);
-        (*it)->ref();
-    }
-
-    return size;
-}
-
-void RenderView::releaseWidgets(Vector<RenderWidget*>& renderWidgets)
-{
-    size_t size = renderWidgets.size();
-
-    for (size_t i = 0; i < size; ++i)
-        renderWidgets[i]->deref();
-}
-
-void RenderView::updateWidgetPositions()
-{
-    // updateWidgetPosition() can possibly cause layout to be re-entered (via plug-ins running
-    // scripts in response to NPP_SetWindow, for example), so we need to keep the Widgets
-    // alive during enumeration.
-
-    Vector<RenderWidget*> renderWidgets;
-    size_t size = getRetainedWidgets(renderWidgets);
-
-    for (size_t i = 0; i < size; ++i)
-        renderWidgets[i]->updateWidgetPosition();
-
-    for (size_t i = 0; i < size; ++i)
-        renderWidgets[i]->widgetPositionsUpdated();
-
-    releaseWidgets(renderWidgets);
-}
-
-void RenderView::addWidget(RenderWidget* o)
-{
-    m_widgets.add(o);
-}
-
-void RenderView::removeWidget(RenderWidget* o)
-{
-    m_widgets.remove(o);
 }
 
 LayoutRect RenderView::viewRect() const
