@@ -8,6 +8,9 @@
  * receiving audio frames from a MediaStream audio track in the browser.
  * This interface is still in development (Dev API status) and may change.
  */
+
+[generate_thunk]
+
 label Chrome {
   [channel=dev] M34 = 0.1
 };
@@ -67,6 +70,7 @@ interface PPB_MediaStreamAudioTrack {
    * @return A <code>PP_Bool</code> with <code>PP_TRUE</code> if the given
    * MediaStream track has ended or <code>PP_FALSE</code> otherwise.
    */
+  [on_failure=PP_TRUE]
   PP_Bool HasEnded([in] PP_Resource audio_track);
 
   /**

@@ -6,6 +6,9 @@
 /**
  * Defines the <code>PPB_AudioFrame</code> interface.
  */
+
+[generate_thunk]
+
 label Chrome {
   [channel=dev] M34 = 0.1
 };
@@ -30,6 +33,7 @@ interface PPB_AudioFrame {
    * @return A <code>PP_TimeDelta</code> containing the timestamp of the audio
    * frame. Given in seconds since the start of the containing audio stream.
    */
+  [on_failure=0.0]
   PP_TimeDelta GetTimestamp([in] PP_Resource frame);
 
   /**

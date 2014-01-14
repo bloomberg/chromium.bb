@@ -22,6 +22,7 @@
   F(ExtensionsCommon_API) \
   F(PPB_Audio_API) \
   F(PPB_AudioConfig_API) \
+  F(PPB_AudioFrame_API) \
   F(PPB_AudioInput_API) \
   F(PPB_AudioTrusted_API) \
   F(PPB_Broker_API) \
@@ -53,6 +54,7 @@
   F(PPB_InputEvent_API) \
   F(PPB_IsolatedFileSystem_Private_API) \
   F(PPB_LayerCompositor_API) \
+  F(PPB_MediaStreamAudioTrack_API) \
   F(PPB_MediaStreamVideoTrack_API) \
   F(PPB_MessageLoop_API) \
   F(PPB_NetAddress_API) \
