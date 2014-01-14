@@ -87,6 +87,7 @@ public:
     virtual bool isFilterEffect() const { return false; }
     virtual bool isGradientStop() const { return false; }
     virtual bool isTextContent() const { return false; }
+    virtual bool isTextPositioning() const { return false; }
     virtual bool isStructurallyExternal() const { return false; }
 
     // For SVGTests

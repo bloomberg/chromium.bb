@@ -67,11 +67,8 @@ SVGFELightElement::SVGFELightElement(const QualifiedName& tagName, Document& doc
 SVGFELightElement* SVGFELightElement::findLightElement(const SVGElement* svgElement)
 {
     for (Node* node = svgElement->firstChild(); node; node = node->nextSibling()) {
-        if (node->hasTagName(SVGNames::feDistantLightTag)
-            || node->hasTagName(SVGNames::fePointLightTag)
-            || node->hasTagName(SVGNames::feSpotLightTag)) {
-            return static_cast<SVGFELightElement*>(node);
-        }
+        if (isSVGFELightElement(*node))
+            return toSVGFELightElement(node);
     }
     return 0;
 }

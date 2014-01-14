@@ -286,7 +286,7 @@ void SVGFontFaceElement::rebuildFontFace()
         // we currently ignore all but the last src element, alternatively we could concat them
         for (Node* child = lastChild(); child && !list; child = child->previousSibling()) {
             if (child->hasTagName(font_face_srcTag)) {
-                list = static_cast<SVGFontFaceSrcElement*>(child)->srcValue();
+                list = toSVGFontFaceSrcElement(child)->srcValue();
                 break;
             }
         }

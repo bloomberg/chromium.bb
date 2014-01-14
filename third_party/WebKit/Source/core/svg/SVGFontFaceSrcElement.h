@@ -21,6 +21,7 @@
 #define SVGFontFaceSrcElement_h
 
 #if ENABLE(SVG_FONTS)
+#include "SVGNames.h"
 #include "core/svg/SVGElement.h"
 
 namespace WebCore {
@@ -39,6 +40,8 @@ private:
     virtual void childrenChanged(bool changedByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0) OVERRIDE;
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
 };
+
+DEFINE_NODE_TYPE_CASTS(SVGFontFaceSrcElement, hasTagName(SVGNames::font_face_srcTag));
 
 } // namespace WebCore
 

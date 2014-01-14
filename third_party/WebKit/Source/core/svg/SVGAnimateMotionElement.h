@@ -73,6 +73,8 @@ private:
     Path m_animationPath;
 };
 
+DEFINE_NODE_TYPE_CASTS(SVGAnimateMotionElement, hasTagName(SVGNames::animateMotionTag));
+
 } // namespace WebCore
 
 #endif // SVGAnimateMotionElement_h

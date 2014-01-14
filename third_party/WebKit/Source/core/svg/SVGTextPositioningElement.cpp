@@ -148,7 +148,7 @@ SVGTextPositioningElement* SVGTextPositioningElement::elementFromRenderer(Render
         && !node->hasTagName(SVGNames::tspanTag))
         return 0;
 
-    return static_cast<SVGTextPositioningElement*>(node);
+    return toSVGTextPositioningElement(node);
 }
 
 }

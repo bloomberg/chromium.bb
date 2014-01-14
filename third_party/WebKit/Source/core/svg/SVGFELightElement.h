@@ -22,6 +22,7 @@
 #ifndef SVGFELightElement_h
 #define SVGFELightElement_h
 
+#include "SVGNames.h"
 #include "core/svg/SVGAnimatedNumber.h"
 #include "core/svg/SVGElement.h"
 #include "platform/graphics/filters/LightSource.h"
@@ -58,6 +59,13 @@ private:
         DECLARE_ANIMATED_NUMBER(LimitingConeAngle, limitingConeAngle)
     END_DECLARE_ANIMATED_PROPERTIES
 };
+
+inline bool isSVGFELightElement(const Node& node)
+{
+    return node.hasTagName(SVGNames::feDistantLightTag) || node.hasTagName(SVGNames::fePointLightTag) || node.hasTagName(SVGNames::feSpotLightTag);
+}
+
+DEFINE_NODE_TYPE_CASTS_WITH_FUNCTION(SVGFELightElement);
 
 } // namespace WebCore
 

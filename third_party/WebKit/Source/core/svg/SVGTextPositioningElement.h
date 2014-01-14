@@ -21,6 +21,7 @@
 #ifndef SVGTextPositioningElement_h
 #define SVGTextPositioningElement_h
 
+#include "SVGNames.h"
 #include "core/svg/SVGAnimatedLengthList.h"
 #include "core/svg/SVGAnimatedNumberList.h"
 #include "core/svg/SVGTextContentElement.h"
@@ -42,6 +43,7 @@ protected:
     bool isSupportedAttribute(const QualifiedName&);
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE FINAL;
     virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE FINAL;
+    virtual bool isTextPositioning() const OVERRIDE FINAL { return true; }
 
     RefPtr<SVGAnimatedLengthList> m_x;
     RefPtr<SVGAnimatedLengthList> m_y;
@@ -51,6 +53,13 @@ protected:
         DECLARE_ANIMATED_NUMBER_LIST(Rotate, rotate)
     END_DECLARE_ANIMATED_PROPERTIES
 };
+
+inline bool isSVGTextPositioningElement(const Node& node)
+{
+    return node.isSVGElement() && toSVGElement(node).isTextPositioning();
+}
+
+DEFINE_NODE_TYPE_CASTS_WITH_FUNCTION(SVGTextPositioningElement);
 
 } // namespace WebCore
 
