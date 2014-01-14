@@ -1951,8 +1951,15 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_PASSWORD_BUBBLE_DESCRIPTION,
     kOsWin | kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kEnableSavePasswordBubble)
-  }
+  },
 #endif
+  {
+    "embed-flash-fullscreen",
+    IDS_FLAGS_EMBED_FLASH_FULLSCREEN_NAME,
+    IDS_FLAGS_EMBED_FLASH_FULLSCREEN_DESCRIPTION,
+    kOsDesktop,
+    SINGLE_VALUE_TYPE(switches::kEmbedFlashFullscreen)
+  }
 };
 
 const Experiment* experiments = kExperiments;

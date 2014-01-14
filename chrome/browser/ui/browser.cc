@@ -1565,7 +1565,6 @@ void Browser::EnumerateDirectory(WebContents* web_contents,
 }
 
 bool Browser::EmbedsFullscreenWidget() const {
-  // TODO(miu): Make this feature switchable in about:flags?
   return CommandLine::ForCurrentProcess()->
       HasSwitch(switches::kEmbedFlashFullscreen);
 }
