@@ -16,6 +16,7 @@
 #include "chrome/common/extensions/manifest_handlers/app_isolation_info.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
@@ -40,6 +41,10 @@ bool ExtensionSpecialStoragePolicy::IsStorageProtected(const GURL& origin) {
 
 bool ExtensionSpecialStoragePolicy::IsStorageUnlimited(const GURL& origin) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUnlimitedStorage))
+    return true;
+
+  if (origin.SchemeIs(chrome::kChromeDevToolsScheme) &&
+      origin.host() == chrome::kChromeUIDevToolsHost)
     return true;
 
   base::AutoLock locker(lock_);
