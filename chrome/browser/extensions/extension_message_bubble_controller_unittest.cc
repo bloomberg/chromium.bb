@@ -274,6 +274,7 @@ TEST_F(ExtensionMessageBubbleTest, MAYBE_WipeoutControllerTest) {
   EXPECT_FALSE(prefs->HasWipeoutBeenAcknowledged(extension_id2_));
   controller.reset(new TestSuspiciousExtensionBubbleController(
       profile()));
+  SuspiciousExtensionBubbleController::ClearProfileListForTesting();
   EXPECT_TRUE(controller->ShouldShow());
   suspicious_extensions = controller->GetExtensionList();
   ASSERT_EQ(1U, suspicious_extensions.size());
@@ -296,6 +297,7 @@ TEST_F(ExtensionMessageBubbleTest, MAYBE_WipeoutControllerTest) {
       FakeExtensionMessageBubble::BUBBLE_ACTION_CLICK_LINK);
   controller.reset(new TestSuspiciousExtensionBubbleController(
       profile()));
+  SuspiciousExtensionBubbleController::ClearProfileListForTesting();
   EXPECT_TRUE(controller->ShouldShow());
   suspicious_extensions = controller->GetExtensionList();
   ASSERT_EQ(2U, suspicious_extensions.size());
@@ -351,6 +353,7 @@ TEST_F(ExtensionMessageBubbleTest, MAYBE_DevModeControllerTest) {
       FakeExtensionMessageBubble::BUBBLE_ACTION_CLICK_ACTION_BUTTON);
   controller.reset(new TestDevModeBubbleController(
       profile()));
+  DevModeBubbleController::ClearProfileListForTesting();
   EXPECT_TRUE(controller->ShouldShow());
   dev_mode_extensions = controller->GetExtensionList();
   EXPECT_EQ(2U, dev_mode_extensions.size());
@@ -370,6 +373,7 @@ TEST_F(ExtensionMessageBubbleTest, MAYBE_DevModeControllerTest) {
       FakeExtensionMessageBubble::BUBBLE_ACTION_CLICK_LINK);
   controller.reset(new TestDevModeBubbleController(
       profile()));
+  DevModeBubbleController::ClearProfileListForTesting();
   EXPECT_TRUE(controller->ShouldShow());
   dev_mode_extensions = controller->GetExtensionList();
   EXPECT_EQ(2U, dev_mode_extensions.size());
@@ -386,6 +390,7 @@ TEST_F(ExtensionMessageBubbleTest, MAYBE_DevModeControllerTest) {
 
   controller.reset(new TestDevModeBubbleController(
       profile()));
+  DevModeBubbleController::ClearProfileListForTesting();
   EXPECT_FALSE(controller->ShouldShow());
   dev_mode_extensions = controller->GetExtensionList();
   EXPECT_EQ(0U, dev_mode_extensions.size());

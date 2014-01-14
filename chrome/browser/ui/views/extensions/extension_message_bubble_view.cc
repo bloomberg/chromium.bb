@@ -54,10 +54,10 @@ namespace extensions {
 
 ExtensionMessageBubbleView::ExtensionMessageBubbleView(
     views::View* anchor_view,
-    ExtensionMessageBubbleController::Delegate* delegate)
+    scoped_ptr<ExtensionMessageBubbleController> controller)
     : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
       weak_factory_(this),
-      delegate_(delegate),
+      controller_(controller.Pass()),
       headline_(NULL),
       learn_more_(NULL),
       dismiss_button_(NULL),
@@ -83,20 +83,21 @@ void ExtensionMessageBubbleView::MaybeShow(
   // bubble is not as time sensitive so we'll catch the dev mode extensions on
   // the next startup/next window that opens. That way, we're not too spammy
   // with the bubbles.
-  SuspiciousExtensionBubbleController* suspicious_extensions =
-      extensions::SuspiciousExtensionBubbleController::Get(
-          browser->profile());
+  scoped_ptr<SuspiciousExtensionBubbleController> suspicious_extensions(
+      new SuspiciousExtensionBubbleController(browser->profile()));
   if (suspicious_extensions->ShouldShow()) {
+    SuspiciousExtensionBubbleController* controller =
+        suspicious_extensions.get();
     ExtensionMessageBubbleView* bubble_delegate =
-        new ExtensionMessageBubbleView(anchor_view, suspicious_extensions);
+        new ExtensionMessageBubbleView(anchor_view,
+                                       suspicious_extensions.Pass());
     views::BubbleDelegateView::CreateBubble(bubble_delegate);
-    suspicious_extensions->Show(bubble_delegate);
+    controller->Show(bubble_delegate);
     return;
   }
 
-  DevModeBubbleController* dev_mode_extensions =
-      extensions::DevModeBubbleController::Get(
-          browser->profile());
+  scoped_ptr<DevModeBubbleController> dev_mode_extensions(
+      new DevModeBubbleController(browser->profile()));
   if (dev_mode_extensions->ShouldShow()) {
     views::View* reference_view = NULL;
     BrowserActionsContainer* container = toolbar_view->browser_actions();
@@ -131,11 +132,11 @@ void ExtensionMessageBubbleView::MaybeShow(
     if (reference_view && reference_view->visible())
       anchor_view = reference_view;  // Catch-all is the hotdog menu.
 
-    // Show the bubble.
+    DevModeBubbleController* controller = dev_mode_extensions.get();
     ExtensionMessageBubbleView* bubble_delegate =
-        new ExtensionMessageBubbleView(anchor_view, dev_mode_extensions);
+        new ExtensionMessageBubbleView(anchor_view, dev_mode_extensions.Pass());
     views::BubbleDelegateView::CreateBubble(bubble_delegate);
-    dev_mode_extensions->Show(bubble_delegate);
+    controller->Show(bubble_delegate);
   }
 #endif
 }
@@ -196,6 +197,9 @@ void ExtensionMessageBubbleView::Init() {
                     kInsetBottomRight, kInsetBottomRight);
   SetLayoutManager(layout);
 
+  ExtensionMessageBubbleController::Delegate* delegate =
+      controller_->delegate();
+
   const int headline_column_set_id = 0;
   views::ColumnSet* top_columns = layout->AddColumnSet(headline_column_set_id);
   top_columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
@@ -203,7 +207,7 @@ void ExtensionMessageBubbleView::Init() {
   top_columns->AddPaddingColumn(1, 0);
   layout->StartRow(0, headline_column_set_id);
 
-  headline_ = new views::Label(delegate_->GetTitle(),
+  headline_ = new views::Label(delegate->GetTitle(),
                                rb.GetFontList(ui::ResourceBundle::MediumFont));
   layout->AddView(headline_);
 
@@ -219,12 +223,12 @@ void ExtensionMessageBubbleView::Init() {
   views::Label* message = new views::Label();
   message->SetMultiLine(true);
   message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  message->SetText(delegate_->GetMessageBody());
+  message->SetText(delegate->GetMessageBody());
   message->SizeToFit(views::Widget::GetLocalizedContentsWidth(
       IDS_EXTENSION_WIPEOUT_BUBBLE_WIDTH_CHARS));
   layout->AddView(message);
 
-  if (delegate_->ShouldShowExtensionList()) {
+  if (delegate->ShouldShowExtensionList()) {
     const int extension_list_column_set_id = 2;
     views::ColumnSet* middle_columns =
         layout->AddColumnSet(extension_list_column_set_id);
@@ -242,7 +246,7 @@ void ExtensionMessageBubbleView::Init() {
     std::vector<base::string16> extension_list;
     base::char16 bullet_point = 0x2022;
 
-    std::vector<base::string16> suspicious = delegate_->GetExtensions();
+    std::vector<base::string16> suspicious = controller_->GetExtensionList();
     size_t i = 0;
     for (; i < suspicious.size() && i < kMaxExtensionsToShow; ++i) {
       // Add each extension with bullet point.
@@ -253,7 +257,7 @@ void ExtensionMessageBubbleView::Init() {
     if (i > kMaxExtensionsToShow) {
       base::string16 difference = base::IntToString16(i - kMaxExtensionsToShow);
       extension_list.push_back(bullet_point + base::ASCIIToUTF16(" ") +
-          delegate_->GetOverflowText(difference));
+          delegate->GetOverflowText(difference));
     }
 
     extensions->SetText(JoinString(extension_list, base::ASCIIToUTF16("\n")));
@@ -262,7 +266,7 @@ void ExtensionMessageBubbleView::Init() {
     layout->AddView(extensions);
   }
 
-  base::string16 action_button = delegate_->GetActionButtonLabel();
+  base::string16 action_button = delegate->GetActionButtonLabel();
 
   const int action_row_column_set_id = 3;
   views::ColumnSet* bottom_columns =
@@ -279,7 +283,7 @@ void ExtensionMessageBubbleView::Init() {
   layout->StartRowWithPadding(0, action_row_column_set_id,
                               0, kMessageBubblePadding);
 
-  learn_more_ = new views::Link(delegate_->GetLearnMoreLabel());
+  learn_more_ = new views::Link(delegate->GetLearnMoreLabel());
   learn_more_->set_listener(this);
   layout->AddView(learn_more_);
 
@@ -290,7 +294,7 @@ void ExtensionMessageBubbleView::Init() {
   }
 
   dismiss_button_ = new views::LabelButton(this,
-      delegate_->GetDismissButtonLabel());
+      delegate->GetDismissButtonLabel());
   dismiss_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   layout->AddView(dismiss_button_);
 }

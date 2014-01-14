@@ -30,6 +30,9 @@ class ExtensionMessageBubbleController {
 
   class Delegate {
    public:
+    Delegate();
+    virtual ~Delegate();
+
     virtual bool ShouldIncludeExtension(const std::string& extension_id) = 0;
     virtual void AcknowledgeExtension(
         const std::string& extension_id,
@@ -48,8 +51,6 @@ class ExtensionMessageBubbleController {
 
     // Whether to show a list of extensions in the bubble.
     virtual bool ShouldShowExtensionList() const = 0;
-    // The data to show in the bubble.
-    virtual std::vector<base::string16> GetExtensions() = 0;
 
     // Record, through UMA, how many extensions were found.
     virtual void LogExtensionCount(size_t count) = 0;
@@ -59,9 +60,7 @@ class ExtensionMessageBubbleController {
   ExtensionMessageBubbleController(Delegate* delegate, Profile* profile);
   virtual ~ExtensionMessageBubbleController();
 
-  // Whether the controller knows of extensions to list in the bubble. Returns
-  // true if so.
-  bool ShouldShow();
+  Delegate* delegate() const { return delegate_.get(); }
 
   // Obtains a list of all extensions (by name) the controller knows about.
   std::vector<base::string16> GetExtensionList();
@@ -70,13 +69,14 @@ class ExtensionMessageBubbleController {
   const ExtensionIdList& GetExtensionIdList();
 
   // Sets up the callbacks and shows the bubble.
-  void Show(ExtensionMessageBubble* bubble);
+  virtual void Show(ExtensionMessageBubble* bubble);
 
   // Callbacks from bubble. Declared virtual for testing purposes.
   virtual void OnBubbleAction();
   virtual void OnBubbleDismiss();
   virtual void OnLinkClicked();
 
+ private:
   // Iterate over the known extensions and acknowledge each one.
   void AcknowledgeExtensions();
 
@@ -95,14 +95,11 @@ class ExtensionMessageBubbleController {
   // The action the user took in the bubble.
   BubbleAction user_action_;
 
-  Delegate* delegate_;
+  // Our delegate supplying information about what to show in the dialog.
+  scoped_ptr<Delegate> delegate_;
 
   // Whether this class has initialized.
   bool initialized_;
-
-  // This object only checks once for suspicious extensions because the dataset
-  // doesn't change after startup.
-  bool has_notified_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionMessageBubbleController);
 };

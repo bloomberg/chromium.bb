@@ -241,10 +241,7 @@ void BrowserActionButton::UpdateState() {
         ThemeServiceFactory::GetForProfile(browser_->profile());
 
     int background_id = IDR_BROWSER_ACTION;
-    extensions::DevModeBubbleController* controller =
-        extensions::DevModeBubbleController::Get(
-            browser_->profile());
-    if (controller->IsDevModeExtension(extension_))
+    if (extensions::DevModeBubbleController::IsDevModeExtension(extension_))
       background_id = IDR_BROWSER_ACTION_HIGHLIGHT;
 
     gfx::ImageSkia bg = *theme->GetImageSkiaNamed(background_id);

@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_EXTENSIONS_DEV_MODE_BUBBLE_CONTROLLER_H_
 
 #include <string>
-#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/extension_message_bubble_controller.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -15,35 +14,22 @@
 class Browser;
 class ExtensionService;
 
-namespace extensions {
+using extensions::ExtensionMessageBubbleController;
 
-class DevModeBubble;
+namespace {
 
-class DevModeBubbleController
-    : public ProfileKeyedAPI,
-      public ExtensionMessageBubbleController,
-      public ExtensionMessageBubbleController::Delegate {
+class DevModeBubbleDelegate
+    : public ExtensionMessageBubbleController::Delegate {
  public:
-  explicit DevModeBubbleController(Profile* profile);
-  virtual ~DevModeBubbleController();
-
-  // ProfileKeyedAPI implementation.
-  static ProfileKeyedAPIFactory<
-      DevModeBubbleController>* GetFactoryInstance();
-
-  // Convenience method to get the DevModeBubbleController for a
-  // profile.
-  static DevModeBubbleController* Get(Profile* profile);
-
-  // Returns true if the extension is considered a Developer Mode extension.
-  bool IsDevModeExtension(const Extension* extension) const;
+  explicit DevModeBubbleDelegate(ExtensionService* service);
+  virtual ~DevModeBubbleDelegate();
 
   // ExtensionMessageBubbleController::Delegate methods.
   virtual bool ShouldIncludeExtension(const std::string& extension_id) OVERRIDE;
   virtual void AcknowledgeExtension(
       const std::string& extension_id,
       ExtensionMessageBubbleController::BubbleAction user_action) OVERRIDE;
-  virtual void PerformAction(const ExtensionIdList& list) OVERRIDE;
+  virtual void PerformAction(const extensions::ExtensionIdList& list) OVERRIDE;
   virtual base::string16 GetTitle() const OVERRIDE;
   virtual base::string16 GetMessageBody() const OVERRIDE;
   virtual base::string16 GetOverflowText(
@@ -53,33 +39,49 @@ class DevModeBubbleController
   virtual base::string16 GetActionButtonLabel() const OVERRIDE;
   virtual base::string16 GetDismissButtonLabel() const OVERRIDE;
   virtual bool ShouldShowExtensionList() const OVERRIDE;
-  virtual std::vector<base::string16> GetExtensions() OVERRIDE;
   virtual void LogExtensionCount(size_t count) OVERRIDE;
   virtual void LogAction(
       ExtensionMessageBubbleController::BubbleAction action) OVERRIDE;
 
  private:
-  friend class ProfileKeyedAPIFactory<DevModeBubbleController>;
-
-  // ProfileKeyedAPI implementation.
-  static const char* service_name() {
-    return "DevModeBubbleController";
-  }
-  static const bool kServiceRedirectedInIncognito = true;
-
   // Our extension service. Weak, not owned by us.
   ExtensionService* service_;
 
+  DISALLOW_COPY_AND_ASSIGN(DevModeBubbleDelegate);
+};
+
+}  // namespace
+
+namespace extensions {
+
+class DevModeBubble;
+
+class DevModeBubbleController
+    : public ExtensionMessageBubbleController {
+ public:
+  // Clears the list of profiles the bubble has been shown for. Should only be
+  // used during testing.
+  static void ClearProfileListForTesting();
+
+  // Returns true if the extension is considered a Developer Mode extension.
+  static bool IsDevModeExtension(const Extension* extension);
+
+  explicit DevModeBubbleController(Profile* profile);
+  virtual ~DevModeBubbleController();
+
+  // Whether the controller knows of extensions to list in the bubble. Returns
+  // true if so.
+  bool ShouldShow();
+
+  // ExtensionMessageBubbleController methods.
+  virtual void Show(ExtensionMessageBubble* bubble) OVERRIDE;
+
+ private:
   // A weak pointer to the profile we are associated with. Not owned by us.
   Profile* profile_;
 
-
   DISALLOW_COPY_AND_ASSIGN(DevModeBubbleController);
 };
-
-template <>
-void ProfileKeyedAPIFactory<
-    DevModeBubbleController>::DeclareFactoryDependencies();
 
 }  // namespace extensions
 

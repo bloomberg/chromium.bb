@@ -21,6 +21,15 @@
 namespace extensions {
 
 ////////////////////////////////////////////////////////////////////////////////
+// ExtensionMessageBubbleController::Delegate
+
+ExtensionMessageBubbleController::Delegate::Delegate() {
+}
+
+ExtensionMessageBubbleController::Delegate::~Delegate() {
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // ExtensionMessageBubbleController
 
 ExtensionMessageBubbleController::ExtensionMessageBubbleController(
@@ -29,19 +38,10 @@ ExtensionMessageBubbleController::ExtensionMessageBubbleController(
       profile_(profile),
       user_action_(ACTION_BOUNDARY),
       delegate_(delegate),
-      initialized_(false),
-      has_notified_(false) {
+      initialized_(false) {
 }
 
 ExtensionMessageBubbleController::~ExtensionMessageBubbleController() {
-}
-
-bool ExtensionMessageBubbleController::ShouldShow() {
-  if (has_notified_)
-    return false;
-
-  has_notified_ = true;
-  return !GetOrCreateExtensionList()->empty();
 }
 
 std::vector<base::string16>
@@ -130,9 +130,6 @@ void ExtensionMessageBubbleController::AcknowledgeExtensions() {
 }
 
 ExtensionIdList* ExtensionMessageBubbleController::GetOrCreateExtensionList() {
-  if (!service_)
-    return &extension_list_;  // Can occur during testing.
-
   if (!initialized_) {
     scoped_ptr<const ExtensionSet> extension_set(
         service_->GenerateInstalledExtensionsSet());

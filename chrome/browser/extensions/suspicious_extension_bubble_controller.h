@@ -13,32 +13,22 @@
 class Browser;
 class ExtensionService;
 
-namespace extensions {
+using extensions::ExtensionMessageBubbleController;
 
-class SuspiciousExtensionBubble;
+namespace {
 
-class SuspiciousExtensionBubbleController
-    : public ProfileKeyedAPI,
-      public ExtensionMessageBubbleController,
-      public ExtensionMessageBubbleController::Delegate {
+class SuspiciousExtensionBubbleDelegate
+    : public ExtensionMessageBubbleController::Delegate {
  public:
-  explicit SuspiciousExtensionBubbleController(Profile* profile);
-  virtual ~SuspiciousExtensionBubbleController();
-
-  // ProfileKeyedAPI implementation.
-  static ProfileKeyedAPIFactory<
-      SuspiciousExtensionBubbleController>* GetFactoryInstance();
-
-  // Convenience method to get the SuspiciousExtensionBubbleController
-  // for a profile.
-  static SuspiciousExtensionBubbleController* Get(Profile* profile);
+  explicit SuspiciousExtensionBubbleDelegate(ExtensionService* service);
+  virtual ~SuspiciousExtensionBubbleDelegate();
 
   // ExtensionMessageBubbleController::Delegate methods.
   virtual bool ShouldIncludeExtension(const std::string& extension_id) OVERRIDE;
   virtual void AcknowledgeExtension(
       const std::string& extension_id,
       ExtensionMessageBubbleController::BubbleAction user_action) OVERRIDE;
-  virtual void PerformAction(const ExtensionIdList& list) OVERRIDE;
+  virtual void PerformAction(const extensions::ExtensionIdList& list) OVERRIDE;
   virtual base::string16 GetTitle() const OVERRIDE;
   virtual base::string16 GetMessageBody() const OVERRIDE;
   virtual base::string16 GetOverflowText(
@@ -48,32 +38,46 @@ class SuspiciousExtensionBubbleController
   virtual base::string16 GetActionButtonLabel() const OVERRIDE;
   virtual base::string16 GetDismissButtonLabel() const OVERRIDE;
   virtual bool ShouldShowExtensionList() const OVERRIDE;
-  virtual std::vector<base::string16> GetExtensions() OVERRIDE;
   virtual void LogExtensionCount(size_t count) OVERRIDE;
   virtual void LogAction(
       ExtensionMessageBubbleController::BubbleAction action) OVERRIDE;
+
  private:
-  friend class ProfileKeyedAPIFactory<
-      SuspiciousExtensionBubbleController>;
-
-  // ProfileKeyedAPI implementation.
-  static const char* service_name() {
-    return "SuspiciousExtensionBubbleController";
-  }
-  static const bool kServiceRedirectedInIncognito = true;
-
   // Our extension service. Weak, not owned by us.
   ExtensionService* service_;
 
+  DISALLOW_COPY_AND_ASSIGN(SuspiciousExtensionBubbleDelegate);
+};
+
+}  // namespace
+
+namespace extensions {
+
+class SuspiciousExtensionBubble;
+
+class SuspiciousExtensionBubbleController
+    : public ExtensionMessageBubbleController {
+ public:
+  // Clears the list of profiles the bubble has been shown for. Should only be
+  // used during testing.
+  static void ClearProfileListForTesting();
+
+  explicit SuspiciousExtensionBubbleController(Profile* profile);
+  virtual ~SuspiciousExtensionBubbleController();
+
+  // Whether the controller knows of extensions to list in the bubble. Returns
+  // true if so.
+  bool ShouldShow();
+
+  // ExtensionMessageBubbleController methods.
+  virtual void Show(ExtensionMessageBubble* bubble) OVERRIDE;
+
+ private:
   // A weak pointer to the profile we are associated with. Not owned by us.
   Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(SuspiciousExtensionBubbleController);
 };
-
-template <>
-void ProfileKeyedAPIFactory<
-    SuspiciousExtensionBubbleController>::DeclareFactoryDependencies();
 
 }  // namespace extensions
 

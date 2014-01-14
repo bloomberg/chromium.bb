@@ -46,7 +46,7 @@ class ExtensionMessageBubbleView : public ExtensionMessageBubble,
  private:
   ExtensionMessageBubbleView(
       views::View* anchor_view,
-      ExtensionMessageBubbleController::Delegate* delegate);
+      scoped_ptr<ExtensionMessageBubbleController> controller);
   virtual ~ExtensionMessageBubbleView();
 
   // Shows the bubble and updates the counter for how often it has been shown.
@@ -69,8 +69,8 @@ class ExtensionMessageBubbleView : public ExtensionMessageBubble,
 
   base::WeakPtrFactory<ExtensionMessageBubbleView> weak_factory_;
 
-  // The controller for the bubble. Weak, not owned by us.
-  ExtensionMessageBubbleController::Delegate* delegate_;
+  // The controller for this bubble.
+  scoped_ptr<ExtensionMessageBubbleController> controller_;
 
   // The headline, labels and buttons on the bubble.
   views::Label* headline_;
