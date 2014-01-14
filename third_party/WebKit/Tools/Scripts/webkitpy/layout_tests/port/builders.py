@@ -45,6 +45,7 @@ _exact_matches = {
     "WebKit Linux": {"port_name": "linux-x86_64"},
     "WebKit Linux 32": {"port_name": "linux-x86"},
     "WebKit Linux (dbg)": {"port_name": "linux-x86_64"},
+    "WebKit Linux ASAN": {"port_name": "linux-x86_64"},
     "WebKit Mac10.6": {"port_name": "mac-snowleopard"},
     "WebKit Mac10.6 (dbg)": {"port_name": "mac-snowleopard"},
     "WebKit Mac10.7": {"port_name": "mac-lion"},
