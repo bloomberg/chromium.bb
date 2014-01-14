@@ -47,7 +47,6 @@
         <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_BIG_CROSSHAIR" file="common/pointers/crosshair_big.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_BIG_EAST_RESIZE" file="common/pointers/sb_h_double_arrow_big.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_BIG_EAST_WEST_RESIZE" file="common/pointers/sb_h_double_arrow_big.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_BIG_FLEUR" file="common/pointers/fleur_big.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_BIG_HAND" file="common/pointers/hand2_big.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_BIG_HELP" file="common/pointers/help_big.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_BIG_IBEAM" file="common/pointers/xterm_big.png" />
@@ -78,7 +77,6 @@
         <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_CROSSHAIR" file="common/pointers/crosshair.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_EAST_RESIZE" file="common/pointers/sb_h_double_arrow.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_EAST_WEST_RESIZE" file="common/pointers/sb_h_double_arrow.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_FLEUR" file="common/pointers/fleur.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_HAND" file="common/pointers/hand2.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_HELP" file="common/pointers/help.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_IBEAM" file="common/pointers/xterm.png" />
