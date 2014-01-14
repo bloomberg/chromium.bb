@@ -4,6 +4,9 @@
 
 import("//build/config/android/config.gni")
 import("//build/config/sysroot.gni")
+if (cpu_arch == "arm") {
+  import("//build/config/arm.gni")
+}
 
 # compiler ---------------------------------------------------------------------
 #
@@ -100,6 +103,25 @@ config("compiler") {
     } else if (cpu_arch == "x86") {
       cflags += "-m32"
       ldflags += "-m32"
+    } else if (cpu_arch == "arm") {
+      # Don't set the compiler flags for the WebView build. These will come
+      # from the Android build system.
+      if (!is_android_webview_build) {
+        cflags += [
+          "-march=$arm_arch",
+          "-mfpu=$arm_fpu",
+          "-mfloat_abi=$arm_float_abi",
+        ]
+        if (arm_tune != "") {
+          cflags += "-mtune=$arm_tune"
+        }
+        if (arm_use_thumb) {
+          cflags += [ "-mthumb" ]
+          if (is_android) {
+            cflags += [ "-mthumb_interwork" ]
+          }
+        }
+      }
     }
 
     defines += [ "_FILE_OFFSET_BITS=64" ]
