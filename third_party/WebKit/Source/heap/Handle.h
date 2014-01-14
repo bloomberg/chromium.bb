@@ -135,7 +135,7 @@ public:
     void trace(Visitor*) { }
 
 private:
-    ~PersistentAnchor() { }
+    virtual ~PersistentAnchor() { }
     PersistentAnchor() : PersistentNode(TraceMethodDelegate<PersistentAnchor, &PersistentAnchor::trace>::trampoline)
     {
         m_next = this;

@@ -362,7 +362,7 @@ public:
         return new Foo(foo);
     }
 
-    virtual void trace(Visitor* visitor)
+    virtual void trace(Visitor* visitor) OVERRIDE
     {
         if (m_pointsToFoo)
             visitor->mark(static_cast<Foo*>(m_bar));
@@ -396,7 +396,7 @@ public:
         return new Bars();
     }
 
-    virtual void trace(Visitor* visitor)
+    virtual void trace(Visitor* visitor) OVERRIDE
     {
         for (unsigned i = 0; i < m_width; i++)
             visitor->trace(m_bars[i]);
@@ -499,7 +499,7 @@ public:
         return new Weak(strong, weak);
     }
 
-    virtual void trace(Visitor* visitor)
+    virtual void trace(Visitor* visitor) OVERRIDE
     {
         visitor->trace(m_strongBar);
         visitor->registerWeakMembers(this, zapWeakMembers);
@@ -538,7 +538,7 @@ public:
         return new WithWeakMember(strong, weak);
     }
 
-    virtual void trace(Visitor* visitor)
+    virtual void trace(Visitor* visitor) OVERRIDE
     {
         visitor->trace(m_strongBar);
         visitor->trace(m_weakBar);
