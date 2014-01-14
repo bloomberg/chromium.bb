@@ -124,14 +124,9 @@ private:
     OwnPtr<DOMDataStore> m_domDataStore;
 
     friend DOMWrapperWorld* mainThreadNormalWorld();
-    friend DOMWrapperWorld* existingWindowShellWorkaroundWorld();
 };
 
 DOMWrapperWorld* mainThreadNormalWorld();
-
-// FIXME: this is a workaround for a problem in ScriptController
-// Do not use this anywhere else!!
-DOMWrapperWorld* existingWindowShellWorkaroundWorld();
 
 } // namespace WebCore
 

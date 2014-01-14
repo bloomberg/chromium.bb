@@ -1439,8 +1439,13 @@ void FrameLoader::dispatchDidClearWindowObjectsInAllWorlds()
 
     Vector<RefPtr<DOMWrapperWorld> > worlds;
     DOMWrapperWorld::getAllWorlds(worlds);
-    for (size_t i = 0; i < worlds.size(); ++i)
-        dispatchDidClearWindowObjectInWorld(worlds[i].get());
+    for (size_t i = 0; i < worlds.size(); ++i) {
+        if (Page* page = m_frame->page())
+            page->inspectorController().didClearWindowObjectInWorld(m_frame, worlds[i].get());
+        m_client->dispatchDidClearWindowObjectInWorld(worlds[i].get());
+
+        InspectorInstrumentation::didClearWindowObjectInWorld(m_frame, worlds[i].get());
+    }
 }
 
 void FrameLoader::dispatchDidClearWindowObjectInWorld(DOMWrapperWorld* world)
@@ -1449,11 +1454,6 @@ void FrameLoader::dispatchDidClearWindowObjectInWorld(DOMWrapperWorld* world)
         return;
 
     m_client->dispatchDidClearWindowObjectInWorld(world);
-
-    if (Page* page = m_frame->page())
-        page->inspectorController().didClearWindowObjectInWorld(m_frame, world);
-
-    InspectorInstrumentation::didClearWindowObjectInWorld(m_frame, world);
 }
 
 SandboxFlags FrameLoader::effectiveSandboxFlags() const

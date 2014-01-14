@@ -231,10 +231,6 @@ V8WindowShell* ScriptController::existingWindowShell(DOMWrapperWorld* world)
     if (world->isMainWorld())
         return m_windowShell->isContextInitialized() ? m_windowShell.get() : 0;
 
-    // FIXME: Remove this block. See comment with existingWindowShellWorkaroundWorld().
-    if (world == existingWindowShellWorkaroundWorld())
-        return m_windowShell.get();
-
     IsolatedWorldMap::iterator iter = m_isolatedWorlds.find(world->worldId());
     if (iter == m_isolatedWorlds.end())
         return 0;
@@ -258,14 +254,8 @@ V8WindowShell* ScriptController::windowShell(DOMWrapperWorld* world)
             m_isolatedWorlds.set(world->worldId(), isolatedWorldShell.release());
         }
     }
-    if (!shell->isContextInitialized() && shell->initializeIfNeeded()) {
-        if (world->isMainWorld()) {
-            // FIXME: Remove this if clause. See comment with existingWindowShellWorkaroundWorld().
-            m_frame->loader().dispatchDidClearWindowObjectInWorld(existingWindowShellWorkaroundWorld());
-        } else {
-            m_frame->loader().dispatchDidClearWindowObjectInWorld(world);
-        }
-    }
+    if (!shell->isContextInitialized() && shell->initializeIfNeeded())
+        m_frame->loader().dispatchDidClearWindowObjectInWorld(world);
     return shell;
 }
 

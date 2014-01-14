@@ -87,13 +87,6 @@ DOMWrapperWorld* mainThreadNormalWorld()
     return cachedNormalWorld;
 }
 
-// FIXME: Remove this function. There is currently an issue with the inspector related to the call to dispatchDidClearWindowObjectInWorld in ScriptController::windowShell.
-DOMWrapperWorld* existingWindowShellWorkaroundWorld()
-{
-    DEFINE_STATIC_REF(DOMWrapperWorld, world, (adoptRef(new DOMWrapperWorld(MainWorldId - 1, DOMWrapperWorld::mainWorldExtensionGroup - 1))));
-    return world;
-}
-
 bool DOMWrapperWorld::contextHasCorrectPrototype(v8::Handle<v8::Context> context)
 {
     ASSERT(isMainThread());
