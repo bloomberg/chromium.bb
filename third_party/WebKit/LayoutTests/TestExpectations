@@ -762,6 +762,7 @@ crbug.com/320099 webaudio/oscillator-triangle.html [ NeedsManualRebaseline ]
 crbug.com/320334 media/media-can-play-ogg.html [ Failure ]
 
 crbug.com/326139 media/video-frame-accurate-seek.html [ Pass ImageOnlyFailure ]
+crbug.com/326139 [ SnowLeopard ] media/video-frame-size-change.html [ Pass ImageOnlyFailure ]
 
 crbug.com/245556 compositing/transitions/transform-on-large-layer.html [ ImageOnlyFailure ]
 crbug.com/245556 virtual/softwarecompositing/transitions/transform-on-large-layer.html [ ImageOnlyFailure ]
