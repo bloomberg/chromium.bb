@@ -34,6 +34,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "modules/quota/StorageErrorCallback.h"
+#include "modules/quota/StorageQuotaClient.h"
 #include "modules/quota/StorageUsageCallback.h"
 #include "modules/quota/WebStorageQuotaCallbacksImpl.h"
 #include "platform/weborigin/KURL.h"
@@ -69,6 +70,20 @@ void StorageQuota::queryUsageAndQuota(ExecutionContext* executionContext, PassOw
 
     KURL storagePartition = KURL(KURL(), securityOrigin->toString());
     blink::Platform::current()->queryStorageUsageAndQuota(storagePartition, storageType, WebStorageQuotaCallbacksImpl::createLeakedPtr(successCallback, errorCallback));
+}
+
+void StorageQuota::requestQuota(ExecutionContext* executionContext, unsigned long long newQuotaInBytes, PassOwnPtr<StorageQuotaCallback> successCallback, PassOwnPtr<StorageErrorCallback> errorCallback)
+{
+    ASSERT(executionContext);
+
+    blink::WebStorageQuotaType storageType = static_cast<blink::WebStorageQuotaType>(m_type);
+    if (storageType != blink::WebStorageQuotaTypeTemporary && storageType != blink::WebStorageQuotaTypePersistent) {
+        // Unknown storage type is requested.
+        executionContext->postTask(StorageErrorCallback::CallbackTask::create(errorCallback, NotSupportedError));
+        return;
+    }
+
+    StorageQuotaClient::from(executionContext)->requestQuota(executionContext, storageType, newQuotaInBytes, successCallback, errorCallback);
 }
 
 StorageQuota::~StorageQuota()

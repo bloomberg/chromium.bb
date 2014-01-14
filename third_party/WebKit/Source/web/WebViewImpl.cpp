@@ -48,6 +48,7 @@
 #include "RuntimeEnabledFeatures.h"
 #include "SpeechInputClientImpl.h"
 #include "SpeechRecognitionClientProxy.h"
+#include "StorageQuotaClientImpl.h"
 #include "ValidationMessageClientImpl.h"
 #include "ViewportAnchor.h"
 #include "WebAXObject.h"
@@ -410,6 +411,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
 
     provideLocalFileSystemTo(m_page.get(), LocalFileSystemClient::create());
     provideDatabaseClientTo(m_page.get(), DatabaseClientImpl::create());
+    provideStorageQuotaClientTo(m_page.get(), StorageQuotaClientImpl::create());
     m_validationMessage = ValidationMessageClientImpl::create(*this);
     m_page->setValidationMessageClient(m_validationMessage.get());
     provideWorkerGlobalScopeProxyProviderTo(m_page.get(), WorkerGlobalScopeProxyProviderImpl::create());

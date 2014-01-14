@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2014 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "modules/quota/StorageQuota.h"
+#include "StorageQuotaClientImpl.h"
 
 #include "WebFrameClient.h"
 #include "WebFrameImpl.h"
@@ -43,20 +43,23 @@
 #include "public/platform/WebStorageQuotaType.h"
 #include "wtf/Threading.h"
 
-using namespace blink;
+using namespace WebCore;
 
-namespace WebCore {
+namespace blink {
 
-// FIXME: Implement this as StorageQuotaClient.
-void StorageQuota::requestQuota(ExecutionContext* executionContext, unsigned long long newQuotaInBytes, PassOwnPtr<StorageQuotaCallback> successCallback, PassOwnPtr<StorageErrorCallback> errorCallback)
+PassOwnPtr<StorageQuotaClientImpl> StorageQuotaClientImpl::create()
+{
+    return adoptPtr(new StorageQuotaClientImpl());
+}
+
+StorageQuotaClientImpl::~StorageQuotaClientImpl()
+{
+}
+
+void StorageQuotaClientImpl::requestQuota(ExecutionContext* executionContext, WebStorageQuotaType storageType, unsigned long long newQuotaInBytes, PassOwnPtr<StorageQuotaCallback> successCallback, PassOwnPtr<StorageErrorCallback> errorCallback)
 {
     ASSERT(executionContext);
-    WebStorageQuotaType storageType = static_cast<WebStorageQuotaType>(m_type);
-    if (storageType != WebStorageQuotaTypeTemporary && storageType != WebStorageQuotaTypePersistent) {
-        // Unknown storage type is requested.
-        executionContext->postTask(StorageErrorCallback::CallbackTask::create(errorCallback, NotSupportedError));
-        return;
-    }
+
     if (executionContext->isDocument()) {
         Document* document = toDocument(executionContext);
         WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
@@ -67,4 +70,8 @@ void StorageQuota::requestQuota(ExecutionContext* executionContext, unsigned lon
     }
 }
 
-} // namespace WebCore
+StorageQuotaClientImpl::StorageQuotaClientImpl()
+{
+}
+
+} // namespace blink

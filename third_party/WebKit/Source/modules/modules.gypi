@@ -525,6 +525,8 @@
       'quota/StorageQuota.cpp',
       'quota/StorageQuota.h',
       'quota/StorageQuotaCallback.h',
+      'quota/StorageQuotaClient.cpp',
+      'quota/StorageQuotaClient.h',
       'quota/StorageUsageCallback.h',
       'quota/WebStorageQuotaCallbacksImpl.cpp',
       'quota/WebStorageQuotaCallbacksImpl.h',
