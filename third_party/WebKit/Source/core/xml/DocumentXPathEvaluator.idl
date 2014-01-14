@@ -16,6 +16,7 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  */
+
 partial interface Document {
     // DOM Level 3 XPath (XPathEvaluator interface)
     [RaisesException] XPathExpression createExpression([Default=Undefined] optional DOMString expression,

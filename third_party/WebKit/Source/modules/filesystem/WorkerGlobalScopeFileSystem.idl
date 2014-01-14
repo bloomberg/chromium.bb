@@ -35,4 +35,3 @@ partial interface WorkerGlobalScope {
 
     [RuntimeEnabled=FileSystem] attribute FileErrorConstructor FileError;
 };
-

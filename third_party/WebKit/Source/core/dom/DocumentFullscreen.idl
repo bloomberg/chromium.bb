@@ -18,15 +18,18 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  */
-partial interface Document {
+
+[
+    RuntimeEnabled=Fullscreen,
+] partial interface Document {
     // Mozilla version
-    [RuntimeEnabled=Fullscreen] readonly attribute boolean webkitIsFullScreen;
-    [RuntimeEnabled=Fullscreen] readonly attribute boolean webkitFullScreenKeyboardInputAllowed;
-    [RuntimeEnabled=Fullscreen] readonly attribute Element webkitCurrentFullScreenElement;
-    [RuntimeEnabled=Fullscreen] void webkitCancelFullScreen();
+    readonly attribute boolean webkitIsFullScreen;
+    readonly attribute boolean webkitFullScreenKeyboardInputAllowed;
+    readonly attribute Element webkitCurrentFullScreenElement;
+    void webkitCancelFullScreen();
 
     // W3C version
-    [RuntimeEnabled=Fullscreen] readonly attribute boolean webkitFullscreenEnabled;
-    [RuntimeEnabled=Fullscreen] readonly attribute Element webkitFullscreenElement;
-    [RuntimeEnabled=Fullscreen] void webkitExitFullscreen();
+    readonly attribute boolean webkitFullscreenEnabled;
+    readonly attribute Element webkitFullscreenElement;
+    void webkitExitFullscreen();
 };

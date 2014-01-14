@@ -28,6 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-partial interface Navigator {
-    [RuntimeEnabled=WebMIDI] MIDIAccessPromise requestMIDIAccess(optional Dictionary options);
+[
+    RuntimeEnabled=WebMIDI,
+] partial interface Navigator {
+    MIDIAccessPromise requestMIDIAccess(optional Dictionary options);
 };

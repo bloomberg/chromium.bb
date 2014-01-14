@@ -28,7 +28,7 @@
  */
 
 [
-    RuntimeEnabled=HighResolutionTimeInWorkers
+    RuntimeEnabled=HighResolutionTimeInWorkers,
 ] partial interface SharedWorker {
     // See https://dvcs.w3.org/hg/webperf/raw-file/tip/specs/HighResolutionTime2/Overview.html for details.
     [CallWith=ExecutionContext] readonly attribute double workerStart;

@@ -29,7 +29,7 @@
  */
 
 [
-    Conditional=Condition11|Condition12
+    Conditional=Condition11|Condition12,
 ] partial interface SupportTestInterface {
     // This IDL file is for testing the bindings code generator and for test support files
     static readonly attribute long supplementalStaticReadOnlyAttr;

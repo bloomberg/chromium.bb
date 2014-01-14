@@ -24,4 +24,3 @@ partial interface Navigator {
     [RuntimeEnabled=CustomSchemeHandler, RaisesException] DOMString isProtocolHandlerRegistered(DOMString scheme, DOMString url);
     [RuntimeEnabled=CustomSchemeHandler, RaisesException] void unregisterProtocolHandler(DOMString scheme, DOMString url);
 };
-

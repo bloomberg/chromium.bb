@@ -28,6 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-partial interface Element {
-    [RuntimeEnabled=WebAnimationsAPI] void animate(sequence<Dictionary> keyframes, optional double duration);
+[
+    RuntimeEnabled=WebAnimationsAPI,
+] partial interface Element {
+    void animate(sequence<Dictionary> keyframes, optional double duration);
 };

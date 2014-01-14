@@ -29,6 +29,5 @@
  */
 
 partial interface Navigator {
-    [RuntimeEnabled=PointerEventsMaxTouchPoints]
-    readonly    attribute long    maxTouchPoints;
+    [RuntimeEnabled=PointerEventsMaxTouchPoints] readonly attribute long maxTouchPoints;
 };

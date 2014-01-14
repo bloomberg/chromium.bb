@@ -28,6 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-partial interface Document {
-    [RuntimeEnabled=FontLoadEvents] readonly attribute FontFaceSet fonts;
+[
+    RuntimeEnabled=FontLoadEvents,
+] partial interface Document {
+    readonly attribute FontFaceSet fonts;
 };

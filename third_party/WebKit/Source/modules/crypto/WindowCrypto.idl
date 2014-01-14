@@ -29,8 +29,7 @@
  */
 
 [
-    ImplementedAs=DOMWindowCrypto
+    ImplementedAs=DOMWindowCrypto,
 ] partial interface Window {
     readonly attribute Crypto crypto;
 };
-

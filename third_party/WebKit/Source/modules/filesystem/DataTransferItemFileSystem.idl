@@ -31,4 +31,3 @@
 partial interface DataTransferItem {
     [CallWith=ExecutionContext] Entry webkitGetAsEntry();
 };
-

@@ -25,9 +25,9 @@
  */
 
 [
-    ImplementedAs=DOMWindowIndexedDatabase
+    ImplementedAs=DOMWindowIndexedDatabase,
 ] partial interface Window {
-    [ImplementedAs=indexedDB,MeasureAs=PrefixedIndexedDB] readonly attribute IDBFactory webkitIndexedDB;
+    [ImplementedAs=indexedDB, MeasureAs=PrefixedIndexedDB] readonly attribute IDBFactory webkitIndexedDB;
 
     [MeasureAs=UnprefixedIndexedDB] readonly attribute IDBFactory indexedDB;
 };

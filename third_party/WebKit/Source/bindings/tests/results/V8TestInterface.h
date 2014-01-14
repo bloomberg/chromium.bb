@@ -55,9 +55,9 @@ public:
     static void visitDOMWrapper(void*, const v8::Persistent<v8::Object>&, v8::Isolate*);
     static ActiveDOMObject* toActiveDOMObject(v8::Handle<v8::Object>);
     static void implementsMethod3MethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
-#if ENABLE(Condition11) || ENABLE(Condition12)
+#if ENABLE(CONDITION_PARTIAL)
     static void supplementalMethod3MethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
-#endif // ENABLE(Condition11) || ENABLE(Condition12)
+#endif // ENABLE(CONDITION_PARTIAL)
     static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void namedPropertySetterCustom(v8::Local<v8::String>, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;

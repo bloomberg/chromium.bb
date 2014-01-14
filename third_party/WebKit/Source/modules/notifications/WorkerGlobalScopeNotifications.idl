@@ -25,7 +25,8 @@
  */
 
 [
-    Conditional=LEGACY_NOTIFICATIONS
+    Conditional=LEGACY_NOTIFICATIONS,
+    RuntimeEnabled=Notifications,
 ] partial interface WorkerGlobalScope {
-    [RuntimeEnabled=Notifications] readonly attribute NotificationCenter webkitNotifications;
+    readonly attribute NotificationCenter webkitNotifications;
 };

@@ -27,7 +27,8 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 partial interface URL {
-    [CallWith=ExecutionContext,TreatReturnedNullStringAs=Null] static DOMString createObjectURL(MediaSource? source);
-    [CallWith=ExecutionContext,TreatReturnedNullStringAs=Null] static DOMString createObjectURL(WebKitMediaSource? source);
+    [CallWith=ExecutionContext, TreatReturnedNullStringAs=Null] static DOMString createObjectURL(MediaSource? source);
+    [CallWith=ExecutionContext, TreatReturnedNullStringAs=Null] static DOMString createObjectURL(WebKitMediaSource? source);
 };

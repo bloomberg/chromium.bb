@@ -30,7 +30,7 @@
 
 [
     ImplementedAs=ImageBitmapFactories,
-    RuntimeEnabled=ExperimentalCanvasFeatures
+    RuntimeEnabled=ExperimentalCanvasFeatures,
 ] partial interface Window {
     [RaisesException] Promise createImageBitmap(HTMLImageElement image);
     [RaisesException] Promise createImageBitmap(HTMLImageElement image, long sx, long sy, long sw, long sh);
