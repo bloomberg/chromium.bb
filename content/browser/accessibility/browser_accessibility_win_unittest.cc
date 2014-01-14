@@ -681,7 +681,6 @@ TEST_F(BrowserAccessibilityTest, TestCreateEmptyDocument) {
   ASSERT_EQ(0, CountedBrowserAccessibility::num_instances());
 }
 
-#if defined(USE_AURA)
 TEST(BrowserAccessibilityManagerWinTest, TestAccessibleHWND) {
   HWND desktop_hwnd = GetDesktopWindow();
   base::win::ScopedComPtr<IAccessible> desktop_hwnd_iaccessible;
@@ -729,6 +728,5 @@ TEST(BrowserAccessibilityManagerWinTest, TestAccessibleHWND) {
   // crash on destruction (to be caught by SyzyASAN or other tools).
   manager.reset(NULL);
 }
-#endif
 
 }  // namespace content

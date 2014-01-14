@@ -370,7 +370,7 @@ WebContentsImpl::WebContentsImpl(
       controller_(this, browser_context),
       render_view_host_delegate_view_(NULL),
       opener_(opener),
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
       accessible_parent_(NULL),
 #endif
       frame_tree_(new NavigatorImpl(&controller_, this),
@@ -429,17 +429,6 @@ WebContentsImpl::~WebContentsImpl() {
       NOTIFICATION_WEB_CONTENTS_DESTROYED,
       Source<WebContents>(this),
       NotificationService::NoDetails());
-
-  // TODO(brettw) this should be moved to the view.
-#if defined(OS_WIN) && !defined(USE_AURA)
-  // If we still have a window handle, destroy it. GetNativeView can return
-  // NULL if this contents was part of a window that closed.
-  if (view_->GetNativeView()) {
-    RenderViewHost* host = GetRenderViewHost();
-    if (host && host->GetView())
-      RenderWidgetHostViewPort::FromRWHV(host->GetView())->WillWmDestroy();
-  }
-#endif
 
   RenderViewHost* pending_rvh = GetRenderManager()->pending_render_view_host();
   if (pending_rvh) {
@@ -776,7 +765,7 @@ const std::string& WebContentsImpl::GetUserAgentOverride() const {
   return renderer_preferences_.user_agent_override;
 }
 
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
 void WebContentsImpl::SetParentNativeViewAccessible(
 gfx::NativeViewAccessible accessible_parent) {
   accessible_parent_ = accessible_parent;
@@ -1248,7 +1237,7 @@ bool WebContentsImpl::PreHandleWheelEvent(
   return false;
 }
 
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
 gfx::NativeViewAccessible WebContentsImpl::GetParentNativeViewAccessible() {
   return accessible_parent_;
 }

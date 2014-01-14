@@ -166,7 +166,6 @@ class PanelView : public NativePanel,
   void UpdateWindowIcon();
   void SetBoundsInternal(const gfx::Rect& bounds, bool animate);
   bool EndDragging(bool cancelled);
-  void OnViewWasResized();
 
   // Sets the bounds of the underlying window to |new_bounds|. Note that this
   // might update the window style to work around the minimum overlapped

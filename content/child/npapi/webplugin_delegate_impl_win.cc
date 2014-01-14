@@ -88,10 +88,8 @@ base::LazyInstance<base::win::IATPatchFunction> g_iat_patch_reg_enum_key_ex_w =
 base::LazyInstance<base::win::IATPatchFunction> g_iat_patch_get_proc_address =
     LAZY_INSTANCE_INITIALIZER;
 
-#if defined(USE_AURA)
 base::LazyInstance<base::win::IATPatchFunction> g_iat_patch_window_from_point =
     LAZY_INSTANCE_INITIALIZER;
-#endif
 
 // http://crbug.com/16114
 // Enforces providing a valid device context in NPWindow, so that NPP_SetWindow
@@ -266,9 +264,7 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
     quirks_ |= PLUGIN_QUIRK_ALWAYS_NOTIFY_SUCCESS;
     quirks_ |= PLUGIN_QUIRK_HANDLE_MOUSE_CAPTURE;
     quirks_ |= PLUGIN_QUIRK_EMULATE_IME;
-#if defined(USE_AURA)
     quirks_ |= PLUGIN_QUIRK_FAKE_WINDOW_FROM_POINT;
-#endif
   } else if (filename == kAcrobatReaderPlugin) {
     // Check for the version number above or equal 9.
     int major_version = GetPluginMajorVersion(plugin_info);
@@ -422,14 +418,13 @@ bool WebPluginDelegateImpl::PlatformInitialize() {
         GetProcAddressPatch);
   }
 
-#if defined(USE_AURA)
   if (windowless_ && !g_iat_patch_window_from_point.Pointer()->is_patched() &&
       (quirks_ & PLUGIN_QUIRK_FAKE_WINDOW_FROM_POINT)) {
     g_iat_patch_window_from_point.Pointer()->Patch(
         GetPluginPath().value().c_str(), "user32.dll", "WindowFromPoint",
         WebPluginDelegateImpl::WindowFromPointPatch);
   }
-#endif
+
   return true;
 }
 
@@ -450,10 +445,8 @@ void WebPluginDelegateImpl::PlatformDestroyInstance() {
   if (g_iat_patch_reg_enum_key_ex_w.Pointer()->is_patched())
     g_iat_patch_reg_enum_key_ex_w.Pointer()->Unpatch();
 
-#if defined(USE_AURA)
   if (g_iat_patch_window_from_point.Pointer()->is_patched())
     g_iat_patch_window_from_point.Pointer()->Unpatch();
-#endif
 
   if (mouse_hook_) {
     UnhookWindowsHookEx(mouse_hook_);
@@ -1494,7 +1487,6 @@ FARPROC WINAPI WebPluginDelegateImpl::GetProcAddressPatch(HMODULE module,
   return ::GetProcAddress(module, name);
 }
 
-#if defined(USE_AURA)
 HWND WINAPI WebPluginDelegateImpl::WindowFromPointPatch(POINT point) {
   HWND window = WindowFromPoint(point);
   if (::ScreenToClient(window, &point)) {
@@ -1505,7 +1497,6 @@ HWND WINAPI WebPluginDelegateImpl::WindowFromPointPatch(POINT point) {
   }
   return window;
 }
-#endif
 
 void WebPluginDelegateImpl::HandleCaptureForMessage(HWND window,
                                                     UINT message) {

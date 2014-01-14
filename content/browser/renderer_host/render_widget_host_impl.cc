@@ -2133,7 +2133,7 @@ void RenderWidgetHostImpl::FatalAccessibilityTreeError() {
   Send(new AccessibilityMsg_FatalError(GetRoutingID()));
 }
 
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
 void RenderWidgetHostImpl::SetParentNativeViewAccessible(
     gfx::NativeViewAccessible accessible_parent) {
   if (view_)

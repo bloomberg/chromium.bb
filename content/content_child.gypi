@@ -194,7 +194,7 @@
         'child/npapi/webplugin_delegate_impl_mac.mm',
       ],
     }],
-    ['use_aura==1 and OS=="win"', {
+    ['OS=="win"', {
       'sources!': [
         'child/npapi/webplugin_delegate_impl_aura.cc',
       ],

@@ -52,9 +52,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   virtual gfx::NativeViewAccessible GetNativeViewAccessible() OVERRIDE;
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
   virtual gfx::Size GetPhysicalBackingSize() const OVERRIDE;
-#if defined(OS_WIN) && !defined(USE_AURA)
-  virtual void SetClickthroughRegion(SkRegion* region) OVERRIDE;
-#endif
 
   // RenderWidgetHostViewPort implementation.
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
@@ -163,11 +160,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   virtual gfx::NativeView BuildInputMethodsGtkMenu() OVERRIDE;
 #endif  // defined(TOOLKIT_GTK)
 
-#if defined(OS_WIN) && !defined(USE_AURA)
-  virtual void WillWmDestroy() OVERRIDE;
-#endif  // defined(OS_WIN) && !defined(USE_AURA)
-
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
   virtual void SetParentNativeViewAccessible(
       gfx::NativeViewAccessible accessible_parent) OVERRIDE;
   virtual gfx::NativeViewId GetParentForWindowlessPlugin() const OVERRIDE;

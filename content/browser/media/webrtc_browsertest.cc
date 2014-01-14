@@ -523,8 +523,8 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MAYBE_CanForwardRemoteStream720p) {
 // MSID and bundle attribute from the initial offer to verify that
 // video is playing for the call even if the initiating client don't support
 // MSID. http://tools.ietf.org/html/draft-alvestrand-rtcweb-msid-02
-#if defined(OS_WIN) && defined(USE_AURA)
-// Disabled for win7_aura, see http://crbug.com/235089.
+#if defined(OS_WIN)
+// Disabled for win, see http://crbug.com/235089.
 #define MAYBE_CanSetupAudioAndVideoCallWithoutMsidAndBundle\
         DISABLED_CanSetupAudioAndVideoCallWithoutMsidAndBundle
 #elif defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
@@ -560,8 +560,8 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, NegotiateOfferWithBLine) {
 
 // This test will make a complete PeerConnection-based call using legacy SDP
 // settings: GIce, external SDES, and no BUNDLE.
-#if defined(OS_WIN) && defined(USE_AURA)
-// Disabled for win7_aura, see http://crbug.com/235089.
+#if defined(OS_WIN)
+// Disabled for win7, see http://crbug.com/235089.
 #define MAYBE_CanSetupLegacyCall DISABLED_CanSetupLegacyCall
 #elif defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
 // Timing out on ARM linux, see http://crbug.com/240373

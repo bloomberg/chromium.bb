@@ -150,11 +150,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   virtual gfx::NativeView BuildInputMethodsGtkMenu() OVERRIDE;
 #endif  // defined(TOOLKIT_GTK)
 
-#if defined(OS_WIN) && !defined(USE_AURA)
-  virtual void WillWmDestroy() OVERRIDE;
-#endif  // defined(OS_WIN) && !defined(USE_AURA)
-
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
   virtual void SetParentNativeViewAccessible(
       gfx::NativeViewAccessible accessible_parent) OVERRIDE;
   virtual gfx::NativeViewId GetParentForWindowlessPlugin() const OVERRIDE;

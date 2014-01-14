@@ -1151,7 +1151,7 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
 #if defined(USE_OZONE)
     switches::kOzonePlatform,
 #endif
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
     switches::kHighDPISupport,
 #endif
   };

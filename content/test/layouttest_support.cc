@@ -18,10 +18,6 @@
 #include "third_party/WebKit/public/platform/WebDeviceOrientationData.h"
 #include "third_party/WebKit/public/platform/WebGamepads.h"
 
-#if defined(OS_WIN) && !defined(USE_AURA)
-#include "content/browser/web_contents/web_contents_drag_win.h"
-#endif
-
 #if defined(OS_MACOSX)
 #include "content/browser/renderer_host/popup_menu_helper_mac.h"
 #endif
@@ -103,8 +99,6 @@ void EnableBrowserLayoutTestMode() {
 #if defined(OS_MACOSX)
   ImageTransportSurface::SetAllowOSMesaForTesting(true);
   PopupMenuHelper::DontShowPopupMenuForTesting();
-#elif defined(OS_WIN) && !defined(USE_AURA)
-  WebContentsDragWin::DisableDragDropForTesting();
 #endif
   RenderWidgetHostImpl::DisableResizeAckCheckForTesting();
 }

@@ -300,11 +300,6 @@ gfx::NativeView RenderWidgetHostViewChildFrame::BuildInputMethodsGtkMenu() {
 }
 #endif  // defined(TOOLKIT_GTK)
 
-#if defined(OS_WIN) && !defined(USE_AURA)
-void RenderWidgetHostViewChildFrame::WillWmDestroy() {
-}
-#endif  // defined(OS_WIN) && !defined(USE_AURA)
-
 BackingStore* RenderWidgetHostViewChildFrame::AllocBackingStore(
     const gfx::Size& size) {
   NOTREACHED();
@@ -342,11 +337,6 @@ bool RenderWidgetHostViewChildFrame::HasAcceleratedSurface(
   return false;
 }
 
-#if defined(OS_WIN) && !defined(USE_AURA)
-void RenderWidgetHostViewChildFrame::SetClickthroughRegion(SkRegion* region) {
-}
-#endif // defined(OS_WIN) && !defined(USE_AURA)
-
 gfx::GLSurfaceHandle RenderWidgetHostViewChildFrame::GetCompositingSurface() {
   return gfx::GLSurfaceHandle(gfx::kNullPluginWindow, gfx::TEXTURE_TRANSPORT);
 }
@@ -359,7 +349,7 @@ void RenderWidgetHostViewChildFrame::SetScrollOffsetPinning(
     bool is_pinned_to_left, bool is_pinned_to_right) {
 }
 
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
 void RenderWidgetHostViewChildFrame::SetParentNativeViewAccessible(
     gfx::NativeViewAccessible accessible_parent) {
 }

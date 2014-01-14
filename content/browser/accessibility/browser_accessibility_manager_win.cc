@@ -149,17 +149,15 @@ void BrowserAccessibilityManagerWin::MaybeCallNotifyWinEvent(DWORD event,
   if (!parent_iaccessible())
     return;
 
-#if defined(USE_AURA)
-  // If this is an Aura build on Win 7 and complete accessibility is
-  // enabled, create a fake child HWND to use as the root of the
-  // accessibility tree. See comments above AccessibleHWND for details.
+  // If on Win 7 and complete accessibility is enabled, create a fake child HWND
+  // to use as the root of the accessibility tree. See comments above
+  // AccessibleHWND for details.
   if (BrowserAccessibilityStateImpl::GetInstance()->IsAccessibleBrowser() &&
       !accessible_hwnd_) {
     accessible_hwnd_ = new AccessibleHWND(parent_hwnd_, this);
     parent_hwnd_ = accessible_hwnd_->hwnd();
     parent_iaccessible_ = accessible_hwnd_->window_accessible();
   }
-#endif
 
   ::NotifyWinEvent(event, parent_hwnd(), OBJID_CLIENT, child_id);
 }

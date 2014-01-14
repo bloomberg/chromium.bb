@@ -179,9 +179,6 @@ bool TestRenderWidgetHostView::PostProcessEventForPluginIme(
   return false;
 }
 
-#elif defined(OS_WIN) && !defined(USE_AURA)
-void TestRenderWidgetHostView::WillWmDestroy() {
-}
 #endif
 
 gfx::Rect TestRenderWidgetHostView::GetBoundsInRootWindow() {
@@ -208,11 +205,6 @@ void TestRenderWidgetHostView::OnSwapCompositorFrame(
 gfx::GLSurfaceHandle TestRenderWidgetHostView::GetCompositingSurface() {
   return gfx::GLSurfaceHandle();
 }
-
-#if defined(OS_WIN) && !defined(USE_AURA)
-void TestRenderWidgetHostView::SetClickthroughRegion(SkRegion* region) {
-}
-#endif
 
 bool TestRenderWidgetHostView::LockMouse() {
   return false;

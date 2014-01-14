@@ -119,7 +119,7 @@ base::i18n::TextDirection WebTextDirectionToChromeTextDirection(
   }
 }
 
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
 
 const int kVirtualKeyboardDisplayWaitTimeoutMs = 100;
 const int kMaxVirtualKeyboardDisplayRetries = 5;
@@ -1778,7 +1778,7 @@ void RenderViewHostImpl::OnTakeFocus(bool reverse) {
 }
 
 void RenderViewHostImpl::OnFocusedNodeChanged(bool is_editable_node) {
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
   if (!is_editable_node && virtual_keyboard_requested_) {
     virtual_keyboard_requested_ = false;
     BrowserThread::PostDelayedTask(
@@ -2194,7 +2194,7 @@ void RenderViewHostImpl::OnDomOperationResponse(
 }
 
 void RenderViewHostImpl::OnFocusedNodeTouched(bool editable) {
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
   if (editable) {
     virtual_keyboard_requested_ = base::win::DisplayVirtualKeyboard();
   } else {

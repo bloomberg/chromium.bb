@@ -49,7 +49,7 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // Notifies that screen rects were sent to renderer process.
   virtual void DidSendScreenRects(RenderWidgetHostImpl* rwh) {}
 
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
   // Returns the widget's parent's NativeViewAccessible.
   virtual gfx::NativeViewAccessible GetParentNativeViewAccessible();
 #endif

@@ -507,7 +507,7 @@ void InterstitialPageImpl::HandleKeyboardEvent(
     render_widget_host_delegate_->HandleKeyboardEvent(event);
 }
 
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
 gfx::NativeViewAccessible
 InterstitialPageImpl::GetParentNativeViewAccessible() {
   return render_widget_host_delegate_->GetParentNativeViewAccessible();

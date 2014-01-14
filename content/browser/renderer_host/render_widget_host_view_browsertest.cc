@@ -229,11 +229,6 @@ class CompositingRenderWidgetHostViewBrowserTest
     } else {
       // We expect real pixel output for these tests.
       UseRealGLContexts();
-
-#if defined(OS_WIN) && !defined(USE_AURA)
-      // On legacy windows, these tests need real GL bindings to pass.
-      UseRealGLBindings();
-#endif
     }
 
     RenderWidgetHostViewBrowserTest::SetUp();
@@ -399,9 +394,8 @@ IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest,
 // always called, even when the RenderWidgetHost is deleting in the middle of
 // an async copy.
 //
-// Test is flaky on Win Aura. http://crbug.com/276783
-#if (defined(OS_WIN) && defined(USE_AURA)) || \
-    (defined(OS_CHROMEOS) && !defined(NDEBUG))
+// Test is flaky on Win. http://crbug.com/276783
+#if defined(OS_WIN) || (defined(OS_CHROMEOS) && !defined(NDEBUG))
 #define MAYBE_CopyFromCompositingSurface_CallbackDespiteDelete \
   DISABLED_CopyFromCompositingSurface_CallbackDespiteDelete
 #else

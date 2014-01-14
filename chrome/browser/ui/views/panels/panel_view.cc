@@ -285,8 +285,6 @@ PanelView::PanelView(Panel* panel, const gfx::Rect& bounds, bool always_on_top)
   web_view_ = new views::WebView(NULL);
   AddChildView(web_view_);
 
-  OnViewWasResized();
-
   // Register accelarators supported by panels.
   views::FocusManager* focus_manager = GetFocusManager();
   const std::map<ui::Accelerator, int>& accelerator_table =
@@ -897,7 +895,6 @@ void PanelView::Layout() {
   // |web_view_| might not be created yet when the window is first created.
   if (web_view_)
     web_view_->SetBounds(0, 0, width(), height());
-  OnViewWasResized();
 }
 
 gfx::Size PanelView::GetMinimumSize() {
@@ -1130,29 +1127,3 @@ void PanelView::UpdateWindowAttribute(int attribute_index,
   }
 }
 #endif
-
-void PanelView::OnViewWasResized() {
-#if defined(OS_WIN) && !defined(USE_AURA)
-  content::WebContents* web_contents = panel_->GetWebContents();
-  if (!web_view_ || !web_contents)
-    return;
-
-  // When the panel is frameless or has thin frame, the mouse resizing should
-  // also be triggered from the part of client area that is close to the window
-  // frame.
-  int width = web_view_->size().width();
-  int height = web_view_->size().height();
-  // Compute the thickness of the client area that needs to be counted towards
-  // mouse resizing.
-  int thickness_for_mouse_resizing =
-      kResizeInsideBoundsSize - GetFrameView()->BorderThickness();
-  DCHECK(thickness_for_mouse_resizing > 0);
-  SkRegion* region = new SkRegion;
-  region->op(0, 0, thickness_for_mouse_resizing, height, SkRegion::kUnion_Op);
-  region->op(width - thickness_for_mouse_resizing, 0, width, height,
-      SkRegion::kUnion_Op);
-  region->op(0, height - thickness_for_mouse_resizing, width, height,
-      SkRegion::kUnion_Op);
-  web_contents->GetRenderViewHost()->GetView()->SetClickthroughRegion(region);
-#endif
-}

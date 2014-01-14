@@ -153,8 +153,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
       const gfx::Rect& target_rect,
       const SkBitmap& zoomed_bitmap) OVERRIDE {}
   virtual void HasTouchEventHandlers(bool need_touch_events) OVERRIDE {}
-#elif defined(OS_WIN) && !defined(USE_AURA)
-  virtual void WillWmDestroy() OVERRIDE;
 #endif
   virtual void GetScreenInfo(blink::WebScreenInfo* results) OVERRIDE {}
   virtual gfx::Rect GetBoundsInRootWindow() OVERRIDE;
@@ -163,9 +161,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   virtual void SetScrollOffsetPinning(
       bool is_pinned_to_left, bool is_pinned_to_right) OVERRIDE { }
   virtual gfx::GLSurfaceHandle GetCompositingSurface() OVERRIDE;
-#if defined(OS_WIN) && !defined(USE_AURA)
-  virtual void SetClickthroughRegion(SkRegion* region) OVERRIDE;
-#endif
   virtual bool LockMouse() OVERRIDE;
   virtual void UnlockMouse() OVERRIDE;
 #if defined(OS_WIN) && defined(USE_AURA)

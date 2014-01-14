@@ -448,12 +448,7 @@ gfx::NativeView RenderWidgetHostViewGuest::BuildInputMethodsGtkMenu() {
 }
 #endif  // defined(TOOLKIT_GTK)
 
-#if defined(OS_WIN) && !defined(USE_AURA)
-void RenderWidgetHostViewGuest::WillWmDestroy() {
-}
-#endif
-
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
 void RenderWidgetHostViewGuest::SetParentNativeViewAccessible(
     gfx::NativeViewAccessible accessible_parent) {
 }

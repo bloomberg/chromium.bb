@@ -335,11 +335,7 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView,
   virtual void HasTouchEventHandlers(bool need_touch_events) = 0;
 #endif
 
-#if defined(OS_WIN) && !defined(USE_AURA)
-  virtual void WillWmDestroy() = 0;
-#endif
-
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
   virtual void SetParentNativeViewAccessible(
       gfx::NativeViewAccessible accessible_parent) = 0;
 

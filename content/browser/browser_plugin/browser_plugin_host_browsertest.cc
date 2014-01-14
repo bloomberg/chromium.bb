@@ -226,10 +226,6 @@ class BrowserPluginHostTest : public ContentBrowserTest {
     content::BrowserPluginGuestManager::set_factory_for_testing(
         TestBrowserPluginHostFactory::GetInstance());
 
-    // On legacy windows, the AcceptDragEvents test needs this to pass.
-#if defined(OS_WIN) && !defined(USE_AURA)
-    UseRealGLBindings();
-#endif
     // We need real contexts, otherwise the embedder doesn't composite, but the
     // guest does, and that isn't an expected configuration.
     UseRealGLContexts();
@@ -579,9 +575,9 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, ReloadEmbedder) {
   }
 }
 
-// Always failing in the win7_aura try bot. See http://crbug.com/181107.
+// Always failing in the win7 try bot. See http://crbug.com/181107.
 // Times out on the Mac. See http://crbug.com/297576.
-#if (defined(OS_WIN) && defined(USE_AURA)) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_AcceptDragEvents DISABLED_AcceptDragEvents
 #else
 #define MAYBE_AcceptDragEvents AcceptDragEvents

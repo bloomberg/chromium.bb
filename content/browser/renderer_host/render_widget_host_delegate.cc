@@ -17,7 +17,7 @@ bool RenderWidgetHostDelegate::PreHandleWheelEvent(
   return false;
 }
 
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
 gfx::NativeViewAccessible
 RenderWidgetHostDelegate::GetParentNativeViewAccessible() {
   return NULL;

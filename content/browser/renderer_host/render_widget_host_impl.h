@@ -424,7 +424,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // Kill the renderer because we got a fatal accessibility error.
   void FatalAccessibilityTreeError();
 
-#if defined(OS_WIN) && defined(USE_AURA)
+#if defined(OS_WIN)
   void SetParentNativeViewAccessible(
       gfx::NativeViewAccessible accessible_parent);
   gfx::NativeViewAccessible GetParentNativeViewAccessible() const;

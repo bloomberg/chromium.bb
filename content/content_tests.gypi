@@ -804,7 +804,7 @@
             '../testing/android/native_test.gyp:native_test_native_code',
           ],
         }],
-        ['use_aura!=1 and OS!="win" and OS!="android"', {
+        ['use_aura!=1 and OS!="android"', {
           'sources!': [
             'browser/renderer_host/input/tap_suppression_controller_unittest.cc',
           ],

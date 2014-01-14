@@ -623,59 +623,6 @@ void NativeAppWindowViews::RemoveObserver(
 // Private method. TODO(stevenjb): Move this below InitializePanelWindow()
 // to match declaration order.
 void NativeAppWindowViews::OnViewWasResized() {
-  // TODO(jeremya): this doesn't seem like a terribly elegant way to keep the
-  // window shape in sync.
-#if defined(OS_WIN) && !defined(USE_AURA)
-  DCHECK(window_);
-  DCHECK(web_view_);
-  gfx::Size sz = web_view_->size();
-  int height = sz.height(), width = sz.width();
-  if (ShouldUseChromeStyleFrame()) {
-    // Set the window shape of the RWHV.
-    const int kCornerRadius = 1;
-    gfx::Path path;
-    if (window_->IsMaximized() || window_->IsFullscreen()) {
-      // Don't round the corners when the window is maximized or fullscreen.
-      path.addRect(0, 0, width, height);
-    } else {
-      if (frameless_) {
-        path.moveTo(0, kCornerRadius);
-        path.lineTo(kCornerRadius, 0);
-        path.lineTo(width - kCornerRadius, 0);
-        path.lineTo(width, kCornerRadius);
-      } else {
-        // Don't round the top corners in chrome-style frame mode.
-        path.moveTo(0, 0);
-        path.lineTo(width, 0);
-      }
-      path.lineTo(width, height - kCornerRadius - 1);
-      path.lineTo(width - kCornerRadius - 1, height);
-      path.lineTo(kCornerRadius + 1, height);
-      path.lineTo(0, height - kCornerRadius - 1);
-      path.close();
-    }
-    SetWindowRgn(web_contents()->GetView()->GetNativeView(),
-                 path.CreateNativeRegion(), 1);
-  }
-
-  SkRegion* rgn = new SkRegion;
-  if (!window_->IsFullscreen()) {
-    if (draggable_region_)
-      rgn->op(*draggable_region_, SkRegion::kUnion_Op);
-    if (!window_->IsMaximized()) {
-      if (frameless_)
-        rgn->op(0, 0, width, kResizeInsideBoundsSize, SkRegion::kUnion_Op);
-      rgn->op(0, 0, kResizeInsideBoundsSize, height, SkRegion::kUnion_Op);
-      rgn->op(width - kResizeInsideBoundsSize, 0, width, height,
-          SkRegion::kUnion_Op);
-      rgn->op(0, height - kResizeInsideBoundsSize, width, height,
-          SkRegion::kUnion_Op);
-    }
-  }
-  if (web_contents()->GetRenderViewHost()->GetView())
-    web_contents()->GetRenderViewHost()->GetView()->SetClickthroughRegion(rgn);
-#endif
-
   FOR_EACH_OBSERVER(web_modal::ModalDialogHostObserver,
                     observer_list_,
                     OnPositionRequiresUpdate());
