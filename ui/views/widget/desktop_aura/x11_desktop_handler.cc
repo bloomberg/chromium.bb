@@ -94,6 +94,7 @@ void X11DesktopHandler::ActivateWindow(::Window window) {
                &xclient);
   } else {
     XRaiseWindow(xdisplay_, window);
+    XSetInputFocus(xdisplay_, window, RevertToParent, CurrentTime);
     OnActiveWindowChanged(window);
   }
 }
