@@ -648,8 +648,13 @@ int KernelProxy::unlink(const char* path) {
 }
 
 int KernelProxy::truncate(const char* path, off_t len) {
-  errno = ENOSYS;
-  return -1;
+  int fd = KernelProxy::open(path, O_WRONLY);
+  if (-1 == fd)
+    return -1;
+
+  int result = ftruncate(fd, len);
+  close(fd);
+  return result;
 }
 
 int KernelProxy::lstat(const char* path, struct stat* buf) {

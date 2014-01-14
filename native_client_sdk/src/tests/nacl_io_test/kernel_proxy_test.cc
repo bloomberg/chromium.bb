@@ -407,6 +407,45 @@ TEST_F(KernelProxyTest, MemMountIO) {
   EXPECT_STREQ("HELLOWORLD", text);
 }
 
+TEST_F(KernelProxyTest, MemMountFTruncate) {
+  char text[1024];
+  int fd1, fd2;
+
+  // Open a file write only, write some text, then test that using a
+  // separate file descriptor pointing to it that it is correctly
+  // truncated at a specified number of bytes (2).
+  fd1 = ki_open("/trunc", O_WRONLY | O_CREAT);
+  ASSERT_NE(-1, fd1);
+  fd2 = ki_open("/trunc", O_RDONLY);
+  ASSERT_NE(-1, fd2);
+  EXPECT_EQ(5, ki_write(fd1, "HELLO", 5));
+  EXPECT_EQ(0, ki_ftruncate(fd1, 2));
+  // Verify the remaining file (using fd2, opened pre-truncation) is
+  // only 2 bytes in length.
+  EXPECT_EQ(2, ki_read(fd2, text, sizeof(text)));
+  EXPECT_EQ(0, ki_close(fd1));
+  EXPECT_EQ(0, ki_close(fd2));
+}
+
+TEST_F(KernelProxyTest, MemMountTruncate) {
+  char text[1024];
+  int fd1;
+
+  // Open a file write only, write some text, then test that by
+  // referring to it by its path and truncating it we correctly truncate
+  // it at a specified number of bytes (2).
+  fd1 = ki_open("/trunc", O_WRONLY | O_CREAT);
+  ASSERT_NE(-1, fd1);
+  EXPECT_EQ(5, ki_write(fd1, "HELLO", 5));
+  EXPECT_EQ(0, ki_close(fd1));
+  EXPECT_EQ(0, ki_truncate("/trunc", 2));
+  // Verify the text is only 2 bytes long with new file descriptor.
+  fd1 = ki_open("/trunc", O_RDONLY);
+  ASSERT_NE(-1, fd1);
+  EXPECT_EQ(2, ki_read(fd1, text, sizeof(text)));
+  EXPECT_EQ(0, ki_close(fd1));
+}
+
 TEST_F(KernelProxyTest, MemMountLseek) {
   int fd = ki_open("/foo", O_CREAT | O_RDWR);
   ASSERT_GT(fd, -1);
