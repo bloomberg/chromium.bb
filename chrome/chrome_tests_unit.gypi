@@ -2296,6 +2296,9 @@
             'browser/ui/sync/one_click_signin_sync_starter_unittest.cc',
             'browser/ui/views/frame/opaque_browser_frame_view_layout_unittest.cc',
           ],
+          'sources': [
+            'browser/extensions/updater/local_extension_cache_unittest.cc',
+          ],
         }, { # else: chromeos == 0
           'sources/': [
             ['exclude', '^browser/chromeos/'],

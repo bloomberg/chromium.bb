@@ -99,7 +99,8 @@ class ExternalCacheTest : public testing::Test,
   }
 
   void CreateFlagFile(const base::FilePath& dir) {
-    CreateFile(dir.Append(ExternalCache::kCacheReadyFlagFileName));
+    CreateFile(dir.Append(
+        extensions::LocalExtensionCache::kCacheReadyFlagFileName));
   }
 
   void CreateExtensionFile(const base::FilePath& dir,

@@ -972,6 +972,8 @@
             'browser/extensions/api/terminal/terminal_extension_helper.h',
             'browser/extensions/api/terminal/terminal_private_api.cc',
             'browser/extensions/api/terminal/terminal_private_api.h',
+            'browser/extensions/updater/local_extension_cache.cc',
+            'browser/extensions/updater/local_extension_cache.h',
           ],
         }],
         ['use_ash==1', {

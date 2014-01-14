@@ -200,6 +200,7 @@ TEST_F(DeviceLocalAccountExternalPolicyLoaderTest, ForceInstallListEmpty) {
   EXPECT_CALL(visitor_, OnExternalProviderReady(provider_.get()))
       .Times(1);
   loader_->StartCache(base::MessageLoopProxy::current());
+  base::RunLoop().RunUntilIdle();
   VerifyAndResetVisitorCallExpectations();
 
   // Stop the cache. Verify that the loader announces an empty extension list.
