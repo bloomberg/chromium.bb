@@ -59,7 +59,6 @@ SET INSTALLER=mini_installer.exe
 )
 
 SET TOCOPY=%TOCOPY% *.dll.pdb chrome.exe.pdb setup.exe.pdb^
-           chrome_frame_helper.exe.pdb chrome_launcher.exe.pdb^
            delegate_execute.exe.pdb
 
 CALL :_copyfiles
