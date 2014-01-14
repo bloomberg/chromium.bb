@@ -1100,11 +1100,11 @@ void Element::classAttributeChanged(const AtomicString& newClassString)
 
     if (classStringHasClassName(newClassString)) {
         const bool shouldFoldCase = document().inQuirksMode();
-        const SpaceSplitString oldClasses = elementData()->classNames();
+        const SpaceSplitString oldClasses = ensureUniqueElementData()->classNames();
         elementData()->setClass(newClassString, shouldFoldCase);
         const SpaceSplitString& newClasses = elementData()->classNames();
         shouldInvalidateStyle = testShouldInvalidateStyle && checkSelectorForClassChange(oldClasses, newClasses, styleResolver->ensureRuleFeatureSet());
-    } else {
+    } else if (elementData()) {
         const SpaceSplitString& oldClasses = elementData()->classNames();
         shouldInvalidateStyle = testShouldInvalidateStyle && checkSelectorForClassChange(oldClasses, styleResolver->ensureRuleFeatureSet());
         elementData()->clearClass();
