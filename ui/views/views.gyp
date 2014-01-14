@@ -960,10 +960,15 @@
       'type': 'executable',
       'dependencies': [
         '../../base/base.gyp:base',
+        '../../base/base.gyp:base_i18n',
+        '../compositor/compositor.gyp:compositor',
+        '../compositor/compositor.gyp:compositor_test_support',
         '../gfx/gfx.gyp:gfx',
         '../resources/ui_resources.gyp:ui_test_pak',
         '../ui.gyp:ui',
         'views',
+        'views_examples_lib',
+        'views_test_support',
       ],
       'sources': [
         'examples/examples_main.cc',
