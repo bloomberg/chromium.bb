@@ -297,7 +297,7 @@ void VideoLayerImpl::DidDraw(ResourceProvider* resource_provider) {
   provider_client_impl_->ReleaseLock();
 }
 
-void VideoLayerImpl::DidLoseOutputSurface() {
+void VideoLayerImpl::ReleaseResources() {
   updater_.reset();
 }
 

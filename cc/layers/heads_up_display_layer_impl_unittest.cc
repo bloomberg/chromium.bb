@@ -43,7 +43,7 @@ TEST(HeadsUpDisplayLayerImplTest, ResourcelessSoftwareDrawAfterResourceLoss) {
       layer.get(), host_impl.resource_provider(), DRAW_MODE_HARDWARE);
 
   // Simulate a resource loss on transitioning to resourceless software mode.
-  layer->DidLoseOutputSurface();
+  layer->ReleaseResources();
 
   // Should skip resourceless software draw and not crash in UpdateHudTexture.
   CheckDrawLayer(layer.get(),

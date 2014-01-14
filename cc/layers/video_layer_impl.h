@@ -37,7 +37,7 @@ class CC_EXPORT VideoLayerImpl : public LayerImpl {
                            AppendQuadsData* append_quads_data) OVERRIDE;
   virtual void DidDraw(ResourceProvider* resource_provider) OVERRIDE;
   virtual void DidBecomeActive() OVERRIDE;
-  virtual void DidLoseOutputSurface() OVERRIDE;
+  virtual void ReleaseResources() OVERRIDE;
 
   void SetNeedsRedraw();
 

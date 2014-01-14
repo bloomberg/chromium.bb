@@ -23,8 +23,8 @@ bool FakeContentLayerImpl::HaveResourceForTileAt(int i, int j) {
   return HasResourceIdForTileAt(i, j);
 }
 
-void FakeContentLayerImpl::DidLoseOutputSurface() {
-  TiledLayerImpl::DidLoseOutputSurface();
+void FakeContentLayerImpl::ReleaseResources() {
+  TiledLayerImpl::ReleaseResources();
   ++lost_output_surface_count_;
 }
 

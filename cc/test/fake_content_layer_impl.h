@@ -28,7 +28,7 @@ class FakeContentLayerImpl : public TiledLayerImpl {
   }
   void reset_lost_output_surface_count() { lost_output_surface_count_ = 0; }
 
-  virtual void DidLoseOutputSurface() OVERRIDE;
+  virtual void ReleaseResources() OVERRIDE;
 
   size_t append_quads_count() const {
     return append_quads_count_;

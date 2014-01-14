@@ -290,7 +290,7 @@ Region TiledLayerImpl::VisibleContentOpaqueRegion() const {
   return tiler_->OpaqueRegionInContentRect(visible_content_rect());
 }
 
-void TiledLayerImpl::DidLoseOutputSurface() {
+void TiledLayerImpl::ReleaseResources() {
   tiler_->reset();
 }
 

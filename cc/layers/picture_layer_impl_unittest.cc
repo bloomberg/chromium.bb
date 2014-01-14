@@ -164,8 +164,8 @@ class PictureLayerImplTest : public testing::Test {
   }
 
   void ResetTilingsAndRasterScales() {
-    pending_layer_->DidLoseOutputSurface();
-    active_layer_->DidLoseOutputSurface();
+    pending_layer_->ReleaseResources();
+    active_layer_->ReleaseResources();
   }
 
   void AssertAllTilesRequired(PictureLayerTiling* tiling) {
@@ -992,7 +992,7 @@ TEST_F(PictureLayerImplTest, DontAddLowResForSmallLayers) {
   EXPECT_BOTH_EQ(num_tilings(), 1u);
 }
 
-TEST_F(PictureLayerImplTest, DidLoseOutputSurface) {
+TEST_F(PictureLayerImplTest, ReleaseResources) {
   gfx::Size tile_size(400, 400);
   gfx::Size layer_bounds(1300, 1900);
 
@@ -1017,9 +1017,9 @@ TEST_F(PictureLayerImplTest, DidLoseOutputSurface) {
   EXPECT_EQ(2u, pending_layer_->tilings()->num_tilings());
 
   // All tilings should be removed when losing output surface.
-  active_layer_->DidLoseOutputSurface();
+  active_layer_->ReleaseResources();
   EXPECT_EQ(0u, active_layer_->tilings()->num_tilings());
-  pending_layer_->DidLoseOutputSurface();
+  pending_layer_->ReleaseResources();
   EXPECT_EQ(0u, pending_layer_->tilings()->num_tilings());
 
   // This should create new tilings.
@@ -1063,7 +1063,7 @@ TEST_F(PictureLayerImplTest, ClampTilesToToMaxTileSize) {
   EXPECT_EQ(gfx::Size(256, 256).ToString(),
             tile->content_rect().size().ToString());
 
-  pending_layer_->DidLoseOutputSurface();
+  pending_layer_->ReleaseResources();
 
   // Change the max texture size on the output surface context.
   scoped_ptr<TestWebGraphicsContext3D> context =
@@ -1115,7 +1115,7 @@ TEST_F(PictureLayerImplTest, ClampSingleTileToToMaxTileSize) {
   PictureLayerTiling* high_res_tiling = pending_layer_->tilings()->tiling_at(0);
   EXPECT_EQ(1u, high_res_tiling->AllTilesForTesting().size());
 
-  pending_layer_->DidLoseOutputSurface();
+  pending_layer_->ReleaseResources();
 
   // Change the max texture size on the output surface context.
   scoped_ptr<TestWebGraphicsContext3D> context =
@@ -1394,7 +1394,7 @@ TEST_F(PictureLayerImplTest, SyncTilingAfterReleaseResource) {
   // context loss, and later becomes opaque, causing active layer SyncTiling to
   // be called.
   const float tile_scale = 2.f;
-  active_layer_->DidLoseOutputSurface();
+  active_layer_->ReleaseResources();
   EXPECT_FALSE(active_layer_->tilings()->TilingAtScale(tile_scale));
   pending_layer_->AddTiling(2.f);
   EXPECT_TRUE(active_layer_->tilings()->TilingAtScale(tile_scale));

@@ -43,7 +43,7 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
   void UpdateHudTexture(DrawMode draw_mode,
                         ResourceProvider* resource_provider);
 
-  virtual void DidLoseOutputSurface() OVERRIDE;
+  virtual void ReleaseResources() OVERRIDE;
 
   virtual bool LayerIsAlwaysDamaged() const OVERRIDE;
 

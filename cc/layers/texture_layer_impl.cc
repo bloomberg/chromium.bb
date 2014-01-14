@@ -209,7 +209,7 @@ Region TextureLayerImpl::VisibleContentOpaqueRegion() const {
   return Region();
 }
 
-void TextureLayerImpl::DidLoseOutputSurface() {
+void TextureLayerImpl::ReleaseResources() {
   if (external_texture_resource_ && !uses_mailbox_) {
     ResourceProvider* resource_provider =
         layer_tree_impl()->resource_provider();

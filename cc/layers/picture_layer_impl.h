@@ -42,7 +42,7 @@ class CC_EXPORT PictureLayerImpl
   virtual void UpdateTilePriorities() OVERRIDE;
   virtual void DidBecomeActive() OVERRIDE;
   virtual void DidBeginTracing() OVERRIDE;
-  virtual void DidLoseOutputSurface() OVERRIDE;
+  virtual void ReleaseResources() OVERRIDE;
   virtual void CalculateContentsScale(float ideal_contents_scale,
                                       float device_scale_factor,
                                       float page_scale_factor,

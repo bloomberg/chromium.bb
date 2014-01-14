@@ -34,7 +34,7 @@ class CC_EXPORT TextureLayerImpl : public LayerImpl {
                            AppendQuadsData* append_quads_data) OVERRIDE;
   virtual void DidDraw(ResourceProvider* resource_provider) OVERRIDE;
   virtual Region VisibleContentOpaqueRegion() const OVERRIDE;
-  virtual void DidLoseOutputSurface() OVERRIDE;
+  virtual void ReleaseResources() OVERRIDE;
 
   unsigned texture_id() const { return texture_id_; }
   void set_texture_id(unsigned id) { texture_id_ = id; }

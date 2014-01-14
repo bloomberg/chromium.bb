@@ -191,7 +191,7 @@ scoped_ptr<LayerImpl> DelegatedRendererLayerImpl::CreateLayerImpl(
       tree_impl, id()).PassAs<LayerImpl>();
 }
 
-void DelegatedRendererLayerImpl::DidLoseOutputSurface() {
+void DelegatedRendererLayerImpl::ReleaseResources() {
   ClearRenderPasses();
   ClearChildId();
 }

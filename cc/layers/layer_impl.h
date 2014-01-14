@@ -474,10 +474,9 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
 
   virtual void DidBeginTracing();
 
-  // Indicates that the surface previously used to render this layer
-  // was lost and that a new one has been created. Won't be called
-  // until the new surface has been created successfully.
-  virtual void DidLoseOutputSurface();
+  // Release resources held by this layer. Called when the output surface
+  // that rendered this layer was lost or a rendering mode switch has occured.
+  virtual void ReleaseResources();
 
   ScrollbarAnimationController* scrollbar_animation_controller() const {
     return scrollbar_animation_controller_.get();

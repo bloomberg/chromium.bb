@@ -2607,8 +2607,7 @@ base::TimeDelta LayerTreeHostImpl::LowFrequencyAnimationInterval() const {
 
 void LayerTreeHostImpl::SendReleaseResourcesRecursive(LayerImpl* current) {
   DCHECK(current);
-  // TODO(boliu): Rename DidLoseOutputSurface to ReleaseResources.
-  current->DidLoseOutputSurface();
+  current->ReleaseResources();
   if (current->mask_layer())
     SendReleaseResourcesRecursive(current->mask_layer());
   if (current->replica_layer())

@@ -380,7 +380,7 @@ void PictureLayerImpl::DidBeginTracing() {
   pile_->DidBeginTracing();
 }
 
-void PictureLayerImpl::DidLoseOutputSurface() {
+void PictureLayerImpl::ReleaseResources() {
   if (tilings_)
     RemoveAllTilings();
 

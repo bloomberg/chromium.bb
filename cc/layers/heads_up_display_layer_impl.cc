@@ -180,7 +180,7 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
                                gfx::Vector2d());
 }
 
-void HeadsUpDisplayLayerImpl::DidLoseOutputSurface() { hud_resource_.reset(); }
+void HeadsUpDisplayLayerImpl::ReleaseResources() { hud_resource_.reset(); }
 
 bool HeadsUpDisplayLayerImpl::LayerIsAlwaysDamaged() const { return true; }
 

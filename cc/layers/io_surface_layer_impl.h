@@ -32,7 +32,7 @@ class CC_EXPORT IOSurfaceLayerImpl : public LayerImpl {
 
   virtual bool WillDraw(DrawMode draw_mode,
                         ResourceProvider* resource_provider) OVERRIDE;
-  virtual void DidLoseOutputSurface() OVERRIDE;
+  virtual void ReleaseResources() OVERRIDE;
 
  private:
   IOSurfaceLayerImpl(LayerTreeImpl* tree_impl, int id);
