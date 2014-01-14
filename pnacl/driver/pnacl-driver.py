@@ -64,6 +64,7 @@ EXTRA_ENV = {
   'NEED_DASH_E' : '0',    # Used for stdin inputs, which must have an explicit
                           # type set (using -x) unless -E is specified.
   'VERBOSE'     : '0',    # Verbose (-v)
+  'SHOW_VERSION': '0',    # Version (--version)
 
   'PTHREAD'     : '0',   # use pthreads?
   'INPUTS'      : '',    # Input files
@@ -230,6 +231,10 @@ def HandleDashX(arg):
     filetype.SetForcedFileType(None)
     return
   filetype.SetForcedFileType(filetype.GCCTypeToFileType(arg))
+
+def AddVersionFlag(*args):
+  env.set('SHOW_VERSION', '1')
+  AddDiagnosticFlag(*args)
 
 def AddBPrefix(prefix):
   """ Add a path to the list searched for host binaries and include dirs. """
@@ -405,7 +410,7 @@ GCCPatterns = [
   ( '(-print-.*)',            AddDiagnosticFlag),
   ( '(--print.*)',            AddDiagnosticFlag),
   ( '(-dumpspecs)',           AddDiagnosticFlag),
-  ( '(--version)',            AddDiagnosticFlag),
+  ( '(--version)',            AddVersionFlag),
   # These are preprocessor flags which should be passed to the frontend, but
   # should not prevent the usual -i flags (which DIAGNOSTIC mode does)
   ( '(-d[DIMNU])',            AddCCFlag),
@@ -453,7 +458,28 @@ def main(argv):
   # parse the output. In these cases we do not alter the incoming
   # commandline. It is also important to not emit spurious messages.
   if env.getbool('DIAGNOSTIC'):
-    Run(env.get('CC') + env.get('CC_FLAGS'))
+    if env.getbool('SHOW_VERSION'):
+      code, stdout, stderr = Run(env.get('CC') + env.get('CC_FLAGS'),
+                                 redirect_stdout=subprocess.PIPE)
+      out = stdout.split('\n')
+      nacl_version = 'unknown'
+      try:
+        rev_file = pathtools.join(env.getone('BASE'), 'REV')
+        svn_ver = open(rev_file).readlines()[0]
+        m = re.search(r'\[SVN\].*/native_client:\s*(\d+)', svn_ver)
+        if m:
+          nacl_version = m.group(1)
+        # fail-fast: if the REV file exists but regex search failed,
+        # we need to fix the regex to get nacl-version.
+        if not m and env.getone('BUILD_OS') != 'windows':
+          Log.Fatal('Failed to parse REV file to get nacl-version.')
+      except IOError:
+        pass
+      out[0] += ' nacl-version=%s' % nacl_version
+      stdout = '\n'.join(out)
+      print stdout,
+    else:
+      Run(env.get('CC') + env.get('CC_FLAGS'))
     return 0
 
   unmatched = env.get('UNMATCHED')
