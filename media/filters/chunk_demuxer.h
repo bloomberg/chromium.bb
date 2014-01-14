@@ -124,6 +124,17 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // middle of parsing a media segment.
   bool SetTimestampOffset(const std::string& id, base::TimeDelta offset);
 
+  // Set the append mode to be applied to subsequent buffers appended to the
+  // source buffer associated with |id|. If |sequence_mode| is true, caller
+  // is requesting "sequence" mode. Otherwise, caller is requesting "segments"
+  // mode. Returns true if the mode update was allowed. Returns false if
+  // the mode cannot be updated because we're in the middle of parsing a media
+  // segment.
+  // In "sequence" mode, appended media will be treated as adjacent in time.
+  // In "segments" mode, timestamps in appended media determine coded frame
+  // placement.
+  bool SetSequenceMode(const std::string& id, bool sequence_mode);
+
   // Called to signal changes in the "end of stream"
   // state. UnmarkEndOfStream() must not be called if a matching
   // MarkEndOfStream() has not come before it.

@@ -2631,7 +2631,7 @@ TEST_F(ChunkDemuxerTest, TimestampOffsetSeparateStreams) {
   GenerateAudioStreamExpectedReads(27300, 4);
 }
 
-TEST_F(ChunkDemuxerTest, TimestampOffsetMidParse) {
+TEST_F(ChunkDemuxerTest, TimestampOffsetMidMediaSegment) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
 
   scoped_ptr<Cluster> cluster = GenerateCluster(0, 2);
@@ -2647,6 +2647,24 @@ TEST_F(ChunkDemuxerTest, TimestampOffsetMidParse) {
   // in the middle of a cluster
   ASSERT_TRUE(demuxer_->SetTimestampOffset(
       kSourceId, base::TimeDelta::FromSeconds(25)));
+}
+
+TEST_F(ChunkDemuxerTest, SetSequenceModeMidMediaSegment) {
+  ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
+
+  scoped_ptr<Cluster> cluster = GenerateCluster(0, 2);
+  // Append only part of the cluster data.
+  AppendData(cluster->data(), cluster->size() - 13);
+
+  // Setting append mode should fail because we're in the middle of a cluster.
+  ASSERT_FALSE(demuxer_->SetSequenceMode(kSourceId, true));
+  ASSERT_FALSE(demuxer_->SetSequenceMode(kSourceId, false));
+
+  demuxer_->Abort(kSourceId);
+  // After Abort(), setting append mode should succeed since we're no longer
+  // in the middle of a cluster.
+  ASSERT_TRUE(demuxer_->SetSequenceMode(kSourceId, true));
+  ASSERT_TRUE(demuxer_->SetSequenceMode(kSourceId, false));
 }
 
 TEST_F(ChunkDemuxerTest, DurationChange) {

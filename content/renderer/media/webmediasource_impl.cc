@@ -73,8 +73,6 @@ void WebMediaSourceImpl::markEndOfStream(
     case WebMediaSource::EndOfStreamStatusDecodeError:
       pipeline_status = media::PIPELINE_ERROR_DECODE;
       break;
-    default:
-      NOTIMPLEMENTED();
   }
 
   demuxer_->MarkEndOfStream(pipeline_status);

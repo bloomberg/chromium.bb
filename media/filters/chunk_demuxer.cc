@@ -123,6 +123,11 @@ class SourceState {
   // updated at this time.
   bool SetTimestampOffset(TimeDelta timestamp_offset);
 
+  // Sets |sequence_mode_| to |sequence_mode| if possible.
+  // Returns true if the mode update was allowed. Returns false if the mode
+  // could not be updated at this time.
+  bool SetSequenceMode(bool sequence_mode);
+
   TimeDelta timestamp_offset() const { return timestamp_offset_; }
 
   void set_append_window_start(TimeDelta start) {
@@ -217,6 +222,13 @@ class SourceState {
   // The offset to apply to media segment timestamps.
   TimeDelta timestamp_offset_;
 
+  // Tracks the mode by which appended media is processed. If true, then
+  // appended media is processed using "sequence" mode. Otherwise, appended
+  // media is processed using "segments" mode.
+  // TODO(wolenetz): Enable "sequence" mode logic. See http://crbug.com/249422
+  // and http://crbug.com/333437.
+  bool sequence_mode_;
+
   TimeDelta append_window_start_;
   TimeDelta append_window_end_;
 
@@ -228,8 +240,9 @@ class SourceState {
   // appended data.
   bool new_media_segment_;
 
-  // Keeps track of whether |timestamp_offset_| can be modified.
-  bool can_update_offset_;
+  // Keeps track of whether |timestamp_offset_| or |sequence_mode_| can be
+  // updated. These cannot be updated if a media segment is being parsed.
+  bool parsing_media_segment_;
 
   // The object used to parse appended data.
   scoped_ptr<StreamParser> stream_parser_;
@@ -356,9 +369,10 @@ SourceState::SourceState(scoped_ptr<StreamParser> stream_parser,
                          const IncreaseDurationCB& increase_duration_cb)
     : create_demuxer_stream_cb_(create_demuxer_stream_cb),
       increase_duration_cb_(increase_duration_cb),
+      sequence_mode_(false),
       append_window_end_(kInfiniteDuration()),
       new_media_segment_(false),
-      can_update_offset_(true),
+      parsing_media_segment_(false),
       stream_parser_(stream_parser.release()),
       audio_(NULL),
       audio_needs_keyframe_(true),
@@ -406,12 +420,21 @@ void SourceState::Init(const StreamParser::InitCB& init_cb,
 }
 
 bool SourceState::SetTimestampOffset(TimeDelta timestamp_offset) {
-  if (!can_update_offset_)
+  if (parsing_media_segment_)
     return false;
 
   timestamp_offset_ = timestamp_offset;
   return true;
 }
+
+bool SourceState::SetSequenceMode(bool sequence_mode) {
+  if (parsing_media_segment_)
+    return false;
+
+  sequence_mode_ = sequence_mode;
+  return true;
+}
+
 
 bool SourceState::Append(const uint8* data, size_t length) {
   return stream_parser_->Parse(data, length);
@@ -421,7 +444,7 @@ void SourceState::Abort() {
   stream_parser_->Flush();
   audio_needs_keyframe_ = true;
   video_needs_keyframe_ = true;
-  can_update_offset_ = true;
+  parsing_media_segment_ = false;
 }
 
 void SourceState::Remove(TimeDelta start, TimeDelta end, TimeDelta duration) {
@@ -744,13 +767,13 @@ bool SourceState::OnNewConfigs(
 
 void SourceState::OnNewMediaSegment() {
   DVLOG(2) << "OnNewMediaSegment()";
-  can_update_offset_ = false;
+  parsing_media_segment_ = true;
   new_media_segment_ = true;
 }
 
 void SourceState::OnEndOfMediaSegment() {
   DVLOG(2) << "OnEndOfMediaSegment()";
-  can_update_offset_ = true;
+  parsing_media_segment_ = false;
   new_media_segment_ = false;
 }
 
@@ -1522,6 +1545,16 @@ bool ChunkDemuxer::SetTimestampOffset(const std::string& id, TimeDelta offset) {
   CHECK(IsValidId(id));
 
   return source_state_map_[id]->SetTimestampOffset(offset);
+}
+
+bool ChunkDemuxer::SetSequenceMode(const std::string& id,
+                                   bool sequence_mode) {
+  base::AutoLock auto_lock(lock_);
+  DVLOG(1) << "SetSequenceMode(" << id << ", " << sequence_mode << ")";
+  CHECK(IsValidId(id));
+  DCHECK_NE(state_, ENDED);
+
+  return source_state_map_[id]->SetSequenceMode(sequence_mode);
 }
 
 void ChunkDemuxer::MarkEndOfStream(PipelineStatus status) {

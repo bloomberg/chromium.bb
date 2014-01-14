@@ -23,6 +23,7 @@ class WebSourceBufferImpl : public blink::WebSourceBuffer {
   virtual ~WebSourceBufferImpl();
 
   // blink::WebSourceBuffer implementation.
+  virtual bool setMode(AppendMode mode);
   virtual blink::WebTimeRanges buffered();
   virtual void append(const unsigned char* data, unsigned length);
   virtual void abort();
