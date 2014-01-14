@@ -531,6 +531,16 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnPut(
       parent_, params.ipc_thread_id, params.ipc_callbacks_id));
 
   int64 host_transaction_id = parent_->HostTransactionId(params.transaction_id);
+  if (params.index_ids.size() != params.index_keys.size()) {
+    connection->database()->Abort(
+        host_transaction_id,
+        IndexedDBDatabaseError(
+            blink::WebIDBDatabaseExceptionUnknownError,
+            "Malformed IPC message: index_ids.size() != index_keys.size()"));
+    parent_->BadMessageReceived();
+    return;
+  }
+
   // TODO(alecflett): Avoid a copy here.
   std::string value_copy(params.value);
   connection->database()->Put(
@@ -565,6 +575,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnSetIndexKeys(
         IndexedDBDatabaseError(
             blink::WebIDBDatabaseExceptionUnknownError,
             "Malformed IPC message: index_ids.size() != index_keys.size()"));
+    parent_->BadMessageReceived();
     return;
   }
 
