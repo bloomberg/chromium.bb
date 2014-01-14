@@ -321,20 +321,10 @@ String HTMLFormControlElement::resultForDialogSubmit()
     return fastGetAttribute(valueAttr);
 }
 
-static void updateFromElementCallback(Node* node)
-{
-    ASSERT_ARG(node, node->isElementNode());
-    ASSERT_ARG(node, toElement(node)->isFormControlElement());
-    if (RenderObject* renderer = node->renderer())
-        renderer->updateFromElement();
-}
-
 void HTMLFormControlElement::didRecalcStyle(StyleRecalcChange)
 {
-    // updateFromElement() can cause the selection to change, and in turn
-    // trigger synchronous layout, so it must not be called during style recalc.
-    if (renderer())
-        PostAttachCallbacks::queueCallback(updateFromElementCallback, this);
+    if (RenderObject* renderer = this->renderer())
+        renderer->updateFromElement();
 }
 
 bool HTMLFormControlElement::supportsFocus() const
