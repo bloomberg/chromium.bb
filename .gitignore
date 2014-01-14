@@ -330,8 +330,6 @@ v8.log
 /tools/histograms
 /tools/json_schema_compiler/test/json_schema_compiler_tests.xml
 /tools/metrics/histograms/histograms.before.pretty-print.xml
-/tools/nodejs/*/*
-!/tools/nodejs/*/*.sha1
 /tools/page_cycler/acid3
 /tools/perf/data
 /tools/perf/results.html
