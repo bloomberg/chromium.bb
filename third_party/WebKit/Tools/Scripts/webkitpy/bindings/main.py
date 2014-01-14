@@ -51,7 +51,6 @@ SKIP_PYTHON = set([
     'TestObject.idl',
     'TestPartialInterface.idl',
     'TestSVG.idl',
-    'TestTypedefs.idl',
 ])
 
 real_input_directory = '.'  # Relative to Source/

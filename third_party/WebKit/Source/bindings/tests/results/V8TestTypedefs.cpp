@@ -34,11 +34,10 @@
 #include "V8TestTypedefs.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "V8SerializedScriptValue.h"
 #include "V8TestCallbackInterface.h"
+#include "V8TestInterfaceEmpty.h"
 #include "V8TestSubObj.h"
 #include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/SerializedScriptValue.h"
 #include "bindings/v8/V8DOMConfiguration.h"
 #include "bindings/v8/V8ObjectConstructor.h"
 #include "core/dom/ContextFeatures.h"
@@ -98,33 +97,6 @@ static void unsignedLongLongAttrAttributeSetterCallback(v8::Local<v8::String>, v
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     TestTypedefsV8Internal::unsignedLongLongAttrAttributeSetter(jsValue, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
-}
-
-static void immutableSerializedScriptValueAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
-    v8SetReturnValue(info, imp->immutableSerializedScriptValue() ? imp->immutableSerializedScriptValue()->deserialize() : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));
-}
-
-static void immutableSerializedScriptValueAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestTypedefsV8Internal::immutableSerializedScriptValueAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
-}
-
-static void immutableSerializedScriptValueAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
-{
-    TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
-    V8TRYCATCH_VOID(RefPtr<SerializedScriptValue>, cppValue, SerializedScriptValue::create(jsValue, info.GetIsolate()));
-    imp->setImmutableSerializedScriptValue(WTF::getPtr(cppValue));
-}
-
-static void immutableSerializedScriptValueAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestTypedefsV8Internal::immutableSerializedScriptValueAttributeSetter(jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -346,7 +318,7 @@ static void methodWithSequenceArgMethod(const v8::FunctionCallbackInfo<v8::Value
         return;
     }
     TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
-    V8TRYCATCH_VOID(Vector<RefPtr<SerializedScriptValue> >, sequenceArg, (toRefPtrNativeArray<SerializedScriptValue, V8SerializedScriptValue>(info[0], 1, info.GetIsolate())));
+    V8TRYCATCH_VOID(Vector<RefPtr<TestInterfaceEmpty> >, sequenceArg, (toRefPtrNativeArray<TestInterfaceEmpty, V8TestInterfaceEmpty>(info[0], 1, info.GetIsolate())));
     v8SetReturnValue(info, static_cast<double>(imp->methodWithSequenceArg(sequenceArg)));
 }
 
@@ -437,7 +409,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 static const V8DOMConfiguration::AttributeConfiguration V8TestTypedefsAttributes[] = {
     {"unsignedLongLongAttr", TestTypedefsV8Internal::unsignedLongLongAttrAttributeGetterCallback, TestTypedefsV8Internal::unsignedLongLongAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"immutableSerializedScriptValue", TestTypedefsV8Internal::immutableSerializedScriptValueAttributeGetterCallback, TestTypedefsV8Internal::immutableSerializedScriptValueAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"TestSubObj", TestTypedefsV8Internal::TestTypedefsConstructorGetter, TestTypedefsV8Internal::TestTypedefsReplaceableAttributeSetterCallback, 0, 0, const_cast<WrapperTypeInfo*>(&V8TestSubObj::wrapperTypeInfo), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), 0 /* on instance */},
     {"attrWithGetterException", TestTypedefsV8Internal::attrWithGetterExceptionAttributeGetterCallback, TestTypedefsV8Internal::attrWithGetterExceptionAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"attrWithSetterException", TestTypedefsV8Internal::attrWithSetterExceptionAttributeGetterCallback, TestTypedefsV8Internal::attrWithSetterExceptionAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"stringAttrWithGetterException", TestTypedefsV8Internal::stringAttrWithGetterExceptionAttributeGetterCallback, TestTypedefsV8Internal::stringAttrWithGetterExceptionAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
@@ -484,7 +456,6 @@ static void configureV8TestTypedefsTemplate(v8::Handle<v8::FunctionTemplate> fun
     functionTemplate->SetLength(1);
     v8::Local<v8::ObjectTemplate> ALLOW_UNUSED instanceTemplate = functionTemplate->InstanceTemplate();
     v8::Local<v8::ObjectTemplate> ALLOW_UNUSED prototypeTemplate = functionTemplate->PrototypeTemplate();
-    functionTemplate->SetNativeDataProperty(v8AtomicString(isolate, "TestSubObj"), TestTypedefsV8Internal::TestTypedefsConstructorGetter, 0, v8::External::New(isolate, const_cast<WrapperTypeInfo*>(&V8TestSubObj::wrapperTypeInfo)), static_cast<v8::PropertyAttribute>(v8::DontEnum), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
 
     // Custom toString template
     functionTemplate->Set(v8AtomicString(isolate, "toString"), V8PerIsolateData::current()->toStringTemplate());

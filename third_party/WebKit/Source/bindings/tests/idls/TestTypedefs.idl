@@ -33,7 +33,7 @@
 
 typedef float                      DOUBLE;
 typedef unsigned long long         ULONGLONG;
-typedef SerializedScriptValue      SCRIPT_VALUE;
+typedef TestInterfaceEmpty         TEST_INTERFACE_EMPTY;
 typedef long[]                     ARRAY_OF_LONGS;
 typedef DOMString                  STRING;
 typedef DOMString[]                ARRAY_OF_STRINGS;
@@ -47,16 +47,14 @@ typedef DOMException               E;
 ] interface TestTypedefs {
     attribute ULONGLONG unsignedLongLongAttr;
 
-    [Immutable] attribute SCRIPT_VALUE immutableSerializedScriptValue;
-
-    static readonly attribute T TestSubObj;
+    attribute T TestSubObj;
 
     [StrictTypeChecking] void func(optional ARRAY_OF_LONGS x);
 
     void setShadow(DOUBLE width, DOUBLE height, float blur, [StrictTypeChecking] optional STRING color, optional DOUBLE alpha);
     void voidMethodTestCallbackInterfaceArgument(TEST_CALLBACK_INTERFACE testCallbackInterface);
 
-    ULONGLONG methodWithSequenceArg(sequence<SCRIPT_VALUE> sequenceArg);
+    ULONGLONG methodWithSequenceArg(sequence<TEST_INTERFACE_EMPTY> sequenceArg);
 
     [RaisesException] ARRAY_OF_STRINGS stringArrayFunction(ARRAY_OF_STRINGS values);
     [RaisesException] STRING[] stringArrayFunction2(STRING[] values);

@@ -40,10 +40,10 @@ callback TestCallbackFunction = void (TestEnumType formal1, TestObject formal2);
     // Attributes
     readonly attribute long            readOnlyLongAttr;
     readonly attribute DOMString       readOnlyStringAttr;
-    readonly attribute TestObject         readOnlyTestObjectAttr;
+    readonly attribute TestObject      readOnlyTestObjectAttr;
     static readonly attribute long     staticReadOnlyLongAttr;
     static attribute DOMString         staticStringAttr;
-    static readonly attribute TestSubObjConstructor TestSubObj;
+    attribute TestSubObjConstructor    TestSubObj;
     attribute TestEnumType             enumAttr;
     readonly attribute TestEnumType    readOnlyEnumAttr;
     attribute byte                     byteAttr;
