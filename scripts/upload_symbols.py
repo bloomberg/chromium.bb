@@ -396,6 +396,7 @@ def main(argv):
                       help='answer yes to all prompts')
 
   opts = parser.parse_args(argv)
+  opts.Freeze()
 
   if opts.sym_paths:
     if opts.regenerate:

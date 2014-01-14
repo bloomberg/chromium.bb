@@ -317,6 +317,7 @@ def main(argv):
                            '(e.g. /build/$BOARD/usr/bin/foo)')
 
   opts = parser.parse_args(argv)
+  opts.Freeze()
 
   if opts.board is None:
     cros_build_lib.Die('--board is required')
