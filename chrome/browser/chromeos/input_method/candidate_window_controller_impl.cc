@@ -9,9 +9,8 @@
 
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
-#include "ash/wm/window_animations.h"
+#include "ash/wm/window_util.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/input_method/candidate_window_view.h"
 #include "chrome/browser/chromeos/input_method/infolist_window.h"
@@ -47,8 +46,10 @@ void CandidateWindowControllerImpl::InitCandidateWindowView() {
   if (candidate_window_view_)
     return;
 
+  aura::Window* active_window = ash::wm::GetActiveWindow();
   candidate_window_view_ = new CandidateWindowView(ash::Shell::GetContainer(
-      ash::Shell::GetTargetRootWindow(),
+      active_window ?
+      active_window->GetRootWindow() : ash::Shell::GetTargetRootWindow(),
       ash::internal::kShellWindowId_InputMethodContainer));
   candidate_window_view_->AddObserver(this);
   candidate_window_view_->SetCursorBounds(cursor_bounds_, composition_head_);
