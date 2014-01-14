@@ -385,8 +385,6 @@ public:
 
     WebGLRenderbuffer* ensureEmulatedStencilBuffer(GLenum target, WebGLRenderbuffer*);
 
-
-
     OwnPtr<blink::WebGraphicsContext3D> m_context;
     RefPtr<GraphicsContext3D> m_contextSupport;
     RefPtr<WebGLContextGroup> m_contextGroup;

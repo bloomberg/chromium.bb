@@ -46,26 +46,11 @@
 
 namespace WebCore {
 
-namespace {
-
-void getDrawingParameters(DrawingBuffer* drawingBuffer, blink::WebGraphicsContext3D* graphicsContext3D,
-                          Platform3DObject* frameBufferId, int* width, int* height)
-{
-    ASSERT(drawingBuffer);
-    *frameBufferId = drawingBuffer->framebuffer();
-    *width = drawingBuffer->size().width();
-    *height = drawingBuffer->size().height();
-}
-
-} // anonymous namespace
-
 GraphicsContext3D::GraphicsContext3D(PassOwnPtr<blink::WebGraphicsContext3D> webContext, bool preserveDrawingBuffer)
     : m_impl(webContext.get())
     , m_ownedWebContext(webContext)
     , m_initializedAvailableExtensions(false)
-    , m_layerComposited(false)
     , m_preserveDrawingBuffer(preserveDrawingBuffer)
-    , m_packAlignment(4)
     , m_grContext(0)
 {
 }
@@ -74,9 +59,7 @@ GraphicsContext3D::GraphicsContext3D(PassOwnPtr<blink::WebGraphicsContext3DProvi
     : m_provider(provider)
     , m_impl(m_provider->context3d())
     , m_initializedAvailableExtensions(false)
-    , m_layerComposited(false)
     , m_preserveDrawingBuffer(preserveDrawingBuffer)
-    , m_packAlignment(4)
     , m_grContext(m_provider->grContext())
 {
 }
@@ -84,17 +67,13 @@ GraphicsContext3D::GraphicsContext3D(PassOwnPtr<blink::WebGraphicsContext3DProvi
 GraphicsContext3D::GraphicsContext3D(blink::WebGraphicsContext3D* webContext)
     : m_impl(webContext)
     , m_initializedAvailableExtensions(false)
-    , m_layerComposited(false)
     , m_preserveDrawingBuffer(false)
-    , m_packAlignment(4)
     , m_grContext(0)
 {
 }
 
 GraphicsContext3D::~GraphicsContext3D()
 {
-    setContextLostCallback(nullptr);
-    setErrorMessageCallback(nullptr);
 }
 
 // Macros to assist in delegating from GraphicsContext3D to
@@ -166,52 +145,6 @@ void GraphicsContext3D::name(t1 a1, t2 a2, t3 a3, t4 a4, t5 a5, t6 a6, t7 a7, t8
     m_impl->name(a1, a2, a3, a4, a5, a6, a7, a8, a9); \
 }
 
-class GraphicsContext3DContextLostCallbackAdapter : public blink::WebGraphicsContext3D::WebGraphicsContextLostCallback {
-public:
-    GraphicsContext3DContextLostCallbackAdapter(PassOwnPtr<GraphicsContext3D::ContextLostCallback> callback)
-        : m_contextLostCallback(callback) { }
-    virtual ~GraphicsContext3DContextLostCallbackAdapter() { }
-
-    virtual void onContextLost()
-    {
-        if (m_contextLostCallback)
-            m_contextLostCallback->onContextLost();
-    }
-private:
-    OwnPtr<GraphicsContext3D::ContextLostCallback> m_contextLostCallback;
-};
-
-class GraphicsContext3DErrorMessageCallbackAdapter : public blink::WebGraphicsContext3D::WebGraphicsErrorMessageCallback {
-public:
-    GraphicsContext3DErrorMessageCallbackAdapter(PassOwnPtr<GraphicsContext3D::ErrorMessageCallback> callback)
-        : m_errorMessageCallback(callback) { }
-    virtual ~GraphicsContext3DErrorMessageCallbackAdapter() { }
-
-    virtual void onErrorMessage(const blink::WebString& message, blink::WGC3Dint id)
-    {
-        if (m_errorMessageCallback)
-            m_errorMessageCallback->onErrorMessage(message, id);
-    }
-private:
-    OwnPtr<GraphicsContext3D::ErrorMessageCallback> m_errorMessageCallback;
-};
-
-void GraphicsContext3D::setContextLostCallback(PassOwnPtr<GraphicsContext3D::ContextLostCallback> callback)
-{
-    if (m_ownedWebContext) {
-        m_contextLostCallbackAdapter = adoptPtr(new GraphicsContext3DContextLostCallbackAdapter(callback));
-        m_ownedWebContext->setContextLostCallback(m_contextLostCallbackAdapter.get());
-    }
-}
-
-void GraphicsContext3D::setErrorMessageCallback(PassOwnPtr<GraphicsContext3D::ErrorMessageCallback> callback)
-{
-    if (m_ownedWebContext) {
-        m_errorMessageCallbackAdapter = adoptPtr(new GraphicsContext3DErrorMessageCallbackAdapter(callback));
-        m_ownedWebContext->setErrorMessageCallback(m_errorMessageCallbackAdapter.get());
-    }
-}
-
 PassRefPtr<GraphicsContext3D> GraphicsContext3D::createContextSupport(blink::WebGraphicsContext3D* webContext)
 {
     RefPtr<GraphicsContext3D> context = adoptRef(new GraphicsContext3D(webContext));
@@ -258,7 +191,6 @@ GrContext* GraphicsContext3D::grContext()
 }
 
 DELEGATE_TO_WEBCONTEXT_R(makeContextCurrent, bool)
-DELEGATE_TO_WEBCONTEXT_R(lastFlushID, uint32_t)
 
 DELEGATE_TO_WEBCONTEXT_1(activeTexture, GLenum)
 DELEGATE_TO_WEBCONTEXT_2(attachShader, Platform3DObject, Platform3DObject)
@@ -332,13 +264,7 @@ GLint GraphicsContext3D::getUniformLocation(Platform3DObject program, const Stri
 }
 
 DELEGATE_TO_WEBCONTEXT_1(linkProgram, Platform3DObject)
-
-void GraphicsContext3D::pixelStorei(GLenum pname, GLint param)
-{
-    if (pname == GL_PACK_ALIGNMENT)
-        m_packAlignment = param;
-    m_impl->pixelStorei(pname, param);
-}
+DELEGATE_TO_WEBCONTEXT_2(pixelStorei, GLenum, GLint)
 
 DELEGATE_TO_WEBCONTEXT_7(readPixels, GLint, GLint, GLsizei, GLsizei, GLenum, GLenum, void*)
 
@@ -368,88 +294,6 @@ DELEGATE_TO_WEBCONTEXT_6(vertexAttribPointer, GLuint, GLint, GLenum, GLboolean, 
 
 DELEGATE_TO_WEBCONTEXT_4(viewport, GLint, GLint, GLsizei, GLsizei)
 
-void GraphicsContext3D::markContextChanged()
-{
-    m_layerComposited = false;
-}
-
-bool GraphicsContext3D::layerComposited() const
-{
-    return m_layerComposited;
-}
-
-void GraphicsContext3D::markLayerComposited()
-{
-    m_layerComposited = true;
-}
-
-void GraphicsContext3D::paintRenderingResultsToCanvas(ImageBuffer* imageBuffer, DrawingBuffer* drawingBuffer)
-{
-    Platform3DObject framebufferId;
-    int width, height;
-    getDrawingParameters(drawingBuffer, m_impl, &framebufferId, &width, &height);
-    paintFramebufferToCanvas(framebufferId, width, height, !getContextAttributes().premultipliedAlpha, imageBuffer);
-}
-
-PassRefPtr<Uint8ClampedArray> GraphicsContext3D::paintRenderingResultsToImageData(DrawingBuffer* drawingBuffer, int& width, int& height)
-{
-    if (getContextAttributes().premultipliedAlpha)
-        return 0;
-
-    Platform3DObject framebufferId;
-    getDrawingParameters(drawingBuffer, m_impl, &framebufferId, &width, &height);
-
-    Checked<int, RecordOverflow> dataSize = 4;
-    dataSize *= width;
-    dataSize *= height;
-    if (dataSize.hasOverflowed())
-        return 0;
-
-    RefPtr<Uint8ClampedArray> pixels = Uint8ClampedArray::createUninitialized(width * height * 4);
-
-    m_impl->bindFramebuffer(GL_FRAMEBUFFER, framebufferId);
-    readBackFramebuffer(pixels->data(), width, height, ReadbackRGBA, AlphaDoNothing);
-    flipVertically(pixels->data(), width, height);
-
-    return pixels.release();
-}
-
-void GraphicsContext3D::readBackFramebuffer(unsigned char* pixels, int width, int height, ReadbackOrder readbackOrder, AlphaOp op)
-{
-    if (m_packAlignment > 4)
-        m_impl->pixelStorei(GL_PACK_ALIGNMENT, 1);
-    m_impl->readPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-    if (m_packAlignment > 4)
-        m_impl->pixelStorei(GL_PACK_ALIGNMENT, m_packAlignment);
-
-    size_t bufferSize = 4 * width * height;
-
-    if (readbackOrder == ReadbackSkia) {
-#if (SK_R32_SHIFT == 16) && !SK_B32_SHIFT
-        // Swizzle red and blue channels to match SkBitmap's byte ordering.
-        // TODO(kbr): expose GL_BGRA as extension.
-        for (size_t i = 0; i < bufferSize; i += 4) {
-            std::swap(pixels[i], pixels[i + 2]);
-        }
-#endif
-    }
-
-    if (op == AlphaDoPremultiply) {
-        for (size_t i = 0; i < bufferSize; i += 4) {
-            pixels[i + 0] = std::min(255, pixels[i + 0] * pixels[i + 3] / 255);
-            pixels[i + 1] = std::min(255, pixels[i + 1] * pixels[i + 3] / 255);
-            pixels[i + 2] = std::min(255, pixels[i + 2] * pixels[i + 3] / 255);
-        }
-    } else if (op != AlphaDoNothing) {
-        ASSERT_NOT_REACHED();
-    }
-}
-
-void GraphicsContext3D::setPackAlignment(GLint param)
-{
-    m_packAlignment = param;
-}
-
 DELEGATE_TO_WEBCONTEXT_R(createBuffer, Platform3DObject)
 DELEGATE_TO_WEBCONTEXT_R(createFramebuffer, Platform3DObject)
 DELEGATE_TO_WEBCONTEXT_R(createProgram, Platform3DObject)
@@ -465,13 +309,6 @@ DELEGATE_TO_WEBCONTEXT_1(deleteShader, Platform3DObject)
 DELEGATE_TO_WEBCONTEXT_1(deleteTexture, Platform3DObject)
 
 DELEGATE_TO_WEBCONTEXT_1(synthesizeGLError, GLenum)
-
-bool GraphicsContext3D::texImage2DResourceSafe(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, GLint unpackAlignment)
-{
-    ASSERT(unpackAlignment == 1 || unpackAlignment == 2 || unpackAlignment == 4 || unpackAlignment == 8);
-    texImage2D(target, level, internalformat, width, height, border, format, type, 0);
-    return true;
-}
 
 bool GraphicsContext3D::computeFormatAndTypeParameters(GLenum format, GLenum type, unsigned* componentsPerPixel, unsigned* bytesPerComponent)
 {
@@ -678,48 +515,6 @@ unsigned GraphicsContext3D::getChannelBitsByFormat(GLenum format)
     }
 }
 
-void GraphicsContext3D::paintFramebufferToCanvas(int framebuffer, int width, int height, bool premultiplyAlpha, ImageBuffer* imageBuffer)
-{
-    unsigned char* pixels = 0;
-
-    const SkBitmap* canvasBitmap = imageBuffer->context()->bitmap();
-    const SkBitmap* readbackBitmap = 0;
-    ASSERT(canvasBitmap->config() == SkBitmap::kARGB_8888_Config);
-    if (canvasBitmap->width() == width && canvasBitmap->height() == height) {
-        // This is the fastest and most common case. We read back
-        // directly into the canvas's backing store.
-        readbackBitmap = canvasBitmap;
-        m_resizingBitmap.reset();
-    } else {
-        // We need to allocate a temporary bitmap for reading back the
-        // pixel data. We will then use Skia to rescale this bitmap to
-        // the size of the canvas's backing store.
-        if (m_resizingBitmap.width() != width || m_resizingBitmap.height() != height) {
-            m_resizingBitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
-            if (!m_resizingBitmap.allocPixels())
-                return;
-        }
-        readbackBitmap = &m_resizingBitmap;
-    }
-
-    // Read back the frame buffer.
-    SkAutoLockPixels bitmapLock(*readbackBitmap);
-    pixels = static_cast<unsigned char*>(readbackBitmap->getPixels());
-
-    m_impl->bindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-    readBackFramebuffer(pixels, width, height, ReadbackSkia, premultiplyAlpha ? AlphaDoPremultiply : AlphaDoNothing);
-    flipVertically(pixels, width, height);
-
-    readbackBitmap->notifyPixelsChanged();
-    if (m_resizingBitmap.readyToDraw()) {
-        // We need to draw the resizing bitmap into the canvas's backing store.
-        SkCanvas canvas(*canvasBitmap);
-        SkRect dst;
-        dst.set(SkIntToScalar(0), SkIntToScalar(0), SkIntToScalar(canvasBitmap->width()), SkIntToScalar(canvasBitmap->height()));
-        canvas.drawBitmapRect(m_resizingBitmap, 0, dst);
-    }
-}
-
 namespace {
 
 void splitStringHelper(const String& str, HashSet<String>& set)
@@ -802,21 +597,6 @@ bool GraphicsContext3D::canUseCopyTextureCHROMIUM(GLenum destFormat, GLenum dest
         && !level)
         return true;
     return false;
-}
-
-void GraphicsContext3D::flipVertically(uint8_t* framebuffer, int width, int height)
-{
-    m_scanline.resize(width * 4);
-    uint8* scanline = &m_scanline[0];
-    unsigned rowBytes = width * 4;
-    unsigned count = height / 2;
-    for (unsigned i = 0; i < count; i++) {
-        uint8* rowA = framebuffer + i * rowBytes;
-        uint8* rowB = framebuffer + (height - i - 1) * rowBytes;
-        memcpy(scanline, rowB, rowBytes);
-        memcpy(rowB, rowA, rowBytes);
-        memcpy(rowA, scanline, rowBytes);
-    }
 }
 
 } // namespace WebCore

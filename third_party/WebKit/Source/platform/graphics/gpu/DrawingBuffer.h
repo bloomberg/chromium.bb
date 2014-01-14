@@ -38,6 +38,8 @@
 
 #include "public/platform/WebExternalTextureLayerClient.h"
 #include "public/platform/WebExternalTextureMailbox.h"
+#include "public/platform/WebGraphicsContext3D.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -76,7 +78,7 @@ public:
         Discard
     };
 
-    static PassRefPtr<DrawingBuffer> create(GraphicsContext3D*, const IntSize&, PreserveDrawingBuffer, PassRefPtr<ContextEvictionManager>);
+    static PassRefPtr<DrawingBuffer> create(blink::WebGraphicsContext3D*, const IntSize&, PreserveDrawingBuffer, PassRefPtr<ContextEvictionManager>);
 
     ~DrawingBuffer();
 
@@ -120,6 +122,8 @@ public:
     Platform3DObject framebuffer() const;
 
     void markContentsChanged();
+    void markLayerComposited();
+    bool layerComposited() const;
 
     blink::WebLayer* platformLayer();
     void paintCompositedResultsToCanvas(ImageBuffer*);
@@ -132,8 +136,13 @@ public:
     bool copyToPlatformTexture(GraphicsContext3D&, Platform3DObject texture, GLenum internalFormat,
         GLenum destType, GLint level, bool premultiplyAlpha, bool flipY);
 
+    void setPackAlignment(GLint param);
+
+    void paintRenderingResultsToCanvas(ImageBuffer*);
+    PassRefPtr<Uint8ClampedArray> paintRenderingResultsToImageData(int&, int&);
+
 private:
-    DrawingBuffer(GraphicsContext3D*, const IntSize&, bool multisampleExtensionSupported,
+    DrawingBuffer(blink::WebGraphicsContext3D*, GraphicsContext3D*, const IntSize&, bool multisampleExtensionSupported,
                   bool packedDepthStencilExtensionSupported, PreserveDrawingBuffer, PassRefPtr<ContextEvictionManager>);
 
     void initialize(const IntSize&);
@@ -163,13 +172,33 @@ private:
     // Returns true if the buffer will only fit if the oldest WebGL context is forcibly lost
     IntSize adjustSizeWithContextEviction(const IntSize&, bool& evictContext);
 
+    void paintFramebufferToCanvas(int framebuffer, int width, int height, bool premultiplyAlpha, ImageBuffer*);
+
+    // This is the order of bytes to use when doing a readback.
+    enum ReadbackOrder {
+        ReadbackRGBA,
+        ReadbackSkia
+    };
+
+    // Helper function which does a readback from the currently-bound
+    // framebuffer into a buffer of a certain size with 4-byte pixels.
+    void readBackFramebuffer(unsigned char* pixels, int width, int height, ReadbackOrder, GraphicsContext3D::AlphaOp);
+
+    // Helper function to flip a bitmap vertically.
+    void flipVertically(uint8_t* data, int width, int height);
+
+    // Helper to texImage2D with pixel==0 case: pixels are initialized to 0.
+    // By default, alignment is 4, the OpenGL default setting.
+    void texImage2DResourceSafe(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, GLint alignment = 4);
+
     PreserveDrawingBuffer m_preserveDrawingBuffer;
     bool m_scissorEnabled;
     Platform3DObject m_texture2DBinding;
     Platform3DObject m_framebufferBinding;
     GLenum m_activeTextureUnit;
 
-    RefPtr<GraphicsContext3D> m_context;
+    blink::WebGraphicsContext3D* m_context;
+    RefPtr<GraphicsContext3D> m_contextSupport;
     IntSize m_size;
     bool m_multisampleExtensionSupported;
     bool m_packedDepthStencilExtensionSupported;
@@ -194,13 +223,15 @@ private:
 
     // True if commit() has been called since the last time markContentsChanged() had been called.
     bool m_contentsChangeCommitted;
+    bool m_layerComposited;
 
-    GraphicsContext3D::Attributes m_attributes;
+    blink::WebGraphicsContext3D::Attributes m_attributes;
     unsigned m_internalColorFormat;
     unsigned m_colorFormat;
     unsigned m_internalRenderbufferFormat;
     int m_maxTextureSize;
     int m_sampleCount;
+    int m_packAlignment;
 
     OwnPtr<blink::WebExternalTextureLayer> m_layer;
 
@@ -210,6 +241,16 @@ private:
     Vector<RefPtr<MailboxInfo> > m_recycledMailboxes;
 
     RefPtr<ContextEvictionManager> m_contextEvictionManager;
+
+    // If the width and height of the Canvas's backing store don't
+    // match those that we were given in the most recent call to
+    // reshape(), then we need an intermediate bitmap to read back the
+    // frame buffer into. This seems to happen when CSS styles are
+    // used to resize the Canvas.
+    SkBitmap m_resizingBitmap;
+
+    // Used to flip a bitmap vertically.
+    Vector<uint8_t> m_scanline;
 };
 
 } // namespace WebCore

@@ -111,15 +111,16 @@ protected:
     virtual void SetUp()
     {
         RefPtr<FakeContextEvictionManager> contextEvictionManager = adoptRef(new FakeContextEvictionManager());
-        RefPtr<GraphicsContext3D> context = GraphicsContext3D::createGraphicsContextFromWebContext(adoptPtr(new WebGraphicsContext3DForTests));
-        m_drawingBuffer = DrawingBuffer::create(context.get(), IntSize(initialWidth, initialHeight), DrawingBuffer::Preserve, contextEvictionManager.release());
+        m_context = adoptPtr(new WebGraphicsContext3DForTests);
+        m_drawingBuffer = DrawingBuffer::create(m_context.get(), IntSize(initialWidth, initialHeight), DrawingBuffer::Preserve, contextEvictionManager.release());
     }
 
     WebGraphicsContext3DForTests* webContext()
     {
-        return static_cast<WebGraphicsContext3DForTests*>(m_drawingBuffer->context());
+        return m_context.get();
     }
 
+    OwnPtr<WebGraphicsContext3DForTests> m_context;
     RefPtr<DrawingBuffer> m_drawingBuffer;
 };
 

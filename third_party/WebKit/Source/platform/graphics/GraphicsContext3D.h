@@ -33,7 +33,6 @@
 #include "platform/weborigin/KURL.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/ListHashSet.h"
@@ -101,21 +100,6 @@ public:
         KURL topDocumentURL;
     };
 
-    class ContextLostCallback {
-    public:
-        virtual void onContextLost() = 0;
-        virtual ~ContextLostCallback() {}
-    };
-
-    class ErrorMessageCallback {
-    public:
-        virtual void onErrorMessage(const String& message, GLint id) = 0;
-        virtual ~ErrorMessageCallback() { }
-    };
-
-    void setContextLostCallback(PassOwnPtr<ContextLostCallback>);
-    void setErrorMessageCallback(PassOwnPtr<ErrorMessageCallback>);
-
     // This is the preferred method for creating an instance of this class. When created this way the webContext
     // is not owned by the GraphicsContext3D
     static PassRefPtr<GraphicsContext3D> createContextSupport(blink::WebGraphicsContext3D* webContext);
@@ -136,13 +120,6 @@ public:
     blink::WebGraphicsContext3D* webContext() const { return m_impl; }
 
     bool makeContextCurrent();
-
-    uint32_t lastFlushID();
-
-    // Helper to texImage2D with pixel==0 case: pixels are initialized to 0.
-    // Return true if no GL error is synthesized.
-    // By default, alignment is 4, the OpenGL default setting.
-    bool texImage2DResourceSafe(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, GLint alignment = 4);
 
     //----------------------------------------------------------------------
     // Helpers for texture uploading and pixel readback.
@@ -270,13 +247,6 @@ public:
 
     void viewport(GLint x, GLint y, GLsizei width, GLsizei height);
 
-    void markContextChanged();
-    void markLayerComposited();
-    bool layerComposited() const;
-
-    void paintRenderingResultsToCanvas(ImageBuffer*, DrawingBuffer*);
-    PassRefPtr<Uint8ClampedArray> paintRenderingResultsToImageData(DrawingBuffer*, int&, int&);
-
     // Support for buffer creation and deletion
     Platform3DObject createBuffer();
     Platform3DObject createFramebuffer();
@@ -387,25 +357,12 @@ public:
 
     // End GraphicsContext3DImagePacking.cpp functions
 
-    // This is the order of bytes to use when doing a readback.
-    enum ReadbackOrder {
-        ReadbackRGBA,
-        ReadbackSkia
-    };
-
-    // Helper function which does a readback from the currently-bound
-    // framebuffer into a buffer of a certain size with 4-byte pixels.
-    void readBackFramebuffer(unsigned char* pixels, int width, int height, ReadbackOrder, AlphaOp);
-
-    void setPackAlignment(GLint param);
-
     // Extension support.
     bool supportsExtension(const String& name);
     bool ensureExtensionEnabled(const String& name);
     bool isExtensionEnabled(const String& name);
-    bool canUseCopyTextureCHROMIUM(GLenum destFormat, GLenum destType, GLint level);
 
-    void paintFramebufferToCanvas(int framebuffer, int width, int height, bool premultiplyAlpha, ImageBuffer*);
+    static bool canUseCopyTextureCHROMIUM(GLenum destFormat, GLenum destType, GLint level);
 
 private:
     GraphicsContext3D(PassOwnPtr<blink::WebGraphicsContext3D>, bool preserveDrawingBuffer);
@@ -420,36 +377,16 @@ private:
     // Implemented in GraphicsContext3DImagePacking.cpp
     static bool packPixels(const uint8_t* sourceData, DataFormat sourceDataFormat, unsigned width, unsigned height, unsigned sourceUnpackAlignment, unsigned destinationFormat, unsigned destinationType, AlphaOp, void* destinationData, bool flipY);
 
-    // Helper function to flip a bitmap vertically.
-    void flipVertically(uint8_t* data, int width, int height);
-
     void initializeExtensions();
-
-    bool preserveDrawingBuffer() const { return m_preserveDrawingBuffer; }
 
     OwnPtr<blink::WebGraphicsContext3DProvider> m_provider;
     blink::WebGraphicsContext3D* m_impl;
-    OwnPtr<GraphicsContext3DContextLostCallbackAdapter> m_contextLostCallbackAdapter;
-    OwnPtr<GraphicsContext3DErrorMessageCallbackAdapter> m_errorMessageCallbackAdapter;
     OwnPtr<blink::WebGraphicsContext3D> m_ownedWebContext;
     bool m_initializedAvailableExtensions;
     HashSet<String> m_enabledExtensions;
     HashSet<String> m_requestableExtensions;
-    bool m_layerComposited;
     bool m_preserveDrawingBuffer;
-    int m_packAlignment;
-
-    // If the width and height of the Canvas's backing store don't
-    // match those that we were given in the most recent call to
-    // reshape(), then we need an intermediate bitmap to read back the
-    // frame buffer into. This seems to happen when CSS styles are
-    // used to resize the Canvas.
-    SkBitmap m_resizingBitmap;
-
     GrContext* m_grContext;
-
-    // Used to flip a bitmap vertically.
-    Vector<uint8_t> m_scanline;
 };
 
 } // namespace WebCore

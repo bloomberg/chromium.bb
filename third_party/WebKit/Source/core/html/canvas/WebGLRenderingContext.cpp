@@ -126,7 +126,7 @@ size_t WebGLRenderingContext::oldestContextIndex()
     size_t candidateID = 0;
     for (size_t ii = 1; ii < activeContexts().size(); ++ii) {
         WebGLRenderingContext* context = activeContexts()[ii];
-        if (context->graphicsContext3D() && candidate->graphicsContext3D() && context->graphicsContext3D()->lastFlushID() < candidate->graphicsContext3D()->lastFlushID()) {
+        if (context->webGraphicsContext3D() && candidate->webGraphicsContext3D() && context->webGraphicsContext3D()->lastFlushID() < candidate->webGraphicsContext3D()->lastFlushID()) {
             candidate = context;
             candidateID = ii;
         }
@@ -529,7 +529,7 @@ PassOwnPtr<WebGLRenderingContext> WebGLRenderingContext::create(HTMLCanvasElemen
     }
 
     if (contextSupport->supportsExtension("GL_EXT_debug_marker"))
-        contextSupport->webContext()->pushGroupMarkerEXT("WebGLRenderingContext");
+        context->pushGroupMarkerEXT("WebGLRenderingContext");
 
     OwnPtr<WebGLRenderingContext> renderingContext = adoptPtr(new WebGLRenderingContext(canvas, context.release(), contextSupport, attributes, requestedAttributes, preserveDrawingBuffer));
     renderingContext->suspendIfNeeded();
@@ -577,7 +577,7 @@ WebGLRenderingContext::WebGLRenderingContext(HTMLCanvasElement* passedCanvas, Pa
 
     // Create the DrawingBuffer and initialize the platform layer.
     DrawingBuffer::PreserveDrawingBuffer preserve = preserveDrawingBuffer ? DrawingBuffer::Preserve : DrawingBuffer::Discard;
-    m_drawingBuffer = DrawingBuffer::create(m_contextSupport.get(), clampedCanvasSize(), preserve, contextEvictionManager.release());
+    m_drawingBuffer = DrawingBuffer::create(m_context.get(), clampedCanvasSize(), preserve, contextEvictionManager.release());
 
     if (!m_drawingBuffer->isZeroSized()) {
         m_drawingBuffer->bind();
@@ -803,7 +803,6 @@ void WebGLRenderingContext::markContextChanged()
     if (m_framebufferBinding || isContextLost())
         return;
 
-    m_contextSupport->markContextChanged();
     m_drawingBuffer->markContentsChanged();
 
     m_layerCleared = false;
@@ -825,7 +824,7 @@ bool WebGLRenderingContext::clearIfComposited(GLbitfield mask)
     if (isContextLost())
         return false;
 
-    if (!m_contextSupport->layerComposited() || m_layerCleared
+    if (!m_drawingBuffer->layerComposited() || m_layerCleared
         || m_preserveDrawingBuffer || (mask && m_framebufferBinding))
         return false;
 
@@ -890,7 +889,7 @@ void WebGLRenderingContext::restoreStateAfterClear()
 void WebGLRenderingContext::markLayerComposited()
 {
     if (!isContextLost())
-        m_contextSupport->markLayerComposited();
+        m_drawingBuffer->markLayerComposited();
 }
 
 void WebGLRenderingContext::paintRenderingResultsToCanvas()
@@ -905,7 +904,7 @@ void WebGLRenderingContext::paintRenderingResultsToCanvas()
 
     // Until the canvas is written to by the application, the clear that
     // happened after it was composited should be ignored by the compositor.
-    if (m_contextSupport->layerComposited() && !m_preserveDrawingBuffer) {
+    if (m_drawingBuffer->layerComposited() && !m_preserveDrawingBuffer) {
         m_drawingBuffer->paintCompositedResultsToCanvas(canvas()->buffer());
 
         canvas()->makePresentationCopy();
@@ -921,7 +920,7 @@ void WebGLRenderingContext::paintRenderingResultsToCanvas()
 
     m_drawingBuffer->commit();
     if (!(canvas()->buffer())->copyRenderingResultsFromDrawingBuffer(m_drawingBuffer.get()))
-        m_contextSupport->paintRenderingResultsToCanvas(canvas()->buffer(), m_drawingBuffer.get());
+        m_drawingBuffer->paintRenderingResultsToCanvas(canvas()->buffer());
 
     if (m_framebufferBinding)
         m_context->bindFramebuffer(GL_FRAMEBUFFER, objectOrZero(m_framebufferBinding.get()));
@@ -937,7 +936,7 @@ PassRefPtr<ImageData> WebGLRenderingContext::paintRenderingResultsToImageData()
     clearIfComposited();
     m_drawingBuffer->commit();
     int width, height;
-    RefPtr<Uint8ClampedArray> imageDataPixels = m_contextSupport->paintRenderingResultsToImageData(m_drawingBuffer.get(), width, height);
+    RefPtr<Uint8ClampedArray> imageDataPixels = m_drawingBuffer->paintRenderingResultsToImageData(width, height);
     if (!imageDataPixels)
         return 0;
 
@@ -3031,7 +3030,7 @@ void WebGLRenderingContext::pixelStorei(GLenum pname, GLint param)
         if (param == 1 || param == 2 || param == 4 || param == 8) {
             if (pname == GL_PACK_ALIGNMENT) {
                 m_packAlignment = param;
-                m_contextSupport->setPackAlignment(param);
+                m_drawingBuffer->setPackAlignment(param);
             } else { // GL_UNPACK_ALIGNMENT:
                 m_unpackAlignment = param;
             }
@@ -5434,7 +5433,7 @@ void WebGLRenderingContext::maybeRestoreContext(Timer<WebGLRenderingContext>*)
     // Construct a new drawing buffer with the new GraphicsContext3D.
     m_drawingBuffer->releaseResources();
     DrawingBuffer::PreserveDrawingBuffer preserve = m_preserveDrawingBuffer ? DrawingBuffer::Preserve : DrawingBuffer::Discard;
-    m_drawingBuffer = DrawingBuffer::create(contextSupport.get(), clampedCanvasSize(), preserve, contextEvictionManager.release());
+    m_drawingBuffer = DrawingBuffer::create(context.get(), clampedCanvasSize(), preserve, contextEvictionManager.release());
 
     if (m_drawingBuffer->isZeroSized())
         return;

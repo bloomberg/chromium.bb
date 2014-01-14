@@ -57,7 +57,7 @@ static const int s_maxScaleAttempts = 3;
 
 class ScopedTextureUnit0BindingRestorer {
 public:
-    ScopedTextureUnit0BindingRestorer(GraphicsContext3D* context, GLenum activeTextureUnit, Platform3DObject textureUnitZeroId)
+    ScopedTextureUnit0BindingRestorer(blink::WebGraphicsContext3D* context, GLenum activeTextureUnit, Platform3DObject textureUnitZeroId)
         : m_context(context)
         , m_oldActiveTextureUnit(activeTextureUnit)
         , m_oldTextureUnitZeroId(textureUnitZeroId)
@@ -71,41 +71,45 @@ public:
     }
 
 private:
-    GraphicsContext3D* m_context;
+    blink::WebGraphicsContext3D* m_context;
     GLenum m_oldActiveTextureUnit;
     Platform3DObject m_oldTextureUnitZeroId;
 };
 
-PassRefPtr<DrawingBuffer> DrawingBuffer::create(GraphicsContext3D* context, const IntSize& size, PreserveDrawingBuffer preserve, PassRefPtr<ContextEvictionManager> contextEvictionManager)
+PassRefPtr<DrawingBuffer> DrawingBuffer::create(blink::WebGraphicsContext3D* context, const IntSize& size, PreserveDrawingBuffer preserve, PassRefPtr<ContextEvictionManager> contextEvictionManager)
 {
-    bool multisampleSupported = context->supportsExtension("GL_ANGLE_framebuffer_blit")
-        && context->supportsExtension("GL_ANGLE_framebuffer_multisample")
-        && context->supportsExtension("GL_OES_rgb8_rgba8");
-    if (multisampleSupported) {
-        context->ensureExtensionEnabled("GL_ANGLE_framebuffer_blit");
-        context->ensureExtensionEnabled("GL_ANGLE_framebuffer_multisample");
-        context->ensureExtensionEnabled("GL_OES_rgb8_rgba8");
-    }
-    bool packedDepthStencilSupported = context->supportsExtension("GL_OES_packed_depth_stencil");
-    if (packedDepthStencilSupported)
-        context->ensureExtensionEnabled("GL_OES_packed_depth_stencil");
+    RefPtr<GraphicsContext3D> contextSupport(GraphicsContext3D::createContextSupport(context));
 
-    RefPtr<DrawingBuffer> drawingBuffer = adoptRef(new DrawingBuffer(context, size, multisampleSupported, packedDepthStencilSupported, preserve, contextEvictionManager));
+    bool multisampleSupported = contextSupport->supportsExtension("GL_ANGLE_framebuffer_blit")
+        && contextSupport->supportsExtension("GL_ANGLE_framebuffer_multisample")
+        && contextSupport->supportsExtension("GL_OES_rgb8_rgba8");
+    if (multisampleSupported) {
+        contextSupport->ensureExtensionEnabled("GL_ANGLE_framebuffer_blit");
+        contextSupport->ensureExtensionEnabled("GL_ANGLE_framebuffer_multisample");
+        contextSupport->ensureExtensionEnabled("GL_OES_rgb8_rgba8");
+    }
+    bool packedDepthStencilSupported = contextSupport->supportsExtension("GL_OES_packed_depth_stencil");
+    if (packedDepthStencilSupported)
+        contextSupport->ensureExtensionEnabled("GL_OES_packed_depth_stencil");
+
+    RefPtr<DrawingBuffer> drawingBuffer = adoptRef(new DrawingBuffer(context, contextSupport.get(), size, multisampleSupported, packedDepthStencilSupported, preserve, contextEvictionManager));
     return drawingBuffer.release();
 }
 
-DrawingBuffer::DrawingBuffer(GraphicsContext3D* context,
-                             const IntSize& size,
-                             bool multisampleExtensionSupported,
-                             bool packedDepthStencilExtensionSupported,
-                             PreserveDrawingBuffer preserve,
-                             PassRefPtr<ContextEvictionManager> contextEvictionManager)
+DrawingBuffer::DrawingBuffer(blink::WebGraphicsContext3D* context,
+    GraphicsContext3D* contextSupport,
+    const IntSize& size,
+    bool multisampleExtensionSupported,
+    bool packedDepthStencilExtensionSupported,
+    PreserveDrawingBuffer preserve,
+    PassRefPtr<ContextEvictionManager> contextEvictionManager)
     : m_preserveDrawingBuffer(preserve)
     , m_scissorEnabled(false)
     , m_texture2DBinding(0)
     , m_framebufferBinding(0)
     , m_activeTextureUnit(GL_TEXTURE0)
     , m_context(context)
+    , m_contextSupport(contextSupport)
     , m_size(-1, -1)
     , m_multisampleExtensionSupported(multisampleExtensionSupported)
     , m_packedDepthStencilExtensionSupported(packedDepthStencilExtensionSupported)
@@ -119,10 +123,12 @@ DrawingBuffer::DrawingBuffer(GraphicsContext3D* context,
     , m_multisampleColorBuffer(0)
     , m_contentsChanged(true)
     , m_contentsChangeCommitted(false)
+    , m_layerComposited(false)
     , m_internalColorFormat(0)
     , m_colorFormat(0)
     , m_internalRenderbufferFormat(0)
     , m_maxTextureSize(0)
+    , m_packAlignment(4)
     , m_contextEvictionManager(contextEvictionManager)
 {
     // Used by browser tests to detect the use of a DrawingBuffer.
@@ -139,13 +145,22 @@ void DrawingBuffer::markContentsChanged()
 {
     m_contentsChanged = true;
     m_contentsChangeCommitted = false;
+    m_layerComposited = false;
+}
+
+bool DrawingBuffer::layerComposited() const
+{
+    return m_layerComposited;
+}
+
+void DrawingBuffer::markLayerComposited()
+{
+    m_layerComposited = true;
 }
 
 blink::WebGraphicsContext3D* DrawingBuffer::context()
 {
-    if (!m_context)
-        return 0;
-    return m_context->webContext();
+    return m_context;
 }
 
 bool DrawingBuffer::prepareMailbox(blink::WebExternalTextureMailbox* outMailbox, blink::WebExternalBitmap* bitmap)
@@ -166,12 +181,12 @@ bool DrawingBuffer::prepareMailbox(blink::WebExternalTextureMailbox* outMailbox,
         bool needPremultiply = m_attributes.alpha && !m_attributes.premultipliedAlpha;
         GraphicsContext3D::AlphaOp op = needPremultiply ? GraphicsContext3D::AlphaDoPremultiply : GraphicsContext3D::AlphaDoNothing;
         if (pixels)
-            m_context->readBackFramebuffer(pixels, size().width(), size().height(), GraphicsContext3D::ReadbackSkia, op);
+            readBackFramebuffer(pixels, size().width(), size().height(), ReadbackSkia, op);
     }
 
     // We must restore the texture binding since creating new textures,
     // consuming and producing mailboxes changes it.
-    ScopedTextureUnit0BindingRestorer restorer(m_context.get(), m_activeTextureUnit, m_texture2DBinding);
+    ScopedTextureUnit0BindingRestorer restorer(m_context, m_activeTextureUnit, m_texture2DBinding);
 
     // First try to recycle an old buffer.
     RefPtr<MailboxInfo> frontColorBufferMailbox = recycledMailbox();
@@ -195,7 +210,7 @@ bool DrawingBuffer::prepareMailbox(blink::WebExternalTextureMailbox* outMailbox,
         m_context->bindFramebuffer(GL_FRAMEBUFFER, m_fbo);
         m_context->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_colorBuffer, 0);
     } else {
-        m_context->webContext()->copyTextureCHROMIUM(GL_TEXTURE_2D, m_colorBuffer, frontColorBufferMailbox->textureId, 0, GL_RGBA, GL_UNSIGNED_BYTE);
+        m_context->copyTextureCHROMIUM(GL_TEXTURE_2D, m_colorBuffer, frontColorBufferMailbox->textureId, 0, GL_RGBA, GL_UNSIGNED_BYTE);
     }
 
     if (multisample() && !m_framebufferBinding)
@@ -205,10 +220,10 @@ bool DrawingBuffer::prepareMailbox(blink::WebExternalTextureMailbox* outMailbox,
 
     m_contentsChanged = false;
 
-    context()->bindTexture(GL_TEXTURE_2D, frontColorBufferMailbox->textureId);
-    context()->produceTextureCHROMIUM(GL_TEXTURE_2D, frontColorBufferMailbox->mailbox.name);
-    context()->flush();
-    m_context->markLayerComposited();
+    m_context->bindTexture(GL_TEXTURE_2D, frontColorBufferMailbox->textureId);
+    m_context->produceTextureCHROMIUM(GL_TEXTURE_2D, frontColorBufferMailbox->mailbox.name);
+    m_context->flush();
+    markLayerComposited();
 
     *outMailbox = frontColorBufferMailbox->mailbox;
     m_frontColorBuffer = frontColorBufferMailbox->textureId;
@@ -237,15 +252,15 @@ PassRefPtr<DrawingBuffer::MailboxInfo> DrawingBuffer::recycledMailbox()
     m_recycledMailboxes.removeLast();
 
     if (mailboxInfo->mailbox.syncPoint) {
-        context()->waitSyncPoint(mailboxInfo->mailbox.syncPoint);
+        m_context->waitSyncPoint(mailboxInfo->mailbox.syncPoint);
         mailboxInfo->mailbox.syncPoint = 0;
     }
 
-    context()->bindTexture(GL_TEXTURE_2D, mailboxInfo->textureId);
-    context()->consumeTextureCHROMIUM(GL_TEXTURE_2D, mailboxInfo->mailbox.name);
+    m_context->bindTexture(GL_TEXTURE_2D, mailboxInfo->textureId);
+    m_context->consumeTextureCHROMIUM(GL_TEXTURE_2D, mailboxInfo->mailbox.name);
 
     if (mailboxInfo->size != m_size) {
-        m_context->texImage2DResourceSafe(GL_TEXTURE_2D, 0, m_internalColorFormat, m_size.width(), m_size.height(), 0, m_colorFormat, GL_UNSIGNED_BYTE);
+        texImage2DResourceSafe(GL_TEXTURE_2D, 0, m_internalColorFormat, m_size.width(), m_size.height(), 0, m_colorFormat, GL_UNSIGNED_BYTE);
         mailboxInfo->size = m_size;
     }
 
@@ -255,7 +270,7 @@ PassRefPtr<DrawingBuffer::MailboxInfo> DrawingBuffer::recycledMailbox()
 PassRefPtr<DrawingBuffer::MailboxInfo> DrawingBuffer::createNewMailbox(unsigned textureId)
 {
     RefPtr<MailboxInfo> returnMailbox = adoptRef(new MailboxInfo());
-    context()->genMailboxCHROMIUM(returnMailbox->mailbox.name);
+    m_context->genMailboxCHROMIUM(returnMailbox->mailbox.name);
     returnMailbox->textureId = textureId;
     returnMailbox->size = m_size;
     m_textureMailboxes.append(returnMailbox);
@@ -293,7 +308,7 @@ void DrawingBuffer::initialize(const IntSize& size)
     reset(size);
 }
 
-bool DrawingBuffer::copyToPlatformTexture(GraphicsContext3D& context, Platform3DObject texture, GLenum internalFormat, GLenum destType, GLint level, bool premultiplyAlpha, bool flipY)
+bool DrawingBuffer::copyToPlatformTexture(GraphicsContext3D& contextSupport, Platform3DObject texture, GLenum internalFormat, GLenum destType, GLint level, bool premultiplyAlpha, bool flipY)
 {
     if (!m_context || !m_context->makeContextCurrent())
         return false;
@@ -309,10 +324,12 @@ bool DrawingBuffer::copyToPlatformTexture(GraphicsContext3D& context, Platform3D
     }
     Platform3DObject sourceTexture = m_colorBuffer;
 
-    if (!context.makeContextCurrent())
+    blink::WebGraphicsContext3D* context = contextSupport.webContext();
+
+    if (!context->makeContextCurrent())
         return false;
-    if (!context.supportsExtension("GL_CHROMIUM_copy_texture") || !context.supportsExtension("GL_CHROMIUM_flipy")
-        || !context.canUseCopyTextureCHROMIUM(internalFormat, destType, level))
+    if (!contextSupport.supportsExtension("GL_CHROMIUM_copy_texture") || !contextSupport.supportsExtension("GL_CHROMIUM_flipy")
+        || !contextSupport.canUseCopyTextureCHROMIUM(internalFormat, destType, level))
         return false;
 
     bool unpackPremultiplyAlphaNeeded = false;
@@ -322,14 +339,14 @@ bool DrawingBuffer::copyToPlatformTexture(GraphicsContext3D& context, Platform3D
     else if (m_attributes.alpha && !m_attributes.premultipliedAlpha && premultiplyAlpha)
         unpackPremultiplyAlphaNeeded = true;
 
-    context.pixelStorei(GC3D_UNPACK_UNPREMULTIPLY_ALPHA_CHROMIUM, unpackUnpremultiplyAlphaNeeded);
-    context.pixelStorei(GC3D_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM, unpackPremultiplyAlphaNeeded);
-    context.pixelStorei(GC3D_UNPACK_FLIP_Y_CHROMIUM, flipY);
-    context.webContext()->copyTextureCHROMIUM(GL_TEXTURE_2D, sourceTexture, texture, level, internalFormat, destType);
-    context.pixelStorei(GC3D_UNPACK_FLIP_Y_CHROMIUM, false);
-    context.pixelStorei(GC3D_UNPACK_UNPREMULTIPLY_ALPHA_CHROMIUM, false);
-    context.pixelStorei(GC3D_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM, false);
-    context.flush();
+    context->pixelStorei(GC3D_UNPACK_UNPREMULTIPLY_ALPHA_CHROMIUM, unpackUnpremultiplyAlphaNeeded);
+    context->pixelStorei(GC3D_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM, unpackPremultiplyAlphaNeeded);
+    context->pixelStorei(GC3D_UNPACK_FLIP_Y_CHROMIUM, flipY);
+    context->copyTextureCHROMIUM(GL_TEXTURE_2D, sourceTexture, texture, level, internalFormat, destType);
+    context->pixelStorei(GC3D_UNPACK_FLIP_Y_CHROMIUM, false);
+    context->pixelStorei(GC3D_UNPACK_UNPREMULTIPLY_ALPHA_CHROMIUM, false);
+    context->pixelStorei(GC3D_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM, false);
+    context->flush();
 
     return true;
 }
@@ -358,14 +375,14 @@ blink::WebLayer* DrawingBuffer::platformLayer()
 
 void DrawingBuffer::paintCompositedResultsToCanvas(ImageBuffer* imageBuffer)
 {
-    if (!m_context || !m_context->makeContextCurrent() || m_context->webContext()->getGraphicsResetStatusARB() != GL_NO_ERROR)
+    if (!m_context || !m_context->makeContextCurrent() || m_context->getGraphicsResetStatusARB() != GL_NO_ERROR)
         return;
 
     if (!imageBuffer)
         return;
     Platform3DObject tex = imageBuffer->getBackingTexture();
     if (tex) {
-        m_context->webContext()->copyTextureCHROMIUM(GL_TEXTURE_2D, m_frontColorBuffer,
+        m_context->copyTextureCHROMIUM(GL_TEXTURE_2D, m_frontColorBuffer,
             tex, 0, GL_RGBA, GL_UNSIGNED_BYTE);
         return;
     }
@@ -375,7 +392,7 @@ void DrawingBuffer::paintCompositedResultsToCanvas(ImageBuffer* imageBuffer)
     // FIXME: That's not true any more, provided we don't change texture
     // parameters.
     unsigned sourceTexture = createColorTexture(m_size);
-    m_context->webContext()->copyTextureCHROMIUM(GL_TEXTURE_2D, m_frontColorBuffer, sourceTexture, 0, GL_RGBA, GL_UNSIGNED_BYTE);
+    m_context->copyTextureCHROMIUM(GL_TEXTURE_2D, m_frontColorBuffer, sourceTexture, 0, GL_RGBA, GL_UNSIGNED_BYTE);
 
     // Since we're using the same context as WebGL, we have to restore any state we change (in this case, just the framebuffer binding).
     // FIXME: The WebGLRenderingContext tracks the current framebuffer binding, it would be slightly more efficient to use this value
@@ -387,7 +404,7 @@ void DrawingBuffer::paintCompositedResultsToCanvas(ImageBuffer* imageBuffer)
     m_context->bindFramebuffer(GL_FRAMEBUFFER, framebuffer);
     m_context->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sourceTexture, 0);
 
-    m_context->paintFramebufferToCanvas(framebuffer, size().width(), size().height(), !m_attributes.premultipliedAlpha, imageBuffer);
+    paintFramebufferToCanvas(framebuffer, size().width(), size().height(), !m_attributes.premultipliedAlpha, imageBuffer);
     m_context->deleteFramebuffer(framebuffer);
     m_context->deleteTexture(sourceTexture);
 
@@ -431,7 +448,8 @@ void DrawingBuffer::releaseResources()
         if (m_fbo)
             m_context->deleteFramebuffer(m_fbo);
 
-        m_context.clear();
+        m_contextSupport.clear();
+        m_context = 0;
     }
 
     setSize(IntSize());
@@ -470,7 +488,7 @@ unsigned DrawingBuffer::createColorTexture(const IntSize& size)
     m_context->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     m_context->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     if (!size.isEmpty())
-        m_context->texImage2DResourceSafe(GL_TEXTURE_2D, 0, m_internalColorFormat, size.width(), size.height(), 0, m_colorFormat, GL_UNSIGNED_BYTE);
+        texImage2DResourceSafe(GL_TEXTURE_2D, 0, m_internalColorFormat, size.width(), size.height(), 0, m_colorFormat, GL_UNSIGNED_BYTE);
 
     return offscreenColorTexture;
 }
@@ -491,7 +509,9 @@ bool DrawingBuffer::resizeFramebuffer(const IntSize& size)
     m_context->bindFramebuffer(GL_FRAMEBUFFER, m_fbo);
 
     m_context->bindTexture(GL_TEXTURE_2D, m_colorBuffer);
-    m_context->texImage2DResourceSafe(GL_TEXTURE_2D, 0, m_internalColorFormat, size.width(), size.height(), 0, m_colorFormat, GL_UNSIGNED_BYTE);
+
+    texImage2DResourceSafe(GL_TEXTURE_2D, 0, m_internalColorFormat, size.width(), size.height(), 0, m_colorFormat, GL_UNSIGNED_BYTE);
+
     m_context->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_colorBuffer, 0);
 
     m_context->bindTexture(GL_TEXTURE_2D, 0);
@@ -510,7 +530,7 @@ bool DrawingBuffer::resizeMultisampleFramebuffer(const IntSize& size)
         m_context->bindFramebuffer(GL_FRAMEBUFFER, m_multisampleFBO);
 
         m_context->bindRenderbuffer(GL_RENDERBUFFER, m_multisampleColorBuffer);
-        m_context->webContext()->renderbufferStorageMultisampleCHROMIUM(GL_RENDERBUFFER, m_sampleCount, m_internalRenderbufferFormat, size.width(), size.height());
+        m_context->renderbufferStorageMultisampleCHROMIUM(GL_RENDERBUFFER, m_sampleCount, m_internalRenderbufferFormat, size.width(), size.height());
 
         if (m_context->getError() == GL_OUT_OF_MEMORY)
             return false;
@@ -531,7 +551,7 @@ void DrawingBuffer::resizeDepthStencil(const IntSize& size)
             m_depthStencilBuffer = m_context->createRenderbuffer();
         m_context->bindRenderbuffer(GL_RENDERBUFFER, m_depthStencilBuffer);
         if (multisample())
-            m_context->webContext()->renderbufferStorageMultisampleCHROMIUM(GL_RENDERBUFFER, m_sampleCount, GL_DEPTH24_STENCIL8_OES, size.width(), size.height());
+            m_context->renderbufferStorageMultisampleCHROMIUM(GL_RENDERBUFFER, m_sampleCount, GL_DEPTH24_STENCIL8_OES, size.width(), size.height());
         else
             m_context->renderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8_OES, size.width(), size.height());
         m_context->framebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_depthStencilBuffer);
@@ -542,7 +562,7 @@ void DrawingBuffer::resizeDepthStencil(const IntSize& size)
                 m_depthBuffer = m_context->createRenderbuffer();
             m_context->bindRenderbuffer(GL_RENDERBUFFER, m_depthBuffer);
             if (multisample())
-                m_context->webContext()->renderbufferStorageMultisampleCHROMIUM(GL_RENDERBUFFER, m_sampleCount, GL_DEPTH_COMPONENT16, size.width(), size.height());
+                m_context->renderbufferStorageMultisampleCHROMIUM(GL_RENDERBUFFER, m_sampleCount, GL_DEPTH_COMPONENT16, size.width(), size.height());
             else
                 m_context->renderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, size.width(), size.height());
             m_context->framebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_depthBuffer);
@@ -552,7 +572,7 @@ void DrawingBuffer::resizeDepthStencil(const IntSize& size)
                 m_stencilBuffer = m_context->createRenderbuffer();
             m_context->bindRenderbuffer(GL_RENDERBUFFER, m_stencilBuffer);
             if (multisample())
-                m_context->webContext()->renderbufferStorageMultisampleCHROMIUM(GL_RENDERBUFFER, m_sampleCount, GL_STENCIL_INDEX8, size.width(), size.height());
+                m_context->renderbufferStorageMultisampleCHROMIUM(GL_RENDERBUFFER, m_sampleCount, GL_STENCIL_INDEX8, size.width(), size.height());
             else
                 m_context->renderbufferStorage(GL_RENDERBUFFER, GL_STENCIL_INDEX8, size.width(), size.height());
             m_context->framebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_stencilBuffer);
@@ -709,7 +729,7 @@ void DrawingBuffer::commit(long x, long y, long width, long height)
             m_context->disable(GL_SCISSOR_TEST);
 
         // Use NEAREST, because there is no scale performed during the blit.
-        m_context->webContext()->blitFramebufferCHROMIUM(x, y, width, height, x, y, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        m_context->blitFramebufferCHROMIUM(x, y, width, height, x, y, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
         if (m_scissorEnabled)
             m_context->enable(GL_SCISSOR_TEST);
@@ -738,6 +758,133 @@ void DrawingBuffer::bind()
         return;
 
     m_context->bindFramebuffer(GL_FRAMEBUFFER, m_multisampleFBO ? m_multisampleFBO : m_fbo);
+}
+
+void DrawingBuffer::setPackAlignment(GLint param)
+{
+    m_packAlignment = param;
+}
+
+void DrawingBuffer::paintRenderingResultsToCanvas(ImageBuffer* imageBuffer)
+{
+    paintFramebufferToCanvas(framebuffer(), size().width(), size().height(), !m_attributes.premultipliedAlpha, imageBuffer);
+}
+
+PassRefPtr<Uint8ClampedArray> DrawingBuffer::paintRenderingResultsToImageData(int& width, int& height)
+{
+    if (m_attributes.premultipliedAlpha)
+        return 0;
+
+    width = size().width();
+    height = size().height();
+
+    Checked<int, RecordOverflow> dataSize = 4;
+    dataSize *= width;
+    dataSize *= height;
+    if (dataSize.hasOverflowed())
+        return 0;
+
+    RefPtr<Uint8ClampedArray> pixels = Uint8ClampedArray::createUninitialized(width * height * 4);
+
+    m_context->bindFramebuffer(GL_FRAMEBUFFER, framebuffer());
+    readBackFramebuffer(pixels->data(), width, height, ReadbackRGBA, GraphicsContext3D::AlphaDoNothing);
+    flipVertically(pixels->data(), width, height);
+
+    return pixels.release();
+}
+
+void DrawingBuffer::paintFramebufferToCanvas(int framebuffer, int width, int height, bool premultiplyAlpha, ImageBuffer* imageBuffer)
+{
+    unsigned char* pixels = 0;
+
+    const SkBitmap* canvasBitmap = imageBuffer->context()->bitmap();
+    const SkBitmap* readbackBitmap = 0;
+    ASSERT(canvasBitmap->config() == SkBitmap::kARGB_8888_Config);
+    if (canvasBitmap->width() == width && canvasBitmap->height() == height) {
+        // This is the fastest and most common case. We read back
+        // directly into the canvas's backing store.
+        readbackBitmap = canvasBitmap;
+        m_resizingBitmap.reset();
+    } else {
+        // We need to allocate a temporary bitmap for reading back the
+        // pixel data. We will then use Skia to rescale this bitmap to
+        // the size of the canvas's backing store.
+        if (m_resizingBitmap.width() != width || m_resizingBitmap.height() != height) {
+            m_resizingBitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
+            if (!m_resizingBitmap.allocPixels())
+                return;
+        }
+        readbackBitmap = &m_resizingBitmap;
+    }
+
+    // Read back the frame buffer.
+    SkAutoLockPixels bitmapLock(*readbackBitmap);
+    pixels = static_cast<unsigned char*>(readbackBitmap->getPixels());
+
+    m_context->bindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+    readBackFramebuffer(pixels, width, height, ReadbackSkia, premultiplyAlpha ? GraphicsContext3D::AlphaDoPremultiply : GraphicsContext3D::AlphaDoNothing);
+    flipVertically(pixels, width, height);
+
+    readbackBitmap->notifyPixelsChanged();
+    if (m_resizingBitmap.readyToDraw()) {
+        // We need to draw the resizing bitmap into the canvas's backing store.
+        SkCanvas canvas(*canvasBitmap);
+        SkRect dst;
+        dst.set(SkIntToScalar(0), SkIntToScalar(0), SkIntToScalar(canvasBitmap->width()), SkIntToScalar(canvasBitmap->height()));
+        canvas.drawBitmapRect(m_resizingBitmap, 0, dst);
+    }
+}
+
+void DrawingBuffer::readBackFramebuffer(unsigned char* pixels, int width, int height, ReadbackOrder readbackOrder, GraphicsContext3D::AlphaOp op)
+{
+    if (m_packAlignment > 4)
+        m_context->pixelStorei(GL_PACK_ALIGNMENT, 1);
+    m_context->readPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+    if (m_packAlignment > 4)
+        m_context->pixelStorei(GL_PACK_ALIGNMENT, m_packAlignment);
+
+    size_t bufferSize = 4 * width * height;
+
+    if (readbackOrder == ReadbackSkia) {
+#if (SK_R32_SHIFT == 16) && !SK_B32_SHIFT
+        // Swizzle red and blue channels to match SkBitmap's byte ordering.
+        // TODO(kbr): expose GL_BGRA as extension.
+        for (size_t i = 0; i < bufferSize; i += 4) {
+            std::swap(pixels[i], pixels[i + 2]);
+        }
+#endif
+    }
+
+    if (op == GraphicsContext3D::AlphaDoPremultiply) {
+        for (size_t i = 0; i < bufferSize; i += 4) {
+            pixels[i + 0] = std::min(255, pixels[i + 0] * pixels[i + 3] / 255);
+            pixels[i + 1] = std::min(255, pixels[i + 1] * pixels[i + 3] / 255);
+            pixels[i + 2] = std::min(255, pixels[i + 2] * pixels[i + 3] / 255);
+        }
+    } else if (op != GraphicsContext3D::AlphaDoNothing) {
+        ASSERT_NOT_REACHED();
+    }
+}
+
+void DrawingBuffer::flipVertically(uint8_t* framebuffer, int width, int height)
+{
+    m_scanline.resize(width * 4);
+    uint8* scanline = &m_scanline[0];
+    unsigned rowBytes = width * 4;
+    unsigned count = height / 2;
+    for (unsigned i = 0; i < count; i++) {
+        uint8* rowA = framebuffer + i * rowBytes;
+        uint8* rowB = framebuffer + (height - i - 1) * rowBytes;
+        memcpy(scanline, rowB, rowBytes);
+        memcpy(rowB, rowA, rowBytes);
+        memcpy(rowA, scanline, rowBytes);
+    }
+}
+
+void DrawingBuffer::texImage2DResourceSafe(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, GLint unpackAlignment)
+{
+    ASSERT(unpackAlignment == 1 || unpackAlignment == 2 || unpackAlignment == 4 || unpackAlignment == 8);
+    m_context->texImage2D(target, level, internalformat, width, height, border, format, type, 0);
 }
 
 } // namespace WebCore
