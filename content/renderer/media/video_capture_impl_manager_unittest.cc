@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -30,38 +31,48 @@ ACTION_P(RunClosure, closure) {
 class MockVideoCaptureImpl : public VideoCaptureImpl {
  public:
   MockVideoCaptureImpl(media::VideoCaptureSessionId session_id,
-                       VideoCaptureMessageFilter* filter)
-      : VideoCaptureImpl(session_id, filter) {
+                       VideoCaptureMessageFilter* filter,
+                       base::Closure destruct_callback)
+      : VideoCaptureImpl(session_id, filter),
+        destruct_callback_(destruct_callback) {
   }
 
   virtual ~MockVideoCaptureImpl() {
-    Destruct();
+    destruct_callback_.Run();
   }
 
-  MOCK_METHOD0(Destruct, void());
-
  private:
+  base::Closure destruct_callback_;
+
   DISALLOW_COPY_AND_ASSIGN(MockVideoCaptureImpl);
 };
 
 class MockVideoCaptureImplManager : public VideoCaptureImplManager {
  public:
-  MockVideoCaptureImplManager() {}
+  explicit MockVideoCaptureImplManager(
+      base::Closure destruct_video_capture_callback)
+      : destruct_video_capture_callback_(
+          destruct_video_capture_callback) {}
 
  protected:
   virtual VideoCaptureImpl* CreateVideoCaptureImpl(
       media::VideoCaptureSessionId id,
       VideoCaptureMessageFilter* filter) const OVERRIDE {
-    return new MockVideoCaptureImpl(id, filter);
+    return new MockVideoCaptureImpl(id,
+                                    filter,
+                                    destruct_video_capture_callback_);
   }
 
  private:
+  base::Closure destruct_video_capture_callback_;
+
   DISALLOW_COPY_AND_ASSIGN(MockVideoCaptureImplManager);
 };
 
 class VideoCaptureImplManagerTest : public ::testing::Test {
  public:
-  VideoCaptureImplManagerTest() {
+  VideoCaptureImplManagerTest()
+      : manager_(BindToCurrentLoop(cleanup_run_loop_.QuitClosure())) {
     params_.requested_format = media::VideoCaptureFormat(
         gfx::Size(176, 144), 30, media::PIXEL_FORMAT_I420);
     child_process_.reset(new ChildProcess());
@@ -81,14 +92,11 @@ class VideoCaptureImplManagerTest : public ::testing::Test {
     manager_.video_capture_message_filter()->OnFilterAdded(NULL);
   }
 
-  void Quit(base::RunLoop* run_loop) {
-    message_loop_.PostTask(FROM_HERE, run_loop->QuitClosure());
-  }
-
  protected:
   base::MessageLoop message_loop_;
   scoped_ptr<ChildProcess> child_process_;
   media::VideoCaptureParams params_;
+  base::RunLoop cleanup_run_loop_;
   MockVideoCaptureImplManager manager_;
 
  private:
@@ -140,9 +148,11 @@ TEST_F(VideoCaptureImplManagerTest, MultipleClients) {
     handle2->StopCapture(client2.get());
     run_loop.Run();
   }
-
   EXPECT_TRUE(device1 == device2);
-  EXPECT_CALL(*static_cast<MockVideoCaptureImpl*>(device1), Destruct());
+
+  handle1.reset();
+  handle2.reset();
+  cleanup_run_loop_.Run();
 }
 
 }  // namespace content

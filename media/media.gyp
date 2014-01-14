@@ -1226,6 +1226,8 @@
         'base/test_helpers.h',
         'filters/mock_gpu_video_accelerator_factories.cc',
         'filters/mock_gpu_video_accelerator_factories.h',
+        'video/capture/mock_video_capture_event_handler.cc',
+        'video/capture/mock_video_capture_event_handler.h',
         'video/mock_video_decode_accelerator.cc',
         'video/mock_video_decode_accelerator.h',
       ],

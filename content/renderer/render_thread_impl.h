@@ -431,8 +431,8 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   // Dispatches all P2P sockets.
   scoped_refptr<P2PSocketDispatcher> p2p_socket_dispatcher_;
 
-  // Used on multiple threads.
-  scoped_refptr<VideoCaptureImplManager> vc_manager_;
+  // Used on the render thread.
+  scoped_ptr<VideoCaptureImplManager> vc_manager_;
 
   // The count of RenderWidgets running through this thread.
   int widget_count_;

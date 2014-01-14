@@ -347,7 +347,7 @@ void RenderThreadImpl::Init() {
   db_message_filter_ = new DBMessageFilter();
   AddFilter(db_message_filter_.get());
 
-  vc_manager_ = new VideoCaptureImplManager();
+  vc_manager_.reset(new VideoCaptureImplManager());
   AddFilter(vc_manager_->video_capture_message_filter());
 
 #if defined(ENABLE_WEBRTC)
@@ -361,7 +361,7 @@ void RenderThreadImpl::Init() {
   webrtc_identity_service_.reset(new WebRTCIdentityService());
 
   media_stream_factory_.reset(new MediaStreamDependencyFactory(
-      vc_manager_.get(), p2p_socket_dispatcher_.get()));
+      p2p_socket_dispatcher_.get()));
   AddObserver(media_stream_factory_.get());
 #endif  // defined(ENABLE_WEBRTC)
 
@@ -468,7 +468,13 @@ void RenderThreadImpl::Shutdown() {
   RemoveFilter(audio_message_filter_.get());
   audio_message_filter_ = NULL;
 
+  // |media_stream_factory_| produces users of |vc_manager_| so it must be
+  // destroyed first.
+#if defined(ENABLE_WEBRTC)
+  media_stream_factory_.reset();
+#endif
   RemoveFilter(vc_manager_->video_capture_message_filter());
+  vc_manager_.reset();
 
   RemoveFilter(db_message_filter_.get());
   db_message_filter_ = NULL;

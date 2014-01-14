@@ -5,25 +5,27 @@
 #include "content/renderer/media/rtc_video_capture_delegate.h"
 
 #include "base/bind.h"
+#include "base/location.h"
+#include "content/renderer/media/video_capture_impl_manager.h"
+#include "content/renderer/render_thread_impl.h"
 #include "media/base/video_frame.h"
 
 namespace content {
 
 RtcVideoCaptureDelegate::RtcVideoCaptureDelegate(
-    const media::VideoCaptureSessionId id,
-    VideoCaptureImplManager* vc_manager)
+    const media::VideoCaptureSessionId id)
     : session_id_(id),
-      vc_manager_(vc_manager),
-      capture_engine_(NULL),
       got_first_frame_(false),
       error_occured_(false) {
   DVLOG(3) << " RtcVideoCaptureDelegate::ctor";
-  capture_engine_ = vc_manager_->AddDevice(session_id_, this);
+  capture_engine_ =
+      RenderThreadImpl::current()->video_capture_impl_manager()
+         ->UseDevice(session_id_);
 }
 
 RtcVideoCaptureDelegate::~RtcVideoCaptureDelegate() {
   DVLOG(3) << " RtcVideoCaptureDelegate::dtor";
-  vc_manager_->RemoveDevice(session_id_, this);
+  StopCapture();
 }
 
 void RtcVideoCaptureDelegate::StartCapture(

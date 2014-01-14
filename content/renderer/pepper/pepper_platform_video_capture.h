@@ -24,6 +24,7 @@ namespace content {
 class PepperMediaDeviceManager;
 class PepperVideoCaptureHost;
 class RenderViewImpl;
+class VideoCaptureHandle;
 
 class PepperPlatformVideoCapture
     : public media::VideoCapture,
@@ -80,7 +81,7 @@ class PepperPlatformVideoCapture
 
   PepperVideoCaptureHost* handler_;
 
-  media::VideoCapture* video_capture_;
+  scoped_ptr<VideoCaptureHandle> video_capture_;
 
   // StartCapture() must be balanced by StopCapture(), otherwise this object
   // will leak.
