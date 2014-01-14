@@ -113,9 +113,9 @@ function buildCardSet() {
   /**
    * Creates/updates/deletes a Chrome notification.
    * @param {ChromeNotificationId} cardId Card ID.
-   * @param {?ReceivedNotification} receivedNotification Google Now card
-   *     represented as a set of parameters for showing a Chrome notification,
-   *     or null if the notification needs to be deleted.
+   * @param {(ReceivedNotification|undefined)} receivedNotification Google Now
+   *     card represented as a set of parameters for showing a Chrome
+   *     notification, or null if the notification needs to be deleted.
    * @param {function(ReceivedNotification)=} onCardShown Optional parameter
    *     called when each card is shown.
    */
@@ -195,8 +195,8 @@ function buildCardSet() {
 
     chrome.alarms.clear(alarmPrefix + cardId);
     var now = Date.now();
-    /** @type {?UncombinedNotification} */
-    var winningCard = null;
+    /** @type {(UncombinedNotification|undefined)} */
+    var winningCard = undefined;
     // Next moment of time when winning notification selection algotithm can
     // potentially return a different notification.
     /** @type {?number} */
@@ -243,7 +243,7 @@ function buildCardSet() {
       // otherwise notifications data with 2 pointers to the same object won't
       // be stored correctly to chrome.storage.
       var winningActionUrls = winningCard &&
-          (winningCard.receivedNotification.actionUrls || null) &&
+          winningCard.receivedNotification.actionUrls &&
           JSON.parse(JSON.stringify(
               winningCard.receivedNotification.actionUrls));
 

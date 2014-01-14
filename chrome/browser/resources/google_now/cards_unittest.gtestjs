@@ -20,24 +20,39 @@ GoogleNowCardsUnitTest.prototype = {
   ]
 };
 
+// Test implementation of a function provided by utility.js.
+function verify(condition, message) {
+  assertTrue(condition, message);
+}
+
 var testCardId = 'TEST CARD ID';
-var testNotification = {testNotificationField: 'TEST NOTIFICATION VALUE'};
-var expectedShowAlarmId = 'card-show-TEST CARD ID';
-var expectedHideAlarmId = 'card-hide-TEST CARD ID';
-var testActionUrls = {testField: 'TEST VALUE'};
-var testDismissals = [
-  {testDismissalField: 'TEST DISMISSAL VALUE 1'},
-  {testDismissalField: 'TEST DISMISSAL VALUE 2'}
-];
-var testGroupRank = 271;
+var testNotificationIdA = 'TEST CARD ID-A';
+var testNotificationIdB = 'TEST CARD ID-B';
+var testNotificationA = {
+  testNotificationField: 'TEST NOTIFICATION VALUE A',
+  priority: 1
+};
+var testNotificationB = {
+  testNotificationField: 'TEST NOTIFICATION VALUE B',
+  priority: 2
+};
+var groupNameA = 'A';
+var groupNameB = 'B';
+var expectedAlarmId = 'card-TEST CARD ID';
+var testActionUrlsA = {testField: 'TEST VALUE A'};
+var testActionUrlsB = {testField: 'TEST VALUE B'};
+var testDismissalA = {testDismissalField: 'TEST DISMISSAL VALUE A'};
+var testDismissalB = {testDismissalField: 'TEST DISMISSAL VALUE B'};
 var LOCATION_CARDS_LINK_THRESHOLD = 10;
 var localStorage = {locationCardsShown: 0};
+var notificationUpdateSuccessful = true;
+var notificationUpdateFailed = false;
 
 function setUpCardManagerTest(fixture) {
   fixture.makeAndRegisterMockApis([
       'chrome.alarms.clear',
       'chrome.alarms.create',
-      'chrome.notifications.clear',
+      'instrumented.notifications.clear',
       'chrome.storage.local.set',
       'countLocationCard',
       'instrumented.alarms.onAlarm.addListener',
@@ -76,10 +91,539 @@ TEST_F('GoogleNowCardsUnitTest', 'BuildCardManager', function() {
   assertEquals('function', typeof test.alarmCallback);
 });
 
+TEST_F('GoogleNowCardsUnitTest', 'UpdateSimpleHideFuture', function() {
+  // Update a simple card with the hide event in future.
+
+  var testUncombinedNotification = {
+    receivedNotification: {
+      notificationId: testNotificationIdA,
+      chromeNotificationId: testCardId,
+      chromeNotificationOptions: testNotificationA,
+      actionUrls: testActionUrlsA,
+      dismissal: testDismissalA,
+      groupName: groupNameA
+    },
+    hideTime: 300001
+  };
+
+  // Setup and expectations.
+  var test = setUpCardManagerTest(this);
+  this.mockApis.expects(once()).
+      chrome_alarms_clear(expectedAlarmId);
+  var chromeNotificationsUpdateSavedArgs = new SaveMockArguments();
+  this.mockApis.expects(once()).
+      instrumented_notifications_update(
+          chromeNotificationsUpdateSavedArgs.match(eq(testCardId)),
+          chromeNotificationsUpdateSavedArgs.match(eqJSON(testNotificationA)),
+          chromeNotificationsUpdateSavedArgs.match(ANYTHING)).
+      will(invokeCallback(
+          chromeNotificationsUpdateSavedArgs, 2, notificationUpdateSuccessful));
+  this.mockApis.expects(once()).	
+      chrome_alarms_create(expectedAlarmId, eqJSON({when: 300001}));
+
+  // Call tested method.
+  var notificationData = test.cardSet.update(
+      testCardId, [testUncombinedNotification], {});
+
+  // Check the return value.
+  assertEquals(
+      JSON.stringify({
+        actionUrls: testActionUrlsA,
+        timestamp: 300000,
+        combinedCard: [testUncombinedNotification]
+      }),
+      JSON.stringify(notificationData));
+});
+
+TEST_F('GoogleNowCardsUnitTest', 'CreateSimpleHideFuture', function() {
+  // Create a simple card with the hide event in future.
+
+  var testUncombinedNotification = {
+    receivedNotification: {
+      notificationId: testNotificationIdA,
+      chromeNotificationId: testCardId,
+      chromeNotificationOptions: testNotificationA,
+      actionUrls: testActionUrlsA,
+      dismissal: testDismissalA,
+      groupName: groupNameA
+    },
+    hideTime: 300001
+  };
+
+  // Setup and expectations.
+  var test = setUpCardManagerTest(this);
+  this.makeMockLocalFunctions(['onCardShown']);
+
+  this.mockApis.expects(once()).
+      chrome_alarms_clear(expectedAlarmId);
+
+  // notifications.update will return false, which will trigger
+  // notifications.create.
+  var chromeNotificationsUpdateSavedArgs = new SaveMockArguments();
+  this.mockApis.expects(once()).
+      instrumented_notifications_update(
+          chromeNotificationsUpdateSavedArgs.match(eq(testCardId)),
+          chromeNotificationsUpdateSavedArgs.match(eqJSON(testNotificationA)),
+          chromeNotificationsUpdateSavedArgs.match(ANYTHING)).
+      will(invokeCallback(
+          chromeNotificationsUpdateSavedArgs, 2, notificationUpdateFailed));
+  var chromeNotificationsCreateSavedArgs = new SaveMockArguments();
+  this.mockApis.expects(once()).
+      instrumented_notifications_create(
+          chromeNotificationsCreateSavedArgs.match(eq(testCardId)),
+          chromeNotificationsCreateSavedArgs.match(eqJSON(testNotificationA)),
+          chromeNotificationsCreateSavedArgs.match(ANYTHING)).
+      will(invokeCallback(chromeNotificationsCreateSavedArgs, 2, testCardId));
+
+  this.mockLocalFunctions.expects(once()).
+      onCardShown(eqJSON(testUncombinedNotification.receivedNotification));
+
+  this.mockApis.expects(once()).	
+      chrome_alarms_create(expectedAlarmId, eqJSON({when: 300001}));
+
+  // Call tested method.
+  var notificationData = test.cardSet.update(
+      testCardId,
+      [testUncombinedNotification],
+      {},
+      this.mockLocalFunctions.functions().onCardShown);
+
+  // Check the return value.
+  assertEquals(
+      JSON.stringify({
+        actionUrls: testActionUrlsA,
+        timestamp: 300000,
+        combinedCard: [testUncombinedNotification]
+      }),
+      JSON.stringify(notificationData));
+});
+
+TEST_F('GoogleNowCardsUnitTest', 'CreateSimpleShowFuture', function() {
+  // Create a simple card with the show event in future. Should create an alarm
+  // to fire at the show time.
+
+  var testUncombinedNotification = {
+    receivedNotification: {
+      notificationId: testNotificationIdA,
+      chromeNotificationId: testCardId,
+      chromeNotificationOptions: testNotificationA,
+      actionUrls: testActionUrlsA,
+      dismissal: testDismissalA,
+      groupName: groupNameA
+    },
+    showTime: 300001,
+    hideTime: 300002
+  };
+
+  // Setup and expectations.
+  var test = setUpCardManagerTest(this);
+
+  this.mockApis.expects(once()).
+      chrome_alarms_clear(expectedAlarmId);
+  this.mockApis.expects(once()).	
+      instrumented_notifications_clear(testCardId, ANYTHING);
+  this.mockApis.expects(once()).	
+      chrome_alarms_create(expectedAlarmId, eqJSON({when: 300001}));
+
+  // Call tested method.
+  var notificationData = test.cardSet.update(
+      testCardId, [testUncombinedNotification], {});
+
+  // Check the return value.
+  assertEquals(
+      JSON.stringify({
+        timestamp: 300000,
+        combinedCard: [testUncombinedNotification]
+      }),
+      JSON.stringify(notificationData));
+});
+
+TEST_F('GoogleNowCardsUnitTest', 'UpdateSimpleHidePast', function() {
+  // Update a simple card with the hide event in the past (actually, present).
+  // Should clear the notification.
+
+  var testUncombinedNotification = {
+    receivedNotification: {
+      notificationId: testNotificationIdA,
+      chromeNotificationId: testCardId,
+      chromeNotificationOptions: testNotificationA,
+      actionUrls: testActionUrlsA,
+      dismissal: testDismissalA,
+      groupName: groupNameA
+    },
+    hideTime: 300000
+  };
+
+  // Setup and expectations.
+  var test = setUpCardManagerTest(this);
+  this.mockApis.expects(once()).
+      chrome_alarms_clear(expectedAlarmId);
+  this.mockApis.expects(once()).	
+      instrumented_notifications_clear(testCardId, ANYTHING);
+
+  var groups = {
+    A: {
+      cards: [{chromeNotificationId: 'ID1'}, {chromeNotificationId: testCardId}]
+    },
+    B: {
+      cards: [{chromeNotificationId: testCardId}, {chromeNotificationId: 'ID2'}]
+    }
+  };
+
+  // Call tested method.
+  var notificationData = test.cardSet.update(
+      testCardId, [testUncombinedNotification], groups);
+
+  // Check the return value.
+  assertEquals(undefined, notificationData);
+
+  // Check that groups were cleaned up.
+  var expectedCleanedGroups = {
+    A: {
+      cards: [{chromeNotificationId: 'ID1'}]
+    },
+    B: {
+      cards: [{chromeNotificationId: 'ID2'}]
+    }
+  };
+
+  assertEquals(JSON.stringify(expectedCleanedGroups), JSON.stringify(groups));
+});
+
+TEST_F('GoogleNowCardsUnitTest', 'UpdateComplex', function() {
+  // Update a combined card that contains 2 uncombined cards. The card from
+  // group B has higher priority and wins.
+
+  var testUncombinedNotificationA = {
+    receivedNotification: {
+      notificationId: testNotificationIdA,
+      chromeNotificationId: testCardId,
+      chromeNotificationOptions: testNotificationA,
+      actionUrls: testActionUrlsA,
+      dismissal: testDismissalA,
+      groupName: groupNameA
+    },
+    hideTime: 300001
+  };
+
+  var testUncombinedNotificationB = {
+    receivedNotification: {
+      notificationId: testNotificationIdB,
+      chromeNotificationId: testCardId,
+      chromeNotificationOptions: testNotificationB,
+      actionUrls: testActionUrlsB,
+      dismissal: testDismissalB,
+      groupName: groupNameB
+    },
+    hideTime: 300002
+  };
+
+  // Setup and expectations.
+  var test = setUpCardManagerTest(this);
+  this.mockApis.expects(once()).
+      chrome_alarms_clear(expectedAlarmId);
+  var chromeNotificationsUpdateSavedArgs = new SaveMockArguments();
+  this.mockApis.expects(once()).
+      instrumented_notifications_update(
+          chromeNotificationsUpdateSavedArgs.match(eq(testCardId)),
+          chromeNotificationsUpdateSavedArgs.match(eqJSON(testNotificationB)),
+          chromeNotificationsUpdateSavedArgs.match(ANYTHING)).
+      will(invokeCallback(
+          chromeNotificationsUpdateSavedArgs, 2, notificationUpdateSuccessful));
+  this.mockApis.expects(once()).	
+      chrome_alarms_create(expectedAlarmId, eqJSON({when: 300001}));
+
+  // Call tested method.
+  var notificationData = test.cardSet.update(
+      testCardId,
+      [testUncombinedNotificationA, testUncombinedNotificationB],
+      {});
+
+  // Check the return value.
+  assertEquals(
+      JSON.stringify({
+        actionUrls: testActionUrlsB,
+        timestamp: 300000,
+        combinedCard: [testUncombinedNotificationA, testUncombinedNotificationB]
+      }),
+      JSON.stringify(notificationData));
+});
+
+TEST_F('GoogleNowCardsUnitTest', 'DismissSimple', function() {
+  // Dismiss a combined card that contains 1 uncombined currently visible card.
+  // The notification should be deleted, and the card data should be cleared.
+
+  var testUncombinedNotificationA = {
+    receivedNotification: {
+      notificationId: testNotificationIdA,
+      chromeNotificationId: testCardId,
+      chromeNotificationOptions: testNotificationA,
+      actionUrls: testActionUrlsA,
+      dismissal: testDismissalA,
+      groupName: groupNameA
+    },
+    showTime: 299995,
+    hideTime: 300005
+  };
+
+  // Setup and expectations.
+  var test = setUpCardManagerTest(this);
+  this.mockApis.expects(once()).
+      chrome_alarms_clear(expectedAlarmId);
+  this.mockApis.expects(once()).	
+      instrumented_notifications_clear(testCardId, ANYTHING);
+
+  var groups = {
+    A: {
+      cards: [{chromeNotificationId: 'ID1'}, {chromeNotificationId: testCardId}]
+    },
+    B: {
+      cards: [{chromeNotificationId: testCardId}, {chromeNotificationId: 'ID2'}]
+    }
+  };
+
+  // Call tested method.
+  var dismissalResult = test.cardSet.onDismissal(
+      testCardId,
+      {
+        actionUrls: testActionUrlsA,
+        timestamp: 299999,
+        combinedCard: [testUncombinedNotificationA]
+      },
+      groups);
+
+  // Check the return value.
+  assertEquals(
+      JSON.stringify({
+        dismissals: [
+          {notificationId: testNotificationIdA, parameters: testDismissalA}
+        ],
+        notificationData: undefined
+      }),
+      JSON.stringify(dismissalResult));
+
+  // Check that groups were cleaned up.
+  var expectedCleanedGroups = {
+    A: {
+      cards: [{chromeNotificationId: 'ID1'}]
+    },
+    B: {
+      cards: [{chromeNotificationId: 'ID2'}]
+    }
+  };
+
+  assertEquals(JSON.stringify(expectedCleanedGroups), JSON.stringify(groups));
+});
+
+TEST_F('GoogleNowCardsUnitTest', 'DismissComplex', function() {
+  // Dismiss a combined card that contains 2 uncombined cards. One of them (B),
+  // is currently shown, and it should be dismissed. The other one (A) has
+  // showTime in future, and it should not be dismissed.
+
+  var testUncombinedNotificationA = {
+    receivedNotification: {
+      notificationId: testNotificationIdA,
+      chromeNotificationId: testCardId,
+      chromeNotificationOptions: testNotificationA,
+      actionUrls: testActionUrlsA,
+      dismissal: testDismissalA,
+      groupName: groupNameA
+    },
+    showTime: 300010,
+    hideTime: 300011
+  };
+
+  var testUncombinedNotificationB = {
+    receivedNotification: {
+      notificationId: testNotificationIdB,
+      chromeNotificationId: testCardId,
+      chromeNotificationOptions: testNotificationB,
+      actionUrls: testActionUrlsB,
+      dismissal: testDismissalB,
+      groupName: groupNameB
+    },
+    showTime: 299995,
+    hideTime: 300005
+  };
+
+  // Setup and expectations.
+  var test = setUpCardManagerTest(this);
+  this.mockApis.expects(once()).
+      chrome_alarms_clear(expectedAlarmId);
+  this.mockApis.expects(once()).	
+      instrumented_notifications_clear(testCardId, ANYTHING);
+  this.mockApis.expects(once()).	
+      chrome_alarms_create(expectedAlarmId, eqJSON({when: 300010}));
+
+  // Call tested method.
+  var dismissalResult = test.cardSet.onDismissal(
+      testCardId,
+      {
+        actionUrls: testActionUrlsB,
+        timestamp: 299999,
+        combinedCard: [testUncombinedNotificationA, testUncombinedNotificationB]
+      },
+      {});
+
+  // Check the return value.
+  assertEquals(
+      JSON.stringify({
+        dismissals: [
+          {notificationId: testNotificationIdB, parameters: testDismissalB}
+        ],
+        notificationData: {
+          timestamp: 300000,
+          combinedCard: [testUncombinedNotificationA]
+        }}),
+      JSON.stringify(dismissalResult));
+});
+
 TEST_F('GoogleNowCardsUnitTest', 'onAlarmUnrecognized', function() {
   // Tests onAlarm does nothing on an unrelated alarm.
   var test = setUpCardManagerTest(this);
 
   // Call tested method.
   test.alarmCallback({name: 'unrelated'});
+});
+
+TEST_F('GoogleNowCardsUnitTest', 'onAlarmClear', function() {
+  // Tests onAlarm fired at a moment past all card's events. The card should be
+  // cleaned.
+  var testUncombinedNotification = {
+    receivedNotification: {
+      notificationId: testNotificationIdA,
+      chromeNotificationId: testCardId,
+      chromeNotificationOptions: testNotificationA,
+      actionUrls: testActionUrlsA,
+      dismissal: testDismissalA,
+      groupName: groupNameA
+    },
+    hideTime: 299999
+  };
+
+  // Setup and expectations.
+  var test = setUpCardManagerTest(this);
+  var tasksAddSavedArgs = new SaveMockArguments();
+  this.mockApis.expects(once()).
+      tasks_add(
+          tasksAddSavedArgs.match(eq(UPDATE_CARD_TASK_NAME)),
+          tasksAddSavedArgs.match(ANYTHING)).
+      will(invokeCallback(tasksAddSavedArgs,1));
+  var storageGetSavedArgs = new SaveMockArguments();
+  this.mockApis.expects(once()).
+      instrumented_storage_local_get(
+          storageGetSavedArgs.match(
+              eqJSON(['notificationsData', 'notificationGroups'])),
+          storageGetSavedArgs.match(ANYTHING)).
+      will(invokeCallback(
+          storageGetSavedArgs,
+          1,
+          {
+            notificationsData: {
+              'TEST CARD ID': {
+                actionUrls: testActionUrlsA,
+                timestamp: 299998,
+                combinedCard: [testUncombinedNotification]
+              },
+              'TEST CARD ID 1': {testField: 'TEST VALUE 1'}
+            },
+            notificationGroups: {
+              A: {
+                cards: [
+                  {chromeNotificationId: 'ID1'},
+                  {chromeNotificationId: testCardId}
+                ]
+              },
+              B: {
+                cards: [
+                  {chromeNotificationId: testCardId},
+                  {chromeNotificationId: 'ID2'}
+                ]
+            }}}));
+  this.mockApis.expects(once()).
+      instrumented_notifications_clear(testCardId, ANYTHING);
+  this.mockApis.expects(once()).
+      chrome_alarms_clear(expectedAlarmId);
+  this.mockApis.expects(once()).
+      chrome_storage_local_set(eqJSON({
+        notificationsData: {
+          'TEST CARD ID 1': {testField: 'TEST VALUE 1'}
+        },
+        notificationGroups: {
+          A: {
+            cards: [{chromeNotificationId: 'ID1'}]
+          },
+          B: {
+            cards: [{chromeNotificationId: 'ID2'}]
+        }}}));
+
+  // Call tested method.
+  test.alarmCallback({name: expectedAlarmId});
+});
+
+TEST_F('GoogleNowCardsUnitTest', 'onAlarmUpdate', function() {
+  // Tests onAlarm fired at a moment when there are future card's events. The
+  // card needs to be updated.
+  var testUncombinedNotification = {
+    receivedNotification: {
+      notificationId: testNotificationIdA,
+      chromeNotificationId: testCardId,
+      chromeNotificationOptions: testNotificationA,
+      actionUrls: testActionUrlsA,
+      dismissal: testDismissalA,
+      groupName: groupNameA
+    },
+    hideTime: 300001
+  };
+
+  // Setup and expectations.
+  var test = setUpCardManagerTest(this);
+  var tasksAddSavedArgs = new SaveMockArguments();
+  this.mockApis.expects(once()).
+      tasks_add(
+          tasksAddSavedArgs.match(eq(UPDATE_CARD_TASK_NAME)),
+          tasksAddSavedArgs.match(ANYTHING)).
+      will(invokeCallback(tasksAddSavedArgs,1));
+  var storageGetSavedArgs = new SaveMockArguments();
+  this.mockApis.expects(once()).
+      instrumented_storage_local_get(
+          storageGetSavedArgs.match(
+              eqJSON(['notificationsData', 'notificationGroups'])),
+          storageGetSavedArgs.match(ANYTHING)).
+      will(invokeCallback(
+          storageGetSavedArgs,
+          1,
+          {
+            notificationsData: {
+              'TEST CARD ID': {
+                actionUrls: testActionUrlsA,
+                timestamp: 299998,
+                combinedCard: [testUncombinedNotification]
+              }}}));
+  this.mockApis.expects(once()).
+      chrome_alarms_clear(expectedAlarmId);
+  var chromeNotificationsUpdateSavedArgs = new SaveMockArguments();
+  this.mockApis.expects(once()).
+      instrumented_notifications_update(
+          chromeNotificationsUpdateSavedArgs.match(eq(testCardId)),
+          chromeNotificationsUpdateSavedArgs.match(eqJSON(testNotificationA)),
+          chromeNotificationsUpdateSavedArgs.match(ANYTHING)).
+      will(invokeCallback(
+          chromeNotificationsUpdateSavedArgs, 2, notificationUpdateSuccessful));
+  this.mockApis.expects(once()).	
+      chrome_alarms_create(expectedAlarmId, eqJSON({when: 300001}));
+  this.mockApis.expects(once()).
+      chrome_storage_local_set(eqJSON({
+            notificationsData: {
+              'TEST CARD ID': {
+                actionUrls: testActionUrlsA,
+                timestamp: 300000,
+                combinedCard: [testUncombinedNotification]
+              }
+            },
+            notificationGroups: {
+            }}));
+
+  // Call tested method.
+  test.alarmCallback({name: expectedAlarmId});
 });

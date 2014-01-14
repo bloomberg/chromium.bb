@@ -442,33 +442,31 @@ function combineAndShowNotificationCards(
 }
 
 /**
- * Parses JSON response from the notification server, shows notifications and
+ * Based on a response from the notification server, shows notifications and
  * schedules next update.
- * @param {string} response Server response.
+ * @param {ServerResponse} response Server response.
  * @param {function(ReceivedNotification)=} onCardShown Optional parameter
  *     called when each card is shown.
  */
-function parseAndShowNotificationCards(response, onCardShown) {
-  console.log('parseAndShowNotificationCards ' + response);
-  /** @type {ServerResponse} */
-  var parsedResponse = JSON.parse(response);
+function processServerResponse(response, onCardShown) {
+  console.log('processServerResponse ' + JSON.stringify(response));
 
-  if (parsedResponse.googleNowDisabled) {
+  if (response.googleNowDisabled) {
     chrome.storage.local.set({googleNowEnabled: false});
     // TODO(vadimt): Remove the line below once the server stops sending groups
     // with 'googleNowDisabled' responses.
-    parsedResponse.groups = {};
+    response.groups = {};
     // Google Now was enabled; now it's disabled. This is a state change.
     onStateChange();
   }
 
-  var receivedGroups = parsedResponse.groups;
+  var receivedGroups = response.groups;
 
   instrumented.storage.local.get(
       ['notificationGroups', 'recentDismissals'],
       function(items) {
         console.log(
-            'parseAndShowNotificationCards-get ' + JSON.stringify(items));
+            'processServerResponse-get ' + JSON.stringify(items));
         items = items || {};
         /** @type {Object.<string, StoredNotificationGroup>} */
         items.notificationGroups = items.notificationGroups || {};
@@ -489,10 +487,10 @@ function parseAndShowNotificationCards(response, onCardShown) {
         }
 
         // Populate groups with corresponding cards.
-        if (parsedResponse.notifications) {
-          for (var i = 0; i < parsedResponse.notifications.length; ++i) {
+        if (response.notifications) {
+          for (var i = 0; i < response.notifications.length; ++i) {
             /** @type {ReceivedNotification} */
-            var card = parsedResponse.notifications[i];
+            var card = response.notifications[i];
             if (!(card.notificationId in updatedRecentDismissals)) {
               var group = receivedGroups[card.groupName];
               group.cards = group.cards || [];
@@ -539,7 +537,7 @@ function parseAndShowNotificationCards(response, onCardShown) {
           updatedGroups[groupName] = storedGroup;
         }
 
-        scheduleNextPoll(updatedGroups, !parsedResponse.googleNowDisabled);
+        scheduleNextPoll(updatedGroups, !response.googleNowDisabled);
         combineAndShowNotificationCards(
             updatedGroups,
             function() {
@@ -595,7 +593,8 @@ function requestNotificationGroups(groupNames) {
     console.log('requestNotificationGroups-onloadend ' + request.status);
     if (request.status == HTTP_OK) {
       recordEvent(GoogleNowEvent.REQUEST_FOR_CARDS_SUCCESS);
-      parseAndShowNotificationCards(request.responseText, cardShownCallback);
+      processServerResponse(
+          JSON.parse(request.responseText), cardShownCallback);
     }
   };
 
