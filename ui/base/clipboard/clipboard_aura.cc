@@ -150,20 +150,21 @@ class ClipboardData {
 // on gtk or winapi clipboard on win.
 class AuraClipboard {
  public:
-  AuraClipboard() {}
+  AuraClipboard() : sequence_number_(0) {
+  }
 
   ~AuraClipboard() {
     Clear();
   }
 
   void Clear() {
+    sequence_number_++;
     STLDeleteContainerPointers(data_list_.begin(), data_list_.end());
     data_list_.clear();
   }
 
-  // Returns the number of entries currently in the clipboard stack.
-  size_t GetNumClipboardEntries() {
-    return data_list_.size();
+  uint64_t sequence_number() const {
+    return sequence_number_;
   }
 
   // Returns the data currently on the top of the clipboard stack, NULL if the
@@ -303,6 +304,7 @@ class AuraClipboard {
 
   void AddToListEnsuringSize(ClipboardData* data) {
     DCHECK(data);
+    sequence_number_++;
     data_list_.push_front(data);
 
     // If the size of list becomes more than the maximum allowed, we delete the
@@ -316,6 +318,9 @@ class AuraClipboard {
 
   // Stack containing various versions of ClipboardData.
   std::list<ClipboardData*> data_list_;
+
+  // Sequence number uniquely identifying clipboard state.
+  uint64_t sequence_number_;
 
   DISALLOW_COPY_AND_ASSIGN(AuraClipboard);
 };
@@ -556,7 +561,7 @@ void Clipboard::ReadData(const FormatType& format, std::string* result) const {
 
 uint64 Clipboard::GetSequenceNumber(ClipboardType type) {
   DCHECK(CalledOnValidThread());
-  return GetClipboard()->GetNumClipboardEntries();
+  return GetClipboard()->sequence_number();
 }
 
 void Clipboard::WriteText(const char* text_data, size_t text_len) {
