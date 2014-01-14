@@ -341,7 +341,7 @@ LayoutUnit RenderFlexibleBox::clientLogicalBottomAfterRepositioning()
         LayoutUnit childLogicalBottom = logicalTopForChild(child) + logicalHeightForChild(child) + marginAfterForChild(child);
         maxChildLogicalBottom = std::max(maxChildLogicalBottom, childLogicalBottom);
     }
-    return std::max(clientLogicalBottom(), maxChildLogicalBottom);
+    return std::max(clientLogicalBottom(), maxChildLogicalBottom + paddingAfter());
 }
 
 bool RenderFlexibleBox::hasOrthogonalFlow(RenderBox* child) const
