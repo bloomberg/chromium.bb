@@ -53,8 +53,8 @@ inertElements.forEach(function(id) {
     element.addEventListener('mousemove', eventFiredOnInertElement);
 });
 
-document.body.addEventListener('click', function(e) {
-    document.body.firedOn = true;
+document.addEventListener('click', function(e) {
+    document.firedOn = true;
 });
 
 document.getElementById('dialog-parent').addEventListener('click', function(e) {
@@ -63,7 +63,7 @@ document.getElementById('dialog-parent').addEventListener('click', function(e) {
 
 document.querySelector('dialog').showModal();
 inertElements.forEach(function(id) {
-    expectedTarget = document.body;
+    expectedTarget = document;
     if (id == 'dialog-sibling')
         expectedTarget = document.getElementById('dialog-parent')
     element = document.getElementById(id);
