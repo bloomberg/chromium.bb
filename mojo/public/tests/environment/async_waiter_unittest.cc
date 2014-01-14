@@ -1,20 +1,19 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/utility/bindings_support_impl.h"
+#include "mojo/public/environment/default_async_waiter.h"
 
-#include "base/basictypes.h"
+#include "mojo/public/environment/environment.h"
 #include "mojo/public/system/core_cpp.h"
 #include "mojo/public/tests/test_support.h"
-#include "mojo/public/utility/environment.h"
 #include "mojo/public/utility/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
 namespace {
 
-class TestAsyncWaitCallback : public BindingsSupport::AsyncWaitCallback {
+class TestAsyncWaitCallback {
  public:
   TestAsyncWaitCallback() : result_count_(0), last_result_(MOJO_RESULT_OK) {
   }
@@ -24,10 +23,11 @@ class TestAsyncWaitCallback : public BindingsSupport::AsyncWaitCallback {
 
   MojoResult last_result() const { return last_result_; }
 
-  // RunLoopHandler:
-  virtual void OnHandleReady(MojoResult result) OVERRIDE {
-    result_count_++;
-    last_result_ = result;
+  // MojoAsyncWaitCallback:
+  static void OnHandleReady(void* closure, MojoResult result) {
+    TestAsyncWaitCallback* self = static_cast<TestAsyncWaitCallback*>(closure);
+    self->result_count_++;
+    self->last_result_ = result;
   }
 
  private:
@@ -37,9 +37,26 @@ class TestAsyncWaitCallback : public BindingsSupport::AsyncWaitCallback {
   DISALLOW_COPY_AND_ASSIGN(TestAsyncWaitCallback);
 };
 
-class BindingsSupportImplTest : public testing::Test {
+MojoAsyncWaitID CallAsyncWait(const Handle& handle,
+                              MojoWaitFlags flags,
+                              TestAsyncWaitCallback* callback) {
+  MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter();
+  return waiter->AsyncWait(waiter,
+                           handle.value(),
+                           flags,
+                           MOJO_DEADLINE_INDEFINITE,
+                           &TestAsyncWaitCallback::OnHandleReady,
+                           callback);
+}
+
+void CallCancelWait(MojoAsyncWaitID wait_id) {
+  MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter();
+  waiter->CancelWait(waiter, wait_id);
+}
+
+class AsyncWaiterTest : public testing::Test {
  public:
-  BindingsSupportImplTest() {}
+  AsyncWaiterTest() {}
 
   virtual void SetUp() OVERRIDE {
     Test::SetUp();
@@ -56,25 +73,26 @@ class BindingsSupportImplTest : public testing::Test {
   scoped_ptr<Environment> environment_;
   scoped_ptr<RunLoop> run_loop_;
 
-  DISALLOW_COPY_AND_ASSIGN(BindingsSupportImplTest);
+  DISALLOW_COPY_AND_ASSIGN(AsyncWaiterTest);
 };
 
 // Verifies AsyncWaitCallback is notified when pipe is ready.
-TEST_F(BindingsSupportImplTest, CallbackNotified) {
+TEST_F(AsyncWaiterTest, CallbackNotified) {
   TestAsyncWaitCallback callback;
   MessagePipe test_pipe;
   EXPECT_EQ(MOJO_RESULT_OK,
             test::WriteEmptyMessage(test_pipe.handle1.get()));
 
-  BindingsSupport::Get()->AsyncWait(test_pipe.handle0.get(),
-                                    MOJO_WAIT_FLAG_READABLE, &callback);
+  CallAsyncWait(test_pipe.handle0.get(),
+                MOJO_WAIT_FLAG_READABLE,
+                &callback);
   RunLoop::current()->Run();
   EXPECT_EQ(1, callback.result_count());
   EXPECT_EQ(MOJO_RESULT_OK, callback.last_result());
 }
 
 // Verifies 2 AsyncWaitCallbacks are notified when there pipes are ready.
-TEST_F(BindingsSupportImplTest, TwoCallbacksNotified) {
+TEST_F(AsyncWaiterTest, TwoCallbacksNotified) {
   TestAsyncWaitCallback callback1;
   TestAsyncWaitCallback callback2;
   MessagePipe test_pipe1;
@@ -84,10 +102,9 @@ TEST_F(BindingsSupportImplTest, TwoCallbacksNotified) {
   EXPECT_EQ(MOJO_RESULT_OK,
             test::WriteEmptyMessage(test_pipe2.handle1.get()));
 
-  BindingsSupport::Get()->AsyncWait(test_pipe1.handle0.get(),
-                                    MOJO_WAIT_FLAG_READABLE, &callback1);
-  BindingsSupport::Get()->AsyncWait(test_pipe2.handle0.get(),
-                                    MOJO_WAIT_FLAG_READABLE, &callback2);
+  CallAsyncWait(test_pipe1.handle0.get(), MOJO_WAIT_FLAG_READABLE, &callback1);
+  CallAsyncWait(test_pipe2.handle0.get(), MOJO_WAIT_FLAG_READABLE, &callback2);
+
   RunLoop::current()->Run();
   EXPECT_EQ(1, callback1.result_count());
   EXPECT_EQ(MOJO_RESULT_OK, callback1.last_result());
@@ -96,14 +113,15 @@ TEST_F(BindingsSupportImplTest, TwoCallbacksNotified) {
 }
 
 // Verifies cancel works.
-TEST_F(BindingsSupportImplTest, CancelCallback) {
+TEST_F(AsyncWaiterTest, CancelCallback) {
   TestAsyncWaitCallback callback;
   MessagePipe test_pipe;
   EXPECT_EQ(MOJO_RESULT_OK, test::WriteEmptyMessage(test_pipe.handle1.get()));
 
-  BindingsSupport::Get()->CancelWait(
-      BindingsSupport::Get()->AsyncWait(test_pipe.handle0.get(),
-                                        MOJO_WAIT_FLAG_READABLE, &callback));
+  CallCancelWait(
+      CallAsyncWait(test_pipe.handle0.get(),
+                    MOJO_WAIT_FLAG_READABLE,
+                    &callback));
   RunLoop::current()->Run();
   EXPECT_EQ(0, callback.result_count());
 }

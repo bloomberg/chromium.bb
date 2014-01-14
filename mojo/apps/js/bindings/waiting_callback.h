@@ -8,35 +8,37 @@
 #include "gin/handle.h"
 #include "gin/runner.h"
 #include "gin/wrappable.h"
-#include "mojo/public/bindings/lib/bindings_support.h"
+#include "mojo/public/system/async_waiter.h"
 
 namespace mojo {
 namespace js {
 
-class WaitingCallback : public gin::Wrappable<WaitingCallback>,
-                        public BindingsSupport::AsyncWaitCallback {
+class WaitingCallback : public gin::Wrappable<WaitingCallback> {
  public:
   static gin::WrapperInfo kWrapperInfo;
 
   static gin::Handle<WaitingCallback> Create(
       v8::Isolate* isolate, v8::Handle<v8::Function> callback);
 
-  BindingsSupport::AsyncWaitID wait_id() const {
+  MojoAsyncWaitID wait_id() const {
     return wait_id_;
   }
 
-  void set_wait_id(BindingsSupport::AsyncWaitID wait_id) {
+  void set_wait_id(MojoAsyncWaitID wait_id) {
     wait_id_ = wait_id;
   }
+
+  // MojoAsyncWaitCallback
+  static void CallOnHandleReady(void* closure, MojoResult result);
 
  private:
   WaitingCallback(v8::Isolate* isolate, v8::Handle<v8::Function> callback);
   virtual ~WaitingCallback();
 
-  virtual void OnHandleReady(MojoResult result) OVERRIDE;
+  void OnHandleReady(MojoResult result);
 
   base::WeakPtr<gin::Runner> runner_;
-  BindingsSupport::AsyncWaitID wait_id_;
+  MojoAsyncWaitID wait_id_;
 
   DISALLOW_COPY_AND_ASSIGN(WaitingCallback);
 };

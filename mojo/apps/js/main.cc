@@ -5,7 +5,6 @@
 #include "base/message_loop/message_loop.h"
 #include "gin/public/isolate_holder.h"
 #include "mojo/apps/js/mojo_runner_delegate.h"
-#include "mojo/common/bindings_support_impl.h"
 #include "mojo/public/gles2/gles2.h"
 #include "mojo/public/system/core_cpp.h"
 #include "mojo/public/system/macros.h"
@@ -38,13 +37,10 @@ void Start(MojoHandle pipe, const std::string& module) {
 }  // namespace mojo
 
 extern "C" MOJO_APPS_JS_EXPORT MojoResult CDECL MojoMain(MojoHandle pipe) {
-  mojo::common::BindingsSupportImpl bindings_support;
-  mojo::BindingsSupport::Set(&bindings_support);
   MojoGLES2Initialize();
 
   mojo::apps::Start(pipe, "mojo/apps/js/main");
 
   MojoGLES2Terminate();
-  mojo::BindingsSupport::Set(NULL);
   return MOJO_RESULT_OK;
 }

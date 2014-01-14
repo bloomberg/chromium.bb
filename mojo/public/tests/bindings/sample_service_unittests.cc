@@ -6,7 +6,7 @@
 #include <ostream>
 #include <string>
 
-#include "mojo/public/tests/bindings/simple_bindings_support.h"
+#include "mojo/public/environment/environment.h"
 #include "mojom/sample_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -286,7 +286,7 @@ class SimpleMessageReceiver : public mojo::MessageReceiver {
 }  // namespace
 
 TEST(BindingsSampleTest, Basic) {
-  mojo::test::SimpleBindingsSupport bindings_support;
+  mojo::Environment env;
   SimpleMessageReceiver receiver;
 
   // User has a proxy to a Service somehow.

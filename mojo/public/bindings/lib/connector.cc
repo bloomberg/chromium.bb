@@ -14,8 +14,10 @@ namespace internal {
 
 // ----------------------------------------------------------------------------
 
-Connector::Connector(ScopedMessagePipeHandle message_pipe)
-    : message_pipe_(message_pipe.Pass()),
+Connector::Connector(ScopedMessagePipeHandle message_pipe,
+                     MojoAsyncWaiter* waiter)
+    : waiter_(waiter),
+      message_pipe_(message_pipe.Pass()),
       incoming_receiver_(NULL),
       error_(false) {
 }
@@ -54,19 +56,26 @@ void Connector::OnHandleReady(Callback* callback, MojoResult result) {
 }
 
 void Connector::WaitToReadMore() {
-  read_callback_.SetOwnerToNotify(this);
-  read_callback_.SetAsyncWaitID(
-      BindingsSupport::Get()->AsyncWait(message_pipe_.get(),
-                                        MOJO_WAIT_FLAG_READABLE,
-                                        &read_callback_));
+  CallAsyncWait(MOJO_WAIT_FLAG_READABLE, &read_callback_);
 }
 
 void Connector::WaitToWriteMore() {
-  write_callback_.SetOwnerToNotify(this);
-  write_callback_.SetAsyncWaitID(
-      BindingsSupport::Get()->AsyncWait(message_pipe_.get(),
-                                        MOJO_WAIT_FLAG_WRITABLE,
-                                        &write_callback_));
+  CallAsyncWait(MOJO_WAIT_FLAG_WRITABLE, &write_callback_);
+}
+
+void Connector::CallAsyncWait(MojoWaitFlags flags, Callback* callback) {
+  callback->SetOwnerToNotify(this);
+  callback->SetAsyncWaitID(
+      waiter_->AsyncWait(waiter_,
+                         message_pipe_.get().value(),
+                         MOJO_WAIT_FLAG_READABLE,
+                         MOJO_DEADLINE_INDEFINITE,
+                         &Callback::OnHandleReady,
+                         callback));
+}
+
+void Connector::CallCancelWait(MojoAsyncWaitID async_wait_id) {
+  waiter_->CancelWait(waiter_, async_wait_id);
 }
 
 void Connector::ReadMore() {
@@ -155,7 +164,7 @@ Connector::Callback::Callback()
 
 Connector::Callback::~Callback() {
   if (owner_)
-    BindingsSupport::Get()->CancelWait(async_wait_id_);
+    owner_->CallCancelWait(async_wait_id_);
 }
 
 void Connector::Callback::SetOwnerToNotify(Connector* owner) {
@@ -163,15 +172,20 @@ void Connector::Callback::SetOwnerToNotify(Connector* owner) {
   owner_ = owner;
 }
 
-void Connector::Callback::SetAsyncWaitID(BindingsSupport::AsyncWaitID id) {
+void Connector::Callback::SetAsyncWaitID(MojoAsyncWaitID id) {
   async_wait_id_ = id;
 }
 
-void Connector::Callback::OnHandleReady(MojoResult result) {
-  assert(owner_);
+// static
+void Connector::Callback::OnHandleReady(void* closure, MojoResult result) {
+  Callback* self = static_cast<Callback*>(closure);
+
+  // Reset |owner_| to indicate that we are no longer in the waiting state.
+
+  assert(self->owner_);
   Connector* owner = NULL;
-  std::swap(owner, owner_);
-  owner->OnHandleReady(this, result);
+  std::swap(owner, self->owner_);
+  owner->OnHandleReady(self, result);
 }
 
 }  // namespace internal

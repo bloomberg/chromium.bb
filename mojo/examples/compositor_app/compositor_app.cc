@@ -6,10 +6,8 @@
 #include <string>
 
 #include "base/message_loop/message_loop.h"
-#include "mojo/common/bindings_support_impl.h"
 #include "mojo/examples/compositor_app/compositor_host.h"
 #include "mojo/examples/compositor_app/gles2_client_impl.h"
-#include "mojo/public/bindings/lib/bindings_support.h"
 #include "mojo/public/bindings/lib/remote_ptr.h"
 #include "mojo/public/gles2/gles2.h"
 #include "mojo/public/system/core.h"
@@ -98,8 +96,6 @@ class SampleApp : public ShellClient {
 extern "C" SAMPLE_APP_EXPORT MojoResult CDECL MojoMain(
     MojoHandle shell_handle) {
   base::MessageLoop loop;
-  mojo::common::BindingsSupportImpl bindings_support_impl;
-  mojo::BindingsSupport::Set(&bindings_support_impl);
   MojoGLES2Initialize();
 
   mojo::examples::SampleApp app(
@@ -107,6 +103,5 @@ extern "C" SAMPLE_APP_EXPORT MojoResult CDECL MojoMain(
   loop.Run();
 
   MojoGLES2Terminate();
-  mojo::BindingsSupport::Set(NULL);
   return MOJO_RESULT_OK;
 }

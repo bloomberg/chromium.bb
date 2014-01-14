@@ -20,14 +20,12 @@ Context::Context()
               scoped_ptr<net::NetworkDelegate>(new NetworkDelegate()),
               storage_.profile_path()) {
   embedder::Init();
-  BindingsSupport::Set(&bindings_support_impl_);
   dynamic_service_loader_.reset(new DynamicServiceLoader(this));
   service_manager_.set_default_loader(dynamic_service_loader_.get());
 }
 
 Context::~Context() {
   service_manager_.set_default_loader(NULL);
-  BindingsSupport::Set(NULL);
 }
 
 }  // namespace shell

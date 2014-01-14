@@ -4,7 +4,7 @@
 
 #include "mojo/public/bindings/lib/bindings_serialization.h"
 #include "mojo/public/bindings/lib/buffer.h"
-#include "mojo/public/tests/bindings/simple_bindings_support.h"
+#include "mojo/public/environment/environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -21,7 +21,7 @@ bool IsZero(void* p_buf, size_t size) {
 
 // Tests small and large allocations in ScratchBuffer.
 TEST(ScratchBufferTest, Basic) {
-  SimpleBindingsSupport bindings_support;
+  Environment env;
 
   // Test that a small allocation is placed on the stack.
   internal::ScratchBuffer buf;
@@ -42,7 +42,7 @@ TEST(ScratchBufferTest, Basic) {
 
 // Tests that Buffer::current() returns the correct value.
 TEST(ScratchBufferTest, Stacked) {
-  SimpleBindingsSupport bindings_support;
+  Environment env;
 
   EXPECT_FALSE(Buffer::current());
 
@@ -61,7 +61,7 @@ TEST(ScratchBufferTest, Stacked) {
 
 // Tests that FixedBuffer allocates memory aligned to 8 byte boundaries.
 TEST(FixedBufferTest, Alignment) {
-  SimpleBindingsSupport bindings_support;
+  Environment env;
 
   internal::FixedBuffer buf(internal::Align(10) * 2);
   ASSERT_EQ(buf.size(), 16u * 2);
@@ -81,7 +81,7 @@ TEST(FixedBufferTest, Alignment) {
 
 // Tests that FixedBuffer::Leak passes ownership to the caller.
 TEST(FixedBufferTest, Leak) {
-  SimpleBindingsSupport bindings_support;
+  Environment env;
 
   void* ptr = NULL;
   void* buf_ptr = NULL;

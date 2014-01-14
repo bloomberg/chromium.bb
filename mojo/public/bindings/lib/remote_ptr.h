@@ -48,13 +48,15 @@ namespace mojo {
 //
 template <typename S>
 class RemotePtr {
+  struct State;
   MOJO_MOVE_ONLY_TYPE_FOR_CPP_03(RemotePtr, RValue);
 
  public:
   RemotePtr() : state_(NULL) {}
   explicit RemotePtr(ScopedMessagePipeHandle message_pipe,
-                     typename S::_Peer* peer = NULL)
-      : state_(new State(message_pipe.Pass(), peer)) {
+                     typename S::_Peer* peer = NULL,
+                     MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter())
+      : state_(new State(message_pipe.Pass(), peer, waiter)) {
   }
 
   // Move-only constructor and operator=.
@@ -87,9 +89,10 @@ class RemotePtr {
   }
 
   void reset(ScopedMessagePipeHandle message_pipe,
-             typename S::_Peer* peer = NULL) {
+             typename S::_Peer* peer = NULL,
+             MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter()) {
     delete state_;
-    state_ = new State(message_pipe.Pass(), peer);
+    state_ = new State(message_pipe.Pass(), peer, waiter);
   }
 
   bool encountered_error() const {
@@ -99,8 +102,9 @@ class RemotePtr {
 
  private:
   struct State {
-    State(ScopedMessagePipeHandle message_pipe, typename S::_Peer* peer)
-        : connector(message_pipe.Pass()),
+    State(ScopedMessagePipeHandle message_pipe, typename S::_Peer* peer,
+          MojoAsyncWaiter* waiter)
+        : connector(message_pipe.Pass(), waiter),
           proxy(&connector),
           stub(peer) {
       if (peer)

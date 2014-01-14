@@ -35,6 +35,7 @@
         'mojo_js_unittests',
         'mojo_public_test_support',
         'mojo_public_bindings_unittests',
+        'mojo_public_environment_unittests',
         'mojo_public_system_perftests',
         'mojo_public_system_unittests',
         'mojo_public_utility_unittests',
@@ -197,8 +198,6 @@
         'mojo_system',
       ],
       'sources': [
-        'common/bindings_support_impl.cc',
-        'common/bindings_support_impl.h',
         'common/common_type_converters.cc',
         'common/common_type_converters.h',
         'common/handle_watcher.cc',
@@ -239,6 +238,7 @@
         '../base/base.gyp:base_message_loop_tests',
         '../testing/gtest.gyp:gtest',
         'mojo_bindings',
+        'mojo_environment_chromium',
         'mojo_common_lib',
         'mojo_common_test_support',
         'mojo_public_test_support',
@@ -259,6 +259,45 @@
             4267,
           ],
         }],
+      ],
+    },
+    {
+      'target_name': 'mojo_environment_chromium',
+      'type': 'static_library',
+      'dependencies': [
+        'mojo_environment_chromium_impl',
+      ],
+      'sources': [
+        'environment/default_async_waiter.cc',
+        'environment/buffer_tls.cc',
+        'environment/environment.cc',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'export_dependent_settings': [
+        'mojo_environment_chromium_impl',
+      ],
+    },
+    {
+      'target_name': 'mojo_environment_chromium_impl',
+      'type': '<(component)',
+      'defines': [
+        'MOJO_ENVIRONMENT_IMPL_IMPLEMENTATION',
+      ],
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+        'mojo_common_lib'
+      ],
+      'sources': [
+        'environment/default_async_waiter_impl.cc',
+        'environment/default_async_waiter_impl.h',
+        'environment/buffer_tls_impl.cc',
+        'environment/buffer_tls_impl.h',
+      ],
+      'include_dirs': [
+        '..',
       ],
     },
     {
@@ -326,6 +365,7 @@
         '../ui/gl/gl.gyp:gl',
         '../url/url.gyp:url_lib',
         'mojo_common_lib',
+        'mojo_environment_chromium',
         'mojo_shell_lib',
         'mojo_system',
         'mojo_system_impl',
@@ -349,6 +389,7 @@
         '../base/base.gyp:base',
         '../testing/gtest.gyp:gtest',
         'mojo_common_lib',
+        'mojo_environment_chromium',
         'mojo_run_all_unittests',
         'mojo_shell_lib',
       ],
@@ -409,6 +450,7 @@
             '../ui/gfx/gfx.gyp:gfx_geometry',
             '../ui/gl/gl.gyp:gl',
             'mojo_common_lib',
+            'mojo_environment_chromium',
             'mojo_jni_headers',
             'mojo_shell_bindings',
             'mojo_shell_lib',

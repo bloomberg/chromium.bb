@@ -15,6 +15,7 @@
         ],
       },
       'sources': [
+        'public/system/async_waiter.h',
         'public/system/core.h',
         'public/system/core_cpp.h',
         'public/system/core_private.cc',
@@ -42,10 +43,12 @@
       'dependencies': [
         '../testing/gtest.gyp:gtest',
         'mojo_bindings',
+        'mojo_environment_standalone',
         'mojo_public_test_support',
         'mojo_run_all_unittests',
         'mojo_sample_service',
         'mojo_system',
+        'mojo_utility',
       ],
       'sources': [
         'public/tests/bindings/array_unittest.cc',
@@ -57,11 +60,25 @@
         'public/tests/bindings/math_calculator.mojom',
         'public/tests/bindings/sample_factory.mojom',
         'public/tests/bindings/sample_service_unittests.cc',
-        'public/tests/bindings/simple_bindings_support.cc',
-        'public/tests/bindings/simple_bindings_support.h',
         'public/tests/bindings/test_structs.mojom',
       ],
       'includes': [ 'public/bindings/mojom_bindings_generator.gypi' ],
+    },
+    {
+      'target_name': 'mojo_public_environment_unittests',
+      'type': 'executable',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../testing/gtest.gyp:gtest',
+        'mojo_environment_standalone',
+        'mojo_public_test_support',
+        'mojo_run_all_unittests',
+        'mojo_system',
+        'mojo_utility',
+      ],
+      'sources': [
+        'public/tests/environment/async_waiter_unittest.cc',
+      ],
     },
     {
       'target_name': 'mojo_public_system_unittests',
@@ -92,7 +109,6 @@
         'mojo_utility',
       ],
       'sources': [
-        'public/tests/utility/bindings_support_impl_unittest.cc',
         'public/tests/utility/run_loop_unittest.cc',
         'public/tests/utility/thread_local_unittest.cc',
       ],
@@ -126,8 +142,6 @@
         'public/bindings/lib/bindings_internal.h',
         'public/bindings/lib/bindings_serialization.cc',
         'public/bindings/lib/bindings_serialization.h',
-        'public/bindings/lib/bindings_support.cc',
-        'public/bindings/lib/bindings_support.h',
         'public/bindings/lib/buffer.cc',
         'public/bindings/lib/buffer.h',
         'public/bindings/lib/connector.cc',
@@ -153,13 +167,25 @@
       ],
     },
     {
+      'target_name': 'mojo_environment_standalone',
+      'type': 'static_library',
+      'sources': [
+        'public/environment/default_async_waiter.h',
+        'public/environment/buffer_tls.h',
+        'public/environment/environment.h',
+        'public/environment/standalone/default_async_waiter.cc',
+        'public/environment/standalone/buffer_tls.cc',
+        'public/environment/standalone/buffer_tls_setup.h',
+        'public/environment/standalone/environment.cc',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+    },
+    {
       'target_name': 'mojo_utility',
       'type': 'static_library',
       'sources': [
-        'public/utility/bindings_support_impl.cc',
-        'public/utility/bindings_support_impl.h',
-        'public/utility/environment.cc',
-        'public/utility/environment.h',
         'public/utility/run_loop.cc',
         'public/utility/run_loop.h',
         'public/utility/run_loop_handler.h',

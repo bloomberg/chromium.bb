@@ -6,7 +6,6 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
-#include "mojo/common/bindings_support_impl.h"
 #include "mojo/services/gles2/gles2_impl.h"
 #include "mojo/services/native_viewport/native_viewport.h"
 #include "mojom/native_viewport.h"
@@ -182,15 +181,10 @@ mojo::services::NativeViewportService*
 
 extern "C" MOJO_NATIVE_VIEWPORT_EXPORT MojoResult MojoMain(
     const MojoHandle shell_handle) {
-  mojo::common::BindingsSupportImpl bindings_support_impl;
-  mojo::BindingsSupport::Set(&bindings_support_impl);
-
   base::MessageLoopForUI loop;
   mojo::services::NativeViewportService app(
       mojo::MakeScopedHandle(mojo::MessagePipeHandle(shell_handle)).Pass());
   base::MessageLoop::current()->Run();
-
-  mojo::BindingsSupport::Set(NULL);
   return MOJO_RESULT_OK;
 }
 

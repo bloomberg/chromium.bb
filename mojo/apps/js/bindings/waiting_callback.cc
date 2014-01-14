@@ -36,8 +36,13 @@ gin::Handle<WaitingCallback> WaitingCallback::Create(
   return gin::CreateHandle(isolate, new WaitingCallback(isolate, callback));
 }
 
+// static
+void WaitingCallback::CallOnHandleReady(void* closure, MojoResult result) {
+  static_cast<WaitingCallback*>(closure)->OnHandleReady(result);
+}
+
 void WaitingCallback::OnHandleReady(MojoResult result) {
-  wait_id_ = NULL;
+  wait_id_ = 0;
 
   if (!runner_)
     return;

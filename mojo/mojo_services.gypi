@@ -53,6 +53,7 @@
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',
         'mojo_common_lib',
+        'mojo_environment_chromium',
         'mojo_gles2_service',
         'mojo_native_viewport_bindings',
         'mojo_shell_bindings',

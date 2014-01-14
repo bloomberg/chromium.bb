@@ -5,7 +5,6 @@
 #ifndef MOJO_SHELL_CONTEXT_H_
 #define MOJO_SHELL_CONTEXT_H_
 
-#include "mojo/common/bindings_support_impl.h"
 #include "mojo/shell/loader.h"
 #include "mojo/shell/service_manager.h"
 #include "mojo/shell/storage.h"
@@ -40,7 +39,6 @@ class Context {
   Storage storage_;
   Loader loader_;
   ServiceManager service_manager_;
-  common::BindingsSupportImpl bindings_support_impl_;
   scoped_ptr<DynamicServiceLoader> dynamic_service_loader_;
 
 #if defined(OS_ANDROID)

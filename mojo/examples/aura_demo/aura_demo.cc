@@ -8,12 +8,10 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
-#include "mojo/common/bindings_support_impl.h"
 #include "mojo/examples/aura_demo/demo_screen.h"
 #include "mojo/examples/aura_demo/root_window_host_mojo.h"
 #include "mojo/examples/compositor_app/compositor_host.h"
 #include "mojo/examples/compositor_app/gles2_client_impl.h"
-#include "mojo/public/bindings/lib/bindings_support.h"
 #include "mojo/public/bindings/lib/remote_ptr.h"
 #include "mojo/public/gles2/gles2.h"
 #include "mojo/public/system/core.h"
@@ -197,8 +195,6 @@ extern "C" AURA_DEMO_EXPORT MojoResult CDECL MojoMain(
   CommandLine::Init(0, NULL);
   base::AtExitManager at_exit;
   base::MessageLoop loop;
-  mojo::common::BindingsSupportImpl bindings_support_impl;
-  mojo::BindingsSupport::Set(&bindings_support_impl);
   MojoGLES2Initialize();
 
   // TODO(beng): This crashes in a DCHECK on X11 because this thread's
@@ -210,6 +206,5 @@ extern "C" AURA_DEMO_EXPORT MojoResult CDECL MojoMain(
   loop.Run();
 
   MojoGLES2Terminate();
-  mojo::BindingsSupport::Set(NULL);
   return MOJO_RESULT_OK;
 }

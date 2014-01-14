@@ -14,7 +14,8 @@
 #include "gin/wrappable.h"
 #include "mojo/apps/js/bindings/handle.h"
 #include "mojo/apps/js/bindings/waiting_callback.h"
-#include "mojo/public/bindings/lib/bindings_support.h"
+#include "mojo/public/environment/default_async_waiter.h"
+#include "mojo/public/system/core_cpp.h"
 
 namespace mojo {
 namespace js {
@@ -27,8 +28,14 @@ WaitingCallback* AsyncWait(const gin::Arguments& args, mojo::Handle handle,
   gin::Handle<WaitingCallback> waiting_callback =
       WaitingCallback::Create(args.isolate(), callback);
 
-  BindingsSupport::AsyncWaitID wait_id = BindingsSupport::Get()->AsyncWait(
-      handle, flags, waiting_callback.get());
+  MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter();
+  MojoAsyncWaitID wait_id = waiter->AsyncWait(
+      waiter,
+      handle.value(),
+      flags,
+      MOJO_DEADLINE_INDEFINITE,
+      &WaitingCallback::CallOnHandleReady,
+      waiting_callback.get());
 
   waiting_callback->set_wait_id(wait_id);
 
@@ -38,8 +45,10 @@ WaitingCallback* AsyncWait(const gin::Arguments& args, mojo::Handle handle,
 void CancelWait(WaitingCallback* waiting_callback) {
   if (!waiting_callback->wait_id())
     return;
-  BindingsSupport::Get()->CancelWait(waiting_callback->wait_id());
-  waiting_callback->set_wait_id(NULL);
+
+  MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter();
+  waiter->CancelWait(waiter, waiting_callback->wait_id());
+  waiting_callback->set_wait_id(0);
 }
 
 gin::WrapperInfo g_wrapper_info = { gin::kEmbedderNativeGin };

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/message_loop/message_loop.h"
-#include "mojo/common/bindings_support_impl.h"
 #include "mojo/public/bindings/lib/remote_ptr.h"
 #include "mojo/shell/service_manager.h"
 #include "mojom/shell.h"
@@ -81,7 +80,6 @@ class ServiceManagerTest : public testing::Test,
   }
 
   virtual void SetUp() OVERRIDE {
-    mojo::BindingsSupport::Set(&support_);
     GURL test_url("test:testService");
     service_manager_.reset(new ServiceManager);
     service_manager_->SetLoaderForURL(this, test_url);
@@ -94,7 +92,6 @@ class ServiceManagerTest : public testing::Test,
     test_client_.reset(NULL);
     test_app_.reset(NULL);
     service_manager_.reset(NULL);
-    mojo::BindingsSupport::Set(NULL);
   }
 
   virtual void Load(const GURL& url,
@@ -103,7 +100,6 @@ class ServiceManagerTest : public testing::Test,
   }
 
  protected:
-  common::BindingsSupportImpl support_;
   base::MessageLoop loop_;
   scoped_ptr<TestApp> test_app_;
   scoped_ptr<TestClientImpl> test_client_;

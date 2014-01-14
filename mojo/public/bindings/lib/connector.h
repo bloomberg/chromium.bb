@@ -5,9 +5,9 @@
 #ifndef MOJO_PUBLIC_BINDINGS_LIB_CONNECTOR_H_
 #define MOJO_PUBLIC_BINDINGS_LIB_CONNECTOR_H_
 
-#include "mojo/public/bindings/lib/bindings_support.h"
 #include "mojo/public/bindings/lib/message.h"
 #include "mojo/public/bindings/lib/message_queue.h"
+#include "mojo/public/environment/default_async_waiter.h"
 #include "mojo/public/system/core_cpp.h"
 
 namespace mojo {
@@ -23,7 +23,8 @@ namespace internal {
 class Connector : public MessageReceiver {
  public:
   // The Connector takes ownership of |message_pipe|.
-  explicit Connector(ScopedMessagePipeHandle message_pipe);
+  explicit Connector(ScopedMessagePipeHandle message_pipe,
+                     MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter());
   virtual ~Connector();
 
   // Sets the receiver to handle messages read from the message pipe.  The
@@ -39,28 +40,32 @@ class Connector : public MessageReceiver {
   virtual bool Accept(Message* message) MOJO_OVERRIDE;
 
  private:
-  class Callback : public BindingsSupport::AsyncWaitCallback {
+  class Callback {
    public:
     Callback();
-    virtual ~Callback();
+    ~Callback();
 
     void SetOwnerToNotify(Connector* owner);
-    void SetAsyncWaitID(BindingsSupport::AsyncWaitID async_wait_id);
+    void SetAsyncWaitID(MojoAsyncWaitID async_wait_id);
 
-    virtual void OnHandleReady(MojoResult result) MOJO_OVERRIDE;
+    static void OnHandleReady(void* closure, MojoResult result);
 
    private:
     Connector* owner_;
-    BindingsSupport::AsyncWaitID async_wait_id_;
+    MojoAsyncWaitID async_wait_id_;
   };
   friend class Callback;
 
   void OnHandleReady(Callback* callback, MojoResult result);
   void WaitToReadMore();
   void WaitToWriteMore();
+  void CallAsyncWait(MojoWaitFlags flags, Callback* callback);
+  void CallCancelWait(MojoAsyncWaitID async_wait_id);
   void ReadMore();
   void WriteMore();
   void WriteOne(Message* message, bool* wait_to_write);
+
+  MojoAsyncWaiter* waiter_;
 
   ScopedMessagePipeHandle message_pipe_;
   MessageReceiver* incoming_receiver_;

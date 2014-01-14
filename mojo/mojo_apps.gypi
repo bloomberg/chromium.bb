@@ -10,6 +10,7 @@
         '../ui/gl/gl.gyp:gl',
         '../v8/tools/gyp/v8.gyp:v8',
         'mojo_common_lib',
+        'mojo_environment_chromium',
         'mojo_gles2',
         'mojo_gles2_bindings',
         'mojo_native_viewport_bindings',

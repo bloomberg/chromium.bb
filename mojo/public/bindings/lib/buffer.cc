@@ -11,7 +11,7 @@
 #include <algorithm>
 
 #include "mojo/public/bindings/lib/bindings_serialization.h"
-#include "mojo/public/bindings/lib/bindings_support.h"
+#include "mojo/public/environment/buffer_tls.h"
 
 // Scrub memory in debug builds to help catch use-after-free bugs.
 #ifdef NDEBUG
@@ -25,17 +25,16 @@ namespace mojo {
 //-----------------------------------------------------------------------------
 
 Buffer::Buffer() {
-  previous_ = BindingsSupport::Get()->SetCurrentBuffer(this);
+  previous_ = internal::SetCurrentBuffer(this);
 }
 
 Buffer::~Buffer() {
-  Buffer* buf MOJO_ALLOW_UNUSED =
-      BindingsSupport::Get()->SetCurrentBuffer(previous_);
+  Buffer* buf MOJO_ALLOW_UNUSED = internal::SetCurrentBuffer(previous_);
   assert(buf == this);
 }
 
 Buffer* Buffer::current() {
-  return BindingsSupport::Get()->GetCurrentBuffer();
+  return internal::GetCurrentBuffer();
 }
 
 //-----------------------------------------------------------------------------

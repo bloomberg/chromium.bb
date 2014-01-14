@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 #include "mojo/public/bindings/lib/remote_ptr.h"
-#include "mojo/public/tests/bindings/simple_bindings_support.h"
+#include "mojo/public/environment/environment.h"
+#include "mojo/public/utility/run_loop.h"
 #include "mojom/math_calculator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -89,7 +90,7 @@ class RemotePtrTest : public testing::Test {
   }
 
   void PumpMessages() {
-    bindings_support_.Process();
+    loop_.RunUntilIdle();
   }
 
  protected:
@@ -97,7 +98,8 @@ class RemotePtrTest : public testing::Test {
   ScopedMessagePipeHandle pipe1_;
 
  private:
-  SimpleBindingsSupport bindings_support_;
+  Environment env_;
+  RunLoop loop_;
 };
 
 TEST_F(RemotePtrTest, EndToEnd) {

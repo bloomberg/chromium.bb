@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 #include "mojo/public/bindings/lib/remote_ptr.h"
-#include "mojo/public/tests/bindings/simple_bindings_support.h"
+#include "mojo/public/environment/environment.h"
 #include "mojo/public/tests/test_support.h"
+#include "mojo/public/utility/run_loop.h"
 #include "mojom/sample_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -125,17 +126,18 @@ class SampleFactoryClientImpl : public sample::FactoryClient {
 
 }  // namespace
 
-class BindingsHandlePassingTest : public testing::Test {
+class HandlePassingTest : public testing::Test {
  public:
   void PumpMessages() {
-    bindings_support_.Process();
+    loop_.RunUntilIdle();
   }
 
  private:
-  SimpleBindingsSupport bindings_support_;
+  Environment env_;
+  RunLoop loop_;
 };
 
-TEST_F(BindingsHandlePassingTest, Basic) {
+TEST_F(HandlePassingTest, Basic) {
   ScopedMessagePipeHandle pipe0;
   ScopedMessagePipeHandle pipe1;
   CreateMessagePipe(&pipe0, &pipe1);
@@ -152,7 +154,7 @@ TEST_F(BindingsHandlePassingTest, Basic) {
   EXPECT_TRUE(factory_client.got_response());
 }
 
-TEST_F(BindingsHandlePassingTest, PassInvalid) {
+TEST_F(HandlePassingTest, PassInvalid) {
   ScopedMessagePipeHandle pipe0;
   ScopedMessagePipeHandle pipe1;
   CreateMessagePipe(&pipe0, &pipe1);

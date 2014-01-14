@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/tests/bindings/simple_bindings_support.h"
+#include "mojo/public/environment/environment.h"
 #include "mojom/test_structs.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -66,7 +66,7 @@ namespace test {
 
 class TypeConversionTest : public testing::Test {
  private:
-  SimpleBindingsSupport bindings_support_;
+  Environment env_;
 };
 
 TEST_F(TypeConversionTest, String) {

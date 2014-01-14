@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "mojo/public/bindings/lib/array.h"
-#include "mojo/public/tests/bindings/simple_bindings_support.h"
+#include "mojo/public/environment/environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -11,7 +11,7 @@ namespace test {
 
 // Tests that basic Array operations work.
 TEST(ArrayTest, Basic) {
-  SimpleBindingsSupport bindings_support;
+  Environment env;
 
   // 8 bytes for the array, with 8 bytes left over for elements.
   internal::FixedBuffer buf(8 + 8*sizeof(char));
@@ -34,7 +34,7 @@ TEST(ArrayTest, Basic) {
 // Tests that basic Array<bool> operations work, and that it's packed into 1
 // bit per element.
 TEST(ArrayTest, Bool) {
-  SimpleBindingsSupport bindings_support;
+  Environment env;
 
   // 8 bytes for the array header, with 8 bytes left over for elements.
   internal::FixedBuffer buf(8 + 3);
@@ -57,7 +57,7 @@ TEST(ArrayTest, Bool) {
 
 // Tests that Array<Handle> supports transferring handles.
 TEST(ArrayTest, Handle) {
-  SimpleBindingsSupport bindings_support;
+  Environment env;
 
   AllocationScope scope;
 

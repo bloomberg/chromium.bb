@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/common/bindings_support_impl.h"
 #include "mojo/common/common_type_converters.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -23,20 +22,7 @@ void ExpectEqualsMojoString(const std::string& expected,
 
 }  // namespace
 
-class CommonTypeConvertersTest : public testing::Test {
- private:
-  virtual void SetUp() OVERRIDE {
-    BindingsSupport::Set(&bindings_support_);
-  }
-
-  virtual void TearDown() OVERRIDE {
-    BindingsSupport::Set(NULL);
-  }
-
-  BindingsSupportImpl bindings_support_;
-};
-
-TEST_F(CommonTypeConvertersTest, StringPiece) {
+TEST(CommonTypeConvertersTest, StringPiece) {
   AllocationScope scope;
 
   std::string kText("hello world");

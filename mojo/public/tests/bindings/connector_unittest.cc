@@ -5,11 +5,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "mojo/public/bindings/lib/bindings_support.h"
 #include "mojo/public/bindings/lib/connector.h"
 #include "mojo/public/bindings/lib/message_queue.h"
+#include "mojo/public/environment/environment.h"
 #include "mojo/public/system/macros.h"
-#include "mojo/public/tests/bindings/simple_bindings_support.h"
+#include "mojo/public/utility/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -59,7 +59,7 @@ class ConnectorTest : public testing::Test {
   }
 
   void PumpMessages() {
-    bindings_support_.Process();
+    loop_.RunUntilIdle();
   }
 
  protected:
@@ -67,7 +67,8 @@ class ConnectorTest : public testing::Test {
   ScopedMessagePipeHandle handle1_;
 
  private:
-  SimpleBindingsSupport bindings_support_;
+  Environment env_;
+  RunLoop loop_;
 };
 
 TEST_F(ConnectorTest, Basic) {

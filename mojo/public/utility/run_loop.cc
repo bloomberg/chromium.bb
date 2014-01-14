@@ -103,7 +103,21 @@ void RunLoop::Run() {
   RunState run_state;
   run_state_ = &run_state;
   while (!run_state.should_quit)
-    Wait();
+    Wait(false);
+  run_state_ = old_state;
+}
+
+void RunLoop::RunUntilIdle() {
+  assert(current() == this);
+  // We don't currently support nesting.
+  assert(!run_state_);
+  RunState* old_state = run_state_;
+  RunState run_state;
+  run_state_ = &run_state;
+  while (!run_state.should_quit) {
+    if (!Wait(true))
+      break;
+  }
   run_state_ = old_state;
 }
 
@@ -113,11 +127,11 @@ void RunLoop::Quit() {
     run_state_->should_quit = true;
 }
 
-void RunLoop::Wait() {
-  const WaitState wait_state = GetWaitState();
+bool RunLoop::Wait(bool non_blocking) {
+  const WaitState wait_state = GetWaitState(non_blocking);
   if (wait_state.handles.empty()) {
     Quit();
-    return;
+    return false;
   }
 
   const MojoResult result =
@@ -128,23 +142,24 @@ void RunLoop::Wait() {
            handler_data_.end());
     handler_data_[wait_state.handles[index]].handler->OnHandleReady(
         wait_state.handles[index]);
-  } else {
-    switch (result) {
-      case MOJO_RESULT_INVALID_ARGUMENT:
-      case MOJO_RESULT_FAILED_PRECONDITION:
-        RemoveFirstInvalidHandle(wait_state);
-        break;
-      case MOJO_RESULT_DEADLINE_EXCEEDED:
-        break;
-      default:
-        assert(false);
-    }
+    return true;
   }
 
-  NotifyDeadlineExceeded();
+  switch (result) {
+    case MOJO_RESULT_INVALID_ARGUMENT:
+    case MOJO_RESULT_FAILED_PRECONDITION:
+      return RemoveFirstInvalidHandle(wait_state);
+    case MOJO_RESULT_DEADLINE_EXCEEDED:
+      return NotifyDeadlineExceeded();
+  }
+
+  assert(false);
+  return false;
 }
 
-void RunLoop::NotifyDeadlineExceeded() {
+bool RunLoop::NotifyDeadlineExceeded() {
+  bool notified = false;
+
   // Make a copy in case someone tries to add/remove new handlers as part of
   // notifying.
   const HandleToHandlerData cloned_handlers(handler_data_);
@@ -159,11 +174,14 @@ void RunLoop::NotifyDeadlineExceeded() {
         handler_data_[i->first].id == i->second.id) {
       handler_data_.erase(i->first);
       i->second.handler->OnHandleError(i->first, MOJO_RESULT_DEADLINE_EXCEEDED);
+      notified = true;
     }
   }
+
+  return notified;
 }
 
-void RunLoop::RemoveFirstInvalidHandle(const WaitState& wait_state) {
+bool RunLoop::RemoveFirstInvalidHandle(const WaitState& wait_state) {
   for (size_t i = 0; i < wait_state.handles.size(); ++i) {
     const MojoResult result =
         mojo::Wait(wait_state.handles[i], wait_state.wait_flags[i],
@@ -177,26 +195,28 @@ void RunLoop::RemoveFirstInvalidHandle(const WaitState& wait_state) {
           handler_data_[wait_state.handles[i]].handler;
       handler_data_.erase(wait_state.handles[i]);
       handler->OnHandleError(wait_state.handles[i], result);
-      return;
-    } else {
-      assert(MOJO_RESULT_DEADLINE_EXCEEDED == result);
+      return true;
     }
+    assert(MOJO_RESULT_DEADLINE_EXCEEDED == result);
   }
+  return false;
 }
 
-RunLoop::WaitState RunLoop::GetWaitState() const {
+RunLoop::WaitState RunLoop::GetWaitState(bool non_blocking) const {
   WaitState wait_state;
   MojoTimeTicks min_time = kInvalidTimeTicks;
   for (HandleToHandlerData::const_iterator i = handler_data_.begin();
        i != handler_data_.end(); ++i) {
     wait_state.handles.push_back(i->first);
     wait_state.wait_flags.push_back(i->second.wait_flags);
-    if (i->second.deadline != kInvalidTimeTicks &&
+    if (!non_blocking && i->second.deadline != kInvalidTimeTicks &&
         (min_time == kInvalidTimeTicks || i->second.deadline < min_time)) {
       min_time = i->second.deadline;
     }
   }
-  if (min_time != kInvalidTimeTicks) {
+  if (non_blocking) {
+    wait_state.deadline = static_cast<MojoDeadline>(0);
+  } else if (min_time != kInvalidTimeTicks) {
     const MojoTimeTicks now = GetTimeTicksNow();
     if (min_time < now)
       wait_state.deadline = static_cast<MojoDeadline>(0);

@@ -7,14 +7,24 @@ several components to the API:
 Bindings
 --------
 
-This directory contains a static library that clients can link into their
-binary. The contents of this directory are not binary stable because each
-client is free to use whichever version they prefer.
+This directory contains a static library that clients may link into their
+binary. The contents of this directory are not binary stable as each client is
+free to use whichever version they prefer.
 
 This directory also contains a compiler that translates mojom interface
 definition files into idiomatic bindings for various languages, including
 C++ and JavaScript. Clients are expected to statically link with the generated
 code, which reads and writes the binary stable IPC message format.
+
+Environment
+-----------
+
+This directory contains a static library that clients may link into their
+binary. The contents of this directory are not binary stable as each client is
+free to use whichever version they prefer.
+
+The environment static library represents the shared state that is needed to
+support the Bindings and GLES2 libraries. It depends on the Utility library.
 
 GLES2
 -----
@@ -39,3 +49,14 @@ Tests
 
 This directory contains tests for code contained in the public API. Mojo
 clients are expected to ignore this directory.
+
+Utility
+-------
+
+This directory contains a static library that clients may link into their
+binary. The contents of this directory are not binary stable as each client is
+free to use whichever version they prefer.
+
+The Utility static library most notably defines an implementation of a RunLoop
+based on the MojoWaitMany that clients may use as the basis for asynchronous
+message processing.
