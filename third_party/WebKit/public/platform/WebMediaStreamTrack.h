@@ -44,6 +44,14 @@ public:
     class ExtraData {
     public:
         virtual ~ExtraData() { }
+        BLINK_EXPORT WebMediaStreamTrack owner();
+
+#if INSIDE_BLINK
+        BLINK_EXPORT void setOwner(WebCore::MediaStreamComponent*);
+#endif
+
+    private:
+        WebCore::MediaStreamComponent* m_owner;
     };
 
     WebMediaStreamTrack() { }
