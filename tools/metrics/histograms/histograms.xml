@@ -3170,6 +3170,15 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Download.MaliciousDownloadClassified"
+    enum="DownloadItem.DangerType">
+  <summary>
+    A download has been marked as malicious. Grouped by the type of danger. Each
+    download can only be recorded once; it will be labeled with the first type
+    of danger spotted.
+  </summary>
+</histogram>
+
 <histogram name="Download.MapErrorNetworkFailed" enum="NetErrorCodes">
   <summary>
     Network error that produced a DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED

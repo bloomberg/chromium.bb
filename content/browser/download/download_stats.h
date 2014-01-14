@@ -134,6 +134,9 @@ void RecordDownloadInterrupted(DownloadInterruptReason reason,
                                int64 received,
                                int64 total);
 
+// Record that a download has been classified as malicious.
+void RecordMaliciousDownloadClassified(DownloadDangerType danger_type);
+
 // Record a dangerous download accept event.
 void RecordDangerousDownloadAccept(
     DownloadDangerType danger_type,

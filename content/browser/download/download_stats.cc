@@ -284,6 +284,12 @@ void RecordDownloadInterrupted(DownloadInterruptReason reason,
   UMA_HISTOGRAM_BOOLEAN("Download.InterruptedUnknownSize", unknown_size);
 }
 
+void RecordMaliciousDownloadClassified(DownloadDangerType danger_type) {
+  UMA_HISTOGRAM_ENUMERATION("Download.MaliciousDownloadClassified",
+                            danger_type,
+                            DOWNLOAD_DANGER_TYPE_MAX);
+}
+
 void RecordDangerousDownloadAccept(DownloadDangerType danger_type,
                                    const base::FilePath& file_path) {
   UMA_HISTOGRAM_ENUMERATION("Download.DangerousDownloadValidated",

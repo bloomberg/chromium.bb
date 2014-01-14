@@ -1593,6 +1593,18 @@ void DownloadItemImpl::SetDangerType(DownloadDangerType danger_type) {
         net::NetLog::TYPE_DOWNLOAD_ITEM_SAFETY_STATE_UPDATED,
         base::Bind(&ItemCheckedNetLogCallback, danger_type));
   }
+  // Only record the Malicious UMA stat if it's going from {not malicious} ->
+  // {malicious}.
+  if ((danger_type_ == DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS ||
+       danger_type_ == DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE ||
+       danger_type_ == DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT ||
+       danger_type_ == DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT) &&
+      (danger_type == DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST ||
+       danger_type == DOWNLOAD_DANGER_TYPE_DANGEROUS_URL ||
+       danger_type == DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT ||
+       danger_type == DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED)) {
+    RecordMaliciousDownloadClassified(danger_type);
+  }
   danger_type_ = danger_type;
 }
 
