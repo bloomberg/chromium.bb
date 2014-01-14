@@ -176,13 +176,15 @@ def cpp_value(interface, method, number_of_arguments):
 
 def v8_set_return_value(interface_name, method, cpp_value):
     idl_type = method.idl_type
+    extended_attributes = method.extended_attributes
     if idl_type == 'void':
         return None
-    # [CallWith=ScriptState]
-    if has_extended_attribute_value(method, 'CallWith', 'ScriptState'):
+    # [CallWith=ScriptState], [RaisesException]
+    if (has_extended_attribute_value(method, 'CallWith', 'ScriptState') or
+        'RaisesException' in extended_attributes):
         cpp_value = 'result'  # use local variable for value
     script_wrappable = 'imp' if v8_types.inherits_interface(interface_name, 'Node') else ''
-    return v8_types.v8_set_return_value(idl_type, cpp_value, method.extended_attributes, script_wrappable=script_wrappable)
+    return v8_types.v8_set_return_value(idl_type, cpp_value, extended_attributes, script_wrappable=script_wrappable)
 
 
 # [NotEnumerable]

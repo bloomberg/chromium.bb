@@ -6297,6 +6297,23 @@ static void raisesExceptionVoidMethodMethodCallback(const v8::FunctionCallbackIn
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void raisesExceptionStringMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "raisesExceptionStringMethod", "TestObjectPython", info.Holder(), info.GetIsolate());
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    String result = imp->raisesExceptionStringMethod(exceptionState);
+    if (exceptionState.throwIfNeeded())
+        return;
+    v8SetReturnValueString(info, result, info.GetIsolate());
+}
+
+static void raisesExceptionStringMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::raisesExceptionStringMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 static void raisesExceptionVoidMethodOptionalLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "raisesExceptionVoidMethodOptionalLongArg", "TestObjectPython", info.Holder(), info.GetIsolate());
@@ -6774,6 +6791,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectPythonMethods[]
     {"activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethod", TestObjectPythonV8Internal::activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethodMethodCallback, TestObjectPythonV8Internal::activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethodMethodCallbackForMainWorld, 0},
     {"perWorldBindingsVoidMethodTestInterfaceEmptyArg", TestObjectPythonV8Internal::perWorldBindingsVoidMethodTestInterfaceEmptyArgMethodCallback, TestObjectPythonV8Internal::perWorldBindingsVoidMethodTestInterfaceEmptyArgMethodCallbackForMainWorld, 1},
     {"raisesExceptionVoidMethod", TestObjectPythonV8Internal::raisesExceptionVoidMethodMethodCallback, 0, 0},
+    {"raisesExceptionStringMethod", TestObjectPythonV8Internal::raisesExceptionStringMethodMethodCallback, 0, 0},
     {"raisesExceptionVoidMethodOptionalLongArg", TestObjectPythonV8Internal::raisesExceptionVoidMethodOptionalLongArgMethodCallback, 0, 0},
     {"raisesExceptionVoidMethodTestCallbackInterfaceArg", TestObjectPythonV8Internal::raisesExceptionVoidMethodTestCallbackInterfaceArgMethodCallback, 0, 1},
     {"raisesExceptionVoidMethodOptionalTestCallbackInterfaceArg", TestObjectPythonV8Internal::raisesExceptionVoidMethodOptionalTestCallbackInterfaceArgMethodCallback, 0, 0},

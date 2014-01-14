@@ -177,7 +177,7 @@ RefPtr<ScriptArguments> scriptArguments(createScriptArguments(info, {{method.num
 {% endif %}
 {% if method.idl_type == 'void' %}
 {{cpp_value}};
-{% elif method.is_call_with_script_state %}
+{% elif method.is_call_with_script_state or method.is_raises_exception %}
 {# FIXME: consider always using a local variable #}
 {{method.cpp_type}} result = {{cpp_value}};
 {% endif %}

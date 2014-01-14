@@ -401,6 +401,7 @@ interface TestObjectPython {
     [ActivityLogging=ForIsolatedWorlds, PerWorldBindings] void activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethod();
     [PerWorldBindings] void perWorldBindingsVoidMethodTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg);
     [RaisesException] void raisesExceptionVoidMethod();
+    [RaisesException] DOMString raisesExceptionStringMethod();
     [RaisesException] void raisesExceptionVoidMethodOptionalLongArg(optional long optionalLongArg);
     [RaisesException] void raisesExceptionVoidMethodTestCallbackInterfaceArg(TestCallbackInterface testCallbackInterfaceArg);
     [RaisesException] void raisesExceptionVoidMethodOptionalTestCallbackInterfaceArg(optional TestCallbackInterface optionalTestCallbackInterfaceArg);
