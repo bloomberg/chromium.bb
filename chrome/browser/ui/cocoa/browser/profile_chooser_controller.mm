@@ -17,7 +17,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/profiles/profiles_state.h"
-#include "chrome/browser/signin/mutable_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
@@ -250,7 +249,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   DCHECK_GE([sender tag], 0);  // Should not be called for the primary account.
   DCHECK(ContainsKey(currentProfileAccounts_, [sender tag]));
   std::string account = currentProfileAccounts_[[sender tag]];
-  ProfileOAuth2TokenServiceFactory::GetPlatformSpecificForProfile(
+  ProfileOAuth2TokenServiceFactory::GetForProfile(
       browser_->profile())->RevokeCredentials(account);
 }
 
