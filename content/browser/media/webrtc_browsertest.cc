@@ -88,6 +88,12 @@ class WebrtcBrowserTest: public ContentBrowserTest {
   WebrtcBrowserTest() {}
   virtual ~WebrtcBrowserTest() {}
 
+  virtual void SetUp() OVERRIDE {
+    // These tests require pixel output.
+    UseRealGLContexts();
+    ContentBrowserTest::SetUp();
+  }
+
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     // We need fake devices in this test since we want to run on naked VMs. We
     // assume these switches are set by default in content_browsertests.
@@ -276,7 +282,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, GetAudioAndVideoStreamAndClone) {
   ExpectTitle("OK");
 }
 
-IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, GetUserMediaWithMandatorySourceID) {
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, GetUserMediaWithMandatorySourceID_1) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   std::vector<std::string> audio_ids;
@@ -284,18 +290,34 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, GetUserMediaWithMandatorySourceID) {
   GetSources(&audio_ids, &video_ids);
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
+  NavigateToURL(shell(), url);
 
-  // Test all combinations of mandatory sourceID;
-  for (std::vector<std::string>::const_iterator video_it = video_ids.begin();
-       video_it != video_ids.end(); ++video_it) {
-    for (std::vector<std::string>::const_iterator audio_it = audio_ids.begin();
-         audio_it != audio_ids.end(); ++audio_it) {
-      NavigateToURL(shell(), url);
-      EXPECT_EQ(kOK, ExecuteJavascriptAndReturnResult(
-          GenerateGetUserMediaWithMandatorySourceID(
-              kGetUserMediaAndStop,
-              *audio_it,
-              *video_it)));
+  for (size_t j = 0; j < video_ids.size() / 2; ++j) {
+    for (size_t i = 0; i < audio_ids.size(); ++i) {
+      EXPECT_EQ(kOK,
+                ExecuteJavascriptAndReturnResult(
+                    GenerateGetUserMediaWithMandatorySourceID(
+                        kGetUserMediaAndStop, audio_ids[i], video_ids[j])));
+    }
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, GetUserMediaWithMandatorySourceID_2) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  std::vector<std::string> audio_ids;
+  std::vector<std::string> video_ids;
+  GetSources(&audio_ids, &video_ids);
+
+  GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
+  NavigateToURL(shell(), url);
+
+  for (size_t j = video_ids.size() / 2; j < video_ids.size(); ++j) {
+    for (size_t i = 0; i < audio_ids.size(); ++i) {
+      EXPECT_EQ(kOK,
+                ExecuteJavascriptAndReturnResult(
+                    GenerateGetUserMediaWithMandatorySourceID(
+                        kGetUserMediaAndStop, audio_ids[i], video_ids[j])));
     }
   }
 }
@@ -312,28 +334,25 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
 
   // Test with invalid mandatory audio sourceID.
   NavigateToURL(shell(), url);
-  EXPECT_EQ(kGetUserMediaFailed, ExecuteJavascriptAndReturnResult(
-      GenerateGetUserMediaWithMandatorySourceID(
-          kGetUserMediaAndStop,
-          "something invalid",
-          video_ids[0])));
+  EXPECT_EQ(kGetUserMediaFailed,
+            ExecuteJavascriptAndReturnResult(
+                GenerateGetUserMediaWithMandatorySourceID(
+                    kGetUserMediaAndStop, "something invalid", video_ids[0])));
 
   // Test with invalid mandatory video sourceID.
-  EXPECT_EQ(kGetUserMediaFailed, ExecuteJavascriptAndReturnResult(
-      GenerateGetUserMediaWithMandatorySourceID(
-          kGetUserMediaAndStop,
-          audio_ids[0],
-          "something invalid")));
+  EXPECT_EQ(kGetUserMediaFailed,
+            ExecuteJavascriptAndReturnResult(
+                GenerateGetUserMediaWithMandatorySourceID(
+                    kGetUserMediaAndStop, audio_ids[0], "something invalid")));
 
   // Test with empty mandatory audio sourceID.
-  EXPECT_EQ(kGetUserMediaFailed, ExecuteJavascriptAndReturnResult(
-      GenerateGetUserMediaWithMandatorySourceID(
-          kGetUserMediaAndStop,
-          "",
-          video_ids[0])));
+  EXPECT_EQ(kGetUserMediaFailed,
+            ExecuteJavascriptAndReturnResult(
+                GenerateGetUserMediaWithMandatorySourceID(
+                    kGetUserMediaAndStop, "", video_ids[0])));
 }
 
-IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, GetUserMediaWithOptionalSourceID) {
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, GetUserMediaWithOptionalSourceID_1) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   std::vector<std::string> audio_ids;
@@ -343,16 +362,34 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, GetUserMediaWithOptionalSourceID) {
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
   NavigateToURL(shell(), url);
 
-  // Test all combinations of mandatory sourceID;
-  for (std::vector<std::string>::const_iterator video_it = video_ids.begin();
-       video_it != video_ids.end(); ++video_it) {
-    for (std::vector<std::string>::const_iterator audio_it = audio_ids.begin();
-         audio_it != audio_ids.end(); ++audio_it) {
-      EXPECT_EQ(kOK, ExecuteJavascriptAndReturnResult(
-          GenerateGetUserMediaWithOptionalSourceID(
-              kGetUserMediaAndStop,
-              *audio_it,
-              *video_it)));
+  // Test all combinations of mandatory sourceID.
+  for (size_t j = 0; j < video_ids.size() / 2; ++j) {
+    for (size_t i = 0; i < audio_ids.size(); ++i) {
+      EXPECT_EQ(kOK,
+                ExecuteJavascriptAndReturnResult(
+                    GenerateGetUserMediaWithOptionalSourceID(
+                        kGetUserMediaAndStop, audio_ids[i], video_ids[j])));
+    }
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, GetUserMediaWithOptionalSourceID_2) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  std::vector<std::string> audio_ids;
+  std::vector<std::string> video_ids;
+  GetSources(&audio_ids, &video_ids);
+
+  GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
+  NavigateToURL(shell(), url);
+
+  // Test all combinations of mandatory sourceID.
+  for (size_t j = video_ids.size() / 2; j < video_ids.size(); ++j) {
+    for (size_t i = 0; i < audio_ids.size(); ++i) {
+      EXPECT_EQ(kOK,
+                ExecuteJavascriptAndReturnResult(
+                    GenerateGetUserMediaWithOptionalSourceID(
+                        kGetUserMediaAndStop, audio_ids[i], video_ids[j])));
     }
   }
 }
@@ -369,25 +406,22 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
 
   // Test with invalid optional audio sourceID.
   NavigateToURL(shell(), url);
-  EXPECT_EQ(kOK, ExecuteJavascriptAndReturnResult(
-      GenerateGetUserMediaWithOptionalSourceID(
-          kGetUserMediaAndStop,
-          "something invalid",
-          video_ids[0])));
+  EXPECT_EQ(
+      kOK,
+      ExecuteJavascriptAndReturnResult(GenerateGetUserMediaWithOptionalSourceID(
+          kGetUserMediaAndStop, "something invalid", video_ids[0])));
 
   // Test with invalid optional video sourceID.
-  EXPECT_EQ(kOK, ExecuteJavascriptAndReturnResult(
-      GenerateGetUserMediaWithOptionalSourceID(
-          kGetUserMediaAndStop,
-          audio_ids[0],
-          "something invalid")));
+  EXPECT_EQ(
+      kOK,
+      ExecuteJavascriptAndReturnResult(GenerateGetUserMediaWithOptionalSourceID(
+          kGetUserMediaAndStop, audio_ids[0], "something invalid")));
 
   // Test with empty optional audio sourceID.
-  EXPECT_EQ(kOK, ExecuteJavascriptAndReturnResult(
-      GenerateGetUserMediaWithOptionalSourceID(
-          kGetUserMediaAndStop,
-          "",
-          video_ids[0])));
+  EXPECT_EQ(
+      kOK,
+      ExecuteJavascriptAndReturnResult(GenerateGetUserMediaWithOptionalSourceID(
+          kGetUserMediaAndStop, "", video_ids[0])));
 }
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
@@ -613,38 +647,61 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MANUAL_CallAndModifyStream) {
       "callWithNewVideoMediaStreamLaterSwitchToAudio();");
 }
 
+namespace {
+
+struct UserMediaSizes {
+  int min_width;
+  int max_width;
+  int min_height;
+  int max_height;
+  int min_frame_rate;
+  int max_frame_rate;
+};
+
+}  // namespace
+
+class WebrtcUserMediaBrowserTest
+    : public WebrtcBrowserTest,
+      public testing::WithParamInterface<UserMediaSizes> {
+ public:
+  WebrtcUserMediaBrowserTest() : user_media_(GetParam()) {}
+  const UserMediaSizes& user_media() const { return user_media_; }
+
+ private:
+  UserMediaSizes user_media_;
+};
+
 // This test calls getUserMedia in sequence with different constraints.
-IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, TestGetUserMediaConstraints) {
+IN_PROC_BROWSER_TEST_P(WebrtcUserMediaBrowserTest, GetUserMediaConstraints) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
 
-  std::vector<std::string> list_of_get_user_media_calls;
-  list_of_get_user_media_calls.push_back(GenerateGetUserMediaCall(
-      kGetUserMediaAndStop, 320, 320, 180, 180, 30, 30));
-  list_of_get_user_media_calls.push_back(GenerateGetUserMediaCall(
-      kGetUserMediaAndStop, 320, 320, 240, 240, 30, 30));
-  list_of_get_user_media_calls.push_back(GenerateGetUserMediaCall(
-      kGetUserMediaAndStop, 640, 640, 360, 360, 30, 30));
-  list_of_get_user_media_calls.push_back(GenerateGetUserMediaCall(
-      kGetUserMediaAndStop, 640, 640, 480, 480, 30, 30));
-  list_of_get_user_media_calls.push_back(GenerateGetUserMediaCall(
-      kGetUserMediaAndStop, 960, 960, 720, 720, 30, 30));
-  list_of_get_user_media_calls.push_back(GenerateGetUserMediaCall(
-      kGetUserMediaAndStop, 1280, 1280, 720, 720, 30, 30));
-  list_of_get_user_media_calls.push_back(GenerateGetUserMediaCall(
-      kGetUserMediaAndStop, 1920, 1920, 1080, 1080, 30, 30));
-
-  for (std::vector<std::string>::iterator const_iterator =
-           list_of_get_user_media_calls.begin();
-       const_iterator != list_of_get_user_media_calls.end();
-       ++const_iterator) {
-    DVLOG(1) << "Calling getUserMedia: " << *const_iterator;
-    NavigateToURL(shell(), url);
-    ASSERT_TRUE(ExecuteJavascript(*const_iterator));
-    ExpectTitle("OK");
-  }
+  std::string call = GenerateGetUserMediaCall(kGetUserMediaAndStop,
+                                              user_media().min_width,
+                                              user_media().max_width,
+                                              user_media().min_height,
+                                              user_media().max_height,
+                                              user_media().min_frame_rate,
+                                              user_media().max_frame_rate);
+  DVLOG(1) << "Calling getUserMedia: " << call;
+  NavigateToURL(shell(), url);
+  ASSERT_TRUE(ExecuteJavascript(call));
+  ExpectTitle("OK");
 }
+
+static const UserMediaSizes kAllUserMediaSizes[] = {
+    {320, 320, 180, 180, 30, 30},
+    {320, 320, 240, 240, 30, 30},
+    {640, 640, 360, 360, 30, 30},
+    {640, 640, 480, 480, 30, 30},
+    {960, 960, 720, 720, 30, 30},
+    {1280, 1280, 720, 720, 30, 30},
+    {1920, 1920, 1080, 1080, 30, 30}};
+
+INSTANTIATE_TEST_CASE_P(UserMedia,
+                        WebrtcUserMediaBrowserTest,
+                        testing::ValuesIn(kAllUserMediaSizes));
 
 // This test calls getUserMedia and checks for aspect ratio behavior.
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, TestGetUserMediaAspectRatio) {
