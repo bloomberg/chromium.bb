@@ -784,7 +784,6 @@ crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/cluster-narrow-
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/clusters-insufficient-text.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/clusters-sufficient-text-except-in-root.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/cluster-wide-in-narrow.html [ ImageOnlyFailure ]
-crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/font-scale-factor.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/forum-comments-autosizing.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/list-marker-numbered-with-autosizing.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/list-marker-with-images-and-forms-autosizing.html [ ImageOnlyFailure ]

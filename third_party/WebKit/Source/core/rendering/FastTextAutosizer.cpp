@@ -47,6 +47,9 @@ namespace WebCore {
 
 FastTextAutosizer::FastTextAutosizer(Document* document)
     : m_document(document)
+#ifndef NDEBUG
+    , m_renderViewInfoPrepared(false)
+#endif
 {
 }
 
@@ -76,7 +79,7 @@ void FastTextAutosizer::beginLayout(RenderBlock* block)
         return;
 
     if (block->isRenderView())
-        prepareWindowInfo(toRenderView(block));
+        prepareRenderViewInfo(toRenderView(block));
 
     if (shouldBeClusterRoot(block))
         m_clusterStack.append(getOrCreateCluster(block));
@@ -118,7 +121,7 @@ bool FastTextAutosizer::enabled()
         && m_document->page();
 }
 
-void FastTextAutosizer::prepareWindowInfo(RenderView* renderView)
+void FastTextAutosizer::prepareRenderViewInfo(RenderView* renderView)
 {
     bool horizontalWritingMode = isHorizontalWritingMode(renderView->style()->writingMode());
 
@@ -130,6 +133,16 @@ void FastTextAutosizer::prepareWindowInfo(RenderView* renderView)
 
     IntSize layoutSize = m_document->page()->mainFrame()->view()->layoutSize();
     m_layoutWidth = horizontalWritingMode ? layoutSize.width() : layoutSize.height();
+
+    // Compute the base font scale multiplier based on device and accessibility settings.
+    m_baseMultiplier = m_document->settings()->accessibilityFontScaleFactor();
+    // If the page has a meta viewport or @viewport, don't apply the device scale adjustment.
+    const ViewportDescription& viewportDescription = m_document->page()->mainFrame()->document()->viewportDescription();
+    if (!viewportDescription.isSpecifiedByAuthor())
+        m_baseMultiplier *= m_document->settings()->deviceScaleAdjustment();
+#ifndef NDEBUG
+    m_renderViewInfoPrepared = true;
+#endif
 }
 
 bool FastTextAutosizer::shouldBeClusterRoot(RenderBlock* block)
@@ -213,12 +226,14 @@ RenderBlock* FastTextAutosizer::deepestCommonAncestor(BlockSet& blocks)
 
 float FastTextAutosizer::computeMultiplier(RenderBlock* block)
 {
+#ifndef NDEBUG
+    ASSERT(m_renderViewInfoPrepared);
+#endif
     // Block width, in CSS pixels.
     float blockWidth = block->contentLogicalWidth();
 
-    // FIXME(crbug.com/333124): incorporate font scale factor.
-    // FIXME(crbug.com/333124): incorporate device scale adjustment.
-    return max(min(blockWidth, (float) m_layoutWidth) / m_windowWidth, 1.0f);
+    float multiplier = min(blockWidth, static_cast<float>(m_layoutWidth)) / m_windowWidth;
+    return max(m_baseMultiplier * multiplier, 1.0f);
 }
 
 void FastTextAutosizer::applyMultiplier(RenderObject* renderer, float multiplier)

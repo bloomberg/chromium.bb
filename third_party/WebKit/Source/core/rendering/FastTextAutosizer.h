@@ -99,7 +99,7 @@ private:
     explicit FastTextAutosizer(Document*);
 
     bool enabled();
-    void prepareWindowInfo(RenderView*);
+    void prepareRenderViewInfo(RenderView*);
     bool shouldBeClusterRoot(RenderBlock*);
     bool clusterWantsAutosizing(RenderBlock*);
     AtomicString computeFingerprint(RenderBlock*);
@@ -113,6 +113,10 @@ private:
     Document* m_document;
     int m_windowWidth; // Frame width in density-independent pixels (DIPs).
     int m_layoutWidth; // Layout width in CSS pixels.
+    float m_baseMultiplier; // Includes accessibility font scale factor and device scale adjustment.
+#ifndef NDEBUG
+    bool m_renderViewInfoPrepared; // Used for assertions.
+#endif
 
     // Clusters are created and destroyed during layout. The map key is the
     // cluster root. Clusters whose roots share the same fingerprint use the
