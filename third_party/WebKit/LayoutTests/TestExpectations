@@ -48,7 +48,6 @@ crbug.com/321606 plugins/layout-in-beforeload-listener-affects-plugin-loading.ht
 crbug.com/264138 dom/xhtml/level3/core/nodecomparedocumentposition38.xhtml [ Failure ]
 
 crbug.com/305070 [ Debug ] virtual/legacy-animations-engine/animations/interpolation/svg-stroke-dasharray-interpolation.html [ Crash Pass ]
-crbug.com/305070 [ Debug ] virtual/threaded/animations/interpolation/svg-stroke-dasharray-interpolation.html [ Crash Pass ]
 
 crbug.com/298211 animations/dynamic-stylesheet-loading.html [ Pass Failure Timeout ]
 crbug.com/321460 animations/animation-direction-normal.html [ Pass ImageOnlyFailure Timeout ]
