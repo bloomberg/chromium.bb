@@ -37,7 +37,7 @@ Channel::Channel()
     : next_local_id_(kBootstrapEndpointId) {
 }
 
-bool Channel::Init(const PlatformChannelHandle& handle) {
+bool Channel::Init(ScopedPlatformHandle handle) {
   DCHECK(creation_thread_checker_.CalledOnValidThread());
 
   // No need to take |lock_|, since this must be called before this object
@@ -45,7 +45,7 @@ bool Channel::Init(const PlatformChannelHandle& handle) {
   DCHECK(!raw_channel_.get());
 
   raw_channel_.reset(
-      RawChannel::Create(handle, this, base::MessageLoop::current()));
+      RawChannel::Create(handle.Pass(), this, base::MessageLoop::current()));
   if (!raw_channel_->Init()) {
     raw_channel_.reset();
     return false;
@@ -110,7 +110,7 @@ bool Channel::WriteMessage(MessageInTransit* message) {
   if (!raw_channel_.get()) {
     // TODO(vtl): I think this is probably not an error condition, but I should
     // think about it (and the shutdown sequence) more carefully.
-    LOG(INFO) << "WriteMessage() after shutdown";
+    LOG(WARNING) << "WriteMessage() after shutdown";
     return false;
   }
 
@@ -203,7 +203,7 @@ void Channel::OnReadMessageForChannel(const MessageInTransit& message) {
 
 void Channel::HandleRemoteError(const base::StringPiece& error_message) {
   // TODO(vtl): Is this how we really want to handle this?
-  LOG(INFO) << error_message;
+  LOG(WARNING) << error_message;
 }
 
 void Channel::HandleLocalError(const base::StringPiece& error_message) {

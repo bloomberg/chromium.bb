@@ -6,8 +6,7 @@
 
 #include "base/logging.h"
 #include "build/build_config.h"
-#include "mojo/system/platform_channel.h"
-#include "mojo/system/platform_channel_handle.h"
+#include "mojo/system/scoped_platform_handle.h"
 
 #if defined(OS_POSIX)
 #include <fcntl.h>
@@ -25,8 +24,7 @@ class MultiprocessTestBaseTest : public test::MultiprocessTestBase {
 TEST_F(MultiprocessTestBaseTest, RunChild) {
 // TODO(vtl): Not implemented on Windows yet.
 #if defined(OS_POSIX)
-  EXPECT_TRUE(server_platform_channel.get());
-  EXPECT_TRUE(server_platform_channel->is_valid());
+  EXPECT_TRUE(server_platform_handle.is_valid());
 #endif
   StartChild("RunChild");
   EXPECT_EQ(123, WaitForChildShutdown());
@@ -35,8 +33,7 @@ TEST_F(MultiprocessTestBaseTest, RunChild) {
 MOJO_MULTIPROCESS_TEST_CHILD_MAIN(RunChild) {
 // TODO(vtl): Not implemented on Windows yet.
 #if defined(OS_POSIX)
-  CHECK(MultiprocessTestBaseTest::client_platform_channel.get());
-  CHECK(MultiprocessTestBaseTest::client_platform_channel->is_valid());
+  CHECK(MultiprocessTestBaseTest::client_platform_handle.is_valid());
 #endif
   return 123;
 }
@@ -47,19 +44,16 @@ TEST_F(MultiprocessTestBaseTest, TestChildMainNotFound) {
   EXPECT_FALSE(result >= 0 && result <= 127);
 }
 
-// POSIX-specific test of passed channel ---------------------------------------
+// POSIX-specific test of passed handle ----------------------------------------
 
 #if defined(OS_POSIX)
 TEST_F(MultiprocessTestBaseTest, PassedChannelPosix) {
-  EXPECT_TRUE(server_platform_channel.get());
-  EXPECT_TRUE(server_platform_channel->is_valid());
+  EXPECT_TRUE(server_platform_handle.is_valid());
   StartChild("PassedChannelPosix");
 
   // Take ownership of the FD.
-  mojo::system::PlatformChannelHandle channel =
-      server_platform_channel->PassHandle();
-  server_platform_channel.reset();
-  int fd = channel.fd;
+  system::ScopedPlatformHandle handle = server_platform_handle.Pass();
+  int fd = handle.get().fd;
 
   // The FD should be non-blocking. Check this.
   CHECK((fcntl(fd, F_GETFL) & O_NONBLOCK));
@@ -82,14 +76,12 @@ TEST_F(MultiprocessTestBaseTest, PassedChannelPosix) {
 }
 
 MOJO_MULTIPROCESS_TEST_CHILD_MAIN(PassedChannelPosix) {
-  CHECK(MultiprocessTestBaseTest::client_platform_channel.get());
-  CHECK(MultiprocessTestBaseTest::client_platform_channel->is_valid());
+  CHECK(MultiprocessTestBaseTest::client_platform_handle.is_valid());
 
   // Take ownership of the FD.
-  mojo::system::PlatformChannelHandle channel =
-      MultiprocessTestBaseTest::client_platform_channel->PassHandle();
-  MultiprocessTestBaseTest::client_platform_channel.reset();
-  int fd = channel.fd;
+  system::ScopedPlatformHandle handle =
+      MultiprocessTestBaseTest::client_platform_handle.Pass();
+  int fd = handle.get().fd;
 
   // The FD should still be non-blocking. Check this.
   CHECK((fcntl(fd, F_GETFL) & O_NONBLOCK));
@@ -105,8 +97,6 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(PassedChannelPosix) {
   c++;
   ssize_t write_size = HANDLE_EINTR(write(fd, &c, 1));
   CHECK_EQ(write_size, 1);
-
-  PCHECK(close(fd) == 0);
 
   // And return it, incremented again.
   c++;

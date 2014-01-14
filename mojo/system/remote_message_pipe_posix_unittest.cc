@@ -18,9 +18,9 @@
 #include "mojo/system/channel.h"
 #include "mojo/system/local_message_pipe_endpoint.h"
 #include "mojo/system/message_pipe.h"
-#include "mojo/system/platform_channel.h"
 #include "mojo/system/platform_channel_pair.h"
 #include "mojo/system/proxy_message_pipe_endpoint.h"
+#include "mojo/system/scoped_platform_handle.h"
 #include "mojo/system/test_utils.h"
 #include "mojo/system/waiter.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -93,12 +93,8 @@ class RemoteMessagePipeTest : public testing::Test {
     CHECK_EQ(base::MessageLoop::current(), io_thread_message_loop());
 
     PlatformChannelPair channel_pair;
-    platform_channels_[0] = channel_pair.CreateServerChannel();
-    CHECK(platform_channels_[0].get());
-    CHECK(platform_channels_[0]->is_valid());
-    platform_channels_[1] = channel_pair.CreateClientChannel();
-    CHECK(platform_channels_[1].get());
-    CHECK(platform_channels_[1]->is_valid());
+    platform_handles_[0] = channel_pair.PassServerHandle();
+    platform_handles_[1] = channel_pair.PassClientHandle();
   }
 
   void CreateAndInitChannel(unsigned channel_index) {
@@ -108,7 +104,7 @@ class RemoteMessagePipeTest : public testing::Test {
 
     channels_[channel_index] = new Channel();
     CHECK(channels_[channel_index]->Init(
-        platform_channels_[channel_index]->PassHandle()));
+        platform_handles_[channel_index].Pass()));
   }
 
   void ConnectMessagePipesOnIOThread(scoped_refptr<MessagePipe> mp_0,
@@ -156,7 +152,7 @@ class RemoteMessagePipeTest : public testing::Test {
   }
 
   base::Thread io_thread_;
-  scoped_ptr<PlatformChannel> platform_channels_[2];
+  ScopedPlatformHandle platform_handles_[2];
   scoped_refptr<Channel> channels_[2];
 
   DISALLOW_COPY_AND_ASSIGN(RemoteMessagePipeTest);

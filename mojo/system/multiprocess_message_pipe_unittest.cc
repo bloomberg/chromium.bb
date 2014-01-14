@@ -21,8 +21,8 @@
 #include "mojo/system/channel.h"
 #include "mojo/system/local_message_pipe_endpoint.h"
 #include "mojo/system/message_pipe.h"
-#include "mojo/system/platform_channel.h"
 #include "mojo/system/proxy_message_pipe_endpoint.h"
+#include "mojo/system/scoped_platform_handle.h"
 #include "mojo/system/test_utils.h"
 #include "mojo/system/waiter.h"
 
@@ -48,13 +48,14 @@ class IOThreadWrapper {
     test::PostTaskAndWait(task_runner(), from_here, task);
   }
 
-  void Init(PlatformChannel* platform_channel, scoped_refptr<MessagePipe> mp) {
+  void Init(ScopedPlatformHandle platform_handle,
+            scoped_refptr<MessagePipe> mp) {
     io_thread_.StartWithOptions(
         base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
     PostTask(FROM_HERE,
              base::Bind(&IOThreadWrapper::InitOnIOThread,
                         base::Unretained(this),
-                        platform_channel, mp));
+                        base::Passed(&platform_handle), mp));
   }
 
   void Shutdown() {
@@ -75,15 +76,14 @@ class IOThreadWrapper {
   }
 
  private:
-  void InitOnIOThread(PlatformChannel* platform_channel,
+  void InitOnIOThread(ScopedPlatformHandle platform_handle,
                       scoped_refptr<MessagePipe> mp) {
     CHECK_EQ(base::MessageLoop::current(), message_loop());
-    CHECK(platform_channel);
-    CHECK(platform_channel->is_valid());
+    CHECK(platform_handle.is_valid());
 
     // Create and initialize |Channel|.
     channel_ = new Channel();
-    CHECK(channel_->Init(platform_channel->PassHandle()));
+    CHECK(channel_->Init(platform_handle.Pass()));
 
     // Attach the message pipe endpoint.
     // Note: On the "server" (parent process) side, we need not attach the
@@ -122,7 +122,7 @@ class MultiprocessMessagePipeTest : public mojo::test::MultiprocessTestBase {
   }
 
   void Init(scoped_refptr<MessagePipe> mp) {
-    io_thread_wrapper_.Init(server_platform_channel.get(), mp);
+    io_thread_wrapper_.Init(server_platform_handle.Pass(), mp);
   }
 
  private:
@@ -152,14 +152,13 @@ MojoResult WaitIfNecessary(scoped_refptr<MessagePipe> mp, MojoWaitFlags flags) {
 // not including any "quitquitquit" message, modulo 100.
 MOJO_MULTIPROCESS_TEST_CHILD_MAIN(EchoEcho) {
   IOThreadWrapper io_thread_wrapper;
-  PlatformChannel* const client_platform_channel =
-      MultiprocessMessagePipeTest::client_platform_channel.get();
-  CHECK(client_platform_channel);
-  CHECK(client_platform_channel->is_valid());
+  ScopedPlatformHandle client_platform_handle =
+      MultiprocessMessagePipeTest::client_platform_handle.Pass();
+  CHECK(client_platform_handle.is_valid());
   scoped_refptr<MessagePipe> mp(new MessagePipe(
       scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint()),
       scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint())));
-  io_thread_wrapper.Init(client_platform_channel, mp);
+  io_thread_wrapper.Init(client_platform_handle.Pass(), mp);
 
   const std::string quitquitquit("quitquitquit");
   int rv = 0;

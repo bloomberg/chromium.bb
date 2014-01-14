@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SYSTEM_PLATFORM_CHANNEL_HANDLE_H_
-#define MOJO_SYSTEM_PLATFORM_CHANNEL_HANDLE_H_
+#ifndef MOJO_SYSTEM_PLATFORM_HANDLE_H_
+#define MOJO_SYSTEM_PLATFORM_HANDLE_H_
 
 #include "build/build_config.h"
+#include "mojo/system/system_impl_export.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -15,9 +16,9 @@ namespace mojo {
 namespace system {
 
 #if defined(OS_POSIX)
-struct PlatformChannelHandle {
-  PlatformChannelHandle() : fd(-1) {}
-  explicit PlatformChannelHandle(int fd) : fd(fd) {}
+struct MOJO_SYSTEM_IMPL_EXPORT PlatformHandle {
+  PlatformHandle() : fd(-1) {}
+  explicit PlatformHandle(int fd) : fd(fd) {}
 
   void CloseIfNecessary();
 
@@ -26,9 +27,9 @@ struct PlatformChannelHandle {
   int fd;
 };
 #elif defined(OS_WIN)
-struct PlatformChannelHandle {
-  PlatformChannelHandle() : handle(INVALID_HANDLE_VALUE) {}
-  explicit PlatformChannelHandle(HANDLE handle) : handle(handle) {}
+struct MOJO_SYSTEM_IMPL_EXPORT PlatformHandle {
+  PlatformHandle() : handle(INVALID_HANDLE_VALUE) {}
+  explicit PlatformHandle(HANDLE handle) : handle(handle) {}
 
   void CloseIfNecessary();
 
@@ -43,4 +44,4 @@ struct PlatformChannelHandle {
 }  // namespace system
 }  // namespace mojo
 
-#endif  // MOJO_SYSTEM_PLATFORM_CHANNEL_HANDLE_H_
+#endif  // MOJO_SYSTEM_PLATFORM_HANDLE_H_

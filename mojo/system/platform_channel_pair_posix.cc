@@ -13,7 +13,7 @@
 #include "base/logging.h"
 #include "base/posix/global_descriptors.h"
 #include "base/strings/string_number_conversions.h"
-#include "mojo/system/platform_channel.h"
+#include "mojo/system/platform_handle.h"
 
 namespace mojo {
 namespace system {
@@ -42,15 +42,14 @@ PlatformChannelPair::PlatformChannelPair() {
   PCHECK(fcntl(fds[0], F_SETFL, O_NONBLOCK) == 0);
   PCHECK(fcntl(fds[1], F_SETFL, O_NONBLOCK) == 0);
 
-  server_handle_.fd = fds[0];
+  server_handle_.reset(PlatformHandle(fds[0]));
   DCHECK(server_handle_.is_valid());
-  client_handle_.fd = fds[1];
+  client_handle_.reset(PlatformHandle(fds[1]));
   DCHECK(client_handle_.is_valid());
 }
 
 // static
-scoped_ptr<PlatformChannel>
-PlatformChannelPair::CreateClientChannelFromParentProcess(
+ScopedPlatformHandle PlatformChannelPair::PassClientHandleFromParentProcess(
     const CommandLine& command_line) {
   std::string client_fd_string =
       command_line.GetSwitchValueASCII(kMojoChannelDescriptorSwitch);
@@ -59,13 +58,13 @@ PlatformChannelPair::CreateClientChannelFromParentProcess(
       !base::StringToInt(client_fd_string, &client_fd) ||
       client_fd < base::GlobalDescriptors::kBaseDescriptor) {
     LOG(ERROR) << "Missing or invalid --" << kMojoChannelDescriptorSwitch;
-    return scoped_ptr<PlatformChannel>();
+    return ScopedPlatformHandle();
   }
 
-  return PlatformChannel::CreateFromHandle(PlatformChannelHandle(client_fd));
+  return ScopedPlatformHandle(PlatformHandle(client_fd));
 }
 
-void PlatformChannelPair::PrepareToPassClientChannelToChildProcess(
+void PlatformChannelPair::PrepareToPassClientHandleToChildProcess(
     CommandLine* command_line,
     base::FileHandleMappingVector* file_handle_mapping) const {
   DCHECK(command_line);
@@ -83,7 +82,7 @@ void PlatformChannelPair::PrepareToPassClientChannelToChildProcess(
   while (IsTargetDescriptorUsed(*file_handle_mapping, target_fd))
     target_fd++;
 
-  file_handle_mapping->push_back(std::pair<int, int>(client_handle_.fd,
+  file_handle_mapping->push_back(std::pair<int, int>(client_handle_.get().fd,
                                                      target_fd));
   // Log a warning if the command line already has the switch, but "clobber" it
   // anyway, since it's reasonably likely that all the switches were just copied
@@ -100,7 +99,7 @@ void PlatformChannelPair::PrepareToPassClientChannelToChildProcess(
 
 void PlatformChannelPair::ChildProcessLaunched() {
   DCHECK(client_handle_.is_valid());
-  client_handle_.CloseIfNecessary();
+  client_handle_.reset();
 }
 
 }  // namespace system

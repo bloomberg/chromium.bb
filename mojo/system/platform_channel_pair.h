@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/launch.h"
-#include "mojo/system/platform_channel_handle.h"
+#include "mojo/system/scoped_platform_handle.h"
 #include "mojo/system/system_impl_export.h"
 
 class CommandLine;
@@ -16,48 +16,44 @@ class CommandLine;
 namespace mojo {
 namespace system {
 
-class PlatformChannel;
-
-// This is used to create a pair of connected |PlatformChannel|s. The resulting
-// channels can then be used in the same process (e.g., in tests) or between
-// processes. (The "server" channel is the one that will be used in the process
-// that created the pair, whereas the "client" channel is the one that will be
-// used in a different process.)
+// This is used to create a pair of |PlatformHandle|s that are connected by a
+// suitable (platform-specific) bidirectional "pipe" (e.g., socket on POSIX,
+// named pipe on Windows). The resulting handles can then be used in the same
+// process (e.g., in tests) or between processes. (The "server" handle is the
+// one that will be used in the process that created the pair, whereas the
+// "client" handle is the one that will be used in a different process.)
 //
-// This class provides facilities for passing the client channel to a child
-// process. The parent should call |PrepareToPassClientChannelToChildProcess()|
+// This class provides facilities for passing the client handle to a child
+// process. The parent should call |PrepareToPassClientHandlelToChildProcess()|
 // to get the data needed to do this, spawn the child using that data, and then
 // call |ChildProcessLaunched()|. Note that on Windows this facility (will) only
 // work on Vista and later (TODO(vtl)).
 //
-// Note: |PlatformChannelPair()|, |CreateClientChannelFromParentProcess()|,
-// |PrepareToPassClientChannelToChildProcess()|, and |ChildProcessLaunched()|
+// Note: |PlatformChannelPair()|, |PassClientHandleFromParentProcess()|,
+// |PrepareToPassClientHandleToChildProcess()|, and |ChildProcessLaunched()|
 // have platform-specific implementations.
 class MOJO_SYSTEM_IMPL_EXPORT PlatformChannelPair {
  public:
   PlatformChannelPair();
   ~PlatformChannelPair();
 
-  // This transfers ownership of the server channel to the caller. Returns null
-  // on failure.
-  scoped_ptr<PlatformChannel> CreateServerChannel();
+  ScopedPlatformHandle PassServerHandle();
 
-  // For in-process use (e.g., in tests). This transfers ownership of the client
-  // channel to the caller. Returns null on failure.
-  scoped_ptr<PlatformChannel> CreateClientChannel();
+  // For in-process use (e.g., in tests).
+  ScopedPlatformHandle PassClientHandle();
 
   // To be called in the child process, after the parent process called
-  // |PrepareToPassClientChannelToChildProcess()| and launched the child (using
-  // the provided data), to create a client channel connected to the server
-  // channel (in the parent process). Returns null on failure.
-  static scoped_ptr<PlatformChannel> CreateClientChannelFromParentProcess(
+  // |PrepareToPassClientHandleToChildProcess()| and launched the child (using
+  // the provided data), to create a client handle connected to the server
+  // handle (in the parent process).
+  static ScopedPlatformHandle PassClientHandleFromParentProcess(
       const CommandLine& command_line);
 
   // Prepares to pass the client channel to a new child process, to be launched
   // using |LaunchProcess()| (from base/launch.h). Modifies |*command_line| and
   // |*file_handle_mapping| as needed. (|file_handle_mapping| may be null on
   // platforms that don't need it, like Windows.)
-  void PrepareToPassClientChannelToChildProcess(
+  void PrepareToPassClientHandleToChildProcess(
       CommandLine* command_line,
       base::FileHandleMappingVector* file_handle_mapping) const;
   // To be called once the child process has been successfully launched, to do
@@ -65,8 +61,8 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformChannelPair {
   void ChildProcessLaunched();
 
  private:
-  PlatformChannelHandle server_handle_;
-  PlatformChannelHandle client_handle_;
+  ScopedPlatformHandle server_handle_;
+  ScopedPlatformHandle client_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformChannelPair);
 };

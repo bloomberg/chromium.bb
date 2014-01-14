@@ -19,6 +19,7 @@
 #include "mojo/system/message_in_transit.h"
 #include "mojo/system/message_pipe.h"
 #include "mojo/system/raw_channel.h"
+#include "mojo/system/scoped_platform_handle.h"
 #include "mojo/system/system_impl_export.h"
 
 namespace base {
@@ -63,9 +64,11 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
 
   // This must be called on the creation thread before any other methods are
   // called, and before references to this object are given to any other
-  // threads. Takes ownership of |handle|. Returns true on success. On failure,
-  // no other methods should be called (including |Shutdown()|).
-  bool Init(const PlatformChannelHandle& handle);
+  // threads. |handle| should be a handle to a (platform-appropriate)
+  // bidirectional communication channel (e.g., a socket on POSIX, a named pipe
+  // on Windows). Returns true on success. On failure, no other methods should
+  // be called (including |Shutdown()|).
+  bool Init(ScopedPlatformHandle handle);
 
   // This must be called on the creation thread before destruction (which can
   // happen on any thread).

@@ -10,7 +10,6 @@
 #include "base/process/process_handle.h"
 // TODO(vtl): Remove build_config.h include when fully implemented on Windows.
 #include "build/build_config.h"
-#include "mojo/system/platform_channel.h"
 #include "mojo/system/platform_channel_pair.h"
 
 namespace mojo {
@@ -32,14 +31,14 @@ void MultiprocessTestBase::SetUp() {
 // TODO(vtl): Not implemented on Windows yet.
 #if defined(OS_POSIX)
   platform_channel_pair_.reset(new system::PlatformChannelPair());
-  server_platform_channel = platform_channel_pair_->CreateServerChannel();
+  server_platform_handle = platform_channel_pair_->PassServerHandle();
 #endif
 }
 
 void MultiprocessTestBase::TearDown() {
   CHECK_EQ(test_child_handle_, base::kNullProcessHandle);
 
-  server_platform_channel.reset();
+  server_platform_handle.reset();
   platform_channel_pair_.reset();
 
   MultiProcessTest::TearDown();
@@ -55,8 +54,8 @@ void MultiprocessTestBase::StartChild(const std::string& test_child_name) {
 #if defined(OS_POSIX)
   CommandLine unused(CommandLine::NO_PROGRAM);
   base::FileHandleMappingVector fds_to_map;
-  platform_channel_pair_->PrepareToPassClientChannelToChildProcess(&unused,
-                                                                   &fds_to_map);
+  platform_channel_pair_->PrepareToPassClientHandleToChildProcess(&unused,
+                                                                  &fds_to_map);
   test_child_handle_ = SpawnChild(test_child_main, fds_to_map, false);
 #elif defined(OS_WIN)
   test_child_handle_  = SpawnChild(test_child_main, false);
@@ -92,8 +91,8 @@ CommandLine MultiprocessTestBase::MakeCmdLine(const std::string& procname,
 // TODO(vtl): Not implemented on Windows yet.
 #if defined(OS_POSIX)
   base::FileHandleMappingVector unused;
-  platform_channel_pair_->PrepareToPassClientChannelToChildProcess(
-      &command_line, &unused);
+  platform_channel_pair_->PrepareToPassClientHandleToChildProcess(&command_line,
+                                                                  &unused);
 #endif
   return command_line;
 }
@@ -103,16 +102,14 @@ void MultiprocessTestBase::ChildSetup() {
   CHECK(CommandLine::InitializedForCurrentProcess());
 // TODO(vtl): Not implemented on Windows yet.
 #if defined(OS_POSIX)
-  client_platform_channel =
-      system::PlatformChannelPair::CreateClientChannelFromParentProcess(
+  client_platform_handle =
+      system::PlatformChannelPair::PassClientHandleFromParentProcess(
           *CommandLine::ForCurrentProcess());
-  CHECK(client_platform_channel.get());
 #endif
 }
 
 // static
-scoped_ptr<system::PlatformChannel>
-    MultiprocessTestBase::client_platform_channel;
+system::ScopedPlatformHandle MultiprocessTestBase::client_platform_handle;
 
 }  // namespace test
 }  // namespace mojo

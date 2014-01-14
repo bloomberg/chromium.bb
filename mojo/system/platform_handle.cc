@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/system/platform_channel_handle.h"
+#include "mojo/system/platform_handle.h"
 
 #include "build/build_config.h"
 #if defined(OS_POSIX)
@@ -13,20 +13,23 @@
 #error "Platform not yet supported."
 #endif
 
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 
 namespace mojo {
 namespace system {
 
-void PlatformChannelHandle::CloseIfNecessary() {
+void PlatformHandle::CloseIfNecessary() {
   if (!is_valid())
     return;
 
 #if defined(OS_POSIX)
-  DPCHECK(close(fd) == 0);
+  bool success = (close(fd) == 0);
+  DPCHECK(success);
   fd = -1;
 #elif defined(OS_WIN)
-  DPCHECK(CloseHandle(handle));
+  bool success = !!CloseHandle(handle);
+  DPCHECK(success);
   handle = INVALID_HANDLE_VALUE;
 #else
 #error "Platform not yet supported."

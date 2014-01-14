@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "mojo/system/constants.h"
+#include "mojo/system/scoped_platform_handle.h"
 #include "mojo/system/system_impl_export.h"
 
 namespace base {
@@ -23,7 +24,7 @@ class MessageInTransit;
 // This simply wraps an |int| file descriptor on POSIX and a |HANDLE| on
 // Windows, but we don't want to impose, e.g., the inclusion of windows.h on
 // everyone.
-struct PlatformChannelHandle;
+struct PlatformHandle;
 
 // |RawChannel| is an interface to objects that wrap an OS "pipe". It presents
 // the following interface to users:
@@ -66,10 +67,11 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
     virtual ~Delegate() {}
   };
 
-  // Static factory method. Takes ownership of |handle| (i.e., will close it).
-  // Does *not* take ownership of |delegate| and |message_loop|, which must
-  // remain alive while this object does.
-  static RawChannel* Create(const PlatformChannelHandle& handle,
+  // Static factory method. |handle| should be a handle to a
+  // (platform-appropriate) bidirectional communication channel (e.g., a socket
+  // on POSIX, a named pipe on Windows). Does *not* take ownership of |delegate|
+  // and |message_loop|, which must remain alive while this object does.
+  static RawChannel* Create(ScopedPlatformHandle handle,
                             Delegate* delegate,
                             base::MessageLoop* message_loop);
 
