@@ -158,6 +158,7 @@ RenderBlock::RenderBlock(ContainerNode* node)
     , m_beingDestroyed(false)
     , m_hasMarkupTruncation(false)
     , m_hasBorderOrPaddingLogicalWidthChanged(false)
+    , m_hasOnlySelfCollapsingChildren(false)
 {
     setChildrenInline(true);
 }
