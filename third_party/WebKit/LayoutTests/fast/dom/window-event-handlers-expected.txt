@@ -99,16 +99,6 @@ PASS Set HTMLFrameSetElement.onpopstate
 PASS Enumerate HTMLFrameSetElement.onpopstate 
 PASS Reflect HTMLFrameSetElement.onpopstate 
 PASS Forward HTMLFrameSetElement.onpopstate to Window 
-PASS Set Window.onresize 
-PASS Enumerate Window.onresize 
-PASS Set HTMLBodyElement.onresize 
-PASS Enumerate HTMLBodyElement.onresize 
-PASS Reflect HTMLBodyElement.onresize 
-PASS Forward HTMLBodyElement.onresize to Window 
-PASS Set HTMLFrameSetElement.onresize 
-PASS Enumerate HTMLFrameSetElement.onresize 
-PASS Reflect HTMLFrameSetElement.onresize 
-PASS Forward HTMLFrameSetElement.onresize to Window 
 PASS Set Window.onstorage 
 PASS Enumerate Window.onstorage 
 PASS Set HTMLBodyElement.onstorage 

@@ -284,6 +284,7 @@ const AtomicString& HTMLElement::eventNameForAttributeName(const QualifiedName& 
         attributeNameToEventNameMap.set(onprogressAttr.localName(), EventTypeNames::progress);
         attributeNameToEventNameMap.set(onratechangeAttr.localName(), EventTypeNames::ratechange);
         attributeNameToEventNameMap.set(onresetAttr.localName(), EventTypeNames::reset);
+        attributeNameToEventNameMap.set(onresizeAttr.localName(), EventTypeNames::resize);
         attributeNameToEventNameMap.set(onseekedAttr.localName(), EventTypeNames::seeked);
         attributeNameToEventNameMap.set(onseekingAttr.localName(), EventTypeNames::seeking);
         attributeNameToEventNameMap.set(onselectAttr.localName(), EventTypeNames::select);

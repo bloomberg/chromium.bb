@@ -33,6 +33,7 @@ interface HTMLBodyElement : HTMLElement {
     attribute EventHandler onerror;
     attribute EventHandler onfocus;
     attribute EventHandler onload;
+    attribute EventHandler onresize;
     attribute EventHandler onscroll;
 };
 

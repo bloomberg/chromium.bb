@@ -21,28 +21,6 @@ PASS Set Document.onblur
 PASS Enumerate Document.onblur 
 PASS Set Window.onblur 
 PASS Enumerate Window.onblur 
-PASS No Element.onerror 
-PASS Set HTMLElement.onerror 
-PASS Enumerate HTMLElement.onerror 
-PASS Reflect HTMLElement.onerror 
-PASS Set SVGElement.onerror 
-PASS Enumerate SVGElement.onerror 
-FAIL Reflect SVGElement.onerror assert_equals: Convert to function expected "function" but got "object"
-PASS Set Document.onerror 
-PASS Enumerate Document.onerror 
-PASS Set Window.onerror 
-PASS Enumerate Window.onerror 
-PASS No Element.onfocus 
-PASS Set HTMLElement.onfocus 
-PASS Enumerate HTMLElement.onfocus 
-PASS Reflect HTMLElement.onfocus 
-PASS Set SVGElement.onfocus 
-PASS Enumerate SVGElement.onfocus 
-FAIL Reflect SVGElement.onfocus assert_equals: Convert to function expected "function" but got "object"
-PASS Set Document.onfocus 
-PASS Enumerate Document.onfocus 
-PASS Set Window.onfocus 
-PASS Enumerate Window.onfocus 
 PASS No Element.oncancel 
 PASS Set HTMLElement.oncancel 
 PASS Enumerate HTMLElement.oncancel 
@@ -263,6 +241,28 @@ PASS Set Document.onended
 PASS Enumerate Document.onended 
 PASS Set Window.onended 
 PASS Enumerate Window.onended 
+PASS No Element.onerror 
+PASS Set HTMLElement.onerror 
+PASS Enumerate HTMLElement.onerror 
+PASS Reflect HTMLElement.onerror 
+PASS Set SVGElement.onerror 
+PASS Enumerate SVGElement.onerror 
+FAIL Reflect SVGElement.onerror assert_equals: Convert to function expected "function" but got "object"
+PASS Set Document.onerror 
+PASS Enumerate Document.onerror 
+PASS Set Window.onerror 
+PASS Enumerate Window.onerror 
+PASS No Element.onfocus 
+PASS Set HTMLElement.onfocus 
+PASS Enumerate HTMLElement.onfocus 
+PASS Reflect HTMLElement.onfocus 
+PASS Set SVGElement.onfocus 
+PASS Enumerate SVGElement.onfocus 
+FAIL Reflect SVGElement.onfocus assert_equals: Convert to function expected "function" but got "object"
+PASS Set Document.onfocus 
+PASS Enumerate Document.onfocus 
+PASS Set Window.onfocus 
+PASS Enumerate Window.onfocus 
 PASS No Element.oninput 
 PASS Set HTMLElement.oninput 
 PASS Enumerate HTMLElement.oninput 
@@ -516,6 +516,17 @@ PASS Set Document.onreset
 PASS Enumerate Document.onreset 
 PASS Set Window.onreset 
 PASS Enumerate Window.onreset 
+PASS No Element.onresize 
+PASS Set HTMLElement.onresize 
+PASS Enumerate HTMLElement.onresize 
+PASS Reflect HTMLElement.onresize 
+PASS Set SVGElement.onresize 
+PASS Enumerate SVGElement.onresize 
+FAIL Reflect SVGElement.onresize assert_equals: Convert to function expected "function" but got "object"
+PASS Set Document.onresize 
+PASS Enumerate Document.onresize 
+PASS Set Window.onresize 
+PASS Enumerate Window.onresize 
 PASS No Element.onscroll 
 PASS Set HTMLElement.onscroll 
 PASS Enumerate HTMLElement.onscroll 
@@ -626,6 +637,17 @@ PASS Set Document.ontimeupdate
 PASS Enumerate Document.ontimeupdate 
 PASS Set Window.ontimeupdate 
 PASS Enumerate Window.ontimeupdate 
+PASS No Element.ontoggle 
+FAIL Set HTMLElement.ontoggle assert_equals: Initially null expected null but got undefined
+FAIL Enumerate HTMLElement.ontoggle assert_true: expected true got undefined
+FAIL Reflect HTMLElement.ontoggle assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set SVGElement.ontoggle assert_equals: Initially null expected null but got undefined
+FAIL Enumerate SVGElement.ontoggle assert_true: expected true got undefined
+FAIL Reflect SVGElement.ontoggle assert_equals: Convert to function expected "function" but got "undefined"
+FAIL Set Document.ontoggle assert_equals: Initially null expected null but got undefined
+FAIL Enumerate Document.ontoggle assert_true: expected true got undefined
+FAIL Set Window.ontoggle assert_equals: Initially null expected null but got undefined
+FAIL Enumerate Window.ontoggle assert_true: expected true got undefined
 PASS No Element.onvolumechange 
 PASS Set HTMLElement.onvolumechange 
 PASS Enumerate HTMLElement.onvolumechange 

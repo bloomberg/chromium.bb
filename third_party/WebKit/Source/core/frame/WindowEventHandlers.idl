@@ -41,7 +41,6 @@
     attribute EventHandler onpagehide;
     attribute EventHandler onpageshow;
     attribute EventHandler onpopstate;
-    attribute EventHandler onresize;
     attribute EventHandler onstorage;
     attribute EventHandler onunload;
 };

@@ -217,3 +217,4 @@ callback CustomElementConstructor = Element ();
 
 Document implements GlobalEventHandlers;
 Document implements ParentNode;
+

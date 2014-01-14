@@ -31,6 +31,14 @@ PASS Set HTMLFrameSetElement.onload
 PASS Enumerate HTMLFrameSetElement.onload 
 PASS Reflect HTMLFrameSetElement.onload 
 PASS Forward HTMLFrameSetElement.onload to Window 
+PASS Set HTMLBodyElement.onresize 
+PASS Enumerate HTMLBodyElement.onresize 
+PASS Reflect HTMLBodyElement.onresize 
+PASS Forward HTMLBodyElement.onresize to Window 
+PASS Set HTMLFrameSetElement.onresize 
+PASS Enumerate HTMLFrameSetElement.onresize 
+PASS Reflect HTMLFrameSetElement.onresize 
+PASS Forward HTMLFrameSetElement.onresize to Window 
 PASS Set HTMLBodyElement.onscroll 
 PASS Enumerate HTMLBodyElement.onscroll 
 PASS Reflect HTMLBodyElement.onscroll 
