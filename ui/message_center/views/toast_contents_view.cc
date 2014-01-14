@@ -152,7 +152,7 @@ void ToastContentsView::StartFadeIn() {
   fade_animation_->Stop();
 
   GetWidget()->SetOpacity(0);
-  GetWidget()->Show();
+  GetWidget()->ShowInactive();
   fade_animation_->Reset(0);
   fade_animation_->Show();
 }
@@ -226,11 +226,7 @@ void ToastContentsView::WindowClosing() {
 }
 
 bool ToastContentsView::CanActivate() const {
-#if defined(OS_WIN) && defined(USE_AURA)
-  return true;
-#else
   return false;
-#endif
 }
 
 void ToastContentsView::OnDisplayChanged() {
