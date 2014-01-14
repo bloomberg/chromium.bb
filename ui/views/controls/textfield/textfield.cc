@@ -872,6 +872,12 @@ void Textfield::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   OnCaretBoundsChanged();
 }
 
+void Textfield::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  if (details.is_add && details.child == this)
+    UpdateColorsFromTheme(GetNativeTheme());
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Textfield, TextfieldModel::Delegate overrides:
 

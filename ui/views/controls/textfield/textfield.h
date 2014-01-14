@@ -218,6 +218,8 @@ class VIEWS_EXPORT Textfield : public View,
   virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE;
   virtual void OnDragDone() OVERRIDE;
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
+  virtual void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) OVERRIDE;
 
   // TextfieldModel::Delegate overrides:
   virtual void OnCompositionTextConfirmedOrCleared() OVERRIDE;
