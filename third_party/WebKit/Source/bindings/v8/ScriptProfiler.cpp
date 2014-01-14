@@ -141,11 +141,11 @@ void ScriptProfiler::clearHeapObjectIds()
 
 namespace {
 
-class ActivityControlAdapter : public v8::ActivityControl {
+class ActivityControlAdapter FINAL : public v8::ActivityControl {
 public:
     ActivityControlAdapter(ScriptProfiler::HeapSnapshotProgress* progress)
             : m_progress(progress), m_firstReport(true) { }
-    ControlOption ReportProgressValue(int done, int total)
+    virtual ControlOption ReportProgressValue(int done, int total) OVERRIDE
     {
         ControlOption result = m_progress->isCanceled() ? kAbort : kContinue;
         if (m_firstReport) {
@@ -162,9 +162,9 @@ private:
     bool m_firstReport;
 };
 
-class GlobalObjectNameResolver : public v8::HeapProfiler::ObjectNameResolver {
+class GlobalObjectNameResolver FINAL : public v8::HeapProfiler::ObjectNameResolver {
 public:
-    virtual const char* GetName(v8::Handle<v8::Object> object)
+    virtual const char* GetName(v8::Handle<v8::Object> object) OVERRIDE
     {
         if (V8DOMWrapper::isWrapperOfType(object, &V8Window::wrapperTypeInfo)) {
             DOMWindow* window = V8Window::toNative(object);

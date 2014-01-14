@@ -46,7 +46,7 @@ class WorkerScriptDebugServer FINAL : public ScriptDebugServer {
     WTF_MAKE_NONCOPYABLE(WorkerScriptDebugServer);
 public:
     WorkerScriptDebugServer(WorkerGlobalScope*, const String&);
-    ~WorkerScriptDebugServer() { }
+    virtual ~WorkerScriptDebugServer() { }
 
     void addListener(ScriptDebugListener*);
     void removeListener(ScriptDebugListener*);

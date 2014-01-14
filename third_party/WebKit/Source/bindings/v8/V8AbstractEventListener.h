@@ -126,7 +126,7 @@ namespace WebCore {
 
     private:
         // Implementation of EventListener function.
-        virtual bool virtualisAttribute() const { return m_isAttribute; }
+        virtual bool virtualisAttribute() const OVERRIDE { return m_isAttribute; }
 
         virtual v8::Local<v8::Value> callListenerFunction(ExecutionContext*, v8::Handle<v8::Value> jsevent, Event*) = 0;
 
