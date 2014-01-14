@@ -523,5 +523,19 @@
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
     },
+    {
+      'target_name': 'ppapi_example_media_stream_video',
+      'dependencies': [
+        'ppapi_example_skeleton',
+        'ppapi.gyp:ppapi_cpp',
+        'ppapi.gyp:ppapi_gles2',
+      ],
+      'include_dirs': [
+        'lib/gl/include',
+      ],
+      'sources': [
+        'examples/media_stream_video/media_stream_video.cc',
+      ],
+    },
   ],
 }
