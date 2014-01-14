@@ -2283,6 +2283,20 @@ class BisectPerformanceMetrics(object):
     print
     self._PrintConfidence(results_dict)
 
+  def _GetViewVCLinkFromDepotAndHash(self, cl, depot):
+    info = self.source_control.QueryRevisionInfo(cl,
+        self._GetDepotDirectory(depot))
+    if depot and DEPOT_DEPS_NAME[depot].has_key('viewvc'):
+      try:
+        # Format is "git-svn-id: svn://....@123456 <other data>"
+        svn_line = [i for i in info['body'].splitlines() if 'git-svn-id:' in i]
+        svn_revision = svn_line[0].split('@')
+        svn_revision = svn_revision[1].split(' ')[0]
+        return DEPOT_DEPS_NAME[depot]['viewvc'] + svn_revision
+      except IndexError:
+        return ''
+    return ''
+
   def _PrintRevisionInfo(self, cl, info, depot=None):
     # The perf dashboard specifically looks for the string
     # "Author  : " to parse out who to cc on a bug. If you change the
@@ -2292,19 +2306,15 @@ class BisectPerformanceMetrics(object):
     print 'Author  : %s' % info['author']
     if not info['email'].startswith(info['author']):
       print 'Email   : %s' % info['email']
-    if depot and DEPOT_DEPS_NAME[depot].has_key('viewvc'):
-      try:
-        # Format is "git-svn-id: svn://....@123456 <other data>"
-        svn_line = [i for i in info['body'].splitlines() if 'git-svn-id:' in i]
-        svn_revision = svn_line[0].split('@')
-        svn_revision = svn_revision[1].split(' ')[0]
-        print 'Link    : %s' % DEPOT_DEPS_NAME[depot]['viewvc'] + svn_revision
-      except IndexError:
-        print
-        print 'Failed to parse svn revision from body:'
-        print
-        print info['body']
-        print
+    commit_link = self._GetViewVCLinkFromDepotAndHash(cl, depot)
+    if commit_link:
+      print 'Link    : %s' % commit_link
+    else:
+      print
+      print 'Failed to parse svn revision from body:'
+      print
+      print info['body']
+      print
     print 'Commit  : %s' % cl
     print 'Date    : %s' % info['date']
 
@@ -2316,8 +2326,8 @@ class BisectPerformanceMetrics(object):
       print 'Tested commits:'
     else:
       print 'Partial results:'
-    print '  %20s  %40s  %12s %14s %13s' % ('Depot'.center(20, ' '),
-        'Commit SHA'.center(40, ' '), 'Mean'.center(12, ' '),
+    print '  %20s  %70s  %12s %14s %13s' % ('Depot'.center(20, ' '),
+        'Commit SHA'.center(70, ' '), 'Mean'.center(12, ' '),
         'Std. Error'.center(14, ' '), 'State'.center(13, ' '))
     state = 0
     for current_id, current_data in revision_data_sorted:
@@ -2347,9 +2357,13 @@ class BisectPerformanceMetrics(object):
         std_error = ('+-%.02f' %
             current_data['value']['std_err']).center(14, ' ')
         mean = ('%.02f' % current_data['value']['mean']).center(12, ' ')
-        print '  %20s  %40s  %12s %14s %13s' % (
-            current_data['depot'].center(20, ' '), current_id, mean,
-            std_error, state_str)
+        cl_link = self._GetViewVCLinkFromDepotAndHash(current_id,
+            current_data['depot'])
+        if not cl_link:
+          cl_link = current_id
+        print '  %20s  %70s  %12s %14s %13s' % (
+            current_data['depot'].center(20, ' '), cl_link.center(70, ' '),
+            mean, std_error, state_str)
 
   def _PrintReproSteps(self):
     print
@@ -2362,16 +2376,29 @@ class BisectPerformanceMetrics(object):
   def _PrintOtherRegressions(self, other_regressions, revision_data):
     print
     print 'Other regressions may have occurred:'
-    print '  %8s  %82s  %10s' % ('Depot'.center(8, ' '),
-        'Range'.center(82, ' '), 'Confidence'.center(10, ' '))
+    print '  %8s  %70s  %10s' % ('Depot'.center(8, ' '),
+        'Range'.center(70, ' '), 'Confidence'.center(10, ' '))
     for regression in other_regressions:
       current_id, previous_id, confidence = regression
       current_data = revision_data[current_id]
       previous_data = revision_data[previous_id]
 
-      print '  %8s  %s..%s %s' % (
-          current_data['depot'], current_id, previous_id,
+      current_link = self._GetViewVCLinkFromDepotAndHash(current_id,
+          current_data['depot'])
+      previous_link = self._GetViewVCLinkFromDepotAndHash(previous_id,
+          previous_data['depot'])
+
+      # If we can't map it to a viewable URL, at least show the original hash.
+      if not current_link:
+        current_link = current_id
+      if not previous_link:
+        previous_link = previous_id
+
+      print '  %8s  %70s %s' % (
+          current_data['depot'], current_link,
           ('%d%%' % confidence).center(10, ' '))
+      print '  %8s  %70s' % (
+          previous_data['depot'], previous_link)
       print
 
   def _PrintStepTime(self, revision_data_sorted):
