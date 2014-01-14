@@ -1377,6 +1377,9 @@ const char kSpdyProxyAuthOrigin[]           = "spdy-proxy-auth-origin";
 // Authentication string for the data reduction proxy.
 const char kSpdyProxyAuthValue[]            = "spdy-proxy-auth-value";
 
+// Origin for which dev version of SpdyProxy authentication is supported.
+const char kSpdyProxyDevAuthOrigin[]        = "spdy-proxy-dev-auth-origin";
+
 // Specifies the URL where spelling service feedback data will be sent instead
 // of the default URL. This switch is for temporary testing only.
 // TODO(rouslan): Remove this flag when feedback testing is complete. Revisit by

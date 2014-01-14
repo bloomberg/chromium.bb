@@ -513,6 +513,7 @@
       'native_memory_pressure_signals%': 0,
 
       'data_reduction_fallback_host%' : '',
+      'data_reduction_dev_host%' : '',
       'spdy_proxy_auth_origin%' : '',
       'spdy_proxy_auth_property%' : '',
       'spdy_proxy_auth_value%' : '',
@@ -980,6 +981,7 @@
     'native_discardable_memory%': '<(native_discardable_memory)',
     'native_memory_pressure_signals%': '<(native_memory_pressure_signals)',
     'data_reduction_fallback_host%': '<(data_reduction_fallback_host)',
+    'data_reduction_dev_host%': '<(data_reduction_dev_host)',
     'spdy_proxy_auth_origin%': '<(spdy_proxy_auth_origin)',
     'spdy_proxy_auth_property%': '<(spdy_proxy_auth_property)',
     'spdy_proxy_auth_value%': '<(spdy_proxy_auth_value)',
@@ -2462,6 +2464,10 @@
       ['data_reduction_fallback_host != ""', {
         'defines': [
           'DATA_REDUCTION_FALLBACK_HOST="<(data_reduction_fallback_host)"'],
+      }],
+      ['data_reduction_dev_host != ""', {
+        'defines': [
+          'DATA_REDUCTION_DEV_HOST="<(data_reduction_dev_host)"'],
       }],
       ['spdy_proxy_auth_origin != ""', {
         'defines': ['SPDY_PROXY_AUTH_ORIGIN="<(spdy_proxy_auth_origin)"'],

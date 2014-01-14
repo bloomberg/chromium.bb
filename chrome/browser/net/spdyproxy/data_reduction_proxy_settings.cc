@@ -229,8 +229,16 @@ bool DataReductionProxySettings::WasFetchedViaProxy(
 // static
 std::string DataReductionProxySettings::GetDataReductionProxyOrigin() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kSpdyProxyDevAuthOrigin))
+    return command_line.GetSwitchValueASCII(switches::kSpdyProxyDevAuthOrigin);
   if (command_line.HasSwitch(switches::kSpdyProxyAuthOrigin))
     return command_line.GetSwitchValueASCII(switches::kSpdyProxyAuthOrigin);
+#if defined(DATA_REDUCTION_DEV_HOST)
+  if (FieldTrialList::FindFullName("DataCompressionProxyDevRollout") ==
+      kEnabled) {
+    return DATA_REDUCTION_DEV_HOST;
+  }
+#endif
 #if defined(SPDY_PROXY_AUTH_ORIGIN)
   return SPDY_PROXY_AUTH_ORIGIN;
 #else

@@ -368,6 +368,7 @@ extern const char kSimulateOutdated[];
 extern const char kSpdyProxyAuthFallback[];
 extern const char kSpdyProxyAuthOrigin[];
 extern const char kSpdyProxyAuthValue[];
+extern const char kSpdyProxyDevAuthOrigin[];
 extern const char kSpellingServiceFeedbackUrl[];
 extern const char kSpellingServiceFeedbackIntervalSeconds[];
 extern const char kSSLVersionMax[];

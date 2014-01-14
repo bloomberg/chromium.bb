@@ -26,6 +26,7 @@
 #include "url/gurl.h"
 
 const char kDataReductionProxyOrigin[] = "https://foo.com:443/";
+const char kDataReductionProxyDevHost[] = "http://foo-dev.com:80";
 const char kDataReductionProxyOriginPAC[] = "HTTPS foo.com:443;";
 const char kDataReductionProxyFallbackPAC[] = "PROXY bar.com:80;";
 
@@ -67,6 +68,18 @@ TEST_F(DataReductionProxySettingsAndroidTest, TestGetDataReductionProxyOrigin) {
   ASSERT_TRUE(result.obj());
   const base::android::JavaRef<jstring>& str_ref = result;
   EXPECT_EQ(kDataReductionProxyOrigin, ConvertJavaStringToUTF8(str_ref));
+}
+
+TEST_F(DataReductionProxySettingsAndroidTest,
+       TestGetDataReductionProxyDevOrigin) {
+  AddProxyToCommandLine();
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kSpdyProxyDevAuthOrigin, kDataReductionProxyDevHost);
+  ScopedJavaLocalRef<jstring> result =
+      Settings()->GetDataReductionProxyOrigin(env_, NULL);
+  ASSERT_TRUE(result.obj());
+  const base::android::JavaRef<jstring>& str_ref = result;
+  EXPECT_EQ(kDataReductionProxyDevHost, ConvertJavaStringToUTF8(str_ref));
 }
 
 // Confirm that the bypass rule functions generate the intended JavaScript

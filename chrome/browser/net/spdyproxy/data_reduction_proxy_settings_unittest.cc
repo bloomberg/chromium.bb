@@ -38,6 +38,7 @@ using testing::AnyNumber;
 using testing::Return;
 
 const char kDataReductionProxyOrigin[] = "https://foo.com:443/";
+const char kDataReductionProxyDevHost[] = "http://foo-dev.com:80";
 const char kDataReductionProxyFallback[] = "http://bar.com:80";
 const char kDataReductionProxyAuth[] = "12345";
 
@@ -307,6 +308,15 @@ TEST_F(DataReductionProxySettingsTest, TestGetDataReductionProxyOrigin) {
   std::string result =
       DataReductionProxySettings::GetDataReductionProxyOrigin();
   EXPECT_EQ(kDataReductionProxyOrigin, result);
+}
+
+TEST_F(DataReductionProxySettingsTest, TestGetDataReductionProxyDevOrigin) {
+  AddProxyToCommandLine();
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kSpdyProxyDevAuthOrigin, kDataReductionProxyDevHost);
+  std::string result =
+      DataReductionProxySettings::GetDataReductionProxyOrigin();
+  EXPECT_EQ(kDataReductionProxyDevHost, result);
 }
 
 TEST_F(DataReductionProxySettingsTest, TestGetDataReductionProxies) {

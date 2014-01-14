@@ -211,7 +211,12 @@ ProxyServer::Scheme ProxyServer::GetSchemeFromURI(const std::string& scheme) {
 // TODO(bengr): Use |scheme_| to indicate that this is the data reduction proxy.
 #if defined(SPDY_PROXY_AUTH_ORIGIN)
 bool ProxyServer::isDataReductionProxy() const {
-  return host_port_pair_.Equals(
+    bool dev_host = false;
+#if defined (DATA_REDUCTION_DEV_HOST)
+    dev_host = host_port_pair_.Equals(
+        HostPortPair::FromURL(GURL(DATA_REDUCTION_DEV_HOST)));
+#endif
+  return dev_host || host_port_pair_.Equals(
       HostPortPair::FromURL(GURL(SPDY_PROXY_AUTH_ORIGIN)));
 }
 
