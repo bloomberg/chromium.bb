@@ -28,6 +28,12 @@ PASS: shape-outside from [polygon(nonzero, 0px 0px, 25px 25px, 50px 50px)] to [p
 PASS: shape-outside from [polygon(nonzero, 0px 0px, 25px 25px, 50px 50px)] to [polygon(nonzero, 25px 25px, 50px 50px, 75px 75px)] was [polygon(nonzero, 15px 15px, 40px 40px, 65px 65px)] at 0.6
 PASS: shape-outside from [polygon(nonzero, 0px 0px, 25px 25px, 50px 50px)] to [polygon(nonzero, 25px 25px, 50px 50px, 75px 75px)] was [polygon(nonzero, 25px 25px, 50px 50px, 75px 75px)] at 1
 PASS: shape-outside from [polygon(nonzero, 0px 0px, 25px 25px, 50px 50px)] to [polygon(nonzero, 25px 25px, 50px 50px, 75px 75px)] was [polygon(nonzero, 37.5px 37.5px, 62.5px 62.5px, 87.5px 87.5px)] at 1.5
+FAIL: shape-outside from [polygon(evenodd, 0px 0px, 25px 25px, 50px 50px)] to [polygon(nonzero, 25px 25px, 50px 50px, 75px 75px)] was [polygon(nonzero, 25px 25px, 50px 50px, 75px 75px)] at -0.3, expected [polygon(evenodd, 0px 0px, 25px 25px, 50px 50px)]
+FAIL: shape-outside from [polygon(evenodd, 0px 0px, 25px 25px, 50px 50px)] to [polygon(nonzero, 25px 25px, 50px 50px, 75px 75px)] was [polygon(nonzero, 25px 25px, 50px 50px, 75px 75px)] at 0, expected [polygon(evenodd, 0px 0px, 25px 25px, 50px 50px)]
+FAIL: shape-outside from [polygon(evenodd, 0px 0px, 25px 25px, 50px 50px)] to [polygon(nonzero, 25px 25px, 50px 50px, 75px 75px)] was [polygon(nonzero, 25px 25px, 50px 50px, 75px 75px)] at 0.3, expected [polygon(evenodd, 0px 0px, 25px 25px, 50px 50px)]
+PASS: shape-outside from [polygon(evenodd, 0px 0px, 25px 25px, 50px 50px)] to [polygon(nonzero, 25px 25px, 50px 50px, 75px 75px)] was [polygon(nonzero, 25px 25px, 50px 50px, 75px 75px)] at 0.6
+PASS: shape-outside from [polygon(evenodd, 0px 0px, 25px 25px, 50px 50px)] to [polygon(nonzero, 25px 25px, 50px 50px, 75px 75px)] was [polygon(nonzero, 25px 25px, 50px 50px, 75px 75px)] at 1
+PASS: shape-outside from [polygon(evenodd, 0px 0px, 25px 25px, 50px 50px)] to [polygon(nonzero, 25px 25px, 50px 50px, 75px 75px)] was [polygon(nonzero, 25px 25px, 50px 50px, 75px 75px)] at 1.5
 FAIL: shape-outside from [none] to [ellipse(100% 100% at 0% 0%)] was [ellipse(100% 100% at 0% 0%)] at -0.3, expected [none]
 FAIL: shape-outside from [none] to [ellipse(100% 100% at 0% 0%)] was [ellipse(100% 100% at 0% 0%)] at 0, expected [none]
 FAIL: shape-outside from [none] to [ellipse(100% 100% at 0% 0%)] was [ellipse(100% 100% at 0% 0%)] at 0.3, expected [none]
