@@ -117,6 +117,7 @@ class EventCountDelegate : public TestWindowDelegate {
   // Overridden from TestWindowDelegate:
   virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
   virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   // Returns the counts of mouse motion events in the
   // form of "<enter> <move> <leave>".
@@ -130,6 +131,9 @@ class EventCountDelegate : public TestWindowDelegate {
   // "<press> <release>".
   std::string GetKeyCountsAndReset();
 
+  // Returns number of gesture events.
+  int GetGestureCountAndReset();
+
  private:
   int mouse_enter_count_;
   int mouse_move_count_;
@@ -138,6 +142,7 @@ class EventCountDelegate : public TestWindowDelegate {
   int mouse_release_count_;
   int key_press_count_;
   int key_release_count_;
+  int gesture_count_;
 
   DISALLOW_COPY_AND_ASSIGN(EventCountDelegate);
 };

@@ -113,9 +113,12 @@ bool TwoFingerDragHandler::ProcessGestureEvent(aura::Window* target,
   }
 
   if (!in_gesture_drag_) {
-    // Consume all two-finger gestures.
-    return event.details().touch_points() == 2;
+    // Consume all two-finger gestures on a normal window.
+    return event.details().touch_points() == 2 &&
+        target->type() == ui::wm::WINDOW_TYPE_NORMAL &&
+        window_state->IsNormalShowState();
   }
+
   // Since |in_gesture_drag_| is true a resizer was either created above or
   // it was created elsewhere and can be found in |window_state|.
   WindowResizer* any_window_resizer = window_resizer_ ?

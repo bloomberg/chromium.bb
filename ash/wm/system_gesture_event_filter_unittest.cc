@@ -10,13 +10,11 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shell.h"
-#include "ash/system/brightness_control_delegate.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/display_manager_test_api.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_shelf_delegate.h"
-#include "ash/volume_control_delegate.h"
 #include "ash/wm/gestures/long_press_affordance_handler.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -24,12 +22,16 @@
 #include "base/command_line.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
+#include "ui/aura/test/test_event_handler.h"
+#include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/event.h"
+#include "ui/events/event_handler.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/gestures/gesture_configuration.h"
 #include "ui/gfx/screen.h"
@@ -40,72 +42,6 @@ namespace ash {
 namespace test {
 
 namespace {
-
-class DelegatePercentTracker {
- public:
-  explicit DelegatePercentTracker()
-      : handle_percent_count_(0),
-        handle_percent_(0){
-  }
-  int handle_percent_count() const {
-    return handle_percent_count_;
-  }
-  double handle_percent() const {
-    return handle_percent_;
-  }
-  void SetPercent(double percent) {
-    handle_percent_ = percent;
-    handle_percent_count_++;
-  }
-
- private:
-  int handle_percent_count_;
-  int handle_percent_;
-
-  DISALLOW_COPY_AND_ASSIGN(DelegatePercentTracker);
-};
-
-class DummyVolumeControlDelegate : public VolumeControlDelegate,
-                                   public DelegatePercentTracker {
- public:
-  explicit DummyVolumeControlDelegate() {}
-  virtual ~DummyVolumeControlDelegate() {}
-
-  virtual bool HandleVolumeMute(const ui::Accelerator& accelerator) OVERRIDE {
-    return true;
-  }
-  virtual bool HandleVolumeDown(const ui::Accelerator& accelerator) OVERRIDE {
-    return true;
-  }
-  virtual bool HandleVolumeUp(const ui::Accelerator& accelerator) OVERRIDE {
-    return true;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DummyVolumeControlDelegate);
-};
-
-class DummyBrightnessControlDelegate : public BrightnessControlDelegate,
-                                       public DelegatePercentTracker {
- public:
-  explicit DummyBrightnessControlDelegate() {}
-  virtual ~DummyBrightnessControlDelegate() {}
-
-  virtual bool HandleBrightnessDown(
-      const ui::Accelerator& accelerator) OVERRIDE { return true; }
-  virtual bool HandleBrightnessUp(
-      const ui::Accelerator& accelerator) OVERRIDE { return true; }
-  virtual void SetBrightnessPercent(double percent, bool gradual) OVERRIDE {
-    SetPercent(percent);
-  }
-  virtual void GetBrightnessPercent(
-      const base::Callback<void(double)>& callback) OVERRIDE {
-    callback.Run(100.0);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DummyBrightnessControlDelegate);
-};
 
 class ResizableWidgetDelegate : public views::WidgetDelegateView {
  public:
@@ -527,6 +463,37 @@ TEST_P(SystemGestureEventFilterTest, TwoFingerDragEdge) {
             toplevel->GetNativeWindow()->bounds().ToString());
 }
 
+// We do not allow resizing a window via multiple edges simultaneously. Test
+// that the behavior is reasonable if a user attempts to resize a window via
+// several edges.
+TEST_P(SystemGestureEventFilterTest,
+       TwoFingerAttemptResizeLeftAndRightEdgesSimultaneously) {
+  gfx::Rect initial_bounds(0, 0, 400, 400);
+  views::Widget* toplevel =
+      views::Widget::CreateWindowWithContextAndBounds(
+          new ResizableWidgetDelegate, CurrentContext(), initial_bounds);
+  toplevel->Show();
+
+  const int kSteps = 15;
+  const int kTouchPoints = 2;
+  gfx::Point points[kTouchPoints] = {
+    gfx::Point(0, 40),    // Left edge
+    gfx::Point(399, 40),  // Right edge
+  };
+  int delays[kTouchPoints] = {0, 120};
+
+  EXPECT_EQ(HTLEFT, toplevel->GetNonClientComponent(points[0]));
+  EXPECT_EQ(HTRIGHT, toplevel->GetNonClientComponent(points[1]));
+
+  GetEventGenerator().GestureMultiFingerScrollWithDelays(
+      kTouchPoints, points, delays, 15, kSteps, 0, 40);
+
+  // The window bounds should not have changed because neither of the fingers
+  // moved horizontally.
+  EXPECT_EQ(initial_bounds.ToString(),
+            toplevel->GetNativeWindow()->bounds().ToString());
+}
+
 TEST_P(SystemGestureEventFilterTest, TwoFingerDragDelayed) {
   gfx::Rect bounds(0, 0, 100, 100);
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
@@ -662,6 +629,37 @@ TEST_P(SystemGestureEventFilterTest, DragRightNearEdgeSnaps) {
   gfx::Rect expected_bounds(snap_sizer.target_bounds());
   EXPECT_EQ(expected_bounds.ToString(),
             toplevel->GetWindowBoundsInScreen().ToString());
+}
+
+// Tests that the window manager does not consume gesture events targetted to
+// windows of type WINDOW_TYPE_CONTROL. This is important because the web
+// contents are often (but not always) of type WINDOW_TYPE_CONTROL.
+TEST_P(SystemGestureEventFilterTest,
+       ControlWindowGetsMultiFingerGestureEvents) {
+  scoped_ptr<aura::Window> parent(
+      CreateTestWindowInShellWithBounds(gfx::Rect(100, 100)));
+
+  aura::test::EventCountDelegate delegate;
+  delegate.set_window_component(HTCLIENT);
+  scoped_ptr<aura::Window> child(new aura::Window(&delegate));
+  child->SetType(ui::wm::WINDOW_TYPE_CONTROL);
+  child->Init(aura::WINDOW_LAYER_TEXTURED);
+  parent->AddChild(child.get());
+  child->SetBounds(gfx::Rect(100, 100));
+  child->Show();
+
+  aura::test::TestEventHandler event_handler;
+  aura::Env::GetInstance()->PrependPreTargetHandler(&event_handler);
+
+  GetEventGenerator().MoveMouseTo(0, 0);
+  for (int i = 1; i <= 3; ++i)
+    GetEventGenerator().PressTouchId(i);
+  for (int i = 1; i <= 3; ++i)
+    GetEventGenerator().ReleaseTouchId(i);
+  EXPECT_EQ(event_handler.num_gesture_events(),
+            delegate.GetGestureCountAndReset());
+
+  aura::Env::GetInstance()->RemovePreTargetHandler(&event_handler);
 }
 
 // Tests run twice - with docked windows disabled or enabled.
