@@ -340,9 +340,8 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   // Retrieve current gamepad data.
   void SampleGamepads(blink::WebGamepads* data);
 
-  // Get the browser process's notion of the renderer process's ID.
-  // This is the first argument to RenderWidgetHost::FromID. Ideally
-  // this would be available on all platforms via base::Process.
+  // DO NOT USE THIS METHOD!
+  // TODO(kbr): remove: crbug.com/333501
   base::ProcessId renderer_process_id() const;
 
   // Called by a RenderWidget when it is created or destroyed. This
