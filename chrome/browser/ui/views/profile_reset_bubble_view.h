@@ -8,7 +8,6 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/values.h"
 #include "chrome/browser/ui/global_error/global_error_bubble_view_base.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/bubble/bubble_delegate.h"
@@ -75,9 +74,6 @@ class ProfileResetBubbleView : public views::BubbleDelegateView,
   // views::LinkListener method.
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
-  // Sets the fully populated feedback data.
-  void UpdateFeedbackDetails(scoped_ptr<base::ListValue> feedback_list);
-
   struct Controls {
     Controls() {
       Reset();
@@ -101,9 +97,6 @@ class ProfileResetBubbleView : public views::BubbleDelegateView,
     // Checkbox for the user to choose to report the settings or not.
     views::Checkbox* report_settings_checkbox;
   } controls_;
-
-  // Feedback shown to user.
-  scoped_ptr<base::ListValue> feedback_data_;
 
   // A version of the help image that is brighter.
   gfx::ImageSkia brighter_help_image_;
