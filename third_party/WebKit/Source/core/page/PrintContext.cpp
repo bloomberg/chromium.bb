@@ -273,10 +273,10 @@ void PrintContext::collectLinkedDestinations(Node* node)
     const AtomicString& href = toElement(node)->getAttribute(HTMLNames::hrefAttr);
     if (href.isNull())
         return;
-    KURL url = node->document().completeURL(href);
+    KURL url = node->treeScope().completeURL(href);
     if (!url.isValid())
         return;
-    if (url.hasFragmentIdentifier() && equalIgnoringFragmentIdentifier(url, node->document().baseURL())) {
+    if (url.hasFragmentIdentifier() && equalIgnoringFragmentIdentifier(url, node->treeScope().baseURL())) {
         String name = url.fragmentIdentifier();
         Element* element = node->document().findAnchor(name);
         if (element)

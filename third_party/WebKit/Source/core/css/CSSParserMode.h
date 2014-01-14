@@ -35,7 +35,7 @@
 
 namespace WebCore {
 
-class Document;
+class TreeScope;
 
 // Must not grow beyond 3 bits, due to packing in StylePropertySet.
 enum CSSParserMode {
@@ -92,7 +92,7 @@ class CSSParserContext {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     CSSParserContext(CSSParserMode);
-    CSSParserContext(const Document&, const KURL& baseURL = KURL(), const String& charset = emptyString());
+    CSSParserContext(const TreeScope&, const KURL& baseURL = KURL(), const String& charset = emptyString());
 
     bool operator==(const CSSParserContext&) const;
     bool operator!=(const CSSParserContext& other) const { return !(*this == other); }

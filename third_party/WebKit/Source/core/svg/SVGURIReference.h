@@ -22,6 +22,7 @@
 #define SVGURIReference_h
 
 #include "core/dom/Document.h"
+#include "core/dom/TreeScope.h"
 
 namespace WebCore {
 
@@ -39,15 +40,15 @@ public:
     static AtomicString fragmentIdentifierFromIRIString(const String&, const Document&);
     static Element* targetElementFromIRIString(const String&, const Document&, AtomicString* = 0, Document* = 0);
 
-    static inline bool isExternalURIReference(const String& uri, const Document& document)
+    static inline bool isExternalURIReference(const String& uri, const TreeScope& treeScope)
     {
         // Fragment-only URIs are always internal
         if (uri.startsWith('#'))
             return false;
 
         // If the URI matches our documents URL, we're dealing with a local reference.
-        KURL url = document.completeURL(uri);
-        return !equalIgnoringFragmentIdentifier(url, document.url());
+        KURL url = treeScope.completeURL(uri);
+        return !equalIgnoringFragmentIdentifier(url, treeScope.document().url());
     }
 
 protected:

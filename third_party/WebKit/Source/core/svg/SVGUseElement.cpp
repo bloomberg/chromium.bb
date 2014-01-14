@@ -223,7 +223,7 @@ void SVGUseElement::svgAttributeChanged(const QualifiedName& attrName)
     if (SVGURIReference::isKnownAttribute(attrName)) {
         bool isExternalReference = isExternalURIReference(hrefCurrentValue(), document());
         if (isExternalReference) {
-            KURL url = document().completeURL(hrefCurrentValue());
+            KURL url = treeScope().completeURL(hrefCurrentValue());
             if (url.hasFragmentIdentifier()) {
                 FetchRequest request(ResourceRequest(url.string()), localName());
                 setDocumentResource(document().fetcher()->fetchSVGDocument(request));

@@ -40,6 +40,8 @@
 
 namespace WebCore {
 
+class Document;
+
 template<class KeyType, class InfoType>
 class MappedInfo {
 public:

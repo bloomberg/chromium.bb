@@ -109,7 +109,7 @@ bool HTMLScriptElement::async() const
 
 KURL HTMLScriptElement::src() const
 {
-    return document().completeURL(sourceAttributeValue());
+    return treeScope().completeURL(sourceAttributeValue());
 }
 
 String HTMLScriptElement::sourceAttributeValue() const

@@ -224,7 +224,7 @@ void PageSerializer::serializeFrame(Frame* frame)
 
         if (element->hasTagName(HTMLNames::imgTag)) {
             HTMLImageElement* imageElement = toHTMLImageElement(element);
-            KURL url = document->completeURL(imageElement->getAttribute(HTMLNames::srcAttr));
+            KURL url = imageElement->treeScope().completeURL(imageElement->getAttribute(HTMLNames::srcAttr));
             ImageResource* cachedImage = imageElement->cachedImage();
             addImageToResources(cachedImage, imageElement->renderer(), url);
         } else if (element->hasTagName(HTMLNames::inputTag)) {
@@ -237,7 +237,7 @@ void PageSerializer::serializeFrame(Frame* frame)
         } else if (element->hasTagName(HTMLNames::linkTag)) {
             HTMLLinkElement* linkElement = toHTMLLinkElement(element);
             if (CSSStyleSheet* sheet = linkElement->sheet()) {
-                KURL url = document->completeURL(linkElement->getAttribute(HTMLNames::hrefAttr));
+                KURL url = linkElement->treeScope().completeURL(linkElement->getAttribute(HTMLNames::hrefAttr));
                 serializeCSSStyleSheet(sheet, url);
                 ASSERT(m_resourceURLs.contains(url));
             }

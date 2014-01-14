@@ -318,7 +318,7 @@ void HTMLImageElement::setHeight(int value)
 
 KURL HTMLImageElement::src() const
 {
-    return document().completeURL(getAttribute(srcAttr));
+    return treeScope().completeURL(getAttribute(srcAttr));
 }
 
 void HTMLImageElement::setSrc(const String& value)
@@ -375,7 +375,7 @@ bool HTMLImageElement::isServerMap() const
     if (usemap.string()[0] == '#')
         return false;
 
-    return document().completeURL(stripLeadingAndTrailingHTMLSpaces(usemap)).isEmpty();
+    return treeScope().completeURL(stripLeadingAndTrailingHTMLSpaces(usemap)).isEmpty();
 }
 
 Image* HTMLImageElement::imageContents()

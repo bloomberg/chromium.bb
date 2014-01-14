@@ -143,11 +143,11 @@ String MarkupAccumulator::resolveURLIfNeeded(const Element* element, const Strin
 {
     switch (m_resolveURLsMethod) {
     case ResolveAllURLs:
-        return element->document().completeURL(urlString).string();
+        return element->treeScope().completeURL(urlString).string();
 
     case ResolveNonLocalURLs:
         if (!element->document().url().isLocalFile())
-            return element->document().completeURL(urlString).string();
+            return element->treeScope().completeURL(urlString).string();
         break;
 
     case DoNotResolveURLs:

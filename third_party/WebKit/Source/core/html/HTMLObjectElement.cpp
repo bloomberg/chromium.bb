@@ -202,7 +202,7 @@ void HTMLObjectElement::parametersForPlugin(Vector<String>& paramNames, Vector<S
     // resource's URL to be given by a param named "src", "movie", "code" or "url"
     // if we know that resource points to a plug-in.
     if (url.isEmpty() && !urlParameter.isEmpty()) {
-        KURL completedURL = document().completeURL(urlParameter);
+        KURL completedURL = treeScope().completeURL(urlParameter);
         bool useFallback;
         if (shouldUsePlugin(completedURL, serviceType, false, useFallback))
             url = urlParameter;

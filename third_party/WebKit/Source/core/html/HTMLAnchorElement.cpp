@@ -275,7 +275,7 @@ void HTMLAnchorElement::parseAttribute(const QualifiedName& name, const AtomicSt
             String parsedURL = stripLeadingAndTrailingHTMLSpaces(value);
             if (document().isDNSPrefetchEnabled()) {
                 if (protocolIs(parsedURL, "http") || protocolIs(parsedURL, "https") || parsedURL.startsWith("//"))
-                    prefetchDNS(document().completeURL(parsedURL).host());
+                    prefetchDNS(treeScope().completeURL(parsedURL).host());
             }
 
             if (wasLink)
@@ -321,7 +321,7 @@ bool HTMLAnchorElement::draggable() const
 
 KURL HTMLAnchorElement::href() const
 {
-    return document().completeURL(stripLeadingAndTrailingHTMLSpaces(getAttribute(hrefAttr)));
+    return treeScope().completeURL(stripLeadingAndTrailingHTMLSpaces(getAttribute(hrefAttr)));
 }
 
 void HTMLAnchorElement::setHref(const AtomicString& value)
@@ -397,7 +397,7 @@ void HTMLAnchorElement::sendPings(const KURL& destinationURL)
 
     SpaceSplitString pingURLs(getAttribute(pingAttr), false);
     for (unsigned i = 0; i < pingURLs.size(); i++)
-        PingLoader::sendPing(document().frame(), document().completeURL(pingURLs[i]), destinationURL);
+        PingLoader::sendPing(document().frame(), treeScope().completeURL(pingURLs[i]), destinationURL);
 }
 
 void HTMLAnchorElement::handleClick(Event* event)
@@ -411,7 +411,7 @@ void HTMLAnchorElement::handleClick(Event* event)
     StringBuilder url;
     url.append(stripLeadingAndTrailingHTMLSpaces(fastGetAttribute(hrefAttr)));
     appendServerMapMousePosition(url, event);
-    KURL completedURL = document().completeURL(url.toString());
+    KURL completedURL = treeScope().completeURL(url.toString());
 
     // Schedule the ping before the frame load. Prerender in Chrome may kill the renderer as soon as the navigation is
     // sent out.

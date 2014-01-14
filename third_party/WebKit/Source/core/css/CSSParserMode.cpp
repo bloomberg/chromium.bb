@@ -28,6 +28,7 @@
 #include "core/css/CSSParserMode.h"
 
 #include "core/dom/Document.h"
+#include "core/dom/TreeScope.h"
 #include "core/frame/Settings.h"
 
 namespace WebCore {
@@ -39,12 +40,12 @@ CSSParserContext::CSSParserContext(CSSParserMode mode)
 {
 }
 
-CSSParserContext::CSSParserContext(const Document& document, const KURL& baseURL, const String& charset)
-    : m_baseURL(baseURL.isNull() ? document.baseURL() : baseURL)
+CSSParserContext::CSSParserContext(const TreeScope& treeScope, const KURL& baseURL, const String& charset)
+    : m_baseURL(baseURL.isNull() ? treeScope.baseURL() : baseURL)
     , m_charset(charset)
-    , m_mode(document.inQuirksMode() ? HTMLQuirksMode : HTMLStandardMode)
-    , m_isHTMLDocument(document.isHTMLDocument())
-    , m_useLegacyBackgroundSizeShorthandBehavior(document.settings() ? document.settings()->useLegacyBackgroundSizeShorthandBehavior() : false)
+    , m_mode(treeScope.document().inQuirksMode() ? HTMLQuirksMode : HTMLStandardMode)
+    , m_isHTMLDocument(treeScope.document().isHTMLDocument())
+    , m_useLegacyBackgroundSizeShorthandBehavior(treeScope.document().settings() ? treeScope.document().settings()->useLegacyBackgroundSizeShorthandBehavior() : false)
 {
 }
 

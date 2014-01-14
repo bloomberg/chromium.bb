@@ -155,7 +155,7 @@ void ImageLoader::updateFromElement()
     // an empty string.
     ResourcePtr<ImageResource> newImage = 0;
     if (!attr.isNull() && !stripLeadingAndTrailingHTMLSpaces(attr).isEmpty()) {
-        FetchRequest request(ResourceRequest(document.completeURL(sourceURI(attr))), element()->localName());
+        FetchRequest request(ResourceRequest(element()->treeScope().completeURL(sourceURI(attr))), element()->localName());
 
         AtomicString crossOriginMode = m_element->fastGetAttribute(HTMLNames::crossoriginAttr);
         if (!crossOriginMode.isNull()) {

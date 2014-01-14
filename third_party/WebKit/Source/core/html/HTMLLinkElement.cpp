@@ -311,7 +311,7 @@ bool HTMLLinkElement::isURLAttribute(const Attribute& attribute) const
 
 KURL HTMLLinkElement::href() const
 {
-    return document().completeURL(getAttribute(hrefAttr));
+    return treeScope().completeURL(getAttribute(hrefAttr));
 }
 
 const AtomicString& HTMLLinkElement::rel() const

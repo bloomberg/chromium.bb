@@ -105,7 +105,7 @@ bool CSSCursorImageValue::updateIfSVGCursorIsUsed(Element* element)
         float y = roundf(cursorElement->y()->currentValue()->value(lengthContext));
         m_hotSpot.setY(static_cast<int>(y));
 
-        if (cachedImageURL() != element->document().completeURL(cursorElement->hrefCurrentValue()))
+        if (cachedImageURL() != element->treeScope().completeURL(cursorElement->hrefCurrentValue()))
             clearImageResource();
 
         SVGElement* svgElement = toSVGElement(element);

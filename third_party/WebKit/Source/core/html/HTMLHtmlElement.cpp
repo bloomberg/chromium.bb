@@ -69,7 +69,7 @@ void HTMLHtmlElement::insertedByParser()
     if (manifest.isEmpty())
         documentLoader->applicationCacheHost()->selectCacheWithoutManifest();
     else
-        documentLoader->applicationCacheHost()->selectCacheWithManifest(document().completeURL(manifest));
+        documentLoader->applicationCacheHost()->selectCacheWithManifest(treeScope().completeURL(manifest));
 }
 
 }

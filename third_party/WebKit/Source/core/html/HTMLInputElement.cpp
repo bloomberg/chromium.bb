@@ -1307,7 +1307,7 @@ void HTMLInputElement::setSize(unsigned size, ExceptionState& exceptionState)
 
 KURL HTMLInputElement::src() const
 {
-    return document().completeURL(fastGetAttribute(srcAttr));
+    return treeScope().completeURL(fastGetAttribute(srcAttr));
 }
 
 FileList* HTMLInputElement::files()

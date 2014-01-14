@@ -73,7 +73,7 @@ LinkRequestBuilder::LinkRequestBuilder(HTMLLinkElement* owner)
 FetchRequest LinkRequestBuilder::build(bool blocking) const
 {
     ResourceLoadPriority priority = blocking ? ResourceLoadPriorityUnresolved : ResourceLoadPriorityVeryLow;
-    return FetchRequest(ResourceRequest(m_owner->document().completeURL(m_url)), m_owner->localName(), m_charset, priority);
+    return FetchRequest(ResourceRequest(m_owner->treeScope().completeURL(m_url)), m_owner->localName(), m_charset, priority);
 }
 
 } // namespace WebCore

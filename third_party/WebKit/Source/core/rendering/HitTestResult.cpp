@@ -304,7 +304,7 @@ KURL HitTestResult::absoluteImageURL() const
     } else
         return KURL();
 
-    return m_innerNonSharedNode->document().completeURL(stripLeadingAndTrailingHTMLSpaces(urlString));
+    return m_innerNonSharedNode->treeScope().completeURL(stripLeadingAndTrailingHTMLSpaces(urlString));
 }
 
 KURL HitTestResult::absoluteMediaURL() const
@@ -340,7 +340,7 @@ KURL HitTestResult::absoluteLinkURL() const
     else
         return KURL();
 
-    return m_innerURLElement->document().completeURL(stripLeadingAndTrailingHTMLSpaces(urlString));
+    return m_innerURLElement->treeScope().completeURL(stripLeadingAndTrailingHTMLSpaces(urlString));
 }
 
 bool HitTestResult::isLiveLink() const

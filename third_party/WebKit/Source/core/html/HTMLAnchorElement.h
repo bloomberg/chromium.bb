@@ -132,7 +132,7 @@ private:
 inline LinkHash HTMLAnchorElement::visitedLinkHash() const
 {
     if (!m_cachedVisitedLinkHash)
-        m_cachedVisitedLinkHash = WebCore::visitedLinkHash(document().baseURL(), fastGetAttribute(HTMLNames::hrefAttr));
+        m_cachedVisitedLinkHash = WebCore::visitedLinkHash(treeScope().baseURL(), fastGetAttribute(HTMLNames::hrefAttr));
     return m_cachedVisitedLinkHash;
 }
 
