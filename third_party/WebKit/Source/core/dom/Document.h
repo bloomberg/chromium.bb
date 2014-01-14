@@ -532,6 +532,7 @@ public:
 
     // To understand how these concepts relate to one another, please see the
     // comments surrounding their declaration.
+    virtual const KURL& baseURL() const OVERRIDE FINAL { return m_baseURL; }
     void setBaseURLOverride(const KURL&);
     const KURL& baseURLOverride() const { return m_baseURLOverride; }
     const KURL& baseElementURL() const { return m_baseElementURL; }
@@ -1118,7 +1119,8 @@ private:
 
     // Document URLs.
     KURL m_url; // Document.URL: The URL from which this document was retrieved.
-    KURL m_baseURLOverride; // An alternative base URL that takes precedence over TreeScope::baseURL() (but not m_baseElementURL).
+    KURL m_baseURL; // Node.baseURI: The URL to use when resolving relative URLs.
+    KURL m_baseURLOverride; // An alternative base URL that takes precedence over m_baseURL (but not m_baseElementURL).
     KURL m_baseElementURL; // The URL set by the <base> element.
     KURL m_cookieURL; // The URL to use for cookie access.
 

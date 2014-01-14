@@ -1146,7 +1146,7 @@ void Document::setXMLStandalone(bool standalone, ExceptionState& exceptionState)
 
 KURL Document::baseURI() const
 {
-    return baseURL();
+    return m_baseURL;
 }
 
 void Document::setContent(const String& content)
@@ -2592,32 +2592,32 @@ void Document::setURL(const KURL& url)
 
 void Document::updateBaseURL()
 {
-    KURL oldBaseURL = baseURL();
+    KURL oldBaseURL = m_baseURL;
     // DOM 3 Core: When the Document supports the feature "HTML" [DOM Level 2 HTML], the base URI is computed using
     // first the value of the href attribute of the HTML BASE element if any, and the value of the documentURI attribute
     // from the Document interface otherwise (which we store, preparsed, in m_url).
     if (!m_baseElementURL.isEmpty())
-        setBaseURL(m_baseElementURL);
+        m_baseURL = m_baseElementURL;
     else if (!m_baseURLOverride.isEmpty())
-        setBaseURL(m_baseURLOverride);
+        m_baseURL = m_baseURLOverride;
     else
-        setBaseURL(m_url);
+        m_baseURL = m_url;
 
     selectorQueryCache().invalidate();
 
-    if (!baseURL().isValid())
-        setBaseURL(KURL());
+    if (!m_baseURL.isValid())
+        m_baseURL = KURL();
 
     if (m_elemSheet) {
         // Element sheet is silly. It never contains anything.
         ASSERT(!m_elemSheet->contents()->ruleCount());
         bool usesRemUnits = m_elemSheet->contents()->usesRemUnits();
-        m_elemSheet = CSSStyleSheet::createInline(this, baseURL());
+        m_elemSheet = CSSStyleSheet::createInline(this, m_baseURL);
         // FIXME: So we are not really the parser. The right fix is to eliminate the element sheet completely.
         m_elemSheet->contents()->parserSetUsesRemUnits(usesRemUnits);
     }
 
-    if (!equalIgnoringFragmentIdentifier(oldBaseURL, baseURL())) {
+    if (!equalIgnoringFragmentIdentifier(oldBaseURL, m_baseURL)) {
         // Base URL change changes any relative visited links.
         // FIXME: There are other URLs in the tree that would need to be re-evaluated on dynamic base URL change. Style should be invalidated too.
         for (Element* element = ElementTraversal::firstWithin(*this); element; element = ElementTraversal::next(*element)) {
@@ -2790,7 +2790,7 @@ void Document::executeScriptsWaitingForResourcesIfNeeded()
 CSSStyleSheet* Document::elementSheet()
 {
     if (!m_elemSheet)
-        m_elemSheet = CSSStyleSheet::createInline(this, baseURL());
+        m_elemSheet = CSSStyleSheet::createInline(this, m_baseURL);
     return m_elemSheet.get();
 }
 

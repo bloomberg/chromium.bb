@@ -126,7 +126,7 @@ public:
 
     Element* getElementByAccessKey(const String& key) const;
 
-    const KURL& baseURL() const { return m_baseURL; }
+    virtual const KURL& baseURL() const = 0;
     KURL completeURL(const String&) const;
 
 protected:
@@ -141,8 +141,6 @@ protected:
     bool hasGuardRefCount() const { return m_guardRefCount; }
 
     void setNeedsStyleRecalcForViewportUnits();
-
-    void setBaseURL(const KURL& baseURL) { m_baseURL = baseURL; }
 
 private:
     virtual void dispose() { }
@@ -170,8 +168,6 @@ private:
     OwnPtr<IdTargetObserverRegistry> m_idTargetObserverRegistry;
 
     mutable RefPtr<DOMSelection> m_selection;
-
-    KURL m_baseURL;
 };
 
 inline bool TreeScope::hasElementWithId(StringImpl* id) const
