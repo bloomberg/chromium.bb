@@ -1,0 +1,30 @@
+PASS successfullyParsed is true
+
+TEST COMPLETE
+onopen
+Tests that WebSocket handshake information is passed to Web Inspector.
+
+log: 
+log: requestMethod: GET
+log: requestHeaders
+log:     Cache-Control: no-cache
+log:     Connection: Upgrade
+log:     Host: localhost:8880
+log:     Origin: http://127.0.0.1:8000
+log:     Pragma: no-cache
+log:     Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits, x-webkit-deflate-frame
+log:     Sec-WebSocket-Key: ***
+log:     Sec-WebSocket-Version: 13
+log:     Upgrade: websocket
+log:     User-Agent: ***
+log: statusCode: 101
+log: statusText: Switching Protocols
+log: responseHeaders
+log:     Connection: Upgrade
+log:     Sec-WebSocket-Accept: ***
+log:     Upgrade: websocket
+log:     foo: FUGA
+log:     foo: bar, baz
+log:     foo: hoge
+log:     xxx: yyy
+

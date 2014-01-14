@@ -31,6 +31,7 @@
 #include "config.h"
 #include "platform/network/WebSocketHandshakeResponse.h"
 
+#include "platform/network/WebSocketHandshakeRequest.h"
 #include "wtf/Assertions.h"
 #include "wtf/text/AtomicString.h"
 
@@ -72,7 +73,7 @@ const HTTPHeaderMap& WebSocketHandshakeResponse::headerFields() const
 
 void WebSocketHandshakeResponse::addHeaderField(const AtomicString& name, const AtomicString& value)
 {
-    m_headerFields.add(name, value);
+    WebSocketHandshakeRequest::addAndMergeHeader(&m_headerFields, name, value);
 }
 
 void WebSocketHandshakeResponse::clearHeaderFields()

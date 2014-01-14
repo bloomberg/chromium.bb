@@ -35,11 +35,20 @@
 
 namespace WebCore {
 
+class HTTPHeaderMap;
+
 class PLATFORM_EXPORT WebSocketHandshakeRequest : public HTTPRequest {
 public:
     static PassRefPtr<WebSocketHandshakeRequest> create(const String& requestMethod, const KURL& url) { return adoptRef(new WebSocketHandshakeRequest(requestMethod, url)); }
     static PassRefPtr<WebSocketHandshakeRequest> create() { return adoptRef(new WebSocketHandshakeRequest); }
     ~WebSocketHandshakeRequest();
+
+    void addAndMergeHeader(const AtomicString& name, const AtomicString& value) { addAndMergeHeader(&m_headerFields, name, value); }
+
+    // Merges the existing value with |value| in |map| if |map| already has |name|.
+    // Associates |value| with |name| in |map| otherwise.
+    // This function builds data for inspector.
+    static void addAndMergeHeader(HTTPHeaderMap* /* map */, const AtomicString& name, const AtomicString& value);
 
 private:
     WebSocketHandshakeRequest(const String& requestMethod, const KURL&);
