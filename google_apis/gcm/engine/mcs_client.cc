@@ -189,6 +189,7 @@ void MCSClient::Initialize(
        iter != ordered_messages.end(); ++iter) {
     ReliablePacketInfo* packet_info = new ReliablePacketInfo();
     packet_info->protobuf.reset(iter->second);
+    packet_info->tag = GetMCSProtoTag(*iter->second);
     packet_info->persistent_id = base::Uint64ToString(iter->first);
     to_send_.push_back(make_linked_ptr(packet_info));
   }
@@ -229,6 +230,7 @@ void MCSClient::SendMessage(const MCSMessage& message) {
   }
 
   ReliablePacketInfo* packet_info = new ReliablePacketInfo();
+  packet_info->tag = message.tag();
   packet_info->protobuf = message.CloneProtobuf();
 
   if (ttl > 0) {
@@ -390,6 +392,19 @@ void MCSClient::MaybeSendMessage() {
 void MCSClient::SendPacketToWire(ReliablePacketInfo* packet_info) {
   packet_info->stream_id = ++stream_id_out_;
   DVLOG(1) << "Sending packet of type " << packet_info->protobuf->GetTypeName();
+
+  // Set the queued time as necessary.
+  if (packet_info->tag == kDataMessageStanzaTag) {
+    mcs_proto::DataMessageStanza* data_message =
+        reinterpret_cast<mcs_proto::DataMessageStanza*>(
+            packet_info->protobuf.get());
+    uint64 sent = data_message->sent();
+    DCHECK_GT(sent, 0U);
+    int queued = (clock_->Now().ToInternalValue() /
+        base::Time::kMicrosecondsPerSecond) - sent;
+    DVLOG(1) << "Message was queued for " << queued << " seconds.";
+    data_message->set_queued(queued);
+  }
 
   // Set the proper last received stream id to acknowledge received server
   // packets.
