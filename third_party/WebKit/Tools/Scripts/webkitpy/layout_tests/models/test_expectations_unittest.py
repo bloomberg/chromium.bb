@@ -177,6 +177,21 @@ class MiscTests(Base):
             set([self.get_test('failures/expected/crash.html'),
                  self.get_test('failures/expected/image_checksum.html')]))
 
+    def test_needs_rebaseline_reftest(self):
+        try:
+            filesystem = self._port.host.filesystem
+            filesystem.write_text_file(filesystem.join(self._port.layout_tests_dir(), 'failures/expected/needsrebaseline.html'), 'content')
+            filesystem.write_text_file(filesystem.join(self._port.layout_tests_dir(), 'failures/expected/needsrebaseline-expected.html'), 'content')
+            filesystem.write_text_file(filesystem.join(self._port.layout_tests_dir(), 'failures/expected/needsmanualrebaseline.html'), 'content')
+            filesystem.write_text_file(filesystem.join(self._port.layout_tests_dir(), 'failures/expected/needsmanualrebaseline-expected.html'), 'content')
+            self.parse_exp("""Bug(user) failures/expected/needsrebaseline.html [ NeedsRebaseline ]
+Bug(user) failures/expected/needsmanualrebaseline.html [ NeedsManualRebaseline ]""", is_lint_mode=True)
+            self.assertFalse(True, "ParseError wasn't raised")
+        except ParseError, e:
+            warnings = """expectations:1 A reftest cannot be marked as NeedsRebaseline/NeedsManualRebaseline failures/expected/needsrebaseline.html
+expectations:2 A reftest cannot be marked as NeedsRebaseline/NeedsManualRebaseline failures/expected/needsmanualrebaseline.html"""
+            self.assertEqual(str(e), warnings)
+
     def test_parse_warning(self):
         try:
             filesystem = self._port.host.filesystem
