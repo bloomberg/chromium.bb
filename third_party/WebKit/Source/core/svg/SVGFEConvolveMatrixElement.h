@@ -70,6 +70,8 @@ public:
     void setOrder(float orderX, float orderY);
     void setKernelUnitLength(float kernelUnitLengthX, float kernelUnitLengthY);
 
+    PassRefPtr<SVGAnimatedBoolean> preserveAlpha() const { return m_preserveAlpha; }
+
 private:
     explicit SVGFEConvolveMatrixElement(Document&);
 
@@ -84,6 +86,7 @@ private:
     static const AtomicString& kernelUnitLengthXIdentifier();
     static const AtomicString& kernelUnitLengthYIdentifier();
 
+    RefPtr<SVGAnimatedBoolean> m_preserveAlpha;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFEConvolveMatrixElement)
         DECLARE_ANIMATED_STRING(In1, in1)
         DECLARE_ANIMATED_INTEGER(OrderX, orderX)
@@ -96,7 +99,6 @@ private:
         DECLARE_ANIMATED_ENUMERATION(EdgeMode, edgeMode, EdgeModeType)
         DECLARE_ANIMATED_NUMBER(KernelUnitLengthX, kernelUnitLengthX)
         DECLARE_ANIMATED_NUMBER(KernelUnitLengthY, kernelUnitLengthY)
-        DECLARE_ANIMATED_BOOLEAN(PreserveAlpha, preserveAlpha)
     END_DECLARE_ANIMATED_PROPERTIES
 };
 

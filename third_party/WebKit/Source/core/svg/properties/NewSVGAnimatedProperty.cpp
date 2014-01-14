@@ -37,14 +37,41 @@ namespace WebCore {
 
 NewSVGAnimatedPropertyBase::NewSVGAnimatedPropertyBase(AnimatedPropertyType type, SVGElement* contextElement, const QualifiedName& attributeName)
     : m_type(type)
+    , m_isReadOnly(false)
+    , m_isAnimating(false)
     , m_contextElement(contextElement)
     , m_attributeName(attributeName)
 {
-    contextElement->setContextElement();
+    ASSERT(m_contextElement);
+    ASSERT(m_attributeName != nullQName());
+    m_contextElement->setContextElement();
 }
 
 NewSVGAnimatedPropertyBase::~NewSVGAnimatedPropertyBase()
 {
+    ASSERT(!isAnimating());
+}
+
+void NewSVGAnimatedPropertyBase::animationStarted()
+{
+    ASSERT(!isAnimating());
+    m_isAnimating = true;
+}
+
+void NewSVGAnimatedPropertyBase::animValWillChange()
+{
+    ASSERT(isAnimating());
+}
+
+void NewSVGAnimatedPropertyBase::animValDidChange()
+{
+    ASSERT(isAnimating());
+}
+
+void NewSVGAnimatedPropertyBase::animationEnded()
+{
+    ASSERT(isAnimating());
+    m_isAnimating = false;
 }
 
 void NewSVGAnimatedPropertyBase::synchronizeAttribute()
@@ -52,6 +79,12 @@ void NewSVGAnimatedPropertyBase::synchronizeAttribute()
     ASSERT(needsSynchronizeAttribute());
     AtomicString value(currentValueBase()->valueAsString());
     m_contextElement->setSynchronizedLazyAttribute(m_attributeName, value);
+}
+
+void NewSVGAnimatedPropertyBase::commitChange()
+{
+    contextElement()->invalidateSVGAttributes();
+    contextElement()->svgAttributeChanged(m_attributeName);
 }
 
 } // namespace WebCore

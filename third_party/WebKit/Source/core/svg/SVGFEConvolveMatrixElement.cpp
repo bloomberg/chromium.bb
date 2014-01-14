@@ -44,7 +44,6 @@ DEFINE_ANIMATED_INTEGER(SVGFEConvolveMatrixElement, SVGNames::targetYAttr, Targe
 DEFINE_ANIMATED_ENUMERATION(SVGFEConvolveMatrixElement, SVGNames::edgeModeAttr, EdgeMode, edgeMode, EdgeModeType)
 DEFINE_ANIMATED_NUMBER_MULTIPLE_WRAPPERS(SVGFEConvolveMatrixElement, SVGNames::kernelUnitLengthAttr, kernelUnitLengthXIdentifier(), KernelUnitLengthX, kernelUnitLengthX)
 DEFINE_ANIMATED_NUMBER_MULTIPLE_WRAPPERS(SVGFEConvolveMatrixElement, SVGNames::kernelUnitLengthAttr, kernelUnitLengthYIdentifier(), KernelUnitLengthY, kernelUnitLengthY)
-DEFINE_ANIMATED_BOOLEAN(SVGFEConvolveMatrixElement, SVGNames::preserveAlphaAttr, PreserveAlpha, preserveAlpha)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFEConvolveMatrixElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(in1)
@@ -58,15 +57,18 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFEConvolveMatrixElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(edgeMode)
     REGISTER_LOCAL_ANIMATED_PROPERTY(kernelUnitLengthX)
     REGISTER_LOCAL_ANIMATED_PROPERTY(kernelUnitLengthY)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(preserveAlpha)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGFilterPrimitiveStandardAttributes)
 END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGFEConvolveMatrixElement::SVGFEConvolveMatrixElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feConvolveMatrixTag, document)
+    , m_preserveAlpha(SVGAnimatedBoolean::create(this, SVGNames::preserveAlphaAttr, SVGBoolean::create()))
     , m_edgeMode(EDGEMODE_DUPLICATE)
 {
     ScriptWrappable::init(this);
+
+    addToPropertyMap(m_preserveAlpha);
+
     registerAnimatedPropertiesForSVGFEConvolveMatrixElement();
 }
 
@@ -201,14 +203,9 @@ void SVGFEConvolveMatrixElement::parseAttribute(const QualifiedName& name, const
     }
 
     if (name == SVGNames::preserveAlphaAttr) {
-        if (value == "true")
-            setPreserveAlphaBaseValue(true);
-        else if (value == "false")
-            setPreserveAlphaBaseValue(false);
-        else
-            document().accessSVGExtensions()->reportWarning(
-                "feConvolveMatrix: problem parsing preserveAlphaAttr=\"" + value
-                + "\". Filtered element will not be displayed.");
+        SVGParsingError parseError = NoError;
+        m_preserveAlpha->setBaseValueAsString(value, parseError);
+        reportAttributeParsingError(parseError, name, value);
         return;
     }
 
@@ -231,7 +228,7 @@ bool SVGFEConvolveMatrixElement::setFilterEffectAttribute(FilterEffect* effect, 
     if (attrName == SVGNames::kernelUnitLengthAttr)
         return convolveMatrix->setKernelUnitLength(FloatPoint(kernelUnitLengthXCurrentValue(), kernelUnitLengthYCurrentValue()));
     if (attrName == SVGNames::preserveAlphaAttr)
-        return convolveMatrix->setPreserveAlpha(preserveAlphaCurrentValue());
+        return convolveMatrix->setPreserveAlpha(m_preserveAlpha->currentValue()->value());
 
     ASSERT_NOT_REACHED();
     return false;
@@ -339,7 +336,7 @@ PassRefPtr<FilterEffect> SVGFEConvolveMatrixElement::build(SVGFilterBuilder* fil
     RefPtr<FilterEffect> effect = FEConvolveMatrix::create(filter,
                     IntSize(orderXValue, orderYValue), divisorValue,
                     biasCurrentValue(), IntPoint(targetXValue, targetYValue), edgeModeCurrentValue(),
-                    FloatPoint(kernelUnitLengthXValue, kernelUnitLengthYValue), preserveAlphaCurrentValue(), kernelMatrix.toFloatVector());
+                    FloatPoint(kernelUnitLengthXValue, kernelUnitLengthYValue), m_preserveAlpha->currentValue()->value(), kernelMatrix.toFloatVector());
     effect->inputEffects().append(input1);
     return effect.release();
 }

@@ -31,6 +31,7 @@
 
 namespace WebCore {
 
+/* use SVGLength.h decls */
 class CSSPrimitiveValue;
 class ExceptionState;
 class QualifiedName;

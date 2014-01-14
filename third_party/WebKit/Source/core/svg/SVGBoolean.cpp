@@ -28,28 +28,58 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGAnimatedBoolean_h
-#define SVGAnimatedBoolean_h
+#include "config.h"
 
 #include "core/svg/SVGBoolean.h"
-#include "core/svg/properties/NewSVGAnimatedProperty.h"
+
+#include "bindings/v8/ExceptionState.h"
+#include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/svg/SVGAnimationElement.h"
 
 namespace WebCore {
 
-class SVGAnimatedBoolean FINAL : public NewSVGAnimatedProperty<SVGBoolean> {
-public:
-    static PassRefPtr<SVGAnimatedBoolean> create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<SVGBoolean> initialValue)
-    {
-        return adoptRef(new SVGAnimatedBoolean(contextElement, attributeName, initialValue));
+PassRefPtr<NewSVGPropertyBase> SVGBoolean::cloneForAnimation(const String& value) const
+{
+    RefPtr<SVGBoolean> svgBoolean = create();
+    svgBoolean->setValueAsString(value, IGNORE_EXCEPTION);
+    return svgBoolean.release();
+}
+
+String SVGBoolean::valueAsString() const
+{
+    return m_value ? "true" : "false";
+}
+
+void SVGBoolean::setValueAsString(const String& value, ExceptionState& exceptionState)
+{
+    if (value == "true") {
+        m_value = true;
+    } else if (value == "false") {
+        m_value = false;
+    } else {
+        exceptionState.throwDOMException(SyntaxError, "The value provided ('" + value + "') is invalid.");
     }
+}
 
-protected:
-    SVGAnimatedBoolean(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<SVGBoolean> initialValue)
-        : NewSVGAnimatedProperty<SVGBoolean>(contextElement, attributeName, initialValue)
-    {
-    }
-};
+void SVGBoolean::add(PassRefPtr<NewSVGPropertyBase>, SVGElement*)
+{
+    ASSERT_NOT_REACHED();
+}
 
-} // namespace WebCore
+void SVGBoolean::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtr<NewSVGPropertyBase> from, PassRefPtr<NewSVGPropertyBase> to, PassRefPtr<NewSVGPropertyBase>, SVGElement*)
+{
+    ASSERT(animationElement);
+    bool fromBoolean = animationElement->animationMode() == ToAnimation ? m_value : toSVGBoolean(from)->value();
+    bool toBoolean = toSVGBoolean(to)->value();
 
-#endif // SVGAnimatedBoolean_h
+    animationElement->animateDiscreteType<bool>(percentage, fromBoolean, toBoolean, m_value);
+}
+
+float SVGBoolean::calculateDistance(PassRefPtr<NewSVGPropertyBase>, SVGElement*)
+{
+    // No paced animations for boolean.
+    return -1;
+}
+
+}

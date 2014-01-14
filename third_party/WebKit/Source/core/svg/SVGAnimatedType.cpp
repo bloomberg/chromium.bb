@@ -37,9 +37,6 @@ SVGAnimatedType::~SVGAnimatedType()
     case AnimatedAngle:
         delete m_data.angleAndEnumeration;
         break;
-    case AnimatedBoolean:
-        delete m_data.boolean;
-        break;
     case AnimatedColor:
         delete m_data.color;
         break;
@@ -79,6 +76,8 @@ SVGAnimatedType::~SVGAnimatedType()
     case AnimatedTransformList:
         delete m_data.transformList;
         break;
+    // Below properties are migrated to new property implementation.
+    case AnimatedBoolean:
     case AnimatedLength:
     case AnimatedLengthList:
         // handled by RefPtr
@@ -94,14 +93,6 @@ PassOwnPtr<SVGAnimatedType> SVGAnimatedType::createAngleAndEnumeration(std::pair
     ASSERT(angleAndEnumeration);
     OwnPtr<SVGAnimatedType> animatedType = adoptPtr(new SVGAnimatedType(AnimatedAngle));
     animatedType->m_data.angleAndEnumeration = angleAndEnumeration;
-    return animatedType.release();
-}
-
-PassOwnPtr<SVGAnimatedType> SVGAnimatedType::createBoolean(bool* boolean)
-{
-    ASSERT(boolean);
-    OwnPtr<SVGAnimatedType> animatedType = adoptPtr(new SVGAnimatedType(AnimatedBoolean));
-    animatedType->m_data.boolean = boolean;
     return animatedType.release();
 }
 

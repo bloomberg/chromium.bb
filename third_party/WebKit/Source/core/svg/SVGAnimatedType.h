@@ -40,7 +40,6 @@ public:
     ~SVGAnimatedType();
 
     static PassOwnPtr<SVGAnimatedType> createAngleAndEnumeration(std::pair<SVGAngle, unsigned>*);
-    static PassOwnPtr<SVGAnimatedType> createBoolean(bool*);
     static PassOwnPtr<SVGAnimatedType> createColor(Color*);
     static PassOwnPtr<SVGAnimatedType> createEnumeration(unsigned*);
     static PassOwnPtr<SVGAnimatedType> createInteger(int*);
@@ -64,12 +63,6 @@ public:
     {
         ASSERT(m_type == AnimatedAngle);
         return *m_data.angleAndEnumeration;
-    }
-
-    bool& boolean()
-    {
-        ASSERT(m_type == AnimatedBoolean);
-        return *m_data.boolean;
     }
 
     Color& color()
@@ -170,7 +163,6 @@ private:
         }
 
         std::pair<SVGAngle, unsigned>* angleAndEnumeration;
-        bool* boolean;
         Color* color;
         unsigned* enumeration;
         int* integer;

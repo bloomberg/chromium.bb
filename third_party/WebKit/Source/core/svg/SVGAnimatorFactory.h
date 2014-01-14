@@ -53,8 +53,6 @@ public:
         switch (attributeType) {
         case AnimatedAngle:
             return adoptPtr(new SVGAnimatedAngleAnimator(animationElement, contextElement));
-        case AnimatedBoolean:
-            return adoptPtr(new SVGAnimatedBooleanAnimator(animationElement, contextElement));
         case AnimatedColor:
             return adoptPtr(new SVGAnimatedColorAnimator(animationElement, contextElement));
         case AnimatedEnumeration:
@@ -82,6 +80,7 @@ public:
         case AnimatedTransformList:
             return adoptPtr(new SVGAnimatedTransformListAnimator(animationElement, contextElement));
         // Below properties have migrated to new property implementation.
+        case AnimatedBoolean:
         case AnimatedLength:
         case AnimatedLengthList:
             return adoptPtr(new SVGAnimatedNewPropertyAnimator(attributeType, animationElement, contextElement));
