@@ -842,3 +842,5 @@ crbug.com/333882 [ Win ] inspector/styles/undo-add-rule-crash.html [ Pass Timeou
 crbug.com/333880 [ Win7 Debug ] media/W3C/video/events/event_order_loadstart_progress.html [ Pass Failure ]
 
 crbug.com/330242 [ Debug ] fast/block/float/float-selection-delete-crash.html [ Skip ]
+
+crbug.com/334242 [ Win ] inspector-protocol/stylesheet-tracking-restart.html [ Pass Failure ]
