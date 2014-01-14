@@ -981,6 +981,41 @@ def merge(complete_state, trace_blacklist):
         exceptions[0][2]
 
 
+def get_remap_dir(root_dir, isolated, outdir):
+  """If necessary, creates a directory aside the root directory."""
+  if outdir:
+    if not os.path.isdir(outdir):
+      os.makedirs(outdir)
+    return outdir
+
+  if not os.path.isabs(root_dir):
+    root_dir = os.path.join(os.path.dirname(isolated), root_dir)
+  return run_isolated.make_temp_dir(
+      'isolate-%s' % datetime.date.today(), root_dir)
+
+
+def create_isolate_tree(outdir, root_dir, files, relative_cwd, read_only):
+  """Creates a isolated tree usable for test execution.
+
+  Returns the current working directory where the isolated command should be
+  started in.
+  """
+  recreate_tree(
+      outdir=outdir,
+      indir=root_dir,
+      infiles=files,
+      action=run_isolated.HARDLINK_WITH_FALLBACK,
+      as_hash=False)
+  cwd = os.path.normpath(os.path.join(outdir, relative_cwd))
+  if not os.path.isdir(cwd):
+    # It can happen when no files are mapped from the directory containing the
+    # .isolate file. But the directory must exist to be the current working
+    # directory.
+    os.makedirs(cwd)
+  run_isolated.change_tree_read_only(outdir, read_only)
+  return cwd
+
+
 ### Commands.
 
 
@@ -1144,31 +1179,30 @@ def CMDremap(parser, args):
   run.
   """
   parser.require_isolated = False
+  parser.add_option(
+      '--skip-refresh', action='store_true',
+      help='Skip reading .isolate file and do not refresh the hash of '
+           'dependencies')
   options, args = parser.parse_args(args)
   if args:
     parser.error('Unsupported argument: %s' % args)
-  complete_state = load_complete_state(options, os.getcwd(), None, False)
+  if options.outdir and file_path.is_url(options.outdir):
+    parser.error('Can\'t use url for --outdir with mode remap.')
 
-  if not options.outdir:
-    options.outdir = run_isolated.make_temp_dir(
-        'isolate', complete_state.root_dir)
-  else:
-    if file_path.is_url(options.outdir):
-      parser.error('Can\'t use url for --outdir with mode remap.')
-    if not os.path.isdir(options.outdir):
-      os.makedirs(options.outdir)
-  print('Remapping into %s' % options.outdir)
-  if len(os.listdir(options.outdir)):
+  complete_state = load_complete_state(
+      options, os.getcwd(), None, options.skip_refresh)
+
+  outdir = get_remap_dir(
+      complete_state.root_dir, options.isolated, options.outdir)
+
+  print('Remapping into %s' % outdir)
+  if len(os.listdir(outdir)):
     raise ExecutionError('Can\'t remap in a non-empty directory')
-  recreate_tree(
-      outdir=options.outdir,
-      indir=complete_state.root_dir,
-      infiles=complete_state.saved_state.files,
-      action=run_isolated.HARDLINK_WITH_FALLBACK,
-      as_hash=False)
-  if complete_state.saved_state.read_only:
-    run_isolated.make_writable(options.outdir, True)
 
+  create_isolate_tree(
+      outdir, complete_state.root_dir, complete_state.saved_state.files,
+      complete_state.saved_state.relative_cwd,
+      complete_state.saved_state.read_only)
   if complete_state.isolated_filepath:
     complete_state.save_files()
   return 0
@@ -1229,34 +1263,16 @@ def CMDrun(parser, args):
   cmd = complete_state.saved_state.command + args
   if not cmd:
     raise ExecutionError('No command to run.')
-
   cmd = tools.fix_python_path(cmd)
+
   try:
-    root_dir = complete_state.root_dir
-    if not options.outdir:
-      if not os.path.isabs(root_dir):
-        root_dir = os.path.join(os.path.dirname(options.isolated), root_dir)
-      options.outdir = run_isolated.make_temp_dir(
-          'isolate-%s' % datetime.date.today(), root_dir)
-    else:
-      if not os.path.isdir(options.outdir):
-        os.makedirs(options.outdir)
+    outdir = get_remap_dir(
+        complete_state.root_dir, options.isolated, options.outdir)
     # TODO(maruel): Use run_isolated.run_tha_test().
-    recreate_tree(
-        outdir=options.outdir,
-        indir=root_dir,
-        infiles=complete_state.saved_state.files,
-        action=run_isolated.HARDLINK_WITH_FALLBACK,
-        as_hash=False)
-    cwd = os.path.normpath(
-        os.path.join(options.outdir, complete_state.saved_state.relative_cwd))
-    if not os.path.isdir(cwd):
-      # It can happen when no files are mapped from the directory containing the
-      # .isolate file. But the directory must exist to be the current working
-      # directory.
-      os.makedirs(cwd)
-    run_isolated.change_tree_read_only(
-        options.outdir, complete_state.saved_state.read_only)
+    cwd = create_isolate_tree(
+        outdir, complete_state.root_dir, complete_state.saved_state.files,
+        complete_state.saved_state.relative_cwd,
+        complete_state.saved_state.read_only)
     logging.info('Running %s, cwd=%s' % (cmd, cwd))
     result = subprocess.call(cmd, cwd=cwd)
   finally:
