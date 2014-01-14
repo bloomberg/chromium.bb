@@ -992,6 +992,42 @@ TEST(HttpCache, SimpleGET_CacheOverride_NonOffline) {
   RemoveMockTransaction(&transaction);
 }
 
+// Tests that was_cached was set properly on a failure, even if the cached
+// response wasn't returned.
+TEST(HttpCache, SimpleGET_CacheSignal_Failure) {
+  MockHttpCache cache;
+
+  // Prime cache.
+  MockTransaction transaction(kSimpleGET_Transaction);
+  transaction.response_headers = "Cache-Control: no-cache\n";
+
+  AddMockTransaction(&transaction);
+  RunTransactionTest(cache.http_cache(), transaction);
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+  RemoveMockTransaction(&transaction);
+
+  // Network failure with error; should fail but have was_cached set.
+  transaction.return_code = net::ERR_FAILED;
+  AddMockTransaction(&transaction);
+
+  MockHttpRequest request(transaction);
+  net::TestCompletionCallback callback;
+  scoped_ptr<net::HttpTransaction> trans;
+  int rv = cache.http_cache()->CreateTransaction(net::DEFAULT_PRIORITY, &trans);
+  EXPECT_EQ(net::OK, rv);
+  ASSERT_TRUE(trans.get());
+  rv = trans->Start(&request, callback.callback(), net::BoundNetLog());
+  EXPECT_EQ(net::ERR_FAILED, callback.GetResult(rv));
+
+  const net::HttpResponseInfo* response_info = trans->GetResponseInfo();
+  ASSERT_TRUE(response_info);
+  EXPECT_TRUE(response_info->was_cached);
+  EXPECT_EQ(2, cache.network_layer()->transaction_count());
+
+  RemoveMockTransaction(&transaction);
+}
+
 // Confirm if we have an empty cache, a read is marked as network verified.
 TEST(HttpCache, SimpleGET_NetworkAccessed_Network) {
   MockHttpCache cache;

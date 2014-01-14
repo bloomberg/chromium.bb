@@ -853,6 +853,10 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
     NotifyCertificateRequested(
         transaction_->GetResponseInfo()->cert_request_info.get());
   } else {
+    // Even on an error, there may be useful information in the response
+    // info (e.g. whether there's a cached copy).
+    if (transaction_.get())
+      response_info_ = transaction_->GetResponseInfo();
     NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED, result));
   }
 }
@@ -944,9 +948,10 @@ bool URLRequestHttpJob::GetCharset(std::string* charset) {
 
 void URLRequestHttpJob::GetResponseInfo(HttpResponseInfo* info) {
   DCHECK(request_);
-  DCHECK(transaction_.get());
 
   if (response_info_) {
+    DCHECK(transaction_.get());
+
     *info = *response_info_;
     if (override_response_headers_.get())
       info->headers = override_response_headers_;

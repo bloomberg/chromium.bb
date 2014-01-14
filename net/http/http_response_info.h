@@ -59,12 +59,14 @@ class NET_EXPORT HttpResponseInfo {
                bool response_truncated) const;
 
   // The following is only defined if the request_time member is set.
-  // If this response was resurrected from cache, then this bool is set, and
+  // If this resource was found in the cache, then this bool is set, and
   // request_time may corresponds to a time "far" in the past.  Note that
   // stale content (perhaps un-cacheable) may be fetched from cache subject to
   // the load flags specified on the request info.  For example, this is done
   // when a user presses the back button to re-render pages, or at startup,
   // when reloading previously visited pages (without going over the network).
+  // Note also that under normal circumstances, was_cached is set to the correct
+  // value even if the request fails.
   bool was_cached;
 
   // True if the request was fetched from cache rather than the network

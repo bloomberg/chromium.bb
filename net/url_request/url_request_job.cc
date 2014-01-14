@@ -430,8 +430,13 @@ void URLRequestJob::NotifyStartError(const URLRequestStatus &status) {
   DCHECK(!has_handled_response_);
   has_handled_response_ = true;
   if (request_) {
+    // There may be relevant information in the response info even in the
+    // error case.
+    GetResponseInfo(&request_->response_info_);
+
     request_->set_status(status);
     request_->NotifyResponseStarted();
+    // We may have been deleted.
   }
 }
 
