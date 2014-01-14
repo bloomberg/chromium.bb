@@ -244,6 +244,17 @@ void RenderViewDevToolsAgentHost::AboutToNavigateRenderView(
   ConnectRenderViewHost(dest_rvh);
 }
 
+void RenderViewDevToolsAgentHost::RenderViewHostChanged(
+    RenderViewHost* old_host,
+    RenderViewHost* new_host) {
+  if (new_host != render_view_host_) {
+    // AboutToNavigateRenderView was not called for renderer-initiated
+    // navigation.
+    DisconnectRenderViewHost();
+    ConnectRenderViewHost(new_host);
+  }
+}
+
 void RenderViewDevToolsAgentHost::RenderViewDeleted(RenderViewHost* rvh) {
   if (rvh != render_view_host_)
     return;
