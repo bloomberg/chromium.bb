@@ -40,6 +40,7 @@ Pipeline::Pipeline(
       running_(false),
       did_loading_progress_(false),
       total_bytes_(0),
+      natural_size_(0, 0),
       volume_(1.0f),
       playback_rate_(0.0f),
       clock_(new Clock(&default_tick_clock_)),
@@ -188,9 +189,10 @@ int64 Pipeline::GetTotalBytes() const {
   return total_bytes_;
 }
 
-gfx::Size Pipeline::GetInitialNaturalSize() const {
+void Pipeline::GetNaturalVideoSize(gfx::Size* out_size) const {
+  CHECK(out_size);
   base::AutoLock auto_lock(lock_);
-  return initial_natural_size_;
+  *out_size = natural_size_;
 }
 
 bool Pipeline::DidLoadingProgress() const {
@@ -469,12 +471,6 @@ void Pipeline::StateTransitionTask(PipelineStatus status) {
         // track.
         has_audio_ = audio_renderer_ != NULL && !audio_disabled_;
         has_video_ = video_renderer_ != NULL;
-
-        // Get an initial natural size so we have something when we signal
-        // the kHaveMetadata buffering state.
-        DemuxerStream* stream = demuxer_->GetStream(DemuxerStream::VIDEO);
-        if (stream)
-          initial_natural_size_ = stream->video_decoder_config().natural_size();
       }
       if (!audio_renderer_ && !video_renderer_) {
         done_cb.Run(PIPELINE_ERROR_COULD_NOT_RENDER);
@@ -705,6 +701,15 @@ void Pipeline::AddBufferedTimeRange(base::TimeDelta start,
   base::AutoLock auto_lock(lock_);
   buffered_time_ranges_.Add(start, end);
   did_loading_progress_ = true;
+}
+
+void Pipeline::OnNaturalVideoSizeChanged(const gfx::Size& size) {
+  DCHECK(IsRunning());
+  media_log_->AddEvent(media_log_->CreateVideoSizeSetEvent(
+      size.width(), size.height()));
+
+  base::AutoLock auto_lock(lock_);
+  natural_size_ = size;
 }
 
 void Pipeline::OnAudioRendererEnded() {
@@ -980,12 +985,22 @@ void Pipeline::InitializeAudioRenderer(const PipelineStatusCB& done_cb) {
 void Pipeline::InitializeVideoRenderer(const PipelineStatusCB& done_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
+  DemuxerStream* stream = demuxer_->GetStream(DemuxerStream::VIDEO);
+
+  {
+    // Get an initial natural size so we have something when we signal
+    // the kHaveMetadata buffering state.
+    base::AutoLock l(lock_);
+    natural_size_ = stream->video_decoder_config().natural_size();
+  }
+
   video_renderer_ = filter_collection_->GetVideoRenderer();
   video_renderer_->Initialize(
-      demuxer_->GetStream(DemuxerStream::VIDEO),
+      stream,
       done_cb,
       base::Bind(&Pipeline::OnUpdateStatistics, base::Unretained(this)),
       base::Bind(&Pipeline::OnVideoTimeUpdate, base::Unretained(this)),
+      base::Bind(&Pipeline::OnNaturalVideoSizeChanged, base::Unretained(this)),
       base::Bind(&Pipeline::OnVideoRendererEnded, base::Unretained(this)),
       base::Bind(&Pipeline::SetError, base::Unretained(this)),
       base::Bind(&Pipeline::GetMediaTime, base::Unretained(this)),
