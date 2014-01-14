@@ -13,7 +13,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
-class Font;
+class FontList;
 class Image;
 }
 
@@ -71,9 +71,9 @@ class UI_BASE_EXPORT MenuModel {
   // updated each time the menu is shown.
   virtual bool IsItemDynamicAt(int index) const = 0;
 
-  // Returns the font used for the label at the specified index.
-  // If NULL, then the default font should be used.
-  virtual const gfx::Font* GetLabelFontAt(int index) const;
+  // Returns the font list used for the label at the specified index.
+  // If NULL, then the default font list should be used.
+  virtual const gfx::FontList* GetLabelFontListAt(int index) const;
 
   // Gets the acclerator information for the specified index, returning true if
   // there is a shortcut accelerator for the item, false otherwise.

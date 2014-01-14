@@ -159,10 +159,11 @@ class ZoomLevelObserver {
           [[menuItem representedObject] pointerValue]);
 
   // The section headers in the recent tabs submenu should be bold and black if
-  // a font is specified for the items (bold is already applied in the
-  // |MenuController| as the font returned by |GetLabelFontAt| is bold).
+  // a font list is specified for the items (bold is already applied in the
+  // |MenuController| as the font list returned by |GetLabelFontListAt| is
+  // bold).
   if (model && model == [self recentTabsMenuModel]) {
-    if (model->GetLabelFontAt([item tag])) {
+    if (model->GetLabelFontListAt([item tag])) {
       DCHECK([menuItem attributedTitle]);
       base::scoped_nsobject<NSMutableAttributedString> title(
           [[NSMutableAttributedString alloc]

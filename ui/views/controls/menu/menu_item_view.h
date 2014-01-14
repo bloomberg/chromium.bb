@@ -24,7 +24,7 @@
 #endif
 
 namespace gfx {
-class Font;
+class FontList;
 }
 
 namespace views {
@@ -375,8 +375,8 @@ class VIEWS_EXPORT MenuItemView : public View {
   // Returns the flags passed to DrawStringInt.
   int GetDrawStringFlags();
 
-  // Returns the font to use for menu text.
-  const gfx::Font& GetFont();
+  // Returns the font list to use for menu text.
+  const gfx::FontList& GetFontList();
 
   // If this menu item has no children a child is added showing it has no
   // children. Otherwise AddEmtpyMenus is recursively invoked on child menu

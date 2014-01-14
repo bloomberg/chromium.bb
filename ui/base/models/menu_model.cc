@@ -40,7 +40,7 @@ base::string16 MenuModel::GetMinorTextAt(int index) const {
   return base::string16();
 }
 
-const gfx::Font* MenuModel::GetLabelFontAt(int index) const {
+const gfx::FontList* MenuModel::GetLabelFontListAt(int index) const {
   return NULL;
 }
 

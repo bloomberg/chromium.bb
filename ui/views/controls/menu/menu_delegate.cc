@@ -17,7 +17,7 @@ base::string16 MenuDelegate::GetLabel(int id) const {
   return base::string16();
 }
 
-const gfx::Font* MenuDelegate::GetLabelFont(int id) const {
+const gfx::FontList* MenuDelegate::GetLabelFontList(int id) const {
   return NULL;
 }
 

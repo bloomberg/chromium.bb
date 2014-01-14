@@ -43,7 +43,7 @@ void MenuConfig::Init(const NativeTheme* theme) {
   {
     base::win::ScopedHFONT new_font(CreateFontIndirect(&metrics.lfMenuFont));
     DLOG_ASSERT(new_font.Get());
-    font = gfx::Font(new_font);
+    font_list = gfx::FontList(gfx::Font(new_font));
   }
   NativeTheme::ExtraParams extra;
   extra.menu_check.is_radio = false;

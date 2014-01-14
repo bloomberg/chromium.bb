@@ -124,7 +124,7 @@ class NetworkMenuModel : public ui::MenuModel {
   virtual ui::MenuSeparatorType GetSeparatorTypeAt(int index) const OVERRIDE;
   virtual base::string16 GetLabelAt(int index) const OVERRIDE;
   virtual bool IsItemDynamicAt(int index) const OVERRIDE;
-  virtual const gfx::Font* GetLabelFontAt(int index) const OVERRIDE;
+  virtual const gfx::FontList* GetLabelFontListAt(int index) const OVERRIDE;
   virtual bool GetAcceleratorAt(int index,
                                 ui::Accelerator* accelerator) const OVERRIDE;
   virtual bool IsItemCheckedAt(int index) const OVERRIDE;
@@ -244,15 +244,14 @@ bool NetworkMenuModel::IsItemDynamicAt(int index) const {
   return false;
 }
 
-const gfx::Font* NetworkMenuModel::GetLabelFontAt(int index) const {
-  const gfx::Font* font = NULL;
+const gfx::FontList* NetworkMenuModel::GetLabelFontListAt(int index) const {
+  const gfx::FontList* font_list = NULL;
   if (menu_items_[index].flags & FLAG_ASSOCIATED) {
-    ResourceBundle& resource_bundle = ResourceBundle::GetSharedInstance();
-    font = &resource_bundle.GetFont(
-        browser_defaults::kAssociatedNetworkFontStyle);
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    font_list = &rb.GetFontList(browser_defaults::kAssociatedNetworkFontStyle);
   }
 
-  return font;
+  return font_list;
 }
 
 bool NetworkMenuModel::GetAcceleratorAt(int index,

@@ -14,7 +14,10 @@
 #include "ui/base/models/menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/text_utils.h"
 #include "ui/native_theme/common_theme.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/image_view.h"
@@ -686,14 +689,14 @@ int MenuItemView::GetDrawStringFlags() {
   return flags;
 }
 
-const gfx::Font& MenuItemView::GetFont() {
+const gfx::FontList& MenuItemView::GetFontList() {
   const MenuDelegate* delegate = GetDelegate();
   if (delegate) {
-    const gfx::Font* font = delegate->GetLabelFont(GetCommand());
-    if (font)
-      return *font;
+    const gfx::FontList* font_list = delegate->GetLabelFontList(GetCommand());
+    if (font_list)
+      return *font_list;
   }
-  return GetMenuConfig().font;
+  return GetMenuConfig().font_list;
 }
 
 void MenuItemView::AddEmptyMenus() {
@@ -803,7 +806,7 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
                                                &override_foreground_color))
     fg_color = override_foreground_color;
 
-  const gfx::Font& font = GetFont();
+  const gfx::FontList& font_list = GetFontList();
   int accel_width = parent_menu_item_->GetSubmenu()->max_minor_text_width();
   int label_start = GetLabelStartForThisItem();
 
@@ -818,19 +821,15 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   int flags = GetDrawStringFlags();
   if (mode == PB_FOR_DRAG)
     flags |= gfx::Canvas::NO_SUBPIXEL_RENDERING;
-  canvas->DrawStringInt(title(), font, fg_color,
-                        text_bounds.x(), text_bounds.y(), text_bounds.width(),
-                        text_bounds.height(), flags);
+  canvas->DrawStringRectWithFlags(title(), font_list, fg_color, text_bounds,
+                                  flags);
   if (!subtitle_.empty()) {
-    canvas->DrawStringInt(
+    canvas->DrawStringRectWithFlags(
         subtitle_,
-        font,
+        font_list,
         GetNativeTheme()->GetSystemColor(
             ui::NativeTheme::kColorId_ButtonDisabledColor),
-        text_bounds.x(),
-        text_bounds.y() + GetFont().GetHeight(),
-        text_bounds.width(),
-        text_bounds.height(),
+        text_bounds + gfx::Vector2d(0, font_list.GetHeight()),
         flags);
   }
 
@@ -855,7 +854,6 @@ void MenuItemView::PaintMinorText(gfx::Canvas* canvas,
   if (minor_text.empty())
     return;
 
-  const gfx::Font& font = GetFont();
   int available_height = height() - GetTopMargin() - GetBottomMargin();
   int max_accel_width =
       parent_menu_item_->GetSubmenu()->max_minor_text_width();
@@ -871,16 +869,13 @@ void MenuItemView::PaintMinorText(gfx::Canvas* canvas,
     flags |= gfx::Canvas::TEXT_ALIGN_LEFT;
   else
     flags |= gfx::Canvas::TEXT_ALIGN_RIGHT;
-  canvas->DrawStringInt(
+  canvas->DrawStringRectWithFlags(
       minor_text,
-      font,
+      GetFontList(),
       GetNativeTheme()->GetSystemColor(render_selection ?
           ui::NativeTheme::kColorId_SelectedMenuItemForegroundColor :
           ui::NativeTheme::kColorId_ButtonDisabledColor),
-      accel_bounds.x(),
-      accel_bounds.y(),
-      accel_bounds.width(),
-      accel_bounds.height(),
+      accel_bounds,
       flags);
 }
 
@@ -962,7 +957,7 @@ MenuItemView::MenuItemDimensions MenuItemView::CalculateDimensions() {
     return dimensions;
 
   // Determine the length of the label text.
-  const gfx::Font& font = GetFont();
+  const gfx::FontList& font_list = GetFontList();
 
   // Get Icon margin overrides for this particular item.
   const MenuDelegate* delegate = GetDelegate();
@@ -977,23 +972,26 @@ MenuItemView::MenuItemDimensions MenuItemView::CalculateDimensions() {
   }
   int label_start = GetLabelStartForThisItem();
 
-  int string_width = font.GetStringWidth(title_);
-  if (!subtitle_.empty())
-    string_width = std::max(string_width, font.GetStringWidth(subtitle_));
+  int string_width = gfx::GetStringWidth(title_, font_list);
+  if (!subtitle_.empty()) {
+    string_width = std::max(string_width,
+                            gfx::GetStringWidth(subtitle_, font_list));
+  }
 
   dimensions.standard_width = string_width + label_start +
       item_right_margin_;
   // Determine the length of the right-side text.
   base::string16 minor_text = GetMinorText();
   dimensions.minor_text_width =
-      minor_text.empty() ? 0 : GetFont().GetStringWidth(minor_text);
+      minor_text.empty() ? 0 : gfx::GetStringWidth(minor_text, font_list);
 
   // Determine the height to use.
+  dimensions.height =
+      std::max(dimensions.height,
+               (subtitle_.empty() ? 0 : font_list.GetHeight()) +
+               font_list.GetHeight() + GetBottomMargin() + GetTopMargin());
   dimensions.height = std::max(dimensions.height,
-      (subtitle_.empty() ? 0 : font.GetHeight()) +
-      font.GetHeight() + GetBottomMargin() + GetTopMargin());
-  dimensions.height = std::max(dimensions.height,
-      GetMenuConfig().item_min_height);
+                               GetMenuConfig().item_min_height);
   return dimensions;
 }
 

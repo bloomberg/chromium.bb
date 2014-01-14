@@ -179,10 +179,11 @@
       model->GetIconAt(modelIndex, &icon);
       [(id)item setImage:icon.IsEmpty() ? nil : icon.ToNSImage()];
     }
-    const gfx::Font* font = model->GetLabelFontAt(modelIndex);
-    if (font) {
+    const gfx::FontList* font_list = model->GetLabelFontListAt(modelIndex);
+    if (font_list) {
       NSDictionary *attributes =
-          [NSDictionary dictionaryWithObject:font->GetNativeFont()
+          [NSDictionary dictionaryWithObject:font_list->GetPrimaryFont().
+                                             GetNativeFont()
                                       forKey:NSFontAttributeName];
       base::scoped_nsobject<NSAttributedString> title(
           [[NSAttributedString alloc] initWithString:[(id)item title]

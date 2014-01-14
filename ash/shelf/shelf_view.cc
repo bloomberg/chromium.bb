@@ -128,7 +128,7 @@ class ShelfMenuModelAdapter : public views::MenuModelAdapter {
   explicit ShelfMenuModelAdapter(ShelfMenuModel* menu_model);
 
   // views::MenuModelAdapter:
-  virtual const gfx::Font* GetLabelFont(int command_id) const OVERRIDE;
+  virtual const gfx::FontList* GetLabelFontList(int command_id) const OVERRIDE;
   virtual bool IsCommandEnabled(int id) const OVERRIDE;
   virtual void GetHorizontalIconMargins(int id,
                                         int icon_size,
@@ -154,12 +154,13 @@ ShelfMenuModelAdapter::ShelfMenuModelAdapter(ShelfMenuModel* menu_model)
       menu_model_(menu_model) {
 }
 
-const gfx::Font* ShelfMenuModelAdapter::GetLabelFont(int command_id) const {
+const gfx::FontList* ShelfMenuModelAdapter::GetLabelFontList(
+    int command_id) const {
   if (command_id != kCommandIdOfMenuName)
-    return MenuModelAdapter::GetLabelFont(command_id);
+    return MenuModelAdapter::GetLabelFontList(command_id);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  return &rb.GetFont(ui::ResourceBundle::BoldFont);
+  return &rb.GetFontList(ui::ResourceBundle::BoldFont);
 }
 
 bool ShelfMenuModelAdapter::IsCommandEnabled(int id) const {

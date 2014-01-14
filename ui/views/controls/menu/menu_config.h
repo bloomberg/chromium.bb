@@ -6,7 +6,7 @@
 #define UI_VIEWS_CONTROLS_MENU_MENU_CONFIG_H_
 
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/views/views_export.h"
 
 namespace ui {
@@ -23,8 +23,8 @@ struct VIEWS_EXPORT MenuConfig {
 
   static const MenuConfig& instance(const ui::NativeTheme* theme);
 
-  // Font used by menus.
-  gfx::Font font;
+  // Font list used by menus.
+  gfx::FontList font_list;
 
   // Normal text color.
   SkColor text_color;

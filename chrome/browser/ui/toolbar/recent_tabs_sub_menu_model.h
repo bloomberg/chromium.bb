@@ -61,7 +61,7 @@ class RecentTabsSubMenuModel : public ui::SimpleMenuModel,
       int command_id,
       ui::Accelerator* accelerator) OVERRIDE;
   virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
-  virtual const gfx::Font* GetLabelFontAt(int index) const OVERRIDE;
+  virtual const gfx::FontList* GetLabelFontListAt(int index) const OVERRIDE;
 
   int GetMaxWidthForItemAtIndex(int item_index) const;
   bool GetURLAndTitleForItemAtIndex(int index,

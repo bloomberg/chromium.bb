@@ -59,7 +59,7 @@ class WrenchMenu : public views::MenuDelegate,
   void RemoveObserver(WrenchMenuObserver* observer);
 
   // MenuDelegate overrides:
-  virtual const gfx::Font* GetLabelFont(int command_id) const OVERRIDE;
+  virtual const gfx::FontList* GetLabelFontList(int command_id) const OVERRIDE;
   virtual bool GetForegroundColor(int command_id,
                                   bool is_hovered,
                                   SkColor* override_color) const OVERRIDE;

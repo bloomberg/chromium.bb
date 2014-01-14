@@ -172,8 +172,8 @@ RecentTabsSubMenuModel::RecentTabsSubMenuModel(
       browser_(browser),
       open_tabs_delegate_(open_tabs_delegate),
       last_local_model_index_(-1),
-      default_favicon_(ResourceBundle::GetSharedInstance().
-          GetNativeImageNamed(IDR_DEFAULT_FAVICON)),
+      default_favicon_(ui::ResourceBundle::GetSharedInstance().
+                       GetNativeImageNamed(IDR_DEFAULT_FAVICON)),
       weak_ptr_factory_(this) {
   // Invoke asynchronous call to load tabs from local last session, which does
   // nothing if the tabs have already been loaded or they shouldn't be loaded.
@@ -313,12 +313,13 @@ void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
   }
 }
 
-const gfx::Font* RecentTabsSubMenuModel::GetLabelFontAt(int index) const {
+const gfx::FontList* RecentTabsSubMenuModel::GetLabelFontListAt(
+    int index) const {
   int command_id = GetCommandIdAt(index);
   if (command_id == kRecentlyClosedHeaderCommandId ||
       IsDeviceNameCommandId(command_id)) {
-    return &ResourceBundle::GetSharedInstance().GetFont(
-        ResourceBundle::BoldFont);
+    return &ui::ResourceBundle::GetSharedInstance().GetFontList(
+        ui::ResourceBundle::BoldFont);
   }
   return NULL;
 }
@@ -385,7 +386,7 @@ void RecentTabsSubMenuModel::BuildLocalEntries() {
     InsertItemWithStringIdAt(++last_local_model_index_,
                              kRecentlyClosedHeaderCommandId,
                              IDS_NEW_TAB_RECENTLY_CLOSED);
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     SetIcon(last_local_model_index_,
             rb.GetNativeImageNamed(IDR_RECENTLY_CLOSED_WINDOW));
 
@@ -527,7 +528,7 @@ void RecentTabsSubMenuModel::BuildLocalWindowItem(
         IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW_MULTIPLE,
         base::IntToString16(num_tabs)));
   }
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   SetIcon(curr_model_index, rb.GetNativeImageNamed(IDR_RECENTLY_CLOSED_WINDOW));
   local_window_items_.push_back(window_id);
 }
@@ -575,7 +576,7 @@ void RecentTabsSubMenuModel::AddDeviceFavicon(
       break;
   };
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   SetIcon(index_in_menu, rb.GetNativeImageNamed(favicon_id));
 }
 

@@ -110,22 +110,23 @@ class DynamicDelegate : public Delegate {
   gfx::Image icon_;
 };
 
-// Menu model that returns a gfx::Font object for one of the items in the menu.
-class FontMenuModel : public SimpleMenuModel {
+// Menu model that returns a gfx::FontList object for one of the items in the
+// menu.
+class FontListMenuModel : public SimpleMenuModel {
  public:
-  FontMenuModel(SimpleMenuModel::Delegate* delegate,
-                const gfx::Font* font, int index)
+  FontListMenuModel(SimpleMenuModel::Delegate* delegate,
+                    const gfx::FontList* font_list, int index)
       : SimpleMenuModel(delegate),
-        font_(font),
+        font_list_(font_list),
         index_(index) {
   }
-  virtual ~FontMenuModel() {}
-  virtual const gfx::Font* GetLabelFontAt(int index) const OVERRIDE {
-    return (index == index_) ? font_ : NULL;
+  virtual ~FontListMenuModel() {}
+  virtual const gfx::FontList* GetLabelFontListAt(int index) const OVERRIDE {
+    return (index == index_) ? font_list_ : NULL;
   }
 
  private:
-  const gfx::Font* font_;
+  const gfx::FontList* font_list_;
   const int index_;
 };
 
@@ -272,10 +273,11 @@ TEST_F(MenuControllerTest, Validate) {
 }
 
 // Tests that items which have a font set actually use that font.
-TEST_F(MenuControllerTest, LabelFont) {
+TEST_F(MenuControllerTest, LabelFontList) {
   Delegate delegate;
-  gfx::Font bold = (gfx::Font()).DeriveFont(0, gfx::Font::BOLD);
-  FontMenuModel model(&delegate, &bold, 0);
+  const gfx::FontList& bold = ResourceBundle::GetSharedInstance().GetFontList(
+      ResourceBundle::BoldFont);
+  FontListMenuModel model(&delegate, &bold, 0);
   model.AddItem(1, ASCIIToUTF16("one"));
   model.AddItem(2, ASCIIToUTF16("two"));
 

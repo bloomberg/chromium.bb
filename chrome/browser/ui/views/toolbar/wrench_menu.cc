@@ -407,7 +407,7 @@ class WrenchMenuView : public views::View,
     button->set_border(
         new MenuButtonBorder(menu_config, menu_->use_new_menu()));
     button->SetHorizontalAlignment(gfx::ALIGN_CENTER);
-    button->SetFontList(gfx::FontList(menu_config.font));
+    button->SetFontList(menu_config.font_list);
     ui::NativeTheme* native_theme = button->GetNativeTheme();
     button->SetTextColor(
         views::Button::STATE_DISABLED,
@@ -628,7 +628,7 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
     const MenuConfig& menu_config(menu->GetMenuConfig());
     zoom_label_->set_border(
         new MenuButtonBorder(menu_config, menu->use_new_menu()));
-    zoom_label_->SetFontList(gfx::FontList(menu_config.font));
+    zoom_label_->SetFontList(menu_config.font_list);
 
     AddChildView(zoom_label_);
     zoom_label_width_ = MaxWidthForZoomLabel();
@@ -850,15 +850,15 @@ class WrenchMenu::RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
         kMaxMenuItemWidth : -1;
   }
 
-  const gfx::Font* GetLabelFontAt(int index) const {
-    return model_->GetLabelFontAt(index);
+  const gfx::FontList* GetLabelFontListAt(int index) const {
+    return model_->GetLabelFontListAt(index);
   }
 
   bool GetForegroundColorAt(int index,
                             bool is_hovered,
                             SkColor* override_color) const {
-    // The items for which we get a font, should be shown in black.
-    if (GetLabelFontAt(index)) {
+    // The items for which we get a font list, should be shown in black.
+    if (GetLabelFontListAt(index)) {
       *override_color = SK_ColorBLACK;
       return true;
     }
@@ -1001,9 +1001,9 @@ void WrenchMenu::RemoveObserver(WrenchMenuObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-const gfx::Font* WrenchMenu::GetLabelFont(int command_id) const {
+const gfx::FontList* WrenchMenu::GetLabelFontList(int command_id) const {
   if (IsRecentTabsCommand(command_id)) {
-    return recent_tabs_menu_model_delegate_->GetLabelFontAt(
+    return recent_tabs_menu_model_delegate_->GetLabelFontListAt(
         ModelIndexFromCommandId(command_id));
   }
   return NULL;

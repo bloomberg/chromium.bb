@@ -17,7 +17,7 @@
 using ui::OSExchangeData;
 
 namespace gfx {
-class Font;
+class FontList;
 }
 
 namespace ui {
@@ -64,7 +64,7 @@ class VIEWS_EXPORT MenuDelegate {
   virtual base::string16 GetLabel(int id) const;
 
   // The font for the menu item label.
-  virtual const gfx::Font* GetLabelFont(int id) const;
+  virtual const gfx::FontList* GetLabelFontList(int id) const;
 
   // Override the text color of a given menu item dependent on the
   // |command_id| and its |is_hovered| state. Returns true if it chooses to
