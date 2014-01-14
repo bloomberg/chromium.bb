@@ -43,7 +43,9 @@ class WebMediaStreamTrack {
 public:
     class ExtraData {
     public:
+        ExtraData() : m_owner(0) { }
         virtual ~ExtraData() { }
+
         BLINK_EXPORT WebMediaStreamTrack owner();
 
 #if INSIDE_BLINK
