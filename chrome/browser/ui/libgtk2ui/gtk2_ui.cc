@@ -18,12 +18,15 @@
 #include "chrome/browser/ui/libgtk2ui/chrome_gtk_frame.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_util.h"
 #include "chrome/browser/ui/libgtk2ui/native_theme_gtk2.h"
+#include "chrome/browser/ui/libgtk2ui/print_dialog_gtk2.h"
+#include "chrome/browser/ui/libgtk2ui/printing_gtk2_util.h"
 #include "chrome/browser/ui/libgtk2ui/select_file_dialog_impl.h"
 #include "chrome/browser/ui/libgtk2ui/skia_utils_gtk2.h"
 #include "chrome/browser/ui/libgtk2ui/unity_service.h"
 #include "chrome/browser/ui/libgtk2ui/x11_input_method_context_impl_gtk2.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
+#include "printing/printing_context_linux.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -330,6 +333,11 @@ void Gtk2UI::Initialize() {
   // style-set signal handler.
   LoadGtkValues();
   SetXDGIconTheme();
+
+  printing::PrintingContextLinux::SetCreatePrintDialogFunction(
+      &PrintDialogGtk2::CreatePrintDialog);
+  printing::PrintingContextLinux::SetPdfPaperSizeFunction(
+      &GetPdfPaperSizeDeviceUnitsGtk);
 
 #if defined(USE_GCONF)
   // We must build this after GTK gets initialized.

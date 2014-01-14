@@ -1,11 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "printing/printing_context_gtk.h"
-
-#include <gtk/gtk.h>
-#include <gtk/gtkunixprint.h>
+#include "printing/printing_context_linux.h"
 
 #include "base/logging.h"
 #include "base/values.h"
@@ -19,7 +16,11 @@ namespace {
 // Function pointer for creating print dialogs. |callback| is only used when
 // |show_dialog| is true.
 printing::PrintDialogGtkInterface* (*create_dialog_func_)(
-    printing::PrintingContextGtk* context) = NULL;
+    printing::PrintingContextLinux* context) = NULL;
+
+// Function pointer for determining paper size.
+gfx::Size (*get_pdf_paper_size_)(
+    printing::PrintingContextLinux* context) = NULL;
 
 }  // namespace
 
@@ -27,15 +28,15 @@ namespace printing {
 
 // static
 PrintingContext* PrintingContext::Create(const std::string& app_locale) {
-  return static_cast<PrintingContext*>(new PrintingContextGtk(app_locale));
+  return static_cast<PrintingContext*>(new PrintingContextLinux(app_locale));
 }
 
-PrintingContextGtk::PrintingContextGtk(const std::string& app_locale)
+PrintingContextLinux::PrintingContextLinux(const std::string& app_locale)
     : PrintingContext(app_locale),
       print_dialog_(NULL) {
 }
 
-PrintingContextGtk::~PrintingContextGtk() {
+PrintingContextLinux::~PrintingContextLinux() {
   ReleaseContext();
 
   if (print_dialog_)
@@ -43,21 +44,29 @@ PrintingContextGtk::~PrintingContextGtk() {
 }
 
 // static
-void PrintingContextGtk::SetCreatePrintDialogFunction(
+void PrintingContextLinux::SetCreatePrintDialogFunction(
     PrintDialogGtkInterface* (*create_dialog_func)(
-        PrintingContextGtk* context)) {
+        PrintingContextLinux* context)) {
   DCHECK(create_dialog_func);
   DCHECK(!create_dialog_func_);
   create_dialog_func_ = create_dialog_func;
 }
 
-void PrintingContextGtk::PrintDocument(const Metafile* metafile) {
+// static
+void PrintingContextLinux::SetPdfPaperSizeFunction(
+    gfx::Size (*get_pdf_paper_size)(PrintingContextLinux* context)) {
+  DCHECK(get_pdf_paper_size);
+  DCHECK(!get_pdf_paper_size_);
+  get_pdf_paper_size_ = get_pdf_paper_size;
+}
+
+void PrintingContextLinux::PrintDocument(const Metafile* metafile) {
   DCHECK(print_dialog_);
   DCHECK(metafile);
   print_dialog_->PrintDocument(metafile, document_name_);
 }
 
-void PrintingContextGtk::AskUserForSettings(
+void PrintingContextLinux::AskUserForSettings(
     gfx::NativeView parent_view,
     int max_pages,
     bool has_selection,
@@ -65,10 +74,14 @@ void PrintingContextGtk::AskUserForSettings(
   print_dialog_->ShowDialog(parent_view, has_selection, callback);
 }
 
-PrintingContext::Result PrintingContextGtk::UseDefaultSettings() {
+PrintingContext::Result PrintingContextLinux::UseDefaultSettings() {
   DCHECK(!in_print_job_);
 
   ResetSettings();
+
+  if (!create_dialog_func_)
+    return OK;
+
   if (!print_dialog_) {
     print_dialog_ = create_dialog_func_(this);
     print_dialog_->AddRefToDialog();
@@ -78,24 +91,20 @@ PrintingContext::Result PrintingContextGtk::UseDefaultSettings() {
   return OK;
 }
 
-gfx::Size PrintingContextGtk::GetPdfPaperSizeDeviceUnits() {
-  GtkPageSetup* page_setup = gtk_page_setup_new();
+gfx::Size PrintingContextLinux::GetPdfPaperSizeDeviceUnits() {
+  if (get_pdf_paper_size_)
+    return get_pdf_paper_size_(this);
 
-  gfx::SizeF paper_size(
-      gtk_page_setup_get_paper_width(page_setup, GTK_UNIT_INCH),
-      gtk_page_setup_get_paper_height(page_setup, GTK_UNIT_INCH));
-
-  g_object_unref(page_setup);
-
-  return gfx::Size(
-      paper_size.width() * settings_.device_units_per_inch(),
-      paper_size.height() * settings_.device_units_per_inch());
+  return gfx::Size();
 }
 
-PrintingContext::Result PrintingContextGtk::UpdatePrinterSettings(
+PrintingContext::Result PrintingContextLinux::UpdatePrinterSettings(
     bool external_preview) {
   DCHECK(!in_print_job_);
   DCHECK(!external_preview) << "Not implemented";
+
+  if (!create_dialog_func_)
+    return OK;
 
   if (!print_dialog_) {
     print_dialog_ = create_dialog_func_(this);
@@ -108,7 +117,7 @@ PrintingContext::Result PrintingContextGtk::UpdatePrinterSettings(
   return OK;
 }
 
-PrintingContext::Result PrintingContextGtk::InitWithSettings(
+PrintingContext::Result PrintingContextLinux::InitWithSettings(
     const PrintSettings& settings) {
   DCHECK(!in_print_job_);
 
@@ -117,7 +126,7 @@ PrintingContext::Result PrintingContextGtk::InitWithSettings(
   return OK;
 }
 
-PrintingContext::Result PrintingContextGtk::NewDocument(
+PrintingContext::Result PrintingContextLinux::NewDocument(
     const base::string16& document_name) {
   DCHECK(!in_print_job_);
   in_print_job_ = true;
@@ -127,7 +136,7 @@ PrintingContext::Result PrintingContextGtk::NewDocument(
   return OK;
 }
 
-PrintingContext::Result PrintingContextGtk::NewPage() {
+PrintingContext::Result PrintingContextLinux::NewPage() {
   if (abort_printing_)
     return CANCEL;
   DCHECK(in_print_job_);
@@ -137,7 +146,7 @@ PrintingContext::Result PrintingContextGtk::NewPage() {
   return OK;
 }
 
-PrintingContext::Result PrintingContextGtk::PageDone() {
+PrintingContext::Result PrintingContextLinux::PageDone() {
   if (abort_printing_)
     return CANCEL;
   DCHECK(in_print_job_);
@@ -147,7 +156,7 @@ PrintingContext::Result PrintingContextGtk::PageDone() {
   return OK;
 }
 
-PrintingContext::Result PrintingContextGtk::DocumentDone() {
+PrintingContext::Result PrintingContextLinux::DocumentDone() {
   if (abort_printing_)
     return CANCEL;
   DCHECK(in_print_job_);
@@ -156,19 +165,18 @@ PrintingContext::Result PrintingContextGtk::DocumentDone() {
   return OK;
 }
 
-void PrintingContextGtk::Cancel() {
+void PrintingContextLinux::Cancel() {
   abort_printing_ = true;
   in_print_job_ = false;
 }
 
-void PrintingContextGtk::ReleaseContext() {
+void PrintingContextLinux::ReleaseContext() {
   // Intentional No-op.
 }
 
-gfx::NativeDrawingContext PrintingContextGtk::context() const {
+gfx::NativeDrawingContext PrintingContextLinux::context() const {
   // Intentional No-op.
   return NULL;
 }
 
 }  // namespace printing
-

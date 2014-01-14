@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/printing/print_dialog_gtk.h"
+#include "chrome/browser/ui/libgtk2ui/print_dialog_gtk2.h"
 
 #include <gtk/gtkunixprint.h>
 
@@ -17,10 +17,10 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/ui/libgtk2ui/printing_gtk2_util.h"
 #include "printing/metafile.h"
 #include "printing/print_job_constants.h"
 #include "printing/print_settings.h"
-#include "printing/print_settings_initializer_gtk.h"
 
 using content::BrowserThread;
 using printing::PageRanges;
@@ -118,13 +118,13 @@ class GtkPrinterList {
 }  // namespace
 
 // static
-printing::PrintDialogGtkInterface* PrintDialogGtk::CreatePrintDialog(
+printing::PrintDialogGtkInterface* PrintDialogGtk2::CreatePrintDialog(
     PrintingContextLinux* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return new PrintDialogGtk(context);
+  return new PrintDialogGtk2(context);
 }
 
-PrintDialogGtk::PrintDialogGtk(PrintingContextLinux* context)
+PrintDialogGtk2::PrintDialogGtk2(PrintingContextLinux* context)
     : context_(context),
       dialog_(NULL),
       gtk_settings_(NULL),
@@ -132,7 +132,7 @@ PrintDialogGtk::PrintDialogGtk(PrintingContextLinux* context)
       printer_(NULL) {
 }
 
-PrintDialogGtk::~PrintDialogGtk() {
+PrintDialogGtk2::~PrintDialogGtk2() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (dialog_) {
@@ -153,7 +153,7 @@ PrintDialogGtk::~PrintDialogGtk() {
   }
 }
 
-void PrintDialogGtk::UseDefaultSettings() {
+void PrintDialogGtk2::UseDefaultSettings() {
   DCHECK(!page_setup_);
   DCHECK(!printer_);
 
@@ -166,7 +166,7 @@ void PrintDialogGtk::UseDefaultSettings() {
   InitPrintSettings(&settings);
 }
 
-bool PrintDialogGtk::UpdateSettings(printing::PrintSettings* settings) {
+bool PrintDialogGtk2::UpdateSettings(printing::PrintSettings* settings) {
   if (!gtk_settings_) {
     gtk_settings_ =
         gtk_print_settings_copy(g_last_used_settings.Get().settings());
@@ -226,15 +226,14 @@ bool PrintDialogGtk::UpdateSettings(printing::PrintSettings* settings) {
   return true;
 }
 
-void PrintDialogGtk::ShowDialog(
+void PrintDialogGtk2::ShowDialog(
     gfx::NativeView parent_view,
     bool has_selection,
     const PrintingContextLinux::PrintSettingsCallback& callback) {
   callback_ = callback;
 
-  GtkWindow* parent = GTK_WINDOW(gtk_widget_get_toplevel(parent_view));
-  // TODO(estade): We need a window title here.
-  dialog_ = gtk_print_unix_dialog_new(NULL, parent);
+  // TODO(mukai): take care of parent as select_file_dialog_impl_gtk2.
+  dialog_ = gtk_print_unix_dialog_new(NULL, NULL);
   g_signal_connect(dialog_, "delete-event",
                    G_CALLBACK(gtk_widget_hide_on_delete), NULL);
 
@@ -264,7 +263,7 @@ void PrintDialogGtk::ShowDialog(
   gtk_widget_show(dialog_);
 }
 
-void PrintDialogGtk::PrintDocument(const printing::Metafile* metafile,
+void PrintDialogGtk2::PrintDocument(const printing::Metafile* metafile,
                                    const base::string16& document_name) {
   // This runs on the print worker thread, does not block the UI thread.
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -292,20 +291,20 @@ void PrintDialogGtk::PrintDocument(const printing::Metafile* metafile,
     // No errors, continue printing.
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&PrintDialogGtk::SendDocumentToPrinter, this,
+        base::Bind(&PrintDialogGtk2::SendDocumentToPrinter, this,
                    document_name));
   }
 }
 
-void PrintDialogGtk::AddRefToDialog() {
+void PrintDialogGtk2::AddRefToDialog() {
   AddRef();
 }
 
-void PrintDialogGtk::ReleaseDialog() {
+void PrintDialogGtk2::ReleaseDialog() {
   Release();
 }
 
-void PrintDialogGtk::OnResponse(GtkWidget* dialog, int response_id) {
+void PrintDialogGtk2::OnResponse(GtkWidget* dialog, int response_id) {
   int num_matched_handlers = g_signal_handlers_disconnect_by_func(
       dialog_, reinterpret_cast<gpointer>(&OnResponseThunk), this);
   CHECK_EQ(1, num_matched_handlers);
@@ -365,8 +364,7 @@ void PrintDialogGtk::OnResponse(GtkWidget* dialog, int response_id) {
       PrintSettings settings;
       settings.set_ranges(ranges_vector);
       settings.set_selection_only(print_selection_only);
-      printing::PrintSettingsInitializerGtk::InitPrintSettings(
-          gtk_settings_, page_setup_, &settings);
+      InitPrintSettingsGtk(gtk_settings_, page_setup_, &settings);
       context_->InitWithSettings(settings);
       callback_.Run(PrintingContextLinux::OK);
       callback_.Reset();
@@ -385,7 +383,7 @@ void PrintDialogGtk::OnResponse(GtkWidget* dialog, int response_id) {
   }
 }
 
-void PrintDialogGtk::SendDocumentToPrinter(
+void PrintDialogGtk2::SendDocumentToPrinter(
     const base::string16& document_name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -410,13 +408,13 @@ void PrintDialogGtk::SendDocumentToPrinter(
 }
 
 // static
-void PrintDialogGtk::OnJobCompletedThunk(GtkPrintJob* print_job,
+void PrintDialogGtk2::OnJobCompletedThunk(GtkPrintJob* print_job,
                                          gpointer user_data,
                                          GError* error) {
-  static_cast<PrintDialogGtk*>(user_data)->OnJobCompleted(print_job, error);
+  static_cast<PrintDialogGtk2*>(user_data)->OnJobCompleted(print_job, error);
 }
 
-void PrintDialogGtk::OnJobCompleted(GtkPrintJob* print_job, GError* error) {
+void PrintDialogGtk2::OnJobCompleted(GtkPrintJob* print_job, GError* error) {
   if (error)
     LOG(ERROR) << "Printing failed: " << error->message;
   if (print_job)
@@ -430,8 +428,7 @@ void PrintDialogGtk::OnJobCompleted(GtkPrintJob* print_job, GError* error) {
   Release();
 }
 
-void PrintDialogGtk::InitPrintSettings(PrintSettings* settings) {
-  printing::PrintSettingsInitializerGtk::InitPrintSettings(
-      gtk_settings_, page_setup_, settings);
+void PrintDialogGtk2::InitPrintSettings(PrintSettings* settings) {
+  InitPrintSettingsGtk(gtk_settings_, page_setup_, settings);
   context_->InitWithSettings(*settings);
 }

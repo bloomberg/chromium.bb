@@ -13,8 +13,10 @@
       'dependencies': [
         '../../../../base/base.gyp:base',
         '../../../../base/base.gyp:base_i18n',
+        '../../../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../../../../build/linux/system.gyp:gconf',
         '../../../../build/linux/system.gyp:gtk',
+        '../../../../build/linux/system.gyp:gtkprint',
         '../../../../skia/skia.gyp:skia',
         '../../../../ui/base/strings/ui_strings.gyp:ui_strings',
         '../../../../ui/resources/ui_resources.gyp:ui_resources',
@@ -27,6 +29,7 @@
       ],
       'defines': [
         'LIBGTK2UI_IMPLEMENTATION',
+        'USE_CUPS',
       ],
       # Several of our source files are named _gtk2.cc. This isn't to
       # differentiate them from their source files (ninja and make are sane
@@ -53,6 +56,10 @@
         'native_theme_gtk2.h',
         'owned_widget_gtk2.cc',
         'owned_widget_gtk2.h',
+        'print_dialog_gtk2.cc',
+        'print_dialog_gtk2.h',
+        'printing_gtk2_util.cc',
+        'printing_gtk2_util.h',
         'select_file_dialog_impl.cc',
         'select_file_dialog_impl.h',
         'select_file_dialog_impl_gtk2.cc',

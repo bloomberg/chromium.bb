@@ -3057,6 +3057,10 @@
             '../dbus/dbus.gyp:dbus',
             '../third_party/undoview/undoview.gyp:undoview',
           ],
+          'sources': [
+            'browser/printing/printing_gtk_util.cc',
+            'browser/printing/printing_gtk_util.h',
+          ],
           'conditions': [
             ['OS=="linux"', {
               'link_settings': {

@@ -6,7 +6,7 @@
 #define PRINTING_PRINT_DIALOG_GTK_INTERFACE_H_
 
 #include "base/strings/string16.h"
-#include "printing/printing_context_gtk.h"
+#include "printing/printing_context_linux.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace printing {
@@ -31,7 +31,7 @@ class PrintDialogGtkInterface {
   virtual void ShowDialog(
       gfx::NativeView parent_view,
       bool has_selection,
-      const PrintingContextGtk::PrintSettingsCallback& callback) = 0;
+      const PrintingContextLinux::PrintSettingsCallback& callback) = 0;
 
   // Prints the document named |document_name| contained in |metafile|.
   // Called from the print worker thread. Once called, the

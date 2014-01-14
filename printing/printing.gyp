@@ -78,7 +78,7 @@
         'print_settings_initializer_win.h',
         'printed_document.cc',
         'printed_document.h',
-        'printed_document_gtk.cc',
+        'printed_document_linux.cc',
         'printed_document_mac.cc',
         'printed_document_win.cc',
         'printed_page.cc',
@@ -158,7 +158,7 @@
             'print_destination_none.cc',
           ],
         }],
-        ['chromeos==1 or (use_aura==1 and OS!="win")',{
+        ['chromeos==1',{
           'sources': [
             'printing_context_no_system_dialog.cc',
             'printing_context_no_system_dialog.h',
@@ -222,10 +222,10 @@
             'backend/print_backend_chromeos.cc',
           ],
         }],
-        ['toolkit_uses_gtk==1 and chromeos==0', {
+        ['OS=="linux" and chromeos==0', {
           'sources': [
-            'printing_context_gtk.cc',
-            'printing_context_gtk.h',
+            'printing_context_linux.cc',
+            'printing_context_linux.h',
           ],
         }],
         ['OS=="android"', {

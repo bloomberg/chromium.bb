@@ -32,6 +32,7 @@
 
 #if defined(ENABLE_PRINTING)
 #include "chrome/browser/printing/print_dialog_gtk.h"
+#include "chrome/browser/printing/printing_gtk_util.h"
 #endif  // defined(ENABLE_PRINTING)
 #endif  // defined(TOOLKIT_GTK)
 
@@ -352,8 +353,10 @@ void ChromeBrowserMainPartsPosix::PostMainMessageLoopStart() {
   CHECK(sigaction(SIGHUP, &action, NULL) == 0);
 
 #if defined(TOOLKIT_GTK) && defined(ENABLE_PRINTING)
-  printing::PrintingContextGtk::SetCreatePrintDialogFunction(
+  printing::PrintingContextLinux::SetCreatePrintDialogFunction(
       &PrintDialogGtk::CreatePrintDialog);
+  printing::PrintingContextLinux::SetPdfPaperSizeFunction(
+      &GetPdfPaperSizeDeviceUnitsGtk);
 #endif
 }
 
