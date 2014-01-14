@@ -95,10 +95,17 @@ var ProgressCenterItem = function() {
   this.type = null;
 
   /**
-   * Whether the item is summarized item or not.
+   * Whether the item represents a single item or not.
    * @type {boolean}
    */
-  this.summarized = false;
+  this.single = true;
+
+  /**
+   * If the property is true, only the message of item shown in the progress
+   * center and the notification of the item is created as priority = -1.
+   * @type {boolean}
+   */
+  this.quiet = false;
 
   /**
    * Callback function to cancel the item.
@@ -152,7 +159,7 @@ ProgressCenterItem.prototype = {
   get cancelable() {
     return !!(this.state == ProgressItemState.PROGRESSING &&
               this.cancelCallback &&
-              !this.summarized);
+              this.single);
   }
 };
 
@@ -168,7 +175,8 @@ ProgressCenterItem.prototype.clone = function() {
   newItem.progressMax = this.progressMax;
   newItem.progressValue = this.progressValue;
   newItem.type = this.type;
-  newItem.summarized = this.summarized;
+  newItem.single = this.single;
+  newItem.quiet = this.quiet;
   newItem.cancelCallback = this.cancelCallback;
   return newItem;
 };

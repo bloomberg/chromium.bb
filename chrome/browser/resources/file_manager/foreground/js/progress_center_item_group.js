@@ -10,14 +10,22 @@
  * This is responsible for generating the summarized item and managing lifetime
  * of error items.
  * @param {string} name Name of the group.
+ * @param {boolean} quiet Whether the group is for quiet items or not.
  * @constructor
  */
-function ProgressCenterItemGroup(name) {
+function ProgressCenterItemGroup(name, quiet) {
   /**
    * Name of the group.
    * @type {string}
    */
   this.name = name;
+
+  /**
+   * Whether the group is for quiet items or not.
+   * @type {boolean}
+   * @private
+   */
+  this.quiet_ = quiet;
 
   /**
    * State of the group.
@@ -120,6 +128,7 @@ ProgressCenterItemGroup.getSummarizedErrorItem = function(var_groups) {
   item.state = ProgressItemState.ERROR;
   item.message = strf('ERROR_PROGRESS_SUMMARY_PLURAL',
                       errorItems.length);
+  item.single = false;
   return item;
 };
 
@@ -214,6 +223,7 @@ ProgressCenterItemGroup.prototype.update = function(item) {
         this.state_ = ProgressCenterItemGroup.State.INACTIVE;
       this.items_[item.id] = item.clone();
       this.animated_[item.id] = false;
+      this.summarizedItem_ = null;
       break;
 
     case ProgressItemState.PROGRESSING:
@@ -293,6 +303,7 @@ ProgressCenterItemGroup.prototype.getSummarizedItem =
     return null;
 
   var summarizedItem = new ProgressCenterItem();
+  summarizedItem.quiet = this.quiet_;
   summarizedItem.progressMax += this.totalProgressMax_;
   summarizedItem.progressValue += this.totalProgressValue_;
   var progressingItems = [];
@@ -338,6 +349,7 @@ ProgressCenterItemGroup.prototype.getSummarizedItem =
 
   // Returns integrated items.
   if (progressingItems.length > 0) {
+    var numErrors = errorItems.length + numOtherErrors;
     var messages = [];
     switch (summarizedItem.type) {
       case ProgressItemType.COPY:
@@ -356,20 +368,15 @@ ProgressCenterItemGroup.prototype.getSummarizedItem =
         messages.push(str('TRANSFER_PROGRESS_SUMMARY'));
         break;
     }
-    var numErrors = errorItems.length + numOtherErrors;
     if (numErrors === 1)
       messages.push(str('ERROR_PROGRESS_SUMMARY'));
     else if (numErrors > 1)
       messages.push(strf('ERROR_PROGRESS_SUMMARY_PLURAL', numErrors));
-    summarizedItem.summarized = true;
+    summarizedItem.single = false;
     summarizedItem.message = messages.join(' ');
     summarizedItem.state = ProgressItemState.PROGRESSING;
     return summarizedItem;
   }
-
-  // Retruns error.
-  if (errorItems.length > 0)
-    return null;
 
   // Returns complete items.
   summarizedItem.state = ProgressItemState.COMPLETED;

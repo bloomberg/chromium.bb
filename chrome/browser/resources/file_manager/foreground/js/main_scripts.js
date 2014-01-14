@@ -97,6 +97,7 @@
 //<include src="file_watcher.js"/>
 //<include src="folder_shortcuts_data_model.js"/>
 //<include src="navigation_list_model.js"/>
+//<include src="progress_center_item_group.js"/>
 //<include src="scrollbar.js"/>
 //<include src="share_client.js"/>
 //<include src="share_dialog.js"/>

@@ -47,7 +47,7 @@ function testCopySuccess() {
   assertEquals('TASK_ID', item.id);
   assertEquals('Copying sample.txt...', item.message);
   assertEquals('copy', item.type);
-  assertEquals(false, item.summarized);
+  assertEquals(true, item.single);
   assertEquals(0, item.progressRateInPercent);
 
   // Dispatch an event.
@@ -66,7 +66,7 @@ function testCopySuccess() {
   assertEquals('TASK_ID', item.id);
   assertEquals('', item.message);
   assertEquals('copy', item.type);
-  assertEquals(false, item.summarized);
+  assertEquals(true, item.single);
   assertEquals(100, item.progressRateInPercent);
   assertEquals(1, background.closeRequestCount);
 }
@@ -92,7 +92,7 @@ function testCopyCancel() {
   assertEquals(ProgressItemState.PROGRESSING, item.state);
   assertEquals('Copying sample.txt...', item.message);
   assertEquals('copy', item.type);
-  assertEquals(false, item.summarized);
+  assertEquals(true, item.single);
   assertEquals(0, item.progressRateInPercent);
 
   // Dispatch an event.
@@ -111,7 +111,7 @@ function testCopyCancel() {
   assertEquals(ProgressItemState.CANCELED, item.state);
   assertEquals('', item.message);
   assertEquals('copy', item.type);
-  assertEquals(false, item.summarized);
+  assertEquals(true, item.single);
   assertEquals(0, item.progressRateInPercent);
   assertEquals(1, background.closeRequestCount);
 }
@@ -137,7 +137,7 @@ function testCopyTargetExistsError() {
   assertEquals(ProgressItemState.ERROR, item.state);
   assertEquals('sample.txt is already exists.', item.message);
   assertEquals('copy', item.type);
-  assertEquals(false, item.summarized);
+  assertEquals(true, item.single);
   assertEquals(0, item.progressRateInPercent);
   assertEquals(1, background.closeRequestCount);
 }
@@ -163,7 +163,7 @@ function testCopyFileSystemError() {
   assertEquals(ProgressItemState.ERROR, item.state);
   assertEquals('Copy filesystem error: File error generic.', item.message);
   assertEquals('copy', item.type);
-  assertEquals(false, item.summarized);
+  assertEquals(true, item.single);
   assertEquals(0, item.progressRateInPercent);
   assertEquals(1, background.closeRequestCount);
 }
@@ -189,7 +189,7 @@ function testCopyUnexpectedError() {
   assertEquals(ProgressItemState.ERROR, item.state);
   assertEquals('Copy unexpected error: Unexpected', item.message);
   assertEquals('copy', item.type);
-  assertEquals(false, item.summarized);
+  assertEquals(true, item.single);
   assertEquals(0, item.progressRateInPercent);
   assertEquals(1, background.closeRequestCount);
 }

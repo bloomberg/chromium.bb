@@ -41,7 +41,7 @@ function ProgressCenterItemElement(document) {
  * @type {string}
  * @const
  */
-ProgressCenterItemElement.DISMISS_EVENT = 'dismiss';
+ProgressCenterItemElement.PROGRESS_ANIMATION_END_EVENT = 'progressAnimationEnd';
 
 /**
  * Decoreates the given element as a progress item.
@@ -64,26 +64,26 @@ ProgressCenterItemElement.prototype = {
   __proto__: HTMLDivElement.prototype,
   get animated() {
     return !!(this.timeoutId_ || this.track_.classList.contains('animated'));
+  },
+  get quiet() {
+    return this.classList.contains('quiet');
   }
 };
 
 /**
  * Updates the element view according to the item.
  * @param {ProgressCenterItem} item Item to be referred for the update.
+ * @param {boolean} animated Whether the progress width is applied as animated
+ *     or not.
  */
-ProgressCenterItemElement.prototype.update = function(item) {
-  // If the current item is not progressing, the item no longer receives further
-  // update.
-  if (this.state_ === ProgressItemState.COMPLETED ||
-      this.state_ === ProgressItemState.ERROR ||
-      this.state_ === ProgressItemState.CANCELED)
-    return;
-
+ProgressCenterItemElement.prototype.update = function(item, animated) {
   // Set element attributes.
   this.state_ = item.state;
   this.setAttribute('data-progress-id', item.id);
   this.classList.toggle('error', item.state === ProgressItemState.ERROR);
   this.classList.toggle('cancelable', item.cancelable);
+  this.classList.toggle('single', item.single);
+  this.classList.toggle('quiet', item.quiet);
 
   // Set label.
   if (this.state_ === ProgressItemState.PROGRESSING ||
@@ -94,10 +94,27 @@ ProgressCenterItemElement.prototype.update = function(item) {
   }
 
   // Set track width.
-  this.applyTrackWidth_(item.progressRateInPercent);
-
-  // Check dismiss.
-  this.checkDismiss_();
+  this.nextWidthRate_ = item.progressRateInPercent;
+  var setWidth = function() {
+    this.timeoutId_ = null;
+    var currentWidthRate = parseInt(this.track_.style.width);
+    // Prevent assigning the same width to avoid stopping the animation.
+    // animated == false may be intended to cancel the animation, so in that
+    // case, the assignment should be done.
+    if (currentWidthRate === this.nextWidthRate_ && animated)
+      return;
+    this.track_.hidden = false;
+    this.track_.style.width = this.nextWidthRate_ + '%';
+    this.track_.classList.toggle('animated', animated);
+  }.bind(this);
+  if (animated) {
+    this.timeoutId_ = this.timeoutId_ || setTimeout(setWidth);
+  } else {
+    clearTimeout(this.timeoutId_);
+    // For animated === false, we should call setWidth immediately to cancel the
+    // animation, otherwise the animation may complete before canceling it.
+    setWidth();
+  }
 };
 
 /**
@@ -110,28 +127,6 @@ ProgressCenterItemElement.prototype.reset = function() {
 };
 
 /**
- * Applies track width.
- * @param {number} nextWidthRate Next track width rate in percent.
- * @private
- */
-ProgressCenterItemElement.prototype.applyTrackWidth_ = function(nextWidthRate) {
-  this.nextWidthRate_ = nextWidthRate;
-  this.timeoutId_ = this.timeoutId_ || setTimeout(function() {
-    this.timeoutId_ = null;
-    var currentWidthRate = parseInt(this.track_.style.width);
-    if (currentWidthRate === this.nextWidthRate_ &&
-        this.track_.classList.contains('animated'))
-      return;
-    var animated = !isNaN(currentWidthRate) && !isNaN(this.nextWidthRate_) &&
-      currentWidthRate < this.nextWidthRate_;
-    this.track_.hidden = false;
-    this.track_.style.width = this.nextWidthRate_ + '%';
-    this.track_.classList.toggle('animated', animated);
-    this.checkDismiss_();
-  }.bind(this));
-};
-
-/**
  * Handles transition end events.
  * @param {Event} event Transition end event.
  * @private
@@ -140,23 +135,9 @@ ProgressCenterItemElement.prototype.onTransitionEnd_ = function(event) {
   if (event.propertyName !== 'width')
     return;
   this.track_.classList.remove('animated');
-  this.checkDismiss_();
-};
-
-/**
- * Checks if the item should be dismissed or not.
- * If true, resets the item and publish a dismiss event.
- * @private
- */
-ProgressCenterItemElement.prototype.checkDismiss_ = function() {
-  if (this.animated ||
-      this.state_ === ProgressItemState.PROGRESSING ||
-      this.state_ === ProgressItemState.ERROR)
-    return;
-
-  this.reset();
-  this.dispatchEvent(new Event(ProgressCenterItemElement.DISMISS_EVENT,
-                               {bubbles: true}));
+  this.dispatchEvent(new Event(
+      ProgressCenterItemElement.PROGRESS_ANIMATION_END_EVENT,
+      {bubbles: true}));
 };
 
 /**
@@ -165,7 +146,7 @@ ProgressCenterItemElement.prototype.checkDismiss_ = function() {
  * @param {HTMLElement} element DOM Element of the process center panel.
  * @constructor
  */
-var ProgressCenterPanel = function(element) {
+function ProgressCenterPanel(element) {
   /**
    * Root element of the progress center.
    * @type {HTMLElement}
@@ -197,12 +178,38 @@ var ProgressCenterPanel = function(element) {
       element.ownerDocument);
 
   /**
-   * Reset is requested but it is pending until the transition of progress bar
-   * is complete.
-   * @type {boolean}
+   * Item group for normal priority items.
+   * @type {ProgressCenterItemGroup}
    * @private
    */
-  this.resetRequested_ = false;
+  this.normalItemGroup_ = new ProgressCenterItemGroup('normal', false);
+
+  /**
+   * Item group for low priority items.
+   * @type {ProgressCenterItemGroup}
+   * @private
+   */
+  this.quietItemGroup_ = new ProgressCenterItemGroup('quiet', true);
+
+  /**
+   * Queries to obtains items for each group.
+   * @type {Object.<string, string>}
+   * @private
+   */
+  this.itemQuery_ = Object.seal({
+    normal: 'li:not(.quiet)',
+    quiet: 'li.quiet'
+  });
+
+  /**
+   * Timeout IDs of the inactive state of each group.
+   * @type {Object.<string, number?>}
+   * @private
+   */
+  this.timeoutId_ = Object.seal({
+    normal: null,
+    quiet: null
+  });
 
   /**
    * Callback to becalled with the ID of the progress item when the cancel
@@ -217,9 +224,9 @@ var ProgressCenterPanel = function(element) {
   element.addEventListener(
       'webkitAnimationEnd', this.onToggleAnimationEnd_.bind(this));
   element.addEventListener(
-      ProgressCenterItemElement.DISMISS_EVENT,
-      this.onItemDismiss_.bind(this));
-};
+      ProgressCenterItemElement.PROGRESS_ANIMATION_END_EVENT,
+      this.onItemAnimationEnd_.bind(this));
+}
 
 /**
  * Obtains the toggle animation keyframes rule from the document.
@@ -242,82 +249,142 @@ ProgressCenterPanel.getToggleAnimation_ = function(document) {
 };
 
 /**
+ * The default amount of milliseconds time, before a progress item will reset
+ * after the last complete.
+ * @type {number}
+ * @private
+ * @const
+ */
+ProgressCenterPanel.RESET_DELAY_TIME_MS_ = 5000;
+
+/**
  * Updates an item to the progress center panel.
  * @param {!ProgressCenterItem} item Item including new contents.
  */
 ProgressCenterPanel.prototype.updateItem = function(item) {
-  // If reset is requested, force to reset.
-  if (this.resetRequested_)
-    this.reset(true);
+  var targetGroup = this.getGroupForItem_(item);
 
-  // Check whether the item should be displayed or not by referring its state.
+  // Update the item.
+  var oldState = targetGroup.state;
+  targetGroup.update(item);
+  this.handleGroupStateChange_(targetGroup, oldState, targetGroup.state);
+
+  // Update an open view item.
+  var newItem = targetGroup.getItem(item.id);
   var itemElement = this.getItemElement_(item.id);
-  switch (item.state) {
-    // Should show the item.
-    case ProgressItemState.PROGRESSING:
-    case ProgressItemState.ERROR:
-      // If the item has not been added yet, create a new element and add it.
-      if (!itemElement) {
-        itemElement =
-            new ProgressCenterItemElement(this.element_.ownerDocument);
-        this.openView_.insertBefore(itemElement, this.openView_.firstNode);
-      }
-      this.element_.hidden = false;
-      break;
-
-    // Should not show the item.
-    case ProgressItemState.COMPLETED:
-    case ProgressItemState.CANCELED:
-      // If itemElement is not shown, just return.
-      if (!itemElement)
-        return;
-      break;
+  if (newItem) {
+    if (!itemElement) {
+      itemElement = new ProgressCenterItemElement(this.element_.ownerDocument);
+      this.openView_.insertBefore(itemElement, this.openView_.firstNode);
+    }
+    itemElement.update(newItem, targetGroup.isAnimated(item.id));
+  } else {
+    if (itemElement)
+      itemElement.parentNode.removeChild(itemElement);
   }
 
-  // Update the element by referring the item model.
-  itemElement.update(item);
+  // Update the close view.
+  this.updateCloseView_();
 };
 
 /**
- * Updates close showing summarized item.
- * @param {!ProgressCenterItem} summarizedItem Item to be displayed in the close
- *     view.
+ * Handles the item animation end.
+ * @param {Event} event Item animation end event.
+ * @private
  */
-ProgressCenterPanel.prototype.updateCloseView = function(summarizedItem) {
-  this.closeView_.classList.toggle('single', !summarizedItem.summarized);
-  this.closeView_.update(summarizedItem);
+ProgressCenterPanel.prototype.onItemAnimationEnd_ = function(event) {
+  var targetGroup = event.target.classList.contains('quiet') ?
+      this.quietItemGroup_ : this.normalItemGroup_;
+  var oldState = targetGroup.state;
+  if (event.target === this.closeView_) {
+    targetGroup.completeSummarizedItemAnimation();
+  } else {
+    var itemId = event.target.getAttribute('data-progress-id');
+    targetGroup.completeItemAnimation(itemId);
+    var newItem = targetGroup.getItem(itemId);
+    var itemElement = this.getItemElement_(itemId);
+    if (!newItem && itemElement)
+      itemElement.parentNode.removeChild(itemElement);
+  }
+  this.handleGroupStateChange_(targetGroup, oldState, targetGroup.state);
+  this.updateCloseView_();
 };
 
 /**
- * Remove all the items.
- * @param {boolean=} opt_force True if we force to reset and do not wait the
- *    transition of progress bar. False otherwise. False is default.
+ * Handles the state change of group.
+ * @param {ProgressCenterItemGroup} group Item group.
+ * @param {ProgressCenterItemGroup.State} oldState Old state of the group.
+ * @param {ProgressCenterItemGroup.State} newState New state of the group.
+ * @private
  */
-ProgressCenterPanel.prototype.reset = function(opt_force) {
-  // If an item is still animated, pending the reset.
-  if (!opt_force) {
-    var items = this.element_.querySelectorAll('li');
-    var itemAnimated = false;
-    for (var i = 0; i < items.length; i++) {
-      itemAnimated = itemAnimated || items[i].animated;
-    }
-
-    if (itemAnimated) {
-      this.resetRequested_ = true;
-      return;
+ProgressCenterPanel.prototype.handleGroupStateChange_ =
+    function(group, oldState, newState) {
+  if (oldState === ProgressCenterItemGroup.State.INACTIVE) {
+    clearTimeout(this.timeoutId_[group.name]);
+    this.timeoutId_[group.name] = null;
+    var elements =
+        this.openView_.querySelectorAll(this.itemQuery_[group.name]);
+    for (var i = 0; i < elements.length; i++) {
+      elements[i].parentNode.removeChild(elements[i]);
     }
   }
+  if (newState === ProgressCenterItemGroup.State.INACTIVE) {
+    this.timeoutId_[group.name] = setTimeout(function() {
+      var inOldState = group.state;
+      group.endInactive();
+      this.handleGroupStateChange_(group, inOldState, group.state);
+      this.updateCloseView_();
+    }.bind(this), ProgressCenterPanel.RESET_DELAY_TIME_MS_);
+  }
+};
 
-  // Clear the flag.
-  this.resetRequested_ = false;
+/**
+ * Updates the close view.
+ * @private
+ */
+ProgressCenterPanel.prototype.updateCloseView_ = function() {
+  // Try to use the normal summarized item.
+  var normalSummarizedItem =
+      this.normalItemGroup_.getSummarizedItem(this.quietItemGroup_.numErrors);
+  if (normalSummarizedItem) {
+    // If the quiet animation is overrided by normal summarized item, discard
+    // the quiet animation.
+    if (this.quietItemGroup_.isSummarizedAnimated()) {
+      var oldState = this.quietItemGroup_.state;
+      this.quietItemGroup_.completeSummarizedItemAnimation();
+      this.handleGroupStateChange_(this.quietItemGroup_,
+                                   oldState,
+                                   this.quietItemGroup_.state);
+    }
 
-  // Clear the all compete item.
-  this.openView_.innerHTML = '';
+    // Update the view state.
+    this.closeView_.update(normalSummarizedItem,
+                           this.normalItemGroup_.isSummarizedAnimated());
+    this.element_.hidden = false;
+    return;
+  }
 
-  // Clear track width of close view.
+  // Try to use the quiet summarized item.
+  var quietSummarizedItem =
+      this.quietItemGroup_.getSummarizedItem(this.normalItemGroup_.numErrors);
+  if (quietSummarizedItem) {
+    this.closeView_.update(quietSummarizedItem,
+                           this.quietItemGroup_.isSummarizedAnimated());
+    this.element_.hidden = false;
+    return;
+  }
+
+  // Try to use the error summarized item.
+  var errorSummarizedItem = ProgressCenterItemGroup.getSummarizedErrorItem(
+      this.normalItemGroup_, this.quietItemGroup_);
+  if (errorSummarizedItem) {
+    this.closeView_.update(errorSummarizedItem, false);
+    this.element_.hidden = false;
+    return;
+  }
+
+  // Hide the progress center because there is no items to show.
   this.closeView_.reset();
-
-  // Hide the progress center.
   this.element_.hidden = true;
   this.element_.classList.remove('opened');
 };
@@ -334,6 +401,16 @@ ProgressCenterPanel.prototype.getItemElement_ = function(id) {
 };
 
 /**
+ * Obtains the group for the item.
+ * @param {ProgressCenterItem} item Progress item.
+ * @return {ProgressCenterItemGroup} Item group that should contain the item.
+ * @private
+ */
+ProgressCenterPanel.prototype.getGroupForItem_ = function(item) {
+  return item.quiet ? this.quietItemGroup_ : this.normalItemGroup_;
+};
+
+/**
  * Handles the animation end event of the progress center.
  * @param {Event} event Animation end event.
  * @private
@@ -345,19 +422,6 @@ ProgressCenterPanel.prototype.onToggleAnimationEnd_ = function(event) {
     this.element_.classList.remove('animated');
     return;
   }
-};
-
-/**
- * Handles the transition end event of items.
- * @param {Event} event Transition end event.
- * @private
- */
-ProgressCenterPanel.prototype.onItemDismiss_ = function(event) {
-  if (event.target !== this.closeView_)
-    this.openView_.removeChild(event.target);
-
-  if (this.resetRequested_)
-    this.reset();
 };
 
 /**

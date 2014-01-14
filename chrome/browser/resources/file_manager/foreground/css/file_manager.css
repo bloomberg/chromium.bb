@@ -1981,7 +1981,8 @@ menuitem#thumbnail-view[lead]:not([disabled]) {
 }
 
 #progress-center li.error .progress-bar,
-#progress-center li.canceled .progress-bar {
+#progress-center li.canceled .progress-bar,
+#progress-center li.quiet .progress-bar {
   visibility: hidden;
 }
 
