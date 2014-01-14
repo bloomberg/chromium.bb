@@ -11,40 +11,43 @@ IPC fuzzer. The fuzzer will then play back a specified testcase.
 Depends on ipc_fuzzer being available on the same directory as chrome.
 """
 
+import argparse
 import os
 import platform
 import subprocess
 import sys
 
 def main():
-  if len(sys.argv) <= 1:
-    print 'Usage: play_testcase.py [chrome_flag...] testcase'
-    return 1
+  desc = 'Wrapper to run chrome with child processes replaced by IPC fuzzers'
+  parser = argparse.ArgumentParser(description=desc)
+  parser.add_argument('--out-dir', dest='out_dir', default='out',
+                      help='ouput directory under src/ directory')
+  parser.add_argument('--build-type', dest='build_type', default='Release',
+                      help='Debug vs. Release build')
+  parser.add_argument('--chrome-flags', dest='chrome_flags',
+                      help='comma-separated additional flags to pass to chrome')
+  parser.add_argument('testcase');
+  parsed = parser.parse_args();
+
+  chrome_binary = 'chrome'
+  fuzzer_binary = 'ipc_fuzzer_replay'
 
   script_path = os.path.realpath(__file__)
   ipc_fuzzer_dir = os.path.dirname(script_path)
-  out_dir = os.path.abspath(os.path.join(ipc_fuzzer_dir, os.pardir,
-                            os.pardir, 'out'));
-  build_dir = ''
-  chrome_path = ''
-  chrome_binary = 'chrome'
+  src_dir = os.path.abspath(os.path.join(ipc_fuzzer_dir, os.pardir, os.pardir))
+  out_dir =  os.path.join(src_dir, parsed.out_dir);
+  build_dir = os.path.join(out_dir, parsed.build_type)
 
-  for build in ['Debug', 'Release']:
-    try_build = os.path.join(out_dir, build)
-    try_chrome = os.path.join(try_build, chrome_binary)
-    if os.path.exists(try_chrome):
-      build_dir = try_build
-      chrome_path = try_chrome
-
-  if not chrome_path:
-    print 'chrome executable not found.'
+  chrome_path = os.path.join(build_dir, chrome_binary)
+  if not os.path.exists(chrome_path):
+    print 'chrome executable not found at ', chrome_path
     return 1
 
-  fuzzer_path = os.path.join(build_dir, 'ipc_fuzzer_replay')
+  fuzzer_path = os.path.join(build_dir, fuzzer_binary)
   if not os.path.exists(fuzzer_path):
-    print fuzzer_path + ' not found.'
-    print ('Please use enable_ipc_fuzzer=1 GYP define and '
-          'build ipc_fuzzer target.')
+    print 'fuzzer executable not found at ', fuzzer_path
+    print ('ensure GYP_DEFINES="enable_ipc_fuzzer=1" and build target ' +
+           fuzzer_binary + '.')
     return 1
 
   prefixes = {
@@ -66,13 +69,14 @@ def main():
   for prefix in prefixes:
     launchers[prefix] = fuzzer_path
 
-  for arg in sys.argv[1:-1]:
-    if arg.find('=') != -1:
-      switch, value = arg.split('=', 1)
-      if switch in prefixes:
-        launchers[switch] = value + ' ' + launchers[switch]
-        continue
-    args.append(arg)
+  if parsed.chrome_flags:
+    for arg in parsed.chrome_flags.split(','):
+      if arg.find('=') != -1:
+        switch, value = arg.split('=', 1)
+        if switch in prefixes:
+          launchers[switch] = value + ' ' + launchers[switch]
+          continue
+      args.append(arg)
 
   for switch, value in launchers.items():
     args.append(switch + '=' + value)
