@@ -163,6 +163,17 @@ class MsvsSettings(object):
 
     self.msvs_cygwin_dirs = spec.get('msvs_cygwin_dirs', ['.'])
 
+    unsupported_fields = [
+        'msvs_prebuild',
+        'msvs_postbuild',
+    ]
+    for field in unsupported_fields:
+      for config in configs.values():
+        if field in config:
+          print "Warning: %s not supported, dropping. (target %s)" \
+                % (field, spec['target_name'])
+          break
+
   def GetVSMacroEnv(self, base_to_build=None, config=None):
     """Get a dict of variables mapping internal VS macro names to their gyp
     equivalents."""

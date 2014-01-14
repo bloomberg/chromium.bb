@@ -2906,7 +2906,7 @@ def _FinalizeMSBuildSettings(spec, configuration):
     # Visual Studio 2010 has TR1
     defines = [d for d in defines if d != '_HAS_TR1=0']
     # Warn of ignored settings
-    ignored_settings = ['msvs_prebuild', 'msvs_postbuild', 'msvs_tool_files']
+    ignored_settings = ['msvs_tool_files']
     for ignored_setting in ignored_settings:
       value = configuration.get(ignored_setting)
       if value:
@@ -2915,9 +2915,8 @@ def _FinalizeMSBuildSettings(spec, configuration):
 
   defines = [_EscapeCppDefineForMSBuild(d) for d in defines]
   disabled_warnings = _GetDisabledWarnings(configuration)
-  # TODO(jeanluc) Validate & warn that we don't translate
-  # prebuild = configuration.get('msvs_prebuild')
-  # postbuild = configuration.get('msvs_postbuild')
+  prebuild = configuration.get('msvs_prebuild')
+  postbuild = configuration.get('msvs_postbuild')
   def_file = _GetModuleDefinition(spec)
   precompiled_header = configuration.get('msvs_precompiled_header')
 
@@ -2965,6 +2964,10 @@ def _FinalizeMSBuildSettings(spec, configuration):
   if def_file:
     _ToolAppend(msbuild_settings, 'Link', 'ModuleDefinitionFile', def_file)
   configuration['finalized_msbuild_settings'] = msbuild_settings
+  if prebuild:
+    _ToolAppend(msbuild_settings, 'PreBuildEvent', 'Command', prebuild)
+  if postbuild:
+    _ToolAppend(msbuild_settings, 'PostBuildEvent', 'Command', postbuild)
 
 
 def _GetValueFormattedForMSBuild(tool_name, name, value):
