@@ -3,15 +3,16 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
-#include "base/debug/trace_event_impl.h"
 #include "base/json/json_reader.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/trace_event_analyzer.h"
 #include "base/values.h"
 #include "content/browser/media/webrtc_internals.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test.h"
 #include "content/test/content_browser_test_utils.h"
@@ -22,6 +23,10 @@
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #endif
+
+using trace_analyzer::TraceAnalyzer;
+using trace_analyzer::Query;
+using trace_analyzer::TraceEventVector;
 
 namespace {
 
@@ -85,7 +90,7 @@ namespace content {
 
 class WebrtcBrowserTest: public ContentBrowserTest {
  public:
-  WebrtcBrowserTest() {}
+  WebrtcBrowserTest() : trace_log_(NULL) {}
   virtual ~WebrtcBrowserTest() {}
 
   virtual void SetUp() OVERRIDE {
@@ -103,60 +108,35 @@ class WebrtcBrowserTest: public ContentBrowserTest {
         switches::kUseFakeUIForMediaStream));
   }
 
-  void DumpChromeTraceCallback(
-      const scoped_refptr<base::RefCountedString>& events,
+  void StartTracing() {
+    CHECK(trace_log_ == NULL) << "Can only can start tracing once";
+    trace_log_ = base::debug::TraceLog::GetInstance();
+    trace_log_->SetEnabled(base::debug::CategoryFilter("video"),
+                           base::debug::TraceLog::RECORDING_MODE,
+                           base::debug::TraceLog::ENABLE_SAMPLING);
+    // Check that we are indeed recording.
+    EXPECT_EQ(trace_log_->GetNumTracesRecorded(), 1);
+  }
+
+  void StopTracing() {
+    CHECK(message_loop_runner_ == NULL) << "Calling StopTracing more than once";
+    trace_log_->SetDisabled();
+    message_loop_runner_ = new MessageLoopRunner;
+    trace_log_->Flush(base::Bind(&WebrtcBrowserTest::OnTraceDataCollected,
+                                 base::Unretained(this)));
+    message_loop_runner_->Run();
+  }
+
+  void OnTraceDataCollected(
+      const scoped_refptr<base::RefCountedString>& events_str_ptr,
       bool has_more_events) {
-    // Convert the dump output into a correct JSON List.
-    std::string contents = "[" + events->data() + "]";
+    CHECK(!has_more_events);
+    recorded_trace_data_ = events_str_ptr;
+    message_loop_runner_->Quit();
+  }
 
-    int error_code;
-    std::string error_message;
-    scoped_ptr<base::Value> value(
-        base::JSONReader::ReadAndReturnError(contents,
-                                             base::JSON_ALLOW_TRAILING_COMMAS,
-                                             &error_code,
-                                             &error_message));
-
-    ASSERT_TRUE(value.get() != NULL) << error_message;
-    ASSERT_EQ(value->GetType(), base::Value::TYPE_LIST);
-
-    base::ListValue* values;
-    ASSERT_TRUE(value->GetAsList(&values));
-
-    int duration_ns = 0;
-    std::string samples_duration;
-    double timestamp_ns = 0.0;
-    double previous_timestamp_ns = 0.0;
-    std::string samples_interarrival_ns;
-    for (base::ListValue::iterator it = values->begin();
-         it != values->end(); ++it) {
-      const base::DictionaryValue* dict;
-      EXPECT_TRUE((*it)->GetAsDictionary(&dict));
-
-      if (dict->GetInteger("dur", &duration_ns))
-        samples_duration.append(base::StringPrintf("%d,", duration_ns));
-      if (dict->GetDouble("ts", &timestamp_ns)) {
-        if (previous_timestamp_ns) {
-          samples_interarrival_ns.append(
-              base::StringPrintf("%f,", timestamp_ns - previous_timestamp_ns));
-        }
-        previous_timestamp_ns = timestamp_ns;
-      }
-    }
-    ASSERT_GT(samples_duration.size(), 0u)
-        << "Could not collect any samples during test, this is bad";
-    perf_test::PrintResultList("video_capture",
-                               "",
-                               "sample_duration",
-                               samples_duration,
-                               "ns",
-                               true);
-    perf_test::PrintResultList("video_capture",
-                               "",
-                               "interarrival_time",
-                               samples_interarrival_ns,
-                               "ns",
-                               true);
+  TraceAnalyzer* CreateTraceAnalyzer() {
+    return TraceAnalyzer::Create("[" + recorded_trace_data_->data() + "]");
   }
 
   void GetSources(std::vector<std::string>* audio_ids,
@@ -242,6 +222,11 @@ class WebrtcBrowserTest: public ContentBrowserTest {
     ASSERT_TRUE(ExecuteJavascript(javascript));
     ExpectTitle("OK");
   }
+
+ private:
+  base::debug::TraceLog* trace_log_;
+  scoped_refptr<base::RefCountedString> recorded_trace_data_;
+  scoped_refptr<MessageLoopRunner> message_loop_runner_;
 };
 
 // These tests will all make a getUserMedia call with different constraints and
@@ -451,21 +436,40 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, TracePerformanceDuringGetUserMedia) {
 
   // Make sure the stream is up and running, then start collecting traces.
   ExpectTitle("Running...");
-  base::debug::TraceLog* trace_log = base::debug::TraceLog::GetInstance();
-  trace_log->SetEnabled(base::debug::CategoryFilter("video"),
-                        base::debug::TraceLog::RECORDING_MODE,
-                        base::debug::TraceLog::ENABLE_SAMPLING);
-  // Check that we are indeed recording.
-  ASSERT_EQ(trace_log->GetNumTracesRecorded(), 1);
+  StartTracing();
 
   // Wait until the page title changes to "OK". Do not sleep() here since that
   // would stop both this code and the browser underneath.
   ExpectTitle("OK");
+  StopTracing();
 
-  // Note that we need to stop the trace recording before flushing the data.
-  trace_log->SetDisabled();
-  trace_log->Flush(base::Bind(&WebrtcBrowserTest::DumpChromeTraceCallback,
-                              base::Unretained(this)));
+  scoped_ptr<TraceAnalyzer> analyzer(CreateTraceAnalyzer());
+  analyzer->AssociateBeginEndEvents();
+  trace_analyzer::TraceEventVector events;
+  analyzer->FindEvents(
+      Query::EventNameIs("VideoCaptureController::OnIncomingCapturedFrame"),
+      &events);
+  ASSERT_GT(events.size(), 0u)
+      << "Could not collect any samples during test, this is bad";
+
+  std::string duration_us;
+  std::string interarrival_us;
+  for (size_t i = 0; i != events.size(); ++i) {
+    duration_us.append(
+        base::StringPrintf("%d,", static_cast<int>(events[i]->duration)));
+  }
+
+  for (size_t i = 1; i < events.size(); ++i) {
+    interarrival_us.append(base::StringPrintf(
+        "%d,",
+        static_cast<int>(events[i]->timestamp - events[i - 1]->timestamp)));
+  }
+
+  perf_test::PrintResultList(
+      "video_capture", "", "sample_duration", duration_us, "us", true);
+
+  perf_test::PrintResultList(
+      "video_capture", "", "interarrival_time", interarrival_us, "us", true);
 }
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
