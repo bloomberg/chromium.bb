@@ -87,7 +87,7 @@ done
 # --mac-only is passed in and the system isn't a mac. People who don't like this
 # can just delete their third_party/llvm-build directory.
 if [[ -n "$mac_only" ]] && [[ "${OS}" != "Darwin" ]] &&
-    [[ ! ( "$GYP_DEFINES" =~ .*(clang|tsan|asan)=1.* ) ]] &&
+    [[ ! ( "$GYP_DEFINES" =~ .*(clang|tsan|asan|lsan|msan)=1.* ) ]] &&
     ! [[ -d "${LLVM_BUILD_DIR}" ]]; then
   exit 0
 fi
