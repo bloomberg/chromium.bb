@@ -3,7 +3,15 @@ onunload = function() {
   // disable page cache
 }
 
+var pageLoaded = false;
+
 onpopstate = function() {
+  // The first time popstate fires, it's because the page has finished loading.
+  if (!pageLoaded) {
+    pageLoaded = true;
+    return;
+  }
+
   var topWin = top;
   // Verify that we are still in an iframe
   if (topWin == window) {
