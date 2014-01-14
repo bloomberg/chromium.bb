@@ -59,7 +59,7 @@ class DocumentResourceClient : public ResourceClient {
 public:
     virtual ~DocumentResourceClient() { }
     static ResourceClientType expectedType() { return DocumentType; }
-    virtual ResourceClientType resourceClientType() const { return expectedType(); }
+    virtual ResourceClientType resourceClientType() const OVERRIDE { return expectedType(); }
 };
 
 }

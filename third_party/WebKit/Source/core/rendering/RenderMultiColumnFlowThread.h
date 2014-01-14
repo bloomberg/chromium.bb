@@ -33,7 +33,7 @@ namespace WebCore {
 
 class RenderMultiColumnFlowThread FINAL : public RenderFlowThread {
 public:
-    ~RenderMultiColumnFlowThread();
+    virtual ~RenderMultiColumnFlowThread();
 
     static RenderMultiColumnFlowThread* createAnonymous(Document*);
 

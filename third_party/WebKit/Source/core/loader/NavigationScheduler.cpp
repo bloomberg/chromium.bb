@@ -104,7 +104,7 @@ protected:
     {
     }
 
-    virtual void fire(Frame* frame)
+    virtual void fire(Frame* frame) OVERRIDE
     {
         OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
         FrameLoadRequest request(m_originDocument.get(), ResourceRequest(KURL(ParsedURLString, m_url), m_referrer), "_self");
@@ -123,7 +123,7 @@ private:
     AtomicString m_referrer;
 };
 
-class ScheduledRedirect : public ScheduledURLNavigation {
+class ScheduledRedirect FINAL : public ScheduledURLNavigation {
 public:
     ScheduledRedirect(double delay, Document* originDocument, const String& url, bool lockBackForwardList)
         : ScheduledURLNavigation(delay, originDocument, url, nullAtom, lockBackForwardList, false)
@@ -131,9 +131,9 @@ public:
         clearUserGesture();
     }
 
-    virtual bool shouldStartTimer(Frame* frame) { return frame->loader().allAncestorsAreComplete(); }
+    virtual bool shouldStartTimer(Frame* frame) OVERRIDE { return frame->loader().allAncestorsAreComplete(); }
 
-    virtual void fire(Frame* frame)
+    virtual void fire(Frame* frame) OVERRIDE
     {
         OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
         FrameLoadRequest request(originDocument(), ResourceRequest(KURL(ParsedURLString, url()), referrer()), "_self");
@@ -145,20 +145,20 @@ public:
     }
 };
 
-class ScheduledLocationChange : public ScheduledURLNavigation {
+class ScheduledLocationChange FINAL : public ScheduledURLNavigation {
 public:
     ScheduledLocationChange(Document* originDocument, const String& url, const AtomicString& referrer, bool lockBackForwardList)
         : ScheduledURLNavigation(0.0, originDocument, url, referrer, lockBackForwardList, true) { }
 };
 
-class ScheduledRefresh : public ScheduledURLNavigation {
+class ScheduledRefresh FINAL : public ScheduledURLNavigation {
 public:
     ScheduledRefresh(Document* originDocument, const String& url, const AtomicString& referrer)
         : ScheduledURLNavigation(0.0, originDocument, url, referrer, true, true)
     {
     }
 
-    virtual void fire(Frame* frame)
+    virtual void fire(Frame* frame) OVERRIDE
     {
         OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
         FrameLoadRequest request(originDocument(), ResourceRequest(KURL(ParsedURLString, url()), referrer(), ReloadIgnoringCacheData), "_self");
@@ -168,7 +168,7 @@ public:
     }
 };
 
-class ScheduledHistoryNavigation : public ScheduledNavigation {
+class ScheduledHistoryNavigation FINAL : public ScheduledNavigation {
 public:
     explicit ScheduledHistoryNavigation(int historySteps)
         : ScheduledNavigation(0, false, true)
@@ -176,7 +176,7 @@ public:
     {
     }
 
-    virtual void fire(Frame* frame)
+    virtual void fire(Frame* frame) OVERRIDE
     {
         OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
 
@@ -197,7 +197,7 @@ private:
     int m_historySteps;
 };
 
-class ScheduledFormSubmission : public ScheduledNavigation {
+class ScheduledFormSubmission FINAL : public ScheduledNavigation {
 public:
     ScheduledFormSubmission(PassRefPtr<FormSubmission> submission, bool lockBackForwardList)
         : ScheduledNavigation(0, lockBackForwardList, true)
@@ -206,7 +206,7 @@ public:
         ASSERT(m_submission->state());
     }
 
-    virtual void fire(Frame* frame)
+    virtual void fire(Frame* frame) OVERRIDE
     {
         OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
         FrameLoadRequest frameRequest(m_submission->state()->sourceDocument());
@@ -217,7 +217,7 @@ public:
         frame->loader().load(frameRequest);
     }
 
-    virtual bool isForm() const { return true; }
+    virtual bool isForm() const OVERRIDE { return true; }
     FormSubmission* submission() const { return m_submission.get(); }
 
 private:

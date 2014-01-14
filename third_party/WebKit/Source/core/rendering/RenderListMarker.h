@@ -65,7 +65,7 @@ private:
     virtual LayoutUnit lineHeight(bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const OVERRIDE;
     virtual int baselinePosition(FontBaseline, bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const OVERRIDE;
 
-    bool isImage() const;
+    virtual bool isImage() const OVERRIDE;
     bool isText() const { return !isImage(); }
 
     virtual void setSelectionState(SelectionState) OVERRIDE;

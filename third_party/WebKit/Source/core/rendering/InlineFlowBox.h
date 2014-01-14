@@ -68,8 +68,8 @@ public:
 #ifndef NDEBUG
     virtual ~InlineFlowBox();
 
-    virtual void showLineTreeAndMark(const InlineBox* = 0, const char* = 0, const InlineBox* = 0, const char* = 0, const RenderObject* = 0, int = 0) const;
-    virtual const char* boxName() const;
+    virtual void showLineTreeAndMark(const InlineBox* = 0, const char* = 0, const InlineBox* = 0, const char* = 0, const RenderObject* = 0, int = 0) const OVERRIDE;
+    virtual const char* boxName() const OVERRIDE;
 #endif
 
     InlineFlowBox* prevLineBox() const { return m_prevLineBox; }
@@ -99,7 +99,7 @@ public:
     virtual void deleteLine() OVERRIDE FINAL;
     virtual void extractLine() OVERRIDE FINAL;
     virtual void attachLine() OVERRIDE FINAL;
-    virtual void adjustPosition(float dx, float dy);
+    virtual void adjustPosition(float dx, float dy) OVERRIDE;
 
     virtual void extractLineBoxFromRenderObject();
     virtual void attachLineBoxToRenderObject();

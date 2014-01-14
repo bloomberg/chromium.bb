@@ -39,14 +39,14 @@ namespace WebCore {
 
 namespace {
 
-class DispatchCallbackTask : public ExecutionContextTask {
+class DispatchCallbackTask FINAL : public ExecutionContextTask {
 public:
     static PassOwnPtr<DispatchCallbackTask> create(PassOwnPtr<StringCallback> callback, const String& data)
     {
         return adoptPtr(new DispatchCallbackTask(callback, data));
     }
 
-    virtual void performTask(ExecutionContext*)
+    virtual void performTask(ExecutionContext*) OVERRIDE
     {
         m_callback->handleEvent(m_data);
     }

@@ -210,8 +210,8 @@ public:
     {
         return adoptPtr(new HTMLTextDecorationEquivalent(primitiveValue, tagName));
     }
-    virtual bool propertyExistsInStyle(const StylePropertySet*) const;
-    virtual bool valueIsPresentInStyle(Element*, StylePropertySet*) const;
+    virtual bool propertyExistsInStyle(const StylePropertySet*) const OVERRIDE;
+    virtual bool valueIsPresentInStyle(Element*, StylePropertySet*) const OVERRIDE;
 
 private:
     HTMLTextDecorationEquivalent(CSSValueID primitiveValue, const QualifiedName& tagName);
@@ -248,10 +248,10 @@ public:
         return adoptPtr(new HTMLAttributeEquivalent(propertyID, attrName));
     }
 
-    bool matches(const Element* elem) const { return HTMLElementEquivalent::matches(elem) && elem->hasAttribute(m_attrName); }
-    virtual bool hasAttribute() const { return true; }
-    virtual bool valueIsPresentInStyle(Element*, StylePropertySet*) const;
-    virtual void addToStyle(Element*, EditingStyle*) const;
+    virtual bool matches(const Element* elem) const OVERRIDE { return HTMLElementEquivalent::matches(elem) && elem->hasAttribute(m_attrName); }
+    virtual bool hasAttribute() const OVERRIDE { return true; }
+    virtual bool valueIsPresentInStyle(Element*, StylePropertySet*) const OVERRIDE;
+    virtual void addToStyle(Element*, EditingStyle*) const OVERRIDE;
     virtual PassRefPtr<CSSValue> attributeValueAsCSSValue(Element*) const;
     inline const QualifiedName& attributeName() const { return m_attrName; }
 
@@ -299,13 +299,13 @@ PassRefPtr<CSSValue> HTMLAttributeEquivalent::attributeValueAsCSSValue(Element* 
     return dummyStyle->getPropertyCSSValue(m_propertyID);
 }
 
-class HTMLFontSizeEquivalent : public HTMLAttributeEquivalent {
+class HTMLFontSizeEquivalent FINAL : public HTMLAttributeEquivalent {
 public:
     static PassOwnPtr<HTMLFontSizeEquivalent> create()
     {
         return adoptPtr(new HTMLFontSizeEquivalent());
     }
-    virtual PassRefPtr<CSSValue> attributeValueAsCSSValue(Element*) const;
+    virtual PassRefPtr<CSSValue> attributeValueAsCSSValue(Element*) const OVERRIDE;
 
 private:
     HTMLFontSizeEquivalent();

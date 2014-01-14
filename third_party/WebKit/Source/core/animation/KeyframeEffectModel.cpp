@@ -38,17 +38,17 @@ namespace {
 
 using namespace WebCore;
 
-class ReplaceCompositableValue : public AnimationEffect::CompositableValue {
+class ReplaceCompositableValue FINAL : public AnimationEffect::CompositableValue {
 public:
     static PassRefPtr<ReplaceCompositableValue> create(const AnimatableValue* value)
     {
         return adoptRef(new ReplaceCompositableValue(value));
     }
-    virtual bool dependsOnUnderlyingValue() const
+    virtual bool dependsOnUnderlyingValue() const OVERRIDE
     {
         return false;
     }
-    virtual PassRefPtr<AnimatableValue> compositeOnto(const AnimatableValue* underlyingValue) const
+    virtual PassRefPtr<AnimatableValue> compositeOnto(const AnimatableValue* underlyingValue) const OVERRIDE
     {
         return PassRefPtr<AnimatableValue>(m_value);
     }
@@ -60,17 +60,17 @@ private:
     RefPtr<AnimatableValue> m_value;
 };
 
-class AddCompositableValue : public AnimationEffect::CompositableValue {
+class AddCompositableValue FINAL : public AnimationEffect::CompositableValue {
 public:
     static PassRefPtr<AddCompositableValue> create(const AnimatableValue* value)
     {
         return adoptRef(new AddCompositableValue(value));
     }
-    virtual bool dependsOnUnderlyingValue() const
+    virtual bool dependsOnUnderlyingValue() const OVERRIDE
     {
         return true;
     }
-    virtual PassRefPtr<AnimatableValue> compositeOnto(const AnimatableValue* underlyingValue) const
+    virtual PassRefPtr<AnimatableValue> compositeOnto(const AnimatableValue* underlyingValue) const OVERRIDE
     {
         return AnimatableValue::add(underlyingValue, m_value.get());
     }
@@ -82,17 +82,17 @@ private:
     RefPtr<AnimatableValue> m_value;
 };
 
-class BlendedCompositableValue : public AnimationEffect::CompositableValue {
+class BlendedCompositableValue FINAL : public AnimationEffect::CompositableValue {
 public:
     static PassRefPtr<BlendedCompositableValue> create(const AnimationEffect::CompositableValue* before, const AnimationEffect::CompositableValue* after, double fraction)
     {
         return adoptRef(new BlendedCompositableValue(before, after, fraction));
     }
-    virtual bool dependsOnUnderlyingValue() const
+    virtual bool dependsOnUnderlyingValue() const OVERRIDE
     {
         return m_dependsOnUnderlyingValue;
     }
-    virtual PassRefPtr<AnimatableValue> compositeOnto(const AnimatableValue* underlyingValue) const
+    virtual PassRefPtr<AnimatableValue> compositeOnto(const AnimatableValue* underlyingValue) const OVERRIDE
     {
         return AnimatableValue::interpolate(m_before->compositeOnto(underlyingValue).get(), m_after->compositeOnto(underlyingValue).get(), m_fraction);
     }

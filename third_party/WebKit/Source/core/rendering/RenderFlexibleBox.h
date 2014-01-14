@@ -63,7 +63,7 @@ protected:
 
     virtual bool supportsPartialLayout() const OVERRIDE { return false; }
 
-    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle);
+    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
 
 private:
     enum FlexSign {

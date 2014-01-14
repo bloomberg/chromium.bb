@@ -120,9 +120,9 @@ public:
     void stopSpeechInput();
 
     // SpeechInputListener methods.
-    void didCompleteRecording(int);
-    void didCompleteRecognition(int);
-    void setRecognitionResult(int, const SpeechInputResultArray&);
+    virtual void didCompleteRecording(int) OVERRIDE;
+    virtual void didCompleteRecognition(int) OVERRIDE;
+    virtual void setRecognitionResult(int, const SpeechInputResultArray&) OVERRIDE;
 
 private:
     InputFieldSpeechButtonElement(Document&);

@@ -36,7 +36,7 @@ namespace WebCore {
 class RenderThemeChromiumDefault : public RenderThemeChromiumSkia {
 public:
     static PassRefPtr<RenderTheme> create();
-    virtual String extraDefaultStyleSheet();
+    virtual String extraDefaultStyleSheet() OVERRIDE;
 
     virtual Color systemColor(CSSValueID) const OVERRIDE;
 
@@ -61,7 +61,7 @@ public:
     virtual void adjustSliderThumbSize(RenderStyle*, Element*) const OVERRIDE;
 
     static void setCaretBlinkInterval(double);
-    virtual double caretBlinkIntervalInternal() const;
+    virtual double caretBlinkIntervalInternal() const OVERRIDE;
 
     virtual bool paintCheckbox(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
     virtual void setCheckboxSize(RenderStyle*) const OVERRIDE;

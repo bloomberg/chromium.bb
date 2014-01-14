@@ -45,7 +45,7 @@ class ApplicationCache FINAL : public ScriptWrappable, public RefCounted<Applica
     REFCOUNTED_EVENT_TARGET(ApplicationCache);
 public:
     static PassRefPtr<ApplicationCache> create(Frame* frame) { return adoptRef(new ApplicationCache(frame)); }
-    ~ApplicationCache() { ASSERT(!m_frame); }
+    virtual ~ApplicationCache() { ASSERT(!m_frame); }
 
     virtual void willDestroyGlobalObjectInFrame() OVERRIDE;
 

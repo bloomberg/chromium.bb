@@ -77,7 +77,7 @@ class CompositedLayerMapping FINAL : public GraphicsLayerClient {
     WTF_MAKE_NONCOPYABLE(CompositedLayerMapping); WTF_MAKE_FAST_ALLOCATED;
 public:
     explicit CompositedLayerMapping(RenderLayer*);
-    ~CompositedLayerMapping();
+    virtual ~CompositedLayerMapping();
 
     RenderLayer* owningLayer() const { return m_owningLayer; }
 

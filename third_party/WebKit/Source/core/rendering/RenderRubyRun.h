@@ -47,7 +47,7 @@ public:
 
     bool hasRubyText() const;
     bool hasRubyBase() const;
-    bool isEmpty() const;
+    virtual bool isEmpty() const OVERRIDE;
     RenderRubyText* rubyText() const;
     RenderRubyBase* rubyBase() const;
     RenderRubyBase* rubyBaseSafe(); // creates the base if it doesn't already exist

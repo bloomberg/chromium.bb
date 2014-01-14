@@ -66,7 +66,7 @@ public:
 
 private:
     RenderLayerFilterInfo(RenderLayer*);
-    ~RenderLayerFilterInfo();
+    virtual ~RenderLayerFilterInfo();
 
     RenderLayer* m_layer;
 

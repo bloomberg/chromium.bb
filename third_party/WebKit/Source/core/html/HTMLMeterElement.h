@@ -60,7 +60,7 @@ public:
     double valueRatio() const;
     GaugeRegion gaugeRegion() const;
 
-    bool canContainRangeEndPoint() const { return false; }
+    virtual bool canContainRangeEndPoint() const OVERRIDE { return false; }
 
 private:
     explicit HTMLMeterElement(Document&);

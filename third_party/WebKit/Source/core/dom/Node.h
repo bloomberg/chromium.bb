@@ -618,7 +618,7 @@ public:
 
     unsigned short compareDocumentPositionInternal(const Node*, ShadowTreesTreatment) const;
 
-    virtual Node* toNode();
+    virtual Node* toNode() OVERRIDE FINAL;
 
     virtual const AtomicString& interfaceName() const OVERRIDE;
     virtual ExecutionContext* executionContext() const OVERRIDE;

@@ -189,7 +189,7 @@ public:
     Node* getLogicalEndBoxWithNode(InlineBox*&) const;
 
 #ifndef NDEBUG
-    virtual const char* boxName() const;
+    virtual const char* boxName() const OVERRIDE;
 #endif
 private:
     LayoutUnit lineSnapAdjustment(LayoutUnit delta = 0) const;

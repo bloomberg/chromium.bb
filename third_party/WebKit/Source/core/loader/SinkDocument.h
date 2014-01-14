@@ -40,7 +40,7 @@ public:
 private:
     SinkDocument(const DocumentInit&);
 
-    virtual PassRefPtr<DocumentParser> createParser();
+    virtual PassRefPtr<DocumentParser> createParser() OVERRIDE;
 };
 
 

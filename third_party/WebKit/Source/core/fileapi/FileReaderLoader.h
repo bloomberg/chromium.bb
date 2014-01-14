@@ -63,7 +63,7 @@ public:
 
     // If client is given, do the loading asynchronously. Otherwise, load synchronously.
     FileReaderLoader(ReadType, FileReaderLoaderClient*);
-    ~FileReaderLoader();
+    virtual ~FileReaderLoader();
 
     void start(ExecutionContext*, PassRefPtr<BlobDataHandle>);
     void start(ExecutionContext*, const Stream&, unsigned readSize);

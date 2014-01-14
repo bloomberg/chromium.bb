@@ -100,11 +100,11 @@ struct CSSPropertyValue {
 };
 
 // This class selects a RenderStyle for a given element based on a collection of stylesheets.
-class StyleResolver : public FontSelectorClient {
+class StyleResolver FINAL : public FontSelectorClient {
     WTF_MAKE_NONCOPYABLE(StyleResolver); WTF_MAKE_FAST_ALLOCATED;
 public:
     explicit StyleResolver(Document&);
-    ~StyleResolver();
+    virtual ~StyleResolver();
 
     // FIXME: StyleResolver should not be keeping tree-walk state.
     // These should move to some global tree-walk state, or should be contained in a
@@ -230,7 +230,7 @@ public:
 
 private:
     // FontSelectorClient implementation.
-    virtual void fontsNeedUpdate(FontSelector*);
+    virtual void fontsNeedUpdate(FontSelector*) OVERRIDE;
 
 private:
     void initWatchedSelectorRules(const Vector<RefPtr<StyleRule> >& watchedSelectors);

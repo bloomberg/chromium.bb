@@ -97,7 +97,7 @@ public:
     static PassOwnPtr<WebGLRenderingContext> create(HTMLCanvasElement*, WebGLContextAttributes*);
     virtual ~WebGLRenderingContext();
 
-    virtual bool is3d() const { return true; }
+    virtual bool is3d() const OVERRIDE { return true; }
     virtual bool isAccelerated() const OVERRIDE { return true; }
 
     int drawingBufferWidth() const;

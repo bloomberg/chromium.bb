@@ -46,7 +46,7 @@ public:
     HTMLMediaElement* mediaElement() const;
 
 protected:
-    virtual void layout();
+    virtual void layout() OVERRIDE;
 
 private:
     virtual RenderObjectChildList* virtualChildren() OVERRIDE FINAL { return children(); }

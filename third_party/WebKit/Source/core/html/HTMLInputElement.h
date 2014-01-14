@@ -135,7 +135,7 @@ public:
 
     void setType(const AtomicString&);
 
-    String value() const;
+    virtual String value() const OVERRIDE;
     void setValue(const String&, ExceptionState&, TextFieldEventBehavior = DispatchNoEvent);
     void setValue(const String&, TextFieldEventBehavior = DispatchNoEvent);
     void setValueForUser(const String&);
@@ -277,7 +277,7 @@ public:
 protected:
     HTMLInputElement(Document&, HTMLFormElement*, bool createdByParser);
 
-    virtual void defaultEventHandler(Event*);
+    virtual void defaultEventHandler(Event*) OVERRIDE;
 
 private:
     enum AutoCompleteSetting { Uninitialized, On, Off };

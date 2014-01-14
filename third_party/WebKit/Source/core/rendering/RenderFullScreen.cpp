@@ -39,9 +39,9 @@ public:
         setDocumentForAnonymous(&owner->document());
     }
 private:
-    virtual bool isRenderFullScreenPlaceholder() const { return true; }
+    virtual bool isRenderFullScreenPlaceholder() const OVERRIDE { return true; }
     virtual bool supportsPartialLayout() const OVERRIDE { return false; }
-    virtual void willBeDestroyed();
+    virtual void willBeDestroyed() OVERRIDE;
     RenderFullScreen* m_owner;
 };
 

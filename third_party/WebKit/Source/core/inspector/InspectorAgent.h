@@ -59,9 +59,9 @@ public:
     virtual ~InspectorAgent();
 
     // Inspector front-end API.
-    void enable(ErrorString*);
-    void disable(ErrorString*);
-    void reset(ErrorString*);
+    virtual void enable(ErrorString*) OVERRIDE;
+    virtual void disable(ErrorString*) OVERRIDE;
+    virtual void reset(ErrorString*) OVERRIDE;
 
     virtual void setFrontend(InspectorFrontend*) OVERRIDE;
     virtual void clearFrontend() OVERRIDE;

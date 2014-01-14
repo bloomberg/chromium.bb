@@ -34,7 +34,7 @@ class RenderTableCell;
 class AutoTableLayout FINAL : public TableLayout {
 public:
     AutoTableLayout(RenderTable*);
-    ~AutoTableLayout();
+    virtual ~AutoTableLayout();
 
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minWidth, LayoutUnit& maxWidth) OVERRIDE;
     virtual void applyPreferredLogicalWidthQuirks(LayoutUnit& minWidth, LayoutUnit& maxWidth) const OVERRIDE;

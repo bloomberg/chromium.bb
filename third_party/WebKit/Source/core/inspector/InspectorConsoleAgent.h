@@ -67,7 +67,7 @@ public:
 
     virtual void enable(ErrorString*) OVERRIDE FINAL;
     virtual void disable(ErrorString*) OVERRIDE FINAL;
-    virtual void clearMessages(ErrorString*);
+    virtual void clearMessages(ErrorString*) OVERRIDE;
     bool enabled() { return m_enabled; }
     void reset();
 
@@ -98,9 +98,9 @@ public:
     void didFailLoading(unsigned long requestIdentifier, DocumentLoader*, const ResourceError&);
     void addProfileFinishedMessageToConsole(PassRefPtr<ScriptProfile>, unsigned lineNumber, const String& sourceURL);
     void addStartProfilingMessageToConsole(const String& title, unsigned lineNumber, const String& sourceURL);
-    virtual void setMonitoringXHREnabled(ErrorString*, bool enabled);
+    virtual void setMonitoringXHREnabled(ErrorString*, bool enabled) OVERRIDE;
     virtual void addInspectedNode(ErrorString*, int nodeId) = 0;
-    virtual void addInspectedHeapObject(ErrorString*, int inspectedHeapObjectId);
+    virtual void addInspectedHeapObject(ErrorString*, int inspectedHeapObjectId) OVERRIDE;
 
     virtual bool isWorkerAgent() = 0;
 

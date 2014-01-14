@@ -41,18 +41,18 @@
 
 namespace WebCore {
 
-class StyleSheetCSSRuleList : public CSSRuleList {
+class StyleSheetCSSRuleList FINAL : public CSSRuleList {
 public:
     StyleSheetCSSRuleList(CSSStyleSheet* sheet) : m_styleSheet(sheet) { }
 
 private:
-    virtual void ref() { m_styleSheet->ref(); }
-    virtual void deref() { m_styleSheet->deref(); }
+    virtual void ref() OVERRIDE { m_styleSheet->ref(); }
+    virtual void deref() OVERRIDE { m_styleSheet->deref(); }
 
-    virtual unsigned length() const { return m_styleSheet->length(); }
-    virtual CSSRule* item(unsigned index) const { return m_styleSheet->item(index); }
+    virtual unsigned length() const OVERRIDE { return m_styleSheet->length(); }
+    virtual CSSRule* item(unsigned index) const OVERRIDE { return m_styleSheet->item(index); }
 
-    virtual CSSStyleSheet* styleSheet() const { return m_styleSheet; }
+    virtual CSSStyleSheet* styleSheet() const OVERRIDE { return m_styleSheet; }
 
     CSSStyleSheet* m_styleSheet;
 };

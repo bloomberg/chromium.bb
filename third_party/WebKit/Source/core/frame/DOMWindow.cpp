@@ -111,7 +111,7 @@ using std::max;
 
 namespace WebCore {
 
-class PostMessageTimer : public TimerBase {
+class PostMessageTimer FINAL : public TimerBase {
 public:
     PostMessageTimer(DOMWindow* window, PassRefPtr<SerializedScriptValue> message, const String& sourceOrigin, PassRefPtr<DOMWindow> source, PassOwnPtr<MessagePortChannelArray> channels, SecurityOrigin* targetOrigin, PassRefPtr<ScriptCallStack> stackTrace)
         : m_window(window)
@@ -133,7 +133,7 @@ public:
     ScriptCallStack* stackTrace() const { return m_stackTrace.get(); }
 
 private:
-    virtual void fired()
+    virtual void fired() OVERRIDE
     {
         m_window->postMessageTimerFired(adoptPtr(this));
         // This object is deleted now.

@@ -223,12 +223,12 @@ void InspectorHeapProfilerAgent::disable(ErrorString* error)
 
 void InspectorHeapProfilerAgent::getHeapSnapshot(ErrorString* errorString, int rawUid)
 {
-    class OutputStream : public ScriptHeapSnapshot::OutputStream {
+    class OutputStream FINAL : public ScriptHeapSnapshot::OutputStream {
     public:
         OutputStream(InspectorFrontend::HeapProfiler* frontend, unsigned uid)
             : m_frontend(frontend), m_uid(uid) { }
-        void Write(const String& chunk) { m_frontend->addHeapSnapshotChunk(m_uid, chunk); }
-        void Close() { }
+        virtual void Write(const String& chunk) OVERRIDE { m_frontend->addHeapSnapshotChunk(m_uid, chunk); }
+        virtual void Close() OVERRIDE { }
     private:
         InspectorFrontend::HeapProfiler* m_frontend;
         int m_uid;
@@ -256,21 +256,21 @@ void InspectorHeapProfilerAgent::removeProfile(ErrorString*, int rawUid)
 
 void InspectorHeapProfilerAgent::takeHeapSnapshot(ErrorString*, const bool* reportProgress)
 {
-    class HeapSnapshotProgress: public ScriptProfiler::HeapSnapshotProgress {
+    class HeapSnapshotProgress FINAL : public ScriptProfiler::HeapSnapshotProgress {
     public:
         explicit HeapSnapshotProgress(InspectorFrontend::HeapProfiler* frontend)
             : m_frontend(frontend) { }
-        void Start(int totalWork)
+        virtual void Start(int totalWork) OVERRIDE
         {
             m_totalWork = totalWork;
         }
-        void Worked(int workDone)
+        virtual void Worked(int workDone) OVERRIDE
         {
             if (m_frontend)
                 m_frontend->reportHeapSnapshotProgress(workDone, m_totalWork);
         }
-        void Done() { }
-        bool isCanceled() { return false; }
+        virtual void Done() OVERRIDE { }
+        virtual bool isCanceled() OVERRIDE { return false; }
     private:
         InspectorFrontend::HeapProfiler* m_frontend;
         int m_totalWork;
