@@ -660,18 +660,13 @@ crbug.com/303444 virtual/legacy-animations-engine/animations/unsigned-underflow.
 crbug.com/255714 [ Linux ] editing/execCommand/switch-list-type-with-orphaned-li.html [ Failure Pass ]
 crbug.com/231910 fast/dom/vertical-scrollbar-in-rtl.html [ Failure Pass ]
 
-# Win has no support for overlay scrollbars required for these tests to pass.
 # Mac has overlay scrollbars depending on external settings.
-crbug.com/304841 [ Mac ] inspector/device-emulation/device-emulation-320-2x.html [ Failure ]
-crbug.com/304841 [ Mac ] inspector/device-emulation/device-emulation-320.html [ Failure ]
-crbug.com/304841 [ Mac ] inspector/device-emulation/device-emulation-980-2x.html [ Failure ]
-crbug.com/304841 [ Mac ] inspector/device-emulation/device-emulation-980.html [ Failure ]
-crbug.com/304841 [ Mac ] inspector/device-emulation/device-emulation-dw-2x.html [ Failure ]
-crbug.com/304841 [ Mac ] inspector/device-emulation/device-emulation-dw.html [ Failure ]
-crbug.com/304841 [ Mac ] inspector/device-emulation/device-emulation-none-2x.html [ Failure ]
-crbug.com/304841 [ Mac ] inspector/device-emulation/device-emulation-none.html [ Failure ]
-crbug.com/304841 [ Mac ] inspector/device-emulation/device-emulation-restore.html [ Failure ]
-crbug.com/304841 [ Mac ] inspector/device-emulation/device-emulation-small.html [ Failure ]
+crbug.com/304841 [ SnowLeopard ] inspector/device-emulation/device-emulation-320-2x.html [ Failure ]
+crbug.com/304841 [ SnowLeopard ] inspector/device-emulation/device-emulation-320.html [ Failure ]
+crbug.com/304841 [ SnowLeopard ] inspector/device-emulation/device-emulation-980-2x.html [ Failure ]
+crbug.com/304841 [ SnowLeopard ] inspector/device-emulation/device-emulation-980.html [ Failure ]
+crbug.com/304841 [ SnowLeopard ] inspector/device-emulation/device-emulation-restore.html [ Failure ]
+crbug.com/304841 [ SnowLeopard ] inspector/device-emulation/device-emulation-small.html [ Failure ]
 
 # Complex text failures on XP (likely caused by r158845).
 crbug.com/305290 [ XP ] fast/text/international/plane2.html [ Failure ]
