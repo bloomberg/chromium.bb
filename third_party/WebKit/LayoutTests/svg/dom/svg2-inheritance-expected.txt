@@ -8,7 +8,7 @@ PASS SVGAltGlyphDefElement inherits SVGElement
 PASS SVGAltGlyphElement inherits SVGTextPositioningElement
 PASS SVGAltGlyphItemElement inherits SVGElement
 PASS SVGAngle inherits Object
-PASS SVGAnimateColorElement inherits SVGAnimationElement
+FAIL SVGAnimateColorElement is not defined
 PASS SVGAnimateElement inherits SVGAnimationElement
 PASS SVGAnimateMotionElement inherits SVGAnimationElement
 PASS SVGAnimateTransformElement inherits SVGAnimationElement

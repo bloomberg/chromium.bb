@@ -260,7 +260,6 @@ SVGAltGlyphDefElement
 SVGAltGlyphElement
 SVGAltGlyphItemElement
 SVGAngle
-SVGAnimateColorElement
 SVGAnimateElement
 SVGAnimateMotionElement
 SVGAnimateTransformElement

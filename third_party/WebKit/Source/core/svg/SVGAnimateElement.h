@@ -78,7 +78,6 @@ private:
 inline bool isSVGAnimateElement(const Node& node)
 {
     return node.hasTagName(SVGNames::animateTag)
-        || node.hasTagName(SVGNames::animateColorTag)
         || node.hasTagName(SVGNames::animateTransformTag)
         || node.hasTagName(SVGNames::setTag);
 }

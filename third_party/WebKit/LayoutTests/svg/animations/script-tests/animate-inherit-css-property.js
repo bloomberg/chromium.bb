@@ -13,7 +13,7 @@ rect.setAttribute("fill", "red");
 rect.setAttribute("onclick", "executeTest()");
 g.appendChild(rect);
 
-var animateInherit = createSVGElement("animateColor");
+var animateInherit = createSVGElement("animate");
 animateInherit.setAttribute("id", "animateInherit");
 animateInherit.setAttribute("attributeName", "fill");
 animateInherit.setAttribute("from", "red");

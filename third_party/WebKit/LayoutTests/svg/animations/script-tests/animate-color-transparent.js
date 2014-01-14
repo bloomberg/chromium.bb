@@ -9,7 +9,7 @@ rect.setAttribute("height", "100px");
 rect.setAttribute("fill", "#00FF00");
 rect.setAttribute("onclick", "executeTest()");
 
-var animate = createSVGElement("animateColor");
+var animate = createSVGElement("animate");
 animate.setAttribute("id", "animation");
 animate.setAttribute("attributeName", "fill");
 animate.setAttribute("from", "transparent");

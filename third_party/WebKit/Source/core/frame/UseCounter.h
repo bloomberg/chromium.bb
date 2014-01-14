@@ -198,7 +198,6 @@ public:
         PrefixedAndUnprefixedAnimationIterationEvent,
         EventReturnValue, // Legacy IE extension.
         SVGSVGElement,
-        SVGAnimateColorElement,
         InsertAdjacentText,
         InsertAdjacentElement,
         HasAttributes, // Removed from DOM4.

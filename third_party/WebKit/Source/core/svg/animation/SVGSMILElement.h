@@ -242,7 +242,7 @@ private:
 inline bool isSVGSMILElement(const Node& node)
 {
     return node.hasTagName(SVGNames::setTag) || node.hasTagName(SVGNames::animateTag) || node.hasTagName(SVGNames::animateMotionTag)
-        || node.hasTagName(SVGNames::animateTransformTag) || node.hasTagName(SVGNames::animateColorTag) || node.hasTagName((SVGNames::discardTag));
+        || node.hasTagName(SVGNames::animateTransformTag) || node.hasTagName((SVGNames::discardTag));
 }
 
 DEFINE_NODE_TYPE_CASTS_WITH_FUNCTION(SVGSMILElement);

@@ -10,7 +10,7 @@ rect.setAttribute("fill", "red");
 rect.setAttribute("color", "green");
 rect.setAttribute("onclick", "executeTest()");
 
-var animateCurrentColor = createSVGElement("animateColor");
+var animateCurrentColor = createSVGElement("animate");
 animateCurrentColor.setAttribute("id", "animateCurrentColor");
 animateCurrentColor.setAttribute("attributeName", "fill");
 animateCurrentColor.setAttribute("from", "red");

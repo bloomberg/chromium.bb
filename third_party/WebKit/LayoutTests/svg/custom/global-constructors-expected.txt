@@ -137,7 +137,7 @@ PASS SVGAnimateElement.toString() is 'function SVGAnimateElement() { [native cod
 PASS SVGSetElement.toString() is 'function SVGSetElement() { [native code] }'
 PASS SVGAnimateMotionElement.toString() is 'function SVGAnimateMotionElement() { [native code] }'
 PASS SVGMPathElement.toString() is 'function SVGMPathElement() { [native code] }'
-PASS SVGAnimateColorElement.toString() is 'function SVGAnimateColorElement() { [native code] }'
+FAIL SVGAnimateColorElement.toString() should be function SVGAnimateColorElement() { [native code] }. Threw exception ReferenceError: SVGAnimateColorElement is not defined
 PASS SVGAnimateTransformElement.toString() is 'function SVGAnimateTransformElement() { [native code] }'
 PASS SVGFontElement.toString() is 'function SVGFontElement() { [native code] }'
 PASS SVGGlyphElement.toString() is 'function SVGGlyphElement() { [native code] }'

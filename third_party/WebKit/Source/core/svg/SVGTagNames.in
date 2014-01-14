@@ -10,7 +10,7 @@ altGlyphDef
 altGlyphItem
 #endif
 animate
-animateColor
+animateColor interfaceName=SVGUnknownElement, JSInterfaceName=SVGElement, noConstructor
 animateMotion
 animateTransform
 set

@@ -39,7 +39,7 @@ SVGAnimateElement::SVGAnimateElement(const QualifiedName& tagName, Document& doc
     : SVGAnimationElement(tagName, document)
     , m_animatedPropertyType(AnimatedString)
 {
-    ASSERT(hasTagName(SVGNames::animateTag) || hasTagName(SVGNames::setTag) || hasTagName(SVGNames::animateColorTag) || hasTagName(SVGNames::animateTransformTag));
+    ASSERT(hasTagName(SVGNames::animateTag) || hasTagName(SVGNames::setTag) || hasTagName(SVGNames::animateTransformTag));
     ScriptWrappable::init(this);
 }
 
@@ -74,8 +74,6 @@ AnimatedPropertyType SVGAnimateElement::determineAnimatedPropertyType(SVGElement
 
     ASSERT(propertyTypes.size() <= 2);
     AnimatedPropertyType type = propertyTypes[0];
-    if (hasTagName(SVGNames::animateColorTag) && type != AnimatedColor)
-        return AnimatedUnknown;
 
     // Animations of transform lists are not allowed for <animate> or <set>
     // http://www.w3.org/TR/SVG/animate.html#AnimationAttributesAndProperties

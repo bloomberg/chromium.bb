@@ -503,7 +503,7 @@ void SVGAnimationElement::currentValuesForValuesAnimation(float percent, float& 
     }
 
     CalcMode calcMode = this->calcMode();
-    if (hasTagName(SVGNames::animateTag) || hasTagName(SVGNames::animateColorTag)) {
+    if (hasTagName(SVGNames::animateTag)) {
         AnimatedPropertyType attributeType = toSVGAnimateElement(this)->determineAnimatedPropertyType(targetElement());
         // Fall back to discrete animations for Strings.
         if (attributeType == AnimatedBoolean

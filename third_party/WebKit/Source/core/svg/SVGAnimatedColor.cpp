@@ -82,7 +82,7 @@ void SVGAnimatedColorAnimator::calculateAnimatedValue(float percentage, unsigned
     m_animationElement->adjustForInheritance<Color>(parseColorFromString, m_animationElement->fromPropertyValueType(), fromColor, m_contextElement);
     m_animationElement->adjustForInheritance<Color>(parseColorFromString, m_animationElement->toPropertyValueType(), toColor, m_contextElement);
 
-    // Apply <animateColor> rules.
+    // Apply currentColor rules.
     adjustForCurrentColor(m_contextElement, fromColor);
     adjustForCurrentColor(m_contextElement, toColor);
     adjustForCurrentColor(m_contextElement, toAtEndOfDurationColor);
