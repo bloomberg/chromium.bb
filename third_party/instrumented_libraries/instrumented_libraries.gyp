@@ -59,15 +59,15 @@
         '<(_sanitizer_type)-libxss1',
         '<(_sanitizer_type)-libxtst6',
         '<(_sanitizer_type)-zlib1g',
+        '<(_sanitizer_type)-libglib2.0-0',
+        '<(_sanitizer_type)-libdbus-1-3',
+        '<(_sanitizer_type)-libdbus-glib-1-2',
+        '<(_sanitizer_type)-libpixman-1-0',
       ],
       'conditions': [
         ['asan==1', {
           'dependencies': [
-            '<(_sanitizer_type)-libdbus-1-3',
-            '<(_sanitizer_type)-libdbus-glib-1-2',
             '<(_sanitizer_type)-libfontconfig1',
-            '<(_sanitizer_type)-libglib2.0-0',
-            '<(_sanitizer_type)-libpixman-1-0',
           ],
         }],
       ],
