@@ -395,6 +395,9 @@ class Settings(object):
       self.viewvc_url = self._GetConfig('rietveld.viewvc-url', error_ok=True)
     return self.viewvc_url
 
+  def GetBugPrefix(self):
+    return self._GetConfig('rietveld.bug-prefix', error_ok=True)
+
   def GetDefaultCCList(self):
     return self._GetConfig('rietveld.cc', error_ok=True)
 
@@ -865,6 +868,7 @@ def GetCodereviewSettingsInteractively():
   SetProperty(settings.GetTreeStatusUrl(error_ok=True), 'Tree status URL',
               'tree-status-url', False)
   SetProperty(settings.GetViewVCUrl(), 'ViewVC URL', 'viewvc-url', True)
+  SetProperty(settings.GetBugPrefix(), 'Bug Prefix', 'bug-prefix', False)
 
   # TODO: configure a default branch to diff against, rather than this
   # svn-based hackery.
@@ -949,7 +953,7 @@ class ChangeDescription(object):
 
     regexp = re.compile(self.BUG_LINE)
     if not any((regexp.match(line) for line in self._description_lines)):
-      self.append_footer('BUG=')
+      self.append_footer('BUG=%s' % settings.GetBugPrefix())
     content = gclient_utils.RunEditor(self.description, True,
                                       git_editor=settings.GetGitEditor())
     if not content:
@@ -1032,6 +1036,7 @@ def LoadCodereviewSettingsFromFile(fileobj):
   SetProperty('private', 'PRIVATE', unset_error_ok=True)
   SetProperty('tree-status-url', 'STATUS', unset_error_ok=True)
   SetProperty('viewvc-url', 'VIEW_VC', unset_error_ok=True)
+  SetProperty('bug-prefix', 'BUG_PREFIX', unset_error_ok=True)
 
   if 'GERRIT_HOST' in keyvals:
     RunGit(['config', 'gerrit.host', keyvals['GERRIT_HOST']])

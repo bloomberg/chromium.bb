@@ -178,6 +178,7 @@ class TestGitCl(TestCase):
       ((['git', 'log', '--pretty=format:%s\n\n%b',
          'fake_ancestor_sha..HEAD'],),
        'desc\n'),
+      ((['git', 'config', 'rietveld.bug-prefix'],), ''),
     ]
 
   @classmethod
@@ -671,6 +672,8 @@ class TestGitCl(TestCase):
            'rietveld.tree-status-url'],), ''),
         ((['git', 'config', '--unset-all',
            'rietveld.viewvc-url'],), ''),
+        ((['git', 'config', '--unset-all',
+           'rietveld.bug-prefix'],), ''),
         ((['git', 'config', 'gerrit.host',
            'gerrit.chromium.org'],), ''),
         # DownloadHooks(False)
@@ -696,6 +699,8 @@ class TestGitCl(TestCase):
         ((['git', 'config', 'rietveld.viewvc-url'],), ''),
         (('ViewVC URL:',), ''),
         # DownloadHooks(True)
+        ((['git', 'config', 'rietveld.bug-prefix'],), ''),
+        (('Bug Prefix:',), ''),
         ((commit_msg_path, os.X_OK,), True),
         ]
     git_cl.main(['config'])
