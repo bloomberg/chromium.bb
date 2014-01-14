@@ -490,8 +490,6 @@ sub HeaderFilesForInterface
     my @includes = ();
     if (IsPrimitiveType($interfaceName) or IsEnumType($interfaceName) or IsCallbackFunctionType($interfaceName)) {
         # Not interface type, no header files
-    } elsif (IsTypedArrayType($interfaceName)) {
-        push(@includes, "wtf/${interfaceName}.h");
     } else {
         my $idlFilename = Cwd::abs_path(IDLFileForInterface($interfaceName)) or die("Could NOT find IDL file for interface \"$interfaceName\" $!\n");
         my $idlRelPath = File::Spec->abs2rel($idlFilename, $sourceRoot);
@@ -5144,13 +5142,6 @@ END
         return wrapper;
 
 END
-    if (IsTypedArrayType($interface->name)) {
-      AddToImplIncludes("bindings/v8/custom/V8ArrayBufferCustom.h");
-      $code .= <<END;
-    impl->buffer()->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instanceTemplate());
-END
-    }
-
     if (InheritsInterface($interface, "AudioBuffer")) {
       AddToImplIncludes("modules/webaudio/AudioBuffer.h");
       $code .= <<END;
