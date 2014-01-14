@@ -34,9 +34,7 @@ enum TestEnumType { "", "EnumValue1", "EnumValue2", "EnumValue3" };
 
 callback TestCallbackFunction = void (TestEnumType formal1, TestObject formal2);
 
-
 [
-    Constructor(TestCallbackInterface testCallbackInterface),
     ImplementedAs=TestObj
 ] interface TestObject : EventTarget {
     // Attributes
@@ -74,7 +72,6 @@ callback TestCallbackFunction = void (TestEnumType formal1, TestObject formal2);
     [Reflect=customContentIntegralAttr] attribute long reflectedCustomIntegralAttr;
     [Reflect=customContentBooleanAttr] attribute boolean reflectedCustomBooleanAttr;
     [Reflect=customContentURLAttr, TreatNullAs=NullString, URL] attribute DOMString reflectedCustomURLAttr;
-    [Reflect] attribute SVGAnimatedString animatedReflectedAttribute;
     [Reflect, ReflectOnly="unique"] attribute DOMString limitedToOnlyOneAttribute;
     [Reflect, ReflectOnly="Per"|"Paal"|"Espen"] attribute DOMString limitedToOnlyAttribute;
     [Reflect=Other, ReflectOnly="Value1"|"Value2" ] attribute DOMString limitedToOnlyOtherAttribute;
@@ -244,18 +241,9 @@ callback TestCallbackFunction = void (TestEnumType formal1, TestObject formal2);
     [RaisesException] DOMStringList domStringListFunction(DOMStringList values);
 
     [CheckSecurity=Node] readonly attribute Document contentDocument;
-    [CheckSecurity=Node, RaisesException] SVGDocument getSVGDocument();
 
     void convert1([TreatNullAs=NullString] TestNode value);
     void convert2([TreatNullAs=NullString, TreatUndefinedAs=NullString] TestNode value);
-
-    attribute SVGPoint mutablePoint;
-    [Immutable] attribute SVGPoint immutablePoint;
-    SVGPoint mutablePointFunction();
-    [Immutable] SVGPoint immutablePointFunction();
-
-    SVGPoint svgPointMethod(SVGPoint item, unsigned long index);
-    [StrictTypeChecking, RaisesException]  SVGPoint strictSVGPointMethod(SVGPoint item, unsigned long index);
 
     [ImplementedAs=banana] void orange();
     [ImplementedAs=blueberry] attribute long strawberry;

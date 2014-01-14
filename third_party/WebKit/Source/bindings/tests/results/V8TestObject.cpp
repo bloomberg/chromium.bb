@@ -39,9 +39,6 @@
 #include "V8Document.h"
 #include "V8MessagePort.h"
 #include "V8Node.h"
-#include "V8SVGAnimatedString.h"
-#include "V8SVGDocument.h"
-#include "V8SVGPoint.h"
 #include "V8TestCallbackInterface.h"
 #include "V8TestInterface.h"
 #include "V8TestNode.h"
@@ -68,8 +65,6 @@
 #include "core/dom/custom/CustomElementCallbackDispatcher.h"
 #include "core/frame/DOMWindow.h"
 #include "core/frame/UseCounter.h"
-#include "core/svg/properties/SVGPropertyTearOff.h"
-#include "core/svg/properties/SVGStaticPropertyTearOff.h"
 #include "platform/TraceEvent.h"
 #include "wtf/GetPtr.h"
 #include "wtf/RefPtr.h"
@@ -851,35 +846,6 @@ static void reflectedCustomURLAttrAttributeSetterCallback(v8::Local<v8::String>,
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     TestObjV8Internal::reflectedCustomURLAttrAttributeSetter(jsValue, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
-}
-
-static void animatedReflectedAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TestObj* imp = V8TestObject::toNative(info.Holder());
-    v8SetReturnValueFast(info, imp->getAttribute(HTMLNames::animatedreflectedattributeAttr), imp);
-}
-
-static void animatedReflectedAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestObjV8Internal::animatedReflectedAttributeAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
-}
-
-static void animatedReflectedAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
-{
-    TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(SVGAnimatedString*, cppValue, V8SVGAnimatedString::hasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8SVGAnimatedString::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
-    imp->setAttribute(HTMLNames::animatedreflectedattributeAttr, WTF::getPtr(cppValue));
-}
-
-static void animatedReflectedAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
-    TestObjV8Internal::animatedReflectedAttributeAttributeSetter(jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -2246,72 +2212,6 @@ static void contentDocumentAttributeGetterCallback(v8::Local<v8::String>, const 
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     TestObjV8Internal::contentDocumentAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
-}
-
-static void mutablePointAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TestObj* imp = V8TestObject::toNative(info.Holder());
-    v8SetReturnValueFast(info, WTF::getPtr(SVGStaticPropertyTearOff<TestObj, SVGPoint>::create(imp, imp->mutablePoint(), &TestObj::updateMutablePoint)), imp);
-}
-
-static void mutablePointAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestObjV8Internal::mutablePointAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
-}
-
-static void mutablePointAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
-{
-    ExceptionState exceptionState(ExceptionState::SetterContext, "mutablePoint", "TestObject", info.Holder(), info.GetIsolate());
-    TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(RefPtr<SVGPropertyTearOff<SVGPoint> >, cppValue, V8SVGPoint::hasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8SVGPoint::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
-    if (!WTF::getPtr(cppValue)) {
-        exceptionState.throwTypeError("The provided value is not of type 'SVGPoint'.");
-        exceptionState.throwIfNeeded();
-        return;
-    }
-    imp->setMutablePoint(WTF::getPtr(cppValue)->propertyReference());
-}
-
-static void mutablePointAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestObjV8Internal::mutablePointAttributeSetter(jsValue, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
-}
-
-static void immutablePointAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TestObj* imp = V8TestObject::toNative(info.Holder());
-    v8SetReturnValueFast(info, WTF::getPtr(SVGPropertyTearOff<SVGPoint>::create(imp->immutablePoint())), imp);
-}
-
-static void immutablePointAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestObjV8Internal::immutablePointAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
-}
-
-static void immutablePointAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
-{
-    ExceptionState exceptionState(ExceptionState::SetterContext, "immutablePoint", "TestObject", info.Holder(), info.GetIsolate());
-    TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(RefPtr<SVGPropertyTearOff<SVGPoint> >, cppValue, V8SVGPoint::hasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8SVGPoint::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
-    if (!WTF::getPtr(cppValue)) {
-        exceptionState.throwTypeError("The provided value is not of type 'SVGPoint'.");
-        exceptionState.throwIfNeeded();
-        return;
-    }
-    imp->setImmutablePoint(WTF::getPtr(cppValue)->propertyReference());
-}
-
-static void immutablePointAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestObjV8Internal::immutablePointAttributeSetter(jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -4741,28 +4641,6 @@ static void domStringListFunctionMethodCallback(const v8::FunctionCallbackInfo<v
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void getSVGDocumentMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "getSVGDocument", "TestObject", info.Holder(), info.GetIsolate());
-    TestObj* imp = V8TestObject::toNative(info.Holder());
-    if (!BindingSecurity::shouldAllowAccessToNode(imp->getSVGDocument(exceptionState), exceptionState)) {
-        v8SetReturnValueNull(info);
-        exceptionState.throwIfNeeded();
-        return;
-    }
-    RefPtr<SVGDocument> result = imp->getSVGDocument(exceptionState);
-    if (exceptionState.throwIfNeeded())
-        return;
-    v8SetReturnValue(info, result.release());
-}
-
-static void getSVGDocumentMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestObjV8Internal::getSVGDocumentMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
-}
-
 static void convert1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
@@ -4796,92 +4674,6 @@ static void convert2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& in
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestObjV8Internal::convert2Method(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
-}
-
-static void mutablePointFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestObj* imp = V8TestObject::toNative(info.Holder());
-    v8SetReturnValue(info, WTF::getPtr(SVGPropertyTearOff<SVGPoint>::create(imp->mutablePointFunction())));
-}
-
-static void mutablePointFunctionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestObjV8Internal::mutablePointFunctionMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
-}
-
-static void immutablePointFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestObj* imp = V8TestObject::toNative(info.Holder());
-    v8SetReturnValue(info, WTF::getPtr(SVGPropertyTearOff<SVGPoint>::create(imp->immutablePointFunction())));
-}
-
-static void immutablePointFunctionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestObjV8Internal::immutablePointFunctionMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
-}
-
-static void svgPointMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "svgPointMethod", "TestObject", info.Holder(), info.GetIsolate());
-    if (UNLIKELY(info.Length() < 2)) {
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(2, info.Length()));
-        exceptionState.throwIfNeeded();
-        return;
-    }
-    TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(RefPtr<SVGPropertyTearOff<SVGPoint> >, item, V8SVGPoint::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8SVGPoint::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
-    V8TRYCATCH_EXCEPTION_VOID(unsigned, index, toUInt32(info[1], exceptionState), exceptionState);
-    if (!item) {
-        exceptionState.throwTypeError("parameter 1 is not of type 'SVGPoint'.");
-        exceptionState.throwIfNeeded();
-        return;
-    }
-    v8SetReturnValue(info, WTF::getPtr(SVGPropertyTearOff<SVGPoint>::create(imp->svgPointMethod(item->propertyReference(), index))));
-}
-
-static void svgPointMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestObjV8Internal::svgPointMethodMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
-}
-
-static void strictSVGPointMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "strictSVGPointMethod", "TestObject", info.Holder(), info.GetIsolate());
-    if (UNLIKELY(info.Length() < 2)) {
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(2, info.Length()));
-        exceptionState.throwIfNeeded();
-        return;
-    }
-    TestObj* imp = V8TestObject::toNative(info.Holder());
-    if (info.Length() > 0 && !isUndefinedOrNull(info[0]) && !V8SVGPoint::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))) {
-        exceptionState.throwTypeError("parameter 1 is not of type 'SVGPoint'.");
-        exceptionState.throwIfNeeded();
-        return;
-    }
-    V8TRYCATCH_VOID(RefPtr<SVGPropertyTearOff<SVGPoint> >, item, V8SVGPoint::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8SVGPoint::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
-    V8TRYCATCH_EXCEPTION_VOID(unsigned, index, toUInt32(info[1], exceptionState), exceptionState);
-    if (!item) {
-        exceptionState.throwTypeError("parameter 1 is not of type 'SVGPoint'.");
-        exceptionState.throwIfNeeded();
-        return;
-    }
-    SVGPoint result = imp->strictSVGPointMethod(item->propertyReference(), index, exceptionState);
-    if (exceptionState.throwIfNeeded())
-        return;
-    v8SetReturnValue(info, WTF::getPtr(SVGPropertyTearOff<SVGPoint>::create(result)));
-}
-
-static void strictSVGPointMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestObjV8Internal::strictSVGPointMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -5422,24 +5214,6 @@ static void deprecatedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToConstruct("TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
-        return;
-    }
-    if (info.Length() <= 0 || !info[0]->IsFunction()) {
-        throwTypeError(ExceptionMessages::failedToExecute("Constructor", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
-        return;
-    }
-    OwnPtr<TestCallbackInterface> testCallbackInterface = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), getExecutionContext());
-    RefPtr<TestObj> impl = TestObj::create(testCallbackInterface);
-    v8::Handle<v8::Object> wrapper = info.Holder();
-
-    V8DOMWrapper::associateObjectWithWrapper<V8TestObject>(impl.release(), &V8TestObject::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
-    v8SetReturnValue(info, wrapper);
-}
-
 static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));
@@ -5552,7 +5326,6 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectAttributes[]
     {"reflectedCustomIntegralAttr", TestObjV8Internal::reflectedCustomIntegralAttrAttributeGetterCallback, TestObjV8Internal::reflectedCustomIntegralAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"reflectedCustomBooleanAttr", TestObjV8Internal::reflectedCustomBooleanAttrAttributeGetterCallback, TestObjV8Internal::reflectedCustomBooleanAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"reflectedCustomURLAttr", TestObjV8Internal::reflectedCustomURLAttrAttributeGetterCallback, TestObjV8Internal::reflectedCustomURLAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"animatedReflectedAttribute", TestObjV8Internal::animatedReflectedAttributeAttributeGetterCallback, TestObjV8Internal::animatedReflectedAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"limitedToOnlyOneAttribute", TestObjV8Internal::limitedToOnlyOneAttributeAttributeGetterCallback, TestObjV8Internal::limitedToOnlyOneAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"limitedToOnlyAttribute", TestObjV8Internal::limitedToOnlyAttributeAttributeGetterCallback, TestObjV8Internal::limitedToOnlyAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"limitedToOnlyOtherAttribute", TestObjV8Internal::limitedToOnlyOtherAttributeAttributeGetterCallback, TestObjV8Internal::limitedToOnlyOtherAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
@@ -5611,8 +5384,6 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectAttributes[]
     {"doubleArray", TestObjV8Internal::doubleArrayAttributeGetterCallback, TestObjV8Internal::doubleArrayAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"messagePortArray", TestObjV8Internal::messagePortArrayAttributeGetterCallback, TestObjV8Internal::messagePortArrayAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"contentDocument", TestObjV8Internal::contentDocumentAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"mutablePoint", TestObjV8Internal::mutablePointAttributeGetterCallback, TestObjV8Internal::mutablePointAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"immutablePoint", TestObjV8Internal::immutablePointAttributeGetterCallback, TestObjV8Internal::immutablePointAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"strawberry", TestObjV8Internal::strawberryAttributeGetterCallback, TestObjV8Internal::strawberryAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"strictFloat", TestObjV8Internal::strictFloatAttributeGetterCallback, TestObjV8Internal::strictFloatAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"replaceableAttribute", TestObjV8Internal::replaceableAttributeAttributeGetterCallback, TestObjV8Internal::TestObjReplaceableAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
@@ -5708,13 +5479,8 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"methodWithUnsignedLongSequence", TestObjV8Internal::methodWithUnsignedLongSequenceMethodCallback, 0, 1},
     {"stringArrayFunction", TestObjV8Internal::stringArrayFunctionMethodCallback, 0, 1},
     {"domStringListFunction", TestObjV8Internal::domStringListFunctionMethodCallback, 0, 1},
-    {"getSVGDocument", TestObjV8Internal::getSVGDocumentMethodCallback, 0, 0},
     {"convert1", TestObjV8Internal::convert1MethodCallback, 0, 1},
     {"convert2", TestObjV8Internal::convert2MethodCallback, 0, 1},
-    {"mutablePointFunction", TestObjV8Internal::mutablePointFunctionMethodCallback, 0, 0},
-    {"immutablePointFunction", TestObjV8Internal::immutablePointFunctionMethodCallback, 0, 0},
-    {"svgPointMethod", TestObjV8Internal::svgPointMethodMethodCallback, 0, 2},
-    {"strictSVGPointMethod", TestObjV8Internal::strictSVGPointMethodMethodCallback, 0, 2},
     {"orange", TestObjV8Internal::orangeMethodCallback, 0, 0},
     {"strictFunction", TestObjV8Internal::strictFunctionMethodCallback, 0, 3},
     {"variadicStringMethod", TestObjV8Internal::variadicStringMethodMethodCallback, 0, 2},
@@ -5730,22 +5496,6 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"deprecatedMethod", TestObjV8Internal::deprecatedMethodMethodCallback, 0, 0},
 };
 
-void V8TestObject::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "DOMConstructor");
-    if (!info.IsConstructCall()) {
-        throwTypeError(ExceptionMessages::failedToConstruct("TestObject", "Please use the 'new' operator, this DOM object constructor cannot be called as a function."), info.GetIsolate());
-        return;
-    }
-
-    if (ConstructorMode::current() == ConstructorMode::WrapExistingObject) {
-        v8SetReturnValue(info, info.Holder());
-        return;
-    }
-
-    TestObjV8Internal::constructor(info);
-}
-
 static void configureV8TestObjectTemplate(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     functionTemplate->ReadOnlyPrototype();
@@ -5756,8 +5506,6 @@ static void configureV8TestObjectTemplate(v8::Handle<v8::FunctionTemplate> funct
         V8TestObjectAccessors, WTF_ARRAY_LENGTH(V8TestObjectAccessors),
         V8TestObjectMethods, WTF_ARRAY_LENGTH(V8TestObjectMethods),
         isolate, currentWorldType);
-    functionTemplate->SetCallHandler(V8TestObject::constructorCallback);
-    functionTemplate->SetLength(1);
     v8::Local<v8::ObjectTemplate> ALLOW_UNUSED instanceTemplate = functionTemplate->InstanceTemplate();
     v8::Local<v8::ObjectTemplate> ALLOW_UNUSED prototypeTemplate = functionTemplate->PrototypeTemplate();
     if (RuntimeEnabledFeatures::featureNameEnabled()) {
