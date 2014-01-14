@@ -1853,6 +1853,12 @@ _release.add_config('wolf-release',
   boards=['wolf'],
 )
 
+_release.add_config('zako-release',
+  boards=['zako'],
+  hw_tests=[],
+  vm_tests=None,
+)
+
 ### Arm release configs.
 
 _arm_release = _release.derive(arm)
