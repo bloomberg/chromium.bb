@@ -64,39 +64,34 @@ PrefHashStore::ValueState PrefHashStoreImpl::CheckValue(
 
 void PrefHashStoreImpl::StoreHash(
     const std::string& path, const base::Value* new_value) {
-  {
-    DictionaryPrefUpdate update(local_state_, prefs::kProfilePreferenceHashes);
+  DictionaryPrefUpdate update(local_state_, prefs::kProfilePreferenceHashes);
 
-    // Get the dictionary corresponding to the profile name, which may have a
-    // '.'
-    base::DictionaryValue* hashes_dict = NULL;
-    if (!update->GetDictionaryWithoutPathExpansion(hash_store_id_,
-                                                   &hashes_dict)) {
-      hashes_dict = new base::DictionaryValue;
-      update->SetWithoutPathExpansion(hash_store_id_, hashes_dict);
-    }
-
-    hashes_dict->SetString(
-        path, pref_hash_calculator_.Calculate(path, new_value));
-
-    // Get the dictionary where the hash of hashes are stored.
-    base::DictionaryValue* hash_of_hashes_dict = NULL;
-    if (!update->GetDictionaryWithoutPathExpansion(internals::kHashOfHashesPref,
-                                                   &hash_of_hashes_dict)) {
-      hash_of_hashes_dict = new base::DictionaryValue;
-      update->SetWithoutPathExpansion(internals::kHashOfHashesPref,
-                                      hash_of_hashes_dict);
-    }
-    // Use the |hash_store_id_| as the hashed path to avoid having the hash
-    // depend on kProfilePreferenceHashes.
-    std::string hash_of_hashes(pref_hash_calculator_.Calculate(hash_store_id_,
-                                                               hashes_dict));
-    hash_of_hashes_dict->SetStringWithoutPathExpansion(hash_store_id_,
-                                                       hash_of_hashes);
+  // Get the dictionary corresponding to the profile name, which may have a
+  // '.'
+  base::DictionaryValue* hashes_dict = NULL;
+  if (!update->GetDictionaryWithoutPathExpansion(hash_store_id_,
+                                                 &hashes_dict)) {
+    hashes_dict = new base::DictionaryValue;
+    update->SetWithoutPathExpansion(hash_store_id_, hashes_dict);
   }
-  // TODO(erikwright): During tests, pending writes were still waiting when the
-  // IO thread is already gone. Consider other solutions.
-  local_state_->CommitPendingWrite();
+
+  hashes_dict->SetString(
+      path, pref_hash_calculator_.Calculate(path, new_value));
+
+  // Get the dictionary where the hash of hashes are stored.
+  base::DictionaryValue* hash_of_hashes_dict = NULL;
+  if (!update->GetDictionaryWithoutPathExpansion(internals::kHashOfHashesPref,
+                                                 &hash_of_hashes_dict)) {
+    hash_of_hashes_dict = new base::DictionaryValue;
+    update->SetWithoutPathExpansion(internals::kHashOfHashesPref,
+                                    hash_of_hashes_dict);
+  }
+  // Use the |hash_store_id_| as the hashed path to avoid having the hash
+  // depend on kProfilePreferenceHashes.
+  std::string hash_of_hashes(pref_hash_calculator_.Calculate(hash_store_id_,
+                                                             hashes_dict));
+  hash_of_hashes_dict->SetStringWithoutPathExpansion(hash_store_id_,
+                                                     hash_of_hashes);
 }
 
 bool PrefHashStoreImpl::IsHashDictionaryTrusted() const {

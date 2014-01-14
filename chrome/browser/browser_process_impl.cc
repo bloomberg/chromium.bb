@@ -296,6 +296,9 @@ void BrowserProcessImpl::StartTearDown() {
 #if defined(ENABLE_WEBRTC)
   webrtc_log_uploader_.reset();
 #endif
+
+  if (local_state())
+    local_state()->CommitPendingWrite();
 }
 
 void BrowserProcessImpl::PostDestroyThreads() {
