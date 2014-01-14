@@ -479,6 +479,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   FileManager.prototype.onMaximize = function() {
+    this.document_.activeElement.blur();
     var appWindow = chrome.app.window.current();
     if (appWindow.isMaximized())
       appWindow.restore();
