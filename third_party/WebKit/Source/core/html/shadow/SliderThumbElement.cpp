@@ -305,7 +305,6 @@ void SliderThumbElement::setPositionFromPoint(const LayoutPoint& point)
     input->setValueFromRenderer(valueString);
     if (renderer())
         renderer()->setNeedsLayout();
-    input->dispatchFormControlChangeEvent();
 }
 
 void SliderThumbElement::startDragging()
@@ -326,6 +325,7 @@ void SliderThumbElement::stopDragging()
     m_inDragMode = false;
     if (renderer())
         renderer()->setNeedsLayout();
+    hostInput()->dispatchFormControlChangeEvent();
 }
 
 void SliderThumbElement::defaultEventHandler(Event* event)

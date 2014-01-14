@@ -52,9 +52,10 @@ function testInput(id, field) {
     lastChangeEventCounter = changeEventCounter;
     dragToRightEdge();
     shouldBe('input.value', '"100"');
-    shouldBeGreaterThanOrEqual('changeEventCounter', 'lastChangeEventCounter + 1');
+    shouldBe('lastChangeEventCounter', 'changeEventCounter');
     lastChangeEventCounter = changeEventCounter;
     dragToLeftEdge();
+    stopDrag();    
     shouldBe('input.value', '"0"');
     shouldBeGreaterThanOrEqual('changeEventCounter', 'lastChangeEventCounter + 1');
 
@@ -65,10 +66,9 @@ function testInput(id, field) {
     // Attempt to drag to right edge. Should not change.
     lastChangeEventCounter = changeEventCounter;
     dragToRightEdge();
-    shouldBe('input.value', '"0"');
-    shouldBe('lastChangeEventCounter', 'changeEventCounter');
-
     stopDrag();
+    shouldBe('input.value', '"0"');
+    shouldBe('lastChangeEventCounter', 'changeEventCounter');    
 }
 
 
