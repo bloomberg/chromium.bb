@@ -581,19 +581,31 @@ test.util.sync.fakeKeyDown = function(
 };
 
 /**
- * Sends a fake mouse click event (left button, single click) to the element
- * specified by |targetQuery|.
+ * Simulates a fake mouse click (left button, single click) on the element
+ * specified by |targetQuery|. This sends 'mouseover', 'mousedown', 'mouseup'
+ * and 'click' events in turns.
  *
  * @param {Window} contentWindow Window to be tested.
  * @param {string} targetQuery Query to specify the element.
  * @param {string=} opt_iframeQuery Optional iframe selector.
- * @return {boolean} True if the event is sent to the target, false otherwise.
+ * @return {boolean} True if the all events are sent to the target, false
+ *     otherwise.
  */
 test.util.sync.fakeMouseClick = function(
     contentWindow, targetQuery, opt_iframeQuery) {
-  var event = new MouseEvent('click', { bubbles: true, detail: 1 });
-  return test.util.sync.sendEvent(
-      contentWindow, targetQuery, event, opt_iframeQuery);
+  var mouseOverEvent = new MouseEvent('mouseover', {bubbles: true, detail: 1});
+  var resultMouseOver = test.util.sync.sendEvent(
+      contentWindow, targetQuery, mouseOverEvent, opt_iframeQuery);
+  var mouseDownEvent = new MouseEvent('mousedown', {bubbles: true, detail: 1});
+  var resultMouseDown = test.util.sync.sendEvent(
+      contentWindow, targetQuery, mouseDownEvent, opt_iframeQuery);
+  var mouseUpEvent = new MouseEvent('mouseup', {bubbles: true, detail: 1});
+  var resultMouseUp = test.util.sync.sendEvent(
+      contentWindow, targetQuery, mouseUpEvent, opt_iframeQuery);
+  var clickEvent = new MouseEvent('click', {bubbles: true, detail: 1});
+  var resultClick = test.util.sync.sendEvent(
+      contentWindow, targetQuery, clickEvent, opt_iframeQuery);
+  return resultMouseOver && resultMouseDown && resultMouseUp && resultClick;
 };
 
 /**
