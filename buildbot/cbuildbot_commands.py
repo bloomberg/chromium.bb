@@ -282,6 +282,12 @@ def RefreshPackageStatus(buildroot, boards, debug):
   # Actually run prepared refresh_package_status command.
   _RunBuildScript(buildroot, cmd, chromite_cmd=True, enter_chroot=True)
 
+  # Disabling the auto-filing of Tracker issues for now - crbug.com/334260.
+  #SyncPackageStatus(buildroot, debug)
+
+
+def SyncPackageStatus(buildroot, debug):
+  """Wrapper around sync_package_status."""
   # Run sync_package_status to create Tracker issues for outdated
   # packages.  At the moment, this runs only for groups that have opted in.
   basecmd = ['sync_package_status']
