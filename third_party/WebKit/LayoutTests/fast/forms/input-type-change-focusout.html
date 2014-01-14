@@ -13,7 +13,7 @@ input.addEventListener('focusout', function() {
     focusoutCalled = true;
 });
 input.focus();
-input.setAttribute('x-webkit-speech');
+input.setAttribute('x-webkit-speech', '');
 shouldBeFalse('focusoutCalled');
 input.type = 'month';
 shouldBeFalse('focusoutCalled');

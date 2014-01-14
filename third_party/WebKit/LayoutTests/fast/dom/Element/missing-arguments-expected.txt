@@ -10,7 +10,8 @@ PASS element.hasAttributeNS('http://example.com/') threw exception TypeError: Fa
 PASS element.removeAttribute() threw exception TypeError: Failed to execute 'removeAttribute' on 'Element': 1 argument required, but only 0 present..
 PASS element.removeAttributeNS() threw exception TypeError: Failed to execute 'removeAttributeNS' on 'Element': 2 arguments required, but only 0 present..
 PASS element.removeAttributeNS('http://example.com/') threw exception TypeError: Failed to execute 'removeAttributeNS' on 'Element': 2 arguments required, but only 1 present..
-PASS element.setAttribute() threw exception TypeError: Failed to execute 'setAttribute' on 'Element': 1 argument required, but only 0 present..
+PASS element.setAttribute() threw exception TypeError: Failed to execute 'setAttribute' on 'Element': 2 arguments required, but only 0 present..
+PASS element.setAttribute('example') threw exception TypeError: Failed to execute 'setAttribute' on 'Element': 2 arguments required, but only 1 present..
 PASS element.setAttributeNS() threw exception TypeError: Failed to execute 'setAttributeNS' on 'Element': 3 arguments required, but only 0 present..
 PASS element.setAttributeNS('http://example.com/') threw exception TypeError: Failed to execute 'setAttributeNS' on 'Element': 3 arguments required, but only 1 present..
 PASS element.setAttributeNS('http://example.com/', 'example') threw exception TypeError: Failed to execute 'setAttributeNS' on 'Element': 3 arguments required, but only 2 present..

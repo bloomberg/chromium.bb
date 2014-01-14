@@ -27,7 +27,7 @@
     [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString tagName;
 
     [TreatReturnedNullStringAs=Null] DOMString getAttribute(DOMString name);
-    [RaisesException, CustomElementCallbacks] void setAttribute(DOMString name, [Default=Undefined] optional DOMString value);
+    [RaisesException, CustomElementCallbacks] void setAttribute(DOMString name, DOMString value);
     [CustomElementCallbacks] void removeAttribute(DOMString name);
     [MeasureAs=ElementGetAttributeNode] Attr getAttributeNode([Default=Undefined] optional DOMString name); // Removed from DOM4.
     [RaisesException, CustomElementCallbacks, MeasureAs=ElementSetAttributeNode] Attr setAttributeNode([Default=Undefined, StrictTypeChecking] optional Attr newAttr); // Removed from DOM4.
