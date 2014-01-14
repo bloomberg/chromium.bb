@@ -41,13 +41,13 @@ GoogleURLTracker::GoogleURLTracker(
       infobar_creator_(base::Bind(&GoogleURLTrackerInfoBarDelegate::Create)),
       google_url_(mode == UNIT_TEST_MODE ? kDefaultGoogleHomepage :
           profile->GetPrefs()->GetString(prefs::kLastKnownGoogleURL)),
-      weak_ptr_factory_(this),
       fetcher_id_(0),
       in_startup_sleep_(true),
       already_fetched_(false),
       need_to_fetch_(false),
       need_to_prompt_(false),
-      search_committed_(false) {
+      search_committed_(false),
+      weak_ptr_factory_(this) {
   net::NetworkChangeNotifier::AddIPAddressObserver(this);
   nav_helper_->SetGoogleURLTracker(this);
 
@@ -202,8 +202,8 @@ void GoogleURLTracker::OnIPAddressChanged() {
 
 void GoogleURLTracker::Shutdown() {
   nav_helper_.reset();
-  weak_ptr_factory_.InvalidateWeakPtrs();
   fetcher_.reset();
+  weak_ptr_factory_.InvalidateWeakPtrs();
   net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
 }
 

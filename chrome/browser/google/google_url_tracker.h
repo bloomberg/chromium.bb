@@ -184,7 +184,6 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
 
   GURL google_url_;
   GURL fetched_google_url_;
-  base::WeakPtrFactory<GoogleURLTracker> weak_ptr_factory_;
   scoped_ptr<net::URLFetcher> fetcher_;
   int fetcher_id_;
   bool in_startup_sleep_;  // True if we're in the five-second "no fetching"
@@ -202,6 +201,7 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
   bool search_committed_;  // True when we're expecting a notification of a new
                            // pending search navigation.
   EntryMap entry_map_;
+  base::WeakPtrFactory<GoogleURLTracker> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GoogleURLTracker);
 };

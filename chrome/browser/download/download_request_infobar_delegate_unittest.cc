@@ -15,10 +15,10 @@ class MockTabDownloadState : public DownloadRequestLimiter::TabDownloadState {
   MockTabDownloadState();
   virtual ~MockTabDownloadState();
 
-  // DownloadRequestLimiter::TabDownloadState
+  // DownloadRequestLimiter::TabDownloadState:
   virtual void Cancel() OVERRIDE;
   virtual void Accept() OVERRIDE;
-  virtual void CancelOnce() OVERRIDE { Cancel(); }
+  virtual void CancelOnce() OVERRIDE;
 
   ConfirmInfoBarDelegate* infobar_delegate() { return infobar_delegate_.get(); }
   void delete_infobar_delegate() { infobar_delegate_.reset(); }
@@ -26,9 +26,6 @@ class MockTabDownloadState : public DownloadRequestLimiter::TabDownloadState {
   bool accepted() const { return accepted_; }
 
  private:
-  // To produce weak pointers for infobar_ construction.
-  base::WeakPtrFactory<DownloadRequestLimiter::TabDownloadState> factory_;
-
   // The actual infobar delegate we're listening to.
   scoped_ptr<DownloadRequestInfoBarDelegate> infobar_delegate_;
 
@@ -39,14 +36,18 @@ class MockTabDownloadState : public DownloadRequestLimiter::TabDownloadState {
   // not true.
   bool accepted_;
 
+  // To produce weak pointers for infobar_ construction.
+  base::WeakPtrFactory<MockTabDownloadState> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockTabDownloadState);
 };
 
 MockTabDownloadState::MockTabDownloadState()
-    : factory_(this),
-      infobar_delegate_(
-          DownloadRequestInfoBarDelegate::Create(factory_.GetWeakPtr())),
-      responded_(false),
-      accepted_(false) {
+    : responded_(false),
+      accepted_(false),
+      weak_ptr_factory_(this) {
+  infobar_delegate_ =
+      DownloadRequestInfoBarDelegate::Create(weak_ptr_factory_.GetWeakPtr());
 }
 
 MockTabDownloadState::~MockTabDownloadState() {
@@ -63,7 +64,11 @@ void MockTabDownloadState::Accept() {
   EXPECT_FALSE(responded_);
   responded_ = true;
   accepted_ = true;
-  factory_.InvalidateWeakPtrs();
+  weak_ptr_factory_.InvalidateWeakPtrs();
+}
+
+void MockTabDownloadState::CancelOnce() {
+  Cancel();
 }
 
 

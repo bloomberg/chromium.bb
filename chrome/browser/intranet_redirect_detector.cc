@@ -26,8 +26,8 @@ const size_t IntranetRedirectDetector::kNumCharsInHostnames = 10;
 IntranetRedirectDetector::IntranetRedirectDetector()
     : redirect_origin_(g_browser_process->local_state()->GetString(
           prefs::kLastKnownIntranetRedirectOrigin)),
-      weak_factory_(this),
-      in_sleep_(true) {
+      in_sleep_(true),
+      weak_ptr_factory_(this) {
   // Because this function can be called during startup, when kicking off a URL
   // fetch can eat up 20 ms of time, we delay seven seconds, which is hopefully
   // long enough to be after startup, but still get results back quickly.
@@ -37,7 +37,7 @@ IntranetRedirectDetector::IntranetRedirectDetector()
   static const int kStartFetchDelaySeconds = 7;
   base::MessageLoop::current()->PostDelayedTask(FROM_HERE,
       base::Bind(&IntranetRedirectDetector::FinishSleep,
-                 weak_factory_.GetWeakPtr()),
+                 weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(kStartFetchDelaySeconds));
 
   net::NetworkChangeNotifier::AddIPAddressObserver(this);
@@ -159,7 +159,7 @@ void IntranetRedirectDetector::OnIPAddressChanged() {
   static const int kNetworkSwitchDelayMS = 1000;
   base::MessageLoop::current()->PostDelayedTask(FROM_HERE,
       base::Bind(&IntranetRedirectDetector::FinishSleep,
-                 weak_factory_.GetWeakPtr()),
+                 weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kNetworkSwitchDelayMS));
 }
 

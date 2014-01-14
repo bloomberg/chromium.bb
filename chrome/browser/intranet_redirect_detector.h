@@ -72,12 +72,12 @@ class IntranetRedirectDetector
   virtual void OnIPAddressChanged() OVERRIDE;
 
   GURL redirect_origin_;
-  base::WeakPtrFactory<IntranetRedirectDetector> weak_factory_;
   Fetchers fetchers_;
   std::vector<GURL> resulting_origins_;
   bool in_sleep_;  // True if we're in the seven-second "no fetching" period
                    // that begins at browser start, or the one-second "no
                    // fetching" period that begins after network switches.
+  base::WeakPtrFactory<IntranetRedirectDetector> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(IntranetRedirectDetector);
 };

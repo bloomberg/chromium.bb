@@ -43,9 +43,9 @@ WebDatabaseService::WebDatabaseService(
     const scoped_refptr<base::MessageLoopProxy>& db_thread)
     : base::RefCountedDeleteOnMessageLoop<WebDatabaseService>(ui_thread),
       path_(path),
-      weak_ptr_factory_(this),
       db_loaded_(false),
-      db_thread_(db_thread) {
+      db_thread_(db_thread),
+      weak_ptr_factory_(this) {
   // WebDatabaseService should be instantiated on UI thread.
   DCHECK(ui_thread->BelongsToCurrentThread());
   // WebDatabaseService requires DB thread if instantiated.
@@ -56,7 +56,7 @@ WebDatabaseService::~WebDatabaseService() {
 }
 
 void WebDatabaseService::AddTable(scoped_ptr<WebDatabaseTable> table) {
-  if (!wds_backend_.get()) {
+  if (!wds_backend_) {
     wds_backend_ = new WebDataServiceBackend(
         path_, new BackendDelegate(weak_ptr_factory_.GetWeakPtr()),
         db_thread_);
@@ -65,8 +65,7 @@ void WebDatabaseService::AddTable(scoped_ptr<WebDatabaseTable> table) {
 }
 
 void WebDatabaseService::LoadDatabase() {
-  DCHECK(wds_backend_.get());
-
+  DCHECK(wds_backend_);
   db_thread_->PostTask(
       FROM_HERE,
       Bind(&WebDataServiceBackend::InitDatabase, wds_backend_));
@@ -74,19 +73,19 @@ void WebDatabaseService::LoadDatabase() {
 
 void WebDatabaseService::UnloadDatabase() {
   db_loaded_ = false;
-  if (!wds_backend_.get())
+  if (!wds_backend_)
     return;
   db_thread_->PostTask(FROM_HERE,
-      Bind(&WebDataServiceBackend::ShutdownDatabase,
-           wds_backend_, true));
+                       Bind(&WebDataServiceBackend::ShutdownDatabase,
+                            wds_backend_, true));
 }
 
 void WebDatabaseService::ShutdownDatabase() {
   db_loaded_ = false;
-  weak_ptr_factory_.InvalidateWeakPtrs();
   loaded_callbacks_.clear();
   error_callbacks_.clear();
-  if (!wds_backend_.get())
+  weak_ptr_factory_.InvalidateWeakPtrs();
+  if (!wds_backend_)
     return;
   db_thread_->PostTask(FROM_HERE,
       Bind(&WebDataServiceBackend::ShutdownDatabase,
@@ -95,9 +94,7 @@ void WebDatabaseService::ShutdownDatabase() {
 
 WebDatabase* WebDatabaseService::GetDatabaseOnDB() const {
   DCHECK(db_thread_->BelongsToCurrentThread());
-  if (!wds_backend_.get())
-    return NULL;
-  return wds_backend_->database();
+  return wds_backend_ ? wds_backend_->database() : NULL;
 }
 
 scoped_refptr<WebDataServiceBackend> WebDatabaseService::GetBackend() const {
@@ -107,17 +104,12 @@ scoped_refptr<WebDataServiceBackend> WebDatabaseService::GetBackend() const {
 void WebDatabaseService::ScheduleDBTask(
     const tracked_objects::Location& from_here,
     const WriteTask& task) {
-  if (!wds_backend_.get()) {
-    NOTREACHED() << "Task scheduled after Shutdown()";
-    return;
-  }
-
+  DCHECK(wds_backend_);
   scoped_ptr<WebDataRequest> request(
       new WebDataRequest(NULL, wds_backend_->request_manager().get()));
-
   db_thread_->PostTask(from_here,
-      Bind(&WebDataServiceBackend::DBWriteTaskWrapper, wds_backend_,
-           task, base::Passed(&request)));
+                       Bind(&WebDataServiceBackend::DBWriteTaskWrapper,
+                            wds_backend_, task, base::Passed(&request)));
 }
 
 WebDataServiceBase::Handle WebDatabaseService::ScheduleDBTaskWithResult(
@@ -125,26 +117,18 @@ WebDataServiceBase::Handle WebDatabaseService::ScheduleDBTaskWithResult(
     const ReadTask& task,
     WebDataServiceConsumer* consumer) {
   DCHECK(consumer);
-  WebDataServiceBase::Handle handle = 0;
-
-  if (!wds_backend_.get()) {
-    NOTREACHED() << "Task scheduled after Shutdown()";
-    return handle;
-  }
-
+  DCHECK(wds_backend_);
   scoped_ptr<WebDataRequest> request(
       new WebDataRequest(consumer, wds_backend_->request_manager().get()));
-  handle = request->GetHandle();
-
+  WebDataServiceBase::Handle handle = request->GetHandle();
   db_thread_->PostTask(from_here,
-      Bind(&WebDataServiceBackend::DBReadTaskWrapper, wds_backend_,
-           task, base::Passed(&request)));
-
+                       Bind(&WebDataServiceBackend::DBReadTaskWrapper,
+                            wds_backend_, task, base::Passed(&request)));
   return handle;
 }
 
 void WebDatabaseService::CancelRequest(WebDataServiceBase::Handle h) {
-  if (!wds_backend_.get())
+  if (!wds_backend_)
     return;
   wds_backend_->request_manager()->CancelRequest(h);
 }
