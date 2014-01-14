@@ -119,6 +119,7 @@ mouseover
 mouseup
 mousewheel
 mute
+needkey
 negotiationneeded
 nomatch
 noupdate

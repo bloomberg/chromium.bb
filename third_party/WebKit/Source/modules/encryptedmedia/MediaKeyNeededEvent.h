@@ -34,6 +34,7 @@ namespace WebCore {
 struct MediaKeyNeededEventInit : public EventInit {
     MediaKeyNeededEventInit();
 
+    String contentType;
     RefPtr<Uint8Array> initData;
 };
 
@@ -53,12 +54,14 @@ public:
 
     virtual const AtomicString& interfaceName() const OVERRIDE;
 
+    String contentType() const { return m_contentType; }
     Uint8Array* initData() const { return m_initData.get(); }
 
 private:
     MediaKeyNeededEvent();
     MediaKeyNeededEvent(const AtomicString& type, const MediaKeyNeededEventInit& initializer);
 
+    String m_contentType;
     RefPtr<Uint8Array> m_initData;
 };
 

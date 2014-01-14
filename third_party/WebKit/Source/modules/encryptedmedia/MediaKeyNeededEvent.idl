@@ -27,6 +27,7 @@
     EventConstructor,
     RuntimeEnabled=EncryptedMedia,
 ] interface MediaKeyNeededEvent : Event {
+    readonly attribute DOMString contentType;
     readonly attribute Uint8Array initData;
 };
 

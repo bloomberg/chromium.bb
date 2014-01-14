@@ -147,7 +147,7 @@ public:
     void closeMediaSource();
     void durationChanged(double duration);
 
-    // encrypted media extensions
+    // encrypted media extensions (v0.1b)
     void webkitGenerateKeyRequest(const String& keySystem, PassRefPtr<Uint8Array> initData, ExceptionState&);
     void webkitGenerateKeyRequest(const String& keySystem, ExceptionState&);
     void webkitAddKey(const String& keySystem, PassRefPtr<Uint8Array> key, PassRefPtr<Uint8Array> initData, const String& sessionId, ExceptionState&);
@@ -159,8 +159,10 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitkeymessage);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitneedkey);
 
+    // encrypted media extensions (WD)
     MediaKeys* mediaKeys() const { return m_mediaKeys.get(); }
     void setMediaKeys(MediaKeys*);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(needkey);
 
     // controls
     bool controls() const;
@@ -358,8 +360,7 @@ private:
     virtual void mediaPlayerKeyAdded(const String& keySystem, const String& sessionId) OVERRIDE FINAL;
     virtual void mediaPlayerKeyError(const String& keySystem, const String& sessionId, MediaPlayerClient::MediaKeyErrorCode, unsigned short systemCode) OVERRIDE FINAL;
     virtual void mediaPlayerKeyMessage(const String& keySystem, const String& sessionId, const unsigned char* message, unsigned messageLength, const KURL& defaultURL) OVERRIDE FINAL;
-    virtual bool mediaPlayerKeyNeeded(const String& keySystem, const String& sessionId, const unsigned char* initData, unsigned initDataLength) OVERRIDE FINAL;
-    virtual bool mediaPlayerKeyNeeded(Uint8Array*) OVERRIDE FINAL;
+    virtual bool mediaPlayerKeyNeeded(const String& contentType, const unsigned char* initData, unsigned initDataLength) OVERRIDE FINAL;
 
     virtual CORSMode mediaPlayerCORSMode() const OVERRIDE FINAL;
 

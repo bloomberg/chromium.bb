@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>NeedKey</title>
+        <script src=../video-test.js></script>
+        <script>
+            function stringToUint8Array(str)
+            {
+                var arr = [];
+                for(var i = 0,j = str.length; i < j; ++i)
+                  arr[i] = str.charCodeAt(i);
+                return new Uint8Array(arr);
+            }
+
+            var mediaKeys;
+            var mediaKeySession;
+            var expectedInitData = stringToUint8Array('0123456789012345');
+            var validKey = stringToUint8Array(
+                '{"keys":[{"kty":"oct","kid":"691i8WgU0nto7xIq/OSuPA","k":"MDEyMzQ1Njc4OTAxMjM0"}]}');
+
+            // Will get 2 identical events, one for audio, one for video.
+            var expectedEvents = 2;
+
+            function runTest() 
+            {
+                video = document.getElementsByTagName('video')[0];
+                run('video.src = "../content/test-encrypted.webm"');
+                waitForEvent('needkey', needKey, false, false, video, false);
+            }
+
+            function needKey(event)
+            {
+                testExpected("event.target", video);
+                testExpected("event instanceof window.MediaKeyNeededEvent", true);
+                testExpected("event.type", "needkey");
+
+                // FIXME: Enable the following line when contentType set.
+                // testExpected("event.contentType", "video/webm");
+                testArraysEqual("event.initData", expectedInitData);
+
+                if (--expectedEvents == 0)
+                    endTest();
+            }
+        </script>
+    </head>
+    <body onload="runTest()">
+        <p>This tests that the 'needkey' event is generated.</p>
+        <video></video>
+    </body>
+</html>

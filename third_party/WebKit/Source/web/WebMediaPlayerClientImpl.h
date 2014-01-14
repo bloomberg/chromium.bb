@@ -82,7 +82,7 @@ public:
     virtual void keyAdded(const WebString& keySystem, const WebString& sessionId);
     virtual void keyError(const WebString& keySystem, const WebString& sessionId, MediaKeyErrorCode, unsigned short systemCode);
     virtual void keyMessage(const WebString& keySystem, const WebString& sessionId, const unsigned char* message, unsigned messageLength, const WebURL& defaultURL);
-    virtual void keyNeeded(const WebString& keySystem, const WebString& sessionId, const unsigned char* initData, unsigned initDataLength);
+    virtual void keyNeeded(const WebString& contentType, const unsigned char* initData, unsigned initDataLength);
     virtual WebPlugin* createHelperPlugin(const WebString& pluginType, WebFrame*);
     virtual void closeHelperPluginSoon(WebFrame*);
     virtual bool needsWebLayerForVideo() const;

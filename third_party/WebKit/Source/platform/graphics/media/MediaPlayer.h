@@ -92,8 +92,7 @@ public:
     virtual void mediaPlayerKeyAdded(const String& /* keySystem */, const String& /* sessionId */) = 0;
     virtual void mediaPlayerKeyError(const String& /* keySystem */, const String& /* sessionId */, MediaKeyErrorCode, unsigned short /* systemCode */) = 0;
     virtual void mediaPlayerKeyMessage(const String& /* keySystem */, const String& /* sessionId */, const unsigned char* /* message */, unsigned /* messageLength */, const KURL& /* defaultURL */) = 0;
-    virtual bool mediaPlayerKeyNeeded(const String& /* keySystem */, const String& /* sessionId */, const unsigned char* /* initData */, unsigned /* initDataLength */) = 0;
-    virtual bool mediaPlayerKeyNeeded(Uint8Array* /* initData */) = 0;
+    virtual bool mediaPlayerKeyNeeded(const String& /* contentType */, const unsigned char* /* initData */, unsigned /* initDataLength */) = 0;
 
     virtual CORSMode mediaPlayerCORSMode() const = 0;
 

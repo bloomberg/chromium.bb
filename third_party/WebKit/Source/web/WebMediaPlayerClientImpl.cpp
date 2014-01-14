@@ -140,9 +140,9 @@ void WebMediaPlayerClientImpl::keyMessage(const WebString& keySystem, const WebS
     m_client->mediaPlayerKeyMessage(keySystem, sessionId, message, messageLength, defaultURL);
 }
 
-void WebMediaPlayerClientImpl::keyNeeded(const WebString& keySystem, const WebString& sessionId, const unsigned char* initData, unsigned initDataLength)
+void WebMediaPlayerClientImpl::keyNeeded(const WebString& contentType, const unsigned char* initData, unsigned initDataLength)
 {
-    m_client->mediaPlayerKeyNeeded(keySystem, sessionId, initData, initDataLength);
+    m_client->mediaPlayerKeyNeeded(contentType, initData, initDataLength);
 }
 
 WebPlugin* WebMediaPlayerClientImpl::createHelperPlugin(const WebString& pluginType, WebFrame* frame)
