@@ -12,6 +12,7 @@
 #include <windows.h>
 
 #include <map>
+#include <utility>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -543,6 +544,17 @@ class ShellUtil {
       ShellChange level,
       const base::FilePath& old_target_exe,
       const base::FilePath& new_target_exe);
+
+  // Appends Chrome shortcuts with non-whitelisted arguments to |shortcuts| if
+  // not NULL. If |do_removal|, also removes non-whitelisted arguments from
+  // those shortcuts.
+  static bool ShortcutListMaybeRemoveUnknownArgs(
+      ShellUtil::ShortcutLocation location,
+      BrowserDistribution* dist,
+      ShellChange level,
+      const base::FilePath& chrome_exe,
+      bool do_removal,
+      std::vector<std::pair<base::FilePath, base::string16> >* shortcuts);
 
   // Sets |suffix| to the base 32 encoding of the md5 hash of this user's sid
   // preceded by a dot.

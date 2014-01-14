@@ -82,11 +82,13 @@ class ExtensionServiceTestBase : public testing::Test {
   static ExtensionServiceInitParams CreateDefaultInitParamsInTempDir(
       base::ScopedTempDir* temp_dir);
 
+  // Destroy temp_dir_ after thread_bundle_ so clean-up tasks can still use the
+  // directory.
+  base::ScopedTempDir temp_dir_;
   // Destroying at_exit_manager_ will delete all LazyInstances, so it must come
   // after thread_bundle_ in the destruction order.
   base::ShadowingAtExitManager at_exit_manager_;
   content::TestBrowserThreadBundle thread_bundle_;
-  base::ScopedTempDir temp_dir_;
   scoped_ptr<TestingProfile> profile_;
   base::FilePath extensions_install_dir_;
   base::FilePath data_dir_;

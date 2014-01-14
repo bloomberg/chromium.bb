@@ -114,7 +114,7 @@ void ResetProfileSettingsHandler::OnResetProfileSettingsDone() {
   web_ui()->CallJavascriptFunction("ResetProfileSettingsOverlay.doneResetting");
   if (setting_snapshot_) {
     Profile* profile = Profile::FromWebUI(web_ui());
-    ResettableSettingsSnapshot current_snapshot(profile);
+    ResettableSettingsSnapshot current_snapshot(profile, false);
     int difference = setting_snapshot_->FindDifferentFields(current_snapshot);
     if (difference) {
       setting_snapshot_->Subtract(current_snapshot);
@@ -134,13 +134,10 @@ void ResetProfileSettingsHandler::OnResetProfileSettingsDone() {
 }
 
 void ResetProfileSettingsHandler::OnShowResetProfileDialog(
-    const base::ListValue*) {
-  base::DictionaryValue flashInfo;
-  flashInfo.Set("feedbackInfo", GetReadableFeedback(
-      Profile::FromWebUI(web_ui())));
-  web_ui()->CallJavascriptFunction(
-      "ResetProfileSettingsOverlay.setFeedbackInfo",
-      flashInfo);
+    const base::ListValue* value) {
+  UpdateFeedbackUI(ResettableSettingsSnapshot::GetReadableFeedback(
+      Profile::FromWebUI(web_ui()),
+      base::Bind(&ResetProfileSettingsHandler::UpdateFeedbackUI, AsWeakPtr())));
 
   if (automatic_profile_resetter_)
     automatic_profile_resetter_->NotifyDidOpenWebUIResetDialog();
@@ -186,7 +183,8 @@ void ResetProfileSettingsHandler::ResetProfile(bool send_settings) {
     default_settings.reset(new BrandcodedDefaultSettings);
   // Save current settings if required.
   setting_snapshot_.reset(send_settings ?
-      new ResettableSettingsSnapshot(Profile::FromWebUI(web_ui())) : NULL);
+      new ResettableSettingsSnapshot(Profile::FromWebUI(web_ui()), true) :
+      NULL);
   resetter_->Reset(
       ProfileResetter::ALL,
       default_settings.Pass(),
@@ -194,6 +192,15 @@ void ResetProfileSettingsHandler::ResetProfile(bool send_settings) {
                  AsWeakPtr()));
   content::RecordAction(base::UserMetricsAction("ResetProfile"));
   UMA_HISTOGRAM_BOOLEAN("ProfileReset.SendFeedback", send_settings);
+}
+
+void ResetProfileSettingsHandler::UpdateFeedbackUI(
+    scoped_ptr<base::ListValue> list) {
+  base::DictionaryValue feedback_info;
+  feedback_info.Set("feedbackInfo", list.release());
+  web_ui()->CallJavascriptFunction(
+      "ResetProfileSettingsOverlay.setFeedbackInfo",
+      feedback_info);
 }
 
 }  // namespace options

@@ -17,7 +17,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
-#include "extensions/common/extension_set.h"
+#include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
 #include "grit/google_chrome_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -33,6 +33,7 @@ const char kDefaultSearchEnginePath[] = "default_search_engine";
 const char kEnabledExtensions[] = "enabled_extensions";
 const char kHomepageIsNewTabPage[] = "homepage_is_ntp";
 const char kHomepagePath[] = "homepage";
+const char kShortcuts[] = "shortcuts";
 const char kStartupTypePath[] = "startup_type";
 const char kStartupURLPath[] = "startup_urls";
 
@@ -46,10 +47,131 @@ void AddPair(base::ListValue* list,
   list->Append(results);
 }
 
+scoped_ptr<base::ListValue> GetReadableFeedbackForSnapshot(
+    Profile* profile,
+    const ResettableSettingsSnapshot& snapshot) {
+  DCHECK(profile);
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  scoped_ptr<base::ListValue> list(new base::ListValue);
+  AddPair(list.get(),
+          l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_LOCALE),
+          g_browser_process->GetApplicationLocale());
+  AddPair(list.get(),
+          l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_USER_AGENT),
+          content::GetUserAgent(GURL()));
+  chrome::VersionInfo version_info;
+  std::string version = version_info.Version();
+  version += chrome::VersionInfo::GetVersionStringModifier();
+  AddPair(list.get(),
+          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
+          version);
+
+  // Add snapshot data.
+  const std::vector<GURL>& urls = snapshot.startup_urls();
+  std::string startup_urls;
+  for (std::vector<GURL>::const_iterator i = urls.begin();
+       i != urls.end(); ++i) {
+    if (!startup_urls.empty())
+      startup_urls += ' ';
+    startup_urls += i->host();
+  }
+  if (!startup_urls.empty()) {
+    AddPair(list.get(),
+            l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_STARTUP_URLS),
+            startup_urls);
+  }
+
+  base::string16 startup_type;
+  switch (snapshot.startup_type()) {
+    case SessionStartupPref::DEFAULT:
+      startup_type = l10n_util::GetStringUTF16(IDS_OPTIONS_STARTUP_SHOW_NEWTAB);
+      break;
+    case SessionStartupPref::LAST:
+      startup_type = l10n_util::GetStringUTF16(
+          IDS_OPTIONS_STARTUP_RESTORE_LAST_SESSION);
+      break;
+    case SessionStartupPref::URLS:
+      startup_type = l10n_util::GetStringUTF16(IDS_OPTIONS_STARTUP_SHOW_PAGES);
+      break;
+    default:
+      break;
+  }
+  AddPair(list.get(),
+          l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_STARTUP_TYPE),
+          startup_type);
+
+  if (!snapshot.homepage().empty()) {
+    AddPair(list.get(),
+            l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_HOMEPAGE),
+            snapshot.homepage());
+  }
+
+  int is_ntp_message_id = snapshot.homepage_is_ntp() ?
+      IDS_RESET_PROFILE_SETTINGS_HOMEPAGE_IS_NTP_TRUE :
+      IDS_RESET_PROFILE_SETTINGS_HOMEPAGE_IS_NTP_FALSE;
+  AddPair(list.get(),
+          l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_HOMEPAGE_IS_NTP),
+          l10n_util::GetStringUTF16(is_ntp_message_id));
+
+  TemplateURLService* service =
+      TemplateURLServiceFactory::GetForProfile(profile);
+  DCHECK(service);
+  TemplateURL* dse = service->GetDefaultSearchProvider();
+  if (dse) {
+    AddPair(list.get(),
+            l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_DSE),
+            TemplateURLService::GenerateSearchURL(dse).host());
+  }
+
+  if (snapshot.shortcuts_determined()) {
+    base::string16 shortcut_targets;
+    const std::vector<ShortcutCommand>& shortcuts = snapshot.shortcuts();
+    for (std::vector<ShortcutCommand>::const_iterator i =
+         shortcuts.begin(); i != shortcuts.end(); ++i) {
+      if (!shortcut_targets.empty())
+        shortcut_targets += base::ASCIIToUTF16("\n");
+      shortcut_targets += i->first.LossyDisplayName();
+      shortcut_targets += base::ASCIIToUTF16(" ");
+      shortcut_targets += i->second;
+    }
+    if (!shortcut_targets.empty()) {
+      AddPair(list.get(),
+              l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_SHORTCUTS),
+              shortcut_targets);
+    }
+  } else {
+    AddPair(list.get(),
+            l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_SHORTCUTS),
+            l10n_util::GetStringUTF16(
+                IDS_RESET_PROFILE_SETTINGS_PROCESSING_SHORTCUTS));
+  }
+
+  const ResettableSettingsSnapshot::ExtensionList& extensions =
+      snapshot.enabled_extensions();
+  std::string extension_names;
+  for (ResettableSettingsSnapshot::ExtensionList::const_iterator i =
+       extensions.begin(); i != extensions.end(); ++i) {
+    if (!extension_names.empty())
+      extension_names += '\n';
+    extension_names += i->second;
+  }
+  if (!extension_names.empty()) {
+    AddPair(list.get(),
+            l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_EXTENSIONS),
+            extension_names);
+  }
+  return list.Pass();
+}
+
 }  // namespace
 
-ResettableSettingsSnapshot::ResettableSettingsSnapshot(Profile* profile)
-    : startup_(SessionStartupPref::GetStartupPref(profile)) {
+ResettableSettingsSnapshot::ResettableSettingsSnapshot(
+    Profile* profile,
+    bool async_request_shortcuts)
+    : startup_(SessionStartupPref::GetStartupPref(profile)),
+      shortcuts_determined_(false),
+      weak_ptr_factory_(this) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   // URLs are always stored sorted.
   std::sort(startup_.urls.begin(), startup_.urls.end());
 
@@ -76,12 +198,25 @@ ResettableSettingsSnapshot::ResettableSettingsSnapshot(Profile* profile)
 
   // ExtensionSet is sorted but it seems to be an implementation detail.
   std::sort(enabled_extensions_.begin(), enabled_extensions_.end());
+  if (async_request_shortcuts) {
+    content::BrowserThread::PostTaskAndReplyWithResult(
+        content::BrowserThread::FILE,
+        FROM_HERE,
+        base::Bind(&GetChromeLaunchShortcuts),
+        base::Bind(&ResettableSettingsSnapshot::SetShortcutsReportFullFeedback,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   profile,
+                   base::Callback<void(scoped_ptr<base::ListValue>)>()));
+  }
 }
 
-ResettableSettingsSnapshot::~ResettableSettingsSnapshot() {}
+ResettableSettingsSnapshot::~ResettableSettingsSnapshot() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+}
 
 void ResettableSettingsSnapshot::Subtract(
     const ResettableSettingsSnapshot& snapshot) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   ExtensionList extensions = base::STLSetDifference<ExtensionList>(
       enabled_extensions_, snapshot.enabled_extensions_);
   enabled_extensions_.swap(extensions);
@@ -89,6 +224,7 @@ void ResettableSettingsSnapshot::Subtract(
 
 int ResettableSettingsSnapshot::FindDifferentFields(
     const ResettableSettingsSnapshot& snapshot) const {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   int bit_mask = 0;
 
   if (startup_.type != snapshot.startup_.type ||
@@ -105,14 +241,54 @@ int ResettableSettingsSnapshot::FindDifferentFields(
   if (enabled_extensions_ != snapshot.enabled_extensions_)
     bit_mask |= EXTENSIONS;
 
-  COMPILE_ASSERT(ResettableSettingsSnapshot::ALL_FIELDS == 15,
+  if (shortcuts_ != snapshot.shortcuts_)
+    bit_mask |= SHORTCUTS;
+
+  COMPILE_ASSERT(ResettableSettingsSnapshot::ALL_FIELDS == 31,
                  add_new_field_here);
 
   return bit_mask;
 }
 
+// static
+scoped_ptr<base::ListValue> ResettableSettingsSnapshot::GetReadableFeedback(
+    Profile* profile,
+    const base::Callback<void(scoped_ptr<base::ListValue>)>& callback) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  scoped_ptr<ResettableSettingsSnapshot> snapshot(
+      new ResettableSettingsSnapshot(profile, false));
+  scoped_ptr<base::ListValue> list(
+      GetReadableFeedbackForSnapshot(profile, *snapshot));
+  content::BrowserThread::PostTaskAndReplyWithResult(
+        content::BrowserThread::FILE,
+        FROM_HERE,
+        base::Bind(&GetChromeLaunchShortcuts),
+        base::Bind(&ResettableSettingsSnapshot::SetShortcutsReportFullFeedback,
+                   base::Owned(snapshot.release()),
+                   profile,
+                   callback));
+  return list.Pass();
+}
+
+void ResettableSettingsSnapshot::SetShortcutsReportFullFeedback(
+    Profile* profile,
+    const base::Callback<void(scoped_ptr<base::ListValue>)>& callback,
+    const std::vector<ShortcutCommand>& shortcuts) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  for (std::vector<ShortcutCommand>::const_iterator i = shortcuts.begin();
+       i != shortcuts.end(); ++i) {
+    if (!i->second.empty())
+      shortcuts_.push_back(*i);
+  }
+  shortcuts_determined_ = true;
+
+  if (!callback.is_null())
+    callback.Run(GetReadableFeedbackForSnapshot(profile, *this));
+}
+
 std::string SerializeSettingsReport(const ResettableSettingsSnapshot& snapshot,
                                     int field_mask) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   base::DictionaryValue dict;
 
   if (field_mask & ResettableSettingsSnapshot::STARTUP_MODE) {
@@ -147,7 +323,18 @@ std::string SerializeSettingsReport(const ResettableSettingsSnapshot& snapshot,
     dict.Set(kEnabledExtensions, list);
   }
 
-  COMPILE_ASSERT(ResettableSettingsSnapshot::ALL_FIELDS == 15,
+  if (field_mask & ResettableSettingsSnapshot::SHORTCUTS) {
+    base::ListValue* list = new base::ListValue;
+    const std::vector<ShortcutCommand>& shortcuts = snapshot.shortcuts();
+    for (std::vector<ShortcutCommand>::const_iterator i = shortcuts.begin();
+         i != shortcuts.end(); ++i) {
+      list->AppendString(
+          i->first.LossyDisplayName() + base::ASCIIToUTF16(" ") + i->second);
+    }
+    dict.Set(kShortcuts, list);
+  }
+
+  COMPILE_ASSERT(ResettableSettingsSnapshot::ALL_FIELDS == 31,
                  serialize_new_field_here);
 
   std::string json;
@@ -178,92 +365,4 @@ void SendSettingsFeedback(const std::string& report,
   feedback_data->set_user_email("");
 
   feedback_util::SendReport(feedback_data);
-}
-
-base::ListValue* GetReadableFeedback(Profile* profile) {
-  DCHECK(profile);
-  base::ListValue* list = new base::ListValue;
-  AddPair(list, l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_LOCALE),
-          g_browser_process->GetApplicationLocale());
-  AddPair(list,
-          l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_USER_AGENT),
-          content::GetUserAgent(GURL()));
-  chrome::VersionInfo version_info;
-  std::string version = version_info.Version();
-  version += chrome::VersionInfo::GetVersionStringModifier();
-  AddPair(list,
-          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-          version);
-
-  // Add snapshot data.
-  ResettableSettingsSnapshot snapshot(profile);
-  const std::vector<GURL>& urls = snapshot.startup_urls();
-  std::string startup_urls;
-  for (std::vector<GURL>::const_iterator i = urls.begin();
-       i != urls.end(); ++i) {
-    (startup_urls += i->host()) += ' ';
-  }
-  if (!startup_urls.empty()) {
-    startup_urls.erase(startup_urls.end() - 1);
-    AddPair(list,
-            l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_STARTUP_URLS),
-            startup_urls);
-  }
-
-  base::string16 startup_type;
-  switch (snapshot.startup_type()) {
-    case SessionStartupPref::DEFAULT:
-      startup_type = l10n_util::GetStringUTF16(IDS_OPTIONS_STARTUP_SHOW_NEWTAB);
-      break;
-    case SessionStartupPref::LAST:
-      startup_type = l10n_util::GetStringUTF16(
-          IDS_OPTIONS_STARTUP_RESTORE_LAST_SESSION);
-      break;
-    case SessionStartupPref::URLS:
-      startup_type = l10n_util::GetStringUTF16(IDS_OPTIONS_STARTUP_SHOW_PAGES);
-      break;
-    default:
-      break;
-  }
-  AddPair(list,
-          l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_STARTUP_TYPE),
-          startup_type);
-
-  if (!snapshot.homepage().empty()) {
-    AddPair(list,
-            l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_HOMEPAGE),
-            snapshot.homepage());
-  }
-
-  int is_ntp_message_id = snapshot.homepage_is_ntp() ?
-      IDS_RESET_PROFILE_SETTINGS_HOMEPAGE_IS_NTP_TRUE :
-      IDS_RESET_PROFILE_SETTINGS_HOMEPAGE_IS_NTP_FALSE;
-  AddPair(list,
-          l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_HOMEPAGE_IS_NTP),
-          l10n_util::GetStringUTF16(is_ntp_message_id));
-
-  TemplateURLService* service =
-      TemplateURLServiceFactory::GetForProfile(profile);
-  DCHECK(service);
-  TemplateURL* dse = service->GetDefaultSearchProvider();
-  if (dse) {
-    AddPair(list,
-            l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_DSE),
-            TemplateURLService::GenerateSearchURL(dse).host());
-  }
-
-  const ResettableSettingsSnapshot::ExtensionList& extensions =
-      snapshot.enabled_extensions();
-  std::string extension_names;
-  for (ResettableSettingsSnapshot::ExtensionList::const_iterator i =
-       extensions.begin(); i != extensions.end(); ++i) {
-    (extension_names += i->second) += '\n';
-  }
-  if (!extension_names.empty()) {
-    extension_names.erase(extension_names.end() - 1);
-    AddPair(list,
-            l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_EXTENSIONS),
-            extension_names);
-  }
-  return list;
 }

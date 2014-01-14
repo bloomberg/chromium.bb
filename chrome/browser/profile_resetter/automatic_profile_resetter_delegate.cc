@@ -331,7 +331,7 @@ void AutomaticProfileResetterDelegateImpl::RunProfileSettingsReset(
     const base::Closure& completion) {
   DCHECK(brandcoded_defaults_);
   scoped_ptr<ResettableSettingsSnapshot> old_settings_snapshot(
-      send_feedback ? new ResettableSettingsSnapshot(profile_) : NULL);
+      send_feedback ? new ResettableSettingsSnapshot(profile_, true) : NULL);
   profile_resetter_->Reset(
       resettable_aspects_,
       brandcoded_defaults_.Pass(),
@@ -358,7 +358,7 @@ void AutomaticProfileResetterDelegateImpl::OnProfileSettingsResetCompleted(
     scoped_ptr<ResettableSettingsSnapshot> old_settings_snapshot) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (old_settings_snapshot) {
-    ResettableSettingsSnapshot new_settings_snapshot(profile_);
+    ResettableSettingsSnapshot new_settings_snapshot(profile_, false);
     int difference =
         old_settings_snapshot->FindDifferentFields(new_settings_snapshot);
     if (difference) {
