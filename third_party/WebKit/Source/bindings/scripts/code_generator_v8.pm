@@ -1278,7 +1278,7 @@ static void ${funcName}OriginSafeMethodGetterCallback${forMainWorldSuffix}(v8::L
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     ${implClassName}V8Internal::${funcName}OriginSafeMethodGetter${forMainWorldSuffix}(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
 END
@@ -1314,7 +1314,7 @@ static void ${implClassName}OriginSafeMethodSetterCallback(v8::Local<v8::String>
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     ${implClassName}V8Internal::${implClassName}OriginSafeMethodSetter(name, jsValue, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
 END
@@ -1434,7 +1434,7 @@ sub GenerateNormalAttributeGetterCallback
     } else {
         $code .= "    ${implClassName}V8Internal::${attrName}AttributeGetter${forMainWorldSuffix}(info);\n";
     }
-    $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"V8\", \"Execution\");\n";
+    $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"V8\", \"V8Execution\");\n";
     $code .= "}\n";
     $code .= "#endif // ${conditionalString}\n" if $conditionalString;
     $code .= "\n";
@@ -1897,7 +1897,7 @@ sub GenerateNormalAttributeSetterCallback
     } else {
         $code .= "    ${implClassName}V8Internal::${attrName}AttributeSetter${forMainWorldSuffix}(jsValue, info);\n";
     }
-    $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"V8\", \"Execution\");\n";
+    $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"V8\", \"V8Execution\");\n";
     $code .= "}\n";
     $code .= "#endif // ${conditionalString}\n" if $conditionalString;
     $code .= "\n";
@@ -2347,7 +2347,7 @@ END
     } else {
         $code .= "    ${implClassName}V8Internal::${name}Method${forMainWorldSuffix}(info);\n";
     }
-    $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"V8\", \"Execution\");\n";
+    $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"V8\", \"V8Execution\");\n";
     $code .= "}\n";
     $code .= "#endif // ${conditionalString}\n" if $conditionalString;
     $code .= "\n";
@@ -3674,7 +3674,7 @@ sub GenerateImplementationIndexedPropertyGetterCallback
     } else {
         $code .= "    ${implClassName}V8Internal::indexedPropertyGetter(index, info);\n";
     }
-    $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"V8\", \"Execution\");\n";
+    $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"V8\", \"V8Execution\");\n";
     $code .= "}\n\n";
     $implementation{nameSpaceInternal}->add($code);
 }
@@ -3694,7 +3694,7 @@ sub GenerateImplementationIndexedPropertySetterCallback
     } else {
         $code .= "    ${implClassName}V8Internal::indexedPropertySetter(index, jsValue, info);\n";
     }
-    $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"V8\", \"Execution\");\n";
+    $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"V8\", \"V8Execution\");\n";
     $code .= "}\n\n";
     $implementation{nameSpaceInternal}->add($code);
 }
@@ -3714,7 +3714,7 @@ sub GenerateImplementationIndexedPropertyDeleterCallback
     } else {
         $code .= "    ${implClassName}V8Internal::indexedPropertyDeleter(index, info);\n";
     }
-    $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"V8\", \"Execution\");\n";
+    $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"V8\", \"V8Execution\");\n";
     $code .= "}\n\n";
     $implementation{nameSpaceInternal}->add($code);
 }
@@ -3858,7 +3858,7 @@ sub GenerateImplementationNamedPropertyGetterCallback
     } else {
         $code .= "    ${implClassName}V8Internal::namedPropertyGetter(name, info);\n";
     }
-    $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"V8\", \"Execution\");\n";
+    $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"V8\", \"V8Execution\");\n";
     $code .= "}\n\n";
     $implementation{nameSpaceInternal}->add($code);
 }
@@ -3878,7 +3878,7 @@ sub GenerateImplementationNamedPropertySetterCallback
     } else {
         $code .= "    ${implClassName}V8Internal::namedPropertySetter(name, jsValue, info);\n";
     }
-    $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"V8\", \"Execution\");\n";
+    $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"V8\", \"V8Execution\");\n";
     $code .= "}\n\n";
     $implementation{nameSpaceInternal}->add($code);
 }
@@ -3898,7 +3898,7 @@ sub GenerateImplementationNamedPropertyDeleterCallback
     } else {
         $code .= "    ${implClassName}V8Internal::namedPropertyDeleter(name, info);\n";
     }
-    $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"V8\", \"Execution\");\n";
+    $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"V8\", \"V8Execution\");\n";
     $code .= "}\n\n";
     $implementation{nameSpaceInternal}->add($code);
 }
@@ -3918,7 +3918,7 @@ sub GenerateImplementationNamedPropertyEnumeratorCallback
     } else {
         $code .= "    ${implClassName}V8Internal::namedPropertyEnumerator(info);\n";
     }
-    $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"V8\", \"Execution\");\n";
+    $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"V8\", \"V8Execution\");\n";
     $code .= "}\n\n";
     $implementation{nameSpaceInternal}->add($code);
 }
@@ -3938,7 +3938,7 @@ sub GenerateImplementationNamedPropertyQueryCallback
     } else {
         $code .= "    ${implClassName}V8Internal::namedPropertyQuery(name, info);\n";
     }
-    $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"V8\", \"Execution\");\n";
+    $code .= "    TRACE_EVENT_SET_SAMPLING_STATE(\"V8\", \"V8Execution\");\n";
     $code .= "}\n\n";
     $implementation{nameSpaceInternal}->add($code);
 }

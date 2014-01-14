@@ -82,7 +82,7 @@ static void unsignedLongLongAttrAttributeGetterCallback(v8::Local<v8::String>, c
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     TestTypedefsV8Internal::unsignedLongLongAttrAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
 static void unsignedLongLongAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
@@ -97,7 +97,7 @@ static void unsignedLongLongAttrAttributeSetterCallback(v8::Local<v8::String>, v
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     TestTypedefsV8Internal::unsignedLongLongAttrAttributeSetter(jsValue, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
 static void attrWithGetterExceptionAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -114,7 +114,7 @@ static void attrWithGetterExceptionAttributeGetterCallback(v8::Local<v8::String>
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     TestTypedefsV8Internal::attrWithGetterExceptionAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
 static void attrWithGetterExceptionAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
@@ -129,7 +129,7 @@ static void attrWithGetterExceptionAttributeSetterCallback(v8::Local<v8::String>
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     TestTypedefsV8Internal::attrWithGetterExceptionAttributeSetter(jsValue, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
 static void attrWithSetterExceptionAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -142,7 +142,7 @@ static void attrWithSetterExceptionAttributeGetterCallback(v8::Local<v8::String>
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     TestTypedefsV8Internal::attrWithSetterExceptionAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
 static void attrWithSetterExceptionAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
@@ -158,7 +158,7 @@ static void attrWithSetterExceptionAttributeSetterCallback(v8::Local<v8::String>
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     TestTypedefsV8Internal::attrWithSetterExceptionAttributeSetter(jsValue, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
 static void stringAttrWithGetterExceptionAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -175,7 +175,7 @@ static void stringAttrWithGetterExceptionAttributeGetterCallback(v8::Local<v8::S
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     TestTypedefsV8Internal::stringAttrWithGetterExceptionAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
 static void stringAttrWithGetterExceptionAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
@@ -189,7 +189,7 @@ static void stringAttrWithGetterExceptionAttributeSetterCallback(v8::Local<v8::S
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     TestTypedefsV8Internal::stringAttrWithGetterExceptionAttributeSetter(jsValue, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
 static void stringAttrWithSetterExceptionAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -202,7 +202,7 @@ static void stringAttrWithSetterExceptionAttributeGetterCallback(v8::Local<v8::S
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     TestTypedefsV8Internal::stringAttrWithSetterExceptionAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
 static void stringAttrWithSetterExceptionAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
@@ -218,7 +218,7 @@ static void stringAttrWithSetterExceptionAttributeSetterCallback(v8::Local<v8::S
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     TestTypedefsV8Internal::stringAttrWithSetterExceptionAttributeSetter(jsValue, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
 static void TestTypedefsConstructorGetter(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -256,7 +256,7 @@ static void funcMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestTypedefsV8Internal::funcMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
 static void setShadowMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -286,7 +286,7 @@ static void setShadowMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& i
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestTypedefsV8Internal::setShadowMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
 static void voidMethodTestCallbackInterfaceArgumentMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -308,7 +308,7 @@ static void voidMethodTestCallbackInterfaceArgumentMethodCallback(const v8::Func
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestTypedefsV8Internal::voidMethodTestCallbackInterfaceArgumentMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
 static void methodWithSequenceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -326,7 +326,7 @@ static void methodWithSequenceArgMethodCallback(const v8::FunctionCallbackInfo<v
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestTypedefsV8Internal::methodWithSequenceArgMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
 static void stringArrayFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -349,7 +349,7 @@ static void stringArrayFunctionMethodCallback(const v8::FunctionCallbackInfo<v8:
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestTypedefsV8Internal::stringArrayFunctionMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
 static void stringArrayFunction2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -372,7 +372,7 @@ static void stringArrayFunction2MethodCallback(const v8::FunctionCallbackInfo<v8
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestTypedefsV8Internal::stringArrayFunction2Method(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
 static void methodWithExceptionMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -388,7 +388,7 @@ static void methodWithExceptionMethodCallback(const v8::FunctionCallbackInfo<v8:
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestTypedefsV8Internal::methodWithExceptionMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)

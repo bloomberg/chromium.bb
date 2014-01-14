@@ -186,6 +186,7 @@ bool V8WindowShell::initializeIfNeeded()
         return true;
 
     TRACE_EVENT0("v8", "V8WindowShell::initializeIfNeeded");
+    TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "InitializeWindow");
 
     v8::HandleScope handleScope(m_isolate);
 

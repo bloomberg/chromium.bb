@@ -113,7 +113,7 @@ v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info
     {% else %}
     {{cpp_class}}V8Internal::{{attribute.name}}AttributeGetter{{world_suffix}}(info);
     {% endif %}
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 {% endfilter %}
 {% endmacro %}
@@ -218,7 +218,7 @@ v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackI
     {% else %}
     {{cpp_class}}V8Internal::{{attribute.name}}AttributeSetter{{world_suffix}}(jsValue, info);
     {% endif %}
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 {% endfilter %}
 {% endmacro %}

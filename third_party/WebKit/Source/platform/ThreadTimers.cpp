@@ -102,7 +102,7 @@ void ThreadTimers::updateSharedTimer()
 
 void ThreadTimers::sharedTimerFired()
 {
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "Internal");
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "BlinkInternal");
 
     // Redirect to non-static method.
     PlatformThreadData::current().threadTimers().sharedTimerFiredInternal();

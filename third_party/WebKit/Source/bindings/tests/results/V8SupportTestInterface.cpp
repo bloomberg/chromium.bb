@@ -86,7 +86,7 @@ static void supplementalStaticReadOnlyAttrAttributeGetterCallback(v8::Local<v8::
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     SupportTestInterfaceV8Internal::supplementalStaticReadOnlyAttrAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
@@ -102,7 +102,7 @@ static void supplementalStaticAttrAttributeGetterCallback(v8::Local<v8::String>,
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     SupportTestInterfaceV8Internal::supplementalStaticAttrAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
@@ -119,7 +119,7 @@ static void supplementalStaticAttrAttributeSetterCallback(v8::Local<v8::String>,
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     SupportTestInterfaceV8Internal::supplementalStaticAttrAttributeSetter(jsValue, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
@@ -136,7 +136,7 @@ static void supplementalStr1AttributeGetterCallback(v8::Local<v8::String>, const
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     SupportTestInterfaceV8Internal::supplementalStr1AttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
@@ -153,7 +153,7 @@ static void supplementalStr2AttributeGetterCallback(v8::Local<v8::String>, const
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     SupportTestInterfaceV8Internal::supplementalStr2AttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
@@ -171,7 +171,7 @@ static void supplementalStr2AttributeSetterCallback(v8::Local<v8::String>, v8::L
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     SupportTestInterfaceV8Internal::supplementalStr2AttributeSetter(jsValue, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
@@ -180,7 +180,7 @@ static void supplementalStr3AttributeGetterCallback(v8::Local<v8::String>, const
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     V8SupportTestInterface::supplementalStr3AttributeGetterCustom(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
@@ -189,7 +189,7 @@ static void supplementalStr3AttributeSetterCallback(v8::Local<v8::String>, v8::L
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     V8SupportTestInterface::supplementalStr3AttributeSetterCustom(jsValue, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
@@ -206,7 +206,7 @@ static void supplementalNodeAttributeGetterCallback(v8::Local<v8::String>, const
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     SupportTestInterfaceV8Internal::supplementalNodeAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
@@ -224,7 +224,7 @@ static void supplementalNodeAttributeSetterCallback(v8::Local<v8::String>, v8::L
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     SupportTestInterfaceV8Internal::supplementalNodeAttributeSetter(jsValue, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
@@ -241,7 +241,7 @@ static void Node13AttributeGetterCallback(v8::Local<v8::String>, const v8::Prope
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     SupportTestInterfaceV8Internal::Node13AttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
@@ -259,7 +259,7 @@ static void Node13AttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::V
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     SupportTestInterfaceV8Internal::Node13AttributeSetter(jsValue, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
@@ -276,7 +276,7 @@ static void Node14AttributeGetterCallback(v8::Local<v8::String>, const v8::Prope
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     SupportTestInterfaceV8Internal::Node14AttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
@@ -294,7 +294,7 @@ static void Node14AttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::V
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     SupportTestInterfaceV8Internal::Node14AttributeSetter(jsValue, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
@@ -311,7 +311,7 @@ static void supplementalMethod1MethodCallback(const v8::FunctionCallbackInfo<v8:
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     SupportTestInterfaceV8Internal::supplementalMethod1Method(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
@@ -345,7 +345,7 @@ static void supplementalMethod2MethodCallback(const v8::FunctionCallbackInfo<v8:
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     SupportTestInterfaceV8Internal::supplementalMethod2Method(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
@@ -354,7 +354,7 @@ static void supplementalMethod3MethodCallback(const v8::FunctionCallbackInfo<v8:
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     V8SupportTestInterface::supplementalMethod3MethodCustom(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
@@ -370,7 +370,7 @@ static void supplementalMethod4MethodCallback(const v8::FunctionCallbackInfo<v8:
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     SupportTestInterfaceV8Internal::supplementalMethod4Method(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 

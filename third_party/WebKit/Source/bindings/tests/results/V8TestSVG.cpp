@@ -89,7 +89,7 @@ static void animatedReflectedAttributeAttributeGetterCallback(v8::Local<v8::Stri
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     TestSVGV8Internal::animatedReflectedAttributeAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
 static void animatedReflectedAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
@@ -105,7 +105,7 @@ static void animatedReflectedAttributeAttributeSetterCallback(v8::Local<v8::Stri
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     TestSVGV8Internal::animatedReflectedAttributeAttributeSetter(jsValue, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
 static void mutablePointAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -118,7 +118,7 @@ static void mutablePointAttributeGetterCallback(v8::Local<v8::String>, const v8:
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     TestSVGV8Internal::mutablePointAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
 static void mutablePointAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
@@ -138,7 +138,7 @@ static void mutablePointAttributeSetterCallback(v8::Local<v8::String>, v8::Local
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     TestSVGV8Internal::mutablePointAttributeSetter(jsValue, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
 static void immutablePointAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -151,7 +151,7 @@ static void immutablePointAttributeGetterCallback(v8::Local<v8::String>, const v
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     TestSVGV8Internal::immutablePointAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
 static void immutablePointAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
@@ -171,7 +171,7 @@ static void immutablePointAttributeSetterCallback(v8::Local<v8::String>, v8::Loc
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     TestSVGV8Internal::immutablePointAttributeSetter(jsValue, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
 static void getSVGDocumentMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -193,7 +193,7 @@ static void getSVGDocumentMethodCallback(const v8::FunctionCallbackInfo<v8::Valu
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestSVGV8Internal::getSVGDocumentMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
 static void mutablePointFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -206,7 +206,7 @@ static void mutablePointFunctionMethodCallback(const v8::FunctionCallbackInfo<v8
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestSVGV8Internal::mutablePointFunctionMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
 static void immutablePointFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -219,7 +219,7 @@ static void immutablePointFunctionMethodCallback(const v8::FunctionCallbackInfo<
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestSVGV8Internal::immutablePointFunctionMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
 static void immutablePointFunctionTypedefMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -232,7 +232,7 @@ static void immutablePointFunctionTypedefMethodCallback(const v8::FunctionCallba
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestSVGV8Internal::immutablePointFunctionTypedefMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
 static void svgPointMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -258,7 +258,7 @@ static void svgPointMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Valu
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestSVGV8Internal::svgPointMethodMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
 static void strictSVGPointMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -292,7 +292,7 @@ static void strictSVGPointMethodMethodCallback(const v8::FunctionCallbackInfo<v8
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestSVGV8Internal::strictSVGPointMethodMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
 } // namespace TestSVGV8Internal
