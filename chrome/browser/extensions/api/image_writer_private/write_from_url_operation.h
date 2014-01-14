@@ -7,8 +7,8 @@
 
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/api/image_writer_private/operation.h"
+#include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
-#include "net/base/net_errors.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -39,7 +39,8 @@ class WriteFromUrlOperation : public Operation,
   void CreateTempFile();
 
   void DownloadStart();
-  void OnDownloadStarted(content::DownloadItem*, net::Error);
+  void OnDownloadStarted(content::DownloadItem*,
+                         content::DownloadInterruptReason interrupt_reason);
   virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
   void DownloadComplete();
   void DownloadCleanUp();

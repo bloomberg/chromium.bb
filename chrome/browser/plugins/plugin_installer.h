@@ -9,8 +9,8 @@
 #include "base/strings/string16.h"
 #include "base/version.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
+#include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
-#include "net/base/net_errors.h"
 #include "url/gurl.h"
 
 class PluginInstallerObserver;
@@ -52,7 +52,8 @@ class PluginInstaller : public content::DownloadItem::Observer {
                        content::WebContents* web_contents);
 
  private:
-  void DownloadStarted(content::DownloadItem* item, net::Error error);
+  void DownloadStarted(content::DownloadItem* item,
+                       content::DownloadInterruptReason interrupt_reason);
   void DownloadError(const std::string& msg);
   void DownloadCancelled();
 

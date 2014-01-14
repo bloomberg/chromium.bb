@@ -18,6 +18,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_save_info.h"
+#include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_context.h"
@@ -47,7 +48,7 @@ void BeginDownload(
   scoped_ptr<net::URLRequest> request(
       resource_context->GetRequestContext()->CreateRequest(
           url, net::DEFAULT_PRIORITY, NULL));
-  net::Error error = rdh->BeginDownload(
+  content::DownloadInterruptReason error = rdh->BeginDownload(
       request.Pass(),
       content::Referrer(),
       false,  // is_content_initiated
@@ -59,7 +60,7 @@ void BeginDownload(
       content::DownloadItem::kInvalidId,
       callback);
 
-  if (error != net::OK) {
+  if (error != content::DOWNLOAD_INTERRUPT_REASON_NONE) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(callback, static_cast<DownloadItem*>(NULL), error));
@@ -94,7 +95,7 @@ void PluginInstaller::OnDownloadUpdated(DownloadItem* download) {
     }
     case DownloadItem::INTERRUPTED: {
       content::DownloadInterruptReason reason = download->GetLastReason();
-      DownloadError(content::InterruptReasonDebugString(reason));
+      DownloadError(content::DownloadInterruptReasonToString(reason));
       break;
     }
     case DownloadItem::MAX_DOWNLOAD_STATE: {
@@ -153,16 +154,19 @@ void PluginInstaller::StartInstalling(const GURL& plugin_url,
                             base::Unretained(this))));
 }
 
-void PluginInstaller::DownloadStarted(content::DownloadItem* item,
-                                      net::Error error) {
+void PluginInstaller::DownloadStarted(
+    content::DownloadItem* item,
+    content::DownloadInterruptReason interrupt_reason) {
   if (!item) {
-    DCHECK_NE(net::OK, error);
-    std::string msg =
-        base::StringPrintf("Error %d: %s", error, net::ErrorToString(error));
+    DCHECK_NE(content::DOWNLOAD_INTERRUPT_REASON_NONE, interrupt_reason);
+    std::string msg = base::StringPrintf(
+        "Error %d: %s",
+        interrupt_reason,
+        content::DownloadInterruptReasonToString(interrupt_reason).c_str());
     DownloadError(msg);
     return;
   }
-  DCHECK_EQ(net::OK, error);
+  DCHECK_EQ(content::DOWNLOAD_INTERRUPT_REASON_NONE, interrupt_reason);
   item->SetOpenWhenComplete(true);
   item->AddObserver(this);
 }

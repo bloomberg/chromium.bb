@@ -89,14 +89,15 @@ class DragDownloadFile::DragDownloadFileUI : public DownloadItem::Observer {
       download_item_->RemoveObserver(this);
   }
 
-  void OnDownloadStarted(DownloadItem* item, net::Error error) {
+  void OnDownloadStarted(DownloadItem* item,
+                         DownloadInterruptReason interrupt_reason) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     if (!item) {
-      DCHECK_NE(net::OK, error);
+      DCHECK_NE(DOWNLOAD_INTERRUPT_REASON_NONE, interrupt_reason);
       on_completed_loop_->PostTask(FROM_HERE, base::Bind(on_completed_, false));
       return;
     }
-    DCHECK_EQ(net::OK, error);
+    DCHECK_EQ(DOWNLOAD_INTERRUPT_REASON_NONE, interrupt_reason);
     download_item_ = item;
     download_item_->AddObserver(this);
   }

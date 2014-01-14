@@ -108,8 +108,9 @@ void WriteFromUrlOperation::DownloadStart() {
   download_manager->DownloadUrl(download_params.Pass());
 }
 
-void WriteFromUrlOperation::OnDownloadStarted(content::DownloadItem* item,
-                                              net::Error error) {
+void WriteFromUrlOperation::OnDownloadStarted(
+    content::DownloadItem* item,
+    content::DownloadInterruptReason interrupt_reason) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (download_stopped_) {
@@ -120,7 +121,7 @@ void WriteFromUrlOperation::OnDownloadStarted(content::DownloadItem* item,
   }
 
   if (item) {
-    DCHECK_EQ(net::OK, error);
+    DCHECK_EQ(content::DOWNLOAD_INTERRUPT_REASON_NONE, interrupt_reason);
 
     download_ = item;
     download_->AddObserver(this);
@@ -128,10 +129,10 @@ void WriteFromUrlOperation::OnDownloadStarted(content::DownloadItem* item,
     // Run at least once.
     OnDownloadUpdated(download_);
   } else {
-    DCHECK_NE(net::OK, error);
+    DCHECK_NE(content::DOWNLOAD_INTERRUPT_REASON_NONE, interrupt_reason);
     std::string error_message = ErrorUtils::FormatErrorMessage(
         "Download failed: *",
-        net::ErrorToString(error));
+        content::DownloadInterruptReasonToString(interrupt_reason));
     Error(error_message);
   }
 }

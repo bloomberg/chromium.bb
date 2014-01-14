@@ -366,7 +366,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
                            "    \"previous\": \"in_progress\","
                            "    \"current\": \"interrupted\"}}]",
                            item->GetId(),
-                           content::InterruptReasonDebugString(
+                           content::DownloadInterruptReasonToString(
                              expected_error).c_str()));
   }
 
@@ -1679,13 +1679,13 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       << kInvalidURLs[index];
   }
 
-  EXPECT_STREQ("net::ERR_ACCESS_DENIED", RunFunctionAndReturnError(
+  EXPECT_STREQ("NETWORK_INVALID_REQUEST", RunFunctionAndReturnError(
       new DownloadsDownloadFunction(),
       "[{\"url\": \"javascript:document.write(\\\"hello\\\");\"}]").c_str());
-  EXPECT_STREQ("net::ERR_ACCESS_DENIED", RunFunctionAndReturnError(
+  EXPECT_STREQ("NETWORK_INVALID_REQUEST", RunFunctionAndReturnError(
       new DownloadsDownloadFunction(),
       "[{\"url\": \"javascript:return false;\"}]").c_str());
-  EXPECT_STREQ("net::ERR_NOT_IMPLEMENTED", RunFunctionAndReturnError(
+  EXPECT_STREQ("NETWORK_FAILED", RunFunctionAndReturnError(
       new DownloadsDownloadFunction(),
       "[{\"url\": \"ftp://example.com/example.txt\"}]").c_str());
 }

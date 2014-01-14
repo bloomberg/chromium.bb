@@ -21,7 +21,7 @@ enum DownloadInterruptReason {
 #undef INTERRUPT_REASON
 };
 
-std::string CONTENT_EXPORT InterruptReasonDebugString(
+std::string CONTENT_EXPORT DownloadInterruptReasonToString(
     DownloadInterruptReason error);
 
 }  // namespace content

@@ -254,16 +254,18 @@ void RemoveDownloadFileFromChildSecurityPolicy(int child_id,
 #pragma warning(default: 4748)
 #endif
 
-net::Error CallbackAndReturn(
+DownloadInterruptReason CallbackAndReturn(
     const DownloadUrlParameters::OnStartedCallback& started_cb,
-    net::Error net_error) {
+    DownloadInterruptReason interrupt_reason) {
   if (started_cb.is_null())
-    return net_error;
+    return interrupt_reason;
   BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(started_cb, static_cast<DownloadItem*>(NULL), net_error));
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(
+          started_cb, static_cast<DownloadItem*>(NULL), interrupt_reason));
 
-  return net_error;
+  return interrupt_reason;
 }
 
 int GetCertID(net::URLRequest* request, int child_id) {
@@ -465,7 +467,7 @@ void ResourceDispatcherHostImpl::CancelRequestsForContext(
   }
 }
 
-net::Error ResourceDispatcherHostImpl::BeginDownload(
+DownloadInterruptReason ResourceDispatcherHostImpl::BeginDownload(
     scoped_ptr<net::URLRequest> request,
     const Referrer& referrer,
     bool is_content_initiated,
@@ -477,7 +479,8 @@ net::Error ResourceDispatcherHostImpl::BeginDownload(
     uint32 download_id,
     const DownloadStartedCallback& started_callback) {
   if (is_shutdown_)
-    return CallbackAndReturn(started_callback, net::ERR_INSUFFICIENT_RESOURCES);
+    return CallbackAndReturn(started_callback,
+                             DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN);
 
   const GURL& url = request->original_url();
 
@@ -515,7 +518,8 @@ net::Error ResourceDispatcherHostImpl::BeginDownload(
           CanRequestURL(child_id, url)) {
     VLOG(1) << "Denied unauthorized download request for "
             << url.possibly_invalid_spec();
-    return CallbackAndReturn(started_callback, net::ERR_ACCESS_DENIED);
+    return CallbackAndReturn(started_callback,
+                             DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST);
   }
 
   request_id_--;
@@ -524,7 +528,8 @@ net::Error ResourceDispatcherHostImpl::BeginDownload(
   if (!request_context->job_factory()->IsHandledURL(url)) {
     VLOG(1) << "Download request for unsupported protocol: "
             << url.possibly_invalid_spec();
-    return CallbackAndReturn(started_callback, net::ERR_ACCESS_DENIED);
+    return CallbackAndReturn(started_callback,
+                             DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST);
   }
 
   ResourceRequestInfoImpl* extra_info =
@@ -548,7 +553,7 @@ net::Error ResourceDispatcherHostImpl::BeginDownload(
 
   BeginRequestInternal(request.Pass(), handler.Pass());
 
-  return net::OK;
+  return DOWNLOAD_INTERRUPT_REASON_NONE;
 }
 
 void ResourceDispatcherHostImpl::ClearLoginDelegateForRequest(

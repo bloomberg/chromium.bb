@@ -262,11 +262,13 @@ scoped_ptr<base::DictionaryValue> DownloadItemToJSON(
   json->SetDouble(kTotalBytesKey, download_item->GetTotalBytes());
   json->SetBoolean(kIncognitoKey, profile->IsOffTheRecord());
   if (download_item->GetState() == DownloadItem::INTERRUPTED) {
-    json->SetString(kErrorKey, content::InterruptReasonDebugString(
-        download_item->GetLastReason()));
+    json->SetString(kErrorKey,
+                    content::DownloadInterruptReasonToString(
+                        download_item->GetLastReason()));
   } else if (download_item->GetState() == DownloadItem::CANCELLED) {
-    json->SetString(kErrorKey, content::InterruptReasonDebugString(
-        content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED));
+    json->SetString(kErrorKey,
+                    content::DownloadInterruptReasonToString(
+                        content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED));
   }
   if (!download_item->GetEndTime().is_null())
     json->SetString(kEndTimeKey, TimeToISO8601(download_item->GetEndTime()));
@@ -1039,11 +1041,11 @@ void DownloadsDownloadFunction::OnStarted(
     const base::FilePath& creator_suggested_filename,
     downloads::FilenameConflictAction creator_conflict_action,
     DownloadItem* item,
-    net::Error error) {
+    content::DownloadInterruptReason interrupt_reason) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  VLOG(1) << __FUNCTION__ << " " << item << " " << error;
+  VLOG(1) << __FUNCTION__ << " " << item << " " << interrupt_reason;
   if (item) {
-    DCHECK_EQ(net::OK, error);
+    DCHECK_EQ(content::DOWNLOAD_INTERRUPT_REASON_NONE, interrupt_reason);
     SetResult(new base::FundamentalValue(static_cast<int>(item->GetId())));
     if (!creator_suggested_filename.empty()) {
       ExtensionDownloadsEventRouterData* data =
@@ -1060,8 +1062,8 @@ void DownloadsDownloadFunction::OnStarted(
         item, GetExtension()->id(), GetExtension()->name());
     item->UpdateObservers();
   } else {
-    DCHECK_NE(net::OK, error);
-    error_ = net::ErrorToString(error);
+    DCHECK_NE(content::DOWNLOAD_INTERRUPT_REASON_NONE, interrupt_reason);
+    error_ = content::DownloadInterruptReasonToString(interrupt_reason);
   }
   SendResponse(error_.empty());
 }

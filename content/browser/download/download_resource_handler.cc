@@ -37,12 +37,12 @@ namespace {
 void CallStartedCBOnUIThread(
     const DownloadUrlParameters::OnStartedCallback& started_cb,
     DownloadItem* item,
-    net::Error error) {
+    DownloadInterruptReason interrupt_reason) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (started_cb.is_null())
     return;
-  started_cb.Run(item, error);
+  started_cb.Run(item, interrupt_reason);
 }
 
 // Static function in order to prevent any accidental accesses to
@@ -58,7 +58,7 @@ static void StartOnUIThread(
     // NULL in unittests or if the page closed right after starting the
     // download.
     if (!started_cb.is_null())
-      started_cb.Run(NULL, net::ERR_ACCESS_DENIED);
+      started_cb.Run(NULL, DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
     return;
   }
 
@@ -206,13 +206,16 @@ bool DownloadResourceHandler::OnResponseStarted(
 }
 
 void DownloadResourceHandler::CallStartedCB(
-    DownloadItem* item, net::Error error) {
+    DownloadItem* item,
+    DownloadInterruptReason interrupt_reason) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (started_cb_.is_null())
     return;
   BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&CallStartedCBOnUIThread, started_cb_, item, error));
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(
+          &CallStartedCBOnUIThread, started_cb_, item, interrupt_reason));
   started_cb_.Reset();
 }
 
@@ -384,7 +387,7 @@ void DownloadResourceHandler::OnResponseCompleted(
   RecordNetworkBlockage(base::TimeTicks::Now() - download_start_time_,
                         total_pause_time_);
 
-  CallStartedCB(NULL, error_code);
+  CallStartedCB(NULL, reason);
 
   // Send the info down the stream.  Conditional is in case we get
   // OnResponseCompleted without OnResponseStarted.
@@ -469,7 +472,7 @@ DownloadResourceHandler::~DownloadResourceHandler() {
   // This won't do anything if the callback was called before.
   // If it goes through, it will likely be because OnWillStart() returned
   // false somewhere in the chain of resource handlers.
-  CallStartedCB(NULL, net::ERR_ACCESS_DENIED);
+  CallStartedCB(NULL, DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED);
 
   // Remove output stream callback if a stream exists.
   if (stream_writer_)

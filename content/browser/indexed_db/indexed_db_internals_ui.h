@@ -9,9 +9,9 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/indexed_db_context.h"
 #include "content/public/browser/web_ui_controller.h"
-#include "net/base/net_errors.h"
 
 namespace base {
 class ListValue;
@@ -52,8 +52,8 @@ class IndexedDBInternalsUI : public WebUIController {
                          const GURL& origin_url,
                          const base::FilePath& temp_path,
                          size_t connection_count,
-                         content::DownloadItem* item,
-                         net::Error error);
+                         DownloadItem* item,
+                         DownloadInterruptReason interrupt_reason);
 
   void ForceCloseOrigin(const base::ListValue* args);
   void ForceCloseOriginOnIndexedDBThread(

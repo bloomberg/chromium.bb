@@ -95,12 +95,11 @@ class DownloadsDownloadFunction : public ChromeAsyncExtensionFunction {
   virtual ~DownloadsDownloadFunction();
 
  private:
-  void OnStarted(
-      const base::FilePath& creator_suggested_filename,
-      extensions::api::downloads::FilenameConflictAction
-        creator_conflict_action,
-      content::DownloadItem* item,
-      net::Error error);
+  void OnStarted(const base::FilePath& creator_suggested_filename,
+                 extensions::api::downloads::FilenameConflictAction
+                     creator_conflict_action,
+                 content::DownloadItem* item,
+                 content::DownloadInterruptReason interrupt_reason);
 
   DISALLOW_COPY_AND_ASSIGN(DownloadsDownloadFunction);
 };

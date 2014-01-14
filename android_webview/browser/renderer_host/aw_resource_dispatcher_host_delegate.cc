@@ -22,6 +22,7 @@
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/load_flags.h"
+#include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 

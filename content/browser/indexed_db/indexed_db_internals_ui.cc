@@ -338,11 +338,11 @@ void IndexedDBInternalsUI::OnDownloadStarted(
     const base::FilePath& temp_path,
     size_t connection_count,
     DownloadItem* item,
-    net::Error error) {
+    DownloadInterruptReason interrupt_reason) {
 
-  if (error != net::OK) {
-    LOG(ERROR)
-        << "Error downloading database dump: " << net::ErrorToString(error);
+  if (interrupt_reason != DOWNLOAD_INTERRUPT_REASON_NONE) {
+    LOG(ERROR) << "Error downloading database dump: "
+               << DownloadInterruptReasonToString(interrupt_reason);
     return;
   }
 

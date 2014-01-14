@@ -70,6 +70,12 @@ INTERRUPT_REASON(NETWORK_DISCONNECTED, 22)
 // "Server Down".
 INTERRUPT_REASON(NETWORK_SERVER_DOWN, 23)
 
+// The network request was invalid. This may be due to the original URL or a
+// redirected URL:
+// - Having an unsupported scheme.
+// - Being an invalid URL.
+// - Being disallowed by policy.
+INTERRUPT_REASON(NETWORK_INVALID_REQUEST, 24)
 
 // Server responses.
 

@@ -414,14 +414,16 @@ WebstoreInstaller::~WebstoreInstaller() {
 }
 
 void WebstoreInstaller::OnDownloadStarted(
-    DownloadItem* item, net::Error error) {
+    DownloadItem* item,
+    content::DownloadInterruptReason interrupt_reason) {
   if (!item) {
-    DCHECK_NE(net::OK, error);
-    ReportFailure(net::ErrorToString(error), FAILURE_REASON_OTHER);
+    DCHECK_NE(content::DOWNLOAD_INTERRUPT_REASON_NONE, interrupt_reason);
+    ReportFailure(content::DownloadInterruptReasonToString(interrupt_reason),
+                  FAILURE_REASON_OTHER);
     return;
   }
 
-  DCHECK_EQ(net::OK, error);
+  DCHECK_EQ(content::DOWNLOAD_INTERRUPT_REASON_NONE, interrupt_reason);
   DCHECK(!pending_modules_.empty());
   download_item_ = item;
   download_item_->AddObserver(this);

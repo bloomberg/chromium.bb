@@ -6,7 +6,8 @@
 #define CONTENT_PUBLIC_BROWSER_RESOURCE_DISPATCHER_HOST_H_
 
 #include "base/callback_forward.h"
-#include "net/base/net_errors.h"
+#include "base/memory/scoped_ptr.h"
+#include "content/public/browser/download_interrupt_reasons.h"
 
 namespace net {
 class URLRequest;
@@ -22,8 +23,8 @@ struct Referrer;
 
 class CONTENT_EXPORT ResourceDispatcherHost {
  public:
-  typedef base::Callback<void(DownloadItem*, net::Error)>
-    DownloadStartedCallback;
+  typedef base::Callback<void(DownloadItem*, DownloadInterruptReason)>
+      DownloadStartedCallback;
 
   // Returns the singleton instance of the ResourceDispatcherHost.
   static ResourceDispatcherHost* Get();
@@ -45,8 +46,8 @@ class CONTENT_EXPORT ResourceDispatcherHost {
   // will be used.  (Note that this will result in re-use of an existing
   // download item if the download id was already assigned.)  If the download
   // is started, |started_callback| will be called on the UI thread with the
-  // DownloadItem; otherwise an error code will be returned.
-  virtual net::Error BeginDownload(
+  // DownloadItem; otherwise an interrupt reason will be returned.
+  virtual DownloadInterruptReason BeginDownload(
       scoped_ptr<net::URLRequest> request,
       const Referrer& referrer,
       bool is_content_initiated,

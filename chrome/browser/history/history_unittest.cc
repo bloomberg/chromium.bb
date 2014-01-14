@@ -810,6 +810,7 @@ const InterruptReasonAssociation historical_reasons[] = {
   {"NETWORK_TIMEOUT",  21},
   {"NETWORK_DISCONNECTED",  22},
   {"NETWORK_SERVER_DOWN",  23},
+  {"NETWORK_INVALID_REQUEST", 24},
   {"SERVER_FAILED",  30},
   {"SERVER_NO_RANGE",  31},
   {"SERVER_PRECONDITION",  32},

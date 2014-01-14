@@ -63,6 +63,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_save_info.h"
@@ -344,7 +345,8 @@ bool WasAutoOpened(DownloadItem* item) {
 }
 
 // Called when a download starts. Marks the download as hidden.
-void SetHiddenDownloadCallback(DownloadItem* item, net::Error error) {
+void SetHiddenDownloadCallback(DownloadItem* item,
+                               content::DownloadInterruptReason reason) {
   DownloadItemModel(item).SetShouldShowInShelf(false);
 }
 
@@ -870,8 +872,7 @@ class DownloadTest : public InProcessBrowserTest {
       << ((download_info.download_method == DOWNLOAD_DIRECT) ?
           "DOWNLOAD_DIRECT" : "DOWNLOAD_NAVIGATE")
       << " show_item = " << download_info.show_download_item
-      << " reason = "
-      << InterruptReasonDebugString(download_info.reason);
+      << " reason = " << DownloadInterruptReasonToString(download_info.reason);
 
     std::vector<DownloadItem*> download_items;
     GetDownloads(browser(), &download_items);
@@ -910,11 +911,13 @@ class DownloadTest : public InProcessBrowserTest {
       EXPECT_EQ(download_info.show_download_item,
                 creation_observer->succeeded());
       if (download_info.show_download_item) {
-        EXPECT_EQ(net::OK, creation_observer->error());
+        EXPECT_EQ(content::DOWNLOAD_INTERRUPT_REASON_NONE,
+                  creation_observer->interrupt_reason());
         EXPECT_NE(content::DownloadItem::kInvalidId,
                   creation_observer->download_id());
       } else {
-        EXPECT_NE(net::OK, creation_observer->error());
+        EXPECT_NE(content::DOWNLOAD_INTERRUPT_REASON_NONE,
+                  creation_observer->interrupt_reason());
         EXPECT_EQ(content::DownloadItem::kInvalidId,
                   creation_observer->download_id());
       }
@@ -1000,12 +1003,11 @@ class DownloadTest : public InProcessBrowserTest {
     s << " " << __FUNCTION__ << "()"
       << " index = " << i
       << " url = " << info.error_info.url
-      << " operation code = " <<
-          content::TestFileErrorInjector::DebugString(
-              info.error_info.code)
+      << " operation code = "
+      << content::TestFileErrorInjector::DebugString(info.error_info.code)
       << " instance = " << info.error_info.operation_instance
-      << " error = " << content::InterruptReasonDebugString(
-         info.error_info.error);
+      << " error = "
+      << content::DownloadInterruptReasonToString(info.error_info.error);
 
     injector->ClearErrors();
     injector->AddError(info.error_info);

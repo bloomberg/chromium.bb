@@ -88,7 +88,7 @@ DownloadInterruptReason ConvertNetErrorToInterruptReason(
   return DOWNLOAD_INTERRUPT_REASON_NONE;
 }
 
-std::string InterruptReasonDebugString(DownloadInterruptReason error) {
+std::string DownloadInterruptReasonToString(DownloadInterruptReason error) {
 
 #define INTERRUPT_REASON(name, value)  \
     case DOWNLOAD_INTERRUPT_REASON_##name: return #name;

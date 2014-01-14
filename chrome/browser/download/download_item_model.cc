@@ -110,9 +110,9 @@ DownloadItemModelData::DownloadItemModelData()
 }
 
 base::string16 InterruptReasonStatusMessage(int reason) {
-  int string_id = 0;
+  int string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS;
 
-  switch (reason) {
+  switch (static_cast<content::DownloadInterruptReason>(reason)) {
     case content::DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED:
       string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_ACCESS_DENIED;
       break;
@@ -140,6 +140,7 @@ base::string16 InterruptReasonStatusMessage(int reason) {
     case content::DOWNLOAD_INTERRUPT_REASON_FILE_TOO_SHORT:
       string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_FILE_TOO_SHORT;
       break;
+    case content::DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST:
     case content::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED:
       string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_NETWORK_ERROR;
       break;
@@ -167,19 +168,23 @@ base::string16 InterruptReasonStatusMessage(int reason) {
     case content::DOWNLOAD_INTERRUPT_REASON_CRASH:
       string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_CRASH;
       break;
-    default:
+    case content::DOWNLOAD_INTERRUPT_REASON_NONE:
+      NOTREACHED();
+      // fallthrough
+    case content::DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE:
+    case content::DOWNLOAD_INTERRUPT_REASON_SERVER_PRECONDITION:
+    case content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED:
       string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS;
-      break;
   }
 
   return l10n_util::GetStringUTF16(string_id);
 }
 
 base::string16 InterruptReasonMessage(int reason) {
-  int string_id = 0;
+  int string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS;
   base::string16 status_text;
 
-  switch (reason) {
+  switch (static_cast<content::DownloadInterruptReason>(reason)) {
     case content::DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED:
       string_id = IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_ACCESS_DENIED;
       break;
@@ -207,6 +212,7 @@ base::string16 InterruptReasonMessage(int reason) {
     case content::DOWNLOAD_INTERRUPT_REASON_FILE_TOO_SHORT:
       string_id = IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_FILE_TOO_SHORT;
       break;
+    case content::DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST:
     case content::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED:
       string_id = IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_NETWORK_ERROR;
       break;
@@ -234,9 +240,13 @@ base::string16 InterruptReasonMessage(int reason) {
     case content::DOWNLOAD_INTERRUPT_REASON_CRASH:
       string_id = IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_CRASH;
       break;
-    default:
+    case content::DOWNLOAD_INTERRUPT_REASON_NONE:
+      NOTREACHED();
+      // fallthrough
+    case content::DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE:
+    case content::DOWNLOAD_INTERRUPT_REASON_SERVER_PRECONDITION:
+    case content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED:
       string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS;
-      break;
   }
 
   status_text = l10n_util::GetStringUTF16(string_id);

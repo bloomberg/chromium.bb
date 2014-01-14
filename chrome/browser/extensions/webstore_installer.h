@@ -16,11 +16,11 @@
 #include "base/version.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/common/manifest_handlers/shared_module_info.h"
-#include "net/base/net_errors.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
 
@@ -205,7 +205,8 @@ class WebstoreInstaller :public content::NotificationObserver,
                                     InstallSource source);
 
   // DownloadManager::DownloadUrl callback.
-  void OnDownloadStarted(content::DownloadItem* item, net::Error error);
+  void OnDownloadStarted(content::DownloadItem* item,
+                         content::DownloadInterruptReason interrupt_reason);
 
   // DownloadItem::Observer implementation:
   virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;

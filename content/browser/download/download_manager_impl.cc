@@ -393,7 +393,7 @@ void DownloadManagerImpl::StartDownloadWithId(
       // while resuming, then also ignore the request.
       info->request_handle.CancelRequest();
       if (!on_started.is_null())
-        on_started.Run(NULL, net::ERR_ABORTED);
+        on_started.Run(NULL, DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
       return;
     }
     download = item_iterator->second;
@@ -437,7 +437,7 @@ void DownloadManagerImpl::StartDownloadWithId(
     FOR_EACH_OBSERVER(Observer, observers_, OnDownloadCreated(this, download));
 
   if (!on_started.is_null())
-    on_started.Run(download, net::OK);
+    on_started.Run(download, DOWNLOAD_INTERRUPT_REASON_NONE);
 }
 
 void DownloadManagerImpl::CheckForHistoryFilesRemoval() {

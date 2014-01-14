@@ -807,7 +807,7 @@ std::string DownloadItemImpl::DebugString(bool verbose) const {
         " target_path = \"%" PRFilePath "\"",
         GetTotalBytes(),
         GetReceivedBytes(),
-        InterruptReasonDebugString(last_reason_).c_str(),
+        DownloadInterruptReasonToString(last_reason_).c_str(),
         IsPaused() ? 'T' : 'F',
         DebugResumeModeString(GetResumeMode()),
         auto_resume_count_,
@@ -868,6 +868,7 @@ DownloadItemImpl::ResumeMode DownloadItemImpl::GetResumeMode() const {
     case DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED:
     case DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED:
     case DOWNLOAD_INTERRUPT_REASON_NETWORK_SERVER_DOWN:
+    case DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST:
     case DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED:
     case DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN:
     case DOWNLOAD_INTERRUPT_REASON_CRASH:
@@ -1382,23 +1383,20 @@ void DownloadItemImpl::Completed() {
   }
 }
 
-void DownloadItemImpl::OnResumeRequestStarted(DownloadItem* item,
-                                              net::Error error) {
+void DownloadItemImpl::OnResumeRequestStarted(
+    DownloadItem* item,
+    DownloadInterruptReason interrupt_reason) {
   // If |item| is not NULL, then Start() has been called already, and nothing
   // more needs to be done here.
   if (item) {
-    DCHECK_EQ(net::OK, error);
+    DCHECK_EQ(DOWNLOAD_INTERRUPT_REASON_NONE, interrupt_reason);
     DCHECK_EQ(static_cast<DownloadItem*>(this), item);
     return;
   }
   // Otherwise, the request failed without passing through
   // DownloadResourceHandler::OnResponseStarted.
-  if (error == net::OK)
-    error = net::ERR_FAILED;
-  DownloadInterruptReason reason =
-      ConvertNetErrorToInterruptReason(error, DOWNLOAD_INTERRUPT_FROM_NETWORK);
-  DCHECK_NE(DOWNLOAD_INTERRUPT_REASON_NONE, reason);
-  Interrupt(reason);
+  DCHECK_NE(DOWNLOAD_INTERRUPT_REASON_NONE, interrupt_reason);
+  Interrupt(interrupt_reason);
 }
 
 // **** End of Download progression cascade

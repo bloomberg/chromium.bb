@@ -78,7 +78,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // ResourceDispatcherHost implementation:
   virtual void SetDelegate(ResourceDispatcherHostDelegate* delegate) OVERRIDE;
   virtual void SetAllowCrossOriginAuthPrompt(bool value) OVERRIDE;
-  virtual net::Error BeginDownload(
+  virtual DownloadInterruptReason BeginDownload(
       scoped_ptr<net::URLRequest> request,
       const Referrer& referrer,
       bool is_content_initiated,

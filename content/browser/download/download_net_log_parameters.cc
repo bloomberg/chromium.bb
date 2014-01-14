@@ -90,7 +90,7 @@ base::Value* ItemInterruptedNetLogCallback(DownloadInterruptReason reason,
                                            net::NetLog::LogLevel log_level) {
   base::DictionaryValue* dict = new base::DictionaryValue();
 
-  dict->SetString("interrupt_reason", InterruptReasonDebugString(reason));
+  dict->SetString("interrupt_reason", DownloadInterruptReasonToString(reason));
   dict->SetString("bytes_so_far", base::Int64ToString(bytes_so_far));
   dict->SetString("hash_state",
                   base::HexEncode(hash_state->data(), hash_state->size()));
@@ -106,7 +106,7 @@ base::Value* ItemResumingNetLogCallback(bool user_initiated,
   base::DictionaryValue* dict = new base::DictionaryValue();
 
   dict->SetString("user_initiated", user_initiated ? "true" : "false");
-  dict->SetString("interrupt_reason", InterruptReasonDebugString(reason));
+  dict->SetString("interrupt_reason", DownloadInterruptReasonToString(reason));
   dict->SetString("bytes_so_far", base::Int64ToString(bytes_so_far));
   dict->SetString("hash_state",
                   base::HexEncode(hash_state->data(), hash_state->size()));
@@ -200,7 +200,7 @@ base::Value* FileInterruptedNetLogCallback(const char* operation,
   dict->SetString("operation", operation);
   if (os_error != 0)
     dict->SetInteger("os_error", os_error);
-  dict->SetString("interrupt_reason", InterruptReasonDebugString(reason));
+  dict->SetString("interrupt_reason", DownloadInterruptReasonToString(reason));
 
   return dict;
 }
