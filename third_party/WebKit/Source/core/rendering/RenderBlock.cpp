@@ -55,6 +55,7 @@
 #include "core/rendering/RenderNamedFlowThread.h"
 #include "core/rendering/RenderRegion.h"
 #include "core/rendering/RenderTableCell.h"
+#include "core/rendering/RenderTextControl.h"
 #include "core/rendering/RenderTextFragment.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
@@ -1148,8 +1149,7 @@ void RenderBlock::removeChild(RenderObject* oldChild)
 
 bool RenderBlock::isSelfCollapsingBlock() const
 {
-    // FIXME: Add ASSERT(!selfNeedsLayout()) when clearFloatsIfNeeded() and skipLeadingWhitespace() no
-    // longer call here when the block requires layout.
+    ASSERT(!needsLayout());
 
     // We are not self-collapsing if we
     // (a) have a non-zero height according to layout (an optimization to avoid wasting time)

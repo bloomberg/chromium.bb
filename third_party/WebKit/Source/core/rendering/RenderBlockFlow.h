@@ -444,7 +444,7 @@ private:
     LayoutUnit clearFloatsIfNeeded(RenderBox* child, MarginInfo&, LayoutUnit oldTopPosMargin, LayoutUnit oldTopNegMargin, LayoutUnit yPos);
     LayoutUnit estimateLogicalTopPosition(RenderBox* child, const MarginInfo&, LayoutUnit& estimateWithoutPagination);
     void marginBeforeEstimateForChild(RenderBox*, LayoutUnit&, LayoutUnit&, bool&) const;
-    void handleAfterSideOfBlock(LayoutUnit top, LayoutUnit bottom, MarginInfo&);
+    void handleAfterSideOfBlock(RenderBox* lastChild, LayoutUnit top, LayoutUnit bottom, MarginInfo&);
     void setCollapsedBottomMargin(const MarginInfo&);
 
     LayoutUnit applyBeforeBreak(RenderBox* child, LayoutUnit logicalOffset); // If the child has a before break, then return a new yPos that shifts to the top of the next page/column.
@@ -465,7 +465,7 @@ private:
     LayoutUnit m_repaintLogicalTop;
     LayoutUnit m_repaintLogicalBottom;
 
-    virtual bool isSelfCollapsingBlock() const OVERRIDE FINAL;
+    virtual bool isSelfCollapsingBlock() const OVERRIDE;
 protected:
     OwnPtr<RenderBlockFlowRareData> m_rareData;
     OwnPtr<FloatingObjects> m_floatingObjects;

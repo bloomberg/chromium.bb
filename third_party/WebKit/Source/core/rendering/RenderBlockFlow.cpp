@@ -807,6 +807,7 @@ void RenderBlockFlow::layoutBlockChildren(bool relayoutChildren, LayoutUnit& max
     maxFloatLogicalBottom = 0;
 
     RenderBox* next = firstChildBox();
+    RenderBox* lastNormalFlowChild = 0;
 
     while (next) {
         RenderBox* child = next;
@@ -832,15 +833,17 @@ void RenderBlockFlow::layoutBlockChildren(bool relayoutChildren, LayoutUnit& max
 
         // Lay out the child.
         layoutBlockChild(child, marginInfo, previousFloatLogicalBottom, maxFloatLogicalBottom);
+        lastNormalFlowChild = child;
 
         // If doing a partial layout and the child was the target renderer, early exit here.
         if (frameView()->partialLayout().checkPartialLayoutComplete(child))
-            break;
+            return;
+
     }
 
     // Now do the handling of the bottom of the block, adding in our bottom border/padding and
     // determining the correct collapsed bottom margin information.
-    handleAfterSideOfBlock(beforeEdge, afterEdge, marginInfo);
+    handleAfterSideOfBlock(lastNormalFlowChild, beforeEdge, afterEdge, marginInfo);
 }
 
 // Our MarginInfo state used when laying out block children.
@@ -1009,11 +1012,12 @@ LayoutUnit RenderBlockFlow::collapseMargins(RenderBox* child, MarginInfo& margin
 
     LayoutUnit clearanceForSelfCollapsingBlock;
     RenderObject* prev = child->previousSibling();
+    RenderBlockFlow* previousBlockFlow =  prev && prev->isRenderBlockFlow() && !prev->isFloatingOrOutOfFlowPositioned() ? toRenderBlockFlow(prev) : 0;
     // If the child's previous sibling is a self-collapsing block that cleared a float then its top border edge has been set at the bottom border edge
     // of the float. Since we want to collapse the child's top margin with the self-collapsing block's top and bottom margins we need to adjust our parent's height to match the
     // margin top of the self-collapsing block. If the resulting collapsed margin leaves the child still intruding into the float then we will want to clear it.
-    if (!marginInfo.canCollapseWithMarginBefore() && prev && prev->isRenderBlockFlow() && toRenderBlockFlow(prev)->isSelfCollapsingBlock()) {
-        clearanceForSelfCollapsingBlock = toRenderBlockFlow(prev)->marginOffsetForSelfCollapsingBlock();
+    if (!marginInfo.canCollapseWithMarginBefore() && previousBlockFlow && previousBlockFlow->isSelfCollapsingBlock()) {
+        clearanceForSelfCollapsingBlock = previousBlockFlow->marginOffsetForSelfCollapsingBlock();
         setLogicalHeight(logicalHeight() - clearanceForSelfCollapsingBlock);
     }
 
@@ -1082,14 +1086,13 @@ LayoutUnit RenderBlockFlow::collapseMargins(RenderBox* child, MarginInfo& margin
         setLogicalHeight(logicalHeight() + (logicalTop - oldLogicalTop));
     }
 
-    if (prev && prev->isRenderBlockFlow() && !prev->isFloatingOrOutOfFlowPositioned()) {
+    if (previousBlockFlow) {
         // If |child| is a self-collapsing block it may have collapsed into a previous sibling and although it hasn't reduced the height of the parent yet
         // any floats from the parent will now overhang.
-        RenderBlockFlow* blockFlow = toRenderBlockFlow(prev);
         LayoutUnit oldLogicalHeight = logicalHeight();
         setLogicalHeight(logicalTop);
-        if (blockFlow->containsFloats() && !blockFlow->avoidsFloats() && (blockFlow->logicalTop() + blockFlow->lowestFloatLogicalBottom()) > logicalTop)
-            addOverhangingFloats(blockFlow, false);
+        if (previousBlockFlow->containsFloats() && !previousBlockFlow->avoidsFloats() && (previousBlockFlow->logicalTop() + previousBlockFlow->lowestFloatLogicalBottom()) > logicalTop)
+            addOverhangingFloats(previousBlockFlow, false);
         setLogicalHeight(oldLogicalHeight);
 
         // If |child|'s previous sibling is a self-collapsing block that cleared a float and margin collapsing resulted in |child| moving up
@@ -1373,16 +1376,15 @@ void RenderBlockFlow::adjustFloatingBlock(const MarginInfo& marginInfo)
     setLogicalHeight(logicalHeight() - marginOffset);
 }
 
-void RenderBlockFlow::handleAfterSideOfBlock(LayoutUnit beforeSide, LayoutUnit afterSide, MarginInfo& marginInfo)
+void RenderBlockFlow::handleAfterSideOfBlock(RenderBox* lastChild, LayoutUnit beforeSide, LayoutUnit afterSide, MarginInfo& marginInfo)
 {
     marginInfo.setAtAfterSideOfBlock(true);
 
     // If our last child was a self-collapsing block with clearance then our logical height is flush with the
     // bottom edge of the float that the child clears. The correct vertical position for the margin-collapsing we want
     // to perform now is at the child's margin-top - so adjust our height to that position.
-    RenderObject* child = lastChild();
-    if (child && child->isRenderBlockFlow() && toRenderBlockFlow(child)->isSelfCollapsingBlock())
-        setLogicalHeight(logicalHeight() - toRenderBlockFlow(child)->marginOffsetForSelfCollapsingBlock());
+    if (lastChild && lastChild->isRenderBlockFlow() && lastChild->isSelfCollapsingBlock())
+        setLogicalHeight(logicalHeight() - toRenderBlockFlow(lastChild)->marginOffsetForSelfCollapsingBlock());
 
     if (marginInfo.canCollapseMarginAfterWithChildren() && !marginInfo.canCollapseMarginAfterWithLastChild())
         marginInfo.setCanCollapseMarginAfterWithChildren(false);

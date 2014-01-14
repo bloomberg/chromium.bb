@@ -74,6 +74,7 @@
 #include "core/rendering/RenderTableCell.h"
 #include "core/rendering/RenderTableCol.h"
 #include "core/rendering/RenderTableRow.h"
+#include "core/rendering/RenderTextControlPlaceholder.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/style/ContentData.h"
@@ -160,6 +161,9 @@ RenderObject* RenderObject::createObject(Element* element, RenderStyle* style)
         image->setStyleInternal(0);
         return image;
     }
+
+    if (element->shadowPseudoId() == "-webkit-input-placeholder")
+        return new RenderTextControlPlaceholder(element);
 
     if (element->hasTagName(rubyTag)) {
         if (style->display() == INLINE)
