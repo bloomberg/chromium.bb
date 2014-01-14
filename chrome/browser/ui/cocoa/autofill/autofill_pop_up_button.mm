@@ -85,41 +85,18 @@
 
 // Draw a bezel that's highlighted.
 - (void)drawBezelWithFrame:(NSRect)frame inView:(NSView*)controlView {
+ [super drawBezelWithFrame:frame inView:controlView];
   if (invalid_) {
-    CGContextRef context = static_cast<CGContextRef>(
-        [[NSGraphicsContext currentContext] graphicsPort]);
-
-    // Create a highlight-shaded bezel in a transparency layer.
-    CGContextBeginTransparencyLayerWithRect(context, NSRectToCGRect(frame), 0);
-    // 1. Draw bezel.
-    [super drawBezelWithFrame:frame inView:controlView];
-
-    // 2. Use that as stencil against solid color rect.
-    [[NSColor redColor] set];
-    NSRectFillUsingOperation(frame, NSCompositeSourceAtop);
-
-    // 3. Composite the solid color bezel and the actual bezel.
-    CGContextSetBlendMode(context, kCGBlendModePlusDarker);
-    [super drawBezelWithFrame:frame inView:controlView];
-    CGContextEndTransparencyLayer(context);
-  } else {
-    [super drawBezelWithFrame:frame inView:controlView];
-  }
-}
-
-- (NSRect)drawTitle:(NSAttributedString*)title
-          withFrame:(NSRect)frame
-             inView:(NSView*)controlView {
-  if (invalid_) {
-    // Draw with a color that has high contrast against the custom background.
-    base::scoped_nsobject<NSMutableAttributedString> coloredTitle(
-        [[NSMutableAttributedString alloc] initWithAttributedString:title]);
-    [coloredTitle addAttribute:NSForegroundColorAttributeName
-                         value:[NSColor whiteColor]
-                         range:NSMakeRange(0, [title length])];
-    return [super drawTitle:coloredTitle withFrame:frame inView:controlView];
-  } else {
-    return [super drawTitle:title withFrame:frame inView:controlView];
+    // Mimic the rounded rect of default popup bezel in size, outline in red.
+    NSBezierPath* path = [NSBezierPath
+        bezierPathWithRoundedRect:
+            NSOffsetRect(
+                NSInsetRect(NSIntegralRect(frame), 3.5, 3.5), -1.0, -1.0)
+                          xRadius:4.0
+                          yRadius:4.0];
+    [path setLineWidth:0];
+    [[NSColor redColor] setStroke];
+    [path stroke];
   }
 }
 
