@@ -13109,9 +13109,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_SYNC_NOTHING" desc="A drop-down menu item for users who want to remain signed in to Chrome, but not sync any datatypes.">
         Sync nothing
       </message>
-      <message name="IDS_SYNC_ZERO_DATA_TYPES_ERROR" desc="Error message if you try to sync, but uncheck all the data type choices.">
-        You must select at least one data type to sync.
-      </message>
       <message name="IDS_SYNC_DATATYPE_BOOKMARKS" desc="Bookmarks, one of the data types that we allow syncing.">
         Bookmarks
       </message>

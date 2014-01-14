@@ -180,13 +180,6 @@ cr.define('options', function() {
       }
     },
 
-    // Returns true if none of the visible checkboxes are checked.
-    noDataTypesChecked_: function() {
-      var query = '.sync-type-checkbox:not([hidden]) input:checked';
-      var checkboxes = $('choose-data-types-body').querySelectorAll(query);
-      return checkboxes.length == 0;
-    },
-
     checkPassphraseMatch_: function() {
       var emptyError = $('empty-error');
       var mismatchError = $('mismatch-error');
@@ -215,16 +208,6 @@ cr.define('options', function() {
     },
 
     sendConfiguration_: function() {
-      // Trying to submit, so hide previous errors.
-      $('error-text').hidden = true;
-
-      var chooseWhatToSync = $('sync-select-datatypes').selectedIndex ==
-                             DataTypeSelection.CHOOSE_WHAT_TO_SYNC;
-      if (chooseWhatToSync && this.noDataTypesChecked_()) {
-        $('error-text').hidden = false;
-        return;
-      }
-
       var encryptAllData = $('full-encryption-option').checked;
 
       var usePassphrase;

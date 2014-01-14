@@ -215,21 +215,6 @@
   margin-left: 5px;
 }
 
-.sync-configuration-errors {
-  margin-top: 5px;
-}
-
-.sync-configuration-error {
-  background-color: rgb(238, 185, 57);
-  border-radius: 4px;
-  font-weight: bold;
-  margin-left: auto;
-  margin-right: auto;
-  padding: 1px 10px;
-  text-align: center;
-  width: 80%;
-}
-
 #learn-more-link {
   float: right;
 }

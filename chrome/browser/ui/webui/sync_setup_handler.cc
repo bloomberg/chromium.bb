@@ -255,7 +255,6 @@ void SyncSetupHandler::GetStaticLocalizedValues(
     { "typedURLs", IDS_SYNC_DATATYPE_TYPED_URLS },
     { "apps", IDS_SYNC_DATATYPE_APPS },
     { "openTabs", IDS_SYNC_DATATYPE_TABS },
-    { "syncZeroDataTypesError", IDS_SYNC_ZERO_DATA_TYPES_ERROR },
     { "serviceUnavailableError", IDS_SYNC_SETUP_ABORTED_BY_PENDING_CLEAR },
     { "confirmLabel", IDS_SYNC_CONFIRM_PASSPHRASE_LABEL },
     { "emptyErrorMessage", IDS_SYNC_EMPTY_PASSPHRASE_ERROR },
