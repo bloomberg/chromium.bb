@@ -848,9 +848,10 @@ resize_handler(struct widget *widget,
 		width = columns * terminal->average_width + m;
 		height = rows * terminal->extents.height + m;
 		widget_set_size(terminal->widget, width, height);
-		asprintf(&p, "%s — [%dx%d]", terminal->title, columns, rows);
-		window_set_title(terminal->window, p);
-		free(p);
+		if (asprintf(&p, "%s — [%dx%d]", terminal->title, columns, rows) > 0) {
+		    window_set_title(terminal->window, p);
+		    free(p);
+		}
 	}
 
 	terminal_resize_cells(terminal, columns, rows);
