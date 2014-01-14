@@ -109,6 +109,8 @@
           'dependencies': [
             'apps',
             'chrome_resources.gyp:packed_resources',
+            # For resources.pak for features JSON files.
+            'chrome_resources.gyp:packed_extra_resources',
             'test_support_common',
             '../base/base.gyp:base',
             '../base/base.gyp:base_prefs_test_support',
