@@ -271,7 +271,22 @@ TEST(FilesystemTest, MemFsRenameDir) {
 TEST(FilesystemTest, DevAccess) {
   // Should not be able to open non-existent file.
   DevFsForTesting fs;
+  ScopedNode invalid_node, valid_node;
   ASSERT_EQ(ENOENT, fs.Access(Path("/foo"), F_OK));
+  // Creating non-existent file should return EACCES
+  ASSERT_EQ(EACCES, fs.Open(Path("/foo"), O_CREAT | O_RDWR, &invalid_node));
+
+  // We should be able to open all existing nodes with O_CREAT and O_RDWR.
+  ASSERT_EQ(0, fs.Open(Path("/null"), O_CREAT | O_RDWR, &valid_node));
+  ASSERT_EQ(0, fs.Open(Path("/zero"), O_CREAT | O_RDWR, &valid_node));
+  ASSERT_EQ(0, fs.Open(Path("/urandom"), O_CREAT | O_RDWR, &valid_node));
+  ASSERT_EQ(0, fs.Open(Path("/console0"), O_CREAT | O_RDWR, &valid_node));
+  ASSERT_EQ(0, fs.Open(Path("/console1"), O_CREAT | O_RDWR, &valid_node));
+  ASSERT_EQ(0, fs.Open(Path("/console3"), O_CREAT | O_RDWR, &valid_node));
+  ASSERT_EQ(0, fs.Open(Path("/tty"), O_CREAT | O_RDWR, &valid_node));
+  ASSERT_EQ(0, fs.Open(Path("/stdin"), O_CREAT | O_RDWR, &valid_node));
+  ASSERT_EQ(0, fs.Open(Path("/stdout"), O_CREAT | O_RDWR, &valid_node));
+  ASSERT_EQ(0, fs.Open(Path("/stderr"), O_CREAT | O_RDWR, &valid_node));
 }
 
 TEST(FilesystemTest, DevNull) {

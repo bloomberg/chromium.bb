@@ -277,12 +277,12 @@ Error DevFs::Access(const Path& path, int a_mode) {
 
 Error DevFs::Open(const Path& path, int open_flags, ScopedNode* out_node) {
   out_node->reset(NULL);
+  int error = root_->FindChild(path.Join(), out_node);
+  // Only return EACCES when trying to create a node that does not exist.
+  if ((error == ENOENT) && (open_flags & O_CREAT))
+    return EACCES;
 
-  // Don't allow creating any files.
-  if (open_flags & O_CREAT)
-    return EINVAL;
-
-  return root_->FindChild(path.Join(), out_node);
+  return error;
 }
 
 Error DevFs::Unlink(const Path& path) { return EPERM; }
