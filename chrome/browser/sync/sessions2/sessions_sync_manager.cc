@@ -390,6 +390,7 @@ bool SessionsSyncManager::ShouldSyncWindow(
 }
 
 void SessionsSyncManager::StopSyncing(syncer::ModelType type) {
+  local_event_router_->Stop();
   sync_processor_.reset(NULL);
   error_handler_.reset();
   session_tracker_.Clear();

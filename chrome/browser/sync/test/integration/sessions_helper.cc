@@ -6,6 +6,9 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
+#include "base/command_line.h"
+#include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
 #include "base/test/test_timeouts.h"
 #include "base/time/time.h"
@@ -14,10 +17,13 @@
 #include "chrome/browser/sync/open_tabs_ui_delegate.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/sessions2/notification_service_sessions_router.h"
+#include "chrome/browser/sync/sessions2/sessions_sync_manager.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/ui/singleton_tabs.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "url/gurl.h"
 
@@ -119,6 +125,43 @@ bool OpenMultipleTabs(int index, const std::vector<GURL>& urls) {
   return WaitForTabsToLoad(index, urls);
 }
 
+namespace {
+
+class TabEventHandler : public browser_sync::LocalSessionEventHandler {
+ public:
+  TabEventHandler() : weak_factory_(this) {
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&TabEventHandler::QuitLoop, weak_factory_.GetWeakPtr()),
+        TestTimeouts::action_max_timeout());
+  }
+
+  virtual void OnLocalTabModified(
+      browser_sync::SyncedTabDelegate* modified_tab) OVERRIDE {
+    // Unwind to ensure SessionsSyncManager has processed the event.
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&TabEventHandler::QuitLoop, weak_factory_.GetWeakPtr()));
+  }
+
+  virtual void OnFaviconPageUrlsUpdated(
+      const std::set<GURL>& updated_page_urls) OVERRIDE {
+    // Unwind to ensure SessionsSyncManager has processed the event.
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&TabEventHandler::QuitLoop, weak_factory_.GetWeakPtr()));
+  }
+
+ private:
+  void QuitLoop() {
+    base::MessageLoop::current()->Quit();
+  }
+
+  base::WeakPtrFactory<TabEventHandler> weak_factory_;
+};
+
+}  // namespace
+
 bool WaitForTabsToLoad(int index, const std::vector<GURL>& urls) {
   DVLOG(1) << "Waiting for session to propagate to associator.";
   base::TimeTicks start_time = base::TimeTicks::Now();
@@ -136,10 +179,20 @@ bool WaitForTabsToLoad(int index, const std::vector<GURL>& urls) {
         return false;
       }
       if (!found) {
-        ProfileSyncServiceFactory::GetInstance()->GetForProfile(
-            test()->GetProfile(index))->GetSessionModelAssociatorDeprecated()->
-            BlockUntilLocalChangeForTest(TestTimeouts::action_max_timeout());
-        content::RunMessageLoop();
+        if (!CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableSyncSessionsV2)) {
+          ProfileSyncServiceFactory::GetForProfile(test()->GetProfile(index))->
+              GetSessionModelAssociatorDeprecated()->
+              BlockUntilLocalChangeForTest(TestTimeouts::action_max_timeout());
+          content::RunMessageLoop();
+        } else {
+          TabEventHandler handler;
+          browser_sync::NotificationServiceSessionsRouter router(
+              test()->GetProfile(index),
+              syncer::SyncableService::StartSyncFlare());
+          router.StartRoutingTo(&handler);
+          content::RunMessageLoop();
+        }
       }
     }
   }
