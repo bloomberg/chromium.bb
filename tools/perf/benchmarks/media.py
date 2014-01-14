@@ -70,7 +70,9 @@ class MediaSourceExtensions(test.Test):
   """Obtains media metrics for key media source extensions functions."""
   test = media.Media
   # Disable MSE media-tests on Android and linux: crbug/329691
-  enabled = not sys.platform.startswith('linux')
+  # Disable MSE tests on windows 8 crbug.com/330910
+  enabled = (not sys.platform.startswith('linux') and
+             not sys.platform.startswith('win'))
   test = MSEMeasurement
   page_set = 'page_sets/mse_cases.json'
 
