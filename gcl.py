@@ -733,13 +733,18 @@ def GenerateDiff(files):
       files, GetRepositoryRoot(), full_move=False, revision=None)
 
 
+def GetTreeStatus():
+  tree_status_url = GetCodeReviewSetting('STATUS')
+  return git_cl.GetTreeStatus(tree_status_url) if tree_status_url else "unset"
+
+
 def OptionallyDoPresubmitChecks(change_info, committing, args):
   if FilterFlag(args, "--no_presubmit") or FilterFlag(args, "--force"):
     breakpad.SendStack(
         breakpad.DEFAULT_URL + '/breakpad',
         'GclHooksBypassedCommit',
-        'Issue %s/%s bypassed hook when committing' %
-        (change_info.rietveld, change_info.issue),
+        'Issue %s/%s bypassed hook when committing (tree status was "%s")' %
+        (change_info.rietveld, change_info.issue, GetTreeStatus()),
         verbose=False)
     return presubmit_support.PresubmitOutput()
   return DoPresubmitChecks(change_info, committing, True)
@@ -1065,7 +1070,10 @@ def CMDcommit(change_info, args):
           change_info.issue, False)
       patch_num = len(props['patchsets'])
       comment = "Committed patchset #%d manually as r%s" % (patch_num, revision)
-      comment += ' (presubmit successful).' if not bypassed else '.'
+      if bypassed:
+        comment += ' (tree was closed).' if GetTreeStatus() == 'closed' else '.'
+      else:
+        comment += ' (presubmit successful).'
       change_info.AddComment(comment)
   return 0
 

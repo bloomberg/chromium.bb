@@ -311,9 +311,10 @@ class TestGitCl(TestCase):
          'config', 'branch.working.rietveldissue'],), '12345'),
       ((['git', 'config', 'branch.working.rietveldserver'],),
          'codereview.example.com'),
+      ((['git', 'config', 'rietveld.tree-status-url'],), ''),
       (('GitClHooksBypassedCommit',
         'Issue https://codereview.example.com/12345 bypassed hook when '
-        'committing'), None),
+        'committing (tree status was "unset")'), None),
   ]
 
   @classmethod

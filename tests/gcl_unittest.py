@@ -99,7 +99,7 @@ class GclUnittest(GclTestsBase):
         'GenerateChangeName', 'GenerateDiff', 'GetCLs', 'GetCacheDir',
         'GetCachedFile', 'GetChangelistInfoFile', 'GetChangesDir',
         'GetCodeReviewSetting', 'GetFilesNotInCL', 'GetInfoDir',
-        'GetModifiedFiles', 'GetRepositoryRoot', 'ListFiles',
+        'GetModifiedFiles', 'GetRepositoryRoot', 'GetTreeStatus', 'ListFiles',
         'LoadChangelistInfoForMultiple', 'MISSING_TEST_MSG',
         'OptionallyDoPresubmitChecks', 'REPOSITORY_ROOT',
         'RunShell', 'RunShellWithReturnCode', 'SVN',

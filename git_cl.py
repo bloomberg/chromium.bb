@@ -1750,8 +1750,8 @@ def SendUpstream(parser, args, cmd):
   else:
     breakpad.SendStack(
         'GitClHooksBypassedCommit',
-        'Issue %s/%s bypassed hook when committing' %
-        (cl.GetRietveldServer(), cl.GetIssue()),
+        'Issue %s/%s bypassed hook when committing (tree status was "%s")' %
+        (cl.GetRietveldServer(), cl.GetIssue(), GetTreeStatus()),
         verbose=False)
 
   change_desc = ChangeDescription(options.message)
@@ -1871,7 +1871,10 @@ def SendUpstream(parser, args, cmd):
     props = cl.GetIssueProperties()
     patch_num = len(props['patchsets'])
     comment = "Committed patchset #%d manually as r%s" % (patch_num, revision)
-    comment += ' (presubmit successful).' if not options.bypass_hooks else '.'
+    if options.bypass_hooks:
+      comment += ' (tree was closed).' if GetTreeStatus() == 'closed' else '.'
+    else:
+      comment += ' (presubmit successful).'
     cl.RpcServer().add_comment(cl.GetIssue(), comment)
     cl.SetIssue(None)
 
@@ -2023,10 +2026,10 @@ def CMDrebase(parser, args):
   return subprocess2.call(['git', 'svn', 'rebase'] + args, env=env)
 
 
-def GetTreeStatus():
+def GetTreeStatus(url=None):
   """Fetches the tree status and returns either 'open', 'closed',
   'unknown' or 'unset'."""
-  url = settings.GetTreeStatusUrl(error_ok=True)
+  url = url or settings.GetTreeStatusUrl(error_ok=True)
   if url:
     status = urllib2.urlopen(url).read().lower()
     if status.find('closed') != -1 or status == '0':
