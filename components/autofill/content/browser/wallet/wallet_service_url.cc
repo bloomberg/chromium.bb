@@ -14,6 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/autofill_switches.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
@@ -33,12 +34,28 @@ const char kSandboxWalletSecureServiceUrl[] =
     "https://wallet-web.sandbox.google.com/";
 
 bool IsWalletProductionEnabled() {
+  // If the command line flag exists, it takes precedence.
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   std::string sandbox_enabled(
       command_line->GetSwitchValueASCII(switches::kWalletServiceUseSandbox));
   if (!sandbox_enabled.empty())
     return sandbox_enabled != "1";
+
+  // Default to sandbox when --reduce-security-for-testing is passed to allow
+  // rAc on http:// pages.
+  if (command_line->HasSwitch(::switches::kReduceSecurityForTesting))
+    return false;
+
+  // TODO(estade): add a build-time flag for Chromium distros to enable this
+  // rather than checking for an official build. http://crbug.com/334088
+#if defined(GOOGLE_CHROME_BUILD)
+  // Default to prod for official builds.
   return true;
+#else
+  // Unofficial builds don't have the proper API keys for production Wallet
+  // servers.
+  return false;
+#endif
 }
 
 GURL GetWalletHostUrl() {

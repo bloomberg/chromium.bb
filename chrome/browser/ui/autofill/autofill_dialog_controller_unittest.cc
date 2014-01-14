@@ -2245,12 +2245,23 @@ TEST_F(AutofillDialogControllerTest, NotProdNotification) {
       "",
       command_line->GetSwitchValueASCII(switches::kWalletServiceUseSandbox));
 
-  // Default everywhere is to use prod (no warning).
-  EXPECT_EQ(0U,
-            NotificationsOfType(DialogNotification::DEVELOPER_WARNING).size());
-
   command_line->AppendSwitchASCII(switches::kWalletServiceUseSandbox, "1");
   EXPECT_EQ(1U,
+            NotificationsOfType(DialogNotification::DEVELOPER_WARNING).size());
+}
+
+TEST_F(AutofillDialogControllerTest, NoNotProdNotification) {
+  // To make IsPayingWithWallet() true.
+  controller()->OnDidGetWalletItems(
+      wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED));
+
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  ASSERT_EQ(
+      "",
+      command_line->GetSwitchValueASCII(switches::kWalletServiceUseSandbox));
+
+  command_line->AppendSwitchASCII(switches::kWalletServiceUseSandbox, "0");
+  EXPECT_EQ(0U,
             NotificationsOfType(DialogNotification::DEVELOPER_WARNING).size());
 }
 

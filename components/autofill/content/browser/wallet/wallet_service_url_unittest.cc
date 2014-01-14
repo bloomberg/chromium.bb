@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "components/autofill/content/browser/wallet/wallet_service_url.h"
 #include "components/autofill/core/common/autofill_switches.h"
+#include "content/public/common/content_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -80,9 +81,22 @@ TEST(WalletServiceSandboxUrl, CheckProdUrls) {
             GetPassiveAuthUrl(1).spec());
 }
 
-TEST(WalletServiceUrl, IsUsingProd) {
+TEST(WalletServiceUrl, DefaultsToProd) {
+#if defined(GOOGLE_CHROME_BUILD)
   EXPECT_TRUE(IsUsingProd());
+#else
+  EXPECT_FALSE(IsUsingProd());
+#endif
 
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  command_line->AppendSwitch(::switches::kReduceSecurityForTesting);
+  EXPECT_FALSE(IsUsingProd());
+
+  command_line->AppendSwitchASCII(switches::kWalletServiceUseSandbox, "0");
+  EXPECT_TRUE(IsUsingProd());
+}
+
+TEST(WalletServiceUrl, IsUsingProd) {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   command_line->AppendSwitchASCII(switches::kWalletServiceUseSandbox, "1");
   EXPECT_FALSE(IsUsingProd());
