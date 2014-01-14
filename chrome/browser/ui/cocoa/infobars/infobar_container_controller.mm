@@ -67,6 +67,7 @@
 }
 
 - (void)changeWebContents:(content::WebContents*)contents {
+  currentWebContents_ = contents;
   if (contents) {
     containerCocoa_->ChangeInfoBarService(
         InfoBarService::FromWebContents(contents));
