@@ -1142,6 +1142,32 @@ blink::WebView* RenderViewImpl::webview() const {
 }
 
 #if defined(ENABLE_PLUGINS)
+void RenderViewImpl::PepperInstanceCreated(
+    PepperPluginInstanceImpl* instance) {
+  active_pepper_instances_.insert(instance);
+}
+
+void RenderViewImpl::PepperInstanceDeleted(
+    PepperPluginInstanceImpl* instance) {
+  active_pepper_instances_.erase(instance);
+
+  if (pepper_last_mouse_event_target_ == instance)
+    pepper_last_mouse_event_target_ = NULL;
+  if (focused_pepper_plugin_ == instance)
+    PepperFocusChanged(instance, false);
+}
+
+void RenderViewImpl::PepperFocusChanged(PepperPluginInstanceImpl* instance,
+                                        bool focused) {
+  if (focused)
+    focused_pepper_plugin_ = instance;
+  else if (focused_pepper_plugin_ == instance)
+    focused_pepper_plugin_ = NULL;
+
+  UpdateTextInputType();
+  UpdateSelectionBounds();
+}
+
 void RenderViewImpl::RegisterPluginDelegate(WebPluginDelegateProxy* delegate) {
   plugin_delegates_.insert(delegate);
   // If the renderer is visible, set initial visibility and focus state.
@@ -5147,13 +5173,44 @@ void RenderViewImpl::OnResize(const ViewMsg_Resize_Params& params) {
 
 void RenderViewImpl::DidInitiatePaint() {
 #if defined(ENABLE_PLUGINS)
-  main_render_frame_->DidInitiatePaint();
+  // Notify all instances that we painted.  The same caveats apply as for
+  // ViewFlushedPaint regarding instances closing themselves, so we take
+  // similar precautions.
+  PepperPluginSet plugins = active_pepper_instances_;
+  for (PepperPluginSet::iterator i = plugins.begin(); i != plugins.end(); ++i) {
+    if (active_pepper_instances_.find(*i) != active_pepper_instances_.end())
+      (*i)->ViewInitiatedPaint();
+  }
 #endif
 }
 
 void RenderViewImpl::DidFlushPaint() {
 #if defined(ENABLE_PLUGINS)
-  main_render_frame_->DidFlushPaint();
+  // Notify all instances that we flushed. This will call into the plugin, and
+  // we it may ask to close itself as a result. This will, in turn, modify our
+  // set, possibly invalidating the iterator. So we iterate on a copy that
+  // won't change out from under us.
+  PepperPluginSet plugins = active_pepper_instances_;
+  for (PepperPluginSet::iterator i = plugins.begin(); i != plugins.end(); ++i) {
+    // The copy above makes sure our iterator is never invalid if some plugins
+    // are destroyed. But some plugin may decide to close all of its views in
+    // response to a paint in one of them, so we need to make sure each one is
+    // still "current" before using it.
+    //
+    // It's possible that a plugin was destroyed, but another one was created
+    // with the same address. In this case, we'll call ViewFlushedPaint on that
+    // new plugin. But that's OK for this particular case since we're just
+    // notifying all of our instances that the view flushed, and the new one is
+    // one of our instances.
+    //
+    // What about the case where a new one is created in a callback at a new
+    // address and we don't issue the callback? We're still OK since this
+    // callback is used for flush callbacks and we could not have possibly
+    // started a new paint for the new plugin while processing a previous paint
+    // for an existing one.
+    if (active_pepper_instances_.find(*i) != active_pepper_instances_.end())
+      (*i)->ViewFlushedPaint();
+  }
 #endif
 
   // If the RenderWidget is closing down then early-exit, otherwise we'll crash.
@@ -5197,8 +5254,16 @@ PepperPluginInstanceImpl* RenderViewImpl::GetBitmapForOptimizedPluginPaint(
     gfx::Rect* clip,
     float* scale_factor) {
 #if defined(ENABLE_PLUGINS)
-  return main_render_frame_->GetBitmapForOptimizedPluginPaint(
-      paint_bounds, dib, location, clip, scale_factor);
+  for (PepperPluginSet::iterator i = active_pepper_instances_.begin();
+       i != active_pepper_instances_.end(); ++i) {
+    PepperPluginInstanceImpl* instance = *i;
+    // In Flash fullscreen , the plugin contents should be painted onto the
+    // fullscreen widget instead of the web page.
+    if (!instance->FlashIsFullscreenOrPending() &&
+        instance->GetBitmapForOptimizedPluginPaint(paint_bounds, dib, location,
+                                                   clip, scale_factor))
+      return *i;
+  }
 #endif
   return NULL;
 }
@@ -5307,7 +5372,14 @@ bool RenderViewImpl::WillHandleMouseEvent(const blink::WebMouseEvent& event) {
       gfx::Point(event.globalX, event.globalY);
 
 #if defined(ENABLE_PLUGINS)
-  main_render_frame_->WillHandleMouseEvent(event);
+  // This method is called for every mouse event that the render view receives.
+  // And then the mouse event is forwarded to WebKit, which dispatches it to the
+  // event target. Potentially a Pepper plugin will receive the event.
+  // In order to tell whether a plugin gets the last mouse event and which it
+  // is, we set |pepper_last_mouse_event_target_| to NULL here. If a plugin gets
+  // the event, it will notify us via DidReceiveMouseEvent() and set itself as
+  // |pepper_last_mouse_event_target_|.
+  pepper_last_mouse_event_target_ = NULL;
 #endif
 
   // If the mouse is locked, only the current owner of the mouse lock can
@@ -5356,7 +5428,9 @@ void RenderViewImpl::OnWasHidden() {
     webview()->setVisibilityState(visibilityState(), false);
 
 #if defined(ENABLE_PLUGINS)
-  main_render_frame_->PageVisibilityChanged(false);
+  for (PepperPluginSet::iterator i = active_pepper_instances_.begin();
+       i != active_pepper_instances_.end(); ++i)
+    (*i)->PageVisibilityChanged(false);
 
 #if defined(OS_MACOSX)
   // Inform NPAPI plugins that their container is no longer visible.
@@ -5381,7 +5455,9 @@ void RenderViewImpl::OnWasShown(bool needs_repainting) {
     webview()->setVisibilityState(visibilityState(), false);
 
 #if defined(ENABLE_PLUGINS)
-  main_render_frame_->PageVisibilityChanged(true);
+  for (PepperPluginSet::iterator i = active_pepper_instances_.begin();
+       i != active_pepper_instances_.end(); ++i)
+    (*i)->PageVisibilityChanged(true);
 
 #if defined(OS_MACOSX)
   // Inform NPAPI plugins that their container is now visible.
@@ -5424,7 +5500,10 @@ void RenderViewImpl::OnSetFocus(bool enable) {
       (*plugin_it)->SetContentAreaFocus(enable);
     }
   }
-  main_render_frame_->OnSetFocus(enable);
+  // Notify all Pepper plugins.
+  for (PepperPluginSet::iterator i = active_pepper_instances_.begin();
+       i != active_pepper_instances_.end(); ++i)
+    (*i)->SetContentAreaFocus(enable);
 #endif
   // Notify all BrowserPlugins of the RenderView's focus state.
   if (browser_plugin_manager_.get())

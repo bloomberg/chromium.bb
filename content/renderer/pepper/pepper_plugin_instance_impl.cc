@@ -537,7 +537,7 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
   module_->InstanceCreated(this);
 
   if (render_frame) {  // NULL in tests
-    render_frame->PepperInstanceCreated(this);
+    render_frame->render_view()->PepperInstanceCreated(this);
     view_data_.is_page_visible = !render_frame_->GetRenderWidget()->is_hidden();
 
     // Set the initial focus.
@@ -580,7 +580,7 @@ PepperPluginInstanceImpl::~PepperPluginInstanceImpl() {
     lock_mouse_callback_->Abort();
 
   if (render_frame_)
-    render_frame_->PepperInstanceDeleted(this);
+    render_frame_->render_view()->PepperInstanceDeleted(this);
 
   if (!module_->IsProxied() && render_frame_) {
     PepperBrowserConnection* browser_connection =
@@ -1455,7 +1455,7 @@ void PepperPluginInstanceImpl::SendFocusChangeNotification() {
   scoped_refptr<PepperPluginInstanceImpl> ref(this);
 
   bool has_focus = PluginHasFocus();
-  render_frame_->PepperFocusChanged(this, has_focus);
+  render_frame_->render_view()->PepperFocusChanged(this, has_focus);
 
   // instance_interface_ may have been cleared in Delete() if the
   // PepperWebPluginImpl is destroyed.

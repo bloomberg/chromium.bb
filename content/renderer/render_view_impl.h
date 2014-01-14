@@ -277,9 +277,6 @@ class CONTENT_EXPORT RenderViewImpl
   PepperPluginInstanceImpl* focused_pepper_plugin() {
     return focused_pepper_plugin_;
   }
-  void set_focused_pepper_plugin(PepperPluginInstanceImpl* plugin) {
-    focused_pepper_plugin_ = plugin;
-  }
   PepperPluginInstanceImpl* pepper_last_mouse_event_target() {
     return pepper_last_mouse_event_target_;
   }
@@ -296,6 +293,17 @@ class CONTENT_EXPORT RenderViewImpl
   // Starts plugin IME.
   void StartPluginIme();
 #endif
+
+  // Indicates that the given instance has been created.
+  void PepperInstanceCreated(PepperPluginInstanceImpl* instance);
+
+  // Indicates that the given instance is being destroyed. This is called from
+  // the destructor, so it's important that the instance is not dereferenced
+  // from this call.
+  void PepperInstanceDeleted(PepperPluginInstanceImpl* instance);
+
+  // Notification that the given plugin is focused or unfocused.
+  void PepperFocusChanged(PepperPluginInstanceImpl* instance, bool focused);
 
   void RegisterPluginDelegate(WebPluginDelegateProxy* delegate);
   void UnregisterPluginDelegate(WebPluginDelegateProxy* delegate);
@@ -1413,6 +1421,9 @@ class CONTENT_EXPORT RenderViewImpl
 #endif
 
 #if defined(ENABLE_PLUGINS)
+  typedef std::set<PepperPluginInstanceImpl*> PepperPluginSet;
+  PepperPluginSet active_pepper_instances_;
+
   // TODO(jam): these belong on RenderFrame, once the browser knows which frame
   // is focused and sends the IPCs which use these to the correct frame. Until
   // then, we must store these on RenderView as that's the one place that knows

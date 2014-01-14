@@ -187,21 +187,6 @@ void RenderFrameImpl::PepperPluginCreated(RendererPpapiHost* host) {
                     DidCreatePepperPlugin(host));
 }
 
-void RenderFrameImpl::PepperInstanceCreated(
-    PepperPluginInstanceImpl* instance) {
-  active_pepper_instances_.insert(instance);
-}
-
-void RenderFrameImpl::PepperInstanceDeleted(
-    PepperPluginInstanceImpl* instance) {
-  active_pepper_instances_.erase(instance);
-
-  if (render_view_->pepper_last_mouse_event_target() == instance)
-    render_view_->set_pepper_last_mouse_event_target(NULL);
-  if (render_view_->focused_pepper_plugin() == instance)
-    PepperFocusChanged(instance, false);
-}
-
 void RenderFrameImpl::PepperDidChangeCursor(
     PepperPluginInstanceImpl* instance,
     const blink::WebCursorInfo& cursor) {
@@ -217,17 +202,6 @@ void RenderFrameImpl::PepperDidChangeCursor(
 void RenderFrameImpl::PepperDidReceiveMouseEvent(
     PepperPluginInstanceImpl* instance) {
   render_view_->set_pepper_last_mouse_event_target(instance);
-}
-
-void RenderFrameImpl::PepperFocusChanged(PepperPluginInstanceImpl* instance,
-                                         bool focused) {
-  if (focused)
-    render_view_->set_focused_pepper_plugin(instance);
-  else if (render_view_->focused_pepper_plugin() == instance)
-    render_view_->set_focused_pepper_plugin(NULL);
-
-  GetRenderWidget()->UpdateTextInputType();
-  GetRenderWidget()->UpdateSelectionBounds();
 }
 
 void RenderFrameImpl::PepperTextInputTypeChanged(
@@ -290,89 +264,6 @@ void RenderFrameImpl::PluginCrashed(const base::FilePath& plugin_path,
   // TODO(jam): dispatch this IPC in RenderFrameHost and switch to use
   // routing_id_ as a result.
   Send(new FrameHostMsg_PluginCrashed(routing_id_, plugin_path, plugin_pid));
-}
-
-void RenderFrameImpl::DidInitiatePaint() {
-  // Notify all instances that we painted.  The same caveats apply as for
-  // ViewFlushedPaint regarding instances closing themselves, so we take
-  // similar precautions.
-  PepperPluginSet plugins = active_pepper_instances_;
-  for (PepperPluginSet::iterator i = plugins.begin(); i != plugins.end(); ++i) {
-    if (active_pepper_instances_.find(*i) != active_pepper_instances_.end())
-      (*i)->ViewInitiatedPaint();
-  }
-}
-
-void RenderFrameImpl::DidFlushPaint() {
-  // Notify all instances that we flushed. This will call into the plugin, and
-  // we it may ask to close itself as a result. This will, in turn, modify our
-  // set, possibly invalidating the iterator. So we iterate on a copy that
-  // won't change out from under us.
-  PepperPluginSet plugins = active_pepper_instances_;
-  for (PepperPluginSet::iterator i = plugins.begin(); i != plugins.end(); ++i) {
-    // The copy above makes sure our iterator is never invalid if some plugins
-    // are destroyed. But some plugin may decide to close all of its views in
-    // response to a paint in one of them, so we need to make sure each one is
-    // still "current" before using it.
-    //
-    // It's possible that a plugin was destroyed, but another one was created
-    // with the same address. In this case, we'll call ViewFlushedPaint on that
-    // new plugin. But that's OK for this particular case since we're just
-    // notifying all of our instances that the view flushed, and the new one is
-    // one of our instances.
-    //
-    // What about the case where a new one is created in a callback at a new
-    // address and we don't issue the callback? We're still OK since this
-    // callback is used for flush callbacks and we could not have possibly
-    // started a new paint for the new plugin while processing a previous paint
-    // for an existing one.
-    if (active_pepper_instances_.find(*i) != active_pepper_instances_.end())
-      (*i)->ViewFlushedPaint();
-  }
-}
-
-PepperPluginInstanceImpl* RenderFrameImpl::GetBitmapForOptimizedPluginPaint(
-      const gfx::Rect& paint_bounds,
-      TransportDIB** dib,
-      gfx::Rect* location,
-      gfx::Rect* clip,
-      float* scale_factor) {
-  for (PepperPluginSet::iterator i = active_pepper_instances_.begin();
-       i != active_pepper_instances_.end(); ++i) {
-    PepperPluginInstanceImpl* instance = *i;
-    // In Flash fullscreen , the plugin contents should be painted onto the
-    // fullscreen widget instead of the web page.
-    if (!instance->FlashIsFullscreenOrPending() &&
-        instance->GetBitmapForOptimizedPluginPaint(paint_bounds, dib, location,
-                                                   clip, scale_factor))
-      return *i;
-  }
-  return NULL;
-}
-
-void RenderFrameImpl::PageVisibilityChanged(bool shown) {
-  // Inform PPAPI plugins that their page is no longer visible.
-  for (PepperPluginSet::iterator i = active_pepper_instances_.begin();
-       i != active_pepper_instances_.end(); ++i)
-    (*i)->PageVisibilityChanged(shown);
-}
-
-void RenderFrameImpl::OnSetFocus(bool enable) {
-  // Notify all Pepper plugins.
-  for (PepperPluginSet::iterator i = active_pepper_instances_.begin();
-       i != active_pepper_instances_.end(); ++i)
-    (*i)->SetContentAreaFocus(enable);
-}
-
-void RenderFrameImpl::WillHandleMouseEvent(const blink::WebMouseEvent& event) {
-  // This method is called for every mouse event that the render view receives.
-  // And then the mouse event is forwarded to WebKit, which dispatches it to the
-  // event target. Potentially a Pepper plugin will receive the event.
-  // In order to tell whether a plugin gets the last mouse event and which it
-  // is, we set |pepper_last_mouse_event_target_| to NULL here. If a plugin gets
-  // the event, it will notify us via DidReceiveMouseEvent() and set itself as
-  // |pepper_last_mouse_event_target_|.
-  render_view_->set_pepper_last_mouse_event_target(NULL);
 }
 
 void RenderFrameImpl::SimulateImeSetComposition(
