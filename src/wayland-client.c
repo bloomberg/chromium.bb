@@ -36,7 +36,7 @@
 #include <ctype.h>
 #include <assert.h>
 #include <fcntl.h>
-#include <sys/poll.h>
+#include <poll.h>
 #include <pthread.h>
 
 #include "wayland-util.h"
