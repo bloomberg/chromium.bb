@@ -51,8 +51,7 @@ static long backlight_get(struct backlight *backlight, char *node)
 	long value, ret;
 
 	if (asprintf(&path, "%s/%s", backlight->path, node) < 0)
-		return -ENOMEM
-;
+		return -ENOMEM;
 	fd = open(path, O_RDONLY);
 	if (fd < 0) {
 		ret = -1;
