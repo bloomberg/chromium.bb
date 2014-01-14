@@ -3,8 +3,19 @@
 # found in the LICENSE file.
 
 {
+  'target_defaults': {
+    'conditions': [
+      ['mojo_shell_debug_url != ""', {
+        'defines': [
+          'MOJO_SHELL_DEBUG=1',
+          'MOJO_SHELL_DEBUG_URL="<(mojo_shell_debug_url)"',
+         ],
+      }],
+    ],
+  },
   'variables': {
     'chromium_code': 1,
+    'mojo_shell_debug_url%': "",
   },
   'includes': [
     'mojo_apps.gypi',

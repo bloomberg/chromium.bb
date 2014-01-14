@@ -5,6 +5,7 @@
 #include "mojo/shell/loader.h"
 
 #include "base/command_line.h"
+#include "base/file_util.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/shell/switches.h"
 #include "net/base/load_flags.h"
@@ -61,7 +62,17 @@ Loader::~Loader() {
 scoped_ptr<Loader::Job> Loader::Load(const GURL& app_url, Delegate* delegate) {
   scoped_ptr<Job> job(new Job(app_url, delegate));
   job->fetcher_->SetRequestContext(url_request_context_getter_.get());
+#if defined(MOJO_SHELL_DEBUG)
+  base::FilePath tmp_dir;
+  base::GetTempDir(&tmp_dir);
+  // If MOJO_SHELL_DEBUG is set we want to dowload to a well known location.
+  // This makes it easier to do the necessary links so that symbols are found.
+  job->fetcher_->SaveResponseToFileAtPath(
+      tmp_dir.Append("link-me"),
+      file_runner_.get());
+#else
   job->fetcher_->SaveResponseToTemporaryFile(file_runner_.get());
+#endif
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableCache))
     job->fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
   job->fetcher_->Start();

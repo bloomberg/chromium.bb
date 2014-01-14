@@ -76,8 +76,16 @@ static void Init(JNIEnv* env, jclass clazz, jobject context) {
 }
 
 static void Start(JNIEnv* env, jclass clazz, jobject context, jstring jurl) {
-  if (jurl) {
-    std::string app_url = base::android::ConvertJavaStringToUTF8(env, jurl);
+  std::string app_url;
+#if defined(MOJO_SHELL_DEBUG_URL)
+  app_url = MOJO_SHELL_DEBUG_URL;
+  // Sleep for 5 seconds to give the debugger a chance to attach.
+  sleep(5);
+#else
+  if (jurl)
+    app_url = base::android::ConvertJavaStringToUTF8(env, jurl);
+#endif
+  if (!app_url.empty()) {
     std::vector<std::string> argv;
     argv.push_back("mojo_shell");
     argv.push_back(app_url);
@@ -91,8 +99,8 @@ static void Start(JNIEnv* env, jclass clazz, jobject context, jstring jurl) {
   shell_context->set_activity(activity.obj());
   g_viewport_service_loader.Get().reset(new NativeViewportServiceLoader());
   shell_context->service_manager()->SetLoaderForURL(
-    g_viewport_service_loader.Get().get(),
-    GURL("mojo:mojo_native_viewport_service"));
+      g_viewport_service_loader.Get().get(),
+      GURL("mojo:mojo_native_viewport_service"));
 
   g_context.Get().reset(shell_context);
   shell::Run(shell_context);
