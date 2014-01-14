@@ -65,7 +65,7 @@ def _ScanPackage(package):
   # Recurse sub folders.
   for path in package.__path__:
     try:
-      basenames = os.listdir(path)
+      basenames = sorted(os.listdir(path))
     except OSError:
       basenames = []
     for basename in basenames:
