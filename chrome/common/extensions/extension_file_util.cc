@@ -325,7 +325,8 @@ std::set<base::FilePath> GetBrowserImagePaths(const Extension* extension) {
 
 void GarbageCollectExtensions(
     const base::FilePath& install_directory,
-    const std::multimap<std::string, base::FilePath>& extension_paths) {
+    const std::multimap<std::string, base::FilePath>& extension_paths,
+    bool clean_temp_dir) {
   // Nothing to clean up if it doesn't exist.
   if (!base::DirectoryExists(install_directory))
     return;
@@ -343,7 +344,8 @@ void GarbageCollectExtensions(
     // Clean up temporary files left if Chrome crashed or quit in the middle
     // of an extension install.
     if (basename.value() == kTempDirectoryName) {
-      base::DeleteFile(extension_path, true);  // Recursive
+      if (clean_temp_dir)
+        base::DeleteFile(extension_path, true);  // Recursive
       continue;
     }
 

@@ -100,9 +100,13 @@ std::vector<base::FilePath> FindPrivateKeyFiles(
 //
 // Obsolete version directories are removed, as are directories that aren't
 // found in |extension_paths|.
+//
+// The "Temp" directory that is used during extension installation only gets
+// removed if |clean_temp_dir| is true.
 void GarbageCollectExtensions(
     const base::FilePath& extensions_dir,
-    const std::multimap<std::string, base::FilePath>& extension_paths);
+    const std::multimap<std::string, base::FilePath>& extension_paths,
+    bool clean_temp_dir);
 
 // Loads extension message catalogs and returns message bundle.
 // Returns NULL on error, or if extension is not localized.
