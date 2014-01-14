@@ -1912,6 +1912,11 @@ _arm_release.add_config('peach_pi-release',
   hw_tests=[],
 )
 
+_arm_release.add_config('nyan_big-release',
+  boards=['nyan_big'],
+  hw_tests=[],
+)
+
 # Factory and Firmware releases much inherit from these classes.  Modifications
 # for these release builders should go here.
 
