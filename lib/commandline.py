@@ -384,7 +384,7 @@ class FilteringParser(OptionParser):
     """Filter the argument by passing it through a function.
 
     Args:
-      parsed_args:  The list of parsed argument namedtuples to filter.  Tuples
+      parsed_args: The list of parsed argument namedtuples to filter.  Tuples
         are of the form (opt_inst, opt_str, value_str).
       filter_fn: A function with signature f(PassedOption), and returns True if
         the argument is to be passed through.  False if not.
@@ -413,6 +413,7 @@ class ArgumentParser(BaseParser, argparse.ArgumentParser):
   """
   # pylint: disable=W0231
   def __init__(self, usage=None, **kwargs):
+    kwargs.setdefault('formatter_class', argparse.RawDescriptionHelpFormatter)
     BaseParser.__init__(self, **kwargs)
     self.PopUsedArgs(kwargs)
     argparse.ArgumentParser.__init__(self, usage=usage, **kwargs)
