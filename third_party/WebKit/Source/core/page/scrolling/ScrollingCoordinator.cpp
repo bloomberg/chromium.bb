@@ -883,7 +883,7 @@ MainThreadScrollingReasons ScrollingCoordinator::mainThreadScrollingReasons() co
     // frame. If it does not exist or if it is not scrollable, there is no
     // reason to force main thread scrolling.
     FrameView* frameView = m_page->mainFrame()->view();
-    if (!frameView || !frameView->isScrollable())
+    if (!frameView)
         return static_cast<MainThreadScrollingReasons>(0);
 
     MainThreadScrollingReasons mainThreadScrollingReasons = (MainThreadScrollingReasons)0;
