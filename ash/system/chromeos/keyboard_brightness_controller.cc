@@ -8,7 +8,6 @@
 #include "ash/shell.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
-#include "content/public/browser/user_metrics.h"
 #include "ui/base/accelerators/accelerator.h"
 
 namespace ash {

@@ -83,7 +83,6 @@
 #include "base/command_line.h"
 #include "base/debug/leak_annotations.h"
 #include "base/debug/trace_event.h"
-#include "content/public/browser/user_metrics.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/user_action_client.h"
 #include "ui/aura/env.h"
