@@ -36,4 +36,6 @@
     attribute EventHandler eventHandlerAttribute;
     [Reflect] attribute DOMString reflectStringAttribute;
     [Reflect, URL] attribute DOMString reflectUrlStringAttribute;
+
+    TestInterfaceEmpty testInterfaceEmptyMethod();
 };

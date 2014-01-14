@@ -124,7 +124,7 @@ def generate_method(interface, method):
         'property_attributes': property_attributes(method),
         'runtime_enabled_function': v8_utilities.runtime_enabled_function_name(method),  # [RuntimeEnabled]
         'signature': 'v8::Local<v8::Signature>()' if is_static or 'DoNotCheckSignature' in extended_attributes else 'defaultSignature',
-        'v8_set_return_value': v8_set_return_value(method, this_cpp_value),
+        'v8_set_return_value': v8_set_return_value(interface.name, method, this_cpp_value),
         'world_suffixes': ['', 'ForMainWorld'] if 'PerWorldBindings' in extended_attributes else [''],  # [PerWorldBindings]
     }
     return contents
@@ -149,7 +149,7 @@ def generate_argument(interface, method, argument, index):
         'is_variadic_wrapper_type': argument.is_variadic and v8_types.is_wrapper_type(idl_type),
         'is_wrapper_type': v8_types.is_wrapper_type(idl_type),
         'name': argument.name,
-        'v8_set_return_value': v8_set_return_value(method, this_cpp_value),
+        'v8_set_return_value': v8_set_return_value(interface.name, method, this_cpp_value),
         'v8_value_to_local_cpp_value': v8_value_to_local_cpp_value(argument, index),
     }
 
@@ -174,14 +174,15 @@ def cpp_value(interface, method, number_of_arguments):
     return '%s(%s)' % (cpp_method_name, ', '.join(cpp_arguments))
 
 
-def v8_set_return_value(method, cpp_value):
+def v8_set_return_value(interface_name, method, cpp_value):
     idl_type = method.idl_type
     if idl_type == 'void':
         return None
     # [CallWith=ScriptState]
     if has_extended_attribute_value(method, 'CallWith', 'ScriptState'):
         cpp_value = 'result'  # use local variable for value
-    return v8_types.v8_set_return_value(idl_type, cpp_value, method.extended_attributes)
+    script_wrappable = 'imp' if v8_types.inherits_interface(interface_name, 'Node') else ''
+    return v8_types.v8_set_return_value(idl_type, cpp_value, method.extended_attributes, script_wrappable=script_wrappable)
 
 
 # [NotEnumerable]

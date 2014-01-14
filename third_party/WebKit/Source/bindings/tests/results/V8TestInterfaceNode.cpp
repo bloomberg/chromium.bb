@@ -199,6 +199,19 @@ static void reflectUrlStringAttributeAttributeSetterCallback(v8::Local<v8::Strin
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void testInterfaceEmptyMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestInterfaceNode* imp = V8TestInterfaceNode::toNative(info.Holder());
+    v8SetReturnValueFast(info, imp->testInterfaceEmptyMethod(), imp);
+}
+
+static void testInterfaceEmptyMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestInterfaceNodeV8Internal::testInterfaceEmptyMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 } // namespace TestInterfaceNodeV8Internal
 
 static const V8DOMConfiguration::AttributeConfiguration V8TestInterfaceNodeAttributes[] = {
@@ -209,6 +222,10 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestInterfaceNodeAttri
     {"reflectUrlStringAttribute", TestInterfaceNodeV8Internal::reflectUrlStringAttributeAttributeGetterCallback, TestInterfaceNodeV8Internal::reflectUrlStringAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 };
 
+static const V8DOMConfiguration::MethodConfiguration V8TestInterfaceNodeMethods[] = {
+    {"testInterfaceEmptyMethod", TestInterfaceNodeV8Internal::testInterfaceEmptyMethodMethodCallback, 0, 0},
+};
+
 static void configureV8TestInterfaceNodeTemplate(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     functionTemplate->ReadOnlyPrototype();
@@ -217,7 +234,7 @@ static void configureV8TestInterfaceNodeTemplate(v8::Handle<v8::FunctionTemplate
     defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "TestInterfaceNode", V8Node::domTemplate(isolate, currentWorldType), V8TestInterfaceNode::internalFieldCount,
         V8TestInterfaceNodeAttributes, WTF_ARRAY_LENGTH(V8TestInterfaceNodeAttributes),
         0, 0,
-        0, 0,
+        V8TestInterfaceNodeMethods, WTF_ARRAY_LENGTH(V8TestInterfaceNodeMethods),
         isolate, currentWorldType);
     v8::Local<v8::ObjectTemplate> ALLOW_UNUSED instanceTemplate = functionTemplate->InstanceTemplate();
     v8::Local<v8::ObjectTemplate> ALLOW_UNUSED prototypeTemplate = functionTemplate->PrototypeTemplate();
