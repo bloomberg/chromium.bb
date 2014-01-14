@@ -73,7 +73,7 @@ size_t Textfield::GetCaretBlinkMs() {
 }
 
 Textfield::Textfield()
-    : model_(new TextfieldViewsModel(this)),
+    : model_(new TextfieldModel(this)),
       controller_(NULL),
       style_(STYLE_DEFAULT),
       read_only_(false),
@@ -105,7 +105,7 @@ Textfield::Textfield()
 }
 
 Textfield::Textfield(StyleFlags style)
-    : model_(new TextfieldViewsModel(this)),
+    : model_(new TextfieldModel(this)),
       controller_(NULL),
       style_(style),
       read_only_(false),
@@ -873,7 +873,7 @@ void Textfield::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Textfield, TextfieldViewsModel::Delegate overrides:
+// Textfield, TextfieldModel::Delegate overrides:
 
 void Textfield::OnCompositionTextConfirmedOrCleared() {
   if (!skip_input_method_cancel_composition_)

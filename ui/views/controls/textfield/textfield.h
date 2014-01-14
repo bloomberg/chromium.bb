@@ -24,7 +24,7 @@
 #include "ui/gfx/selection_model.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/views/context_menu_controller.h"
-#include "ui/views/controls/textfield/textfield_views_model.h"
+#include "ui/views/controls/textfield/textfield_model.h"
 #include "ui/views/drag_controller.h"
 #include "ui/views/view.h"
 
@@ -36,7 +36,7 @@ class TextfieldController;
 
 // A views/skia textfield implementation. No platform-specific code is used.
 class VIEWS_EXPORT Textfield : public View,
-                               public TextfieldViewsModel::Delegate,
+                               public TextfieldModel::Delegate,
                                public ContextMenuController,
                                public DragController,
                                public ui::TouchEditable,
@@ -219,7 +219,7 @@ class VIEWS_EXPORT Textfield : public View,
   virtual void OnDragDone() OVERRIDE;
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
 
-  // TextfieldViewsModel::Delegate overrides:
+  // TextfieldModel::Delegate overrides:
   virtual void OnCompositionTextConfirmedOrCleared() OVERRIDE;
 
   // ContextMenuController overrides:
@@ -289,7 +289,7 @@ class VIEWS_EXPORT Textfield : public View,
   virtual void OnCandidateWindowHidden() OVERRIDE;
 
  protected:
-   // Returns the TextfieldViewsModel's text/cursor/selection rendering model.
+   // Returns the TextfieldModel's text/cursor/selection rendering model.
    gfx::RenderText* GetRenderText() const;
 
  private:
@@ -321,7 +321,7 @@ class VIEWS_EXPORT Textfield : public View,
 
   void PaintTextAndCursor(gfx::Canvas* canvas);
 
-  // Helper function to call MoveCursorTo on the TextfieldViewsModel.
+  // Helper function to call MoveCursorTo on the TextfieldModel.
   bool MoveCursorTo(const gfx::Point& point, bool select);
 
   // Convenience method to call InputMethod::OnCaretBoundsChanged();
@@ -359,7 +359,7 @@ class VIEWS_EXPORT Textfield : public View,
   void CreateTouchSelectionControllerAndNotifyIt();
 
   // The text model.
-  scoped_ptr<TextfieldViewsModel> model_;
+  scoped_ptr<TextfieldModel> model_;
 
   // This is the current listener for events from this Textfield.
   TextfieldController* controller_;

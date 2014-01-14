@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/controls/textfield/textfield_views_model.h"
+#include "ui/views/controls/textfield/textfield_model.h"
 
 #include <algorithm>
 
@@ -42,14 +42,14 @@ class Edit {
   }
 
   // Revert the change made by this edit in |model|.
-  void Undo(TextfieldViewsModel* model) {
+  void Undo(TextfieldModel* model) {
     model->ModifyText(new_text_start_, new_text_end(),
                       old_text_, old_text_start_,
                       old_cursor_pos_);
   }
 
   // Apply the change of this edit to the |model|.
-  void Redo(TextfieldViewsModel* model) {
+  void Redo(TextfieldModel* model) {
     model->ModifyText(old_text_start_, old_text_end(),
                       new_text_, new_text_start_,
                       new_cursor_pos_);
@@ -290,23 +290,23 @@ using internal::MERGE_WITH_PREVIOUS;
 using internal::MERGEABLE;
 
 /////////////////////////////////////////////////////////////////
-// TextfieldViewsModel: public
+// TextfieldModel: public
 
-TextfieldViewsModel::Delegate::~Delegate() {
+TextfieldModel::Delegate::~Delegate() {
 }
 
-TextfieldViewsModel::TextfieldViewsModel(Delegate* delegate)
+TextfieldModel::TextfieldModel(Delegate* delegate)
     : delegate_(delegate),
       render_text_(gfx::RenderText::CreateInstance()),
       current_edit_(edit_history_.end()) {
 }
 
-TextfieldViewsModel::~TextfieldViewsModel() {
+TextfieldModel::~TextfieldModel() {
   ClearEditHistory();
   ClearComposition();
 }
 
-bool TextfieldViewsModel::SetText(const base::string16& new_text) {
+bool TextfieldModel::SetText(const base::string16& new_text) {
   bool changed = false;
   if (HasCompositionText()) {
     ConfirmCompositionText();
@@ -333,7 +333,7 @@ bool TextfieldViewsModel::SetText(const base::string16& new_text) {
   return changed;
 }
 
-void TextfieldViewsModel::Append(const base::string16& new_text) {
+void TextfieldModel::Append(const base::string16& new_text) {
   if (HasCompositionText())
     ConfirmCompositionText();
   size_t save = GetCursorPosition();
@@ -345,7 +345,7 @@ void TextfieldViewsModel::Append(const base::string16& new_text) {
   ClearSelection();
 }
 
-bool TextfieldViewsModel::Delete() {
+bool TextfieldModel::Delete() {
   if (HasCompositionText()) {
     // No undo/redo for composition text.
     CancelCompositionText();
@@ -366,7 +366,7 @@ bool TextfieldViewsModel::Delete() {
   return false;
 }
 
-bool TextfieldViewsModel::Backspace() {
+bool TextfieldModel::Backspace() {
   if (HasCompositionText()) {
     // No undo/redo for composition text.
     CancelCompositionText();
@@ -386,19 +386,19 @@ bool TextfieldViewsModel::Backspace() {
   return false;
 }
 
-size_t TextfieldViewsModel::GetCursorPosition() const {
+size_t TextfieldModel::GetCursorPosition() const {
   return render_text_->cursor_position();
 }
 
-void TextfieldViewsModel::MoveCursor(gfx::BreakType break_type,
-                                     gfx::VisualCursorDirection direction,
-                                     bool select) {
+void TextfieldModel::MoveCursor(gfx::BreakType break_type,
+                                gfx::VisualCursorDirection direction,
+                                bool select) {
   if (HasCompositionText())
     ConfirmCompositionText();
   render_text_->MoveCursor(break_type, direction, select);
 }
 
-bool TextfieldViewsModel::MoveCursorTo(const gfx::SelectionModel& model) {
+bool TextfieldModel::MoveCursorTo(const gfx::SelectionModel& model) {
   if (HasCompositionText()) {
     ConfirmCompositionText();
     // ConfirmCompositionText() updates cursor position. Need to reflect it in
@@ -412,52 +412,52 @@ bool TextfieldViewsModel::MoveCursorTo(const gfx::SelectionModel& model) {
   return render_text_->MoveCursorTo(model);
 }
 
-bool TextfieldViewsModel::MoveCursorTo(const gfx::Point& point, bool select) {
+bool TextfieldModel::MoveCursorTo(const gfx::Point& point, bool select) {
   if (HasCompositionText())
     ConfirmCompositionText();
   return render_text_->MoveCursorTo(point, select);
 }
 
-base::string16 TextfieldViewsModel::GetSelectedText() const {
+base::string16 TextfieldModel::GetSelectedText() const {
   return text().substr(render_text_->selection().GetMin(),
                        render_text_->selection().length());
 }
 
-void TextfieldViewsModel::SelectRange(const gfx::Range& range) {
+void TextfieldModel::SelectRange(const gfx::Range& range) {
   if (HasCompositionText())
     ConfirmCompositionText();
   render_text_->SelectRange(range);
 }
 
-void TextfieldViewsModel::SelectSelectionModel(const gfx::SelectionModel& sel) {
+void TextfieldModel::SelectSelectionModel(const gfx::SelectionModel& sel) {
   if (HasCompositionText())
     ConfirmCompositionText();
   render_text_->MoveCursorTo(sel);
 }
 
-void TextfieldViewsModel::SelectAll(bool reversed) {
+void TextfieldModel::SelectAll(bool reversed) {
   if (HasCompositionText())
     ConfirmCompositionText();
   render_text_->SelectAll(reversed);
 }
 
-void TextfieldViewsModel::SelectWord() {
+void TextfieldModel::SelectWord() {
   if (HasCompositionText())
     ConfirmCompositionText();
   render_text_->SelectWord();
 }
 
-void TextfieldViewsModel::ClearSelection() {
+void TextfieldModel::ClearSelection() {
   if (HasCompositionText())
     ConfirmCompositionText();
   render_text_->ClearSelection();
 }
 
-bool TextfieldViewsModel::CanUndo() {
+bool TextfieldModel::CanUndo() {
   return edit_history_.size() && current_edit_ != edit_history_.end();
 }
 
-bool TextfieldViewsModel::CanRedo() {
+bool TextfieldModel::CanRedo() {
   if (!edit_history_.size())
     return false;
   // There is no redo iff the current edit is the last element
@@ -467,7 +467,7 @@ bool TextfieldViewsModel::CanRedo() {
       ++iter != edit_history_.end();
 }
 
-bool TextfieldViewsModel::Undo() {
+bool TextfieldModel::Undo() {
   if (!CanUndo())
     return false;
   DCHECK(!HasCompositionText());
@@ -486,7 +486,7 @@ bool TextfieldViewsModel::Undo() {
   return old != text() || old_cursor != GetCursorPosition();
 }
 
-bool TextfieldViewsModel::Redo() {
+bool TextfieldModel::Redo() {
   if (!CanRedo())
     return false;
   DCHECK(!HasCompositionText());
@@ -503,7 +503,7 @@ bool TextfieldViewsModel::Redo() {
   return old != text() || old_cursor != GetCursorPosition();
 }
 
-bool TextfieldViewsModel::Cut() {
+bool TextfieldModel::Cut() {
   if (!HasCompositionText() && HasSelection() && !render_text_->obscured()) {
     ui::ScopedClipboardWriter(
         ui::Clipboard::GetForCurrentThread(),
@@ -521,7 +521,7 @@ bool TextfieldViewsModel::Cut() {
   return false;
 }
 
-bool TextfieldViewsModel::Copy() {
+bool TextfieldModel::Copy() {
   if (!HasCompositionText() && HasSelection() && !render_text_->obscured()) {
     ui::ScopedClipboardWriter(
         ui::Clipboard::GetForCurrentThread(),
@@ -531,7 +531,7 @@ bool TextfieldViewsModel::Copy() {
   return false;
 }
 
-bool TextfieldViewsModel::Paste() {
+bool TextfieldModel::Paste() {
   base::string16 result;
   ui::Clipboard::GetForCurrentThread()->ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE,
                                                  &result);
@@ -542,17 +542,17 @@ bool TextfieldViewsModel::Paste() {
   return false;
 }
 
-bool TextfieldViewsModel::HasSelection() const {
+bool TextfieldModel::HasSelection() const {
   return !render_text_->selection().is_empty();
 }
 
-void TextfieldViewsModel::DeleteSelection() {
+void TextfieldModel::DeleteSelection() {
   DCHECK(!HasCompositionText());
   DCHECK(HasSelection());
   ExecuteAndRecordDelete(render_text_->selection(), false);
 }
 
-void TextfieldViewsModel::DeleteSelectionAndInsertTextAt(
+void TextfieldModel::DeleteSelectionAndInsertTextAt(
     const base::string16& new_text,
     size_t position) {
   if (HasCompositionText())
@@ -564,18 +564,17 @@ void TextfieldViewsModel::DeleteSelectionAndInsertTextAt(
                           position);
 }
 
-base::string16 TextfieldViewsModel::GetTextFromRange(
-    const gfx::Range& range) const {
+base::string16 TextfieldModel::GetTextFromRange(const gfx::Range& range) const {
   if (range.IsValid() && range.GetMin() < text().length())
     return text().substr(range.GetMin(), range.length());
   return base::string16();
 }
 
-void TextfieldViewsModel::GetTextRange(gfx::Range* range) const {
+void TextfieldModel::GetTextRange(gfx::Range* range) const {
   *range = gfx::Range(0, text().length());
 }
 
-void TextfieldViewsModel::SetCompositionText(
+void TextfieldModel::SetCompositionText(
     const ui::CompositionText& composition) {
   if (HasCompositionText())
     CancelCompositionText();
@@ -612,7 +611,7 @@ void TextfieldViewsModel::SetCompositionText(
   }
 }
 
-void TextfieldViewsModel::ConfirmCompositionText() {
+void TextfieldModel::ConfirmCompositionText() {
   DCHECK(HasCompositionText());
   gfx::Range range = render_text_->GetCompositionRange();
   base::string16 composition = text().substr(range.start(), range.length());
@@ -625,7 +624,7 @@ void TextfieldViewsModel::ConfirmCompositionText() {
     delegate_->OnCompositionTextConfirmedOrCleared();
 }
 
-void TextfieldViewsModel::CancelCompositionText() {
+void TextfieldModel::CancelCompositionText() {
   DCHECK(HasCompositionText());
   gfx::Range range = render_text_->GetCompositionRange();
   ClearComposition();
@@ -636,28 +635,28 @@ void TextfieldViewsModel::CancelCompositionText() {
     delegate_->OnCompositionTextConfirmedOrCleared();
 }
 
-void TextfieldViewsModel::ClearComposition() {
+void TextfieldModel::ClearComposition() {
   render_text_->SetCompositionRange(gfx::Range::InvalidRange());
 }
 
-void TextfieldViewsModel::GetCompositionTextRange(gfx::Range* range) const {
+void TextfieldModel::GetCompositionTextRange(gfx::Range* range) const {
   *range = gfx::Range(render_text_->GetCompositionRange());
 }
 
-bool TextfieldViewsModel::HasCompositionText() const {
+bool TextfieldModel::HasCompositionText() const {
   return !render_text_->GetCompositionRange().is_empty();
 }
 
-void TextfieldViewsModel::ClearEditHistory() {
+void TextfieldModel::ClearEditHistory() {
   STLDeleteElements(&edit_history_);
   current_edit_ = edit_history_.end();
 }
 
 /////////////////////////////////////////////////////////////////
-// TextfieldViewsModel: private
+// TextfieldModel: private
 
-void TextfieldViewsModel::InsertTextInternal(const base::string16& new_text,
-                                             bool mergeable) {
+void TextfieldModel::InsertTextInternal(const base::string16& new_text,
+                                        bool mergeable) {
   if (HasCompositionText()) {
     CancelCompositionText();
     ExecuteAndRecordInsert(new_text, mergeable);
@@ -669,8 +668,8 @@ void TextfieldViewsModel::InsertTextInternal(const base::string16& new_text,
   }
 }
 
-void TextfieldViewsModel::ReplaceTextInternal(const base::string16& new_text,
-                                              bool mergeable) {
+void TextfieldModel::ReplaceTextInternal(const base::string16& new_text,
+                                         bool mergeable) {
   if (HasCompositionText()) {
     CancelCompositionText();
   } else if (!HasSelection()) {
@@ -689,7 +688,7 @@ void TextfieldViewsModel::ReplaceTextInternal(const base::string16& new_text,
   InsertTextInternal(new_text, mergeable);
 }
 
-void TextfieldViewsModel::ClearRedoHistory() {
+void TextfieldModel::ClearRedoHistory() {
   if (edit_history_.begin() == edit_history_.end())
     return;
   if (current_edit_ == edit_history_.end()) {
@@ -702,8 +701,7 @@ void TextfieldViewsModel::ClearRedoHistory() {
   edit_history_.erase(delete_start, edit_history_.end());
 }
 
-void TextfieldViewsModel::ExecuteAndRecordDelete(gfx::Range range,
-                                                 bool mergeable) {
+void TextfieldModel::ExecuteAndRecordDelete(gfx::Range range, bool mergeable) {
   size_t old_text_start = range.GetMin();
   const base::string16 old_text = text().substr(old_text_start, range.length());
   bool backward = range.is_reversed();
@@ -714,7 +712,7 @@ void TextfieldViewsModel::ExecuteAndRecordDelete(gfx::Range range,
     delete edit;
 }
 
-void TextfieldViewsModel::ExecuteAndRecordReplaceSelection(
+void TextfieldModel::ExecuteAndRecordReplaceSelection(
     MergeType merge_type,
     const base::string16& new_text) {
   size_t new_text_start = render_text_->selection().GetMin();
@@ -726,12 +724,11 @@ void TextfieldViewsModel::ExecuteAndRecordReplaceSelection(
                           new_text_start);
 }
 
-void TextfieldViewsModel::ExecuteAndRecordReplace(
-    MergeType merge_type,
-    size_t old_cursor_pos,
-    size_t new_cursor_pos,
-    const base::string16& new_text,
-    size_t new_text_start) {
+void TextfieldModel::ExecuteAndRecordReplace(MergeType merge_type,
+                                             size_t old_cursor_pos,
+                                             size_t new_cursor_pos,
+                                             const base::string16& new_text,
+                                             size_t new_text_start) {
   size_t old_text_start = render_text_->selection().GetMin();
   bool backward = render_text_->selection().is_reversed();
   Edit* edit = new ReplaceEdit(merge_type,
@@ -748,8 +745,8 @@ void TextfieldViewsModel::ExecuteAndRecordReplace(
     delete edit;
 }
 
-void TextfieldViewsModel::ExecuteAndRecordInsert(const base::string16& new_text,
-                                                 bool mergeable) {
+void TextfieldModel::ExecuteAndRecordInsert(const base::string16& new_text,
+                                            bool mergeable) {
   Edit* edit = new InsertEdit(mergeable, new_text, GetCursorPosition());
   bool delete_edit = AddOrMergeEditHistory(edit);
   edit->Redo(this);
@@ -757,7 +754,7 @@ void TextfieldViewsModel::ExecuteAndRecordInsert(const base::string16& new_text,
     delete edit;
 }
 
-bool TextfieldViewsModel::AddOrMergeEditHistory(Edit* edit) {
+bool TextfieldModel::AddOrMergeEditHistory(Edit* edit) {
   ClearRedoHistory();
 
   if (current_edit_ != edit_history_.end() && (*current_edit_)->Merge(edit)) {
@@ -778,11 +775,11 @@ bool TextfieldViewsModel::AddOrMergeEditHistory(Edit* edit) {
   return false;
 }
 
-void TextfieldViewsModel::ModifyText(size_t delete_from,
-                                     size_t delete_to,
-                                     const base::string16& new_text,
-                                     size_t new_text_insert_at,
-                                     size_t new_cursor_pos) {
+void TextfieldModel::ModifyText(size_t delete_from,
+                                size_t delete_to,
+                                const base::string16& new_text,
+                                size_t new_text_insert_at,
+                                size_t new_cursor_pos) {
   DCHECK_LE(delete_from, delete_to);
   base::string16 old_text = text();
   ClearComposition();

@@ -30,7 +30,7 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/render_text.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
-#include "ui/views/controls/textfield/textfield_views_model.h"
+#include "ui/views/controls/textfield/textfield_model.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/ime/mock_input_method.h"
 #include "ui/views/test/test_views_delegate.h"
@@ -326,7 +326,7 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
   Widget* widget_;
 
   TestTextfield* textfield_;
-  TextfieldViewsModel* model_;
+  TextfieldModel* model_;
 
   // The string from Controller::ContentsChanged callback.
   base::string16 last_contents_;
@@ -1293,8 +1293,7 @@ TEST_F(TextfieldTest, UndoRedoTest) {
   // SetText
   SendKeyEvent(ui::VKEY_C);
   // Undo'ing append moves the cursor to the end for now.
-  // no-op SetText won't add new edit. See TextfieldViewsModel::SetText
-  // description.
+  // A no-op SetText won't add a new edit; see TextfieldModel::SetText.
   EXPECT_STR_EQ("abc", textfield_->text());
   textfield_->SetText(ASCIIToUTF16("abc"));
   EXPECT_STR_EQ("abc", textfield_->text());

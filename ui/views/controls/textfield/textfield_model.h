@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_CONTROLS_TEXTFIELD_TEXTFIELD_VIEWS_MODEL_H_
-#define UI_VIEWS_CONTROLS_TEXTFIELD_TEXTFIELD_VIEWS_MODEL_H_
+#ifndef UI_VIEWS_CONTROLS_TEXTFIELD_TEXTFIELD_MODEL_H_
+#define UI_VIEWS_CONTROLS_TEXTFIELD_TEXTFIELD_MODEL_H_
 
 #include <list>
 #include <vector>
@@ -44,9 +44,9 @@ enum MergeType {
 
 }  // namespace internal
 
-// A model that represents a text content for TextfieldViews.
+// A model that represents text content for a views::Textfield.
 // It supports editing, selection and cursor manipulation.
-class VIEWS_EXPORT TextfieldViewsModel {
+class VIEWS_EXPORT TextfieldModel {
  public:
   // Delegate interface implemented by the textfield view class to provided
   // additional functionalities required by the model.
@@ -59,8 +59,8 @@ class VIEWS_EXPORT TextfieldViewsModel {
     virtual ~Delegate();
   };
 
-  explicit TextfieldViewsModel(Delegate* delegate);
-  virtual ~TextfieldViewsModel();
+  explicit TextfieldModel(Delegate* delegate);
+  virtual ~TextfieldModel();
 
   // Edit related methods.
 
@@ -129,7 +129,7 @@ class VIEWS_EXPORT TextfieldViewsModel {
   // selection will move to.
   bool MoveCursorTo(const gfx::SelectionModel& selection);
 
-  // Helper function to call MoveCursorTo on the TextfieldViewsModel.
+  // Helper function to call MoveCursorTo on the TextfieldModel.
   bool MoveCursorTo(const gfx::Point& point, bool select);
 
   // Selection related method
@@ -228,15 +228,15 @@ class VIEWS_EXPORT TextfieldViewsModel {
   void ClearEditHistory();
 
  private:
-  friend class TextfieldViewsModelTest;
+  friend class TextfieldModelTest;
   friend class UndoRedo_BasicTest;
   friend class UndoRedo_CutCopyPasteTest;
   friend class UndoRedo_ReplaceTest;
   friend class internal::Edit;
 
-  FRIEND_TEST_ALL_PREFIXES(TextfieldViewsModelTest, UndoRedo_BasicTest);
-  FRIEND_TEST_ALL_PREFIXES(TextfieldViewsModelTest, UndoRedo_CutCopyPasteTest);
-  FRIEND_TEST_ALL_PREFIXES(TextfieldViewsModelTest, UndoRedo_ReplaceTest);
+  FRIEND_TEST_ALL_PREFIXES(TextfieldModelTest, UndoRedo_BasicTest);
+  FRIEND_TEST_ALL_PREFIXES(TextfieldModelTest, UndoRedo_CutCopyPasteTest);
+  FRIEND_TEST_ALL_PREFIXES(TextfieldModelTest, UndoRedo_ReplaceTest);
 
   // Insert the given |new_text|. |mergeable| indicates if this insert
   // operation can be merged to previous edit in the edit history.
@@ -278,7 +278,7 @@ class VIEWS_EXPORT TextfieldViewsModel {
 
   void ClearComposition();
 
-  // Pointer to a TextfieldViewsModel::Delegate instance, should be provided by
+  // Pointer to a TextfieldModel::Delegate instance, should be provided by
   // the View object.
   Delegate* delegate_;
 
@@ -301,9 +301,9 @@ class VIEWS_EXPORT TextfieldViewsModel {
   // 3) redone all undone edits.
   EditHistory::iterator current_edit_;
 
-  DISALLOW_COPY_AND_ASSIGN(TextfieldViewsModel);
+  DISALLOW_COPY_AND_ASSIGN(TextfieldModel);
 };
 
 }  // namespace views
 
-#endif  // UI_VIEWS_CONTROLS_TEXTFIELD_TEXTFIELD_VIEWS_MODEL_H_
+#endif  // UI_VIEWS_CONTROLS_TEXTFIELD_TEXTFIELD_MODEL_H_
