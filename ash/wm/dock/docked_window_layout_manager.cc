@@ -64,7 +64,9 @@ class DockedBackgroundWidget : public views::Widget,
       : alignment_(DOCKED_ALIGNMENT_NONE),
         background_animator_(this, 0, kShelfBackgroundAlpha),
         alpha_(0),
-        opaque_background_(ui::LAYER_SOLID_COLOR) {
+        opaque_background_(ui::LAYER_SOLID_COLOR),
+        visible_background_type_(SHELF_BACKGROUND_DEFAULT),
+        visible_background_change_type_(BACKGROUND_CHANGE_IMMEDIATE) {
     InitWidget(container);
   }
 
@@ -75,31 +77,23 @@ class DockedBackgroundWidget : public views::Widget,
     alignment_ = alignment;
   }
 
-  // Sets the docked area background type and starts transition animation.
-  void SetPaintsBackground(
-      ShelfBackgroundType background_type,
-      BackgroundAnimatorChangeType change_type) {
-    float target_opacity =
-        (background_type == SHELF_BACKGROUND_MAXIMIZED) ? 1.0f : 0.0f;
-    scoped_ptr<ui::ScopedLayerAnimationSettings> opaque_background_animation;
-    if (change_type != BACKGROUND_CHANGE_IMMEDIATE) {
-      opaque_background_animation.reset(new ui::ScopedLayerAnimationSettings(
-          opaque_background_.GetAnimator()));
-      opaque_background_animation->SetTransitionDuration(
-          base::TimeDelta::FromMilliseconds(kTimeToSwitchBackgroundMs));
-    }
-    opaque_background_.SetOpacity(target_opacity);
-
-    // TODO(varkha): use ui::Layer on both opaque_background and normal
-    // background retire background_animator_ at all. It would be simpler.
-    // See also ShelfWidget::SetPaintsBackground.
-    background_animator_.SetPaintsBackground(
-        background_type != SHELF_BACKGROUND_DEFAULT,
-        change_type);
-    SchedulePaintInRect(gfx::Rect(GetWindowBoundsInScreen().size()));
+  // Sets the background type. Starts an animation to transition to
+  // |background_type| if the widget is visible. If the widget is not visible,
+  // the animation is postponed till the widget becomes visible.
+  void SetBackgroundType(ShelfBackgroundType background_type,
+                         BackgroundAnimatorChangeType change_type) {
+    visible_background_type_ = background_type;
+    visible_background_change_type_ = change_type;
+    if (IsVisible())
+      UpdateBackground();
   }
 
   // views::Widget:
+  virtual void OnNativeWidgetVisibilityChanged(bool visible) OVERRIDE {
+    views::Widget::OnNativeWidgetVisibilityChanged(visible);
+    UpdateBackground();
+  }
+
   virtual void OnNativeWidgetPaint(gfx::Canvas* canvas) OVERRIDE {
     const gfx::ImageSkia& shelf_background(
         alignment_ == DOCKED_ALIGNMENT_LEFT ?
@@ -152,6 +146,7 @@ class DockedBackgroundWidget : public views::Widget,
     params.accept_events = false;
     set_focus_on_creation(false);
     Init(params);
+    SetVisibilityChangedAnimationsEnabled(false);
     GetNativeWindow()->SetProperty(internal::kStayInSameRootWindowKey, true);
     opaque_background_.SetColor(SK_ColorBLACK);
     opaque_background_.SetBounds(gfx::Rect(GetWindowBoundsInScreen().size()));
@@ -168,6 +163,34 @@ class DockedBackgroundWidget : public views::Widget,
         shelf_background, SkBitmapOperations::ROTATION_270_CW);
   }
 
+  // Transitions to |visible_background_type_| if the widget is visible and to
+  // SHELF_BACKGROUND_DEFAULT if it is not.
+  void UpdateBackground() {
+    ShelfBackgroundType background_type = IsVisible() ?
+        visible_background_type_ : SHELF_BACKGROUND_DEFAULT;
+    BackgroundAnimatorChangeType change_type = IsVisible() ?
+        visible_background_change_type_ : BACKGROUND_CHANGE_IMMEDIATE;
+
+    float target_opacity =
+        (background_type == SHELF_BACKGROUND_MAXIMIZED) ? 1.0f : 0.0f;
+    scoped_ptr<ui::ScopedLayerAnimationSettings> opaque_background_animation;
+    if (change_type != BACKGROUND_CHANGE_IMMEDIATE) {
+      opaque_background_animation.reset(new ui::ScopedLayerAnimationSettings(
+          opaque_background_.GetAnimator()));
+      opaque_background_animation->SetTransitionDuration(
+          base::TimeDelta::FromMilliseconds(kTimeToSwitchBackgroundMs));
+    }
+    opaque_background_.SetOpacity(target_opacity);
+
+    // TODO(varkha): use ui::Layer on both opaque_background and normal
+    // background retire background_animator_ at all. It would be simpler.
+    // See also ShelfWidget::SetPaintsBackground.
+    background_animator_.SetPaintsBackground(
+        background_type != SHELF_BACKGROUND_DEFAULT,
+        change_type);
+    SchedulePaintInRect(gfx::Rect(GetWindowBoundsInScreen().size()));
+  }
+
   DockedAlignment alignment_;
 
   // The animator for the background transitions.
@@ -182,6 +205,13 @@ class DockedBackgroundWidget : public views::Widget,
   // Backgrounds created from shelf background by 90 or 270 degree rotation.
   gfx::ImageSkia shelf_background_left_;
   gfx::ImageSkia shelf_background_right_;
+
+  // The background type to use when the widget is visible. When not visible,
+  // the widget uses SHELF_BACKGROUND_DEFAULT.
+  ShelfBackgroundType visible_background_type_;
+
+  // Whether the widget should animate to |visible_background_type_|.
+  BackgroundAnimatorChangeType visible_background_change_type_;
 
   DISALLOW_COPY_AND_ASSIGN(DockedBackgroundWidget);
 };
@@ -746,7 +776,7 @@ void DockedWindowLayoutManager::OnShelfAlignmentChanged(
 void DockedWindowLayoutManager::OnBackgroundUpdated(
     ShelfBackgroundType background_type,
     BackgroundAnimatorChangeType change_type) {
-  background_widget_->SetPaintsBackground(background_type, change_type);
+  background_widget_->SetBackgroundType(background_type, change_type);
 }
 
 /////////////////////////////////////////////////////////////////////////////
