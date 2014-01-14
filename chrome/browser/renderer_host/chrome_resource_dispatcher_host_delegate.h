@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 
 class DelayedResourceQueue;
@@ -97,6 +98,11 @@ class ChromeResourceDispatcherHostDelegate
       net::URLRequest* request,
       content::ResourceContext* resource_context,
       content::ResourceResponse* response) OVERRIDE;
+
+  // Called on the UI thread. Allows switching out the
+  // ExternalProtocolHandler::Delegate for testing code.
+  static void SetExternalProtocolHandlerDelegateForTesting(
+      ExternalProtocolHandler::Delegate* delegate);
 
  private:
   void AppendStandardResourceThrottles(

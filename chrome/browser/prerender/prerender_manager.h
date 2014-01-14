@@ -228,8 +228,9 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // SessionStorageNamespace associated with the given WebContens.
   bool HasPrerenderedUrl(GURL url, content::WebContents* web_contents) const;
 
-  // Returns the PrerenderContents object for the given web_contents if it's
-  // used for an active prerender page, otherwise returns NULL.
+  // Returns the PrerenderContents object for the given web_contents, otherwise
+  // returns NULL. Note that the PrerenderContents may have been Destroy()ed,
+  // but not yet deleted.
   PrerenderContents* GetPrerenderContents(
       const content::WebContents* web_contents) const;
 

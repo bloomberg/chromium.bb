@@ -18,7 +18,6 @@
 #include "chrome/browser/extensions/api/streams_private/streams_private_api.h"
 #include "chrome/browser/extensions/extension_renderer_state.h"
 #include "chrome/browser/extensions/user_script_listener.h"
-#include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/metrics/variations/variations_http_header_provider.h"
 #include "chrome/browser/prefetch/prefetch_field_trial.h"
@@ -98,6 +97,8 @@ using navigation_interception::InterceptNavigationDelegate;
 
 namespace {
 
+ExternalProtocolHandler::Delegate* g_external_protocol_handler_delegate = NULL;
+
 void NotifyDownloadInitiatedOnUI(int render_process_id, int render_view_id) {
   RenderViewHost* rvh = RenderViewHost::FromID(render_process_id,
                                                render_view_id);
@@ -156,21 +157,30 @@ void SendExecuteMimeTypeHandlerEvent(scoped_ptr<content::StreamHandle> stream,
 }
 
 void LaunchURL(const GURL& url, int render_process_id, int render_view_id) {
+  // If there is no longer a WebContents, the request may have raced with tab
+  // closing. Don't fire the external request. (It may have been a prerender.)
   content::RenderViewHost* rvh = content::RenderViewHost::FromID(
       render_process_id, render_view_id);
-  if (rvh) {
-    content::WebContents* web_contents =
-        content::WebContents::FromRenderViewHost(rvh);
-    prerender::PrerenderContents* prerender_contents =
-        prerender::PrerenderContents::FromWebContents(web_contents);
-    if (prerender_contents) {
-      prerender_contents->Destroy(prerender::FINAL_STATUS_UNSUPPORTED_SCHEME);
-      prerender::ReportPrerenderExternalURL();
-      return;
-    }
+  if (!rvh)
+    return;
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderViewHost(rvh);
+  if (!web_contents)
+    return;
+
+  // If the request was for a prerender, abort the prerender and do not
+  // continue.
+  prerender::PrerenderContents* prerender_contents =
+      prerender::PrerenderContents::FromWebContents(web_contents);
+  if (prerender_contents) {
+    prerender_contents->Destroy(prerender::FINAL_STATUS_UNSUPPORTED_SCHEME);
+    prerender::ReportPrerenderExternalURL();
+    return;
   }
 
-  ExternalProtocolHandler::LaunchUrl(url, render_process_id, render_view_id);
+  ExternalProtocolHandler::LaunchUrlWithDelegate(
+      url, render_process_id, render_view_id,
+      g_external_protocol_handler_delegate);
 }
 #endif  // !defined(OS_ANDROID)
 
@@ -616,4 +626,11 @@ void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
   // management UI is built on top of it.
   signin::AppendMirrorRequestHeaderIfPossible(request, redirect_url, io_data,
       info->GetChildID(), info->GetRouteID());
+}
+
+// static
+void ChromeResourceDispatcherHostDelegate::
+    SetExternalProtocolHandlerDelegateForTesting(
+    ExternalProtocolHandler::Delegate* delegate) {
+  g_external_protocol_handler_delegate = delegate;
 }

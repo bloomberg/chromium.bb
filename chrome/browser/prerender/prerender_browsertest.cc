@@ -24,6 +24,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_handle.h"
@@ -33,6 +34,7 @@
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
+#include "chrome/browser/renderer_host/chrome_resource_dispatcher_host_delegate.h"
 #include "chrome/browser/safe_browsing/database_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
@@ -751,6 +753,40 @@ class SwapProcessesContentBrowserClient
   DISALLOW_COPY_AND_ASSIGN(SwapProcessesContentBrowserClient);
 };
 
+// An ExternalProtocolHandler that blocks everything and asserts it never is
+// called.
+class NeverRunsExternalProtocolHandlerDelegate
+    : public ExternalProtocolHandler::Delegate {
+ public:
+  // ExternalProtocolHandler::Delegate implementation.
+  virtual ShellIntegration::DefaultProtocolClientWorker* CreateShellWorker(
+      ShellIntegration::DefaultWebClientObserver* observer,
+      const std::string& protocol) OVERRIDE {
+    NOTREACHED();
+    // This will crash, but it shouldn't get this far with BlockState::BLOCK
+    // anyway.
+    return NULL;
+  }
+  virtual ExternalProtocolHandler::BlockState GetBlockState(
+      const std::string& scheme) OVERRIDE {
+    // Block everything and fail the test.
+    ADD_FAILURE();
+    return ExternalProtocolHandler::BLOCK;
+  }
+  virtual void BlockRequest() OVERRIDE { }
+  virtual void RunExternalProtocolDialog(const GURL& url,
+                                         int render_process_host_id,
+                                         int routing_id) OVERRIDE {
+    NOTREACHED();
+  }
+  virtual void LaunchUrlWithoutSecurityCheck(const GURL& url) OVERRIDE {
+    NOTREACHED();
+  }
+  virtual void FinishedProcessingCheck() OVERRIDE {
+    NOTREACHED();
+  }
+};
+
 }  // namespace
 
 // Many of these tests are flaky. See http://crbug.com/249179
@@ -819,6 +855,9 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     IncreasePrerenderMemory();
     if (autostart_test_server_)
       ASSERT_TRUE(test_server()->Start());
+    ChromeResourceDispatcherHostDelegate::
+        SetExternalProtocolHandlerDelegateForTesting(
+            &external_protocol_handler_delegate_);
   }
 
   // Overload for a single expected final status
@@ -1418,6 +1457,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
 #if defined(FULL_SAFE_BROWSING)
   scoped_ptr<TestSafeBrowsingServiceFactory> safe_browsing_factory_;
 #endif
+  NeverRunsExternalProtocolHandlerDelegate external_protocol_handler_delegate_;
   GURL dest_url_;
   bool use_https_src_server_;
   bool call_javascript_;
@@ -3164,7 +3204,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions, MAYBE_TabsApi) {
 // Checks that non-http/https/chrome-extension subresource cancels the
 // prerender.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       DISABLED_PrerenderCancelSubresourceUnsupportedScheme) {
+                       PrerenderCancelSubresourceUnsupportedScheme) {
   GURL image_url = GURL("invalidscheme://www.google.com/test.jpg");
   std::vector<net::SpawnedTestServer::StringPair> replacement_text;
   replacement_text.push_back(
@@ -3175,7 +3215,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
       replacement_text,
       &replacement_path));
   PrerenderTestURL(replacement_path, FINAL_STATUS_UNSUPPORTED_SCHEME, 0);
-  NavigateToDestURL();
 }
 
 // Ensure that about:blank is permitted for any subresource.
@@ -3209,7 +3248,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
       replacement_text,
       &replacement_path));
   PrerenderTestURL(replacement_path, FINAL_STATUS_UNSUPPORTED_SCHEME, 0);
-  NavigateToDestURL();
 }
 
 // Checks that chrome-extension subresource does not cancel the prerender.
@@ -3253,7 +3291,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   GURL url = test_server()->GetURL(
       CreateServerRedirect("invalidscheme://www.google.com/test.html"));
   PrerenderTestURL(url, FINAL_STATUS_UNSUPPORTED_SCHEME, 0);
-  NavigateToDestURL();
 }
 
 // Checks that media source video loads are deferred on prerendering.

@@ -835,23 +835,6 @@ bool PrerenderManager::IsWebContentsPrerendering(
       *origin = prerender_contents->origin();
     return true;
   }
-
-  // Also look through the pending-deletion list.
-  for (ScopedVector<PrerenderData>::const_iterator it =
-           to_delete_prerenders_.begin();
-       it != to_delete_prerenders_.end();
-       ++it) {
-    if (PrerenderContents* prerender_contents = (*it)->contents()) {
-      WebContents* prerender_web_contents =
-          prerender_contents->prerender_contents();
-      if (prerender_web_contents == web_contents) {
-        if (origin)
-          *origin = prerender_contents->origin();
-        return true;
-      }
-    }
-  }
-
   return false;
 }
 
@@ -878,6 +861,18 @@ PrerenderContents* PrerenderManager::GetPrerenderContents(
   for (ScopedVector<PrerenderData>::const_iterator it =
            active_prerenders_.begin();
        it != active_prerenders_.end(); ++it) {
+    WebContents* prerender_web_contents =
+        (*it)->contents()->prerender_contents();
+    if (prerender_web_contents == web_contents) {
+      return (*it)->contents();
+    }
+  }
+
+  // Also check the pending-deletion list. If the prerender is in pending
+  // delete, anyone with a handle on the WebContents needs to know.
+  for (ScopedVector<PrerenderData>::const_iterator it =
+           to_delete_prerenders_.begin();
+       it != to_delete_prerenders_.end(); ++it) {
     WebContents* prerender_web_contents =
         (*it)->contents()->prerender_contents();
     if (prerender_web_contents == web_contents) {
