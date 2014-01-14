@@ -561,26 +561,11 @@ private:
 
 TEST(HeapTest, Threading)
 {
-    Heap::init();
     ThreadedHeapTester::test();
-    Heap::shutdown();
-}
-
-TEST(HeapTest, Init)
-{
-    // FIXME: init and shutdown should be called via Blink
-    // initialization in the test runner. This test can be removed
-    // when that is done.
-    Heap::init();
-    Heap::shutdown();
 }
 
 TEST(HeapTest, SimpleAllocation)
 {
-    // FIXME: init and shutdown should be called via Blink
-    // initialization in the test runner.
-    Heap::init();
-
     // Get initial heap stats.
     HeapStats initialHeapStats;
     getHeapStats(&initialHeapStats);
@@ -597,40 +582,26 @@ TEST(HeapTest, SimpleAllocation)
     EXPECT_EQ(42, array->at(42));
     EXPECT_EQ(0, array->at(128));
     EXPECT_EQ(999 % 128, array->at(999));
-
-    Heap::shutdown();
 }
 
 TEST(HeapTest, SimplePersistent)
 {
-    // FIXME: init and shutdown should be called via Blink
-    // initialization in the test runner.
-    Heap::init();
+    Persistent<TraceCounter> traceCounter = TraceCounter::create();
+    EXPECT_EQ(0, traceCounter->traceCount());
 
-    {
-        Persistent<TraceCounter> traceCounter = TraceCounter::create();
-        EXPECT_EQ(0, traceCounter->traceCount());
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+    EXPECT_EQ(1, traceCounter->traceCount());
 
-        Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
-        EXPECT_EQ(1, traceCounter->traceCount());
+    Persistent<ClassWithMember> classWithMember = ClassWithMember::create();
+    EXPECT_EQ(0, classWithMember->traceCount());
 
-        Persistent<ClassWithMember> classWithMember = ClassWithMember::create();
-        EXPECT_EQ(0, classWithMember->traceCount());
-
-        Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
-        EXPECT_EQ(1, classWithMember->traceCount());
-        EXPECT_EQ(2, traceCounter->traceCount());
-    }
-
-    Heap::shutdown();
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+    EXPECT_EQ(1, classWithMember->traceCount());
+    EXPECT_EQ(2, traceCounter->traceCount());
 }
 
 TEST(HeapTest, SimpleFinalization)
 {
-    // FIXME: init and shutdown should be called via Blink
-    // initialization in the test runner.
-    Heap::init();
-
     {
         Persistent<SimpleFinalizedObject> finalized = SimpleFinalizedObject::create();
         EXPECT_EQ(0, SimpleFinalizedObject::s_destructorCalls);
@@ -640,33 +611,19 @@ TEST(HeapTest, SimpleFinalization)
 
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
     EXPECT_EQ(1, SimpleFinalizedObject::s_destructorCalls);
-
-    Heap::shutdown();
 }
 
 TEST(HeapTest, TypedHeapSanity)
 {
-    // FIXME: init and shutdown should be called via Blink
-    // initialization in the test runner.
-    Heap::init();
-
-    {
-        // We use TraceCounter for allocating an object on the general heap.
-        Persistent<TraceCounter> generalHeapObject = TraceCounter::create();
-        Persistent<TestTypedHeapClass> typedHeapObject = TestTypedHeapClass::create();
-        EXPECT_NE(pageHeaderAddress(reinterpret_cast<Address>(generalHeapObject.raw())),
-            pageHeaderAddress(reinterpret_cast<Address>(typedHeapObject.raw())));
-    }
-
-    Heap::shutdown();
+    // We use TraceCounter for allocating an object on the general heap.
+    Persistent<TraceCounter> generalHeapObject = TraceCounter::create();
+    Persistent<TestTypedHeapClass> typedHeapObject = TestTypedHeapClass::create();
+    EXPECT_NE(pageHeaderAddress(reinterpret_cast<Address>(generalHeapObject.raw())),
+        pageHeaderAddress(reinterpret_cast<Address>(typedHeapObject.raw())));
 }
 
 TEST(HeapTest, NoAllocation)
 {
-    // FIXME: init and shutdown should be called via Blink
-    // initialization in the test runner.
-    Heap::init();
-
     EXPECT_TRUE(ThreadState::current()->isAllocationAllowed());
     {
         // Disallow allocation
@@ -674,16 +631,10 @@ TEST(HeapTest, NoAllocation)
         EXPECT_FALSE(ThreadState::current()->isAllocationAllowed());
     }
     EXPECT_TRUE(ThreadState::current()->isAllocationAllowed());
-
-    Heap::shutdown();
 }
 
 TEST(HeapTest, Members)
 {
-    // FIXME: init and shutdown should be called via Blink
-    // initialization in the test runner.
-    Heap::init();
-
     Bar::s_live = 0;
     {
         Persistent<Baz> h1;
@@ -704,16 +655,10 @@ TEST(HeapTest, Members)
     }
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
     EXPECT_EQ(0u, Bar::s_live);
-
-    Heap::shutdown();
 }
 
 TEST(HeapTest, DeepTest)
 {
-    // FIXME: init and shutdown should be called via Blink
-    // initialization in the test runner.
-    Heap::init();
-
     const unsigned depth = 100000;
     Bar::s_live = 0;
     {
@@ -733,16 +678,10 @@ TEST(HeapTest, DeepTest)
     }
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
     EXPECT_EQ(0u, Bar::s_live);
-
-    Heap::shutdown();
 }
 
 TEST(HeapTest, WideTest)
 {
-    // FIXME: init and shutdown should be called via Blink
-    // initialization in the test runner.
-    Heap::init();
-
     Bar::s_live = 0;
     {
         Bars* bars = Bars::create();
@@ -757,16 +696,10 @@ TEST(HeapTest, WideTest)
     EXPECT_EQ(Bars::width + 1, Bar::s_live);
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
     EXPECT_EQ(0u, Bar::s_live);
-
-    Heap::shutdown();
 }
 
 TEST(HeapTest, HashMapOfMembers)
 {
-    // FIXME: init and shutdown should be called via Blink
-    // initialization in the test runner.
-    Heap::init();
-
     HeapStats initialHeapSize;
     IntWrapper::s_destructorCalls = 0;
 
@@ -849,16 +782,10 @@ TEST(HeapTest, HashMapOfMembers)
     HeapStats afterGC4;
     getHeapStats(&afterGC4);
     EXPECT_EQ(afterGC4.totalObjectSpace(), initialHeapSize.totalObjectSpace());
-
-    Heap::shutdown();
 }
 
 TEST(HeapTest, NestedAllocation)
 {
-    // FIXME: init and shutdown should be called via Blink
-    // initialization in the test runner.
-    Heap::init();
-
     HeapStats initialHeapSize;
     clearOutOldGarbage(&initialHeapSize);
     {
@@ -867,16 +794,10 @@ TEST(HeapTest, NestedAllocation)
     HeapStats afterFree;
     clearOutOldGarbage(&afterFree);
     EXPECT_TRUE(initialHeapSize == afterFree);
-
-    Heap::shutdown();
 }
 
 TEST(HeapTest, LargeObjects)
 {
-    // FIXME: init and shutdown should be called via Blink
-    // initialization in the test runner.
-    Heap::init();
-
     HeapStats initialHeapSize;
     clearOutOldGarbage(&initialHeapSize);
     IntWrapper::s_destructorCalls = 0;
@@ -922,16 +843,10 @@ TEST(HeapTest, LargeObjects)
     EXPECT_EQ(11, IntWrapper::s_destructorCalls);
     EXPECT_EQ(11, LargeObject::s_destructorCalls);
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
-
-    Heap::shutdown();
 }
 
 TEST(HeapTest, RefCountedGarbageCollected)
 {
-    // FIXME: init and shutdown should be called via Blink
-    // initialization in the test runner.
-    Heap::init();
-
     RefCountedAndGarbageCollected::s_destructorCalls = 0;
     {
         RefPtr<RefCountedAndGarbageCollected> refPtr3;
@@ -959,16 +874,10 @@ TEST(HeapTest, RefCountedGarbageCollected)
     // object can be collected.
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
     EXPECT_EQ(2, RefCountedAndGarbageCollected::s_destructorCalls);
-
-    Heap::shutdown();
 }
 
 TEST(HeapTest, WeakMembers)
 {
-    // FIXME: init and shutdown should be called via Blink
-    // initialization in the test runner.
-    Heap::init();
-
     Bar::s_live = 0;
     {
         Persistent<Bar> h1 = Bar::create();
@@ -1004,8 +913,6 @@ TEST(HeapTest, WeakMembers)
     // h4 and h5 have gone out of scope now and they were keeping h2 alive.
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
     EXPECT_EQ(0u, Bar::s_live); // All gone.
-
-    Heap::shutdown();
 }
 
 DEFINE_GC_INFO(Bar);
