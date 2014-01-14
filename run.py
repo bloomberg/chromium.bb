@@ -10,6 +10,9 @@ import subprocess
 import sys
 import tempfile
 
+sys.path.append("build")
+import platform_tools
+
 # Target architecture for PNaCl can be set through the ``-arch``
 # command-line argument, and when its value is ``env`` the following
 # program environment variable is queried to figure out which
@@ -442,15 +445,6 @@ def Run(args, cwd=None, verbose=True, exit_on_failure=False,
 
   return (stdout_contents or '') + (stderr_contents or '')
 
-def ArchDict():
-  """Returns a dictionary that maps an alias for an architecture into
-  its canonical architecture name.
-  """
-  alias = { 'x86-32': 'x86-32 x86_32 x8632 i386 i686 ia32 32',
-            'x86-64': 'x86-64 amd64 x86_64 x8664 64',
-            'arm'   : 'arm armv7',
-            'mips32': 'mips32 mips' }
-  return {alt:arch for arch in alias.keys() for alt in (alias[arch].split())}
 
 def ArgSplit(argv):
   """Parse command-line arguments.
@@ -492,7 +486,8 @@ def ArgSplit(argv):
   parser.add_argument('--debug', '-g', action='store_true', default=False,
                       help='Run sel_ldr with debugging enabled.')
   parser.add_argument('-arch', '-m', dest='arch', action='store',
-                      choices=sorted(ArchDict().keys() + ['env']),
+                      choices=sorted(platform_tools.ArchDict().keys() +
+                                     ['env']),
                       help=('Specify architecture for PNaCl translation. ' +
                             '"env" is a special value which obtains the ' +
                             'architecture from the environment ' +
@@ -526,7 +521,7 @@ def ArgSplit(argv):
     # and just translate to the current machine's architecture.
     env.arch = GetBuildArch()
   # Canonicalize env.arch.
-  aliases = ArchDict()
+  aliases = platform_tools.ArchDict()
   if env.arch in aliases:
     env.arch = aliases[env.arch]
   elif env.arch:
@@ -610,8 +605,8 @@ def GetSconsOS():
   Fatal('Unsupported platform "%s"' % name)
 
 def GetBuildArch():
-  return ArchDict()[platform.machine()]
-
+  machine = platform.machine().lower()
+  return platform_tools.ArchDict()[machine]
 
 def FindBaseDir():
   '''Crawl backwards, starting from the directory containing this script,

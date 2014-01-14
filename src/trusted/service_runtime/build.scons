@@ -454,18 +454,9 @@ if (env.Bit('linux') and not env.Bit('android')
        bootstrap_env.File('linux/nacl_bootstrap.x')),
       )
 
-  # This is a terrible kludge in lieu of SCons having decent support for
-  # a "build environment" environment.  We need to compile this program
-  # with native defaults for where we're being built, i.e. for x86-64
-  # when the host is x86-64 but platform=x86-32.
-  munge_env = env.Clone(BUILD_TYPE='gen',
-                        BUILD_TYPE_DESCRIPTION='build-host generation',
-                        NACL_BUILD_FAMILY='TRUSTED_BUILD',
-                        CC='cc',
-                        LINK='${CC}',
-                        CCFLAGS=['-O2'],
-                        LINKFLAGS=[],
-                        LIBPATH=[])
+  # The bootstrap program is used as an intermediate program so it
+  # must be built in the current build environment.
+  munge_env = env['BUILD_ENV']
   bootstrap_munge = munge_env.Program(
       'nacl_bootstrap_munge_phdr',
       ['linux/nacl_bootstrap_munge_phdr.c'],

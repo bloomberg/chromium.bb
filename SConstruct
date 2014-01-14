@@ -26,6 +26,9 @@ sys.path.append("tools")
 import command_tester
 import test_lib
 
+sys.path.append("build")
+import platform_tools
+
 # NOTE: Underlay for  src/third_party_mod/gtest
 # TODO: try to eliminate this hack
 Dir('src/third_party_mod/gtest').addRepository(
@@ -441,6 +444,16 @@ def ExpandArguments():
         ARGUMENTS.get('buildbot'), ))
 
 ExpandArguments()
+
+def GetTargetPlatform():
+  return ARGUMENTS.get('platform', 'x86-32')
+
+def GetBuildPlatform():
+  arch_dict = platform_tools.ArchDict()
+  machine = platform.machine().lower()
+  if machine not in arch_dict:
+    raise UserError('Unrecognized host architecture: %s', platform.machine())
+  return arch_dict[machine]
 
 environment_list = []
 
@@ -931,12 +944,6 @@ AVAILABLE_PLATFORMS = {
     'arm-thumb2'  : { 'arch' : 'arm' , 'subarch' : '32' }
     }
 
-# Look up the platform name from the command line arguments.
-def GetPlatform(self):
-  return ARGUMENTS.get('platform', 'x86-32')
-
-pre_base_env.AddMethod(GetPlatform)
-
 # Decode platform into list [ ARCHITECTURE , EXEC_MODE ].
 def DecodePlatform(platform):
   if platform in AVAILABLE_PLATFORMS:
@@ -976,9 +983,10 @@ DeclareBit('build_arm', 'Building binaries for the arm architecture')
 DeclareBit('target_arm', 'Tools being built will process arm binaries')
 
 
-def MakeArchSpecificEnv():
+def MakeArchSpecificEnv(platform=None):
   env = pre_base_env.Clone()
-  platform = env.GetPlatform()
+  if platform is None:
+    platform = GetTargetPlatform()
   info = DecodePlatform(platform)
 
   env.Replace(BUILD_FULLARCH=platform)
@@ -1005,7 +1013,7 @@ def MakeArchSpecificEnv():
   if env.Bit('target_arm_arm') or env.Bit('target_arm_thumb2'):
     env.SetBits('target_arm')
 
-  env.Replace(BUILD_ISA_NAME=env.GetPlatform())
+  env.Replace(BUILD_ISA_NAME=platform)
 
   if env.Bit('target_mips32'):
     # This is a silent default on MIPS.
@@ -2021,9 +2029,10 @@ def MakeUntrustedNativeEnv(env):
 
 pre_base_env.AddMethod(MakeUntrustedNativeEnv)
 
-def MakeBaseTrustedEnv():
-  base_env = MakeArchSpecificEnv()
+def MakeBaseTrustedEnv(platform=None):
+  base_env = MakeArchSpecificEnv(platform)
   base_env.Append(
+    IS_BUILD_ENV = False,
     BUILD_SUBTYPE = '',
     CPPDEFINES = [
       ['NACL_TARGET_ARCH', '${TARGET_ARCHITECTURE}' ],
@@ -2269,8 +2278,8 @@ The optional target argument overrides the setting of what that target is."""
     env.Alias('install_bin', install_node)
 
 
-def MakeWindowsEnv():
-  base_env = MakeBaseTrustedEnv()
+def MakeWindowsEnv(platform=None):
+  base_env = MakeBaseTrustedEnv(platform)
   windows_env = base_env.Clone(
       BUILD_TYPE = '${OPTIMIZATION_LEVEL}-win',
       BUILD_TYPE_DESCRIPTION = 'Windows ${OPTIMIZATION_LEVEL} build',
@@ -2332,8 +2341,8 @@ def MakeWindowsEnv():
 (windows_debug_env,
  windows_optimized_env) = GenerateOptimizationLevels(MakeWindowsEnv())
 
-def MakeUnixLikeEnv():
-  unix_like_env = MakeBaseTrustedEnv()
+def MakeUnixLikeEnv(platform=None):
+  unix_like_env = MakeBaseTrustedEnv(platform)
   # -Wdeclaration-after-statement is desirable because MS studio does
   # not allow declarations after statements in a block, and since much
   # of our code is portable and primarily initially tested on Linux,
@@ -2381,8 +2390,8 @@ def MakeUnixLikeEnv():
   return unix_like_env
 
 
-def MakeMacEnv():
-  mac_env = MakeUnixLikeEnv().Clone(
+def MakeMacEnv(platform=None):
+  mac_env = MakeUnixLikeEnv(platform).Clone(
       BUILD_TYPE = '${OPTIMIZATION_LEVEL}-mac',
       BUILD_TYPE_DESCRIPTION = 'MacOS ${OPTIMIZATION_LEVEL} build',
       tools = ['target_platform_mac'],
@@ -2599,8 +2608,8 @@ def SetUpLinuxEnvMips(env):
                      CCFLAGS=['-march=mips32r2'])
 
 
-def MakeLinuxEnv():
-  linux_env = MakeUnixLikeEnv().Clone(
+def MakeLinuxEnv(platform=None):
+  linux_env = MakeUnixLikeEnv(platform).Clone(
       BUILD_TYPE = '${OPTIMIZATION_LEVEL}-linux',
       BUILD_TYPE_DESCRIPTION = 'Linux ${OPTIMIZATION_LEVEL} build',
       tools = ['target_platform_linux'],
@@ -2640,7 +2649,7 @@ def MakeLinuxEnv():
   elif linux_env.Bit('build_mips32'):
     SetUpLinuxEnvMips(linux_env)
   else:
-    Banner('Strange platform: %s' % env.GetPlatform())
+    Banner('Strange platform: %s' % GetTargetPlatform())
 
   # These are desireable options for every Linux platform:
   # _FORTIFY_SOURCE: general paranoia "hardening" option for library functions
@@ -2674,7 +2683,6 @@ def MakeLinuxEnv():
 
 (linux_debug_env, linux_optimized_env) = \
     GenerateOptimizationLevels(MakeLinuxEnv())
-
 
 # Do this before the site_scons/site_tools/naclsdk.py stuff to pass it along.
 pre_base_env.Append(
@@ -3377,7 +3385,7 @@ def AddImplicitLibs(env):
                         'crti.o',
                         'crtn.o']
       # TODO(mcgrathr): multilib nonsense defeats -B!  figure out a better way.
-      if env.GetPlatform() == 'x86-32':
+      if GetTargetPlatform() == 'x86-32':
         implicit_libs.append(os.path.join('32', 'crt1.o'))
 
   if implicit_libs != []:
@@ -3579,6 +3587,44 @@ def LinkTrustedEnv(selected_envs):
     Banner('Warning: "--mode" did not specify both trusted and untrusted '
            'build environments.  As a result, many tests will not be run.')
 
+def MakeBuildEnv():
+  build_platform = GetBuildPlatform()
+
+  # Build Platform Base Function
+  platform_func_map = {
+      'win32' : MakeWindowsEnv,
+      'cygwin': MakeWindowsEnv,
+      'linux' : MakeLinuxEnv,
+      'linux2': MakeLinuxEnv,
+      'darwin': MakeMacEnv,
+      }
+  if sys.platform not in platform_func_map:
+    raise UserError('Unrecognized host platform: %s', sys.platform)
+  make_env_func = platform_func_map[sys.platform]
+
+  build_env = make_env_func(build_platform)
+  build_env['IS_BUILD_ENV'] = True
+  build_env['BUILD_SCONSCRIPTS'] = []
+
+  # The build environment is only used for intermediate steps and should
+  # not be creating any targets. Aliases are used as means to add targets
+  # to builds (IE, all_programs, all_libraries...etc.). Since we want to
+  # share all of our build scripts but not define any aliases, we should
+  # override the alias function and essentially stub it out.
+  build_env.Alias = lambda env, target, source=[], actions=None, **kw : []
+
+  dbg_build_env, opt_build_env = GenerateOptimizationLevels(build_env)
+
+  return opt_build_env
+
+def LinkBuildEnv(selected_envs, build_env):
+  for env in selected_envs:
+    env['BUILD_ENV'] = build_env
+
+  # If platform is not the same as the host environment, add the targets
+  #  of the host environment so scons can find them
+  if GetBuildPlatform() != GetTargetPlatform():
+    selected_envs.append(build_env)
 
 def DumpEnvironmentInfo(selected_envs):
   if VerboseConfigInfo(pre_base_env):
@@ -3646,10 +3692,12 @@ if nacl_irt_test_env in selected_envs and nacl_env not in selected_envs:
 
 DumpEnvironmentInfo(selected_envs)
 LinkTrustedEnv(selected_envs)
+LinkBuildEnv(selected_envs, MakeBuildEnv())
 # This must happen after LinkTrustedEnv, since that is where TRUSTED_ENV
 # is finally set, and env.UsingEmulator() checks TRUSTED_ENV for the emulator.
 # This must also happen before BuildEnvironments.
 PnaclSetEmulatorForSandboxedTranslator(selected_envs)
+
 BuildEnvironments(selected_envs)
 
 # Change default to build everything, but not run tests.

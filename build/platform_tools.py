@@ -35,3 +35,13 @@ def IsLinux():
 # useful.
 def Is64BitLinux():
   return IsLinux() and platform.machine() == 'x86_64'
+
+def ArchDict():
+  """Returns a dictionary that maps an alias for an architecture into
+  its canonical architecture name.
+  """
+  alias = { 'x86-32': 'x86 x86-32 x86_32 x8632 i386 i686 ia32 32',
+            'x86-64': 'x86-64 amd64 x86_64 x8664 64',
+            'arm'   : 'arm armv7',
+            'mips32': 'mips32 mips' }
+  return {alt:arch for arch in alias.keys() for alt in (alias[arch].split())}
