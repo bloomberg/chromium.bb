@@ -131,7 +131,9 @@ ANDROID_SDK_ROOT = os.path.join(DIR_SOURCE_ROOT,
 ANDROID_NDK_ROOT = os.path.join(DIR_SOURCE_ROOT,
                                 'third_party/android_tools/ndk')
 
-EMULATOR_SDK_ROOT = os.path.join(DIR_SOURCE_ROOT, 'android_emulator_sdk')
+EMULATOR_SDK_ROOT = os.environ.get('ANDROID_EMULATOR_SDK_ROOT',
+                                   os.path.join(DIR_SOURCE_ROOT,
+                                                'android_emulator_sdk'))
 
 UPSTREAM_FLAKINESS_SERVER = 'test-results.appspot.com'
 
