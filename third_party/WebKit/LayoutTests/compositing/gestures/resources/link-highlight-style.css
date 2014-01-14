@@ -38,6 +38,10 @@ a.needsFix:active {
   position: absolute;
 }
 
+.squaredHighlight {
+  -webkit-border-radius: 0px;
+}
+
 .composited {
   -webkit-transform: translateZ(0);
 }

@@ -1,3 +1,8 @@
+function createSquareCompositedHighlight(node)
+{
+  return _createHighlight(node, "squaredHighlight highlightDiv composited");
+}
+
 function createCompositedHighlight(node)
 {
   return _createHighlight(node, "highlightDiv composited");

@@ -49,6 +49,7 @@
 #include "public/platform/WebRect.h"
 #include "public/platform/WebSize.h"
 #include "wtf/CurrentTime.h"
+#include "wtf/Vector.h"
 
 using namespace WebCore;
 
@@ -184,6 +185,27 @@ static void addQuadToPath(const FloatQuad& quad, Path& path)
     path.closeSubpath();
 }
 
+void LinkHighlight::computeQuads(Node* node, Vector<FloatQuad>& outQuads) const
+{
+    if (!node || !node->renderer())
+        return;
+
+    RenderObject* renderer = node->renderer();
+
+    // For inline elements, absoluteQuads will return a line box based on the line-height
+    // and font metrics, which is technically incorrect as replaced elements like images
+    // should use their intristic height and expand the linebox  as needed. To get an
+    // appropriately sized highlight we descend into the children and have them add their
+    // boxes.
+    if (renderer->isRenderInline()) {
+        for (Node* child = node->firstChild(); child; child = child->nextSibling())
+            computeQuads(child, outQuads);
+    } else {
+        renderer->absoluteQuads(outQuads);
+    }
+
+}
+
 bool LinkHighlight::computeHighlightLayerPathAndPosition(RenderLayer* compositingLayer)
 {
     if (!m_node || !m_node->renderer() || !m_currentGraphicsLayer)
@@ -193,14 +215,14 @@ bool LinkHighlight::computeHighlightLayerPathAndPosition(RenderLayer* compositin
 
     // Get quads for node in absolute coordinates.
     Vector<FloatQuad> quads;
-    m_node->renderer()->absoluteQuads(quads);
+    computeQuads(m_node.get(), quads);
     ASSERT(quads.size());
 
     // Adjust for offset between target graphics layer and the node's renderer.
     FloatPoint positionAdjust = IntPoint(m_currentGraphicsLayer->offsetFromRenderer());
 
     Path newPath;
-    for (unsigned quadIndex = 0; quadIndex < quads.size(); ++quadIndex) {
+    for (size_t quadIndex = 0; quadIndex < quads.size(); ++quadIndex) {
         FloatQuad absoluteQuad = quads[quadIndex];
         absoluteQuad.move(-positionAdjust.x(), -positionAdjust.y());
 

@@ -35,9 +35,11 @@
 #include "public/platform/WebContentLayerClient.h"
 #include "public/platform/WebLayer.h"
 #include "wtf/OwnPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 class RenderLayer;
+class RenderObject;
 class Node;
 }
 
@@ -75,6 +77,7 @@ private:
     LinkHighlight(WebCore::Node*, WebViewImpl*);
 
     void releaseResources();
+    void computeQuads(WebCore::Node*, WTF::Vector<WebCore::FloatQuad>&) const;
 
     WebCore::RenderLayer* computeEnclosingCompositingLayer();
     void clearGraphicsLayerLinkHighlightPointer();

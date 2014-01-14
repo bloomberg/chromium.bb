@@ -622,6 +622,8 @@ crbug.com/307777 [ Android ] virtual/softwarecompositing/overflow/get-transform-
 crbug.com/307777 [ Android ] webaudio/stereo2mono-down-mixing.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] webexposed/custom-elements.html [ Timeout Pass ]
 
+crbug.com/289764 compositing/gestures/gesture-tapHighlight-pixel-rotated-link.html [ NeedsRebaseline ]
+
 crbug.com/326153 fast/html/imports/import-style-link.html [ Pass Failure ]
 
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ ImageOnlyFailure ]
