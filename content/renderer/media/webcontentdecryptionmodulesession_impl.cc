@@ -46,12 +46,6 @@ void WebContentDecryptionModuleSessionImpl::initializeNewSession(
       session_id_, UTF16ToASCII(mime_type), init_data, init_data_length);
 }
 
-void WebContentDecryptionModuleSessionImpl::generateKeyRequest(
-    const blink::WebString& mime_type,
-    const uint8* init_data, size_t init_data_length) {
-  initializeNewSession(mime_type, init_data, init_data_length);
-}
-
 void WebContentDecryptionModuleSessionImpl::update(const uint8* response,
                                                    size_t response_length) {
   DCHECK(response);
@@ -60,10 +54,6 @@ void WebContentDecryptionModuleSessionImpl::update(const uint8* response,
 
 void WebContentDecryptionModuleSessionImpl::release() {
   media_keys_->ReleaseSession(session_id_);
-}
-
-void WebContentDecryptionModuleSessionImpl::close() {
-  release();
 }
 
 void WebContentDecryptionModuleSessionImpl::OnSessionCreated(

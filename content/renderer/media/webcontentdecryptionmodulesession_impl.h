@@ -40,13 +40,6 @@ class WebContentDecryptionModuleSessionImpl
   virtual void update(const uint8* response, size_t response_length);
   virtual void release();
 
-  // TODO(xhwang): Drop generateKeyRequest() and close() after blink side is
-  // updated.
-  virtual void generateKeyRequest(const blink::WebString& mime_type,
-                                  const uint8* init_data,
-                                  size_t init_data_length);
-  virtual void close();
-
   // Callbacks.
   void OnSessionCreated(const std::string& web_session_id);
   void OnSessionMessage(const std::vector<uint8>& message,
