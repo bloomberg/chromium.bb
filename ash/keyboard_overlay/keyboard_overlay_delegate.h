@@ -5,7 +5,7 @@
 #ifndef ASH_KEYBOARD_OVERLAY_KEYBOARD_OVERLAY_DELEGATE_H_
 #define ASH_KEYBOARD_OVERLAY_KEYBOARD_OVERLAY_DELEGATE_H_
 
-#include "ash/ash_export.h"
+#include "ash/ash_with_content_export.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
@@ -20,7 +20,8 @@ class Widget;
 namespace ash {
 
 // Delegate to handle showing the keyboard overlay drawing. Exported for test.
-class ASH_EXPORT KeyboardOverlayDelegate : public ui::WebDialogDelegate {
+class ASH_WITH_CONTENT_EXPORT KeyboardOverlayDelegate
+    : public ui::WebDialogDelegate {
  public:
   KeyboardOverlayDelegate(const base::string16& title, const GURL& url);
 

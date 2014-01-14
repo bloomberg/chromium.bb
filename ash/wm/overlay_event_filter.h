@@ -5,6 +5,7 @@
 #ifndef ASH_WM_OVERLAY_EVENT_FILTER_H_
 #define ASH_WM_OVERLAY_EVENT_FILTER_H_
 
+#include "ash/ash_export.h"
 #include "ash/shell_observer.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/window.h"
@@ -19,11 +20,11 @@ namespace internal {
 // called.  The main task of this event filter is just to stop propagation
 // of any key events during activation, and also signal cancellation when keys
 // for canceling are pressed.
-class OverlayEventFilter : public ui::EventHandler,
-                           public ShellObserver {
+class ASH_EXPORT OverlayEventFilter : public ui::EventHandler,
+                                      public ShellObserver {
  public:
   // Windows that need to receive events from OverlayEventFilter implement this.
-  class Delegate {
+  class ASH_EXPORT Delegate {
    public:
     // Invoked when OverlayEventFilter needs to stop handling events.
     virtual void Cancel() = 0;

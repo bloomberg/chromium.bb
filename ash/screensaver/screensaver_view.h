@@ -5,7 +5,7 @@
 #ifndef ASH_SCREENSAVER_SCREENSAVER_VIEW_H_
 #define ASH_SCREENSAVER_SCREENSAVER_VIEW_H_
 
-#include "ash/ash_export.h"
+#include "ash/ash_with_content_export.h"
 #include "base/callback.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -25,9 +25,9 @@ namespace test {
 class ScreensaverViewTest;
 }
 
-ASH_EXPORT void ShowScreensaver(const GURL& url);
-ASH_EXPORT void CloseScreensaver();
-ASH_EXPORT bool IsScreensaverShown();
+ASH_WITH_CONTENT_EXPORT void ShowScreensaver(const GURL& url);
+ASH_WITH_CONTENT_EXPORT void CloseScreensaver();
+ASH_WITH_CONTENT_EXPORT bool IsScreensaverShown();
 
 typedef
     base::Callback<views::WebView*(content::BrowserContext*)> WebViewFactory;
@@ -69,8 +69,8 @@ class ScreensaverView : public views::WidgetDelegateView,
   void ShowWindow();
 
   // For testing purposes.
-  static ASH_EXPORT ScreensaverView* GetInstance();
-  ASH_EXPORT bool IsScreensaverShowingURL(const GURL& url);
+  static ASH_WITH_CONTENT_EXPORT ScreensaverView* GetInstance();
+  ASH_WITH_CONTENT_EXPORT bool IsScreensaverShowingURL(const GURL& url);
 
   // URL to show in the screensaver.
   GURL url_;

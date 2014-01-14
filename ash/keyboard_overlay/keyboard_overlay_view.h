@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "ash/ash_export.h"
+#include "ash/ash_with_content_export.h"
 #include "ash/wm/overlay_event_filter.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
@@ -26,7 +26,7 @@ class WebDialogDelegate;
 namespace ash {
 
 // A customized dialog view for the keyboard overlay.
-class ASH_EXPORT KeyboardOverlayView
+class ASH_WITH_CONTENT_EXPORT KeyboardOverlayView
     : public views::WebDialogView,
       public ash::internal::OverlayEventFilter::Delegate {
  public:

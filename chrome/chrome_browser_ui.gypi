@@ -2850,6 +2850,7 @@
           ],
           'dependencies': [
             '../ash/ash.gyp:ash',
+            '../ash/ash.gyp:ash_with_content',
             '../ash/ash_strings.gyp:ash_strings',
           ],
         }, { # use_ash==0
