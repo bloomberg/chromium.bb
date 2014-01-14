@@ -50,8 +50,7 @@ def RunWithCorrectPythonIfNecessary():
     child.
     """
     if sys.platform == 'cygwin' or sys.platform.startswith('win'):
-      cmd = [os.path.join(pyauto_paths.GetThirdPartyDir(), 'python_26',
-                          'python_slave.exe')]
+      cmd = [sys.executable]
     elif sys.platform.startswith('darwin'):
       # Arch runs the specified architecture of a universal binary. Run
       # the 32 bit one.
