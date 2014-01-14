@@ -44,9 +44,6 @@ common_vars_defines() {
   esac
 
   toolchain_version="4.6"
-  # We directly set the gcc_version since we know what we use, and it should
-  # be set to xx instead of x.x. Refer the output of compiler_version.py.
-  gcc_version="46"
   toolchain_target=$(basename \
     ${ANDROID_NDK_ROOT}/toolchains/${toolchain_arch}-${toolchain_version})
   toolchain_path="${ANDROID_NDK_ROOT}/toolchains/${toolchain_target}"\
@@ -86,7 +83,6 @@ ${ANDROID_SDK_BUILD_TOOLS_VERSION}
   # to canonicalize them (remove double '/', remove trailing '/', etc).
   DEFINES="OS=android"
   DEFINES+=" host_os=${host_os}"
-  DEFINES+=" gcc_version=${gcc_version}"
 
   if [[ -n "$CHROME_ANDROID_OFFICIAL_BUILD" ]]; then
     DEFINES+=" branding=Chrome"

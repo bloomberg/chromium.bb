@@ -1268,7 +1268,14 @@
       # TODO(glider): set clang to 1 earlier for ASan and TSan builds so that
       # it takes effect here.
       ['os_posix==1 and OS!="mac" and OS!="ios" and clang==0 and asan==0 and lsan==0 and tsan==0 and msan==0', {
-        'gcc_version%': '<!(python <(DEPTH)/build/compiler_version.py)',
+        'conditions': [
+          ['OS=="android"', {
+            # We directly set the gcc_version since we know what we use.
+            'gcc_version%': 46,
+          }, {
+            'gcc_version%': '<!(python <(DEPTH)/build/compiler_version.py)',
+          }],
+        ],
       }, {
         'gcc_version%': 0,
       }],
@@ -3840,11 +3847,6 @@
                   '-Wno-type-limits',
                 ],
                 'cflags_cc': [
-                  # Disabling c++0x-compat should be handled in WebKit, but
-                  # this currently doesn't work because gcc_version is not set
-                  # correctly when building with the Android build system.
-                  # TODO(torne): Fix this in WebKit.
-                  '-Wno-error=c++0x-compat',
                   # Other things unrelated to -Wextra:
                   '-Wno-non-virtual-dtor',
                   '-Wno-sign-promo',

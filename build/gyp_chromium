@@ -137,7 +137,6 @@ def GetArgsStringForGN(supplemental_files):
   #   mac_strip_release=1         http://crbug.com/330301
   #   linux_dump_symbols=0        http://crbug.com/330300
   #   host_os=linux  Probably can skip, GN knows the host OS.
-  #   gcc_version=46  Hopefully we can skip this and fix whatever uses it.
   #   order_text_section=<path>   http://crbug.com/330299
   #   chromium_win_pch=0          http://crbug.com/297678
   #   clang_use_chrome_plugins=1  http://crbug.com/330298
