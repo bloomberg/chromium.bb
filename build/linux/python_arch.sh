@@ -11,7 +11,9 @@
 #
 
 file_out=$(file --dereference "$1")
-if [ $? -ne 0 ]; then
+# The POSIX spec says that `file` should not exit(1) if the file does not
+# exist, so do our own -e check to catch things.
+if [ $? -ne 0 ] || [ ! -e "$1" ] ; then
   echo unknown
   exit 0
 fi
