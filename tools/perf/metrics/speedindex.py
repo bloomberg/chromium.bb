@@ -6,6 +6,7 @@ import collections
 import os
 
 from metrics import Metric
+from telemetry.core import bitmap
 
 
 class SpeedIndexMetric(Metric):
@@ -156,8 +157,14 @@ class VideoSpeedIndexImpl(SpeedIndexImpl):
     self.tab.StartVideoCapture(min_bitrate_mbps=4)
 
   def Stop(self):
-    histograms = [(time, bitmap.ColorHistogram())
-                  for time, bitmap in self.tab.StopVideoCapture()]
+    white = bitmap.RgbaColor(255, 255, 255)
+    # Ignore white because Chrome may blank out the page during load and we want
+    # that to count as 0% complete. Relying on this fact, we also blank out the
+    # previous page to white. The tolerance of 8 experimentally does well with
+    # video capture at 4mbps. We should keep this as low as possible with
+    # supported video compression settings.
+    histograms = [(time, bmp.ColorHistogram(ignore_color=white, tolerance=8))
+                  for time, bmp in self.tab.StopVideoCapture()]
 
     start_histogram = histograms[0][1]
     final_histogram = histograms[-1][1]
