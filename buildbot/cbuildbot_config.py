@@ -1158,7 +1158,7 @@ _toolchain_major = _cros_sdk.add_config('toolchain-major',
   latest_toolchain=True,
   prebuilts=False,
   trybot_list=False,
-  gcc_githash='gcc.gnu.org/branches/google/main',
+  gcc_githash='gcc.gnu.org/branches/google/gcc-4_9-mobile',
   description='Test next major toolchain revision',
 )
 
