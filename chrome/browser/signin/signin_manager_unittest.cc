@@ -99,8 +99,8 @@ class SigninManagerTest : public testing::Test {
     // Manually destroy PrefService and Profile so that they are shutdown
     // in the correct order.  Both need to be destroyed before the
     // |thread_bundle_| member.
-    prefs_.reset();
     profile_.reset();
+    prefs_.reset();  // LocalState needs to outlive the profile.
   }
 
   TestingProfile* profile() { return profile_.get(); }

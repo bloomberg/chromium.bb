@@ -208,6 +208,7 @@ void OneClickSigninSyncStarter::LoadPolicyWithCachedCredentials() {
       signin->GetUsernameForAuthInProgress(),
       dm_token_,
       client_id_,
+      profile_->GetRequestContext(),
       base::Bind(&OneClickSigninSyncStarter::OnPolicyFetchComplete,
                  weak_pointer_factory_.GetWeakPtr()));
 }

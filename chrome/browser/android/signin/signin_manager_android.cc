@@ -35,6 +35,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #include "google_apis/gaia/gaia_auth_util.h"
+#include "net/url_request/url_request_context_getter.h"
 #endif
 
 namespace {
@@ -109,6 +110,7 @@ void SigninManagerAndroid::FetchPolicyBeforeSignIn(JNIEnv* env, jobject obj) {
         username_,
         dm_token_,
         client_id_,
+        profile_->GetRequestContext(),
         base::Bind(&SigninManagerAndroid::OnPolicyFetchDone,
                    weak_factory_.GetWeakPtr()));
     dm_token_.clear();

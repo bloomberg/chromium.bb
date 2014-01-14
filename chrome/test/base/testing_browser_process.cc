@@ -120,6 +120,13 @@ ProfileManager* TestingBrowserProcess::profile_manager() {
 
 void TestingBrowserProcess::SetProfileManager(ProfileManager* profile_manager) {
 #if !defined(OS_IOS)
+  // NotificationUIManager can contain references to elements in the current
+  // ProfileManager (for example, the MessageCenterSettingsController maintains
+  // a pointer to the ProfileInfoCache). So when we change the ProfileManager
+  // (typically during test shutdown) make sure to reset any objects that might
+  // maintain references to it. See SetLocalState() for a description of a
+  // similar situation.
+  notification_ui_manager_.reset();
   profile_manager_.reset(profile_manager);
 #endif
 }

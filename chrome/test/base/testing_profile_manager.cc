@@ -38,6 +38,9 @@ TestingProfileManager::TestingProfileManager(TestingBrowserProcess* process)
 }
 
 TestingProfileManager::~TestingProfileManager() {
+  // Destroying this class also destroys the LocalState, so make sure the
+  // associated ProfileManager is also destroyed.
+  browser_process_->SetProfileManager(NULL);
 }
 
 bool TestingProfileManager::SetUp() {

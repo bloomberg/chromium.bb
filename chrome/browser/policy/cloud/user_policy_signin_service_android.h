@@ -33,6 +33,8 @@ class UserPolicySigninService : public UserPolicySigninServiceBase {
       Profile* profile,
       PrefService* local_state,
       DeviceManagementService* device_management_service,
+      UserCloudPolicyManager* policy_manager,
+      SigninManager* signin_manager,
       scoped_refptr<net::URLRequestContextGetter> system_request_context,
       ProfileOAuth2TokenService* token_service);
   virtual ~UserPolicySigninService();
@@ -69,6 +71,9 @@ class UserPolicySigninService : public UserPolicySigninServiceBase {
   // Weak pointer to the token service used to authenticate the
   // CloudPolicyClient during registration.
   ProfileOAuth2TokenService* oauth2_token_service_;
+
+  // The PrefService associated with the profile.
+  PrefService* profile_prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(UserPolicySigninService);
 };

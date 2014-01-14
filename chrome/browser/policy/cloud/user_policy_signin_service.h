@@ -29,11 +29,14 @@ class CloudPolicyClientRegistrationHelper;
 class UserPolicySigninService : public UserPolicySigninServiceBase,
                                 public OAuth2TokenService::Observer {
  public:
-  // Creates a UserPolicySigninService associated with the passed |profile|.
+  // Creates a UserPolicySigninService associated with the passed
+  // |policy_manager| and |signin_manager|.
   UserPolicySigninService(
       Profile* profile,
       PrefService* local_state,
       DeviceManagementService* device_management_service,
+      UserCloudPolicyManager* policy_manager,
+      SigninManager* signin_manager,
       scoped_refptr<net::URLRequestContextGetter> system_request_context,
       ProfileOAuth2TokenService* oauth2_token_service);
   virtual ~UserPolicySigninService();
@@ -82,6 +85,9 @@ class UserPolicySigninService : public UserPolicySigninServiceBase,
   // Invoked when a policy registration request is complete.
   void CallPolicyRegistrationCallback(scoped_ptr<CloudPolicyClient> client,
                                       PolicyRegistrationCallback callback);
+
+  // Parent profile for this service.
+  Profile* profile_;
 
   scoped_ptr<CloudPolicyClientRegistrationHelper> registration_helper_;
 

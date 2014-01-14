@@ -27,12 +27,17 @@ UserPolicySigninService::UserPolicySigninService(
     Profile* profile,
     PrefService* local_state,
     DeviceManagementService* device_management_service,
+    UserCloudPolicyManager* policy_manager,
+    SigninManager* signin_manager,
     scoped_refptr<net::URLRequestContextGetter> system_request_context,
     ProfileOAuth2TokenService* token_service)
     : UserPolicySigninServiceBase(profile,
                                   local_state,
                                   device_management_service,
+                                  policy_manager,
+                                  signin_manager,
                                   system_request_context),
+      profile_(profile),
       oauth2_token_service_(token_service) {
   // ProfileOAuth2TokenService should not yet have loaded its tokens since this
   // happens in the background after PKS initialization - so this service
@@ -105,7 +110,7 @@ void UserPolicySigninService::OnRefreshTokenAvailable(
     const std::string& account_id) {
   // If using a TestingProfile with no UserCloudPolicyManager, skip
   // initialization.
-  if (!GetManager()) {
+  if (!policy_manager()) {
     DVLOG(1) << "Skipping initialization for tests due to missing components.";
     return;
   }
@@ -116,7 +121,8 @@ void UserPolicySigninService::OnRefreshTokenAvailable(
 
   // ProfileOAuth2TokenService now has a refresh token so initialize the
   // UserCloudPolicyManager.
-  InitializeForSignedInUser(GetSigninManager()->GetAuthenticatedUsername());
+  InitializeForSignedInUser(signin_manager()->GetAuthenticatedUsername(),
+                            profile_->GetRequestContext());
 }
 
 void UserPolicySigninService::InitializeUserCloudPolicyManager(
@@ -128,16 +134,16 @@ void UserPolicySigninService::InitializeUserCloudPolicyManager(
 }
 
 void UserPolicySigninService::ShutdownUserCloudPolicyManager() {
-  UserCloudPolicyManager* manager = GetManager();
+  UserCloudPolicyManager* manager = policy_manager();
   // Allow the user to signout again.
   if (manager)
-    GetSigninManager()->ProhibitSignout(false);
+    signin_manager()->ProhibitSignout(false);
   UserPolicySigninServiceBase::ShutdownUserCloudPolicyManager();
 }
 
 void UserPolicySigninService::OnInitializationCompleted(
     CloudPolicyService* service) {
-  UserCloudPolicyManager* manager = GetManager();
+  UserCloudPolicyManager* manager = policy_manager();
   DCHECK_EQ(service, manager->core()->service());
   DCHECK(service->IsInitializationComplete());
   // The service is now initialized - if the client is not yet registered, then
@@ -160,7 +166,7 @@ void UserPolicySigninService::OnInitializationCompleted(
 }
 
 void UserPolicySigninService::RegisterCloudPolicyService() {
-  DCHECK(!GetManager()->IsClientRegistered());
+  DCHECK(!policy_manager()->IsClientRegistered());
   DVLOG(1) << "Fetching new DM Token";
   // Do nothing if already starting the registration process.
   if (registration_helper_)
@@ -169,7 +175,7 @@ void UserPolicySigninService::RegisterCloudPolicyService() {
   // Start the process of registering the CloudPolicyClient. Once it completes,
   // policy fetch will automatically happen.
   registration_helper_.reset(new CloudPolicyClientRegistrationHelper(
-      GetManager()->core()->client(),
+      policy_manager()->core()->client(),
       ShouldForceLoadPolicy(),
       enterprise_management::DeviceRegisterRequest::BROWSER));
   registration_helper_->StartRegistration(
@@ -185,9 +191,9 @@ void UserPolicySigninService::OnRegistrationComplete() {
 }
 
 void UserPolicySigninService::ProhibitSignoutIfNeeded() {
-  if (GetManager()->IsClientRegistered()) {
+  if (policy_manager()->IsClientRegistered()) {
     DVLOG(1) << "User is registered for policy - prohibiting signout";
-    GetSigninManager()->ProhibitSignout(true);
+    signin_manager()->ProhibitSignout(true);
   }
 }
 

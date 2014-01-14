@@ -84,6 +84,8 @@ const BehaviorTestCase kBehaviorTestCases[] = {
   },
 };
 
+// Weak ptr to PolicyCertVerifier - object is freed in test destructor once
+// we've ensured the profile has been shut down.
 policy::PolicyCertVerifier* g_policy_cert_verifier_for_factory = NULL;
 
 BrowserContextKeyedService* TestPolicyCertServiceFactory(
@@ -100,14 +102,15 @@ class MultiProfileUserControllerTest
       public MultiProfileUserControllerDelegate {
  public:
   MultiProfileUserControllerTest()
-      : profile_manager_(TestingBrowserProcess::GetGlobal()),
-        fake_user_manager_(new FakeUserManager),
+      : fake_user_manager_(new FakeUserManager),
         user_manager_enabler_(fake_user_manager_),
         user_not_allowed_count_(0) {}
   virtual ~MultiProfileUserControllerTest() {}
 
   virtual void SetUp() OVERRIDE {
-    ASSERT_TRUE(profile_manager_.SetUp());
+    profile_manager_.reset(
+        new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
+    ASSERT_TRUE(profile_manager_->SetUp());
     controller_.reset(new MultiProfileUserController(
         this, TestingBrowserProcess::GetGlobal()->local_state()));
 
@@ -117,12 +120,27 @@ class MultiProfileUserControllerTest
 
       // Note that user profiles are created after user login in reality.
       TestingProfile* user_profile =
-          profile_manager_.CreateTestingProfile(user_email);
+          profile_manager_->CreateTestingProfile(user_email);
       user_profile->set_profile_name(user_email);
       user_profiles_.push_back(user_profile);
 
       fake_user_manager_->SetProfileForUser(user, user_profile);
     }
+  }
+
+  virtual void TearDown() OVERRIDE {
+    // Clear our cached pointer to the PolicyCertVerifier.
+    g_policy_cert_verifier_for_factory = NULL;
+
+    // We must ensure that the PolicyCertVerifier outlives the
+    // PolicyCertService so shutdown the profile here. Additionally, we need
+    // to run the message loop between freeing the PolicyCertService and
+    // freeing the PolicyCertVerifier (see
+    // PolicyCertService::OnTrustAnchorsChanged() which is called from
+    // PolicyCertService::Shutdown()).
+    controller_.reset();
+    profile_manager_.reset();
+    base::RunLoop().RunUntilIdle();
   }
 
   void LoginUser(size_t user_index) {
@@ -169,9 +187,9 @@ class MultiProfileUserControllerTest
     return user_profiles_[index];
   }
 
- private:
   content::TestBrowserThreadBundle threads_;
-  TestingProfileManager profile_manager_;
+  scoped_ptr<policy::PolicyCertVerifier> cert_verifier_;
+  scoped_ptr<TestingProfileManager> profile_manager_;
   FakeUserManager* fake_user_manager_;  // Not owned
   ScopedUserManagerEnabler user_manager_enabler_;
 
@@ -311,9 +329,8 @@ TEST_F(MultiProfileUserControllerTest,
   policy::PolicyCertServiceFactory::SetUsedPolicyCertificates(kUsers[0]);
   LoginUser(0);
 
-  // Double parenthesis to avoid http://en.wikipedia.org/wiki/Most_vexing_parse.
-  policy::PolicyCertVerifier verifier((base::Closure()));
-  g_policy_cert_verifier_for_factory = &verifier;
+  cert_verifier_.reset(new policy::PolicyCertVerifier(base::Closure()));
+  g_policy_cert_verifier_for_factory = cert_verifier_.get();
   ASSERT_TRUE(
       policy::PolicyCertServiceFactory::GetInstance()->SetTestingFactoryAndUse(
           profile(0), TestPolicyCertServiceFactory));
@@ -332,9 +349,8 @@ TEST_F(MultiProfileUserControllerTest,
   // then no other users can be added.
   LoginUser(0);
 
-  // Double parenthesis to avoid http://en.wikipedia.org/wiki/Most_vexing_parse.
-  policy::PolicyCertVerifier verifier((base::Closure()));
-  g_policy_cert_verifier_for_factory = &verifier;
+  cert_verifier_.reset(new policy::PolicyCertVerifier(base::Closure()));
+  g_policy_cert_verifier_for_factory = cert_verifier_.get();
   ASSERT_TRUE(
       policy::PolicyCertServiceFactory::GetInstance()->SetTestingFactoryAndUse(
           profile(0), TestPolicyCertServiceFactory));

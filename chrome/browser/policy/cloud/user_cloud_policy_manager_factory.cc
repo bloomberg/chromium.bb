@@ -37,7 +37,9 @@ class UserCloudPolicyManagerFactory::ManagerWrapper
     : public BrowserContextKeyedService {
  public:
   explicit ManagerWrapper(UserCloudPolicyManager* manager)
-      : manager_(manager) {}
+      : manager_(manager) {
+    DCHECK(manager);
+  }
   virtual ~ManagerWrapper() {}
 
   virtual void Shutdown() OVERRIDE {
@@ -71,7 +73,11 @@ UserCloudPolicyManagerFactory::CreateForOriginalBrowserContext(
     const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& file_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& io_task_runner) {
-  return GetInstance()->CreateManagerForOriginalBrowserContext(
+  UserCloudPolicyManagerFactory* factory = GetInstance();
+  // If there's a testing factory set, don't bother creating a new one.
+  if (factory->testing_factory_ != NULL)
+    return scoped_ptr<UserCloudPolicyManager>();
+  return factory->CreateManagerForOriginalBrowserContext(
       context,
       force_immediate_load,
       background_task_runner,
@@ -88,18 +94,25 @@ UserCloudPolicyManagerFactory::RegisterForOffTheRecordBrowserContext(
       original_context, off_the_record_context);
 }
 
-void UserCloudPolicyManagerFactory::RegisterForTesting(
-    content::BrowserContext* context,
-    UserCloudPolicyManager* manager) {
-  ManagerWrapper*& manager_wrapper = manager_wrappers_[context];
-  delete manager_wrapper;
-  manager_wrapper = new ManagerWrapper(manager);
+void UserCloudPolicyManagerFactory::RegisterTestingFactory(
+    TestingFactoryFunction factory) {
+  // Can't set a testing factory when a testing factory has already been
+  // created, or after UCPMs have already been built.
+  DCHECK(!testing_factory_);
+  DCHECK(factory);
+  DCHECK(manager_wrappers_.empty());
+  testing_factory_ = factory;
+}
+
+void UserCloudPolicyManagerFactory::ClearTestingFactory() {
+  testing_factory_ = NULL;
 }
 
 UserCloudPolicyManagerFactory::UserCloudPolicyManagerFactory()
     : BrowserContextKeyedBaseFactory(
         "UserCloudPolicyManager",
-        BrowserContextDependencyManager::GetInstance()) {
+        BrowserContextDependencyManager::GetInstance()),
+      testing_factory_(NULL) {
   DependsOn(SchemaRegistryServiceFactory::GetInstance());
 }
 
@@ -125,6 +138,10 @@ UserCloudPolicyManagerFactory::CreateManagerForOriginalBrowserContext(
     const scoped_refptr<base::SequencedTaskRunner>& io_task_runner) {
   DCHECK(!context->IsOffTheRecord());
 
+  // This should never be called if we're using a testing factory.
+  // Instead, instances are instantiated via CreateServiceNow().
+  DCHECK(!testing_factory_);
+
   scoped_ptr<UserCloudPolicyStore> store(
       UserCloudPolicyStore::Create(context->GetPath(), background_task_runner));
   if (force_immediate_load)
@@ -133,13 +150,14 @@ UserCloudPolicyManagerFactory::CreateManagerForOriginalBrowserContext(
   const base::FilePath component_policy_cache_dir =
       context->GetPath().Append(kPolicy).Append(kComponentsDir);
 
-  scoped_ptr<UserCloudPolicyManager> manager(
-      new UserCloudPolicyManager(store.Pass(),
-                                 component_policy_cache_dir,
-                                 scoped_ptr<CloudExternalDataManager>(),
-                                 base::MessageLoopProxy::current(),
-                                 file_task_runner,
-                                 io_task_runner));
+  scoped_ptr<UserCloudPolicyManager> manager;
+  manager.reset(new UserCloudPolicyManager(
+      store.Pass(),
+      component_policy_cache_dir,
+      scoped_ptr<CloudExternalDataManager>(),
+      base::MessageLoopProxy::current(),
+      file_task_runner,
+      io_task_runner));
   manager->Init(SchemaRegistryServiceFactory::GetForContext(context));
   manager_wrappers_[context] = new ManagerWrapper(manager.get());
   return manager.Pass();
@@ -180,7 +198,16 @@ void UserCloudPolicyManagerFactory::BrowserContextDestroyed(
 void UserCloudPolicyManagerFactory::SetEmptyTestingFactory(
     content::BrowserContext* context) {}
 
+// If there's a TestingFactory set, then create a service during BrowserContext
+// initialization.
+bool UserCloudPolicyManagerFactory::ServiceIsCreatedWithBrowserContext() const {
+  return testing_factory_ != NULL;
+}
+
 void UserCloudPolicyManagerFactory::CreateServiceNow(
-    content::BrowserContext* context) {}
+    content::BrowserContext* context) {
+  DCHECK(testing_factory_);
+  manager_wrappers_[context] = new ManagerWrapper(testing_factory_(context));
+}
 
 }  // namespace policy

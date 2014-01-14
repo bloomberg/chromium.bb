@@ -50,7 +50,8 @@ class UserCloudPolicyManagerFactory : public BrowserContextKeyedBaseFactory {
   // Creates an instance for |context|. Note that the caller is responsible for
   // managing the lifetime of the instance. Subsequent calls to
   // GetForBrowserContext() will return the created instance as long as it
-  // lives.
+  // lives. If RegisterTestingFactory() has been called, then calls to
+  // this method will return null.
   //
   // If |force_immediate_load| is true, policy is loaded synchronously from
   // UserCloudPolicyStore at startup.
@@ -71,8 +72,16 @@ class UserCloudPolicyManagerFactory : public BrowserContextKeyedBaseFactory {
       content::BrowserContext* original_context,
       content::BrowserContext* off_the_record_context);
 
-  void RegisterForTesting(content::BrowserContext* context,
-                          UserCloudPolicyManager* manager);
+  typedef UserCloudPolicyManager*
+      (*TestingFactoryFunction)(content::BrowserContext* context);
+
+  // Allows testing code to inject UserCloudPolicyManager objects for tests.
+  // The factory function will be invoked for every Profile created. Because
+  // this class does not free the UserCloudPolicyManager objects it manages,
+  // it is up to the tests themselves to free the objects after the profile is
+  // shut down.
+  void RegisterTestingFactory(TestingFactoryFunction factory);
+  void ClearTestingFactory();
 
  private:
   class ManagerWrapper;
@@ -104,10 +113,13 @@ class UserCloudPolicyManagerFactory : public BrowserContextKeyedBaseFactory {
   virtual void SetEmptyTestingFactory(
       content::BrowserContext* context) OVERRIDE;
   virtual void CreateServiceNow(content::BrowserContext* context) OVERRIDE;
+  virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;
+
 
   typedef std::map<content::BrowserContext*, ManagerWrapper*> ManagerWrapperMap;
 
   ManagerWrapperMap manager_wrappers_;
+  TestingFactoryFunction testing_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyManagerFactory);
 };

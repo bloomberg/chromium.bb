@@ -30,8 +30,7 @@ namespace theme_service_internal {
 class ThemeServiceTest : public ExtensionServiceTestBase {
  public:
   ThemeServiceTest() : is_managed_(false),
-                       registry_(NULL),
-                       manager_(TestingBrowserProcess::GetGlobal()) {}
+                       registry_(NULL) {}
   virtual ~ThemeServiceTest() {}
 
   // Moves a minimal theme to |temp_dir_path| and unpacks it from that
@@ -88,7 +87,6 @@ class ThemeServiceTest : public ExtensionServiceTestBase {
     params.profile_is_managed = is_managed_;
     InitializeExtensionService(params);
     service_->Init();
-    ASSERT_TRUE(manager_.SetUp());
     registry_ = ExtensionRegistry::Get(profile_.get());
     ASSERT_TRUE(registry_);
   }
@@ -97,16 +95,10 @@ class ThemeServiceTest : public ExtensionServiceTestBase {
     return theme_service->get_theme_supplier();
   }
 
-  TestingProfileManager* manager() {
-    return &manager_;
-  }
-
  protected:
   bool is_managed_;
   ExtensionRegistry* registry_;
 
- private:
-  TestingProfileManager manager_;
 };
 
 // Installs then uninstalls a theme and makes sure that the ThemeService

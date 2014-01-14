@@ -70,12 +70,12 @@ UserPolicySigninServiceFactory::BuildServiceInstanceFor(
   DeviceManagementService* device_management_service =
       g_device_management_service ? g_device_management_service
                                   : connector->device_management_service();
-  // TODO(atwilson): Inject SigninManager here or remove the dependency
-  // entirely. http://crbug.com/276270.
   UserPolicySigninService* service = new UserPolicySigninService(
       profile,
       g_browser_process->local_state(),
       device_management_service,
+      UserCloudPolicyManagerFactory::GetForBrowserContext(context),
+      SigninManagerFactory::GetForProfile(profile),
       g_browser_process->system_request_context(),
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile));
   return service;

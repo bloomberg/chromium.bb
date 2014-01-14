@@ -65,6 +65,8 @@ class UserPolicySigninServiceBase : public BrowserContextKeyedService,
       Profile* profile,
       PrefService* local_state,
       DeviceManagementService* device_management_service,
+      UserCloudPolicyManager* policy_manager,
+      SigninManager* signin_manager,
       scoped_refptr<net::URLRequestContextGetter> system_request_context);
   virtual ~UserPolicySigninServiceBase();
 
@@ -72,10 +74,12 @@ class UserPolicySigninServiceBase : public BrowserContextKeyedService,
   // |client_id| fetched via RegisterForPolicy(). |callback| is invoked
   // once the policy fetch is complete, passing true if the policy fetch
   // succeeded.
-  void FetchPolicyForSignedInUser(const std::string& username,
-                                  const std::string& dm_token,
-                                  const std::string& client_id,
-                                  const PolicyFetchCallback& callback);
+  void FetchPolicyForSignedInUser(
+      const std::string& username,
+      const std::string& dm_token,
+      const std::string& client_id,
+      scoped_refptr<net::URLRequestContextGetter> profile_request_context,
+      const PolicyFetchCallback& callback);
 
   // content::NotificationObserver implementation:
   virtual void Observe(int type,
@@ -119,14 +123,16 @@ class UserPolicySigninServiceBase : public BrowserContextKeyedService,
   // becomes ready. If the Profile has a signed-in account associated with it
   // at startup then this initializes the cloud policy manager by calling
   // InitializeForSignedInUser(); otherwise it clears any stored policies.
-  void InitializeOnProfileReady();
+  void InitializeOnProfileReady(Profile* profile);
 
   // Invoked to initialize the cloud policy service for |username|, which is the
   // account associated with the Profile that owns this service. This is invoked
   // from InitializeOnProfileReady() if the Profile already has a signed-in
   // account at startup, or (on the desktop platforms) as soon as the user
   // signs-in and an OAuth2 login refresh token becomes available.
-  void InitializeForSignedInUser(const std::string& username);
+  void InitializeForSignedInUser(
+      const std::string& username,
+      scoped_refptr<net::URLRequestContextGetter> profile_request_context);
 
   // Initializes the cloud policy manager with the passed |client|. This is
   // called from InitializeForSignedInUser() when the Profile already has a
@@ -144,20 +150,23 @@ class UserPolicySigninServiceBase : public BrowserContextKeyedService,
   // out) and deletes any cached policy.
   virtual void ShutdownUserCloudPolicyManager();
 
-  // Convenience helper to get the UserCloudPolicyManager for |profile_|.
-  UserCloudPolicyManager* GetManager();
+  // Convenience helpers to get the associated UserCloudPolicyManager and
+  // SigninManager.
+  UserCloudPolicyManager* policy_manager() { return policy_manager_; }
+  SigninManager* signin_manager() { return signin_manager_; }
 
-  Profile* profile() { return profile_; }
   content::NotificationRegistrar* registrar() { return &registrar_; }
-  SigninManager* GetSigninManager();
 
  private:
   // Helper functions to create a request context for use by CloudPolicyClients.
-  scoped_refptr<net::URLRequestContextGetter> CreateUserRequestContext();
+  scoped_refptr<net::URLRequestContextGetter> CreateUserRequestContext(
+      scoped_refptr<net::URLRequestContextGetter> profile_request_context);
   scoped_refptr<net::URLRequestContextGetter> CreateSystemRequestContext();
 
-  // Weak pointer to the profile this service is associated with.
-  Profile* profile_;
+  // Weak pointer to the UserCloudPolicyManager and SigninManager this service
+  // is associated with.
+  UserCloudPolicyManager* policy_manager_;
+  SigninManager* signin_manager_;
 
   content::NotificationRegistrar registrar_;
 
