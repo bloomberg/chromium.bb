@@ -186,7 +186,7 @@ public:
 
     virtual void setSelectionState(SelectionState) OVERRIDE;
 
-    bool canHaveBoxInfoInRegion() const { return !isFloating() && !isReplaced() && !isInline() && !hasColumns() && !isTableCell() && isRenderBlock() && !isRenderSVGBlock(); }
+    bool canHaveBoxInfoInRegion() const { return !isFloating() && !isReplaced() && !isInline() && !hasColumns() && !isTableCell() && isRenderBlock() && !isSVG(); }
 
     void contentChanged(ContentChangeType);
     bool hasAcceleratedCompositing() const;
