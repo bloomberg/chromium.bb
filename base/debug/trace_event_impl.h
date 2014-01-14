@@ -283,8 +283,7 @@ class BASE_EXPORT TraceResultBuffer {
 
 class BASE_EXPORT CategoryFilter {
  public:
-  typedef std::pair<std::string, std::string> DelayValue;
-  typedef std::vector<DelayValue> DelayValueList;
+  typedef std::vector<std::string> StringList;
 
   // The default category filter, used when none is provided.
   // Allows all categories through, except if they end in the suffix 'Debug' or
@@ -331,7 +330,7 @@ class BASE_EXPORT CategoryFilter {
   bool IsCategoryGroupEnabled(const char* category_group) const;
 
   // Return a list of the synthetic delays specified in this category filter.
-  const DelayValueList& GetSyntheticDelayValues() const;
+  const StringList& GetSyntheticDelayValues() const;
 
   // Merges nested_filter with the current CategoryFilter
   void Merge(const CategoryFilter& nested_filter);
@@ -350,13 +349,11 @@ class BASE_EXPORT CategoryFilter {
   static bool IsEmptyOrContainsLeadingOrTrailingWhitespace(
       const std::string& str);
 
-  typedef std::vector<std::string> StringList;
-
   void Initialize(const std::string& filter_string);
   void WriteString(const StringList& values,
                    std::string* out,
                    bool included) const;
-  void WriteString(const DelayValueList& delays, std::string* out) const;
+  void WriteString(const StringList& delays, std::string* out) const;
   bool HasIncludedPatterns() const;
 
   bool DoesCategoryGroupContainCategory(const char* category_group,
@@ -365,7 +362,7 @@ class BASE_EXPORT CategoryFilter {
   StringList included_;
   StringList disabled_;
   StringList excluded_;
-  DelayValueList delays_;
+  StringList delays_;
 };
 
 class TraceSamplingThread;

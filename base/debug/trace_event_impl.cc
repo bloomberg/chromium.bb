@@ -1214,16 +1214,19 @@ void TraceLog::UpdateCategoryGroupEnabledFlags() {
 
 void TraceLog::UpdateSyntheticDelaysFromCategoryFilter() {
   ResetTraceEventSyntheticDelays();
-  const CategoryFilter::DelayValueList& delays =
+  const CategoryFilter::StringList& delays =
       category_filter_.GetSyntheticDelayValues();
-  CategoryFilter::DelayValueList::const_iterator ci;
+  CategoryFilter::StringList::const_iterator ci;
   for (ci = delays.begin(); ci != delays.end(); ++ci) {
+    StringTokenizer tokens(*ci, ";");
+    if (!tokens.GetNext())
+      continue;
     TraceEventSyntheticDelay* delay =
-        TraceEventSyntheticDelay::Lookup(ci->first);
-    StringTokenizer tokens(ci->second, ";");
+        TraceEventSyntheticDelay::Lookup(tokens.token());
     while (tokens.GetNext()) {
-      double target_duration;
-      if (StringToDouble(tokens.token(), &target_duration)) {
+      char* duration_end;
+      double target_duration = strtod(tokens.token().c_str(), &duration_end);
+      if (duration_end != tokens.token().c_str()) {
         delay->SetTargetDuration(
             TimeDelta::FromMicroseconds(target_duration * 1e6));
       } else if (tokens.token() == "static") {
@@ -2241,8 +2244,7 @@ void CategoryFilter::Initialize(const std::string& filter_string) {
       size_t name_length = category.find(';');
       if (name_length != std::string::npos && name_length > 0 &&
           name_length != category.size() - 1) {
-        delays_.push_back(DelayValue(category.substr(0, name_length),
-                                     category.substr(name_length + 1)));
+        delays_.push_back(category);
       }
     } else if (category.at(0) == '-') {
       // Excluded categories start with '-'.
@@ -2272,16 +2274,16 @@ void CategoryFilter::WriteString(const StringList& values,
   }
 }
 
-void CategoryFilter::WriteString(const DelayValueList& delays,
+void CategoryFilter::WriteString(const StringList& delays,
                                  std::string* out) const {
   bool prepend_comma = !out->empty();
   int token_cnt = 0;
-  for (DelayValueList::const_iterator ci = delays.begin();
+  for (StringList::const_iterator ci = delays.begin();
        ci != delays.end(); ++ci) {
     if (token_cnt > 0 || prepend_comma)
       StringAppendF(out, ",");
-    StringAppendF(out, "%s%s;%s)", kSyntheticDelayCategoryFilterPrefix,
-                  ci->first.c_str(), ci->second.c_str());
+    StringAppendF(out, "%s%s)", kSyntheticDelayCategoryFilterPrefix,
+                  ci->c_str());
     ++token_cnt;
   }
 }
@@ -2358,7 +2360,7 @@ void CategoryFilter::Clear() {
   excluded_.clear();
 }
 
-const CategoryFilter::DelayValueList&
+const CategoryFilter::StringList&
     CategoryFilter::GetSyntheticDelayValues() const {
   return delays_;
 }
