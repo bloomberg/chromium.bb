@@ -1,5 +1,4 @@
 #!/usr/bin/python
-
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -360,6 +359,7 @@ class RunCommandResult(object):
 
 
 class PInfoTest(cros_test_lib.OutputTestCase):
+  """Tests for the PInfo class."""
 
   def testInit(self):
     pinfo = cpu.PInfo(category='SomeCat', user_arg='SomeArg')
@@ -514,13 +514,9 @@ class CpuTestBase(cros_test_lib.MoxOutputTestCase):
 
     # Initialize with command line if given.
     if cmdargs is not None:
-      def ParseCmdArgs(cmdargs):
-        """Returns (options, args) tuple."""
-        parser = cpu._CreateOptParser()
-        return parser.parse_args(args=cmdargs)
-
-      (options, args) = ParseCmdArgs(cmdargs)
-      cpu.Upgrader.__init__(upgrader, options, args)
+      parser = cpu._CreateParser()
+      options = parser.parse_args(cmdargs)
+      cpu.Upgrader.__init__(upgrader, options)
 
     # Override Upgrader attributes if requested.
     for slot in cpu.Upgrader.__slots__:
@@ -530,9 +526,6 @@ class CpuTestBase(cros_test_lib.MoxOutputTestCase):
 
     return upgrader
 
-########################
-### CopyUpstreamTest ###
-########################
 
 @unittest.skip('relies on portage module not currently available')
 class CopyUpstreamTest(CpuTestBase):
@@ -651,7 +644,7 @@ class CopyUpstreamTest(CpuTestBase):
     upstream_portdir = self._GetPlaygroundPortdir()
     portage_stable = self.tempdir
     mocked_upgrader = self._MockUpgrader(_curr_board=None,
-                                         _upstream_repo=upstream_portdir,
+                                         _upstream=upstream_portdir,
                                          _stable_repo=portage_stable,
                                          )
 
@@ -753,7 +746,7 @@ class CopyUpstreamTest(CpuTestBase):
 
 
     mocked_upgrader = self._MockUpgrader(_curr_board=None,
-                                         _upstream_repo=upstream_portdir,
+                                         _upstream=upstream_portdir,
                                          _stable_repo=portage_stable,
                                          )
 
@@ -1008,10 +1001,6 @@ class CopyUpstreamTest(CpuTestBase):
     self._AssertManifestContents(current_manifest, expected_mlines)
 
 
-##################################
-### GetPackageUpgradeStateTest ###
-##################################
-
 class GetPackageUpgradeStateTest(CpuTestBase):
   """Test Upgrader._GetPackageUpgradeState"""
 
@@ -1109,9 +1098,6 @@ class GetPackageUpgradeStateTest(CpuTestBase):
     result = self._TestGetPackageUpgradeState(pinfo, exists_upstream=False)
     self.assertEquals(result, utable.UpgradeTable.STATE_CURRENT)
 
-######################
-### EmergeableTest ###
-######################
 
 @unittest.skip('relies on portage module not currently available')
 class EmergeableTest(CpuTestBase):
@@ -1203,9 +1189,6 @@ class EmergeableTest(CpuTestBase):
     cpvlist = ['dev-apps/X-1', 'dev-apps/Y-2']
     return self._TestAreEmergeable(cpvlist, False)
 
-#####################
-### CPVUtilTest ###
-#####################
 
 class CPVUtilTest(CpuTestBase):
   """Test various CPV utilities in Upgrader"""
@@ -1327,9 +1310,6 @@ class CPVUtilTest(CpuTestBase):
       result = self._TestGetEbuildPathFromCpv(cpv)
       self.assertEquals(verrev, result)
 
-#########################
-### PortageStableTest ###
-#########################
 
 class PortageStableTest(CpuTestBase):
   """Test Upgrader methods _SaveStatusOnStableRepo, _CheckStableRepoOnBranch"""
@@ -1574,9 +1554,6 @@ class PortageStableTest(CpuTestBase):
     self._TestDropAnyStashedChanges(True)
     self._TestDropAnyStashedChanges(False)
 
-###################
-### UtilityTest ###
-###################
 
 class UtilityTest(CpuTestBase):
   """Test several Upgrader methods.
@@ -1720,10 +1697,6 @@ class UtilityTest(CpuTestBase):
                               ('ooo', 'ccc', 'ppp', 'ppp-1.2.3-r123'))
 
 
-#######################
-### TreeInspectTest ###
-#######################
-
 @unittest.skip('relies on portage module not currently available')
 class TreeInspectTest(CpuTestBase):
   """Test Upgrader methods: _FindCurrentCPV, _FindUpstreamCPV"""
@@ -1755,7 +1728,7 @@ class TreeInspectTest(CpuTestBase):
     self._SetUpPlayground()
     eroot = self._GetPlaygroundRoot()
     mocked_upgrader = self._MockUpgrader(_curr_board=None,
-                                         _upstream_repo=eroot,
+                                         _upstream=eroot,
                                          )
 
     # Add test-specific mocks/stubs
@@ -1769,7 +1742,7 @@ class TreeInspectTest(CpuTestBase):
     portage_configroot = mocked_upgrader._emptydir
     mocked_upgrader._GenPortageEnvvars(mocked_upgrader._curr_arch,
                                        unstable_ok,
-                                       portdir=mocked_upgrader._upstream_repo,
+                                       portdir=mocked_upgrader._upstream,
                                        portage_configroot=portage_configroot,
                                        ).AndReturn(envvars)
 
@@ -1894,9 +1867,6 @@ class TreeInspectTest(CpuTestBase):
     result = self._TestFindCurrentCPV(cp, ebuild)
     self.assertEquals(result, cpv)
 
-####################
-### RunBoardTest ###
-####################
 
 class RunBoardTest(CpuTestBase):
   """Test Upgrader.RunBoard,PrepareToRun,RunCompleted."""
@@ -1908,12 +1878,10 @@ class RunBoardTest(CpuTestBase):
                                          _curr_board=None)
 
     # Add test-specific mocks/stubs
-    self.mox.StubOutWithMock(os.path, 'exists')
-    self.mox.StubOutWithMock(os, 'rmdir')
+    self.mox.StubOutWithMock(osutils, 'RmDir')
 
     # Replay script
-    os.path.exists('empty-dir').AndReturn(True)
-    os.rmdir('empty-dir')
+    osutils.RmDir('empty-dir', ignore_missing=True)
     self.mox.ReplayAll()
 
     # Verify
@@ -1928,15 +1896,13 @@ class RunBoardTest(CpuTestBase):
                                          _curr_board=None)
 
     # Add test-specific mocks/stubs
-    self.mox.StubOutWithMock(shutil, 'rmtree')
-    self.mox.StubOutWithMock(os, 'rmdir')
-    self.mox.StubOutWithMock(os.path, 'exists')
+    self.mox.StubOutWithMock(osutils, 'RmDir')
+    self.mox.StubOutWithMock(osutils, 'SafeUnlink')
 
     # Replay script
-    shutil.rmtree(mocked_upgrader._upstream_repo)
-    os.path.exists(mocked_upgrader._upstream_repo + '-README').AndReturn(False)
-    os.path.exists('empty-dir').AndReturn(True)
-    os.rmdir('empty-dir')
+    osutils.RmDir(mocked_upgrader._upstream, ignore_missing=True)
+    osutils.SafeUnlink('%s-README' % mocked_upgrader._upstream)
+    osutils.RmDir('empty-dir', ignore_missing=True)
     self.mox.ReplayAll()
 
     # Verify
@@ -1951,34 +1917,15 @@ class RunBoardTest(CpuTestBase):
                                          _curr_board=None)
 
     # Add test-specific mocks/stubs
-    self.mox.StubOutWithMock(os.path, 'exists')
-    self.mox.StubOutWithMock(os, 'rmdir')
+    self.mox.StubOutWithMock(osutils, 'RmDir')
 
     # Replay script
-    os.path.exists('empty-dir').AndReturn(True)
-    os.rmdir('empty-dir')
+    osutils.RmDir('empty-dir', ignore_missing=True)
     self.mox.ReplayAll()
 
     # Verify
     with self.OutputCapturer():
       cpu.Upgrader.RunCompleted(mocked_upgrader)
-    self.mox.VerifyAll()
-
-  def testPrepareToRunUpstreamSpecified(self):
-    cmdargs = ['--upstream=/some/dir']
-    mocked_upgrader = self._MockUpgrader(cmdargs=cmdargs,
-                                         _curr_board=None)
-
-    # Add test-specific mocks/stubs
-    self.mox.StubOutWithMock(tempfile, 'mkdtemp')
-
-    # Replay script
-    tempfile.mkdtemp()
-    self.mox.ReplayAll()
-
-    # Verify
-    with self.OutputCapturer():
-      cpu.Upgrader.PrepareToRun(mocked_upgrader)
     self.mox.VerifyAll()
 
   def testPrepareToRunUpstreamRepoExists(self):
@@ -2011,7 +1958,7 @@ class RunBoardTest(CpuTestBase):
   def testPrepareToRunUpstreamRepoNew(self):
     cmdargs = []
     mocked_upgrader = self._MockUpgrader(cmdargs=cmdargs,
-                                         _upstream_repo=self.tempdir,
+                                         _upstream=self.tempdir,
                                          _curr_board=None)
 
     # Add test-specific mocks/stubs
@@ -2021,8 +1968,8 @@ class RunBoardTest(CpuTestBase):
 
     # Replay script
     tempfile.mkdtemp()
-    root = os.path.dirname(mocked_upgrader._upstream_repo).AndReturn('root')
-    name = os.path.basename(mocked_upgrader._upstream_repo).AndReturn('name')
+    root = os.path.dirname(mocked_upgrader._upstream).AndReturn('root')
+    name = os.path.basename(mocked_upgrader._upstream).AndReturn('name')
     os.path.basename('origin/gentoo').AndReturn('gentoo')
     mocked_upgrader._RunGit(root,
                             ['clone', '--branch', 'gentoo', '--depth', '1',
@@ -2155,10 +2102,6 @@ class RunBoardTest(CpuTestBase):
     self.mox.VerifyAll()
 
 
-#############################
-### GiveEmergeResultsTest ###
-#############################
-
 class GiveEmergeResultsTest(CpuTestBase):
   """Test Upgrader._GiveEmergeResults"""
 
@@ -2241,10 +2184,6 @@ class GiveEmergeResultsTest(CpuTestBase):
     self._TestGiveEmergeResultsMasked(pinfolist, False, masked_cpvs,
                                       error=RuntimeError)
 
-
-###############################
-### CheckStagedUpgradesTest ###
-###############################
 
 class CheckStagedUpgradesTest(CpuTestBase):
   """Test Upgrader._CheckStagedUpgrades"""
@@ -2329,9 +2268,6 @@ class CheckStagedUpgradesTest(CpuTestBase):
     cpu.Upgrader._CheckStagedUpgrades(mocked_upgrader, pinfolist)
     self.mox.VerifyAll()
 
-###########################
-### UpgradePackagesTest ###
-###########################
 
 class UpgradePackagesTest(CpuTestBase):
   """Test Upgrader._UpgradePackages"""
@@ -2393,11 +2329,9 @@ class UpgradePackagesTest(CpuTestBase):
                  ]
     self._TestUpgradePackages(pinfolist, False)
 
-###############################
-### CategoriesRoundtripTest ###
-###############################
 
 class CategoriesRoundtripTest(cros_test_lib.MoxOutputTestCase):
+  """Tests for full "round trip" runs."""
 
   @osutils.TempDirDecorator
   def _TestCategoriesRoundtrip(self, categories):
@@ -2411,7 +2345,8 @@ class CategoriesRoundtripTest(cros_test_lib.MoxOutputTestCase):
     cpu.Upgrader._RunGit(stable_repo, ['add', cat_file])
     self.mox.ReplayAll()
 
-    options = cros_test_lib.EasyAttr(srcroot='foobar', upstream=None)
+    options = cros_test_lib.EasyAttr(srcroot='foobar', upstream=None,
+                                     packages='')
     upgrader = cpu.Upgrader(options=options)
     upgrader._stable_repo = stable_repo
     os.makedirs(profiles_dir)
@@ -2437,9 +2372,6 @@ class CategoriesRoundtripTest(cros_test_lib.MoxOutputTestCase):
     categories = ['virtual', 'happy-days', 'virtually-there']
     self._TestCategoriesRoundtrip(categories)
 
-##########################
-### UpgradePackageTest ###
-##########################
 
 class UpgradePackageTest(CpuTestBase):
   """Test Upgrader._UpgradePackage"""
@@ -2660,11 +2592,9 @@ class UpgradePackageTest(CpuTestBase):
                                       )
     self.assertTrue(result)
 
-#########################
-### VerifyPackageTest ###
-#########################
 
 class VerifyPackageTest(CpuTestBase):
+  """Tests for _VerifyPackageUpgrade()."""
 
   def _TestVerifyPackageUpgrade(self, pinfo):
     cmdargs = []
@@ -2800,9 +2730,6 @@ class VerifyPackageTest(CpuTestBase):
     self._TestSetUpgradedMaskBits(pinfo, output)
     self.assertFalse(pinfo.upgraded_unmasked)
 
-##################
-### CommitTest ###
-##################
 
 class CommitTest(CpuTestBase):
   """Test various commit-related Upgrader methods"""
@@ -3023,9 +2950,6 @@ class CommitTest(CpuTestBase):
                         re.VERBOSE | re.MULTILINE)
     self.assertTrue(regexp.search(result))
 
-##############################
-### GetCurrentVersionsTest ###
-##############################
 
 @unittest.skip('relies on portage module not currently available')
 class GetCurrentVersionsTest(CpuTestBase):
@@ -3109,9 +3033,6 @@ class GetCurrentVersionsTest(CpuTestBase):
                         ]
     self._TestGetCurrentVersionsPackageOnly(target_pinfolist)
 
-################################
-### ResolveAndVerifyArgsTest ###
-################################
 
 class ResolveAndVerifyArgsTest(CpuTestBase):
   """Test Upgrader._ResolveAndVerifyArgs"""
@@ -3308,11 +3229,8 @@ class ResolveAndVerifyArgsTest(CpuTestBase):
     self.mox.VerifyAll()
 
 
-###########################
-### StabilizeEbuildTest ###
-###########################
-
 class StabilizeEbuildTest(CpuTestBase):
+  """Tests for _StabilizeEbuild()."""
 
   PREFIX_LINES = ['Garbletygook nonsense unimportant',
                   'Some other nonsense with KEYWORDS mention',
@@ -3508,9 +3426,6 @@ class StabilizeEbuildTest(CpuTestBase):
     self._TestStabilizeEbuildWrapper(self.tempfile, arch,
                                      keyword_lines, gold_keyword_lines)
 
-###############################
-### GetPreOrderDepGraphTest ###
-###############################
 
 @unittest.skip('relies on portage module not currently available')
 class GetPreOrderDepGraphTest(CpuTestBase):
@@ -3556,9 +3471,6 @@ class GetPreOrderDepGraphTest(CpuTestBase):
   def testGetPreOrderDepGraphCrosbaseLibcros(self):
     return self._TestGetPreOrderDepGraph('chromeos-base/libcros')
 
-################
-### MainTest ###
-################
 
 class MainTest(CpuTestBase):
   """Test argument handling at the main method level."""
@@ -3593,7 +3505,7 @@ class MainTest(CpuTestBase):
 
     # Verify that a message beginning with "Usage: " was printed
     stdout = output.GetStdout()
-    self.assertTrue(stdout.startswith('Usage: '))
+    self.assertTrue(stdout.startswith('usage: '))
 
   def testMissingBoard(self):
     """Test that running without --board exits with an error."""

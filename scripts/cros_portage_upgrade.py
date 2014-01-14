@@ -7,8 +7,6 @@
 
 import filecmp
 import fnmatch
-import logging
-import optparse
 import os
 import parallel_emerge
 import portage
@@ -17,6 +15,7 @@ import shutil
 import tempfile
 
 from chromite.buildbot import constants
+from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 from chromite.lib import operation
@@ -146,15 +145,14 @@ class Upgrader(object):
                '_upgrade',      # Boolean indicating upgrade requested
                '_upgrade_cnt',  # Num pkg upgrades in this run (all boards)
                '_upgrade_deep', # Boolean indicating upgrade_deep requested
-               '_upstream',     # User-provided path to upstream repo
-               '_upstream_repo',# Path to upstream portage repo
+               '_upstream',     # Path to upstream portage repo
                '_unstable_ok',  # Boolean to allow unstable upstream also
                '_verbose',      # Boolean
                ]
 
-  def __init__(self, options=None, args=None):
-    self._args = args
-    self._targets = mps.ProcessTargets(args)
+  def __init__(self, options):
+    self._args = options.packages
+    self._targets = mps.ProcessTargets(self._args)
 
     self._master_table = None
     self._master_cnt = 0
@@ -163,9 +161,6 @@ class Upgrader(object):
 
     self._stable_repo = os.path.join(options.srcroot, 'third_party',
                                      self.STABLE_OVERLAY_NAME)
-    self._upstream_repo = options.upstream
-    if not self._upstream_repo:
-      self._upstream_repo = self.UPSTREAM_TMP_REPO
     # This can exist in two spots; the tree, or the cache.
 
     self._cros_overlay = os.path.join(options.srcroot, 'third_party',
@@ -432,7 +427,7 @@ class Upgrader(object):
     return envvars
 
   def _FindUpstreamCPV(self, pkg, unstable_ok=False):
-    """Returns latest cpv in |_upstream_repo| that matches |pkg|.
+    """Returns latest cpv in |_upstream| that matches |pkg|.
 
     The |pkg| argument can specify as much or as little of the full CPV
     syntax as desired, exactly as accepted by the Portage 'equery' command.
@@ -447,7 +442,7 @@ class Upgrader(object):
     Returns upstream cpv, if found.
     """
     envvars = self._GenPortageEnvvars(self._curr_arch, unstable_ok,
-                                      portdir=self._upstream_repo,
+                                      portdir=self._upstream,
                                       portage_configroot=self._emptydir)
 
     # Point equery to the upstream source to get latest version for keywords.
@@ -711,7 +706,7 @@ class Upgrader(object):
     ebuild = upstream_cpv.replace(cat + '/', '') + '.ebuild'
     catpkgsubdir = os.path.join(cat, pkgname)
     pkgdir = os.path.join(self._stable_repo, catpkgsubdir)
-    upstream_pkgdir = os.path.join(self._upstream_repo, cat, pkgname)
+    upstream_pkgdir = os.path.join(self._upstream, cat, pkgname)
 
     # Fail early if upstream_cpv ebuild is not found
     upstream_ebuild_path = os.path.join(upstream_pkgdir, ebuild)
@@ -851,7 +846,7 @@ class Upgrader(object):
       True if the copy was done.
     """
     eclass_subpath = os.path.join('eclass', eclass)
-    upstream_path = os.path.join(self._upstream_repo, eclass_subpath)
+    upstream_path = os.path.join(self._upstream, eclass_subpath)
     local_path = os.path.join(self._stable_repo, eclass_subpath)
 
     if os.path.exists(upstream_path):
@@ -1530,68 +1525,65 @@ class Upgrader(object):
   def PrepareToRun(self):
     """Checkout upstream gentoo if necessary, and any other prep steps."""
 
-    if not self._upstream:
-      if not os.path.exists(os.path.join(
-          self._upstream_repo, '.git', 'shallow')):
-        osutils.RmDir(self._upstream_repo, ignore_missing=True)
+    if not os.path.exists(os.path.join(
+        self._upstream, '.git', 'shallow')):
+      osutils.RmDir(self._upstream, ignore_missing=True)
 
-      if os.path.exists(self._upstream_repo):
-        if self._local_only:
-          oper.Notice('Using upstream cache as-is (no network) %s.' %
-                      self._upstream_repo)
-        else:
-          # Recheck the pathway; it's possible in switching off alternates,
-          # this was converted down to a depth=1 repo.
-
-          oper.Notice('Updating previously created upstream cache at %s.' %
-                      self._upstream_repo)
-          self._RunGit(self._upstream_repo, ['remote', 'set-url', 'origin',
-                                             self.PORTAGE_GIT_URL])
-          self._RunGit(self._upstream_repo, ['remote', 'update'])
-          self._RunGit(self._upstream_repo, ['checkout', self.ORIGIN_GENTOO],
-                       redirect_stdout=True, combine_stdout_stderr=True)
+    if os.path.exists(self._upstream):
+      if self._local_only:
+        oper.Notice('Using upstream cache as-is (no network) %s.' %
+                    self._upstream)
       else:
-        if self._local_only:
-          oper.Die('--local-only specified, but no local cache exists. '
-                   'Re-run w/out --local-only to create cache automatically.')
+        # Recheck the pathway; it's possible in switching off alternates,
+        # this was converted down to a depth=1 repo.
 
-        root = os.path.dirname(self._upstream_repo)
-        osutils.SafeMakedirs(root)
-        # Create local copy of upstream gentoo.
-        oper.Notice('Cloning origin/gentoo at %s as upstream reference.' %
-                    self._upstream_repo)
-        name = os.path.basename(self._upstream_repo)
-        args = ['clone', '--branch', os.path.basename(self.ORIGIN_GENTOO)]
-        args += ['--depth', '1', self.PORTAGE_GIT_URL, name]
-        self._RunGit(root, args)
+        oper.Notice('Updating previously created upstream cache at %s.' %
+                    self._upstream)
+        self._RunGit(self._upstream, ['remote', 'set-url', 'origin',
+                                      self.PORTAGE_GIT_URL])
+        self._RunGit(self._upstream, ['remote', 'update'])
+        self._RunGit(self._upstream, ['checkout', self.ORIGIN_GENTOO],
+                     redirect_stdout=True, combine_stdout_stderr=True)
+    else:
+      if self._local_only:
+        oper.Die('--local-only specified, but no local cache exists. '
+                 'Re-run w/out --local-only to create cache automatically.')
 
-        # Create a README file to explain its presence.
-        with open(self._upstream_repo + '-README', 'w') as f:
-          f.write('Directory at %s is local copy of upstream '
-                  'Gentoo/Portage packages. Used by cros_portage_upgrade.\n'
-                  'Feel free to delete if you want the space back.\n' %
-                  self._upstream_repo)
+      root = os.path.dirname(self._upstream)
+      osutils.SafeMakedirs(root)
+      # Create local copy of upstream gentoo.
+      oper.Notice('Cloning origin/gentoo at %s as upstream reference.' %
+                  self._upstream)
+      name = os.path.basename(self._upstream)
+      args = ['clone', '--branch', os.path.basename(self.ORIGIN_GENTOO)]
+      args += ['--depth', '1', self.PORTAGE_GIT_URL, name]
+      self._RunGit(root, args)
+
+      # Create a README file to explain its presence.
+      with open(self._upstream + '-README', 'w') as f:
+        f.write('Directory at %s is local copy of upstream '
+                'Gentoo/Portage packages. Used by cros_portage_upgrade.\n'
+                'Feel free to delete if you want the space back.\n' %
+                self._upstream)
 
     # An empty directory is needed to trick equery later.
     self._emptydir = tempfile.mkdtemp()
 
   def RunCompleted(self):
     """Undo any checkout of upstream gentoo if requested."""
-    if not self._upstream:
-      if self._no_upstream_cache:
-        oper.Notice('Removing upstream cache at %s as requested.'
-                    % self._upstream_repo)
-        shutil.rmtree(self._upstream_repo)
+    if self._no_upstream_cache:
+      oper.Notice('Removing upstream cache at %s as requested.'
+                  % self._upstream)
+      osutils.RmDir(self._upstream, ignore_missing=True)
 
-        # Remove the README file, too.
-        readmepath = self._upstream_repo + '-README'
-        if os.path.exists(readmepath):
-          os.remove(readmepath)
-      else:
-        oper.Notice('Keeping upstream cache at %s.' % self._upstream_repo)
+      # Remove the README file, too.
+      readmepath = self._upstream + '-README'
+      osutils.SafeUnlink(readmepath)
+    else:
+      oper.Notice('Keeping upstream cache at %s.' % self._upstream)
 
-    if self._emptydir and os.path.exists(self._emptydir):
-      os.rmdir(self._emptydir)
+    if self._emptydir:
+      osutils.RmDir(self._emptydir, ignore_missing=True)
 
   def CommitIsStaged(self):
     """Return True if upgrades are staged and ready for a commit."""
@@ -1814,9 +1806,8 @@ def _BoardIsSetUp(board):
   """Return true if |board| has been setup."""
   return os.path.isdir(cros_build_lib.GetSysroot(board=board))
 
-def _CreateOptParser():
+def _CreateParser():
   """Create the optparser.parser object for command-line args."""
-  usage = 'Usage: %prog [options] packages...'
   epilog = ('\n'
             'There are essentially two "modes": status report mode and '
             'upgrade mode.\nStatus report mode is the default; upgrade '
@@ -1865,111 +1856,85 @@ def _CreateOptParser():
             '\n'
             )
 
-  class MyOptParser(optparse.OptionParser):
-    """Override default epilog formatter, which strips newlines."""
-    # pylint: disable=R0904
-    def format_epilog(self, formatter):
-      return self.epilog
-
-  parser = MyOptParser(usage=usage, epilog=epilog)
-  parser.add_option('--amend', dest='amend', action='store_true',
-                    default=False,
-                    help='Amend existing commit when doing upgrade.')
-  parser.add_option('--board', dest='board', type='string', action='store',
-                    default=None, help='Target board(s), colon-separated')
-  parser.add_option('--force', dest='force', action='store_true',
-                    default=False,
-                    help='Force upgrade even if version already in source')
-  parser.add_option('--host', dest='host', action='store_true',
-                    default=False,
-                    help='Host target pseudo-board')
-  parser.add_option('--no-upstream-cache', dest='no_upstream_cache',
-                    action='store_true', default=False,
-                    help='Do not preserve cached upstream for future runs')
-  parser.add_option('--rdeps', dest='rdeps', action='store_true',
-                    default=False,
-                    help='Use runtime dependencies only')
-  parser.add_option('--srcroot', dest='srcroot', type='string', action='store',
-                    default='%s/trunk/src' % os.environ['HOME'],
-                    help='Path to root src directory [default: "%default"]')
-  parser.add_option('--to-csv', dest='csv_file', type='string', action='store',
-                    default=None, help='File to write csv-formatted results to')
-  parser.add_option('--upgrade', dest='upgrade',
-                    action='store_true', default=False,
-                    help='Upgrade target package(s) only')
-  parser.add_option('--upgrade-deep', dest='upgrade_deep', action='store_true',
-                    default=False,
-                    help='Upgrade target package(s) and all dependencies')
-  # TODO(mtennant): Put UPSTREAM_TMP_REPO in as default for better transparency.
-  parser.add_option('--upstream', dest='upstream', type='string',
-                    action='store', default=None,
-                    help='Latest upstream repo location [default: "%default"]')
-  parser.add_option('--unstable-ok', dest='unstable_ok', action='store_true',
-                    default=False,
-                    help='Use latest upstream ebuild, stable or not')
-  parser.add_option('--verbose', dest='verbose', action='store_true',
-                    default=False,
-                    help='Enable verbose output (for debugging)')
-  parser.add_option('-l', '--local-only', action='store_true', default=False,
-                    help='Do not attempt to update local portage cache')
-
+  parser = commandline.ArgumentParser(epilog=epilog)
+  parser.add_argument('packages', nargs='*', default=None,
+                      help='Packages to process.')
+  parser.add_argument('--amend', action='store_true', default=False,
+                      help='Amend existing commit when doing upgrade.')
+  parser.add_argument('--board', default=None,
+                      help='Target board(s), colon-separated')
+  parser.add_argument('--force', action='store_true', default=False,
+                      help='Force upgrade even if version already in source')
+  parser.add_argument('--host', action='store_true', default=False,
+                      help='Host target pseudo-board')
+  parser.add_argument('--no-upstream-cache', action='store_true', default=False,
+                      help='Do not preserve cached upstream for future runs')
+  parser.add_argument('--rdeps', action='store_true', default=False,
+                      help='Use runtime dependencies only')
+  parser.add_argument('--srcroot', type='path',
+                      default='%s/trunk/src' % os.environ['HOME'],
+                      help='Path to root src directory [default: %(default)s]')
+  parser.add_argument('--to-csv', dest='csv_file', type='path',
+                      default=None, help='File to store csv-formatted results')
+  parser.add_argument('--upgrade', action='store_true', default=False,
+                      help='Upgrade target package(s) only')
+  parser.add_argument('--upgrade-deep', action='store_true', default=False,
+                      help='Upgrade target package(s) and all dependencies')
+  parser.add_argument('--upstream', type='path',
+                      default=Upgrader.UPSTREAM_TMP_REPO,
+                      help='Latest upstream repo location '
+                      '[default: %(default)s]')
+  parser.add_argument('--unstable-ok', action='store_true', default=False,
+                      help='Use latest upstream ebuild, stable or not')
+  parser.add_argument('--verbose', action='store_true', default=False,
+                      help='Enable verbose output (for debugging)')
+  parser.add_argument('-l', '--local-only', action='store_true', default=False,
+                      help='Do not attempt to update local portage cache')
   return parser
 
 
 def main(argv):
   """Main function."""
-  parser = _CreateOptParser()
-  (options, args) = parser.parse_args(argv)
+  parser = _CreateParser()
+  options = parser.parse_args(argv)
+  # TODO: Can't freeze until options.host modification below is sorted.
+  #options.Freeze()
 
-  if (options.verbose):
-    logging.basicConfig(level=logging.DEBUG)
-    oper.verbose = True
+  oper.verbose = options.verbose
 
   #
   # Do some argument checking.
   #
 
   if not options.board and not options.host:
-    parser.print_help()
+    parser.print_usage()
     oper.Die('Board (or host) is required.')
 
-  if not args:
-    parser.print_help()
+  if not options.packages:
+    parser.print_usage()
     oper.Die('No packages provided.')
 
   # The --upgrade and --upgrade-deep options are mutually exclusive.
   if options.upgrade_deep and options.upgrade:
-    parser.print_help()
-    oper.Die('The --upgrade and --upgrade-deep options ' +
+    parser.print_usage()
+    oper.Die('The --upgrade and --upgrade-deep options '
              'are mutually exclusive.')
 
   # The --force option only makes sense with --upgrade or --upgrade-deep.
   if options.force and not (options.upgrade or options.upgrade_deep):
-    parser.print_help()
+    parser.print_usage()
     oper.Die('The --force option requires --upgrade or --upgrade-deep.')
-
-  # The --upstream and --no-upstream-cache options are mutually exclusive.
-  if options.upstream and options.no_upstream_cache:
-    parser.print_help()
-    oper.Die('The --upstream and --no-upstream-cache options ' +
-             'are mutually exclusive.')
-
-  # If upstream portage is provided, verify that it is a valid directory.
-  if options.upstream and not os.path.isdir(options.upstream):
-    parser.print_help()
-    oper.Die('Argument to --upstream must be a valid directory.')
 
   # If --to-csv given verify file can be opened for write.
   if options.csv_file:
     try:
-      fh = open(options.csv_file, 'w')
-      fh.close()
+      osutils.WriteFile(options.csv_file, '')
     except IOError as ex:
-      parser.print_help()
+      parser.print_usage()
       oper.Die('Unable to open %s for writing: %s' % (options.csv_file,
                                                       str(ex)))
 
-  upgrader = Upgrader(options, args)
+  upgrader = Upgrader(options)
   upgrader.PreRunChecks()
 
   # Automatically handle board 'host' as 'amd64-host'.
@@ -1993,7 +1958,7 @@ def main(argv):
   # Check that all boards have been setup first.
   for board in boards:
     if (board != Upgrader.HOST_BOARD and not _BoardIsSetUp(board)):
-      parser.print_help()
+      parser.print_usage()
       oper.Die('You must setup the %s board first.' % board)
 
   # If --board and --upgrade are given then in almost all cases
