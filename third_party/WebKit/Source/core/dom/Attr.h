@@ -63,8 +63,6 @@ public:
     virtual const AtomicString& namespaceURI() const OVERRIDE { return m_name.namespaceURI(); }
     const AtomicString& prefix() const { return m_name.prefix(); }
 
-    void setPrefix(const AtomicString&, ExceptionState&);
-
 private:
     Attr(Element&, const QualifiedName&);
     Attr(Document&, const QualifiedName&, const AtomicString& value);

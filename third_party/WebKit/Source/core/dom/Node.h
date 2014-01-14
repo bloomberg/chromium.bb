@@ -796,8 +796,6 @@ protected:
     bool isParsingChildrenFinished() const { return getFlag(IsParsingChildrenFinishedFlag); }
     void setIsParsingChildrenFinished(bool value) { setFlag(value, IsParsingChildrenFinishedFlag); }
 
-    void checkSetPrefix(const AtomicString& prefix, ExceptionState&);
-
 private:
     friend class TreeShared<Node>;
 

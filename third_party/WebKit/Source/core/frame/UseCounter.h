@@ -220,7 +220,7 @@ public:
         ScrollLeftBodyNotQuirksMode,
         UnusedSlot07, // Removed, was Attr.isId.
         UnusedSlot08, // Removed, was Attr.ownerElement.
-        AttributeSetPrefix, // Attribute prefix is readonly in DOM4.
+        UnusedSlot09, // Removed, was Attr.prefix setter.
         AttributeSpecified, // Removed in DOM4.
         BeforeLoadEventInIsolatedWorld,
         PrefixedAudioDecodedByteCount,

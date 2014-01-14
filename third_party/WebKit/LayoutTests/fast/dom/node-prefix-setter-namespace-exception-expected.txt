@@ -3,15 +3,8 @@ Test how Node.prefix setter raises NAMESPACE_ERR.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS href.prefix is null
-PASS document.createAttribute('attr').prefix = 'abc' threw exception NamespaceError: Failed to set the 'prefix' property on 'Attr': No namespace is set, so a namespace prefix may not be set..
-PASS document.createAttributeNS(null, 'attr').prefix = 'abc' threw exception NamespaceError: Failed to set the 'prefix' property on 'Attr': No namespace is set, so a namespace prefix may not be set..
 PASS document.createElementNS(null, 'attr').prefix = 'abc' threw exception NamespaceError: Failed to set the 'prefix' property on 'Element': No namespace is set, so a namespace prefix may not be set..
-PASS document.createAttributeNS('foo', 'bar').prefix = 'xml' threw exception NamespaceError: Failed to set the 'prefix' property on 'Attr': The prefix 'xml' may not be set on namespace 'foo'..
 PASS document.createElementNS('foo', 'bar').prefix = 'xml' threw exception NamespaceError: Failed to set the 'prefix' property on 'Element': The prefix 'xml' may not be set on namespace 'foo'..
-PASS document.createAttribute('attr').prefix = 'xmlns' threw exception NamespaceError: Failed to set the 'prefix' property on 'Attr': No namespace is set, so a namespace prefix may not be set..
-PASS document.createAttributeNS('foo', 'attr').prefix = 'xmlns' threw exception NamespaceError: Failed to set the 'prefix' property on 'Attr': The prefix 'xmlns' may not be used on the namespace 'foo'..
-PASS document.createAttribute('xmlns').prefix = 'foo' threw exception NamespaceError: Failed to set the 'prefix' property on 'Attr': No namespace is set, so a namespace prefix may not be set..
 PASS successfullyParsed is true
 
 TEST COMPLETE

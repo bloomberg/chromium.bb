@@ -1235,7 +1235,24 @@ void Element::setPrefix(const AtomicString& prefix, ExceptionState& exceptionSta
 {
     UseCounter::count(document(), UseCounter::ElementSetPrefix);
 
-    checkSetPrefix(prefix, exceptionState);
+    if (!prefix.isEmpty() && !Document::isValidName(prefix)) {
+        exceptionState.throwDOMException(InvalidCharacterError, "The prefix '" + prefix + "' is not a valid name.");
+        return;
+    }
+
+    // FIXME: Raise NamespaceError if prefix is malformed per the Namespaces in XML specification.
+
+    const AtomicString& nodeNamespaceURI = namespaceURI();
+    if (nodeNamespaceURI.isEmpty() && !prefix.isEmpty()) {
+        exceptionState.throwDOMException(NamespaceError, "No namespace is set, so a namespace prefix may not be set.");
+        return;
+    }
+
+    if (prefix == xmlAtom && nodeNamespaceURI != XMLNames::xmlNamespaceURI) {
+        exceptionState.throwDOMException(NamespaceError, "The prefix '" + xmlAtom + "' may not be set on namespace '" + nodeNamespaceURI + "'.");
+        return;
+    }
+
     if (exceptionState.hadException())
         return;
 

@@ -30,7 +30,7 @@ interface Attr : Node {
 
     // DOM 4
 
-    [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, PerWorldBindings, RaisesException=Setter] attribute DOMString prefix;
+    [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString prefix;
     [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString namespaceURI;
     [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString localName;
 };
