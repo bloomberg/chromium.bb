@@ -57,7 +57,6 @@ class ProfileInfoCache : public ProfileInfoInterface,
   virtual base::string16 GetShortcutNameOfProfileAtIndex(size_t index)
       const OVERRIDE;
   virtual base::FilePath GetPathOfProfileAtIndex(size_t index) const OVERRIDE;
-  virtual base::Time GetProfileActiveTimeAtIndex(size_t index) const OVERRIDE;
   virtual base::string16 GetUserNameOfProfileAtIndex(
       size_t index) const OVERRIDE;
   virtual const gfx::Image& GetAvatarIconOfProfileAtIndex(
@@ -89,7 +88,6 @@ class ProfileInfoCache : public ProfileInfoInterface,
 
   size_t GetAvatarIconIndexOfProfileAtIndex(size_t index) const;
 
-  void SetProfileActiveTimeAtIndex(size_t index);
   void SetNameOfProfileAtIndex(size_t index, const base::string16& name);
   void SetShortcutNameOfProfileAtIndex(size_t index,
                                        const base::string16& name);

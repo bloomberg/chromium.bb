@@ -1183,11 +1183,6 @@ void ProfileManager::BrowserListObserver::OnBrowserSetLastActive(
     return;
 
   Profile* last_active = browser->profile();
-  ProfileInfoCache& cache = profile_manager_->GetProfileInfoCache();
-  size_t profile_index =
-      cache.GetIndexOfProfileWithPath(last_active->GetPath());
-  if (profile_index != std::string::npos)
-    cache.SetProfileActiveTimeAtIndex(profile_index);
 
   // Don't remember ephemeral profiles as last because they are not going to
   // persist after restart.

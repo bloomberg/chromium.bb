@@ -53,7 +53,6 @@ const char kIsManagedKey[] = "is_managed";
 const char kSigninRequiredKey[] = "signin_required";
 const char kManagedUserId[] = "managed_user_id";
 const char kProfileIsEphemeral[] = "is_ephemeral";
-const char kActiveTimeKey[] = "active_time";
 
 const char kDefaultUrlPrefix[] = "chrome://theme/IDR_PROFILE_AVATAR_";
 const char kGAIAPictureFileName[] = "Google Profile Picture.png";
@@ -310,15 +309,6 @@ base::FilePath ProfileInfoCache::GetPathOfProfileAtIndex(size_t index) const {
   return user_data_dir_.AppendASCII(sorted_keys_[index]);
 }
 
-base::Time ProfileInfoCache::GetProfileActiveTimeAtIndex(size_t index) const {
-  double dt;
-  if (GetInfoForProfileAtIndex(index)->GetDouble(kActiveTimeKey, &dt)) {
-    return base::Time::FromDoubleT(dt);
-  } else {
-    return base::Time();
-  }
-}
-
 base::string16 ProfileInfoCache::GetUserNameOfProfileAtIndex(
     size_t index) const {
   base::string16 user_name;
@@ -482,14 +472,6 @@ size_t ProfileInfoCache::GetAvatarIconIndexOfProfileAtIndex(size_t index)
     DLOG(WARNING) << "Unknown avatar icon: " << icon_url;
 
   return icon_index;
-}
-
-void ProfileInfoCache::SetProfileActiveTimeAtIndex(size_t index) {
-  scoped_ptr<base::DictionaryValue> info(
-      GetInfoForProfileAtIndex(index)->DeepCopy());
-  info->SetDouble(kActiveTimeKey, base::Time::Now().ToDoubleT());
-  // This takes ownership of |info|.
-  SetInfoForProfileAtIndex(index, info.release());
 }
 
 void ProfileInfoCache::SetNameOfProfileAtIndex(size_t index,
