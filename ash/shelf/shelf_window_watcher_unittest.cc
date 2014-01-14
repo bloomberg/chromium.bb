@@ -40,7 +40,7 @@ class ShelfWindowWatcherTest : public test::AshTestBase {
 
   LauncherID CreateShelfItem(aura::Window* window) {
     LauncherID id = model_->next_id();
-    LauncherItemDetails item_details;
+    ShelfItemDetails item_details;
     item_details.type = TYPE_PLATFORM_APP;
     SetShelfItemDetailsForWindow(window, item_details);
     return id;
@@ -128,7 +128,7 @@ TEST_F(ShelfWindowWatcherTest, UpdateWindowProperty) {
   EXPECT_EQ(STATUS_RUNNING, model_->items()[index].status);
 
   // Update LauncherItem for |window|.
-  LauncherItemDetails details;
+  ShelfItemDetails details;
   details.type = TYPE_PLATFORM_APP;
 
   SetShelfItemDetailsForWindow(window.get(), details);

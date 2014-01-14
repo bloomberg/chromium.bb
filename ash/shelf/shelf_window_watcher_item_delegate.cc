@@ -46,7 +46,7 @@ bool ShelfWindowWatcherItemDelegate::ItemSelected(const ui::Event& event) {
 }
 
 base::string16 ShelfWindowWatcherItemDelegate::GetTitle() {
-  return GetLauncherItemDetailsForWindow(window_)->title;
+  return GetShelfItemDetailsForWindow(window_)->title;
 }
 
 ui::MenuModel* ShelfWindowWatcherItemDelegate::CreateContextMenu(

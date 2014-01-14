@@ -27,7 +27,7 @@ namespace {
 // Sets LauncherItem property by using the value of |details|.
 void SetShelfItemDetailsForLauncherItem(
     ash::LauncherItem* item,
-    const ash::LauncherItemDetails& details) {
+    const ash::ShelfItemDetails& details) {
   item->type = details.type;
   if (details.image_resource_id != ash::kInvalidImageResourceID) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
@@ -37,7 +37,7 @@ void SetShelfItemDetailsForLauncherItem(
 
 // Returns true if |window| has a LauncherItem added by ShelfWindowWatcher.
 bool HasLauncherItemForWindow(aura::Window* window) {
-  if (ash::GetLauncherItemDetailsForWindow(window) != NULL &&
+  if (ash::GetShelfItemDetailsForWindow(window) != NULL &&
       ash::GetLauncherIDForWindow(window) != ash::kInvalidShelfID)
     return true;
   return false;
@@ -131,8 +131,8 @@ ShelfWindowWatcher::~ShelfWindowWatcher() {
 }
 
 void ShelfWindowWatcher::AddLauncherItem(aura::Window* window) {
-  const LauncherItemDetails* item_details =
-      GetLauncherItemDetailsForWindow(window);
+  const ShelfItemDetails* item_details =
+      GetShelfItemDetailsForWindow(window);
   LauncherItem item;
   LauncherID id = model_->next_id();
   item.status = wm::IsActiveWindow(window) ? STATUS_ACTIVE: STATUS_RUNNING;
@@ -214,11 +214,11 @@ void ShelfWindowWatcher::OnWindowAdded(aura::Window* window) {
     return;
   }
 
-  // Add LauncherItem if |window| already has a LauncherItemDetails when it is
+  // Add LauncherItem if |window| already has a ShelfItemDetails when it is
   // created. Don't make a new LauncherItem for the re-parented |window| that
   // already has a LauncherItem.
   if (GetLauncherIDForWindow(window) == kInvalidShelfID &&
-      GetLauncherItemDetailsForWindow(window))
+      GetShelfItemDetailsForWindow(window))
     AddLauncherItem(window);
 }
 
@@ -243,23 +243,23 @@ void ShelfWindowWatcher::OnWindowDestroying(aura::Window* window) {
 void ShelfWindowWatcher::OnWindowPropertyChanged(aura::Window* window,
                                                  const void* key,
                                                  intptr_t old) {
-  if (key != kLauncherItemDetailsKey)
+  if (key != kShelfItemDetailsKey)
     return;
 
-  if (GetLauncherItemDetailsForWindow(window) == NULL) {
+  if (GetShelfItemDetailsForWindow(window) == NULL) {
     // Removes LauncherItem for |window| when it has a LauncherItem.
-    if (reinterpret_cast<LauncherItemDetails*>(old) != NULL)
+    if (reinterpret_cast<ShelfItemDetails*>(old) != NULL)
       RemoveLauncherItem(window);
     return;
   }
 
-  // When LauncherItemDetails is changed, update LauncherItem.
+  // When ShelfItemDetails is changed, update LauncherItem.
   if (HasLauncherItemForWindow(window)) {
     int index = GetLauncherItemIndexForWindow(window);
     DCHECK_GE(index, 0);
     LauncherItem item = model_->items()[index];
-    const LauncherItemDetails* details =
-        GetLauncherItemDetailsForWindow(window);
+    const ShelfItemDetails* details =
+        GetShelfItemDetailsForWindow(window);
     SetShelfItemDetailsForLauncherItem(&item, *details);
     model_->Set(index, item);
     return;

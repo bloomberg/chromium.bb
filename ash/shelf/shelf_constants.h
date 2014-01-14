@@ -15,7 +15,7 @@ ASH_EXPORT extern const int kShelfPreferredSize;
 // Max alpha of the shelf background.
 ASH_EXPORT extern const int kShelfBackgroundAlpha;
 
-// Invalid image resource id used for LauncherItemDetails.
+// Invalid image resource id used for ShelfItemDetails.
 extern const int kInvalidImageResourceID;
 
 extern const int kInvalidShelfID;

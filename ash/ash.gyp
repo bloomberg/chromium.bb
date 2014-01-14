@@ -218,6 +218,8 @@
         'shelf/shelf_item_delegate.h',
         'shelf/shelf_item_delegate_manager.cc',
         'shelf/shelf_item_delegate_manager.h',
+        'shelf/shelf_item_types.cc',
+        'shelf/shelf_item_types.h',
         'shelf/shelf_layout_manager.cc',
         'shelf/shelf_layout_manager.h',
         'shelf/shelf_layout_manager_observer.h',

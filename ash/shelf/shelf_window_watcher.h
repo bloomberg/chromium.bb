@@ -31,7 +31,7 @@ class ShelfItemDelegateManager;
 
 namespace internal {
 // ShelfWindowWatcher creates and handles a LauncherItem for windows that have
-// a LauncherItemDetails property in the default container.
+// a ShelfItemDetails property in the default container.
 class ShelfWindowWatcher : public aura::client::ActivationChangeObserver,
                            public aura::WindowObserver,
                            public gfx::DisplayObserver {
@@ -75,7 +75,7 @@ class ShelfWindowWatcher : public aura::client::ActivationChangeObserver,
     DISALLOW_COPY_AND_ASSIGN(RemovedWindowObserver);
   };
 
-  // Creates a LauncherItem for |window| that has LauncherItemDetails.
+  // Creates a LauncherItem for |window| that has ShelfItemDetails.
   void AddLauncherItem(aura::Window* window);
 
   // Removes a LauncherItem for |window|.

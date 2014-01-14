@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/launcher/launcher_types.h"
+#include "ash/shelf/shelf_item_types.h"
 #include "ui/aura/window.h"
 
 namespace aura {
@@ -15,8 +16,8 @@ class Window;
 
 namespace ash {
 
-extern const aura::WindowProperty<ash::LauncherItemDetails*>* const
-    kLauncherItemDetailsKey;
+extern const aura::WindowProperty<ShelfItemDetails*>* const
+    kShelfItemDetailsKey;
 
 // Associates LauncherItem of |id| with specified |window|.
 ASH_EXPORT void SetLauncherIDForWindow(LauncherID id, aura::Window* window);
@@ -27,19 +28,18 @@ ASH_EXPORT void SetLauncherIDForWindow(LauncherID id, aura::Window* window);
 // currently active tab.
 ASH_EXPORT LauncherID GetLauncherIDForWindow(aura::Window* window);
 
-// Sets LauncherItemDetails for |window|.
-ASH_EXPORT void SetShelfItemDetailsForWindow(
-    aura::Window* window,
-    const LauncherItemDetails& details);
+// Sets ShelfItemDetails for |window|.
+ASH_EXPORT void SetShelfItemDetailsForWindow(aura::Window* window,
+                                             const ShelfItemDetails& details);
 
-// Clears LauncherItemDetails for |window|.
+// Clears ShelfItemDetails for |window|.
 // If |window| has a LauncherItem by SetShelfItemDetailsForWindow(), it will
 // be removed.
 ASH_EXPORT void ClearShelfItemDetailsForWindow(aura::Window* window);
 
-// Returns LauncherItemDetails for |window| or NULL if it doesn't have.
-// Returned LauncherItemDetails object is owned by the |window|.
-ASH_EXPORT const LauncherItemDetails* GetLauncherItemDetailsForWindow(
+// Returns ShelfItemDetails for |window| or NULL if it doesn't have.
+// Returned ShelfItemDetails object is owned by the |window|.
+ASH_EXPORT const ShelfItemDetails* GetShelfItemDetailsForWindow(
     aura::Window* window);
 
 }  // namespace ash

@@ -17,12 +17,4 @@ LauncherItem::LauncherItem()
 LauncherItem::~LauncherItem() {
 }
 
-LauncherItemDetails::LauncherItemDetails()
-    : type(TYPE_UNDEFINED),
-      image_resource_id(kInvalidImageResourceID) {
-}
-
-LauncherItemDetails::~LauncherItemDetails() {
-}
-
 }  // namespace ash

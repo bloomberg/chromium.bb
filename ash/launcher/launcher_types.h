@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "base/strings/string16.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace ash {
@@ -71,22 +70,6 @@ struct ASH_EXPORT LauncherItem {
 };
 
 typedef std::vector<LauncherItem> LauncherItems;
-
-// LauncherItemDetails may be set on Window (by way of
-// SetShelfItemDetailsForWindow) to make the window appear in the shelf. See
-// ShelfWindowWatcher for details.
-struct ASH_EXPORT LauncherItemDetails {
-  LauncherItemDetails();
-  ~LauncherItemDetails();
-
-  LauncherItemType type;
-
-  // Resource id of the image to display on the shelf.
-  int image_resource_id;
-
-  // Title of the item.
-  base::string16 title;
-};
 
 }  // namespace ash
 
