@@ -1453,14 +1453,26 @@ class BuildImageStageTest(BuildPackagesStageTest):
     parallel.RunParallelSteps(steps)
 
 
-class ArchiveStageMock(partial_mock.PartialMock):
+class ArchiveStageBaseMock(partial_mock.PartialMock):
   """Partial mock for Archive Stage."""
 
-  TARGET = 'chromite.buildbot.cbuildbot_stages.ArchiveStage'
-  ATTRS = ('WaitForBreakpadSymbols',)
   VERSION = '3333.1.0'
 
-  def WaitForBreakpadSymbols(self, _inst):
+
+class ArchiveStageMock(ArchiveStageBaseMock):
+  """Partial Archive stage w/debug symbol logic disabled."""
+
+  TARGET = 'chromite.buildbot.cbuildbot_stages.ArchiveStage'
+  ATTRS = ('WaitForBreakpadSymbols', 'WaitForDebugTarball',)
+
+  # We want to fully stub out the same interface, but we don't care about the
+  # actual values for things like |timeout|.
+  # pylint: disable=W0613
+
+  def WaitForBreakpadSymbols(self, _inst, timeout=None):
+    return True
+
+  def WaitForDebugTarball(self, _inst, timeout=None):
     return True
 
 
@@ -1849,44 +1861,55 @@ class DebugSymbolsStageTest(AbstractStageTest):
 
   def setUp(self):
     self.StartPatcher(BuilderRunMock())
-    self.StartPatcher(ArchiveStageMock())
+    self.StartPatcher(ArchiveStageBaseMock())
     self.StartPatcher(parallel_unittest.ParallelMock())
 
+    self.gen_mock = self.PatchObject(commands, 'GenerateBreakpadSymbols')
     self.upload_mock = self.PatchObject(commands, 'UploadSymbols')
     self.tar_mock = self.PatchObject(commands, 'GenerateDebugTarball')
-    self.gen_mock = self.PatchObject(commands, 'GenerateBreakpadSymbols')
 
     self.rc_mock = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
     self.rc_mock.SetDefaultCmdResult(output='')
 
+    self.archive_stage = None
+
   def ConstructStage(self):
     """Create a DebugSymbolsStage instance for testing"""
     self.run.GetArchive().SetupArchivePath()
-    archive_stage = stages.ArchiveStage(self.run, self._current_board)
+    self.archive_stage = stages.ArchiveStage(self.run, self._current_board)
     return stages.DebugSymbolsStage(self.run, self._current_board,
-                                    archive_stage)
+                                    self.archive_stage)
 
-  def _TestPerformStage(self, extra_config):
+  def _TestPerformStage(self, extra_config=None):
     """Run PerformStage for the stage with the given extra config."""
+    if not extra_config:
+      extra_config = {
+          'archive_build_debug': True,
+          'vm_tests': True,
+          'upload_symbols': True,
+      }
+
     self._Prepare(extra_config=extra_config)
     self.run.attrs.release_tag = BuilderRunMock.VERSION
 
     self.tar_mock.side_effect = '/my/tar/ball'
     stage = self.ConstructStage()
-    stage.PerformStage()
+    try:
+      stage.PerformStage()
+    except Exception as e:
+      stage._HandleStageException(e)
+      raise
 
   def testPerformStageWithSymbols(self):
     """Smoke test for an PerformStage when debugging is enabled"""
-    extra_config = {
-        'archive_build_debug': True,
-        'vm_tests': True,
-        'upload_symbols': True,
-    }
-    self._TestPerformStage(extra_config)
+    self._TestPerformStage()
 
     self.assertEqual(self.gen_mock.call_count, 1)
-    self.assertEqual(self.tar_mock.call_count, 1)
     self.assertEqual(self.upload_mock.call_count, 1)
+    self.assertEqual(self.tar_mock.call_count, 1)
+
+    self.assertEqual(self.archive_stage.WaitForBreakpadSymbols(), True)
+    self.assertEqual(self.archive_stage.WaitForDebugTarball(), True)
 
   def testPerformStageNoSymbols(self):
     """Smoke test for an PerformStage when debugging is disabled"""
@@ -1898,8 +1921,41 @@ class DebugSymbolsStageTest(AbstractStageTest):
     self._TestPerformStage(extra_config)
 
     self.assertEqual(self.gen_mock.call_count, 1)
-    self.assertEqual(self.tar_mock.call_count, 1)
     self.assertEqual(self.upload_mock.call_count, 0)
+    self.assertEqual(self.tar_mock.call_count, 1)
+
+    self.assertEqual(self.archive_stage.WaitForBreakpadSymbols(), True)
+    self.assertEqual(self.archive_stage.WaitForDebugTarball(), True)
+
+  def testGenerateCrashStillNotifies(self):
+    """Crashes in symbol generation should still notify external events."""
+    class TestError(Exception):
+      """Unique test exception"""
+
+    self.gen_mock.side_effect = TestError('mew')
+    self.assertRaises(TestError, self._TestPerformStage)
+
+    self.assertEqual(self.gen_mock.call_count, 1)
+    self.assertEqual(self.upload_mock.call_count, 0)
+    self.assertEqual(self.tar_mock.call_count, 0)
+
+    self.assertEqual(self.archive_stage.WaitForBreakpadSymbols(), False)
+    self.assertEqual(self.archive_stage.WaitForDebugTarball(), False)
+
+  def testUploadCrashStillNotifies(self):
+    """Crashes in symbol upload should still notify external events."""
+    class TestError(Exception):
+      """Unique test exception"""
+
+    self.upload_mock.side_effect = TestError('mew')
+    self.assertRaises(TestError, self._TestPerformStage)
+
+    self.assertEqual(self.gen_mock.call_count, 1)
+    self.assertEqual(self.upload_mock.call_count, 1)
+    self.assertEqual(self.tar_mock.call_count, 0)
+
+    self.assertEqual(self.archive_stage.WaitForBreakpadSymbols(), True)
+    self.assertEqual(self.archive_stage.WaitForDebugTarball(), False)
 
 
 class PassStage(bs.BuilderStage):

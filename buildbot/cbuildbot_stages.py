@@ -3303,6 +3303,7 @@ class ArchiveStage(ArchivingStage):
     # move to use self._run.attrs.release_tag directly.
     self.release_tag = getattr(self._run.attrs, 'release_tag', None)
 
+    self._debug_tarball_queue = multiprocessing.Queue()
     self._breakpad_symbols_queue = multiprocessing.Queue()
     self._recovery_image_status_queue = multiprocessing.Queue()
     self._release_upload_queue = multiprocessing.Queue()
@@ -3335,6 +3336,26 @@ class ArchiveStage(ArchivingStage):
     # Put the status back so other processes don't starve.
     self._push_image_status_queue.put(urls)
     return urls
+
+  def DebugTarballGenerated(self, success):
+    """Signal that the debug tarball has been generated.
+
+    Args:
+      success: True to indicate the tarball was generated, else False.
+    """
+    self._debug_tarball_queue.put(success)
+
+  def WaitForDebugTarball(self, timeout=None):
+    """Wait for the debug tarball to be generated.
+
+    Returns:
+      True if the tarball was generated.
+    """
+    cros_build_lib.Info('Waiting for debug tarball...')
+    status = self._breakpad_symbols_queue.get(timeout=timeout)
+    # Put the status back so other processes don't starve.
+    self._breakpad_symbols_queue.put(status)
+    return status
 
   def AnnounceChannelSigned(self, channel):
     """Announce that image signing has compeleted for a given channel.
@@ -3369,22 +3390,17 @@ class ArchiveStage(ArchivingStage):
     """
     self._breakpad_symbols_queue.put(success)
 
-  def WaitForBreakpadSymbols(self):
+  def WaitForBreakpadSymbols(self, timeout=None):
     """Wait for the breakpad symbols to be generated.
 
     Returns:
       True if the breakpad symbols were generated.
-      False if the breakpad symbols were not generated within 20 mins.
     """
-    success = False
     cros_build_lib.Info('Waiting for breakpad symbols...')
-    try:
-      # TODO: Clean this up so that we no longer rely on a timeout
-      success = self._breakpad_symbols_queue.get(True, 1200)
-    except Queue.Empty:
-      cros_build_lib.Warning(
-          'Breakpad symbols were not generated within timeout period.')
-    return success
+    status = self._breakpad_symbols_queue.get(timeout=timeout)
+    # Put the status back so other processes don't starve.
+    self._breakpad_symbols_queue.put(status)
+    return status
 
   @staticmethod
   def SingleMatchGlob(path_pattern):
@@ -3596,6 +3612,8 @@ class ArchiveStage(ArchivingStage):
       if not config['internal']:
         return
 
+      self.WaitForDebugTarball()
+
       # Now that all data has been generated, we can upload the final result to
       # the image server.
       # TODO: When we support branches fully, the friendly name of the branch
@@ -3669,7 +3687,8 @@ class DebugSymbolsStage(ArchivingStage):
     debug = self._run.debug
     archive_path = self.archive_path
 
-    self._GenerateBreakpadSymbols(buildroot, board, debug)
+    commands.GenerateBreakpadSymbols(buildroot, board, debug)
+    self.archive_stage.BreakpadSymbolsGenerated(True)
 
     # Kick off the symbol upload process in the background.
     failed_list = os.path.join(archive_path, 'failed_upload_symbols.list')
@@ -3685,6 +3704,7 @@ class DebugSymbolsStage(ArchivingStage):
           buildroot, board, archive_path,
           config['archive_build_debug'])
       queue.put([filename])
+    self.archive_stage.DebugTarballGenerated(True)
 
   def UploadSymbols(self, buildroot, board, failed_list):
     """Upload generated debug symbols."""
@@ -3699,14 +3719,19 @@ class DebugSymbolsStage(ArchivingStage):
 
     commands.UploadSymbols(buildroot, board, official, cnt, failed_list)
 
-  def _GenerateBreakpadSymbols(self, buildroot, board, debug):
-    """Generate the breakpad symbols"""
-    success = False
+  def _HandleStageException(self, exception):
+    """Tell other stages to not wait on us if we die for some reason."""
     try:
-      commands.GenerateBreakpadSymbols(buildroot, board, debug)
-      success = True
-    finally:
-      self.archive_stage.BreakpadSymbolsGenerated(success)
+      self.archive_stage.WaitForBreakpadSymbols(timeout=0)
+    except Queue.Empty:
+      self.archive_stage.BreakpadSymbolsGenerated(False)
+
+    try:
+      self.archive_stage.WaitForDebugTarball(timeout=0)
+    except Queue.Empty:
+      self.archive_stage.DebugTarballGenerated(False)
+
+    return super(DebugSymbolsStage, self)._HandleStageException(exception)
 
 
 class MasterUploadPrebuiltsStage(bs.BuilderStage):
