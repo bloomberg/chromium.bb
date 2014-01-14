@@ -1016,6 +1016,7 @@ InjectedScript.RemoteObject.prototype = {
                     continue;
 
                 if (!("value" in descriptor)) {
+                    preview.lossless = false;
                     this._appendPropertyPreview(preview, { name: name, type: "accessor" }, propertiesThreshold);
                     continue;
                 }

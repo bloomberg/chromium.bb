@@ -89,14 +89,14 @@ test named "test" console-format.html:12
 ["test named "test""] console-format.html:13
 globals[3]
 "test named "test""
-Error {stack: (...)} console-format.html:12
+Error {stack: (...)}stack: (...)get stack: function () { [native code] }set stack: function () { [native code] }__proto__: d console-format.html:12
 [Error]0: Errorlength: 1__proto__: Array[0] console-format.html:13
 globals[4]
-Error {stack: (...)}
-Error {stack: (...), message: "my error message"} console-format.html:12
+Error {stack: (...)}stack: (...)get stack: function () { [native code] }set stack: function () { [native code] }__proto__: d
+Error {stack: (...), message: "my error message"}message: "my error message"stack: (...)get stack: function () { [native code] }set stack: function () { [native code] }__proto__: d console-format.html:12
 [Error]0: Errorlength: 1__proto__: Array[0] console-format.html:13
 globals[5]
-Error {stack: (...), message: "my error message"}
+Error {stack: (...), message: "my error message"}message: "my error message"stack: (...)get stack: function () { [native code] }set stack: function () { [native code] }__proto__: d
 <p id="p">Tests that console logging dumps proper messages.</p> console-format.html:12
 [p#p]0: p#plength: 1__proto__: Array[0] console-format.html:13
 globals[6]
@@ -142,10 +142,10 @@ id="x""x" console-format.html:12
 [id]0: idlength: 1__proto__: Array[0] console-format.html:13
 globals[15]
 id="x""x"
-Object {length: (...)} console-format.html:12
+Object {length: (...)}length: (...)get length: function length() { throw "Length called"; }__proto__: Object console-format.html:12
 [Object]0: Objectlength: 1__proto__: Array[0] console-format.html:13
 globals[16]
-Object {length: (...)}
+Object {length: (...)}length: (...)get length: function length() { throw "Length called"; }__proto__: Object
 NaN console-format.html:12
 [NaN] console-format.html:13
 globals[17]
@@ -178,10 +178,10 @@ Object {bar: "bar", foo: "foo"}
 [svg#svg-node]0: svg#svg-nodelength: 1__proto__: Array[0] console-format.html:13
 globals[24]
 <svg id="svg-node"></svg>
-Object {bar: (...), foo: 1} console-format.html:12
+Object {bar: (...), foo: 1}bar: (...)get bar: function () { return this.bar; }set bar: function (x) { this.bar = x; }getFoo: function () { return this.foo; }__proto__: Object console-format.html:12
 [Object]0: Objectlength: 1__proto__: Array[0] console-format.html:13
 globals[25]
-Object {bar: (...), foo: 1}
+Object {bar: (...), foo: 1}bar: (...)get bar: function () { return this.bar; }set bar: function (x) { this.bar = x; }getFoo: function () { return this.foo; }__proto__: Object
 -0 console-format.html:12
 [-0] console-format.html:13
 globals[26]
