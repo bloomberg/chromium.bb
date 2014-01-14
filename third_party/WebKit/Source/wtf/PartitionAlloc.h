@@ -223,18 +223,13 @@ struct PartitionFreelistEntry {
 // active list. If there are no suitable active pages found, a free page (if one
 // exists) will be pulled from the free list on to the active list.
 struct PartitionPage {
-    union { // Accessed most in hot path => goes first.
-        PartitionFreelistEntry* freelistHead; // If the page is active.
-        PartitionPage* freePageNext; // If the page is free.
-    } u;
-    PartitionPage* activePageNext;
+    PartitionFreelistEntry* freelistHead;
+    PartitionPage* nextPage;
     PartitionBucket* bucket;
     int16_t numAllocatedSlots; // Deliberately signed, -1 for free page, -n for full pages.
     uint16_t numUnprovisionedSlots;
     uint16_t pageOffset;
-    uint16_t flags;
 };
-static uint16_t kPartitionPageFlagFree = 1;
 
 struct PartitionBucket {
     PartitionPage* activePagesHead; // Accessed most in hot path => goes first.
@@ -471,34 +466,17 @@ ALWAYS_INLINE bool partitionPointerIsValid(PartitionRootBase* root, void* ptr)
     return false;
 }
 
-ALWAYS_INLINE bool partitionPageIsFree(PartitionPage* page)
-{
-    return (page->flags & kPartitionPageFlagFree);
-}
-
-ALWAYS_INLINE PartitionFreelistEntry* partitionPageFreelistHead(PartitionPage* page)
-{
-    ASSERT((page == &PartitionRootBase::gSeedPage && !page->u.freelistHead) || !partitionPageIsFree(page));
-    return page->u.freelistHead;
-}
-
-ALWAYS_INLINE void partitionPageSetFreelistHead(PartitionPage* page, PartitionFreelistEntry* newHead)
-{
-    ASSERT(!partitionPageIsFree(page));
-    page->u.freelistHead = newHead;
-}
-
 ALWAYS_INLINE void* partitionBucketAlloc(PartitionRootBase* root, size_t size, PartitionBucket* bucket)
 {
     PartitionPage* page = bucket->activePagesHead;
-    ASSERT(page == &PartitionRootBase::gSeedPage || page->numAllocatedSlots >= 0);
-    void* ret = partitionPageFreelistHead(page);
+    ASSERT(page->numAllocatedSlots >= 0);
+    void* ret = page->freelistHead;
     if (LIKELY(ret != 0)) {
         // If these asserts fire, you probably corrupted memory.
         ASSERT(partitionPointerIsValid(root, ret));
         ASSERT(partitionPointerToPage(ret));
         PartitionFreelistEntry* newHead = partitionFreelistMask(static_cast<PartitionFreelistEntry*>(ret)->next);
-        partitionPageSetFreelistHead(page, newHead);
+        page->freelistHead = newHead;
         ASSERT(!ret || partitionPointerIsValid(root, ret));
         ASSERT(!ret || partitionPointerToPage(ret));
         page->numAllocatedSlots++;
@@ -554,14 +532,15 @@ ALWAYS_INLINE void partitionFreeWithPage(void* ptr, PartitionPage* page)
     ASSERT(*(static_cast<uintptr_t*>(ptrEnd) - 1) == kCookieValue);
     memset(ptr, kFreedByte, bucketSize);
 #endif
-    PartitionFreelistEntry* freelistHead = partitionPageFreelistHead(page);
+    ASSERT(page->numAllocatedSlots);
+    PartitionFreelistEntry* freelistHead = page->freelistHead;
     ASSERT(!freelistHead || partitionPointerIsValid(partitionPageToRoot(page), freelistHead));
     ASSERT(!freelistHead || partitionPointerToPage(freelistHead));
     RELEASE_ASSERT(ptr != freelistHead); // Catches an immediate double free.
     ASSERT(!freelistHead || ptr != partitionFreelistMask(freelistHead->next)); // Look for double free one level deeper in debug.
     PartitionFreelistEntry* entry = static_cast<PartitionFreelistEntry*>(ptr);
     entry->next = partitionFreelistMask(freelistHead);
-    partitionPageSetFreelistHead(page, entry);
+    page->freelistHead = entry;
     --page->numAllocatedSlots;
     if (UNLIKELY(page->numAllocatedSlots <= 0))
         partitionFreeSlowPath(page);
