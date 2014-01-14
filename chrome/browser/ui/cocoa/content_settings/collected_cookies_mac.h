@@ -143,4 +143,9 @@ class CollectedCookiesMac : public ConstrainedWindowMacDelegate,
 - (CookiesTreeModel*)blockedTreeModel;
 
 - (void)loadTreeModelFromWebContents;
+
+// Given an array of selected NSTreeNode objects, normalizes the selection so
+// that it does not contain any children whose parents are also in the array.
++ (NSArray*)normalizeNodeSelection:(NSArray*)selection;
+
 @end

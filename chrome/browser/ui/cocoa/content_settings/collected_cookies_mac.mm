@@ -263,7 +263,8 @@ void CollectedCookiesMac::OnConstrainedWindowClosed(
 }
 
 - (IBAction)deleteSelected:(id)sender {
-  NSArray* nodes = [allowedTreeController_ selectedNodes];
+  NSArray* nodes = [[self class] normalizeNodeSelection:
+      [allowedTreeController_ selectedNodes]];
   for (NSTreeNode* cocoaTreeNode in nodes) {
     CookieTreeNode* cookieNode = static_cast<CookieTreeNode*>(
         [[cocoaTreeNode representedObject] treeNode]);
@@ -407,6 +408,20 @@ void CollectedCookiesMac::OnConstrainedWindowClosed(
   }
   [infoBarText_ setStringValue:label];
   [self animateInfoBar];
+}
+
++ (NSArray*)normalizeNodeSelection:(NSArray*)selection {
+  NSMutableArray* normalized = [NSMutableArray arrayWithArray:selection];
+  for (NSTreeNode* node in selection) {
+    NSTreeNode* parent = node;
+    while ((parent = [parent parentNode])) {
+      if ([normalized containsObject:parent]) {
+        [normalized removeObject:node];
+        break;
+      }
+    }
+  }
+  return normalized;
 }
 
 - (void)showInfoBarForDomain:(const base::string16&)domain

@@ -1532,6 +1532,7 @@
         'browser/ui/cocoa/constrained_window/constrained_window_button_unittest.mm',
         'browser/ui/cocoa/constrained_window/constrained_window_custom_window_unittest.mm',
         'browser/ui/cocoa/constrained_window/constrained_window_sheet_controller_unittest.mm',
+        'browser/ui/cocoa/content_settings/collected_cookies_mac_unittest.mm',
         'browser/ui/cocoa/content_settings/cookie_details_unittest.mm',
         'browser/ui/cocoa/content_settings/cookie_details_view_controller_unittest.mm',
         'browser/ui/cocoa/custom_frame_view_unittest.mm',
