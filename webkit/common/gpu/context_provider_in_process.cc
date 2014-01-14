@@ -77,6 +77,13 @@ ContextProviderInProcess::~ContextProviderInProcess() {
          context_thread_checker_.CalledOnValidThread());
 }
 
+blink::WebGraphicsContext3D* ContextProviderInProcess::WebContext3D() {
+  DCHECK(lost_context_callback_proxy_);  // Is bound to thread.
+  DCHECK(context_thread_checker_.CalledOnValidThread());
+
+  return context3d_.get();
+}
+
 bool ContextProviderInProcess::BindToCurrentThread() {
   DCHECK(context3d_);
 

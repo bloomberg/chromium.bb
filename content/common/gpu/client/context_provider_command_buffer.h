@@ -12,6 +12,7 @@
 #include "cc/output/context_provider.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
+#include "webkit/common/gpu/context_provider_web_context.h"
 
 namespace webkit {
 namespace gpu {
@@ -24,7 +25,7 @@ namespace content {
 // Implementation of cc::ContextProvider that provides a
 // WebGraphicsContext3DCommandBufferImpl context and a GrContext.
 class CONTENT_EXPORT ContextProviderCommandBuffer
-    : NON_EXPORTED_BASE(public cc::ContextProvider) {
+    : NON_EXPORTED_BASE(public webkit::gpu::ContextProviderWebContext) {
  public:
   static scoped_refptr<ContextProviderCommandBuffer> Create(
       scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context3d,
@@ -38,9 +39,12 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
     leak_on_destroy_ = true;
   }
 
+  // ContextProviderWebContext implementation.
+  virtual WebGraphicsContext3DCommandBufferImpl* WebContext3D() OVERRIDE;
+
   // cc::ContextProvider implementation.
   virtual bool BindToCurrentThread() OVERRIDE;
-  virtual WebGraphicsContext3DCommandBufferImpl* Context3d() OVERRIDE;
+  virtual blink::WebGraphicsContext3D* Context3d() OVERRIDE;
   virtual gpu::gles2::GLES2Interface* ContextGL() OVERRIDE;
   virtual gpu::ContextSupport* ContextSupport() OVERRIDE;
   virtual class GrContext* GrContext() OVERRIDE;

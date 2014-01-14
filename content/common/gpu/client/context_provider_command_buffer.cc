@@ -87,6 +87,15 @@ int ContextProviderCommandBuffer::GetGPUProcessID() {
   return context3d_->GetGPUProcessID();
 }
 
+WebGraphicsContext3DCommandBufferImpl*
+ContextProviderCommandBuffer::WebContext3D() {
+  DCHECK(context3d_);
+  DCHECK(lost_context_callback_proxy_);  // Is bound to thread.
+  DCHECK(context_thread_checker_.CalledOnValidThread());
+
+  return context3d_.get();
+}
+
 bool ContextProviderCommandBuffer::BindToCurrentThread() {
   // This is called on the thread the context will be used.
   DCHECK(context_thread_checker_.CalledOnValidThread());
@@ -110,12 +119,8 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
   return true;
 }
 
-WebGraphicsContext3DCommandBufferImpl*
-ContextProviderCommandBuffer::Context3d() {
-  DCHECK(lost_context_callback_proxy_);  // Is bound to thread.
-  DCHECK(context_thread_checker_.CalledOnValidThread());
-
-  return context3d_.get();
+blink::WebGraphicsContext3D* ContextProviderCommandBuffer::Context3d() {
+  return NULL;
 }
 
 gpu::gles2::GLES2Interface* ContextProviderCommandBuffer::ContextGL() {

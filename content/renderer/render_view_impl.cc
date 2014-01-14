@@ -5911,7 +5911,7 @@ WebMediaPlayer* RenderViewImpl::CreateAndroidWebMediaPlayer(
         SynchronousCompositorFactory::GetInstance();
     stream_texture_factory = factory->CreateStreamTextureFactory(routing_id_);
   } else {
-    scoped_refptr<cc::ContextProvider> context_provider =
+    scoped_refptr<webkit::gpu::ContextProviderWebContext> context_provider =
         RenderThreadImpl::current()->SharedMainThreadContextProvider();
 
     if (!context_provider.get()) {
@@ -5920,7 +5920,7 @@ WebMediaPlayer* RenderViewImpl::CreateAndroidWebMediaPlayer(
     }
 
     stream_texture_factory.reset(new StreamTextureFactoryImpl(
-        context_provider->Context3d(), gpu_channel_host, routing_id_));
+        context_provider->WebContext3D(), gpu_channel_host, routing_id_));
   }
 
   scoped_ptr<WebMediaPlayerAndroid> web_media_player_android(
