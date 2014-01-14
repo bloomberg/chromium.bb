@@ -59,7 +59,6 @@ class FakeWebGraphicsContext3D {
       GLsizei num_attachments,
       const GLenum* attachments) {}
 
-  virtual blink::WebString getRequestableExtensionsCHROMIUM();
   virtual void requestExtensionCHROMIUM(const char*) {}
 
   virtual void blitFramebufferCHROMIUM(
@@ -256,7 +255,6 @@ class FakeWebGraphicsContext3D {
       GLenum pname,
       GLint* value);
 
-  virtual blink::WebString getProgramInfoLog(GLuint program);
   virtual void getRenderbufferParameteriv(
       GLenum target,
       GLenum pname,
@@ -267,14 +265,11 @@ class FakeWebGraphicsContext3D {
       GLenum pname,
       GLint* value);
 
-  virtual blink::WebString getShaderInfoLog(GLuint shader);
   virtual void getShaderPrecisionFormat(
       GLenum shadertype,
       GLenum precisiontype,
       GLint* range,
       GLint* precision);
-  virtual blink::WebString getShaderSource(GLuint shader);
-  virtual blink::WebString getString(GLenum name);
   virtual void getTexParameterfv(
       GLenum target,
       GLenum pname,

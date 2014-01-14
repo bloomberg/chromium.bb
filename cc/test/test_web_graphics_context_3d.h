@@ -75,7 +75,6 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
 
   virtual GLenum checkFramebufferStatus(GLenum target) OVERRIDE;
 
-  virtual blink::WebString getString(GLenum name) OVERRIDE;
   virtual GLint getUniformLocation(
       GLuint program,
       const GLchar* name) OVERRIDE;

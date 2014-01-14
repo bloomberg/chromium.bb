@@ -52,10 +52,6 @@ void* FakeWebGraphicsContext3D::mapTexSubImage2DCHROMIUM(
   return 0;
 }
 
-blink::WebString FakeWebGraphicsContext3D::getRequestableExtensionsCHROMIUM() {
-  return blink::WebString();
-}
-
 GLenum FakeWebGraphicsContext3D::checkFramebufferStatus(
     GLenum target) {
   return GL_FRAMEBUFFER_COMPLETE;
@@ -102,22 +98,12 @@ void FakeWebGraphicsContext3D::getProgramiv(
     *value = 1;
 }
 
-blink::WebString FakeWebGraphicsContext3D::getProgramInfoLog(
-    GLuint program) {
-  return blink::WebString();
-}
-
 void FakeWebGraphicsContext3D::getShaderiv(
     GLuint shader,
     GLenum pname,
     GLint* value) {
   if (pname == GL_COMPILE_STATUS)
     *value = 1;
-}
-
-blink::WebString FakeWebGraphicsContext3D::getShaderInfoLog(
-    GLuint shader) {
-  return blink::WebString();
 }
 
 void FakeWebGraphicsContext3D::getShaderPrecisionFormat(
@@ -161,15 +147,6 @@ void FakeWebGraphicsContext3D::getShaderPrecisionFormat(
       NOTREACHED();
       break;
   }
-}
-
-blink::WebString FakeWebGraphicsContext3D::getShaderSource(
-    GLuint shader) {
-  return blink::WebString();
-}
-
-blink::WebString FakeWebGraphicsContext3D::getString(GLenum name) {
-  return blink::WebString();
 }
 
 GLint FakeWebGraphicsContext3D::getUniformLocation(

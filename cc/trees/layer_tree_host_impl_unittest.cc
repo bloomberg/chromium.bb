@@ -3546,7 +3546,6 @@ class MockContext : public TestWebGraphicsContext3D {
                                   GLsizei count,
                                   GLenum type,
                                   GLintptr offset));
-  MOCK_METHOD0(getRequestableExtensionsCHROMIUM, blink::WebString());
   MOCK_METHOD1(enable, void(GLenum cap));
   MOCK_METHOD1(disable, void(GLenum cap));
   MOCK_METHOD4(scissor, void(GLint x,

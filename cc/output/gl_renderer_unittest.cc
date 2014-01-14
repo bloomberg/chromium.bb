@@ -40,7 +40,6 @@ using testing::InSequence;
 using testing::Mock;
 using testing::Return;
 using testing::StrictMock;
-using blink::WebString;
 
 namespace cc {
 
@@ -471,34 +470,17 @@ class ForbidSynchronousCallContext : public TestWebGraphicsContext3D {
 #endif
   }
 
-  virtual WebString getString(GLenum name) OVERRIDE {
-    ADD_FAILURE() << name;
-    return WebString();
-  }
-
-  virtual WebString getProgramInfoLog(GLuint program) OVERRIDE {
-    ADD_FAILURE();
-    return WebString();
-  }
   virtual void getRenderbufferParameteriv(GLenum target,
                                           GLenum pname,
                                           GLint* value) OVERRIDE {
     ADD_FAILURE();
   }
 
-  virtual WebString getShaderInfoLog(GLuint shader) OVERRIDE {
-    ADD_FAILURE();
-    return WebString();
-  }
   virtual void getShaderPrecisionFormat(GLenum shadertype,
                                         GLenum precisiontype,
                                         GLint* range,
                                         GLint* precision) OVERRIDE {
     ADD_FAILURE();
-  }
-  virtual WebString getShaderSource(GLuint shader) OVERRIDE {
-    ADD_FAILURE();
-    return WebString();
   }
   virtual void getTexParameterfv(GLenum target,
                                  GLenum pname,

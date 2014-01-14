@@ -111,10 +111,6 @@ GLenum TestWebGraphicsContext3D::checkFramebufferStatus(
   return GL_FRAMEBUFFER_COMPLETE;
 }
 
-blink::WebString TestWebGraphicsContext3D::getString(GLenum name) {
-  return blink::WebString();
-}
-
 GLint TestWebGraphicsContext3D::getUniformLocation(
     GLuint program,
     const GLchar* name) {

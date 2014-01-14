@@ -335,7 +335,6 @@
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
-        '../third_party/WebKit/public/blink.gyp:blink_minimal',
         '../third_party/mesa/mesa.gyp:osmesa',
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',
