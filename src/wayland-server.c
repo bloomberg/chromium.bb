@@ -1317,25 +1317,31 @@ wl_display_remove_global(struct wl_display *display, struct wl_global *global)
  *
  * \param display The display object
  * \param format The wl_shm pixel format to advertise
+ * \return A pointer to the wl_shm format that was added to the list
+ * or NULL if adding it to the list failed.
  *
  * Add the specified wl_shm format to the list of formats the wl_shm
  * object advertises when a client binds to it.  Adding a format to
  * the list means that clients will know that the compositor supports
  * this format and may use it for creating wl_shm buffers.  The
- * compositor must be able to handle the pixel format when a client 
+ * compositor must be able to handle the pixel format when a client
+ * requests it.
  *
  * The compositor by default supports WL_SHM_FORMAT_ARGB8888 and
  * WL_SHM_FORMAT_XRGB8888.
  *
  * \memberof wl_display
  */
-WL_EXPORT void
+WL_EXPORT uint32_t *
 wl_display_add_shm_format(struct wl_display *display, uint32_t format)
 {
-	uint32_t *p;
+	uint32_t *p = NULL;
 
 	p = wl_array_add(&display->additional_shm_formats, sizeof *p);
-	*p = format;
+
+	if (p != NULL)
+		*p = format;
+	return p;
 }
 
 /**

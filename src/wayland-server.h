@@ -439,7 +439,7 @@ wl_shm_buffer_get_height(struct wl_shm_buffer *buffer);
 int
 wl_display_init_shm(struct wl_display *display);
 
-void
+uint32_t *
 wl_display_add_shm_format(struct wl_display *display, uint32_t format);
 
 struct wl_shm_buffer *
