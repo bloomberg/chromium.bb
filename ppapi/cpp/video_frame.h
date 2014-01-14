@@ -22,12 +22,15 @@ class VideoFrame : public Resource {
   /// @param[in] other A reference to a <code>VideoFrame</code>.
   VideoFrame(const VideoFrame& other);
 
-  VideoFrame(const Resource& resource);
+  /// Constructs a <code>VideoFrame</code> from a <code>Resource</code>.
+  ///
+  /// @param[in] resource A <code>PPB_VideoFrame</code> resource.
+  explicit VideoFrame(const Resource& resource);
 
   /// A constructor used when you have received a <code>PP_Resource</code> as a
   /// return value that has had 1 ref added for you.
   ///
-  /// @para[in] resource A <code>PPB_VideoFrame</code> resource.
+  /// @param[in] resource A <code>PPB_VideoFrame</code> resource.
   VideoFrame(PassRef, PP_Resource resource);
 
   virtual ~VideoFrame();
@@ -38,8 +41,7 @@ class VideoFrame : public Resource {
   /// frame. Given in seconds since the start of the containing video stream.
   PP_TimeDelta GetTimestamp() const;
 
-  /// Sets the timestamp of the video frame. Given in seconds since the
-  /// start of the containing video stream.
+  /// Sets the timestamp of the video frame.
   ///
   /// @param[in] timestamp A <code>PP_TimeDelta</code> containing the timestamp
   /// of the video frame. Given in seconds since the start of the containing
@@ -64,9 +66,9 @@ class VideoFrame : public Resource {
   /// @return A pointer to the beginning of the data buffer.
   void* GetDataBuffer();
 
-  /// Gets the size of data buffer.
+  /// Gets the size of data buffer in bytes.
   ///
-  /// @return The size of the data buffer.
+  /// @return The size of the data buffer in bytes.
   uint32_t GetDataBufferSize() const;
 };
 

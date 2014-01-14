@@ -34,12 +34,9 @@ VideoFrame::~VideoFrame() {
 }
 
 PP_TimeDelta VideoFrame::GetTimestamp() const {
-  PP_TimeDelta timestamp = .0;
-  if (has_interface<PPB_VideoFrame_0_1>()) {
-    timestamp = get_interface<PPB_VideoFrame_0_1>()->GetTimestamp(
-        pp_resource());
-  }
-  return timestamp;
+  if (has_interface<PPB_VideoFrame_0_1>())
+    return get_interface<PPB_VideoFrame_0_1>()->GetTimestamp(pp_resource());
+  return 0.0;
 }
 
 void VideoFrame::SetTimestamp(PP_TimeDelta timestamp) {

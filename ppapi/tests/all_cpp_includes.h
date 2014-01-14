@@ -10,6 +10,7 @@
 
 #include "ppapi/cpp/audio.h"
 #include "ppapi/cpp/audio_config.h"
+#include "ppapi/cpp/audio_frame.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/core.h"
 #include "ppapi/cpp/dev/alarms_dev.h"
@@ -51,6 +52,7 @@
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/logging.h"
+#include "ppapi/cpp/media_stream_audio_track.h"
 #include "ppapi/cpp/media_stream_video_track.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
