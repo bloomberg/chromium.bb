@@ -165,7 +165,7 @@ END
 IDR_MAINFRAME       ICON                        "theme\google_chrome\chrome.ico"
 IDR_SXS             ICON                        "theme\google_chrome\chrome_sxs.ico"
 #else
-IDR_MAINFRAME       ICON                        "theme\chromium\chromium.ico"
+IDR_MAINFRAME       ICON                        "theme\chromium\win\chromium.ico"
 #endif
 
 // We include these resources because all ICON types need to be in the

@@ -44,7 +44,7 @@ IDR_MAINFRAME_4         ICON                    "theme\google_chrome\chrome4.ico
 // identify it.
 IDR_SXS                 ICON                    "theme\google_chrome\chrome_sxs.ico"
 #else
-IDR_MAINFRAME           ICON                    "theme\chromium\chromium.ico"
+IDR_MAINFRAME           ICON                    "theme\chromium\win\chromium.ico"
 #endif
 
 // Icon for the App Lancher. Named with a leading X to keep the name
@@ -55,7 +55,7 @@ IDR_X_APP_LIST          ICON                    "theme\\google_chrome\\app_list.
 IDR_X_APP_LIST_SXS      ICON                    "theme\\google_chrome\\app_list_sxs.ico"
 #else
 // The App Launcher icon must have an index of 1 for Chromium.
-IDR_X_APP_LIST          ICON                    "theme\\chromium\\app_list.ico"
+IDR_X_APP_LIST          ICON                    "theme\\chromium\\win\\app_list.ico"
 #endif
 
 

@@ -189,8 +189,8 @@
               ],
             }, {  # else: 'branding!="Chrome"
               'mac_bundle_resources': [
-                'app/theme/chromium/app.icns',
-                'app/theme/chromium/document.icns',
+                'app/theme/chromium/mac/app.icns',
+                'app/theme/chromium/mac/document.icns',
                 'browser/ui/cocoa/applescript/scripting.sdef',
               ],
             }],
