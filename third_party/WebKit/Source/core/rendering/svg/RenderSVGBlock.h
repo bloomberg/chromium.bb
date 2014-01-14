@@ -32,8 +32,20 @@ public:
 
     virtual LayoutRect visualOverflowRect() const OVERRIDE FINAL;
 
+    virtual LayoutRect clippedOverflowRectForRepaint(const RenderLayerModelObject* repaintContainer) const OVERRIDE FINAL;
+    virtual void computeFloatRectForRepaint(const RenderLayerModelObject* repaintContainer, FloatRect&, bool fixed = false) const OVERRIDE FINAL;
+
+    virtual void mapLocalToContainer(const RenderLayerModelObject* repaintContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0) const OVERRIDE FINAL;
+    virtual const RenderObject* pushMappingToContainer(const RenderLayerModelObject* ancestorToStopAt, RenderGeometryMap&) const OVERRIDE FINAL;
+
+    virtual AffineTransform localTransform() const OVERRIDE FINAL { return m_localTransform; }
+
+    virtual LayerType layerTypeRequired() const OVERRIDE FINAL { return NoLayer; }
+
 protected:
     virtual void willBeDestroyed() OVERRIDE;
+
+    AffineTransform m_localTransform;
 
 private:
     virtual void updateFromStyle() OVERRIDE FINAL;
@@ -45,6 +57,8 @@ private:
     virtual void absoluteRects(Vector<IntRect>&, const LayoutPoint& accumulatedOffset) const OVERRIDE FINAL;
 
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE FINAL;
+
+    virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) OVERRIDE;
 };
 
 }

@@ -24,6 +24,7 @@
 #include "core/rendering/svg/RenderSVGBlock.h"
 
 #include "core/rendering/style/ShadowList.h"
+#include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
 #include "core/svg/SVGElement.h"
 
@@ -82,6 +83,32 @@ void RenderSVGBlock::styleDidChange(StyleDifference diff, const RenderStyle* old
 
     RenderBlock::styleDidChange(diff, oldStyle);
     SVGResourcesCache::clientStyleChanged(this, diff, style());
+}
+
+void RenderSVGBlock::mapLocalToContainer(const RenderLayerModelObject* repaintContainer, TransformState& transformState, MapCoordinatesFlags, bool* wasFixed) const
+{
+    SVGRenderSupport::mapLocalToContainer(this, repaintContainer, transformState, wasFixed);
+}
+
+const RenderObject* RenderSVGBlock::pushMappingToContainer(const RenderLayerModelObject* ancestorToStopAt, RenderGeometryMap& geometryMap) const
+{
+    return SVGRenderSupport::pushMappingToContainer(this, ancestorToStopAt, geometryMap);
+}
+
+LayoutRect RenderSVGBlock::clippedOverflowRectForRepaint(const RenderLayerModelObject* repaintContainer) const
+{
+    return SVGRenderSupport::clippedOverflowRectForRepaint(this, repaintContainer);
+}
+
+void RenderSVGBlock::computeFloatRectForRepaint(const RenderLayerModelObject* repaintContainer, FloatRect& repaintRect, bool fixed) const
+{
+    SVGRenderSupport::computeFloatRectForRepaint(this, repaintContainer, repaintRect, fixed);
+}
+
+bool RenderSVGBlock::nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation&, const LayoutPoint&, HitTestAction)
+{
+    ASSERT_NOT_REACHED();
+    return false;
 }
 
 }

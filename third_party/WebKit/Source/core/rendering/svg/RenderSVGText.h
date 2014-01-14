@@ -61,21 +61,15 @@ private:
     virtual bool isSVGText() const OVERRIDE { return true; }
 
     virtual void paint(PaintInfo&, const LayoutPoint&) OVERRIDE;
-    virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) OVERRIDE;
     virtual bool nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint& pointInParent, HitTestAction) OVERRIDE;
     virtual PositionWithAffinity positionForPoint(const LayoutPoint&) OVERRIDE;
 
-    virtual LayerType layerTypeRequired() const OVERRIDE { return NoLayer; }
     virtual void layout() OVERRIDE;
 
     virtual void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const OVERRIDE;
 
-    virtual LayoutRect clippedOverflowRectForRepaint(const RenderLayerModelObject* repaintContainer) const OVERRIDE;
     virtual void computeRectForRepaint(const RenderLayerModelObject* repaintContainer, LayoutRect&, bool fixed = false) const OVERRIDE;
-    virtual void computeFloatRectForRepaint(const RenderLayerModelObject* repaintContainer, FloatRect&, bool fixed = false) const OVERRIDE;
 
-    virtual void mapLocalToContainer(const RenderLayerModelObject* repaintContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0) const OVERRIDE;
-    virtual const RenderObject* pushMappingToContainer(const RenderLayerModelObject* ancestorToStopAt, RenderGeometryMap&) const OVERRIDE;
     virtual void addChild(RenderObject* child, RenderObject* beforeChild = 0) OVERRIDE;
     virtual void removeChild(RenderObject*) OVERRIDE;
     virtual void willBeDestroyed() OVERRIDE;
@@ -84,7 +78,6 @@ private:
     virtual FloatRect strokeBoundingBox() const OVERRIDE;
 
     virtual const AffineTransform& localToParentTransform() const OVERRIDE { return m_localTransform; }
-    virtual AffineTransform localTransform() const OVERRIDE { return m_localTransform; }
     virtual RootInlineBox* createRootInlineBox() OVERRIDE;
 
     virtual RenderBlock* firstLineBlock() const OVERRIDE;
@@ -96,7 +89,6 @@ private:
     bool m_needsPositioningValuesUpdate : 1;
     bool m_needsTransformUpdate : 1;
     bool m_needsTextMetricsUpdate : 1;
-    AffineTransform m_localTransform;
     SVGTextLayoutAttributesBuilder m_layoutAttributesBuilder;
     Vector<SVGTextLayoutAttributes*> m_layoutAttributes;
 };

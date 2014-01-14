@@ -36,10 +36,6 @@ public:
 
     virtual void paint(PaintInfo&, const LayoutPoint&) OVERRIDE;
 
-    virtual LayoutRect clippedOverflowRectForRepaint(const RenderLayerModelObject* repaintContainer) const OVERRIDE;
-    virtual void computeFloatRectForRepaint(const RenderLayerModelObject* repaintContainer, FloatRect&, bool fixed = false) const OVERRIDE;
-
-    virtual LayerType layerTypeRequired() const OVERRIDE { return NoLayer; }
     virtual void layout() OVERRIDE;
 
     virtual FloatRect objectBoundingBox() const OVERRIDE { return FloatRect(FloatPoint(), m_viewport.size()); }
@@ -47,11 +43,8 @@ public:
     virtual FloatRect repaintRectInLocalCoordinates() const OVERRIDE { return FloatRect(FloatPoint(), m_viewport.size()); }
 
     virtual bool nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint& pointInParent, HitTestAction) OVERRIDE;
-    virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) OVERRIDE;
     virtual bool isSVGForeignObject() const OVERRIDE { return true; }
 
-    virtual void mapLocalToContainer(const RenderLayerModelObject* repaintContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0) const OVERRIDE;
-    virtual const RenderObject* pushMappingToContainer(const RenderLayerModelObject* ancestorToStopAt, RenderGeometryMap&) const OVERRIDE;
     virtual void setNeedsTransformUpdate() OVERRIDE { m_needsTransformUpdate = true; }
 
 private:
@@ -59,11 +52,9 @@ private:
     virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const OVERRIDE;
 
     virtual const AffineTransform& localToParentTransform() const OVERRIDE;
-    virtual AffineTransform localTransform() const OVERRIDE { return m_localTransform; }
 
     bool m_needsTransformUpdate : 1;
     FloatRect m_viewport;
-    AffineTransform m_localTransform;
     mutable AffineTransform m_localToParentTransform;
 };
 
