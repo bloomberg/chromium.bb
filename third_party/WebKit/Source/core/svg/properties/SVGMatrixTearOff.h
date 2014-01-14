@@ -25,7 +25,7 @@
 
 namespace WebCore {
 
-class SVGMatrixTearOff : public SVGPropertyTearOff<SVGMatrix> {
+class SVGMatrixTearOff FINAL : public SVGPropertyTearOff<SVGMatrix> {
 public:
     // Used for child types (baseVal/animVal) of a SVGAnimated* property (for example: SVGAnimatedLength::baseVal()).
     // Also used for list tear offs (for example: text.x.baseVal.getItem(0)).
@@ -52,7 +52,7 @@ public:
         return result.release();
     }
 
-    virtual void commitChange()
+    virtual void commitChange() OVERRIDE
     {
         if (m_parent) {
             // This is a tear-off from a SVGPropertyTearOff<SVGTransform>.
@@ -68,7 +68,7 @@ public:
     // which means that |m_value| may be pointing inside |m_value| of the other tear-off.
     // This method is called from the parent SVGTransform tear-off when |m_parent->m_value| is updated,
     // so that |this->m_value| would point to valid location.
-    virtual void setValueForMatrixIfNeeded(SVGTransform* transform)
+    virtual void setValueForMatrixIfNeeded(SVGTransform* transform) OVERRIDE
     {
         setValue(transform->svgMatrix());
     }

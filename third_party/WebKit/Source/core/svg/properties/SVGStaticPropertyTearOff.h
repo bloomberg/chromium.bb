@@ -30,7 +30,7 @@ namespace WebCore {
 #pragma pack(push, 16)
 #endif
 template<typename ContextElement, typename PropertyType>
-class SVGStaticPropertyTearOff : public SVGPropertyTearOff<PropertyType> {
+class SVGStaticPropertyTearOff FINAL : public SVGPropertyTearOff<PropertyType> {
 public:
     typedef SVGStaticPropertyTearOff<ContextElement, PropertyType> Self;
     typedef void (ContextElement::*UpdateMethod)();
@@ -43,7 +43,7 @@ public:
         return adoptRef(new Self(contextElement, value, update));
     }
 
-    virtual void commitChange() { (m_contextElement.get()->*m_update)(); }
+    virtual void commitChange() OVERRIDE { (m_contextElement.get()->*m_update)(); }
 
 private:
     SVGStaticPropertyTearOff(ContextElement* contextElement, PropertyType& value, UpdateMethod update)

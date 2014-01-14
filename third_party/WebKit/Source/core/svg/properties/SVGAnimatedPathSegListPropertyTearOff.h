@@ -29,16 +29,16 @@
 
 namespace WebCore {
 
-class SVGAnimatedPathSegListPropertyTearOff : public SVGAnimatedListPropertyTearOff<SVGPathSegList> {
+class SVGAnimatedPathSegListPropertyTearOff FINAL : public SVGAnimatedListPropertyTearOff<SVGPathSegList> {
 public:
-    virtual SVGListProperty<SVGPathSegList>* baseVal()
+    virtual SVGListProperty<SVGPathSegList>* baseVal() OVERRIDE
     {
         if (!m_baseVal)
             m_baseVal = SVGPathSegListPropertyTearOff::create(this, BaseValRole, PathSegUnalteredRole, m_values, m_wrappers);
         return static_cast<SVGListProperty<SVGPathSegList>*>(m_baseVal.get());
     }
 
-    virtual SVGListProperty<SVGPathSegList>* animVal()
+    virtual SVGListProperty<SVGPathSegList>* animVal() OVERRIDE
     {
         if (!m_animVal)
             m_animVal = SVGPathSegListPropertyTearOff::create(this, AnimValRole, PathSegUnalteredRole, m_values, m_wrappers);

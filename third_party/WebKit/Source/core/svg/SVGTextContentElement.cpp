@@ -40,14 +40,14 @@ namespace WebCore {
 
 // SVGTextContentElement's 'textLength' attribute needs special handling.
 // It should return getComputedTextLength() when textLength is not specified manually.
-class SVGAnimatedTextLength : public SVGAnimatedLength {
+class SVGAnimatedTextLength FINAL : public SVGAnimatedLength {
 public:
     static PassRefPtr<SVGAnimatedTextLength> create(SVGTextContentElement* contextElement)
     {
         return adoptRef(new SVGAnimatedTextLength(contextElement));
     }
 
-    virtual SVGLengthTearOff* baseVal()
+    virtual SVGLengthTearOff* baseVal() OVERRIDE
     {
         SVGTextContentElement* textContentElement = toSVGTextContentElement(contextElement());
         if (!textContentElement->textLengthIsSpecifiedByUser())

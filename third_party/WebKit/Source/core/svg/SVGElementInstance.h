@@ -150,7 +150,7 @@ private:
     void removedLastRef();
     bool hasTreeSharedParent() const { return !!m_parentInstance; }
 
-    virtual Node* toNode();
+    virtual Node* toNode() OVERRIDE;
 
     void appendChild(PassRefPtr<SVGElementInstance> child);
     void setShadowTreeElement(SVGElement*);

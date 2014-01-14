@@ -46,14 +46,14 @@ using namespace std;
 
 namespace WebCore {
 
-class RepeatEvent : public Event {
+class RepeatEvent FINAL : public Event {
 public:
     static PassRefPtr<RepeatEvent> create(const AtomicString& type, int repeat)
     {
         return adoptRef(new RepeatEvent(type, false, false, repeat));
     }
 
-    ~RepeatEvent() { }
+    virtual ~RepeatEvent() { }
 
     int repeat() const { return m_repeat; }
 protected:
@@ -99,7 +99,7 @@ static SMILEventSender& smilRepeatNEventSender()
 // This is used for duration type time values that can't be negative.
 static const double invalidCachedTime = -1.;
 
-class ConditionEventListener : public EventListener {
+class ConditionEventListener FINAL : public EventListener {
 public:
     static PassRefPtr<ConditionEventListener> create(SVGSMILElement* animation, SVGSMILElement::Condition* condition)
     {
@@ -113,7 +113,7 @@ public:
             : 0;
     }
 
-    virtual bool operator==(const EventListener& other);
+    virtual bool operator==(const EventListener& other) OVERRIDE;
 
     void disconnectAnimation()
     {
@@ -128,7 +128,7 @@ private:
     {
     }
 
-    virtual void handleEvent(ExecutionContext*, Event*);
+    virtual void handleEvent(ExecutionContext*, Event*) OVERRIDE;
 
     SVGSMILElement* m_animation;
     SVGSMILElement::Condition* m_condition;
