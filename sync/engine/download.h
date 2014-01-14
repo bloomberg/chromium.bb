@@ -75,6 +75,21 @@ SYNC_EXPORT_PRIVATE void BuildDownloadUpdatesForPollImpl(
     UpdateHandlerMap* update_handler_map,
     sync_pb::GetUpdatesMessage* get_updates);
 
+// Same as BuildDownloadUpdatesForPoll() except the update origin/source is
+// RETRY.
+SYNC_EXPORT_PRIVATE void BuildDownloadUpdatesForRetry(
+    sessions::SyncSession* session,
+    bool create_mobile_bookmarks_folder,
+    ModelTypeSet request_types,
+    sync_pb::ClientToServerMessage* client_to_server_message);
+
+// Same as BuildDownloadUpdatesForPollImpl() except the update origin/source is
+// RETRY.
+SYNC_EXPORT_PRIVATE void BuildDownloadUpdatesForRetryImpl(
+    ModelTypeSet proto_request_types,
+    UpdateHandlerMap* update_handler_map,
+    sync_pb::GetUpdatesMessage* get_updates);
+
 // Sends the specified message to the server and stores the response in a member
 // of the |session|'s StatusController.
 SYNC_EXPORT_PRIVATE SyncerError

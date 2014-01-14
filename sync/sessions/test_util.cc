@@ -81,15 +81,15 @@ void SimulateConnectionFailure(
       NETWORK_CONNECTION_UNAVAILABLE);
 }
 
-void SimulatePollSuccess(ModelTypeSet requested_types,
-                         sessions::SyncSession* session) {
+void SimulatePollRetrySuccess(ModelTypeSet requested_types,
+                              sessions::SyncSession* session) {
   ASSERT_EQ(0U, session->status_controller().num_server_changes_remaining());
   session->mutable_status_controller()->set_last_download_updates_result(
       SYNCER_OK);
 }
 
-void SimulatePollFailed(ModelTypeSet requested_types,
-                        sessions::SyncSession* session) {
+void SimulatePollRetryFailed(ModelTypeSet requested_types,
+                             sessions::SyncSession* session) {
   ASSERT_EQ(0U, session->status_controller().num_server_changes_remaining());
   session->mutable_status_controller()->set_last_download_updates_result(
       SERVER_RETURN_TRANSIENT_ERROR);
@@ -116,7 +116,7 @@ void SimulatePollIntervalUpdateImpl(
     ModelTypeSet requested_types,
     sessions::SyncSession* session,
     const base::TimeDelta& new_poll) {
-  SimulatePollSuccess(requested_types, session);
+  SimulatePollRetrySuccess(requested_types, session);
   session->delegate()->OnReceivedLongPollIntervalUpdate(new_poll);
 }
 
@@ -127,6 +127,13 @@ void SimulateSessionsCommitDelayUpdateImpl(
     const base::TimeDelta& new_delay) {
   SimulateNormalSuccess(requested_types, nudge_tracker, session);
   session->delegate()->OnReceivedSessionsCommitDelay(new_delay);
+}
+
+void SimulateGuRetryDelayCommandImpl(sessions::SyncSession* session,
+                                     base::TimeDelta delay) {
+  session->mutable_status_controller()->set_last_download_updates_result(
+      SYNCER_OK);
+  session->delegate()->OnReceivedGuRetryDelay(delay);
 }
 
 }  // namespace test_util
