@@ -24,6 +24,7 @@
 #include <map>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/cpu.h"
 #include "base/debug/alias.h"
@@ -34,6 +35,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/native_library.h"
 #include "base/stl_util.h"
@@ -444,6 +446,12 @@ class NSSInitSingleton {
   ScopedPK11Slot GetPublicSlotForChromeOSUser(
       const std::string& username_hash) {
     DCHECK(thread_checker_.CalledOnValidThread());
+
+    if (username_hash.empty()) {
+      DVLOG(2) << "empty username_hash";
+      return ScopedPK11Slot();
+    }
+
     if (test_slot_) {
       DVLOG(2) << "returning test_slot_ for " << username_hash;
       return ScopedPK11Slot(PK11_ReferenceSlot(test_slot_));
@@ -460,6 +468,16 @@ class NSSInitSingleton {
       const std::string& username_hash,
       const base::Callback<void(ScopedPK11Slot)>& callback) {
     DCHECK(thread_checker_.CalledOnValidThread());
+
+    if (username_hash.empty()) {
+      DVLOG(2) << "empty username_hash";
+      if (!callback.is_null()) {
+        base::MessageLoop::current()->PostTask(
+            FROM_HERE, base::Bind(callback, base::Passed(ScopedPK11Slot())));
+      }
+      return ScopedPK11Slot();
+    }
+
     DCHECK(chromeos_user_map_.find(username_hash) != chromeos_user_map_.end());
 
     if (test_slot_) {

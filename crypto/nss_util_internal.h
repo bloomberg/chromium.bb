@@ -35,7 +35,7 @@ CRYPTO_EXPORT PK11SlotInfo* GetPrivateNSSKeySlot() WARN_UNUSED_RESULT;
 
 // A helper class that acquires the SECMOD list read lock while the
 // AutoSECMODListReadLock is in scope.
-class AutoSECMODListReadLock {
+class CRYPTO_EXPORT AutoSECMODListReadLock {
  public:
   AutoSECMODListReadLock();
   ~AutoSECMODListReadLock();

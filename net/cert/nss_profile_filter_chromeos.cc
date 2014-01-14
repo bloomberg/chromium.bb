@@ -47,9 +47,16 @@ bool NSSProfileFilterChromeOS::IsModuleAllowed(PK11SlotInfo* slot) const {
   // If this is one of the public/private slots for this profile, allow it.
   if (slot == public_slot_.get() || slot == private_slot_.get())
     return true;
-  // If it's from the read-only slot, allow it.
-  if (PK11_IsInternalKeySlot(slot))
+  // Allow the root certs module.
+  if (PK11_HasRootCerts(slot))
     return true;
+  // If it's from the read-only slots, allow it.
+  if (PK11_IsInternal(slot) && !PK11_IsRemovable(slot))
+    return true;
+  // If |public_slot_| or |private_slot_| is null, there isn't a way to get the
+  // modules to use in the final test.
+  if (!public_slot_.get() || !private_slot_.get())
+    return false;
   // If this is not the internal (file-system) module or the TPM module, allow
   // it.
   SECMODModule* module_for_slot = PK11_GetModule(slot);
