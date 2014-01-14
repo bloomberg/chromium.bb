@@ -10,13 +10,13 @@
 #include "base/memory/weak_ptr.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
-#include "net/url_request/url_request_job.h"
+#include "net/url_request/url_range_request_job.h"
 
 namespace net {
 
 class URLRequest;
 
-class NET_EXPORT URLRequestSimpleJob : public URLRequestJob {
+class NET_EXPORT URLRequestSimpleJob : public URLRangeRequestJob {
  public:
   URLRequestSimpleJob(URLRequest* request, NetworkDelegate* network_delegate);
 
@@ -51,6 +51,7 @@ class NET_EXPORT URLRequestSimpleJob : public URLRequestJob {
  private:
   void OnGetDataCompleted(int result);
 
+  HttpByteRange byte_range_;
   std::string mime_type_;
   std::string charset_;
   std::string data_;

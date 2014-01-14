@@ -977,6 +977,8 @@ component("net") {
     "url_request/url_fetcher_impl.h",
     "url_request/url_fetcher_response_writer.cc",
     "url_request/url_fetcher_response_writer.h",
+    "url_request/url_range_request_job.cc",
+    "url_request/url_range_request_job.h",
     "url_request/url_request.cc",
     "url_request/url_request.h",
     "url_request/url_request_about_job.cc",
