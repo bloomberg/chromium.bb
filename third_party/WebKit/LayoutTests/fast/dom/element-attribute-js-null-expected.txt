@@ -90,7 +90,7 @@ TEST SUCCEEDED: The value was the string 'null'. [tested HTMLFontElement.size]
 
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLFormElement.acceptCharset]
 TEST SUCCEEDED: The value was the string 'null' resolved as a URL. [tested HTMLFormElement.action]
-TEST SUCCEEDED: The value was the string 'null'. [tested HTMLFormElement.autocomplete]
+TEST SUCCEEDED: The value was the string 'on'. [tested HTMLFormElement.autocomplete]
 TEST SUCCEEDED: The value was the string 'application/x-www-form-urlencoded'. [tested HTMLFormElement.enctype]
 TEST SUCCEEDED: The value was the string 'application/x-www-form-urlencoded'. [tested HTMLFormElement.encoding]
 TEST SUCCEEDED: The value was the string 'get'. [tested HTMLFormElement.method]
