@@ -193,6 +193,16 @@ dictionary VolumeMetadata {
   // Device type. Available if this is removable volume.
   DeviceType? deviceType;
 
+  // Path to identify the device. This is consistent with DeviceEvent's
+  // devicePath.
+  DOMString? devicePath;
+
+  // Label of the device.
+  DOMString? deviceLabel;
+
+  // Whether the device is parent or not (i.e. sdb rather than sdb1).
+  boolean? isParentDevice;
+
   // Flag that specifies if volume is mounted in read-only mode.
   boolean isReadOnly;
 
@@ -212,6 +222,9 @@ dictionary MountCompletedEvent {
 
   // Metadata of the mounted volume.
   VolumeMetadata volumeMetadata;
+
+  // Whether it is remount or not.
+  boolean isRemounting;
 };
 
 // Payload data for file transfer status updates.

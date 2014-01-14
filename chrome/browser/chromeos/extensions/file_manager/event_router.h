@@ -36,8 +36,6 @@ class NetworkState;
 
 namespace file_manager {
 
-class DesktopNotifications;
-
 // Monitors changes in disk mounts, network connection state and preferences
 // affecting File Manager. Dispatches appropriate File Browser events.
 class EventRouter
@@ -162,7 +160,6 @@ class EventRouter
   base::Time last_file_transfer_event_;
 
   WatcherMap file_watchers_;
-  scoped_ptr<DesktopNotifications> notifications_;
   scoped_ptr<PrefChangeRegistrar> pref_change_registrar_;
   Profile* profile_;
 

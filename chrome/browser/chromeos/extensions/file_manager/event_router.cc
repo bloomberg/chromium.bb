@@ -18,7 +18,6 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
-#include "chrome/browser/chromeos/file_manager/desktop_notifications.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/open_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
@@ -211,12 +210,14 @@ void BroadcastMountCompletedEvent(
     Profile* profile,
     file_browser_private::MountCompletedEventType event_type,
     chromeos::MountError error,
-    const VolumeInfo& volume_info) {
+    const VolumeInfo& volume_info,
+    bool is_remounting) {
   file_browser_private::MountCompletedEvent event;
   event.event_type = event_type;
   event.status = MountErrorToMountCompletedStatus(error);
   util::VolumeInfoToVolumeMetadata(
       profile, volume_info, &event.volume_metadata);
+  event.is_remounting = is_remounting;
 
   if (!volume_info.mount_path.empty() &&
       event.volume_metadata.mount_path.empty()) {
@@ -258,8 +259,7 @@ EventRouter::DriveJobInfoWithStatus::DriveJobInfoWithStatus(
 }
 
 EventRouter::EventRouter(Profile* profile)
-    : notifications_(new DesktopNotifications(profile)),
-      pref_change_registrar_(new PrefChangeRegistrar),
+    : pref_change_registrar_(new PrefChangeRegistrar),
       profile_(profile),
       weak_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -713,17 +713,12 @@ void EventRouter::OnVolumeMounted(chromeos::MountError error_code,
   BroadcastMountCompletedEvent(
       profile_,
       file_browser_private::MOUNT_COMPLETED_EVENT_TYPE_MOUNT,
-      error_code, volume_info);
+      error_code,
+      volume_info,
+      is_remounting);
 
   if (volume_info.type == VOLUME_TYPE_REMOVABLE_DISK_PARTITION &&
       !is_remounting) {
-    notifications_->ManageNotificationsOnMountCompleted(
-        volume_info.system_path_prefix.AsUTF8Unsafe(),
-        volume_info.drive_label,
-        volume_info.is_parent,
-        error_code == chromeos::MOUNT_ERROR_NONE,
-        error_code == chromeos::MOUNT_ERROR_UNSUPPORTED_FILESYSTEM);
-
     // If a new device was mounted, a new File manager window may need to be
     // opened.
     if (error_code == chromeos::MOUNT_ERROR_NONE)
@@ -737,7 +732,9 @@ void EventRouter::OnVolumeUnmounted(chromeos::MountError error_code,
   BroadcastMountCompletedEvent(
       profile_,
       file_browser_private::MOUNT_COMPLETED_EVENT_TYPE_UNMOUNT,
-      error_code, volume_info);
+      error_code,
+      volume_info,
+      false);
 }
 
 void EventRouter::OnFormatStarted(const std::string& device_path,

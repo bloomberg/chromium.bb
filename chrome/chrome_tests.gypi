@@ -1001,7 +1001,6 @@
         'browser/chromeos/extensions/input_method_apitest_chromeos.cc',
         'browser/chromeos/extensions/virtual_keyboard_browsertest.cc',
         'browser/chromeos/extensions/wallpaper_private_apitest.cc',
-        'browser/chromeos/file_manager/desktop_notifications_browsertest.cc',
         'browser/chromeos/file_manager/drive_test_util.cc',
         'browser/chromeos/file_manager/drive_test_util.h',
         'browser/chromeos/file_manager/external_filesystem_apitest.cc',

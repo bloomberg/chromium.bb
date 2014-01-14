@@ -339,8 +339,6 @@
         'browser/chromeos/file_manager/app_id.h',
         'browser/chromeos/file_manager/app_installer.cc',
         'browser/chromeos/file_manager/app_installer.h',
-        'browser/chromeos/file_manager/desktop_notifications.cc',
-        'browser/chromeos/file_manager/desktop_notifications.h',
         'browser/chromeos/file_manager/file_browser_handlers.cc',
         'browser/chromeos/file_manager/file_browser_handlers.h',
         'browser/chromeos/file_manager/file_tasks.cc',

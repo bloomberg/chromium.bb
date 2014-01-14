@@ -183,6 +183,12 @@ void VolumeInfoToVolumeMetadata(
         volume_metadata->device_type = file_browser_private::DEVICE_TYPE_MOBILE;
         break;
     }
+    volume_metadata->device_path.reset(
+        new std::string(volume_info.system_path_prefix.AsUTF8Unsafe()));
+    volume_metadata->device_label.reset(
+        new std::string(volume_info.drive_label));
+    volume_metadata->is_parent_device.reset(
+        new bool(volume_info.is_parent));
   } else {
     volume_metadata->device_type =
         file_browser_private::DEVICE_TYPE_NONE;

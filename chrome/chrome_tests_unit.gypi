@@ -671,7 +671,6 @@
         'browser/chromeos/extensions/default_app_order_unittest.cc',
         'browser/chromeos/extensions/device_local_account_external_policy_loader_unittest.cc',
         'browser/chromeos/extensions/external_cache_unittest.cc',
-        'browser/chromeos/file_manager/desktop_notifications_unittest.cc',
         'browser/chromeos/file_manager/fake_disk_mount_manager.cc',
         'browser/chromeos/file_manager/fake_disk_mount_manager.h',
         'browser/chromeos/file_manager/file_tasks_unittest.cc',

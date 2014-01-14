@@ -9,6 +9,9 @@ var expectedVolume1 = {
   sourcePath: 'device_path1',
   volumeType: 'removable',
   deviceType: 'usb',
+  devicePath: 'system_path_prefix1',
+  deviceLabel: 'drive_label1',
+  isParentDevice: false,
   isReadOnly: false,
   profile: {displayName: "", isCurrentProfile: true}
 };
@@ -19,6 +22,9 @@ var expectedVolume2 = {
   sourcePath: 'device_path2',
   volumeType: 'removable',
   deviceType: 'mobile',
+  devicePath: 'system_path_prefix2',
+  deviceLabel: 'drive_label2',
+  isParentDevice: true,
   isReadOnly: true,
   profile: {displayName: "", isCurrentProfile: true}
 };
@@ -29,6 +35,9 @@ var expectedVolume3 = {
   sourcePath: 'device_path3',
   volumeType: 'removable',
   deviceType: 'optical',
+  devicePath: 'system_path_prefix3',
+  deviceLabel: 'drive_label3',
+  isParentDevice: true,
   isReadOnly: false,
   profile: {displayName: "", isCurrentProfile: true}
 };
