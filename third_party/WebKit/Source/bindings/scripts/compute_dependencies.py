@@ -35,6 +35,9 @@ import posixpath
 import re
 import string
 
+module_path, _ = os.path.split(__file__)
+source_path = os.path.normpath(os.path.join(module_path, os.pardir, os.pardir))
+
 
 class IdlBadFilenameError(Exception):
     """Raised if an IDL filename disagrees with the interface name in the file."""
@@ -236,6 +239,16 @@ def generate_dependencies(idl_file_name, interfaces_info, partial_interface_file
     full_path = os.path.realpath(idl_file_name)
     idl_file_contents = get_file_contents(full_path)
 
+    extended_attributes = get_interface_extended_attributes_from_idl(idl_file_contents)
+    implemented_as = extended_attributes.get('ImplementedAs')
+
+    # Relative path to header file, used in includes
+    relative_path_local = os.path.relpath(idl_file_name, source_path)
+    relative_dir_local = os.path.dirname(relative_path_local)
+    posix_dir = relative_dir_local.replace(os.path.sep, posixpath.sep)
+    cpp_class_name = implemented_as or interface_name
+    include_path = os.path.join(posix_dir, cpp_class_name + '.h')
+
     # Handle partial interfaces
     partial_interface_name = get_partial_interface_name_from_idl(idl_file_contents)
     if partial_interface_name:
@@ -246,12 +259,12 @@ def generate_dependencies(idl_file_name, interfaces_info, partial_interface_file
     # but are removed later if they are implemented by another interface
     interfaces_info[interface_name] = {
         'full_path': full_path,
+        'include_path': include_path,
         'implements_interfaces': get_implemented_interfaces_from_idl(idl_file_contents, interface_name),
         'is_callback_interface': is_callback_interface_from_idl(idl_file_contents),
     }
-    extended_attributes = get_interface_extended_attributes_from_idl(idl_file_contents)
-    if 'ImplementedAs' in extended_attributes:
-        interfaces_info[interface_name]['implemented_as'] = extended_attributes['ImplementedAs']
+    if implemented_as:
+        interfaces_info[interface_name]['implemented_as'] = implemented_as
 
     return None
 

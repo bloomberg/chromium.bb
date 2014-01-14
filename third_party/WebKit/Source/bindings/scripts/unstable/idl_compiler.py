@@ -39,16 +39,11 @@ For details, see bug http://crbug.com/239771
 import optparse
 import os
 import cPickle as pickle
-import posixpath
 import shlex
 import sys
 
 import code_generator_v8
 import idl_reader
-
-module_path, _ = os.path.split(__file__)
-source_path = os.path.normpath(os.path.join(module_path, os.pardir, os.pardir, os.pardir))
-
 
 def parse_options():
     parser = optparse.OptionParser()
@@ -81,13 +76,6 @@ def parse_options():
     return options
 
 
-def get_relative_dir_posix(filename):
-    """Returns directory of a local file relative to Source, in POSIX format."""
-    relative_path_local = os.path.relpath(filename, source_path)
-    relative_dir_local = os.path.dirname(relative_path_local)
-    return relative_dir_local.replace(os.path.sep, posixpath.sep)
-
-
 def write_json_and_pickle(definitions, interface_name, output_directory):
     json_string = definitions.to_json()
     json_basename = interface_name + '.json'
@@ -109,7 +97,6 @@ def main():
     verbose = options.verbose
     if verbose:
         print idl_filename
-    relative_dir_posix = get_relative_dir_posix(idl_filename)
 
     interfaces_info_filename = options.interfaces_info_file
     if interfaces_info_filename:
@@ -120,7 +107,7 @@ def main():
 
     reader = idl_reader.IdlReader(interfaces_info, options.additional_idl_files, options.idl_attributes_file, output_directory, verbose)
     definitions = reader.read_idl_definitions(idl_filename)
-    code_generator = code_generator_v8.CodeGeneratorV8(definitions, interface_name, interfaces_info, options.output_directory, relative_dir_posix, options.idl_directories, verbose)
+    code_generator = code_generator_v8.CodeGeneratorV8(definitions, interface_name, interfaces_info, options.output_directory, options.idl_directories, verbose)
     if not definitions:
         # We generate dummy .h and .cpp files just to tell build scripts
         # that outputs have been created.

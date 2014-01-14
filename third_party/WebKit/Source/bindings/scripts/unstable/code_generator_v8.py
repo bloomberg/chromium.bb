@@ -94,8 +94,8 @@ class CodeGeneratorV8:
         self.header_template = jinja_env.get_template(header_template_filename)
         self.cpp_template = jinja_env.get_template(cpp_template_filename)
 
-        class_name = cpp_name(self.interface)
-        self.include_for_cpp_class = posixpath.join(relative_dir_posix, class_name + '.h')
+        interface_info = interfaces_info[interface_name]
+        self.include_for_cpp_class = interface_info['include_path']
 
         v8_types.set_callback_functions(definitions.callback_functions.keys())
         v8_types.set_enums((enum.name, enum.values)
