@@ -93,6 +93,7 @@
               'preferences_private.json',
               'power.idl',
               'push_messaging.idl',
+              'reading_list_private.json',
               'runtime.json',
               'serial.idl',
               'sessions.json',

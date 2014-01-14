@@ -89,6 +89,26 @@
           ],
         },
         {
+          'target_name': 'dom_distiller_test_support',
+          'type': 'static_library',
+          'dependencies': [
+            'dom_distiller_core',
+            '../sync/sync.gyp:sync',
+            '../testing/gmock.gyp:gmock',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'sources': [
+            'dom_distiller/core/dom_distiller_test_util.cc',
+            'dom_distiller/core/dom_distiller_test_util.h',
+            'dom_distiller/core/fake_db.cc',
+            'dom_distiller/core/fake_db.h',
+            'dom_distiller/core/fake_distiller.cc',
+            'dom_distiller/core/fake_distiller.h',
+          ],
+        },
+        {
           'target_name': 'distilled_page_proto',
           'type': 'static_library',
           'sources': [

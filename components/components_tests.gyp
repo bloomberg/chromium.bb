@@ -31,12 +31,6 @@
             'dom_distiller/core/dom_distiller_model_unittest.cc',
             'dom_distiller/core/dom_distiller_service_unittest.cc',
             'dom_distiller/core/dom_distiller_store_unittest.cc',
-            'dom_distiller/core/dom_distiller_test_util.cc',
-            'dom_distiller/core/dom_distiller_test_util.h',
-            'dom_distiller/core/fake_db.cc',
-            'dom_distiller/core/fake_db.h',
-            'dom_distiller/core/fake_distiller.cc',
-            'dom_distiller/core/fake_distiller.h',
             'dom_distiller/core/task_tracker_unittest.cc',
             'json_schema/json_schema_validator_unittest.cc',
             'json_schema/json_schema_validator_unittest_base.cc',
@@ -97,6 +91,7 @@
             # Dependencies of dom_distiller
             'components.gyp:distilled_page_proto',
             'components.gyp:dom_distiller_core',
+            'components.gyp:dom_distiller_test_support',
 
             # Dependencies of encryptor
             'components.gyp:encryptor',

@@ -5,6 +5,7 @@
 #include "components/dom_distiller/core/dom_distiller_service.h"
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -90,7 +91,7 @@ class DomDistillerServiceTest : public testing::Test {
 };
 
 TEST_F(DomDistillerServiceTest, TestViewEntry) {
-  FakeDistiller* distiller = new FakeDistiller();
+  FakeDistiller* distiller = new FakeDistiller(false);
   EXPECT_CALL(*distiller_factory_, CreateDistillerImpl())
       .WillOnce(Return(distiller));
 
@@ -115,7 +116,7 @@ TEST_F(DomDistillerServiceTest, TestViewEntry) {
 }
 
 TEST_F(DomDistillerServiceTest, TestViewUrl) {
-  FakeDistiller* distiller = new FakeDistiller();
+  FakeDistiller* distiller = new FakeDistiller(false);
   EXPECT_CALL(*distiller_factory_, CreateDistillerImpl())
       .WillOnce(Return(distiller));
 
@@ -133,8 +134,8 @@ TEST_F(DomDistillerServiceTest, TestViewUrl) {
 }
 
 TEST_F(DomDistillerServiceTest, TestMultipleViewUrl) {
-  FakeDistiller* distiller = new FakeDistiller();
-  FakeDistiller* distiller2 = new FakeDistiller();
+  FakeDistiller* distiller = new FakeDistiller(false);
+  FakeDistiller* distiller2 = new FakeDistiller(false);
   EXPECT_CALL(*distiller_factory_, CreateDistillerImpl())
       .WillOnce(Return(distiller))
       .WillOnce(Return(distiller2));
@@ -166,7 +167,7 @@ TEST_F(DomDistillerServiceTest, TestMultipleViewUrl) {
 }
 
 TEST_F(DomDistillerServiceTest, TestViewUrlCancelled) {
-  FakeDistiller* distiller = new FakeDistiller();
+  FakeDistiller* distiller = new FakeDistiller(false);
   EXPECT_CALL(*distiller_factory_, CreateDistillerImpl())
       .WillOnce(Return(distiller));
 
@@ -191,7 +192,7 @@ TEST_F(DomDistillerServiceTest, TestViewUrlCancelled) {
 }
 
 TEST_F(DomDistillerServiceTest, TestAddAndRemoveEntry) {
-  FakeDistiller* distiller = new FakeDistiller();
+  FakeDistiller* distiller = new FakeDistiller(false);
   EXPECT_CALL(*distiller_factory_, CreateDistillerImpl())
       .WillOnce(Return(distiller));
 
@@ -220,7 +221,7 @@ TEST_F(DomDistillerServiceTest, TestAddAndRemoveEntry) {
 }
 
 TEST_F(DomDistillerServiceTest, TestCancellation) {
-  FakeDistiller* distiller = new FakeDistiller();
+  FakeDistiller* distiller = new FakeDistiller(false);
   MockDistillerObserver observer;
   service_->AddObserver(&observer);
 
@@ -251,7 +252,7 @@ TEST_F(DomDistillerServiceTest, TestCancellation) {
 }
 
 TEST_F(DomDistillerServiceTest, TestMultipleObservers) {
-  FakeDistiller* distiller = new FakeDistiller();
+  FakeDistiller* distiller = new FakeDistiller(false);
   EXPECT_CALL(*distiller_factory_, CreateDistillerImpl())
       .WillOnce(Return(distiller));
 
@@ -297,7 +298,7 @@ TEST_F(DomDistillerServiceTest, TestMultipleObservers) {
 }
 
 TEST_F(DomDistillerServiceTest, TestMultipleCallbacks) {
-  FakeDistiller* distiller = new FakeDistiller();
+  FakeDistiller* distiller = new FakeDistiller(false);
   EXPECT_CALL(*distiller_factory_, CreateDistillerImpl())
       .WillOnce(Return(distiller));
 
@@ -329,7 +330,7 @@ TEST_F(DomDistillerServiceTest, TestMultipleCallbacks) {
 }
 
 TEST_F(DomDistillerServiceTest, TestMultipleCallbacksOnRemove) {
-  FakeDistiller* distiller = new FakeDistiller();
+  FakeDistiller* distiller = new FakeDistiller(false);
   EXPECT_CALL(*distiller_factory_, CreateDistillerImpl())
       .WillOnce(Return(distiller));
 

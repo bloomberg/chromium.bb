@@ -709,6 +709,14 @@
       "D7986543275120831B39EF28D1327552FC343960"  // Chrome OS Recovery Tool
     ]
   },
+  "readingListPrivate": {
+    "channel": "stable",
+    "extension_types": ["extension"],
+    "whitelist": [
+      "D5736E4B5CF695CB93A2FB57E4FDC6E5AFAB6FE2", // http://crbug.com/312900
+      "D57DE394F36DC1C3220E7604C575D29C51A6C495"  // http://crbug.com/319444
+    ]
+  },
   "rtcPrivate": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"],

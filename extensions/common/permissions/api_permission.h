@@ -126,6 +126,7 @@ class APIPermission {
     kProxy,
     kPushMessaging,
     kImageWriterPrivate,
+    kReadingListPrivate,
     kRtcPrivate,
     kSearchProvider,
     kSerial,

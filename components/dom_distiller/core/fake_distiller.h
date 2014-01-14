@@ -27,7 +27,7 @@ class MockDistillerFactory : public DistillerFactory {
 
 class FakeDistiller : public Distiller {
  public:
-  FakeDistiller();
+  FakeDistiller(bool execute_callback);
   virtual ~FakeDistiller();
   MOCK_METHOD0(Die, void());
 
@@ -35,6 +35,9 @@ class FakeDistiller : public Distiller {
                            const DistillerCallback& callback) OVERRIDE {
     url_ = url;
     callback_ = callback;
+    if (execute_callback_) {
+      RunDistillerCallback(make_scoped_ptr(new DistilledPageProto));
+    }
   }
 
   void RunDistillerCallback(scoped_ptr<DistilledPageProto> proto);
@@ -46,6 +49,7 @@ class FakeDistiller : public Distiller {
  private:
   void RunDistillerCallbackInternal(scoped_ptr<DistilledPageProto> proto);
 
+  bool execute_callback_;
   GURL url_;
   DistillerCallback callback_;
 };

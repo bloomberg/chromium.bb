@@ -14,7 +14,8 @@ namespace test {
 MockDistillerFactory::MockDistillerFactory() {}
 MockDistillerFactory::~MockDistillerFactory() {}
 
-FakeDistiller::FakeDistiller() {
+FakeDistiller::FakeDistiller(bool execute_callback) :
+      execute_callback_(execute_callback) {
   EXPECT_CALL(*this, Die()).Times(testing::AnyNumber());
 }
 

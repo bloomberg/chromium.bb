@@ -87,19 +87,22 @@ std::vector<ArticleEntry> DomDistillerService::GetEntries() const {
   return store_->GetEntries();
 }
 
-void DomDistillerService::RemoveEntry(
+scoped_ptr<ArticleEntry> DomDistillerService::RemoveEntry(
     const std::string& entry_id) {
-  ArticleEntry entry;
-  if (!store_->GetEntryById(entry_id, &entry)) {
-    return;
+  scoped_ptr<ArticleEntry> entry(new ArticleEntry);
+  if (!store_->GetEntryById(entry_id, entry.get())) {
+    return scoped_ptr<ArticleEntry>();
   }
 
-  TaskTracker* task_tracker = GetTaskTrackerForEntry(entry);
+  TaskTracker* task_tracker = GetTaskTrackerForEntry(*entry);
   if (task_tracker != NULL) {
     task_tracker->CancelSaveCallbacks();
   }
 
-  store_->RemoveEntry(entry);
+  if (store_->RemoveEntry(*entry)) {
+    return entry.Pass();
+  }
+  return scoped_ptr<ArticleEntry>();
 }
 
 scoped_ptr<ViewerHandle> DomDistillerService::ViewEntry(
