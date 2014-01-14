@@ -884,6 +884,7 @@
       'weborigin/KURLTest.cpp',
       'weborigin/OriginAccessEntryTest.cpp',
       'weborigin/SecurityOriginTest.cpp',
+      'weborigin/SecurityPolicyTest.cpp',
     ],
     # NOTE: these are legacy unit tests, do not add more!
     'platform_web_unittest_files': [
