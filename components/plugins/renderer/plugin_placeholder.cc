@@ -201,6 +201,8 @@ void PluginPlaceholder::LoadPlugin() {
   // event propagation changes between "close" vs. "click-to-play".
   if (hidden_)
     return;
+  if (!plugin_)
+    return;
   if (!allow_loading_) {
     NOTREACHED();
     return;
