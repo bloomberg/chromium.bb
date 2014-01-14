@@ -1792,17 +1792,21 @@ void WebGLRenderingContext::disableVertexAttribArray(GLuint index)
     m_context->disableVertexAttribArray(index);
 }
 
-bool WebGLRenderingContext::validateRenderingState()
+bool WebGLRenderingContext::validateRenderingState(const char* functionName)
 {
-    if (!m_currentProgram)
+    if (!m_currentProgram) {
+        synthesizeGLError(GL_INVALID_OPERATION, functionName, "no valid shader program in use");
         return false;
+    }
 
     // Look in each enabled vertex attrib and check if they've been bound to a buffer.
     for (unsigned i = 0; i < m_onePlusMaxEnabledAttribIndex; ++i) {
         const WebGLVertexArrayObjectOES::VertexAttribState& state = m_boundVertexArrayObject->getVertexAttribState(i);
         if (state.enabled
-            && (!state.bufferBinding || !state.bufferBinding->object()))
+            && (!state.bufferBinding || !state.bufferBinding->object())) {
+            synthesizeGLError(GL_INVALID_OPERATION, functionName, String::format("attribute %d is enabled but has no buffer bound", i).utf8().data());
             return false;
+        }
     }
 
     return true;
@@ -5218,8 +5222,7 @@ bool WebGLRenderingContext::validateDrawArrays(const char* functionName, GLenum 
         return false;
     }
 
-    if (!validateRenderingState()) {
-        synthesizeGLError(GL_INVALID_OPERATION, functionName, "attribs not setup correctly");
+    if (!validateRenderingState(functionName)) {
         return false;
     }
 
@@ -5269,8 +5272,7 @@ bool WebGLRenderingContext::validateDrawElements(const char* functionName, GLenu
         return false;
     }
 
-    if (!validateRenderingState()) {
-        synthesizeGLError(GL_INVALID_OPERATION, functionName, "attribs not setup correctly");
+    if (!validateRenderingState(functionName)) {
         return false;
     }
 

@@ -371,7 +371,7 @@ public:
     unsigned sizeInBytes(GLenum type);
 
     // Check if each enabled vertex attribute is bound to a buffer.
-    bool validateRenderingState();
+    bool validateRenderingState(const char*);
 
     bool validateWebGLObject(const char*, WebGLObject*);
 
