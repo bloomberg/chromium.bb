@@ -335,7 +335,9 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual JavaScriptDialogManager* GetJavaScriptDialogManager();
 
   // Called when color chooser should open. Returns the opened color chooser.
-  // Ownership of the returned pointer is transferred to the caller.
+  // Returns NULL if we failed to open the color chooser (e.g. when there is a
+  // ColorChooserDialog already open on Windows). Ownership of the returned
+  // pointer is transferred to the caller.
   virtual ColorChooser* OpenColorChooser(
       WebContents* web_contents,
       SkColor color,
