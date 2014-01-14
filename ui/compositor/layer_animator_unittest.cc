@@ -2185,9 +2185,9 @@ TEST(LayerAnimatorTest, Color) {
 TEST(LayerAnimatorTest, SchedulePauseForProperties) {
   scoped_refptr<LayerAnimator> animator(LayerAnimator::CreateDefaultAnimator());
   animator->set_preemption_strategy(LayerAnimator::ENQUEUE_NEW_ANIMATION);
-  animator->SchedulePauseForProperties(base::TimeDelta::FromMilliseconds(100),
-                                       LayerAnimationElement::TRANSFORM,
-                                       LayerAnimationElement::BOUNDS, -1);
+  animator->SchedulePauseForProperties(
+      base::TimeDelta::FromMilliseconds(100),
+      LayerAnimationElement::TRANSFORM | LayerAnimationElement::BOUNDS);
   EXPECT_TRUE(animator->IsAnimatingProperty(LayerAnimationElement::TRANSFORM));
   EXPECT_TRUE(animator->IsAnimatingProperty(LayerAnimationElement::BOUNDS));
   EXPECT_FALSE(animator->IsAnimatingProperty(LayerAnimationElement::OPACITY));

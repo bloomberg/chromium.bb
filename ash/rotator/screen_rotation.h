@@ -45,9 +45,6 @@ class ASH_EXPORT ScreenRotation : public ui::LayerAnimationElement {
   virtual void OnGetTarget(TargetValue* target) const OVERRIDE;
   virtual void OnAbort(ui::LayerAnimationDelegate* delegate) OVERRIDE;
 
-  static const ui::LayerAnimationElement::AnimatableProperties&
-      GetProperties();
-
   scoped_ptr<ui::InterpolatedTransform> interpolated_transform_;
 
   // The number of degrees to rotate.

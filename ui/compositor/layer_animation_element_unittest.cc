@@ -314,12 +314,11 @@ TEST(LayerAnimationElementTest, GrayscaleElement) {
 // Check that the pause element progresses the delegate as expected and
 // that the element can be reused after it completes.
 TEST(LayerAnimationElementTest, PauseElement) {
-  LayerAnimationElement::AnimatableProperties properties;
-  properties.insert(LayerAnimationElement::TRANSFORM);
-  properties.insert(LayerAnimationElement::BOUNDS);
-  properties.insert(LayerAnimationElement::OPACITY);
-  properties.insert(LayerAnimationElement::BRIGHTNESS);
-  properties.insert(LayerAnimationElement::GRAYSCALE);
+  LayerAnimationElement::AnimatableProperties properties =
+      LayerAnimationElement::TRANSFORM | LayerAnimationElement::BOUNDS |
+      LayerAnimationElement::OPACITY | LayerAnimationElement::BRIGHTNESS |
+      LayerAnimationElement::GRAYSCALE;
+
   base::TimeTicks start_time;
   base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
 

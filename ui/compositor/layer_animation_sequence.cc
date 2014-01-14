@@ -16,7 +16,8 @@
 namespace ui {
 
 LayerAnimationSequence::LayerAnimationSequence()
-    : is_cyclic_(false),
+    : properties_(LayerAnimationElement::UNKNOWN),
+      is_cyclic_(false),
       last_element_(0),
       waiting_for_group_start_(false),
       animation_group_id_(0),
@@ -25,7 +26,8 @@ LayerAnimationSequence::LayerAnimationSequence()
 }
 
 LayerAnimationSequence::LayerAnimationSequence(LayerAnimationElement* element)
-    : is_cyclic_(false),
+    : properties_(LayerAnimationElement::UNKNOWN),
+      is_cyclic_(false),
       last_element_(0),
       waiting_for_group_start_(false),
       animation_group_id_(0),
@@ -178,20 +180,13 @@ void LayerAnimationSequence::Abort(LayerAnimationDelegate* delegate) {
 }
 
 void LayerAnimationSequence::AddElement(LayerAnimationElement* element) {
-  properties_.insert(element->properties().begin(),
-                     element->properties().end());
+  properties_ |= element->properties();
   elements_.push_back(make_linked_ptr(element));
 }
 
 bool LayerAnimationSequence::HasConflictingProperty(
-    const LayerAnimationElement::AnimatableProperties& other) const {
-  LayerAnimationElement::AnimatableProperties intersection;
-  std::insert_iterator<LayerAnimationElement::AnimatableProperties> ii(
-      intersection, intersection.begin());
-  std::set_intersection(properties_.begin(), properties_.end(),
-                        other.begin(), other.end(),
-                        ii);
-  return (intersection.size() > 0);
+    LayerAnimationElement::AnimatableProperties other) const {
+  return (properties_ & other) != LayerAnimationElement::UNKNOWN;
 }
 
 bool LayerAnimationSequence::IsFirstElementThreaded() const {
@@ -219,11 +214,11 @@ void LayerAnimationSequence::OnThreadedAnimationStarted(
     return;
 
   size_t current_index = last_element_ % elements_.size();
-  const LayerAnimationElement::AnimatableProperties& element_properties =
+  LayerAnimationElement::AnimatableProperties element_properties =
     elements_[current_index]->properties();
   LayerAnimationElement::AnimatableProperty event_property =
       LayerAnimationElement::ToAnimatableProperty(event.target_property);
-  DCHECK(element_properties.find(event_property) != element_properties.end());
+  DCHECK(element_properties & event_property);
   elements_[current_index]->set_effective_start_time(
       base::TimeTicks::FromInternalValue(
           event.monotonic_time * base::Time::kMicrosecondsPerSecond));

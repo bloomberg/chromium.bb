@@ -140,11 +140,16 @@ void ImplicitAnimationObserver::CheckCompleted() {
 void ImplicitAnimationObserver::UpdatePropertyAnimationStatus(
     LayerAnimationSequence* sequence,
     AnimationStatus status) {
-  const LayerAnimationElement::AnimatableProperties& properties =
+  LayerAnimationElement::AnimatableProperties properties =
       sequence->properties();
-  for (LayerAnimationElement::AnimatableProperties::const_iterator i =
-           properties.begin(); i != properties.end(); ++i) {
-    property_animation_status_[(*i)] = status;
+  for (unsigned i = LayerAnimationElement::FIRST_PROPERTY;
+       i != LayerAnimationElement::SENTINEL;
+       i = i << 1) {
+    if (i & properties) {
+      LayerAnimationElement::AnimatableProperty property =
+          static_cast<LayerAnimationElement::AnimatableProperty>(i);
+      property_animation_status_[property] = status;
+    }
   }
 }
 

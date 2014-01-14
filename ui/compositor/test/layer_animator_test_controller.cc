@@ -41,8 +41,7 @@ void LayerAnimatorTestController::StartThreadedAnimationsIfNeeded() {
       continue;
 
     LayerAnimationElement* element = sequence->CurrentElement();
-    if (element->properties().find(animatable_property) ==
-        element->properties().end())
+    if (!(element->properties() & animatable_property))
       continue;
 
     if (!element->Started() ||

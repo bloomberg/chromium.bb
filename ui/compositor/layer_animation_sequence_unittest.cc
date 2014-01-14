@@ -28,9 +28,10 @@ TEST(LayerAnimationSequenceTest, NoElement) {
   start_time += base::TimeDelta::FromSeconds(1);
   sequence.set_start_time(start_time);
   EXPECT_TRUE(sequence.IsFinished(start_time));
-  EXPECT_TRUE(sequence.properties().size() == 0);
-  LayerAnimationElement::AnimatableProperties properties;
-  EXPECT_FALSE(sequence.HasConflictingProperty(properties));
+  EXPECT_EQ(static_cast<LayerAnimationElement::AnimatableProperties>(
+                LayerAnimationElement::UNKNOWN),
+            sequence.properties());
+  EXPECT_FALSE(sequence.HasConflictingProperty(LayerAnimationElement::UNKNOWN));
 }
 
 // Check that the sequences progresses the delegate as expected when it contains
@@ -62,9 +63,9 @@ TEST(LayerAnimationSequenceTest, SingleElement) {
     EXPECT_FLOAT_EQ(target, delegate.GetBrightnessForAnimation());
   }
 
-  EXPECT_TRUE(sequence.properties().size() == 1);
-  EXPECT_TRUE(sequence.properties().find(LayerAnimationElement::BRIGHTNESS) !=
-              sequence.properties().end());
+  EXPECT_EQ(static_cast<LayerAnimationElement::AnimatableProperties>(
+                LayerAnimationElement::BRIGHTNESS),
+            sequence.properties());
 }
 
 // Check that the sequences progresses the delegate as expected when it contains
@@ -105,9 +106,9 @@ TEST(LayerAnimationSequenceTest, SingleThreadedElement) {
     EXPECT_FLOAT_EQ(target, delegate.GetOpacityForAnimation());
   }
 
-  EXPECT_TRUE(sequence.properties().size() == 1);
-  EXPECT_TRUE(sequence.properties().find(LayerAnimationElement::OPACITY) !=
-              sequence.properties().end());
+  EXPECT_EQ(static_cast<LayerAnimationElement::AnimatableProperties>(
+                LayerAnimationElement::OPACITY),
+            sequence.properties());
 }
 
 // Check that the sequences progresses the delegate as expected when it contains
@@ -125,11 +126,8 @@ TEST(LayerAnimationSequenceTest, MultipleElement) {
       LayerAnimationElement::CreateOpacityElement(target_opacity, delta));
 
   // Pause bounds for a second.
-  LayerAnimationElement::AnimatableProperties properties;
-  properties.insert(LayerAnimationElement::BOUNDS);
-
-  sequence.AddElement(
-      LayerAnimationElement::CreatePauseElement(properties, delta));
+  sequence.AddElement(LayerAnimationElement::CreatePauseElement(
+      LayerAnimationElement::BOUNDS, delta));
 
   gfx::Transform start_transform, target_transform, middle_transform;
   start_transform.Rotate(-30.0);
@@ -196,13 +194,11 @@ TEST(LayerAnimationSequenceTest, MultipleElement) {
                             delegate.GetTransformForAnimation());
   }
 
-  EXPECT_TRUE(sequence.properties().size() == 3);
-  EXPECT_TRUE(sequence.properties().find(LayerAnimationElement::OPACITY) !=
-              sequence.properties().end());
-  EXPECT_TRUE(sequence.properties().find(LayerAnimationElement::TRANSFORM) !=
-              sequence.properties().end());
-  EXPECT_TRUE(sequence.properties().find(LayerAnimationElement::BOUNDS) !=
-              sequence.properties().end());
+  EXPECT_EQ(
+      static_cast<LayerAnimationElement::AnimatableProperties>(
+          LayerAnimationElement::OPACITY | LayerAnimationElement::TRANSFORM |
+          LayerAnimationElement::BOUNDS),
+      sequence.properties());
 }
 
 // Check that a sequence can still be aborted if it has cycled many times.

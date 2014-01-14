@@ -122,7 +122,7 @@ void AddLayerAnimationsForMinimize(aura::Window* window, bool show) {
   // to save bandwidth and reduce jank.
   if (!show) {
     window->layer()->GetAnimator()->SchedulePauseForProperties(
-        (duration * 3) / 4, ui::LayerAnimationElement::OPACITY, -1);
+        (duration * 3) / 4, ui::LayerAnimationElement::OPACITY);
   }
 
   // Fade in and out quickly when the window is small to reduce jank.

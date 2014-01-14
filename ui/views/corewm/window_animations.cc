@@ -358,10 +358,8 @@ void AnimateBounce(aura::Window* window) {
   scoped_ptr<ui::LayerAnimationSequence> sequence(
       new ui::LayerAnimationSequence);
   sequence->AddElement(CreateGrowShrinkElement(window, true));
-  ui::LayerAnimationElement::AnimatableProperties paused_properties;
-  paused_properties.insert(ui::LayerAnimationElement::BOUNDS);
   sequence->AddElement(ui::LayerAnimationElement::CreatePauseElement(
-      paused_properties,
+      ui::LayerAnimationElement::BOUNDS,
       base::TimeDelta::FromMilliseconds(
         kWindowAnimation_Bounce_DurationMS *
             (100 - 2 * kWindowAnimation_Bounce_GrowShrinkDurationPercent) /
@@ -382,8 +380,7 @@ void AddLayerAnimationsForRotate(aura::Window* window, bool show) {
     new HidingWindowAnimationObserver(window);
     window->layer()->GetAnimator()->SchedulePauseForProperties(
         duration * (100 - kWindowAnimation_Rotate_OpacityDurationPercent) / 100,
-        ui::LayerAnimationElement::OPACITY,
-        -1);
+        ui::LayerAnimationElement::OPACITY);
   }
   scoped_ptr<ui::LayerAnimationElement> opacity(
       ui::LayerAnimationElement::CreateOpacityElement(

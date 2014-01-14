@@ -28,13 +28,18 @@ class LayerAnimationDelegate;
 class COMPOSITOR_EXPORT LayerAnimationElement {
  public:
   enum AnimatableProperty {
-    TRANSFORM = 0,
-    BOUNDS,
-    OPACITY,
-    VISIBILITY,
-    BRIGHTNESS,
-    GRAYSCALE,
-    COLOR,
+    UNKNOWN = 0,
+    TRANSFORM = (1 << 0),
+    BOUNDS = (1 << 1),
+    OPACITY = (1 << 2),
+    VISIBILITY = (1 << 3),
+    BRIGHTNESS = (1 << 4),
+    GRAYSCALE = (1 << 5),
+    COLOR = (1 << 6),
+
+    // Used when iterating over properties.
+    FIRST_PROPERTY = TRANSFORM,
+    SENTINEL = (1 << 7)
   };
 
   static AnimatableProperty ToAnimatableProperty(
@@ -54,9 +59,9 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
     SkColor color;
   };
 
-  typedef std::set<AnimatableProperty> AnimatableProperties;
+  typedef uint32 AnimatableProperties;
 
-  LayerAnimationElement(const AnimatableProperties& properties,
+  LayerAnimationElement(AnimatableProperties properties,
                         base::TimeDelta duration);
 
   virtual ~LayerAnimationElement();
@@ -124,7 +129,7 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
   // Creates an element that pauses the given properties. The caller owns the
   // return value.
   static LayerAnimationElement* CreatePauseElement(
-      const AnimatableProperties& properties,
+      AnimatableProperties properties,
       base::TimeDelta duration);
 
   // Creates an element that transitions to the given color. The caller owns the
@@ -178,7 +183,7 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
   void GetTargetValue(TargetValue* target) const;
 
   // The properties that the element modifies.
-  const AnimatableProperties& properties() const { return properties_; }
+  AnimatableProperties properties() const { return properties_; }
 
   // Whether this element animates on the compositor thread.
   virtual bool IsThreaded() const;

@@ -50,18 +50,14 @@ void SchedulePulsingAnimation(ui::Layer* layer) {
             base::TimeDelta::FromMilliseconds(kAnimationDurationInMs)));
   }
 
-  ui::LayerAnimationElement::AnimatableProperties opacity_properties;
-  opacity_properties.insert(ui::LayerAnimationElement::OPACITY);
   opacity_sequence->AddElement(
       ui::LayerAnimationElement::CreatePauseElement(
-          opacity_properties,
-           base::TimeDelta::FromMilliseconds(kAnimationDurationInMs)));
+          ui::LayerAnimationElement::OPACITY,
+          base::TimeDelta::FromMilliseconds(kAnimationDurationInMs)));
 
-  ui::LayerAnimationElement::AnimatableProperties transform_properties;
-  transform_properties.insert(ui::LayerAnimationElement::TRANSFORM);
   transform_sequence->AddElement(
       ui::LayerAnimationElement::CreatePauseElement(
-          transform_properties,
+          ui::LayerAnimationElement::TRANSFORM,
           base::TimeDelta::FromMilliseconds(kAnimationDurationInMs)));
 
   std::vector<ui::LayerAnimationSequence*> animations;

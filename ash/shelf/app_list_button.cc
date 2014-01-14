@@ -67,11 +67,9 @@ void AppListButton::StartLoadingAnimation() {
             base::TimeDelta::FromMilliseconds(kAnimationDurationInMs)));
   }
 
-  ui::LayerAnimationElement::AnimatableProperties opacity_properties;
-  opacity_properties.insert(ui::LayerAnimationElement::OPACITY);
   opacity_sequence->AddElement(
       ui::LayerAnimationElement::CreatePauseElement(
-          opacity_properties,
+          ui::LayerAnimationElement::OPACITY,
           base::TimeDelta::FromMilliseconds(kAnimationDurationInMs)));
 
   // LayerAnimator takes ownership of the sequences.

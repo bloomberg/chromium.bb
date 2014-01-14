@@ -81,7 +81,7 @@ class COMPOSITOR_EXPORT LayerAnimationSequence
   void Abort(LayerAnimationDelegate* delegate);
 
   // All properties modified by the sequence.
-  const LayerAnimationElement::AnimatableProperties& properties() const {
+  LayerAnimationElement::AnimatableProperties properties() const {
     return properties_;
   }
 
@@ -96,7 +96,7 @@ class COMPOSITOR_EXPORT LayerAnimationSequence
   // Returns true if this sequence has at least one element conflicting with a
   // property in |other|.
   bool HasConflictingProperty(
-      const LayerAnimationElement::AnimatableProperties& other) const;
+      LayerAnimationElement::AnimatableProperties other) const;
 
   // Returns true if the first element animates on the compositor thread.
   bool IsFirstElementThreaded() const;

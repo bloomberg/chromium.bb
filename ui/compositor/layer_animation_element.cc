@@ -29,7 +29,7 @@ const int kFastDurationScaleFactor = 4;
 // Pause -----------------------------------------------------------------------
 class Pause : public LayerAnimationElement {
  public:
-  Pause(const AnimatableProperties& properties, base::TimeDelta duration)
+  Pause(AnimatableProperties properties, base::TimeDelta duration)
       : LayerAnimationElement(properties, duration) {
   }
   virtual ~Pause() {}
@@ -51,7 +51,7 @@ class Pause : public LayerAnimationElement {
 class TransformTransition : public LayerAnimationElement {
  public:
     TransformTransition(const gfx::Transform& target, base::TimeDelta duration)
-      : LayerAnimationElement(GetProperties(), duration),
+      : LayerAnimationElement(TRANSFORM, duration),
         target_(target) {
   }
   virtual ~TransformTransition() {}
@@ -74,12 +74,6 @@ class TransformTransition : public LayerAnimationElement {
   virtual void OnAbort(LayerAnimationDelegate* delegate) OVERRIDE {}
 
  private:
-  static AnimatableProperties GetProperties() {
-    AnimatableProperties properties;
-    properties.insert(LayerAnimationElement::TRANSFORM);
-    return properties;
-  }
-
   gfx::Transform start_;
   const gfx::Transform target_;
 
@@ -92,7 +86,7 @@ class InterpolatedTransformTransition : public LayerAnimationElement {
  public:
   InterpolatedTransformTransition(InterpolatedTransform* interpolated_transform,
                                   base::TimeDelta duration)
-      : LayerAnimationElement(GetProperties(), duration),
+      : LayerAnimationElement(TRANSFORM, duration),
         interpolated_transform_(interpolated_transform) {
   }
   virtual ~InterpolatedTransformTransition() {}
@@ -114,12 +108,6 @@ class InterpolatedTransformTransition : public LayerAnimationElement {
   virtual void OnAbort(LayerAnimationDelegate* delegate) OVERRIDE {}
 
  private:
-  static AnimatableProperties GetProperties() {
-    AnimatableProperties properties;
-    properties.insert(LayerAnimationElement::TRANSFORM);
-    return properties;
-  }
-
   scoped_ptr<InterpolatedTransform> interpolated_transform_;
 
   DISALLOW_COPY_AND_ASSIGN(InterpolatedTransformTransition);
@@ -130,7 +118,7 @@ class InterpolatedTransformTransition : public LayerAnimationElement {
 class BoundsTransition : public LayerAnimationElement {
  public:
   BoundsTransition(const gfx::Rect& target, base::TimeDelta duration)
-      : LayerAnimationElement(GetProperties(), duration),
+      : LayerAnimationElement(BOUNDS, duration),
         target_(target) {
   }
   virtual ~BoundsTransition() {}
@@ -153,12 +141,6 @@ class BoundsTransition : public LayerAnimationElement {
   virtual void OnAbort(LayerAnimationDelegate* delegate) OVERRIDE {}
 
  private:
-  static AnimatableProperties GetProperties() {
-    AnimatableProperties properties;
-    properties.insert(LayerAnimationElement::BOUNDS);
-    return properties;
-  }
-
   gfx::Rect start_;
   const gfx::Rect target_;
 
@@ -170,7 +152,7 @@ class BoundsTransition : public LayerAnimationElement {
 class OpacityTransition : public LayerAnimationElement {
  public:
   OpacityTransition(float target, base::TimeDelta duration)
-      : LayerAnimationElement(GetProperties(), duration),
+      : LayerAnimationElement(OPACITY, duration),
         start_(0.0f),
         target_(target) {
   }
@@ -194,12 +176,6 @@ class OpacityTransition : public LayerAnimationElement {
   virtual void OnAbort(LayerAnimationDelegate* delegate) OVERRIDE {}
 
  private:
-  static AnimatableProperties GetProperties() {
-    AnimatableProperties properties;
-    properties.insert(LayerAnimationElement::OPACITY);
-    return properties;
-  }
-
   float start_;
   const float target_;
 
@@ -211,7 +187,7 @@ class OpacityTransition : public LayerAnimationElement {
 class VisibilityTransition : public LayerAnimationElement {
  public:
   VisibilityTransition(bool target, base::TimeDelta duration)
-      : LayerAnimationElement(GetProperties(), duration),
+      : LayerAnimationElement(VISIBILITY, duration),
         start_(false),
         target_(target) {
   }
@@ -234,12 +210,6 @@ class VisibilityTransition : public LayerAnimationElement {
   virtual void OnAbort(LayerAnimationDelegate* delegate) OVERRIDE {}
 
  private:
-  static AnimatableProperties GetProperties() {
-    AnimatableProperties properties;
-    properties.insert(LayerAnimationElement::VISIBILITY);
-    return properties;
-  }
-
   bool start_;
   const bool target_;
 
@@ -251,7 +221,7 @@ class VisibilityTransition : public LayerAnimationElement {
 class BrightnessTransition : public LayerAnimationElement {
  public:
   BrightnessTransition(float target, base::TimeDelta duration)
-      : LayerAnimationElement(GetProperties(), duration),
+      : LayerAnimationElement(BRIGHTNESS, duration),
         start_(0.0f),
         target_(target) {
   }
@@ -275,12 +245,6 @@ class BrightnessTransition : public LayerAnimationElement {
   virtual void OnAbort(LayerAnimationDelegate* delegate) OVERRIDE {}
 
  private:
-  static AnimatableProperties GetProperties() {
-    AnimatableProperties properties;
-    properties.insert(LayerAnimationElement::BRIGHTNESS);
-    return properties;
-  }
-
   float start_;
   const float target_;
 
@@ -292,7 +256,7 @@ class BrightnessTransition : public LayerAnimationElement {
 class GrayscaleTransition : public LayerAnimationElement {
  public:
   GrayscaleTransition(float target, base::TimeDelta duration)
-      : LayerAnimationElement(GetProperties(), duration),
+      : LayerAnimationElement(GRAYSCALE, duration),
         start_(0.0f),
         target_(target) {
   }
@@ -316,12 +280,6 @@ class GrayscaleTransition : public LayerAnimationElement {
   virtual void OnAbort(LayerAnimationDelegate* delegate) OVERRIDE {}
 
  private:
-  static AnimatableProperties GetProperties() {
-    AnimatableProperties properties;
-    properties.insert(LayerAnimationElement::GRAYSCALE);
-    return properties;
-  }
-
   float start_;
   const float target_;
 
@@ -333,7 +291,7 @@ class GrayscaleTransition : public LayerAnimationElement {
 class ColorTransition : public LayerAnimationElement {
  public:
   ColorTransition(SkColor target, base::TimeDelta duration)
-      : LayerAnimationElement(GetProperties(), duration),
+      : LayerAnimationElement(COLOR, duration),
         start_(SK_ColorBLACK),
         target_(target) {
   }
@@ -357,12 +315,6 @@ class ColorTransition : public LayerAnimationElement {
   virtual void OnAbort(LayerAnimationDelegate* delegate) OVERRIDE {}
 
  private:
-  static AnimatableProperties GetProperties() {
-    AnimatableProperties properties;
-    properties.insert(LayerAnimationElement::COLOR);
-    return properties;
-  }
-
   SkColor start_;
   const SkColor target_;
 
@@ -373,7 +325,7 @@ class ColorTransition : public LayerAnimationElement {
 
 class ThreadedLayerAnimationElement : public LayerAnimationElement {
  public:
-  ThreadedLayerAnimationElement(const AnimatableProperties& properties,
+  ThreadedLayerAnimationElement(AnimatableProperties properties,
                                 base::TimeDelta duration)
       : LayerAnimationElement(properties, duration) {
   }
@@ -433,7 +385,7 @@ class ThreadedLayerAnimationElement : public LayerAnimationElement {
 class ThreadedOpacityTransition : public ThreadedLayerAnimationElement {
  public:
   ThreadedOpacityTransition(float target, base::TimeDelta duration)
-      : ThreadedLayerAnimationElement(GetProperties(), duration),
+      : ThreadedLayerAnimationElement(OPACITY, duration),
         start_(0.0f),
         target_(target) {
   }
@@ -477,12 +429,6 @@ class ThreadedOpacityTransition : public ThreadedLayerAnimationElement {
   }
 
  private:
-  static AnimatableProperties GetProperties() {
-    AnimatableProperties properties;
-    properties.insert(LayerAnimationElement::OPACITY);
-    return properties;
-  }
-
   float start_;
   const float target_;
 
@@ -495,7 +441,7 @@ class ThreadedTransformTransition : public ThreadedLayerAnimationElement {
  public:
   ThreadedTransformTransition(const gfx::Transform& target,
                               base::TimeDelta duration)
-      : ThreadedLayerAnimationElement(GetProperties(), duration),
+      : ThreadedLayerAnimationElement(TRANSFORM, duration),
         target_(target) {
   }
   virtual ~ThreadedTransformTransition() {}
@@ -543,12 +489,6 @@ class ThreadedTransformTransition : public ThreadedLayerAnimationElement {
   }
 
  private:
-  static AnimatableProperties GetProperties() {
-    AnimatableProperties properties;
-    properties.insert(LayerAnimationElement::TRANSFORM);
-    return properties;
-  }
-
   gfx::Transform start_;
   gfx::Transform cc_start_;
   const gfx::Transform target_;
@@ -652,16 +592,10 @@ class InverseTransformTransition : public ThreadedLayerAnimationElement {
     return to_return;
   }
 
-  static AnimatableProperties GetProperties() {
-    AnimatableProperties properties;
-    properties.insert(LayerAnimationElement::TRANSFORM);
-    return properties;
-  }
-
   template <typename T>
   static T CheckAndCast(const LayerAnimationElement* element) {
-    const AnimatableProperties& properties = element->properties();
-    DCHECK(properties.find(TRANSFORM) != properties.end());
+    AnimatableProperties properties = element->properties();
+    DCHECK(properties & TRANSFORM);
     return static_cast<T>(element);
   }
 
@@ -705,8 +639,7 @@ LayerAnimationElement::TargetValue::TargetValue(
 // LayerAnimationElement -------------------------------------------------------
 
 LayerAnimationElement::LayerAnimationElement(
-    const AnimatableProperties& properties,
-    base::TimeDelta duration)
+    AnimatableProperties properties, base::TimeDelta duration)
     : first_frame_(true),
       properties_(properties),
       duration_(GetEffectiveDuration(duration)),
@@ -920,7 +853,7 @@ LayerAnimationElement* LayerAnimationElement::CreateGrayscaleElement(
 
 // static
 LayerAnimationElement* LayerAnimationElement::CreatePauseElement(
-    const AnimatableProperties& properties,
+    AnimatableProperties properties,
     base::TimeDelta duration) {
   return new Pause(properties, duration);
 }

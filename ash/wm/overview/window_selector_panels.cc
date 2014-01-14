@@ -73,10 +73,8 @@ views::Widget* ScopedTransformPanelWindow::GetCalloutWidget() {
 void ScopedTransformPanelWindow::RestoreCallout() {
   scoped_ptr<ui::LayerAnimationSequence> sequence(
       new ui::LayerAnimationSequence);
-  ui::LayerAnimationElement::AnimatableProperties paused_properties;
-  paused_properties.insert(ui::LayerAnimationElement::OPACITY);
   sequence->AddElement(ui::LayerAnimationElement::CreatePauseElement(
-      paused_properties, base::TimeDelta::FromMilliseconds(
+      ui::LayerAnimationElement::OPACITY, base::TimeDelta::FromMilliseconds(
           ScopedTransformOverviewWindow::kTransitionMilliseconds)));
   sequence->AddElement(ui::LayerAnimationElement::CreateOpacityElement(1,
       base::TimeDelta::FromMilliseconds(

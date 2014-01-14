@@ -188,12 +188,12 @@ void LayerAnimator::StartTogether(
   }
 
   // Collect all the affected properties.
-  LayerAnimationElement::AnimatableProperties animated_properties;
+  LayerAnimationElement::AnimatableProperties animated_properties =
+      LayerAnimationElement::UNKNOWN;
+
   std::vector<LayerAnimationSequence*>::const_iterator iter;
-  for (iter = animations.begin(); iter != animations.end(); ++iter) {
-    animated_properties.insert((*iter)->properties().begin(),
-                               (*iter)->properties().end());
-  }
+  for (iter = animations.begin(); iter != animations.end(); ++iter)
+    animated_properties |= (*iter)->properties();
 
   // Starting a zero duration pause that affects all the animated properties
   // will prevent any of the sequences from animating until there are no
@@ -227,12 +227,12 @@ void LayerAnimator::ScheduleTogether(
   scoped_refptr<LayerAnimator> retain(this);
 
   // Collect all the affected properties.
-  LayerAnimationElement::AnimatableProperties animated_properties;
+  LayerAnimationElement::AnimatableProperties animated_properties =
+      LayerAnimationElement::UNKNOWN;
+
   std::vector<LayerAnimationSequence*>::const_iterator iter;
-  for (iter = animations.begin(); iter != animations.end(); ++iter) {
-    animated_properties.insert((*iter)->properties().begin(),
-                               (*iter)->properties().end());
-  }
+  for (iter = animations.begin(); iter != animations.end(); ++iter)
+    animated_properties |= (*iter)->properties();
 
   // Scheduling a zero duration pause that affects all the animated properties
   // will prevent any of the sequences from animating until there are no
@@ -260,16 +260,7 @@ void LayerAnimator::ScheduleTogether(
 
 void LayerAnimator::SchedulePauseForProperties(
     base::TimeDelta duration,
-    LayerAnimationElement::AnimatableProperty property,
-    ...) {
-  ui::LayerAnimationElement::AnimatableProperties properties_to_pause;
-  va_list marker;
-  va_start(marker, property);
-  for (int p = static_cast<int>(property); p != -1; p = va_arg(marker, int)) {
-    properties_to_pause.insert(
-        static_cast<LayerAnimationElement::AnimatableProperty>(p));
-  }
-  va_end(marker);
+    LayerAnimationElement::AnimatableProperties properties_to_pause) {
   ScheduleAnimation(new ui::LayerAnimationSequence(
                         ui::LayerAnimationElement::CreatePauseElement(
                             properties_to_pause, duration)));
@@ -279,10 +270,8 @@ bool LayerAnimator::IsAnimatingProperty(
     LayerAnimationElement::AnimatableProperty property) const {
   for (AnimationQueue::const_iterator queue_iter = animation_queue_.begin();
        queue_iter != animation_queue_.end(); ++queue_iter) {
-    if ((*queue_iter)->properties().find(property) !=
-        (*queue_iter)->properties().end()) {
+    if ((*queue_iter)->properties() & property)
       return true;
-    }
   }
   return false;
 }
@@ -556,8 +545,7 @@ LayerAnimator::RunningAnimation* LayerAnimator::GetRunningAnimation(
   PurgeDeletedAnimations();
   for (RunningAnimations::iterator iter = running_animations_.begin();
        iter != running_animations_.end(); ++iter) {
-    if ((*iter).sequence()->properties().find(property) !=
-        (*iter).sequence()->properties().end())
+    if ((*iter).sequence()->properties() & property)
       return &(*iter);
   }
   return NULL;
@@ -708,13 +696,14 @@ void LayerAnimator::ProcessQueue() {
   do {
     started_sequence = false;
     // Build a list of all currently animated properties.
-    LayerAnimationElement::AnimatableProperties animated;
+    LayerAnimationElement::AnimatableProperties animated =
+        LayerAnimationElement::UNKNOWN;
     for (RunningAnimations::const_iterator iter = running_animations_.begin();
          iter != running_animations_.end(); ++iter) {
       if (!(*iter).is_sequence_alive())
         continue;
-      animated.insert((*iter).sequence()->properties().begin(),
-                      (*iter).sequence()->properties().end());
+
+      animated |= (*iter).sequence()->properties();
     }
 
     // Try to find an animation that doesn't conflict with an animated
@@ -744,8 +733,7 @@ void LayerAnimator::ProcessQueue() {
       // the first element because it animates the transform, too. We cannot
       // start the second element, either, because the first element animates
       // bounds too, and needs to go first.
-      animated.insert(sequences[i]->properties().begin(),
-                      sequences[i]->properties().end());
+      animated |= sequences[i]->properties();
     }
 
     // If we started a sequence, try again. We may be able to start several.

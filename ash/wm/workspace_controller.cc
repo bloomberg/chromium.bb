@@ -127,12 +127,10 @@ void WorkspaceController::DoInitialAnimation() {
     settings.SetPreemptionStrategy(ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
     viewport_->layer()->GetAnimator()->SchedulePauseForProperties(
         base::TimeDelta::FromMilliseconds(kInitialPauseTimeMS),
-        ui::LayerAnimationElement::TRANSFORM,
-        ui::LayerAnimationElement::OPACITY,
-        ui::LayerAnimationElement::BRIGHTNESS,
-        ui::LayerAnimationElement::VISIBILITY,
-        -1);
-
+        ui::LayerAnimationElement::TRANSFORM |
+            ui::LayerAnimationElement::OPACITY |
+            ui::LayerAnimationElement::BRIGHTNESS |
+            ui::LayerAnimationElement::VISIBILITY);
     settings.SetTweenType(gfx::Tween::EASE_OUT);
     settings.SetTransitionDuration(
         base::TimeDelta::FromMilliseconds(kCrossFadeDurationMS));

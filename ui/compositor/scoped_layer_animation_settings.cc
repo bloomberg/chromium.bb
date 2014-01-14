@@ -61,10 +61,10 @@ class InvertingObserver : public ImplicitAnimationObserver {
         "Inverse supported only for single element sequences.";
 
       LayerAnimationElement* element = sequence->FirstElement();
-      LayerAnimationElement::AnimatableProperties transform_property;
-      transform_property.insert(LayerAnimationElement::TRANSFORM);
-      DCHECK(transform_property == element->properties())
-        << "Only transform animations are currently invertible.";
+      DCHECK_EQ(static_cast<LayerAnimationElement::AnimatableProperties>(
+                    LayerAnimationElement::TRANSFORM),
+                element->properties())
+          << "Only transform animations are currently invertible.";
 
       scoped_ptr<LayerAnimationElement> to_return(
           LayerAnimationElement::CreateInverseTransformElement(base, element));

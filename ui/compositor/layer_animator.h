@@ -138,8 +138,7 @@ class COMPOSITOR_EXPORT LayerAnimator
   // End the list with -1.
   void SchedulePauseForProperties(
       base::TimeDelta duration,
-      LayerAnimationElement::AnimatableProperty property,
-      ...);
+      LayerAnimationElement::AnimatableProperties properties_to_pause);
 
   // Returns true if there is an animation in the queue (animations remain in
   // the queue until they complete, so this includes running animations).

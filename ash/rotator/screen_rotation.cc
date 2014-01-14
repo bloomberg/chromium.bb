@@ -31,7 +31,7 @@ base::TimeDelta GetTransitionDuration(int degrees) {
 }  // namespace
 
 ScreenRotation::ScreenRotation(int degrees, ui::Layer* layer)
-    : ui::LayerAnimationElement(GetProperties(),
+    : ui::LayerAnimationElement(LayerAnimationElement::TRANSFORM,
                                 GetTransitionDuration(degrees)),
       degrees_(degrees) {
   InitTransform(layer);
@@ -118,15 +118,6 @@ void ScreenRotation::OnGetTarget(TargetValue* target) const {
 }
 
 void ScreenRotation::OnAbort(ui::LayerAnimationDelegate* delegate) {
-}
-
-// static
-const ui::LayerAnimationElement::AnimatableProperties&
-ScreenRotation::GetProperties() {
-  static ui::LayerAnimationElement::AnimatableProperties properties;
-  if (properties.empty())
-    properties.insert(ui::LayerAnimationElement::TRANSFORM);
-  return properties;
 }
 
 }  // namespace ash
