@@ -57,7 +57,7 @@ void ArrayBufferView::neuter()
 
 const char* ArrayBufferView::typeName()
 {
-    switch (getType()) {
+    switch (type()) {
     case TypeInt8:
         return "Int8";
         break;

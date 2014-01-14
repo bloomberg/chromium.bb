@@ -3089,7 +3089,7 @@ void WebGLRenderingContext::readPixels(GLint x, GLint y, GLsizei width, GLsizei 
         return;
     }
     // Validate array type against pixel type.
-    if (pixels->getType() != ArrayBufferView::TypeUint8) {
+    if (pixels->type() != ArrayBufferView::TypeUint8) {
         synthesizeGLError(GL_INVALID_OPERATION, "readPixels", "ArrayBufferView not Uint8Array");
         return;
     }
@@ -4756,7 +4756,7 @@ bool WebGLRenderingContext::validateTexFuncData(const char* functionName, GLint 
 
     switch (type) {
     case GL_UNSIGNED_BYTE:
-        if (pixels->getType() != ArrayBufferView::TypeUint8) {
+        if (pixels->type() != ArrayBufferView::TypeUint8) {
             synthesizeGLError(GL_INVALID_OPERATION, functionName, "type UNSIGNED_BYTE but ArrayBufferView not Uint8Array");
             return false;
         }
@@ -4764,13 +4764,13 @@ bool WebGLRenderingContext::validateTexFuncData(const char* functionName, GLint 
     case GL_UNSIGNED_SHORT_5_6_5:
     case GL_UNSIGNED_SHORT_4_4_4_4:
     case GL_UNSIGNED_SHORT_5_5_5_1:
-        if (pixels->getType() != ArrayBufferView::TypeUint16) {
+        if (pixels->type() != ArrayBufferView::TypeUint16) {
             synthesizeGLError(GL_INVALID_OPERATION, functionName, "type UNSIGNED_SHORT but ArrayBufferView not Uint16Array");
             return false;
         }
         break;
     case GL_FLOAT: // OES_texture_float
-        if (pixels->getType() != ArrayBufferView::TypeFloat32) {
+        if (pixels->type() != ArrayBufferView::TypeFloat32) {
             synthesizeGLError(GL_INVALID_OPERATION, functionName, "type FLOAT but ArrayBufferView not Float32Array");
             return false;
         }

@@ -54,7 +54,7 @@ public:
     inline PassRefPtr<Float64Array> subarray(int start) const;
     inline PassRefPtr<Float64Array> subarray(int start, int end) const;
 
-    virtual ViewType getType() const OVERRIDE
+    virtual ViewType type() const OVERRIDE
     {
         return TypeFloat64;
     }

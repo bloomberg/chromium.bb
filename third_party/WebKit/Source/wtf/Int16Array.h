@@ -48,7 +48,7 @@ public:
     inline PassRefPtr<Int16Array> subarray(int start) const;
     inline PassRefPtr<Int16Array> subarray(int start, int end) const;
 
-    virtual ViewType getType() const OVERRIDE
+    virtual ViewType type() const OVERRIDE
     {
         return TypeInt16;
     }

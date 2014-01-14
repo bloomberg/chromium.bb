@@ -71,7 +71,7 @@ public:
     void setFloat64(unsigned byteOffset, double value, ExceptionState& ec) { setFloat64(byteOffset, value, false, ec); }
     void setFloat64(unsigned byteOffset, double value, bool littleEndian, ExceptionState&);
 
-    virtual ViewType getType() const OVERRIDE
+    virtual ViewType type() const OVERRIDE
     {
         return TypeDataView;
     }

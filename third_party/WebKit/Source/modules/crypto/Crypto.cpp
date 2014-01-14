@@ -41,7 +41,7 @@ namespace {
 
 bool isIntegerArray(ArrayBufferView* array)
 {
-    ArrayBufferView::ViewType type = array->getType();
+    ArrayBufferView::ViewType type = array->type();
     return type == ArrayBufferView::TypeInt8
         || type == ArrayBufferView::TypeUint8
         || type == ArrayBufferView::TypeUint8Clamped

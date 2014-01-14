@@ -430,7 +430,7 @@ public:
         ASSERT(static_cast<const uint8_t*>(arrayBuffer.data()) + arrayBufferView.byteOffset() ==
                static_cast<const uint8_t*>(arrayBufferView.baseAddress()));
 #endif
-        ArrayBufferView::ViewType type = arrayBufferView.getType();
+        ArrayBufferView::ViewType type = arrayBufferView.type();
 
         if (type == ArrayBufferView::TypeInt8)
             append(ByteArrayTag);
