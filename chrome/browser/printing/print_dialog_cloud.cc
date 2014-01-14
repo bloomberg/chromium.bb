@@ -19,6 +19,7 @@
 #include "chrome/browser/printing/cloud_print/cloud_print_url.h"
 #include "chrome/browser/printing/print_dialog_cloud_internal.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -33,8 +34,10 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/common/frame_navigate_params.h"
 #include "webkit/common/webpreferences.h"
 
 #if defined(USE_AURA)
@@ -112,8 +115,59 @@ using content::WebContents;
 using content::WebUIMessageHandler;
 using ui::WebDialogDelegate;
 
+namespace {
+
 const int kDefaultWidth = 912;
 const int kDefaultHeight = 633;
+
+bool IsSimilarUrl(const GURL& url, const GURL& cloud_print_url) {
+  return url.host() == cloud_print_url.host() &&
+         StartsWithASCII(url.path(), cloud_print_url.path(), false) &&
+         url.scheme() == cloud_print_url.scheme();
+}
+
+class SignInObserver : public content::WebContentsObserver {
+ public:
+  SignInObserver(content::WebContents* web_contents,
+                 GURL cloud_print_url,
+                 const base::Closure& callback)
+      : WebContentsObserver(web_contents),
+        cloud_print_url_(cloud_print_url),
+        callback_(callback),
+        weak_ptr_factory_(this) {
+  }
+
+ private:
+  // Overridden from content::WebContentsObserver:
+  virtual void DidNavigateMainFrame(
+      const content::LoadCommittedDetails& details,
+      const content::FrameNavigateParams& params) OVERRIDE {
+    if (IsSimilarUrl(params.url, cloud_print_url_)) {
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&SignInObserver::OnSignIn,
+                     weak_ptr_factory_.GetWeakPtr()));
+    }
+  }
+
+  virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE {
+    delete this;
+  }
+
+  void OnSignIn() {
+    callback_.Run();
+    if (web_contents())
+      web_contents()->Close();
+  }
+
+  GURL cloud_print_url_;
+  base::Closure callback_;
+  base::WeakPtrFactory<SignInObserver> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(SignInObserver);
+};
+
+}  // namespace
 
 namespace internal_cloud_print_helpers {
 
@@ -228,16 +282,12 @@ CloudPrintFlowHandler::CloudPrintFlowHandler(
     const base::RefCountedMemory* data,
     const base::string16& print_job_title,
     const base::string16& print_ticket,
-    const std::string& file_type,
-    bool close_after_signin,
-    const base::Closure& callback)
+    const std::string& file_type)
     : dialog_delegate_(NULL),
       data_(data),
       print_job_title_(print_job_title),
       print_ticket_(print_ticket),
-      file_type_(file_type),
-      close_after_signin_(close_after_signin),
-      callback_(callback) {
+      file_type_(file_type) {
 }
 
 CloudPrintFlowHandler::~CloudPrintFlowHandler() {
@@ -287,13 +337,8 @@ void CloudPrintFlowHandler::RegisterMessages() {
   NavigationEntry* pending_entry = controller->GetPendingEntry();
   if (pending_entry) {
     Profile* profile = Profile::FromWebUI(web_ui());
-    if (close_after_signin_) {
-      pending_entry->SetURL(
-          CloudPrintURL(profile).GetCloudPrintSigninURL());
-    } else {
-      pending_entry->SetURL(
-          CloudPrintURL(profile).GetCloudPrintServiceDialogURL());
-    }
+    pending_entry->SetURL(
+        CloudPrintURL(profile).GetCloudPrintServiceDialogURL());
   }
   registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
                  content::Source<NavigationController>(controller));
@@ -306,13 +351,6 @@ void CloudPrintFlowHandler::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case content::NOTIFICATION_NAV_ENTRY_COMMITTED: {
-      NavigationEntry* entry =
-          web_ui()->GetWebContents()->GetController().GetActiveEntry();
-      if (entry)
-        NavigationToURLDidCloseDialog(entry->GetURL());
-      break;
-    }
     case content::NOTIFICATION_LOAD_STOP: {
       GURL url = web_ui()->GetWebContents()->GetURL();
       if (IsCloudPrintDialogUrl(url)) {
@@ -439,24 +477,10 @@ void CloudPrintFlowHandler::StoreDialogClientSize() const {
   }
 }
 
-bool CloudPrintFlowHandler::NavigationToURLDidCloseDialog(const GURL& url) {
-  if (close_after_signin_) {
-    if (IsCloudPrintDialogUrl(url)) {
-      StoreDialogClientSize();
-      web_ui()->GetWebContents()->GetRenderViewHost()->ClosePage();
-      callback_.Run();
-      return true;
-    }
-  }
-  return false;
-}
-
 bool CloudPrintFlowHandler::IsCloudPrintDialogUrl(const GURL& url) {
   GURL cloud_print_url =
       CloudPrintURL(Profile::FromWebUI(web_ui())).GetCloudPrintServiceURL();
-  return url.host() == cloud_print_url.host() &&
-         StartsWithASCII(url.path(), cloud_print_url.path(), false) &&
-         url.scheme() == cloud_print_url.scheme();
+  return IsSimilarUrl(url, cloud_print_url);
 }
 
 CloudPrintWebDialogDelegate::CloudPrintWebDialogDelegate(
@@ -466,12 +490,10 @@ CloudPrintWebDialogDelegate::CloudPrintWebDialogDelegate(
     const std::string& json_arguments,
     const base::string16& print_job_title,
     const base::string16& print_ticket,
-    const std::string& file_type,
-    bool close_after_signin,
-    const base::Closure& callback)
+    const std::string& file_type)
     : flow_handler_(
           new CloudPrintFlowHandler(data, print_job_title, print_ticket,
-                                    file_type, close_after_signin, callback)),
+                                    file_type)),
       modal_parent_(modal_parent),
       owns_flow_handler_(true),
       keep_alive_when_non_modal_(true) {
@@ -592,27 +614,18 @@ bool CloudPrintWebDialogDelegate::HandleContextMenu(
   return true;
 }
 
-bool CloudPrintWebDialogDelegate::HandleOpenURLFromTab(
-    content::WebContents* source,
-    const content::OpenURLParams& params,
-    content::WebContents** out_new_contents) {
-  return flow_handler_->NavigationToURLDidCloseDialog(params.url);
-}
-
 // Called from the UI thread, starts up the dialog.
 void CreateDialogImpl(content::BrowserContext* browser_context,
                       gfx::NativeWindow modal_parent,
                       const base::RefCountedMemory* data,
                       const base::string16& print_job_title,
                       const base::string16& print_ticket,
-                      const std::string& file_type,
-                      bool close_after_signin,
-                      const base::Closure& callback) {
+                      const std::string& file_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   WebDialogDelegate* dialog_delegate =
       new internal_cloud_print_helpers::CloudPrintWebDialogDelegate(
           browser_context, modal_parent, data, std::string(), print_job_title,
-          print_ticket, file_type, close_after_signin, callback);
+          print_ticket, file_type);
 #if defined(OS_WIN)
   gfx::NativeWindow window =
 #endif
@@ -632,13 +645,6 @@ void CreateDialogImpl(content::BrowserContext* browser_context,
     }
   }
 #endif
-}
-
-void CreateDialogSigninImpl(content::BrowserContext* browser_context,
-                            gfx::NativeWindow modal_parent,
-                            const base::Closure& callback) {
-  CreateDialogImpl(browser_context, modal_parent, NULL, base::string16(),
-                   base::string16(), std::string(), true, callback);
 }
 
 void CreateDialogForFileImpl(content::BrowserContext* browser_context,
@@ -706,15 +712,17 @@ void CreatePrintDialogForFile(content::BrowserContext* browser_context,
                  print_ticket, file_type, delete_on_close));
 }
 
-void CreateCloudPrintSigninDialog(content::BrowserContext* browser_context,
-                                  gfx::NativeWindow modal_parent,
-                                  const base::Closure& callback) {
+void CreateCloudPrintSigninTab(Browser* browser,
+                               const base::Closure& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&internal_cloud_print_helpers::CreateDialogSigninImpl,
-                 browser_context, modal_parent, callback));
+  CloudPrintURL cp_url(browser->profile());
+  content::WebContents* web_contents =
+      browser->OpenURL(
+          content::OpenURLParams(cp_url.GetCloudPrintSigninURL(),
+                                 content::Referrer(), NEW_FOREGROUND_TAB,
+                                 content::PAGE_TRANSITION_AUTO_BOOKMARK,
+                                 false));
+  new SignInObserver(web_contents, cp_url.GetCloudPrintServiceURL(), callback);
 }
 
 void CreatePrintDialogForBytes(content::BrowserContext* browser_context,
@@ -725,8 +733,7 @@ void CreatePrintDialogForBytes(content::BrowserContext* browser_context,
                                const std::string& file_type) {
   internal_cloud_print_helpers::CreateDialogImpl(browser_context, modal_parent,
                                                  data, print_job_title,
-                                                 print_ticket, file_type, false,
-                                                 base::Closure());
+                                                 print_ticket, file_type);
 }
 
 bool CreatePrintDialogFromCommandLine(Profile* profile,

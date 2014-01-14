@@ -82,11 +82,8 @@ class MockCloudPrintFlowHandler
  public:
   MockCloudPrintFlowHandler(const base::string16& title,
                             const base::string16& print_ticket,
-                            const std::string& file_type,
-                            bool close_after_signin,
-                            const base::Closure& callback)
-      : CloudPrintFlowHandler(NULL, title, print_ticket, file_type,
-                              close_after_signin, callback) {}
+                            const std::string& file_type)
+      : CloudPrintFlowHandler(NULL, title, print_ticket, file_type) {}
   MOCK_METHOD0(DestructorCalled, void());
   MOCK_METHOD0(RegisterMessages, void());
   MOCK_METHOD3(Observe,
@@ -296,7 +293,7 @@ class CloudPrintWebDialogDelegateTest : public testing::Test {
     std::string mock_file_type;
     MockCloudPrintFlowHandler* handler =
         new MockCloudPrintFlowHandler(mock_print_ticket, mock_title,
-                                      mock_file_type, false, base::Closure());
+                                      mock_file_type);
     mock_flow_handler_ = handler->AsWeakPtr();
     EXPECT_CALL(*mock_flow_handler_.get(), SetDialogDelegate(_));
     EXPECT_CALL(*mock_flow_handler_.get(), SetDialogDelegate(NULL));

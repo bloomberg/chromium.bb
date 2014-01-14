@@ -98,9 +98,7 @@ class CloudPrintFlowHandler : public content::WebUIMessageHandler,
   CloudPrintFlowHandler(const base::RefCountedMemory* data,
                         const base::string16& print_job_title,
                         const base::string16& print_ticket,
-                        const std::string& file_type,
-                        bool close_after_signin,
-                        const base::Closure& callback);
+                        const std::string& file_type);
   virtual ~CloudPrintFlowHandler();
 
   // WebUIMessageHandler implementation.
@@ -118,8 +116,6 @@ class CloudPrintFlowHandler : public content::WebUIMessageHandler,
 
   virtual void SetDialogDelegate(CloudPrintWebDialogDelegate *delegate);
   void StoreDialogClientSize() const;
-
-  bool NavigationToURLDidCloseDialog(const GURL& url);
 
  private:
   virtual scoped_refptr<CloudPrintDataSender> CreateCloudPrintDataSender();
@@ -140,8 +136,6 @@ class CloudPrintFlowHandler : public content::WebUIMessageHandler,
   std::string file_type_;
   scoped_refptr<CloudPrintDataSender> print_data_sender_;
   scoped_ptr<CloudPrintDataSenderHelper> print_data_helper_;
-  bool close_after_signin_;
-  base::Closure callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPrintFlowHandler);
 };
@@ -157,9 +151,7 @@ class CloudPrintWebDialogDelegate : public ui::WebDialogDelegate {
                               const std::string& json_arguments,
                               const base::string16& print_job_title,
                               const base::string16& print_ticket,
-                              const std::string& file_type,
-                              bool close_after_signin,
-                              const base::Closure& callback);
+                              const std::string& file_type);
   virtual ~CloudPrintWebDialogDelegate();
 
   // ui::WebDialogDelegate implementation:
@@ -176,10 +168,6 @@ class CloudPrintWebDialogDelegate : public ui::WebDialogDelegate {
   virtual bool ShouldShowDialogTitle() const OVERRIDE;
   virtual bool HandleContextMenu(
       const content::ContextMenuParams& params) OVERRIDE;
-  virtual bool HandleOpenURLFromTab(
-      content::WebContents* source,
-      const content::OpenURLParams& params,
-      content::WebContents** out_new_contents) OVERRIDE;
 
  private:
   friend class ::CloudPrintWebDialogDelegateTest;
@@ -208,9 +196,6 @@ void CreateDialogForFileImpl(content::BrowserContext* browser_context,
                              const base::string16& print_ticket,
                              const std::string& file_type,
                              bool delete_on_close);
-void CreateDialogSigninImpl(content::BrowserContext* browser_context,
-                            gfx::NativeWindow modal_parent,
-                            const base::Closure& callback);
 
 }  // namespace internal_cloud_print_helpers
 

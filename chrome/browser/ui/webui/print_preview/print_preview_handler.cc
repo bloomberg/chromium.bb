@@ -901,11 +901,9 @@ void PrintPreviewHandler::OnSigninComplete() {
 }
 
 void PrintPreviewHandler::HandleSignin(const base::ListValue* /*args*/) {
-  gfx::NativeWindow modal_parent = platform_util::GetTopLevel(
-      preview_web_contents()->GetView()->GetNativeView());
-  print_dialog_cloud::CreateCloudPrintSigninDialog(
-      preview_web_contents()->GetBrowserContext(),
-      modal_parent,
+  Browser* browser = chrome::FindBrowserWithWebContents(GetInitiator());
+  print_dialog_cloud::CreateCloudPrintSigninTab(
+      browser,
       base::Bind(&PrintPreviewHandler::OnSigninComplete,
                  weak_factory_.GetWeakPtr()));
 }
