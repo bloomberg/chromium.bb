@@ -1301,8 +1301,10 @@ def DoPresubmitChecks(change,
     global _ASKED_FOR_FEEDBACK
     # Ask for feedback one time out of 5.
     if (len(results) and random.randint(0, 4) == 0 and not _ASKED_FOR_FEEDBACK):
-      output.write("Was the presubmit check useful? Please send feedback "
-                  "& hate mail to maruel@chromium.org!\n")
+      output.write(
+          'Was the presubmit check useful? If not, run "git cl presubmit -v"\n'
+          'to figure out which PRESUBMIT.py was run, then run git blame\n'
+          'on the file to figure out who to ask for help.\n')
       _ASKED_FOR_FEEDBACK = True
     return output
   finally:

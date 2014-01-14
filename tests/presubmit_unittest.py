@@ -815,13 +815,15 @@ def CheckChangeOnCommit(input_api, output_api):
     output = presubmit.DoPresubmitChecks(
         change, False, True, None, input_buf, DEFAULT_SCRIPT, False, None)
     self.failIf(output.should_continue())
-    text = ('Running presubmit upload checks ...\n'
-            'Warning, no PRESUBMIT.py found.\n'
-            'Running default presubmit script.\n'
-            '\n'
-            '** Presubmit ERRORS **\n!!\n\n'
-            'Was the presubmit check useful? Please send feedback & hate mail '
-            'to maruel@chromium.org!\n')
+    text = (
+        'Running presubmit upload checks ...\n'
+        'Warning, no PRESUBMIT.py found.\n'
+        'Running default presubmit script.\n'
+        '\n'
+        '** Presubmit ERRORS **\n!!\n\n'
+        'Was the presubmit check useful? If not, run "git cl presubmit -v"\n'
+        'to figure out which PRESUBMIT.py was run, then run git blame\n'
+        'on the file to figure out who to ask for help.\n')
     self.assertEquals(output.getvalue(), text)
 
   def testDirectoryHandling(self):
