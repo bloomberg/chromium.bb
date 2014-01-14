@@ -8,6 +8,8 @@ import android.content.Context;
 import android.util.Log;
 import android.view.Surface;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
@@ -208,10 +210,15 @@ public class ChildProcessLauncher {
     private static ChildProcessConnection sSpareSandboxedConnection = null;
 
     // Manages oom bindings used to bind chind services.
-    private static BindingManager sBindingManager = BindingManager.createBindingManager();
+    private static BindingManager sBindingManager = BindingManagerImpl.createBindingManager();
 
     static BindingManager getBindingManager() {
         return sBindingManager;
+    }
+
+    @VisibleForTesting
+    public static void setBindingManagerForTesting(BindingManager manager) {
+        sBindingManager = manager;
     }
 
     @CalledByNative

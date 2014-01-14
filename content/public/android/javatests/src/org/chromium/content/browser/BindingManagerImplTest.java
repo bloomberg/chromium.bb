@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,14 +13,14 @@ import org.chromium.content.common.IChildProcessCallback;
 import org.chromium.content.common.IChildProcessService;
 
 /**
- * Unit tests for BindingManager. The tests run agains mock ChildProcessConnection implementation,
- * thus testing only the BindingManager itself.
+ * Unit tests for BindingManagerImpl. The tests run agains mock ChildProcessConnection
+ * implementation, thus testing only the BindingManagerImpl itself.
  *
  * Default property of being low-end device is overriden, so that both low-end and high-end policies
  * are tested. Unbinding delays are set to 0, so that we don't need to deal with waiting, but we
  * still can test if the unbinding tasks are posted or executed synchronously.
  */
-public class BindingManagerTest extends InstrumentationTestCase {
+public class BindingManagerImplTest extends InstrumentationTestCase {
     private static class MockChildProcessConnection implements ChildProcessConnection {
         boolean mInitialBindingBound;
         int mStrongBindingCount;
@@ -110,10 +110,10 @@ public class BindingManagerTest extends InstrumentationTestCase {
      * failed.
      */
     private static class ManagerEntry {
-        BindingManager mManager;
+        BindingManagerImpl mManager;
         String mLabel;  // Name of the manager.
 
-        ManagerEntry(BindingManager manager, String label) {
+        ManagerEntry(BindingManagerImpl manager, String label) {
             mManager = manager;
             mLabel = label;
         }
@@ -124,14 +124,14 @@ public class BindingManagerTest extends InstrumentationTestCase {
     }
 
     // The managers are created in setUp() for convenience.
-    BindingManager mLowEndManager;
-    BindingManager mHighEndManager;
+    BindingManagerImpl mLowEndManager;
+    BindingManagerImpl mHighEndManager;
     ManagerEntry[] mAllManagers;
 
     @Override
     protected void setUp() {
-        mLowEndManager = BindingManager.createBindingManagerForTesting(true);
-        mHighEndManager = BindingManager.createBindingManagerForTesting(false);
+        mLowEndManager = BindingManagerImpl.createBindingManagerForTesting(true);
+        mHighEndManager = BindingManagerImpl.createBindingManagerForTesting(false);
         mAllManagers = new ManagerEntry[] {
             new ManagerEntry(mLowEndManager, "low-end"),
             new ManagerEntry(mHighEndManager, "high-end")};
@@ -145,7 +145,7 @@ public class BindingManagerTest extends InstrumentationTestCase {
     @Feature({"ProcessManagement"})
     public void testNewConnectionDropsPreviousOnLowEnd() {
         // This test applies only to the low-end manager.
-        BindingManager manager = mLowEndManager;
+        BindingManagerImpl manager = mLowEndManager;
 
         // Add a connection to the manager.
         MockChildProcessConnection firstConnection = new MockChildProcessConnection(1);
@@ -172,7 +172,7 @@ public class BindingManagerTest extends InstrumentationTestCase {
     @Feature({"ProcessManagement"})
     public void testBindingRemovalOnLowEnd() throws Throwable {
         // This test applies only to the low-end manager.
-        final BindingManager manager = mLowEndManager;
+        final BindingManagerImpl manager = mLowEndManager;
 
         // Add a connection to the manager.
         final MockChildProcessConnection connection = new MockChildProcessConnection(1);
@@ -211,7 +211,7 @@ public class BindingManagerTest extends InstrumentationTestCase {
     @Feature({"ProcessManagement"})
     public void testBindingRemovalOnHighEnd() throws Throwable {
         // This test applies only to the high-end manager.
-        final BindingManager manager = mHighEndManager;
+        final BindingManagerImpl manager = mHighEndManager;
 
         // Add a connection to the manager.
         final MockChildProcessConnection connection = new MockChildProcessConnection(1);
@@ -244,10 +244,10 @@ public class BindingManagerTest extends InstrumentationTestCase {
     }
 
     /**
-     * Verifies that BindingManager correctly stashes the status of the connection oom bindings when
-     * the connection is cleared. BindingManager should reply to isOomProtected() queries with live
-     * status of the connection while it's still around and reply with stashed status after
-     * clearConnection() is called.
+     * Verifies that BindingManagerImpl correctly stashes the status of the connection oom bindings
+     * when the connection is cleared. BindingManagerImpl should reply to isOomProtected() queries
+     * with live status of the connection while it's still around and reply with stashed status
+     * after clearConnection() is called.
      *
      * This test corresponds to a process crash scenario: after a process dies and its connection is
      * cleared, isOomProtected() may be called to decide if it was a crash or out-of-memory kill.
@@ -257,7 +257,7 @@ public class BindingManagerTest extends InstrumentationTestCase {
     public void testIsOomProtected() {
         // This test applies to both low-end and high-end policies.
         for (ManagerEntry managerEntry : mAllManagers) {
-            BindingManager manager = managerEntry.mManager;
+            BindingManagerImpl manager = managerEntry.mManager;
             String message = managerEntry.getErrorMessage();
 
             // Add a connection to the manager.
@@ -306,7 +306,7 @@ public class BindingManagerTest extends InstrumentationTestCase {
     public void testBackgroundPeriodBinding() {
         // This test applies to both low-end and high-end policies.
         for (ManagerEntry managerEntry : mAllManagers) {
-            BindingManager manager = managerEntry.mManager;
+            BindingManagerImpl manager = managerEntry.mManager;
             String message = managerEntry.getErrorMessage();
 
             // Add two connections, bind and release each.
