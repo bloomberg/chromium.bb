@@ -19,10 +19,21 @@ sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party'))
 
 import httplib2
 from oauth2client import client
-from oauth2client import keyring_storage
 from oauth2client import tools
+from oauth2client import multistore_file
+
+# keyring_storage depends on 'keyring' module that may not be available.
+try:
+  from oauth2client import keyring_storage
+except ImportError:
+  keyring_storage = None
 
 from third_party import requests
+
+
+# Path to a file with cached OAuth2 credentials, used only if keyring is not
+# available.
+OAUTH_STORAGE_FILE = os.path.join(os.path.expanduser('~'), '.isolated_oauth')
 
 
 def add_oauth_options(parser):
@@ -89,7 +100,14 @@ def purge_access_token(urlhost):
 
 def _get_storage(urlhost):
   """Returns oauth2client.Storage with tokens to access |urlhost|."""
-  return keyring_storage.Storage(urlhost.rstrip('/'), 'oauth2_tokens')
+  # Normalize urlhost.
+  urlhost = urlhost.rstrip('/')
+  # Use keyring storage if 'keyring' module is present (it is on Linux).
+  if keyring_storage:
+    return keyring_storage.Storage(urlhost, 'oauth2_tokens')
+  # Revert to less secure plain text storage otherwise (Win, Mac).
+  return multistore_file.get_credential_storage_custom_string_key(
+      OAUTH_STORAGE_FILE, urlhost)
 
 
 def _run_oauth_dance(urlhost, storage, options):
