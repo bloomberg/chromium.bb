@@ -14,12 +14,19 @@
 #include "chrome/browser/extensions/webstore_data_fetcher_delegate.h"
 #include "ui/gfx/image/image_skia.h"
 
+class Profile;
+
 namespace base {
 class RefCountedString;
 }
 
 namespace extensions {
+class Extension;
 class WebstoreDataFetcher;
+}
+
+namespace gfx {
+class Image;
 }
 
 namespace net {
@@ -54,6 +61,9 @@ class KioskAppData : public base::SupportsWeakPtr<KioskAppData>,
   // Clears locally cached data.
   void ClearCache();
 
+  // Loads app data from the app installed in the given profile.
+  void LoadFromInstalledApp(Profile* profile, const extensions::Extension* app);
+
   // Returns true if web store data fetching is in progress.
   bool IsLoading() const;
 
@@ -80,6 +90,12 @@ class KioskAppData : public base::SupportsWeakPtr<KioskAppData>,
 
   // Sets the cached data.
   void SetCache(const std::string& name, const base::FilePath& icon_path);
+
+  // Helper to set the cached data using a SkBitmap icon.
+  void SetCache(const std::string& name, const SkBitmap& icon);
+
+  // Callback for extensions::ImageLoader.
+  void OnExtensionIconLoaded(const gfx::Image& icon);
 
   // Callbacks for IconLoader.
   void OnIconLoadSuccess(const scoped_refptr<base::RefCountedString>& raw_icon,

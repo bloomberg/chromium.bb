@@ -17,14 +17,20 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_data_delegate.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/extensions/webstore_data_fetcher.h"
 #include "chrome/browser/extensions/webstore_install_helper.h"
 #include "chrome/browser/image_decoder.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/image/image.h"
 
 using content::BrowserThread;
 
@@ -288,6 +294,28 @@ void KioskAppData::ClearCache() {
   }
 }
 
+void KioskAppData::LoadFromInstalledApp(Profile* profile,
+                                        const extensions::Extension* app) {
+  SetStatus(STATUS_LOADING);
+
+  if (!app) {
+    app = extensions::ExtensionSystem::Get(profile)
+              ->extension_service()
+              ->GetInstalledExtension(app_id_);
+  }
+
+  DCHECK_EQ(app_id_, app->id());
+
+  name_ = app->name();
+
+  const int kIconSize = extension_misc::EXTENSION_ICON_LARGE;
+  extensions::ExtensionResource image = extensions::IconsInfo::GetIconResource(
+      app, kIconSize, ExtensionIconSet::MATCH_BIGGER);
+  extensions::ImageLoader::Get(profile)->LoadImageAsync(
+      app, image, gfx::Size(kIconSize, kIconSize),
+      base::Bind(&KioskAppData::OnExtensionIconLoaded, AsWeakPtr()));
+}
+
 bool KioskAppData::IsLoading() const {
   return status_ == STATUS_LOADING;
 }
@@ -354,21 +382,7 @@ void KioskAppData::SetCache(const std::string& name,
   icon_path_ = icon_path;
 }
 
-void KioskAppData::OnIconLoadSuccess(
-    const scoped_refptr<base::RefCountedString>& raw_icon,
-    const gfx::ImageSkia& icon) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  raw_icon_ = raw_icon;
-  icon_ = icon;
-  SetStatus(STATUS_LOADED);
-}
-
-void KioskAppData::OnIconLoadFailure() {
-  // Re-fetch data from web store when failed to load cached data.
-  StartFetch();
-}
-
-void KioskAppData::OnWebstoreParseSuccess(const SkBitmap& icon) {
+void KioskAppData::SetCache(const std::string& name, const SkBitmap& icon) {
   icon_ = gfx::ImageSkia::CreateFrom1xBitmap(icon);
   icon_.MakeThreadSafe();
 
@@ -387,7 +401,37 @@ void KioskAppData::OnWebstoreParseSuccess(const SkBitmap& icon) {
       FROM_HERE,
       base::Bind(&SaveIconToLocalOnBlockingPool, icon_path, raw_icon_));
 
-  SetCache(name_, icon_path);
+  SetCache(name, icon_path);
+}
+
+void KioskAppData::OnExtensionIconLoaded(const gfx::Image& icon) {
+  if (icon.IsEmpty()) {
+    LOG(WARNING) << "Failed to load icon from installed app"
+                 << ", id=" << app_id_;
+    SetCache(name_, *extensions::IconsInfo::GetDefaultAppIcon().bitmap());
+  } else {
+    SetCache(name_, icon.AsBitmap());
+  }
+
+  SetStatus(STATUS_LOADED);
+}
+
+void KioskAppData::OnIconLoadSuccess(
+    const scoped_refptr<base::RefCountedString>& raw_icon,
+    const gfx::ImageSkia& icon) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  raw_icon_ = raw_icon;
+  icon_ = icon;
+  SetStatus(STATUS_LOADED);
+}
+
+void KioskAppData::OnIconLoadFailure() {
+  // Re-fetch data from web store when failed to load cached data.
+  StartFetch();
+}
+
+void KioskAppData::OnWebstoreParseSuccess(const SkBitmap& icon) {
+  SetCache(name_, icon);
   SetStatus(STATUS_LOADED);
 }
 

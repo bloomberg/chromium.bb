@@ -20,9 +20,14 @@
 #include "ui/gfx/image/image_skia.h"
 
 class PrefRegistrySimple;
+class Profile;
 
 namespace base {
 class RefCountedString;
+}
+
+namespace extensions {
+class Extension;
 }
 
 namespace chromeos {
@@ -124,6 +129,18 @@ class KioskAppManager : public KioskAppDataDelegate {
   // Gets whether the bailout shortcut is disabled.
   bool GetDisableBailoutShortcut() const;
 
+  // Clears locally cached app data.
+  void ClearAppData(const std::string& app_id);
+
+  // Updates app data from the |app| in |profile|. |app| is provided to cover
+  // the case of app update case where |app| is the new version and is not
+  // finished installing (e.g. because old version is still running). Otherwise,
+  // |app| could be NULL and the current installed app in |profile| will be
+  // used.
+  void UpdateAppDataFromProfile(const std::string& app_id,
+                                Profile* profile,
+                                const extensions::Extension* app);
+
   void AddObserver(KioskAppManagerObserver* observer);
   void RemoveObserver(KioskAppManagerObserver* observer);
 
@@ -148,6 +165,7 @@ class KioskAppManager : public KioskAppDataDelegate {
 
   // Gets KioskAppData for the given app id.
   const KioskAppData* GetAppData(const std::string& app_id) const;
+  KioskAppData* GetAppDataMutable(const std::string& app_id);
 
   // Update app data |apps_| based on CrosSettings.
   void UpdateAppData();
@@ -171,7 +189,7 @@ class KioskAppManager : public KioskAppDataDelegate {
   // Callback for reading handling checks of the owner public.
   void OnOwnerFileChecked(
       const GetConsumerKioskModeStatusCallback& callback,
-      bool *owner_present);
+      bool* owner_present);
 
   // Reads/writes auto login state from/to local state.
   AutoLoginState GetAutoLoginState() const;

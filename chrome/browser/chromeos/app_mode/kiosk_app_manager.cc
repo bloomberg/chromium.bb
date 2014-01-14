@@ -269,6 +269,7 @@ void KioskAppManager::RemoveApp(const std::string& app_id) {
 }
 
 void KioskAppManager::GetApps(Apps* apps) const {
+  apps->clear();
   apps->reserve(apps_.size());
   for (size_t i = 0; i < apps_.size(); ++i)
     apps->push_back(App(*apps_[i]));
@@ -300,6 +301,25 @@ bool KioskAppManager::GetDisableBailoutShortcut() const {
   }
 
   return false;
+}
+
+void KioskAppManager::ClearAppData(const std::string& app_id) {
+  KioskAppData* app_data = GetAppDataMutable(app_id);
+  if (!app_data)
+    return;
+
+  app_data->ClearCache();
+}
+
+void KioskAppManager::UpdateAppDataFromProfile(
+    const std::string& app_id,
+    Profile* profile,
+    const extensions::Extension* app) {
+  KioskAppData* app_data = GetAppDataMutable(app_id);
+  if (!app_data)
+    return;
+
+  app_data->LoadFromInstalledApp(profile, app);
 }
 
 void KioskAppManager::AddObserver(KioskAppManagerObserver* observer) {
@@ -339,6 +359,10 @@ const KioskAppData* KioskAppManager::GetAppData(
   }
 
   return NULL;
+}
+
+KioskAppData* KioskAppManager::GetAppDataMutable(const std::string& app_id) {
+  return const_cast<KioskAppData*>(GetAppData(app_id));
 }
 
 void KioskAppManager::UpdateAppData() {

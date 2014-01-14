@@ -16,6 +16,8 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/updater/manifest_fetch_data.h"
+#include "chrome/browser/extensions/updater/safe_manifest_parser.h"
 #include "chrome/browser/extensions/webstore_startup_installer.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
@@ -23,12 +25,20 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
+#include "chrome/common/extensions/manifest_url_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/kiosk_mode_info.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_constants.h"
+#include "net/base/load_flags.h"
+#include "net/url_request/url_fetcher.h"
+#include "net/url_request/url_fetcher_delegate.h"
+#include "net/url_request/url_request_context_getter.h"
+#include "net/url_request/url_request_status.h"
+#include "url/gurl.h"
 
 using content::BrowserThread;
 using extensions::Extension;
@@ -45,13 +55,123 @@ const char kOAuthClientSecret[] = "client_secret";
 const base::FilePath::CharType kOAuthFileName[] =
     FILE_PATH_LITERAL("kiosk_auth");
 
-bool IsAppInstalled(Profile* profile, const std::string& app_id) {
-  return extensions::ExtensionSystem::Get(profile)->extension_service()->
-      GetInstalledExtension(app_id);
-}
-
 }  // namespace
 
+class StartupAppLauncher::AppUpdateChecker
+    : public base::SupportsWeakPtr<AppUpdateChecker>,
+      public net::URLFetcherDelegate {
+ public:
+  explicit AppUpdateChecker(StartupAppLauncher* launcher)
+      : launcher_(launcher),
+        profile_(launcher->profile_),
+        app_id_(launcher->app_id_) {}
+  virtual ~AppUpdateChecker() {}
+
+  void Start() {
+    const Extension* app = GetInstalledApp();
+    if (!app) {
+      launcher_->OnUpdateCheckNotInstalled();
+      return;
+    }
+
+    GURL update_url = extensions::ManifestURL::GetUpdateURL(app);
+    if (update_url.is_empty())
+      update_url = extension_urls::GetWebstoreUpdateUrl();
+    if (!update_url.is_valid()) {
+      launcher_->OnUpdateCheckNoUpdate();
+      return;
+    }
+
+    manifest_fetch_data_.reset(
+        new extensions::ManifestFetchData(update_url, 0));
+    manifest_fetch_data_->AddExtension(
+        app_id_, app->version()->GetString(), NULL, "", "");
+
+    manifest_fetcher_.reset(net::URLFetcher::Create(
+        manifest_fetch_data_->full_url(), net::URLFetcher::GET, this));
+    manifest_fetcher_->SetRequestContext(profile_->GetRequestContext());
+    manifest_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
+                                    net::LOAD_DO_NOT_SAVE_COOKIES |
+                                    net::LOAD_DISABLE_CACHE);
+    manifest_fetcher_->SetAutomaticallyRetryOnNetworkChanges(3);
+    manifest_fetcher_->Start();
+  }
+
+ private:
+  const Extension* GetInstalledApp() {
+    ExtensionService* extension_service =
+        extensions::ExtensionSystem::Get(profile_)->extension_service();
+    return extension_service->GetInstalledExtension(app_id_);
+  }
+
+  void HandleManifestResults(const extensions::ManifestFetchData& fetch_data,
+                             const UpdateManifest::Results* results) {
+    if (!results || results->list.empty()) {
+      launcher_->OnUpdateCheckNoUpdate();
+      return;
+    }
+
+    DCHECK_EQ(1u, results->list.size());
+
+    const UpdateManifest::Result& update = results->list[0];
+
+    if (update.browser_min_version.length() > 0) {
+      Version browser_version;
+      chrome::VersionInfo version_info;
+      if (version_info.is_valid())
+        browser_version = Version(version_info.Version());
+
+      Version browser_min_version(update.browser_min_version);
+      if (browser_version.IsValid() &&
+          browser_min_version.IsValid() &&
+          browser_min_version.CompareTo(browser_version) > 0) {
+        launcher_->OnUpdateCheckNoUpdate();
+        return;
+      }
+    }
+
+    const Version& existing_version = *GetInstalledApp()->version();
+    Version update_version(update.version);
+    if (existing_version.IsValid() &&
+        update_version.IsValid() &&
+        update_version.CompareTo(existing_version) <= 0) {
+      launcher_->OnUpdateCheckNoUpdate();
+      return;
+    }
+
+    launcher_->OnUpdateCheckUpdateAvailable();
+  }
+
+  // net::URLFetcherDelegate implementation.
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE {
+    DCHECK_EQ(source, manifest_fetcher_.get());
+
+    if (source->GetStatus().status() != net::URLRequestStatus::SUCCESS ||
+        source->GetResponseCode() != 200) {
+      launcher_->OnUpdateCheckNoUpdate();
+      return;
+    }
+
+    std::string data;
+    source->GetResponseAsString(&data);
+    scoped_refptr<extensions::SafeManifestParser> safe_parser(
+        new extensions::SafeManifestParser(
+            data,
+            manifest_fetch_data_.release(),
+            base::Bind(&AppUpdateChecker::HandleManifestResults,
+                       AsWeakPtr())));
+    safe_parser->Start();
+  }
+
+  StartupAppLauncher* launcher_;
+  Profile* profile_;
+  const std::string app_id_;
+
+  scoped_ptr<extensions::ManifestFetchData> manifest_fetch_data_;
+  scoped_ptr<net::URLFetcher> manifest_fetcher_;
+
+  DISALLOW_COPY_AND_ASSIGN(AppUpdateChecker);
+};
 
 StartupAppLauncher::StartupAppLauncher(Profile* profile,
                                        const std::string& app_id,
@@ -80,7 +200,7 @@ void StartupAppLauncher::ContinueWithNetworkReady() {
   // Starts install if it is not started.
   if (!install_attempted_) {
     install_attempted_ = true;
-    BeginInstall();
+    MaybeInstall();
   }
 }
 
@@ -183,17 +303,6 @@ void StartupAppLauncher::OnRefreshTokensLoaded() {
   InitializeNetwork();
 }
 
-void StartupAppLauncher::OnLaunchSuccess() {
-  delegate_->OnLaunchSucceeded();
-}
-
-void StartupAppLauncher::OnLaunchFailure(KioskAppLaunchError::Error error) {
-  LOG(ERROR) << "App launch failed, error: " << error;
-  DCHECK_NE(KioskAppLaunchError::NONE, error);
-
-  delegate_->OnLaunchFailed(error);
-}
-
 void StartupAppLauncher::LaunchApp() {
   if (!ready_to_launch_) {
     NOTREACHED();
@@ -225,14 +334,44 @@ void StartupAppLauncher::LaunchApp() {
   OnLaunchSuccess();
 }
 
-void StartupAppLauncher::BeginInstall() {
+void StartupAppLauncher::OnLaunchSuccess() {
+  delegate_->OnLaunchSucceeded();
+}
+
+void StartupAppLauncher::OnLaunchFailure(KioskAppLaunchError::Error error) {
+  LOG(ERROR) << "App launch failed, error: " << error;
+  DCHECK_NE(KioskAppLaunchError::NONE, error);
+
+  delegate_->OnLaunchFailed(error);
+}
+
+void StartupAppLauncher::MaybeInstall() {
   delegate_->OnInstallingApp();
 
-  if (IsAppInstalled(profile_, app_id_)) {
-    OnReadyToLaunch();
-    return;
-  }
+  update_checker_.reset(new AppUpdateChecker(this));
+  update_checker_->Start();
+}
 
+void StartupAppLauncher::OnUpdateCheckNotInstalled() {
+  BeginInstall();
+}
+
+void StartupAppLauncher::OnUpdateCheckUpdateAvailable() {
+  // Uninstall to force a re-install.
+  // TODO(xiyuan): Find a better way. Either download CRX and install it
+  // directly or integrate with ExtensionUpdater in someway.
+  ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
+  extension_service->UninstallExtension(app_id_, false, NULL);
+
+  OnUpdateCheckNotInstalled();
+}
+
+void StartupAppLauncher::OnUpdateCheckNoUpdate() {
+  OnReadyToLaunch();
+}
+
+void StartupAppLauncher::BeginInstall() {
   installer_ = new WebstoreStartupInstaller(
       app_id_,
       profile_,
@@ -252,6 +391,13 @@ void StartupAppLauncher::InstallCallback(bool success,
         FROM_HERE,
         base::Bind(&StartupAppLauncher::OnReadyToLaunch,
                    AsWeakPtr()));
+
+    // Schedule app data update after installation.
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&StartupAppLauncher::UpdateAppData,
+                   AsWeakPtr()));
     return;
   }
 
@@ -262,6 +408,11 @@ void StartupAppLauncher::InstallCallback(bool success,
 void StartupAppLauncher::OnReadyToLaunch() {
   ready_to_launch_ = true;
   delegate_->OnReadyToLaunch();
+}
+
+void StartupAppLauncher::UpdateAppData() {
+  KioskAppManager::Get()->ClearAppData(app_id_);
+  KioskAppManager::Get()->UpdateAppDataFromProfile(app_id_, profile_, NULL);
 }
 
 }   // namespace chromeos
