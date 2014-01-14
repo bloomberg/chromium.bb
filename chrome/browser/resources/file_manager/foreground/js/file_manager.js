@@ -2487,7 +2487,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
                   newName);
             } else {
               message = strf('ERROR_RENAMING', entry.name,
-                             util.getFileErrorString(err.code));
+                             util.getFileErrorString(error.code));
             }
 
             this.alert.show(message);
