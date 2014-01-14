@@ -8,6 +8,7 @@
 import logging
 import multiprocessing
 import os
+import socket
 import tempfile
 import urllib2
 
@@ -154,7 +155,7 @@ class DevServerWrapper(multiprocessing.Process):
     except urllib2.HTTPError as e:
       logging.error('Devserver responsded with an error!')
       raise DevServerException(e)
-    except urllib2.URLError as e:
+    except (urllib2.URLError, socket.timeout) as e:
       if not ignore_url_error:
         logging.error('Cannot connect to devserver!')
         raise DevServerException(e)
@@ -183,7 +184,7 @@ class DevServerWrapper(multiprocessing.Process):
       raise DevServerException('Devserver crashed while starting')
 
     url = os.path.join('http://127.0.0.1:%d' % self.port, 'check_health')
-    if self.OpenURL(url, ignore_url_error=True, timeout=0.05):
+    if self.OpenURL(url, ignore_url_error=True, timeout=2):
       return True
 
     return False
@@ -204,7 +205,7 @@ class DevServerWrapper(multiprocessing.Process):
     try:
       timeout_util.WaitForReturnValue([True], self.IsReady,
                                       timeout=self.DEV_SERVER_TIMEOUT,
-                                      period=2)
+                                      period=5)
     except timeout_util.TimeoutError:
       self.terminate()
       raise DevServerException('Devserver did not start')
