@@ -153,7 +153,7 @@
     // This is the interface orientation in degrees. Some examples are:
     //  0 is straight up; -90 is when the device is rotated 90 clockwise;
     //  90 is when rotated counter clockwise.
-    [Conditional=ORIENTATION_EVENTS] readonly attribute long orientation;
+    [RuntimeEnabled=OrientationEvent] readonly attribute long orientation;
 
     [Replaceable] readonly attribute Console console;
 
@@ -176,7 +176,7 @@
     [RuntimeEnabled=CSSAnimationUnprefixed] attribute EventHandler onanimationstart;
     [RuntimeEnabled=DeviceMotion] attribute EventHandler ondevicemotion;
     [RuntimeEnabled=DeviceOrientation] attribute EventHandler ondeviceorientation;
-    [Conditional=ORIENTATION_EVENTS] attribute EventHandler onorientationchange;
+    [RuntimeEnabled=OrientationEvent] attribute EventHandler onorientationchange;
     attribute EventHandler onsearch;
     [RuntimeEnabled=Touch] attribute EventHandler ontouchcancel;
     [RuntimeEnabled=Touch] attribute EventHandler ontouchend;

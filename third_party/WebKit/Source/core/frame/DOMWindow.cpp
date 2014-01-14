@@ -612,15 +612,15 @@ bool DOMWindow::isCurrentlyDisplayedInFrame() const
     return m_frame && m_frame->domWindow() == this;
 }
 
-#if ENABLE(ORIENTATION_EVENTS)
 int DOMWindow::orientation() const
 {
+    ASSERT(!RuntimeEnabledFeatures::orientationEventEnabled());
+
     if (!m_frame)
         return 0;
 
     return m_frame->orientation();
 }
-#endif
 
 Screen* DOMWindow::screen() const
 {

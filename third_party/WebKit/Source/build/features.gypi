@@ -58,7 +58,6 @@
           'ENABLE_INPUT_SPEECH=0',
           'ENABLE_LEGACY_NOTIFICATIONS=0',
           'ENABLE_MEDIA_CAPTURE=1',
-          'ENABLE_ORIENTATION_EVENTS=1',
           'ENABLE_TOUCH_ICON_LOADING=1',
         ],
       }, { # OS!="android"
@@ -67,7 +66,6 @@
           'ENABLE_INPUT_MULTIPLE_FIELDS_UI=1',
           'ENABLE_LEGACY_NOTIFICATIONS=1',
           'ENABLE_MEDIA_CAPTURE=0',
-          'ENABLE_ORIENTATION_EVENTS=0',
           'ENABLE_WEB_AUDIO=1',
         ],
       }],

@@ -23,7 +23,7 @@ interface HTMLFrameSetElement : HTMLElement {
     [Reflect] attribute DOMString cols;
     [Reflect] attribute DOMString rows;
 
-    [Conditional=ORIENTATION_EVENTS] attribute EventHandler onorientationchange;
+    [RuntimeEnabled=OrientationEvent] attribute EventHandler onorientationchange;
 
     // Overrides of GlobalEventHandler attributes
     attribute EventHandler onblur;

@@ -5,7 +5,7 @@ HTMLEvents ImplementedAs=Event
 KeyboardEvents ImplementedAs=KeyboardEvent
 MouseEvents ImplementedAs=MouseEvent
 MutationEvents ImplementedAs=MutationEvent
-OrientationEvent ImplementedAs=Event, Conditional=ORIENTATION_EVENTS
+OrientationEvent ImplementedAs=Event, RuntimeEnabled=OrientationEventEnabled
 SVGEvents ImplementedAs=Event
 SVGZoomEvents ImplementedAs=SVGZoomEvent
 UIEvents ImplementedAs=UIEvent

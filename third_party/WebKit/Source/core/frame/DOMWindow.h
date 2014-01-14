@@ -284,15 +284,12 @@ enum PageshowEventPersistence {
         ApplicationCache* applicationCache() const;
         ApplicationCache* optionalApplicationCache() const { return m_applicationCache.get(); }
 
-#if ENABLE(ORIENTATION_EVENTS)
         // This is the interface orientation in degrees. Some examples are:
         //  0 is straight up; -90 is when the device is rotated 90 clockwise;
         //  90 is when rotated counter clockwise.
         int orientation() const;
 
         DEFINE_ATTRIBUTE_EVENT_LISTENER(orientationchange);
-#endif
-
         DEFINE_ATTRIBUTE_EVENT_LISTENER(touchstart);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(touchmove);
         DEFINE_ATTRIBUTE_EVENT_LISTENER(touchend);

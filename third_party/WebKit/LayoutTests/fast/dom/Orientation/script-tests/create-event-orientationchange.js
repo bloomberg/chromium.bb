@@ -1,16 +1,20 @@
-description('Tests that document.createEvent() works with orientationChange')
+description('Tests that document.createEvent() works with orientationChange if enabled')
 
-function handleOrientationChange()
+function handleTestResult()
 {
     document.getElementById('result').innerHTML = "PASS";
 }
 
-window.addEventListener('orientationchange', handleOrientationChange, false);
+if (window.internals && internals.runtimeFlags.orientationEventEnabled) {
+    window.addEventListener('orientationchange', handleTestResult, false);
 
-try {
-    var event = document.createEvent("OrientationEvent");
-    event.initEvent("orientationchange", false, false);
-    window.dispatchEvent(event);
-} catch(e) {
-    document.getElementById('result').innerHTML = "FAIL... orientationChange event doesn't appear to be enabled or implemented.";
+    try {
+        var event = document.createEvent("OrientationEvent");
+        event.initEvent("orientationchange", false, false);
+        window.dispatchEvent(event);
+    } catch(e) {
+        document.getElementById('result').innerHTML = "FAIL... orientationChange event doesn't appear to be enabled or implemented.";
+    }
+} else {
+    handleTestResult();
 }

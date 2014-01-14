@@ -117,9 +117,7 @@ inline Frame::Frame(PassRefPtr<FrameInit> frameInit)
     , m_frameInit(frameInit)
     , m_pageZoomFactor(parentPageZoomFactor(this))
     , m_textZoomFactor(parentTextZoomFactor(this))
-#if ENABLE(ORIENTATION_EVENTS)
     , m_orientation(0)
-#endif
     , m_inViewSourceMode(false)
     , m_remotePlatformLayer(0)
 {
@@ -212,14 +210,15 @@ void Frame::setView(PassRefPtr<FrameView> view)
         m_view->setVisibleContentScaleFactor(page()->pageScaleFactor());
 }
 
-#if ENABLE(ORIENTATION_EVENTS)
 void Frame::sendOrientationChangeEvent(int orientation)
 {
+    if (!RuntimeEnabledFeatures::orientationEventEnabled())
+        return;
+
     m_orientation = orientation;
     if (DOMWindow* window = domWindow())
         window->dispatchEvent(Event::create(EventTypeNames::orientationchange));
 }
-#endif // ENABLE(ORIENTATION_EVENTS)
 
 FrameHost* Frame::host() const
 {

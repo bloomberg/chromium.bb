@@ -1750,10 +1750,10 @@ void WebFrameImpl::resetMatchCount()
 
 void WebFrameImpl::sendOrientationChangeEvent(int orientation)
 {
-#if ENABLE(ORIENTATION_EVENTS)
+    ASSERT(!RuntimeEnabledFeatures::orientationEventEnabled());
+
     if (frame())
         frame()->sendOrientationChangeEvent(orientation);
-#endif
 }
 
 void WebFrameImpl::dispatchMessageEventWithOriginCheck(const WebSecurityOrigin& intendedTargetOrigin, const WebDOMEvent& event)
