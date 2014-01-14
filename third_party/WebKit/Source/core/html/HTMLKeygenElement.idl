@@ -33,7 +33,7 @@ interface HTMLKeygenElement : HTMLElement {
     [Reflect] attribute DOMString challenge;
     [Reflect] attribute boolean disabled;
     [ImplementedAs=formOwner] readonly attribute HTMLFormElement form;
-    [Reflect] attribute DOMString keytype;
+    [Reflect, ReflectOnly="rsa", ReflectMissing="rsa"] attribute DOMString keytype;
     [Reflect] attribute DOMString name;
 
     readonly attribute DOMString type;
