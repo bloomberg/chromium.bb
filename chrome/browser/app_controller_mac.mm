@@ -1463,7 +1463,7 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
 }
 
 - (void)initAppShimMenuController {
-  if (apps::IsAppShimsEnabled() && !appShimMenuController_)
+  if (!appShimMenuController_)
     appShimMenuController_.reset([[AppShimMenuController alloc] init]);
 }
 
