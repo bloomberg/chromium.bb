@@ -316,6 +316,10 @@ void MediaGalleriesGetMediaFileSystemsFunction::ShowDialog() {
   const Extension* extension = GetExtension();
   WebContents* contents =
       GetWebContents(render_view_host(), GetProfile(), extension->id());
+  if (!contents) {
+    SendResponse(false);
+    return;
+  }
 
   // Controller will delete itself.
   base::Closure cb = base::Bind(
@@ -420,14 +424,19 @@ bool MediaGalleriesAddUserSelectedFolderFunction::RunImpl() {
 }
 
 void MediaGalleriesAddUserSelectedFolderFunction::OnPreferencesInit() {
+  Profile* profile = GetProfile();
+  const std::string& app_id = GetExtension()->id();
+  WebContents* contents = GetWebContents(render_view_host(), profile, app_id);
+  if (!contents) {
+    SendResponse(false);
+    return;
+  }
+
   if (!user_gesture()) {
     OnDirectorySelected(base::FilePath());
     return;
   }
 
-  Profile* profile = GetProfile();
-  const std::string& app_id = GetExtension()->id();
-  WebContents* contents = GetWebContents(render_view_host(), profile, app_id);
   base::FilePath last_used_path =
       extensions::file_system_api::GetLastChooseEntryDirectory(
           extensions::ExtensionPrefs::Get(profile), app_id);
