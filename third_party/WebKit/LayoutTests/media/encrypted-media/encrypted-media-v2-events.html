@@ -23,17 +23,17 @@
             {
                 run('mediaKeys = new MediaKeys("org.w3.clearkey")');
                 run('mediaKeySession = mediaKeys.createSession("video/webm", initData)');
-                waitForEvent('webkitkeymessage', keyMessage, false, false, mediaKeySession);
-                waitForEvent('webkitkeyerror', keyError, false, false, mediaKeySession);
-                waitForEvent('webkitkeyadded', null, true, false, mediaKeySession);
+                waitForEvent('message', processMessage, false, false, mediaKeySession);
+                waitForEvent('error', processError, false, false, mediaKeySession);
+                waitForEvent('ready', null, true, false, mediaKeySession);
             }
 
-            function keyMessage(event)
+            function processMessage(event)
             {
                 run('mediaKeySession.update(invalidKey)');
             }
 
-            function keyError(event)
+            function processError(event)
             {
                 run('mediaKeySession.update(validKey)');
             }

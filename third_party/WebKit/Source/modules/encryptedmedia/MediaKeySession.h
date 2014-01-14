@@ -70,10 +70,6 @@ public:
 
     void enqueueEvent(PassRefPtr<Event>);
 
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitkeyadded);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitkeyerror);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitkeymessage);
-
     virtual const AtomicString& interfaceName() const OVERRIDE;
     virtual ExecutionContext* executionContext() const OVERRIDE;
 
@@ -83,9 +79,10 @@ private:
     void updateTimerFired(Timer<MediaKeySession>*);
 
     // ContentDecryptionModuleSessionClient
-    virtual void keyAdded() OVERRIDE;
-    virtual void keyError(MediaKeyErrorCode, unsigned long systemCode) OVERRIDE;
-    virtual void keyMessage(const unsigned char* message, size_t messageLength, const KURL& destinationURL) OVERRIDE;
+    virtual void message(const unsigned char* message, size_t messageLength, const KURL& destinationURL) OVERRIDE;
+    virtual void ready() OVERRIDE;
+    virtual void close() OVERRIDE;
+    virtual void error(MediaKeyErrorCode, unsigned long systemCode) OVERRIDE;
 
     String m_keySystem;
     RefPtr<MediaKeyError> m_error;

@@ -47,9 +47,15 @@ public:
             MediaKeyErrorCodeClient,
         };
 
-        virtual void keyAdded() = 0;
-        virtual void keyError(MediaKeyErrorCode, unsigned long systemCode) = 0;
-        virtual void keyMessage(const unsigned char* message, size_t messageLength, const blink::WebURL& destinationURL) = 0;
+        virtual void message(const unsigned char* message, size_t messageLength, const blink::WebURL& destinationURL) = 0;
+        virtual void ready() = 0;
+        virtual void close() = 0;
+        virtual void error(MediaKeyErrorCode, unsigned long systemCode) = 0;
+
+        // FIXME: Remove when all callers change to using the methods above.
+        virtual void keyMessage(const unsigned char* actualMessage, size_t messageLength, const blink::WebURL& destinationURL) { message(actualMessage, messageLength, destinationURL); }
+        virtual void keyAdded() { ready(); }
+        virtual void keyError(MediaKeyErrorCode errorCode, unsigned long systemCode) { error(errorCode, systemCode); }
 
     protected:
         virtual ~Client();

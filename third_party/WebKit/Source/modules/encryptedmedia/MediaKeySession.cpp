@@ -132,15 +132,36 @@ void MediaKeySession::updateTimerFired(Timer<MediaKeySession>*)
     }
 }
 
-void MediaKeySession::keyAdded()
+// Queue a task to fire a simple event named keymessage at the new object
+void MediaKeySession::message(const unsigned char* message, size_t messageLength, const KURL& destinationURL)
 {
-    RefPtr<Event> event = Event::create(EventTypeNames::webkitkeyadded);
+    MediaKeyMessageEventInit init;
+    init.bubbles = false;
+    init.cancelable = false;
+    init.message = Uint8Array::create(message, messageLength);
+    init.destinationURL = destinationURL;
+
+    RefPtr<MediaKeyMessageEvent> event = MediaKeyMessageEvent::create(EventTypeNames::message, init);
+    event->setTarget(this);
+    m_asyncEventQueue->enqueueEvent(event.release());
+}
+
+void MediaKeySession::ready()
+{
+    RefPtr<Event> event = Event::create(EventTypeNames::ready);
+    event->setTarget(this);
+    m_asyncEventQueue->enqueueEvent(event.release());
+}
+
+void MediaKeySession::close()
+{
+    RefPtr<Event> event = Event::create(EventTypeNames::close);
     event->setTarget(this);
     m_asyncEventQueue->enqueueEvent(event.release());
 }
 
 // Queue a task to fire a simple event named keyadded at the MediaKeySession object.
-void MediaKeySession::keyError(MediaKeyErrorCode errorCode, unsigned long systemCode)
+void MediaKeySession::error(MediaKeyErrorCode errorCode, unsigned long systemCode)
 {
     MediaKeyError::Code mediaKeyErrorCode = MediaKeyError::MEDIA_KEYERR_UNKNOWN;
     switch (errorCode) {
@@ -159,21 +180,7 @@ void MediaKeySession::keyError(MediaKeyErrorCode errorCode, unsigned long system
     m_error = MediaKeyError::create(mediaKeyErrorCode, systemCode);
 
     // 3. queue a task to fire a simple event named keyerror at the MediaKeySession object.
-    RefPtr<Event> event = Event::create(EventTypeNames::webkitkeyerror);
-    event->setTarget(this);
-    m_asyncEventQueue->enqueueEvent(event.release());
-}
-
-// Queue a task to fire a simple event named keymessage at the new object
-void MediaKeySession::keyMessage(const unsigned char* message, size_t messageLength, const KURL& destinationURL)
-{
-    MediaKeyMessageEventInit init;
-    init.bubbles = false;
-    init.cancelable = false;
-    init.message = Uint8Array::create(message, messageLength);
-    init.destinationURL = destinationURL;
-
-    RefPtr<MediaKeyMessageEvent> event = MediaKeyMessageEvent::create(EventTypeNames::webkitkeymessage, init);
+    RefPtr<Event> event = Event::create(EventTypeNames::error);
     event->setTarget(this);
     m_asyncEventQueue->enqueueEvent(event.release());
 }

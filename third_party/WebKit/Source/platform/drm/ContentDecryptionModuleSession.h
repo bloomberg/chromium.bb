@@ -49,9 +49,10 @@ class KURL;
 class PLATFORM_EXPORT ContentDecryptionModuleSessionClient {
 public:
     enum MediaKeyErrorCode { UnknownError = 1, ClientError };
-    virtual void keyAdded() = 0;
-    virtual void keyError(MediaKeyErrorCode, unsigned long systemCode) = 0;
-    virtual void keyMessage(const unsigned char* message, size_t messageLength, const KURL& destinationURL) = 0;
+    virtual void message(const unsigned char* message, size_t messageLength, const KURL& destinationURL) = 0;
+    virtual void ready() = 0;
+    virtual void close() = 0;
+    virtual void error(MediaKeyErrorCode, unsigned long systemCode) = 0;
 };
 
 class PLATFORM_EXPORT ContentDecryptionModuleSession : private blink::WebContentDecryptionModuleSession::Client {
@@ -69,9 +70,10 @@ public:
 
 private:
     // blink::WebContentDecryptionModuleSession::Client
-    virtual void keyAdded() OVERRIDE;
-    virtual void keyError(MediaKeyErrorCode, unsigned long systemCode) OVERRIDE;
-    virtual void keyMessage(const unsigned char* message, size_t messageLength, const blink::WebURL& destinationURL) OVERRIDE;
+    virtual void message(const unsigned char* message, size_t messageLength, const blink::WebURL& destinationURL) OVERRIDE;
+    virtual void ready() OVERRIDE;
+    virtual void close() OVERRIDE;
+    virtual void error(MediaKeyErrorCode, unsigned long systemCode) OVERRIDE;
 
     OwnPtr<blink::WebContentDecryptionModuleSession> m_session;
 

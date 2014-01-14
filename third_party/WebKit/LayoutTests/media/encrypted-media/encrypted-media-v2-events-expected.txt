@@ -2,10 +2,10 @@ This tests the events created by MediaKeys.
 
 RUN(mediaKeys = new MediaKeys("org.w3.clearkey"))
 RUN(mediaKeySession = mediaKeys.createSession("video/webm", initData))
-EVENT(webkitkeymessage)
+EVENT(message)
 RUN(mediaKeySession.update(invalidKey))
-EVENT(webkitkeyerror)
+EVENT(error)
 RUN(mediaKeySession.update(validKey))
-EVENT(webkitkeyadded)
+EVENT(ready)
 END OF TEST
 

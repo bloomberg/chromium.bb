@@ -70,19 +70,24 @@ void ContentDecryptionModuleSession::release()
     m_session->release();
 }
 
-void ContentDecryptionModuleSession::keyAdded()
+void ContentDecryptionModuleSession::message(const unsigned char* message, size_t messageLength, const blink::WebURL& destinationURL)
 {
-    m_client->keyAdded();
+    m_client->message(message, messageLength, destinationURL);
 }
 
-void ContentDecryptionModuleSession::keyError(MediaKeyErrorCode errorCode, unsigned long systemCode)
+void ContentDecryptionModuleSession::ready()
 {
-    m_client->keyError(static_cast<ContentDecryptionModuleSessionClient::MediaKeyErrorCode>(errorCode), systemCode);
+    m_client->ready();
 }
 
-void ContentDecryptionModuleSession::keyMessage(const unsigned char* message, size_t messageLength, const blink::WebURL& destinationURL)
+void ContentDecryptionModuleSession::close()
 {
-    m_client->keyMessage(message, messageLength, destinationURL);
+    m_client->close();
+}
+
+void ContentDecryptionModuleSession::error(MediaKeyErrorCode errorCode, unsigned long systemCode)
+{
+    m_client->error(static_cast<ContentDecryptionModuleSessionClient::MediaKeyErrorCode>(errorCode), systemCode);
 }
 
 } // namespace WebCore

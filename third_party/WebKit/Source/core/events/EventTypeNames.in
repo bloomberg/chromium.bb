@@ -137,6 +137,7 @@ playing
 popstate
 progress
 ratechange
+ready
 readystatechange
 removesourcebuffer
 removestream
