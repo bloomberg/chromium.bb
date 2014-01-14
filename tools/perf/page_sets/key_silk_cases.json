@@ -228,6 +228,238 @@
           }
         }
       ]
+    },
+    {
+      "disabled": "The page isn't scrollable on large screen sizes (e.g. tablets); crbug.com/333923",
+      "url": "http://forecast.io?scroll",
+      "navigate_steps": [
+        { "action": "navigate" },
+        { "action": "wait", "javascript": "document.getElementById('forecast').style['display'] != 'none'" },
+        { "action": "wait", "seconds": 2 }
+      ],
+      "smoothness": {
+        "action": "scroll_timeline"
+      },
+      "scroll_timeline": {
+        "action": "scroll",
+        "direction": "right",
+        "scroll_requires_touch": "true",
+        "scrollable_element_function": "function(callback) { callback(document.getElementsByClassName('scroll')[0]); }"
+      }
+    },
+    {
+      "url": "http://forecast.io?swipe",
+      "navigate_steps": [
+        { "action": "navigate" },
+        { "action": "wait", "javascript": "document.getElementById('forecast').style['display'] != 'none'" },
+        { "action": "wait", "seconds": 2 }
+      ],
+      "smoothness": {
+        "action": "slide_next_7_days"
+      },
+      "slide_next_7_days": {
+        "action": "swipe",
+        "direction": "up",
+        "distance": 200,
+        "wait_after": { "javascript": "document.getElementsByClassName('grippy')[0].getBoundingClientRect().top == 12" }
+      }
+    },
+    {
+      "url": "http://forecast.io?tap",
+      "navigate_steps" : [
+        { "action": "navigate" },
+        { "action": "wait", "javascript": "document.getElementById('forecast').style['display'] != 'none'" },
+        { "action": "wait", "seconds": 2 },
+        { "action": "slide_next_7_days" }
+      ],
+      "smoothness": {
+        "action": "tap_day"
+      },
+      "slide_next_7_days" : {
+        "action": "swipe",
+        "direction": "up",
+        "distance": 200,
+        "wait_after": { "javascript": "document.getElementsByClassName('grippy')[0].getBoundingClientRect().top == 12" }
+      },
+      "tap_day": {
+        "action": "tap",
+        "element_function": "function(callback) { callback(document.getElementsByClassName('day')[2]); }",
+        "wait_after": { "javascript": "document.getElementById('day_timeline').style['display'] == 'block'" }
+      }
+    },
+    {
+      "url": "http://www.google.com/#q=google",
+      "navigate_steps" : [
+        { "action": "navigate" },
+        { "action": "wait", "seconds": 3 },
+        { "action": "scroll_knowledge_card_to_top" }
+      ],
+      "smoothness": {
+        "action": "expand_knowledge_card"
+      },
+      "scroll_knowledge_card_to_top": {
+        "action": "scroll",
+        "_comment": "scroll until the knowledge card is at the top",
+        "scroll_distance_function": "function() { return document.getElementById('kno-result').getBoundingClientRect().top - document.body.scrollTop; }"
+      },
+      "expand_knowledge_card": {
+        "action": "tap",
+        "_comment": "expand card",
+        "element_function": "function(callback) { callback(document.getElementsByClassName('vk_arc')[0]); }",
+        "wait_after": { "seconds": 2 }
+      }
+    },
+    {
+      "url": "http://pr.gg/scroll6.html",
+      "navigate_steps" : [
+        { "action": "navigate" },
+        { "action": "wait", "seconds": 1 }
+      ],
+      "smoothness": {
+        "action": "scroll",
+        "scrollable_element_function": "function(callback) { callback(document.getElementsByClassName('container')[0]); }"
+      }
+    },
+    {
+      "url": "http://plus.google.com/app/basic/stream",
+      "credentials": "google",
+      "navigate_steps" : [
+        { "action": "navigate" },
+        { "action": "wait", "javascript": "document.getElementsByClassName('fHa').length > 0" },
+        { "action": "wait", "seconds": 2 }
+      ],
+      "smoothness": {
+        "action": "scroll",
+        "scrollable_element_function": "function(callback) { callback(document.getElementById('mainContent')); }"
+      }
+    },
+    {
+      "url": "http://jsbin.com/UVIgUTa/6/quiet",
+      "smoothness": {
+        "action": "scroll",
+        "scroll_requires_touch": true,
+        "direction": "down",
+        "scroll_distance_function": "function() { return window.innerHeight / 2; }",
+        "wait_after": { "seconds": 1 }
+      }
+    },
+    {
+      "url": "http://mobile-news.sandbox.google.com/news/pt1",
+      "why": "Google News: accelerated scrolling version",
+      "navigate_steps" : [
+        { "action": "navigate" },
+        { "action": "wait", "seconds": 10 }
+      ]
+    },
+    {
+      "url": "http://mobile-news.sandbox.google.com/news/pt0?scroll",
+      "why": "Google News: this iOS version is slower than accelerated scrolling",
+      "navigate_steps": [
+        { "action": "navigate" },
+        { "action": "wait", "javascript": "document.getElementById(':h') != null" },
+        { "action": "wait", "seconds": 1 }
+      ],
+      "smoothness": {
+        "action": "scroll",
+        "scroll_requires_touch": true,
+        "scrollable_element_function": "function(callback) { callback(document.getElementById(':5')); }",
+        "scroll_distance_function": "function() { return 2500; }"
+      }
+    },
+    {
+      "url": "http://mobile-news.sandbox.google.com/news/pt0?swipe",
+      "navigate_steps": [
+        { "action": "navigate" },
+        { "action": "wait", "javascript": "document.getElementById(':h') != null" },
+        { "action": "wait", "seconds": 1 }
+      ],
+      "smoothness": {
+        "action": "swipe",
+        "direction": "left",
+        "distance": 100,
+        "element_function": "function(callback) { callback(document.getElementById(':f')); }",
+        "wait_after": { "seconds": 1 }
+      }
+    },
+    {
+      "url": "http://s.codepen.io/befamous/fullpage/pFsqb?scroll",
+      "why": "famo.us twitter demo",
+      "navigate_steps" : [
+        { "action": "navigate" },
+        { "action": "wait", "javascript": "document.getElementsByClassName('tweet').length > 0" },
+        { "action": "wait", "seconds": 1 }
+      ],
+      "smoothness": {
+        "action": "scroll",
+        "scroll_distance_function": "function() { return 5000; }"
+      }
+    },
+    {
+      "url": "http://s.codepen.io/befamous/fullpage/pFsqb?flip",
+      "why": "famo.us twitter demo",
+      "navigate_steps" : [
+        { "action": "navigate" },
+        { "action": "wait", "javascript": "document.getElementsByClassName('tweet').length > 0" }
+      ],
+      "smoothness": {
+        "action": "tap",
+        "element_function": "function(callback) { callback(document.getElementsByClassName('navigation')[2]); }",
+        "wait_after": { "javascript": "document.getElementsByClassName('header')[0].getBoundingClientRect().top == 0" }
+      }
+    },
+    {
+      "url": "http://s.codepen.io/befamous/fullpage/kbxnH?scroll",
+      "why": "famo.us lightbox demo",
+      "smoothness": {
+        "action": "scroll",
+        "scrollable_element_function": "function(callback) { callback(document.getElementsByClassName('container')[0]); }"
+      }
+    },
+    {
+      "url": "http://s.codepen.io/befamous/fullpage/kbxnH?select",
+      "why": "famo.us lightbox demo",
+      "smoothness": {
+        "action": "tap",
+        "element_function": "function(callback) { callback(document.getElementsByClassName('surface')[2]); }",
+        "_comment": "The wait_after condition is split into a condition for phones and portrait tablets, and one for landscape tablets",
+        "wait_after": { "javascript": "document.getElementsByClassName('surface')[1].getBoundingClientRect().left == 860 || Math.abs(document.getElementsByClassName('lightbox-title')[0].getBoundingClientRect().left - 907.77) < 0.1" }
+      }
+    },
+    {
+      "url": "http://famo.us?scroll",
+      "navigate_steps": [
+        { "action": "navigate" },
+        { "action": "wait", "seconds": 2 },
+        { "action": "close_signup_box" }
+      ],
+      "smoothness": {
+        "action": "scroll",
+        "direction": "right",
+        "scroll_distance_function": "function() { return 5000; }"
+      },
+      "close_signup_box": {
+        "action": "tap",
+        "element_function": "function(callback) { callback(document.getElementsByClassName('signup-hide')[0]); }",
+        "wait_after": { "javascript": "document.getElementsByClassName('signup-hide')[0].getBoundingClientRect().left < 0" }
+      }
+    },
+    {
+      "url": "http://famo.us?tap",
+      "navigate_steps": [
+        { "action": "navigate" },
+        { "action": "wait", "seconds": 2 },
+        { "action": "close_signup_box" }
+      ],
+      "smoothness": {
+        "action": "tap",
+        "element_function": "function(callback) { callback(document.getElementsByClassName('periodic-item')[47]); }",
+        "wait_after": { "seconds": 3 }
+      },
+      "close_signup_box": {
+        "action": "tap",
+        "element_function": "function(callback) { callback(document.getElementsByClassName('signup-hide')[0]); }",
+        "wait_after": { "javascript": "document.getElementsByClassName('signup-hide')[0].getBoundingClientRect().left < 0" }
+      }
     }
   ]
 }

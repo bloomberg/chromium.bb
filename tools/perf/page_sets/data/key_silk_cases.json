@@ -28,6 +28,24 @@
             "http://jsfiddle.net/mdxJ7/3/show", 
             "http://jsfiddle.net/3yDKh/1/show", 
             "http://jsfiddle.net/3yDKh/3/show"
+        ], 
+        "key_silk_cases_002.wpr": [
+            "http://forecast.io?scroll", 
+            "http://www.google.com/#q=google", 
+            "http://forecast.io?swipe", 
+            "http://pr.gg/scroll6.html", 
+            "http://plus.google.com/app/basic/stream", 
+            "http://forecast.io?tap", 
+            "http://jsbin.com/UVIgUTa/6/quiet", 
+            "http://mobile-news.sandbox.google.com/news/pt1", 
+            "http://mobile-news.sandbox.google.com/news/pt0?scroll", 
+            "http://mobile-news.sandbox.google.com/news/pt0?swipe", 
+            "http://s.codepen.io/befamous/fullpage/pFsqb?scroll", 
+            "http://s.codepen.io/befamous/fullpage/pFsqb?flip", 
+            "http://s.codepen.io/befamous/fullpage/kbxnH?scroll", 
+            "http://s.codepen.io/befamous/fullpage/kbxnH?select", 
+            "http://famo.us?scroll", 
+            "http://famo.us?tap"
         ]
     }
 }
