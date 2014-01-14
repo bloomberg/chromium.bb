@@ -29,3 +29,8 @@ class SmoothnessKeyMobileSites(test.Test):
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
   test = smoothness.Smoothness
   page_set = 'page_sets/key_mobile_sites.json'
+
+
+class SmoothnessToughAnimationCases(test.Test):
+  test = smoothness.Smoothness
+  page_set = 'page_sets/tough_animation_cases.json'
