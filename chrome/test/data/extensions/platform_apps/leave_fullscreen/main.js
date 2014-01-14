@@ -14,6 +14,13 @@ chrome.app.runtime.onLaunched.addListener(function() {
     });
 
     chrome.test.sendMessage('Launched', function(reply) {
+      win.contentWindow.document.addEventListener('keydown', function(e) {
+        if (e.keyCode != 90) // 'z'
+          return;
+
+        chrome.test.sendMessage('KeyReceived');
+      });
+
       switch (reply) {
         case 'window':
           win.fullscreen();
