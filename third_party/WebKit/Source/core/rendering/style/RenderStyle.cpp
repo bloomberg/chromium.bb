@@ -369,48 +369,69 @@ StyleDifference RenderStyle::diff(const RenderStyle* other, unsigned& changedCon
 {
     changedContextSensitiveProperties = ContextSensitivePropertyNone;
 
+    // Note, we use .get() on each DataRef below because DataRef::operator== will do a deep
+    // compare, which is duplicate work when we're going to compare each property inside
+    // this function anyway.
+
     StyleDifference svgChange = StyleDifferenceEqual;
-    if (m_svgStyle != other->m_svgStyle) {
+    if (m_svgStyle.get() != other->m_svgStyle.get()) {
         svgChange = m_svgStyle->diff(other->m_svgStyle.get());
         if (svgChange == StyleDifferenceLayout)
             return svgChange;
     }
 
-    if (m_box->width() != other->m_box->width()
-        || m_box->minWidth() != other->m_box->minWidth()
-        || m_box->maxWidth() != other->m_box->maxWidth()
-        || m_box->height() != other->m_box->height()
-        || m_box->minHeight() != other->m_box->minHeight()
-        || m_box->maxHeight() != other->m_box->maxHeight())
-        return StyleDifferenceLayout;
+    if (m_box.get() != other->m_box.get()) {
+        if (m_box->width() != other->m_box->width()
+            || m_box->minWidth() != other->m_box->minWidth()
+            || m_box->maxWidth() != other->m_box->maxWidth()
+            || m_box->height() != other->m_box->height()
+            || m_box->minHeight() != other->m_box->minHeight()
+            || m_box->maxHeight() != other->m_box->maxHeight())
+            return StyleDifferenceLayout;
 
-    if (m_box->verticalAlign() != other->m_box->verticalAlign() || noninherited_flags._vertical_align != other->noninherited_flags._vertical_align)
-        return StyleDifferenceLayout;
+        if (m_box->verticalAlign() != other->m_box->verticalAlign())
+            return StyleDifferenceLayout;
 
-    if (m_box->boxSizing() != other->m_box->boxSizing())
-        return StyleDifferenceLayout;
+        if (m_box->boxSizing() != other->m_box->boxSizing())
+            return StyleDifferenceLayout;
+    }
 
-    if (surround->margin != other->surround->margin)
-        return StyleDifferenceLayout;
+    if (surround.get() != other->surround.get()) {
+        if (surround->margin != other->surround->margin)
+            return StyleDifferenceLayout;
 
-    if (surround->padding != other->surround->padding)
-        return StyleDifferenceLayout;
+        if (surround->padding != other->surround->padding)
+            return StyleDifferenceLayout;
+
+        // If our border widths change, then we need to layout. Other changes to borders only necessitate a repaint.
+        if (borderLeftWidth() != other->borderLeftWidth()
+            || borderTopWidth() != other->borderTopWidth()
+            || borderBottomWidth() != other->borderBottomWidth()
+            || borderRightWidth() != other->borderRightWidth())
+            return StyleDifferenceLayout;
+    }
 
     if (rareNonInheritedData.get() != other->rareNonInheritedData.get()) {
         if (rareNonInheritedData->m_appearance != other->rareNonInheritedData->m_appearance
             || rareNonInheritedData->marginBeforeCollapse != other->rareNonInheritedData->marginBeforeCollapse
             || rareNonInheritedData->marginAfterCollapse != other->rareNonInheritedData->marginAfterCollapse
             || rareNonInheritedData->lineClamp != other->rareNonInheritedData->lineClamp
-            || rareNonInheritedData->textOverflow != other->rareNonInheritedData->textOverflow)
-            return StyleDifferenceLayout;
-
-        if (rareNonInheritedData->m_regionFragment != other->rareNonInheritedData->m_regionFragment)
-            return StyleDifferenceLayout;
-
-        if (rareNonInheritedData->m_wrapFlow != other->rareNonInheritedData->m_wrapFlow
+            || rareNonInheritedData->textOverflow != other->rareNonInheritedData->textOverflow
+            || rareNonInheritedData->m_regionFragment != other->rareNonInheritedData->m_regionFragment
+            || rareNonInheritedData->m_wrapFlow != other->rareNonInheritedData->m_wrapFlow
             || rareNonInheritedData->m_wrapThrough != other->rareNonInheritedData->m_wrapThrough
             || rareNonInheritedData->m_shapeMargin != other->rareNonInheritedData->m_shapeMargin
-            || rareNonInheritedData->m_shapePadding != other->rareNonInheritedData->m_shapePadding)
+            || rareNonInheritedData->m_shapePadding != other->rareNonInheritedData->m_shapePadding
+            || rareNonInheritedData->m_order != other->rareNonInheritedData->m_order
+            || rareNonInheritedData->m_alignContent != other->rareNonInheritedData->m_alignContent
+            || rareNonInheritedData->m_alignItems != other->rareNonInheritedData->m_alignItems
+            || rareNonInheritedData->m_alignSelf != other->rareNonInheritedData->m_alignSelf
+            || rareNonInheritedData->m_justifyContent != other->rareNonInheritedData->m_justifyContent
+            || rareNonInheritedData->m_grid.get() != other->rareNonInheritedData->m_grid.get()
+            || rareNonInheritedData->m_gridItem.get() != other->rareNonInheritedData->m_gridItem.get()
+            || rareNonInheritedData->m_shapeInside != other->rareNonInheritedData->m_shapeInside
+            || rareNonInheritedData->m_textCombine != other->rareNonInheritedData->m_textCombine
+            || rareNonInheritedData->hasFilters() != other->rareNonInheritedData->hasFilters())
             return StyleDifferenceLayout;
 
         if (rareNonInheritedData->m_deprecatedFlexibleBox.get() != other->rareNonInheritedData->m_deprecatedFlexibleBox.get()
@@ -419,12 +440,6 @@ StyleDifference RenderStyle::diff(const RenderStyle* other, unsigned& changedCon
 
         if (rareNonInheritedData->m_flexibleBox.get() != other->rareNonInheritedData->m_flexibleBox.get()
             && *rareNonInheritedData->m_flexibleBox.get() != *other->rareNonInheritedData->m_flexibleBox.get())
-            return StyleDifferenceLayout;
-        if (rareNonInheritedData->m_order != other->rareNonInheritedData->m_order
-            || rareNonInheritedData->m_alignContent != other->rareNonInheritedData->m_alignContent
-            || rareNonInheritedData->m_alignItems != other->rareNonInheritedData->m_alignItems
-            || rareNonInheritedData->m_alignSelf != other->rareNonInheritedData->m_alignSelf
-            || rareNonInheritedData->m_justifyContent != other->rareNonInheritedData->m_justifyContent)
             return StyleDifferenceLayout;
 
         // FIXME: We should add an optimized form of layout that just recomputes visual overflow.
@@ -445,12 +460,22 @@ StyleDifference RenderStyle::diff(const RenderStyle* other, unsigned& changedCon
             changedContextSensitiveProperties |= ContextSensitivePropertyTransform;
         }
 
-        if (rareNonInheritedData->m_grid.get() != other->rareNonInheritedData->m_grid.get()
-            || rareNonInheritedData->m_gridItem.get() != other->rareNonInheritedData->m_gridItem.get())
+        // If the counter directives change, trigger a relayout to re-calculate counter values and rebuild the counter node tree.
+        const CounterDirectiveMap* mapA = rareNonInheritedData->m_counterDirectives.get();
+        const CounterDirectiveMap* mapB = other->rareNonInheritedData->m_counterDirectives.get();
+        if (!(mapA == mapB || (mapA && mapB && *mapA == *mapB)))
             return StyleDifferenceLayout;
 
-        if (rareNonInheritedData->m_shapeInside != other->rareNonInheritedData->m_shapeInside)
+        // We only need do layout for opacity changes if adding or losing opacity could trigger a change
+        // in us being a stacking context.
+        if (hasAutoZIndex() != other->hasAutoZIndex() && rareNonInheritedData->hasOpacity() != other->rareNonInheritedData->hasOpacity()) {
+            // FIXME: We would like to use SimplifiedLayout here, but we can't quite do that yet.
+            // We need to make sure SimplifiedLayout can operate correctly on RenderInlines (we will need
+            // to add a selfNeedsSimplifiedLayout bit in order to not get confused and taint every line).
+            // In addition we need to solve the floating object issue when layers come and go. Right now
+            // a full layout is necessary to keep floating object lists sane.
             return StyleDifferenceLayout;
+        }
     }
 
     if (rareInheritedData.get() != other->rareInheritedData.get()) {
@@ -480,32 +505,48 @@ StyleDifference RenderStyle::diff(const RenderStyle* other, unsigned& changedCon
             || rareInheritedData->m_lineGrid != other->rareInheritedData->m_lineGrid
             || rareInheritedData->m_lineSnap != other->rareInheritedData->m_lineSnap
             || rareInheritedData->m_lineAlign != other->rareInheritedData->m_lineAlign
-            || rareInheritedData->listStyleImage != other->rareInheritedData->listStyleImage)
+            || rareInheritedData->listStyleImage != other->rareInheritedData->listStyleImage
+            || rareInheritedData->textStrokeWidth != other->rareInheritedData->textStrokeWidth)
             return StyleDifferenceLayout;
 
         if (!rareInheritedData->shadowDataEquivalent(*other->rareInheritedData.get()))
             return StyleDifferenceLayout;
 
-        if (textStrokeWidth() != other->textStrokeWidth())
+        if (!QuotesData::equals(rareInheritedData->quotes.get(), other->rareInheritedData->quotes.get()))
             return StyleDifferenceLayout;
     }
 
     if (visual->m_textAutosizingMultiplier != other->visual->m_textAutosizingMultiplier)
         return StyleDifferenceLayout;
 
-    if (inherited->line_height != other->inherited->line_height
+    if (inherited.get() != other->inherited.get()) {
+        if (inherited->line_height != other->inherited->line_height
         || inherited->font != other->inherited->font
         || inherited->horizontal_border_spacing != other->inherited->horizontal_border_spacing
-        || inherited->vertical_border_spacing != other->inherited->vertical_border_spacing
-        || inherited_flags._box_direction != other->inherited_flags._box_direction
+        || inherited->vertical_border_spacing != other->inherited->vertical_border_spacing)
+        return StyleDifferenceLayout;
+    }
+
+    if (inherited_flags._box_direction != other->inherited_flags._box_direction
         || inherited_flags.m_rtlOrdering != other->inherited_flags.m_rtlOrdering
-        || noninherited_flags._position != other->noninherited_flags._position
-        || noninherited_flags._floating != other->noninherited_flags._floating
-        || noninherited_flags._originalDisplay != other->noninherited_flags._originalDisplay)
+        || inherited_flags._text_align != other->inherited_flags._text_align
+        || inherited_flags._text_transform != other->inherited_flags._text_transform
+        || inherited_flags._direction != other->inherited_flags._direction
+        || inherited_flags._white_space != other->inherited_flags._white_space
+        || inherited_flags.m_writingMode != other->inherited_flags.m_writingMode)
         return StyleDifferenceLayout;
 
+    if (noninherited_flags._overflowX != other->noninherited_flags._overflowX
+        || noninherited_flags._overflowY != other->noninherited_flags._overflowY
+        || noninherited_flags._clear != other->noninherited_flags._clear
+        || noninherited_flags._unicodeBidi != other->noninherited_flags._unicodeBidi
+        || noninherited_flags._position != other->noninherited_flags._position
+        || noninherited_flags._floating != other->noninherited_flags._floating
+        || noninherited_flags._originalDisplay != other->noninherited_flags._originalDisplay
+        || noninherited_flags._vertical_align != other->noninherited_flags._vertical_align)
+        return StyleDifferenceLayout;
 
-    if (((int)noninherited_flags._effectiveDisplay) >= TABLE) {
+    if (noninherited_flags._effectiveDisplay >= FIRST_TABLE_DISPLAY && noninherited_flags._effectiveDisplay <= LAST_TABLE_DISPLAY) {
         if (inherited_flags._border_collapse != other->inherited_flags._border_collapse
             || inherited_flags._empty_cells != other->inherited_flags._empty_cells
             || inherited_flags._caption_side != other->inherited_flags._caption_side
@@ -524,67 +565,13 @@ StyleDifference RenderStyle::diff(const RenderStyle* other, unsigned& changedCon
                 || (borderRightStyle() == BHIDDEN && other->borderRightStyle() == BNONE)
                 || (borderRightStyle() == BNONE && other->borderRightStyle() == BHIDDEN)))
             return StyleDifferenceLayout;
-    }
-
-    if (noninherited_flags._effectiveDisplay == LIST_ITEM) {
+    } else if (noninherited_flags._effectiveDisplay == LIST_ITEM) {
         if (inherited_flags._list_style_type != other->inherited_flags._list_style_type
             || inherited_flags._list_style_position != other->inherited_flags._list_style_position)
             return StyleDifferenceLayout;
     }
 
-    if (inherited_flags._text_align != other->inherited_flags._text_align
-        || inherited_flags._text_transform != other->inherited_flags._text_transform
-        || inherited_flags._direction != other->inherited_flags._direction
-        || inherited_flags._white_space != other->inherited_flags._white_space
-        || noninherited_flags._clear != other->noninherited_flags._clear
-        || noninherited_flags._unicodeBidi != other->noninherited_flags._unicodeBidi)
-        return StyleDifferenceLayout;
-
-    // Check block flow direction.
-    if (inherited_flags.m_writingMode != other->inherited_flags.m_writingMode)
-        return StyleDifferenceLayout;
-
-    // Check text combine mode.
-    if (rareNonInheritedData->m_textCombine != other->rareNonInheritedData->m_textCombine)
-        return StyleDifferenceLayout;
-
-    // Overflow returns a layout hint.
-    if (noninherited_flags._overflowX != other->noninherited_flags._overflowX
-        || noninherited_flags._overflowY != other->noninherited_flags._overflowY)
-        return StyleDifferenceLayout;
-
-    // If our border widths change, then we need to layout.  Other changes to borders
-    // only necessitate a repaint.
-    if (borderLeftWidth() != other->borderLeftWidth()
-        || borderTopWidth() != other->borderTopWidth()
-        || borderBottomWidth() != other->borderBottomWidth()
-        || borderRightWidth() != other->borderRightWidth())
-        return StyleDifferenceLayout;
-
-    // If the counter directives change, trigger a relayout to re-calculate counter values and rebuild the counter node tree.
-    const CounterDirectiveMap* mapA = rareNonInheritedData->m_counterDirectives.get();
-    const CounterDirectiveMap* mapB = other->rareNonInheritedData->m_counterDirectives.get();
-    if (!(mapA == mapB || (mapA && mapB && *mapA == *mapB)))
-        return StyleDifferenceLayout;
-
     if ((visibility() == COLLAPSE) != (other->visibility() == COLLAPSE))
-        return StyleDifferenceLayout;
-
-    // We only need do layout for opacity changes if adding or losing opacity could trigger a change
-    // in us being a stacking context.
-    if (hasAutoZIndex() != other->hasAutoZIndex() && rareNonInheritedData->hasOpacity() != other->rareNonInheritedData->hasOpacity()) {
-        // FIXME: We would like to use SimplifiedLayout here, but we can't quite do that yet.
-        // We need to make sure SimplifiedLayout can operate correctly on RenderInlines (we will need
-        // to add a selfNeedsSimplifiedLayout bit in order to not get confused and taint every line).
-        // In addition we need to solve the floating object issue when layers come and go. Right now
-        // a full layout is necessary to keep floating object lists sane.
-        return StyleDifferenceLayout;
-    }
-
-    if (rareNonInheritedData->hasFilters() != other->rareNonInheritedData->hasFilters())
-        return StyleDifferenceLayout;
-
-    if (!QuotesData::equals(rareInheritedData->quotes.get(), other->rareInheritedData->quotes.get()))
         return StyleDifferenceLayout;
 
     // SVGRenderStyle::diff() might have returned StyleDifferenceRepaint, eg. if fill changes.
@@ -594,18 +581,18 @@ StyleDifference RenderStyle::diff(const RenderStyle* other, unsigned& changedCon
     if (svgChange != StyleDifferenceEqual)
         return svgChange;
 
-    // Make sure these left/top/right/bottom checks stay below all layout checks and above
-    // all visible checks.
+    // NOTE: This block must be last in this function for the StyleDifferenceLayoutPositionedMovementOnly
+    // optimization to work properly.
     if (position() != StaticPosition && surround->offset != other->surround->offset) {
         // Optimize for the case where a positioned layer is moving but not changing size.
         if (position() == AbsolutePosition && positionedObjectMoved(surround->offset, other->surround->offset, m_box->width()) && repaintOnlyDiff(other, changedContextSensitiveProperties) == StyleDifferenceEqual)
             return StyleDifferenceLayoutPositionedMovementOnly;
-
         // FIXME: We would like to use SimplifiedLayout for relative positioning, but we can't quite do that yet.
         // We need to make sure SimplifiedLayout can operate correctly on RenderInlines (we will need
         // to add a selfNeedsSimplifiedLayout bit in order to not get confused and taint every line).
         return StyleDifferenceLayout;
     }
+
     return repaintOnlyDiff(other, changedContextSensitiveProperties);
 }
 
