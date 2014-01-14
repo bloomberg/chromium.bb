@@ -879,6 +879,11 @@ TEST_P(SpdyFramerTest, PushPromiseWithPromisedStreamIdZero) {
 }
 
 TEST_P(SpdyFramerTest, CreateCredential) {
+  // CREDENTIAL only exists in SPDY 3.
+  if (!IsSpdy3()) {
+    return;
+  }
+
   SpdyFramer framer(spdy_version_);
 
   {
@@ -900,23 +905,6 @@ TEST_P(SpdyFramerTest, CreateCredential) {
       'a',  'l',  ' ',  'c',
       'e',  'r',  't',
     };
-    const unsigned char kV4FrameData[] = {
-      0x00, 0x3b, 0x0A, 0x00,
-      0x00, 0x00, 0x00, 0x00,
-      0x00, 0x03, 0x00, 0x00,
-      0x00, 0x05, 'p',  'r',
-      'o',  'o',  'f',  0x00,
-      0x00, 0x00, 0x06, 'a',
-      ' ',  'c',  'e',  'r',
-      't',  0x00, 0x00, 0x00,
-      0x0C, 'a',  'n',  'o',
-      't',  'h',  'e',  'r',
-      ' ',  'c',  'e',  'r',
-      't',  0x00, 0x00, 0x00,
-      0x0A, 'f',  'i',  'n',
-      'a',  'l',  ' ',  'c',
-      'e',  'r',  't',
-    };
     SpdyCredential credential;
     credential.slot = 3;
     credential.proof = "proof";
@@ -924,15 +912,16 @@ TEST_P(SpdyFramerTest, CreateCredential) {
     credential.certs.push_back("another cert");
     credential.certs.push_back("final cert");
     scoped_ptr<SpdyFrame> frame(framer.CreateCredentialFrame(credential));
-    if (IsSpdy4()) {
-      CompareFrame(kDescription, *frame, kV4FrameData, arraysize(kV4FrameData));
-    } else {
-      CompareFrame(kDescription, *frame, kV3FrameData, arraysize(kV3FrameData));
-    }
+    CompareFrame(kDescription, *frame, kV3FrameData, arraysize(kV3FrameData));
   }
 }
 
 TEST_P(SpdyFramerTest, ParseCredentialFrameData) {
+  // CREDENTIAL only exists in SPDY 3.
+  if (!IsSpdy3()) {
+    return;
+  }
+
   SpdyFramer framer(spdy_version_);
 
   {
@@ -953,38 +942,13 @@ TEST_P(SpdyFramerTest, ParseCredentialFrameData) {
       'a',  'l',  ' ',  'c',
       'e',  'r',  't',
     };
-    const unsigned char kV4FrameData[] = {
-      0x00, 0x37, 0x0A, 0x00,
-      0x00, 0x00, 0x00, 0x00,
-      0x00, 0x03, 0x00, 0x00,
-      0x00, 0x05, 'p',  'r',
-      'o',  'o',  'f',  0x00,
-      0x00, 0x00, 0x06, 'a',
-      ' ',  'c',  'e',  'r',
-      't',  0x00, 0x00, 0x00,
-      0x0C, 'a',  'n',  'o',
-      't',  'h',  'e',  'r',
-      ' ',  'c',  'e',  'r',
-      't',  0x00,  0x00, 0x00,
-      0x0A, 'f',  'i',  'n',
-      'a',  'l',  ' ',  'c',
-      'e',  'r',  't',
-    };
 
     SpdyCredential credential;
-    if (IsSpdy4()) {
-      EXPECT_TRUE(SpdyFramer::ParseCredentialData(
-          reinterpret_cast<const char*>(kV4FrameData) +
-              framer.GetControlFrameHeaderSize(),
-          arraysize(kV4FrameData) - framer.GetControlFrameHeaderSize(),
-          &credential));
-    } else {
-      EXPECT_TRUE(SpdyFramer::ParseCredentialData(
-          reinterpret_cast<const char*>(kV3FrameData) +
-              framer.GetControlFrameHeaderSize(),
-          arraysize(kV3FrameData) - framer.GetControlFrameHeaderSize(),
-          &credential));
-    }
+    EXPECT_TRUE(SpdyFramer::ParseCredentialData(
+        reinterpret_cast<const char*>(kV3FrameData) +
+            framer.GetControlFrameHeaderSize(),
+        arraysize(kV3FrameData) - framer.GetControlFrameHeaderSize(),
+        &credential));
     EXPECT_EQ(3u, credential.slot);
     EXPECT_EQ("proof", credential.proof);
     EXPECT_EQ("a cert", credential.certs.front());
@@ -3612,6 +3576,11 @@ TEST_P(SpdyFramerTest, ReadWindowUpdate) {
 }
 
 TEST_P(SpdyFramerTest, ReadCredentialFrame) {
+  // CREDENTIAL only exists in SPDY 3.
+  if (!IsSpdy3()) {
+    return;
+  }
+
   SpdyCredential credential;
   credential.slot = 3;
   credential.proof = "proof";
@@ -3639,6 +3608,11 @@ TEST_P(SpdyFramerTest, ReadCredentialFrame) {
 }
 
 TEST_P(SpdyFramerTest, ReadCredentialFrameOneByteAtATime) {
+  // CREDENTIAL only exists in SPDY 3.
+  if (!IsSpdy3()) {
+    return;
+  }
+
   SpdyCredential credential;
   credential.slot = 3;
   credential.proof = "proof";
@@ -3670,6 +3644,11 @@ TEST_P(SpdyFramerTest, ReadCredentialFrameOneByteAtATime) {
 }
 
 TEST_P(SpdyFramerTest, ReadCredentialFrameWithNoPayload) {
+  // CREDENTIAL only exists in SPDY 3.
+  if (!IsSpdy3()) {
+    return;
+  }
+
   SpdyCredential credential;
   credential.slot = 3;
   credential.proof = "proof";
@@ -3690,6 +3669,11 @@ TEST_P(SpdyFramerTest, ReadCredentialFrameWithNoPayload) {
 }
 
 TEST_P(SpdyFramerTest, ReadCredentialFrameWithCorruptProof) {
+  // CREDENTIAL only exists in SPDY 3.
+  if (!IsSpdy3()) {
+    return;
+  }
+
   SpdyCredential credential;
   credential.slot = 3;
   credential.proof = "proof";
@@ -3712,6 +3696,11 @@ TEST_P(SpdyFramerTest, ReadCredentialFrameWithCorruptProof) {
 }
 
 TEST_P(SpdyFramerTest, ReadCredentialFrameWithCorruptCertificate) {
+  // CREDENTIAL only exists in SPDY 3.
+  if (!IsSpdy3()) {
+    return;
+  }
+
   SpdyCredential credential;
   credential.slot = 3;
   credential.proof = "proof";
@@ -3735,6 +3724,11 @@ TEST_P(SpdyFramerTest, ReadCredentialFrameWithCorruptCertificate) {
 
 // Regression test for parsing issue found in b/8278897.
 TEST_P(SpdyFramerTest, ReadCredentialFrameFollowedByAnotherFrame) {
+  // CREDENTIAL only exists in SPDY 3.
+  if (!IsSpdy3()) {
+    return;
+  }
+
   SpdyCredential credential;
   credential.slot = 3;
   credential.proof = "proof";
@@ -4358,6 +4352,11 @@ TEST_P(SpdyFramerTest, PushPromiseFrameFlags) {
 }
 
 TEST_P(SpdyFramerTest, CredentialFrameFlags) {
+  // CREDENTIAL only exists in SPDY 3.
+  if (!IsSpdy3()) {
+    return;
+  }
+
   for (int flags = 0; flags < 256; ++flags) {
     SCOPED_TRACE(testing::Message() << "Flags " << flags);
 

@@ -793,6 +793,8 @@ void SpdyFramer::ProcessControlFrameHeader(uint16 control_frame_type_field) {
   }
 
   if (current_frame_type_ == CREDENTIAL) {
+    DCHECK_EQ(3, protocol_version());
+    // TODO(hkhalil): Send GOAWAY for non-SPDY3
     CHANGE_STATE(SPDY_CREDENTIAL_FRAME_PAYLOAD);
     return;
   }
@@ -1971,6 +1973,7 @@ SpdyFrame* SpdyFramer::CreateCredentialFrame(
 
 SpdySerializedFrame* SpdyFramer::SerializeCredential(
     const SpdyCredentialIR& credential) const {
+  DCHECK_EQ(3, protocol_version());
   size_t size = GetCredentialMinimumSize();
   size += 4 + credential.proof().length();  // Room for proof.
   for (SpdyCredentialIR::CertificateList::const_iterator it =
