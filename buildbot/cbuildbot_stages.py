@@ -3247,9 +3247,7 @@ class ArchiveStage(ArchivingStage):
       if config['name'].endswith('-%s' % cbuildbot_config.CONFIG_TYPE_FIRMWARE):
         sign_types += ['firmware']
       commands.PushImages(
-          buildroot,
           board=board,
-          branch_name='master',
           archive_url=upload_url,
           dryrun=debug or not config['push_image'],
           profile=self._run.options.profile or config['profile'],

@@ -28,6 +28,7 @@ from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import retry_util
 from chromite.lib import timeout_util
+from chromite.scripts import pushimage
 from chromite.scripts import upload_symbols
 
 
@@ -1270,10 +1271,10 @@ def UploadSymbols(buildroot, board, official, cnt):
     cros_build_lib.PrintBuildbotStepWarnings()
 
 
-def PushImages(buildroot, board, branch_name, archive_url, dryrun, profile,
-               sign_types=()):
-  """Push the generated image to http://chromeos_images."""
-  cmd = ['./pushimage', '--board=%s' % board]
+def PushImages(board, archive_url, dryrun, profile, sign_types=()):
+  """Push the generated image to the release bucket for signing."""
+  # Log the equivalent command for debugging purposes.
+  cmd = ['pushimage', '--board=%s' % board]
 
   if dryrun:
     cmd.append('-n')
@@ -1281,15 +1282,14 @@ def PushImages(buildroot, board, branch_name, archive_url, dryrun, profile,
   if profile:
     cmd.append('--profile=%s' % profile)
 
-  if branch_name:
-    cmd.append('--branch=%s' % branch_name)
-
   if sign_types:
     cmd.append('--sign-types=%s' % ' '.join(sign_types))
 
   cmd.append(archive_url)
+  cros_build_lib.Info('Running: %s' % cros_build_lib.CmdToStr(cmd))
 
-  cros_build_lib.RunCommand(cmd, cwd=os.path.join(buildroot, 'crostools'))
+  pushimage.PushImage(archive_url, board, profile=profile,
+                      sign_types=sign_types, dry_run=dryrun)
 
 
 def BuildFactoryTestImage(buildroot, board, extra_env):

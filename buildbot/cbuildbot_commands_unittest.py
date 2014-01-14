@@ -19,6 +19,7 @@ from chromite.lib import gs
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import partial_mock
+from chromite.scripts import pushimage
 
 # TODO(build): Finish test wrapper (http://crosbug.com/37517).
 # Until then, this has to be after the chromite imports.
@@ -315,16 +316,11 @@ ca-t3/pk-g4-4.0.1-r333
     # pylint: disable=E1120
     self.testUploadSymbols(cnt=10)
 
-  def testPushImages(self, profile=None):
+  def testPushImages(self):
     """Test PushImages Command."""
-    commands.PushImages(self._buildroot, self._board, 'branch_name', 'gs://foo',
-                        dryrun=False, profile=profile)
-    self.assertCommandContains(['./pushimage', '--branch=branch_name'])
-
-  def testPushImagesWithProfile(self):
-    """Test PushImages Command with profile."""
-    self.testPushImages(profile='some_profile')
-    self.assertCommandContains(['--profile=some_profile'])
+    m = self.PatchObject(pushimage, 'PushImage')
+    commands.PushImages(self._board, 'gs://foo/R34-1234.0.0', False, None)
+    self.assertEqual(m.call_count, 1)
 
   def testBuildImage(self):
     """Test Basic BuildImage Command."""
