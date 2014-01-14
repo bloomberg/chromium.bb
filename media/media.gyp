@@ -1156,7 +1156,7 @@
         'base/audio_bus_perftest.cc',
         'base/audio_converter_perftest.cc',
         'base/demuxer_perftest.cc',
-        'base/run_all_unittests.cc',
+        'base/run_all_perftests.cc',
         'base/sinc_resampler_perftest.cc',
         'base/test_data_util.cc',
         'base/vector_math_perftest.cc',
