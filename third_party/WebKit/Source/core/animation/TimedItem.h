@@ -94,6 +94,7 @@ protected:
     // updateChildrenAndEffects.
     // Returns whether style recalc was triggered.
     bool updateInheritedTime(double inheritedTime) const;
+    void invalidate() const { m_needsUpdate = true; };
 
 private:
     // Returns whether style recalc was triggered.
@@ -135,6 +136,8 @@ private:
         double timeToEffectChange;
     } m_calculated;
     mutable bool m_isFirstSample;
+    mutable bool m_needsUpdate;
+    mutable double m_lastUpdateTime;
 
     // FIXME: Should check the version and reinherit time if inconsistent.
     const CalculatedTiming& ensureCalculated() const { return m_calculated; }
