@@ -28,10 +28,10 @@ PASS: shape-outside from [polygon(nonzero, 0px 0px, 25px 25px, 50px 50px)] to [p
 PASS: shape-outside from [polygon(nonzero, 0px 0px, 25px 25px, 50px 50px)] to [polygon(nonzero, 25px 25px, 50px 50px, 75px 75px)] was [polygon(nonzero, 15px 15px, 40px 40px, 65px 65px)] at 0.6
 PASS: shape-outside from [polygon(nonzero, 0px 0px, 25px 25px, 50px 50px)] to [polygon(nonzero, 25px 25px, 50px 50px, 75px 75px)] was [polygon(nonzero, 25px 25px, 50px 50px, 75px 75px)] at 1
 PASS: shape-outside from [polygon(nonzero, 0px 0px, 25px 25px, 50px 50px)] to [polygon(nonzero, 25px 25px, 50px 50px, 75px 75px)] was [polygon(nonzero, 37.5px 37.5px, 62.5px 62.5px, 87.5px 87.5px)] at 1.5
-PASS: shape-outside from [auto] to [ellipse(100% 100% at 0% 0%)] was [auto] at -0.3
-PASS: shape-outside from [auto] to [ellipse(100% 100% at 0% 0%)] was [auto] at 0
-PASS: shape-outside from [auto] to [ellipse(100% 100% at 0% 0%)] was [auto] at 0.3
-PASS: shape-outside from [auto] to [ellipse(100% 100% at 0% 0%)] was [ellipse(100% 100% at 0% 0%)] at 0.6
-PASS: shape-outside from [auto] to [ellipse(100% 100% at 0% 0%)] was [ellipse(100% 100% at 0% 0%)] at 1
-PASS: shape-outside from [auto] to [ellipse(100% 100% at 0% 0%)] was [ellipse(100% 100% at 0% 0%)] at 1.5
+PASS: shape-outside from [none] to [ellipse(100% 100% at 0% 0%)] was [none] at -0.3
+PASS: shape-outside from [none] to [ellipse(100% 100% at 0% 0%)] was [none] at 0
+PASS: shape-outside from [none] to [ellipse(100% 100% at 0% 0%)] was [none] at 0.3
+PASS: shape-outside from [none] to [ellipse(100% 100% at 0% 0%)] was [ellipse(100% 100% at 0% 0%)] at 0.6
+PASS: shape-outside from [none] to [ellipse(100% 100% at 0% 0%)] was [ellipse(100% 100% at 0% 0%)] at 1
+PASS: shape-outside from [none] to [ellipse(100% 100% at 0% 0%)] was [ellipse(100% 100% at 0% 0%)] at 1.5
 

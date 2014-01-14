@@ -5554,7 +5554,7 @@ PassRefPtr<CSSValue> BisonCSSParser::parseShapeProperty(CSSPropertyID propId)
     RefPtr<CSSPrimitiveValue> boxValue;
     RefPtr<CSSPrimitiveValue> shapeValue;
 
-    if (valueId == CSSValueAuto
+    if (valueId == CSSValueNone
         || (valueId == CSSValueOutsideShape && propId == CSSPropertyShapeInside)) {
         RefPtr<CSSPrimitiveValue> keywordValue = parseValidPrimitive(valueId, value);
         m_valueList->next();

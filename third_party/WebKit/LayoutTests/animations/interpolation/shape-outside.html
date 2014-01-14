@@ -70,12 +70,12 @@ assertInterpolation({
 
 assertInterpolation({
   property: 'shape-outside',
-  from: 'auto',
+  from: 'none',
   to: 'ellipse(100% 100% at 0% 0%)',
 }, [
-  {at: -0.3, is: 'auto'},
-  {at: 0, is: 'auto'},
-  {at: 0.3, is: 'auto'},
+  {at: -0.3, is: 'none'},
+  {at: 0, is: 'none'},
+  {at: 0.3, is: 'none'},
   {at: 0.6, is: 'ellipse(100% 100% at 0% 0%)'},
   {at: 1, is: 'ellipse(100% 100% at 0% 0%)'},
   {at: 1.5, is: 'ellipse(100% 100% at 0% 0%)'}
