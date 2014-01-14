@@ -723,6 +723,12 @@ crbug.com/312606 [ Mac ] fast/text/international/text-combine-image-test.html [ 
 
 crbug.com/312613 fast/canvas/canvas-blending-pattern-over-gradient.html [ Pass Timeout ]
 
+# Auto-rebaseline Skia suppressions
+crbug.com/314499 fast/canvas/image-object-in-canvas.html [ NeedsRebaseline ]
+crbug.com/326138 virtual/gpu/fast/canvas/image-object-in-canvas.html [ NeedsRebaseline ]
+crbug.com/329201 svg/as-background-image/svg-as-background-6.html [ NeedsRebaseline ]
+crbug.com/331781 css3/filters/effect-reference-subregion-hw.html [ NeedsRebaseline ]
+
 crbug.com/312910 webaudio/audiobuffersource-loop-points.html [ Crash Timeout Pass ]
 crbug.com/313217 fast/dom/node-iterator-document-moved-crash.html [ Crash Pass ]
 crbug.com/313219 traversal/tree-walker-005.html [ Crash Pass ]
