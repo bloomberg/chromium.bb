@@ -227,6 +227,16 @@
     },
     {
       "archives": [],
+      "description": "Chrome 33 bundle, revision xxxxx",
+      "name": "pepper_33",
+      "recommended": "no",
+      "repath": "pepper_33",
+      "revision": 0,
+      "stability": "post_stable",
+      "version": 33
+    },
+    {
+      "archives": [],
       "description": "Chrome Canary",
       "name": "pepper_canary",
       "recommended": "no",
