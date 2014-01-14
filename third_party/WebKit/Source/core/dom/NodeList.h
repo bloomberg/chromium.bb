@@ -44,6 +44,7 @@ public:
     // Other methods (not part of DOM)
     virtual bool isLiveNodeList() const { return false; }
     void anonymousNamedGetter(const AtomicString&, bool&, RefPtr<Node>&, bool&, unsigned&);
+    Node* ownerNode() const;
 
 protected:
     NodeList()

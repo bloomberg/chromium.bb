@@ -19,8 +19,8 @@
  */
 
 [
-    Custom=VisitDOMWrapper,
     DependentLifetime,
+    GenerateVisitDOMWrapper=ownerNode
 ] interface NodeList {
 
     getter Node item(unsigned long index);

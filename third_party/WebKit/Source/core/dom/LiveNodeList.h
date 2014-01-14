@@ -187,6 +187,8 @@ public:
     virtual Node* item(unsigned offset) const OVERRIDE FINAL { return LiveNodeListBase::item(offset); }
     virtual Node* namedItem(const AtomicString&) const OVERRIDE FINAL;
     virtual bool nodeMatches(Element*) const = 0;
+    // Avoid ambiguity since both NodeList and LiveNodeListBase have an ownerNode() method.
+    using LiveNodeListBase::ownerNode;
 
     Node* traverseToFirstElement(ContainerNode& root) const;
     Node* traverseForwardToOffset(unsigned offset, Node& currentNode, unsigned& currentOffset, ContainerNode* root) const;
