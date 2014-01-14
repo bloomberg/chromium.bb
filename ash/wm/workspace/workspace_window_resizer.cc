@@ -553,15 +553,6 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
   instance_ = this;
 }
 
-gfx::Rect WorkspaceWindowResizer::GetFinalBounds(
-    const gfx::Rect& bounds) const {
-  if (snap_phantom_window_controller_.get() &&
-      snap_phantom_window_controller_->IsShowing()) {
-    return snap_phantom_window_controller_->bounds_in_screen();
-  }
-  return bounds;
-}
-
 void WorkspaceWindowResizer::LayoutAttachedWindows(
     gfx::Rect* bounds) {
   gfx::Rect work_area(ScreenAsh::GetDisplayWorkAreaBoundsInParent(GetTarget()));
