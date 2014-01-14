@@ -205,6 +205,10 @@ class Context(cr.config.Config, cr.loader.AutoExport):
       self._gclient = cr.base.client.ReadGClient(self)
     return self._gclient
 
+  def WriteGClient(self):
+    if self._gclient:
+      cr.base.client.WriteGClient(self)
+
   def ParseArgs(self, speculative=False):
     cr.plugin.DynamicChoices.only_active = not speculative
     self._speculative = speculative

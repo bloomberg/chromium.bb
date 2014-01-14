@@ -137,6 +137,23 @@ class Host(cr.Plugin, cr.Plugin.Type):
     return self._Execute(context, command,
                          ignore_dry_run=True, return_status=True)
 
+  @cr.Plugin.activemethod
+  def YesNo(self, question, default=True):
+    """Ask the user a yes no question
+
+    This blocks until the user responds.
+    Args:
+      question: The question string to show the user
+      default: True if the default response is Yes
+    Returns:
+      True if the response was yes.
+    """
+    options = 'Y/n' if default else 'y/N'
+    result = raw_input(question + ' [' + options + '] ').lower()
+    if result == '':
+      return default
+    return result in ['y', 'yes']
+
   @classmethod
   def SearchPath(cls, name):
     """Searches the PATH for an executable.

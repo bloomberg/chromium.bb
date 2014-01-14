@@ -11,6 +11,7 @@ rest of the cr tool what the client is capable of.
 """
 
 import os
+import pprint
 import sys
 
 import cr
@@ -112,7 +113,7 @@ def ReadGClient(context):
   This will load from CR_CLIENT_PATH.
 
   Args:
-    context: The active context to load configuratin for.
+    context: The active context to load configuration for.
   Returns:
     The dict of values set in the .gclient file.
 
@@ -130,6 +131,26 @@ def ReadGClient(context):
     pass
   return result
 
+
+def WriteGClient(context):
+  """Writes the .gclient configuration for the current client.
+
+  This will write to CR_CLIENT_PATH.
+
+  Args:
+    context: The active context to write the configuration for.
+
+  """
+  gclient_file = context.Substitute(
+      os.path.join('{CR_CLIENT_PATH}', GCLIENT_FILENAME))
+  spec = '\n'.join('%s = %s' % (key, pprint.pformat(value))
+      for key,value in context.gclient.items())
+  if context.dry_run:
+    print 'Write the following spec to', gclient_file
+    print spec
+  else:
+    with open(gclient_file, 'w') as spec_file:
+      spec_file.write(spec)
 
 def LoadConfig(context):
   """Loads the client configuration for the given context.

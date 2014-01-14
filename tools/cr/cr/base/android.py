@@ -19,16 +19,6 @@ _IGNORE_ENV = [
     'GYP_DEFINES',  # Because it gets a special merge handler
 ]
 
-# The message to print when we detect use of an android output directory in a
-# client that cannot build android.
-_NOT_ANDROID_MESSAGE = """
-You are trying to build for the android platform in a client that is not
-android capable.
-Please get a new client using "fetch android".
-See https://code.google.com/p/chromium/wiki/AndroidBuildInstructions for more
-details.
-"""
-
 
 class AndroidPlatform(cr.Platform):
   """The implementation of Platform for the android target."""
@@ -64,16 +54,6 @@ class AndroidPlatform(cr.Platform):
   def Prepare(self, context):
     """Override Prepare from cr.Platform."""
     super(AndroidPlatform, self).Prepare(context)
-    # Check we are an android capable client
-    is_android = 'android' in context.gclient.get('target_os', '')
-    if not is_android:
-      url = context.gclient.get('solutions', [{}])[0].get('url')
-      is_android = (url.startswith(
-                        'https://chrome-internal.googlesource.com/') and
-                    url.endswith('/internal/apps.git'))
-    if not is_android:
-      print _NOT_ANDROID_MESSAGE
-      exit(1)
     try:
       # capture the result of env setup if we have not already done so
       if not self._env_ready:
@@ -114,3 +94,40 @@ class AndroidPlatform(cr.Platform):
   @property
   def paths(self):
     return self._env_paths
+
+
+class AndroidInitHook(cr.InitHook):
+  """Android output directory init hook.
+
+  This makes sure that your client is android capable when you try
+  to make and android output directory.
+  """
+
+  @property
+  def enabled(self):
+    return cr.AndroidPlatform.GetInstance().is_active
+
+  def Run(self, context, old_version, config):
+    _ = old_version, config  # unused
+    # Check we are an android capable client
+    target_os = context.gclient.get('target_os', [])
+    if 'android' in target_os:
+      return
+    url = context.gclient.get('solutions', [{}])[0].get('url')
+    if (url.startswith('https://chrome-internal.googlesource.com/') and
+        url.endswith('/internal/apps.git')):
+      return
+    print 'This client is not android capable.'
+    print 'It can be made capable by adding android to the target_os list'
+    print 'in the .gclient file, and then syncing again.'
+    if not cr.Host.YesNo('Would you like to upgrade this client?'):
+      print 'Abandoning the creation of and android output directory.'
+      exit(1)
+    target_os.append('android')
+    context.gclient['target_os'] = target_os
+    context.WriteGClient()
+    print 'Client updated.'
+    print 'You may need to sync before an output directory can be made.'
+    if cr.Host.YesNo('Would you like to sync this client now?'):
+      cr.SyncCommand.Sync(context, ["--nohooks"])
+

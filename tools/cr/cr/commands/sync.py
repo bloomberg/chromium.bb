@@ -37,11 +37,15 @@ class SyncCommand(cr.Command):
     return parser
 
   def Run(self, context):
+    self.Sync(context, context.remains)
+
+  @staticmethod
+  def Sync(context, args):
     # TODO(iancottrell): we should probably run the python directly,
     # rather than the shell wrapper
     # TODO(iancottrell): try to help out when the local state is not a good
     # one to do a sync in
-    cr.Host.Execute(context, '{GCLIENT_BINARY}', 'sync', *context.remains)
+    cr.Host.Execute(context, '{GCLIENT_BINARY}', 'sync', *args)
 
 
   @classmethod
