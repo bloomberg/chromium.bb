@@ -555,14 +555,11 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, Rend
             if (textPathOffset > m_textPathLength)
                 break;
 
-            bool ok = false;
-            FloatPoint point = m_textPath.pointAtLength(textPathOffset, ok);
-            ASSERT(ok);
-
+            FloatPoint point;
+            bool ok = m_textPath.pointAndNormalAtLength(textPathOffset, point, angle);
+            ASSERT_UNUSED(ok, ok);
             x = point.x();
             y = point.y();
-            angle = m_textPath.normalAngleAtLength(textPathOffset, ok);
-            ASSERT(ok);
 
             // For vertical text on path, the actual angle has to be rotated 90 degrees anti-clockwise, not the orientation angle!
             if (m_isVerticalText)
