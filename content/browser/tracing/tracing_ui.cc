@@ -16,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "content/browser/tracing/tracing_controller_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/tracing_controller.h"
 #include "content/public/browser/web_contents.h"
@@ -243,6 +244,16 @@ TracingUI::TracingUI(WebUI* web_ui) : WebUIController(web_ui) {
   source->AddResourcePath("tracing.js", IDR_TRACING_JS);
   source->SetRequestFilter(base::Bind(OnTracingRequest));
   WebUIDataSource::Add(browser_context, source);
+  TracingControllerImpl::GetInstance()->RegisterTracingUI(this);
+}
+
+TracingUI::~TracingUI() {
+  TracingControllerImpl::GetInstance()->UnregisterTracingUI(this);
+}
+
+void TracingUI::OnMonitoringStateChanged(bool is_monitoring) {
+  web_ui()->CallJavascriptFunction(
+      "onMonitoringStateChanged", base::FundamentalValue(is_monitoring));
 }
 
 }  // namespace content

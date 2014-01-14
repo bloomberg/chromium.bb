@@ -10,6 +10,7 @@
 #include "base/json/string_escape.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/browser/tracing/trace_message_filter.h"
+#include "content/browser/tracing/tracing_ui.h"
 #include "content/common/child_process_messages.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/common/content_switches.h"
@@ -291,7 +292,7 @@ bool TracingControllerImpl::EnableMonitoring(
 
   if (!can_enable_monitoring())
     return false;
-  is_monitoring_ = true;
+  OnMonitoringStateChanged(true);
 
 #if defined(OS_ANDROID)
   TraceLog::GetInstance()->AddClockSyncMetadataEvent();
@@ -353,7 +354,7 @@ void TracingControllerImpl::OnDisableMonitoringDone(
     const DisableMonitoringDoneCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  is_monitoring_ = false;
+  OnMonitoringStateChanged(false);
 
   // Notify all child processes.
   for (TraceMessageFilterSet::iterator it = trace_message_filters_.begin();
@@ -780,6 +781,34 @@ void TracingControllerImpl::OnWatchEventMatched() {
 
   if (!watch_event_callback_.is_null())
     watch_event_callback_.Run();
+}
+
+void TracingControllerImpl::RegisterTracingUI(TracingUI* tracing_ui)
+{
+  DCHECK(tracing_uis_.find(tracing_ui) == tracing_uis_.end());
+  tracing_uis_.insert(tracing_ui);
+  tracing_ui->OnMonitoringStateChanged(is_monitoring_);
+}
+
+void TracingControllerImpl::UnregisterTracingUI(TracingUI* tracing_ui)
+{
+  std::set<TracingUI*>::iterator it = tracing_uis_.find(tracing_ui);
+  DCHECK(it != tracing_uis_.end());
+  tracing_uis_.erase(it);
+}
+
+void TracingControllerImpl::OnMonitoringStateChanged(bool is_monitoring)
+{
+  if (is_monitoring_ == is_monitoring)
+    return;
+
+  is_monitoring_ = is_monitoring;
+#if !defined(OS_ANDROID)
+  for (std::set<TracingUI*>::iterator it = tracing_uis_.begin();
+       it != tracing_uis_.end(); it++) {
+    (*it)->OnMonitoringStateChanged(is_monitoring);
+  }
+#endif
 }
 
 }  // namespace content

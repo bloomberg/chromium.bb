@@ -20,6 +20,7 @@ class RefCountedString;
 namespace content {
 
 class TraceMessageFilter;
+class TracingUI;
 
 class TracingControllerImpl : public TracingController {
  public:
@@ -53,6 +54,9 @@ class TracingControllerImpl : public TracingController {
                              const std::string& event_name,
                              const WatchEventCallback& callback) OVERRIDE;
   virtual bool CancelWatchEvent() OVERRIDE;
+
+  void RegisterTracingUI(TracingUI* tracing_ui);
+  void UnregisterTracingUI(TracingUI* tracing_ui);
 
  private:
   typedef std::set<scoped_refptr<TraceMessageFilter> > TraceMessageFilterSet;
@@ -136,6 +140,8 @@ class TracingControllerImpl : public TracingController {
                               const EnableMonitoringDoneCallback& callback);
   void OnDisableMonitoringDone(const DisableMonitoringDoneCallback& callback);
 
+  void OnMonitoringStateChanged(bool is_monitoring);
+
   TraceMessageFilterSet trace_message_filters_;
 
   // Pending acks for DisableRecording.
@@ -162,6 +168,7 @@ class TracingControllerImpl : public TracingController {
   WatchEventCallback watch_event_callback_;
 
   std::set<std::string> known_category_groups_;
+  std::set<TracingUI*> tracing_uis_;
   scoped_ptr<ResultFile> result_file_;
   scoped_ptr<ResultFile> monitoring_snapshot_file_;
   DISALLOW_COPY_AND_ASSIGN(TracingControllerImpl);

@@ -10,9 +10,11 @@
 namespace content {
 
 // The C++ back-end for the chrome://tracing webui page.
-class TracingUI : public WebUIController {
+class CONTENT_EXPORT TracingUI : public WebUIController {
  public:
   explicit TracingUI(WebUI* web_ui);
+  virtual ~TracingUI();
+  void OnMonitoringStateChanged(bool is_monitoring);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TracingUI);
