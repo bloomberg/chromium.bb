@@ -1097,6 +1097,11 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, SimulateSuccessfulSignIn) {
 }
 
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AddAccount) {
+#if defined(OS_WIN)
+  // TODO(msw): Fix potential flakiness on Windows XP; http://crbug.com/333641
+  if (base::win::GetVersion() <= base::win::VERSION_XP)
+    return;
+#endif
   InitializeController();
 
   controller()->OnDidFetchWalletCookieValue(std::string());
