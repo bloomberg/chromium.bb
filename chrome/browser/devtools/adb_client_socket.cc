@@ -280,37 +280,11 @@ void AdbClientSocket::AdbQuery(int port,
   new AdbQuerySocket(port, query, callback);
 }
 
-#if defined(DEBUG_DEVTOOLS)
-static void UseTransportQueryForDesktop(const SocketCallback& callback,
-                                        net::StreamSocket* socket,
-                                        int result) {
-  callback.Run(result, socket);
-}
-#endif  // defined(DEBUG_DEVTOOLS)
-
 // static
 void AdbClientSocket::TransportQuery(int port,
                                      const std::string& serial,
                                      const std::string& socket_name,
                                      const SocketCallback& callback) {
-#if defined(DEBUG_DEVTOOLS)
-  if (serial.empty()) {
-    // Use plain socket for remote debugging on Desktop (debugging purposes).
-    net::IPAddressNumber ip_number;
-    net::ParseIPLiteralToNumber(kLocalhost, &ip_number);
-
-    int tcp_port = 0;
-    if (!base::StringToInt(socket_name, &tcp_port))
-      tcp_port = 9222;
-
-    net::AddressList address_list =
-        net::AddressList::CreateFromIPAddress(ip_number, tcp_port);
-    net::TCPClientSocket* socket = new net::TCPClientSocket(
-        address_list, NULL, net::NetLog::Source());
-    socket->Connect(base::Bind(&UseTransportQueryForDesktop, callback, socket));
-    return;
-  }
-#endif  // defined(DEBUG_DEVTOOLS)
   new AdbTransportSocket(port, serial, socket_name, callback);
 }
 

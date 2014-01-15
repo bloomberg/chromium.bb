@@ -77,6 +77,9 @@ class AndroidDeviceProvider
   static scoped_refptr<AndroidDeviceProvider> GetAdbDeviceProvider();
   static scoped_refptr<AndroidDeviceProvider>
       GetUsbDeviceProvider(Profile* profile);
+#if defined(DEBUG_DEVTOOLS)
+  static scoped_refptr<AndroidDeviceProvider> GetSelfAsDeviceProvider();
+#endif
 
  protected:
   friend struct

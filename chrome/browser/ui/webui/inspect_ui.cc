@@ -317,6 +317,12 @@ void InspectUI::UpdateDiscoverUsbDevicesEnabled() {
     value->GetAsBoolean(&enabled);
 
     DevToolsAdbBridge::DeviceProviders device_providers;
+
+#if defined(DEBUG_DEVTOOLS)
+    device_providers.push_back(
+        AndroidDeviceProvider::GetSelfAsDeviceProvider());
+#endif
+
     device_providers.push_back(AndroidDeviceProvider::GetAdbDeviceProvider());
 
     if (enabled) {

@@ -75,10 +75,6 @@ const int kNewPageNavigateDelayMs = 500;
 const char kWebViewSocketPrefix[] = "webview_devtools_remote";
 const char kWebViewNameTemplate[] = "WebView in %s";
 
-#if defined(DEBUG_DEVTOOLS)
-const char kLocalChrome[] = "Local Chrome";
-#endif  // defined(DEBUG_DEVTOOLS)
-
 typedef DevToolsAdbBridge::Callback Callback;
 typedef std::vector<scoped_refptr<AndroidDevice> >
     AndroidDevices;
@@ -361,24 +357,6 @@ void AdbPagesCommand::ProcessSerials() {
   }
 
   scoped_refptr<AndroidDevice> device = current_device();
-#if defined(DEBUG_DEVTOOLS)
-  // For desktop remote debugging.
-  if (device->serial().empty()) {
-    device->set_model(kLocalChrome);
-    remote_devices_->push_back(
-        new DevToolsAdbBridge::RemoteDevice(device));
-    scoped_refptr<DevToolsAdbBridge::RemoteBrowser> remote_browser =
-        new DevToolsAdbBridge::RemoteBrowser(
-            adb_thread_, device, std::string());
-    remote_browser->set_display_name(kChromeDefaultName);
-    remote_devices_->back()->AddBrowser(remote_browser);
-    browsers_.push_back(remote_browser);
-    device->HttpQuery(
-        std::string(), kVersionRequest,
-        base::Bind(&AdbPagesCommand::ReceivedVersion, this));
-    return;
-  }
-#endif  // defined(DEBUG_DEVTOOLS)
 
   if (device->is_connected()) {
     device->RunCommand(kDeviceModelCommand,
@@ -461,11 +439,6 @@ void AdbPagesCommand::ProcessSockets() {
     return;
   }
 
-  if (!current_device()->serial().empty() &&
-     current_browser()->socket().empty()) {
-    NextBrowser();
-    return;
-  }
   current_device()->HttpQuery(
       current_browser()->socket(),
       kVersionRequest,
