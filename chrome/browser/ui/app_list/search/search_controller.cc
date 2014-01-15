@@ -58,7 +58,8 @@ void SearchController::Init() {
   search_box_->SetHintText(
       l10n_util::GetStringUTF16(IDS_SEARCH_BOX_HINT));
   search_box_->SetIcon(*bundle.GetImageSkiaNamed(IDR_OMNIBOX_SEARCH));
-  if (StartPageService::Get(profile_)) {
+  StartPageService* service = StartPageService::Get(profile_);
+  if (service && service->GetSpeechRecognitionContents()) {
     search_box_->SetSpeechRecognitionButton(
         scoped_ptr<SearchBoxModel::ButtonProperty>(
             new SearchBoxModel::ButtonProperty(

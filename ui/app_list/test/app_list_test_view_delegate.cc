@@ -104,6 +104,10 @@ content::WebContents* AppListTestViewDelegate::GetStartPageContents() {
   return NULL;
 }
 
+content::WebContents* AppListTestViewDelegate::GetSpeechRecognitionContents() {
+  return NULL;
+}
+
 const AppListViewDelegate::Users& AppListTestViewDelegate::GetUsers() const {
   return users_;
 }

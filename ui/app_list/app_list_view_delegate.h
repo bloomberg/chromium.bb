@@ -98,6 +98,9 @@ class APP_LIST_EXPORT AppListViewDelegate {
                                         int action_index,
                                         int event_flags) = 0;
 
+  // Invoked when the app list UI is created.
+  virtual void ViewInitialized() = 0;
+
   // Invoked to dismiss app list. This may leave the view open but hidden from
   // the user.
   virtual void Dismiss() = 0;
@@ -125,6 +128,10 @@ class APP_LIST_EXPORT AppListViewDelegate {
 
   // Get the start page web contents. Owned by the AppListViewDelegate.
   virtual content::WebContents* GetStartPageContents() = 0;
+
+  // Get the web contents for speech recognition or NULL if speech recognition
+  // is unavailable.
+  virtual content::WebContents* GetSpeechRecognitionContents() = 0;
 
   // Returns the list of users (for AppListMenu).
   virtual const Users& GetUsers() const = 0;

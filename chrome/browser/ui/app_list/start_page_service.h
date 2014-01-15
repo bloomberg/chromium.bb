@@ -41,7 +41,11 @@ class StartPageService : public BrowserContextKeyedService {
 
   void ToggleSpeechRecognition();
 
-  content::WebContents* contents() { return contents_.get(); }
+  // They return essentially the same web contents but might return NULL when
+  // some flag disables the feature.
+  content::WebContents* GetStartPageContents();
+  content::WebContents* GetSpeechRecognitionContents();
+
   RecommendedApps* recommended_apps() { return recommended_apps_.get(); }
   Profile* profile() { return profile_; }
   void OnSpeechResult(const base::string16& query, bool is_final);

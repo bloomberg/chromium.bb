@@ -304,6 +304,10 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     // Nothing needs to be done.
   }
 
+  virtual void ViewInitialized() OVERRIDE {
+    // Nothing needs to be done.
+  }
+
   virtual void Dismiss() OVERRIDE {
     DCHECK(ash::Shell::HasInstance());
     if (Shell::GetInstance()->GetAppListTargetVisibility())
@@ -340,6 +344,10 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
   }
 
   virtual content::WebContents* GetStartPageContents() OVERRIDE {
+    return NULL;
+  }
+
+  virtual content::WebContents* GetSpeechRecognitionContents() OVERRIDE {
     return NULL;
   }
 

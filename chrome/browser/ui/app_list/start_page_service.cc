@@ -27,14 +27,16 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "extensions/common/extension.h"
+#include "ui/app_list/app_list_switches.h"
 
 namespace app_list {
 
 class StartPageService::Factory : public BrowserContextKeyedServiceFactory {
  public:
   static StartPageService* GetForProfile(Profile* profile) {
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kShowAppListStartPage)) {
+    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    if (!command_line->HasSwitch(::switches::kShowAppListStartPage) &&
+        !command_line->HasSwitch(app_list::switches::kEnableVoiceSearch)) {
       return NULL;
     }
 
@@ -130,9 +132,9 @@ StartPageService::StartPageService(Profile* profile)
 
   GURL url(chrome::kChromeUIAppListStartPageURL);
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kAppListStartPageURL)) {
+  if (command_line->HasSwitch(::switches::kAppListStartPageURL)) {
     url = GURL(
-        command_line->GetSwitchValueASCII(switches::kAppListStartPageURL));
+        command_line->GetSwitchValueASCII(::switches::kAppListStartPageURL));
   }
 
   contents_->GetController().LoadURL(
@@ -155,6 +157,17 @@ void StartPageService::RemoveObserver(StartPageObserver* observer) {
 void StartPageService::ToggleSpeechRecognition() {
   contents_->GetWebUI()->CallJavascriptFunction(
       "appList.startPage.toggleSpeechRecognition");
+}
+
+content::WebContents* StartPageService::GetStartPageContents() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      ::switches::kShowAppListStartPage) ? contents_.get() : NULL;
+}
+
+content::WebContents* StartPageService::GetSpeechRecognitionContents() {
+  // Speech recognition is available if either of start-page or voice-search
+  // is enabled.
+  return contents_.get();
 }
 
 void StartPageService::OnSpeechResult(

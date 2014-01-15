@@ -228,12 +228,26 @@ void AppListViewDelegate::InvokeSearchResultAction(
   search_controller_->InvokeResultAction(result, action_index, event_flags);
 }
 
+void AppListViewDelegate::ViewInitialized() {
+  content::WebContents* contents = GetSpeechRecognitionContents();
+  if (contents) {
+    contents->GetWebUI()->CallJavascriptFunction(
+        "appList.startPage.onAppListShown");
+  }
+}
+
 void AppListViewDelegate::Dismiss()  {
   controller_->DismissView();
 }
 
 void AppListViewDelegate::ViewClosing() {
   controller_->ViewClosing();
+
+  content::WebContents* contents = GetSpeechRecognitionContents();
+  if (contents) {
+    contents->GetWebUI()->CallJavascriptFunction(
+        "appList.startPage.onAppListHidden");
+  }
 }
 
 gfx::ImageSkia AppListViewDelegate::GetWindowIcon() {
@@ -328,7 +342,16 @@ content::WebContents* AppListViewDelegate::GetStartPageContents() {
   if (!service)
     return NULL;
 
-  return service->contents();
+  return service->GetStartPageContents();
+}
+
+content::WebContents* AppListViewDelegate::GetSpeechRecognitionContents() {
+  app_list::StartPageService* service =
+      app_list::StartPageService::Get(profile_);
+  if (!service)
+    return NULL;
+
+  return service->GetSpeechRecognitionContents();
 }
 
 const app_list::AppListViewDelegate::Users&

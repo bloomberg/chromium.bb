@@ -271,7 +271,7 @@ void AppListView::InitAsBubbleInternal(gfx::NativeView parent,
   AddChildView(signin_view_);
 
   // Speech recognition is available only when the start page exists.
-  if (delegate_ && delegate_->GetStartPageContents()) {
+  if (delegate_ && delegate_->GetSpeechRecognitionContents()) {
     speech_view_ = new SpeechView(delegate_.get());
     speech_view_->SetVisible(false);
 #if defined(USE_AURA)
@@ -317,6 +317,9 @@ void AppListView::InitAsBubbleInternal(gfx::NativeView parent,
   // the border to be shown. See http://crbug.com/231687 .
   GetWidget()->Hide();
 #endif
+
+  if (delegate_)
+    delegate_->ViewInitialized();
 }
 
 void AppListView::OnBeforeBubbleWidgetInit(

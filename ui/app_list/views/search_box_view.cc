@@ -189,7 +189,7 @@ bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
 
 void SearchBoxView::ButtonPressed(views::Button* sender,
                                   const ui::Event& event) {
-  DCHECK(!speech_button_ && sender == speech_button_);
+  DCHECK(speech_button_ && sender == speech_button_);
   view_delegate_->ToggleSpeechRecognition();
 }
 

@@ -75,6 +75,7 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   virtual void InvokeSearchResultAction(app_list::SearchResult* result,
                                         int action_index,
                                         int event_flags) OVERRIDE;
+  virtual void ViewInitialized() OVERRIDE;
   virtual void Dismiss() OVERRIDE;
   virtual void ViewClosing() OVERRIDE;
   virtual gfx::ImageSkia GetWindowIcon() OVERRIDE;
@@ -85,6 +86,7 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   virtual void ShowForProfileByPath(
       const base::FilePath& profile_path) OVERRIDE;
   virtual content::WebContents* GetStartPageContents() OVERRIDE;
+  virtual content::WebContents* GetSpeechRecognitionContents() OVERRIDE;
   virtual const Users& GetUsers() const OVERRIDE;
   virtual void AddObserver(
       app_list::AppListViewDelegateObserver* observer) OVERRIDE;
