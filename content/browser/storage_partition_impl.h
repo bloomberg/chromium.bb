@@ -42,6 +42,7 @@ class StoragePartitionImpl : public StoragePartition {
   virtual webkit_database::DatabaseTracker* GetDatabaseTracker() OVERRIDE;
   virtual DOMStorageContextWrapper* GetDOMStorageContext() OVERRIDE;
   virtual IndexedDBContextImpl* GetIndexedDBContext() OVERRIDE;
+  virtual ServiceWorkerContextWrapper* GetServiceWorkerContext() OVERRIDE;
 
   virtual void ClearDataForOrigin(
       uint32 remove_mask,
@@ -55,8 +56,6 @@ class StoragePartitionImpl : public StoragePartition {
                          const base::Time begin,
                          const base::Time end,
                          const base::Closure& callback) OVERRIDE;
-
-  ServiceWorkerContextWrapper* GetServiceWorkerContext();
 
   WebRTCIdentityStore* GetWebRTCIdentityStore();
 

@@ -53,6 +53,7 @@ EmbeddedWorkerContextClient::EmbeddedWorkerContextClient(
       sender_(ChildThread::current()->thread_safe_sender()),
       main_thread_proxy_(base::MessageLoopProxy::current()),
       proxy_(NULL) {
+  g_worker_client_tls.Pointer()->Set(this);
 }
 
 EmbeddedWorkerContextClient::~EmbeddedWorkerContextClient() {
@@ -91,7 +92,8 @@ void EmbeddedWorkerContextClient::workerContextStarted(
 }
 
 void EmbeddedWorkerContextClient::workerContextDestroyed() {
-  DCHECK_NE(0, WorkerTaskRunner::Instance()->CurrentWorkerId());
+  // At this point OnWorkerRunLoopStopped is already called, so
+  // CurrentWorkerId() returns 0 (while we're still on the worker thread).
   proxy_ = NULL;
   main_thread_proxy_->PostTask(
       FROM_HERE,

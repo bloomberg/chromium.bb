@@ -187,6 +187,10 @@ class TestStoragePartition : public StoragePartition {
   virtual content::IndexedDBContext* GetIndexedDBContext() OVERRIDE {
     return NULL;
   }
+  virtual content::ServiceWorkerContextWrapper*
+  GetServiceWorkerContext() OVERRIDE {
+    return NULL;
+  }
 
   virtual void ClearDataForOrigin(
       uint32 remove_mask,

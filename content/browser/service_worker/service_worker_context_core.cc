@@ -99,4 +99,19 @@ void ServiceWorkerContextCore::RegistrationComplete(
   callback.Run(status, registration->id());
 }
 
+void ServiceWorkerContextCore::GetAllProviderHosts(
+    std::vector<ServiceWorkerProviderHost*>* providers) {
+  DCHECK(providers);
+
+  ProcessToProviderMap::iterator map_iter(&providers_);
+  while (!map_iter.IsAtEnd()) {
+    ProviderMap::iterator iter(map_iter.GetCurrentValue());
+    while (!iter.IsAtEnd()) {
+      providers->push_back(iter.GetCurrentValue());
+      iter.Advance();
+    }
+    map_iter.Advance();
+  }
+}
+
 }  // namespace content

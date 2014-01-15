@@ -85,12 +85,22 @@ void EmbeddedWorkerInstance::OnStarted(int thread_id) {
   DCHECK(status_ == STARTING);
   status_ = RUNNING;
   thread_id_ = thread_id;
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnStarted());
 }
 
 void EmbeddedWorkerInstance::OnStopped() {
   status_ = STOPPED;
   process_id_ = -1;
   thread_id_ = -1;
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnStopped());
+}
+
+void EmbeddedWorkerInstance::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void EmbeddedWorkerInstance::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
 }
 
 bool EmbeddedWorkerInstance::ChooseProcess() {

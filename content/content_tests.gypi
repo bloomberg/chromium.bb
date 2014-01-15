@@ -980,6 +980,7 @@
             'browser/renderer_host/render_widget_host_browsertest.cc',
             'browser/renderer_host/render_widget_host_view_browsertest.cc',
             'browser/security_exploit_browsertest.cc',
+            'browser/service_worker/service_worker_browsertest.cc',
             'browser/session_history_browsertest.cc',
             'browser/site_per_process_browsertest.cc',
             'browser/speech/input_tag_speech_browsertest.cc',

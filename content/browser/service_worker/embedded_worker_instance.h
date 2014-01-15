@@ -12,6 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/observer_list.h"
 #include "content/common/content_export.h"
 
 class GURL;
@@ -31,6 +32,13 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
     STARTING,
     RUNNING,
     STOPPING,
+  };
+
+  class Observer {
+   public:
+    virtual ~Observer() {}
+    virtual void OnStarted() = 0;
+    virtual void OnStopped() = 0;
   };
 
   ~EmbeddedWorkerInstance();
@@ -62,6 +70,9 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   Status status() const { return status_; }
   int process_id() const { return process_id_; }
   int thread_id() const { return thread_id_; }
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
  private:
   friend class EmbeddedWorkerRegistry;
@@ -99,6 +110,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   int thread_id_;
 
   ProcessRefMap process_refs_;
+  ObserverList<Observer> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(EmbeddedWorkerInstance);
 };

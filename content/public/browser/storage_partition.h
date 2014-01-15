@@ -38,6 +38,7 @@ namespace content {
 class BrowserContext;
 class IndexedDBContext;
 class DOMStorageContext;
+class ServiceWorkerContextWrapper;
 
 // Defines what persistent state a child process can access.
 //
@@ -56,6 +57,7 @@ class StoragePartition {
   virtual webkit_database::DatabaseTracker* GetDatabaseTracker() = 0;
   virtual DOMStorageContext* GetDOMStorageContext() = 0;
   virtual IndexedDBContext* GetIndexedDBContext() = 0;
+  virtual ServiceWorkerContextWrapper* GetServiceWorkerContext() = 0;
 
   enum RemoveDataMask {
     REMOVE_DATA_MASK_APPCACHE = 1 << 0,
