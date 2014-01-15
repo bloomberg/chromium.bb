@@ -5,7 +5,6 @@ from measurements import smoothness
 from telemetry.core import wpr_modes
 from telemetry.page import page_measurement_unittest_base
 from telemetry.unittest import options_for_unittests
-from metrics import timeline
 
 class SmoothnessUnitTest(
       page_measurement_unittest_base.PageMeasurementUnitTestBase):
@@ -20,7 +19,7 @@ class SmoothnessUnitTest(
     self._options = options_for_unittests.GetCopy()
     self._options.browser_options.wpr_mode = wpr_modes.WPR_OFF
 
-  def testSmoothnessWithSmoothnessMetric(self):
+  def testSmoothness(self):
     ps = self.CreatePageSetFromFileInUnittestDataDir('scrollable_page.html')
     measurement = smoothness.Smoothness()
     results = self.RunMeasurement(measurement, ps, options=self._options)
@@ -41,21 +40,3 @@ class SmoothnessUnitTest(
     mostly_smooth = results.FindAllPageSpecificValuesNamed('mostly_smooth')
     self.assertEquals(len(mostly_smooth), 1)
     self.assertGreaterEqual(mostly_smooth[0].GetRepresentativeNumber(), 0)
-
-
-  def testSmoothnessWithTimelineMetric(self):
-    ps = self.CreatePageSetFromFileInUnittestDataDir('scrollable_page.html')
-    measurement = smoothness.Smoothness()
-    timeline_options = self._options
-    timeline_options.metric = 'timeline'
-    results = self.RunMeasurement(measurement, ps, options = timeline_options)
-    self.assertEquals(0, len(results.failures))
-
-    for category in timeline.TimelineThreadCategories.values():
-      clock_time_name = timeline.ThreadTimePercentageName(category)
-      clock_time = results.FindAllPageSpecificValuesNamed(clock_time_name)
-      self.assertEquals(len(clock_time), 1)
-
-      cpu_time_name = timeline.ThreadCPUTimePercentageName(category)
-      cpu_time = results.FindAllPageSpecificValuesNamed(cpu_time_name)
-      self.assertEquals(len(cpu_time), 1)

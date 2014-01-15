@@ -9,7 +9,7 @@ class LoadingTimeline(page_measurement.PageMeasurement):
   def __init__(self, *args, **kwargs):
     super(LoadingTimeline, self).__init__(*args, **kwargs)
     self._timeline_metric = timeline.LoadTimesTimelineMetric(
-        timeline.TIMELINE_MODE, 'thread 0')
+        timeline.TIMELINE_MODE)
 
   @property
   def results_are_the_same_on_every_page(self):
