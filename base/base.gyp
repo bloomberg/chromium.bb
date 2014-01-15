@@ -495,6 +495,7 @@
         'i18n/icu_string_conversions_unittest.cc',
         'i18n/number_formatting_unittest.cc',
         'i18n/rtl_unittest.cc',
+        'i18n/streaming_utf8_validator_unittest.cc',
         'i18n/string_search_unittest.cc',
         'i18n/time_formatting_unittest.cc',
         'i18n/timezone_unittest.cc',
@@ -829,6 +830,20 @@
       ],  # target_conditions
     },
     {
+      'target_name': 'base_i18n_perftests',
+      'type': '<(gtest_target_type)',
+      'dependencies': [
+        'test_support_base',
+        'test_support_perf',
+        '../testing/gtest.gyp:gtest',
+        'base_i18n',
+        'base',
+      ],
+      'sources': [
+        'i18n/streaming_utf8_validator_perftest.cc',
+      ],
+    },
+    {
       'target_name': 'test_support_base',
       'type': 'static_library',
       'dependencies': [
@@ -1009,6 +1024,18 @@
           ],
           'dependencies': [
             'base',
+          ],
+        },
+        {
+          'target_name': 'build_utf8_validator_tables',
+          'type': 'executable',
+          'toolsets': ['host'],
+          'dependencies': [
+            'base',
+            '../third_party/icu/icu.gyp:icuuc',
+          ],
+          'sources': [
+            'i18n/build_utf8_validator_tables.cc'
           ],
         },
       ],
