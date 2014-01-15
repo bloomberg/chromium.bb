@@ -118,6 +118,9 @@ MojoResult DataPipe::ProducerBeginWriteData(void** buffer,
   if (!consumer_open_no_lock())
     return MOJO_RESULT_FAILED_PRECONDITION;
 
+  if (all_or_none && *buffer_num_bytes % element_num_bytes_ != 0)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
   MojoResult rv = ProducerBeginWriteDataImplNoLock(buffer, buffer_num_bytes,
                                                    all_or_none);
   if (rv != MOJO_RESULT_OK)
@@ -140,7 +143,14 @@ MojoResult DataPipe::ProducerEndWriteData(uint32_t num_bytes_written) {
   // consumer has been closed.
 
   MojoWaitFlags old_consumer_satisfied_flags = ConsumerSatisfiedFlagsNoLock();
-  MojoResult rv = ProducerEndWriteDataImplNoLock(num_bytes_written);
+  MojoResult rv;
+  if (num_bytes_written > producer_two_phase_max_num_bytes_written_ ||
+      num_bytes_written % element_num_bytes_ != 0) {
+    rv = MOJO_RESULT_INVALID_ARGUMENT;
+    producer_two_phase_max_num_bytes_written_ = 0;
+  } else {
+    rv = ProducerEndWriteDataImplNoLock(num_bytes_written);
+  }
   // Two-phase write ended even on failure.
   DCHECK(!producer_in_two_phase_write_no_lock());
   // If we're now writable, we *became* writable (since we weren't writable
@@ -256,6 +266,9 @@ MojoResult DataPipe::ConsumerBeginReadData(const void** buffer,
   if (consumer_in_two_phase_read_no_lock())
     return MOJO_RESULT_BUSY;
 
+  if (all_or_none && *buffer_num_bytes % element_num_bytes_ != 0)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
   MojoResult rv = ConsumerBeginReadDataImplNoLock(buffer, buffer_num_bytes,
                                                   all_or_none);
   if (rv != MOJO_RESULT_OK)
@@ -272,7 +285,14 @@ MojoResult DataPipe::ConsumerEndReadData(uint32_t num_bytes_read) {
     return MOJO_RESULT_FAILED_PRECONDITION;
 
   MojoWaitFlags old_producer_satisfied_flags = ProducerSatisfiedFlagsNoLock();
-  MojoResult rv = ConsumerEndReadDataImplNoLock(num_bytes_read);
+  MojoResult rv;
+  if (num_bytes_read > consumer_two_phase_max_num_bytes_read_ ||
+      num_bytes_read % element_num_bytes_ != 0) {
+    rv = MOJO_RESULT_INVALID_ARGUMENT;
+    consumer_two_phase_max_num_bytes_read_ = 0;
+  } else {
+    rv = ConsumerEndReadDataImplNoLock(num_bytes_read);
+  }
   // Two-phase read ended even on failure.
   DCHECK(!consumer_in_two_phase_read_no_lock());
   // If we're now readable, we *became* readable (since we weren't readable

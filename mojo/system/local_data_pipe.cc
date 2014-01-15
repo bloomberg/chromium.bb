@@ -143,12 +143,8 @@ MojoResult LocalDataPipe::ProducerBeginWriteDataImplNoLock(
 
 MojoResult LocalDataPipe::ProducerEndWriteDataImplNoLock(
     uint32_t num_bytes_written) {
-  if (num_bytes_written > producer_two_phase_max_num_bytes_written_no_lock()) {
-    // Note: The two-phase write ends here even on failure.
-    set_producer_two_phase_max_num_bytes_written_no_lock(0);
-    return MOJO_RESULT_INVALID_ARGUMENT;
-  }
-
+  DCHECK_LE(num_bytes_written,
+            producer_two_phase_max_num_bytes_written_no_lock());
   current_num_bytes_ += num_bytes_written;
   DCHECK_LE(current_num_bytes_, capacity_num_bytes());
   set_producer_two_phase_max_num_bytes_written_no_lock(0);
@@ -275,12 +271,7 @@ MojoResult LocalDataPipe::ConsumerBeginReadDataImplNoLock(
 
 MojoResult LocalDataPipe::ConsumerEndReadDataImplNoLock(
     uint32_t num_bytes_read) {
-  if (num_bytes_read > consumer_two_phase_max_num_bytes_read_no_lock()) {
-    // Note: The two-phase read ends here even on failure.
-    set_consumer_two_phase_max_num_bytes_read_no_lock(0);
-    return MOJO_RESULT_INVALID_ARGUMENT;
-  }
-
+  DCHECK_LE(num_bytes_read, consumer_two_phase_max_num_bytes_read_no_lock());
   DCHECK_LE(start_index_ + num_bytes_read, capacity_num_bytes());
   MarkDataAsConsumedNoLock(num_bytes_read);
   set_consumer_two_phase_max_num_bytes_read_no_lock(0);

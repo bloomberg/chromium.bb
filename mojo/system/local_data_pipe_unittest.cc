@@ -1090,6 +1090,14 @@ TEST(LocalDataPipeTest, TwoPhaseAllOrNone) {
   EXPECT_EQ(MOJO_RESULT_OUT_OF_RANGE,
             dp->ProducerBeginWriteData(&write_ptr, &num_bytes, true));
 
+  // Try writing an amount which isn't a multiple of the element size
+  // (two-phase).
+  COMPILE_ASSERT(sizeof(int32_t) > 1u, wow_int32_ts_have_size_1);
+  num_bytes = 1u;
+  write_ptr = NULL;
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+            dp->ProducerBeginWriteData(&write_ptr, &num_bytes, true));
+
   // Try reading way too much (two-phase).
   num_bytes = 20u * sizeof(int32_t);
   const void* read_ptr = NULL;
@@ -1106,6 +1114,13 @@ TEST(LocalDataPipeTest, TwoPhaseAllOrNone) {
   EXPECT_TRUE(write_ptr != NULL);
   Seq(0, 5, static_cast<int32_t*>(write_ptr));
   EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerEndWriteData(5u * sizeof(int32_t)));
+
+  // Try reading an amount which isn't a multiple of the element size
+  // (two-phase).
+  num_bytes = 1u;
+  read_ptr = NULL;
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+            dp->ConsumerBeginReadData(&read_ptr, &num_bytes, true));
 
   // Read one (two-phase).
   num_bytes = 1u * sizeof(int32_t);
@@ -1429,6 +1444,119 @@ TEST(LocalDataPipeTest, CloseWriteRead) {
 
     dp->ConsumerClose();
   }
+}
+
+TEST(LocalDataPipeTest, TwoPhaseMoreInvalidArguments) {
+  const MojoCreateDataPipeOptions options = {
+    kSizeOfOptions,  // |struct_size|.
+    MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
+    static_cast<uint32_t>(sizeof(int32_t)),  // |element_num_bytes|.
+    10 * sizeof(int32_t)  // |capacity_num_bytes|.
+  };
+  MojoCreateDataPipeOptions validated_options = { 0 };
+  EXPECT_EQ(MOJO_RESULT_OK,
+            DataPipe::ValidateOptions(&options, &validated_options));
+
+  scoped_refptr<LocalDataPipe> dp(new LocalDataPipe(validated_options));
+
+  // No data.
+  uint32_t num_bytes = 1000u;
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerQueryData(&num_bytes));
+  EXPECT_EQ(0u, num_bytes);
+
+  // Try "ending" a two-phase write when one isn't active.
+  EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
+            dp->ProducerEndWriteData(1u * sizeof(int32_t)));
+
+  // Still no data.
+  num_bytes = 1000u;
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerQueryData(&num_bytes));
+  EXPECT_EQ(0u, num_bytes);
+
+  // Try ending a two-phase write with an invalid amount (too much).
+  num_bytes = 0u;
+  void* write_ptr = NULL;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ProducerBeginWriteData(&write_ptr, &num_bytes, false));
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+            dp->ProducerEndWriteData(
+                num_bytes + static_cast<uint32_t>(sizeof(int32_t))));
+
+  // But the two-phase write still ended.
+  EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, dp->ProducerEndWriteData(0u));
+
+  // Still no data.
+  num_bytes = 1000u;
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerQueryData(&num_bytes));
+  EXPECT_EQ(0u, num_bytes);
+
+  // Try ending a two-phase write with an invalid amount (not a multiple of the
+  // element size).
+  num_bytes = 0u;
+  write_ptr = NULL;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ProducerBeginWriteData(&write_ptr, &num_bytes, false));
+  EXPECT_GE(num_bytes, 1u);
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, dp->ProducerEndWriteData(1u));
+
+  // But the two-phase write still ended.
+  EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, dp->ProducerEndWriteData(0u));
+
+  // Still no data.
+  num_bytes = 1000u;
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerQueryData(&num_bytes));
+  EXPECT_EQ(0u, num_bytes);
+
+  // Now write some data, so we'll be able to try reading.
+  int32_t element = 123;
+  num_bytes = 1u * sizeof(int32_t);
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerWriteData(&element, &num_bytes, false));
+
+  // One element available.
+  num_bytes = 0u;
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerQueryData(&num_bytes));
+  EXPECT_EQ(1u * sizeof(int32_t), num_bytes);
+
+  // Try "ending" a two-phase read when one isn't active.
+  EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
+            dp->ConsumerEndReadData(1u * sizeof(int32_t)));
+
+  // Still one element available.
+  num_bytes = 0u;
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerQueryData(&num_bytes));
+  EXPECT_EQ(1u * sizeof(int32_t), num_bytes);
+
+  // Try ending a two-phase read with an invalid amount (too much).
+  num_bytes = 0u;
+  const void* read_ptr = NULL;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ConsumerBeginReadData(&read_ptr, &num_bytes, false));
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+            dp->ConsumerEndReadData(
+                num_bytes + static_cast<uint32_t>(sizeof(int32_t))));
+
+  // Still one element available.
+  num_bytes = 0u;
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerQueryData(&num_bytes));
+  EXPECT_EQ(1u * sizeof(int32_t), num_bytes);
+
+  // Try ending a two-phase read with an invalid amount (not a multiple of the
+  // element size).
+  num_bytes = 0u;
+  read_ptr = NULL;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ConsumerBeginReadData(&read_ptr, &num_bytes, false));
+  EXPECT_EQ(1u * sizeof(int32_t), num_bytes);
+  EXPECT_EQ(123, static_cast<const int32_t*>(read_ptr)[0]);
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, dp->ConsumerEndReadData(1u));
+
+  // Still one element available.
+  num_bytes = 0u;
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerQueryData(&num_bytes));
+  EXPECT_EQ(1u * sizeof(int32_t), num_bytes);
+
+  dp->ProducerClose();
+  dp->ConsumerClose();
 }
 
 }  // namespace
