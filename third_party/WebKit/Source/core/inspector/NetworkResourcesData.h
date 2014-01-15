@@ -29,7 +29,7 @@
 #ifndef NetworkResourcesData_h
 #define NetworkResourcesData_h
 
-#include "core/html/parser/TextResourceDecoder.h"
+#include "core/fetch/TextResourceDecoder.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/weborigin/KURL.h"

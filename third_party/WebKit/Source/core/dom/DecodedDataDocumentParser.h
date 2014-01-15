@@ -42,11 +42,10 @@ public:
     // The below functions are used by DocumentWriter (the loader).
     virtual void appendBytes(const char* bytes, size_t length) OVERRIDE;
     virtual void flush() OVERRIDE;
-    virtual bool needsDecoder() const OVERRIDE FINAL { return m_needsDecoder; }
-    virtual void setDecoder(PassOwnPtr<TextResourceDecoder>) OVERRIDE;
+    virtual bool needsDecoder() const OVERRIDE FINAL { return !m_decoder; }
+    virtual void setDecoder(PassOwnPtr<TextResourceDecoder>) OVERRIDE FINAL;
     virtual TextResourceDecoder* decoder() OVERRIDE FINAL;
-
-    PassOwnPtr<TextResourceDecoder> takeDecoder();
+    virtual void setHasAppendedData() OVERRIDE FINAL;
 
 protected:
     explicit DecodedDataDocumentParser(Document*);
@@ -58,7 +57,7 @@ private:
 
     void updateDocument(String& decodedData);
 
-    bool m_needsDecoder;
+    bool m_hasAppendedData;
     OwnPtr<TextResourceDecoder> m_decoder;
 };
 
