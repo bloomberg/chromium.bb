@@ -100,20 +100,20 @@ void WebRtcLogUploader::LoggingStoppedDontUpload() {
 
 void WebRtcLogUploader::LoggingStoppedDoUpload(
     net::URLRequestContextGetter* request_context,
-    scoped_ptr<base::SharedMemory> shared_memory,
+    scoped_ptr<unsigned char[]> log_buffer,
     uint32 length,
     const std::map<std::string, std::string>& meta_data,
     const WebRtcLogUploadDoneData& upload_done_data) {
   DCHECK(file_thread_checker_.CalledOnValidThread());
-  DCHECK(shared_memory);
-  DCHECK(shared_memory->memory());
+  DCHECK(log_buffer.get());
   DCHECK(!upload_done_data.upload_list_path.empty());
 
   scoped_ptr<std::string> post_data;
   post_data.reset(new std::string);
   SetupMultipart(post_data.get(),
-                 reinterpret_cast<uint8*>(shared_memory->memory()),
-                 length, meta_data);
+                 reinterpret_cast<uint8*>(log_buffer.get()),
+                 length,
+                 meta_data);
 
   // If a test has set the test string pointer, write to it and skip uploading.
   // Still fire the upload callback so that we can run an extension API test

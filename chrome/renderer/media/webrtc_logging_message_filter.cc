@@ -12,8 +12,8 @@
 
 WebRtcLoggingMessageFilter::WebRtcLoggingMessageFilter(
     const scoped_refptr<base::MessageLoopProxy>& io_message_loop)
-    : log_message_delegate_(NULL),
-      io_message_loop_(io_message_loop),
+    : io_message_loop_(io_message_loop),
+      log_message_delegate_(NULL),
       channel_(NULL) {
   // May be null in a browsertest using MockRenderThread.
   if (io_message_loop_) {
@@ -56,6 +56,11 @@ void WebRtcLoggingMessageFilter::OnChannelClosing() {
   log_message_delegate_->OnFilterRemoved();
 }
 
+void WebRtcLoggingMessageFilter::AddLogMessage(const std::string& message) {
+  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  Send(new WebRtcLoggingMsg_AddLogMessage(message));
+}
+
 void WebRtcLoggingMessageFilter::LoggingStopped() {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
   Send(new WebRtcLoggingMsg_LoggingStopped());
@@ -67,11 +72,9 @@ void WebRtcLoggingMessageFilter::CreateLoggingHandler() {
       new ChromeWebRtcLogMessageDelegate(io_message_loop_, this);
 }
 
-void WebRtcLoggingMessageFilter::OnStartLogging(
-    base::SharedMemoryHandle handle,
-    uint32 length) {
+void WebRtcLoggingMessageFilter::OnStartLogging() {
   DCHECK(!io_message_loop_ || io_message_loop_->BelongsToCurrentThread());
-  log_message_delegate_->OnStartLogging(handle, length);
+  log_message_delegate_->OnStartLogging();
 }
 
 void WebRtcLoggingMessageFilter::OnStopLogging() {

@@ -37,13 +37,16 @@ class ChromeWebRtcLogMessageDelegate
 
   void OnFilterRemoved();
 
-  void OnStartLogging(base::SharedMemoryHandle handle, uint32 length);
+  void OnStartLogging();
   void OnStopLogging();
 
  private:
+  void SendLogBuffer();
+
   scoped_refptr<base::MessageLoopProxy> io_message_loop_;
-  scoped_ptr<base::SharedMemory> shared_memory_;
-  scoped_ptr<PartialCircularBuffer> circular_buffer_;
+  bool logging_started_;
+  std::string log_buffer_;
+  base::TimeTicks last_log_buffer_send_;
 
   WebRtcLoggingMessageFilter* message_filter_;
 

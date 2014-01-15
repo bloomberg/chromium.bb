@@ -182,7 +182,8 @@ void WebRtcLoggingHandlerHost::DiscardLog(const GenericDoneCallback& callback) {
     return;
   }
   g_browser_process->webrtc_log_uploader()->LoggingStoppedDontUpload();
-  shared_memory_.reset(NULL);
+  circular_buffer_.reset();
+  log_buffer_.reset();
   logging_state_ = CLOSED;
   FireGenericDoneCallback(&discard_callback, true, "");
 }
@@ -209,12 +210,23 @@ bool WebRtcLoggingHandlerHost::OnMessageReceived(const IPC::Message& message,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(WebRtcLoggingHandlerHost, message, *message_was_ok)
+    IPC_MESSAGE_HANDLER(WebRtcLoggingMsg_AddLogMessage, OnAddLogMessage)
     IPC_MESSAGE_HANDLER(WebRtcLoggingMsg_LoggingStopped,
                         OnLoggingStoppedInRenderer)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 
   return handled;
+}
+
+void WebRtcLoggingHandlerHost::OnAddLogMessage(const std::string& message) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (logging_state_ == STARTED || logging_state_ == STOPPING) {
+    DCHECK(circular_buffer_.get());
+    circular_buffer_->Write(message.c_str(), message.length());
+    const char eol = '\n';
+    circular_buffer_->Write(&eol, 1);
+  }
 }
 
 void WebRtcLoggingHandlerHost::OnLoggingStoppedInRenderer() {
@@ -239,27 +251,13 @@ void WebRtcLoggingHandlerHost::StartLoggingIfAllowed() {
 
 void WebRtcLoggingHandlerHost::DoStartLogging() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(!shared_memory_);
 
-  shared_memory_.reset(new base::SharedMemory());
-
-  if (!shared_memory_->CreateAndMapAnonymous(kWebRtcLogSize)) {
-    const std::string error_message = "Failed to create shared memory";
-    DLOG(ERROR) << error_message;
-    logging_state_ = CLOSED;
-    FireGenericDoneCallback(&start_callback_, false, error_message);
-    return;
-  }
-
-  if (!shared_memory_->ShareToProcess(PeerHandle(),
-                                     &foreign_memory_handle_)) {
-    const std::string error_message =
-        "Failed to share memory to render process";
-    DLOG(ERROR) << error_message;
-    logging_state_ = CLOSED;
-    FireGenericDoneCallback(&start_callback_, false, error_message);
-    return;
-  }
+  log_buffer_.reset(new unsigned char[kWebRtcLogSize]);
+  circular_buffer_.reset(
+    new PartialCircularBuffer(log_buffer_.get(),
+                              kWebRtcLogSize,
+                              kWebRtcLogSize / 2,
+                              false));
 
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, base::Bind(
       &WebRtcLoggingHandlerHost::LogMachineInfo, this));
@@ -267,27 +265,23 @@ void WebRtcLoggingHandlerHost::DoStartLogging() {
 
 void WebRtcLoggingHandlerHost::LogMachineInfo() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  PartialCircularBuffer pcb(shared_memory_->memory(),
-                            kWebRtcLogSize,
-                            kWebRtcLogSize / 2,
-                            false);
 
   // Meta data
   std::string info;
   std::map<std::string, std::string>::iterator it = meta_data_.begin();
   for (; it != meta_data_.end(); ++it) {
     info = it->first + ": " + it->second + '\n';
-    pcb.Write(info.c_str(), info.length());
+    circular_buffer_->Write(info.c_str(), info.length());
   }
 
   // OS
   info = base::SysInfo::OperatingSystemName() + " " +
          base::SysInfo::OperatingSystemVersion() + " " +
          base::SysInfo::OperatingSystemArchitecture() + '\n';
-  pcb.Write(info.c_str(), info.length());
+  circular_buffer_->Write(info.c_str(), info.length());
 #if defined(OS_LINUX)
   info = "Linux distribution: " + base::GetLinuxDistro() + '\n';
-  pcb.Write(info.c_str(), info.length());
+  circular_buffer_->Write(info.c_str(), info.length());
 #endif
 
   // CPU
@@ -296,7 +290,7 @@ void WebRtcLoggingHandlerHost::LogMachineInfo() {
          "." + IntToString(cpu.stepping()) +
          ", x" + IntToString(base::SysInfo::NumberOfProcessors()) + ", " +
          IntToString(base::SysInfo::AmountOfPhysicalMemoryMB()) + "MB" + '\n';
-  pcb.Write(info.c_str(), info.length());
+  circular_buffer_->Write(info.c_str(), info.length());
   std::string cpu_brand = cpu.cpu_brand();
   // Workaround for crbug.com/249713.
   // TODO(grunell): Remove workaround when bug is fixed.
@@ -304,7 +298,7 @@ void WebRtcLoggingHandlerHost::LogMachineInfo() {
   if (null_pos != std::string::npos)
     cpu_brand.erase(null_pos);
   info = "Cpu brand: " + cpu_brand + '\n';
-  pcb.Write(info.c_str(), info.length());
+  circular_buffer_->Write(info.c_str(), info.length());
 
   // Computer model
 #if defined(OS_MACOSX)
@@ -312,7 +306,7 @@ void WebRtcLoggingHandlerHost::LogMachineInfo() {
 #else
   info = "Computer model: Not available\n";
 #endif
-  pcb.Write(info.c_str(), info.length());
+  circular_buffer_->Write(info.c_str(), info.length());
 
   // GPU
   gpu::GPUInfo gpu_info = content::GpuDataManager::GetInstance()->GetGPUInfo();
@@ -321,7 +315,7 @@ void WebRtcLoggingHandlerHost::LogMachineInfo() {
          ", device-id=" + IntToString(gpu_info.gpu.device_id) +
          ", driver-vendor='" + gpu_info.driver_vendor +
          "', driver-version=" + gpu_info.driver_version + '\n';
-  pcb.Write(info.c_str(), info.length());
+  circular_buffer_->Write(info.c_str(), info.length());
 
   // Network interfaces
   net::NetworkInterfaceList network_list;
@@ -329,12 +323,12 @@ void WebRtcLoggingHandlerHost::LogMachineInfo() {
                       net::EXCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES);
   info  = "Discovered " + IntToString(network_list.size()) +
           " network interfaces:" + '\n';
-  pcb.Write(info.c_str(), info.length());
+  circular_buffer_->Write(info.c_str(), info.length());
   for (net::NetworkInterfaceList::iterator it = network_list.begin();
        it != network_list.end(); ++it) {
     info = "Name: " + it->name +
            ", Address: " + IPAddressToSensitiveString(it->address) + '\n';
-    pcb.Write(info.c_str(), info.length());
+    circular_buffer_->Write(info.c_str(), info.length());
   }
 
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
@@ -343,8 +337,7 @@ void WebRtcLoggingHandlerHost::LogMachineInfo() {
 
 void WebRtcLoggingHandlerHost::NotifyLoggingStarted() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  Send(new WebRtcLoggingMsg_StartLogging(foreign_memory_handle_,
-                                         kWebRtcLogSize));
+  Send(new WebRtcLoggingMsg_StartLogging());
   logging_state_ = STARTED;
   FireGenericDoneCallback(&start_callback_, true, "");
 }
@@ -365,12 +358,13 @@ void WebRtcLoggingHandlerHost::TriggerUploadLog() {
       &WebRtcLogUploader::LoggingStoppedDoUpload,
       base::Unretained(g_browser_process->webrtc_log_uploader()),
       system_request_context_,
-      Passed(&shared_memory_),
+      Passed(&log_buffer_),
       kWebRtcLogSize,
       meta_data_,
       upload_done_data));
 
   meta_data_.clear();
+  circular_buffer_.reset();
 }
 
 void WebRtcLoggingHandlerHost::FireGenericDoneCallback(

@@ -13,6 +13,7 @@ namespace net {
 class URLRequestContextGetter;
 }  // namespace net
 
+class PartialCircularBuffer;
 class Profile;
 class RenderProcessHost;
 
@@ -96,6 +97,7 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 
+  void OnAddLogMessage(const std::string& message);
   void OnLoggingStoppedInRenderer();
 
   void StartLoggingIfAllowed();
@@ -110,7 +112,9 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
                                const std::string& error_message);
 
   scoped_refptr<net::URLRequestContextGetter> system_request_context_;
-  scoped_ptr<base::SharedMemory> shared_memory_;
+
+  scoped_ptr<unsigned char[]> log_buffer_;
+  scoped_ptr<PartialCircularBuffer> circular_buffer_;
 
   // The profile associated with our renderer process.
   Profile* profile_;

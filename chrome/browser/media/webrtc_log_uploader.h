@@ -70,7 +70,7 @@ class WebRtcLogUploader : public net::URLFetcherDelegate {
   // either this function or LoggingStoppedDontUpload().
   void LoggingStoppedDoUpload(
       net::URLRequestContextGetter* request_context,
-      scoped_ptr<base::SharedMemory> shared_memory,
+      scoped_ptr<unsigned char[]> log_buffer,
       uint32 length,
       const std::map<std::string, std::string>& meta_data,
       const WebRtcLogUploadDoneData& upload_done_data);
