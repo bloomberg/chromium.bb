@@ -110,7 +110,7 @@ config("compiler") {
         cflags += [
           "-march=$arm_arch",
           "-mfpu=$arm_fpu",
-          "-mfloat_abi=$arm_float_abi",
+          "-mfloat-abi=$arm_float_abi",
         ]
         if (arm_tune != "") {
           cflags += "-mtune=$arm_tune"
@@ -118,7 +118,7 @@ config("compiler") {
         if (arm_use_thumb) {
           cflags += [ "-mthumb" ]
           if (is_android) {
-            cflags += [ "-mthumb_interwork" ]
+            cflags += [ "-mthumb-interwork" ]
           }
         }
       }
