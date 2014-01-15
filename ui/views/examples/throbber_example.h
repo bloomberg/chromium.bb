@@ -12,7 +12,7 @@
 namespace views {
 namespace examples {
 
-class ThrobberExample : public ExampleBase {
+class VIEWS_EXAMPLES_EXPORT ThrobberExample : public ExampleBase {
  public:
   ThrobberExample();
   virtual ~ThrobberExample();

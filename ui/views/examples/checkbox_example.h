@@ -15,7 +15,8 @@ class Checkbox;
 namespace examples {
 
 // CheckboxExample exercises a Checkbox control.
-class CheckboxExample : public ExampleBase, public ButtonListener {
+class VIEWS_EXAMPLES_EXPORT CheckboxExample : public ExampleBase,
+                                              public ButtonListener {
  public:
   CheckboxExample();
   virtual ~CheckboxExample();

@@ -15,7 +15,8 @@ class Label;
 
 namespace examples {
 
-class SliderExample : public ExampleBase, public SliderListener {
+class VIEWS_EXAMPLES_EXPORT SliderExample : public ExampleBase,
+                                            public SliderListener {
  public:
   SliderExample();
   virtual ~SliderExample();

@@ -21,9 +21,9 @@ class LabelButton;
 namespace examples {
 
 // TextfieldExample mimics login screen.
-class TextfieldExample : public ExampleBase,
-                         public TextfieldController,
-                         public ButtonListener {
+class VIEWS_EXAMPLES_EXPORT TextfieldExample : public ExampleBase,
+                                               public TextfieldController,
+                                               public ButtonListener {
  public:
   TextfieldExample();
   virtual ~TextfieldExample();

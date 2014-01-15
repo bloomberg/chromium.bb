@@ -14,7 +14,7 @@ class SingleSplitView;
 
 namespace examples {
 
-class DoubleSplitViewExample : public ExampleBase {
+class VIEWS_EXAMPLES_EXPORT DoubleSplitViewExample : public ExampleBase {
  public:
   DoubleSplitViewExample();
   virtual ~DoubleSplitViewExample();

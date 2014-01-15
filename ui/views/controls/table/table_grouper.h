@@ -5,9 +5,11 @@
 #ifndef UI_VIEWS_CONTROLS_TABLE_TABLE_GROUPER_H_
 #define UI_VIEWS_CONTROLS_TABLE_TABLE_GROUPER_H_
 
+#include "ui/views/views_export.h"
+
 namespace views {
 
-struct GroupRange {
+struct VIEWS_EXPORT GroupRange {
   int start;
   int length;
 };
@@ -15,7 +17,7 @@ struct GroupRange {
 // TableGrouper is used by TableView to group a set of rows and treat them
 // as one. Rows that fall in the same group are selected together and sorted
 // together.
-class TableGrouper {
+class VIEWS_EXPORT TableGrouper {
  public:
   virtual void GetGroupRange(int model_index, GroupRange* range) = 0;
 

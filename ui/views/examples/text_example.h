@@ -20,9 +20,9 @@ namespace examples {
 
 class ExampleComboboxModel;
 
-class TextExample : public ExampleBase,
-                    public ButtonListener,
-                    public ComboboxListener {
+class VIEWS_EXAMPLES_EXPORT TextExample : public ExampleBase,
+                                          public ButtonListener,
+                                          public ComboboxListener {
  public:
   TextExample();
   virtual ~TextExample();

@@ -27,11 +27,11 @@ class TableView;
 
 namespace examples {
 
-class TableExample : public ExampleBase,
-                     public ui::TableModel,
-                     public TableGrouper,
-                     public TableViewObserver,
-                     public ButtonListener {
+class VIEWS_EXAMPLES_EXPORT TableExample : public ExampleBase,
+                                           public ui::TableModel,
+                                           public TableGrouper,
+                                           public TableViewObserver,
+                                           public ButtonListener {
  public:
   TableExample();
   virtual ~TableExample();

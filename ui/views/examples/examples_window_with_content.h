@@ -6,6 +6,7 @@
 #define UI_VIEWS_EXAMPLES_EXAMPLES_WINDOW_WITH_CONTENT_H_
 
 #include "ui/gfx/native_widget_types.h"
+#include "ui/views/examples/examples_window.h"
 #include "ui/views/examples/views_examples_with_content_export.h"
 
 namespace content {
@@ -14,11 +15,6 @@ class BrowserContext;
 
 namespace views {
 namespace examples {
-
-enum Operation {
-  DO_NOTHING_ON_CLOSE = 0,
-  QUIT_ON_CLOSE,
-};
 
 // Shows a window with the views examples in it.
 VIEWS_EXAMPLES_WITH_CONTENT_EXPORT void ShowExamplesWindowWithContent(

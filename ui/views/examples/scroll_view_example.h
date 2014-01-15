@@ -19,7 +19,8 @@ class LabelButton;
 
 namespace examples {
 
-class ScrollViewExample : public ExampleBase, public ButtonListener {
+class VIEWS_EXAMPLES_EXPORT ScrollViewExample : public ExampleBase,
+                                                public ButtonListener {
  public:
   ScrollViewExample();
   virtual ~ScrollViewExample();

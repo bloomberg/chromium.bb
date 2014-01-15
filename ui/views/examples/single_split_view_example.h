@@ -13,8 +13,9 @@
 namespace views {
 namespace examples {
 
-class SingleSplitViewExample : public ExampleBase,
-                               public SingleSplitViewListener {
+class VIEWS_EXAMPLES_EXPORT SingleSplitViewExample
+    : public ExampleBase,
+      public SingleSplitViewListener {
  public:
   SingleSplitViewExample();
   virtual ~SingleSplitViewExample();

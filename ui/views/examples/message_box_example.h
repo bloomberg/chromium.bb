@@ -18,7 +18,8 @@ class MessageBoxView;
 namespace examples {
 
 // A MessageBoxView example. This tests some of checkbox features as well.
-class MessageBoxExample : public ExampleBase, public ButtonListener {
+class VIEWS_EXAMPLES_EXPORT MessageBoxExample : public ExampleBase,
+                                                public ButtonListener {
  public:
   MessageBoxExample();
   virtual ~MessageBoxExample();

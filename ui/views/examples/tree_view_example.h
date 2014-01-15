@@ -21,11 +21,12 @@ class TreeView;
 
 namespace examples {
 
-class TreeViewExample : public ExampleBase,
-                        public ButtonListener,
-                        public TreeViewController,
-                        public ContextMenuController,
-                        public ui::SimpleMenuModel::Delegate {
+class VIEWS_EXAMPLES_EXPORT TreeViewExample
+    : public ExampleBase,
+      public ButtonListener,
+      public TreeViewController,
+      public ContextMenuController,
+      public ui::SimpleMenuModel::Delegate {
  public:
   TreeViewExample();
   virtual ~TreeViewExample();

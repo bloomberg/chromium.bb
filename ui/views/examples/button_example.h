@@ -18,7 +18,8 @@ class LabelButton;
 namespace examples {
 
 // ButtonExample simply counts the number of clicks.
-class ButtonExample : public ExampleBase, public ButtonListener {
+class VIEWS_EXAMPLES_EXPORT ButtonExample : public ExampleBase,
+                                            public ButtonListener {
  public:
   ButtonExample();
   virtual ~ButtonExample();

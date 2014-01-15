@@ -17,7 +17,8 @@ namespace views {
 namespace examples {
 
 // WidgetExample demonstrates how to create a popup widget.
-class WidgetExample : public ExampleBase, public ButtonListener {
+class VIEWS_EXAMPLES_EXPORT WidgetExample : public ExampleBase,
+                                            public ButtonListener {
  public:
   WidgetExample();
   virtual ~WidgetExample();

@@ -14,7 +14,7 @@ namespace examples {
 
 // MenuExample demonstrates how to use the MenuModelAdapter and MenuRunner
 // classes.
-class MenuExample : public ExampleBase {
+class VIEWS_EXAMPLES_EXPORT MenuExample : public ExampleBase {
  public:
   MenuExample();
   virtual ~MenuExample();

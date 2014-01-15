@@ -13,7 +13,8 @@
 namespace views {
 namespace examples {
 
-class LinkExample : public ExampleBase, public LinkListener {
+class VIEWS_EXAMPLES_EXPORT LinkExample : public ExampleBase,
+                                          public LinkListener {
  public:
   LinkExample();
   virtual ~LinkExample();

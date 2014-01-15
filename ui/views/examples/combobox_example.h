@@ -15,7 +15,7 @@ namespace views {
 namespace examples {
 
 // A combobox model implementation that generates a list of "Item <index>".
-class ComboboxModelExample : public ui::ComboboxModel {
+class VIEWS_EXAMPLES_EXPORT ComboboxModelExample : public ui::ComboboxModel {
  public:
   ComboboxModelExample();
   virtual ~ComboboxModelExample();
@@ -28,7 +28,8 @@ class ComboboxModelExample : public ui::ComboboxModel {
   DISALLOW_COPY_AND_ASSIGN(ComboboxModelExample);
 };
 
-class ComboboxExample : public ExampleBase, public ComboboxListener {
+class VIEWS_EXAMPLES_EXPORT ComboboxExample : public ExampleBase,
+                                              public ComboboxListener {
  public:
   ComboboxExample();
   virtual ~ComboboxExample();

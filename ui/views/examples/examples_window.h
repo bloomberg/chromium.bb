@@ -5,18 +5,31 @@
 #ifndef UI_VIEWS_EXAMPLES_EXAMPLES_WINDOW_H_
 #define UI_VIEWS_EXAMPLES_EXAMPLES_WINDOW_H_
 
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "ui/views/examples/views_examples_export.h"
+
+namespace aura {
+class Window;
+}
 
 namespace views {
 namespace examples {
+
+class ExampleBase;
 
 enum Operation {
   DO_NOTHING_ON_CLOSE = 0,
   QUIT_ON_CLOSE,
 };
 
-// Shows a window with the views examples in it.
-VIEWS_EXAMPLES_EXPORT void ShowExamplesWindow(Operation operation);
+// Shows a window with the views examples in it. |extra_examples| contains any
+// additional examples to add. |window_context| is used to determine where the
+// window should be created (see |Widget::InitParams::context| for details).
+VIEWS_EXAMPLES_EXPORT void ShowExamplesWindow(
+    Operation operation,
+    aura::Window* window_context,
+    scoped_ptr<ScopedVector<ExampleBase> > extra_examples);
 
 }  // namespace examples
 }  // namespace views

@@ -18,9 +18,9 @@ class Label;
 namespace examples {
 
 // An example that compares the multiline rendering of different controls.
-class MultilineExample : public ExampleBase,
-                         public TextfieldController,
-                         public ButtonListener {
+class VIEWS_EXAMPLES_EXPORT MultilineExample : public ExampleBase,
+                                               public TextfieldController,
+                                               public ButtonListener {
  public:
   MultilineExample();
   virtual ~MultilineExample();

@@ -4,6 +4,7 @@
 
 #include "ui/views/examples/examples_window.h"
 
+#include <algorithm>
 #include <string>
 
 #include "base/memory/scoped_vector.h"
@@ -43,11 +44,65 @@
 namespace views {
 namespace examples {
 
+typedef scoped_ptr<ScopedVector<ExampleBase> > ScopedExamples;
+
+namespace {
+
+// Creates the default set of examples. Caller owns the result.
+ScopedExamples CreateExamples() {
+  ScopedExamples examples(new ScopedVector<ExampleBase>);
+  examples->push_back(new BubbleExample);
+  examples->push_back(new ButtonExample);
+  examples->push_back(new CheckboxExample);
+  examples->push_back(new ComboboxExample);
+  examples->push_back(new DoubleSplitViewExample);
+  examples->push_back(new LabelExample);
+  examples->push_back(new LinkExample);
+  examples->push_back(new MenuExample);
+  examples->push_back(new MessageBoxExample);
+  examples->push_back(new MultilineExample);
+  examples->push_back(new ProgressBarExample);
+  examples->push_back(new RadioButtonExample);
+  examples->push_back(new ScrollViewExample);
+  examples->push_back(new SingleSplitViewExample);
+  examples->push_back(new SliderExample);
+  examples->push_back(new TabbedPaneExample);
+  examples->push_back(new TableExample);
+  examples->push_back(new TextExample);
+  examples->push_back(new TextfieldExample);
+  examples->push_back(new ThrobberExample);
+  examples->push_back(new TreeViewExample);
+  examples->push_back(new WidgetExample);
+  return examples.Pass();
+}
+
+struct ExampleTitleCompare {
+  bool operator() (ExampleBase* a, ExampleBase* b) {
+    return a->example_title() < b->example_title();
+  }
+};
+
+ScopedExamples GetExamplesToShow(ScopedExamples extra) {
+  ScopedExamples examples(CreateExamples());
+  if (extra.get()) {
+    examples->insert(examples->end(), extra->begin(), extra->end());
+    extra->weak_clear();
+  }
+  std::sort(examples->begin(), examples->end(), ExampleTitleCompare());
+  return examples.Pass();
+}
+
+}  // namespace
+
 // Model for the examples that are being added via AddExample().
 class ComboboxModelExampleList : public ui::ComboboxModel {
  public:
   ComboboxModelExampleList() {}
   virtual ~ComboboxModelExampleList() {}
+
+  void SetExamples(ScopedExamples examples) {
+    example_list_.swap(*examples);
+  }
 
   // Overridden from ui::ComboboxModel:
   virtual int GetItemCount() const OVERRIDE { return example_list_.size(); }
@@ -59,10 +114,6 @@ class ComboboxModelExampleList : public ui::ComboboxModel {
     return example_list_[index]->example_view();
   }
 
-  void AddExample(ExampleBase* example) {
-    example_list_.push_back(example);
-  }
-
  private:
   ScopedVector<ExampleBase> example_list_;
 
@@ -72,14 +123,39 @@ class ComboboxModelExampleList : public ui::ComboboxModel {
 class ExamplesWindowContents : public WidgetDelegateView,
                                public ComboboxListener {
  public:
-  ExamplesWindowContents(Operation operation)
+  ExamplesWindowContents(Operation operation, ScopedExamples examples)
       : combobox_(new Combobox(&combobox_model_)),
         example_shown_(new View),
         status_label_(new Label),
         operation_(operation) {
     instance_ = this;
     combobox_->set_listener(this);
+    combobox_model_.SetExamples(examples.Pass());
+
+    set_background(Background::CreateStandardPanelBackground());
+    GridLayout* layout = new GridLayout(this);
+    SetLayoutManager(layout);
+    ColumnSet* column_set = layout->AddColumnSet(0);
+    column_set->AddPaddingColumn(0, 5);
+    column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
+                          GridLayout::USE_PREF, 0, 0);
+    column_set->AddPaddingColumn(0, 5);
+    layout->AddPaddingRow(0, 5);
+    layout->StartRow(0 /* no expand */, 0);
+    layout->AddView(combobox_);
+
+    if (combobox_model_.GetItemCount() > 0) {
+      layout->StartRow(1, 0);
+      example_shown_->SetLayoutManager(new FillLayout());
+      example_shown_->AddChildView(combobox_model_.GetItemViewAt(0));
+      layout->AddView(example_shown_);
+    }
+
+    layout->StartRow(0 /* no expand */, 0);
+    layout->AddView(status_label_);
+    layout->AddPaddingRow(0, 5);
   }
+
   virtual ~ExamplesWindowContents() {
     // Delete |combobox_| first as it references |combobox_model_|.
     delete combobox_;
@@ -107,13 +183,6 @@ class ExamplesWindowContents : public WidgetDelegateView,
       base::MessageLoopForUI::current()->Quit();
   }
 
-  // Overridden from View:
-  virtual void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) OVERRIDE {
-    if (details.is_add && details.child == this)
-      InitExamplesWindow();
-  }
-
   // Overridden from ComboboxListener:
   virtual void OnSelectedIndexChanged(Combobox* combobox) OVERRIDE {
     DCHECK_EQ(combobox, combobox_);
@@ -124,61 +193,6 @@ class ExamplesWindowContents : public WidgetDelegateView,
     example_shown_->RequestFocus();
     SetStatus(std::string());
     Layout();
-  }
-
-  // Creates the layout within the examples window.
-  void InitExamplesWindow() {
-    AddExamples();
-
-    set_background(Background::CreateStandardPanelBackground());
-    GridLayout* layout = new GridLayout(this);
-    SetLayoutManager(layout);
-    ColumnSet* column_set = layout->AddColumnSet(0);
-    column_set->AddPaddingColumn(0, 5);
-    column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
-                          GridLayout::USE_PREF, 0, 0);
-    column_set->AddPaddingColumn(0, 5);
-    layout->AddPaddingRow(0, 5);
-    layout->StartRow(0 /* no expand */, 0);
-    layout->AddView(combobox_);
-
-    if (combobox_model_.GetItemCount() > 0) {
-      layout->StartRow(1, 0);
-      example_shown_->SetLayoutManager(new FillLayout());
-      example_shown_->AddChildView(combobox_model_.GetItemViewAt(0));
-      layout->AddView(example_shown_);
-    }
-
-    layout->StartRow(0 /* no expand */, 0);
-    layout->AddView(status_label_);
-    layout->AddPaddingRow(0, 5);
-  }
-
-  // Adds all the individual examples to the combobox model.
-  void AddExamples() {
-    // Please keep this list in alphabetical order!
-    combobox_model_.AddExample(new BubbleExample);
-    combobox_model_.AddExample(new ButtonExample);
-    combobox_model_.AddExample(new CheckboxExample);
-    combobox_model_.AddExample(new ComboboxExample);
-    combobox_model_.AddExample(new DoubleSplitViewExample);
-    combobox_model_.AddExample(new LabelExample);
-    combobox_model_.AddExample(new LinkExample);
-    combobox_model_.AddExample(new MenuExample);
-    combobox_model_.AddExample(new MessageBoxExample);
-    combobox_model_.AddExample(new MultilineExample);
-    combobox_model_.AddExample(new ProgressBarExample);
-    combobox_model_.AddExample(new RadioButtonExample);
-    combobox_model_.AddExample(new ScrollViewExample);
-    combobox_model_.AddExample(new SingleSplitViewExample);
-    combobox_model_.AddExample(new SliderExample);
-    combobox_model_.AddExample(new TabbedPaneExample);
-    combobox_model_.AddExample(new TableExample);
-    combobox_model_.AddExample(new TextExample);
-    combobox_model_.AddExample(new TextfieldExample);
-    combobox_model_.AddExample(new ThrobberExample);
-    combobox_model_.AddExample(new TreeViewExample);
-    combobox_model_.AddExample(new WidgetExample);
   }
 
   static ExamplesWindowContents* instance_;
@@ -194,12 +208,21 @@ class ExamplesWindowContents : public WidgetDelegateView,
 // static
 ExamplesWindowContents* ExamplesWindowContents::instance_ = NULL;
 
-void ShowExamplesWindow(Operation operation) {
+void ShowExamplesWindow(Operation operation,
+                        aura::Window* window_context,
+                        ScopedExamples extra_examples) {
   if (ExamplesWindowContents::instance()) {
     ExamplesWindowContents::instance()->GetWidget()->Activate();
   } else {
-    Widget::CreateWindowWithBounds(new ExamplesWindowContents(operation),
-                                   gfx::Rect(0, 0, 850, 300))->Show();
+    ScopedExamples examples(GetExamplesToShow(extra_examples.Pass()));
+    Widget* widget = new Widget;
+    Widget::InitParams params;
+    params.delegate = new ExamplesWindowContents(operation, examples.Pass());
+    params.context = window_context;
+    params.bounds = gfx::Rect(0, 0, 850, 300);
+    params.top_level = true;
+    widget->Init(params);
+    widget->Show();
   }
 }
 

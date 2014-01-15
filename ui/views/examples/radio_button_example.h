@@ -19,7 +19,8 @@ class RadioButton;
 
 namespace examples {
 
-class RadioButtonExample : public ExampleBase, public ButtonListener {
+class VIEWS_EXAMPLES_EXPORT RadioButtonExample : public ExampleBase,
+                                                 public ButtonListener {
  public:
   RadioButtonExample();
   virtual ~RadioButtonExample();

@@ -5,13 +5,15 @@
 #ifndef UI_VIEWS_CONTROLS_SINGLE_SPLIT_VIEW_LISTENER_H_
 #define UI_VIEWS_CONTROLS_SINGLE_SPLIT_VIEW_LISTENER_H_
 
+#include "ui/views/views_export.h"
+
 namespace views {
 
 class SingleSplitView;
 
 // An interface implemented by objects that want to be notified when the
 // splitter moves.
-class SingleSplitViewListener {
+class VIEWS_EXPORT SingleSplitViewListener {
  public:
   // Invoked when split handle is moved by the user. |sender|'s divider_offset
   // is already set to the new value, but Layout has not happened yet.

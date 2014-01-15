@@ -19,9 +19,9 @@ class TabbedPane;
 namespace examples {
 
 // A TabbedPane example tests adding and selecting tabs.
-class TabbedPaneExample : public ExampleBase,
-                          public ButtonListener,
-                          public TabbedPaneListener {
+class VIEWS_EXAMPLES_EXPORT TabbedPaneExample : public ExampleBase,
+                                                public ButtonListener,
+                                                public TabbedPaneListener {
  public:
   TabbedPaneExample();
   virtual ~TabbedPaneExample();

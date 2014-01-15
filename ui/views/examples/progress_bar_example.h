@@ -15,7 +15,8 @@ class ProgressBar;
 
 namespace examples {
 
-class ProgressBarExample : public ExampleBase, public ButtonListener {
+class VIEWS_EXAMPLES_EXPORT ProgressBarExample : public ExampleBase,
+                                                 public ButtonListener {
  public:
   ProgressBarExample();
   virtual ~ProgressBarExample();

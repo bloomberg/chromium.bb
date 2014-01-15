@@ -6,6 +6,7 @@
 #define UI_VIEWS_CONTROLS_TABLE_TABLE_VIEW_OBSERVER_H_
 
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/views/views_export.h"
 
 namespace views {
 
@@ -13,7 +14,7 @@ class TableView;
 class TableView2;
 
 // TableViewObserver is notified about the TableView selection.
-class TableViewObserver {
+class VIEWS_EXPORT TableViewObserver {
  public:
   virtual ~TableViewObserver() {}
 

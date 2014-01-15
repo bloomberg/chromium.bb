@@ -12,7 +12,7 @@
 namespace views {
 namespace examples {
 
-class LabelExample : public ExampleBase {
+class VIEWS_EXAMPLES_EXPORT LabelExample : public ExampleBase {
  public:
   LabelExample();
   virtual ~LabelExample();

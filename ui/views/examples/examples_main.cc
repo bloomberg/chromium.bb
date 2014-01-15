@@ -15,6 +15,7 @@
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/corewm/wm_state.h"
+#include "ui/views/examples/example_base.h"
 #include "ui/views/examples/examples_window.h"
 #include "ui/views/test/desktop_test_views_delegate.h"
 
@@ -63,7 +64,10 @@ int main(int argc, char** argv) {
                                    desktop_screen.get());
 #endif
 
-    views::examples::ShowExamplesWindow(views::examples::QUIT_ON_CLOSE);
+    views::examples::ShowExamplesWindow(
+        views::examples::QUIT_ON_CLOSE,
+        NULL,
+        scoped_ptr<ScopedVector<views::examples::ExampleBase> >());
 
     base::RunLoop().Run();
 
