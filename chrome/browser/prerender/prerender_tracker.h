@@ -40,10 +40,11 @@ class PrerenderTracker : public base::NonThreadSafe,
   // been displayed or destroyed is still prerendering.
   bool IsPrerenderingOnIOThread(int child_id, int route_id) const;
 
-  // Returns whether or not a RenderView and URL are regarding a pending
+  // Returns whether or not a RenderFrame and URL are regarding a pending
   // prerender swap. Can only be called on the IO thread. Does not acquire a
   // lock.
-  bool IsPendingSwapRequestOnIOThread(int child_id, int route_id,
+  bool IsPendingSwapRequestOnIOThread(int render_process_id,
+                                      int render_frame_id,
                                       const GURL& url) const;
 
   // Called when a PrerenderResourceThrottle defers a request. Cancel
@@ -57,16 +58,18 @@ class PrerenderTracker : public base::NonThreadSafe,
   // or Resume will be called on |throttle| when the prerender is
   // canceled or used, respectively.
   void AddPendingSwapThrottleOnIOThread(
-      int child_id, int route_id, const GURL& url,
+      int render_process_id, int render_frame_id, const GURL& url,
       const base::WeakPtr<PrerenderPendingSwapThrottle>& throttle);
 
   // Called to add throttles for a pending prerender swap.
-  void AddPrerenderPendingSwap(const ChildRouteIdPair& child_route_id_pair,
-                               const GURL& url);
+  void AddPrerenderPendingSwap(
+      const ChildRouteIdPair& render_frame_route_id_pair,
+      const GURL& url);
 
   // Called to remove the throttles for a pending prerender swap.
-  void RemovePrerenderPendingSwap(const ChildRouteIdPair& child_route_id_pair,
-                                  bool swap_successful);
+  void RemovePrerenderPendingSwap(
+      const ChildRouteIdPair& render_frame_route_id_pair,
+      bool swap_successful);
 
  private:
   friend class PrerenderContents;
@@ -82,9 +85,10 @@ class PrerenderTracker : public base::NonThreadSafe,
     explicit PendingSwapThrottleData(const GURL& swap_url);
     ~PendingSwapThrottleData();
     GURL url;
-    std::vector<base::WeakPtr<PrerenderPendingSwapThrottle> > throttles;
+    base::WeakPtr<PrerenderPendingSwapThrottle> throttle;
   };
-  // Set of throttles for pending swaps.
+  // Set of throttles for pending swaps. The key is the routing ID pair
+  // of a RenderFrame.
   typedef std::map<ChildRouteIdPair, PendingSwapThrottleData>
       PendingSwapThrottleMap;
 
@@ -100,21 +104,9 @@ class PrerenderTracker : public base::NonThreadSafe,
 
   // Add/remove prerenders pending swap on the IO Thread.
   void AddPrerenderPendingSwapOnIOThread(
-      const ChildRouteIdPair& child_route_id_pair, const GURL& url);
+      const ChildRouteIdPair& render_frame_route_id_pair, const GURL& url);
   void RemovePrerenderPendingSwapOnIOThread(
-      const ChildRouteIdPair& child_route_id_pair,
-      bool swap_successful);
-
-  // Tasks posted to the IO Thread to call the above functions.
-  static void AddPrerenderOnIOThreadTask(
-      const ChildRouteIdPair& child_route_id_pair);
-  static void RemovePrerenderOnIOThreadTask(
-      const ChildRouteIdPair& child_route_id_pair,
-      FinalStatus final_status);
-  static void AddPrerenderPendingSwapOnIOThreadTask(
-      const ChildRouteIdPair& child_route_id_pair, const GURL& url);
-  static void RemovePrerenderPendingSwapOnIOThreadTask(
-      const ChildRouteIdPair& child_route_id_pair,
+      const ChildRouteIdPair& render_frame_route_id_pair,
       bool swap_successful);
 
   static PrerenderTracker* GetDefault();

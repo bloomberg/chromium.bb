@@ -49,7 +49,8 @@ void PrerenderTracker::OnPrerenderStart(
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&AddPrerenderOnIOThreadTask, child_route_id_pair));
+      base::Bind(&PrerenderTracker::AddPrerenderOnIOThread,
+                 base::Unretained(this), child_route_id_pair));
 }
 
 void PrerenderTracker::OnPrerenderStop(
@@ -66,7 +67,8 @@ void PrerenderTracker::OnPrerenderStop(
   DCHECK_LT(prerender_contents->final_status(), FINAL_STATUS_MAX);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&RemovePrerenderOnIOThreadTask, child_route_id_pair,
+      base::Bind(&PrerenderTracker::RemovePrerenderOnIOThread,
+                 base::Unretained(this), child_route_id_pair,
                  prerender_contents->final_status()));
 }
 
@@ -79,12 +81,13 @@ bool PrerenderTracker::IsPrerenderingOnIOThread(int child_id,
 }
 
 bool PrerenderTracker::IsPendingSwapRequestOnIOThread(
-    int child_id, int route_id, const GURL& url) const {
+    int render_process_id, int render_frame_id, const GURL& url) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  ChildRouteIdPair child_route_id_pair(child_id, route_id);
+  ChildRouteIdPair render_frame_route_id_pair(
+      render_process_id, render_frame_id);
   PendingSwapThrottleMap::const_iterator it =
-      pending_swap_throttle_map_.find(child_route_id_pair);
+      pending_swap_throttle_map_.find(render_frame_route_id_pair);
   return (it != pending_swap_throttle_map_.end() && it->second.url == url);
 }
 
@@ -102,19 +105,20 @@ void PrerenderTracker::AddResourceThrottleOnIOThread(
 }
 
 void PrerenderTracker::AddPendingSwapThrottleOnIOThread(
-    int child_id,
-    int route_id,
+    int render_process_id,
+    int render_frame_id,
     const GURL& url,
     const base::WeakPtr<PrerenderPendingSwapThrottle>& throttle) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  ChildRouteIdPair child_route_id_pair(child_id, route_id);
+  ChildRouteIdPair render_frame_route_id_pair(
+      render_process_id, render_frame_id);
   PendingSwapThrottleMap::iterator it =
-      pending_swap_throttle_map_.find(child_route_id_pair);
+      pending_swap_throttle_map_.find(render_frame_route_id_pair);
   DCHECK(it != pending_swap_throttle_map_.end());
   if (it == pending_swap_throttle_map_.end())
     return;
-  it->second.throttles.push_back(throttle);
+  it->second.throttle = throttle;
 }
 
 void PrerenderTracker::AddPrerenderOnIOThread(
@@ -152,50 +156,49 @@ void PrerenderTracker::RemovePrerenderOnIOThread(
 }
 
 void PrerenderTracker::AddPrerenderPendingSwapOnIOThread(
-    const ChildRouteIdPair& child_route_id_pair,
+    const ChildRouteIdPair& render_frame_route_id_pair,
     const GURL& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   std::pair<PendingSwapThrottleMap::iterator, bool> insert_result =
       pending_swap_throttle_map_.insert(std::make_pair(
-          child_route_id_pair, PendingSwapThrottleData(url)));
+          render_frame_route_id_pair, PendingSwapThrottleData(url)));
   DCHECK(insert_result.second);
 }
 
 void PrerenderTracker::RemovePrerenderPendingSwapOnIOThread(
-    const ChildRouteIdPair& child_route_id_pair,
+    const ChildRouteIdPair& render_frame_route_id_pair,
     bool swap_successful) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   PendingSwapThrottleMap::iterator it =
-      pending_swap_throttle_map_.find(child_route_id_pair);
+      pending_swap_throttle_map_.find(render_frame_route_id_pair);
   DCHECK(it != pending_swap_throttle_map_.end());
   // Cancel or resume all throttled resources.
-  for (size_t i = 0; i < it->second.throttles.size(); i++) {
-    if (!it->second.throttles[i])
-      continue;
+  if (it->second.throttle) {
     if (swap_successful)
-      it->second.throttles[i]->Cancel();
+      it->second.throttle->Cancel();
     else
-      it->second.throttles[i]->Resume();
+      it->second.throttle->Resume();
   }
-  pending_swap_throttle_map_.erase(child_route_id_pair);
+  pending_swap_throttle_map_.erase(render_frame_route_id_pair);
 }
 
 void PrerenderTracker::AddPrerenderPendingSwap(
-    const ChildRouteIdPair& child_route_id_pair,
+    const ChildRouteIdPair& render_frame_route_id_pair,
     const GURL& url) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&AddPrerenderPendingSwapOnIOThreadTask,
-                 child_route_id_pair, url));
+      base::Bind(&PrerenderTracker::AddPrerenderPendingSwapOnIOThread,
+                 base::Unretained(this), render_frame_route_id_pair, url));
 }
 
 void PrerenderTracker::RemovePrerenderPendingSwap(
-    const ChildRouteIdPair& child_route_id_pair,
+    const ChildRouteIdPair& render_frame_route_id_pair,
     bool swap_successful) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&RemovePrerenderPendingSwapOnIOThreadTask,
-                 child_route_id_pair, swap_successful));
+      base::Bind(&PrerenderTracker::RemovePrerenderPendingSwapOnIOThread,
+                 base::Unretained(this), render_frame_route_id_pair,
+                 swap_successful));
 }
 
 PrerenderTracker::PendingSwapThrottleData::PendingSwapThrottleData(
@@ -209,34 +212,6 @@ PrerenderTracker::PendingSwapThrottleData::~PendingSwapThrottleData() {
 // static
 PrerenderTracker* PrerenderTracker::GetDefault() {
   return g_browser_process->prerender_tracker();
-}
-
-// static
-void PrerenderTracker::AddPrerenderOnIOThreadTask(
-    const ChildRouteIdPair& child_route_id_pair) {
-  GetDefault()->AddPrerenderOnIOThread(child_route_id_pair);
-}
-
-// static
-void PrerenderTracker::RemovePrerenderOnIOThreadTask(
-    const ChildRouteIdPair& child_route_id_pair,
-    FinalStatus final_status) {
-  GetDefault()->RemovePrerenderOnIOThread(child_route_id_pair, final_status);
-}
-
-// static
-void PrerenderTracker::AddPrerenderPendingSwapOnIOThreadTask(
-    const ChildRouteIdPair& child_route_id_pair,
-    const GURL& url) {
-  GetDefault()->AddPrerenderPendingSwapOnIOThread(child_route_id_pair, url);
-}
-
-// static
-void PrerenderTracker::RemovePrerenderPendingSwapOnIOThreadTask(
-    const ChildRouteIdPair& child_route_id_pair,
-    bool swap_successful) {
-  GetDefault()->RemovePrerenderPendingSwapOnIOThread(child_route_id_pair,
-                                                     swap_successful);
 }
 
 }  // namespace prerender

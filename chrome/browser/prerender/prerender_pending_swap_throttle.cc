@@ -31,20 +31,19 @@ void PrerenderPendingSwapThrottle::WillStartRequest(bool* defer) {
   if (info->GetResourceType() != ResourceType::MAIN_FRAME)
     return;
 
-  int child_id = info->GetChildID();
-  int route_id = info->GetRouteID();
+  int render_process_id = info->GetChildID();
+  int render_frame_id = info->GetRenderFrameID();
 
   // Check if this request is for a URL we intend to swap in.
-  if (!tracker_->IsPendingSwapRequestOnIOThread(child_id, route_id,
-                                                  request_->url())) {
+  if (!tracker_->IsPendingSwapRequestOnIOThread(
+          render_process_id, render_frame_id, request_->url())) {
     return;
   }
 
   *defer = true;
   throttled_ = true;
-  tracker_->AddPendingSwapThrottleOnIOThread(child_id, route_id,
-                                               request_->url(),
-                                               this->AsWeakPtr());
+  tracker_->AddPendingSwapThrottleOnIOThread(
+      render_process_id, render_frame_id, request_->url(), this->AsWeakPtr());
 }
 
 const char* PrerenderPendingSwapThrottle::GetNameForLogging() const {
