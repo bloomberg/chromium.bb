@@ -406,6 +406,9 @@ get_modifier(char *modifier)
 static enum animation_type
 get_animation_type(char *animation)
 {
+	if (!animation)
+		return ANIMATION_NONE;
+
 	if (!strcmp("zoom", animation))
 		return ANIMATION_ZOOM;
 	else if (!strcmp("fade", animation))
