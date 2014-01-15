@@ -542,6 +542,8 @@
         '../extensions/common/url_pattern_set_unittest.cc',
         '../extensions/common/url_pattern_unittest.cc',
         '../extensions/common/user_script_unittest.cc',
+        '../ui/compositor/test/layer_animator_test_controller.cc',
+        '../ui/compositor/test/layer_animator_test_controller.h',
         'app/chrome_dll.rc',
         # All unittests in browser, common, renderer and service.
         'browser/about_flags_unittest.cc',
@@ -1409,6 +1411,7 @@
         'browser/translate/translate_prefs_unittest.cc',
         'browser/translate/translate_script_unittest.cc',
         'browser/ui/android/tab_model/tab_model_unittest.cc',
+        'browser/ui/ash/ash_keyboard_controller_proxy_unittest.cc',
         'browser/ui/ash/event_rewriter_unittest.cc',
         'browser/ui/ash/ime_controller_chromeos_unittest.cc',
         'browser/ui/ash/launcher/chrome_launcher_controller_unittest.cc',
