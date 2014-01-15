@@ -117,21 +117,16 @@ void PrivetNotificationsListener::CreateInfoOperation(
   DCHECK(device_iter != devices_seen_.end());
   DeviceContext* device = device_iter->second.get();
   device->privet_http.swap(http_client);
-  device->info_operation =
-       device->privet_http->CreateInfoOperation(this);
+  device->info_operation = device->privet_http->CreateInfoOperation(
+      base::Bind(&PrivetNotificationsListener::OnPrivetInfoDone,
+                 base::Unretained(this),
+                 device));
   device->info_operation->Start();
 }
 
 void PrivetNotificationsListener::OnPrivetInfoDone(
-      PrivetInfoOperation* operation,
-      int http_code,
-      const base::DictionaryValue* json_value) {
-  ReportPrivetUmaEvent(PRIVET_INFO_DONE);
-  std::string name = operation->GetHTTPClient()->GetName();
-  DeviceContextMap::iterator device_iter = devices_seen_.find(name);
-  DCHECK(device_iter != devices_seen_.end());
-  DeviceContext* device = device_iter->second.get();
-
+    DeviceContext* device,
+    const base::DictionaryValue* json_value) {
   int uptime;
 
   if (!json_value ||

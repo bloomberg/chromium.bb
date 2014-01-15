@@ -30,7 +30,7 @@ class PrivetTrafficDetector;
 struct DeviceDescription;
 
 // Contains logic related to notifications not tied actually displaying them.
-class PrivetNotificationsListener : public PrivetInfoOperation::Delegate {
+class PrivetNotificationsListener  {
  public:
   class Delegate {
    public:
@@ -57,12 +57,6 @@ class PrivetNotificationsListener : public PrivetInfoOperation::Delegate {
   void DeviceRemoved(const std::string& name);
   virtual void DeviceCacheFlushed();
 
-  // PrivetInfoOperation::Delegate implementation.
-  virtual void OnPrivetInfoDone(
-      PrivetInfoOperation* operation,
-      int http_code,
-      const base::DictionaryValue* json_value) OVERRIDE;
-
  private:
   struct DeviceContext {
     DeviceContext();
@@ -70,7 +64,7 @@ class PrivetNotificationsListener : public PrivetInfoOperation::Delegate {
 
     bool notification_may_be_active;
     bool registered;
-    scoped_ptr<PrivetInfoOperation> info_operation;
+    scoped_ptr<PrivetJSONOperation> info_operation;
     scoped_ptr<PrivetHTTPResolution> privet_http_resolution;
     scoped_ptr<PrivetHTTPClient> privet_http;
   };
@@ -78,6 +72,9 @@ class PrivetNotificationsListener : public PrivetInfoOperation::Delegate {
   typedef std::map<std::string, linked_ptr<DeviceContext> > DeviceContextMap;
 
   void CreateInfoOperation(scoped_ptr<PrivetHTTPClient> http_client);
+  void OnPrivetInfoDone(DeviceContext* device,
+                        const base::DictionaryValue* json_value);
+
 
   void NotifyDeviceRemoved();
 

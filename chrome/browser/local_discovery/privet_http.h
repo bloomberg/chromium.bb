@@ -28,25 +28,14 @@ namespace local_discovery {
 
 class PrivetHTTPClient;
 
-// Represents a request to /privet/info. Will store a cached response and token
-// in the PrivetHTTPClient that created.
-class PrivetInfoOperation {
+// Represents a simple request that returns pure JSON.
+class PrivetJSONOperation {
  public:
-  class Delegate {
-   public:
-    virtual ~Delegate() {}
+  // If value is null, the operation failed.
+  typedef base::Callback<void(
+      const base::DictionaryValue* /*value*/)> ResultCallback;
 
-    // In case of non-HTTP errors, |http_code| will be -1.
-
-    // TODO(noamsml): Remove http_code from this delegate; it's unnecessary in
-    // practice
-    virtual void OnPrivetInfoDone(
-        PrivetInfoOperation* operation,
-        int http_code,
-        const base::DictionaryValue* json_value) = 0;
-  };
-
-  virtual ~PrivetInfoOperation() {}
+  virtual ~PrivetJSONOperation() {}
 
   virtual void Start() = 0;
 
@@ -105,25 +94,6 @@ class PrivetRegisterOperation {
   virtual PrivetHTTPClient* GetHTTPClient() = 0;
 };
 
-class PrivetCapabilitiesOperation {
- public:
-  class Delegate {
-   public:
-    virtual ~Delegate() {}
-
-    // |capabilities| will be NULL in case of an error.
-    virtual void OnPrivetCapabilities(
-        PrivetCapabilitiesOperation* capabilities_operation,
-        int http_error,
-        const base::DictionaryValue* capabilities) = 0;
-  };
-
-  virtual ~PrivetCapabilitiesOperation() {}
-  virtual void Start() = 0;
-
-  virtual PrivetHTTPClient* GetHTTPClient() = 0;
-};
-
 class PrivetLocalPrintOperation {
  public:
   class Delegate {
@@ -172,10 +142,10 @@ class PrivetHTTPClient {
   virtual scoped_ptr<PrivetRegisterOperation> CreateRegisterOperation(
       const std::string& user,
       PrivetRegisterOperation::Delegate* delegate) = 0;
-  virtual scoped_ptr<PrivetInfoOperation> CreateInfoOperation(
-      PrivetInfoOperation::Delegate* delegate) = 0;
-  virtual scoped_ptr<PrivetCapabilitiesOperation> CreateCapabilitiesOperation(
-      PrivetCapabilitiesOperation::Delegate* delegate) = 0;
+  virtual scoped_ptr<PrivetJSONOperation> CreateInfoOperation(
+      const PrivetJSONOperation::ResultCallback& callback) = 0;
+  virtual scoped_ptr<PrivetJSONOperation> CreateCapabilitiesOperation(
+      const PrivetJSONOperation::ResultCallback& callback) = 0;
   virtual scoped_ptr<PrivetLocalPrintOperation> CreateLocalPrintOperation(
       PrivetLocalPrintOperation::Delegate* delegate) = 0;
 

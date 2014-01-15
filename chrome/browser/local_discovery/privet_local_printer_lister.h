@@ -19,8 +19,7 @@ namespace local_discovery {
 
 // This is an adapter to PrivetDeviceLister that finds printers and checks if
 // they support Privet local printing.
-class PrivetLocalPrinterLister : PrivetDeviceLister::Delegate,
-                                 PrivetInfoOperation::Delegate {
+class PrivetLocalPrinterLister : PrivetDeviceLister::Delegate {
  public:
   class Delegate {
    public:
@@ -52,18 +51,16 @@ class PrivetLocalPrinterLister : PrivetDeviceLister::Delegate,
   virtual void DeviceRemoved(const std::string& name) OVERRIDE;
   virtual void DeviceCacheFlushed() OVERRIDE;
 
-  // PrivetInfoOperation::Delegate implementation.
-  virtual void OnPrivetInfoDone(
-      PrivetInfoOperation* operation,
-      int http_code,
-      const base::DictionaryValue* json_value) OVERRIDE;
-
  private:
   struct DeviceContext;
 
-  void OnPrivetResolved(scoped_ptr<PrivetHTTPClient> http_client);
-
   typedef std::map<std::string, linked_ptr<DeviceContext> > DeviceContextMap;
+
+  void OnPrivetInfoDone(DeviceContext* context,
+                        std::string name,
+                        const base::DictionaryValue* json_value);
+
+  void OnPrivetResolved(scoped_ptr<PrivetHTTPClient> http_client);
 
   scoped_ptr<PrivetHTTPAsynchronousFactory> privet_http_factory_;
   DeviceContextMap device_contexts_;

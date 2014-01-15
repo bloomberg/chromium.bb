@@ -282,51 +282,28 @@ class PrivetHTTPTest : public ::testing::Test {
   NiceMock<MockTestURLFetcherFactoryDelegate> fetcher_delegate_;
 };
 
-class MockInfoDelegate : public PrivetInfoOperation::Delegate {
+class MockJSONCallback{
  public:
-  MockInfoDelegate() {}
-  ~MockInfoDelegate() {}
+  MockJSONCallback() {}
+  ~MockJSONCallback() {}
 
-  virtual void OnPrivetInfoDone(PrivetInfoOperation* operation,
-                                int response_code,
-                                const base::DictionaryValue* value) OVERRIDE {
+  void OnPrivetJSONDone(const base::DictionaryValue* value) {
     if (!value) {
       value_.reset();
     } else {
       value_.reset(value->DeepCopy());
     }
 
-    OnPrivetInfoDoneInternal(response_code);
+    OnPrivetJSONDoneInternal();
   }
 
-  MOCK_METHOD1(OnPrivetInfoDoneInternal, void(int response_code));
+  MOCK_METHOD0(OnPrivetJSONDoneInternal, void());
 
   const base::DictionaryValue* value() { return value_.get(); }
- protected:
-  scoped_ptr<base::DictionaryValue> value_;
-};
-
-class MockCapabilitiesDelegate : public PrivetCapabilitiesOperation::Delegate {
- public:
-  MockCapabilitiesDelegate() {}
-  ~MockCapabilitiesDelegate() {}
-
-  virtual void OnPrivetCapabilities(
-      PrivetCapabilitiesOperation* operation,
-      int response_code,
-      const base::DictionaryValue* value) OVERRIDE {
-    if (!value) {
-      value_.reset();
-    } else {
-      value_.reset(value->DeepCopy());
-    }
-
-    OnPrivetCapabilitiesDoneInternal(response_code);
+  PrivetJSONOperation::ResultCallback callback() {
+    return base::Bind(&MockJSONCallback::OnPrivetJSONDone,
+                      base::Unretained(this));
   }
-
-  MOCK_METHOD1(OnPrivetCapabilitiesDoneInternal, void(int response_code));
-
-  const base::DictionaryValue* value() { return value_.get(); }
  protected:
   scoped_ptr<base::DictionaryValue> value_;
 };
@@ -422,12 +399,13 @@ class PrivetInfoTest : public PrivetHTTPTest {
   virtual ~PrivetInfoTest() {}
 
   virtual void SetUp() OVERRIDE {
-    info_operation_ = privet_client_->CreateInfoOperation(&info_delegate_);
+    info_operation_ = privet_client_->CreateInfoOperation(
+        info_callback_.callback());
   }
 
  protected:
-  scoped_ptr<PrivetInfoOperation> info_operation_;
-  StrictMock<MockInfoDelegate> info_delegate_;
+  scoped_ptr<PrivetJSONOperation> info_operation_;
+  StrictMock<MockJSONCallback> info_callback_;
 };
 
 TEST_F(PrivetInfoTest, SuccessfulInfo) {
@@ -443,7 +421,7 @@ TEST_F(PrivetInfoTest, SuccessfulInfo) {
                                             net::OK));
   fetcher->set_response_code(200);
 
-  EXPECT_CALL(info_delegate_, OnPrivetInfoDoneInternal(200));
+  EXPECT_CALL(info_callback_, OnPrivetJSONDoneInternal());
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 
   std::string name;
@@ -462,10 +440,11 @@ TEST_F(PrivetInfoTest, InfoSaveToken) {
                                             net::OK));
   fetcher->set_response_code(200);
 
-  EXPECT_CALL(info_delegate_, OnPrivetInfoDoneInternal(200));
+  EXPECT_CALL(info_callback_, OnPrivetJSONDoneInternal());
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 
-  info_operation_ = privet_client_->CreateInfoOperation(&info_delegate_);
+  info_operation_ =
+      privet_client_->CreateInfoOperation(info_callback_.callback());
   info_operation_->Start();
 
   fetcher = fetcher_factory_.GetFetcherByID(0);
@@ -486,7 +465,7 @@ TEST_F(PrivetInfoTest, InfoFailureHTTP) {
                                             net::OK));
   fetcher->set_response_code(404);
 
-  EXPECT_CALL(info_delegate_, OnPrivetInfoDoneInternal(404));
+  EXPECT_CALL(info_callback_, OnPrivetJSONDoneInternal());
   fetcher->delegate()->OnURLFetchComplete(fetcher);
   EXPECT_EQ(NULL, privet_client_->GetCachedInfo());
 };
@@ -499,7 +478,8 @@ class PrivetRegisterTest : public PrivetHTTPTest {
   }
 
   virtual void SetUp() OVERRIDE {
-    info_operation_ = privet_client_->CreateInfoOperation(&info_delegate_);
+    info_operation_ = privet_client_->CreateInfoOperation(
+        info_callback_.callback());
     register_operation_ =
         privet_client_->CreateRegisterOperation("example@google.com",
                                                 &register_delegate_);
@@ -522,8 +502,8 @@ class PrivetRegisterTest : public PrivetHTTPTest {
     return true;
   }
 
-  scoped_ptr<PrivetInfoOperation> info_operation_;
-  NiceMock<MockInfoDelegate> info_delegate_;
+  scoped_ptr<PrivetJSONOperation> info_operation_;
+  NiceMock<MockJSONCallback> info_callback_;
   scoped_ptr<PrivetRegisterOperation> register_operation_;
   StrictMock<MockRegisterDelegate> register_delegate_;
 };
@@ -707,12 +687,12 @@ class PrivetCapabilitiesTest : public PrivetHTTPTest {
 
   virtual void SetUp() OVERRIDE {
     capabilities_operation_ = privet_client_->CreateCapabilitiesOperation(
-        &capabilities_delegate_);
+        capabilities_callback_.callback());
   }
 
  protected:
-  scoped_ptr<PrivetCapabilitiesOperation> capabilities_operation_;
-  StrictMock<MockCapabilitiesDelegate> capabilities_delegate_;
+  scoped_ptr<PrivetJSONOperation> capabilities_operation_;
+  StrictMock<MockJSONCallback> capabilities_callback_;
 };
 
 TEST_F(PrivetCapabilitiesTest, SuccessfulCapabilities) {
@@ -722,14 +702,14 @@ TEST_F(PrivetCapabilitiesTest, SuccessfulCapabilities) {
       GURL("http://10.0.0.8:6006/privet/info"),
       kSampleInfoResponse));
 
-  EXPECT_CALL(capabilities_delegate_, OnPrivetCapabilitiesDoneInternal(200));
+  EXPECT_CALL(capabilities_callback_, OnPrivetJSONDoneInternal());
 
   EXPECT_TRUE(SuccessfulResponseToURL(
       GURL("http://10.0.0.8:6006/privet/capabilities"),
       kSampleCapabilitiesResponse));
 
   std::string version;
-  EXPECT_TRUE(capabilities_delegate_.value()->GetString("version", &version));
+  EXPECT_TRUE(capabilities_callback_.value()->GetString("version", &version));
   EXPECT_EQ("1.0", version);
 };
 
@@ -740,18 +720,18 @@ TEST_F(PrivetCapabilitiesTest, CacheToken) {
       GURL("http://10.0.0.8:6006/privet/info"),
       kSampleInfoResponse));
 
-  EXPECT_CALL(capabilities_delegate_, OnPrivetCapabilitiesDoneInternal(200));
+  EXPECT_CALL(capabilities_callback_, OnPrivetJSONDoneInternal());
 
   EXPECT_TRUE(SuccessfulResponseToURL(
       GURL("http://10.0.0.8:6006/privet/capabilities"),
       kSampleCapabilitiesResponse));
 
   capabilities_operation_ = privet_client_->CreateCapabilitiesOperation(
-      &capabilities_delegate_);
+      capabilities_callback_.callback());
 
   capabilities_operation_->Start();
 
-  EXPECT_CALL(capabilities_delegate_, OnPrivetCapabilitiesDoneInternal(200));
+  EXPECT_CALL(capabilities_callback_, OnPrivetJSONDoneInternal());
 
   EXPECT_TRUE(SuccessfulResponseToURL(
       GURL("http://10.0.0.8:6006/privet/capabilities"),
@@ -773,7 +753,7 @@ TEST_F(PrivetCapabilitiesTest, BadToken) {
       GURL("http://10.0.0.8:6006/privet/info"),
       kSampleInfoResponse));
 
-  EXPECT_CALL(capabilities_delegate_, OnPrivetCapabilitiesDoneInternal(200));
+  EXPECT_CALL(capabilities_callback_, OnPrivetJSONDoneInternal());
 
   EXPECT_TRUE(SuccessfulResponseToURL(
       GURL("http://10.0.0.8:6006/privet/capabilities"),

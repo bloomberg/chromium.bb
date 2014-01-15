@@ -1399,7 +1399,8 @@ void PrintPreviewHandler::PrivetCapabilitiesUpdateClient(
 
   privet_capabilities_operation_ =
       privet_http_client_->CreateCapabilitiesOperation(
-          this);
+          base::Bind(&PrintPreviewHandler::OnPrivetCapabilities,
+                     base::Unretained(this)));
   privet_capabilities_operation_->Start();
 }
 
@@ -1476,10 +1477,8 @@ void PrintPreviewHandler::StartPrivetLocalPrint(
 
 
 void PrintPreviewHandler::OnPrivetCapabilities(
-    local_discovery::PrivetCapabilitiesOperation* capabilities_operation,
-    int http_error,
     const base::DictionaryValue* capabilities) {
-  std::string name = capabilities_operation->GetHTTPClient()->GetName();
+  std::string name = privet_capabilities_operation_->GetHTTPClient()->GetName();
 
   if (!capabilities || capabilities->HasKey(local_discovery::kPrivetKeyError)) {
     SendPrivetCapabilitiesError(name);

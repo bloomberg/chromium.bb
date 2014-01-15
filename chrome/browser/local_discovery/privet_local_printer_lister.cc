@@ -22,7 +22,7 @@ struct PrivetLocalPrinterLister::DeviceContext {
 
   scoped_ptr<PrivetHTTPResolution> privet_resolution;
   scoped_ptr<PrivetHTTPClient> privet_client;
-  scoped_ptr<PrivetInfoOperation> info_operation;
+  scoped_ptr<PrivetJSONOperation> info_operation;
   DeviceDescription description;
 
   bool has_local_printing;
@@ -87,14 +87,18 @@ void PrivetLocalPrinterLister::OnPrivetResolved(
   DeviceContextMap::iterator i = device_contexts_.find(http_client->GetName());
   DCHECK(i != device_contexts_.end());
 
-  i->second->info_operation = http_client->CreateInfoOperation(this);
+  i->second->info_operation = http_client->CreateInfoOperation(
+      base::Bind(&PrivetLocalPrinterLister::OnPrivetInfoDone,
+                 base::Unretained(this),
+                 i->second.get(),
+                 http_client->GetName()));
   i->second->privet_client = http_client.Pass();
   i->second->info_operation->Start();
 }
 
 void PrivetLocalPrinterLister::OnPrivetInfoDone(
-    PrivetInfoOperation* operation,
-    int http_code,
+    DeviceContext* context,
+    std::string name,
     const base::DictionaryValue* json_value) {
   bool has_local_printing = false;
   const base::ListValue* api_list = NULL;
@@ -108,12 +112,9 @@ void PrivetLocalPrinterLister::OnPrivetInfoDone(
     }
   }
 
-  std::string name = operation->GetHTTPClient()->GetName();
-  DeviceContextMap::iterator i = device_contexts_.find(name);
-  DCHECK(i != device_contexts_.end());
-  i->second->has_local_printing = has_local_printing;
+  context->has_local_printing = has_local_printing;
   delegate_->LocalPrinterChanged(true, name, has_local_printing,
-                                 i->second->description);
+                                 context->description);
 }
 
 void PrivetLocalPrinterLister::DeviceRemoved(const std::string& device_name) {
