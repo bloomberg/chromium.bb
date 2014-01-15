@@ -740,11 +740,11 @@ bool OneClickSigninHelper::CanOffer(content::WebContents* web_contents,
       if (g_browser_process && !same_email) {
         ProfileManager* manager = g_browser_process->profile_manager();
         if (manager) {
-          base::string16 email16 = base::UTF8ToUTF16(email);
           ProfileInfoCache& cache = manager->GetProfileInfoCache();
-
           for (size_t i = 0; i < cache.GetNumberOfProfiles(); ++i) {
-            if (email16 == cache.GetUserNameOfProfileAtIndex(i)) {
+            std::string current_email =
+                base::UTF16ToUTF8(cache.GetUserNameOfProfileAtIndex(i));
+            if (gaia::AreEmailsSame(email, current_email)) {
               if (error_message) {
                 error_message->assign(
                     l10n_util::GetStringUTF8(IDS_SYNC_USER_NAME_IN_USE_ERROR));
