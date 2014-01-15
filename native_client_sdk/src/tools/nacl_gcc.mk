@@ -13,27 +13,27 @@
 # We always link with the C++ compiler but include -Wl,-as-needed flag
 # in LDFLAGS so the linker should drop libc++ unless it's actually needed.
 #
-X86_32_CC ?= $(NACL_COMPILER_PREFIX) $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a x86_32 --tool=cc)
-X86_32_CXX ?= $(NACL_COMPILER_PREFIX) $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a x86_32 --tool=c++)
-X86_32_LINK ?= $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a x86_32 --tool=c++)
-X86_32_LIB ?= $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a x86_32 --tool=ar)
-X86_32_STRIP ?= $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a x86_32 --tool=strip)
-X86_32_NM ?= $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a x86_32 --tool=nm)
+X86_32_CC := $(NACL_COMPILER_PREFIX) $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a x86_32 --tool=cc)
+X86_32_CXX := $(NACL_COMPILER_PREFIX) $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a x86_32 --tool=c++)
+X86_32_LINK := $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a x86_32 --tool=c++)
+X86_32_LIB := $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a x86_32 --tool=ar)
+X86_32_STRIP := $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a x86_32 --tool=strip)
+X86_32_NM := $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a x86_32 --tool=nm)
 
-X86_64_CC ?= $(NACL_COMPILER_PREFIX) $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a x86_64 --tool=cc)
-X86_64_CXX ?= $(NACL_COMPILER_PREFIX) $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a x86_64 --tool=c++)
-X86_64_LINK ?= $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a x86_64 --tool=c++)
-X86_64_LIB ?= $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a x86_64 --tool=ar)
-X86_64_STRIP ?= $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a x86_64 --tool=strip)
-X86_64_NM ?= $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a x86_64 --tool=nm)
+X86_64_CC := $(NACL_COMPILER_PREFIX) $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a x86_64 --tool=cc)
+X86_64_CXX := $(NACL_COMPILER_PREFIX) $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a x86_64 --tool=c++)
+X86_64_LINK := $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a x86_64 --tool=c++)
+X86_64_LIB := $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a x86_64 --tool=ar)
+X86_64_STRIP := $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a x86_64 --tool=strip)
+X86_64_NM := $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a x86_64 --tool=nm)
 
 ifneq ($(TOOLCHAIN),glibc)
-ARM_CC ?= $(NACL_COMPILER_PREFIX) $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a arm --tool=cc)
-ARM_CXX ?= $(NACL_COMPILER_PREFIX) $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a arm --tool=c++)
-ARM_LINK ?= $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a arm --tool=c++)
-ARM_LIB ?= $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a arm --tool=ar)
-ARM_STRIP ?= $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a arm --tool=strip)
-ARM_NM ?= $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a arm --tool=nm)
+ARM_CC := $(NACL_COMPILER_PREFIX) $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a arm --tool=cc)
+ARM_CXX := $(NACL_COMPILER_PREFIX) $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a arm --tool=c++)
+ARM_LINK := $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a arm --tool=c++)
+ARM_LIB := $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a arm --tool=ar)
+ARM_STRIP := $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a arm --tool=strip)
+ARM_NM := $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a arm --tool=nm)
 endif
 
 NCVAL ?= python $(NACL_SDK_ROOT)/tools/ncval.py

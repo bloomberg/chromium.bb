@@ -10,13 +10,13 @@
 #
 # Paths to Tools
 #
-PNACL_CC ?= $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) --tool=cc)
-PNACL_CXX ?= $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) --tool=c++)
-PNACL_LINK ?= $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) --tool=c++)
-PNACL_LIB ?= $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) --tool=ar)
-PNACL_STRIP ?= $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) --tool=strip)
-PNACL_FINALIZE ?= $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) --tool=finalize)
-PNACL_TRANSLATE ?= $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) --tool=translate)
+PNACL_CC := $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) --tool=cc)
+PNACL_CXX := $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) --tool=c++)
+PNACL_LINK := $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) --tool=c++)
+PNACL_LIB := $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) --tool=ar)
+PNACL_STRIP := $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) --tool=strip)
+PNACL_FINALIZE := $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) --tool=finalize)
+PNACL_TRANSLATE := $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) --tool=translate)
 
 #
 # Compile Macro
