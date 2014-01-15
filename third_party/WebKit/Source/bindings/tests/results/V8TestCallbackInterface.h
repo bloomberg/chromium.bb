@@ -42,7 +42,7 @@ namespace WebCore {
 
 class ExecutionContext;
 
-class V8TestCallbackInterface : public TestCallbackInterface, public ActiveDOMCallback {
+class V8TestCallbackInterface FINAL : public TestCallbackInterface, public ActiveDOMCallback {
 public:
     static PassOwnPtr<V8TestCallbackInterface> create(v8::Handle<v8::Function> callback, ExecutionContext* context)
     {
@@ -52,15 +52,15 @@ public:
 
     virtual ~V8TestCallbackInterface();
 
-    virtual void voidMethod();
-    virtual bool booleanMethod();
-    virtual void voidMethodBooleanArg(bool boolArg);
-    virtual void voidMethodSequenceArg(const Vector<RefPtr<TestInterfaceEmpty> >& sequenceArg);
-    virtual void voidMethodFloatArg(float floatArg);
-    virtual void voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty* testInterfaceEmptyArg);
-    virtual void voidMethodTestInterfaceEmptyStringArg(TestInterfaceEmpty* testInterfaceEmptyArg, const String& stringArg);
-    virtual void callbackWithThisValueVoidMethodStringArg(ScriptValue thisValue, const String& stringArg);
-    virtual void customVoidMethodTestInterfaceEmptyArg(TestInterfaceEmpty* testInterfaceEmptyArg);
+    virtual void voidMethod() OVERRIDE;
+    virtual bool booleanMethod() OVERRIDE;
+    virtual void voidMethodBooleanArg(bool boolArg) OVERRIDE;
+    virtual void voidMethodSequenceArg(const Vector<RefPtr<TestInterfaceEmpty> >& sequenceArg) OVERRIDE;
+    virtual void voidMethodFloatArg(float floatArg) OVERRIDE;
+    virtual void voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty* testInterfaceEmptyArg) OVERRIDE;
+    virtual void voidMethodTestInterfaceEmptyStringArg(TestInterfaceEmpty* testInterfaceEmptyArg, const String& stringArg) OVERRIDE;
+    virtual void callbackWithThisValueVoidMethodStringArg(ScriptValue thisValue, const String& stringArg) OVERRIDE;
+    virtual void customVoidMethodTestInterfaceEmptyArg(TestInterfaceEmpty* testInterfaceEmptyArg) OVERRIDE;
 private:
     V8TestCallbackInterface(v8::Handle<v8::Function>, ExecutionContext*);
 

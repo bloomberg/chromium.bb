@@ -44,7 +44,7 @@ namespace WebCore {
 
 class ExecutionContext;
 
-class {{v8_class}} : public {{cpp_class}}, public ActiveDOMCallback {
+class {{v8_class}} FINAL : public {{cpp_class}}, public ActiveDOMCallback {
 public:
     static PassOwnPtr<{{v8_class}}> create(v8::Handle<v8::Function> callback, ExecutionContext* context)
     {
@@ -55,7 +55,7 @@ public:
     virtual ~{{v8_class}}();
 
 {% for method in methods %}
-    virtual {{method.return_cpp_type}} {{method.name}}({{method.argument_declarations | join(', ')}});
+    virtual {{method.return_cpp_type}} {{method.name}}({{method.argument_declarations | join(', ')}}) OVERRIDE;
 {% endfor %}
 private:
     {{v8_class}}(v8::Handle<v8::Function>, ExecutionContext*);

@@ -4877,7 +4877,7 @@ sub GenerateCallbackHeader
         $header{includes}->add("#include \"$include\"\n");
     }
     $header{nameSpaceWebCore}->addHeader("\nclass ExecutionContext;\n");
-    $header{class}->addHeader("class $v8ClassName : public $implClassName, public ActiveDOMCallback {");
+    $header{class}->addHeader("class $v8ClassName FINAL : public $implClassName, public ActiveDOMCallback {");
     $header{class}->addFooter("};\n");
 
     $header{classPublic}->add(<<END);
@@ -4906,7 +4906,7 @@ END
                 push(@args, GetNativeTypeForCallbacks($param->type) . " " . $param->name);
             }
             $code .= join(", ", @args);
-            $code .= ");\n";
+            $code .= ") OVERRIDE;\n";
             $header{classPublic}->add($code);
         }
     }
