@@ -581,13 +581,26 @@ config("default_warnings") {
 }
 
 # Optimization -----------------------------------------------------------------
+#
+# Note that BUILDCONFIG.gn sets up a variable "default_optimization_config"
+# which it will assign to the config it implicitly applies to every target. If
+# you want to override the optimization level for your target, remove this
+# config (which will expand differently for debug or release builds), and then
+# add back the one you want to override it with:
+#
+#   configs -= default_optimization_config
+#   configs += [ "//build/config/compiler/optimize_max" ]
 
+# Default "optimization on" config. On Windows, this favors size over speed.
+#
+# IF YOU CHANGE THIS also consider whether optimize_max should be updated.
 config("optimize") {
   if (is_win) {
     cflags = [
       "/O2",
       "/Ob2",  # Both explicit and auto inlining.
       "/Oy-",  # Disable omitting frame pointers, must be after /O2.
+      "/Os",   # Favor size over speed.
     ]
   } else {
     if (is_ios) {
@@ -598,6 +611,7 @@ config("optimize") {
   }
 }
 
+# Turn off optimizations.
 config("no_optimize") {
   if (is_win) {
     cflags = [
@@ -607,6 +621,27 @@ config("no_optimize") {
     ]
   } else {
     cflags = [ "-O0" ]
+  }
+}
+
+# On Windows, turns up the optimization level. This implies whole program
+# optimization and link-time code generation which is very expensive and should
+# be used sparingly. For non-Windows, this is the same as "optimize".
+config("optimize_max") {
+  if (is_win) {
+    cflags = [
+      "/O2",
+      "/Ob2",  # Both explicit and auto inlining.
+      "/Oy-",  # Disable omitting frame pointers, must be after /O2.
+      "/Ot",   # Favor speed over size.
+      "/GL",   # Whole program optimization.
+    ]
+  } else {
+    if (is_ios) {
+      cflags = [ "-Os" ]
+    } else {
+      cflags = [ "-O2" ]
+    }
   }
 }
 
