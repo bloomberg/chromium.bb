@@ -76,9 +76,7 @@ bool ShouldHideCursorOnKeyEvent(const ui::KeyEvent& event) {
 
 // Returns true if the cursor should be hidden on touch events.
 bool ShouldHideCursorOnTouch(const ui::TouchEvent& event) {
-#if defined(OS_WIN)
-  return true;
-#elif defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
 #if defined(USE_X11)
   int device_id = event.source_device_id();
   if (device_id >= 0 &&
@@ -90,9 +88,10 @@ bool ShouldHideCursorOnTouch(const ui::TouchEvent& event) {
 #endif  // defined(USE_X11)
   return true;
 #else
-  // Linux Aura does not hide the cursor on touch by default.
-  // TODO(tdanderson): Change this if having consistency across
-  // all platforms which use Aura is desired.
+  // Windows hides the cursor on touch, but we cannot track the cursor
+  // visibility or enabledness state reliably until we are able to
+  // properly flag all incoming mouse messages in HWNDMessageHandler.
+  // TODO(ananta|tdanderson): crbug.com/332430
   return false;
 #endif
 }
