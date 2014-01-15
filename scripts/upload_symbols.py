@@ -9,8 +9,11 @@ crashes on non-release builds (in which case try to only upload the symbols
 for those executables involved).
 """
 
+from __future__ import print_function
+
 import ctypes
 import functools
+import httplib
 import multiprocessing
 import os
 import poster
@@ -138,7 +141,13 @@ def TestingSymUpload(sym_file, upload_url):
   result = cros_build_lib.CommandResult(cmd=cmd, error=None, output=output,
                                         returncode=returncode)
   if returncode:
-    raise urllib2.HTTPError(upload_url, 400, 'forced test fail', {}, None)
+    exceptions = (
+        httplib.BadStatusLine('[BadStatusLine] forced test fail'),
+        urllib2.HTTPError(upload_url, 400, '[HTTPError] forced test fail',
+                          {}, None),
+        urllib2.URLError('[URLError] forced test fail'),
+    )
+    raise random.choice(exceptions)
   else:
     return result
 
@@ -249,7 +258,7 @@ def UploadSymbol(sym_file, upload_url, file_limit=DEFAULT_FILE_LIMIT,
     except urllib2.HTTPError as e:
       cros_build_lib.Warning('could not upload: %s: HTTP %s: %s',
                              os.path.basename(sym_file), e.code, e.reason)
-    except urllib2.URLError as e:
+    except (urllib2.URLError, httplib.HTTPException) as e:
       cros_build_lib.Warning('could not upload: %s: %s',
                              os.path.basename(sym_file), e)
     finally:
