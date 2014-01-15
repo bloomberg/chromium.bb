@@ -844,7 +844,7 @@ static void
 blit_surface_init(struct nested_surface *surface)
 {
 	struct nested_blit_surface *blit_surface =
-		zalloc(sizeof *blit_surface);
+		xzalloc(sizeof *blit_surface);
 
 	glGenTextures(1, &blit_surface->texture);
 	glBindTexture(GL_TEXTURE_2D, blit_surface->texture);
@@ -967,7 +967,7 @@ ss_surface_init(struct nested_surface *surface)
 	struct wl_compositor *compositor =
 		display_get_compositor(nested->display);
 	struct nested_ss_surface *ss_surface =
-		zalloc(sizeof *ss_surface);
+		xzalloc(sizeof *ss_surface);
 	struct rectangle allocation;
 	struct wl_region *region;
 
