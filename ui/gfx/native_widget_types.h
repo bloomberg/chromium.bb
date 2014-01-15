@@ -233,18 +233,13 @@ static inline NativeView NativeViewFromIdInBrowser(NativeViewId id) {
 #endif  // defined(OS_POSIX)
 
 // PluginWindowHandle is an abstraction wrapping "the types of windows
-// used by NPAPI plugins".  On Windows it's an HWND, on X it's an X
+// used by NPAPI plugins". On Windows it's an HWND, on X it's an X
 // window id.
 #if defined(OS_WIN)
   typedef HWND PluginWindowHandle;
   const PluginWindowHandle kNullPluginWindow = NULL;
 #elif defined(USE_X11)
   typedef unsigned long PluginWindowHandle;
-  const PluginWindowHandle kNullPluginWindow = 0;
-#elif defined(USE_AURA) && defined(OS_MACOSX)
-  // Mac-Aura uses NSView-backed GLSurface.  Regular Mac does not.
-  // TODO(dhollowa): Rationalize these two definitions. http://crbug.com/104551.
-  typedef NSView* PluginWindowHandle;
   const PluginWindowHandle kNullPluginWindow = 0;
 #elif defined(OS_ANDROID)
   typedef uint64 PluginWindowHandle;
@@ -253,17 +248,9 @@ static inline NativeView NativeViewFromIdInBrowser(NativeViewId id) {
   typedef intptr_t PluginWindowHandle;
   const PluginWindowHandle kNullPluginWindow = 0;
 #else
-  // On OS X we don't have windowed plugins.
-  // We use a NULL/0 PluginWindowHandle in shared code to indicate there
-  // is no window present, so mirror that behavior here.
-  //
-  // The GPU plugin is currently an exception to this rule. As of this
-  // writing it uses some NPAPI infrastructure, and minimally we need
-  // to identify the plugin instance via this window handle. When the
-  // GPU plugin becomes a full-on GPU process, this typedef can be
-  // returned to a bool. For now we use a type large enough to hold a
-  // pointer on 64-bit architectures in case we need this capability.
-  typedef uint64 PluginWindowHandle;
+  // On Mac we don't have windowed plugins. We use a NULL/0 PluginWindowHandle
+  // in shared code to indicate there is no window present.
+  typedef bool PluginWindowHandle;
   const PluginWindowHandle kNullPluginWindow = 0;
 #endif
 
