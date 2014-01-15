@@ -20,6 +20,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_item_model.h"
+#include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/download/drag_download_item.h"
 #include "chrome/browser/safe_browsing/download_feedback_service.h"
 #include "chrome/browser/safe_browsing/download_protection_service.h"
@@ -1119,10 +1120,12 @@ void DownloadItemView::ClearWarningDialog() {
 void DownloadItemView::ShowWarningDialog() {
   DCHECK(mode_ != DANGEROUS_MODE && mode_ != MALICIOUS_MODE);
   time_download_warning_shown_ = base::Time::Now();
+  content::DownloadDangerType danger_type = download()->GetDangerType();
+  RecordDangerousDownloadWarningShown(danger_type);
 #if defined(FULL_SAFE_BROWSING)
   if (model_.ShouldAllowDownloadFeedback()) {
     safe_browsing::DownloadFeedbackService::RecordEligibleDownloadShown(
-        download()->GetDangerType());
+        danger_type);
   }
 #endif
   mode_ = model_.MightBeMalicious() ? MALICIOUS_MODE : DANGEROUS_MODE;
@@ -1145,7 +1148,7 @@ void DownloadItemView::ShowWarningDialog() {
   AddChildView(discard_button_);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  switch (download()->GetDangerType()) {
+  switch (danger_type) {
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
     case content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT:

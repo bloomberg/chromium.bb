@@ -15,6 +15,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_item_model.h"
+#include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/download/download_item_drag.h"
@@ -200,6 +201,8 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
   gtk_widget_show_all(hbox_.get());
 
   if (download_model_.IsDangerous()) {
+    RecordDangerousDownloadWarningShown(download()->GetDangerType());
+
     // Hide the download item components for now.
     gtk_widget_set_no_show_all(body_.get(), TRUE);
     gtk_widget_set_no_show_all(menu_button_, TRUE);

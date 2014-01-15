@@ -79,6 +79,10 @@ void RecordDownloadCount(ChromeDownloadCountTypes type);
 // Record initiation of a download from a specific source.
 void RecordDownloadSource(ChromeDownloadSource source);
 
+// Record that a download warning was shown.
+void RecordDangerousDownloadWarningShown(
+    content::DownloadDangerType danger_type);
+
 // Record that the user opened the confirmation dialog for a dangerous download.
 void RecordOpenedDangerousConfirmDialog(
     content::DownloadDangerType danger_type);

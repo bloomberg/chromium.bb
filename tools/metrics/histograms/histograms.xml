@@ -3058,6 +3058,16 @@ other types of suffix sets.
   <summary>The size of successfully completed downloads.</summary>
 </histogram>
 
+<histogram name="Download.DownloadWarningShownOnShelf"
+    enum="DownloadItem.DangerType">
+  <summary>
+    A download warning was shown in the shelf. Note that some downloads may not
+    be shown on the shelf, e.g., if chrome://downloads is already open when the
+    download completes, or if an extension is using the downloads API. Grouped
+    by the type of danger.
+  </summary>
+</histogram>
+
 <histogram name="Download.FilePickerResult" enum="DownloadFilePickerResult">
   <summary>
     How the user interacts with the file chooser when doing a &quot;Save

@@ -31,6 +31,13 @@ void RecordDownloadSource(ChromeDownloadSource source) {
       "Download.SourcesChrome", source, CHROME_DOWNLOAD_SOURCE_LAST_ENTRY);
 }
 
+void RecordDangerousDownloadWarningShown(
+    content::DownloadDangerType danger_type) {
+  UMA_HISTOGRAM_ENUMERATION("Download.DownloadWarningShown",
+                            danger_type,
+                            content::DOWNLOAD_DANGER_TYPE_MAX);
+}
+
 void RecordOpenedDangerousConfirmDialog(
     content::DownloadDangerType danger_type) {
   UMA_HISTOGRAM_ENUMERATION("Download.ShowDangerousDownloadConfirmationPrompt",
