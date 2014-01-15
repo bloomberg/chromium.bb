@@ -161,7 +161,7 @@ void scanWithInvPredicate(const String& input)
     // collectUntil doesn't move the scan position.
     EXPECT_TRUE(scanner.match('B'));
     // Consume "BAD".
-    scanner.skipRun(ucRun);
+    scanner.skipUntil<lowerCaseAlpha>();
     EXPECT_TRUE(scanner.match('a'));
     EXPECT_TRUE(scanner.isAt(ucRun.end()));
 
@@ -173,12 +173,12 @@ void scanWithInvPredicate(const String& input)
     // collectUntil doesn't move the scan position.
     EXPECT_FALSE(scanner.isAtEnd());
     // Consume "BING".
-    scanner.skipRun(ucRun);
+    scanner.skipUntil<lowerCaseAlpha>();
     EXPECT_TRUE(scanner.isAt(ucRun.end()));
     EXPECT_TRUE(scanner.isAtEnd());
 }
 
-// Tests collectUntil().
+// Tests skipUntil() and collectUntil().
 TEST(VTTScanner, InversePredicateScanning)
 {
     TEST_WITH(scanWithInvPredicate, "BADaBING");
@@ -197,6 +197,12 @@ void scanRuns(const String& input)
     EXPECT_TRUE(scanner.match(':'));
     EXPECT_TRUE(scanner.scan(':'));
 
+    // Skip 'baz'.
+    scanner.skipRun(scanner.collectWhile<lowerCaseAlpha>());
+
+    EXPECT_TRUE(scanner.match(':'));
+    EXPECT_TRUE(scanner.scan(':'));
+
     word = scanner.collectWhile<lowerCaseAlpha>();
     EXPECT_FALSE(scanner.scanRun(word, fooString));
     EXPECT_TRUE(scanner.scanRun(word, barString));
@@ -206,7 +212,7 @@ void scanRuns(const String& input)
 // Tests scanRun/skipRun.
 TEST(VTTScanner, RunScanning)
 {
-    TEST_WITH(scanRuns, "foo:bar");
+    TEST_WITH(scanRuns, "foo:baz:bar");
 }
 
 void scanRunsToStrings(const String& input)

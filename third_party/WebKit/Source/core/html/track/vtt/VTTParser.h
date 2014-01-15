@@ -94,7 +94,6 @@ public:
         return c == ' ' || c == '\t';
     }
     static unsigned collectDigitsToInt(const String& input, unsigned* position, int& number);
-    static String collectWord(const String&, unsigned*);
     static bool collectTimeStamp(const String&, double& timeStamp);
 
     // Useful functions for parsing percentage settings.

@@ -91,6 +91,10 @@ public:
     template<bool characterPredicate(UChar)>
     void skipWhile();
 
+    // Like skipWhile, but using a negated predicate.
+    template<bool characterPredicate(UChar)>
+    void skipUntil();
+
     // Return the run of characters for which the specified
     // |characterPredicate| returns true. The start of the run will be the
     // current input pointer.
@@ -163,6 +167,15 @@ inline void VTTScanner::skipWhile()
         ::skipWhile<LChar, LCharPredicateAdapter<characterPredicate> >(m_data.characters8, m_end.characters8);
     else
         ::skipWhile<UChar, characterPredicate>(m_data.characters16, m_end.characters16);
+}
+
+template<bool characterPredicate(UChar)>
+inline void VTTScanner::skipUntil()
+{
+    if (m_is8Bit)
+        ::skipUntil<LChar, LCharPredicateAdapter<characterPredicate> >(m_data.characters8, m_end.characters8);
+    else
+        ::skipUntil<UChar, characterPredicate>(m_data.characters16, m_end.characters16);
 }
 
 template<bool characterPredicate(UChar)>

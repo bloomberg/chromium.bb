@@ -37,6 +37,7 @@
 #include "core/dom/DOMTokenList.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/html/track/vtt/VTTParser.h"
+#include "core/html/track/vtt/VTTScanner.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderObject.h"
 #include "platform/Logging.h"
@@ -206,26 +207,19 @@ void VTTRegion::setRegionSettings(const String& input)
     }
 }
 
-VTTRegion::RegionSetting VTTRegion::getSettingFromString(const String& setting)
+VTTRegion::RegionSetting VTTRegion::scanSettingName(VTTScanner& input)
 {
-    DEFINE_STATIC_LOCAL(const AtomicString, idKeyword, ("id", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(const AtomicString, heightKeyword, ("height", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(const AtomicString, widthKeyword, ("width", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(const AtomicString, regionAnchorKeyword, ("regionanchor", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(const AtomicString, viewportAnchorKeyword, ("viewportanchor", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(const AtomicString, scrollKeyword, ("scroll", AtomicString::ConstructFromLiteral));
-
-    if (setting == idKeyword)
+    if (input.scan("id"))
         return Id;
-    if (setting == heightKeyword)
+    if (input.scan("height"))
         return Height;
-    if (setting == widthKeyword)
+    if (input.scan("width"))
         return Width;
-    if (setting == viewportAnchorKeyword)
+    if (input.scan("viewportanchor"))
         return ViewportAnchor;
-    if (setting == regionAnchorKeyword)
+    if (input.scan("regionanchor"))
         return RegionAnchor;
-    if (setting == scrollKeyword)
+    if (input.scan("scroll"))
         return Scroll;
 
     return None;
@@ -276,18 +270,23 @@ void VTTRegion::parseSettingValue(RegionSetting setting, const String& value)
     }
 }
 
-void VTTRegion::parseSetting(const String& input, unsigned* position)
+void VTTRegion::parseSetting(const String& inputString, unsigned* position)
 {
-    String setting = VTTParser::collectWord(input, position);
+    VTTLegacyScanner input(inputString, position);
 
-    size_t equalOffset = setting.find('=', 1);
-    if (equalOffset == kNotFound || !equalOffset || equalOffset == setting.length() - 1)
+    // Scan the name part.
+    RegionSetting name = scanSettingName(input);
+
+    // Verify that we're looking at a '='.
+    if (!input.scan('=')) {
+        input.skipUntil<VTTParser::isASpace>();
         return;
+    }
 
-    RegionSetting name = getSettingFromString(setting.substring(0, equalOffset));
-    String value = setting.substring(equalOffset + 1, setting.length() - 1);
-
-    parseSettingValue(name, value);
+    // Scan the value part.
+    VTTScanner::Run valueRun = input.collectUntil<VTTParser::isASpace>();
+    parseSettingValue(name, input.extractString(valueRun));
+    input.skipRun(valueRun);
 }
 
 const AtomicString& VTTRegion::textTrackCueContainerShadowPseudoId()

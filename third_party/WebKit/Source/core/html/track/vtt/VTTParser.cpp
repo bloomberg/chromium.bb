@@ -60,14 +60,6 @@ unsigned VTTParser::collectDigitsToInt(const String& input, unsigned* position, 
     return inputScanner.scanDigits(number);
 }
 
-String VTTParser::collectWord(const String& input, unsigned* position)
-{
-    StringBuilder string;
-    while (*position < input.length() && !isASpace(input[*position]))
-        string.append(input[(*position)++]);
-    return string.toString();
-}
-
 bool VTTParser::parseFloatPercentageValue(const String& value, float& percentage)
 {
     // '%' must be present and at the end of the setting value.
