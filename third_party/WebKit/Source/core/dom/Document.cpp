@@ -1658,7 +1658,6 @@ void Document::recalcStyle(StyleRecalcChange change)
     {
         PostAttachCallbacks::SuspendScope suspendPostAttachCallbacks;
         RenderWidget::UpdateSuspendScope suspendWidgetHierarchyUpdates;
-        FrameView::DeferredRepaintScope deferRepaints(*view());
         TemporaryChange<bool> changeInStyleRecalc(m_inStyleRecalc, true);
 
         if (styleChangeType() >= SubtreeStyleChange)

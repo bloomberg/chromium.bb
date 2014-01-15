@@ -154,17 +154,6 @@ Pagination::Mode paginationModeForRenderStyle(RenderStyle* style)
     return Pagination::BottomToTopPaginated;
 }
 
-FrameView::DeferredRepaintScope::DeferredRepaintScope(FrameView& view)
-    : m_view(&view)
-{
-    m_view->beginDeferredRepaints();
-}
-
-FrameView::DeferredRepaintScope::~DeferredRepaintScope()
-{
-    m_view->endDeferredRepaints();
-}
-
 FrameView::FrameView(Frame* frame)
     : m_frame(frame)
     , m_canHaveScrollbars(true)
@@ -271,7 +260,6 @@ void FrameView::reset()
     m_safeToPropagateScrollToParent = true;
     m_lastViewportSize = IntSize();
     m_lastZoomFactor = 1.0f;
-    m_deferringRepaints = 0;
     m_repaintCount = 0;
     m_repaintRects.clear();
     m_deferredRepaintDelay = s_initialDeferredRepaintDelayDuringLoading;
@@ -897,7 +885,6 @@ void FrameView::performLayout(RenderObject* rootForThisLayout, bool inSubtreeLay
     // performLayout is the actual guts of layout().
     // FIXME: The 300 other lines in layout() probably belong in other helper functions
     // so that a single human could understand what layout() is actually doing.
-    FrameView::DeferredRepaintScope deferRepaints(*this);
 
     {
         bool disableLayoutState = false;
@@ -1119,25 +1106,22 @@ void FrameView::layout(bool allowSubtree)
 
     m_doFullRepaint = neededFullRepaint;
 
-    {
-        // FIXME: Can this scope just encompass this entire function?
-        FrameView::DeferredRepaintScope deferRepaints(*this);
+    if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled()) {
+        if (m_doFullRepaint)
+            renderView()->setShouldDoFullRepaintAfterLayout(true);
 
-        if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled()) {
-            if (m_doFullRepaint)
-                renderView()->setShouldDoFullRepaintAfterLayout(true);
+        if (m_doFullRepaint || !partialLayout().isStopping())
+            repaintTree(rootForThisLayout);
 
-            if (m_doFullRepaint || !partialLayout().isStopping())
-                repaintTree(rootForThisLayout);
-
-        } else if (m_doFullRepaint) {
-            // FIXME: This isn't really right, since the RenderView doesn't fully encompass
-            // the visibleContentRect(). It just happens to work out most of the time,
-            // since first layouts and printing don't have you scrolled anywhere.
-            renderView()->repaint();
-        }
-        layer->updateLayerPositionsAfterLayout(renderView()->layer(), updateLayerPositionFlags(layer, inSubtreeLayout, m_doFullRepaint));
+    } else if (m_doFullRepaint) {
+        // FIXME: This isn't really right, since the RenderView doesn't fully encompass
+        // the visibleContentRect(). It just happens to work out most of the time,
+        // since first layouts and printing don't have you scrolled anywhere.
+        renderView()->repaint();
     }
+
+    layer->updateLayerPositionsAfterLayout(renderView()->layer(), updateLayerPositionFlags(layer, inSubtreeLayout, m_doFullRepaint));
+
     updateCompositingLayersAfterLayout();
 
     m_layoutCount++;
@@ -1818,8 +1802,8 @@ void FrameView::repaintContentRectangle(const IntRect& r)
         m_trackedRepaintRects.append(repaintRect);
     }
 
-    double delay = m_deferringRepaints ? 0 : adjustedDeferredRepaintDelay();
-    if (m_deferringRepaints || m_deferredRepaintTimer.isActive() || delay) {
+    double delay = adjustedDeferredRepaintDelay();
+    if (m_deferredRepaintTimer.isActive() || delay) {
         IntRect paintRect = r;
         if (clipsRepaints() && !paintsEntireContents())
             paintRect.intersect(visibleContentRect());
@@ -1838,8 +1822,7 @@ void FrameView::repaintContentRectangle(const IntRect& r)
             m_repaintRects[0].unite(paintRect);
         m_repaintCount++;
 
-        if (!m_deferringRepaints)
-            startDeferredRepaintTimer(delay);
+        startDeferredRepaintTimer(delay);
 
         return;
     }
@@ -1883,45 +1866,6 @@ void FrameView::scrollbarExistenceDidChange()
     }
 }
 
-void FrameView::beginDeferredRepaints()
-{
-    Page* page = m_frame->page();
-    ASSERT(page);
-
-    if (!isMainFrame()) {
-        page->mainFrame()->view()->beginDeferredRepaints();
-        return;
-    }
-
-    m_deferringRepaints++;
-}
-
-void FrameView::endDeferredRepaints()
-{
-    Page* page = m_frame->page();
-    ASSERT(page);
-
-    if (!isMainFrame()) {
-        page->mainFrame()->view()->endDeferredRepaints();
-        return;
-    }
-
-    ASSERT(m_deferringRepaints > 0);
-
-    if (--m_deferringRepaints)
-        return;
-
-    if (m_deferredRepaintTimer.isActive())
-        return;
-
-    if (double delay = adjustedDeferredRepaintDelay()) {
-        startDeferredRepaintTimer(delay);
-        return;
-    }
-
-    doDeferredRepaints();
-}
-
 void FrameView::startDeferredRepaintTimer(double delay)
 {
     if (m_deferredRepaintTimer.isActive())
@@ -1951,7 +1895,6 @@ void FrameView::flushDeferredRepaints()
 
 void FrameView::doDeferredRepaints()
 {
-    ASSERT(!m_deferringRepaints);
     if (!shouldUpdate()) {
         m_repaintRects.clear();
         m_repaintCount = 0;
@@ -1997,14 +1940,12 @@ void FrameView::resetDeferredRepaintDelay()
     m_deferredRepaintDelay = 0;
     if (m_deferredRepaintTimer.isActive()) {
         m_deferredRepaintTimer.stop();
-        if (!m_deferringRepaints)
-            doDeferredRepaints();
+        doDeferredRepaints();
     }
 }
 
 double FrameView::adjustedDeferredRepaintDelay() const
 {
-    ASSERT(!m_deferringRepaints);
     if (!m_deferredRepaintDelay)
         return 0;
     double timeSinceLastPaint = currentTime() - m_lastPaintTime;

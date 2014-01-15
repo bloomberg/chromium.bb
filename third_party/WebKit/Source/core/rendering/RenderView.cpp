@@ -874,8 +874,6 @@ void RenderView::setSelection(RenderObject* start, int startPos, RenderObject* e
     if (!m_frameView || blockRepaintMode == RepaintNothing)
         return;
 
-    FrameView::DeferredRepaintScope deferRepaints(*m_frameView);
-
     // Have any of the old selected objects changed compared to the new selection?
     for (SelectedObjectMap::iterator i = oldSelectedObjects.begin(); i != oldObjectsEnd; ++i) {
         RenderObject* obj = i->key;

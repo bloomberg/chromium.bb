@@ -344,14 +344,6 @@ public:
     virtual void didAddScrollbar(Scrollbar*, ScrollbarOrientation) OVERRIDE;
     virtual void willRemoveScrollbar(Scrollbar*, ScrollbarOrientation) OVERRIDE;
 
-    class DeferredRepaintScope {
-    public:
-        DeferredRepaintScope(FrameView&);
-        ~DeferredRepaintScope();
-    private:
-        RefPtr<FrameView> m_view;
-    };
-
 protected:
     virtual bool scrollContentsFastPath(const IntSize& scrollDelta, const IntRect& rectToScroll, const IntRect& clipRect) OVERRIDE;
     virtual void scrollContentsSlowPath(const IntRect& updateRect) OVERRIDE;
@@ -512,7 +504,6 @@ private:
     bool m_inProgrammaticScroll;
     bool m_safeToPropagateScrollToParent;
 
-    unsigned m_deferringRepaints;
     unsigned m_repaintCount;
     Vector<LayoutRect> m_repaintRects;
     Timer<FrameView> m_deferredRepaintTimer;
