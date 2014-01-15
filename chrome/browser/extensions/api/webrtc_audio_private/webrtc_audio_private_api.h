@@ -15,10 +15,6 @@
 #include "media/audio/audio_device_name.h"
 #include "url/gurl.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}
-
 namespace extensions {
 
 // Listens for device changes and forwards as an extension event.
@@ -47,7 +43,67 @@ class WebrtcAudioPrivateEventService
   Profile* profile_;
 };
 
-class WebrtcAudioPrivateGetSinksFunction : public ChromeAsyncExtensionFunction {
+// Common base for WebrtcAudioPrivate functions, that provides a
+// couple of optionally-used common implementations.
+class WebrtcAudioPrivateFunction : public ChromeAsyncExtensionFunction {
+ protected:
+  WebrtcAudioPrivateFunction();
+  virtual ~WebrtcAudioPrivateFunction();
+
+ protected:
+  // Retrieves the list of output device names on the appropriate
+  // thread. Call from UI thread, callback will occur on IO thread.
+  void GetOutputDeviceNames();
+
+  // Must override this if you call GetOutputDeviceNames. Called on IO thread.
+  virtual void OnOutputDeviceNames(
+      scoped_ptr<media::AudioDeviceNames> device_names);
+
+  // Retrieve the list of AudioOutputController objects. Calls back
+  // via OnControllerList.
+  //
+  // Returns false on error, in which case it has set |error_| and the
+  // entire function should fail.
+  //
+  // Call from any thread. Callback will occur on originating thread.
+  bool GetControllerList(int tab_id);
+
+  // Must override this if you call GetControllerList.
+  virtual void OnControllerList(
+      const content::RenderViewHost::AudioOutputControllerList& list);
+
+  // Calculates a single HMAC. Call from any thread. Calls back via
+  // OnHMACCalculated on UI thread.
+  //
+  // This function, and device ID HMACs in this API in general use the
+  // calling extension's ID as the security origin. The only exception
+  // to this rule is when calculating the input device ID HMAC in
+  // getAssociatedSink, where we use the provided |securityOrigin|.
+  void CalculateHMAC(const std::string& raw_id);
+
+  // Must override this if you call CalculateHMAC.
+  virtual void OnHMACCalculated(const std::string& hmac);
+
+  // Calculates a single HMAC, using the extension ID as the security origin.
+  //
+  // Call only on IO thread.
+  std::string CalculateHMACImpl(const std::string& raw_id);
+
+  // Initializes |resource_context_|. Must be called on the UI thread,
+  // before any calls to |resource_context()|.
+  void InitResourceContext();
+
+  // Callable from any thread. Must previously have called
+  // |InitResourceContext()|.
+  content::ResourceContext* resource_context() const;
+
+ private:
+  content::ResourceContext* resource_context_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebrtcAudioPrivateFunction);
+};
+
+class WebrtcAudioPrivateGetSinksFunction : public WebrtcAudioPrivateFunction {
  protected:
   virtual ~WebrtcAudioPrivateGetSinksFunction() {}
 
@@ -55,25 +111,18 @@ class WebrtcAudioPrivateGetSinksFunction : public ChromeAsyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("webrtcAudioPrivate.getSinks",
                              WEBRTC_AUDIO_PRIVATE_GET_SINKS);
 
+  // Sequence of events is that we query the list of sinks on the
+  // AudioManager's thread, then calculate HMACs on the IO thread,
+  // then finish on the UI thread.
   virtual bool RunImpl() OVERRIDE;
   void DoQuery();
+  virtual void OnOutputDeviceNames(
+      scoped_ptr<media::AudioDeviceNames> raw_ids) OVERRIDE;
   void DoneOnUIThread();
 };
 
-// Common base for functions that start by retrieving the list of
-// controllers for the specified tab.
-class WebrtcAudioPrivateTabIdFunction : public ChromeAsyncExtensionFunction {
- protected:
-  virtual ~WebrtcAudioPrivateTabIdFunction() {}
-
- protected:
-  bool DoRunImpl(int tab_id);
-  virtual void OnControllerList(
-      const content::RenderViewHost::AudioOutputControllerList& list) = 0;
-};
-
 class WebrtcAudioPrivateGetActiveSinkFunction
-    : public WebrtcAudioPrivateTabIdFunction {
+    : public WebrtcAudioPrivateFunction {
  protected:
   virtual ~WebrtcAudioPrivateGetActiveSinkFunction() {}
 
@@ -85,11 +134,11 @@ class WebrtcAudioPrivateGetActiveSinkFunction
   virtual void OnControllerList(
       const content::RenderViewHost::AudioOutputControllerList&
       controllers) OVERRIDE;
-  void OnSinkId(const std::string&);
+  virtual void OnHMACCalculated(const std::string& hmac) OVERRIDE;
 };
 
 class WebrtcAudioPrivateSetActiveSinkFunction
-    : public WebrtcAudioPrivateTabIdFunction {
+    : public WebrtcAudioPrivateFunction {
  public:
   WebrtcAudioPrivateSetActiveSinkFunction();
 
@@ -104,14 +153,16 @@ class WebrtcAudioPrivateSetActiveSinkFunction
   virtual void OnControllerList(
       const content::RenderViewHost::AudioOutputControllerList&
       controllers) OVERRIDE;
+  virtual void OnOutputDeviceNames(
+      scoped_ptr<media::AudioDeviceNames> device_names) OVERRIDE;
   void SwitchDone();
   void DoneOnUIThread();
 
-  // Task runner of the thread this class is constructed on.
-  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-
   int tab_id_;
   std::string sink_id_;
+
+  // Filled in by OnControllerList.
+  content::RenderViewHost::AudioOutputControllerList controllers_;
 
   // Number of sink IDs we are still waiting for. Can become greater
   // than 0 in OnControllerList, decreases on every OnSinkId call.
@@ -119,7 +170,7 @@ class WebrtcAudioPrivateSetActiveSinkFunction
 };
 
 class WebrtcAudioPrivateGetAssociatedSinkFunction
-    : public ChromeAsyncExtensionFunction {
+    : public WebrtcAudioPrivateFunction {
  public:
   WebrtcAudioPrivateGetAssociatedSinkFunction();
 
@@ -135,39 +186,39 @@ class WebrtcAudioPrivateGetAssociatedSinkFunction
   // This implementation is slightly complicated because of different
   // thread requirements for the various functions we need to invoke.
   //
-  // All OnXyzDone callbacks occur on the UI thread, and they trigger
-  // the next step (or send the response in case of the last step).
+  // Each worker function will post a task to the appropriate thread
+  // for the next one.
   //
   // The sequence of events is:
   // 1. Get the list of source devices on the device thread.
   // 2. Given a source ID for an origin and that security origin, find
   //    the raw source ID. This needs to happen on the IO thread since
   //    we will be using the ResourceContext.
-  // 3. Given a raw source ID, get the associated sink ID on the
+  // 3. Given a raw source ID, get the raw associated sink ID on the
   //    device thread.
+  // 4. Given the raw associated sink ID, get its HMAC on the IO thread.
+  // 5. Respond with the HMAC of the associated sink ID on the UI thread.
 
-  // Fills in |source_devices_|. OnGetDevicesDone will be invoked on
-  // the UI thread once done.
+  // Fills in |source_devices_|. Note that these are input devices,
+  // not output devices, so don't use
+  // |WebrtcAudioPrivateFunction::GetOutputDeviceNames|.
   void GetDevicesOnDeviceThread();
-  void OnGetDevicesDone();
 
-  // Takes the parameters of the function, returns the raw source
+  // Takes the parameters of the function, retrieves the raw source
   // device ID, or the empty string if none.
-  std::string GetRawSourceIDOnIOThread(content::ResourceContext* context,
-                                       GURL security_origin,
-                                       const std::string& source_id_in_origin);
-  void OnGetRawSourceIDDone(const std::string& raw_source_id);
+  void GetRawSourceIDOnIOThread();
 
-  // Given a raw source ID, get its associated sink, which needs to
-  // happen on the device thread.
-  std::string GetAssociatedSinkOnDeviceThread(const std::string& raw_source_id);
-  void OnGetAssociatedSinkDone(const std::string& associated_sink_id);
+  // Gets the raw sink ID for a raw source ID. Sends it to |CalculateHMAC|.
+  void GetAssociatedSinkOnDeviceThread(const std::string& raw_source_id);
+
+  // Receives the associated sink ID after its HMAC is calculated.
+  virtual void OnHMACCalculated(const std::string& hmac) OVERRIDE;
 
   // Accessed from UI thread and device thread, but only on one at a
   // time, no locking needed.
   scoped_ptr<api::webrtc_audio_private::GetAssociatedSink::Params> params_;
 
-  // Filled in by DoWorkOnDeviceThread.
+  // Audio sources (input devices). Filled in by DoWorkOnDeviceThread.
   media::AudioDeviceNames source_devices_;
 };
 
