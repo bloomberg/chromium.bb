@@ -25,6 +25,10 @@
 
 using mkvmuxer::uint64;
 
+#ifdef _MSC_VER
+#pragma warning(disable:4996)
+#endif
+
 namespace {
 
 void Usage() {
