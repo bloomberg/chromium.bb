@@ -2,6 +2,7 @@
   - |article|       The article content.
   - |platform|      The platform.
   - |platformTitle| The title of the platform ("Extensions" or "Apps").
+  - |removeToc|     Whether or not to remove the Table of Contents.
   -}}
 {{+content:partials.site
        platform:platform
@@ -12,7 +13,9 @@
     {{+partials.cc /}}
     <nav class="inline-toc no-permalink">
       {{+partials.relatedpages_items items:sidenavs.related /}}
+      {{^removeToc}}
       $(table_of_contents)
+      {{/removeToc}}
     </nav>
   </div>
 </article>
