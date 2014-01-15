@@ -138,6 +138,10 @@ void ScopedStyleTree::resolveScopedKeyframesRules(const Element* element, Vector
     TreeScope& treeScope = element->treeScope();
     bool applyAuthorStyles = treeScope.applyAuthorStyles();
 
+    // Add resolvers for shadow roots hosted by the given element.
+    collectScopedResolversForHostedShadowTrees(element, resolvers);
+
+    // Add resolvers while walking up DOM tree from the given element.
     for (ScopedStyleResolver* scopedResolver = scopedResolverFor(element); scopedResolver; scopedResolver = scopedResolver->parent()) {
         if (scopedResolver->treeScope() == treeScope || (applyAuthorStyles && scopedResolver->treeScope() == document))
             resolvers.append(scopedResolver);
