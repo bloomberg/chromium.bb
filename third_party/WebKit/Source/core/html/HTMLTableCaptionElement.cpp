@@ -43,13 +43,6 @@ PassRefPtr<HTMLTableCaptionElement> HTMLTableCaptionElement::create(Document& do
     return adoptRef(new HTMLTableCaptionElement(document));
 }
 
-bool HTMLTableCaptionElement::isPresentationAttribute(const QualifiedName& name) const
-{
-    if (name == alignAttr)
-        return true;
-    return HTMLElement::isPresentationAttribute(name);
-}
-
 void HTMLTableCaptionElement::collectStyleForPresentationAttribute(const QualifiedName& name, const AtomicString& value, MutableStylePropertySet* style)
 {
     if (name == alignAttr) {
