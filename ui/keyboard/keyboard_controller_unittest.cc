@@ -207,6 +207,7 @@ class KeyboardControllerTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
+    controller_.reset();
     focus_controller_.reset();
     aura_test_helper_->TearDown();
   }
@@ -293,6 +294,7 @@ TEST_F(KeyboardControllerTest, ClickDoesNotFocusKeyboard) {
   generator.MoveMouseTo(gfx::Point());
   generator.ClickLeftButton();
   EXPECT_EQ("1 1", delegate.GetMouseButtonCountsAndReset());
+  keyboard_container->RemovePreTargetHandler(&observer);
 }
 
 TEST_F(KeyboardControllerTest, VisibilityChangeWithTextInputTypeChange) {
