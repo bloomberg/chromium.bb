@@ -41,6 +41,8 @@
 
 namespace WebCore {
 
+using namespace HTMLNames;
+
 const double secondsPerHour = 3600;
 const double secondsPerMinute = 60;
 const double secondsPerMillisecond = 0.001;

@@ -44,6 +44,9 @@
 
 namespace WebCore {
 
+using namespace std;
+using namespace WTF::Unicode;
+
 static IndentTextOrNot requiresIndent(bool isFirstLine, bool isAfterHardLineBreak, RenderStyle* style)
 {
     if (isFirstLine)

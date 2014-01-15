@@ -32,6 +32,8 @@
 
 namespace WebCore {
 
+using namespace HTMLNames;
+
 LoadableTextTrack::LoadableTextTrack(HTMLTrackElement* track)
     : TextTrack(track->document(), track, emptyAtom, emptyAtom, emptyAtom, emptyAtom, TrackElement)
     , m_trackElement(track)

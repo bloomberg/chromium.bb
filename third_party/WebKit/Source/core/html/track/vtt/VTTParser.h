@@ -44,8 +44,6 @@
 
 namespace WebCore {
 
-using namespace HTMLNames;
-
 class Document;
 class VTTScanner;
 
@@ -76,11 +74,11 @@ public:
 
     static inline bool isRecognizedTag(const AtomicString& tagName)
     {
-        return tagName == iTag
-            || tagName == bTag
-            || tagName == uTag
-            || tagName == rubyTag
-            || tagName == rtTag;
+        return tagName == HTMLNames::iTag
+            || tagName == HTMLNames::bTag
+            || tagName == HTMLNames::uTag
+            || tagName == HTMLNames::rubyTag
+            || tagName == HTMLNames::rtTag;
     }
     static inline bool isASpace(UChar c)
     {

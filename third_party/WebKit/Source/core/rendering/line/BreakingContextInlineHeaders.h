@@ -36,10 +36,6 @@
 
 namespace WebCore {
 
-using namespace std;
-using namespace WTF;
-using namespace Unicode;
-
 // We don't let our line box tree for a single line get any deeper than this.
 const unsigned cMaxLineDepth = 200;
 
@@ -927,7 +923,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
                 breakWords = false;
             }
 
-            if (midWordBreak && !U16_IS_TRAIL(c) && !(category(c) & (Mark_NonSpacing | Mark_Enclosing | Mark_SpacingCombining))) {
+            if (midWordBreak && !U16_IS_TRAIL(c) && !(WTF::Unicode::category(c) & (WTF::Unicode::Mark_NonSpacing | WTF::Unicode::Mark_Enclosing | WTF::Unicode::Mark_SpacingCombining))) {
                 // Remember this as a breakable position in case
                 // adding the end width forces a break.
                 m_lineBreak.moveTo(m_current.object(), m_current.offset(), m_current.nextBreakablePosition());
