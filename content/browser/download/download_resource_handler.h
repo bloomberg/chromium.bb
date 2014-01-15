@@ -88,6 +88,8 @@ class CONTENT_EXPORT DownloadResourceHandler
 
   void PauseRequest();
   void ResumeRequest();
+
+  // May result in this object being deleted by its owner.
   void CancelRequest();
 
   std::string DebugString() const;

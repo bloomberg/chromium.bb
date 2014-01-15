@@ -389,9 +389,8 @@ void SaveFileManager::OnRequireSaveJobFromOtherSource(
 void SaveFileManager::ExecuteCancelSaveRequest(int render_process_id,
                                                int request_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  ResourceDispatcherHostImpl::Get()->CancelRequest(render_process_id,
-                                                   request_id,
-                                                   false);
+  ResourceDispatcherHostImpl::Get()->CancelRequest(
+      render_process_id, request_id);
 }
 
 // Notifications sent from the UI thread and run on the file thread.

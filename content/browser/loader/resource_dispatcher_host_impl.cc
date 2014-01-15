@@ -1247,8 +1247,26 @@ void ResourceDispatcherHostImpl::OnUploadProgressACK(int request_id) {
     loader->OnUploadProgressACK();
 }
 
+// Note that this cancel is subtly different from the other
+// CancelRequest methods in this file, which also tear down the loader.
 void ResourceDispatcherHostImpl::OnCancelRequest(int request_id) {
-  CancelRequest(filter_->child_id(), request_id, true);
+  int child_id = filter_->child_id();
+
+  // When the old renderer dies, it sends a message to us to cancel its
+  // requests.
+  if (IsTransferredNavigation(GlobalRequestID(child_id, request_id)))
+    return;
+
+  ResourceLoader* loader = GetLoader(child_id, request_id);
+  if (!loader) {
+    // We probably want to remove this warning eventually, but I wanted to be
+    // able to notice when this happens during initial development since it
+    // should be rare and may indicate a bug.
+    DVLOG(1) << "Canceling a request that wasn't found";
+    return;
+  }
+
+  loader->CancelRequest(true);
 }
 
 ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
@@ -1502,15 +1520,7 @@ void ResourceDispatcherHostImpl::RemovePendingLoader(
 }
 
 void ResourceDispatcherHostImpl::CancelRequest(int child_id,
-                                               int request_id,
-                                               bool from_renderer) {
-  if (from_renderer) {
-    // When the old renderer dies, it sends a message to us to cancel its
-    // requests.
-    if (IsTransferredNavigation(GlobalRequestID(child_id, request_id)))
-      return;
-  }
-
+                                               int request_id) {
   ResourceLoader* loader = GetLoader(child_id, request_id);
   if (!loader) {
     // We probably want to remove this warning eventually, but I wanted to be
@@ -1520,7 +1530,7 @@ void ResourceDispatcherHostImpl::CancelRequest(int child_id,
     return;
   }
 
-  loader->CancelRequest(from_renderer);
+  RemovePendingRequest(child_id, request_id);
 }
 
 ResourceDispatcherHostImpl::OustandingRequestsStats

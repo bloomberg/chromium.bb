@@ -444,8 +444,8 @@ void DownloadResourceHandler::CancelRequest() {
   const ResourceRequestInfo* info = GetRequestInfo();
   ResourceDispatcherHostImpl::Get()->CancelRequest(
       info->GetChildID(),
-      info->GetRequestID(),
-      false);
+      info->GetRequestID());
+  // This object has been deleted.
 }
 
 std::string DownloadResourceHandler::DebugString() const {

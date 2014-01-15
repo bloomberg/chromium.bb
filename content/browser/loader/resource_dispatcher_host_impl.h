@@ -123,11 +123,8 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
                      int route_id,
                      ResourceContext* context);
 
-  // Cancels the given request if it still exists. We ignore cancels from the
-  // renderer in the event of a download.
-  void CancelRequest(int child_id,
-                     int request_id,
-                     bool from_renderer);
+  // Cancels the given request if it still exists.
+  void CancelRequest(int child_id, int request_id);
 
   // Marks the request as "parked". This happens if a request is
   // redirected cross-site and needs to be resumed by a new render view.
@@ -233,6 +230,8 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   void FinishedWithResourcesForRequest(const net::URLRequest* request_);
 
  private:
+  friend class ResourceDispatcherHostTest;
+
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
                            TestBlockedRequestsProcessDies);
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,

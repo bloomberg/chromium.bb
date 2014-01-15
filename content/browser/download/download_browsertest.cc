@@ -11,6 +11,8 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/platform_thread.h"
+#include "base/time/time.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/download/download_file_factory.h"
 #include "content/browser/download/download_file_impl.h"
@@ -942,7 +944,20 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ShutdownInProgress) {
     EXPECT_CALL(item_observer, OnDownloadDestroyed(items[0]))
         .WillOnce(Return());
   }
+
+  // See http://crbug.com/324525.  If we have a refcount release/post task
+  // race, the second post will stall the IO thread long enough so that we'll
+  // lose the race and crash.  The first stall is just to give the UI thread
+  // a chance to get the second stall onto the IO thread queue after the cancel
+  // message created by Shutdown and before the notification callback
+  // created by the IO thread in canceling the request.
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(&base::PlatformThread::Sleep,
+                                     base::TimeDelta::FromMilliseconds(25)));
   DownloadManagerForShell(shell())->Shutdown();
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(&base::PlatformThread::Sleep,
+                                     base::TimeDelta::FromMilliseconds(25)));
   items.clear();
 }
 
