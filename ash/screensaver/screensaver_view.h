@@ -5,7 +5,7 @@
 #ifndef ASH_SCREENSAVER_SCREENSAVER_VIEW_H_
 #define ASH_SCREENSAVER_SCREENSAVER_VIEW_H_
 
-#include "ash/content_support/ash_with_content_export.h"
+#include "ash/ash_with_content_export.h"
 #include "base/callback.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/views/widget/widget_delegate.h"

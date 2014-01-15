@@ -6,7 +6,6 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/ash_switches.h"
-#include "ash/content_support/inject.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
@@ -59,7 +58,6 @@ void OpenAsh() {
 
   // Shell takes ownership of ChromeShellDelegate.
   ash::Shell* shell = ash::Shell::CreateInstance(new ChromeShellDelegate);
-  ash::InitContentSupport();
   shell->event_rewriter_filter()->SetEventRewriterDelegate(
       scoped_ptr<ash::EventRewriterDelegate>(new EventRewriter).Pass());
   shell->accelerator_controller()->SetScreenshotDelegate(

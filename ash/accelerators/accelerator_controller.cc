@@ -18,7 +18,6 @@
 #include "ash/display/display_controller.h"
 #include "ash/display/display_manager.h"
 #include "ash/focus_cycler.h"
-#include "ash/gpu_support.h"
 #include "ash/ime_control_delegate.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
@@ -56,6 +55,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/user_metrics.h"
+#include "content/public/browser/gpu_data_manager.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -968,7 +968,7 @@ bool AcceleratorController::PerformAction(int action,
     case TOUCH_HUD_PROJECTION_TOGGLE:
       return HandleTouchHudProjectToggle();
     case DISABLE_GPU_WATCHDOG:
-      Shell::GetInstance()->gpu_support()->DisableGpuWatchdog();
+      content::GpuDataManager::GetInstance()->DisableGpuWatchdog();
       return true;
 #endif  // OS_CHROMEOS
     case OPEN_FEEDBACK_PAGE:

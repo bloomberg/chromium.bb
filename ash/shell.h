@@ -83,7 +83,6 @@ class CapsLockDelegate;
 class DesktopBackgroundController;
 class DisplayController;
 class FirstRunHelper;
-class GPUSupport;
 class HighContrastController;
 class LockStateController;
 class MagnificationController;
@@ -536,9 +535,6 @@ class ASH_EXPORT Shell
   }
 #endif  // defined(OS_CHROMEOS)
 
-  GPUSupport* gpu_support() { return gpu_support_.get(); }
-  void SetGPUSupport(scoped_ptr<GPUSupport> gpu_support);
-
  private:
   FRIEND_TEST_ALL_PREFIXES(ExtendedDesktopTest, TestCursor);
   FRIEND_TEST_ALL_PREFIXES(WindowManagerTest, MouseEventCursors);
@@ -710,9 +706,6 @@ class ASH_EXPORT Shell
   bool simulate_modal_window_open_for_testing_;
 
   bool is_touch_hud_projection_enabled_;
-
-  // Injected content::GPUDataManager support.
-  scoped_ptr<GPUSupport> gpu_support_;
 
   DISALLOW_COPY_AND_ASSIGN(Shell);
 };

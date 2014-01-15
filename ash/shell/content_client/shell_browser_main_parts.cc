@@ -5,7 +5,6 @@
 #include "ash/shell/content_client/shell_browser_main_parts.h"
 
 #include "ash/ash_switches.h"
-#include "ash/content_support/inject.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/shell.h"
 #include "ash/shell/shell_delegate_impl.h"
@@ -124,7 +123,6 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 #endif
 
   ash::Shell::CreateInstance(delegate_);
-  ash::InitContentSupport();
   delegate_->set_browser_context(browser_context_.get());
   ash::Shell::GetInstance()->CreateShelf();
   ash::Shell::GetInstance()->UpdateAfterLoginStatusChange(
