@@ -4,6 +4,7 @@
 
 #include "android_webview/renderer/aw_permission_client.h"
 
+#include "content/public/renderer/render_frame.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "url/gurl.h"
@@ -24,14 +25,11 @@ bool AllowMixedContent(const blink::WebURL& url) {
 }
 
 AwPermissionClient::AwPermissionClient(content::RenderFrame* render_frame)
-    : content::RenderFrameObserver(render_frame){
+    : content::RenderFrameObserver(render_frame) {
+  render_frame->GetWebFrame()->setPermissionClient(this);
 }
 
 AwPermissionClient::~AwPermissionClient() {
-}
-
-void AwPermissionClient::WebFrameCreated(blink::WebFrame* frame) {
-  frame->setPermissionClient(this);
 }
 
 bool AwPermissionClient::allowDisplayingInsecureContent(

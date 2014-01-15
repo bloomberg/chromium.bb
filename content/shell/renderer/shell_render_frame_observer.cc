@@ -5,6 +5,7 @@
 #include "content/shell/renderer/shell_render_frame_observer.h"
 
 #include "base/command_line.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/renderer/shell_render_process_observer.h"
 #include "content/shell/renderer/test_runner/WebTestInterfaces.h"
@@ -15,14 +16,11 @@ namespace content {
 
 ShellRenderFrameObserver::ShellRenderFrameObserver(RenderFrame* render_frame)
     : RenderFrameObserver(render_frame) {
-}
-
-void ShellRenderFrameObserver::WebFrameCreated(blink::WebFrame* frame) {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
     return;
-  frame->setPermissionClient(
-      ShellRenderProcessObserver::GetInstance()->test_interfaces()->testRunner()
-          ->webPermissions());
+  render_frame->GetWebFrame()->setPermissionClient(
+      ShellRenderProcessObserver::GetInstance()->test_interfaces()->
+          testRunner()->webPermissions());
 }
 
 }  // namespace content

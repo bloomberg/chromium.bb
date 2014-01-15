@@ -22,9 +22,6 @@ class SharedWorkerRepository : public RenderFrameObserver,
   explicit SharedWorkerRepository(RenderFrameImpl* render_frame);
   virtual ~SharedWorkerRepository();
 
-  // RenderFrameObserver overrides.
-  virtual void WebFrameCreated(blink::WebFrame* frame) OVERRIDE;
-
   // WebSharedWorkerRepositoryClient overrides.
   virtual blink::WebSharedWorkerConnector* createSharedWorkerConnector(
       const blink::WebURL& url,

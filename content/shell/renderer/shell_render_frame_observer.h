@@ -20,9 +20,6 @@ class ShellRenderFrameObserver : public RenderFrameObserver {
   virtual ~ShellRenderFrameObserver() {}
 
  private:
-  // content::RenderFrameObserver implementation.
-  virtual void WebFrameCreated(blink::WebFrame* frame) OVERRIDE;
-
   DISALLOW_COPY_AND_ASSIGN(ShellRenderFrameObserver);
 };
 

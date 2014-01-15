@@ -31,11 +31,17 @@ struct WebPluginInfo;
 class CONTENT_EXPORT RenderFrame : public IPC::Listener,
                                    public IPC::Sender {
  public:
+  // Returns the RenderFrame given a WebFrame.
+  static RenderFrame* FromWebFrame(blink::WebFrame* web_frame);
+
   // Returns the RenderView associated with this frame.
   virtual RenderView* GetRenderView() = 0;
 
   // Get the routing ID of the frame.
   virtual int GetRoutingID() = 0;
+
+  // Returns the associated WebFrame.
+  virtual blink::WebFrame* GetWebFrame() = 0;
 
    // Gets WebKit related preferences associated with this frame.
   virtual WebPreferences& GetWebkitPreferences() = 0;

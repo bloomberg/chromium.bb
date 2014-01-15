@@ -33,13 +33,6 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   // Called when a Pepper plugin is created.
   virtual void DidCreatePepperPlugin(RendererPpapiHost* host) {}
 
-  // Called when the WebFrame associated with the RenderFrame is created.
-  // When switches::kSitePerProcess is the default, there will be one
-  // RenderFrame per blink::WebFrame. If it's not set though, a RenderFrame can
-  // be used for more than one blink::WebFrame. In that case, this can be called
-  // more than once.
-  virtual void WebFrameCreated(blink::WebFrame* frame) {}
-
   // These match the Blink API notifications
   virtual void DidCommitProvisionalLoad(blink::WebFrame* frame,
                                         bool is_new_navigation) {}

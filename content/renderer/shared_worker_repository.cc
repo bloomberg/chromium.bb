@@ -14,13 +14,10 @@ namespace content {
 
 SharedWorkerRepository::SharedWorkerRepository(RenderFrameImpl* render_frame)
     : RenderFrameObserver(render_frame) {
+  render_frame->GetWebFrame()->setSharedWorkerRepositoryClient(this);
 }
 
 SharedWorkerRepository::~SharedWorkerRepository() {}
-
-void SharedWorkerRepository::WebFrameCreated(blink::WebFrame* frame) {
-  frame->setSharedWorkerRepositoryClient(this);
-}
 
 blink::WebSharedWorkerConnector*
 SharedWorkerRepository::createSharedWorkerConnector(

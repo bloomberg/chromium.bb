@@ -944,7 +944,6 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
   // The main frame WebFrame object is closed by
   // RenderFrameImpl::frameDetached().
   webview()->setMainFrame(WebFrame::create(main_render_frame_.get()));
-  main_render_frame_->MainWebFrameCreated(webview()->mainFrame());
   main_render_frame_->SetWebFrame(webview()->mainFrame());
 
   if (switches::IsTouchDragDropEnabled())
@@ -2024,7 +2023,7 @@ void RenderViewImpl::UpdateURL(WebFrame* frame) {
 
     // Don't send this message while the subframe is swapped out.
     // TODO(creis): This whole method should move to RenderFrame.
-    RenderFrameImpl* rf = RenderFrameImpl::FindByWebFrame(frame);
+    RenderFrameImpl* rf = RenderFrameImpl::FromWebFrame(frame);
     if (!rf || !rf->is_swapped_out())
       Send(new ViewHostMsg_FrameNavigate(routing_id_, params));
   }
@@ -3747,7 +3746,7 @@ void RenderViewImpl::didFinishLoad(WebFrame* frame) {
 
   // Don't send this message while the subframe is swapped out.
   // TODO(creis): This whole method should move to RenderFrame.
-  RenderFrameImpl* rf = RenderFrameImpl::FindByWebFrame(frame);
+  RenderFrameImpl* rf = RenderFrameImpl::FromWebFrame(frame);
   if (rf && rf->is_swapped_out())
     return;
 
@@ -5118,7 +5117,7 @@ void RenderViewImpl::NavigateToSwappedOutURL(blink::WebFrame* frame) {
   // showing, then WebKit will never send a commit and we'll be left spinning.
   // TODO(creis): Until we move this to RenderFrame, we may call this from a
   // swapped out RenderFrame while our own is_swapped_out_ is false.
-  RenderFrameImpl* rf = RenderFrameImpl::FindByWebFrame(frame);
+  RenderFrameImpl* rf = RenderFrameImpl::FromWebFrame(frame);
   CHECK(is_swapped_out_ || rf->is_swapped_out());
   GURL swappedOutURL(kSwappedOutURL);
   WebURLRequest request(swappedOutURL);

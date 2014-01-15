@@ -19,9 +19,6 @@ class AwPermissionClient : public content::RenderFrameObserver,
  private:  
   virtual ~AwPermissionClient();
 
-  // content::RenderFrameObserver implementation.
-  virtual void WebFrameCreated(blink::WebFrame* frame) OVERRIDE;
-
   // blink::WebPermissionClient implementation.
   virtual bool allowDisplayingInsecureContent(
       blink::WebFrame* frame,

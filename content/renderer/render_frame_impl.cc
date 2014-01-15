@@ -115,13 +115,15 @@ RenderFrameImpl* RenderFrameImpl::Create(RenderViewImpl* render_view,
     return new RenderFrameImpl(render_view, routing_id);
 }
 
-RenderFrameImpl* RenderFrameImpl::FindByWebFrame(blink::WebFrame* web_frame) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess)) {
-    FrameMap::iterator iter = g_frame_map.Get().find(web_frame);
-    if (iter != g_frame_map.Get().end())
-      return iter->second;
-  }
+// static
+RenderFrame* RenderFrame::FromWebFrame(blink::WebFrame* web_frame) {
+  return RenderFrameImpl::FromWebFrame(web_frame);
+}
 
+RenderFrameImpl* RenderFrameImpl::FromWebFrame(blink::WebFrame* web_frame) {
+  FrameMap::iterator iter = g_frame_map.Get().find(web_frame);
+  if (iter != g_frame_map.Get().end())
+    return iter->second;
   return NULL;
 }
 
@@ -141,12 +143,6 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
       is_detaching_(false),
       cookie_jar_(this) {
   RenderThread::Get()->AddRoute(routing_id_, this);
-#if defined(ENABLE_PLUGINS)
-  new PepperBrowserConnection(this);
-#endif
-  new SharedWorkerRepository(this);
-
-  GetContentClient()->renderer()->RenderFrameCreated(this);
 }
 
 RenderFrameImpl::~RenderFrameImpl() {
@@ -162,19 +158,23 @@ void RenderFrameImpl::operator delete(void* ptr) {
   memset(ptr, 0xAF, sizeof(RenderFrameImpl));
 }
 
-void RenderFrameImpl::MainWebFrameCreated(blink::WebFrame* frame) {
-  std::pair<FrameMap::iterator, bool> result = g_frame_map.Get().insert(
-      std::make_pair(frame, this));
-  CHECK(result.second) << "Inserting a duplicate item.";
-
-  FOR_EACH_OBSERVER(RenderFrameObserver, observers_,
-                    WebFrameCreated(frame));
-}
-
 void RenderFrameImpl::SetWebFrame(blink::WebFrame* web_frame) {
   DCHECK(!frame_);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess))
-    frame_ = web_frame;
+
+  std::pair<FrameMap::iterator, bool> result = g_frame_map.Get().insert(
+      std::make_pair(web_frame, this));
+  CHECK(result.second) << "Inserting a duplicate item.";
+
+  frame_ = web_frame;
+ 
+#if defined(ENABLE_PLUGINS)
+  new PepperBrowserConnection(this);
+#endif
+  new SharedWorkerRepository(this);
+
+  // We delay calling this until we have the WebFrame so that any observer or
+  // embedder can call GetWebFrame on any RenderFrame.
+  GetContentClient()->renderer()->RenderFrameCreated(this);
 }
 
 RenderWidget* RenderFrameImpl::GetRenderWidget() {
@@ -440,6 +440,11 @@ int RenderFrameImpl::GetRoutingID() {
   return routing_id_;
 }
 
+blink::WebFrame* RenderFrameImpl::GetWebFrame() {
+  DCHECK(frame_);
+  return frame_;
+}
+
 WebPreferences& RenderFrameImpl::GetWebkitPreferences() {
   return render_view_->GetWebkitPreferences();
 }
@@ -587,12 +592,6 @@ blink::WebFrame* RenderFrameImpl::createChildFrame(
   CHECK(web_frame);
   child_render_frame->SetWebFrame(web_frame);
 
-  std::pair<FrameMap::iterator, bool> result = g_frame_map.Get().insert(
-      std::make_pair(web_frame, child_render_frame));
-  CHECK(result.second) << "Inserting a duplicate item.";
-
-  FOR_EACH_OBSERVER(RenderFrameObserver, observers_,
-                    WebFrameCreated(web_frame));
   return web_frame;
 }
 

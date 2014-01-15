@@ -155,6 +155,7 @@ ContentSettingsObserver::ContentSettingsObserver(
       is_interstitial_page_(false),
       npapi_plugins_blocked_(false) {
   ClearBlockedContentSettings();
+  render_frame->GetWebFrame()->setPermissionClient(this);
 }
 
 ContentSettingsObserver::~ContentSettingsObserver() {
@@ -181,10 +182,6 @@ void ContentSettingsObserver::DidBlockContentType(
     content_blocked_[settings_type] = true;
     Send(new ChromeViewHostMsg_ContentBlocked(routing_id(), settings_type));
   }
-}
-
-void ContentSettingsObserver::WebFrameCreated(blink::WebFrame* frame) {
-  frame->setPermissionClient(this);
 }
 
 bool ContentSettingsObserver::OnMessageReceived(const IPC::Message& message) {

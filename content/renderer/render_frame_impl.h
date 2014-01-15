@@ -50,12 +50,8 @@ class CONTENT_EXPORT RenderFrameImpl
   // TODO(creis): We should structure this so that |SetWebFrame| isn't needed.
   static RenderFrameImpl* Create(RenderViewImpl* render_view, int32 routing_id);
 
-  // For subframes, look up the RenderFrameImpl for the given WebFrame.  Returns
-  // NULL for main frames.
-  // This only works when using --site-per-process, and returns NULL otherwise.
-  // TODO(creis): Remove this when the RenderView methods dealing with frames
-  // have moved to RenderFrame.
-  static RenderFrameImpl* FindByWebFrame(blink::WebFrame* web_frame);
+  // Just like RenderFrame::FromWebFrame but returns the implementation.
+  static RenderFrameImpl* FromWebFrame(blink::WebFrame* web_frame);
 
   // Used by content_layouttest_support to hook into the creation of
   // RenderFrameImpls.
@@ -80,12 +76,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // Returns the RenderWidget associated with this frame.
   RenderWidget* GetRenderWidget();
 
-  // Called by RenderView right after creating this object when the
-  // blink::WebFrame has been created.
-  void MainWebFrameCreated(blink::WebFrame* frame);
-
-  // In --site-per-process mode, we keep track of which WebFrame this
-  // RenderFrameImpl is for.
+  // This is called right after creation with the WebFrame for this RenderFrame.
   void SetWebFrame(blink::WebFrame* web_frame);
 
 #if defined(ENABLE_PLUGINS)
@@ -152,6 +143,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // RenderFrame implementation:
   virtual RenderView* GetRenderView() OVERRIDE;
   virtual int GetRoutingID() OVERRIDE;
+  virtual blink::WebFrame* GetWebFrame() OVERRIDE;
   virtual WebPreferences& GetWebkitPreferences() OVERRIDE;
   virtual int ShowContextMenu(ContextMenuClient* client,
                               const ContextMenuParams& params) OVERRIDE;
@@ -327,8 +319,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // content/common/*_messages.h for the message that the function is handling.
   void OnSwapOut();
 
-  // In --site-per-process mode, stores the WebFrame we are associated with.
-  // NULL otherwise.
+  // Stores the WebFrame we are associated with.
   blink::WebFrame* frame_;
 
   RenderViewImpl* render_view_;
