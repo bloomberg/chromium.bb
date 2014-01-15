@@ -183,7 +183,8 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   // The |constraints| will be modified to include the default, mandatory
   // WebAudio constraints.
   virtual scoped_refptr<WebAudioCapturerSource> CreateWebAudioSource(
-      blink::WebMediaStreamSource* source, RTCMediaConstraints* constraints);
+      blink::WebMediaStreamSource* source,
+      const RTCMediaConstraints& constraints);
 
   // Asks the PeerConnection factory to create a Local AudioTrack object.
   virtual scoped_refptr<webrtc::AudioTrackInterface>
@@ -191,8 +192,7 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
           const std::string& id,
           const scoped_refptr<WebRtcAudioCapturer>& capturer,
           WebAudioCapturerSource* webaudio_source,
-          webrtc::AudioSourceInterface* source,
-          const webrtc::MediaConstraintsInterface* constraints);
+          webrtc::AudioSourceInterface* source);
 
   // Asks the PeerConnection factory to create a Local VideoTrack object.
   virtual scoped_refptr<webrtc::VideoTrackInterface>
@@ -212,7 +212,8 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   // and |device_info|. When the |render_view_id| and |device_info| are valid,
   // it reuses existing capture if any; otherwise it creates a new capturer.
   virtual scoped_refptr<WebRtcAudioCapturer> MaybeCreateAudioCapturer(
-      int render_view_id, const StreamDeviceInfo& device_info);
+      int render_view_id, const StreamDeviceInfo& device_info,
+      const blink::WebMediaConstraints& constraints);
 
  private:
   // Creates and deletes |pc_factory_|, which in turn is used for

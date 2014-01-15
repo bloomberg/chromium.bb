@@ -243,11 +243,9 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     local_stream.audioTracks(audio_tracks);
     const std::string audio_track_id = base::UTF16ToUTF8(audio_tracks[0].id());
     scoped_refptr<WebRtcAudioCapturer> capturer;
-    RTCMediaConstraints audio_constraints(audio_source.constraints());
     scoped_refptr<webrtc::AudioTrackInterface> audio_track(
         mock_dependency_factory_->CreateLocalAudioTrack(
-            audio_track_id, capturer, NULL, NULL,
-            &audio_constraints));
+            audio_track_id, capturer, NULL, NULL));
     MediaStreamDependencyFactory::AddNativeTrackToBlinkTrack(
         audio_track.get(), audio_tracks[0], true);
     native_stream->AddTrack(audio_track.get());
@@ -287,7 +285,6 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
       scoped_refptr<webrtc::AudioTrackInterface> audio_track(
           mock_dependency_factory_->CreateLocalAudioTrack(audio_track_label,
                                                           capturer,
-                                                          NULL,
                                                           NULL,
                                                           NULL));
       stream->AddTrack(audio_track.get());

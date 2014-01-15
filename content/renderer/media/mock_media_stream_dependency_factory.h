@@ -130,7 +130,7 @@ class MockMediaStreamDependencyFactory : public MediaStreamDependencyFactory {
           const webrtc::MediaConstraintsInterface* constraints) OVERRIDE;
   virtual scoped_refptr<WebAudioCapturerSource> CreateWebAudioSource(
       blink::WebMediaStreamSource* source,
-      RTCMediaConstraints* constraints) OVERRIDE;
+      const RTCMediaConstraints& constraints) OVERRIDE;
   virtual scoped_refptr<webrtc::MediaStreamInterface>
       CreateLocalMediaStream(const std::string& label) OVERRIDE;
   virtual scoped_refptr<webrtc::VideoTrackInterface>
@@ -143,8 +143,7 @@ class MockMediaStreamDependencyFactory : public MediaStreamDependencyFactory {
       const std::string& id,
       const scoped_refptr<WebRtcAudioCapturer>& capturer,
       WebAudioCapturerSource* webaudio_source,
-      webrtc::AudioSourceInterface* source,
-      const webrtc::MediaConstraintsInterface* constraints) OVERRIDE;
+      webrtc::AudioSourceInterface* source) OVERRIDE;
   virtual webrtc::SessionDescriptionInterface* CreateSessionDescription(
       const std::string& type,
       const std::string& sdp,
@@ -158,7 +157,8 @@ class MockMediaStreamDependencyFactory : public MediaStreamDependencyFactory {
   virtual bool PeerConnectionFactoryCreated() OVERRIDE;
 
   virtual scoped_refptr<WebRtcAudioCapturer> MaybeCreateAudioCapturer(
-      int render_view_id, const StreamDeviceInfo& device_info) OVERRIDE;
+      int render_view_id, const StreamDeviceInfo& device_info,
+      const blink::WebMediaConstraints& constraints) OVERRIDE;
 
   MockAudioSource* last_audio_source() { return last_audio_source_.get(); }
   MockVideoSource* last_video_source() { return last_video_source_.get(); }

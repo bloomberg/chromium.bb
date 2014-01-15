@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
-#include "content/renderer/media/rtc_media_constraints.h"
 #include "content/renderer/media/webrtc_audio_capturer.h"
 #include "content/renderer/media/webrtc_local_audio_track.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/audio_bus.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 
 using ::testing::_;
 using ::testing::AtLeast;
@@ -17,38 +17,6 @@ using ::testing::AtLeast;
 namespace content {
 
 namespace {
-
-// TODO(xians): Consolidate the similar methods in different unittests into
-// one.
-void ApplyFixedAudioConstraints(RTCMediaConstraints* constraints) {
-  // Constant constraint keys which enables default audio constraints on
-  // mediastreams with audio.
-  struct {
-    const char* key;
-    const char* value;
-  } static const kDefaultAudioConstraints[] = {
-    { webrtc::MediaConstraintsInterface::kEchoCancellation,
-      webrtc::MediaConstraintsInterface::kValueTrue },
-  #if defined(OS_CHROMEOS) || defined(OS_MACOSX)
-    // Enable the extended filter mode AEC on platforms with known echo issues.
-    { webrtc::MediaConstraintsInterface::kExperimentalEchoCancellation,
-      webrtc::MediaConstraintsInterface::kValueTrue },
-  #endif
-    { webrtc::MediaConstraintsInterface::kAutoGainControl,
-      webrtc::MediaConstraintsInterface::kValueTrue },
-    { webrtc::MediaConstraintsInterface::kExperimentalAutoGainControl,
-      webrtc::MediaConstraintsInterface::kValueTrue },
-    { webrtc::MediaConstraintsInterface::kNoiseSuppression,
-      webrtc::MediaConstraintsInterface::kValueTrue },
-    { webrtc::MediaConstraintsInterface::kHighpassFilter,
-      webrtc::MediaConstraintsInterface::kValueTrue },
-  };
-
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kDefaultAudioConstraints); ++i) {
-    constraints->AddMandatory(kDefaultAudioConstraints[i].key,
-                              kDefaultAudioConstraints[i].value, false);
-  }
-}
 
 class MockCapturerSource : public media::AudioCapturerSource {
  public:
@@ -95,22 +63,21 @@ class WebRtcAudioCapturerTest : public testing::Test {
                 media::CHANNEL_LAYOUT_STEREO, 48000, 16, 128) {
 #endif
     capturer_ = WebRtcAudioCapturer::CreateCapturer();
+    blink::WebMediaConstraints constraints;
     capturer_->Initialize(-1, params_.channel_layout(), params_.sample_rate(),
                           params_.frames_per_buffer(), 0, std::string(), 0, 0,
-                          params_.effects());
+                          params_.effects(), constraints);
     capturer_source_ = new MockCapturerSource();
     EXPECT_CALL(*capturer_source_.get(), Initialize(_, capturer_.get(), 0));
     capturer_->SetCapturerSource(capturer_source_,
                                  params_.channel_layout(),
                                  params_.sample_rate(),
-                                 params_.effects());
+                                 params_.effects(), constraints);
 
     EXPECT_CALL(*capturer_source_.get(), SetAutomaticGainControl(true));
     EXPECT_CALL(*capturer_source_.get(), Start());
-    RTCMediaConstraints constraints;
-    ApplyFixedAudioConstraints(&constraints);
     track_ = WebRtcLocalAudioTrack::Create(std::string(), capturer_, NULL,
-                                           NULL, &constraints);
+                                           NULL);
     static_cast<WebRtcLocalAudioSourceProvider*>(
         track_->audio_source_provider())->SetSinkParamsForTesting(params_);
     track_->Start();

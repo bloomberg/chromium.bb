@@ -11,6 +11,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "content/common/media/media_stream_messages.h"
 #include "content/public/common/content_switches.h"
+#include "content/renderer/media/media_stream_audio_processor_options.h"
 #include "content/renderer/media/media_stream_source_extra_data.h"
 #include "content/renderer/media/media_stream_track_extra_data.h"
 #include "content/renderer/media/media_stream_video_track.h"
@@ -55,29 +56,6 @@
 
 namespace content {
 
-// Constant constraint keys which enables default audio constraints on
-// mediastreams with audio.
-struct {
-  const char* key;
-  const char* value;
-} const kDefaultAudioConstraints[] = {
-  { webrtc::MediaConstraintsInterface::kEchoCancellation,
-    webrtc::MediaConstraintsInterface::kValueTrue },
-#if defined(OS_CHROMEOS) || defined(OS_MACOSX)
-  // Enable the extended filter mode AEC on platforms with known echo issues.
-  { webrtc::MediaConstraintsInterface::kExperimentalEchoCancellation,
-    webrtc::MediaConstraintsInterface::kValueTrue },
-#endif
-  { webrtc::MediaConstraintsInterface::kAutoGainControl,
-    webrtc::MediaConstraintsInterface::kValueTrue },
-  { webrtc::MediaConstraintsInterface::kExperimentalAutoGainControl,
-    webrtc::MediaConstraintsInterface::kValueTrue },
-  { webrtc::MediaConstraintsInterface::kNoiseSuppression,
-    webrtc::MediaConstraintsInterface::kValueTrue },
-  { webrtc::MediaConstraintsInterface::kHighpassFilter,
-    webrtc::MediaConstraintsInterface::kValueTrue },
-};
-
 // Map of corresponding media constraints and platform effects.
 struct {
   const char* constraint;
@@ -86,24 +64,6 @@ struct {
   { webrtc::MediaConstraintsInterface::kEchoCancellation,
     media::AudioParameters::ECHO_CANCELLER},
 };
-
-// Merge |constraints| with |kDefaultAudioConstraints|. For any key which exists
-// in both, the value from |constraints| is maintained, including its
-// mandatory/optional status. New values from |kDefaultAudioConstraints| will
-// be added with mandatory status.
-void ApplyFixedAudioConstraints(RTCMediaConstraints* constraints) {
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kDefaultAudioConstraints); ++i) {
-    bool already_set_value;
-    if (!webrtc::FindConstraint(constraints, kDefaultAudioConstraints[i].key,
-                                &already_set_value, NULL)) {
-      constraints->AddMandatory(kDefaultAudioConstraints[i].key,
-          kDefaultAudioConstraints[i].value, false);
-    } else {
-      DVLOG(1) << "Constraint " << kDefaultAudioConstraints[i].key
-               << " already set to " << already_set_value;
-    }
-  }
-}
 
 class P2PPortAllocatorFactory : public webrtc::PortAllocatorFactoryInterface {
  public:
@@ -364,7 +324,8 @@ void MediaStreamDependencyFactory::CreateNativeMediaSources(
     }
 
     scoped_refptr<WebRtcAudioCapturer> capturer(
-        MaybeCreateAudioCapturer(render_view_id, device_info));
+        MaybeCreateAudioCapturer(render_view_id, device_info,
+                                 audio_constraints));
     if (!capturer.get()) {
       DLOG(WARNING) << "Failed to create the capturer for device "
                     << device_info.device.id;
@@ -448,7 +409,7 @@ MediaStreamDependencyFactory::CreateNativeAudioMediaStreamTrack(
     if (source.requiresAudioConsumer()) {
       // We're adding a WebAudio MediaStream.
       // Create a specific capturer for each WebAudio consumer.
-      webaudio_source = CreateWebAudioSource(&source, &track_constraints);
+      webaudio_source = CreateWebAudioSource(&source, track_constraints);
       source_data =
           static_cast<MediaStreamSourceExtraData*>(source.extraData());
     } else {
@@ -468,8 +429,7 @@ MediaStreamDependencyFactory::CreateNativeAudioMediaStreamTrack(
       CreateLocalAudioTrack(track_id,
                             capturer,
                             webaudio_source.get(),
-                            source_data->local_audio_source(),
-                            &track_constraints));
+                            source_data->local_audio_source()));
   AddNativeTrackToBlinkTrack(audio_track.get(), track, true);
 
   audio_track->set_enabled(track.isEnabled());
@@ -738,7 +698,7 @@ MediaStreamDependencyFactory::CreateLocalVideoSource(
 scoped_refptr<WebAudioCapturerSource>
 MediaStreamDependencyFactory::CreateWebAudioSource(
     blink::WebMediaStreamSource* source,
-    RTCMediaConstraints* constraints) {
+    const RTCMediaConstraints& constraints) {
   DVLOG(1) << "MediaStreamDependencyFactory::CreateWebAudioSource()";
   DCHECK(GetWebRtcAudioDevice());
 
@@ -748,7 +708,7 @@ MediaStreamDependencyFactory::CreateWebAudioSource(
 
   // Create a LocalAudioSource object which holds audio options.
   // SetLocalAudioSource() affects core audio parts in third_party/Libjingle.
-  source_data->SetLocalAudioSource(CreateLocalAudioSource(constraints).get());
+  source_data->SetLocalAudioSource(CreateLocalAudioSource(&constraints).get());
   source->setExtraData(source_data);
 
   // Replace the default source with WebAudio as source instead.
@@ -785,14 +745,12 @@ MediaStreamDependencyFactory::CreateLocalAudioTrack(
     const std::string& id,
     const scoped_refptr<WebRtcAudioCapturer>& capturer,
     WebAudioCapturerSource* webaudio_source,
-    webrtc::AudioSourceInterface* source,
-    const webrtc::MediaConstraintsInterface* constraints) {
+    webrtc::AudioSourceInterface* source) {
   // TODO(xians): Merge |source| to the capturer(). We can't do this today
   // because only one capturer() is supported while one |source| is created
   // for each audio track.
   scoped_refptr<WebRtcLocalAudioTrack> audio_track(
-      WebRtcLocalAudioTrack::Create(id, capturer, webaudio_source,
-                                    source, constraints));
+      WebRtcLocalAudioTrack::Create(id, capturer, webaudio_source, source));
 
   // Add the WebRtcAudioDevice as the sink to the local audio track.
   audio_track->AddSink(GetWebRtcAudioDevice());
@@ -929,7 +887,8 @@ void MediaStreamDependencyFactory::CleanupPeerConnectionFactory() {
 scoped_refptr<WebRtcAudioCapturer>
 MediaStreamDependencyFactory::MaybeCreateAudioCapturer(
     int render_view_id,
-    const StreamDeviceInfo& device_info) {
+    const StreamDeviceInfo& device_info,
+    const blink::WebMediaConstraints& constraints) {
   // TODO(xians): Handle the cases when gUM is called without a proper render
   // view, for example, by an extension.
   DCHECK_GE(render_view_id, 0);
@@ -955,7 +914,8 @@ MediaStreamDependencyFactory::MaybeCreateAudioCapturer(
           device_info.device.id,
           device_info.device.matched_output.sample_rate,
           device_info.device.matched_output.frames_per_buffer,
-          device_info.device.input.effects)) {
+          device_info.device.input.effects,
+          constraints)) {
     return NULL;
   }
 

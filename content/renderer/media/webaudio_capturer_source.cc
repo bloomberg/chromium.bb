@@ -54,6 +54,8 @@ void WebAudioCapturerSource::setFormat(
 
   wrapper_bus_ = AudioBus::CreateWrapper(params_.channels());
   capture_bus_ = AudioBus::Create(params_);
+  audio_data_.reset(
+      new int16[params_.frames_per_buffer() * params_.channels()]);
   fifo_.reset(new AudioFifo(
       params_.channels(),
       kMaxNumberOfBuffersInFifo * params_.frames_per_buffer()));
@@ -112,10 +114,20 @@ void WebAudioCapturerSource::consumeAudio(
   if (capturer_) {
     capturer_->GetAudioProcessingParams(&delay, &volume, &key_pressed);
   }
+
+  // Turn off audio processing if the delay value is 0, since in such case,
+  // it indicates the data is not from microphone.
+  // TODO(xians): remove the flag when supporting one APM per audio track.
+  // See crbug/264611 for details.
+  bool need_audio_processing = (delay.InMilliseconds() != 0);
   while (fifo_->frames() >= capture_frames) {
     fifo_->Consume(capture_bus_.get(), 0, capture_frames);
-    track_->Capture(capture_bus_.get(), delay.InMilliseconds(),
-                    volume, key_pressed);
+    // TODO(xians): Avoid this interleave/deinterleave operation.
+    capture_bus_->ToInterleaved(capture_bus_->frames(),
+                                params_.bits_per_sample() / 8,
+                                audio_data_.get());
+    track_->Capture(audio_data_.get(), delay, volume, key_pressed,
+                    need_audio_processing);
   }
 }
 

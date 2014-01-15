@@ -14,7 +14,6 @@
 #include "content/renderer/media/tagged_list.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "content/renderer/media/webrtc_local_audio_source_provider.h"
-#include "third_party/libjingle/source/talk/app/webrtc/mediaconstraintsinterface.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreamtrack.h"
 #include "third_party/libjingle/source/talk/media/base/audiorenderer.h"
@@ -49,8 +48,7 @@ class CONTENT_EXPORT WebRtcLocalAudioTrack
       const std::string& id,
       const scoped_refptr<WebRtcAudioCapturer>& capturer,
       WebAudioCapturerSource* webaudio_source,
-      webrtc::AudioSourceInterface* track_source,
-      const webrtc::MediaConstraintsInterface* constraints);
+      webrtc::AudioSourceInterface* track_source);
 
   // Add a sink to the track. This function will trigger a OnSetFormat()
   // call on the |sink|.
@@ -77,10 +75,11 @@ class CONTENT_EXPORT WebRtcLocalAudioTrack
 
   // Method called by the capturer to deliver the capture data.
   // Call on the capture audio thread.
-  void Capture(media::AudioBus* audio_source,
-               int audio_delay_milliseconds,
+  void Capture(const int16* audio_data,
+               base::TimeDelta delay,
                int volume,
-               bool key_pressed);
+               bool key_pressed,
+               bool need_audio_processing);
 
   // Method called by the capturer to set the audio parameters used by source
   // of the capture data..
@@ -96,8 +95,7 @@ class CONTENT_EXPORT WebRtcLocalAudioTrack
       const std::string& label,
       const scoped_refptr<WebRtcAudioCapturer>& capturer,
       WebAudioCapturerSource* webaudio_source,
-      webrtc::AudioSourceInterface* track_source,
-      const webrtc::MediaConstraintsInterface* constraints);
+      webrtc::AudioSourceInterface* track_source);
 
   virtual ~WebRtcLocalAudioTrack();
 
@@ -144,12 +142,9 @@ class CONTENT_EXPORT WebRtcLocalAudioTrack
   // A vector of WebRtc VoE channels that the capturer sends data to.
   std::vector<int> voe_channels_;
 
-  bool need_audio_processing_;
-
-  // Buffers used for temporary storage during capture callbacks.
-  // Allocated and accessed only on the capture audio thread.
-  class ConfiguredBuffer;
-  scoped_ptr<ConfiguredBuffer> buffer_;
+  // Audio parameters of the audio capture stream.
+  // Accessed on only the audio capture thread.
+  media::AudioParameters audio_parameters_;
 
   // The source provider to feed the track data to other clients like
   // WebAudio.

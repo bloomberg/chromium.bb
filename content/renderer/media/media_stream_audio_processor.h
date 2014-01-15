@@ -11,9 +11,12 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "media/base/audio_converter.h"
-#include "third_party/libjingle/source/talk/app/webrtc/mediaconstraintsinterface.h"
 #include "third_party/webrtc/modules/audio_processing/include/audio_processing.h"
 #include "third_party/webrtc/modules/interface/module_common_types.h"
+
+namespace blink {
+class WebMediaConstraints;
+}
 
 namespace media {
 class AudioBus;
@@ -27,15 +30,18 @@ class AudioFrame;
 
 namespace content {
 
+class RTCMediaConstraints;
+
 // This class owns an object of webrtc::AudioProcessing which contains signal
 // processing components like AGC, AEC and NS. It enables the components based
 // on the getUserMedia constraints, processes the data and outputs it in a unit
 // of 10 ms data chunk.
-class CONTENT_EXPORT MediaStreamAudioProcessor {
+class CONTENT_EXPORT MediaStreamAudioProcessor :
+    public base::RefCountedThreadSafe<MediaStreamAudioProcessor> {
  public:
-  explicit MediaStreamAudioProcessor(
-      const webrtc::MediaConstraintsInterface* constraints);
-  ~MediaStreamAudioProcessor();
+  MediaStreamAudioProcessor(const media::AudioParameters& source_params,
+                            const blink::WebMediaConstraints& constraints,
+                            int effects);
 
   // Pushes capture data in |audio_source| to the internal FIFO.
   // Called on the capture audio thread.
@@ -67,23 +73,29 @@ class CONTENT_EXPORT MediaStreamAudioProcessor {
                              bool key_pressed,
                              int16** out);
 
-  // Called when the format of the capture data has changed.
-  // This has to be called before PushCaptureData() and ProcessAndConsumeData().
-  // Called on the main render thread.
-  void SetCaptureFormat(const media::AudioParameters& source_params);
+
+  // The audio format of the input to the processor.
+  const media::AudioParameters& InputFormat() const;
 
   // The audio format of the output from the processor.
   const media::AudioParameters& OutputFormat() const;
 
   // Accessor to check if the audio processing is enabled or not.
-  bool has_audio_processing() const { return audio_processing_.get() != NULL; }
+  bool has_audio_processing() const { return audio_processing_ != NULL; }
+
+ protected:
+  friend class base::RefCountedThreadSafe<MediaStreamAudioProcessor>;
+  virtual ~MediaStreamAudioProcessor();
 
  private:
   class MediaStreamAudioConverter;
 
   // Helper to initialize the WebRtc AudioProcessing.
   void InitializeAudioProcessingModule(
-      const webrtc::MediaConstraintsInterface* constraints);
+      const blink::WebMediaConstraints& constraints, int effects);
+
+  // Helper to initialize the capture converter.
+  void InitializeCaptureConverter(const media::AudioParameters& source_params);
 
   // Helper to initialize the render converter.
   void InitializeRenderConverterIfNeeded(int sample_rate,

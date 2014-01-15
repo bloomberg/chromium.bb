@@ -82,7 +82,7 @@ int WebRtcAudioDeviceImpl::OnData(const int16* audio_data,
   int accumulated_audio_samples = 0;
   uint32_t new_volume = 0;
 
-  // The lock here is to protect the racing in the resampler inside webrtc when
+  // The lock here is to protect a race in the resampler inside webrtc when
   // there are more than one input stream calling OnData(), which can happen
   // when the users setup two getUserMedia, one for the microphone, another
   // for WebAudio. Currently we don't have a better way to fix it except for
@@ -382,7 +382,7 @@ int32_t WebRtcAudioDeviceImpl::StereoRecordingIsAvailable(
   if (!capturer.get())
     return -1;
 
-  *available = (capturer->audio_parameters().channels() == 2);
+  *available = (capturer->source_audio_parameters().channels() == 2);
   return 0;
 }
 
@@ -406,7 +406,7 @@ int32_t WebRtcAudioDeviceImpl::RecordingSampleRate(
     return -1;
 
   *samples_per_sec = static_cast<uint32_t>(
-      capturer->audio_parameters().sample_rate());
+      capturer->source_audio_parameters().sample_rate());
   return 0;
 }
 

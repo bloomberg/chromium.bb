@@ -19,6 +19,7 @@
 #include "media/audio/audio_manager_base.h"
 #include "media/base/audio_hardware_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/webrtc/voice_engine/include/voe_audio_processing.h"
 #include "third_party/webrtc/voice_engine/include/voe_base.h"
 #include "third_party/webrtc/voice_engine/include/voe_codec.h"
@@ -119,9 +120,10 @@ bool CreateAndInitializeCapturer(WebRtcAudioDeviceImpl* webrtc_audio_device) {
   int sample_rate = hardware_config->GetInputSampleRate();
   media::ChannelLayout channel_layout =
       hardware_config->GetInputChannelLayout();
+  blink::WebMediaConstraints constraints;
   if (!capturer->Initialize(kRenderViewId, channel_layout, sample_rate, 0, 1,
                             media::AudioManagerBase::kDefaultDeviceId, 0, 0,
-                            media::AudioParameters::NO_EFFECTS)) {
+                            media::AudioParameters::NO_EFFECTS, constraints)) {
     return false;
   }
 
@@ -138,7 +140,7 @@ scoped_refptr<WebRtcLocalAudioTrack>
 CreateAndStartLocalAudioTrack(WebRtcAudioCapturer* capturer,
                               PeerConnectionAudioSink* sink) {
   scoped_refptr<WebRtcLocalAudioTrack> local_audio_track(
-      WebRtcLocalAudioTrack::Create(std::string(), capturer, NULL, NULL, NULL));
+      WebRtcLocalAudioTrack::Create(std::string(), capturer, NULL, NULL));
   local_audio_track->AddSink(sink);
   local_audio_track->Start();
   return local_audio_track;
