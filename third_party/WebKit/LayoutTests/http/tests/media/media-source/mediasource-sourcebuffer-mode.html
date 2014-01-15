@@ -79,8 +79,52 @@
               });
           }, 'Test setting SourceBuffer.mode triggers parent MediaSource \'ended\' to \'open\' transition.');
 
-          // FIXME: Once enough Chromium implementation lands, add tests for at least confirming exception if append
-          // state is PARSING_MEDIA_SEGMENT (per 3.1 setting mode steps 6-7). See http://crbug.com/249422.
+          mediasource_testafterdataloaded(function(test, mediaElement, mediaSource, segmentInfo, sourceBuffer, mediaData)
+          {
+              var initSegment = MediaSourceUtil.extractSegmentData(mediaData, segmentInfo.init);
+              var fullMediaSegment = MediaSourceUtil.extractSegmentData(mediaData, segmentInfo.media[0]);
+              var truncateAt = Math.floor(segmentInfo.media[0].size * 0.95);  // Pick first 95% of segment bytes.
+              var partialMediaSegment = fullMediaSegment.subarray(0, truncateAt);
+              var mediaSegmentRemainder = fullMediaSegment.subarray(truncateAt);
+
+              // Append init segment.
+              test.expectEvent(sourceBuffer, 'updateend', 'Init segment append ended.');
+              sourceBuffer.appendBuffer(initSegment);
+
+              test.waitForExpectedEvents(function()
+              {
+                  assert_false(sourceBuffer.updating, 'updating attribute is false');
+                  assert_equals(sourceBuffer.mode, 'segments');
+                  sourceBuffer.mode = 'segments';  // No exception should occur.
+
+                  // Append first part of media segment.
+                  test.expectEvent(sourceBuffer, 'updateend', 'Partial media segment append ended.');
+                  sourceBuffer.appendBuffer(partialMediaSegment);
+              });
+
+              test.waitForExpectedEvents(function()
+              {
+                  assert_false(sourceBuffer.updating, 'updating attribute is false');
+                  assert_equals(sourceBuffer.mode, 'segments');
+                  assert_throws('InvalidStateError',
+                      function() { sourceBuffer.mode = 'segments'; },
+                      'Setting valid sourceBuffer.mode while still parsing media segment threw InvalidStateError.');
+
+                  // Append remainder of media segment.
+                  test.expectEvent(sourceBuffer, 'updateend', 'Append ended of remainder of media segment.');
+                  sourceBuffer.appendBuffer(mediaSegmentRemainder);
+              });
+
+              test.waitForExpectedEvents(function()
+              {
+                  assert_false(sourceBuffer.updating, 'updating attribute is false');
+                  assert_equals(sourceBuffer.mode, 'segments');
+                  sourceBuffer.mode = 'segments';  // No exception should occur.
+                  test.done();
+              });
+          }, 'Test setting SourceBuffer.mode while parsing media segment.');
+
+          // FIXME: Once 'sequence' mode implemented, add verification. See http://crbug.com/249422.
         </script>
     </body>
 </html>

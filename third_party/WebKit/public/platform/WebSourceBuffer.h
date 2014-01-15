@@ -43,10 +43,7 @@ public:
     };
 
     virtual ~WebSourceBuffer() { }
-
-    // FIXME: Remove default implementation once Chromium setMode() implementation has landed. See http://crbug.com/249422.
-    virtual bool setMode(AppendMode) { return true; }
-
+    virtual bool setMode(AppendMode) = 0;
     virtual WebTimeRanges buffered() = 0;
     virtual void append(const unsigned char* data, unsigned length) = 0;
     virtual void abort() = 0;
