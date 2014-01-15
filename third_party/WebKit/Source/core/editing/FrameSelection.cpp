@@ -1253,11 +1253,7 @@ bool FrameSelection::recomputeCaretRect()
     if (!shouldUpdateCaretRect())
         return false;
 
-    if (!m_frame)
-        return false;
-
-    FrameView* v = m_frame->document()->view();
-    if (!v)
+    if (!m_frame || !m_frame->document()->view())
         return false;
 
     LayoutRect oldRect = localCaretRectWithoutUpdate();
@@ -1273,9 +1269,9 @@ bool FrameSelection::recomputeCaretRect()
         return false;
 
     if (RenderView* view = m_frame->document()->renderView()) {
-        Node* node = m_selection.start().deprecatedNode();
-        if (m_previousCaretNode)
+        if (m_previousCaretNode && shouldRepaintCaret(view, m_previousCaretNode->isContentEditable()))
             repaintCaretForLocalRect(m_previousCaretNode.get(), oldRect);
+        Node* node = m_selection.start().deprecatedNode();
         m_previousCaretNode = node;
         if (shouldRepaintCaret(view, isContentEditable()))
             repaintCaretForLocalRect(node, newRect);
