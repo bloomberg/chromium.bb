@@ -58,6 +58,9 @@ scoped_ptr<InputMethod> CreateInputMethod(
 }
 
 void SetUpInputMethodFactoryForTesting() {
+  if (g_input_method_set_for_testing)
+    return;
+
   CHECK(!g_create_input_method_called)
       << "ui::SetUpInputMethodFactoryForTesting was called after use of "
       << "ui::CreateInputMethod.  You must call "
