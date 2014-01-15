@@ -5,6 +5,8 @@
 
 """Unittests for upload_symbols.py"""
 
+from __future__ import print_function
+
 import ctypes
 import logging
 import os
@@ -77,6 +79,27 @@ class UploadSymbolsTest(cros_test_lib.MockTempDirTestCase):
                                            sleep=0, upload_count=c)
         self.assertEquals(ret, 0)
         self.assertEqual(m.call_count, c)
+
+  def testFailedFileList(self):
+    """Verify the failed file list is populated with the right content"""
+    def UploadSymbol(*args, **kwargs):
+      kwargs['failed_queue'].put(args[0])
+      kwargs['num_errors'].value = 4
+    upload_symbols.UploadSymbol = mock.Mock(side_effect=UploadSymbol)
+    with parallel_unittest.ParallelMock():
+      failed_list = os.path.join(self.tempdir, 'list')
+      ret = upload_symbols.UploadSymbols('', breakpad_dir=self.tempdir, sleep=0,
+                                         retry=False, failed_list=failed_list)
+      self.assertEquals(ret, 4)
+
+      # Need to sort the output as parallel/fs discovery can be unordered.
+      got_list = sorted(osutils.ReadFile(failed_list).splitlines())
+      exp_list = [
+          'bar/real.sym',
+          'foo/real.sym',
+          'some/dir/here/real.sym',
+      ]
+      self.assertEquals(exp_list, got_list)
 
 
 class UploadSymbolTest(cros_test_lib.MockTempDirTestCase):

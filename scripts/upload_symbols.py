@@ -211,6 +211,8 @@ def UploadSymbol(sym_file, upload_url, file_limit=DEFAULT_FILE_LIMIT,
     num_errors = ctypes.c_int()
   if ErrorLimitHit(num_errors, watermark_errors):
     # Abandon ship!  It's on fire!  NOoooooooooooOOOoooooo.
+    if failed_queue:
+      failed_queue.put(sym_file)
     return 0
 
   upload_file = sym_file
@@ -296,7 +298,8 @@ def SymbolFinder(paths):
 
 def UploadSymbols(board=None, official=False, breakpad_dir=None,
                   file_limit=DEFAULT_FILE_LIMIT, sleep=DEFAULT_SLEEP_DELAY,
-                  upload_count=None, sym_paths=None, root=None, retry=True):
+                  upload_count=None, sym_paths=None, failed_list=None,
+                  root=None, retry=True):
   """Upload all the generated symbols for |board| to the crash server
 
   You can use in a few ways:
@@ -313,6 +316,8 @@ def UploadSymbols(board=None, official=False, breakpad_dir=None,
     upload_count: If set, only upload this many symbols (meant for testing)
     sym_paths: Specific symbol files (or dirs of sym files) to upload,
       otherwise search |breakpad_dir|
+    failed_list: Write the names of all sym files we did not upload; can be a
+      filename or file-like object.
     root: The tree to prefix to |breakpad_dir| (if |breakpad_dir| is not set)
     retry: Whether we should retry failures.
 
@@ -380,6 +385,16 @@ def UploadSymbols(board=None, official=False, breakpad_dir=None,
       # No failed symbols, so just return now.
       break
 
+  # If the user has requested it, save all the symbol files that we failed to
+  # upload to a listing file.  This should help with recovery efforts later on.
+  if failed_list:
+    with cros_build_lib.Open(failed_list, 'wb+') as f:
+      while not failed_queue.empty():
+        path = failed_queue.get()
+        if breakpad_dir:
+          path = os.path.relpath(path, breakpad_dir)
+        f.write('%s\n' % path)
+
   return bg_errors.value
 
 
@@ -400,6 +415,8 @@ def main(argv):
   parser.add_argument('--strip_cfi', type=int,
                       default=CRASH_SERVER_FILE_LIMIT - (10 * 1024 * 1024),
                       help='strip CFI data for files above this size')
+  parser.add_argument('--failed-list', type='path',
+                      help='where to save a list of failed symbols')
   parser.add_argument('--testing', action='store_true', default=False,
                       help='run in testing mode')
   parser.add_argument('--yes', action='store_true', default=False,
@@ -448,7 +465,8 @@ def main(argv):
   ret += UploadSymbols(opts.board, official=opts.official_build,
                        breakpad_dir=opts.breakpad_root,
                        file_limit=opts.strip_cfi, sleep=DEFAULT_SLEEP_DELAY,
-                       upload_count=opts.upload_count, sym_paths=opts.sym_paths)
+                       upload_count=opts.upload_count, sym_paths=opts.sym_paths,
+                       failed_list=opts.failed_list)
   if ret:
     cros_build_lib.Error('encountered %i problem(s)', ret)
     # Since exit(status) gets masked, clamp it to 1 so we don't inadvertently

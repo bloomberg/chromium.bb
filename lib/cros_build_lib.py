@@ -1218,10 +1218,10 @@ def PredicateSplit(func, iterable):
 
 
 @contextlib.contextmanager
-def _Open(input):
+def Open(input, mode='r'):
   """Convenience ctx that accepts a file path or an already open file object."""
   if isinstance(input, basestring):
-    with open(input) as f:
+    with open(input, mode=mode) as f:
       yield f
   else:
     yield input
@@ -1245,7 +1245,7 @@ def LoadKeyValueFile(input, ignore_missing=False, multiline=False):
   d = {}
 
   try:
-    with _Open(input) as f:
+    with Open(input) as f:
       key = None
       in_quotes = None
       for raw_line in f:
