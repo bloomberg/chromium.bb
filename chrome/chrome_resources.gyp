@@ -375,6 +375,9 @@
         {
           'includes': ['chrome_repack_chrome_200_percent.gypi']
         },
+        {
+          'includes': ['chrome_repack_chrome_touch_100_percent.gypi']
+        },
       ],
       'conditions': [
         ['OS != "ios"', {
