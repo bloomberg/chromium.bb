@@ -71,12 +71,8 @@ const Extension* GcmApiTest::LoadTestExtension(
 
 bool GcmApiTest::ShouldSkipTest() const {
   // TODO(jianli): Remove this once the GCM API enters stable.
-#if defined(OS_WIN)
   return chrome::VersionInfo::GetChannel() ==
       chrome::VersionInfo::CHANNEL_STABLE;
-#else
-  return false;
-#endif
 }
 
 IN_PROC_BROWSER_TEST_F(GcmApiTest, RegisterValidation) {
