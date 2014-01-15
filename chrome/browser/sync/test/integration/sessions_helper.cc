@@ -179,8 +179,8 @@ bool WaitForTabsToLoad(int index, const std::vector<GURL>& urls) {
         return false;
       }
       if (!found) {
-        if (!CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableSyncSessionsV2)) {
+        if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableSyncSessionsV2)) {
           ProfileSyncServiceFactory::GetForProfile(test()->GetProfile(index))->
               GetSessionModelAssociatorDeprecated()->
               BlockUntilLocalChangeForTest(TestTimeouts::action_max_timeout());
