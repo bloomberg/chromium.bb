@@ -197,6 +197,10 @@ html[dir=rtl] .pod .capslock-hint {
   visibility: visible;
 }
 
+.capslock-on .pod.focused .password {
+  padding: 4px 27px 4px 6px;
+}
+
 .action-box-area {
   -webkit-transition: opacity 100ms ease-in-out;
   background-color: white;
