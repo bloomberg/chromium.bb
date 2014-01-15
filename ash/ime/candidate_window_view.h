@@ -1,23 +1,24 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_CANDIDATE_WINDOW_VIEW_H_
-#define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_CANDIDATE_WINDOW_VIEW_H_
+#ifndef ASH_IME_CANDIDATE_WINDOW_VIEW_H_
+#define ASH_IME_CANDIDATE_WINDOW_VIEW_H_
 
+#include "ash/ash_export.h"
 #include "ui/base/ime/candidate_window.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
 
-namespace chromeos {
-namespace input_method {
+namespace ash {
+namespace ime {
 
 class CandidateView;
 class InformationTextArea;
 
 // CandidateWindowView is the main container of the candidate window UI.
-class CandidateWindowView : public views::BubbleDelegateView,
-                            public views::ButtonListener {
+class ASH_EXPORT CandidateWindowView : public views::BubbleDelegateView,
+                                       public views::ButtonListener {
  public:
   // The object can be monitored by the observer.
   class Observer {
@@ -127,7 +128,7 @@ class CandidateWindowView : public views::BubbleDelegateView,
   DISALLOW_COPY_AND_ASSIGN(CandidateWindowView);
 };
 
-}  // namespace input_method
-}  // namespace chromeos
+}  // namespace ime
+}  // namespace ash
 
-#endif  // CHROME_BROWSER_CHROMEOS_INPUT_METHOD_CANDIDATE_WINDOW_VIEW_H_
+#endif  // ASH_IME_CANDIDATE_WINDOW_VIEW_H_

@@ -9,6 +9,7 @@
 #include <vector>
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/base/ime/infolist_entry.h"
 #include "ui/base/ui_base_export.h"
 
 namespace ui {
@@ -62,6 +63,11 @@ class UI_BASE_EXPORT CandidateWindow {
   void SetProperty(const CandidateWindowProperty& property) {
     *property_ = property;
   }
+
+  // Gets the infolist entry models. Sets |has_highlighted| to true if |entries|
+  // contains highlighted entry.
+  void GetInfolistEntries(std::vector<InfolistEntry>* entries,
+                          bool* has_highlighted) const;
 
   // Returns the number of candidates in one page.
   uint32 page_size() const { return property_->page_size; }

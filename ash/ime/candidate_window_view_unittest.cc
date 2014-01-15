@@ -1,20 +1,20 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/input_method/candidate_window_view.h"
+#include "ash/ime/candidate_window_view.h"
 
 #include <string>
 
+#include "ash/ime/candidate_view.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chromeos/input_method/candidate_view.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 
-namespace chromeos {
-namespace input_method {
+namespace ash {
+namespace ime {
 
 namespace {
 const char* kSampleCandidate[] = {
@@ -379,5 +379,6 @@ TEST_F(CandidateWindowViewTest, DoNotChangeRowHeightWithLabelSwitchTest) {
   for (size_t i = 1; i < GetCandidatesSize(); ++i)
     EXPECT_EQ(before_height, GetCandidateAt(i)->GetContentsBounds().height());
 }
-}  // namespace input_method
-}  // namespace chromeos
+
+}  // namespace ime
+}  // namespace ash

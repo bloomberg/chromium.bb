@@ -582,6 +582,10 @@ Press Shift + Alt to switch.
         Press Control Shift Q twice to quit.
       </message>
 
+      <message name="IDS_ASH_IME_INFOLIST_WINDOW_TITLE" desc="The title of the infolist window where the meanings and the usages of words are displayed.">
+        Information
+      </message>
+
       <message name="IDS_ASH_LOGOUT_CONFIRMATION_TITLE" desc="Dialog title for the logout confirmation dialog.">
         Exiting Session
       </message>

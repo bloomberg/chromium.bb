@@ -7,13 +7,11 @@
 #include <string>
 #include <vector>
 
+#include "ash/ime/infolist_window.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/window_util.h"
 #include "base/logging.h"
-#include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chromeos/input_method/candidate_window_view.h"
-#include "chrome/browser/chromeos/input_method/infolist_window.h"
 #include "chrome/browser/chromeos/input_method/mode_indicator_controller.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
@@ -47,10 +45,11 @@ void CandidateWindowControllerImpl::InitCandidateWindowView() {
     return;
 
   aura::Window* active_window = ash::wm::GetActiveWindow();
-  candidate_window_view_ = new CandidateWindowView(ash::Shell::GetContainer(
-      active_window ?
-      active_window->GetRootWindow() : ash::Shell::GetTargetRootWindow(),
-      ash::internal::kShellWindowId_InputMethodContainer));
+  candidate_window_view_ =
+      new ash::ime::CandidateWindowView(ash::Shell::GetContainer(
+          active_window ?
+          active_window->GetRootWindow() : ash::Shell::GetTargetRootWindow(),
+          ash::internal::kShellWindowId_InputMethodContainer));
   candidate_window_view_->AddObserver(this);
   candidate_window_view_->SetCursorBounds(cursor_bounds_, composition_head_);
   views::Widget* widget = candidate_window_view_->InitWidget();
@@ -99,35 +98,6 @@ void CandidateWindowControllerImpl::FocusStateChanged(bool is_focused) {
   mode_indicator_controller_->FocusStateChanged(is_focused);
 }
 
-// static
-void CandidateWindowControllerImpl::ConvertLookupTableToInfolistEntry(
-    const ui::CandidateWindow& candidate_window,
-    std::vector<InfolistEntry>* infolist_entries,
-    bool* has_highlighted) {
-  DCHECK(infolist_entries);
-  DCHECK(has_highlighted);
-  infolist_entries->clear();
-  *has_highlighted = false;
-
-  const size_t cursor_index_in_page =
-      candidate_window.cursor_position() % candidate_window.page_size();
-
-  for (size_t i = 0; i < candidate_window.candidates().size(); ++i) {
-    const ui::CandidateWindow::Entry& ibus_entry =
-        candidate_window.candidates()[i];
-    if (ibus_entry.description_title.empty() &&
-        ibus_entry.description_body.empty())
-      continue;
-    InfolistEntry entry(base::UTF8ToUTF16(ibus_entry.description_title),
-                        base::UTF8ToUTF16(ibus_entry.description_body));
-    if (i == cursor_index_in_page) {
-      entry.highlighted = true;
-      *has_highlighted = true;
-    }
-    infolist_entries->push_back(entry);
-  }
-}
-
 void CandidateWindowControllerImpl::UpdateLookupTable(
     const ui::CandidateWindow& candidate_window,
     bool visible) {
@@ -148,9 +118,8 @@ void CandidateWindowControllerImpl::UpdateLookupTable(
   candidate_window_view_->ShowLookupTable();
 
   bool has_highlighted = false;
-  std::vector<InfolistEntry> infolist_entries;
-  ConvertLookupTableToInfolistEntry(candidate_window, &infolist_entries,
-                                    &has_highlighted);
+  std::vector<ui::InfolistEntry> infolist_entries;
+  candidate_window.GetInfolistEntries(&infolist_entries, &has_highlighted);
 
   // If there is no change, just return.
   if (latest_infolist_entries_ == infolist_entries)
@@ -174,7 +143,7 @@ void CandidateWindowControllerImpl::UpdateLookupTable(
   if (infolist_window_) {
     infolist_window_->Relayout(infolist_entries);
   } else {
-    infolist_window_ = new InfolistWindow(
+    infolist_window_ = new ash::ime::InfolistWindow(
         candidate_window_view_, infolist_entries);
     infolist_window_->InitWidget();
     infolist_window_->GetWidget()->AddObserver(this);

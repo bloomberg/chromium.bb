@@ -7,20 +7,26 @@
 
 #include "chrome/browser/chromeos/input_method/candidate_window_controller.h"
 
+#include "ash/ime/candidate_window_view.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/chromeos/input_method/candidate_window_view.h"
-#include "chrome/browser/chromeos/input_method/infolist_window.h"
 #include "ui/base/ime/chromeos/ibus_bridge.h"
+#include "ui/base/ime/infolist_entry.h"
 #include "ui/views/widget/widget_observer.h"
 
-namespace views {
-class Widget;
-}  // namespace views
+namespace ash {
+namespace ime {
+class InfolistWindow;
+}  // namespace ime
+}  // namespace ash
 
 namespace ui {
 class CandidateWindow;
 }  // namespace ui
+
+namespace views {
+class Widget;
+}  // namespace views
 
 namespace chromeos {
 namespace input_method {
@@ -32,7 +38,7 @@ class ModeIndicatorController;
 // CandidateWindowController controls the CandidateWindow.
 class CandidateWindowControllerImpl
     : public CandidateWindowController,
-      public CandidateWindowView::Observer,
+      public ash::ime::CandidateWindowView::Observer,
       public views::WidgetObserver,
       public IBusPanelCandidateWindowHandlerInterface {
  public:
@@ -47,16 +53,13 @@ class CandidateWindowControllerImpl
   virtual void Hide() OVERRIDE;
 
  protected:
-  // Converts |candidate_window| to infolist entry models. Sets
-  // |has_highlighted| to true if infolist_entries contains highlighted entry.
-  // TODO(mukai): move this method (and tests) to the new InfolistEntry model.
   static void ConvertLookupTableToInfolistEntry(
       const ui::CandidateWindow& candidate_window,
-      std::vector<InfolistEntry>* infolist_entries,
+      std::vector<ui::InfolistEntry>* infolist_entries,
       bool* has_highlighted);
 
  private:
-  // CandidateWindowView::Observer implementation.
+  // ash::ime::CandidateWindowView::Observer implementation.
   virtual void OnCandidateCommitted(int index) OVERRIDE;
 
   // views::WidgetObserver implementation.
@@ -75,10 +78,10 @@ class CandidateWindowControllerImpl
   void InitCandidateWindowView();
 
   // The candidate window view.
-  CandidateWindowView* candidate_window_view_;
+  ash::ime::CandidateWindowView* candidate_window_view_;
 
   // This is the outer frame of the infolist window view. Owned by the widget.
-  InfolistWindow* infolist_window_;
+  ash::ime::InfolistWindow* infolist_window_;
 
   gfx::Rect cursor_bounds_;
   gfx::Rect composition_head_;
@@ -88,7 +91,7 @@ class CandidateWindowControllerImpl
 
   // The infolist entries and its focused index which currently shown in
   // Infolist window.
-  std::vector<InfolistEntry> latest_infolist_entries_;
+  std::vector<ui::InfolistEntry> latest_infolist_entries_;
 
   ObserverList<CandidateWindowController::Observer> observers_;
 

@@ -1,12 +1,12 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_CANDIDATE_WINDOW_CONSTANTS_H_
-#define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_CANDIDATE_WINDOW_CONSTANTS_H_
+#ifndef ASH_IME_CANDIDATE_WINDOW_CONSTANTS_H_
+#define ASH_IME_CANDIDATE_WINDOW_CONSTANTS_H_
 
-namespace chromeos {
-namespace input_method {
+namespace ash {
+namespace ime {
 
 // We'll use a bigger font size, so Chinese characters are more readable
 // in the candidate window.
@@ -36,7 +36,7 @@ const int kInfolistIndicatorIconWidth = 4;
 // The padding size of the infolist indicator icon in the candidate window.
 const int kInfolistIndicatorIconPadding = 2;
 
-}  // namespace input_method
-}  // namespace chromeos
+}  // namespace ime
+}  // namespace ash
 
-#endif  // CHROME_BROWSER_CHROMEOS_INPUT_METHOD_CANDIDATE_WINDOW_CONSTANTS_H_
+#endif  // ASH_IME_CANDIDATE_WINDOW_CONSTANTS_H_

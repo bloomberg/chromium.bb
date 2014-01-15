@@ -4,11 +4,14 @@
 
 #include "chrome/browser/chromeos/input_method/mode_indicator_controller.h"
 
+#include "ash/ime/mode_indicator_view.h"
+#include "ash/shell.h"
+#include "ash/shell_window_ids.h"
+#include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
-#include "chrome/browser/chromeos/input_method/mode_indicator_delegate_view.h"
 #include "chromeos/chromeos_switches.h"
 
 namespace chromeos {
@@ -115,16 +118,19 @@ void ModeIndicatorController::ShowModeIndicator() {
   const base::string16 short_name =
       imm_->GetInputMethodUtil()->GetInputMethodShortName(descriptor);
 
-  ModeIndicatorDelegateView* mi_delegate_view =
-      new ModeIndicatorDelegateView(cursor_bounds_, short_name);
-  views::BubbleDelegateView::CreateBubble(mi_delegate_view);
+  aura::Window* parent = ash::Shell::GetContainer(
+      ash::wm::GetActiveWindow()->GetRootWindow(),
+      ash::internal::kShellWindowId_InputMethodContainer);
+  ash::ime::ModeIndicatorView* mi_view = new ash::ime::ModeIndicatorView(
+      parent, cursor_bounds_, short_name);
+  views::BubbleDelegateView::CreateBubble(mi_view);
 
-  views::Widget* mi_widget = mi_delegate_view->GetWidget();
+  views::Widget* mi_widget = mi_view->GetWidget();
   if (GetModeIndicatorObserverForTesting())
     GetModeIndicatorObserverForTesting()->AddModeIndicatorWidget(mi_widget);
 
   mi_observer_->AddModeIndicatorWidget(mi_widget);
-  mi_delegate_view->ShowAndFadeOut();
+  mi_view->ShowAndFadeOut();
 }
 
 }  // namespace input_method

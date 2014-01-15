@@ -26,6 +26,8 @@
     'composition_underline.h',
     'dummy_input_method_delegate.cc',
     'dummy_input_method_delegate.h',
+    'infolist_entry.cc',
+    'infolist_entry.h',
     'input_method.h',
     'input_method_base.cc',
     'input_method_base.h',

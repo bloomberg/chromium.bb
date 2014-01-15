@@ -6,6 +6,7 @@
 
 #include <string>
 #include "base/logging.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 
 namespace ui {
@@ -52,6 +53,32 @@ void CandidateWindow::CopyFrom(const CandidateWindow& cw) {
   candidates_ = cw.candidates_;
 }
 
+
+void CandidateWindow::GetInfolistEntries(
+    std::vector<ui::InfolistEntry>* infolist_entries,
+    bool* has_highlighted) const {
+  DCHECK(infolist_entries);
+  DCHECK(has_highlighted);
+  infolist_entries->clear();
+  *has_highlighted = false;
+
+  const size_t cursor_index_in_page = cursor_position() % page_size();
+
+  for (size_t i = 0; i < candidates().size(); ++i) {
+    const CandidateWindow::Entry& candidate_entry = candidates()[i];
+    if (candidate_entry.description_title.empty() &&
+        candidate_entry.description_body.empty())
+      continue;
+
+    InfolistEntry entry(base::UTF8ToUTF16(candidate_entry.description_title),
+                        base::UTF8ToUTF16(candidate_entry.description_body));
+    if (i == cursor_index_in_page) {
+      entry.highlighted = true;
+      *has_highlighted = true;
+    }
+    infolist_entries->push_back(entry);
+  }
+}
 
 // When the default values are changed, please modify
 // InputMethodEngineInterface::CandidateWindowProperty too.

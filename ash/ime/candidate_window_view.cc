@@ -1,13 +1,14 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#include "chrome/browser/chromeos/input_method/candidate_window_view.h"
+
+#include "ash/ime/candidate_window_view.h"
 
 #include <string>
 
+#include "ash/ime/candidate_view.h"
+#include "ash/ime/candidate_window_constants.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chromeos/input_method/candidate_view.h"
-#include "chrome/browser/chromeos/input_method/candidate_window_constants.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/screen.h"
 #include "ui/native_theme/native_theme.h"
@@ -19,8 +20,8 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 
-namespace chromeos {
-namespace input_method {
+namespace ash {
+namespace ime {
 
 namespace {
 
@@ -398,5 +399,5 @@ void CandidateWindowView::ButtonPressed(views::Button* sender,
   }
 }
 
-}  // namespace input_method
-}  // namespace chromeos
+}  // namespace ime
+}  // namespace ash

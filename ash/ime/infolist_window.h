@@ -1,46 +1,36 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_INFOLIST_WINDOW_H_
-#define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_INFOLIST_WINDOW_H_
+#ifndef ASH_IME_INFOLIST_WINDOW_H_
+#define ASH_IME_INFOLIST_WINDOW_H_
 
 #include <string>
 #include <vector>
 
+#include "ash/ash_export.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
+#include "ui/base/ime/infolist_entry.h"
 #include "ui/gfx/font_list.h"
 #include "ui/views/bubble/bubble_delegate.h"
 
-namespace chromeos {
-namespace input_method {
+namespace ash {
+namespace ime {
 
 class InfolistEntryView;
 
-// TODO(mukai): move this model to another place, src/chromeos/ime or
-// src/ui/base/ime.
-struct InfolistEntry {
-  base::string16 title;
-  base::string16 body;
-  bool highlighted;
-
-  InfolistEntry(const base::string16& title, const base::string16& body);
-  bool operator==(const InfolistEntry& entry) const;
-  bool operator!=(const InfolistEntry& entry) const;
-};
-
 // A widget delegate representing the infolist window UI.
-class InfolistWindow : public views::BubbleDelegateView {
+class ASH_EXPORT InfolistWindow : public views::BubbleDelegateView {
  public:
   InfolistWindow(views::View* candidate_window,
-                 const std::vector<InfolistEntry>& entries);
+                 const std::vector<ui::InfolistEntry>& entries);
   virtual ~InfolistWindow();
   void InitWidget();
 
   // Updates infolist contents with |entries|.
-  void Relayout(const std::vector<InfolistEntry>& entries);
+  void Relayout(const std::vector<ui::InfolistEntry>& entries);
 
   // Show/hide itself with a delay.
   void ShowWithDelay();
@@ -68,7 +58,7 @@ class InfolistWindow : public views::BubbleDelegateView {
   DISALLOW_COPY_AND_ASSIGN(InfolistWindow);
 };
 
-}  // namespace input_method
-}  // namespace chromeos
+}  // namespace ime
+}  // namespace ash
 
-#endif  // CHROME_BROWSER_CHROMEOS_INPUT_METHOD_INFOLIST_WINDOW_H_
+#endif  // ASH_IME_INFOLIST_WINDOW_H_

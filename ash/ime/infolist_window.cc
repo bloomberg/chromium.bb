@@ -1,15 +1,15 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/input_method/infolist_window.h"
+#include "ash/ime/infolist_window.h"
 
 #include <string>
 #include <vector>
 
+#include "ash/ime/candidate_window_constants.h"
 #include "base/logging.h"
-#include "chrome/browser/chromeos/input_method/candidate_window_constants.h"
-#include "grit/generated_resources.h"
+#include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/font.h"
@@ -23,8 +23,8 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 
-namespace chromeos {
-namespace input_method {
+namespace ash {
+namespace ime {
 
 namespace {
 // The width of an info-list.
@@ -86,12 +86,12 @@ gfx::Insets InfolistBorder::GetInsets() const {
 // InfolistRow renderes a row of a infolist.
 class InfolistEntryView : public views::View {
  public:
-  InfolistEntryView(const InfolistEntry& entry,
+  InfolistEntryView(const ui::InfolistEntry& entry,
                     const gfx::FontList& title_font,
                     const gfx::FontList& description_font);
   virtual ~InfolistEntryView();
 
-  void SetEntry(const InfolistEntry& entry);
+  void SetEntry(const ui::InfolistEntry& entry);
 
  private:
   // views::View implementation.
@@ -99,7 +99,7 @@ class InfolistEntryView : public views::View {
 
   void UpdateBackground();
 
-  InfolistEntry entry_;
+  ui::InfolistEntry entry_;
 
   // The title label. Owned by views hierarchy.
   views::Label* title_label_;
@@ -110,7 +110,7 @@ class InfolistEntryView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(InfolistEntryView);
 };
 
-InfolistEntryView::InfolistEntryView(const InfolistEntry& entry,
+InfolistEntryView::InfolistEntryView(const ui::InfolistEntry& entry,
                                      const gfx::FontList& title_font,
                                      const gfx::FontList& description_font)
     : entry_(entry) {
@@ -138,7 +138,7 @@ InfolistEntryView::InfolistEntryView(const InfolistEntry& entry,
 
 InfolistEntryView::~InfolistEntryView() {}
 
-void InfolistEntryView::SetEntry(const InfolistEntry& entry) {
+void InfolistEntryView::SetEntry(const ui::InfolistEntry& entry) {
   if (entry_ == entry)
     return;
 
@@ -168,26 +168,10 @@ void InfolistEntryView::UpdateBackground() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// InfolistEntry model
-
-InfolistEntry::InfolistEntry(const base::string16& title,
-                             const base::string16& body)
-    : title(title), body(body), highlighted(false) {}
-
-bool InfolistEntry::operator==(const InfolistEntry& other) const {
-  return title == other.title && body == other.body &&
-      highlighted == other.highlighted;
-}
-
-bool InfolistEntry::operator!=(const InfolistEntry& other) const {
-  return !(*this == other);
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // InfolistWindow
 
 InfolistWindow::InfolistWindow(views::View* candidate_window,
-                               const std::vector<InfolistEntry>& entries)
+                               const std::vector<ui::InfolistEntry>& entries)
     : views::BubbleDelegateView(candidate_window, views::BubbleBorder::NONE),
       title_font_(gfx::Font(kJapaneseFontName, kFontSizeDelta + 15)),
       description_font_(gfx::Font(kJapaneseFontName, kFontSizeDelta + 11)) {
@@ -204,7 +188,7 @@ InfolistWindow::InfolistWindow(views::View* candidate_window,
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
 
   views::Label* caption_label = new views::Label(
-      l10n_util::GetStringUTF16(IDS_INPUT_METHOD_INFOLIST_WINDOW_TITLE));
+      l10n_util::GetStringUTF16(IDS_ASH_IME_INFOLIST_WINDOW_TITLE));
   caption_label->SetFontList(
       caption_label->font_list().DeriveFontList(kFontSizeDelta - 2));
   caption_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -240,7 +224,7 @@ void InfolistWindow::InitWidget() {
   SizeToContents();
 }
 
-void InfolistWindow::Relayout(const std::vector<InfolistEntry>& entries) {
+void InfolistWindow::Relayout(const std::vector<ui::InfolistEntry>& entries) {
   size_t i = 0;
   for (; i < entries.size(); ++i) {
     if (i < entry_views_.size()) {
@@ -294,5 +278,5 @@ void InfolistWindow::WindowClosing() {
   show_hide_timer_.Stop();
 }
 
-}  // namespace input_method
-}  // namespace chromeos
+}  // namespace ime
+}  // namespace ash

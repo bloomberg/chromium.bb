@@ -1,21 +1,22 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_CANDIDATE_VIEW_H_
-#define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_CANDIDATE_VIEW_H_
+#ifndef ASH_IME_CANDIDATE_VIEW_H_
+#define ASH_IME_CANDIDATE_VIEW_H_
 
+#include "ash/ash_export.h"
 #include "base/gtest_prod_util.h"
 #include "ui/base/ime/candidate_window.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/view.h"
 
-namespace chromeos {
-namespace input_method {
+namespace ash {
+namespace ime {
 
 // CandidateView renderes a row of a candidate.
-class CandidateView : public views::CustomButton {
+class ASH_EXPORT CandidateView : public views::CustomButton {
  public:
   CandidateView(views::ButtonListener* listener,
                 ui::CandidateWindow::Orientation orientation);
@@ -66,7 +67,7 @@ class CandidateView : public views::CustomButton {
   DISALLOW_COPY_AND_ASSIGN(CandidateView);
 };
 
-}  // namespace input_method
-}  // namespace chromeos
+}  // namespace ime
+}  // namespace ash
 
-#endif  // CHROME_BROWSER_CHROMEOS_INPUT_METHOD_CANDIDATE_VIEW_H_
+#endif  // ASH_IME_CANDIDATE_VIEW_H_
