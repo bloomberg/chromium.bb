@@ -298,6 +298,7 @@ void OpusAudioDecoder::Read(const ReadCB& read_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!read_cb.is_null());
   CHECK(read_cb_.is_null()) << "Overlapping decodes are not supported.";
+  DCHECK(stop_cb_.is_null());
   read_cb_ = BindToCurrentLoop(read_cb);
 
   ReadFromDemuxerStream();
@@ -320,17 +321,51 @@ int OpusAudioDecoder::samples_per_second() {
 
 void OpusAudioDecoder::Reset(const base::Closure& closure) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  base::Closure reset_cb = BindToCurrentLoop(closure);
+  reset_cb_ = BindToCurrentLoop(closure);
+
+  // A demuxer read is pending, we'll wait until it finishes.
+  if (!read_cb_.is_null())
+    return;
+
+  DoReset();
+}
+
+void OpusAudioDecoder::Stop(const base::Closure& closure) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  stop_cb_ = BindToCurrentLoop(closure);
+
+  // A demuxer read is pending, we'll wait until it finishes.
+  if (!read_cb_.is_null())
+    return;
+
+  if (!reset_cb_.is_null()) {
+    DoReset();
+    return;
+  }
+
+  DoStop();
+}
+
+OpusAudioDecoder::~OpusAudioDecoder() {}
+
+void OpusAudioDecoder::DoReset() {
+  DCHECK(!reset_cb_.is_null());
 
   opus_multistream_decoder_ctl(opus_decoder_, OPUS_RESET_STATE);
   ResetTimestampState();
-  reset_cb.Run();
+  base::ResetAndReturn(&reset_cb_).Run();
+
+  if (!stop_cb_.is_null())
+    DoStop();
 }
 
-OpusAudioDecoder::~OpusAudioDecoder() {
-  // TODO(scherkus): should we require Stop() to be called? this might end up
-  // getting called on a random thread due to refcounting.
+void OpusAudioDecoder::DoStop() {
+  DCHECK(!stop_cb_.is_null());
+
+  opus_multistream_decoder_ctl(opus_decoder_, OPUS_RESET_STATE);
+  ResetTimestampState();
   CloseDecoder();
+  base::ResetAndReturn(&stop_cb_).Run();
 }
 
 void OpusAudioDecoder::ReadFromDemuxerStream() {
@@ -344,6 +379,22 @@ void OpusAudioDecoder::BufferReady(
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!read_cb_.is_null());
   DCHECK_EQ(status != DemuxerStream::kOk, !input.get()) << status;
+
+  // Drop the buffer, fire |read_cb_| and complete the pending Reset().
+  // If there happens to also be a pending Stop(), that will be handled at
+  // the end of DoReset().
+  if (!reset_cb_.is_null()) {
+    base::ResetAndReturn(&read_cb_).Run(kAborted, NULL);
+    DoReset();
+    return;
+  }
+
+  // Drop the buffer, fire |read_cb_| and complete the pending Stop().
+  if (!stop_cb_.is_null()) {
+    base::ResetAndReturn(&read_cb_).Run(kAborted, NULL);
+    DoStop();
+    return;
+  }
 
   if (status == DemuxerStream::kAborted) {
     DCHECK(!input.get());

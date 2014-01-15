@@ -46,7 +46,8 @@ class AudioRendererImplTest : public ::testing::Test {
  public:
   // Give the decoder some non-garbage media properties.
   AudioRendererImplTest()
-      : demuxer_stream_(DemuxerStream::AUDIO),
+      : needs_stop_(true),
+        demuxer_stream_(DemuxerStream::AUDIO),
         decoder_(new MockAudioDecoder()) {
     AudioDecoderConfig audio_config(kCodec,
                                     kSampleFormat,
@@ -63,6 +64,9 @@ class AudioRendererImplTest : public ::testing::Test {
 
     EXPECT_CALL(*decoder_, Reset(_))
         .WillRepeatedly(Invoke(this, &AudioRendererImplTest::ResetDecoder));
+
+    EXPECT_CALL(*decoder_, Stop(_))
+        .WillRepeatedly(Invoke(this, &AudioRendererImplTest::StopDecoder));
 
     // Set up audio properties.
     EXPECT_CALL(*decoder_, bits_per_channel())
@@ -88,9 +92,11 @@ class AudioRendererImplTest : public ::testing::Test {
 
   virtual ~AudioRendererImplTest() {
     SCOPED_TRACE("~AudioRendererImplTest()");
-    WaitableMessageLoopEvent event;
-    renderer_->Stop(event.GetClosure());
-    event.RunAndWait();
+    if (needs_stop_) {
+      WaitableMessageLoopEvent event;
+      renderer_->Stop(event.GetClosure());
+      event.RunAndWait();
+    }
   }
 
   void ExpectUnsupportedAudioDecoder() {
@@ -376,6 +382,10 @@ class AudioRendererImplTest : public ::testing::Test {
   scoped_ptr<AudioRendererImpl> renderer_;
   scoped_refptr<FakeAudioRendererSink> sink_;
 
+  // Whether or not the test needs the destructor to call Stop() on
+  // |renderer_| at destruction.
+  bool needs_stop_;
+
  private:
   TimeTicks GetTime() {
     base::AutoLock auto_lock(lock_);
@@ -404,6 +414,10 @@ class AudioRendererImplTest : public ::testing::Test {
         << "Reset overlapping with reads is not permitted";
 
     message_loop_.PostTask(FROM_HERE, reset_cb);
+  }
+
+  void StopDecoder(const base::Closure& stop_cb) {
+    message_loop_.PostTask(FROM_HERE, stop_cb);
   }
 
   void DeliverBuffer(AudioDecoder::Status status,
@@ -769,7 +783,6 @@ TEST_F(AudioRendererImplTest, PendingRead_Pause) {
   Preroll(1000, PIPELINE_OK);
 }
 
-
 TEST_F(AudioRendererImplTest, PendingRead_Flush) {
   Initialize();
 
@@ -798,7 +811,32 @@ TEST_F(AudioRendererImplTest, PendingRead_Flush) {
   Preroll(1000, PIPELINE_OK);
 }
 
-TEST_F(AudioRendererImplTest, StopDuringFlush) {
+TEST_F(AudioRendererImplTest, PendingRead_Stop) {
+  Initialize();
+
+  Preroll();
+  Play();
+
+  // Partially drain internal buffer so we get a pending read.
+  EXPECT_TRUE(ConsumeBufferedData(frames_buffered() / 2, NULL));
+  WaitForPendingRead();
+
+  Pause();
+
+  EXPECT_TRUE(IsReadPending());
+
+  WaitableMessageLoopEvent stop_event;
+  renderer_->Stop(stop_event.GetClosure());
+  needs_stop_ = false;
+
+  SatisfyPendingRead(kDataSize);
+
+  stop_event.RunAndWait();
+
+  EXPECT_FALSE(IsReadPending());
+}
+
+TEST_F(AudioRendererImplTest, PendingFlush_Stop) {
   Initialize();
 
   Preroll();
@@ -818,10 +856,10 @@ TEST_F(AudioRendererImplTest, StopDuringFlush) {
 
   SatisfyPendingRead(kDataSize);
 
-  // Request a Stop() before the flush completes.
-  WaitableMessageLoopEvent stop_event;
-  renderer_->Stop(stop_event.GetClosure());
-  stop_event.RunAndWait();
+  WaitableMessageLoopEvent event;
+  renderer_->Stop(event.GetClosure());
+  event.RunAndWait();
+  needs_stop_ = false;
 }
 
 }  // namespace media

@@ -28,14 +28,14 @@ class MEDIA_EXPORT AudioDecoder {
   AudioDecoder();
   virtual ~AudioDecoder();
 
-  // Initialize an AudioDecoder with the given DemuxerStream, executing the
+  // Initializes an AudioDecoder with the given DemuxerStream, executing the
   // callback upon completion.
   // statistics_cb is used to update global pipeline statistics.
   virtual void Initialize(DemuxerStream* stream,
                           const PipelineStatusCB& status_cb,
                           const StatisticsCB& statistics_cb) = 0;
 
-  // Request samples to be decoded and returned via the provided callback.
+  // Requests samples to be decoded and returned via the provided callback.
   // Only one read may be in flight at any given time.
   //
   // Implementations guarantee that the callback will not be called from within
@@ -49,8 +49,15 @@ class MEDIA_EXPORT AudioDecoder {
       ReadCB;
   virtual void Read(const ReadCB& read_cb) = 0;
 
-  // Reset decoder state, dropping any queued encoded data.
+  // Resets decoder state, dropping any queued encoded data.
   virtual void Reset(const base::Closure& closure) = 0;
+
+  // Stops decoder, fires any pending callbacks and sets the decoder to an
+  // uninitialized state. An AudioDecoder cannot be re-initialized after it has
+  // been stopped.
+  // Note that if Initialize() has been called, Stop() must be called and
+  // complete before deleting the decoder.
+  virtual void Stop(const base::Closure& closure) = 0;
 
   // Returns various information about the decoded audio format.
   virtual int bits_per_channel() = 0;

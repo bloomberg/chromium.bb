@@ -183,6 +183,9 @@ class MEDIA_EXPORT AudioRendererImpl
   // Called when the |decoder_|.Reset() has completed.
   void ResetDecoderDone();
 
+  // Called when the |decoder_|.Stop() has completed.
+  void StopDecoderDone();
+
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::WeakPtrFactory<AudioRendererImpl> weak_factory_;
   base::WeakPtr<AudioRendererImpl> weak_this_;
@@ -211,6 +214,7 @@ class MEDIA_EXPORT AudioRendererImpl
   base::Closure ended_cb_;
   base::Closure disabled_cb_;
   PipelineStatusCB error_cb_;
+  base::Closure stop_cb_;
 
   // Callback provided to Flush().
   base::Closure flush_cb_;

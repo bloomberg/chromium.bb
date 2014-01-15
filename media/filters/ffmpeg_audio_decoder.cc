@@ -115,6 +115,8 @@ void FFmpegAudioDecoder::Read(const ReadCB& read_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!read_cb.is_null());
   CHECK(read_cb_.is_null()) << "Overlapping decodes are not supported.";
+  DCHECK(reset_cb_.is_null());
+  DCHECK(stop_cb_.is_null());
 
   read_cb_ = BindToCurrentLoop(read_cb);
 
@@ -147,19 +149,32 @@ int FFmpegAudioDecoder::samples_per_second() {
 
 void FFmpegAudioDecoder::Reset(const base::Closure& closure) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  base::Closure reset_cb = BindToCurrentLoop(closure);
+  reset_cb_ = BindToCurrentLoop(closure);
 
-  avcodec_flush_buffers(codec_context_.get());
-  ResetTimestampState();
-  queued_audio_.clear();
-  reset_cb.Run();
+  // A demuxer read is pending, we'll wait until it finishes.
+  if (!read_cb_.is_null())
+    return;
+
+  DoReset();
 }
 
-FFmpegAudioDecoder::~FFmpegAudioDecoder() {
-  // TODO(scherkus): should we require Stop() to be called? this might end up
-  // getting called on a random thread due to refcounting.
-  ReleaseFFmpegResources();
+void FFmpegAudioDecoder::Stop(const base::Closure& closure) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  stop_cb_ = BindToCurrentLoop(closure);
+
+  // A demuxer read is pending, we'll wait until it finishes.
+  if (!read_cb_.is_null())
+    return;
+
+  if (!reset_cb_.is_null()) {
+    DoReset();
+    return;
+  }
+
+  DoStop();
 }
+
+FFmpegAudioDecoder::~FFmpegAudioDecoder() {}
 
 int FFmpegAudioDecoder::GetAudioBuffer(AVCodecContext* codec,
                                        AVFrame* frame,
@@ -226,6 +241,32 @@ int FFmpegAudioDecoder::GetAudioBuffer(AVCodecContext* codec,
   return 0;
 }
 
+void FFmpegAudioDecoder::DoStop() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(!stop_cb_.is_null());
+  DCHECK(read_cb_.is_null());
+  DCHECK(reset_cb_.is_null());
+
+  ResetTimestampState();
+  queued_audio_.clear();
+  ReleaseFFmpegResources();
+  base::ResetAndReturn(&stop_cb_).Run();
+}
+
+void FFmpegAudioDecoder::DoReset() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(!reset_cb_.is_null());
+  DCHECK(read_cb_.is_null());
+
+  avcodec_flush_buffers(codec_context_.get());
+  ResetTimestampState();
+  queued_audio_.clear();
+  base::ResetAndReturn(&reset_cb_).Run();
+
+  if (!stop_cb_.is_null())
+    DoStop();
+}
+
 void FFmpegAudioDecoder::ReadFromDemuxerStream() {
   DCHECK(!read_cb_.is_null());
   demuxer_stream_->Read(base::Bind(
@@ -239,6 +280,24 @@ void FFmpegAudioDecoder::BufferReady(
   DCHECK(!read_cb_.is_null());
   DCHECK(queued_audio_.empty());
   DCHECK_EQ(status != DemuxerStream::kOk, !input.get()) << status;
+
+  // Pending Reset: ignore the buffer we just got, send kAborted to |read_cb_|
+  // and carry out the Reset().
+  // If there happens to also be a pending Stop(), that will be handled at
+  // the end of DoReset().
+  if (!reset_cb_.is_null()) {
+    base::ResetAndReturn(&read_cb_).Run(kAborted, NULL);
+    DoReset();
+    return;
+  }
+
+  // Pending Stop: ignore the buffer we just got, send kAborted to |read_cb_|
+  // and carry out the Stop().
+  if (!stop_cb_.is_null()) {
+    base::ResetAndReturn(&read_cb_).Run(kAborted, NULL);
+    DoStop();
+    return;
+  }
 
   if (status == DemuxerStream::kAborted) {
     DCHECK(!input.get());

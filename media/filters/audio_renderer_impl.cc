@@ -147,8 +147,8 @@ void AudioRendererImpl::DoFlush_Locked() {
   DCHECK_EQ(state_, kPaused);
 
   if (decrypting_demuxer_stream_) {
-    decrypting_demuxer_stream_->Reset(BindToCurrentLoop(
-        base::Bind(&AudioRendererImpl::ResetDecoder, weak_this_)));
+    decrypting_demuxer_stream_->Reset(
+        base::Bind(&AudioRendererImpl::ResetDecoder, weak_this_));
     return;
   }
 
@@ -157,29 +157,50 @@ void AudioRendererImpl::DoFlush_Locked() {
 
 void AudioRendererImpl::ResetDecoder() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  decoder_->Reset(BindToCurrentLoop(
-      base::Bind(&AudioRendererImpl::ResetDecoderDone, weak_this_)));
+  decoder_->Reset(base::Bind(&AudioRendererImpl::ResetDecoderDone, weak_this_));
 }
 
 void AudioRendererImpl::ResetDecoderDone() {
-  base::AutoLock auto_lock(lock_);
-  if (state_ == kStopped)
-    return;
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  {
+    base::AutoLock auto_lock(lock_);
+    if (state_ == kStopped)
+      return;
 
-  DCHECK_EQ(state_, kPaused);
-  DCHECK(!flush_cb_.is_null());
+    DCHECK_EQ(state_, kPaused);
+    DCHECK(!flush_cb_.is_null());
 
-  audio_time_buffered_ = kNoTimestamp();
-  current_time_ = kNoTimestamp();
-  received_end_of_stream_ = false;
-  rendered_end_of_stream_ = false;
-  preroll_aborted_ = false;
+    audio_time_buffered_ = kNoTimestamp();
+    current_time_ = kNoTimestamp();
+    received_end_of_stream_ = false;
+    rendered_end_of_stream_ = false;
+    preroll_aborted_ = false;
 
-  earliest_end_time_ = now_cb_.Run();
-  splicer_->Reset();
-  algorithm_->FlushBuffers();
-
+    earliest_end_time_ = now_cb_.Run();
+    splicer_->Reset();
+    algorithm_->FlushBuffers();
+  }
   base::ResetAndReturn(&flush_cb_).Run();
+}
+
+void AudioRendererImpl::StopDecoderDone() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  {
+    base::AutoLock auto_lock(lock_);
+    if (state_ == kStopped)
+      return;
+
+    DCHECK(!stop_cb_.is_null());
+    DCHECK(init_cb_.is_null());
+
+    ChangeState_Locked(kStopped);
+    algorithm_.reset();
+    init_cb_.Reset();
+    underflow_cb_.Reset();
+    time_cb_.Reset();
+    flush_cb_.Reset();
+  }
+  base::ResetAndReturn(&stop_cb_).Run();
 }
 
 void AudioRendererImpl::Stop(const base::Closure& callback) {
@@ -194,17 +215,15 @@ void AudioRendererImpl::Stop(const base::Closure& callback) {
     sink_ = NULL;
   }
 
-  {
-    base::AutoLock auto_lock(lock_);
-    ChangeState_Locked(kStopped);
-    algorithm_.reset(NULL);
-    init_cb_.Reset();
-    underflow_cb_.Reset();
-    time_cb_.Reset();
-    flush_cb_.Reset();
+  stop_cb_ = callback;
+
+  if (decoder_) {
+    DCHECK(task_runner_->BelongsToCurrentThread());
+    decoder_->Stop(base::Bind(&AudioRendererImpl::StopDecoderDone, weak_this_));
+    return;
   }
 
-  callback.Run();
+  StopDecoderDone();
 }
 
 void AudioRendererImpl::Preroll(base::TimeDelta time,

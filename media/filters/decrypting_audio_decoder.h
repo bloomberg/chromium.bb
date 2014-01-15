@@ -48,6 +48,7 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
                           const StatisticsCB& statistics_cb) OVERRIDE;
   virtual void Read(const ReadCB& read_cb) OVERRIDE;
   virtual void Reset(const base::Closure& closure) OVERRIDE;
+  virtual void Stop(const base::Closure& closure) OVERRIDE;
   virtual int bits_per_channel() OVERRIDE;
   virtual ChannelLayout channel_layout() OVERRIDE;
   virtual int samples_per_second() OVERRIDE;
@@ -67,6 +68,7 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
     kPendingDecode,
     kWaitingForKey,
     kDecodeFinished,
+    kStopped,
   };
 
   // Callback for DecryptorHost::RequestDecryptor().
@@ -115,6 +117,7 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
   StatisticsCB statistics_cb_;
   ReadCB read_cb_;
   base::Closure reset_cb_;
+  base::Closure stop_cb_;
 
   // Pointer to the demuxer stream that will feed us compressed buffers.
   DemuxerStream* demuxer_stream_;
