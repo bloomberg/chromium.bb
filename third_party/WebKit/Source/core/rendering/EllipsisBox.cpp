@@ -70,8 +70,8 @@ void EllipsisBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, La
         DrawLooper drawLooper;
         for (size_t i = shadowList->shadows().size(); i--; ) {
             const ShadowData& shadow = shadowList->shadows()[i];
-            int shadowX = isHorizontal() ? shadow.x() : shadow.y();
-            int shadowY = isHorizontal() ? shadow.y() : -shadow.x();
+            float shadowX = isHorizontal() ? shadow.x() : shadow.y();
+            float shadowY = isHorizontal() ? shadow.y() : -shadow.x();
             FloatSize offset(shadowX, shadowY);
             drawLooper.addShadow(offset, shadow.blur(), m_renderer->resolveColor(shadow.color()),
                 DrawLooper::ShadowRespectsTransforms, DrawLooper::ShadowIgnoresAlpha);

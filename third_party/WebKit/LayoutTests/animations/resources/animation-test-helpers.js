@@ -310,8 +310,8 @@ function checkExpectedTransitionValue(expected, index)
                     // arbitrarily pick shadow-x and shadow-y
                     if (property == 'box-shadow' || property == 'text-shadow') {
                       var text = computedStyle[i].cssText;
-                      // Shadow cssText looks like "rgb(0, 0, 255) 0px -3px 10px 0px"
-                      var shadowPositionRegExp = /\)\s*(-?\d+)px\s*(-?\d+)px/;
+                      // Shadow cssText looks like "rgb(0, 0, 255) 0px -3px 10px 0px" and can be fractional.
+                      var shadowPositionRegExp = /\)\s*(-?[\d.]+)px\s*(-?[\d.]+)px/;
                       var match = shadowPositionRegExp.exec(text);
                       var shadowXY = [parseInt(match[1]), parseInt(match[2])];
                       values.push(shadowXY[0]);

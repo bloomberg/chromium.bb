@@ -400,8 +400,8 @@ static void paintTextWithShadows(GraphicsContext* context,
         DrawLooper drawLooper;
         for (size_t i = shadowList->shadows().size(); i--; ) {
             const ShadowData& shadow = shadowList->shadows()[i];
-            int shadowX = horizontal ? shadow.x() : shadow.y();
-            int shadowY = horizontal ? shadow.y() : -shadow.x();
+            float shadowX = horizontal ? shadow.x() : shadow.y();
+            float shadowY = horizontal ? shadow.y() : -shadow.x();
             FloatSize offset(shadowX, shadowY);
             drawLooper.addShadow(offset, shadow.blur(), renderer->resolveColor(shadow.color()),
                 DrawLooper::ShadowRespectsTransforms, DrawLooper::ShadowIgnoresAlpha);
@@ -1087,18 +1087,18 @@ void InlineTextBox::paintDecoration(GraphicsContext* context, const FloatPoint& 
     const float textDecorationThickness = std::max(1.f, styleToUse->computedFontSize() / 10.f);
     context->setStrokeThickness(textDecorationThickness);
 
-    int extraOffset = 0;
+    float extraOffset = 0;
     if (!linesAreOpaque && shadowCount > 1) {
         FloatRect clipRect(localOrigin, FloatSize(width, baseline + 2));
         for (size_t i = shadowCount; i--; ) {
             const ShadowData& s = shadowList->shadows()[i];
             FloatRect shadowRect(localOrigin, FloatSize(width, baseline + 2));
             shadowRect.inflate(s.blur());
-            int shadowX = isHorizontal() ? s.x() : s.y();
-            int shadowY = isHorizontal() ? s.y() : -s.x();
+            float shadowX = isHorizontal() ? s.x() : s.y();
+            float shadowY = isHorizontal() ? s.y() : -s.x();
             shadowRect.move(shadowX, shadowY);
             clipRect.unite(shadowRect);
-            extraOffset = max(extraOffset, max(0, shadowY) + s.blur());
+            extraOffset = max(extraOffset, max(0.0f, shadowY) + s.blur());
         }
         context->clip(clipRect);
         extraOffset += baseline + 2;
@@ -1114,8 +1114,8 @@ void InlineTextBox::paintDecoration(GraphicsContext* context, const FloatPoint& 
                 extraOffset = 0;
             }
             const ShadowData& shadow = shadowList->shadows()[i];
-            int shadowX = isHorizontal() ? shadow.x() : shadow.y();
-            int shadowY = isHorizontal() ? shadow.y() : -shadow.x();
+            float shadowX = isHorizontal() ? shadow.x() : shadow.y();
+            float shadowY = isHorizontal() ? shadow.y() : -shadow.x();
             context->setShadow(FloatSize(shadowX, shadowY - extraOffset), shadow.blur(), shadow.color());
         }
 

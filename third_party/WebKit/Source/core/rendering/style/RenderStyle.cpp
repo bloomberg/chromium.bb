@@ -1263,7 +1263,7 @@ void RenderStyle::getShadowExtent(const ShadowList* shadowList, LayoutUnit &top,
         const ShadowData& shadow = shadowList->shadows()[i];
         if (shadow.style() == Inset)
             continue;
-        int blurAndSpread = shadow.blur() + shadow.spread();
+        float blurAndSpread = shadow.blur() + shadow.spread();
 
         top = min<LayoutUnit>(top, shadow.y() - blurAndSpread);
         right = max<LayoutUnit>(right, shadow.x() + blurAndSpread);
@@ -1284,7 +1284,7 @@ LayoutBoxExtent RenderStyle::getShadowInsetExtent(const ShadowList* shadowList) 
         const ShadowData& shadow = shadowList->shadows()[i];
         if (shadow.style() == Normal)
             continue;
-        int blurAndSpread = shadow.blur() + shadow.spread();
+        float blurAndSpread = shadow.blur() + shadow.spread();
         top = max<LayoutUnit>(top, shadow.y() + blurAndSpread);
         right = min<LayoutUnit>(right, shadow.x() - blurAndSpread);
         bottom = min<LayoutUnit>(bottom, shadow.y() - blurAndSpread);
@@ -1304,7 +1304,7 @@ void RenderStyle::getShadowHorizontalExtent(const ShadowList* shadowList, Layout
         const ShadowData& shadow = shadowList->shadows()[i];
         if (shadow.style() == Inset)
             continue;
-        int blurAndSpread = shadow.blur() + shadow.spread();
+        float blurAndSpread = shadow.blur() + shadow.spread();
 
         left = min<LayoutUnit>(left, shadow.x() - blurAndSpread);
         right = max<LayoutUnit>(right, shadow.x() + blurAndSpread);
@@ -1321,7 +1321,7 @@ void RenderStyle::getShadowVerticalExtent(const ShadowList* shadowList, LayoutUn
         const ShadowData& shadow = shadowList->shadows()[i];
         if (shadow.style() == Inset)
             continue;
-        int blurAndSpread = shadow.blur() + shadow.spread();
+        float blurAndSpread = shadow.blur() + shadow.spread();
 
         top = min<LayoutUnit>(top, shadow.y() - blurAndSpread);
         bottom = max<LayoutUnit>(bottom, shadow.y() + blurAndSpread);

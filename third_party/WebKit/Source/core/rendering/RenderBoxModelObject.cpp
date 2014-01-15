@@ -2499,9 +2499,9 @@ void RenderBoxModelObject::paintBoxShadow(const PaintInfo& info, const LayoutRec
         if (shadow.style() != shadowStyle)
             continue;
 
-        IntSize shadowOffset(shadow.x(), shadow.y());
-        int shadowBlur = shadow.blur();
-        int shadowSpread = shadow.spread();
+        FloatSize shadowOffset(shadow.x(), shadow.y());
+        float shadowBlur = shadow.blur();
+        float shadowSpread = shadow.spread();
 
         if (shadowOffset.isZero() && !shadowBlur && !shadowSpread)
             continue;
@@ -2509,12 +2509,12 @@ void RenderBoxModelObject::paintBoxShadow(const PaintInfo& info, const LayoutRec
         const Color& shadowColor = resolveColor(shadow.color());
 
         if (shadow.style() == Normal) {
-            RoundedRect fillRect = border;
+            FloatRect fillRect = border.rect();
             fillRect.inflate(shadowSpread);
             if (fillRect.isEmpty())
                 continue;
 
-            IntRect shadowRect(border.rect());
+            FloatRect shadowRect(border.rect());
             shadowRect.inflate(shadowBlur + shadowSpread);
             shadowRect.move(shadowOffset);
 
@@ -2535,6 +2535,8 @@ void RenderBoxModelObject::paintBoxShadow(const PaintInfo& info, const LayoutRec
                         context->clipOutRoundedRect(rectToClipOut);
                     }
                 } else {
+                    // This IntRect is correct even with fractional shadows, because it is used for the rectangle
+                    // of the box itself, which is always pixel-aligned.
                     IntRect rectToClipOut = border.rect();
 
                     // If the box is opaque, it is unnecessary to clip it out. However, doing so saves time
@@ -2562,20 +2564,25 @@ void RenderBoxModelObject::paintBoxShadow(const PaintInfo& info, const LayoutRec
             context->setDrawLooper(drawLooper);
 
             if (hasBorderRadius) {
-                RoundedRect influenceRect(shadowRect, border.radii());
+                RoundedRect influenceRect(pixelSnappedIntRect(LayoutRect(shadowRect)), border.radii());
                 influenceRect.expandRadii(2 * shadowBlur + shadowSpread);
                 if (allCornersClippedOut(influenceRect, info.rect))
-                    context->fillRect(fillRect.rect(), Color::black);
+                    context->fillRect(fillRect, Color::black);
                 else {
-                    fillRect.expandRadii(shadowSpread);
-                    if (!fillRect.isRenderable())
-                        fillRect.adjustRadii();
-                    context->fillRoundedRect(fillRect, Color::black);
+                    // TODO: support non-integer shadows - crbug.com/334829
+                    RoundedRect roundedFillRect = border;
+                    roundedFillRect.inflate(shadowSpread);
+
+                    roundedFillRect.expandRadii(shadowSpread);
+                    if (!roundedFillRect.isRenderable())
+                        roundedFillRect.adjustRadii();
+                    context->fillRoundedRect(roundedFillRect, Color::black);
                 }
             } else {
-                context->fillRect(fillRect.rect(), Color::black);
+                context->fillRect(fillRect, Color::black);
             }
         } else {
+            // The inset shadow case.
             GraphicsContext::Edges clippedEdges = GraphicsContext::NoEdge;
             if (!includeLogicalLeftEdge) {
                 if (isHorizontal)
@@ -2589,7 +2596,8 @@ void RenderBoxModelObject::paintBoxShadow(const PaintInfo& info, const LayoutRec
                 else
                     clippedEdges |= GraphicsContext::BottomEdge;
             }
-            context->drawInnerShadow(border, shadowColor, shadowOffset, shadowBlur, shadowSpread, clippedEdges);
+            // TODO: support non-integer shadows - crbug.com/334828
+            context->drawInnerShadow(border, shadowColor, flooredIntSize(shadowOffset), shadowBlur, shadowSpread, clippedEdges);
         }
     }
 }

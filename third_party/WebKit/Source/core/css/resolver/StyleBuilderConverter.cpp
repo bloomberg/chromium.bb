@@ -136,10 +136,10 @@ PassRefPtr<ShadowList> StyleBuilderConverter::convertShadow(StyleResolverState& 
     ShadowDataVector shadows;
     for (size_t i = 0; i < shadowCount; ++i) {
         const CSSShadowValue* item = toCSSShadowValue(valueList->item(i));
-        int x = item->x->computeLength<int>(state.cssToLengthConversionData());
-        int y = item->y->computeLength<int>(state.cssToLengthConversionData());
-        int blur = item->blur ? item->blur->computeLength<int>(state.cssToLengthConversionData()) : 0;
-        int spread = item->spread ? item->spread->computeLength<int>(state.cssToLengthConversionData()) : 0;
+        float x = item->x->computeLength<float>(state.cssToLengthConversionData());
+        float y = item->y->computeLength<float>(state.cssToLengthConversionData());
+        float blur = item->blur ? item->blur->computeLength<float>(state.cssToLengthConversionData()) : 0;
+        float spread = item->spread ? item->spread->computeLength<float>(state.cssToLengthConversionData()) : 0;
         ShadowStyle shadowStyle = item->style && item->style->getValueID() == CSSValueInset ? Inset : Normal;
         Color color;
         if (item->color)
@@ -149,7 +149,7 @@ PassRefPtr<ShadowList> StyleBuilderConverter::convertShadow(StyleResolverState& 
 
         if (!color.isValid())
             color = Color::transparent;
-        shadows.append(ShadowData(IntPoint(x, y), blur, spread, shadowStyle, color));
+        shadows.append(ShadowData(FloatPoint(x, y), blur, spread, shadowStyle, color));
     }
     return ShadowList::adopt(shadows);
 }

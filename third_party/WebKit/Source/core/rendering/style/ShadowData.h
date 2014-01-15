@@ -25,7 +25,7 @@
 #ifndef ShadowData_h
 #define ShadowData_h
 
-#include "platform/geometry/IntPoint.h"
+#include "platform/geometry/FloatPoint.h"
 #include "platform/graphics/Color.h"
 
 namespace WebCore {
@@ -36,7 +36,7 @@ enum ShadowStyle { Normal, Inset };
 class ShadowData {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    ShadowData(const IntPoint& location, int blur, int spread, ShadowStyle style, const Color& color)
+    ShadowData(const FloatPoint& location, float blur, float spread, ShadowStyle style, const Color& color)
         : m_location(location)
         , m_blur(blur)
         , m_spread(spread)
@@ -50,18 +50,18 @@ public:
 
     ShadowData blend(const ShadowData& from, double progress) const;
 
-    int x() const { return m_location.x(); }
-    int y() const { return m_location.y(); }
-    IntPoint location() const { return m_location; }
-    int blur() const { return m_blur; }
-    int spread() const { return m_spread; }
+    float x() const { return m_location.x(); }
+    float y() const { return m_location.y(); }
+    FloatPoint location() const { return m_location; }
+    float blur() const { return m_blur; }
+    float spread() const { return m_spread; }
     ShadowStyle style() const { return m_style; }
     const Color& color() const { return m_color; }
 
 private:
-    IntPoint m_location;
-    int m_blur;
-    int m_spread;
+    FloatPoint m_location;
+    float m_blur;
+    float m_spread;
     Color m_color;
     ShadowStyle m_style;
 };

@@ -32,6 +32,7 @@
 #define ShadowList_h
 
 #include "core/rendering/style/ShadowData.h"
+#include "platform/geometry/LayoutRect.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
@@ -57,8 +58,8 @@ public:
 
     static PassRefPtr<ShadowList> blend(const ShadowList* from, const ShadowList* to, double progress);
 
-    void adjustRectForShadow(LayoutRect&, int additionalOutlineSize = 0) const;
-    void adjustRectForShadow(FloatRect&, int additionalOutlineSize = 0) const;
+    void adjustRectForShadow(LayoutRect&, float additionalOutlineSize = 0) const;
+    void adjustRectForShadow(FloatRect&, float additionalOutlineSize = 0) const;
 
 private:
     ShadowList(ShadowDataVector& shadows)

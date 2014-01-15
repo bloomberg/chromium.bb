@@ -41,7 +41,7 @@ ShadowData ShadowData::blend(const ShadowData& from, double progress) const
         return *this;
 
     return ShadowData(WebCore::blend(from.location(), location(), progress),
-        clampTo<int>(WebCore::blend(from.blur(), blur(), progress), 0),
+        clampTo(WebCore::blend(from.blur(), blur(), progress), 0.0f),
         WebCore::blend(from.spread(), spread(), progress),
         style(),
         WebCore::blend(from.color(), color(), progress));

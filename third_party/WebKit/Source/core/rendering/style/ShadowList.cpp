@@ -32,11 +32,10 @@
 #include "core/rendering/style/ShadowList.h"
 
 #include "platform/geometry/FloatRect.h"
-#include "platform/geometry/LayoutRect.h"
 
 namespace WebCore {
 
-static inline void calculateShadowExtent(const ShadowList* shadowList, int additionalOutlineSize, int& shadowLeft, int& shadowRight, int& shadowTop, int& shadowBottom)
+static inline void calculateShadowExtent(const ShadowList* shadowList, float additionalOutlineSize, float& shadowLeft, float& shadowRight, float& shadowTop, float& shadowBottom)
 {
     ASSERT(shadowList);
     size_t shadowCount = shadowList->shadows().size();
@@ -44,7 +43,7 @@ static inline void calculateShadowExtent(const ShadowList* shadowList, int addit
         const ShadowData& shadow = shadowList->shadows()[i];
         if (shadow.style() == Inset)
             continue;
-        int blurAndSpread = shadow.blur() + shadow.spread() + additionalOutlineSize;
+        float blurAndSpread = shadow.blur() + shadow.spread() + additionalOutlineSize;
         shadowLeft = std::min(shadow.x() - blurAndSpread, shadowLeft);
         shadowRight = std::max(shadow.x() + blurAndSpread, shadowRight);
         shadowTop = std::min(shadow.y() - blurAndSpread, shadowTop);
@@ -52,25 +51,19 @@ static inline void calculateShadowExtent(const ShadowList* shadowList, int addit
     }
 }
 
-void ShadowList::adjustRectForShadow(LayoutRect& rect, int additionalOutlineSize) const
+void ShadowList::adjustRectForShadow(LayoutRect& rect, float additionalOutlineSize) const
 {
-    int shadowLeft = 0;
-    int shadowRight = 0;
-    int shadowTop = 0;
-    int shadowBottom = 0;
-    calculateShadowExtent(this, additionalOutlineSize, shadowLeft, shadowRight, shadowTop, shadowBottom);
-
-    rect.move(shadowLeft, shadowTop);
-    rect.setWidth(rect.width() - shadowLeft + shadowRight);
-    rect.setHeight(rect.height() - shadowTop + shadowBottom);
+    FloatRect floatRect(rect);
+    adjustRectForShadow(floatRect);
+    rect = LayoutRect(floatRect);
 }
 
-void ShadowList::adjustRectForShadow(FloatRect& rect, int additionalOutlineSize) const
+void ShadowList::adjustRectForShadow(FloatRect& rect, float additionalOutlineSize) const
 {
-    int shadowLeft = 0;
-    int shadowRight = 0;
-    int shadowTop = 0;
-    int shadowBottom = 0;
+    float shadowLeft = 0;
+    float shadowRight = 0;
+    float shadowTop = 0;
+    float shadowBottom = 0;
     calculateShadowExtent(this, additionalOutlineSize, shadowLeft, shadowRight, shadowTop, shadowBottom);
 
     rect.move(shadowLeft, shadowTop);
@@ -87,8 +80,8 @@ PassRefPtr<ShadowList> ShadowList::blend(const ShadowList* from, const ShadowLis
 
     ShadowDataVector shadows;
 
-    DEFINE_STATIC_LOCAL(ShadowData, defaultShadowData, (IntPoint(), 0, 0, Normal, Color::transparent));
-    DEFINE_STATIC_LOCAL(ShadowData, defaultInsetShadowData, (IntPoint(), 0, 0, Inset, Color::transparent));
+    DEFINE_STATIC_LOCAL(ShadowData, defaultShadowData, (FloatPoint(), 0, 0, Normal, Color::transparent));
+    DEFINE_STATIC_LOCAL(ShadowData, defaultInsetShadowData, (FloatPoint(), 0, 0, Inset, Color::transparent));
 
     size_t maxLength = std::max(fromLength, toLength);
     for (size_t i = 0; i < maxLength; ++i) {
