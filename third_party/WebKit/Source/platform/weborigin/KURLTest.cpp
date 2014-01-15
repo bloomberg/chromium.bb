@@ -48,7 +48,6 @@ struct ComponentCase {
     const int port;
     const char* user;
     const char* pass;
-    const char* path;
     const char* lastPath;
     const char* query;
     const char* ref;
@@ -111,21 +110,21 @@ TEST(KURLTest, SameGetters)
 TEST(KURLTest, DISABLED_DifferentGetters)
 {
     ComponentCase cases[] = {
-        // url                                    protocol      host        port  user  pass    path                lastPath  query      ref
+        // url                                    protocol      host        port  user  pass             lastPath  query      ref
 
         // Old WebKit allows references and queries in what we call "path" URLs
         // like javascript, so the path here will only consist of "hello!".
-        {"javascript:hello!?#/\\world",           "javascript", "",         0,    "",   0,      "hello!?#/\\world", "world",  0,         0},
+        {"javascript:hello!?#/\\world",           "javascript", "",         0,    "",   0,               "world",  0,         0},
 
         // Old WebKit doesn't handle "parameters" in paths, so will
         // disagree with us about where the path is for this URL.
-        {"http://a.com/hello;world",              "http",       "a.com",    0,    "",   0,      "/hello;world",     "hello",  0,         0},
+        {"http://a.com/hello;world",              "http",       "a.com",    0,    "",   0,               "hello",  0,         0},
 
         // WebKit doesn't like UTF-8 or UTF-16 input.
-        {"http://\xe4\xbd\xa0\xe5\xa5\xbd\xe4\xbd\xa0\xe5\xa5\xbd/", "http", "xn--6qqa088eba", 0, "", 0, "/",       0,        0,         0},
+        {"http://\xe4\xbd\xa0\xe5\xa5\xbd\xe4\xbd\xa0\xe5\xa5\xbd/", "http", "xn--6qqa088eba", 0, "", 0, 0,        0,         0},
 
         // WebKit %-escapes non-ASCII characters in reference, but we don't.
-        {"http://www.google.com/foo/blah?bar=baz#\xce\xb1\xce\xb2", "http", "www.google.com", 0, "", 0, "/foo/blah/", "blah", "bar=baz", "\xce\xb1\xce\xb2"},
+        {"http://www.google.com/foo/blah?bar=baz#\xce\xb1\xce\xb2", "http", "www.google.com", 0, "", 0,  "blah", "bar=baz", "\xce\xb1\xce\xb2"},
     };
 
     for (size_t i = 0; i < arraysize(cases); i++) {
