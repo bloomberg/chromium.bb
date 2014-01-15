@@ -67,7 +67,6 @@ const char kPageReloadCommand[] = "Page.reload";
 const char kPageNavigateCommand[] = "Page.navigate";
 
 const char kChromeDefaultName[] = "Chrome";
-const char kChromeDefaultActivity[] = "com.google.android.apps.chrome.Main";
 const char kChromeDefaultSocket[] = "chrome_devtools_remote";
 const int kMinVersionNewWithURL = 32;
 const int kNewPageNavigateDelayMs = 500;
@@ -83,7 +82,6 @@ typedef base::Callback<void(const AndroidDevices&)> AndroidDevicesCallback;
 
 struct BrowserDescriptor {
   const char* package;
-  const char* launch_activity;
   const char* socket;
   const char* display_name;
 };
@@ -91,43 +89,36 @@ struct BrowserDescriptor {
 const BrowserDescriptor kBrowserDescriptors[] = {
   {
     "com.android.chrome",
-    kChromeDefaultActivity,
     kChromeDefaultSocket,
     kChromeDefaultName
   },
   {
     "com.chrome.beta",
-    kChromeDefaultActivity,
     kChromeDefaultSocket,
     "Chrome Beta"
   },
   {
     "com.google.android.apps.chrome_dev",
-    kChromeDefaultActivity,
     kChromeDefaultSocket,
     "Chrome Dev"
   },
   {
     "com.google.android.apps.chrome",
-    kChromeDefaultActivity,
     kChromeDefaultSocket,
     "Chromium"
   },
   {
     "org.chromium.content_shell_apk",
-    "org.chromium.content_shell_apk.ContentShellActivity",
     "content_shell_devtools_remote",
     "Content Shell"
   },
   {
     "org.chromium.chrome.testshell",
-    "org.chromium.chrome.testshell.ChromiumTestShellActivity",
     "chromium_testshell_devtools_remote",
     "Chromium Test Shell"
   },
   {
     "org.chromium.android_webview.shell",
-    "org.chromium.android_webview.shell.AwShellActivity",
     "webview_devtools_remote",
     "WebView Test Shell"
   }

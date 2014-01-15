@@ -354,10 +354,6 @@ class ExpandableContainerView : public views::View,
     views::GridLayout* layout_;
     double state_;
 
-    // Whether the parent item is showing bullets. This will determine how much
-    // extra indentation is needed.
-    bool parent_bulleted_;
-
     // Whether the detail text should be shown with a lighter color.
     bool lighter_color_;
 
@@ -369,9 +365,6 @@ class ExpandableContainerView : public views::View,
 
   // A view for showing |issue_advice.details|.
   DetailsView* details_view_;
-
-  // The '>' zippy control.
-  views::ImageView* arrow_view_;
 
   // The 'more details' link shown under the heading (changes to 'hide details'
   // when the details section is expanded).
@@ -1146,7 +1139,6 @@ ExpandableContainerView::DetailsView::DetailsView(int horizontal_space,
                                                   bool lighter_color)
     : layout_(new views::GridLayout(this)),
       state_(0),
-      parent_bulleted_(parent_bulleted),
       lighter_color_(lighter_color) {
   SetLayoutManager(layout_);
   views::ColumnSet* column_set = layout_->AddColumnSet(0);
@@ -1203,7 +1195,6 @@ ExpandableContainerView::ExpandableContainerView(
     bool lighter_color_details)
     : owner_(owner),
       details_view_(NULL),
-      arrow_view_(NULL),
       more_details_(NULL),
       slide_animation_(this),
       arrow_toggle_(NULL),

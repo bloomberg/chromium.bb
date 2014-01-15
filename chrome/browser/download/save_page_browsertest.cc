@@ -92,7 +92,6 @@ class DownloadPersistedObserver : public DownloadHistory::Observer {
 
  private:
   Profile* profile_;
-  DownloadItem* item_;
   PersistedFilter filter_;
   bool waiting_;
   bool persisted_;
