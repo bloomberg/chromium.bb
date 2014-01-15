@@ -119,6 +119,13 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   bool RemoveNativeMediaStreamTrack(const blink::WebMediaStream& stream,
                                     const blink::WebMediaStreamTrack& track);
 
+  // Asks the PeerConnection factory to create a Video Source.
+  // The video source takes ownership of |capturer|.
+  virtual scoped_refptr<webrtc::VideoSourceInterface>
+      CreateVideoSource(
+          cricket::VideoCapturer* capturer,
+          const webrtc::MediaConstraintsInterface* constraints);
+
   // Asks the libjingle PeerConnection factory to create a libjingle
   // PeerConnection object.
   // The PeerConnection object is owned by PeerConnectionHandler.

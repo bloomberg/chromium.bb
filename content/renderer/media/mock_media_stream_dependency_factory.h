@@ -11,10 +11,28 @@
 #include "base/compiler_specific.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediaconstraintsinterface.h"
+#include "third_party/libjingle/source/talk/media/base/videorenderer.h"
 
 namespace content {
 
 class WebAudioCapturerSource;
+
+class MockVideoRenderer : public cricket::VideoRenderer {
+ public:
+  MockVideoRenderer();
+  virtual ~MockVideoRenderer();
+  virtual bool SetSize(int width, int height, int reserved) OVERRIDE;
+  virtual bool RenderFrame(const cricket::VideoFrame* frame) OVERRIDE;
+
+  int width() const { return width_; }
+  int height() const { return height_; }
+  int num() const { return num_; }
+
+ private:
+  int width_;
+  int height_;
+  int num_;
+};
 
 class MockVideoSource : public webrtc::VideoSourceInterface {
  public:
@@ -36,6 +54,11 @@ class MockVideoSource : public webrtc::VideoSourceInterface {
   // Set the video capturer.
   void SetVideoCapturer(cricket::VideoCapturer* capturer);
 
+  // Test helpers.
+  int GetLastFrameWidth() const { return renderer_.width(); }
+  int GetLastFrameHeight() const { return renderer_.height(); }
+  int GetFrameNum() const { return renderer_.num(); }
+
  protected:
   virtual ~MockVideoSource();
 
@@ -45,6 +68,7 @@ class MockVideoSource : public webrtc::VideoSourceInterface {
   std::vector<webrtc::ObserverInterface*> observers_;
   MediaSourceInterface::SourceState state_;
   scoped_ptr<cricket::VideoCapturer> capturer_;
+  MockVideoRenderer renderer_;
 };
 
 class MockAudioSource : public webrtc::AudioSourceInterface {
@@ -127,6 +151,10 @@ class MockMediaStreamDependencyFactory : public MediaStreamDependencyFactory {
       CreateLocalVideoSource(
           int video_session_id,
           bool is_screencast,
+          const webrtc::MediaConstraintsInterface* constraints) OVERRIDE;
+  virtual scoped_refptr<webrtc::VideoSourceInterface>
+      CreateVideoSource(
+          cricket::VideoCapturer* capturer,
           const webrtc::MediaConstraintsInterface* constraints) OVERRIDE;
   virtual scoped_refptr<WebAudioCapturerSource> CreateWebAudioSource(
       blink::WebMediaStreamSource* source,

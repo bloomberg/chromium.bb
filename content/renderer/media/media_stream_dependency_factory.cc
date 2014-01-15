@@ -571,6 +571,15 @@ bool MediaStreamDependencyFactory::RemoveNativeMediaStreamTrack(
   return false;
 }
 
+scoped_refptr<webrtc::VideoSourceInterface>
+    MediaStreamDependencyFactory::CreateVideoSource(
+        cricket::VideoCapturer* capturer,
+        const webrtc::MediaConstraintsInterface* constraints) {
+  scoped_refptr<webrtc::VideoSourceInterface> source =
+      pc_factory_->CreateVideoSource(capturer, constraints).get();
+  return source;
+}
+
 bool MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
   DCHECK(!pc_factory_.get());
   DCHECK(!audio_device_.get());
@@ -691,7 +700,7 @@ MediaStreamDependencyFactory::CreateLocalVideoSource(
 
   // The video source takes ownership of |capturer|.
   scoped_refptr<webrtc::VideoSourceInterface> source =
-      pc_factory_->CreateVideoSource(capturer, constraints).get();
+      CreateVideoSource(capturer, constraints);
   return source;
 }
 
@@ -734,7 +743,7 @@ MediaStreamDependencyFactory::CreateLocalVideoTrack(
 
   // Create video source from the |capturer|.
   scoped_refptr<webrtc::VideoSourceInterface> source =
-      pc_factory_->CreateVideoSource(capturer, NULL).get();
+      CreateVideoSource(capturer, NULL);
 
   // Create native track from the source.
   return pc_factory_->CreateVideoTrack(id, source.get()).get();

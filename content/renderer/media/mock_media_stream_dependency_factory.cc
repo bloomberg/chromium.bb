@@ -115,6 +115,24 @@ class MockMediaStream : public webrtc::MediaStreamInterface {
   webrtc::ObserverInterface* observer_;
 };
 
+MockVideoRenderer::MockVideoRenderer()
+    : width_(0),
+      height_(0),
+      num_(0) {}
+
+MockVideoRenderer::~MockVideoRenderer() {}
+
+bool MockVideoRenderer::SetSize(int width, int height, int reserved) {
+  width_ = width;
+  height_ = height;
+  return true;
+}
+
+bool MockVideoRenderer::RenderFrame(const cricket::VideoFrame* frame) {
+  ++num_;
+  return true;
+}
+
 MockAudioSource::MockAudioSource(
     const webrtc::MediaConstraintsInterface* constraints)
     : observer_(NULL),
@@ -176,8 +194,7 @@ void MockVideoSource::RemoveSink(cricket::VideoRenderer* output) {
 }
 
 cricket::VideoRenderer* MockVideoSource::FrameInput() {
-  NOTIMPLEMENTED();
-  return NULL;
+  return &renderer_;
 }
 
 void MockVideoSource::RegisterObserver(webrtc::ObserverInterface* observer) {
@@ -404,6 +421,14 @@ scoped_refptr<webrtc::VideoSourceInterface>
 MockMediaStreamDependencyFactory::CreateLocalVideoSource(
     int video_session_id,
     bool is_screencast,
+    const webrtc::MediaConstraintsInterface* constraints) {
+  last_video_source_ = new talk_base::RefCountedObject<MockVideoSource>();
+  return last_video_source_;
+}
+
+scoped_refptr<webrtc::VideoSourceInterface>
+MockMediaStreamDependencyFactory::CreateVideoSource(
+    cricket::VideoCapturer* capturer,
     const webrtc::MediaConstraintsInterface* constraints) {
   last_video_source_ = new talk_base::RefCountedObject<MockVideoSource>();
   return last_video_source_;
