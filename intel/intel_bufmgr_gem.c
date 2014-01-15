@@ -212,6 +212,15 @@ struct _drm_intel_bo_gem {
 	bool reusable;
 
 	/**
+	 * Boolean of whether the GPU is definitely not accessing the buffer.
+	 *
+	 * This is only valid when reusable, since non-reusable
+	 * buffers are those that have been shared wth other
+	 * processes, so we don't know their state.
+	 */
+	bool idle;
+
+	/**
 	 * Size in bytes of this buffer and its relocation descendents.
 	 *
 	 * Used to avoid costly tree walking in
@@ -567,11 +576,19 @@ drm_intel_gem_bo_busy(drm_intel_bo *bo)
 	struct drm_i915_gem_busy busy;
 	int ret;
 
+	if (bo_gem->reusable && bo_gem->idle)
+		return false;
+
 	VG_CLEAR(busy);
 	busy.handle = bo_gem->gem_handle;
 
 	ret = drmIoctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_BUSY, &busy);
-
+	if (ret == 0) {
+		bo_gem->idle = !busy.busy;
+		return busy.busy;
+	} else {
+		return false;
+	}
 	return (ret == 0 && busy.busy);
 }
 
@@ -2219,6 +2236,8 @@ drm_intel_gem_bo_exec(drm_intel_bo *bo, int used,
 		drm_intel_bo *bo = bufmgr_gem->exec_bos[i];
 		drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
 
+		bo_gem->idle = false;
+
 		/* Disconnect the buffer from the validate list */
 		bo_gem->validate_index = -1;
 		bufmgr_gem->exec_bos[i] = NULL;
@@ -2313,6 +2332,8 @@ skip_execution:
 	for (i = 0; i < bufmgr_gem->exec_count; i++) {
 		drm_intel_bo *bo = bufmgr_gem->exec_bos[i];
 		drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *)bo;
+
+		bo_gem->idle = false;
 
 		/* Disconnect the buffer from the validate list */
 		bo_gem->validate_index = -1;
