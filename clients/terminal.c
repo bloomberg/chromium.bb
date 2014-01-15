@@ -2830,7 +2830,7 @@ terminal_create(struct display *display)
 	terminal->margin_bottom = -1;
 	terminal->window = window_create(display);
 	terminal->widget = window_frame_create(terminal->window, terminal);
-	terminal->title = strdup("Wayland Terminal");
+	terminal->title = xstrdup("Wayland Terminal");
 	window_set_title(terminal->window, terminal->title);
 	widget_set_transparent(terminal->widget, 0);
 
