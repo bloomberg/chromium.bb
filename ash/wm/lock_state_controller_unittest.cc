@@ -18,6 +18,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
+#include "ui/aura/test/test_window_delegate.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -129,6 +130,7 @@ class LockStateControllerTest : public AshTestBase {
   virtual void TearDown() {
     // TODO(antrim) : restore
     // animator_helper_->AdvanceUntilDone();
+    window_.reset();
     AshTestBase::TearDown();
   }
 
@@ -382,12 +384,27 @@ class LockStateControllerTest : public AshTestBase {
     lock_state_controller_->OnLockStateChanged(false);
   }
 
+  void CreateWindowForLockscreen() {
+    window_.reset(new aura::Window(&window_delegate_));
+    window_->SetBounds(gfx::Rect(0, 0, 100, 100));
+    window_->SetType(ui::wm::WINDOW_TYPE_NORMAL);
+    window_->Init(aura::WINDOW_LAYER_TEXTURED);
+    window_->SetName("WINDOW");
+    aura::Window* container = Shell::GetContainer(Shell::GetPrimaryRootWindow(),
+        internal::kShellWindowId_LockScreenContainer);
+    ASSERT_TRUE(container);
+    container->AddChild(window_.get());
+    window_->Show();
+  }
+
   PowerButtonController* controller_;  // not owned
   LockStateController* lock_state_controller_;  // not owned
   TestLockStateControllerDelegate* delegate_;  // not owned
   TestShellDelegate* shell_delegate_;  // not owned
   SessionStateDelegate* session_state_delegate_;  // not owned
 
+  aura::test::TestWindowDelegate window_delegate_;
+  scoped_ptr<aura::Window> window_;
   scoped_ptr<ui::ScopedAnimationDurationScaleMode> animation_duration_mode_;
   scoped_ptr<LockStateController::TestApi> test_api_;
   scoped_ptr<SessionStateAnimator::TestApi> animator_api_;
@@ -880,6 +897,7 @@ TEST_F(LockStateControllerTest, ShutdownWithoutButton) {
 // outside request to shut down (e.g. from the login or lock screen).
 TEST_F(LockStateControllerTest, RequestShutdownFromLoginScreen) {
   Initialize(false, user::LOGGED_IN_NONE);
+  CreateWindowForLockscreen();
 
   lock_state_controller_->RequestShutdown();
 
@@ -899,6 +917,7 @@ TEST_F(LockStateControllerTest, RequestShutdownFromLockScreen) {
   Initialize(false, user::LOGGED_IN_USER);
 
   SystemLocks();
+  CreateWindowForLockscreen();
   Advance(SessionStateAnimator::ANIMATION_SPEED_SHUTDOWN);
   ExpectPastLockAnimationFinished();
 

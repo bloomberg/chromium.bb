@@ -271,6 +271,7 @@ void LockStateController::RequestShutdown() {
 
   Shell* shell = ash::Shell::GetInstance();
   shell->cursor_manager()->HideCursor();
+  shell->cursor_manager()->LockCursor();
 
   animator_->StartGlobalAnimation(
       internal::SessionStateAnimator::ANIMATION_GRAYSCALE_BRIGHTNESS,
