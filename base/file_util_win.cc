@@ -728,8 +728,24 @@ bool CopyFileUnsafe(const FilePath& from_path, const FilePath& to_path) {
       to_path.value().length() >= MAX_PATH) {
     return false;
   }
-  return (::CopyFile(from_path.value().c_str(), to_path.value().c_str(),
-                     false) != 0);
+
+  // Unlike the posix implementation that copies the file manually and discards
+  // the ACL bits, CopyFile() copies the complete SECURITY_DESCRIPTOR and access
+  // bits, which is usually not what we want. We can't do much about the
+  // SECURITY_DESCRIPTOR but at least remove the read only bit.
+  const wchar_t* dest = to_path.value().c_str();
+  if (!::CopyFile(from_path.value().c_str(), dest, false)) {
+    // Copy failed.
+    return false;
+  }
+  DWORD attrs = GetFileAttributes(dest);
+  if (attrs == INVALID_FILE_ATTRIBUTES) {
+    return false;
+  }
+  if (attrs & FILE_ATTRIBUTE_READONLY) {
+    SetFileAttributes(dest, attrs & ~FILE_ATTRIBUTE_READONLY);
+  }
+  return true;
 }
 
 bool CopyAndDeleteDirectory(const FilePath& from_path,

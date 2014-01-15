@@ -1398,6 +1398,60 @@ TEST_F(FileUtilTest, CopyFile) {
   EXPECT_TRUE(PathExists(dest_file2));
 }
 
+#if defined(OS_WIN) || defined(OS_POSIX)
+TEST_F(FileUtilTest, CopyFileACL) {
+  // While FileUtilTest.CopyFile asserts the content is correctly copied over,
+  // this test case asserts the access control bits are meeting expectations in
+  // CopyFileUnsafe().
+  FilePath src = temp_dir_.path().Append(FILE_PATH_LITERAL("src.txt"));
+  const std::wstring file_contents(L"Gooooooooooooooooooooogle");
+  CreateTextFile(src, file_contents);
+
+  // Set the source file to read-only.
+#if defined(OS_WIN)
+  // On Windows, it involves setting a bit.
+  DWORD attrs = GetFileAttributes(src.value().c_str());
+  ASSERT_NE(INVALID_FILE_ATTRIBUTES, attrs);
+  ASSERT_TRUE(SetFileAttributes(
+      src.value().c_str(), attrs | FILE_ATTRIBUTE_READONLY));
+  attrs = GetFileAttributes(src.value().c_str());
+  // Files in the temporary directory should not be indexed ever. If this
+  // assumption change, fix this unit test accordingly.
+  DWORD expected = (FILE_ATTRIBUTE_NOT_CONTENT_INDEXED |
+                    FILE_ATTRIBUTE_ARCHIVE | FILE_ATTRIBUTE_READONLY);
+  ASSERT_EQ(expected, attrs);
+#else
+  // On all other platforms, it involves removing the write bit.
+  EXPECT_TRUE(SetPosixFilePermissions(src, 0400));
+#endif
+
+  // Copy the file.
+  FilePath dst = temp_dir_.path().Append(FILE_PATH_LITERAL("dst.txt"));
+  ASSERT_TRUE(CopyFile(src, dst));
+  EXPECT_EQ(file_contents, ReadTextFile(dst));
+
+#if defined(OS_WIN)
+  // While the source file had RO bit set, the copied file doesn't. Other file
+  // modes are copied.
+  attrs = GetFileAttributes(src.value().c_str());
+  ASSERT_EQ(expected, attrs);
+  expected = FILE_ATTRIBUTE_NOT_CONTENT_INDEXED | FILE_ATTRIBUTE_ARCHIVE;
+  attrs = GetFileAttributes(dst.value().c_str());
+  ASSERT_EQ(expected, attrs);
+#elif defined(OS_MACOSX)
+  // On OSX, file mode is copied.
+  int mode = 0;
+  EXPECT_TRUE(GetPosixFilePermissions(dst, &mode));
+  EXPECT_EQ(0400, mode & 0600);
+#else
+  // On other POSIX, file mode is not copied.
+  int mode = 0;
+  EXPECT_TRUE(GetPosixFilePermissions(dst, &mode));
+  EXPECT_EQ(0600, mode & 0600);
+#endif
+}
+#endif  // defined(OS_WIN) || defined(OS_POSIX)
+
 // file_util winds up using autoreleased objects on the Mac, so this needs
 // to be a PlatformTest.
 typedef PlatformTest ReadOnlyFileUtilTest;
