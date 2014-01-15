@@ -168,8 +168,7 @@ scoped_refptr<extensions::Extension> MakeThemeExtension(
 class ThemeSyncableServiceTest : public testing::Test {
  protected:
   ThemeSyncableServiceTest()
-      : loop_(base::MessageLoop::TYPE_DEFAULT),
-        ui_thread_(content::BrowserThread::UI, &loop_),
+      : ui_thread_(content::BrowserThread::UI, &loop_),
         file_thread_(content::BrowserThread::FILE, &loop_),
         fake_theme_service_(NULL) {}
 

@@ -161,7 +161,7 @@ TEST(AudioInputTest, MAYBE_Record) {
   scoped_ptr<AudioManager> audio_man(AudioManager::CreateForTesting());
   if (!CanRunAudioTests(audio_man.get()))
     return;
-  base::MessageLoop message_loop(base::MessageLoop::TYPE_DEFAULT);
+  base::MessageLoop message_loop;
   AudioInputStream* ais = CreateTestAudioInputStream(audio_man.get());
   EXPECT_TRUE(ais->Open());
 

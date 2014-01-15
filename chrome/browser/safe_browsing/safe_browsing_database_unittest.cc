@@ -395,7 +395,7 @@ TEST_F(SafeBrowsingDatabaseTest, ListNameForBrowse) {
 
 TEST_F(SafeBrowsingDatabaseTest, ListNameForBrowseAndDownload) {
   database_.reset();
-  base::MessageLoop loop(base::MessageLoop::TYPE_DEFAULT);
+  base::MessageLoop loop;
   SafeBrowsingStoreFile* browse_store = new SafeBrowsingStoreFile();
   SafeBrowsingStoreFile* download_store = new SafeBrowsingStoreFile();
   SafeBrowsingStoreFile* csd_whitelist_store = new SafeBrowsingStoreFile();
@@ -1123,7 +1123,7 @@ TEST_F(SafeBrowsingDatabaseTest, DISABLED_FileCorruptionHandling) {
   // influence task-posting.  Database specifically needs to the
   // file-backed.
   database_.reset();
-  base::MessageLoop loop(base::MessageLoop::TYPE_DEFAULT);
+  base::MessageLoop loop;
   SafeBrowsingStoreFile* store = new SafeBrowsingStoreFile();
   database_.reset(new SafeBrowsingDatabaseNew(store, NULL, NULL, NULL, NULL,
                                               NULL, NULL));
@@ -1192,7 +1192,7 @@ TEST_F(SafeBrowsingDatabaseTest, DISABLED_FileCorruptionHandling) {
 // Checks database reading and writing.
 TEST_F(SafeBrowsingDatabaseTest, ContainsDownloadUrl) {
   database_.reset();
-  base::MessageLoop loop(base::MessageLoop::TYPE_DEFAULT);
+  base::MessageLoop loop;
   SafeBrowsingStoreFile* browse_store = new SafeBrowsingStoreFile();
   SafeBrowsingStoreFile* download_store = new SafeBrowsingStoreFile();
   SafeBrowsingStoreFile* csd_whitelist_store = new SafeBrowsingStoreFile();

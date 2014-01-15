@@ -159,7 +159,7 @@ TEST(CancelableCallbackTest, IsNull) {
 // CancelableCallback posted to a MessageLoop with PostTask.
 //  - Callbacks posted to a MessageLoop can be cancelled.
 TEST(CancelableCallbackTest, PostTask) {
-  MessageLoop loop(MessageLoop::TYPE_DEFAULT);
+  MessageLoop loop;
 
   int count = 0;
   CancelableClosure cancelable(base::Bind(&Increment,

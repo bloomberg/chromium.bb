@@ -152,7 +152,7 @@ class WorkerProcessLauncherTest
  protected:
   void DoLaunchProcess();
 
-  base::MessageLoop message_loop_;
+  base::MessageLoopForIO message_loop_;
   scoped_refptr<AutoThreadTaskRunner> task_runner_;
 
   // Receives messages sent to the worker process.
@@ -180,9 +180,7 @@ class WorkerProcessLauncherTest
   ScopedHandle worker_process_;
 };
 
-WorkerProcessLauncherTest::WorkerProcessLauncherTest()
-    : message_loop_(base::MessageLoop::TYPE_IO),
-      event_handler_(NULL) {
+WorkerProcessLauncherTest::WorkerProcessLauncherTest() : event_handler_(NULL) {
 }
 
 WorkerProcessLauncherTest::~WorkerProcessLauncherTest() {

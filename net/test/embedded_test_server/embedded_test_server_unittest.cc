@@ -270,7 +270,7 @@ class EmbeddedTestServerThreadingTestDelegate
 
     scoped_ptr<base::MessageLoop> loop;
     if (message_loop_present_on_initialize_)
-      loop.reset(new base::MessageLoop(base::MessageLoop::TYPE_IO));
+      loop.reset(new base::MessageLoopForIO);
 
     // Create the test server instance.
     EmbeddedTestServer server;
@@ -280,7 +280,7 @@ class EmbeddedTestServerThreadingTestDelegate
 
     // Make a request and wait for the reply.
     if (!loop)
-      loop.reset(new base::MessageLoop(base::MessageLoop::TYPE_IO));
+      loop.reset(new base::MessageLoopForIO);
 
     scoped_ptr<URLFetcher> fetcher(URLFetcher::Create(
         server.GetURL("/test?q=foo"), URLFetcher::GET, this));

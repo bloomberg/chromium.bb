@@ -328,7 +328,7 @@ class DeferredResourceLoadingTest : public ResourceDispatcherTest,
 };
 
 TEST_F(DeferredResourceLoadingTest, DeferredLoadTest) {
-  base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
+  base::MessageLoopForIO message_loop;
 
   ResourceLoaderBridge* bridge = CreateBridge();
 

@@ -160,7 +160,7 @@ std::string ServiceState::ToString() {
 std::string ServiceState::LoginToGoogle(const std::string& service,
                                         const std::string& email,
                                         const std::string& password) {
-  base::MessageLoop loop(base::MessageLoop::TYPE_IO);
+  base::MessageLoopForIO loop;
 
   net::URLRequestContextBuilder builder;
   scoped_ptr<net::URLRequestContext> context(builder.Build());

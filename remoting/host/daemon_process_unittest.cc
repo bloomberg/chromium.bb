@@ -145,14 +145,13 @@ class DaemonProcessTest : public testing::Test {
   }
 
  protected:
-  base::MessageLoop message_loop_;
+  base::MessageLoopForIO message_loop_;
 
   scoped_ptr<MockDaemonProcess> daemon_process_;
   int terminal_id_;
 };
 
-DaemonProcessTest::DaemonProcessTest()
-    : message_loop_(base::MessageLoop::TYPE_IO), terminal_id_(0) {
+DaemonProcessTest::DaemonProcessTest() : terminal_id_(0) {
 }
 
 DaemonProcessTest::~DaemonProcessTest() {

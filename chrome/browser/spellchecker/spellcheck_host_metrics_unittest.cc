@@ -20,7 +20,7 @@
 
 class SpellcheckHostMetricsTest : public testing::Test {
  public:
-  SpellcheckHostMetricsTest() : loop_(base::MessageLoop::TYPE_DEFAULT) {
+  SpellcheckHostMetricsTest() {
   }
 
   static void SetUpTestCase() {

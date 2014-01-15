@@ -147,7 +147,7 @@ class TestStreamReaderJob : public AndroidStreamReaderURLRequestJob {
 
 class AndroidStreamReaderURLRequestJobTest : public Test {
  public:
-  AndroidStreamReaderURLRequestJobTest() : loop_(base::MessageLoop::TYPE_IO) {}
+  AndroidStreamReaderURLRequestJobTest() {}
 
  protected:
   virtual void SetUp() {
@@ -195,7 +195,7 @@ class AndroidStreamReaderURLRequestJobTest : public Test {
     DCHECK(set_protocol);
   }
 
-  base::MessageLoop loop_;
+  base::MessageLoopForIO loop_;
   TestURLRequestContext context_;
   android_webview::AwURLRequestJobFactory factory_;
   TestDelegate url_request_delegate_;

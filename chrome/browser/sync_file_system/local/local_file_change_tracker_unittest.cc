@@ -34,8 +34,7 @@ namespace sync_file_system {
 class LocalFileChangeTrackerTest : public testing::Test {
  public:
   LocalFileChangeTrackerTest()
-      : message_loop_(base::MessageLoop::TYPE_IO),
-        file_system_(GURL("http://example.com"),
+      : file_system_(GURL("http://example.com"),
                      base::MessageLoopProxy::current().get(),
                      base::MessageLoopProxy::current().get()) {}
 
@@ -106,7 +105,7 @@ class LocalFileChangeTrackerTest : public testing::Test {
   }
 
   ScopedEnableSyncFSDirectoryOperation enable_directory_operation_;
-  base::MessageLoop message_loop_;
+  base::MessageLoopForIO message_loop_;
   CannedSyncableFileSystem file_system_;
 
  private:

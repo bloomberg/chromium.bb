@@ -34,8 +34,7 @@ class TestProfileWriter : public ProfileWriter {
 class ProfileWriterTest : public testing::Test {
  public:
   ProfileWriterTest()
-      : loop_(base::MessageLoop::TYPE_DEFAULT),
-        ui_thread_(BrowserThread::UI, &loop_),
+      : ui_thread_(BrowserThread::UI, &loop_),
         file_thread_(BrowserThread::FILE, &loop_) {
   }
   virtual ~ProfileWriterTest() {}

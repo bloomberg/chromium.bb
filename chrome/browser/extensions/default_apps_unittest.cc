@@ -29,11 +29,10 @@ class MockExternalLoader : public ExternalLoader {
 
 class DefaultAppsTest : public testing::Test {
  public:
-  DefaultAppsTest() : loop_(base::MessageLoop::TYPE_IO),
-      ui_thread_(content::BrowserThread::UI, &loop_) {}
+  DefaultAppsTest() : ui_thread_(content::BrowserThread::UI, &loop_) {}
   virtual ~DefaultAppsTest() {}
  private:
-  base::MessageLoop loop_;
+  base::MessageLoopForIO loop_;
   content::TestBrowserThread ui_thread_;
 };
 

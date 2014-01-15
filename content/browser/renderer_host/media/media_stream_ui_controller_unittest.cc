@@ -43,7 +43,7 @@ class MediaStreamDeviceUIControllerTest
 
  protected:
   virtual void SetUp() {
-    message_loop_.reset(new base::MessageLoop(base::MessageLoop::TYPE_IO));
+    message_loop_.reset(new base::MessageLoopForIO);
     ui_thread_.reset(new BrowserThreadImpl(BrowserThread::UI,
                                            message_loop_.get()));
     io_thread_.reset(new BrowserThreadImpl(BrowserThread::IO,

@@ -46,12 +46,11 @@ class NativeMessagingReaderTest : public testing::Test {
  private:
   // MessageLoop declared here, since the NativeMessageReader ctor requires a
   // MessageLoop to have been created.
-  base::MessageLoop message_loop_;
+  base::MessageLoopForIO message_loop_;
   base::RunLoop run_loop_;
 };
 
-NativeMessagingReaderTest::NativeMessagingReaderTest()
-    : message_loop_(base::MessageLoop::TYPE_IO) {
+NativeMessagingReaderTest::NativeMessagingReaderTest() {
 }
 
 NativeMessagingReaderTest::~NativeMessagingReaderTest() {}

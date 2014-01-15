@@ -83,8 +83,7 @@ namespace predictors {
 class AutocompleteActionPredictorTest : public testing::Test {
  public:
   AutocompleteActionPredictorTest()
-      : loop_(base::MessageLoop::TYPE_DEFAULT),
-        ui_thread_(BrowserThread::UI, &loop_),
+      : ui_thread_(BrowserThread::UI, &loop_),
         db_thread_(BrowserThread::DB, &loop_),
         file_thread_(BrowserThread::FILE, &loop_),
         profile_(new TestingProfile()),

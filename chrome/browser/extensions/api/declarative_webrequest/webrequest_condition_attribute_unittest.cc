@@ -32,7 +32,7 @@ namespace keys = declarative_webrequest_constants;
 
 TEST(WebRequestConditionAttributeTest, CreateConditionAttribute) {
   // Necessary for TestURLRequest.
-  base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
+  base::MessageLoopForIO message_loop;
 
   std::string error;
   scoped_refptr<const WebRequestConditionAttribute> result;
@@ -73,7 +73,7 @@ TEST(WebRequestConditionAttributeTest, CreateConditionAttribute) {
 
 TEST(WebRequestConditionAttributeTest, ResourceType) {
   // Necessary for TestURLRequest.
-  base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
+  base::MessageLoopForIO message_loop;
 
   std::string error;
   base::ListValue resource_types;
@@ -106,7 +106,7 @@ TEST(WebRequestConditionAttributeTest, ResourceType) {
 
 TEST(WebRequestConditionAttributeTest, ContentType) {
   // Necessary for TestURLRequest.
-  base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
+  base::MessageLoopForIO message_loop;
 
   std::string error;
   scoped_refptr<const WebRequestConditionAttribute> result;
@@ -177,7 +177,7 @@ TEST(WebRequestConditionAttributeTest, ContentType) {
 // Testing WebRequestConditionAttributeThirdParty.
 TEST(WebRequestConditionAttributeTest, ThirdParty) {
   // Necessary for TestURLRequest.
-  base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
+  base::MessageLoopForIO message_loop;
 
   std::string error;
   const FundamentalValue value_true(true);
@@ -239,7 +239,7 @@ TEST(WebRequestConditionAttributeTest, ThirdParty) {
 // applicable in all stages.
 TEST(WebRequestConditionAttributeTest, Stages) {
   // Necessary for TestURLRequest.
-  base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
+  base::MessageLoopForIO message_loop;
 
   typedef std::pair<RequestStage, const char*> StageNamePair;
   static const StageNamePair active_stages[] = {
@@ -418,7 +418,7 @@ void MatchAndCheck(const std::vector< std::vector<const std::string*> >& tests,
 // by both types of condition attributes, so it is enough to test it once.
 TEST(WebRequestConditionAttributeTest, RequestHeaders) {
   // Necessary for TestURLRequest.
-  base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
+  base::MessageLoopForIO message_loop;
 
   net::TestURLRequestContext context;
   net::TestDelegate delegate;
@@ -498,7 +498,7 @@ TEST(WebRequestConditionAttributeTest, RequestHeaders) {
 // 3. Negating the match in case of 'doesNotContainHeaders'.
 TEST(WebRequestConditionAttributeTest, ResponseHeaders) {
   // Necessary for TestURLRequest.
-  base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
+  base::MessageLoopForIO message_loop;
 
   net::SpawnedTestServer test_server(
       net::SpawnedTestServer::TYPE_HTTP,

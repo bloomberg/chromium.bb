@@ -375,7 +375,7 @@ TEST(TimerTest, MessageLoopShutdown) {
     OneShotTimerTester c(&did_run);
     OneShotTimerTester d(&did_run);
     {
-      base::MessageLoop loop(base::MessageLoop::TYPE_DEFAULT);
+      base::MessageLoop loop;
       a.Start();
       b.Start();
     }  // MessageLoop destructs by falling out of scope.
@@ -389,7 +389,7 @@ void TimerTestCallback() {
 
 TEST(TimerTest, NonRepeatIsRunning) {
   {
-    base::MessageLoop loop(base::MessageLoop::TYPE_DEFAULT);
+    base::MessageLoop loop;
     base::Timer timer(false, false);
     EXPECT_FALSE(timer.IsRunning());
     timer.Start(FROM_HERE, TimeDelta::FromDays(1),
@@ -402,7 +402,7 @@ TEST(TimerTest, NonRepeatIsRunning) {
 
   {
     base::Timer timer(true, false);
-    base::MessageLoop loop(base::MessageLoop::TYPE_DEFAULT);
+    base::MessageLoop loop;
     EXPECT_FALSE(timer.IsRunning());
     timer.Start(FROM_HERE, TimeDelta::FromDays(1),
                 base::Bind(&TimerTestCallback));
@@ -418,7 +418,7 @@ TEST(TimerTest, NonRepeatIsRunning) {
 TEST(TimerTest, NonRepeatMessageLoopDeath) {
   base::Timer timer(false, false);
   {
-    base::MessageLoop loop(base::MessageLoop::TYPE_DEFAULT);
+    base::MessageLoop loop;
     EXPECT_FALSE(timer.IsRunning());
     timer.Start(FROM_HERE, TimeDelta::FromDays(1),
                 base::Bind(&TimerTestCallback));
@@ -429,7 +429,7 @@ TEST(TimerTest, NonRepeatMessageLoopDeath) {
 }
 
 TEST(TimerTest, RetainRepeatIsRunning) {
-  base::MessageLoop loop(base::MessageLoop::TYPE_DEFAULT);
+  base::MessageLoop loop;
   base::Timer timer(FROM_HERE, TimeDelta::FromDays(1),
                     base::Bind(&TimerTestCallback), true);
   EXPECT_FALSE(timer.IsRunning());
@@ -442,7 +442,7 @@ TEST(TimerTest, RetainRepeatIsRunning) {
 }
 
 TEST(TimerTest, RetainNonRepeatIsRunning) {
-  base::MessageLoop loop(base::MessageLoop::TYPE_DEFAULT);
+  base::MessageLoop loop;
   base::Timer timer(FROM_HERE, TimeDelta::FromDays(1),
                     base::Bind(&TimerTestCallback), false);
   EXPECT_FALSE(timer.IsRunning());
@@ -477,7 +477,7 @@ void SetCallbackHappened2() {
 TEST(TimerTest, ContinuationStopStart) {
   {
     ClearAllCallbackHappened();
-    base::MessageLoop loop(base::MessageLoop::TYPE_DEFAULT);
+    base::MessageLoop loop;
     base::Timer timer(false, false);
     timer.Start(FROM_HERE, TimeDelta::FromMilliseconds(10),
                 base::Bind(&SetCallbackHappened1));
@@ -493,7 +493,7 @@ TEST(TimerTest, ContinuationStopStart) {
 TEST(TimerTest, ContinuationReset) {
   {
     ClearAllCallbackHappened();
-    base::MessageLoop loop(base::MessageLoop::TYPE_DEFAULT);
+    base::MessageLoop loop;
     base::Timer timer(false, false);
     timer.Start(FROM_HERE, TimeDelta::FromMilliseconds(10),
                 base::Bind(&SetCallbackHappened1));

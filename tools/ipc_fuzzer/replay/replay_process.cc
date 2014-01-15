@@ -18,8 +18,7 @@
 namespace ipc_fuzzer {
 
 ReplayProcess::ReplayProcess()
-    : main_loop_(base::MessageLoop::TYPE_DEFAULT),
-      io_thread_("Chrome_ChildIOThread"),
+    : io_thread_("Chrome_ChildIOThread"),
       shutdown_event_(true, false),
       message_index_(0) {
 }

@@ -57,7 +57,7 @@ class DialServiceTest : public testing::Test {
 };
 
 TEST_F(DialServiceTest, TestSendMultipleRequests) {
-  base::MessageLoop loop(base::MessageLoop::TYPE_IO);
+  base::MessageLoopForIO loop;
   // Setting the finish delay to zero disables the timer that invokes
   // FinishDiscovery().
   dial_service_.finish_delay_ = TimeDelta::FromSeconds(0);
@@ -74,7 +74,7 @@ TEST_F(DialServiceTest, TestSendMultipleRequests) {
 }
 
 TEST_F(DialServiceTest, TestMultipleNetworkInterfaces) {
-  base::MessageLoop loop(base::MessageLoop::TYPE_IO);
+  base::MessageLoopForIO loop;
   // Setting the finish delay to zero disables the timer that invokes
   // FinishDiscovery().
   dial_service_.finish_delay_ = TimeDelta::FromSeconds(0);

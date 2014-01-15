@@ -21,8 +21,7 @@ namespace {
 
 class TrackedCallbackTest : public testing::Test {
  public:
-  TrackedCallbackTest()
-      : message_loop_(base::MessageLoop::TYPE_DEFAULT), pp_instance_(1234) {}
+  TrackedCallbackTest() : pp_instance_(1234) {}
 
   PP_Instance pp_instance() const { return pp_instance_; }
 

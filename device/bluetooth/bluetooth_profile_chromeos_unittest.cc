@@ -31,8 +31,7 @@ namespace chromeos {
 class BluetoothProfileChromeOSTest : public testing::Test {
  public:
   BluetoothProfileChromeOSTest()
-      : message_loop_(base::MessageLoop::TYPE_IO),
-        callback_count_(0),
+      : callback_count_(0),
         error_callback_count_(0),
         profile_callback_count_(0),
         connection_callback_count_(0),
@@ -102,7 +101,7 @@ class BluetoothProfileChromeOSTest : public testing::Test {
   }
 
  protected:
-  base::MessageLoop message_loop_;
+  base::MessageLoopForIO message_loop_;
 
   FakeBluetoothProfileManagerClient* fake_bluetooth_profile_manager_client_;
   scoped_refptr<BluetoothAdapter> adapter_;

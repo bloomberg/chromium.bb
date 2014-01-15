@@ -134,7 +134,7 @@ class DeviceRequestMessageFilterTest : public testing::Test {
   virtual ~DeviceRequestMessageFilterTest() {}
 
   virtual void SetUp() OVERRIDE {
-    message_loop_.reset(new base::MessageLoop(base::MessageLoop::TYPE_IO));
+    message_loop_.reset(new base::MessageLoopForIO);
     io_thread_.reset(
         new TestBrowserThread(BrowserThread::IO, message_loop_.get()));
 

@@ -141,7 +141,7 @@ int main(int argc, char** argv) {
   bool use_cache = parsed_command_line.HasSwitch("use-cache");
 
   // Do work here.
-  base::MessageLoop loop(base::MessageLoop::TYPE_IO);
+  base::MessageLoopForIO loop;
 
   net::HttpStreamFactory::EnableNpnHttp2Draft04();
 

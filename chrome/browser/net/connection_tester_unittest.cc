@@ -89,8 +89,7 @@ class ConnectionTesterDelegate : public ConnectionTester::Delegate {
 class ConnectionTesterTest : public PlatformTest {
  public:
   ConnectionTesterTest()
-      : message_loop_(base::MessageLoop::TYPE_IO),
-        io_thread_(BrowserThread::IO, &message_loop_),
+      : io_thread_(BrowserThread::IO, &message_loop_),
         test_server_(net::SpawnedTestServer::TYPE_HTTP,
                      net::SpawnedTestServer::kLocalhost,
                      // Nothing is read in this directory.
@@ -105,7 +104,7 @@ class ConnectionTesterTest : public PlatformTest {
   // SSLClientAuthCache calls RemoveObserver when destroyed, but if the
   // MessageLoop is already destroyed, then the RemoveObserver will be a
   // no-op, and the ObserverList will contain invalid entries.
-  base::MessageLoop message_loop_;
+  base::MessageLoopForIO message_loop_;
   content::TestBrowserThread io_thread_;
   net::SpawnedTestServer test_server_;
   ConnectionTesterDelegate test_delegate_;

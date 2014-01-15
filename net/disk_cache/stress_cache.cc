@@ -279,7 +279,7 @@ int main(int argc, const char* argv[]) {
 
   // Some time for the memory manager to flush stuff.
   base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(3));
-  base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
+  base::MessageLoopForIO message_loop;
 
   char* end;
   long int iteration = strtol(argv[1], &end, 0);

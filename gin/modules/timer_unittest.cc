@@ -57,8 +57,7 @@ struct TestHelper {
       : runner(new Runner(&delegate, isolate)),
         scope(runner.get()),
         timer_module(TimerModule::Create(isolate)),
-        result(Result::Create(isolate)),
-        loop(base::MessageLoop::TYPE_DEFAULT) {
+        result(Result::Create(isolate)) {
     EXPECT_FALSE(runner->global().IsEmpty());
     runner->global()->Set(StringToV8(isolate, "timer"),
                           timer_module->GetWrapper(isolate));

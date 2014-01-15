@@ -51,7 +51,7 @@ class StreamURLRequestJobTest : public testing::Test {
     StreamRegistry* registry_;
   };
 
-  StreamURLRequestJobTest() : message_loop_(base::MessageLoop::TYPE_IO) {}
+  StreamURLRequestJobTest() {}
 
   virtual void SetUp() {
     registry_.reset(new StreamRegistry());
@@ -93,7 +93,7 @@ class StreamURLRequestJobTest : public testing::Test {
   }
 
  protected:
-  base::MessageLoop message_loop_;
+  base::MessageLoopForIO message_loop_;
   scoped_ptr<StreamRegistry> registry_;
 
   net::URLRequestContext url_request_context_;

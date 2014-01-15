@@ -71,8 +71,7 @@ class AutocompleteActionPredictorTableReopenTest
 };
 
 AutocompleteActionPredictorTableTest::AutocompleteActionPredictorTableTest()
-    : loop_(base::MessageLoop::TYPE_DEFAULT),
-      db_thread_(BrowserThread::DB, &loop_) {
+    : db_thread_(BrowserThread::DB, &loop_) {
 }
 
 AutocompleteActionPredictorTableTest::~AutocompleteActionPredictorTableTest() {

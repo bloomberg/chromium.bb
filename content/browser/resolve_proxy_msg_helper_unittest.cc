@@ -63,7 +63,6 @@ class ResolveProxyMsgHelperTest : public testing::Test, public IPC::Listener {
         service_(
             new net::ProxyService(new MockProxyConfigService, resolver_, NULL)),
         helper_(new TestResolveProxyMsgHelper(service_.get(), this)),
-        message_loop_(base::MessageLoop::TYPE_IO),
         io_thread_(BrowserThread::IO, &message_loop_) {
     test_sink_.AddFilter(this);
   }
@@ -97,7 +96,7 @@ class ResolveProxyMsgHelperTest : public testing::Test, public IPC::Listener {
     return true;
   }
 
-  base::MessageLoop message_loop_;
+  base::MessageLoopForIO message_loop_;
   BrowserThreadImpl io_thread_;
   IPC::TestSink test_sink_;
 };

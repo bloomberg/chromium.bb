@@ -30,7 +30,6 @@ class IndexedDBTest : public testing::Test {
   IndexedDBTest()
       : kNormalOrigin("http://normal/"),
         kSessionOnlyOrigin("http://session-only/"),
-        message_loop_(base::MessageLoop::TYPE_IO),
         task_runner_(new base::TestSimpleTaskRunner),
         special_storage_policy_(new quota::MockSpecialStoragePolicy),
         file_thread_(BrowserThread::FILE_USER_BLOCKING, &message_loop_),
@@ -41,7 +40,7 @@ class IndexedDBTest : public testing::Test {
  protected:
   void FlushIndexedDBTaskRunner() { task_runner_->RunUntilIdle(); }
 
-  base::MessageLoop message_loop_;
+  base::MessageLoopForIO message_loop_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   scoped_refptr<quota::MockSpecialStoragePolicy> special_storage_policy_;
 

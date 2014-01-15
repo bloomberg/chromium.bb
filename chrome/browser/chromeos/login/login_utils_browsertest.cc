@@ -148,7 +148,6 @@ class LoginUtilsTest : public testing::Test,
   LoginUtilsTest()
       : fake_io_thread_completion_(false, false),
         fake_io_thread_("fake_io_thread"),
-        loop_(base::MessageLoop::TYPE_IO),
         browser_process_(TestingBrowserProcess::GetGlobal()),
         local_state_(browser_process_),
         ui_thread_(BrowserThread::UI, &loop_),
@@ -455,7 +454,7 @@ class LoginUtilsTest : public testing::Test,
   base::WaitableEvent fake_io_thread_completion_;
   base::Thread fake_io_thread_;
 
-  base::MessageLoop loop_;
+  base::MessageLoopForIO loop_;
   TestingBrowserProcess* browser_process_;
   ScopedTestingLocalState local_state_;
 

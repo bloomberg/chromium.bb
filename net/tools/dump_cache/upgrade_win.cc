@@ -893,7 +893,7 @@ HANDLE CreateServer(base::string16* pipe_number) {
 
 // This is the controller process for an upgrade operation.
 int UpgradeCache(const base::FilePath& output_path, HANDLE pipe) {
-  base::MessageLoop loop(base::MessageLoop::TYPE_IO);
+  base::MessageLoopForIO loop;
 
   MasterSM master(output_path, pipe);
   if (!master.DoInit()) {
@@ -908,7 +908,7 @@ int UpgradeCache(const base::FilePath& output_path, HANDLE pipe) {
 // This process will only execute commands from the controller.
 int RunSlave(const base::FilePath& input_path,
              const base::string16& pipe_number) {
-  base::MessageLoop loop(base::MessageLoop::TYPE_IO);
+  base::MessageLoopForIO loop;
 
   base::win::ScopedHandle pipe(OpenServer(pipe_number));
   if (!pipe.IsValid()) {

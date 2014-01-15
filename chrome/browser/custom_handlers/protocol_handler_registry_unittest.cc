@@ -282,7 +282,7 @@ class QueryProtocolHandlerOnChange
 // our type based on the current thread. GO DEPENDENCY INJECTION!
 class TestMessageLoop : public base::MessageLoop {
  public:
-  TestMessageLoop() : base::MessageLoop(base::MessageLoop::TYPE_DEFAULT) {}
+  TestMessageLoop() {}
   virtual ~TestMessageLoop() {}
   virtual bool IsType(base::MessageLoop::Type type) const OVERRIDE {
     switch (type) {

@@ -90,7 +90,7 @@ int main(int argc, char* argv[]) {
 
   signal(SIGINT, OnAbort);  // Handle Ctrl+C signal.
 
-  base::MessageLoop loop(base::MessageLoop::TYPE_IO);
+  base::MessageLoopForIO loop;
   g_message_loop = &loop;
   g_message_loop->PostTask(FROM_HERE, base::Bind(&StartPrinter, &printer));
   base::RunLoop runner;

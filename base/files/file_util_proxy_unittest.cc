@@ -21,8 +21,7 @@ namespace base {
 class FileUtilProxyTest : public testing::Test {
  public:
   FileUtilProxyTest()
-      : message_loop_(MessageLoop::TYPE_IO),
-        file_thread_("FileUtilProxyTestFileThread"),
+      : file_thread_("FileUtilProxyTestFileThread"),
         error_(PLATFORM_FILE_OK),
         created_(false),
         file_(kInvalidPlatformFileValue),
@@ -103,7 +102,7 @@ class FileUtilProxyTest : public testing::Test {
   const FilePath& test_dir_path() const { return dir_.path(); }
   const FilePath test_path() const { return dir_.path().AppendASCII("test"); }
 
-  MessageLoop message_loop_;
+  MessageLoopForIO message_loop_;
   Thread file_thread_;
 
   ScopedTempDir dir_;

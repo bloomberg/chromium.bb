@@ -84,7 +84,7 @@ class TestingURLBlacklistManager : public URLBlacklistManager {
 
 class URLBlacklistManagerTest : public testing::Test {
  protected:
-  URLBlacklistManagerTest() : loop_(base::MessageLoop::TYPE_IO) {}
+  URLBlacklistManagerTest() {}
 
   virtual void SetUp() OVERRIDE {
     pref_service_.registry()->RegisterListPref(policy_prefs::kUrlBlacklist);
@@ -102,7 +102,7 @@ class URLBlacklistManagerTest : public testing::Test {
     blacklist_manager_.reset();
   }
 
-  base::MessageLoop loop_;
+  base::MessageLoopForIO loop_;
   TestingPrefServiceSimple pref_service_;
   scoped_ptr<TestingURLBlacklistManager> blacklist_manager_;
 };

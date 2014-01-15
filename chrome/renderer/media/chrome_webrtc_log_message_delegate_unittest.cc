@@ -13,7 +13,7 @@
 TEST(ChromeWebRtcLogMessageDelegateTest, Basic) {
   const char kTestString[] = "abcdefghijklmnopqrstuvwxyz";
 
-  base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
+  base::MessageLoopForIO message_loop;
 
   scoped_refptr<MockWebRtcLoggingMessageFilter> log_message_filter(
       new MockWebRtcLoggingMessageFilter(message_loop.message_loop_proxy()));

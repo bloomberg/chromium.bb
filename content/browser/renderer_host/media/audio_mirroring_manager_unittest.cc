@@ -46,8 +46,7 @@ class MockMirroringDestination
 class AudioMirroringManagerTest : public testing::Test {
  public:
   AudioMirroringManagerTest()
-      : message_loop_(base::MessageLoop::TYPE_IO),
-        io_thread_(BrowserThread::IO, &message_loop_),
+      : io_thread_(BrowserThread::IO, &message_loop_),
         params_(AudioParameters::AUDIO_FAKE, media::CHANNEL_LAYOUT_STEREO,
                 AudioParameters::kAudioCDSampleRate, 16,
                 AudioParameters::kAudioCDSampleRate / 10) {}
@@ -102,7 +101,7 @@ class AudioMirroringManagerTest : public testing::Test {
 }
 
  private:
-  base::MessageLoop message_loop_;
+  base::MessageLoopForIO message_loop_;
   BrowserThreadImpl io_thread_;
   AudioParameters params_;
   AudioMirroringManager mirroring_manager_;

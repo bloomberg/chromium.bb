@@ -23,7 +23,7 @@ namespace extensions {
 
 TEST(WebRequestConditionTest, CreateCondition) {
   // Necessary for TestURLRequest.
-  base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
+  base::MessageLoopForIO message_loop;
   URLMatcher matcher;
 
   std::string error;
@@ -101,7 +101,7 @@ TEST(WebRequestConditionTest, CreateCondition) {
 
 TEST(WebRequestConditionTest, CreateConditionFirstPartyForCookies) {
   // Necessary for TestURLRequest.
-  base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
+  base::MessageLoopForIO message_loop;
   URLMatcher matcher;
 
   std::string error;
@@ -147,7 +147,7 @@ TEST(WebRequestConditionTest, CreateConditionFirstPartyForCookies) {
 //      always fulfilled.
 TEST(WebRequestConditionTest, NoUrlAttributes) {
   // Necessary for TestURLRequest.
-  base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
+  base::MessageLoopForIO message_loop;
   URLMatcher matcher;
   std::string error;
 
@@ -220,7 +220,7 @@ TEST(WebRequestConditionTest, NoUrlAttributes) {
 
 TEST(WebRequestConditionTest, CreateConditionSet) {
   // Necessary for TestURLRequest.
-  base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
+  base::MessageLoopForIO message_loop;
   URLMatcher matcher;
 
   WebRequestConditionSet::AnyVector conditions;
@@ -289,7 +289,7 @@ TEST(WebRequestConditionTest, CreateConditionSet) {
 
 TEST(WebRequestConditionTest, TestPortFilter) {
   // Necessary for TestURLRequest.
-  base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
+  base::MessageLoopForIO message_loop;
   URLMatcher matcher;
 
   WebRequestConditionSet::AnyVector conditions;
@@ -349,7 +349,7 @@ TEST(WebRequestConditionTest, TestPortFilter) {
 // impossible that both conditions are fulfilled at the same time.
 TEST(WebRequestConditionTest, ConditionsWithConflictingStages) {
   // Necessary for TestURLRequest.
-  base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
+  base::MessageLoopForIO message_loop;
   URLMatcher matcher;
 
   std::string error;

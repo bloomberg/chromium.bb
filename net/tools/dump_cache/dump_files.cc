@@ -57,7 +57,7 @@ int GetMajorVersionFromFile(const base::FilePath& name) {
 // Dumps the contents of the Stats record.
 void DumpStats(const base::FilePath& path, disk_cache::CacheAddr addr) {
   // We need a message loop, although we really don't run any task.
-  base::MessageLoop loop(base::MessageLoop::TYPE_IO);
+  base::MessageLoopForIO loop;
 
   disk_cache::BlockFiles block_files(path);
   if (!block_files.Init(false)) {
@@ -355,7 +355,7 @@ int DumpContents(const base::FilePath& input_path) {
   DumpHeaders(input_path);
 
   // We need a message loop, although we really don't run any task.
-  base::MessageLoop loop(base::MessageLoop::TYPE_IO);
+  base::MessageLoopForIO loop;
   CacheDumper dumper(input_path);
   if (!dumper.Init())
     return -1;
