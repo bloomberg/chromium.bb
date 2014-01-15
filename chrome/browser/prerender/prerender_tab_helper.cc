@@ -6,25 +6,18 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/password_manager/password_manager.h"
-#include "chrome/browser/predictors/logged_in_predictor_table.h"
 #include "chrome/browser/prerender/prerender_histograms.h"
 #include "chrome/browser/prerender/prerender_local_predictor.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/frame_navigate_params.h"
-#include "skia/ext/platform_canvas.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/gfx/rect.h"
 
 using content::WebContents;
 
@@ -48,109 +41,6 @@ void ReportTabHelperURLSeenToLocalPredictor(
 }
 
 }  // namespace
-
-// Helper class to compute pixel-based stats on the paint progress
-// between when a prerendered page is swapped in and when the onload event
-// fires.
-class PrerenderTabHelper::PixelStats {
- public:
-  explicit PixelStats(PrerenderTabHelper* tab_helper) :
-      bitmap_web_contents_(NULL),
-      weak_factory_(this),
-      tab_helper_(tab_helper) {
-  }
-
-  // Reasons why we need to fetch bitmaps: either a prerender was swapped in,
-  // or a prerendered page has finished loading.
-  enum BitmapType {
-      BITMAP_SWAP_IN,
-      BITMAP_ON_LOAD
-  };
-
-  void GetBitmap(BitmapType bitmap_type, WebContents* web_contents) {
-    if (bitmap_type == BITMAP_SWAP_IN) {
-      bitmap_.reset();
-      bitmap_web_contents_ = web_contents;
-    }
-
-    if (bitmap_type == BITMAP_ON_LOAD && bitmap_web_contents_ != web_contents)
-      return;
-
-    if (!web_contents || !web_contents->GetView() ||
-        !web_contents->GetRenderViewHost()) {
-      return;
-    }
-
-    web_contents->GetRenderViewHost()->CopyFromBackingStore(
-        gfx::Rect(),
-        gfx::Size(),
-        base::Bind(&PrerenderTabHelper::PixelStats::HandleBitmapResult,
-                   weak_factory_.GetWeakPtr(),
-                   bitmap_type,
-                   web_contents));
-  }
-
- private:
-  void HandleBitmapResult(BitmapType bitmap_type,
-                          WebContents* web_contents,
-                          bool succeeded,
-                          const SkBitmap& canvas_bitmap) {
-    scoped_ptr<SkBitmap> bitmap;
-    if (succeeded) {
-      // TODO(nick): This copy may now be unnecessary.
-      bitmap.reset(new SkBitmap());
-      canvas_bitmap.copyTo(bitmap.get(), SkBitmap::kARGB_8888_Config);
-    }
-
-    if (bitmap_web_contents_ != web_contents)
-      return;
-
-    if (bitmap_type == BITMAP_SWAP_IN)
-      bitmap_.swap(bitmap);
-
-    if (bitmap_type == BITMAP_ON_LOAD) {
-      PrerenderManager* prerender_manager =
-          tab_helper_->MaybeGetPrerenderManager();
-      if (prerender_manager) {
-        prerender_manager->RecordFractionPixelsFinalAtSwapin(
-            web_contents, CompareBitmaps(bitmap_.get(), bitmap.get()));
-      }
-      bitmap_.reset();
-      bitmap_web_contents_ = NULL;
-    }
-  }
-
-  // Helper comparing two bitmaps of identical size.
-  // Returns a value < 0.0 if there is an error, and otherwise, a double in
-  // [0, 1] indicating the fraction of pixels that are the same.
-  double CompareBitmaps(SkBitmap* bitmap1, SkBitmap* bitmap2) {
-    if (!bitmap1 || !bitmap2) {
-      return -2.0;
-    }
-    if (bitmap1->width() != bitmap2->width() ||
-        bitmap1->height() != bitmap2->height()) {
-      return -1.0;
-    }
-    int pixels = bitmap1->width() * bitmap1->height();
-    int same_pixels = 0;
-    for (int y = 0; y < bitmap1->height(); ++y) {
-      for (int x = 0; x < bitmap1->width(); ++x) {
-        if (bitmap1->getColor(x, y) == bitmap2->getColor(x, y))
-          same_pixels++;
-      }
-    }
-    return static_cast<double>(same_pixels) / static_cast<double>(pixels);
-  }
-
-  // Bitmap of what the last swapped in prerendered tab looked like at swapin,
-  // and the WebContents that it was swapped into.
-  scoped_ptr<SkBitmap> bitmap_;
-  WebContents* bitmap_web_contents_;
-
-  base::WeakPtrFactory<PixelStats> weak_factory_;
-
-  PrerenderTabHelper* tab_helper_;
-};
 
 // static
 void PrerenderTabHelper::CreateForWebContentsWithPasswordManager(
@@ -237,8 +127,6 @@ void PrerenderTabHelper::DidStopLoading(
     PrerenderManager::RecordPerceivedPageLoadTime(
         now - pplt_load_start_, fraction_elapsed_at_swapin, web_contents(),
         url_);
-    if (IsPrerendered() && pixel_stats_.get())
-      pixel_stats_->GetBitmap(PixelStats::BITMAP_ON_LOAD, web_contents());
   }
 
   // Reset the PPLT metric.
@@ -297,16 +185,11 @@ void PrerenderTabHelper::PrerenderSwappedIn() {
     // If we have already finished loading, report a 0 PPLT.
     PrerenderManager::RecordPerceivedPageLoadTime(base::TimeDelta(), 1.0,
                                                   web_contents(), url_);
-    PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
-    if (prerender_manager)
-      prerender_manager->RecordFractionPixelsFinalAtSwapin(web_contents(), 1.0);
   } else {
     // If we have not finished loading yet, record the actual load start, and
     // rebase the start time to now.
     actual_load_start_ = pplt_load_start_;
     pplt_load_start_ = base::TimeTicks::Now();
-    if (pixel_stats_.get())
-      pixel_stats_->GetBitmap(PixelStats::BITMAP_SWAP_IN, web_contents());
   }
 }
 

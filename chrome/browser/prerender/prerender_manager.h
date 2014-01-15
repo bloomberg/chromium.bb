@@ -198,11 +198,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
       content::WebContents* web_contents,
       const GURL& url);
 
-  // Records the percentage of pixels of the final page in place at swap-in.
-  void RecordFractionPixelsFinalAtSwapin(
-      content::WebContents* web_contents,
-      double fraction);
-
   // Set whether prerendering is currently enabled for this manager.
   // Must be called on the UI thread.
   // If |enabled| is false, existing prerendered pages will still persist until

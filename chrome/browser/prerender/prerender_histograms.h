@@ -84,10 +84,6 @@ class PrerenderHistograms {
   void RecordTimeSinceLastRecentVisit(Origin origin,
                                       base::TimeDelta time) const;
 
-  // Record a percentage of pixels of the final page already in place at
-  // swap-in.
-  void RecordFractionPixelsFinalAtSwapin(Origin origin, double fraction) const;
-
   // Records a prerender event.
   void RecordEvent(Origin origin, uint8 experiment_id, PrerenderEvent event)
       const;

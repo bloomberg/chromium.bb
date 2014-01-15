@@ -14505,6 +14505,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Prerender.FractionPixelsFinalAtSwapin">
+  <obsolete>
+    Deprecated Jan 14 2014.
+  </obsolete>
   <summary>
     For prerenders that are swapped in, the percentage of pixels that is already
     final at swap-in time compared to when the spinner stops.

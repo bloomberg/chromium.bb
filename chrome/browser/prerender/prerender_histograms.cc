@@ -208,18 +208,6 @@ void PrerenderHistograms::RecordTimeSinceLastRecentVisit(
       UMA_HISTOGRAM_TIMES(name, delta));
 }
 
-void PrerenderHistograms::RecordFractionPixelsFinalAtSwapin(
-    Origin origin,
-    double fraction) const {
-  if (fraction < 0.0 || fraction > 1.0)
-    return;
-  int percentage = static_cast<int>(fraction * 100);
-  if (percentage < 0 || percentage > 100)
-    return;
-  PREFIXED_HISTOGRAM("FractionPixelsFinalAtSwapin",
-                     origin, UMA_HISTOGRAM_PERCENTAGE(name, percentage));
-}
-
 base::TimeTicks PrerenderHistograms::GetCurrentTimeTicks() const {
   return base::TimeTicks::Now();
 }

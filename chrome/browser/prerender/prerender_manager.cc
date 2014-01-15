@@ -756,15 +756,6 @@ void PrerenderManager::RecordPerceivedPageLoadTime(
   }
 }
 
-void PrerenderManager::RecordFractionPixelsFinalAtSwapin(
-    content::WebContents* web_contents,
-    double fraction) {
-  Origin origin = ORIGIN_NONE;
-  bool is_prerendered = IsWebContentsPrerendered(web_contents, &origin);
-  DCHECK(is_prerendered);
-  histograms_->RecordFractionPixelsFinalAtSwapin(origin, fraction);
-}
-
 void PrerenderManager::set_enabled(bool enabled) {
   DCHECK(CalledOnValidThread());
   enabled_ = enabled;

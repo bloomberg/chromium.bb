@@ -18,10 +18,6 @@ namespace autofill {
 struct PasswordForm;
 }
 
-namespace predictors {
-class LoggedInPredictorTable;
-}
-
 namespace prerender {
 
 class PrerenderManager;
@@ -87,11 +83,6 @@ class PrerenderTabHelper
   void RecordEventIfLoggedInURL(Event event, const GURL& url);
   void RecordEventIfLoggedInURLResult(Event event, scoped_ptr<bool> is_present,
                                       scoped_ptr<bool> lookup_succeeded);
-  // Helper class to compute pixel-based stats on the paint progress
-  // between when a prerendered page is swapped in and when the onload event
-  // fires.
-  class PixelStats;
-  scoped_ptr<PixelStats> pixel_stats_;
 
   // Retrieves the PrerenderManager, or NULL, if none was found.
   PrerenderManager* MaybeGetPrerenderManager() const;
