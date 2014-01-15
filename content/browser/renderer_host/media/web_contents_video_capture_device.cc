@@ -108,6 +108,14 @@ void InvokeCaptureFrameCallback(
   capture_frame_cb.Run(timestamp, frame_captured);
 }
 
+void DeleteOnWorkerThread(scoped_ptr<base::Thread> render_thread,
+                          const base::Closure& callback) {
+  render_thread.reset();
+
+  // After thread join call the callback on UI thread.
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback);
+}
+
 // FrameSubscriber is a proxy to the ThreadSafeCaptureOracle that's compatible
 // with RenderWidgetHostViewFrameSubscriber. We create one per event type.
 class FrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
@@ -211,7 +219,7 @@ class WebContentsCaptureMachine
   // VideoCaptureMachine overrides.
   virtual bool Start(
       const scoped_refptr<ThreadSafeCaptureOracle>& oracle_proxy) OVERRIDE;
-  virtual void Stop() OVERRIDE;
+  virtual void Stop(const base::Closure& callback) OVERRIDE;
 
   // Starts a copy from the backing store or the composited surface. Must be run
   // on the UI BrowserThread. |deliver_frame_cb| will be run when the operation
@@ -285,7 +293,7 @@ class WebContentsCaptureMachine
 
   // A dedicated worker thread on which SkBitmap->VideoFrame conversion will
   // occur. Only used when this activity cannot be done on the GPU.
-  base::Thread render_thread_;
+  scoped_ptr<base::Thread> render_thread_;
 
   // Makes all the decisions about which frames to copy, and how.
   scoped_refptr<ThreadSafeCaptureOracle> oracle_proxy_;
@@ -551,10 +559,14 @@ WebContentsCaptureMachine::WebContentsCaptureMachine(int render_process_id,
                                                      int render_view_id)
     : initial_render_process_id_(render_process_id),
       initial_render_view_id_(render_view_id),
-      render_thread_("WebContentsVideo_RenderThread"),
       fullscreen_widget_id_(MSG_ROUTING_NONE) {}
 
-WebContentsCaptureMachine::~WebContentsCaptureMachine() {}
+WebContentsCaptureMachine::~WebContentsCaptureMachine() {
+  BrowserThread::PostBlockingPoolTask(
+      FROM_HERE,
+      base::Bind(&DeleteOnWorkerThread, base::Passed(&render_thread_),
+                 base::Bind(&base::DoNothing)));
+}
 
 bool WebContentsCaptureMachine::Start(
     const scoped_refptr<ThreadSafeCaptureOracle>& oracle_proxy) {
@@ -564,26 +576,38 @@ bool WebContentsCaptureMachine::Start(
   DCHECK(oracle_proxy.get());
   oracle_proxy_ = oracle_proxy;
 
-  if (!render_thread_.Start()) {
+  render_thread_.reset(new base::Thread("WebContentsVideo_RenderThread"));
+  if (!render_thread_->Start()) {
     DVLOG(1) << "Failed to spawn render thread.";
+    render_thread_.reset();
     return false;
   }
 
-  if (!StartObservingWebContents())
+  if (!StartObservingWebContents()) {
+    DVLOG(1) << "Failed to observe web contents.";
+    render_thread_.reset();
     return false;
+  }
 
   started_ = true;
   return true;
 }
 
-void WebContentsCaptureMachine::Stop() {
+void WebContentsCaptureMachine::Stop(const base::Closure& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   subscription_.reset();
   if (web_contents()) {
     web_contents()->DecrementCapturerCount();
     Observe(NULL);
   }
-  render_thread_.Stop();
+
+  // The render thread cannot be stopped on the UI thread, so post a message
+  // to the thread pool used for blocking operations.
+  BrowserThread::PostBlockingPoolTask(
+      FROM_HERE,
+      base::Bind(&DeleteOnWorkerThread, base::Passed(&render_thread_),
+                 callback));
+
   started_ = false;
 }
 
@@ -706,11 +730,12 @@ void WebContentsCaptureMachine::DidCopyFromBackingStore(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   base::TimeTicks now = base::TimeTicks::Now();
+  DCHECK(render_thread_.get());
   if (success) {
     UMA_HISTOGRAM_TIMES("TabCapture.CopyTimeBitmap", now - start_time);
     TRACE_EVENT_ASYNC_STEP_INTO0("mirroring", "Capture", target.get(),
                                  "Render");
-    render_thread_.message_loop_proxy()->PostTask(FROM_HERE, base::Bind(
+    render_thread_->message_loop_proxy()->PostTask(FROM_HERE, base::Bind(
         &RenderVideoFrame, bitmap, target,
         base::Bind(deliver_frame_cb, start_time)));
   } else {

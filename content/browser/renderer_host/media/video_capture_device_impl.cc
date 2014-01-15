@@ -34,10 +34,8 @@ namespace {
 void DeleteCaptureMachineOnUIThread(
     scoped_ptr<VideoCaptureMachine> capture_machine) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (capture_machine) {
-    capture_machine->Stop();
-    capture_machine.reset();
-  }
+
+  capture_machine.reset();
 }
 
 }  // namespace
@@ -247,7 +245,8 @@ void VideoCaptureDeviceImpl::StopAndDeAllocate() {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE, base::Bind(
           &VideoCaptureMachine::Stop,
-          base::Unretained(capture_machine_.get())));
+          base::Unretained(capture_machine_.get()),
+          base::Bind(&base::DoNothing)));
 }
 
 void VideoCaptureDeviceImpl::CaptureStarted(bool success) {
@@ -267,9 +266,13 @@ VideoCaptureDeviceImpl::~VideoCaptureDeviceImpl() {
   // If capture_machine is not NULL, then we need to return to the UI thread to
   // safely stop the capture machine.
   if (capture_machine_) {
+    VideoCaptureMachine* capture_machine_ptr = capture_machine_.get();
     BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE, base::Bind(
-            &DeleteCaptureMachineOnUIThread, base::Passed(&capture_machine_)));
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&VideoCaptureMachine::Stop,
+                   base::Unretained(capture_machine_ptr),
+                   base::Bind(&DeleteCaptureMachineOnUIThread,
+                              base::Passed(&capture_machine_))));
   }
   DVLOG(1) << "VideoCaptureDeviceImpl@" << this << " destroying.";
 }

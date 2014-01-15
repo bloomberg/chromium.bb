@@ -119,7 +119,8 @@ class VideoCaptureMachine {
       const scoped_refptr<ThreadSafeCaptureOracle>& oracle_proxy) = 0;
 
   // Stops capturing. Must be run on the UI BrowserThread.
-  virtual void Stop() = 0;
+  // |callback| is invoked after the capturing has stopped.
+  virtual void Stop(const base::Closure& callback) = 0;
 
  protected:
   bool started_;

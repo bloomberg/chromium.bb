@@ -97,7 +97,7 @@ class DesktopVideoCaptureMachine
   // VideoCaptureFrameSource overrides.
   virtual bool Start(
       const scoped_refptr<ThreadSafeCaptureOracle>& oracle_proxy) OVERRIDE;
-  virtual void Stop() OVERRIDE;
+  virtual void Stop(const base::Closure& callback) OVERRIDE;
 
   // Implements aura::WindowObserver.
   virtual void OnWindowBoundsChanged(aura::Window* window,
@@ -213,7 +213,7 @@ bool DesktopVideoCaptureMachine::Start(
   return true;
 }
 
-void DesktopVideoCaptureMachine::Stop() {
+void DesktopVideoCaptureMachine::Stop(const base::Closure& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Stop observing window events.
@@ -234,6 +234,8 @@ void DesktopVideoCaptureMachine::Stop() {
   timer_.Stop();
 
   started_ = false;
+
+  callback.Run();
 }
 
 void DesktopVideoCaptureMachine::UpdateCaptureSize() {
@@ -401,7 +403,7 @@ void DesktopVideoCaptureMachine::OnWindowBoundsChanged(
 void DesktopVideoCaptureMachine::OnWindowDestroyed(aura::Window* window) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  Stop();
+  Stop(base::Bind(&base::DoNothing));
 
   oracle_proxy_->ReportError();
 }
