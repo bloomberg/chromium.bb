@@ -214,7 +214,7 @@ int main(int argc, char *argv[])
 	int num = 30, denom = 1;
 	char filename[200];
 	char *mode;
-	uint32_t msecs, frame_time, *frame, frame_size;
+	uint32_t msecs, frame_time;
 
 	for (i = 1, j = 1; i < argc; i++) {
 		if (strcmp(argv[i], "--yuv4mpeg2-444") == 0) {
@@ -276,11 +276,7 @@ int main(int argc, char *argv[])
 	has_frame = wcap_decoder_get_frame(decoder);
 	msecs = decoder->msecs;
 	frame_time = 1000 * denom / num;
-	frame_size = decoder->width * decoder->height * 4;
-	frame = malloc(frame_size);
 	while (has_frame) {
-		if (decoder->msecs >= msecs)
-			memcpy(frame, decoder->frame, frame_size);
 		if (all || i == output_frame) {
 			snprintf(filename, sizeof filename,
 				 "wcap-frame-%d.png", i);
