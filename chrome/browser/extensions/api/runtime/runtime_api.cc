@@ -222,6 +222,11 @@ void RuntimeAPI::OnExtensionLoaded(const Extension* extension) {
 }
 
 void RuntimeAPI::OnExtensionInstalled(const Extension* extension) {
+  // Ephemeral apps are not considered to be installed and do not receive
+  // the onInstalled() event.
+  if (extension->is_ephemeral())
+    return;
+
   // Get the previous version to check if this is an upgrade.
   ExtensionService* service = ExtensionSystem::GetForBrowserContext(
       browser_context_)->extension_service();
@@ -242,6 +247,11 @@ void RuntimeAPI::OnExtensionInstalled(const Extension* extension) {
 }
 
 void RuntimeAPI::OnExtensionUninstalled(const Extension* extension) {
+  // Ephemeral apps are not considered to be installed, so the uninstall URL
+  // is not invoked when they are removed.
+  if (extension->is_ephemeral())
+    return;
+
   Profile* profile = Profile::FromBrowserContext(browser_context_);
   RuntimeEventRouter::OnExtensionUninstalled(profile, extension->id());
 }
