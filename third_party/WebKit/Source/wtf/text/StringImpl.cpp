@@ -28,13 +28,17 @@
 #include "wtf/DynamicAnnotations.h"
 #include "wtf/LeakAnnotations.h"
 #include "wtf/MainThread.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/PartitionAlloc.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/WTF.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/StringBuffer.h"
 #include "wtf/text/StringHash.h"
 #include "wtf/unicode/CharacterNames.h"
+#include <unicode/translit.h>
+#include <unicode/unistr.h>
 
 #ifdef STRING_STATS
 #include "wtf/DataLog.h"
@@ -688,72 +692,109 @@ upconvert:
     return newImpl.release();
 }
 
+static bool inline localeIdMatchesLang(const AtomicString& localeId, const char* lang)
+{
+    if (equalIgnoringCase(localeId, lang))
+        return true;
+    static char localeIdPrefix[4];
+    static const char delimeter[4] = "-_@";
+
+    size_t langLength = strlen(lang);
+    RELEASE_ASSERT(langLength >= 2 && langLength <= 3);
+    strncpy(localeIdPrefix, lang, langLength);
+    for (int i = 0; i < 3; ++i) {
+        localeIdPrefix[langLength] = delimeter[i];
+        // case-insensitive comparison
+        if (localeId.impl() && localeId.impl()->startsWith(localeIdPrefix, langLength + 1, false))
+            return true;
+    }
+    return false;
+}
+
+typedef int32_t (*icuCaseConverter)(UChar*, int32_t, const UChar*, int32_t, const char*, UErrorCode*);
+
+static PassRefPtr<StringImpl> caseConvert(const UChar* source16, size_t length, icuCaseConverter converter, const char* locale, StringImpl* originalString)
+{
+    UChar* data16;
+    int32_t targetLength = length;
+    RefPtr<StringImpl> output = StringImpl::createUninitialized(length, data16);
+    do {
+        UErrorCode status = U_ZERO_ERROR;
+        targetLength = converter(data16, targetLength, source16, length, locale, &status);
+        if (U_SUCCESS(status)) {
+            output->truncateAssumingIsolated(targetLength);
+            return output.release();
+        }
+        if (status != U_BUFFER_OVERFLOW_ERROR)
+            return originalString;
+        // Expand the buffer.
+        output = StringImpl::createUninitialized(targetLength, data16);
+    } while (true);
+}
+
 PassRefPtr<StringImpl> StringImpl::lower(const AtomicString& localeIdentifier)
 {
     // Use the more-optimized code path most of the time.
-    // Note the assumption here that the only locale-specific lowercasing is
-    // in the "tr" and "az" locales.
-    // FIXME: Could possibly optimize further by looking for the specific sequences
-    // that have locale-specific lowercasing. There are only three of them.
-    if (!(localeIdentifier == "tr" || localeIdentifier == "az"))
+    // Only Turkic (tr and az) languages and Lithuanian requires
+    // locale-specific lowercasing rules. Even though CLDR has el-Lower,
+    // it's identical to the locale-agnostic lowercasing. Context-dependent
+    // handling of Greek capital sigma is built into the common lowercasing
+    // function in ICU.
+    const char* localeForConversion = 0;
+    if (localeIdMatchesLang(localeIdentifier, "tr") || localeIdMatchesLang(localeIdentifier, "az"))
+        localeForConversion = "tr";
+    else if (localeIdMatchesLang(localeIdentifier, "lt"))
+        localeForConversion = "lt";
+    else
         return lower();
 
     if (m_length > static_cast<unsigned>(numeric_limits<int32_t>::max()))
         CRASH();
     int length = m_length;
 
-    // Below, we pass in the hardcoded locale "tr". Passing that is more efficient than
-    // allocating memory just to turn localeIdentifier into a C string, and there is no
-    // difference between the uppercasing for "tr" and "az" locales.
     RefPtr<StringImpl> upconverted = upconvertedString();
     const UChar* source16 = upconverted->characters16();
-    UChar* data16;
-    RefPtr<StringImpl> newString = createUninitialized(length, data16);
-    do {
-        UErrorCode status = U_ZERO_ERROR;
-        int realLength = u_strToLower(data16, length, source16, length, "tr", &status);
-        if (U_SUCCESS(status)) {
-            newString->truncateAssumingIsolated(realLength);
-            return newString.release();
-        }
-        if (status != U_BUFFER_OVERFLOW_ERROR)
-            return this;
-        // Expand the buffer.
-        newString = createUninitialized(realLength, data16);
-    } while (true);
+    return caseConvert(source16, length, u_strToLower, localeForConversion, this);
 }
 
 PassRefPtr<StringImpl> StringImpl::upper(const AtomicString& localeIdentifier)
 {
     // Use the more-optimized code path most of the time.
-    // Note the assumption here that the only locale-specific uppercasing is of the
-    // letter "i" in the "tr" and "az" locales.
-    if (!(localeIdentifier == "tr" || localeIdentifier == "az") || find('i') == kNotFound)
+    // Only Turkic (tr and az) languages and Greek require locale-specific
+    // lowercasing rules.
+    icu::UnicodeString transliteratorId;
+    const char* localeForConversion = 0;
+    if (localeIdMatchesLang(localeIdentifier, "tr") || localeIdMatchesLang(localeIdentifier, "az"))
+        localeForConversion = "tr";
+    else if (localeIdMatchesLang(localeIdentifier, "el"))
+        transliteratorId = UNICODE_STRING_SIMPLE("el-Upper");
+    else if (localeIdMatchesLang(localeIdentifier, "lt"))
+        localeForConversion = "lt";
+    else
         return upper();
 
     if (m_length > static_cast<unsigned>(numeric_limits<int32_t>::max()))
         CRASH();
     int length = m_length;
 
-    // Below, we pass in the hardcoded locale "tr". Passing that is more efficient than
-    // allocating memory just to turn localeIdentifier into a C string, and there is no
-    // difference between the uppercasing for "tr" and "az" locales.
     RefPtr<StringImpl> upconverted = upconvertedString();
     const UChar* source16 = upconverted->characters16();
-    UChar* data16;
-    RefPtr<StringImpl> newString = createUninitialized(length, data16);
-    do {
-        UErrorCode status = U_ZERO_ERROR;
-        int realLength = u_strToUpper(data16, length, source16, length, "tr", &status);
-        if (U_SUCCESS(status)) {
-            newString->truncateAssumingIsolated(realLength);
-            return newString.release();
-        }
-        if (status != U_BUFFER_OVERFLOW_ERROR)
-            return this;
-        // Expand the buffer.
-        newString = createUninitialized(realLength, data16);
-    } while (true);
+
+    if (localeForConversion)
+        return caseConvert(source16, length, u_strToUpper, localeForConversion, this);
+
+    // TODO(jungshik): Cache transliterator if perf penaly warrants it for Greek.
+    UErrorCode status = U_ZERO_ERROR;
+    OwnPtr<icu::Transliterator> translit =
+        adoptPtr(icu::Transliterator::createInstance(transliteratorId, UTRANS_FORWARD, status));
+    if (U_FAILURE(status))
+        return upper();
+
+    // target will be copy-on-write.
+    icu::UnicodeString target(false, source16, length);
+    translit->transliterate(target);
+
+    return create(target.getBuffer(), target.length());
 }
 
 PassRefPtr<StringImpl> StringImpl::fill(UChar character)

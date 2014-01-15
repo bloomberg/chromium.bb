@@ -176,4 +176,142 @@ TEST(WTF, SimplifyWhiteSpace)
     ASSERT_EQ(String("  Hello  world  "), extraSpacesAndTabs.simplifyWhiteSpace(WTF::DoNotStripWhiteSpace));
 }
 
+struct CaseFoldingTestData {
+    const char* sourceDescription;
+    const char* source;
+    const char** localeList;
+    size_t localeListLength;
+    const char* expected;
+};
+
+// \xC4\xB0 = U+0130 (capital dotted I)
+// \xC4\xB1 = U+0131 (lowercase dotless I)
+const char* turkicInput = "Isi\xC4\xB0 \xC4\xB0s\xC4\xB1I";
+const char* greekInput = "ΟΔΌΣ Οδός Σο ΣΟ oΣ ΟΣ σ ἕξ";
+const char* lithuanianInput = "I Ï J J̈ Į Į̈ Ì Í Ĩ xi̇̈ xj̇̈ xį̇̈ xi̇̀ xi̇́ xi̇̃ XI XÏ XJ XJ̈ XĮ XĮ̈";
+
+const char* turkicLocales[] = {
+    "tr", "tr-TR", "tr_TR", "tr@foo=bar", "tr-US", "TR", "tr-tr", "tR",
+    "az", "az-AZ", "az_AZ", "az@foo=bar", "az-US", "Az", "AZ-AZ", };
+const char* nonTurkicLocales[] = {
+    "en", "en-US", "en_US", "en@foo=bar", "EN", "En",
+    "ja", "el", "fil", "fi", "lt", };
+const char* greekLocales[] = {
+    "el", "el-GR", "el_GR", "el@foo=bar", "el-US", "EL", "el-gr", "eL",
+};
+const char* nonGreekLocales[] = {
+    "en", "en-US", "en_US", "en@foo=bar", "EN", "En",
+    "ja", "tr", "az", "fil", "fi", "lt", };
+const char* lithuanianLocales[] = {
+    "lt", "lt-LT", "lt_LT", "lt@foo=bar", "lt-US", "LT", "lt-lt", "lT",
+};
+// Should not have "tr" or "az" because "lt" and 'tr/az' rules conflict with each other.
+const char* nonLithuanianLocales[] = {
+    "en", "en-US", "en_US", "en@foo=bar", "EN", "En", "ja", "fil", "fi", "el", };
+
+TEST(WTF, StringToUpperLocale)
+{
+    CaseFoldingTestData testDataList[] = {
+        {
+            "Turkic input",
+            turkicInput,
+            turkicLocales,
+            sizeof(turkicLocales) / sizeof(const char*),
+            "IS\xC4\xB0\xC4\xB0 \xC4\xB0SII",
+        }, {
+            "Turkic input",
+            turkicInput,
+            nonTurkicLocales,
+            sizeof(nonTurkicLocales) / sizeof(const char*),
+            "ISI\xC4\xB0 \xC4\xB0SII",
+        }, {
+            "Greek input",
+            greekInput,
+            greekLocales,
+            sizeof(greekLocales) / sizeof(const char*),
+            "ΟΔΟΣ ΟΔΟΣ ΣΟ ΣΟ OΣ ΟΣ Σ ΕΞ",
+        }, {
+            "Greek input",
+            greekInput,
+            nonGreekLocales,
+            sizeof(nonGreekLocales) / sizeof(const char*),
+            "ΟΔΌΣ ΟΔΌΣ ΣΟ ΣΟ OΣ ΟΣ Σ ἝΞ",
+        }, {
+            "Lithuanian input",
+            lithuanianInput,
+            lithuanianLocales,
+            sizeof(lithuanianLocales) / sizeof(const char*),
+            "I Ï J J̈ Į Į̈ Ì Í Ĩ XÏ XJ̈ XĮ̈ XÌ XÍ XĨ XI XÏ XJ XJ̈ XĮ XĮ̈",
+        }, {
+            "Lithuanian input",
+            lithuanianInput,
+            nonLithuanianLocales,
+            sizeof(nonLithuanianLocales) / sizeof(const char*),
+            "I Ï J J̈ Į Į̈ Ì Í Ĩ Xİ̈ XJ̇̈ XĮ̇̈ Xİ̀ Xİ́ Xİ̃ XI XÏ XJ XJ̈ XĮ XĮ̈",
+        },
+    };
+
+    for (size_t i = 0; i < sizeof(testDataList) / sizeof(testDataList[0]); ++i) {
+        const char* expected = testDataList[i].expected;
+        String source = String::fromUTF8(testDataList[i].source);
+        for (size_t j = 0; j < testDataList[i].localeListLength; ++j) {
+            const char* locale = testDataList[i].localeList[j];
+            EXPECT_STREQ(expected, source.upper(locale).utf8().data()) << testDataList[i].sourceDescription << "; locale=" << locale;
+        }
+    }
+}
+
+TEST(WTF, StringToLowerLocale)
+{
+    CaseFoldingTestData testDataList[] = {
+        {
+            "Turkic input",
+            turkicInput,
+            turkicLocales,
+            sizeof(turkicLocales) / sizeof(const char*),
+            "ısii isıı",
+        }, {
+            "Turkic input",
+            turkicInput,
+            nonTurkicLocales,
+            sizeof(nonTurkicLocales) / sizeof(const char*),
+            // U+0130 is lowercased to U+0069 followed by U+0307
+            "isii\xCC\x87 i\xCC\x87s\xC4\xB1i",
+        }, {
+            "Greek input",
+            greekInput,
+            greekLocales,
+            sizeof(greekLocales) / sizeof(const char*),
+            "οδός οδός σο σο oς ος σ ἕξ",
+        }, {
+            "Greek input",
+            greekInput,
+            nonGreekLocales,
+            sizeof(greekLocales) / sizeof(const char*),
+            "οδός οδός σο σο oς ος σ ἕξ",
+        }, {
+            "Lithuanian input",
+            lithuanianInput,
+            lithuanianLocales,
+            sizeof(lithuanianLocales) / sizeof(const char*),
+            "i ï j j̇̈ į į̇̈ i̇̀ i̇́ i̇̃ xi̇̈ xj̇̈ xį̇̈ xi̇̀ xi̇́ xi̇̃ xi xï xj xj̇̈ xį xį̇̈",
+        }, {
+            "Lithuanian input",
+            lithuanianInput,
+            nonLithuanianLocales,
+            sizeof(nonLithuanianLocales) / sizeof(const char*),
+            "i ï j j̈ į į̈ ì í ĩ xi̇̈ xj̇̈ xį̇̈ xi̇̀ xi̇́ xi̇̃ xi xï xj xj̈ xį xį̈",
+        },
+    };
+
+    for (size_t i = 0; i < sizeof(testDataList) / sizeof(testDataList[0]); ++i) {
+        const char* expected = testDataList[i].expected;
+        String source = String::fromUTF8(testDataList[i].source);
+        for (size_t j = 0; j < testDataList[i].localeListLength; ++j) {
+            const char* locale = testDataList[i].localeList[j];
+            EXPECT_STREQ(expected, source.lower(locale).utf8().data()) << testDataList[i].sourceDescription << "; locale=" << locale;
+        }
+    }
+}
+
 } // namespace
