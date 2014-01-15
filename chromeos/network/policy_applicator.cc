@@ -193,7 +193,17 @@ void PolicyApplicator::GetEntryCallback(
         DeleteEntry(entry);
       }
 
-      WriteNewShillConfiguration(*new_shill_properties, *new_policy);
+      // In general, old entries should at first be deleted before new
+      // configurations are written to prevent inconsistencies. Therefore, we
+      // delay the writing of the new config here until ~PolicyApplicator.
+      // E.g. one problematic case is if a policy { {GUID=X, SSID=Y} } is
+      // applied to the profile entries
+      // { ENTRY1 = {GUID=X, SSID=X, USER_SETTINGS=X},
+      //   ENTRY2 = {SSID=Y, ... } }.
+      // At first ENTRY1 and ENTRY2 should be removed, then the new config be
+      // written and the result should be:
+      // { {GUID=X, SSID=Y, USER_SETTINGS=X} }
+      WriteNewShillConfiguration(*new_shill_properties, *new_policy, true);
       remaining_policies_.erase(new_guid);
     }
   } else if (was_managed) {
@@ -231,7 +241,8 @@ void PolicyApplicator::DeleteEntry(const std::string& entry) {
 
 void PolicyApplicator::WriteNewShillConfiguration(
     const base::DictionaryValue& shill_dictionary,
-    const base::DictionaryValue& policy) {
+    const base::DictionaryValue& policy,
+    bool write_later) {
   // Ethernet (non EAP) settings, like GUID or UIData, cannot be stored per
   // user. Abort in that case.
   std::string type;
@@ -248,7 +259,10 @@ void PolicyApplicator::WriteNewShillConfiguration(
       return;
   }
 
-  handler_->CreateConfigurationFromPolicy(shill_dictionary);
+  if (write_later)
+    new_shill_configurations_.push_back(shill_dictionary.DeepCopy());
+  else
+    handler_->CreateConfigurationFromPolicy(shill_dictionary);
 }
 
 void PolicyApplicator::GetPropertiesForUnmanagedEntry(
@@ -285,6 +299,9 @@ void PolicyApplicator::GetPropertiesForUnmanagedEntry(
 PolicyApplicator::~PolicyApplicator() {
   ApplyRemainingPolicies();
   STLDeleteValues(&all_policies_);
+  // Notify the handler about all policies being applied, so that the network
+  // lists can be updated.
+  handler_->OnPoliciesApplied();
 }
 
 void PolicyApplicator::ApplyRemainingPolicies() {
@@ -292,6 +309,14 @@ void PolicyApplicator::ApplyRemainingPolicies() {
     LOG(WARNING) << "Handler destructed during policy application to profile "
                  << profile_.ToDebugString();
     return;
+  }
+
+  // Write all queued configurations now.
+  for (ScopedVector<base::DictionaryValue>::const_iterator it =
+           new_shill_configurations_.begin();
+       it != new_shill_configurations_.end();
+       ++it) {
+    handler_->CreateConfigurationFromPolicy(**it);
   }
 
   if (remaining_policies_.empty())
@@ -312,7 +337,7 @@ void PolicyApplicator::ApplyRemainingPolicies() {
 
     scoped_ptr<base::DictionaryValue> shill_dictionary =
         policy_util::CreateShillConfiguration(profile_, *it, policy, NULL);
-    WriteNewShillConfiguration(*shill_dictionary, *policy);
+    WriteNewShillConfiguration(*shill_dictionary, *policy, false);
   }
 }
 

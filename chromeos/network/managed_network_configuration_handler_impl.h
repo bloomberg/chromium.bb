@@ -98,6 +98,8 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandlerImpl
       const base::DictionaryValue& existing_properties,
       const base::DictionaryValue& new_properties) OVERRIDE;
 
+  virtual void OnPoliciesApplied() OVERRIDE;
+
  private:
   friend class ClientCertResolverTest;
   friend class NetworkHandler;
@@ -121,7 +123,7 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandlerImpl
   const Policies* GetPoliciesForUser(const std::string& userhash) const;
   const Policies* GetPoliciesForProfile(const NetworkProfile& profile) const;
 
-  void OnPolicyApplied(const std::string& service_path);
+  void OnPolicyAppliedToNetwork(const std::string& service_path);
 
   // If present, the empty string maps to the device policy.
   UserToPoliciesMap policies_by_user_;

@@ -445,8 +445,9 @@ void ManagedNetworkConfigurationHandlerImpl::CreateConfigurationFromPolicy(
     const base::DictionaryValue& shill_properties) {
   network_configuration_handler_->CreateConfiguration(
       shill_properties,
-      base::Bind(&ManagedNetworkConfigurationHandlerImpl::OnPolicyApplied,
-                 weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(
+          &ManagedNetworkConfigurationHandlerImpl::OnPolicyAppliedToNetwork,
+          weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&LogErrorWithDict, FROM_HERE));
 }
 
@@ -475,9 +476,16 @@ void ManagedNetworkConfigurationHandlerImpl::
 
   network_configuration_handler_->CreateConfiguration(
       shill_properties,
-      base::Bind(&ManagedNetworkConfigurationHandlerImpl::OnPolicyApplied,
-                 weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(
+          &ManagedNetworkConfigurationHandlerImpl::OnPolicyAppliedToNetwork,
+          weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&LogErrorWithDict, FROM_HERE));
+}
+
+void ManagedNetworkConfigurationHandlerImpl::OnPoliciesApplied() {
+  // After all policies were applied, trigger an update of the network lists.
+  if (network_state_handler_)
+    network_state_handler_->UpdateManagerProperties();
 }
 
 const base::DictionaryValue*
@@ -577,7 +585,7 @@ void ManagedNetworkConfigurationHandlerImpl::Init(
   network_profile_handler_->AddObserver(this);
 }
 
-void ManagedNetworkConfigurationHandlerImpl::OnPolicyApplied(
+void ManagedNetworkConfigurationHandlerImpl::OnPolicyAppliedToNetwork(
     const std::string& service_path) {
   if (service_path.empty())
     return;

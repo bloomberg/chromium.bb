@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "chromeos/network/network_profile.h"
@@ -36,6 +37,10 @@ class PolicyApplicator : public base::RefCounted<PolicyApplicator> {
      virtual void UpdateExistingConfigurationWithPropertiesFromPolicy(
          const base::DictionaryValue& existing_properties,
          const base::DictionaryValue& new_properties) = 0;
+
+     // Called after all policies were applied. At this point, the list of
+     // networks should be updated.
+     virtual void OnPoliciesApplied() = 0;
 
     private:
      DISALLOW_ASSIGN(ConfigurationHandler);
@@ -69,9 +74,11 @@ class PolicyApplicator : public base::RefCounted<PolicyApplicator> {
   // Sends Shill the command to delete profile entry |entry| from |profile_|.
   void DeleteEntry(const std::string& entry);
 
-  // Sends the Shill configuration |shill_dictionary| to Shill.
+  // Sends the Shill configuration |shill_dictionary| to Shill. If |write_later|
+  // is true, the configuration is queued for sending until ~PolicyApplicator.
   void WriteNewShillConfiguration(const base::DictionaryValue& shill_dictionary,
-                                  const base::DictionaryValue& policy);
+                                  const base::DictionaryValue& policy,
+                                  bool write_later);
 
   // Adds properties to |properties_to_update|, which are enforced on an
   // unamaged network by the global network config of the policy.
@@ -94,6 +101,7 @@ class PolicyApplicator : public base::RefCounted<PolicyApplicator> {
   NetworkProfile profile_;
   GuidToPolicyMap all_policies_;
   base::DictionaryValue global_network_config_;
+  ScopedVector<base::DictionaryValue> new_shill_configurations_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyApplicator);
 };

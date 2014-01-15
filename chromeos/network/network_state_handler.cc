@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/format_macros.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -318,9 +319,11 @@ const FavoriteState* NetworkStateHandler::GetFavoriteState(
       GetModifiableManagedState(&favorite_list_, service_path);
   if (!managed)
     return NULL;
-  if (managed && !managed->update_received())
+  const FavoriteState* favorite = managed->AsFavoriteState();
+  DCHECK(favorite);
+  if (!favorite->update_received() || !favorite->is_favorite())
     return NULL;
-  return managed->AsFavoriteState();
+  return favorite;
 }
 
 void NetworkStateHandler::RequestScan() const {
