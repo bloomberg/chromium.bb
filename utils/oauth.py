@@ -2,15 +2,19 @@
 # Use of this source code is governed under the Apache License, Version 2.0 that
 # can be found in the LICENSE file.
 
-"""OAuth2 related utilities, mainly wrapper around oauth2client."""
+"""OAuth2 related utilities and implementation of browser based login flow."""
 
 # pylint: disable=W0613
 
+import BaseHTTPServer
 import datetime
 import logging
 import optparse
 import os
+import socket
 import sys
+import urlparse
+import webbrowser
 
 # oauth2client expects to find itself in sys.path.
 # Also ensure we use bundled version instead of system one.
@@ -19,7 +23,6 @@ sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party'))
 
 import httplib2
 from oauth2client import client
-from oauth2client import tools
 from oauth2client import multistore_file
 
 # keyring_storage depends on 'keyring' module that may not be available.
@@ -43,7 +46,7 @@ def add_oauth_options(parser):
   # open-ended request_uri. It should always be 'localhost'.
   parser.oauth_group = optparse.OptionGroup(parser, 'OAuth options')
   parser.oauth_group.add_option(
-      '--noauth-local-webserver', action='store_true',
+      '--no-auth-local-webserver', action='store_true',
       default=bool(int(os.environ.get('DISABLE_LOCAL_SERVER', '0'))),
       help='Do not run a local web server.')
   parser.oauth_group.add_option(
@@ -110,36 +113,6 @@ def _get_storage(urlhost):
       OAUTH_STORAGE_FILE, urlhost)
 
 
-def _run_oauth_dance(urlhost, storage, options):
-  """Perform full OAuth2 dance with the browser."""
-  # Fetch client_id and client_secret from service itself.
-  client_id, client_not_so_secret = _fetch_oauth_client_id(urlhost)
-  if not client_id or not client_not_so_secret:
-    logging.error('Couldn\'t fetch OAuth client credentials')
-    return None
-
-  # Appengine expects a token scoped to 'userinfo.email'.
-  flow = client.OAuth2WebServerFlow(
-      client_id,
-      client_not_so_secret,
-      'https://www.googleapis.com/auth/userinfo.email',
-      approval_prompt='force')
-
-  # There are some issues with run_flow.
-  # 1) It messes up global logging level.
-  # 2) It expects to find 'logging_level' in options.
-  # 3) It mutates options inside.
-  # 4) It uses sys.exit() to indicate a failure.
-  try:
-    tools.logging = _EmptyMock()
-    credentials = tools.run_flow(flow, storage, _extract_flags(options))
-  except SystemExit:
-    return None
-
-  # run_flow stores a token into |storage| itself.
-  return credentials.access_token
-
-
 def _fetch_oauth_client_id(urlhost):
   """Ask service to for client_id and client_secret to use."""
   # client_secret is not really a secret in that case. So an attacker can
@@ -166,19 +139,132 @@ def _fetch_oauth_client_id(urlhost):
   return None, None
 
 
-class _EmptyMock(object):
-  """Black hole that absorbs all calls and attribute accesses."""
-  def __getattr__(self, name):
-    return self
-  def __call__(self, *args, **kwargs):
-    return self
+# The chunk of code below is based on oauth2client.tools module. Unfortunately
+# 'tools' module itself depends on 'argparse' module unavailable on Python 2.6
+# so it can't be imported directly.
 
 
-def _extract_flags(options):
-  """Options parser -> mutable object with a structure expected by run_flow."""
-  class Flags(object):
-    auth_host_name = 'localhost'
-    auth_host_port = options.auth_host_port
-    logging_level = 'ignored'
-    noauth_local_webserver = options.noauth_local_webserver
-  return Flags()
+def _run_oauth_dance(urlhost, storage, options):
+  """Perform full OAuth2 dance with the browser."""
+  # Fetch client_id and client_secret from service itself.
+  client_id, client_not_so_secret = _fetch_oauth_client_id(urlhost)
+  if not client_id or not client_not_so_secret:
+    print 'Couldn\'t fetch OAuth client credentials'
+    return None
+
+  # Appengine expects a token scoped to 'userinfo.email'.
+  flow = client.OAuth2WebServerFlow(
+      client_id,
+      client_not_so_secret,
+      'https://www.googleapis.com/auth/userinfo.email',
+      approval_prompt='force')
+
+  use_local_webserver = not options.no_auth_local_webserver
+  ports = options.auth_host_port
+  if use_local_webserver:
+    success = False
+    port_number = 0
+    for port in ports:
+      port_number = port
+      try:
+        httpd = ClientRedirectServer(('localhost', port), ClientRedirectHandler)
+      except socket.error:
+        pass
+      else:
+        success = True
+        break
+    use_local_webserver = success
+    if not success:
+      print 'Failed to start a local webserver listening on ports %r.' % ports
+      print 'Please check your firewall settings and locally'
+      print 'running programs that may be blocking or using those ports.'
+      print
+      print 'Falling back to --no-auth-local-webserver and continuing with',
+      print 'authorization.'
+      print
+
+  if use_local_webserver:
+    oauth_callback = 'http://localhost:%s/' % port_number
+  else:
+    oauth_callback = client.OOB_CALLBACK_URN
+  flow.redirect_uri = oauth_callback
+  authorize_url = flow.step1_get_authorize_url()
+
+  if use_local_webserver:
+    webbrowser.open(authorize_url, new=1, autoraise=True)
+    print 'Your browser has been opened to visit:'
+    print
+    print '    ' + authorize_url
+    print
+    print 'If your browser is on a different machine then exit and re-run this'
+    print 'application with the command-line parameter '
+    print
+    print '  --no-auth-local-webserver'
+    print
+  else:
+    print 'Go to the following link in your browser:'
+    print
+    print '    ' + authorize_url
+    print
+
+  code = None
+  if use_local_webserver:
+    httpd.handle_request()
+    if 'error' in httpd.query_params:
+      print 'Authentication request was rejected.'
+      return None
+    if 'code' not in httpd.query_params:
+      print 'Failed to find "code" in the query parameters of the redirect.'
+      print 'Try running with --no-auth-local-webserver.'
+      return None
+    code = httpd.query_params['code']
+  else:
+    code = raw_input('Enter verification code: ').strip()
+
+  try:
+    credential = flow.step2_exchange(code)
+  except client.FlowExchangeError as e:
+    print 'Authentication has failed: %s' % e
+    return None
+
+  print 'Authentication successful.'
+  storage.put(credential)
+  credential.set_store(storage)
+  return credential.access_token
+
+
+class ClientRedirectServer(BaseHTTPServer.HTTPServer):
+  """A server to handle OAuth 2.0 redirects back to localhost.
+
+  Waits for a single request and parses the query parameters
+  into query_params and then stops serving.
+  """
+  query_params = {}
+
+
+class ClientRedirectHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+  """A handler for OAuth 2.0 redirects back to localhost.
+
+  Waits for a single request and parses the query parameters
+  into the servers query_params and then stops serving.
+  """
+
+  def do_GET(self):
+    """Handle a GET request.
+
+    Parses the query parameters and prints a message
+    if the flow has completed. Note that we can't detect
+    if an error occurred.
+    """
+    self.send_response(200)
+    self.send_header('Content-type', 'text/html')
+    self.end_headers()
+    query = self.path.split('?', 1)[-1]
+    query = dict(urlparse.parse_qsl(query))
+    self.server.query_params = query
+    self.wfile.write('<html><head><title>Authentication Status</title></head>')
+    self.wfile.write('<body><p>The authentication flow has completed.</p>')
+    self.wfile.write('</body></html>')
+
+  def log_message(self, _format, *args):
+    """Do not log messages to stdout while running as command line program."""
