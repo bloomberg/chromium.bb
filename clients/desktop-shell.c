@@ -21,12 +21,15 @@
  * OF THIS SOFTWARE.
  */
 
+#include "config.h"
+
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <errno.h>
 #include <math.h>
 #include <cairo.h>
 #include <sys/wait.h>
@@ -609,7 +612,7 @@ panel_add_launcher(struct panel *panel, const char *icon, const char *path)
 
 	launcher = xzalloc(sizeof *launcher);
 	launcher->icon = load_icon_or_fallback(icon);
-	launcher->path = strdup(path);
+	launcher->path = xstrdup(path);
 
 	wl_array_init(&launcher->envp);
 	wl_array_init(&launcher->argv);
@@ -1061,6 +1064,11 @@ background_create(struct desktop *desktop)
 
 	weston_config_section_get_string(s, "background-type",
 					 &type, "tile");
+	if (type == NULL) {
+		fprintf(stderr, "%s: out of memory\n", program_invocation_short_name);
+		exit(EXIT_FAILURE);
+	}
+
 	if (strcmp(type, "scale") == 0) {
 		background->type = BACKGROUND_SCALE;
 	} else if (strcmp(type, "scale-crop") == 0) {
