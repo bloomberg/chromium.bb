@@ -563,10 +563,6 @@ private:
 
     void updateDescendantDependentFlags();
 
-    // This flag is computed by RenderLayerCompositor, which knows more about 3d hierarchies than we do.
-    void setHas3DTransformedDescendant(bool b) { m_has3DTransformedDescendant = b; }
-    bool has3DTransformedDescendant() const { return m_has3DTransformedDescendant; }
-
     void dirty3DTransformedDescendantStatus();
     // Both updates the status, and returns true if descendants of this have 3d.
     bool update3DTransformedDescendantStatus();
