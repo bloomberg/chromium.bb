@@ -3,7 +3,7 @@
 <head>
 <script src="resources/shadow-dom.js"></script>
 <style>
-div {
+* ^^ div {
   margin: 10px 10px 10px 10px;
   border: solid black;
 }
@@ -14,20 +14,13 @@ div {
 function text(contents) {
     return document.createTextNode(contents);
 }
-
-function shadowRoot() {
-    var args = Array.prototype.slice.call(arguments);
-    args.unshift({'applyAuthorStyles': true});
-    return createShadowRoot.apply(this, args);
-}
-
 document.body.appendChild(
     createDOM('div', {},
-              shadowRoot(
-                  createDOM('div', {},
-                            shadowRoot(
-                                createDOM('content', {'select': '#a-1'})),
-                            createDOM('content', {'select': '#a-1'}))),
+              createShadowRoot({},
+                               createDOM('div', {},
+                                         createShadowRoot({},
+                                                          createDOM('content', {'select': '#a-1'})),
+                                         createDOM('content', {'select': '#a-1'}))),
               createDOM('div', {'id': 'a-1'}, text('a-1'))));
 </script>
 </body>

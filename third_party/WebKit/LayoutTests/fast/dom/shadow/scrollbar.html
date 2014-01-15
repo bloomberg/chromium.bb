@@ -12,7 +12,7 @@
    width: 50px;
 }
 
-#div1 {
+* ^^ #div1 {
    position: fixed;
    overflow: scroll;
    width: 80px;
@@ -20,7 +20,7 @@
    background-color: red;
 }
 
-#div1::-webkit-scrollbar {
+* ^^ #div1::-webkit-scrollbar {
    width: 20px;
 }
 </style>
@@ -29,7 +29,6 @@
 
 <script>
 var shadowRoot = host.createShadowRoot();
-shadowRoot.applyAuthorStyles = true;
 shadowRoot.innerHTML = '<div id="div1">some long text showing scrollbar</div>';
 </script>
 
