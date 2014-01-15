@@ -16,7 +16,14 @@
             var mediaKeySession;
             var initData = stringToUint8Array('mock');
 
-            function runTest() 
+            function checkError()
+            {
+                testExpected('mediaKeySession.error', null, '!=');
+                testExpected('mediaKeySession.error.code', MediaKeyError.MEDIA_KEYERR_UNKNOWN);
+                testExpected('mediaKeySession.error.systemCode', 0);
+            }
+
+            function runTest()
             {
                 consoleWrite("Test MediaKeys.");
                 testExpected('typeof window.MediaKeys', 'function');
@@ -26,8 +33,14 @@
                 testExpected('typeof mediaKeys', 'object');
                 testExpected('mediaKeys.keySystem', 'org.w3.clearkey');
                 testExpected('typeof mediaKeys.createSession', 'function');
+
+                testException('mediaKeys.createSession()', '"TypeError: Failed to execute \'createSession\' on \'MediaKeys\': 2 arguments required, but only 0 present."');
+                testException('mediaKeys.createSession("")', '"TypeError: Failed to execute \'createSession\' on \'MediaKeys\': 2 arguments required, but only 1 present."');
+                testException('mediaKeys.createSession("video/webm")', '"TypeError: Failed to execute \'createSession\' on \'MediaKeys\': 2 arguments required, but only 1 present."');
                 testDOMException('mediaKeys.createSession("", new Uint8Array(1))', "DOMException.INVALID_ACCESS_ERR");
-                testDOMException('mediaKeys.createSession("unsupported/type")', "DOMException.NOT_SUPPORTED_ERR");
+                testDOMException('mediaKeys.createSession("video/webm", null)', "DOMException.INVALID_ACCESS_ERR");
+                testDOMException('mediaKeys.createSession("video/webm", new Uint8Array(0))', "DOMException.INVALID_ACCESS_ERR");
+                testDOMException('mediaKeys.createSession("unsupported/type", new Uint8Array(1))', "DOMException.NOT_SUPPORTED_ERR");
                 consoleWrite("");
 
                 consoleWrite("Test MediaKeySession.");
@@ -41,7 +54,12 @@
                 testExpected('mediaKeySession.onwebkitkeyadded', null);
                 testExpected('mediaKeySession.onwebkitkeyerror', null);
                 testExpected('mediaKeySession.onwebkitkeymessage', null);
+                testException('mediaKeySession.update()', '"TypeError: Failed to execute \'update\' on \'MediaKeySession\': 1 argument required, but only 0 present."');
                 testDOMException('mediaKeySession.update(null)', "DOMException.INVALID_ACCESS_ERR");
+                run('mediaKeySession.update(new Uint8Array(1))');
+
+                // FIXME: Test MediaKeySession.release().
+
                 endTest();
             }
         </script>

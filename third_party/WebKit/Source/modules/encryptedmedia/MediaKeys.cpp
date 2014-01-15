@@ -30,7 +30,6 @@
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/html/HTMLMediaElement.h"
 #include "modules/encryptedmedia/MediaKeyMessageEvent.h"
-#include "modules/encryptedmedia/MediaKeySession.h"
 #include "platform/UUID.h"
 #include "platform/drm/ContentDecryptionModule.h"
 #include "wtf/HashSet.h"
@@ -72,6 +71,7 @@ MediaKeys::MediaKeys(const String& keySystem, PassOwnPtr<ContentDecryptionModule
     : m_mediaElement(0)
     , m_keySystem(keySystem)
     , m_cdm(cdm)
+    , m_initializeNewSessionTimer(this, &MediaKeys::initializeNewSessionTimerFired)
 {
     ScriptWrappable::init(this);
 }
@@ -81,25 +81,26 @@ MediaKeys::~MediaKeys()
     // FIXME: Make sure MediaKeySessions are torn down correctly.
 }
 
-PassRefPtr<MediaKeySession> MediaKeys::createSession(ExecutionContext* context, const String& type, Uint8Array* initData, ExceptionState& exceptionState)
+PassRefPtr<MediaKeySession> MediaKeys::createSession(ExecutionContext* context, const String& contentType, Uint8Array* initData, ExceptionState& exceptionState)
 {
     // From <http://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#dom-createsession>:
     // The createSession(type, initData) method must run the following steps:
     // Note: The contents of initData are container-specific Initialization Data.
 
-    // FIXME: Follow the latest spec to check |type| and |initData|.
-    // If type is null or an empty string and initData is not null or an empty string, throw an
-    // InvalidAccessError exception and abort these steps.
-    if ((type.isEmpty()) && (!initData || initData->length())) {
-        exceptionState.throwDOMException(InvalidAccessError, "The type provided is empty, but initData is not empty.");
+    if (contentType.isEmpty()) {
+        exceptionState.throwDOMException(InvalidAccessError, "The contentType provided ('" + contentType + "') is empty.");
+        return 0;
+    }
+
+    if (!initData || !initData->length()) {
+        exceptionState.throwDOMException(InvalidAccessError, "The initData provided is null or empty.");
         return 0;
     }
 
     // 1. If type contains a MIME type that is not supported or is not supported by the keySystem,
     // throw a NOT_SUPPORTED_ERR exception and abort these steps.
-    ASSERT(!type.isEmpty());
-    if (type.isEmpty() || !m_cdm->supportsMIMEType(type)) {
-        exceptionState.throwDOMException(NotSupportedError, "The type provided ('" + type + "') is unsupported.");
+    if (!m_cdm->supportsMIMEType(contentType)) {
+        exceptionState.throwDOMException(NotSupportedError, "The type provided ('" + contentType + "') is unsupported.");
         return 0;
     }
 
@@ -113,10 +114,10 @@ PassRefPtr<MediaKeySession> MediaKeys::createSession(ExecutionContext* context, 
     m_sessions.append(session);
 
     // 4. Schedule a task to initialize the session, providing type, initData, and the new object.
-    // FIXME: The spec says "schedule a task". We should move the timer here.
-    // FIXME: |initData| may be 0. We need to add more check before we dereference it.
-    // Note that this may become obsolete when the FIXME on l.90 is fixed.
-    session->initializeNewSession(type, initData);
+    m_pendingInitializeNewSessionData.append(InitializeNewSessionData(session, contentType, initData));
+
+    if (!m_initializeNewSessionTimer.isActive())
+        m_initializeNewSessionTimer.startOneShot(0);
 
     // 5. Return the new object to the caller.
     return session;
@@ -133,6 +134,17 @@ void MediaKeys::setMediaElement(HTMLMediaElement* element)
 blink::WebContentDecryptionModule* MediaKeys::contentDecryptionModule()
 {
     return m_cdm ? m_cdm->contentDecryptionModule() : 0;
+}
+
+void MediaKeys::initializeNewSessionTimerFired(Timer<MediaKeys>*)
+{
+    ASSERT(m_pendingInitializeNewSessionData.size());
+
+    while (!m_pendingInitializeNewSessionData.isEmpty()) {
+        InitializeNewSessionData data = m_pendingInitializeNewSessionData.takeFirst();
+        // FIXME: Refer to the spec to see what needs to be done in blink.
+        data.session->initializeNewSession(data.contentType, *data.initData);
+    }
 }
 
 }

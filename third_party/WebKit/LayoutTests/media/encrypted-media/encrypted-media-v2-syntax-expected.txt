@@ -8,8 +8,13 @@ RUN(mediaKeys = new MediaKeys("org.w3.clearkey"))
 EXPECTED (typeof mediaKeys == 'object') OK
 EXPECTED (mediaKeys.keySystem == 'org.w3.clearkey') OK
 EXPECTED (typeof mediaKeys.createSession == 'function') OK
-TEST(mediaKeys.createSession("", new Uint8Array(1))) THROWS(DOMException.INVALID_ACCESS_ERR: Failed to execute 'createSession' on 'MediaKeys': The type provided is empty, but initData is not empty.) OK
-TEST(mediaKeys.createSession("unsupported/type")) THROWS(DOMException.NOT_SUPPORTED_ERR: Failed to execute 'createSession' on 'MediaKeys': The type provided ('unsupported/type') is unsupported.) OK
+TEST(mediaKeys.createSession()) THROWS("TypeError: Failed to execute 'createSession' on 'MediaKeys': 2 arguments required, but only 0 present.") OK
+TEST(mediaKeys.createSession("")) THROWS("TypeError: Failed to execute 'createSession' on 'MediaKeys': 2 arguments required, but only 1 present.") OK
+TEST(mediaKeys.createSession("video/webm")) THROWS("TypeError: Failed to execute 'createSession' on 'MediaKeys': 2 arguments required, but only 1 present.") OK
+TEST(mediaKeys.createSession("", new Uint8Array(1))) THROWS(DOMException.INVALID_ACCESS_ERR: Failed to execute 'createSession' on 'MediaKeys': The contentType provided ('') is empty.) OK
+TEST(mediaKeys.createSession("video/webm", null)) THROWS(DOMException.INVALID_ACCESS_ERR: Failed to execute 'createSession' on 'MediaKeys': The initData provided is null or empty.) OK
+TEST(mediaKeys.createSession("video/webm", new Uint8Array(0))) THROWS(DOMException.INVALID_ACCESS_ERR: Failed to execute 'createSession' on 'MediaKeys': The initData provided is null or empty.) OK
+TEST(mediaKeys.createSession("unsupported/type", new Uint8Array(1))) THROWS(DOMException.NOT_SUPPORTED_ERR: Failed to execute 'createSession' on 'MediaKeys': The type provided ('unsupported/type') is unsupported.) OK
 
 Test MediaKeySession.
 RUN(mediaKeySession = mediaKeys.createSession("video/webm", initData))
@@ -22,6 +27,8 @@ EXPECTED (mediaKeySession.sessionId != 'null') OK
 EXPECTED (mediaKeySession.onwebkitkeyadded == 'null') OK
 EXPECTED (mediaKeySession.onwebkitkeyerror == 'null') OK
 EXPECTED (mediaKeySession.onwebkitkeymessage == 'null') OK
+TEST(mediaKeySession.update()) THROWS("TypeError: Failed to execute 'update' on 'MediaKeySession': 1 argument required, but only 0 present.") OK
 TEST(mediaKeySession.update(null)) THROWS(DOMException.INVALID_ACCESS_ERR: Failed to execute 'update' on 'MediaKeySession': The response argument provided is invalid.) OK
+RUN(mediaKeySession.update(new Uint8Array(1)))
 END OF TEST
 

@@ -48,7 +48,6 @@ MediaKeySession::MediaKeySession(ExecutionContext* context, ContentDecryptionMod
     , m_asyncEventQueue(GenericEventQueue::create(this))
     , m_session(cdm->createSession(this))
     , m_keys(keys)
-    , m_initializeNewSessionTimer(this, &MediaKeySession::initializeNewSessionTimerFired)
     , m_updateTimer(this, &MediaKeySession::updateTimerFired)
 {
     ScriptWrappable::init(this);
@@ -80,21 +79,9 @@ String MediaKeySession::sessionId() const
     return m_session->sessionId();
 }
 
-void MediaKeySession::initializeNewSession(const String& mimeType, Uint8Array* initData)
+void MediaKeySession::initializeNewSession(const String& mimeType, const Uint8Array& initData)
 {
-    m_pendingInitializeNewSessionData.append(InitializeNewSessionData(mimeType, initData));
-    m_initializeNewSessionTimer.startOneShot(0);
-}
-
-void MediaKeySession::initializeNewSessionTimerFired(Timer<MediaKeySession>*)
-{
-    ASSERT(m_pendingInitializeNewSessionData.size());
-
-    while (!m_pendingInitializeNewSessionData.isEmpty()) {
-        InitializeNewSessionData data = m_pendingInitializeNewSessionData.takeFirst();
-        // FIXME: Refer to the spec to see what needs to be done in blink.
-        m_session->initializeNewSession(data.mimeType, *data.initData);
-    }
+    m_session->initializeNewSession(mimeType, initData);
 }
 
 void MediaKeySession::update(Uint8Array* response, ExceptionState& exceptionState)
@@ -111,24 +98,26 @@ void MediaKeySession::update(Uint8Array* response, ExceptionState& exceptionStat
     // FIXME: Implement states in MediaKeySession.
 
     // 3. Schedule a task to handle the call, providing response.
-    m_pendingKeys.append(response);
-    m_updateTimer.startOneShot(0);
+    m_pendingUpdates.append(response);
+
+    if (!m_updateTimer.isActive())
+        m_updateTimer.startOneShot(0);
 }
 
 void MediaKeySession::updateTimerFired(Timer<MediaKeySession>*)
 {
-    ASSERT(m_pendingKeys.size());
+    ASSERT(m_pendingUpdates.size());
 
-    while (!m_pendingKeys.isEmpty()) {
-        RefPtr<Uint8Array> pendingKey = m_pendingKeys.takeFirst();
+    while (!m_pendingUpdates.isEmpty()) {
+        RefPtr<Uint8Array> pendingUpdate = m_pendingUpdates.takeFirst();
 
-        // NOTE: Continued from step 2. of MediaKeySession::update()
-        // 2.1. Let cdm be the cdm loaded in the MediaKeys constructor.
+        // NOTE: Continued from step 3. of MediaKeySession::update()
+        // 3.1. Let cdm be the cdm loaded in the MediaKeys constructor.
         // NOTE: This is m_session.
-        // 2.2. Let 'did store key' be false.
-        // 2.3. Let 'next message' be null.
-        // 2.4. Use cdm to handle key.
-        m_session->update(*pendingKey);
+        // 3.2. Let request be null.
+        // 3.3. Use cdm to execute the following steps:
+        // 3.3.1 Process response.
+        m_session->update(*pendingUpdate);
     }
 }
 
