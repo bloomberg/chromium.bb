@@ -124,7 +124,7 @@ void GrapWindowSnapshotAsync(
     const gfx::Rect& snapshot_bounds,
     const gfx::Size& target_size,
     scoped_refptr<base::TaskRunner> background_task_runner,
-    GrapWindowSnapshotAsyncCallback callback) {
+    GrabWindowSnapshotAsyncCallback callback) {
   NOTIMPLEMENTED();
 }
 
@@ -132,7 +132,7 @@ void GrabWindowSnapshotAsync(
     gfx::NativeWindow window,
     const gfx::Rect& source_rect,
     scoped_refptr<base::TaskRunner> background_task_runner,
-    const GrabWindowSnapshotAsyncCallback& callback) {
+    const GrabWindowSnapshotAsyncPNGCallback& callback) {
   NOTIMPLEMENTED();
 }
 

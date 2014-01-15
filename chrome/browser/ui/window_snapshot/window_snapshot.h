@@ -27,10 +27,9 @@ void RegisterScreenshotPrefs(PrefRegistrySimple* registry);
 // by browser code. If you need to take a screenshot for debugging purposes,
 // consider using ui::GrabWindowSnapshot.
 // Returns true if the operation is successful (ie. permitted).
-bool GrabWindowSnapshotForUser(
-    gfx::NativeWindow window,
-    std::vector<unsigned char>* png_representation,
-    const gfx::Rect& snapshot_bounds);
+bool GrabWindowSnapshotForUser(gfx::NativeWindow window,
+                               std::vector<unsigned char>* png_representation,
+                               const gfx::Rect& snapshot_bounds);
 
 }  // namespace chrome
 

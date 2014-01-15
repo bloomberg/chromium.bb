@@ -39,6 +39,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
+#include "ui/snapshot/snapshot.h"
 
 #if defined(USE_ASH)
 #include "ash/shell.h"
@@ -304,12 +305,6 @@ void PostSaveScreenshotTask(const ShowNotificationCallback& callback,
 }
 #endif
 
-bool GrabWindowSnapshot(aura::Window* window,
-                        const gfx::Rect& snapshot_bounds,
-                        std::vector<unsigned char>* png_data) {
-  return chrome::GrabWindowSnapshotForUser(window, png_data, snapshot_bounds);
-}
-
 bool ShouldUse24HourClock() {
 #if defined(OS_CHROMEOS)
   Profile* profile = ProfileManager::GetActiveUserProfile();
@@ -431,28 +426,16 @@ void ScreenshotTaker::HandleTakeScreenshotForAllRootWindows() {
   }
   for (size_t i = 0; i < root_windows.size(); ++i) {
     aura::Window* root_window = root_windows[i];
-    scoped_refptr<base::RefCountedBytes> png_data(new base::RefCountedBytes);
     std::string basename = screenshot_basename;
     gfx::Rect rect = root_window->bounds();
     if (root_windows.size() > 1)
       basename += base::StringPrintf(" - Display %d", static_cast<int>(i + 1));
     base::FilePath screenshot_path =
         screenshot_directory.AppendASCII(basename + ".png");
-    if (GrabWindowSnapshot(root_window, rect, &png_data->data())) {
-      PostSaveScreenshotTask(
-          base::Bind(&ScreenshotTaker::ShowNotification, factory_.GetWeakPtr()),
-          GetProfile(),
-          screenshot_path,
-          png_data);
-    } else {
-      LOG(ERROR) << "Failed to grab the window screenshot for " << i;
-      ShowNotification(
-          ScreenshotTakerObserver::SCREENSHOT_GRABWINDOW_FULL_FAILED,
-          screenshot_path);
-    }
+    GrabFullWindowSnapshotAsync(
+        root_window, rect, GetProfile(), screenshot_path, i);
   }
   content::RecordAction(base::UserMetricsAction("Screenshot_TakeFull"));
-  last_screenshot_timestamp_ = base::Time::Now();
 }
 
 void ScreenshotTaker::HandleTakePartialScreenshot(
@@ -474,25 +457,11 @@ void ScreenshotTaker::HandleTakePartialScreenshot(
     return;
   }
 
-  scoped_refptr<base::RefCountedBytes> png_data(new base::RefCountedBytes);
-
   std::string screenshot_basename = !screenshot_basename_for_test_.empty() ?
       screenshot_basename_for_test_ : GetScreenshotBaseFilename();
   base::FilePath screenshot_path =
       screenshot_directory.AppendASCII(screenshot_basename + ".png");
-  if (GrabWindowSnapshot(window, rect, &png_data->data())) {
-    last_screenshot_timestamp_ = base::Time::Now();
-    PostSaveScreenshotTask(
-        base::Bind(&ScreenshotTaker::ShowNotification, factory_.GetWeakPtr()),
-        GetProfile(),
-        screenshot_path,
-        png_data);
-  } else {
-    LOG(ERROR) << "Failed to grab the window screenshot";
-    ShowNotification(
-        ScreenshotTakerObserver::SCREENSHOT_GRABWINDOW_PARTIAL_FAILED,
-        screenshot_path);
-  }
+  GrabPartialWindowSnapshotAsync(window, rect, GetProfile(), screenshot_path);
   content::RecordAction(base::UserMetricsAction("Screenshot_TakePartial"));
 }
 
@@ -576,6 +545,73 @@ void ScreenshotTaker::RemoveObserver(ScreenshotTakerObserver* observer) {
 
 bool ScreenshotTaker::HasObserver(ScreenshotTakerObserver* observer) const {
   return observers_.HasObserver(observer);
+}
+
+void ScreenshotTaker::GrabWindowSnapshotAsyncCallback(
+    base::FilePath screenshot_path,
+    bool is_partial,
+    int window_idx,
+    scoped_refptr<base::RefCountedBytes> png_data) {
+  if (!png_data) {
+    if (is_partial) {
+      LOG(ERROR) << "Failed to grab the window screenshot";
+      ShowNotification(
+          ScreenshotTakerObserver::SCREENSHOT_GRABWINDOW_PARTIAL_FAILED,
+          screenshot_path);
+    } else {
+      LOG(ERROR) << "Failed to grab the window screenshot for " << window_idx;
+      ShowNotification(
+          ScreenshotTakerObserver::SCREENSHOT_GRABWINDOW_FULL_FAILED,
+          screenshot_path);
+    }
+    return;
+  }
+
+  PostSaveScreenshotTask(
+      base::Bind(&ScreenshotTaker::ShowNotification, factory_.GetWeakPtr()),
+      GetProfile(),
+      screenshot_path,
+      png_data);
+}
+
+void ScreenshotTaker::GrabPartialWindowSnapshotAsync(
+    aura::Window* window,
+    const gfx::Rect& snapshot_bounds,
+    Profile* profile,
+    base::FilePath screenshot_path) {
+  last_screenshot_timestamp_ = base::Time::Now();
+
+  bool is_partial = true;
+  int window_idx = -1;  // unused
+  ui::GrabWindowSnapshotAsync(
+      window,
+      snapshot_bounds,
+      content::BrowserThread::GetBlockingPool(),
+      base::Bind(&ScreenshotTaker::GrabWindowSnapshotAsyncCallback,
+                 factory_.GetWeakPtr(),
+                 screenshot_path,
+                 is_partial,
+                 window_idx));
+}
+
+void ScreenshotTaker::GrabFullWindowSnapshotAsync(
+    aura::Window* window,
+    const gfx::Rect& snapshot_bounds,
+    Profile* profile,
+    base::FilePath screenshot_path,
+    int window_idx) {
+  last_screenshot_timestamp_ = base::Time::Now();
+
+  bool is_partial = false;
+  ui::GrabWindowSnapshotAsync(
+      window,
+      snapshot_bounds,
+      content::BrowserThread::GetBlockingPool(),
+      base::Bind(&ScreenshotTaker::GrabWindowSnapshotAsyncCallback,
+                 factory_.GetWeakPtr(),
+                 screenshot_path,
+                 is_partial,
+                 window_idx));
 }
 
 Profile* ScreenshotTaker::GetProfile() {

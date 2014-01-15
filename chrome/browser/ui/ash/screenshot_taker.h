@@ -72,6 +72,21 @@ class ScreenshotTaker : public ash::ScreenshotDelegate {
  private:
   friend class ash::test::ScreenshotTakerTest;
 
+  void GrabWindowSnapshotAsyncCallback(
+      base::FilePath screenshot_path,
+      bool is_partial,
+      int window_idx,
+      scoped_refptr<base::RefCountedBytes> png_data);
+  void GrabPartialWindowSnapshotAsync(aura::Window* window,
+                                      const gfx::Rect& snapshot_bounds,
+                                      Profile* profile,
+                                      base::FilePath screenshot_path);
+  void GrabFullWindowSnapshotAsync(aura::Window* window,
+                                   const gfx::Rect& snapshot_bounds,
+                                   Profile* profile,
+                                   base::FilePath screenshot_path,
+                                   int window_idx);
+
   Profile* GetProfile();
   void SetScreenshotDirectoryForTest(const base::FilePath& directory);
   void SetScreenshotBasenameForTest(const std::string& basename);

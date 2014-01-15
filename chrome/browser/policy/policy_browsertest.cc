@@ -146,6 +146,7 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/screenshot_taker.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #endif
 
@@ -626,17 +627,34 @@ class PolicyTest : public InProcessBrowserTest {
   }
 
 #if defined(OS_CHROMEOS)
+  class QuitMessageLoopAfterScreenshot : public ScreenshotTakerObserver {
+   public:
+    virtual void OnScreenshotCompleted(
+        ScreenshotTakerObserver::Result screenshot_result,
+        const base::FilePath& screenshot_path) OVERRIDE {
+      BrowserThread::PostTaskAndReply(BrowserThread::IO,
+                                      FROM_HERE,
+                                      base::Bind(base::DoNothing),
+                                      base::MessageLoop::QuitClosure());
+    }
+
+    virtual ~QuitMessageLoopAfterScreenshot() {}
+  };
+
   void TestScreenshotFile(bool enabled) {
+    // AddObserver is an ash-specific method, so just replace the screenshot
+    // taker with one we've created here.
+    scoped_ptr<ScreenshotTaker> screenshot_taker(new ScreenshotTaker);
+    // ScreenshotTaker doesn't own this observer, so the observer's lifetime
+    // is tied to the test instead.
+    screenshot_taker->AddObserver(&observer_);
+    ash::Shell::GetInstance()->accelerator_controller()->SetScreenshotDelegate(
+        screenshot_taker.PassAs<ash::ScreenshotDelegate>());
+
     SetScreenshotPolicy(enabled);
     ash::Shell::GetInstance()->accelerator_controller()->PerformAction(
         ash::TAKE_SCREENSHOT, ui::Accelerator());
 
-    // TAKE_SCREENSHOT handler posts write file task on success, wait for it.
-    BrowserThread::PostTaskAndReply(
-        BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(base::DoNothing),
-        base::MessageLoop::QuitClosure());
     content::RunMessageLoop();
   }
 #endif
@@ -721,6 +739,9 @@ class PolicyTest : public InProcessBrowserTest {
   }
 
   MockConfigurationPolicyProvider provider_;
+#if defined(OS_CHROMEOS)
+  QuitMessageLoopAfterScreenshot observer_;
+#endif
 };
 
 #if defined(OS_WIN)

@@ -139,9 +139,10 @@ class SnapshotAuraTest : public testing::TestWithParam<bool> {
    public:
     SnapshotHolder() : completed_(false) {}
 
-    void SnapshotCallback(const gfx::Image& image) {
+    void SnapshotCallback(scoped_refptr<base::RefCountedBytes> png_data) {
       DCHECK(!completed_);
-      image_ = image;
+      image_ = gfx::Image::CreateFrom1xPNGBytes(&(png_data->data()[0]),
+                                                png_data->size());
       completed_ = true;
     }
     bool completed() const {

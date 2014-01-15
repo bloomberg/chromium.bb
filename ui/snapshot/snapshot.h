@@ -9,6 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/ref_counted_memory.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/snapshot/snapshot_export.h"
 
@@ -49,11 +50,14 @@ SNAPSHOT_EXPORT void GrabWindowSnapshotAndScaleAsync(
     const gfx::Size& target_size,
     scoped_refptr<base::TaskRunner> background_task_runner,
     const GrabWindowSnapshotAsyncCallback& callback);
+
+typedef base::Callback<void(scoped_refptr<base::RefCountedBytes> png_data)>
+    GrabWindowSnapshotAsyncPNGCallback;
 SNAPSHOT_EXPORT void GrabWindowSnapshotAsync(
     gfx::NativeWindow window,
     const gfx::Rect& source_rect,
     scoped_refptr<base::TaskRunner> background_task_runner,
-    const GrabWindowSnapshotAsyncCallback& callback);
+    const GrabWindowSnapshotAsyncPNGCallback& callback);
 
 }  // namespace ui
 

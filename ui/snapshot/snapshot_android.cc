@@ -46,7 +46,7 @@ void GrabWindowSnapshotAsync(
     gfx::NativeWindow window,
     const gfx::Rect& source_rect,
     scoped_refptr<base::TaskRunner> background_task_runner,
-    const GrabWindowSnapshotAsyncCallback& callback) {
+    const GrabWindowSnapshotAsyncPNGCallback& callback) {
   NOTIMPLEMENTED();
 }
 

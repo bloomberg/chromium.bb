@@ -73,6 +73,27 @@ SkBitmap ScaleAndRotateBitmap(const SkBitmap& input_bitmap,
   return bitmap;
 }
 
+scoped_refptr<base::RefCountedBytes> ScaleRotateAndEncodeBitmap(
+    const SkBitmap& input_bitmap,
+    gfx::Size target_size_pre_rotation,
+    gfx::Display::Rotation rotation) {
+  SkBitmap bitmap =
+      ScaleAndRotateBitmap(input_bitmap, target_size_pre_rotation, rotation);
+  scoped_refptr<base::RefCountedBytes> png_data(new base::RefCountedBytes);
+  unsigned char* pixels =
+      reinterpret_cast<unsigned char*>(bitmap.pixelRef()->pixels());
+  if (!gfx::PNGCodec::Encode(pixels,
+                             gfx::PNGCodec::FORMAT_BGRA,
+                             gfx::Size(bitmap.width(), bitmap.height()),
+                             base::checked_numeric_cast<int>(bitmap.rowBytes()),
+                             true,
+                             std::vector<gfx::PNGCodec::Comment>(),
+                             &png_data->data())) {
+    return scoped_refptr<base::RefCountedBytes>();
+  }
+  return png_data;
+}
+
 void ScaleAndRotateCopyOutputResult(
     const GrabWindowSnapshotAsyncCallback& callback,
     const gfx::Size& target_size,
@@ -94,6 +115,30 @@ void ScaleAndRotateCopyOutputResult(
       base::Bind(
           ScaleAndRotateBitmap, *result->TakeBitmap(), target_size, rotation),
       base::Bind(&OnFrameScalingFinished, callback));
+}
+
+void ScaleRotateAndEncodeCopyOutputResult(
+    const GrabWindowSnapshotAsyncPNGCallback& callback,
+    const gfx::Size& target_size,
+    gfx::Display::Rotation rotation,
+    scoped_refptr<base::TaskRunner> background_task_runner,
+    scoped_ptr<cc::CopyOutputResult> result) {
+  if (result->IsEmpty()) {
+    callback.Run(scoped_refptr<base::RefCountedBytes>());
+    return;
+  }
+
+  // TODO(sergeyu): Potentially images can be scaled on GPU before reading it
+  // from GPU. Image scaling is implemented in content::GlHelper, but it's can't
+  // be used here because it's not in content/public. Move the scaling code
+  // somewhere so that it can be reused here.
+  base::PostTaskAndReplyWithResult(background_task_runner,
+                                   FROM_HERE,
+                                   base::Bind(ScaleRotateAndEncodeBitmap,
+                                              *result->TakeBitmap(),
+                                              target_size,
+                                              rotation),
+                                   callback);
 }
 
 gfx::Rect GetTargetBoundsFromWindow(gfx::NativeWindow window,
@@ -157,19 +202,9 @@ bool GrabWindowSnapshot(gfx::NativeWindow window,
 void MakeAsyncCopyRequest(
     gfx::NativeWindow window,
     const gfx::Rect& source_rect,
-    const gfx::Size& target_size,
-    scoped_refptr<base::TaskRunner> background_task_runner,
-    const GrabWindowSnapshotAsyncCallback& callback) {
-  gfx::Display::Rotation rotation = gfx::Screen::GetScreenFor(window)
-                                        ->GetDisplayNearestWindow(window)
-                                        .rotation();
+    const cc::CopyOutputRequest::CopyOutputRequestCallback& callback) {
   scoped_ptr<cc::CopyOutputRequest> request =
-      cc::CopyOutputRequest::CreateBitmapRequest(
-          base::Bind(&ScaleAndRotateCopyOutputResult,
-                     callback,
-                     target_size,
-                     rotation,
-                     background_task_runner));
+      cc::CopyOutputRequest::CreateBitmapRequest(callback);
   request->set_area(ui::ConvertRectToPixel(window->layer(), source_rect));
   window->layer()->RequestCopyOfOutput(request.Pass());
 }
@@ -201,19 +236,29 @@ void GrabWindowSnapshotAndScaleAsync(
 
   MakeAsyncCopyRequest(window,
                        source_rect,
-                       rotated_target_size,
-                       background_task_runner,
-                       callback);
+                       base::Bind(&ScaleAndRotateCopyOutputResult,
+                                  callback,
+                                  rotated_target_size,
+                                  rotation,
+                                  background_task_runner));
 }
 
 void GrabWindowSnapshotAsync(
     gfx::NativeWindow window,
     const gfx::Rect& source_rect,
     scoped_refptr<base::TaskRunner> background_task_runner,
-    const GrabWindowSnapshotAsyncCallback& callback) {
+    const GrabWindowSnapshotAsyncPNGCallback& callback) {
   gfx::Size target_size = GetTargetBoundsFromWindow(window, source_rect).size();
-  MakeAsyncCopyRequest(
-      window, source_rect, target_size, background_task_runner, callback);
+  gfx::Display::Rotation rotation = gfx::Screen::GetScreenFor(window)
+                                        ->GetDisplayNearestWindow(window)
+                                        .rotation();
+  MakeAsyncCopyRequest(window,
+                       source_rect,
+                       base::Bind(&ScaleRotateAndEncodeCopyOutputResult,
+                                  callback,
+                                  target_size,
+                                  rotation,
+                                  background_task_runner));
 }
 
 }  // namespace ui
