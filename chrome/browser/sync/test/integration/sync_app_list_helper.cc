@@ -54,13 +54,8 @@ bool SyncAppListHelper::AppListMatchesVerifier(Profile* profile) {
       AppListSyncableServiceFactory::GetForProfile(profile);
   AppListSyncableService* verifier =
       AppListSyncableServiceFactory::GetForProfile(test_->verifier());
-  if (service->GetNumSyncItemsForTest() !=
-      verifier->GetNumSyncItemsForTest()) {
-    LOG(ERROR) << "Sync item count: "
-               << service->GetNumSyncItemsForTest()
-               << " != " << verifier->GetNumSyncItemsForTest();
-    return false;
-  }
+  // Note: sync item entries may not exist in verifier, but item lists should
+  // match.
   if (service->model()->item_list()->item_count() !=
       verifier->model()->item_list()->item_count()) {
     LOG(ERROR) << "Model item count: "

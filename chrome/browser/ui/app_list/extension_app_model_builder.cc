@@ -220,7 +220,7 @@ void ExtensionAppModelBuilder::PopulateApps() {
 
 void ExtensionAppModelBuilder::InsertApp(ExtensionAppItem* app) {
   if (service_) {
-    service_->AddExtensionAppItem(app);
+    service_->AddItem(app);
     return;
   }
   model_->item_list()->AddItem(app);
@@ -271,9 +271,8 @@ void ExtensionAppModelBuilder::OnListItemMoved(size_t from_index,
   if (item->GetAppType() != ExtensionAppItem::kAppType)
     return;
 
-  ExtensionAppItem* extension_item = static_cast<ExtensionAppItem*>(item);
   if (service_) {
-    service_->UpdateExtensionAppItem(extension_item);
+    service_->UpdateItem(item);
     return;
   }
 
@@ -295,5 +294,5 @@ void ExtensionAppModelBuilder::OnListItemMoved(size_t from_index,
   }
   // item->Move will call set_position, overriding the item's position.
   if (prev || next)
-    extension_item->Move(prev, next);
+    static_cast<ExtensionAppItem*>(item)->Move(prev, next);
 }

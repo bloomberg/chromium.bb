@@ -1400,6 +1400,15 @@ const Experiment kExperiments[] = {
     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableSyncSyncedNotifications,
                               switches::kDisableSyncSyncedNotifications)
   },
+#if defined(ENABLE_APP_LIST)
+  {
+    "enable-sync-app-list",
+    IDS_FLAGS_ENABLE_SYNC_APP_LIST_NAME,
+    IDS_FLAGS_ENABLE_SYNC_APP_LIST_DESCRIPTION,
+    kOsDesktop,
+    SINGLE_VALUE_TYPE(switches::kEnableSyncAppList)
+  },
+#endif
   {
     "disable-full-history-sync",
     IDS_FLAGS_FULL_HISTORY_SYNC_NAME,

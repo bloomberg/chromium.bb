@@ -19,10 +19,12 @@
 #include "sync/api/syncable_service.h"
 #include "sync/protocol/app_list_specifics.pb.h"
 
-class ExtensionAppItem;
 class ExtensionAppModelBuilder;
-class ExtensionService;
 class Profile;
+
+namespace extensions {
+class ExtensionSystem;
+}
 
 namespace sync_pb {
 class AppListSpecifics;
@@ -33,8 +35,7 @@ namespace app_list {
 class AppListModel;
 class AppListItem;
 
-// Keyed Service that owns, stores, and syncs an AppListModel for an
-// ExtensionSystem and corresponding profile.
+// Keyed Service that owns, stores, and syncs an AppListModel for a profile.
 class AppListSyncableService : public syncer::SyncableService,
                                public BrowserContextKeyedService,
                                public content::NotificationObserver {
@@ -53,18 +54,18 @@ class AppListSyncableService : public syncer::SyncableService,
     std::string ToString() const;
   };
 
-  // Create an empty model. Then, if |extension_service| is non-NULL and ready,
-  // populate it. Otherwise populate the model once extensions become ready.
-  AppListSyncableService(Profile* profile, ExtensionService* extension_service);
+  // Populates the model when |extension_system| is ready.
+  AppListSyncableService(Profile* profile,
+                         extensions::ExtensionSystem* extension_system);
 
   virtual ~AppListSyncableService();
 
-  // Adds |item| to |sync_items_| and |model_|. Does noting if a sync item
+  // Adds |item| to |sync_items_| and |model_|. Does nothing if a sync item
   // already exists.
-  void AddExtensionAppItem(ExtensionAppItem* item);
+  void AddItem(AppListItem* item);
 
   // Updates existing entry in |sync_items_| from |item|.
-  void UpdateExtensionAppItem(ExtensionAppItem* item);
+  void UpdateItem(AppListItem* item);
 
   // Removes sync item matching |id|.
   void RemoveItem(const std::string& id);
@@ -100,15 +101,19 @@ class AppListSyncableService : public syncer::SyncableService,
   // Builds the model once ExtensionService is ready.
   void BuildModel();
 
-  // Creates a new Appitem from |sync_item| and adds it to the model.
-  void CreateAppItemFromSyncItem(SyncItem* sync_item);
-
   // Returns true if sync has restarted, otherwise runs |flare_|.
   bool SyncStarted();
 
-  // Creates a SyncItem entry and adds |item| to the model.
-  SyncItem* AddItem(sync_pb::AppListSpecifics::AppListItemType type,
-                    AppListItem* item);
+  // Creates or updates a SyncItem from |specifics|. Returns true if a new item
+  // was created.
+  bool ProcessSyncItem(const sync_pb::AppListSpecifics& specifics);
+
+  // Handles a newly created sync item (e.g. creates a new Appitem and adds it
+  // to the model or uninstalls a deleted default item.
+  void ProcessNewSyncItem(SyncItem* sync_item);
+
+  // Handles updating an existing sync item (e.g. updates item positions).
+  void ProcessExistingSyncItem(SyncItem* sync_item);
 
   // Sends ADD or CHANGED for sync item.
   void SendSyncChange(SyncItem* sync_item,
@@ -117,21 +122,16 @@ class AppListSyncableService : public syncer::SyncableService,
   // Returns an existing SyncItem corresponding to |item_id| or NULL.
   SyncItem* FindSyncItem(const std::string& item_id);
 
-  // Returns a SyncItem corresponding to |item_id|. Sets |new_item| if an item
-  // was created.
-  SyncItem* FindOrCreateSyncItem(
+  // Creates a new sync item for |item_id|.
+  SyncItem* CreateSyncItem(
       const std::string& item_id,
-      sync_pb::AppListSpecifics::AppListItemType type,
-      bool* new_item);
-
-  // Creates or updates a SyncItem from |specifics|. Returns true if an item
-  // was created.
-  bool CreateOrUpdateSyncItem(const sync_pb::AppListSpecifics& specifics);
+      sync_pb::AppListSpecifics::AppListItemType item_type);
 
   // Deletes a SyncItem matching |specifics|.
   void DeleteSyncItem(const sync_pb::AppListSpecifics& specifics);
 
   Profile* profile_;
+  extensions::ExtensionSystem* extension_system_;
   content::NotificationRegistrar registrar_;
   scoped_ptr<AppListModel> model_;
   scoped_ptr<ExtensionAppModelBuilder> apps_builder_;

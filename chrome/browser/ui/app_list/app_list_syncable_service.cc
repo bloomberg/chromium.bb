@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
@@ -19,6 +20,7 @@
 #include "sync/api/sync_data.h"
 #include "sync/api/sync_merge_result.h"
 #include "sync/protocol/sync.pb.h"
+#include "ui/app_list/app_list_folder_item.h"
 #include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_model.h"
 
@@ -44,6 +46,10 @@ bool UpdateSyncItemFromAppItem(const AppListItem* app_item,
                                AppListSyncableService::SyncItem* sync_item) {
   DCHECK_EQ(sync_item->item_id, app_item->id());
   bool changed = false;
+  if (sync_item->item_name != app_item->title()) {
+    sync_item->item_name = app_item->title();
+    changed = true;
+  }
   if (!sync_item->item_ordinal.IsValid() ||
       !app_item->position().Equals(sync_item->item_ordinal)) {
     sync_item->item_ordinal = app_item->position();
@@ -75,6 +81,23 @@ syncer::SyncData GetSyncDataFromSyncItem(
                                            specifics);
 }
 
+bool AppIsDefault(ExtensionService* service, const std::string& id) {
+  return service && service->extension_prefs()->WasInstalledByDefault(id);
+}
+
+bool AppIsPlatformApp(ExtensionService* service, const std::string& id) {
+  if (!service)
+    return false;
+  const extensions::Extension* app = service->GetInstalledExtension(id);
+  DVLOG_IF(1, !app) << "No App for ID: " << id;
+  return app ? app->is_platform_app() : false;
+}
+
+void UninstallExtension(ExtensionService* service, const std::string& id) {
+  if (service && service->GetInstalledExtension(id))
+    service->UninstallExtension(id, false, NULL);
+}
+
 }  // namespace
 
 // AppListSyncableService::SyncItem
@@ -93,10 +116,16 @@ AppListSyncableService::SyncItem::~SyncItem() {
 
 AppListSyncableService::AppListSyncableService(
     Profile* profile,
-    ExtensionService* extension_service)
+    extensions::ExtensionSystem* extension_system)
     : profile_(profile),
+      extension_system_(extension_system),
       model_(new AppListModel) {
-  if (extension_service && extension_service->is_ready()) {
+  if (!extension_system || !extension_system->extension_service()) {
+    LOG(WARNING) << "AppListSyncableService created with no ExtensionService";
+    return;
+  }
+
+  if (extension_system->extension_service()->is_ready()) {
     BuildModel();
     return;
   }
@@ -153,26 +182,71 @@ AppListSyncableService::GetSyncItem(const std::string& id) const {
   return NULL;
 }
 
-void AppListSyncableService::AddExtensionAppItem(ExtensionAppItem* item) {
-  SyncItem* sync_item = AddItem(
-      sync_pb::AppListSpecifics_AppListItemType_TYPE_APP, item);
-  if (!sync_item)
-    return;  // Item already exists.
-  sync_item->item_name = item->extension_name();
+void AppListSyncableService::AddItem(AppListItem* item) {
+  const std::string& item_id = item->id();
+  if (item_id.empty()) {
+    LOG(ERROR) << "AppListItem item with empty ID";
+    return;
+  }
+  sync_pb::AppListSpecifics::AppListItemType type;
+  const char* item_type = item->GetAppType();
+  if (item_type == ExtensionAppItem::kAppType) {
+    type = sync_pb::AppListSpecifics_AppListItemType_TYPE_APP;
+  } else if (item_type == AppListFolderItem::kAppType) {
+    type = sync_pb::AppListSpecifics_AppListItemType_TYPE_FOLDER;
+  } else {
+    LOG(ERROR) << "Unrecognized model type: " << item_type;
+    return;
+  }
+  SyncItem* sync_item = FindSyncItem(item_id);
+  if (sync_item) {
+    // If there is an existing, non-REMOVE_DEFAULT entry, update it.
+    if (sync_item->item_type !=
+        sync_pb::AppListSpecifics::TYPE_REMOVE_DEFAULT_APP) {
+      DCHECK_EQ(sync_item->item_type, type);
+      DVLOG(2) << this << ": AddItem already exists: " << sync_item->ToString();
+      UpdateItem(item);
+      return;
+    }
+    // If there is an existing REMOVE_DEFAULT_APP entry, and the app is
+    // installed as a Default app, uninstall the app instead of adding it.
+    if (type == sync_pb::AppListSpecifics_AppListItemType_TYPE_APP &&
+        AppIsDefault(extension_system_->extension_service(), item_id)) {
+      DVLOG(1) << this << ": AddItem: Uninstall: " << sync_item->ToString();
+      UninstallExtension(extension_system_->extension_service(), item_id);
+      return;
+    }
+    // Otherwise, we are adding the app as a non-default app (i.e. an app that
+    // was installed by Default and removed is getting installed explicitly by
+    // the user), so delete the REMOVE_DEFAULT_APP.
+    if (SyncStarted()) {
+      DVLOG(2) << this << " -> SYNC DELETE: " << sync_item->ToString();
+      SyncChange sync_change(FROM_HERE, SyncChange::ACTION_DELETE,
+                             GetSyncDataFromSyncItem(sync_item));
+      sync_processor_->ProcessSyncChanges(
+          FROM_HERE, syncer::SyncChangeList(1, sync_change));
+    }
+    delete sync_item;
+    sync_items_.erase(item_id);
+    // Fall through. The REMOVE_DEFAULT_APP entry has been deleted, now an App
+    // entry can be added as usual.
+  }
+
+  sync_item = CreateSyncItem(item_id, type);
+  UpdateSyncItemFromAppItem(item, sync_item);
+  model_->item_list()->AddItem(item);
+  DVLOG(1) << this << ": AddItem: " << sync_item->ToString() << " Default: "
+           << AppIsDefault(extension_system_->extension_service(), item->id());
   SendSyncChange(sync_item, SyncChange::ACTION_ADD);
 }
 
-void AppListSyncableService::UpdateExtensionAppItem(ExtensionAppItem* item) {
+void AppListSyncableService::UpdateItem(AppListItem* item) {
   SyncItem* sync_item = FindSyncItem(item->id());
   if (!sync_item) {
-    LOG(ERROR) << "UpdateExtensionAppItem: no sync item: " << item->id();
+    LOG(ERROR) << "UpdateItem: no sync item: " << item->id();
     return;
   }
   bool changed = UpdateSyncItemFromAppItem(item, sync_item);
-  if (sync_item->item_name != item->extension_name()) {
-    sync_item->item_name = item->extension_name();
-    changed = true;
-  }
   if (!changed) {
     DVLOG(2) << this << " - Update: SYNC NO CHANGE: " << sync_item->ToString();
     return;
@@ -183,9 +257,34 @@ void AppListSyncableService::UpdateExtensionAppItem(ExtensionAppItem* item) {
 void AppListSyncableService::RemoveItem(const std::string& id) {
   DVLOG(2) << this << ": RemoveItem: " << id.substr(0, 8);
   SyncItemMap::iterator iter = sync_items_.find(id);
-  if (iter == sync_items_.end())
+  if (iter == sync_items_.end()) {
+    DVLOG(2) << this << " : No Sync Item.";
     return;
+  }
+  // Always delete the item from the model.
+  model_->item_list()->DeleteItem(id);
+
+  // Check for existing RemoveDefault sync item.
   SyncItem* sync_item = iter->second;
+  if (sync_item->item_type ==
+      sync_pb::AppListSpecifics::TYPE_REMOVE_DEFAULT_APP) {
+    // RemoveDefault item exists, just return.
+    DVLOG(2) << this << " : RemoveDefault Item exists.";
+    return;
+  }
+
+  if (AppIsDefault(extension_system_->extension_service(), id)) {
+    // This is a Default app; update the entry to a REMOVE_DEFAULT entry. This
+    // will overwrite any existing entry for the item.
+    DVLOG(2) << this << " -> SYNC UPDATE: REMOVE_DEFAULT: "
+             << sync_item->item_id;
+    sync_item->item_type = sync_pb::AppListSpecifics::TYPE_REMOVE_DEFAULT_APP;
+    SendSyncChange(sync_item, SyncChange::ACTION_UPDATE);
+    return;
+  }
+
+  // Existing entry is a normal entry, send a Delete sync change and remove
+  // the entry.
   if (SyncStarted()) {
     DVLOG(2) << this << " -> SYNC DELETE: " << sync_item->ToString();
     SyncChange sync_change(FROM_HERE, SyncChange::ACTION_DELETE,
@@ -195,7 +294,6 @@ void AppListSyncableService::RemoveItem(const std::string& id) {
   }
   delete sync_item;
   sync_items_.erase(iter);
-  model_->item_list()->DeleteItem(id);
 }
 
 // AppListSyncableService syncer::SyncableService
@@ -229,8 +327,11 @@ syncer::SyncMergeResult AppListSyncableService::MergeDataAndStartSyncing(
   for (syncer::SyncDataList::const_iterator iter = initial_sync_data.begin();
        iter != initial_sync_data.end(); ++iter) {
     const syncer::SyncData& data = *iter;
+    DVLOG(2) << this << "  Initial Sync Item: "
+             << data.GetSpecifics().app_list().item_id()
+             << " Type: " << data.GetSpecifics().app_list().item_type();
     DCHECK_EQ(syncer::APP_LIST, data.GetDataType());
-    if (CreateOrUpdateSyncItem(data.GetSpecifics().app_list()))
+    if (ProcessSyncItem(data.GetSpecifics().app_list()))
       ++new_items;
     else
       ++updated_items;
@@ -267,7 +368,7 @@ syncer::SyncDataList AppListSyncableService::GetAllSyncData(
     syncer::ModelType type) const {
   DCHECK_EQ(syncer::APP_LIST, type);
 
-  DVLOG(1) << this << "GetAllSyncData: " << sync_items_.size();
+  DVLOG(1) << this << ": GetAllSyncData: " << sync_items_.size();
   syncer::SyncDataList list;
   for (SyncItemMap::const_iterator iter = sync_items_.begin();
        iter != sync_items_.end(); ++iter) {
@@ -287,14 +388,16 @@ syncer::SyncError AppListSyncableService::ProcessSyncChanges(
                              syncer::APP_LIST);
   }
 
-  // Process incoming changes first.
   DVLOG(1) << this << ": ProcessSyncChanges: " << change_list.size();
   for (syncer::SyncChangeList::const_iterator iter = change_list.begin();
        iter != change_list.end(); ++iter) {
     const SyncChange& change = *iter;
+    DVLOG(2) << this << "  Change: "
+             << change.sync_data().GetSpecifics().app_list().item_id()
+             << " (" << change.change_type() << ")";
     if (change.change_type() == SyncChange::ACTION_ADD ||
         change.change_type() == SyncChange::ACTION_UPDATE) {
-      CreateOrUpdateSyncItem(change.sync_data().GetSpecifics().app_list());
+      ProcessSyncItem(change.sync_data().GetSpecifics().app_list());
     } else if (change.change_type() == SyncChange::ACTION_DELETE) {
       DeleteSyncItem(change.sync_data().GetSpecifics().app_list());
     } else {
@@ -306,36 +409,89 @@ syncer::SyncError AppListSyncableService::ProcessSyncChanges(
 
 // AppListSyncableService private
 
-void AppListSyncableService::CreateAppItemFromSyncItem(SyncItem* sync_item) {
-  if (sync_item->item_type == sync_pb::AppListSpecifics::TYPE_APP) {
-    std::string extension_id = sync_item->item_id;
-    const ExtensionService* extension_service =
-        extensions::ExtensionSystem::Get(profile_)->extension_service();
-    const extensions::Extension* app =
-        extension_service->GetInstalledExtension(extension_id);
-    DVLOG_IF(1, !app) << this << "No App for ID: " << extension_id;
-    bool is_platform_app = app ? app->is_platform_app() : false;
-    ExtensionAppItem* app_item = new ExtensionAppItem(
-        profile_,
-        sync_item,
-        extension_id,
-        sync_item->item_name,
-        gfx::ImageSkia(),
-        is_platform_app);
-    model_->item_list()->AddItem(app_item);
-    return;
+bool AppListSyncableService::ProcessSyncItem(
+    const sync_pb::AppListSpecifics& specifics) {
+  const std::string& item_id = specifics.item_id();
+  if (item_id.empty()) {
+    LOG(ERROR) << "AppList item with empty ID";
+    return false;
   }
-  if (sync_item->item_type ==
+  SyncItem* sync_item = FindSyncItem(item_id);
+  if (sync_item) {
+    // If an item of the same type exists, update it.
+    if (sync_item->item_type == specifics.item_type()) {
+      UpdateSyncItemFromSync(specifics, sync_item);
+      ProcessExistingSyncItem(sync_item);
+      DVLOG(2) << this << " <- SYNC UPDATE: " << sync_item->ToString();
+      return false;
+    }
+    // Otherwise, one of the entries should be TYPE_REMOVE_DEFAULT_APP.
+    if (sync_item->item_type !=
+        sync_pb::AppListSpecifics::TYPE_REMOVE_DEFAULT_APP &&
+        specifics.item_type() !=
+        sync_pb::AppListSpecifics::TYPE_REMOVE_DEFAULT_APP) {
+      LOG(ERROR) << "Synced item type: " << specifics.item_type()
+                 << " != existing sync item type: " << sync_item->item_type
+                 << " Deleting item from model!";
+      model_->item_list()->DeleteItem(item_id);
+    }
+    DVLOG(2) << this << " - ProcessSyncItem: Delete existing entry: "
+             << sync_item->ToString();
+    delete sync_item;
+    sync_items_.erase(item_id);
+  }
+
+  sync_item = CreateSyncItem(item_id, specifics.item_type());
+  UpdateSyncItemFromSync(specifics, sync_item);
+  ProcessNewSyncItem(sync_item);
+  DVLOG(2) << this << " <- SYNC ADD: " << sync_item->ToString();
+  return true;
+}
+
+void AppListSyncableService::ProcessNewSyncItem(SyncItem* sync_item) {
+  switch (sync_item->item_type) {
+    case sync_pb::AppListSpecifics::TYPE_APP: {
+      std::string extension_id = sync_item->item_id;
+      bool is_platform_app =
+          AppIsPlatformApp(extension_system_->extension_service(),
+                           extension_id);
+      ExtensionAppItem* app_item = new ExtensionAppItem(
+          profile_,
+          sync_item,
+          extension_id,
+          sync_item->item_name,
+          gfx::ImageSkia(),
+          is_platform_app);
+      model_->item_list()->AddItem(app_item);
+      return;
+    }
+    case sync_pb::AppListSpecifics::TYPE_REMOVE_DEFAULT_APP: {
+      DVLOG(1) << this << ": Uninstall: " << sync_item->ToString();
+      UninstallExtension(extension_system_->extension_service(),
+                         sync_item->item_id);
+      return;
+    }
+    case sync_pb::AppListSpecifics::TYPE_FOLDER: {
+      // TODO(stevenjb): Implement
+      LOG(WARNING) << "TYPE_FOLDER not supported";
+      return;
+    }
+    case sync_pb::AppListSpecifics::TYPE_URL: {
+      // TODO(stevenjb): Implement
+      LOG(WARNING) << "TYPE_URL not supported";
+      return;
+    }
+  }
+  NOTREACHED() << "Unrecoginized sync item type: " << sync_item->ToString();
+}
+
+void AppListSyncableService::ProcessExistingSyncItem(SyncItem* sync_item) {
+  if (sync_item->item_type !=
       sync_pb::AppListSpecifics::TYPE_REMOVE_DEFAULT_APP) {
-    // TODO(stevenjb): Implement
+    AppListItem* item = model_->item_list()->FindItem(sync_item->item_id);
+    if (item && !item->position().Equals(sync_item->item_ordinal))
+      model_->item_list()->SetItemPosition(item, sync_item->item_ordinal);
   }
-  if (sync_item->item_type == sync_pb::AppListSpecifics::TYPE_FOLDER) {
-    // TODO(stevenjb): Implement
-  }
-  if (sync_item->item_type == sync_pb::AppListSpecifics::TYPE_URL) {
-    // TODO(stevenjb): Implement
-  }
-  LOG(ERROR) << "Unsupported type: " << sync_item->item_type;
 }
 
 bool AppListSyncableService::SyncStarted() {
@@ -347,26 +503,6 @@ bool AppListSyncableService::SyncStarted() {
     flare_.Run(syncer::APP_LIST);
   }
   return false;
-}
-
-AppListSyncableService::SyncItem* AppListSyncableService::AddItem(
-    sync_pb::AppListSpecifics::AppListItemType type,
-    AppListItem* app_item) {
-  const std::string& item_id = app_item->id();
-  if (item_id.empty()) {
-    LOG(ERROR) << "AppListItem item with empty ID";
-    return NULL;
-  }
-  bool new_item = false;
-  SyncItem* sync_item = FindOrCreateSyncItem(item_id, type, &new_item);
-  if (!new_item) {
-    DVLOG(2) << this << ": AddItem already exists: " << sync_item->ToString();
-    return NULL;  // Item already exists.
-  }
-  UpdateSyncItemFromAppItem(app_item, sync_item);
-  DVLOG(1) << this << ": AddItem: " << sync_item->ToString();
-  model_->item_list()->AddItem(app_item);
-  return sync_item;
 }
 
 void AppListSyncableService::SendSyncChange(
@@ -395,47 +531,14 @@ AppListSyncableService::FindSyncItem(const std::string& item_id) {
   return iter->second;
 }
 
-AppListSyncableService::SyncItem* AppListSyncableService::FindOrCreateSyncItem(
+AppListSyncableService::SyncItem*
+AppListSyncableService::CreateSyncItem(
     const std::string& item_id,
-    sync_pb::AppListSpecifics::AppListItemType type,
-    bool* new_item) {
-  SyncItem* item = FindSyncItem(item_id);
-  if (item) {
-    DCHECK(type == item->item_type);
-    *new_item = false;
-    return item;
-  }
-
-  item = new SyncItem(item_id, type);
-  sync_items_[item_id] = item;
-  *new_item = true;
-  return item;
-}
-
-bool AppListSyncableService::CreateOrUpdateSyncItem(
-    const sync_pb::AppListSpecifics& specifics) {
-  const std::string& item_id = specifics.item_id();
-  if (item_id.empty()) {
-    LOG(ERROR) << "CreateOrUpdate AppList item with empty ID";
-    return false;
-  }
-  bool new_item = false;
-  SyncItem* sync_item =
-      FindOrCreateSyncItem(item_id, specifics.item_type(), &new_item);
-  DVLOG(2) << this << "CreateOrUpdateSyncItem: " << sync_item->ToString()
-           << " New: " << new_item << " Pos: " << specifics.item_ordinal();
-  UpdateSyncItemFromSync(specifics, sync_item);
-  // Update existing item in model
-  AppListItem* item = model_->item_list()->FindItem(sync_item->item_id);
-  if (item && !item->position().Equals(sync_item->item_ordinal))
-    model_->item_list()->SetItemPosition(item, sync_item->item_ordinal);
-  if (new_item) {
-    CreateAppItemFromSyncItem(sync_item);
-    DVLOG(2) << this << " <- SYNC ADD: " << sync_item->ToString();
-  } else {
-    DVLOG(2) << this << " <- SYNC UPDATE: " << sync_item->ToString();
-  }
-  return new_item;
+    sync_pb::AppListSpecifics::AppListItemType item_type) {
+  DCHECK(!ContainsKey(sync_items_, item_id));
+  SyncItem* sync_item = new SyncItem(item_id, item_type);
+  sync_items_[item_id] = sync_item;
+  return sync_item;
 }
 
 void AppListSyncableService::DeleteSyncItem(
@@ -445,18 +548,28 @@ void AppListSyncableService::DeleteSyncItem(
     LOG(ERROR) << "Delete AppList item with empty ID";
     return;
   }
-  DVLOG(2) << this << "DeleteSyncItem: " << item_id.substr(0, 8);
+  DVLOG(2) << this << ": DeleteSyncItem: " << item_id.substr(0, 8);
   SyncItemMap::iterator iter = sync_items_.find(item_id);
   if (iter == sync_items_.end())
     return;
+  sync_pb::AppListSpecifics::AppListItemType item_type =
+      iter->second->item_type;
   DVLOG(2) << this << " <- SYNC DELETE: " << iter->second->ToString();
   delete iter->second;
   sync_items_.erase(iter);
-  model_->item_list()->DeleteItem(item_id);
+  if (item_type != sync_pb::AppListSpecifics::TYPE_REMOVE_DEFAULT_APP)
+    model_->item_list()->DeleteItem(item_id);
 }
 
 std::string AppListSyncableService::SyncItem::ToString() const {
-  return item_id.substr(0, 8) + " [" + item_ordinal.ToDebugString() + "]";
+  std::string res = item_id.substr(0, 8);
+  if (item_type == sync_pb::AppListSpecifics::TYPE_REMOVE_DEFAULT_APP) {
+    res += " { RemoveDefault }";
+  } else {
+    res += " { " + item_name + " }";
+    res += " [" + item_ordinal.ToDebugString() + "]";
+  }
+  return res;
 }
 
 }  // namespace app_list

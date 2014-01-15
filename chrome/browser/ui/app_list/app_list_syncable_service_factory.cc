@@ -40,9 +40,8 @@ BrowserContextKeyedService*
 AppListSyncableServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* browser_context) const {
   Profile* profile = static_cast<Profile*>(browser_context);
-  ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  return new AppListSyncableService(profile, extension_service);
+  return new AppListSyncableService(profile,
+                                    extensions::ExtensionSystem::Get(profile));
 }
 
 void AppListSyncableServiceFactory::RegisterProfilePrefs(

@@ -35,6 +35,14 @@ bool AllProfilesHaveSameAppListAsVerifier() {
       AllProfilesHaveSameAppListAsVerifier();
 }
 
+const app_list::AppListSyncableService::SyncItem* GetSyncItem(
+    Profile* profile,
+    const std::string& app_id) {
+  app_list::AppListSyncableService* service =
+      app_list::AppListSyncableServiceFactory::GetForProfile(profile);
+  return service->GetSyncItem(app_id);
+}
+
 }  // namespace
 
 class TwoClientAppListSyncTest : public SyncTest {
@@ -397,4 +405,67 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncTest, Move) {
 
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(AllProfilesHaveSameAppListAsVerifier());
+}
+
+// Install a Default App on both clients, then sync. Remove the app on one
+// client and sync. Ensure that the app is removed on the other client and
+// that a REMOVE_DEFAULT_APP entry exists.
+IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncTest, RemoveDefault) {
+  ASSERT_TRUE(SetupClients());
+  ASSERT_TRUE(SetupSync());
+
+  // Install a non-default app.
+  InstallApp(GetProfile(0), 0);
+  InstallApp(GetProfile(1), 0);
+  InstallApp(verifier(), 0);
+
+  // Install a default app in Profile 0 only.
+  const int default_app_index = 1;
+  std::string default_app_id = InstallApp(GetProfile(0), default_app_index);
+  InstallApp(verifier(), default_app_index);
+  SyncAppListHelper::GetInstance()->CopyOrdinalsToVerifier(
+      GetProfile(0), default_app_id);
+
+  ASSERT_TRUE(AwaitQuiescence());
+  InstallAppsPendingForSync(GetProfile(0));
+  InstallAppsPendingForSync(GetProfile(1));
+  ASSERT_TRUE(AllProfilesHaveSameAppListAsVerifier());
+
+  // Flag Default app in Profile 1.
+  extensions::ExtensionSystem::Get(GetProfile(1))->
+      extension_service()->extension_prefs()->
+      UpdateExtensionPref(default_app_id, "was_installed_by_default",
+                          new base::FundamentalValue(true));
+
+  // Remove the default app in Profile 0 and verifier, ensure it was removed
+  // in Profile 1.
+  UninstallApp(GetProfile(0), default_app_index);
+  UninstallApp(verifier(), default_app_index);
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(AllProfilesHaveSameAppListAsVerifier());
+
+  // Ensure that a REMOVE_DEFAULT_APP SyncItem entry exists in Profile 1.
+  const app_list::AppListSyncableService::SyncItem* sync_item =
+      GetSyncItem(GetProfile(1), default_app_id);
+  ASSERT_TRUE(sync_item);
+  ASSERT_EQ(sync_pb::AppListSpecifics::TYPE_REMOVE_DEFAULT_APP,
+            sync_item->item_type);
+
+  // Re-Install the same app in Profile 0.
+  std::string app_id2 = InstallApp(GetProfile(0), default_app_index);
+  EXPECT_EQ(default_app_id, app_id2);
+  InstallApp(verifier(), default_app_index);
+  sync_item = GetSyncItem(GetProfile(0), app_id2);
+  EXPECT_EQ(sync_pb::AppListSpecifics::TYPE_APP, sync_item->item_type);
+
+  ASSERT_TRUE(AwaitQuiescence());
+  InstallAppsPendingForSync(GetProfile(0));
+  InstallAppsPendingForSync(GetProfile(1));
+  ASSERT_TRUE(AllProfilesHaveSameAppListAsVerifier());
+
+  // Ensure that the REMOVE_DEFAULT_APP SyncItem entry in Profile 1 is replaced
+  // with an APP entry after an install.
+  sync_item = GetSyncItem(GetProfile(1), app_id2);
+  ASSERT_TRUE(sync_item);
+  EXPECT_EQ(sync_pb::AppListSpecifics::TYPE_APP, sync_item->item_type);
 }
