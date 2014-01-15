@@ -176,15 +176,18 @@ int StringForChromeHost(const GURL& url) {
 
 base::string16 SiteChipView::SiteLabelFromURL(const GURL& provided_url) {
   // First, strip view-source: if it appears.  Note that GetContent removes
-  // "view-source:" but leaves the http, https or ftp scheme.
+  // "view-source:" but leaves the original scheme (http, https, ftp, etc).
   GURL url(provided_url);
   if (url.SchemeIs(content::kViewSourceScheme))
     url = GURL(url.GetContent());
 
+  // About scheme pages. Currently all about: URLs other than about:blank
+  // redirect to chrome: URLs, so this only affects about:blank.
+  if (url.SchemeIs(chrome::kAboutScheme))
+    return base::UTF8ToUTF16(url.spec());
+
   // Chrome built-in pages.
-  if (url.is_empty() ||
-      url.SchemeIs(chrome::kChromeUIScheme) ||
-      url.SchemeIs(chrome::kAboutScheme)) {
+  if (url.is_empty() || url.SchemeIs(chrome::kChromeUIScheme)) {
     int string_ref = StringForChromeHost(url);
     if (string_ref == -1)
       return base::UTF8ToUTF16("Chrome");
@@ -193,7 +196,7 @@ base::string16 SiteChipView::SiteLabelFromURL(const GURL& provided_url) {
 
   Profile* profile = toolbar_view_->browser()->profile();
 
-  // For chrome-extension urls, return the extension name.
+  // For chrome-extension URLs, return the extension name.
   if (url.SchemeIs(extensions::kExtensionScheme)) {
     ExtensionService* service =
         extensions::ExtensionSystem::Get(profile)->extension_service();
