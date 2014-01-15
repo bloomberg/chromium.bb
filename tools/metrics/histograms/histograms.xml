@@ -6034,6 +6034,108 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="InstallSigner.InvalidSignature">
+  <obsolete>
+    Deprecated 1/2014 (crbug.com/333934). Replaced by
+    ExtensionInstallSigner.ResultWasValid.
+  </obsolete>
+  <summary>
+    The extensions install signer got a well-formed result from the server but
+    the signature check on it failed.
+  </summary>
+</histogram>
+
+<histogram name="InstallVerifier.CallbackInvalidSignature">
+  <obsolete>
+    Deprecated 1/2014 (crbug.com/333934). Replaced by
+    ExtensionInstallVerifier.GetSignatureResult.
+  </obsolete>
+  <summary>
+    The extension install verifier tried to get a new signature and received a
+    response but it wasn't properly signed.
+  </summary>
+</histogram>
+
+<histogram name="InstallVerifier.CallbackNoSignature">
+  <obsolete>
+    Deprecated 1/2014 (crbug.com/333934). Replaced by
+    ExtensionInstallVerifier.GetSignatureResult.
+  </obsolete>
+  <summary>
+    The extension install verifier tried to get a new signature but was unable
+    to (network error contacting the server, response from server was malformed,
+    etc.).
+  </summary>
+</histogram>
+
+<histogram name="InstallVerifier.CallbackValidSignature">
+  <obsolete>
+    Deprecated 1/2014 (crbug.com/333934). Replaced by
+    ExtensionInstallVerifier.GetSignatureResult.
+  </obsolete>
+  <summary>
+    The extension install verifier got a new signature from the server that was
+    valid.
+  </summary>
+</histogram>
+
+<histogram name="InstallVerifier.InitGoodSignature">
+  <obsolete>
+    Deprecated 1/2014 (crbug.com/333934). Replaced by
+    ExtensionInstallVerifier.InitResult.
+  </obsolete>
+  <summary>
+    The extension install verifier found a valid signature at startup, and this
+    is a count of the number of signed ids it contained.
+  </summary>
+</histogram>
+
+<histogram name="InstallVerifier.InitInvalidSignature">
+  <obsolete>
+    Deprecated 1/2014 (crbug.com/333934). Replaced by
+    ExtensionInstallVerifier.InitResult.
+  </obsolete>
+  <summary>
+    The extension install verifier found a signature in the prefs at startup,
+    and it parsed properly, but it was invalid (some ids may have been
+    added/removed, could not verify it was signed with the correct private key,
+    etc.).
+  </summary>
+</histogram>
+
+<histogram name="InstallVerifier.InitNoSignature">
+  <obsolete>
+    Deprecated 1/2014 (crbug.com/333934). Replaced by
+    ExtensionInstallVerifier.InitResult.
+  </obsolete>
+  <summary>
+    The extension install verifier did not find any signature in the prefs at
+    startup.
+  </summary>
+</histogram>
+
+<histogram name="InstallVerifier.InitUnparseablePref">
+  <obsolete>
+    Deprecated 1/2014 (crbug.com/333934). Replaced by
+    ExtensionInstallVerifier.InitResult.
+  </obsolete>
+  <summary>
+    The extension install verifier found a signature in the prefs at startup,
+    but it wasn't parseable (missing/wrong format of required keys, etc.).
+  </summary>
+</histogram>
+
+<histogram name="InstallVerifier.SignatureFailedButNotEnforcing">
+  <obsolete>
+    Deprecated 1/2014 (crbug.com/333934). Replaced by
+    ExtensionInstallVerifier.MustRemainDisabled.
+  </obsolete>
+  <summary>
+    The extension install verifier would have disabled an extension but is not
+    in enforcement mode.
+  </summary>
+</histogram>
+
 <histogram name="Instant.InstantControllerEvent" enum="InstantControllerEvent">
   <summary>
     Records various events of interest in the InstantController. E.g. When URLs
