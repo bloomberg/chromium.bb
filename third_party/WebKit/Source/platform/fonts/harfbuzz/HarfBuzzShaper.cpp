@@ -559,6 +559,33 @@ FloatPoint HarfBuzzShaper::adjustStartPoint(const FloatPoint& point)
     return point + m_startOffset;
 }
 
+static inline int handleMultipleUChar(
+    UChar32 character,
+    unsigned clusterLength,
+    const SimpleFontData* currentFontData,
+    const UChar* currentCharacterPosition,
+    const UChar* markCharactersEnd,
+    const UChar* normalizedBufferEnd)
+{
+    if (U_GET_GC_MASK(character) & U_GC_M_MASK) {
+        int markLength = clusterLength;
+        while (markCharactersEnd < normalizedBufferEnd) {
+            UChar32 nextCharacter;
+            int nextCharacterLength = 0;
+            U16_NEXT(markCharactersEnd, nextCharacterLength, normalizedBufferEnd - markCharactersEnd, nextCharacter);
+            if (!(U_GET_GC_MASK(nextCharacter) & U_GC_M_MASK))
+                break;
+            markLength += nextCharacterLength;
+            markCharactersEnd += nextCharacterLength;
+        }
+
+        if (currentFontData->canRenderCombiningCharacterSequence(currentCharacterPosition, markCharactersEnd - currentCharacterPosition)) {
+            return markLength;
+        }
+    }
+    return 0;
+}
+
 bool HarfBuzzShaper::collectHarfBuzzRuns()
 {
     const UChar* normalizedBufferEnd = m_normalizedBuffer.get() + m_normalizedBufferLength;
@@ -584,23 +611,10 @@ bool HarfBuzzShaper::collectHarfBuzzRuns()
             if (Font::treatAsZeroWidthSpace(character))
                 continue;
 
-            if (U_GET_GC_MASK(character) & U_GC_M_MASK) {
-                int markLength = clusterLength;
-                const UChar* markCharactersEnd = iterator.characters() + clusterLength;
-                while (markCharactersEnd < normalizedBufferEnd) {
-                    UChar32 nextCharacter;
-                    int nextCharacterLength = 0;
-                    U16_NEXT(markCharactersEnd, nextCharacterLength, normalizedBufferEnd - markCharactersEnd, nextCharacter);
-                    if (!(U_GET_GC_MASK(nextCharacter) & U_GC_M_MASK))
-                        break;
-                    markLength += nextCharacterLength;
-                    markCharactersEnd += nextCharacterLength;
-                }
-
-                if (currentFontData->canRenderCombiningCharacterSequence(currentCharacterPosition, markCharactersEnd - currentCharacterPosition)) {
-                    clusterLength = markLength;
-                    continue;
-                }
+            int length = handleMultipleUChar(character, clusterLength, currentFontData, currentCharacterPosition, iterator.characters() + clusterLength, normalizedBufferEnd);
+            if (length) {
+                clusterLength = length;
+                continue;
             }
 
             nextFontData = m_font->glyphDataForCharacter(character, false).fontData;
