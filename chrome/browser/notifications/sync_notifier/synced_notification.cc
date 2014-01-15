@@ -70,8 +70,10 @@ SyncedNotification::SyncedNotification(const syncer::SyncData& sync_data)
     : notification_manager_(NULL),
       notifier_service_(NULL),
       profile_(NULL),
-      active_fetcher_count_(0),
-      toast_state_(true) {
+      toast_state_(true),
+      app_icon_bitmap_fetch_pending_(true),
+      sender_bitmap_fetch_pending_(true),
+      image_bitmap_fetch_pending_(true) {
   Update(sync_data);
 }
 
@@ -88,6 +90,29 @@ sync_pb::EntitySpecifics SyncedNotification::GetEntitySpecifics() const {
   return entity_specifics;
 }
 
+// Check that we have either fetched or gotten an error on all the bitmaps we
+// asked for.
+bool SyncedNotification::AreAllBitmapsFetched() {
+  bool app_icon_ready = GetAppIconUrl().is_empty() ||
+      !app_icon_bitmap_.IsEmpty() || !app_icon_bitmap_fetch_pending_;
+  bool images_ready = GetImageUrl().is_empty() || !image_bitmap_.IsEmpty() ||
+      !image_bitmap_fetch_pending_;
+  bool sender_picture_ready = GetProfilePictureUrl(0).is_empty() ||
+      !sender_bitmap_.IsEmpty() || !sender_bitmap_fetch_pending_;
+  bool button_bitmaps_ready = true;
+  for (unsigned int j = 0; j < GetButtonCount(); ++j) {
+    if (!GetButtonIconUrl(j).is_empty()
+        && button_bitmaps_[j].IsEmpty()
+        && button_bitmaps_fetch_pending_[j]) {
+      button_bitmaps_ready = false;
+      break;
+    }
+  }
+
+  return app_icon_ready && images_ready && sender_picture_ready &&
+      button_bitmaps_ready;
+}
+
 // TODO(petewil): The fetch mechanism appears to be returning two bitmaps on the
 // mac - perhaps one is regular, one is high dpi?  If so, ensure we use the high
 // dpi bitmap when appropriate.
@@ -98,46 +123,42 @@ void SyncedNotification::OnFetchComplete(const GURL url,
   // Make sure we are on the thread we expect.
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
+  gfx::Image downloaded_image;
+  if (bitmap != NULL)
+    downloaded_image = gfx::Image::CreateFrom1xBitmap(*bitmap);
+
   // Match the incoming bitmaps to URLs.  In case this is a dup, make sure to
   // try all potentially matching urls.
-  if (GetAppIconUrl() == url && bitmap != NULL) {
-    app_icon_bitmap_ = gfx::Image::CreateFrom1xBitmap(*bitmap);
+  if (GetAppIconUrl() == url) {
+    app_icon_bitmap_ = downloaded_image;
+    if (app_icon_bitmap_.IsEmpty())
+      app_icon_bitmap_fetch_pending_ = false;
   }
-  if (GetImageUrl() == url && bitmap != NULL) {
-    image_bitmap_ = gfx::Image::CreateFrom1xBitmap(*bitmap);
+  if (GetImageUrl() == url) {
+    image_bitmap_ = downloaded_image;
+    if (image_bitmap_.IsEmpty())
+      image_bitmap_fetch_pending_ = false;
   }
-  if (GetProfilePictureUrl(0) == url && bitmap != NULL) {
-    sender_bitmap_ = gfx::Image::CreateFrom1xBitmap(*bitmap);
+  if (GetProfilePictureUrl(0) == url) {
+    sender_bitmap_ = downloaded_image;
+    if (sender_bitmap_.IsEmpty())
+      sender_bitmap_fetch_pending_ = false;
   }
 
   // If this URL matches one or more button bitmaps, save them off.
   for (unsigned int i = 0; i < GetButtonCount(); ++i) {
-    if (GetButtonIconUrl(i) == url && bitmap != NULL)
-      button_bitmaps_[i] = gfx::Image::CreateFrom1xBitmap(*bitmap);
-  }
-
-  // Count off the bitmaps as they arrive.
-  --active_fetcher_count_;
-
-  DVLOG(2) << __FUNCTION__ << " popping bitmap " << url;
-  DVLOG(2) << __FUNCTION__ << " size is " << bitmap->getSize();
-
-  // Check to see if all images we need are now present.
-  bool app_icon_ready = GetAppIconUrl().is_empty() ||
-      !app_icon_bitmap_.IsEmpty();
-  bool images_ready = GetImageUrl().is_empty() || !image_bitmap_.IsEmpty();
-  bool sender_picture_ready = GetProfilePictureUrl(0).is_empty() ||
-      !sender_bitmap_.IsEmpty();
-  bool button_bitmaps_ready = true;
-  for (unsigned int j = 0; j < GetButtonCount(); ++j) {
-    if (!GetButtonIconUrl(j).is_empty() && button_bitmaps_[j].IsEmpty()) {
-      button_bitmaps_ready = false;
-      break;
+    if (GetButtonIconUrl(i) == url) {
+      if (bitmap != NULL) {
+        button_bitmaps_[i] = gfx::Image::CreateFrom1xBitmap(*bitmap);
+      }
+      button_bitmaps_fetch_pending_[i] = false;
     }
   }
-  // See if all bitmaps are accounted for, if so call Show.
-  if (app_icon_ready && images_ready && sender_picture_ready &&
-      button_bitmaps_ready) {
+
+  DVLOG(2) << __FUNCTION__ << " popping bitmap " << url;
+
+  // See if all bitmaps are already accounted for, if so call Show.
+  if (AreAllBitmapsFetched()) {
     Show(notification_manager_, notifier_service_, profile_);
   }
 }
@@ -157,12 +178,12 @@ void SyncedNotification::QueueBitmapFetchJobs(
   notification_manager_ = notification_manager;
   notifier_service_ = notifier_service;
   profile_ = profile;
-  DCHECK_EQ(active_fetcher_count_, 0);
 
   // Ensure our bitmap vector has as many entries as there are buttons,
   // so that when the bitmaps arrive the vector has a slot for them.
   for (unsigned int i = 0; i < GetButtonCount(); ++i) {
     button_bitmaps_.push_back(gfx::Image());
+    button_bitmaps_fetch_pending_.push_back(true);
     AddBitmapToFetchQueue(GetButtonIconUrl(i));
   }
 
@@ -177,9 +198,12 @@ void SyncedNotification::QueueBitmapFetchJobs(
   AddBitmapToFetchQueue(GetAppIconUrl());
   AddBitmapToFetchQueue(GetImageUrl());
 
-  // If there are no bitmaps, call show now.
-  if (active_fetcher_count_ == 0) {
-    Show(notification_manager, notifier_service, profile);
+  // Check to see if we don't need to fetch images, either because we already
+  // did, or because the URLs are empty. If so, we can display the notification.
+
+  // See if all bitmaps are accounted for, if so call Show().
+  if (AreAllBitmapsFetched()) {
+    Show(notification_manager_, notifier_service_, profile_);
   }
 }
 
@@ -200,7 +224,6 @@ void SyncedNotification::AddBitmapToFetchQueue(const GURL& url) {
   }
 
   if (url.is_valid()) {
-    ++active_fetcher_count_;
     fetchers_.push_back(new NotificationBitmapFetcher(url, this));
     DVLOG(2) << __FUNCTION__ << "Pushing bitmap " << url;
   }

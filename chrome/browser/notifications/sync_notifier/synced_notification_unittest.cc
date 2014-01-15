@@ -149,6 +149,7 @@ class SyncedNotificationTest : public testing::Test {
                                 unsigned int how_many) {
     for (unsigned int i = 0; i < how_many; ++i) {
       notification->button_bitmaps_.push_back(gfx::Image());
+      notification->button_bitmaps_fetch_pending_.push_back(true);
     }
   }
 
@@ -363,12 +364,10 @@ TEST_F(SyncedNotificationTest, AddBitmapToFetchQueueTest) {
   notification6->AddBitmapToFetchQueue(GURL(kIconUrl1));
   notification6->AddBitmapToFetchQueue(GURL(kIconUrl2));
 
-  EXPECT_EQ(2, notification6->active_fetcher_count_);
   EXPECT_EQ(GURL(kIconUrl1), notification6->fetchers_[0]->url());
   EXPECT_EQ(GURL(kIconUrl2), notification6->fetchers_[1]->url());
 
   notification6->AddBitmapToFetchQueue(GURL(kIconUrl2));
-  EXPECT_EQ(2, notification6->active_fetcher_count_);
 }
 
 TEST_F(SyncedNotificationTest, OnFetchCompleteTest) {
@@ -386,8 +385,6 @@ TEST_F(SyncedNotificationTest, OnFetchCompleteTest) {
   notification1_->AddBitmapToFetchQueue(GURL(kButtonOneIconUrl));
   notification1_->AddBitmapToFetchQueue(GURL(kButtonTwoIconUrl));
 
-  EXPECT_EQ(4, notification1_->active_fetcher_count_);
-
   // Put some realistic looking bitmap data into the url_fetcher.
   SkBitmap bitmap;
 
@@ -400,17 +397,13 @@ TEST_F(SyncedNotificationTest, OnFetchCompleteTest) {
   AddButtonBitmaps(notification1_.get(), 2);
 
   notification1_->OnFetchComplete(GURL(kIconUrl1), &bitmap);
-  EXPECT_EQ(3, notification1_->active_fetcher_count_);
 
   // When we call OnFetchComplete on the last bitmap, show should be called.
   notification1_->OnFetchComplete(GURL(kImageUrl1), &bitmap);
-  EXPECT_EQ(2, notification1_->active_fetcher_count_);
 
   notification1_->OnFetchComplete(GURL(kButtonOneIconUrl), &bitmap);
-  EXPECT_EQ(1, notification1_->active_fetcher_count_);
 
   notification1_->OnFetchComplete(GURL(kButtonTwoIconUrl), &bitmap);
-  EXPECT_EQ(0, notification1_->active_fetcher_count_);
 
   // Since we check Show() thoroughly in its own test, we only check cursorily.
   EXPECT_EQ(message_center::NOTIFICATION_TYPE_IMAGE,
@@ -426,16 +419,55 @@ TEST_F(SyncedNotificationTest, OnFetchCompleteTest) {
   //     image, notification1_->GetAppIconBitmap()));
 }
 
-TEST_F(SyncedNotificationTest, QueueBitmapFetchJobsTest) {
+
+TEST_F(SyncedNotificationTest, EmptyBitmapTest) {
   if (!UseRichNotifications())
     return;
 
   StubNotificationUIManager notification_manager;
 
-  notification1_->QueueBitmapFetchJobs(&notification_manager, NULL, NULL);
+  // Set up the internal state that FetchBitmaps() would have set.
+  notification1_->notification_manager_ = &notification_manager;
 
-  // There should be 4 urls in the queue, icon, image, and two buttons.
-  EXPECT_EQ(4, notification1_->active_fetcher_count_);
+  // Add the bitmaps to the queue for us to match up.
+  notification1_->AddBitmapToFetchQueue(GURL(kIconUrl1));
+  notification1_->AddBitmapToFetchQueue(GURL(kImageUrl1));
+  notification1_->AddBitmapToFetchQueue(GURL(kButtonOneIconUrl));
+  notification1_->AddBitmapToFetchQueue(GURL(kButtonTwoIconUrl));
+
+  // Put some realistic looking bitmap data into the url_fetcher.
+  SkBitmap bitmap;
+  SkBitmap empty_bitmap;
+
+  // Put a real bitmap into "bitmap".  2x2 bitmap of green 32 bit pixels.
+  bitmap.setConfig(SkBitmap::kARGB_8888_Config, 2, 2);
+  bitmap.allocPixels();
+  bitmap.eraseColor(SK_ColorGREEN);
+
+  // Put a null bitmap into "bitmap".  2x2 bitmap of green 32 bit pixels.
+  empty_bitmap.setConfig(SkBitmap::kARGB_8888_Config, 0, 0);
+  empty_bitmap.allocPixels();
+  empty_bitmap.eraseColor(SK_ColorGREEN);
+
+  // Allocate the button_bitmaps_ array as the calling function normally would.
+  AddButtonBitmaps(notification1_.get(), 2);
+
+  notification1_->OnFetchComplete(GURL(kIconUrl1), &bitmap);
+
+  // When we call OnFetchComplete on the last bitmap, show should be called.
+  notification1_->OnFetchComplete(GURL(kImageUrl1), &bitmap);
+
+  notification1_->OnFetchComplete(GURL(kButtonOneIconUrl), &empty_bitmap);
+
+  notification1_->OnFetchComplete(GURL(kButtonTwoIconUrl), NULL);
+
+  // Since we check Show() thoroughly in its own test, we only check cursorily.
+  EXPECT_EQ(message_center::NOTIFICATION_TYPE_IMAGE,
+            notification_manager.notification().type());
+  EXPECT_EQ(std::string(kTitle1),
+            base::UTF16ToUTF8(notification_manager.notification().title()));
+  EXPECT_EQ(std::string(kText1),
+            base::UTF16ToUTF8(notification_manager.notification().message()));
 }
 
 // TODO(petewil): Add a test for a notification being read and or deleted.

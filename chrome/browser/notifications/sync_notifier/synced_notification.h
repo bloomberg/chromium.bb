@@ -115,23 +115,31 @@ class SyncedNotification : public NotificationBitmapFetcherDelegate {
   // If this bitmap has a valid GURL, create a fetcher for it.
   void AddBitmapToFetchQueue(const GURL& gurl);
 
+  // Check to see if we have responses for all the bitmaps we need.
+  bool AreAllBitmapsFetched();
+
   sync_pb::SyncedNotificationSpecifics specifics_;
   NotificationUIManager* notification_manager_;
   ChromeNotifierService* notifier_service_;
   Profile* profile_;
+  bool toast_state_;
   ScopedVector<NotificationBitmapFetcher> fetchers_;
-  int active_fetcher_count_;
   gfx::Image app_icon_bitmap_;
   gfx::Image sender_bitmap_;
   gfx::Image image_bitmap_;
   std::vector<gfx::Image> button_bitmaps_;
-  bool toast_state_;
+  bool app_icon_bitmap_fetch_pending_;
+  bool sender_bitmap_fetch_pending_;
+  bool image_bitmap_fetch_pending_;
+  std::vector<bool> button_bitmaps_fetch_pending_;
+
 
   friend class SyncedNotificationTest;
 
   FRIEND_TEST_ALL_PREFIXES(SyncedNotificationTest, AddBitmapToFetchQueueTest);
   FRIEND_TEST_ALL_PREFIXES(SyncedNotificationTest, OnFetchCompleteTest);
   FRIEND_TEST_ALL_PREFIXES(SyncedNotificationTest, QueueBitmapFetchJobsTest);
+  FRIEND_TEST_ALL_PREFIXES(SyncedNotificationTest, EmptyBitmapTest);
 
   DISALLOW_COPY_AND_ASSIGN(SyncedNotification);
 };
