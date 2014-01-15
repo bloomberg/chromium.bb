@@ -210,8 +210,10 @@ struct backlight *backlight_init(struct udev_device *drm_device,
 			     entry->d_name) < 0)
 			goto err;
 
-		if (asprintf(&path, "%s/%s", backlight_path, "type") < 0)
+		if (asprintf(&path, "%s/%s", backlight_path, "type") < 0) {
+			free(backlight_path);
 			goto err;
+		}
 
 		fd = open(path, O_RDONLY);
 
