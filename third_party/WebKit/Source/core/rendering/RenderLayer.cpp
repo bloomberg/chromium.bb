@@ -236,6 +236,7 @@ LayoutPoint RenderLayer::computeOffsetFromRoot(bool& hasLayerOffset) const
 
 void RenderLayer::updateLayerPositionsAfterLayout(const RenderLayer* rootLayer, UpdateLayerPositionsFlags flags)
 {
+    TRACE_EVENT0("blink_rendering", "RenderLayer::updateLayerPositionsAfterLayout");
     RenderGeometryMap geometryMap(UseTransforms);
     if (this != rootLayer)
         geometryMap.pushMappingsToAncestor(parent(), 0);
