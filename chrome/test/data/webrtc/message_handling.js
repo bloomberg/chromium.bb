@@ -573,6 +573,11 @@ function handlePeerMessage_(peerId, message) {
     answerCall(gPeerConnection, message);
     return;
   }
+  if (gPeerConnection == null) {
+    debug('Discarding message ' + message + '; already disconnected.');
+    return;
+  }
+
   handleMessage(gPeerConnection, message);
 }
 
