@@ -55,14 +55,6 @@ void RenderPart::setWidget(PassRefPtr<Widget> widget)
         return;
 
     RenderWidget::setWidget(widget);
-
-    // make sure the scrollbars are set correctly for restore
-    // ### find better fix
-    viewCleared();
-}
-
-void RenderPart::viewCleared()
-{
 }
 
 LayerType RenderPart::layerTypeRequired() const

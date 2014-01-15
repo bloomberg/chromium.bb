@@ -34,7 +34,6 @@ public:
     virtual ~RenderPart();
 
     virtual void setWidget(PassRefPtr<Widget>) OVERRIDE FINAL;
-    virtual void viewCleared();
 
     bool requiresAcceleratedCompositing() const;
 

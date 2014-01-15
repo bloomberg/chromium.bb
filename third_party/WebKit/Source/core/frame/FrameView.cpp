@@ -300,7 +300,6 @@ void FrameView::init()
 {
     reset();
 
-    m_margins = LayoutSize(-1, -1); // undefined
     m_size = LayoutSize();
 
     // Propagate the marginwidth/height and scrolling modes to the view.
@@ -309,12 +308,6 @@ void FrameView::init()
         HTMLFrameElementBase* frameElt = toHTMLFrameElementBase(ownerElement);
         if (frameElt->scrollingMode() == ScrollbarAlwaysOff)
             setCanHaveScrollbars(false);
-        LayoutUnit marginWidth = frameElt->marginWidth();
-        LayoutUnit marginHeight = frameElt->marginHeight();
-        if (marginWidth != -1)
-            setMarginWidth(marginWidth);
-        if (marginHeight != -1)
-            setMarginHeight(marginHeight);
     }
 }
 
@@ -377,9 +370,6 @@ void FrameView::clear()
     setCanBlitOnScroll(true);
 
     reset();
-
-    if (RenderPart* renderer = m_frame->ownerRenderer())
-        renderer->viewCleared();
 
     setScrollbarsSuppressed(true);
 }
@@ -447,18 +437,6 @@ bool FrameView::scheduleAnimation()
 RenderView* FrameView::renderView() const
 {
     return frame().contentRenderer();
-}
-
-void FrameView::setMarginWidth(LayoutUnit w)
-{
-    // make it update the rendering area when set
-    m_margins.setWidth(w);
-}
-
-void FrameView::setMarginHeight(LayoutUnit h)
-{
-    // make it update the rendering area when set
-    m_margins.setHeight(h);
 }
 
 void FrameView::setCanHaveScrollbars(bool canHaveScrollbars)

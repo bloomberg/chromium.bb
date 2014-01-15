@@ -77,11 +77,6 @@ public:
 
     RenderView* renderView() const;
 
-    LayoutUnit marginWidth() const { return m_margins.width(); } // -1 means default
-    LayoutUnit marginHeight() const { return m_margins.height(); } // -1 means default
-    void setMarginWidth(LayoutUnit);
-    void setMarginHeight(LayoutUnit);
-
     virtual void setCanHaveScrollbars(bool) OVERRIDE;
     void updateCanHaveScrollbars();
 
@@ -450,7 +445,6 @@ private:
     static bool s_inPaintContents;
 
     LayoutSize m_size;
-    LayoutSize m_margins;
 
     typedef HashSet<RefPtr<RenderEmbeddedObject> > EmbeddedObjectSet;
     EmbeddedObjectSet m_widgetUpdateSet;

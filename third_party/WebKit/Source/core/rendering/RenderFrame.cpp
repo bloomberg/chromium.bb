@@ -47,21 +47,4 @@ void RenderFrame::updateFromElement()
         toRenderFrameSet(parent())->notifyFrameEdgeInfoChanged();
 }
 
-void RenderFrame::viewCleared()
-{
-    HTMLFrameElement* element = toHTMLFrameElement(node());
-    if (!element || !widget() || !widget()->isFrameView())
-        return;
-
-    FrameView* view = toFrameView(widget());
-
-    int marginWidth = element->marginWidth();
-    int marginHeight = element->marginHeight();
-
-    if (marginWidth != -1)
-        view->setMarginWidth(marginWidth);
-    if (marginHeight != -1)
-        view->setMarginHeight(marginHeight);
-}
-
 } // namespace WebCore
