@@ -305,8 +305,9 @@ double Resource::freshnessLifetime() const
         return 0;
 #endif
 
-    // Cache other non-http resources liberally.
-    if (!m_response.url().protocolIsInHTTPFamily())
+    // Cache other non-http / non-filesystem resources liberally.
+    if (!m_response.url().protocolIsInHTTPFamily()
+        && !m_response.url().protocolIs("filesystem"))
         return std::numeric_limits<double>::max();
 
     // RFC2616 13.2.4
