@@ -6,6 +6,7 @@
 
 #include "ash/content_support/gpu_support_impl.h"
 #include "ash/shell.h"
+#include "base/memory/scoped_ptr.h"
 
 namespace ash {
 
