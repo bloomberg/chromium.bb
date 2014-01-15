@@ -136,13 +136,10 @@ static void
 exposay_highlight_surface(struct desktop_shell *shell,
                           struct exposay_surface *esurface)
 {
-	struct weston_view *view = NULL;
+	struct weston_view *view = esurface->view;
 
-	if (esurface) {
-		shell->exposay.row_current = esurface->row;
-		shell->exposay.column_current = esurface->column;
-		view = esurface->view;
-	}
+	shell->exposay.row_current = esurface->row;
+	shell->exposay.column_current = esurface->column;
 
 	activate(shell, view->surface, shell->exposay.seat);
 	shell->exposay.focus_current = view;
