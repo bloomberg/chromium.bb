@@ -106,37 +106,6 @@ class NET_EXPORT UploadFileElementReader : public UploadElementReader {
   DISALLOW_COPY_AND_ASSIGN(UploadFileElementReader);
 };
 
-// An UploadElementReader implementation for file which performs file operation
-// synchronously.
-// Use this class only if the thread is IO allowed.
-class NET_EXPORT UploadFileElementReaderSync : public UploadElementReader {
- public:
-  UploadFileElementReaderSync(const base::FilePath& path,
-                              uint64 range_offset,
-                              uint64 range_length,
-                              const base::Time& expected_modification_time);
-  virtual ~UploadFileElementReaderSync();
-
-  // UploadElementReader overrides:
-  virtual int Init(const CompletionCallback& callback) OVERRIDE;
-  virtual uint64 GetContentLength() const OVERRIDE;
-  virtual uint64 BytesRemaining() const OVERRIDE;
-  virtual int Read(IOBuffer* buf,
-                   int buf_length,
-                   const CompletionCallback& callback) OVERRIDE;
-
- private:
-  const base::FilePath path_;
-  const uint64 range_offset_;
-  const uint64 range_length_;
-  const base::Time expected_modification_time_;
-  scoped_ptr<FileStream> file_stream_;
-  uint64 content_length_;
-  uint64 bytes_remaining_;
-
-  DISALLOW_COPY_AND_ASSIGN(UploadFileElementReaderSync);
-};
-
 }  // namespace net
 
 #endif  // NET_BASE_UPLOAD_FILE_ELEMENT_READER_H_
