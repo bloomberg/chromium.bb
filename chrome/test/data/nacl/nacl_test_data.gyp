@@ -658,6 +658,42 @@
       ],
     },
     {
+      'target_name': 'ppapi_extension_mime_handler',
+      'type': 'none',
+      'variables': {
+        'nexe_target': 'ppapi_extension_mime_handler',
+        'build_newlib': 1,
+        'build_glibc': 0,
+        'build_pnacl_newlib': 0,
+        'nexe_destination_dir': 'nacl_test_data',
+        'link_flags': [
+          '-lppapi',
+          '-lppapi_test_lib',
+          '-lplatform',
+          '-lgio',
+        ],
+        'sources': [
+          'extension_mime_handler/ppapi_extension_mime_handler.cc',
+        ],
+        'test_files': [
+          'extension_mime_handler/ppapi_extension_mime_handler.html',
+          'extension_mime_handler/mime_test_data.dat',
+          # For faking the file's MIME type.
+          'extension_mime_handler/mime_test_data.dat.mock-http-headers',
+          # Turns the test data directory into an extension.  Hackish.
+          # Note that the .nexe names are embedded in this file.
+          'extension_mime_handler/manifest.json',
+        ],
+      },
+      'dependencies': [
+        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
+        '<(DEPTH)/ppapi/native_client/native_client.gyp:ppapi_lib',
+        '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform_lib',
+        '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio_lib',
+        'ppapi_test_lib',
+      ],
+    },
+    {
       'target_name': 'pnacl_error_handling_test',
       'type': 'none',
       'variables': {
