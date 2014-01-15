@@ -64,6 +64,7 @@ protected:
     virtual bool supportsPartialLayout() const OVERRIDE { return false; }
 
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
+    virtual void removeChild(RenderObject*) OVERRIDE;
 
 private:
     enum FlexSign {
@@ -155,6 +156,9 @@ private:
     void applyStretchAlignmentToChild(RenderBox*, LayoutUnit lineCrossAxisExtent);
     void flipForRightToLeftColumn();
     void flipForWrapReverse(const Vector<LineContext>&, LayoutUnit crossAxisStartEdge);
+
+    // This is used to cache the preferred size for orthogonal flow children so we don't have to relayout to get it
+    HashMap<const RenderObject*, LayoutUnit> m_intrinsicSizeAlongMainAxis;
 
     mutable OrderIterator m_orderIterator;
     int m_numberOfInFlowChildrenOnFirstLine;
