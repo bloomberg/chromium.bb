@@ -525,7 +525,12 @@ create_focus_surface(struct weston_compositor *ec,
 	surface->output = output;
 	surface->configure_private = fsurf;
 
-	fsurf->view = weston_view_create (surface);
+	fsurf->view = weston_view_create(surface);
+	if (fsurf->view == NULL) {
+		weston_surface_destroy(surface);
+		free(fsurf);
+		return NULL;
+	}
 	fsurf->view->output = output;
 
 	weston_surface_set_size(surface, output->width, output->height);
@@ -719,9 +724,17 @@ animate_focus_change(struct desktop_shell *shell, struct workspace *ws,
 	output = get_default_output(shell->compositor);
 	if (ws->fsurf_front == NULL && (from || to)) {
 		ws->fsurf_front = create_focus_surface(shell->compositor, output);
-		ws->fsurf_back = create_focus_surface(shell->compositor, output);
+		if (ws->fsurf_front == NULL)
+			return;
 		ws->fsurf_front->view->alpha = 0.0;
+
+		ws->fsurf_back = create_focus_surface(shell->compositor, output);
+		if (ws->fsurf_back == NULL) {
+			focus_surface_destroy(ws->fsurf_front);
+			return;
+		}
 		ws->fsurf_back->view->alpha = 0.0;
+
 		focus_surface_created = true;
 	} else {
 		wl_list_remove(&ws->fsurf_front->view->layer_link);
