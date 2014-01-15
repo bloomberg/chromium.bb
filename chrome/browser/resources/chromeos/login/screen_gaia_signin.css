@@ -86,8 +86,15 @@
 
 #signin-frame {
   background-color: transparent;
+  margin-left: -44px;
   vertical-align: top;
-  width: 340px;
+  width: 400px;
+}
+
+/* Simpler alignment if no right panel. */
+.no-right-panel #signin-frame,
+.saml #signin-frame {
+  margin-left: 0;
 }
 
 /* Position to be aligned with the login box in iframe  */
