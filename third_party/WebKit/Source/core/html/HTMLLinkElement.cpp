@@ -329,7 +329,7 @@ IconType HTMLLinkElement::iconType() const
     return m_relAttribute.iconType();
 }
 
-String HTMLLinkElement::iconSizes() const
+const AtomicString& HTMLLinkElement::iconSizes() const
 {
     return m_sizes->toString();
 }

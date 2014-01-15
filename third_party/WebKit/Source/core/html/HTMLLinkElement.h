@@ -134,7 +134,7 @@ public:
     IconType iconType() const;
 
     // the icon size string as parsed from the HTML attribute
-    String iconSizes() const;
+    const AtomicString& iconSizes() const;
 
     CSSStyleSheet* sheet() const { return linkStyle() ? linkStyle()->sheet() : 0; }
     Document* import() const;

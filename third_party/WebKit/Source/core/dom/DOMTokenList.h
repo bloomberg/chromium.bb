@@ -57,12 +57,12 @@ public:
     bool toggle(const AtomicString&, ExceptionState&);
     bool toggle(const AtomicString&, bool force, ExceptionState&);
 
-    AtomicString toString() const { return value(); }
+    const AtomicString& toString() const { return value(); }
 
     virtual Element* element() { return 0; }
 
 protected:
-    virtual AtomicString value() const = 0;
+    virtual const AtomicString& value() const = 0;
     virtual void setValue(const AtomicString&) = 0;
 
     virtual void addInternal(const AtomicString&);
