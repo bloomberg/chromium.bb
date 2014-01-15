@@ -16,21 +16,18 @@ namespace {
 
 const size_t kNumberOfAddressLinesUS = 7;
 
-void AppendSwitch() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  command_line->AppendSwitch(::switches::kEnableAutofillAddressI18n);
-  ASSERT_TRUE(Enabled());
-}
-
 }  // namespace
 
-TEST(AutofillDialogI18nInput, DisabledByDefault) {
+TEST(AutofillDialogI18nInput, DisabledByDefaultEnabledByFlag) {
   EXPECT_FALSE(Enabled());
+
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  command_line->AppendSwitch(::switches::kEnableAutofillAddressI18n);
+
+  EXPECT_TRUE(Enabled());
 }
 
 TEST(AutofillDialogI18nInput, USShippingAddress) {
-  AppendSwitch();
-
   DetailInputs inputs;
   BuildAddressInputs(common::ADDRESS_TYPE_SHIPPING, "US", &inputs);
 
@@ -40,8 +37,6 @@ TEST(AutofillDialogI18nInput, USShippingAddress) {
 }
 
 TEST(AutofillDialogI18nInput, USBillingAddress) {
-  AppendSwitch();
-
   DetailInputs inputs;
   BuildAddressInputs(common::ADDRESS_TYPE_BILLING, "US", &inputs);
 
@@ -51,8 +46,6 @@ TEST(AutofillDialogI18nInput, USBillingAddress) {
 }
 
 TEST(AutofillDialogI18nInput, USCityStateAndZipCodeShareInputRow) {
-  AppendSwitch();
-
   DetailInputs inputs;
   BuildAddressInputs(common::ADDRESS_TYPE_SHIPPING, "US", &inputs);
   ASSERT_EQ(kNumberOfAddressLinesUS, inputs.size());
