@@ -14,6 +14,7 @@
 #include "content/common/resource_messages.h"
 #include "content/public/common/resource_response.h"
 #include "net/base/net_errors.h"
+#include "net/base/upload_data.h"
 #include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/common/appcache/appcache_interfaces.h"
