@@ -58,8 +58,7 @@ bool ReadTextMessage(MessagePipeHandle handle, std::string* text) {
 }
 
 void IterateAndReportPerf(const char* test_name,
-                          PerfTestSingleIteration single_iteration,
-                          void* closure) {
+                          base::Callback<void()> single_iteration) {
   // TODO(vtl): These should be specifiable using command-line flags.
   static const size_t kGranularity = 100;
   static const double kPerftestTimeSeconds = 3.0;
@@ -69,7 +68,7 @@ void IterateAndReportPerf(const char* test_name,
   size_t iterations = 0;
   do {
     for (size_t i = 0; i < kGranularity; i++)
-      (*single_iteration)(closure);
+      single_iteration.Run();
     iterations += kGranularity;
 
     end_time = base::TimeTicks::HighResNow();
