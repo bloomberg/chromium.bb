@@ -71,7 +71,7 @@ TEST_F(FocusManagerTest, FocusStoreRestore) {
   SimulateActivateWindow();
 
   LabelButton* button = new LabelButton(NULL, base::ASCIIToUTF16("Press me"));
-  button->SetStyle(Button::STYLE_NATIVE_TEXTBUTTON);
+  button->SetStyle(Button::STYLE_BUTTON);
   View* view = new View();
   view->SetFocusable(true);
 

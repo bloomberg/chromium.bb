@@ -256,7 +256,7 @@ views::View* SSLClientCertificateSelector::CreateExtraView() {
   DCHECK(!view_cert_button_);
   view_cert_button_ = new views::LabelButton(this,
       l10n_util::GetStringUTF16(IDS_PAGEINFO_CERT_INFO_BUTTON));
-  view_cert_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  view_cert_button_->SetStyle(views::Button::STYLE_BUTTON);
   return view_cert_button_;
 }
 

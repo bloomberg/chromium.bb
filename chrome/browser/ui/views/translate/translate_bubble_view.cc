@@ -38,10 +38,11 @@
 namespace {
 
 views::LabelButton* CreateLabelButton(views::ButtonListener* listener,
-                                      const base::string16& label, int id) {
+                                      const base::string16& label,
+                                      int id) {
   views::LabelButton* button = new views::LabelButton(listener, label);
   button->set_id(id);
-  button->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  button->SetStyle(views::Button::STYLE_BUTTON);
   return button;
 }
 

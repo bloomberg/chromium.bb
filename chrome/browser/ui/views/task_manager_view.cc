@@ -374,11 +374,11 @@ void TaskManagerView::Init() {
       switches::kPurgeMemoryButton)) {
     purge_memory_button_ = new views::LabelButton(this,
         l10n_util::GetStringUTF16(IDS_TASK_MANAGER_PURGE_MEMORY));
-    purge_memory_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+    purge_memory_button_->SetStyle(views::Button::STYLE_BUTTON);
   }
   kill_button_ = new views::LabelButton(this,
       l10n_util::GetStringUTF16(IDS_TASK_MANAGER_KILL));
-  kill_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  kill_button_->SetStyle(views::Button::STYLE_BUTTON);
   about_memory_link_ = new views::Link(
       l10n_util::GetStringUTF16(IDS_TASK_MANAGER_ABOUT_MEMORY_LINK));
   about_memory_link_->set_listener(this);

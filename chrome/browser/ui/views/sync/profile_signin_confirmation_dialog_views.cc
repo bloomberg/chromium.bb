@@ -116,7 +116,7 @@ views::View* ProfileSigninConfirmationDialogViews::CreateExtraView() {
         l10n_util::GetStringUTF16(IDS_ENTERPRISE_SIGNIN_CONTINUE_NEW_STYLE);
     continue_signin_button_ =
         new views::LabelButton(this, continue_signin_text);
-    continue_signin_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+    continue_signin_button_->SetStyle(views::Button::STYLE_BUTTON);
     continue_signin_button_->SetFocusable(true);
   }
   return continue_signin_button_;

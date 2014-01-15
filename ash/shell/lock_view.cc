@@ -26,7 +26,7 @@ class LockView : public views::WidgetDelegateView,
  public:
   LockView() : unlock_button_(new views::LabelButton(
                                   this, base::ASCIIToUTF16("Unlock"))) {
-    unlock_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+    unlock_button_->SetStyle(views::Button::STYLE_BUTTON);
     AddChildView(unlock_button_);
     unlock_button_->SetFocusable(true);
   }

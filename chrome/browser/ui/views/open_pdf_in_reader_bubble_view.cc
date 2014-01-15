@@ -58,7 +58,7 @@ void OpenPDFInReaderBubbleView::Init() {
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   close_button_ = new views::LabelButton(this, model_->GetCancelButtonText());
-  close_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  close_button_->SetStyle(views::Button::STYLE_BUTTON);
   layout->StartRow(0, single_column_set_id);
   layout->AddView(close_button_);
 }

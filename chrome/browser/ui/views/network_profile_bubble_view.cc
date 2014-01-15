@@ -106,7 +106,7 @@ void NetworkProfileBubbleView::Init() {
 
   views::LabelButton* ok_button = new views::LabelButton(
       this, l10n_util::GetStringUTF16(IDS_OK));
-  ok_button->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  ok_button->SetStyle(views::Button::STYLE_BUTTON);
   ok_button->SetIsDefault(true);
   layout->AddView(ok_button);
 }

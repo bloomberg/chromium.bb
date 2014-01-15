@@ -367,7 +367,7 @@ LabelButton* DialogClientView::CreateDialogButton(ui::DialogButton type) {
     button = new BlueButton(this, title);
   } else {
     button = new LabelButton(this, title);
-    button->SetStyle(Button::STYLE_NATIVE_TEXTBUTTON);
+    button->SetStyle(Button::STYLE_BUTTON);
   }
   button->SetFocusable(true);
 

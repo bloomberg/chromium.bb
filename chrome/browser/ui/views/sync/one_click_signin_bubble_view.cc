@@ -284,7 +284,7 @@ void OneClickSigninBubbleView::GetButtons(views::LabelButton** ok_button,
       l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_OK_BUTTON);
 
   *ok_button = new views::LabelButton(this, ok_label);
-  (*ok_button)->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  (*ok_button)->SetStyle(views::Button::STYLE_BUTTON);
 
   // The default size of the buttons is too large.  To allow them to be smaller
   // ignore the minimum default size.,
@@ -292,7 +292,7 @@ void OneClickSigninBubbleView::GetButtons(views::LabelButton** ok_button,
 
   if (is_sync_dialog_) {
     *undo_button = new views::LabelButton(this, base::string16());
-    (*undo_button)->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+    (*undo_button)->SetStyle(views::Button::STYLE_BUTTON);
     (*undo_button)->set_min_size(gfx::Size());
 
     base::string16 undo_label =

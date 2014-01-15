@@ -71,10 +71,10 @@ WidgetsWindow::WidgetsWindow()
           base::ASCIIToUTF16("Radio button selected"), 0)),
       radio_button_selected_disabled_(new views::RadioButton(
           base::ASCIIToUTF16("Radio button selected disabled"), 1)) {
-  button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  button_->SetStyle(views::Button::STYLE_BUTTON);
   AddChildView(button_);
   disabled_button_->SetEnabled(false);
-  disabled_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  disabled_button_->SetStyle(views::Button::STYLE_BUTTON);
   AddChildView(disabled_button_);
   AddChildView(checkbox_);
   checkbox_disabled_->SetEnabled(false);

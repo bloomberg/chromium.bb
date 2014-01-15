@@ -233,7 +233,7 @@ void ProfileResetBubbleView::SetupLayoutManager(bool report_checked) {
     reset_button_string_id = IDS_RESETTING;
   controls_.reset_button = new views::LabelButton(
       this, l10n_util::GetStringUTF16(reset_button_string_id));
-  controls_.reset_button->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  controls_.reset_button->SetStyle(views::Button::STYLE_BUTTON);
   controls_.reset_button->SetIsDefault(true);
   controls_.reset_button->SetFontList(
       rb.GetFontList(ui::ResourceBundle::BoldFont));
@@ -246,7 +246,7 @@ void ProfileResetBubbleView::SetupLayoutManager(bool report_checked) {
   // No thanks button.
   controls_.no_thanks_button = new views::LabelButton(
       this, l10n_util::GetStringUTF16(IDS_NO_THANKS));
-  controls_.no_thanks_button->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  controls_.no_thanks_button->SetStyle(views::Button::STYLE_BUTTON);
   controls_.no_thanks_button->SetEnabled(!resetting_);
 
   // Checkbox for reporting settings or not.

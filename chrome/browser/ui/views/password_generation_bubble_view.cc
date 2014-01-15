@@ -177,7 +177,7 @@ void PasswordGenerationBubbleView::Init() {
   accept_button_ = new views::LabelButton(
       this,
       l10n_util::GetStringUTF16(IDS_PASSWORD_GENERATION_BUTTON_TEXT));
-  accept_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  accept_button_->SetStyle(views::Button::STYLE_BUTTON);
   AddChildView(accept_button_);
 }
 

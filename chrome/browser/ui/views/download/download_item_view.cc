@@ -1132,7 +1132,7 @@ void DownloadItemView::ShowWarningDialog() {
   if (mode_ == DANGEROUS_MODE) {
     save_button_ = new views::LabelButton(
         this, model_.GetWarningConfirmButtonText());
-    save_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+    save_button_->SetStyle(views::Button::STYLE_BUTTON);
     AddChildView(save_button_);
   }
   int discard_button_message = model_.IsMalicious() ?
@@ -1141,7 +1141,7 @@ void DownloadItemView::ShowWarningDialog() {
     discard_button_message = IDS_REPORT_AND_DISCARD_DOWNLOAD;
   discard_button_ = new views::LabelButton(
       this, l10n_util::GetStringUTF16(discard_button_message));
-  discard_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  discard_button_->SetStyle(views::Button::STYLE_BUTTON);
   AddChildView(discard_button_);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();

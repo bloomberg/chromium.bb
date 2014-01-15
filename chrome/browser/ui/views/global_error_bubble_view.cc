@@ -94,7 +94,7 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
   base::string16 accept_string(error_->GetBubbleViewAcceptButtonLabel());
   scoped_ptr<views::LabelButton> accept_button(
       new views::LabelButton(this, accept_string));
-  accept_button->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  accept_button->SetStyle(views::Button::STYLE_BUTTON);
   accept_button->SetIsDefault(true);
   accept_button->set_tag(TAG_ACCEPT_BUTTON);
 
@@ -102,7 +102,7 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
   scoped_ptr<views::LabelButton> cancel_button;
   if (!cancel_string.empty()) {
     cancel_button.reset(new views::LabelButton(this, cancel_string));
-    cancel_button->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+    cancel_button->SetStyle(views::Button::STYLE_BUTTON);
     cancel_button->set_tag(TAG_CANCEL_BUTTON);
   }
 

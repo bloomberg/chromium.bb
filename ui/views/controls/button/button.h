@@ -42,7 +42,6 @@ class VIEWS_EXPORT Button : public View {
   enum ButtonStyle {
     STYLE_BUTTON = 0,
     STYLE_TEXTBUTTON,
-    STYLE_NATIVE_TEXTBUTTON,
     STYLE_COUNT,
   };
 

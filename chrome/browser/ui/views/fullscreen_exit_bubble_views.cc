@@ -65,12 +65,12 @@ ButtonView::ButtonView(views::ButtonListener* listener,
     : accept_button_(NULL),
       deny_button_(NULL) {
   accept_button_ = new views::LabelButton(listener, base::string16());
-  accept_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  accept_button_->SetStyle(views::Button::STYLE_BUTTON);
   accept_button_->SetFocusable(false);
   AddChildView(accept_button_);
 
   deny_button_ = new views::LabelButton(listener, base::string16());
-  deny_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  deny_button_->SetStyle(views::Button::STYLE_BUTTON);
   deny_button_->SetFocusable(false);
   AddChildView(deny_button_);
 

@@ -224,7 +224,7 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
 
   views::LabelButton* accept_button = new views::LabelButton(
       this, l10n_util::GetStringUTF16(IDS_OK));
-  accept_button->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  accept_button->SetStyle(views::Button::STYLE_BUTTON);
   accept_button->set_tag(BT_OK_BUTTON);
 
   views::Separator* separator = NULL;
@@ -253,7 +253,7 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
       // this the button case.
       views::LabelButton* cancel_button = new views::LabelButton(
           this, l10n_util::GetStringUTF16(IDS_TRY_TOAST_CANCEL));
-      cancel_button->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+      cancel_button->SetStyle(views::Button::STYLE_BUTTON);
       cancel_button->set_tag(BT_CLOSE_BUTTON);
       layout->AddView(cancel_button);
     }

@@ -306,7 +306,7 @@ views::View* MediaGalleriesDialogViews::CreateExtraView() {
   DCHECK(!add_gallery_button_);
   add_gallery_button_ = new views::LabelButton(this,
       l10n_util::GetStringUTF16(IDS_MEDIA_GALLERIES_DIALOG_ADD_GALLERY));
-  add_gallery_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  add_gallery_button_->SetStyle(views::Button::STYLE_BUTTON);
   return add_gallery_button_;
 }
 

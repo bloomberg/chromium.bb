@@ -397,7 +397,7 @@ void ContentSettingBubbleContents::Init() {
 
     close_button_ =
         new views::LabelButton(this, l10n_util::GetStringUTF16(IDS_DONE));
-    close_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+    close_button_->SetStyle(views::Button::STYLE_BUTTON);
     layout->AddView(close_button_);
 }
 

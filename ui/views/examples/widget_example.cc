@@ -44,7 +44,7 @@ base::string16 DialogExample::GetWindowTitle() const {
 
 View* DialogExample::CreateExtraView() {
   LabelButton* button = new LabelButton(NULL, ASCIIToUTF16("Extra button!"));
-  button->SetStyle(Button::STYLE_NATIVE_TEXTBUTTON);
+  button->SetStyle(Button::STYLE_BUTTON);
   return button;
 }
 

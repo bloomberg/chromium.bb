@@ -103,7 +103,7 @@ bool NetworkConfigView::InitWithType(const std::string& type) {
                                             false /* show_8021x */);
     advanced_button_ = new views::LabelButton(this, l10n_util::GetStringUTF16(
         IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_ADVANCED_BUTTON));
-    advanced_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+    advanced_button_->SetStyle(views::Button::STYLE_BUTTON);
   } else if (type == shill::kTypeVPN) {
     child_config_view_ = new VPNConfigView(this,
                                            "" /* service_path */);

@@ -58,7 +58,7 @@ class ModalWindow : public views::WidgetDelegateView,
         open_button_(new views::LabelButton(this,
                                             base::ASCIIToUTF16("Moar!"))) {
     ++g_color_index %= arraysize(g_colors);
-    open_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+    open_button_->SetStyle(views::Button::STYLE_BUTTON);
     AddChildView(open_button_);
   }
   virtual ~ModalWindow() {
@@ -229,20 +229,20 @@ WindowTypeLauncher::WindowTypeLauncher()
           this, base::ASCIIToUTF16("Show the Screensaver [for 5 seconds]"))),
       show_web_notification_(new views::LabelButton(
           this, base::ASCIIToUTF16("Show a web/app notification"))) {
-  create_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
-  panel_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
-  create_nonresizable_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
-  bubble_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
-  lock_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
-  widgets_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
-  system_modal_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
-  window_modal_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
-  child_modal_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
-  transient_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
-  examples_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
-  show_hide_window_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
-  show_screensaver_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
-  show_web_notification_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  create_button_->SetStyle(views::Button::STYLE_BUTTON);
+  panel_button_->SetStyle(views::Button::STYLE_BUTTON);
+  create_nonresizable_button_->SetStyle(views::Button::STYLE_BUTTON);
+  bubble_button_->SetStyle(views::Button::STYLE_BUTTON);
+  lock_button_->SetStyle(views::Button::STYLE_BUTTON);
+  widgets_button_->SetStyle(views::Button::STYLE_BUTTON);
+  system_modal_button_->SetStyle(views::Button::STYLE_BUTTON);
+  window_modal_button_->SetStyle(views::Button::STYLE_BUTTON);
+  child_modal_button_->SetStyle(views::Button::STYLE_BUTTON);
+  transient_button_->SetStyle(views::Button::STYLE_BUTTON);
+  examples_button_->SetStyle(views::Button::STYLE_BUTTON);
+  show_hide_window_button_->SetStyle(views::Button::STYLE_BUTTON);
+  show_screensaver_->SetStyle(views::Button::STYLE_BUTTON);
+  show_web_notification_->SetStyle(views::Button::STYLE_BUTTON);
 
   views::GridLayout* layout = new views::GridLayout(this);
   layout->SetInsets(5, 5, 5, 5);

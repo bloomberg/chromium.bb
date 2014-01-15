@@ -210,12 +210,12 @@ void CriticalNotificationBubbleView::Init() {
 
   restart_button_ = new views::LabelButton(this,
       l10n_util::GetStringUTF16(IDS_CRITICAL_NOTIFICATION_RESTART));
-  restart_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  restart_button_->SetStyle(views::Button::STYLE_BUTTON);
   restart_button_->SetIsDefault(true);
   layout->AddView(restart_button_);
   dismiss_button_ = new views::LabelButton(this,
       l10n_util::GetStringUTF16(IDS_CRITICAL_NOTIFICATION_DISMISS));
-  dismiss_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  dismiss_button_->SetStyle(views::Button::STYLE_BUTTON);
   layout->AddView(dismiss_button_);
 
   refresh_timer_.Start(FROM_HERE,

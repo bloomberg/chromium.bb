@@ -176,11 +176,11 @@ void ConflictingModuleView::Init() {
                               0, kMessageBubblePadding);
   learn_more_button_ = new views::LabelButton(this,
       l10n_util::GetStringUTF16(IDS_CONFLICTS_LEARN_MORE));
-  learn_more_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  learn_more_button_->SetStyle(views::Button::STYLE_BUTTON);
   layout->AddView(learn_more_button_);
   not_now_button_ = new views::LabelButton(this,
       l10n_util::GetStringUTF16(IDS_CONFLICTS_NOT_NOW));
-  not_now_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  not_now_button_->SetStyle(views::Button::STYLE_BUTTON);
   layout->AddView(not_now_button_);
 
   content::RecordAction(

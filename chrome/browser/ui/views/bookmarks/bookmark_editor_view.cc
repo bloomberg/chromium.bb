@@ -289,7 +289,7 @@ void BookmarkEditorView::Init() {
 
     new_folder_button_.reset(new views::LabelButton(this,
         l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_NEW_FOLDER_BUTTON)));
-    new_folder_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+    new_folder_button_->SetStyle(views::Button::STYLE_BUTTON);
     new_folder_button_->set_owned_by_client();
     new_folder_button_->SetEnabled(false);
   }

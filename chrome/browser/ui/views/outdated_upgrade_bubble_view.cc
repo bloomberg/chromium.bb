@@ -96,13 +96,13 @@ void OutdatedUpgradeBubbleView::Init() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   reinstall_button_ = new views::LabelButton(
       this, l10n_util::GetStringFUTF16(IDS_REINSTALL_APP, product_name));
-  reinstall_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  reinstall_button_->SetStyle(views::Button::STYLE_BUTTON);
   reinstall_button_->SetIsDefault(true);
   reinstall_button_->SetFontList(rb.GetFontList(ui::ResourceBundle::BoldFont));
 
   later_button_ = new views::LabelButton(
       this, l10n_util::GetStringUTF16(IDS_LATER));
-  later_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  later_button_->SetStyle(views::Button::STYLE_BUTTON);
 
   views::Label* title_label = new views::Label(
       l10n_util::GetStringFUTF16(IDS_UPGRADE_BUBBLE_TITLE, product_name));

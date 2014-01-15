@@ -228,7 +228,7 @@ void ManagePasswordsBubbleView::Init() {
 
     cancel_button_ = new views::LabelButton(
         this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_CANCEL_BUTTON));
-    cancel_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+    cancel_button_->SetStyle(views::Button::STYLE_BUTTON);
     save_button_ = new views::BlueButton(
         this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SAVE_BUTTON));
 
@@ -312,7 +312,7 @@ void ManagePasswordsBubbleView::Init() {
 
     done_button_ =
         new views::LabelButton(this, l10n_util::GetStringUTF16(IDS_DONE));
-    done_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+    done_button_->SetStyle(views::Button::STYLE_BUTTON);
     layout->AddView(done_button_);
   }
 }

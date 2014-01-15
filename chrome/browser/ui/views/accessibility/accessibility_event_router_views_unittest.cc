@@ -197,15 +197,15 @@ TEST_F(AccessibilityEventRouterViewsTest, TestFocusNotification) {
   views::View* contents = new views::View();
   views::LabelButton* button1 = new views::LabelButton(
       NULL, ASCIIToUTF16(kButton1ASCII));
-  button1->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  button1->SetStyle(views::Button::STYLE_BUTTON);
   contents->AddChildView(button1);
   views::LabelButton* button2 = new views::LabelButton(
       NULL, ASCIIToUTF16(kButton2ASCII));
-  button2->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  button2->SetStyle(views::Button::STYLE_BUTTON);
   contents->AddChildView(button2);
   views::LabelButton* button3 = new views::LabelButton(
       NULL, ASCIIToUTF16(kButton3ASCII));
-  button3->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  button3->SetStyle(views::Button::STYLE_BUTTON);
   contents->AddChildView(button3);
 
   // Put the view in a window.
@@ -254,7 +254,7 @@ TEST_F(AccessibilityEventRouterViewsTest, TestToolbarContext) {
       ui::AccessibilityTypes::ROLE_TOOLBAR);
   views::LabelButton* button = new views::LabelButton(
       NULL, ASCIIToUTF16(kButtonNameASCII));
-  button->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  button->SetStyle(views::Button::STYLE_BUTTON);
   contents->AddChildView(button);
 
   // Put the view in a window.
@@ -286,7 +286,7 @@ TEST_F(AccessibilityEventRouterViewsTest, TestAlertContext) {
   contents->AddChildView(label);
   views::LabelButton* button = new views::LabelButton(
       NULL, ASCIIToUTF16(kButtonNameASCII));
-  button->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  button->SetStyle(views::Button::STYLE_BUTTON);
   contents->AddChildView(button);
 
   // Put the view in a window.
@@ -387,7 +387,7 @@ TEST_F(AccessibilityEventRouterViewsTest, AlertsFromWindowAndControl) {
   views::View* contents = new views::View();
   views::LabelButton* button = new views::LabelButton(
       NULL, ASCIIToUTF16(kButtonASCII));
-  button->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  button->SetStyle(views::Button::STYLE_BUTTON);
   contents->AddChildView(button);
 
   // Put the view in a window.

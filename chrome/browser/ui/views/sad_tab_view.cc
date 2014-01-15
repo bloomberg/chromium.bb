@@ -123,7 +123,7 @@ SadTabView::SadTabView(WebContents* web_contents, chrome::SadTabKind kind)
     reload_button_ = new views::LabelButton(
         this,
         l10n_util::GetStringUTF16(IDS_SAD_TAB_RELOAD_LABEL));
-    reload_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+    reload_button_->SetStyle(views::Button::STYLE_BUTTON);
     layout->AddView(reload_button_);
 
     help_link_ = CreateLink(l10n_util::GetStringUTF16(

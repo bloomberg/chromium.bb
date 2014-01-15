@@ -17,10 +17,6 @@
 #include "ui/views/painter.h"
 #include "ui/views/window/dialog_delegate.h"
 
-#if defined(OS_WIN)
-#include "ui/native_theme/native_theme_win.h"
-#endif
-
 namespace {
 
 // The spacing between the icon and text.
@@ -150,11 +146,6 @@ void LabelButton::SetIsDefault(bool is_default) {
 }
 
 void LabelButton::SetStyle(ButtonStyle style) {
-  // Use the new button style instead of the native button style.
-  // TODO(msw): Officialy deprecate and remove STYLE_NATIVE_TEXTBUTTON.
-  if (style == STYLE_NATIVE_TEXTBUTTON)
-    style = STYLE_BUTTON;
-
   style_ = style;
   set_border(new LabelButtonBorder(style));
   // Inset the button focus rect from the actual border; roughly match Windows.
@@ -164,7 +155,7 @@ void LabelButton::SetStyle(ButtonStyle style) {
     SetFocusPainter(Painter::CreateDashedFocusPainterWithInsets(
                         gfx::Insets(3, 3, 3, 3)));
   }
-  if (style == STYLE_BUTTON || style == STYLE_NATIVE_TEXTBUTTON) {
+  if (style == STYLE_BUTTON) {
     label_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
     SetFocusable(true);
   }
@@ -297,7 +288,7 @@ void LabelButton::GetExtraParams(ui::NativeTheme::ExtraParams* params) const {
   params->button.indeterminate = false;
   params->button.is_default = is_default_;
   params->button.is_focused = HasFocus() && IsAccessibilityFocusable();
-  params->button.has_border = style() == STYLE_NATIVE_TEXTBUTTON;
+  params->button.has_border = false;
   params->button.classic_state = 0;
   params->button.background_color = label_->background_color();
 }
@@ -313,11 +304,6 @@ void LabelButton::ResetColorsFromNativeTheme() {
 
   // Certain styles do not change text color when hovered or pressed.
   bool constant_text_color = false;
-#if defined(OS_WIN)
-  constant_text_color |= (style() == STYLE_NATIVE_TEXTBUTTON &&
-                          theme == ui::NativeThemeWin::instance());
-#endif
-
   // Use hardcoded colors for inverted color scheme support and STYLE_BUTTON.
   if (gfx::IsInvertedColorScheme()) {
     constant_text_color = true;
@@ -395,13 +381,6 @@ ui::NativeTheme::State LabelButton::GetThemeState(
 }
 
 const gfx::Animation* LabelButton::GetThemeAnimation() const {
-#if defined(OS_WIN)
-  if (style() == STYLE_NATIVE_TEXTBUTTON &&
-      GetNativeTheme() == ui::NativeThemeWin::instance()) {
-    return ui::NativeThemeWin::instance()->IsThemingActive() ?
-        hover_animation_.get() : NULL;
-  }
-#endif
   return hover_animation_.get();
 }
 

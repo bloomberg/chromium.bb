@@ -521,7 +521,7 @@ class FocusManagerDtorTest : public FocusManagerTest {
                            DtorTrackVector* dtor_tracker)
         : LabelButton(NULL, text),
           dtor_tracker_(dtor_tracker) {
-      SetStyle(STYLE_NATIVE_TEXTBUTTON);
+      SetStyle(STYLE_BUTTON);
     };
     virtual ~LabelButtonDtorTracked() {
       dtor_tracker_->push_back("LabelButtonDtorTracked");

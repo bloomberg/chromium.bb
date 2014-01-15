@@ -138,15 +138,15 @@ void BookmarkBubbleView::Init() {
 
   remove_button_ = new views::LabelButton(this, l10n_util::GetStringUTF16(
       IDS_BOOKMARK_BUBBLE_REMOVE_BOOKMARK));
-  remove_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  remove_button_->SetStyle(views::Button::STYLE_BUTTON);
 
   edit_button_ = new views::LabelButton(
       this, l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_OPTIONS));
-  edit_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  edit_button_->SetStyle(views::Button::STYLE_BUTTON);
 
   close_button_ = new views::LabelButton(
       this, l10n_util::GetStringUTF16(IDS_DONE));
-  close_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  close_button_->SetStyle(views::Button::STYLE_BUTTON);
   close_button_->SetIsDefault(true);
 
   views::Label* combobox_label = new views::Label(

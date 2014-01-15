@@ -151,12 +151,12 @@ void SpeechRecognitionBubbleView::Init() {
   AddChildView(icon_);
 
   cancel_ = new views::LabelButton(this, l10n_util::GetStringUTF16(IDS_CANCEL));
-  cancel_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  cancel_->SetStyle(views::Button::STYLE_BUTTON);
   AddChildView(cancel_);
 
   try_again_ = new views::LabelButton(
       this, l10n_util::GetStringUTF16(IDS_SPEECH_INPUT_TRY_AGAIN));
-  try_again_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  try_again_->SetStyle(views::Button::STYLE_BUTTON);
   AddChildView(try_again_);
 
   mic_settings_ = new views::Link(

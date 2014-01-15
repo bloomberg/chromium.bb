@@ -329,7 +329,7 @@ views::View* HungRendererDialogView::CreateExtraView() {
   DCHECK(!kill_button_);
   kill_button_ = new views::LabelButton(this,
       l10n_util::GetStringUTF16(IDS_BROWSER_HANGMONITOR_RENDERER_END));
-  kill_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  kill_button_->SetStyle(views::Button::STYLE_BUTTON);
   return kill_button_;
 }
 

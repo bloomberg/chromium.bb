@@ -289,13 +289,13 @@ void ExtensionMessageBubbleView::Init() {
 
   if (!action_button.empty()) {
     action_button_ = new views::LabelButton(this, action_button.c_str());
-    action_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+    action_button_->SetStyle(views::Button::STYLE_BUTTON);
     layout->AddView(action_button_);
   }
 
   dismiss_button_ = new views::LabelButton(this,
       delegate->GetDismissButtonLabel());
-  dismiss_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  dismiss_button_->SetStyle(views::Button::STYLE_BUTTON);
   layout->AddView(dismiss_button_);
 }
 

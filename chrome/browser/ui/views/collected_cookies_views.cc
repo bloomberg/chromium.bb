@@ -381,11 +381,11 @@ views::View* CollectedCookiesViews::CreateAllowedPane() {
 
   block_allowed_button_ = new views::LabelButton(this,
       l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_BLOCK_BUTTON));
-  block_allowed_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  block_allowed_button_->SetStyle(views::Button::STYLE_BUTTON);
 
   delete_allowed_button_ = new views::LabelButton(this,
       l10n_util::GetStringUTF16(IDS_COOKIES_REMOVE_LABEL));
-  delete_allowed_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  delete_allowed_button_->SetStyle(views::Button::STYLE_BUTTON);
 
   // Create the view that holds all the controls together.  This will be the
   // pane added to the tabbed pane.
@@ -455,10 +455,10 @@ views::View* CollectedCookiesViews::CreateBlockedPane() {
 
   allow_blocked_button_ = new views::LabelButton(this,
       l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_ALLOW_BUTTON));
-  allow_blocked_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  allow_blocked_button_->SetStyle(views::Button::STYLE_BUTTON);
   for_session_blocked_button_ = new views::LabelButton(this,
       l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_SESSION_ONLY_BUTTON));
-  for_session_blocked_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  for_session_blocked_button_->SetStyle(views::Button::STYLE_BUTTON);
 
   // Create the view that holds all the controls together.  This will be the
   // pane added to the tabbed pane.

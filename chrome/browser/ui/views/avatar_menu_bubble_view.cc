@@ -440,14 +440,14 @@ ActionButtonView::ActionButtonView(views::ButtonListener* listener,
 
   manage_button_ = new views::LabelButton(
       listener, l10n_util::GetStringUTF16(IDS_PROFILES_MANAGE_PROFILES_BUTTON));
-  manage_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  manage_button_->SetStyle(views::Button::STYLE_BUTTON);
   manage_button_->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_PROFILES_MANAGE_PROFILES_BUTTON_TIP));
   manage_button_->set_tag(IDS_PROFILES_MANAGE_PROFILES_BUTTON);
 
   signout_button_ = new views::LabelButton(
       listener, l10n_util::GetStringUTF16(IDS_PROFILES_PROFILE_SIGNOUT_BUTTON));
-  signout_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+  signout_button_->SetStyle(views::Button::STYLE_BUTTON);
   if (username.empty()) {
     signout_button_->SetTooltipText(
         l10n_util::GetStringUTF16(
