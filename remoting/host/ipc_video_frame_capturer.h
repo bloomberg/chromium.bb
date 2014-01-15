@@ -38,6 +38,10 @@ class IpcVideoFrameCapturer : public webrtc::ScreenCapturer {
   virtual void SetMouseShapeObserver(
       MouseShapeObserver* mouse_shape_observer) OVERRIDE;
 
+  virtual bool GetScreenList(ScreenList* screens) OVERRIDE;
+
+  virtual bool SelectScreen(webrtc::ScreenId id) OVERRIDE;
+
   // Called when a video |frame| has been captured.
   void OnCaptureCompleted(scoped_ptr<webrtc::DesktopFrame> frame);
 

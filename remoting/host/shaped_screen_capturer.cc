@@ -4,6 +4,7 @@
 
 #include "remoting/host/shaped_screen_capturer.h"
 
+#include "base/logging.h"
 #include "remoting/host/desktop_shape_tracker.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
@@ -41,6 +42,16 @@ void ShapedScreenCapturer::Capture(const webrtc::DesktopRegion& region) {
 void ShapedScreenCapturer::SetMouseShapeObserver(
     MouseShapeObserver* mouse_shape_observer) {
   screen_capturer_->SetMouseShapeObserver(mouse_shape_observer);
+}
+
+bool ShapedScreenCapturer::GetScreenList(ScreenList* screens) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+bool ShapedScreenCapturer::SelectScreen(webrtc::ScreenId id) {
+  NOTIMPLEMENTED();
+  return false;
 }
 
 webrtc::SharedMemory* ShapedScreenCapturer::CreateSharedMemory(size_t size) {

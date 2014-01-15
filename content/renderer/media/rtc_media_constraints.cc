@@ -33,14 +33,6 @@ void GetNativeMediaConstraints(
     if (new_constraint.key == kMediaStreamSourceInfoId)
       continue;
 
-    // Ignore internal constraints set by JS.
-    if (StartsWithASCII(
-        new_constraint.key,
-        webrtc::MediaConstraintsInterface::kInternalConstraintPrefix,
-        true)) {
-      continue;
-    }
-
     DVLOG(3) << "MediaStreamConstraints:" << new_constraint.key
              << " : " <<  new_constraint.value;
     native_constraints->push_back(new_constraint);

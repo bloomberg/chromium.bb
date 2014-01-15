@@ -36,6 +36,16 @@ void IpcVideoFrameCapturer::SetMouseShapeObserver(
   mouse_shape_observer_ = mouse_shape_observer;
 }
 
+bool IpcVideoFrameCapturer::GetScreenList(ScreenList* screens) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+bool IpcVideoFrameCapturer::SelectScreen(webrtc::ScreenId id) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 void IpcVideoFrameCapturer::Capture(const webrtc::DesktopRegion& region) {
   DCHECK(!capture_pending_);
   capture_pending_ = true;

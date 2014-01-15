@@ -82,6 +82,16 @@ void ScreenCapturerFake::SetMouseShapeObserver(
   mouse_shape_observer_ = mouse_shape_observer;
 }
 
+bool ScreenCapturerFake::GetScreenList(ScreenList* screens) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+bool ScreenCapturerFake::SelectScreen(webrtc::ScreenId id) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 void ScreenCapturerFake::GenerateImage() {
   webrtc::DesktopFrame* frame = queue_.current_frame();
 
