@@ -134,10 +134,6 @@ unsigned ImageDecoder::frameBytesAtIndex(size_t index) const
 
 size_t ImageDecoder::clearCacheExceptFrame(size_t clearExceptFrame)
 {
-    // Don't clear if there are no frames or only one frame.
-    if (m_frameBufferCache.size() <= 1)
-        return 0;
-
     size_t frameBytesCleared = 0;
     for (size_t i = 0; i < m_frameBufferCache.size(); ++i) {
         if (i != clearExceptFrame) {

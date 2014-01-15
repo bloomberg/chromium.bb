@@ -221,11 +221,21 @@ TEST(ImageDecoderTest, clearCacheExceptFrameAll)
         frameBuffers[i].setStatus(i % 2 ? ImageFrame::FramePartial : ImageFrame::FrameComplete);
 
     decoder->clearCacheExceptFrame(kNotFound);
-
     for (size_t i = 0; i < numFrames; ++i) {
         SCOPED_TRACE(testing::Message() << i);
         EXPECT_EQ(ImageFrame::FrameEmpty, frameBuffers[i].status());
     }
+}
+
+TEST(ImageDecoderTest, clearCacheExceptFrameAllSingleFrame)
+{
+    OwnPtr<TestImageDecoder> decoder(adoptPtr(new TestImageDecoder()));
+    decoder->initFrames(1);
+    ImageFrame* frame = &decoder->frameBufferCache().first();
+    frame->setStatus(ImageFrame::FrameComplete);
+
+    decoder->clearCacheExceptFrame(kNotFound);
+    EXPECT_EQ(ImageFrame::FrameEmpty, frame->status());
 }
 
 TEST(ImageDecoderTest, clearCacheExceptFramePreverveClearExceptFrame)
