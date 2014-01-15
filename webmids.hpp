@@ -68,12 +68,12 @@ enum MkvId {
   kMkvFlagForced              = 0x55AA,
   kMkvFlagLacing              = 0x9C,
   kMkvDefaultDuration         = 0x23E383,
+  kMkvMaxBlockAdditionID      = 0x55EE,
   kMkvName                    = 0x536E,
   kMkvLanguage                = 0x22B59C,
   kMkvCodecID                 = 0x86,
   kMkvCodecPrivate            = 0x63A2,
   kMkvCodecName               = 0x258688,
-  kMkvMaxBlockAdditionID      = 0x55EE,
   kMkvCodecDelay              = 0x56AA,
   kMkvSeekPreRoll             = 0x56BB,
   //video
@@ -97,7 +97,7 @@ enum MkvId {
   kMkvAudio                   = 0xE1,
   kMkvSamplingFrequency       = 0xB5,
   kMkvOutputSamplingFrequency = 0x78B5,
-  kMkvChannels = 0x9F,
+  kMkvChannels                = 0x9F,
   kMkvBitDepth                = 0x6264,
   //end audio
   //ContentEncodings
