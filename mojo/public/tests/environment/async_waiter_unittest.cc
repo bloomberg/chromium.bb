@@ -6,6 +6,7 @@
 
 #include "mojo/public/environment/environment.h"
 #include "mojo/public/system/core_cpp.h"
+#include "mojo/public/system/macros.h"
 #include "mojo/public/tests/test_support.h"
 #include "mojo/public/utility/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,7 +35,7 @@ class TestAsyncWaitCallback {
   int result_count_;
   MojoResult last_result_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestAsyncWaitCallback);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(TestAsyncWaitCallback);
 };
 
 MojoAsyncWaitID CallAsyncWait(const Handle& handle,
@@ -58,22 +59,11 @@ class AsyncWaiterTest : public testing::Test {
  public:
   AsyncWaiterTest() {}
 
-  virtual void SetUp() OVERRIDE {
-    Test::SetUp();
-    environment_.reset(new Environment);
-    run_loop_.reset(new RunLoop);
-  }
-  virtual void TearDown() OVERRIDE {
-    run_loop_.reset();
-    environment_.reset(NULL);
-    Test::TearDown();
-  }
-
  private:
-  scoped_ptr<Environment> environment_;
-  scoped_ptr<RunLoop> run_loop_;
+  Environment environment_;
+  RunLoop run_loop_;
 
-  DISALLOW_COPY_AND_ASSIGN(AsyncWaiterTest);
+  MOJO_DISALLOW_COPY_AND_ASSIGN(AsyncWaiterTest);
 };
 
 // Verifies AsyncWaitCallback is notified when pipe is ready.
