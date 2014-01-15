@@ -144,9 +144,8 @@ public:
     void updateBackForwardListForFragmentScroll(Frame*, HistoryItem*);
     void updateForCommit(Frame*, HistoryItem*, HistoryCommitType);
 
-    PassRefPtr<HistoryItem> currentItemForExport(Frame*);
-    PassRefPtr<HistoryItem> previousItemForExport(Frame*);
-    PassRefPtr<HistoryItem> provisionalItemForExport(Frame*);
+    PassRefPtr<HistoryItem> currentItemForExport();
+    PassRefPtr<HistoryItem> previousItemForExport();
     HistoryItem* itemForNewChildFrame(Frame*) const;
 
     void setDefersLoading(bool);

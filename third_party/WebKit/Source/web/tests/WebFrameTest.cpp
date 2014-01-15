@@ -4734,6 +4734,22 @@ TEST_F(WebFrameTest, ReloadIframe)
     EXPECT_EQ(childClient.cachePolicy(), WebURLRequest::ReloadIgnoringCacheData);
 }
 
+TEST_F(WebFrameTest, ExportHistoryItemFromChildFrame)
+{
+    registerMockedHttpURLLoad("iframe_reload.html");
+    registerMockedHttpURLLoad("visible_iframe.html");
+    TestCachePolicyWebFrameClient mainClient;
+    TestCachePolicyWebFrameClient childClient;
+    mainClient.setChildWebFrameClient(&childClient);
+
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "iframe_reload.html", true, &mainClient);
+
+    WebFrame* childFrame = webViewHelper.webViewImpl()->mainFrameImpl()->firstChild();
+    WebHistoryItem item = childFrame->currentHistoryItem();
+    EXPECT_EQ(item.urlString(), WebString::fromUTF8(m_baseURL + "iframe_reload.html"));
+}
+
 class TestSameDocumentWebFrameClient : public WebFrameClient {
 public:
     TestSameDocumentWebFrameClient()

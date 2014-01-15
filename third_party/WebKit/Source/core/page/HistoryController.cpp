@@ -245,6 +245,7 @@ void HistoryController::updateForCommit(Frame* frame, HistoryItem* item, History
 
 static PassRefPtr<HistoryItem> itemForExport(HistoryNode* historyNode)
 {
+    ASSERT(historyNode);
     RefPtr<HistoryItem> item = historyNode->value()->copy();
     const Vector<OwnPtr<HistoryNode> >& childEntries = historyNode->children();
     for (size_t i = 0; i < childEntries.size(); i++)
@@ -252,28 +253,18 @@ static PassRefPtr<HistoryItem> itemForExport(HistoryNode* historyNode)
     return item;
 }
 
-PassRefPtr<HistoryItem> HistoryController::currentItemForExport(Frame* frame)
+PassRefPtr<HistoryItem> HistoryController::currentItemForExport()
 {
     if (!m_currentEntry)
         return 0;
-    HistoryNode* historyNode = m_currentEntry->historyNodeForFrame(frame);
-    return historyNode ? itemForExport(historyNode) : 0;
+    return itemForExport(m_currentEntry->rootHistoryNode());
 }
 
-PassRefPtr<HistoryItem> HistoryController::previousItemForExport(Frame* frame)
+PassRefPtr<HistoryItem> HistoryController::previousItemForExport()
 {
     if (!m_previousEntry)
         return 0;
-    HistoryNode* historyNode = m_previousEntry->historyNodeForFrame(frame);
-    return historyNode ? itemForExport(historyNode) : 0;
-}
-
-PassRefPtr<HistoryItem> HistoryController::provisionalItemForExport(Frame* frame)
-{
-    if (!m_provisionalEntry)
-        return 0;
-    HistoryNode* historyNode = m_provisionalEntry->historyNodeForFrame(frame);
-    return historyNode ? itemForExport(historyNode) : 0;
+    return itemForExport(m_previousEntry->rootHistoryNode());
 }
 
 HistoryItem* HistoryController::itemForNewChildFrame(Frame* frame) const
