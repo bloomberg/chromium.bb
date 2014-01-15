@@ -80,6 +80,12 @@ PassRefPtr<CSSStyleSheet> CSSStyleSheet::create(PassRefPtr<StyleSheetContents> s
     return adoptRef(new CSSStyleSheet(sheet, ownerNode, false, TextPosition::minimumPosition()));
 }
 
+PassRefPtr<CSSStyleSheet> CSSStyleSheet::createInline(PassRefPtr<StyleSheetContents> sheet, Node* ownerNode, const TextPosition& startPosition)
+{
+    ASSERT(sheet);
+    return adoptRef(new CSSStyleSheet(sheet, ownerNode, true, startPosition));
+}
+
 PassRefPtr<CSSStyleSheet> CSSStyleSheet::createInline(Node* ownerNode, const KURL& baseURL, const TextPosition& startPosition, const String& encoding)
 {
     CSSParserContext parserContext(ownerNode->document(), baseURL, encoding);
@@ -94,6 +100,7 @@ CSSStyleSheet::CSSStyleSheet(PassRefPtr<StyleSheetContents> contents, CSSImportR
     , m_ownerNode(0)
     , m_ownerRule(ownerRule)
     , m_startPosition(TextPosition::minimumPosition())
+    , m_loadCompleted(false)
 {
     m_contents->registerClient(this);
 }
@@ -105,6 +112,7 @@ CSSStyleSheet::CSSStyleSheet(PassRefPtr<StyleSheetContents> contents, Node* owne
     , m_ownerNode(ownerNode)
     , m_ownerRule(0)
     , m_startPosition(startPosition)
+    , m_loadCompleted(false)
 {
     ASSERT(isAcceptableCSSStyleSheetParent(ownerNode));
     m_contents->registerClient(this);
@@ -132,6 +140,8 @@ void CSSStyleSheet::willMutateRules()
     // If we are the only client it is safe to mutate.
     if (m_contents->hasOneClient() && !m_contents->isInMemoryCache()) {
         m_contents->clearRuleSet();
+        if (m_contents->maybeCacheable())
+            StyleEngine::removeSheet(m_contents.get());
         m_contents->setMutable();
         return;
     }
@@ -379,6 +389,18 @@ Document* CSSStyleSheet::ownerDocument() const
 void CSSStyleSheet::clearChildRuleCSSOMWrappers()
 {
     m_childRuleCSSOMWrappers.clear();
+}
+
+bool CSSStyleSheet::sheetLoaded()
+{
+    m_loadCompleted = m_ownerNode->sheetLoaded();
+    return m_loadCompleted;
+}
+
+void CSSStyleSheet::startLoadingDynamicSheet()
+{
+    m_loadCompleted = false;
+    m_ownerNode->startLoadingDynamicSheet();
 }
 
 }

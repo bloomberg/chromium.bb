@@ -51,6 +51,7 @@ public:
     static PassRefPtr<CSSStyleSheet> create(PassRefPtr<StyleSheetContents>, CSSImportRule* ownerRule = 0);
     static PassRefPtr<CSSStyleSheet> create(PassRefPtr<StyleSheetContents>, Node* ownerNode);
     static PassRefPtr<CSSStyleSheet> createInline(Node*, const KURL&, const TextPosition& startPosition = TextPosition::minimumPosition(), const String& encoding = String());
+    static PassRefPtr<CSSStyleSheet> createInline(PassRefPtr<StyleSheetContents>, Node* ownerNode, const TextPosition& startPosition = TextPosition::minimumPosition());
 
     virtual ~CSSStyleSheet();
 
@@ -110,6 +111,10 @@ public:
     bool isInline() const { return m_isInlineStylesheet; }
     TextPosition startPositionInSource() const { return m_startPosition; }
 
+    bool sheetLoaded();
+    bool loadCompleted() const { return m_loadCompleted; }
+    void startLoadingDynamicSheet();
+
 private:
     CSSStyleSheet(PassRefPtr<StyleSheetContents>, CSSImportRule* ownerRule);
     CSSStyleSheet(PassRefPtr<StyleSheetContents>, Node* ownerNode, bool isInlineStylesheet, const TextPosition& startPosition);
@@ -131,6 +136,7 @@ private:
     CSSRule* m_ownerRule;
 
     TextPosition m_startPosition;
+    bool m_loadCompleted;
 
     mutable RefPtr<MediaList> m_mediaCSSOMWrapper;
     mutable Vector<RefPtr<CSSRule> > m_childRuleCSSOMWrappers;

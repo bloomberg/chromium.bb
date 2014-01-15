@@ -388,8 +388,7 @@ void LinkStyle::setCSSStyleSheet(const String& href, const KURL& baseURL, const 
         m_sheet->setTitle(m_owner->title());
 
         m_loading = false;
-        sheetLoaded();
-        notifyLoadedSheetAndAllCriticalSubresources(false);
+        restoredSheet->checkLoaded();
         return;
     }
 

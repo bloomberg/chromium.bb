@@ -59,7 +59,6 @@ unsigned StyleSheetContents::estimatedSizeInBytes() const
 StyleSheetContents::StyleSheetContents(StyleRuleImport* ownerRule, const String& originalURL, const CSSParserContext& context)
     : m_ownerRule(ownerRule)
     , m_originalURL(originalURL)
-    , m_loadCompleted(false)
     , m_hasSyntacticallyValidCSSHeader(true)
     , m_didLoadErrorOccur(false)
     , m_usesRemUnits(false)
@@ -79,7 +78,6 @@ StyleSheetContents::StyleSheetContents(const StyleSheetContents& o)
     , m_importRules(o.m_importRules.size())
     , m_childRules(o.m_childRules.size())
     , m_namespaces(o.m_namespaces)
-    , m_loadCompleted(true)
     , m_hasSyntacticallyValidCSSHeader(o.m_hasSyntacticallyValidCSSHeader)
     , m_didLoadErrorOccur(false)
     , m_usesRemUnits(o.m_usesRemUnits)
@@ -100,10 +98,18 @@ StyleSheetContents::StyleSheetContents(const StyleSheetContents& o)
 
 StyleSheetContents::~StyleSheetContents()
 {
+    StyleEngine::removeSheet(this);
     clearRules();
 }
 
-bool StyleSheetContents::isCacheable() const
+void StyleSheetContents::setHasSyntacticallyValidCSSHeader(bool isValidCss)
+{
+    if (maybeCacheable() && !isValidCss)
+        StyleEngine::removeSheet(this);
+    m_hasSyntacticallyValidCSSHeader = isValidCss;
+}
+
+bool StyleSheetContents::maybeCacheable() const
 {
     // FIXME: StyleSheets with media queries can't be cached because their RuleSet
     // is processed differently based off the media queries, which might resolve
@@ -118,9 +124,6 @@ bool StyleSheetContents::isCacheable() const
     // FIXME: Support cached stylesheets in import rules.
     if (m_ownerRule)
         return false;
-    // This would require dealing with multiple clients for load callbacks.
-    if (!m_loadCompleted)
-        return false;
     if (m_didLoadErrorOccur)
         return false;
     // It is not the original sheet anymore.
@@ -131,6 +134,14 @@ bool StyleSheetContents::isCacheable() const
     if (!m_hasSyntacticallyValidCSSHeader)
         return false;
     return true;
+}
+
+bool StyleSheetContents::isCacheable() const
+{
+    // This would require dealing with multiple clients for load callbacks.
+    if (!loadCompleted())
+        return false;
+    return maybeCacheable();
 }
 
 void StyleSheetContents::parserAppendRule(PassRefPtr<StyleRuleBase> rule)
@@ -347,6 +358,20 @@ bool StyleSheetContents::isLoading() const
     return false;
 }
 
+bool StyleSheetContents::loadCompleted() const
+{
+    StyleSheetContents* parentSheet = parentStyleSheet();
+    if (parentSheet)
+        return parentSheet->loadCompleted();
+
+    StyleSheetContents* root = rootStyleSheet();
+    for (unsigned i = 0; i < root->m_clients.size(); ++i) {
+        if (!root->m_clients[i]->loadCompleted())
+            return false;
+    }
+    return true;
+}
+
 void StyleSheetContents::checkLoaded()
 {
     if (isLoading())
@@ -360,17 +385,26 @@ void StyleSheetContents::checkLoaded()
     StyleSheetContents* parentSheet = parentStyleSheet();
     if (parentSheet) {
         parentSheet->checkLoaded();
-        m_loadCompleted = true;
         return;
     }
-    RefPtr<Node> ownerNode = singleOwnerNode();
-    if (!ownerNode) {
-        m_loadCompleted = true;
+
+    StyleSheetContents* root = rootStyleSheet();
+    if (root->m_clients.isEmpty())
         return;
+
+    Vector<CSSStyleSheet*> clients(root->m_clients);
+    for (unsigned i = 0; i < clients.size(); ++i) {
+        // Avoid |CSSSStyleSheet| and |ownerNode| being deleted by scripts that run via
+        // ScriptableDocumentParser::executeScriptsWaitingForResources().
+        RefPtr<CSSStyleSheet> protectClient(clients[i]);
+
+        if (clients[i]->loadCompleted())
+            continue;
+
+        RefPtr<Node> ownerNode = clients[i]->ownerNode();
+        if (clients[i]->sheetLoaded())
+            ownerNode->notifyLoadedSheetAndAllCriticalSubresources(m_didLoadErrorOccur);
     }
-    m_loadCompleted = ownerNode->sheetLoaded();
-    if (m_loadCompleted)
-        ownerNode->notifyLoadedSheetAndAllCriticalSubresources(m_didLoadErrorOccur);
 }
 
 void StyleSheetContents::notifyLoadedSheet(const CSSStyleSheetResource* sheet)
@@ -385,8 +419,9 @@ void StyleSheetContents::notifyLoadedSheet(const CSSStyleSheetResource* sheet)
 
 void StyleSheetContents::startLoadingDynamicSheet()
 {
-    if (Node* owner = singleOwnerNode())
-        owner->startLoadingDynamicSheet();
+    StyleSheetContents* root = rootStyleSheet();
+    for (unsigned i = 0; i < root->m_clients.size(); ++i)
+        root->m_clients[i]->startLoadingDynamicSheet();
 }
 
 StyleSheetContents* StyleSheetContents::rootStyleSheet() const

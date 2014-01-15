@@ -52,6 +52,20 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
+static HashMap<AtomicString, StyleSheetContents*>& textToSheetCache()
+{
+    typedef HashMap<AtomicString, StyleSheetContents*> TextToSheetCache;
+    DEFINE_STATIC_LOCAL(TextToSheetCache, cache, ());
+    return cache;
+}
+
+static HashMap<StyleSheetContents*, AtomicString>& sheetToTextCache()
+{
+    typedef HashMap<StyleSheetContents*, AtomicString> SheetToTextCache;
+    DEFINE_STATIC_LOCAL(SheetToTextCache, cache, ());
+    return cache;
+}
+
 StyleEngine::StyleEngine(Document& document)
     : m_document(document)
     , m_isMaster(HTMLImport::isMaster(&document))
@@ -572,6 +586,54 @@ void StyleEngine::markDocumentDirty()
     m_documentScopeDirty = true;
     if (!HTMLImport::isMaster(&m_document))
         m_document.import()->master()->styleEngine()->markDocumentDirty();
+}
+
+PassRefPtr<CSSStyleSheet> StyleEngine::createSheet(Element* e, const String& text, TextPosition startPosition, bool createdByParser)
+{
+    RefPtr<CSSStyleSheet> styleSheet;
+
+    e->document().styleEngine()->addPendingSheet();
+
+    if (!e->document().inQuirksMode()) {
+        AtomicString textContent(text);
+
+        HashMap<AtomicString, StyleSheetContents*>::AddResult result = textToSheetCache().add(textContent, 0);
+        if (result.isNewEntry || !result.iterator->value) {
+            styleSheet = StyleEngine::parseSheet(e, text, startPosition, createdByParser);
+            if (result.isNewEntry && styleSheet->contents()->maybeCacheable()) {
+                result.iterator->value = styleSheet->contents();
+                sheetToTextCache().add(styleSheet->contents(), textContent);
+            }
+        } else {
+            ASSERT(result.iterator->value->maybeCacheable());
+            styleSheet = CSSStyleSheet::createInline(result.iterator->value, e, startPosition);
+        }
+    } else {
+        // FIXME: currently we don't cache StyleSheetContents inQuirksMode.
+        styleSheet = StyleEngine::parseSheet(e, text, startPosition, createdByParser);
+    }
+
+    ASSERT(styleSheet);
+    styleSheet->setTitle(e->title());
+    return styleSheet;
+}
+
+PassRefPtr<CSSStyleSheet> StyleEngine::parseSheet(Element* e, const String& text, TextPosition startPosition, bool createdByParser)
+{
+    RefPtr<CSSStyleSheet> styleSheet;
+    styleSheet = CSSStyleSheet::createInline(e, KURL(), startPosition, e->document().inputEncoding());
+    styleSheet->contents()->parseStringAtPosition(text, startPosition, createdByParser);
+    return styleSheet;
+}
+
+void StyleEngine::removeSheet(StyleSheetContents* contents)
+{
+    HashMap<StyleSheetContents*, AtomicString>::iterator it = sheetToTextCache().find(contents);
+    if (it == sheetToTextCache().end())
+        return;
+
+    textToSheetCache().remove(it->value);
+    sheetToTextCache().remove(contents);
 }
 
 }

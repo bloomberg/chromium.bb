@@ -69,6 +69,7 @@ public:
     bool parseStringAtPosition(const String&, const TextPosition&, bool);
 
     bool isCacheable() const;
+    bool maybeCacheable() const;
 
     bool isLoading() const;
 
@@ -82,12 +83,12 @@ public:
 
     const String& charset() const { return m_parserContext.charset(); }
 
-    bool loadCompleted() const { return m_loadCompleted; }
+    bool loadCompleted() const;
     bool hasFailedOrCanceledSubresources() const;
 
     KURL completeURL(const String& url) const;
 
-    void setHasSyntacticallyValidCSSHeader(bool b) { m_hasSyntacticallyValidCSSHeader = b; }
+    void setHasSyntacticallyValidCSSHeader(bool isValidCss);
     bool hasSyntacticallyValidCSSHeader() const { return m_hasSyntacticallyValidCSSHeader; }
 
     void setHasFontFaceRule(bool b) { m_hasFontFaceRule = b; }
@@ -165,7 +166,6 @@ private:
     typedef HashMap<AtomicString, AtomicString> PrefixNamespaceURIMap;
     PrefixNamespaceURIMap m_namespaces;
 
-    bool m_loadCompleted : 1;
     bool m_hasSyntacticallyValidCSSHeader : 1;
     bool m_didLoadErrorOccur : 1;
     bool m_usesRemUnits : 1;

@@ -175,6 +175,9 @@ public:
     void collectDocumentActiveStyleSheets(StyleSheetCollectionBase&);
     void markDocumentDirty();
 
+    static PassRefPtr<CSSStyleSheet> createSheet(Element*, const String& text, TextPosition startPosition, bool createdByParser);
+    static void removeSheet(StyleSheetContents*);
+
 private:
     StyleEngine(Document&);
 
@@ -196,6 +199,8 @@ private:
 
     void notifyPendingStyleSheetAdded();
     void notifyPendingStyleSheetRemoved(RemovePendingSheetNotificationType);
+
+    static PassRefPtr<CSSStyleSheet> parseSheet(Element*, const String& text, TextPosition startPosition, bool createdByParser);
 
     Document& m_document;
     bool m_isMaster;
