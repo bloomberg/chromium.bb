@@ -30,9 +30,7 @@
 
 namespace WebCore {
 
-class CSSStyleDeclaration;
 class ExceptionState;
-class MutableStylePropertySet;
 
 // Attr can have Text children
 // therefore it has to be a fullblown Node. The plan
