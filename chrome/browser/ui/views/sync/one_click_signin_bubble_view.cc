@@ -183,10 +183,11 @@ void OneClickSigninBubbleView::InitBubbleContent(views::GridLayout* layout) {
   {
     layout->StartRow(0, COLUMN_SET_TITLE_BAR);
 
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     views::Label* label = new views::Label(
-        l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_TITLE_NEW));
+        l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_TITLE_NEW),
+        rb.GetFontList(ui::ResourceBundle::MediumFont));
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    label->SetFont(label->font().DeriveFont(3));
     layout->AddView(label);
   }
 
