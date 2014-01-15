@@ -4,6 +4,11 @@
 <title>Check that content settings apply to the correct frame</title>
 </head>
 <body>
-  <iframe src="popup-frames-iframe.html"></iframe>
+  <script>
+    var frame = document.createElement("iframe");
+    frame.src = "http://www.a.com:" + location.port +
+        "/popup_blocker/popup-frames-iframe.html";
+    document.body.appendChild(frame);
+  </script>
 </body>
 </html>

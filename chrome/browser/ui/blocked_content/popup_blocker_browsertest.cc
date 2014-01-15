@@ -34,14 +34,13 @@
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
+#include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::WebContents;
 
 namespace {
-
-static const base::FilePath::CharType* kTestDir =
-    FILE_PATH_LITERAL("popup_blocker");
 
 // Counts the number of RenderViewHosts created.
 class CountRenderViewHosts : public content::NotificationObserver {
@@ -74,6 +73,13 @@ class PopupBlockerBrowserTest : public InProcessBrowserTest {
  public:
   PopupBlockerBrowserTest() {}
   virtual ~PopupBlockerBrowserTest() {}
+
+  virtual void SetUpOnMainThread() OVERRIDE {
+    InProcessBrowserTest::SetUpOnMainThread();
+
+    host_resolver()->AddRule("*", "127.0.0.1");
+    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  }
 
   int GetBlockedContentsCount() {
     // Do a round trip to the renderer first to flush any in-flight IPCs to
@@ -108,10 +114,10 @@ class PopupBlockerBrowserTest : public InProcessBrowserTest {
   //
   // Returns the WebContents of the launched popup.
   WebContents* RunCheckTest(Browser* browser,
-                            const base::FilePath& test_name,
+                            const std::string& test_name,
                             bool expect_new_browser,
                             bool check_title) {
-    GURL url(ui_test_utils::GetTestUrl(base::FilePath(kTestDir), test_name));
+    GURL url(embedded_test_server()->GetURL(test_name));
 
     CountRenderViewHosts counter;
 
@@ -184,7 +190,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
 
   RunCheckTest(
       browser(),
-      base::FilePath(FILE_PATH_LITERAL("popup-blocked-to-post-blank.html")),
+      "/popup_blocker/popup-blocked-to-post-blank.html",
       true,
       false);
 }
@@ -199,7 +205,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
 
   RunCheckTest(
       CreateIncognitoBrowser(),
-      base::FilePath(FILE_PATH_LITERAL("popup-blocked-to-post-blank.html")),
+      "/popup_blocker/popup-blocked-to-post-blank.html",
       true,
       false);
 }
@@ -214,7 +220,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
 
   RunCheckTest(
       browser(),
-      base::FilePath(FILE_PATH_LITERAL("popup-fake-click-on-anchor.html")),
+      "/popup_blocker/popup-fake-click-on-anchor.html",
       false,
       false);
 }
@@ -229,15 +235,13 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
 
   RunCheckTest(
       browser(),
-      base::FilePath(FILE_PATH_LITERAL("popup-fake-click-on-anchor2.html")),
+      "/popup_blocker/popup-fake-click-on-anchor2.html",
       false,
       false);
 }
 
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, MultiplePopups) {
-  GURL url(ui_test_utils::GetTestUrl(
-      base::FilePath(kTestDir),
-      base::FilePath(FILE_PATH_LITERAL("popup-many.html"))));
+  GURL url(embedded_test_server()->GetURL("/popup_blocker/popup-many.html"));
   ui_test_utils::NavigateToURL(browser(), url);
   ASSERT_EQ(2, GetBlockedContentsCount());
 }
@@ -245,9 +249,8 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, MultiplePopups) {
 // Verify that popups are launched on browser back button.
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
                        AllowPopupThroughContentSetting) {
-  GURL url(ui_test_utils::GetTestUrl(
-      base::FilePath(kTestDir),
-      base::FilePath(FILE_PATH_LITERAL("popup-blocked-to-post-blank.html"))));
+  GURL url(embedded_test_server()->GetURL(
+      "/popup_blocker/popup-blocked-to-post-blank.html"));
   browser()->profile()->GetHostContentSettingsMap()
       ->SetContentSetting(ContentSettingsPattern::FromURL(url),
                           ContentSettingsPattern::Wildcard(),
@@ -261,9 +264,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
 // Verify that content settings are applied based on the top-level frame URL.
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
                        AllowPopupThroughContentSettingIFrame) {
-  GURL url(ui_test_utils::GetTestUrl(
-      base::FilePath(kTestDir),
-      base::FilePath(FILE_PATH_LITERAL("popup-frames.html"))));
+  GURL url(embedded_test_server()->GetURL("/popup_blocker/popup-frames.html"));
   browser()->profile()->GetHostContentSettingsMap()
       ->SetContentSetting(ContentSettingsPattern::FromURL(url),
                           ContentSettingsPattern::Wildcard(),
@@ -276,9 +277,12 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
   NavigateAndCheckPopupShown(url);
 
   // Whitelist iframe URL instead.
-  GURL frame_url(ui_test_utils::GetTestUrl(
-      base::FilePath(kTestDir),
-      base::FilePath(FILE_PATH_LITERAL("popup-frames-iframe.html"))));
+  GURL::Replacements replace_host;
+  std::string host_str("www.a.com");  // Must stay in scope with replace_host
+  replace_host.SetHostStr(host_str);
+  GURL frame_url(embedded_test_server()
+                     ->GetURL("/popup_blocker/popup-frames-iframe.html")
+                     .ReplaceComponents(replace_host));
   browser()->profile()->GetHostContentSettingsMap()->ClearSettingsForOneType(
       CONTENT_SETTINGS_TYPE_POPUPS);
   browser()->profile()->GetHostContentSettingsMap()
@@ -297,12 +301,11 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
                        PopupsLaunchWhenTabIsClosed) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisablePopupBlocking);
-  GURL url = ui_test_utils::GetTestUrl(
-      base::FilePath(kTestDir),
-      base::FilePath(FILE_PATH_LITERAL("popup-on-unload.html")));
+  GURL url(
+      embedded_test_server()->GetURL("/popup_blocker/popup-on-unload.html"));
   ui_test_utils::NavigateToURL(browser(), url);
 
-  NavigateAndCheckPopupShown(GURL(content::kAboutBlankURL));
+  NavigateAndCheckPopupShown(embedded_test_server()->GetURL("/popup_blocker/"));
 }
 
 // Verify that when you unblock popup, the popup shows in history and omnibox.
@@ -310,9 +313,8 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
                        UnblockedPopupShowsInHistoryAndOmnibox) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisablePopupBlocking);
-  GURL url(ui_test_utils::GetTestUrl(
-      base::FilePath(kTestDir),
-      base::FilePath(FILE_PATH_LITERAL("popup-blocked-to-post-blank.html"))));
+  GURL url(embedded_test_server()->GetURL(
+      "/popup_blocker/popup-blocked-to-post-blank.html"));
   NavigateAndCheckPopupShown(url);
 
   std::string search_string =
@@ -348,7 +350,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, MAYBE_WindowFeatures) {
   WebContents* popup =
       RunCheckTest(browser(),
-                   base::FilePath(FILE_PATH_LITERAL("popup-window-open.html")),
+                   "/popup_blocker/popup-window-open.html",
                    true,
                    false);
 
@@ -360,35 +362,35 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, MAYBE_WindowFeatures) {
 
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, CorrectReferrer) {
   RunCheckTest(browser(),
-               base::FilePath(FILE_PATH_LITERAL("popup-referrer.html")),
+               "/popup_blocker/popup-referrer.html",
                true,
                true);
 }
 
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, WindowFeaturesBarProps) {
   RunCheckTest(browser(),
-               base::FilePath(FILE_PATH_LITERAL("popup-windowfeatures.html")),
+               "/popup_blocker/popup-windowfeatures.html",
                true,
                true);
 }
 
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, SessionStorage) {
   RunCheckTest(browser(),
-               base::FilePath(FILE_PATH_LITERAL("popup-sessionstorage.html")),
+               "/popup_blocker/popup-sessionstorage.html",
                true,
                true);
 }
 
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, Opener) {
   RunCheckTest(browser(),
-               base::FilePath(FILE_PATH_LITERAL("popup-opener.html")),
+               "/popup_blocker/popup-opener.html",
                true,
                true);
 }
 
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, OpenerSuppressed) {
   RunCheckTest(browser(),
-               base::FilePath(FILE_PATH_LITERAL("popup-openersuppressed.html")),
+               "/popup_blocker/popup-openersuppressed.html",
                false,
                true);
 }
@@ -396,7 +398,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, OpenerSuppressed) {
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ShiftClick) {
   RunCheckTest(
       browser(),
-      base::FilePath(FILE_PATH_LITERAL("popup-fake-click-on-anchor3.html")),
+      "/popup_blocker/popup-fake-click-on-anchor3.html",
       true,
       true);
 }
@@ -404,7 +406,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ShiftClick) {
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, WebUI) {
   WebContents* popup =
       RunCheckTest(browser(),
-                   base::FilePath(FILE_PATH_LITERAL("popup-webui.html")),
+                   "/popup_blocker/popup-webui.html",
                    true,
                    false);
 
@@ -415,9 +417,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, WebUI) {
 // Verify that the renderer can't DOS the browser by creating arbitrarily many
 // popups.
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, DenialOfService) {
-  GURL url(ui_test_utils::GetTestUrl(
-      base::FilePath(kTestDir),
-      base::FilePath(FILE_PATH_LITERAL("popup-dos.html"))));
+  GURL url(embedded_test_server()->GetURL("/popup_blocker/popup-dos.html"));
   ui_test_utils::NavigateToURL(browser(), url);
   ASSERT_EQ(25, GetBlockedContentsCount());
 }
