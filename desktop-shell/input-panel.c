@@ -116,14 +116,18 @@ input_panel_configure(struct weston_surface *surface, int32_t sx, int32_t sy)
 {
 	struct input_panel_surface *ip_surface = surface->configure_private;
 	struct desktop_shell *shell = ip_surface->shell;
+	struct weston_view *view;
 	float x, y;
 
 	if (surface->width == 0)
 		return;
 
 	if (ip_surface->panel) {
-		x = get_default_view(shell->text_input.surface)->geometry.x + shell->text_input.cursor_rectangle.x2;
-		y = get_default_view(shell->text_input.surface)->geometry.y + shell->text_input.cursor_rectangle.y2;
+		view = get_default_view(shell->text_input.surface);
+		if (view == NULL)
+			return;
+		x = view->geometry.x + shell->text_input.cursor_rectangle.x2;
+		y = view->geometry.y + shell->text_input.cursor_rectangle.y2;
 	} else {
 		x = ip_surface->output->x + (ip_surface->output->width - surface->width) / 2;
 		y = ip_surface->output->y + ip_surface->output->height - surface->height;
