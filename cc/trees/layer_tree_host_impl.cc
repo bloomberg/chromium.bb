@@ -1448,7 +1448,8 @@ bool LayerTreeHostImpl::IsContextLost() {
   return renderer_ && renderer_->IsContextLost();
 }
 
-const RendererCapabilities& LayerTreeHostImpl::GetRendererCapabilities() const {
+const RendererCapabilitiesImpl&
+LayerTreeHostImpl::GetRendererCapabilities() const {
   return renderer_->Capabilities();
 }
 

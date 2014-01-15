@@ -47,17 +47,23 @@ static base::StaticAtomicSequenceNumber s_layer_tree_host_sequence_number;
 
 namespace cc {
 
+RendererCapabilities::RendererCapabilities(ResourceFormat best_texture_format,
+                                           bool allow_partial_texture_updates,
+                                           bool using_offscreen_context3d,
+                                           int max_texture_size,
+                                           bool using_shared_memory_resources)
+    : best_texture_format(best_texture_format),
+      allow_partial_texture_updates(allow_partial_texture_updates),
+      using_offscreen_context3d(using_offscreen_context3d),
+      max_texture_size(max_texture_size),
+      using_shared_memory_resources(using_shared_memory_resources) {}
+
 RendererCapabilities::RendererCapabilities()
     : best_texture_format(RGBA_8888),
-      using_partial_swap(false),
-      using_egl_image(false),
       allow_partial_texture_updates(false),
       using_offscreen_context3d(false),
       max_texture_size(0),
-      avoid_pow2_textures(false),
-      using_map_image(false),
-      using_shared_memory_resources(false),
-      using_discard_framebuffer(false) {}
+      using_shared_memory_resources(false) {}
 
 RendererCapabilities::~RendererCapabilities() {}
 

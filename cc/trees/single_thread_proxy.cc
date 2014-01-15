@@ -146,7 +146,8 @@ void SingleThreadProxy::CreateAndInitializeOutputSurface() {
         output_surface.Pass());
     if (initialized) {
       renderer_capabilities_for_main_thread_ =
-          layer_tree_host_impl_->GetRendererCapabilities();
+          layer_tree_host_impl_->GetRendererCapabilities()
+              .MainThreadCapabilities();
     } else if (offscreen_context_provider.get()) {
       offscreen_context_provider->VerifyContexts();
       offscreen_context_provider = NULL;

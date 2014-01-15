@@ -16,6 +16,27 @@ class CompositorFrameAck;
 class CompositorFrameMetadata;
 class ScopedResource;
 
+struct RendererCapabilitiesImpl {
+  RendererCapabilitiesImpl();
+  ~RendererCapabilitiesImpl();
+
+  // Capabilities copied to main thread.
+  ResourceFormat best_texture_format;
+  bool allow_partial_texture_updates;
+  bool using_offscreen_context3d;
+  int max_texture_size;
+  bool using_shared_memory_resources;
+
+  // Capabilities used on compositor thread only.
+  bool using_partial_swap;
+  bool using_egl_image;
+  bool avoid_pow2_textures;
+  bool using_map_image;
+  bool using_discard_framebuffer;
+
+  RendererCapabilities MainThreadCapabilities() const;
+};
+
 class CC_EXPORT RendererClient {
  public:
   virtual void SetFullRootLayerDamage() = 0;
@@ -25,7 +46,7 @@ class CC_EXPORT Renderer {
  public:
   virtual ~Renderer() {}
 
-  virtual const RendererCapabilities& Capabilities() const = 0;
+  virtual const RendererCapabilitiesImpl& Capabilities() const = 0;
 
   virtual bool CanReadPixels() const = 0;
 

@@ -14,6 +14,7 @@
 #include "cc/base/scoped_ptr_vector.h"
 #include "cc/base/swap_promise.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/output/renderer.h"
 #include "cc/resources/ui_resource_client.h"
 
 #if defined(COMPILER_GCC)
@@ -59,7 +60,7 @@ class CC_EXPORT LayerTreeImpl {
   // Methods called by the layer tree that pass-through or access LTHI.
   // ---------------------------------------------------------------------------
   const LayerTreeSettings& settings() const;
-  const RendererCapabilities& GetRendererCapabilities() const;
+  const RendererCapabilitiesImpl& GetRendererCapabilities() const;
   ContextProvider* context_provider() const;
   OutputSurface* output_surface() const;
   ResourceProvider* resource_provider() const;

@@ -222,7 +222,7 @@ GLRenderer::~GLRenderer() {
   CleanupSharedObjects();
 }
 
-const RendererCapabilities& GLRenderer::Capabilities() const {
+const RendererCapabilitiesImpl& GLRenderer::Capabilities() const {
   return capabilities_;
 }
 

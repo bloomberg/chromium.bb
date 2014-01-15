@@ -96,7 +96,7 @@ SoftwareRenderer::SoftwareRenderer(RendererClient* client,
 
 SoftwareRenderer::~SoftwareRenderer() {}
 
-const RendererCapabilities& SoftwareRenderer::Capabilities() const {
+const RendererCapabilitiesImpl& SoftwareRenderer::Capabilities() const {
   return capabilities_;
 }
 

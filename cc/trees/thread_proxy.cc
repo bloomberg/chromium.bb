@@ -1428,7 +1428,8 @@ void ThreadProxy::InitializeOutputSurfaceOnImplThread(
   *success = layer_tree_host_impl_->InitializeRenderer(output_surface.Pass());
 
   if (*success) {
-    *capabilities = layer_tree_host_impl_->GetRendererCapabilities();
+    *capabilities = layer_tree_host_impl_->GetRendererCapabilities()
+                        .MainThreadCapabilities();
     scheduler_on_impl_thread_->DidCreateAndInitializeOutputSurface();
   } else if (offscreen_context_provider.get()) {
     if (offscreen_context_provider->BindToCurrentThread())

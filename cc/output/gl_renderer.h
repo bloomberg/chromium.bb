@@ -56,7 +56,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
 
   virtual ~GLRenderer();
 
-  virtual const RendererCapabilities& Capabilities() const OVERRIDE;
+  virtual const RendererCapabilitiesImpl& Capabilities() const OVERRIDE;
 
   // Waits for rendering to finish.
   virtual void Finish() OVERRIDE;
@@ -222,7 +222,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   virtual void EnsureBackbuffer() OVERRIDE;
   void EnforceMemoryPolicy();
 
-  RendererCapabilities capabilities_;
+  RendererCapabilitiesImpl capabilities_;
 
   unsigned offscreen_framebuffer_id_;
 

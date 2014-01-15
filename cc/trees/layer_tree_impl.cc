@@ -514,7 +514,7 @@ const LayerTreeSettings& LayerTreeImpl::settings() const {
   return layer_tree_host_impl_->settings();
 }
 
-const RendererCapabilities& LayerTreeImpl::GetRendererCapabilities() const {
+const RendererCapabilitiesImpl& LayerTreeImpl::GetRendererCapabilities() const {
   return layer_tree_host_impl_->GetRendererCapabilities();
 }
 

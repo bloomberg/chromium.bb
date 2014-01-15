@@ -34,7 +34,7 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
       ResourceProvider* resource_provider);
 
   virtual ~SoftwareRenderer();
-  virtual const RendererCapabilities& Capabilities() const OVERRIDE;
+  virtual const RendererCapabilitiesImpl& Capabilities() const OVERRIDE;
   virtual void Finish() OVERRIDE;
   virtual void SwapBuffers(const CompositorFrameMetadata& metadata) OVERRIDE;
   virtual void GetFramebufferPixels(void* pixels,
@@ -98,7 +98,7 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
   void DrawUnsupportedQuad(const DrawingFrame* frame,
                            const DrawQuad* quad);
 
-  RendererCapabilities capabilities_;
+  RendererCapabilitiesImpl capabilities_;
   bool visible_;
   bool is_scissor_enabled_;
   bool is_backbuffer_discarded_;

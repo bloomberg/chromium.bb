@@ -64,19 +64,21 @@ struct ScrollAndScaleSet;
 // Provides information on an Impl's rendering capabilities back to the
 // LayerTreeHost.
 struct CC_EXPORT RendererCapabilities {
+  RendererCapabilities(ResourceFormat best_texture_format,
+                       bool allow_partial_texture_updates,
+                       bool using_offscreen_context3d,
+                       int max_texture_size,
+                       bool using_shared_memory_resources);
+
   RendererCapabilities();
   ~RendererCapabilities();
 
+  // Duplicate any modification to this list to RendererCapabilitiesImpl.
   ResourceFormat best_texture_format;
-  bool using_partial_swap;
-  bool using_egl_image;
   bool allow_partial_texture_updates;
   bool using_offscreen_context3d;
   int max_texture_size;
-  bool avoid_pow2_textures;
-  bool using_map_image;
   bool using_shared_memory_resources;
-  bool using_discard_framebuffer;
 };
 
 class CC_EXPORT LayerTreeHost {

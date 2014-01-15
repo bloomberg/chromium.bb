@@ -53,7 +53,7 @@ class TextureMailboxDeleter;
 class TopControlsManager;
 class UIResourceBitmap;
 class UIResourceRequest;
-struct RendererCapabilities;
+struct RendererCapabilitiesImpl;
 
 // LayerTreeHost->Proxy callback interface.
 class LayerTreeHostImplClient {
@@ -257,7 +257,7 @@ class CC_EXPORT LayerTreeHostImpl
   bool IsContextLost();
   TileManager* tile_manager() { return tile_manager_.get(); }
   Renderer* renderer() { return renderer_.get(); }
-  const RendererCapabilities& GetRendererCapabilities() const;
+  const RendererCapabilitiesImpl& GetRendererCapabilities() const;
 
   virtual bool SwapBuffers(const FrameData& frame);
   void SetNeedsBeginImplFrame(bool enable);

@@ -24,7 +24,7 @@ class CC_EXPORT DelegatingRenderer : public Renderer {
       ResourceProvider* resource_provider);
   virtual ~DelegatingRenderer();
 
-  virtual const RendererCapabilities& Capabilities() const OVERRIDE;
+  virtual const RendererCapabilitiesImpl& Capabilities() const OVERRIDE;
 
   virtual bool CanReadPixels() const OVERRIDE;
 
@@ -61,7 +61,7 @@ class CC_EXPORT DelegatingRenderer : public Renderer {
 
   OutputSurface* output_surface_;
   ResourceProvider* resource_provider_;
-  RendererCapabilities capabilities_;
+  RendererCapabilitiesImpl capabilities_;
   scoped_ptr<DelegatedFrameData> delegated_frame_data_;
   bool visible_;
 
