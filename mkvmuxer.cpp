@@ -8,6 +8,7 @@
 
 #include "mkvmuxer.hpp"
 
+#include <climits>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -100,9 +101,9 @@ bool ChunkedCopy(mkvparser::IMkvReader* source,
   int64 offset = start;
   while (size > 0) {
     const int64 read_len = (size > kBufSize) ? kBufSize : size;
-    if (source->Read(offset, read_len, buf))
+    if (source->Read(offset, static_cast<long>(read_len), buf))
       return false;
-    dst->Write(buf, read_len);
+    dst->Write(buf, static_cast<uint32>(read_len));
     offset += read_len;
     size -= read_len;
   }
@@ -1797,13 +1798,13 @@ bool SeekHead::AddSeekEntry(uint32 id, uint64 pos) {
 
 uint32 SeekHead::GetId(int index) const {
   if (index < 0 || index >= kSeekEntryCount)
-    return -1;
+    return UINT_MAX;
   return seek_entry_id_[index];
 }
 
 uint64 SeekHead::GetPosition(int index) const {
   if (index < 0 || index >= kSeekEntryCount)
-    return -1;
+    return ULLONG_MAX;
   return seek_entry_pos_[index];
 }
 
@@ -2106,8 +2107,8 @@ void Segment::MoveCuesBeforeClusters() {
 
   // Adjust the Seek Entry to reflect the change in position
   // of Cluster and Cues
-  int32 cluster_index;
-  int32 cues_index;
+  int32 cluster_index = 0;
+  int32 cues_index = 0;
   for (int32 i = 0; i < SeekHead::kSeekEntryCount; ++i) {
     if (seek_head_.GetId(i) == kMkvCluster)
       cluster_index = i;
