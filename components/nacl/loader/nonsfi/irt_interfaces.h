@@ -15,6 +15,7 @@ size_t NaClIrtInterface(const char* interface_ident,
                         void* table, size_t tablesize);
 
 extern const struct nacl_irt_basic kIrtBasic;
+extern const struct nacl_irt_fdio kIrtFdIO;
 
 }  // namespace nonsfi
 }  // namespace nacl
