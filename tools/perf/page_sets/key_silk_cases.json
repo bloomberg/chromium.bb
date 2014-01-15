@@ -427,6 +427,7 @@
     },
     {
       "url": "http://famo.us?scroll",
+      "disabled": "Times out",
       "navigate_steps": [
         { "action": "navigate" },
         { "action": "wait", "seconds": 2 },
@@ -445,6 +446,7 @@
     },
     {
       "url": "http://famo.us?tap",
+      "disabled": "Times out",
       "navigate_steps": [
         { "action": "navigate" },
         { "action": "wait", "seconds": 2 },
