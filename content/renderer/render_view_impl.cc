@@ -3647,10 +3647,8 @@ void RenderViewImpl::didClearWindowObject(WebFrame* frame, int world_id) {
   FOR_EACH_OBSERVER(RenderViewObserver, observers_,
                     DidClearWindowObject(frame, world_id));
 
-  if ((enabled_bindings_ & BINDINGS_POLICY_DOM_AUTOMATION) &&
-      (world_id == 0 || world_id == -1)) {
+  if ((enabled_bindings_ & BINDINGS_POLICY_DOM_AUTOMATION) && (world_id == 0))
     DomAutomationController::Install(this, frame);
-  }
 
   if (enabled_bindings_ & BINDINGS_POLICY_STATS_COLLECTION)
     StatsCollectionController::Install(frame);
