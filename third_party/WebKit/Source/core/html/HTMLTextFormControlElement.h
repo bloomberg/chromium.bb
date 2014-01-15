@@ -73,7 +73,6 @@ public:
 
     virtual void dispatchFormControlChangeEvent() OVERRIDE FINAL;
 
-    virtual int maxLength() const = 0;
     virtual String value() const = 0;
 
     HTMLElement* innerTextElement() const;

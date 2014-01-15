@@ -198,7 +198,7 @@ public:
 
     KURL src() const;
 
-    virtual int maxLength() const OVERRIDE FINAL;
+    int maxLength() const;
     void setMaxLength(int, ExceptionState&);
 
     bool multiple() const;

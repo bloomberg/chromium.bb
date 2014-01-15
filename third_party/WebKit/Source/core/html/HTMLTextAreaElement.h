@@ -46,7 +46,7 @@ public:
     String defaultValue() const;
     void setDefaultValue(const String&);
     int textLength() const { return value().length(); }
-    virtual int maxLength() const OVERRIDE;
+    int maxLength() const;
     void setMaxLength(int, ExceptionState&);
 
     String suggestedValue() const;
