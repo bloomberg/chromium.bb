@@ -391,10 +391,4 @@ SVGRect SVGPathElement::getBBox()
     return renderer->path().boundingRect();
 }
 
-RenderObject* SVGPathElement::createRenderer(RenderStyle*)
-{
-    // By default, any subclass is expected to do path-based drawing
-    return new RenderSVGPath(this);
-}
-
 }

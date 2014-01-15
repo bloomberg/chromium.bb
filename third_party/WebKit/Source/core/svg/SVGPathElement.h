@@ -110,8 +110,6 @@ private:
     static void synchronizeD(SVGElement* contextElement);
     static PassRefPtr<SVGAnimatedProperty> lookupOrCreateDWrapper(SVGElement* contextElement);
 
-    virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
-
     virtual Node::InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
     virtual void removedFrom(ContainerNode*) OVERRIDE;
 
