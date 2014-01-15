@@ -92,7 +92,7 @@ public:
     // FIXME: Needed until we move all the necessary bits to the new class.
     friend class RenderLayerScrollableArea;
 
-    RenderLayer(RenderLayerModelObject*);
+    RenderLayer(RenderLayerModelObject*, LayerType);
     ~RenderLayer();
 
     String debugName() const;

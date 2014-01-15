@@ -97,8 +97,9 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-RenderLayer::RenderLayer(RenderLayerModelObject* renderer)
-    : m_hasSelfPaintingLayerDescendant(false)
+RenderLayer::RenderLayer(RenderLayerModelObject* renderer, LayerType type)
+    : m_isOverflowOnlyLayer(type == OverflowClipLayer)
+    , m_hasSelfPaintingLayerDescendant(false)
     , m_hasSelfPaintingLayerDescendantDirty(false)
     , m_hasOutOfFlowPositionedDescendant(false)
     , m_hasOutOfFlowPositionedDescendantDirty(true)

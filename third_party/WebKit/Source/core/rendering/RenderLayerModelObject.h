@@ -68,7 +68,7 @@ public:
     CompositedLayerMapping* groupedMapping() const;
 
 protected:
-    void createLayer();
+    void createLayer(LayerType);
 
     virtual void willBeDestroyed() OVERRIDE;
 
