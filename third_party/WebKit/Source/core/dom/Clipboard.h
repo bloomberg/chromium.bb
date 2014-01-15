@@ -36,7 +36,7 @@
 
 namespace WebCore {
 
-class ChromiumDataObject;
+class DataObject;
 class DataTransferItemList;
 class DragImage;
 class Element;
@@ -56,7 +56,7 @@ public:
         DragAndDrop,
     };
 
-    static PassRefPtr<Clipboard> create(ClipboardType, ClipboardAccessPolicy, PassRefPtr<ChromiumDataObject>);
+    static PassRefPtr<Clipboard> create(ClipboardType, ClipboardAccessPolicy, PassRefPtr<DataObject>);
     ~Clipboard();
 
     bool isForCopyAndPaste() const { return m_clipboardType == CopyAndPaste; }
@@ -110,10 +110,10 @@ public:
 
     PassRefPtr<DataTransferItemList> items();
 
-    PassRefPtr<ChromiumDataObject> dataObject() const;
+    PassRefPtr<DataObject> dataObject() const;
 
 private:
-    Clipboard(ClipboardType, ClipboardAccessPolicy, PassRefPtr<ChromiumDataObject>);
+    Clipboard(ClipboardType, ClipboardAccessPolicy, PassRefPtr<DataObject>);
 
     void setDragImage(ImageResource*, Node*, const IntPoint&);
 
@@ -125,7 +125,7 @@ private:
     String m_dropEffect;
     String m_effectAllowed;
     ClipboardType m_clipboardType;
-    RefPtr<ChromiumDataObject> m_dataObject;
+    RefPtr<DataObject> m_dataObject;
 
     IntPoint m_dragLoc;
     ResourcePtr<ImageResource> m_dragImage;

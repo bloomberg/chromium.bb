@@ -36,11 +36,13 @@
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Clipboard.h"
+#include "core/dom/DataObject.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/DocumentMarkerController.h"
 #include "core/dom/NodeList.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/ParserContentPolicy.h"
+#include "core/dom/Pasteboard.h"
 #include "core/dom/Text.h"
 #include "core/editing/ApplyStyleCommand.h"
 #include "core/editing/DeleteSelectionCommand.h"
@@ -64,6 +66,9 @@
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/ResourceFetcher.h"
+#include "core/frame/Frame.h"
+#include "core/frame/FrameView.h"
+#include "core/frame/Settings.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLTextAreaElement.h"
@@ -72,12 +77,7 @@
 #include "core/page/EditorClient.h"
 #include "core/page/EventHandler.h"
 #include "core/page/FocusController.h"
-#include "core/frame/Frame.h"
-#include "core/frame/FrameView.h"
 #include "core/page/Page.h"
-#include "core/frame/Settings.h"
-#include "core/platform/Pasteboard.h"
-#include "core/platform/chromium/ChromiumDataObject.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderImage.h"
 #include "platform/KillRing.h"
@@ -463,14 +463,14 @@ bool Editor::dispatchCPPEvent(const AtomicString &eventType, ClipboardAccessPoli
         Clipboard::CopyAndPaste,
         policy,
         policy == ClipboardWritable
-            ? ChromiumDataObject::create()
-            : ChromiumDataObject::createFromPasteboard(pasteMode));
+            ? DataObject::create()
+            : DataObject::createFromPasteboard(pasteMode));
 
     RefPtr<Event> evt = ClipboardEvent::create(eventType, true, true, clipboard);
     target->dispatchEvent(evt, IGNORE_EXCEPTION);
     bool noDefaultProcessing = evt->defaultPrevented();
     if (noDefaultProcessing && policy == ClipboardWritable) {
-        RefPtr<ChromiumDataObject> dataObject = clipboard->dataObject();
+        RefPtr<DataObject> dataObject = clipboard->dataObject();
         Pasteboard::generalPasteboard()->writeDataObject(dataObject.release());
     }
 

@@ -33,13 +33,13 @@
 
 #include "bindings/v8/V8Binding.h"
 #include "core/dom/Clipboard.h"
+#include "core/dom/DataObjectItem.h"
 #include "core/dom/StringCallback.h"
-#include "core/platform/chromium/ChromiumDataObjectItem.h"
 #include "wtf/StdLibExtras.h"
 
 namespace WebCore {
 
-PassRefPtr<DataTransferItem> DataTransferItem::create(PassRefPtr<Clipboard> clipboard, PassRefPtr<ChromiumDataObjectItem> item)
+PassRefPtr<DataTransferItem> DataTransferItem::create(PassRefPtr<Clipboard> clipboard, PassRefPtr<DataObjectItem> item)
 {
     return adoptRef(new DataTransferItem(clipboard, item));
 }
@@ -55,9 +55,9 @@ String DataTransferItem::kind() const
     if (!m_clipboard->canReadTypes())
         return String();
     switch (m_item->kind()) {
-    case ChromiumDataObjectItem::StringKind:
+    case DataObjectItem::StringKind:
         return kindString;
-    case ChromiumDataObjectItem::FileKind:
+    case DataObjectItem::FileKind:
         return kindFile;
     }
     ASSERT_NOT_REACHED();
@@ -75,7 +75,7 @@ void DataTransferItem::getAsString(ExecutionContext* context, PassOwnPtr<StringC
 {
     if (!m_clipboard->canReadData())
         return;
-    if (!callback || m_item->kind() != ChromiumDataObjectItem::StringKind)
+    if (!callback || m_item->kind() != DataObjectItem::StringKind)
         return;
 
     StringCallback::scheduleCallback(callback, context, m_item->getAsString());
@@ -89,7 +89,7 @@ PassRefPtr<Blob> DataTransferItem::getAsFile() const
     return m_item->getAsFile();
 }
 
-DataTransferItem::DataTransferItem(PassRefPtr<Clipboard> clipboard, PassRefPtr<ChromiumDataObjectItem> item)
+DataTransferItem::DataTransferItem(PassRefPtr<Clipboard> clipboard, PassRefPtr<DataObjectItem> item)
     : m_clipboard(clipboard)
     , m_item(item)
 {

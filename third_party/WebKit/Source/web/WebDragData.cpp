@@ -30,8 +30,8 @@
 
 #include "config.h"
 
+#include "core/dom/DataObject.h"
 #include "core/dom/DataTransferItem.h"
-#include "core/platform/chromium/ChromiumDataObject.h"
 #include "modules/filesystem/DraggedIsolatedFileSystem.h"
 #include "platform/clipboard/ClipboardMimeTypes.h"
 #include "public/platform/WebData.h"
@@ -46,12 +46,12 @@ using namespace WebCore;
 
 namespace blink {
 
-class WebDragDataPrivate : public ChromiumDataObject {
+class WebDragDataPrivate : public DataObject {
 };
 
 void WebDragData::initialize()
 {
-    assign(static_cast<WebDragDataPrivate*>(ChromiumDataObject::create().leakRef()));
+    assign(static_cast<WebDragDataPrivate*>(DataObject::create().leakRef()));
 }
 
 void WebDragData::reset()
@@ -71,13 +71,13 @@ WebVector<WebDragData::Item> WebDragData::items() const
 {
     Vector<Item> itemList;
     for (size_t i = 0; i < m_private->length(); ++i) {
-        ChromiumDataObjectItem* originalItem = m_private->item(i).get();
+        DataObjectItem* originalItem = m_private->item(i).get();
         WebDragData::Item item;
-        if (originalItem->kind() == ChromiumDataObjectItem::StringKind) {
+        if (originalItem->kind() == DataObjectItem::StringKind) {
             item.storageType = Item::StorageTypeString;
             item.stringType = originalItem->type();
             item.stringData = originalItem->getAsString();
-        } else if (originalItem->kind() == ChromiumDataObjectItem::FileKind) {
+        } else if (originalItem->kind() == DataObjectItem::FileKind) {
             if (originalItem->sharedBuffer()) {
                 item.storageType = Item::StorageTypeBinaryData;
                 item.binaryData = originalItem->sharedBuffer();
@@ -145,20 +145,20 @@ void WebDragData::setFilesystemId(const WebString& filesystemId)
     DraggedIsolatedFileSystem::provideTo(m_private, DraggedIsolatedFileSystem::supplementName(), DraggedIsolatedFileSystem::create(filesystemId));
 }
 
-WebDragData::WebDragData(const WTF::PassRefPtr<WebCore::ChromiumDataObject>& data)
+WebDragData::WebDragData(const WTF::PassRefPtr<WebCore::DataObject>& data)
     : m_private(static_cast<WebDragDataPrivate*>(data.leakRef()))
 {
 }
 
-WebDragData& WebDragData::operator=(const WTF::PassRefPtr<WebCore::ChromiumDataObject>& data)
+WebDragData& WebDragData::operator=(const WTF::PassRefPtr<WebCore::DataObject>& data)
 {
     assign(static_cast<WebDragDataPrivate*>(data.leakRef()));
     return *this;
 }
 
-WebDragData::operator WTF::PassRefPtr<WebCore::ChromiumDataObject>() const
+WebDragData::operator WTF::PassRefPtr<WebCore::DataObject>() const
 {
-    return PassRefPtr<ChromiumDataObject>(const_cast<WebDragDataPrivate*>(m_private));
+    return PassRefPtr<DataObject>(const_cast<WebDragDataPrivate*>(m_private));
 }
 
 void WebDragData::assign(WebDragDataPrivate* p)

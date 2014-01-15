@@ -37,7 +37,7 @@
 #include "WebURL.h"
 
 #if BLINK_IMPLEMENTATION
-namespace WebCore { class ChromiumDataObject; }
+namespace WebCore { class DataObject; }
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
 
@@ -107,9 +107,9 @@ public:
     BLINK_EXPORT void setFilesystemId(const WebString&);
 
 #if BLINK_IMPLEMENTATION
-    WebDragData(const WTF::PassRefPtr<WebCore::ChromiumDataObject>&);
-    WebDragData& operator=(const WTF::PassRefPtr<WebCore::ChromiumDataObject>&);
-    operator WTF::PassRefPtr<WebCore::ChromiumDataObject>() const;
+    WebDragData(const WTF::PassRefPtr<WebCore::DataObject>&);
+    WebDragData& operator=(const WTF::PassRefPtr<WebCore::DataObject>&);
+    operator WTF::PassRefPtr<WebCore::DataObject>() const;
 #endif
 
 private:

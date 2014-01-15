@@ -27,12 +27,12 @@
 #include "config.h"
 #include "core/page/DragData.h"
 
+#include "core/dom/DataObject.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/Range.h"
 #include "core/editing/markup.h"
 #include "core/frame/Frame.h"
-#include "core/platform/chromium/ChromiumDataObject.h"
 #include "modules/filesystem/DraggedIsolatedFileSystem.h"
 #include "platform/FileMetadata.h"
 #include "platform/clipboard/ClipboardMimeTypes.h"
@@ -41,7 +41,7 @@
 
 namespace WebCore {
 
-DragData::DragData(ChromiumDataObject* data, const IntPoint& clientPosition, const IntPoint& globalPosition,
+DragData::DragData(DataObject* data, const IntPoint& clientPosition, const IntPoint& globalPosition,
     DragOperation sourceOperationMask, DragApplicationFlags flags)
     : m_clientPosition(clientPosition)
     , m_globalPosition(globalPosition)
@@ -61,7 +61,7 @@ DragData::DragData(const String&, const IntPoint& clientPosition, const IntPoint
 {
 }
 
-static bool containsHTML(const ChromiumDataObject* dropData)
+static bool containsHTML(const DataObject* dropData)
 {
     return dropData->types().contains(mimeTypeTextHTML);
 }

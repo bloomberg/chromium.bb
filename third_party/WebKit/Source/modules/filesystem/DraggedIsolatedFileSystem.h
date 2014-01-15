@@ -31,7 +31,7 @@
 #ifndef DraggedIsolatedFileSystem_h
 #define DraggedIsolatedFileSystem_h
 
-#include "core/platform/chromium/ChromiumDataObject.h"
+#include "core/dom/DataObject.h"
 #include "wtf/Forward.h"
 #include "wtf/text/WTFString.h"
 
@@ -39,7 +39,7 @@ namespace WebCore {
 
 class DOMFileSystem;
 
-class DraggedIsolatedFileSystem : public Supplement<ChromiumDataObject> {
+class DraggedIsolatedFileSystem : public Supplement<DataObject> {
 public:
     ~DraggedIsolatedFileSystem();
 
@@ -52,7 +52,7 @@ public:
     DOMFileSystem* getDOMFileSystem(ExecutionContext*);
 
     static const char* supplementName();
-    static DraggedIsolatedFileSystem* from(ChromiumDataObject* dataObject) { return static_cast<DraggedIsolatedFileSystem*>(Supplement<ChromiumDataObject>::from(dataObject, supplementName())); }
+    static DraggedIsolatedFileSystem* from(DataObject* dataObject) { return static_cast<DraggedIsolatedFileSystem*>(Supplement<DataObject>::from(dataObject, supplementName())); }
 
 private:
     DraggedIsolatedFileSystem(const String& filesystemId);

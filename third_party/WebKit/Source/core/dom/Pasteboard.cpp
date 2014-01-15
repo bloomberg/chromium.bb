@@ -29,9 +29,9 @@
  */
 
 #include "config.h"
-#include "core/platform/Pasteboard.h"
+#include "core/dom/Pasteboard.h"
 
-#include "core/platform/chromium/ChromiumDataObject.h"
+#include "core/dom/DataObject.h"
 #include "platform/clipboard/ClipboardUtilities.h"
 #include "platform/graphics/Image.h"
 #include "platform/graphics/skia/NativeImageSkia.h"
@@ -90,7 +90,7 @@ void Pasteboard::writeImage(Image* image, const KURL& url, const String& title)
     blink::Platform::current()->clipboard()->writeImage(webImage, blink::WebURL(url), blink::WebString(title));
 }
 
-void Pasteboard::writeDataObject(PassRefPtr<ChromiumDataObject> dataObject)
+void Pasteboard::writeDataObject(PassRefPtr<DataObject> dataObject)
 {
     blink::Platform::current()->clipboard()->writeDataObject(dataObject);
 }

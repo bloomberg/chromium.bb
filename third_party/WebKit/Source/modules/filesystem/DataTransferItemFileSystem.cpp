@@ -32,10 +32,10 @@
 #include "modules/filesystem/DataTransferItemFileSystem.h"
 
 #include "core/dom/Clipboard.h"
+#include "core/dom/DataObject.h"
 #include "core/dom/DataTransferItem.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/File.h"
-#include "core/platform/chromium/ChromiumDataObject.h"
 #include "modules/filesystem/DOMFilePath.h"
 #include "modules/filesystem/DOMFileSystem.h"
 #include "modules/filesystem/DirectoryEntry.h"

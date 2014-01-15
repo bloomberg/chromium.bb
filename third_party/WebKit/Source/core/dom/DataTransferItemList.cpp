@@ -29,13 +29,13 @@
 
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/Clipboard.h"
+#include "core/dom/DataObject.h"
 #include "core/dom/DataTransferItem.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/platform/chromium/ChromiumDataObject.h"
 
 namespace WebCore {
 
-PassRefPtr<DataTransferItemList> DataTransferItemList::create(PassRefPtr<Clipboard> clipboard, PassRefPtr<ChromiumDataObject> list)
+PassRefPtr<DataTransferItemList> DataTransferItemList::create(PassRefPtr<Clipboard> clipboard, PassRefPtr<DataObject> list)
 {
     return adoptRef(new DataTransferItemList(clipboard, list));
 }
@@ -55,7 +55,7 @@ PassRefPtr<DataTransferItem> DataTransferItemList::item(unsigned long index)
 {
     if (!m_clipboard->canReadTypes())
         return 0;
-    RefPtr<ChromiumDataObjectItem> item = m_dataObject->item(index);
+    RefPtr<DataObjectItem> item = m_dataObject->item(index);
     if (!item)
         return 0;
 
@@ -82,7 +82,7 @@ PassRefPtr<DataTransferItem> DataTransferItemList::add(const String& data, const
 {
     if (!m_clipboard->canWriteData())
         return 0;
-    RefPtr<ChromiumDataObjectItem> item = m_dataObject->add(data, type);
+    RefPtr<DataObjectItem> item = m_dataObject->add(data, type);
     if (!item) {
         exceptionState.throwDOMException(NotSupportedError, "An item already exists for type '" + type + "'.");
         return 0;
@@ -94,13 +94,13 @@ PassRefPtr<DataTransferItem> DataTransferItemList::add(PassRefPtr<File> file)
 {
     if (!m_clipboard->canWriteData())
         return 0;
-    RefPtr<ChromiumDataObjectItem> item = m_dataObject->add(file);
+    RefPtr<DataObjectItem> item = m_dataObject->add(file);
     if (!item)
         return 0;
     return DataTransferItem::create(m_clipboard, item);
 }
 
-DataTransferItemList::DataTransferItemList(PassRefPtr<Clipboard> clipboard, PassRefPtr<ChromiumDataObject> dataObject)
+DataTransferItemList::DataTransferItemList(PassRefPtr<Clipboard> clipboard, PassRefPtr<DataObject> dataObject)
     : m_clipboard(clipboard)
     , m_dataObject(dataObject)
 {

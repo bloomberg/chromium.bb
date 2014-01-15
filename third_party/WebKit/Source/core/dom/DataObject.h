@@ -28,18 +28,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ChromiumDataObject_h
-#define ChromiumDataObject_h
+#ifndef DataObject_h
+#define DataObject_h
 
-#include "core/platform/chromium/ChromiumDataObjectItem.h"
+#include "core/dom/DataObjectItem.h"
 #include "platform/PasteMode.h"
 #include "platform/Supplementable.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
-#include "wtf/Vector.h"
 
 namespace WebCore {
 
@@ -47,24 +47,24 @@ class KURL;
 class SharedBuffer;
 
 // A data object for holding data that would be in a clipboard or moved
-// during a drag-n-drop operation.  This is the data that WebCore is aware
+// during a drag-n-drop operation. This is the data that WebCore is aware
 // of and is not specific to a platform.
-class ChromiumDataObject : public RefCounted<ChromiumDataObject>, public Supplementable<ChromiumDataObject> {
+class DataObject : public RefCounted<DataObject>, public Supplementable<DataObject> {
 public:
-    static PassRefPtr<ChromiumDataObject> createFromPasteboard(PasteMode);
-    static PassRefPtr<ChromiumDataObject> create();
+    static PassRefPtr<DataObject> createFromPasteboard(PasteMode);
+    static PassRefPtr<DataObject> create();
 
-    PassRefPtr<ChromiumDataObject> copy() const;
+    PassRefPtr<DataObject> copy() const;
 
     // DataTransferItemList support.
     size_t length() const;
-    PassRefPtr<ChromiumDataObjectItem> item(unsigned long index);
+    PassRefPtr<DataObjectItem> item(unsigned long index);
     // FIXME: Implement V8DataTransferItemList::indexedPropertyDeleter to get this called.
     void deleteItem(unsigned long index);
     void clearAll();
     // Returns null if an item already exists with the provided type.
-    PassRefPtr<ChromiumDataObjectItem> add(const String& data, const String& type);
-    PassRefPtr<ChromiumDataObjectItem> add(PassRefPtr<File>);
+    PassRefPtr<DataObjectItem> add(const String& data, const String& type);
+    PassRefPtr<DataObjectItem> add(PassRefPtr<File>);
 
     // WebCore helpers.
     void clearData(const String& type);
@@ -91,14 +91,14 @@ public:
     void setModifierKeyState(int modifierKeyState) { m_modifierKeyState = modifierKeyState; }
 
 private:
-    ChromiumDataObject();
-    explicit ChromiumDataObject(const ChromiumDataObject&);
+    DataObject();
+    explicit DataObject(const DataObject&);
 
-    PassRefPtr<ChromiumDataObjectItem> findStringItem(const String& type) const;
-    bool internalAddStringItem(PassRefPtr<ChromiumDataObjectItem>);
-    void internalAddFileItem(PassRefPtr<ChromiumDataObjectItem>);
+    PassRefPtr<DataObjectItem> findStringItem(const String& type) const;
+    bool internalAddStringItem(PassRefPtr<DataObjectItem>);
+    void internalAddFileItem(PassRefPtr<DataObjectItem>);
 
-    Vector<RefPtr<ChromiumDataObjectItem> > m_itemList;
+    Vector<RefPtr<DataObjectItem> > m_itemList;
 
     // State of Shift/Ctrl/Alt/Meta keys.
     int m_modifierKeyState;

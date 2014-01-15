@@ -32,6 +32,7 @@
 
 #include "bindings/v8/ScriptFunctionCall.h"
 #include "bindings/v8/ScriptState.h"
+#include "core/dom/Pasteboard.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/TextResourceDecoder.h"
 #include "core/frame/Frame.h"
@@ -41,7 +42,6 @@
 #include "core/page/ContextMenuController.h"
 #include "core/page/ContextMenuProvider.h"
 #include "core/page/Page.h"
-#include "core/platform/Pasteboard.h"
 #include "core/rendering/RenderTheme.h"
 #include "modules/filesystem/DOMFileSystem.h"
 #include "platform/ContextMenu.h"

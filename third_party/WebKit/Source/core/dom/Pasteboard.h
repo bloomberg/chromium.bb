@@ -29,12 +29,12 @@
 #include "public/platform/WebClipboard.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/text/WTFString.h"
 #include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-class ChromiumDataObject;
+class DataObject;
 class Image;
 class KURL;
 
@@ -49,7 +49,7 @@ public:
     static Pasteboard* generalPasteboard();
     void writePlainText(const String&, SmartReplaceOption);
     void writeImage(Image*, const KURL&, const String& title);
-    void writeDataObject(PassRefPtr<ChromiumDataObject>);
+    void writeDataObject(PassRefPtr<DataObject>);
     bool canSmartReplace();
     bool isHTMLAvailable();
     String plainText();

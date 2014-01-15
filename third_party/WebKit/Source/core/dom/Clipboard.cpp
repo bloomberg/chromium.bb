@@ -27,6 +27,7 @@
 #include "core/dom/Clipboard.h"
 
 #include "HTMLNames.h"
+#include "core/dom/DataObject.h"
 #include "core/dom/DataTransferItem.h"
 #include "core/dom/DataTransferItemList.h"
 #include "core/editing/markup.h"
@@ -34,7 +35,6 @@
 #include "core/fileapi/FileList.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/frame/Frame.h"
-#include "core/platform/chromium/ChromiumDataObject.h"
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderObject.h"
 #include "platform/DragImage.h"
@@ -107,7 +107,7 @@ static String normalizeType(const String& type, bool* convertToURL = 0)
     return cleanType;
 }
 
-PassRefPtr<Clipboard> Clipboard::create(ClipboardType type, ClipboardAccessPolicy policy, PassRefPtr<ChromiumDataObject> dataObject)
+PassRefPtr<Clipboard> Clipboard::create(ClipboardType type, ClipboardAccessPolicy policy, PassRefPtr<DataObject> dataObject)
 {
     return adoptRef(new Clipboard(type, policy , dataObject));
 }
@@ -201,7 +201,7 @@ PassRefPtr<FileList> Clipboard::files() const
         return files.release();
 
     for (size_t i = 0; i < m_dataObject->length(); ++i) {
-        if (m_dataObject->item(i)->kind() == ChromiumDataObjectItem::FileKind) {
+        if (m_dataObject->item(i)->kind() == DataObjectItem::FileKind) {
             RefPtr<Blob> blob = m_dataObject->item(i)->getAsFile();
             if (blob && blob->isFile())
                 files->append(toFile(blob.get()));
@@ -265,7 +265,7 @@ static ImageResource* getImageResource(Element* element)
     return 0;
 }
 
-static void writeImageToDataObject(ChromiumDataObject* dataObject, Element* element, const KURL& url)
+static void writeImageToDataObject(DataObject* dataObject, Element* element, const KURL& url)
 {
     // Shove image data into a DataObject for use as a file
     ImageResource* cachedImage = getImageResource(element);
@@ -448,12 +448,12 @@ PassRefPtr<DataTransferItemList> Clipboard::items()
     return DataTransferItemList::create(this, m_dataObject);
 }
 
-PassRefPtr<ChromiumDataObject> Clipboard::dataObject() const
+PassRefPtr<DataObject> Clipboard::dataObject() const
 {
     return m_dataObject;
 }
 
-Clipboard::Clipboard(ClipboardType type, ClipboardAccessPolicy policy, PassRefPtr<ChromiumDataObject> dataObject)
+Clipboard::Clipboard(ClipboardType type, ClipboardAccessPolicy policy, PassRefPtr<DataObject> dataObject)
     : m_policy(policy)
     , m_dropEffect("uninitialized")
     , m_effectAllowed("uninitialized")

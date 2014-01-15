@@ -33,6 +33,7 @@
 #include "SVGNames.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Clipboard.h"
+#include "core/dom/DataObject.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentMarkerController.h"
 #include "core/dom/FullscreenElementStack.h"
@@ -75,7 +76,6 @@
 #include "core/frame/Settings.h"
 #include "core/page/SpatialNavigation.h"
 #include "core/page/TouchAdjustment.h"
-#include "core/platform/chromium/ChromiumDataObject.h"
 #include "core/rendering/HitTestRequest.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderFlowThread.h"
@@ -4010,7 +4010,7 @@ bool EventHandler::passWidgetMouseDownEventToWidget(const MouseEventWithHitTestR
 
 PassRefPtr<Clipboard> EventHandler::createDraggingClipboard() const
 {
-    return Clipboard::create(Clipboard::DragAndDrop, ClipboardWritable, ChromiumDataObject::create());
+    return Clipboard::create(Clipboard::DragAndDrop, ClipboardWritable, DataObject::create());
 }
 
 void EventHandler::focusDocumentView()

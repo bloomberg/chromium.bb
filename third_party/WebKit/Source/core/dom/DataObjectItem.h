@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ChromiumDataObjectItem_h
-#define ChromiumDataObjectItem_h
+#ifndef DataObjectItem_h
+#define DataObjectItem_h
 
 #include "core/fileapi/File.h"
 #include "platform/SharedBuffer.h"
@@ -42,19 +42,19 @@ namespace WebCore {
 
 class Blob;
 
-class ChromiumDataObjectItem : public RefCounted<ChromiumDataObjectItem> {
+class DataObjectItem : public RefCounted<DataObjectItem> {
 public:
     enum Kind {
         StringKind,
         FileKind
     };
 
-    static PassRefPtr<ChromiumDataObjectItem> createFromString(const String& type, const String& data);
-    static PassRefPtr<ChromiumDataObjectItem> createFromFile(PassRefPtr<File>);
-    static PassRefPtr<ChromiumDataObjectItem> createFromURL(const String& url, const String& title);
-    static PassRefPtr<ChromiumDataObjectItem> createFromHTML(const String& html, const KURL& baseURL);
-    static PassRefPtr<ChromiumDataObjectItem> createFromSharedBuffer(const String& filename, PassRefPtr<SharedBuffer>);
-    static PassRefPtr<ChromiumDataObjectItem> createFromPasteboard(const String& type, uint64_t sequenceNumber);
+    static PassRefPtr<DataObjectItem> createFromString(const String& type, const String& data);
+    static PassRefPtr<DataObjectItem> createFromFile(PassRefPtr<File>);
+    static PassRefPtr<DataObjectItem> createFromURL(const String& url, const String& title);
+    static PassRefPtr<DataObjectItem> createFromHTML(const String& html, const KURL& baseURL);
+    static PassRefPtr<DataObjectItem> createFromSharedBuffer(const String& filename, PassRefPtr<SharedBuffer>);
+    static PassRefPtr<DataObjectItem> createFromPasteboard(const String& type, uint64_t sequenceNumber);
 
     Kind kind() const { return m_kind; }
     String type() const { return m_type; }
@@ -73,8 +73,8 @@ private:
         InternalSource,
     };
 
-    ChromiumDataObjectItem(Kind, const String& type);
-    ChromiumDataObjectItem(Kind, const String& type, uint64_t sequenceNumber);
+    DataObjectItem(Kind, const String& type);
+    DataObjectItem(Kind, const String& type, uint64_t sequenceNumber);
 
     DataSource m_source;
     Kind m_kind;
@@ -92,4 +92,4 @@ private:
 
 } // namespace WebCore
 
-#endif // ChromiumDataObjectItem_h
+#endif // DataObjectItem_h
