@@ -31,6 +31,10 @@ config("my_msvs") {
       "ENABLE_SETTINGS_APP=1",
       "ENABLE_MANAGED_USERS=1",
   ]
+
+  if (use_aura) {
+    defines += [ "USE_AURA=1" ]
+  }
 }
 
 config("feature_flags") {

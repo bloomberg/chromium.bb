@@ -58,7 +58,7 @@ toolchain("32") {
     description = "ASM \$in"
   }
   tool("alink") {
-    command = "$python_path gyp-win-tool link-wrapper environment.x86 lib.exe /nologo /ignore:4221 /OUT:\$out @\$out.rsp"
+    command = "$python_path gyp-win-tool link-wrapper environment.x86 False lib.exe /nologo /ignore:4221 /OUT:\$out @\$out.rsp"
     description = "LIB \$out"
     rspfile = "\$out.rsp"
     rspfile_content = "\$in_newline \$libflags"

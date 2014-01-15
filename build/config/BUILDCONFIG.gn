@@ -105,6 +105,9 @@ if (os == "win") {
   is_nacl = false
   is_posix = false
   is_win = true
+
+  # Windows currelty implies Aura.
+  use_aura = true
 } else if (os == "mac") {
   is_android = false
   is_chromeos = false
