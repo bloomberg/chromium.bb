@@ -1059,7 +1059,7 @@ def BooleanShellValue(sval, default, msg=None):
     Warning('%s: %r' % (msg, sval))
     return default
   else:
-    raise ValueError('could not decode as a boolean value: %r' % sval)
+    raise ValueError('Could not decode as a boolean value: %r' % sval)
 
 
 # Suppress whacked complaints about abstract class being unused.
@@ -1303,7 +1303,11 @@ def GetChrootVersion(chroot=None, buildroot=None):
   if chroot is None:
     chroot = os.path.join(buildroot, constants.DEFAULT_CHROOT_DIR)
   ver_path = os.path.join(chroot, 'etc', 'cros_chroot_version')
-  return osutils.ReadFile(ver_path).strip()
+  try:
+    return osutils.ReadFile(ver_path).strip()
+  except IOError:
+    Warning('could not read %s', ver_path)
+    return None
 
 
 def iflatten_instance(iterable, terminate_on_kls=(basestring,)):

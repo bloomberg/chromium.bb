@@ -18,7 +18,6 @@ import errno
 import functools
 import itertools
 import logging
-import mock
 import mox
 import signal
 import StringIO
@@ -1192,23 +1191,27 @@ qlen 1000
     self.rc.assertCommandContains(['ip', 'addr', 'show', 'scope', 'global'])
 
 
-@mock.patch('chromite.lib.osutils.ReadFile')
-class TestGetChrootVersion(cros_test_lib.TestCase):
+class TestGetChrootVersion(cros_test_lib.MockTestCase):
   """Tests GetChrootVersion functionality."""
 
-  def testSimpleBuildroot(self, read_mock):
+  def testSimpleBuildroot(self):
     """Verify buildroot arg works"""
-    read_mock.return_value = '12\n'
+    read_mock = self.PatchObject(osutils, 'ReadFile', return_value='12\n')
     ret = cros_build_lib.GetChrootVersion(buildroot='/build/root')
     self.assertEqual(ret, '12')
     read_mock.assert_called_with('/build/root/chroot/etc/cros_chroot_version')
 
-  def testSimpleChroot(self, read_mock):
+  def testSimpleChroot(self):
     """Verify chroot arg works"""
-    read_mock.return_value = '70'
+    read_mock = self.PatchObject(osutils, 'ReadFile', return_value='70')
     ret = cros_build_lib.GetChrootVersion(chroot='/ch/root')
     self.assertEqual(ret, '70')
     read_mock.assert_called_with('/ch/root/etc/cros_chroot_version')
+
+  def testNoChroot(self):
+    """Verify we don't blow up when there is no chroot yet"""
+    ret = cros_build_lib.GetChrootVersion(chroot='/.$om3/place/nowhere')
+    self.assertEqual(ret, None)
 
 
 if __name__ == '__main__':
