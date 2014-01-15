@@ -2760,7 +2760,6 @@
           'dependencies!': [
             'safe_browsing_proto',
             'safe_browsing_report_proto',
-            '../third_party/libusb/libusb.gyp:libusb',
           ],
         }],
         ['toolkit_views == 1', {
@@ -3011,6 +3010,9 @@
           'dependencies': [
             '../components/components.gyp:web_contents_delegate_android',
             'chrome_browser_jni_headers',
+          ],
+          'dependencies!': [
+             '../third_party/libusb/libusb.gyp:libusb',
           ],
           'sources': [
             'browser/ui/webui/ntp/android/bookmarks_handler.cc',

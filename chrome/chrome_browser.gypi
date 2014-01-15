@@ -2841,7 +2841,9 @@
           'dependencies!': [
             'safe_browsing_proto',
           ],
-         'sources!': [
+          'sources!': [
+            'browser/download/download_completion_blocker.cc',
+            'browser/download/download_completion_blocker.h',
             'browser/renderer_host/safe_browsing_resource_throttle.cc',
             'browser/renderer_host/safe_browsing_resource_throttle.h',
           ],
@@ -2875,6 +2877,8 @@
             'safe_browsing_report_proto',
           ],
           'sources!': [
+            'browser/download/download_completion_blocker.cc',
+            'browser/download/download_completion_blocker.h',
             'browser/renderer_host/safe_browsing_resource_throttle.cc',
             'browser/renderer_host/safe_browsing_resource_throttle.h',
             'browser/renderer_host/safe_browsing_resource_throttle_factory.cc',
@@ -3217,7 +3221,6 @@
             'browser/component_updater/pnacl/pnacl_profile_observer.cc',
             'browser/component_updater/widevine_cdm_component_installer.cc',
             'browser/custom_home_pages_table_model.cc',
-            'browser/download/download_completion_blocker.cc',
             'browser/download/download_danger_prompt.cc',
             'browser/download/download_shelf.cc',
             'browser/drive/drive_switches.cc',
