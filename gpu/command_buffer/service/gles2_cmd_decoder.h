@@ -228,6 +228,9 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
 
   virtual Logger* GetLogger() = 0;
 
+  virtual void BeginDecoding();
+  virtual void EndDecoding();
+
  protected:
   GLES2Decoder();
 

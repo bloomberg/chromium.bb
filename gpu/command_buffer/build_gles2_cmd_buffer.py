@@ -1255,6 +1255,7 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoBindFramebuffer',
     'gl_test_func': 'glBindFramebufferEXT',
     'gen_func': 'GenFramebuffersEXT',
+    'trace_level': 1,
   },
   'BindRenderbuffer': {
     'type': 'Bind',
@@ -1268,6 +1269,7 @@ _FUNCTION_INFO = {
     'gen_func': 'GenTextures',
     # TODO(gman): remove this once client side caching works.
     'client_test': False,
+    'trace_level': 1,
   },
   'BlitFramebufferCHROMIUM': {
     'decoder_func': 'DoBlitFramebufferCHROMIUM',
@@ -1277,6 +1279,7 @@ _FUNCTION_INFO = {
     'pepper_name': 'BlitFramebufferEXT',
     'defer_reads': True,
     'defer_draws': True,
+    'trace_level': 1,
   },
   'BufferData': {
     'type': 'Manual',
@@ -1299,6 +1302,7 @@ _FUNCTION_INFO = {
   'Clear': {
     'decoder_func': 'DoClear',
     'defer_draws': True,
+    'trace_level': 1,
   },
   'ClearColor': {
     'type': 'StateSet',
@@ -1327,6 +1331,7 @@ _FUNCTION_INFO = {
     'unit_test': False,
     'extension': True,
     'chromium': True,
+    'trace_level': 1,
   },
   'ClearStencil': {
     'type': 'StateSet',
@@ -1523,6 +1528,7 @@ _FUNCTION_INFO = {
     'type': 'Manual',
     'cmd_args': 'GLenumDrawMode mode, GLint first, GLsizei count',
     'defer_draws': True,
+    'trace_level': 2,
   },
   'DrawElements': {
     'type': 'Manual',
@@ -1530,6 +1536,7 @@ _FUNCTION_INFO = {
                 'GLenumIndexType type, GLuint index_offset',
     'client_test': False,
     'defer_draws': True,
+    'trace_level': 2,
   },
   'Enable': {
     'decoder_func': 'DoEnable',
@@ -1557,6 +1564,7 @@ _FUNCTION_INFO = {
   'FramebufferTexture2D': {
     'decoder_func': 'DoFramebufferTexture2D',
     'gl_test_func': 'glFramebufferTexture2DEXT',
+    'trace_level': 1,
   },
   'FramebufferTexture2DMultisampleEXT': {
     'decoder_func': 'DoFramebufferTexture2DMultisample',
@@ -1564,6 +1572,7 @@ _FUNCTION_INFO = {
     'expectation': False,
     'unit_test': False,
     'extension': True,
+    'trace_level': 1,
   },
   'GenerateMipmap': {
     'decoder_func': 'DoGenerateMipmap',
@@ -1905,6 +1914,7 @@ _FUNCTION_INFO = {
     'unit_test': False,
     'extension': True,
     'chromium': True,
+    'trace_level': 1,
   },
   'RenderbufferStorage': {
     'decoder_func': 'DoRenderbufferStorage',
@@ -1995,6 +2005,7 @@ _FUNCTION_INFO = {
     'unit_test': False,
     'client_test': False,
     'extension': True,
+    'trace_level': 1,
   },
   'TexImage2D': {
     'type': 'Manual',
@@ -2491,6 +2502,7 @@ _FUNCTION_INFO = {
     'impl_func': True,
     'extension': True,
     'chromium': True,
+    'trace_level': 1,
   },
   'DiscardBackbufferCHROMIUM': {
     'type': 'Custom',
@@ -2713,6 +2725,7 @@ class TypeHandler(object):
     file.Write("  typedef %s ValueType;\n" % func.name)
     file.Write("  static const CommandId kCmdId = k%s;\n" % func.name)
     func.WriteCmdArgFlag(file)
+    func.WriteCmdFlag(file)
     file.Write("\n")
     result = func.GetInfo('result')
     if not result == None:
@@ -6496,6 +6509,25 @@ class Function(object):
   def WriteValidationCode(self, file):
     """Writes the validation code for a command."""
     pass
+
+  def WriteCmdFlag(self, file):
+    """Writes the cmd cmd_flags constant."""
+    flags = []
+    trace_level = 3  # By default trace only at the highest level
+    if hasattr(self.info, 'trace_level'):
+      if (self.info.trace_level < 0) or (self.info.trace_level > 3):
+        raise KeyError("Unhandled trace_level: %d" % self.info.trace_level)
+      trace_level = self.info.trace_level
+
+    flags.append('CMD_FLAG_SET_TRACE_LEVEL(%d)' % trace_level)
+
+    if len(flags) > 0:
+      cmd_flags = ' | '.join(flags)
+    else:
+      cmd_flags = 0
+
+    file.Write("  static const uint8 cmd_flags = %s;\n" % cmd_flags)
+
 
   def WriteCmdArgFlag(self, file):
     """Writes the cmd kArgFlags constant."""

@@ -111,17 +111,23 @@ RETURN_TYPE GetImmediateDataAs(const COMMAND_TYPE& pod) {
   return static_cast<RETURN_TYPE>(const_cast<void*>(AddressAfterStruct(pod)));
 }
 
+// TODO(vmiura): Looks like this g_command_info is duplicated in
+// common_decoder.cc
+// and gles2_cmd_decoder.cc.  Fix it!
+
 // A struct to hold info about each command.
 struct CommandInfo {
-  int arg_flags;  // How to handle the arguments for this command
-  int arg_count;  // How many arguments are expected for this command.
+  uint8 arg_flags;   // How to handle the arguments for this command
+  uint8 cmd_flags;   // How to handle this command
+  uint16 arg_count;  // How many arguments are expected for this command.
 };
 
 // A table of CommandInfo for all the commands.
 const CommandInfo g_command_info[] = {
   #define COMMON_COMMAND_BUFFER_CMD_OP(name) {                           \
     cmd::name::kArgFlags,                                                \
-    sizeof(cmd::name) / sizeof(CommandBufferEntry) - 1, },  /* NOLINT */ \
+    cmd::name::cmd_flags,                                                \
+    sizeof(cmd::name) / sizeof(CommandBufferEntry) - 1, },  /* NOLINT */
 
   COMMON_COMMAND_BUFFER_CMDS(COMMON_COMMAND_BUFFER_CMD_OP)
 

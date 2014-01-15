@@ -69,6 +69,8 @@ void GpuScheduler::PutChanged() {
 
   base::TimeTicks begin_time(base::TimeTicks::HighResNow());
   error::Error error = error::kNoError;
+  if (decoder_)
+    decoder_->BeginDecoding();
   while (!parser_->IsEmpty()) {
     if (IsPreempted())
       break;
@@ -108,6 +110,7 @@ void GpuScheduler::PutChanged() {
       command_buffer_->SetContextLostReason(decoder_->GetContextLostReason());
       command_buffer_->SetParseError(error::kLostContext);
     }
+    decoder_->EndDecoding();
     decoder_->AddProcessingCommandsTime(
         base::TimeTicks::HighResNow() - begin_time);
   }

@@ -300,6 +300,7 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
                        attribs);
   decoder_->MakeCurrent();
   decoder_->set_engine(engine_.get());
+  decoder_->BeginDecoding();
 
   EXPECT_CALL(*gl_, GenBuffersARB(_, _))
       .WillOnce(SetArgumentPointee<1>(kServiceBufferId))
@@ -336,6 +337,7 @@ void GLES2DecoderTestBase::TearDown() {
       .Times(2)
       .RetiresOnSaturation();
 
+  decoder_->EndDecoding();
   decoder_->Destroy(true);
   decoder_.reset();
   group_->Destroy(mock_decoder_.get(), false);

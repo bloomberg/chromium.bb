@@ -373,7 +373,7 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
   { 0x9243, "GL_UNPACK_COLORSPACE_CONVERSION_CHROMIUM", },
   { 0x8DF3, "GL_LOW_INT", },
   { 0x82E8, "GL_MAX_LABEL_LENGTH_KHR", },
-  { 0x82E6, "GL_SAMPLER", },
+  { 0x82E6, "GL_SAMPLER_KHR", },
   { 0x0C02, "GL_READ_BUFFER_EXT", },
   { 0x82E3, "GL_QUERY_KHR", },
   { 0x82E2, "GL_PROGRAM_KHR", },

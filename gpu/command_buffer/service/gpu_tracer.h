@@ -19,25 +19,38 @@
 namespace gpu {
 namespace gles2 {
 
+// Id used to keep trace namespaces separate
+enum GpuTracerSource {
+  kTraceGroupMarker = 0,
+  kTraceCHROMIUM = 1,
+  kTraceDecoder = 2,
+};
+
 // Traces GPU Commands.
 class GPUTracer {
  public:
   static scoped_ptr<GPUTracer> Create(gles2::GLES2Decoder* decoder);
 
-  explicit GPUTracer(gles2::GLES2Decoder* decoder);
+  GPUTracer();
   virtual ~GPUTracer();
 
-  // Begin a trace.
-  virtual bool Begin(const std::string& name) = 0;
+  // Scheduled processing in decoder begins.
+  virtual bool BeginDecoding() = 0;
 
-  // End the last started trace.
-  virtual bool End() = 0;
+  // Scheduled processing in decoder ends.
+  virtual bool EndDecoding() = 0;
+
+  // Begin a trace marker.
+  virtual bool Begin(const std::string& name, GpuTracerSource source) = 0;
+
+  // End the last started trace marker.
+  virtual bool End(GpuTracerSource source) = 0;
+
+  virtual bool IsTracing() = 0;
 
   // Retrieve the name of the current open trace.
   // Returns empty string if no current open trace.
   virtual const std::string& CurrentName() const = 0;
-
-  gles2::GLES2Decoder* decoder_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GPUTracer);

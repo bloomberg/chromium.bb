@@ -23,6 +23,10 @@ namespace cmd {
   };
 }  // namespace cmd
 
+// Pack & unpack Command cmd_flags
+#define CMD_FLAG_SET_TRACE_LEVEL(level)     ((level & 3) << 0)
+#define CMD_FLAG_GET_TRACE_LEVEL(cmd_flags) ((cmd_flags >> 0) & 3)
+
 // Computes the number of command buffer entries needed for a certain size. In
 // other words it rounds up to a multiple of entries.
 inline uint32 ComputeNumEntries(size_t size_in_bytes) {
@@ -177,6 +181,7 @@ struct Noop {
   typedef Noop ValueType;
   static const CommandId kCmdId = kNoop;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   void SetHeader(uint32 skip_count) {
     DCHECK_GT(skip_count, 0u);
@@ -205,6 +210,7 @@ struct SetToken {
   typedef SetToken ValueType;
   static const CommandId kCmdId = kSetToken;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   void SetHeader() {
     header.SetCmd<ValueType>();
@@ -245,6 +251,7 @@ struct SetBucketSize {
   typedef SetBucketSize ValueType;
   static const CommandId kCmdId = kSetBucketSize;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   void SetHeader() {
     header.SetCmd<ValueType>();
@@ -280,6 +287,7 @@ struct SetBucketData {
   typedef SetBucketData ValueType;
   static const CommandId kCmdId = kSetBucketData;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   void SetHeader() {
     header.SetCmd<ValueType>();
@@ -341,6 +349,7 @@ struct SetBucketDataImmediate {
   typedef SetBucketDataImmediate ValueType;
   static const CommandId kCmdId = kSetBucketDataImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   void SetHeader(uint32 size) {
     header.SetCmdBySize<ValueType>(size);
@@ -396,6 +405,7 @@ struct GetBucketStart {
   typedef GetBucketStart ValueType;
   static const CommandId kCmdId = kGetBucketStart;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   typedef uint32 Result;
 
@@ -465,6 +475,7 @@ struct GetBucketData {
   typedef GetBucketData ValueType;
   static const CommandId kCmdId = kGetBucketData;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
   void SetHeader() {
     header.SetCmd<ValueType>();
