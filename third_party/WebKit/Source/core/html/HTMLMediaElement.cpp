@@ -930,8 +930,6 @@ void HTMLMediaElement::updateActiveTextTrackCues(double movieTime)
     if (ignoreTrackDisplayUpdateRequests())
         return;
 
-    WTF_LOG(Media, "HTMLMediaElement::updateActiveTextTrackCues");
-
     // 1 - Let current cues be a list of cues, initialized to contain all the
     // cues of all the hidden, showing, or showing by default text tracks of the
     // media element (not the disabled ones) whose start times are less than or
