@@ -19,24 +19,6 @@ class Size;
 namespace cc {
 class Picture;
 
-class TestPixelRef : public SkPixelRef {
- public:
-  explicit TestPixelRef(const SkImageInfo& info);
-  virtual ~TestPixelRef();
-
-  virtual SkFlattenable::Factory getFactory() const OVERRIDE;
-#ifdef SK_SUPPORT_LEGACY_ONLOCKPIXELS
-  virtual void* onLockPixels(SkColorTable** color_table) OVERRIDE;
-#endif
-  virtual bool onNewLockPixels(LockRec* rec) OVERRIDE;
-  virtual void onUnlockPixels() OVERRIDE {}
-  virtual SkPixelRef* deepCopy(
-      SkBitmap::Config config,
-      const SkIRect* subset) OVERRIDE;
- private:
-  scoped_ptr<char[]> pixels_;
-};
-
 void DrawPicture(unsigned char* buffer,
                  const gfx::Rect& layer_rect,
                  scoped_refptr<Picture> picture);

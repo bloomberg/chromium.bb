@@ -6,42 +6,11 @@
 
 #include "cc/resources/picture.h"
 #include "skia/ext/refptr.h"
-#include "third_party/skia/include/core/SkBitmapDevice.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/skia_util.h"
 
 namespace cc {
-
-TestPixelRef::TestPixelRef(const SkImageInfo& info)
-    : SkPixelRef(info), pixels_(new char[4 * info.fWidth * info.fHeight]) {}
-
-TestPixelRef::~TestPixelRef() {}
-
-SkFlattenable::Factory TestPixelRef::getFactory() const { return NULL; }
-
-#ifdef SK_SUPPORT_LEGACY_ONLOCKPIXELS
-void* TestPixelRef::onLockPixels(SkColorTable** color_table) {
-  return pixels_.get();
-}
-#endif
-
-bool TestPixelRef::onNewLockPixels(LockRec* rec) {
-    if (pixels_.get()) {
-        rec->fPixels = pixels_.get();
-        rec->fColorTable = NULL;
-        rec->fRowBytes = 4 * info().fWidth;
-        return true;
-    }
-    return false;
-}
-
-SkPixelRef* TestPixelRef::deepCopy(
-    SkBitmap::Config config,
-    const SkIRect* subset) {
-  this->ref();
-  return this;
-}
-
 
 void DrawPicture(unsigned char* buffer,
                  const gfx::Rect& layer_rect,
@@ -51,8 +20,7 @@ void DrawPicture(unsigned char* buffer,
                    layer_rect.width(),
                    layer_rect.height());
   bitmap.setPixels(buffer);
-  SkBitmapDevice device(bitmap);
-  SkCanvas canvas(&device);
+  SkCanvas canvas(bitmap);
   canvas.clipRect(gfx::RectToSkRect(layer_rect));
   picture->Raster(&canvas, NULL, layer_rect, 1.0f);
 }
@@ -65,13 +33,10 @@ void CreateBitmap(gfx::Size size, const char* uri, SkBitmap* bitmap) {
     kPremul_SkAlphaType
   };
 
-  skia::RefPtr<TestPixelRef> pixel_ref =
-      skia::AdoptRef(new TestPixelRef(info));
-  pixel_ref->setURI(uri);
-
   bitmap->setConfig(info);
-  bitmap->setPixelRef(pixel_ref.get());
+  bitmap->allocPixels();
+  bitmap->pixelRef()->setImmutable();
+  bitmap->pixelRef()->setURI(uri);
 }
-
 
 }  // namespace cc
