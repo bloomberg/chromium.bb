@@ -466,7 +466,8 @@ void MediaGalleriesAddUserSelectedFolderFunction::OnDirectorySelected(
   MediaGalleriesPreferences* preferences =
       media_file_system_registry()->GetPreferences(GetProfile());
   MediaGalleryPrefId pref_id =
-      preferences->AddGalleryByPath(selected_directory);
+      preferences->AddGalleryByPath(selected_directory,
+                                    MediaGalleryPrefInfo::kUserAdded);
   preferences->SetGalleryPermissionForExtension(*GetExtension(), pref_id, true);
 
   GetMediaFileSystemsForExtension(base::Bind(

@@ -222,8 +222,11 @@ class MediaGalleriesPreferencesTest : public testing::Test {
                                           const base::string16& display_name,
                                           const base::FilePath& relative_path,
                                           bool user_added) {
+    MediaGalleryPrefInfo::Type type =
+        user_added ? MediaGalleryPrefInfo::kUserAdded
+                   : MediaGalleryPrefInfo::kAutoDetected;
     return gallery_prefs()->AddGalleryInternal(
-        device_id, display_name, relative_path, user_added,
+        device_id, display_name, relative_path, type,
         base::string16(), base::string16(), base::string16(), 0, base::Time(),
         false, 0);
   }
@@ -232,8 +235,11 @@ class MediaGalleriesPreferencesTest : public testing::Test {
                                           const base::string16& display_name,
                                           const base::FilePath& relative_path,
                                           bool user_added) {
+    MediaGalleryPrefInfo::Type type =
+        user_added ? MediaGalleryPrefInfo::kUserAdded
+                   : MediaGalleryPrefInfo::kAutoDetected;
     return gallery_prefs()->AddGalleryInternal(
-        device_id, display_name, relative_path, user_added,
+        device_id, display_name, relative_path, type,
         base::string16(), base::string16(), base::string16(), 0, base::Time(),
         false, 1);
   }
@@ -241,9 +247,9 @@ class MediaGalleriesPreferencesTest : public testing::Test {
   MediaGalleryPrefId AddGalleryWithNameV2(const std::string& device_id,
                                           const base::string16& display_name,
                                           const base::FilePath& relative_path,
-                                          bool user_added) {
+                                          MediaGalleryPrefInfo::Type type) {
     return gallery_prefs()->AddGalleryInternal(
-        device_id, display_name, relative_path, user_added,
+        device_id, display_name, relative_path, type,
         base::string16(), base::string16(), base::string16(), 0, base::Time(),
         false, 2);
   }
@@ -296,7 +302,7 @@ base::FilePath MakePath(std::string dir) {
 }
 
 TEST_F(MediaGalleriesPreferencesTest, GalleryManagement) {
-  MediaGalleryPrefId auto_id, user_added_id, id;
+  MediaGalleryPrefId auto_id, user_added_id, scan_id, id;
   base::FilePath path;
   base::FilePath relative_path;
   Verify();
@@ -306,35 +312,84 @@ TEST_F(MediaGalleriesPreferencesTest, GalleryManagement) {
   StorageInfo info;
   MediaStorageUtil::GetDeviceInfoFromPath(path, &info, &relative_path);
   info.set_name(ASCIIToUTF16("NewAutoGallery"));
-  id = AddGalleryWithNameV1(info.device_id(), info.name(),
-                            relative_path, false /*auto*/);
+  id = AddGalleryWithNameV2(info.device_id(), info.name(),
+                            relative_path, MediaGalleryPrefInfo::kAutoDetected);
   EXPECT_EQ(default_galleries_count() + 1UL, id);
   auto_id = id;
   AddGalleryExpectation(id, info.name(), info.device_id(), relative_path,
                         MediaGalleryPrefInfo::kAutoDetected);
   Verify();
 
-  // Add it again (as user), nothing should happen.
-  id = AddGalleryWithNameV1(info.device_id(), info.name(),
-                            relative_path, true /*auto*/);
+  // Add it as other types, nothing should happen.
+  id = AddGalleryWithNameV2(info.device_id(), info.name(),
+                            relative_path, MediaGalleryPrefInfo::kUserAdded);
   EXPECT_EQ(auto_id, id);
   Verify();
+  id = AddGalleryWithNameV2(info.device_id(), info.name(),
+                            relative_path, MediaGalleryPrefInfo::kAutoDetected);
+  EXPECT_EQ(auto_id, id);
+  Verify();
+  id = AddGalleryWithNameV2(info.device_id(), info.name(),
+                            relative_path, MediaGalleryPrefInfo::kScanResult);
+  EXPECT_EQ(auto_id, id);
 
   // Add a new user added gallery.
   path = MakePath("new_user");
   MediaStorageUtil::GetDeviceInfoFromPath(path, &info, &relative_path);
   info.set_name(ASCIIToUTF16("NewUserGallery"));
-  id = AddGalleryWithNameV1(info.device_id(), info.name(),
-                            relative_path, true /*user*/);
+  id = AddGalleryWithNameV2(info.device_id(), info.name(),
+                            relative_path, MediaGalleryPrefInfo::kUserAdded);
   EXPECT_EQ(default_galleries_count() + 2UL, id);
   user_added_id = id;
+  const std::string user_added_device_id = info.device_id();
   AddGalleryExpectation(id, info.name(), info.device_id(), relative_path,
                         MediaGalleryPrefInfo::kUserAdded);
+  Verify();
+
+  // Add it as other types, nothing should happen.
+  id = AddGalleryWithNameV2(info.device_id(), info.name(),
+                            relative_path, MediaGalleryPrefInfo::kUserAdded);
+  EXPECT_EQ(user_added_id, id);
+  Verify();
+  id = AddGalleryWithNameV2(info.device_id(), info.name(),
+                            relative_path, MediaGalleryPrefInfo::kAutoDetected);
+  EXPECT_EQ(user_added_id, id);
+  Verify();
+  id = AddGalleryWithNameV2(info.device_id(), info.name(),
+                            relative_path, MediaGalleryPrefInfo::kScanResult);
+  EXPECT_EQ(user_added_id, id);
+  Verify();
+
+  // Add a new scan result gallery.
+  path = MakePath("new_scan");
+  MediaStorageUtil::GetDeviceInfoFromPath(path, &info, &relative_path);
+  info.set_name(ASCIIToUTF16("NewScanGallery"));
+  id = AddGalleryWithNameV2(info.device_id(), info.name(),
+                            relative_path, MediaGalleryPrefInfo::kScanResult);
+  EXPECT_EQ(default_galleries_count() + 3UL, id);
+  scan_id = id;
+  AddGalleryExpectation(id, info.name(), info.device_id(), relative_path,
+                        MediaGalleryPrefInfo::kScanResult);
+  Verify();
+
+  // Add it as other types, nothing should happen.
+  id = AddGalleryWithNameV2(info.device_id(), info.name(),
+                            relative_path, MediaGalleryPrefInfo::kUserAdded);
+  EXPECT_EQ(scan_id, id);
+  Verify();
+  id = AddGalleryWithNameV2(info.device_id(), info.name(),
+                            relative_path, MediaGalleryPrefInfo::kAutoDetected);
+  EXPECT_EQ(scan_id, id);
+  Verify();
+  id = AddGalleryWithNameV2(info.device_id(), info.name(),
+                            relative_path, MediaGalleryPrefInfo::kScanResult);
+  EXPECT_EQ(scan_id, id);
   Verify();
 
   // Lookup some galleries.
   EXPECT_TRUE(gallery_prefs()->LookUpGalleryByPath(MakePath("new_auto"), NULL));
   EXPECT_TRUE(gallery_prefs()->LookUpGalleryByPath(MakePath("new_user"), NULL));
+  EXPECT_TRUE(gallery_prefs()->LookUpGalleryByPath(MakePath("new_scan"), NULL));
   EXPECT_FALSE(gallery_prefs()->LookUpGalleryByPath(MakePath("other"), NULL));
 
   // Check that we always get the gallery info.
@@ -346,6 +401,10 @@ TEST_F(MediaGalleriesPreferencesTest, GalleryManagement) {
   EXPECT_TRUE(gallery_prefs()->LookUpGalleryByPath(MakePath("new_user"),
                                                    &gallery_info));
   VerifyGalleryInfo(gallery_info, user_added_id);
+  EXPECT_FALSE(gallery_info.volume_metadata_valid);
+  EXPECT_TRUE(gallery_prefs()->LookUpGalleryByPath(MakePath("new_scan"),
+                                                   &gallery_info));
+  VerifyGalleryInfo(gallery_info, scan_id);
   EXPECT_FALSE(gallery_info.volume_metadata_valid);
 
   path = MakePath("other");
@@ -363,10 +422,15 @@ TEST_F(MediaGalleriesPreferencesTest, GalleryManagement) {
   expected_galleries_for_all.erase(auto_id);
   Verify();
 
+  // Remove a scan result (i.e. make it blacklisted).
+  gallery_prefs()->ForgetGalleryById(scan_id);
+  expected_galleries_[scan_id].type = MediaGalleryPrefInfo::kRemovedScan;
+  Verify();
+
   // Remove a user added gallery and it should go away.
   gallery_prefs()->ForgetGalleryById(user_added_id);
   expected_galleries_.erase(user_added_id);
-  expected_device_map[info.device_id()].erase(user_added_id);
+  expected_device_map[user_added_device_id].erase(user_added_id);
   Verify();
 }
 
@@ -382,7 +446,7 @@ TEST_F(MediaGalleriesPreferencesTest, AddGalleryWithVolumeMetadata) {
   path = MakePath("new_auto");
   MediaStorageUtil::GetDeviceInfoFromPath(path, &info, &relative_path);
   id = gallery_prefs()->AddGallery(info.device_id(), relative_path,
-                                   false /*auto*/,
+                                   MediaGalleryPrefInfo::kAutoDetected,
                                    ASCIIToUTF16("volume label"),
                                    ASCIIToUTF16("vendor name"),
                                    ASCIIToUTF16("model name"),
@@ -428,7 +492,7 @@ TEST_F(MediaGalleriesPreferencesTest, ReplaceGalleryWithVolumeMetadata) {
 
   metadata_id = gallery_prefs()->AddGallery(info.device_id(),
                                             relative_path,
-                                            false /*auto*/,
+                                            MediaGalleryPrefInfo::kAutoDetected,
                                             ASCIIToUTF16("volume label"),
                                             ASCIIToUTF16("vendor name"),
                                             ASCIIToUTF16("model name"),
@@ -442,13 +506,10 @@ TEST_F(MediaGalleriesPreferencesTest, ReplaceGalleryWithVolumeMetadata) {
   Verify();
 }
 
-
-// Whenever a gallery is added, its type is either set to "AutoDetected" or
-// "UserAdded". When the gallery is removed, user added galleries are actually
-// deleted and the auto detected galleries are moved to black listed state.
-// When the gallery is added again, the black listed state is updated back to
-// "AutoDetected" type.
-TEST_F(MediaGalleriesPreferencesTest, UpdateGalleryType) {
+// Whenever an "AutoDetected" gallery is removed, it is moved to a black listed
+// state.  When the gallery is added again, the black listed state is updated
+// back to the "AutoDetected" type.
+TEST_F(MediaGalleriesPreferencesTest, AutoAddedBlackListing) {
   MediaGalleryPrefId auto_id, id;
   base::FilePath path;
   StorageInfo info;
@@ -473,23 +534,61 @@ TEST_F(MediaGalleriesPreferencesTest, UpdateGalleryType) {
   expected_galleries_for_all.erase(auto_id);
   Verify();
 
-  // Add the gallery again as a user action.
-  id = gallery_prefs()->AddGalleryByPath(path);
-  EXPECT_EQ(auto_id, id);
-  AddGalleryExpectation(id, info.name(), info.device_id(), relative_path,
-                        MediaGalleryPrefInfo::kAutoDetected);
-  Verify();
-
-  // Remove an auto added gallery (i.e. make it blacklisted).
-  gallery_prefs()->ForgetGalleryById(auto_id);
-  expected_galleries_[auto_id].type = MediaGalleryPrefInfo::kBlackListed;
-  expected_galleries_for_all.erase(auto_id);
-  Verify();
-
   // Try adding the gallery again automatically and it should be a no-op.
   id = AddGalleryWithNameV1(info.device_id(), info.name(),
                             relative_path, false /*auto*/);
   EXPECT_EQ(auto_id, id);
+  Verify();
+
+  // Add the gallery again as a user action.
+  id = gallery_prefs()->AddGalleryByPath(path,
+                                         MediaGalleryPrefInfo::kUserAdded);
+  EXPECT_EQ(auto_id, id);
+  AddGalleryExpectation(id, info.name(), info.device_id(), relative_path,
+                        MediaGalleryPrefInfo::kAutoDetected);
+  Verify();
+}
+
+// Whenever a "ScanResult" gallery is removed, it is moved to a black listed
+// state.  When the gallery is added again, the black listed state is updated
+// back to the "ScanResult" type.
+TEST_F(MediaGalleriesPreferencesTest, ScanResultBlackListing) {
+  MediaGalleryPrefId scan_id, id;
+  base::FilePath path;
+  StorageInfo info;
+  base::FilePath relative_path;
+  Verify();
+
+  // Add a new scan result gallery to test with.
+  path = MakePath("new_scan");
+  MediaStorageUtil::GetDeviceInfoFromPath(path, &info, &relative_path);
+  info.set_name(ASCIIToUTF16("NewScanGallery"));
+  id = AddGalleryWithNameV2(info.device_id(), info.name(),
+                            relative_path, MediaGalleryPrefInfo::kScanResult);
+  EXPECT_EQ(default_galleries_count() + 1UL, id);
+  scan_id = id;
+  AddGalleryExpectation(id, info.name(), info.device_id(), relative_path,
+                        MediaGalleryPrefInfo::kScanResult);
+  Verify();
+
+  // Remove a scan result gallery (i.e. make it blacklisted).
+  gallery_prefs()->ForgetGalleryById(scan_id);
+  expected_galleries_[scan_id].type = MediaGalleryPrefInfo::kRemovedScan;
+  expected_galleries_for_all.erase(scan_id);
+  Verify();
+
+  // Try adding the gallery again as a scan result it should be a no-op.
+  id = AddGalleryWithNameV2(info.device_id(), info.name(),
+                            relative_path, MediaGalleryPrefInfo::kScanResult);
+  EXPECT_EQ(scan_id, id);
+  Verify();
+
+  // Add the gallery again as a user action.
+  id = gallery_prefs()->AddGalleryByPath(path,
+                                         MediaGalleryPrefInfo::kUserAdded);
+  EXPECT_EQ(scan_id, id);
+  AddGalleryExpectation(id, info.name(), info.device_id(), relative_path,
+                        MediaGalleryPrefInfo::kUserAdded);
   Verify();
 }
 
@@ -502,19 +601,20 @@ TEST_F(MediaGalleriesPreferencesTest, UpdateGalleryNameV2) {
   info.set_name(ASCIIToUTF16("NewAutoGallery"));
   MediaGalleryPrefId id =
       AddGalleryWithNameV2(info.device_id(), info.name(),
-                           relative_path, false /*auto*/);
+                           relative_path, MediaGalleryPrefInfo::kAutoDetected);
   AddGalleryExpectation(id, info.name(), info.device_id(), relative_path,
                         MediaGalleryPrefInfo::kAutoDetected);
   Verify();
 
   // Won't override the name -- don't change any expectation.
   info.set_name(base::string16());
-  AddGalleryWithNameV2(info.device_id(), info.name(), relative_path, false);
+  AddGalleryWithNameV2(info.device_id(), info.name(), relative_path,
+                       MediaGalleryPrefInfo::kAutoDetected);
   Verify();
 
   info.set_name(ASCIIToUTF16("NewName"));
   id = AddGalleryWithNameV2(info.device_id(), info.name(),
-                            relative_path, false);
+                            relative_path, MediaGalleryPrefInfo::kAutoDetected);
   // Note: will really just update the existing expectation.
   AddGalleryExpectation(id, info.name(), info.device_id(), relative_path,
                         MediaGalleryPrefInfo::kAutoDetected);
@@ -522,7 +622,8 @@ TEST_F(MediaGalleriesPreferencesTest, UpdateGalleryNameV2) {
 }
 
 TEST_F(MediaGalleriesPreferencesTest, GalleryPermissions) {
-  MediaGalleryPrefId auto_id, user_added_id, to_blacklist_id, id;
+  MediaGalleryPrefId auto_id, user_added_id, to_blacklist_id, scan_id,
+                     to_scan_remove_id, id;
   base::FilePath path;
   StorageInfo info;
   base::FilePath relative_path;
@@ -562,6 +663,28 @@ TEST_F(MediaGalleriesPreferencesTest, GalleryPermissions) {
                         MediaGalleryPrefInfo::kAutoDetected);
   Verify();
 
+  path = MakePath("new_scan");
+  MediaStorageUtil::GetDeviceInfoFromPath(path, &info, &relative_path);
+  info.set_name(ASCIIToUTF16("NewScanGallery"));
+  id = AddGalleryWithNameV2(info.device_id(), info.name(),
+                            relative_path, MediaGalleryPrefInfo::kScanResult);
+  EXPECT_EQ(default_galleries_count() + 4UL, id);
+  scan_id = id;
+  AddGalleryExpectation(id, info.name(), info.device_id(), relative_path,
+                        MediaGalleryPrefInfo::kScanResult);
+  Verify();
+
+  path = MakePath("to_scan_remove");
+  MediaStorageUtil::GetDeviceInfoFromPath(path, &info, &relative_path);
+  info.set_name(ASCIIToUTF16("ToScanRemoveGallery"));
+  id = AddGalleryWithNameV2(info.device_id(), info.name(),
+                            relative_path, MediaGalleryPrefInfo::kScanResult);
+  EXPECT_EQ(default_galleries_count() + 5UL, id);
+  to_scan_remove_id = id;
+  AddGalleryExpectation(id, info.name(), info.device_id(), relative_path,
+                        MediaGalleryPrefInfo::kScanResult);
+  Verify();
+
   // Remove permission for all galleries from the all-permission extension.
   gallery_prefs()->SetGalleryPermissionForExtension(
       *all_permission_extension.get(), auto_id, false);
@@ -576,6 +699,16 @@ TEST_F(MediaGalleriesPreferencesTest, GalleryPermissions) {
   gallery_prefs()->SetGalleryPermissionForExtension(
       *all_permission_extension.get(), to_blacklist_id, false);
   expected_galleries_for_all.erase(to_blacklist_id);
+  Verify();
+
+  gallery_prefs()->SetGalleryPermissionForExtension(
+      *all_permission_extension.get(), scan_id, false);
+  expected_galleries_for_all.erase(scan_id);
+  Verify();
+
+  gallery_prefs()->SetGalleryPermissionForExtension(
+      *all_permission_extension.get(), to_scan_remove_id, false);
+  expected_galleries_for_all.erase(to_scan_remove_id);
   Verify();
 
   // Add permission back for all galleries to the all-permission extension.
@@ -594,6 +727,16 @@ TEST_F(MediaGalleriesPreferencesTest, GalleryPermissions) {
   expected_galleries_for_all.insert(to_blacklist_id);
   Verify();
 
+  gallery_prefs()->SetGalleryPermissionForExtension(
+      *all_permission_extension.get(), scan_id, true);
+  expected_galleries_for_all.insert(scan_id);
+  Verify();
+
+  gallery_prefs()->SetGalleryPermissionForExtension(
+      *all_permission_extension.get(), to_scan_remove_id, true);
+  expected_galleries_for_all.insert(to_scan_remove_id);
+  Verify();
+
   // Add permission for all galleries to the regular permission extension.
   gallery_prefs()->SetGalleryPermissionForExtension(
       *regular_permission_extension.get(), auto_id, true);
@@ -610,12 +753,29 @@ TEST_F(MediaGalleriesPreferencesTest, GalleryPermissions) {
   expected_galleries_for_regular.insert(to_blacklist_id);
   Verify();
 
+  gallery_prefs()->SetGalleryPermissionForExtension(
+      *regular_permission_extension.get(), scan_id, true);
+  expected_galleries_for_regular.insert(scan_id);
+  Verify();
+
+  gallery_prefs()->SetGalleryPermissionForExtension(
+      *regular_permission_extension.get(), to_scan_remove_id, true);
+  expected_galleries_for_regular.insert(to_scan_remove_id);
+  Verify();
+
   // Blacklist the to be black listed gallery
   gallery_prefs()->ForgetGalleryById(to_blacklist_id);
   expected_galleries_[to_blacklist_id].type =
       MediaGalleryPrefInfo::kBlackListed;
   expected_galleries_for_all.erase(to_blacklist_id);
   expected_galleries_for_regular.erase(to_blacklist_id);
+  Verify();
+
+  gallery_prefs()->ForgetGalleryById(to_scan_remove_id);
+  expected_galleries_[to_scan_remove_id].type =
+      MediaGalleryPrefInfo::kRemovedScan;
+  expected_galleries_for_all.erase(to_scan_remove_id);
+  expected_galleries_for_regular.erase(to_scan_remove_id);
   Verify();
 
   // Remove permission for all galleries to the regular permission extension.
@@ -629,16 +789,19 @@ TEST_F(MediaGalleriesPreferencesTest, GalleryPermissions) {
   expected_galleries_for_regular.erase(user_added_id);
   Verify();
 
+  gallery_prefs()->SetGalleryPermissionForExtension(
+      *regular_permission_extension.get(), scan_id, false);
+  expected_galleries_for_regular.erase(scan_id);
+  Verify();
+
   // Add permission for an invalid gallery id.
   gallery_prefs()->SetGalleryPermissionForExtension(
       *regular_permission_extension.get(), 9999L, true);
   Verify();
 }
 
-// Whenever a gallery is added, check to see if there is any gallery info exists
-// for the added gallery. If so, verify the existing gallery information with
-// the new details. If there is a mismatch, update the gallery information
-// accordingly.
+// What an existing gallery is added again, update the gallery information if
+// needed.
 TEST_F(MediaGalleriesPreferencesTest, UpdateGalleryDetails) {
   MediaGalleryPrefId auto_id, id;
   base::FilePath path;
@@ -812,7 +975,7 @@ TEST_F(MediaGalleriesPreferencesTest, UpdateSingletonDeviceIdType) {
   info.set_device_id(StorageInfo::MakeDeviceId(StorageInfo::ITUNES,
                                                path.AsUTF8Unsafe()));
   id = AddGalleryWithNameV2(info.device_id(), info.name(), relative_path,
-                            false /*auto*/);
+                            MediaGalleryPrefInfo::kAutoDetected);
   EXPECT_EQ(default_galleries_count() + 1UL, id);
   AddGalleryExpectation(id, info.name(), info.device_id(), relative_path,
                         MediaGalleryPrefInfo::kAutoDetected);
@@ -839,7 +1002,7 @@ TEST_F(MediaGalleriesPreferencesTest, UpdateSingletonDeviceIdType) {
   EXPECT_FALSE(UpdateDeviceIDForSingletonType(new_device_id));
 }
 
-TEST(MediaGalleryPrefInfoTest, NameGeneration) {
+TEST(MediaGalleriesPrefInfoTest, NameGeneration) {
   ASSERT_TRUE(TestStorageMonitor::CreateAndInstall());
 
   MediaGalleryPrefInfo info;

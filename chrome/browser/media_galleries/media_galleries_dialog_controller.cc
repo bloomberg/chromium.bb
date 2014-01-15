@@ -303,7 +303,7 @@ void MediaGalleriesDialogController::FileSelected(const base::FilePath& path,
   // Try to find it in the prefs.
   MediaGalleryPrefInfo gallery;
   bool gallery_exists = preferences_->LookUpGalleryByPath(path, &gallery);
-  if (gallery_exists && gallery.type != MediaGalleryPrefInfo::kBlackListed) {
+  if (gallery_exists && !gallery.IsBlackListedType()) {
     // The prefs are in sync with |known_galleries_|, so it should exist in
     // |known_galleries_| as well. User selecting a known gallery effectively
     // just sets the gallery to permitted.
@@ -432,7 +432,7 @@ void MediaGalleriesDialogController::SavePermissions() {
     // TODO(gbillock): Should be adding volume metadata during FileSelected.
     const MediaGalleryPrefInfo& gallery = iter->pref_info;
     MediaGalleryPrefId id = preferences_->AddGallery(
-        gallery.device_id, gallery.path, true,
+        gallery.device_id, gallery.path, MediaGalleryPrefInfo::kUserAdded,
         gallery.volume_label, gallery.vendor_name, gallery.model_name,
         gallery.total_size_in_bytes, gallery.last_attach_time);
     preferences_->SetGalleryPermissionForExtension(*extension_, id, true);

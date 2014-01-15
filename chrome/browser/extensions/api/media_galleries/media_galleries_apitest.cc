@@ -154,7 +154,7 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
                                                   &gallery_info));
     preferences->AddGallery(gallery_info.device_id,
                             gallery_info.path,
-                            false /* user_added */,
+                            MediaGalleryPrefInfo::kAutoDetected,
                             gallery_info.volume_label,
                             gallery_info.vendor_name,
                             gallery_info.model_name,

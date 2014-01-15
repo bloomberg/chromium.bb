@@ -89,7 +89,7 @@ void MediaGalleriesHandler::OnGalleriesChanged(
   for (MediaGalleriesPrefInfoMap::const_iterator iter = galleries.begin();
        iter != galleries.end(); ++iter) {
     const MediaGalleryPrefInfo& gallery = iter->second;
-    if (gallery.type == MediaGalleryPrefInfo::kBlackListed)
+    if (gallery.IsBlackListedType())
       continue;
 
     base::DictionaryValue* dict = new base::DictionaryValue();
@@ -153,7 +153,7 @@ void MediaGalleriesHandler::FileSelected(const base::FilePath& path,
   MediaGalleriesPreferences* preferences =
       g_browser_process->media_file_system_registry()->GetPreferences(
           Profile::FromWebUI(web_ui()));
-  preferences->AddGalleryByPath(path);
+  preferences->AddGalleryByPath(path, MediaGalleryPrefInfo::kUserAdded);
 }
 
 void MediaGalleriesHandler::PreferencesInitialized() {

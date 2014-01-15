@@ -44,9 +44,11 @@ struct MediaGalleryPermission {
 
 struct MediaGalleryPrefInfo {
   enum Type {
-    kAutoDetected,  // Auto added to the list of galleries.
     kUserAdded,     // Explicitly added by the user.
+    kAutoDetected,  // Auto added to the list of galleries.
     kBlackListed,   // Auto added but then removed by the user.
+    kScanResult,    // Discovered by a disk scan.
+    kRemovedScan,   // Discovered by a disk scan but then removed by the user.
     kInvalidType,
   };
 
@@ -55,6 +57,10 @@ struct MediaGalleryPrefInfo {
 
   // The absolute path of the gallery.
   base::FilePath AbsolutePath() const;
+
+  // True if the gallery should not be displayed to the user
+  // i.e. kBlackListed || kRemovedScan.
+  bool IsBlackListedType() const;
 
   // The ID that identifies this gallery in this Profile.
   MediaGalleryPrefId pref_id;
@@ -172,9 +178,6 @@ class MediaGalleriesPreferences : public BrowserContextKeyedService,
 
   // Lookup a media gallery and fill in information about it and return true if
   // it exists. Return false if it does not, filling in default information.
-  // TODO(vandebo) figure out if we want this to be async, in which case:
-  // void LookUpGalleryByPath(base::FilePath& path,
-  //                          callback(const MediaGalleryInfo&))
   bool LookUpGalleryByPath(const base::FilePath& path,
                            MediaGalleryPrefInfo* gallery) const;
 
@@ -190,20 +193,23 @@ class MediaGalleriesPreferences : public BrowserContextKeyedService,
       const extensions::Extension* extension,
       bool include_unpermitted_galleries);
 
-  // Teaches the registry about a new gallery.
-  // Returns the gallery's pref id.
+  // Teaches the registry about a new gallery. If the gallery is in a
+  // blacklisted state, it is unblacklisted. |type| should not be a blacklisted
+  // type. Returns the gallery's pref id.
   MediaGalleryPrefId AddGallery(const std::string& device_id,
                                 const base::FilePath& relative_path,
-                                bool user_added,
+                                MediaGalleryPrefInfo::Type type,
                                 const base::string16& volume_label,
                                 const base::string16& vendor_name,
                                 const base::string16& model_name,
                                 uint64 total_size_in_bytes,
                                 base::Time last_attach_time);
 
-  // Teach the registry about a user added registry simply from the path.
-  // Returns the gallery's pref id.
-  MediaGalleryPrefId AddGalleryByPath(const base::FilePath& path);
+  // Teach the registry about a gallery simply from the path. If the gallery is
+  // in a blacklisted state, it is unblacklisted. |type| should not be a
+  // blacklisted type. Returns the gallery's pref id.
+  MediaGalleryPrefId AddGalleryByPath(const base::FilePath& path,
+                                      MediaGalleryPrefInfo::Type type);
 
   // Removes the gallery identified by |id| from the store.
   void ForgetGalleryById(MediaGalleryPrefId id);
@@ -265,7 +271,7 @@ class MediaGalleriesPreferences : public BrowserContextKeyedService,
   MediaGalleryPrefId AddGalleryInternal(const std::string& device_id,
                                         const base::string16& display_name,
                                         const base::FilePath& relative_path,
-                                        bool user_added,
+                                        MediaGalleryPrefInfo::Type type,
                                         const base::string16& volume_label,
                                         const base::string16& vendor_name,
                                         const base::string16& model_name,

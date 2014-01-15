@@ -621,7 +621,7 @@ std::string MediaFileSystemRegistryTest::AddUserGallery(
 
   for (size_t i = 0; i < profile_states_.size(); ++i) {
     profile_states_[i]->GetMediaGalleriesPrefs()->AddGallery(
-        device_id, base::FilePath(), true /*user_added*/,
+        device_id, base::FilePath(), MediaGalleryPrefInfo::kUserAdded,
         base::string16(), base::string16(), base::string16(), 0,
         base::Time::Now());
   }
