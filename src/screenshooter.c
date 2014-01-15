@@ -190,7 +190,7 @@ screenshooter_shoot(struct wl_client *client,
 	}
 	if (!wl_shm_buffer_get(buffer->resource))
 		return;
-	
+
 	buffer->shm_buffer = wl_shm_buffer_get(buffer->resource);
 	buffer->width = wl_shm_buffer_get_width(buffer->shm_buffer);
 	buffer->height = wl_shm_buffer_get_height(buffer->shm_buffer);
@@ -428,6 +428,11 @@ weston_recorder_create(struct weston_output *output, const char *filename)
 
 	recorder = malloc(sizeof *recorder);
 
+	if (recorder == NULL) {
+		weston_log("%s: out of memory\n", __func__);
+		return;
+	}
+
 	stride = output->current_mode->width;
 	size = stride * 4 * output->current_mode->height;
 	recorder->frame = zalloc(size);
@@ -454,6 +459,9 @@ weston_recorder_create(struct weston_output *output, const char *filename)
 		break;
 	default:
 		weston_log("unknown recorder format\n");
+		free(recorder->rect);
+		free(recorder->tmpbuf);
+		free(recorder->frame);
 		free(recorder);
 		return;
 	}
@@ -463,6 +471,9 @@ weston_recorder_create(struct weston_output *output, const char *filename)
 
 	if (recorder->fd < 0) {
 		weston_log("problem opening output file %s: %m\n", filename);
+		free(recorder->rect);
+		free(recorder->tmpbuf);
+		free(recorder->frame);
 		free(recorder);
 		return;
 	}
