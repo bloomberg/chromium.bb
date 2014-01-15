@@ -47,7 +47,6 @@
 #include "core/editing/IndentOutdentCommand.h"
 #include "core/editing/InputMethodController.h"
 #include "core/editing/InsertListCommand.h"
-#include "core/editing/ModifySelectionListLevel.h"
 #include "core/editing/RemoveFormatCommand.h"
 #include "core/editing/RenderedPosition.h"
 #include "core/editing/ReplaceSelectionCommand.h"
@@ -593,61 +592,6 @@ PassRefPtr<Node> Editor::insertUnorderedList()
     RefPtr<Node> newList = InsertListCommand::insertList(*m_frame.document(), InsertListCommand::UnorderedList);
     revealSelectionAfterEditingOperation();
     return newList;
-}
-
-bool Editor::canIncreaseSelectionListLevel()
-{
-    ASSERT(m_frame.document());
-    return canEditRichly() && IncreaseSelectionListLevelCommand::canIncreaseSelectionListLevel(*m_frame.document());
-}
-
-bool Editor::canDecreaseSelectionListLevel()
-{
-    ASSERT(m_frame.document());
-    return canEditRichly() && DecreaseSelectionListLevelCommand::canDecreaseSelectionListLevel(*m_frame.document());
-}
-
-PassRefPtr<Node> Editor::increaseSelectionListLevel()
-{
-    if (!canEditRichly() || m_frame.selection().isNone())
-        return 0;
-
-    ASSERT(m_frame.document());
-    RefPtr<Node> newList = IncreaseSelectionListLevelCommand::increaseSelectionListLevel(*m_frame.document());
-    revealSelectionAfterEditingOperation();
-    return newList;
-}
-
-PassRefPtr<Node> Editor::increaseSelectionListLevelOrdered()
-{
-    if (!canEditRichly() || m_frame.selection().isNone())
-        return 0;
-
-    ASSERT(m_frame.document());
-    RefPtr<Node> newList = IncreaseSelectionListLevelCommand::increaseSelectionListLevelOrdered(*m_frame.document());
-    revealSelectionAfterEditingOperation();
-    return newList.release();
-}
-
-PassRefPtr<Node> Editor::increaseSelectionListLevelUnordered()
-{
-    if (!canEditRichly() || m_frame.selection().isNone())
-        return 0;
-
-    ASSERT(m_frame.document());
-    RefPtr<Node> newList = IncreaseSelectionListLevelCommand::increaseSelectionListLevelUnordered(*m_frame.document());
-    revealSelectionAfterEditingOperation();
-    return newList.release();
-}
-
-void Editor::decreaseSelectionListLevel()
-{
-    if (!canEditRichly() || m_frame.selection().isNone())
-        return;
-
-    ASSERT(m_frame.document());
-    DecreaseSelectionListLevelCommand::decreaseSelectionListLevel(*m_frame.document());
-    revealSelectionAfterEditingOperation();
 }
 
 void Editor::removeFormattingAndStyle()

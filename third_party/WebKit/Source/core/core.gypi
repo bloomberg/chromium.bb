@@ -906,8 +906,6 @@
             'editing/MarkupAccumulator.h',
             'editing/MergeIdenticalElementsCommand.cpp',
             'editing/MergeIdenticalElementsCommand.h',
-            'editing/ModifySelectionListLevel.cpp',
-            'editing/ModifySelectionListLevel.h',
             'editing/MoveSelectionCommand.cpp',
             'editing/PlainTextRange.cpp',
             'editing/PlainTextRange.h',
