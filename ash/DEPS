@@ -13,7 +13,4 @@ include_rules = [
   "+net",
   "+ui",
   "+win8",
-
-  # Used by shell.cc, accelerator_controller.cc, tray_monitor.h
-  "+content/public/browser/gpu_data_manager.h",
 ]

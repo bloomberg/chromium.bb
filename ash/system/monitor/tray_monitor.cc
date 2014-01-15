@@ -4,12 +4,13 @@
 
 #include "ash/system/monitor/tray_monitor.h"
 
+#include "ash/gpu_support.h"
+#include "ash/shell.h"
 #include "ash/system/tray/tray_item_view.h"
 #include "base/process/memory.h"
 #include "base/process/process_metrics.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/public/browser/gpu_data_manager.h"
 #include "ui/base/text/bytes_formatting.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
@@ -53,10 +54,10 @@ void TrayMonitor::DestroyTrayView() {
 }
 
 void TrayMonitor::OnTimer() {
-  content::GpuDataManager::GetGpuProcessHandlesCallback callback =
+  GPUSupport::GetGpuProcessHandlesCallback callback =
       base::Bind(&TrayMonitor::OnGotHandles, base::Unretained(this));
   refresh_timer_.Stop();
-  content::GpuDataManager::GetInstance()->GetGpuProcessHandles(callback);
+  Shell::GetInstance()->gpu_support()->GetGpuProcessHandles(callback);
 }
 
 void TrayMonitor::OnGotHandles(const std::list<base::ProcessHandle>& handles) {

@@ -27,6 +27,7 @@
 #include "ash/drag_drop/drag_drop_controller.h"
 #include "ash/first_run/first_run_helper_impl.h"
 #include "ash/focus_cycler.h"
+#include "ash/gpu_support.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/host/root_window_host_factory.h"
 #include "ash/keyboard_uma_event_filter.h"
@@ -125,8 +126,6 @@
 #include "base/message_loop/message_pump_x11.h"
 #include "base/sys_info.h"
 #include "chromeos/display/output_configurator.h"
-#include "content/public/browser/gpu_data_manager.h"
-#include "gpu/config/gpu_feature_type.h"
 #endif  // defined(USE_X11)
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/system/chromeos/brightness/brightness_controller_chromeos.h"
@@ -159,6 +158,23 @@ class AshVisibilityController : public views::corewm::VisibilityController {
   }
 
   DISALLOW_COPY_AND_ASSIGN(AshVisibilityController);
+};
+
+class DefaultGPUSupportImpl : public GPUSupport {
+ public:
+  DefaultGPUSupportImpl() {}
+  virtual ~DefaultGPUSupportImpl() {}
+
+ private:
+  // Overridden from GPUSupport:
+  virtual bool IsPanelFittingDisabled() const OVERRIDE {
+    return false;
+  }
+  virtual void DisableGpuWatchdog() OVERRIDE {}
+  virtual void GetGpuProcessHandles(
+      const GetGpuProcessHandlesCallback& callback) const OVERRIDE {}
+
+  DISALLOW_COPY_AND_ASSIGN(DefaultGPUSupportImpl);
 };
 
 }  // namespace
@@ -545,6 +561,10 @@ void Shell::DoInitialWorkspaceAnimation() {
       DoInitialAnimation();
 }
 
+void Shell::SetGPUSupport(scoped_ptr<GPUSupport> gpu_support) {
+  gpu_support_ = gpu_support.Pass();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Shell, private:
 
@@ -562,7 +582,8 @@ Shell::Shell(ShellDelegate* delegate)
       cursor_manager_(scoped_ptr<views::corewm::NativeCursorManager>(
           native_cursor_manager_)),
       simulate_modal_window_open_for_testing_(false),
-      is_touch_hud_projection_enabled_(false) {
+      is_touch_hud_projection_enabled_(false),
+      gpu_support_(new DefaultGPUSupportImpl) {
   DCHECK(delegate_.get());
   display_manager_.reset(new internal::DisplayManager);
 
@@ -572,11 +593,7 @@ Shell::Shell(ShellDelegate* delegate)
     gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_);
   display_controller_.reset(new DisplayController);
 #if defined(OS_CHROMEOS) && defined(USE_X11)
-  bool is_panel_fitting_disabled =
-      content::GpuDataManager::GetInstance()->IsFeatureBlacklisted(
-          gpu::GPU_FEATURE_TYPE_PANEL_FITTING);
-
-  output_configurator_->Init(!is_panel_fitting_disabled);
+  output_configurator_->Init(!gpu_support_->IsPanelFittingDisabled());
   user_metrics_recorder_.reset(new UserMetricsRecorder);
 
   base::MessagePumpX11::Current()->AddDispatcherForRootWindow(

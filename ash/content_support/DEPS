@@ -1,0 +1,5 @@
+include_rules = [
+  # TODO(beng): It may make sense to have a broad permit of content/public
+  #             in this file, but I'm starting out conservative.
+  "+content/public/browser/gpu_data_manager.h",
+]
