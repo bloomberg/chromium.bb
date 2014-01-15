@@ -1626,7 +1626,7 @@ void RenderBlockFlow::repaintDirtyFloats(Vector<FloatWithRect>& floats)
     for (size_t i = 0; i < floatCount; ++i) {
         if (!floats[i].everHadLayout) {
             RenderBox* f = floats[i].object;
-            if (!f->x() && !f->y() && f->checkForRepaintDuringLayout()) {
+            if (!f->x() && !f->y() && f->checkForRepaint()) {
                 if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
                     f->setShouldDoFullRepaintAfterLayout(true);
                 else

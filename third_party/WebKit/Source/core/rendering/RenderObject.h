@@ -831,6 +831,7 @@ public:
 
     virtual void repaintOverflow();
 
+    bool checkForRepaint() const;
     bool checkForRepaintDuringLayout() const;
 
     // Returns the rect that should be repainted whenever this object changes.  The rect is in the view's

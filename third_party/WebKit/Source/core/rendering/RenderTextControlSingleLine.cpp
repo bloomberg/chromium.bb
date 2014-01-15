@@ -181,6 +181,8 @@ void RenderTextControlSingleLine::layout()
     HTMLElement* placeholderElement = inputElement()->placeholderElement();
     if (RenderBox* placeholderBox = placeholderElement ? placeholderElement->renderBox() : 0) {
         LayoutSize innerTextSize;
+        LayoutRectRecorder placeholderBoxRecorder(*placeholderBox);
+
         if (innerTextRenderer)
             innerTextSize = innerTextRenderer->size();
         placeholderBox->style()->setWidth(Length(innerTextSize.width() - placeholderBox->borderAndPaddingWidth(), Fixed));

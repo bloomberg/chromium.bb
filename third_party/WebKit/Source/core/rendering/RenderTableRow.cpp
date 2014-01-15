@@ -186,7 +186,7 @@ void RenderTableRow::layout()
     // the fact that we did not repaint in setStyle() because we had a layout hint.
     // We cannot call repaint() because our clippedOverflowRectForRepaint() is taken from the
     // parent table, and being mid-layout, that is invalid. Instead, we repaint our cells.
-    if (selfNeedsLayout() && checkForRepaintDuringLayout()) {
+    if (selfNeedsLayout() && checkForRepaint()) {
         for (RenderObject* child = firstChild(); child; child = child->nextSibling()) {
             if (child->isTableCell()) {
                 if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled()) {

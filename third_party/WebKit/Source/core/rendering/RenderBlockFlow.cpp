@@ -547,7 +547,7 @@ void RenderBlockFlow::layoutBlockChild(RenderBox* child, MarginInfo& marginInfo,
             child->repaintDuringLayoutIfMoved(oldRect);
     }
 
-    if (!childHadLayout && child->checkForRepaintDuringLayout()) {
+    if (!childHadLayout && child->checkForRepaint()) {
         if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
             child->repaint();
         child->repaintOverhangingFloats(true);

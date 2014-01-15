@@ -1611,9 +1611,14 @@ void RenderObject::repaintOverflow()
 {
 }
 
-bool RenderObject::checkForRepaintDuringLayout() const
+bool RenderObject::checkForRepaint() const
 {
     return !document().view()->needsFullRepaint() && !hasLayer() && everHadLayout();
+}
+
+bool RenderObject::checkForRepaintDuringLayout() const
+{
+    return !RuntimeEnabledFeatures::repaintAfterLayoutEnabled() && checkForRepaint();
 }
 
 LayoutRect RenderObject::rectWithOutlineForRepaint(const RenderLayerModelObject* repaintContainer, LayoutUnit outlineWidth) const

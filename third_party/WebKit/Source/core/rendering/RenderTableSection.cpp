@@ -998,8 +998,7 @@ void RenderTableSection::layoutRows()
                 // If the child moved, we have to repaint it as well as any floating/positioned
                 // descendants.  An exception is if we need a layout.  In this case, we know we're going to
                 // repaint ourselves (and the child) anyway.
-                if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled()
-                    && !table()->selfNeedsLayout() && cell->checkForRepaintDuringLayout())
+                if (!table()->selfNeedsLayout() && cell->checkForRepaintDuringLayout())
                     cell->repaintDuringLayoutIfMoved(oldCellRect);
             }
         }
