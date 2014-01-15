@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TOOLBAR_WRENCH_MENU_OBSERVER_H_
 #define CHROME_BROWSER_UI_VIEWS_TOOLBAR_WRENCH_MENU_OBSERVER_H_
 
-// TODO(gbillock): Make this an inner class of WrenchMenu. (even needed?)
 class WrenchMenuObserver {
  public:
   // Invoked when the WrenchMenu is about to be destroyed (from its destructor).
