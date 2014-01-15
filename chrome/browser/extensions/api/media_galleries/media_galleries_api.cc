@@ -558,7 +558,8 @@ void MediaGalleriesGetMetadataFunction::OnPreferencesInit(
 }
 
 void MediaGalleriesGetMetadataFunction::SniffMimeType(
-    bool mime_type_only, scoped_ptr<std::string> blob_header) {
+    bool mime_type_only, scoped_ptr<std::string> blob_header,
+    int64 /* total_blob_length */) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   MediaGalleries::MediaMetadata metadata;

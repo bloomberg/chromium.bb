@@ -41,6 +41,8 @@ class NET_EXPORT HttpResponseHeaders
   static const PersistOptions PERSIST_SANS_RANGES = 1 << 4;
   static const PersistOptions PERSIST_SANS_SECURITY_STATE = 1 << 5;
 
+  static const char kContentRange[];
+
   // Parses the given raw_headers.  raw_headers should be formatted thus:
   // includes the http status response line, each line is \0-terminated, and
   // it's terminated by an empty line (ie, 2 \0s in a row).

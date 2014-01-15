@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/http/http_request_headers.h"
+#include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -55,8 +56,10 @@ void BlobReader::Start() {
 // Overridden from net::URLFetcherDelegate.
 void BlobReader::OnURLFetchComplete(const net::URLFetcher* source) {
   scoped_ptr<std::string> response(new std::string);
+  int64 first = 0, last = 0, length = 0;
   source->GetResponseAsString(response.get());
-  callback_.Run(response.Pass());
+  source->GetResponseHeaders()->GetContentRange(&first, &last, &length);
+  callback_.Run(response.Pass(), length);
 
   delete this;
 }

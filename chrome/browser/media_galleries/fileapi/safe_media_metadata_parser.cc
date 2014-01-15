@@ -20,7 +20,8 @@ namespace {
 void OnBlobReaderDone(
     const base::WeakPtr<content::UtilityProcessHost>& utility_process_host,
     int64 request_id,
-    scoped_ptr<std::string> data) {
+    scoped_ptr<std::string> data,
+    int64 /* blob_total_size */) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (!utility_process_host.get())

@@ -21,7 +21,11 @@ class URLFetcher;
 
 class BlobReader : public net::URLFetcherDelegate {
  public:
-  typedef base::Callback<void(scoped_ptr<std::string> blob_data)>
+  // |blob_data| contains the portion of the Blob requested. |blob_total_size|
+  // is the total size of the Blob, and may be larger than |blob_data->size()|.
+  // |blob_total_size| is -1 if it cannot be determined.
+  typedef base::Callback<void(scoped_ptr<std::string> blob_data,
+                              int64 blob_total_size)>
       BlobReadCallback;
 
   BlobReader(Profile* profile,

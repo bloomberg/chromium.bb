@@ -125,7 +125,8 @@ class MediaGalleriesGetMetadataFunction : public ChromeAsyncExtensionFunction {
   // Bottom half for RunImpl, invoked after the preferences is initialized.
   void OnPreferencesInit(bool mime_type_only, const std::string& blob_uuid);
 
-  void SniffMimeType(bool mime_type_only, scoped_ptr<std::string> blob_header);
+  void SniffMimeType(bool mime_type_only, scoped_ptr<std::string> blob_header,
+                     int64 total_blob_length);
 };
 
 }  // namespace extensions

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
@@ -9,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
+#include "base/safe_numerics.h"
 #include "base/time/time.h"
 #include "content/public/test/test_file_system_context.h"
 #include "net/base/io_buffer.h"
@@ -225,10 +227,13 @@ class BlobURLRequestJobTest : public testing::Test {
     file_system_root_url_ = root;
   }
 
-  void TestSuccessRequest(const std::string& expected_response) {
+  void TestSuccessNonrangeRequest(const std::string& expected_response,
+                                  int64 expected_content_length) {
     expected_status_code_ = 200;
     expected_response_ = expected_response;
     TestRequest("GET", net::HttpRequestHeaders());
+    EXPECT_EQ(expected_content_length,
+              request_->response_headers()->GetContentLength());
   }
 
   void TestErrorRequest(int expected_status_code) {
@@ -272,6 +277,20 @@ class BlobURLRequestJobTest : public testing::Test {
     *expected_result += std::string(kTestFileSystemFileData2 + 6, 7);
   }
 
+  // This only works if all the Blob items have a definite pre-computed length.
+  // Otherwise, this will fail a CHECK.
+  int64 GetTotalBlobLength() const {
+    int64 total = 0;
+    const std::vector<BlobData::Item>& items = blob_data_->items();
+    for (std::vector<BlobData::Item>::const_iterator it = items.begin();
+         it != items.end(); ++it) {
+      int64 length = base::checked_numeric_cast<int64>(it->length());
+      CHECK(length <= kint64max - total);
+      total += length;
+    }
+    return total;
+  }
+
  protected:
   base::ScopedTempDir temp_dir_;
   base::FilePath temp_file1_;
@@ -298,12 +317,12 @@ class BlobURLRequestJobTest : public testing::Test {
 
 TEST_F(BlobURLRequestJobTest, TestGetSimpleDataRequest) {
   blob_data_->AppendData(kTestData1);
-  TestSuccessRequest(kTestData1);
+  TestSuccessNonrangeRequest(kTestData1, arraysize(kTestData1) - 1);
 }
 
 TEST_F(BlobURLRequestJobTest, TestGetSimpleFileRequest) {
   blob_data_->AppendFile(temp_file1_, 0, -1, base::Time());
-  TestSuccessRequest(kTestFileData1);
+  TestSuccessNonrangeRequest(kTestFileData1, arraysize(kTestFileData1) - 1);
 }
 
 TEST_F(BlobURLRequestJobTest, TestGetLargeFileRequest) {
@@ -317,7 +336,7 @@ TEST_F(BlobURLRequestJobTest, TestGetLargeFileRequest) {
             file_util::WriteFile(large_temp_file, large_data.data(),
                                  large_data.size()));
   blob_data_->AppendFile(large_temp_file, 0, -1, base::Time());
-  TestSuccessRequest(large_data);
+  TestSuccessNonrangeRequest(large_data, large_data.size());
 }
 
 TEST_F(BlobURLRequestJobTest, TestGetNonExistentFileRequest) {
@@ -337,14 +356,15 @@ TEST_F(BlobURLRequestJobTest, TestGetChangedFileRequest) {
 TEST_F(BlobURLRequestJobTest, TestGetSlicedFileRequest) {
   blob_data_->AppendFile(temp_file1_, 2, 4, temp_file_modification_time1_);
   std::string result(kTestFileData1 + 2, 4);
-  TestSuccessRequest(result);
+  TestSuccessNonrangeRequest(result, 4);
 }
 
 TEST_F(BlobURLRequestJobTest, TestGetSimpleFileSystemFileRequest) {
   SetUpFileSystem();
   blob_data_->AppendFileSystemFile(temp_file_system_file1_, 0, -1,
-                                  base::Time());
-  TestSuccessRequest(kTestFileSystemFileData1);
+                                   base::Time());
+  TestSuccessNonrangeRequest(kTestFileSystemFileData1,
+                             arraysize(kTestFileSystemFileData1) - 1);
 }
 
 TEST_F(BlobURLRequestJobTest, TestGetLargeFileSystemFileRequest) {
@@ -357,9 +377,9 @@ TEST_F(BlobURLRequestJobTest, TestGetLargeFileSystemFileRequest) {
   const char kFilename[] = "LargeBlob.dat";
   WriteFileSystemFile(kFilename, large_data.data(), large_data.size(), NULL);
 
-  blob_data_->AppendFileSystemFile(GetFileSystemURL(kFilename),
-                                   0, -1, base::Time());
-  TestSuccessRequest(large_data);
+  blob_data_->AppendFileSystemFile(GetFileSystemURL(kFilename), 0, -1,
+                                   base::Time());
+  TestSuccessNonrangeRequest(large_data, large_data.size());
 }
 
 TEST_F(BlobURLRequestJobTest, TestGetNonExistentFileSystemFileRequest) {
@@ -383,14 +403,14 @@ TEST_F(BlobURLRequestJobTest, TestGetSlicedFileSystemFileRequest) {
   blob_data_->AppendFileSystemFile(temp_file_system_file1_, 2, 4,
                                   temp_file_system_file_modification_time1_);
   std::string result(kTestFileSystemFileData1 + 2, 4);
-  TestSuccessRequest(result);
+  TestSuccessNonrangeRequest(result, 4);
 }
 
 TEST_F(BlobURLRequestJobTest, TestGetComplicatedDataAndFileRequest) {
   SetUpFileSystem();
   std::string result;
   BuildComplicatedData(&result);
-  TestSuccessRequest(result);
+  TestSuccessNonrangeRequest(result, GetTotalBlobLength());
 }
 
 TEST_F(BlobURLRequestJobTest, TestGetRangeRequest1) {
@@ -403,6 +423,15 @@ TEST_F(BlobURLRequestJobTest, TestGetRangeRequest1) {
   expected_status_code_ = 206;
   expected_response_ = result.substr(5, 10 - 5 + 1);
   TestRequest("GET", extra_headers);
+
+  EXPECT_EQ(6, request_->response_headers()->GetContentLength());
+
+  int64 first = 0, last = 0, length = 0;
+  EXPECT_TRUE(
+      request_->response_headers()->GetContentRange(&first, &last, &length));
+  EXPECT_EQ(5, first);
+  EXPECT_EQ(10, last);
+  EXPECT_EQ(GetTotalBlobLength(), length);
 }
 
 TEST_F(BlobURLRequestJobTest, TestGetRangeRequest2) {
@@ -415,6 +444,16 @@ TEST_F(BlobURLRequestJobTest, TestGetRangeRequest2) {
   expected_status_code_ = 206;
   expected_response_ = result.substr(result.length() - 10);
   TestRequest("GET", extra_headers);
+
+  EXPECT_EQ(10, request_->response_headers()->GetContentLength());
+
+  int64 total = GetTotalBlobLength();
+  int64 first = 0, last = 0, length = 0;
+  EXPECT_TRUE(
+      request_->response_headers()->GetContentRange(&first, &last, &length));
+  EXPECT_EQ(total - 10, first);
+  EXPECT_EQ(total - 1, last);
+  EXPECT_EQ(total, length);
 }
 
 TEST_F(BlobURLRequestJobTest, TestExtraHeaders) {

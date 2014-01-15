@@ -115,6 +115,8 @@ void CheckDoesNotHaveEmbededNulls(const std::string& str) {
 
 }  // namespace
 
+const char HttpResponseHeaders::kContentRange[] = "Content-Range";
+
 struct HttpResponseHeaders::ParsedHeader {
   // A header "continuation" contains only a subsequent value for the
   // preceding header.  (Header values are comma separated.)
@@ -819,7 +821,7 @@ void HttpResponseHeaders::AddChallengeHeaders(HeaderSet* result) {
 }
 
 void HttpResponseHeaders::AddHopContentRangeHeaders(HeaderSet* result) {
-  result->insert("content-range");
+  result->insert(kContentRange);
 }
 
 void HttpResponseHeaders::AddSecurityStateHeaders(HeaderSet* result) {
@@ -1199,7 +1201,7 @@ bool HttpResponseHeaders::GetContentRange(int64* first_byte_position,
   void* iter = NULL;
   std::string content_range_spec;
   *first_byte_position = *last_byte_position = *instance_length = -1;
-  if (!EnumerateHeader(&iter, "content-range", &content_range_spec))
+  if (!EnumerateHeader(&iter, kContentRange, &content_range_spec))
     return false;
 
   // If the header value is empty, we have an invalid header.

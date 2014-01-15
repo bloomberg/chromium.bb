@@ -66,7 +66,8 @@ void FeedbackService::SendFeedback(
   CompleteSendFeedback();
 }
 
-void FeedbackService::AttachedFileCallback(scoped_ptr<std::string> data) {
+void FeedbackService::AttachedFileCallback(scoped_ptr<std::string> data,
+                                           int64 /* total_blob_length */) {
   if (!data.get())
     feedback_data_->set_attached_file_uuid(std::string());
   else
@@ -75,7 +76,8 @@ void FeedbackService::AttachedFileCallback(scoped_ptr<std::string> data) {
   CompleteSendFeedback();
 }
 
-void FeedbackService::ScreenshotCallback(scoped_ptr<std::string> data) {
+void FeedbackService::ScreenshotCallback(scoped_ptr<std::string> data,
+                                         int64 /* total_blob_length */) {
   if (!data.get())
     feedback_data_->set_screenshot_uuid(std::string());
   else

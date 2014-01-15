@@ -10,10 +10,12 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_util_proxy.h"
+#include "base/format_macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
@@ -509,6 +511,18 @@ void BlobURLRequestJob::HeadersCompleted(net::HttpStatusCode status_code) {
     content_length_header.append(": ");
     content_length_header.append(base::Int64ToString(remaining_bytes_));
     headers->AddHeader(content_length_header);
+    if (status_code == net::HTTP_PARTIAL_CONTENT) {
+      DCHECK(byte_range_set_);
+      DCHECK(byte_range_.IsValid());
+      std::string content_range_header(net::HttpResponseHeaders::kContentRange);
+      content_range_header.append(": bytes ");
+      content_range_header.append(base::StringPrintf(
+          "%" PRId64 "-%" PRId64,
+          byte_range_.first_byte_position(), byte_range_.last_byte_position()));
+      content_range_header.append("/");
+      content_range_header.append(base::StringPrintf("%" PRId64, total_size_));
+      headers->AddHeader(content_range_header);
+    }
     if (!blob_data_->content_type().empty()) {
       std::string content_type_header(net::HttpRequestHeaders::kContentType);
       content_type_header.append(": ");
