@@ -46,6 +46,7 @@ class CONTENT_EXPORT PageState {
   std::vector<base::FilePath> GetReferencedFiles() const;
   PageState RemovePasswordData() const;
   PageState RemoveScrollOffset() const;
+  PageState RemoveReferrer() const;
 
  private:
   PageState(const std::string& data);

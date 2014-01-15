@@ -296,5 +296,36 @@ TEST(SerializedNavigationEntryTest, TransitionTypes) {
   }
 }
 
+// Tests that the input data is sanitized when a SerializedNavigationEntry
+// is created from a pickle format.
+TEST(SerializedNavigationEntryTest, Sanitize) {
+  sync_pb::TabNavigation sync_data = MakeSyncDataForTest();
+
+  sync_data.set_referrer_policy(blink::WebReferrerPolicyNever);
+  content::PageState page_state =
+      content::PageState::CreateFromURL(kVirtualURL);
+  sync_data.set_state(page_state.ToEncodedData());
+
+  const SerializedNavigationEntry& navigation =
+      SerializedNavigationEntry::FromSyncData(kIndex, sync_data);
+
+  EXPECT_EQ(kIndex, navigation.index());
+  EXPECT_EQ(kUniqueID, navigation.unique_id());
+  EXPECT_EQ(GURL(), navigation.referrer().url);
+  EXPECT_EQ(blink::WebReferrerPolicyDefault, navigation.referrer().policy);
+  EXPECT_EQ(kVirtualURL, navigation.virtual_url());
+  EXPECT_EQ(kTitle, navigation.title());
+  EXPECT_EQ(page_state, navigation.page_state());
+  EXPECT_EQ(kTransitionType, navigation.transition_type());
+  EXPECT_FALSE(navigation.has_post_data());
+  EXPECT_EQ(-1, navigation.post_id());
+  EXPECT_EQ(GURL(), navigation.original_request_url());
+  EXPECT_FALSE(navigation.is_overriding_user_agent());
+  EXPECT_TRUE(navigation.timestamp().is_null());
+  EXPECT_EQ(kSearchTerms, navigation.search_terms());
+  EXPECT_EQ(kFaviconURL, navigation.favicon_url());
+  EXPECT_EQ(kHttpStatusCode, navigation.http_status_code());
+}
+
 }  // namespace
 }  // namespace sessions

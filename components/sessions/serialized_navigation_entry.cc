@@ -151,6 +151,8 @@ SerializedNavigationEntry SerializedNavigationEntry::FromSyncData(
   DCHECK(!sync_data.has_blocked_state());
   DCHECK_EQ(0, sync_data.content_pack_categories_size());
 
+  navigation.Sanitize();
+
   return navigation;
 }
 
@@ -325,6 +327,8 @@ bool SerializedNavigationEntry::ReadFromPickle(PickleIterator* iterator) {
       http_status_code_ = 0;
   }
 
+  Sanitize();
+
   return true;
 }
 
@@ -483,6 +487,38 @@ std::vector<NavigationEntry*> SerializedNavigationEntry::ToNavigationEntries(
     ++page_id;
   }
   return entries;
+}
+
+void SerializedNavigationEntry::Sanitize() {
+  // Store original referrer so we can later see whether it was actually
+  // changed during sanitization, and we need to strip the referrer from the
+  // page state as well.
+  content::Referrer old_referrer = referrer_;
+
+  if (!referrer_.url.SchemeIsHTTPOrHTTPS())
+    referrer_ = content::Referrer();
+  switch (referrer_.policy) {
+    case blink::WebReferrerPolicyNever:
+      referrer_.url = GURL();
+      break;
+    case blink::WebReferrerPolicyAlways:
+      break;
+    case blink::WebReferrerPolicyOrigin:
+      referrer_.url = referrer_.url.GetWithEmptyPath();
+      break;
+    case blink::WebReferrerPolicyDefault:
+      // Fall through.
+    default:
+      referrer_.policy = blink::WebReferrerPolicyDefault;
+      if (referrer_.url.SchemeIsSecure() && !virtual_url_.SchemeIsSecure())
+        referrer_.url = GURL();
+  }
+
+  if (referrer_.url != old_referrer.url ||
+      referrer_.policy != old_referrer.policy) {
+    referrer_ = content::Referrer();
+    page_state_ = page_state_.RemoveReferrer();
+  }
 }
 
 }  // namespace sessions

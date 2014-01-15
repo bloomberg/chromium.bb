@@ -44,6 +44,15 @@ void RecursivelyRemoveScrollOffset(ExplodedFrameState* state) {
   state->scroll_offset = gfx::Point();
 }
 
+void RecursivelyRemoveReferrer(ExplodedFrameState* state) {
+  state->referrer = base::NullableString16();
+  for (std::vector<ExplodedFrameState>::iterator it = state->children.begin();
+       it != state->children.end();
+       ++it) {
+    RecursivelyRemoveReferrer(&*it);
+  }
+}
+
 }  // namespace
 
 // static
@@ -136,6 +145,16 @@ PageState PageState::RemoveScrollOffset() const {
     return PageState();  // Oops!
 
   RecursivelyRemoveScrollOffset(&state.top);
+
+  return ToPageState(state);
+}
+
+PageState PageState::RemoveReferrer() const {
+  ExplodedPageState state;
+  if (!DecodePageState(data_, &state))
+    return PageState();  // Oops!
+
+  RecursivelyRemoveReferrer(&state.top);
 
   return ToPageState(state);
 }

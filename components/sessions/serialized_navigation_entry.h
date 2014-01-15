@@ -133,6 +133,10 @@ class SESSIONS_EXPORT SerializedNavigationEntry {
  private:
   friend class SerializedNavigationEntryTestHelper;
 
+  // Sanitizes the data in this class to be more robust against faulty data
+  // written by older versions.
+  void Sanitize();
+
   // Index in the NavigationController.
   int index_;
 
