@@ -75,5 +75,13 @@ TEST(AutofillDialogI18nInput, USCityStateAndZipCodeShareInputRow) {
   EXPECT_NE(inputs[6].length, DetailInput::SHORT);
 }
 
+TEST(AutofillDialogI18nInput, IvoryCoastNoStreetLine2) {
+  DetailInputs inputs;
+  BuildAddressInputs(common::ADDRESS_TYPE_SHIPPING, "CI", &inputs);
+  for (size_t i = 0; i < inputs.size(); ++i) {
+    EXPECT_NE(ADDRESS_HOME_LINE2, inputs[i].type);
+  }
+}
+
 }  // namespace i18ninput
 }  // namespace autofill

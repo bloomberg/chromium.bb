@@ -87,7 +87,8 @@ void BuildAddressInputs(common::AddressType address_type,
     DetailInput input = { length, server_type, placeholder };
     inputs->push_back(input);
 
-    if (component.field == i18n::addressinput::STREET_ADDRESS) {
+    if (component.field == i18n::addressinput::STREET_ADDRESS &&
+        component.length_hint == AddressUiComponent::HINT_LONG) {
       // TODO(dbeam): support more than 2 address lines. http://crbug.com/324889
       ServerFieldType server_type =
           billing ? ADDRESS_BILLING_LINE2 : ADDRESS_HOME_LINE2;
