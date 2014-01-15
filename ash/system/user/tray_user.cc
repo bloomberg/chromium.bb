@@ -832,8 +832,7 @@ void UserView::AddLogoutButton(user::LoginStatus login) {
   logout_button_ = logout_button;
   // In public account mode, the logout button border has a custom color.
   if (login == user::LOGGED_IN_PUBLIC) {
-    TrayPopupLabelButtonBorder* border =
-        static_cast<TrayPopupLabelButtonBorder*>(logout_button_->border());
+    TrayPopupLabelButtonBorder* border = new TrayPopupLabelButtonBorder();
     border->SetPainter(false, views::Button::STATE_NORMAL,
                        views::Painter::CreateImageGridPainter(
                            kPublicAccountLogoutButtonBorderImagesNormal));
@@ -843,6 +842,7 @@ void UserView::AddLogoutButton(user::LoginStatus login) {
     border->SetPainter(false, views::Button::STATE_PRESSED,
                        views::Painter::CreateImageGridPainter(
                            kPublicAccountLogoutButtonBorderImagesHovered));
+    logout_button_->set_border(border);
   }
   AddChildView(logout_button_);
 }

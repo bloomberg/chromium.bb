@@ -147,7 +147,6 @@ void LabelButton::SetIsDefault(bool is_default) {
 
 void LabelButton::SetStyle(ButtonStyle style) {
   style_ = style;
-  set_border(new LabelButtonBorder(style));
   // Inset the button focus rect from the actual border; roughly match Windows.
   if (style == STYLE_BUTTON) {
     SetFocusPainter(scoped_ptr<Painter>());
@@ -161,9 +160,12 @@ void LabelButton::SetStyle(ButtonStyle style) {
   }
   if (style == STYLE_BUTTON)
     set_min_size(gfx::Size(70, 33));
-  // Invalidate the layout to pickup the new insets from the border.
-  InvalidateLayout();
+
   ResetColorsFromNativeTheme();
+
+  // Set the border and invalidate the layout to pickup its new insets.
+  set_border(new LabelButtonBorder(style));
+  InvalidateLayout();
 }
 
 void LabelButton::SetFocusPainter(scoped_ptr<Painter> focus_painter) {

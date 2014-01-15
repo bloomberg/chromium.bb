@@ -390,7 +390,7 @@ void LocationBarView::Init() {
   search_button_->SetFocusable(false);
   search_button_->set_min_size(gfx::Size());
   views::LabelButtonBorder* search_button_border =
-      static_cast<views::LabelButtonBorder*>(search_button_->border());
+      new views::LabelButtonBorder(search_button_->style());
   search_button_border->set_insets(gfx::Insets());
   const int kSearchButtonNormalImages[] = IMAGE_GRID(IDR_OMNIBOX_SEARCH_BUTTON);
   search_button_border->SetPainter(
@@ -411,6 +411,7 @@ void LocationBarView::Init() {
   search_button_border->SetPainter(true, views::Button::STATE_HOVERED, NULL);
   search_button_border->SetPainter(true, views::Button::STATE_PRESSED, NULL);
   search_button_border->SetPainter(true, views::Button::STATE_DISABLED, NULL);
+  search_button_->set_border(search_button_border);
   const int kSearchButtonWidth = 56;
   search_button_->set_min_size(gfx::Size(kSearchButtonWidth, 0));
   search_button_->SetVisible(false);

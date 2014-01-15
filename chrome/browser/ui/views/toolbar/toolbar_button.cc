@@ -36,11 +36,6 @@ void ToolbarButton::Init() {
   SetFocusable(false);
   SetAccessibilityFocusable(true);
   image()->EnableCanvasFlippingForRTLUI(true);
-
-  // Provides the hover/pressed style used by buttons in the toolbar.
-  views::LabelButtonBorder* border =
-      new views::LabelButtonBorder(views::Button::STYLE_TEXTBUTTON);
-  set_border(border);
 }
 
 void ToolbarButton::ClearPendingMenu() {
