@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/callback.h"
 #include "mojo/public/system/core_cpp.h"
 
 namespace mojo {
@@ -19,8 +18,10 @@ bool ReadTextMessage(MessagePipeHandle handle, std::string* text);
 // Run |single_iteration| an appropriate number of times and report its
 // performance appropriately. (This actually runs |single_iteration| for a fixed
 // amount of time and reports the number of iterations per unit time.)
+typedef void (*PerfTestSingleIteration)(void* closure);
 void IterateAndReportPerf(const char* test_name,
-                          base::Callback<void()> single_iteration);
+                          PerfTestSingleIteration single_iteration,
+                          void* closure);
 
 MojoResult WriteEmptyMessage(const MessagePipeHandle& handle);
 MojoResult ReadEmptyMessage(const MessagePipeHandle& handle);
