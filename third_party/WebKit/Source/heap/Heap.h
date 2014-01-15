@@ -1482,7 +1482,7 @@ template<bool markWeakMembersStrongly, typename T, typename Traits>
 struct CollectionBackingTraceTrait<true, false, markWeakMembersStrongly, Member<T>, Traits> {
     static void mark(WebCore::Visitor* visitor, Member<T> self)
     {
-        visitor->mark(self.raw());
+        visitor->mark(self.get());
     }
 };
 
@@ -1496,7 +1496,7 @@ struct CollectionBackingTraceTrait<false, true, true, WeakMember<T>, Traits> {
         // backing only through the hash table. Reaching it in any other way
         // makes it impossible to update the size and deleted slot count of the
         // table, and exposes us to weak processing during iteration issues.
-        visitor->mark(self.raw());
+        visitor->mark(self.get());
     }
 };
 
@@ -1573,7 +1573,7 @@ struct IfWeakMember {
 
 template<typename T>
 struct IfWeakMember<WeakMember<T> > {
-    static bool isDead(Visitor* visitor, const WeakMember<T>& t) { return !visitor->isAlive(t.raw()); }
+    static bool isDead(Visitor* visitor, const WeakMember<T>& t) { return !visitor->isAlive(t.get()); }
 };
 
 template<typename K, typename V, typename HashFunctions, typename KeyTraits, typename ValueTraits>

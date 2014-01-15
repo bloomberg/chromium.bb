@@ -338,7 +338,7 @@ public:
         visitor->trace(m_bar);
     }
 
-    void clear() { m_bar.clear(); }
+    void clear() { m_bar.release(); }
 
 private:
     explicit Baz(Bar* bar)
@@ -653,8 +653,8 @@ TEST(HeapTest, TypedHeapSanity)
         // We use TraceCounter for allocating an object on the general heap.
         Persistent<TraceCounter> generalHeapObject = TraceCounter::create();
         Persistent<TestTypedHeapClass> typedHeapObject = TestTypedHeapClass::create();
-        EXPECT_NE(pageHeaderAddress(reinterpret_cast<Address>(generalHeapObject.raw())),
-            pageHeaderAddress(reinterpret_cast<Address>(typedHeapObject.raw())));
+        EXPECT_NE(pageHeaderAddress(reinterpret_cast<Address>(generalHeapObject.get())),
+            pageHeaderAddress(reinterpret_cast<Address>(typedHeapObject.get())));
     }
 
     Heap::shutdown();
@@ -994,7 +994,7 @@ TEST(HeapTest, WeakMembers)
         EXPECT_FALSE(h4->weakIsThere()); // h3 is gone from weak pointer.
         EXPECT_TRUE(h5->strongIsThere());
         EXPECT_FALSE(h5->weakIsThere()); // h3 is gone from weak pointer.
-        h1.clear(); // Zero out h1.
+        h1.release(); // Zero out h1.
         Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
         EXPECT_EQ(3u, Bar::s_live); // Only h4, h5 and h2 are left.
         EXPECT_TRUE(h4->strongIsThere()); // h2 is still pointed to from h4.
@@ -1003,6 +1003,21 @@ TEST(HeapTest, WeakMembers)
     // h4 and h5 have gone out of scope now and they were keeping h2 alive.
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
     EXPECT_EQ(0u, Bar::s_live); // All gone.
+
+    Heap::shutdown();
+}
+
+TEST(HeapTest, Comparisons)
+{
+    Heap::init();
+
+    {
+        Persistent<Bar> barPersistent = Bar::create();
+        Persistent<Foo> fooPersistent = Foo::create(barPersistent);
+        EXPECT_TRUE(barPersistent != fooPersistent);
+        barPersistent = fooPersistent;
+        EXPECT_TRUE(barPersistent == fooPersistent);
+    }
 
     Heap::shutdown();
 }

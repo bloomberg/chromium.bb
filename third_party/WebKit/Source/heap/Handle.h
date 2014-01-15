@@ -193,7 +193,7 @@ public:
 
     void trace(Visitor* visitor) { visitor->mark(m_raw); }
 
-    T* clear()
+    T* release()
     {
         T* result = m_raw;
         m_raw = 0;
@@ -234,7 +234,7 @@ public:
         return *this;
     }
 
-    T* raw() const { return m_raw; }
+    T* get() const { return m_raw; }
 
 private:
     T* m_raw;
@@ -266,7 +266,7 @@ public:
     template<typename U>
     Member(const Member<U>& other) : m_raw(other) { }
 
-    T* clear()
+    T* release()
     {
         T* result = m_raw;
         m_raw = 0;
@@ -321,25 +321,12 @@ public:
 
     void swap(Member<T>& other) { std::swap(m_raw, other.m_raw); }
 
-protected:
-    T* raw() const { return m_raw; }
+    T* get() const { return m_raw; }
 
+protected:
     T* m_raw;
 
-    template<typename U> friend class Member;
-    template<typename U> friend class Persistent;
-    friend class Visitor;
-    template<typename U> friend struct WTF::PtrHash;
-    // FIXME: Uncomment when HeapObjectHash is moved.
-    // friend struct HeapObjectHash<T>;
-    friend struct ObjectAliveTrait<Member<T> >;
     template<bool x, bool y, bool z, typename U, typename V> friend struct CollectionBackingTraceTrait;
-    template<typename U, typename V> friend bool operator==(const Member<U>&, const Persistent<V>&);
-    template<typename U, typename V> friend bool operator!=(const Member<U>&, const Persistent<V>&);
-    template<typename U, typename V> friend bool operator==(const Persistent<U>&, const Member<V>&);
-    template<typename U, typename V> friend bool operator!=(const Persistent<U>&, const Member<V>&);
-    template<typename U, typename V> friend bool operator==(const Member<U>&, const Member<V>&);
-    template<typename U, typename V> friend bool operator!=(const Member<U>&, const Member<V>&);
 };
 
 template<typename T>
@@ -404,25 +391,18 @@ public:
 private:
     T** cell() const { return const_cast<T**>(&this->m_raw); }
 
-    template<typename U> friend class Member;
-    template<typename U> friend class WeakMember;
-    template<typename U> friend class Persistent;
     friend class Visitor;
-    template<typename U> friend struct WTF::PtrHash;
-    // FIXME: Uncomment when moving HeapObjectHash to trunk.
-    // friend struct HeapObjectHash<T>;
-    friend struct ObjectAliveTrait<WeakMember<T> >;
 };
 
 // Comparison operators between (Weak)Members and Persistents
-template<typename T, typename U> inline bool operator==(const Member<T>& a, const Member<U>& b) { return a.m_raw == b.m_raw; }
-template<typename T, typename U> inline bool operator!=(const Member<T>& a, const Member<U>& b) { return a.m_raw != b.m_raw; }
-template<typename T, typename U> inline bool operator==(const Member<T>& a, const Persistent<U>& b) { return a.m_raw == b.m_raw; }
-template<typename T, typename U> inline bool operator!=(const Member<T>& a, const Persistent<U>& b) { return a.m_raw != b.m_raw; }
-template<typename T, typename U> inline bool operator==(const Persistent<T>& a, const Member<U>& b) { return a.m_raw == b.m_raw; }
-template<typename T, typename U> inline bool operator!=(const Persistent<T>& a, const Member<U>& b) { return a.m_raw != b.m_raw; }
-template<typename T, typename U> inline bool operator==(const Persistent<T>& a, const Persistent<U>& b) { return a.m_raw == b.m_raw; }
-template<typename T, typename U> inline bool operator!=(const Persistent<T>& a, const Persistent<U>& b) { return a.m_raw != b.m_raw; }
+template<typename T, typename U> inline bool operator==(const Member<T>& a, const Member<U>& b) { return a.get() == b.get(); }
+template<typename T, typename U> inline bool operator!=(const Member<T>& a, const Member<U>& b) { return a.get() != b.get(); }
+template<typename T, typename U> inline bool operator==(const Member<T>& a, const Persistent<U>& b) { return a.get() == b.get(); }
+template<typename T, typename U> inline bool operator!=(const Member<T>& a, const Persistent<U>& b) { return a.get() != b.get(); }
+template<typename T, typename U> inline bool operator==(const Persistent<T>& a, const Member<U>& b) { return a.get() == b.get(); }
+template<typename T, typename U> inline bool operator!=(const Persistent<T>& a, const Member<U>& b) { return a.get() != b.get(); }
+template<typename T, typename U> inline bool operator==(const Persistent<T>& a, const Persistent<U>& b) { return a.get() == b.get(); }
+template<typename T, typename U> inline bool operator!=(const Persistent<T>& a, const Persistent<U>& b) { return a.get() != b.get(); }
 
 } // namespace WebCore
 
@@ -453,7 +433,7 @@ template<typename T> struct HashTraits<WebCore::Member<T> > : SimpleClassHashTra
     typedef T* IteratorConstGetType;
     typedef T* IteratorReferenceType;
     typedef T* IteratorConstReferenceType;
-    static IteratorConstGetType getToConstGetConversion(const WebCore::Member<T>* x) { return x->raw(); }
+    static IteratorConstGetType getToConstGetConversion(const WebCore::Member<T>* x) { return x->get(); }
     static IteratorReferenceType getToReferenceConversion(IteratorGetType x) { return x; }
     static IteratorConstReferenceType getToReferenceConstConversion(IteratorConstGetType x) { return x; }
     // FIXME: Similarly, there is no need for a distinction between PeekOutType
@@ -481,7 +461,7 @@ template<typename T> struct HashTraits<WebCore::WeakMember<T> > : SimpleClassHas
     typedef T* IteratorConstGetType;
     typedef T* IteratorReferenceType;
     typedef T* IteratorConstReferenceType;
-    static IteratorConstGetType getToConstGetConversion(const WebCore::WeakMember<T>* x) { return x->raw(); }
+    static IteratorConstGetType getToConstGetConversion(const WebCore::WeakMember<T>* x) { return x->get(); }
     static IteratorReferenceType getToReferenceConversion(IteratorGetType x) { return x; }
     static IteratorConstReferenceType getToReferenceConstConversion(IteratorConstGetType x) { return x; }
     // FIXME: Similarly, there is no need for a distinction between PeekOutType

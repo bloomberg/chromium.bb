@@ -235,7 +235,7 @@ public:
     template<typename T>
     void trace(const Member<T>& t)
     {
-        mark(t.raw());
+        mark(t.get());
     }
 
     // WeakMember version of the templated trace method. It doesn't keep
@@ -310,7 +310,7 @@ public:
     template<typename T> inline bool isAlive(T obj) { return ObjectAliveTrait<T>::isAlive(this, obj); }
     template<typename T> inline bool isAlive(const Member<T>& member)
     {
-        return isAlive(member.raw());
+        return isAlive(member.get());
     }
 
 #ifndef NDEBUG
@@ -398,7 +398,7 @@ template<typename T> bool ObjectAliveTrait<T>::isAlive(Visitor* visitor, T obj)
 }
 template<typename T> bool ObjectAliveTrait<Member<T> >::isAlive(Visitor* visitor, const Member<T>& obj)
 {
-    return visitor->isMarked(obj.raw());
+    return visitor->isMarked(obj.get());
 }
 
 }
