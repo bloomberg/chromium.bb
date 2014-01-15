@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/strings/string16.h"
 #include "ipc/ipc_platform_file.h"
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/c/private/ppb_pdf.h"
@@ -62,6 +63,9 @@ class PepperPDFHost : public ppapi::host::ResourceHost {
   int32_t OnHostMsgGetResourceImage(ppapi::host::HostMessageContext* context,
                                     PP_ResourceImage image_id,
                                     float scale);
+  int32_t OnHostMsgSetSelectedText(
+      ppapi::host::HostMessageContext* context,
+      const base::string16& selected_text);
 
   bool CreateImageData(PP_Instance instance,
                        PP_ImageDataFormat format,

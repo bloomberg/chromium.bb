@@ -205,4 +205,13 @@ bool PDF::IsOutOfProcess(const InstanceHandle& instance) {
   return false;
 }
 
+// static
+void PDF::SetSelectedText(const InstanceHandle& instance,
+                          const char* selected_text) {
+  if (has_interface<PPB_PDF>()) {
+    get_interface<PPB_PDF>()->SetSelectedText(instance.pp_instance(),
+                                              selected_text);
+  }
+}
+
 }  // namespace pp

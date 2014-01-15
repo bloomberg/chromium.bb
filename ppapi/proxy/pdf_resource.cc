@@ -9,6 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -192,6 +193,11 @@ PP_Resource PDFResource::GetResourceImage(PP_ResourceImage image_id) {
 
 PP_Bool PDFResource::IsOutOfProcess() {
   return PP_TRUE;
+}
+
+void PDFResource::SetSelectedText(const char* selected_text) {
+  Post(RENDERER,
+       PpapiHostMsg_PDF_SetSelectedText(base::UTF8ToUTF16(selected_text)));
 }
 
 }  // namespace proxy

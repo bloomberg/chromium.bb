@@ -370,6 +370,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   virtual int MakePendingFileRefRendererHost(
       const base::FilePath& path) OVERRIDE;
   virtual void SetEmbedProperty(PP_Var key, PP_Var value) OVERRIDE;
+  virtual void SetSelectedText(const base::string16& selected_text) OVERRIDE;
 
   // PPB_Instance_API implementation.
   virtual PP_Bool BindGraphics(PP_Instance instance,
@@ -857,6 +858,9 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   scoped_ptr<MouseLockDispatcher::LockTarget> lock_target_;
 
   bool is_deleted_;
+
+  // The text that is currently selected in the plugin.
+  base::string16 selected_text_;
 
   // We use a weak ptr factory for scheduling DidChangeView events so that we
   // can tell whether updates are pending and consolidate them. When there's

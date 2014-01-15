@@ -1243,11 +1243,16 @@ bool PepperPluginInstanceImpl::GetBitmapForOptimizedPluginPaint(
   return true;
 }
 
+void PepperPluginInstanceImpl::SetSelectedText(
+    const base::string16& selected_text) {
+  selected_text_ = selected_text;
+}
+
 base::string16 PepperPluginInstanceImpl::GetSelectedText(bool html) {
   // Keep a reference on the stack. See NOTE above.
   scoped_refptr<PepperPluginInstanceImpl> ref(this);
   if (!LoadSelectionInterface())
-    return base::string16();
+    return selected_text_;
 
   PP_Var rv = plugin_selection_interface_->GetSelectedText(pp_instance(),
                                                            PP_FromBool(html));

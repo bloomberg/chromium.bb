@@ -148,6 +148,8 @@ int32_t PepperPDFHost::OnResourceMessageReceived(
                                         OnHostMsgSaveAs)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_PDF_GetResourceImage,
                                       OnHostMsgGetResourceImage)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_PDF_SetSelectedText,
+                                      OnHostMsgSetSelectedText)
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
@@ -340,6 +342,17 @@ int32_t PepperPDFHost::OnHostMsgGetResourceImage(
   image_data_resource.Release();
 
   return PP_OK_COMPLETIONPENDING;
+}
+
+int32_t PepperPDFHost::OnHostMsgSetSelectedText(
+    ppapi::host::HostMessageContext* context,
+    const base::string16& selected_text) {
+  content::PepperPluginInstance* instance =
+      host_->GetPluginInstance(pp_instance());
+  if (!instance)
+    return PP_ERROR_FAILED;
+  instance->SetSelectedText(selected_text);
+  return PP_OK;
 }
 
 // TODO(raymes): This function is mainly copied from ppb_image_data_proxy.cc.

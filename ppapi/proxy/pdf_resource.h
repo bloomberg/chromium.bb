@@ -55,6 +55,7 @@ class PPAPI_PROXY_EXPORT PDFResource
                                                float scale) OVERRIDE;
   virtual PP_Resource GetResourceImage(PP_ResourceImage image_id) OVERRIDE;
   virtual PP_Bool IsOutOfProcess() OVERRIDE;
+  virtual void SetSelectedText(const char* selected_text) OVERRIDE;
 
  private:
   std::string locale_;

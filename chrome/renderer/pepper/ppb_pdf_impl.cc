@@ -425,6 +425,11 @@ PP_Bool IsOutOfProcess(PP_Instance instance_id) {
   return PP_FALSE;
 }
 
+void SetSelectedText(PP_Instance instance_id, const char* selected_text) {
+  // This function is intended for out of process PDF plugin.
+  NOTIMPLEMENTED();
+}
+
 const PPB_PDF ppb_pdf = {
   &GetLocalizedString,
   &GetResourceImage,
@@ -443,6 +448,7 @@ const PPB_PDF ppb_pdf = {
   &GetResourceImageForScale,
   &ModalPromptForPassword,
   &IsOutOfProcess,
+  &SetSelectedText,
 };
 
 }  // namespace

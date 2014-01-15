@@ -1979,6 +1979,10 @@ IPC_MESSAGE_CONTROL2(PpapiPluginMsg_PDF_GetResourceImageReply,
                      ppapi::HostResource /* resource_id */,
                      PP_ImageDataDesc /* image_data_desc */)
 
+// Called by the plugin when its selection changes.
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_PDF_SetSelectedText,
+                     base::string16 /* selected_text */)
+
 // VideoCapture_Dev, plugin -> host
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_VideoCapture_Create)
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_VideoCapture_StartCapture)

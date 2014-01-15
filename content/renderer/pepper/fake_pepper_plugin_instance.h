@@ -39,6 +39,7 @@ class FakePepperPluginInstance : public PepperPluginInstance {
   virtual int MakePendingFileRefRendererHost(
       const base::FilePath& path) OVERRIDE;
   virtual void SetEmbedProperty(PP_Var key, PP_Var value) OVERRIDE;
+  virtual void SetSelectedText(const base::string16& selected_text) OVERRIDE;
 
  private:
   GURL gurl_;

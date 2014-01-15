@@ -163,6 +163,9 @@ struct PPB_PDF {
 
  // Returns PP_TRUE if the plugin is out of process.
  PP_Bool(*IsOutOfProcess)(PP_Instance instance);
+
+  // Sets the selected text of the plugin.
+  void(*SetSelectedText)(PP_Instance instance, const char* selected_text);
 };
 
 #endif  // PPAPI_C_PRIVATE_PPB_PDF_H_

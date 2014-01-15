@@ -78,4 +78,7 @@ int FakePepperPluginInstance::MakePendingFileRefRendererHost(
 
 void FakePepperPluginInstance::SetEmbedProperty(PP_Var key, PP_Var value) {}
 
+void FakePepperPluginInstance::SetSelectedText(
+    const base::string16& selected_text) {}
+
 }  // namespace content
