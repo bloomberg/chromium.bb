@@ -70,6 +70,10 @@ def generate_interface(interface):
         header_includes.update(v8_types.includes_for_type(parent_interface))
     extended_attributes = interface.extended_attributes
 
+    is_audio_buffer = inherits_interface(interface.name, 'AudioBuffer')
+    if is_audio_buffer:
+        includes.add('modules/webaudio/AudioBuffer.h')
+
     is_document = inherits_interface(interface.name, 'Document')
     if is_document:
         includes.update(['bindings/v8/ScriptController.h',
@@ -159,6 +163,7 @@ def generate_interface(interface):
             interface_length(interface, constructors + custom_constructors),
         'interface_name': interface.name,
         'is_active_dom_object': 'ActiveDOMObject' in extended_attributes,  # [ActiveDOMObject]
+        'is_audio_buffer': is_audio_buffer,
         'is_check_security': is_check_security,
         'is_constructor_call_with_document': has_extended_attribute_value(
             interface, 'ConstructorCallWith', 'Document'),  # [ConstructorCallWith=Document]

@@ -728,6 +728,16 @@ v8::Handle<v8::Object> {{v8_class}}::createWrapper(PassRefPtr<{{cpp_class}}> imp
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
 
+    {% if is_audio_buffer %}
+    {# We only setDeallocationObservers on array buffers that are held by some
+       object in the V8 heap, not in the ArrayBuffer constructor itself.
+       This is because V8 GC only cares about memory it can free on GC, and
+       until the object is exposed to JavaScript, V8 GC doesn't affect it. #}
+    for (unsigned i = 0, n = impl->numberOfChannels(); i < n; i++) {
+        Float32Array* channelData = impl->getChannelData(i);
+        channelData->buffer()->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instanceTemplate());
+    }
+    {% endif %}
     installPerContextEnabledProperties(wrapper, impl.get(), isolate);
     {% set wrapper_configuration = 'WrapperConfiguration::Dependent'
                                    if (has_visit_dom_wrapper or
