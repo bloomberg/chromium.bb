@@ -211,15 +211,10 @@ void FinancialPingUrlFetcherDelegate::OnURLFetchComplete(
   callback_.Run();
 }
 
-#if defined(RLZ_NETWORK_IMPLEMENTATION_CHROME_NET)
 bool send_financial_ping_interrupted_for_test = false;
-#endif
 
 }  // namespace
 
-#endif
-
-#if defined(RLZ_NETWORK_IMPLEMENTATION_CHROME_NET)
 void ShutdownCheck(base::WeakPtr<base::RunLoop> weak) {
   if (!weak.get())
     return;

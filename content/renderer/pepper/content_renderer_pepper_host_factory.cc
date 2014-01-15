@@ -40,7 +40,6 @@ namespace content {
 #if defined(ENABLE_WEBRTC)
 namespace {
 
-#if defined(ENABLE_WEBRTC)
 bool CanUseMediaStreamAPI(const RendererPpapiHost* host,
                           PP_Instance instance) {
   blink::WebPluginContainer* container =
@@ -53,7 +52,6 @@ bool CanUseMediaStreamAPI(const RendererPpapiHost* host,
       GetContentClient()->renderer();
   return content_renderer_client->AllowPepperMediaStreamAPI(document_url);
 }
-#endif  // defined(ENABLE_WEBRTC)
 
 }  // namespace
 #endif  // defined(ENABLE_WEBRTC)

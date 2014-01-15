@@ -345,9 +345,7 @@ void WebPluginDelegateStub::OnImeCompositionUpdated(
     int cursor_position) {
   if (delegate_)
     delegate_->ImeCompositionUpdated(text, clauses, target, cursor_position);
-#if defined(OS_WIN) && !defined(USE_AURA)
   webplugin_->UpdateIMEStatus();
-#endif
 }
 
 void WebPluginDelegateStub::OnImeCompositionCompleted(

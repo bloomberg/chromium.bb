@@ -769,9 +769,7 @@ void SyncSetupHandler::HandleStartSignin(const base::ListValue* args) {
 void SyncSetupHandler::HandleStopSyncing(const base::ListValue* args) {
   if (GetSyncService())
     ProfileSyncService::SyncEvent(ProfileSyncService::STOP_FROM_OPTIONS);
-#if !defined(OS_CHROMEOS)
   SigninManagerFactory::GetForProfile(GetProfile())->SignOut();
-#endif
 }
 #endif
 

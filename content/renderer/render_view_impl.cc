@@ -5962,12 +5962,10 @@ bool RenderViewImpl::openDateTimeChooser(
   return date_time_picker_client_->Open();
 }
 
-#if defined(OS_ANDROID)
 void RenderViewImpl::DismissDateTimeDialog() {
   DCHECK(date_time_picker_client_);
   date_time_picker_client_.reset(NULL);
 }
-#endif
 
 WebMediaPlayer* RenderViewImpl::CreateAndroidWebMediaPlayer(
       WebFrame* frame,

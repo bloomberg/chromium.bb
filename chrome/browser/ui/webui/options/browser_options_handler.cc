@@ -1516,8 +1516,6 @@ void BrowserOptionsHandler::VirtualKeyboardChangeCallback(
   chromeos::accessibility::EnableVirtualKeyboard(enabled);
 }
 
-#if defined(OS_CHROMEOS)
-
 void BrowserOptionsHandler::PerformFactoryResetRestart(
     const base::ListValue* args) {
   if (g_browser_process->browser_policy_connector()->IsEnterpriseManaged())
@@ -1531,8 +1529,6 @@ void BrowserOptionsHandler::PerformFactoryResetRestart(
   // be launched (as if it was a restart).
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
 }
-
-#endif
 
 void BrowserOptionsHandler::SetupAccessibilityFeatures() {
   PrefService* pref_service = g_browser_process->local_state();
