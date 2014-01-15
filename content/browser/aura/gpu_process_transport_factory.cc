@@ -292,11 +292,7 @@ gfx::GLSurfaceHandle GpuProcessTransportFactory::GetSharedSurfaceHandle() {
   // TODO(sievers): crbug.com/329737
   //                Creating the context here hurts startup performance.
   //                Remove this once all tests are happy.
-  scoped_refptr<cc::ContextProvider> provider =
-      SharedMainThreadContextProvider();
-  LOG_IF(ERROR, !provider.get())
-      << "Could not create shared context. CanUseBrowserCompositor() = "
-      << GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor();
+  SharedMainThreadContextProvider();
 
   gfx::GLSurfaceHandle handle = gfx::GLSurfaceHandle(
       gfx::kNullPluginWindow, gfx::TEXTURE_TRANSPORT);
