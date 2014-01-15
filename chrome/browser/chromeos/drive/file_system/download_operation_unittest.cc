@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/drive/file_system/download_operation.h"
 
+#include "base/callback_helpers.h"
 #include "base/file_util.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
@@ -432,12 +433,14 @@ TEST_F(DownloadOperationTest, EnsureFileDownloadedByPath_DirtyCache) {
       google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
+  scoped_ptr<base::ScopedClosureRunner> file_closer;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner(),
       FROM_HERE,
-      base::Bind(&internal::FileCache::MarkDirty,
+      base::Bind(&internal::FileCache::OpenForWrite,
                  base::Unretained(cache()),
-                 GetLocalId(file_in_root)),
+                 GetLocalId(file_in_root),
+                 &file_closer),
       google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);

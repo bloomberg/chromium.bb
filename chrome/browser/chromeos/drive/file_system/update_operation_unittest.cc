@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/drive/file_system/update_operation.h"
 
+#include "base/callback_helpers.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_test_base.h"
@@ -69,12 +70,14 @@ TEST_F(UpdateOperationTest, UpdateFileByLocalId_PersistentFile) {
 
   // Add the dirty bit.
   error = FILE_ERROR_FAILED;
+  scoped_ptr<base::ScopedClosureRunner> file_closer;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner(),
       FROM_HERE,
-      base::Bind(&internal::FileCache::MarkDirty,
+      base::Bind(&internal::FileCache::OpenForWrite,
                  base::Unretained(cache()),
-                 local_id),
+                 local_id,
+                 &file_closer),
       google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -160,12 +163,14 @@ TEST_F(UpdateOperationTest, UpdateFileByLocalId_Md5) {
 
   // Add the dirty bit.
   error = FILE_ERROR_FAILED;
+  scoped_ptr<base::ScopedClosureRunner> file_closer;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner(),
       FROM_HERE,
-      base::Bind(&internal::FileCache::MarkDirty,
+      base::Bind(&internal::FileCache::OpenForWrite,
                  base::Unretained(cache()),
-                 local_id),
+                 local_id,
+                 &file_closer),
       google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -217,9 +222,10 @@ TEST_F(UpdateOperationTest, UpdateFileByLocalId_Md5) {
   base::PostTaskAndReplyWithResult(
       blocking_task_runner(),
       FROM_HERE,
-      base::Bind(&internal::FileCache::MarkDirty,
+      base::Bind(&internal::FileCache::OpenForWrite,
                  base::Unretained(cache()),
-                 local_id),
+                 local_id,
+                 &file_closer),
       google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -258,9 +264,10 @@ TEST_F(UpdateOperationTest, UpdateFileByLocalId_Md5) {
   base::PostTaskAndReplyWithResult(
       blocking_task_runner(),
       FROM_HERE,
-      base::Bind(&internal::FileCache::MarkDirty,
+      base::Bind(&internal::FileCache::OpenForWrite,
                  base::Unretained(cache()),
-                 local_id),
+                 local_id,
+                 &file_closer),
       google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);

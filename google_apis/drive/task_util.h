@@ -10,8 +10,8 @@
 
 namespace google_apis {
 
-// Runs task on the thread to which |task_runner| belongs.
-void RunTaskOnThread(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+// Runs task on a thread on which |task_runner| may run tasks.
+void RunTaskOnThread(scoped_refptr<base::SequencedTaskRunner> task_runner,
                      const base::Closure& task);
 
 namespace internal {

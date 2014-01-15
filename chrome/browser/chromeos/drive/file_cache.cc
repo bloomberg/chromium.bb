@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/callback_helpers.h"
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
 #include "base/logging.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/drive/drive_api_util.h"
 #include "chromeos/chromeos_constants.h"
 #include "content/public/browser/browser_thread.h"
+#include "google_apis/drive/task_util.h"
 #include "net/base/mime_sniffer.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
@@ -248,7 +250,9 @@ FileError FileCache::MarkAsMounted(const std::string& id,
   return FILE_ERROR_OK;
 }
 
-FileError FileCache::MarkDirty(const std::string& id) {
+FileError FileCache::OpenForWrite(
+    const std::string& id,
+    scoped_ptr<base::ScopedClosureRunner>* file_closer) {
   AssertOnSequencedWorkerPool();
 
   // Marking a file dirty means its entry and actual file blob must exist in
@@ -260,12 +264,25 @@ FileError FileCache::MarkDirty(const std::string& id) {
     return FILE_ERROR_NOT_FOUND;
   }
 
-  if (cache_entry.is_dirty())
-    return FILE_ERROR_OK;
+  if (!cache_entry.is_dirty()) {
+    cache_entry.set_is_dirty(true);
+    if (!storage_->PutCacheEntry(id, cache_entry))
+      return FILE_ERROR_FAILED;
+  }
 
-  cache_entry.set_is_dirty(true);
-  return storage_->PutCacheEntry(id, cache_entry) ?
-      FILE_ERROR_OK : FILE_ERROR_FAILED;
+  write_opened_files_[id]++;
+  file_closer->reset(new base::ScopedClosureRunner(
+      base::Bind(&google_apis::RunTaskOnThread,
+                 blocking_task_runner_,
+                 base::Bind(&FileCache::CloseForWrite,
+                            weak_ptr_factory_.GetWeakPtr(),
+                            id))));
+  return FILE_ERROR_OK;
+}
+
+bool FileCache::IsOpenedForWrite(const std::string& id) {
+  AssertOnSequencedWorkerPool();
+  return write_opened_files_.count(id);
 }
 
 FileError FileCache::ClearDirty(const std::string& id, const std::string& md5) {
@@ -281,8 +298,8 @@ FileError FileCache::ClearDirty(const std::string& id, const std::string& md5) {
     return FILE_ERROR_NOT_FOUND;
   }
 
-  // If a file is not dirty (it should have been marked dirty via
-  // MarkDirtyInCache), clearing its dirty state is an invalid operation.
+  // If a file is not dirty (it should have been marked dirty via OpenForWrite),
+  // clearing its dirty state is an invalid operation.
   if (!cache_entry.is_dirty()) {
     LOG(WARNING) << "Can't clear dirty state of a non-dirty file: " << id;
     return FILE_ERROR_INVALID_OPERATION;
@@ -351,9 +368,6 @@ bool FileCache::Initialize() {
 
 void FileCache::Destroy() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // Invalidate the weak pointer.
-  weak_ptr_factory_.InvalidateWeakPtrs();
 
   // Destroy myself on the blocking pool.
   // Note that base::DeletePointer<> cannot be used as the destructor of this
@@ -512,6 +526,19 @@ bool FileCache::RenameCacheFilesToNewFormat() {
       return false;
   }
   return true;
+}
+
+void FileCache::CloseForWrite(const std::string& id) {
+  AssertOnSequencedWorkerPool();
+
+  std::map<std::string, int>::iterator it = write_opened_files_.find(id);
+  if (it == write_opened_files_.end())
+    return;
+
+  DCHECK_LT(0, it->second);
+  --it->second;
+  if (it->second == 0)
+    write_opened_files_.erase(it);
 }
 
 }  // namespace internal

@@ -8,9 +8,9 @@
 
 namespace google_apis {
 
-void RunTaskOnThread(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+void RunTaskOnThread(scoped_refptr<base::SequencedTaskRunner> task_runner,
                      const base::Closure& task) {
-  if (task_runner->BelongsToCurrentThread()) {
+  if (task_runner->RunsTasksOnCurrentThread()) {
     task.Run();
   } else {
     const bool posted = task_runner->PostTask(FROM_HERE, task);

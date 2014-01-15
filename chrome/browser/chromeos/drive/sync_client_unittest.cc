@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/drive/sync_client.h"
 
+#include "base/callback_helpers.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
@@ -214,7 +215,9 @@ class SyncClientTest : public testing::Test {
               cache_->Store(GetLocalId("dirty"), md5_dirty,
                             temp_file, FileCache::FILE_OPERATION_COPY));
     EXPECT_EQ(FILE_ERROR_OK, cache_->Pin(GetLocalId("dirty")));
-    EXPECT_EQ(FILE_ERROR_OK, cache_->MarkDirty(GetLocalId("dirty")));
+    scoped_ptr<base::ScopedClosureRunner> file_closer;
+    EXPECT_EQ(FILE_ERROR_OK,
+              cache_->OpenForWrite(GetLocalId("dirty"), &file_closer));
 
     // Prepare a removed file.
     file_system::RemoveOperation remove_operation(

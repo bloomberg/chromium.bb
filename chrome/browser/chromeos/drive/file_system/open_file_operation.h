@@ -16,6 +16,7 @@
 
 namespace base {
 class FilePath;
+class ScopedClosureRunner;
 class SequencedTaskRunner;
 }  // namespace base
 
@@ -70,14 +71,17 @@ class OpenFileOperation {
                                    const base::FilePath& local_file_path,
                                    scoped_ptr<ResourceEntry> entry);
 
-  // Part of OpenFile(). Called after marking the cache file dirty.
-  void OpenFileAfterMarkDirty(const base::FilePath& local_file_path,
-                              const std::string& local_id,
-                              const OpenFileCallback& callback,
-                              FileError error);
+  // Part of OpenFile(). Called after opening the cache file.
+  void OpenFileAfterOpenForWrite(
+      const base::FilePath& local_file_path,
+      const std::string& local_id,
+      const OpenFileCallback& callback,
+      scoped_ptr<base::ScopedClosureRunner>* file_closer,
+      FileError error);
 
   // Closes the file with |local_id|.
-  void CloseFile(const std::string& local_id);
+  void CloseFile(const std::string& local_id,
+                 scoped_ptr<base::ScopedClosureRunner> file_closer);
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   OperationObserver* observer_;

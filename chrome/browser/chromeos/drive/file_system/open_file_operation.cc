@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
@@ -121,23 +122,28 @@ void OpenFileOperation::OpenFileAfterFileDownloaded(
     return;
   }
 
+  scoped_ptr<base::ScopedClosureRunner>* file_closer =
+      new scoped_ptr<base::ScopedClosureRunner>;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
-      base::Bind(&internal::FileCache::MarkDirty,
+      base::Bind(&internal::FileCache::OpenForWrite,
                  base::Unretained(cache_),
-                 entry->local_id()),
-      base::Bind(&OpenFileOperation::OpenFileAfterMarkDirty,
+                 entry->local_id(),
+                 file_closer),
+      base::Bind(&OpenFileOperation::OpenFileAfterOpenForWrite,
                  weak_ptr_factory_.GetWeakPtr(),
                  local_file_path,
                  entry->local_id(),
-                 callback));
+                 callback,
+                 base::Owned(file_closer)));
 }
 
-void OpenFileOperation::OpenFileAfterMarkDirty(
+void OpenFileOperation::OpenFileAfterOpenForWrite(
     const base::FilePath& local_file_path,
     const std::string& local_id,
     const OpenFileCallback& callback,
+    scoped_ptr<base::ScopedClosureRunner>* file_closer,
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -150,10 +156,14 @@ void OpenFileOperation::OpenFileAfterMarkDirty(
   ++open_files_[local_id];
   callback.Run(error, local_file_path,
                base::Bind(&OpenFileOperation::CloseFile,
-                          weak_ptr_factory_.GetWeakPtr(), local_id));
+                          weak_ptr_factory_.GetWeakPtr(),
+                          local_id,
+                          base::Passed(file_closer)));
 }
 
-void OpenFileOperation::CloseFile(const std::string& local_id) {
+void OpenFileOperation::CloseFile(
+    const std::string& local_id,
+    scoped_ptr<base::ScopedClosureRunner> file_closer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_GT(open_files_[local_id], 0);
 

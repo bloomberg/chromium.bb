@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/drive/file_system/truncate_operation.h"
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_platform_file_closer.h"
 #include "base/logging.h"
@@ -35,7 +36,8 @@ FileError TruncateOnBlockingPool(internal::ResourceMetadata* metadata,
   DCHECK(metadata);
   DCHECK(cache);
 
-  FileError error = cache->MarkDirty(local_id);
+  scoped_ptr<base::ScopedClosureRunner> file_closer;
+  FileError error = cache->OpenForWrite(local_id, &file_closer);
   if (error != FILE_ERROR_OK)
     return error;
 
@@ -49,7 +51,7 @@ FileError TruncateOnBlockingPool(internal::ResourceMetadata* metadata,
     return FILE_ERROR_FAILED;
 
   DCHECK_NE(base::kInvalidPlatformFileValue, file);
-  base::ScopedPlatformFileCloser file_closer(&file);
+  base::ScopedPlatformFileCloser platform_file_closer(&file);
 
   if (!base::TruncatePlatformFile(file, length))
     return FILE_ERROR_FAILED;

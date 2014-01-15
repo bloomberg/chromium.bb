@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/drive/resource_metadata_storage.h"
 
 namespace base {
+class ScopedClosureRunner;
 class SequencedTaskRunner;
 }  // namespace base
 
@@ -105,8 +106,14 @@ class FileCache {
   // Sets the state of the cache entry corresponding to file_path as unmounted.
   FileError MarkAsUnmounted(const base::FilePath& file_path);
 
-  // Marks the specified entry dirty.
-  FileError MarkDirty(const std::string& id);
+  // Opens the cache file corresponding to |id| for write. |file_closer| should
+  // be kept alive until writing finishes.
+  // This method must be called before writing to cache files.
+  FileError OpenForWrite(const std::string& id,
+                         scoped_ptr<base::ScopedClosureRunner>* file_closer);
+
+  // Returns true if the cache file corresponding to |id| is write-opened.
+  bool IsOpenedForWrite(const std::string& id);
 
   // Clears dirty state of the specified entry and updates its MD5.
   FileError ClearDirty(const std::string& id, const std::string& md5);
@@ -160,6 +167,10 @@ class FileCache {
   // TODO(hashimoto): Remove this method at some point.
   bool RenameCacheFilesToNewFormat();
 
+  // This method must be called after writing to a cache file.
+  // Used to implement OpenForWrite().
+  void CloseForWrite(const std::string& id);
+
   const base::FilePath cache_file_directory_;
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
@@ -168,11 +179,15 @@ class FileCache {
 
   FreeDiskSpaceGetterInterface* free_disk_space_getter_;  // Not owned.
 
+  // IDs of files being write-opened.
+  std::map<std::string, int> write_opened_files_;
+
   // IDs of files marked mounted.
   std::set<std::string> mounted_files_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
+  // This object should be accessed only on |blocking_task_runner_|.
   base::WeakPtrFactory<FileCache> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(FileCache);
 };

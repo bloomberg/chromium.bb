@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_helpers.h"
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/scoped_temp_dir.h"
@@ -195,12 +196,14 @@ class FileCacheTestOnUIThread : public testing::Test {
     expected_cache_state_ = expected_cache_state;
 
     FileError error = FILE_ERROR_OK;
+    scoped_ptr<base::ScopedClosureRunner> file_closer;
     base::PostTaskAndReplyWithResult(
         blocking_task_runner_,
         FROM_HERE,
-        base::Bind(&internal::FileCache::MarkDirty,
+        base::Bind(&internal::FileCache::OpenForWrite,
                    base::Unretained(cache_.get()),
-                   id),
+                   id,
+                   &file_closer),
         google_apis::test_util::CreateCopyResultCallback(&error));
     test_util::RunBlockingPoolTask();
 
@@ -929,6 +932,41 @@ TEST_F(FileCacheTest, GetFile) {
   contents.clear();
   EXPECT_TRUE(base::ReadFileToString(cache_file_path, &contents));
   EXPECT_EQ(src_contents, contents);
+}
+
+TEST_F(FileCacheTest, OpenForWrite) {
+  // Prepare a file.
+  base::FilePath src_file;
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(), &src_file));
+
+  const std::string id = "id";
+  ASSERT_EQ(FILE_ERROR_OK, cache_->Store(id, "md5", src_file,
+                                         FileCache::FILE_OPERATION_COPY));
+
+  // Not opened.
+  EXPECT_FALSE(cache_->IsOpenedForWrite(id));
+
+  // Open (1).
+  scoped_ptr<base::ScopedClosureRunner> file_closer1;
+  EXPECT_EQ(FILE_ERROR_OK, cache_->OpenForWrite(id, &file_closer1));
+  EXPECT_TRUE(cache_->IsOpenedForWrite(id));
+
+  // Open (2).
+  scoped_ptr<base::ScopedClosureRunner> file_closer2;
+  EXPECT_EQ(FILE_ERROR_OK, cache_->OpenForWrite(id, &file_closer2));
+  EXPECT_TRUE(cache_->IsOpenedForWrite(id));
+
+  // Close (1).
+  file_closer1.reset();
+  EXPECT_TRUE(cache_->IsOpenedForWrite(id));
+
+  // Close (2).
+  file_closer2.reset();
+  EXPECT_FALSE(cache_->IsOpenedForWrite(id));
+
+  // Try to open non-existent file.
+  EXPECT_EQ(FILE_ERROR_NOT_FOUND,
+            cache_->OpenForWrite("nonexistent_id", &file_closer1));
 }
 
 TEST_F(FileCacheTest, RenameCacheFilesToNewFormat) {

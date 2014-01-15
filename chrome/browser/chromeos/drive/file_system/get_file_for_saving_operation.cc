@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system/create_file_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/download_operation.h"
@@ -99,23 +100,28 @@ void GetFileForSavingOperation::GetFileForSavingAfterDownload(
   }
 
   const std::string& local_id = entry->local_id();
+  scoped_ptr<base::ScopedClosureRunner>* file_closer =
+      new scoped_ptr<base::ScopedClosureRunner>;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
-      base::Bind(&internal::FileCache::MarkDirty,
+      base::Bind(&internal::FileCache::OpenForWrite,
                  base::Unretained(cache_),
-                 local_id),
-      base::Bind(&GetFileForSavingOperation::GetFileForSavingAfterMarkDirty,
+                 local_id,
+                 file_closer),
+      base::Bind(&GetFileForSavingOperation::GetFileForSavingAfterOpenForWrite,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback,
                  cache_path,
-                 base::Passed(&entry)));
+                 base::Passed(&entry),
+                 base::Owned(file_closer)));
 }
 
-void GetFileForSavingOperation::GetFileForSavingAfterMarkDirty(
+void GetFileForSavingOperation::GetFileForSavingAfterOpenForWrite(
     const GetFileCallback& callback,
     const base::FilePath& cache_path,
     scoped_ptr<ResourceEntry> entry,
+    scoped_ptr<base::ScopedClosureRunner>* file_closer,
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -135,7 +141,8 @@ void GetFileForSavingOperation::GetFileForSavingAfterMarkDirty(
                  base::Passed(&entry)),
       base::Bind(&GetFileForSavingOperation::OnWriteEvent,
                  weak_ptr_factory_.GetWeakPtr(),
-                 local_id));
+                 local_id,
+                 base::Passed(file_closer)));
 }
 
 void GetFileForSavingOperation::GetFileForSavingAfterWatch(
@@ -155,7 +162,9 @@ void GetFileForSavingOperation::GetFileForSavingAfterWatch(
   callback.Run(FILE_ERROR_OK, cache_path, entry.Pass());
 }
 
-void GetFileForSavingOperation::OnWriteEvent(const std::string& local_id) {
+void GetFileForSavingOperation::OnWriteEvent(
+    const std::string& local_id,
+    scoped_ptr<base::ScopedClosureRunner> file_closer) {
   observer_->OnCacheFileUploadNeededByOperation(local_id);
 
   // Clients may have enlarged the file. By FreeDiskpSpaceIfNeededFor(0),
