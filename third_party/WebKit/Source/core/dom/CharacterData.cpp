@@ -70,7 +70,7 @@ String CharacterData::substringData(unsigned offset, unsigned count, ExceptionSt
 void CharacterData::parserAppendData(const String& string)
 {
     unsigned oldLength = m_data.length();
-    m_data.append(string);
+    m_data = m_data + string;
 
     ASSERT(!renderer() || isTextNode());
     if (isTextNode())

@@ -98,7 +98,7 @@ void CSSStyleSheetResource::checkNotify()
     // Decode the data to find out the encoding and keep the sheet text around during checkNotify()
     if (m_data) {
         m_decodedSheetText = m_decoder->decode(m_data->data(), m_data->size());
-        m_decodedSheetText.append(m_decoder->flush());
+        m_decodedSheetText = m_decodedSheetText + m_decoder->flush();
     }
 
     ResourceClientWalker<StyleSheetResourceClient> w(m_clients);

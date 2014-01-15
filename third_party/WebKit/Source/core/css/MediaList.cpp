@@ -239,17 +239,17 @@ static void addResolutionWarningMessageToConsole(Document* document, const Strin
     DEFINE_STATIC_LOCAL(String, lengthUnitInch, ("inch"));
     DEFINE_STATIC_LOCAL(String, lengthUnitCentimeter, ("centimeter"));
 
-    String message;
+    StringBuilder message;
     if (value->isDotsPerInch())
-        message = String(mediaQueryMessage).replace("%replacementUnits%", mediaValueDPI).replace("%lengthUnit%", lengthUnitInch);
+        message.append(String(mediaQueryMessage).replace("%replacementUnits%", mediaValueDPI).replace("%lengthUnit%", lengthUnitInch));
     else if (value->isDotsPerCentimeter())
-        message = String(mediaQueryMessage).replace("%replacementUnits%", mediaValueDPCM).replace("%lengthUnit%", lengthUnitCentimeter);
+        message.append(String(mediaQueryMessage).replace("%replacementUnits%", mediaValueDPCM).replace("%lengthUnit%", lengthUnitCentimeter));
     else
         ASSERT_NOT_REACHED();
 
     message.append(serializedExpression);
 
-    document->addConsoleMessage(CSSMessageSource, DebugMessageLevel, message);
+    document->addConsoleMessage(CSSMessageSource, DebugMessageLevel, message.toString());
 }
 
 static inline bool isResolutionMediaFeature(const AtomicString& mediaFeature)
