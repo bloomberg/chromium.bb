@@ -336,6 +336,18 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'UNKNOWN',
     ],
 
+    # http://crbug.com/334668
+    # MIT license.
+    'tools/swarming_client/third_party/httplib2': [
+        'UNKNOWN',
+    ],
+
+    # http://crbug.com/334668
+    # Apache v2.0.
+    'tools/swarming_client/third_party/oauth2client': [
+        'UNKNOWN',
+    ],
+
     # https://github.com/kennethreitz/requests/issues/1610
     'tools/swarming_client/third_party/requests': [
         'UNKNOWN',
