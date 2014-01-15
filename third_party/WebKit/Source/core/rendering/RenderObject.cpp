@@ -3370,17 +3370,6 @@ bool RenderObject::nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const
     return false;
 }
 
-// FIXME: This should really use local coords
-// Works on absolute coords - expensive to call
-bool RenderObject::isContainedInParentBoundingBox() const
-{
-    if (!parent())
-        return false;
-
-    IntRect parentRect = parent()->absoluteBoundingBoxRect();
-    return parentRect.contains(absoluteBoundingBoxRect());
-}
-
 bool RenderObject::isRelayoutBoundaryForInspector() const
 {
     return objectIsRelayoutBoundary(this);
