@@ -424,6 +424,12 @@ class ChromeLauncherController : public ash::ShelfDelegate,
   typedef std::map<std::string, WebContentsList> AppIDToWebContentsListMap;
   typedef std::map<content::WebContents*, std::string> WebContentsToAppIDMap;
 
+  // Remembers / restores list of running applications.
+  // Note that this order will neither be stored in the preference nor will it
+  // remember the order of closed applications since it is only temporary.
+  void RememberUnpinnedRunningApplicationOrder();
+  void RestoreUnpinnedRunningApplicationOrder(const std::string& user_id);
+
   // Creates a new app shortcut item and controller on the shelf at |index|.
   // Use kInsertItemAtEnd to add a shortcut as the last item.
   ash::LauncherID CreateAppShortcutLauncherItemWithType(
@@ -586,6 +592,12 @@ class ChromeLauncherController : public ash::ShelfDelegate,
 
   // True if each user has an own desktop.
   bool multi_profile_desktop_separation_;
+
+  // The list of running & un-pinned applications for different users on hidden
+  // desktops.
+  typedef std::vector<std::string> RunningAppListIds;
+  typedef std::map<std::string, RunningAppListIds> RunningAppListIdMap;
+  RunningAppListIdMap last_used_running_application_order_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherController);
 };

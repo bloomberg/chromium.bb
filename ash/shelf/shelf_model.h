@@ -52,6 +52,11 @@ class ASH_EXPORT ShelfModel {
   // Note: Requires a linear search.
   int GetItemIndexForType(LauncherItemType type);
 
+  // Returns the index of the first running application or the index where the
+  // first running application would go if there are no running (non pinned)
+  // applications yet.
+  int FirstRunningAppIndex() const;
+
   // Returns the index of the first panel or the index where the first panel
   // would go if there are no panels.
   int FirstPanelIndex() const;

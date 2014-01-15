@@ -1150,6 +1150,8 @@ void ChromeLauncherController::ShelfStatusChanged() {
 
 void ChromeLauncherController::ActiveUserChanged(
     const std::string& user_email) {
+  // Store the order of running applications for the user which gets inactive.
+  RememberUnpinnedRunningApplicationOrder();
   // Coming here the default profile is already switched. All profile specific
   // resources get released and the new profile gets attached instead.
   ReleaseProfile();
@@ -1165,6 +1167,9 @@ void ChromeLauncherController::ActiveUserChanged(
   SetShelfAlignmentFromPrefs();
   SetShelfAutoHideBehaviorFromPrefs();
   SetShelfBehaviorsFromPrefs();
+  // Restore the order of running, but unpinned applications for the activated
+  // user.
+  RestoreUnpinnedRunningApplicationOrder(user_email);
 }
 
 void ChromeLauncherController::AdditionalUserAddedToSession(Profile* profile) {
@@ -1397,6 +1402,42 @@ const std::string& ChromeLauncherController::GetAppIdFromLauncherIdForTest(
 void ChromeLauncherController::SetShelfItemDelegateManagerForTest(
     ash::ShelfItemDelegateManager* manager) {
   item_delegate_manager_ = manager;
+}
+
+void ChromeLauncherController::RememberUnpinnedRunningApplicationOrder() {
+  RunningAppListIds list;
+  for (int i = 0; i < model_->item_count(); i++) {
+    ash::LauncherItemType type = model_->items()[i].type;
+    if (type == ash::TYPE_WINDOWED_APP || type == ash::TYPE_PLATFORM_APP)
+      list.push_back(GetAppIDForLauncherID(model_->items()[i].id));
+  }
+  last_used_running_application_order_[
+      multi_user_util::GetUserIDFromProfile(profile_)] = list;
+}
+
+void ChromeLauncherController::RestoreUnpinnedRunningApplicationOrder(
+    const std::string& user_id) {
+  const RunningAppListIdMap::iterator app_id_list =
+      last_used_running_application_order_.find(user_id);
+  if (app_id_list == last_used_running_application_order_.end())
+    return;
+
+  // Find the first insertion point for running applications.
+  int running_index = model_->FirstRunningAppIndex();
+  for (RunningAppListIds::iterator app_id = app_id_list->second.begin();
+       app_id != app_id_list->second.end(); ++app_id) {
+    ash::LauncherID launcher_id = GetLauncherIDForAppID(*app_id);
+    if (launcher_id) {
+      int app_index = model_->ItemIndexByID(launcher_id);
+      DCHECK_GE(app_index, 0);
+      ash::LauncherItemType type = model_->items()[app_index].type;
+      if (type == ash::TYPE_WINDOWED_APP || type == ash::TYPE_PLATFORM_APP) {
+        if (running_index != app_index)
+          model_->Move(running_index, app_index);
+        running_index++;
+      }
+    }
+  }
 }
 
 ash::LauncherID ChromeLauncherController::CreateAppShortcutLauncherItemWithType(

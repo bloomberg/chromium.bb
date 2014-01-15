@@ -236,6 +236,72 @@ TEST_F(ShelfModelTest, AddIndices) {
   EXPECT_EQ(TYPE_APP_LIST, model_->items()[0].type);
 }
 
+// Test that the indexes for the running applications are properly determined
+// when the first running application is a windowed application.
+TEST_F(ShelfModelTest, FirstRunningAppIndexUsingWindowedAppFirst) {
+  // Insert the browser shortcut at index 1 and check that the running
+  // application index would be behind it.
+  LauncherItem item;
+  item.type = TYPE_BROWSER_SHORTCUT;
+  EXPECT_EQ(1, model_->Add(item));
+  EXPECT_EQ(2, model_->FirstRunningAppIndex());
+
+  // Insert a panel application at the end and check that the running
+  // application index would be at / before the application panel.
+  item.type = TYPE_APP_PANEL;
+  EXPECT_EQ(2, model_->Add(item));
+  EXPECT_EQ(2, model_->FirstRunningAppIndex());
+
+  // Insert an application shortcut and make sure that the running application
+  // index would be behind it.
+  item.type = TYPE_APP_SHORTCUT;
+  EXPECT_EQ(2, model_->Add(item));
+  EXPECT_EQ(3, model_->FirstRunningAppIndex());
+
+  // Insert different running application shortcuts - but first a windowed
+  // application - and make sure that the same index gets returned.
+  item.type = TYPE_WINDOWED_APP;
+  int running_app_index = model_->Add(item);
+  EXPECT_EQ(3, running_app_index);
+  EXPECT_EQ(running_app_index, model_->FirstRunningAppIndex());
+  item.type = TYPE_PLATFORM_APP;
+  EXPECT_EQ(running_app_index + 1, model_->Add(item));
+  EXPECT_EQ(running_app_index, model_->FirstRunningAppIndex());
+}
+
+// Test that the indexes for the running applications are properly determined
+// when the first running application is a platform application.
+TEST_F(ShelfModelTest, FirstRunningAppIndexUsingPlatformAppFirst) {
+  // Insert the browser shortcut at index 1 and check that the running
+  // application index would be behind it.
+  LauncherItem item;
+  item.type = TYPE_BROWSER_SHORTCUT;
+  EXPECT_EQ(1, model_->Add(item));
+  EXPECT_EQ(2, model_->FirstRunningAppIndex());
+
+  // Insert a panel application at the end and check that the running
+  // application index would be at / before the application panel.
+  item.type = TYPE_APP_PANEL;
+  EXPECT_EQ(2, model_->Add(item));
+  EXPECT_EQ(2, model_->FirstRunningAppIndex());
+
+  // Insert an application shortcut and make sure that the running application
+  // index would be behind it.
+  item.type = TYPE_APP_SHORTCUT;
+  EXPECT_EQ(2, model_->Add(item));
+  EXPECT_EQ(3, model_->FirstRunningAppIndex());
+
+  // Insert different running application shortcuts - but first a platfom
+  // application - and make sure that the same index gets returned.
+  item.type = TYPE_PLATFORM_APP;
+  int running_app_index = model_->Add(item);
+  EXPECT_EQ(3, running_app_index);
+  EXPECT_EQ(running_app_index, model_->FirstRunningAppIndex());
+  item.type = TYPE_WINDOWED_APP;
+  EXPECT_EQ(running_app_index + 1, model_->Add(item));
+  EXPECT_EQ(running_app_index, model_->FirstRunningAppIndex());
+}
+
 // Assertions around where items are added.
 TEST_F(ShelfModelTest, AddIndicesForLegacyShelfLayout) {
   CommandLine::ForCurrentProcess()->AppendSwitch(

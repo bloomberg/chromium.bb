@@ -152,6 +152,17 @@ LauncherItems::const_iterator ShelfModel::ItemByID(int id) const {
   return items_.end();
 }
 
+int ShelfModel::FirstRunningAppIndex() const {
+  // Since lower_bound only checks weights against each other, we do not need
+  // to explicitly change different running application types.
+  DCHECK_EQ(LauncherItemTypeToWeight(TYPE_WINDOWED_APP),
+            LauncherItemTypeToWeight(TYPE_PLATFORM_APP));
+  LauncherItem weight_dummy;
+  weight_dummy.type = TYPE_WINDOWED_APP;
+  return std::lower_bound(items_.begin(), items_.end(), weight_dummy,
+                          CompareByWeight) - items_.begin();
+}
+
 int ShelfModel::FirstPanelIndex() const {
   LauncherItem weight_dummy;
   weight_dummy.type = TYPE_APP_PANEL;
