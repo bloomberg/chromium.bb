@@ -1176,12 +1176,6 @@ gfx::Rect BrowserView::GetRootWindowResizerRect() const {
   return gfx::Rect();
 }
 
-void BrowserView::DisableInactiveFrame() {
-#if defined(OS_WIN) && !defined(USE_AURA)
-  frame_->DisableInactiveRendering();
-#endif  // No tricks are needed to get the right behavior on Linux.
-}
-
 void BrowserView::ConfirmAddSearchProvider(TemplateURL* template_url,
                                            Profile* profile) {
   chrome::EditSearchEngine(GetWidget()->GetNativeWindow(), template_url, NULL,
@@ -1326,18 +1320,6 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
       (event.type != blink::WebInputEvent::KeyUp)) {
     return false;
   }
-
-#if defined(OS_WIN) && !defined(USE_AURA)
-  // As Alt+F4 is the close-app keyboard shortcut, it needs processing
-  // immediately.
-  if (event.windowsKeyCode == ui::VKEY_F4 &&
-      event.type == blink::WebInputEvent::RawKeyDown &&
-      event.modifiers == NativeWebKeyboardEvent::AltKey) {
-    DefWindowProc(event.os_event.hwnd, event.os_event.message,
-                  event.os_event.wParam, event.os_event.lParam);
-    return true;
-  }
-#endif
 
   views::FocusManager* focus_manager = GetFocusManager();
   DCHECK(focus_manager);
@@ -2278,38 +2260,6 @@ bool BrowserView::ShouldUseImmersiveFullscreenForUrl(const GURL& url) const {
 }
 
 void BrowserView::LoadAccelerators() {
-#if defined(OS_WIN) && !defined(USE_AURA)
-  HACCEL accelerator_table = AtlLoadAccelerators(IDR_MAINFRAME);
-  DCHECK(accelerator_table);
-
-  // We have to copy the table to access its contents.
-  int count = CopyAcceleratorTable(accelerator_table, 0, 0);
-  if (count == 0) {
-    // Nothing to do in that case.
-    return;
-  }
-
-  ACCEL* accelerators = static_cast<ACCEL*>(malloc(sizeof(ACCEL) * count));
-  CopyAcceleratorTable(accelerator_table, accelerators, count);
-
-  views::FocusManager* focus_manager = GetFocusManager();
-  DCHECK(focus_manager);
-
-  // Let's fill our own accelerator table.
-  for (int i = 0; i < count; ++i) {
-    ui::Accelerator accelerator(
-        static_cast<ui::KeyboardCode>(accelerators[i].key),
-        ui::GetModifiersFromACCEL(accelerators[i]));
-    accelerator_table_[accelerator] = accelerators[i].cmd;
-
-    // Also register with the focus manager.
-    focus_manager->RegisterAccelerator(
-        accelerator, ui::AcceleratorManager::kNormalPriority, this);
-  }
-
-  // We don't need the Windows accelerator table anymore.
-  free(accelerators);
-#else
   views::FocusManager* focus_manager = GetFocusManager();
   DCHECK(focus_manager);
 
@@ -2331,7 +2281,6 @@ void BrowserView::LoadAccelerators() {
     focus_manager->RegisterAccelerator(
         accelerator, ui::AcceleratorManager::kNormalPriority, this);
   }
-#endif
 }
 
 int BrowserView::GetCommandIDForAppCommandID(int app_command_id) const {

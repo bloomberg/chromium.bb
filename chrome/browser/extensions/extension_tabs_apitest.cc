@@ -14,6 +14,10 @@
 #include "chrome/common/url_constants.h"
 #include "net/dns/mock_host_resolver.h"
 
+#if defined(OS_WIN)
+#include "ui/aura/root_window.h"
+#include "ui/aura/window.h"
+#endif
 
 // Window resizes are not completed by the time the callback happens,
 // so these tests fail on linux/gtk. http://crbug.com/72369
@@ -227,9 +231,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
   ASSERT_TRUE(RunExtensionTest("window_update/resize")) << message_;
 }
 
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FocusWindowDoesNotUnmaximize) {
-  gfx::NativeWindow window = browser()->window()->GetNativeWindow();
+  HWND window = browser()->window()->GetNativeWindow()->
+      GetDispatcher()->host()->GetAcceleratedWidget();
   ::SendMessage(window, WM_SYSCOMMAND, SC_MAXIMIZE, 0);
   ASSERT_TRUE(RunExtensionTest("window_update/focus")) << message_;
   ASSERT_TRUE(::IsZoomed(window));

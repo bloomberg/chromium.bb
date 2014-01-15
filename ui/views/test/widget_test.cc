@@ -72,23 +72,6 @@ Widget* WidgetTest::CreateChildPlatformWidget(
   return child;
 }
 
-#if defined(OS_WIN) && !defined(USE_AURA)
-// On Windows, it is possible for us to have a child window that is
-// TYPE_POPUP.
-Widget* WidgetTest::CreateChildPopupPlatformWidget(
-    gfx::NativeView parent_native_view) {
-  Widget* child = new Widget;
-  Widget::InitParams child_params =
-      CreateParams(Widget::InitParams::TYPE_POPUP);
-  child_params.child = true;
-  child_params.native_widget = CreatePlatformNativeWidget(child);
-  child_params.parent = parent_native_view;
-  child->Init(child_params);
-  child->SetContentsView(new View);
-  return child;
-}
-#endif
-
 Widget* WidgetTest::CreateTopLevelNativeWidget() {
   Widget* toplevel = new Widget;
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);

@@ -1746,9 +1746,7 @@ class BookmarkBarViewTest20 : public BookmarkBarViewEventTestBase {
   TestViewForMenuExit* test_view_;
 };
 
-#if defined(OS_WIN) && !defined(USE_AURA)
-#define MAYBE_ContextMenuExitTest DISABLED_ContextMenuExitTest
-#elif defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 // TODO(erg): linux_aura bringup: http://crbug.com/163931
 #define MAYBE_ContextMenuExitTest DISABLED_ContextMenuExitTest
 #else

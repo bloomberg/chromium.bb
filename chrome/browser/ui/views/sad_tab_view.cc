@@ -236,15 +236,6 @@ void SadTabView::Show() {
   // TODO(avi): This is a cheat. Can this be made cleaner?
   sad_tab_params.parent = web_contents_->GetView()->GetNativeView();
 
-#if defined(OS_WIN) && !defined(USE_AURA)
-  // Crash data indicates we can get here when the parent is no longer valid.
-  // Attempting to create a child window with a bogus parent crashes. So, we
-  // don't show a sad tab in this case in hopes the tab is in the process of
-  // shutting down.
-  if (!IsWindow(sad_tab_params.parent))
-    return;
-#endif
-
   set_owned_by_client();
 
   views::Widget* sad_tab = new views::Widget;

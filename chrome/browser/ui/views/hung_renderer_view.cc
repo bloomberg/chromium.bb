@@ -4,10 +4,6 @@
 
 #include "chrome/browser/ui/views/hung_renderer_view.h"
 
-#if defined(OS_WIN) && !defined(USE_AURA)
-#include <windows.h>
-#endif
-
 #include "base/i18n/rtl.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/utf_string_conversions.h"

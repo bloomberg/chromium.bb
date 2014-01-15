@@ -85,13 +85,6 @@ ViewEventTestBase::ViewEventTestBase()
 void ViewEventTestBase::Done() {
   base::MessageLoop::current()->Quit();
 
-#if defined(OS_WIN) && !defined(USE_AURA)
-  // We need to post a message to tickle the Dispatcher getting called and
-  // exiting out of the nested loop. Without this the quit never runs.
-  if (window_)
-    PostMessage(window_->GetNativeWindow(), WM_USER, 0, 0);
-#endif
-
   // If we're in a nested message loop, as is the case with menus, we
   // need to quit twice. The second quit does that for us. Finish all
   // pending UI events before posting closure because events it may be
@@ -151,12 +144,8 @@ void ViewEventTestBase::SetUp() {
 
 void ViewEventTestBase::TearDown() {
   if (window_) {
-#if defined(OS_WIN) && !defined(USE_AURA)
-    DestroyWindow(window_->GetNativeWindow());
-#else
     window_->Close();
     content::RunAllPendingInMessageLoop();
-#endif
     window_ = NULL;
   }
 

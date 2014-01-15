@@ -49,7 +49,7 @@ class TabStripModel;
 // can happen (this state is referred to as detached):
 // . If |detach_into_browser_| is true then a new Browser is created and
 //   RunMoveLoop() is invoked on the Widget to drag the browser around. This is
-//   the default on aura.
+//   the default on aura except in Metro mode on Win 8.
 // . If |detach_into_browser_| is false a small representation of the active tab
 //   is created and that is dragged around. This mode does not run a nested
 //   message loop.
@@ -113,10 +113,6 @@ class TabDragController : public content::WebContentsDelegate,
 
   // Returns true if there is a drag underway.
   static bool IsActive();
-
-  // Used to determine whether the tab drag controller detaches dragged tabs
-  // into new browser windows while the drag is in process.
-  static bool ShouldDetachIntoNewBrowser();
 
   // Sets the move behavior. Has no effect if started_drag() is true.
   void SetMoveBehavior(MoveBehavior behavior);

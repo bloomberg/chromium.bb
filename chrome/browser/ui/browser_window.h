@@ -202,12 +202,6 @@ class BrowserWindow : public ui::BaseWindow {
   // where we take care of it ourselves at the browser level).
   virtual gfx::Rect GetRootWindowResizerRect() const = 0;
 
-  // Tells the frame not to render as inactive until the next activation change.
-  // This is required on Windows when dropdown selects are shown to prevent the
-  // select from deactivating the browser frame. A stub implementation is
-  // provided here since the functionality is Windows-specific.
-  virtual void DisableInactiveFrame() {}
-
   // Shows a confirmation dialog box for adding a search engine described by
   // |template_url|. Takes ownership of |template_url|.
   virtual void ConfirmAddSearchProvider(TemplateURL* template_url,

@@ -212,11 +212,7 @@ void ToolbarView::Init() {
 
   browser_actions_ = new BrowserActionsContainer(browser_, this);
 
-#if defined(OS_WIN) && !defined(USE_AURA)
-  app_menu_ = new AppMenuButtonWin(this);
-#else
   app_menu_ = new WrenchToolbarButton(this);
-#endif
   app_menu_->set_border(NULL);
   app_menu_->EnableCanvasFlippingForRTLUI(true);
   app_menu_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_APP));

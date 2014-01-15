@@ -364,7 +364,6 @@ class DetachToBrowserTabDragControllerTest
   DetachToBrowserTabDragControllerTest() {}
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    command_line->AppendSwitch(switches::kTabBrowserDragging);
 #if defined(USE_ASH) && !defined(OS_WIN)  // TODO(win_ash)
     if (!docked_windows_enabled()) {
       CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -713,12 +712,6 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
 // Drags from browser to separate window and releases mouse.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
                        DetachToOwnWindowFromMaximizedWindow) {
-  if (!TabDragController::ShouldDetachIntoNewBrowser()) {
-    VLOG(1)
-        << "Skipping DetachToOwnWindowFromMaximizedWindow on this platform.";
-    return;
-  }
-
   // Maximize the initial browser window.
   browser()->window()->Maximize();
   ASSERT_TRUE(browser()->window()->IsMaximized());
@@ -2102,12 +2095,6 @@ void DetachToDockedWindowNextStep(
 // Drags from browser to separate window, docks that window and releases mouse.
 IN_PROC_BROWSER_TEST_P(DetachToDockedTabDragControllerTest,
                        DetachToDockedWindowFromMaximizedWindow) {
-  if (!TabDragController::ShouldDetachIntoNewBrowser()) {
-    VLOG(1)
-        << "Skipping DetachToDockedWindowFromMaximizedWindow on this platform.";
-    return;
-  }
-
   // Maximize the initial browser window.
   browser()->window()->Maximize();
   ASSERT_TRUE(browser()->window()->IsMaximized());

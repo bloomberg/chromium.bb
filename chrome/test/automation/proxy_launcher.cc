@@ -324,12 +324,6 @@ void ProxyLauncher::TerminateBrowser() {
 
   base::TimeTicks quit_start = base::TimeTicks::Now();
 
-#if defined(OS_WIN) && !defined(USE_AURA)
-  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
-  ASSERT_TRUE(browser.get());
-  ASSERT_TRUE(browser->TerminateSession());
-#endif  // defined(OS_WIN)
-
   ChromeProcessList processes = GetRunningChromeProcesses(process_id_);
 
   // Now, drop the automation IPC channel so that the automation provider in

@@ -69,8 +69,7 @@ class Shell : public WebContentsDelegate,
   void Close();
   void ShowDevTools();
   void CloseDevTools();
-#if (defined(OS_WIN) && !defined(USE_AURA)) || \
-    defined(TOOLKIT_GTK) || defined(OS_MACOSX)
+#if defined(TOOLKIT_GTK) || defined(OS_MACOSX)
   // Resizes the main window to the given dimensions.
   void SizeTo(const gfx::Size& content_size);
 #endif
@@ -206,11 +205,7 @@ class Shell : public WebContentsDelegate,
 
   void OnDevToolsWebContentsDestroyed();
 
-#if defined(OS_WIN) && !defined(USE_AURA)
-  static ATOM RegisterWindowClass();
-  static LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
-  static LRESULT CALLBACK EditWndProc(HWND, UINT, WPARAM, LPARAM);
-#elif defined(TOOLKIT_GTK)
+#if defined(TOOLKIT_GTK)
   CHROMEGTK_CALLBACK_0(Shell, void, OnBackButtonClicked);
   CHROMEGTK_CALLBACK_0(Shell, void, OnForwardButtonClicked);
   CHROMEGTK_CALLBACK_0(Shell, void, OnReloadButtonClicked);
@@ -242,10 +237,7 @@ class Shell : public WebContentsDelegate,
 
   gfx::Size content_size_;
 
-#if defined(OS_WIN) && !defined(USE_AURA)
-  WNDPROC default_edit_wnd_proc_;
-  static HINSTANCE instance_handle_;
-#elif defined(TOOLKIT_GTK)
+#if defined(TOOLKIT_GTK)
   GtkWidget* vbox_;
 
   GtkToolItem* back_button_;

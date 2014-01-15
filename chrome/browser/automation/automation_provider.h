@@ -33,10 +33,6 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 
-#if defined(OS_WIN) && !defined(USE_AURA)
-#include "ui/gfx/native_widget_types.h"
-#endif  // defined(OS_WIN) && !defined(USE_AURA)
-
 class AutomationBrowserTracker;
 class AutomationTabTracker;
 class AutomationWindowTracker;

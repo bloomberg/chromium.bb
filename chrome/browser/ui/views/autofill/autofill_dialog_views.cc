@@ -1717,11 +1717,7 @@ void AutofillDialogViews::ContentsChanged(views::Textfield* sender,
 bool AutofillDialogViews::HandleKeyEvent(views::Textfield* sender,
                                          const ui::KeyEvent& key_event) {
   ui::KeyEvent copy(key_event);
-#if defined(OS_WIN) && !defined(USE_AURA)
-  content::NativeWebKeyboardEvent event(copy.native_event());
-#else
   content::NativeWebKeyboardEvent event(&copy);
-#endif
   return delegate_->HandleKeyPressEventInInput(event);
 }
 

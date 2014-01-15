@@ -567,7 +567,6 @@ class Browser : public TabStripModelObserver,
   virtual bool ShouldFocusLocationBarByDefault(
       content::WebContents* source) OVERRIDE;
   virtual void SetFocusToLocationBar(bool select_all) OVERRIDE;
-  virtual void RenderWidgetShowing() OVERRIDE;
   virtual int GetExtraRenderViewHeight() const OVERRIDE;
   virtual void ViewSourceForTab(content::WebContents* source,
                                 const GURL& page_url) OVERRIDE;

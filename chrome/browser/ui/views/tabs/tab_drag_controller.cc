@@ -377,7 +377,7 @@ const int TabDragController::kTouchVerticalDetachMagnetism = 50;
 const int TabDragController::kVerticalDetachMagnetism = 15;
 
 TabDragController::TabDragController()
-    : detach_into_browser_(ShouldDetachIntoNewBrowser()),
+    : detach_into_browser_(true),
       event_source_(EVENT_SOURCE_MOUSE),
       source_tabstrip_(NULL),
       attached_tabstrip_(NULL),
@@ -498,16 +498,6 @@ bool TabDragController::IsAttachedTo(const TabStrip* tab_strip) {
 // static
 bool TabDragController::IsActive() {
   return instance_ && instance_->active();
-}
-
-// static
-bool TabDragController::ShouldDetachIntoNewBrowser() {
-#if defined(USE_AURA)
-  return true;
-#else
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kTabBrowserDragging);
-#endif
 }
 
 void TabDragController::SetMoveBehavior(MoveBehavior behavior) {
@@ -1443,8 +1433,6 @@ void TabDragController::Detach(ReleaseCapture release_capture) {
       if (!selection_model.empty())
         attached_model->SetSelectionFromModel(selection_model);
     }
-  } else if (!detach_into_browser_) {
-    HideFrame();
   }
 
   // Create the dragged view.
@@ -2073,36 +2061,6 @@ gfx::Rect TabDragController::GetViewScreenBounds(
   gfx::Rect view_screen_bounds = view->GetLocalBounds();
   view_screen_bounds.Offset(view_topleft.x(), view_topleft.y());
   return view_screen_bounds;
-}
-
-void TabDragController::HideFrame() {
-#if defined(OS_WIN) && !defined(USE_AURA)
-  // We don't actually hide the window, rather we just move it way off-screen.
-  // If we actually hide it, we stop receiving drag events.
-  //
-  // Windows coordinates are 16 bit values. Additionally mouse events are
-  // relative, this means if we move this window to the max position it is easy
-  // to trigger overflow. To avoid this we don't move to the max position,
-  // rather some where reasonably large. This should avoid common overflow
-  // problems.
-  // An alternative approach is to query the mouse pointer and ignore the
-  // location on the mouse (early versions did this). This proves problematic as
-  // if we happen to get behind in event processing it is all to easy to process
-  // a release in the wrong location, triggering either an unexpected move or an
-  // unexpected detach.
-  HWND frame_hwnd = source_tabstrip_->GetWidget()->GetNativeView();
-  RECT wr;
-  GetWindowRect(frame_hwnd, &wr);
-  MoveWindow(frame_hwnd, 0x3FFF, 0x3FFF, wr.right - wr.left,
-             wr.bottom - wr.top, TRUE);
-
-  // We also save the bounds of the window prior to it being moved, so that if
-  // the drag session is aborted we can restore them.
-  restore_bounds_ = gfx::Rect(wr);
-#else
-  // Shouldn't hit as aura triggers the |detach_into_browser_| path.
-  NOTREACHED();
-#endif
 }
 
 void TabDragController::CleanUpHiddenFrame() {

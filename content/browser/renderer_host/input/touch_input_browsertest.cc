@@ -164,11 +164,6 @@ class TouchInputBrowserTest : public ContentBrowserTest,
     // We expect real pixel output for these tests.
     UseRealGLContexts();
 
-    // On legacy windows, these tests need real GL bindings to pass.
-#if defined(OS_WIN) && !defined(USE_AURA)
-    UseRealGLBindings();
-#endif
-
     ContentBrowserTest::SetUp();
   }
 

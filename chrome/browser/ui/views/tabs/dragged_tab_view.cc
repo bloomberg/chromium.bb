@@ -80,20 +80,10 @@ void DraggedTabView::MoveTo(const gfx::Point& screen_point) {
   }
   int y = screen_point.y() - ScaleValue(mouse_tab_offset_.y());
 
-#if defined(OS_WIN) && !defined(USE_AURA)
-  double scale = gfx::win::GetDeviceScaleFactor();
-  x = static_cast<int>(scale * screen_point.x());
-  y = static_cast<int>(scale * screen_point.y());
-  // TODO(beng): make this cross-platform
-  int show_flags = container_->IsVisible() ? SWP_NOZORDER : SWP_SHOWWINDOW;
-  SetWindowPos(container_->GetNativeView(), HWND_TOP, x, y, 0, 0,
-               SWP_NOSIZE | SWP_NOACTIVATE | show_flags);
-#else
   gfx::Rect bounds = container_->GetWindowBoundsInScreen();
   container_->SetBounds(gfx::Rect(x, y, bounds.width(), bounds.height()));
   if (!container_->IsVisible())
     container_->Show();
-#endif
 }
 
 void DraggedTabView::Update() {

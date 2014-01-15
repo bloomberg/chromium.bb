@@ -217,9 +217,6 @@ class TaskManagerView : public views::ButtonListener,
   // Activates the tab associated with the focused row.
   void ActivateFocusedTab();
 
-  // Adds an always on top item to the window's system menu.
-  void AddAlwaysOnTopSystemMenuItem();
-
   // Restores saved always on top state from a previous session.
   bool GetSavedAlwaysOnTopState(bool* always_on_top) const;
 
@@ -556,36 +553,6 @@ bool TaskManagerView::CanMaximize() const {
 }
 
 bool TaskManagerView::ExecuteWindowsCommand(int command_id) {
-#if defined(OS_WIN) && !defined(USE_AURA)
-  if (command_id == IDC_ALWAYS_ON_TOP) {
-    is_always_on_top_ = !is_always_on_top_;
-
-    // Change the menu check state.
-    HMENU system_menu = GetSystemMenu(GetWidget()->GetNativeWindow(), FALSE);
-    MENUITEMINFO menu_info;
-    memset(&menu_info, 0, sizeof(MENUITEMINFO));
-    menu_info.cbSize = sizeof(MENUITEMINFO);
-    BOOL r = GetMenuItemInfo(system_menu, IDC_ALWAYS_ON_TOP,
-                             FALSE, &menu_info);
-    DCHECK(r);
-    menu_info.fMask = MIIM_STATE;
-    if (is_always_on_top_)
-      menu_info.fState = MFS_CHECKED;
-    r = SetMenuItemInfo(system_menu, IDC_ALWAYS_ON_TOP, FALSE, &menu_info);
-
-    // Now change the actual window's behavior.
-    GetWidget()->SetAlwaysOnTop(is_always_on_top_);
-
-    // Save the state.
-    if (g_browser_process->local_state()) {
-      DictionaryPrefUpdate update(g_browser_process->local_state(),
-                                  GetWindowName().c_str());
-      base::DictionaryValue* window_preferences = update.Get();
-      window_preferences->SetBoolean("always_on_top", is_always_on_top_);
-    }
-    return true;
-  }
-#endif
   return false;
 }
 
@@ -682,46 +649,12 @@ void TaskManagerView::InitAlwaysOnTopState() {
   is_always_on_top_ = false;
   if (GetSavedAlwaysOnTopState(&is_always_on_top_))
     GetWidget()->SetAlwaysOnTop(is_always_on_top_);
-  AddAlwaysOnTopSystemMenuItem();
 }
 
 void TaskManagerView::ActivateFocusedTab() {
   const int active_row = tab_table_->selection_model().active();
   if (active_row != -1)
     task_manager_->ActivateProcess(active_row);
-}
-
-void TaskManagerView::AddAlwaysOnTopSystemMenuItem() {
-#if defined(OS_WIN) && !defined(USE_AURA)
-  // The Win32 API requires that we own the text.
-  always_on_top_menu_text_ = l10n_util::GetStringUTF16(IDS_ALWAYS_ON_TOP);
-
-  // Let's insert a menu to the window.
-  HMENU system_menu = ::GetSystemMenu(GetWidget()->GetNativeWindow(), FALSE);
-  int index = ::GetMenuItemCount(system_menu) - 1;
-  if (index < 0) {
-    // Paranoia check.
-    NOTREACHED();
-    index = 0;
-  }
-  // First we add the separator.
-  MENUITEMINFO menu_info;
-  memset(&menu_info, 0, sizeof(MENUITEMINFO));
-  menu_info.cbSize = sizeof(MENUITEMINFO);
-  menu_info.fMask = MIIM_FTYPE;
-  menu_info.fType = MFT_SEPARATOR;
-  ::InsertMenuItem(system_menu, index, TRUE, &menu_info);
-
-  // Then the actual menu.
-  menu_info.fMask = MIIM_FTYPE | MIIM_ID | MIIM_STRING | MIIM_STATE;
-  menu_info.fType = MFT_STRING;
-  menu_info.fState = MFS_ENABLED;
-  if (is_always_on_top_)
-    menu_info.fState |= MFS_CHECKED;
-  menu_info.wID = IDC_ALWAYS_ON_TOP;
-  menu_info.dwTypeData = const_cast<wchar_t*>(always_on_top_menu_text_.c_str());
-  ::InsertMenuItem(system_menu, index, TRUE, &menu_info);
-#endif
 }
 
 bool TaskManagerView::GetSavedAlwaysOnTopState(bool* always_on_top) const {

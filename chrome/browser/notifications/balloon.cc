@@ -12,7 +12,7 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
-#if !defined(OS_WIN) && !defined(USE_AURA)
+#if !defined(USE_AURA)
 // static
 int BalloonView::GetHorizontalMargin() {
   // TODO: implement for linux (non-aura) and mac.

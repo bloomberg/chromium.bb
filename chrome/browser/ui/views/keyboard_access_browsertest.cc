@@ -363,7 +363,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardAccessTest,
   TestMenuKeyboardAccess(true, true, false);
 }
 
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(KeyboardAccessTest,
                        TestAltMenuKeyboardAccessFocusOmnibox) {
   TestMenuKeyboardAccess(true, false, true);

@@ -890,13 +890,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE_AND_VALUE(switches::kJavaScriptFlags, "--harmony")
   },
   {
-    "enable-tab-browser-dragging",
-    IDS_FLAGS_ENABLE_TAB_BROWSER_DRAGGING_NAME,
-    IDS_FLAGS_ENABLE_TAB_BROWSER_DRAGGING_DESCRIPTION,
-    kOsWin,
-    SINGLE_VALUE_TYPE(switches::kTabBrowserDragging)
-  },
-  {
     "disable-restore-session-state",
     IDS_FLAGS_DISABLE_RESTORE_SESSION_STATE_NAME,
     IDS_FLAGS_DISABLE_RESTORE_SESSION_STATE_DESCRIPTION,

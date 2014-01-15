@@ -11,10 +11,6 @@
 
 #include "base/strings/string16.h"
 
-#if defined(OS_WIN)
-#include "ui/base/dragdrop/drop_target_win.h"
-#endif
-
 class GURL;
 
 namespace ui {
@@ -34,18 +30,11 @@ class WebDragDestDelegate {
   virtual void DragInitialize(WebContents* contents) = 0;
 
   // Notifications of drag progression.
-#if defined(OS_WIN) && !defined(USE_AURA)
-  virtual void OnDragOver(IDataObject* data_object) = 0;
-  virtual void OnDragEnter(IDataObject* data_object) = 0;
-  virtual void OnDrop(IDataObject* data_object) = 0;
-  virtual void OnDragLeave(IDataObject* data_object) = 0;
-#else
   virtual void OnDragOver() = 0;
   virtual void OnDragEnter() = 0;
   virtual void OnDrop() = 0;
   // This should also clear any state kept about this drag.
   virtual void OnDragLeave() = 0;
-#endif
 
 #if defined(TOOLKIT_GTK)
   // Returns the bookmark atom type. GTK and Views return different values here.
@@ -60,11 +49,6 @@ class WebDragDestDelegate {
   // Called at the start of every drag to supply the data associated with the
   // drag.
   virtual void OnReceiveDragData(const ui::OSExchangeData& data) = 0;
-#elif defined(OS_WIN)
-  // Allows the delegate to set data on the drag. If it doesn't want to set
-  // data, it should return false.
-  virtual bool AddDragData(const DropData& drop_data,
-                           ui::OSExchangeData* data) = 0;
 #endif  // TOOLKIT_GTK
 
   virtual ~WebDragDestDelegate() {}

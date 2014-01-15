@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/tab_contents/chrome_web_contents_view_delegate_views.h"
 
 #include "chrome/browser/browser_shutdown.h"
+#include "chrome/browser/ui/aura/tab_contents/web_drag_bookmark_handler_aura.h"
 #include "chrome/browser/ui/sad_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/chrome_web_contents_view_delegate.h"
 #include "chrome/browser/ui/views/sad_tab_view.h"
@@ -17,17 +18,11 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_view.h"
+#include "ui/aura/client/screen_position_client.h"
+#include "ui/aura/window.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/focus/view_storage.h"
 #include "ui/views/widget/widget.h"
-
-#if defined(USE_AURA)
-#include "chrome/browser/ui/aura/tab_contents/web_drag_bookmark_handler_aura.h"
-#include "ui/aura/client/screen_position_client.h"
-#include "ui/aura/window.h"
-#else
-#include "chrome/browser/ui/views/tab_contents/web_drag_bookmark_handler_win.h"
-#endif
 
 using web_modal::WebContentsModalDialogManager;
 
@@ -52,11 +47,7 @@ content::WebDragDestDelegate*
     ChromeWebContentsViewDelegateViews::GetDragDestDelegate() {
   // We install a chrome specific handler to intercept bookmark drags for the
   // bookmark manager/extension API.
-#if defined(USE_AURA)
   bookmark_handler_.reset(new WebDragBookmarkHandlerAura);
-#else
-  bookmark_handler_.reset(new WebDragBookmarkHandlerWin);
-#endif
   return bookmark_handler_.get();
 }
 
@@ -145,7 +136,6 @@ void ChromeWebContentsViewDelegateViews::ShowContextMenu(
 
   gfx::Point screen_point(params.x, params.y);
 
-#if defined(USE_AURA)
   // Convert from content coordinates to window coordinates.
   aura::Window* web_contents_window =
       web_contents_->GetView()->GetNativeView();
@@ -156,12 +146,6 @@ void ChromeWebContentsViewDelegateViews::ShowContextMenu(
     screen_position_client->ConvertPointToScreen(web_contents_window,
                                                  &screen_point);
   }
-#else
-  POINT temp = screen_point.ToPOINT();
-  ClientToScreen(web_contents_->GetView()->GetNativeView(), &temp);
-  screen_point = temp;
-#endif
-
   // Enable recursive tasks on the message loop so we can get updates while
   // the context menu is being displayed.
   base::MessageLoop::ScopedNestableTaskAllower allow(

@@ -210,11 +210,6 @@ class CONTENT_EXPORT WebContentsDelegate {
   // to live. Default is true.
   virtual bool ShouldFocusPageAfterCrash();
 
-  // Called when a popup select is about to be displayed. The delegate can use
-  // this to disable inactive rendering for the frame in the window the select
-  // is opened within if necessary.
-  virtual void RenderWidgetShowing() {}
-
   // This is called when WebKit tells us that it is done tabbing through
   // controls on the page. Provides a way for WebContentsDelegates to handle
   // this. Returns true if the delegate successfully handled it.

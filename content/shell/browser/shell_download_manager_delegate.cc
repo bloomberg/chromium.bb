@@ -28,6 +28,11 @@
 #include "content/shell/common/shell_switches.h"
 #include "net/base/net_util.h"
 
+#if defined(OS_WIN)
+#include "ui/aura/root_window.h"
+#include "ui/aura/window.h"
+#endif
+
 namespace content {
 
 ShellDownloadManagerDelegate::ShellDownloadManagerDelegate()
@@ -163,14 +168,15 @@ void ShellDownloadManagerDelegate::ChooseDownloadPath(
     return;
 
   base::FilePath result;
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
   std::wstring file_part = base::FilePath(suggested_path).BaseName().value();
   wchar_t file_name[MAX_PATH];
   base::wcslcpy(file_name, file_part.c_str(), arraysize(file_name));
   OPENFILENAME save_as;
   ZeroMemory(&save_as, sizeof(save_as));
   save_as.lStructSize = sizeof(OPENFILENAME);
-  save_as.hwndOwner = item->GetWebContents()->GetView()->GetNativeView();
+  save_as.hwndOwner = item->GetWebContents()->GetView()->GetNativeView()->
+      GetDispatcher()->host()->GetAcceleratedWidget();
   save_as.lpstrFile = file_name;
   save_as.nMaxFile = arraysize(file_name);
 

@@ -143,7 +143,6 @@
         'shell/browser/shell_web_contents_view_delegate.h',
         'shell/browser/shell_web_contents_view_delegate_mac.mm',
         'shell/browser/shell_web_contents_view_delegate_win.cc',
-        'shell/browser/shell_win.cc',
         'shell/browser/webkit_test_controller.cc',
         'shell/browser/webkit_test_controller.h',
         'shell/common/shell_content_client.cc',
@@ -323,7 +322,6 @@
           ],
           'sources/': [
             ['exclude', 'shell/browser/shell_gtk.cc'],
-            ['exclude', 'shell/browser/shell_win.cc'],
           ],
           'conditions': [
             ['toolkit_views==1', {

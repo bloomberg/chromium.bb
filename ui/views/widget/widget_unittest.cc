@@ -244,32 +244,6 @@ TEST_F(WidgetTest, Visibility) {
   // |child| should be automatically destroyed with |toplevel|.
 }
 
-#if defined(OS_WIN) && !defined(USE_AURA)
-// On Windows, it is possible to have child window that are TYPE_POPUP.  Unlike
-// regular child windows, these should be created as hidden and must be shown
-// explicitly.
-TEST_F(WidgetTest, Visibility_ChildPopup) {
-  Widget* toplevel = CreateTopLevelPlatformWidget();
-  Widget* child_popup = CreateChildPopupPlatformWidget(
-      toplevel->GetNativeView());
-
-  EXPECT_FALSE(toplevel->IsVisible());
-  EXPECT_FALSE(child_popup->IsVisible());
-
-  toplevel->Show();
-
-  EXPECT_TRUE(toplevel->IsVisible());
-  EXPECT_FALSE(child_popup->IsVisible());
-
-  child_popup->Show();
-
-  EXPECT_TRUE(child_popup->IsVisible());
-
-  toplevel->CloseNow();
-  // |child_popup| should be automatically destroyed with |toplevel|.
-}
-#endif
-
 ////////////////////////////////////////////////////////////////////////////////
 // Widget ownership tests.
 //

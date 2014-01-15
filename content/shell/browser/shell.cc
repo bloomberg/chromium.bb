@@ -67,9 +67,6 @@ Shell::Shell(WebContents* web_contents)
       is_fullscreen_(false),
       window_(NULL),
       url_edit_view_(NULL),
-#if defined(OS_WIN) && !defined(USE_AURA)
-      default_edit_wnd_proc_(0),
-#endif
       headless_(false) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kDumpRenderTree))

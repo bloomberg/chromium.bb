@@ -38,20 +38,6 @@
 
 using base::ASCIIToUTF16;
 
-namespace {
-
-// The expected initial focus count.
-#if defined(OS_WIN) && !defined(USE_AURA)
-// On windows (non-aura) this code triggers activating the window. Activating
-// the window triggers clearing the focus then resetting it. This results in an
-// additional focus change.
-const int kInitialFocusCount = 2;
-#else
-const int kInitialFocusCount = 1;
-#endif
-
-}  // namespace
-
 class AccessibilityViewsDelegate : public views::TestViewsDelegate {
  public:
   AccessibilityViewsDelegate() {}
@@ -281,7 +267,7 @@ TEST_F(AccessibilityEventRouterViewsTest, TestToolbarContext) {
   base::MessageLoop::current()->RunUntilIdle();
 
   // Test that we got the event with the expected name and context.
-  EXPECT_EQ(kInitialFocusCount, control_event_count_);
+  EXPECT_EQ(1, control_event_count_);
   EXPECT_EQ(kButtonNameASCII, last_control_name_);
   EXPECT_EQ(kToolbarNameASCII, last_control_context_);
 
@@ -313,7 +299,7 @@ TEST_F(AccessibilityEventRouterViewsTest, TestAlertContext) {
   base::MessageLoop::current()->RunUntilIdle();
 
   // Test that we got the event with the expected name and context.
-  EXPECT_EQ(kInitialFocusCount, control_event_count_);
+  EXPECT_EQ(1, control_event_count_);
   EXPECT_EQ(kButtonNameASCII, last_control_name_);
   EXPECT_EQ(kAlertTextASCII, last_control_context_);
 
@@ -351,7 +337,7 @@ TEST_F(AccessibilityEventRouterViewsTest, StateChangeAfterNotification) {
   // Process anything in the event loop. Now we should get the notification,
   // and it should give us the new control name, not the old one.
   base::MessageLoop::current()->RunUntilIdle();
-  EXPECT_EQ(kInitialFocusCount, control_event_count_);
+  EXPECT_EQ(1, control_event_count_);
   EXPECT_EQ(kNewNameASCII, last_control_name_);
 
   window->CloseNow();

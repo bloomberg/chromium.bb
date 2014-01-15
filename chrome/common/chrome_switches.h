@@ -387,7 +387,6 @@ extern const char kSyncTrySsltcpFirstForXmpp[];
 extern const char kSyncEnableDeferredStartup[];
 extern const char kSyncEnableGetUpdateAvoidance[];
 extern const char kSyncfsEnableDirectoryOperation[];
-extern const char kTabBrowserDragging[];
 extern const char kTabCapture[];
 extern const char kTestName[];
 extern const char kTestType[];

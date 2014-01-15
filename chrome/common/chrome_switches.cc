@@ -1455,9 +1455,6 @@ const char kSyncEnableGetUpdateAvoidance[]   =
 const char kSyncfsEnableDirectoryOperation[] =
     "enable-syncfs-directory-operation";
 
-// Enables tab dragging to create a real browser.
-const char kTabBrowserDragging[]            = "enable-tab-browser-dragging";
-
 // Passes the name of the current running automated test to Chrome.
 const char kTestName[]                      = "test-name";
 

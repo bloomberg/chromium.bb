@@ -1442,10 +1442,6 @@ void Browser::SetFocusToLocationBar(bool select_all) {
   window_->SetFocusToLocationBar(select_all);
 }
 
-void Browser::RenderWidgetShowing() {
-  window_->DisableInactiveFrame();
-}
-
 int Browser::GetExtraRenderViewHeight() const {
   return window_->GetExtraRenderViewHeight();
 }

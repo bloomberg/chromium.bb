@@ -134,20 +134,6 @@ TEST(WebCursorTest, BrokenCursorSerialization) {
   EXPECT_FALSE(custom_cursor.Deserialize(&iter));
 }
 
-#if defined(OS_WIN) && !defined(USE_AURA)
-TEST(WebCursorTest, WindowsCursorConversion) {
-  WebCursor custom_cursor;
-  Pickle win32_custom_pickle;
-  WebCursor win32_custom_cursor;
-  win32_custom_cursor.InitFromExternalCursor(
-      reinterpret_cast<HCURSOR>(1000));
-  EXPECT_TRUE(win32_custom_cursor.Serialize(&win32_custom_pickle));
-  PickleIterator iter(win32_custom_pickle);
-  EXPECT_TRUE(custom_cursor.Deserialize(&iter));
-  EXPECT_EQ(reinterpret_cast<HCURSOR>(1000), custom_cursor.GetCursor(NULL));
-}
-#endif  // OS_WIN
-
 TEST(WebCursorTest, ClampHotspot) {
   WebCursor custom_cursor;
   // This is a valid custom cursor.

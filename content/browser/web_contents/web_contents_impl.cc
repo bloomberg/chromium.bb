@@ -1522,9 +1522,6 @@ void WebContentsImpl::ShowCreatedFullscreenWidget(int route_id) {
 void WebContentsImpl::ShowCreatedWidget(int route_id,
                                         bool is_fullscreen,
                                         const gfx::Rect& initial_pos) {
-  if (delegate_)
-    delegate_->RenderWidgetShowing();
-
   RenderWidgetHostViewPort* widget_host_view =
       RenderWidgetHostViewPort::FromRWHV(GetCreatedWidget(route_id));
   if (!widget_host_view)

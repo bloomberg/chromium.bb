@@ -19,11 +19,6 @@
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
 
-#if defined(OS_WIN) && !defined(USE_AURA)
-#include "ui/base/dragdrop/drag_source_win.h"
-#include "ui/base/dragdrop/os_exchange_data_provider_win.h"
-#endif
-
 #if defined(USE_AURA)
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/root_window.h"

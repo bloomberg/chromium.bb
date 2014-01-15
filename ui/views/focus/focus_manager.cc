@@ -75,20 +75,10 @@ bool FocusManager::OnKeyEvent(const ui::KeyEvent& event) {
     // Note that we don't do focus traversal if the root window is not part of
     // the active window hierarchy as this would mean we have no focused view
     // and would focus the first focusable view.
-#if defined(OS_WIN) && !defined(USE_AURA)
-    HWND top_window = widget_->GetNativeView();
-    HWND active_window = ::GetActiveWindow();
-    if ((active_window == top_window || ::IsChild(active_window, top_window)) &&
-        IsTabTraversalKeyEvent(event)) {
-      AdvanceFocus(event.IsShiftDown());
-      return false;
-    }
-#else
     if (IsTabTraversalKeyEvent(event)) {
       AdvanceFocus(event.IsShiftDown());
       return false;
     }
-#endif
 
     if (arrow_key_traversal_enabled_ && ProcessArrowKeyTraversal(event))
       return false;
