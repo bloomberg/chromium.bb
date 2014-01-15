@@ -454,6 +454,79 @@ InspectorTest.MockSetting.prototype = {
     }
 };
 
+
+/**
+ * @constructor
+ * @param {!string} dirPath
+ * @param {!string} name
+ * @param {!function(?WebInspector.TempFile)} callback
+ */
+InspectorTest.TempFileMock = function(dirPath, name, callback)
+{
+    this._chunks = [];
+    this._name = name;
+    setTimeout(callback.bind(this, this), 0);
+}
+
+InspectorTest.TempFileMock.prototype = {
+    /**
+     * @param {!string} data
+     * @param {!function(boolean)} callback
+     */
+    write: function(data, callback)
+    {
+        this._chunks.push(data);
+        setTimeout(callback.bind(this, true), 0);
+    },
+
+    finishWriting: function() { },
+
+    /**
+     * @param {function(?string)} callback
+     */
+    read: function(callback)
+    {
+        callback(this._chunks.join(""));
+    },
+
+    /**
+     * @param {!WebInspector.OutputStream} outputStream
+     * @param {!WebInspector.OutputStreamDelegate} delegate
+     */
+    writeToOutputSteam: function(outputStream, delegate)
+    {
+        var name = this._name;
+        var text = this._chunks.join("");
+        var chunkedReaderMock = {
+            loadedSize: function()
+            {
+                return text.length;
+            },
+
+            fileSize: function()
+            {
+                return text.length;
+            },
+
+            fileName: function()
+            {
+                return name;
+            },
+
+            cancel: function() { }
+        }
+        delegate.onTransferStarted(chunkedReaderMock);
+        outputStream.write(text);
+        delegate.onChunkTransferred(chunkedReaderMock);
+        outputStream.close();
+        delegate.onTransferFinished(chunkedReaderMock);
+    },
+
+    remove: function() { }
+}
+
+WebInspector.TempFile = InspectorTest.TempFileMock;
+
 };
 
 var initializeCallId = 0;

@@ -824,9 +824,6 @@ crbug.com/333772 svg/animations/discard-check-removal-order.html [ Pass Failure 
 crbug.com/333791 [ Linux Win7 Debug ] svg/animations/repeatn-event-1b.svg [ Pass ImageOnlyFailure ]
 crbug.com/333791 [ Linux Win7 Debug ] svg/animations/repeatn-event-1d.svg [ Pass ImageOnlyFailure ]
 
-crbug.com/330617 inspector/profiler/heap-snapshot-loader.html [ Pass Failure ]
-crbug.com/333860 inspector/profiler/cpu-profiler-save-load.html [ Pass Failure ]
-
 crbug.com/334225 virtual/legacy-animations-engine/animations/compositor-start-event-timing.html [ Pass Failure ]
 
 crbug.com/333882 [ Win ] inspector/editor/text-editor-autocomplete.html [ Pass Failure ]
