@@ -4,80 +4,31 @@
 
 #include "media/base/bit_reader.h"
 
-#include <algorithm>
-
 namespace media {
 
-BitReader::BitReader(const uint8* data, off_t size)
-    : data_(data), bytes_left_(size), num_remaining_bits_in_curr_byte_(0) {
-  DCHECK(data_ != NULL && bytes_left_ > 0);
-
-  UpdateCurrByte();
+BitReader::BitReader(const uint8* data, int size)
+    : initial_size_(size),
+      data_(data),
+      bytes_left_(size),
+      bit_reader_core_(this) {
+  DCHECK(data != NULL);
+  DCHECK_GE(size, 0);
 }
 
 BitReader::~BitReader() {}
 
-bool BitReader::SkipBits(int num_bits) {
-  DCHECK_GE(num_bits, 0);
-  DVLOG_IF(0, num_bits > 100)
-      << "BitReader::SkipBits inefficient for large skips";
+int BitReader::GetBytes(int max_nbytes, const uint8** out) {
+  DCHECK_GE(max_nbytes, 0);
+  DCHECK(out);
 
-  // Skip any bits in the current byte waiting to be processed, then
-  // process full bytes until less than 8 bits remaining.
-  while (num_bits > 0 && num_bits > num_remaining_bits_in_curr_byte_) {
-    num_bits -= num_remaining_bits_in_curr_byte_;
-    num_remaining_bits_in_curr_byte_ = 0;
-    UpdateCurrByte();
+  int nbytes = max_nbytes;
+  if (nbytes > bytes_left_)
+    nbytes = bytes_left_;
 
-    // If there is no more data remaining, only return true if we
-    // skipped all that were requested.
-    if (num_remaining_bits_in_curr_byte_ == 0)
-      return (num_bits == 0);
-  }
-
-  // Less than 8 bits remaining to skip. Use ReadBitsInternal to verify
-  // that the remaining bits we need exist, and adjust them as necessary
-  // for subsequent operations.
-  uint64 not_needed;
-  return ReadBitsInternal(num_bits, &not_needed);
-}
-
-int BitReader::bits_available() const {
-  return 8 * bytes_left_ + num_remaining_bits_in_curr_byte_;
-}
-
-bool BitReader::ReadBitsInternal(int num_bits, uint64* out) {
-  DCHECK_LE(num_bits, 64);
-
-  *out = 0;
-
-  while (num_remaining_bits_in_curr_byte_ != 0 && num_bits != 0) {
-    int bits_to_take = std::min(num_remaining_bits_in_curr_byte_, num_bits);
-
-    *out <<= bits_to_take;
-    *out += curr_byte_ >> (num_remaining_bits_in_curr_byte_ - bits_to_take);
-    num_bits -= bits_to_take;
-    num_remaining_bits_in_curr_byte_ -= bits_to_take;
-    curr_byte_ &= (1 << num_remaining_bits_in_curr_byte_) - 1;
-
-    if (num_remaining_bits_in_curr_byte_ == 0)
-      UpdateCurrByte();
-  }
-
-  return num_bits == 0;
-}
-
-void BitReader::UpdateCurrByte() {
-  DCHECK_EQ(num_remaining_bits_in_curr_byte_, 0);
-
-  if (bytes_left_ == 0)
-    return;
-
-  // Load a new byte and advance pointers.
-  curr_byte_ = *data_;
-  ++data_;
-  --bytes_left_;
-  num_remaining_bits_in_curr_byte_ = 8;
+  *out = data_;
+  data_ += nbytes;
+  bytes_left_ -= nbytes;
+  return nbytes;
 }
 
 }  // namespace media

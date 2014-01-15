@@ -241,6 +241,8 @@
         'base/bind_to_current_loop.h',
         'base/bit_reader.cc',
         'base/bit_reader.h',
+        'base/bit_reader_core.cc',
+        'base/bit_reader_core.h',
         'base/bitstream_buffer.h',
         'base/buffers.h',
         'base/byte_queue.cc',

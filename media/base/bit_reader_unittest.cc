@@ -64,4 +64,25 @@ TEST(BitReaderTest, SkipBitsTest) {
   EXPECT_FALSE(reader1.SkipBits(1));
 }
 
+TEST(BitReaderTest, BitsReadTest) {
+  int value;
+  bool flag;
+  uint8 buffer[] = { 0x0a, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
+  BitReader reader1(buffer, sizeof(buffer));
+  EXPECT_EQ(reader1.bits_available(), 120);
+
+  EXPECT_TRUE(reader1.SkipBits(2));
+  EXPECT_EQ(reader1.bits_read(), 2);
+  EXPECT_EQ(reader1.bits_available(), 118);
+  EXPECT_TRUE(reader1.ReadBits(3, &value));
+  EXPECT_EQ(reader1.bits_read(), 5);
+  EXPECT_EQ(reader1.bits_available(), 115);
+  EXPECT_TRUE(reader1.ReadFlag(&flag));
+  EXPECT_EQ(reader1.bits_read(), 6);
+  EXPECT_EQ(reader1.bits_available(), 114);
+  EXPECT_TRUE(reader1.SkipBits(76));
+  EXPECT_EQ(reader1.bits_read(), 82);
+  EXPECT_EQ(reader1.bits_available(), 38);
+}
+
 }  // namespace media
