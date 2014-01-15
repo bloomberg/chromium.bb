@@ -2352,7 +2352,6 @@ TEST_F(DiskCacheEntryTest, SimpleCacheReleaseBuffer) {
   InitCache();
   for (int i = 0; i < disk_cache::kSimpleEntryStreamCount; ++i) {
     EXPECT_EQ(net::OK, DoomAllEntries());
-    CleanupCacheDir();
     ReleaseBuffer(i);
   }
 }
@@ -2374,7 +2373,6 @@ TEST_F(DiskCacheEntryTest, SimpleCacheGetTimes) {
   InitCache();
   for (int i = 0; i < disk_cache::kSimpleEntryStreamCount; ++i) {
     EXPECT_EQ(net::OK, DoomAllEntries());
-    CleanupCacheDir();
     GetTimes(i);
   }
 }
@@ -2384,7 +2382,6 @@ TEST_F(DiskCacheEntryTest, SimpleCacheGrowData) {
   InitCache();
   for (int i = 0; i < disk_cache::kSimpleEntryStreamCount; ++i) {
     EXPECT_EQ(net::OK, DoomAllEntries());
-    CleanupCacheDir();
     GrowData(i);
   }
 }
@@ -2394,7 +2391,6 @@ TEST_F(DiskCacheEntryTest, SimpleCacheTruncateData) {
   InitCache();
   for (int i = 0; i < disk_cache::kSimpleEntryStreamCount; ++i) {
     EXPECT_EQ(net::OK, DoomAllEntries());
-    CleanupCacheDir();
     TruncateData(i);
   }
 }
@@ -2404,7 +2400,6 @@ TEST_F(DiskCacheEntryTest, SimpleCacheZeroLengthIO) {
   InitCache();
   for (int i = 0; i < disk_cache::kSimpleEntryStreamCount; ++i) {
     EXPECT_EQ(net::OK, DoomAllEntries());
-    CleanupCacheDir();
     ZeroLengthIO(i);
   }
 }
@@ -2421,7 +2416,6 @@ TEST_F(DiskCacheEntryTest, SimpleCacheReuseExternalEntry) {
   InitCache();
   for (int i = 0; i < disk_cache::kSimpleEntryStreamCount; ++i) {
     EXPECT_EQ(net::OK, DoomAllEntries());
-    CleanupCacheDir();
     ReuseEntry(20 * 1024, i);
   }
 }
@@ -2432,7 +2426,6 @@ TEST_F(DiskCacheEntryTest, SimpleCacheReuseInternalEntry) {
   InitCache();
   for (int i = 0; i < disk_cache::kSimpleEntryStreamCount; ++i) {
     EXPECT_EQ(net::OK, DoomAllEntries());
-    CleanupCacheDir();
     ReuseEntry(10 * 1024, i);
   }
 }
@@ -2442,7 +2435,6 @@ TEST_F(DiskCacheEntryTest, SimpleCacheSizeChanges) {
   InitCache();
   for (int i = 0; i < disk_cache::kSimpleEntryStreamCount; ++i) {
     EXPECT_EQ(net::OK, DoomAllEntries());
-    CleanupCacheDir();
     SizeChanges(i);
   }
 }
@@ -2452,7 +2444,6 @@ TEST_F(DiskCacheEntryTest, SimpleCacheInvalidData) {
   InitCache();
   for (int i = 0; i < disk_cache::kSimpleEntryStreamCount; ++i) {
     EXPECT_EQ(net::OK, DoomAllEntries());
-    CleanupCacheDir();
     InvalidData(i);
   }
 }
@@ -2467,7 +2458,6 @@ TEST_F(DiskCacheEntryTest, SimpleCacheReadWriteDestroyBuffer) {
   InitCache();
   for (int i = 1; i < disk_cache::kSimpleEntryStreamCount; ++i) {
     EXPECT_EQ(net::OK, DoomAllEntries());
-    CleanupCacheDir();
     ReadWriteDestroyBuffer(i);
   }
 }
@@ -2491,7 +2481,6 @@ TEST_F(DiskCacheEntryTest, SimpleCacheDoomedEntry) {
   // it on a doomed entry, if it was previously lazily omitted.
   for (int i = 0; i < disk_cache::kSimpleEntryStreamCount - 1; ++i) {
     EXPECT_EQ(net::OK, DoomAllEntries());
-    CleanupCacheDir();
     DoomedEntry(i);
   }
 }
