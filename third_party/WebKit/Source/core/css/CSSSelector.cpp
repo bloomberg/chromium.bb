@@ -96,7 +96,7 @@ inline unsigned CSSSelector::specificityForOneSelector() const
     case Id:
         return 0x10000;
     case PseudoClass:
-        if (pseudoType() == PseudoHost)
+        if (pseudoType() == PseudoHost || pseudoType() == PseudoAncestor)
             return 0;
         // fall through.
     case Exact:
@@ -251,6 +251,7 @@ PseudoId CSSSelector::pseudoId(PseudoType type)
     case PseudoUnresolved:
     case PseudoContent:
     case PseudoHost:
+    case PseudoAncestor:
     case PseudoFullScreen:
     case PseudoFullScreenDocument:
     case PseudoFullScreenAncestor:
@@ -346,6 +347,8 @@ static HashMap<StringImpl*, CSSSelector::PseudoType>* nameToPseudoTypeMap()
     DEFINE_STATIC_LOCAL(AtomicString, content, ("content", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, host, ("host", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, hostWithParams, ("host(", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, ancestor, ("ancestor", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, ancestorWithParams, ("ancestor(", AtomicString::ConstructFromLiteral));
 
     static HashMap<StringImpl*, CSSSelector::PseudoType>* nameToPseudoType = 0;
     if (!nameToPseudoType) {
@@ -428,6 +431,8 @@ static HashMap<StringImpl*, CSSSelector::PseudoType>* nameToPseudoTypeMap()
         if (RuntimeEnabledFeatures::shadowDOMEnabled()) {
             nameToPseudoType->set(host.impl(), CSSSelector::PseudoHost);
             nameToPseudoType->set(hostWithParams.impl(), CSSSelector::PseudoHost);
+            nameToPseudoType->set(ancestor.impl(), CSSSelector::PseudoAncestor);
+            nameToPseudoType->set(ancestorWithParams.impl(), CSSSelector::PseudoAncestor);
             nameToPseudoType->set(content.impl(), CSSSelector::PseudoContent);
         }
         if (RuntimeEnabledFeatures::customElementsEnabled())
@@ -548,6 +553,7 @@ void CSSSelector::extractPseudoType() const
     case PseudoFutureCue:
     case PseudoPastCue:
     case PseudoHost:
+    case PseudoAncestor:
     case PseudoUnresolved:
         break;
     case PseudoFirstPage:
@@ -647,7 +653,8 @@ String CSSSelector::selectorText(const String& rightSide) const
                 str.append(')');
                 break;
             }
-            case PseudoHost: {
+            case PseudoHost:
+            case PseudoAncestor: {
                 if (cs->selectorList()) {
                     const CSSSelector* firstSubSelector = cs->selectorList()->first();
                     for (const CSSSelector* subSelector = firstSubSelector; subSelector; subSelector = CSSSelectorList::next(subSelector)) {
@@ -799,6 +806,7 @@ static bool validateSubSelector(const CSSSelector* selector)
     case CSSSelector::PseudoLastOfType:
     case CSSSelector::PseudoOnlyOfType:
     case CSSSelector::PseudoHost:
+    case CSSSelector::PseudoAncestor:
         return true;
     default:
         return false;

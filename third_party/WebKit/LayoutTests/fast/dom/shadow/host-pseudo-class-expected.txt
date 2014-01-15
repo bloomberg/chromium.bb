@@ -17,22 +17,18 @@ PASS backgroundColorOf('host') is "rgba(0, 0, 0, 0)"
 PASS backgroundColorOf('host') is "rgba(0, 0, 0, 0)"
 :host in a shadow tree should match its shadow host.
 PASS backgroundColorOf('host') is "rgb(0, 128, 0)"
+:host with :ancestor in a shadow tree should match its shadow host.
+PASS backgroundColorOf('host') is "rgb(0, 128, 0)"
 :host takes simple selectors and matches when one of the simple selectors matches.
 PASS backgroundColorOf('host') is "rgb(0, 128, 0)"
 :host matches a shadow host in just a nested shadow tree, not all enclosing shadow trees.
 PASS backgroundColorOf('host1') is "rgba(0, 0, 0, 0)"
 PASS backgroundColorOf('host1/host2') is "rgb(0, 128, 0)"
-:host matches based on a composed tree.
-PASS backgroundColorOf('host/target') is "rgb(0, 128, 0)"
-:host matches based on a composed tree when having multiple shadow roots.
-PASS backgroundColorOf('host/targetA') is "rgba(0, 0, 0, 0)"
-PASS backgroundColorOf('host/targetB') is "rgb(0, 128, 0)"
-PASS backgroundColorOf('host/targetC') is "rgb(0, 128, 0)"
-:host is updated when its matched ancestor changes className or id.
+:host is updated when its matched host changes className or id.
 PASS backgroundColorOf('host') is "rgb(0, 128, 0)"
 PASS backgroundColorOf('host') is "rgba(0, 0, 0, 0)"
 PASS backgroundColorOf('host') is "rgb(0, 128, 0)"
-PASS backgroundColorOf('host') is "rgba(0, 0, 0, 0)"
+PASS backgroundColorOf('host2') is "rgba(0, 0, 0, 0)"
 Compare :host with :host.
 PASS backgroundColorOf('host') is "rgb(0, 128, 0)"
 PASS backgroundColorOf('host') is "rgb(255, 0, 0)"

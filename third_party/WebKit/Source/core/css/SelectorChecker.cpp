@@ -848,6 +848,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
             break;
 
         case CSSSelector::PseudoHost:
+        case CSSSelector::PseudoAncestor:
             {
                 // :host only matches a shadow host when :host is in a shadow tree of the shadow host.
                 if (!context.scope || !(context.behaviorAtBoundary & ScopeIsShadowHost) || context.scope != element)
@@ -869,7 +870,8 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
                     subContext.behaviorAtBoundary = ScopeIsShadowHostInPseudoHostParameter;
                     subContext.scope = context.scope;
                     // Use NodeRenderingTraversal to traverse a composed ancestor list of a given element.
-                    for (Element* nextElement = &element; nextElement; nextElement = NodeRenderingTraversal::parentElement(nextElement)) {
+                    Element* nextElement = &element;
+                    do {
                         MatchResult subResult;
                         subContext.element = nextElement;
                         if (match(subContext, siblingTraversalStrategy, &subResult) == SelectorMatches) {
@@ -880,7 +882,12 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
                         }
                         subContext.behaviorAtBoundary = DoesNotCrossBoundary;
                         subContext.scope = 0;
-                    }
+
+                        if (selector->pseudoType() == CSSSelector::PseudoHost)
+                            break;
+
+                        nextElement = NodeRenderingTraversal::parentElement(nextElement);
+                    } while (nextElement);
                 }
                 if (matched) {
                     if (specificity)

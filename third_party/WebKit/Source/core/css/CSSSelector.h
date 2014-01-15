@@ -165,7 +165,8 @@ namespace WebCore {
             PseudoDistributed,
             PseudoUnresolved,
             PseudoContent,
-            PseudoHost
+            PseudoHost,
+            PseudoAncestor
         };
 
         enum MarginBoxType {

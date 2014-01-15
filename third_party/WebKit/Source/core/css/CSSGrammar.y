@@ -114,6 +114,7 @@ static inline bool isCSSTokenAString(int yytype)
     case FUNCTION:
     case ANYFUNCTION:
     case HOSTFUNCTION:
+    case ANCESTORFUNCTION:
     case NOTFUNCTION:
     case CALCFUNCTION:
     case MINFUNCTION:
@@ -269,6 +270,7 @@ inline static CSSParserValue makeIdentValue(CSSParserString string)
 %token <string> VARFUNCTION
 %token <string> VAR_DEFINITION
 %token <string> HOSTFUNCTION
+%token <string> ANCESTORFUNCTION
 
 %token <string> UNICODERANGE
 
@@ -1540,6 +1542,29 @@ pseudo:
             YYERROR;
     }
     | ':' HOSTFUNCTION selector_recovery closing_parenthesis {
+        YYERROR;
+    }
+    | ':' ANCESTORFUNCTION maybe_space simple_selector_list maybe_space closing_parenthesis {
+        $$ = parser->createFloatingSelector();
+        $$->setMatch(CSSSelector::PseudoClass);
+        $$->adoptSelectorVector(*parser->sinkFloatingSelectorVector($4));
+        parser->tokenToLowerCase($2);
+        $$->setValue($2);
+        CSSSelector::PseudoType type = $$->pseudoType();
+        if (type != CSSSelector::PseudoAncestor)
+            YYERROR;
+    }
+    //  used by :ancestor()
+    | ':' ANCESTORFUNCTION maybe_space closing_parenthesis {
+        $$ = parser->createFloatingSelector();
+        $$->setMatch(CSSSelector::PseudoClass);
+        parser->tokenToLowerCase($2);
+        $$->setValue($2.atomicSubstring(0, $2.length() - 1));
+        CSSSelector::PseudoType type = $$->pseudoType();
+        if (type != CSSSelector::PseudoAncestor)
+            YYERROR;
+    }
+    | ':' ANCESTORFUNCTION selector_recovery closing_parenthesis {
         YYERROR;
     }
   ;

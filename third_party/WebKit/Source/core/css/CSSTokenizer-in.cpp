@@ -733,6 +733,10 @@ inline bool CSSTokenizer::detectFunctionTypeToken(int length)
             m_token = HOSTFUNCTION;
             return true;
         }
+        CASE("ancestor") {
+            m_token = ANCESTORFUNCTION;
+            return true;
+        }
         CASE("nth-child") {
             m_parsingMode = NthChildMode;
             return true;
