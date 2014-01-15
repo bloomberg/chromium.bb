@@ -62,7 +62,6 @@ public:
     void destroy(RenderBlock*);
 
     void beginLayout(RenderBlock*);
-    void inflate(RenderBlock*);
     void endLayout(RenderBlock*);
 
 private:
@@ -98,6 +97,7 @@ private:
 
     explicit FastTextAutosizer(Document*);
 
+    void inflate(RenderBlock*);
     bool enabled();
     void prepareRenderViewInfo(RenderView*);
     bool shouldBeClusterRoot(RenderBlock*);

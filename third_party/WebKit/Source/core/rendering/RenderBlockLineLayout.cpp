@@ -1550,9 +1550,6 @@ void RenderBlockFlow::repaintDirtyFloats(Vector<FloatWithRect>& floats)
 
 void RenderBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& repaintLogicalTop, LayoutUnit& repaintLogicalBottom, LayoutUnit afterEdge)
 {
-    if (FastTextAutosizer* textAutosizer = document().fastTextAutosizer())
-        textAutosizer->inflate(this);
-
     // Lay out our hypothetical grid line as though it occurs at the top of the block.
     if (view()->layoutState() && view()->layoutState()->lineGrid() == this)
         layoutLineGridBox();

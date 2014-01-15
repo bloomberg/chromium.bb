@@ -83,6 +83,18 @@ void FastTextAutosizer::beginLayout(RenderBlock* block)
 
     if (shouldBeClusterRoot(block))
         m_clusterStack.append(getOrCreateCluster(block));
+
+    if (block->childrenInline())
+        inflate(block);
+}
+
+void FastTextAutosizer::endLayout(RenderBlock* block)
+{
+    if (!enabled())
+        return;
+
+    if (!m_clusterStack.isEmpty() && m_clusterStack.last()->m_root == block)
+        m_clusterStack.removeLast();
 }
 
 void FastTextAutosizer::inflate(RenderBlock* block)
@@ -94,7 +106,6 @@ void FastTextAutosizer::inflate(RenderBlock* block)
     // localMultiplier is used to prevent inflation of some containers such as a row of links.
     float localMultiplier = TextAutosizer::containerShouldBeAutosized(block) ? cluster->m_multiplier : 1;
 
-    // FIXME: Add an optimization to not do this walk if it's not needed.
     for (InlineWalker walker(block); !walker.atEnd(); walker.advance()) {
         RenderObject* inlineObj = walker.current();
         if (inlineObj->isText()) {
@@ -102,15 +113,6 @@ void FastTextAutosizer::inflate(RenderBlock* block)
             applyMultiplier(inlineObj->parent(), localMultiplier); // Parent handles line spacing.
         }
     }
-}
-
-void FastTextAutosizer::endLayout(RenderBlock* block)
-{
-    if (!enabled())
-        return;
-
-    if (!m_clusterStack.isEmpty() && m_clusterStack.last()->m_root == block)
-        m_clusterStack.removeLast();
 }
 
 bool FastTextAutosizer::enabled()
