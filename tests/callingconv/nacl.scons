@@ -57,6 +57,9 @@ def AddTest(env, test_variant, envlist, settings, is_broken):
   # wipes CFLAGS.
   for e in envlist:
     e.Append(CFLAGS = extra_cflags)
+    # This can generate references to runtime code we won't link with
+    # (__aeabi_unwind_cpp_pr0, etc.) when using PNaCl as the linker.
+    e.FilterOut(CCFLAGS=['-fasynchronous-unwind-tables'])
 
   # Create two modules for each environment,
   # so that we test toolchain self-interaction.
