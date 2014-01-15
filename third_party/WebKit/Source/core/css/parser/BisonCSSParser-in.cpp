@@ -8721,16 +8721,6 @@ static bool validFlowName(const String& flowName)
             || equalIgnoringCase(flowName, "none"));
 }
 
-bool BisonCSSParser::parseFlowThread(const String& flowName)
-{
-    setupParser("@-internal-decls -webkit-flow-into:", flowName, "");
-    cssyyparse(this);
-
-    m_rule = 0;
-
-    return ((m_parsedProperties.size() == 1) && (m_parsedProperties.first().id() == CSSPropertyWebkitFlowInto));
-}
-
 // none | <ident>
 bool BisonCSSParser::parseFlowThread(CSSPropertyID propId, bool important)
 {
