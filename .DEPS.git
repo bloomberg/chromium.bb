@@ -18,7 +18,7 @@ deps = {
     'testing/gtest':
         Var('git_url') + '/external/googletest.git@74de57c951aedebc5dfe26a27604353432392b98',
     'third_party':
-        Var('git_url') + '/native_client/src/third_party.git@db54368e43ae95a54a79c19a7e7dc00db2e85df0',
+        Var('git_url') + '/native_client/src/third_party.git@a4d9f882687eb0afca4687457d910eb8d64a9979',
     'third_party/lcov':
         Var('git_url') + '/chromium/src/third_party/lcov.git@b37daf5968200da8ff520ce65c4e5bce4047dd15',
     'third_party/lss':
