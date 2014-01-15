@@ -12,7 +12,7 @@
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',
         '../ui/gl/gl.gyp:gl',
-        'mojo_environment_chromium',
+        'mojo_environment_standalone',
         'mojo_gles2',
         'mojo_gles2_bindings',
         'mojo_native_viewport_bindings',

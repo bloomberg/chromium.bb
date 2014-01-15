@@ -29,6 +29,7 @@
       'type': 'none',
       'dependencies': [
         'mojo_bindings',
+        'mojo_compositor_app',
         'mojo_common_lib',
         'mojo_common_unittests',
         'mojo_js',
