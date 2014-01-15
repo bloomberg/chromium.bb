@@ -46,6 +46,9 @@ static int weston_log_timestamp(void)
 	gettimeofday(&tv, NULL);
 
 	brokendown_time = localtime(&tv.tv_sec);
+	if (brokendown_time == NULL)
+		return fprintf(weston_logfile, "[(NULL)localtime] ");
+
 	if (brokendown_time->tm_mday != cached_tm_mday) {
 		strftime(string, sizeof string, "%Y-%m-%d %Z", brokendown_time);
 		fprintf(weston_logfile, "Date: %s\n", string);
