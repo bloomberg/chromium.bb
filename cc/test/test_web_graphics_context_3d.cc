@@ -16,8 +16,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 
-using blink::WebGraphicsContext3D;
-
 namespace cc {
 
 static const GLuint kFramebufferId = 1;
@@ -59,7 +57,6 @@ TestWebGraphicsContext3D::TestWebGraphicsContext3D()
       context_lost_(false),
       times_map_image_chromium_succeeds_(-1),
       times_map_buffer_chromium_succeeds_(-1),
-      context_lost_callback_(NULL),
       next_program_id_(1000),
       next_shader_id_(2000),
       max_texture_size_(2048),
@@ -396,18 +393,13 @@ void TestWebGraphicsContext3D::genMailboxCHROMIUM(GLbyte* mailbox) {
   }
 }
 
-void TestWebGraphicsContext3D::setContextLostCallback(
-    blink::WebGraphicsContext3D::WebGraphicsContextLostCallback* callback) {
-  context_lost_callback_ = callback;
-}
-
 void TestWebGraphicsContext3D::loseContextCHROMIUM(GLenum current,
                                                    GLenum other) {
   if (context_lost_)
     return;
   context_lost_ = true;
-  if (context_lost_callback_)
-    context_lost_callback_->onContextLost();
+  if (!context_lost_callback_.is_null())
+    context_lost_callback_.Run();
 
   for (size_t i = 0; i < shared_contexts_.size(); ++i)
     shared_contexts_[i]->loseContextCHROMIUM(current, other);

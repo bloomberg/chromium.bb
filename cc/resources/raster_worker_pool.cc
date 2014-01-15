@@ -16,7 +16,6 @@
 #include "third_party/skia/include/core/SkPixelRef.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/SkGpuDevice.h"
-#include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 
 namespace cc {
 

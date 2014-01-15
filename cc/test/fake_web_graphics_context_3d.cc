@@ -7,8 +7,6 @@
 #include "base/logging.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
-using blink::WebGraphicsContext3D;
-
 namespace cc {
 
 FakeWebGraphicsContext3D::FakeWebGraphicsContext3D() {}
@@ -55,20 +53,6 @@ void* FakeWebGraphicsContext3D::mapTexSubImage2DCHROMIUM(
 GLenum FakeWebGraphicsContext3D::checkFramebufferStatus(
     GLenum target) {
   return GL_FRAMEBUFFER_COMPLETE;
-}
-
-bool FakeWebGraphicsContext3D::getActiveAttrib(
-    GLuint program,
-    GLuint index,
-    WebGraphicsContext3D::ActiveInfo&) {
-  return false;
-}
-
-bool FakeWebGraphicsContext3D::getActiveUniform(
-    GLuint program,
-    GLuint index,
-    WebGraphicsContext3D::ActiveInfo&) {
-  return false;
 }
 
 GLint FakeWebGraphicsContext3D::getAttribLocation(
@@ -310,10 +294,6 @@ void FakeWebGraphicsContext3D::getQueryObjectuivEXT(
     GLuint query,
     GLenum pname,
     GLuint* params) {
-}
-
-void FakeWebGraphicsContext3D::setContextLostCallback(
-    WebGraphicsContext3D::WebGraphicsContextLostCallback* callback) {
 }
 
 void FakeWebGraphicsContext3D::loseContextCHROMIUM(GLenum current,

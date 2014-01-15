@@ -7,12 +7,12 @@
 
 #include <string>
 
-#include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
+#include "base/macros.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
 namespace cc {
 
-// WebGraphicsContext3D base class for use in unit tests.
+// Base class for use in unit tests.
 // All operations are no-ops (returning 0 if necessary).
 class FakeWebGraphicsContext3D {
  public:
@@ -214,13 +214,6 @@ class FakeWebGraphicsContext3D {
   virtual void frontFace(GLenum mode) {}
   virtual void generateMipmap(GLenum target) {}
 
-  virtual bool getActiveAttrib(
-      GLuint program,
-      GLuint index, blink::WebGraphicsContext3D::ActiveInfo&);
-  virtual bool getActiveUniform(
-      GLuint program,
-      GLuint index,
-      blink::WebGraphicsContext3D::ActiveInfo&);
   virtual void getAttachedShaders(
       GLuint program,
       GLsizei max_count,
@@ -572,9 +565,6 @@ class FakeWebGraphicsContext3D {
       GLuint query,
       GLenum pname,
       GLuint* params);
-
-  virtual void setContextLostCallback(
-      blink::WebGraphicsContext3D::WebGraphicsContextLostCallback* callback);
 
   virtual void loseContextCHROMIUM(GLenum current,
                                    GLenum other);

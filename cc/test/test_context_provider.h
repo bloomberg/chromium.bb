@@ -79,9 +79,6 @@ class TestContextProvider : public ContextProvider {
   LostContextCallback lost_context_callback_;
   MemoryPolicyChangedCallback memory_policy_changed_callback_;
 
-  class LostContextCallbackProxy;
-  scoped_ptr<LostContextCallbackProxy> lost_context_callback_proxy_;
-
   base::WeakPtrFactory<TestContextProvider> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TestContextProvider);

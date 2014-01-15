@@ -28,7 +28,6 @@
 #include "cc/test/layer_tree_test.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "gpu/GLES2/gl2extchromium.h"
-#include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 
 namespace cc {
 namespace {

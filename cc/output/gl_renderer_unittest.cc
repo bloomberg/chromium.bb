@@ -396,20 +396,6 @@ class ForbidSynchronousCallContext : public TestWebGraphicsContext3D {
  public:
   ForbidSynchronousCallContext() {}
 
-  virtual bool getActiveAttrib(GLuint program,
-                               GLuint index,
-                               blink::WebGraphicsContext3D::ActiveInfo& info)
-      OVERRIDE {
-    ADD_FAILURE();
-    return false;
-  }
-  virtual bool getActiveUniform(GLuint program,
-                                GLuint index,
-                                blink::WebGraphicsContext3D::ActiveInfo& info)
-      OVERRIDE {
-    ADD_FAILURE();
-    return false;
-  }
   virtual void getAttachedShaders(GLuint program,
                                   GLsizei max_count,
                                   GLsizei* count,

@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
 #include "base/containers/scoped_ptr_hash_map.h"
@@ -30,6 +31,10 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   static scoped_ptr<TestWebGraphicsContext3D> Create();
 
   virtual ~TestWebGraphicsContext3D();
+
+  void set_context_lost_callback(const base::Closure& callback) {
+    context_lost_callback_ = callback;
+  }
 
   virtual void reshapeWithScaleFactor(int width,
                                       int height,
@@ -136,10 +141,6 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
                                       const GLbyte* mailbox) { }
   virtual void consumeTextureCHROMIUM(GLenum target,
                                       const GLbyte* mailbox) { }
-
-  virtual void setContextLostCallback(
-      blink::WebGraphicsContext3D::WebGraphicsContextLostCallback* callback)
-      OVERRIDE;
 
   virtual void loseContextCHROMIUM(GLenum current,
                                    GLenum other) OVERRIDE;
@@ -346,8 +347,7 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   bool context_lost_;
   int times_map_image_chromium_succeeds_;
   int times_map_buffer_chromium_succeeds_;
-  blink::WebGraphicsContext3D::WebGraphicsContextLostCallback*
-      context_lost_callback_;
+  base::Closure context_lost_callback_;
   base::hash_set<unsigned> used_textures_;
   unsigned next_program_id_;
   base::hash_set<unsigned> program_set_;
