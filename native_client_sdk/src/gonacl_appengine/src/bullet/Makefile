@@ -13,7 +13,7 @@ include $(NACL_SDK_ROOT)/tools/common.mk
 TARGET = NaClAMBullet
 LIBS = BulletDynamics BulletCollision LinearMath ppapi pthread
 
-USR_INCLUDE=$(dir $(PNACL_BIN))/usr/include
+USR_INCLUDE=$(NACL_SDK_ROOT)/toolchain/$(OSNAME)_pnacl/usr/include
 BULLET_INCLUDE=$(USR_INCLUDE)/bullet
 
 CFLAGS = -I$(CURDIR) -I$(BULLET_INCLUDE)
