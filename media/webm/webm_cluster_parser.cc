@@ -336,15 +336,15 @@ bool WebMClusterParser::OnBlock(bool is_simple_block, int track_num,
   base::TimeDelta timestamp = base::TimeDelta::FromMicroseconds(
       (cluster_timecode_ + timecode) * timecode_multiplier_);
 
-  // The first bit of the flags is set when a SimpleBlock contains only
-  // keyframes. If this is a Block, then inspection of the payload is
-  // necessary to determine whether it contains a keyframe or not.
-  // http://www.matroska.org/technical/specs/index.html
-  bool is_keyframe =
-      is_simple_block ? (flags & 0x80) != 0 : track->IsKeyframe(data, size);
-
   scoped_refptr<StreamParserBuffer> buffer;
   if (!is_text) {
+    // The first bit of the flags is set when a SimpleBlock contains only
+    // keyframes. If this is a Block, then inspection of the payload is
+    // necessary to determine whether it contains a keyframe or not.
+    // http://www.matroska.org/technical/specs/index.html
+    bool is_keyframe =
+        is_simple_block ? (flags & 0x80) != 0 : track->IsKeyframe(data, size);
+
     // Every encrypted Block has a signal byte and IV prepended to it. Current
     // encrypted WebM request for comments specification is here
     // http://wiki.webmproject.org/encryption/webm-encryption-rfc
@@ -380,7 +380,7 @@ bool WebMClusterParser::OnBlock(bool is_simple_block, int track_num,
         content.length(),
         &side_data[0],
         side_data.size(),
-        is_keyframe);
+        true);
   }
 
   buffer->set_timestamp(timestamp);

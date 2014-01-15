@@ -13,6 +13,8 @@
 #include "media/base/data_buffer.h"
 #include "media/base/media_log.h"
 #include "media/base/test_helpers.h"
+#include "media/base/text_track_config.h"
+#include "media/filters/webvtt_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -26,8 +28,8 @@ static const int kDataSize = 1;
 class SourceBufferStreamTest : public testing::Test {
  protected:
   SourceBufferStreamTest() {
-    config_ = TestVideoConfig::Normal();
-    stream_.reset(new SourceBufferStream(config_, LogCB()));
+    video_config_ = TestVideoConfig::Normal();
+    stream_.reset(new SourceBufferStream(video_config_, LogCB()));
     SetStreamInfo(kDefaultFramesPerSecond, kDefaultKeyframesPerSecond);
   }
 
@@ -39,6 +41,13 @@ class SourceBufferStreamTest : public testing::Test {
     frames_per_second_ = frames_per_second;
     keyframes_per_second_ = keyframes_per_second;
     frame_duration_ = ConvertToFrameDuration(frames_per_second);
+  }
+
+  void SetTextStream() {
+    video_config_ = TestVideoConfig::Invalid();
+    TextTrackConfig config(kTextSubtitles, "", "", "");
+    stream_.reset(new SourceBufferStream(config, LogCB()));
+    SetStreamInfo(2, 2);
   }
 
   void NewSegmentAppend(int starting_position, int number_of_buffers) {
@@ -241,7 +250,7 @@ class SourceBufferStreamTest : public testing::Test {
     EXPECT_EQ(SourceBufferStream::kNeedBuffer, stream_->GetNextBuffer(&buffer));
   }
 
-  void CheckConfig(const VideoDecoderConfig& config) {
+  void CheckVideoConfig(const VideoDecoderConfig& config) {
     const VideoDecoderConfig& actual = stream_->GetCurrentVideoDecoderConfig();
     EXPECT_TRUE(actual.Matches(config))
         << "Expected: " << config.AsHumanReadableString()
@@ -251,7 +260,7 @@ class SourceBufferStreamTest : public testing::Test {
   base::TimeDelta frame_duration() const { return frame_duration_; }
 
   scoped_ptr<SourceBufferStream> stream_;
-  VideoDecoderConfig config_;
+  VideoDecoderConfig video_config_;
 
  private:
   base::TimeDelta ConvertToFrameDuration(int frames_per_second) {
@@ -2662,22 +2671,22 @@ TEST_F(SourceBufferStreamTest, GetRemovalRange_Range) {
 
 TEST_F(SourceBufferStreamTest, ConfigChange_Basic) {
   VideoDecoderConfig new_config = TestVideoConfig::Large();
-  ASSERT_FALSE(new_config.Matches(config_));
+  ASSERT_FALSE(new_config.Matches(video_config_));
 
   Seek(0);
-  CheckConfig(config_);
+  CheckVideoConfig(video_config_);
 
   // Append 5 buffers at positions 0 through 4
   NewSegmentAppend(0, 5, &kDataA);
 
-  CheckConfig(config_);
+  CheckVideoConfig(video_config_);
 
   // Signal a config change.
   stream_->UpdateVideoConfig(new_config);
 
   // Make sure updating the config doesn't change anything since new_config
   // should not be associated with the buffer GetNextBuffer() will return.
-  CheckConfig(config_);
+  CheckVideoConfig(video_config_);
 
   // Append 5 buffers at positions 5 through 9.
   NewSegmentAppend(5, 5, &kDataB);
@@ -2686,7 +2695,7 @@ TEST_F(SourceBufferStreamTest, ConfigChange_Basic) {
   scoped_refptr<StreamParserBuffer> buffer;
   for (int i = 0; i < 5; i++) {
     EXPECT_EQ(stream_->GetNextBuffer(&buffer), SourceBufferStream::kSuccess);
-    CheckConfig(config_);
+    CheckVideoConfig(video_config_);
   }
 
   // Verify the next attempt to get a buffer will signal that a config change
@@ -2694,11 +2703,11 @@ TEST_F(SourceBufferStreamTest, ConfigChange_Basic) {
   EXPECT_EQ(stream_->GetNextBuffer(&buffer), SourceBufferStream::kConfigChange);
 
   // Verify that the new config is now returned.
-  CheckConfig(new_config);
+  CheckVideoConfig(new_config);
 
   // Consume the remaining buffers associated with the new config.
   for (int i = 0; i < 5; i++) {
-    CheckConfig(new_config);
+    CheckVideoConfig(new_config);
     EXPECT_EQ(stream_->GetNextBuffer(&buffer), SourceBufferStream::kSuccess);
   }
 }
@@ -2714,29 +2723,29 @@ TEST_F(SourceBufferStreamTest, ConfigChange_Seek) {
 
   // Seek to the start of the buffers with the new config and make sure a
   // config change is signalled.
-  CheckConfig(config_);
+  CheckVideoConfig(video_config_);
   Seek(5);
-  CheckConfig(config_);
+  CheckVideoConfig(video_config_);
   EXPECT_EQ(stream_->GetNextBuffer(&buffer), SourceBufferStream::kConfigChange);
-  CheckConfig(new_config);
+  CheckVideoConfig(new_config);
   CheckExpectedBuffers(5, 9, &kDataB);
 
 
   // Seek to the start which has a different config. Don't fetch any buffers and
   // seek back to buffers with the current config. Make sure a config change
   // isn't signalled in this case.
-  CheckConfig(new_config);
+  CheckVideoConfig(new_config);
   Seek(0);
   Seek(7);
   CheckExpectedBuffers(5, 9, &kDataB);
 
 
   // Seek to the start and make sure a config change is signalled.
-  CheckConfig(new_config);
+  CheckVideoConfig(new_config);
   Seek(0);
-  CheckConfig(new_config);
+  CheckVideoConfig(new_config);
   EXPECT_EQ(stream_->GetNextBuffer(&buffer), SourceBufferStream::kConfigChange);
-  CheckConfig(config_);
+  CheckVideoConfig(video_config_);
   CheckExpectedBuffers(0, 4, &kDataA);
 }
 
@@ -3273,6 +3282,72 @@ TEST_F(SourceBufferStreamTest,
   // remove.
   NewSegmentAppend("90K 121 151");
   CheckExpectedBuffers("90K 121 151");
+}
+
+TEST_F(SourceBufferStreamTest, Text_Append_SingleRange) {
+  SetTextStream();
+  NewSegmentAppend("0K 500K 1000K");
+  CheckExpectedRangesByTimestamp("{ [0,1500) }");
+
+  Seek(0);
+  CheckExpectedBuffers("0K 500K 1000K");
+}
+
+TEST_F(SourceBufferStreamTest, Text_Append_DisjointAfter) {
+  SetTextStream();
+  NewSegmentAppend("0K 500K 1000K");
+  CheckExpectedRangesByTimestamp("{ [0,1500) }");
+  NewSegmentAppend("3000K 3500K 4000K");
+  CheckExpectedRangesByTimestamp("{ [0,4500) }");
+
+  Seek(0);
+  CheckExpectedBuffers("0K 500K 1000K 3000K 3500K 4000K");
+}
+
+TEST_F(SourceBufferStreamTest, Text_Append_DisjointBefore) {
+  SetTextStream();
+  NewSegmentAppend("3000K 3500K 4000K");
+  CheckExpectedRangesByTimestamp("{ [3000,4500) }");
+  NewSegmentAppend("0K 500K 1000K");
+  CheckExpectedRangesByTimestamp("{ [0,4500) }");
+
+  Seek(0);
+  CheckExpectedBuffers("0K 500K 1000K 3000K 3500K 4000K");
+}
+
+TEST_F(SourceBufferStreamTest, Text_CompleteOverlap) {
+  SetTextStream();
+  NewSegmentAppend("3000K 3500K 4000K");
+  CheckExpectedRangesByTimestamp("{ [3000,4500) }");
+  NewSegmentAppend("0K 501K 1001K 1501K 2001K 2501K "
+                   "3001K 3501K 4001K 4501K 5001K");
+  CheckExpectedRangesByTimestamp("{ [0,5502) }");
+
+  Seek(0);
+  CheckExpectedBuffers("0K 501K 1001K 1501K 2001K 2501K "
+                       "3001K 3501K 4001K 4501K 5001K");
+}
+
+TEST_F(SourceBufferStreamTest, Text_OverlapAfter) {
+  SetTextStream();
+  NewSegmentAppend("0K 500K 1000K 1500K 2000K");
+  CheckExpectedRangesByTimestamp("{ [0,2500) }");
+  NewSegmentAppend("1499K 2001K 2501K 3001K");
+  CheckExpectedRangesByTimestamp("{ [0,3503) }");
+
+  Seek(0);
+  CheckExpectedBuffers("0K 500K 1000K 1499K 2001K 2501K 3001K");
+}
+
+TEST_F(SourceBufferStreamTest, Text_OverlapBefore) {
+  SetTextStream();
+  NewSegmentAppend("1500K 2000K 2500K 3000K 3500K");
+  CheckExpectedRangesByTimestamp("{ [1500,4000) }");
+  NewSegmentAppend("0K 501K 1001K 1501K 2001K");
+  CheckExpectedRangesByTimestamp("{ [0,4001) }");
+
+  Seek(0);
+  CheckExpectedBuffers("0K 501K 1001K 1501K 2001K 2500K 3000K 3500K");
 }
 
 // TODO(vrk): Add unit tests where keyframes are unaligned between streams.

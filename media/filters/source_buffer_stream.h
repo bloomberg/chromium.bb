@@ -46,6 +46,12 @@ class MEDIA_EXPORT SourceBufferStream {
     kEndOfStream
   };
 
+  enum Type {
+    kAudio,
+    kVideo,
+    kText
+  };
+
   SourceBufferStream(const AudioDecoderConfig& audio_config,
                      const LogCB& log_cb);
   SourceBufferStream(const VideoDecoderConfig& video_config,
@@ -265,8 +271,8 @@ class MEDIA_EXPORT SourceBufferStream {
   // have a keyframe after |timestamp| then kNoTimestamp() is returned.
   base::TimeDelta FindKeyframeAfterTimestamp(const base::TimeDelta timestamp);
 
-  // Returns "VIDEO" for a video SourceBufferStream and "AUDIO" for an audio
-  // one.
+  // Returns "VIDEO" for a video SourceBufferStream, "AUDIO" for an audio
+  // stream, and "TEXT" for a text stream.
   std::string GetStreamTypeName() const;
 
   // Returns true if we don't have any ranges or the last range is selected
@@ -291,7 +297,7 @@ class MEDIA_EXPORT SourceBufferStream {
       base::TimeDelta start, base::TimeDelta end, bool is_exclusive,
       BufferQueue* deleted_buffers);
 
-  bool is_video() const { return video_configs_.size() > 0; }
+  Type GetType() const;
 
   // Callback used to report error strings that can help the web developer
   // figure out what is wrong with the content.

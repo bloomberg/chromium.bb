@@ -21,8 +21,9 @@ namespace media {
 // Returns true if |prev_is_keyframe| and |current_is_keyframe| indicate a
 // same timestamp situation that is allowed. False is returned otherwise.
 static bool AllowSameTimestamp(
-    bool prev_is_keyframe, bool current_is_keyframe, bool is_video) {
-  if (is_video)
+    bool prev_is_keyframe, bool current_is_keyframe,
+    SourceBufferStream::Type type) {
+  if (type == SourceBufferStream::kVideo)
     return !prev_is_keyframe && !current_is_keyframe;
 
   return prev_is_keyframe || !current_is_keyframe;
@@ -44,7 +45,7 @@ class SourceBufferRange {
   // empty and the front of |new_buffers| must be a keyframe.
   // |media_segment_start_time| refers to the starting timestamp for the media
   // segment to which these buffers belong.
-  SourceBufferRange(bool is_video,
+  SourceBufferRange(SourceBufferStream::Type type,
                     const BufferQueue& new_buffers,
                     base::TimeDelta media_segment_start_time,
                     const InterbufferDistanceCB& interbuffer_distance_cb);
@@ -228,8 +229,8 @@ class SourceBufferRange {
   // Returns the approximate duration of a buffer in this range.
   base::TimeDelta GetApproximateDuration() const;
 
-  // True if this object stores video data.
-  bool is_video_;
+  // Type of this stream.
+  const SourceBufferStream::Type type_;
 
   // An ordered list of buffers in this range.
   BufferQueue buffers_;
@@ -501,7 +502,7 @@ bool SourceBufferStream::Append(
 
     range_for_next_append_ =
         AddToRanges(new SourceBufferRange(
-            is_video(), *buffers_for_new_range, new_range_start_time,
+            GetType(), *buffers_for_new_range, new_range_start_time,
             base::Bind(&SourceBufferStream::GetMaxInterbufferDistance,
                        base::Unretained(this))));
     last_appended_buffer_timestamp_ =
@@ -701,7 +702,7 @@ bool SourceBufferStream::IsMonotonicallyIncreasing(
 
       if (current_timestamp == prev_timestamp &&
           !AllowSameTimestamp(prev_is_keyframe, current_is_keyframe,
-                              is_video())) {
+                              GetType())) {
         MEDIA_LOG(log_cb_) << "Unexpected combination of buffers with the"
                            << " same timestamp detected at "
                            << current_timestamp.InSecondsF();
@@ -720,7 +721,7 @@ bool SourceBufferStream::IsNextTimestampValid(
   return (last_appended_buffer_timestamp_ != next_timestamp) ||
       new_media_segment_ ||
       AllowSameTimestamp(last_appended_buffer_is_keyframe_, next_is_keyframe,
-                         is_video());
+                         GetType());
 }
 
 
@@ -883,7 +884,7 @@ int SourceBufferStream::FreeBuffers(int total_bytes_to_free,
       DCHECK(!new_range_for_append);
       // Create a new range containing these buffers.
       new_range_for_append = new SourceBufferRange(
-          is_video(), buffers, kNoTimestamp(),
+          GetType(), buffers, kNoTimestamp(),
           base::Bind(&SourceBufferStream::GetMaxInterbufferDistance,
                      base::Unretained(this)));
       range_for_next_append_ = ranges_.end();
@@ -964,7 +965,7 @@ void SourceBufferStream::PrepareRangesForNextAppend(
   // from deleting the last buffer in the previous append if both buffers
   // have the same timestamp.
   bool is_exclusive = (prev_timestamp == next_timestamp) &&
-      AllowSameTimestamp(prev_is_keyframe, next_is_keyframe, is_video());
+      AllowSameTimestamp(prev_is_keyframe, next_is_keyframe, GetType());
 
   // Delete the buffers that |new_buffers| overlaps.
   base::TimeDelta start = new_buffers.front()->GetDecodeTimestamp();
@@ -1469,13 +1470,25 @@ base::TimeDelta SourceBufferStream::FindKeyframeAfterTimestamp(
 }
 
 std::string SourceBufferStream::GetStreamTypeName() const {
-  if (!video_configs_.empty()) {
-    DCHECK(audio_configs_.empty());
-    return "VIDEO";
+  switch (GetType()) {
+    case kAudio:
+      return "AUDIO";
+    case kVideo:
+      return "VIDEO";
+    case kText:
+      return "TEXT";
   }
+  NOTREACHED();
+  return "";
+}
 
-  DCHECK(!audio_configs_.empty());
-  return "AUDIO";
+SourceBufferStream::Type SourceBufferStream::GetType() const {
+  if (!audio_configs_.empty())
+    return kAudio;
+  if (!video_configs_.empty())
+    return kVideo;
+  DCHECK_NE(text_track_config_.kind(), kTextNone);
+  return kText;
 }
 
 void SourceBufferStream::DeleteAndRemoveRange(RangeList::iterator* itr) {
@@ -1497,10 +1510,10 @@ void SourceBufferStream::DeleteAndRemoveRange(RangeList::iterator* itr) {
 }
 
 SourceBufferRange::SourceBufferRange(
-    bool is_video, const BufferQueue& new_buffers,
+    SourceBufferStream::Type type, const BufferQueue& new_buffers,
     base::TimeDelta media_segment_start_time,
     const InterbufferDistanceCB& interbuffer_distance_cb)
-    : is_video_(is_video),
+    : type_(type),
       keyframe_map_index_base_(0),
       next_buffer_index_(-1),
       media_segment_start_time_(media_segment_start_time),
@@ -1592,7 +1605,7 @@ SourceBufferRange* SourceBufferRange::SplitRange(
   // Create a new range with |removed_buffers|.
   SourceBufferRange* split_range =
       new SourceBufferRange(
-          is_video_, removed_buffers, kNoTimestamp(), interbuffer_distance_cb_);
+          type_, removed_buffers, kNoTimestamp(), interbuffer_distance_cb_);
 
   // If the next buffer position is now in |split_range|, update the state of
   // this range and |split_range| accordingly.
@@ -1975,9 +1988,14 @@ base::TimeDelta SourceBufferRange::KeyframeBeforeTimestamp(
 bool SourceBufferRange::IsNextInSequence(
     base::TimeDelta timestamp, bool is_keyframe) const {
   base::TimeDelta end = buffers_.back()->GetDecodeTimestamp();
-  return (end < timestamp && timestamp <= end + GetFudgeRoom()) ||
-      (timestamp == end && AllowSameTimestamp(
-          buffers_.back()->IsKeyframe(), is_keyframe, is_video_));
+  if (end < timestamp &&
+      (type_ == SourceBufferStream::kText ||
+          timestamp <= end + GetFudgeRoom())) {
+    return true;
+  }
+
+  return timestamp == end && AllowSameTimestamp(
+      buffers_.back()->IsKeyframe(), is_keyframe, type_);
 }
 
 base::TimeDelta SourceBufferRange::GetFudgeRoom() const {
