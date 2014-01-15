@@ -8,7 +8,9 @@
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "ui/aura/window.h"
 #include "ui/base/test/ui_controls.h"
+#include "ui/compositor/layer.h"
 #include "ui/views/focus/focus_manager.h"
 
 namespace ui_test_utils {
@@ -44,6 +46,16 @@ void MoveMouseToCenterAndPress(views::View* view,
                                const base::Closure& closure) {
   DCHECK(view);
   DCHECK(view->GetWidget());
+  // Complete any in-progress animation before sending the events so that the
+  // mouse-event targetting happens reliably, and does not flake because of
+  // unreliable animation state.
+  aura::Window* window = view->GetWidget()->GetNativeView();
+  if (window && window->layer()) {
+    ui::LayerAnimator* animator = window->layer()->GetAnimator();
+    if (animator && animator->is_animating())
+      animator->StopAnimating();
+  }
+
   gfx::Point view_center(view->width() / 2, view->height() / 2);
   views::View::ConvertPointToScreen(view, &view_center);
   ui_controls::SendMouseMoveNotifyWhenDone(
