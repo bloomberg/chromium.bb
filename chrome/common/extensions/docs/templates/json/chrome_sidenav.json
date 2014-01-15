@@ -653,11 +653,11 @@
         "items": [
           {
             "title": "Learn Basics",
-            "href": "/native-client/index.html",
+            "href": "/native-client/overview.html",
             "items": [
               {
                 "title": "What Is Native Client?",
-                "href": "/native-client/index.html"
+                "href": "/native-client/overview.html"
               },
               {
                 "title": "NaCl and PNaCl",
@@ -672,6 +672,10 @@
               {
                 "title": "Download SDK",
                 "href": "/native-client/sdk/download.html"
+              },
+              {
+                "title": "Examples",
+                "href": "/native-client/sdk/examples.html"
               },
               {
                 "title": "SDK Release Notes",
@@ -714,7 +718,7 @@
                 "href": "/native-client/devguide/devcycle/vs-addin.html"
               },
               {
-                "title": "Dynamic Linking and Loading with glibc",
+                "title": "Dynamic Linking and Loading with GlibC",
                 "href": "/native-client/devguide/devcycle/dynamic-loading.html"
               }
             ]
@@ -851,7 +855,7 @@
               },
               {
                 "title": "Security Contest Archive",
-                "href": "/native-client/community/security-content/index.html"
+                "href": "/native-client/community/security-contest/index.html"
               }
             ]
           }

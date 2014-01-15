@@ -1,3 +1,7 @@
+# Copyright (c) 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 # -*- coding: utf-8 -*-
 #
 # Native Client documentation build configuration file, created by
@@ -23,7 +27,7 @@ sys.path.insert(0, os.path.abspath('_sphinxext'))
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['devsite_builder']
+extensions = ['devsite_builder', 'chromesite_builder']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -90,7 +94,7 @@ exclude_patterns = ['_build', '**/.#*']
 # a list of builtin themes.
 html_theme = 'default'
 
-html_translator_class = 'devsite_builder.DevsiteHTMLTranslator'
+html_translator_class = 'chromesite_builder.ChromesiteHTMLTranslator'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the

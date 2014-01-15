@@ -70,9 +70,9 @@
   },
   "cr-native-client": {
     "chromium": {
-      "dir": "components/nacl/docs/dev"
+      "dir": "native_client_sdk/src/doc/_build/chromesite"
     },
-    "serveFrom": "nacl",
+    "serveFrom": "native-client",
     "supportsTemplates": true
   },
   //"devtools-docs": {
