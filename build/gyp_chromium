@@ -303,14 +303,6 @@ if __name__ == '__main__':
     else:
       args.append(os.path.join(script_dir, 'all.gyp'))
 
-  supplemental_includes = GetSupplementalFiles()
-
-  if not RunGN(supplemental_includes):
-    sys.exit(1)
-
-  args.extend(
-      ['-I' + i for i in additional_include_files(supplemental_includes, args)])
-
   # There shouldn't be a circular dependency relationship between .gyp files,
   # but in Chromium's .gyp files, on non-Mac platforms, circular relationships
   # currently exist.  The check for circular dependencies is currently
@@ -376,6 +368,12 @@ if __name__ == '__main__':
   syntax_check = os.environ.get('CHROMIUM_GYP_SYNTAX_CHECK')
   if syntax_check and int(syntax_check):
     args.append('--check')
+
+  supplemental_includes = GetSupplementalFiles()
+  if not RunGN(supplemental_includes):
+    sys.exit(1)
+  args.extend(
+      ['-I' + i for i in additional_include_files(supplemental_includes, args)])
 
   print 'Updating projects from gyp files...'
   sys.stdout.flush()
