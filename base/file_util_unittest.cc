@@ -1417,8 +1417,10 @@ TEST_F(FileUtilTest, CopyFileACL) {
   attrs = GetFileAttributes(src.value().c_str());
   // Files in the temporary directory should not be indexed ever. If this
   // assumption change, fix this unit test accordingly.
-  DWORD expected = (FILE_ATTRIBUTE_NOT_CONTENT_INDEXED |
-                    FILE_ATTRIBUTE_ARCHIVE | FILE_ATTRIBUTE_READONLY);
+  // FILE_ATTRIBUTE_NOT_CONTENT_INDEXED doesn't exist on XP.
+  DWORD expected = FILE_ATTRIBUTE_ARCHIVE | FILE_ATTRIBUTE_READONLY;
+  if (win::GetVersion() >= win::VERSION_VISTA)
+    expected |= FILE_ATTRIBUTE_NOT_CONTENT_INDEXED;
   ASSERT_EQ(expected, attrs);
 #else
   // On all other platforms, it involves removing the write bit.
@@ -1435,7 +1437,9 @@ TEST_F(FileUtilTest, CopyFileACL) {
   // modes are copied.
   attrs = GetFileAttributes(src.value().c_str());
   ASSERT_EQ(expected, attrs);
-  expected = FILE_ATTRIBUTE_NOT_CONTENT_INDEXED | FILE_ATTRIBUTE_ARCHIVE;
+  expected = FILE_ATTRIBUTE_ARCHIVE;
+  if (win::GetVersion() >= win::VERSION_VISTA)
+    expected |= FILE_ATTRIBUTE_NOT_CONTENT_INDEXED;
   attrs = GetFileAttributes(dst.value().c_str());
   ASSERT_EQ(expected, attrs);
 #elif defined(OS_MACOSX)
