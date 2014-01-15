@@ -10,6 +10,7 @@
 
 #include <vector>
 
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "content/renderer/webcrypto/webcrypto_util.h"
 #include "crypto/nss_util.h"
@@ -18,6 +19,96 @@
 #include "third_party/WebKit/public/platform/WebArrayBuffer.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithm.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithmParams.h"
+
+#if defined(USE_NSS)
+#include <dlfcn.h>
+#endif
+
+// At the time of this writing:
+//   * Windows and Mac builds ship with their own copy of NSS (3.15+)
+//   * Linux builds use the system's libnss, which is 3.14 on Debian (but 3.15+
+//     on other distros).
+//
+// Since NSS provides AES-GCM support starting in version 3.15, it may be
+// unavailable for Linux Chrome users.
+//
+//  * !defined(CKM_AES_GCM)
+//
+//      This means that at build time, the NSS header pkcs11t.h is older than
+//      3.15. However at runtime support may be present.
+//
+//  * !defined(USE_NSS)
+//
+//      This means that Chrome is being built with an embedded copy of NSS,
+//      which can be assumed to be >= 3.15. On the other hand if USE_NSS is
+//      defined, it also implies running on Linux.
+//
+// TODO(eroman): Simplify this once 3.15+ is required by Linux builds.
+#if !defined(CKM_AES_GCM)
+#define CKM_AES_GCM 0x00001087
+
+struct CK_GCM_PARAMS {
+  CK_BYTE_PTR pIv;
+  CK_ULONG ulIvLen;
+  CK_BYTE_PTR pAAD;
+  CK_ULONG ulAADLen;
+  CK_ULONG ulTagBits;
+};
+#endif  // !defined(CKM_AES_GCM)
+
+// Signature for PK11_Encrypt and PK11_Decrypt.
+typedef SECStatus
+(*PK11_EncryptDecryptFunction)(
+    PK11SymKey*, CK_MECHANISM_TYPE, SECItem*,
+    unsigned char*, unsigned int*, unsigned int,
+    const unsigned char*, unsigned int);
+
+// Singleton to abstract away dynamically loading libnss3.so
+class AesGcmSupport {
+ public:
+  bool IsSupported() const {
+    return pk11_encrypt_func_ && pk11_decrypt_func_;
+  }
+
+  // Returns NULL if unsupported.
+  PK11_EncryptDecryptFunction pk11_encrypt_func() const {
+    return pk11_encrypt_func_;
+  }
+
+  // Returns NULL if unsupported.
+  PK11_EncryptDecryptFunction pk11_decrypt_func() const {
+    return pk11_decrypt_func_;
+  }
+
+ private:
+  friend struct base::DefaultLazyInstanceTraits<AesGcmSupport>;
+
+  AesGcmSupport() {
+#if !defined(USE_NSS)
+    // Using a bundled version of NSS that is guaranteed to have this symbol.
+    pk11_encrypt_func_ = PK11_Encrypt;
+    pk11_decrypt_func_ = PK11_Decrypt;
+#else
+    // Using system NSS libraries and PCKS #11 modules, which may not have the
+    // necessary function (PK11_Encrypt) or mechanism support (CKM_AES_GCM).
+
+    // If PK11_Encrypt() was successfully resolved, then NSS will support
+    // AES-GCM directly. This was introduced in NSS 3.15.
+    pk11_encrypt_func_ =
+        reinterpret_cast<PK11_EncryptDecryptFunction>(
+            dlsym(RTLD_DEFAULT, "PK11_Encrypt"));
+    pk11_decrypt_func_ =
+        reinterpret_cast<PK11_EncryptDecryptFunction>(
+            dlsym(RTLD_DEFAULT, "PK11_Decrypt"));
+#endif
+  }
+
+  PK11_EncryptDecryptFunction pk11_encrypt_func_;
+  PK11_EncryptDecryptFunction pk11_decrypt_func_;
+};
+
+base::LazyInstance<AesGcmSupport>::Leaky g_aes_gcm_support =
+    LAZY_INSTANCE_INITIALIZER;
 
 namespace content {
 
@@ -181,6 +272,106 @@ bool AesCbcEncryptDecrypt(
   return true;
 }
 
+// Helper to either encrypt or decrypt for AES-GCM. The result of encryption is
+// the concatenation of the ciphertext and the authentication tag. Similarly,
+// this is the expectation for the input to decryption.
+bool AesGcmEncryptDecrypt(
+    bool encrypt,
+    const blink::WebCryptoAlgorithm& algorithm,
+    const blink::WebCryptoKey& key,
+    const unsigned char* data,
+    unsigned data_size,
+    blink::WebArrayBuffer* buffer) {
+  DCHECK_EQ(blink::WebCryptoAlgorithmIdAesGcm, algorithm.id());
+  DCHECK_EQ(algorithm.id(), key.algorithm().id());
+  DCHECK_EQ(blink::WebCryptoKeyTypeSecret, key.type());
+
+  if (!g_aes_gcm_support.Get().IsSupported())
+    return false;
+
+  SymKeyHandle* sym_key = reinterpret_cast<SymKeyHandle*>(key.handle());
+
+  const blink::WebCryptoAesGcmParams* params = algorithm.aesGcmParams();
+  if (!params)
+    return false;
+
+  // TODO(eroman): The spec doesn't define the default value. Assume 128 for now
+  // since that is the maximum tag length:
+  // http://www.w3.org/2012/webcrypto/track/issues/46
+  unsigned tag_length_bits = 128;
+  if (params->hasTagLengthBits()) {
+    tag_length_bits = params->optionalTagLengthBits();
+  }
+
+  if (tag_length_bits > 128) {
+    return false;
+  }
+
+  if (tag_length_bits % 8 != 0)
+    return false;
+  unsigned tag_length_bytes = tag_length_bits / 8;
+
+  CK_GCM_PARAMS gcm_params = {0};
+  gcm_params.pIv =
+      const_cast<unsigned char*>(algorithm.aesGcmParams()->iv().data());
+  gcm_params.ulIvLen = algorithm.aesGcmParams()->iv().size();
+
+  gcm_params.pAAD =
+      const_cast<unsigned char*>(params->optionalAdditionalData().data());
+  gcm_params.ulAADLen = params->optionalAdditionalData().size();
+
+  gcm_params.ulTagBits = tag_length_bits;
+
+  SECItem param;
+  param.type = siBuffer;
+  param.data = reinterpret_cast<unsigned char*>(&gcm_params);
+  param.len = sizeof(gcm_params);
+
+  unsigned buffer_size = 0;
+
+  // Calculate the output buffer size.
+  if (encrypt) {
+    // TODO(eroman): This is ugly, abstract away the safe integer arithmetic.
+    if (data_size > (UINT_MAX - tag_length_bytes))
+      return false;
+    buffer_size = data_size + tag_length_bytes;
+  } else {
+    // TODO(eroman): In theory the buffer allocated for the plain text should be
+    // sized as |data_size - tag_length_bytes|.
+    //
+    // However NSS has a bug whereby it will fail if the output buffer size is
+    // not at least as large as the ciphertext:
+    //
+    // https://bugzilla.mozilla.org/show_bug.cgi?id=%20853674
+    //
+    // From the analysis of that bug it looks like it might be safe to pass a
+    // correctly sized buffer but lie about its size. Since resizing the
+    // WebCryptoArrayBuffer is expensive that hack may be worth looking into.
+    buffer_size = data_size;
+  }
+
+  *buffer = blink::WebArrayBuffer::create(buffer_size, 1);
+  unsigned char* buffer_data = reinterpret_cast<unsigned char*>(buffer->data());
+
+  PK11_EncryptDecryptFunction func =
+    encrypt ? g_aes_gcm_support.Get().pk11_encrypt_func() :
+              g_aes_gcm_support.Get().pk11_decrypt_func();
+
+  unsigned int output_len = 0;
+  SECStatus result = func(sym_key->key(), CKM_AES_GCM, &param,
+                          buffer_data, &output_len, buffer->byteLength(),
+                          data, data_size);
+
+  if (result != SECSuccess)
+    return false;
+
+  // Unfortunately the buffer needs to be shrunk for decryption (see the NSS bug
+  // above).
+  webcrypto::ShrinkBuffer(buffer, output_len);
+
+  return true;
+}
+
 CK_MECHANISM_TYPE WebCryptoAlgorithmToGenMechanism(
     const blink::WebCryptoAlgorithm& algorithm) {
   switch (algorithm.id()) {
@@ -238,6 +429,7 @@ bool ImportKeyInternalRaw(
     case blink::WebCryptoAlgorithmIdHmac:
     case blink::WebCryptoAlgorithmIdAesCbc:
     case blink::WebCryptoAlgorithmIdAesKw:
+    case blink::WebCryptoAlgorithmIdAesGcm:
       type = blink::WebCryptoKeyTypeSecret;
       break;
     // TODO(bryaneyler): Support more key types.
@@ -274,6 +466,13 @@ bool ImportKeyInternalRaw(
     case blink::WebCryptoAlgorithmIdAesKw: {
       mechanism = CKM_NSS_AES_KEY_WRAP;
       flags |= CKF_WRAP | CKF_WRAP;
+      break;
+    }
+    case blink::WebCryptoAlgorithmIdAesGcm: {
+      if (!g_aes_gcm_support.Get().IsSupported())
+        return false;
+      mechanism = CKM_AES_GCM;
+      flags |= CKF_ENCRYPT | CKF_DECRYPT;
       break;
     }
     default:
@@ -504,9 +703,13 @@ bool WebCryptoImpl::EncryptInternal(
   DCHECK(key.handle());
   DCHECK(buffer);
 
+  // TODO(eroman): Use a switch() statement.
   if (algorithm.id() == blink::WebCryptoAlgorithmIdAesCbc) {
     return AesCbcEncryptDecrypt(
         CKA_ENCRYPT, algorithm, key, data, data_size, buffer);
+  } else if (algorithm.id() == blink::WebCryptoAlgorithmIdAesGcm) {
+    return AesGcmEncryptDecrypt(
+        true, algorithm, key, data, data_size, buffer);
   } else if (algorithm.id() == blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5) {
 
     // RSAES encryption does not support empty input
@@ -556,9 +759,13 @@ bool WebCryptoImpl::DecryptInternal(
   DCHECK(key.handle());
   DCHECK(buffer);
 
+  // TODO(eroman): Use a switch() statement.
   if (algorithm.id() == blink::WebCryptoAlgorithmIdAesCbc) {
     return AesCbcEncryptDecrypt(
         CKA_DECRYPT, algorithm, key, data, data_size, buffer);
+  } else if (algorithm.id() == blink::WebCryptoAlgorithmIdAesGcm) {
+    return AesGcmEncryptDecrypt(
+        false, algorithm, key, data, data_size, buffer);
   } else if (algorithm.id() == blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5) {
 
     // RSAES decryption does not support empty input
