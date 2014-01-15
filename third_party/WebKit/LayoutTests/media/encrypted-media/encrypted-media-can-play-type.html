@@ -12,9 +12,6 @@
         <script>
             video = mediaElement = document.getElementsByTagName('video')[0];
 
-            consoleWrite("Always return the empty string for no type.");
-            testExpected("video.canPlayType()", "");
-
             consoleWrite("<br>Always return the empty string for an empty type.");
             testExpected("video.canPlayType('')", "");
             testExpected("video.canPlayType('', '')", "");

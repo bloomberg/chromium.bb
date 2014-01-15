@@ -45,7 +45,7 @@
 
     readonly attribute TimeRanges buffered;
     void load();
-    DOMString canPlayType([Default=Undefined] optional DOMString type, [Default=Undefined, TreatNullAs=NullString, TreatUndefinedAs=NullString] optional DOMString keySystem);
+    DOMString canPlayType(DOMString type, [Default=Undefined, TreatNullAs=NullString, TreatUndefinedAs=NullString] optional DOMString keySystem);
 
     // ready state
     const unsigned short HAVE_NOTHING = 0;
