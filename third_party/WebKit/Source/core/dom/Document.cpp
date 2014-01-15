@@ -4355,10 +4355,8 @@ Vector<IconURL> Document::iconURLs(int iconTypesMask)
             continue;
         if (linkElement->href().isEmpty())
             continue;
-#if !ENABLE(TOUCH_ICON_LOADING)
-        if (linkElement->iconType() != Favicon)
+        if (!RuntimeEnabledFeatures::touchIconLoadingEnabled() && linkElement->iconType() != Favicon)
             continue;
-#endif
 
         IconURL newURL(linkElement->href(), linkElement->iconSizes(), linkElement->type(), linkElement->iconType());
         if (linkElement->iconType() == Favicon) {

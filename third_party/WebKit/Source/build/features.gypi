@@ -44,8 +44,7 @@
     # through GYP_DEFINES.
     'variables': {
       # Enables the Oilpan garbage-collection infrastructure.
-      'enable_oilpan%': 0,
-      'enable_touch_icon_loading%' : 0,
+      'enable_oilpan%': 0
     },
     'conditions': [
       ['use_concatenated_impulse_responses==1', {
@@ -57,8 +56,7 @@
           'ENABLE_FAST_MOBILE_SCROLLING=1',
           'ENABLE_INPUT_SPEECH=0',
           'ENABLE_LEGACY_NOTIFICATIONS=0',
-          'ENABLE_MEDIA_CAPTURE=1',
-          'ENABLE_TOUCH_ICON_LOADING=1',
+          'ENABLE_MEDIA_CAPTURE=1'
         ],
       }, { # OS!="android"
         'feature_defines': [
@@ -66,7 +64,7 @@
           'ENABLE_INPUT_MULTIPLE_FIELDS_UI=1',
           'ENABLE_LEGACY_NOTIFICATIONS=1',
           'ENABLE_MEDIA_CAPTURE=0',
-          'ENABLE_WEB_AUDIO=1',
+          'ENABLE_WEB_AUDIO=1'
         ],
       }],
       # Mac OS X uses Accelerate.framework FFT by default instead of FFmpeg.

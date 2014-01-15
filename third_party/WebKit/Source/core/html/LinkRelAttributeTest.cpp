@@ -30,6 +30,7 @@
 
 #include "config.h"
 #include "core/html/LinkRelAttribute.h"
+#include "RuntimeEnabledFeatures.h"
 
 #include "wtf/text/CString.h"
 #include <gtest/gtest.h>
@@ -60,13 +61,13 @@ TEST(CoreLinkRelAttribute, Constructor)
     testLinkRelAttribute("shortcut icon", false, Favicon, false, false, false, false);
     testLinkRelAttribute("sHoRtCuT iCoN", false, Favicon, false, false, false, false);
 
-#if ENABLE(TOUCH_ICON_LOADING)
-    testLinkRelAttribute("apple-touch-icon", false, TouchIcon, false, false, false, false);
-    testLinkRelAttribute("aPpLe-tOuCh-IcOn", false, TouchIcon, false, false, false, false);
+    if (RuntimeEnabledFeatures::touchIconLoadingEnabled()) {
+        testLinkRelAttribute("apple-touch-icon", false, TouchIcon, false, false, false, false);
+        testLinkRelAttribute("aPpLe-tOuCh-IcOn", false, TouchIcon, false, false, false, false);
 
-    testLinkRelAttribute("apple-touch-icon-precomposed", false, TouchPrecomposedIcon, false, false, false, false);
-    testLinkRelAttribute("aPpLe-tOuCh-IcOn-pReCoMpOsEd", false, TouchPrecomposedIcon, false, false, false, false);
-#endif
+        testLinkRelAttribute("apple-touch-icon-precomposed", false, TouchPrecomposedIcon, false, false, false, false);
+        testLinkRelAttribute("aPpLe-tOuCh-IcOn-pReCoMpOsEd", false, TouchPrecomposedIcon, false, false, false, false);
+    }
 
     testLinkRelAttribute("dns-prefetch", false, InvalidIcon, false, true, false, false);
     testLinkRelAttribute("dNs-pReFeTcH", false, InvalidIcon, false, true, false, false);

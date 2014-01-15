@@ -32,6 +32,7 @@
 #include "config.h"
 #include "core/html/LinkRelAttribute.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -58,23 +59,22 @@ LinkRelAttribute::LinkRelAttribute(const String& rel)
     , m_isLinkPrerender(false)
     , m_isImport(false)
 {
-    if (equalIgnoringCase(rel, "stylesheet"))
+    if (equalIgnoringCase(rel, "stylesheet")) {
         m_isStyleSheet = true;
-    else if (equalIgnoringCase(rel, "icon") || equalIgnoringCase(rel, "shortcut icon"))
+    } else if (equalIgnoringCase(rel, "icon") || equalIgnoringCase(rel, "shortcut icon")) {
         m_iconType = Favicon;
-#if ENABLE(TOUCH_ICON_LOADING)
-    else if (equalIgnoringCase(rel, "apple-touch-icon"))
-        m_iconType = TouchIcon;
-    else if (equalIgnoringCase(rel, "apple-touch-icon-precomposed"))
-        m_iconType = TouchPrecomposedIcon;
-#endif
-    else if (equalIgnoringCase(rel, "dns-prefetch"))
+    } else if (equalIgnoringCase(rel, "dns-prefetch")) {
         m_isDNSPrefetch = true;
-    else if (equalIgnoringCase(rel, "alternate stylesheet") || equalIgnoringCase(rel, "stylesheet alternate")) {
+    } else if (equalIgnoringCase(rel, "alternate stylesheet") || equalIgnoringCase(rel, "stylesheet alternate")) {
         m_isStyleSheet = true;
         m_isAlternate = true;
     } else if (equalIgnoringCase(rel, "import")) {
         m_isImport = true;
+    } else if (RuntimeEnabledFeatures::touchIconLoadingEnabled()) {
+        if (equalIgnoringCase(rel, "apple-touch-icon"))
+            m_iconType = TouchIcon;
+        else if (equalIgnoringCase(rel, "apple-touch-icon-precomposed"))
+            m_iconType = TouchPrecomposedIcon;
     } else {
         // Tokenize the rel attribute and set bits based on specific keywords that we find.
         String relCopy = rel;
@@ -83,24 +83,24 @@ LinkRelAttribute::LinkRelAttribute(const String& rel)
         relCopy.split(' ', list);
         Vector<String>::const_iterator end = list.end();
         for (Vector<String>::const_iterator it = list.begin(); it != end; ++it) {
-            if (equalIgnoringCase(*it, "stylesheet"))
+            if (equalIgnoringCase(*it, "stylesheet")) {
                 m_isStyleSheet = true;
-            else if (equalIgnoringCase(*it, "alternate"))
+            } else if (equalIgnoringCase(*it, "alternate")) {
                 m_isAlternate = true;
-            else if (equalIgnoringCase(*it, "icon"))
+            } else if (equalIgnoringCase(*it, "icon")) {
                 m_iconType = Favicon;
-#if ENABLE(TOUCH_ICON_LOADING)
-            else if (equalIgnoringCase(*it, "apple-touch-icon"))
-                m_iconType = TouchIcon;
-            else if (equalIgnoringCase(*it, "apple-touch-icon-precomposed"))
-                m_iconType = TouchPrecomposedIcon;
-#endif
-            else if (equalIgnoringCase(*it, "prefetch"))
-              m_isLinkPrefetch = true;
-            else if (equalIgnoringCase(*it, "subresource"))
-              m_isLinkSubresource = true;
-            else if (equalIgnoringCase(*it, "prerender"))
-              m_isLinkPrerender = true;
+            } else if (equalIgnoringCase(*it, "prefetch")) {
+                m_isLinkPrefetch = true;
+            } else if (equalIgnoringCase(*it, "subresource")) {
+                m_isLinkSubresource = true;
+            } else if (equalIgnoringCase(*it, "prerender")) {
+                m_isLinkPrerender = true;
+            } else if (RuntimeEnabledFeatures::touchIconLoadingEnabled()) {
+                if (equalIgnoringCase(*it, "apple-touch-icon"))
+                    m_iconType = TouchIcon;
+                else if (equalIgnoringCase(*it, "apple-touch-icon-precomposed"))
+                    m_iconType = TouchPrecomposedIcon;
+            }
         }
     }
 }

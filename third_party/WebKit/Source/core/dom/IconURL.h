@@ -35,12 +35,6 @@
 
 namespace WebCore {
 
-#if ENABLE(TOUCH_ICON_LOADING)
-#define ICON_COUNT 3
-#else
-#define ICON_COUNT 1
-#endif
-
 enum IconType {
     InvalidIcon = 0,
     Favicon = 1,
@@ -74,8 +68,6 @@ struct IconURL {
 };
 
 bool operator==(const IconURL&, const IconURL&);
-
-typedef Vector<IconURL, ICON_COUNT> IconURLs;
 
 }
 
