@@ -1,4 +1,86 @@
 # This code should not depend on Views.
 
-"-ui/views",
-"+ui/views/views_export.h"
+include_rules = [
+  "-ui/views",
+  "+ui/views/corewm",
+  "+ui/views/views_export.h",
+]
+
+# TODO: temporary, don't add more.
+specific_include_rules = {
+  "image_grid_unittest.cc": [
+    "+ui/views/test/views_test_base.h",
+  ],
+
+  "tooltip_controller.cc": [
+    "+ui/views/widget/tooltip_manager.h",
+  ],
+
+  "window_util.cc": [
+    "+ui/views/view.h",
+    "+ui/views/widget/widget.h",
+  ],
+
+  "window_util_unittest.cc": [
+    "+ui/views/view_constants_aura.h",
+    "+ui/views/widget/widget.h",
+  ],
+
+  "window_animations.cc": [
+    "+ui/views/view.h",
+    "+ui/views/widget/widget.h",
+  ],
+
+  "transient_window_manager_unittest.cc": [
+    "+ui/views/test/views_test_base.h",
+  ],
+
+  "cursor_manager_unittest.cc": [
+    "+ui/views/test/views_test_base.h",
+  ],
+
+  "tooltip_aura_unittest.cc": [
+    "+ui/views/test/views_test_base.h",
+  ],
+
+  "tooltip_aura.cc": [
+    "+ui/views/background.h",
+    "+ui/views/border.h",
+    "+ui/views/widget/widget.h",
+  ],
+
+  "desktop_capture_controller_unittest.cc": [
+    "+ui/views/test/views_test_base.h",
+    "+ui/views/view.h",
+    "+ui/views/widget/desktop_aura/desktop_native_widget_aura.h",
+    "+ui/views/widget/desktop_aura/desktop_screen_position_client.h",
+    "+ui/views/widget/root_view.h",
+    "+ui/views/widget/widget.h",
+  ],
+
+  "tooltip_controller_unittest.cc": [
+    "+ui/views/view.h",
+    "+ui/views/widget/desktop_aura/desktop_native_widget_aura.h",
+    "+ui/views/widget/desktop_aura/desktop_screen.h",
+    "+ui/views/widget/tooltip_manager.h",
+    "+ui/views/widget/widget.h",
+  ],
+
+  "tooltip_aura.h": [
+    "+ui/views/controls/label.h",
+    "+ui/views/widget/widget_observer.h",
+  ],
+
+  "tooltip_controller_test_helper.h": [
+    "+ui/views/view.h",
+  ],
+
+  "capture_controller_unittest.cc": [
+    "+ui/views/test/views_test_base.h",
+    "+ui/views/view.h",
+    "+ui/views/widget/desktop_aura/desktop_native_widget_aura.h",
+    "+ui/views/widget/desktop_aura/desktop_screen_position_client.h",
+    "+ui/views/widget/root_view.h",
+    "+ui/views/widget/widget.h",
+  ],
+}
