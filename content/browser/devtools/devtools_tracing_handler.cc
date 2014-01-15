@@ -144,8 +144,15 @@ DevToolsTracingHandler::OnStart(
 
   TracingController::GetInstance()->EnableRecording(
       categories, options,
-      TracingController::EnableRecordingDoneCallback());
-  return command->SuccessResponse(NULL);
+      base::Bind(&DevToolsTracingHandler::OnTracingStarted,
+                 weak_factory_.GetWeakPtr(),
+                 command));
+  return command->AsyncResponsePromise();
+}
+
+void DevToolsTracingHandler::OnTracingStarted(
+    scoped_refptr<DevToolsProtocol::Command> command) {
+  SendAsyncResponse(command->SuccessResponse(NULL));
 }
 
 scoped_refptr<DevToolsProtocol::Response>
