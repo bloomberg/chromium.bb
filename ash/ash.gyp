@@ -70,6 +70,8 @@
         'accelerators/nested_dispatcher_controller.cc',
         'accelerators/nested_dispatcher_controller.h',
         'accessibility_delegate.h',
+        'audio/sounds.cc',
+        'audio/sounds.h',
         'autoclick/autoclick_controller.cc',
         'autoclick/autoclick_controller.h',
         'ash_constants.cc',

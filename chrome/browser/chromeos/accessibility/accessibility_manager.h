@@ -178,11 +178,6 @@ class AccessibilityManager : public content::NotificationObserver,
   virtual void OnListenerRemoved(
       const extensions::EventListenerInfo& details) OVERRIDE;
 
-  // Plays sound identified by |sound_key|.  |sound_key| must be an ID for sound
-  // registered by AccessibilityManager.  If there is no such sound, sound isn't
-  // played.
-  void PlaySound(int sound_key) const;
-
   // Profile which has the current a11y context.
   Profile* profile_;
 

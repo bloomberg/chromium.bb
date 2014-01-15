@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "ash/audio/sounds.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/shell.h"
@@ -1031,26 +1032,21 @@ void LoginDisplayHostImpl::TryToPlayStartupSound() {
     return;
   }
 
-  // Don't play startup sound if login prompt is already visible for a
-  // long time.
+  startup_sound_played_ = true;
+
+  // Don't try play startup sound if login prompt is already visible
+  // for a long time or can't be played.
   if (base::TimeTicks::Now() - login_prompt_visible_time_ >
-      base::TimeDelta::FromMilliseconds(kStartupSoundMaxDelayMs)) {
+      base::TimeDelta::FromMilliseconds(kStartupSoundMaxDelayMs) ||
+      !ash::PlaySystemSound(SOUND_STARTUP,
+                            startup_sound_honors_spoken_feedback_)) {
+    EnableSystemSoundsForAccessibility();
     return;
   }
-
-  AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
-  media::SoundsManager* sounds_manager = media::SoundsManager::Get();
-  startup_sound_played_ = true;
-  if (!startup_sound_honors_spoken_feedback_ ||
-      accessibility_manager->IsSpokenFeedbackEnabled()) {
-    sounds_manager->Play(SOUND_STARTUP);
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&EnableSystemSoundsForAccessibility),
-        sounds_manager->GetDuration(SOUND_STARTUP));
-  } else {
-    accessibility_manager->EnableSystemSounds(true);
-  }
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&EnableSystemSoundsForAccessibility),
+      media::SoundsManager::Get()->GetDuration(SOUND_STARTUP));
 }
 
 void LoginDisplayHostImpl::OnLoginPromptVisible() {

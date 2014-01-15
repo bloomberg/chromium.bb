@@ -133,6 +133,10 @@ const char kAshEnableSoftwareMirroring[] = "ash-enable-software-mirroring";
 // Enables "sticky" edges instead of "snap-to-edge"
 const char kAshEnableStickyEdges[] = "ash-enable-sticky-edges";
 
+// When this flag is set, system sounds will be played whether the
+// ChromeVox is enabled or not.
+const char kAshEnableSystemSounds[] = "ash-enable-system-sounds";
+
 // Enables showing the tray bubble by dragging on the shelf.
 const char kAshEnableTrayDragging[] = "ash-enable-tray-dragging";
 

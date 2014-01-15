@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 
+#include "ash/audio/sounds.h"
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/metrics/user_metrics_recorder.h"
@@ -548,7 +549,10 @@ void AccessibilityManager::LoadChromeVoxToLockScreen() {
 }
 
 void AccessibilityManager::UnloadChromeVox() {
-  PlaySound(SOUND_SPOKEN_FEEDBACK_DISABLED);
+  if (system_sounds_enabled_) {
+    ash::PlaySystemSound(SOUND_SPOKEN_FEEDBACK_DISABLED,
+                         false /* honor_spoken_feedback */);
+  }
   if (chrome_vox_loaded_on_lock_screen_)
     UnloadChromeVoxFromLockScreen();
 
@@ -777,12 +781,12 @@ void AccessibilityManager::EnableSystemSounds(bool system_sounds_enabled) {
 }
 
 base::TimeDelta AccessibilityManager::PlayShutdownSound() {
-  if (!IsSpokenFeedbackEnabled() || !system_sounds_enabled_)
+  if (!system_sounds_enabled_)
     return base::TimeDelta();
   system_sounds_enabled_ = false;
-  media::SoundsManager* manager = media::SoundsManager::Get();
-  manager->Play(SOUND_SHUTDOWN);
-  return manager->GetDuration(SOUND_SHUTDOWN);
+  if (!ash::PlaySystemSound(SOUND_SHUTDOWN, true /* honor_spoken_feedback */))
+    return base::TimeDelta();
+  return media::SoundsManager::Get()->GetDuration(SOUND_SHUTDOWN);
 }
 
 void AccessibilityManager::UpdateChromeOSAccessibilityHistograms() {
@@ -937,7 +941,10 @@ void AccessibilityManager::OnListenerRemoved(
 
 void AccessibilityManager::SetUpPreLoadChromeVox(Profile* profile) {
   // Do any setup work needed immediately before ChromeVox actually loads.
-  PlaySound(SOUND_SPOKEN_FEEDBACK_ENABLED);
+  if (system_sounds_enabled_) {
+    ash::PlaySystemSound(SOUND_SPOKEN_FEEDBACK_ENABLED,
+                         false /* honor_spoken_feedback */);
+  }
 
   if (profile) {
     extensions::ExtensionSystem::Get(profile)->
@@ -955,10 +962,6 @@ void AccessibilityManager::TearDownPostUnloadChromeVox(Profile* profile) {
         event_router()->UnregisterObserver(this);
     chromevox_profiles_.erase(profile);
   }
-}
-
-void AccessibilityManager::PlaySound(int sound_key) const {
-  media::SoundsManager::Get()->Play(sound_key);
 }
 
 }  // namespace chromeos
