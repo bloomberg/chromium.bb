@@ -222,7 +222,7 @@ class DevServerWrapper(multiprocessing.Process):
            '--logfile', ToChrootPath(self.log_filename)]
 
     if self.static_dir:
-      cmd.append('--static_dir=%s' % self.static_dir)
+      cmd.append('--static_dir=%s' % ToChrootPath(self.static_dir))
 
     if self.src_image:
       cmd.append('--src_image=%s' % ToChrootPath(self.src_image))
@@ -268,7 +268,7 @@ class DevServerWrapper(multiprocessing.Process):
     """Print devserver output to stdout."""
     print self.TailLog(num_lines='+1')
 
-  def TailLog(self, num_lines=20):
+  def TailLog(self, num_lines=50):
     """Returns the most recent |num_lines| lines of the devserver log file."""
     fname = self.log_filename
     if os.path.exists(fname):
