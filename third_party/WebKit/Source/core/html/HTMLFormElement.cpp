@@ -665,11 +665,6 @@ void HTMLFormElement::setMethod(const AtomicString& value)
     setAttribute(methodAttr, value);
 }
 
-AtomicString HTMLFormElement::target() const
-{
-    return getAttribute(targetAttr);
-}
-
 bool HTMLFormElement::wasUserSubmitted() const
 {
     return m_wasUserSubmitted;

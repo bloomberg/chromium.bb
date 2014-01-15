@@ -129,8 +129,6 @@ public:
     String typeValue() const { return m_type; }
     const LinkRelAttribute& relAttribute() const { return m_relAttribute; }
 
-    virtual AtomicString target() const OVERRIDE;
-
     const AtomicString& type() const;
 
     IconType iconType() const;

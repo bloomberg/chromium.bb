@@ -72,11 +72,6 @@ bool HTMLBaseElement::isURLAttribute(const Attribute& attribute) const
     return attribute.name().localName() == hrefAttr || HTMLElement::isURLAttribute(attribute);
 }
 
-AtomicString HTMLBaseElement::target() const
-{
-    return fastGetAttribute(targetAttr);
-}
-
 KURL HTMLBaseElement::href() const
 {
     // This does not use the getURLAttribute function because that will resolve relative to the document's base URL;

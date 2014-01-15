@@ -188,18 +188,6 @@ Frame* HitTestResult::innerNodeFrame() const
     return 0;
 }
 
-Frame* HitTestResult::targetFrame() const
-{
-    if (!m_innerURLElement)
-        return 0;
-
-    Frame* frame = m_innerURLElement->document().frame();
-    if (!frame)
-        return 0;
-
-    return frame->tree().find(AtomicString(m_innerURLElement->target()));
-}
-
 bool HitTestResult::isSelected() const
 {
     if (!m_innerNonSharedNode)

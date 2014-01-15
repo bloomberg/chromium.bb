@@ -39,7 +39,6 @@ private:
     virtual bool isValid() const OVERRIDE { return SVGTests::isValid(); }
 
     virtual String title() const OVERRIDE;
-    virtual AtomicString target() const OVERRIDE { return AtomicString(svgTargetCurrentValue()); }
 
     bool isSupportedAttribute(const QualifiedName&);
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;

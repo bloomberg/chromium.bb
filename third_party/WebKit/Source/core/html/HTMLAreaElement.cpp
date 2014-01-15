@@ -246,9 +246,4 @@ bool HTMLAreaElement::supportsFocus() const
     return isLink();
 }
 
-AtomicString HTMLAreaElement::target() const
-{
-    return getAttribute(targetAttr);
-}
-
 }

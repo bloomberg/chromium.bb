@@ -167,7 +167,7 @@ void SVGAElement::defaultEventHandler(Event* event)
                     return;
             }
 
-            AtomicString target = this->target();
+            AtomicString target(svgTargetCurrentValue());
             if (target.isEmpty() && fastGetAttribute(XLinkNames::showAttr) == "new")
                 target = AtomicString("_blank", AtomicString::ConstructFromLiteral);
             event->setDefaultHandled();

@@ -98,13 +98,12 @@ private:
     virtual void accessKeyAction(bool sendMouseEvents) OVERRIDE FINAL;
     virtual bool isURLAttribute(const Attribute&) const OVERRIDE FINAL;
     virtual bool canStartSelection() const OVERRIDE FINAL;
-    virtual AtomicString target() const OVERRIDE;
     virtual short tabIndex() const OVERRIDE FINAL;
     virtual bool draggable() const OVERRIDE FINAL;
     virtual bool isInteractiveContent() const OVERRIDE FINAL;
 
     void sendPings(const KURL& destinationURL);
-
+    AtomicString target() const;
     void handleClick(Event*);
 
     enum EventType {

@@ -90,8 +90,6 @@ public:
     String method() const;
     void setMethod(const AtomicString&);
 
-    virtual AtomicString target() const OVERRIDE;
-
     bool wasUserSubmitted() const;
 
     HTMLFormControlElement* defaultButton() const;
