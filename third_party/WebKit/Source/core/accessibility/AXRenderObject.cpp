@@ -1571,24 +1571,6 @@ VisibleSelection AXRenderObject::selection() const
     return m_renderer->frame()->selection().selection();
 }
 
-String AXRenderObject::selectedText() const
-{
-    ASSERT(isTextControl());
-
-    if (isPasswordField())
-        return String(); // need to return something distinct from empty string
-
-    if (isNativeTextControl() && m_renderer->isTextControl()) {
-        HTMLTextFormControlElement* textControl = toRenderTextControl(m_renderer)->textFormControlElement();
-        return textControl->selectedText();
-    }
-
-    if (ariaRoleAttribute() == UnknownRole)
-        return String();
-
-    return stringForRange(ariaSelectedTextRange());
-}
-
 //
 // Modify or take an action on an object.
 //
@@ -1802,23 +1784,6 @@ void AXRenderObject::lineBreaks(Vector<int>& lineBreaks) const
         savedVisiblePos = visiblePos;
         visiblePos = nextLinePosition(visiblePos, 0);
     }
-}
-
-// A substring of the text associated with this accessibility object that is
-// specified by the given character range.
-String AXRenderObject::stringForRange(const PlainTextRange& range) const
-{
-    if (!range.length)
-        return String();
-
-    if (!isTextControl())
-        return String();
-
-    String elementText = isPasswordField() ? String() : text();
-    if (range.start + range.length > elementText.length())
-        return String();
-
-    return elementText.substring(range.start, range.length);
 }
 
 //

@@ -182,13 +182,6 @@ void HTMLTextFormControlElement::select()
     setSelectionRange(0, numeric_limits<int>::max(), SelectionHasNoDirection);
 }
 
-String HTMLTextFormControlElement::selectedText() const
-{
-    if (!isTextFormControl())
-        return String();
-    return value().substring(selectionStart(), selectionEnd() - selectionStart());
-}
-
 void HTMLTextFormControlElement::dispatchFormControlChangeEvent()
 {
     if (m_textAsOfLastFormControlChangeEvent != value()) {

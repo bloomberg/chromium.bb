@@ -70,7 +70,6 @@ public:
     void setSelectionRange(int start, int end, const String& direction);
     void setSelectionRange(int start, int end, TextFieldSelectionDirection = SelectionHasNoDirection);
     PassRefPtr<Range> selection() const;
-    String selectedText() const;
 
     virtual void dispatchFormControlChangeEvent() OVERRIDE FINAL;
 

@@ -514,7 +514,6 @@ public:
 
     // Selected text.
     virtual PlainTextRange selectedTextRange() const { return PlainTextRange(); }
-    virtual String selectedText() const { return String(); }
 
     // Modify or take an action on an object.
     virtual void increment() { }

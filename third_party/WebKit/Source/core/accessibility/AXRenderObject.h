@@ -181,7 +181,6 @@ protected:
 
     // Selected text.
     virtual PlainTextRange selectedTextRange() const OVERRIDE;
-    virtual String selectedText() const OVERRIDE;
 
     // Modify or take an action on an object.
     virtual void setSelectedTextRange(const PlainTextRange&) OVERRIDE;
@@ -227,7 +226,6 @@ private:
     bool inheritsPresentationalRole() const;
     LayoutRect computeElementRect() const;
     VisibleSelection selection() const;
-    String stringForRange(const PlainTextRange&) const;
     int indexForVisiblePosition(const VisiblePosition&) const;
 };
 
