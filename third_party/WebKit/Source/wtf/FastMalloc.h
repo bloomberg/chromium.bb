@@ -35,11 +35,6 @@ namespace WTF {
 
     WTF_EXPORT void fastFree(void*);
 
-#ifndef NDEBUG
-    WTF_EXPORT void fastMallocForbid();
-    WTF_EXPORT void fastMallocAllow();
-#endif
-
     WTF_EXPORT void releaseFastMallocFreeMemory();
 
     struct FastMallocStatistics {
@@ -61,10 +56,5 @@ using WTF::fastMalloc;
 using WTF::fastRealloc;
 using WTF::fastStrDup;
 using WTF::fastZeroedMalloc;
-
-#ifndef NDEBUG
-using WTF::fastMallocForbid;
-using WTF::fastMallocAllow;
-#endif
 
 #endif /* WTF_FastMalloc_h */

@@ -136,20 +136,6 @@ static bool isForbidden()
 }
 #endif
 
-void fastMallocForbid()
-{
-    if (isForibiddenTlsIndex == TLS_OUT_OF_INDEXES)
-        isForibiddenTlsIndex = TlsAlloc(); // a little racey, but close enough for debug only
-    TlsSetValue(isForibiddenTlsIndex, kTlsForbiddenValue);
-}
-
-void fastMallocAllow()
-{
-    if (isForibiddenTlsIndex == TLS_OUT_OF_INDEXES)
-        return;
-    TlsSetValue(isForibiddenTlsIndex, kTlsAllowValue);
-}
-
 #else // !OS(WIN)
 
 static pthread_key_t isForbiddenKey;
@@ -166,18 +152,6 @@ static bool isForbidden()
     return !!pthread_getspecific(isForbiddenKey);
 }
 #endif
-
-void fastMallocForbid()
-{
-    pthread_once(&isForbiddenKeyOnce, initializeIsForbiddenKey);
-    pthread_setspecific(isForbiddenKey, &isForbiddenKey);
-}
-
-void fastMallocAllow()
-{
-    pthread_once(&isForbiddenKeyOnce, initializeIsForbiddenKey);
-    pthread_setspecific(isForbiddenKey, 0);
-}
 #endif // OS(WIN)
 
 } // namespace WTF
