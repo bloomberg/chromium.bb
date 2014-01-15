@@ -88,13 +88,14 @@ class WebSpeechSynthesizer;
 class WebSpeechSynthesizerClient;
 class WebStorageNamespace;
 class WebStorageQuotaCallbacks;
-class WebUnitTestSupport;
+struct WebFloatPoint;
 class WebThemeEngine;
 class WebThread;
 class WebURL;
 class WebURLLoader;
+class WebUnitTestSupport;
+class WebWaitableEvent;
 class WebWorkerRunLoop;
-struct WebFloatPoint;
 struct WebLocalizedString;
 struct WebSize;
 
@@ -361,6 +362,18 @@ public:
     // Returns an interface to the current thread. This is owned by the
     // embedder.
     virtual WebThread* currentThread() { return 0; }
+
+
+    // WaitableEvent -------------------------------------------------------
+
+    // Creates an embedder-defined waitable event object.
+    virtual WebWaitableEvent* createWaitableEvent() { return 0; }
+
+    // Waits on multiple events and returns the event object that has been
+    // signaled. This may return 0 if it fails to wait events.
+    // Any event objects given to this method must not deleted while this
+    // wait is happening.
+    virtual WebWaitableEvent* waitMultipleEvents(const WebVector<WebWaitableEvent*>& events) { return 0; }
 
 
     // Profiling -----------------------------------------------------------

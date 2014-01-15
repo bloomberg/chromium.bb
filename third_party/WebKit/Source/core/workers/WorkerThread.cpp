@@ -39,6 +39,7 @@
 #include "platform/PlatformThreadData.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebWaitableEvent.h"
 #include "public/platform/WebWorkerRunLoop.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/text/WTFString.h"
@@ -71,6 +72,7 @@ WorkerThread::WorkerThread(WorkerLoaderProxy& workerLoaderProxy, WorkerReporting
     , m_workerReportingProxy(workerReportingProxy)
     , m_startupData(startupData)
     , m_notificationClient(0)
+    , m_shutdownEvent(adoptPtr(blink::Platform::current()->createWaitableEvent()))
 {
     MutexLocker lock(threadSetMutex());
     workerThreads().add(this);
@@ -209,6 +211,10 @@ void WorkerThread::stop()
 {
     // Mutex protection is necessary because stop() can be called before the context is fully created.
     MutexLocker lock(m_threadCreationMutex);
+
+    // Signal the thread to notify that the thread's stopping.
+    if (m_shutdownEvent)
+        m_shutdownEvent->signal();
 
     // Ensure that tasks are being handled by thread event loop. If script execution weren't forbidden, a while(1) loop in JS could keep the thread alive forever.
     if (m_workerGlobalScope) {
