@@ -20,6 +20,9 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "config.h"
+
+#include <errno.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,6 +33,7 @@
 #include "../shared/os-compatibility.h"
 
 typedef void (*print_info_t)(void *info);
+typedef void (*destroy_info_t)(void *info);
 
 struct global_info {
 	struct wl_list link;
@@ -39,6 +43,7 @@ struct global_info {
 	char *interface;
 
 	print_info_t print;
+	destroy_info_t destroy;
 };
 
 struct output_mode {
@@ -96,16 +101,32 @@ struct weston_info {
 };
 
 static void *
-xmalloc(size_t s)
+fail_on_null(void *p)
 {
-	void *p = malloc(s);
-
 	if (p == NULL) {
-		fprintf(stderr, "out of memory\n");
-		exit(1);
+		fprintf(stderr, "%s: out of memory\n", program_invocation_short_name);
+		exit(EXIT_FAILURE);
 	}
 
 	return p;
+}
+
+static void *
+xmalloc(size_t s)
+{
+	return fail_on_null(malloc(s));
+}
+
+static void *
+xzalloc(size_t s)
+{
+	return fail_on_null(calloc(1, s));
+}
+
+static char *
+xstrdup(const char *s)
+{
+	return fail_on_null(strdup(s));
 }
 
 static void
@@ -124,7 +145,7 @@ init_global_info(struct weston_info *info,
 {
 	global->id = id;
 	global->version = version;
-	global->interface = strdup(interface);
+	global->interface = xstrdup(interface);
 
 	wl_list_insert(info->infos.prev, &global->link);
 }
@@ -285,7 +306,7 @@ seat_handle_name(void *data, struct wl_seat *wl_seat,
 		 const char *name)
 {
 	struct seat_info *seat = data;
-	seat->name = strdup(name);
+	seat->name = xstrdup(name);
 }
 
 static const struct wl_seat_listener seat_listener = {
@@ -294,12 +315,24 @@ static const struct wl_seat_listener seat_listener = {
 };
 
 static void
+destroy_seat_info(void *data)
+{
+	struct seat_info *seat = data;
+
+	wl_seat_destroy(seat->seat);
+
+	if (seat->name != NULL)
+		free(seat->name);
+}
+
+static void
 add_seat_info(struct weston_info *info, uint32_t id, uint32_t version)
 {
-	struct seat_info *seat = xmalloc(sizeof *seat);
+	struct seat_info *seat = xzalloc(sizeof *seat);
 
 	init_global_info(info, &seat->global, id, "wl_seat", version);
 	seat->global.print = print_seat_info;
+	seat->global.destroy = destroy_seat_info;
 
 	seat->seat = wl_registry_bind(info->registry,
 				      id, &wl_seat_interface, 2);
@@ -312,7 +345,7 @@ static void
 shm_handle_format(void *data, struct wl_shm *wl_shm, uint32_t format)
 {
 	struct shm_info *shm = data;
-	struct shm_format *shm_format = xmalloc(sizeof *shm_format);
+	struct shm_format *shm_format = xzalloc(sizeof *shm_format);
 
 	wl_list_insert(&shm->formats, &shm_format->link);
 	shm_format->format = format;
@@ -323,12 +356,28 @@ static const struct wl_shm_listener shm_listener = {
 };
 
 static void
+destroy_shm_info(void *data)
+{
+	struct shm_info *shm = data;
+	struct shm_format *format, *tmp;
+
+	wl_list_for_each_safe(format, tmp, &shm->formats, link) {
+		wl_list_remove(&format->link);
+		free(format);
+	}
+
+	wl_shm_destroy(shm->shm);
+}
+
+static void
 add_shm_info(struct weston_info *info, uint32_t id, uint32_t version)
 {
-	struct shm_info *shm = xmalloc(sizeof *shm);
+	struct shm_info *shm = xzalloc(sizeof *shm);
 
 	init_global_info(info, &shm->global, id, "wl_shm", version);
 	shm->global.print = print_shm_info;
+	shm->global.destroy = destroy_shm_info;
+
 	wl_list_init(&shm->formats);
 
 	shm->shm = wl_registry_bind(info->registry,
@@ -353,8 +402,8 @@ output_handle_geometry(void *data, struct wl_output *wl_output,
 	output->geometry.physical_width = physical_width;
 	output->geometry.physical_height = physical_height;
 	output->geometry.subpixel = subpixel;
-	output->geometry.make = strdup(make);
-	output->geometry.model = strdup(model);
+	output->geometry.make = xstrdup(make);
+	output->geometry.model = xstrdup(model);
 	output->geometry.output_transform = output_transform;
 }
 
@@ -380,12 +429,32 @@ static const struct wl_output_listener output_listener = {
 };
 
 static void
+destroy_output_info(void *data)
+{
+	struct output_info *output = data;
+	struct output_mode *mode, *tmp;
+
+	wl_output_destroy(output->output);
+
+	if (output->geometry.make != NULL)
+		free(output->geometry.make);
+	if (output->geometry.model != NULL)
+		free(output->geometry.model);
+
+	wl_list_for_each_safe(mode, tmp, &output->modes, link) {
+		wl_list_remove(&mode->link);
+		free(mode);
+	}
+}
+
+static void
 add_output_info(struct weston_info *info, uint32_t id, uint32_t version)
 {
-	struct output_info *output = xmalloc(sizeof *output);
+	struct output_info *output = xzalloc(sizeof *output);
 
 	init_global_info(info, &output->global, id, "wl_output", version);
 	output->global.print = print_output_info;
+	output->global.destroy = destroy_output_info;
 
 	wl_list_init(&output->modes);
 
@@ -398,13 +467,19 @@ add_output_info(struct weston_info *info, uint32_t id, uint32_t version)
 }
 
 static void
+destroy_global_info(void *data)
+{
+}
+
+static void
 add_global_info(struct weston_info *info, uint32_t id,
 		const char *interface, uint32_t version)
 {
-	struct global_info *global = xmalloc(sizeof *global);
+	struct global_info *global = xzalloc(sizeof *global);
 
 	init_global_info(info, global, id, interface, version);
 	global->print = print_global_info;
+	global->destroy = destroy_global_info;
 }
 
 static void
@@ -442,6 +517,25 @@ print_infos(struct wl_list *infos)
 		info->print(info);
 }
 
+static void
+destroy_info(void *data)
+{
+	struct global_info *global = data;
+
+	global->destroy(data);
+	wl_list_remove(&global->link);
+	free(global->interface);
+	free(data);
+}
+
+static void
+destroy_infos(struct wl_list *infos)
+{
+	struct global_info *info, *tmp;
+	wl_list_for_each_safe(info, tmp, infos, link)
+		destroy_info(info);
+}
+
 int
 main(int argc, char **argv)
 {
@@ -464,6 +558,10 @@ main(int argc, char **argv)
 	} while (info.roundtrip_needed);
 
 	print_infos(&info.infos);
+	destroy_infos(&info.infos);
+
+	wl_registry_destroy(info.registry);
+	wl_display_disconnect(info.display);
 
 	return 0;
 }
