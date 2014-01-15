@@ -122,6 +122,8 @@ bool InitializeGLExtensionBindings(GLImplementation implementation,
 }
 
 void InitializeDebugGLBindings() {
+  InitializeDebugGLBindingsEGL();
+  InitializeDebugGLBindingsGL();
 }
 
 void ClearGLBindings() {
