@@ -25,7 +25,6 @@
 
 #include "HTMLNames.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
-#include "core/dom/ChildListMutationScope.h"
 #include "core/dom/Document.h"
 #include "core/dom/Text.h"
 #include "core/rendering/style/RenderStyle.h"
@@ -38,7 +37,6 @@ using namespace HTMLNames;
 
 inline HTMLTitleElement::HTMLTitleElement(Document& document)
     : HTMLElement(titleTag, document)
-    , m_ignoreTitleUpdatesWhenChildrenChange(false)
 {
     setHasCustomStyleCallbacks();
     ScriptWrappable::init(this);
@@ -67,7 +65,7 @@ void HTMLTitleElement::removedFrom(ContainerNode* insertionPoint)
 void HTMLTitleElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
 {
     HTMLElement::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
-    if (inDocument() && !isInShadowTree() && !m_ignoreTitleUpdatesWhenChildrenChange)
+    if (inDocument() && !isInShadowTree())
         document().setTitleElement(text(), this);
 }
 
@@ -86,14 +84,23 @@ String HTMLTitleElement::text() const
 void HTMLTitleElement::setText(const String &value)
 {
     RefPtr<Node> protectFromMutationEvents(this);
-    ChildListMutationScope mutation(*this);
 
-    // Avoid calling Document::setTitleElement() during intermediate steps.
-    m_ignoreTitleUpdatesWhenChildrenChange = true;
-    removeChildren();
-    m_ignoreTitleUpdatesWhenChildrenChange = false;
+    int numChildren = childNodeCount();
 
-    appendChild(document().createTextNode(value.impl()), IGNORE_EXCEPTION);
+    if (numChildren == 1 && firstChild()->isTextNode()) {
+        toText(firstChild())->setData(value);
+        document().setTitleElement(text(), this);
+    } else {
+        // We make a copy here because entity of "value" argument can be Document::m_title,
+        // which goes empty during removeChildren() invocation below,
+        // which causes HTMLTitleElement::childrenChanged(), which ends up Document::setTitle().
+        String valueCopy(value);
+
+        if (numChildren > 0)
+            removeChildren();
+
+        appendChild(document().createTextNode(valueCopy.impl()), IGNORE_EXCEPTION);
+    }
 }
 
 }
