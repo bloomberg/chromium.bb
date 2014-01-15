@@ -71,6 +71,7 @@
 #include "ash/wm/system_gesture_event_filter.h"
 #include "ash/wm/system_modal_container_event_filter.h"
 #include "ash/wm/system_modal_container_layout_manager.h"
+#include "ash/wm/toplevel_window_event_handler.h"
 #include "ash/wm/user_activity_detector.h"
 #include "ash/wm/video_detector.h"
 #include "ash/wm/window_animations.h"
@@ -607,12 +608,14 @@ Shell::~Shell() {
   RemovePreTargetHandler(user_activity_detector_.get());
   RemovePreTargetHandler(overlay_filter_.get());
   RemovePreTargetHandler(input_method_filter_.get());
-  if (mouse_cursor_filter_)
-    RemovePreTargetHandler(mouse_cursor_filter_.get());
+  RemovePreTargetHandler(accelerator_filter_.get());
+  RemovePreTargetHandler(event_transformation_handler_.get());
+  RemovePreTargetHandler(toplevel_window_event_handler_.get());
+  RemovePostTargetHandler(toplevel_window_event_handler_.get());
   RemovePreTargetHandler(system_gesture_filter_.get());
   RemovePreTargetHandler(keyboard_metrics_filter_.get());
-  RemovePreTargetHandler(event_transformation_handler_.get());
-  RemovePreTargetHandler(accelerator_filter_.get());
+  if (mouse_cursor_filter_)
+    RemovePreTargetHandler(mouse_cursor_filter_.get());
 
   // TooltipController is deleted with the Shell so removing its references.
   RemovePreTargetHandler(tooltip_controller_.get());
@@ -675,6 +678,7 @@ Shell::~Shell() {
   tooltip_controller_.reset();
   event_client_.reset();
   nested_dispatcher_controller_.reset();
+  toplevel_window_event_handler_.reset();
   user_action_client_.reset();
   visibility_controller_.reset();
   // |shelf_item_delegate_manager_| observes |shelf_model_|. It must be
@@ -824,6 +828,8 @@ void Shell::Init() {
 
   event_transformation_handler_.reset(new internal::EventTransformationHandler);
   AddPreTargetHandler(event_transformation_handler_.get());
+
+  toplevel_window_event_handler_.reset(new ToplevelWindowEventHandler);
 
   system_gesture_filter_.reset(new internal::SystemGestureEventFilter);
   AddPreTargetHandler(system_gesture_filter_.get());
@@ -983,6 +989,11 @@ void Shell::InitRootWindow(aura::Window* root_window) {
   aura::client::SetCursorClient(root_window, &cursor_manager_);
   aura::client::SetTooltipClient(root_window, tooltip_controller_.get());
   aura::client::SetEventClient(root_window, event_client_.get());
+
+  aura::client::SetWindowMoveClient(root_window,
+      toplevel_window_event_handler_.get());
+  root_window->AddPreTargetHandler(toplevel_window_event_handler_.get());
+  root_window->AddPostTargetHandler(toplevel_window_event_handler_.get());
 
   if (nested_dispatcher_controller_) {
     aura::client::SetDispatcherClient(root_window,

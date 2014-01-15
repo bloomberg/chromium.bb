@@ -12,6 +12,7 @@
 #include "ash/wm/workspace_controller.h"
 #include "ash/wm/workspace_controller_test_helper.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/window_move_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -338,9 +339,9 @@ TEST_F(WorkspaceEventHandlerTest, DeleteWhileInRunLoop) {
   scoped_ptr<aura::Window> window(CreateTestWindow(&wd, bounds));
   wd.set_window_component(HTCAPTION);
 
-  ASSERT_TRUE(aura::client::GetWindowMoveClient(window->parent()));
+  ASSERT_TRUE(aura::client::GetWindowMoveClient(window->GetRootWindow()));
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, window.get());
-  aura::client::GetWindowMoveClient(window->parent())
+  aura::client::GetWindowMoveClient(window->GetRootWindow())
       ->RunMoveLoop(window.release(),
                     gfx::Vector2d(),
                     aura::client::WINDOW_MOVE_SOURCE_MOUSE);

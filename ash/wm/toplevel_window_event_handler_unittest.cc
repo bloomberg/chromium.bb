@@ -708,7 +708,7 @@ TEST_F(ToplevelWindowEventHandlerTest, RunMoveLoopRevertsInProgressDrag) {
   EXPECT_NE(window1_initial_bounds.ToString(), window1->bounds().ToString());
 
   aura::client::WindowMoveClient* move_client =
-      aura::client::GetWindowMoveClient(window2->parent());
+      aura::client::GetWindowMoveClient(window2->GetRootWindow());
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&aura::client::WindowMoveClient::EndMoveLoop,

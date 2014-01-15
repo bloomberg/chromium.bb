@@ -79,6 +79,14 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
     case ash::UMA_MOUSE_DOWN:
       base::RecordAction(base::UserMetricsAction("Mouse_Down"));
       break;
+    case ash::UMA_PANEL_MINIMIZE_CAPTION_CLICK:
+      base::RecordAction(
+         base::UserMetricsAction("Panel_Minimize_Caption_Click"));
+      break;
+    case ash::UMA_PANEL_MINIMIZE_CAPTION_GESTURE:
+      base::RecordAction(
+          base::UserMetricsAction("Panel_Minimize_Caption_Gesture"));
+      break;
     case ash::UMA_SHELF_ALIGNMENT_SET_BOTTOM:
       base::RecordAction(
           base::UserMetricsAction("Shelf_AlignmentSetBottom"));
