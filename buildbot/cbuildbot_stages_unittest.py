@@ -984,6 +984,83 @@ class HWTestStageTest(AbstractStageTest):
     self.mox.VerifyAll()
 
 
+class SignerResultsStageTest(AbstractStageTest):
+  """Test the SignerResultsStage."""
+
+  BOT_ID = 'x86-mario-release'
+  RELEASE_TAG = '0.0.1'
+
+  def setUp(self):
+    self.archive_stage = ArchiveStageMock()
+    self.archive_stage.WaitForPushImage = mock.Mock(return_value=True)
+    self.archive_stage.debug = False
+
+    self.StartPatcher(BuilderRunMock())
+    self.StartPatcher(self.archive_stage)
+
+    self._Prepare()
+
+  def ConstructStage(self):
+    return stages.SignerResultsStage(
+        self.run, self._current_board, self.archive_stage)
+
+  def testPerformStageSuccess(self):
+    """Test that SignerResultsStage works when signing works."""
+    insns = {
+        'chan1': ['chan1_uri1', 'chan1_uri2'],
+        'chan2': ['chan2_uri1']
+    }
+    results = ['chan1_uri1.json', 'chan1_uri2.json', 'chan2_uri1.json']
+
+    with patch(self.archive_stage, 'WaitForPushImage', return_value=insns):
+      with patch(stages.gs, 'GSContext') as mock_gs_ctx_init:
+        mock_gs_ctx = mock_gs_ctx_init.return_value
+        mock_gs_ctx.WaitForGsPaths.return_value = None
+        mock_gs_ctx.Cat.return_value.output = """
+            { "status": { "status": "passed" }, "board": "link",
+              "keyset": "link-mp-v4", "type": "recovery", "channel": "stable" }
+            """
+
+        stage = self.ConstructStage()
+        stage.PerformStage()
+        mock_gs_ctx.WaitForGsPaths.assert_called_once_with(results,
+                                                           timeout=1800)
+        for result in results:
+          mock_gs_ctx.Cat.assert_any_call(result)
+
+  def testPerformStageFailure(self):
+    """Test that SignerResultsStage errors when the signers report an error."""
+    insns = { 'chan1': ['chan1_uri1'] }
+    results = ['chan1_uri1.json']
+
+    with patch(self.archive_stage, 'WaitForPushImage', return_value=insns):
+      with patch(stages.gs, 'GSContext') as mock_gs_ctx_init:
+        mock_gs_ctx = mock_gs_ctx_init.return_value
+        mock_gs_ctx.WaitForGsPaths.return_value = None
+        mock_gs_ctx.Cat.return_value.output = """
+            { "status": { "status": "sadness" }, "board": "link",
+              "keyset": "link-mp-v4", "type": "recovery", "channel": "stable" }
+            """
+        stage = self.ConstructStage()
+        self.assertRaises(stages.SignerFailure, stage.PerformStage)
+        mock_gs_ctx.WaitForGsPaths.assert_called_once_with(results,
+                                                           timeout=1800)
+
+  def testPerformStageTimeout(self):
+    """Test that SignerResultsStage errors when no signer results appear."""
+    insns = { 'chan1': ['chan1_uri1'] }
+    results = ['chan1_uri1.json']
+
+    with patch(self.archive_stage, 'WaitForPushImage', return_value=insns):
+      with patch(stages.gs, 'GSContext') as mock_gs_ctx_init:
+        mock_gs_ctx = mock_gs_ctx_init.return_value
+        mock_gs_ctx.WaitForGsPaths.side_effect = timeout_util.TimeoutError
+
+        stage = self.ConstructStage()
+        self.assertRaises(stages.SignerResultsTimeout, stage.PerformStage)
+        mock_gs_ctx.WaitForGsPaths.assert_called_once_with(results,
+                                                           timeout=1800)
+
 class AUTestStageTest(AbstractStageTest,
                       cros_build_lib_unittest.RunCommandTestCase):
   """Test only custom methods in AUTestStageTest."""

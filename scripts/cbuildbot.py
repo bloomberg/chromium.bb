@@ -435,6 +435,7 @@ class SimpleBuilder(Builder):
     stage_list += [
         [stages.RetryStage, 1, stages.VMTestStage, board, archive_stage],
         [stages.SignerTestStage, board, archive_stage],
+        [stages.SignerResultsStage, board, archive_stage],
         [stages.UnitTestStage, board],
         [stages.UploadPrebuiltsStage, board, archive_stage],
         [stages.DevInstallerPrebuiltsStage, board, archive_stage],
@@ -1113,6 +1114,9 @@ def _CreateParser():
   group.add_remote_option('--nosdk', action='store_true',
                           default=False,
                           help='Re-create the SDK from scratch.')
+  group.add_remote_option('--nosigner-results', action='store_false',
+                          dest='signer_results', default=True,
+                          help="Don't display signing results.")
   group.add_remote_option('--nosync', action='store_false', dest='sync',
                           default=True, help="Don't sync before building.")
   group.add_remote_option('--notests', action='store_false', dest='tests',

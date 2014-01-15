@@ -2778,6 +2778,91 @@ class HWTestStage(ArchivingStage):
         self._SendPerfResults()
 
 
+class SignerResultsException(Exception):
+  """An expected failure from the SignerResultsStage."""
+
+
+class SignerResultsTimeout(SignerResultsException):
+  """The signer did not produce any results inside the expected time."""
+
+
+class SignerFailure(SignerResultsException):
+  """The signer returned an error result."""
+
+
+class MissingInstructionException(SignerResultsException):
+  """We didn't receive the list of signing instructions PushImage uploaded."""
+
+
+class SignerResultsStage(ArchivingStage):
+  """Stage that blocks on and retrieves signer results."""
+
+  option_name = 'signer_results'
+  config_name = 'signer_results'
+
+  # If the signing takes longer than 30 minutes, abort.
+  SIGNING_TIMEOUT = 1800
+
+  def _HandleStageException(self, exception):
+    """Override and don't set status to FAIL but FORGIVEN instead."""
+    # This stage is experimental, don't trust it yet.
+    if isinstance(exception, SignerResultsException):
+      return self._HandleExceptionAsWarning(exception)
+
+  def PerformStage(self):
+    """Do the work of waiting for signer results and logging them.
+
+    Raises:
+      ValueError: If the signer result isn't valid json.
+      RunCommandError: If we are unable to download signer results.
+    """
+    # These results are expected to contain:
+    # { 'channel': ['gs://instruction_uri1', 'gs://signer_instruction_uri2'] }
+    instruction_urls_per_channel = self.archive_stage.WaitForPushImage()
+    if not instruction_urls_per_channel:
+      raise MissingInstructionException('No signer requests to validate.')
+
+    # We will want seperate parallel handling for each channel in time, but for
+    # now, just lump all of the channels together.
+
+    result_urls = [
+        '%s.json' % url for url in
+        cros_build_lib.iflatten_instance(instruction_urls_per_channel.values())]
+
+    gs_ctx = gs.GSContext(dry_run=self.debug)
+
+    try:
+      cros_build_lib.Info('Waiting for signer results.')
+      gs_ctx.WaitForGsPaths(result_urls, timeout=self.SIGNING_TIMEOUT)
+    except timeout_util.TimeoutError:
+      msg = 'Image signing timed out.'
+      cros_build_lib.Error(msg)
+      cros_build_lib.PrintBuildbotStepText(msg)
+      raise SignerResultsTimeout(msg)
+
+    # Log all signer results, then handle any signing failures.
+    failures = []
+    for url in result_urls:
+      signer_result = json.loads(gs_ctx.Cat(url).output)
+
+      result_description = ('%(type)s - %(board)s - %(channel)s - %(keyset)s' %
+                            signer_result)
+
+      cros_build_lib.PrintBuildbotStepText(result_description)
+      cros_build_lib.Info('Received results for: %s', result_description)
+      cros_build_lib.Info(json.dumps(signer_result, indent=4))
+
+      if signer_result['status']['status'] != 'passed':
+        failures.append(result_description)
+        cros_build_lib.Error('Signing failed for: %s', result_description)
+
+    if failures:
+      cros_build_lib.Error('Failure summary:')
+      for failure in failures:
+        cros_build_lib.Error('  %s', failure)
+      raise SignerFailure(failures)
+
+
 class AUTestStage(HWTestStage):
   """Stage for au hw test suites that requires special pre-processing."""
 
@@ -2936,6 +3021,7 @@ class ArchiveStage(ArchivingStage):
     self._recovery_image_status_queue = multiprocessing.Queue()
     self._release_upload_queue = multiprocessing.Queue()
     self._upload_queue = multiprocessing.Queue()
+    self._push_image_status_queue = multiprocessing.Queue()
 
     # Setup the archive path. This is used by other stages.
     self._SetupArchivePath()
@@ -2952,6 +3038,19 @@ class ArchiveStage(ArchivingStage):
     # Put the status back so other SignerTestStage instances don't starve.
     self._recovery_image_status_queue.put(status)
     return status
+
+  def WaitForPushImage(self):
+    """Wait until PushImage compeletes.
+
+    Returns:
+      On success: The pushimage results.
+      None otherwise.
+    """
+    cros_build_lib.Info('Waiting for PushImage...')
+    urls = self._push_image_status_queue.get()
+    # Put the status back so other processes don't starve.
+    self._push_image_status_queue.put(urls)
+    return urls
 
   def BreakpadSymbolsGenerated(self, success):
     """Signal that breakpad symbols have been generated.
@@ -3196,12 +3295,14 @@ class ArchiveStage(ArchivingStage):
       sign_types = []
       if config['name'].endswith('-%s' % cbuildbot_config.CONFIG_TYPE_FIRMWARE):
         sign_types += ['firmware']
-      commands.PushImages(
+      urls = commands.PushImages(
           board=board,
           archive_url=upload_url,
           dryrun=debug or not config['push_image'],
           profile=self._run.options.profile or config['profile'],
           sign_types=sign_types)
+      self._push_image_status_queue.put(urls)
+
 
     def ArchiveReleaseArtifacts():
       with self.ArtifactUploader(self._release_upload_queue, archive=False):
@@ -3245,6 +3346,7 @@ class ArchiveStage(ArchivingStage):
     # Tell the HWTestStage not to wait for artifacts to be uploaded
     # in case ArchiveStage throws an exception.
     self._recovery_image_status_queue.put(False)
+    self._push_image_status_queue.put(None)
     return super(ArchiveStage, self)._HandleStageException(exception)
 
 

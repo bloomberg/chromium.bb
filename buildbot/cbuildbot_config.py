@@ -86,6 +86,7 @@ def OverrideConfigForTrybot(build_config, options):
       my_config['manifest'] = my_config['dev_manifest']
 
     my_config['push_image'] = False
+    my_config['signer_results'] = False
     if options.hwtest:
       my_config['upload_hw_test_artifacts'] = True
       if not my_config['hw_tests']:
@@ -412,6 +413,9 @@ _settings = dict(
 
 # hwqual -- Whether we upload a hwqual tarball.
   hwqual=False,
+
+# signer_results -- Run a stage that waits for and displays signer output.
+  signer_results=False,
 
 # manifest_repo_url -- git repository URL for our manifests.
 #  External: https://chromium.googlesource.com/chromiumos/manifest
@@ -1649,6 +1653,7 @@ _release = full.derive(official, internal,
   disk_vm_layout='usb',
   hw_tests=HWTestConfig.DefaultList(file_bugs=True),
   upload_hw_test_artifacts=True,
+  signer_results=True,
   signer_tests=True,
   trybot_list=True,
   hwqual=True,

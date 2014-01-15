@@ -1288,8 +1288,8 @@ def PushImages(board, archive_url, dryrun, profile, sign_types=()):
   cmd.append(archive_url)
   cros_build_lib.Info('Running: %s' % cros_build_lib.CmdToStr(cmd))
 
-  pushimage.PushImage(archive_url, board, profile=profile,
-                      sign_types=sign_types, dry_run=dryrun)
+  return pushimage.PushImage(archive_url, board, profile=profile,
+                             sign_types=sign_types, dry_run=dryrun)
 
 
 def BuildFactoryTestImage(buildroot, board, extra_env):
