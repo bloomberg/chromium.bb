@@ -44,6 +44,7 @@
 #include "core/rendering/RenderView.h"
 #include "core/rendering/line/LineWidth.h"
 #include "core/rendering/svg/SVGTextRunRenderingContext.h"
+#include "platform/text/BidiTextRun.h"
 
 using namespace std;
 
@@ -2698,11 +2699,11 @@ static inline TextRun constructTextRunInternal(RenderObject* context, const Font
 }
 
 template <typename CharacterType>
-static inline TextRun constructTextRunInternal(RenderObject* context, const Font& font, const CharacterType* characters, int length, RenderStyle* style, TextRun::ExpansionBehavior expansion, TextRunFlags flags)
+static inline TextRun constructTextRunInternal(RenderObject* context, const Font& font, const CharacterType* characters, int length, RenderStyle* style, TextDirection direction, TextRun::ExpansionBehavior expansion, TextRunFlags flags)
 {
     ASSERT(style);
 
-    TextDirection textDirection = LTR;
+    TextDirection textDirection = direction;
     bool directionalOverride = style->rtlOrdering() == VisualOrder;
     if (flags != DefaultTextRunFlags) {
         if (flags & RespectDirection)
@@ -2743,14 +2744,22 @@ TextRun RenderBlockFlow::constructTextRun(RenderObject* context, const Font& fon
     return constructTextRunInternal(context, font, text->characters16() + offset, length, style, direction, expansion);
 }
 
-TextRun RenderBlockFlow::constructTextRun(RenderObject* context, const Font& font, const String& string, RenderStyle* style, TextRun::ExpansionBehavior expansion, TextRunFlags flags)
+TextRun RenderBlockFlow::constructTextRun(RenderObject* context, const Font& font, const String& string, RenderStyle* style, TextDirection direction, TextRun::ExpansionBehavior expansion, TextRunFlags flags)
 {
     unsigned length = string.length();
     if (!length)
-        return constructTextRunInternal(context, font, static_cast<const LChar*>(0), length, style, expansion, flags);
+        return constructTextRunInternal(context, font, static_cast<const LChar*>(0), length, style, direction, expansion, flags);
     if (string.is8Bit())
-        return constructTextRunInternal(context, font, string.characters8(), length, style, expansion, flags);
-    return constructTextRunInternal(context, font, string.characters16(), length, style, expansion, flags);
+        return constructTextRunInternal(context, font, string.characters8(), length, style, direction, expansion, flags);
+    return constructTextRunInternal(context, font, string.characters16(), length, style, direction, expansion, flags);
+}
+
+TextRun RenderBlockFlow::constructTextRun(RenderObject* context, const Font& font, const String& string, RenderStyle* style, TextRun::ExpansionBehavior expansion, TextRunFlags flags)
+{
+    bool hasStrongDirectionality;
+    return constructTextRun(context, font, string, style,
+        determineDirectionality(string, hasStrongDirectionality),
+        expansion, flags);
 }
 
 RootInlineBox* RenderBlockFlow::createRootInlineBox()

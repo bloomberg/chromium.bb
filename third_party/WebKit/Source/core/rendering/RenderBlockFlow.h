@@ -194,7 +194,12 @@ public:
         return obj->isFloating() || (obj->isOutOfFlowPositioned() && !obj->style()->isOriginalDisplayInlineType() && !obj->container()->isRenderInline());
     }
 
+    // Direction resolved from string value.
     static TextRun constructTextRun(RenderObject* context, const Font&, const String&, RenderStyle*,
+        TextRun::ExpansionBehavior = TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion, TextRunFlags = DefaultTextRunFlags);
+
+    // Explicit direction.
+    static TextRun constructTextRun(RenderObject* context, const Font&, const String&, RenderStyle*, TextDirection,
         TextRun::ExpansionBehavior = TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion, TextRunFlags = DefaultTextRunFlags);
 
     static TextRun constructTextRun(RenderObject* context, const Font&, const RenderText*, RenderStyle*,
