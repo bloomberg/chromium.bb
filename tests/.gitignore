@@ -7,6 +7,8 @@ matrix-test
 setbacklight
 test-client
 test-text-client
+text-client-protocol.h
+text-protocol.c
 wayland-test-client-protocol.h
 wayland-test-protocol.c
 wayland-test-server-protocol.h
