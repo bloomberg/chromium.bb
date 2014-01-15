@@ -170,10 +170,15 @@ public:
     virtual void setScrollPosition(WebPoint) = 0;
     virtual WebPoint scrollPosition() const = 0;
 
+    // TODO(wjmaclean) Remove next line once https://codereview.chromium.org/23983047 lands.
     virtual void setMaxScrollPosition(WebSize) = 0;
     virtual WebSize maxScrollPosition() const = 0;
 
+    // TODO(wjmaclean) Remove next line once https://codereview.chromium.org/23983047 lands.
     virtual void setScrollable(bool) = 0;
+    // To set a WebLayer as scrollable we must specify the corresponding clip layer.
+    // TODO(wjmaclean) Make this pure virtual once https://codereview.chromium.org/23983047 lands.
+    virtual void setScrollClipLayer(WebLayer*) { }
     virtual bool scrollable() const = 0;
 
     virtual void setUserScrollable(bool horizontal, bool vertical) = 0;

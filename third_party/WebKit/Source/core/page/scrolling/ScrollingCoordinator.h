@@ -145,6 +145,7 @@ private:
     void updateShouldUpdateScrollLayerPositionOnMainThread();
 
     static blink::WebLayer* scrollingWebLayerForScrollableArea(ScrollableArea*);
+    static blink::WebLayer* containerWebLayerForScrollableArea(ScrollableArea*);
 
     bool touchHitTestingEnabled() const;
     void setShouldHandleScrollGestureOnMainThreadRegion(const Region&);

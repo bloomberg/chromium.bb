@@ -1573,6 +1573,11 @@ GraphicsLayer* RenderLayerCompositor::scrollLayer() const
     return m_scrollLayer.get();
 }
 
+GraphicsLayer* RenderLayerCompositor::containerLayer() const
+{
+    return m_containerLayer.get();
+}
+
 void RenderLayerCompositor::setIsInWindow(bool isInWindow)
 {
     if (!inCompositingMode())

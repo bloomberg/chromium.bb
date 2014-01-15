@@ -141,6 +141,7 @@ public:
     RenderLayer* rootRenderLayer() const;
     GraphicsLayer* rootGraphicsLayer() const;
     GraphicsLayer* scrollLayer() const;
+    GraphicsLayer* containerLayer() const;
 
     enum RootLayerAttachment {
         RootLayerUnattached,

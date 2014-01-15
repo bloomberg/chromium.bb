@@ -80,6 +80,15 @@ WebLayer* ScrollingCoordinator::scrollingWebLayerForScrollableArea(ScrollableAre
     return graphicsLayer ? scrollingWebLayerForGraphicsLayer(graphicsLayer) : 0;
 }
 
+WebLayer* ScrollingCoordinator::containerWebLayerForScrollableArea(ScrollableArea* scrollableArea)
+{
+    GraphicsLayer* graphicsLayer = scrollLayerForScrollableArea(scrollableArea);
+    if (!graphicsLayer)
+        return 0;
+    graphicsLayer = graphicsLayer->parent();
+    return graphicsLayer ? graphicsLayer->platformLayer() : 0;
+}
+
 PassRefPtr<ScrollingCoordinator> ScrollingCoordinator::create(Page* page)
 {
     return adoptRef(new ScrollingCoordinator(page));
@@ -250,7 +259,7 @@ static void detachScrollbarLayer(GraphicsLayer* scrollbarGraphicsLayer)
     scrollbarGraphicsLayer->setDrawsContent(true);
 }
 
-static void setupScrollbarLayer(GraphicsLayer* scrollbarGraphicsLayer, WebScrollbarLayer* scrollbarLayer, WebLayer* scrollLayer)
+static void setupScrollbarLayer(GraphicsLayer* scrollbarGraphicsLayer, WebScrollbarLayer* scrollbarLayer, WebLayer* scrollLayer, WebLayer* containerLayer)
 {
     ASSERT(scrollbarGraphicsLayer);
     ASSERT(scrollbarLayer);
@@ -260,6 +269,7 @@ static void setupScrollbarLayer(GraphicsLayer* scrollbarGraphicsLayer, WebScroll
         return;
     }
     scrollbarLayer->setScrollLayer(scrollLayer);
+    scrollbarLayer->setClipLayer(containerLayer);
     scrollbarGraphicsLayer->setContentsToPlatformLayer(scrollbarLayer->layer());
     scrollbarGraphicsLayer->setDrawsContent(false);
 }
@@ -325,7 +335,9 @@ void ScrollingCoordinator::scrollableAreaScrollbarLayerDidChange(ScrollableArea*
             scrollbarGraphicsLayer->setContentsOpaque(isMainFrame && isOpaqueScrollbar);
         scrollbarLayer->layer()->setOpaque(scrollbarGraphicsLayer->contentsOpaque());
 
-        setupScrollbarLayer(scrollbarGraphicsLayer, scrollbarLayer, scrollingWebLayerForScrollableArea(scrollableArea));
+        WebLayer* scrollLayer = scrollingWebLayerForScrollableArea(scrollableArea);
+        WebLayer* containerLayer = containerWebLayerForScrollableArea(scrollableArea);
+        setupScrollbarLayer(scrollbarGraphicsLayer, scrollbarLayer, scrollLayer, containerLayer);
     } else
         removeWebScrollbarLayer(scrollableArea, orientation);
 }
@@ -339,10 +351,15 @@ bool ScrollingCoordinator::scrollableAreaScrollLayerDidChange(ScrollableArea* sc
     }
 
     WebLayer* webLayer = scrollingWebLayerForScrollableArea(scrollableArea);
+    WebLayer* containerLayer = containerWebLayerForScrollableArea(scrollableArea);
     if (webLayer) {
+        // TODO(wjmaclean) Remove the next line once https://codereview.chromium.org/23983047 lands.
         webLayer->setScrollable(true);
+        webLayer->setScrollClipLayer(containerLayer);
         webLayer->setScrollPosition(IntPoint(scrollableArea->scrollPosition() - scrollableArea->minimumScrollPosition()));
+        // TODO(wjmaclean) Remove the next line once https://codereview.chromium.org/23983047 lands.
         webLayer->setMaxScrollPosition(IntSize(scrollableArea->scrollSize(HorizontalScrollbar), scrollableArea->scrollSize(VerticalScrollbar)));
+        webLayer->setBounds(scrollableArea->contentsSize());
         bool canScrollX = scrollableArea->userInputScrollable(HorizontalScrollbar);
         bool canScrollY = scrollableArea->userInputScrollable(VerticalScrollbar);
         webLayer->setUserScrollable(canScrollX, canScrollY);
@@ -350,12 +367,12 @@ bool ScrollingCoordinator::scrollableAreaScrollLayerDidChange(ScrollableArea* sc
     if (WebScrollbarLayer* scrollbarLayer = getWebScrollbarLayer(scrollableArea, HorizontalScrollbar)) {
         GraphicsLayer* horizontalScrollbarLayer = horizontalScrollbarLayerForScrollableArea(scrollableArea);
         if (horizontalScrollbarLayer)
-            setupScrollbarLayer(horizontalScrollbarLayer, scrollbarLayer, webLayer);
+            setupScrollbarLayer(horizontalScrollbarLayer, scrollbarLayer, webLayer, containerLayer);
     }
     if (WebScrollbarLayer* scrollbarLayer = getWebScrollbarLayer(scrollableArea, VerticalScrollbar)) {
         GraphicsLayer* verticalScrollbarLayer = verticalScrollbarLayerForScrollableArea(scrollableArea);
         if (verticalScrollbarLayer)
-            setupScrollbarLayer(verticalScrollbarLayer, scrollbarLayer, webLayer);
+            setupScrollbarLayer(verticalScrollbarLayer, scrollbarLayer, webLayer, containerLayer);
     }
 
     return !!webLayer;

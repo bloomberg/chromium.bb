@@ -63,13 +63,20 @@ PinchViewports::PinchViewports(WebViewImpl* owner)
     , m_overlayScrollbarHorizontal(GraphicsLayer::create(m_owner->graphicsLayerFactory(), this))
     , m_overlayScrollbarVertical(GraphicsLayer::create(m_owner->graphicsLayerFactory(), this))
 {
-    m_innerViewportContainerLayer->platformLayer()->setIsContainerForFixedPositionLayers(true);
+    ASSERT(m_owner);
+    WebCore::ScrollingCoordinator* coordinator = m_owner->page()->scrollingCoordinator();
+    ASSERT(coordinator);
+    coordinator->setLayerIsContainerForFixedPositionLayers(m_innerViewportScrollLayer.get(), true);
+
     // No need for the inner viewport to clip, since the compositing
     // surface takes care of it -- and clipping here would interfere with
     // dynamically-sized viewports on Android.
     m_innerViewportContainerLayer->setMasksToBounds(false);
 
+    // TODO(wjmaclean) Remove next line once https://codereview.chromium.org/23983047 lands.
     m_innerViewportScrollLayer->platformLayer()->setScrollable(true);
+    m_innerViewportScrollLayer->platformLayer()->setScrollClipLayer(
+        m_innerViewportContainerLayer->platformLayer());
     m_innerViewportScrollLayer->platformLayer()->setUserScrollable(true, true);
 
     m_innerViewportContainerLayer->addChild(m_pageScaleLayer.get());
@@ -87,6 +94,10 @@ PinchViewports::~PinchViewports() { }
 void PinchViewports::setViewportSize(const WebCore::IntSize& newSize)
 {
     m_innerViewportContainerLayer->setSize(newSize);
+    // The innerviewport scroll layer always has the same size as its clip layer, but
+    // the page scale layer lives between them, allowing for non-zero max scroll
+    // offset when page scale > 1.
+    m_innerViewportScrollLayer->setSize(newSize);
 
     // Need to re-compute sizes for the overlay scrollbars.
     setupScrollbar(WebScrollbar::Horizontal);
@@ -150,7 +161,7 @@ void PinchViewports::setupScrollbar(WebScrollbar::Orientation orientation)
         WebCore::ScrollbarOrientation webcoreOrientation = isHorizontal ? WebCore::HorizontalScrollbar : WebCore::VerticalScrollbar;
         webScrollbarLayer = coordinator->createSolidColorScrollbarLayer(webcoreOrientation, overlayScrollbarThickness, false);
 
-        webScrollbarLayer->setScrollLayer(m_innerViewportScrollLayer->platformLayer());
+        webScrollbarLayer->setClipLayer(m_innerViewportContainerLayer->platformLayer());
         scrollbarGraphicsLayer->setContentsToPlatformLayer(webScrollbarLayer->layer());
         scrollbarGraphicsLayer->setDrawsContent(false);
     }
@@ -160,8 +171,10 @@ void PinchViewports::setupScrollbar(WebScrollbar::Orientation orientation)
     int width = isHorizontal ? m_innerViewportContainerLayer->size().width() - overlayScrollbarThickness : overlayScrollbarThickness;
     int height = isHorizontal ? overlayScrollbarThickness : m_innerViewportContainerLayer->size().height() - overlayScrollbarThickness;
 
+    // Use the GraphicsLayer to position the scrollbars.
     scrollbarGraphicsLayer->setPosition(WebCore::IntPoint(xPosition, yPosition));
     scrollbarGraphicsLayer->setSize(WebCore::IntSize(width, height));
+    scrollbarGraphicsLayer->setContentsRect(WebCore::IntRect(0, 0, width, height));
 }
 
 void PinchViewports::registerViewportLayersWithTreeView(WebLayerTreeView* layerTreeView) const
@@ -169,13 +182,17 @@ void PinchViewports::registerViewportLayersWithTreeView(WebLayerTreeView* layerT
     ASSERT(layerTreeView);
 
     WebCore::RenderLayerCompositor* compositor = m_owner->compositor();
-    GraphicsLayer* scrollLayer = compositor->scrollLayer();
+    // Get the outer viewport scroll layer.
+    WebLayer* scrollLayer = compositor->scrollLayer()->platformLayer();
+
+    m_webOverlayScrollbarHorizontal->setScrollLayer(scrollLayer);
+    m_webOverlayScrollbarVertical->setScrollLayer(scrollLayer);
 
     ASSERT(compositor);
     layerTreeView->registerViewportLayers(
         m_pageScaleLayer->platformLayer(),
         m_innerViewportScrollLayer->platformLayer(),
-        scrollLayer->platformLayer());
+        scrollLayer);
 }
 
 void PinchViewports::clearViewportLayersForTreeView(WebLayerTreeView* layerTreeView) const

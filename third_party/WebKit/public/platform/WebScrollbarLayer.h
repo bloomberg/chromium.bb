@@ -43,6 +43,8 @@ public:
     virtual WebLayer* layer() = 0;
 
     virtual void setScrollLayer(WebLayer*) = 0;
+    // TODO(wjmaclean) Make this pure virtual once https://codereview.chromium.org/23983047 lands.
+    virtual void setClipLayer(WebLayer*) { }
 };
 
 } // namespace blink
