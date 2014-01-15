@@ -1000,11 +1000,19 @@ def create_isolate_tree(outdir, root_dir, files, relative_cwd, read_only):
   Returns the current working directory where the isolated command should be
   started in.
   """
+  # Forcibly copy when the tree has to be read only. Otherwise the inode is
+  # modified, and this cause real problems because the user's source tree
+  # becomes read only. On the other hand, the cost of doing file copy is huge.
+  if read_only not in (0, None):
+    action = run_isolated.COPY
+  else:
+    action = run_isolated.HARDLINK_WITH_FALLBACK
+
   recreate_tree(
       outdir=outdir,
       indir=root_dir,
       infiles=files,
-      action=run_isolated.HARDLINK_WITH_FALLBACK,
+      action=action,
       as_hash=False)
   cwd = os.path.normpath(os.path.join(outdir, relative_cwd))
   if not os.path.isdir(cwd):
