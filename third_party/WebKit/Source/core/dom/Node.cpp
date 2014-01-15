@@ -2354,11 +2354,6 @@ bool Node::dispatchWheelEvent(const PlatformWheelEvent& event)
     return EventDispatcher::dispatchEvent(this, WheelEventDispatchMediator::create(event, document().domWindow()));
 }
 
-void Node::dispatchChangeEvent()
-{
-    dispatchScopedEvent(Event::createBubble(EventTypeNames::change));
-}
-
 void Node::dispatchInputEvent()
 {
     dispatchScopedEvent(Event::createBubble(EventTypeNames::input));

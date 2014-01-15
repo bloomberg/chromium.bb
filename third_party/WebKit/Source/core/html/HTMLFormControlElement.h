@@ -60,6 +60,7 @@ public:
     virtual void setChangedSinceLastFormControlChangeEvent(bool) OVERRIDE FINAL;
 
     virtual void dispatchFormControlChangeEvent() OVERRIDE;
+    void dispatchChangeEvent();
     void dispatchFormControlInputEvent();
 
     virtual HTMLFormElement* formOwner() const OVERRIDE FINAL;
