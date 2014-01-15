@@ -288,23 +288,22 @@ ui::ContextFactory* GpuProcessTransportFactory::AsContextFactory() {
   return this;
 }
 
-gfx::GLSurfaceHandle GpuProcessTransportFactory::CreateSharedSurfaceHandle() {
+gfx::GLSurfaceHandle GpuProcessTransportFactory::GetSharedSurfaceHandle() {
+  // TODO(sievers): crbug.com/329737
+  //                Creating the context here hurts startup performance.
+  //                Remove this once all tests are happy.
   scoped_refptr<cc::ContextProvider> provider =
       SharedMainThreadContextProvider();
-  if (!provider.get())
-    return gfx::GLSurfaceHandle();
-  ContextProviderCommandBuffer* provider_command_buffer =
-      static_cast<ContextProviderCommandBuffer*>(provider.get());
+  LOG_IF(ERROR, !provider.get())
+      << "Could not create shared context. CanUseBrowserCompositor() = "
+      << GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor();
+
   gfx::GLSurfaceHandle handle = gfx::GLSurfaceHandle(
       gfx::kNullPluginWindow, gfx::TEXTURE_TRANSPORT);
-  handle.parent_gpu_process_id = provider_command_buffer->GetGPUProcessID();
   handle.parent_client_id =
       BrowserGpuChannelHostFactory::instance()->GetGpuChannelId();
   return handle;
 }
-
-void GpuProcessTransportFactory::DestroySharedSurfaceHandle(
-    gfx::GLSurfaceHandle surface) {}
 
 scoped_refptr<ui::Texture> GpuProcessTransportFactory::CreateTransportClient(
     float device_scale_factor) {

@@ -83,10 +83,6 @@ CommandBufferProxyImpl* ContextProviderCommandBuffer::GetCommandBufferProxy() {
   return context3d_->GetCommandBufferProxy();
 }
 
-int ContextProviderCommandBuffer::GetGPUProcessID() {
-  return context3d_->GetGPUProcessID();
-}
-
 WebGraphicsContext3DCommandBufferImpl*
 ContextProviderCommandBuffer::WebContext3D() {
   DCHECK(context3d_);

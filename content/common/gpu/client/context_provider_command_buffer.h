@@ -32,7 +32,6 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
       const std::string& debug_name);
 
   CommandBufferProxyImpl* GetCommandBufferProxy();
-  int GetGPUProcessID();
 
   void set_leak_on_destroy() {
     base::AutoLock lock(main_thread_lock_);

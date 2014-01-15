@@ -477,11 +477,6 @@ void WebGraphicsContext3DCommandBufferImpl::Destroy() {
   host_ = NULL;
 }
 
-// TODO(apatrick,piman): This should be renamed to something clearer.
-int WebGraphicsContext3DCommandBufferImpl::GetGPUProcessID() {
-  return host_.get() ? host_->gpu_host_id() : 0;
-}
-
 gpu::ContextSupport*
 WebGraphicsContext3DCommandBufferImpl::GetContextSupport() {
   return real_gl_.get();

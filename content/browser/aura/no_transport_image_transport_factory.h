@@ -23,9 +23,7 @@ class NoTransportImageTransportFactory : public ImageTransportFactory {
 
   // ImageTransportFactory implementation.
   virtual ui::ContextFactory* AsContextFactory() OVERRIDE;
-  virtual gfx::GLSurfaceHandle CreateSharedSurfaceHandle() OVERRIDE;
-  virtual void DestroySharedSurfaceHandle(gfx::GLSurfaceHandle surface)
-      OVERRIDE;
+  virtual gfx::GLSurfaceHandle GetSharedSurfaceHandle() OVERRIDE;
   virtual scoped_refptr<ui::Texture> CreateTransportClient(
       float device_scale_factor) OVERRIDE;
   virtual scoped_refptr<ui::Texture> CreateOwnedTexture(

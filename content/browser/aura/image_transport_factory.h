@@ -67,13 +67,7 @@ class CONTENT_EXPORT ImageTransportFactory {
   // Gets the image transport factory as a context factory for the compositor.
   virtual ui::ContextFactory* AsContextFactory() = 0;
 
-  // Creates a shared surface handle.
-  // Note: the handle may get lost at any time, a state that an
-  // ImageTransportFactoryObserver gets notified of.
-  virtual gfx::GLSurfaceHandle CreateSharedSurfaceHandle() = 0;
-
-  // Destroys a shared surface handle.
-  virtual void DestroySharedSurfaceHandle(gfx::GLSurfaceHandle surface) = 0;
+  virtual gfx::GLSurfaceHandle GetSharedSurfaceHandle() = 0;
 
   // Creates a transport texture for a given scale factor.
   virtual scoped_refptr<ui::Texture> CreateTransportClient(
