@@ -662,13 +662,20 @@ void Layer::SetForceRenderSurface(bool force) {
   cc_layer_->SetForceRenderSurface(force_render_surface_);
 }
 
-std::string Layer::DebugName() {
-  return name_;
-}
+class LayerDebugInfo : public base::debug::ConvertableToTraceFormat {
+ public:
+  explicit LayerDebugInfo(std::string name) : name_(name) { }
+  virtual void AppendAsTraceFormat(std::string* out) const OVERRIDE {
+    out->append("{'layer_name', '" + name_ + "'}");
+  }
+
+ private:
+  virtual ~LayerDebugInfo() { }
+  std::string name_;
+};
 
 scoped_refptr<base::debug::ConvertableToTraceFormat> Layer::TakeDebugInfo() {
-  // TODO: return something useful here.
-  return NULL;
+  return new LayerDebugInfo(name_);
 }
 
 void Layer::OnAnimationStarted(const cc::AnimationEvent& event) {

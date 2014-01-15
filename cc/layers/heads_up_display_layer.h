@@ -25,8 +25,6 @@ class CC_EXPORT HeadsUpDisplayLayer : public ContentsScalingLayer {
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
       OVERRIDE;
 
-  virtual std::string DebugName() OVERRIDE;
-
  protected:
   HeadsUpDisplayLayer();
 

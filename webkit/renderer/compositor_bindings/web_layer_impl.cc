@@ -405,7 +405,6 @@ void WebLayerImpl::setWebLayerClient(blink::WebLayerClient* client) {
   web_layer_client_ = client;
 }
 
-// TODO(chrishtr): move DebugName into this class.
 class TracedDebugInfo : public base::debug::ConvertableToTraceFormat {
  public:
   // This object takes ownership of the debug_info object.
@@ -428,21 +427,12 @@ scoped_refptr<base::debug::ConvertableToTraceFormat>
   if (!web_layer_client_)
     return NULL;
   blink::WebGraphicsLayerDebugInfo* debug_info =
-      web_layer_client_->takeDebugInfo();
+      web_layer_client_->takeDebugInfoFor(this);
 
   if (debug_info)
     return new TracedDebugInfo(debug_info);
   else
     return NULL;
-}
-
-std::string WebLayerImpl::DebugName() {
-  if (!web_layer_client_)
-    return std::string();
-
-  std::string name = web_layer_client_->debugName(this).utf8();
-  DCHECK(IsStringASCII(name));
-  return name;
 }
 
 void WebLayerImpl::setScrollParent(blink::WebLayer* parent) {

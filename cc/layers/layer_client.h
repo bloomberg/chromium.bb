@@ -20,8 +20,6 @@ namespace cc {
 
 class CC_EXPORT LayerClient {
  public:
-  virtual std::string DebugName() = 0;
-
   // Returns a pointer to a debug info object, if one has been computed.
   // If not, returns NULL. If the returned pointer is non-NULL, the caller takes
   // ownership of the pointer.

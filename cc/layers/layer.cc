@@ -875,12 +875,8 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   bool is_tracing;
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                                      &is_tracing);
-  if (is_tracing) {
-    layer->SetDebugName(DebugName());
+  if (is_tracing)
     layer->SetDebugInfo(TakeDebugInfo());
-  } else {
-    layer->SetDebugName(std::string());
-  }
 
   layer->SetDoubleSided(double_sided_);
   layer->SetDrawCheckerboardForMissingTiles(
@@ -1031,10 +1027,6 @@ bool Layer::Update(ResourceUpdateQueue* queue,
 
 bool Layer::NeedMoreUpdates() {
   return false;
-}
-
-std::string Layer::DebugName() {
-  return client_ ? client_->DebugName() : std::string();
 }
 
 scoped_refptr<base::debug::ConvertableToTraceFormat> Layer::TakeDebugInfo() {

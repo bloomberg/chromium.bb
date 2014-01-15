@@ -709,4 +709,9 @@ const char* HeadsUpDisplayLayerImpl::LayerTypeAsString() const {
   return "cc::HeadsUpDisplayLayerImpl";
 }
 
+void HeadsUpDisplayLayerImpl::AsValueInto(base::DictionaryValue* dict) const {
+  LayerImpl::AsValueInto(dict);
+  dict->SetString("layer_name", "Heads Up Display Layer");
+}
+
 }  // namespace cc

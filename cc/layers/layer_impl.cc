@@ -503,7 +503,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->SetBounds(bounds_);
   layer->SetContentBounds(content_bounds());
   layer->SetContentsScale(contents_scale_x(), contents_scale_y());
-  layer->SetDebugName(debug_name_);
   layer->SetDoubleSided(double_sided_);
   layer->SetDrawCheckerboardForMissingTiles(
       draw_checkerboard_for_missing_tiles_);
@@ -1194,7 +1193,6 @@ void LayerImpl::SetVerticalScrollbarLayer(
 void LayerImpl::AsValueInto(base::DictionaryValue* state) const {
   TracedValue::MakeDictIntoImplicitSnapshot(state, LayerTypeAsString(), this);
   state->SetInteger("layer_id", id());
-  state->SetString("layer_name", debug_name());
   state->Set("bounds", MathUtil::AsValue(bounds()).release());
   state->SetInteger("draws_content", DrawsContent());
   state->SetInteger("gpu_memory_usage", GPUMemoryUsageInBytes());

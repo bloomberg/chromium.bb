@@ -272,10 +272,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
     return sublayer_transform_;
   }
 
-  // Debug layer name.
-  void SetDebugName(const std::string& debug_name) { debug_name_ = debug_name; }
-  std::string debug_name() const { return debug_name_; }
-
   bool ShowDebugBorders() const;
 
   // These invalidate the host's render surface layer list.  The caller
@@ -619,9 +615,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   // The global depth value of the center of the layer. This value is used
   // to sort layers from back to front.
   float draw_depth_;
-
-  // Debug layer name.
-  std::string debug_name_;
 
   FilterOperations filters_;
   FilterOperations background_filters_;

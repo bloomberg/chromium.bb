@@ -134,7 +134,6 @@ class WebLayerImpl : public blink::WebLayer, public cc::LayerClient {
   virtual void setWebLayerClient(blink::WebLayerClient* client);
 
   // LayerClient implementation.
-  virtual std::string DebugName() OVERRIDE;
   virtual scoped_refptr<base::debug::ConvertableToTraceFormat>
       TakeDebugInfo() OVERRIDE;
 

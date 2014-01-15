@@ -33,8 +33,6 @@ class CC_EXPORT RenderSurfaceImpl {
   explicit RenderSurfaceImpl(LayerImpl* owning_layer);
   virtual ~RenderSurfaceImpl();
 
-  std::string Name() const;
-
   gfx::PointF ContentRectCenter() const {
     return gfx::RectF(content_rect_).CenterPoint();
   }

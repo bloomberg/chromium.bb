@@ -336,8 +336,6 @@ class COMPOSITOR_EXPORT Layer
   bool force_render_surface() const { return force_render_surface_; }
 
   // LayerClient
-  virtual std::string DebugName() OVERRIDE;
-
   virtual scoped_refptr<base::debug::ConvertableToTraceFormat>
       TakeDebugInfo() OVERRIDE;
 

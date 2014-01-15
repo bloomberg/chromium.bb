@@ -53,12 +53,6 @@ gfx::RectF RenderSurfaceImpl::DrawableContentRect() const {
   return drawable_content_rect;
 }
 
-std::string RenderSurfaceImpl::Name() const {
-  return base::StringPrintf("RenderSurfaceImpl(id=%i,owner=%s)",
-                            owning_layer_->id(),
-                            owning_layer_->debug_name().data());
-}
-
 int RenderSurfaceImpl::OwningLayerId() const {
   return owning_layer_ ? owning_layer_->id() : 0;
 }
