@@ -42,44 +42,6 @@ extern "C" {
 
 #include "wtf/MathExtras.h"
 
-namespace {
-
-struct FFTComplexProxy {
-    int16_t re;
-    int16_t im;
-};
-
-struct FFTContextProxy {
-    int nbits;
-    int inverse;
-    uint16_t* revtab;
-    FFTComplexProxy* tmpBuf;
-    int mdctSize;
-    int mdctBits;
-    void* tcos;
-    void* tsin;
-    void (*fftPermute)();
-    void (*fftCalc)();
-    void (*imdctCalc)();
-    void (*imdctHalf)();
-    void (*mdctCalc)();
-    void (*mdctCalcw)();
-    int fftPermutation;
-    int mdctPermutation;
-};
-
-struct RDFTContextProxy {
-    int nbits;
-    int inverse;
-    int signConvention;
-    const void* tcos;
-    const void* tsin;
-    FFTContextProxy fft;
-    void (*rdft_calc)();
-};
-
-}
-
 namespace WebCore {
 
 #if !ASSERT_DISABLED
