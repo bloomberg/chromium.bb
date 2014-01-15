@@ -381,10 +381,10 @@ void InstallSigner::HandleSignatureResult(const std::string& signature,
     result->salt = salt_;
     result->signature = signature;
     result->expire_date = expire_date;
-    if (!VerifySignature(*result)) {
-      UMA_HISTOGRAM_BOOLEAN("InstallSigner.InvalidSignature", true);
+    bool verified = VerifySignature(*result);
+    UMA_HISTOGRAM_BOOLEAN("ExtensionInstallSigner.ResultWasValid", verified);
+    if (!verified)
       result.reset();
-    }
   }
 
   if (!callback_.is_null())

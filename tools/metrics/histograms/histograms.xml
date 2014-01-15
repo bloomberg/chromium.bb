@@ -4351,6 +4351,40 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="ExtensionInstalledLoader.ForceDisabled"
+    enum="BooleanForceDisabled">
+  <summary>
+    Counts whether we force-disabled an installed extension at startup because a
+    policy provider indicated it must remain disabled.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionInstallSigner.ResultWasValid">
+  <summary>
+    Whether the server result received by the extensions install signer was
+    valid or invalid.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionInstallVerifier.GetSignatureResult"
+    enum="ExtensionInstallVerifierGetSignatureResult">
+  <summary>The result of the verifier trying to get a new signature.</summary>
+</histogram>
+
+<histogram name="ExtensionInstallVerifier.InitResult"
+    enum="ExtensionInstallVerifierInitResult">
+  <summary>
+    The result of initialization for the extension install verifier.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionInstallVerifier.MustRemainDisabled"
+    enum="ExtensionInstallVerifierMustRemainDisabled">
+  <summary>
+    The outcome for each call to InstallVerifier::MustRemainDisabled.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.AllocatePortIdPairOverflow">
   <summary>
     Records when the allocation of IDs for chrome.runtime.Port overflows.
@@ -22316,6 +22350,11 @@ other types of suffix sets.
   <int value="1" label="Expired"/>
 </enum>
 
+<enum name="BooleanForceDisabled" type="int">
+  <int value="0" label="Not Force Disabled"/>
+  <int value="1" label="Force Disabled"/>
+</enum>
+
 <enum name="BooleanHasCrc" type="int">
   <int value="0" label="No CRC"/>
   <int value="1" label="Has CRC"/>
@@ -24601,6 +24640,31 @@ other types of suffix sets.
   <int value="5" label="External install prompt"/>
   <int value="6" label="Post install permissions prompt"/>
   <int value="7" label="Launch prompt"/>
+</enum>
+
+<enum name="ExtensionInstallVerifierGetSignatureResult" type="int">
+  <int value="0" label="No signature (network error, etc)"/>
+  <int value="1" label="Invalid signature"/>
+  <int value="2" label="Valid signature"/>
+</enum>
+
+<enum name="ExtensionInstallVerifierInitResult" type="int">
+  <int value="0" label="No value in prefs"/>
+  <int value="1" label="Pref present but parsing failed"/>
+  <int value="2" label="Invalid signature"/>
+  <int value="3" label="Valid signature"/>
+</enum>
+
+<enum name="ExtensionInstallVerifierMustRemainDisabled" type="int">
+  <int value="0" label="VERIFIED"/>
+  <int value="1" label="NOT_EXTENSION"/>
+  <int value="2" label="UNPACKED"/>
+  <int value="3" label="ENTERPRISE_POLICY_ALLOWED"/>
+  <int value="4" label="FORCED_NOT_VERIFIED"/>
+  <int value="5" label="NOT_FROM_STORE"/>
+  <int value="6" label="NO_SIGNATURE"/>
+  <int value="7" label="NOT_VERIFIED_BUT_NOT_ENFORCING"/>
+  <int value="8" label="NOT_VERIFIED"/>
 </enum>
 
 <enum name="ExtensionLaunchType" type="int">

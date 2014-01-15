@@ -104,24 +104,46 @@ InstallVerifier::InstallVerifier(ExtensionPrefs* prefs,
 
 InstallVerifier::~InstallVerifier() {}
 
+namespace {
+
+enum InitResult {
+  INIT_NO_PREF = 0,
+  INIT_UNPARSEABLE_PREF,
+  INIT_INVALID_SIGNATURE,
+  INIT_VALID_SIGNATURE,
+
+  // This is used in histograms - do not remove or reorder entries above! Also
+  // the "MAX" item below should always be the last element.
+
+  INIT_RESULT_MAX
+};
+
+void LogInitResultHistogram(InitResult result) {
+  UMA_HISTOGRAM_ENUMERATION("ExtensionInstallVerifier.InitResult",
+                            result, INIT_RESULT_MAX);
+}
+
+}  // namespace
+
 void InstallVerifier::Init() {
   const base::DictionaryValue* pref = prefs_->GetInstallSignature();
   if (pref) {
     scoped_ptr<InstallSignature> signature_from_prefs =
         InstallSignature::FromValue(*pref);
     if (!signature_from_prefs.get()) {
-      UMA_HISTOGRAM_BOOLEAN("InstallVerifier.InitUnparseablePref", true);
+      LogInitResultHistogram(INIT_UNPARSEABLE_PREF);
     } else if (!InstallSigner::VerifySignature(*signature_from_prefs.get())) {
-      UMA_HISTOGRAM_BOOLEAN("InstallVerifier.InitInvalidSignature", true);
+      LogInitResultHistogram(INIT_INVALID_SIGNATURE);
       DVLOG(1) << "Init - ignoring invalid signature";
     } else {
       signature_ = signature_from_prefs.Pass();
-      UMA_HISTOGRAM_COUNTS("InstallVerifier.InitGoodSignature",
-                           signature_->ids.size());
+      LogInitResultHistogram(INIT_VALID_SIGNATURE);
+      UMA_HISTOGRAM_COUNTS_100("ExtensionInstallVerifier.InitSignatureCount",
+                               signature_->ids.size());
       GarbageCollect();
     }
   } else {
-    UMA_HISTOGRAM_BOOLEAN("InstallVerifier.InitNoSignature", true);
+    LogInitResultHistogram(INIT_NO_PREF);
   }
 }
 
@@ -211,30 +233,72 @@ static bool FromStore(const Extension* extension) {
   return extension->from_webstore() || updates_from_store;
 }
 
+namespace {
+
+enum MustRemainDisabledOutcome {
+  VERIFIED = 0,
+  NOT_EXTENSION,
+  UNPACKED,
+  ENTERPRISE_POLICY_ALLOWED,
+  FORCED_NOT_VERIFIED,
+  NOT_FROM_STORE,
+  NO_SIGNATURE,
+  NOT_VERIFIED_BUT_NOT_ENFORCING,
+  NOT_VERIFIED,
+
+  // This is used in histograms - do not remove or reorder entries above! Also
+  // the "MAX" item below should always be the last element.
+
+  MUST_REMAIN_DISABLED_OUTCOME_MAX
+};
+
+void MustRemainDisabledHistogram(MustRemainDisabledOutcome outcome) {
+  UMA_HISTOGRAM_ENUMERATION("ExtensionInstallVerifier.MustRemainDisabled",
+                            outcome, MUST_REMAIN_DISABLED_OUTCOME_MAX);
+}
+
+}  // namespace
+
 bool InstallVerifier::MustRemainDisabled(const Extension* extension,
                                          Extension::DisableReason* reason,
                                          base::string16* error) const {
-  if (!extension->is_extension() ||
-      Manifest::IsUnpackedLocation(extension->location()) ||
-      AllowedByEnterprisePolicy(extension->id()))
-    return false;
-
-  // If we don't have a signature yet, we'll temporarily consider every
-  // extension from the webstore verified to avoid false positives on existing
-  // profiles hitting this code for the first time, and rely on consumers of
-  // this class to check NeedsBootstrap() and schedule a first check so we can
-  // get a signature.
-  bool verified =
-      FromStore(extension) &&
-      (signature_.get() == NULL || IsVerified(extension->id())) &&
-      !ContainsKey(InstallSigner::GetForcedNotFromWebstore(), extension->id());
-
-  if (!verified && !ShouldEnforce()) {
-    if (signature_.get())
-      UMA_HISTOGRAM_BOOLEAN("InstallVerifier.SignatureFailedButNotEnforcing",
-                            true);
+  if (!extension->is_extension()) {
+    MustRemainDisabledHistogram(NOT_EXTENSION);
     return false;
   }
+  if (Manifest::IsUnpackedLocation(extension->location())) {
+    MustRemainDisabledHistogram(UNPACKED);
+    return false;
+  }
+  if (AllowedByEnterprisePolicy(extension->id())) {
+    MustRemainDisabledHistogram(ENTERPRISE_POLICY_ALLOWED);
+    return false;
+  }
+
+  bool verified = true;
+  MustRemainDisabledOutcome outcome = VERIFIED;
+  if (ContainsKey(InstallSigner::GetForcedNotFromWebstore(), extension->id())) {
+    verified = false;
+    outcome = FORCED_NOT_VERIFIED;
+  } else if (!FromStore(extension)) {
+    verified = false;
+    outcome = NOT_FROM_STORE;
+  } else if (signature_.get() == NULL) {
+    // If we don't have a signature yet, we'll temporarily consider every
+    // extension from the webstore verified to avoid false positives on existing
+    // profiles hitting this code for the first time, and rely on consumers of
+    // this class to check NeedsBootstrap() and schedule a first check so we can
+    // get a signature.
+    outcome = NO_SIGNATURE;
+  } else if (!IsVerified(extension->id())) {
+    verified = false;
+    outcome = NOT_VERIFIED;
+  }
+  if (!verified && !ShouldEnforce()) {
+    verified = true;
+    outcome = NOT_VERIFIED_BUT_NOT_ENFORCING;
+  }
+  MustRemainDisabledHistogram(outcome);
 
   if (!verified) {
     if (reason)
@@ -346,6 +410,26 @@ void InstallVerifier::SaveToPrefs() {
   }
 }
 
+namespace {
+
+enum CallbackResult {
+  CALLBACK_NO_SIGNATURE = 0,
+  CALLBACK_INVALID_SIGNATURE,
+  CALLBACK_VALID_SIGNATURE,
+
+  // This is used in histograms - do not remove or reorder entries above! Also
+  // the "MAX" item below should always be the last element.
+
+  CALLBACK_RESULT_MAX
+};
+
+void GetSignatureResultHistogram(CallbackResult result) {
+  UMA_HISTOGRAM_ENUMERATION("ExtensionInstallVerifier.GetSignatureResult",
+                            result, CALLBACK_RESULT_MAX);
+}
+
+}  // namespace
+
 void InstallVerifier::SignatureCallback(
     scoped_ptr<InstallSignature> signature) {
 
@@ -354,11 +438,11 @@ void InstallVerifier::SignatureCallback(
 
   bool success = false;
   if (!signature.get()) {
-    UMA_HISTOGRAM_BOOLEAN("InstallVerifier.CallbackNoSignature", true);
+    GetSignatureResultHistogram(CALLBACK_NO_SIGNATURE);
   } else if (!InstallSigner::VerifySignature(*signature)) {
-    UMA_HISTOGRAM_BOOLEAN("InstallVerifier.CallbackInvalidSignature", true);
+    GetSignatureResultHistogram(CALLBACK_INVALID_SIGNATURE);
   } else {
-    UMA_HISTOGRAM_BOOLEAN("InstallVerifier.CallbackValidSignature", true);
+    GetSignatureResultHistogram(CALLBACK_VALID_SIGNATURE);
     success = true;
   }
 

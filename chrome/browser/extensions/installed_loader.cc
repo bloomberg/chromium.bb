@@ -153,6 +153,7 @@ void InstalledLoader::Load(const ExtensionInfo& info, bool write_to_prefs) {
       extension_service_->profile())->management_policy();
   if (extension.get()) {
     Extension::DisableReason disable_reason = Extension::DISABLE_NONE;
+    bool force_disabled = false;
     if (!policy->UserMayLoad(extension.get(), NULL)) {
       // The error message from UserMayInstall() often contains the extension ID
       // and is therefore not well suited to this UI.
@@ -162,7 +163,10 @@ void InstalledLoader::Load(const ExtensionInfo& info, bool write_to_prefs) {
                policy->MustRemainDisabled(extension, &disable_reason, NULL)) {
       extension_prefs_->SetExtensionState(extension->id(), Extension::DISABLED);
       extension_prefs_->AddDisableReason(extension->id(), disable_reason);
+      force_disabled = true;
     }
+    UMA_HISTOGRAM_BOOLEAN("ExtensionInstalledLoader.ForceDisabled",
+                          force_disabled);
   }
 
   if (!extension.get()) {
