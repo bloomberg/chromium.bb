@@ -61,11 +61,6 @@ inline bool keyMatchesLabelForAttribute(StringImpl* key, Element* element)
     return element->hasTagName(labelTag) && element->getAttribute(forAttr).impl() == key;
 }
 
-void DocumentOrderedMap::clear()
-{
-    m_map.clear();
-}
-
 void DocumentOrderedMap::add(StringImpl* key, Element* element)
 {
     ASSERT(key);

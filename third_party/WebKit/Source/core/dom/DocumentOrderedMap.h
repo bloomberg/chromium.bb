@@ -31,7 +31,6 @@
 #ifndef DocumentOrderedMap_h
 #define DocumentOrderedMap_h
 
-#include "wtf/HashCountedSet.h"
 #include "wtf/HashMap.h"
 #include "wtf/Vector.h"
 #include "wtf/text/StringImpl.h"
@@ -45,7 +44,6 @@ class DocumentOrderedMap {
 public:
     void add(StringImpl*, Element*);
     void remove(StringImpl*, Element*);
-    void clear();
 
     bool contains(StringImpl*) const;
     bool containsMultiple(StringImpl*) const;
@@ -55,8 +53,6 @@ public:
     Element* getElementByMapName(StringImpl*, const TreeScope*) const;
     Element* getElementByLowercasedMapName(StringImpl*, const TreeScope*) const;
     Element* getElementByLabelForAttribute(StringImpl*, const TreeScope*) const;
-
-    void checkConsistency() const;
 
 private:
     template<bool keyMatches(StringImpl*, Element*)> Element* get(StringImpl*, const TreeScope*) const;
