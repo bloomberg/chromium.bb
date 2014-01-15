@@ -61,12 +61,6 @@ PartitionBucket PartitionRootBase::gPagedBucket;
 
 static size_t partitionBucketNumSystemPages(size_t size)
 {
-    // TODO: Remove this once the more comprehensive solution is landed.
-    // This is a temporary bandaid to fix a Mac performance issue. Mac has poor page
-    // fault performance so we limit the freelist thrash of these popular sizes by
-    // allocating them in bigger slabs.
-    if (size == 16384 || size == 8192 || size == 4096)
-        return kMaxSystemPagesPerSlotSpan;
     // This works out reasonably for the current bucket sizes of the generic
     // allocator, and the current values of partition page size and constants.
     // Specifically, we have enough room to always pack the slots perfectly into
@@ -119,6 +113,9 @@ static void parititonAllocBaseInit(PartitionRootBase* root)
     root->nextPartitionPageEnd = 0;
     root->firstExtent = 0;
     root->currentExtent = 0;
+
+    memset(&root->globalEmptyPageRing, '\0', sizeof(root->globalEmptyPageRing));
+    root->globalEmptyPageRingIndex = 0;
 
     // This is a "magic" value so we can test if a root pointer is valid.
     root->invertedSelf = ~reinterpret_cast<uintptr_t>(root);
@@ -394,6 +391,7 @@ static ALWAYS_INLINE void partitionPageReset(PartitionPage* page, PartitionBucke
     // NULLing the freelist is not strictly necessary but it makes an ASSERT in partitionPageFillFreelist simpler.
     page->freelistHead = 0;
     page->pageOffset = 0;
+    page->freeCacheIndex = -1;
     size_t numPartitionPages = partitionBucketPartitionPages(bucket);
     size_t i;
     char* pageCharPtr = reinterpret_cast<char*>(page);
@@ -499,6 +497,7 @@ static ALWAYS_INLINE bool partitionSetNewActivePage(PartitionBucket* bucket, boo
 
         ASSERT(page->numAllocatedSlots >= 0);
         if (LIKELY(page->numAllocatedSlots == 0)) {
+            ASSERT(page->freeCacheIndex == -1);
             // We hit a free page, so shepherd it on to the free page list.
             page->nextPage = bucket->freePagesHead;
             bucket->freePagesHead = page;
@@ -560,6 +559,7 @@ void* partitionAllocSlowPath(PartitionRootBase* root, size_t size, PartitionBuck
         ASSERT(!newPage->freelistHead);
         ASSERT(!newPage->numAllocatedSlots);
         ASSERT(!newPage->numUnprovisionedSlots);
+        ASSERT(newPage->freeCacheIndex == -1);
         bucket->freePagesHead = newPage->nextPage;
     } else {
         // Third. If we get here, we need a brand new page.
@@ -588,6 +588,45 @@ static ALWAYS_INLINE void partitionFreePage(PartitionPage* page)
     page->numUnprovisionedSlots = 0;
 }
 
+static ALWAYS_INLINE void partitionRegisterEmptyPage(PartitionPage* page)
+{
+    PartitionRootBase* root = partitionPageToRoot(page);
+    // If the page is already registered as empty, give it another life.
+    if (page->freeCacheIndex != -1) {
+        ASSERT(page->freeCacheIndex >= 0);
+        ASSERT(static_cast<unsigned>(page->freeCacheIndex) < kMaxFreeableSpans);
+        ASSERT(root->globalEmptyPageRing[page->freeCacheIndex] == page);
+        root->globalEmptyPageRing[page->freeCacheIndex] = 0;
+    }
+
+    size_t currentIndex = root->globalEmptyPageRingIndex;
+    PartitionPage* pageToFree = root->globalEmptyPageRing[currentIndex];
+    // The page might well have been re-activated, filled up, etc. before we get
+    // around to looking at it here.
+    if (pageToFree) {
+        ASSERT(pageToFree != &PartitionRootBase::gSeedPage);
+        ASSERT(pageToFree->freeCacheIndex >= 0);
+        ASSERT(static_cast<unsigned>(pageToFree->freeCacheIndex) < kMaxFreeableSpans);
+        ASSERT(pageToFree == root->globalEmptyPageRing[pageToFree->freeCacheIndex]);
+        if (!pageToFree->numAllocatedSlots && pageToFree->freelistHead) {
+            // The page is still empty, and not freed, so _really_ free it.
+            partitionFreePage(pageToFree);
+        }
+        pageToFree->freeCacheIndex = -1;
+    }
+
+    // We put the empty slot span on our global list of "pages that were once
+    // empty". thus providing it a bit of breathing room to get re-used before
+    // we really free it. This improves performance, particularly on Mac OS X
+    // which has subpar memory management performance.
+    root->globalEmptyPageRing[currentIndex] = page;
+    page->freeCacheIndex = currentIndex;
+    ++currentIndex;
+    if (currentIndex == kMaxFreeableSpans)
+        currentIndex = 0;
+    root->globalEmptyPageRingIndex = currentIndex;
+}
+
 void partitionFreeSlowPath(PartitionPage* page)
 {
     PartitionBucket* bucket = page->bucket;
@@ -595,25 +634,21 @@ void partitionFreeSlowPath(PartitionPage* page)
     ASSERT(bucket->activePagesHead != &PartitionRootGeneric::gSeedPage);
     if (LIKELY(page->numAllocatedSlots == 0)) {
         // Page became fully unused.
-        // If it's the current page, change it!
+        // If it's the current page, attempt to change it. We'd prefer to leave
+        // the page empty as a gentle force towards defragmentation.
         if (LIKELY(page == bucket->activePagesHead)) {
-            // Change active page, rejecting the current page as a candidate.
-            if (!partitionSetNewActivePage(bucket, false)) {
-                // We do not free the last active page in a bucket.
-                // To do so is a serious performance issue as we can get into
-                // a repeating state change between 0 and 1 objects of a given
-                // size allocated; and each state change incurs either a system
-                // call or a page fault, or more.
-                ASSERT(!page->nextPage);
-                return;
+            if (partitionSetNewActivePage(bucket, false)) {
+                ASSERT(bucket->activePagesHead != page);
+                // Link the empty page back in after the new current page, to
+                // avoid losing a reference to it.
+                // TODO: consider walking the list to link the empty page after
+                // all non-empty pages?
+                PartitionPage* currentPage = bucket->activePagesHead;
+                page->nextPage = currentPage->nextPage;
+                currentPage->nextPage = page;
             }
-            // Link the to-be-freed page back in after the new current page, to
-            // avoid losing a reference to it.
-            PartitionPage* currentPage = bucket->activePagesHead;
-            page->nextPage = currentPage->nextPage;
-            currentPage->nextPage = page;
         }
-        partitionFreePage(page);
+        partitionRegisterEmptyPage(page);
     } else {
         // Ensure that the page is full. That's the only valid case if we
         // arrive here.
@@ -631,8 +666,6 @@ void partitionFreeSlowPath(PartitionPage* page)
         // now be empty and we want to run it through the empty logic.
         if (UNLIKELY(page->numAllocatedSlots == 0))
             partitionFreeSlowPath(page);
-        // Note: there's an opportunity here to look to see if the old active
-        // page is now freeable.
     }
 }
 

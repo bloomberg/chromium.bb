@@ -183,6 +183,8 @@ static const size_t kGenericMaxBucketSpacing = 1 << ((kGenericMaxBucketedOrder -
 static const size_t kGenericMaxBucketed = (1 << (kGenericMaxBucketedOrder - 1)) + ((kGenericNumBucketsPerOrder - 1) * kGenericMaxBucketSpacing);
 static const size_t kBitsPerSizet = sizeof(void*) * CHAR_BIT;
 
+// Constants for the memory reclaim logic.
+static const size_t kMaxFreeableSpans = 16;
 
 #ifndef NDEBUG
 // These two byte values match tcmalloc.
@@ -195,8 +197,8 @@ static const uintptr_t kCookieValue = 0xDEADBEEFu;
 #endif
 #endif
 
-struct PartitionRootBase;
 struct PartitionBucket;
+struct PartitionRootBase;
 
 struct PartitionFreelistEntry {
     PartitionFreelistEntry* next;
@@ -229,6 +231,7 @@ struct PartitionPage {
     int16_t numAllocatedSlots; // Deliberately signed, -1 for free page, -n for full pages.
     uint16_t numUnprovisionedSlots;
     uint16_t pageOffset;
+    int16_t freeCacheIndex; // -1 if not in the free cache.
 };
 
 struct PartitionBucket {
@@ -259,6 +262,8 @@ struct WTF_EXPORT PartitionRootBase {
     char* nextPartitionPageEnd;
     PartitionSuperPageExtentEntry* currentExtent;
     PartitionSuperPageExtentEntry* firstExtent;
+    PartitionPage* globalEmptyPageRing[kMaxFreeableSpans];
+    size_t globalEmptyPageRingIndex;
     uintptr_t invertedSelf;
 
     static int gInitializedLock;
