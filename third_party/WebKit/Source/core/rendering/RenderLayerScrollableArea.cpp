@@ -56,6 +56,7 @@
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/rendering/CompositedLayerMapping.h"
+#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/RenderGeometryMap.h"
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderScrollbar.h"
@@ -529,6 +530,8 @@ void RenderLayerScrollableArea::updateAfterLayout()
     if (m_box->style()->appearance() == ListboxPart)
         return;
 
+    LayoutRectRecorder recorder(*m_box);
+
     m_scrollDimensionsDirty = true;
     IntSize originalScrollOffset = adjustedScrollOffset();
 
@@ -570,7 +573,8 @@ void RenderLayerScrollableArea::updateAfterLayout()
         if (m_box->document().hasAnnotatedRegions())
             m_box->document().setAnnotatedRegionsDirty(true);
 
-        m_box->repaint();
+        if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
+            m_box->repaint();
 
         if (m_box->style()->overflowX() == OAUTO || m_box->style()->overflowY() == OAUTO) {
             if (!m_inOverflowRelayout) {
