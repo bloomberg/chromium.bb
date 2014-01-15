@@ -117,7 +117,7 @@ config("compiler") {
         }
         if (arm_use_thumb) {
           cflags += [ "-mthumb" ]
-          if (is_android) {
+          if (is_android && !is_clang) {  # Clang doesn't support this option.
             cflags += [ "-mthumb-interwork" ]
           }
         }
