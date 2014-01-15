@@ -38,6 +38,15 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_BACKGROUND_NORMAL" file="common/alt_launcher/status_icon_background_normal.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_BACKGROUND_ON_BLACK" file="common/alt_launcher/status_icon_background_onblack_normal.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_BACKGROUND_PRESSED" file="common/alt_launcher/status_icon_background_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_PHANTOM_WINDOW_BOTTOM" file="common/phantom_window_bottom.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_PHANTOM_WINDOW_BOTTOM_LEFT" file="common/phantom_window_bottom_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_PHANTOM_WINDOW_BOTTOM_RIGHT" file="common/phantom_window_bottom_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_PHANTOM_WINDOW_CENTER" file="common/phantom_window_center.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_PHANTOM_WINDOW_LEFT" file="common/phantom_window_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_PHANTOM_WINDOW_RIGHT" file="common/phantom_window_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_PHANTOM_WINDOW_TOP" file="common/phantom_window_top.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_PHANTOM_WINDOW_TOP_LEFT" file="common/phantom_window_top_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_PHANTOM_WINDOW_TOP_RIGHT" file="common/phantom_window_top_right.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_RESIZE_SHADOW_BOTTOM" file="common/resize_shadow_bottom.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_RESIZE_SHADOW_BOTTOM_LEFT" file="common/resize_shadow_bottom_left.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_RESIZE_SHADOW_BOTTOM_RIGHT" file="common/resize_shadow_bottom_right.png" />

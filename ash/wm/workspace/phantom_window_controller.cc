@@ -4,9 +4,11 @@
 
 #include "ash/wm/workspace/phantom_window_controller.h"
 
+#include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/coordinate_conversion.h"
+#include "grit/ash_resources.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -26,6 +28,27 @@ namespace {
 
 // The duration of the show animation.
 const int kAnimationDurationMs = 200;
+
+// The size of the phantom window at the beginning of the show animation in
+// relation to the size of the phantom window at the end of the animation when
+// using the alternate caption button style.
+const float kAlternateCaptionButtonStyleAnimationInitialBoundsRatio = 0.85f;
+
+// The amount of pixels that the phantom window's shadow should extend past
+// the bounds passed into Show(). There is no shadow when not using the
+// alternate caption button style.
+const int kShadowThickness = 60;
+
+// Converts the bounds of a phantom window without a shadow to those of a
+// phantom window with a shadow.
+gfx::Rect GetBoundsWithShadow(const gfx::Rect& bounds) {
+  gfx::Rect bounds_with_shadow(bounds);
+  // Phantom windows have a shadow solely when using the alternate caption
+  // button style.
+  if (switches::UseAlternateFrameCaptionButtonStyle())
+    bounds_with_shadow.Inset(-kShadowThickness, -kShadowThickness);
+  return bounds_with_shadow;
+}
 
 // Starts an animation of |widget| to |new_bounds_in_screen|. No-op if |widget|
 // is NULL.
@@ -115,55 +138,72 @@ PhantomWindowController::~PhantomWindowController() {
 }
 
 void PhantomWindowController::Show(const gfx::Rect& bounds_in_screen) {
-  if (bounds_in_screen == target_bounds_in_screen_)
+  if (GetBoundsWithShadow(bounds_in_screen) == target_bounds_in_screen_)
     return;
-  target_bounds_in_screen_ = bounds_in_screen;
+  target_bounds_in_screen_ = GetBoundsWithShadow(bounds_in_screen);
 
-  gfx::Rect start_bounds_in_screen;
-  if (!phantom_widget_in_target_root_) {
-    start_bounds_in_screen = window_->GetBoundsInScreen();
+  if (switches::UseAlternateFrameCaptionButtonStyle()) {
+    gfx::Rect start_bounds_in_screen = target_bounds_in_screen_;
+    float inset_ratio =
+        (1.0f - kAlternateCaptionButtonStyleAnimationInitialBoundsRatio) / 2;
+    start_bounds_in_screen.Inset(
+        static_cast<int>(start_bounds_in_screen.width() * inset_ratio),
+        static_cast<int>(start_bounds_in_screen.height() * inset_ratio));
+    phantom_widget_in_target_root_ = CreatePhantomWidget(
+        wm::GetRootWindowMatching(target_bounds_in_screen_),
+        start_bounds_in_screen);
+
+    AnimateToBounds(phantom_widget_in_target_root_.get(),
+                    target_bounds_in_screen_);
   } else {
-    start_bounds_in_screen =
-        phantom_widget_in_target_root_->GetWindowBoundsInScreen();
-  }
+    gfx::Rect start_bounds_in_screen;
+    if (!phantom_widget_in_target_root_) {
+      start_bounds_in_screen =
+          GetBoundsWithShadow(window_->GetBoundsInScreen());
+    } else {
+      start_bounds_in_screen =
+          phantom_widget_in_target_root_->GetWindowBoundsInScreen();
+    }
 
-  aura::Window* target_root =
-      wm::GetRootWindowMatching(target_bounds_in_screen_);
-  if (!phantom_widget_in_target_root_ ||
-      phantom_widget_in_target_root_->GetNativeWindow()->GetRootWindow() !=
-          target_root) {
-    phantom_widget_in_target_root_ =
-        CreatePhantomWidget(target_root, start_bounds_in_screen);
-  }
-  AnimateToBounds(phantom_widget_in_target_root_.get(),
-                  target_bounds_in_screen_);
+    aura::Window* target_root =
+        wm::GetRootWindowMatching(target_bounds_in_screen_);
+    if (!phantom_widget_in_target_root_ ||
+        phantom_widget_in_target_root_->GetNativeWindow()->GetRootWindow() !=
+            target_root) {
+      phantom_widget_in_target_root_ =
+          CreatePhantomWidget(target_root, start_bounds_in_screen);
+    }
+    AnimateToBounds(phantom_widget_in_target_root_.get(),
+                    target_bounds_in_screen_);
 
-  // Create a secondary widget in a second screen if |start_bounds_in_screen|
-  // lies at least partially in another screen. This allows animations to start
-  // or restart in one root window and progress to another root.
-  aura::Window* start_root = wm::GetRootWindowMatching(start_bounds_in_screen);
-  if (start_root == target_root) {
-    aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-    for (size_t i = 0; i < root_windows.size(); ++i) {
-      if (root_windows[i] != target_root &&
-          root_windows[i]->GetBoundsInScreen().Intersects(
-              start_bounds_in_screen)) {
-        start_root = root_windows[i];
-        break;
+    // Create a secondary widget in a second screen if |start_bounds_in_screen|
+    // lies at least partially in another screen. This allows animations to
+    // start or restart in one root window and progress to another root.
+    aura::Window* start_root =
+        wm::GetRootWindowMatching(start_bounds_in_screen);
+    if (start_root == target_root) {
+      aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+      for (size_t i = 0; i < root_windows.size(); ++i) {
+        if (root_windows[i] != target_root &&
+            root_windows[i]->GetBoundsInScreen().Intersects(
+                start_bounds_in_screen)) {
+          start_root = root_windows[i];
+          break;
+        }
       }
     }
-  }
-  if (start_root == target_root) {
-    phantom_widget_in_start_root_.reset();
-  } else {
-    if (!phantom_widget_in_start_root_ ||
-        phantom_widget_in_start_root_->GetNativeWindow()->GetRootWindow() !=
-            start_root) {
-      phantom_widget_in_start_root_ =
-          CreatePhantomWidget(start_root, start_bounds_in_screen);
+    if (start_root == target_root) {
+      phantom_widget_in_start_root_.reset();
+    } else {
+      if (!phantom_widget_in_start_root_ ||
+          phantom_widget_in_start_root_->GetNativeWindow()->GetRootWindow() !=
+              start_root) {
+        phantom_widget_in_start_root_ =
+            CreatePhantomWidget(start_root, start_bounds_in_screen);
+      }
+      AnimateToBounds(phantom_widget_in_start_root_.get(),
+                      target_bounds_in_screen_);
     }
-    AnimateToBounds(phantom_widget_in_start_root_.get(),
-                    target_bounds_in_screen_);
   }
 }
 
@@ -186,15 +226,23 @@ scoped_ptr<views::Widget> PhantomWindowController::CreatePhantomWidget(
   phantom_widget->SetVisibilityChangedAnimationsEnabled(false);
   phantom_widget->GetNativeWindow()->SetName("PhantomWindow");
   phantom_widget->GetNativeWindow()->set_id(kShellWindowId_PhantomWindow);
-  views::View* content_view = new views::View;
-  content_view->set_background(
-      views::Background::CreateBackgroundPainter(true, new EdgePainter));
-  phantom_widget->SetContentsView(content_view);
   phantom_widget->SetBounds(bounds_in_screen);
   if (phantom_below_window_)
     phantom_widget->StackBelow(phantom_below_window_);
   else
     phantom_widget->StackAbove(window_);
+
+  views::Painter* background_painter = NULL;
+  if (switches::UseAlternateFrameCaptionButtonStyle()) {
+    const int kImages[] = IMAGE_GRID(IDR_AURA_PHANTOM_WINDOW);
+    background_painter = views::Painter::CreateImageGridPainter(kImages);
+  } else {
+    background_painter = new EdgePainter;
+  }
+  views::View* content_view = new views::View;
+  content_view->set_background(
+      views::Background::CreateBackgroundPainter(true, background_painter));
+  phantom_widget->SetContentsView(content_view);
 
   // Show the widget after all the setups.
   phantom_widget->Show();

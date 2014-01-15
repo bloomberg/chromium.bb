@@ -31,11 +31,8 @@ class ASH_EXPORT PhantomWindowController {
   // Hides the phantom window without any animation.
   virtual ~PhantomWindowController();
 
-  // Animates the phantom window towards |bounds_in_screen|.
-  // Creates two (if start bounds intersect any root window other than the
-  // root window that matches the target bounds) or one (otherwise) phantom
-  // widgets to display animated rectangle in each root.
-  // This does not immediately show the window.
+  // Animates the phantom window towards |bounds_in_screen|. The animation used
+  // depends on whether the alternate caption button style is used.
   void Show(const gfx::Rect& bounds_in_screen);
 
   // If set, the phantom window is stacked below this window, otherwise it
@@ -59,7 +56,8 @@ class ASH_EXPORT PhantomWindowController {
   // If set, the phantom window should get stacked below this window.
   aura::Window* phantom_below_window_;
 
-  // Target bounds of the animation in screen coordinates.
+  // Target bounds (including the shadows if any) of the animation in screen
+  // coordinates.
   gfx::Rect target_bounds_in_screen_;
 
   // Phantom representation of the window which is in the root window matching
@@ -69,7 +67,7 @@ class ASH_EXPORT PhantomWindowController {
   // Phantom representation of the window which is in the root window matching
   // the window's initial bounds. This allows animations to progress from one
   // display to the other. NULL if the phantom window starts and ends in the
-  // same root window.
+  // same root window. Not used when using the alternate caption button style.
   scoped_ptr<views::Widget> phantom_widget_in_start_root_;
 
   DISALLOW_COPY_AND_ASSIGN(PhantomWindowController);

@@ -7,6 +7,7 @@
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "base/command_line.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
@@ -98,10 +99,14 @@ class PhantomWindowControllerTest : public ash::test::AshTestBase {
 };
 
 // Test that two phantom windows are used when animating to bounds at least
-// partially in another display.
-TEST_F(PhantomWindowControllerTest, PhantomWindowShow) {
+// partially in another display when using the old caption button style.
+TEST_F(PhantomWindowControllerTest, OldCaptionButtonStyle) {
   if (!SupportsMultipleDisplays())
     return;
+
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAshDisableAlternateFrameCaptionButtonStyle);
+  ASSERT_FALSE(switches::UseAlternateFrameCaptionButtonStyle());
 
   UpdateDisplay("500x400,500x400");
 

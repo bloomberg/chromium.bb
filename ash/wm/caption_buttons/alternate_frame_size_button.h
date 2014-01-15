@@ -18,6 +18,10 @@ class Widget;
 namespace ash {
 class AlternateFrameSizeButtonDelegate;
 
+namespace internal {
+class PhantomWindowController;
+}
+
 // The maximize/restore button when using the alternate button style.
 // When the mouse is pressed over the size button or the size button is touched:
 // - The minimize and close buttons are set to snap left and snap right
@@ -91,6 +95,11 @@ class ASH_EXPORT AlternateFrameSizeButton : public FrameCaptionButton {
   // The action of the currently pressed button. If |snap_type_| == SNAP_NONE,
   // the size button's default action is run when clicked.
   SnapType snap_type_;
+
+  // Displays a preview of how the window's bounds will change as a result of
+  // snapping the window left or right. The preview is only visible if the snap
+  // left or snap right button is pressed.
+  scoped_ptr<internal::PhantomWindowController> phantom_window_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(AlternateFrameSizeButton);
 };
