@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
-#include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size_conversions.h"
