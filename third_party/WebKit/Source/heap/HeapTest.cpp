@@ -48,7 +48,6 @@ public:
         ASSERT(!m_state->isInGC());
         ThreadState::stopThreads();
         m_state->enterGC();
-        Heap::makeConsistentForGC();
     }
 
     ~TestGCScope()
