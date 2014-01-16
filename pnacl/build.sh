@@ -366,24 +366,6 @@ git-sync() {
   newlib-nacl-headers
 }
 
-checkout-git-bundles-for-trybot() {
-  # For testing LLVM, Clang, etc. changes on the trybots, look for a
-  # Git bundle file created by llvm_change_try_helper.sh.
-  local patch_dir=${NACL_ROOT}/pnacl/not_for_commit
-  for component in llvm clang nacl-newlib binutils gcc compiler-rt; do
-    if [ -e ${patch_dir}/${component}_bundle.b64 ]; then
-      python -c "import base64, sys; base64.decode(sys.stdin, sys.stdout)" \
-          < ${patch_dir}/${component}_bundle.b64 \
-          > ${patch_dir}/${component}_bundle
-      spushd "${PNACL_GIT_ROOT}/${component}"
-      git fetch
-      git bundle unbundle ${patch_dir}/${component}_bundle
-      git checkout $(head -1 ${patch_dir}/${component}_commit_id)
-      spopd
-    fi
-  done
-}
-
 gerrit-upload() {
   # Upload to gerrit code review
   # (Note: normally we use Rietveld code review. This is only useful if

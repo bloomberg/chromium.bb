@@ -77,7 +77,6 @@ tc-compile-toolchain() {
   # toolchain_build_pnacl.py.
   ${PNACL_BUILD} llvm-link-clang
   ${PNACL_BUILD} newlib-nacl-headers
-  ${PNACL_BUILD} checkout-git-bundles-for-trybot
   if ${build_fat}; then
     HOST_ARCH=x86_32 ${PNACL_BUILD} build-all
     HOST_ARCH=x86_64 ${PNACL_BUILD} build-host

@@ -15,12 +15,14 @@
 # Done first to set up python module path
 import toolchain_env
 
+import base64
 import fnmatch
 import logging
 import os
 import re
 import shutil
 import stat
+import subprocess
 import sys
 
 import command
@@ -335,6 +337,25 @@ def SyncPNaClRepos(revisions):
         destination,
         revision,
         clean=is_newlib)
+
+    # For testing LLVM, Clang, etc. changes on the trybots, look for a
+    # Git bundle file created by llvm_change_try_helper.sh.
+    bundle_file = os.path.join(NACL_DIR, 'pnacl', 'not_for_commit',
+                               '%s_bundle' % repo)
+    base64_file = '%s.b64' % bundle_file
+    if os.path.exists(base64_file):
+      input_fh = open(base64_file, 'r')
+      output_fh = open(bundle_file, 'wb')
+      base64.decode(input_fh, output_fh)
+      input_fh.close()
+      output_fh.close()
+      subprocess.check_call(['git', 'fetch'], cwd=destination)
+      subprocess.check_call(['git', 'bundle', 'unbundle', bundle_file],
+                            cwd=destination)
+      commit_id_file = os.path.join(NACL_DIR, 'pnacl', 'not_for_commit',
+                                    '%s_commit_id' % repo)
+      commit_id = open(commit_id_file, 'r').readline().strip()
+      subprocess.check_call(['git', 'checkout', commit_id], cwd=destination)
 
 if __name__ == '__main__':
   # This sets the logging for gclient-alike repo sync. It will be overridden
