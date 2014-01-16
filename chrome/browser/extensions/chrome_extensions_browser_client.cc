@@ -20,6 +20,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
+#include "extensions/browser/pref_names.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/chromeos_switches.h"
@@ -131,15 +132,15 @@ bool ChromeExtensionsBrowserClient::DidVersionUpdate(
 
   PrefService* pref_service = extension_prefs->pref_service();
   base::Version last_version;
-  if (pref_service->HasPrefPath(prefs::kExtensionsLastChromeVersion)) {
+  if (pref_service->HasPrefPath(pref_names::kLastChromeVersion)) {
     std::string last_version_str =
-        pref_service->GetString(prefs::kExtensionsLastChromeVersion);
+        pref_service->GetString(pref_names::kLastChromeVersion);
     last_version = base::Version(last_version_str);
   }
 
   chrome::VersionInfo current_version_info;
   std::string current_version = current_version_info.Version();
-  pref_service->SetString(prefs::kExtensionsLastChromeVersion,
+  pref_service->SetString(pref_names::kLastChromeVersion,
                           current_version);
 
   // If there was no version string in prefs, assume we're out of date.

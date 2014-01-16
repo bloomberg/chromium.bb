@@ -16,6 +16,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "extensions/browser/external_provider_interface.h"
+#include "extensions/browser/pref_names.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -50,8 +51,7 @@ class MockExternalPolicyProviderVisitor
              const std::set<std::string>& expected_extensions) {
     profile_.reset(new TestingProfile);
     profile_->GetTestingPrefService()->SetManagedPref(
-        prefs::kExtensionInstallForceList,
-        policy_forcelist.DeepCopy());
+        pref_names::kInstallForceList, policy_forcelist.DeepCopy());
     provider_.reset(new ExternalProviderImpl(
         this,
         new ExternalPolicyLoader(profile_.get()),

@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
+#include "extensions/browser/pref_names.h"
 
 namespace extensions {
 
@@ -30,7 +31,7 @@ InstallTracker::InstallTracker(Profile* profile,
       content::Source<Profile>(profile));
 
   pref_change_registrar_.Init(prefs->pref_service());
-  pref_change_registrar_.Add(prefs::kExtensionsPref,
+  pref_change_registrar_.Add(pref_names::kExtensions,
                              base::Bind(&InstallTracker::OnAppsReordered,
                                         base::Unretained(this)));
 }

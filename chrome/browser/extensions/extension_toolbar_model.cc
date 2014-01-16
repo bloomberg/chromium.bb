@@ -24,6 +24,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/pref_names.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/feature_switch.h"
@@ -57,13 +58,15 @@ ExtensionToolbarModel::ExtensionToolbarModel(
       this, chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
       content::Source<extensions::ExtensionPrefs>(extension_prefs_));
 
-  visible_icon_count_ = prefs_->GetInteger(prefs::kExtensionToolbarSize);
+  visible_icon_count_ = prefs_->GetInteger(
+      extensions::pref_names::kToolbarSize);
 
   pref_change_registrar_.Init(prefs_);
   pref_change_callback_ =
       base::Bind(&ExtensionToolbarModel::OnExtensionToolbarPrefChange,
                  base::Unretained(this));
-  pref_change_registrar_.Add(prefs::kExtensionToolbar, pref_change_callback_);
+  pref_change_registrar_.Add(extensions::pref_names::kToolbar,
+                             pref_change_callback_);
 }
 
 ExtensionToolbarModel::~ExtensionToolbarModel() {
@@ -166,7 +169,7 @@ ExtensionToolbarModel::Action ExtensionToolbarModel::ExecuteBrowserAction(
 void ExtensionToolbarModel::SetVisibleIconCount(int count) {
   visible_icon_count_ =
       count == static_cast<int>(toolbar_items_.size()) ? -1 : count;
-  prefs_->SetInteger(prefs::kExtensionToolbarSize, visible_icon_count_);
+  prefs_->SetInteger(extensions::pref_names::kToolbarSize, visible_icon_count_);
 }
 
 void ExtensionToolbarModel::Observe(
@@ -391,9 +394,10 @@ void ExtensionToolbarModel::UpdatePrefs() {
     return;
 
   // Don't observe change caused by self.
-  pref_change_registrar_.Remove(prefs::kExtensionToolbar);
+  pref_change_registrar_.Remove(extensions::pref_names::kToolbar);
   extension_prefs_->SetToolbarOrder(last_known_positions_);
-  pref_change_registrar_.Add(prefs::kExtensionToolbar, pref_change_callback_);
+  pref_change_registrar_.Add(extensions::pref_names::kToolbar,
+                             pref_change_callback_);
 }
 
 int ExtensionToolbarModel::IncognitoIndexToOriginal(int incognito_index) {

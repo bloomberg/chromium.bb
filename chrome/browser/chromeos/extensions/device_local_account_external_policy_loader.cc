@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/policy_handlers.h"
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/common/policy_map.h"
+#include "extensions/browser/pref_names.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace chromeos {
@@ -94,7 +95,8 @@ void DeviceLocalAccountExternalPolicyLoader::UpdateExtensionListFromStore() {
     policy_handler.ApplyPolicySettings(policy_map, &pref_value_map);
     const base::Value* value = NULL;
     const base::DictionaryValue* dict = NULL;
-    if (pref_value_map.GetValue(prefs::kExtensionInstallForceList, &value) &&
+    if (pref_value_map.GetValue(extensions::pref_names::kInstallForceList,
+                                &value) &&
         value->GetAsDictionary(&dict)) {
       prefs.reset(dict->DeepCopy());
     }

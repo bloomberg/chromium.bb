@@ -8,6 +8,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_map.h"
+#include "extensions/browser/pref_names.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -168,7 +169,7 @@ TEST(ExtensionInstallForcelistPolicyHandlerTest, ApplyPolicySettings) {
   ExtensionInstallForcelistPolicyHandler handler;
 
   handler.ApplyPolicySettings(policy_map, &prefs);
-  EXPECT_FALSE(prefs.GetValue(prefs::kExtensionInstallForceList, &value));
+  EXPECT_FALSE(prefs.GetValue(pref_names::kInstallForceList, &value));
   EXPECT_FALSE(value);
 
   policy_map.Set(policy::key::kExtensionInstallForcelist,
@@ -177,7 +178,7 @@ TEST(ExtensionInstallForcelistPolicyHandlerTest, ApplyPolicySettings) {
                  policy.DeepCopy(),
                  NULL);
   handler.ApplyPolicySettings(policy_map, &prefs);
-  EXPECT_TRUE(prefs.GetValue(prefs::kExtensionInstallForceList, &value));
+  EXPECT_TRUE(prefs.GetValue(pref_names::kInstallForceList, &value));
   EXPECT_TRUE(base::Value::Equals(&expected, value));
 
   policy.AppendString("abcdefghijklmnopabcdefghijklmnop;http://example.com");
@@ -189,7 +190,7 @@ TEST(ExtensionInstallForcelistPolicyHandlerTest, ApplyPolicySettings) {
                  policy.DeepCopy(),
                  NULL);
   handler.ApplyPolicySettings(policy_map, &prefs);
-  EXPECT_TRUE(prefs.GetValue(prefs::kExtensionInstallForceList, &value));
+  EXPECT_TRUE(prefs.GetValue(pref_names::kInstallForceList, &value));
   EXPECT_TRUE(base::Value::Equals(&expected, value));
 
   policy.AppendString("invalid");
@@ -199,7 +200,7 @@ TEST(ExtensionInstallForcelistPolicyHandlerTest, ApplyPolicySettings) {
                  policy.DeepCopy(),
                  NULL);
   handler.ApplyPolicySettings(policy_map, &prefs);
-  EXPECT_TRUE(prefs.GetValue(prefs::kExtensionInstallForceList, &value));
+  EXPECT_TRUE(prefs.GetValue(pref_names::kInstallForceList, &value));
   EXPECT_TRUE(base::Value::Equals(&expected, value));
 }
 

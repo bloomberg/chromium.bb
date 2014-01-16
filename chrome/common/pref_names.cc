@@ -944,20 +944,9 @@ const char kCurrentThemeDisplayProperties[] = "extensions.theme.properties";
 // (showing developer packing tools and extensions details)
 const char kExtensionsUIDeveloperMode[] = "extensions.ui.developer_mode";
 
-// Integer pref that tracks the number of browser actions visible in the browser
-// actions toolbar.
-const char kExtensionToolbarSize[] = "extensions.toolbarsize";
-
-// A preference that tracks browser action toolbar configuration. This is a list
-// object stored in the Preferences file. The extensions are stored by ID.
-const char kExtensionToolbar[] = "extensions.toolbar";
-
 // Dictionary pref that tracks which command belongs to which
 // extension + named command pair.
 const char kExtensionCommands[] = "extensions.commands";
-
-// A list of known disabled extensions IDs.
-const char kExtensionKnownDisabled[] = "extensions.known_disabled";
 
 // Pref containing the directory for internal plugins as written to the plugins
 // list (below).
@@ -1272,14 +1261,6 @@ extern const char kWelcomeNotificationDismissed[] =
 extern const char kWelcomeNotificationPreviouslyPoppedUp[] =
     "message_center.welcome_notification_previously_popped_up";
 
-// Dictionary pref that keeps track of per-extension settings. The keys are
-// extension ids.
-const char kExtensionsPref[] = "extensions.settings";
-
-// String pref for what version chrome was last time the extension prefs were
-// loaded.
-const char kExtensionsLastChromeVersion[] = "extensions.last_chrome_version";
-
 // Boolean pref that determines whether the user can enter fullscreen mode.
 // Disabling fullscreen mode also makes kiosk mode unavailable on desktop
 // platforms.
@@ -1298,10 +1279,6 @@ const char kProfileResetPromptMemento[] = "profile.reset_prompt_memento";
 // Stores the check-in info retrieved from the GCM server.
 const char kGCMUserAccountID[] = "gcm.user.account_id";
 const char kGCMUserToken[] = "gcm.user.token";
-
-// Whitelist of Native Messaging Hosts.
-const char kNativeMessagingBlacklist[] = "native_messaging.blacklist";
-const char kNativeMessagingWhitelist[] = "native_messaging.whitelist";
 
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
@@ -1693,54 +1670,6 @@ const char kDisableExtensions[] = "extensions.disabled";
 
 // Whether the plugin finder that lets you install missing plug-ins is enabled.
 const char kDisablePluginFinder[] = "plugins.disable_plugin_finder";
-
-// Integer boolean representing the width (in pixels) of the container for
-// browser actions.
-const char kBrowserActionContainerWidth[] =
-    "extensions.browseractions.container.width";
-
-// Time of the last, and next scheduled, extensions auto-update checks.
-const char kLastExtensionsUpdateCheck[] = "extensions.autoupdate.last_check";
-const char kNextExtensionsUpdateCheck[] = "extensions.autoupdate.next_check";
-
-// Whether we have run the extension-alert system (see ExtensionGlobalError)
-// at least once for this profile.
-const char kExtensionAlertsInitializedPref[] = "extensions.alerts.initialized";
-
-// The sites that are allowed to install extensions. These sites should be
-// allowed to install extensions without the scary dangerous downloads bar.
-// Also, when off-store-extension installs are disabled, these sites are exempt.
-const char kExtensionAllowedInstallSites[] = "extensions.allowed_install_sites";
-
-// A list of allowed extension types. Extensions can only be installed if their
-// type is on this whitelist or alternatively on kExtensionInstallAllowList or
-// kExtensionInstallForceList.
-const char kExtensionAllowedTypes[] = "extensions.allowed_types";
-
-// Version number of last blacklist check.
-const char kExtensionBlacklistUpdateVersion[] =
-    "extensions.blacklistupdate.version";
-
-// A whitelist of extension ids the user can install: exceptions from the
-// following blacklist.
-const char kExtensionInstallAllowList[] = "extensions.install.allowlist";
-
-// A blacklist, containing extensions the user cannot install. This list can
-// contain "*" meaning all extensions. This list should not be confused with the
-// extension blacklist, which is Google controlled.
-const char kExtensionInstallDenyList[] = "extensions.install.denylist";
-
-// A list containing extensions that Chrome will silently install
-// at startup time. It is a list of strings, each string contains
-// an extension ID and an update URL, delimited by a semicolon.
-// This preference is set by an admin policy, and meant to be only
-// accessed through extensions::ExternalPolicyProvider.
-const char kExtensionInstallForceList[] = "extensions.install.forcelist";
-
-// Indicates on-disk data might have skeletal data that needs to be cleaned
-// on the next start of the browser.
-const char kExtensionStorageGarbageCollect[] =
-    "extensions.storage.garbagecollect";
 
 // Customized app page names that appear on the New Tab Page.
 const char kNtpAppPageNames[] = "ntp.app_page_names";

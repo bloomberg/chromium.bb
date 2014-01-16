@@ -9,34 +9,104 @@
 
 #include "extensions/browser/extension_prefs_scope.h"
 
-namespace extensions {
-
 // Preference keys which are needed by both the ExtensionPrefs and by external
 // clients, such as APIs.
+
+namespace extensions {
 namespace pref_names {
 
 // If the given |scope| is persisted, return true and populate |result| with the
-// appropriate pref name. If |scope| is not persisted, return false, and leave
-// |result| unchanged.
+// appropriate property (i.e. one of kPref*) within a kExtensions dictionary. If
+// |scope| is not persisted, return false, and leave |result| unchanged.
 bool ScopeToPrefName(ExtensionPrefsScope scope, std::string* result);
 
-// A preference that contains any extension-controlled preferences.
+// Browser-level preferences ---------------------------------------------------
+
+// Whether we have run the extension-alert system (see ExtensionGlobalError)
+// at least once for this profile.
+extern const char kAlertsInitialized[];
+
+// The sites that are allowed to install extensions. These sites should be
+// allowed to install extensions without the scary dangerous downloads bar.
+// Also, when off-store-extension installs are disabled, these sites are exempt.
+extern const char kAllowedInstallSites[];
+
+// A list of allowed extension types. Extensions can only be installed if their
+// type is on this whitelist or alternatively on kInstallAllowList or
+// kInstallForceList.
+extern const char kAllowedTypes[];
+
+// Integer boolean representing the width (in pixels) of the container for
+// browser actions.
+extern const char kBrowserActionContainerWidth[];
+
+// Dictionary pref that keeps track of per-extension settings. The keys are
+// extension ids.
+extern const char kExtensions[];
+
+// A whitelist of extension ids the user can install: exceptions from the
+// following blacklist.
+extern const char kInstallAllowList[];
+
+// A blacklist, containing extensions the user cannot install. This list can
+// contain "*" meaning all extensions. This list should not be confused with the
+// extension blacklist, which is Google controlled.
+extern const char kInstallDenyList[];
+
+// A list containing extensions that Chrome will silently install
+// at startup time. It is a list of strings, each string contains
+// an extension ID and an update URL, delimited by a semicolon.
+// This preference is set by an admin policy, and meant to be only
+// accessed through extensions::ExternalPolicyProvider.
+extern const char kInstallForceList[];
+
+// A list of known disabled extensions IDs.
+extern const char kKnownDisabled[];
+
+// String pref for what version chrome was last time the extension prefs were
+// loaded.
+extern const char kLastChromeVersion[];
+
+// Time of the last extensions auto-update check.
+extern const char kLastUpdateCheck[];
+
+// Blacklist and whitelist for Native Messaging Hosts.
+extern const char kNativeMessagingBlacklist[];
+extern const char kNativeMessagingWhitelist[];
+
+// Time of the next scheduled extensions auto-update checks.
+extern const char kNextUpdateCheck[];
+
+// Indicates on-disk data might have skeletal data that needs to be cleaned
+// on the next start of the browser.
+extern const char kStorageGarbageCollect[];
+
+// A preference that tracks browser action toolbar configuration. This is a list
+// object stored in the Preferences file. The extensions are stored by ID.
+extern const char kToolbar[];
+
+// Integer pref that tracks the number of browser actions visible in the browser
+// actions toolbar.
+extern const char kToolbarSize[];
+
+// Properties in kExtensions dictionaries --------------------------------------
+
+// Extension-controlled preferences.
 extern const char kPrefPreferences[];
 
-// A preference that contains any extension-controlled incognito preferences.
+// Extension-controlled incognito preferences.
 extern const char kPrefIncognitoPreferences[];
 
-// A preference that contains any extension-controlled regular-only preferences.
+// Extension-controlled regular-only preferences.
 extern const char kPrefRegularOnlyPreferences[];
 
-// A preference that contains extension-set content settings.
+// Extension-set content settings.
 extern const char kPrefContentSettings[];
 
-// A preference that contains extension-set content settings.
+// Extension-set incognito content settings.
 extern const char kPrefIncognitoContentSettings[];
 
 }  // namespace pref_names
-
 }  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_PREF_NAMES_H_

@@ -32,6 +32,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/browser/pref_names.h"
 #include "grit/theme_resources.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
 
@@ -386,11 +387,12 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
 - (CGFloat)savedWidth {
   if (!toolbarModel_)
     return 0;
-  if (!profile_->GetPrefs()->HasPrefPath(prefs::kExtensionToolbarSize)) {
+  if (!profile_->GetPrefs()->HasPrefPath(
+          extensions::pref_names::kToolbarSize)) {
     // Migration code to the new VisibleIconCount pref.
     // TODO(mpcomplete): remove this at some point.
-    double predefinedWidth =
-        profile_->GetPrefs()->GetDouble(prefs::kBrowserActionContainerWidth);
+    double predefinedWidth = profile_->GetPrefs()->GetDouble(
+        extensions::pref_names::kBrowserActionContainerWidth);
     if (predefinedWidth != 0) {
       int iconWidth = kBrowserActionWidth + kBrowserActionButtonPadding;
       int extraWidth = kChevronWidth;

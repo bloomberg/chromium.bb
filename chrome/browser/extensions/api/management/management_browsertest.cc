@@ -26,6 +26,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/test/net/url_request_prepackaged_interceptor.h"
+#include "extensions/browser/pref_names.h"
 #include "net/url_request/url_fetcher.h"
 
 using extensions::Extension;
@@ -496,12 +497,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
 
   PrefService* prefs = browser()->profile()->GetPrefs();
   const base::DictionaryValue* forcelist =
-      prefs->GetDictionary(prefs::kExtensionInstallForceList);
+      prefs->GetDictionary(extensions::pref_names::kInstallForceList);
   ASSERT_TRUE(forcelist->empty()) << kForceInstallNotEmptyHelp;
 
   {
     // Set the policy as a user preference and fire notification observers.
-    DictionaryPrefUpdate pref_update(prefs, prefs::kExtensionInstallForceList);
+    DictionaryPrefUpdate pref_update(prefs,
+                                     extensions::pref_names::kInstallForceList);
     base::DictionaryValue* forcelist = pref_update.Get();
     extensions::ExternalPolicyLoader::AddExtension(
         forcelist, kExtensionId, "http://localhost/autoupdate/manifest");
@@ -532,7 +534,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
   EXPECT_EQ(0u, service->disabled_extensions()->size());
 
   // Check that emptying the list triggers uninstall.
-  prefs->ClearPref(prefs::kExtensionInstallForceList);
+  prefs->ClearPref(extensions::pref_names::kInstallForceList);
   EXPECT_EQ(size_before + 1, service->extensions()->size());
   EXPECT_FALSE(service->GetExtensionById(kExtensionId, true));
 }
@@ -568,7 +570,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
   // Check that the policy is initially empty.
   PrefService* prefs = browser()->profile()->GetPrefs();
   const base::DictionaryValue* forcelist =
-      prefs->GetDictionary(prefs::kExtensionInstallForceList);
+      prefs->GetDictionary(extensions::pref_names::kInstallForceList);
   ASSERT_TRUE(forcelist->empty()) << kForceInstallNotEmptyHelp;
 
   // User install of the extension.
@@ -581,7 +583,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
 
   // Setup the force install policy. It should override the location.
   {
-    DictionaryPrefUpdate pref_update(prefs, prefs::kExtensionInstallForceList);
+    DictionaryPrefUpdate pref_update(prefs,
+                                     extensions::pref_names::kInstallForceList);
     extensions::ExternalPolicyLoader::AddExtension(
         pref_update.Get(), kExtensionId,
         "http://localhost/autoupdate/manifest");
@@ -597,7 +600,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
   // TODO(joaodasilva): it would be nicer if the extension was kept instead,
   // and reverted location to INTERNAL or whatever it was before the policy
   // was applied.
-  prefs->ClearPref(prefs::kExtensionInstallForceList);
+  prefs->ClearPref(extensions::pref_names::kInstallForceList);
   ASSERT_EQ(size_before, service->extensions()->size());
   extension = service->GetExtensionById(kExtensionId, true);
   EXPECT_FALSE(extension);
@@ -620,7 +623,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
   // Install the policy again. It should overwrite the extension's location,
   // and force enable it too.
   {
-    DictionaryPrefUpdate pref_update(prefs, prefs::kExtensionInstallForceList);
+    DictionaryPrefUpdate pref_update(prefs,
+                                     extensions::pref_names::kInstallForceList);
     base::DictionaryValue* forcelist = pref_update.Get();
     extensions::ExternalPolicyLoader::AddExtension(
         forcelist, kExtensionId, "http://localhost/autoupdate/manifest");

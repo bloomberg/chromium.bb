@@ -477,7 +477,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs,
   AppSorting* app_sorting() const { return app_sorting_.get(); }
 
   // Describes the URLs that are able to install extensions. See
-  // prefs::kExtensionAllowedInstallSites for more information.
+  // pref_names::kAllowedInstallSites for more information.
   URLPatternSet GetAllowedInstallSites();
 
   // Schedules garbage collection of an extension's on-disk data on the next

@@ -426,7 +426,7 @@ void PreferenceAPI::LoadExtensionControlledPrefs(
   std::string key = extension_id + "." + scope_string;
 
   const base::DictionaryValue* source_dict = prefs->pref_service()->
-      GetDictionary(prefs::kExtensionsPref);
+      GetDictionary(pref_names::kExtensions);
   const base::DictionaryValue* preferences = NULL;
   if (!source_dict->GetDictionary(key, &preferences))
     return;

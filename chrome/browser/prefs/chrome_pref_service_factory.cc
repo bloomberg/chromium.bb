@@ -28,6 +28,7 @@
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/pref_names.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 
@@ -56,7 +57,7 @@ const PrefHashFilter::TrackedPreference kTrackedPrefs[] = {
   { 2, prefs::kHomePage, true },
   { 3, prefs::kRestoreOnStartup, true },
   { 4, prefs::kURLsToRestoreOnStartup, true },
-  { 5, prefs::kExtensionsPref, false },
+  { 5, extensions::pref_names::kExtensions, false },
   { 6, prefs::kGoogleServicesLastUsername, true },
   { 7, prefs::kSearchProviderOverrides, true },
   { 8, prefs::kDefaultSearchProviderSearchURL, true },
@@ -65,7 +66,7 @@ const PrefHashFilter::TrackedPreference kTrackedPrefs[] = {
 #if !defined(OS_ANDROID)
   { 11, prefs::kPinnedTabs, true },
 #endif
-  { 12, prefs::kExtensionKnownDisabled, true },
+  { 12, extensions::pref_names::kKnownDisabled, true },
   { 13, prefs::kProfileResetPromptMemento, true },
 };
 

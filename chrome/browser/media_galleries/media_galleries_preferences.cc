@@ -31,6 +31,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/pref_names.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/permissions/api_permission.h"
@@ -1165,7 +1166,7 @@ void MediaGalleriesPreferences::RemoveGalleryPermissionsFromPrefs(
   DCHECK(IsInitialized());
   ExtensionPrefs* prefs = GetExtensionPrefs();
   const base::DictionaryValue* extensions =
-      prefs->pref_service()->GetDictionary(prefs::kExtensionsPref);
+      prefs->pref_service()->GetDictionary(extensions::pref_names::kExtensions);
   if (!extensions)
     return;
 

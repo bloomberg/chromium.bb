@@ -15,16 +15,17 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/browser/pref_names.h"
 
 namespace extensions {
 
 ExternalPolicyLoader::ExternalPolicyLoader(Profile* profile)
     : profile_(profile) {
   pref_change_registrar_.Init(profile_->GetPrefs());
-  pref_change_registrar_.Add(prefs::kExtensionInstallForceList,
+  pref_change_registrar_.Add(pref_names::kInstallForceList,
                              base::Bind(&ExternalPolicyLoader::StartLoading,
                                         base::Unretained(this)));
-  pref_change_registrar_.Add(prefs::kExtensionAllowedTypes,
+  pref_change_registrar_.Add(pref_names::kAllowedTypes,
                              base::Bind(&ExternalPolicyLoader::StartLoading,
                                         base::Unretained(this)));
   notification_registrar_.Add(this,
@@ -57,7 +58,7 @@ void ExternalPolicyLoader::Observe(
 
 void ExternalPolicyLoader::StartLoading() {
   const base::DictionaryValue* forcelist =
-      profile_->GetPrefs()->GetDictionary(prefs::kExtensionInstallForceList);
+      profile_->GetPrefs()->GetDictionary(pref_names::kInstallForceList);
   prefs_.reset(forcelist ? forcelist->DeepCopy() : NULL);
   LoadFinished();
 }

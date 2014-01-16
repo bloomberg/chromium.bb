@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/ui/app_list/recommended_apps_observer.h"
 #include "chrome/common/pref_names.h"
+#include "extensions/browser/pref_names.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 
@@ -45,7 +46,7 @@ RecommendedApps::RecommendedApps(Profile* profile) : profile_(profile) {
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   extensions::ExtensionPrefs* prefs = service->extension_prefs();
   pref_change_registrar_.Init(prefs->pref_service());
-  pref_change_registrar_.Add(prefs::kExtensionsPref,
+  pref_change_registrar_.Add(extensions::pref_names::kExtensions,
                              base::Bind(&RecommendedApps::Update,
                                         base::Unretained(this)));
 

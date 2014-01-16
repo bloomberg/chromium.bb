@@ -29,6 +29,7 @@
 #include "content/public/browser/notification_source.h"
 #include "crypto/sha2.h"
 #include "extensions/browser/pending_extension_manager.h"
+#include "extensions/browser/pref_names.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
@@ -39,8 +40,6 @@ using base::RandInt;
 using base::Time;
 using base::TimeDelta;
 using content::BrowserThread;
-using prefs::kLastExtensionsUpdateCheck;
-using prefs::kNextExtensionsUpdateCheck;
 
 typedef extensions::ExtensionDownloaderDelegate::Error Error;
 typedef extensions::ExtensionDownloaderDelegate::PingResult PingResult;
@@ -165,14 +164,14 @@ TimeDelta ExtensionUpdater::DetermineFirstCheckDelay() {
     return TimeDelta::FromSeconds(frequency_seconds_);
 
   // If we've never scheduled a check before, start at frequency_seconds_.
-  if (!prefs_->HasPrefPath(kNextExtensionsUpdateCheck))
+  if (!prefs_->HasPrefPath(pref_names::kNextUpdateCheck))
     return TimeDelta::FromSeconds(frequency_seconds_);
 
   // If it's been a long time since our last actual check, we want to do one
   // relatively soon.
   Time now = Time::Now();
   Time last = Time::FromInternalValue(prefs_->GetInt64(
-      kLastExtensionsUpdateCheck));
+      pref_names::kLastUpdateCheck));
   int days = (now - last).InDays();
   if (days >= 30) {
     // Wait 5-10 minutes.
@@ -191,7 +190,7 @@ TimeDelta ExtensionUpdater::DetermineFirstCheckDelay() {
   // Read the persisted next check time, and use that if it isn't too soon.
   // Otherwise pick something random.
   Time saved_next = Time::FromInternalValue(prefs_->GetInt64(
-      kNextExtensionsUpdateCheck));
+      pref_names::kNextUpdateCheck));
   Time earliest = now + TimeDelta::FromSeconds(kStartupWaitSeconds);
   if (saved_next >= earliest) {
     return saved_next - now;
@@ -241,7 +240,7 @@ void ExtensionUpdater::ScheduleNextCheck(const TimeDelta& target_delay) {
 
   // Save the time of next check.
   Time next = Time::Now() + actual_delay;
-  prefs_->SetInt64(kNextExtensionsUpdateCheck, next.ToInternalValue());
+  prefs_->SetInt64(pref_names::kNextUpdateCheck, next.ToInternalValue());
 
   timer_.Start(FROM_HERE, actual_delay, this, &ExtensionUpdater::TimerFired);
 }
@@ -254,7 +253,7 @@ void ExtensionUpdater::TimerFired() {
   // this.
   if (frequency_seconds_ == extensions::kDefaultUpdateFrequencySeconds) {
     Time last = Time::FromInternalValue(prefs_->GetInt64(
-        kLastExtensionsUpdateCheck));
+        pref_names::kLastUpdateCheck));
     if (last.ToInternalValue() != 0) {
       // Use counts rather than time so we can use minutes rather than millis.
       UMA_HISTOGRAM_CUSTOM_COUNTS("Extensions.UpdateCheckGap",
@@ -267,7 +266,7 @@ void ExtensionUpdater::TimerFired() {
 
   // Save the last check time, and schedule the next check.
   int64 now = Time::Now().ToInternalValue();
-  prefs_->SetInt64(kLastExtensionsUpdateCheck, now);
+  prefs_->SetInt64(pref_names::kLastUpdateCheck, now);
   ScheduleNextCheck(TimeDelta::FromSeconds(frequency_seconds_));
 }
 

@@ -30985,14 +30985,14 @@ other types of suffix sets.
   <int value="2" label="prefs::kHomePage"/>
   <int value="3" label="prefs::kRestoreOnStartup"/>
   <int value="4" label="prefs::kURLsToRestoreOnStartup"/>
-  <int value="5" label="prefs::kExtensionsPref"/>
+  <int value="5" label="extensions::pref_names::kExtensions"/>
   <int value="6" label="prefs::kGoogleServicesLastUsername"/>
   <int value="7" label="prefs::kSearchProviderOverrides"/>
   <int value="8" label="prefs::kDefaultSearchProviderSearchURL"/>
   <int value="9" label="prefs::kDefaultSearchProviderKeyword"/>
   <int value="10" label="prefs::kDefaultSearchProviderName"/>
   <int value="11" label="prefs::kPinnedTabs"/>
-  <int value="12" label="prefs::kExtensionKnownDisabled"/>
+  <int value="12" label="extensions::pref_names::kKnownDisabled"/>
   <int value="13" label="prefs::kProfileResetPromptMemento"/>
 </enum>
 

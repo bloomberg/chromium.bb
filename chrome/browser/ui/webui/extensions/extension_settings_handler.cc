@@ -73,6 +73,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/browser/management_policy.h"
+#include "extensions/browser/pref_names.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -1101,7 +1102,7 @@ void ExtensionSettingsHandler::MaybeRegisterForNotifications() {
       AsWeakPtr());
 
   pref_registrar_.Init(profile->GetPrefs());
-  pref_registrar_.Add(prefs::kExtensionInstallDenyList, callback);
+  pref_registrar_.Add(pref_names::kInstallDenyList, callback);
 }
 
 std::vector<ExtensionPage>

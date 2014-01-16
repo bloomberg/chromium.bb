@@ -50,6 +50,7 @@
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/management_policy.h"
+#include "extensions/browser/pref_names.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
@@ -464,7 +465,8 @@ void AppLauncherHandler::HandleGetApps(const base::ListValue* args) {
         base::Unretained(this));
     extension_pref_change_registrar_.Init(
         extension_service_->extension_prefs()->pref_service());
-    extension_pref_change_registrar_.Add(prefs::kExtensionsPref, callback);
+    extension_pref_change_registrar_.Add(
+        extensions::pref_names::kExtensions, callback);
     extension_pref_change_registrar_.Add(prefs::kNtpAppPageNames, callback);
 
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,

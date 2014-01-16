@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/common/pref_names.h"
 #include "extensions/browser/admin_policy.h"
+#include "extensions/browser/pref_names.h"
 #include "extensions/common/extension.h"
 
 namespace extensions {
@@ -37,14 +38,14 @@ bool StandardManagementPolicyProvider::UserMayLoad(
   PrefService* pref_service = prefs_->pref_service();
 
   const base::ListValue* blacklist =
-      pref_service->GetList(prefs::kExtensionInstallDenyList);
+      pref_service->GetList(pref_names::kInstallDenyList);
   const base::ListValue* whitelist =
-      pref_service->GetList(prefs::kExtensionInstallAllowList);
+      pref_service->GetList(pref_names::kInstallAllowList);
   const base::DictionaryValue* forcelist =
-      pref_service->GetDictionary(prefs::kExtensionInstallForceList);
+      pref_service->GetDictionary(pref_names::kInstallForceList);
   const base::ListValue* allowed_types = NULL;
-  if (pref_service->HasPrefPath(prefs::kExtensionAllowedTypes))
-    allowed_types = pref_service->GetList(prefs::kExtensionAllowedTypes);
+  if (pref_service->HasPrefPath(pref_names::kAllowedTypes))
+    allowed_types = pref_service->GetList(pref_names::kAllowedTypes);
 
   return admin_policy::UserMayLoad(
       blacklist, whitelist, forcelist, allowed_types, extension, error);

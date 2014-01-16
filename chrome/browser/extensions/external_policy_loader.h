@@ -22,7 +22,7 @@ class DictionaryValue;
 namespace extensions {
 
 // A specialization of the ExternalProvider that uses
-// prefs::kExtensionInstallForceList to look up which external extensions are
+// pref_names::kInstallForceList to look up which external extensions are
 // registered.
 class ExternalPolicyLoader
     : public ExternalLoader,

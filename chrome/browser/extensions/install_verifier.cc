@@ -19,6 +19,7 @@
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/common/content_switches.h"
+#include "extensions/browser/pref_names.h"
 #include "extensions/common/manifest.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -349,16 +350,16 @@ void InstallVerifier::GarbageCollect() {
 
 bool InstallVerifier::AllowedByEnterprisePolicy(const std::string& id) const {
   PrefService* pref_service = prefs_->pref_service();
-  if (pref_service->IsManagedPreference(prefs::kExtensionInstallAllowList)) {
+  if (pref_service->IsManagedPreference(pref_names::kInstallAllowList)) {
     const base::ListValue* whitelist =
-        pref_service->GetList(prefs::kExtensionInstallAllowList);
+        pref_service->GetList(pref_names::kInstallAllowList);
     base::StringValue id_value(id);
     if (whitelist && whitelist->Find(id_value) != whitelist->end())
       return true;
   }
-  if (pref_service->IsManagedPreference(prefs::kExtensionInstallForceList)) {
+  if (pref_service->IsManagedPreference(pref_names::kInstallForceList)) {
     const base::DictionaryValue* forcelist =
-        pref_service->GetDictionary(prefs::kExtensionInstallForceList);
+        pref_service->GetDictionary(pref_names::kInstallForceList);
     if (forcelist && forcelist->HasKey(id))
       return true;
   }

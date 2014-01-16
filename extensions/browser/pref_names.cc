@@ -27,6 +27,25 @@ bool ScopeToPrefName(ExtensionPrefsScope scope, std::string* result) {
   return false;
 }
 
+const char kAlertsInitialized[] = "extensions.alerts.initialized";
+const char kAllowedInstallSites[] = "extensions.allowed_install_sites";
+const char kAllowedTypes[] = "extensions.allowed_types";
+const char kBrowserActionContainerWidth[] =
+    "extensions.browseractions.container.width";
+const char kExtensions[] = "extensions.settings";
+const char kInstallAllowList[] = "extensions.install.allowlist";
+const char kInstallDenyList[] = "extensions.install.denylist";
+const char kInstallForceList[] = "extensions.install.forcelist";
+const char kKnownDisabled[] = "extensions.known_disabled";
+const char kLastChromeVersion[] = "extensions.last_chrome_version";
+const char kLastUpdateCheck[] = "extensions.autoupdate.last_check";
+const char kNativeMessagingBlacklist[] = "native_messaging.blacklist";
+const char kNativeMessagingWhitelist[] = "native_messaging.whitelist";
+const char kNextUpdateCheck[] = "extensions.autoupdate.next_check";
+const char kStorageGarbageCollect[] = "extensions.storage.garbagecollect";
+const char kToolbar[] = "extensions.toolbar";
+const char kToolbarSize[] = "extensions.toolbarsize";
+
 const char kPrefPreferences[] = "preferences";
 const char kPrefIncognitoPreferences[] = "incognito_preferences";
 const char kPrefRegularOnlyPreferences[] = "regular_only_preferences";

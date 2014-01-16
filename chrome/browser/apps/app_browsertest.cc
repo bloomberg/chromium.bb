@@ -43,6 +43,7 @@
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/pref_names.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
 
@@ -1025,7 +1026,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
       SetRegisteredEvents(extension->id(), std::set<std::string>());
 
   DictionaryPrefUpdate update(extension_prefs->pref_service(),
-                              prefs::kExtensionsPref);
+                              extensions::pref_names::kExtensions);
   base::DictionaryValue* dict = update.Get();
   std::string key(extension->id());
   key += ".manifest.version";

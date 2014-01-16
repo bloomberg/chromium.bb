@@ -25,6 +25,7 @@
 #include "components/policy/core/common/policy_details.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_pref_names.h"
+#include "extensions/browser/pref_names.h"
 #include "extensions/common/manifest.h"
 #include "grit/component_strings.h"
 #include "policy/policy_constants.h"
@@ -494,23 +495,23 @@ scoped_ptr<ConfigurationPolicyHandlerList> BuildHandlerList() {
   handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
       new extensions::ExtensionListPolicyHandler(
           key::kExtensionInstallWhitelist,
-          prefs::kExtensionInstallAllowList,
+          extensions::pref_names::kInstallAllowList,
           false)));
   handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
       new extensions::ExtensionListPolicyHandler(
           key::kExtensionInstallBlacklist,
-          prefs::kExtensionInstallDenyList,
+          extensions::pref_names::kInstallDenyList,
           true)));
   handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
       new extensions::ExtensionInstallForcelistPolicyHandler()));
   handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
       new extensions::ExtensionURLPatternListPolicyHandler(
           key::kExtensionInstallSources,
-          prefs::kExtensionAllowedInstallSites)));
+          extensions::pref_names::kAllowedInstallSites)));
   handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
       new StringToIntEnumListPolicyHandler(
           key::kExtensionAllowedTypes,
-          prefs::kExtensionAllowedTypes,
+          extensions::pref_names::kAllowedTypes,
           kExtensionAllowedTypesMap,
           kExtensionAllowedTypesMap + arraysize(kExtensionAllowedTypesMap))));
 #if defined(OS_CHROMEOS)
@@ -530,12 +531,12 @@ scoped_ptr<ConfigurationPolicyHandlerList> BuildHandlerList() {
   handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
       new extensions::NativeMessagingHostListPolicyHandler(
           key::kNativeMessagingWhitelist,
-          prefs::kNativeMessagingWhitelist,
+          extensions::pref_names::kNativeMessagingWhitelist,
           false)));
   handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
       new extensions::NativeMessagingHostListPolicyHandler(
           key::kNativeMessagingBlacklist,
-          prefs::kNativeMessagingBlacklist,
+          extensions::pref_names::kNativeMessagingBlacklist,
           true)));
 #endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
 

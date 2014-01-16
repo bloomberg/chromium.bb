@@ -15,7 +15,7 @@
 #include "chrome/browser/extensions/api/messaging/native_messaging_host_manifest.h"
 #include "chrome/browser/extensions/api/messaging/native_process_launcher.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/pref_names.h"
+#include "extensions/browser/pref_names.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/features/feature.h"
 #include "net/base/file_stream.h"
@@ -56,10 +56,10 @@ bool NativeMessageProcessHost::IsHostAllowed(
     const PrefService* pref_service,
     const std::string& native_host_name) {
   // All native messaging hosts are allowed if there is no blacklist.
-  if (!pref_service->IsManagedPreference(prefs::kNativeMessagingBlacklist))
+  if (!pref_service->IsManagedPreference(pref_names::kNativeMessagingBlacklist))
     return true;
   const base::ListValue* blacklist =
-      pref_service->GetList(prefs::kNativeMessagingBlacklist);
+      pref_service->GetList(pref_names::kNativeMessagingBlacklist);
   if (!blacklist)
     return true;
 
@@ -72,9 +72,10 @@ bool NativeMessageProcessHost::IsHostAllowed(
   }
 
   // The native messaging host is blacklisted. Check the whitelist.
-  if (pref_service->IsManagedPreference(prefs::kNativeMessagingWhitelist)) {
+  if (pref_service->IsManagedPreference(
+          pref_names::kNativeMessagingWhitelist)) {
     const base::ListValue* whitelist =
-        pref_service->GetList(prefs::kNativeMessagingWhitelist);
+        pref_service->GetList(pref_names::kNativeMessagingWhitelist);
     if (whitelist && whitelist->Find(name_value) != whitelist->end())
       return true;
   }

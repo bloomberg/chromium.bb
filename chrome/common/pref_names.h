@@ -308,10 +308,7 @@ extern const char kCurrentThemeColors[];
 extern const char kCurrentThemeTints[];
 extern const char kCurrentThemeDisplayProperties[];
 extern const char kExtensionsUIDeveloperMode[];
-extern const char kExtensionToolbarSize[];
-extern const char kExtensionToolbar[];
 extern const char kExtensionCommands[];
-extern const char kExtensionKnownDisabled[];
 extern const char kPluginsLastInternalDirectory[];
 extern const char kPluginsPluginsList[];
 extern const char kPluginsDisabledPlugins[];
@@ -398,9 +395,6 @@ extern const char kSyncedNotificationFirstRun[];
 extern const char kWelcomeNotificationDismissed[];
 extern const char kWelcomeNotificationPreviouslyPoppedUp[];
 
-extern const char kExtensionsPref[];
-extern const char kExtensionsLastChromeVersion[];
-
 extern const char kFullscreenAllowed[];
 
 extern const char kLocalDiscoveryNotificationsEnabled[];
@@ -409,9 +403,6 @@ extern const char kProfileResetPromptMemento[];
 
 extern const char kGCMUserAccountID[];
 extern const char kGCMUserToken[];
-
-extern const char kNativeMessagingBlacklist[];
-extern const char kNativeMessagingWhitelist[];
 
 // Local state prefs. Please add Profile prefs above instead.
 extern const char kCertRevocationCheckingEnabled[];
@@ -560,19 +551,6 @@ extern const char kDisableVideoAndChat[];
 
 extern const char kDisableExtensions[];
 extern const char kDisablePluginFinder[];
-extern const char kBrowserActionContainerWidth[];
-
-extern const char kLastExtensionsUpdateCheck[];
-extern const char kNextExtensionsUpdateCheck[];
-
-extern const char kExtensionAlertsInitializedPref[];
-extern const char kExtensionAllowedInstallSites[];
-extern const char kExtensionAllowedTypes[];
-extern const char kExtensionBlacklistUpdateVersion[];
-extern const char kExtensionInstallAllowList[];
-extern const char kExtensionInstallDenyList[];
-extern const char kExtensionInstallForceList[];
-extern const char kExtensionStorageGarbageCollect[];
 
 extern const char kNtpAppPageNames[];
 extern const char kNtpCollapsedForeignSessions[];

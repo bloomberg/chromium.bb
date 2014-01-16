@@ -80,6 +80,7 @@
 #include "extensions/browser/external_provider_interface.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/browser/pending_extension_manager.h"
+#include "extensions/browser/pref_names.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/update_observer.h"
 #include "extensions/common/constants.h"
@@ -364,9 +365,11 @@ ExtensionService::ExtensionService(Profile* profile,
   base::Closure callback =
       base::Bind(&ExtensionService::OnExtensionInstallPrefChanged,
                  base::Unretained(this));
-  pref_change_registrar_.Add(prefs::kExtensionInstallAllowList, callback);
-  pref_change_registrar_.Add(prefs::kExtensionInstallDenyList, callback);
-  pref_change_registrar_.Add(prefs::kExtensionAllowedTypes, callback);
+  pref_change_registrar_.Add(extensions::pref_names::kInstallAllowList,
+                             callback);
+  pref_change_registrar_.Add(extensions::pref_names::kInstallDenyList,
+                             callback);
+  pref_change_registrar_.Add(extensions::pref_names::kAllowedTypes, callback);
 
   // Set up the ExtensionUpdater
   if (autoupdate_enabled) {

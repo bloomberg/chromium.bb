@@ -93,6 +93,7 @@
 #include "extensions/browser/management_policy.h"
 #include "extensions/browser/pending_extension_info.h"
 #include "extensions/browser/pending_extension_manager.h"
+#include "extensions/browser/pref_names.h"
 #include "extensions/browser/test_management_policy.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -3473,7 +3474,7 @@ TEST_F(ExtensionServiceTest, UnloadBlacklistedExtensionPolicy) {
   base::ListValue whitelist;
   PrefService* prefs = service_->extension_prefs()->pref_service();
   whitelist.Append(new base::StringValue(good_crx));
-  prefs->Set(prefs::kExtensionInstallAllowList, whitelist);
+  prefs->Set(extensions::pref_names::kInstallAllowList, whitelist);
 
   test_blacklist.SetBlacklistState(
       good_crx, extensions::BLACKLISTED_MALWARE, true);
@@ -3558,7 +3559,7 @@ TEST_F(ExtensionServiceTest, BlacklistedByPolicyWillNotInstall) {
   // Blacklist everything.
   {
     ListPrefUpdate update(profile_->GetPrefs(),
-                          prefs::kExtensionInstallDenyList);
+                          extensions::pref_names::kInstallDenyList);
     base::ListValue* blacklist = update.Get();
     blacklist->Append(new base::StringValue("*"));
   }
@@ -3571,7 +3572,7 @@ TEST_F(ExtensionServiceTest, BlacklistedByPolicyWillNotInstall) {
   // Now whitelist this particular extension.
   {
     ListPrefUpdate update(profile_->GetPrefs(),
-                          prefs::kExtensionInstallAllowList);
+                          extensions::pref_names::kInstallAllowList);
     base::ListValue* whitelist = update.Get();
     whitelist->Append(new base::StringValue(good_crx));
   }
@@ -3592,7 +3593,7 @@ TEST_F(ExtensionServiceTest, BlacklistedByPolicyRemovedIfRunning) {
 
   { // Scope for pref update notification.
     PrefService* prefs = profile_->GetPrefs();
-    ListPrefUpdate update(prefs, prefs::kExtensionInstallDenyList);
+    ListPrefUpdate update(prefs, extensions::pref_names::kInstallDenyList);
     base::ListValue* blacklist = update.Get();
     ASSERT_TRUE(blacklist != NULL);
 
@@ -3612,7 +3613,7 @@ TEST_F(ExtensionServiceTest, ComponentExtensionWhitelisted) {
   // Blacklist everything.
   {
     ListPrefUpdate update(profile_->GetPrefs(),
-                          prefs::kExtensionInstallDenyList);
+                          extensions::pref_names::kInstallDenyList);
     base::ListValue* blacklist = update.Get();
     blacklist->Append(new base::StringValue("*"));
   }
@@ -3641,7 +3642,7 @@ TEST_F(ExtensionServiceTest, ComponentExtensionWhitelisted) {
   // Extension should not be uninstalled on blacklist changes.
   {
     ListPrefUpdate update(profile_->GetPrefs(),
-                          prefs::kExtensionInstallDenyList);
+                          extensions::pref_names::kInstallDenyList);
     base::ListValue* blacklist = update.Get();
     blacklist->Append(new base::StringValue(good0));
   }
@@ -3656,14 +3657,15 @@ TEST_F(ExtensionServiceTest, PolicyInstalledExtensionsWhitelisted) {
 
   {
     // Blacklist everything.
-    ListPrefUpdate blacklist_update(profile_->GetPrefs(),
-                                    prefs::kExtensionInstallDenyList);
+    ListPrefUpdate blacklist_update(
+        profile_->GetPrefs(), extensions::pref_names::kInstallDenyList);
     base::ListValue* blacklist = blacklist_update.Get();
     blacklist->AppendString("*");
 
     // Mark good.crx for force-installation.
-    DictionaryPrefUpdate forcelist_update(profile_->GetPrefs(),
-                                          prefs::kExtensionInstallForceList);
+    DictionaryPrefUpdate forcelist_update(
+        profile_->GetPrefs(),
+        extensions::pref_names::kInstallForceList);
     extensions::ExternalPolicyLoader::AddExtension(
         forcelist_update.Get(), good_crx, "http://example.com/update_url");
   }
@@ -3691,7 +3693,7 @@ TEST_F(ExtensionServiceTest, PolicyInstalledExtensionsWhitelisted) {
   // Blacklist update should not uninstall the extension.
   {
     ListPrefUpdate update(profile_->GetPrefs(),
-                          prefs::kExtensionInstallDenyList);
+                          extensions::pref_names::kInstallDenyList);
     base::ListValue* blacklist = update.Get();
     blacklist->Append(new base::StringValue(good0));
   }

@@ -10,6 +10,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_map.h"
+#include "extensions/browser/pref_names.h"
 #include "extensions/common/extension.h"
 #include "grit/component_strings.h"
 #include "policy/policy_constants.h"
@@ -119,7 +120,7 @@ void ExtensionInstallForcelistPolicyHandler::ApplyPolicySettings(
   if (CheckAndGetValue(policies, NULL, &value) &&
       value &&
       ParseList(value, dict.get(), NULL)) {
-    prefs->SetValue(prefs::kExtensionInstallForceList, dict.release());
+    prefs->SetValue(pref_names::kInstallForceList, dict.release());
   }
 }
 

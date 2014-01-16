@@ -16,7 +16,6 @@
 #include "chrome/browser/extensions/api/preference/preference_api.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/extensions/extension_prefs_factory.h"
-#include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "extensions/browser/admin_policy.h"
 #include "extensions/browser/app_sorting.h"
@@ -182,7 +181,7 @@ class ScopedExtensionPrefUpdate : public DictionaryPrefUpdate {
  public:
   ScopedExtensionPrefUpdate(PrefService* service,
                             const std::string& extension_id) :
-    DictionaryPrefUpdate(service, prefs::kExtensionsPref),
+    DictionaryPrefUpdate(service, pref_names::kExtensions),
     extension_id_(extension_id) {}
 
   virtual ~ScopedExtensionPrefUpdate() {
@@ -242,7 +241,7 @@ ExtensionPrefs::ScopedUpdate<T, type_enum_value>::ScopedUpdate(
     ExtensionPrefs* prefs,
     const std::string& extension_id,
     const std::string& key)
-    : update_(prefs->pref_service(), prefs::kExtensionsPref),
+    : update_(prefs->pref_service(), pref_names::kExtensions),
       extension_id_(extension_id),
       key_(key) {
   DCHECK(Extension::IdIsValid(extension_id_));
@@ -350,7 +349,7 @@ static base::FilePath::StringType MakePathRelative(const base::FilePath& parent,
 
 void ExtensionPrefs::MakePathsRelative() {
   const base::DictionaryValue* dict =
-      prefs_->GetDictionary(prefs::kExtensionsPref);
+      prefs_->GetDictionary(pref_names::kExtensions);
   if (!dict || dict->empty())
     return;
 
@@ -378,7 +377,7 @@ void ExtensionPrefs::MakePathsRelative() {
     return;
 
   // Fix these paths.
-  DictionaryPrefUpdate update(prefs_, prefs::kExtensionsPref);
+  DictionaryPrefUpdate update(prefs_, pref_names::kExtensions);
   base::DictionaryValue* update_dict = update.Get();
   for (std::set<std::string>::iterator i = absolute_keys.begin();
        i != absolute_keys.end(); ++i) {
@@ -398,7 +397,7 @@ void ExtensionPrefs::MakePathsRelative() {
 const base::DictionaryValue* ExtensionPrefs::GetExtensionPref(
     const std::string& extension_id) const {
   const base::DictionaryValue* extensions =
-      prefs_->GetDictionary(prefs::kExtensionsPref);
+      prefs_->GetDictionary(pref_names::kExtensions);
   const base::DictionaryValue* extension_dict = NULL;
   if (!extensions ||
       !extensions->GetDictionary(extension_id, &extension_dict)) {
@@ -424,7 +423,7 @@ void ExtensionPrefs::UpdateExtensionPref(const std::string& extension_id,
 void ExtensionPrefs::DeleteExtensionPrefs(const std::string& extension_id) {
   extension_pref_value_map_->UnregisterExtension(extension_id);
   content_settings_store_->UnregisterExtension(extension_id);
-  DictionaryPrefUpdate update(prefs_, prefs::kExtensionsPref);
+  DictionaryPrefUpdate update(prefs_, pref_names::kExtensions);
   base::DictionaryValue* dict = update.Get();
   dict->Remove(extension_id, NULL);
 }
@@ -679,16 +678,16 @@ void ExtensionPrefs::SetWipeoutAcknowledged(
 }
 
 bool ExtensionPrefs::SetAlertSystemFirstRun() {
-  if (prefs_->GetBoolean(prefs::kExtensionAlertsInitializedPref)) {
+  if (prefs_->GetBoolean(pref_names::kAlertsInitialized)) {
     return true;
   }
-  prefs_->SetBoolean(prefs::kExtensionAlertsInitializedPref, true);
+  prefs_->SetBoolean(pref_names::kAlertsInitialized, true);
   return false;
 }
 
 bool ExtensionPrefs::ExtensionsBlacklistedByDefault() const {
   return admin_policy::BlacklistedByDefault(
-      prefs_->GetList(prefs::kExtensionInstallDenyList));
+      prefs_->GetList(pref_names::kInstallDenyList));
 }
 
 bool ExtensionPrefs::DidExtensionEscalatePermissions(
@@ -741,7 +740,7 @@ std::set<std::string> ExtensionPrefs::GetBlacklistedExtensions() {
   std::set<std::string> ids;
 
   const base::DictionaryValue* extensions =
-      prefs_->GetDictionary(prefs::kExtensionsPref);
+      prefs_->GetDictionary(pref_names::kExtensions);
   if (!extensions)
     return ids;
 
@@ -1087,21 +1086,21 @@ bool ExtensionPrefs::IsExtensionDisabled(
 
 ExtensionIdList ExtensionPrefs::GetToolbarOrder() {
   ExtensionIdList id_list_out;
-  GetUserExtensionPrefIntoContainer(prefs::kExtensionToolbar, &id_list_out);
+  GetUserExtensionPrefIntoContainer(pref_names::kToolbar, &id_list_out);
   return id_list_out;
 }
 
 void ExtensionPrefs::SetToolbarOrder(const ExtensionIdList& extension_ids) {
-  SetExtensionPrefFromContainer(prefs::kExtensionToolbar, extension_ids);
+  SetExtensionPrefFromContainer(pref_names::kToolbar, extension_ids);
 }
 
 bool ExtensionPrefs::GetKnownDisabled(ExtensionIdSet* id_set_out) {
-  return GetUserExtensionPrefIntoContainer(prefs::kExtensionKnownDisabled,
+  return GetUserExtensionPrefIntoContainer(pref_names::kKnownDisabled,
                                            id_set_out);
 }
 
 void ExtensionPrefs::SetKnownDisabled(const ExtensionIdSet& extension_ids) {
-  SetExtensionPrefFromContainer(prefs::kExtensionKnownDisabled, extension_ids);
+  SetExtensionPrefFromContainer(pref_names::kKnownDisabled, extension_ids);
 }
 
 void ExtensionPrefs::OnExtensionInstalled(
@@ -1232,7 +1231,7 @@ scoped_ptr<ExtensionInfo> ExtensionPrefs::GetInstalledExtensionInfo(
     const std::string& extension_id) const {
   const base::DictionaryValue* ext = NULL;
   const base::DictionaryValue* extensions =
-      prefs_->GetDictionary(prefs::kExtensionsPref);
+      prefs_->GetDictionary(pref_names::kExtensions);
   if (!extensions ||
       !extensions->GetDictionaryWithoutPathExpansion(extension_id, &ext))
     return scoped_ptr<ExtensionInfo>();
@@ -1257,7 +1256,7 @@ ExtensionPrefs::GetInstalledExtensionsInfo() const {
   scoped_ptr<ExtensionsInfo> extensions_info(new ExtensionsInfo);
 
   const base::DictionaryValue* extensions =
-      prefs_->GetDictionary(prefs::kExtensionsPref);
+      prefs_->GetDictionary(pref_names::kExtensions);
   for (base::DictionaryValue::Iterator extension_id(*extensions);
        !extension_id.IsAtEnd(); extension_id.Advance()) {
     if (!Extension::IdIsValid(extension_id.key()))
@@ -1277,7 +1276,7 @@ ExtensionPrefs::GetUninstalledExtensionsInfo() const {
   scoped_ptr<ExtensionsInfo> extensions_info(new ExtensionsInfo);
 
   const base::DictionaryValue* extensions =
-      prefs_->GetDictionary(prefs::kExtensionsPref);
+      prefs_->GetDictionary(pref_names::kExtensions);
   for (base::DictionaryValue::Iterator extension_id(*extensions);
        !extension_id.IsAtEnd(); extension_id.Advance()) {
     const base::DictionaryValue* ext = NULL;
@@ -1407,7 +1406,7 @@ scoped_ptr<ExtensionPrefs::ExtensionsInfo> ExtensionPrefs::
   scoped_ptr<ExtensionsInfo> extensions_info(new ExtensionsInfo);
 
   const base::DictionaryValue* extensions =
-      prefs_->GetDictionary(prefs::kExtensionsPref);
+      prefs_->GetDictionary(pref_names::kExtensions);
   for (base::DictionaryValue::Iterator extension_id(*extensions);
        !extension_id.IsAtEnd(); extension_id.Advance()) {
     if (!Extension::IdIsValid(extension_id.key()))
@@ -1539,7 +1538,7 @@ ExtensionIdList ExtensionPrefs::GetExtensionsFrom(
 
   const base::DictionaryValue* extension_prefs = NULL;
   const base::Value* extension_prefs_value =
-      pref_service->GetUserPrefValue(prefs::kExtensionsPref);
+      pref_service->GetUserPrefValue(pref_names::kExtensions);
   if (!extension_prefs_value ||
       !extension_prefs_value->GetAsDictionary(&extension_prefs)) {
     return result;  // Empty set
@@ -1617,7 +1616,7 @@ bool ExtensionPrefs::HasIncognitoPrefValue(const std::string& pref_key) {
 URLPatternSet ExtensionPrefs::GetAllowedInstallSites() {
   URLPatternSet result;
   const base::ListValue* list =
-      prefs_->GetList(prefs::kExtensionAllowedInstallSites);
+      prefs_->GetList(pref_names::kAllowedInstallSites);
   CHECK(list);
 
   for (size_t i = 0; i < list->GetSize(); ++i) {
@@ -1626,8 +1625,7 @@ URLPatternSet ExtensionPrefs::GetAllowedInstallSites() {
     if (!list->GetString(i, &entry_string) ||
         entry.Parse(entry_string) != URLPattern::PARSE_SUCCESS) {
       LOG(ERROR) << "Invalid value for preference: "
-                 << prefs::kExtensionAllowedInstallSites
-                 << "." << i;
+                 << pref_names::kAllowedInstallSites << "." << i;
       continue;
     }
     result.AddPattern(entry);
@@ -1691,64 +1689,60 @@ ExtensionPrefs::ExtensionPrefs(
 }
 
 void ExtensionPrefs::SetNeedsStorageGarbageCollection(bool value) {
-  prefs_->SetBoolean(prefs::kExtensionStorageGarbageCollect, value);
+  prefs_->SetBoolean(pref_names::kStorageGarbageCollect, value);
 }
 
 bool ExtensionPrefs::NeedsStorageGarbageCollection() {
-  return prefs_->GetBoolean(prefs::kExtensionStorageGarbageCollect);
+  return prefs_->GetBoolean(pref_names::kStorageGarbageCollect);
 }
 
 // static
 void ExtensionPrefs::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(
-      prefs::kExtensionsPref,
+      pref_names::kExtensions,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterListPref(prefs::kExtensionToolbar,
+  registry->RegisterListPref(pref_names::kToolbar,
                              user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterIntegerPref(
-      prefs::kExtensionToolbarSize,
+      pref_names::kToolbarSize,
       -1,  // default value
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterDictionaryPref(
       kExtensionsBlacklistUpdate,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterListPref(prefs::kExtensionInstallAllowList,
+  registry->RegisterListPref(pref_names::kInstallAllowList,
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterListPref(prefs::kExtensionInstallDenyList,
+  registry->RegisterListPref(pref_names::kInstallDenyList,
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterDictionaryPref(
-      prefs::kExtensionInstallForceList,
+      pref_names::kInstallForceList,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterListPref(prefs::kExtensionAllowedTypes,
+  registry->RegisterListPref(pref_names::kAllowedTypes,
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterStringPref(
-      prefs::kExtensionBlacklistUpdateVersion,
-      "0",  // default value
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterBooleanPref(
-      prefs::kExtensionStorageGarbageCollect,
+      pref_names::kStorageGarbageCollect,
       false,  // default value
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterInt64Pref(
-      prefs::kLastExtensionsUpdateCheck,
+      pref_names::kLastUpdateCheck,
       0,  // default value
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterInt64Pref(
-      prefs::kNextExtensionsUpdateCheck,
+      pref_names::kNextUpdateCheck,
       0,  // default value
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterListPref(prefs::kExtensionAllowedInstallSites,
+  registry->RegisterListPref(pref_names::kAllowedInstallSites,
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterStringPref(
-      prefs::kExtensionsLastChromeVersion,
+      pref_names::kLastChromeVersion,
       std::string(),  // default value
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterListPref(prefs::kExtensionKnownDisabled,
+  registry->RegisterListPref(pref_names::kKnownDisabled,
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 #if defined(TOOLKIT_VIEWS)
   registry->RegisterIntegerPref(
-      prefs::kBrowserActionContainerWidth,
+      pref_names::kBrowserActionContainerWidth,
       0,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 #endif
@@ -1756,9 +1750,9 @@ void ExtensionPrefs::RegisterProfilePrefs(
       kInstallSignature,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
-  registry->RegisterListPref(prefs::kNativeMessagingBlacklist,
+  registry->RegisterListPref(pref_names::kNativeMessagingBlacklist,
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterListPref(prefs::kNativeMessagingWhitelist,
+  registry->RegisterListPref(pref_names::kNativeMessagingWhitelist,
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
