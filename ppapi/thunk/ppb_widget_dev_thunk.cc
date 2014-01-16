@@ -2,16 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From dev/ppb_widget_dev.idl modified Tue Apr 16 11:25:44 2013.
+// From dev/ppb_widget_dev.idl modified Tue Aug 20 08:13:36 2013.
 
 #include "ppapi/c/dev/ppb_widget_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
-#include "ppapi/thunk/ppb_instance_api.h"
+#include "ppapi/thunk/ppapi_thunk_export.h"
 #include "ppapi/thunk/ppb_widget_api.h"
-#include "ppapi/thunk/resource_creation_api.h"
-#include "ppapi/thunk/thunk.h"
 
 namespace ppapi {
 namespace thunk {
@@ -85,11 +83,11 @@ const PPB_Widget_Dev_0_4 g_ppb_widget_dev_thunk_0_4 = {
 
 }  // namespace
 
-const PPB_Widget_Dev_0_3* GetPPB_Widget_Dev_0_3_Thunk() {
+PPAPI_THUNK_EXPORT const PPB_Widget_Dev_0_3* GetPPB_Widget_Dev_0_3_Thunk() {
   return &g_ppb_widget_dev_thunk_0_3;
 }
 
-const PPB_Widget_Dev_0_4* GetPPB_Widget_Dev_0_4_Thunk() {
+PPAPI_THUNK_EXPORT const PPB_Widget_Dev_0_4* GetPPB_Widget_Dev_0_4_Thunk() {
   return &g_ppb_widget_dev_thunk_0_4;
 }
 

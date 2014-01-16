@@ -2,17 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_media_stream_video_track.idl modified Wed Jan  8 14:08:11 2014.
+// From ppb_media_stream_video_track.idl modified Mon Jan 13 12:02:23 2014.
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_media_stream_video_track.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
-#include "ppapi/thunk/ppb_instance_api.h"
+#include "ppapi/thunk/ppapi_thunk_export.h"
 #include "ppapi/thunk/ppb_media_stream_video_track_api.h"
-#include "ppapi/thunk/resource_creation_api.h"
-#include "ppapi/thunk/thunk.h"
 
 namespace ppapi {
 namespace thunk {
@@ -89,7 +87,8 @@ const PPB_MediaStreamVideoTrack_0_1 g_ppb_mediastreamvideotrack_thunk_0_1 = {
 
 }  // namespace
 
-const PPB_MediaStreamVideoTrack_0_1* GetPPB_MediaStreamVideoTrack_0_1_Thunk() {
+PPAPI_THUNK_EXPORT const PPB_MediaStreamVideoTrack_0_1*
+    GetPPB_MediaStreamVideoTrack_0_1_Thunk() {
   return &g_ppb_mediastreamvideotrack_thunk_0_1;
 }
 

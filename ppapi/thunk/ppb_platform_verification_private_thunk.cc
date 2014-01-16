@@ -3,17 +3,15 @@
 // found in the LICENSE file.
 
 // From private/ppb_platform_verification_private.idl,
-//   modified Fri Oct 18 15:02:09 2013.
+//   modified Thu Oct 31 12:30:06 2013.
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_platform_verification_private.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
-#include "ppapi/thunk/ppb_instance_api.h"
+#include "ppapi/thunk/ppapi_thunk_export.h"
 #include "ppapi/thunk/ppb_platform_verification_api.h"
-#include "ppapi/thunk/resource_creation_api.h"
-#include "ppapi/thunk/thunk.h"
 
 namespace ppapi {
 namespace thunk {
@@ -63,7 +61,7 @@ const PPB_PlatformVerification_Private_0_2
 
 }  // namespace
 
-const PPB_PlatformVerification_Private_0_2*
+PPAPI_THUNK_EXPORT const PPB_PlatformVerification_Private_0_2*
     GetPPB_PlatformVerification_Private_0_2_Thunk() {
   return &g_ppb_platformverification_private_thunk_0_2;
 }

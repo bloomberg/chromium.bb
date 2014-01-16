@@ -2,15 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_fullscreen.idl modified Wed May  1 09:47:29 2013.
+// From ppb_fullscreen.idl modified Tue Aug 20 08:13:36 2013.
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_fullscreen.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
-#include "ppapi/thunk/ppb_instance_api.h"
-#include "ppapi/thunk/resource_creation_api.h"
-#include "ppapi/thunk/thunk.h"
+#include "ppapi/thunk/ppapi_thunk_export.h"
 
 namespace ppapi {
 namespace thunk {
@@ -49,7 +47,7 @@ const PPB_Fullscreen_1_0 g_ppb_fullscreen_thunk_1_0 = {
 
 }  // namespace
 
-const PPB_Fullscreen_1_0* GetPPB_Fullscreen_1_0_Thunk() {
+PPAPI_THUNK_EXPORT const PPB_Fullscreen_1_0* GetPPB_Fullscreen_1_0_Thunk() {
   return &g_ppb_fullscreen_thunk_1_0;
 }
 

@@ -2,16 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_video_frame.idl modified Wed Jan  8 13:30:05 2014.
+// From ppb_video_frame.idl modified Mon Jan 13 12:02:23 2014.
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_video_frame.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
-#include "ppapi/thunk/ppb_instance_api.h"
+#include "ppapi/thunk/ppapi_thunk_export.h"
 #include "ppapi/thunk/ppb_video_frame_api.h"
-#include "ppapi/thunk/resource_creation_api.h"
-#include "ppapi/thunk/thunk.h"
 
 namespace ppapi {
 namespace thunk {
@@ -84,7 +82,7 @@ const PPB_VideoFrame_0_1 g_ppb_videoframe_thunk_0_1 = {
 
 }  // namespace
 
-const PPB_VideoFrame_0_1* GetPPB_VideoFrame_0_1_Thunk() {
+PPAPI_THUNK_EXPORT const PPB_VideoFrame_0_1* GetPPB_VideoFrame_0_1_Thunk() {
   return &g_ppb_videoframe_thunk_0_1;
 }
 
