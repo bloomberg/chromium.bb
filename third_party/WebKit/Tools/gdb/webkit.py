@@ -212,9 +212,9 @@ class WebCoreQualifiedNamePrinter(StringPrinter):
         self.length = 0
         if self.val['m_impl']:
             self.prefix_printer = WTFStringPrinter(
-                self.val['m_impl']['m_prefix']['m_string'])
+                self.val['m_impl']['m_ptr']['m_prefix']['m_string'])
             self.local_name_printer = WTFStringPrinter(
-                self.val['m_impl']['m_localName']['m_string'])
+                self.val['m_impl']['m_ptr']['m_localName']['m_string'])
             self.prefix_length = self.prefix_printer.get_length()
             if self.prefix_length > 0:
                 self.length = (self.prefix_length + 1 +
