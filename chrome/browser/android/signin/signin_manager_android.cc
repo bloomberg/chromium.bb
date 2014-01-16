@@ -210,6 +210,7 @@ void SigninManagerAndroid::OnBrowsingDataRemoverDone() {
 void SigninManagerAndroid::MergeSessionCompleted(
     const std::string& account_id,
     const GoogleServiceAuthError& error) {
+  merge_session_helper_->RemoveObserver(this);
   merge_session_helper_.reset();
 }
 
