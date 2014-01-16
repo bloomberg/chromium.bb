@@ -17,13 +17,6 @@ then
     base_dir=`cd "$base_dir" && pwd -P`
 fi
 
-# Don't try to use Cygwin tools.  Get real win32 tools using the batch script.
-OUTPUT="$(uname | grep 'CYGWIN')"
-CYGWIN=$?
-if [ $CYGWIN = 0 ]; then
-  exec cmd /c "$base_dir/bootstrap/win/win_tools.bat" force
-fi
-
 # Test if this script is running under a MSys install.  If it is, we will
 # hardcode the paths to SVN and Git where possible.
 OUTPUT="$(uname | grep 'MINGW')"

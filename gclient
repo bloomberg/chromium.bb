@@ -9,12 +9,4 @@ if [[ "#grep#fetch#cleanup#diff#" != *"#$1#"* ]]; then
   "$base_dir"/update_depot_tools
 fi
 
-PYTHON=python
-
-OUTPUT="$(uname | grep 'CYGWIN')"
-CYGWIN=$?
-if [ $CYGWIN = 0 ]; then
-  PYTHON="$base_dir/python.bat"
-fi
-
-PYTHONDONTWRITEBYTECODE=1 exec "$PYTHON" "$base_dir/gclient.py" "$@"
+PYTHONDONTWRITEBYTECODE=1 exec python "$base_dir/gclient.py" "$@"
