@@ -20,6 +20,7 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
@@ -2432,6 +2433,22 @@ void RenderWidgetHostImpl::DidReceiveRendererFrame() {
   view_->DidReceiveRendererFrame();
 }
 
+void RenderWidgetHostImpl::WindowSnapshotAsyncCallback(
+    int routing_id,
+    int snapshot_id,
+    gfx::Size snapshot_size,
+    scoped_refptr<base::RefCountedBytes> png_data) {
+  if (!png_data) {
+    std::vector<unsigned char> png_vector;
+    Send(new ViewMsg_WindowSnapshotCompleted(
+        routing_id, snapshot_id, gfx::Size(), png_vector));
+    return;
+  }
+
+  Send(new ViewMsg_WindowSnapshotCompleted(
+      routing_id, snapshot_id, snapshot_size, png_data->data()));
+}
+
 void RenderWidgetHostImpl::WindowSnapshotReachedScreen(int snapshot_id) {
   DCHECK(base::MessageLoop::current()->IsType(base::MessageLoop::TYPE_UI));
 
@@ -2440,21 +2457,32 @@ void RenderWidgetHostImpl::WindowSnapshotReachedScreen(int snapshot_id) {
   // This feature is behind the kEnableGpuBenchmarking command line switch
   // because it poses security concerns and should only be used for testing.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kEnableGpuBenchmarking)) {
-    gfx::Rect view_bounds = GetView()->GetViewBounds();
-    gfx::Rect snapshot_bounds(view_bounds.size());
-    gfx::Size snapshot_size = snapshot_bounds.size();
-
-    if (ui::GrabViewSnapshot(GetView()->GetNativeView(),
-                             &png, snapshot_bounds)) {
-      Send(new ViewMsg_WindowSnapshotCompleted(
-          GetRoutingID(), snapshot_id, snapshot_size, png));
-      return;
-    }
+  if (!command_line.HasSwitch(switches::kEnableGpuBenchmarking)) {
+    Send(new ViewMsg_WindowSnapshotCompleted(
+        GetRoutingID(), snapshot_id, gfx::Size(), png));
+    return;
   }
 
-  Send(new ViewMsg_WindowSnapshotCompleted(
-      GetRoutingID(), snapshot_id, gfx::Size(), png));
+  gfx::Rect view_bounds = GetView()->GetViewBounds();
+  gfx::Rect snapshot_bounds(view_bounds.size());
+  gfx::Size snapshot_size = snapshot_bounds.size();
+
+  if (ui::GrabViewSnapshot(
+          GetView()->GetNativeView(), &png, snapshot_bounds)) {
+    Send(new ViewMsg_WindowSnapshotCompleted(
+        GetRoutingID(), snapshot_id, snapshot_size, png));
+    return;
+  }
+
+  ui::GrabViewSnapshotAsync(
+      GetView()->GetNativeView(),
+      snapshot_bounds,
+      base::ThreadTaskRunnerHandle::Get(),
+      base::Bind(&RenderWidgetHostImpl::WindowSnapshotAsyncCallback,
+                 weak_factory_.GetWeakPtr(),
+                 GetRoutingID(),
+                 snapshot_id,
+                 snapshot_size));
 }
 
 // static

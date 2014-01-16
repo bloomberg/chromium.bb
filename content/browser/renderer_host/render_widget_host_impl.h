@@ -544,6 +544,12 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // Don't check whether we expected a resize ack during layout tests.
   static void DisableResizeAckCheckForTesting();
 
+  void WindowSnapshotAsyncCallback(
+      int routing_id,
+      int snapshot_id,
+      gfx::Size snapshot_size,
+      scoped_refptr<base::RefCountedBytes> png_data);
+
  protected:
   virtual RenderWidgetHostImpl* AsRenderWidgetHostImpl() OVERRIDE;
 

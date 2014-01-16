@@ -177,26 +177,8 @@ bool GrabViewSnapshot(gfx::NativeView view,
 bool GrabWindowSnapshot(gfx::NativeWindow window,
                         std::vector<unsigned char>* png_representation,
                         const gfx::Rect& snapshot_bounds) {
-  gfx::Rect read_pixels_bounds_in_pixel =
-      GetTargetBoundsFromWindow(window, snapshot_bounds);
-
-  ui::Compositor* compositor = window->layer()->GetCompositor();
-  SkBitmap bitmap;
-  if (!compositor->ReadPixels(&bitmap, read_pixels_bounds_in_pixel))
-    return false;
-
-  gfx::Display display =
-      gfx::Screen::GetScreenFor(window)->GetDisplayNearestWindow(window);
-  RotateBitmap(&bitmap, display.rotation());
-
-  unsigned char* pixels = reinterpret_cast<unsigned char*>(
-      bitmap.pixelRef()->pixels());
-  return gfx::PNGCodec::Encode(
-      pixels, gfx::PNGCodec::FORMAT_BGRA,
-      gfx::Size(bitmap.width(), bitmap.height()),
-      base::checked_numeric_cast<int>(bitmap.rowBytes()),
-      true, std::vector<gfx::PNGCodec::Comment>(),
-      png_representation);
+  // Not supported in Aura.  Callers should fall back to the async version.
+  return false;
 }
 
 void MakeAsyncCopyRequest(
@@ -260,5 +242,14 @@ void GrabWindowSnapshotAsync(
                                   rotation,
                                   background_task_runner));
 }
+
+void GrabViewSnapshotAsync(
+    gfx::NativeView view,
+    const gfx::Rect& source_rect,
+    scoped_refptr<base::TaskRunner> background_task_runner,
+    const GrabWindowSnapshotAsyncPNGCallback& callback) {
+  GrabWindowSnapshotAsync(view, source_rect, background_task_runner, callback);
+}
+
 
 }  // namespace ui

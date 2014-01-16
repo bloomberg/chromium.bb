@@ -10,6 +10,8 @@
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/task_runner.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
 
 namespace ui {
@@ -79,7 +81,15 @@ void GrabWindowSnapshotAndScaleAsync(
     const gfx::Size& target_size,
     scoped_refptr<base::TaskRunner> background_task_runner,
     GrabWindowSnapshotAsyncCallback callback) {
-  NOTIMPLEMENTED();
+  callback.Run(gfx::Image());
+}
+
+void GrabViewSnapshotAsync(
+    gfx::NativeView view,
+    const gfx::Rect& source_rect,
+    scoped_refptr<base::TaskRunner> background_task_runner,
+    const GrabWindowSnapshotAsyncPNGCallback& callback) {
+  callback.Run(scoped_refptr<base::RefCountedBytes>());
 }
 
 void GrabWindowSnapshotAsync(
@@ -87,7 +97,8 @@ void GrabWindowSnapshotAsync(
     const gfx::Rect& source_rect,
     scoped_refptr<base::TaskRunner> background_task_runner,
     const GrabWindowSnapshotAsyncPNGCallback& callback) {
-  NOTIMPLEMENTED();
+  return GrabViewSnapshotAsync([[window contentView] superview], source_rect,
+      background_task_runner, callback);
 }
 
 }  // namespace ui

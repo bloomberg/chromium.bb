@@ -28,8 +28,9 @@ namespace ui {
 // Grabs a snapshot of the window/view. No security checks are done. This is
 // intended to be used for debugging purposes where no BrowserProcess instance
 // is available (ie. tests). This function is synchronous, so it should NOT be
-// used in a result of user action. Use asynchronous GrabWindowSnapshotAsync()
-// instead on supported platforms.
+// used in a result of user action. Support for async vs synchronous
+// GrabWindowSnapshot differs by platform.  To be most general, use the
+// synchronous function first and if it returns false call the async one.
 SNAPSHOT_EXPORT bool GrabWindowSnapshot(
     gfx::NativeWindow window,
     std::vector<unsigned char>* png_representation,
@@ -55,6 +56,11 @@ typedef base::Callback<void(scoped_refptr<base::RefCountedBytes> png_data)>
     GrabWindowSnapshotAsyncPNGCallback;
 SNAPSHOT_EXPORT void GrabWindowSnapshotAsync(
     gfx::NativeWindow window,
+    const gfx::Rect& source_rect,
+    scoped_refptr<base::TaskRunner> background_task_runner,
+    const GrabWindowSnapshotAsyncPNGCallback& callback);
+SNAPSHOT_EXPORT void GrabViewSnapshotAsync(
+    gfx::NativeView view,
     const gfx::Rect& source_rect,
     scoped_refptr<base::TaskRunner> background_task_runner,
     const GrabWindowSnapshotAsyncPNGCallback& callback);

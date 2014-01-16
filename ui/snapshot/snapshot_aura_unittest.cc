@@ -60,7 +60,7 @@ size_t GetFailedPixelsCount(const gfx::Image& image) {
 
 }  // namespace
 
-class SnapshotAuraTest : public testing::TestWithParam<bool> {
+class SnapshotAuraTest : public testing::Test {
  public:
   SnapshotAuraTest() {}
   virtual ~SnapshotAuraTest() {}
@@ -99,16 +99,8 @@ class SnapshotAuraTest : public testing::TestWithParam<bool> {
         delegate_.get(), 0, window_bounds, root_window()));
   }
 
-  bool is_async_test() const { return GetParam(); }
-
   gfx::Image GrabSnapshotForTestWindow() {
     gfx::Rect source_rect(test_window_->bounds().size());
-    if (!is_async_test()) {
-      std::vector<unsigned char> png_representation;
-      ui::GrabWindowSnapshot(test_window(), &png_representation, source_rect);
-      return gfx::Image::CreateFrom1xPNGBytes(&(png_representation[0]),
-                                              png_representation.size());
-    }
 
     scoped_refptr<base::TestSimpleTaskRunner> task_runner(
         new base::TestSimpleTaskRunner());
@@ -167,9 +159,7 @@ class SnapshotAuraTest : public testing::TestWithParam<bool> {
   DISALLOW_COPY_AND_ASSIGN(SnapshotAuraTest);
 };
 
-INSTANTIATE_TEST_CASE_P(SnapshotAuraTest, SnapshotAuraTest, ::testing::Bool());
-
-TEST_P(SnapshotAuraTest, FullScreenWindow) {
+TEST_F(SnapshotAuraTest, FullScreenWindow) {
   SetupTestWindow(root_window()->bounds());
   WaitForDraw();
 
@@ -179,7 +169,7 @@ TEST_P(SnapshotAuraTest, FullScreenWindow) {
   EXPECT_EQ(0u, GetFailedPixelsCount(snapshot));
 }
 
-TEST_P(SnapshotAuraTest, PartialBounds) {
+TEST_F(SnapshotAuraTest, PartialBounds) {
   gfx::Rect test_bounds(100, 100, 300, 200);
   SetupTestWindow(test_bounds);
   WaitForDraw();
@@ -190,7 +180,7 @@ TEST_P(SnapshotAuraTest, PartialBounds) {
   EXPECT_EQ(0u, GetFailedPixelsCount(snapshot));
 }
 
-TEST_P(SnapshotAuraTest, Rotated) {
+TEST_F(SnapshotAuraTest, Rotated) {
   test_screen()->SetDisplayRotation(gfx::Display::ROTATE_90);
 
   gfx::Rect test_bounds(100, 100, 300, 200);
@@ -203,7 +193,7 @@ TEST_P(SnapshotAuraTest, Rotated) {
   EXPECT_EQ(0u, GetFailedPixelsCount(snapshot));
 }
 
-TEST_P(SnapshotAuraTest, UIScale) {
+TEST_F(SnapshotAuraTest, UIScale) {
   const float kUIScale = 1.25f;
   test_screen()->SetUIScale(kUIScale);
 
@@ -221,7 +211,7 @@ TEST_P(SnapshotAuraTest, UIScale) {
   EXPECT_EQ(0u, GetFailedPixelsCount(snapshot));
 }
 
-TEST_P(SnapshotAuraTest, DeviceScaleFactor) {
+TEST_F(SnapshotAuraTest, DeviceScaleFactor) {
   test_screen()->SetDeviceScaleFactor(2.0f);
 
   gfx::Rect test_bounds(100, 100, 150, 100);
@@ -238,7 +228,7 @@ TEST_P(SnapshotAuraTest, DeviceScaleFactor) {
   EXPECT_EQ(0u, GetFailedPixelsCount(snapshot));
 }
 
-TEST_P(SnapshotAuraTest, RotateAndUIScale) {
+TEST_F(SnapshotAuraTest, RotateAndUIScale) {
   const float kUIScale = 1.25f;
   test_screen()->SetUIScale(kUIScale);
   test_screen()->SetDisplayRotation(gfx::Display::ROTATE_90);
@@ -257,7 +247,7 @@ TEST_P(SnapshotAuraTest, RotateAndUIScale) {
   EXPECT_EQ(0u, GetFailedPixelsCount(snapshot));
 }
 
-TEST_P(SnapshotAuraTest, RotateAndUIScaleAndScaleFactor) {
+TEST_F(SnapshotAuraTest, RotateAndUIScaleAndScaleFactor) {
   test_screen()->SetDeviceScaleFactor(2.0f);
   const float kUIScale = 1.25f;
   test_screen()->SetUIScale(kUIScale);

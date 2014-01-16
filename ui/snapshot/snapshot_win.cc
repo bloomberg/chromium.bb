@@ -125,15 +125,24 @@ void GrapWindowSnapshotAsync(
     const gfx::Size& target_size,
     scoped_refptr<base::TaskRunner> background_task_runner,
     GrabWindowSnapshotAsyncCallback callback) {
-  NOTIMPLEMENTED();
+  callback.Run(gfx::Image());
 }
+
+void GrabViewSnapshotAsync(
+    gfx::NativeView view,
+    const gfx::Rect& source_rect,
+    scoped_refptr<base::TaskRunner> background_task_runner,
+    const GrabWindowSnapshotAsyncPNGCallback& callback) {
+  callback.Run(scoped_refptr<base::RefCountedBytes>());
+}
+
 
 void GrabWindowSnapshotAsync(
     gfx::NativeWindow window,
     const gfx::Rect& source_rect,
     scoped_refptr<base::TaskRunner> background_task_runner,
     const GrabWindowSnapshotAsyncPNGCallback& callback) {
-  NOTIMPLEMENTED();
+  callback.Run(scoped_refptr<base::RefCountedBytes>());
 }
 
 #endif  // !defined(USE_AURA)
