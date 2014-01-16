@@ -1528,7 +1528,10 @@ void HWNDMessageHandler::OnInitMenu(HMENU menu) {
   EnableMenuItemByCommand(menu, SC_MINIMIZE, delegate_->CanMaximize() &&
                           !is_minimized);
 
-  ::SetMenuDefaultItem(menu, is_maximized ? SC_RESTORE : SC_MAXIMIZE, FALSE);
+  if (is_maximized)
+    ::SetMenuDefaultItem(menu, SC_RESTORE, FALSE);
+  else if (delegate_->CanMaximize())
+    ::SetMenuDefaultItem(menu, SC_MAXIMIZE, FALSE);
 }
 
 void HWNDMessageHandler::OnInputLangChange(DWORD character_set,
