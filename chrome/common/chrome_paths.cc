@@ -75,9 +75,6 @@ const base::FilePath::CharType kEffectsPluginFileName[] =
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 
-const base::FilePath::CharType kO3DPluginFileName[] =
-    FILE_PATH_LITERAL("pepper/libppo3dautoplugin.so");
-
 const base::FilePath::CharType kO1DPluginFileName[] =
     FILE_PATH_LITERAL("pepper/libppo1d.so");
 
@@ -334,11 +331,6 @@ bool PathProvider(int key, base::FilePath* result) {
       cur = cur.Append(FILE_PATH_LITERAL("pnacl"));
       break;
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-    case chrome::FILE_O3D_PLUGIN:
-      if (!PathService::Get(base::DIR_MODULE, &cur))
-        return false;
-      cur = cur.Append(kO3DPluginFileName);
-      break;
     case chrome::FILE_O1D_PLUGIN:
       if (!PathService::Get(base::DIR_MODULE, &cur))
         return false;

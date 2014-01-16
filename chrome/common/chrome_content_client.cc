@@ -79,13 +79,6 @@ const char kPnaclPluginMimeType[] = "application/x-pnacl";
 const char kPnaclPluginExtension[] = "";
 const char kPnaclPluginDescription[] = "Portable Native Client Executable";
 
-const char kO3DPluginName[] = "Google Talk Plugin Video Accelerator";
-const char kO3DPluginMimeType[] ="application/vnd.o3d.auto";
-const char kO3DPluginExtension[] = "";
-const char kO3DPluginDescription[] = "O3D MIME";
-const uint32 kO3DPluginPermissions = ppapi::PERMISSION_PRIVATE |
-                                     ppapi::PERMISSION_DEV;
-
 const char kO1DPluginName[] = "Google Talk Plugin Video Renderer";
 const char kO1DPluginMimeType[] ="application/o1d";
 const char kO1DPluginExtension[] = "";
@@ -204,27 +197,6 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
       plugins->push_back(nacl);
 
       skip_nacl_file_check = true;
-    }
-  }
-
-  // TODO(jhorwich|noahric): Remove o3d ppapi code once o3d is replaced
-  // entirely with o1d.
-  static bool skip_o3d_file_check = false;
-  if (PathService::Get(chrome::FILE_O3D_PLUGIN, &path)) {
-    if (skip_o3d_file_check || base::PathExists(path)) {
-      content::PepperPluginInfo o3d;
-      o3d.path = path;
-      o3d.name = kO3DPluginName;
-      o3d.is_out_of_process = true;
-      o3d.is_sandboxed = false;
-      o3d.permissions = kO3DPluginPermissions;
-      content::WebPluginMimeType o3d_mime_type(kO3DPluginMimeType,
-                                               kO3DPluginExtension,
-                                               kO3DPluginDescription);
-      o3d.mime_types.push_back(o3d_mime_type);
-      plugins->push_back(o3d);
-
-      skip_o3d_file_check = true;
     }
   }
 
