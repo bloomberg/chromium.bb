@@ -765,17 +765,19 @@ class WebContentsViewAura::WindowObserver
   // going to be deprecated in a year, this is ok for now. The test for this is
   // PrintPreviewTest.WindowedNPAPIPluginHidden.
   virtual void OnWindowAdded(aura::Window* new_window) OVERRIDE {
-    if (new_window == view_->window_)
-      return;
+    if (new_window != view_->window_) {
+      // Skip the case when the parent moves to the root window.
+      if (new_window != parent_) {
+        // Observe sibling windows of the WebContents, or children of the root
+        // window.
+        if (new_window->parent() == parent_ ||
+            new_window->parent() == view_->window_->GetRootWindow()) {
+          new_window->AddObserver(this);
+        }
+      }
+    }
 
-    if (new_window == parent_)
-      return;  // This happens if the parent moves to the root window.
-
-    // Observe sibling windows of the WebContents, or children of the root
-    // window.
-    if (new_window->parent() == parent_ ||
-        new_window->parent() == view_->window_->GetRootWindow()) {
-      new_window->AddObserver(this);
+    if (new_window->parent() == parent_) {
       UpdateConstrainedWindows(NULL);
     }
   }
