@@ -63,7 +63,7 @@
 #include "ui/base/clipboard/clipboard.h"
 
 #if defined(USE_AURA)
-#include "content/browser/aura/image_transport_factory.h"
+#include "content/browser/compositor/image_transport_factory.h"
 #endif
 
 #if defined(OS_ANDROID)

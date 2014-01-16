@@ -64,7 +64,8 @@
     'aura_compositor': {
       'filepath':
         'ui/compositor/' \
-       	'|content/browser/aura/' \
+        '|content/browser/compositor/' \
+        '|content/browser/renderer_host/compositor_resize_lock_aura' \
         '|content/browser/renderer_host/render_widget_host_view_aura' \
         '|content/browser/renderer_host/render_widget_host_view_browsertest' \
         '|content/common/gpu/client/' \
