@@ -5,7 +5,7 @@
 #include "mojo/public/tests/test_support.h"
 
 #include "base/test/perf_log.h"
-#include "base/time/time.h"
+#include "mojo/public/system/core_cpp.h"
 
 namespace mojo {
 namespace test {
@@ -62,21 +62,21 @@ void IterateAndReportPerf(const char* test_name,
                           void* closure) {
   // TODO(vtl): These should be specifiable using command-line flags.
   static const size_t kGranularity = 100;
-  static const double kPerftestTimeSeconds = 3.0;
+  static const MojoTimeTicks kPerftestTimeMicroseconds = 3 * 1000000;
 
-  const base::TimeTicks start_time = base::TimeTicks::HighResNow();
-  base::TimeTicks end_time;
+  const MojoTimeTicks start_time = GetTimeTicksNow();
+  MojoTimeTicks end_time;
   size_t iterations = 0;
   do {
     for (size_t i = 0; i < kGranularity; i++)
       (*single_iteration)(closure);
     iterations += kGranularity;
 
-    end_time = base::TimeTicks::HighResNow();
-  } while ((end_time - start_time).InSecondsF() < kPerftestTimeSeconds);
+    end_time = GetTimeTicksNow();
+  } while (end_time - start_time < kPerftestTimeMicroseconds);
 
   base::LogPerfResult(test_name,
-                      iterations / (end_time - start_time).InSecondsF(),
+                      1000000.0 * iterations / (end_time - start_time),
                       "iterations/second");
 }
 
