@@ -122,9 +122,13 @@ void ManagedUserImportHandler::SendExistingManagedUsers(
   DCHECK(dict);
   const ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
+
+  // Collect the ids of local supervised user profiles.
   std::set<std::string> managed_user_ids;
-  for (size_t i = 0; i < cache.GetNumberOfProfiles(); ++i)
-    managed_user_ids.insert(cache.GetManagedUserIdOfProfileAtIndex(i));
+  for (size_t i = 0; i < cache.GetNumberOfProfiles(); ++i) {
+    if (cache.ProfileIsManagedAtIndex(i))
+      managed_user_ids.insert(cache.GetManagedUserIdOfProfileAtIndex(i));
+  }
 
   base::ListValue managed_users;
   for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {

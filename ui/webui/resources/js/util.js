@@ -401,11 +401,11 @@ function HTMLEscape(original) {
  * @param {string} original The original string.
  * @param {number} maxLength The maximum length allowed for the string.
  * @return {string} The original string if its length does not exceed
- *     |maxLength|. Otherwise the first |maxLength| - 3 characters with '...'
+ *     |maxLength|. Otherwise the first |maxLength| - 1 characters with '...'
  *     appended.
  */
 function elide(original, maxLength) {
   if (original.length <= maxLength)
     return original;
-  return original.substring(0, maxLength - 3) + '...';
+  return original.substring(0, maxLength - 1) + '\u2026';
 }

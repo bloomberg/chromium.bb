@@ -140,19 +140,19 @@ TEST_F('ManageProfileUITest', 'CreateManagedUserText', function() {
   assertTrue($('create-profile-managed').disabled);
 });
 
+function ManageProfileUITestAsync() {}
+
+ManageProfileUITestAsync.prototype = {
+  __proto__: ManageProfileUITest.prototype,
+
+  isAsync: true,
+};
+
 // The import link should show up if the user tries to create a profile with the
 // same name as an existing managed user profile.
-TEST_F('ManageProfileUITest', 'CreateExistingManagedUser', function() {
-  ManageProfileOverlay.getInstance().initializePage();
-  var custodianEmail = 'chrome.playpen.test@gmail.com';
-  CreateProfileOverlay.updateSignedInStatus(custodianEmail);
-  assertEquals(custodianEmail,
-               CreateProfileOverlay.getInstance().signedInEmail_);
-  this.setProfileManaged_(false, 'create');
-
+TEST_F('ManageProfileUITestAsync', 'CreateExistingManagedUser', function() {
   // Initialize the list of existing managed users.
-  var managedUserListData = options.ManagedUserListData.getInstance();
-  managedUserListData.managedUsers_ = [
+  var managedUsers = [
     {
       id: 'managedUser1',
       name: 'Rosalie',
@@ -173,10 +173,29 @@ TEST_F('ManageProfileUITest', 'CreateExistingManagedUser', function() {
       iconURL: 'chrome://path/to/icon/image',
       onCurrentDevice: true,
       needAvatar: false
+    },
+    {
+      id: 'managedUser4',
+      name: 'SameName',
+      iconURL: 'chrome://path/to/icon/image',
+      onCurrentDevice: false,
+      needAvatar: false
     }];
-  // Also add the name 'Test' to |profileNames_| to simulate that the profile
-  // exists on the device.
+  var promise = Promise.resolve(managedUsers);
+  options.ManagedUserListData.getInstance().promise_ = promise;
+
+  // Initialize the ManageProfileOverlay.
+  ManageProfileOverlay.getInstance().initializePage();
+  var custodianEmail = 'chrome.playpen.test@gmail.com';
+  CreateProfileOverlay.updateSignedInStatus(custodianEmail);
+  assertEquals(custodianEmail,
+               CreateProfileOverlay.getInstance().signedInEmail_);
+  this.setProfileManaged_(false, 'create');
+
+  // Also add the names 'Test' and 'Test2' to |profileNames_| to simulate that
+  // profiles with those names exist on the device.
   ManageProfileOverlay.getInstance().profileNames_.Test = true;
+  ManageProfileOverlay.getInstance().profileNames_.SameName = true;
 
   // Initially, the ok button should be enabled and the import link should not
   // exist.
@@ -189,24 +208,45 @@ TEST_F('ManageProfileUITest', 'CreateExistingManagedUser', function() {
   // A profile which already has an avatar.
   nameField.value = 'Rosalie';
   ManageProfileOverlay.getInstance().onNameChanged_('create');
-  assertTrue($('create-profile-ok').disabled);
-  assertFalse($('supervised-user-import') == null);
-  // A profile which doesn't have an avatar yet.
-  nameField.value = 'Fritz';
-  ManageProfileOverlay.getInstance().onNameChanged_('create');
-  assertTrue($('create-profile-ok').disabled);
-  assertFalse($('supervised-user-import') == null);
-  // A profile which already exists on the device.
-  nameField.value = 'Test';
-  ManageProfileOverlay.getInstance().onNameChanged_('create');
-  assertTrue($('create-profile-ok').disabled);
-  assertTrue($('supervised-user-import') == null);
+  // Need to wait until the promise resolves.
+  promise.then(function() {
+    assertTrue($('create-profile-ok').disabled);
+    assertFalse($('supervised-user-import') == null);
 
-  // A profile which does not exist yet.
-  nameField.value = 'NewProfileName';
-  ManageProfileOverlay.getInstance().onNameChanged_('create');
-  assertFalse($('create-profile-ok').disabled);
-  assertTrue($('supervised-user-import') == null);
+    // A profile which doesn't have an avatar yet.
+    nameField.value = 'Fritz';
+    ManageProfileOverlay.getInstance().onNameChanged_('create');
+    return options.ManagedUserListData.getInstance().promise_;
+  }).then(function() {
+    assertTrue($('create-profile-ok').disabled);
+    assertFalse($('supervised-user-import') == null);
+
+    // A profile which already exists on the device.
+    nameField.value = 'Test';
+    ManageProfileOverlay.getInstance().onNameChanged_('create');
+    return options.ManagedUserListData.getInstance().promise_;
+  }).then(function() {
+    assertTrue($('create-profile-ok').disabled);
+    assertTrue($('supervised-user-import') == null);
+
+    // A profile which does not exist on the device, but there is a profile with
+    // the same name already on the device.
+    nameField.value = 'SameName';
+    ManageProfileOverlay.getInstance().onNameChanged_('create');
+    return options.ManagedUserListData.getInstance().promise_;
+  }).then(function() {
+    assertTrue($('create-profile-ok').disabled);
+    assertFalse($('supervised-user-import') == null);
+
+    // A profile which does not exist yet.
+    nameField.value = 'NewProfileName';
+    ManageProfileOverlay.getInstance().onNameChanged_('create');
+    return options.ManagedUserListData.getInstance().promise_;
+  }).then(function() {
+    assertFalse($('create-profile-ok').disabled);
+    assertTrue($('supervised-user-import') == null);
+    testDone();
+  });
 });
 
 // Managed users should not be able to edit their profile names, and the initial
@@ -325,17 +365,23 @@ TEST_F('ManageProfileUITest', 'CreateConfirmationText', function () {
               // independent of whether they were escaped in the setter.
               'It\'s "&lt;HTML&gt; injection" &amp; more!');
 
-  // Test elision. MAX_LENGTH = 50, minus 3 for the ellipsis.
-  var name47Characters = '01234567890123456789012345678901234567890123456';
-  var name60Characters = name47Characters + '0123456789012';
-  checkDialog(name60Characters, name47Characters + '...');
+  // Test elision. MAX_LENGTH = 50, minus 1 for the ellipsis.
+  var name49Characters = '0123456789012345678901234567890123456789012345678';
+  var name50Characters = name49Characters + '9';
+  var name51Characters = name50Characters + '0';
+  var name60Characters = name51Characters + '123456789';
+  checkDialog(name49Characters, name49Characters);
+  checkDialog(name50Characters, name50Characters);
+  checkDialog(name51Characters, name49Characters + '\u2026');
+  checkDialog(name60Characters, name49Characters + '\u2026');
 
   // Test both elision and HTML escaping. The allowed string length is the
   // visible length, not the length including the entity names.
-  name47Characters = name47Characters.replace('0', '&').replace('1', '>');
+  name49Characters = name49Characters.replace('0', '&').replace('1', '>');
   name60Characters = name60Characters.replace('0', '&').replace('1', '>');
-  var escaped = name47Characters.replace('&', '&amp;').replace('>', '&gt;');
-  checkDialog(name60Characters, name47Characters + '...', escaped + '...');
+  var escaped = name49Characters.replace('&', '&amp;').replace('>', '&gt;');
+  checkDialog(
+      name60Characters, name49Characters + '\u2026', escaped + '\u2026');
 });
 
 // An additional warning should be shown when deleting a managed user.
@@ -469,9 +515,8 @@ TEST_F('ManageProfileUITest', 'ManagedDelete', function() {
 
   this.setProfileManaged_(false, 'manage');
   var messages = clickAndListen();
-  assertEquals(2, messages.length);
+  assertEquals(1, messages.length);
   assertEquals('deleteProfile', messages[0]);
-  assertEquals('requestManagedUserImportUpdate', messages[1]);
   assertEquals('settings', OptionsPage.getTopmostVisiblePage().name);
 
   ManageProfileOverlay.showDeleteDialog(this.testProfileInfo_(false));

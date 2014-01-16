@@ -67,7 +67,7 @@ cr.define('options', function() {
         if (BrowserOptions.getCurrentProfile().isManaged)
           return;
         chrome.send('deleteProfile', [self.profileInfo_.filePath]);
-        options.ManagedUserListData.reloadExistingManagedUsers();
+        options.ManagedUserListData.resetPromise();
       };
       $('add-shortcut-button').onclick = function(event) {
         chrome.send('addProfileShortcut', [self.profileInfo_.filePath]);
@@ -276,6 +276,7 @@ cr.define('options', function() {
      * @private
      */
     hideErrorBubble_: function(mode) {
+      $(mode + '-profile-error-bubble').innerHTML = '';
       $(mode + '-profile-error-bubble').hidden = true;
       $(mode + '-profile-ok').disabled = false;
     },
@@ -294,31 +295,15 @@ cr.define('options', function() {
       // existing supervised user.
       if (newName == oldName && mode == 'manage') {
         this.hideErrorBubble_(mode);
-      } else if (this.profileNames_[newName] != undefined) {
-        var errorHtml =
-            loadTimeData.getString('manageProfilesDuplicateNameError');
-        this.showErrorBubble_(errorHtml, mode, true);
       } else if (mode == 'create' &&
-                 loadTimeData.getBoolean('allowCreateExistingManagedUsers')) {
-        this.checkIfSupervisedUserExists_();
+                 loadTimeData.getBoolean('allowCreateExistingManagedUsers') &&
+                 $('create-profile-managed').checked) {
+        options.ManagedUserListData.requestExistingManagedUsers().then(
+            this.receiveExistingManagedUsers_.bind(this),
+            this.onSigninError_.bind(this));
       } else {
         this.updateOkButton_(mode);
       }
-    },
-
-    /**
-     * Checks if a supervised user with the currently entered name already
-     * exists.
-     * @private
-     */
-    checkIfSupervisedUserExists_: function() {
-      if (!$('create-profile-managed').checked) {
-        this.updateOkButton_('create');
-        return;
-      }
-      options.ManagedUserListData.requestExistingManagedUsers(
-          this.receiveExistingManagedUsers_.bind(this),
-          this.onSigninError_.bind(this));
     },
 
     /**
@@ -376,20 +361,27 @@ cr.define('options', function() {
      */
     onSigninError_: function() {
       this.updateImportExistingManagedUserLink_(false);
-      this.updateManagedUsersAllowed_(false);
     },
 
     /**
-     * Called if the name seems to be unused so far.
+     * Called to update the state of the ok button depending if the name is
+     * already used or not.
      * @param {string} mode A label that specifies the type of dialog box which
      *     is currently being viewed (i.e. 'create' or 'manage').
      * @private
      */
     updateOkButton_: function(mode) {
-      this.hideErrorBubble_(mode);
+      var newName = $(mode + '-profile-name').value;
+      if (this.profileNames_[newName] != undefined) {
+        var errorHtml =
+            loadTimeData.getString('manageProfilesDuplicateNameError');
+        this.showErrorBubble_(errorHtml, mode, true);
+      } else {
+        this.hideErrorBubble_(mode);
 
-      var nameIsValid = $(mode + '-profile-name').validity.valid;
-      $(mode + '-profile-ok').disabled = !nameIsValid;
+        var nameIsValid = $(mode + '-profile-name').validity.valid;
+        $(mode + '-profile-ok').disabled = !nameIsValid;
+      }
     },
 
     /**
@@ -403,6 +395,8 @@ cr.define('options', function() {
 
       chrome.send('setProfileIconAndName',
                   [this.profileInfo_.filePath, iconURL, name]);
+      if (name != this.profileInfo_.name)
+        options.ManagedUserListData.resetPromise();
     },
 
     /**
@@ -670,7 +664,7 @@ cr.define('options', function() {
       this.updateCreateInProgress_(false);
       OptionsPage.closeOverlay();
       if (profileInfo.isManaged) {
-        options.ManagedUserListData.reloadExistingManagedUsers();
+        options.ManagedUserListData.resetPromise();
         profileInfo.custodianEmail = this.signedInEmail_;
         ManagedUserCreateConfirmOverlay.setProfileInfo(profileInfo);
         OptionsPage.showPageByName('managedUserCreateConfirm', false);

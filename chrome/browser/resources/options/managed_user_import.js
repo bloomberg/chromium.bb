@@ -75,7 +75,7 @@ cr.define('options', function() {
      * @override
      */
     didShowPage: function() {
-      options.ManagedUserListData.requestExistingManagedUsers(
+      options.ManagedUserListData.requestExistingManagedUsers().then(
           this.receiveExistingManagedUsers_, this.onSigninError_.bind(this));
 
       this.updateImportInProgress_(false);
@@ -173,6 +173,8 @@ cr.define('options', function() {
      */
     receiveExistingManagedUsers_: function(managedUsers) {
       managedUsers.sort(function(a, b) {
+        if (a.onCurrentDevice != b.onCurrentDevice)
+          return a.onCurrentDevice ? 1 : -1;
         return a.name.localeCompare(b.name);
       });
 

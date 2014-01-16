@@ -6,34 +6,18 @@ cr.define('options', function() {
   /**
    * ManagedUserListData class.
    * Handles requests for retrieving a list of existing managed users which are
-   * supervised by the current profile. This list is cached in order to make it
-   * possible to serve future requests immediately. The first request will be
-   * handled asynchronously.
+   * supervised by the current profile. For each request a promise is returned,
+   * which is cached in order to reuse the retrieved managed users for future
+   * requests. The first request will be handled asynchronously.
    * @constructor
    * @class
    */
-  function ManagedUserListData() {
-    this.callbacks_ = [];
-    this.errbacks_ = [];
-    this.requestInProgress_ = false;
-    this.managedUsers_ = null;
-  };
+  function ManagedUserListData() {};
 
   cr.addSingletonGetter(ManagedUserListData);
 
   /**
-   * Resets to the initial state of no pending requests.
-   * @private
-   */
-  ManagedUserListData.prototype.reset_ = function() {
-    this.callbacks_ = [];
-    this.errbacks_ = [];
-    this.requestInProgress_ = false;
-  }
-
-  /**
-   * Receives a list of managed users and passes the list to each of the
-   * callbacks.
+   * Receives a list of managed users and resolves the promise.
    * @param {Array.<Object>} managedUsers An array of managed user objects.
    *     Each object is of the form:
    *       managedUser = {
@@ -43,70 +27,77 @@ cr.define('options', function() {
    *         onCurrentDevice: true or false,
    *         needAvatar: true or false
    *       }
+   * @private
    */
-  ManagedUserListData.receiveExistingManagedUsers = function(managedUsers) {
-    var instance = ManagedUserListData.getInstance();
-    var i;
-    for (i = 0; i < instance.callbacks_.length; i++) {
-      instance.callbacks_[i](managedUsers);
-    }
-    instance.managedUsers_ = managedUsers;
-    instance.reset_();
+  ManagedUserListData.prototype.receiveExistingManagedUsers_ = function(
+      managedUsers) {
+    assert(this.promise_);
+    this.resolve_(managedUsers);
   };
 
   /**
    * Called when there is a signin error when retrieving the list of managed
-   * users. Calls the error callbacks which will display an appropriate error
-   * message to the user.
+   * users. Rejects the promise and resets the cached promise to null.
+   * @private
    */
-  ManagedUserListData.onSigninError = function() {
-    var instance = ManagedUserListData.getInstance();
-    var i;
-    for (i = 0; i < instance.errbacks_.length; i++) {
-      instance.errbacks_[i]();
-    }
-    // Reset the list of managed users in order to avoid showing stale data.
-    instance.managedUsers_ = null;
-    instance.reset_();
+  ManagedUserListData.prototype.onSigninError_ = function() {
+    assert(this.promise_);
+    this.reject_();
+    this.resetPromise_();
   };
 
   /**
-   * Handles the request for the list of existing managed users. If the data is
-   * already available, it will call |callback| immediately. Otherwise, it
-   * retrieves the list of existing managed users which is then processed in
-   * receiveExistingManagedUsers().
-   * @param {Object} callback The callback function which is called on success.
-   * @param {Object} errback the callback function which is called on error.
+   * Handles the request for the list of existing managed users by returning a
+   * promise for the requested data. If there is no cached promise yet, a new
+   * one will be created.
+   * @return {Promise} The promise containing the list of managed users.
+   * @private
    */
-  ManagedUserListData.requestExistingManagedUsers = function(callback,
-                                                             errback) {
-    var instance = ManagedUserListData.getInstance();
-    instance.callbacks_.push(callback);
-    instance.errbacks_.push(errback);
-    if (!instance.requestInProgress_) {
-      if (instance.managedUsers_ != null) {
-        ManagedUserListData.receiveExistingManagedUsers(instance.managedUsers_);
-        return;
-      }
-      instance.requestInProgress_ = true;
-      chrome.send('requestManagedUserImportUpdate');
-    }
-  };
-
-  /**
-   * Reload the list of existing managed users. Should be called when a new
-   * supervised user profile was created or a supervised user profile was
-   * deleted.
-   */
-  ManagedUserListData.reloadExistingManagedUsers = function() {
-    var instance = ManagedUserListData.getInstance();
-    if (instance.requestInProgress_)
-      return;
-
-    instance.managedUsers_ = null;
-    instance.requestInProgress_ = true;
+  ManagedUserListData.prototype.requestExistingManagedUsers_ = function() {
+    if (this.promise_)
+      return this.promise_;
+    this.promise_ = this.createPromise_();
     chrome.send('requestManagedUserImportUpdate');
+    return this.promise_;
   };
+
+  /**
+   * Creates the promise containing the list of managed users. The promise is
+   * resolved in receiveExistingManagedUsers_() or rejected in
+   * onSigninError_(). The promise is cached, so that for future requests it can
+   * be resolved immediately.
+   * @return {Promise} The promise containing the list of managed users.
+   * @private
+   */
+  ManagedUserListData.prototype.createPromise_ = function() {
+    var self = this;
+    return new Promise(function(resolve, reject) {
+      self.resolve_ = resolve;
+      self.reject_ = reject;
+    });
+  };
+
+  /**
+   * Resets the promise to null in order to avoid stale data. For the next
+   * request, a new promise will be created.
+   * @private
+   */
+  ManagedUserListData.prototype.resetPromise_ = function() {
+    this.promise_ = null;
+  };
+
+  // Forward public APIs to private implementations.
+  [
+    'onSigninError',
+    'receiveExistingManagedUsers',
+    'requestExistingManagedUsers',
+    'resetPromise',
+  ].forEach(function(name) {
+    ManagedUserListData[name] = function() {
+      var instance = ManagedUserListData.getInstance();
+      return instance[name + '_'].apply(instance, arguments);
+    };
+  });
 
   // Export
   return {
