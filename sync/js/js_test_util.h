@@ -35,10 +35,6 @@ void PrintTo(const JsEventDetails& details, ::std::ostream* os);
 //   EXPECT_CALL(mock, HandleJsReply("foo", HasArgs(expected_args)));
 ::testing::Matcher<const JsArgList&> HasArgs(const JsArgList& expected_args);
 
-// Like HasArgs() but takes a ListValue instead.
-::testing::Matcher<const JsArgList&> HasArgsAsList(
-    const base::ListValue& expected_args);
-
 // A gmock matcher for JsEventDetails.  Use like:
 //
 //   EXPECT_CALL(mock, HandleJsEvent("foo", HasArgs(expected_details)));

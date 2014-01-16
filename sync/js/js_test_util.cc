@@ -87,12 +87,6 @@ class HasDetailsMatcher
   return ::testing::MakeMatcher(new HasArgsMatcher(expected_args));
 }
 
-::testing::Matcher<const JsArgList&> HasArgsAsList(
-    const base::ListValue& expected_args) {
-  scoped_ptr<base::ListValue> expected_args_copy(expected_args.DeepCopy());
-  return HasArgs(JsArgList(expected_args_copy.get()));
-}
-
 ::testing::Matcher<const JsEventDetails&> HasDetails(
     const JsEventDetails& expected_details) {
   return ::testing::MakeMatcher(new HasDetailsMatcher(expected_details));

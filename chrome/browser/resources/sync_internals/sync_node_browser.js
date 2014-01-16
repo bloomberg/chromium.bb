@@ -6,52 +6,83 @@
 // require: cr/ui.js
 // require: cr/ui/tree.js
 
-cr.define('chrome.sync', function() {
+(function() {
   /**
-   * Gets all children of the given node and passes it to the given
-   * callback.
-   * @param {string} id The id whose children we want.
-   * @param {function(Array.<!Object>)} callback The callback to call
-   *     with the list of children summaries.
+   * A helper function to determine if a node is the root of its type.
+   *
+   * @param {!Object} node The node to check.
    */
-  function getSyncNodeChildrenSummaries(id, callback) {
-    var timer = chrome.sync.makeTimer();
-    chrome.sync.getChildNodeIds(id, function(childNodeIds) {
-      console.debug('getChildNodeIds took ' +
-                    timer.elapsedSeconds + 's to retrieve ' +
-                    childNodeIds.length + ' ids');
-      timer = chrome.sync.makeTimer();
-      chrome.sync.getNodeSummariesById(
-          childNodeIds, function(childrenSummaries) {
-        console.debug('getNodeSummariesById took ' +
-                      timer.elapsedSeconds + 's to retrieve summaries for ' +
-                      childrenSummaries.length + ' nodes');
-        callback(childrenSummaries);
-      });
-    });
+  var isTypeRootNode = function(node) {
+    return node.PARENT_ID == 'r' && node.UNIQUE_SERVER_TAG != '';
+  }
+
+  /**
+   * A helper function to determine if a node is a child of the given parent.
+   *
+   * @param {string} parentId The ID of the parent.
+   * @param {!Object} node The node to check.
+   */
+  var isChildOf = function(parentId, node) {
+    return node.PARENT_ID == parentId;
+  }
+
+  /**
+   * A helper function to sort sync nodes.
+   *
+   * Sorts by position index if possible, falls back to sorting by name, and
+   * finally sorting by METAHANDLE.
+   *
+   * If this proves to be slow and expensive, we should experiment with moving
+   * this functionality to C++ instead.
+   */
+  var nodeComparator = function(nodeA, nodeB) {
+    if (nodeA.hasOwnProperty('positionIndex') &&
+        nodeB.hasOwnProperty('positionIndex')) {
+      return nodeA.positionIndex - nodeB.positionIndex;
+    } else if (nodeA.NON_UNIQUE_NAME != nodeB.NON_UNIQUE_NAME) {
+      return nodeA.NON_UNIQUE_NAME.localeCompare(nodeB.NON_UNIQUE_NAME);
+    } else {
+      return nodeA.METAHANDLE - nodeB.METAHANDLE;
+    }
+  }
+
+  /**
+   * Updates the node detail view with the details for the given node.
+   * @param {!Object} node The struct representing the node we want to display.
+   */
+  function updateNodeDetailView(node) {
+    var nodeDetailsView = $('node-details');
+    nodeDetailsView.hidden = false;
+    jstProcess(new JsEvalContext(node.entry_), nodeDetailsView);
+  }
+
+  /**
+   * Updates the 'Last refresh time' display.
+   * @param {string} The text to display.
+   */
+  function setLastRefreshTime(str) {
+    $('node-browser-refresh-time').textContent = str;
   }
 
   /**
    * Creates a new sync node tree item.
-   * @param {{id: string, title: string, isFolder: boolean}}
-   *     nodeSummary The nodeSummary object for the node (as returned
-   *     by chrome.sync.getNodeSummariesById()).
+   *
    * @constructor
+   * @param {!Object} node The nodeDetails object for the node as returned by
+   *     chrome.sync.getAllNodes().
    * @extends {cr.ui.TreeItem}
    */
-  var SyncNodeTreeItem = function(nodeSummary) {
-    var treeItem = new cr.ui.TreeItem({
-      id_: nodeSummary.id
-    });
+  var SyncNodeTreeItem = function(node) {
+    var treeItem = new cr.ui.TreeItem();
     treeItem.__proto__ = SyncNodeTreeItem.prototype;
 
-    treeItem.label = nodeSummary.title;
-    if (nodeSummary.isFolder) {
+    treeItem.entry_ = node;
+    treeItem.label = node.NON_UNIQUE_NAME;
+    if (node.IS_DIR) {
       treeItem.mayHaveChildren_ = true;
 
-      // Load children asynchronously on expand.
-      // TODO(akalin): Add a throbber while loading?
-      treeItem.triggeredLoad_ = false;
+      // Load children on expand.
+      treeItem.expanded_ = false;
       treeItem.addEventListener('expand',
                                 treeItem.handleExpand_.bind(treeItem));
     } else {
@@ -64,55 +95,31 @@ cr.define('chrome.sync', function() {
     __proto__: cr.ui.TreeItem.prototype,
 
     /**
-     * Retrieves the details for this node.
-     * @param {function(Object)} callback The callback that will be
-     *    called with the node details, or null if it could not be
-     *    retrieved.
+     * Finds the children of this node and appends them to the tree.
      */
-    getDetails: function(callback) {
-      chrome.sync.getNodeDetailsById([this.id_], function(nodeDetails) {
-        callback(nodeDetails[0] || null);
+    handleExpand_: function(event) {
+      var treeItem = this;
+
+      if (treeItem.expanded_) {
+        return;
+      }
+      treeItem.expanded_ = true;
+
+      var children = treeItem.tree.allNodes.filter(
+          isChildOf.bind(undefined, treeItem.entry_.ID));
+      children.sort(nodeComparator);
+
+      children.forEach(function(node) {
+        treeItem.add(new SyncNodeTreeItem(node));
       });
     },
-
-    handleExpand_: function(event) {
-      if (!this.triggeredLoad_) {
-        getSyncNodeChildrenSummaries(this.id_, this.addChildNodes_.bind(this));
-        this.triggeredLoad_ = true;
-      }
-    },
-
-    /**
-     * Adds children from the list of children summaries.
-     * @param {Array.<{id: string, title: string, isFolder: boolean}>}
-     *    childrenSummaries The list of children summaries with which
-     *    to create the child nodes.
-     */
-    addChildNodes_: function(childrenSummaries) {
-      var timer = chrome.sync.makeTimer();
-      for (var i = 0; i < childrenSummaries.length; ++i) {
-        var childTreeItem = new SyncNodeTreeItem(childrenSummaries[i]);
-        this.add(childTreeItem);
-      }
-      console.debug('adding ' + childrenSummaries.length +
-                    ' children took ' + timer.elapsedSeconds + 's');
-    }
   };
 
   /**
-   * Updates the node detail view with the details for the given node.
-   * @param {!Object} nodeDetails The details for the node we want
-   *     to display.
-   */
-  function updateNodeDetailView(nodeDetails) {
-    var nodeBrowser = document.getElementById('node-browser');
-    // TODO(akalin): Write a nicer detail viewer.
-    nodeDetails.entry = JSON.stringify(nodeDetails.entry, null, 2);
-    jstProcess(new JsEvalContext(nodeDetails), nodeBrowser);
-  }
-
-  /**
-   * Creates a new sync node tree.
+   * Creates a new sync node tree.  Technically, it's a forest since it each
+   * type has its own root node for its own tree, but it still looks and acts
+   * mostly like a tree.
+   *
    * @param {Object=} opt_propertyBag Optional properties.
    * @constructor
    * @extends {cr.ui.Tree}
@@ -125,57 +132,78 @@ cr.define('chrome.sync', function() {
     decorate: function() {
       cr.ui.Tree.prototype.decorate.call(this);
       this.addEventListener('change', this.handleChange_.bind(this));
-      chrome.sync.getRootNodeDetails(this.makeRoot_.bind(this));
+      this.allNodes = [];
     },
 
-    /**
-     * Creates the root of the tree.
-     * @param {{id: string, title: string, isFolder: boolean}}
-     *    rootNodeSummary The summary info for the root node.
-     */
-    makeRoot_: function(rootNodeSummary) {
-      // The root node usually doesn't have a title.
-      rootNodeSummary.title = rootNodeSummary.title || 'Root';
-      var rootTreeItem = new SyncNodeTreeItem(rootNodeSummary);
-      this.add(rootTreeItem);
+    populate: function(nodes) {
+      var tree = this;
+
+      // We store the full set of nodes in the SyncNodeTree object.
+      tree.allNodes = nodes;
+
+      var roots = tree.allNodes.filter(isTypeRootNode);
+      roots.sort(nodeComparator);
+
+      roots.forEach(function(typeRoot) {
+        tree.add(new SyncNodeTreeItem(typeRoot));
+      });
     },
 
     handleChange_: function(event) {
       if (this.selectedItem) {
-        this.selectedItem.getDetails(updateNodeDetailView);
+        updateNodeDetailView(this.selectedItem);
       }
     }
   };
 
-  function decorateSyncNodeBrowser(syncNodeBrowser) {
-    cr.ui.decorate(syncNodeBrowser, SyncNodeTree);
+  /**
+   * Clears any existing UI state.  Useful prior to a refresh.
+   */
+  function clear() {
+    var treeContainer = $('sync-node-tree-container');
+    while (treeContainer.firstChild) {
+      treeContainer.removeChild(treeContainer.firstChild);
+    }
+
+    var nodeDetailsView = $('node-details');
+    nodeDetailsView.hidden = true;
   }
 
-  // This is needed because JsTemplate (which is needed by
-  // updateNodeDetailView) is loaded at the end of the file after
-  // everything else.
-  //
-  // TODO(akalin): Remove dependency on JsTemplate and get rid of
-  // this.
-  var domLoaded = false;
-  var pendingSyncNodeBrowsers = [];
-  function decorateSyncNodeBrowserAfterDOMLoad(id) {
-    var e = document.getElementById(id);
-    if (domLoaded) {
-      decorateSyncNodeBrowser(e);
-    } else {
-      pendingSyncNodeBrowsers.push(e);
-    }
+  /**
+   * Fetch the latest set of nodes and refresh the UI.
+   */
+  function refresh() {
+    $('node-browser-refresh-button').disabled = true;
+
+    clear();
+    setLastRefreshTime('In progress since ' + (new Date()).toLocaleString());
+
+    chrome.sync.getAllNodes(function(nodes) {
+      var treeContainer = $('sync-node-tree-container');
+      var tree = document.createElement('tree');
+      tree.setAttribute('id', 'sync-node-tree');
+      tree.setAttribute('icon-visibility', 'parent');
+      treeContainer.appendChild(tree);
+
+      cr.ui.decorate(tree, SyncNodeTree);
+      tree.populate(nodes);
+
+      setLastRefreshTime((new Date()).toLocaleString());
+      $('node-browser-refresh-button').disabled = false;
+    });
   }
 
-  document.addEventListener('DOMContentLoaded', function() {
-    for (var i = 0; i < pendingSyncNodeBrowsers.length; ++i) {
-      decorateSyncNodeBrowser(pendingSyncNodeBrowsers[i]);
-    }
-    domLoaded = true;
+  document.addEventListener('DOMContentLoaded', function(e) {
+    $('node-browser-refresh-button').addEventListener('click', refresh);
+    cr.ui.decorate('#sync-node-splitter', cr.ui.Splitter);
+
+    // Automatically trigger a refresh the first time this tab is selected.
+    $('sync-browser-tab').addEventListener('selectedChange', function f(e) {
+      if (this.selected) {
+        $('sync-browser-tab').removeEventListener('selectedChange', f);
+        refresh();
+      }
+    });
   });
 
-  return {
-    decorateSyncNodeBrowser: decorateSyncNodeBrowserAfterDOMLoad
-  };
-});
+})();

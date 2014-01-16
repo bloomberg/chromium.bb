@@ -2,10 +2,16 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#sync-node-main {
+#sync-node-browser-refresher {
+  border-bottom: 1px rgb(160,160,160) solid;
+}
+
+#sync-node-browser-refresher > * {
+  display: inline-block;
+}
+
+#sync-node-browser-container {
   display: -webkit-box;
-  /* Should be > #sync-page's min-height. */
-  /* TODO(akalin): Find a less hacky way to do this. */
   height: 750px;
 }
 
@@ -17,7 +23,6 @@
   max-width: 50%;
   min-width: 50px;
   overflow: auto;
-  padding: 5px;
   width: 200px;
 }
 
@@ -42,20 +47,22 @@
 </if>
 }
 
-#sync-node-browser-container {
+#sync-node-details-container {
   -webkit-box-flex: 1;
   height: 100%;
   overflow: auto;
+  visibility: hidden;  /* Element is invisible until first refresh. */
 }
 
-#node-browser {
+#node-details {
   width: 100%;
 }
 
-#node-browser td {
+#node-details td {
   vertical-align: top;
+  white-space: nowrap;
 }
 
-#node-browser tr:nth-child(odd) {
+#node-details tr:nth-child(odd) {
   background: rgb(239, 243, 255);
 }

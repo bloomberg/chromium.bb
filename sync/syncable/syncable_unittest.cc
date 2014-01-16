@@ -117,14 +117,6 @@ TEST_F(SyncableGeneralTest, General) {
   ASSERT_EQ(OPENED, dir.Open(
           "SimpleTest", &delegate_, NullTransactionObserver()));
 
-  int64 root_metahandle;
-  {
-    ReadTransaction rtrans(FROM_HERE, &dir);
-    Entry e(&rtrans, GET_BY_ID, rtrans.root_id());
-    ASSERT_TRUE(e.good());
-    root_metahandle = e.GetMetahandle();
-  }
-
   int64 written_metahandle;
   const Id id = TestIdFactory::FromNumber(99);
   std::string name = "Jeff";
@@ -136,9 +128,6 @@ TEST_F(SyncableGeneralTest, General) {
 
     Directory::Metahandles child_handles;
     dir.GetChildHandlesById(&rtrans, rtrans.root_id(), &child_handles);
-    EXPECT_TRUE(child_handles.empty());
-
-    dir.GetChildHandlesByHandle(&rtrans, root_metahandle, &child_handles);
     EXPECT_TRUE(child_handles.empty());
   }
 
@@ -161,14 +150,6 @@ TEST_F(SyncableGeneralTest, General) {
 
     Directory::Metahandles child_handles;
     dir.GetChildHandlesById(&rtrans, rtrans.root_id(), &child_handles);
-    EXPECT_EQ(1u, child_handles.size());
-
-    for (Directory::Metahandles::iterator i = child_handles.begin();
-         i != child_handles.end(); ++i) {
-      EXPECT_EQ(*i, written_metahandle);
-    }
-
-    dir.GetChildHandlesByHandle(&rtrans, root_metahandle, &child_handles);
     EXPECT_EQ(1u, child_handles.size());
 
     for (Directory::Metahandles::iterator i = child_handles.begin();

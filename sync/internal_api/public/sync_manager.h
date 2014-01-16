@@ -213,47 +213,6 @@ class SYNC_EXPORT SyncManager : public syncer::InvalidationHandler {
      */
     // function getNotificationState(callback);
 
-    /**
-     * Gets details about the root node.
-     *
-     * @param {function(!Object)} callback Called with details about the
-     *     root node.
-     */
-    // TODO(akalin): Change this to getRootNodeId or eliminate it
-    // entirely.
-    // function getRootNodeDetails(callback);
-
-    /**
-     * Gets summary information for a list of ids.
-     *
-     * @param {Array.<string>} idList List of 64-bit ids in decimal
-     *     string form.
-     * @param {Array.<{id: string, title: string, isFolder: boolean}>}
-     * callback Called with summaries for the nodes in idList that
-     *     exist.
-     */
-    // function getNodeSummariesById(idList, callback);
-
-    /**
-     * Gets detailed information for a list of ids.
-     *
-     * @param {Array.<string>} idList List of 64-bit ids in decimal
-     *     string form.
-     * @param {Array.<!Object>} callback Called with detailed
-     *     information for the nodes in idList that exist.
-     */
-    // function getNodeDetailsById(idList, callback);
-
-    /**
-     * Gets child ids for a given id.
-     *
-     * @param {string} id 64-bit id in decimal string form of the parent
-     *     node.
-     * @param {Array.<string>} callback Called with the (possibly empty)
-     *     list of child ids.
-     */
-    // function getChildNodeIds(id);
-
     virtual void OnInitializationComplete(
         const WeakHandle<JsBackend>& js_backend,
         const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,

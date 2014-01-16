@@ -271,24 +271,6 @@ bool Directory::GetChildHandlesById(
   return true;
 }
 
-bool Directory::GetChildHandlesByHandle(
-    BaseTransaction* trans, int64 handle,
-    Directory::Metahandles* result) {
-  if (!SyncAssert(this == trans->directory(), FROM_HERE,
-                  "Directories don't match", trans))
-    return false;
-
-  result->clear();
-
-  ScopedKernelLock lock(this);
-  EntryKernel* kernel = GetEntryByHandle(handle, &lock);
-  if (!kernel)
-    return true;
-
-  AppendChildHandles(lock, kernel->ref(ID), result);
-  return true;
-}
-
 int Directory::GetTotalNodeCount(
     BaseTransaction* trans,
     EntryKernel* kernel) const {
@@ -887,16 +869,6 @@ void Directory::GetAllMetaHandles(BaseTransaction* trans,
   }
 }
 
-void Directory::GetAllEntryKernels(BaseTransaction* trans,
-                                   std::vector<const EntryKernel*>* result) {
-  result->clear();
-  ScopedKernelLock lock(this);
-  for (MetahandlesMap::iterator i = kernel_->metahandles_map.begin();
-       i != kernel_->metahandles_map.end(); ++i) {
-    result->push_back(i->second);
-  }
-}
-
 void Directory::GetUnsyncedMetaHandles(BaseTransaction* trans,
                                        Metahandles* result) {
   result->clear();
@@ -945,6 +917,30 @@ void Directory::CollectMetaHandleCounts(
     if (entry->ref(IS_DEL))
       (*num_to_delete_entries_by_type)[type]++;
   }
+}
+
+scoped_ptr<base::ListValue> Directory::GetAllNodeDetails(
+    BaseTransaction* trans) {
+  scoped_ptr<base::ListValue> nodes(new base::ListValue());
+
+  ScopedKernelLock lock(this);
+  for (MetahandlesMap::iterator it = kernel_->metahandles_map.begin();
+       it != kernel_->metahandles_map.end(); ++it) {
+    EntryKernel* kernel = it->second;
+    scoped_ptr<base::DictionaryValue> node(
+        kernel->ToValue(GetCryptographer(trans)));
+
+    // Add the position index if appropriate.  This must be done here (and not
+    // in EntryKernel) because the EntryKernel does not have access to its
+    // siblings.
+    if (kernel->ShouldMaintainPosition() && !kernel->ref(IS_DEL)) {
+      node->SetInteger("positionIndex", GetPositionIndex(trans, kernel));
+    }
+
+    nodes->Append(node.release());
+  }
+
+  return nodes.Pass();
 }
 
 bool Directory::CheckInvariantsOnTransactionClose(

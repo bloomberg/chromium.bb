@@ -20,7 +20,9 @@ SyncInternalsWebUITest.prototype = {
 
   /** @override */
   preLoad: function() {
-    // TODO(zea): mock out the the sync info to fake an active syncer.
+    this.makeAndRegisterMockHandler([
+        'getAllNodes',
+    ]);
   },
 
   /**
@@ -47,6 +49,114 @@ SyncInternalsWebUITest.prototype = {
     return false;
   }
 };
+
+/** Constant hard-coded value to return from mock getAllNodes */
+var HARD_CODED_ALL_NODES = [
+{
+  "BASE_SERVER_SPECIFICS": {},
+      "BASE_VERSION": "1388699799780000",
+      "CTIME": "Wednesday, December 31, 1969 4:00:00 PM",
+      "ID": "sZ:ADqtAZw5kjSwSkukraMoMX6z0OlFXENzhA+1HZNcO6LbATQrkVenHJS5" +
+          "AgICYfj8/6KcvwlCw3FIvcRFtOEP3zSP5YJ1VH53/Q==",
+      "IS_DEL": false,
+      "IS_DIR": true,
+      "IS_UNAPPLIED_UPDATE": false,
+      "IS_UNSYNCED": false,
+      "LOCAL_EXTERNAL_ID": "0",
+      "META_HANDLE": "376",
+      "MTIME": "Wednesday, December 31, 1969 4:00:00 PM",
+      "NON_UNIQUE_NAME": "Typed URLs",
+      "PARENT_ID": "r",
+      "SERVER_CTIME": "Wednesday, December 31, 1969 4:00:00 PM",
+      "SERVER_IS_DEL": false,
+      "SERVER_IS_DIR": true,
+      "SERVER_MTIME": "Wednesday, December 31, 1969 4:00:00 PM",
+      "SERVER_NON_UNIQUE_NAME": "Typed URLs",
+      "SERVER_PARENT_ID": "r",
+      "SERVER_SPECIFICS": {
+        "typed_url": {
+          "visit_transitions": [],
+          "visits": []
+        }
+      },
+      "SERVER_UNIQUE_POSITION": "INVALID[]",
+      "SERVER_VERSION": "1388699799780000",
+      "SPECIFICS": {
+        "typed_url": {
+          "visit_transitions": [],
+          "visits": []
+        }
+      },
+      "SYNCING": false,
+      "TRANSACTION_VERSION": "1",
+      "UNIQUE_BOOKMARK_TAG": "",
+      "UNIQUE_CLIENT_TAG": "",
+      "UNIQUE_POSITION": "INVALID[]",
+      "UNIQUE_SERVER_TAG": "google_chrome_typed_urls",
+      "isDirty": false,
+      "serverModelType": "Typed URLs"
+},
+{
+  "BASE_SERVER_SPECIFICS": {},
+  "BASE_VERSION": "1372291923970334",
+  "CTIME": "Wednesday, June 26, 2013 5:12:03 PM",
+  "ID": "sZ:ADqtAZyz70DhOIusPT1v2XCd/8YT8Fy43WlqdRyH6UwoBAqMkX5Pnkl/sW9A" +
+      "+AVrmzAPWFTrRBf0AWD57HyN4GcYXwSR9q4lYA==",
+  "IS_DEL": false,
+  "IS_DIR": false,
+  "IS_UNAPPLIED_UPDATE": false,
+  "IS_UNSYNCED": false,
+  "LOCAL_EXTERNAL_ID": "0",
+  "META_HANDLE": "3011",
+  "MTIME": "Wednesday, June 26, 2013 5:12:03 PM",
+  "NON_UNIQUE_NAME": "http://chrome.com/",
+  "PARENT_ID": "sZ:ADqtAZw5kjSwSkukraMoMX6z0OlFXENzhA+1HZNcO6LbATQrkVen" +
+      "HJS5AgICYfj8/6KcvwlCw3FIvcRFtOEP3zSP5YJ1VH53/Q==",
+  "SERVER_CTIME": "Wednesday, June 26, 2013 5:12:03 PM",
+  "SERVER_IS_DEL": false,
+  "SERVER_IS_DIR": false,
+  "SERVER_MTIME": "Wednesday, June 26, 2013 5:12:03 PM",
+  "SERVER_NON_UNIQUE_NAME": "http://chrome.com/",
+  "SERVER_PARENT_ID": "sZ:ADqtAZw5kjSwSkukraMoMX6z0OlFXENzhA+1HZNcO6LbAT" +
+      "QrkVenHJS5AgICYfj8/6KcvwlCw3FIvcRFtOEP3zSP5YJ1VH53/Q==",
+  "SERVER_SPECIFICS": {
+    "typed_url": {
+      "hidden": false,
+      "title": "Chrome",
+      "url": "http://chrome.com/",
+      "visit_transitions": [
+          "268435457"
+          ],
+      "visits": [
+          "13016765523677321"
+          ]
+    }
+  },
+  "SERVER_UNIQUE_POSITION": "INVALID[]",
+  "SERVER_VERSION": "1372291923970334",
+  "SPECIFICS": {
+    "typed_url": {
+      "hidden": false,
+      "title": "Chrome",
+      "url": "http://chrome.com/",
+      "visit_transitions": [
+          "268435457"
+          ],
+      "visits": [
+          "13016765523677321"
+          ]
+    }
+  },
+  "SYNCING": false,
+  "TRANSACTION_VERSION": "1",
+  "UNIQUE_BOOKMARK_TAG": "",
+  "UNIQUE_CLIENT_TAG": "J28uWKpXPuQwR3SJKbuLqzYGOcM=",
+  "UNIQUE_POSITION": "INVALID[]",
+  "UNIQUE_SERVER_TAG": "",
+  "isDirty": false,
+  "serverModelType": "Typed URLs"
+}
+];
 
 TEST_F('SyncInternalsWebUITest', 'Uninitialized', function() {
   assertNotEquals(null, chrome.sync.aboutInfo);
@@ -76,4 +186,58 @@ TEST_F('SyncInternalsWebUITest', 'SearchTabDoesntChangeOnItemSelect',
   // Select the first list item and verify the search tab remains selected.
   $('sync-results-list').getListItemByIndex(0).selected = true;
   expectTrue($('sync-search-tab').selected);
+});
+
+TEST_F('SyncInternalsWebUITest', 'NodeBrowserTest', function() {
+  this.mockHandler.expects(once()).getAllNodes([]).will(
+      callFunction(function() {
+        chrome.sync.getAllNodes.handleReply(HARD_CODED_ALL_NODES);
+      }));
+
+  // Hit the refresh button.
+  $('node-browser-refresh-button').click();
+
+  // Check that the refresh time was updated.
+  expectNotEquals($('node-browser-refresh-time').textContent, 'Never');
+
+  // Verify some hard-coded assumptions.  These depend on the vaue of the
+  // hard-coded nodes, specified elsewhere in this file.
+
+  // Start with the tree itself.
+  var tree = $('sync-node-tree');
+  assertEquals(1, tree.items.length);
+
+  // Check the type root and expand it.
+  var typeRoot = tree.items[0];
+  expectFalse(typeRoot.expanded);
+  typeRoot.expanded = true;
+  assertEquals(1, typeRoot.items.length);
+
+  // An actual sync node.  The child of the type root.
+  var leaf = typeRoot.items[0];
+
+  // Verify that selecting it affects the details view.
+  expectTrue($('node-details').hasAttribute('hidden'));
+  leaf.selected = true;
+  expectFalse($('node-details').hasAttribute('hidden'));
+});
+
+TEST_F('SyncInternalsWebUITest', 'NodeBrowserRefreshOnTabSelect', function() {
+  this.mockHandler.expects(once()).getAllNodes([]).will(
+      callFunction(function() {
+        chrome.sync.getAllNodes.handleReply(HARD_CODED_ALL_NODES);
+      }));
+
+  // Should start with non-refreshed node browser.
+  expectEquals($('node-browser-refresh-time').textContent, 'Never');
+
+  // Selecting the tab will refresh it.
+  $('sync-browser-tab').selected = true;
+  expectNotEquals($('node-browser-refresh-time').textContent, 'Never');
+
+  // Re-selecting the tab shouldn't re-refresh.
+  $('node-browser-refresh-time').textContent = 'TestCanary';
+  $('sync-browser-tab').selected = false;
+  $('sync-browser-tab').selected = true;
+  expectEquals($('node-browser-refresh-time').textContent, 'TestCanary');
 });

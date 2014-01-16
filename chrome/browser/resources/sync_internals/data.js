@@ -164,19 +164,10 @@ function createTypesCheckboxes(types) {
   });
 }
 
-function populateDatatypes(childNodeSummaries) {
-  var types = childNodeSummaries.map(function(n) {
-    return n.type;
-  });
-  types = types.sort();
-  createTypesCheckboxes(types);
-}
-
 document.addEventListener('DOMContentLoaded', function() {
-  chrome.sync.getRootNodeDetails(function(rootNode) {
-    chrome.sync.getChildNodeIds(rootNode.id, function(childNodeIds) {
-      chrome.sync.getNodeSummariesById(childNodeIds, populateDatatypes);
-    });
+  chrome.sync.getListOfTypes(function(types) {
+    types.sort();
+    createTypesCheckboxes(types);
   });
 });
 

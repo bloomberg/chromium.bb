@@ -274,7 +274,6 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl :
   // JS message handlers.
   JsArgList GetNotificationState(const JsArgList& args);
   JsArgList GetNotificationInfo(const JsArgList& args);
-  JsArgList GetRootNodeDetails(const JsArgList& args);
   JsArgList GetAllNodes(const JsArgList& args);
   JsArgList GetNodeSummariesById(const JsArgList& args);
   JsArgList GetNodeDetailsById(const JsArgList& args);

@@ -144,7 +144,7 @@ class LoggingChangeDelegate : public SyncManager::ChangeDelegate {
       if (it->action != ChangeRecord::ACTION_DELETE) {
         ReadNode node(trans);
         CHECK_EQ(node.InitByIdLookup(it->id), BaseNode::INIT_OK);
-        scoped_ptr<base::DictionaryValue> details(node.GetDetailsAsValue());
+        scoped_ptr<base::DictionaryValue> details(node.ToValue());
         VLOG(1) << "Details: " << ValueToString(*details);
       }
       ++i;

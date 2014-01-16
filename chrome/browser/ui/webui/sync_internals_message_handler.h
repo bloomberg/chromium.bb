@@ -31,6 +31,7 @@ class SyncInternalsMessageHandler
 
   void ForwardToJsController(const std::string& name, const base::ListValue*);
   void OnGetAboutInfo(const base::ListValue*);
+  void OnGetListOfTypes(const base::ListValue*);
 
   // syncer::JsEventHandler implementation.
   virtual void HandleJsEvent(

@@ -34,8 +34,6 @@ content::WebUIDataSource* CreateSyncInternalsHTMLSource() {
   source->AddResourcePath("notifications.js",
                           IDR_SYNC_INTERNALS_NOTIFICATIONS_JS);
   source->AddResourcePath("search.js", IDR_SYNC_INTERNALS_SEARCH_JS);
-  source->AddResourcePath("node_browser.js",
-                          IDR_SYNC_INTERNALS_NODE_BROWSER_JS);
   source->AddResourcePath("traffic.js", IDR_SYNC_INTERNALS_TRAFFIC_JS);
   source->SetDefaultResource(IDR_SYNC_INTERNALS_INDEX_HTML);
   return source;

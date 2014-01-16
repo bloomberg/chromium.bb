@@ -191,20 +191,8 @@ SyncManagerImpl::SyncManagerImpl(const std::string& name)
       "getNotificationInfo",
       &SyncManagerImpl::GetNotificationInfo);
   BindJsMessageHandler(
-      "getRootNodeDetails",
-      &SyncManagerImpl::GetRootNodeDetails);
-  BindJsMessageHandler(
-      "getNodeSummariesById",
-      &SyncManagerImpl::GetNodeSummariesById);
-  BindJsMessageHandler(
-     "getNodeDetailsById",
-      &SyncManagerImpl::GetNodeDetailsById);
-  BindJsMessageHandler(
       "getAllNodes",
       &SyncManagerImpl::GetAllNodes);
-  BindJsMessageHandler(
-      "getChildNodeIds",
-      &SyncManagerImpl::GetChildNodeIds);
   BindJsMessageHandler(
       "getClientServerTraffic",
       &SyncManagerImpl::GetClientServerTraffic);
@@ -1041,16 +1029,6 @@ JsArgList SyncManagerImpl::GetNotificationInfo(
   return JsArgList(&return_args);
 }
 
-JsArgList SyncManagerImpl::GetRootNodeDetails(
-    const JsArgList& args) {
-  ReadTransaction trans(FROM_HERE, GetUserShare());
-  ReadNode root(&trans);
-  root.InitByRootLookup();
-  base::ListValue return_args;
-  return_args.Append(root.GetDetailsAsValue());
-  return JsArgList(&return_args);
-}
-
 JsArgList SyncManagerImpl::GetClientServerTraffic(
     const JsArgList& args) {
   base::ListValue return_args;
@@ -1060,90 +1038,12 @@ JsArgList SyncManagerImpl::GetClientServerTraffic(
   return JsArgList(&return_args);
 }
 
-namespace {
-
-int64 GetId(const base::ListValue& ids, int i) {
-  std::string id_str;
-  if (!ids.GetString(i, &id_str)) {
-    return kInvalidId;
-  }
-  int64 id = kInvalidId;
-  if (!base::StringToInt64(id_str, &id)) {
-    return kInvalidId;
-  }
-  return id;
-}
-
-JsArgList GetNodeInfoById(
-    const JsArgList& args,
-    UserShare* user_share,
-    base::DictionaryValue* (BaseNode::*info_getter)() const) {
-  CHECK(info_getter);
-  base::ListValue return_args;
-  base::ListValue* node_summaries = new base::ListValue();
-  return_args.Append(node_summaries);
-  const base::ListValue* id_list = NULL;
-  ReadTransaction trans(FROM_HERE, user_share);
-  if (args.Get().GetList(0, &id_list)) {
-    CHECK(id_list);
-    for (size_t i = 0; i < id_list->GetSize(); ++i) {
-      int64 id = GetId(*id_list, i);
-      if (id == kInvalidId) {
-        continue;
-      }
-      ReadNode node(&trans);
-      if (node.InitByIdLookup(id) != BaseNode::INIT_OK) {
-        continue;
-      }
-      node_summaries->Append((node.*info_getter)());
-    }
-  }
-  return JsArgList(&return_args);
-}
-
-}  // namespace
-
-JsArgList SyncManagerImpl::GetNodeSummariesById(const JsArgList& args) {
-  return GetNodeInfoById(args, GetUserShare(), &BaseNode::GetSummaryAsValue);
-}
-
-JsArgList SyncManagerImpl::GetNodeDetailsById(const JsArgList& args) {
-  return GetNodeInfoById(args, GetUserShare(), &BaseNode::GetDetailsAsValue);
-}
-
 JsArgList SyncManagerImpl::GetAllNodes(const JsArgList& args) {
-  base::ListValue return_args;
-  base::ListValue* result = new base::ListValue();
-  return_args.Append(result);
-
   ReadTransaction trans(FROM_HERE, GetUserShare());
-  std::vector<const syncable::EntryKernel*> entry_kernels;
-  trans.GetDirectory()->GetAllEntryKernels(trans.GetWrappedTrans(),
-                                           &entry_kernels);
-
-  for (std::vector<const syncable::EntryKernel*>::const_iterator it =
-           entry_kernels.begin(); it != entry_kernels.end(); ++it) {
-    result->Append((*it)->ToValue(trans.GetCryptographer()));
-  }
-
-  return JsArgList(&return_args);
-}
-
-JsArgList SyncManagerImpl::GetChildNodeIds(const JsArgList& args) {
   base::ListValue return_args;
-  base::ListValue* child_ids = new base::ListValue();
-  return_args.Append(child_ids);
-  int64 id = GetId(args.Get(), 0);
-  if (id != kInvalidId) {
-    ReadTransaction trans(FROM_HERE, GetUserShare());
-    syncable::Directory::Metahandles child_handles;
-    trans.GetDirectory()->GetChildHandlesByHandle(trans.GetWrappedTrans(),
-                                                  id, &child_handles);
-    for (syncable::Directory::Metahandles::const_iterator it =
-             child_handles.begin(); it != child_handles.end(); ++it) {
-      child_ids->Append(new base::StringValue(base::Int64ToString(*it)));
-    }
-  }
+  scoped_ptr<base::ListValue> nodes(
+      trans.GetDirectory()->GetAllNodeDetails(trans.GetWrappedTrans()));
+  return_args.Append(nodes.release());
   return JsArgList(&return_args);
 }
 

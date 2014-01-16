@@ -19,6 +19,7 @@
 using syncer::JsArgList;
 using syncer::JsEventDetails;
 using syncer::JsReplyHandler;
+using syncer::ModelTypeSet;
 using syncer::WeakHandle;
 
 SyncInternalsMessageHandler::SyncInternalsMessageHandler()
@@ -44,23 +45,38 @@ void SyncInternalsMessageHandler::RegisterMessages() {
       base::Bind(&SyncInternalsMessageHandler::OnGetAboutInfo,
                  base::Unretained(this)));
 
+  web_ui()->RegisterMessageCallback(
+      "getListOfTypes",
+      base::Bind(&SyncInternalsMessageHandler::OnGetListOfTypes,
+                 base::Unretained(this)));
+
   RegisterJsControllerCallback("getNotificationState");
   RegisterJsControllerCallback("getNotificationInfo");
-  RegisterJsControllerCallback("getRootNodeDetails");
-  RegisterJsControllerCallback("getNodeSummariesById");
-  RegisterJsControllerCallback("getNodeDetailsById");
   RegisterJsControllerCallback("getAllNodes");
-  RegisterJsControllerCallback("getChildNodeIds");
   RegisterJsControllerCallback("getClientServerTraffic");
 }
 
 void SyncInternalsMessageHandler::OnGetAboutInfo(const base::ListValue* args) {
-  // TODO(rlarocque): We should DCHECK(!args) here.
+  // TODO(rlarocque): We should DCHECK(!args) here.  See crbug.com/334431.
   scoped_ptr<base::DictionaryValue> value =
       sync_ui_util::ConstructAboutInformation(GetProfileSyncService());
   web_ui()->CallJavascriptFunction(
       "chrome.sync.getAboutInfo.handleReply",
       *value);
+}
+
+void SyncInternalsMessageHandler::OnGetListOfTypes(
+    const base::ListValue* args) {
+  // TODO(rlarocque): We should DCHECK(!args) here.  See crbug.com/334431.
+  base::ListValue type_list;
+  ModelTypeSet protocol_types = syncer::ProtocolTypes();
+  for (ModelTypeSet::Iterator it = protocol_types.First();
+       it.Good(); it.Inc()) {
+    type_list.Append(new base::StringValue(ModelTypeToString(it.Get())));
+  }
+  web_ui()->CallJavascriptFunction(
+      "chrome.sync.getListOfTypes.handleReply",
+      type_list);
 }
 
 void SyncInternalsMessageHandler::HandleJsReply(

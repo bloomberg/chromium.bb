@@ -8,7 +8,6 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/values.h"
 #include "sync/internal_api/public/base_transaction.h"
 #include "sync/internal_api/syncapi_internal.h"
 #include "sync/protocol/app_specifics.pb.h"
@@ -227,36 +226,8 @@ int BaseNode::GetPositionIndex() const {
   return GetEntry()->GetPositionIndex();
 }
 
-base::DictionaryValue* BaseNode::GetSummaryAsValue() const {
-  base::DictionaryValue* node_info = new base::DictionaryValue();
-  node_info->SetString("id", base::Int64ToString(GetId()));
-  node_info->SetBoolean("isFolder", GetIsFolder());
-  node_info->SetString("title", GetTitle());
-  node_info->Set("type", ModelTypeToValue(GetModelType()));
-  return node_info;
-}
-
-base::DictionaryValue* BaseNode::GetDetailsAsValue() const {
-  base::DictionaryValue* node_info = GetSummaryAsValue();
-  node_info->SetString(
-      "modificationTime", GetTimeDebugString(GetModificationTime()));
-  node_info->SetString("parentId", base::Int64ToString(GetParentId()));
-  // Specifics are already in the Entry value, so no need to duplicate
-  // it here.
-  node_info->SetString("externalId", base::Int64ToString(GetExternalId()));
-  if (GetEntry()->ShouldMaintainPosition() &&
-      !GetEntry()->GetIsDel()) {
-    node_info->SetString("successorId", base::Int64ToString(GetSuccessorId()));
-    node_info->SetString(
-        "predecessorId", base::Int64ToString(GetPredecessorId()));
-  }
-  if (GetEntry()->GetIsDir()) {
-    node_info->SetString(
-        "firstChildId", base::Int64ToString(GetFirstChildId()));
-  }
-  node_info->Set(
-      "entry", GetEntry()->ToValue(GetTransaction()->GetCryptographer()));
-  return node_info;
+base::DictionaryValue* BaseNode::ToValue() const {
+  return GetEntry()->ToValue(GetTransaction()->GetCryptographer());
 }
 
 int64 BaseNode::GetExternalId() const {

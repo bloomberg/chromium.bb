@@ -213,13 +213,8 @@ class SYNC_EXPORT BaseNode {
   virtual const syncable::Entry* GetEntry() const = 0;
   virtual const BaseTransaction* GetTransaction() const = 0;
 
-  // Dumps a summary of node info into a DictionaryValue and returns it.
-  // Transfers ownership of the DictionaryValue to the caller.
-  base::DictionaryValue* GetSummaryAsValue() const;
-
-  // Dumps all node details into a DictionaryValue and returns it.
-  // Transfers ownership of the DictionaryValue to the caller.
-  base::DictionaryValue* GetDetailsAsValue() const;
+  // Returns a base::DictionaryValue serialization of this node.
+  base::DictionaryValue* ToValue() const;
 
  protected:
   BaseNode();
