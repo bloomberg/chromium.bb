@@ -437,10 +437,12 @@ unsigned FontFace::traitsMask() const
         case CSSValue200:
             traitsMask |= FontWeight200Mask;
             break;
+        case CSSValueLighter:
         case CSSValue100:
             traitsMask |= FontWeight100Mask;
             break;
         default:
+            ASSERT_NOT_REACHED();
             break;
         }
     } else {
