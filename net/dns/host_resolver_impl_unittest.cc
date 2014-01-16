@@ -599,7 +599,13 @@ TEST_F(HostResolverImplTest, AbortedAsynchronousLookup) {
   EXPECT_FALSE(req0->completed());
 }
 
-TEST_F(HostResolverImplTest, NumericIPv4Address) {
+#if defined(THREAD_SANITIZER)
+// Use of WorkerPool in HostResolverImpl causes a data race. crbug.com/334140
+#define MAYBE_NumericIPv4Address DISABLED_NumericIPv4Address
+#else
+#define MAYBE_NumericIPv4Address NumericIPv4Address
+#endif
+TEST_F(HostResolverImplTest, MAYBE_NumericIPv4Address) {
   // Stevens says dotted quads with AI_UNSPEC resolve to a single sockaddr_in.
   Request* req = CreateRequest("127.1.2.3", 5555);
   EXPECT_EQ(OK, req->Resolve());
@@ -607,7 +613,13 @@ TEST_F(HostResolverImplTest, NumericIPv4Address) {
   EXPECT_TRUE(req->HasOneAddress("127.1.2.3", 5555));
 }
 
-TEST_F(HostResolverImplTest, NumericIPv6Address) {
+#if defined(THREAD_SANITIZER)
+// Use of WorkerPool in HostResolverImpl causes a data race. crbug.com/334140
+#define MAYBE_NumericIPv6Address DISABLED_NumericIPv6Address
+#else
+#define MAYBE_NumericIPv6Address NumericIPv6Address
+#endif
+TEST_F(HostResolverImplTest, MAYBE_NumericIPv6Address) {
   // Resolve a plain IPv6 address.  Don't worry about [brackets], because
   // the caller should have removed them.
   Request* req = CreateRequest("2001:db8::1", 5555);
@@ -616,7 +628,13 @@ TEST_F(HostResolverImplTest, NumericIPv6Address) {
   EXPECT_TRUE(req->HasOneAddress("2001:db8::1", 5555));
 }
 
-TEST_F(HostResolverImplTest, EmptyHost) {
+#if defined(THREAD_SANITIZER)
+// Use of WorkerPool in HostResolverImpl causes a data race. crbug.com/334140
+#define MAYBE_EmptyHost DISABLED_EmptyHost
+#else
+#define MAYBE_EmptyHost EmptyHost
+#endif
+TEST_F(HostResolverImplTest, MAYBE_EmptyHost) {
   Request* req = CreateRequest(std::string(), 5555);
   EXPECT_EQ(ERR_NAME_NOT_RESOLVED, req->Resolve());
 }
