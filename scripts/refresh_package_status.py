@@ -34,30 +34,6 @@ def RunGit(cwd, cmd, args=[]):
   cros_build_lib.RunCommand(cmdline, cwd=cwd)
 
 
-def UpdateOriginGentoo():
-  """Update origin/gentoo on server and return path to local copy."""
-  gentoo_root = '%s/%s' % (TMP_ROOT, GENTOO_DIR)
-  oper.Info('Performing update of origin/gentoo upstream mirror as requested.')
-
-  osutils.RmDir(gentoo_root, ignore_missing=True)
-
-  RunGit(cwd=TMP_ROOT, cmd='clone', args=[PRTG_GIT_URL, GENTOO_DIR])
-  RunGit(cwd=gentoo_root, cmd='remote', args=['add', 'funtoo', FUNTOO_GIT_URL])
-  RunGit(cwd=gentoo_root, cmd='checkout',
-         args=['-b', 'gentoo', '--track', 'origin/gentoo'])
-  RunGit(cwd=gentoo_root, cmd='fetch', args=['funtoo'])
-  RunGit(cwd=gentoo_root, cmd='merge', args=['remotes/funtoo/gentoo.org'])
-  RunGit(cwd=gentoo_root, cmd='push')
-
-  return gentoo_root
-
-
-def CleanupOriginGentoo(gentoo_root):
-  """Remove the local copy of origin/gentoo source."""
-  oper.Info('Removing local copy of origin/gentoo upstream mirror now.')
-  osutils.RmDir(gentoo_root, ignore_missing=True)
-
-
 def PrepareBoards(boards):
   """Run setup_board for any boards that need it."""
   scripts_dir = os.path.join(SCRIPT_DIR, '..', '..', 'src', 'scripts')
@@ -78,23 +54,22 @@ def PrepareCSVRoot():
   return csv_root
 
 
-def RefreshPackageStatus(board, upstream, csv_root, test,
+def RefreshPackageStatus(board, csv_root, test,
                          token_file, cred_file):
   """Run through steps to refresh package status spreadsheet.
 
-  |board| is a colon-separated list of chromeos boards to use.
-  |upstream| is a path to origin/gentoo upstream.  Can be None.
-  Put all csv files under the |csv_root| directory.
-  If |test| is True, upload to test spreadsheet instead of real one.
-  Use |token_file| as auth token file for spreadsheet upload if it exists.
-  Otherwise, use |cred_file| as credentials file for spreadsheet upload.
+  Args:
+    board: A colon-separated list of chromeos boards to use.
+    csv_root: Put all csv files under this directory.
+    test: If True, upload to test spreadsheet instead of real one.
+    token_file: Use as auth token file for spreadsheet upload if it exists.
+    cred_file: If |token_file| is missing, use this as credentials file for
+      spreadsheet upload.
   """
 
   # Run all chromeos targets for all boards.
   oper.Info('Getting package status for all chromeos targets on all boards.')
   cpu_cmd_baseline = ['cros_portage_upgrade', '--board=%s' % board]
-  if upstream:
-    cpu_cmd_baseline.append('--upstream=%s' % upstream)
 
   cros_csv = '%s/chromeos-boards.csv' % csv_root
   cros_build_lib.RunCommand(cpu_cmd_baseline +
@@ -114,8 +89,6 @@ def RefreshPackageStatus(board, upstream, csv_root, test,
   # Run all host targets (world, hard-host-depends) for the host.
   oper.Info('Getting package status for all host targets.')
   cpu_host_baseline = ['cros_portage_upgrade', '--host']
-  if upstream:
-    cpu_host_baseline.append('--upstream=%s' % upstream)
 
   hostworld_csv = '%s/world-host.csv' % csv_root
   cros_build_lib.RunCommand(cpu_host_baseline +
@@ -187,9 +160,6 @@ def main(argv):
   parser.add_option('--test-spreadsheet', dest='test',
                     action='store_true', default=False,
                     help='Upload changes to test spreadsheet instead')
-  parser.add_option('--update-gentoo-first', dest='update_gentoo',
-                    action='store_true', default=False,
-                    help='Perform update to origin/gentoo before refresh')
 
   (options, args) = parser.parse_args(argv)
 
@@ -201,17 +171,9 @@ def main(argv):
     parser.print_help()
     oper.Die('Board is required.')
 
-  upstream = None
-  if options.update_gentoo:
-    upstream = UpdateOriginGentoo()
-
   csv_root = PrepareCSVRoot()
   PrepareBoards(options.board)
 
-  RefreshPackageStatus(board=options.board, upstream=upstream,
-                       csv_root=csv_root, test=options.test,
-                       token_file=options.token_file,
+  RefreshPackageStatus(board=options.board, csv_root=csv_root,
+                       test=options.test, token_file=options.token_file,
                        cred_file=options.cred_file)
-
-  if options.update_gentoo:
-    CleanupOriginGentoo(upstream)
