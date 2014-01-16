@@ -480,9 +480,12 @@ MockMediaStreamDependencyFactory::CreateLocalAudioTrack(
     WebAudioCapturerSource* webaudio_source,
     webrtc::AudioSourceInterface* source) {
   DCHECK(mock_pc_factory_created_);
-  DCHECK(!capturer.get());
+  blink::WebMediaConstraints constraints;
+  scoped_refptr<WebRtcAudioCapturer> audio_capturer = capturer ?
+      capturer : WebRtcAudioCapturer::CreateCapturer(-1, StreamDeviceInfo(),
+                                                     constraints, NULL);
   return WebRtcLocalAudioTrack::Create(
-      id, WebRtcAudioCapturer::CreateCapturer(), webaudio_source, source);
+      id, audio_capturer, webaudio_source, source);
 }
 
 SessionDescriptionInterface*
@@ -502,10 +505,11 @@ MockMediaStreamDependencyFactory::CreateIceCandidate(
 }
 
 scoped_refptr<WebRtcAudioCapturer>
-MockMediaStreamDependencyFactory::MaybeCreateAudioCapturer(
+MockMediaStreamDependencyFactory::CreateAudioCapturer(
     int render_view_id, const StreamDeviceInfo& device_info,
     const blink::WebMediaConstraints& constraints) {
-  return WebRtcAudioCapturer::CreateCapturer();
+  return WebRtcAudioCapturer::CreateCapturer(-1, device_info,
+                                             constraints, NULL);
 }
 
 }  // namespace content

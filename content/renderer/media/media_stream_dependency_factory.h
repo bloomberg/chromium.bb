@@ -218,7 +218,7 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   // Returns a new capturer or existing capturer based on the |render_view_id|
   // and |device_info|. When the |render_view_id| and |device_info| are valid,
   // it reuses existing capture if any; otherwise it creates a new capturer.
-  virtual scoped_refptr<WebRtcAudioCapturer> MaybeCreateAudioCapturer(
+  virtual scoped_refptr<WebRtcAudioCapturer> CreateAudioCapturer(
       int render_view_id, const StreamDeviceInfo& device_info,
       const blink::WebMediaConstraints& constraints);
 

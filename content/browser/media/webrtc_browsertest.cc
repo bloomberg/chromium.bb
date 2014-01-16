@@ -267,6 +267,18 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, GetAudioAndVideoStreamAndClone) {
   ExpectTitle("OK");
 }
 
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, TwoGetUserMediaAndStop) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
+  NavigateToURL(shell(), url);
+
+  ASSERT_TRUE(ExecuteJavascript(
+      "twoGetUserMediaAndStop({video: true, audio: true});"));
+
+  ExpectTitle("OK");
+}
+
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, GetUserMediaWithMandatorySourceID_1) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 

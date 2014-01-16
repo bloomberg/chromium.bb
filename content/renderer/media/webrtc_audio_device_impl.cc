@@ -436,24 +436,47 @@ void WebRtcAudioDeviceImpl::AddAudioCapturer(
   DVLOG(1) << "WebRtcAudioDeviceImpl::AddAudioCapturer()";
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(capturer.get());
-
-  // We only support one microphone today, which means the list can contain
-  // only one capturer with a valid device id.
-  DCHECK(capturer->device_id().empty() || !GetDefaultCapturer());
+  DCHECK(!capturer->device_id().empty());
   base::AutoLock auto_lock(lock_);
+  DCHECK(std::find(capturers_.begin(), capturers_.end(), capturer) ==
+      capturers_.end());
   capturers_.push_back(capturer);
+}
+
+void WebRtcAudioDeviceImpl::RemoveAudioCapturer(
+    const scoped_refptr<WebRtcAudioCapturer>& capturer) {
+  DVLOG(1) << "WebRtcAudioDeviceImpl::AddAudioCapturer()";
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(capturer.get());
+  base::AutoLock auto_lock(lock_);
+  capturers_.remove(capturer);
 }
 
 scoped_refptr<WebRtcAudioCapturer>
 WebRtcAudioDeviceImpl::GetDefaultCapturer() const {
   base::AutoLock auto_lock(lock_);
-  for (CapturerList::const_iterator iter = capturers_.begin();
-       iter != capturers_.end(); ++iter) {
-    if (!(*iter)->device_id().empty())
-      return *iter;
+  // Use the last |capturer| which is from the latest getUserMedia call as
+  // the default capture device.
+  for (CapturerList::const_reverse_iterator iter = capturers_.rbegin();
+       iter != capturers_.rend(); ++iter) {
+    return *iter;
   }
 
   return NULL;
+}
+
+bool WebRtcAudioDeviceImpl::GetAuthorizedDeviceInfoForAudioRenderer(
+    int* session_id,
+    int* output_sample_rate,
+    int* output_frames_per_buffer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  // If there is no capturer or there are more than one open capture devices,
+  // return false.
+  if (capturers_.empty() || capturers_.size() > 1)
+    return false;
+
+  return GetDefaultCapturer()->GetPairedOutputParameters(
+      session_id, output_sample_rate, output_frames_per_buffer);
 }
 
 }  // namespace content

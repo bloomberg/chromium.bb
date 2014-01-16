@@ -162,16 +162,13 @@ class WebRtcLocalAudioTrackTest : public ::testing::Test {
   virtual void SetUp() OVERRIDE {
     params_.Reset(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                   media::CHANNEL_LAYOUT_STEREO, 2, 0, 48000, 16, 480);
-    capturer_ = WebRtcAudioCapturer::CreateCapturer();
-    capturer_source_ = new MockCapturerSource(capturer_.get());
-    EXPECT_CALL(*capturer_source_.get(), OnInitialize(_, capturer_.get(), 0))
-        .WillOnce(Return());
     blink::WebMediaConstraints constraints;
-    capturer_->SetCapturerSource(capturer_source_,
-                                 params_.channel_layout(),
-                                 params_.sample_rate(),
-                                 params_.effects(),
-                                 constraints);
+    capturer_ = WebRtcAudioCapturer::CreateCapturer(-1, StreamDeviceInfo(),
+                                                    constraints, NULL);
+    capturer_source_ = new MockCapturerSource(capturer_.get());
+    EXPECT_CALL(*capturer_source_.get(), OnInitialize(_, capturer_.get(), -1))
+        .WillOnce(Return());
+    capturer_->SetCapturerSourceForTesting(capturer_source_, params_);
   }
 
   media::AudioParameters params_;
@@ -428,37 +425,6 @@ TEST_F(WebRtcLocalAudioTrackTest, StartAndStopAudioTracks) {
   capturer_->Stop();
 }
 
-// Set new source to the existing capturer.
-TEST_F(WebRtcLocalAudioTrackTest, SetNewSourceForCapturerAfterStartTrack) {
-  // Setup the audio track and start the track.
-  EXPECT_CALL(*capturer_source_.get(), SetAutomaticGainControl(true));
-  EXPECT_CALL(*capturer_source_.get(), OnStart());
-  scoped_refptr<WebRtcLocalAudioTrack> track =
-      WebRtcLocalAudioTrack::Create(std::string(), capturer_, NULL, NULL);
-  static_cast<WebRtcLocalAudioSourceProvider*>(
-      track->audio_source_provider())->SetSinkParamsForTesting(params_);
-  track->Start();
-
-  // Setting new source to the capturer and the track should still get packets.
-  scoped_refptr<MockCapturerSource> new_source(
-      new MockCapturerSource(capturer_.get()));
-  EXPECT_CALL(*capturer_source_.get(), OnStop());
-  EXPECT_CALL(*new_source.get(), SetAutomaticGainControl(true));
-  EXPECT_CALL(*new_source.get(), OnInitialize(_, capturer_.get(), 0))
-      .WillOnce(Return());
-  EXPECT_CALL(*new_source.get(), OnStart());
-  blink::WebMediaConstraints constraints;
-  capturer_->SetCapturerSource(new_source,
-                               params_.channel_layout(),
-                               params_.sample_rate(),
-                               params_.effects(),
-                               constraints);
-
-  // Stop the track.
-  EXPECT_CALL(*new_source.get(), OnStop());
-  capturer_->Stop();
-}
-
 // Create a new capturer with new source, connect it to a new audio track.
 TEST_F(WebRtcLocalAudioTrackTest, ConnectTracksToDifferentCapturers) {
   // Setup the first audio track and start it.
@@ -487,17 +453,17 @@ TEST_F(WebRtcLocalAudioTrackTest, ConnectTracksToDifferentCapturers) {
   track_1->AddSink(sink_1.get());
 
   // Create a new capturer with new source with different audio format.
+  blink::WebMediaConstraints constraints;
   scoped_refptr<WebRtcAudioCapturer> new_capturer(
-      WebRtcAudioCapturer::CreateCapturer());
+      WebRtcAudioCapturer::CreateCapturer(-1, StreamDeviceInfo(),
+                                          constraints, NULL));
   scoped_refptr<MockCapturerSource> new_source(
       new MockCapturerSource(new_capturer.get()));
-  EXPECT_CALL(*new_source.get(), OnInitialize(_, new_capturer.get(), 0));
-  blink::WebMediaConstraints constraints;
-  new_capturer->SetCapturerSource(new_source,
-                                  media::CHANNEL_LAYOUT_MONO,
-                                  44100,
-                                  media::AudioParameters::NO_EFFECTS,
-                                  constraints);
+  EXPECT_CALL(*new_source.get(), OnInitialize(_, new_capturer.get(), -1));
+  media::AudioParameters new_param(
+      media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
+      media::CHANNEL_LAYOUT_MONO, 44100, 16, 441);
+  new_capturer->SetCapturerSourceForTesting(new_source, new_param);
 
   // Setup the second audio track, connect it to the new capturer and start it.
   EXPECT_CALL(*new_source.get(), SetAutomaticGainControl(true));
@@ -520,7 +486,8 @@ TEST_F(WebRtcLocalAudioTrackTest, ConnectTracksToDifferentCapturers) {
   EXPECT_CALL(
       *sink_2,
       CaptureData(
-          kNumberOfNetworkChannelsForTrack2, 44100, 1, _, 0, 0, true, false))
+          kNumberOfNetworkChannelsForTrack2, new_param.sample_rate(),
+          new_param.channels(), _, 0, 0, true, false))
       .Times(AnyNumber()).WillRepeatedly(Return());
   EXPECT_CALL(*sink_2, OnSetFormat(_)).WillOnce(SignalEvent(&event));
   track_2->AddSink(sink_2.get());
@@ -547,19 +514,20 @@ TEST_F(WebRtcLocalAudioTrackTest, TrackWorkWithSmallBufferSize) {
                                 media::CHANNEL_LAYOUT_STEREO, 48000, 16, 128);
 
   // Create a capturer with new source which works with the format above.
+  blink::WebMediaConstraints constraints;
   scoped_refptr<WebRtcAudioCapturer> capturer(
-      WebRtcAudioCapturer::CreateCapturer());
+      WebRtcAudioCapturer::CreateCapturer(
+          -1,
+          StreamDeviceInfo(MEDIA_DEVICE_AUDIO_CAPTURE,
+                           "", "", params.sample_rate(),
+                           params.channel_layout(),
+                           params.frames_per_buffer()),
+          constraints,
+          NULL));
   scoped_refptr<MockCapturerSource> source(
       new MockCapturerSource(capturer.get()));
-  blink::WebMediaConstraints constraints;
-  capturer->Initialize(-1, params.channel_layout(), params.sample_rate(),
-                       params.frames_per_buffer(), 0, std::string(), 0, 0,
-                       params.effects(), constraints);
-
-  EXPECT_CALL(*source.get(), OnInitialize(_, capturer.get(), 0));
-  capturer->SetCapturerSource(source, params.channel_layout(),
-                              params.sample_rate(), params.effects(),
-                              constraints);
+  EXPECT_CALL(*source.get(), OnInitialize(_, capturer.get(), -1));
+  capturer->SetCapturerSourceForTesting(source, params);
 
   // Setup a audio track, connect it to the capturer and start it.
   EXPECT_CALL(*source.get(), SetAutomaticGainControl(true));

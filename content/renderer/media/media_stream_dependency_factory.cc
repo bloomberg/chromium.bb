@@ -324,8 +324,7 @@ void MediaStreamDependencyFactory::CreateNativeMediaSources(
     }
 
     scoped_refptr<WebRtcAudioCapturer> capturer(
-        MaybeCreateAudioCapturer(render_view_id, device_info,
-                                 audio_constraints));
+        CreateAudioCapturer(render_view_id, device_info, audio_constraints));
     if (!capturer.get()) {
       DLOG(WARNING) << "Failed to create the capturer for device "
                     << device_info.device.id;
@@ -420,14 +419,9 @@ MediaStreamDependencyFactory::CreateNativeAudioMediaStreamTrack(
     }
   }
 
-  std::string track_id = base::UTF16ToUTF8(track.id());
-  scoped_refptr<WebRtcAudioCapturer> capturer;
-  if (GetWebRtcAudioDevice())
-    capturer = GetWebRtcAudioDevice()->GetDefaultCapturer();
-
   scoped_refptr<webrtc::AudioTrackInterface> audio_track(
-      CreateLocalAudioTrack(track_id,
-                            capturer,
+      CreateLocalAudioTrack(track.id().utf8(),
+                            source_data->GetAudioCapturer(),
                             webaudio_source.get(),
                             source_data->local_audio_source()));
   AddNativeTrackToBlinkTrack(audio_track.get(), track, true);
@@ -894,7 +888,7 @@ void MediaStreamDependencyFactory::CleanupPeerConnectionFactory() {
 }
 
 scoped_refptr<WebRtcAudioCapturer>
-MediaStreamDependencyFactory::MaybeCreateAudioCapturer(
+MediaStreamDependencyFactory::CreateAudioCapturer(
     int render_view_id,
     const StreamDeviceInfo& device_info,
     const blink::WebMediaConstraints& constraints) {
@@ -902,37 +896,9 @@ MediaStreamDependencyFactory::MaybeCreateAudioCapturer(
   // view, for example, by an extension.
   DCHECK_GE(render_view_id, 0);
 
-  scoped_refptr<WebRtcAudioCapturer> capturer =
-      GetWebRtcAudioDevice()->GetDefaultCapturer();
-
-  // If the default capturer does not exist or |render_view_id| == -1, create
-  // a new capturer.
-  bool is_new_capturer = false;
-  if (!capturer.get()) {
-    capturer = WebRtcAudioCapturer::CreateCapturer();
-    is_new_capturer = true;
-  }
-
-  if (!capturer->Initialize(
-          render_view_id,
-          static_cast<media::ChannelLayout>(
-              device_info.device.input.channel_layout),
-          device_info.device.input.sample_rate,
-          device_info.device.input.frames_per_buffer,
-          device_info.session_id,
-          device_info.device.id,
-          device_info.device.matched_output.sample_rate,
-          device_info.device.matched_output.frames_per_buffer,
-          device_info.device.input.effects,
-          constraints)) {
-    return NULL;
-  }
-
-  // Add the capturer to the WebRtcAudioDeviceImpl if it is a new capturer.
-  if (is_new_capturer)
-    GetWebRtcAudioDevice()->AddAudioCapturer(capturer);
-
-  return capturer;
+  return WebRtcAudioCapturer::CreateCapturer(render_view_id, device_info,
+                                             constraints,
+                                             GetWebRtcAudioDevice());
 }
 
 void MediaStreamDependencyFactory::AddNativeTrackToBlinkTrack(

@@ -104,33 +104,28 @@ bool HardwareSampleRatesAreValid() {
   return true;
 }
 
-// Utility method which creates and initializes the audio capturer and adds it
-// to WebRTC audio device. This method should be used in tests where
+// Utility method which creates the audio capturer, it returns a scoped
+// reference of the capturer if it is created successfully, otherwise it returns
+// NULL. This method should be used in tests where
 // HardwareSampleRatesAreValid() has been called and returned true.
-bool CreateAndInitializeCapturer(WebRtcAudioDeviceImpl* webrtc_audio_device) {
-  DCHECK(webrtc_audio_device);
-  scoped_refptr<WebRtcAudioCapturer> capturer(
-      WebRtcAudioCapturer::CreateCapturer());
-
+scoped_refptr<WebRtcAudioCapturer> CreateAudioCapturer(
+    WebRtcAudioDeviceImpl* webrtc_audio_device) {
   media::AudioHardwareConfig* hardware_config =
       RenderThreadImpl::current()->GetAudioHardwareConfig();
-
   // Use native capture sample rate and channel configuration to get some
   // action in this test.
   int sample_rate = hardware_config->GetInputSampleRate();
   media::ChannelLayout channel_layout =
       hardware_config->GetInputChannelLayout();
   blink::WebMediaConstraints constraints;
-  if (!capturer->Initialize(kRenderViewId, channel_layout, sample_rate, 0, 1,
-                            media::AudioManagerBase::kDefaultDeviceId, 0, 0,
-                            media::AudioParameters::NO_EFFECTS, constraints)) {
-    return false;
-  }
-
-  // Add the capturer to the WebRtcAudioDeviceImpl.
-  webrtc_audio_device->AddAudioCapturer(capturer);
-
-  return true;
+  StreamDeviceInfo device(MEDIA_DEVICE_AUDIO_CAPTURE,
+                          media::AudioManagerBase::kDefaultDeviceName,
+                          media::AudioManagerBase::kDefaultDeviceId,
+                          sample_rate, channel_layout, 0);
+  device.session_id = 1;
+  return WebRtcAudioCapturer::CreateCapturer(kRenderViewId, device,
+                                             constraints,
+                                             webrtc_audio_device);
 }
 
 // Create and start a local audio track. Starting the audio track will connect
@@ -490,7 +485,7 @@ TEST_F(MAYBE_WebRTCAudioDeviceTest, Construct) {
 
   ScopedWebRTCPtr<webrtc::VoEBase> base(engine.get());
   int err = base->Init(webrtc_audio_device.get());
-  EXPECT_TRUE(CreateAndInitializeCapturer(webrtc_audio_device.get()));
+  EXPECT_TRUE(CreateAudioCapturer(webrtc_audio_device) != NULL);
   EXPECT_EQ(0, err);
   EXPECT_EQ(0, base->Terminate());
 }
@@ -639,15 +634,15 @@ TEST_F(MAYBE_WebRTCAudioDeviceTest, MAYBE_StartRecording) {
   EXPECT_EQ(0, network->RegisterExternalTransport(ch, *transport.get()));
   EXPECT_EQ(0, base->StartSend(ch));
 
-  // Create and initialize the capturer which starts the source of the data
-  // flow.
-  EXPECT_TRUE(CreateAndInitializeCapturer(webrtc_audio_device.get()));
+  // Create the capturer which starts the source of the data flow.
+  scoped_refptr<WebRtcAudioCapturer> capturer(
+      CreateAudioCapturer(webrtc_audio_device));
+  EXPECT_TRUE(capturer);
 
   // Create and start a local audio track which is bridging the data flow
   // between the capturer and WebRtcAudioDeviceImpl.
   scoped_refptr<WebRtcLocalAudioTrack> local_audio_track(
-      CreateAndStartLocalAudioTrack(webrtc_audio_device->GetDefaultCapturer(),
-                                    webrtc_audio_device));
+      CreateAndStartLocalAudioTrack(capturer, webrtc_audio_device));
   // connect the VoE voice channel to the audio track
   static_cast<webrtc::AudioTrackInterface*>(local_audio_track.get())->
       GetRenderer()->AddChannel(ch);
@@ -667,7 +662,7 @@ TEST_F(MAYBE_WebRTCAudioDeviceTest, MAYBE_StartRecording) {
       ch, webrtc::kRecordingPerChannel));
   EXPECT_EQ(0, base->StopSend(ch));
 
-  webrtc_audio_device->GetDefaultCapturer()->Stop();
+  capturer->Stop();
   EXPECT_EQ(0, base->DeleteChannel(ch));
   EXPECT_EQ(0, base->Terminate());
 }
@@ -796,10 +791,11 @@ TEST_F(MAYBE_WebRTCAudioDeviceTest, MAYBE_FullDuplexAudioWithAGC) {
   int ch = base->CreateChannel();
   EXPECT_NE(-1, ch);
 
-  EXPECT_TRUE(CreateAndInitializeCapturer(webrtc_audio_device.get()));
+  scoped_refptr<WebRtcAudioCapturer> capturer(
+      CreateAudioCapturer(webrtc_audio_device));
+  EXPECT_TRUE(capturer);
   scoped_refptr<WebRtcLocalAudioTrack> local_audio_track(
-      CreateAndStartLocalAudioTrack(webrtc_audio_device->GetDefaultCapturer(),
-                                    webrtc_audio_device));
+      CreateAndStartLocalAudioTrack(capturer, webrtc_audio_device));
   // connect the VoE voice channel to the audio track
   static_cast<webrtc::AudioTrackInterface*>(local_audio_track.get())->
       GetRenderer()->AddChannel(ch);
@@ -825,7 +821,7 @@ TEST_F(MAYBE_WebRTCAudioDeviceTest, MAYBE_FullDuplexAudioWithAGC) {
                                 base::TimeDelta::FromSeconds(2));
   message_loop_.Run();
 
-  webrtc_audio_device->GetDefaultCapturer()->Stop();
+  capturer->Stop();
   proxy->Stop();
   EXPECT_EQ(0, base->StopSend(ch));
   EXPECT_EQ(0, base->StopPlayout(ch));
@@ -862,7 +858,9 @@ TEST_F(MAYBE_WebRTCAudioDeviceTest, DISABLED_WebRtcRecordingSetupTime) {
   int ch = base->CreateChannel();
   EXPECT_NE(-1, ch);
 
-  EXPECT_TRUE(CreateAndInitializeCapturer(webrtc_audio_device.get()));
+  scoped_refptr<WebRtcAudioCapturer> capturer(
+      CreateAudioCapturer(webrtc_audio_device));
+  EXPECT_TRUE(capturer);
   base::WaitableEvent event(false, false);
   scoped_ptr<MockMediaStreamAudioSink> sink(
       new MockMediaStreamAudioSink(&event));
@@ -870,8 +868,7 @@ TEST_F(MAYBE_WebRTCAudioDeviceTest, DISABLED_WebRtcRecordingSetupTime) {
   // Create and start a local audio track. Starting the audio track will connect
   // the audio track to the capturer and also start the source of the capturer.
   scoped_refptr<WebRtcLocalAudioTrack> local_audio_track(
-      CreateAndStartLocalAudioTrack(
-          webrtc_audio_device->GetDefaultCapturer().get(), sink.get()));
+      CreateAndStartLocalAudioTrack(capturer, sink.get()));
 
   // connect the VoE voice channel to the audio track.
   static_cast<webrtc::AudioTrackInterface*>(local_audio_track.get())->
@@ -884,7 +881,7 @@ TEST_F(MAYBE_WebRTCAudioDeviceTest, DISABLED_WebRtcRecordingSetupTime) {
   int delay = (base::Time::Now() - start_time).InMilliseconds();
   PrintPerfResultMs("webrtc_recording_setup_c", "t", delay);
 
-  webrtc_audio_device->GetDefaultCapturer()->Stop();
+  capturer->Stop();
   EXPECT_EQ(0, base->StopSend(ch));
   EXPECT_EQ(0, base->DeleteChannel(ch));
   EXPECT_EQ(0, base->Terminate());

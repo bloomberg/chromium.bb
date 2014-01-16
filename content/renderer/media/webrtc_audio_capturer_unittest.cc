@@ -62,17 +62,17 @@ class WebRtcAudioCapturerTest : public testing::Test {
       : params_(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                 media::CHANNEL_LAYOUT_STEREO, 48000, 16, 128) {
 #endif
-    capturer_ = WebRtcAudioCapturer::CreateCapturer();
     blink::WebMediaConstraints constraints;
-    capturer_->Initialize(-1, params_.channel_layout(), params_.sample_rate(),
-                          params_.frames_per_buffer(), 0, std::string(), 0, 0,
-                          params_.effects(), constraints);
+    capturer_ = WebRtcAudioCapturer::CreateCapturer(
+        -1, StreamDeviceInfo(MEDIA_DEVICE_AUDIO_CAPTURE,
+                             "", "", params_.sample_rate(),
+                             params_.channel_layout(),
+                             params_.frames_per_buffer()),
+        constraints,
+        NULL);
     capturer_source_ = new MockCapturerSource();
-    EXPECT_CALL(*capturer_source_.get(), Initialize(_, capturer_.get(), 0));
-    capturer_->SetCapturerSource(capturer_source_,
-                                 params_.channel_layout(),
-                                 params_.sample_rate(),
-                                 params_.effects(), constraints);
+    EXPECT_CALL(*capturer_source_.get(), Initialize(_, capturer_.get(), -1));
+    capturer_->SetCapturerSourceForTesting(capturer_source_, params_);
 
     EXPECT_CALL(*capturer_source_.get(), SetAutomaticGainControl(true));
     EXPECT_CALL(*capturer_source_.get(), Start());

@@ -184,7 +184,7 @@ class MockMediaStreamDependencyFactory : public MediaStreamDependencyFactory {
   virtual bool EnsurePeerConnectionFactory() OVERRIDE;
   virtual bool PeerConnectionFactoryCreated() OVERRIDE;
 
-  virtual scoped_refptr<WebRtcAudioCapturer> MaybeCreateAudioCapturer(
+  virtual scoped_refptr<WebRtcAudioCapturer> CreateAudioCapturer(
       int render_view_id, const StreamDeviceInfo& device_info,
       const blink::WebMediaConstraints& constraints) OVERRIDE;
 

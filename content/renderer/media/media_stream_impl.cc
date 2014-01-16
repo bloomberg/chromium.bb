@@ -728,9 +728,8 @@ void MediaStreamImpl::StopLocalSource(
            << "{device_id = " << extra_data->device_info().device.id << "})";
 
   if (source.type() == blink::WebMediaStreamSource::TypeAudio) {
-    if (extra_data->GetAudioCapturer()) {
+    if (extra_data->GetAudioCapturer())
       extra_data->GetAudioCapturer()->Stop();
-    }
   }
 
   if (notify_dispatcher)
@@ -801,19 +800,13 @@ bool MediaStreamImpl::GetAuthorizedDeviceInfoForAudioRenderer(
     int* output_sample_rate,
     int* output_frames_per_buffer) {
   DCHECK(CalledOnValidThread());
-
   WebRtcAudioDeviceImpl* audio_device =
       dependency_factory_->GetWebRtcAudioDevice();
   if (!audio_device)
     return false;
 
-  if (!audio_device->GetDefaultCapturer())
-    return false;
-
-  return audio_device->GetDefaultCapturer()->GetPairedOutputParameters(
-      session_id,
-      output_sample_rate,
-      output_frames_per_buffer);
+  return audio_device->GetAuthorizedDeviceInfoForAudioRenderer(
+      session_id, output_sample_rate, output_frames_per_buffer);
 }
 
 MediaStreamSourceExtraData::MediaStreamSourceExtraData(
