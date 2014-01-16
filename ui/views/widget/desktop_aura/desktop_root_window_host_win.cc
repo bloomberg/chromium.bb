@@ -88,6 +88,7 @@ DesktopWindowTreeHostWin::DesktopWindowTreeHostWin(
 }
 
 DesktopWindowTreeHostWin::~DesktopWindowTreeHostWin() {
+  DestroyCompositor();
   // WARNING: |content_window_| has been destroyed by the time we get here.
   desktop_native_widget_aura_->OnDesktopWindowTreeHostDestroyed(
       root_window_);
@@ -769,10 +770,6 @@ void DesktopWindowTreeHostWin::HandleCreate() {
 void DesktopWindowTreeHostWin::HandleDestroying() {
   drag_drop_client_->OnNativeWidgetDestroying(GetHWND());
   native_widget_delegate_->OnNativeWidgetDestroying();
-
-  // Destroy the compositor before destroying the HWND since shutdown
-  // may try to swap to the window.
-  DestroyCompositor();
 }
 
 void DesktopWindowTreeHostWin::HandleDestroyed() {
