@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/system/platform_channel_pair.h"
+#include "mojo/system/embedder/platform_channel_pair.h"
 
 #include <fcntl.h>
 #include <sys/socket.h>
@@ -13,7 +13,7 @@
 #include "base/logging.h"
 #include "base/posix/global_descriptors.h"
 #include "base/strings/string_number_conversions.h"
-#include "mojo/system/platform_handle.h"
+#include "mojo/system/embedder/platform_handle.h"
 
 namespace mojo {
 namespace embedder {

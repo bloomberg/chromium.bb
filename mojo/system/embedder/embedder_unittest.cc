@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/system/embedder.h"
+#include "mojo/system/embedder/embedder.h"
 
 #include <string.h>
 
@@ -12,8 +12,8 @@
 // TODO(vtl): Remove build_config.h include when fully implemented on Windows.
 #include "build/build_config.h"
 #include "mojo/public/system/core.h"
-#include "mojo/system/platform_channel_pair.h"
-#include "mojo/system/test_embedder.h"
+#include "mojo/system/embedder/platform_channel_pair.h"
+#include "mojo/system/embedder/test_embedder.h"
 #include "mojo/system/test_utils.h"
 
 namespace mojo {

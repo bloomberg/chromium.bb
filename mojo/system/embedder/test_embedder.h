@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SYSTEM_TEST_EMBEDDER_H_
-#define MOJO_SYSTEM_TEST_EMBEDDER_H_
+#ifndef MOJO_SYSTEM_EMBEDDER_TEST_EMBEDDER_H_
+#define MOJO_SYSTEM_EMBEDDER_TEST_EMBEDDER_H_
 
 namespace mojo {
 namespace embedder {
@@ -20,4 +20,4 @@ void Shutdown();
 }  // namespace embedder
 }  // namespace mojo
 
-#endif  // MOJO_SYSTEM_EMBEDDER_H_
+#endif  // MOJO_SYSTEM_EMBEDDER_EMBEDDER_H_

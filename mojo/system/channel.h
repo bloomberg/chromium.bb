@@ -16,10 +16,10 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "mojo/public/system/core.h"
+#include "mojo/system/embedder/scoped_platform_handle.h"
 #include "mojo/system/message_in_transit.h"
 #include "mojo/system/message_pipe.h"
 #include "mojo/system/raw_channel.h"
-#include "mojo/system/scoped_platform_handle.h"
 #include "mojo/system/system_impl_export.h"
 
 namespace base {

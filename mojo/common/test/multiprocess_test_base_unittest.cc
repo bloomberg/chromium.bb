@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "build/build_config.h"
-#include "mojo/system/scoped_platform_handle.h"
+#include "mojo/system/embedder/scoped_platform_handle.h"
 
 #if defined(OS_POSIX)
 #include <fcntl.h>

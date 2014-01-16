@@ -19,10 +19,10 @@
 #include "base/threading/thread.h"
 #include "mojo/common/test/multiprocess_test_base.h"
 #include "mojo/system/channel.h"
+#include "mojo/system/embedder/scoped_platform_handle.h"
 #include "mojo/system/local_message_pipe_endpoint.h"
 #include "mojo/system/message_pipe.h"
 #include "mojo/system/proxy_message_pipe_endpoint.h"
-#include "mojo/system/scoped_platform_handle.h"
 #include "mojo/system/test_utils.h"
 #include "mojo/system/waiter.h"
 

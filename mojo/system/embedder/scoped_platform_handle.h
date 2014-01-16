@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SYSTEM_SCOPED_PLATFORM_HANDLE_H_
-#define MOJO_SYSTEM_SCOPED_PLATFORM_HANDLE_H_
+#ifndef MOJO_SYSTEM_EMBEDDER_SCOPED_PLATFORM_HANDLE_H_
+#define MOJO_SYSTEM_EMBEDDER_SCOPED_PLATFORM_HANDLE_H_
 
 #include "base/compiler_specific.h"
 #include "base/move.h"
-#include "mojo/system/platform_handle.h"
+#include "mojo/system/embedder/platform_handle.h"
 #include "mojo/system/system_impl_export.h"
 
 namespace mojo {
@@ -58,4 +58,4 @@ class MOJO_SYSTEM_IMPL_EXPORT ScopedPlatformHandle {
 }  // namespace embedder
 }  // namespace mojo
 
-#endif  // MOJO_SYSTEM_SCOPED_PLATFORM_HANDLE_H_
+#endif  // MOJO_SYSTEM_EMBEDDER_SCOPED_PLATFORM_HANDLE_H_

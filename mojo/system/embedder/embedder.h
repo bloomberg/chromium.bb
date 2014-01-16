@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SYSTEM_EMBEDDER_H_
-#define MOJO_SYSTEM_EMBEDDER_H_
+#ifndef MOJO_SYSTEM_EMBEDDER_EMBEDDER_H_
+#define MOJO_SYSTEM_EMBEDDER_EMBEDDER_H_
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/task_runner.h"
 #include "mojo/public/system/core.h"
-#include "mojo/system/scoped_platform_handle.h"
+#include "mojo/system/embedder/scoped_platform_handle.h"
 #include "mojo/system/system_impl_export.h"
 
 namespace mojo {
@@ -53,4 +53,4 @@ MOJO_SYSTEM_IMPL_EXPORT void DestroyChannelOnIOThread(
 }  // namespace embedder
 }  // namespace mojo
 
-#endif  // MOJO_SYSTEM_EMBEDDER_H_
+#endif  // MOJO_SYSTEM_EMBEDDER_EMBEDDER_H_

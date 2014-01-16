@@ -28,10 +28,10 @@
 #include "base/threading/platform_thread.h"  // For |Sleep()|.
 #include "base/threading/simple_thread.h"
 #include "base/time/time.h"
+#include "mojo/system/embedder/platform_channel_pair.h"
+#include "mojo/system/embedder/platform_handle.h"
+#include "mojo/system/embedder/scoped_platform_handle.h"
 #include "mojo/system/message_in_transit.h"
-#include "mojo/system/platform_channel_pair.h"
-#include "mojo/system/platform_handle.h"
-#include "mojo/system/scoped_platform_handle.h"
 #include "mojo/system/test_utils.h"
 
 namespace mojo {

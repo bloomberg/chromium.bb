@@ -10,7 +10,7 @@
 #include "base/process/process_handle.h"
 // TODO(vtl): Remove build_config.h include when fully implemented on Windows.
 #include "build/build_config.h"
-#include "mojo/system/platform_channel_pair.h"
+#include "mojo/system/embedder/platform_channel_pair.h"
 
 namespace mojo {
 namespace test {

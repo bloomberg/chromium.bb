@@ -6,7 +6,7 @@
 
 #include "mojo/shell/dynamic_service_loader.h"
 #include "mojo/shell/network_delegate.h"
-#include "mojo/system/embedder.h"
+#include "mojo/system/embedder/embedder.h"
 
 namespace mojo {
 namespace shell {

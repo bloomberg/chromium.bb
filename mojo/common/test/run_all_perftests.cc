@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/test/perf_test_suite.h"
-#include "mojo/system/embedder.h"
+#include "mojo/system/embedder/embedder.h"
 
 int main(int argc, char** argv) {
   mojo::embedder::Init();

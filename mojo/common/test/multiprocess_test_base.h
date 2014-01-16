@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/process/process_handle.h"
 #include "base/test/multiprocess_test.h"
-#include "mojo/system/scoped_platform_handle.h"
+#include "mojo/system/embedder/scoped_platform_handle.h"
 #include "testing/multiprocess_func_list.h"
 
 namespace mojo {

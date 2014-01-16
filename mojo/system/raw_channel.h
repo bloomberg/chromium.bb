@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "mojo/system/constants.h"
-#include "mojo/system/scoped_platform_handle.h"
+#include "mojo/system/embedder/scoped_platform_handle.h"
 #include "mojo/system/system_impl_export.h"
 
 namespace base {
