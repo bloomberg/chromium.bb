@@ -144,27 +144,13 @@ void DecoratedTextfield::UpdateBorder() {
     border->SetColor(kWarningColor);
   else if (!editable_)
     border->SetColor(SK_ColorTRANSPARENT);
-
-  const gfx::Insets insets = GetInsets();
-  int left = icon_view_ ?
-      icon_view_->GetPreferredSize().width() + 2 * kTextfieldIconPadding : 0;
-  int right = 0;
-  if (base::i18n::IsRTL())
-    std::swap(left, right);
-  border->SetInsets(insets.top(), insets.left() + left, insets.bottom(),
-                    insets.right() + right);
   set_border(border);
 }
 
 void DecoratedTextfield::IconChanged() {
   // Don't show the icon if nothing else is showing.
-  const bool visible = editable_ || !text().empty();
-  if (icon_view_->visible() == visible)
-    return;
-
-  icon_view_->SetVisible(visible);
-  UpdateBorder();
-  SchedulePaint();
+  icon_view_->SetVisible(editable_ || !text().empty());
+  Layout();
 }
 
 } // namespace autofill
