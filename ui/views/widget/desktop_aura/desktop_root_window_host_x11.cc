@@ -362,6 +362,7 @@ bool DesktopWindowTreeHostX11::IsVisible() const {
 void DesktopWindowTreeHostX11::SetSize(const gfx::Size& size) {
   bool size_changed = bounds_.size() != size;
   XResizeWindow(xdisplay_, xwindow_, size.width(), size.height());
+  bounds_.set_size(size);
   if (size_changed)
     NotifyHostResized(size);
 }

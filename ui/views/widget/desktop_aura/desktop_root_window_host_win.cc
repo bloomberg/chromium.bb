@@ -239,11 +239,14 @@ void DesktopWindowTreeHostWin::StackAtTop() {
 }
 
 void DesktopWindowTreeHostWin::CenterWindow(const gfx::Size& size) {
+  gfx::Size size_in_pixels = gfx::win::DIPToScreenSize(size);
   gfx::Size expanded_size;
-  expanded_size = GetExpandedWindowSize(
-      message_handler_->window_ex_style(), size);
-  gfx::Size size_in_pixels = gfx::win::DIPToScreenSize(expanded_size);
-  message_handler_->CenterWindow(size_in_pixels);
+  expanded_size = GetExpandedWindowSize(message_handler_->window_ex_style(),
+                                        size_in_pixels);
+  window_enlargement_ =
+      gfx::Vector2d(expanded_size.width() - size_in_pixels.width(),
+                    expanded_size.height() - size_in_pixels.height());
+  message_handler_->CenterWindow(expanded_size);
 }
 
 void DesktopWindowTreeHostWin::GetWindowPlacement(
@@ -452,13 +455,7 @@ void DesktopWindowTreeHostWin::ToggleFullScreen() {
 // methods work in DIP.
 
 gfx::Rect DesktopWindowTreeHostWin::GetBounds() const {
-  // Match the logic in HWNDMessageHandler::ClientAreaSizeChanged().
-  if (IsMinimized())
-    return gfx::Rect();
-  gfx::Rect bounds(WidgetSizeIsClientSize() ?
-      message_handler_->GetClientAreaBoundsInScreen() :
-      message_handler_->GetWindowBoundsInScreen());
-
+  gfx::Rect bounds(message_handler_->GetClientAreaBounds());
   // If the window bounds were expanded we need to return the original bounds
   // To achieve this we do the reverse of the expansion, i.e. add the
   // window_expansion_top_left_delta_ to the origin and subtract the
@@ -477,6 +474,9 @@ void DesktopWindowTreeHostWin::SetBounds(const gfx::Rect& bounds) {
   // If the window bounds have to be expanded we need to subtract the
   // window_expansion_top_left_delta_ from the origin and add the
   // window_expansion_bottom_right_delta_ to the width and height
+  gfx::Size old_hwnd_size(message_handler_->GetClientAreaBounds().size());
+  gfx::Size old_content_size = GetBounds().size();
+
   gfx::Rect expanded(
       bounds.x() - window_expansion_top_left_delta_.x(),
       bounds.y() - window_expansion_top_left_delta_.y(),
@@ -491,6 +491,11 @@ void DesktopWindowTreeHostWin::SetBounds(const gfx::Rect& bounds) {
       gfx::Vector2d(new_expanded.width() - expanded.width(),
                     new_expanded.height() - expanded.height());
   message_handler_->SetBounds(new_expanded);
+
+  // The client area size may have changed even though the window bounds have
+  // not, if the window bounds were expanded to 64 pixels both times.
+  if (old_hwnd_size == new_expanded.size() && old_content_size != bounds.size())
+    HandleClientSizeChanged(new_expanded.size());
 }
 
 gfx::Insets DesktopWindowTreeHostWin::GetInsets() const {

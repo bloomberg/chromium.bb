@@ -123,6 +123,9 @@ class VIEWS_EXPORT HWNDMessageHandler :
   gfx::Rect GetWindowBoundsInScreen() const;
   gfx::Rect GetClientAreaBoundsInScreen() const;
   gfx::Rect GetRestoredBounds() const;
+  // This accounts for the case where the widget size is the client size.
+  gfx::Rect GetClientAreaBounds() const;
+
   void GetWindowPlacement(gfx::Rect* bounds,
                           ui::WindowShowState* show_state) const;
 

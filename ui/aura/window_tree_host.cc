@@ -184,10 +184,11 @@ void WindowTreeHost::NotifyHostResized(const gfx::Size& new_size) {
   compositor_->SetScaleAndSize(GetDeviceScaleFactorFromDisplay(window()),
                                new_size);
 
+  gfx::Size layer_size = GetBounds().size();
   // The layer, and the observers should be notified of the
   // transformed size of the root window.
-  UpdateRootWindowSize(new_size);
-  delegate_->OnHostResized(new_size);
+  UpdateRootWindowSize(layer_size);
+  delegate_->OnHostResized(layer_size);
 }
 
 #if defined(OS_ANDROID)

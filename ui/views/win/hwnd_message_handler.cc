@@ -519,6 +519,14 @@ gfx::Rect HWNDMessageHandler::GetRestoredBounds() const {
   return bounds;
 }
 
+gfx::Rect HWNDMessageHandler::GetClientAreaBounds() const {
+  if (IsMinimized())
+    return gfx::Rect();
+  if (delegate_->WidgetSizeIsClientSize())
+    return GetClientAreaBoundsInScreen();
+  return GetWindowBoundsInScreen();
+}
+
 void HWNDMessageHandler::GetWindowPlacement(
     gfx::Rect* bounds,
     ui::WindowShowState* show_state) const {
@@ -1099,17 +1107,7 @@ void HWNDMessageHandler::TrackMouseEvents(DWORD mouse_tracking_flags) {
 }
 
 void HWNDMessageHandler::ClientAreaSizeChanged() {
-  RECT r = {0, 0, 0, 0};
-  // In case of minimized window GetWindowRect can return normally unexpected
-  // coordinates.
-  if (!IsMinimized()) {
-    if (delegate_->WidgetSizeIsClientSize())
-      GetClientRect(hwnd(), &r);
-    else
-      GetWindowRect(hwnd(), &r);
-  }
-  gfx::Size s(std::max(0, static_cast<int>(r.right - r.left)),
-              std::max(0, static_cast<int>(r.bottom - r.top)));
+  gfx::Size s = GetClientAreaBounds().size();
   delegate_->HandleClientSizeChanged(s);
   if (use_layered_buffer_)
     layered_window_contents_.reset(new gfx::Canvas(s, 1.0f, false));
