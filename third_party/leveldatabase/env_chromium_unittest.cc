@@ -7,7 +7,10 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/test_suite.h"
-#include "env_chromium.h"
+#include "env_chromium_stdio.h"
+#if defined(OS_WIN)
+#include "env_chromium_win.h"
+#endif
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/env_idb.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
@@ -54,6 +57,21 @@ TEST(ErrorEncoding, Errno) {
   EXPECT_EQ(some_errno, error);
 }
 
+#if defined(OS_WIN)
+TEST(ErrorEncoding, ErrnoWin32) {
+  const MethodID in_method = kWritableFileFlush;
+  const DWORD some_errno = ERROR_FILE_NOT_FOUND;
+  const Status s =
+      MakeIOErrorWin("Somefile.txt", "message", in_method, some_errno);
+  MethodID method;
+  int error;
+  EXPECT_EQ(METHOD_AND_ERRNO,
+            ParseMethodAndError(s.ToString().c_str(), &method, &error));
+  EXPECT_EQ(in_method, method);
+  EXPECT_EQ(some_errno, error);
+}
+#endif
+
 TEST(ErrorEncoding, NoEncodedMessage) {
   Status s = Status::IOError("Some message", "from leveldb itself");
   MethodID method = kRandomAccessFileRead;
@@ -63,7 +81,8 @@ TEST(ErrorEncoding, NoEncodedMessage) {
   EXPECT_EQ(4, error);
 }
 
-class MyEnv : public ChromiumEnv {
+template <typename T>
+class MyEnv : public T {
  public:
   MyEnv() : directory_syncs_(0) {}
   int directory_syncs() { return directory_syncs_; }
@@ -78,8 +97,21 @@ class MyEnv : public ChromiumEnv {
   int directory_syncs_;
 };
 
-TEST(ChromiumEnv, DirectorySyncing) {
-  MyEnv env;
+template <typename T>
+class ChromiumEnvMultiPlatformTests : public ::testing::Test {
+ public:
+};
+
+#if defined(OS_WIN)
+typedef ::testing::Types<ChromiumEnvStdio, ChromiumEnvWin> ChromiumEnvMultiPlatformTestsTypes;
+#else
+typedef ::testing::Types<ChromiumEnvStdio> ChromiumEnvMultiPlatformTestsTypes;
+#endif
+TYPED_TEST_CASE(ChromiumEnvMultiPlatformTests, ChromiumEnvMultiPlatformTestsTypes);
+
+TYPED_TEST(ChromiumEnvMultiPlatformTests, DirectorySyncing) {
+  MyEnv<TypeParam> env;
+
   base::ScopedTempDir dir;
   dir.CreateUniqueTempDir();
   base::FilePath dir_path = dir.path();

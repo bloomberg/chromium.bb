@@ -49,6 +49,12 @@
             '../../third_party/snappy/snappy.gyp:snappy',
           ],
         }],
+        ['OS=="win"', {
+          'sources': [
+            'env_chromium_win.cc',
+            'env_chromium_win.h',
+          ],
+        }],
       ],
       'direct_dependent_settings': {
         'include_dirs': [
@@ -72,6 +78,8 @@
         # they don't build.
         'env_chromium.cc',
         'env_chromium.h',
+        'env_chromium_stdio.cc',
+        'env_chromium_stdio.h',
         'env_idb.h',
         'port/port_chromium.cc',
         'port/port_chromium.h',
