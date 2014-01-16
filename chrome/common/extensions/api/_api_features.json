@@ -532,6 +532,7 @@
   },
   "runtime.lastError": {
     "contexts": "all",
+    "extension_types": "all",
     "matches": ["<all_urls>"]
   },
   "runtime.onConnect": {

@@ -935,5 +935,24 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest, HostedAppOnWebsite) {
   EXPECT_FALSE(AreAnyNonWebApisDefined());
 }
 
+// Tests that an invalid extension ID specified in a hosted app does not crash
+// the hosted app's renderer.
+//
+// This is a regression test for http://crbug.com/326250#c12.
+IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
+                       InvalidExtensionIDFromHostedApp) {
+  InitializeTestServer();
+
+  // The presence of the chromium hosted app triggers this bug. The chromium
+  // connectable extension needs to be installed to set up the runtime bindings.
+  LoadChromiumHostedApp();
+  LoadChromiumConnectableExtension();
+
+  ui_test_utils::NavigateToURL(browser(), chromium_org_url());
+  EXPECT_EQ(COULD_NOT_ESTABLISH_CONNECTION_ERROR ,
+            CanConnectAndSendMessages("invalid"));
+}
+
 }  // namespace
+
 };  // namespace extensions
