@@ -67,6 +67,8 @@ class TestAshKeyboardControllerProxy : public AshKeyboardControllerProxy {
   DISALLOW_COPY_AND_ASSIGN(TestAshKeyboardControllerProxy);
 };
 
+// TODO(bshe): Move this test back to unit test if
+// ui::SetUpInputMethodFactoryForTesting() is safe to be called in unit test.
 class AshKeyboardControllerProxyTest : public ash::test::AshTestBase {
  public:
   AshKeyboardControllerProxyTest() {}
