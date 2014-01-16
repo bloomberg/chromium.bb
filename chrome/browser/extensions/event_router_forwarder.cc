@@ -114,11 +114,13 @@ void EventRouterForwarder::CallEventRouter(
     scoped_ptr<base::ListValue> event_args,
     Profile* restrict_to_profile,
     const GURL& event_url) {
-  // We may not have an extension in cases like chromeos login
-  // (crosbug.com/12856), chrome_frame_net_tests.exe which reuses the chrome
-  // browser single process framework.
+#if defined(OS_CHROMEOS)
+  // Extension does not exist for chromeos login.  This needs to be
+  // removed once we have an extension service for login screen.
+  // crosbug.com/12856.
   if (!extensions::ExtensionSystem::Get(profile)->event_router())
     return;
+#endif
 
   scoped_ptr<Event> event(new Event(event_name, event_args.Pass()));
   event->restrict_to_browser_context = restrict_to_profile;
