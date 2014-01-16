@@ -129,6 +129,14 @@ public:
         virtual ~WebGraphicsErrorMessageCallback() { }
     };
 
+    class WebGraphicsSwapBuffersCompleteCallbackCHROMIUM {
+    public:
+        virtual void onSwapBuffersComplete() = 0;
+
+    protected:
+        virtual ~WebGraphicsSwapBuffersCompleteCallbackCHROMIUM() { }
+    };
+
     // This destructor needs to be public so that using classes can destroy instances if initialization fails.
     virtual ~WebGraphicsContext3D() { }
 
@@ -140,11 +148,28 @@ public:
     // the ID number, the more recently the context has been flushed.
     virtual uint32_t lastFlushID() { return 0; }
 
+    // Resizes the region into which this WebGraphicsContext3D is drawing.
+    virtual void reshapeWithScaleFactor(int width, int height, float scaleFactor) { }
+
+    // GL_CHROMIUM_setVisibility - Changes the visibility of the backbuffer
+    virtual void setVisibilityCHROMIUM(bool visible) = 0;
+
     // GL_EXT_discard_framebuffer - makes specified attachments of currently bound framebuffer undefined.
     virtual void discardFramebufferEXT(WGC3Denum target, WGC3Dsizei numAttachments, const WGC3Denum* attachments) { }
 
+    // GL_CHROMIUM_discard_backbuffer - controls allocation/deallocation of the back buffer.
+    virtual void discardBackbufferCHROMIUM() { }
+    virtual void ensureBackbufferCHROMIUM() { }
+
     virtual unsigned insertSyncPoint() { return 0; }
     virtual void waitSyncPoint(unsigned) { }
+
+    // Copies the contents of the off-screen render target used by the WebGL
+    // context to the corresponding texture used by the compositor.
+    virtual void prepareTexture() = 0;
+
+    // GL_CHROMIUM_post_sub_buffer - Copies part of the back buffer to the front buffer.
+    virtual void postSubBufferCHROMIUM(int x, int y, int width, int height) = 0;
 
     // Synthesizes an OpenGL error which will be returned from a
     // later call to getError. This is used to emulate OpenGL ES
@@ -158,6 +183,12 @@ public:
 
     virtual bool isContextLost() = 0;
 
+    // GL_CHROMIUM_map_sub
+    virtual void* mapBufferSubDataCHROMIUM(WGC3Denum target, WGC3Dintptr offset, WGC3Dsizeiptr size, WGC3Denum access) = 0;
+    virtual void unmapBufferSubDataCHROMIUM(const void*) = 0;
+    virtual void* mapTexSubImage2DCHROMIUM(WGC3Denum target, WGC3Dint level, WGC3Dint xoffset, WGC3Dint yoffset, WGC3Dsizei width, WGC3Dsizei height, WGC3Denum format, WGC3Denum type, WGC3Denum access) = 0;
+    virtual void unmapTexSubImage2DCHROMIUM(const void*) = 0;
+
     // GL_CHROMIUM_request_extension
     virtual WebString getRequestableExtensionsCHROMIUM() = 0;
     virtual void requestExtensionCHROMIUM(const char*) = 0;
@@ -165,6 +196,18 @@ public:
     // GL_CHROMIUM_framebuffer_multisample
     virtual void blitFramebufferCHROMIUM(WGC3Dint srcX0, WGC3Dint srcY0, WGC3Dint srcX1, WGC3Dint srcY1, WGC3Dint dstX0, WGC3Dint dstY0, WGC3Dint dstX1, WGC3Dint dstY1, WGC3Dbitfield mask, WGC3Denum filter) = 0;
     virtual void renderbufferStorageMultisampleCHROMIUM(WGC3Denum target, WGC3Dsizei samples, WGC3Denum internalformat, WGC3Dsizei width, WGC3Dsizei height) = 0;
+
+    // GL_CHROMIUM_swapbuffers_complete_callback
+    virtual void setSwapBuffersCompleteCallbackCHROMIUM(WebGraphicsSwapBuffersCompleteCallbackCHROMIUM* callback) { }
+
+    // GL_CHROMIUM_rate_limit_offscreen_context
+    virtual void rateLimitOffscreenContextCHROMIUM() { }
+
+    // GL_CHROMIUM_stream_texture
+    // Returns the stream end point identifier created for the given texture.
+    virtual WebGLId createStreamTextureCHROMIUM(WebGLId texture) { return 0; }
+    // Destroys the stream for the given texture.
+    virtual void destroyStreamTextureCHROMIUM(WebGLId texture) { }
 
     // GL_CHROMIUM_lose_context
     virtual void loseContextCHROMIUM(WGC3Denum current, WGC3Denum other) { }
@@ -358,9 +401,32 @@ public:
     // both command buffer port and in-process port.
     virtual WebString getTranslatedShaderSourceANGLE(WebGLId shader) { return WebString(); }
 
+    // GL_CHROMIUM_iosurface
+    virtual void texImageIOSurface2DCHROMIUM(WGC3Denum target, WGC3Dint width, WGC3Dint height, WGC3Duint ioSurfaceId, WGC3Duint plane) { }
+
+    // GL_EXT_texture_storage
+    virtual void texStorage2DEXT(WGC3Denum target, WGC3Dint levels, WGC3Duint internalformat,
+                                 WGC3Dint width, WGC3Dint height) { }
+
+    // GL_EXT_occlusion_query
+    virtual WebGLId createQueryEXT() { return 0; }
+    virtual void deleteQueryEXT(WebGLId query) { }
+    virtual WGC3Dboolean isQueryEXT(WebGLId query) { return false; }
+    virtual void beginQueryEXT(WGC3Denum target, WebGLId query) { }
+    virtual void endQueryEXT(WGC3Denum target) { }
+    virtual void getQueryivEXT(WGC3Denum target, WGC3Denum pname, WGC3Dint* params) { }
+    virtual void getQueryObjectuivEXT(WebGLId query, WGC3Denum pname, WGC3Duint* params) { }
+
+    // GL_CHROMIUM_bind_uniform_location
+    virtual void bindUniformLocationCHROMIUM(WebGLId program, WGC3Dint location, const WGC3Dchar* uniform) { }
+
     // GL_CHROMIUM_copy_texture
     virtual void copyTextureCHROMIUM(WGC3Denum target, WGC3Duint sourceId,
         WGC3Duint destId, WGC3Dint level, WGC3Denum internalFormat, WGC3Denum destType) { }
+
+    // GL_CHROMIUM_shallow_flush
+    virtual void shallowFlushCHROMIUM() { }
+    virtual void shallowFinishCHROMIUM() { }
 
     // GL_CHROMIUM_texture_mailbox
     virtual void genMailboxCHROMIUM(WGC3Dbyte* mailbox) { }
@@ -378,10 +444,30 @@ public:
     virtual WGC3Dboolean isVertexArrayOES(WebGLId array) { return false; }
     virtual void bindVertexArrayOES(WebGLId array) { }
 
+    // GL_CHROMIUM_texture_from_image
+    virtual void bindTexImage2DCHROMIUM(WGC3Denum target, WGC3Dint imageId) { }
+    virtual void releaseTexImage2DCHROMIUM(WGC3Denum target, WGC3Dint imageId) { }
+
+    // GL_CHROMIUM_pixel_transfer_buffer_object
+    virtual void* mapBufferCHROMIUM(WGC3Denum target, WGC3Denum access) { return 0; }
+    virtual WGC3Dboolean unmapBufferCHROMIUM(WGC3Denum target) { return false; }
+
+    // GL_CHROMIUM_async_pixel_transfers
+    virtual void asyncTexImage2DCHROMIUM(WGC3Denum target, WGC3Dint level, WGC3Denum internalformat, WGC3Dsizei width, WGC3Dsizei height, WGC3Dint border, WGC3Denum format, WGC3Denum type, const void* pixels) { }
+    virtual void asyncTexSubImage2DCHROMIUM(WGC3Denum target, WGC3Dint level, WGC3Dint xoffset, WGC3Dint yoffset, WGC3Dsizei width, WGC3Dsizei height, WGC3Denum format, WGC3Denum type, const void* pixels) { }
+    virtual void waitAsyncTexImage2DCHROMIUM(WGC3Denum) { }
+
     // GL_EXT_draw_buffers
     virtual void drawBuffersEXT(WGC3Dsizei n, const WGC3Denum* bufs) { }
 
     virtual GrGLInterface* createGrGLInterface() { return 0; }
+
+    // GL_CHROMIUM_map_image
+    virtual WGC3Duint createImageCHROMIUM(WGC3Dsizei width, WGC3Dsizei height, WGC3Denum internalformat) { return 0; }
+    virtual void destroyImageCHROMIUM(WGC3Duint imageId) { }
+    virtual void getImageParameterivCHROMIUM(WGC3Duint imageId, WGC3Denum pname, WGC3Dint* params) { }
+    virtual void* mapImageCHROMIUM(WGC3Duint imageId, WGC3Denum access) { return 0; }
+    virtual void unmapImageCHROMIUM(WGC3Duint imageId) { }
 
     // GL_ANGLE_instanced_arrays
     virtual void drawArraysInstancedANGLE(WGC3Denum mode, WGC3Dint first, WGC3Dsizei count, WGC3Dsizei primcount) { }
