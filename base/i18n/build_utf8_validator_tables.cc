@@ -40,6 +40,7 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/safe_numerics.h"
 #include "base/strings/stringprintf.h"
 #include "third_party/icu/source/common/unicode/utf8.h"
 
@@ -317,7 +318,8 @@ uint8 MakeState(const StringSet& set,
   states->push_back(
       State(new_state_initializer,
             new_state_initializer + arraysize(new_state_initializer)));
-  const uint8 new_state_number = states->size() - 1;
+  const uint8 new_state_number =
+      base::checked_numeric_cast<uint8>(states->size() - 1);
   CHECK(state_map->insert(std::make_pair(set, new_state_number)).second);
   return new_state_number;
 }
