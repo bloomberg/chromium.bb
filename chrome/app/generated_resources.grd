@@ -6726,11 +6726,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_ENABLE_APP_LIST_FOLDER_DESCRIPTION" desc="Description of the flag to enable the app list folder.">
           Enable the app list folder. If enabled, user will be able to create app list folder by drag-and-drop.
         </message>
-        <message name="IDS_FLAGS_DISABLE_APP_LIST_VOICE_SEARCH" desc="Name of the flag to disable voice search in the app list.">
-          Disable voice search in the app list.
+        <message name="IDS_FLAGS_ENABLE_APP_LIST_VOICE_SEARCH" desc="Name of the flag to enable voice search in the app list.">
+          Enable voice search in the app list.
         </message>
-        <message name="IDS_FLAGS_DISABLE_APP_LIST_VOICE_SEARCH_DESCRIPTION" desc="Description of the flag to disable voice search in the app list.">
-          Disable voice search in the app list. If disabled, user won't be able to search by speech.
+        <message name="IDS_FLAGS_ENABLE_APP_LIST_VOICE_SEARCH_DESCRIPTION" desc="Description of the flag to enable voice search in the app list.">
+          Enable voice search in the app list. If enabled, user will be able to search by speech.
         </message>
       </if>
       <message name="IDS_FLAGS_DISABLE_USER_IMAGE_SYNC_NAME" desc="Name of the flag to disable sync of user account image.">
