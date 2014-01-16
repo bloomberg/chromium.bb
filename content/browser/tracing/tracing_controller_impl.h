@@ -157,6 +157,7 @@ class TracingControllerImpl : public TracingController {
 
   bool is_recording_;
   bool is_monitoring_;
+  TracingController::Options options_;
 
   GetCategoriesDoneCallback pending_get_categories_done_callback_;
   TracingFileResultCallback pending_disable_recording_done_callback_;

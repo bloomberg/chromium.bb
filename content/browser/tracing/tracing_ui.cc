@@ -44,8 +44,7 @@ void OnGotCategories(const WebUIDataSource::GotDataCallback& callback,
 
 bool GetTracingOptions(const std::string& data64,
                        std::string* category_filter_string,
-                       int* tracing_options)
-{
+                       int* tracing_options) {
   std::string data;
   if (!base::Base64Decode(data64, &data)) {
     LOG(ERROR) << "Options were not base64 encoded.";
@@ -90,8 +89,8 @@ bool GetTracingOptions(const std::string& data64,
 
 void OnRecordingEnabledAck(const WebUIDataSource::GotDataCallback& callback);
 
-bool OnBeginRecording(const std::string& data64,
-                      const WebUIDataSource::GotDataCallback& callback) {
+bool BeginRecording(const std::string& data64,
+                    const WebUIDataSource::GotDataCallback& callback) {
   std::string category_filter_string;
   int tracing_options = 0;
   if (!GetTracingOptions(data64, &category_filter_string, &tracing_options))
@@ -133,8 +132,8 @@ void BeginReadingRecordingResult(
 
 void OnMonitoringEnabledAck(const WebUIDataSource::GotDataCallback& callback);
 
-bool OnEnableMonitoring(const std::string& data64,
-                        const WebUIDataSource::GotDataCallback& callback) {
+bool EnableMonitoring(const std::string& data64,
+                      const WebUIDataSource::GotDataCallback& callback) {
   std::string category_filter_string;
   int tracing_options = 0;
   if (!GetTracingOptions(data64, &category_filter_string, &tracing_options))
@@ -154,6 +153,34 @@ void OnMonitoringEnabledAck(const WebUIDataSource::GotDataCallback& callback) {
 void OnMonitoringDisabled(const WebUIDataSource::GotDataCallback& callback) {
   base::RefCountedString* res = new base::RefCountedString();
   callback.Run(res);
+}
+
+void GetMonitoringStatus(const WebUIDataSource::GotDataCallback& callback) {
+  bool is_monitoring;
+  std::string category_filter;
+  TracingController::Options options;
+  TracingController::GetInstance()->GetMonitoringStatus(
+      &is_monitoring, &category_filter, &options);
+
+  scoped_ptr<base::DictionaryValue>
+    monitoring_options(new base::DictionaryValue());
+  monitoring_options->SetBoolean("isMonitoring", is_monitoring);
+  monitoring_options->SetString("categoryFilter", category_filter);
+  monitoring_options->SetBoolean("useSystemTracing",
+      (options & TracingController::ENABLE_SYSTRACE) != 0);
+  monitoring_options->SetBoolean("useContinuousTracing",
+      (options & TracingController::RECORD_CONTINUOUSLY) != 0);
+  monitoring_options->SetBoolean("useSampling",
+      (options & TracingController::ENABLE_SAMPLING) != 0);
+
+  std::string monitoring_options_json;
+  base::JSONWriter::Write(monitoring_options.get(), &monitoring_options_json);
+
+  base::RefCountedString* monitoring_options_base64 =
+    new base::RefCountedString();
+  base::Base64Encode(monitoring_options_json,
+                     &monitoring_options_base64->data());
+  callback.Run(monitoring_options_base64);
 }
 
 void ReadMonitoringSnapshot(const WebUIDataSource::GotDataCallback& callback,
@@ -183,7 +210,7 @@ bool OnBeginJSONRequest(const std::string& path,
   const char* beginRecordingPath = "json/begin_recording?";
   if (StartsWithASCII(path, beginRecordingPath, true)) {
     std::string data = path.substr(strlen(beginRecordingPath));
-    return OnBeginRecording(data, callback);
+    return BeginRecording(data, callback);
   }
   if (path == "json/get_buffer_percent_full") {
     return TracingController::GetInstance()->GetTraceBufferPercentFull(
@@ -197,7 +224,7 @@ bool OnBeginJSONRequest(const std::string& path,
   const char* enableMonitoringPath = "json/begin_monitoring?";
   if (path.find(enableMonitoringPath) == 0) {
     std::string data = path.substr(strlen(enableMonitoringPath));
-    return OnEnableMonitoring(data, callback);
+    return EnableMonitoring(data, callback);
   }
   if (path == "json/end_monitoring") {
     return TracingController::GetInstance()->DisableMonitoring(
@@ -208,6 +235,11 @@ bool OnBeginJSONRequest(const std::string& path,
         base::FilePath(), base::Bind(OnMonitoringSnapshotCaptured, callback));
     return true;
   }
+  if (path == "json/get_monitoring_status") {
+    GetMonitoringStatus(callback);
+    return true;
+  }
+
   LOG(ERROR) << "Unhandled request to " << path;
   return false;
 }

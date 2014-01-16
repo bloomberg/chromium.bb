@@ -188,6 +188,7 @@ bool TracingControllerImpl::EnableRecording(
     TraceLog::GetInstance()->AddClockSyncMetadataEvent();
 #endif
 
+  options_ = options;
   int trace_options = (options & RECORD_CONTINUOUSLY) ?
       TraceLog::RECORD_CONTINUOUSLY : TraceLog::RECORD_UNTIL_FULL;
   if (options & ENABLE_SAMPLING) {
@@ -234,6 +235,7 @@ bool TracingControllerImpl::DisableRecording(
   if (!can_disable_recording())
     return false;
 
+  options_ = TracingController::Options();
   // Disable local trace early to avoid traces during end-tracing process from
   // interfering with the process.
   base::Closure on_disable_recording_done_callback =
@@ -298,6 +300,7 @@ bool TracingControllerImpl::EnableMonitoring(
   TraceLog::GetInstance()->AddClockSyncMetadataEvent();
 #endif
 
+  options_ = options;
   int trace_options = 0;
   if (options & ENABLE_SAMPLING)
     trace_options |= TraceLog::ENABLE_SAMPLING;
@@ -340,6 +343,7 @@ bool TracingControllerImpl::DisableMonitoring(
   if (!can_disable_monitoring())
     return false;
 
+  options_ = TracingController::Options();
   base::Closure on_disable_monitoring_done_callback =
       base::Bind(&TracingControllerImpl::OnDisableMonitoringDone,
                  base::Unretained(this), callback);
@@ -370,7 +374,10 @@ void TracingControllerImpl::GetMonitoringStatus(
     bool* out_enabled,
     std::string* out_category_filter,
     TracingController::Options* out_options) {
-  NOTIMPLEMENTED();
+  *out_enabled = is_monitoring_;
+  *out_category_filter =
+    TraceLog::GetInstance()->GetCurrentCategoryFilter().ToString();
+  *out_options = options_;
 }
 
 bool TracingControllerImpl::CaptureMonitoringSnapshot(
@@ -787,7 +794,6 @@ void TracingControllerImpl::RegisterTracingUI(TracingUI* tracing_ui)
 {
   DCHECK(tracing_uis_.find(tracing_ui) == tracing_uis_.end());
   tracing_uis_.insert(tracing_ui);
-  tracing_ui->OnMonitoringStateChanged(is_monitoring_);
 }
 
 void TracingControllerImpl::UnregisterTracingUI(TracingUI* tracing_ui)
