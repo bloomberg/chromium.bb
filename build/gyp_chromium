@@ -129,6 +129,28 @@ def GetArgsStringForGN(supplemental_files):
   """Returns the args to pass to GN.
   Based on a subset of the GYP variables that have been rewritten a bit."""
 
+  # Find the .gyp directory in the user's home directory.
+  home_dot_gyp = os.environ.get('GYP_CONFIG_DIR', None)
+  if home_dot_gyp:
+    home_dot_gyp = os.path.expanduser(home_dot_gyp)
+  if not home_dot_gyp:
+    home_vars = ['HOME']
+    if sys.platform in ('cygwin', 'win32'):
+      home_vars.append('USERPROFILE')
+    for home_var in home_vars:
+      home = os.getenv(home_var)
+      if home != None:
+        home_dot_gyp = os.path.join(home, '.gyp')
+        if not os.path.exists(home_dot_gyp):
+          home_dot_gyp = None
+        else:
+          break
+
+  if home_dot_gyp:
+    include_gypi = os.path.join(home_dot_gyp, "include.gypi")
+    if os.path.exists(include_gypi):
+      supplemental_files += [include_gypi]
+
   vars_dict = GetGypVarsForGN(supplemental_files)
   gn_args = ''
 

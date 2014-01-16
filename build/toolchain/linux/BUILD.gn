@@ -29,10 +29,10 @@ if (is_gyp) {
     # generator set.
     gyp_header =
       "'conditions':" +
-      "['\"<(GENERATOR)\"==\"ninja\"', { 'make_global_settings': [" +
+      "[['\"<(GENERATOR)\"==\"ninja\"', { 'make_global_settings': [" +
       make_global_settings +
       make_goma_global_settings +
-      "]}],"
+      "]}]],"
   } else {
     gyp_header = "'make_global_settings': [" + make_global_settings + "],"
   }
