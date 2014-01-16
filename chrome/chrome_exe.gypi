@@ -6,42 +6,7 @@
   'targets': [
     {
       'target_name': 'chrome',
-      'type': 'none',
-      'dependencies': [ 'chrome_initial', ],
-      'conditions': [
-        ['OS == "win"', {
-          'actions': [
-            {
-              'variables': {
-                'reorder_py_path': '<(DEPTH)/build/win/reorder-imports.py',
-                'exe_input_path':'$(OutDir)\\initial',
-                'exe_output_path':'<(PRODUCT_DIR)',
-              },
-              'action_name': 'reorder_imports',
-              'inputs': [
-                '<(reorder_py_path)',
-              ],
-              'outputs': [
-                '<(PRODUCT_DIR)\\chrome.exe',
-                '<(PRODUCT_DIR)\\chrome.exe.pdb',
-              ],
-              'action': [
-                'python',
-                '<(reorder_py_path)',
-                '-i', '<(exe_input_path)',
-                '-o', '<(exe_output_path)',
-              ],
-              'message': 'Reordering Imports',
-            },
-          ],
-        }],
-      ],
-    },
-    {
-      'target_name': 'chrome_initial',
       'type': 'executable',
-      # Name the exe chrome.exe, not chrome_initial.exe.
-      'product_name': 'chrome',
       'mac_bundle': 1,
       'variables': {
         'use_system_xdg_utils%': 0,
@@ -503,6 +468,8 @@
         }],
         ['OS=="win"', {
           'dependencies': [
+            # Note that chrome_elf must be listed first. Do not reorder it.
+            '../chrome_elf/chrome_elf.gyp:chrome_elf',
             'chrome_dll',
             'chrome_nacl_win64',
             'chrome_process_finder',
@@ -514,7 +481,6 @@
             '../breakpad/breakpad.gyp:breakpad_sender',
             '../components/components.gyp:breakpad_component',
             '../components/components.gyp:policy',
-            '../chrome_elf/chrome_elf.gyp:chrome_elf',
             '../sandbox/sandbox.gyp:sandbox',
           ],
           'sources': [
@@ -528,7 +494,6 @@
           'msvs_settings': {
             'VCLinkerTool': {
               'ImportLibrary': '$(OutDir)\\lib\\chrome_exe.lib',
-              'OutputFile': '$(OutDir)\\initial\\chrome.exe',
               'DelayLoadDLLs': [
                 'dbghelp.dll',
                 'dwmapi.dll',
