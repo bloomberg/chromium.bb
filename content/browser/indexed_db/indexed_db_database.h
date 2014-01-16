@@ -8,6 +8,7 @@
 #include <list>
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -44,7 +45,9 @@ class CONTENT_EXPORT IndexedDBDatabase
     CURSOR_UPDATE
   };
 
-  typedef std::vector<IndexedDBKey> IndexKeys;
+  // An index and corresponding set of keys
+  typedef std::pair<int64, std::vector<IndexedDBKey> > IndexKeys;
+
   // Identifier is pair of (origin url, database name).
   typedef std::pair<GURL, base::string16> Identifier;
 
@@ -130,12 +133,10 @@ class CONTENT_EXPORT IndexedDBDatabase
            scoped_ptr<IndexedDBKey> key,
            PutMode mode,
            scoped_refptr<IndexedDBCallbacks> callbacks,
-           const std::vector<int64>& index_ids,
            const std::vector<IndexKeys>& index_keys);
   void SetIndexKeys(int64 transaction_id,
                     int64 object_store_id,
                     scoped_ptr<IndexedDBKey> primary_key,
-                    const std::vector<int64>& index_ids,
                     const std::vector<IndexKeys>& index_keys);
   void SetIndexesReady(int64 transaction_id,
                        int64 object_store_id,

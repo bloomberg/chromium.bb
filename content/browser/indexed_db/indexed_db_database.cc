@@ -698,7 +698,6 @@ struct IndexedDBDatabase::PutOperationParams {
   scoped_ptr<IndexedDBKey> key;
   IndexedDBDatabase::PutMode put_mode;
   scoped_refptr<IndexedDBCallbacks> callbacks;
-  std::vector<int64> index_ids;
   std::vector<IndexKeys> index_keys;
 
   DISALLOW_COPY_AND_ASSIGN(PutOperationParams);
@@ -710,7 +709,6 @@ void IndexedDBDatabase::Put(int64 transaction_id,
                             scoped_ptr<IndexedDBKey> key,
                             PutMode put_mode,
                             scoped_refptr<IndexedDBCallbacks> callbacks,
-                            const std::vector<int64>& index_ids,
                             const std::vector<IndexKeys>& index_keys) {
   IDB_TRACE("IndexedDBDatabase::Put");
   IndexedDBTransaction* transaction = GetTransaction(transaction_id);
@@ -728,7 +726,6 @@ void IndexedDBDatabase::Put(int64 transaction_id,
   params->key = key.Pass();
   params->put_mode = put_mode;
   params->callbacks = callbacks;
-  params->index_ids = index_ids;
   params->index_keys = index_keys;
   transaction->ScheduleTask(base::Bind(
       &IndexedDBDatabase::PutOperation, this, base::Passed(&params)));
@@ -738,7 +735,6 @@ void IndexedDBDatabase::PutOperation(scoped_ptr<PutOperationParams> params,
                                      IndexedDBTransaction* transaction) {
   IDB_TRACE("IndexedDBDatabase::PutOperation");
   DCHECK_NE(transaction->mode(), indexed_db::TRANSACTION_READ_ONLY);
-  DCHECK_EQ(params->index_ids.size(), params->index_keys.size());
   bool key_was_generated = false;
 
   DCHECK(metadata_.object_stores.find(params->object_store_id) !=
@@ -799,7 +795,6 @@ void IndexedDBDatabase::PutOperation(scoped_ptr<PutOperationParams> params,
                                                 object_store,
                                                 *key,
                                                 key_was_generated,
-                                                params->index_ids,
                                                 params->index_keys,
                                                 &index_writers,
                                                 &error_message,
@@ -864,7 +859,6 @@ void IndexedDBDatabase::PutOperation(scoped_ptr<PutOperationParams> params,
 void IndexedDBDatabase::SetIndexKeys(int64 transaction_id,
                                      int64 object_store_id,
                                      scoped_ptr<IndexedDBKey> primary_key,
-                                     const std::vector<int64>& index_ids,
                                      const std::vector<IndexKeys>& index_keys) {
   IDB_TRACE("IndexedDBDatabase::SetIndexKeys");
   IndexedDBTransaction* transaction = GetTransaction(transaction_id);
@@ -909,7 +903,6 @@ void IndexedDBDatabase::SetIndexKeys(int64 transaction_id,
                                                 object_store_metadata,
                                                 *primary_key,
                                                 false,
-                                                index_ids,
                                                 index_keys,
                                                 &index_writers,
                                                 &error_message,
