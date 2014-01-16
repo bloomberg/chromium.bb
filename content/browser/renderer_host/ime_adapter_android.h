@@ -56,6 +56,7 @@ class ImeAdapterAndroid {
 
   // Called from native -> java
   void CancelComposition();
+  void FocusedNodeChanged(bool is_editable_node);
 
  private:
   RenderWidgetHostImpl* GetRenderWidgetHostImpl();

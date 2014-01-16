@@ -548,6 +548,10 @@ void RenderWidgetHostViewAndroid::ImeCancelComposition() {
   ime_adapter_android_.CancelComposition();
 }
 
+void RenderWidgetHostViewAndroid::FocusedNodeChanged(bool is_editable_node) {
+  ime_adapter_android_.FocusedNodeChanged(is_editable_node);
+}
+
 void RenderWidgetHostViewAndroid::DidUpdateBackingStore(
     const gfx::Rect& scroll_rect,
     const gfx::Vector2d& scroll_delta,

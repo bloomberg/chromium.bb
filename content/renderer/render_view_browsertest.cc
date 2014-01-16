@@ -2209,4 +2209,35 @@ TEST_F(RenderViewImplTest, SendFaviconURLUpdateEvent) {
       ViewHostMsg_UpdateFaviconURL::ID));
 }
 
+TEST_F(RenderViewImplTest, FocusElementCallsFocusedNodeChanged) {
+  LoadHTML("<input id='test1' value='hello1'></input>"
+           "<input id='test2' value='hello2'></input>");
+
+  ExecuteJavaScript("document.getElementById('test1').focus();");
+  const IPC::Message* msg1 = render_thread_->sink().GetFirstMessageMatching(
+      ViewHostMsg_FocusedNodeChanged::ID);
+  EXPECT_TRUE(msg1);
+
+  ViewHostMsg_FocusedNodeChanged::Param params;
+  ViewHostMsg_FocusedNodeChanged::Read(msg1, &params);
+  EXPECT_TRUE(params.a);
+  render_thread_->sink().ClearMessages();
+
+  ExecuteJavaScript("document.getElementById('test2').focus();");
+  const IPC::Message* msg2 = render_thread_->sink().GetFirstMessageMatching(
+        ViewHostMsg_FocusedNodeChanged::ID);
+  EXPECT_TRUE(msg2);
+  ViewHostMsg_FocusedNodeChanged::Read(msg2, &params);
+  EXPECT_TRUE(params.a);
+  render_thread_->sink().ClearMessages();
+
+  view()->webview()->clearFocusedNode();
+  const IPC::Message* msg3 = render_thread_->sink().GetFirstMessageMatching(
+        ViewHostMsg_FocusedNodeChanged::ID);
+  EXPECT_TRUE(msg3);
+  ViewHostMsg_FocusedNodeChanged::Read(msg3, &params);
+  EXPECT_FALSE(params.a);
+  render_thread_->sink().ClearMessages();
+}
+
 }  // namespace content

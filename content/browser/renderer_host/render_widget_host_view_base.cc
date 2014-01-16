@@ -537,6 +537,9 @@ RenderWidgetHostViewBase::CreateSyntheticGestureTarget() {
       new SyntheticGestureTargetBase(host));
 }
 
+void RenderWidgetHostViewBase::FocusedNodeChanged(bool is_editable_node) {
+}
+
 // Platform implementation should override this method to allow frame
 // subscription. Frame subscriber is set to RenderProcessHost, which is
 // platform independent. It should be set to the specific presenter on each

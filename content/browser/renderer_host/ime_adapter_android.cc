@@ -179,6 +179,16 @@ void ImeAdapterAndroid::CancelComposition() {
     Java_ImeAdapter_cancelComposition(AttachCurrentThread(), obj.obj());
 }
 
+void ImeAdapterAndroid::FocusedNodeChanged(bool is_editable_node) {
+  base::android::ScopedJavaLocalRef<jobject> obj =
+      java_ime_adapter_.get(AttachCurrentThread());
+  if (!obj.is_null()) {
+    Java_ImeAdapter_focusedNodeChanged(AttachCurrentThread(),
+                                       obj.obj(),
+                                       is_editable_node);
+  }
+}
+
 void ImeAdapterAndroid::SetEditableSelectionOffsets(JNIEnv*, jobject,
                                                     int start, int end) {
   RenderWidgetHostImpl* rwhi = GetRenderWidgetHostImpl();

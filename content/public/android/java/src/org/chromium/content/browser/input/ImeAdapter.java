@@ -39,6 +39,9 @@ import org.chromium.base.JNINamespace;
  */
 @JNINamespace("content")
 public class ImeAdapter {
+    /**
+     * Interface for the delegate that needs to be notified of IME changes.
+     */
     public interface ImeAdapterDelegate {
         /**
          * @param isFinish whether the event is occurring because input is finished.
@@ -119,6 +122,9 @@ public class ImeAdapter {
         mHandler = new Handler();
     }
 
+    /**
+     * Default factory for AdapterInputConnection classes.
+     */
     public static class AdapterInputConnectionFactory {
         public AdapterInputConnection get(View view, ImeAdapter imeAdapter, EditorInfo outAttrs) {
             return new AdapterInputConnection(view, imeAdapter, outAttrs);
@@ -491,10 +497,13 @@ public class ImeAdapter {
     }
 
     @CalledByNative
+    private void focusedNodeChanged(boolean isEditable) {
+        if (mInputConnection != null && isEditable) mInputConnection.restartInput();
+    }
+
+    @CalledByNative
     private void cancelComposition() {
-        if (mInputConnection != null) {
-            mInputConnection.restartInput();
-        }
+        if (mInputConnection != null) mInputConnection.restartInput();
     }
 
     @CalledByNative

@@ -105,6 +105,7 @@ class RenderWidgetHostViewAndroid
                                     ui::TextInputMode input_mode,
                                     bool can_compose_inline) OVERRIDE;
   virtual void ImeCancelComposition() OVERRIDE;
+  virtual void FocusedNodeChanged(bool is_editable_node) OVERRIDE;
   virtual void DidUpdateBackingStore(
       const gfx::Rect& scroll_rect,
       const gfx::Vector2d& scroll_delta,

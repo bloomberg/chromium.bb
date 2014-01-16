@@ -1778,6 +1778,8 @@ void RenderViewHostImpl::OnTakeFocus(bool reverse) {
 }
 
 void RenderViewHostImpl::OnFocusedNodeChanged(bool is_editable_node) {
+  if (view_)
+    view_->FocusedNodeChanged(is_editable_node);
 #if defined(OS_WIN)
   if (!is_editable_node && virtual_keyboard_requested_) {
     virtual_keyboard_requested_ = false;

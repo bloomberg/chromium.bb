@@ -75,6 +75,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
                                       InputEventAckState ack_result) OVERRIDE;
   virtual scoped_ptr<SyntheticGestureTarget> CreateSyntheticGestureTarget()
       OVERRIDE;
+  virtual void FocusedNodeChanged(bool is_editable_node) OVERRIDE;
   virtual bool CanSubscribeFrame() const OVERRIDE;
   virtual void BeginFrameSubscription(
       scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) OVERRIDE;

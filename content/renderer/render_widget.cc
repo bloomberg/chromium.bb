@@ -1108,10 +1108,6 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
     prevent_default = prevent_default || WillHandleGestureEvent(gesture_event);
   }
 
-  if (input_event->type == WebInputEvent::GestureTap ||
-      input_event->type == WebInputEvent::GestureLongPress)
-    resetInputMethod();
-
   if (input_event->type == WebInputEvent::TouchStart)
       handling_touchstart_event_ = true;
 
