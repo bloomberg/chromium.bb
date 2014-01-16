@@ -558,6 +558,7 @@ def MainTestWrapper(options):
       coverage_html = GenerateJavaCoverageReport(options)
       UploadHTML(options, '%s/java' % options.coverage_bucket, coverage_html,
                  'Coverage Report')
+      shutil.rmtree(coverage_html, ignore_errors=True)
 
     if options.experimental:
       RunTestSuites(options, gtest_config.EXPERIMENTAL_TEST_SUITES)
