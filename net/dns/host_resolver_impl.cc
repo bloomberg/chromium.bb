@@ -2155,7 +2155,12 @@ HostResolverImpl::Key HostResolverImpl::GetEffectiveKeyForRequest(
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x88, 0x88 };
       IPAddressNumber address(kIPv6Address,
                               kIPv6Address + arraysize(kIPv6Address));
-      bool rv6 = IsGloballyReachable(address, net_log);
+      BoundNetLog probe_net_log = BoundNetLog::Make(
+          net_log.net_log(), NetLog::SOURCE_IPV6_REACHABILITY_CHECK);
+      probe_net_log.BeginEvent(NetLog::TYPE_IPV6_REACHABILITY_CHECK,
+                               net_log.source().ToEventParametersCallback());
+      bool rv6 = IsGloballyReachable(address, probe_net_log);
+      probe_net_log.EndEvent(NetLog::TYPE_IPV6_REACHABILITY_CHECK);
       if (rv6)
         net_log.AddEvent(NetLog::TYPE_HOST_RESOLVER_IMPL_IPV6_SUPPORTED);
 

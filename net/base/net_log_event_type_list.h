@@ -2275,3 +2275,7 @@ EVENT_TYPE(SIMPLE_CACHE_ENTRY_CLOSE_BEGIN)
 // This event is created when the Simple Cache finishes a CloseEntry call.  It
 // contains no parameters.
 EVENT_TYPE(SIMPLE_CACHE_ENTRY_CLOSE_END)
+
+// This event is created (in a source of the same name) when the internal DNS
+// resolver creates a UDP socket to check for global IPv6 connectivity.
+EVENT_TYPE(IPV6_REACHABILITY_CHECK)
