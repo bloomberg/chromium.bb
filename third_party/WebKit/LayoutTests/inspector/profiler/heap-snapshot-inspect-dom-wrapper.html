@@ -38,14 +38,11 @@ function test()
     {
         InspectorTest.addResult("PASS: snapshot was received");
         var snapshotProxy = profile._snapshotProxy;
-        var snapshot = snapshotProxy._worker._worker._dispatcher._objects[snapshotProxy._objectId];
+        snapshotProxy.callMethod(didGetBodyWrapperIds, "idsOfObjectsWithName", "HTMLBodyElement");
+    }
 
-        var bodyWrapperIds = [];
-        for (var it = snapshot._allNodes(); it.hasNext(); it.next()) {
-            if (it.item().name() === "HTMLBodyElement")
-                bodyWrapperIds.push(it.item().id());
-        }
-
+    function didGetBodyWrapperIds(bodyWrapperIds)
+    {
         if (bodyWrapperIds.length < 3)
             return clear("FAILED: less than 3 HTMLBodyElement objects were detected");
 
