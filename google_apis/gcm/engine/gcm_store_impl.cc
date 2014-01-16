@@ -79,6 +79,9 @@ std::string ParseUsername(const std::string& key) {
   return key.substr(arraysize(kUserSerialNumberKeyStart) - 1);
 }
 
+// Note: leveldb::Slice keeps a pointer to the data in |s|, which must therefore
+// outlive the slice.
+// For example: MakeSlice(MakeOutgoingKey(x)) is invalid.
 leveldb::Slice MakeSlice(const base::StringPiece& s) {
   return leveldb::Slice(s.begin(), s.size());
 }
@@ -232,10 +235,11 @@ void GCMStoreImpl::Backend::SetDeviceCredentials(
   std::string encrypted_token;
   Encryptor::EncryptString(base::Uint64ToString(device_security_token),
                            &encrypted_token);
+  std::string android_id_str = base::Uint64ToString(device_android_id);
   leveldb::Status s =
       db_->Put(write_options,
                MakeSlice(kDeviceAIDKey),
-               MakeSlice(base::Uint64ToString(device_android_id)));
+               MakeSlice(android_id_str));
   if (s.ok()) {
     s = db_->Put(
         write_options, MakeSlice(kDeviceTokenKey), MakeSlice(encrypted_token));
@@ -260,8 +264,9 @@ void GCMStoreImpl::Backend::AddIncomingMessage(const std::string& persistent_id,
   leveldb::WriteOptions write_options;
   write_options.sync = true;
 
+  std::string key = MakeIncomingKey(persistent_id);
   const leveldb::Status s = db_->Put(write_options,
-                                     MakeSlice(MakeIncomingKey(persistent_id)),
+                                     MakeSlice(key),
                                      MakeSlice(persistent_id));
   if (s.ok()) {
     foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, true));
@@ -287,7 +292,8 @@ void GCMStoreImpl::Backend::RemoveIncomingMessages(
        iter != persistent_ids.end();
        ++iter) {
     DVLOG(1) << "Removing incoming message with id " << *iter;
-    s = db_->Delete(write_options, MakeSlice(MakeIncomingKey(*iter)));
+    std::string key = MakeIncomingKey(*iter);
+    s = db_->Delete(write_options, MakeSlice(key));
     if (!s.ok())
       break;
   }
@@ -313,8 +319,9 @@ void GCMStoreImpl::Backend::AddOutgoingMessage(const std::string& persistent_id,
 
   std::string data =
       static_cast<char>(message.tag()) + message.SerializeAsString();
+  std::string key = MakeOutgoingKey(persistent_id);
   const leveldb::Status s = db_->Put(write_options,
-                                     MakeSlice(MakeOutgoingKey(persistent_id)),
+                                     MakeSlice(key),
                                      MakeSlice(data));
   if (s.ok()) {
     foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, true));
@@ -348,8 +355,10 @@ void GCMStoreImpl::Backend::RemoveOutgoingMessages(
        ++iter) {
     DVLOG(1) << "Removing outgoing message with id " << *iter;
     std::string outgoing_message;
-    leveldb::Slice key_slice = MakeSlice(MakeOutgoingKey(*iter));
-    s = db_->Get(read_options, key_slice, &outgoing_message);
+    std::string key = MakeOutgoingKey(*iter);
+    s = db_->Get(read_options,
+                 MakeSlice(key),
+                 &outgoing_message);
     if (!s.ok())
       break;
     mcs_proto::DataMessageStanza data_message;
@@ -362,8 +371,7 @@ void GCMStoreImpl::Backend::RemoveOutgoingMessages(
         removed_message_counts[data_message.from()] = 1;
     }
     DVLOG(1) << "Removing outgoing message with id " << *iter;
-    // Have to create a new slice to perform the deletion.
-    s = db_->Delete(write_options, MakeSlice(MakeOutgoingKey(*iter)));
+    s = db_->Delete(write_options, MakeSlice(key));
     if (!s.ok())
       break;
   }
@@ -394,10 +402,12 @@ void GCMStoreImpl::Backend::AddUserSerialNumber(
   leveldb::WriteOptions write_options;
   write_options.sync = true;
 
+  std::string key = MakeUserSerialNumberKey(username);
+  std::string serial_number_str = base::Int64ToString(serial_number);
   const leveldb::Status status =
       db_->Put(write_options,
-               MakeSlice(MakeUserSerialNumberKey(username)),
-               MakeSlice(base::Int64ToString(serial_number)));
+               MakeSlice(key),
+               MakeSlice(serial_number_str));
   if (status.ok()) {
     foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, true));
     return;
@@ -439,10 +449,11 @@ void GCMStoreImpl::Backend::SetNextSerialNumber(
   leveldb::WriteOptions write_options;
   write_options.sync = true;
 
+  std::string serial_number_str = base::Int64ToString(next_serial_number);
   const leveldb::Status status =
       db_->Put(write_options,
                MakeSlice(kNextSerialNumberKey),
-               MakeSlice(base::Int64ToString(next_serial_number)));
+               MakeSlice(serial_number_str));
   if (status.ok()) {
     foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, true));
     return;
