@@ -35,9 +35,16 @@ using std::vector;
 
 namespace {
 
+// This is the one and only instance of UsbService. The reason not to use
+// Singleton is: 1. Singleton focuses on solving race conditions and at-exit
+// deletion, none of them are needed here, and 2. Singleton does not provide
+// a way to clear the pointer after the instance being destroyed.
+UsbService* g_usb_service_instance = NULL;
+bool g_usb_service_instance_destroyed = false;
+
 class ExitObserver : public content::NotificationObserver {
  public:
-  explicit ExitObserver(UsbService* service) : service_(service) {
+  ExitObserver() {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&content::NotificationRegistrar::Add,
@@ -52,49 +59,54 @@ class ExitObserver : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
     if (type == chrome::NOTIFICATION_APP_TERMINATING) {
-      BrowserThread::DeleteSoon(BrowserThread::FILE, FROM_HERE, service_);
+      BrowserThread::DeleteSoon(BrowserThread::FILE,
+                                FROM_HERE,
+                                g_usb_service_instance);
       delete this;
     }
   }
-  UsbService* service_;
   content::NotificationRegistrar registrar_;
 };
 
 }  // namespace
 
-using content::BrowserThread;
-
 UsbService::UsbService(PlatformUsbContext context)
     : context_(new UsbContext(context)),
       next_unique_id_(0) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  // Will be deleted upon NOTIFICATION_APP_TERMINATING.
-  new ExitObserver(this);
 }
 
 UsbService::~UsbService() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  // Prevents creating a new UsbService.
+  g_usb_service_instance_destroyed = true;
+  g_usb_service_instance = NULL;
+
   for (DeviceMap::iterator it = devices_.begin(); it != devices_.end(); ++it) {
     it->second->OnDisconnect();
   }
 }
 
-struct InitUsbContextTraits : public LeakySingletonTraits<UsbService> {
-  // LeakySingletonTraits<UsbService>
-  static UsbService* New() {
+UsbService* UsbService::GetInstance() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  if (g_usb_service_instance_destroyed)
+    return NULL;
+
+  if (!g_usb_service_instance) {
     PlatformUsbContext context = NULL;
     if (libusb_init(&context) != LIBUSB_SUCCESS)
       return NULL;
     if (!context)
       return NULL;
-    return new UsbService(context);
-  }
-};
 
-UsbService* UsbService::GetInstance() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  // UsbService deletes itself upon APP_TERMINATING.
-  return Singleton<UsbService, InitUsbContextTraits>::get();
+    g_usb_service_instance = new UsbService(context);
+
+    // Will be deleted upon NOTIFICATION_APP_TERMINATING.
+    new ExitObserver();
+  }
+
+  return g_usb_service_instance;
 }
 
 void UsbService::GetDevices(std::vector<scoped_refptr<UsbDevice> >* devices) {

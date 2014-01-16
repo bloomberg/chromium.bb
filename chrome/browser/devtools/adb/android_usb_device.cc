@@ -207,7 +207,8 @@ static void CountOnFileThread(
     const base::Callback<void(int)>& callback) {
   UsbService* service = UsbService::GetInstance();
   UsbDevices usb_devices;
-  service->GetDevices(&usb_devices);
+  if (service != NULL)
+    service->GetDevices(&usb_devices);
   int device_count = 0;
   for (UsbDevices::iterator it = usb_devices.begin(); it != usb_devices.end();
        ++it) {
@@ -231,7 +232,8 @@ static void EnumerateOnFileThread(crypto::RSAPrivateKey* rsa_key,
 
   UsbService* service = UsbService::GetInstance();
   UsbDevices usb_devices;
-  service->GetDevices(&usb_devices);
+  if (service != NULL)
+    service->GetDevices(&usb_devices);
 
   AndroidUsbDevices& devices = g_devices.Get();
 

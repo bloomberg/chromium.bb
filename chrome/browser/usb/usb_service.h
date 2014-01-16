@@ -12,7 +12,6 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/singleton.h"
 
 namespace base {
 
@@ -50,8 +49,6 @@ class UsbService {
   void GetDevices(std::vector<scoped_refptr<UsbDevice> >* devices);
 
  private:
-  friend struct InitUsbContextTraits;
-  friend struct DefaultSingletonTraits<UsbService>;
   friend class base::DeleteHelper<UsbService>;
 
   explicit UsbService(PlatformUsbContext context);
