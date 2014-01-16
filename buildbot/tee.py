@@ -84,7 +84,7 @@ class _TeeProcess(multiprocessing.Process):
     Args:
       output_filenames: List of filenames to print to.
       complain: Print a warning if we get EAGAIN errors.
-      error: The fd to write exceptions/errors to during
+      error_fd: The fd to write exceptions/errors to during
         shutdown.
       master_pid: Pid to SIGTERM if we shutdown uncleanly.
     """

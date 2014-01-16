@@ -4,6 +4,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Unittests for remote_try.py."""
+
 import json
 import mox
 import os
@@ -21,10 +23,11 @@ from chromite.buildbot import repository
 from chromite.scripts import cbuildbot
 
 class RemoteTryJobMock(remote_try.RemoteTryJob):
-  pass
+  """Helper for Mocking out a RemoteTryJob."""
 
 # pylint: disable=W0212,R0904,E1101
 class RemoteTryTests(cros_test_lib.MoxTempDirTestCase):
+  """Test cases related to remote try jobs."""
 
   PATCHES = ('5555', '6666')
   BOTS = ('x86-generic-paladin', 'arm-generic-paladin')

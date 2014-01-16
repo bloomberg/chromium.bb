@@ -43,6 +43,7 @@ import mock
 _GetNumber = iter(itertools.count()).next
 
 class MockPatch(mox.MockObject):
+  """Helper class to mock Patch objects."""
 
   owner = 'elmer.fudd@google.com'
 
@@ -72,6 +73,7 @@ def GetTestJson(change_id=None):
 
 
 class MockManifest(object):
+  """Helper class for Mocking Manifest objects."""
 
   def __init__(self, path, **kwargs):
     self.root = path
@@ -84,6 +86,7 @@ class MockManifest(object):
 
 # pylint: disable=W0212,R0904
 class Base(cros_test_lib.MockTestCase):
+  """Test case base class with helpers for other test suites."""
 
   def setUp(self):
     self.patch_mock = None
@@ -151,6 +154,7 @@ class Base(cros_test_lib.MockTestCase):
 
 
 class MoxBase(Base, cros_test_lib.MoxTestCase):
+  """Base class for other test suites with numbers mocks patched in."""
 
   def setUp(self):
     self.mox.StubOutWithMock(validation_pool, '_RunCommand')
@@ -603,6 +607,7 @@ class MockPatchSeries(partial_mock.PartialMock):
 
 
 class TestSubmitChange(cros_test_lib.MoxTestCase):
+  """Test suite related to submitting changes."""
 
   def setUp(self):
     self.orig_timeout = validation_pool.SUBMITTED_WAIT_TIMEOUT
@@ -925,7 +930,7 @@ class TestCoreLogic(MoxBase):
     pool, patches, _failed = self._setUpSubmit()
 
     class MyException(Exception):
-      pass
+      """"Unique Exception used for testing."""
 
     def VerifyCQError(patch, error):
       cq_error = validation_pool.InternalCQError(patch, error.message)
@@ -1124,7 +1129,7 @@ class TestFindSuspects(MoxBase):
       suspects: Expected list of suspects returned by _FindSuspects.
       pkgs: List of packages that failed with exceptions in the build.
       exceptions: List of other exceptions that occurred during the build.
-      remote: Whether the failures occurred on an internal bot.
+      internal: Whether the failures occurred on an internal bot.
     """
     all_exceptions = list(exceptions) + [self._GetBuildFailure(x) for x in pkgs]
     tracebacks = []
@@ -1184,6 +1189,7 @@ class TestFindSuspects(MoxBase):
 
 
 class SimplePatch(object):
+  """Helper class with minimal implementation of Patch."""
 
   remote = constants.EXTERNAL_REMOTE
   internal = False
@@ -1433,6 +1439,7 @@ class BaseSubmitPoolTestCase(Base, cros_build_lib_unittest.RunCommandTestCase):
 
 
 class SubmitPoolTest(BaseSubmitPoolTestCase):
+  """Test suite related to the Submit Pool."""
 
   def GetNotifyArg(self, change, key):
     """Look up a call to notify about |change| and grab |key| from it.

@@ -4,6 +4,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Unittests for repository.py."""
+
 import functools
 import os
 import sys
@@ -16,6 +18,7 @@ from chromite.lib import cros_test_lib
 
 # pylint: disable=W0212,R0904,E1101,W0613
 class RepositoryTests(cros_test_lib.MoxTestCase):
+  """Test cases related to repository checkout methods."""
 
   def RunCommand_Mock(self, result, *args, **kwargs):
     output = self.mox.CreateMockAnything()
@@ -50,6 +53,7 @@ class RepositoryTests(cros_test_lib.MoxTestCase):
 
 
 class RepoInitTests(cros_test_lib.MoxTempDirTestCase):
+  """Test cases related to repository initialization."""
 
   def _Initialize(self, branch='master'):
     repo = repository.RepoRepository(constants.MANIFEST_URL, self.tempdir,

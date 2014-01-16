@@ -118,6 +118,7 @@ def FindPrimaryOverlay(overlay_type, board, buildroot=constants.SOURCE_ROOT):
       'public': Just the public overlays.
       'both': Both the public and private overlays.
     board: Board to look at.
+    buildroot: Path to root of build directory.
 
   Raises:
     MissingOverlayException: No primary overlay found.
@@ -138,6 +139,7 @@ def GetOverlayName(overlay):
 
 
 class EBuildVersionFormatException(Exception):
+  """Exception for bad ebuild version string format."""
   def __init__(self, filename):
     self.filename = filename
     message = ('Ebuild file name %s '
@@ -146,6 +148,7 @@ class EBuildVersionFormatException(Exception):
 
 
 class EbuildFormatIncorrectException(Exception):
+  """Exception for bad ebuild format."""
   def __init__(self, filename, message):
     message = 'Ebuild %s has invalid format: %s ' % (filename, message)
     super(EbuildFormatIncorrectException, self).__init__(message)
@@ -187,10 +190,10 @@ class EBuild(object):
     This function takes an ebuild_path and updates WORKON information.
 
     Args:
-      ebuild_path:  The path of the ebuild.
+      ebuild_path: The path of the ebuild.
       variables: Dictionary of variables to update in ebuild.
-      redirect_file:  Optionally redirect output of new ebuild somewhere else.
-      make_stable:  Actually make the ebuild stable.
+      redirect_file: Optionally redirect output of new ebuild somewhere else.
+      make_stable: Actually make the ebuild stable.
     """
     written = False
     for line in fileinput.input(ebuild_path, inplace=1):
@@ -229,11 +232,11 @@ class EBuild(object):
 
     Args:
       unstable_ebuild_path: The path to the unstable ebuild.
-      new_stable_ebuild_path:  The path you want to use for the new stable
+      new_stable_ebuild_path: The path you want to use for the new stable
         ebuild.
       variables: Dictionary of variables to update in ebuild.
-      redirect_file:  Optionally redirect output of new ebuild somewhere else.
-      make_stable:  Actually make the ebuild stable.
+      redirect_file: Optionally redirect output of new ebuild somewhere else.
+      make_stable: Actually make the ebuild stable.
     """
     shutil.copyfile(unstable_ebuild_path, new_stable_ebuild_path)
     EBuild.UpdateEBuild(new_stable_ebuild_path, variables, redirect_file,
@@ -512,7 +515,7 @@ class EBuild(object):
 
     Args:
       manifest: git.ManifestCheckout object.
-      project: Project to look up.
+      path: Path of project.
 
     Raises:
       Exception if the manifest is pinned.
@@ -584,6 +587,7 @@ class EBuild(object):
 
 def BestEBuild(ebuilds):
   """Returns the newest EBuild from a list of EBuild objects."""
+  # pylint: disable=F0401
   from portage.versions import vercmp
   winner = ebuilds[0]
   for ebuild in ebuilds[1:]:
@@ -828,7 +832,7 @@ def BestVisible(atom, board=None, buildroot=constants.SOURCE_ROOT):
   Args:
     atom: Portage atom.
     board: Board to look at. By default, look in chroot.
-    root: Directory
+    buildroot: Directory
 
   Returns:
     A CPV object.

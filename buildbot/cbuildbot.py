@@ -6,6 +6,8 @@
 # TODO(ferringb): remove this as soon as depot_tools is gutted of its
 # import logic, and is just a re-exec.
 
+"""Dynamic wrapper to invoke cbuildbot with standardized import paths."""
+
 import os
 import sys
 

@@ -25,6 +25,7 @@ from chromite.buildbot import portage_utilities
 MANIFEST = git.ManifestCheckout.Cached(constants.SOURCE_ROOT)
 
 class _Package(object):
+  """Package helper class."""
   def __init__(self, package):
     self.package = package
 
@@ -41,6 +42,7 @@ class _DummyCommandResult(object):
 
 
 class EBuildTest(cros_test_lib.MoxTestCase):
+  """Ebuild related tests."""
 
   def _makeFakeEbuild(self, fake_ebuild_path, fake_ebuild_content=''):
     self.mox.StubOutWithMock(fileinput, 'input')
@@ -139,6 +141,7 @@ class EBuildTest(cros_test_lib.MoxTestCase):
 
 
 class ProjectAndPathTest(cros_test_lib.MoxTempDirTestCase):
+  """Project and Path related tests."""
 
   def _MockParseWorkonVariables(self, fake_projects, _fake_localname,
                                 _fake_subdir, fake_ebuild_contents):
@@ -203,6 +206,7 @@ CROS_WORKON_SUBDIR=%s
 
 
 class StubEBuild(portage_utilities.EBuild):
+  """Test helper to StubEBuild."""
   def __init__(self, path):
     super(StubEBuild, self).__init__(path)
     self.is_workon = True
@@ -224,6 +228,7 @@ class StubEBuild(portage_utilities.EBuild):
 
 
 class EBuildRevWorkonTest(cros_test_lib.MoxTempDirTestCase):
+  """Tests for EBuildRevWorkon."""
   # Lines that we will feed as fake ebuild contents to
   # EBuild.MarAsStable().  This is the minimum content needed
   # to test the various branches in the function's main processing
@@ -408,6 +413,8 @@ class EBuildRevWorkonTest(cros_test_lib.MoxTempDirTestCase):
 
 
 class FindOverlaysTest(cros_test_lib.MoxTestCase):
+  """Tests related to finding overlays."""
+
   FAKE, MARIO = 'fake-board', 'x86-mario'
   PRIVATE = constants.PRIVATE_OVERLAYS
   PUBLIC = constants.PUBLIC_OVERLAYS
@@ -507,6 +514,7 @@ class FindOverlaysTest(cros_test_lib.MoxTestCase):
 
 
 class BuildEBuildDictionaryTest(cros_test_lib.MoxTestCase):
+  """Tests of the EBuild Dictionary."""
 
   def setUp(self):
     self.mox.StubOutWithMock(os, 'walk')
@@ -541,6 +549,7 @@ class BuildEBuildDictionaryTest(cros_test_lib.MoxTestCase):
 
 
 class ProjectMappingTest(cros_test_lib.TestCase):
+  """Tests related to Proejct Mapping."""
 
   def testSplitEbuildPath(self):
     """Test if we can split an ebuild path into its components."""
@@ -587,6 +596,8 @@ class ProjectMappingTest(cros_test_lib.TestCase):
                           portage_utilities.FindWorkonProjects(packages))
 
 class PackageDBTest(cros_test_lib.MoxTempDirTestCase):
+  """Package Database related tests."""
+
   fake_pkgdb = { 'category1' : [ 'package-1', 'package-2' ],
                  'category2' : [ 'package-3', 'package-4' ],
                  'category3' : [ 'invalid', 'semi-invalid' ],

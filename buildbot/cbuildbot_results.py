@@ -210,6 +210,7 @@ class _Results(object):
         The textual backtrace of the exception, or None
       prefix: The prefix of the stage (e.g. HWTest). Defaults to
         the value of name.
+      time: How long the result took to complete.
     """
     if prefix is None:
       prefix = name

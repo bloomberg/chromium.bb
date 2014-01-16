@@ -27,14 +27,14 @@ import mock
 
 # pylint: disable=W0212
 class RunBuildScriptTest(cros_test_lib.TempDirTestCase):
+  """Test RunBuildScript in a variety of cases."""
 
   def _assertRunBuildScript(self, in_chroot=False, error=None, raises=None):
     """Test the RunBuildScript function.
 
     Args:
       in_chroot: Whether to enter the chroot or not.
-      tmpf: If the chroot tempdir exists, a NamedTemporaryFile that contains
-            a list of the packages that failed to build.
+      error: error result message to simulate.
       raises: If the command should fail, the exception to be raised.
     """
     # Write specified error message to status file.
@@ -157,6 +157,7 @@ class ChromeSDKTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
 
 
 class CBuildBotTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
+  """Test general cbuildbot command methods."""
 
   def setUp(self):
     self._board = 'test-board'
@@ -384,6 +385,7 @@ ca-t3/pk-g4-4.0.1-r333
 
 
 class BuildTarballTests(cros_build_lib_unittest.RunCommandTempDirTestCase):
+  """Tests related to BuildAUTestTarball."""
 
   def setUp(self):
     self._buildroot = os.path.join(self.tempdir, 'buildroot')
@@ -412,6 +414,7 @@ class BuildTarballTests(cros_build_lib_unittest.RunCommandTempDirTestCase):
 
 
 class UnmockedTests(cros_test_lib.TempDirTestCase):
+  """Test cases which really run tests, instead of using mocks."""
 
   def testArchiveTestResults(self):
     """Test if we can archive a test results dir."""

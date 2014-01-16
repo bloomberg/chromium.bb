@@ -40,7 +40,7 @@ class TestFailedException(Exception):
 
 
 class RunBuildStagesTest(cros_test_lib.MoxTempDirTestCase):
-  """Test BuildStages functionality."""
+  """Test that cbuildbot runs the appropriate stages for a given config."""
 
   def setUp(self):
     self.buildroot = os.path.join(self.tempdir, 'buildroot')

@@ -368,7 +368,7 @@ class BuildSpecsManager(object):
 
     Args:
       source_repo: Repository object for the source code.
-      manifest_repo:  Manifest repository for manifest versions / buildspecs.
+      manifest_repo: Manifest repository for manifest versions / buildspecs.
       build_name: Identifier for the build.  Must match cbuildbot_config.
       incr_type: How we should increment this version - build|branch|patch
       force: Create a new manifest even if there are no changes.

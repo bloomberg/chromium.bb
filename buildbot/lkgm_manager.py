@@ -138,7 +138,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       source_repo: Repository object for the source code.
       manifest_repo: Manifest repository for manifest versions/buildspecs.
       build_name: Identifier for the build. Must much cbuildbot_config.
-      build_type:  Type of build.  Must be a pfq type.
+      build_type: Type of build.  Must be a pfq type.
       incr_type: How we should increment this version - build|branch|patch
       force: Create a new manifest even if there are no changes.
       branch: Branch this builder is running on.
