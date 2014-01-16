@@ -151,7 +151,7 @@ TEST_F(DriveAppRegistryTest, UninstallDriveApp) {
       "123456788192",
       google_apis::test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(error, google_apis::HTTP_SUCCESS);
+  EXPECT_EQ(error, google_apis::HTTP_NO_CONTENT);
 
   // Check that the number of apps is decreased by one.
   apps_registry_->GetAppList(&apps);

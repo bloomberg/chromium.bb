@@ -1280,7 +1280,7 @@ CancelCallback FakeDriveService::UninstallApp(
         if (items->GetDictionary(i, &item) && item->GetString("id", &id) &&
             id == app_id) {
           if (items->Remove(i, NULL))
-            error = google_apis::HTTP_SUCCESS;
+            error = google_apis::HTTP_NO_CONTENT;
           break;
         }
       }

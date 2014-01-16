@@ -71,7 +71,8 @@ class DriveAppRegistry {
   void GetAppList(std::vector<DriveAppInfo>* apps) const;
 
   // Uninstalls the app specified by |app_id|. This method sends requests to the
-  // remote server, and returns the result to |callback| asynchronously.
+  // remote server, and returns the result to |callback| asynchronously. When
+  // succeeded, the callback receives HTTP_NO_CONTENT, and error code otherwise.
   // |callback| must not be null.
   void UninstallApp(const std::string& app_id,
                     const UninstallCallback& callback);

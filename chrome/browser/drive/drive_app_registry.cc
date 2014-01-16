@@ -195,7 +195,7 @@ void DriveAppRegistry::UninstallApp(const std::string& app_id,
 void DriveAppRegistry::OnAppUninstalled(const std::string& app_id,
                                         const UninstallCallback& callback,
                                         google_apis::GDataErrorCode error) {
-  if (error == google_apis::HTTP_SUCCESS) {
+  if (error == google_apis::HTTP_NO_CONTENT) {
     all_apps_.erase(app_id);
     RemoveAppFromSelector(app_id, &mimetype_map_);
     RemoveAppFromSelector(app_id, &extension_map_);
