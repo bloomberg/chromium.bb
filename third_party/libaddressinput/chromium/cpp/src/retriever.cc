@@ -26,7 +26,6 @@
 #include <string>
 #include <utility>
 
-#include "lookup_key_util.h"
 #include "util/stl_util.h"
 
 namespace i18n {
@@ -35,9 +34,11 @@ namespace addressinput {
 Retriever::Retriever(const std::string& validation_data_url,
                      scoped_ptr<Downloader> downloader,
                      scoped_ptr<Storage> storage)
-    : lookup_key_util_(validation_data_url),
+    : validation_data_url_(validation_data_url),
       downloader_(downloader.Pass()),
       storage_(storage.Pass()) {
+  assert(validation_data_url_.length() > 0);
+  assert(validation_data_url_[validation_data_url_.length() - 1] == '/');
   assert(storage_ != NULL);
   assert(downloader_ != NULL);
 }
@@ -72,7 +73,7 @@ void Retriever::OnDataRetrievedFromStorage(bool success,
       (*retrieved)(success, key, data);
     }
   } else {
-    downloader_->Download(lookup_key_util_.GetUrlForKey(key),
+    downloader_->Download(GetUrlForKey(key),
                           BuildCallback(this, &Retriever::OnDownloaded));
   }
 }
@@ -80,7 +81,7 @@ void Retriever::OnDataRetrievedFromStorage(bool success,
 void Retriever::OnDownloaded(bool success,
                              const std::string& url,
                              const std::string& data) {
-  const std::string& key = lookup_key_util_.GetKeyForUrl(url);
+  const std::string& key = GetKeyForUrl(url);
   if (success) {
     storage_->Put(key, data);
   }
@@ -88,6 +89,22 @@ void Retriever::OnDownloaded(bool success,
   if (retrieved != NULL) {
     (*retrieved)(success, key, success ? data : std::string());
   }
+}
+
+std::string Retriever::GetUrlForKey(const std::string& key) const {
+  return validation_data_url_ + key;
+}
+
+std::string Retriever::GetKeyForUrl(const std::string& url) const {
+  if (url.compare(0, validation_data_url_.length(), validation_data_url_) == 0)
+    return url.substr(validation_data_url_.length());
+
+  return std::string();
+}
+
+bool Retriever::IsValidationDataUrl(const std::string& url) const {
+  return
+      url.compare(0, validation_data_url_.length(), validation_data_url_) == 0;
 }
 
 scoped_ptr<Retriever::Callback> Retriever::GetCallbackForKey(

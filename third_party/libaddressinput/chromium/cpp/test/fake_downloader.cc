@@ -20,8 +20,6 @@
 #include <string>
 #include <utility>
 
-#include "lookup_key_util.h"
-
 namespace i18n {
 namespace addressinput {
 
@@ -36,11 +34,6 @@ const char kDataFileName[] = TEST_DATA_DIR "/countryinfo.txt";
 // The number of characters in the fake data URL prefix.
 const size_t kFakeDataUrlLength = sizeof FakeDownloader::kFakeDataUrl - 1;
 
-const LookupKeyUtil& GetLookupKeyUtil() {
-  static const LookupKeyUtil kLookupKeyUtil(FakeDownloader::kFakeDataUrl);
-  return kLookupKeyUtil;
-}
-
 std::map<std::string, std::string> InitData() {
   std::map<std::string, std::string> data;
   std::ifstream file(kDataFileName);
@@ -52,7 +45,7 @@ std::map<std::string, std::string> InitData() {
     std::string::size_type divider = line.find('=');
     if (divider != std::string::npos) {
       data.insert(std::make_pair(
-          GetLookupKeyUtil().GetUrlForKey(line.substr(0, divider)),
+          FakeDownloader::kFakeDataUrl + (line.substr(0, divider)),
           line.substr(divider + 1)));
     }
   }
@@ -77,7 +70,7 @@ void FakeDownloader::Download(const std::string& url,
       GetData().find(url);
   bool success = data_it != GetData().end();
   std::string data = success ? data_it->second : std::string();
-  if (!success && GetLookupKeyUtil().IsValidationDataUrl(url)) {
+  if (!success && !url.compare(0, kFakeDataUrlLength, kFakeDataUrl)) {
     // URLs that start with "https://i18napis.appspot.com/ssl-address/" prefix,
     // but do not have associated data will always return "{}" with status code
     // 200. FakeDownloader imitates this behavior for URLs that start with

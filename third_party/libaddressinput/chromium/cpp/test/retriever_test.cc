@@ -29,8 +29,6 @@
 namespace i18n {
 namespace addressinput {
 
-namespace {
-
 const char kKey[] = "data/CA/AB--fr";
 
 // Empty data that the downloader can return.
@@ -40,12 +38,11 @@ const char kEmptyData[] = "{}";
 class RetrieverTest : public testing::Test {
  protected:
   RetrieverTest()
-      : retriever_(FakeDownloader::kFakeDataUrl,
-                   scoped_ptr<Downloader>(new FakeDownloader),
-                   scoped_ptr<Storage>(new FakeStorage)),
-        success_(false),
+      : success_(false),
         key_(),
-        data_() {}
+        data_() {
+    ResetRetriever(FakeDownloader::kFakeDataUrl);
+  }
 
   virtual ~RetrieverTest() {}
 
@@ -54,7 +51,22 @@ class RetrieverTest : public testing::Test {
         this, &RetrieverTest::OnDataReady);
   }
 
-  Retriever retriever_;
+  void ResetRetriever(const std::string& url) {
+    retriever_.reset(
+        new Retriever(url,
+                      scoped_ptr<Downloader>(new FakeDownloader),
+                      scoped_ptr<Storage>(new FakeStorage)));
+  }
+
+  std::string GetUrlForKey(const std::string& key) {
+    return retriever_->GetUrlForKey(key);
+  }
+
+  std::string GetKeyForUrl(const std::string& url) {
+    return retriever_->GetKeyForUrl(url);
+  }
+
+  scoped_ptr<Retriever> retriever_;
   bool success_;
   std::string key_;
   std::string data_;
@@ -70,7 +82,7 @@ class RetrieverTest : public testing::Test {
 };
 
 TEST_F(RetrieverTest, RetrieveData) {
-  retriever_.Retrieve(kKey, BuildCallback());
+  retriever_->Retrieve(kKey, BuildCallback());
 
   EXPECT_TRUE(success_);
   EXPECT_EQ(kKey, key_);
@@ -79,8 +91,8 @@ TEST_F(RetrieverTest, RetrieveData) {
 }
 
 TEST_F(RetrieverTest, ReadDataFromStorage) {
-  retriever_.Retrieve(kKey, BuildCallback());
-  retriever_.Retrieve(kKey, BuildCallback());
+  retriever_->Retrieve(kKey, BuildCallback());
+  retriever_->Retrieve(kKey, BuildCallback());
 
   EXPECT_TRUE(success_);
   EXPECT_EQ(kKey, key_);
@@ -91,7 +103,7 @@ TEST_F(RetrieverTest, ReadDataFromStorage) {
 TEST_F(RetrieverTest, MissingKeyReturnsEmptyData) {
   static const char kMissingKey[] = "junk";
 
-  retriever_.Retrieve(kMissingKey, BuildCallback());
+  retriever_->Retrieve(kMissingKey, BuildCallback());
 
   EXPECT_TRUE(success_);
   EXPECT_EQ(kMissingKey, key_);
@@ -145,7 +157,24 @@ TEST_F(RetrieverTest, RequestsDontStack) {
   EXPECT_NO_FATAL_FAILURE(slow_retriever.Retrieve(kKey, BuildCallback()));
 }
 
-}  // namespace
+TEST_F(RetrieverTest, GetUrlForKey) {
+  ResetRetriever("test:///");
+  EXPECT_EQ("test:///", GetUrlForKey(""));
+  EXPECT_EQ("test:///data", GetUrlForKey("data"));
+  EXPECT_EQ("test:///data/US", GetUrlForKey("data/US"));
+  EXPECT_EQ("test:///data/CA--fr", GetUrlForKey("data/CA--fr"));
+}
+
+TEST_F(RetrieverTest, GetKeyForUrl) {
+  ResetRetriever("test:///");
+  EXPECT_EQ("", GetKeyForUrl("test://"));
+  EXPECT_EQ("", GetKeyForUrl("http://www.google.com/"));
+  EXPECT_EQ("", GetKeyForUrl(""));
+  EXPECT_EQ("", GetKeyForUrl("test:///"));
+  EXPECT_EQ("data", GetKeyForUrl("test:///data"));
+  EXPECT_EQ("data/US", GetKeyForUrl("test:///data/US"));
+  EXPECT_EQ("data/CA--fr", GetKeyForUrl("test:///data/CA--fr"));
+}
 
 }  // namespace addressinput
 }  // namespace i18n

@@ -24,8 +24,6 @@
 #include <map>
 #include <string>
 
-#include "lookup_key_util.h"
-
 namespace i18n {
 namespace addressinput {
 
@@ -54,6 +52,8 @@ class Retriever {
   void Retrieve(const std::string& key, scoped_ptr<Callback> retrieved);
 
  private:
+  friend class RetrieverTest;
+
   // Callback for when a rule is retrieved from |storage_|.
   void OnDataRetrievedFromStorage(bool success,
                                   const std::string& key,
@@ -64,11 +64,27 @@ class Retriever {
                     const std::string& url,
                     const std::string& data);
 
+  // Returns the URL where the |key| can be retrieved. For example, returns
+  // "https://i18napis.appspot.com/ssl-address/data/US" for input "data/US".
+  // Assumes that the input string is a valid URL segment.
+  std::string GetUrlForKey(const std::string& key) const;
+
+  // Returns the key for the |url|. For example, returns "data/US" for
+  // "https://i18napis.appspot.com/ssl-address/data/US". If the |url| does not
+  // start with |validation_data_url| that was passed to the constructor, then
+  // returns an empty string. (This can happen if the user of the library
+  // returns a bad URL in their Downloader implementation.)
+  std::string GetKeyForUrl(const std::string& url) const;
+
+  // Returns true if the |url| starts with |validation_data_url| that was passed
+  // to the constructor.
+  bool IsValidationDataUrl(const std::string& url) const;
+
   // Looks up the callback for |key| in |requests_|, removes it from the map
   // and returns it. Assumes that |key| is in fact in |requests_|.
   scoped_ptr<Callback> GetCallbackForKey(const std::string& key);
 
-  const LookupKeyUtil lookup_key_util_;
+  const std::string validation_data_url_;
   scoped_ptr<Downloader> downloader_;
   scoped_ptr<Storage> storage_;
   // Holds pending requests. The callback pointers are owned.
