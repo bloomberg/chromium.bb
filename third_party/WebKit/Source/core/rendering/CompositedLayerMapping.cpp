@@ -175,8 +175,13 @@ CompositedLayerMapping::~CompositedLayerMapping()
 {
     // Do not leave the destroyed pointer dangling on any RenderLayers that painted to this mapping's squashing layer.
     for (size_t i = 0; i < m_squashedLayers.size(); ++i) {
-        if (m_squashedLayers[i].renderLayer->groupedMapping() == this)
-            m_squashedLayers[i].renderLayer->setGroupedMapping(0);
+        RenderLayer* oldSquashedLayer = m_squashedLayers[i].renderLayer;
+        if (oldSquashedLayer->groupedMapping() == this) {
+            oldSquashedLayer->setGroupedMapping(0);
+            // At this point we do not yet know which backing the layer will be assigned to.
+            // So we just flag that the layer will need to invalidate when it is assigned.
+            oldSquashedLayer->setShouldInvalidateNextBacking(true);
+        }
     }
 
     updateClippingLayers(false, false);

@@ -1124,15 +1124,23 @@ void RenderLayerCompositor::assignLayersToBackingsInternal(RenderLayer* layer, S
         } else {
             if (layer->compositingState() == PaintsIntoGroupedBacking) {
                 // This scenario is a layer transitioning from squashed to not-squashed.
-                // Note carefully - this code does not catch all cases; specifically if the layer's
-                // groupedMapping was already de-allocated due to another layer's compositing state update,
-                // that case is handled in the CompositedLayerMapping destructor.
                 ASSERT(layer->groupedMapping());
                 layer->setGroupedMapping(0);
-                // FIXME: this absolutely needs to be tighter bounds.
-                layer->enclosingCompositingLayerForRepaint(ExcludeSelf)->compositedLayerMapping()->setContentsNeedDisplay();
+                layer->setShouldInvalidateNextBacking(true);
             }
         }
+    }
+
+    // At this point, the layer's compositingState() is correct and indicates where this layer would paint into. Issue
+    // an invalidation if we needed to.
+    if (layer->shouldInvalidateNextBacking()) {
+        // FIXME: these should invalidate only the rect that needs to be invalidated, i.e. the layer's rect in the squashingLayer's space.
+        if (layer->compositingState() == PaintsIntoGroupedBacking && squashingState.mostRecentMapping->squashingLayer())
+            squashingState.mostRecentMapping->squashingLayer()->setNeedsDisplay();
+        else
+            layer->enclosingCompositingLayerForRepaint(ExcludeSelf)->compositedLayerMapping()->setContentsNeedDisplay();
+
+        layer->setShouldInvalidateNextBacking(false);
     }
 
     if (layer->stackingNode()->isStackingContainer()) {

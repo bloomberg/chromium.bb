@@ -588,6 +588,9 @@ private:
     bool shouldIsolateCompositedDescendants() const { return m_compositingProperties.shouldIsolateCompositedDescendants; }
     void setShouldIsolateCompositedDescendants(bool b)  { m_compositingProperties.shouldIsolateCompositedDescendants = b; }
 
+    bool shouldInvalidateNextBacking() const { return m_compositingProperties.shouldInvalidateNextBacking; }
+    void setShouldInvalidateNextBacking(bool b) { m_compositingProperties.shouldInvalidateNextBacking = b; }
+
     void setCompositingReasons(CompositingReasons reasons) { m_compositingProperties.compositingReasons = reasons; }
     CompositingReasons compositingReasons() const { return m_compositingProperties.compositingReasons; }
 
@@ -680,6 +683,7 @@ protected:
             : hasCompositingDescendant(false)
             , hasNonCompositedChild(false)
             , shouldIsolateCompositedDescendants(false)
+            , shouldInvalidateNextBacking(false)
             , viewportConstrainedNotCompositedReason(NoNotCompositedReason)
             , compositingReasons(CompositingReasonNone)
         { }
@@ -693,6 +697,10 @@ protected:
 
         // Should be for stacking contexts having unisolated blending descendants.
         bool shouldIsolateCompositedDescendants : 1;
+
+        // Used when the layer needs to cause a repaint invalidation but does not yet know which GraphicsLayer
+        // it will be assigned to.
+        bool shouldInvalidateNextBacking : 1;
 
         // The reason, if any exists, that a fixed-position layer is chosen not to be composited.
         unsigned viewportConstrainedNotCompositedReason : 2;
