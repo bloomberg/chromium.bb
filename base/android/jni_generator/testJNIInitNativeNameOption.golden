@@ -59,8 +59,8 @@ static bool RegisterNativesImpl(JNIEnv* env, jclass clazz) {
 }
 
 extern "C" JNIEXPORT bool JNICALL
-Java_org_chromium_example_jni_generator_Test_initNativeClass(JNIEnv* env, jclass
-    clazz) {
+Java_org_chromium_example_jni_generator_Test_nativeInitNativeClass(JNIEnv* env,
+    jclass clazz) {
   return RegisterNativesImpl(env, clazz);
 }
 

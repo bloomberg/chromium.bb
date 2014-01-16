@@ -318,7 +318,7 @@ def ExtractNatives(contents, ptr_type):
                          '(@NativeCall(\(\"(?P<java_class_name>.*?)\"\)))?\s*'
                          '(?P<qualifiers>\w+\s\w+|\w+|\s+)\s*?native '
                          '(?P<return_type>\S*?) '
-                         '(?P<name>\w+?)\((?P<params>.*?)\);')
+                         '(?P<name>native\w+?)\((?P<params>.*?)\);')
   for match in re.finditer(re_native, contents):
     native = NativeMethod(
         static='static' in match.group('qualifiers'),
@@ -533,7 +533,7 @@ class JNIFromJavaP(object):
   @staticmethod
   def CreateFromClass(class_file, options):
     class_name = os.path.splitext(os.path.basename(class_file))[0]
-    p = subprocess.Popen(args=['javap', '-s', class_name],
+    p = subprocess.Popen(args=[options.javap, '-s', class_name],
                          cwd=os.path.dirname(class_file),
                          stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE)
@@ -546,7 +546,7 @@ class JNIFromJavaSource(object):
   """Uses the given java source file to generate the JNI header file."""
 
   def __init__(self, contents, fully_qualified_class, options):
-    contents = self._RemoveComments(contents)
+    contents = self._RemoveComments(contents, options)
     JniParams.SetFullyQualifiedClass(fully_qualified_class)
     JniParams.ExtractImportsAndInnerClasses(contents)
     jni_namespace = ExtractJNINamespace(contents) or options.namespace
@@ -560,7 +560,7 @@ class JNIFromJavaSource(object):
         options)
     self.content = inl_header_file_generator.GetContent()
 
-  def _RemoveComments(self, contents):
+  def _RemoveComments(self, contents, options):
     # We need to support both inline and block comments, and we need to handle
     # strings that contain '//' or '/*'. Rather than trying to do all that with
     # regexps, we just pipe the contents through the C preprocessor. We tell cpp
@@ -571,7 +571,7 @@ class JNIFromJavaSource(object):
     # parser. Maybe we could ditch JNIFromJavaSource and just always use
     # JNIFromJavaP; or maybe we could rewrite this script in Java and use APT.
     # http://code.google.com/p/chromium/issues/detail?id=138941
-    p = subprocess.Popen(args=['cpp', '-fpreprocessed'],
+    p = subprocess.Popen(args=[options.cpp, '-fpreprocessed'],
                          stdin=subprocess.PIPE,
                          stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE)
@@ -605,7 +605,7 @@ class InlHeaderFileGenerator(object):
 
   def ExtractInitNative(self, options):
     for native in self.natives:
-      if options.jni_init_native_name == native.name:
+      if options.jni_init_native_name == 'native' + native.name:
         self.natives.remove(native)
         return native
     return None
@@ -831,7 +831,7 @@ Java_${FULLY_QUALIFIED_CLASS}_${INIT_NATIVE_NAME}(JNIEnv* env, jclass clazz) {
     if self.namespace:
       namespace = self.namespace + '::'
     values = {'FULLY_QUALIFIED_CLASS': fully_qualified_class,
-              'INIT_NATIVE_NAME': self.init_native.name,
+              'INIT_NATIVE_NAME': 'native' + self.init_native.name,
               'NAMESPACE': namespace,
               'REGISTER_NATIVES_IMPL': self.GetRegisterNativesImplString()
              }
@@ -1270,6 +1270,10 @@ See SampleForTests.java for more details.
                            action='store_true', dest='eager_called_by_natives',
                            help='When true, the called-by-native methods will '
                            'be initialized in a non-atomic way.')
+  option_parser.add_option('--cpp', default='cpp',
+                           help='The path to cpp command.')
+  option_parser.add_option('--javap', default='javap',
+                           help='The path to javap command.')
   options, args = option_parser.parse_args(argv)
   if options.jar_file:
     input_file = ExtractJarInputFile(options.jar_file, options.input_file,

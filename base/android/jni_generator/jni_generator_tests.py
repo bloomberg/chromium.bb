@@ -40,6 +40,8 @@ class TestOptions(object):
     self.ptr_type = 'long'
     self.jni_init_native_name = None
     self.eager_called_by_natives = False
+    self.cpp = 'cpp'
+    self.javap = 'javap'
 
 
 class TestGenerator(unittest.TestCase):
@@ -969,12 +971,12 @@ class Foo {
     long nativeTest;
 
     class Test {
-        private static native boolean initNativeClass();
+        private static native boolean nativeInitNativeClass();
         private static native int nativeMethod(long nativeTest, int arg1);
     }
     """
     options = TestOptions()
-    options.jni_init_native_name = 'initNativeClass'
+    options.jni_init_native_name = 'nativeInitNativeClass'
     jni_from_java = jni_generator.JNIFromJavaSource(
         test_data, 'org/chromium/example/jni_generator/Test', options)
     self.assertGoldenTextEquals(jni_from_java.GetContent())
@@ -987,7 +989,7 @@ class Foo {
     long nativeTest;
 
     class Test {
-        private static native boolean initNativeClass();
+        private static native boolean nativeInitNativeClass();
         private static native int nativeMethod(long nativeTest, int arg1);
         @CalledByNative
         private void testMethodWithParam(int iParam);
@@ -1000,7 +1002,7 @@ class Foo {
     }
     """
     options = TestOptions()
-    options.jni_init_native_name = 'initNativeClass'
+    options.jni_init_native_name = 'nativeInitNativeClass'
     options.eager_called_by_natives = True
     jni_from_java = jni_generator.JNIFromJavaSource(
         test_data, 'org/chromium/example/jni_generator/Test', options)
