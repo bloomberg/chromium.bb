@@ -3183,7 +3183,7 @@ TEST_F(SearchProviderTest, NavigationInline) {
     AutocompleteMatch match(
         provider_->NavigationToMatch(SearchProvider::NavigationResult(
             *provider_.get(), GURL(cases[i].url), base::string16(), false, 0,
-            false)));
+            false, ASCIIToUTF16(cases[i].input), std::string())));
     EXPECT_EQ(ASCIIToUTF16(cases[i].inline_autocompletion),
               match.inline_autocompletion);
     EXPECT_EQ(ASCIIToUTF16(cases[i].fill_into_edit), match.fill_into_edit);
@@ -3197,7 +3197,8 @@ TEST_F(SearchProviderTest, NavigationInlineSchemeSubstring) {
   const base::string16 input(ASCIIToUTF16("ht"));
   const base::string16 url(ASCIIToUTF16("http://a.com"));
   const SearchProvider::NavigationResult result(
-      *provider_.get(), GURL(url), base::string16(), false, 0, false);
+      *provider_.get(), GURL(url), base::string16(), false, 0, false,
+      input, std::string());
 
   // Check the offset and strings when inline autocompletion is allowed.
   QueryForInput(input, false, false);
@@ -3222,7 +3223,7 @@ TEST_F(SearchProviderTest, NavigationInlineDomainClassify) {
   AutocompleteMatch match(
       provider_->NavigationToMatch(SearchProvider::NavigationResult(
           *provider_.get(), GURL("http://www.wow.com"), base::string16(), false,
-          0, false)));
+          0, false, ASCIIToUTF16("w"), std::string())));
   EXPECT_EQ(ASCIIToUTF16("ow.com"), match.inline_autocompletion);
   EXPECT_TRUE(match.allowed_to_be_default_match);
   EXPECT_EQ(ASCIIToUTF16("www.wow.com"), match.fill_into_edit);
@@ -3385,7 +3386,8 @@ TEST_F(SearchProviderTest, RemoveStaleResultsTest) {
         provider_->default_results_.navigation_results.push_back(
             SearchProvider::NavigationResult(
                 *provider_.get(), GURL(suggestion), base::string16(), false,
-                cases[i].results[j].relevance, false));
+                cases[i].results[j].relevance, false,
+                ASCIIToUTF16(cases[i].omnibox_input), std::string()));
       } else {
         provider_->default_results_.suggest_results.push_back(
             SearchProvider::SuggestResult(

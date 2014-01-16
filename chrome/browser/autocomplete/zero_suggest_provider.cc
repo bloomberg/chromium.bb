@@ -247,6 +247,8 @@ void ZeroSuggestProvider::FillResults(
   std::string type;
   const base::string16 current_query_string16 =
       base::ASCIIToUTF16(current_query_);
+  const std::string languages(
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
   for (size_t index = 0; results->GetString(index, &result); ++index) {
     // Google search may return empty suggestions for weird input characters,
     // they make no sense at all and can cause problems in our code.
@@ -266,7 +268,8 @@ void ZeroSuggestProvider::FillResults(
         if (descriptions != NULL)
           descriptions->GetString(index, &title);
         navigation_results->push_back(SearchProvider::NavigationResult(
-            *this, url, title, false, relevance, relevances != NULL));
+            *this, url, title, false, relevance, relevances != NULL,
+            current_query_string16, languages));
       }
     } else {
       suggest_results->push_back(SearchProvider::SuggestResult(
@@ -330,6 +333,7 @@ AutocompleteMatch ZeroSuggestProvider::NavigationToMatch(
                           AutocompleteMatchType::NAVSUGGEST);
   match.destination_url = navigation.url();
 
+  // Zero suggest results should always omit protocols and never appear bold.
   const std::string languages(
       profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
   match.contents = net::FormatUrl(navigation.url(), languages,
@@ -423,10 +427,15 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
           "Omnibox.ZeroSuggest.MostVisitedResultsCounterfactual",
           most_visited_urls_.size());
     }
+    const base::string16 current_query_string16(
+        base::ASCIIToUTF16(current_query_));
+    const std::string languages(
+        profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
     for (size_t i = 0; i < most_visited_urls_.size(); i++) {
       const history::MostVisitedURL& url = most_visited_urls_[i];
-      SearchProvider::NavigationResult nav(*this, url.url, url.title, false,
-                                           relevance, true);
+      SearchProvider::NavigationResult nav(
+          *this, url.url, url.title, false, relevance, true,
+          current_query_string16, languages);
       matches_.push_back(NavigationToMatch(nav));
       --relevance;
     }

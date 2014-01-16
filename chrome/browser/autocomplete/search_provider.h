@@ -169,6 +169,11 @@ class SearchProvider : public AutocompleteProvider,
 
     bool from_keyword_provider() const { return from_keyword_provider_; }
 
+    const base::string16& match_contents() const { return match_contents_; }
+    const ACMatchClassifications& match_contents_class() const {
+      return match_contents_class_;
+    }
+
     int relevance() const { return relevance_; }
     void set_relevance(int relevance) { relevance_ = relevance; }
 
@@ -189,6 +194,10 @@ class SearchProvider : public AutocompleteProvider,
                                    bool keyword_provider_requested) const = 0;
 
    protected:
+    // The contents to be displayed and its style info.
+    base::string16 match_contents_;
+    ACMatchClassifications match_contents_class_;
+
     // True if the result came from the keyword provider.
     bool from_keyword_provider_;
 
@@ -221,10 +230,6 @@ class SearchProvider : public AutocompleteProvider,
 
     const base::string16& suggestion() const { return suggestion_; }
     AutocompleteMatchType::Type type() const { return type_; }
-    const base::string16& match_contents() const { return match_contents_; }
-    const ACMatchClassifications& match_contents_class() const {
-      return match_contents_class_;
-    }
     const base::string16& annotation() const { return annotation_; }
     const std::string& suggest_query_params() const {
       return suggest_query_params_;
@@ -232,7 +237,7 @@ class SearchProvider : public AutocompleteProvider,
     const std::string& deletion_url() const { return deletion_url_; }
     bool should_prefetch() const { return should_prefetch_; }
 
-    // Fills in |match_contents_class| to reflect how |match_contents_| should
+    // Fills in |match_contents_class_| to reflect how |match_contents_| should
     // be displayed and bolded against the current |input_text|.  If
     // |allow_bolding_all| is false and |match_contents_class_| would have all
     // of |match_contents_| bolded, do nothing.
@@ -250,10 +255,6 @@ class SearchProvider : public AutocompleteProvider,
     base::string16 suggestion_;
 
     AutocompleteMatchType::Type type_;
-
-    // The contents to be displayed and its style info.
-    base::string16 match_contents_;
-    ACMatchClassifications match_contents_class_;
 
     // Optional annotation for the |match_contents_| for disambiguation.
     // This may be displayed in the autocomplete match contents, but is defined
@@ -281,12 +282,23 @@ class SearchProvider : public AutocompleteProvider,
                      const base::string16& description,
                      bool from_keyword_provider,
                      int relevance,
-                     bool relevance_from_server);
+                     bool relevance_from_server,
+                     const base::string16& input_text,
+                     const std::string& languages);
     virtual ~NavigationResult();
 
     const GURL& url() const { return url_; }
     const base::string16& description() const { return description_; }
     const base::string16& formatted_url() const { return formatted_url_; }
+
+    // Fills in |match_contents_| and |match_contents_class_| to reflect how
+    // the URL should be displayed and bolded against the current |input_text|
+    // and user |languages|.  If |allow_bolding_nothing| is false and
+    // |match_contents_class_| would result in an entirely unbolded
+    // |match_contents_|, do nothing.
+    void CalculateAndClassifyMatchContents(const bool allow_bolding_nothing,
+                                           const base::string16& input_text,
+                                           const std::string& languages);
 
     // Result:
     virtual bool IsInlineable(const base::string16& input) const OVERRIDE;
@@ -382,10 +394,10 @@ class SearchProvider : public AutocompleteProvider,
                                  SuggestResults* suggest_results,
                                  NavigationResults* navigation_results);
 
-  // Recalculates the match contents class of |suggest_results| to better
-  // display against the current input.
-  static void UpdateMatchContentsClass(const base::string16& input_text,
-                                       SuggestResults* suggest_results);
+  // Recalculates the match contents class of |results| to better display
+  // against the current input and user's language.
+  void UpdateMatchContentsClass(const base::string16& input_text,
+                                Results* results);
 
   // Calculates the relevance score for the keyword verbatim result (if the
   // input matches one of the profile's keyword).

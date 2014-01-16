@@ -220,11 +220,11 @@ SearchProvider::SuggestResult::SuggestResult(
     : Result(from_keyword_provider, relevance, relevance_from_server),
       suggestion_(suggestion),
       type_(type),
-      match_contents_(match_contents),
       annotation_(annotation),
       suggest_query_params_(suggest_query_params),
       deletion_url_(deletion_url),
       should_prefetch_(should_prefetch) {
+  match_contents_ = match_contents;
   DCHECK(!match_contents_.empty());
   ClassifyMatchContents(true, input_text);
 }
@@ -301,16 +301,52 @@ SearchProvider::NavigationResult::NavigationResult(
     const base::string16& description,
     bool from_keyword_provider,
     int relevance,
-    bool relevance_from_server)
+    bool relevance_from_server,
+    const base::string16& input_text,
+    const std::string& languages)
     : Result(from_keyword_provider, relevance, relevance_from_server),
       url_(url),
       formatted_url_(AutocompleteInput::FormattedStringWithEquivalentMeaning(
           url, provider.StringForURLDisplay(url, true, false))),
       description_(description) {
   DCHECK(url_.is_valid());
+  CalculateAndClassifyMatchContents(true, input_text, languages);
 }
 
 SearchProvider::NavigationResult::~NavigationResult() {
+}
+
+void SearchProvider::NavigationResult::CalculateAndClassifyMatchContents(
+    const bool allow_bolding_nothing,
+    const base::string16& input_text,
+    const std::string& languages) {
+  // First look for the user's input inside the formatted url as it would be
+  // without trimming the scheme, so we can find matches at the beginning of the
+  // scheme.
+  const URLPrefix* prefix =
+      URLPrefix::BestURLPrefix(formatted_url_, input_text);
+  size_t match_start = (prefix == NULL) ?
+      formatted_url_.find(input_text) : prefix->prefix.length();
+  bool trim_http = !AutocompleteInput::HasHTTPScheme(input_text) &&
+      (!prefix || (match_start != 0));
+  const net::FormatUrlTypes format_types =
+      net::kFormatUrlOmitAll & ~(trim_http ? 0 : net::kFormatUrlOmitHTTP);
+
+  base::string16 match_contents = net::FormatUrl(url_, languages, format_types,
+      net::UnescapeRule::SPACES, NULL, NULL, &match_start);
+  // If the first match in the untrimmed string was inside a scheme that we
+  // trimmed, look for a subsequent match.
+  if (match_start == base::string16::npos)
+    match_start = match_contents.find(input_text);
+  // Update |match_contents_| and |match_contents_class_| if it's allowed.
+  if (allow_bolding_nothing || (match_start != base::string16::npos)) {
+    match_contents_ = match_contents;
+    // Safe if |match_start| is npos; also safe if the input is longer than the
+    // remaining contents after |match_start|.
+    AutocompleteMatch::ClassifyLocationInString(match_start,
+        input_text.length(), match_contents_.length(),
+        ACMatchClassification::URL, &match_contents_class_);
+  }
 }
 
 bool SearchProvider::NavigationResult::IsInlineable(
@@ -571,12 +607,17 @@ void SearchProvider::RemoveStaleResults(const base::string16& input,
   }
 }
 
-// static
 void SearchProvider::UpdateMatchContentsClass(const base::string16& input_text,
-                                              SuggestResults* suggest_results) {
-  for (SuggestResults::iterator sug_it = suggest_results->begin();
-       sug_it != suggest_results->end(); ++sug_it) {
+                                              Results* results) {
+  for (SuggestResults::iterator sug_it = results->suggest_results.begin();
+       sug_it != results->suggest_results.end(); ++sug_it) {
     sug_it->ClassifyMatchContents(false, input_text);
+  }
+  const std::string languages(
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
+  for (NavigationResults::iterator nav_it = results->navigation_results.begin();
+       nav_it != results->navigation_results.end(); ++nav_it) {
+    nav_it->CalculateAndClassifyMatchContents(false, input_text, languages);
   }
 }
 
@@ -888,11 +929,9 @@ void SearchProvider::StartOrStopSuggestQuery(bool minimal_changes) {
 
   // Update the content classifications of remaining results so they look good
   // against the current input.
-  UpdateMatchContentsClass(input_.text(), &default_results_.suggest_results);
-  if (!keyword_input_.text().empty()) {
-    UpdateMatchContentsClass(keyword_input_.text(),
-                             &keyword_results_.suggest_results);
-  }
+  UpdateMatchContentsClass(input_.text(), &default_results_);
+  if (!keyword_input_.text().empty())
+    UpdateMatchContentsClass(keyword_input_.text(), &keyword_results_);
 
   // We can't start a new query if we're only allowed synchronous results.
   if (input_.matches_requested() != AutocompleteInput::ALL_MATCHES)
@@ -1180,6 +1219,8 @@ bool SearchProvider::ParseSuggestResults(base::Value* root_val,
   const bool allow_navsuggest =
       (is_keyword ? keyword_input_.type() : input_.type()) !=
       AutocompleteInput::FORCED_QUERY;
+  const std::string languages(
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
   for (size_t index = 0; results_list->GetString(index, &suggestion); ++index) {
     // Google search may return empty suggestions for weird input characters,
     // they make no sense at all and can cause problems in our code.
@@ -1198,7 +1239,8 @@ bool SearchProvider::ParseSuggestResults(base::Value* root_val,
         if (descriptions != NULL)
           descriptions->GetString(index, &title);
         results->navigation_results.push_back(NavigationResult(
-            *this, url, title, is_keyword, relevance, true));
+            *this, url, title, is_keyword, relevance, true, input_text,
+            languages));
       }
     } else {
       AutocompleteMatchType::Type match_type = GetAutocompleteMatchType(type);
@@ -1890,23 +1932,22 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
                           AutocompleteMatchType::NAVSUGGEST);
   match.destination_url = navigation.url();
 
-  // First look for the user's input inside the fill_into_edit as it would be
+  // First look for the user's input inside the formatted url as it would be
   // without trimming the scheme, so we can find matches at the beginning of the
   // scheme.
-  const base::string16& untrimmed_fill_into_edit = navigation.formatted_url();
   const URLPrefix* prefix =
-      URLPrefix::BestURLPrefix(untrimmed_fill_into_edit, input);
+      URLPrefix::BestURLPrefix(navigation.formatted_url(), input);
   size_t match_start = (prefix == NULL) ?
-      untrimmed_fill_into_edit.find(input) : prefix->prefix.length();
-  size_t inline_autocomplete_offset = (prefix == NULL) ?
-      base::string16::npos : (match_start + input.length());
+      navigation.formatted_url().find(input) : prefix->prefix.length();
   bool trim_http = !AutocompleteInput::HasHTTPScheme(input) &&
       (!prefix || (match_start != 0));
+  const net::FormatUrlTypes format_types =
+      net::kFormatUrlOmitAll & ~(trim_http ? 0 : net::kFormatUrlOmitHTTP);
 
   const std::string languages(
       profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
-  const net::FormatUrlTypes format_types =
-      net::kFormatUrlOmitAll & ~(trim_http ? 0 : net::kFormatUrlOmitHTTP);
+  size_t inline_autocomplete_offset = (prefix == NULL) ?
+      base::string16::npos : (match_start + input.length());
   match.fill_into_edit +=
       AutocompleteInput::FormattedStringWithEquivalentMeaning(navigation.url(),
           net::FormatUrl(navigation.url(), languages, format_types,
@@ -1931,18 +1972,8 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
         match.fill_into_edit.substr(inline_autocomplete_offset);
   }
 
-  match.contents = net::FormatUrl(navigation.url(), languages,
-      format_types, net::UnescapeRule::SPACES, NULL, NULL, &match_start);
-  // If the first match in the untrimmed string was inside a scheme that we
-  // trimmed, look for a subsequent match.
-  if (match_start == base::string16::npos)
-    match_start = match.contents.find(input);
-  // Safe if |match_start| is npos; also safe if the input is longer than the
-  // remaining contents after |match_start|.
-  AutocompleteMatch::ClassifyLocationInString(match_start, input.length(),
-      match.contents.length(), ACMatchClassification::URL,
-      &match.contents_class);
-
+  match.contents = navigation.match_contents();
+  match.contents_class = navigation.match_contents_class();
   match.description = navigation.description();
   AutocompleteMatch::ClassifyMatchInString(input, match.description,
       ACMatchClassification::NONE, &match.description_class);
