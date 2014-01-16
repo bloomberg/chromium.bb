@@ -130,18 +130,26 @@ int ScreenAsh::GetNumDisplays() const {
 }
 
 std::vector<gfx::Display> ScreenAsh::GetAllDisplays() const {
+  if (!Shell::HasInstance())
+    return std::vector<gfx::Display>(1, GetPrimaryDisplay());
   return GetDisplayManager()->displays();
 }
 
 gfx::Display ScreenAsh::GetDisplayNearestWindow(gfx::NativeView window) const {
+  if (!Shell::HasInstance())
+    return GetPrimaryDisplay();
   return GetDisplayController()->GetDisplayNearestWindow(window);
 }
 
 gfx::Display ScreenAsh::GetDisplayNearestPoint(const gfx::Point& point) const {
+  if (!Shell::HasInstance())
+    return GetPrimaryDisplay();
   return GetDisplayController()->GetDisplayNearestPoint(point);
 }
 
 gfx::Display ScreenAsh::GetDisplayMatching(const gfx::Rect& match_rect) const {
+  if (!Shell::HasInstance())
+    return GetPrimaryDisplay();
   return GetDisplayController()->GetDisplayMatching(match_rect);
 }
 
