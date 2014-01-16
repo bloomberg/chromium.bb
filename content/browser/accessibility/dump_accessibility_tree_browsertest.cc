@@ -434,8 +434,9 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   RunTest(FILE_PATH_LITERAL("modal-dialog-closed.html"));
 }
 
+// TODO(falken): Rebaseline modal dialog tests after Blink r165040 is relanded.
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-                       AccessibilityModalDialogOpened) {
+                       DISABLED_AccessibilityModalDialogOpened) {
   RunTest(FILE_PATH_LITERAL("modal-dialog-opened.html"));
 }
 
@@ -445,12 +446,12 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-                       AccessibilityModalDialogInIframeOpened) {
+                       DISABLED_AccessibilityModalDialogInIframeOpened) {
   RunTest(FILE_PATH_LITERAL("modal-dialog-in-iframe-opened.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-                       AccessibilityModalDialogStack) {
+                       DISABLED_AccessibilityModalDialogStack) {
   RunTest(FILE_PATH_LITERAL("modal-dialog-stack.html"));
 }
 
