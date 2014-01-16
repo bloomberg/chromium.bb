@@ -63,7 +63,8 @@ class IOSurfaceImageTransportSurface
       const AcceleratedSurfaceMsg_BufferPresented_Params& params) OVERRIDE;
   virtual void OnResizeViewACK() OVERRIDE;
   virtual void OnResize(gfx::Size size, float scale_factor) OVERRIDE;
-  virtual void SetLatencyInfo(const ui::LatencyInfo&) OVERRIDE;
+  virtual void SetLatencyInfo(
+      const std::vector<ui::LatencyInfo>&) OVERRIDE;
   virtual void WakeUpGpu() OVERRIDE;
 
   // GpuCommandBufferStub::DestructionObserver implementation.
@@ -105,7 +106,7 @@ class IOSurfaceImageTransportSurface
   // Whether we unscheduled command buffer because of pending SwapBuffers.
   bool did_unschedule_;
 
-  ui::LatencyInfo latency_info_;
+  std::vector<ui::LatencyInfo> latency_info_;
 
   scoped_ptr<ImageTransportHelper> helper_;
 
@@ -249,7 +250,7 @@ bool IOSurfaceImageTransportSurface::SwapBuffers() {
   params.surface_handle = io_surface_handle_;
   params.size = GetSize();
   params.scale_factor = scale_factor_;
-  params.latency_info = latency_info_;
+  params.latency_info.swap(latency_info_);
   helper_->SendAcceleratedSurfaceBuffersSwapped(params);
 
   DCHECK(!is_swap_buffers_pending_);
@@ -272,7 +273,7 @@ bool IOSurfaceImageTransportSurface::PostSubBuffer(
   params.height = height;
   params.surface_size = GetSize();
   params.surface_scale_factor = scale_factor_;
-  params.latency_info = latency_info_;
+  params.latency_info.swap(latency_info_);
   helper_->SendAcceleratedSurfacePostSubBuffer(params);
 
   DCHECK(!is_swap_buffers_pending_);
@@ -323,8 +324,9 @@ void IOSurfaceImageTransportSurface::OnResize(gfx::Size size,
 }
 
 void IOSurfaceImageTransportSurface::SetLatencyInfo(
-    const ui::LatencyInfo& latency_info) {
-  latency_info_ = latency_info;
+    const std::vector<ui::LatencyInfo>& latency_info) {
+  for (size_t i = 0; i < latency_info.size(); i++)
+    latency_info_.push_back(latency_info[i]);
 }
 
 void IOSurfaceImageTransportSurface::WakeUpGpu() {

@@ -61,7 +61,7 @@ class GpuCommandBufferStub
     virtual ~DestructionObserver() {}
   };
 
-  typedef base::Callback<void(const ui::LatencyInfo&)>
+  typedef base::Callback<void(const std::vector<ui::LatencyInfo>&)>
       LatencyInfoCallback;
 
   GpuCommandBufferStub(
@@ -196,7 +196,7 @@ class GpuCommandBufferStub
 
   void OnCommandProcessed();
   void OnParseError();
-  void OnSetLatencyInfo(const ui::LatencyInfo& latency_info);
+  void OnSetLatencyInfo(const std::vector<ui::LatencyInfo>& latency_info);
 
   void ReportState();
 

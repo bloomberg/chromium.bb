@@ -106,7 +106,7 @@ class GpuProcessHostUIShim : public IPC::Listener,
   void OnUpdateVSyncParameters(int surface_id,
                                base::TimeTicks timebase,
                                base::TimeDelta interval);
-  void OnFrameDrawn(const ui::LatencyInfo& latency_info);
+  void OnFrameDrawn(const std::vector<ui::LatencyInfo>& latency_info);
 
   // The serial number of the GpuProcessHost / GpuProcessHostUIShim pair.
   int host_id_;

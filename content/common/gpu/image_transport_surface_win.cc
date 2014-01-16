@@ -47,7 +47,7 @@ class PbufferImageTransportSurface
       const AcceleratedSurfaceMsg_BufferPresented_Params& params) OVERRIDE;
   virtual void OnResizeViewACK() OVERRIDE;
   virtual void OnResize(gfx::Size size, float scale_factor) OVERRIDE;
-  virtual void SetLatencyInfo(const ui::LatencyInfo&) OVERRIDE;
+  virtual void SetLatencyInfo(const std::vector<ui::LatencyInfo>&) OVERRIDE;
   virtual void WakeUpGpu() OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;
 
@@ -69,7 +69,7 @@ class PbufferImageTransportSurface
   // Size to resize to when the surface becomes visible.
   gfx::Size visible_size_;
 
-  ui::LatencyInfo latency_info_;
+  std::vector<ui::LatencyInfo> latency_info_;
 
   scoped_ptr<ImageTransportHelper> helper_;
 
@@ -190,7 +190,7 @@ void PbufferImageTransportSurface::SendBuffersSwapped() {
   params.surface_handle = reinterpret_cast<int64>(GetShareHandle());
   CHECK(params.surface_handle);
   params.size = GetSize();
-  params.latency_info = latency_info_;
+  params.latency_info.swap(latency_info_);
 
   helper_->SendAcceleratedSurfaceBuffersSwapped(params);
 
@@ -228,8 +228,9 @@ void PbufferImageTransportSurface::OnResize(gfx::Size size,
 }
 
 void PbufferImageTransportSurface::SetLatencyInfo(
-    const ui::LatencyInfo& latency_info) {
-  latency_info_ = latency_info;
+    const std::vector<ui::LatencyInfo>& latency_info) {
+  for (size_t i = 0; i < latency_info.size(); i++)
+    latency_info_.push_back(latency_info[i]);
 }
 
 void PbufferImageTransportSurface::WakeUpGpu() {

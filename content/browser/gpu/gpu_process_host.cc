@@ -132,7 +132,7 @@ void AcceleratedSurfaceBuffersSwappedCompletedForRenderer(
     int surface_id,
     base::TimeTicks timebase,
     base::TimeDelta interval,
-    const ui::LatencyInfo& latency_info) {
+    const std::vector<ui::LatencyInfo>& latency_info) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI,
@@ -156,7 +156,8 @@ void AcceleratedSurfaceBuffersSwappedCompletedForRenderer(
   RenderWidgetHostImpl::From(rwh)->AcknowledgeSwapBuffersToRenderer();
   if (interval != base::TimeDelta())
     RenderWidgetHostImpl::From(rwh)->UpdateVSyncParameters(timebase, interval);
-  RenderWidgetHostImpl::From(rwh)->FrameSwapped(latency_info);
+  for (size_t i = 0; i < latency_info.size(); i++)
+    RenderWidgetHostImpl::From(rwh)->FrameSwapped(latency_info[i]);
   RenderWidgetHostImpl::From(rwh)->DidReceiveRendererFrame();
 }
 
@@ -167,7 +168,7 @@ void AcceleratedSurfaceBuffersSwappedCompleted(
     bool alive,
     base::TimeTicks timebase,
     base::TimeDelta interval,
-    const ui::LatencyInfo& latency_info) {
+    const std::vector<ui::LatencyInfo>& latency_info) {
   AcceleratedSurfaceBuffersSwappedCompletedForGPU(
       host_id, route_id, alive, timebase, interval);
   AcceleratedSurfaceBuffersSwappedCompletedForRenderer(
@@ -881,6 +882,10 @@ void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params) {
   TRACE_EVENT0("gpu", "GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped");
 
+  if (!ui::LatencyInfo::Verify(params.latency_info,
+                               "GpuHostMsg_AcceleratedSurfaceBuffersSwapped"))
+    return;
+
   gfx::GLSurfaceHandle surface_handle =
       GpuSurfaceTracker::Get()->GetSurfaceHandle(params.surface_id);
   // Compositor window is always gfx::kNullPluginWindow.
@@ -933,10 +938,15 @@ void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params) {
   TRACE_EVENT0("gpu", "GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped");
 
+  if (!ui::LatencyInfo::Verify(params.latency_info,
+                               "GpuHostMsg_AcceleratedSurfaceBuffersSwapped"))
+    return;
+
   base::ScopedClosureRunner scoped_completion_runner(
       base::Bind(&AcceleratedSurfaceBuffersSwappedCompleted,
           host_id_, params.route_id, params.surface_id,
-          true, base::TimeTicks(), base::TimeDelta(), ui::LatencyInfo()));
+          true, base::TimeTicks(), base::TimeDelta(),
+          std::vector<ui::LatencyInfo>()));
 
   gfx::GLSurfaceHandle handle =
       GpuSurfaceTracker::Get()->GetSurfaceHandle(params.surface_id);
@@ -1002,6 +1012,10 @@ void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
 void GpuProcessHost::OnAcceleratedSurfacePostSubBuffer(
     const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params) {
   TRACE_EVENT0("gpu", "GpuProcessHost::OnAcceleratedSurfacePostSubBuffer");
+
+  if (!ui::LatencyInfo::Verify(params.latency_info,
+                               "GpuHostMsg_AcceleratedSurfacePostSubBuffer"))
+    return;
 
   NOTIMPLEMENTED();
 }

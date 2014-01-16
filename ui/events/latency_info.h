@@ -7,6 +7,7 @@
 
 #include <map>
 #include <utility>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/time/time.h"
@@ -86,6 +87,16 @@ struct EVENTS_BASE_EXPORT LatencyInfo {
   LatencyInfo();
 
   ~LatencyInfo();
+
+  // Returns true if the vector |latency_info| is valid. Returns false
+  // if it is not valid and log the |referring_msg|.
+  // This function is mainly used to check the latency_info vector that
+  // is passed between processes using IPC message has reasonable size
+  // so that we are confident the IPC message is not corrupted/compromised.
+  // This check will go away once the IPC system has better built-in scheme
+  // for corruption/compromise detection.
+  static bool Verify(const std::vector<LatencyInfo>& latency_info,
+                     const char* referring_msg);
 
   // Merges the contents of another LatencyInfo into this one.
   void MergeWith(const LatencyInfo& other);

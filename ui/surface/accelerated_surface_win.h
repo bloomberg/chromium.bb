@@ -32,10 +32,11 @@ class VideoFrame;
 class SURFACE_EXPORT AcceleratedPresenter
     : public base::RefCountedThreadSafe<AcceleratedPresenter> {
  public:
-  typedef base::Callback<void(bool,
-                              base::TimeTicks,
-                              base::TimeDelta,
-                              const ui::LatencyInfo&)> CompletionTask;
+  typedef base::Callback<void(
+      bool,
+      base::TimeTicks,
+      base::TimeDelta,
+      const std::vector<ui::LatencyInfo>&)> CompletionTask;
 
   explicit AcceleratedPresenter(gfx::PluginWindowHandle window);
 
@@ -54,7 +55,7 @@ class SURFACE_EXPORT AcceleratedPresenter
   void AsyncPresentAndAcknowledge(
       const gfx::Size& size,
       int64 surface_handle,
-      const ui::LatencyInfo& latency_info,
+      const std::vector<ui::LatencyInfo>& latency_info,
       const CompletionTask& completion_task);
 
   // Returns true if the swap chain has been created and initialized.  This can
@@ -99,7 +100,7 @@ class SURFACE_EXPORT AcceleratedPresenter
   void DoPresentAndAcknowledge(
       const gfx::Size& size,
       int64 surface_handle,
-      const ui::LatencyInfo& latency_info,
+      const std::vector<ui::LatencyInfo>& latency_info,
       const CompletionTask& completion_task);
   void DoSuspend();
   void DoPresent(const base::Closure& composite_task);
@@ -173,7 +174,7 @@ class SURFACE_EXPORT AcceleratedPresenter
   gfx::Size last_window_size_;
   base::Time last_window_resize_time_;
 
-  ui::LatencyInfo latency_info_;
+  std::vector<ui::LatencyInfo> latency_info_;
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratedPresenter);
 };

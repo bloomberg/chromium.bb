@@ -63,7 +63,7 @@ class ImageTransportSurface {
   virtual void OnResizeViewACK() = 0;
   virtual void OnResize(gfx::Size size, float scale_factor) = 0;
   virtual void SetLatencyInfo(
-      const ui::LatencyInfo& latency_info) = 0;
+      const std::vector<ui::LatencyInfo>& latency_info) = 0;
   virtual void WakeUpGpu() = 0;
 
   // Creates a surface with the given attributes.
@@ -125,7 +125,7 @@ class ImageTransportHelper
   void SendUpdateVSyncParameters(
       base::TimeTicks timebase, base::TimeDelta interval);
 
-  void SendLatencyInfo(const ui::LatencyInfo& latency_info);
+  void SendLatencyInfo(const std::vector<ui::LatencyInfo>& latency_info);
 
   // Whether or not we should execute more commands.
   void SetScheduled(bool is_scheduled);
@@ -159,7 +159,7 @@ class ImageTransportHelper
   // Backbuffer resize callback.
   void Resize(gfx::Size size, float scale_factor);
 
-  void SetLatencyInfo(const ui::LatencyInfo& latency_info);
+  void SetLatencyInfo(const std::vector<ui::LatencyInfo>& latency_info);
 
   // Weak pointers that point to objects that outlive this helper.
   ImageTransportSurface* surface_;
@@ -198,7 +198,7 @@ class PassThroughImageTransportSurface
   virtual void OnResize(gfx::Size size, float scale_factor) OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;
   virtual void SetLatencyInfo(
-      const ui::LatencyInfo& latency_info) OVERRIDE;
+      const std::vector<ui::LatencyInfo>& latency_info) OVERRIDE;
   virtual void WakeUpGpu() OVERRIDE;
 
  protected:
@@ -217,7 +217,7 @@ class PassThroughImageTransportSurface
   bool did_set_swap_interval_;
   bool did_unschedule_;
   bool is_swap_buffers_pending_;
-  ui::LatencyInfo latency_info_;
+  std::vector<ui::LatencyInfo> latency_info_;
 
   DISALLOW_COPY_AND_ASSIGN(PassThroughImageTransportSurface);
 };

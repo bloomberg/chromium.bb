@@ -11,6 +11,9 @@
 #include <algorithm>
 
 namespace {
+
+const unsigned int kMaxLatencyInfoNumber = 100;
+
 const char* GetComponentName(ui::LatencyComponentType type) {
 #define CASE_TYPE(t) case ui::t:  return #t
   switch (type) {
@@ -117,6 +120,16 @@ LatencyInfo::LatencyInfo() : trace_id(-1), terminated(false) {
 }
 
 LatencyInfo::~LatencyInfo() {
+}
+
+bool LatencyInfo::Verify(const std::vector<LatencyInfo>& latency_info,
+                         const char* referring_msg) {
+  if (latency_info.size() > kMaxLatencyInfoNumber) {
+    LOG(ERROR) << referring_msg << ", LatencyInfo vector size "
+               << latency_info.size() << " is too big.";
+    return false;
+  }
+  return true;
 }
 
 void LatencyInfo::MergeWith(const LatencyInfo& other) {

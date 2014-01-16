@@ -332,7 +332,7 @@ bool CompositingIOSurfaceMac::SetIOSurface(
     uint64 io_surface_handle,
     const gfx::Size& size,
     float scale_factor,
-    const ui::LatencyInfo& latency_info) {
+    const std::vector<ui::LatencyInfo>& latency_info) {
   pixel_io_surface_size_ = size;
   scale_factor_ = scale_factor;
   dip_io_surface_size_ = gfx::ToFlooredSize(
@@ -345,7 +345,9 @@ bool CompositingIOSurfaceMac::SetIOSurface(
   }
   bool result = MapIOSurfaceToTexture(io_surface_handle);
   CGLSetCurrentContext(0);
-  latency_info_.MergeWith(latency_info);
+  for (size_t i = 0; i < latency_info.size(); i++) {
+    latency_info_.push_back(latency_info[i]);
+  }
   return result;
 }
 
@@ -495,10 +497,12 @@ bool CompositingIOSurfaceMac::DrawIOSurface(
     result = false;
   }
 
-  latency_info_.AddLatencyNumber(
-      ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0);
+  for (size_t i = 0; i < latency_info_.size(); i++) {
+    latency_info_[i].AddLatencyNumber(
+          ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0);
+  }
   RenderWidgetHostImpl::CompositorFrameDrawn(latency_info_);
-  latency_info_.Clear();
+  latency_info_.clear();
 
   // Try to finish previous copy requests after flush to get better pipelining.
   CheckIfAllCopiesAreFinished(false);

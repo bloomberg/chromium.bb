@@ -1479,6 +1479,9 @@ void RenderWidgetHostImpl::OnCompositorSurfaceBuffersSwapped(
       const ViewHostMsg_CompositorSurfaceBuffersSwapped_Params& params) {
   TRACE_EVENT0("renderer_host",
                "RenderWidgetHostImpl::OnCompositorSurfaceBuffersSwapped");
+  if (!ui::LatencyInfo::Verify(params.latency_info,
+                               "ViewHostMsg_CompositorSurfaceBuffersSwapped"))
+    return;
   if (!view_) {
     AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
     ack_params.sync_point = 0;
@@ -2456,26 +2459,27 @@ void RenderWidgetHostImpl::WindowSnapshotReachedScreen(int snapshot_id) {
 
 // static
 void RenderWidgetHostImpl::CompositorFrameDrawn(
-    const ui::LatencyInfo& latency_info) {
-  std::set<RenderWidgetHostImpl*> rwhi_set;
-
-  for (ui::LatencyInfo::LatencyMap::const_iterator b =
-           latency_info.latency_components.begin();
-       b != latency_info.latency_components.end();
-       ++b) {
-    if (b->first.first == ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT ||
-        b->first.first == ui::WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT) {
-      // Matches with GetLatencyComponentId
-      int routing_id = b->first.second & 0xffffffff;
-      int process_id = (b->first.second >> 32) & 0xffffffff;
-      RenderWidgetHost* rwh =
-          RenderWidgetHost::FromID(process_id, routing_id);
-      if (!rwh) {
-        continue;
+    const std::vector<ui::LatencyInfo>& latency_info) {
+  for (size_t i = 0; i < latency_info.size(); i++) {
+    std::set<RenderWidgetHostImpl*> rwhi_set;
+    for (ui::LatencyInfo::LatencyMap::const_iterator b =
+             latency_info[i].latency_components.begin();
+         b != latency_info[i].latency_components.end();
+         ++b) {
+      if (b->first.first == ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT ||
+          b->first.first == ui::WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT) {
+        // Matches with GetLatencyComponentId
+        int routing_id = b->first.second & 0xffffffff;
+        int process_id = (b->first.second >> 32) & 0xffffffff;
+        RenderWidgetHost* rwh =
+            RenderWidgetHost::FromID(process_id, routing_id);
+        if (!rwh) {
+          continue;
+        }
+        RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(rwh);
+        if (rwhi_set.insert(rwhi).second)
+          rwhi->FrameSwapped(latency_info[i]);
       }
-      RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(rwh);
-      if (rwhi_set.insert(rwhi).second)
-        rwhi->FrameSwapped(latency_info);
     }
   }
 }

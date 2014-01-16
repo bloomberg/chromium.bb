@@ -215,13 +215,7 @@ void CommandBufferProxyImpl::SetLatencyInfo(
     const std::vector<ui::LatencyInfo>& latency_info) {
   if (last_state_.error != gpu::error::kNoError)
     return;
-  // TODO(miletus) : Pass the std::vector<ui::LatencyInfo> latency_info
-  // directly without merging once GpuCommandBufferMsg_SetLatencyInfo
-  // is converted to contain std::vector<ui::LatencyInfo>.
-  ui::LatencyInfo merged_latency;
-  for (size_t i = 0; i < latency_info.size(); i++)
-    merged_latency.MergeWith(latency_info[i]);
-  Send(new GpuCommandBufferMsg_SetLatencyInfo(route_id_, merged_latency));
+  Send(new GpuCommandBufferMsg_SetLatencyInfo(route_id_, latency_info));
 }
 
 gpu::CommandBuffer::State CommandBufferProxyImpl::FlushSync(

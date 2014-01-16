@@ -538,7 +538,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // subsystem.
   int64 GetLatencyComponentId();
 
-  static void CompositorFrameDrawn(const ui::LatencyInfo& latency_info);
+  static void CompositorFrameDrawn(
+      const std::vector<ui::LatencyInfo>& latency_info);
 
   // Don't check whether we expected a resize ack during layout tests.
   static void DisableResizeAckCheckForTesting();

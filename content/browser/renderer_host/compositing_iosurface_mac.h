@@ -53,7 +53,7 @@ class CompositingIOSurfaceMac {
   bool SetIOSurface(uint64 io_surface_handle,
                     const gfx::Size& size,
                     float scale_factor,
-                    const ui::LatencyInfo& latency_info);
+                    const std::vector<ui::LatencyInfo>& latency_info);
 
   // Get the CGL renderer ID currently associated with this context.
   int GetRendererID();
@@ -345,7 +345,7 @@ class CompositingIOSurfaceMac {
   // Error saved by GetAndSaveGLError
   GLint gl_error_;
 
-  ui::LatencyInfo latency_info_;
+  std::vector<ui::LatencyInfo> latency_info_;
 };
 
 }  // namespace content

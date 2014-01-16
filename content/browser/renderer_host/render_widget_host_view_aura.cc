@@ -1350,16 +1350,11 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
       params_in_pixel.route_id,
       gpu_host_id,
       params_in_pixel.mailbox_name);
-  // TODO(miletus) : Pass the params_in_pixel.latency_info directly into
-  // BuffersSwapped() once GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params
-  // is converted to contain std::vector<ui::LatencyInfo>.
-  std::vector<ui::LatencyInfo> latency_info;
-  latency_info.push_back(params_in_pixel.latency_info);
   BuffersSwapped(params_in_pixel.size,
                  gfx::Rect(params_in_pixel.size),
                  params_in_pixel.scale_factor,
                  params_in_pixel.mailbox_name,
-                 latency_info,
+                 params_in_pixel.latency_info,
                  ack_callback);
 }
 
@@ -1761,16 +1756,11 @@ void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
                  params_in_pixel.route_id,
                  gpu_host_id,
                  params_in_pixel.mailbox_name);
-  // TODO(miletus) : Pass the params_in_pixel.latency_info directly into
-  // BuffersSwapped() once GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params
-  // is converted to contain std::vector<ui::LatencyInfo>.
-  std::vector<ui::LatencyInfo> latency_info;
-  latency_info.push_back(params_in_pixel.latency_info);
   BuffersSwapped(params_in_pixel.surface_size,
                  damage_rect,
                  params_in_pixel.surface_scale_factor,
                  params_in_pixel.mailbox_name,
-                 latency_info,
+                 params_in_pixel.latency_info,
                  ack_callback);
 }
 

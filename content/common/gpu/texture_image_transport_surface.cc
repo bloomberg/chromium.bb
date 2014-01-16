@@ -192,8 +192,9 @@ void TextureImageTransportSurface::OnWillDestroyStub() {
 }
 
 void TextureImageTransportSurface::SetLatencyInfo(
-    const ui::LatencyInfo& latency_info) {
-  latency_info_ = latency_info;
+    const std::vector<ui::LatencyInfo>& latency_info) {
+  for (size_t i = 0; i < latency_info.size(); i++)
+    latency_info_.push_back(latency_info[i]);
 }
 
 void TextureImageTransportSurface::WakeUpGpu() {
@@ -222,7 +223,7 @@ bool TextureImageTransportSurface::SwapBuffers() {
 
   glFlush();
 
-  params.latency_info = latency_info_;
+  params.latency_info.swap(latency_info_);
   helper_->SendAcceleratedSurfaceBuffersSwapped(params);
 
   DCHECK(!is_swap_buffers_pending_);
@@ -262,7 +263,7 @@ bool TextureImageTransportSurface::PostSubBuffer(
 
   glFlush();
 
-  params.latency_info = latency_info_;
+  params.latency_info.swap(latency_info_);
   helper_->SendAcceleratedSurfacePostSubBuffer(params);
 
   DCHECK(!is_swap_buffers_pending_);

@@ -1285,7 +1285,7 @@ void RenderWidgetHostViewMac::CompositorSwapBuffers(
     uint64 surface_handle,
     const gfx::Size& size,
     float surface_scale_factor,
-    const ui::LatencyInfo& latency_info) {
+    const std::vector<ui::LatencyInfo>& latency_info) {
   if (render_widget_host_->is_hidden())
     return;
 

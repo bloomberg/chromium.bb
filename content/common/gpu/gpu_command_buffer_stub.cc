@@ -567,7 +567,10 @@ void GpuCommandBufferStub::OnInitialize(
 }
 
 void GpuCommandBufferStub::OnSetLatencyInfo(
-    const ui::LatencyInfo& latency_info) {
+    const std::vector<ui::LatencyInfo>& latency_info) {
+  if (!ui::LatencyInfo::Verify(latency_info,
+                               "GpuCommandBufferStub::OnSetLatencyInfo"))
+    return;
   if (!latency_info_callback_.is_null())
     latency_info_callback_.Run(latency_info);
 }

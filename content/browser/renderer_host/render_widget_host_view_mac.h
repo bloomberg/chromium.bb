@@ -344,7 +344,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   void CompositorSwapBuffers(uint64 surface_handle,
                              const gfx::Size& size,
                              float scale_factor,
-                             const ui::LatencyInfo& latency_info);
+                             const std::vector<ui::LatencyInfo>& latency_info);
 
   // Draw the IOSurface by making its context current to this view.
   bool DrawIOSurfaceWithoutCoreAnimation();

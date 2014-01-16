@@ -377,13 +377,13 @@ scoped_refptr<AcceleratedPresenter> AcceleratedPresenter::GetForWindow(
 void AcceleratedPresenter::AsyncPresentAndAcknowledge(
     const gfx::Size& size,
     int64 surface_handle,
-    const ui::LatencyInfo& latency_info,
+    const std::vector<ui::LatencyInfo>& latency_info,
     const CompletionTask& completion_task) {
   if (!surface_handle) {
     TRACE_EVENT1("gpu", "EarlyOut_ZeroSurfaceHandle",
                  "surface_handle", surface_handle);
-    completion_task.Run(
-        true, base::TimeTicks(), base::TimeDelta(), ui::LatencyInfo());
+    completion_task.Run(true, base::TimeTicks(), base::TimeDelta(),
+                        std::vector<ui::LatencyInfo>());
     return;
   }
 
@@ -679,7 +679,7 @@ bool AcceleratedPresenter::IsSwapChainInitialized() const {
 void AcceleratedPresenter::DoPresentAndAcknowledge(
     const gfx::Size& size,
     int64 surface_handle,
-    const ui::LatencyInfo& latency_info,
+    const std::vector<ui::LatencyInfo>& latency_info,
     const CompletionTask& completion_task) {
   TRACE_EVENT2(
       "gpu", "DoPresentAndAcknowledge",
@@ -690,14 +690,15 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
 
   base::AutoLock locked(*present_thread_->lock());
 
-  latency_info_.MergeWith(latency_info);
+  for (size_t i = 0; i < latency_info.size(); i++)
+    latency_info_.push_back(latency_info[i]);
 
   // Initialize the device lazily since calling Direct3D can crash bots.
   present_thread_->InitDevice();
 
   if (!present_thread_->device()) {
-    completion_task.Run(
-        false, base::TimeTicks(), base::TimeDelta(), ui::LatencyInfo());
+    completion_task.Run(false, base::TimeTicks(), base::TimeDelta(),
+                        std::vector<ui::LatencyInfo>());
     TRACE_EVENT0("gpu", "EarlyOut_NoDevice");
     return;
   }
@@ -708,7 +709,7 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
                  true,
                  base::TimeTicks(),
                  base::TimeDelta(),
-                 ui::LatencyInfo()));
+                 std::vector<ui::LatencyInfo>()));
 
   // If invalidated, do nothing, the window is gone.
   if (!window_) {
@@ -847,8 +848,10 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
     ReleaseDC(window_, dc);
   }
 
-  latency_info_.AddLatencyNumber(
-      ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0);
+  for (size_t i = 0; i < latency_info_.size(); i++) {
+    latency_info_[i].AddLatencyNumber(
+        ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0);
+  }
 
   hidden_ = false;
 
@@ -916,7 +919,7 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
 
   scoped_completion_runner.Release();
   completion_task.Run(true, last_vsync_time, refresh_period, latency_info_);
-  latency_info_.Clear();
+  latency_info_.clear();
 }
 
 void AcceleratedPresenter::DoSuspend() {
