@@ -60,8 +60,6 @@
 #include "sync/engine/sync_scheduler_impl.h"
 #include "sync/notifier/p2p_invalidator.h"
 #include "sync/protocol/sync.pb.h"
-#include "sync/test/fake_server/fake_server.h"
-#include "sync/test/fake_server/fake_server_network_resources.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;
@@ -145,34 +143,30 @@ void SyncTest::SetUp() {
     password_ = "password";
   }
 
-  // Only set |server_type_| if it hasn't already been set. This allows for
-  // IN_PROCESS_FAKE_SERVER tests to set this value in each test class.
-  if (server_type_ == SERVER_TYPE_UNDECIDED) {
-    if (!cl->HasSwitch(switches::kSyncServiceURL) &&
-        !cl->HasSwitch(switches::kSyncServerCommandLine)) {
-      // If neither a sync server URL nor a sync server command line is
-      // provided, start up a local python sync test server and point Chrome
-      // to its URL.  This is the most common configuration, and the only
-      // one that makes sense for most developers.
-      server_type_ = LOCAL_PYTHON_SERVER;
-    } else if (cl->HasSwitch(switches::kSyncServiceURL) &&
-               cl->HasSwitch(switches::kSyncServerCommandLine)) {
-      // If a sync server URL and a sync server command line are provided,
-      // start up a local sync server by running the command line. Chrome
-      // will connect to the server at the URL that was provided.
-      server_type_ = LOCAL_LIVE_SERVER;
-    } else if (cl->HasSwitch(switches::kSyncServiceURL) &&
-               !cl->HasSwitch(switches::kSyncServerCommandLine)) {
-      // If a sync server URL is provided, but not a server command line,
-      // it is assumed that the server is already running. Chrome will
-      // automatically connect to it at the URL provided. There is nothing
-      // to do here.
-      server_type_ = EXTERNAL_LIVE_SERVER;
-    } else {
-      // If a sync server command line is provided, but not a server URL,
-      // we flag an error.
-      LOG(FATAL) << "Can't figure out how to run a server.";
-    }
+  if (!cl->HasSwitch(switches::kSyncServiceURL) &&
+      !cl->HasSwitch(switches::kSyncServerCommandLine)) {
+    // If neither a sync server URL nor a sync server command line is
+    // provided, start up a local python sync test server and point Chrome
+    // to its URL.  This is the most common configuration, and the only
+    // one that makes sense for most developers.
+    server_type_ = LOCAL_PYTHON_SERVER;
+  } else if (cl->HasSwitch(switches::kSyncServiceURL) &&
+             cl->HasSwitch(switches::kSyncServerCommandLine)) {
+    // If a sync server URL and a sync server command line are provided,
+    // start up a local sync server by running the command line. Chrome
+    // will connect to the server at the URL that was provided.
+    server_type_ = LOCAL_LIVE_SERVER;
+  } else if (cl->HasSwitch(switches::kSyncServiceURL) &&
+             !cl->HasSwitch(switches::kSyncServerCommandLine)) {
+    // If a sync server URL is provided, but not a server command line,
+    // it is assumed that the server is already running. Chrome will
+    // automatically connect to it at the URL provided. There is nothing
+    // to do here.
+    server_type_ = EXTERNAL_LIVE_SERVER;
+  } else {
+    // If a sync server command line is provided, but not a server URL,
+    // we flag an error.
+    LOG(FATAL) << "Can't figure out how to run a server.";
   }
 
   if (username_.empty() || password_.empty())
@@ -322,15 +316,7 @@ void SyncTest::InitializeInstance(int index) {
   // Make sure the ProfileSyncService has been created before creating the
   // ProfileSyncServiceHarness - some tests expect the ProfileSyncService to
   // already exist.
-  ProfileSyncService* profile_sync_service =
-      ProfileSyncServiceFactory::GetForProfile(GetProfile(index));
-
-  if (server_type_ == IN_PROCESS_FAKE_SERVER) {
-    // TODO(pvalenzuela): Run the fake server via EmbeddedTestServer.
-    profile_sync_service->OverrideNetworkResourcesForTest(
-        make_scoped_ptr<syncer::NetworkResources>(
-            new syncer::FakeServerNetworkResources(fake_server_.get())));
-  }
+  ProfileSyncServiceFactory::GetForProfile(GetProfile(index));
 
   clients_[index] =
       ProfileSyncServiceHarness::CreateForIntegrationTest(
@@ -523,11 +509,6 @@ void SyncTest::SetUpTestServerIfRequired() {
       LOG(FATAL) << "Failed to set up local python XMPP server";
     if (!SetUpLocalTestServer())
       LOG(FATAL) << "Failed to set up local test server";
-  } else if (server_type_ == IN_PROCESS_FAKE_SERVER) {
-    fake_server_.reset(new syncer::FakeServer());
-    // Similar to LOCAL_LIVE_SERVER, we must start this for XMPP.
-    SetUpLocalPythonTestServer();
-    SetupMockGaiaResponses();
   } else if (server_type_ == EXTERNAL_LIVE_SERVER) {
     // Nothing to do; we'll just talk to the URL we were given.
   } else {
@@ -880,9 +861,4 @@ void SyncTest::SetProxyConfig(net::URLRequestContextGetter* context_getter,
       base::Bind(&SetProxyConfigCallback, &done,
                  make_scoped_refptr(context_getter), proxy_config));
   done.Wait();
-}
-
-void SyncTest::UseFakeServer() {
-  DCHECK_EQ(SERVER_TYPE_UNDECIDED, server_type_);
-  server_type_ = IN_PROCESS_FAKE_SERVER;
 }

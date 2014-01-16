@@ -18,7 +18,6 @@
 #include "net/url_request/url_request_status.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/protocol/sync_protocol_error.h"
-#include "sync/test/fake_server/fake_server.h"
 #include "sync/test/local_sync_test_server.h"
 
 
@@ -58,18 +57,14 @@ class SyncTest : public InProcessBrowserTest {
   // The type of server we're running against.
   enum ServerType {
     SERVER_TYPE_UNDECIDED,
-    LOCAL_PYTHON_SERVER,    // The mock python server that runs locally and is
-                            // part of the Chromium checkout.
-    LOCAL_LIVE_SERVER,      // Some other server (maybe the real binary used by
-                            // Google's sync service) that can be started on
-                            // a per-test basis by running a command
-    EXTERNAL_LIVE_SERVER,   // A remote server that the test code has no control
-                            // over whatsoever; cross your fingers that the
-                            // account state is initially clean.
-    IN_PROCESS_FAKE_SERVER, // The fake Sync server (FakeServer) running
-                            // in-process (bypassing HTTP calls). This
-                            // ServerType will eventually replace
-                            // LOCAL_PYTHON_SERVER.
+    LOCAL_PYTHON_SERVER,   // The mock python server that runs locally and is
+                           // part of the Chromium checkout.
+    LOCAL_LIVE_SERVER,     // Some other server (maybe the real binary used by
+                           // Google's sync service) that can be started on
+                           // a per-test basis by running a command
+    EXTERNAL_LIVE_SERVER,  // A remote server that the test code has no control
+                           // over whatsoever; cross your fingers that the
+                           // account state is initially clean.
   };
 
   // NOTE: IMPORTANT the enum here should match with
@@ -256,12 +251,6 @@ class SyncTest : public InProcessBrowserTest {
   void DisableNotificationsImpl();
   void EnableNotificationsImpl();
 
-  // Set up the test to use the in-process fake server. This must be called
-  // before SetUp().
-  // TODO(pvalenzuela): Remove this method when the C++ fake server becomes
-  // the default server type.
-  void UseFakeServer();
-
   // GAIA account used by the test case.
   std::string username_;
 
@@ -270,9 +259,6 @@ class SyncTest : public InProcessBrowserTest {
 
   // Locally available plain text file in which GAIA credentials are stored.
   base::FilePath password_file_;
-
-  // The FakeServer used in tests with server type IN_PROCESS_FAKE_SERVER.
-  scoped_ptr<syncer::FakeServer> fake_server_;
 
  private:
   // Helper to ProfileManager::CreateProfile that handles path creation.

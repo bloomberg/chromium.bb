@@ -90,31 +90,6 @@
       ],
     },
 
-    # Test support files for the fake sync server.
-    {
-      'target_name': 'test_support_sync_fake_server',
-      'type': 'static_library',
-      'variables': { 'enable_wexit_time_destructors': 1, },
-      'include_dirs': [
-        '..',
-      ],
-      'dependencies': [
-        '../base/base.gyp:base',
-        'sync',
-      ],
-      'export_dependent_settings': [
-        'sync',
-      ],
-      'sources': [
-        'test/fake_server/fake_server.h',
-        'test/fake_server/fake_server.cc',
-        'test/fake_server/fake_server_http_post_provider.h',
-        'test/fake_server/fake_server_http_post_provider.cc',
-        'test/fake_server/fake_server_network_resources.h',
-        'test/fake_server/fake_server_network_resources.cc',
-      ],
-    },
-
     # Test support files for the 'sync_notifier' target.
     {
       'target_name': 'test_support_sync_notifier',
