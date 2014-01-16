@@ -242,6 +242,14 @@ void WebRtcLoggingHandlerHost::OnAddLogMessage(const std::string& message) {
 
 void WebRtcLoggingHandlerHost::OnLoggingStoppedInRenderer() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (logging_state_ != STOPPING) {
+    // If an out-of-order response is received, stop_callback_ may be invalid,
+    // and must not be invoked.
+    DLOG(ERROR) << "OnLoggingStoppedInRenderer invoked in state "
+                << logging_state_;
+    BadMessageReceived();
+    return;
+  }
   logging_state_ = STOPPED;
   FireGenericDoneCallback(&stop_callback_, true, "");
 }
