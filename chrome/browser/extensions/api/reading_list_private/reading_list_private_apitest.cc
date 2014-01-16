@@ -30,7 +30,7 @@ class ReadingListPrivateApiTest : public ExtensionApiTest {
     DomDistillerContextKeyedService* service =
         new DomDistillerContextKeyedService(
             scoped_ptr<DomDistillerStoreInterface>(
-                CreateStoreWithFakeDB(fake_db, new FakeDB::EntryMap)),
+                CreateStoreWithFakeDB(fake_db, FakeDB::EntryMap())),
             scoped_ptr<DistillerFactory>(factory));
     fake_db->InitCallback(true);
     fake_db->LoadCallback(true);

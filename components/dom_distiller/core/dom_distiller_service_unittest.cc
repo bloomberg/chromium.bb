@@ -65,7 +65,7 @@ class DomDistillerServiceTest : public testing::Test {
     main_loop_.reset(new base::MessageLoop());
     FakeDB* fake_db = new FakeDB(&db_model_);
     FakeDB::EntryMap store_model;
-    store_ = test::util::CreateStoreWithFakeDB(fake_db, &store_model);
+    store_ = test::util::CreateStoreWithFakeDB(fake_db, store_model);
     distiller_factory_ = new MockDistillerFactory();
     service_.reset(new DomDistillerService(
         scoped_ptr<DomDistillerStoreInterface>(store_),

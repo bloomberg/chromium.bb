@@ -43,7 +43,7 @@ testing::Matcher<const std::vector<DomDistillerObserver::ArticleUpdate>&>
 // Creates a simple DomDistillerStore backed by |fake_db| and initialized
 // with |store_model|.
 DomDistillerStore* CreateStoreWithFakeDB(FakeDB* fake_db,
-                                         FakeDB::EntryMap* store_model);
+                                         const FakeDB::EntryMap& store_model);
 
 }  // namespace util
 }  // namespace test

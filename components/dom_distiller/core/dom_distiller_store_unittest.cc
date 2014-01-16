@@ -140,7 +140,7 @@ class DomDistillerStoreTest : public testing::Test {
   // with a FakeDB backed by |db_model_|.
   void CreateStore() {
     fake_db_ = new FakeDB(&db_model_);
-    store_.reset(test::util::CreateStoreWithFakeDB(fake_db_, &store_model_));
+    store_.reset(test::util::CreateStoreWithFakeDB(fake_db_, store_model_));
   }
 
   void StartSyncing() {
@@ -170,7 +170,7 @@ class DomDistillerStoreTest : public testing::Test {
 
   EntryMap db_model_;
   EntryMap sync_model_;
-  EntryMap store_model_;
+  FakeDB::EntryMap store_model_;
 
   scoped_ptr<DomDistillerStore> store_;
 

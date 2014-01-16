@@ -91,10 +91,10 @@ HasExpectedUpdates(
 
 // static
 DomDistillerStore* CreateStoreWithFakeDB(FakeDB* fake_db,
-                                         FakeDB::EntryMap* store_model) {
+                                         const FakeDB::EntryMap& store_model) {
   return new DomDistillerStore(
       scoped_ptr<DomDistillerDatabaseInterface>(fake_db),
-      EntryMapToList(*store_model),
+      EntryMapToList(store_model),
       FakeDB::DirectoryForTestDB());
 }
 
