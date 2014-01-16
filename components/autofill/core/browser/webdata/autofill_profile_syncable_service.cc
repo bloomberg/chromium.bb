@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/webdata/autofill_profile_syncable_service.h"
+#include "components/autofill/core/browser/webdata/autofill_profile_syncable_service.h"
 
 #include "base/guid.h"
 #include "base/location.h"
@@ -14,7 +14,6 @@
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/webdata/common/web_database.h"
-#include "content/public/browser/browser_thread.h"
 #include "sync/api/sync_error.h"
 #include "sync/api/sync_error_factory.h"
 #include "sync/protocol/sync.pb.h"
@@ -22,7 +21,6 @@
 using base::ASCIIToUTF16;
 using base::UTF8ToUTF16;
 using base::UTF16ToUTF8;
-using content::BrowserThread;
 
 namespace autofill {
 
@@ -52,7 +50,6 @@ AutofillProfileSyncableService::AutofillProfileSyncableService(
     : webdata_backend_(webdata_backend),
       app_locale_(app_locale),
       scoped_observer_(this) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   DCHECK(webdata_backend_);
 
   scoped_observer_.Add(webdata_backend_);
@@ -83,7 +80,6 @@ AutofillProfileSyncableService::FromWebDataService(
 AutofillProfileSyncableService::AutofillProfileSyncableService()
     : webdata_backend_(NULL),
       scoped_observer_(this) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 }
 
 syncer::SyncMergeResult

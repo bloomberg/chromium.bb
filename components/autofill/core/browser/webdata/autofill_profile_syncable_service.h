@@ -1,8 +1,12 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef CHROME_BROWSER_WEBDATA_AUTOFILL_PROFILE_SYNCABLE_SERVICE_H_
-#define CHROME_BROWSER_WEBDATA_AUTOFILL_PROFILE_SYNCABLE_SERVICE_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_WEBDATA_AUTOFILL_PROFILE_SYNCABLE_SERVICE_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_WEBDATA_AUTOFILL_PROFILE_SYNCABLE_SERVICE_H_
+
+#if !defined(AUTOFILL_ENABLE_SYNC)
+#error "This file should be built only when sync is enabled in Autofill"
+#endif
 
 #include <map>
 #include <string>
@@ -50,7 +54,8 @@ class AutofillProfileSyncableService
   virtual ~AutofillProfileSyncableService();
 
   // Creates a new AutofillProfileSyncableService and hangs it off of
-  // |web_data_service|, which takes ownership.
+  // |web_data_service|, which takes ownership. This method should only be
+  // called on |web_data_service|'s DB thread.
   static void CreateForWebDataServiceAndBackend(
       AutofillWebDataService* web_data_service,
       AutofillWebDataBackend* webdata_backend,
@@ -215,4 +220,4 @@ struct AutofillProfileSyncableService::DataBundle {
 
 }  // namespace autofill
 
-#endif  // CHROME_BROWSER_WEBDATA_AUTOFILL_PROFILE_SYNCABLE_SERVICE_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_WEBDATA_AUTOFILL_PROFILE_SYNCABLE_SERVICE_H_
