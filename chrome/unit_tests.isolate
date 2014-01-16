@@ -103,7 +103,6 @@
       'variables': {
         'isolate_dependency_tracked': [
           '<(PRODUCT_DIR)/ffmpegsumo.dll',
-          '<(PRODUCT_DIR)/icudt.dll',
         ],
         'isolate_dependency_untracked': [
           '../ppapi/lib/gl/include/KHR/',
@@ -112,5 +111,8 @@
         ],
       },
     }],
+  ],
+  'includes': [
+    '../third_party/icu/icu.isolate',
   ],
 }

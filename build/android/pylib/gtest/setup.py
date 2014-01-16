@@ -108,6 +108,8 @@ def _GenerateDepsDirUsingIsolate(suite_name):
   isolated_abs_path = os.path.join(
       constants.GetOutDirectory(), '%s.isolated' % suite_name)
   assert os.path.exists(isolate_abs_path)
+  # This needs to be kept in sync with the cmd line options for isolate.py
+  # in src/build/isolate.gypi.
   isolate_cmd = [
       'python', _ISOLATE_SCRIPT,
       'remap',
@@ -115,6 +117,7 @@ def _GenerateDepsDirUsingIsolate(suite_name):
       '--isolated', isolated_abs_path,
       '--path-variable', 'PRODUCT_DIR', constants.GetOutDirectory(),
       '--config-variable', 'OS', 'android',
+      '--config-variable', 'icu_use_data_file_flag', '0',
       '--outdir', constants.ISOLATE_DEPS_DIR,
   ]
   assert not cmd_helper.RunCmd(isolate_cmd)
