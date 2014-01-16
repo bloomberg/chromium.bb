@@ -116,6 +116,14 @@ static inline void resetSectionPointerIfNotBefore(RenderTableSection*& ptr, Rend
         ptr = 0;
 }
 
+static inline bool needsTableSection(RenderObject* object)
+{
+    // Return true if 'object' can't exist in an anonymous table without being
+    // wrapped in a table section box.
+    EDisplay display = object->style()->display();
+    return display != TABLE_CAPTION && display != TABLE_COLUMN_GROUP && display != TABLE_COLUMN;
+}
+
 void RenderTable::addChild(RenderObject* child, RenderObject* beforeChild)
 {
     bool wrapInAnonymousSection = !child->isOutOfFlowPositioned();
@@ -155,9 +163,7 @@ void RenderTable::addChild(RenderObject* child, RenderObject* beforeChild)
             default:
                 ASSERT_NOT_REACHED();
         }
-    } else if (child->isTableCell() || child->isTableRow())
-        wrapInAnonymousSection = true;
-    else
+    } else
         wrapInAnonymousSection = true;
 
     if (child->isTableSection())
@@ -185,7 +191,7 @@ void RenderTable::addChild(RenderObject* child, RenderObject* beforeChild)
     }
 
     RenderObject* lastBox = beforeChild;
-    while (lastBox && lastBox->parent()->isAnonymous() && !lastBox->isTableSection() && lastBox->style()->display() != TABLE_CAPTION && lastBox->style()->display() != TABLE_COLUMN_GROUP)
+    while (lastBox && lastBox->parent()->isAnonymous() && !lastBox->isTableSection() && needsTableSection(lastBox))
         lastBox = lastBox->parent();
     if (lastBox && lastBox->isAnonymous() && !isAfterContent(lastBox)) {
         if (beforeChild == lastBox)
@@ -194,7 +200,7 @@ void RenderTable::addChild(RenderObject* child, RenderObject* beforeChild)
         return;
     }
 
-    if (beforeChild && !beforeChild->isTableSection() && beforeChild->style()->display() != TABLE_CAPTION && beforeChild->style()->display() != TABLE_COLUMN_GROUP)
+    if (beforeChild && !beforeChild->isTableSection() && needsTableSection(beforeChild))
         beforeChild = 0;
 
     RenderTableSection* section = RenderTableSection::createAnonymousWithParentRenderer(this);
