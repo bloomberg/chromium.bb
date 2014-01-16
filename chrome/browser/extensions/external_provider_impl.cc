@@ -465,6 +465,7 @@ void ExternalProviderImpl::CreateExternalProviders(
 #endif
 
   if (!profile->IsManaged() && !is_chromeos_demo_session) {
+#if !defined(OS_WIN)
     provider_list->push_back(
         linked_ptr<ExternalProviderInterface>(
             new ExternalProviderImpl(
@@ -475,6 +476,7 @@ void ExternalProviderImpl::CreateExternalProviders(
                 Manifest::EXTERNAL_PREF,
                 Manifest::EXTERNAL_PREF_DOWNLOAD,
                 bundled_extension_creation_flags)));
+#endif
 
     // Define a per-user source of external extensions.
     // On Chrome OS, this serves as a source for OEM customization.
