@@ -575,8 +575,7 @@ void ExtensionService::VerifyAllExtensions() {
        i != all_extensions->end(); ++i) {
     const Extension& extension = **i;
 
-    if (extensions::ManifestURL::UpdatesFromGallery(&extension) &&
-        extension.is_extension())
+    if (InstallVerifier::NeedsVerification(extension))
       to_add.insert(extension.id());
   }
   extensions::ExtensionSystem::Get(profile_)->install_verifier()->AddMany(
@@ -2195,7 +2194,7 @@ void ExtensionService::AddNewOrUpdatedExtension(
                                          blacklisted_for_malware,
                                          page_ordinal);
   delayed_installs_.Remove(extension->id());
-  if (extensions::ManifestURL::UpdatesFromGallery(extension)) {
+  if (InstallVerifier::NeedsVerification(*extension)) {
     extensions::ExtensionSystem::Get(profile_)->install_verifier()->Add(
         extension->id(), InstallVerifier::AddResultCallback());
   }

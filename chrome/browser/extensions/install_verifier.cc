@@ -123,7 +123,21 @@ void LogInitResultHistogram(InitResult result) {
                             result, INIT_RESULT_MAX);
 }
 
+bool FromStore(const Extension& extension) {
+  bool updates_from_store = ManifestURL::UpdatesFromGallery(&extension);
+  return extension.from_webstore() || updates_from_store;
+}
+
+bool CanUseExtensionApis(const Extension& extension) {
+  return extension.is_extension() || extension.is_legacy_packaged_app();
+}
+
 }  // namespace
+
+// static
+bool InstallVerifier::NeedsVerification(const Extension& extension) {
+  return FromStore(extension) && CanUseExtensionApis(extension);
+}
 
 void InstallVerifier::Init() {
   const base::DictionaryValue* pref = prefs_->GetInstallSignature();
@@ -228,11 +242,6 @@ std::string InstallVerifier::GetDebugPolicyProviderName() const {
   return std::string("InstallVerifier");
 }
 
-static bool FromStore(const Extension* extension) {
-  bool updates_from_store = ManifestURL::UpdatesFromGallery(extension);
-  return extension->from_webstore() || updates_from_store;
-}
-
 namespace {
 
 enum MustRemainDisabledOutcome {
@@ -262,7 +271,8 @@ void MustRemainDisabledHistogram(MustRemainDisabledOutcome outcome) {
 bool InstallVerifier::MustRemainDisabled(const Extension* extension,
                                          Extension::DisableReason* reason,
                                          base::string16* error) const {
-  if (!extension->is_extension()) {
+  CHECK(extension);
+  if (!CanUseExtensionApis(*extension)) {
     MustRemainDisabledHistogram(NOT_EXTENSION);
     return false;
   }
@@ -280,7 +290,7 @@ bool InstallVerifier::MustRemainDisabled(const Extension* extension,
   if (ContainsKey(InstallSigner::GetForcedNotFromWebstore(), extension->id())) {
     verified = false;
     outcome = FORCED_NOT_VERIFIED;
-  } else if (!FromStore(extension)) {
+  } else if (!FromStore(*extension)) {
     verified = false;
     outcome = NOT_FROM_STORE;
   } else if (signature_.get() == NULL) {

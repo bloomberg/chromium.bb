@@ -41,6 +41,9 @@ class InstallVerifier : public ManagementPolicy::Provider {
                   net::URLRequestContextGetter* context_getter);
   virtual ~InstallVerifier();
 
+  // Returns whether |extension| is of a type that needs verification.
+  static bool NeedsVerification(const Extension& extension);
+
   // Initializes this object for use, including reading preferences and
   // validating the stored signature.
   void Init();
