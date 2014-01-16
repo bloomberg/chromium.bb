@@ -598,7 +598,7 @@ class GSContext(object):
             "SetAcl invoked w/out a specified acl, nor a default acl.")
       acl = self.acl
 
-    self.DoCommand(['setacl', acl, upload_url])
+    self.DoCommand(['acl', 'set', acl, upload_url])
 
   def Exists(self, path, **kwargs):
     """Checks whether the given object exists.

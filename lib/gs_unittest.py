@@ -434,13 +434,13 @@ class GSContextTest(AbstractGSContextTest):
   def testSetDefaultAcl(self):
     """Test default ACL behavior."""
     self.ctx.SetACL('gs://abc/1', 'monkeys')
-    self.gs_mock.assertCommandContains(['setacl', 'monkeys', 'gs://abc/1'])
+    self.gs_mock.assertCommandContains(['acl', 'set', 'monkeys', 'gs://abc/1'])
 
   def testSetAcl(self):
     """Base ACL setting functionality."""
     ctx = gs.GSContext(acl='/my/file/acl')
     ctx.SetACL('gs://abc/1')
-    self.gs_mock.assertCommandContains(['setacl', '/my/file/acl',
+    self.gs_mock.assertCommandContains(['acl', 'set', '/my/file/acl',
                                         'gs://abc/1'])
 
   def testIncrement(self):
