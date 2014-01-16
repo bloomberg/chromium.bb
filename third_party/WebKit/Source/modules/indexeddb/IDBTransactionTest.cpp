@@ -145,6 +145,9 @@ TEST_F(IDBTransactionTest, TransactionFinish)
     // Fire an abort to make sure this doesn't free the transaction during use. The test
     // will not fail if it is, but ASAN would notice the error.
     db->onAbort(transactionId, DOMError::create(AbortError, "Aborted"));
+
+    // onAbort() should have cleared the transaction's reference to the database.
+    EXPECT_EQ(1, db->refCount());
 }
 
 } // namespace

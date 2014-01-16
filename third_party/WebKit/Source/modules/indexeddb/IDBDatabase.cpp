@@ -331,8 +331,10 @@ void IDBDatabase::closeConnection()
     ASSERT(m_closePending);
     ASSERT(m_transactions.isEmpty());
 
-    m_backend->close();
-    m_backend.clear();
+    if (m_backend) {
+        m_backend->close();
+        m_backend.clear();
+    }
 
     if (m_contextStopped || !executionContext())
         return;
@@ -402,10 +404,15 @@ bool IDBDatabase::hasPendingActivity() const
 
 void IDBDatabase::stop()
 {
-    // Stop fires at a deterministic time, so we need to call close in it.
-    close();
-
     m_contextStopped = true;
+
+    // Immediately close the connection to the back end. Don't attempt a
+    // normal close() since that may wait on transactions which require a
+    // round trip to the back-end to abort.
+    if (m_backend) {
+        m_backend->close();
+        m_backend.clear();
+    }
 }
 
 const AtomicString& IDBDatabase::interfaceName() const

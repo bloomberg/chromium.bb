@@ -196,12 +196,13 @@ void IDBTransaction::abort(ExceptionState& exceptionState)
 
     m_state = Finishing;
 
-    if (!m_contextStopped) {
-        while (!m_requestList.isEmpty()) {
-            RefPtr<IDBRequest> request = *m_requestList.begin();
-            m_requestList.remove(request);
-            request->abort();
-        }
+    if (m_contextStopped)
+        return;
+
+    while (!m_requestList.isEmpty()) {
+        RefPtr<IDBRequest> request = *m_requestList.begin();
+        m_requestList.remove(request);
+        request->abort();
     }
 
     RefPtr<IDBTransaction> selfRef = this;
@@ -225,6 +226,12 @@ void IDBTransaction::unregisterRequest(IDBRequest* request)
 void IDBTransaction::onAbort(PassRefPtr<DOMError> prpError)
 {
     IDB_TRACE("IDBTransaction::onAbort");
+    if (m_contextStopped) {
+        RefPtr<IDBTransaction> protect(this);
+        m_database->transactionFinished(this);
+        return;
+    }
+
     RefPtr<DOMError> error = prpError;
     ASSERT(m_state != Finished);
 
@@ -261,6 +268,12 @@ void IDBTransaction::onAbort(PassRefPtr<DOMError> prpError)
 void IDBTransaction::onComplete()
 {
     IDB_TRACE("IDBTransaction::onComplete");
+    if (m_contextStopped) {
+        RefPtr<IDBTransaction> protect(this);
+        m_database->transactionFinished(this);
+        return;
+    }
+
     ASSERT(m_state != Finished);
     m_state = Finishing;
     m_objectStoreCleanupMap.clear();
