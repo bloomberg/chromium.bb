@@ -57,6 +57,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   virtual base::string16 GetShortcutNameOfProfileAtIndex(size_t index)
       const OVERRIDE;
   virtual base::FilePath GetPathOfProfileAtIndex(size_t index) const OVERRIDE;
+  virtual base::Time GetProfileActiveTimeAtIndex(size_t index) const OVERRIDE;
   virtual base::string16 GetUserNameOfProfileAtIndex(
       size_t index) const OVERRIDE;
   virtual const gfx::Image& GetAvatarIconOfProfileAtIndex(
@@ -88,6 +89,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
 
   size_t GetAvatarIconIndexOfProfileAtIndex(size_t index) const;
 
+  void SetProfileActiveTimeAtIndex(size_t index);
   void SetNameOfProfileAtIndex(size_t index, const base::string16& name);
   void SetShortcutNameOfProfileAtIndex(size_t index,
                                        const base::string16& name);
@@ -158,6 +160,8 @@ class ProfileInfoCache : public ProfileInfoInterface,
   // Saves the profile info to a cache and takes ownership of |info|.
   // Currently the only information that is cached is the profile's name,
   // user name, and avatar icon.
+  void SetInfoQuietlyForProfileAtIndex(size_t index,
+                                       base::DictionaryValue* info);
   void SetInfoForProfileAtIndex(size_t index, base::DictionaryValue* info);
   std::string CacheKeyFromProfilePath(const base::FilePath& profile_path) const;
   std::vector<std::string>::iterator FindPositionForProfile(

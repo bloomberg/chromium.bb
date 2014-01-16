@@ -8,6 +8,10 @@
 #include "base/files/file_path.h"
 #include "base/strings/string16.h"
 
+namespace base {
+class Time;
+}
+
 namespace gfx {
 class Image;
 }
@@ -21,6 +25,8 @@ class ProfileInfoInterface {
 
   virtual size_t GetIndexOfProfileWithPath(
       const base::FilePath& profile_path) const = 0;
+
+  virtual base::Time GetProfileActiveTimeAtIndex(size_t index) const = 0;
 
   virtual base::string16 GetNameOfProfileAtIndex(size_t index) const = 0;
 

@@ -1200,6 +1200,12 @@ void ProfileManager::BrowserListObserver::OnBrowserSetLastActive(
       last_active->GetPath()) != profile_manager_->profiles_info_.end()) {
     local_state->SetString(prefs::kProfileLastUsed,
                            last_active->GetPath().BaseName().MaybeAsASCII());
+
+    ProfileInfoCache& cache = profile_manager_->GetProfileInfoCache();
+    size_t profile_index =
+        cache.GetIndexOfProfileWithPath(last_active->GetPath());
+    if (profile_index != std::string::npos)
+      cache.SetProfileActiveTimeAtIndex(profile_index);
   }
 }
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)

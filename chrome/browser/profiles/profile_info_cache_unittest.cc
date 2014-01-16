@@ -9,6 +9,7 @@
 #include "base/prefs/testing_pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
@@ -305,6 +306,18 @@ TEST_F(ProfileInfoCacheTest, HasMigrated) {
   GetCache()->SetHasMigratedToGAIAInfoOfProfileAtIndex(1, false);
   EXPECT_TRUE(GetCache()->GetHasMigratedToGAIAInfoOfProfileAtIndex(0));
   EXPECT_FALSE(GetCache()->GetHasMigratedToGAIAInfoOfProfileAtIndex(1));
+}
+
+TEST_F(ProfileInfoCacheTest, ProfileActiveTime) {
+  GetCache()->AddProfileToCache(
+      GetProfilePath("path_1"), ASCIIToUTF16("name_1"),
+      base::string16(), 0, std::string());
+  EXPECT_EQ(base::Time(), GetCache()->GetProfileActiveTimeAtIndex(0));
+  base::Time before = base::Time::Now();
+  GetCache()->SetProfileActiveTimeAtIndex(0);
+  base::Time after = base::Time::Now();
+  EXPECT_LE(before, GetCache()->GetProfileActiveTimeAtIndex(0));
+  EXPECT_GE(after, GetCache()->GetProfileActiveTimeAtIndex(0));
 }
 
 TEST_F(ProfileInfoCacheTest, GAIAName) {
