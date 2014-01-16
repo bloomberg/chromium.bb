@@ -6,6 +6,7 @@
 #define ASH_STICKY_KEYS_STICKY_KEYS_CONTROLLER_H_
 
 #include "ash/ash_export.h"
+#include "ash/sticky_keys/sticky_keys_state.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_handler.h"
@@ -22,6 +23,7 @@ class Window;
 
 namespace ash {
 
+class StickyKeysOverlay;
 class StickyKeysHandler;
 
 // StickyKeysController is an accessibility feature for users to be able to
@@ -65,6 +67,15 @@ class ASH_EXPORT StickyKeysController : public ui::EventHandler {
   // Activate sticky keys to intercept and modify incoming events.
   void Enable(bool enabled);
 
+  // Overridden from ui::EventHandler:
+  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
+  virtual void OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
+
+  // Returns the StickyKeyOverlay used by the controller. Ownership is not
+  // passed.
+  StickyKeysOverlay* GetOverlayForTest();
+
  private:
   // Handles keyboard event. Returns true if Sticky key consumes keyboard event.
   bool HandleKeyEvent(ui::KeyEvent* event);
@@ -75,10 +86,8 @@ class ASH_EXPORT StickyKeysController : public ui::EventHandler {
   // Handles scroll event. Returns true if sticky key consumes scroll event.
   bool HandleScrollEvent(ui::ScrollEvent* event);
 
-  // Overridden from ui::EventHandler:
-  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
-  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
-  virtual void OnScrollEvent(ui::ScrollEvent* event) OVERRIDE;
+  // Updates the overlay UI with the current state of the sticky keys.
+  void UpdateOverlay();
 
   // Whether sticky keys is activated and modifying events.
   bool enabled_;
@@ -87,6 +96,8 @@ class ASH_EXPORT StickyKeysController : public ui::EventHandler {
   scoped_ptr<StickyKeysHandler> shift_sticky_key_;
   scoped_ptr<StickyKeysHandler> alt_sticky_key_;
   scoped_ptr<StickyKeysHandler> ctrl_sticky_key_;
+
+  scoped_ptr<StickyKeysOverlay> overlay_;
 
   DISALLOW_COPY_AND_ASSIGN(StickyKeysController);
 };
@@ -138,19 +149,6 @@ class ASH_EXPORT StickyKeysHandler {
     // Dispatches scroll event synchronously.
     virtual void DispatchScrollEvent(ui::ScrollEvent* event,
                                      aura::Window* target) = 0;
-  };
-  // Represents Sticky Key state.
-  enum StickyKeyState {
-    // The sticky key is disabled. Incomming non modifier key events are not
-    // affected.
-    DISABLED,
-    // The sticky key is enabled. Incomming non modifier key down events are
-    // modified with |modifier_flag_|. After that, sticky key state become
-    // DISABLED.
-    ENABLED,
-    // The sticky key is locked. Incomming non modifier key down events are
-    // modified with |modifier_flag_|.
-    LOCKED,
   };
 
   // This class takes an ownership of |delegate|.
@@ -207,7 +205,7 @@ class ASH_EXPORT StickyKeysHandler {
   void AppendModifier(ui::MouseEvent* event);
   void AppendModifier(ui::ScrollEvent* event);
 
-  // The modifier flag to be monitored and appended.
+  // The modifier flag to be monitored and appended to events.
   const ui::EventFlags modifier_flag_;
 
   // The current sticky key status.

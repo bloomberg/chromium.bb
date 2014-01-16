@@ -598,6 +598,18 @@ Press Shift + Alt to switch.
       <message name="IDS_ASH_LOGOUT_CONFIRMATION_BUTTON" desc="The text for okay button of the logout confirmation dialog.">
         Sign out now
       </message>
+      <message name="IDS_ASH_CONTROL_KEY" desc="Name of [Ctrl] key name. Shouldn't be translated in many languages actually. This name should be lower case.">
+        ctrl
+      </message>
+      <message name="IDS_ASH_SHIFT_KEY" desc="Name of [Shift] key. Shouldn't be translated in many languages actually. This name should be lower case.">
+        shift
+      </message>
+      <message name="IDS_ASH_ALT_KEY" desc="Name of [Alt] key name. Shouldn't be translated in many languages actually. This name should be lower case.">
+        alt
+      </message>
+      <message name="IDS_ASH_SEARCH_KEY" desc="Name of [Search] key name. Shouldn't be translated in many languages actually. This name should be lower case.">
+        search
+      </message>
 
       <!-- ChromeOS-specific strings -->
       <if expr="pp_ifdef('chromeos')">
