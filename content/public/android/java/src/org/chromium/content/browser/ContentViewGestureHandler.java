@@ -329,7 +329,6 @@ class ContentViewGestureHandler implements LongPressDelegate {
                         mIgnoreSingleTap = false;
                         mTouchScrolling = false;
                         mSeenFirstScrollEvent = false;
-                        mSnapScrollController.resetSnapScrollMode();
                         mLastRawX = e.getRawX();
                         mLastRawY = e.getRawY();
                         mAccumulatedScrollErrorX = 0;
@@ -678,9 +677,9 @@ class ContentViewGestureHandler implements LongPressDelegate {
      *              to send. This argument is an optional and can be null.
      */
     void endDoubleTapDragIfNecessary(MotionEvent event) {
+        assert event != null;
         if (!isDoubleTapActive()) return;
         if (mDoubleTapMode == DOUBLE_TAP_MODE_DRAG_ZOOM) {
-            if (event == null) event = obtainActionCancelMotionEvent();
             pinchEnd(event.getEventTime());
             sendGesture(GESTURE_SCROLL_END, event.getEventTime(),
                     (int) event.getX(), (int) event.getY(), null);
@@ -806,15 +805,12 @@ class ContentViewGestureHandler implements LongPressDelegate {
             }
 
             mLongPressDetector.cancelLongPressIfNeeded(event);
-            mSnapScrollController.setSnapScrollingMode(event);
             // Notify native that scrolling has stopped whenever a down action is processed prior to
             // passing the event to native as it will drop them as an optimization if scrolling is
             // enabled.  Ending the fling ensures scrolling has stopped as well as terminating the
             // current fling if applicable.
             if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
                 endFlingIfNecessary(event.getEventTime());
-            } else if (event.getActionMasked() == MotionEvent.ACTION_POINTER_DOWN) {
-                endDoubleTapDragIfNecessary(null);
             }
 
             return queueEvent(event);
@@ -833,10 +829,13 @@ class ContentViewGestureHandler implements LongPressDelegate {
     }
 
     private MotionEvent obtainActionCancelMotionEvent() {
-        return MotionEvent.obtain(
+        MotionEvent me = MotionEvent.obtain(
                 SystemClock.uptimeMillis(),
                 SystemClock.uptimeMillis(),
                 MotionEvent.ACTION_CANCEL, 0.0f,  0.0f,  0);
+        me.setSource(mCurrentDownEvent != null ?
+                mCurrentDownEvent.getSource() : InputDevice.SOURCE_CLASS_POINTER);
+        return me;
     }
 
     /**
@@ -847,7 +846,6 @@ class ContentViewGestureHandler implements LongPressDelegate {
      */
     void resetGestureHandlers() {
         MotionEvent me = obtainActionCancelMotionEvent();
-        me.setSource(InputDevice.SOURCE_CLASS_POINTER);
         mGestureDetector.onTouchEvent(me);
         mZoomManager.processTouchEvent(me);
         me.recycle();
@@ -974,6 +972,12 @@ class ContentViewGestureHandler implements LongPressDelegate {
 
     private boolean processTouchEvent(MotionEvent event) {
         final boolean wasTouchScrolling = mTouchScrolling;
+
+        mSnapScrollController.setSnapScrollingMode(event);
+
+        if (event.getActionMasked() == MotionEvent.ACTION_POINTER_DOWN) {
+            endDoubleTapDragIfNecessary(event);
+        }
 
         mLongPressDetector.cancelLongPressIfNeeded(event);
         mLongPressDetector.startLongPressTimerIfNeeded(event);
