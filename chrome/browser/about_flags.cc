@@ -1749,11 +1749,11 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(app_list::switches::kEnableFolderUI)
   },
   {
-    "enable-app-list-voice-search",
-    IDS_FLAGS_ENABLE_APP_LIST_VOICE_SEARCH,
-    IDS_FLAGS_ENABLE_APP_LIST_VOICE_SEARCH_DESCRIPTION,
+    "disable-app-list-voice-search",
+    IDS_FLAGS_DISABLE_APP_LIST_VOICE_SEARCH,
+    IDS_FLAGS_DISABLE_APP_LIST_VOICE_SEARCH_DESCRIPTION,
     kOsCrOS,
-    SINGLE_VALUE_TYPE(app_list::switches::kEnableVoiceSearch)
+    SINGLE_VALUE_TYPE(app_list::switches::kDisableVoiceSearch)
   },
 #endif
 #if defined(OS_CHROMEOS)

@@ -12,8 +12,8 @@ namespace switches {
 // If set, folder will be enabled in app list UI.
 const char kEnableFolderUI[] = "enable-app-list-folder-ui";
 
-// If set, the voice search is enabled in app list UI.
-const char kEnableVoiceSearch[] = "enable-app-list-voice-search";
+// If set, the voice search is disabled in app list UI.
+const char kDisableVoiceSearch[] = "disable-app-list-voice-search";
 
 bool IsFolderUIEnabled() {
   return CommandLine::ForCurrentProcess()->HasSwitch(kEnableFolderUI);

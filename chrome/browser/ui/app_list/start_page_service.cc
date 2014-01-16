@@ -36,7 +36,7 @@ class StartPageService::Factory : public BrowserContextKeyedServiceFactory {
   static StartPageService* GetForProfile(Profile* profile) {
     CommandLine* command_line = CommandLine::ForCurrentProcess();
     if (!command_line->HasSwitch(::switches::kShowAppListStartPage) &&
-        !command_line->HasSwitch(app_list::switches::kEnableVoiceSearch)) {
+        command_line->HasSwitch(app_list::switches::kDisableVoiceSearch)) {
       return NULL;
     }
 
@@ -165,9 +165,8 @@ content::WebContents* StartPageService::GetStartPageContents() {
 }
 
 content::WebContents* StartPageService::GetSpeechRecognitionContents() {
-  // Speech recognition is available if either of start-page or voice-search
-  // is enabled.
-  return contents_.get();
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      app_list::switches::kDisableVoiceSearch) ? NULL : contents_.get();
 }
 
 void StartPageService::OnSpeechResult(
