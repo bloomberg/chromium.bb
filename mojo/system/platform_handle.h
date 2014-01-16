@@ -13,7 +13,7 @@
 #endif
 
 namespace mojo {
-namespace system {
+namespace embedder {
 
 #if defined(OS_POSIX)
 struct MOJO_SYSTEM_IMPL_EXPORT PlatformHandle {
@@ -41,7 +41,7 @@ struct MOJO_SYSTEM_IMPL_EXPORT PlatformHandle {
 #error "Platform not yet supported."
 #endif
 
-}  // namespace system
+}  // namespace embedder
 }  // namespace mojo
 
 #endif  // MOJO_SYSTEM_PLATFORM_HANDLE_H_

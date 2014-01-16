@@ -17,7 +17,7 @@
 #include "base/logging.h"
 
 namespace mojo {
-namespace system {
+namespace embedder {
 
 void PlatformHandle::CloseIfNecessary() {
   if (!is_valid())
@@ -36,5 +36,5 @@ void PlatformHandle::CloseIfNecessary() {
 #endif
 }
 
-}  // namespace system
+}  // namespace embedder
 }  // namespace mojo

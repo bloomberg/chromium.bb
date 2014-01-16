@@ -76,7 +76,7 @@ class RemoteMessagePipeTest : public test::TestWithIOThreadBase {
   void SetUpOnIOThread() {
     CHECK_EQ(base::MessageLoop::current(), io_thread_message_loop());
 
-    PlatformChannelPair channel_pair;
+    embedder::PlatformChannelPair channel_pair;
     platform_handles_[0] = channel_pair.PassServerHandle();
     platform_handles_[1] = channel_pair.PassClientHandle();
   }
@@ -135,7 +135,7 @@ class RemoteMessagePipeTest : public test::TestWithIOThreadBase {
     }
   }
 
-  ScopedPlatformHandle platform_handles_[2];
+  embedder::ScopedPlatformHandle platform_handles_[2];
   scoped_refptr<Channel> channels_[2];
 
   DISALLOW_COPY_AND_ASSIGN(RemoteMessagePipeTest);

@@ -34,9 +34,9 @@ TEST_F(EmbedderTest, ChannelsBasic) {
 
 // TODO(vtl): |PlatformChannelPair| not implemented on Windows yet.
 #if !defined(OS_WIN)
-  system::PlatformChannelPair channel_pair;
-  system::ScopedPlatformHandle server_handle = channel_pair.PassServerHandle();
-  system::ScopedPlatformHandle client_handle = channel_pair.PassClientHandle();
+  PlatformChannelPair channel_pair;
+  ScopedPlatformHandle server_handle = channel_pair.PassServerHandle();
+  ScopedPlatformHandle client_handle = channel_pair.PassClientHandle();
 
   ChannelInfo* server_channel_info = NULL;
   MojoHandle server_mp = CreateChannel(server_handle.Pass(),

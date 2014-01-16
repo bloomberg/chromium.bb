@@ -48,7 +48,7 @@ class IOThreadWrapper {
     test::PostTaskAndWait(task_runner(), from_here, task);
   }
 
-  void Init(ScopedPlatformHandle platform_handle,
+  void Init(embedder::ScopedPlatformHandle platform_handle,
             scoped_refptr<MessagePipe> mp) {
     io_thread_.StartWithOptions(
         base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
@@ -76,7 +76,7 @@ class IOThreadWrapper {
   }
 
  private:
-  void InitOnIOThread(ScopedPlatformHandle platform_handle,
+  void InitOnIOThread(embedder::ScopedPlatformHandle platform_handle,
                       scoped_refptr<MessagePipe> mp) {
     CHECK_EQ(base::MessageLoop::current(), message_loop());
     CHECK(platform_handle.is_valid());
@@ -152,7 +152,7 @@ MojoResult WaitIfNecessary(scoped_refptr<MessagePipe> mp, MojoWaitFlags flags) {
 // not including any "quitquitquit" message, modulo 100.
 MOJO_MULTIPROCESS_TEST_CHILD_MAIN(EchoEcho) {
   IOThreadWrapper io_thread_wrapper;
-  ScopedPlatformHandle client_platform_handle =
+  embedder::ScopedPlatformHandle client_platform_handle =
       MultiprocessMessagePipeTest::client_platform_handle.Pass();
   CHECK(client_platform_handle.is_valid());
   scoped_refptr<MessagePipe> mp(new MessagePipe(

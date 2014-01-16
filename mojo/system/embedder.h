@@ -43,7 +43,7 @@ MOJO_SYSTEM_IMPL_EXPORT void Init();
 struct ChannelInfo;
 typedef base::Callback<void(ChannelInfo*)> DidCreateChannelOnIOThreadCallback;
 MOJO_SYSTEM_IMPL_EXPORT MojoHandle CreateChannel(
-    system::ScopedPlatformHandle platform_handle,
+    ScopedPlatformHandle platform_handle,
     scoped_refptr<base::TaskRunner> io_thread_task_runner,
     DidCreateChannelOnIOThreadCallback callback);
 

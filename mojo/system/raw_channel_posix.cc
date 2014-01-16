@@ -35,7 +35,7 @@ const size_t kReadSize = 4096;
 class RawChannelPosix : public RawChannel,
                         public base::MessageLoopForIO::Watcher {
  public:
-  RawChannelPosix(ScopedPlatformHandle handle,
+  RawChannelPosix(embedder::ScopedPlatformHandle handle,
                   Delegate* delegate,
                   base::MessageLoop* message_loop);
   virtual ~RawChannelPosix();
@@ -72,7 +72,7 @@ class RawChannelPosix : public RawChannel,
     return static_cast<base::MessageLoopForIO*>(message_loop());
   }
 
-  ScopedPlatformHandle fd_;
+  embedder::ScopedPlatformHandle fd_;
 
   // Only used on the I/O thread:
   scoped_ptr<base::MessageLoopForIO::FileDescriptorWatcher> read_watcher_;
@@ -97,7 +97,7 @@ class RawChannelPosix : public RawChannel,
   DISALLOW_COPY_AND_ASSIGN(RawChannelPosix);
 };
 
-RawChannelPosix::RawChannelPosix(ScopedPlatformHandle handle,
+RawChannelPosix::RawChannelPosix(embedder::ScopedPlatformHandle handle,
                                  Delegate* delegate,
                                  base::MessageLoop* message_loop)
     : RawChannel(delegate, message_loop),
@@ -400,7 +400,7 @@ void RawChannelPosix::CancelPendingWritesNoLock() {
 
 // Static factory method declared in raw_channel.h.
 // static
-RawChannel* RawChannel::Create(ScopedPlatformHandle handle,
+RawChannel* RawChannel::Create(embedder::ScopedPlatformHandle handle,
                                Delegate* delegate,
                                base::MessageLoop* message_loop) {
   return new RawChannelPosix(handle.Pass(), delegate, message_loop);

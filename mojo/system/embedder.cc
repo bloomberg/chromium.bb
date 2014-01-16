@@ -16,57 +16,57 @@
 #include "mojo/system/proxy_message_pipe_endpoint.h"
 
 namespace mojo {
-
 namespace embedder {
 
 struct ChannelInfo {
   scoped_refptr<system::Channel> channel;
 };
 
-}  // namespace embedder
-
-// Have helpers in the |system| namespace, to avoid saying "system::" all over
-// the place.
-namespace system {
-namespace {
-
-void CreateChannelOnIOThread(
+static void CreateChannelOnIOThread(
     ScopedPlatformHandle platform_handle,
-    scoped_refptr<MessagePipe> message_pipe,
-    embedder::DidCreateChannelOnIOThreadCallback callback) {
+    scoped_refptr<system::MessagePipe> message_pipe,
+    DidCreateChannelOnIOThreadCallback callback) {
   CHECK(platform_handle.is_valid());
 
-  scoped_ptr<embedder::ChannelInfo> channel_info(new embedder::ChannelInfo);
+  scoped_ptr<ChannelInfo> channel_info(new ChannelInfo);
 
-  // Create and initialize |Channel|.
-  channel_info->channel = new Channel();
+  // Create and initialize a |system::Channel|.
+  channel_info->channel = new system::Channel();
   bool success = channel_info->channel->Init(platform_handle.Pass());
   DCHECK(success);
 
   // Attach the message pipe endpoint.
-  MessageInTransit::EndpointId endpoint_id =
+  system::MessageInTransit::EndpointId endpoint_id =
       channel_info->channel->AttachMessagePipeEndpoint(message_pipe, 1);
-  DCHECK_EQ(endpoint_id, Channel::kBootstrapEndpointId);
-  channel_info->channel->RunMessagePipeEndpoint(Channel::kBootstrapEndpointId,
-                                                Channel::kBootstrapEndpointId);
+  DCHECK_EQ(endpoint_id, system::Channel::kBootstrapEndpointId);
+  channel_info->channel->RunMessagePipeEndpoint(
+      system::Channel::kBootstrapEndpointId,
+      system::Channel::kBootstrapEndpointId);
 
   // Hand the channel back to the embedder.
   callback.Run(channel_info.release());
 }
 
-MojoHandle CreateChannelHelper(
+void Init() {
+  Core::Init(new system::CoreImpl());
+}
+
+MojoHandle CreateChannel(
     ScopedPlatformHandle platform_handle,
     scoped_refptr<base::TaskRunner> io_thread_task_runner,
-    embedder::DidCreateChannelOnIOThreadCallback callback) {
+    DidCreateChannelOnIOThreadCallback callback) {
   DCHECK(platform_handle.is_valid());
 
-  scoped_refptr<MessagePipe> message_pipe(new MessagePipe(
-      scoped_ptr<MessagePipeEndpoint>(new LocalMessagePipeEndpoint()),
-      scoped_ptr<MessagePipeEndpoint>(new ProxyMessagePipeEndpoint())));
-  scoped_refptr<MessagePipeDispatcher> dispatcher(new MessagePipeDispatcher());
+  scoped_refptr<system::MessagePipe> message_pipe(
+      new system::MessagePipe(scoped_ptr<system::MessagePipeEndpoint>(
+                                  new system::LocalMessagePipeEndpoint()),
+                              scoped_ptr<system::MessagePipeEndpoint>(
+                                  new system::ProxyMessagePipeEndpoint())));
+  scoped_refptr<system::MessagePipeDispatcher> dispatcher(
+      new system::MessagePipeDispatcher());
   dispatcher->Init(message_pipe, 0);
 
-  CoreImpl* core_impl = static_cast<CoreImpl*>(Core::Get());
+  system::CoreImpl* core_impl = static_cast<system::CoreImpl*>(Core::Get());
   DCHECK(core_impl);
   MojoHandle rv = core_impl->AddDispatcher(dispatcher);
   // TODO(vtl): Do we properly handle the failure case here?
@@ -78,24 +78,6 @@ MojoHandle CreateChannelHelper(
                                                callback));
   }
   return rv;
-}
-
-}  // namespace
-}  // namespace system
-
-namespace embedder {
-
-void Init() {
-  Core::Init(new system::CoreImpl());
-}
-
-MojoHandle CreateChannel(
-    system::ScopedPlatformHandle platform_handle,
-    scoped_refptr<base::TaskRunner> io_thread_task_runner,
-    DidCreateChannelOnIOThreadCallback callback) {
-  return system::CreateChannelHelper(platform_handle.Pass(),
-                                     io_thread_task_runner,
-                                     callback);
 }
 
 void DestroyChannelOnIOThread(ChannelInfo* channel_info) {

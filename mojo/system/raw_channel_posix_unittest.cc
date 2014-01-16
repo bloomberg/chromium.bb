@@ -71,7 +71,7 @@ class RawChannelPosixTest : public test::TestWithIOThreadBase {
   virtual void SetUp() OVERRIDE {
     test::TestWithIOThreadBase::SetUp();
 
-    PlatformChannelPair channel_pair;
+    embedder::PlatformChannelPair channel_pair;
     handles[0] = channel_pair.PassServerHandle();
     handles[1] = channel_pair.PassClientHandle();
   }
@@ -84,7 +84,7 @@ class RawChannelPosixTest : public test::TestWithIOThreadBase {
   }
 
  protected:
-  ScopedPlatformHandle handles[2];
+  embedder::ScopedPlatformHandle handles[2];
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RawChannelPosixTest);
@@ -114,7 +114,7 @@ static const size_t kMessageReaderMaxPollIterations = 3000;
 
 class TestMessageReaderAndChecker {
  public:
-  explicit TestMessageReaderAndChecker(PlatformHandle handle)
+  explicit TestMessageReaderAndChecker(embedder::PlatformHandle handle)
       : handle_(handle) {}
   ~TestMessageReaderAndChecker() { CHECK(bytes_.empty()); }
 
@@ -172,7 +172,7 @@ class TestMessageReaderAndChecker {
   }
 
  private:
-  const PlatformHandle handle_;
+  const embedder::PlatformHandle handle_;
 
   // The start of the received data should always be on a message boundary.
   std::vector<unsigned char> bytes_;

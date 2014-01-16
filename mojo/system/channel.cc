@@ -37,7 +37,7 @@ Channel::Channel()
     : next_local_id_(kBootstrapEndpointId) {
 }
 
-bool Channel::Init(ScopedPlatformHandle handle) {
+bool Channel::Init(embedder::ScopedPlatformHandle handle) {
   DCHECK(creation_thread_checker_.CalledOnValidThread());
 
   // No need to take |lock_|, since this must be called before this object

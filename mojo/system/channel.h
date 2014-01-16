@@ -68,7 +68,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   // bidirectional communication channel (e.g., a socket on POSIX, a named pipe
   // on Windows). Returns true on success. On failure, no other methods should
   // be called (including |Shutdown()|).
-  bool Init(ScopedPlatformHandle handle);
+  bool Init(embedder::ScopedPlatformHandle handle);
 
   // This must be called on the creation thread before destruction (which can
   // happen on any thread).

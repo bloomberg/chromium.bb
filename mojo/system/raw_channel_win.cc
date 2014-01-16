@@ -15,7 +15,7 @@ namespace system {
 
 // Static factory method declared in raw_channel.h.
 // static
-RawChannel* RawChannel::Create(ScopedPlatformHandle handle,
+RawChannel* RawChannel::Create(embedder::ScopedPlatformHandle handle,
                                Delegate* delegate,
                                base::MessageLoop* message_loop) {
   // TODO(vtl)

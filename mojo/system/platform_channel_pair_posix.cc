@@ -16,7 +16,7 @@
 #include "mojo/system/platform_handle.h"
 
 namespace mojo {
-namespace system {
+namespace embedder {
 
 namespace {
 
@@ -102,5 +102,5 @@ void PlatformChannelPair::ChildProcessLaunched() {
   client_handle_.reset();
 }
 
-}  // namespace system
+}  // namespace embedder
 }  // namespace mojo

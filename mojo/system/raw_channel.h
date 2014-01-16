@@ -21,11 +21,6 @@ namespace system {
 
 class MessageInTransit;
 
-// This simply wraps an |int| file descriptor on POSIX and a |HANDLE| on
-// Windows, but we don't want to impose, e.g., the inclusion of windows.h on
-// everyone.
-struct PlatformHandle;
-
 // |RawChannel| is an interface to objects that wrap an OS "pipe". It presents
 // the following interface to users:
 //  - Receives and dispatches messages on a thread (running a |MessageLoop|; it
@@ -71,7 +66,7 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   // (platform-appropriate) bidirectional communication channel (e.g., a socket
   // on POSIX, a named pipe on Windows). Does *not* take ownership of |delegate|
   // and |message_loop|, which must remain alive while this object does.
-  static RawChannel* Create(ScopedPlatformHandle handle,
+  static RawChannel* Create(embedder::ScopedPlatformHandle handle,
                             Delegate* delegate,
                             base::MessageLoop* message_loop);
 

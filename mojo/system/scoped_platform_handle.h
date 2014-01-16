@@ -11,7 +11,7 @@
 #include "mojo/system/system_impl_export.h"
 
 namespace mojo {
-namespace system {
+namespace embedder {
 
 class MOJO_SYSTEM_IMPL_EXPORT ScopedPlatformHandle {
   MOVE_ONLY_TYPE_FOR_CPP_03(ScopedPlatformHandle, RValue);
@@ -55,7 +55,7 @@ class MOJO_SYSTEM_IMPL_EXPORT ScopedPlatformHandle {
   PlatformHandle handle_;
 };
 
-}  // namespace system
+}  // namespace embedder
 }  // namespace mojo
 
 #endif  // MOJO_SYSTEM_SCOPED_PLATFORM_HANDLE_H_

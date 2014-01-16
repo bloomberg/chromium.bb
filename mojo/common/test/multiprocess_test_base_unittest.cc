@@ -51,7 +51,7 @@ TEST_F(MultiprocessTestBaseTest, PassedChannelPosix) {
   StartChild("PassedChannelPosix");
 
   // Take ownership of the FD.
-  system::ScopedPlatformHandle handle = server_platform_handle.Pass();
+  embedder::ScopedPlatformHandle handle = server_platform_handle.Pass();
   int fd = handle.get().fd;
 
   // The FD should be non-blocking. Check this.
@@ -78,7 +78,7 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(PassedChannelPosix) {
   CHECK(MultiprocessTestBaseTest::client_platform_handle.is_valid());
 
   // Take ownership of the FD.
-  system::ScopedPlatformHandle handle =
+  embedder::ScopedPlatformHandle handle =
       MultiprocessTestBaseTest::client_platform_handle.Pass();
   int fd = handle.get().fd;
 

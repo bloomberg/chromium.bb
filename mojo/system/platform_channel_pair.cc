@@ -7,7 +7,7 @@
 #include "base/logging.h"
 
 namespace mojo {
-namespace system {
+namespace embedder {
 
 PlatformChannelPair::~PlatformChannelPair() {
 }
@@ -20,5 +20,5 @@ ScopedPlatformHandle PlatformChannelPair::PassClientHandle() {
   return client_handle_.Pass();
 }
 
-}  // namespace system
+}  // namespace embedder
 }  // namespace mojo

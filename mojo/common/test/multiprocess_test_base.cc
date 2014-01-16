@@ -30,7 +30,7 @@ void MultiprocessTestBase::SetUp() {
 
 // TODO(vtl): Not implemented on Windows yet.
 #if defined(OS_POSIX)
-  platform_channel_pair_.reset(new system::PlatformChannelPair());
+  platform_channel_pair_.reset(new embedder::PlatformChannelPair());
   server_platform_handle = platform_channel_pair_->PassServerHandle();
 #endif
 }
@@ -103,13 +103,13 @@ void MultiprocessTestBase::ChildSetup() {
 // TODO(vtl): Not implemented on Windows yet.
 #if defined(OS_POSIX)
   client_platform_handle =
-      system::PlatformChannelPair::PassClientHandleFromParentProcess(
+      embedder::PlatformChannelPair::PassClientHandleFromParentProcess(
           *CommandLine::ForCurrentProcess());
 #endif
 }
 
 // static
-system::ScopedPlatformHandle MultiprocessTestBase::client_platform_handle;
+embedder::ScopedPlatformHandle MultiprocessTestBase::client_platform_handle;
 
 }  // namespace test
 }  // namespace mojo

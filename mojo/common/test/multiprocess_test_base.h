@@ -16,7 +16,7 @@
 
 namespace mojo {
 
-namespace system {
+namespace embedder {
 class PlatformChannelPair;
 }
 
@@ -45,16 +45,16 @@ class MultiprocessTestBase : public base::MultiProcessTest {
   static void ChildSetup();
 
   // For use in the main process:
-  system::ScopedPlatformHandle server_platform_handle;
+  embedder::ScopedPlatformHandle server_platform_handle;
 
   // For use (and only valid) in the child process:
-  static system::ScopedPlatformHandle client_platform_handle;
+  static embedder::ScopedPlatformHandle client_platform_handle;
 
  private:
   virtual CommandLine MakeCmdLine(const std::string& procname,
                                   bool debug_on_start) OVERRIDE;
 
-  scoped_ptr<system::PlatformChannelPair> platform_channel_pair_;
+  scoped_ptr<embedder::PlatformChannelPair> platform_channel_pair_;
 
   // Valid after |StartChild()| and before |WaitForChildShutdown()|.
   base::ProcessHandle test_child_handle_;

@@ -14,7 +14,7 @@
 class CommandLine;
 
 namespace mojo {
-namespace system {
+namespace embedder {
 
 // This is used to create a pair of |PlatformHandle|s that are connected by a
 // suitable (platform-specific) bidirectional "pipe" (e.g., socket on POSIX,
@@ -67,7 +67,7 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformChannelPair {
   DISALLOW_COPY_AND_ASSIGN(PlatformChannelPair);
 };
 
-}  // namespace system
+}  // namespace embedder
 }  // namespace mojo
 
 #endif  // MOJO_SYSTEM_PLATFORM_CHANNEL_PAIR_H_
