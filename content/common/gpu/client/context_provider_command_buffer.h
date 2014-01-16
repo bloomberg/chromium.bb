@@ -43,7 +43,6 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
 
   // cc::ContextProvider implementation.
   virtual bool BindToCurrentThread() OVERRIDE;
-  virtual blink::WebGraphicsContext3D* Context3d() OVERRIDE;
   virtual gpu::gles2::GLES2Interface* ContextGL() OVERRIDE;
   virtual gpu::ContextSupport* ContextSupport() OVERRIDE;
   virtual class GrContext* GrContext() OVERRIDE;

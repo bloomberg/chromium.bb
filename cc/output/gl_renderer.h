@@ -23,8 +23,6 @@
 
 class SkBitmap;
 
-namespace blink { class WebGraphicsContext3D; }
-
 namespace gpu {
 namespace gles2 {
 class GLES2Interface;

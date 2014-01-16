@@ -115,10 +115,6 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
   return true;
 }
 
-blink::WebGraphicsContext3D* ContextProviderCommandBuffer::Context3d() {
-  return NULL;
-}
-
 gpu::gles2::GLES2Interface* ContextProviderCommandBuffer::ContextGL() {
   DCHECK(context3d_);
   DCHECK(lost_context_callback_proxy_);  // Is bound to thread.

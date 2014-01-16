@@ -143,8 +143,9 @@ TEST(OutputSurfaceTest, ClientPointerIndicatesBindToClientSuccess) {
 
   // Verify DidLoseOutputSurface callback is hooked up correctly.
   EXPECT_FALSE(client.did_lose_output_surface_called());
-  provider->TestContext3d()->loseContextCHROMIUM(
+  output_surface.context_provider()->ContextGL()->LoseContextCHROMIUM(
       GL_GUILTY_CONTEXT_RESET_ARB, GL_INNOCENT_CONTEXT_RESET_ARB);
+  output_surface.context_provider()->ContextGL()->Flush();
   EXPECT_TRUE(client.did_lose_output_surface_called());
 }
 
@@ -198,8 +199,9 @@ TEST_F(OutputSurfaceTestInitializeNewContext3d, Success) {
   EXPECT_EQ(context_provider_, output_surface_.context_provider());
 
   EXPECT_FALSE(client_.did_lose_output_surface_called());
-  context_provider_->TestContext3d()->loseContextCHROMIUM(
+  context_provider_->ContextGL()->LoseContextCHROMIUM(
       GL_GUILTY_CONTEXT_RESET_ARB, GL_INNOCENT_CONTEXT_RESET_ARB);
+  context_provider_->ContextGL()->Flush();
   EXPECT_TRUE(client_.did_lose_output_surface_called());
 
   output_surface_.ReleaseGL();

@@ -27,7 +27,6 @@
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 
-using blink::WebGraphicsContext3D;
 
 namespace cc {
 

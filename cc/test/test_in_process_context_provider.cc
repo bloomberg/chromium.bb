@@ -55,10 +55,6 @@ TestInProcessContextProvider::~TestInProcessContextProvider() {
 
 bool TestInProcessContextProvider::BindToCurrentThread() { return true; }
 
-blink::WebGraphicsContext3D* TestInProcessContextProvider::Context3d() {
-  return NULL;
-}
-
 gpu::gles2::GLES2Interface* TestInProcessContextProvider::ContextGL() {
   return context_->GetImplementation();
 }

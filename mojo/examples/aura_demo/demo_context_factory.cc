@@ -27,7 +27,6 @@ class MojoContextProvider : public cc::ContextProvider {
 
   // cc::ContextProvider implementation.
   virtual bool BindToCurrentThread() OVERRIDE { return true; }
-  virtual blink::WebGraphicsContext3D* Context3d() OVERRIDE { return NULL; }
   virtual gpu::gles2::GLES2Interface* ContextGL() OVERRIDE {
     return gles2_client_impl_->Interface();
   }

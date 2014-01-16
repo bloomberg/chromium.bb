@@ -32,8 +32,8 @@ class VideoContextProvider
     return gl_in_process_context_->GetSurfaceTexture(stream_id);
   }
 
-  virtual blink::WebGraphicsContext3D* Context3d() OVERRIDE {
-    return context_provider_->Context3d();
+  virtual gpu::gles2::GLES2Interface* ContextGL() OVERRIDE {
+    return context_provider_->ContextGL();
   }
 
  private:

@@ -74,10 +74,6 @@ ContextProvider::Capabilities TestContextProvider::ContextCapabilities() {
   return context3d_->test_capabilities();
 }
 
-blink::WebGraphicsContext3D* TestContextProvider::Context3d() {
-  return NULL;
-}
-
 gpu::gles2::GLES2Interface* TestContextProvider::ContextGL() {
   DCHECK(context3d_);
   DCHECK(bound_);

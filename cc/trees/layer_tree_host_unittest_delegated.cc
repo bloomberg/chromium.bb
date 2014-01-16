@@ -342,9 +342,10 @@ class LayerTreeHostDelegatedTestCreateChildId
         EXPECT_TRUE(delegated_impl->ChildId());
         EXPECT_FALSE(did_reset_child_id_);
 
-        context_provider->TestContext3d()->loseContextCHROMIUM(
+        context_provider->ContextGL()->LoseContextCHROMIUM(
             GL_GUILTY_CONTEXT_RESET_ARB,
             GL_INNOCENT_CONTEXT_RESET_ARB);
+        context_provider->ContextGL()->Flush();
         break;
       case 3:
         EXPECT_TRUE(delegated_impl->ChildId());
@@ -419,7 +420,7 @@ class LayerTreeHostDelegatedTestInvalidFrameAfterContextLost
     ++num_activates_;
     switch (num_activates_) {
       case 2:
-        context_provider->TestContext3d()->loseContextCHROMIUM(
+        context_provider->ContextGL()->LoseContextCHROMIUM(
             GL_GUILTY_CONTEXT_RESET_ARB,
             GL_INNOCENT_CONTEXT_RESET_ARB);
         break;

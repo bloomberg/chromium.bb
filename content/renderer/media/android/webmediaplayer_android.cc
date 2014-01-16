@@ -22,6 +22,7 @@
 #include "content/renderer/media/webmediaplayer_util.h"
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/GLES2/gl2extchromium.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "grit/content_resources.h"
 #include "media/base/android/media_player_android.h"
 #include "media/base/bind_to_current_loop.h"
@@ -52,6 +53,7 @@ using blink::WebSize;
 using blink::WebString;
 using blink::WebTimeRanges;
 using blink::WebURL;
+using gpu::gles2::GLES2Interface;
 using media::MediaPlayerAndroid;
 using media::VideoFrame;
 
@@ -181,10 +183,8 @@ WebMediaPlayerAndroid::~WebMediaPlayerAndroid() {
     stream_texture_factory_->DestroyStreamTexture(texture_id_);
 
   if (remote_playback_texture_id_) {
-    blink::WebGraphicsContext3D* context =
-        stream_texture_factory_->Context3d();
-    if (context->makeContextCurrent())
-      context->deleteTexture(remote_playback_texture_id_);
+    stream_texture_factory_->ContextGL()->
+        DeleteTextures(1, &remote_playback_texture_id_);
   }
 
   if (base::MessageLoop::current())
@@ -929,9 +929,6 @@ void WebMediaPlayerAndroid::DrawRemotePlaybackIcon() {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   if (!video_weblayer_)
     return;
-  blink::WebGraphicsContext3D* context = stream_texture_factory_->Context3d();
-  if (!context->makeContextCurrent())
-    return;
 
   // TODO(johnme): Should redraw this frame if the layer bounds change; but
   // there seems no easy way to listen for the layer resizing (as opposed to
@@ -978,33 +975,35 @@ void WebMediaPlayerAndroid::DrawRemotePlaybackIcon() {
   canvas.drawBitmapRectToRect(
       *icon_bitmap, NULL /* src */, icon_rect /* dest */, &paint);
 
+  GLES2Interface* gl = stream_texture_factory_->ContextGL();
+
   if (!remote_playback_texture_id_)
-    remote_playback_texture_id_ = context->createTexture();
-  unsigned texture_target = GL_TEXTURE_2D;
-  context->bindTexture(texture_target, remote_playback_texture_id_);
-  context->texParameteri(texture_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  context->texParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  context->texParameteri(texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  context->texParameteri(texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    gl->GenTextures(1, &remote_playback_texture_id_);
+  GLuint texture_target = GL_TEXTURE_2D;
+  gl->BindTexture(texture_target, remote_playback_texture_id_);
+  gl->TexParameteri(texture_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  gl->TexParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  gl->TexParameteri(texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  gl->TexParameteri(texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
   {
     SkAutoLockPixels lock(bitmap);
-    context->texImage2D(texture_target,
-                        0 /* level */,
-                        GL_RGBA /* internalformat */,
-                        bitmap.width(),
-                        bitmap.height(),
-                        0 /* border */,
-                        GL_RGBA /* format */,
-                        GL_UNSIGNED_BYTE /* type */,
-                        bitmap.getPixels());
+    gl->TexImage2D(texture_target,
+                   0 /* level */,
+                   GL_RGBA /* internalformat */,
+                   bitmap.width(),
+                   bitmap.height(),
+                   0 /* border */,
+                   GL_RGBA /* format */,
+                   GL_UNSIGNED_BYTE /* type */,
+                   bitmap.getPixels());
   }
 
   gpu::Mailbox texture_mailbox;
-  context->genMailboxCHROMIUM(texture_mailbox.name);
-  context->produceTextureCHROMIUM(texture_target, texture_mailbox.name);
-  context->flush();
-  unsigned texture_mailbox_sync_point = context->insertSyncPoint();
+  gl->GenMailboxCHROMIUM(texture_mailbox.name);
+  gl->ProduceTextureCHROMIUM(texture_target, texture_mailbox.name);
+  gl->Flush();
+  GLuint texture_mailbox_sync_point = gl->InsertSyncPointCHROMIUM();
 
   scoped_refptr<VideoFrame> new_frame = VideoFrame::WrapNativeTexture(
       make_scoped_ptr(new VideoFrame::MailboxHolder(
@@ -1444,12 +1443,11 @@ void WebMediaPlayerAndroid::DoReleaseRemotePlaybackTexture(uint32 sync_point) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK(remote_playback_texture_id_);
 
-  blink::WebGraphicsContext3D* context =
-      stream_texture_factory_->Context3d();
+  GLES2Interface* gl = stream_texture_factory_->ContextGL();
 
   if (sync_point)
-    context->waitSyncPoint(sync_point);
-  context->deleteTexture(remote_playback_texture_id_);
+    gl->WaitSyncPointCHROMIUM(sync_point);
+  gl->DeleteTextures(1, &remote_playback_texture_id_);
   remote_playback_texture_id_ = 0;
 }
 

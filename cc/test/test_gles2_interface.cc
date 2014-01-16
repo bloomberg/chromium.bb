@@ -369,4 +369,8 @@ void TestGLES2Interface::ResizeCHROMIUM(GLuint width,
   test_context_->reshapeWithScaleFactor(width, height, device_scale);
 }
 
+void TestGLES2Interface::LoseContextCHROMIUM(GLenum current, GLenum other) {
+  test_context_->loseContextCHROMIUM(current, other);
+}
+
 }  // namespace cc

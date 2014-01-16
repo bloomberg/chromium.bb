@@ -7,9 +7,16 @@
 
 #include "content/renderer/media/android/stream_texture_factory_android.h"
 
-namespace blink {
-class WebGraphicsContext3D;
+namespace cc {
+class ContextProvider;
 }
+
+namespace gpu {
+namespace gles2 {
+class GLES2Interface;
+}  // namespace gles2
+}  // namespace gpu
+
 
 namespace content {
 
@@ -17,9 +24,10 @@ class GpuChannelHost;
 
 class StreamTextureFactoryImpl : public StreamTextureFactory {
  public:
-  StreamTextureFactoryImpl(blink::WebGraphicsContext3D* context,
-                           GpuChannelHost* channel,
-                           int view_id);
+  StreamTextureFactoryImpl(
+      const scoped_refptr<cc::ContextProvider>& context_provider,
+      GpuChannelHost* channel,
+      int view_id);
   virtual ~StreamTextureFactoryImpl();
 
   // StreamTextureFactory implementation.
@@ -33,10 +41,10 @@ class StreamTextureFactoryImpl : public StreamTextureFactory {
   virtual void DestroyStreamTexture(unsigned texture_id) OVERRIDE;
   virtual void SetStreamTextureSize(int32 texture_id,
                                     const gfx::Size& size) OVERRIDE;
-  virtual blink::WebGraphicsContext3D* Context3d() OVERRIDE;
+  virtual gpu::gles2::GLES2Interface* ContextGL() OVERRIDE;
 
  private:
-  blink::WebGraphicsContext3D* context_;
+  scoped_refptr<cc::ContextProvider> context_provider_;
   scoped_refptr<GpuChannelHost> channel_;
   int view_id_;
 

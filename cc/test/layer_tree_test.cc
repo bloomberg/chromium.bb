@@ -53,12 +53,8 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
       LayerTreeHostImplClient* host_impl_client,
       Proxy* proxy,
       RenderingStatsInstrumentation* stats_instrumentation) {
-    return make_scoped_ptr(
-        new LayerTreeHostImplForTesting(test_hooks,
-                                        settings,
-                                        host_impl_client,
-                                        proxy,
-                                        stats_instrumentation));
+    return make_scoped_ptr(new LayerTreeHostImplForTesting(
+        test_hooks, settings, host_impl_client, proxy, stats_instrumentation));
   }
 
  protected:
@@ -226,9 +222,7 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
         monotonic_time * base::Time::kMicrosecondsPerSecond));
   }
 
-  virtual void Layout() OVERRIDE {
-    test_hooks_->Layout();
-  }
+  virtual void Layout() OVERRIDE { test_hooks_->Layout(); }
 
   virtual void ApplyScrollAndScale(gfx::Vector2d scroll_delta,
                                    float scale) OVERRIDE {
@@ -250,9 +244,7 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
 
   virtual void WillCommit() OVERRIDE { test_hooks_->WillCommit(); }
 
-  virtual void DidCommit() OVERRIDE {
-    test_hooks_->DidCommit();
-  }
+  virtual void DidCommit() OVERRIDE { test_hooks_->DidCommit(); }
 
   virtual void DidCommitAndDrawFrame() OVERRIDE {
     test_hooks_->DidCommitAndDrawFrame();
@@ -319,9 +311,7 @@ class LayerTreeHostForTesting : public LayerTreeHost {
 
   void set_test_started(bool started) { test_started_ = started; }
 
-  virtual void DidDeferCommit() OVERRIDE {
-    test_hooks_->DidDeferCommit();
-  }
+  virtual void DidDeferCommit() OVERRIDE { test_hooks_->DidDeferCommit(); }
 
  private:
   LayerTreeHostForTesting(TestHooks* test_hooks,
@@ -490,8 +480,8 @@ void LayerTreeTest::DoBeginTest() {
   // Allow commits to happen once BeginTest() has had a chance to post tasks
   // so that those tasks will happen before the first commit.
   if (layer_tree_host_) {
-    static_cast<LayerTreeHostForTesting*>(layer_tree_host_.get())->
-        set_test_started(true);
+    static_cast<LayerTreeHostForTesting*>(layer_tree_host_.get())
+        ->set_test_started(true);
   }
 }
 
@@ -540,11 +530,8 @@ void LayerTreeTest::DispatchAddAnimation(Layer* layer_to_receive_animation,
   DCHECK(!proxy() || proxy()->IsMainThread());
 
   if (layer_to_receive_animation) {
-    AddOpacityTransitionToLayer(layer_to_receive_animation,
-                                animation_duration,
-                                0,
-                                0.5,
-                                true);
+    AddOpacityTransitionToLayer(
+        layer_to_receive_animation, animation_duration, 0, 0.5, true);
   }
 }
 
@@ -647,8 +634,8 @@ void LayerTreeTest::RunTest(bool threaded,
   // mocked out.
   settings_.refresh_rate = 200.0;
   if (impl_side_painting) {
-    DCHECK(threaded) <<
-        "Don't run single thread + impl side painting, it doesn't exist.";
+    DCHECK(threaded)
+        << "Don't run single thread + impl side painting, it doesn't exist.";
     settings_.impl_side_painting = true;
   }
   InitializeSettings(&settings_);
@@ -686,13 +673,19 @@ void LayerTreeTest::RunTestWithImplSidePainting() {
 }
 
 scoped_ptr<OutputSurface> LayerTreeTest::CreateOutputSurface(bool fallback) {
-  scoped_ptr<FakeOutputSurface> output_surface;
-  if (delegating_renderer_)
-    output_surface = FakeOutputSurface::CreateDelegating3d();
-  else
-    output_surface = FakeOutputSurface::Create3d();
+  scoped_ptr<FakeOutputSurface> output_surface =
+      CreateFakeOutputSurfaceForTest(fallback);
+
   output_surface_ = output_surface.get();
   return output_surface.PassAs<OutputSurface>();
+}
+
+scoped_ptr<FakeOutputSurface> LayerTreeTest::CreateFakeOutputSurfaceForTest(
+    bool fallback) {
+  if (delegating_renderer_)
+    return FakeOutputSurface::CreateDelegating3d();
+  else
+    return FakeOutputSurface::Create3d();
 }
 
 scoped_refptr<ContextProvider> LayerTreeTest::OffscreenContextProvider() {
@@ -700,6 +693,11 @@ scoped_refptr<ContextProvider> LayerTreeTest::OffscreenContextProvider() {
       compositor_contexts_->DestroyedOnMainThread())
     compositor_contexts_ = TestContextProvider::Create();
   return compositor_contexts_;
+}
+
+TestWebGraphicsContext3D* LayerTreeTest::TestContext() {
+  return static_cast<TestContextProvider*>(
+      output_surface_->context_provider().get())->TestContext3d();
 }
 
 }  // namespace cc

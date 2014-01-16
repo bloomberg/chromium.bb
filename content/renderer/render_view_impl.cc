@@ -5994,7 +5994,7 @@ WebMediaPlayer* RenderViewImpl::CreateAndroidWebMediaPlayer(
     }
 
     stream_texture_factory.reset(new StreamTextureFactoryImpl(
-        context_provider->WebContext3D(), gpu_channel_host, routing_id_));
+        context_provider, gpu_channel_host, routing_id_));
   }
 
   scoped_ptr<WebMediaPlayerAndroid> web_media_player_android(

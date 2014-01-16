@@ -121,12 +121,12 @@ void CompositorOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
   }
 
   if (frame->gl_frame_data) {
+    context_provider_->ContextGL()->ShallowFlushCHROMIUM();
     ContextProviderCommandBuffer* provider_command_buffer =
         static_cast<ContextProviderCommandBuffer*>(context_provider_.get());
     CommandBufferProxyImpl* command_buffer_proxy =
         provider_command_buffer->GetCommandBufferProxy();
     DCHECK(command_buffer_proxy);
-    context_provider_->ContextGL()->ShallowFlushCHROMIUM();
     command_buffer_proxy->SetLatencyInfo(frame->metadata.latency_info);
   }
 

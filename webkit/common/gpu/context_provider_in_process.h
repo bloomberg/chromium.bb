@@ -31,9 +31,9 @@ class WEBKIT_GPU_EXPORT ContextProviderInProcess
   static scoped_refptr<ContextProviderInProcess> CreateOffscreen();
 
   virtual blink::WebGraphicsContext3D* WebContext3D() OVERRIDE;
+
   virtual bool BindToCurrentThread() OVERRIDE;
   virtual Capabilities ContextCapabilities() OVERRIDE;
-  virtual blink::WebGraphicsContext3D* Context3d() OVERRIDE;
   virtual ::gpu::gles2::GLES2Interface* ContextGL() OVERRIDE;
   virtual ::gpu::ContextSupport* ContextSupport() OVERRIDE;
   virtual class GrContext* GrContext() OVERRIDE;

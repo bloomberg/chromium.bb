@@ -10,9 +10,12 @@
 #include "gpu/command_buffer/common/mailbox.h"
 #include "ui/gfx/size.h"
 
-namespace blink {
-class WebGraphicsContext3D;
-}
+namespace gpu {
+namespace gles2 {
+class GLES2Interface;
+}  // namespace gles2
+}  // namespace gpu
+
 
 namespace content {
 
@@ -75,7 +78,7 @@ class StreamTextureFactory {
   virtual void SetStreamTextureSize(int32 texture_id,
                                     const gfx::Size& size) = 0;
 
-  virtual blink::WebGraphicsContext3D* Context3d() = 0;
+  virtual gpu::gles2::GLES2Interface* ContextGL() = 0;
 };
 
 }  // namespace content
