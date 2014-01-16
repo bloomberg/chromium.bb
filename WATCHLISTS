@@ -147,6 +147,9 @@
                   'webkit/renderer/compositor_bindings/|'\
                   'content/common/cc_messages'
     },
+    'chrome_elf': {
+      'filepath': 'chrome_elf',
+    },
     'chrome_views': {
       'filepath': 'chrome/browser/ui/views',
     },
@@ -590,6 +593,9 @@
     'valgrind': {
       'filepath': 'valgrind',
     },
+    'version_assembly': {
+      'filepath': 'chrome/app/version_assembly',
+    },
     'views': {
       # Applies to all files and subdirs within this directory.
       'filepath': '^ui/views/',
@@ -694,6 +700,7 @@
              'miu+watch@chromium.org',
              'pwestin+watch@google.com'],
     'cc': ['cc-bugs@chromium.org'],
+    'chrome_elf': ['caitkp+watch@chromium.org',],
     'chrome_views': ['tfarina@chromium.org'],
     'chromedriver': ['chrisgao@chromium.org', 'frankf@chromium.org'],
     'chromeos' : ['oshima+watch@chromium.org',
@@ -856,6 +863,8 @@
     'valgrind': ['bruening+watch@chromium.org',
                  'glider+watch@chromium.org',
                  'timurrrr+watch@chromium.org'],
+    'version_assembly': ['caitkp+watch@chromium.org',
+                         'gab+watch@chromium.org'],
     'views': ['tfarina@chromium.org'],
     'views_core': ['ben+views@chromium.org'],
     'views_corewm': ['ben+corewm@chromium.org'],

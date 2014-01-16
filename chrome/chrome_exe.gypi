@@ -508,7 +508,7 @@
             'VCManifestTool': {
               'AdditionalManifestFiles': [
                 '$(ProjectDir)\\app\\chrome.exe.manifest',
-                '<(SHARED_INTERMEDIATE_DIR)/chrome_elf/version_assembly.manifest',
+                '<(SHARED_INTERMEDIATE_DIR)/chrome/app/version_assembly/version_assembly.manifest',
               ],
             },
           },
@@ -528,13 +528,13 @@
             {
               'action_name': 'chrome_exe_manifest',
               'includes': [
-                  '../chrome_elf/chrome_exe_manifest_action.gypi',
+                  'app/version_assembly/chrome_exe_manifest_action.gypi',
               ],
             },
             {
               'action_name': 'version_assembly_manifest',
               'includes': [
-                  '../chrome_elf/version_assembly_manifest_action.gypi',
+                  'app/version_assembly/version_assembly_manifest_action.gypi',
               ],
             },
           ],
