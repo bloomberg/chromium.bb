@@ -25,7 +25,6 @@ void DoPostImportPlatformSpecificTasks(Profile* profile) {
 #if !defined(OS_CHROMEOS)
   // Aura needs a views implementation of the first run dialog for Linux.
   // http://crbug.com/234637
-#if !defined(USE_AURA)
   base::FilePath local_state_path;
   PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
   bool local_state_file_exists = base::PathExists(local_state_path);
@@ -35,7 +34,6 @@ void DoPostImportPlatformSpecificTasks(Profile* profile) {
     if (ShowFirstRunDialog(profile))
       startup_metric_utils::SetNonBrowserUIDisplayed();
   }
-#endif
 
   // If stats reporting was turned on by the first run dialog then toggle
   // the pref (on Windows, the download is tagged with enable/disable stats so

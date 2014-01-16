@@ -339,8 +339,6 @@ bool SetDefaultWebClient(const std::string& protocol) {
 #if defined(OS_CHROMEOS)
   return true;
 #else
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
   scoped_ptr<base::Environment> env(base::Environment::Create());
 
   std::vector<std::string> argv;

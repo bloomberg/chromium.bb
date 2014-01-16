@@ -1834,6 +1834,8 @@
         'browser/ui/views/find_bar_view.h',
         'browser/ui/views/first_run_bubble.cc',
         'browser/ui/views/first_run_bubble.h',
+        'browser/ui/views/first_run_dialog.cc',
+        'browser/ui/views/first_run_dialog.h',
         'browser/ui/views/frame/app_panel_browser_frame_view.cc',
         'browser/ui/views/frame/app_panel_browser_frame_view.h',
         'browser/ui/views/frame/browser_frame.cc',
@@ -2862,6 +2864,8 @@
         }],
         ['use_aura==0 or chromeos==1 or OS!="linux"', {
           'sources!': [
+            'browser/ui/views/first_run_dialog.cc',
+            'browser/ui/views/first_run_dialog.h',
             'browser/ui/views/status_icons/status_icon_linux_wrapper.cc',
             'browser/ui/views/status_icons/status_icon_linux_wrapper.h',
           ],
