@@ -7,7 +7,7 @@
     <script>
         description("Verify that TextTrackCue exceptions are properly messaged to developers.");
 
-        var cue = new TextTrackCue(0, 0, "Test.");
+        var cue = new VTTCue(0, 0, "Test.");
 
         function testInfinityAndNaN(property) {
             shouldThrow("cue." + property + " = Number.NaN;");
