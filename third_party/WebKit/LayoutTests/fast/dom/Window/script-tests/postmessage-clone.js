@@ -24,6 +24,8 @@ tryPostMessage('var x = 0; try { eval("badref"); } catch(e) { x = e; } x', true,
 var arrayBuffer = new ArrayBuffer(1);
 tryPostMessage('"data"', false, null, 0, [arrayBuffer]);
 tryPostMessage('arrayBuffer', true, null, DOMException.DATA_CLONE_ERR);
+var duplicateArrayBuffer = new ArrayBuffer(1);
+tryPostMessage('"data"', true, null, DOMException.DATA_CLONE_ERR, [duplicateArrayBuffer, duplicateArrayBuffer]);
 var uint8Array = new Uint8Array([10]);
 tryPostMessage('"data"', false, null, 0, [uint8Array.buffer]);
 tryPostMessage('uint8Array', true, null, DOMException.DATA_CLONE_ERR);

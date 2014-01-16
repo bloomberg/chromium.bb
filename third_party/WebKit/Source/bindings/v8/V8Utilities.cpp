@@ -100,9 +100,14 @@ bool extractTransferables(v8::Local<v8::Value> value, int argumentIndex, Message
                 return false;
             }
             ports.append(port.release());
-        } else if (V8ArrayBuffer::hasInstance(transferrable, isolate, worldType(isolate)))
-            arrayBuffers.append(V8ArrayBuffer::toNative(v8::Handle<v8::Object>::Cast(transferrable)));
-        else {
+        } else if (V8ArrayBuffer::hasInstance(transferrable, isolate, worldType(isolate))) {
+            RefPtr<ArrayBuffer> arrayBuffer = V8ArrayBuffer::toNative(v8::Handle<v8::Object>::Cast(transferrable));
+            if (arrayBuffers.contains(arrayBuffer)) {
+                exceptionState.throwDOMException(DataCloneError, "ArrayBuffer at index " + String::number(i) + " is a duplicate of an earlier ArrayBuffer.");
+                return false;
+            }
+            arrayBuffers.append(arrayBuffer.release());
+        } else {
             exceptionState.throwDOMException(DataCloneError, "Value at index " + String::number(i) + " does not have a transferable type.");
             return false;
         }

@@ -24,6 +24,8 @@ channel.port1.postMessage("entangled ports", [channel3.port1, channel3.port2]);
 
 shouldThrow('channel.port1.postMessage("notAnArray", channel3.port1)', '"TypeError: Failed to execute \'postMessage\' on \'MessagePort\': The 2nd argument is neither an array, nor does it have indexed properties."');
 shouldThrow('channel.port1.postMessage("notASequence", [{length: 3}])', '"DataCloneError: Failed to execute \'postMessage\' on \'MessagePort\': Value at index 0 does not have a transferable type."');
+var arrayBuffer = new ArrayBuffer(2);
+shouldThrow('channel.port1.postMessage("duplicate buffer", [arrayBuffer, arrayBuffer])', '"DataCloneError: Failed to execute \'postMessage\' on \'MessagePort\': ArrayBuffer at index 1 is a duplicate of an earlier ArrayBuffer."');
 
 // Should not crash (we should figure out that the array contains undefined
 // entries).
