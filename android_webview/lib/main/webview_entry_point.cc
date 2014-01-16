@@ -10,6 +10,7 @@
 #include "components/web_contents_delegate_android/component_jni_registrar.h"
 #include "content/public/app/android_library_loader_hooks.h"
 #include "content/public/app/content_main.h"
+#include "url/url_util.h"
 
 static base::android::RegistrationMethod
     kWebViewDependencyRegisteredMethods[] = {
@@ -43,6 +44,11 @@ JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
     return -1;
 
   content::SetContentMainDelegate(new android_webview::AwMainDelegate());
+
+  // Initialize url_util here while we are still single-threaded, in case we use
+  // CookieManager before initializing Chromium (which would normally have done
+  // this). It's safe to call this multiple times.
+  url_util::Initialize();
 
   return JNI_VERSION_1_4;
 }
