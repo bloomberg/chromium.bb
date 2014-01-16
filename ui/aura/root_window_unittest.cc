@@ -430,13 +430,22 @@ class EventFilterRecorder : public ui::EventHandler {
   typedef std::vector<ui::EventType> Events;
   typedef std::vector<gfx::Point> EventLocations;
 
-  EventFilterRecorder() {}
+  EventFilterRecorder()
+      : wait_until_event_(ui::ET_UNKNOWN) {
+  }
 
   const Events& events() const { return events_; }
 
   const EventLocations& mouse_locations() const { return mouse_locations_; }
   gfx::Point mouse_location(int i) const { return mouse_locations_[i]; }
   const EventLocations& touch_locations() const { return touch_locations_; }
+
+  void WaitUntilReceivedEvent(ui::EventType type) {
+    wait_until_event_ = type;
+    run_loop_.reset(new base::RunLoop(
+        Env::GetInstance()->GetDispatcher()));
+    run_loop_->Run();
+  }
 
   Events GetAndResetEvents() {
     Events events = events_;
@@ -454,6 +463,10 @@ class EventFilterRecorder : public ui::EventHandler {
   virtual void OnEvent(ui::Event* event) OVERRIDE {
     ui::EventHandler::OnEvent(event);
     events_.push_back(event->type());
+    if (wait_until_event_ == event->type() && run_loop_) {
+      run_loop_->Quit();
+      wait_until_event_ = ui::ET_UNKNOWN;
+    }
   }
 
   virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
@@ -465,6 +478,9 @@ class EventFilterRecorder : public ui::EventHandler {
   }
 
  private:
+  scoped_ptr<base::RunLoop> run_loop_;
+  ui::EventType wait_until_event_;
+
   Events events_;
   EventLocations mouse_locations_;
   EventLocations touch_locations_;
@@ -669,13 +685,7 @@ TEST_F(RootWindowTest, MouseMovesHeld) {
   EXPECT_TRUE(filter->events().empty());
 }
 
-#if defined(OS_CHROMEOS)
-// This test may be flaky on Chromium OS valgrind bots: http://crbug.com/333644
-#define MAYBE_TouchMovesHeld DISABLED_TouchMovesHeld
-#else
-#define MAYBE_TouchMovesHeld TouchMovesHeld
-#endif
-TEST_F(RootWindowTest, MAYBE_TouchMovesHeld) {
+TEST_F(RootWindowTest, TouchMovesHeld) {
   EventFilterRecorder* filter = new EventFilterRecorder;
   root_window()->SetEventFilter(filter);  // passes ownership
 
@@ -691,7 +701,7 @@ TEST_F(RootWindowTest, MAYBE_TouchMovesHeld) {
                                      0, base::TimeDelta());
   dispatcher()->AsWindowTreeHostDelegate()->OnHostTouchEvent(
       &touch_pressed_event);
-  RunAllPendingInMessageLoop();
+  filter->WaitUntilReceivedEvent(ui::ET_GESTURE_SHOW_PRESS);
   filter->Reset();
 
   dispatcher()->HoldPointerMoves();
