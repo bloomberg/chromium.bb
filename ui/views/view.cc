@@ -1562,7 +1562,7 @@ void View::ReorderChildLayers(ui::Layer* parent_layer) {
     // Iterate backwards through the children so that a child with a layer
     // which is further to the back is stacked above one which is further to
     // the front.
-    for (Views::const_reverse_iterator it(children_.rbegin());
+    for (Views::reverse_iterator it(children_.rbegin());
          it != children_.rend(); ++it) {
       (*it)->ReorderChildLayers(parent_layer);
     }

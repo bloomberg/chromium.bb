@@ -9,10 +9,12 @@
 
 namespace ui {
 
+#if !defined(USE_AURA)
 // static
 NativeTheme* NativeTheme::instance() {
   return NativeThemeAndroid::instance();
 }
+#endif
 
 // static
 NativeThemeAndroid* NativeThemeAndroid::instance() {
