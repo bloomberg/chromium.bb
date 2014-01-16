@@ -16,6 +16,7 @@
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/pagination_model.h"
 #include "ui/app_list/views/app_list_drag_and_drop_host.h"
+#include "ui/app_list/views/app_list_folder_view.h"
 #include "ui/app_list/views/app_list_item_view.h"
 #include "ui/app_list/views/apps_grid_view_delegate.h"
 #include "ui/app_list/views/page_switcher.h"
@@ -347,7 +348,11 @@ AppsGridView::AppsGridView(AppsGridViewDelegate* delegate,
       page_flip_target_(-1),
       page_flip_delay_in_ms_(kPageFlipDelayInMs),
       bounds_animator_(this),
-      is_root_level_(true) {
+      is_root_level_(true),
+      activated_item_view_(NULL) {
+  SetPaintToLayer(true);
+  SetFillsBoundsOpaquely(false);
+
   pagination_model_->AddObserver(this);
   AddChildView(page_switcher_view_);
 
@@ -649,6 +654,35 @@ void AppsGridView::EndDrag(bool cancel) {
 void AppsGridView::StopPageFlipTimer() {
   page_flip_timer_.Stop();
   page_flip_target_ = -1;
+}
+
+AppListItemView* AppsGridView::GetItemViewAt(int index) const {
+  DCHECK(index >= 0 && index < view_model_.view_size());
+  return static_cast<AppListItemView*>(view_model_.view_at(index));
+}
+
+void AppsGridView::SetTopItemViewsVisible(bool visible) {
+  int top_item_count = std::min(static_cast<int>(kNumFolderTopItems),
+                                view_model_.view_size());
+  for (int i = 0; i < top_item_count; ++i)
+    GetItemViewAt(i)->SetVisible(visible);
+}
+
+void AppsGridView::ScheduleShowHideAnimation(bool show) {
+  // Stop any previous animation.
+  layer()->GetAnimator()->StopAnimating();
+
+  // Set initial state.
+  SetVisible(true);
+  layer()->SetOpacity(show ? 0.0f : 1.0f);
+
+  ui::ScopedLayerAnimationSettings animation(layer()->GetAnimator());
+  animation.AddObserver(this);
+  animation.SetTweenType(gfx::Tween::EASE_IN_2);
+  animation.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
+      show ? kFolderTransitionInDurationMs : kFolderTransitionOutDurationMs));
+
+  layer()->SetOpacity(show ? 1.0f : 0.0f);
 }
 
 bool AppsGridView::IsDraggedView(const views::View* view) const {
@@ -1394,6 +1428,7 @@ void AppsGridView::ButtonPressed(views::Button* sender,
     return;
 
   if (delegate_) {
+    activated_item_view_ = static_cast<AppListItemView*>(sender);
     delegate_->ActivateApp(static_cast<AppListItemView*>(sender)->item(),
                            event.flags());
   }
@@ -1499,6 +1534,11 @@ void AppsGridView::SetViewHidden(views::View* view, bool hide, bool immediate) {
                   ui::LayerAnimator::BLEND_WITH_CURRENT_ANIMATION);
   view->layer()->SetOpacity(hide ? 0 : 1);
 #endif
+}
+
+void AppsGridView::OnImplicitAnimationsCompleted() {
+  if (layer()->opacity() == 0.0f)
+    SetVisible(false);
 }
 
 bool AppsGridView::EnableFolderDragDropUI() {

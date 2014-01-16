@@ -47,7 +47,7 @@ const int kLeftRightPaddingChars = 1;
 const float kDraggingIconScale = 1.5f;
 
 // Delay in milliseconds of when the dragging UI should be shown for mouse drag.
-const int kMouseDragUIDelayInMs = 100;
+const int kMouseDragUIDelayInMs = 200;
 
 }  // namespace
 
@@ -127,7 +127,7 @@ void AppListItemView::UpdateIcon() {
                                                             icon_shadows_));
     icon_->SetImage(shadow);
     return;
-  };
+  }
 
   icon_->SetImage(resized);
 }
@@ -269,7 +269,6 @@ void AppListItemView::Layout() {
   gfx::Rect icon_bounds(rect.x(), y, rect.width(), icon_size_.height());
   icon_bounds.Inset(gfx::ShadowValue::GetMargin(icon_shadows_));
   icon_->SetBoundsRect(icon_bounds);
-
   const gfx::Size title_size = title_->GetPreferredSize();
   gfx::Rect title_bounds(rect.x() + (rect.width() - title_size.width()) / 2,
                          y + icon_size_.height() + kIconTitleSpacing,
@@ -461,6 +460,10 @@ void AppListItemView::OnGestureEvent(ui::GestureEvent* event) {
 
 void AppListItemView::OnSyncDragEnd() {
   SetUIState(UI_STATE_NORMAL);
+}
+
+const gfx::Rect& AppListItemView::GetIconBounds() const {
+  return icon_->bounds();
 }
 
 }  // namespace app_list

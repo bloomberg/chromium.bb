@@ -10,11 +10,13 @@
 #include "ui/app_list/app_list_folder_item.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/pagination_model.h"
+#include "ui/app_list/views/app_list_item_view.h"
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/apps_container_view.h"
 #include "ui/app_list/views/apps_grid_view.h"
 #include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/folder_header_view.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/events/event.h"
 #include "ui/views/view_model.h"
 #include "ui/views/view_model_utils.h"
@@ -50,6 +52,11 @@ AppListFolderView::AppListFolderView(AppsContainerView* container_view,
   items_grid_view_->SetModel(model);
   AddChildView(items_grid_view_);
   view_model_->Add(items_grid_view_, kIndexChildItems);
+
+#if defined(USE_AURA)
+  SetPaintToLayer(true);
+  SetFillsBoundsOpaquely(false);
+#endif
 }
 
 AppListFolderView::~AppListFolderView() {
@@ -61,6 +68,27 @@ void AppListFolderView::SetAppListFolderItem(AppListFolderItem* folder) {
   folder_item_ = folder;
   items_grid_view_->SetItemList(folder_item_->item_list());
   folder_header_view_->SetFolderItem(folder_item_);
+}
+
+void AppListFolderView::ScheduleShowHideAnimation(bool show) {
+  // Stop any previous animation.
+  layer()->GetAnimator()->StopAnimating();
+
+  // Hide the top items temporarily if showing the view for opening the folder.
+  if (show)
+    items_grid_view_->SetTopItemViewsVisible(false);
+
+  // Set initial state.
+  SetVisible(true);
+  layer()->SetOpacity(show ? 0.0f : 1.0f);
+
+  ui::ScopedLayerAnimationSettings animation(layer()->GetAnimator());
+  animation.SetTweenType(gfx::Tween::EASE_IN_2);
+  animation.AddObserver(this);
+  animation.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
+      show ? kFolderTransitionInDurationMs : kFolderTransitionOutDurationMs));
+
+  layer()->SetOpacity(show ? 1.0f : 0.0f);
 }
 
 gfx::Size AppListFolderView::GetPreferredSize() {
@@ -80,6 +108,15 @@ bool AppListFolderView::OnKeyPressed(const ui::KeyEvent& event) {
   return items_grid_view_->OnKeyPressed(event);
 }
 
+void AppListFolderView::OnImplicitAnimationsCompleted() {
+  // Show the top items when the opening folder animation is done.
+  if (layer()->opacity() == 1.0f)
+    items_grid_view_->SetTopItemViewsVisible(true);
+
+  if (layer()->opacity() == 0.0f)
+    SetVisible(false);
+}
+
 void AppListFolderView::CalculateIdealBounds() {
   gfx::Rect rect(GetContentsBounds());
   if (rect.IsEmpty())
@@ -95,9 +132,24 @@ void AppListFolderView::CalculateIdealBounds() {
   view_model_->set_ideal_bounds(kIndexChildItems, grid_frame);
 }
 
+gfx::Rect AppListFolderView::GetItemIconBoundsAt(int index) {
+  AppListItemView* item_view = items_grid_view_->GetItemViewAt(index);
+  // Icon bounds relative to AppListItemView.
+  const gfx::Rect icon_bounds = item_view->GetIconBounds();
+  gfx::Rect to_apps_grid_view = item_view->ConvertRectToParent(icon_bounds);
+  gfx::Rect to_folder =
+      items_grid_view_->ConvertRectToParent(to_apps_grid_view);
+
+  // Get the icon image's bound.
+  to_folder.ClampToCenteredSize(
+      gfx::Size(kPreferredIconDimension, kPreferredIconDimension));
+
+  return to_folder;
+}
+
 void AppListFolderView::NavigateBack(AppListFolderItem* item,
                                      const ui::Event& event_flags) {
-  container_view_->ShowApps();
+  container_view_->ShowApps(item);
 }
 
 }  // namespace app_list

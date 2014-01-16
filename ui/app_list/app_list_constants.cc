@@ -36,10 +36,22 @@ const int kPageTransitionDurationInMs = 180;
 // Duration in milliseconds for over scroll page transition.
 const int kOverscrollPageTransitionDurationMs = 50;
 
+// Duration in milliseconds for the target page transition when opening or
+// closing a folder.
+const int kFolderTransitionInDurationMs = 200;
+
+// Duration in milliseconds for fading out the old page when opening or
+// closing a folder.
+const int kFolderTransitionOutDurationMs = 30;
+
 // Preferred number of columns and rows in apps grid.
 const int kPreferredCols = 4;
 const int kPreferredRows = 4;
 const int kPreferredIconDimension = 48;
+
+// Number of the top items in a folder, which are shown inside the folder icon
+// and animated when opening and closing a folder.
+const size_t kNumFolderTopItems = 4;
 
 // Font style for app item labels.
 const ui::ResourceBundle::FontStyle kItemTextFontStyle =

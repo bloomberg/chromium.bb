@@ -61,6 +61,9 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
   // ending, so the runner of the drag should call this.
   void OnSyncDragEnd();
 
+  // Returns the icon bounds relative to AppListItemView.
+  const gfx::Rect& GetIconBounds() const;
+
  private:
   enum UIState {
     UI_STATE_NORMAL,    // Normal UI (icon + label)

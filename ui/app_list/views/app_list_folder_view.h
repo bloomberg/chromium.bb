@@ -7,6 +7,7 @@
 
 #include "ui/app_list/views/folder_header_view.h"
 #include "ui/app_list/views/folder_header_view_delegate.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
@@ -29,7 +30,8 @@ class FolderHeaderView;
 class PaginationModel;
 
 class AppListFolderView : public views::View,
-                          public FolderHeaderViewDelegate {
+                          public FolderHeaderViewDelegate,
+                          public ui::ImplicitAnimationObserver {
  public:
   AppListFolderView(AppsContainerView* container_view,
                     AppListModel* model,
@@ -39,10 +41,20 @@ class AppListFolderView : public views::View,
 
   void SetAppListFolderItem(AppListFolderItem* folder);
 
-  // Overridden from views::View:
+  // Schedules an animation to show or hide the view.
+  void ScheduleShowHideAnimation(bool show);
+
+  // Gets icon image bounds of the item at |index|, relative to
+  // AppListFolderView.
+  gfx::Rect GetItemIconBoundsAt(int index);
+
+  // views::View overrides:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
+
+  // ui::ImplicitAnimationObserver overrides:
+  virtual void OnImplicitAnimationsCompleted() OVERRIDE;
 
  private:
   void CalculateIdealBounds();

@@ -15,6 +15,7 @@
 #include "ui/app_list/app_list_model_observer.h"
 #include "ui/app_list/pagination_model_observer.h"
 #include "ui/base/models/list_model_observer.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
@@ -55,7 +56,8 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
                                      public views::ButtonListener,
                                      public AppListItemListObserver,
                                      public PaginationModelObserver,
-                                     public AppListModelObserver {
+                                     public AppListModelObserver,
+                                     public ui::ImplicitAnimationObserver {
  public:
   enum Pointer {
     NONE,
@@ -138,6 +140,15 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Stops the timer that triggers a page flip during a drag.
   void StopPageFlipTimer();
 
+  // Returns the item view of the item at |index|.
+  AppListItemView* GetItemViewAt(int index) const;
+
+  // Show or hide the top item views.
+  void SetTopItemViewsVisible(bool visible);
+
+  // Schedules an animation to show or hide the view.
+  void ScheduleShowHideAnimation(bool show);
+
   // Return the view model for test purposes.
   const views::ViewModel* view_model_for_test() const { return &view_model_; }
 
@@ -150,6 +161,10 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   }
 
   void set_is_root_level(bool value) { is_root_level_ = value; }
+
+  AppListItemView* activated_item_view() const {
+    return activated_item_view_;
+  }
 
  private:
   friend class test::AppsGridViewTestApi;
@@ -291,6 +306,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Overridden from AppListModelObserver:
   virtual void OnAppListModelStatusChanged() OVERRIDE;
 
+  // ui::ImplicitAnimationObserver overrides:
+  virtual void OnImplicitAnimationsCompleted() OVERRIDE;
+
   // Hide a given view temporarily without losing (mouse) events and / or
   // changing the size of it. If |immediate| is set the change will be
   // immediately applied - otherwise it will change gradually.
@@ -412,6 +430,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   // If true, AppsGridView is rending items at the root level of the app list.
   bool is_root_level_;
+
+  // The most recent activated item view.
+  AppListItemView* activated_item_view_;
 
   DISALLOW_COPY_AND_ASSIGN(AppsGridView);
 };

@@ -34,10 +34,14 @@ APP_LIST_EXPORT extern const SkColor kFolderBubbleColor;
 
 APP_LIST_EXPORT extern const int kPageTransitionDurationInMs;
 APP_LIST_EXPORT extern const int kOverscrollPageTransitionDurationMs;
+APP_LIST_EXPORT extern const int kFolderTransitionInDurationMs;
+APP_LIST_EXPORT extern const int kFolderTransitionOutDurationMs;
 
 APP_LIST_EXPORT extern const int kPreferredCols;
 APP_LIST_EXPORT extern const int kPreferredRows;
 APP_LIST_EXPORT extern const int kPreferredIconDimension;
+
+APP_LIST_EXPORT extern const size_t kNumFolderTopItems;
 
 APP_LIST_EXPORT extern const ui::ResourceBundle::FontStyle kItemTextFontStyle;
 
