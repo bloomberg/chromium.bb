@@ -12,12 +12,14 @@
 
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/completion_callback.h"
 #include "net/proxy/proxy_server.h"
 #include "net/quic/quic_connection_logger.h"
 #include "net/quic/quic_crypto_client_stream.h"
+#include "net/quic/quic_protocol.h"
 #include "net/quic/quic_reliable_client_stream.h"
 #include "net/quic/quic_session.h"
 

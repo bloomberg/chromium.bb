@@ -96,10 +96,10 @@ MockPacketWriter::MockPacketWriter() {
 MockPacketWriter::~MockPacketWriter() {
 }
 
-MockQuicSessionOwner::MockQuicSessionOwner() {
+MockQuicServerSessionVisitor::MockQuicServerSessionVisitor() {
 }
 
-MockQuicSessionOwner::~MockQuicSessionOwner() {
+MockQuicServerSessionVisitor::~MockQuicServerSessionVisitor() {
 }
 
 bool TestDecompressorVisitor::OnDecompressedData(StringPiece data) {

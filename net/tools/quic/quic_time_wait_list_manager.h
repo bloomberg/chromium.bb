@@ -10,6 +10,7 @@
 
 #include <deque>
 
+#include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "base/strings/string_piece.h"
 #include "net/quic/quic_blocked_writer_interface.h"
@@ -23,6 +24,7 @@ namespace net {
 namespace tools {
 
 class GuidCleanUpAlarm;
+class QuicServerSessionVisitor;
 
 namespace test {
 class QuicTimeWaitListManagerPeer;
@@ -39,8 +41,10 @@ class QuicTimeWaitListManagerPeer;
 class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
  public:
   // writer - the entity that writes to the socket. (Owned by the dispatcher)
+  // visitor - the entity that manages blocked writers. (The dispatcher)
   // epoll_server - used to run clean up alarms. (Owned by the dispatcher)
   QuicTimeWaitListManager(QuicPacketWriter* writer,
+                          QuicServerSessionVisitor* visitor,
                           EpollServer* epoll_server,
                           const QuicVersionVector& supported_versions);
   virtual ~QuicTimeWaitListManager();
@@ -137,7 +141,7 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
   std::deque<QueuedPacket*> pending_packets_queue_;
 
   // Used to schedule alarms to delete old guids which have been in the list for
-  // too long. Owned by the dispatcher.
+  // too long.
   EpollServer* epoll_server_;
 
   // Time period for which guids should remain in time wait state.
@@ -150,8 +154,11 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
   // Clock to efficiently measure approximate time from the epoll server.
   QuicEpollClock clock_;
 
-  // Interface that writes given buffer to the socket. Owned by the dispatcher.
+  // Interface that writes given buffer to the socket.
   QuicPacketWriter* writer_;
+
+  // Interface that manages blocked writers.
+  QuicServerSessionVisitor* visitor_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicTimeWaitListManager);
 };

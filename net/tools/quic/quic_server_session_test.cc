@@ -60,10 +60,9 @@ class TestQuicQuicServerSession : public QuicServerSession {
  public:
   TestQuicQuicServerSession(const QuicConfig& config,
                             QuicConnection* connection,
-                            QuicSessionOwner* owner)
+                            QuicServerSessionVisitor* owner)
       : QuicServerSession(config, connection, owner),
-        close_stream_on_data_(false) {
-  }
+        close_stream_on_data_(false) {}
 
   virtual QuicDataStream* CreateIncomingDataStream(
       QuicStreamId id) OVERRIDE {
@@ -110,7 +109,7 @@ class QuicServerSessionTest : public ::testing::TestWithParam<QuicVersion> {
     QuicDataStreamPeer::SetHeadersDecompressed(stream, true);
   }
 
-  StrictMock<MockQuicSessionOwner> owner_;
+  StrictMock<MockQuicServerSessionVisitor> owner_;
   StrictMock<MockConnection>* connection_;
   QuicConfig config_;
   QuicCryptoServerConfig crypto_config_;

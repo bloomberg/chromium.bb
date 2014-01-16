@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "base/basictypes.h"
 #include "net/quic/quic_crypto_client_stream.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_session.h"

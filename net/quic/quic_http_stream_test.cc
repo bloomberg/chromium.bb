@@ -22,6 +22,7 @@
 #include "net/quic/quic_default_packet_writer.h"
 #include "net/quic/quic_http_utils.h"
 #include "net/quic/quic_reliable_client_stream.h"
+#include "net/quic/quic_write_blocked_list.h"
 #include "net/quic/spdy_utils.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/mock_crypto_client_stream_factory.h"
@@ -35,7 +36,6 @@
 #include "net/spdy/spdy_framer.h"
 #include "net/spdy/spdy_http_utils.h"
 #include "net/spdy/spdy_protocol.h"
-#include "net/spdy/write_blocked_list.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -662,7 +662,7 @@ TEST_P(QuicHttpStreamTest, Priority) {
   QuicReliableClientStream* reliable_stream =
       QuicHttpStreamPeer::GetQuicReliableClientStream(stream_.get());
   DCHECK(reliable_stream);
-  DCHECK_EQ(static_cast<QuicPriority>(kHighestPriority),
+  DCHECK_EQ(QuicWriteBlockedList::kHighestPriority,
             reliable_stream->EffectivePriority());
 
   EXPECT_EQ(OK, stream_->SendRequest(headers_, &response_,
@@ -709,13 +709,13 @@ TEST_P(QuicHttpStreamTest, CheckPriorityWithNoDelegate) {
   DCHECK(reliable_stream);
   QuicReliableClientStream::Delegate* delegate = reliable_stream->GetDelegate();
   DCHECK(delegate);
-  DCHECK_EQ(static_cast<QuicPriority>(kHighestPriority),
+  DCHECK_EQ(QuicWriteBlockedList::kHighestPriority,
             reliable_stream->EffectivePriority());
 
   // Set Delegate to NULL and make sure EffectivePriority returns highest
   // priority.
   reliable_stream->SetDelegate(NULL);
-  DCHECK_EQ(static_cast<QuicPriority>(kHighestPriority),
+  DCHECK_EQ(QuicWriteBlockedList::kHighestPriority,
             reliable_stream->EffectivePriority());
   reliable_stream->SetDelegate(delegate);
 }

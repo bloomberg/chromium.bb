@@ -12,6 +12,7 @@
 
 #include <set>
 
+#include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/ip_endpoint.h"
 #include "net/quic/quic_protocol.h"

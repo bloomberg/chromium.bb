@@ -6,6 +6,7 @@
 
 #include <limits>
 
+#include "base/basictypes.h"
 #include "base/logging.h"
 
 using base::StringPiece;

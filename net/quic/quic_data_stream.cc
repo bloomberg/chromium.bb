@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "net/quic/quic_session.h"
 #include "net/quic/quic_spdy_decompressor.h"
-#include "net/spdy/write_blocked_list.h"
+#include "net/quic/quic_write_blocked_list.h"
 
 using base::StringPiece;
 using std::min;

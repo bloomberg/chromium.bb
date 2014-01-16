@@ -226,6 +226,7 @@ class MockConnectionVisitor : public QuicConnectionVisitorInterface {
   MOCK_METHOD1(OnRstStream, void(const QuicRstStreamFrame& frame));
   MOCK_METHOD1(OnGoAway, void(const QuicGoAwayFrame& frame));
   MOCK_METHOD2(OnConnectionClosed, void(QuicErrorCode error, bool from_peer));
+  MOCK_METHOD0(OnWriteBlocked, void());
   MOCK_METHOD0(OnCanWrite, bool());
   MOCK_CONST_METHOD0(HasPendingHandshake, bool());
   MOCK_METHOD1(OnSuccessfulVersionNegotiation,
@@ -353,6 +354,8 @@ class MockSession : public QuicSession {
   MOCK_METHOD0(IsHandshakeComplete, bool());
   MOCK_METHOD0(IsCryptoHandshakeConfirmed, bool());
 
+  using QuicSession::ActivateStream;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSession);
 };
@@ -401,8 +404,8 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
                void(const QuicCongestionFeedbackFrame&,
                     QuicTime feedback_receive_time,
                     const SentPacketsMap&));
-  MOCK_METHOD3(OnPacketAcked,
-               void(QuicPacketSequenceNumber, QuicByteCount, QuicTime::Delta));
+  MOCK_METHOD2(OnPacketAcked,
+               void(QuicPacketSequenceNumber, QuicByteCount));
   MOCK_METHOD2(OnPacketLost, void(QuicPacketSequenceNumber, QuicTime));
   MOCK_METHOD5(OnPacketSent,
                bool(QuicTime sent_time, QuicPacketSequenceNumber, QuicByteCount,
@@ -414,6 +417,7 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
                                               HasRetransmittableData,
                                               IsHandshake));
   MOCK_CONST_METHOD0(BandwidthEstimate, QuicBandwidth(void));
+  MOCK_METHOD1(UpdateRtt, void(QuicTime::Delta rtt_sample));
   MOCK_CONST_METHOD0(SmoothedRtt, QuicTime::Delta(void));
   MOCK_CONST_METHOD0(RetransmissionDelay, QuicTime::Delta(void));
   MOCK_CONST_METHOD0(GetCongestionWindow, QuicByteCount());

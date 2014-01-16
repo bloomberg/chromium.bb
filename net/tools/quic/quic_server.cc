@@ -147,9 +147,9 @@ bool QuicServer::Listen(const IPEndPoint& address) {
   }
 
   epoll_server_.RegisterFD(fd_, this, kEpollFlags);
-  dispatcher_.reset(new QuicDispatcher(config_, crypto_config_,
-                                       supported_versions_,
-                                       fd_, &epoll_server_));
+  dispatcher_.reset(new QuicDispatcher(
+      config_, crypto_config_, supported_versions_, &epoll_server_));
+  dispatcher_->Initialize(fd_);
 
   return true;
 }

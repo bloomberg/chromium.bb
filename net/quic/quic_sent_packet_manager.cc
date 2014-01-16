@@ -104,6 +104,7 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
         << "Client did not set an initial RTT, but did negotiate one.";
     rtt_sample_ =
         QuicTime::Delta::FromMicroseconds(config.initial_round_trip_time_us());
+    send_algorithm_->UpdateRtt(rtt_sample_);
   }
   if (config.congestion_control() == kPACE) {
     MaybeEnablePacing();
@@ -181,19 +182,17 @@ void QuicSentPacketManager::OnRetransmittedPacket(
 
 bool QuicSentPacketManager::OnIncomingAck(
     const ReceivedPacketInfo& received_info, QuicTime ack_receive_time) {
-  // Determine if the least unacked sequence number is being acked.
-  QuicPacketSequenceNumber least_unacked_sent_before =
-      GetLeastUnackedSentPacket();
-  // TODO(ianswett): Consider a non-TCP metric for determining the connection
-  // is making progress, since QUIC has out of order delivery.
-  bool new_least_unacked = !IsAwaitingPacket(received_info,
-                                             least_unacked_sent_before);
-
+  // We rely on delta_time_largest_observed to compute an RTT estimate, so
+  // we only update rtt when the largest observed gets acked.
+  bool largest_observed_acked =
+      ContainsKey(unacked_packets_, received_info.largest_observed);
   MaybeUpdateRTT(received_info, ack_receive_time);
   HandleAckForSentPackets(received_info);
   MaybeRetransmitOnAckFrame(received_info, ack_receive_time);
 
-  if (new_least_unacked) {
+  // Anytime we are making forward progress and have a new RTT estimate, reset
+  // the backoff counters.
+  if (largest_observed_acked) {
     // Reset all retransmit counters any time a new packet is acked.
     consecutive_rto_count_ = 0;
     consecutive_tlp_count_ = 0;
@@ -304,15 +303,9 @@ void QuicSentPacketManager::RetransmitUnackedPackets(
        unacked_it != unacked_packets_.end(); ++unacked_it) {
     const RetransmittableFrames* frames =
         unacked_it->second.retransmittable_frames;
-    if (frames == NULL) {
-      continue;
-    }
     if (retransmission_type == ALL_PACKETS ||
-        frames->encryption_level() == ENCRYPTION_INITIAL) {
-      // TODO(satyamshekhar): Think about congestion control here.
-      // Specifically, about the retransmission count of packets being sent
-      // proactively to achieve 0 (minimal) RTT.
-      if (unacked_it->second.retransmittable_frames) {
+        (frames != NULL && frames->encryption_level() == ENCRYPTION_INITIAL)) {
+      if (frames) {
         OnPacketAbandoned(unacked_it);
         MarkForRetransmission(unacked_it->first, NACK_RETRANSMISSION);
       } else {
@@ -398,7 +391,7 @@ QuicSentPacketManager::MarkPacketHandled(
   if (it->second.pending) {
     size_t bytes_sent = packet_history_map_[sequence_number]->bytes_sent();
     if (received_by_peer == RECEIVED_BY_PEER) {
-      send_algorithm_->OnPacketAcked(sequence_number, bytes_sent, rtt_sample_);
+      send_algorithm_->OnPacketAcked(sequence_number, bytes_sent);
     } else {
       // It's been abandoned.
       send_algorithm_->OnPacketAbandoned(sequence_number, bytes_sent);
@@ -550,18 +543,13 @@ bool QuicSentPacketManager::OnPacketSent(
     TransmissionType transmission_type,
     HasRetransmittableData has_retransmittable_data) {
   DCHECK_LT(0u, sequence_number);
-  // In some edge cases, on some platforms (such as Windows), it is possible
-  // that we were write-blocked when we tried to send a packet, and then decided
-  // not to send the packet (such as when the encryption key changes, and we
-  // "discard" the unsent packet).  In that rare case, we may indeed
-  // asynchronously (later) send the packet, calling this method, but the
-  // sequence number may already be erased from unacked_packets_ map. In that
-  // case, we can just return false since the packet will not be tracked for
-  // retransmission.
-  if (!ContainsKey(unacked_packets_, sequence_number))
-    return false;
-  DCHECK(!unacked_packets_[sequence_number].pending);
   UnackedPacketMap::iterator it = unacked_packets_.find(sequence_number);
+  // In rare circumstances, the packet could be serialized, sent, and then acked
+  // before OnPacketSent is called.
+  if (it == unacked_packets_.end()) {
+    return false;
+  }
+  DCHECK(!it->second.pending);
 
   // Only track packets the send algorithm wants us to track.
   if (!send_algorithm_->OnPacketSent(sent_time, sequence_number, bytes,
@@ -805,6 +793,10 @@ void QuicSentPacketManager::MaybeUpdateRTT(
   if (transmission_info == NULL) {
     return;
   }
+  // Don't update the RTT if it hasn't been sent.
+  if (transmission_info->sent_time == QuicTime::Zero()) {
+    return;
+  }
 
   QuicTime::Delta send_delta =
       ack_receive_time.Subtract(transmission_info->sent_time);
@@ -817,6 +809,7 @@ void QuicSentPacketManager::MaybeUpdateRTT(
     // approximation until we get a better estimate.
     rtt_sample_ = send_delta;
   }
+  send_algorithm_->UpdateRtt(rtt_sample_);
 }
 
 QuicTime::Delta QuicSentPacketManager::TimeUntilSend(

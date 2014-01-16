@@ -216,27 +216,10 @@ bool InterArrivalSender::ProbingPhase(QuicTime feedback_receive_time) {
 
 void InterArrivalSender::OnPacketAcked(
     QuicPacketSequenceNumber /*acked_sequence_number*/,
-    QuicByteCount acked_bytes,
-    QuicTime::Delta rtt) {
-  // RTT can't be negative.
-  DCHECK_LE(0, rtt.ToMicroseconds());
-
+    QuicByteCount acked_bytes) {
   if (probing_) {
     probe_->OnAcknowledgedPacket(acked_bytes);
   }
-
-  if (rtt.IsInfinite()) {
-    return;
-  }
-
-  if (smoothed_rtt_.IsZero()) {
-    smoothed_rtt_ = rtt;
-  } else {
-    smoothed_rtt_ = QuicTime::Delta::FromMicroseconds(
-        kOneMinusAlpha * smoothed_rtt_.ToMicroseconds() +
-        kAlpha * rtt.ToMicroseconds());
-  }
-  state_machine_->set_rtt(smoothed_rtt_);
 }
 
 void InterArrivalSender::OnPacketLost(
@@ -335,6 +318,24 @@ void InterArrivalSender::EstimateDelayBandwidth(QuicTime feedback_receive_time,
 
 QuicBandwidth InterArrivalSender::BandwidthEstimate() const {
   return current_bandwidth_;
+}
+
+void InterArrivalSender::UpdateRtt(QuicTime::Delta rtt) {
+  // RTT can't be negative.
+  DCHECK_LE(0, rtt.ToMicroseconds());
+
+  if (rtt.IsInfinite()) {
+    return;
+  }
+
+  if (smoothed_rtt_.IsZero()) {
+    smoothed_rtt_ = rtt;
+  } else {
+    smoothed_rtt_ = QuicTime::Delta::FromMicroseconds(
+        kOneMinusAlpha * smoothed_rtt_.ToMicroseconds() +
+        kAlpha * rtt.ToMicroseconds());
+  }
+  state_machine_->set_rtt(smoothed_rtt_);
 }
 
 QuicTime::Delta InterArrivalSender::SmoothedRtt() const {

@@ -13,6 +13,7 @@
 #include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/tools/balsa/balsa_headers.h"
 #include "net/tools/quic/quic_epoll_connection_helper.h"
+#include "net/tools/quic/quic_packet_writer_wrapper.h"
 #include "net/tools/quic/quic_spdy_client_stream.h"
 #include "net/tools/quic/test_tools/http_message_test_utils.h"
 #include "net/tools/quic/test_tools/quic_client_peer.h"
@@ -20,7 +21,6 @@
 
 using base::StringPiece;
 using net::test::QuicConnectionPeer;
-using net::test::QuicTestWriter;
 using std::string;
 using std::vector;
 
@@ -96,33 +96,31 @@ BalsaHeaders* MungeHeaders(const BalsaHeaders* const_headers,
 }
 
 // A quic client which allows mocking out writes.
-class QuicEpollClient : public QuicClient {
+class MockableQuicClient : public QuicClient {
  public:
-  typedef QuicClient Super;
+  MockableQuicClient(IPEndPoint server_address,
+                     const string& server_hostname,
+                     const QuicVersionVector& supported_versions)
+      : QuicClient(server_address, server_hostname, supported_versions, false),
+        override_guid_(0),
+        test_writer_(NULL) {}
 
-  QuicEpollClient(IPEndPoint server_address,
-             const string& server_hostname,
-             const QuicVersionVector& supported_versions)
-      : Super(server_address, server_hostname, supported_versions, false),
-        override_guid_(0), test_writer_(NULL) {
-  }
+  MockableQuicClient(IPEndPoint server_address,
+                     const string& server_hostname,
+                     const QuicConfig& config,
+                     const QuicVersionVector& supported_versions)
+      : QuicClient(server_address, server_hostname, config, supported_versions),
+        override_guid_(0),
+        test_writer_(NULL) {}
 
-  QuicEpollClient(IPEndPoint server_address,
-             const string& server_hostname,
-             const QuicConfig& config,
-             const QuicVersionVector& supported_versions)
-      : Super(server_address, server_hostname, config, supported_versions),
-        override_guid_(0), test_writer_(NULL) {
-  }
-
-  virtual ~QuicEpollClient() {
+  virtual ~MockableQuicClient() {
     if (connected()) {
       Disconnect();
     }
   }
 
   virtual QuicPacketWriter* CreateQuicPacketWriter() OVERRIDE {
-    QuicPacketWriter* writer = Super::CreateQuicPacketWriter();
+    QuicPacketWriter* writer = QuicClient::CreateQuicPacketWriter();
     if (!test_writer_) {
       return writer;
     }
@@ -131,24 +129,22 @@ class QuicEpollClient : public QuicClient {
   }
 
   virtual QuicGuid GenerateGuid() OVERRIDE {
-    return override_guid_ ? override_guid_ : Super::GenerateGuid();
+    return override_guid_ ? override_guid_ : QuicClient::GenerateGuid();
   }
 
   // Takes ownership of writer.
-  void UseWriter(QuicTestWriter* writer) { test_writer_ = writer; }
+  void UseWriter(QuicPacketWriterWrapper* writer) { test_writer_ = writer; }
 
-  void UseGuid(QuicGuid guid) {
-    override_guid_ = guid;
-  }
+  void UseGuid(QuicGuid guid) { override_guid_ = guid; }
 
  private:
   QuicGuid override_guid_;  // GUID to use, if nonzero
-  QuicTestWriter* test_writer_;
+  QuicPacketWriterWrapper* test_writer_;
 };
 
 QuicTestClient::QuicTestClient(IPEndPoint address, const string& hostname,
                                const QuicVersionVector& supported_versions)
-    : client_(new QuicEpollClient(address, hostname, supported_versions)) {
+    : client_(new MockableQuicClient(address, hostname, supported_versions)) {
   Initialize(address, hostname, true);
 }
 
@@ -156,7 +152,7 @@ QuicTestClient::QuicTestClient(IPEndPoint address,
                                const string& hostname,
                                bool secure,
                                const QuicVersionVector& supported_versions)
-    : client_(new QuicEpollClient(address, hostname, supported_versions)) {
+    : client_(new MockableQuicClient(address, hostname, supported_versions)) {
   Initialize(address, hostname, secure);
 }
 
@@ -165,8 +161,8 @@ QuicTestClient::QuicTestClient(IPEndPoint address,
                                bool secure,
                                const QuicConfig& config,
                                const QuicVersionVector& supported_versions)
-    : client_(new QuicEpollClient(address, hostname, config,
-                                  supported_versions)) {
+    : client_(new MockableQuicClient(
+        address, hostname, config, supported_versions)) {
   Initialize(address, hostname, secure);
 }
 
@@ -237,6 +233,10 @@ ssize_t QuicTestClient::SendData(string data, bool last_data) {
   return data.length();
 }
 
+QuicPacketCreator::Options* QuicTestClient::options() {
+  return client_->options();
+}
+
 string QuicTestClient::SendCustomSynchronousRequest(
     const HTTPMessage& message) {
   SendMessage(message);
@@ -273,6 +273,12 @@ QuicSpdyClientStream* QuicTestClient::GetOrCreateStream() {
 
   return stream_;
 }
+
+QuicErrorCode QuicTestClient::connection_error() {
+  return client()->session()->error();
+}
+
+QuicClient* QuicTestClient::client() { return client_.get(); }
 
 const string& QuicTestClient::cert_common_name() const {
   return reinterpret_cast<RecordingProofVerifier*>(proof_verifier_)
@@ -435,17 +441,17 @@ void QuicTestClient::OnClose(QuicDataStream* stream) {
   stream_ = NULL;
 }
 
-void QuicTestClient::UseWriter(QuicTestWriter* writer) {
-  reinterpret_cast<QuicEpollClient*>(client_.get())->UseWriter(writer);
+void QuicTestClient::UseWriter(QuicPacketWriterWrapper* writer) {
+  client_->UseWriter(writer);
 }
 
 void QuicTestClient::UseGuid(QuicGuid guid) {
   DCHECK(!connected());
-  reinterpret_cast<QuicEpollClient*>(client_.get())->UseGuid(guid);
+  client_->UseGuid(guid);
 }
 
 void QuicTestClient::WaitForWriteToFlush() {
-  while (connected() && client()->session()->HasQueuedData()) {
+  while (connected() && client()->session()->HasDataToWrite()) {
     client_->WaitForEvents();
   }
 }

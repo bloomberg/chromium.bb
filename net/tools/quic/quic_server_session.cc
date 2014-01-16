@@ -15,13 +15,11 @@ namespace tools {
 QuicServerSession::QuicServerSession(
     const QuicConfig& config,
     QuicConnection* connection,
-    QuicSessionOwner* owner)
+    QuicServerSessionVisitor* visitor)
     : QuicSession(connection, config),
-      owner_(owner) {
-}
+      visitor_(visitor) {}
 
-QuicServerSession::~QuicServerSession() {
-}
+QuicServerSession::~QuicServerSession() {}
 
 void QuicServerSession::InitializeSession(
     const QuicCryptoServerConfig& crypto_config) {
@@ -36,7 +34,12 @@ QuicCryptoServerStream* QuicServerSession::CreateQuicCryptoServerStream(
 void QuicServerSession::OnConnectionClosed(QuicErrorCode error,
                                            bool from_peer) {
   QuicSession::OnConnectionClosed(error, from_peer);
-  owner_->OnConnectionClosed(connection()->guid(), error);
+  visitor_->OnConnectionClosed(connection()->guid(), error);
+}
+
+void QuicServerSession::OnWriteBlocked() {
+  QuicSession::OnWriteBlocked();
+  visitor_->OnWriteBlocked(connection());
 }
 
 bool QuicServerSession::ShouldCreateIncomingDataStream(QuicStreamId id) {

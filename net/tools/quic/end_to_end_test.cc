@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_number_conversions.h"
@@ -21,10 +22,10 @@
 #include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/quic/test_tools/quic_session_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
-#include "net/quic/test_tools/quic_test_writer.h"
 #include "net/quic/test_tools/reliable_quic_stream_peer.h"
 #include "net/tools/quic/quic_epoll_connection_helper.h"
 #include "net/tools/quic/quic_in_memory_cache.h"
+#include "net/tools/quic/quic_packet_writer_wrapper.h"
 #include "net/tools/quic/quic_server.h"
 #include "net/tools/quic/quic_socket_utils.h"
 #include "net/tools/quic/quic_spdy_client_stream.h"
@@ -42,7 +43,6 @@ using base::StringPiece;
 using base::WaitableEvent;
 using net::test::QuicConnectionPeer;
 using net::test::QuicSessionPeer;
-using net::test::QuicTestWriter;
 using net::test::ReliableQuicStreamPeer;
 using net::tools::test::PacketDroppingTestWriter;
 using net::tools::test::QuicDispatcherPeer;
@@ -179,7 +179,7 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     QuicInMemoryCachePeer::ResetForTests();
   }
 
-  virtual QuicTestClient* CreateQuicClient(QuicTestWriter* writer) {
+  virtual QuicTestClient* CreateQuicClient(QuicPacketWriterWrapper* writer) {
     QuicTestClient* client = new QuicTestClient(server_address_,
                                                 server_hostname_,
                                                 false,  // not secure
@@ -204,8 +204,8 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
   }
 
   virtual void SetUp() {
-    // The ownership of these gets transferred to the QuicTestWriter and
-    // QuicDispatcher when Initialize() is executed.
+    // The ownership of these gets transferred to the QuicPacketWriterWrapper
+    // and QuicDispatcher when Initialize() is executed.
     client_writer_ = new PacketDroppingTestWriter();
     server_writer_ = new PacketDroppingTestWriter();
   }
@@ -816,7 +816,7 @@ TEST_P(EndToEndTest, StreamCancelErrorTest) {
   }
 }
 
-class WrongAddressWriter : public QuicTestWriter {
+class WrongAddressWriter : public QuicPacketWriterWrapper {
  public:
   WrongAddressWriter() {
     IPAddressNumber ip;
@@ -825,12 +825,14 @@ class WrongAddressWriter : public QuicTestWriter {
   }
 
   virtual WriteResult WritePacket(
-      const char* buffer, size_t buf_len,
+      const char* buffer,
+      size_t buf_len,
       const IPAddressNumber& real_self_address,
       const IPEndPoint& peer_address,
       QuicBlockedWriterInterface* blocked_writer) OVERRIDE {
-    return writer()->WritePacket(buffer, buf_len, self_address_.address(),
-                                 peer_address, blocked_writer);
+    // Use wrong address!
+    return QuicPacketWriterWrapper::WritePacket(
+        buffer, buf_len, self_address_.address(), peer_address, blocked_writer);
   }
 
   virtual bool IsWriteBlockedDataBuffered() const OVERRIDE {

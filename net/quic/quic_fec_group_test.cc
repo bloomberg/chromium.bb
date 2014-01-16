@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/quic/quic_fec_group.h"

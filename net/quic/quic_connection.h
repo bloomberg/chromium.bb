@@ -75,8 +75,10 @@ class NET_EXPORT_PRIVATE QuicConnectionVisitorInterface {
 
   // Called when the connection is closed either locally by the framer, or
   // remotely by the peer.
-  virtual void OnConnectionClosed(QuicErrorCode error,
-                                  bool from_peer) = 0;
+  virtual void OnConnectionClosed(QuicErrorCode error, bool from_peer) = 0;
+
+  // Called when the connection failed to write because the socket was blocked.
+  virtual void OnWriteBlocked() = 0;
 
   // Called once a specific QUIC version is agreed by both endpoints.
   virtual void OnSuccessfulVersionNegotiation(const QuicVersion& version) = 0;
@@ -249,9 +251,8 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Called when a packet has been finally sent to the network.
   bool OnPacketSent(WriteResult result);
 
-  // If the socket is not blocked, this allows queued writes to happen. Returns
-  // false if the socket has become blocked.
-  bool WriteIfNotBlocked();
+  // If the socket is not blocked, writes queued packets.
+  void WriteIfNotBlocked();
 
   // Do any work which logically would be done in OnPacket but can not be
   // safely done until the packet is validated.  Returns true if the packet
@@ -339,6 +340,11 @@ class NET_EXPORT_PRIVATE QuicConnection
   // does nothing if there are no pending frames.
   void Flush();
 
+  // Returns true if the underlying UDP socket is writable, there is
+  // no queued data and the connection is not congestion-control
+  // blocked.
+  bool CanWriteStreamData();
+
   // Returns true if the connection has queued packets or frames.
   bool HasQueuedData() const;
 
@@ -411,8 +417,8 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Send a packet to the peer using encryption |level|. If |sequence_number|
   // is present in the |retransmission_map_|, then contents of this packet will
   // be retransmitted with a new sequence number if it's not acked by the peer.
-  // Deletes |packet| via WritePacket call or transfers ownership to
-  // QueuedPacket, ultimately deleted via WritePacket. Updates the
+  // Deletes |packet| if WritePacket call succeeds, or transfers ownership to
+  // QueuedPacket, ultimately deleted in WriteQueuedPackets. Updates the
   // entropy map corresponding to |sequence_number| using |entropy_hash|.
   // |transmission_type| and |retransmittable| are supplied to the congestion
   // manager, and when |forced| is true, it bypasses the congestion manager.
@@ -425,7 +431,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   // of helper. Returns true on successful write, false otherwise. However,
   // behavior is undefined if connection is not established or broken. In any
   // circumstances, a return value of true implies that |packet| has been
-  // deleted and should not be accessed. If |sequence_number| is present in
+  // transmitted and may be destroyed. If |sequence_number| is present in
   // |retransmission_map_| it also sets up retransmission of the given packet
   // in case of successful write. If |force| is FORCE, then the packet will be
   // sent immediately and the send scheduler will not be consulted.
@@ -532,10 +538,6 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Clears any accumulated frames from the last received packet.
   void ClearLastFrames();
 
-  // Called from OnCanWrite and WriteIfNotBlocked to write queued packets.
-  // Returns false if the socket has become blocked.
-  bool DoWrite();
-
   // Calculates the smallest sequence number length that can also represent four
   // times the maximum of the congestion window and the difference between the
   // least_packet_awaited_by_peer_ and |sequence_number|.
@@ -550,7 +552,7 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   // Writes as many queued packets as possible.  The connection must not be
   // blocked when this is called.
-  bool WriteQueuedPackets();
+  void WriteQueuedPackets();
 
   // Writes as many pending retransmissions as possible.
   void WritePendingRetransmissions();
@@ -639,9 +641,6 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   // Contains the connection close packet if the connection has been closed.
   scoped_ptr<QuicEncryptedPacket> connection_close_packet_;
-
-  // True when the socket becomes unwritable.
-  bool write_blocked_;
 
   FecGroupMap group_map_;
 

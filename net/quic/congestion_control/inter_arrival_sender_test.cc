@@ -18,8 +18,7 @@ namespace test {
 class InterArrivalSenderTest : public ::testing::Test {
  protected:
   InterArrivalSenderTest()
-     : rtt_(QuicTime::Delta::FromMilliseconds(60)),
-       one_ms_(QuicTime::Delta::FromMilliseconds(1)),
+     : one_ms_(QuicTime::Delta::FromMilliseconds(1)),
        one_s_(QuicTime::Delta::FromMilliseconds(1000)),
        nine_ms_(QuicTime::Delta::FromMilliseconds(9)),
        send_start_time_(send_clock_.Now()),
@@ -54,7 +53,7 @@ class InterArrivalSenderTest : public ::testing::Test {
   void AckNPackets(int n) {
     for (int i = 0; i < n; ++i) {
       sender_.OnPacketAcked(
-          acked_sequence_number_++, kDefaultMaxPacketSize, rtt_);
+          acked_sequence_number_++, kDefaultMaxPacketSize);
     }
   }
 
@@ -106,7 +105,6 @@ class InterArrivalSenderTest : public ::testing::Test {
     return send_clock_.ApproximateNow().Subtract(send_start_time_);
   }
 
-  const QuicTime::Delta rtt_;
   const QuicTime::Delta one_ms_;
   const QuicTime::Delta one_s_;
   const QuicTime::Delta nine_ms_;
@@ -504,6 +502,7 @@ TEST_F(InterArrivalSenderTest, MinBitrateDueToDelay) {
 }
 
 TEST_F(InterArrivalSenderTest, MinBitrateDueToLoss) {
+  sender_.UpdateRtt(QuicTime::Delta::FromMilliseconds(60));
   QuicBandwidth expected_min_bitrate = QuicBandwidth::FromKBitsPerSecond(10);
   QuicCongestionFeedbackFrame feedback;
   // At startup make sure we can send.
@@ -541,7 +540,7 @@ TEST_F(InterArrivalSenderTest, MinBitrateDueToLoss) {
     EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(),
         NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
     sender_.OnPacketLost(acked_sequence_number_ - 1, send_clock_.Now());
-    sender_.OnPacketAcked(acked_sequence_number_, kDefaultMaxPacketSize, rtt_);
+    sender_.OnPacketAcked(acked_sequence_number_, kDefaultMaxPacketSize);
     acked_sequence_number_ += 2;  // Create a loss by not acking both packets.
     SendFeedbackMessageNPackets(2, nine_ms_, nine_ms_);
   }
@@ -556,7 +555,7 @@ TEST_F(InterArrivalSenderTest, MinBitrateDueToLoss) {
     EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(),
         NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
     sender_.OnPacketLost(acked_sequence_number_ - 1, send_clock_.Now());
-    sender_.OnPacketAcked(acked_sequence_number_, kDefaultMaxPacketSize, rtt_);
+    sender_.OnPacketAcked(acked_sequence_number_, kDefaultMaxPacketSize);
     acked_sequence_number_ += 2;  // Create a loss by not acking both packets.
     SendFeedbackMessageNPackets(2, nine_ms_, nine_ms_);
 

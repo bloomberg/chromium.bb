@@ -17,6 +17,7 @@
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_utils.h"
+#include "net/tools/quic/quic_server_session.h"
 
 using base::StringPiece;
 using std::make_pair;
@@ -93,13 +94,15 @@ class QuicTimeWaitListManager::QueuedPacket {
 
 QuicTimeWaitListManager::QuicTimeWaitListManager(
     QuicPacketWriter* writer,
+    QuicServerSessionVisitor* visitor,
     EpollServer* epoll_server,
     const QuicVersionVector& supported_versions)
     : epoll_server_(epoll_server),
       kTimeWaitPeriod_(QuicTime::Delta::FromSeconds(kTimeWaitSeconds)),
       guid_clean_up_alarm_(new GuidCleanUpAlarm(this)),
       clock_(epoll_server_),
-      writer_(writer) {
+      writer_(writer),
+      visitor_(visitor) {
   SetGuidCleanUpAlarm();
 }
 
@@ -215,6 +218,7 @@ void QuicTimeWaitListManager::SendOrQueuePacket(QueuedPacket* packet) {
 
 bool QuicTimeWaitListManager::WriteToWire(QueuedPacket* queued_packet) {
   if (writer_->IsWriteBlocked()) {
+    visitor_->OnWriteBlocked(this);
     return false;
   }
   WriteResult result = writer_->WritePacket(
@@ -226,6 +230,7 @@ bool QuicTimeWaitListManager::WriteToWire(QueuedPacket* queued_packet) {
   if (result.status == WRITE_STATUS_BLOCKED) {
     // If blocked and unbuffered, return false to retry sending.
     DCHECK(writer_->IsWriteBlocked());
+    visitor_->OnWriteBlocked(this);
     return writer_->IsWriteBlockedDataBuffered();
   } else if (result.status == WRITE_STATUS_ERROR) {
     LOG(WARNING) << "Received unknown error while sending reset packet to "

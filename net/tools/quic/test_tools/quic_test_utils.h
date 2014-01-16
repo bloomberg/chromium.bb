@@ -128,11 +128,12 @@ class MockPacketWriter : public QuicPacketWriter {
   MOCK_METHOD0(SetWritable, void());
 };
 
-class MockQuicSessionOwner : public QuicSessionOwner {
+class MockQuicServerSessionVisitor : public QuicServerSessionVisitor {
  public:
-  MockQuicSessionOwner();
-  virtual ~MockQuicSessionOwner();
+  MockQuicServerSessionVisitor();
+  virtual ~MockQuicServerSessionVisitor();
   MOCK_METHOD2(OnConnectionClosed, void(QuicGuid guid, QuicErrorCode error));
+  MOCK_METHOD1(OnWriteBlocked, void(QuicBlockedWriterInterface* writer));
 };
 
 class TestDecompressorVisitor : public QuicSpdyDecompressor::Visitor {

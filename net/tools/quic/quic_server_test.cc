@@ -21,7 +21,9 @@ class QuicServerDispatchPacketTest : public ::testing::Test {
  public:
   QuicServerDispatchPacketTest()
       : crypto_config_("blah", QuicRandom::GetInstance()),
-        dispatcher_(config_, crypto_config_, 1234, &eps_) {}
+        dispatcher_(config_, crypto_config_, &eps_) {
+    dispatcher_.Initialize(1234);
+  }
 
   void DispatchPacket(const QuicEncryptedPacket& packet) {
     IPEndPoint client_addr, server_addr;

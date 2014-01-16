@@ -63,8 +63,7 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
 
   // Called for each received ACK, with sequence number from remote peer.
   virtual void OnPacketAcked(QuicPacketSequenceNumber acked_sequence_number,
-                             QuicByteCount acked_bytes,
-                             QuicTime::Delta rtt) = 0;
+                             QuicByteCount acked_bytes) = 0;
 
   // Indicates a loss event of one packet. |sequence_number| is the
   // sequence number of the lost packet.
@@ -100,6 +99,9 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
   // What's the current estimated bandwidth in bytes per second.
   // Returns 0 when it does not have an estimate.
   virtual QuicBandwidth BandwidthEstimate() const = 0;
+
+  // Updates the smoothed RTT based on a new sample.
+  virtual void UpdateRtt(QuicTime::Delta rtt_sample) = 0;
 
   // TODO(satyamshekhar): Monitor MinRtt.
   virtual QuicTime::Delta SmoothedRtt() const = 0;

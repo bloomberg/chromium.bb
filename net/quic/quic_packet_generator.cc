@@ -4,6 +4,7 @@
 
 #include "net/quic/quic_packet_generator.h"
 
+#include "base/basictypes.h"
 #include "base/logging.h"
 #include "net/quic/quic_fec_group.h"
 #include "net/quic/quic_utils.h"

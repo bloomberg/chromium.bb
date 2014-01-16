@@ -247,12 +247,17 @@ void QuicClient::OnEvent(int fd, EpollEvent* event) {
 }
 
 void QuicClient::OnClose(QuicDataStream* stream) {
+  QuicSpdyClientStream* client_stream =
+      static_cast<QuicSpdyClientStream*>(stream);
+  if (response_listener_.get() != NULL) {
+    response_listener_->OnCompleteResponse(
+        stream->id(), client_stream->headers(), client_stream->data());
+  }
+
   if (!print_response_) {
     return;
   }
 
-  QuicSpdyClientStream* client_stream =
-      static_cast<QuicSpdyClientStream*>(stream);
   const BalsaHeaders& headers = client_stream->headers();
   printf("%s\n", headers.first_line().as_string().c_str());
   for (BalsaHeaders::const_header_lines_iterator i =

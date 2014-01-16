@@ -27,7 +27,7 @@ QuicHeadersStream* QuicSessionPeer::GetHeadersStream(QuicSession* session) {
 }
 
 // static
-WriteBlockedList<QuicStreamId>* QuicSessionPeer::GetWriteblockedStreams(
+QuicWriteBlockedList* QuicSessionPeer::GetWriteblockedStreams(
     QuicSession* session) {
   return &session->write_blocked_streams_;
 }

@@ -7,14 +7,14 @@
 
 #include <list>
 
+#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "net/quic/quic_alarm.h"
 #include "net/quic/quic_blocked_writer_interface.h"
-#include "net/quic/quic_packet_writer.h"
-#include "net/quic/test_tools/quic_test_writer.h"
 #include "net/tools/quic/quic_epoll_clock.h"
+#include "net/tools/quic/quic_packet_writer_wrapper.h"
 #include "net/tools/quic/test_tools/quic_test_client.h"
 #include "net/tools/quic/test_tools/quic_test_utils.h"
 
@@ -25,7 +25,7 @@ namespace test {
 // Simulates a connection that drops packets a configured percentage of the time
 // and has a blocked socket a configured percentage of the time.  Also provides
 // the options to delay packets and reorder packets if delay is enabled.
-class PacketDroppingTestWriter : public net::test::QuicTestWriter {
+class PacketDroppingTestWriter : public QuicPacketWriterWrapper {
  public:
   PacketDroppingTestWriter();
 
@@ -35,12 +35,11 @@ class PacketDroppingTestWriter : public net::test::QuicTestWriter {
 
   // QuicPacketWriter methods:
   virtual WriteResult WritePacket(
-      const char* buffer, size_t buf_len,
+      const char* buffer,
+      size_t buf_len,
       const IPAddressNumber& self_address,
       const IPEndPoint& peer_address,
       QuicBlockedWriterInterface* blocked_writer) OVERRIDE;
-
-  virtual bool IsWriteBlockedDataBuffered() const OVERRIDE;
 
   // Writes out any packet which should have been sent by now
   // to the contained writer and returns the time

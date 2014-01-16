@@ -8,6 +8,7 @@
 #include <sys/types.h>
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/strings/string_piece.h"
 #include "net/base/io_buffer.h"
 #include "net/quic/quic_data_stream.h"

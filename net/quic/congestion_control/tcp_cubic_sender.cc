@@ -89,15 +89,12 @@ void TcpCubicSender::OnIncomingQuicCongestionFeedbackFrame(
 }
 
 void TcpCubicSender::OnPacketAcked(
-    QuicPacketSequenceNumber acked_sequence_number,
-    QuicByteCount acked_bytes,
-    QuicTime::Delta rtt) {
+    QuicPacketSequenceNumber acked_sequence_number, QuicByteCount acked_bytes) {
   DCHECK_GE(bytes_in_flight_, acked_bytes);
   bytes_in_flight_ -= acked_bytes;
   largest_acked_sequence_number_ = max(acked_sequence_number,
                                        largest_acked_sequence_number_);
   CongestionAvoidance(acked_sequence_number);
-  AckAccounting(rtt);
   if (end_sequence_number_ == acked_sequence_number) {
     DVLOG(1) << "Start update end sequence number @" << acked_sequence_number;
     update_end_sequence_number_ = true;
@@ -286,7 +283,7 @@ void TcpCubicSender::OnRetransmissionTimeout(bool packets_retransmitted) {
   }
 }
 
-void TcpCubicSender::AckAccounting(QuicTime::Delta rtt) {
+void TcpCubicSender::UpdateRtt(QuicTime::Delta rtt) {
   if (rtt.IsInfinite() || rtt.IsZero()) {
     DVLOG(1) << "Ignoring rtt, because it's "
                << (rtt.IsZero() ? "Zero" : "Infinite");

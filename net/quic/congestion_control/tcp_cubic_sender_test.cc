@@ -35,14 +35,12 @@ class TcpCubicSenderPeer : public TcpCubicSender {
 
   using TcpCubicSender::AvailableSendWindow;
   using TcpCubicSender::SendWindow;
-  using TcpCubicSender::AckAccounting;
 };
 
 class TcpCubicSenderTest : public ::testing::Test {
  protected:
   TcpCubicSenderTest()
-      : rtt_(QuicTime::Delta::FromMilliseconds(60)),
-        one_ms_(QuicTime::Delta::FromMilliseconds(1)),
+      : one_ms_(QuicTime::Delta::FromMilliseconds(1)),
         sender_(new TcpCubicSenderPeer(&clock_, true,
                                        kDefaultMaxCongestionWindowTCP)),
         receiver_(new TcpReceiver()),
@@ -67,12 +65,12 @@ class TcpCubicSenderTest : public ::testing::Test {
   void AckNPackets(int n) {
     for (int i = 0; i < n; ++i) {
       acked_sequence_number_++;
-      sender_->OnPacketAcked(acked_sequence_number_, kDefaultTCPMSS, rtt_);
+      sender_->UpdateRtt(QuicTime::Delta::FromMilliseconds(60));
+      sender_->OnPacketAcked(acked_sequence_number_, kDefaultTCPMSS);
     }
     clock_.AdvanceTime(one_ms_);  // 1 millisecond.
   }
 
-  const QuicTime::Delta rtt_;
   const QuicTime::Delta one_ms_;
   MockClock clock_;
   SendAlgorithmInterface::SentPacketsMap not_used_;
@@ -158,12 +156,8 @@ TEST_F(TcpCubicSenderTest, SlowStartAckTrain) {
       kDefaultWindowTCP + (kDefaultTCPMSS * 2 * kNumberOfAck);
   EXPECT_EQ(expected_send_window, sender_->SendWindow());
   EXPECT_EQ(expected_send_window, sender_->GetCongestionWindow());
-  // We should now have fallen out of slow start.
-  SendAvailableSendWindow();
-  AckNPackets(2);
-  expected_send_window += kDefaultTCPMSS;
-  EXPECT_EQ(expected_send_window, sender_->SendWindow());
 
+  // We should now have fallen out of slow start.
   // Testing Reno phase.
   // We should need 141(65*2+1+10) ACK:ed packets before increasing window by
   // one.
@@ -261,7 +255,7 @@ TEST_F(TcpCubicSenderTest, RetransmissionDelay) {
   const int64 kDeviationMs = 3;
   EXPECT_EQ(QuicTime::Delta::Zero(), sender_->RetransmissionDelay());
 
-  sender_->AckAccounting(QuicTime::Delta::FromMilliseconds(kRttMs));
+  sender_->UpdateRtt(QuicTime::Delta::FromMilliseconds(kRttMs));
 
   // Initial value is to set the median deviation to half of the initial
   // rtt, the median in then multiplied by a factor of 4 and finally the
@@ -272,9 +266,9 @@ TEST_F(TcpCubicSenderTest, RetransmissionDelay) {
 
   for (int i = 0; i < 100; ++i) {
     // Run to make sure that we converge.
-    sender_->AckAccounting(
+    sender_->UpdateRtt(
         QuicTime::Delta::FromMilliseconds(kRttMs + kDeviationMs));
-    sender_->AckAccounting(
+    sender_->UpdateRtt(
         QuicTime::Delta::FromMilliseconds(kRttMs - kDeviationMs));
   }
   expected_delay = QuicTime::Delta::FromMilliseconds(kRttMs + kDeviationMs * 4);

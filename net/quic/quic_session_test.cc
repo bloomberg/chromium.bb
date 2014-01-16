@@ -7,7 +7,9 @@
 #include <set>
 #include <vector>
 
+#include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
+#include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/quic_crypto_stream.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/reliable_quic_stream.h"
@@ -26,13 +28,15 @@ using std::vector;
 using testing::_;
 using testing::InSequence;
 using testing::InvokeWithoutArgs;
+using testing::Return;
 using testing::StrictMock;
 
 namespace net {
 namespace test {
 namespace {
 
-const QuicPriority kSomeMiddlePriority = 2;
+const QuicPriority kHighestPriority = 0;
+const QuicPriority kSomeMiddlePriority = 3;
 
 class TestCryptoStream : public QuicCryptoStream {
  public:
@@ -279,6 +283,32 @@ TEST_P(QuicSessionTest, DecompressionError) {
   }
 }
 
+TEST_P(QuicSessionTest, DebugDFatalIfMarkingClosedStreamWriteBlocked) {
+  TestStream* stream2 = session_.CreateOutgoingDataStream();
+  // Close the stream.
+  stream2->Reset(QUIC_BAD_APPLICATION_PAYLOAD);
+  // TODO(rtenneti): enable when chromium supports EXPECT_DEBUG_DFATAL.
+  /*
+  QuicStreamId kClosedStreamId = stream2->id();
+  EXPECT_DEBUG_DFATAL(
+      session_.MarkWriteBlocked(kClosedStreamId, kSomeMiddlePriority),
+      "Marking unknown stream 2 blocked.");
+  */
+}
+
+TEST_P(QuicSessionTest, DebugDFatalIfMarkWriteBlockedCalledWithWrongPriority) {
+  const QuicPriority kDifferentPriority = 0;
+
+  TestStream* stream2 = session_.CreateOutgoingDataStream();
+  EXPECT_NE(kDifferentPriority, stream2->EffectivePriority());
+  // TODO(rtenneti): enable when chromium supports EXPECT_DEBUG_DFATAL.
+  /*
+  EXPECT_DEBUG_DFATAL(
+      session_.MarkWriteBlocked(stream2->id(), kDifferentPriority),
+      "Priorities do not match.  Got: 0 Expected: 3");
+  */
+}
+
 TEST_P(QuicSessionTest, OnCanWrite) {
   TestStream* stream2 = session_.CreateOutgoingDataStream();
   TestStream* stream4 = session_.CreateOutgoingDataStream();
@@ -299,6 +329,49 @@ TEST_P(QuicSessionTest, OnCanWrite) {
   EXPECT_FALSE(session_.OnCanWrite());
 }
 
+TEST_P(QuicSessionTest, OnCanWriteCongestionControlBlocks) {
+  InSequence s;
+
+  // Drive congestion control manually.
+  MockSendAlgorithm* send_algorithm = new StrictMock<MockSendAlgorithm>;
+  QuicConnectionPeer::SetSendAlgorithm(session_.connection(), send_algorithm);
+
+  TestStream* stream2 = session_.CreateOutgoingDataStream();
+  TestStream* stream4 = session_.CreateOutgoingDataStream();
+  TestStream* stream6 = session_.CreateOutgoingDataStream();
+
+  session_.MarkWriteBlocked(stream2->id(), kSomeMiddlePriority);
+  session_.MarkWriteBlocked(stream6->id(), kSomeMiddlePriority);
+  session_.MarkWriteBlocked(stream4->id(), kSomeMiddlePriority);
+
+  StreamBlocker stream2_blocker(&session_, stream2->id());
+  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _, _, _)).WillOnce(Return(
+      QuicTime::Delta::Zero()));
+  EXPECT_CALL(*stream2, OnCanWrite());
+  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _, _, _)).WillOnce(Return(
+      QuicTime::Delta::Zero()));
+  EXPECT_CALL(*stream6, OnCanWrite());
+  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _, _, _)).WillOnce(Return(
+      QuicTime::Delta::Infinite()));
+  // stream4->OnCanWrite is not called.
+
+  // TODO(avd) change return value to 'true', since the connection
+  // can't write because it is congestion control blocked.
+  EXPECT_FALSE(session_.OnCanWrite());
+
+  // Still congestion-control blocked.
+  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _, _, _)).WillOnce(Return(
+      QuicTime::Delta::Infinite()));
+  EXPECT_FALSE(session_.OnCanWrite());
+
+  // stream4->OnCanWrite is called once the connection stops being
+  // congestion-control blocked.
+  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _, _, _)).WillOnce(Return(
+      QuicTime::Delta::Zero()));
+  EXPECT_CALL(*stream4, OnCanWrite());
+  EXPECT_TRUE(session_.OnCanWrite());
+}
+
 TEST_P(QuicSessionTest, BufferedHandshake) {
   EXPECT_FALSE(session_.HasPendingHandshake());  // Default value.
 
@@ -314,7 +387,7 @@ TEST_P(QuicSessionTest, BufferedHandshake) {
   EXPECT_FALSE(session_.HasPendingHandshake());
 
   // Blocking (due to buffering of) the Crypto stream is detected.
-  session_.MarkWriteBlocked(kCryptoStreamId, kSomeMiddlePriority);
+  session_.MarkWriteBlocked(kCryptoStreamId, kHighestPriority);
   EXPECT_TRUE(session_.HasPendingHandshake());
 
   TestStream* stream4 = session_.CreateOutgoingDataStream();

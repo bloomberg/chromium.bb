@@ -26,8 +26,8 @@ class NET_EXPORT_PRIVATE QuicPacketWriter {
   // and error_code is populated.
   virtual WriteResult WritePacket(
       const char* buffer, size_t buf_len,
-      const net::IPAddressNumber& self_address,
-      const net::IPEndPoint& peer_address,
+      const IPAddressNumber& self_address,
+      const IPEndPoint& peer_address,
       QuicBlockedWriterInterface* blocked_writer) = 0;
 
   // Returns true if the writer buffers and subsequently rewrites data

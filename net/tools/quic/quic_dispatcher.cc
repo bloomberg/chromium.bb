@@ -12,9 +12,11 @@
 #include "net/quic/quic_utils.h"
 #include "net/tools/quic/quic_default_packet_writer.h"
 #include "net/tools/quic/quic_epoll_connection_helper.h"
+#include "net/tools/quic/quic_packet_writer_wrapper.h"
 #include "net/tools/quic/quic_socket_utils.h"
 
 namespace net {
+
 namespace tools {
 
 using base::StringPiece;
@@ -39,8 +41,7 @@ class DeleteSessionsAlarm : public EpollAlarm {
 class QuicDispatcher::QuicFramerVisitor : public QuicFramerVisitorInterface {
  public:
   explicit QuicFramerVisitor(QuicDispatcher* dispatcher)
-      : dispatcher_(dispatcher) {
-  }
+      : dispatcher_(dispatcher) {}
 
   // QuicFramerVisitorInterface implementation
   virtual void OnPacket() OVERRIDE {}
@@ -123,17 +124,12 @@ class QuicDispatcher::QuicFramerVisitor : public QuicFramerVisitorInterface {
 QuicDispatcher::QuicDispatcher(const QuicConfig& config,
                                const QuicCryptoServerConfig& crypto_config,
                                const QuicVersionVector& supported_versions,
-                               int fd,
                                EpollServer* epoll_server)
     : config_(config),
       crypto_config_(crypto_config),
-      time_wait_list_manager_(
-          new QuicTimeWaitListManager(this, epoll_server, supported_versions)),
       delete_sessions_alarm_(new DeleteSessionsAlarm(this)),
       epoll_server_(epoll_server),
-      fd_(fd),
       helper_(new QuicEpollConnectionHelper(epoll_server_)),
-      writer_(new QuicDefaultPacketWriter(fd)),
       supported_versions_(supported_versions),
       current_packet_(NULL),
       framer_(supported_versions, /*unused*/ QuicTime::Zero(), true),
@@ -146,9 +142,12 @@ QuicDispatcher::~QuicDispatcher() {
   STLDeleteElements(&closed_session_list_);
 }
 
-void QuicDispatcher::set_fd(int fd) {
-  fd_ = fd;
-  writer_.reset(new QuicDefaultPacketWriter(fd));
+void QuicDispatcher::Initialize(int fd) {
+  DCHECK(writer_ == NULL);
+  writer_.reset(CreateWriterWrapper(CreateWriter(fd)));
+  time_wait_list_manager_.reset(
+      new QuicTimeWaitListManager(writer_.get(), this,
+                                  epoll_server(), supported_versions()));
 }
 
 // TODO(fnk): remove the Writer interface implementation in favor of
@@ -332,6 +331,11 @@ void QuicDispatcher::OnConnectionClosed(QuicGuid guid, QuicErrorCode error) {
   CleanUpSession(it);
 }
 
+void QuicDispatcher::OnWriteBlocked(QuicBlockedWriterInterface* writer) {
+  DCHECK(writer_->IsWriteBlocked());
+  write_blocked_list_.insert(make_pair(writer, true));
+}
+
 QuicSession* QuicDispatcher::CreateQuicSession(
     QuicGuid guid,
     const IPEndPoint& server_address,
@@ -341,6 +345,19 @@ QuicSession* QuicDispatcher::CreateQuicSession(
                                   true, supported_versions_), this);
   session->InitializeSession(crypto_config_);
   return session;
+}
+
+QuicPacketWriter* QuicDispatcher::CreateWriter(int fd) {
+  return new QuicDefaultPacketWriter(fd);
+}
+
+QuicPacketWriterWrapper* QuicDispatcher::CreateWriterWrapper(
+    QuicPacketWriter* writer) {
+  return new QuicPacketWriterWrapper(writer);
+}
+
+void QuicDispatcher::set_writer(QuicPacketWriter* writer) {
+  writer_->set_writer(writer);
 }
 
 bool QuicDispatcher::HandlePacketForTimeWait(

@@ -10,6 +10,7 @@
 
 #include <list>
 
+#include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/ip_endpoint.h"
@@ -37,10 +38,13 @@ namespace net {
 
 class EpollServer;
 class QuicConfig;
+class QuicConnectionHelper;
 class QuicCryptoServerConfig;
 class QuicSession;
 
 namespace tools {
+
+class QuicPacketWriterWrapper;
 
 namespace test {
 class QuicDispatcherPeer;
@@ -49,7 +53,8 @@ class QuicDispatcherPeer;
 class DeleteSessionsAlarm;
 class QuicEpollConnectionHelper;
 
-class QuicDispatcher : public QuicPacketWriter, public QuicSessionOwner {
+class QuicDispatcher : public QuicPacketWriter,
+                       public QuicServerSessionVisitor {
  public:
   // Ideally we'd have a linked_hash_set: the  boolean is unused.
   typedef linked_hash_map<QuicBlockedWriterInterface*, bool> WriteBlockedList;
@@ -60,9 +65,11 @@ class QuicDispatcher : public QuicPacketWriter, public QuicSessionOwner {
   QuicDispatcher(const QuicConfig& config,
                  const QuicCryptoServerConfig& crypto_config,
                  const QuicVersionVector& supported_versions,
-                 int fd,
                  EpollServer* epoll_server);
+
   virtual ~QuicDispatcher();
+
+  void Initialize(int fd);
 
   // QuicPacketWriter
   virtual WriteResult WritePacket(
@@ -89,11 +96,12 @@ class QuicDispatcher : public QuicPacketWriter, public QuicSessionOwner {
   // Sends ConnectionClose frames to all connected clients.
   void Shutdown();
 
+  // QuicServerSessionVisitor interface implementation:
   // Ensure that the closed connection is cleaned up asynchronously.
   virtual void OnConnectionClosed(QuicGuid guid, QuicErrorCode error) OVERRIDE;
 
-  // Sets the fd and creates a default packet writer with that fd.
-  void set_fd(int fd);
+  // Queues the blocked writer for later resumption.
+  virtual void OnWriteBlocked(QuicBlockedWriterInterface* writer) OVERRIDE;
 
   typedef base::hash_map<QuicGuid, QuicSession*> SessionMap;
 
@@ -110,8 +118,17 @@ class QuicDispatcher : public QuicPacketWriter, public QuicSessionOwner {
   WriteBlockedList* write_blocked_list() { return &write_blocked_list_; }
 
  protected:
-  const QuicConfig& config_;
-  const QuicCryptoServerConfig& crypto_config_;
+  // Instantiates a new low-level packet writer. Caller takes ownership of the
+  // returned object.
+  QuicPacketWriter* CreateWriter(int fd);
+
+  // Instantiates a new top-level writer wrapper. Takes ownership of |writer|.
+  // Caller takes ownership of the returned object.
+  virtual QuicPacketWriterWrapper* CreateWriterWrapper(
+      QuicPacketWriter* writer);
+
+  // Replaces the packet writer with |writer|. Takes ownership of |writer|.
+  void set_writer(QuicPacketWriter* writer);
 
   QuicTimeWaitListManager* time_wait_list_manager() {
     return time_wait_list_manager_.get();
@@ -124,7 +141,6 @@ class QuicDispatcher : public QuicPacketWriter, public QuicSessionOwner {
     return supported_versions_;
   }
 
- protected:
   // Called by |framer_visitor_| when the public header has been parsed.
   virtual bool OnUnauthenticatedPublicHeader(
       const QuicPacketPublicHeader& header);
@@ -140,6 +156,10 @@ class QuicDispatcher : public QuicPacketWriter, public QuicSessionOwner {
     return *current_packet_;
   }
 
+  const QuicConfig& config() const { return config_; }
+
+  const QuicCryptoServerConfig& crypto_config() const { return crypto_config_; }
+
  private:
   class QuicFramerVisitor;
   friend class net::tools::test::QuicDispatcherPeer;
@@ -153,6 +173,10 @@ class QuicDispatcher : public QuicPacketWriter, public QuicSessionOwner {
   void CleanUpSession(SessionMap::iterator it);
 
   bool HandlePacketForTimeWait(const QuicPacketPublicHeader& header);
+
+  const QuicConfig& config_;
+
+  const QuicCryptoServerConfig& crypto_config_;
 
   // The list of connections waiting to write.
   WriteBlockedList write_blocked_list_;
@@ -170,14 +194,13 @@ class QuicDispatcher : public QuicPacketWriter, public QuicSessionOwner {
 
   EpollServer* epoll_server_;  // Owned by the server.
 
-  // The connection for client-server communication
-  int fd_;
-
   // The helper used for all connections.
   scoped_ptr<QuicEpollConnectionHelper> helper_;
 
-  // The writer to write to the socket with.
-  scoped_ptr<QuicPacketWriter> writer_;
+  // The writer to write to the socket with. We require a writer wrapper to
+  // allow replacing writer implementation without disturbing running
+  // connections.
+  scoped_ptr<QuicPacketWriterWrapper> writer_;
 
   // This vector contains QUIC versions which we currently support.
   // This should be ordered such that the highest supported version is the first

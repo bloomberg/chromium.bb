@@ -4,6 +4,7 @@
 
 #include "net/quic/crypto/curve25519_key_exchange.h"
 
+#include "base/basictypes.h"
 #include "base/logging.h"
 #include "crypto/curve25519.h"
 #include "net/quic/crypto/quic_random.h"

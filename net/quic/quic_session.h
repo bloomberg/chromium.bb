@@ -21,8 +21,8 @@
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_spdy_compressor.h"
 #include "net/quic/quic_spdy_decompressor.h"
+#include "net/quic/quic_write_blocked_list.h"
 #include "net/quic/reliable_quic_stream.h"
-#include "net/spdy/write_blocked_list.h"
 
 namespace net {
 
@@ -65,10 +65,10 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   virtual void OnRstStream(const QuicRstStreamFrame& frame) OVERRIDE;
   virtual void OnGoAway(const QuicGoAwayFrame& frame) OVERRIDE;
   virtual void OnConnectionClosed(QuicErrorCode error, bool from_peer) OVERRIDE;
+  virtual void OnWriteBlocked() OVERRIDE {}
   virtual void OnSuccessfulVersionNegotiation(
       const QuicVersion& version) OVERRIDE {}
   virtual void OnConfigNegotiated() OVERRIDE;
-  // Not needed for HTTP.
   virtual bool OnCanWrite() OVERRIDE;
   virtual bool HasPendingHandshake() const OVERRIDE;
 
@@ -171,7 +171,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
 
   // Returns true if the session has data to be sent, either queued in the
   // connection, or in a write-blocked stream.
-  bool HasQueuedData() const;
+  bool HasDataToWrite() const;
 
   // Marks that |stream_id| is blocked waiting to decompress the
   // headers identified by |decompression_id|.
@@ -303,7 +303,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   base::hash_set<QuicStreamId> implicitly_created_streams_;
 
   // A list of streams which need to write more data.
-  WriteBlockedList<QuicStreamId> write_blocked_streams_;
+  QuicWriteBlockedList write_blocked_streams_;
 
   // A map of headers waiting to be compressed, and the streams
   // they are associated with.

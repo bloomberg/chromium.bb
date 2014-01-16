@@ -11,6 +11,7 @@
 #include <sys/uio.h>
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/logging.h"
 #include "net/quic/quic_protocol.h"
 

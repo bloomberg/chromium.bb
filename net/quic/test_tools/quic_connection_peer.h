@@ -18,6 +18,7 @@ class QuicAlarm;
 class QuicConnection;
 class QuicConnectionHelperInterface;
 class QuicConnectionVisitorInterface;
+class QuicEncryptedPacket;
 class QuicFecGroup;
 class QuicFramer;
 class QuicPacketCreator;
@@ -28,8 +29,6 @@ class ReceiveAlgorithmInterface;
 class SendAlgorithmInterface;
 
 namespace test {
-
-class QuicTestWriter;
 
 // Peer to make public a number of otherwise private QuicConnection methods.
 class QuicConnectionPeer {
@@ -77,10 +76,6 @@ class QuicConnectionPeer {
       QuicConnection* connection,
       QuicPacketSequenceNumber sequence_number);
 
-  static bool IsWriteBlocked(QuicConnection* connection);
-
-  static void SetIsWriteBlocked(QuicConnection* connection, bool write_blocked);
-
   static bool IsServer(QuicConnection* connection);
 
   static void SetIsServer(QuicConnection* connection, bool is_server);
@@ -107,8 +102,10 @@ class QuicConnectionPeer {
   static QuicAlarm* GetTimeoutAlarm(QuicConnection* connection);
 
   static QuicPacketWriter* GetWriter(QuicConnection* connection);
-  static void SetWriter(QuicConnection* connection, QuicTestWriter* writer);
+  static void SetWriter(QuicConnection* connection, QuicPacketWriter* writer);
   static void CloseConnection(QuicConnection* connection);
+  static QuicEncryptedPacket* GetConnectionClosePacket(
+      QuicConnection* connection);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicConnectionPeer);
@@ -118,4 +115,4 @@ class QuicConnectionPeer {
 
 }  // namespace net
 
-#endif  // NET_QUIC_TEST_TOOLS_QUIC_TEST_PEER_H_
+#endif  // NET_QUIC_TEST_TOOLS_QUIC_CONNECTION_PEER_H_

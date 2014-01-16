@@ -5,6 +5,7 @@
 #ifndef NET_QUIC_QUIC_CRYPTO_STREAM_H_
 #define NET_QUIC_QUIC_CRYPTO_STREAM_H_
 
+#include "base/basictypes.h"
 #include "net/quic/crypto/crypto_framer.h"
 #include "net/quic/crypto/crypto_utils.h"
 #include "net/quic/quic_config.h"

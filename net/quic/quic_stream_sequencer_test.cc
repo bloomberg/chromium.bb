@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/logging.h"
 #include "base/rand_util.h"
 #include "net/base/ip_endpoint.h"
 #include "net/quic/reliable_quic_stream.h"

@@ -64,10 +64,14 @@ class VisitorShim : public QuicConnectionVisitorInterface {
     session_->OnConfigNegotiated();
   }
 
-  virtual void OnConnectionClosed(QuicErrorCode error,
-                                  bool from_peer) OVERRIDE {
+  virtual void OnConnectionClosed(
+      QuicErrorCode error, bool from_peer) OVERRIDE {
     session_->OnConnectionClosed(error, from_peer);
     // The session will go away, so don't bother with cleanup.
+  }
+
+  virtual void OnWriteBlocked() OVERRIDE {
+    session_->OnWriteBlocked();
   }
 
   virtual bool HasPendingHandshake() const OVERRIDE {
@@ -269,16 +273,14 @@ bool QuicSession::OnCanWrite() {
   // may be modifying the list as we loop.
   int remaining_writes = write_blocked_streams_.NumBlockedStreams();
 
-  while (!connection_->HasQueuedData() &&
-         remaining_writes > 0) {
+  while (remaining_writes > 0 && connection_->CanWriteStreamData()) {
     DCHECK(write_blocked_streams_.HasWriteBlockedStreams());
     if (!write_blocked_streams_.HasWriteBlockedStreams()) {
       LOG(DFATAL) << "WriteBlockedStream is missing";
       connection_->CloseConnection(QUIC_INTERNAL_ERROR, false);
       return true;  // We have no write blocked streams.
     }
-    int index = write_blocked_streams_.GetHighestPriorityWriteBlockedList();
-    QuicStreamId stream_id = write_blocked_streams_.PopFront(index);
+    QuicStreamId stream_id = write_blocked_streams_.PopFront();
     if (stream_id == kCryptoStreamId) {
       has_pending_handshake_ = false;  // We just popped it.
     }
@@ -588,6 +590,17 @@ size_t QuicSession::GetNumOpenStreams() const {
 }
 
 void QuicSession::MarkWriteBlocked(QuicStreamId id, QuicPriority priority) {
+#ifndef NDEBUG
+  ReliableQuicStream* stream = GetStream(id);
+  if (stream != NULL) {
+    LOG_IF(DFATAL, priority != stream->EffectivePriority())
+        << "Priorities do not match.  Got: " << priority
+        << " Expected: " << stream->EffectivePriority();
+  } else {
+    LOG(DFATAL) << "Marking unknown stream " << id << " blocked.";
+  }
+#endif
+
   if (id == kCryptoStreamId) {
     DCHECK(!has_pending_handshake_);
     has_pending_handshake_ = true;
@@ -596,11 +609,11 @@ void QuicSession::MarkWriteBlocked(QuicStreamId id, QuicPriority priority) {
     // kHighestPriority.
     priority = kHighestPriority;
   }
-  write_blocked_streams_.PushBack(id, priority);
+  write_blocked_streams_.PushBack(id, priority, connection()->version());
 }
 
-bool QuicSession::HasQueuedData() const {
-  return write_blocked_streams_.NumBlockedStreams() ||
+bool QuicSession::HasDataToWrite() const {
+  return write_blocked_streams_.HasWriteBlockedStreams() ||
       connection_->HasQueuedData();
 }
 

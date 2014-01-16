@@ -9,6 +9,7 @@
 #include "net/quic/quic_spdy_compressor.h"
 #include "net/quic/quic_spdy_decompressor.h"
 #include "net/quic/quic_utils.h"
+#include "net/quic/quic_write_blocked_list.h"
 #include "net/quic/spdy_utils.h"
 #include "net/quic/test_tools/quic_session_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
@@ -117,7 +118,7 @@ class ReliableQuicStreamTest : public ::testing::TestWithParam<bool> {
   scoped_ptr<QuicSpdyCompressor> compressor_;
   scoped_ptr<QuicSpdyDecompressor> decompressor_;
   SpdyHeaderBlock headers_;
-  WriteBlockedList<QuicStreamId>* write_blocked_list_;
+  QuicWriteBlockedList* write_blocked_list_;
 };
 
 TEST_F(ReliableQuicStreamTest, WriteAllData) {

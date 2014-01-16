@@ -12,7 +12,6 @@
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_packet_creator.h"
 #include "net/quic/quic_protocol.h"
-#include "net/quic/test_tools/quic_test_writer.h"
 #include "net/tools/quic/quic_client.h"
 
 namespace net {
@@ -21,9 +20,12 @@ class ProofVerifier;
 
 namespace tools {
 
+class QuicPacketWriterWrapper;
+
 namespace test {
 
 class HTTPMessage;
+class MockableQuicClient;
 
 // A toy QUIC client used for testing.
 class QuicTestClient :  public QuicDataStream::Visitor {
@@ -58,7 +60,7 @@ class QuicTestClient :  public QuicDataStream::Visitor {
   // Wraps data in a quic packet and sends it.
   ssize_t SendData(string data, bool last_data);
 
-  QuicPacketCreator::Options* options() { return client_->options(); }
+  QuicPacketCreator::Options* options();
 
   void WaitForResponse();
 
@@ -86,7 +88,7 @@ class QuicTestClient :  public QuicDataStream::Visitor {
 
   // Configures client_ to take ownership of and use the writer.
   // Must be called before initial connect.
-  void UseWriter(net::test::QuicTestWriter* writer);
+  void UseWriter(QuicPacketWriterWrapper* writer);
   // If the given GUID is nonzero, configures client_ to use a specific GUID
   // instead of a random one.
   void UseGuid(QuicGuid guid);
@@ -95,9 +97,9 @@ class QuicTestClient :  public QuicDataStream::Visitor {
   QuicSpdyClientStream* GetOrCreateStream();
 
   QuicRstStreamErrorCode stream_error() { return stream_error_; }
-  QuicErrorCode connection_error() { return client()->session()->error(); }
+  QuicErrorCode connection_error();
 
-  QuicClient* client() { return client_.get(); }
+  QuicClient* client();
 
   // cert_common_name returns the common name value of the server's certificate,
   // or the empty string if no certificate was presented.
@@ -120,7 +122,7 @@ class QuicTestClient :  public QuicDataStream::Visitor {
 
   IPEndPoint server_address_;
   IPEndPoint client_address_;
-  scoped_ptr<QuicClient> client_;  // The actual client
+  scoped_ptr<MockableQuicClient> client_;  // The actual client
   QuicSpdyClientStream* stream_;
 
   QuicRstStreamErrorCode stream_error_;

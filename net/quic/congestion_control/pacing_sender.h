@@ -37,8 +37,7 @@ class NET_EXPORT_PRIVATE PacingSender : public SendAlgorithmInterface {
       QuicTime feedback_receive_time,
       const SendAlgorithmInterface::SentPacketsMap& sent_packets) OVERRIDE;
   virtual void OnPacketAcked(QuicPacketSequenceNumber acked_sequence_number,
-                             QuicByteCount acked_bytes,
-                             QuicTime::Delta rtt) OVERRIDE;
+                             QuicByteCount acked_bytes) OVERRIDE;
   virtual void OnPacketLost(QuicPacketSequenceNumber sequence_number,
                             QuicTime ack_receive_time) OVERRIDE;
   virtual bool OnPacketSent(QuicTime sent_time,
@@ -55,6 +54,7 @@ class NET_EXPORT_PRIVATE PacingSender : public SendAlgorithmInterface {
       HasRetransmittableData has_retransmittable_data,
       IsHandshake handshake) OVERRIDE;
   virtual QuicBandwidth BandwidthEstimate() const OVERRIDE;
+  virtual void UpdateRtt(QuicTime::Delta rtt_sample) OVERRIDE;
   virtual QuicTime::Delta SmoothedRtt() const OVERRIDE;
   virtual QuicTime::Delta RetransmissionDelay() const OVERRIDE;
   virtual QuicByteCount GetCongestionWindow() const OVERRIDE;

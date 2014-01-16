@@ -5,11 +5,13 @@
 #ifndef NET_TOOLS_QUIC_TEST_TOOLS_QUIC_DISPATCHER_PEER_H_
 #define NET_TOOLS_QUIC_TEST_TOOLS_QUIC_DISPATCHER_PEER_H_
 
-#include "net/quic/test_tools/quic_test_writer.h"
 #include "net/tools/quic/quic_dispatcher.h"
 
 namespace net {
 namespace tools {
+
+class QuicPacketWriterWrapper;
+
 namespace test {
 
 class QuicDispatcherPeer {
@@ -18,10 +20,12 @@ class QuicDispatcherPeer {
       QuicDispatcher* dispatcher,
       QuicTimeWaitListManager* time_wait_list_manager);
 
+  // Injects |writer| into |dispatcher| beneath the top-level wrapper (to avoid
+  // messing up existing connections).
   static void UseWriter(QuicDispatcher* dispatcher,
-                        net::test::QuicTestWriter* writer);
+                        QuicPacketWriterWrapper* writer);
 
-  static QuicPacketWriter* GetWriter(QuicDispatcher* dispatcher);
+  static QuicPacketWriterWrapper* GetWriter(QuicDispatcher* dispatcher);
 
   static QuicEpollConnectionHelper* GetHelper(QuicDispatcher* dispatcher);
 };

@@ -12,6 +12,7 @@
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+using testing::AnyNumber;
 using testing::Return;
 using testing::StrEq;
 using testing::_;
@@ -41,9 +42,10 @@ class QuicReliableClientStreamTest
     : public ::testing::TestWithParam<QuicVersion> {
  public:
   QuicReliableClientStreamTest()
-      : session_(new MockConnection(false, SupportedVersions(GetParam()))),
-        stream_(kStreamId, &session_, BoundNetLog()) {
-    stream_.SetDelegate(&delegate_);
+      : session_(new MockConnection(false, SupportedVersions(GetParam()))) {
+    stream_ = new QuicReliableClientStream(kStreamId, &session_, BoundNetLog());
+    session_.ActivateStream(stream_);
+    stream_->SetDelegate(&delegate_);
   }
 
   void InitializeHeaders() {
@@ -78,7 +80,7 @@ class QuicReliableClientStreamTest
 
   testing::StrictMock<MockDelegate> delegate_;
   MockSession session_;
-  QuicReliableClientStream stream_;
+  QuicReliableClientStream* stream_;
   QuicCryptoClientConfig crypto_config_;
   SpdyHeaderBlock headers_;
 };
@@ -94,21 +96,21 @@ TEST_P(QuicReliableClientStreamTest, OnFinRead) {
                                         uncompressed_headers.size()));
   QuicStreamOffset offset = 0;
   if (GetParam() > QUIC_VERSION_12) {
-    stream_.OnStreamHeaders(uncompressed_headers);
-    stream_.OnStreamHeadersComplete(false, uncompressed_headers.length());
+    stream_->OnStreamHeaders(uncompressed_headers);
+    stream_->OnStreamHeadersComplete(false, uncompressed_headers.length());
   } else {
     QuicSpdyCompressor compressor;
     string compressed_headers = compressor.CompressHeaders(headers_);
     QuicStreamFrame frame1(kStreamId, false, 0,
                            MakeIOVector(compressed_headers));
-    stream_.OnStreamFrame(frame1);
+    stream_->OnStreamFrame(frame1);
     offset = compressed_headers.length();
   }
 
   IOVector iov;
   QuicStreamFrame frame2(kStreamId, true, offset, iov);
   EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR));
-  stream_.OnStreamFrame(frame2);
+  stream_->OnStreamFrame(frame2);
 }
 
 TEST_P(QuicReliableClientStreamTest, ProcessData) {
@@ -116,7 +118,7 @@ TEST_P(QuicReliableClientStreamTest, ProcessData) {
   EXPECT_CALL(delegate_, OnDataReceived(StrEq(data), arraysize(data)));
   EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR));
 
-  EXPECT_EQ(arraysize(data), stream_.ProcessData(data, arraysize(data)));
+  EXPECT_EQ(arraysize(data), stream_->ProcessData(data, arraysize(data)));
 }
 
 TEST_P(QuicReliableClientStreamTest, ProcessDataWithError) {
@@ -127,14 +129,14 @@ TEST_P(QuicReliableClientStreamTest, ProcessDataWithError) {
   EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR));
 
 
-  EXPECT_EQ(0u, stream_.ProcessData(data, arraysize(data)));
+  EXPECT_EQ(0u, stream_->ProcessData(data, arraysize(data)));
 }
 
 TEST_P(QuicReliableClientStreamTest, OnError) {
   EXPECT_CALL(delegate_, OnError(ERR_INTERNET_DISCONNECTED));
 
-  stream_.OnError(ERR_INTERNET_DISCONNECTED);
-  EXPECT_FALSE(stream_.GetDelegate());
+  stream_->OnError(ERR_INTERNET_DISCONNECTED);
+  EXPECT_FALSE(stream_->GetDelegate());
 }
 
 TEST_P(QuicReliableClientStreamTest, WriteStreamData) {
@@ -144,33 +146,33 @@ TEST_P(QuicReliableClientStreamTest, WriteStreamData) {
   const size_t kDataLen = arraysize(kData1);
 
   // All data written.
-  EXPECT_CALL(session_, WritevData(stream_.id(), _, _, _, _, _)).WillOnce(
+  EXPECT_CALL(session_, WritevData(stream_->id(), _, _, _, _, _)).WillOnce(
       Return(QuicConsumedData(kDataLen, true)));
   TestCompletionCallback callback;
-  EXPECT_EQ(OK, stream_.WriteStreamData(base::StringPiece(kData1, kDataLen),
-                                        true, callback.callback()));
+  EXPECT_EQ(OK, stream_->WriteStreamData(base::StringPiece(kData1, kDataLen),
+                                         true, callback.callback()));
 }
 
 TEST_P(QuicReliableClientStreamTest, WriteStreamDataAsync) {
-  EXPECT_CALL(delegate_, HasSendHeadersComplete());
+  EXPECT_CALL(delegate_, HasSendHeadersComplete()).Times(AnyNumber());
   EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR));
 
   const char kData1[] = "hello world";
   const size_t kDataLen = arraysize(kData1);
 
   // No data written.
-  EXPECT_CALL(session_, WritevData(stream_.id(), _, _, _, _, _)).WillOnce(
+  EXPECT_CALL(session_, WritevData(stream_->id(), _, _, _, _, _)).WillOnce(
       Return(QuicConsumedData(0, false)));
   TestCompletionCallback callback;
   EXPECT_EQ(ERR_IO_PENDING,
-            stream_.WriteStreamData(base::StringPiece(kData1, kDataLen),
-                                    true, callback.callback()));
+            stream_->WriteStreamData(base::StringPiece(kData1, kDataLen),
+                                     true, callback.callback()));
   ASSERT_FALSE(callback.have_result());
 
   // All data written.
-  EXPECT_CALL(session_, WritevData(stream_.id(), _, _, _, _, _)).WillOnce(
+  EXPECT_CALL(session_, WritevData(stream_->id(), _, _, _, _, _)).WillOnce(
       Return(QuicConsumedData(kDataLen, true)));
-  stream_.OnCanWrite();
+  stream_->OnCanWrite();
   ASSERT_TRUE(callback.have_result());
   EXPECT_EQ(OK, callback.WaitForResult());
 }

@@ -10,6 +10,7 @@
 
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/ip_endpoint.h"
@@ -36,6 +37,15 @@ class QuicClientPeer;
 class QuicClient : public EpollCallbackInterface,
                    public QuicDataStream::Visitor {
  public:
+  class ResponseListener {
+   public:
+    ResponseListener() {}
+    virtual ~ResponseListener() {}
+    virtual void OnCompleteResponse(QuicStreamId id,
+                                    const BalsaHeaders& response_headers,
+                                    const string& response_body) = 0;
+  };
+
   QuicClient(IPEndPoint server_address,
              const string& server_hostname,
              const QuicVersionVector& supported_versions,
@@ -152,6 +162,11 @@ class QuicClient : public EpollCallbackInterface,
     supported_versions_ = versions;
   }
 
+  // Takes ownership of the listener.
+  void set_response_listener(ResponseListener* listener) {
+    response_listener_.reset(listener);
+  }
+
  protected:
   virtual QuicGuid GenerateGuid();
   virtual QuicEpollConnectionHelper* CreateQuicConnectionHelper();
@@ -191,6 +206,9 @@ class QuicClient : public EpollCallbackInterface,
 
   // Helper to be used by created connections.
   scoped_ptr<QuicEpollConnectionHelper> helper_;
+
+  // Listens for full responses.
+  scoped_ptr<ResponseListener> response_listener_;
 
   // Writer used to actually send packets to the wire.
   scoped_ptr<QuicPacketWriter> writer_;

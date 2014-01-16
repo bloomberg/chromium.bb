@@ -36,9 +36,8 @@ void PacingSender::OnIncomingQuicCongestionFeedbackFrame(
 
 void PacingSender::OnPacketAcked(
     QuicPacketSequenceNumber acked_sequence_number,
-    QuicByteCount acked_bytes,
-    QuicTime::Delta rtt) {
-  sender_->OnPacketAcked(acked_sequence_number, acked_bytes, rtt);
+    QuicByteCount acked_bytes) {
+  sender_->OnPacketAcked(acked_sequence_number, acked_bytes);
 }
 
 void PacingSender::OnPacketLost(QuicPacketSequenceNumber sequence_number,
@@ -121,6 +120,10 @@ QuicTime::Delta PacingSender::TimeUntilSend(
 
 QuicBandwidth PacingSender::BandwidthEstimate() const {
   return sender_->BandwidthEstimate();
+}
+
+void PacingSender::UpdateRtt(QuicTime::Delta rtt_sample) {
+  sender_->UpdateRtt(rtt_sample);
 }
 
 QuicTime::Delta PacingSender::SmoothedRtt() const {

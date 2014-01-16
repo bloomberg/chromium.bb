@@ -166,7 +166,6 @@ QuicConnection::QuicConnection(QuicGuid guid,
       peer_address_(address),
       largest_seen_packet_with_ack_(0),
       pending_version_negotiation_packet_(false),
-      write_blocked_(false),
       received_packet_manager_(kTCP),
       ack_alarm_(helper->CreateAlarm(new AckAlarm(this))),
       retransmission_alarm_(helper->CreateAlarm(new RetransmissionAlarm(this))),
@@ -772,9 +771,6 @@ void QuicConnection::SendVersionNegotiationPacket() {
   WriteResult result =
       writer_->WritePacket(version_packet->data(), version_packet->length(),
                            self_address().address(), peer_address(), this);
-  if (result.status == WRITE_STATUS_BLOCKED) {
-    write_blocked_ = true;
-  }
   if (result.status == WRITE_STATUS_OK ||
       (result.status == WRITE_STATUS_BLOCKED &&
        writer_->IsWriteBlockedDataBuffered())) {
@@ -881,21 +877,9 @@ void QuicConnection::ProcessUdpPacket(const IPEndPoint& self_address,
 }
 
 bool QuicConnection::OnCanWrite() {
-  write_blocked_ = false;
-  return DoWrite();
-}
+  DCHECK(!writer_->IsWriteBlocked());
 
-bool QuicConnection::WriteIfNotBlocked() {
-  if (write_blocked_) {
-    return false;
-  }
-  return DoWrite();
-}
-
-bool QuicConnection::DoWrite() {
-  DCHECK(!write_blocked_);
   WriteQueuedPackets();
-
   WritePendingRetransmissions();
 
   IsHandshake pending_handshake = visitor_->HasPendingHandshake() ?
@@ -925,7 +909,13 @@ bool QuicConnection::DoWrite() {
     }
   }
 
-  return !write_blocked_;
+  return !writer_->IsWriteBlocked();
+}
+
+void QuicConnection::WriteIfNotBlocked() {
+  if (!writer_->IsWriteBlocked()) {
+    OnCanWrite();
+  }
 }
 
 bool QuicConnection::ProcessValidatedPacket() {
@@ -946,15 +936,16 @@ bool QuicConnection::ProcessValidatedPacket() {
   return true;
 }
 
-bool QuicConnection::WriteQueuedPackets() {
-  DCHECK(!write_blocked_);
+void QuicConnection::WriteQueuedPackets() {
+  DCHECK(!writer_->IsWriteBlocked());
 
   if (pending_version_negotiation_packet_) {
     SendVersionNegotiationPacket();
   }
 
   QueuedPacketList::iterator packet_iterator = queued_packets_.begin();
-  while (!write_blocked_ && packet_iterator != queued_packets_.end()) {
+  while (!writer_->IsWriteBlocked() &&
+         packet_iterator != queued_packets_.end()) {
     if (WritePacket(packet_iterator->encryption_level,
                     packet_iterator->sequence_number,
                     packet_iterator->packet,
@@ -962,15 +953,14 @@ bool QuicConnection::WriteQueuedPackets() {
                     packet_iterator->retransmittable,
                     packet_iterator->handshake,
                     packet_iterator->forced)) {
+      delete packet_iterator->packet;
       packet_iterator = queued_packets_.erase(packet_iterator);
     } else {
       // Continue, because some queued packets may still be writable.
-      // This can happen if a retransmit send fail.
+      // This can happen if a retransmit send fails.
       ++packet_iterator;
     }
   }
-
-  return !write_blocked_;
 }
 
 void QuicConnection::WritePendingRetransmissions() {
@@ -1035,7 +1025,7 @@ bool QuicConnection::ShouldGeneratePacket(
 bool QuicConnection::CanWrite(TransmissionType transmission_type,
                               HasRetransmittableData retransmittable,
                               IsHandshake handshake) {
-  if (write_blocked_) {
+  if (writer_->IsWriteBlocked()) {
     return false;
   }
 
@@ -1073,16 +1063,13 @@ bool QuicConnection::WritePacket(EncryptionLevel level,
                                  IsHandshake handshake,
                                  Force forced) {
   if (ShouldDiscardPacket(level, sequence_number, retransmittable)) {
-    delete packet;
     return true;
   }
 
-  // If we're write blocked, we know we can't write.
-  if (write_blocked_) {
-    return false;
-  }
-
-  // If we are not forced and we can't write, then simply return false;
+  // If the writer is blocked, we must not write. However, if the packet is
+  // forced (i.e., it's the ConnectionClose packet), we still need to encrypt it
+  // and hand it off to TimeWaitListManager.
+  // We check nonforced packets here and forced after encryption.
   if (forced == NO_FORCE &&
       !CanWrite(transmission_type, retransmittable, handshake)) {
     return false;
@@ -1098,20 +1085,29 @@ bool QuicConnection::WritePacket(EncryptionLevel level,
     sequence_number_of_last_inorder_packet_ = sequence_number;
   }
 
-  scoped_ptr<QuicEncryptedPacket> encrypted(
-      framer_.EncryptPacket(level, sequence_number, *packet));
-  if (encrypted.get() == NULL) {
+  QuicEncryptedPacket* encrypted =
+      framer_.EncryptPacket(level, sequence_number, *packet);
+  if (encrypted == NULL) {
     LOG(DFATAL) << ENDPOINT << "Failed to encrypt packet number "
                 << sequence_number;
+    // CloseConnection does not send close packet, so no infinite loop here.
     CloseConnection(QUIC_ENCRYPTION_FAILURE, false);
     return false;
   }
 
-  // If it's the ConnectionClose packet, the only FORCED frame type,
-  // clone a copy for resending later by the TimeWaitListManager.
-  if (forced == FORCE) {
+  // Forced packets are eventually owned by TimeWaitListManager; nonforced are
+  // deleted at the end of this call.
+  scoped_ptr<QuicEncryptedPacket> encrypted_deleter;
+  if (forced == NO_FORCE) {
+    encrypted_deleter.reset(encrypted);
+  } else {  // forced == FORCE
     DCHECK(connection_close_packet_.get() == NULL);
-    connection_close_packet_.reset(encrypted->Clone());
+    connection_close_packet_.reset(encrypted);
+    // This assures we won't try to write *forced* packets when blocked.
+    // Return true to stop processing.
+    if (writer_->IsWriteBlocked()) {
+      return true;
+    }
   }
 
   if (encrypted->length() > options()->max_packet_length) {
@@ -1153,16 +1149,11 @@ bool QuicConnection::WritePacket(EncryptionLevel level,
     debug_visitor_->OnPacketSent(sequence_number, level, *encrypted, result);
   }
   if (result.status == WRITE_STATUS_BLOCKED) {
-    // TODO(satyashekhar): It might be more efficient (fewer system calls), if
-    // all connections share this variable i.e this becomes a part of
-    // PacketWriterInterface.
-    write_blocked_ = true;
     // If the socket buffers the the data, then the packet should not
     // be queued and sent again, which would result in an unnecessary
     // duplicate packet being sent.  The helper must call OnPacketSent
     // when the packet is actually sent.
     if (writer_->IsWriteBlockedDataBuffered()) {
-      delete packet;
       return true;
     }
     pending_write_.reset();
@@ -1170,7 +1161,6 @@ bool QuicConnection::WritePacket(EncryptionLevel level,
   }
 
   if (OnPacketSent(result)) {
-    delete packet;
     return true;
   }
   return false;
@@ -1196,19 +1186,15 @@ bool QuicConnection::ShouldDiscardPacket(
     return true;
   }
 
-  if (retransmittable == HAS_RETRANSMITTABLE_DATA) {
-    if (!sent_packet_manager_.IsUnacked(sequence_number)) {
-      // This is a crazy edge case, but if we retransmit a packet,
-      // (but have to queue it for some reason) then receive an ack
-      // for the previous transmission (but not the retransmission)
-      // then receive a truncated ACK which causes us to raise the
-      // high water mark, all before we're able to send the packet
-      // then we can simply drop it.
-      DVLOG(1) << ENDPOINT << "Dropping packet: " << sequence_number
-                 << " since it has already been acked.";
-      return true;
-    }
+  // If the packet has been discarded before sending, don't send it.
+  // This occurs if a packet gets serialized, queued, then discarded.
+  if (!sent_packet_manager_.IsUnacked(sequence_number)) {
+    DVLOG(1) << ENDPOINT << "Dropping packet before sending: "
+             << sequence_number << " since it has already been discarded.";
+    return true;
+  }
 
+  if (retransmittable == HAS_RETRANSMITTABLE_DATA) {
     if (sent_packet_manager_.IsPreviousTransmission(sequence_number)) {
       // If somehow we have already retransmitted this packet *before*
       // we actually send it for the first time (I think this is probably
@@ -1322,6 +1308,7 @@ bool QuicConnection::SendOrQueuePacket(EncryptionLevel level,
                                                 packet.entropy_hash);
   if (WritePacket(level, packet.sequence_number, packet.packet,
                   transmission_type, retransmittable, handshake, forced)) {
+    delete packet.packet;
     return true;
   }
   queued_packets_.push_back(QueuedPacket(packet.sequence_number, packet.packet,
@@ -1491,9 +1478,9 @@ void QuicConnection::SendConnectionClose(QuicErrorCode error) {
 
 void QuicConnection::SendConnectionCloseWithDetails(QuicErrorCode error,
                                                     const string& details) {
-  if (!write_blocked_) {
-    SendConnectionClosePacket(error, details);
-  }
+  // If we're write blocked, WritePacket() will not send, but will capture the
+  // serialized packet.
+  SendConnectionClosePacket(error, details);
   CloseConnection(error, false);
 }
 
@@ -1564,6 +1551,21 @@ void QuicConnection::Flush() {
 bool QuicConnection::HasQueuedData() const {
   return pending_version_negotiation_packet_ ||
       !queued_packets_.empty() || packet_generator_.HasQueuedFrames();
+}
+
+bool QuicConnection::CanWriteStreamData() {
+  if (HasQueuedData()) {
+    return false;
+  }
+
+  IsHandshake pending_handshake = visitor_->HasPendingHandshake() ?
+      IS_HANDSHAKE : NOT_HANDSHAKE;
+  // Sending queued packets may have caused the socket to become write blocked,
+  // or the congestion manager to prohibit sending.  If we've sent everything
+  // we had queued and we're still not blocked, let the visitor know it can
+  // write more.
+  return ShouldGeneratePacket(NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA,
+                              pending_handshake);
 }
 
 void QuicConnection::SetIdleNetworkTimeout(QuicTime::Delta timeout) {

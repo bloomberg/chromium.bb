@@ -11,11 +11,9 @@ namespace test {
 MockQuicDispatcher::MockQuicDispatcher(
     const QuicConfig& config,
     const QuicCryptoServerConfig& crypto_config,
-    QuicGuid guid,
     EpollServer* eps)
-    : QuicDispatcher(config, crypto_config, QuicSupportedVersions(), guid,
-                     eps) {
-}
+    : QuicDispatcher(config, crypto_config, QuicSupportedVersions(), eps) {}
+
 MockQuicDispatcher::~MockQuicDispatcher() {}
 
 }  // namespace test

@@ -12,7 +12,6 @@
 #include "net/quic/quic_received_packet_manager.h"
 #include "net/quic/test_tools/quic_framer_peer.h"
 #include "net/quic/test_tools/quic_sent_packet_manager_peer.h"
-#include "net/quic/test_tools/quic_test_writer.h"
 
 namespace net {
 namespace test {
@@ -116,17 +115,6 @@ QuicPacketEntropyHash QuicConnectionPeer::ReceivedEntropyHash(
 }
 
 // static
-bool QuicConnectionPeer::IsWriteBlocked(QuicConnection* connection) {
-  return connection->write_blocked_;
-}
-
-// static
-void QuicConnectionPeer::SetIsWriteBlocked(QuicConnection* connection,
-                                           bool write_blocked) {
-  connection->write_blocked_ = write_blocked;
-}
-
-// static
 bool QuicConnectionPeer::IsServer(QuicConnection* connection) {
   return connection->is_server_;
 }
@@ -207,13 +195,19 @@ QuicPacketWriter* QuicConnectionPeer::GetWriter(QuicConnection* connection) {
 
 // static
 void QuicConnectionPeer::SetWriter(QuicConnection* connection,
-                                   QuicTestWriter* writer) {
+                                   QuicPacketWriter* writer) {
   connection->writer_ = writer;
 }
 
 // static
 void QuicConnectionPeer::CloseConnection(QuicConnection* connection) {
   connection->connected_ = false;
+}
+
+// static
+QuicEncryptedPacket* QuicConnectionPeer::GetConnectionClosePacket(
+    QuicConnection* connection) {
+  return connection->connection_close_packet_.get();
 }
 
 }  // namespace test

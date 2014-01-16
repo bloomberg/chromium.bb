@@ -5,6 +5,7 @@
 #ifndef NET_QUIC_CRYPTO_LOCAL_STRIKE_REGISTER_CLIENT_H_
 #define NET_QUIC_CRYPTO_LOCAL_STRIKE_REGISTER_CLIENT_H_
 
+#include "base/basictypes.h"
 #include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
 #include "net/base/net_export.h"

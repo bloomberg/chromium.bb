@@ -58,16 +58,8 @@ void FixRateSender::OnIncomingQuicCongestionFeedbackFrame(
 
 void FixRateSender::OnPacketAcked(
     QuicPacketSequenceNumber /*acked_sequence_number*/,
-    QuicByteCount bytes_acked,
-    QuicTime::Delta rtt) {
-  // RTT can't be negative.
-  DCHECK_LE(0, rtt.ToMicroseconds());
-
+    QuicByteCount bytes_acked) {
   data_in_flight_ -= bytes_acked;
-  if (rtt.IsInfinite()) {
-    return;
-  }
-  latest_rtt_ = rtt;
 }
 
 void FixRateSender::OnPacketLost(QuicPacketSequenceNumber /*sequence_number*/,
@@ -125,6 +117,15 @@ QuicByteCount FixRateSender::CongestionWindow() {
 
 QuicBandwidth FixRateSender::BandwidthEstimate() const {
   return bitrate_;
+}
+
+void FixRateSender::UpdateRtt(QuicTime::Delta rtt_sample) {
+  // RTT can't be negative.
+  DCHECK_LE(0, rtt_sample.ToMicroseconds());
+  if (rtt_sample.IsInfinite()) {
+    return;
+  }
+  latest_rtt_ = rtt_sample;
 }
 
 QuicTime::Delta FixRateSender::SmoothedRtt() const {

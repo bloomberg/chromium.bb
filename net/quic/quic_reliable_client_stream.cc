@@ -7,7 +7,7 @@
 #include "base/callback_helpers.h"
 #include "net/base/net_errors.h"
 #include "net/quic/quic_session.h"
-#include "net/spdy/write_blocked_list.h"
+#include "net/quic/quic_write_blocked_list.h"
 
 namespace net {
 
@@ -59,7 +59,7 @@ QuicPriority QuicReliableClientStream::EffectivePriority() const {
   if (delegate_ && delegate_->HasSendHeadersComplete()) {
     return QuicDataStream::EffectivePriority();
   }
-  return kHighestPriority;
+  return QuicWriteBlockedList::kHighestPriority;
 }
 
 int QuicReliableClientStream::WriteStreamData(

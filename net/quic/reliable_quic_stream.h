@@ -11,6 +11,7 @@
 
 #include <list>
 
+#include "base/basictypes.h"
 #include "base/strings/string_piece.h"
 #include "net/base/iovec.h"
 #include "net/base/net_export.h"

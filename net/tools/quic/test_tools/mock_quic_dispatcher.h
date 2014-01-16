@@ -21,8 +21,8 @@ class MockQuicDispatcher : public QuicDispatcher {
  public:
   MockQuicDispatcher(const QuicConfig& config,
                      const QuicCryptoServerConfig& crypto_config,
-                     QuicGuid guid,
                      EpollServer* eps);
+
   virtual ~MockQuicDispatcher();
 
   MOCK_METHOD3(ProcessPacket, void(const IPEndPoint& server_address,

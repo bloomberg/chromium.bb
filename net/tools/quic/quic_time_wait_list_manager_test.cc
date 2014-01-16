@@ -41,7 +41,7 @@ namespace test {
 class QuicTimeWaitListManagerPeer {
  public:
   static bool ShouldSendResponse(QuicTimeWaitListManager* manager,
-                          int received_packet_count) {
+                                 int received_packet_count) {
     return manager->ShouldSendResponse(received_packet_count);
   }
 
@@ -57,14 +57,6 @@ class QuicTimeWaitListManagerPeer {
 
 namespace {
 
-class TestTimeWaitListManager : public QuicTimeWaitListManager {
- public:
-  TestTimeWaitListManager(QuicPacketWriter* writer,
-                          EpollServer* epoll_server)
-      : QuicTimeWaitListManager(writer, epoll_server, QuicSupportedVersions()) {
-  }
-};
-
 class MockFakeTimeEpollServer : public FakeTimeEpollServer {
  public:
   MOCK_METHOD2(RegisterAlarm, void(int64 timeout_in_us,
@@ -74,8 +66,8 @@ class MockFakeTimeEpollServer : public FakeTimeEpollServer {
 class QuicTimeWaitListManagerTest : public testing::Test {
  protected:
   QuicTimeWaitListManagerTest()
-      : time_wait_list_manager_(
-          &writer_, &epoll_server_, QuicSupportedVersions()),
+      : time_wait_list_manager_(&writer_, &visitor_,
+                                &epoll_server_, QuicSupportedVersions()),
         framer_(QuicSupportedVersions(), QuicTime::Zero(), true),
         guid_(45),
         writer_is_blocked_(false) {}
@@ -142,6 +134,7 @@ class QuicTimeWaitListManagerTest : public testing::Test {
 
   NiceMock<MockFakeTimeEpollServer> epoll_server_;
   StrictMock<MockPacketWriter> writer_;
+  StrictMock<MockQuicServerSessionVisitor> visitor_;
   QuicTimeWaitListManager time_wait_list_manager_;
   QuicFramer framer_;
   QuicGuid guid_;
@@ -307,6 +300,7 @@ TEST_F(QuicTimeWaitListManagerTest, SendQueuedPackets) {
       .WillOnce(DoAll(
           Assign(&writer_is_blocked_, true),
           Return(WriteResult(WRITE_STATUS_BLOCKED, EAGAIN))));
+  EXPECT_CALL(visitor_, OnWriteBlocked(&time_wait_list_manager_));
   ProcessPacket(guid, sequence_number);
   // 3rd packet. No public reset should be sent;
   ProcessPacket(guid, sequence_number);
@@ -321,6 +315,7 @@ TEST_F(QuicTimeWaitListManagerTest, SendQueuedPackets) {
           ENCRYPTION_NONE, other_guid, other_sequence_number));
   EXPECT_CALL(writer_, WritePacket(_, _, _, _, _))
       .Times(0);
+  EXPECT_CALL(visitor_, OnWriteBlocked(&time_wait_list_manager_));
   ProcessPacket(other_guid, other_sequence_number);
 
   // Now expect all the write blocked public reset packets to be sent again.
