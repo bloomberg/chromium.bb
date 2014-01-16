@@ -21,19 +21,27 @@ bool GLStateRestorerImpl::IsInitialized() {
   return decoder_->initialized();
 }
 
-void GLStateRestorerImpl::RestoreState() {
+void GLStateRestorerImpl::RestoreState(const gfx::GLStateRestorer* prev_state) {
   DCHECK(decoder_.get());
-  decoder_->RestoreState();
+  const GLStateRestorerImpl* restorer_impl =
+      static_cast<const GLStateRestorerImpl*>(prev_state);
+  decoder_->RestoreState(
+      restorer_impl ? restorer_impl->GetContextState() : NULL);
 }
 
 void GLStateRestorerImpl::RestoreAllTextureUnitBindings() {
   DCHECK(decoder_.get());
-  decoder_->RestoreAllTextureUnitBindings();
+  decoder_->RestoreAllTextureUnitBindings(NULL);
 }
 
 void GLStateRestorerImpl::RestoreFramebufferBindings() {
   DCHECK(decoder_.get());
   decoder_->RestoreFramebufferBindings();
+}
+
+const gles2::ContextState* GLStateRestorerImpl::GetContextState() const {
+  DCHECK(decoder_.get());
+  return decoder_->GetContextState();
 }
 
 }  // namespace gpu

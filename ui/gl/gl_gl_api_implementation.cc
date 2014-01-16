@@ -309,17 +309,17 @@ bool VirtualGLApi::MakeCurrent(GLContext* virtual_context, GLSurface* surface) {
     // new context.
     DCHECK_EQ(glGetErrorFn(), static_cast<GLenum>(GL_NO_ERROR));
 
-    current_context_ = virtual_context;
     // Set all state that is different from the real state
-    // NOTE: !!! This is a temporary implementation that just restores all
-    // state to let us test that it works.
-    // TODO: ASAP, change this to something that only restores the state
-    // needed for individual GL calls.
     GLApi* temp = GetCurrentGLApi();
     SetGLToRealGLApi();
-    if (virtual_context->GetGLStateRestorer()->IsInitialized())
-      virtual_context->GetGLStateRestorer()->RestoreState();
+    if (virtual_context->GetGLStateRestorer()->IsInitialized()) {
+      virtual_context->GetGLStateRestorer()->RestoreState(
+          (current_context_ && !switched_contexts)
+              ? current_context_->GetGLStateRestorer()
+              : NULL);
+    }
     SetGLApi(temp);
+    current_context_ = virtual_context;
   }
   SetGLApi(this);
 

@@ -14,6 +14,7 @@
 #include "gpu/command_buffer/service/async_pixel_transfer_manager_mock.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/context_group.h"
+#include "gpu/command_buffer/service/context_state.h"
 #include "gpu/command_buffer/service/gl_surface_mock.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_unittest_base.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
@@ -139,6 +140,47 @@ class GLES2DecoderManualInitTest : public GLES2DecoderWithShaderTest {
   virtual void SetUp() {
   }
 };
+
+class GLES2DecoderRestoreStateTest : public GLES2DecoderManualInitTest {
+ public:
+  GLES2DecoderRestoreStateTest() { }
+
+ protected:
+  void AddExpectationsForActiveTexture(GLenum unit);
+  void AddExpectationsForBindTexture(GLenum target, GLuint id);
+  void InitializeContextState(
+      ContextState* state, uint32 non_default_unit, uint32 active_unit);
+};
+
+void GLES2DecoderRestoreStateTest::AddExpectationsForActiveTexture(
+    GLenum unit) {
+  EXPECT_CALL(*gl_, ActiveTexture(unit))
+      .Times(1)
+      .RetiresOnSaturation();
+}
+
+void GLES2DecoderRestoreStateTest::AddExpectationsForBindTexture(GLenum target,
+                                                                 GLuint id) {
+  EXPECT_CALL(*gl_, BindTexture(target, id))
+      .Times(1)
+      .RetiresOnSaturation();
+}
+
+void GLES2DecoderRestoreStateTest::InitializeContextState(
+    ContextState* state, uint32 non_default_unit, uint32 active_unit) {
+  state->texture_units.resize(group().max_texture_units());
+  for (uint32 tt = 0; tt < state->texture_units.size(); ++tt) {
+    TextureRef* ref_cube_map =
+        group().texture_manager()->GetDefaultTextureInfo(GL_TEXTURE_CUBE_MAP);
+    state->texture_units[tt].bound_texture_cube_map = ref_cube_map;
+    TextureRef* ref_2d =
+        (tt == non_default_unit)
+            ? group().texture_manager()->GetTexture(client_texture_id_)
+            : group().texture_manager()->GetDefaultTextureInfo(GL_TEXTURE_2D);
+    state->texture_units[tt].bound_texture_2d = ref_2d;
+  }
+  state->active_texture_unit = active_unit;
+}
 
 TEST_F(GLES2DecoderWithShaderTest, DrawArraysNoAttributesSucceeds) {
   SetupTexture();
@@ -8818,6 +8860,189 @@ TEST_F(GLES2DecoderTest, DiscardFramebufferEXTUnsupported) {
   EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(attachments)));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+}
+
+TEST_F(GLES2DecoderRestoreStateTest, NullPreviousState) {
+  InitDecoder(
+      "",      // extensions
+      false,   // has alpha
+      false,   // has depth
+      false,   // has stencil
+      false,   // request alpha
+      false,   // request depth
+      false,   // request stencil
+      false);  // bind generates resource
+  SetupTexture();
+
+  InSequence sequence;
+  // Expect to restore texture bindings for unit GL_TEXTURE0.
+  AddExpectationsForActiveTexture(GL_TEXTURE0);
+  AddExpectationsForBindTexture(GL_TEXTURE_2D, kServiceTextureId);
+  AddExpectationsForBindTexture(GL_TEXTURE_CUBE_MAP,
+                                TestHelper::kServiceDefaultTextureCubemapId);
+
+  // Expect to restore texture bindings for remaining units.
+  for (uint32 i = 1; i < group().max_texture_units() ; ++i) {
+    AddExpectationsForActiveTexture(GL_TEXTURE0 + i);
+    AddExpectationsForBindTexture(GL_TEXTURE_2D,
+                                  TestHelper::kServiceDefaultTexture2dId);
+    AddExpectationsForBindTexture(GL_TEXTURE_CUBE_MAP,
+                                  TestHelper::kServiceDefaultTextureCubemapId);
+  }
+
+  // Expect to restore the active texture unit to GL_TEXTURE0.
+  AddExpectationsForActiveTexture(GL_TEXTURE0);
+
+  GetDecoder()->RestoreAllTextureUnitBindings(NULL);
+}
+
+TEST_F(GLES2DecoderRestoreStateTest, WithPreviousState) {
+  InitDecoder(
+      "",      // extensions
+      false,   // has alpha
+      false,   // has depth
+      false,   // has stencil
+      false,   // request alpha
+      false,   // request depth
+      false,   // request stencil
+      false);  // bind generates resource
+  SetupTexture();
+
+  // Construct a previous ContextState with all texture bindings
+  // set to default textures.
+  ContextState prev_state(NULL, NULL);
+  InitializeContextState(&prev_state, std::numeric_limits<uint32>::max(), 0);
+
+  InSequence sequence;
+  // Expect to restore only GL_TEXTURE_2D binding for GL_TEXTURE0 unit,
+  // since the rest of the bindings haven't changed between the current
+  // state and the |prev_state|.
+  AddExpectationsForActiveTexture(GL_TEXTURE0);
+  AddExpectationsForBindTexture(GL_TEXTURE_2D, kServiceTextureId);
+
+  // Expect to restore active texture unit to GL_TEXTURE0.
+  AddExpectationsForActiveTexture(GL_TEXTURE0);
+
+  GetDecoder()->RestoreAllTextureUnitBindings(&prev_state);
+}
+
+TEST_F(GLES2DecoderRestoreStateTest, ActiveUnit1) {
+  InitDecoder(
+      "",      // extensions
+      false,   // has alpha
+      false,   // has depth
+      false,   // has stencil
+      false,   // request alpha
+      false,   // request depth
+      false,   // request stencil
+      false);  // bind generates resource
+
+  // Bind a non-default texture to GL_TEXTURE1 unit.
+  EXPECT_CALL(*gl_, ActiveTexture(GL_TEXTURE1));
+  ActiveTexture cmd;
+  cmd.Init(GL_TEXTURE1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  SetupTexture();
+
+  // Construct a previous ContextState with all texture bindings
+  // set to default textures.
+  ContextState prev_state(NULL, NULL);
+  InitializeContextState(&prev_state, std::numeric_limits<uint32>::max(), 0);
+
+  InSequence sequence;
+  // Expect to restore only GL_TEXTURE_2D binding for GL_TEXTURE1 unit,
+  // since the rest of the bindings haven't changed between the current
+  // state and the |prev_state|.
+  AddExpectationsForActiveTexture(GL_TEXTURE1);
+  AddExpectationsForBindTexture(GL_TEXTURE_2D, kServiceTextureId);
+
+  // Expect to restore active texture unit to GL_TEXTURE1.
+  AddExpectationsForActiveTexture(GL_TEXTURE1);
+
+  GetDecoder()->RestoreAllTextureUnitBindings(&prev_state);
+}
+
+TEST_F(GLES2DecoderRestoreStateTest, NonDefaultUnit0) {
+  InitDecoder(
+      "",      // extensions
+      false,   // has alpha
+      false,   // has depth
+      false,   // has stencil
+      false,   // request alpha
+      false,   // request depth
+      false,   // request stencil
+      false);  // bind generates resource
+
+  // Bind a non-default texture to GL_TEXTURE1 unit.
+  EXPECT_CALL(*gl_, ActiveTexture(GL_TEXTURE1));
+  SpecializedSetup<ActiveTexture, 0>(true);
+  ActiveTexture cmd;
+  cmd.Init(GL_TEXTURE1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  SetupTexture();
+
+  // Construct a previous ContextState with GL_TEXTURE_2D target in
+  // GL_TEXTURE0 unit bound to a non-default texture and the rest
+  // set to default textures.
+  ContextState prev_state(NULL, NULL);
+  InitializeContextState(&prev_state, 0, kServiceTextureId);
+
+  InSequence sequence;
+  // Expect to restore GL_TEXTURE_2D binding for GL_TEXTURE0 unit to
+  // a default texture.
+  AddExpectationsForActiveTexture(GL_TEXTURE0);
+  AddExpectationsForBindTexture(GL_TEXTURE_2D,
+                                TestHelper::kServiceDefaultTexture2dId);
+
+  // Expect to restore GL_TEXTURE_2D binding for GL_TEXTURE1 unit to
+  // non-default.
+  AddExpectationsForActiveTexture(GL_TEXTURE1);
+  AddExpectationsForBindTexture(GL_TEXTURE_2D, kServiceTextureId);
+
+  // Expect to restore active texture unit to GL_TEXTURE1.
+  AddExpectationsForActiveTexture(GL_TEXTURE1);
+
+  GetDecoder()->RestoreAllTextureUnitBindings(&prev_state);
+}
+
+TEST_F(GLES2DecoderRestoreStateTest, NonDefaultUnit1) {
+  InitDecoder(
+      "",      // extensions
+      false,   // has alpha
+      false,   // has depth
+      false,   // has stencil
+      false,   // request alpha
+      false,   // request depth
+      false,   // request stencil
+      false);  // bind generates resource
+
+  // Bind a non-default texture to GL_TEXTURE0 unit.
+  SetupTexture();
+
+  // Construct a previous ContextState with GL_TEXTURE_2D target in
+  // GL_TEXTURE1 unit bound to a non-default texture and the rest
+  // set to default textures.
+  ContextState prev_state(NULL, NULL);
+  InitializeContextState(&prev_state, 1, kServiceTextureId);
+
+  InSequence sequence;
+  // Expect to restore GL_TEXTURE_2D binding to the non-default texture
+  // for GL_TEXTURE0 unit.
+  AddExpectationsForActiveTexture(GL_TEXTURE0);
+  AddExpectationsForBindTexture(GL_TEXTURE_2D, kServiceTextureId);
+
+  // Expect to restore GL_TEXTURE_2D binding to the default texture
+  // for GL_TEXTURE1 unit.
+  AddExpectationsForActiveTexture(GL_TEXTURE1);
+  AddExpectationsForBindTexture(GL_TEXTURE_2D,
+                                TestHelper::kServiceDefaultTexture2dId);
+
+  // Expect to restore active texture unit to GL_TEXTURE0.
+  AddExpectationsForActiveTexture(GL_TEXTURE0);
+
+  GetDecoder()->RestoreAllTextureUnitBindings(&prev_state);
 }
 
 // TODO(gman): Complete this test.

@@ -39,6 +39,7 @@ class GLES2Util;
 class Logger;
 class QueryManager;
 class VertexArrayManager;
+struct ContextState;
 
 struct DisallowedFeatures {
   DisallowedFeatures()
@@ -137,11 +138,12 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
   virtual Capabilities GetCapabilities() = 0;
 
   // Restores all of the decoder GL state.
-  virtual void RestoreState() const = 0;
+  virtual void RestoreState(const ContextState* prev_state) const = 0;
 
   // Restore States.
   virtual void RestoreActiveTexture() const = 0;
-  virtual void RestoreAllTextureUnitBindings() const = 0;
+  virtual void RestoreAllTextureUnitBindings(
+      const ContextState* prev_state) const = 0;
   virtual void RestoreAttribute(unsigned index) const = 0;
   virtual void RestoreBufferBindings() const = 0;
   virtual void RestoreFramebufferBindings() const = 0;
@@ -227,6 +229,8 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
   virtual void BeginDecoding();
   virtual void EndDecoding();
 
+  virtual const ContextState* GetContextState() = 0;
+
  protected:
   GLES2Decoder();
 
@@ -240,4 +244,5 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
 
 }  // namespace gles2
 }  // namespace gpu
+
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_H_
