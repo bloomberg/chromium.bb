@@ -11,7 +11,6 @@
 #include "content/public/test/layouttest_support.h"
 #include "content/shell/common/shell_messages.h"
 #include "content/shell/common/shell_switches.h"
-#include "content/shell/renderer/gc_extension.h"
 #include "content/shell/renderer/shell_content_renderer_client.h"
 #include "content/shell/renderer/test_runner/WebTestInterfaces.h"
 #include "content/shell/renderer/webkit_test_runner.h"
@@ -68,7 +67,6 @@ void ShellRenderProcessObserver::WebKitInitialized() {
 
   // We always expose GC to layout tests.
   webkit_glue::SetJavaScriptFlags(" --expose-gc");
-  RenderThread::Get()->RegisterExtension(extensions_v8::GCExtension::Get());
 
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
     switches::kStableReleaseMode)) {

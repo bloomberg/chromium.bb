@@ -28,6 +28,7 @@
 #include "content/public/test/layouttest_support.h"
 #include "content/shell/common/shell_messages.h"
 #include "content/shell/common/webkit_test_helpers.h"
+#include "content/shell/renderer/gc_controller.h"
 #include "content/shell/renderer/shell_render_process_observer.h"
 #include "content/shell/renderer/test_runner/WebTask.h"
 #include "content/shell/renderer/test_runner/WebTestInterfaces.h"
@@ -545,6 +546,8 @@ void WebKitTestRunner::captureHistoryForWindow(
 void WebKitTestRunner::DidClearWindowObject(WebFrame* frame, int world_id) {
   WebTestingSupport::injectInternalsObject(frame);
   ShellRenderProcessObserver::GetInstance()->test_interfaces()->bindTo(frame);
+  if (world_id == 0)
+    GCController::Install(frame);
 }
 
 bool WebKitTestRunner::OnMessageReceived(const IPC::Message& message) {
