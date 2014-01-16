@@ -390,6 +390,11 @@ cr.define('print_preview', function() {
     addEventListeners_: function() {
       this.tracker_.add(
           this.destinationStore_,
+          print_preview.DestinationStore.EventType.DESTINATION_SELECT,
+          this.onDestinationSelect_.bind(this));
+
+      this.tracker_.add(
+          this.destinationStore_,
           print_preview.DestinationStore.EventType.
               SELECTED_DESTINATION_CAPABILITIES_READY,
           this.onSelectedDestinationCapabilitiesReady_.bind(this));
@@ -411,6 +416,22 @@ cr.define('print_preview', function() {
     },
 
     /**
+     * Called when the destination selected.
+     * @private
+     */
+    onDestinationSelect_: function() {
+      // Reset user selection for certain ticket items.
+      if (this.capabilitiesHolder_.get() != null) {
+        this.customMargins_.updateValue(null);
+        if (this.marginsType_.getValue() ==
+            print_preview.ticket_items.MarginsType.Value.CUSTOM) {
+          this.marginsType_.updateValue(
+              print_preview.ticket_items.MarginsType.Value.DEFAULT);
+        }
+      }
+    },
+
+    /**
      * Called when the capabilities of the selected destination are ready.
      * @private
      */
@@ -422,14 +443,6 @@ cr.define('print_preview', function() {
         this.isInitialized_ = true;
         cr.dispatchSimpleEvent(this, PrintTicketStore.EventType.INITIALIZE);
       } else {
-        // Reset user selection for certain ticket items.
-        this.customMargins_.updateValue(null);
-
-        if (this.marginsType_.getValue() ==
-            print_preview.ticket_items.MarginsType.Value.CUSTOM) {
-          this.marginsType_.updateValue(
-              print_preview.ticket_items.MarginsType.Value.DEFAULT);
-        }
         cr.dispatchSimpleEvent(
             this, PrintTicketStore.EventType.CAPABILITIES_CHANGE);
       }
