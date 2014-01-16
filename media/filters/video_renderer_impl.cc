@@ -157,7 +157,6 @@ void VideoRendererImpl::Initialize(DemuxerStream* stream,
                                    const PipelineStatusCB& init_cb,
                                    const StatisticsCB& statistics_cb,
                                    const TimeCB& max_time_cb,
-                                   const NaturalSizeChangedCB& size_changed_cb,
                                    const base::Closure& ended_cb,
                                    const PipelineStatusCB& error_cb,
                                    const TimeDeltaCB& get_time_cb,
@@ -169,7 +168,6 @@ void VideoRendererImpl::Initialize(DemuxerStream* stream,
   DCHECK(!init_cb.is_null());
   DCHECK(!statistics_cb.is_null());
   DCHECK(!max_time_cb.is_null());
-  DCHECK(!size_changed_cb.is_null());
   DCHECK(!ended_cb.is_null());
   DCHECK(!get_time_cb.is_null());
   DCHECK(!get_duration_cb.is_null());
@@ -179,7 +177,6 @@ void VideoRendererImpl::Initialize(DemuxerStream* stream,
   init_cb_ = init_cb;
   statistics_cb_ = statistics_cb;
   max_time_cb_ = max_time_cb;
-  size_changed_cb_ = size_changed_cb;
   ended_cb_ = ended_cb;
   error_cb_ = error_cb;
   get_time_cb_ = get_time_cb;
@@ -323,12 +320,6 @@ void VideoRendererImpl::PaintNextReadyFrame_Locked() {
   frames_decoded_++;
 
   last_timestamp_ = next_frame->GetTimestamp();
-
-  const gfx::Size& natural_size = next_frame->natural_size();
-  if (natural_size != last_natural_size_) {
-    last_natural_size_ = natural_size;
-    size_changed_cb_.Run(natural_size);
-  }
 
   paint_cb_.Run(next_frame);
 

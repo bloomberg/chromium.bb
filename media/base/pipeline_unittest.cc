@@ -165,7 +165,7 @@ class PipelineTest : public ::testing::Test {
 
   // Sets up expectations to allow the video renderer to initialize.
   void InitializeVideoRenderer(DemuxerStream* stream) {
-    EXPECT_CALL(*video_renderer_, Initialize(stream, _, _, _, _, _, _, _, _))
+    EXPECT_CALL(*video_renderer_, Initialize(stream, _, _, _, _, _, _, _))
         .WillOnce(RunCallback<1>(PIPELINE_OK));
     EXPECT_CALL(*video_renderer_, SetPlaybackRate(0.0f));
 
@@ -374,9 +374,8 @@ TEST_F(PipelineTest, NotStarted) {
 
   EXPECT_EQ(0, pipeline_->GetTotalBytes());
 
-  // Should always get set to zero.
-  gfx::Size size(1, 1);
-  pipeline_->GetNaturalVideoSize(&size);
+  // Should always be zero.
+  gfx::Size size = pipeline_->GetInitialNaturalSize();
   EXPECT_EQ(0, size.width());
   EXPECT_EQ(0, size.height());
 }
@@ -1058,13 +1057,13 @@ class PipelineTeardownTest : public PipelineTest {
 
     if (state == kInitVideoRenderer) {
       if (stop_or_error == kStop) {
-        EXPECT_CALL(*video_renderer_, Initialize(_, _, _, _, _, _, _, _, _))
+        EXPECT_CALL(*video_renderer_, Initialize(_, _, _, _, _, _, _, _))
             .WillOnce(DoAll(Stop(pipeline_.get(), stop_cb),
                             RunCallback<1>(PIPELINE_OK)));
         EXPECT_CALL(callbacks_, OnStop());
       } else {
         status = PIPELINE_ERROR_INITIALIZATION_FAILED;
-        EXPECT_CALL(*video_renderer_, Initialize(_, _, _, _, _, _, _, _, _))
+        EXPECT_CALL(*video_renderer_, Initialize(_, _, _, _, _, _, _, _))
             .WillOnce(RunCallback<1>(status));
       }
 
@@ -1074,7 +1073,7 @@ class PipelineTeardownTest : public PipelineTest {
       return status;
     }
 
-    EXPECT_CALL(*video_renderer_, Initialize(_, _, _, _, _, _, _, _, _))
+    EXPECT_CALL(*video_renderer_, Initialize(_, _, _, _, _, _, _, _))
         .WillOnce(RunCallback<1>(PIPELINE_OK));
 
     EXPECT_CALL(callbacks_, OnBufferingState(Pipeline::kHaveMetadata));

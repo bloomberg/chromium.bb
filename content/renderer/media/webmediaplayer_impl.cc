@@ -160,7 +160,6 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       current_frame_painted_(false),
       frames_dropped_before_paint_(0),
       pending_repaint_(false),
-      pending_size_change_(false),
       video_frame_provider_client_(NULL),
       text_track_index_(0),
       web_cdm_(NULL) {
@@ -437,9 +436,7 @@ bool WebMediaPlayerImpl::hasAudio() const {
 blink::WebSize WebMediaPlayerImpl::naturalSize() const {
   DCHECK(main_loop_->BelongsToCurrentThread());
 
-  gfx::Size size;
-  pipeline_->GetNaturalVideoSize(&size);
-  return blink::WebSize(size);
+  return blink::WebSize(natural_size_);
 }
 
 bool WebMediaPlayerImpl::paused() const {
@@ -869,20 +866,13 @@ void WebMediaPlayerImpl::Repaint() {
   DCHECK(main_loop_->BelongsToCurrentThread());
   TRACE_EVENT0("media", "WebMediaPlayerImpl:repaint");
 
-  bool size_changed = false;
   {
     base::AutoLock auto_lock(lock_);
-    std::swap(pending_size_change_, size_changed);
     if (pending_repaint_) {
       TRACE_EVENT_ASYNC_END0(
           "media", "WebMediaPlayerImpl:repaintPending", this);
       pending_repaint_ = false;
     }
-  }
-
-  if (size_changed) {
-    TRACE_EVENT0("media", "WebMediaPlayerImpl:clientSizeChanged");
-    client_->sizeChanged();
   }
 
   TRACE_EVENT0("media", "WebMediaPlayerImpl:clientRepaint");
@@ -943,6 +933,11 @@ void WebMediaPlayerImpl::OnPipelineBufferingState(
 
   switch (buffering_state) {
     case media::Pipeline::kHaveMetadata:
+      // TODO(scherkus): Would be better to have a metadata changed callback
+      // that contained the size information as well whether audio/video is
+      // present. Doing so would let us remove more methods off Pipeline.
+      natural_size_ = pipeline_->GetInitialNaturalSize();
+
       SetReadyState(WebMediaPlayer::ReadyStateHaveMetadata);
 
       if (hasVideo() && client_->needsWebLayerForVideo()) {
@@ -1263,14 +1258,27 @@ void WebMediaPlayerImpl::OnDurationChange() {
   client_->durationChanged();
 }
 
+void WebMediaPlayerImpl::OnNaturalSizeChange(gfx::Size size) {
+  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK_NE(ready_state_, WebMediaPlayer::ReadyStateHaveNothing);
+  TRACE_EVENT0("media", "WebMediaPlayerImpl::OnNaturalSizeChanged");
+
+  media_log_->AddEvent(
+      media_log_->CreateVideoSizeSetEvent(size.width(), size.height()));
+  natural_size_ = size;
+
+  client_->sizeChanged();
+}
+
 void WebMediaPlayerImpl::FrameReady(
     const scoped_refptr<media::VideoFrame>& frame) {
   base::AutoLock auto_lock(lock_);
 
   if (current_frame_ &&
-      current_frame_->natural_size() != frame->natural_size() &&
-      !pending_size_change_) {
-    pending_size_change_ = true;
+      current_frame_->natural_size() != frame->natural_size()) {
+    main_loop_->PostTask(FROM_HERE, base::Bind(
+        &WebMediaPlayerImpl::OnNaturalSizeChange, AsWeakPtr(),
+        frame->natural_size()));
   }
 
   DoneWaitingForPaint(false);

@@ -68,7 +68,6 @@ class MEDIA_EXPORT VideoRendererImpl
                           const PipelineStatusCB& init_cb,
                           const StatisticsCB& statistics_cb,
                           const TimeCB& max_time_cb,
-                          const NaturalSizeChangedCB& size_changed_cb,
                           const base::Closure& ended_cb,
                           const PipelineStatusCB& error_cb,
                           const TimeDeltaCB& get_time_cb,
@@ -116,9 +115,7 @@ class MEDIA_EXPORT VideoRendererImpl
   // Helper function that flushes the buffers when a Stop() or error occurs.
   void DoStopOrError_Locked();
 
-  // Runs |paint_cb_| with the next frame from |ready_frames_|, updating
-  // |last_natural_size_| and running |size_changed_cb_| if the natural size
-  // changes.
+  // Runs |paint_cb_| with the next frame from |ready_frames_|.
   //
   // A read is scheduled to replace the frame.
   void PaintNextReadyFrame_Locked();
@@ -220,7 +217,6 @@ class MEDIA_EXPORT VideoRendererImpl
   PipelineStatusCB init_cb_;
   StatisticsCB statistics_cb_;
   TimeCB max_time_cb_;
-  NaturalSizeChangedCB size_changed_cb_;
   base::Closure ended_cb_;
   PipelineStatusCB error_cb_;
   TimeDeltaCB get_time_cb_;
@@ -233,13 +229,6 @@ class MEDIA_EXPORT VideoRendererImpl
 
   // Callback to execute to inform the player if the decoded output is opaque.
   SetOpaqueCB set_opaque_cb_;
-
-  // The last natural size |size_changed_cb_| was called with.
-  //
-  // TODO(scherkus): WebMediaPlayerImpl should track this instead of plumbing
-  // this through Pipeline. The one tricky bit might be guaranteeing we deliver
-  // the size information before we reach HAVE_METADATA.
-  gfx::Size last_natural_size_;
 
   // The timestamp of the last frame removed from the |ready_frames_| queue,
   // either for calling |paint_cb_| or for dropping. Set to kNoTimestamp()

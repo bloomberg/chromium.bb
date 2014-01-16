@@ -40,7 +40,6 @@ Pipeline::Pipeline(
       running_(false),
       did_loading_progress_(false),
       total_bytes_(0),
-      natural_size_(0, 0),
       volume_(1.0f),
       playback_rate_(0.0f),
       clock_(new Clock(&default_tick_clock_)),
@@ -189,10 +188,9 @@ int64 Pipeline::GetTotalBytes() const {
   return total_bytes_;
 }
 
-void Pipeline::GetNaturalVideoSize(gfx::Size* out_size) const {
-  CHECK(out_size);
+gfx::Size Pipeline::GetInitialNaturalSize() const {
   base::AutoLock auto_lock(lock_);
-  *out_size = natural_size_;
+  return initial_natural_size_;
 }
 
 bool Pipeline::DidLoadingProgress() const {
@@ -703,15 +701,6 @@ void Pipeline::AddBufferedTimeRange(base::TimeDelta start,
   did_loading_progress_ = true;
 }
 
-void Pipeline::OnNaturalVideoSizeChanged(const gfx::Size& size) {
-  DCHECK(IsRunning());
-  media_log_->AddEvent(media_log_->CreateVideoSizeSetEvent(
-      size.width(), size.height()));
-
-  base::AutoLock auto_lock(lock_);
-  natural_size_ = size;
-}
-
 void Pipeline::OnAudioRendererEnded() {
   // Force post to process ended tasks after current execution frame.
   task_runner_->PostTask(FROM_HERE, base::Bind(
@@ -985,13 +974,18 @@ void Pipeline::InitializeAudioRenderer(const PipelineStatusCB& done_cb) {
 void Pipeline::InitializeVideoRenderer(const PipelineStatusCB& done_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
+  // Get an initial natural size so we have something when we signal
+  // the kHaveMetadata buffering state.
+  //
+  // TODO(acolwell): We have to query demuxer outside of the lock to prevent a
+  // deadlock between ChunkDemuxer and Pipeline. See http://crbug.com/334325 for
+  // ideas on removing locking from ChunkDemuxer.
   DemuxerStream* stream = demuxer_->GetStream(DemuxerStream::VIDEO);
-
+  gfx::Size initial_natural_size =
+      stream->video_decoder_config().natural_size();
   {
-    // Get an initial natural size so we have something when we signal
-    // the kHaveMetadata buffering state.
     base::AutoLock l(lock_);
-    natural_size_ = stream->video_decoder_config().natural_size();
+    initial_natural_size_ = initial_natural_size;
   }
 
   video_renderer_ = filter_collection_->GetVideoRenderer();
@@ -1000,7 +994,6 @@ void Pipeline::InitializeVideoRenderer(const PipelineStatusCB& done_cb) {
       done_cb,
       base::Bind(&Pipeline::OnUpdateStatistics, base::Unretained(this)),
       base::Bind(&Pipeline::OnVideoTimeUpdate, base::Unretained(this)),
-      base::Bind(&Pipeline::OnNaturalVideoSizeChanged, base::Unretained(this)),
       base::Bind(&Pipeline::OnVideoRendererEnded, base::Unretained(this)),
       base::Bind(&Pipeline::SetError, base::Unretained(this)),
       base::Bind(&Pipeline::GetMediaTime, base::Unretained(this)),

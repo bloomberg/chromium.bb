@@ -111,11 +111,10 @@ class MockVideoRenderer : public VideoRenderer {
   virtual ~MockVideoRenderer();
 
   // VideoRenderer implementation.
-  MOCK_METHOD9(Initialize, void(DemuxerStream* stream,
+  MOCK_METHOD8(Initialize, void(DemuxerStream* stream,
                                 const PipelineStatusCB& init_cb,
                                 const StatisticsCB& statistics_cb,
                                 const TimeCB& time_cb,
-                                const NaturalSizeChangedCB& size_changed_cb,
                                 const base::Closure& ended_cb,
                                 const PipelineStatusCB& error_cb,
                                 const TimeDeltaCB& get_time_cb,

@@ -250,8 +250,9 @@ class WebMediaPlayerImpl
   // Gets the duration value reported by the pipeline.
   double GetPipelineDuration() const;
 
-  // Notifies WebKit of the duration change.
+  // Callbacks from |pipeline_| that are forwarded to |client_|.
   void OnDurationChange();
+  void OnNaturalSizeChange(gfx::Size size);
 
   // Called by VideoRendererImpl on its internal thread with the new frame to be
   // painted.
@@ -362,7 +363,8 @@ class WebMediaPlayerImpl
   bool current_frame_painted_;
   uint32 frames_dropped_before_paint_;
   bool pending_repaint_;
-  bool pending_size_change_;
+
+  gfx::Size natural_size_;
 
   // The compositor layer for displaying the video content when using composited
   // playback.

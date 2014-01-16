@@ -70,8 +70,8 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   // Buffering states the pipeline transitions between during playback.
   // kHaveMetadata:
   //   Indicates that the following things are known:
-  //   content duration, natural size, start time, and whether the content has
-  //   audio and/or video in supported formats.
+  //   content duration, container video size, start time, and whether the
+  //   content has audio and/or video in supported formats.
   // kPrerollCompleted:
   //   All renderers have buffered enough data to satisfy preroll and are ready
   //   to start playback.
@@ -178,10 +178,9 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   // determined or can not be determined, this value is 0.
   int64 GetTotalBytes() const;
 
-  // Gets the natural size of the video output in pixel units.  If there is no
-  // video or the video has not been rendered yet, the width and height will
-  // be 0.
-  void GetNaturalVideoSize(gfx::Size* out_size) const;
+  // Get the video's initial natural size as reported by the container. Note
+  // that the natural size can change during playback.
+  gfx::Size GetInitialNaturalSize() const;
 
   // Return true if loading progress has been made since the last time this
   // method was called.
@@ -242,9 +241,6 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   //
   // Safe to call from any thread.
   void SetError(PipelineStatus error);
-
-  // Callback executed when the natural size of the video has changed.
-  void OnNaturalVideoSizeChanged(const gfx::Size& size);
 
   // Callbacks executed when a renderer has ended.
   void OnAudioRendererEnded();
@@ -374,8 +370,8 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   // Total size of the media.  Set by filters.
   int64 total_bytes_;
 
-  // Video's natural width and height.  Set by filters.
-  gfx::Size natural_size_;
+  // The initial natural size of the video as reported by the container.
+  gfx::Size initial_natural_size_;
 
   // Current volume level (from 0.0f to 1.0f).  This value is set immediately
   // via SetVolume() and a task is dispatched on the task runner to notify the
