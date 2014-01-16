@@ -94,7 +94,7 @@ class SyncBackendHostImpl
       const std::string& passphrase,
       bool is_explicit) OVERRIDE;
   virtual bool SetDecryptionPassphrase(const std::string& passphrase)
-      WARN_UNUSED_RESULT OVERRIDE;
+      OVERRIDE WARN_UNUSED_RESULT;
   virtual void StopSyncingForShutdown() OVERRIDE;
   virtual scoped_ptr<base::Thread> Shutdown(ShutdownOption option) OVERRIDE;
   virtual void UnregisterInvalidationIds() OVERRIDE;
