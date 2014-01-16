@@ -251,7 +251,13 @@ void MutableProfileOAuth2TokenService::UpdateAuthError(
   }
 #endif
 
-  DCHECK_GT(refresh_tokens_.count(account_id), 0u);
+  if (refresh_tokens_.count(account_id) == 0) {
+    // This could happen if the preferences have been corrupted (see
+    // http://crbug.com/321370). In a Debug build that would be a bug, but in a
+    // Release build we want to deal with it gracefully.
+    NOTREACHED();
+    return;
+  }
   refresh_tokens_[account_id]->SetLastAuthError(error);
 }
 
