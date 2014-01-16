@@ -39,24 +39,13 @@ history.pushState([FileList], "FileList entry");
     history.back();
 }
 
-var beganTest = false;
-
 onpopstate = function(event)
 {
-    // The first time popstate fires, it's because the page has finished loading.
-    // Only then can we begin the test.
-    if (!beganTest) {
-        beganTest = true;
-        runTest();
-        return;
-    }
-    
     if (event.state instanceof Date)
         log("State popped - " + event.state.getTime() + " (type " + typeof event.state + ")");
     else
         log("State popped - " + event.state + " (type " + typeof event.state + ")");
 
-    
     if (event.state != "FirstEntry")
         history.back();
     else if (window.testRunner)
@@ -64,7 +53,7 @@ onpopstate = function(event)
 }
 
 </script>
-<body>
+<body onload="runTest();">
 <p>
 This test calls pushState with state objects of all the different object types supported by the HTML5 "internal structured cloning algorithm" and makes sure the events contain the expected objects when the states are popped.
 </p>
