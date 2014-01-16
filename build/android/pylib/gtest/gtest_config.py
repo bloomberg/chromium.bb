@@ -7,6 +7,7 @@
 # Add new suites here before upgrading them to the stable list below.
 EXPERIMENTAL_TEST_SUITES = [
     'content_browsertests',
+    'content_gl_tests',
 ]
 
 # Do not modify this list without approval of an android owner.
