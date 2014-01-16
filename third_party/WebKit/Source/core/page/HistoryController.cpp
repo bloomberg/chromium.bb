@@ -139,7 +139,10 @@ void HistoryController::goToEntry(PassOwnPtr<HistoryEntry> targetEntry, Resource
     HistoryFrameLoadSet differentDocumentLoads;
 
     m_provisionalEntry = targetEntry;
-    recursiveGoToEntry(m_page->mainFrame(), sameDocumentLoads, differentDocumentLoads);
+    if (m_currentEntry)
+        recursiveGoToEntry(m_page->mainFrame(), sameDocumentLoads, differentDocumentLoads);
+    else
+        differentDocumentLoads.set(m_page->mainFrame(), m_provisionalEntry->root());
 
     if (sameDocumentLoads.isEmpty() && differentDocumentLoads.isEmpty())
         sameDocumentLoads.set(m_page->mainFrame(), m_provisionalEntry->root());
@@ -157,8 +160,10 @@ void HistoryController::goToEntry(PassOwnPtr<HistoryEntry> targetEntry, Resource
 
 void HistoryController::recursiveGoToEntry(Frame* frame, HistoryFrameLoadSet& sameDocumentLoads, HistoryFrameLoadSet& differentDocumentLoads)
 {
+    ASSERT(m_provisionalEntry);
+    ASSERT(m_currentEntry);
     HistoryItem* newItem = m_provisionalEntry->itemForFrame(frame);
-    HistoryItem* oldItem = m_currentEntry ? m_currentEntry->itemForFrame(frame) : 0;
+    HistoryItem* oldItem = m_currentEntry->itemForFrame(frame);
     if (!newItem)
         return;
 
