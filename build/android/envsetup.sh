@@ -142,6 +142,3 @@ android_gyp() {
     "${CHROME_SRC}/build/gyp_chromium" --depth="${CHROME_SRC}" --check "$@"
   )
 }
-
-# FLOCK needs to be null on system that has no flock
-which flock > /dev/null || export FLOCK=
