@@ -29,6 +29,8 @@ INT_DIR = None
 # The target platform. If it is not defined, sys.platform will be used.
 OS = None
 
+USE_ASH = False
+
 # Extra input files.
 EXTRA_INPUT_FILES = []
 
@@ -74,6 +76,11 @@ def calc_inputs(locale):
   inputs.append(os.path.join(SHARE_INT_DIR, 'components', 'strings',
                 'component_strings_%s.pak' % locale))
 
+  if USE_ASH:
+    #e.g. '<(SHARED_INTERMEDIATE_DIR)/ash_strings/ash_strings_da.pak',
+    inputs.append(os.path.join(SHARE_INT_DIR, 'ash_strings',
+                  'ash_strings_%s.pak' % locale))
+
   if OS != 'ios':
     #e.g. '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_da.pak'
     inputs.append(os.path.join(SHARE_INT_DIR, 'webkit',
@@ -82,10 +89,6 @@ def calc_inputs(locale):
     #e.g. '<(SHARED_INTERMEDIATE_DIR)/ui/ui_strings_da.pak',
     inputs.append(os.path.join(SHARE_INT_DIR, 'ui', 'ui_strings',
                   'ui_strings_%s.pak' % locale))
-
-    #e.g. '<(SHARED_INTERMEDIATE_DIR)/ash_strings/ash_strings_da.pak',
-    inputs.append(os.path.join(SHARE_INT_DIR, 'ash_strings',
-                  'ash_strings_%s.pak' % locale))
 
     #e.g. '<(SHARED_INTERMEDIATE_DIR)/device/bluetooth/strings/
     # device_bluetooth_strings_da.pak',
@@ -152,6 +155,7 @@ def DoMain(argv):
   global SHARE_INT_DIR
   global INT_DIR
   global OS
+  global USE_ASH
   global EXTRA_INPUT_FILES
 
   parser = optparse.OptionParser("usage: %prog [options] locales")
@@ -172,6 +176,8 @@ def DoMain(argv):
                          locale suffix and \".pak\" extension.")
   parser.add_option("-p", action="store", dest="os",
                     help="The target OS. (e.g. mac, linux, win, etc.)")
+  parser.add_option("--use-ash", action="store", dest="use_ash",
+                    help="Whether to include ash strings")
   options, locales = parser.parse_args(argv)
 
   if not locales:
@@ -185,6 +191,7 @@ def DoMain(argv):
   BRANDING = options.branding
   EXTRA_INPUT_FILES = options.extra_input
   OS = options.os
+  USE_ASH = options.use_ash == '1'
 
   if not OS:
     if sys.platform == 'darwin':

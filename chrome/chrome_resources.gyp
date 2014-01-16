@@ -382,8 +382,6 @@
       'conditions': [
         ['OS != "ios"', {
           'dependencies': [
-            # TODO(zork): Protect this with if use_aura==1
-            '<(DEPTH)/ash/ash_strings.gyp:ash_strings',
             '<(DEPTH)/content/content_resources.gyp:content_resources',
             '<(DEPTH)/device/bluetooth/bluetooth_strings.gyp:device_bluetooth_strings',
             '<(DEPTH)/webkit/webkit_resources.gyp:webkit_resources',
@@ -392,6 +390,7 @@
         }],
         ['use_ash==1', {
           'dependencies': [
+             '<(DEPTH)/ash/ash_strings.gyp:ash_strings',
              '<(DEPTH)/ash/ash.gyp:ash_resources',
           ],
         }],

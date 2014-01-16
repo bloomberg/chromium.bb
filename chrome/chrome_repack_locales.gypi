@@ -16,7 +16,7 @@
   },
   'inputs': [
     'tools/build/repack_locales.py',
-    '<!@pymod_do_main(repack_locales -i -p <(OS) <(branding_flag) -g <(grit_out_dir) -s <(SHARED_INTERMEDIATE_DIR) -x <(repack_output_dir) <(repack_extra_flags) <(locales))'
+    '<!@pymod_do_main(repack_locales -i -p <(OS) <(branding_flag) -g <(grit_out_dir) -s <(SHARED_INTERMEDIATE_DIR) -x <(repack_output_dir) --use-ash <(use_ash) <(repack_extra_flags) <(locales))'
   ],
   'outputs': [
     '<!@pymod_do_main(repack_locales -o -p <(OS) -g <(grit_out_dir) -s <(SHARED_INTERMEDIATE_DIR) -x <(repack_output_dir) <(locales))'
@@ -28,6 +28,7 @@
     '-g', '<(grit_out_dir)',
     '-s', '<(SHARED_INTERMEDIATE_DIR)',
     '-x', '<(repack_output_dir)/.',
+    '--use-ash', '<(use_ash)',
     '<@(repack_extra_flags)',
     '<@(locales)',
   ],

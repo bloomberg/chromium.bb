@@ -14,7 +14,7 @@
   },
   'inputs': [
     'tools/build/repack_locales.py',
-    '<!@pymod_do_main(repack_locales -i -p <(OS) <(branding_flag) -g <(grit_out_dir) -s <(SHARED_INTERMEDIATE_DIR) -x <(INTERMEDIATE_DIR) <(pseudo_locales))'
+    '<!@pymod_do_main(repack_locales -i -p <(OS) <(branding_flag) -g <(grit_out_dir) -s <(SHARED_INTERMEDIATE_DIR) -x <(INTERMEDIATE_DIR) --use-ash <(use_ash) <(pseudo_locales))'
   ],
   'conditions': [
     ['OS == "mac" or OS == "ios"', {
@@ -34,6 +34,7 @@
     '-g', '<(grit_out_dir)',
     '-s', '<(SHARED_INTERMEDIATE_DIR)',
     '-x', '<(SHARED_INTERMEDIATE_DIR)/.',
+    '--use-ash', '<(use_ash)',
     '<@(pseudo_locales)',
   ],
 }
