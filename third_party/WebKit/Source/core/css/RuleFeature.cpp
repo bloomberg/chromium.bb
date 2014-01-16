@@ -69,6 +69,9 @@ void RuleFeatureSet::collectFeaturesFromSelectorList(const CSSSelectorList* sele
 
 void RuleFeatureSet::add(const RuleFeatureSet& other)
 {
+    if (const RuleSetAnalyzer* otherAnalyzer = other.ruleSetAnalyzer())
+        ensureRuleSetAnalyzer().combine(*otherAnalyzer);
+
     HashSet<AtomicString>::const_iterator end = other.idsInRules.end();
     for (HashSet<AtomicString>::const_iterator it = other.idsInRules.begin(); it != end; ++it)
         idsInRules.add(*it);
@@ -93,6 +96,18 @@ void RuleFeatureSet::clear()
     uncommonAttributeRules.clear();
     m_usesFirstLineRules = false;
     m_maxDirectAdjacentSelectors = 0;
+}
+
+const RuleSetAnalyzer* RuleFeatureSet::ruleSetAnalyzer() const
+{
+    return m_ruleSetAnalyzer.get();
+}
+
+RuleSetAnalyzer& RuleFeatureSet::ensureRuleSetAnalyzer()
+{
+    if (!m_ruleSetAnalyzer)
+        m_ruleSetAnalyzer = RuleSetAnalyzer::create();
+    return *m_ruleSetAnalyzer;
 }
 
 } // namespace WebCore

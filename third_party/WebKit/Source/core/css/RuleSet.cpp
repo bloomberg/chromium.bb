@@ -39,6 +39,7 @@
 #include "core/css/SelectorFilter.h"
 #include "core/css/StyleRuleImport.h"
 #include "core/css/StyleSheetContents.h"
+#include "core/css/analyzer/RuleSetAnalyzer.h"
 #include "core/html/track/TextTrackCue.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
@@ -207,36 +208,6 @@ RuleData::RuleData(StyleRule* rule, unsigned selectorIndex, unsigned position, A
     SelectorFilter::collectIdentifierHashes(selector(), m_descendantSelectorIdentifierHashes, maximumIdentifierCount);
 }
 
-static void collectFeaturesFromRuleData(RuleFeatureSet& features, const RuleData& ruleData)
-{
-    bool foundSiblingSelector = false;
-    unsigned maxDirectAdjacentSelectors = 0;
-    for (const CSSSelector* selector = ruleData.selector(); selector; selector = selector->tagHistory()) {
-        features.collectFeaturesFromSelector(selector);
-
-        if (const CSSSelectorList* selectorList = selector->selectorList()) {
-            for (const CSSSelector* subSelector = selectorList->first(); subSelector; subSelector = CSSSelectorList::next(subSelector)) {
-                // FIXME: Shouldn't this be checking subSelector->isSiblingSelector()?
-                if (!foundSiblingSelector && selector->isSiblingSelector())
-                    foundSiblingSelector = true;
-                if (subSelector->isDirectAdjacentSelector())
-                    maxDirectAdjacentSelectors++;
-                features.collectFeaturesFromSelector(subSelector);
-            }
-        } else {
-            if (!foundSiblingSelector && selector->isSiblingSelector())
-                foundSiblingSelector = true;
-            if (selector->isDirectAdjacentSelector())
-                maxDirectAdjacentSelectors++;
-        }
-    }
-    features.setMaxDirectAdjacentSelectors(maxDirectAdjacentSelectors);
-    if (foundSiblingSelector)
-        features.siblingRules.append(RuleFeature(ruleData.rule(), ruleData.selectorIndex(), ruleData.hasDocumentSecurityOrigin()));
-    if (ruleData.containsUncommonAttributeSelector())
-        features.uncommonAttributeRules.append(RuleFeature(ruleData.rule(), ruleData.selectorIndex(), ruleData.hasDocumentSecurityOrigin()));
-}
-
 void RuleSet::addToRuleSet(StringImpl* key, PendingRuleMap& map, const RuleData& ruleData)
 {
     if (!key)
@@ -299,7 +270,7 @@ bool RuleSet::findBestRuleSetAndAdd(const CSSSelector* component, RuleData& rule
 void RuleSet::addRule(StyleRule* rule, unsigned selectorIndex, AddRuleFlags addRuleFlags)
 {
     RuleData ruleData(rule, selectorIndex, m_ruleCount++, addRuleFlags);
-    collectFeaturesFromRuleData(m_features, ruleData);
+    m_features.ensureRuleSetAnalyzer().collectFeaturesFromRuleData(m_features, ruleData);
 
     if (!findBestRuleSetAndAdd(ruleData.selector(), ruleData)) {
         // If we didn't find a specialized map to stick it in, file under universal rules.

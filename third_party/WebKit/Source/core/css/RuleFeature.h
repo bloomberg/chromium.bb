@@ -22,6 +22,7 @@
 #ifndef RuleFeature_h
 #define RuleFeature_h
 
+#include "core/css/analyzer/RuleSetAnalyzer.h"
 #include "wtf/Forward.h"
 #include "wtf/HashSet.h"
 #include "wtf/text/AtomicStringHash.h"
@@ -80,12 +81,18 @@ public:
         return idsInRules.contains(idValue);
     }
 
+    const RuleSetAnalyzer* ruleSetAnalyzer() const;
+    RuleSetAnalyzer& ensureRuleSetAnalyzer();
+
+    // FIXME: move this stuff into the rule set analyzer.
     HashSet<AtomicString> idsInRules;
     HashSet<AtomicString> classesInRules;
     HashSet<AtomicString> attrsInRules;
     Vector<RuleFeature> siblingRules;
     Vector<RuleFeature> uncommonAttributeRules;
 private:
+    RefPtr<RuleSetAnalyzer> m_ruleSetAnalyzer;
+
     void collectFeaturesFromSelectorList(const CSSSelectorList*);
 
     bool m_usesFirstLineRules;
