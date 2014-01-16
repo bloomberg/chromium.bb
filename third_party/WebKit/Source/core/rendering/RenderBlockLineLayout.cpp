@@ -914,7 +914,7 @@ static inline void constructBidiRunsForLine(const RenderBlockFlow* block, Inline
             segmentMarker->m_startsSegment = true;
             bidiRuns.addRun(segmentMarker);
             // Do not collapse midpoints between segments
-            topResolver.midpointState().betweenMidpoints = false;
+            topResolver.midpointState().setBetweenMidpoints(false);
         }
         if (!segmentIsEmpty(segmentStart, segmentEnd)) {
             topResolver.setPosition(segmentStart, numberOfIsolateAncestors(segmentStart));

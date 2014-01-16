@@ -32,7 +32,10 @@
 
 namespace WebCore {
 
-template <class Iterator> struct MidpointState {
+class RenderObject;
+
+template <class Iterator> class MidpointState {
+public:
     MidpointState()
     {
         reset();
@@ -40,18 +43,84 @@ template <class Iterator> struct MidpointState {
 
     void reset()
     {
-        numMidpoints = 0;
-        currentMidpoint = 0;
-        betweenMidpoints = false;
+        m_numMidpoints = 0;
+        m_currentMidpoint = 0;
+        m_betweenMidpoints = false;
     }
 
+    void startIgnoringSpaces(const Iterator& midpoint)
+    {
+        ASSERT(!(m_numMidpoints % 2));
+        addMidpoint(midpoint);
+    }
+
+    void stopIgnoringSpaces(const Iterator& midpoint)
+    {
+        ASSERT(m_numMidpoints % 2);
+        addMidpoint(midpoint);
+    }
+
+    // When ignoring spaces, this needs to be called for objects that need line boxes such as RenderInlines or
+    // hard line breaks to ensure that they're not ignored.
+    void ensureLineBoxInsideIgnoredSpaces(RenderObject* renderer)
+    {
+        Iterator midpoint(0, renderer, 0);
+        stopIgnoringSpaces(midpoint);
+        startIgnoringSpaces(midpoint);
+    }
+
+    // Adding a pair of midpoints before a character will split it out into a new line box.
+    void ensureCharacterGetsLineBox(Iterator& textParagraphSeparator)
+    {
+        Iterator midpoint(0, textParagraphSeparator.object(), textParagraphSeparator.offset());
+        startIgnoringSpaces(Iterator(0, textParagraphSeparator.object(), textParagraphSeparator.offset() - 1));
+        stopIgnoringSpaces(Iterator(0, textParagraphSeparator.object(), textParagraphSeparator.offset()));
+    }
+
+    void checkMidpoints(Iterator& lBreak)
+    {
+        // Check to see if our last midpoint is a start point beyond the line break. If so,
+        // shave it off the list, and shave off a trailing space if the previous end point doesn't
+        // preserve whitespace.
+        if (lBreak.object() && m_numMidpoints && !(m_numMidpoints % 2)) {
+            Iterator* midpointsIterator = m_midpoints.data();
+            Iterator& endpoint = midpointsIterator[m_numMidpoints - 2];
+            const Iterator& startpoint = midpointsIterator[m_numMidpoints - 1];
+            Iterator currpoint = endpoint;
+            while (!currpoint.atEnd() && currpoint != startpoint && currpoint != lBreak)
+                currpoint.increment();
+            if (currpoint == lBreak) {
+                // We hit the line break before the start point. Shave off the start point.
+                m_numMidpoints--;
+                if (endpoint.object()->style()->collapseWhiteSpace() && endpoint.object()->isText())
+                    endpoint.setOffset(endpoint.offset() - 1);
+            }
+        }
+    }
+
+    Vector<Iterator>& midpoints() { return m_midpoints; }
+    const unsigned& numMidpoints() const { return m_numMidpoints; }
+    const unsigned& currentMidpoint() const { return m_currentMidpoint; }
+    void incrementCurrentMidpoint() { m_currentMidpoint++; }
+    const bool& betweenMidpoints() const { return m_betweenMidpoints; }
+    void setBetweenMidpoints(bool betweenMidpoint) { m_betweenMidpoints = betweenMidpoint; }
+private:
     // The goal is to reuse the line state across multiple
     // lines so we just keep an array around for midpoints and never clear it across multiple
     // lines. We track the number of items and position using the two other variables.
-    Vector<Iterator> midpoints;
-    unsigned numMidpoints;
-    unsigned currentMidpoint;
-    bool betweenMidpoints;
+    Vector<Iterator> m_midpoints;
+    unsigned m_numMidpoints;
+    unsigned m_currentMidpoint;
+    bool m_betweenMidpoints;
+
+    void addMidpoint(const Iterator& midpoint)
+    {
+        if (m_midpoints.size() <= m_numMidpoints)
+            m_midpoints.grow(m_numMidpoints + 10);
+
+        Iterator* midpointsIterator = m_midpoints.data();
+        midpointsIterator[m_numMidpoints++] = midpoint;
+    }
 };
 
 // The BidiStatus at a given position (typically the end of a line) can
