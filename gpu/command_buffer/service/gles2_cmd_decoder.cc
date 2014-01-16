@@ -9007,9 +9007,6 @@ void GLES2DecoderImpl::DoSwapBuffers() {
         glFlush();
     }
   } else {
-    TRACE_EVENT2("gpu", "Onscreen",
-        "width", surface_->GetSize().width(),
-        "height", surface_->GetSize().height());
     if (!surface_->SwapBuffers()) {
       LOG(ERROR) << "Context lost because SwapBuffers failed.";
       LoseContext(GL_UNKNOWN_CONTEXT_RESET_ARB);

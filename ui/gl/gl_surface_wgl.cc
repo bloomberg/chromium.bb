@@ -4,6 +4,7 @@
 
 #include "ui/gl/gl_surface_wgl.h"
 
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gl/gl_bindings.h"
@@ -267,6 +268,10 @@ bool NativeViewGLSurfaceWGL::IsOffscreen() {
 }
 
 bool NativeViewGLSurfaceWGL::SwapBuffers() {
+  TRACE_EVENT2("gpu", "NativeViewGLSurfaceWGL:RealSwapBuffers",
+      "width", GetSize().width(),
+      "height", GetSize().height());
+
   // Resize the child window to match the parent before swapping. Do not repaint
   // it as it moves.
   RECT rect;

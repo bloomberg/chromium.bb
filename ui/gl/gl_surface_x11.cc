@@ -185,6 +185,10 @@ bool NativeViewGLSurfaceOSMesa::IsOffscreen() {
 }
 
 bool NativeViewGLSurfaceOSMesa::SwapBuffers() {
+  TRACE_EVENT2("gpu", "NativeViewGLSurfaceOSMesa:RealSwapBuffers",
+      "width", GetSize().width(),
+      "height", GetSize().height());
+
   gfx::Size size = GetSize();
 
   XWindowAttributes attributes;

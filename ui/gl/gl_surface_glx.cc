@@ -600,6 +600,10 @@ bool NativeViewGLSurfaceGLX::IsOffscreen() {
 }
 
 bool NativeViewGLSurfaceGLX::SwapBuffers() {
+  TRACE_EVENT2("gpu", "NativeViewGLSurfaceGLX:RealSwapBuffers",
+      "width", GetSize().width(),
+      "height", GetSize().height());
+
   glXSwapBuffers(g_display, GetDrawableHandle());
   return true;
 }

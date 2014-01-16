@@ -7,6 +7,7 @@
 #import <AppKit/NSOpenGL.h>
 #import <AppKit/NSView.h>
 
+#include "base/debug/trace_event.h"
 #include "ui/gl/gl_context_nsview.h"
 
 namespace gfx {
@@ -27,6 +28,9 @@ bool GLSurfaceNSView::IsOffscreen() {
 }
 
 bool GLSurfaceNSView::SwapBuffers() {
+  TRACE_EVENT2("gpu", "GLSurfaceNSView:RealSwapBuffers",
+      "width", GetSize().width(),
+      "height", GetSize().height());
   context_->FlushBuffer();
   return true;
 }
