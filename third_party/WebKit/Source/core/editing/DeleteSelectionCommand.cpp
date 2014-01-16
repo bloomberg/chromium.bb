@@ -636,6 +636,16 @@ void DeleteSelectionCommand::mergeParagraphs()
     if (mergeDestination == endOfParagraphToMove)
         return;
 
+    // If the merge destination and source to be moved are both list items of different lists, merge them into single list.
+    Node* listItemInFirstParagraph = enclosingNodeOfType(m_upstreamStart, isListItem);
+    Node* listItemInSecondParagraph = enclosingNodeOfType(m_downstreamEnd, isListItem);
+    if (listItemInFirstParagraph && listItemInSecondParagraph
+        && canMergeLists(listItemInFirstParagraph->parentElement(), listItemInSecondParagraph->parentElement())) {
+        mergeIdenticalElements(listItemInFirstParagraph->parentElement(), listItemInSecondParagraph->parentElement());
+        m_endingPosition = mergeDestination.deepEquivalent();
+        return;
+    }
+
     // The rule for merging into an empty block is: only do so if its farther to the right.
     // FIXME: Consider RTL.
     if (!m_startsAtEmptyLine && isStartOfParagraph(mergeDestination) && startOfParagraphToMove.absoluteCaretBounds().x() > mergeDestination.absoluteCaretBounds().x()) {
