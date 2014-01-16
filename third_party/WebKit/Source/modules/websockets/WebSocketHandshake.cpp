@@ -103,10 +103,9 @@ static String hostName(const KURL& url, bool secure)
 static const size_t maxInputSampleSize = 128;
 static String trimInputSample(const char* p, size_t len)
 {
-    String s = String(p, std::min<size_t>(len, maxInputSampleSize));
     if (len > maxInputSampleSize)
-        s.append(horizontalEllipsis);
-    return s;
+        return String(p, maxInputSampleSize) + horizontalEllipsis;
+    return String(p, len);
 }
 
 static String generateSecWebSocketKey()

@@ -45,6 +45,7 @@
 #include "platform/network/FormData.h"
 #include "platform/network/FormDataBuilder.h"
 #include "wtf/CurrentTime.h"
+#include "wtf/text/StringBuilder.h"
 #include "wtf/text/TextEncoding.h"
 
 namespace WebCore {
@@ -73,11 +74,12 @@ static void appendMailtoPostFormDataToURL(KURL& url, const FormData& data, const
     FormDataBuilder::encodeStringAsFormData(bodyData, body.utf8());
     body = String(bodyData.data(), bodyData.size()).replaceWithLiteral('+', "%20");
 
-    String query = url.query();
+    StringBuilder query;
+    query.append(url.query());
     if (!query.isEmpty())
         query.append('&');
     query.append(body);
-    url.setQuery(query);
+    url.setQuery(query.toString());
 }
 
 void FormSubmission::Attributes::parseAction(const String& action)
