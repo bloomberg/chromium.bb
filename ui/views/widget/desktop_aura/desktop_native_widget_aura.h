@@ -295,6 +295,13 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   bool restore_focus_on_activate_;
 
   gfx::NativeCursor cursor_;
+  // We must manually reference count the number of users of |cursor_manager_|
+  // because the cursors created by |cursor_manager_| are shared among the
+  // DNWAs. We can't just stuff this in a LazyInstance because we need to
+  // destroy this as the last DNWA happens; we can't put it off until
+  // (potentially) after we tear down the X11 connection because that's a
+  // crash.
+  static int cursor_reference_count_;
   static views::corewm::CursorManager* cursor_manager_;
   static views::DesktopNativeCursorManager* native_cursor_manager_;
 

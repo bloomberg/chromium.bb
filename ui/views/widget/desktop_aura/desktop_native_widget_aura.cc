@@ -210,6 +210,7 @@ class FocusManagerEventHandler : public ui::EventHandler {
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopNativeWidgetAura, public:
 
+int DesktopNativeWidgetAura::cursor_reference_count_ = 0;
 DesktopNativeCursorManager* DesktopNativeWidgetAura::native_cursor_manager_ =
     NULL;
 views::corewm::CursorManager* DesktopNativeWidgetAura::cursor_manager_ = NULL;
@@ -300,6 +301,15 @@ void DesktopNativeWidgetAura::OnDesktopWindowTreeHostDestroyed(
 
   aura::client::SetCursorClient(root->window(), NULL);
   native_cursor_manager_->RemoveRootWindow(root);
+
+  cursor_reference_count_--;
+  if (cursor_reference_count_ == 0) {
+    // We are the last DesktopNativeWidgetAura instance, and we are responsible
+    // for cleaning up |cursor_manager_|.
+    delete cursor_manager_;
+    native_cursor_manager_ = NULL;
+    cursor_manager_ = NULL;
+  }
 
   aura::client::SetScreenPositionClient(root->window(), NULL);
   position_client_.reset();
@@ -397,6 +407,7 @@ void DesktopNativeWidgetAura::InitNativeWidget(
 
   // |root_window_| must be added to |native_cursor_manager_| before
   // OnRootWindowCreated() is called.
+  cursor_reference_count_++;
   if (!native_cursor_manager_) {
     native_cursor_manager_ = new DesktopNativeCursorManager(
         DesktopCursorLoaderUpdater::Create());
