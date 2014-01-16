@@ -15,7 +15,6 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
-#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -28,14 +27,12 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"  // For |Sleep()|.
 #include "base/threading/simple_thread.h"
-#include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "mojo/system/message_in_transit.h"
 #include "mojo/system/platform_channel_pair.h"
 #include "mojo/system/platform_handle.h"
 #include "mojo/system/scoped_platform_handle.h"
 #include "mojo/system/test_utils.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
 namespace system {
@@ -66,17 +63,13 @@ void InitOnIOThread(RawChannel* raw_channel) {
 
 // -----------------------------------------------------------------------------
 
-class RawChannelPosixTest : public testing::Test {
+class RawChannelPosixTest : public test::TestWithIOThreadBase {
  public:
-  RawChannelPosixTest() : io_thread_("io_thread") {
-  }
-
-  virtual ~RawChannelPosixTest() {
-  }
+  RawChannelPosixTest() {}
+  virtual ~RawChannelPosixTest() {}
 
   virtual void SetUp() OVERRIDE {
-    io_thread_.StartWithOptions(
-        base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
+    test::TestWithIOThreadBase::SetUp();
 
     PlatformChannelPair channel_pair;
     handles[0] = channel_pair.PassServerHandle();
@@ -87,23 +80,13 @@ class RawChannelPosixTest : public testing::Test {
     handles[0].reset();
     handles[1].reset();
 
-    io_thread_.Stop();
+    test::TestWithIOThreadBase::TearDown();
   }
 
  protected:
-  base::MessageLoop* io_thread_message_loop() {
-    return io_thread_.message_loop();
-  }
-
-  scoped_refptr<base::TaskRunner> io_thread_task_runner() {
-    return io_thread_message_loop()->message_loop_proxy();
-  }
-
   ScopedPlatformHandle handles[2];
 
  private:
-  base::Thread io_thread_;
-
   DISALLOW_COPY_AND_ASSIGN(RawChannelPosixTest);
 };
 
@@ -519,7 +502,6 @@ TEST_F(RawChannelPosixTest, OnFatalError) {
                         FROM_HERE,
                         base::Bind(&RawChannel::Shutdown,
                                    base::Unretained(rc.get())));
-
 }
 
 // RawChannelPosixTest.WriteMessageAfterShutdown -------------------------------

@@ -176,8 +176,7 @@ void CoreTestBase::TearDown() {
 MojoHandle CoreTestBase::CreateMockHandle(CoreTestBase::MockHandleInfo* info) {
   CHECK(core_);
   scoped_refptr<MockDispatcher> dispatcher(new MockDispatcher(info));
-  base::AutoLock locker(core_->handle_table_lock_);
-  return core_->AddDispatcherNoLock(dispatcher);
+  return core_->AddDispatcher(dispatcher);
 }
 
 // CoreTestBase_MockHandleInfo -------------------------------------------------

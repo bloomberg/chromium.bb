@@ -10,7 +10,6 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
-#include "base/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -23,24 +22,18 @@
 #include "mojo/system/scoped_platform_handle.h"
 #include "mojo/system/test_utils.h"
 #include "mojo/system/waiter.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
 namespace system {
 namespace {
 
-class RemoteMessagePipeTest : public testing::Test {
+class RemoteMessagePipeTest : public test::TestWithIOThreadBase {
  public:
-  RemoteMessagePipeTest() : io_thread_("io_thread") {
-  }
-
-  virtual ~RemoteMessagePipeTest() {
-  }
+  RemoteMessagePipeTest() {}
+  virtual ~RemoteMessagePipeTest() {}
 
   virtual void SetUp() OVERRIDE {
-    io_thread_.StartWithOptions(
-        base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
-
+    test::TestWithIOThreadBase::SetUp();
     test::PostTaskAndWait(io_thread_task_runner(),
                           FROM_HERE,
                           base::Bind(&RemoteMessagePipeTest::SetUpOnIOThread,
@@ -52,7 +45,7 @@ class RemoteMessagePipeTest : public testing::Test {
                           FROM_HERE,
                           base::Bind(&RemoteMessagePipeTest::TearDownOnIOThread,
                                      base::Unretained(this)));
-    io_thread_.Stop();
+    test::TestWithIOThreadBase::TearDown();
   }
 
   // This connects MP 0, port 1 and MP 1, port 0 (leaving MP 0, port 0 and MP 1,
@@ -77,15 +70,6 @@ class RemoteMessagePipeTest : public testing::Test {
         FROM_HERE,
         base::Bind(&RemoteMessagePipeTest::BootstrapMessagePipeOnIOThread,
                    base::Unretained(this), channel_index, mp));
-  }
-
- protected:
-  base::MessageLoop* io_thread_message_loop() {
-    return io_thread_.message_loop();
-  }
-
-  scoped_refptr<base::TaskRunner> io_thread_task_runner() {
-    return io_thread_message_loop()->message_loop_proxy();
   }
 
  private:
@@ -151,7 +135,6 @@ class RemoteMessagePipeTest : public testing::Test {
     }
   }
 
-  base::Thread io_thread_;
   ScopedPlatformHandle platform_handles_[2];
   scoped_refptr<Channel> channels_[2];
 

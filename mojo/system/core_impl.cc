@@ -85,9 +85,19 @@ CoreImpl::HandleTableEntry::~HandleTableEntry() {
   DCHECK(!busy);
 }
 
-// static
-void CoreImpl::Init() {
-  Core::Init(new CoreImpl());
+CoreImpl::CoreImpl()
+    : next_handle_(MOJO_HANDLE_INVALID + 1) {
+}
+
+CoreImpl::~CoreImpl() {
+  // This should usually not be reached (the singleton lives forever), except in
+  // tests.
+}
+
+MojoHandle CoreImpl::AddDispatcher(
+    const scoped_refptr<Dispatcher>& dispatcher) {
+  base::AutoLock locker(handle_table_lock_);
+  return AddDispatcherNoLock(dispatcher);
 }
 
 MojoTimeTicks CoreImpl::GetTimeTicksNow() {
@@ -469,15 +479,6 @@ MojoResult CoreImpl::EndReadData(MojoHandle data_pipe_consumer_handle,
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   return dispatcher->EndReadData(num_bytes_read);
-}
-
-CoreImpl::CoreImpl()
-    : next_handle_(MOJO_HANDLE_INVALID + 1) {
-}
-
-CoreImpl::~CoreImpl() {
-  // This should usually not be reached (the singleton lives forever), except in
-  // tests.
 }
 
 scoped_refptr<Dispatcher> CoreImpl::GetDispatcher(MojoHandle handle) {

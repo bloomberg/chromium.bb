@@ -128,9 +128,20 @@ namespace mojo {
 Core::~Core() {
 }
 
+// static
 void Core::Init(Core* core) {
   assert(!g_core);
   g_core = core;
+}
+
+// static
+Core* Core::Get() {
+  return g_core;
+}
+
+// static
+void Core::Reset() {
+  g_core = NULL;
 }
 
 }  // namespace mojo

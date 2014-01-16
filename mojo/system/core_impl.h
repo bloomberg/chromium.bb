@@ -15,24 +15,19 @@
 
 namespace mojo {
 
-namespace embedder {
-void Init();  // So it can be friended.
-}
-
 namespace system {
 
 class CoreImpl;
 class Dispatcher;
 
-namespace test {
-class CoreTestBase;
-}
-
 // |CoreImpl| is a singleton object that implements the Mojo system calls. All
 // public methods are thread-safe.
 class MOJO_SYSTEM_IMPL_EXPORT CoreImpl : public Core {
  public:
-  static void Init();
+  // These methods are only to be used by via the embedder API.
+  CoreImpl();
+  virtual ~CoreImpl();
+  MojoHandle AddDispatcher(const scoped_refptr<Dispatcher>& dispatcher);
 
   // |CorePrivate| implementation:
   virtual MojoTimeTicks GetTimeTicksNow() OVERRIDE;
@@ -85,9 +80,6 @@ class MOJO_SYSTEM_IMPL_EXPORT CoreImpl : public Core {
                                  uint32_t num_bytes_read) OVERRIDE;
 
  private:
-  friend void embedder::Init();
-  friend class test::CoreTestBase;
-
   // The |busy| member is used only to deal with functions (in particular
   // |WriteMessage()|) that want to hold on to a dispatcher and later remove it
   // from the handle table, without holding on to the handle table lock.
@@ -122,9 +114,6 @@ class MOJO_SYSTEM_IMPL_EXPORT CoreImpl : public Core {
     bool busy;
   };
   typedef base::hash_map<MojoHandle, HandleTableEntry> HandleTableMap;
-
-  CoreImpl();
-  virtual ~CoreImpl();
 
   // Looks up the dispatcher for the given handle. Returns null if the handle is
   // invalid.

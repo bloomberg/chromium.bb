@@ -31,6 +31,23 @@ void PostTaskAndWait(scoped_refptr<base::TaskRunner> task_runner,
   event.Wait();
 }
 
+// TestWithIOThreadBase --------------------------------------------------------
+
+TestWithIOThreadBase::TestWithIOThreadBase() : io_thread_("io_thread") {
+}
+
+TestWithIOThreadBase::~TestWithIOThreadBase() {
+}
+
+void TestWithIOThreadBase::SetUp() {
+  io_thread_.StartWithOptions(
+      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
+}
+
+void TestWithIOThreadBase::TearDown() {
+  io_thread_.Stop();
+}
+
 }  // namespace test
 }  // namespace system
 }  // namespace mojo

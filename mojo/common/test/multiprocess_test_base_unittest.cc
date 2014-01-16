@@ -18,8 +18,7 @@
 namespace mojo {
 namespace {
 
-class MultiprocessTestBaseTest : public test::MultiprocessTestBase {
-};
+typedef test::MultiprocessTestBase MultiprocessTestBaseTest;
 
 TEST_F(MultiprocessTestBaseTest, RunChild) {
 // TODO(vtl): Not implemented on Windows yet.

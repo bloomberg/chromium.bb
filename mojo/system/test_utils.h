@@ -7,11 +7,14 @@
 
 #include <stdint.h>
 
-#include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/task_runner.h"
+#include "base/threading/thread.h"
 #include "base/time/time.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace tracked_objects {
 class Location;
@@ -46,6 +49,31 @@ class Stopwatch {
 void PostTaskAndWait(scoped_refptr<base::TaskRunner> task_runner,
                      const tracked_objects::Location& from_here,
                      const base::Closure& task);
+
+// TestWithIOThreadBase --------------------------------------------------------
+
+class TestWithIOThreadBase : public testing::Test {
+ public:
+  TestWithIOThreadBase();
+  virtual ~TestWithIOThreadBase();
+
+  virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
+
+ protected:
+  base::MessageLoop* io_thread_message_loop() {
+    return io_thread_.message_loop();
+  }
+
+  scoped_refptr<base::TaskRunner> io_thread_task_runner() {
+    return io_thread_message_loop()->message_loop_proxy();
+  }
+
+ private:
+  base::Thread io_thread_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestWithIOThreadBase);
+};
 
 }  // namespace test
 }  // namespace system

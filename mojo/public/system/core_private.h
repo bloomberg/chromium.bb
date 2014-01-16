@@ -17,6 +17,8 @@ class MOJO_SYSTEM_EXPORT Core {
   virtual ~Core();
 
   static void Init(Core* core);
+  static Core* Get();
+  static void Reset();
 
   virtual MojoTimeTicks GetTimeTicksNow() = 0;
   virtual MojoResult Close(MojoHandle handle) = 0;
