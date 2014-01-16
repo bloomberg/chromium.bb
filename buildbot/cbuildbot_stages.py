@@ -1624,8 +1624,7 @@ class PreCQLauncherStage(SyncStage):
       pool: ValidationPool corresponding to |plan|.
       plan: The list of patches to test in the Pre-CQ run.
     """
-    cmd = ['cbuildbot', '--remote', '--nobootstrap',
-           constants.PRE_CQ_BUILDER_NAME]
+    cmd = ['cbuildbot', '--remote', constants.PRE_CQ_BUILDER_NAME]
     if self._run.options.debug:
       cmd.append('--debug')
     for patch in plan:
