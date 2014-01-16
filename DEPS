@@ -293,6 +293,10 @@ deps = {
   "src/third_party/html_office":
      Var("chromium_git") +
          "/chromium/html-office-public.git@1d04f3dfbd8bd604190dfb6f5a030d30233ba6ea",
+
+  "src/third_party/libwebm/source":
+    Var("chromium_git") +
+      "/webm/libwebm.git@0f7815b036651e242ec8c2fcfb59fe54f69be1a8",
 }
 
 
