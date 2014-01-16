@@ -87,7 +87,9 @@ bool SupportsShadow() {
 // An animation observer to hide the view at the end of the animation.
 class HideViewAnimationObserver : public ui::ImplicitAnimationObserver {
  public:
-  HideViewAnimationObserver() : target_(NULL) {
+  HideViewAnimationObserver()
+      : frame_(NULL),
+        target_(NULL) {
   }
 
   virtual ~HideViewAnimationObserver() {
@@ -101,15 +103,21 @@ class HideViewAnimationObserver : public ui::ImplicitAnimationObserver {
     target_ = target;
   }
 
+  void set_frame(views::BubbleFrameView* frame) { frame_ = frame; }
+
  private:
   // Overridden from ui::ImplicitAnimationObserver:
   virtual void OnImplicitAnimationsCompleted() OVERRIDE {
     if (target_) {
       target_->SetVisible(false);
       target_ = NULL;
+
+      // Should update the background by invoking SchedulePaint().
+      frame_->SchedulePaint();
     }
   }
 
+  views::BubbleFrameView* frame_;
   views::View* target_;
 
   DISALLOW_COPY_AND_ASSIGN(HideViewAnimationObserver);
@@ -442,6 +450,7 @@ void AppListView::OnSpeechRecognitionStateChanged(
     speech_view_->Reset();
 
 #if defined(USE_AURA)
+  animation_observer_->set_frame(GetBubbleFrameView());
   gfx::Transform speech_transform;
   speech_transform.Translate(
       0, SkFloatToMScalar(kSpeechUIAppearingPosition));
@@ -480,10 +489,10 @@ void AppListView::OnSpeechRecognitionStateChanged(
 #else
   speech_view_->SetVisible(recognizing);
   app_list_main_view_->SetVisible(!recognizing);
-#endif
 
   // Needs to schedule paint of AppListView itself, to repaint the background.
-  SchedulePaint();
+  GetBubbleFrameView()->SchedulePaint();
+#endif
 }
 
 }  // namespace app_list
