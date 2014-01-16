@@ -37,7 +37,6 @@ def TempDir():
   """Generates a temporary directory (for downloading or extracting to) and keep
   track of the directory that's created for cleaning up later.
   """
-  global g_temp_dirs
   temp = tempfile.mkdtemp()
   g_temp_dirs.append(temp)
   return temp
@@ -77,13 +76,13 @@ def Download(url, local_path):
   content_length = int(req.headers.get('Content-Length', 0))
   bytes_read = 0L
   terminator = '\r' if sys.stdout.isatty() else '\n'
-  with open(local_path, 'wb') as file:
+  with open(local_path, 'wb') as file_handle:
     while True:
       chunk = req.read(1024 * 1024)
       if not chunk:
         break
       bytes_read += len(chunk)
-      file.write(chunk)
+      file_handle.write(chunk)
       sys.stdout.write('... %d/%d%s' % (bytes_read, content_length, terminator))
       sys.stdout.flush()
   sys.stdout.write('\n')
@@ -181,7 +180,7 @@ def CopyToFinalLocation(extracted_dirs, target_dir):
   }
   matches = []
   for extracted_dir in extracted_dirs:
-    for root, dirnames, filenames in os.walk(extracted_dir):
+    for root, _, filenames in os.walk(extracted_dir):
       for filename in filenames:
         matches.append((extracted_dir, os.path.join(root, filename)))
 
@@ -265,7 +264,7 @@ def main():
                     help='use downloaded files from DIR')
   parser.add_option('--express',
                     help='use VS Express instead of Pro', action='store_true')
-  options, args = parser.parse_args()
+  options, _ = parser.parse_args()
   try:
     target_dir = os.path.abspath(options.targetdir)
     if os.path.exists(target_dir):
