@@ -16,6 +16,8 @@ size_t NaClIrtInterface(const char* interface_ident,
 
 extern const struct nacl_irt_basic kIrtBasic;
 extern const struct nacl_irt_fdio kIrtFdIO;
+extern const struct nacl_irt_thread kIrtThread;
+extern const struct nacl_irt_tls kIrtTls;
 
 }  // namespace nonsfi
 }  // namespace nacl

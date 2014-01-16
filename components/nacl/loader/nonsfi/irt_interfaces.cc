@@ -24,6 +24,8 @@ struct NaClInterfaceTable {
 const NaClInterfaceTable kIrtInterfaces[] = {
   NACL_INTERFACE_TABLE(NACL_IRT_BASIC_v0_1, kIrtBasic),
   NACL_INTERFACE_TABLE(NACL_IRT_DEV_FDIO_v0_1, kIrtFdIO),
+  NACL_INTERFACE_TABLE(NACL_IRT_THREAD_v0_1, kIrtThread),
+  NACL_INTERFACE_TABLE(NACL_IRT_TLS_v0_1, kIrtTls),
 };
 #undef NACL_INTERFACE_TABLE
 
