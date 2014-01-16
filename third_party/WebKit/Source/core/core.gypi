@@ -2072,6 +2072,8 @@
             'dom/StyleElement.h',
             'dom/StyleEngine.cpp',
             'dom/StyleEngine.h',
+            'dom/StyleSheetCandidate.cpp',
+            'dom/StyleSheetCandidate.h',
             'dom/StyleSheetCollection.cpp',
             'dom/StyleSheetCollection.h',
             'dom/StyleSheetScopingNodeList.cpp',

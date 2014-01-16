@@ -116,6 +116,12 @@ public:
     void setPreferredStylesheetSetName(const String& name) { m_preferredStylesheetSetName = name; }
     void setSelectedStylesheetSetName(const String& name) { m_selectedStylesheetSetName = name; }
 
+    void selectStylesheetSetName(const String& name)
+    {
+        setPreferredStylesheetSetName(name);
+        setSelectedStylesheetSetName(name);
+    }
+
     void addPendingSheet();
     enum RemovePendingSheetNotificationType {
         RemovePendingSheetNotifyImmediately,

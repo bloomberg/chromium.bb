@@ -36,6 +36,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/ProcessingInstruction.h"
 #include "core/dom/StyleEngine.h"
+#include "core/dom/StyleSheetCandidate.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLLinkElement.h"
 #include "core/html/HTMLStyleElement.h"
@@ -58,82 +59,40 @@ void DocumentStyleSheetCollection::collectStyleSheetsFromCandidates(StyleEngine*
     DocumentOrderedList::iterator end = m_styleSheetCandidateNodes.end();
     for (DocumentOrderedList::iterator it = begin; it != end; ++it) {
         Node* n = *it;
-        StyleSheet* sheet = 0;
-        CSSStyleSheet* activeSheet = 0;
-        if (n->nodeType() == Node::PROCESSING_INSTRUCTION_NODE && !document()->isHTMLDocument()) {
+        StyleSheetCandidate candidate(*n);
+
+        if (candidate.isXSL()) {
             // Processing instruction (XML documents only).
             // We don't support linking to embedded CSS stylesheets, see <https://bugs.webkit.org/show_bug.cgi?id=49281> for discussion.
-            ProcessingInstruction* pi = toProcessingInstruction(n);
             // Don't apply XSL transforms to already transformed documents -- <rdar://problem/4132806>
-            if (RuntimeEnabledFeatures::xsltEnabled() && pi->isXSL() && !document()->transformSourceDocument()) {
+            if (RuntimeEnabledFeatures::xsltEnabled() && !document()->transformSourceDocument()) {
+                ProcessingInstruction* pi = toProcessingInstruction(n);
                 // Don't apply XSL transforms until loading is finished.
                 if (!document()->parsing() && !pi->isLoading())
                     document()->applyXSLTransform(pi);
                 return;
             }
-            sheet = pi->sheet();
-            if (sheet && !sheet->disabled() && sheet->isCSSStyleSheet())
-                activeSheet = toCSSStyleSheet(sheet);
-        } else if ((n->isHTMLElement() && (n->hasTagName(linkTag) || n->hasTagName(styleTag))) || (n->isSVGElement() && n->hasTagName(SVGNames::styleTag))) {
-            Element* e = toElement(n);
-            AtomicString title = e->getAttribute(titleAttr);
-            bool enabledViaScript = false;
-            if (e->hasLocalName(linkTag)) {
-                // <LINK> element
-                HTMLLinkElement* linkElement = toHTMLLinkElement(n);
-                enabledViaScript = linkElement->isEnabledViaScript();
-                if (!linkElement->isDisabled() && linkElement->styleSheetIsLoading()) {
-                    // it is loading but we should still decide which style sheet set to use
-                    if (!enabledViaScript && !title.isEmpty() && engine->preferredStylesheetSetName().isEmpty()) {
-                        const AtomicString& rel = e->getAttribute(relAttr);
-                        if (!rel.contains("alternate")) {
-                            engine->setPreferredStylesheetSetName(title);
-                            engine->setSelectedStylesheetSetName(title);
-                        }
-                    }
 
-                    continue;
-                }
-                sheet = linkElement->sheet();
-                if (!sheet)
-                    title = nullAtom;
-            } else if (n->isSVGElement() && n->hasTagName(SVGNames::styleTag)) {
-                sheet = toSVGStyleElement(n)->sheet();
-            } else {
-                sheet = toHTMLStyleElement(n)->sheet();
-            }
-
-            if (sheet && !sheet->disabled() && sheet->isCSSStyleSheet())
-                activeSheet = toCSSStyleSheet(sheet);
-
-            // Check to see if this sheet belongs to a styleset
-            // (thus making it PREFERRED or ALTERNATE rather than
-            // PERSISTENT).
-            AtomicString rel = e->getAttribute(relAttr);
-            if (!enabledViaScript && sheet && !title.isEmpty()) {
-                // Yes, we have a title.
-                if (engine->preferredStylesheetSetName().isEmpty()) {
-                    // No preferred set has been established. If
-                    // we are NOT an alternate sheet, then establish
-                    // us as the preferred set. Otherwise, just ignore
-                    // this sheet.
-                    if (e->hasLocalName(styleTag) || !rel.contains("alternate")) {
-                        engine->setPreferredStylesheetSetName(title);
-                        engine->setSelectedStylesheetSetName(title);
-                    }
-                }
-                if (title != engine->preferredStylesheetSetName())
-                    activeSheet = 0;
-            }
-
-            if (rel.contains("alternate") && title.isEmpty())
-                activeSheet = 0;
+            continue;
         }
 
-        if (sheet && collectFor == CollectForList)
+        if (candidate.isEnabledAndLoading()) {
+            // it is loading but we should still decide which style sheet set to use
+            if (candidate.hasPreferrableName(engine->preferredStylesheetSetName()))
+                engine->selectStylesheetSetName(candidate.title());
+            continue;
+        }
+
+        StyleSheet* sheet = candidate.sheet();
+        if (!sheet)
+            continue;
+
+        if (candidate.hasPreferrableName(engine->preferredStylesheetSetName()))
+            engine->selectStylesheetSetName(candidate.title());
+        if (collectFor == CollectForList)
             collection.appendSheetForList(sheet);
-        if (activeSheet)
-            collection.appendActiveStyleSheet(activeSheet);
+        if (candidate.canBeActivated(engine->preferredStylesheetSetName()))
+            collection.appendActiveStyleSheet(toCSSStyleSheet(sheet));
     }
 }
 
