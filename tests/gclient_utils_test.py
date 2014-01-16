@@ -31,15 +31,17 @@ class GclientUtilsUnittest(GclientUtilBase):
         'Annotated', 'AutoFlush', 'CheckCallAndFilter', 'CommandToStr',
         'CheckCallAndFilterAndHeader', 'Error', 'ExecutionQueue', 'FileRead',
         'FileWrite', 'FindFileUpwards', 'FindGclientRoot',
-        'GetGClientRootAndEntries', 'GetEditor', 'IsDateRevision',
-        'MakeDateRevision', 'MakeFileAutoFlush', 'MakeFileAnnotated',
-        'PathDifference', 'ParseCodereviewSettingsContent', 'NumLocalCpus',
-        'PrintableObject', 'RETRY_INITIAL_SLEEP', 'RETRY_MAX', 'RunEditor',
-        'GCLIENT_CHILDREN', 'GCLIENT_CHILDREN_LOCK', 'GClientChildren',
-        'SplitUrlRevision', 'SyntaxErrorToError', 'UpgradeToHttps', 'Wrapper',
-        'WorkItem', 'codecs', 'lockedmethod', 'logging', 'os', 'pipes', 'Queue',
-        're', 'rmtree', 'safe_makedirs', 'safe_rename', 'stat', 'subprocess', 
+        'GetGClientRootAndEntries', 'GetEditor', 'GetExeSuffix',
+        'GetMacWinOrLinux', 'IsDateRevision', 'MakeDateRevision',
+        'MakeFileAutoFlush', 'MakeFileAnnotated', 'PathDifference',
+        'ParseCodereviewSettingsContent', 'NumLocalCpus', 'PrintableObject',
+        'RETRY_INITIAL_SLEEP', 'RETRY_MAX', 'RunEditor', 'GCLIENT_CHILDREN',
+        'GCLIENT_CHILDREN_LOCK', 'GClientChildren', 'SplitUrlRevision',
+        'SyntaxErrorToError', 'UpgradeToHttps', 'Wrapper', 'WorkItem',
+        'codecs', 'lockedmethod', 'logging', 'os', 'pipes', 'Queue', 're',
+        'rmtree', 'safe_makedirs', 'safe_rename', 'stat', 'subprocess',
         'subprocess2', 'sys', 'tempfile', 'threading', 'time', 'urlparse',
+
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(gclient_utils, members)

@@ -32,6 +32,7 @@ except ImportError:
 from third_party import colorama
 from third_party import upload
 import breakpad  # pylint: disable=W0611
+import clang_format
 import fix_encoding
 import gclient_utils
 import presubmit_support
@@ -269,7 +270,7 @@ class Settings(object):
     if not self.updated:
       # The only value that actually changes the behavior is
       # autoupdate = "false". Everything else means "true".
-      autoupdate = RunGit(['config', 'rietveld.autoupdate'], 
+      autoupdate = RunGit(['config', 'rietveld.autoupdate'],
                           error_ok=True
                           ).strip().lower()
 
@@ -2342,7 +2343,14 @@ def CMDformat(parser, args):
   diff_cmd += ['*' + ext for ext in CLANG_EXTS]
   diff_output = RunGit(diff_cmd)
 
-  top_dir = RunGit(["rev-parse", "--show-toplevel"]).rstrip('\n')
+  top_dir = os.path.normpath(
+      RunGit(["rev-parse", "--show-toplevel"]).rstrip('\n'))
+
+  # Locate the clang-format binary in the checkout
+  try:
+    clang_format_tool = clang_format.FindClangFormatToolInChromiumTree()
+  except clang_format.NotFoundError, e:
+    DieWithError(e)
 
   if opts.full:
     # diff_output is a list of files to send to clang-format.
@@ -2350,24 +2358,21 @@ def CMDformat(parser, args):
     if not files:
       print "Nothing to format."
       return 0
-    RunCommand(['clang-format', '-i', '-style', 'Chromium'] + files,
+    RunCommand([clang_format_tool, '-i', '-style', 'Chromium'] + files,
                cwd=top_dir)
   else:
+    env = os.environ.copy()
+    env['PATH'] = os.path.dirname(clang_format_tool)
     # diff_output is a patch to send to clang-format-diff.py
-    cfd_path = os.path.join('/usr', 'lib', 'clang-format',
-                            'clang-format-diff.py')
-    if not os.path.exists(cfd_path):
-      DieWithError('Could not find clang-format-diff at %s.' % cfd_path)
-    cmd = [sys.executable, cfd_path, '-p0', '-style', 'Chromium']
+    try:
+      script = clang_format.FindClangFormatScriptInChromiumTree(
+          'clang-format-diff.py')
+    except clang_format.NotFoundError, e:
+      DieWithError(e)
 
-    # Newer versions of clang-format-diff.py require an explicit -i flag
-    # to apply the edits to files, otherwise it just displays a diff.
-    # Probe the usage string to verify if this is needed.
-    help_text = RunCommand([sys.executable, cfd_path, '-h'])
-    if '[-i]' in help_text:
-      cmd.append('-i')
+    cmd = [sys.executable, script, '-p0', '-style', 'Chromium', '-i']
 
-    RunCommand(cmd, stdin=diff_output, cwd=top_dir)
+    RunCommand(cmd, stdin=diff_output, cwd=top_dir, env=env)
 
   return 0
 

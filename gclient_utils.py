@@ -33,6 +33,7 @@ class Error(Exception):
       msg = '\n'.join('%d> %s' % (index, l) for l in msg.splitlines())
     super(Error, self).__init__(msg, *args, **kwargs)
 
+
 def SplitUrlRevision(url):
   """Splits url and returns a two-tuple: url, rev"""
   if url.startswith('ssh:'):
@@ -103,10 +104,10 @@ def FileWrite(filename, content, mode='w'):
 def safe_rename(old, new):
   """Renames a file reliably.
 
-  Sometimes os.rename does not work because a dying git process keeps a handle 
-  on it for a few seconds. An exception is then thrown, which make the program 
+  Sometimes os.rename does not work because a dying git process keeps a handle
+  on it for a few seconds. An exception is then thrown, which make the program
   give up what it was doing and remove what was deleted.
-  The only solution is to catch the exception and try again until it works. 
+  The only solution is to catch the exception and try again until it works.
   """
   # roughly 10s
   retries = 100
@@ -558,6 +559,24 @@ def FindFileUpwards(filename, path=None):
     if new_path == path:
       return None
     path = new_path
+
+
+def GetMacWinOrLinux():
+  """Returns 'mac', 'win', or 'linux', matching the current platform."""
+  if sys.platform.startswith(('cygwin', 'win')):
+    return 'win'
+  elif sys.platform.startswith('linux'):
+    return 'linux'
+  elif sys.platform == 'darwin':
+    return 'mac'
+  raise Error('Unknown platform: ' + sys.platform)
+
+
+def GetExeSuffix():
+  """Returns '' or '.exe' depending on how executables work on this platform."""
+  if sys.platform.startswith(('cygwin', 'win')):
+    return '.exe'
+  return ''
 
 
 def GetGClientRootAndEntries(path=None):
