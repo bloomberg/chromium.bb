@@ -33,6 +33,36 @@ class TestPageMeasurementResults(
   def __str__(self):
     return '\n'.join([repr(x) for x in self.all_page_specific_values])
 
+class LoadTimesTimelineMetric(unittest.TestCase):
+  def GetResultsForModel(self, metric, model):
+    metric.model = model
+    results = TestPageMeasurementResults(self)
+    tab = None
+    metric.AddResults(tab, results)
+    return results
+
+  def testSanitizing(self):
+    model = model_module.TimelineModel()
+    renderer_main = model.GetOrCreateProcess(1).GetOrCreateThread(2)
+    renderer_main.name = 'CrRendererMain'
+
+    # [      X       ]
+    #      [  Y  ]
+    renderer_main.BeginSlice('cat1', 'x.y', 10, 0)
+    renderer_main.EndSlice(20, 20)
+    model.FinalizeImport()
+
+    metric = timeline.LoadTimesTimelineMetric(timeline.TRACING_MODE)
+    metric.renderer_process = renderer_main.parent
+    results = self.GetResultsForModel(metric, model)
+    results.AssertHasPageSpecificScalarValue(
+      'CrRendererMain|x_y', 'ms', 10)
+    results.AssertHasPageSpecificScalarValue(
+      'CrRendererMain|x_y_max', 'ms', 10)
+    results.AssertHasPageSpecificScalarValue(
+      'CrRendererMain|x_y_avg', 'ms', 10)
+
+
 class ThreadTimesTimelineMetricUnittest(unittest.TestCase):
   def GetResultsForModel(self, metric, model):
     metric.model = model

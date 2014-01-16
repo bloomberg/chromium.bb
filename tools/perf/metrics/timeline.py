@@ -60,6 +60,10 @@ class TimelineMetric(Metric):
   def renderer_process(self):
     return self._renderer_process
 
+  @renderer_process.setter
+  def renderer_process(self, p):
+    self._renderer_process = p
+
   def AddResults(self, tab, results):
     return
 
@@ -95,7 +99,11 @@ class LoadTimesTimelineMetric(TimelineMetric):
         times = [event.self_time for event in event_group]
         total = sum(times)
         biggest_jank = max(times)
-        full_name = thread_name + '|' + event_name
+
+        # Results objects cannot contain the '.' character, so remove that here.
+        sanitized_event_name = event_name.replace('.', '_')
+
+        full_name = thread_name + '|' + sanitized_event_name
         results.Add(full_name, 'ms', total)
         results.Add(full_name + '_max', 'ms', biggest_jank)
         results.Add(full_name + '_avg', 'ms', total / len(times))
