@@ -47,6 +47,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/search_engines/util.h"
+#include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -793,4 +794,22 @@ bool StartupBrowserCreator::ActivatedProfile() {
 bool HasPendingUncleanExit(Profile* profile) {
   return profile->GetLastSessionExitType() == Profile::EXIT_CRASHED &&
       !profile_launch_observer.Get().HasBeenLaunched(profile);
+}
+
+base::FilePath GetStartupProfilePath(const base::FilePath& user_data_dir,
+                                     const CommandLine& command_line) {
+  // If we are showing the app list then chrome isn't shown so load the app
+  // list's profile rather than chrome's.
+  if (command_line.HasSwitch(switches::kShowAppList)) {
+    return AppListService::Get(chrome::HOST_DESKTOP_TYPE_NATIVE)->
+        GetProfilePath(user_data_dir);
+  }
+
+  if (command_line.HasSwitch(switches::kProfileDirectory)) {
+    return user_data_dir.Append(
+        command_line.GetSwitchValuePath(switches::kProfileDirectory));
+  }
+
+  return g_browser_process->profile_manager()->GetLastUsedProfileDir(
+      user_data_dir);
 }

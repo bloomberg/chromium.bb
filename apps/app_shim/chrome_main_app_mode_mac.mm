@@ -605,8 +605,16 @@ int ChromeAppModeStart(const app_mode::ChromeAppModeInfo* info) {
     ProcessSerialNumber psn;
     CommandLine command_line(CommandLine::NO_PROGRAM);
     command_line.AppendSwitch(switches::kSilentLaunch);
-    command_line.AppendSwitchPath(switches::kProfileDirectory,
-                                  info->profile_dir);
+
+    // If the shim is the app launcher, pass --show-app-list when starting a new
+    // Chrome process to inform startup codepaths and load the correct profile.
+    if (info->app_mode_id == app_mode::kAppListModeId) {
+      command_line.AppendSwitch(switches::kShowAppList);
+    } else {
+      command_line.AppendSwitchPath(switches::kProfileDirectory,
+                                    info->profile_dir);
+    }
+
     bool success =
         base::mac::OpenApplicationWithPath(base::mac::OuterBundlePath(),
                                            command_line,

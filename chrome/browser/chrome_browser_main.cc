@@ -300,26 +300,6 @@ PrefService* InitializeLocalState(
   return local_state;
 }
 
-// Returns the path that contains the profile that should be loaded
-// on process startup.
-base::FilePath GetStartupProfilePath(const base::FilePath& user_data_dir,
-                                     const CommandLine& command_line) {
-  if (command_line.HasSwitch(switches::kProfileDirectory)) {
-    return user_data_dir.Append(
-        command_line.GetSwitchValuePath(switches::kProfileDirectory));
-  }
-
-  // If we are showing the app list then chrome isn't shown so load the app
-  // list's profile rather than chrome's.
-  if (command_line.HasSwitch(switches::kShowAppList)) {
-    return AppListService::Get(chrome::HOST_DESKTOP_TYPE_NATIVE)->
-        GetProfilePath(user_data_dir);
-  }
-
-  return g_browser_process->profile_manager()->GetLastUsedProfileDir(
-      user_data_dir);
-}
-
 // Initializes the primary profile, possibly doing some user prompting to pick
 // a fallback profile. Returns the newly created profile, or NULL if startup
 // should not continue.
@@ -341,9 +321,9 @@ Profile* CreatePrimaryProfile(const content::MainFunctionParams& parameters,
   }
 
   Profile* profile = NULL;
-#if defined(OS_CHROMEOS)
-  // On ChromeOS the ProfileManager will use the same path as the one we got
-  // passed. GetActiveUserProfile will therefore use the correct path
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
+  // On ChromeOS and Android the ProfileManager will use the same path as the
+  // one we got passed. GetActiveUserProfile will therefore use the correct path
   // automatically.
   DCHECK_EQ(user_data_dir.value(),
             g_browser_process->profile_manager()->user_data_dir().value());

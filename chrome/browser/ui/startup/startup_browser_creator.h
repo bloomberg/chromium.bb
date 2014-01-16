@@ -170,4 +170,9 @@ class StartupBrowserCreator {
 // after the unclean exit.
 bool HasPendingUncleanExit(Profile* profile);
 
+// Returns the path that contains the profile that should be loaded on process
+// startup.
+base::FilePath GetStartupProfilePath(const base::FilePath& user_data_dir,
+                                     const CommandLine& command_line);
+
 #endif  // CHROME_BROWSER_UI_STARTUP_STARTUP_BROWSER_CREATOR_H_

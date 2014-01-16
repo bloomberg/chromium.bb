@@ -5,8 +5,10 @@
 #include "chrome/browser/ui/app_list/app_list_service.h"
 
 #include "base/command_line.h"
+#include "base/json/json_file_value_serializer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -15,7 +17,10 @@
 #include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "ui/app_list/app_list_model.h"
@@ -55,18 +60,21 @@ class AppListServiceInteractiveTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(AppListServiceInteractiveTest);
 };
 
-// ChromeOS does not support ShowForProfile(), or profile switching, because
-// the browser instance is only ever associated with a single profile.
+// ChromeOS does not support ShowForProfile(), or profile switching within the
+// app list. Profile switching on CrOS goes through a different code path.
 #if defined(OS_CHROMEOS)
 #define MAYBE_ShowAndDismiss DISABLED_ShowAndDismiss
 #define MAYBE_SwitchAppListProfiles DISABLED_SwitchAppListProfiles
 #define MAYBE_SwitchAppListProfilesDuringSearch \
     DISABLED_SwitchAppListProfilesDuringSearch
+#define MAYBE_ShowAppListNonDefaultProfile \
+    DISABLED_ShowAppListNonDefaultProfile
 #else
 #define MAYBE_ShowAndDismiss ShowAndDismiss
 #define MAYBE_SwitchAppListProfiles SwitchAppListProfiles
 #define MAYBE_SwitchAppListProfilesDuringSearch \
     SwitchAppListProfilesDuringSearch
+#define MAYBE_ShowAppListNonDefaultProfile ShowAppListNonDefaultProfile
 #endif
 
 // Show the app list, then dismiss it.
@@ -174,5 +182,62 @@ IN_PROC_BROWSER_TEST_F(ShowAppListInteractiveTest, ShowAppListFlag) {
   // need to do this because switches::kShowAppList suppresses the creation of
   // any browsers.
   CreateBrowser(service->GetCurrentAppListProfile());
+  service->DismissAppList();
+}
+
+// Interactive UI test that creates a non-default profile and configures it for
+// the --show-app-list flag.
+class ShowAppListNonDefaultInteractiveTest : public ShowAppListInteractiveTest {
+ public:
+  ShowAppListNonDefaultInteractiveTest()
+      : second_profile_name_(FILE_PATH_LITERAL("Profile 1")) {
+  }
+
+  virtual bool SetUpUserDataDirectory() OVERRIDE {
+    // Create a temp dir for "Profile 1" and seed the user data dir with a Local
+    // State file configuring the app list to use it.
+    base::FilePath user_data_dir;
+    CHECK(PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
+    base::FilePath profile_path = user_data_dir.Append(second_profile_name_);
+    CHECK(second_profile_temp_dir_.Set(profile_path));
+
+    base::FilePath local_pref_path =
+        user_data_dir.Append(chrome::kLocalStateFilename);
+    base::DictionaryValue dict;
+    dict.SetString(prefs::kAppListProfile,
+                   second_profile_name_.MaybeAsASCII());
+    CHECK(JSONFileValueSerializer(local_pref_path).Serialize(dict));
+
+    return InProcessBrowserTest::SetUpUserDataDirectory();
+  }
+
+ protected:
+  const base::FilePath second_profile_name_;
+  base::ScopedTempDir second_profile_temp_dir_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ShowAppListNonDefaultInteractiveTest);
+};
+
+// Test showing the app list for a profile that doesn't match the browser
+// profile.
+IN_PROC_BROWSER_TEST_F(ShowAppListNonDefaultInteractiveTest,
+                       MAYBE_ShowAppListNonDefaultProfile) {
+  AppListService* service = test::GetAppListService();
+  EXPECT_TRUE(service->IsAppListVisible());
+  EXPECT_EQ(second_profile_name_.value(),
+            service->GetCurrentAppListProfile()->GetPath().BaseName().value());
+
+  // Check that the default profile hasn't been loaded.
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  EXPECT_EQ(1u, profile_manager->GetNumberOfProfiles());
+
+  // Create a browser for the Default profile. This stops MaybeTeminate being
+  // called when the app list window is dismissed. Use the last used browser
+  // profile to verify that it is different and causes ProfileManager to load a
+  // new profile.
+  CreateBrowser(profile_manager->GetLastUsedProfile());
+  EXPECT_EQ(2u, profile_manager->GetNumberOfProfiles());
+
   service->DismissAppList();
 }

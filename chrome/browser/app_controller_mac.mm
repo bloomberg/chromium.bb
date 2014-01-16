@@ -561,8 +561,10 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
 
   // If the window changed to a new BrowserWindowController, update the profile.
   id windowController = [[notify object] windowController];
-  if ([notify name] == NSWindowDidBecomeMainNotification &&
-      [windowController isKindOfClass:[BrowserWindowController class]]) {
+  if (![windowController isKindOfClass:[BrowserWindowController class]])
+    return;
+
+  if ([notify name] == NSWindowDidBecomeMainNotification) {
     // If the profile is incognito, use the original profile.
     Profile* newProfile = [windowController profile]->GetOriginalProfile();
     [self windowChangedToProfile:newProfile];
@@ -1258,11 +1260,15 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   if (lastProfile_)
     return lastProfile_;
 
-  // On first launch, no profile will be stored, so use last from Local State.
-  if (g_browser_process->profile_manager())
-    return g_browser_process->profile_manager()->GetLastUsedProfile();
+  // On first launch, use the logic that ChromeBrowserMain uses to determine
+  // the initial profile.
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  if (!profile_manager)
+    return NULL;
 
-  return NULL;
+  return profile_manager->GetProfile(GetStartupProfilePath(
+      profile_manager->user_data_dir(),
+      *CommandLine::ForCurrentProcess()));
 }
 
 // Various methods to open URLs that we get in a native fashion. We use
