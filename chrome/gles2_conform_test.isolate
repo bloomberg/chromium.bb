@@ -2,6 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 {
+  'includes': [
+    'angle.isolate',
+  ],
   'conditions': [
     # TODO(kbr): add Android when these tests are run on those bots.
     ['OS=="linux" or OS=="mac" or OS=="win"', {

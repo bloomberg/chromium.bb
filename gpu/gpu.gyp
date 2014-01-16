@@ -335,6 +335,12 @@
             '../testing/android/native_test.gyp:native_test_native_code',
           ],
         }],
+        ['OS == "win"', {
+          'dependencies': [
+            '../third_party/angle/src/build_angle.gyp:libEGL',
+            '../third_party/angle/src/build_angle.gyp:libGLESv2',
+          ],
+        }],
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],

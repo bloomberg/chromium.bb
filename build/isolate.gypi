@@ -38,6 +38,9 @@
 # for more information.
 
 {
+  'includes': [
+    '../chrome/version.gypi',
+  ],
   'rules': [
     {
       'rule_name': 'isolate',
@@ -77,6 +80,7 @@
         '--config-variable',
         'internal_gles2_conform_tests=<(internal_gles2_conform_tests)',
         '--config-variable', 'icu_use_data_file_flag=<(icu_use_data_file_flag)',
+        '--extra-variable', 'version_full=<(version_full)',
         '--result', '<@(_outputs)',
         '--isolate', '<(RULE_INPUT_PATH)',
       ],

@@ -6,8 +6,6 @@
     ['OS=="linux"', {
       'variables': {
         'isolate_dependency_tracked': [
-          '<(PRODUCT_DIR)/libclearkeycdm.so',
-          '<(PRODUCT_DIR)/libclearkeycdmadapter.so',
           '<(PRODUCT_DIR)/libffmpegsumo.so',
           '<(PRODUCT_DIR)/libosmesa.so',
           '<(PRODUCT_DIR)/libppGoogleNaClPluginChrome.so',
@@ -36,8 +34,6 @@
           '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe',
         ],
         'isolate_dependency_untracked': [
-          '<(PRODUCT_DIR)/lib64/',
-          '<(PRODUCT_DIR)/plugins/',
           '<(PRODUCT_DIR)/resources/extension/',
         ],
       },
@@ -48,25 +44,23 @@
           '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/MacOS/<(mac_product_name)',
         ],
         'isolate_dependency_tracked': [
-          '<(PRODUCT_DIR)/clearkeycdmadapter.plugin',
           '<(PRODUCT_DIR)/ffmpegsumo.so',
-          '<(PRODUCT_DIR)/libclearkeycdm.dylib',
         ],
         'isolate_dependency_untracked': [
           '<(PRODUCT_DIR)/<(mac_product_name) Framework.framework/',
           '<(PRODUCT_DIR)/<(mac_product_name) Helper.app/',
           '<(PRODUCT_DIR)/<(mac_product_name).app/',
-          '<(PRODUCT_DIR)/lib32/',
         ],
       },
     }],
     ['OS=="win"', {
       'variables': {
         'isolate_dependency_tracked': [
+          '<(PRODUCT_DIR)/<(version_full).manifest',
           '<(PRODUCT_DIR)/D3DCompiler_43.dll',
           '<(PRODUCT_DIR)/chrome.dll',
-          '<(PRODUCT_DIR)/clearkeycdm.dll',
-          '<(PRODUCT_DIR)/clearkeycdmadapter.dll',
+          '<(PRODUCT_DIR)/chrome_child.dll',
+          '<(PRODUCT_DIR)/chrome_elf.dll',
           '<(PRODUCT_DIR)/d3dcompiler_46.dll',
           '<(PRODUCT_DIR)/ffmpegsumo.dll',
           '<(PRODUCT_DIR)/libEGL.dll',

@@ -20,7 +20,7 @@
           '../third_party/webgl/',
         ],
         'command': [
-          '../content/test/gpu/run_gpu_test',
+          '../content/test/gpu/run_gpu_test.py',
         ],
       },
     }],
