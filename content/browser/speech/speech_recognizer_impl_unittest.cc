@@ -54,9 +54,8 @@ class SpeechRecognizerImplTest : public SpeechRecognitionEventListener,
     sr_engine->SetConfig(config);
 
     const int kTestingSessionId = 1;
-    const bool kOneShotMode = true;
     recognizer_ = new SpeechRecognizerImpl(
-        this, kTestingSessionId, kOneShotMode, sr_engine);
+        this, kTestingSessionId, false, false, sr_engine);
     audio_manager_.reset(new media::MockAudioManager(
         base::MessageLoop::current()->message_loop_proxy().get()));
     recognizer_->SetAudioManagerForTesting(audio_manager_.get());

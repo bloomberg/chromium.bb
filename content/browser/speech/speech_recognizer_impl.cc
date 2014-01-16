@@ -173,17 +173,19 @@ double SpeechRecognizerImpl::OnDataConverter::ProvideInput(
 SpeechRecognizerImpl::SpeechRecognizerImpl(
     SpeechRecognitionEventListener* listener,
     int session_id,
-    bool is_single_shot,
+    bool continuous,
+    bool provisional_results,
     SpeechRecognitionEngine* engine)
     : SpeechRecognizer(listener, session_id),
       recognition_engine_(engine),
       endpointer_(kAudioSampleRate),
       is_dispatching_event_(false),
-      is_single_shot_(is_single_shot),
+      provisional_results_(provisional_results),
       state_(STATE_IDLE) {
   DCHECK(recognition_engine_ != NULL);
-  if (is_single_shot) {
-    // In single shot recognition, the session is automatically ended after:
+  if (!continuous) {
+    // In single shot (non-continous) recognition,
+    // the session is automatically ended after:
     //  - 0.5 seconds of silence if time <  3 seconds
     //  - 1   seconds of silence if time >= 3 seconds
     endpointer_.set_speech_input_complete_silence_length(
@@ -685,10 +687,8 @@ SpeechRecognizerImpl::FSMState SpeechRecognizerImpl::Abort(
 
 SpeechRecognizerImpl::FSMState SpeechRecognizerImpl::ProcessIntermediateResult(
     const FSMEventArgs& event_args) {
-  // Provisional results can occur only during continuous (non one-shot) mode.
-  // If this check is reached it means that a continuous speech recognition
-  // engine is being used for a one shot recognition.
-  DCHECK_EQ(false, is_single_shot_);
+  // Provisional results can occur only if explicitly enabled in the JS API.
+  DCHECK(provisional_results_);
 
   // In continuous recognition, intermediate results can occur even when we are
   // in the ESTIMATING_ENVIRONMENT or WAITING_FOR_SPEECH states (if the
@@ -718,8 +718,8 @@ SpeechRecognizerImpl::ProcessFinalResult(const FSMEventArgs& event_args) {
   for (; i != results.end(); ++i) {
     const SpeechRecognitionResult& result = *i;
     if (result.is_provisional) {
+      DCHECK(provisional_results_);
       provisional_results_pending = true;
-      DCHECK(!is_single_shot_);
     } else if (results_are_empty) {
       results_are_empty = result.hypotheses.empty();
     }

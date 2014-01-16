@@ -147,7 +147,8 @@ int SpeechRecognitionManagerImpl::CreateSession(
   session->recognizer = new SpeechRecognizerImpl(
       this,
       session_id,
-      !config.continuous,
+      config.continuous,
+      config.interim_results,
       google_remote_engine);
 #else
   session->recognizer = new SpeechRecognizerImplAndroid(this, session_id);

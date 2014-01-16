@@ -41,7 +41,8 @@ class CONTENT_EXPORT SpeechRecognizerImpl
 
   SpeechRecognizerImpl(SpeechRecognitionEventListener* listener,
                        int session_id,
-                       bool is_single_shot,
+                       bool continuous,
+                       bool provisional_results,
                        SpeechRecognitionEngine* engine);
 
   virtual void StartRecognition(const std::string& device_id) OVERRIDE;
@@ -146,7 +147,7 @@ class CONTENT_EXPORT SpeechRecognizerImpl
   int num_samples_recorded_;
   float audio_level_;
   bool is_dispatching_event_;
-  bool is_single_shot_;
+  bool provisional_results_;
   FSMState state_;
   std::string device_id_;
 
