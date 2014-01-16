@@ -115,6 +115,10 @@ class UserCloudPolicyManagerChromeOS
   // successful.
   void OnInitialPolicyFetchComplete(bool success);
 
+  // Called when |policy_fetch_timeout_| times out, to cancel the blocking
+  // wait for the initial policy fetch.
+  void OnBlockingFetchTimeout();
+
   // Cancels waiting for the policy fetch and flags the
   // ConfigurationPolicyProvider ready (assuming all other initialization tasks
   // have completed).
