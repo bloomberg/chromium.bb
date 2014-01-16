@@ -11,9 +11,11 @@ namespace app_list {
 namespace switches {
 
 APP_LIST_EXPORT extern const char kEnableFolderUI[];
-APP_LIST_EXPORT extern const char kEnableVoiceSearch[];
+APP_LIST_EXPORT extern const char kDisableVoiceSearch[];
 
 bool IsFolderUIEnabled();
+
+bool APP_LIST_EXPORT IsVoiceSearchEnabled();
 
 }  // namespace switches
 }  // namespace app_list
