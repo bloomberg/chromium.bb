@@ -35,7 +35,7 @@
 #include "ui/gfx/screen.h"
 
 #if defined(USE_AURA)
-#include "content/browser/aura/image_transport_factory.h"
+#include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/test_screen.h"
