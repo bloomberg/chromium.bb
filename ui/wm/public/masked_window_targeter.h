@@ -28,6 +28,7 @@ class MaskedWindowTargeter : public aura::WindowTargeter {
       aura::Window* window,
       const ui::LocatedEvent& event) const OVERRIDE;
 
+ private:
   aura::Window* masked_window_;
 
   DISALLOW_COPY_AND_ASSIGN(MaskedWindowTargeter);

@@ -21,6 +21,7 @@
 #include "ui/keyboard/keyboard_controller_proxy.h"
 #include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_util.h"
+#include "ui/wm/public/masked_window_targeter.h"
 
 namespace {
 
@@ -35,6 +36,31 @@ gfx::Rect KeyboardBoundsFromWindowBounds(const gfx::Rect& window_bounds) {
       window_bounds.width(),
       window_bounds.height() * kKeyboardHeightRatio);
 }
+
+// Event targeter for the keyboard container.
+class KeyboardContainerTargeter : public wm::MaskedWindowTargeter {
+ public:
+  KeyboardContainerTargeter(aura::Window* container,
+                            keyboard::KeyboardControllerProxy* proxy)
+      : wm::MaskedWindowTargeter(container),
+        proxy_(proxy) {
+  }
+
+  virtual ~KeyboardContainerTargeter() {}
+
+ private:
+  // wm::MaskedWindowTargeter:
+  virtual void GetHitTestMask(aura::Window* window,
+                              gfx::Path* mask) const OVERRIDE {
+    gfx::Rect keyboard_bounds = proxy_ ? proxy_->GetKeyboardWindow()->bounds() :
+        KeyboardBoundsFromWindowBounds(window->bounds());
+    mask->addRect(RectToSkRect(keyboard_bounds));
+  }
+
+  keyboard::KeyboardControllerProxy* proxy_;
+
+  DISALLOW_COPY_AND_ASSIGN(KeyboardContainerTargeter);
+};
 
 // The KeyboardWindowDelegate makes sure the keyboard-window does not get focus.
 // This is necessary to make sure that the synthetic key-events reach the target
@@ -166,6 +192,8 @@ aura::Window* KeyboardController::GetContainerWindow() {
   if (!container_.get()) {
     container_.reset(new aura::Window(
         new KeyboardWindowDelegate(proxy_.get())));
+    container_->set_event_targeter(scoped_ptr<ui::EventTargeter>(
+        new KeyboardContainerTargeter(container_.get(), proxy_.get())));
     container_->SetName("KeyboardContainer");
     container_->set_owned_by_parent(false);
     container_->Init(aura::WINDOW_LAYER_NOT_DRAWN);

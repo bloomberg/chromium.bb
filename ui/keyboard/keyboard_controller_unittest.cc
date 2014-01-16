@@ -297,6 +297,45 @@ TEST_F(KeyboardControllerTest, ClickDoesNotFocusKeyboard) {
   keyboard_container->RemovePreTargetHandler(&observer);
 }
 
+TEST_F(KeyboardControllerTest, EventHitTestingInContainer) {
+  const gfx::Rect& root_bounds = root_window()->bounds();
+  aura::test::EventCountDelegate delegate;
+  scoped_ptr<aura::Window> window(new aura::Window(&delegate));
+  window->Init(aura::WINDOW_LAYER_NOT_DRAWN);
+  window->SetBounds(root_bounds);
+  root_window()->AddChild(window.get());
+  window->Show();
+  window->Focus();
+
+  aura::Window* keyboard_container(controller()->GetContainerWindow());
+  keyboard_container->SetBounds(root_bounds);
+
+  root_window()->AddChild(keyboard_container);
+  keyboard_container->Show();
+
+  ShowKeyboard();
+
+  EXPECT_TRUE(window->IsVisible());
+  EXPECT_TRUE(keyboard_container->IsVisible());
+  EXPECT_TRUE(window->HasFocus());
+  EXPECT_FALSE(keyboard_container->HasFocus());
+
+  // Make sure hit testing works correctly while the keyboard is visible.
+  aura::Window* keyboard_window = proxy()->GetKeyboardWindow();
+  ui::EventTarget* root = root_window();
+  ui::EventTargeter* targeter = root->GetEventTargeter();
+  gfx::Point location = keyboard_window->bounds().CenterPoint();
+  ui::MouseEvent mouse1(ui::ET_MOUSE_MOVED, location, location, ui::EF_NONE,
+                        ui::EF_NONE);
+  EXPECT_EQ(keyboard_window, targeter->FindTargetForEvent(root, &mouse1));
+
+
+  location.set_y(keyboard_window->bounds().y() - 5);
+  ui::MouseEvent mouse2(ui::ET_MOUSE_MOVED, location, location, ui::EF_NONE,
+                        ui::EF_NONE);
+  EXPECT_EQ(window.get(), targeter->FindTargetForEvent(root, &mouse2));
+}
+
 TEST_F(KeyboardControllerTest, VisibilityChangeWithTextInputTypeChange) {
   const gfx::Rect& root_bounds = root_window()->bounds();
 

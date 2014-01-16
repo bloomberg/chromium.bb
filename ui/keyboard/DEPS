@@ -7,4 +7,5 @@ include_rules = [
   "+ui/compositor",
   "+ui/gfx",
   "+ui/test",
+  "+ui/wm",
 ]
