@@ -53,6 +53,7 @@ void CSSSegmentedFontFaceCache::add(CSSFontSelector* cssFontSelector, const Styl
 
     if (!m_styleRuleToFontFace.add(fontFaceRule, cssFontFace).isNewEntry)
         return;
+    m_fontFaceList.add(cssFontFace);
 
     FontFace* fontFace = cssFontFace->fontFace();
 
@@ -92,6 +93,7 @@ void CSSSegmentedFontFaceCache::remove(const StyleRuleFontFace* fontFaceRule)
         if (familyFontFaces->isEmpty())
             m_fontFaces.remove(fontFacesIter);
     }
+    m_fontFaceList.remove(styleRuleToFontFaceIter->value);
     m_styleRuleToFontFace.remove(styleRuleToFontFaceIter);
     m_fonts.clear();
     ++m_version;

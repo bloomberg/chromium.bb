@@ -73,7 +73,6 @@ public:
     virtual unsigned version() const OVERRIDE { return m_cssSegmentedFontFaceCache.version(); }
 
     virtual PassRefPtr<FontData> getFontData(const FontDescription&, const AtomicString&) OVERRIDE;
-    CSSSegmentedFontFace* getFontFace(const FontDescription&, const AtomicString& family);
     virtual void willUseFontData(const FontDescription&, const AtomicString& family) OVERRIDE;
 
     void clearDocument();
@@ -88,6 +87,7 @@ public:
     virtual void unregisterForInvalidationCallbacks(FontSelectorClient*) OVERRIDE;
 
     Document* document() const { return m_document; }
+    CSSSegmentedFontFaceCache* cssSegmentedFontFaceCache() { return &m_cssSegmentedFontFaceCache; }
 
     const GenericFontFamilySettings& genericFontFamilySettings() const { return m_genericFontFamilySettings; }
 

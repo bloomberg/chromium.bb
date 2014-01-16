@@ -28,6 +28,7 @@
 
 #include "bindings/v8/ScriptPromise.h"
 #include "core/css/FontFace.h"
+#include "core/css/FontFaceSetForEachCallback.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventListener.h"
 #include "core/events/EventTarget.h"
@@ -68,6 +69,11 @@ public:
     ScriptPromise load(const String& font, const String& text, ExceptionState&);
     ScriptPromise ready();
 
+    void forEach(PassOwnPtr<FontFaceSetForEachCallback>, ScriptValue& thisArg) const;
+    void forEach(PassOwnPtr<FontFaceSetForEachCallback>) const;
+    bool has(FontFace*, ExceptionState&) const;
+
+    unsigned long size() const;
     AtomicString status() const;
 
     virtual ExecutionContext* executionContext() const OVERRIDE;
@@ -111,6 +117,7 @@ private:
 
     bool hasLoadedFonts() const { return !m_loadedFonts.isEmpty() || !m_failedFonts.isEmpty(); }
 
+    void forEachInternal(PassOwnPtr<FontFaceSetForEachCallback>, ScriptValue* thisArg) const;
     void queueDoneEvent(FontFace*);
     void fireLoadingEvent();
     void fireDoneEventIfPossible();

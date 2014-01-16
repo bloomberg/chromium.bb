@@ -29,6 +29,7 @@
 
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
+#include "wtf/ListHashSet.h"
 #include "wtf/text/StringHash.h"
 
 namespace WebCore {
@@ -47,9 +48,12 @@ public:
     // a result of egregious spaghettification in CSSFontFace/FontFaceSet.
     void add(CSSFontSelector*, const StyleRuleFontFace*, PassRefPtr<CSSFontFace>);
     void remove(const StyleRuleFontFace*);
+
     // FIXME: It's sort of weird that add/remove uses StyleRuleFontFace* as key,
     // but this function uses FontDescription/family pair.
     CSSSegmentedFontFace* get(const FontDescription&, const AtomicString& family);
+
+    const ListHashSet<RefPtr<CSSFontFace> >& cssFontFaceList() const { return m_fontFaceList; }
 
     unsigned version() const { return m_version; }
 
@@ -60,6 +64,7 @@ private:
     FamilyToTraitsMap m_fontFaces;
     FamilyToTraitsMap m_fonts;
     StyleRuleToFontFace m_styleRuleToFontFace;
+    ListHashSet<RefPtr<CSSFontFace> > m_fontFaceList;
 
     // FIXME: See if this could be ditched
     // Used to compare Font instances, and the usage seems suspect.

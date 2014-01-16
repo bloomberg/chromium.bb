@@ -84,6 +84,7 @@ public:
     void setLoadStatus(LoadStatus);
     unsigned traitsMask() const;
     PassRefPtr<CSSFontFace> createCSSFontFace(Document*);
+    CSSFontFace* cssFontFace() { return m_cssFontFace; }
     void cssFontFaceDestroyed() { m_cssFontFace = 0; }
 
 private:

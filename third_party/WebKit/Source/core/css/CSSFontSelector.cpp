@@ -204,14 +204,9 @@ PassRefPtr<FontData> CSSFontSelector::getFontData(const FontDescription& fontDes
     return FontCache::fontCache()->getFontData(fontDescription, settingsFamilyName);
 }
 
-CSSSegmentedFontFace* CSSFontSelector::getFontFace(const FontDescription& fontDescription, const AtomicString& familyName)
-{
-    return m_cssSegmentedFontFaceCache.get(fontDescription, familyName);
-}
-
 void CSSFontSelector::willUseFontData(const FontDescription& fontDescription, const AtomicString& family)
 {
-    CSSSegmentedFontFace* face = getFontFace(fontDescription, family);
+    CSSSegmentedFontFace* face = m_cssSegmentedFontFaceCache.get(fontDescription, family);
     if (face)
         face->willUseFontData(fontDescription);
 }
