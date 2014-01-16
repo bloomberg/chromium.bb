@@ -69,11 +69,6 @@ void AnalyserNode::process(size_t framesToProcess)
         outputBus->copyFrom(*inputBus);
 }
 
-void AnalyserNode::reset()
-{
-    m_analyser.reset();
-}
-
 void AnalyserNode::setFftSize(unsigned size, ExceptionState& exceptionState)
 {
     if (!m_analyser.setFftSize(size)) {

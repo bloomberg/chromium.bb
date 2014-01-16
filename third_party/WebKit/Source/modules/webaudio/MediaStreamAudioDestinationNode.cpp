@@ -77,10 +77,6 @@ void MediaStreamAudioDestinationNode::process(size_t numberOfFrames)
     m_source->consumeAudio(m_mixBus.get(), numberOfFrames);
 }
 
-void MediaStreamAudioDestinationNode::reset()
-{
-}
-
 } // namespace WebCore
 
 #endif // ENABLE(WEB_AUDIO)

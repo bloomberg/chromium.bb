@@ -49,7 +49,6 @@ public:
 
     // AudioNode
     virtual void process(size_t framesToProcess) OVERRIDE;
-    virtual void reset() OVERRIDE;
 
     // AudioSourceProviderClient
     virtual void setFormat(size_t numberOfChannels, float sampleRate) OVERRIDE;

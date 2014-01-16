@@ -270,17 +270,6 @@ void ScriptProcessorNode::fireProcessEvent()
     }
 }
 
-void ScriptProcessorNode::reset()
-{
-    m_bufferReadWriteIndex = 0;
-    m_doubleBufferIndex = 0;
-
-    for (unsigned i = 0; i < 2; ++i) {
-        m_inputBuffers[i]->zero();
-        m_outputBuffers[i]->zero();
-    }
-}
-
 double ScriptProcessorNode::tailTime() const
 {
     return std::numeric_limits<double>::infinity();

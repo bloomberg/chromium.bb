@@ -90,13 +90,6 @@ void ConvolverNode::process(size_t framesToProcess)
     }
 }
 
-void ConvolverNode::reset()
-{
-    MutexLocker locker(m_processLock);
-    if (m_reverb.get())
-        m_reverb->reset();
-}
-
 void ConvolverNode::initialize()
 {
     if (isInitialized())

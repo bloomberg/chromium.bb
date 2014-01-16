@@ -44,7 +44,6 @@ public:
     // AudioNode
     virtual void process(size_t framesToProcess) OVERRIDE FINAL;
     virtual void pullInputs(size_t framesToProcess) OVERRIDE FINAL;
-    virtual void reset() OVERRIDE FINAL;
     virtual void initialize() OVERRIDE FINAL;
     virtual void uninitialize() OVERRIDE FINAL;
 

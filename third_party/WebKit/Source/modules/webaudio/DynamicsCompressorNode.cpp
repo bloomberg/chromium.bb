@@ -85,11 +85,6 @@ void DynamicsCompressorNode::process(size_t framesToProcess)
     m_reduction->setValue(reduction);
 }
 
-void DynamicsCompressorNode::reset()
-{
-    m_dynamicsCompressor->reset();
-}
-
 void DynamicsCompressorNode::initialize()
 {
     if (isInitialized())

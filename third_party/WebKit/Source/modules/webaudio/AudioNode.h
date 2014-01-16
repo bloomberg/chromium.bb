@@ -109,10 +109,6 @@ public:
     // Called from context's audio thread.
     virtual void process(size_t framesToProcess) = 0;
 
-    // Resets DSP processing state (clears delay lines, filter memory, etc.)
-    // Called from context's audio thread.
-    virtual void reset() = 0;
-
     // No significant resources should be allocated until initialize() is called.
     // Processing may not occur until a node is initialized.
     virtual void initialize();

@@ -79,10 +79,6 @@ void ChannelSplitterNode::process(size_t framesToProcess)
     }
 }
 
-void ChannelSplitterNode::reset()
-{
-}
-
 } // namespace WebCore
 
 #endif // ENABLE(WEB_AUDIO)

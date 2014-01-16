@@ -135,10 +135,6 @@ void MediaElementAudioSourceNode::process(size_t numberOfFrames)
     }
 }
 
-void MediaElementAudioSourceNode::reset()
-{
-}
-
 void MediaElementAudioSourceNode::lock()
 {
     ref();

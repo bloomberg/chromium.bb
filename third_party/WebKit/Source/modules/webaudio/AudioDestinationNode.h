@@ -43,7 +43,6 @@ public:
 
     // AudioNode
     virtual void process(size_t) OVERRIDE FINAL { } // we're pulled by hardware so this is never called
-    virtual void reset() OVERRIDE FINAL { m_currentSampleFrame = 0; }
 
     // The audio hardware calls render() to get the next render quantum of audio into destinationBus.
     // It will optionally give us local/live audio input in sourceBus (if it's not 0).

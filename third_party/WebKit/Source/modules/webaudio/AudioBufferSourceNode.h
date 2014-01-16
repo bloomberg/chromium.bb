@@ -50,7 +50,6 @@ public:
 
     // AudioNode
     virtual void process(size_t framesToProcess) OVERRIDE;
-    virtual void reset() OVERRIDE;
 
     // setBuffer() is called on the main thread. This is the buffer we use for playback.
     void setBuffer(AudioBuffer*, ExceptionState&);

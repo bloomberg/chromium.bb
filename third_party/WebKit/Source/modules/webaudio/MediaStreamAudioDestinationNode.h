@@ -47,7 +47,6 @@ public:
 
     // AudioNode.
     virtual void process(size_t framesToProcess) OVERRIDE;
-    virtual void reset() OVERRIDE;
 
     MediaStreamSource* mediaStreamSource();
 

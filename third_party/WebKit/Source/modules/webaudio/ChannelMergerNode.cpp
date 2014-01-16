@@ -95,10 +95,6 @@ void ChannelMergerNode::process(size_t framesToProcess)
     ASSERT(outputChannelIndex == output->numberOfChannels());
 }
 
-void ChannelMergerNode::reset()
-{
-}
-
 // Any time a connection or disconnection happens on any of our inputs, we potentially need to change the
 // number of channels of our output.
 void ChannelMergerNode::checkNumberOfChannelsForInput(AudioNodeInput* input)

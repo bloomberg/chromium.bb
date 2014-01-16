@@ -136,13 +136,6 @@ void PannerNode::process(size_t framesToProcess)
     }
 }
 
-void PannerNode::reset()
-{
-    m_lastGain = -1.0; // force to snap to initial gain
-    if (m_panner.get())
-        m_panner->reset();
-}
-
 void PannerNode::initialize()
 {
     if (isInitialized())

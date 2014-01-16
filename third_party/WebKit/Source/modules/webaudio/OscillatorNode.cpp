@@ -328,11 +328,6 @@ void OscillatorNode::process(size_t framesToProcess)
     outputBus->clearSilentFlag();
 }
 
-void OscillatorNode::reset()
-{
-    m_virtualReadIndex = 0;
-}
-
 void OscillatorNode::setPeriodicWave(PeriodicWave* periodicWave)
 {
     ASSERT(isMainThread());
