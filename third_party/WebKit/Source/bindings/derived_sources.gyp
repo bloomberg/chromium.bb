@@ -42,7 +42,6 @@
     'main_idl_files': [
       '<@(core_idl_files)',
       '<@(modules_idl_files)',
-      '<@(svg_idl_files)',
     ],
     'support_idl_files': [
       '<@(webcore_testing_support_idl_files)',
