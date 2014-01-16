@@ -248,7 +248,8 @@ void TouchEditableImplAura::GetSelectionEndPoints(gfx::Rect* p1,
 }
 
 gfx::Rect TouchEditableImplAura::GetBounds() {
-  return rwhva_ ? rwhva_->GetNativeView()->bounds() : gfx::Rect();
+  return rwhva_ ? gfx::Rect(rwhva_->GetNativeView()->bounds().size()) :
+      gfx::Rect();
 }
 
 gfx::NativeView TouchEditableImplAura::GetNativeView() const {

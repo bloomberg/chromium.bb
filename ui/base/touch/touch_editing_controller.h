@@ -15,6 +15,9 @@ namespace ui {
 // using touch.
 class UI_BASE_EXPORT TouchEditable : public ui::SimpleMenuModel::Delegate {
  public:
+  // TODO(mohsen): Consider switching from local coordinates to screen
+  // coordinates in this interface and see if it will simplify things.
+
   // Select everything between start and end (points are in view's local
   // coordinate system). |start| is the logical start and |end| is the logical
   // end of selection. Visually, |start| may lie after |end|.
@@ -24,7 +27,8 @@ class UI_BASE_EXPORT TouchEditable : public ui::SimpleMenuModel::Delegate {
   virtual void MoveCaretTo(const gfx::Point& point) = 0;
 
   // Gets the end points of the current selection. The end points p1 and p2 must
-  // be the cursor rect for the start and end of selection:
+  // be the cursor rect for the start and end of selection (in local
+  // coordinates):
   // ____________________________________
   // | textfield with |selected text|   |
   // ------------------------------------
@@ -34,7 +38,7 @@ class UI_BASE_EXPORT TouchEditable : public ui::SimpleMenuModel::Delegate {
   // visually, p1 could be to the right of p2 in the figure above.
   virtual void GetSelectionEndPoints(gfx::Rect* p1, gfx::Rect* p2) = 0;
 
-  // Gets the bounds of the client view in parent's coordinates.
+  // Gets the bounds of the client view in its local coordinates.
   virtual gfx::Rect GetBounds() = 0;
 
   // Gets the NativeView hosting the client.

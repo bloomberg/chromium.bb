@@ -974,7 +974,7 @@ void Textfield::GetSelectionEndPoints(gfx::Rect* p1, gfx::Rect* p2) {
 }
 
 gfx::Rect Textfield::GetBounds() {
-  return bounds();
+  return GetLocalBounds();
 }
 
 gfx::NativeView Textfield::GetNativeView() const {
