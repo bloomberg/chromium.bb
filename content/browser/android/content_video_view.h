@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 
 namespace content {
@@ -50,7 +51,7 @@ class ContentVideoView {
   int GetDurationInMilliSeconds(JNIEnv*, jobject obj) const;
   int GetCurrentPosition(JNIEnv*, jobject obj) const;
   bool IsPlaying(JNIEnv*, jobject obj);
-  void UpdateMediaMetadata(JNIEnv*, jobject obj);
+  void RequestMediaMetadata(JNIEnv*, jobject obj);
 
   // Called when the Java fullscreen view is destroyed. If
   // |release_media_player| is true, |manager_| needs to release the player
@@ -106,6 +107,9 @@ class ContentVideoView {
     SUSPENDED,
     RESUME
   } fullscreen_state_;
+
+  // Weak pointer for posting tasks.
+  base::WeakPtrFactory<ContentVideoView> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentVideoView);
 };

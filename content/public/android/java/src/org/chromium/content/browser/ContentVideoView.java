@@ -286,7 +286,7 @@ public class ContentVideoView extends FrameLayout implements SurfaceHolder.Callb
         if (mSurfaceHolder != null) {
             mCurrentState = STATE_IDLE;
             if (mNativeContentVideoView != 0) {
-                nativeUpdateMediaMetadata(mNativeContentVideoView);
+                nativeRequestMediaMetadata(mNativeContentVideoView);
                 nativeSetSurface(mNativeContentVideoView,
                         mSurfaceHolder.getSurface());
             }
@@ -429,7 +429,7 @@ public class ContentVideoView extends FrameLayout implements SurfaceHolder.Callb
             boolean relaseMediaPlayer);
     private native int nativeGetCurrentPosition(long nativeContentVideoView);
     private native int nativeGetDurationInMilliSeconds(long nativeContentVideoView);
-    private native void nativeUpdateMediaMetadata(long nativeContentVideoView);
+    private native void nativeRequestMediaMetadata(long nativeContentVideoView);
     private native int nativeGetVideoWidth(long nativeContentVideoView);
     private native int nativeGetVideoHeight(long nativeContentVideoView);
     private native boolean nativeIsPlaying(long nativeContentVideoView);
