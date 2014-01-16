@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/background/ash_user_wallpaper_delegate.h"
+#include "chrome/browser/chromeos/display/display_configuration_observer.h"
 #include "chrome/browser/chromeos/display/display_preferences.h"
 #include "chrome/browser/chromeos/extensions/media_player_api.h"
 #include "chrome/browser/chromeos/extensions/media_player_event_router.h"
@@ -207,6 +208,10 @@ bool ChromeShellDelegate::IsFirstRunAfterBoot() const {
 
 void ChromeShellDelegate::PreInit() {
   chromeos::LoadDisplayPreferences(IsFirstRunAfterBoot());
+  // Set the observer now so that we can save the initial state
+  // in Shell::Init.
+  display_configuration_observer_.reset(
+      new chromeos::DisplayConfigurationObserver());
 }
 
 void ChromeShellDelegate::Shutdown() {
@@ -256,6 +261,11 @@ void ChromeShellDelegate::Observe(int type,
       RestoreFocus();
       ash::Shell::GetInstance()->ShowShelf();
       break;
+    case chrome::NOTIFICATION_APP_TERMINATING:
+      // Let classes unregister themselves as observers of the
+      // ash::Shell singleton before the shell is destroyed.
+      display_configuration_observer_.reset();
+      break;
     default:
       NOTREACHED() << "Unexpected notification " << type;
   }
@@ -267,5 +277,8 @@ void ChromeShellDelegate::PlatformInit() {
                  content::NotificationService::AllSources());
   registrar_.Add(this,
                  chrome::NOTIFICATION_SESSION_STARTED,
+                 content::NotificationService::AllSources());
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
 }

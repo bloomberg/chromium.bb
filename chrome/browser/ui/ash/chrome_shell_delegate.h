@@ -29,6 +29,12 @@ namespace keyboard {
 class KeyboardControllerProxy;
 }
 
+#if defined(OS_CHROMEOS)
+namespace chromeos {
+class DisplayConfigurationObserver;
+}
+#endif
+
 class ChromeLauncherController;
 
 class ChromeShellDelegate : public ash::ShellDelegate,
@@ -81,6 +87,11 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   content::NotificationRegistrar registrar_;
 
   ChromeLauncherController* shelf_delegate_;
+
+#if defined(OS_CHROMEOS)
+  scoped_ptr<chromeos::DisplayConfigurationObserver>
+      display_configuration_observer_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeShellDelegate);
 };

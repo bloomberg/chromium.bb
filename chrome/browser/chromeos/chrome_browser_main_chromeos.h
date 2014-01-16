@@ -21,7 +21,6 @@ class PowerSaveBlocker;
 namespace chromeos {
 
 class DataPromoNotification;
-class DisplayConfigurationObserver;
 class ExtensionSystemEventObserver;
 class IdleActionWarningObserver;
 class MagnificationManager;
@@ -62,7 +61,6 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
 
  private:
   scoped_ptr<contacts::ContactManager> contact_manager_;
-  scoped_ptr<DisplayConfigurationObserver> display_configuration_observer_;
   scoped_ptr<default_app_order::ExternalLoader> app_order_loader_;
   scoped_ptr<ExtensionSystemEventObserver> extension_system_event_observer_;
   scoped_ptr<PeripheralBatteryObserver> peripheral_battery_observer_;

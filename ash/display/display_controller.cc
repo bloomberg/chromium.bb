@@ -19,6 +19,7 @@
 #include "ash/root_window_settings.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
@@ -246,6 +247,12 @@ DisplayController::~DisplayController() {
 void DisplayController::Start() {
   Shell::GetScreen()->AddObserver(this);
   Shell::GetInstance()->display_manager()->set_delegate(this);
+
+  if (Shell::GetInstance()->delegate()->IsFirstRunAfterBoot()) {
+    // Update the display pref with the initial power state.
+    FOR_EACH_OBSERVER(Observer, observers_, OnDisplayConfigurationChanging());
+    FOR_EACH_OBSERVER(Observer, observers_, OnDisplayConfigurationChanged());
+  }
 }
 
 void DisplayController::Shutdown() {

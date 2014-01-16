@@ -31,7 +31,6 @@
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/contacts/contact_manager.h"
 #include "chrome/browser/chromeos/dbus/cros_dbus_service.h"
-#include "chrome/browser/chromeos/display/display_configuration_observer.h"
 #include "chrome/browser/chromeos/extensions/default_app_order.h"
 #include "chrome/browser/chromeos/extensions/extension_system_event_observer.h"
 #include "chrome/browser/chromeos/external_metrics.h"
@@ -615,9 +614,6 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
 
   peripheral_battery_observer_.reset(new PeripheralBatteryObserver());
 
-  display_configuration_observer_.reset(
-      new DisplayConfigurationObserver());
-
   g_browser_process->platform_part()->InitializeAutomaticRebootManager();
 
   // This observer cannot be created earlier because it requires the shell to be
@@ -718,10 +714,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   SystemKeyEventListener::Shutdown();
   imageburner::BurnManager::Shutdown();
   CrasAudioHandler::Shutdown();
-
-  // Let classes unregister themselves as observers of the ash::Shell singleton
-  // before the shell is destroyed.
-  display_configuration_observer_.reset();
 
   // Detach D-Bus clients before DBusThreadManager is shut down.
   power_button_observer_.reset();
