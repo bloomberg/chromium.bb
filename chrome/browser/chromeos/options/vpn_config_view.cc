@@ -529,8 +529,8 @@ void VPNConfigView::Init() {
       new views::Label(l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_SERVER_HOSTNAME));
   layout_->AddView(server_label);
-  server_textfield_ = new views::Textfield(views::Textfield::STYLE_DEFAULT);
-  server_textfield_->SetController(this);
+  server_textfield_ = new views::Textfield();
+  server_textfield_->set_controller(this);
   layout_->AddView(server_textfield_);
   layout_->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   if (!service_path_.empty()) {
@@ -543,8 +543,8 @@ void VPNConfigView::Init() {
   layout_->AddView(new views::Label(l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_SERVICE_NAME)));
   if (service_path_.empty()) {
-    service_textfield_ = new views::Textfield(views::Textfield::STYLE_DEFAULT);
-    service_textfield_->SetController(this);
+    service_textfield_ = new views::Textfield();
+    service_textfield_->set_controller(this);
     layout_->AddView(service_textfield_);
     service_text_ = NULL;
   } else {
@@ -581,7 +581,7 @@ void VPNConfigView::Init() {
       IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_PSK_PASSPHRASE));
   layout_->AddView(psk_passphrase_label_);
   psk_passphrase_textfield_ = new PassphraseTextfield();
-  psk_passphrase_textfield_->SetController(this);
+  psk_passphrase_textfield_->set_controller(this);
   layout_->AddView(psk_passphrase_textfield_);
   layout_->AddView(
       new ControlledSettingIndicatorView(psk_passphrase_ui_data_));
@@ -622,8 +622,8 @@ void VPNConfigView::Init() {
   layout_->StartRow(0, 0);
   layout_->AddView(new views::Label(l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_USERNAME)));
-  username_textfield_ = new views::Textfield(views::Textfield::STYLE_DEFAULT);
-  username_textfield_->SetController(this);
+  username_textfield_ = new views::Textfield();
+  username_textfield_->set_controller(this);
   username_textfield_->SetEnabled(username_ui_data_.IsEditable());
   layout_->AddView(username_textfield_);
   layout_->AddView(new ControlledSettingIndicatorView(username_ui_data_));
@@ -634,7 +634,7 @@ void VPNConfigView::Init() {
   layout_->AddView(new views::Label(l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_USER_PASSPHRASE)));
   user_passphrase_textfield_ = new PassphraseTextfield();
-  user_passphrase_textfield_->SetController(this);
+  user_passphrase_textfield_->set_controller(this);
   user_passphrase_textfield_->SetEnabled(user_passphrase_ui_data_.IsEditable());
   layout_->AddView(user_passphrase_textfield_);
   layout_->AddView(
@@ -646,8 +646,8 @@ void VPNConfigView::Init() {
   otp_label_ = new views::Label(l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_OTP));
   layout_->AddView(otp_label_);
-  otp_textfield_ = new views::Textfield(views::Textfield::STYLE_DEFAULT);
-  otp_textfield_->SetController(this);
+  otp_textfield_ = new views::Textfield();
+  otp_textfield_->set_controller(this);
   layout_->AddView(otp_textfield_);
   layout_->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
@@ -657,8 +657,8 @@ void VPNConfigView::Init() {
       IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_GROUP_NAME));
   layout_->AddView(group_name_label_);
   group_name_textfield_ =
-      new views::Textfield(views::Textfield::STYLE_DEFAULT);
-  group_name_textfield_->SetController(this);
+      new views::Textfield();
+  group_name_textfield_->set_controller(this);
   layout_->AddView(group_name_textfield_);
   layout_->AddView(new ControlledSettingIndicatorView(group_name_ui_data_));
   layout_->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);

@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/debug/trace_event.h"
-#include "base/i18n/case_conversion.h"
 #include "grit/ui_strings.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
@@ -75,7 +74,6 @@ size_t Textfield::GetCaretBlinkMs() {
 Textfield::Textfield()
     : model_(new TextfieldModel(this)),
       controller_(NULL),
-      style_(STYLE_DEFAULT),
       read_only_(false),
       default_width_in_chars_(0),
       text_color_(SK_ColorBLACK),
@@ -96,7 +94,7 @@ Textfield::Textfield()
   SetFocusable(true);
 
   if (ViewsDelegate::views_delegate) {
-    obscured_reveal_duration_ = ViewsDelegate::views_delegate->
+    password_reveal_duration_ = ViewsDelegate::views_delegate->
         GetDefaultTextfieldObscuredRevealDuration();
   }
 
@@ -104,51 +102,7 @@ Textfield::Textfield()
     focus_painter_ = Painter::CreateDashedFocusPainter();
 }
 
-Textfield::Textfield(StyleFlags style)
-    : model_(new TextfieldModel(this)),
-      controller_(NULL),
-      style_(style),
-      read_only_(false),
-      default_width_in_chars_(0),
-      text_color_(SK_ColorBLACK),
-      use_default_text_color_(true),
-      background_color_(SK_ColorWHITE),
-      use_default_background_color_(true),
-      placeholder_text_color_(kDefaultPlaceholderTextColor),
-      text_input_type_(ui::TEXT_INPUT_TYPE_TEXT),
-      skip_input_method_cancel_composition_(false),
-      cursor_visible_(false),
-      drop_cursor_visible_(false),
-      initiating_drag_(false),
-      aggregated_clicks_(0),
-      weak_ptr_factory_(this) {
-  set_context_menu_controller(this);
-  set_drag_controller(this);
-  set_border(new FocusableBorder());
-  SetFocusable(true);
-
-  if (IsObscured())
-    SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
-
-  if (ViewsDelegate::views_delegate) {
-    obscured_reveal_duration_ = ViewsDelegate::views_delegate->
-        GetDefaultTextfieldObscuredRevealDuration();
-  }
-
-  if (NativeViewHost::kRenderNativeControlFocus)
-    focus_painter_ = Painter::CreateDashedFocusPainter();
-}
-
-Textfield::~Textfield() {
-}
-
-void Textfield::SetController(TextfieldController* controller) {
-  controller_ = controller;
-}
-
-TextfieldController* Textfield::GetController() const {
-  return controller_;
-}
+Textfield::~Textfield() {}
 
 void Textfield::SetReadOnly(bool read_only) {
   // Update read-only without changing the focusable state (or active, etc.).
@@ -159,34 +113,17 @@ void Textfield::SetReadOnly(bool read_only) {
   UpdateBackgroundColor();
 }
 
-bool Textfield::IsObscured() const {
-  return style_ & STYLE_OBSCURED;
-}
-
-void Textfield::SetObscured(bool obscured) {
-  if (obscured) {
-    style_ = static_cast<StyleFlags>(style_ | STYLE_OBSCURED);
-    SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
-  } else {
-    style_ = static_cast<StyleFlags>(style_ & ~STYLE_OBSCURED);
-    SetTextInputType(ui::TEXT_INPUT_TYPE_TEXT);
-  }
-  GetRenderText()->SetObscured(obscured);
+void Textfield::SetTextInputType(ui::TextInputType type) {
+  GetRenderText()->SetObscured(type == ui::TEXT_INPUT_TYPE_PASSWORD);
+  text_input_type_ = type;
   OnCaretBoundsChanged();
   if (GetInputMethod())
     GetInputMethod()->OnTextInputTypeChanged(this);
   SchedulePaint();
 }
 
-void Textfield::SetTextInputType(ui::TextInputType type) {
-  text_input_type_ = type;
-  bool should_be_obscured = type == ui::TEXT_INPUT_TYPE_PASSWORD;
-  if (IsObscured() != should_be_obscured)
-    SetObscured(should_be_obscured);
-}
-
 void Textfield::SetText(const base::string16& new_text) {
-  model_->SetText(GetTextForDisplay(new_text));
+  model_->SetText(new_text);
   OnCaretBoundsChanged();
   SchedulePaint();
   NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_TEXT_CHANGED, true);
@@ -195,7 +132,7 @@ void Textfield::SetText(const base::string16& new_text) {
 void Textfield::AppendText(const base::string16& new_text) {
   if (new_text.empty())
     return;
-  model_->Append(GetTextForDisplay(new_text));
+  model_->Append(new_text);
   OnCaretBoundsChanged();
   SchedulePaint();
 }
@@ -411,7 +348,7 @@ bool Textfield::OnKeyPressed(const ui::KeyEvent& event) {
 
     gfx::RenderText* render_text = GetRenderText();
     const bool editable = !read_only();
-    const bool readable = !IsObscured();
+    const bool readable = text_input_type_ != ui::TEXT_INPUT_TYPE_PASSWORD;
     const bool shift = event.IsShiftDown();
     const bool control = event.IsControlDown();
     const bool alt = event.IsAltDown() || event.IsAltGrDown();
@@ -642,7 +579,7 @@ void Textfield::GetAccessibleState(ui::AccessibleViewState* state) {
   state->name = accessible_name_;
   if (read_only())
     state->state |= ui::AccessibilityTypes::STATE_READONLY;
-  if (IsObscured())
+  if (text_input_type_ == ui::TEXT_INPUT_TYPE_PASSWORD)
     state->state |= ui::AccessibilityTypes::STATE_PROTECTED;
   state->value = text();
 
@@ -841,7 +778,6 @@ int Textfield::OnPerformDrop(const ui::DropTargetEvent& event) {
       render_text->FindCursorPosition(event.location());
   base::string16 new_text;
   event.data().GetString(&new_text);
-  new_text = GetTextForDisplay(new_text);
 
   // Delete the current selection for a drag and drop within this view.
   const bool move = initiating_drag_ && !event.IsControlDown() &&
@@ -924,11 +860,13 @@ void Textfield::WriteDragDataForView(views::View* sender,
 int Textfield::GetDragOperationsForView(views::View* sender,
                                         const gfx::Point& p) {
   int drag_operations = ui::DragDropTypes::DRAG_COPY;
-  if (!enabled() || IsObscured() || !GetRenderText()->IsPointInSelection(p))
+  if (!enabled() || text_input_type_ == ui::TEXT_INPUT_TYPE_PASSWORD ||
+      !GetRenderText()->IsPointInSelection(p)) {
     drag_operations = ui::DragDropTypes::DRAG_NONE;
-  else if (sender == this && !read_only())
+  } else if (sender == this && !read_only()) {
     drag_operations =
         ui::DragDropTypes::DRAG_MOVE | ui::DragDropTypes::DRAG_COPY;
+  }
   if (controller_)
     controller_->OnGetDragOperationsForTextfield(&drag_operations);
   return drag_operations;
@@ -1008,13 +946,14 @@ bool Textfield::IsCommandIdChecked(int command_id) const {
 bool Textfield::IsCommandIdEnabled(int command_id) const {
   base::string16 result;
   bool editable = !read_only();
+  bool readable = text_input_type_ != ui::TEXT_INPUT_TYPE_PASSWORD;
   switch (command_id) {
     case IDS_APP_UNDO:
       return editable && model_->CanUndo();
     case IDS_APP_CUT:
-      return editable && model_->HasSelection() && !IsObscured();
+      return editable && readable && model_->HasSelection();
     case IDS_APP_COPY:
-      return model_->HasSelection() && !IsObscured();
+      return readable && model_->HasSelection();
     case IDS_APP_PASTE:
       ui::Clipboard::GetForCurrentThread()->ReadText(
           ui::CLIPBOARD_TYPE_COPY_PASTE, &result);
@@ -1128,9 +1067,9 @@ void Textfield::InsertText(const base::string16& new_text) {
   OnBeforeUserAction();
   skip_input_method_cancel_composition_ = true;
   if (GetRenderText()->insert_mode())
-    model_->InsertText(GetTextForDisplay(new_text));
+    model_->InsertText(new_text);
   else
-    model_->ReplaceText(GetTextForDisplay(new_text));
+    model_->ReplaceText(new_text);
   skip_input_method_cancel_composition_ = false;
   UpdateAfterChange(true, true);
   OnAfterUserAction();
@@ -1154,15 +1093,14 @@ void Textfield::InsertChar(base::char16 ch, int flags) {
     model_->ReplaceChar(ch);
   skip_input_method_cancel_composition_ = false;
 
-  model_->SetText(GetTextForDisplay(text()));
-
   UpdateAfterChange(true, true);
   OnAfterUserAction();
 
-  if (IsObscured() && obscured_reveal_duration_ != base::TimeDelta()) {
+  if (text_input_type_ == ui::TEXT_INPUT_TYPE_PASSWORD &&
+      password_reveal_duration_ != base::TimeDelta()) {
     const size_t change_offset = model_->GetCursorPosition();
     DCHECK_GT(change_offset, 0u);
-    RevealObscuredChar(change_offset - 1, obscured_reveal_duration_);
+    RevealPasswordChar(change_offset - 1);
   }
 }
 
@@ -1335,10 +1273,6 @@ gfx::RenderText* Textfield::GetRenderText() const {
 ////////////////////////////////////////////////////////////////////////////////
 // Textfield, private:
 
-base::string16 Textfield::GetTextForDisplay(const base::string16& raw) {
-  return style_ & Textfield::STYLE_LOWERCASE ? base::i18n::ToLower(raw) : raw;
-}
-
 void Textfield::AccessibilitySetValue(const base::string16& new_value) {
   if (!read_only()) {
     SetText(new_value);
@@ -1448,7 +1382,8 @@ void Textfield::OnAfterUserAction() {
 }
 
 bool Textfield::Cut() {
-  if (!read_only() && !IsObscured() && model_->Cut()) {
+  if (!read_only() && text_input_type_ != ui::TEXT_INPUT_TYPE_PASSWORD &&
+      model_->Cut()) {
     if (controller_)
       controller_->OnAfterCutOrCopy();
     return true;
@@ -1457,7 +1392,7 @@ bool Textfield::Cut() {
 }
 
 bool Textfield::Copy() {
-  if (!IsObscured() && model_->Copy()) {
+  if (text_input_type_ != ui::TEXT_INPUT_TYPE_PASSWORD && model_->Copy()) {
     if (controller_)
       controller_->OnAfterCutOrCopy();
     return true;
@@ -1466,16 +1401,7 @@ bool Textfield::Copy() {
 }
 
 bool Textfield::Paste() {
-  if (read_only())
-    return false;
-
-  const base::string16 original_text = text();
-  if (model_->Paste()) {
-    // As Paste is handled in model_->Paste(), the RenderText may contain
-    // upper case characters. This is not consistent with other places
-    // which keeps RenderText only containing lower case characters.
-    base::string16 new_text = GetTextForDisplay(text());
-    model_->SetText(new_text);
+  if (!read_only() && model_->Paste()) {
     if (controller_)
       controller_->OnAfterPaste();
     return true;
@@ -1524,14 +1450,14 @@ bool Textfield::ImeEditingAllowed() const {
   return (t != ui::TEXT_INPUT_TYPE_NONE && t != ui::TEXT_INPUT_TYPE_PASSWORD);
 }
 
-void Textfield::RevealObscuredChar(int index, const base::TimeDelta& duration) {
+void Textfield::RevealPasswordChar(int index) {
   GetRenderText()->SetObscuredRevealIndex(index);
   SchedulePaint();
 
   if (index != -1) {
-    obscured_reveal_timer_.Start(FROM_HERE, duration,
-        base::Bind(&Textfield::RevealObscuredChar, base::Unretained(this),
-                   -1, base::TimeDelta()));
+    password_reveal_timer_.Start(FROM_HERE, password_reveal_duration_,
+        base::Bind(&Textfield::RevealPasswordChar,
+                   weak_ptr_factory_.GetWeakPtr(), -1));
   }
 }
 

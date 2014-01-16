@@ -75,7 +75,7 @@ FolderHeaderView::FolderHeaderView(FolderHeaderViewDelegate* delegate)
       rb.GetLocalizedString(IDS_APP_LIST_FOLDER_NAME_PLACEHOLDER));
   folder_name_view_->set_border(NULL);
   folder_name_view_->SetBackgroundColor(kContentsBackgroundColor);
-  folder_name_view_->SetController(this);
+  folder_name_view_->set_controller(this);
   AddChildView(folder_name_view_);
 }
 

@@ -9,9 +9,10 @@
 namespace chromeos {
 
 PassphraseTextfield::PassphraseTextfield()
-    : Textfield(views::Textfield::STYLE_OBSCURED),
+    : Textfield(),
       show_fake_(false),
       changed_(true) {
+  SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
 }
 
 void PassphraseTextfield::SetShowFake(bool show_fake) {

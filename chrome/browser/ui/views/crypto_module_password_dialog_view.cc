@@ -121,8 +121,9 @@ void CryptoModulePasswordDialogView::Init(const std::string& hostname,
   password_label_ = new views::Label(l10n_util::GetStringUTF16(
       IDS_CRYPTO_MODULE_AUTH_DIALOG_PASSWORD_FIELD));
 
-  password_entry_ = new views::Textfield(views::Textfield::STYLE_OBSCURED);
-  password_entry_->SetController(this);
+  password_entry_ = new views::Textfield();
+  password_entry_->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
+  password_entry_->set_controller(this);
 
   views::GridLayout* layout = views::GridLayout::CreatePanel(this);
   SetLayoutManager(layout);

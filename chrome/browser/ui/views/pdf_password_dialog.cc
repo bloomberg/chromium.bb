@@ -70,8 +70,7 @@ PDFPasswordDialogViews::PDFPasswordDialogViews(
   init_params.inter_row_vertical_spacing =
       views::kUnrelatedControlVerticalSpacing;
   message_box_view_ = new views::MessageBoxView(init_params);
-
-  message_box_view_->text_box()->SetObscured(true);
+  message_box_view_->text_box()->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
 
   web_modal::WebContentsModalDialogManager* web_contents_modal_dialog_manager =
       web_modal::WebContentsModalDialogManager::FromWebContents(web_contents);

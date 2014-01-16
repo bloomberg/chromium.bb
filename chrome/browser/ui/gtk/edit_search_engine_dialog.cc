@@ -27,8 +27,7 @@
 
 namespace {
 
-// Forces text to lowercase when connected to an editable's "insert-text"
-// signal.  (Like views Textfield::STYLE_LOWERCASE.)
+// Forces lowercase text when connected to an editable's "insert-text" signal.
 void LowercaseInsertTextHandler(GtkEditable *editable, const gchar *text,
                                 gint length, gint *position, gpointer data) {
   base::string16 original_text = base::UTF8ToUTF16(text);

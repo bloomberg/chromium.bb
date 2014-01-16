@@ -56,11 +56,7 @@ const base::char16 kHebrewLetterSamekh = 0x05E1;
 // A Textfield wrapper to intercept OnKey[Pressed|Released]() ressults.
 class TestTextfield : public views::Textfield {
  public:
-  explicit TestTextfield(StyleFlags style)
-      : Textfield(style),
-        key_handled_(false),
-        key_received_(false) {
-  }
+  TestTextfield() : Textfield(), key_handled_(false), key_received_(false) {}
 
   virtual bool OnKeyPressed(const ui::KeyEvent& e) OVERRIDE {
     key_received_ = true;
@@ -78,8 +74,6 @@ class TestTextfield : public views::Textfield {
   bool key_received() const { return key_received_; }
 
   void clear() { key_received_ = key_handled_ = false; }
-
-  bool focusable() const { return View::focusable(); }
 
  private:
   bool key_handled_;
@@ -164,14 +158,14 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
     ++on_after_user_action_;
   }
 
-  void InitTextfield(Textfield::StyleFlags style) {
-    InitTextfields(style, 1);
+  void InitTextfield() {
+    InitTextfields(1);
   }
 
-  void InitTextfields(Textfield::StyleFlags style, int count) {
+  void InitTextfields(int count) {
     ASSERT_FALSE(textfield_);
-    textfield_ = new TestTextfield(style);
-    textfield_->SetController(this);
+    textfield_ = new TestTextfield();
+    textfield_->set_controller(this);
     widget_ = new Widget();
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
     params.bounds = gfx::Rect(100, 100, 100, 100);
@@ -183,7 +177,7 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
     textfield_->set_id(1);
 
     for (int i = 1; i < count; i++) {
-      Textfield* textfield = new Textfield(style);
+      Textfield* textfield = new Textfield();
       container->AddChildView(textfield);
       textfield->set_id(i + 1);
     }
@@ -345,7 +339,7 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
 };
 
 TEST_F(TextfieldTest, ModelChangesTest) {
-  InitTextfield(Textfield::STYLE_DEFAULT);
+  InitTextfield();
 
   // TextfieldController::ContentsChanged() shouldn't be called when changing
   // text programmatically.
@@ -367,75 +361,8 @@ TEST_F(TextfieldTest, ModelChangesTest) {
   EXPECT_TRUE(last_contents_.empty());
 }
 
-TEST_F(TextfieldTest, ModelChangesTestLowerCase) {
-  // Check if |model_|'s text is properly lowercased for STYLE_LOWERCASE.
-  InitTextfield(Textfield::STYLE_LOWERCASE);
-  EXPECT_EQ(0U, textfield_->GetCursorPosition());
-
-  last_contents_.clear();
-  textfield_->SetText(ASCIIToUTF16("THIS IS"));
-  EXPECT_EQ(7U, textfield_->GetCursorPosition());
-
-  EXPECT_STR_EQ("this is", textfield_->text());
-  EXPECT_TRUE(last_contents_.empty());
-
-  textfield_->AppendText(ASCIIToUTF16(" A TEST"));
-  EXPECT_EQ(7U, textfield_->GetCursorPosition());
-  EXPECT_STR_EQ("this is a test", textfield_->text());
-
-  EXPECT_TRUE(last_contents_.empty());
-}
-
-TEST_F(TextfieldTest, ModelChangesTestLowerCaseI18n) {
-  // Check if lower case conversion works for non-ASCII characters.
-  InitTextfield(Textfield::STYLE_LOWERCASE);
-  EXPECT_EQ(0U, textfield_->GetCursorPosition());
-
-  last_contents_.clear();
-  // Zenkaku Japanese "ABCabc"
-  textfield_->SetText(WideToUTF16(L"\xFF21\xFF22\xFF23\xFF41\xFF42\xFF43"));
-  EXPECT_EQ(6U, textfield_->GetCursorPosition());
-  // Zenkaku Japanese "abcabc"
-  EXPECT_EQ(WideToUTF16(L"\xFF41\xFF42\xFF43\xFF41\xFF42\xFF43"),
-            textfield_->text());
-  EXPECT_TRUE(last_contents_.empty());
-
-  // Zenkaku Japanese "XYZxyz"
-  textfield_->AppendText(WideToUTF16(L"\xFF38\xFF39\xFF3A\xFF58\xFF59\xFF5A"));
-  EXPECT_EQ(6U, textfield_->GetCursorPosition());
-  // Zenkaku Japanese "abcabcxyzxyz"
-  EXPECT_EQ(WideToUTF16(L"\xFF41\xFF42\xFF43\xFF41\xFF42\xFF43"
-                        L"\xFF58\xFF59\xFF5A\xFF58\xFF59\xFF5A"),
-            textfield_->text());
-  EXPECT_TRUE(last_contents_.empty());
-}
-
-TEST_F(TextfieldTest, ModelChangesTestLowerCaseWithLocale) {
-  // Check if lower case conversion honors locale properly.
-  std::string locale = l10n_util::GetApplicationLocale("");
-  base::i18n::SetICUDefaultLocale("tr");
-
-  InitTextfield(Textfield::STYLE_LOWERCASE);
-  EXPECT_EQ(0U, textfield_->GetCursorPosition());
-
-  last_contents_.clear();
-  // Turkish 'I' should be converted to dotless 'i' (U+0131).
-  textfield_->SetText(WideToUTF16(L"I"));
-  EXPECT_EQ(1U, textfield_->GetCursorPosition());
-  EXPECT_EQ(WideToUTF16(L"\x0131"), textfield_->text());
-  EXPECT_TRUE(last_contents_.empty());
-
-  base::i18n::SetICUDefaultLocale(locale);
-
-  // On default (en) locale, 'I' should be converted to 'i'.
-  textfield_->SetText(WideToUTF16(L"I"));
-  EXPECT_EQ(1U, textfield_->GetCursorPosition());
-  EXPECT_EQ(WideToUTF16(L"i"), textfield_->text());
-  EXPECT_TRUE(last_contents_.empty());
-}
-
 TEST_F(TextfieldTest, KeyTest) {
-  InitTextfield(Textfield::STYLE_DEFAULT);
+  InitTextfield();
   // Event flags:  key,    alt,   shift, ctrl,  caps-lock.
   SendKeyEvent(ui::VKEY_T, false, true,  false, false);
   SendKeyEvent(ui::VKEY_E, false, false, false, false);
@@ -450,7 +377,7 @@ TEST_F(TextfieldTest, KeyTest) {
 
 TEST_F(TextfieldTest, ControlAndSelectTest) {
   // Insert a test string in a textfield.
-  InitTextfield(Textfield::STYLE_DEFAULT);
+  InitTextfield();
   textfield_->SetText(ASCIIToUTF16("one two three"));
   SendKeyEvent(ui::VKEY_HOME,  false /* shift */, false /* control */);
   SendKeyEvent(ui::VKEY_RIGHT, true, false);
@@ -485,7 +412,7 @@ TEST_F(TextfieldTest, ControlAndSelectTest) {
 
 TEST_F(TextfieldTest, InsertionDeletionTest) {
   // Insert a test string in a textfield.
-  InitTextfield(Textfield::STYLE_DEFAULT);
+  InitTextfield();
   for (size_t i = 0; i < 10; i++)
     SendKeyEvent(static_cast<ui::KeyboardCode>(ui::VKEY_A + i));
   EXPECT_STR_EQ("abcdefghij", textfield_->text());
@@ -536,10 +463,11 @@ TEST_F(TextfieldTest, InsertionDeletionTest) {
 }
 
 TEST_F(TextfieldTest, PasswordTest) {
-  InitTextfield(Textfield::STYLE_OBSCURED);
+  InitTextfield();
+  textfield_->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_PASSWORD, GetTextInputType());
   EXPECT_TRUE(textfield_->enabled());
-  EXPECT_TRUE(textfield_->focusable());
+  EXPECT_TRUE(textfield_->IsFocusable());
 
   last_contents_.clear();
   textfield_->SetText(ASCIIToUTF16("password"));
@@ -572,33 +500,8 @@ TEST_F(TextfieldTest, PasswordTest) {
   EXPECT_STR_EQ("foofoofoo", textfield_->text());
 }
 
-TEST_F(TextfieldTest, InputTypeSetsObscured) {
-  InitTextfield(Textfield::STYLE_DEFAULT);
-
-  // Defaults to TEXT
-  EXPECT_EQ(ui::TEXT_INPUT_TYPE_TEXT, GetTextInputType());
-
-  // Setting to TEXT_INPUT_TYPE_PASSWORD also sets obscured state of textfield.
-  textfield_->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
-  EXPECT_EQ(ui::TEXT_INPUT_TYPE_PASSWORD, GetTextInputType());
-  EXPECT_TRUE(textfield_->IsObscured());
-}
-
-TEST_F(TextfieldTest, ObscuredSetsInputType) {
-  InitTextfield(Textfield::STYLE_DEFAULT);
-
-  // Defaults to TEXT
-  EXPECT_EQ(ui::TEXT_INPUT_TYPE_TEXT, GetTextInputType());
-
-  textfield_->SetObscured(true);
-  EXPECT_EQ(ui::TEXT_INPUT_TYPE_PASSWORD, GetTextInputType());
-
-  textfield_->SetObscured(false);
-  EXPECT_EQ(ui::TEXT_INPUT_TYPE_TEXT, GetTextInputType());
-}
-
 TEST_F(TextfieldTest, TextInputType) {
-  InitTextfield(Textfield::STYLE_DEFAULT);
+  InitTextfield();
 
   // Defaults to TEXT
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_TEXT, GetTextInputType());
@@ -606,21 +509,26 @@ TEST_F(TextfieldTest, TextInputType) {
   // And can be set.
   textfield_->SetTextInputType(ui::TEXT_INPUT_TYPE_URL);
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_URL, GetTextInputType());
+  textfield_->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
+  EXPECT_EQ(ui::TEXT_INPUT_TYPE_PASSWORD, GetTextInputType());
 
   // Readonly textfields have type NONE
   textfield_->SetReadOnly(true);
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_NONE, GetTextInputType());
 
   textfield_->SetReadOnly(false);
-  EXPECT_EQ(ui::TEXT_INPUT_TYPE_URL, GetTextInputType());
+  EXPECT_EQ(ui::TEXT_INPUT_TYPE_PASSWORD, GetTextInputType());
 
   // As do disabled textfields
   textfield_->SetEnabled(false);
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_NONE, GetTextInputType());
+
+  textfield_->SetEnabled(true);
+  EXPECT_EQ(ui::TEXT_INPUT_TYPE_PASSWORD, GetTextInputType());
 }
 
 TEST_F(TextfieldTest, OnKeyPressReturnValueTest) {
-  InitTextfield(Textfield::STYLE_DEFAULT);
+  InitTextfield();
 
   // Character keys will be handled by input method.
   SendKeyEvent(ui::VKEY_A);
@@ -683,7 +591,7 @@ TEST_F(TextfieldTest, OnKeyPressReturnValueTest) {
 }
 
 TEST_F(TextfieldTest, CursorMovement) {
-  InitTextfield(Textfield::STYLE_DEFAULT);
+  InitTextfield();
 
   // Test with trailing whitespace.
   textfield_->SetText(ASCIIToUTF16("one two hre "));
@@ -733,7 +641,7 @@ TEST_F(TextfieldTest, CursorMovement) {
 }
 
 TEST_F(TextfieldTest, FocusTraversalTest) {
-  InitTextfields(Textfield::STYLE_DEFAULT, 3);
+  InitTextfields(3);
   textfield_->RequestFocus();
 
   EXPECT_EQ(1, GetFocusedView()->id());
@@ -769,7 +677,7 @@ TEST_F(TextfieldTest, FocusTraversalTest) {
 }
 
 TEST_F(TextfieldTest, ContextMenuDisplayTest) {
-  InitTextfield(Textfield::STYLE_DEFAULT);
+  InitTextfield();
   EXPECT_TRUE(textfield_->context_menu_controller());
   textfield_->SetText(ASCIIToUTF16("hello world"));
   ui::Clipboard::GetForCurrentThread()->Clear(ui::CLIPBOARD_TYPE_COPY_PASTE);
@@ -792,7 +700,7 @@ TEST_F(TextfieldTest, ContextMenuDisplayTest) {
 }
 
 TEST_F(TextfieldTest, DoubleAndTripleClickTest) {
-  InitTextfield(Textfield::STYLE_DEFAULT);
+  InitTextfield();
   textfield_->SetText(ASCIIToUTF16("hello world"));
   ui::MouseEvent click(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                        ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
@@ -823,7 +731,7 @@ TEST_F(TextfieldTest, DoubleAndTripleClickTest) {
 }
 
 TEST_F(TextfieldTest, DragToSelect) {
-  InitTextfield(Textfield::STYLE_DEFAULT);
+  InitTextfield();
   textfield_->SetText(ASCIIToUTF16("hello world"));
   const int kStart = GetCursorPositionX(5);
   const int kEnd = 500;
@@ -861,7 +769,7 @@ TEST_F(TextfieldTest, DragToSelect) {
 
 #if defined(OS_WIN)
 TEST_F(TextfieldTest, DragAndDrop_AcceptDrop) {
-  InitTextfield(Textfield::STYLE_DEFAULT);
+  InitTextfield();
   textfield_->SetText(ASCIIToUTF16("hello world"));
 
   ui::OSExchangeData data;
@@ -913,7 +821,7 @@ TEST_F(TextfieldTest, DragAndDrop_AcceptDrop) {
 #endif
 
 TEST_F(TextfieldTest, DragAndDrop_InitiateDrag) {
-  InitTextfield(Textfield::STYLE_DEFAULT);
+  InitTextfield();
   textfield_->SetText(ASCIIToUTF16("hello string world"));
 
   // Ensure the textfield will provide selected text for drag data.
@@ -937,10 +845,10 @@ TEST_F(TextfieldTest, DragAndDrop_InitiateDrag) {
             textfield_->GetDragOperationsForView(NULL, kStringPoint));
   textfield_->SelectRange(kStringRange);
   // Ensure that password textfields do not support drag operations.
-  textfield_->SetObscured(true);
+  textfield_->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
   EXPECT_EQ(ui::DragDropTypes::DRAG_NONE,
             textfield_->GetDragOperationsForView(NULL, kStringPoint));
-  textfield_->SetObscured(false);
+  textfield_->SetTextInputType(ui::TEXT_INPUT_TYPE_TEXT);
   // Ensure that textfields only initiate drag operations inside the selection.
   ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, kStringPoint, kStringPoint,
                              ui::EF_LEFT_MOUSE_BUTTON,
@@ -960,7 +868,7 @@ TEST_F(TextfieldTest, DragAndDrop_InitiateDrag) {
 }
 
 TEST_F(TextfieldTest, DragAndDrop_ToTheRight) {
-  InitTextfield(Textfield::STYLE_DEFAULT);
+  InitTextfield();
   textfield_->SetText(ASCIIToUTF16("hello world"));
 
   base::string16 string;
@@ -1013,7 +921,7 @@ TEST_F(TextfieldTest, DragAndDrop_ToTheRight) {
 }
 
 TEST_F(TextfieldTest, DragAndDrop_ToTheLeft) {
-  InitTextfield(Textfield::STYLE_DEFAULT);
+  InitTextfield();
   textfield_->SetText(ASCIIToUTF16("hello world"));
 
   base::string16 string;
@@ -1066,7 +974,7 @@ TEST_F(TextfieldTest, DragAndDrop_ToTheLeft) {
 }
 
 TEST_F(TextfieldTest, DragAndDrop_Canceled) {
-  InitTextfield(Textfield::STYLE_DEFAULT);
+  InitTextfield();
   textfield_->SetText(ASCIIToUTF16("hello world"));
 
   // Start dragging "worl".
@@ -1096,11 +1004,11 @@ TEST_F(TextfieldTest, DragAndDrop_Canceled) {
 }
 
 TEST_F(TextfieldTest, ReadOnlyTest) {
-  InitTextfield(Textfield::STYLE_DEFAULT);
+  InitTextfield();
   textfield_->SetText(ASCIIToUTF16("read only"));
   textfield_->SetReadOnly(true);
   EXPECT_TRUE(textfield_->enabled());
-  EXPECT_TRUE(textfield_->focusable());
+  EXPECT_TRUE(textfield_->IsFocusable());
 
   SendKeyEvent(ui::VKEY_HOME);
   EXPECT_EQ(0U, textfield_->GetCursorPosition());
@@ -1162,7 +1070,7 @@ TEST_F(TextfieldTest, ReadOnlyTest) {
 }
 
 TEST_F(TextfieldTest, TextInputClientTest) {
-  InitTextfield(Textfield::STYLE_DEFAULT);
+  InitTextfield();
   ui::TextInputClient* client = textfield_->GetTextInputClient();
   EXPECT_TRUE(client);
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_TEXT, client->GetTextInputType());
@@ -1261,13 +1169,13 @@ TEST_F(TextfieldTest, TextInputClientTest) {
 
   textfield_->SetReadOnly(false);
   input_method_->Clear();
-  textfield_->SetObscured(true);
+  textfield_->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
   EXPECT_TRUE(input_method_->text_input_type_changed());
   EXPECT_TRUE(textfield_->GetTextInputClient());
 }
 
 TEST_F(TextfieldTest, UndoRedoTest) {
-  InitTextfield(Textfield::STYLE_DEFAULT);
+  InitTextfield();
   SendKeyEvent(ui::VKEY_A);
   EXPECT_STR_EQ("a", textfield_->text());
   SendKeyEvent(ui::VKEY_Z, false, true);
@@ -1361,7 +1269,7 @@ TEST_F(TextfieldTest, UndoRedoTest) {
 }
 
 TEST_F(TextfieldTest, CutCopyPaste) {
-  InitTextfield(Textfield::STYLE_DEFAULT);
+  InitTextfield();
 
   // Ensure IDS_APP_CUT cuts.
   textfield_->SetText(ASCIIToUTF16("123"));
@@ -1432,7 +1340,7 @@ TEST_F(TextfieldTest, CutCopyPaste) {
 }
 
 TEST_F(TextfieldTest, OvertypeMode) {
-  InitTextfield(Textfield::STYLE_DEFAULT);
+  InitTextfield();
   // Overtype mode should be disabled (no-op [Insert]).
   textfield_->SetText(ASCIIToUTF16("2"));
   SendKeyEvent(ui::VKEY_HOME);
@@ -1442,7 +1350,7 @@ TEST_F(TextfieldTest, OvertypeMode) {
 }
 
 TEST_F(TextfieldTest, TextCursorDisplayTest) {
-  InitTextfield(Textfield::STYLE_DEFAULT);
+  InitTextfield();
   // LTR-RTL string in LTR context.
   SendKeyEvent('a');
   EXPECT_STR_EQ("a", textfield_->text());
@@ -1497,7 +1405,7 @@ TEST_F(TextfieldTest, TextCursorDisplayInRTLTest) {
   std::string locale = l10n_util::GetApplicationLocale("");
   base::i18n::SetICUDefaultLocale("he");
 
-  InitTextfield(Textfield::STYLE_DEFAULT);
+  InitTextfield();
   // LTR-RTL string in RTL context.
   SendKeyEvent('a');
   EXPECT_STR_EQ("a", textfield_->text());
@@ -1552,7 +1460,7 @@ TEST_F(TextfieldTest, TextCursorDisplayInRTLTest) {
 }
 
 TEST_F(TextfieldTest, HitInsideTextAreaTest) {
-  InitTextfield(Textfield::STYLE_DEFAULT);
+  InitTextfield();
   textfield_->SetText(WideToUTF16(L"ab\x05E1\x5E2"));
   std::vector<gfx::Rect> cursor_bounds;
 
@@ -1607,7 +1515,7 @@ TEST_F(TextfieldTest, HitInsideTextAreaTest) {
 }
 
 TEST_F(TextfieldTest, HitOutsideTextAreaTest) {
-  InitTextfield(Textfield::STYLE_DEFAULT);
+  InitTextfield();
 
   // LTR-RTL string in LTR context.
   textfield_->SetText(WideToUTF16(L"ab\x05E1\x5E2"));
@@ -1642,7 +1550,7 @@ TEST_F(TextfieldTest, HitOutsideTextAreaInRTLTest) {
   std::string locale = l10n_util::GetApplicationLocale("");
   base::i18n::SetICUDefaultLocale("he");
 
-  InitTextfield(Textfield::STYLE_DEFAULT);
+  InitTextfield();
 
   // RTL-LTR string in RTL context.
   textfield_->SetText(WideToUTF16(L"\x05E1\x5E2" L"ab"));
@@ -1675,7 +1583,7 @@ TEST_F(TextfieldTest, HitOutsideTextAreaInRTLTest) {
 }
 
 TEST_F(TextfieldTest, OverflowTest) {
-  InitTextfield(Textfield::STYLE_DEFAULT);
+  InitTextfield();
 
   base::string16 str;
   for (int i = 0; i < 500; ++i)
@@ -1704,7 +1612,7 @@ TEST_F(TextfieldTest, OverflowInRTLTest) {
   std::string locale = l10n_util::GetApplicationLocale("");
   base::i18n::SetICUDefaultLocale("he");
 
-  InitTextfield(Textfield::STYLE_DEFAULT);
+  InitTextfield();
 
   base::string16 str;
   for (int i = 0; i < 500; ++i)
@@ -1732,7 +1640,7 @@ TEST_F(TextfieldTest, OverflowInRTLTest) {
 }
 
 TEST_F(TextfieldTest, GetCompositionCharacterBoundsTest) {
-  InitTextfield(Textfield::STYLE_DEFAULT);
+  InitTextfield();
 
   base::string16 str;
   const uint32 char_count = 10UL;
@@ -1776,7 +1684,7 @@ TEST_F(TextfieldTest, GetCompositionCharacterBoundsTest) {
 }
 
 TEST_F(TextfieldTest, GetCompositionCharacterBounds_ComplexText) {
-  InitTextfield(Textfield::STYLE_DEFAULT);
+  InitTextfield();
 
   const base::char16 kUtf16Chars[] = {
     // U+0020 SPACE
@@ -1813,7 +1721,7 @@ TEST_F(TextfieldTest, GetCompositionCharacterBounds_ComplexText) {
 // The word we select by double clicking should remain selected regardless of
 // where we drag the mouse afterwards without releasing the left button.
 TEST_F(TextfieldTest, KeepInitiallySelectedWord) {
-  InitTextfield(Textfield::STYLE_DEFAULT);
+  InitTextfield();
 
   textfield_->SetText(ASCIIToUTF16("abc def ghi"));
 
@@ -1842,7 +1750,7 @@ TEST_F(TextfieldTest, KeepInitiallySelectedWord) {
 // Touch selection and dragging currently only works for chromeos.
 #if defined(OS_CHROMEOS)
 TEST_F(TextfieldTest, TouchSelectionAndDraggingTest) {
-  InitTextfield(Textfield::STYLE_DEFAULT);
+  InitTextfield();
   textfield_->SetText(ASCIIToUTF16("hello world"));
   EXPECT_FALSE(GetTouchSelectionController());
   const int x = GetCursorPositionX(2);
@@ -1887,7 +1795,7 @@ TEST_F(TextfieldTest, TouchSelectionAndDraggingTest) {
 }
 
 TEST_F(TextfieldTest, TouchScrubbingSelection) {
-  InitTextfield(Textfield::STYLE_DEFAULT);
+  InitTextfield();
   textfield_->SetText(ASCIIToUTF16("hello world"));
   EXPECT_FALSE(GetTouchSelectionController());
 
@@ -1929,7 +1837,7 @@ TEST_F(TextfieldTest, TouchScrubbingSelection) {
 
 // Long_Press gesture in Textfield can initiate a drag and drop now.
 TEST_F(TextfieldTest, TestLongPressInitiatesDragDrop) {
-  InitTextfield(Textfield::STYLE_DEFAULT);
+  InitTextfield();
   textfield_->SetText(ASCIIToUTF16("Hello string world"));
 
   // Ensure the textfield will provide selected text for drag data.
@@ -1949,7 +1857,7 @@ TEST_F(TextfieldTest, TestLongPressInitiatesDragDrop) {
 }
 
 TEST_F(TextfieldTest, GetTextfieldBaseline_FontFallbackTest) {
-  InitTextfield(Textfield::STYLE_DEFAULT);
+  InitTextfield();
   textfield_->SetText(UTF8ToUTF16("abc"));
   const int old_baseline = textfield_->GetBaseline();
 

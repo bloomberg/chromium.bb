@@ -1555,7 +1555,8 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
   Textfield* normal = new Textfield();
   Textfield* read_only = new Textfield();
   read_only->SetReadOnly(true);
-  Textfield* password = new Textfield(Textfield::STYLE_OBSCURED);
+  Textfield* password = new Textfield();
+  password->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
 
   root_view->AddChildView(normal);
   root_view->AddChildView(read_only);

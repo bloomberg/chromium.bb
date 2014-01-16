@@ -115,7 +115,7 @@ void MultilineExample::CreateExampleView(View* container) {
   label_checkbox_->set_request_focus_on_press(false);
 
   textfield_ = new Textfield();
-  textfield_->SetController(this);
+  textfield_->set_controller(this);
   textfield_->SetText(ASCIIToUTF16(kTestString));
 
   GridLayout* layout = new GridLayout(container);

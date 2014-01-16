@@ -280,7 +280,7 @@ void BookmarkEditorView::Init() {
   title_tf_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_BOOKMARK_AX_EDITOR_NAME_LABEL));
   title_tf_->SetText(title);
-  title_tf_->SetController(this);
+  title_tf_->set_controller(this);
 
   if (show_tree_) {
     tree_view_ = new views::TreeView;
@@ -335,7 +335,7 @@ void BookmarkEditorView::Init() {
     PrefService* prefs =
         profile_ ? user_prefs::UserPrefs::Get(profile_) : NULL;
     url_tf_->SetText(chrome::FormatBookmarkURLForDisplay(url, prefs));
-    url_tf_->SetController(this);
+    url_tf_->set_controller(this);
     url_tf_->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_BOOKMARK_AX_EDITOR_URL_LABEL));
 

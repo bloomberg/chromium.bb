@@ -35,7 +35,7 @@ DecoratedTextfield::DecoratedTextfield(
 
   set_placeholder_text(placeholder);
   SetText(default_value);
-  SetController(controller);
+  set_controller(controller);
 }
 
 DecoratedTextfield::~DecoratedTextfield() {}

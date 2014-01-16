@@ -250,7 +250,7 @@ class EditableProfileName : public views::TextButton,
 
     // Textfield that overlaps the button.
     profile_name_textfield_ = new views::Textfield();
-    profile_name_textfield_->SetController(controller);
+    profile_name_textfield_->set_controller(controller);
     profile_name_textfield_->SetFontList(medium_font_list);
     profile_name_textfield_->SetVisible(false);
     AddChildView(profile_name_textfield_);

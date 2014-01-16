@@ -58,9 +58,8 @@ class EditSearchEngineDialog : public views::TextfieldController,
   // Create a Label containing the text with the specified message id.
   views::Label* CreateLabel(int message_id);
 
-  // Creates a text field with the specified text. If |lowercase| is true, the
-  // Textfield is configured to map all input to lower case.
-  views::Textfield* CreateTextfield(const base::string16& text, bool lowercase);
+  // Creates a text field with the specified text.
+  views::Textfield* CreateTextfield(const base::string16& text);
 
   // Invokes UpdateImageView for each of the images views.
   void UpdateImageViews();

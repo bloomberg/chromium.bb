@@ -394,7 +394,7 @@ ColorChooserView::ColorChooserView(ColorChooserListener* listener,
       GridLayout::FILL, GridLayout::FILL, 1, GridLayout::USE_PREF, 0, 0);
   layout->StartRow(0, 0);
   textfield_ = new Textfield();
-  textfield_->SetController(this);
+  textfield_->set_controller(this);
   textfield_->set_default_width_in_chars(kTextfieldLengthInChars);
   layout->AddView(textfield_);
   selected_color_patch_ = new SelectedColorPatchView();

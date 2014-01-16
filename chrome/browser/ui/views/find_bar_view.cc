@@ -84,7 +84,7 @@ FindBarView::FindBarView(FindBarHost* host)
   find_text_ = new views::Textfield;
   find_text_->set_id(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD);
   find_text_->set_default_width_in_chars(kDefaultCharWidth);
-  find_text_->SetController(this);
+  find_text_->set_controller(this);
   find_text_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_FIND));
   // The find bar textfield has a background image instead of a border.
   const gfx::Insets insets = find_text_->GetInsets();

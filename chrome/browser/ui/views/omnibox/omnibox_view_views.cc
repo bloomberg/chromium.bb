@@ -162,7 +162,7 @@ OmniboxViewViews::~OmniboxViewViews() {
 // OmniboxViewViews public:
 
 void OmniboxViewViews::Init() {
-  SetController(this);
+  set_controller(this);
   SetTextInputType(DetermineTextInputType());
   SetBackgroundColor(location_bar_view_->GetColor(
       ToolbarModel::NONE, LocationBarView::BACKGROUND));

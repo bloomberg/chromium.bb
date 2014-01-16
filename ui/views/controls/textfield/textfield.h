@@ -45,33 +45,22 @@ class VIEWS_EXPORT Textfield : public View,
   // The textfield's class name.
   static const char kViewClassName[];
 
-  enum StyleFlags {
-    STYLE_DEFAULT   = 0,
-    STYLE_OBSCURED  = 1 << 0,
-    STYLE_LOWERCASE = 1 << 1
-  };
-
   // Returns the text cursor blink time in milliseconds, or 0 for no blinking.
   static size_t GetCaretBlinkMs();
 
   Textfield();
-  explicit Textfield(StyleFlags style);
   virtual ~Textfield();
 
-  // TextfieldController accessors
-  void SetController(TextfieldController* controller);
-  TextfieldController* GetController() const;
+  // Set the controller for this textfield.
+  void set_controller(TextfieldController* controller) {
+    controller_ = controller;
+  }
 
   // Gets/Sets whether or not the Textfield is read-only.
   bool read_only() const { return read_only_; }
   void SetReadOnly(bool read_only);
 
-  // Gets/sets the STYLE_OBSCURED bit, controlling whether characters in this
-  // Textfield are displayed as asterisks/bullets.
-  bool IsObscured() const;
-  void SetObscured(bool obscured);
-
-  // Sets the input type of this textfield.
+  // Sets the input type; displays only asterisks for TEXT_INPUT_TYPE_PASSWORD.
   void SetTextInputType(ui::TextInputType type);
 
   // Gets the text currently displayed in the Textfield.
@@ -105,9 +94,6 @@ class VIEWS_EXPORT Textfield : public View,
 
   // Checks if there is any selected text.
   bool HasSelection() const;
-
-  // Accessor for |style_|.
-  StyleFlags style() const { return style_; }
 
   // Gets/Sets the text color to be used when painting the Textfield.
   // Call |UseDefaultTextColor| to restore the default system color.
@@ -298,9 +284,6 @@ class VIEWS_EXPORT Textfield : public View,
   friend class TextfieldTest;
   friend class TouchSelectionControllerImplTest;
 
-  // Converts the raw text according to the current style, e.g. STYLE_LOWERCASE.
-  base::string16 GetTextForDisplay(const base::string16& raw);
-
   // Handles a request to change the value of this text field from software
   // using an accessibility API (typically automation software, screen readers
   // don't normally use this). Sets the value and clears the selection.
@@ -354,9 +337,9 @@ class VIEWS_EXPORT Textfield : public View,
   // Returns true if the current text input type allows access by the IME.
   bool ImeEditingAllowed() const;
 
-  // Reveals the obscured char at |index| for the given |duration|. If |index|
-  // is -1, existing revealed index will be cleared.
-  void RevealObscuredChar(int index, const base::TimeDelta& duration);
+  // Reveals the password character at |index| for a set duration.
+  // If |index| is -1, the existing revealed character will be reset.
+  void RevealPasswordChar(int index);
 
   void CreateTouchSelectionControllerAndNotifyIt();
 
@@ -365,9 +348,6 @@ class VIEWS_EXPORT Textfield : public View,
 
   // This is the current listener for events from this Textfield.
   TextfieldController* controller_;
-
-  // The mask of style options for this Textfield.
-  StyleFlags style_;
 
   // True if this Textfield cannot accept input and is read-only.
   bool read_only_;
@@ -402,8 +382,8 @@ class VIEWS_EXPORT Textfield : public View,
   // The input type of this text field.
   ui::TextInputType text_input_type_;
 
-  // The duration to reveal the last typed char for obscured textfields.
-  base::TimeDelta obscured_reveal_duration_;
+  // The duration to reveal the last typed char for password textfields.
+  base::TimeDelta password_reveal_duration_;
 
   // True if InputMethod::CancelComposition() should not be called.
   bool skip_input_method_cancel_composition_;
@@ -428,9 +408,9 @@ class VIEWS_EXPORT Textfield : public View,
   scoped_ptr<ui::TouchSelectionController> touch_selection_controller_;
 
   // A timer to control the duration of showing the last typed char in
-  // obscured text. When the timer is running, the last typed char is shown
-  // and when the time expires, the last typed char is obscured.
-  base::OneShotTimer<Textfield> obscured_reveal_timer_;
+  // password text. When the timer is running, the last typed char is shown
+  // and when the time expires, the last typed char is password.
+  base::OneShotTimer<Textfield> password_reveal_timer_;
 
   // Context menu related members.
   scoped_ptr<ui::SimpleMenuModel> context_menu_contents_;

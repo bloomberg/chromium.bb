@@ -37,7 +37,8 @@ TextfieldExample::~TextfieldExample() {
 
 void TextfieldExample::CreateExampleView(View* container) {
   name_ = new Textfield();
-  password_ = new Textfield(Textfield::STYLE_OBSCURED);
+  password_ = new Textfield();
+  password_->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
   password_->set_placeholder_text(ASCIIToUTF16("password"));
   read_only_ = new Textfield();
   read_only_->SetReadOnly(true);
@@ -47,8 +48,8 @@ void TextfieldExample::CreateExampleView(View* container) {
   append_ = new LabelButton(this, ASCIIToUTF16("Append"));
   set_ = new LabelButton(this, ASCIIToUTF16("Set"));
   set_style_ = new LabelButton(this, ASCIIToUTF16("Set Styles"));
-  name_->SetController(this);
-  password_->SetController(this);
+  name_->set_controller(this);
+  password_->set_controller(this);
 
   GridLayout* layout = new GridLayout(container);
   container->SetLayoutManager(layout);

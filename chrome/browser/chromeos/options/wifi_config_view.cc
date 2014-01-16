@@ -611,11 +611,13 @@ bool WifiConfigView::HandleKeyEvent(views::Textfield* sender,
 
 void WifiConfigView::ButtonPressed(views::Button* sender,
                                    const ui::Event& event) {
-  if (sender == passphrase_visible_button_) {
-    if (passphrase_textfield_) {
-      passphrase_textfield_->SetObscured(!passphrase_textfield_->IsObscured());
-      passphrase_visible_button_->SetToggled(
-          !passphrase_textfield_->IsObscured());
+  if (sender == passphrase_visible_button_ && passphrase_textfield_) {
+    if (passphrase_textfield_->GetTextInputType() == ui::TEXT_INPUT_TYPE_TEXT) {
+      passphrase_textfield_->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
+      passphrase_visible_button_->SetToggled(false);
+    } else {
+      passphrase_textfield_->SetTextInputType(ui::TEXT_INPUT_TYPE_TEXT);
+      passphrase_visible_button_->SetToggled(true);
     }
   } else {
     NOTREACHED();
@@ -936,8 +938,8 @@ void WifiConfigView::Init(bool show_8021x) {
   layout->AddView(new views::Label(l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_ID)));
   if (!wifi) {
-    ssid_textfield_ = new views::Textfield(views::Textfield::STYLE_DEFAULT);
-    ssid_textfield_->SetController(this);
+    ssid_textfield_ = new views::Textfield();
+    ssid_textfield_->set_controller(this);
     ssid_textfield_->SetAccessibleName(l10n_util::GetStringUTF16(
         IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_ID));
     layout->AddView(ssid_textfield_);
@@ -1026,10 +1028,9 @@ void WifiConfigView::Init(bool show_8021x) {
         IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EAP_SUBJECT_MATCH);
     subject_match_label_ = new views::Label(subject_match_label_text);
     layout->AddView(subject_match_label_);
-    subject_match_textfield_ =
-        new views::Textfield(views::Textfield::STYLE_DEFAULT);
+    subject_match_textfield_ = new views::Textfield();
     subject_match_textfield_->SetAccessibleName(subject_match_label_text);
-    subject_match_textfield_->SetController(this);
+    subject_match_textfield_->set_controller(this);
     layout->AddView(subject_match_textfield_);
     layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
@@ -1055,9 +1056,9 @@ void WifiConfigView::Init(bool show_8021x) {
         IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_IDENTITY);
     identity_label_ = new views::Label(identity_label_text);
     layout->AddView(identity_label_);
-    identity_textfield_ = new views::Textfield(views::Textfield::STYLE_DEFAULT);
+    identity_textfield_ = new views::Textfield();
     identity_textfield_->SetAccessibleName(identity_label_text);
-    identity_textfield_->SetController(this);
+    identity_textfield_->set_controller(this);
     identity_textfield_->SetEnabled(identity_ui_data_.IsEditable());
     layout->AddView(identity_textfield_);
     layout->AddView(new ControlledSettingIndicatorView(identity_ui_data_));
@@ -1072,7 +1073,7 @@ void WifiConfigView::Init(bool show_8021x) {
   passphrase_label_ = new views::Label(passphrase_label_text);
   layout->AddView(passphrase_label_);
   passphrase_textfield_ = new PassphraseTextfield();
-  passphrase_textfield_->SetController(this);
+  passphrase_textfield_->set_controller(this);
   // Disable passphrase input initially for other network.
   passphrase_label_->SetEnabled(wifi);
   passphrase_textfield_->SetEnabled(wifi && passphrase_ui_data_.IsEditable());
@@ -1121,11 +1122,10 @@ void WifiConfigView::Init(bool show_8021x) {
         new views::Label(l10n_util::GetStringUTF16(
             IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_IDENTITY_ANONYMOUS));
     layout->AddView(identity_anonymous_label_);
-    identity_anonymous_textfield_ = new views::Textfield(
-        views::Textfield::STYLE_DEFAULT);
+    identity_anonymous_textfield_ = new views::Textfield();
     identity_anonymous_label_->SetEnabled(false);
     identity_anonymous_textfield_->SetEnabled(false);
-    identity_anonymous_textfield_->SetController(this);
+    identity_anonymous_textfield_->set_controller(this);
     layout->AddView(identity_anonymous_textfield_);
     layout->AddView(
         new ControlledSettingIndicatorView(identity_anonymous_ui_data_));

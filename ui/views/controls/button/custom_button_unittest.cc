@@ -178,7 +178,7 @@ TEST_F(CustomButtonTest, AsCustomButton) {
   Link link(text);
   EXPECT_FALSE(CustomButton::AsCustomButton(&link));
 
-  Textfield textfield(Textfield::STYLE_DEFAULT);
+  Textfield textfield;
   EXPECT_FALSE(CustomButton::AsCustomButton(&textfield));
 }
 

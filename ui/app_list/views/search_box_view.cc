@@ -66,7 +66,7 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
   search_box_->set_border(NULL);
   search_box_->SetFontList(rb.GetFontList(ui::ResourceBundle::MediumFont));
   search_box_->set_placeholder_text_color(kHintTextColor);
-  search_box_->SetController(this);
+  search_box_->set_controller(this);
   AddChildView(search_box_);
 
   ModelChanged();

@@ -129,11 +129,13 @@ bool WimaxConfigView::HandleKeyEvent(views::Textfield* sender,
 
 void WimaxConfigView::ButtonPressed(views::Button* sender,
                                    const ui::Event& event) {
-  if (sender == passphrase_visible_button_) {
-    if (passphrase_textfield_) {
-      passphrase_textfield_->SetObscured(!passphrase_textfield_->IsObscured());
-      passphrase_visible_button_->SetToggled(
-          !passphrase_textfield_->IsObscured());
+  if (sender == passphrase_visible_button_ && passphrase_textfield_) {
+    if (passphrase_textfield_->GetTextInputType() == ui::TEXT_INPUT_TYPE_TEXT) {
+      passphrase_textfield_->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
+      passphrase_visible_button_->SetToggled(false);
+    } else {
+      passphrase_textfield_->SetTextInputType(ui::TEXT_INPUT_TYPE_TEXT);
+      passphrase_visible_button_->SetToggled(true);
     }
   } else {
     NOTREACHED();
@@ -242,10 +244,9 @@ void WimaxConfigView::Init() {
       IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_IDENTITY);
   identity_label_ = new views::Label(identity_label_text);
   layout->AddView(identity_label_);
-  identity_textfield_ = new views::Textfield(
-      views::Textfield::STYLE_DEFAULT);
+  identity_textfield_ = new views::Textfield();
   identity_textfield_->SetAccessibleName(identity_label_text);
-  identity_textfield_->SetController(this);
+  identity_textfield_->set_controller(this);
   identity_textfield_->SetEnabled(identity_ui_data_.IsEditable());
   layout->AddView(identity_textfield_);
   layout->AddView(new ControlledSettingIndicatorView(identity_ui_data_));
@@ -257,9 +258,9 @@ void WimaxConfigView::Init() {
       IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PASSPHRASE);
   passphrase_label_ = new views::Label(passphrase_label_text);
   layout->AddView(passphrase_label_);
-  passphrase_textfield_ = new views::Textfield(
-      views::Textfield::STYLE_OBSCURED);
-  passphrase_textfield_->SetController(this);
+  passphrase_textfield_ = new views::Textfield();
+  passphrase_textfield_->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
+  passphrase_textfield_->set_controller(this);
   passphrase_label_->SetEnabled(true);
   passphrase_textfield_->SetEnabled(passphrase_ui_data_.IsEditable());
   passphrase_textfield_->SetAccessibleName(passphrase_label_text);

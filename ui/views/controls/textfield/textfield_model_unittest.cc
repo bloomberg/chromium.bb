@@ -513,7 +513,7 @@ TEST_F(TextfieldModelTest, Clipboard) {
   EXPECT_STR_EQ("HELLO WORLD", model.text());
   EXPECT_STR_EQ("HELLO WORLD", model.GetSelectedText());
 
-  // Copy on obscured text should do nothing.
+  // Copy on obscured (password) text should do nothing.
   model.SelectAll(false);
   EXPECT_FALSE(model.Copy());
   clipboard->ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE, &clipboard_text);
