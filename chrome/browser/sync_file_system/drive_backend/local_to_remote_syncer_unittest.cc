@@ -412,7 +412,7 @@ TEST_F(LocalToRemoteSyncerTest, Conflict_UpdateDeleteOnFile) {
 
   DeleteResource(file_id);
 
-  EXPECT_EQ(SYNC_STATUS_RETRY, RunLocalToRemoteSyncer(
+  EXPECT_EQ(SYNC_STATUS_FILE_BUSY, RunLocalToRemoteSyncer(
       FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                  SYNC_FILE_TYPE_FILE),
       URL(kOrigin, "foo")));

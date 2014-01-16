@@ -49,12 +49,10 @@ void DidGetResourceEntryForUploadExisting(
     const UploadCompletionCallback& callback,
     GDataErrorCode error,
     scoped_ptr<ResourceEntry> entry) {
-  ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
-  ASSERT_TRUE(entry);
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(callback,
-                 google_apis::HTTP_SUCCESS,
+                 error,
                  GURL(),
                  base::Passed(&entry)));
 }

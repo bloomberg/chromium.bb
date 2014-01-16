@@ -1450,7 +1450,8 @@ base::DictionaryValue* FakeDriveService::FindEntryByResourceId(
       std::string current_resource_id;
       if (entries->GetDictionary(i, &entry) &&
           entry->GetString("gd$resourceId.$t", &current_resource_id) &&
-          resource_id == current_resource_id) {
+          resource_id == current_resource_id &&
+          !entry->HasKey("docs$removed")) {
         return entry;
       }
     }
