@@ -177,6 +177,10 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestStatic, CORSNoCookie) {
   RunLoadTest(FILE_PATH_LITERAL("cross_origin/cors_no_cookie.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestStatic, RelativeManifest) {
+  RunLoadTest(FILE_PATH_LITERAL("manifest/relative_manifest.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnacl,
                        MAYBE_PNACL(PnaclErrorHandling)) {
   RunNaClIntegrationTest(FILE_PATH_LITERAL("pnacl_error_handling.html"));
