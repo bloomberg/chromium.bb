@@ -15,6 +15,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       'showStep',
       'showError',
       'showWorking',
+      'setAuthenticatedUserEmail',
     ],
 
     /**
@@ -47,6 +48,12 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      * The current step. This is the last value passed to showStep().
      */
     currentStep_: null,
+
+    /**
+     * Opaque token used to correlate request and response while retrieving the
+     * authenticated user's e-mail address from GAIA.
+     */
+    attemptToken_: null,
 
     /** @override */
     decorate: function() {
@@ -233,6 +240,19 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
     },
 
     /**
+     * Invoked when the authenticated user's e-mail address has been retrieved.
+     * This completes SAML authentication.
+     * @param {number} attemptToken An opaque token used to correlate this
+     *     method invocation with the corresponding request to retrieve the
+     *     user's e-mail address.
+     * @param {string} email The authenticated user's e-mail address.
+     */
+    setAuthenticatedUserEmail: function(attemptToken, email) {
+      if (this.attemptToken_ == attemptToken)
+        chrome.send('oauthEnrollCompleteLogin', [email]);
+    },
+
+    /**
      * Handler for cancellations of an enforced auto-enrollment.
      */
     cancelAutoEnrollment: function() {
@@ -296,12 +316,20 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
 
       var msg = m.data;
 
-      // 'completeLogin' for full gaia signin flow. For SAML case,
-      // 'confirmPassword' is sent after authentication. Since enrollment
-      // does not need the actual password, this is treated the same as
-      // 'completeLogin'.
-      if (msg.method == 'completeLogin' || msg.method == 'confirmPassword')
+      if (msg.method == 'completeLogin') {
+        // A user has successfully authenticated via regular GAIA.
         chrome.send('oauthEnrollCompleteLogin', [msg.email]);
+      }
+
+      if (msg.method == 'retrieveAuthenticatedUserEmail') {
+        // A user has successfully authenticated via SAML. However, the user's
+        // identity is not known. Instead of reporting success immediately,
+        // retrieve the user's e-mail address first.
+        this.attemptToken_ = msg.attemptToken;
+        this.showWorking(null);
+        chrome.send('oauthEnrollRetrieveAuthenticatedUserEmail',
+                    [msg.attemptToken]);
+      }
     }
   };
 });

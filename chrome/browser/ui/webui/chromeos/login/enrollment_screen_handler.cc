@@ -16,6 +16,7 @@
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/chromeos/policy/policy_oauth2_token_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/chromeos/login/authenticated_user_email_retriever.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "components/policy/core/browser/cloud/message_util.h"
 #include "content/public/browser/web_contents.h"
@@ -26,6 +27,7 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -88,6 +90,8 @@ EnrollmentScreenHandler::~EnrollmentScreenHandler() {
 // EnrollmentScreenHandler, WebUIMessageHandler implementation --
 
 void EnrollmentScreenHandler::RegisterMessages() {
+  AddCallback("oauthEnrollRetrieveAuthenticatedUserEmail",
+              &EnrollmentScreenHandler::HandleRetrieveAuthenticatedUserEmail);
   AddCallback("oauthEnrollClose",
               &EnrollmentScreenHandler::HandleClose);
   AddCallback("oauthEnrollCompleteLogin",
@@ -327,6 +331,16 @@ void EnrollmentScreenHandler::OnBrowsingDataRemoverDone() {
 }
 
 // EnrollmentScreenHandler, private -----------------------------
+
+void EnrollmentScreenHandler::HandleRetrieveAuthenticatedUserEmail(
+    double attempt_token) {
+  email_retriever_.reset(new AuthenticatedUserEmailRetriever(
+      base::Bind(&EnrollmentScreenHandler::CallJS<double, std::string>,
+                 base::Unretained(this),
+                 "setAuthenticatedUserEmail",
+                 attempt_token),
+      Profile::FromWebUI(web_ui())->GetRequestContext()));
+}
 
 void EnrollmentScreenHandler::HandleClose(const std::string& reason) {
   if (!controller_) {
