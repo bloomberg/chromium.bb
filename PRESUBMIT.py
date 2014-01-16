@@ -9,7 +9,6 @@ for more details about the presubmit API built into gcl.
 """
 
 
-import random
 import re
 import subprocess
 import sys
@@ -1456,15 +1455,5 @@ def GetPreferredTrySlaves(project, change):
   if (not all(re.search('^chrome', f) for f in files) or
       any(re.search('\.gypi?$', f) for f in files)):
     trybots.extend(GetDefaultTryConfigs(['android_aosp']))
-
-  # Experimental recipe-based Chromium trybots. To avoid possible capacity
-  # problems, only enable for a small percentage of try runs.
-  if random.random() < 0.25:
-    trybots.extend(GetDefaultTryConfigs([
-        'linux_chromium_dbg',
-        'linux_chromium_rel',
-        'mac_chromium_dbg',
-        'mac_chromium_rel',
-    ]))
 
   return trybots
