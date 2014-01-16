@@ -117,8 +117,7 @@ void ProxyAdvisor::Advise(
   std::string header_value = motivation_name + " " + url.spec();
   net::URLRequestContext* context = context_getter_->GetURLRequestContext();
   std::string endpoint =
-      DataReductionProxySettings::GetDataReductionProxyOrigin();
-  endpoint += "/preconnect";
+      DataReductionProxySettings::GetDataReductionProxyOrigin() + "preconnect";
   scoped_ptr<net::URLRequest> request = context->CreateRequest(
       GURL(endpoint), net::DEFAULT_PRIORITY, this);
   request->set_method("HEAD");
