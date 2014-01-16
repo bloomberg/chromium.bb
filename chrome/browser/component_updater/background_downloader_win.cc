@@ -525,6 +525,8 @@ void BackgroundDownloader::EndDownload(HRESULT error) {
   // Clean up stale jobs before invoking the callback.
   CleanupStaleJobs(bits_manager_);
 
+  bits_manager_ = NULL;
+
   Result result;
   result.error = error;
   result.response = response;
@@ -536,8 +538,6 @@ void BackgroundDownloader::EndDownload(HRESULT error) {
                    is_handled,
                    result,
                    download_metrics));
-
-  bits_manager_ = NULL;
 
   // Once the task is posted to the the UI thread, this object may be deleted
   // by its owner. It is not safe to access members of this object on the

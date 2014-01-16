@@ -36,6 +36,9 @@ class BackgroundDownloader : public CrxDownloader {
 
   // Called asynchronously on the FILE thread at different stages during
   // the download. |OnDownloading| can be called multiple times.
+  // |EndDownload| switches the execution flow from the FILE to the UI thread.
+  // Accessing any data members of this object on the FILE thread after
+  // calling |EndDownload| is unsafe.
   void BeginDownload(const GURL& url);
   void OnDownloading();
   void EndDownload(HRESULT hr);
