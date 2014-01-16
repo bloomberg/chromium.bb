@@ -54,6 +54,7 @@ class OperationTestBase : public testing::Test {
         const std::string& local_id) OVERRIDE;
     virtual void OnEntryUpdatedByOperation(
         const std::string& local_id) OVERRIDE;
+    virtual void OnDriveSyncError(DriveSyncErrorType type) OVERRIDE;
 
     // Gets the set of changed paths.
     const std::set<base::FilePath>& get_changed_paths() {
@@ -70,10 +71,16 @@ class OperationTestBase : public testing::Test {
       return updated_local_ids_;
     }
 
+    // Gets the list of drive sync errors.
+    const std::vector<DriveSyncErrorType> drive_sync_errors() const {
+      return drive_sync_errors_;
+    }
+
    private:
     std::set<base::FilePath> changed_paths_;
     std::set<std::string> upload_needed_local_ids_;
     std::set<std::string> updated_local_ids_;
+    std::vector<DriveSyncErrorType> drive_sync_errors_;
   };
 
   OperationTestBase();

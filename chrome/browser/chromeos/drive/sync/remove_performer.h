@@ -87,6 +87,7 @@ class RemovePerformer {
       google_apis::GDataErrorCode status);
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
+  file_system::OperationObserver* observer_;
   JobScheduler* scheduler_;
   ResourceMetadata* metadata_;
   scoped_ptr<EntryRevertPerformer> entry_revert_performer_;

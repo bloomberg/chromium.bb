@@ -100,6 +100,12 @@ enum DeviceEventType {
   format_fail
 };
 
+// Drive sync error type.
+enum DriveSyncErrorType {
+  // Request to delete a file without permission.
+  delete_without_permission
+};
+
 // A file task represents an action that the file manager can perform over the
 // currently selected files. See
 // chrome/browser/chromeos/extensions/file_manager/file_tasks.h for details
@@ -243,6 +249,10 @@ dictionary FileTransferStatus {
 
   // Approximated total size of transfer operation.
   double? total;
+};
+
+dictionary DriveSyncErrorEvent {
+  DriveSyncErrorType type;
 };
 
 // Payload data for copy status progress updates.
@@ -681,5 +691,7 @@ interface Events {
   static void onDriveConnectionStatusChanged();
 
   static void onDeviceChanged(DeviceEvent event);
+
+  static void onDriveSyncError(DriveSyncErrorEvent event);
 };
 };

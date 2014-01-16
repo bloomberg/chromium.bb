@@ -41,6 +41,11 @@ void OperationTestBase::LoggingObserver::OnEntryUpdatedByOperation(
   updated_local_ids_.insert(local_id);
 }
 
+void OperationTestBase::LoggingObserver::OnDriveSyncError(
+    DriveSyncErrorType type) {
+  drive_sync_errors_.push_back(type);
+}
+
 OperationTestBase::OperationTestBase() {
 }
 

@@ -563,6 +563,23 @@ void EventRouter::OnDirectoryChanged(const base::FilePath& directory_path) {
   HandleFileWatchNotification(directory_path, false);
 }
 
+void EventRouter::OnDriveSyncError(
+    drive::file_system::DriveSyncErrorType type) {
+  file_browser_private::DriveSyncErrorEvent event;
+  event.type = file_browser_private::DRIVE_SYNC_ERROR_TYPE_NONE;
+  switch (type) {
+    case drive::file_system::DELETE_WITHOUT_PERMISSION:
+      event.type =
+          file_browser_private::DRIVE_SYNC_ERROR_TYPE_DELETE_WITHOUT_PERMISSION;
+      break;
+  }
+  DCHECK_NE(file_browser_private::DRIVE_SYNC_ERROR_TYPE_NONE, event.type);
+  BroadcastEvent(
+      profile_,
+      file_browser_private::OnDriveSyncError::kEventName,
+      file_browser_private::OnDriveSyncError::Create(event));
+}
+
 void EventRouter::OnRefreshTokenInvalid() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 

@@ -6,6 +6,7 @@
 
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
+#include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
@@ -51,6 +52,7 @@ RemovePerformer::RemovePerformer(
     JobScheduler* scheduler,
     ResourceMetadata* metadata)
     : blocking_task_runner_(blocking_task_runner),
+      observer_(observer),
       scheduler_(scheduler),
       metadata_(metadata),
       entry_revert_performer_(new EntryRevertPerformer(blocking_task_runner,
@@ -134,6 +136,7 @@ void RemovePerformer::TrashResourceAfterUpdateRemoteState(
   if (status == google_apis::HTTP_FORBIDDEN) {
     // Editing this entry is not allowed, revert local changes.
     entry_revert_performer_->RevertEntry(local_id, callback);
+    observer_->OnDriveSyncError(file_system::DELETE_WITHOUT_PERMISSION);
     return;
   }
 

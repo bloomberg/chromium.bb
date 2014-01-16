@@ -819,6 +819,12 @@ void FileSystem::OnEntryUpdatedByOperation(const std::string& local_id) {
   sync_client_->AddUpdateTask(local_id);
 }
 
+void FileSystem::OnDriveSyncError(file_system::DriveSyncErrorType type) {
+  FOR_EACH_OBSERVER(FileSystemObserver,
+                    observers_,
+                    OnDriveSyncError(type));
+}
+
 void FileSystem::OnDirectoryChanged(const base::FilePath& directory_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 

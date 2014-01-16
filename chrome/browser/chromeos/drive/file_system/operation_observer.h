@@ -12,6 +12,12 @@ class FilePath;
 namespace drive {
 namespace file_system {
 
+// Error type of sync client.
+enum DriveSyncErrorType {
+  // Request to delete a file without permission.
+  DELETE_WITHOUT_PERMISSION
+};
+
 // Passes notifications from Drive operations back to the file system.
 class OperationObserver {
  public:
@@ -27,6 +33,9 @@ class OperationObserver {
 
   // Sent when metadata entry is updated and sync is needed.
   virtual void OnEntryUpdatedByOperation(const std::string& local_id) {}
+
+  // Sent when a specific drive sync error occurred.
+  virtual void OnDriveSyncError(DriveSyncErrorType type) {}
 };
 
 }  // namespace file_system

@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_observer.h"
 #include "chrome/browser/chromeos/drive/job_list.h"
+#include "chrome/browser/chromeos/drive/sync_client.h"
 #include "chrome/browser/chromeos/file_manager/file_watcher.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager_observer.h"
 #include "chrome/browser/drive/drive_service_interface.h"
@@ -97,6 +98,8 @@ class EventRouter
   // drive::FileSystemObserver overrides.
   virtual void OnDirectoryChanged(
       const base::FilePath& directory_path) OVERRIDE;
+  virtual void OnDriveSyncError(
+      drive::file_system::DriveSyncErrorType type) OVERRIDE;
 
   // VolumeManagerObserver overrides.
   virtual void OnDiskAdded(
