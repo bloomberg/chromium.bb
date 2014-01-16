@@ -210,6 +210,39 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   EXPECT_TRUE(observer.infobar_shown());
 }
 
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
+                       LoginSuccessWithUnrelatedForm) {
+  // Log in, see a form on the landing page. That form is not related to the
+  // login form (=has a different action), so we should offer saving the
+  // password.
+  NavigateToFile("/password/password_form.html");
+
+  NavigationObserver observer(WebContents());
+  std::string fill_and_submit =
+      "document.getElementById('username_unrelated').value = 'temp';"
+      "document.getElementById('password_unrelated').value = 'random';"
+      "document.getElementById('submit_unrelated').click()";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  observer.Wait();
+  EXPECT_TRUE(observer.infobar_shown());
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, LoginFailed) {
+  // Log in, see a form on the landing page. That form is not related to the
+  // login form (=has a different action), so we should offer saving the
+  // password.
+  NavigateToFile("/password/password_form.html");
+
+  NavigationObserver observer(WebContents());
+  std::string fill_and_submit =
+      "document.getElementById('username_failed').value = 'temp';"
+      "document.getElementById('password_failed').value = 'random';"
+      "document.getElementById('submit_failed').click()";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  observer.Wait();
+  EXPECT_FALSE(observer.infobar_shown());
+}
+
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, Redirects) {
   NavigateToFile("/password/password_form.html");
 

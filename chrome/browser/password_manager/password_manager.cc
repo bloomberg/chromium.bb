@@ -350,12 +350,18 @@ void PasswordManager::OnPasswordFormsRendered(
 
   DCHECK(IsSavingEnabled());
 
-  // We now assume that if there is at least one visible password form
-  // that means that the previous login attempt failed.
-  if (!visible_forms.empty()) {
-    provisional_save_manager_->SubmitFailed();
-    provisional_save_manager_.reset();
-    return;
+  // If we see the login form again, then the login failed.
+  for (size_t i = 0; i < visible_forms.size(); ++i) {
+    // TODO(vabr): The similarity check is just action equality for now. If it
+    // becomes more complex, it may make sense to consider modifying and using
+    // PasswordFormManager::DoesManage for it.
+    if (visible_forms[i].action.is_valid() &&
+        provisional_save_manager_->pending_credentials().action ==
+            visible_forms[i].action) {
+      provisional_save_manager_->SubmitFailed();
+      provisional_save_manager_.reset();
+      return;
+    }
   }
 
   // Looks like a successful login attempt. Either show an infobar or
