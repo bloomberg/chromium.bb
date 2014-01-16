@@ -867,6 +867,9 @@ void WebMediaPlayerAndroid::OnPlayerReleased() {
   if (!needs_external_surface_)
     needs_establish_peer_ = true;
 
+  if (is_playing_)
+    OnMediaPlayerPause();
+
 #if defined(VIDEO_HOLE)
   last_computed_rect_ = gfx::RectF();
 #endif  // defined(VIDEO_HOLE)

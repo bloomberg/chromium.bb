@@ -269,7 +269,7 @@ void BrowserMediaPlayerManager::OnPlaybackComplete(int player_id) {
 
 void BrowserMediaPlayerManager::OnMediaInterrupted(int player_id) {
   // Tell WebKit that the audio should be paused, then release all resources
-  Send(new MediaPlayerMsg_DidMediaPlayerPause(routing_id(), player_id));
+  Send(new MediaPlayerMsg_MediaPlayerReleased(routing_id(), player_id));
   OnReleaseResources(player_id);
 }
 
