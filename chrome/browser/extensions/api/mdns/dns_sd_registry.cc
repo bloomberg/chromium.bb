@@ -53,7 +53,8 @@ bool DnsSdRegistry::ServiceTypeData::UpdateService(
                    IsSameServiceName(service));
   // Set to true when a service is updated in or added to the registry.
   bool updated_or_added = added;
-  if (it != service_list_.end()) {
+  bool known = (it != service_list_.end());
+  if (known) {
     // If added == true, but we still found the service in our cache, then just
     // update the existing entry, but this should not happen!
     DCHECK(!added);
@@ -64,6 +65,11 @@ bool DnsSdRegistry::ServiceTypeData::UpdateService(
   } else if (added) {
     service_list_.push_back(service);
   }
+
+  VLOG(1) << "UpdateService: " << service.service_name
+          << ", added: " << added
+          << ", known: " << known
+          << ", updated or added: " << updated_or_added;
   return updated_or_added;
 };
 
@@ -120,6 +126,8 @@ DnsSdDeviceLister* DnsSdRegistry::CreateDnsSdDeviceLister(
 }
 
 void DnsSdRegistry::RegisterDnsSdListener(std::string service_type) {
+  VLOG(1) << "RegisterDnsSdListener: " << service_type
+          << ", registered: " << IsRegistered(service_type);
   if (service_type.empty())
     return;
 
@@ -139,6 +147,7 @@ void DnsSdRegistry::RegisterDnsSdListener(std::string service_type) {
 }
 
 void DnsSdRegistry::UnregisterDnsSdListener(std::string service_type) {
+  VLOG(1) << "UnregisterDnsSdListener: " << service_type;
   DnsSdRegistry::DnsSdServiceTypeDataMap::iterator it =
       service_data_map_.find(service_type);
   if (it == service_data_map_.end())
@@ -151,42 +160,58 @@ void DnsSdRegistry::UnregisterDnsSdListener(std::string service_type) {
 void DnsSdRegistry::ServiceChanged(const std::string& service_type,
                                    bool added,
                                    const DnsSdService& service) {
-  if (!IsRegistered(service_type))
+  VLOG(1) << "ServiceChanged: service_type: " << service_type
+          << ", known: " << IsRegistered(service_type)
+          << ", service: " << service.service_name
+          << ", added: " << added;
+  if (!IsRegistered(service_type)) {
     return;
+  }
 
-  VLOG(1) << "Service changed: " << service.service_name;
-  if (service_data_map_[service_type]->UpdateService(added, service)) {
+  bool is_updated =
+      service_data_map_[service_type]->UpdateService(added, service);
+  VLOG(1) << "ServiceChanged: is_updated: " << is_updated;
+
+  if (is_updated) {
     DispatchApiEvent(service_type);
-  } else {
-    VLOG(1) << "Failed to find existing service to update: "
-            << service.service_name;
   }
 }
 
 void DnsSdRegistry::ServiceRemoved(const std::string& service_type,
                                    const std::string& service_name) {
-  if (!IsRegistered(service_type))
+  VLOG(1) << "ServiceRemoved: service_type: " << service_type
+          << ", known: " << IsRegistered(service_type)
+          << ", service: " << service_name;
+  if (!IsRegistered(service_type)) {
     return;
-
-  VLOG(1) << "Removing service: " << service_name;
-  if (service_data_map_[service_type]->RemoveService(service_name)) {
-    DispatchApiEvent(service_type);
-  } else {
-    VLOG(1) << "Failed to remove service: " << service_name;
   }
+
+  bool is_removed =
+      service_data_map_[service_type]->RemoveService(service_name);
+  VLOG(1) << "ServiceRemoved: is_removed: " << is_removed;
+
+  if (is_removed)
+    DispatchApiEvent(service_type);
 }
 
 void DnsSdRegistry::ServicesFlushed(const std::string& service_type) {
-  if (!IsRegistered(service_type))
+  VLOG(1) << "ServicesFlushed: service_type: " << service_type
+          << ", known: " << IsRegistered(service_type);
+  if (!IsRegistered(service_type)) {
     return;
+  }
 
-  if (service_data_map_[service_type]->ClearServices())
+  bool is_cleared = service_data_map_[service_type]->ClearServices();
+  VLOG(1) << "ServicesFlushed: is_cleared: " << is_cleared;
+
+  if (is_cleared)
     DispatchApiEvent(service_type);
 }
 
 void DnsSdRegistry::DispatchApiEvent(const std::string& service_type) {
   // TODO(justinlin): Make this MaybeDispatchApiEvent instead and dispatch if a
   // dirty bit is set.
+  VLOG(1) << "DispatchApiEvent: service_type: " << service_type;
   FOR_EACH_OBSERVER(DnsSdObserver, observers_, OnDnsSdEvent(
       service_type, service_data_map_[service_type]->GetServiceList()));
 }

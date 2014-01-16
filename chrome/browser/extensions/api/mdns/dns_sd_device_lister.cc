@@ -22,7 +22,7 @@ void FillServiceInfo(const ServiceDescription& service_description,
   }
   service->service_data = service_description.metadata;
 
-  DVLOG(1) << "Found " << service->service_name << ", "
+  VLOG(1) << "Found " << service->service_name << ", "
            << service->service_host_port << ", "
            << service->ip_address;
 }
@@ -58,14 +58,23 @@ void DnsSdDeviceLister::OnDeviceChanged(
     const ServiceDescription& service_description) {
   DnsSdService service;
   FillServiceInfo(service_description, &service);
+  VLOG(1) << "OnDeviceChanged: "
+          << "service_name: " << service.service_name << ", "
+          << "added: " << added << ", "
+          << "service_type: " << device_lister_.service_type();
   delegate_->ServiceChanged(device_lister_.service_type(), added, service);
 }
 
 void DnsSdDeviceLister::OnDeviceRemoved(const std::string& service_name) {
+  VLOG(1) << "OnDeviceRemoved: "
+          << "service_name: " << service_name << ", "
+          << "service_type: " << device_lister_.service_type();
   delegate_->ServiceRemoved(device_lister_.service_type(), service_name);
 }
 
 void DnsSdDeviceLister::OnDeviceCacheFlushed() {
+  VLOG(1) << "OnDeviceCacheFlushed: "
+          << "service_type: " << device_lister_.service_type();
   delegate_->ServicesFlushed(device_lister_.service_type());
   device_lister_.DiscoverNewDevices(false);
 }

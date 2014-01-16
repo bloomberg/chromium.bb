@@ -32,16 +32,21 @@ ServiceDiscoveryDeviceLister::~ServiceDiscoveryDeviceLister() {
 }
 
 void ServiceDiscoveryDeviceLister::Start() {
+  VLOG(1) << "DeviceListerStart: service_type: " << service_type_;
   CreateServiceWatcher();
 }
 
 void ServiceDiscoveryDeviceLister::DiscoverNewDevices(bool force_update) {
+  VLOG(1) << "DiscoverNewDevices: service_type: " << service_type_;
   service_watcher_->DiscoverNewServices(force_update);
 }
 
 void ServiceDiscoveryDeviceLister::OnServiceUpdated(
     ServiceWatcher::UpdateType update,
     const std::string& service_name) {
+  VLOG(1) << "OnServiceUpdated: service_type: " << service_type_
+          << ", service_name: " << service_name
+          << ", update: " << update;
   if (update == ServiceWatcher::UPDATE_INVALIDATED) {
     resolvers_.clear();
     CreateServiceWatcher();
@@ -58,6 +63,7 @@ void ServiceDiscoveryDeviceLister::OnServiceUpdated(
 
     // If there is already a resolver working on this service, don't add one.
     if (insert_result.second) {
+      VLOG(1) << "Adding resolver for service_name: " << service_name;
       scoped_ptr<ServiceResolver> resolver =
           service_discovery_client_->CreateServiceResolver(
           service_name, base::Bind(
@@ -68,6 +74,8 @@ void ServiceDiscoveryDeviceLister::OnServiceUpdated(
 
       insert_result.first->second.reset(resolver.release());
       insert_result.first->second->StartResolving();
+    } else {
+      VLOG(1) << "Resolver already exists, service_name: " << service_name;
     }
   } else {
     delegate_->OnDeviceRemoved(service_name);
@@ -80,6 +88,9 @@ void ServiceDiscoveryDeviceLister::OnResolveComplete(
     std::string service_name,
     ServiceResolver::RequestStatus status,
     const ServiceDescription& service_description) {
+  VLOG(1) << "OnResolveComplete: service_type: " << service_type_
+          << ", service_name: " << service_name
+          << ", status: " << status;
   if (status == ServiceResolver::STATUS_SUCCESS) {
     delegate_->OnDeviceChanged(added, service_description);
 

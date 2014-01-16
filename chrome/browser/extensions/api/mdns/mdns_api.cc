@@ -89,9 +89,6 @@ void MDnsAPI::UpdateMDnsListeners(const EventListenerInfo& details) {
   for (EventListenerMap::ListenerList::const_iterator it = listeners.begin();
        it != listeners.end(); ++it) {
     base::DictionaryValue* filter = ((*it)->filter.get());
-    for (base::DictionaryValue::Iterator iter(*filter);
-       !iter.IsAtEnd(); iter.Advance()) {
-    }
 
     std::string filter_value;
     filter->GetStringASCII(kEventFilterServiceTypeKey, &filter_value);
@@ -145,6 +142,8 @@ void MDnsAPI::OnDnsSdEvent(const std::string& service_type,
       new Event(mdns::OnServiceList::kEventName, results.Pass()));
   event->restrict_to_browser_context = profile_;
   event->filter_info.SetServiceType(service_type);
+
+  VLOG(1) << "Broadcasting OnServiceList event: " << event.get();
 
   // TODO(justinlin): To avoid having listeners without filters getting all
   // events, modify API to have this event require filters.
