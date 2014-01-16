@@ -50,7 +50,6 @@ Layer::Layer()
       visible_(true),
       force_render_surface_(false),
       fills_bounds_opaquely_(true),
-      layer_updated_externally_(false),
       background_blur_radius_(0),
       layer_saturation_(0.0f),
       layer_brightness_(0.0f),
@@ -74,7 +73,6 @@ Layer::Layer(LayerType type)
       visible_(true),
       force_render_surface_(false),
       fills_bounds_opaquely_(true),
-      layer_updated_externally_(false),
       background_blur_radius_(0),
       layer_saturation_(0.0f),
       layer_brightness_(0.0f),
@@ -484,7 +482,6 @@ void Layer::SetExternalTexture(Texture* texture) {
 
   DCHECK_EQ(type_, LAYER_TEXTURED);
   DCHECK(!solid_color_layer_.get());
-  layer_updated_externally_ = true;
   texture_ = texture;
   if (!texture_layer_.get()) {
     scoped_refptr<cc::TextureLayer> new_layer = cc::TextureLayer::Create(this);
@@ -501,7 +498,6 @@ void Layer::SetTextureMailbox(
     float scale_factor) {
   DCHECK_EQ(type_, LAYER_TEXTURED);
   DCHECK(!solid_color_layer_.get());
-  layer_updated_externally_ = true;
   texture_ = NULL;
   if (!texture_layer_.get() || !texture_layer_->uses_mailbox()) {
     scoped_refptr<cc::TextureLayer> new_layer =
@@ -530,7 +526,6 @@ void Layer::SetShowDelegatedContent(cc::DelegatedFrameProvider* frame_provider,
       cc::DelegatedRendererLayer::Create(frame_provider);
   SwitchToLayer(new_layer);
   delegated_renderer_layer_ = new_layer;
-  layer_updated_externally_ = true;
 
   delegated_frame_size_in_dip_ = frame_size_in_dip;
   RecomputeDrawsContentAndUVRect();
@@ -544,7 +539,6 @@ void Layer::SetShowPaintedContent() {
   SwitchToLayer(new_layer);
   content_layer_ = new_layer;
 
-  layer_updated_externally_ = false;
   mailbox_ = cc::TextureMailbox();
   texture_ = NULL;
 
@@ -726,7 +720,7 @@ bool Layer::ConvertPointFromAncestor(const Layer* ancestor,
   return result;
 }
 
-void Layer::SetBoundsImmediately(const gfx::Rect& bounds) {
+void Layer::SetBoundsFromAnimation(const gfx::Rect& bounds) {
   if (bounds == bounds_)
     return;
 
@@ -753,16 +747,16 @@ void Layer::SetBoundsImmediately(const gfx::Rect& bounds) {
   }
 }
 
-void Layer::SetTransformImmediately(const gfx::Transform& transform) {
+void Layer::SetTransformFromAnimation(const gfx::Transform& transform) {
   RecomputeCCTransformFromTransform(transform);
 }
 
-void Layer::SetOpacityImmediately(float opacity) {
+void Layer::SetOpacityFromAnimation(float opacity) {
   cc_layer_->SetOpacity(opacity);
   ScheduleDraw();
 }
 
-void Layer::SetVisibilityImmediately(bool visible) {
+void Layer::SetVisibilityFromAnimation(bool visible) {
   if (visible_ == visible)
     return;
 
@@ -770,48 +764,20 @@ void Layer::SetVisibilityImmediately(bool visible) {
   cc_layer_->SetHideLayerAndSubtree(!visible_);
 }
 
-void Layer::SetBrightnessImmediately(float brightness) {
+void Layer::SetBrightnessFromAnimation(float brightness) {
   layer_brightness_ = brightness;
   SetLayerFilters();
 }
 
-void Layer::SetGrayscaleImmediately(float grayscale) {
+void Layer::SetGrayscaleFromAnimation(float grayscale) {
   layer_grayscale_ = grayscale;
   SetLayerFilters();
 }
 
-void Layer::SetColorImmediately(SkColor color) {
+void Layer::SetColorFromAnimation(SkColor color) {
   DCHECK_EQ(type_, LAYER_SOLID_COLOR);
   solid_color_layer_->SetBackgroundColor(color);
   SetFillsBoundsOpaquely(SkColorGetA(color) == 0xFF);
-}
-
-void Layer::SetBoundsFromAnimation(const gfx::Rect& bounds) {
-  SetBoundsImmediately(bounds);
-}
-
-void Layer::SetTransformFromAnimation(const gfx::Transform& transform) {
-  SetTransformImmediately(transform);
-}
-
-void Layer::SetOpacityFromAnimation(float opacity) {
-  SetOpacityImmediately(opacity);
-}
-
-void Layer::SetVisibilityFromAnimation(bool visibility) {
-  SetVisibilityImmediately(visibility);
-}
-
-void Layer::SetBrightnessFromAnimation(float brightness) {
-  SetBrightnessImmediately(brightness);
-}
-
-void Layer::SetGrayscaleFromAnimation(float grayscale) {
-  SetGrayscaleImmediately(grayscale);
-}
-
-void Layer::SetColorFromAnimation(SkColor color) {
-  SetColorImmediately(color);
 }
 
 void Layer::ScheduleDrawForAnimation() {
