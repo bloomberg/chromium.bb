@@ -22,7 +22,6 @@ void FakeModemMessagingClient::SetSmsReceivedHandler(
     const std::string& service_name,
     const dbus::ObjectPath& object_path,
     const SmsReceivedHandler& handler) {
-  DCHECK(sms_received_handler_.is_null());
   sms_received_handler_ = handler;
 }
 
