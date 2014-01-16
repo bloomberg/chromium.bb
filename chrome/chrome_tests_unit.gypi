@@ -845,6 +845,7 @@
         'browser/extensions/api/identity/gaia_web_auth_flow_unittest.cc',
         'browser/extensions/api/identity/identity_mint_queue_unittest.cc',
         'browser/extensions/api/idle/idle_api_unittest.cc',
+        'browser/extensions/api/image_writer_private/destroy_partitions_operation_unittest.cc',
         'browser/extensions/api/image_writer_private/operation_manager_unittest.cc',
         'browser/extensions/api/image_writer_private/operation_unittest.cc',
         'browser/extensions/api/image_writer_private/test_utils.cc',

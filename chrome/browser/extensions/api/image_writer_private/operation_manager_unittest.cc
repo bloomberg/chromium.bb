@@ -5,11 +5,12 @@
 #include "base/command_line.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/extensions/api/image_writer_private/error_messages.h"
+#include "chrome/browser/extensions/api/image_writer_private/operation_manager.h"
 #include "chrome/browser/extensions/api/image_writer_private/test_utils.h"
-#include "chrome/browser/extensions/api/image_writer_private/write_from_file_operation.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/test/base/testing_profile.h"
+#include "extensions/browser/event_router.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -25,6 +26,43 @@ using testing::Lt;
 using testing::AnyNumber;
 using testing::AtLeast;
 
+namespace {
+
+// A fake for the EventRouter. If tests require monitoring of interaction with
+// the event router put the logic here.
+class FakeEventRouter : public extensions::EventRouter {
+ public:
+  explicit FakeEventRouter(Profile* profile) : EventRouter(profile, NULL) {}
+
+  virtual void DispatchEventToExtension(
+      const std::string& extension_id,
+      scoped_ptr<extensions::Event> event) OVERRIDE {
+    // Do nothing with the event as no tests currently care.
+  }
+};
+
+// A fake ExtensionSystem that returns a FakeEventRouter for event_router().
+class FakeExtensionSystem : public extensions::TestExtensionSystem {
+ public:
+  explicit FakeExtensionSystem(Profile* profile)
+      : TestExtensionSystem(profile) {
+    fake_event_router_.reset(new FakeEventRouter(profile));
+  }
+
+  virtual EventRouter* event_router() OVERRIDE {
+    return fake_event_router_.get();
+  }
+
+ private:
+  scoped_ptr<FakeEventRouter> fake_event_router_;
+};
+
+// Factory function to register for the ExtensionSystem.
+BrowserContextKeyedService* BuildFakeExtensionSystem(
+    content::BrowserContext* profile) {
+  return new FakeExtensionSystem(static_cast<Profile*>(profile));
+}
+
 class ImageWriterOperationManagerTest
     : public ImageWriterUnitTestBase {
  public:
@@ -37,26 +75,26 @@ class ImageWriterOperationManagerTest
  protected:
   ImageWriterOperationManagerTest()
       : started_(false),
-        start_success_(false),
-        command_line_(CommandLine::NO_PROGRAM) {
-    extensions::TestExtensionSystem* test_extension_system =
-        static_cast<extensions::TestExtensionSystem*>(
-            extensions::ExtensionSystem::Get(&test_profile_));
-    extension_service_ = test_extension_system->CreateExtensionService(
-        &command_line_,
-        base::FilePath(),
-        false);
+        start_success_(false) {}
+
+  virtual void SetUp() OVERRIDE {
+    ImageWriterUnitTestBase::SetUp();
+    extension_system_ = static_cast<FakeExtensionSystem*>(
+        ExtensionSystemFactory::GetInstance()->
+            SetTestingFactoryAndUse(&test_profile_, &BuildFakeExtensionSystem));
+    event_router_ = static_cast<FakeEventRouter*>(
+        extension_system_->event_router());
   }
 
   bool started_;
   bool start_success_;
   std::string start_error_;
 
-  CommandLine command_line_;
   TestingProfile test_profile_;
-  ExtensionService* extension_service_;
+  FakeExtensionSystem* extension_system_;
+  FakeEventRouter* event_router_;
 
-#if defined OS_CHROMEOS
+#if defined(OS_CHROMEOS)
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
   chromeos::ScopedTestCrosSettings test_cros_settings_;
   chromeos::ScopedTestUserManager test_user_manager_;
@@ -68,15 +106,34 @@ TEST_F(ImageWriterOperationManagerTest, WriteFromFile) {
 
   manager.StartWriteFromFile(
     kDummyExtensionId,
-    test_image_,
-    test_device_.AsUTF8Unsafe(),
+    test_image_path_,
+    test_device_path_.AsUTF8Unsafe(),
     base::Bind(&ImageWriterOperationManagerTest::StartCallback,
                base::Unretained(this)));
 
   EXPECT_TRUE(started_);
   EXPECT_TRUE(start_success_);
   EXPECT_EQ("", start_error_);
+
+  base::RunLoop().RunUntilIdle();
 }
 
-}  // namespace image_writer
-}  // namespace extensions
+TEST_F(ImageWriterOperationManagerTest, DestroyPartitions) {
+  OperationManager manager(&test_profile_);
+
+  manager.DestroyPartitions(
+      kDummyExtensionId,
+      test_device_path_.AsUTF8Unsafe(),
+      base::Bind(&ImageWriterOperationManagerTest::StartCallback,
+                 base::Unretained(this)));
+
+  EXPECT_TRUE(started_);
+  EXPECT_TRUE(start_success_);
+  EXPECT_EQ("", start_error_);
+
+  base::RunLoop().RunUntilIdle();
+}
+
+} // namespace
+} // namespace image_writer
+} // namespace extensions
