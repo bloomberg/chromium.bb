@@ -21,8 +21,8 @@
     <a id="anchor" href="">Link</a>
 </div>
 <script>
-description('Test that inert nodes are not focusable. The test passses if only the document body ' +
-            'and the topmost dialog and its button are focusable.');
+description('Test that inert nodes are not focusable. The test passses if only the ' +
+            'topmost dialog and its button are focusable.');
 
 function testFocus(element, expectFocus) {
     focusedElement = null;
@@ -47,7 +47,7 @@ bottomDialog.showModal();
 var topDialog = document.getElementById('top-dialog');
 topDialog.showModal();
 
-testFocus(document.body, true);
+testFocus(document.body, false);
 testTree(topDialog, true);
 testTree(bottomDialog, false);
 testTree(document.getElementById('container'), false);
