@@ -12,10 +12,19 @@
 <body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
   <div id="main-layout">
     <div id="battery-charge-section">
-      <h3 i18n-content="batteryChargeHeader"></h3>
+      <h3 i18n-content="batteryChargePercentageHeader"></h3>
       <div class="plot-canvas-div">
-        <canvas id="battery-charge-canvas" width="600" height="200"></canvas>
+        <canvas id="battery-charge-percentage-canvas" width="600" height="200">
+        </canvas>
       </div>
+
+      <h3 i18n-content="batteryDischargeRateHeader"></h3>
+      <p i18n-content="negativeDischargeRateInfo"></p>
+      <div class="plot-canvas-div">
+        <canvas id="battery-discharge-rate-canvas" width="600" height="200">
+        </canvas>
+      </div>
+
       <button id="battery-charge-reload-button" class="reload-button"
               i18n-content="reloadButton">
       </button>

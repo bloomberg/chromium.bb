@@ -64,6 +64,8 @@ void PowerMessageHandler::OnGetBatteryChargeData(const base::ListValue* value) {
         (base::TimeTicks::Now() - snapshot.time);
     scoped_ptr<base::DictionaryValue> element(new base::DictionaryValue);
     element->SetDouble("battery_percent", snapshot.battery_percent);
+    element->SetDouble("battery_discharge_rate",
+                       snapshot.battery_discharge_rate);
     element->SetBoolean("external_power", snapshot.external_power);
     element->SetDouble("time", time.ToJsTime());
 
@@ -84,8 +86,12 @@ PowerUI::PowerUI(content::WebUI* web_ui) : content::WebUIController(web_ui) {
 
   html->AddLocalizedString("titleText", IDS_ABOUT_POWER_TITLE);
   html->AddLocalizedString("reloadButton", IDS_ABOUT_POWER_RELOAD_BUTTON);
-  html->AddLocalizedString("batteryChargeHeader",
-                           IDS_ABOUT_POWER_BATTERY_CHARGE_HEADER);
+  html->AddLocalizedString("batteryChargePercentageHeader",
+                           IDS_ABOUT_POWER_BATTERY_CHARGE_PERCENTAGE_HEADER);
+  html->AddLocalizedString("batteryDischargeRateHeader",
+                           IDS_ABOUT_POWER_BATTERY_DISCHARGE_RATE_HEADER);
+  html->AddLocalizedString("negativeDischargeRateInfo",
+                           IDS_ABOUT_POWER_NEGATIVE_DISCHARGE_RATE_INFO);
   html->AddLocalizedString("notEnoughDataAvailableYet",
                            IDS_ABOUT_POWER_NOT_ENOUGH_DATA);
   html->AddLocalizedString("timeAndPlotDataMismatch",

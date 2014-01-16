@@ -236,22 +236,48 @@ function plotLineGraph(canvas, tData, plots, yMin, yMax, yPrecision) {
  *     taken, and whether there was external power connected at that time.
  */
 function showBatteryChargeData(powerSupplyArray) {
-  var canvas = $('battery-charge-canvas');
   var tData = [];
-  var plot = [];
+  var chargePlot = [
+    {
+      color: '#0000FF',
+      data: []
+    }
+  ];
+  var dischargeRatePlot = [
+    {
+      color: '#FF0000',
+      data: []
+    }
+  ];
+  var minDischargeRate = 1000;  // A high unrealistic number to begin with.
+  var maxDischargeRate = -1000; // A low unrealistic number to begin with.
   for (var i = 0; i < powerSupplyArray.length; i++) {
     var time = new Date(powerSupplyArray[i].time);
     tData[i] = time.toLocaleTimeString();
-    plot[i] = powerSupplyArray[i].battery_percent;
+
+    chargePlot[0].data[i] = powerSupplyArray[i].battery_percent;
+
+    var dischargeRate = powerSupplyArray[i].battery_discharge_rate;
+    dischargeRatePlot[0].data[i] = dischargeRate;
+    minDischargeRate = Math.min(dischargeRate, minDischargeRate);
+    maxDischargeRate = Math.max(dischargeRate, maxDischargeRate);
+  }
+  if (minDischargeRate == maxDischargeRate) {
+    // This means that all the samples had the same value. Hence, offset the
+    // extremes by a bit so that the plot looks good.
+    minDischargeRate -= 1;
+    maxDischargeRate += 1;
   }
 
-  var plots = [
-    {
-      color: '#0000FF',
-      data: plot
-    }
-  ];
-  plotLineGraph(canvas, tData, plots, 0.00, 100.00, 3);
+  var chargeCanvas = $('battery-charge-percentage-canvas');
+  var dischargeRateCanvas = $('battery-discharge-rate-canvas');
+  plotLineGraph(chargeCanvas, tData, chargePlot, 0.00, 100.00, 3);
+  plotLineGraph(dischargeRateCanvas,
+                tData,
+                dischargeRatePlot,
+                minDischargeRate,
+                maxDischargeRate,
+                3);
 }
 
 function requestBatteryChargeData() {

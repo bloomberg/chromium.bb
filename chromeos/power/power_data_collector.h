@@ -38,6 +38,10 @@ class CHROMEOS_EXPORT PowerDataCollector : public PowerManagerClient::Observer {
 
     // The battery charge as a percentage of full charge in range [0.0, 100.00].
     double battery_percent;
+
+    // The battery discharge rate in W. Positive if the battery is being
+    // discharged and negative if it's being charged.
+    double battery_discharge_rate;
   };
 
   const std::deque<PowerSupplySnapshot>& power_supply_data() const {

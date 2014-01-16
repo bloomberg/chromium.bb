@@ -15432,8 +15432,14 @@ Do you accept?
       <message name="IDS_ABOUT_POWER_RELOAD_BUTTON" desc="Text on the reload button">
         Reload
       </message>
-      <message name="IDS_ABOUT_POWER_BATTERY_CHARGE_HEADER" desc="Header of the battery charge section">
+      <message name="IDS_ABOUT_POWER_BATTERY_CHARGE_PERCENTAGE_HEADER" desc="Header of the battery charge plot">
         Battery Charge Percentage
+      </message>
+      <message name="IDS_ABOUT_POWER_BATTERY_DISCHARGE_RATE_HEADER" desc="Header of the battery discharge rate plot">
+        Battery Discharge Rate in Watts
+      </message>
+      <message name="IDS_ABOUT_POWER_NEGATIVE_DISCHARGE_RATE_INFO" desc="Describes what a negative discharge rate means">
+        Negative discharge rate means the battery is charging
       </message>
       <message name="IDS_ABOUT_POWER_NOT_ENOUGH_DATA" desc="String to display when enough plot data is not available">
         Not enough data available yet.

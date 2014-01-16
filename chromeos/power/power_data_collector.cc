@@ -49,6 +49,7 @@ void PowerDataCollector::PowerChanged(
   snapshot.external_power = (prop.external_power() !=
       power_manager::PowerSupplyProperties::DISCONNECTED);
   snapshot.battery_percent = prop.battery_percent();
+  snapshot.battery_discharge_rate = prop.battery_discharge_rate();
   AddSnapshot(snapshot);
 }
 
@@ -78,7 +79,8 @@ void PowerDataCollector::AddSnapshot(const PowerSupplySnapshot& snapshot) {
 PowerDataCollector::PowerSupplySnapshot::PowerSupplySnapshot()
     : time(base::TimeTicks::Now()),
       external_power(false),
-      battery_percent(0) {
+      battery_percent(0),
+      battery_discharge_rate(0.0) {
 }
 
 }  // namespace chromeos
