@@ -36,8 +36,6 @@
 #include "chrome/common/extensions/manifest_handlers/theme_handler.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/mime_types_handler.h"
-#include "chrome/common/extensions/web_accessible_resources_handler.h"
-#include "chrome/common/extensions/webview_handler.h"
 #include "extensions/common/manifest_handlers/requirements_info.h"
 
 namespace extensions {
@@ -82,8 +80,6 @@ void RegisterChromeManifestHandlers() {
   (new UpdateURLHandler)->Register();
   (new UrlHandlersParser)->Register();
   (new URLOverridesHandler)->Register();
-  (new WebAccessibleResourcesHandler)->Register();
-  (new WebviewHandler)->Register();
 #endif
 }
 

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
-#include "chrome/common/extensions/web_accessible_resources_handler.h"
+#include "extensions/common/manifest_handlers/web_accessible_resources_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using extensions::Extension;

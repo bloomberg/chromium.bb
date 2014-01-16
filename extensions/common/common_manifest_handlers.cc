@@ -12,6 +12,8 @@
 #include "extensions/common/manifest_handlers/offline_enabled_info.h"
 #include "extensions/common/manifest_handlers/sandboxed_page_info.h"
 #include "extensions/common/manifest_handlers/shared_module_info.h"
+#include "extensions/common/manifest_handlers/web_accessible_resources_info.h"
+#include "extensions/common/manifest_handlers/webview_info.h"
 
 namespace extensions {
 
@@ -25,6 +27,8 @@ void RegisterCommonManifestHandlers() {
   (new OfflineEnabledHandler)->Register();
   (new SandboxedPageHandler)->Register();
   (new SharedModuleHandler)->Register();
+  (new WebAccessibleResourcesHandler)->Register();
+  (new WebviewHandler)->Register();
 }
 
 }  // namespace extensions
