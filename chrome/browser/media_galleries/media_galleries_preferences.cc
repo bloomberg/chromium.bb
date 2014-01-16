@@ -62,6 +62,9 @@ const char kMediaGalleriesVendorNameKey[] = "vendorName";
 const char kMediaGalleriesModelNameKey[] = "modelName";
 const char kMediaGalleriesSizeKey[] = "totalSize";
 const char kMediaGalleriesLastAttachTimeKey[] = "lastAttachTime";
+const char kMediaGalleriesScanImageCountKey[] = "imageCount";
+const char kMediaGalleriesScanMusicCountKey[] = "musicCount";
+const char kMediaGalleriesScanVideoCountKey[] = "videoCount";
 const char kMediaGalleriesPrefsVersionKey[] = "preferencesVersion";
 
 const char kMediaGalleriesTypeAutoDetectedValue[] = "autoDetected";
@@ -73,6 +76,8 @@ const char kMediaGalleriesTypeUserAddedValue[] = "userAdded";
 const char kIPhotoGalleryName[] = "iPhoto";
 const char kITunesGalleryName[] = "iTunes";
 const char kPicasaGalleryName[] = "Picasa";
+
+const int kCurrentPrefsVersion = 2;
 
 int NumberExtensionsUsingMediaGalleries(Profile* profile) {
   int count = 0;
@@ -174,6 +179,9 @@ bool PopulateGalleryPrefInfoFromDictionary(
   double total_size_in_bytes = 0.0;
   double last_attach_time = 0.0;
   bool volume_metadata_valid = false;
+  int image_count = 0;
+  int music_count = 0;
+  int video_count = 0;
   int prefs_version = 0;
 
   if (!GetPrefId(dict, &pref_id) ||
@@ -192,6 +200,15 @@ bool PopulateGalleryPrefInfoFromDictionary(
       dict.GetDouble(kMediaGalleriesSizeKey, &total_size_in_bytes) &&
       dict.GetDouble(kMediaGalleriesLastAttachTimeKey, &last_attach_time)) {
     volume_metadata_valid = true;
+  }
+
+  if (type == MediaGalleryPrefInfo::kScanResult &&
+      dict.GetInteger(kMediaGalleriesScanImageCountKey, &image_count) &&
+      dict.GetInteger(kMediaGalleriesScanMusicCountKey, &music_count) &&
+      dict.GetInteger(kMediaGalleriesScanVideoCountKey, &video_count)) {
+    out_gallery_info->image_count = image_count;
+    out_gallery_info->music_count = music_count;
+    out_gallery_info->video_count = video_count;
   }
 
   out_gallery_info->pref_id = pref_id;
@@ -216,8 +233,6 @@ base::DictionaryValue* CreateGalleryPrefInfoDictionary(
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString(kMediaGalleriesPrefIdKey,
                   base::Uint64ToString(gallery.pref_id));
-  if (!gallery.volume_metadata_valid)
-    dict->SetString(kMediaGalleriesDisplayNameKey, gallery.display_name);
   dict->SetString(kMediaGalleriesDeviceIdKey, gallery.device_id);
   dict->SetString(kMediaGalleriesPathKey, gallery.path.value());
   dict->SetString(kMediaGalleriesTypeKey, TypeToStringValue(gallery.type));
@@ -229,6 +244,14 @@ base::DictionaryValue* CreateGalleryPrefInfoDictionary(
     dict->SetDouble(kMediaGalleriesSizeKey, gallery.total_size_in_bytes);
     dict->SetDouble(kMediaGalleriesLastAttachTimeKey,
                     gallery.last_attach_time.ToInternalValue());
+  } else {
+    dict->SetString(kMediaGalleriesDisplayNameKey, gallery.display_name);
+  }
+
+  if (gallery.type == MediaGalleryPrefInfo::kScanResult) {
+    dict->SetInteger(kMediaGalleriesScanImageCountKey, gallery.image_count);
+    dict->SetInteger(kMediaGalleriesScanMusicCountKey, gallery.music_count);
+    dict->SetInteger(kMediaGalleriesScanVideoCountKey, gallery.video_count);
   }
 
   // Version 0 of the prefs format was that the display_name was always
@@ -308,6 +331,9 @@ MediaGalleryPrefInfo::MediaGalleryPrefInfo()
       type(kInvalidType),
       total_size_in_bytes(0),
       volume_metadata_valid(false),
+      image_count(0),
+      music_count(0),
+      video_count(0),
       prefs_version(0) {
 }
 
@@ -490,7 +516,7 @@ void MediaGalleriesPreferences::FinishInitialization() {
                existing_devices[i].vendor_name(),
                existing_devices[i].model_name(),
                existing_devices[i].total_size_in_bytes(),
-               base::Time::Now());
+               base::Time::Now(), 0, 0, 0);
   }
 
   for (std::vector<base::Closure>::iterator iter =
@@ -521,7 +547,7 @@ void MediaGalleriesPreferences::AddDefaultGalleries() {
                          MediaGalleryPrefInfo::kAutoDetected,
                          info.storage_label(), info.vendor_name(),
                          info.model_name(), info.total_size_in_bytes(),
-                         base::Time(), true, 2);
+                         base::Time(), true, 0, 0, 0, kCurrentPrefsVersion);
     }
   }
 }
@@ -589,7 +615,7 @@ void MediaGalleriesPreferences::OnFinderDeviceID(const std::string& device_id) {
     AddGalleryInternal(device_id, base::ASCIIToUTF16(gallery_name),
                        base::FilePath(), MediaGalleryPrefInfo::kAutoDetected,
                        base::string16(), base::string16(), base::string16(), 0,
-                       base::Time(), false, 2);
+                       base::Time(), false, 0, 0, 0, kCurrentPrefsVersion);
   }
 
   OnInitializationCallbackReturned();
@@ -640,7 +666,7 @@ void MediaGalleriesPreferences::OnRemovableStorageAttached(
   AddGallery(info.device_id(), base::FilePath(),
              MediaGalleryPrefInfo::kAutoDetected, info.storage_label(),
              info.vendor_name(), info.model_name(), info.total_size_in_bytes(),
-             base::Time::Now());
+             base::Time::Now(), 0, 0, 0);
 }
 
 bool MediaGalleriesPreferences::LookUpGalleryByPath(
@@ -688,7 +714,7 @@ bool MediaGalleriesPreferences::LookUpGalleryByPath(
     gallery_info->total_size_in_bytes = info.total_size_in_bytes();
     gallery_info->last_attach_time = base::Time::Now();
     gallery_info->volume_metadata_valid = true;
-    gallery_info->prefs_version = 2;
+    gallery_info->prefs_version = kCurrentPrefsVersion;
   }
   return false;
 }
@@ -726,11 +752,16 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddGallery(
     const base::string16& vendor_name,
     const base::string16& model_name,
     uint64 total_size_in_bytes,
-    base::Time last_attach_time) {
+    base::Time last_attach_time,
+    int image_count,
+    int music_count,
+    int video_count) {
   DCHECK(IsInitialized());
   return AddGalleryInternal(device_id, base::string16(), relative_path,
                             type, volume_label, vendor_name, model_name,
-                            total_size_in_bytes, last_attach_time, true, 2);
+                            total_size_in_bytes, last_attach_time, true,
+                            image_count, music_count, video_count,
+                            kCurrentPrefsVersion);
 }
 
 MediaGalleryPrefId MediaGalleriesPreferences::AddGalleryInternal(
@@ -738,9 +769,8 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddGalleryInternal(
     const base::FilePath& relative_path, MediaGalleryPrefInfo::Type type,
     const base::string16& volume_label, const base::string16& vendor_name,
     const base::string16& model_name, uint64 total_size_in_bytes,
-    base::Time last_attach_time,
-    bool volume_metadata_valid,
-    int prefs_version) {
+    base::Time last_attach_time, bool volume_metadata_valid,
+    int image_count, int music_count, int video_count, int prefs_version) {
   DCHECK(type == MediaGalleryPrefInfo::kUserAdded ||
          type == MediaGalleryPrefInfo::kAutoDetected ||
          type == MediaGalleryPrefInfo::kScanResult);
@@ -765,7 +795,7 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddGalleryInternal(
         update_gallery_type = true;
       }
       if (existing.type == MediaGalleryPrefInfo::kRemovedScan) {
-        new_type = type;
+        new_type = MediaGalleryPrefInfo::kUserAdded;
         update_gallery_type = true;
       }
     }
@@ -789,8 +819,12 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddGalleryInternal(
          (existing.total_size_in_bytes != total_size_in_bytes) ||
          (existing.last_attach_time != last_attach_time));
 
+    bool update_scan_counts =
+      (new_type == MediaGalleryPrefInfo::kScanResult) &&
+      (image_count > 0 || music_count > 0 || video_count > 0);
+
     if (!update_gallery_name && !update_gallery_type &&
-        !update_gallery_metadata)
+        !update_gallery_metadata && !update_scan_counts)
       return *pref_id_it;
 
     PrefService* prefs = profile_->GetPrefs();
@@ -818,6 +852,11 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddGalleryInternal(
           dict->SetDouble(kMediaGalleriesLastAttachTimeKey,
                           last_attach_time.ToInternalValue());
         }
+        if (update_scan_counts) {
+          dict->SetInteger(kMediaGalleriesScanImageCountKey, image_count);
+          dict->SetInteger(kMediaGalleriesScanMusicCountKey, music_count);
+          dict->SetInteger(kMediaGalleriesScanVideoCountKey, video_count);
+        }
         dict->SetInteger(kMediaGalleriesPrefsVersionKey, prefs_version);
         break;
       }
@@ -826,12 +865,9 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddGalleryInternal(
     // Commits the prefs update.
     update.reset();
 
-    if (update_gallery_name || update_gallery_metadata || update_gallery_type) {
-      InitFromPrefs();
-      FOR_EACH_OBSERVER(GalleryChangeObserver,
-                        gallery_change_observers_,
-                        OnGalleryInfoUpdated(this, *pref_id_it));
-    }
+    InitFromPrefs();
+    FOR_EACH_OBSERVER(GalleryChangeObserver, gallery_change_observers_,
+                      OnGalleryInfoUpdated(this, *pref_id_it));
     return *pref_id_it;
   }
 
@@ -844,14 +880,15 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddGalleryInternal(
   gallery_info.device_id = device_id;
   gallery_info.path = normalized_relative_path;
   gallery_info.type = type;
-  if (volume_metadata_valid) {
-    gallery_info.volume_label = volume_label;
-    gallery_info.vendor_name = vendor_name;
-    gallery_info.model_name = model_name;
-    gallery_info.total_size_in_bytes = total_size_in_bytes;
-    gallery_info.last_attach_time = last_attach_time;
-  }
+  gallery_info.volume_label = volume_label;
+  gallery_info.vendor_name = vendor_name;
+  gallery_info.model_name = model_name;
+  gallery_info.total_size_in_bytes = total_size_in_bytes;
+  gallery_info.last_attach_time = last_attach_time;
   gallery_info.volume_metadata_valid = volume_metadata_valid;
+  gallery_info.image_count = image_count;
+  gallery_info.music_count = music_count;
+  gallery_info.video_count = video_count;
   gallery_info.prefs_version = prefs_version;
 
   {
@@ -885,7 +922,8 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddGalleryByPath(
                             gallery_info.total_size_in_bytes,
                             gallery_info.last_attach_time,
                             gallery_info.volume_metadata_valid,
-                            gallery_info.prefs_version);
+                            0, 0, 0,
+                            kCurrentPrefsVersion);
 }
 
 void MediaGalleriesPreferences::ForgetGalleryById(MediaGalleryPrefId pref_id) {
@@ -915,6 +953,9 @@ void MediaGalleriesPreferences::ForgetGalleryById(MediaGalleryPrefId pref_id) {
         } else {
           dict->SetString(kMediaGalleriesTypeKey,
                           kMediaGalleriesTypeRemovedScanValue);
+          dict->SetInteger(kMediaGalleriesScanImageCountKey, 0);
+          dict->SetInteger(kMediaGalleriesScanMusicCountKey, 0);
+          dict->SetInteger(kMediaGalleriesScanVideoCountKey, 0);
         }
       } else {
         list->Erase(iter, NULL);

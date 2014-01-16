@@ -104,6 +104,14 @@ struct MediaGalleryPrefInfo {
   // never written.
   bool volume_metadata_valid;
 
+  // The following fields are populated with the image, music, and video file
+  // counts from the last scan if |type| is kScanResult. For files where it is
+  // hard to determine the exact type, the file should be counted in all
+  // possible counts.
+  int image_count;
+  int music_count;
+  int video_count;
+
   // 0 if the display_name is set externally and always used for display.
   // 1 if the display_name is only set externally when it is overriding
   // the name constructed from volume metadata.
@@ -203,7 +211,10 @@ class MediaGalleriesPreferences : public BrowserContextKeyedService,
                                 const base::string16& vendor_name,
                                 const base::string16& model_name,
                                 uint64 total_size_in_bytes,
-                                base::Time last_attach_time);
+                                base::Time last_attach_time,
+                                int image_count,
+                                int music_count,
+                                int video_count);
 
   // Teach the registry about a gallery simply from the path. If the gallery is
   // in a blacklisted state, it is unblacklisted. |type| should not be a
@@ -278,6 +289,9 @@ class MediaGalleriesPreferences : public BrowserContextKeyedService,
                                         uint64 total_size_in_bytes,
                                         base::Time last_attach_time,
                                         bool volume_metadata_valid,
+                                        int image_count,
+                                        int music_count,
+                                        int video_count,
                                         int prefs_version);
 
   // Sets permission for the media galleries identified by |gallery_id| for the

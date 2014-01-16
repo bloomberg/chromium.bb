@@ -434,7 +434,7 @@ void MediaGalleriesDialogController::SavePermissions() {
     MediaGalleryPrefId id = preferences_->AddGallery(
         gallery.device_id, gallery.path, MediaGalleryPrefInfo::kUserAdded,
         gallery.volume_label, gallery.vendor_name, gallery.model_name,
-        gallery.total_size_in_bytes, gallery.last_attach_time);
+        gallery.total_size_in_bytes, gallery.last_attach_time, 0, 0, 0);
     preferences_->SetGalleryPermissionForExtension(*extension_, id, true);
   }
 }

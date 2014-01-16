@@ -192,6 +192,9 @@ class MediaGalleriesPreferencesTest : public testing::Test {
     EXPECT_EQ(in_expectation->second.device_id, actual.device_id);
     EXPECT_EQ(in_expectation->second.path.value(), actual.path.value());
     EXPECT_EQ(in_expectation->second.type, actual.type);
+    EXPECT_EQ(in_expectation->second.image_count, actual.image_count);
+    EXPECT_EQ(in_expectation->second.music_count, actual.music_count);
+    EXPECT_EQ(in_expectation->second.video_count, actual.video_count);
   }
 
   MediaGalleriesPreferences* gallery_prefs() {
@@ -218,6 +221,20 @@ class MediaGalleriesPreferencesTest : public testing::Test {
     expected_device_map[device_id].insert(id);
   }
 
+  void AddScanResultExpectation(MediaGalleryPrefId id,
+                                base::string16 display_name,
+                                std::string device_id,
+                                base::FilePath relative_path,
+                                int image_count,
+                                int music_count,
+                                int video_count) {
+    AddGalleryExpectation(id, display_name, device_id, relative_path,
+                          MediaGalleryPrefInfo::kScanResult);
+    expected_galleries_[id].image_count = image_count;
+    expected_galleries_[id].music_count = music_count;
+    expected_galleries_[id].video_count = video_count;
+  }
+
   MediaGalleryPrefId AddGalleryWithNameV0(const std::string& device_id,
                                           const base::string16& display_name,
                                           const base::FilePath& relative_path,
@@ -228,7 +245,7 @@ class MediaGalleriesPreferencesTest : public testing::Test {
     return gallery_prefs()->AddGalleryInternal(
         device_id, display_name, relative_path, type,
         base::string16(), base::string16(), base::string16(), 0, base::Time(),
-        false, 0);
+        false, 0, 0, 0, 0);
   }
 
   MediaGalleryPrefId AddGalleryWithNameV1(const std::string& device_id,
@@ -241,7 +258,7 @@ class MediaGalleriesPreferencesTest : public testing::Test {
     return gallery_prefs()->AddGalleryInternal(
         device_id, display_name, relative_path, type,
         base::string16(), base::string16(), base::string16(), 0, base::Time(),
-        false, 1);
+        false, 0, 0, 0, 1);
   }
 
   MediaGalleryPrefId AddGalleryWithNameV2(const std::string& device_id,
@@ -251,7 +268,7 @@ class MediaGalleriesPreferencesTest : public testing::Test {
     return gallery_prefs()->AddGalleryInternal(
         device_id, display_name, relative_path, type,
         base::string16(), base::string16(), base::string16(), 0, base::Time(),
-        false, 2);
+        false, 0, 0, 0, 2);
   }
 
   bool UpdateDeviceIDForSingletonType(const std::string& device_id) {
@@ -450,7 +467,7 @@ TEST_F(MediaGalleriesPreferencesTest, AddGalleryWithVolumeMetadata) {
                                    ASCIIToUTF16("volume label"),
                                    ASCIIToUTF16("vendor name"),
                                    ASCIIToUTF16("model name"),
-                                   1000000ULL, now);
+                                   1000000ULL, now, 0, 0, 0);
   EXPECT_EQ(default_galleries_count() + 1UL, id);
   AddGalleryExpectation(id, base::string16(), info.device_id(), relative_path,
                         MediaGalleryPrefInfo::kAutoDetected);
@@ -496,7 +513,7 @@ TEST_F(MediaGalleriesPreferencesTest, ReplaceGalleryWithVolumeMetadata) {
                                             ASCIIToUTF16("volume label"),
                                             ASCIIToUTF16("vendor name"),
                                             ASCIIToUTF16("model name"),
-                                            1000000ULL, now);
+                                            1000000ULL, now, 0, 0, 0);
   EXPECT_EQ(id, metadata_id);
   AddGalleryExpectation(id, base::string16(), info.device_id(), relative_path,
                         MediaGalleryPrefInfo::kAutoDetected);
@@ -1000,6 +1017,67 @@ TEST_F(MediaGalleriesPreferencesTest, UpdateSingletonDeviceIdType) {
   std::string new_device_id =
       StorageInfo::MakeDeviceId(StorageInfo::PICASA, path.AsUTF8Unsafe());
   EXPECT_FALSE(UpdateDeviceIDForSingletonType(new_device_id));
+}
+
+TEST_F(MediaGalleriesPreferencesTest, ScanResults) {
+  MediaGalleryPrefId id;
+  base::FilePath path;
+  StorageInfo info;
+  base::FilePath relative_path;
+  base::Time now = base::Time::Now();
+  Verify();
+
+  // Add a new scan result gallery to test with.
+  path = MakePath("new_scan");
+  MediaStorageUtil::GetDeviceInfoFromPath(path, &info, &relative_path);
+  id = gallery_prefs()->AddGallery(info.device_id(), relative_path,
+                                   MediaGalleryPrefInfo::kScanResult,
+                                   ASCIIToUTF16("volume label"),
+                                   ASCIIToUTF16("vendor name"),
+                                   ASCIIToUTF16("model name"),
+                                   1000000ULL, now, 1, 2, 3);
+  EXPECT_EQ(default_galleries_count() + 1UL, id);
+  AddScanResultExpectation(id, base::string16(), info.device_id(),
+                           relative_path, 1, 2, 3);
+  Verify();
+
+  // Update the found media count.
+  id = gallery_prefs()->AddGallery(info.device_id(), relative_path,
+                                   MediaGalleryPrefInfo::kScanResult,
+                                   ASCIIToUTF16("volume label"),
+                                   ASCIIToUTF16("vendor name"),
+                                   ASCIIToUTF16("model name"),
+                                   1000000ULL, now, 4, 5, 6);
+  EXPECT_EQ(default_galleries_count() + 1UL, id);
+  AddScanResultExpectation(id, base::string16(), info.device_id(),
+                           relative_path, 4, 5, 6);
+  Verify();
+
+  // Remove a scan result (i.e. make it blacklisted).
+  gallery_prefs()->ForgetGalleryById(id);
+  expected_galleries_[id].type = MediaGalleryPrefInfo::kRemovedScan;
+  expected_galleries_[id].image_count = 0;
+  expected_galleries_[id].music_count = 0;
+  expected_galleries_[id].video_count = 0;
+  Verify();
+
+  // Try adding the gallery again as a scan result it should be a no-op.
+  id = gallery_prefs()->AddGallery(info.device_id(), relative_path,
+                                   MediaGalleryPrefInfo::kScanResult,
+                                   ASCIIToUTF16("volume label"),
+                                   ASCIIToUTF16("vendor name"),
+                                   ASCIIToUTF16("model name"),
+                                   1000000ULL, now, 7, 8, 9);
+  EXPECT_EQ(default_galleries_count() + 1UL, id);
+  Verify();
+
+  // Add the gallery again as a user action.
+  id = gallery_prefs()->AddGalleryByPath(path,
+                                         MediaGalleryPrefInfo::kUserAdded);
+  EXPECT_EQ(default_galleries_count() + 1UL, id);
+  AddGalleryExpectation(id, base::string16(), info.device_id(), relative_path,
+                        MediaGalleryPrefInfo::kUserAdded);
+  Verify();
 }
 
 TEST(MediaGalleriesPrefInfoTest, NameGeneration) {

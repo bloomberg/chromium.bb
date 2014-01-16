@@ -159,7 +159,8 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
                             gallery_info.vendor_name,
                             gallery_info.model_name,
                             gallery_info.total_size_in_bytes,
-                            gallery_info.last_attach_time);
+                            gallery_info.last_attach_time,
+                            0, 0, 0);
 
     content::RunAllPendingInMessageLoop();
 

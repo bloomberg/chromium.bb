@@ -623,7 +623,7 @@ std::string MediaFileSystemRegistryTest::AddUserGallery(
     profile_states_[i]->GetMediaGalleriesPrefs()->AddGallery(
         device_id, base::FilePath(), MediaGalleryPrefInfo::kUserAdded,
         base::string16(), base::string16(), base::string16(), 0,
-        base::Time::Now());
+        base::Time::Now(), 0, 0, 0);
   }
   return device_id;
 }
