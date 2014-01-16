@@ -730,7 +730,6 @@ camera.views.Camera.prototype.onPointerActivity_ = function(event) {
   // Update the ribbon's visibility.
   switch (event.type) {
     case 'mousedown':
-    case 'touchstart':
       // Toggle the ribbon if clicking on static area.
       if (event.target == document.body ||
           document.querySelector('#main-canvas-wrapper').contains(
