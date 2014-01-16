@@ -872,14 +872,13 @@ component("base_i18n") {
     "i18n/time_formatting.cc",
     "i18n/time_formatting.h",
   ]
+  defines = [ "BASE_I18N_IMPLEMENTATION" ]
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
   deps = [
     ":base",
     "//base/third_party/dynamic_annotations",
     "//third_party/icu:icui18n",
     "//third_party/icu:icuuc",
-  ]
-  defines = [
-    "BASE_I18N_IMPLEMENTATION",
   ]
 
   if (toolkit_uses_gtk) {
@@ -896,7 +895,6 @@ component("base_i18n") {
   #  }],
   #],
   #'variables': {
-  #  'enable_wexit_time_destructors': 1,
   #  'optimize': 'max',
   #},
 }

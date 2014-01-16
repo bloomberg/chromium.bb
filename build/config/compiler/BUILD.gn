@@ -11,7 +11,7 @@ if (cpu_arch == "arm") {
 # compiler ---------------------------------------------------------------------
 #
 # Base compiler configuration.
-# 
+#
 # See also "runtime_library" below for related stuff and a discusison about
 # where stuff should go. Put warning related stuff in the "warnings" config.
 
@@ -469,7 +469,7 @@ config("no_rtti") {
 # Warnings ---------------------------------------------------------------------
 #
 # This is where we disable various warnings that we've decided aren't
-# worthwhile.
+# worthwhile, and enable special warnings.
 
 config("default_warnings") {
   if (is_win) {
@@ -580,6 +580,15 @@ config("default_warnings") {
   }
 }
 
+# This will generate warnings when using Clang if code generates exit-time
+# destructors, which will slow down closing the program.
+# TODO(thakis): Make this a blacklist instead, http://crbug.com/101600
+config("wexit_time_destructors") {
+  if (is_clang) {
+    cflags = [ "-Wexit-time-destructors" ]
+  }
+}
+
 # Optimization -----------------------------------------------------------------
 #
 # Note that BUILDCONFIG.gn sets up a variable "default_optimization_config"
@@ -676,3 +685,4 @@ config("no_symbols") {
     cflags = [ "-g0" ]
   }
 }
+

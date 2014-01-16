@@ -1216,11 +1216,9 @@ static_library("http_server") {
     "server/web_socket.cc",
     "server/web_socket.h",
   ]
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
   deps = [
     ":net",
     "//base",
   ]
-
-  # TODO(brettw) figure out how to get this:
-  # 'variables': { 'enable_wexit_time_destructors': 1, },
 }
