@@ -5,7 +5,7 @@
 {
   'dependencies': [
     '../base/base.gyp:base',
-    '../third_party/re2/re2.gyp:re2',
+    '../out/gn_gyp/third_party/re2/re2.gyp:re2',
     '../ui/gl/gl.gyp:gl',
   ],
   'include_dirs': [

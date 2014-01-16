@@ -41,7 +41,7 @@
         # base::LazyInstance is a template that pulls in dynamic_annotations so
         # we need to explictly link in the code for dynamic_annotations.
         '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-        '../re2/re2.gyp:re2',
+        '../../out/gn_gyp/third_party/re2/re2.gyp:re2',
       ],
       'conditions': [
         ['use_snappy', {

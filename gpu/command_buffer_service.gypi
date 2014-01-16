@@ -23,7 +23,7 @@
     '../third_party/khronos/khronos.gyp:khronos_headers',
     '../third_party/protobuf/protobuf.gyp:protobuf_lite',
     '../third_party/smhasher/smhasher.gyp:cityhash',
-    '../third_party/re2/re2.gyp:re2',
+    '../out/gn_gyp/third_party/re2/re2.gyp:re2',
   ],
   'sources': [
     'command_buffer/service/async_pixel_transfer_delegate.cc',
