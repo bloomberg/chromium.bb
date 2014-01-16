@@ -744,10 +744,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   KioskAppManager::Shutdown();
 
   // We first call PostMainMessageLoopRun and then destroy UserManager, because
-  // Ash needs to be closed before UserManager is destroyed. Also, on some tests
-  // MergeSessionThrottle::ShouldShowMergeSessionPage gets triggered during
-  // PostMainMessageLoopRun, which also requires UserManager to live (see
-  // http://crbug.com/243364).
+  // Ash needs to be closed before UserManager is destroyed.
   ChromeBrowserMainPartsLinux::PostMainMessageLoopRun();
 
   // Called after
