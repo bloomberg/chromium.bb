@@ -59,7 +59,7 @@ const CGFloat kImageNoFocusAlpha = 0.65;
   return image_[state].image;
 }
 
-- (void)drawWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
+- (void)drawImageWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
   image_button_cell::ButtonState state = [self currentButtonState];
   BOOL windowHasFocus = [[controlView window] isMainWindow] ||
                         [[controlView window] isKeyWindow];
@@ -97,8 +97,14 @@ const CGFloat kImageNoFocusAlpha = 0.65;
            fraction:alpha
      respectFlipped:YES
               hints:nil];
+}
 
-  [self drawFocusRingWithFrame:cellFrame inView:controlView];
+- (void)drawWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
+  [self drawImageWithFrame:cellFrame inView:controlView];
+  // Only draw custom focus ring if the 10.7 focus ring APIs are not available.
+  // TODO(groby): Remove once we build against the 10.7 SDK.
+  if (![self respondsToSelector:@selector(drawFocusRingMaskWithFrame:inView:)])
+    [self drawFocusRingWithFrame:cellFrame inView:controlView];
 }
 
 - (void)setImageID:(NSInteger)imageID

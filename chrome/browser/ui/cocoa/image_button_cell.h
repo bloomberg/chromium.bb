@@ -64,6 +64,9 @@ enum ButtonState {
 // Gets the alpha to use to draw the button for the current window focus state.
 - (CGFloat)imageAlphaForWindowState:(NSWindow*)window;
 
+// Draws the cell's image within |cellFrame|.
+- (void)drawImageWithFrame:(NSRect)cellFrame inView:(NSView*)controlView;
+
 // If |controlView| is a first responder then draws a blue focus ring.
 - (void)drawFocusRingWithFrame:(NSRect)cellFrame inView:(NSView*)controlView;
 
