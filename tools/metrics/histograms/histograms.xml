@@ -11375,14 +11375,25 @@ other types of suffix sets.
   </summary>
 </histogram>
 
-<histogram name="Network.Shill.VPN.TimeToConfig" units="milliseconds">
+<histogram name="Network.Shill.Vpn.TimeOnline" units="milliseconds">
+  <summary>
+    Chrome OS network metric sampling the time spent using VPN to transport
+    data.  These data are mostly useful when summed and compared to TimeOnline
+    for other network technologies (e.g. WiFi vs Cellular).  A sample is emitted
+    every time the system transitions from primary connectivity through a VPN to
+    some other type of connectivity.  The value of the sample is the time delta
+    in seconds from the instant the system transitioned to VPN connectivity.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Vpn.TimeToConfig" units="milliseconds">
   <summary>
     Chrome OS network performance metric sampling the time to configure Layer 3
     state on a VPN network (typically acquire a DHCP lease).
   </summary>
 </histogram>
 
-<histogram name="Network.Shill.VPN.TimeToOnline" units="milliseconds">
+<histogram name="Network.Shill.Vpn.TimeToOnline" units="milliseconds">
   <summary>
     Chrome OS network performance metric sampling the time to determine that a
     WiMax network is online after configuring Layer 3 state.
