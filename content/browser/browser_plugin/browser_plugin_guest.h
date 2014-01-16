@@ -524,10 +524,6 @@ class CONTENT_EXPORT BrowserPluginGuest
   // Forwards all messages from the |pending_messages_| queue to the embedder.
   void SendQueuedMessages();
 
-  // Weak pointer used to ask GeolocationPermissionContext about geolocation
-  // permission.
-  base::WeakPtrFactory<BrowserPluginGuest> weak_ptr_factory_;
-
   // Static factory instance (always NULL for non-test).
   static BrowserPluginHostFactory* factory_;
 
@@ -599,6 +595,10 @@ class CONTENT_EXPORT BrowserPluginGuest
   // These are parameters passed from JavaScript on attachment to the content
   // embedder.
   scoped_ptr<base::DictionaryValue> extra_attach_params_;
+
+  // Weak pointer used to ask GeolocationPermissionContext about geolocation
+  // permission.
+  base::WeakPtrFactory<BrowserPluginGuest> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginGuest);
 };

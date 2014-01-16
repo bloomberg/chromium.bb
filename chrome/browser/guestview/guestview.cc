@@ -52,7 +52,8 @@ GuestView::GuestView(WebContents* guest_web_contents,
       embedder_render_process_id_(0),
       browser_context_(guest_web_contents->GetBrowserContext()),
       guest_instance_id_(guest_web_contents->GetEmbeddedInstanceID()),
-      view_instance_id_(guestview::kInstanceIDNone) {
+      view_instance_id_(guestview::kInstanceIDNone),
+      weak_ptr_factory_(this) {
   webcontents_guestview_map.Get().insert(
       std::make_pair(guest_web_contents, this));
 }
@@ -157,7 +158,7 @@ void GuestView::Attach(content::WebContents* embedder_web_contents,
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&GuestView::SendQueuedEvents,
-                  base::Unretained(this)));
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 GuestView::Type GuestView::GetViewType() const {

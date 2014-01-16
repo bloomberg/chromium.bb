@@ -7,6 +7,7 @@
 
 #include <queue>
 
+#include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "content/public/browser/browser_plugin_guest_delegate.h"
 #include "content/public/browser/web_contents.h"
@@ -131,6 +132,10 @@ class GuestView : public content::BrowserPluginGuestDelegate {
   // This is a queue of Events that are destined to be sent to the embedder once
   // the guest is attached to a particular embedder.
   std::queue<Event*> pending_events_;
+
+  // This is used to ensure pending tasks will not fire after this object is
+  // destroyed.
+  base::WeakPtrFactory<GuestView> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GuestView);
 };

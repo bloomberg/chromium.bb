@@ -369,11 +369,11 @@ class CONTENT_EXPORT BrowserPlugin :
   // URL for the embedder frame.
   GURL embedder_frame_url_;
 
+  std::vector<EditCommand> edit_commands_;
+
   // Weak factory used in v8 |MakeWeak| callback, since the v8 callback might
   // get called after BrowserPlugin has been destroyed.
   base::WeakPtrFactory<BrowserPlugin> weak_ptr_factory_;
-
-  std::vector<EditCommand> edit_commands_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPlugin);
 };

@@ -340,7 +340,6 @@ BrowserPluginGuest::BrowserPluginGuest(
     WebContentsImpl* web_contents,
     BrowserPluginGuest* opener)
     : WebContentsObserver(web_contents),
-      weak_ptr_factory_(this),
       embedder_web_contents_(NULL),
       instance_id_(instance_id),
       damage_buffer_sequence_id_(0),
@@ -357,7 +356,8 @@ BrowserPluginGuest::BrowserPluginGuest(
       next_permission_request_id_(browser_plugin::kInvalidPermissionRequestID),
       has_render_view_(has_render_view),
       last_seen_auto_size_enabled_(false),
-      is_in_destruction_(false) {
+      is_in_destruction_(false),
+      weak_ptr_factory_(this) {
   DCHECK(web_contents);
   web_contents->SetDelegate(this);
   if (opener)
