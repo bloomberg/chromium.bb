@@ -407,7 +407,8 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate)
       menu_depth_(0),
       autohide_factory_(this),
       id_generator_(0),
-      scroll_styles_set_(false) {
+      needs_scroll_styles_(false),
+      in_size_move_loop_(false) {
 }
 
 HWNDMessageHandler::~HWNDMessageHandler() {
@@ -424,6 +425,27 @@ void HWNDMessageHandler::Init(HWND parent, const gfx::Rect& bounds) {
 
   // Create the window.
   WindowImpl::Init(parent, bounds);
+
+#if defined(USE_AURA)
+  // Certain trackpad drivers on Windows have bugs where in they don't generate
+  // WM_MOUSEWHEEL messages for the trackpoint and trackpad scrolling gestures
+  // unless there is an entry for Chrome with the class name of the Window.
+  // These drivers check if the window under the trackpoint has the WS_VSCROLL/
+  // WS_HSCROLL style and if yes they generate the legacy WM_VSCROLL/WM_HSCROLL
+  // messages. We add these styles to ensure that trackpad/trackpoint scrolling
+  // work.
+  // TODO(ananta)
+  // Look into moving the WS_VSCROLL and WS_HSCROLL style setting logic to the
+  // CalculateWindowStylesFromInitParams function. Doing it there seems to
+  // cause some interactive tests to fail. Investigation needed.
+  if (IsTopLevelWindow(hwnd())) {
+    long current_style = ::GetWindowLong(hwnd(), GWL_STYLE);
+    if (!(current_style & WS_POPUP)) {
+      AddScrollStylesToWindow(hwnd());
+      needs_scroll_styles_ = true;
+    }
+  }
+#endif
 }
 
 void HWNDMessageHandler::InitModalType(ui::ModalType modal_type) {
@@ -1366,25 +1388,6 @@ LRESULT HWNDMessageHandler::OnCreate(CREATESTRUCT* create_struct) {
 
   delegate_->HandleCreate();
 
-#if defined(USE_AURA)
-  // Certain trackpad drivers on Windows have bugs where in they don't generate
-  // WM_MOUSEWHEEL messages for the trackpoint and trackpad scrolling gestures
-  // unless there is an entry for Chrome with the class name of the Window.
-  // These drivers check if the window under the trackpoint has the WS_VSCROLL/
-  // WS_HSCROLL style and if yes they generate the legacy WM_VSCROLL/WM_HSCROLL
-  // messages. We add these styles to ensure that trackpad/trackpoint scrolling
-  // work.
-  // TODO(ananta)
-  // Look into moving the WS_VSCROLL and WS_HSCROLL style setting logic to the
-  // CalculateWindowStylesFromInitParams function. Doing it there seems to
-  // cause some interactive tests to fail. Investigation needed.
-  if (IsTopLevelWindow(hwnd())) {
-    long current_style = ::GetWindowLong(hwnd(), GWL_STYLE);
-    ::SetWindowLong(hwnd(), GWL_STYLE,
-                    current_style | WS_VSCROLL | WS_HSCROLL);
-    scroll_styles_set_ = true;
-  }
-#endif
   // TODO(beng): move more of NWW::OnCreate here.
   return 0;
 }
@@ -1416,6 +1419,15 @@ void HWNDMessageHandler::OnEnterMenuLoop(BOOL from_track_popup_menu) {
 }
 
 void HWNDMessageHandler::OnEnterSizeMove() {
+  in_size_move_loop_ = true;
+
+  // Please refer to the comments in the OnSize function about the scrollbar
+  // hack.
+  // Hide the Windows scrollbar if the scroll styles are present to ensure
+  // that a paint flicker does not occur while sizing.
+  if (needs_scroll_styles_)
+    ShowScrollBar(hwnd(), SB_BOTH, FALSE);
+
   delegate_->HandleBeginWMSizeMove();
   SetMsgHandled(FALSE);
 }
@@ -1434,6 +1446,14 @@ void HWNDMessageHandler::OnExitMenuLoop(BOOL is_shortcut_menu) {
 void HWNDMessageHandler::OnExitSizeMove() {
   delegate_->HandleEndWMSizeMove();
   SetMsgHandled(FALSE);
+  in_size_move_loop_ = false;
+  // Please refer to the notes in the OnSize function for information about
+  // the scrolling hack.
+  // We hide the Windows scrollbar in the OnEnterSizeMove function. We need
+  // to add the scroll styles back to ensure that scrolling works in legacy
+  // trackpoint drivers.
+  if (needs_scroll_styles_)
+    AddScrollStylesToWindow(hwnd());
 }
 
 void HWNDMessageHandler::OnGetMinMaxInfo(MINMAXINFO* minmax_info) {
@@ -2098,16 +2118,14 @@ void HWNDMessageHandler::OnSize(UINT param, const CSize& size) {
   // We add the WS_VSCROLL and WS_HSCROLL styles to top level windows to ensure
   // that legacy trackpad/trackpoint drivers generate the WM_VSCROLL and
   // WM_HSCROLL messages and scrolling works.
-  // We want the style to be present on the window. However we don't want
-  // Windows to draw the scrollbars. To achieve this we hide the scroll bars
-  // and readd them to the window style in a posted task which works.
-  if (scroll_styles_set_) {
-    ShowScrollBar(hwnd(), SB_BOTH, FALSE);
+  // We want the scroll styles to be present on the window. However we don't
+  // want Windows to draw the scrollbars. To achieve this we hide the scroll
+  // bars and readd them to the window style in a posted task to ensure that we
+  // don't get nested WM_SIZE messages.
+  if (needs_scroll_styles_ && !in_size_move_loop_)
     base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&AddScrollStylesToWindow, hwnd()));
+        FROM_HERE, base::Bind(&AddScrollStylesToWindow, hwnd()));
 #endif
-  }
 }
 
 void HWNDMessageHandler::OnSysCommand(UINT notification_code,
