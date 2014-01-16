@@ -322,6 +322,41 @@ bool FitToPageEnabled(const base::DictionaryValue& job_settings) {
   return fit_to_paper_size;
 }
 
+// Returns the print scaling option to retain/scale/crop the source page size
+// to fit the printable area of the paper.
+//
+// We retain the source page size when the current destination printer is
+// SAVE_AS_PDF.
+//
+// We crop the source page size to fit the printable area or we print only the
+// left top page contents when
+// (1) Source is PDF and the user has requested not to fit to printable area
+// via |job_settings|.
+// (2) Source is PDF. This is the first preview request and print scaling
+// option is disabled for initiator renderer plugin.
+//
+// In all other cases, we scale the source page to fit the printable area.
+blink::WebPrintScalingOption GetPrintScalingOption(
+    blink::WebFrame* frame,
+    const blink::WebNode& node,
+    bool source_is_html,
+    const base::DictionaryValue& job_settings,
+    const PrintMsg_Print_Params& params) {
+  if (params.print_to_pdf)
+    return blink::WebPrintScalingOptionSourceSize;
+
+  if (!source_is_html) {
+    if (!FitToPageEnabled(job_settings))
+      return blink::WebPrintScalingOptionNone;
+
+    bool no_plugin_scaling = frame->isPrintScalingDisabledForPlugin(node);
+
+    if (params.is_first_request && no_plugin_scaling)
+      return blink::WebPrintScalingOptionNone;
+  }
+  return blink::WebPrintScalingOptionFitToPrintableArea;
+}
+
 PrintMsg_Print_Params CalculatePrintParamsForCss(
     blink::WebFrame* frame,
     int page_index,
@@ -925,36 +960,14 @@ bool PrintWebViewHelper::IsPrintToPdfRequested(
   return print_to_pdf;
 }
 
-blink::WebPrintScalingOption PrintWebViewHelper::GetPrintScalingOption(
-    bool source_is_html, const base::DictionaryValue& job_settings,
-    const PrintMsg_Print_Params& params) {
-  DCHECK(!print_for_preview_);
-
-  if (params.print_to_pdf)
-    return blink::WebPrintScalingOptionSourceSize;
-
-  if (!source_is_html) {
-    if (!FitToPageEnabled(job_settings))
-      return blink::WebPrintScalingOptionNone;
-
-    bool no_plugin_scaling =
-        print_preview_context_.source_frame()->isPrintScalingDisabledForPlugin(
-            print_preview_context_.source_node());
-
-    if (params.is_first_request && no_plugin_scaling)
-      return blink::WebPrintScalingOptionNone;
-  }
-  return blink::WebPrintScalingOptionFitToPrintableArea;
-}
-
 void PrintWebViewHelper::OnPrintPreview(const base::DictionaryValue& settings) {
   DCHECK(is_preview_enabled_);
   print_preview_context_.OnPrintPreview();
 
   UMA_HISTOGRAM_ENUMERATION("PrintPreview.PreviewEvent",
                             PREVIEW_EVENT_REQUESTED, PREVIEW_EVENT_MAX);
-
-  if (!UpdatePrintSettings(print_preview_context_.source_frame(),
+  if (!print_preview_context_.source_frame() ||
+      !UpdatePrintSettings(print_preview_context_.source_frame(),
                            print_preview_context_.source_node(), settings)) {
     if (print_preview_context_.last_error() != PREVIEW_ERROR_BAD_SETTING) {
       Send(new PrintHostMsg_PrintPreviewInvalidPrinterSettings(
@@ -1493,7 +1506,7 @@ bool PrintWebViewHelper::UpdatePrintSettings(
     settings.params.print_to_pdf = IsPrintToPdfRequested(*job_settings);
     UpdateFrameMarginsCssInfo(*job_settings);
     settings.params.print_scaling_option = GetPrintScalingOption(
-        source_is_html, *job_settings, settings.params);
+        frame, node, source_is_html, *job_settings, settings.params);
 
     // Header/Footer: Set |header_footer_info_|.
     if (settings.params.display_header_footer) {

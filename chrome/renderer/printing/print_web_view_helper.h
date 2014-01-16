@@ -137,25 +137,6 @@ class PrintWebViewHelper
   // Returns true if the current destination printer is PRINT_TO_PDF.
   bool IsPrintToPdfRequested(const base::DictionaryValue& settings);
 
-  // Returns the print scaling option to retain/scale/crop the source page size
-  // to fit the printable area of the paper.
-  //
-  // We retain the source page size when the current destination printer is
-  // SAVE_AS_PDF.
-  //
-  // We crop the source page size to fit the printable area or we print only the
-  // left top page contents when
-  // (1) Source is PDF and the user has requested not to fit to printable area
-  // via |job_settings|.
-  // (2) Source is PDF. This is the first preview request and print scaling
-  // option is disabled for initiator renderer plugin.
-  //
-  // In all other cases, we scale the source page to fit the printable area.
-  blink::WebPrintScalingOption GetPrintScalingOption(
-      bool source_is_html,
-      const base::DictionaryValue& job_settings,
-      const PrintMsg_Print_Params& params);
-
   // Initiate print preview.
   void OnInitiatePrintPreview(bool selection_only);
 
