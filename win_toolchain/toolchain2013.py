@@ -119,15 +119,59 @@ def DownloadMainIso(url):
   return target_path
 
 
-def GetSourceImage(local_dir, pro):
+def DownloadSDK8():
+  """Downloads the Win8 SDK.
+
+  This one is slightly different than the simpler direct downloads. There is
+  no .ISO distribution for the Windows 8 SDK. Rather, a tool is provided that
+  is a download manager. This is used to download the various .msi files to a
+  target location. Unfortunately, this tool requires elevation for no obvious
+  reason even when only downloading, so this function will trigger a UAC
+  elevation if the script is not run from an elevated prompt. This is mostly
+  grabbed for windbg and cdb (See http://crbug.com/321187) as most of the SDK
+  is in VS2013, however we need a couple D3D related things from the SDK.
+  """
+  # Use the long path name here because because 8dot3 names don't seem to work.
+  sdk_temp_dir = GetLongPathName(TempDir())
+  target_path = os.path.join(sdk_temp_dir, 'sdksetup.exe')
+  standalone_path = os.path.join(sdk_temp_dir, 'Standalone')
+  Download(
+      ('http://download.microsoft.com/download/'
+       'F/1/3/F1300C9C-A120-4341-90DF-8A52509B23AC/standalonesdk/sdksetup.exe'),
+      target_path)
+  sys.stdout.write(
+      'Running sdksetup.exe to download Win8 SDK (may request elevation)...\n')
+  count = 0
+  while count < 5:
+    rc = os.system(target_path + ' /quiet '
+                   '/features OptionId.WindowsDesktopDebuggers '
+                   '/layout ' + standalone_path)
+    if rc == 0:
+      return standalone_path
+    count += 1
+    sys.stdout.write('Windows 8 SDK failed to download, retrying.\n')
+  raise SystemExit("After multiple retries, couldn't download Win8 SDK")
+
+
+class SourceImages(object):
+  def __init__(self, vs_path, sdk8_path):
+    self.vs_path = vs_path
+    self.sdk8_path = sdk8_path
+
+
+def GetSourceImages(local_dir, pro):
   url = GetIsoUrl(pro)
   if local_dir:
-    return os.path.join(local_dir, os.path.basename(url))
+    return SourceImages(os.path.join(local_dir, os.path.basename(url)),
+                        os.path.join(local_dir, 'Standalone'))
   else:
-    return DownloadMainIso(url)
+    # Note that we do the SDK first, as it might cause an elevation prompt.
+    sdk8_path = DownloadSDK8()
+    vs_path = DownloadMainIso(url)
+    return SourceImages(vs_path, sdk8_path)
 
 
-def ExtractMsiList(iso_dir, packages):
+def ExtractMsiList(root_dir, packages):
   """Extracts the contents of a list of .msi files from an already extracted
   .iso file.
 
@@ -136,7 +180,7 @@ def ExtractMsiList(iso_dir, packages):
   """
   results = []
   for (package, required) in packages:
-    path_to_package = os.path.join(iso_dir, 'packages', package)
+    path_to_package = os.path.join(root_dir, package)
     if not os.path.exists(path_to_package) and not required:
       continue
     results.append(ExtractMsi(path_to_package))
@@ -144,7 +188,7 @@ def ExtractMsiList(iso_dir, packages):
 
 
 def ExtractComponents(image):
-  packages = [
+  vs_packages = [
       (r'vcRuntimeAdditional_amd64\vc_runtimeAdditional_x64.msi', True),
       (r'vcRuntimeAdditional_x86\vc_runtimeAdditional_x86.msi', True),
       (r'vcRuntimeDebug_amd64\vc_runtimeDebug_x64.msi', True),
@@ -166,8 +210,18 @@ def ExtractComponents(image):
        r'Windows Software Development Kit for Metro style Apps-x86_en-us.msi',
           True),
     ]
-  extracted_iso = ExtractIso(image)
-  return ExtractMsiList(extracted_iso, packages)
+  extracted_iso = ExtractIso(image.vs_path)
+  result = ExtractMsiList(os.path.join(extracted_iso, 'packages'), vs_packages)
+
+  sdk_packages = [
+      (r'X86 Debuggers And Tools-x86_en-us.msi', True),
+      (r'X64 Debuggers And Tools-x64_en-us.msi', True),
+      (r'SDK Debuggers-x86_en-us.msi', True),
+    ]
+  result.extend(ExtractMsiList(os.path.join(image.sdk8_path, 'Installers'),
+                               sdk_packages))
+
+  return result
 
 
 def CopyToFinalLocation(extracted_dirs, target_dir):
@@ -275,8 +329,8 @@ def main():
     # codec dll very well, so this is the simplest way to make sure it runs
     # correctly, as we don't otherwise care about working directory.
     os.chdir(os.path.join(BASEDIR, '7z'))
-    image = GetSourceImage(options.local, not options.express)
-    extracted = ExtractComponents(image)
+    images = GetSourceImages(options.local, not options.express)
+    extracted = ExtractComponents(images)
     CopyToFinalLocation(extracted, target_dir)
 
     GenerateSetEnvCmd(target_dir, not options.express)
