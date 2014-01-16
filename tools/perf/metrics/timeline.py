@@ -4,9 +4,15 @@
 import collections
 
 from metrics import Metric
+from telemetry.page import page_measurement
 
 TRACING_MODE = 'tracing-mode'
 TIMELINE_MODE = 'timeline-mode'
+
+class MissingFramesError(page_measurement.MeasurementFailure):
+  def __init__(self):
+    super(MissingFramesError, self).__init__(
+        'No frames found in trace. Unable to normalize results.')
 
 class TimelineMetric(Metric):
   def __init__(self, mode):
@@ -114,8 +120,12 @@ TimelineThreadCategories =  {
   "CrRendererMain"        : "renderer_main",
   "Compositor"            : "renderer_compositor",
   "IOThread"              : "IO",
-  "CompositorRasterWorker": "raster"
+  "CompositorRasterWorker": "raster",
+  "DummyThreadName1"      : "other",
+  "DummyThreadName2"      : "total_fast_path",
+  "DummyThreadName3"      : "total_all"
 }
+
 MatchBySubString = ["IOThread", "CompositorRasterWorker"]
 FastPath = ["GPU",
             "browser_main",
@@ -123,18 +133,38 @@ FastPath = ["GPU",
             "renderer_compositor",
             "IO"]
 
+AllThreads = TimelineThreadCategories.values()
+NoThreads = []
+MainThread = ["renderer_main"]
+FastPathResults = AllThreads
+FastPathDetails = NoThreads
+SilkResults = ["renderer_main", "total_all"]
+SilkDetails = MainThread
 
-def ThreadTimePercentageName(category):
-  return "thread_" + category + "_clock_time_percentage"
+def ThreadCategoryName(thread_name):
+  thread_category = "other"
+  for substring, category in TimelineThreadCategories.iteritems():
+    if substring in MatchBySubString and substring in thread_name:
+      thread_category = category
+  if thread_name in TimelineThreadCategories:
+    thread_category = TimelineThreadCategories[thread_name]
+  return thread_category
 
-def ThreadCPUTimePercentageName(category):
-  return "thread_" + category + "_cpu_time_percentage"
+def ThreadTimeResultName(thread_category):
+  return "thread_" + thread_category + "_clock_time_per_frame"
+
+def ThreadCpuTimeResultName(thread_category):
+  return "thread_" + thread_category + "_cpu_time_per_frame"
+
+def ThreadDetailResultName(thread_category, detail):
+  return "thread_" +  thread_category + "|" + detail
 
 class ResultsForThread(object):
-  def __init__(self, model):
+  def __init__(self, model, name):
     self.model = model
     self.toplevel_slices = []
     self.all_slices = []
+    self.name = name
 
   @property
   def clock_time(self):
@@ -153,80 +183,79 @@ class ResultsForThread(object):
         res += x.thread_duration
     return res
 
-  def AddDetailedResults(self, thread_category_name, results):
+  def AppendThreadSlices(self, thread):
+    self.all_slices.extend(thread.all_slices)
+    self.toplevel_slices.extend(thread.toplevel_slices)
+
+  def AddResults(self, num_frames, results):
+    clock_report_name = ThreadTimeResultName(self.name)
+    cpu_report_name  = ThreadCpuTimeResultName(self.name)
+    clock_per_frame = float(self.clock_time) / num_frames
+    cpu_per_frame   = float(self.cpu_time) / num_frames
+    results.Add(clock_report_name, 'ms', clock_per_frame)
+    results.Add(cpu_report_name, 'ms', cpu_per_frame)
+
+  def AddDetailedResults(self, num_frames, results):
     slices_by_category = collections.defaultdict(list)
     for s in self.all_slices:
       slices_by_category[s.category].append(s)
     all_self_times = []
     for category, slices_in_category in slices_by_category.iteritems():
       self_time = sum([x.self_time for x in slices_in_category])
-      results.Add('%s|%s' % (thread_category_name, category), 'ms', self_time)
       all_self_times.append(self_time)
+      self_time_result = float(self_time) / num_frames
+      results.Add(ThreadDetailResultName(self.name, category),
+                  'ms', self_time_result)
     all_measured_time = sum(all_self_times)
-    idle_time = max(0,
-                    self.model.bounds.bounds - all_measured_time)
-    results.Add('%s|idle' % thread_category_name, 'ms', idle_time)
+    idle_time = max(0, self.model.bounds.bounds - all_measured_time)
+    idle_time_result = float(idle_time) / num_frames
+    results.Add(ThreadDetailResultName(self.name, "idle"),
+                'ms', idle_time_result)
 
 class ThreadTimesTimelineMetric(TimelineMetric):
   def __init__(self):
     super(ThreadTimesTimelineMetric, self).__init__(TRACING_MODE)
-    self.report_renderer_main_details = False
+    self.results_to_report = AllThreads
+    self.details_to_report = NoThreads
 
-  def GetThreadCategoryName(self, thread):
-    # First determine if we care about this thread.
-    # Check substrings first, followed by exact matches
-    thread_category = None
-    for substring, category in TimelineThreadCategories.iteritems():
-      if substring in thread.name:
-        thread_category = category
-    if thread.name in TimelineThreadCategories:
-      thread_category = TimelineThreadCategories[thread.name]
-    if thread_category == None:
-      thread_category = "other"
-
-    return thread_category
+  def CalcFrameCount(self):
+    gpu_swaps = 0
+    for thread in self._model.GetAllThreads():
+      if (ThreadCategoryName(thread.name) == "GPU"):
+        for event in thread.IterAllSlices():
+          if ":RealSwapBuffers" in event.name:
+            gpu_swaps += 1
+    return gpu_swaps
 
   def AddResults(self, tab, results):
-    results_per_thread_category = collections.defaultdict(
-        lambda: ResultsForThread(self._model))
+    num_frames = self.CalcFrameCount()
+    if not num_frames:
+      raise MissingFramesError()
 
-    # Set up each category anyway so that we get consistant results.
-    for category in TimelineThreadCategories.values():
-      results_per_thread_category[category] = ResultsForThread(self.model)
-    results_for_all_threads = results_per_thread_category['total_fast_path']
+    # Set up each thread category for consistant results.
+    thread_category_results = {}
+    for name in TimelineThreadCategories.values():
+      thread_category_results[name] = ResultsForThread(self.model, name)
 
     # Group the slices by their thread category.
     for thread in self._model.GetAllThreads():
-      # First determine if we care about this thread.
-      # Check substrings first, followed by exact matches
-      thread_category = self.GetThreadCategoryName(thread)
+      thread_category = ThreadCategoryName(thread.name)
+      thread_category_results[thread_category].AppendThreadSlices(thread)
 
-      results_for_thread = results_per_thread_category[thread_category]
-      for event in thread.all_slices:
-        results_for_thread.all_slices.append(event)
-        results_for_all_threads.all_slices.append(event)
-      for event in thread.toplevel_slices:
-        results_for_thread.toplevel_slices.append(event)
-        results_for_all_threads.toplevel_slices.append(event)
+    # Group all threads.
+    for thread in self._model.GetAllThreads():
+      thread_category_results['total_all'].AppendThreadSlices(thread)
 
-    for thread_category, results_for_thread_category in (
-        results_per_thread_category.iteritems()):
-      thread_report_name = ThreadTimePercentageName(thread_category)
-      time_as_percentage = (float(results_for_thread_category.clock_time) /
-                            self._model.bounds.bounds) * 100
-      results.Add(thread_report_name, '%', time_as_percentage)
+    # Also group fast-path threads.
+    for thread in self._model.GetAllThreads():
+      if ThreadCategoryName(thread.name) in FastPath:
+        thread_category_results['total_fast_path'].AppendThreadSlices(thread)
 
-    for thread_category, results_for_thread_category in (
-        results_per_thread_category.iteritems()):
-      cpu_time_report_name = ThreadCPUTimePercentageName(thread_category)
-      time_as_percentage = (float(results_for_thread_category.cpu_time) /
-                            self._model.bounds.bounds) * 100
-      results.Add(cpu_time_report_name, '%', time_as_percentage)
-
-    # TOOD(nduca): When generic results objects are done, this special case
-    # can be replaced with a generic UI feature.
-    for thread_category, results_for_thread_category in (
-        results_per_thread_category.iteritems()):
-      if (thread_category == 'renderer_main' and
-          self.report_renderer_main_details):
-        results_for_thread_category.AddDetailedResults(thread_category, results)
+    # Report the desired results and details.
+    for thread_results in thread_category_results.values():
+      if thread_results.name in self.results_to_report:
+        thread_results.AddResults(num_frames, results)
+      # TOOD(nduca): When generic results objects are done, this special case
+      # can be replaced with a generic UI feature.
+      if thread_results.name in self.details_to_report:
+        thread_results.AddDetailedResults(num_frames, results)

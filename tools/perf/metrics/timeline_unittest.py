@@ -1,4 +1,4 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -46,6 +46,14 @@ class ThreadTimesTimelineMetricUnittest(unittest.TestCase):
     renderer_main = model.GetOrCreateProcess(1).GetOrCreateThread(2)
     renderer_main.name = 'CrRendererMain'
 
+    # Create two frame swaps (Results times should be divided by two)
+    gpu_main = model.GetOrCreateProcess(1).GetOrCreateThread(3)
+    gpu_main.name = 'CrGPUMain'
+    gpu_main.BeginSlice('gpucat', ':RealSwapBuffers', 10, 10)
+    gpu_main.EndSlice(11, 11)
+    gpu_main.BeginSlice('gpucat', ':RealSwapBuffers', 12, 12)
+    gpu_main.EndSlice(13, 13)
+
     # [      X       ]
     #      [  Y  ]
     renderer_main.BeginSlice('cat1', 'X', 10, 0)
@@ -55,37 +63,20 @@ class ThreadTimesTimelineMetricUnittest(unittest.TestCase):
     model.FinalizeImport()
 
     metric = timeline.ThreadTimesTimelineMetric()
-    metric.report_renderer_main_details = True
-    results = self.GetResultsForModel(metric, model)
-    results.AssertHasPageSpecificScalarValue(
-      'thread_renderer_main_clock_time_percentage', '%', 100)
-    results.AssertHasPageSpecificScalarValue(
-      'renderer_main|cat1', 'ms', 19)
-    results.AssertHasPageSpecificScalarValue(
-      'renderer_main|cat2', 'ms', 1)
-    results.AssertHasPageSpecificScalarValue(
-      'renderer_main|idle', 'ms', 0)
-
-  def testPercentage(self):
-    model = model_module.TimelineModel()
-    renderer_main = model.GetOrCreateProcess(1).GetOrCreateThread(2)
-    renderer_main.name = 'CrRendererMain'
-
-    # [      X       ]   [  Z  ]
-    # X is 20ms, then 10ms delay, then Z is 10ms
-    renderer_main.BeginSlice('cat', 'X', 10, 0)
-    renderer_main.EndSlice(30, 19.5)
-    renderer_main.BeginSlice('cat', 'Z', 40, 20)
-    renderer_main.EndSlice(50, 30)
-    model.FinalizeImport()
-
-    metric = timeline.ThreadTimesTimelineMetric()
-    metric.report_renderer_main_details = True
+    metric.details_to_report = timeline.MainThread
     results = self.GetResultsForModel(metric, model)
 
-    results.AssertHasPageSpecificScalarValue(
-      'thread_renderer_main_clock_time_percentage', '%', 75)
-    results.AssertHasPageSpecificScalarValue(
-      'renderer_main|cat', 'ms', 30)
-    results.AssertHasPageSpecificScalarValue(
-      'renderer_main|idle', 'ms', 10)
+    # Test that all categories exist
+    for name in timeline.TimelineThreadCategories.values():
+      results.GetPageSpecificValueNamed(timeline.ThreadTimeResultName(name))
+      results.GetPageSpecificValueNamed(timeline.ThreadCpuTimeResultName(name))
+
+    # Test a couple specific results.
+    assert_results = {
+      timeline.ThreadTimeResultName('renderer_main') : 10,
+      timeline.ThreadDetailResultName('renderer_main','cat1') : 9.5,
+      timeline.ThreadDetailResultName('renderer_main','cat2') : 0.5,
+      timeline.ThreadDetailResultName('renderer_main','idle') : 0
+    }
+    for name, value in assert_results.iteritems():
+      results.AssertHasPageSpecificScalarValue(name, 'ms', value)

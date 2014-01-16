@@ -11,8 +11,10 @@ class ThreadTimes(page_measurement.PageMeasurement):
     self._metric = timeline.ThreadTimesTimelineMetric()
 
   def AddCommandLineOptions(self, parser):
-    parser.add_option('--report-renderer-main-details', action='store_true',
-                      help='Report details on the render main thread.')
+    parser.add_option('--report-silk-results', action='store_true',
+                      help='Report results relevant to silk.')
+    parser.add_option('--report-silk-details', action='store_true',
+                      help='Report details relevant to silk.')
 
   def CanRunForPage(self, page):
     return hasattr(page, 'smoothness')
@@ -23,8 +25,10 @@ class ThreadTimes(page_measurement.PageMeasurement):
 
   def WillRunActions(self, page, tab):
     self._metric.Start(page, tab)
-    self._metric.report_renderer_main_details = \
-      self.options.report_renderer_main_details
+    if self.options.report_silk_results:
+      self._metric.results_to_report = timeline.SilkResults
+    if self.options.report_silk_details:
+      self._metric.details_to_report = timeline.SilkDetails
 
   def DidRunActions(self, page, tab):
     self._metric.Stop(page, tab)

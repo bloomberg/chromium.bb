@@ -15,16 +15,16 @@ class ThreadTimesUnitTest(
 
   def testBasic(self):
     ps = self.CreatePageSetFromFileInUnittestDataDir('scrollable_page.html')
-    measurement = thread_times.ThreandTimes()
+    measurement = thread_times.ThreadTimes()
     timeline_options = self._options
     results = self.RunMeasurement(measurement, ps, options = timeline_options)
     self.assertEquals(0, len(results.failures))
 
     for category in timeline.TimelineThreadCategories.values():
-      clock_time_name = timeline.ThreadTimePercentageName(category)
+      clock_time_name = timeline.ThreadTimeResultName(category)
       clock_time = results.FindAllPageSpecificValuesNamed(clock_time_name)
       self.assertEquals(len(clock_time), 1)
 
-      cpu_time_name = timeline.ThreadCPUTimePercentageName(category)
+      cpu_time_name = timeline.ThreadCpuTimeResultName(category)
       cpu_time = results.FindAllPageSpecificValuesNamed(cpu_time_name)
       self.assertEquals(len(cpu_time), 1)

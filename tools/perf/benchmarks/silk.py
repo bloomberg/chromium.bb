@@ -12,4 +12,4 @@ class SilkKeySilkCases(test.Test):
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
   test = thread_times.ThreadTimes
   page_set = 'page_sets/key_silk_cases.json'
-  options = {"report_silk_details": True}
+  options = {"report_silk_results": True}
