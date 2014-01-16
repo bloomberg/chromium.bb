@@ -446,6 +446,60 @@ static void stringAttrAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
+static void treatNullAsNullStringStringAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    v8SetReturnValueString(info, imp->treatNullAsNullStringStringAttr(), info.GetIsolate());
+}
+
+static void treatNullAsNullStringStringAttrAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestObjV8Internal::treatNullAsNullStringStringAttrAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void treatNullAsNullStringStringAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, cppValue, jsValue);
+    imp->setTreatNullAsNullStringStringAttr(cppValue);
+}
+
+static void treatNullAsNullStringStringAttrAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    TestObjV8Internal::treatNullAsNullStringStringAttrAttributeSetter(jsValue, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void treatNullAsNullStringTreatUndefinedAsNullStringStringAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    v8SetReturnValueString(info, imp->treatNullAsNullStringTreatUndefinedAsNullStringStringAttr(), info.GetIsolate());
+}
+
+static void treatNullAsNullStringTreatUndefinedAsNullStringStringAttrAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestObjV8Internal::treatNullAsNullStringTreatUndefinedAsNullStringStringAttrAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void treatNullAsNullStringTreatUndefinedAsNullStringStringAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, cppValue, jsValue);
+    imp->setTreatNullAsNullStringTreatUndefinedAsNullStringStringAttr(cppValue);
+}
+
+static void treatNullAsNullStringTreatUndefinedAsNullStringStringAttrAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    TestObjV8Internal::treatNullAsNullStringTreatUndefinedAsNullStringStringAttrAttributeSetter(jsValue, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
 static void eventHandlerAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
@@ -601,7 +655,7 @@ static void reflectedStringAttrAttributeGetterCallback(v8::Local<v8::String>, co
 static void reflectedStringAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, cppValue, jsValue);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     imp->setAttribute(HTMLNames::reflectedstringattrAttr, cppValue);
 }
@@ -611,6 +665,64 @@ static void reflectedStringAttrAttributeSetterCallback(v8::Local<v8::String>, v8
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     TestObjV8Internal::reflectedStringAttrAttributeSetter(jsValue, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void reflectedTreatNullAsNullStringStringAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    v8SetReturnValueString(info, imp->fastGetAttribute(HTMLNames::reflectedtreatnullasnullstringstringattrAttr), info.GetIsolate());
+}
+
+static void reflectedTreatNullAsNullStringStringAttrAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestObjV8Internal::reflectedTreatNullAsNullStringStringAttrAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void reflectedTreatNullAsNullStringStringAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, cppValue, jsValue);
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    imp->setAttribute(HTMLNames::reflectedtreatnullasnullstringstringattrAttr, cppValue);
+}
+
+static void reflectedTreatNullAsNullStringStringAttrAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    TestObjV8Internal::reflectedTreatNullAsNullStringStringAttrAttributeSetter(jsValue, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void reflectedTreatNullAsNullStringTreatUndefinedAsNullStringStringAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    v8SetReturnValueString(info, imp->fastGetAttribute(HTMLNames::reflectedtreatnullasnullstringtreatundefinedasnullstringstringattrAttr), info.GetIsolate());
+}
+
+static void reflectedTreatNullAsNullStringTreatUndefinedAsNullStringStringAttrAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestObjV8Internal::reflectedTreatNullAsNullStringTreatUndefinedAsNullStringStringAttrAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void reflectedTreatNullAsNullStringTreatUndefinedAsNullStringStringAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, cppValue, jsValue);
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    imp->setAttribute(HTMLNames::reflectedtreatnullasnullstringtreatundefinedasnullstringstringattrAttr, cppValue);
+}
+
+static void reflectedTreatNullAsNullStringTreatUndefinedAsNullStringStringAttrAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    TestObjV8Internal::reflectedTreatNullAsNullStringTreatUndefinedAsNullStringStringAttrAttributeSetter(jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
@@ -719,7 +831,7 @@ static void reflectedURLAttrAttributeGetterCallback(v8::Local<v8::String>, const
 static void reflectedURLAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, cppValue, jsValue);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     imp->setAttribute(HTMLNames::reflectedurlattrAttr, cppValue);
 }
@@ -732,20 +844,107 @@ static void reflectedURLAttrAttributeSetterCallback(v8::Local<v8::String>, v8::L
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
-static void reflectedStringAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+static void reflectedTreatNullAsNullStringURLAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    v8SetReturnValueString(info, imp->getURLAttribute(HTMLNames::reflectedtreatnullasnullstringurlattrAttr), info.GetIsolate());
+}
+
+static void reflectedTreatNullAsNullStringURLAttrAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestObjV8Internal::reflectedTreatNullAsNullStringURLAttrAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void reflectedTreatNullAsNullStringURLAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, cppValue, jsValue);
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    imp->setAttribute(HTMLNames::reflectedtreatnullasnullstringurlattrAttr, cppValue);
+}
+
+static void reflectedTreatNullAsNullStringURLAttrAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    TestObjV8Internal::reflectedTreatNullAsNullStringURLAttrAttributeSetter(jsValue, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void reflectedTreatNullAsNullStringTreatUndefinedAsNullStringURLAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    v8SetReturnValueString(info, imp->getURLAttribute(HTMLNames::reflectedtreatnullasnullstringtreatundefinedasnullstringurlattrAttr), info.GetIsolate());
+}
+
+static void reflectedTreatNullAsNullStringTreatUndefinedAsNullStringURLAttrAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestObjV8Internal::reflectedTreatNullAsNullStringTreatUndefinedAsNullStringURLAttrAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void reflectedTreatNullAsNullStringTreatUndefinedAsNullStringURLAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, cppValue, jsValue);
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    imp->setAttribute(HTMLNames::reflectedtreatnullasnullstringtreatundefinedasnullstringurlattrAttr, cppValue);
+}
+
+static void reflectedTreatNullAsNullStringTreatUndefinedAsNullStringURLAttrAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    TestObjV8Internal::reflectedTreatNullAsNullStringTreatUndefinedAsNullStringURLAttrAttributeSetter(jsValue, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void reflectedCustomStringAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     v8SetReturnValueString(info, imp->fastGetAttribute(HTMLNames::customContentStringAttrAttr), info.GetIsolate());
 }
 
-static void reflectedStringAttrAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void reflectedCustomStringAttrAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestObjV8Internal::reflectedStringAttrAttributeGetter(info);
+    TestObjV8Internal::reflectedCustomStringAttrAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
-static void reflectedStringAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+static void reflectedCustomStringAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    imp->setAttribute(HTMLNames::customContentStringAttrAttr, cppValue);
+}
+
+static void reflectedCustomStringAttrAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    TestObjV8Internal::reflectedCustomStringAttrAttributeSetter(jsValue, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void reflectedTreatNullAsNullStringCustomStringAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    v8SetReturnValueString(info, imp->fastGetAttribute(HTMLNames::customContentStringAttrAttr), info.GetIsolate());
+}
+
+static void reflectedTreatNullAsNullStringCustomStringAttrAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestObjV8Internal::reflectedTreatNullAsNullStringCustomStringAttrAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void reflectedTreatNullAsNullStringCustomStringAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, cppValue, jsValue);
@@ -753,11 +952,40 @@ static void reflectedStringAttrAttributeSetter(v8::Local<v8::Value> jsValue, con
     imp->setAttribute(HTMLNames::customContentStringAttrAttr, cppValue);
 }
 
-static void reflectedStringAttrAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+static void reflectedTreatNullAsNullStringCustomStringAttrAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
-    TestObjV8Internal::reflectedStringAttrAttributeSetter(jsValue, info);
+    TestObjV8Internal::reflectedTreatNullAsNullStringCustomStringAttrAttributeSetter(jsValue, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void reflectedTreatNullAsNullStringTreatUndefinedAsNullStringCustomStringAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    v8SetReturnValueString(info, imp->fastGetAttribute(HTMLNames::customContentStringAttrAttr), info.GetIsolate());
+}
+
+static void reflectedTreatNullAsNullStringTreatUndefinedAsNullStringCustomStringAttrAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestObjV8Internal::reflectedTreatNullAsNullStringTreatUndefinedAsNullStringCustomStringAttrAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void reflectedTreatNullAsNullStringTreatUndefinedAsNullStringCustomStringAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, cppValue, jsValue);
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    imp->setAttribute(HTMLNames::customContentStringAttrAttr, cppValue);
+}
+
+static void reflectedTreatNullAsNullStringTreatUndefinedAsNullStringCustomStringAttrAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    TestObjV8Internal::reflectedTreatNullAsNullStringTreatUndefinedAsNullStringCustomStringAttrAttributeSetter(jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
@@ -836,7 +1064,7 @@ static void reflectedCustomURLAttrAttributeGetterCallback(v8::Local<v8::String>,
 static void reflectedCustomURLAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, cppValue, jsValue);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     imp->setAttribute(HTMLNames::customContentURLAttrAttr, cppValue);
 }
@@ -846,6 +1074,64 @@ static void reflectedCustomURLAttrAttributeSetterCallback(v8::Local<v8::String>,
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     TestObjV8Internal::reflectedCustomURLAttrAttributeSetter(jsValue, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void reflectedTreatNullAsNullStringCustomURLAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    v8SetReturnValueString(info, imp->getURLAttribute(HTMLNames::customContentURLAttrAttr), info.GetIsolate());
+}
+
+static void reflectedTreatNullAsNullStringCustomURLAttrAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestObjV8Internal::reflectedTreatNullAsNullStringCustomURLAttrAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void reflectedTreatNullAsNullStringCustomURLAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, cppValue, jsValue);
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    imp->setAttribute(HTMLNames::customContentURLAttrAttr, cppValue);
+}
+
+static void reflectedTreatNullAsNullStringCustomURLAttrAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    TestObjV8Internal::reflectedTreatNullAsNullStringCustomURLAttrAttributeSetter(jsValue, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void reflectedTreatNullAsNullStringTreatUndefinedAsNullStringCustomURLAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    v8SetReturnValueString(info, imp->getURLAttribute(HTMLNames::customContentURLAttrAttr), info.GetIsolate());
+}
+
+static void reflectedTreatNullAsNullStringTreatUndefinedAsNullStringCustomURLAttrAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestObjV8Internal::reflectedTreatNullAsNullStringTreatUndefinedAsNullStringCustomURLAttrAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void reflectedTreatNullAsNullStringTreatUndefinedAsNullStringCustomURLAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, cppValue, jsValue);
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    imp->setAttribute(HTMLNames::customContentURLAttrAttr, cppValue);
+}
+
+static void reflectedTreatNullAsNullStringTreatUndefinedAsNullStringCustomURLAttrAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    TestObjV8Internal::reflectedTreatNullAsNullStringTreatUndefinedAsNullStringCustomURLAttrAttributeSetter(jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
@@ -5314,19 +5600,29 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectAttributes[]
     {"longLongAttr", TestObjV8Internal::longLongAttrAttributeGetterCallback, TestObjV8Internal::longLongAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"unsignedLongLongAttr", TestObjV8Internal::unsignedLongLongAttrAttributeGetterCallback, TestObjV8Internal::unsignedLongLongAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"stringAttr", TestObjV8Internal::stringAttrAttributeGetterCallback, TestObjV8Internal::stringAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"treatNullAsNullStringStringAttr", TestObjV8Internal::treatNullAsNullStringStringAttrAttributeGetterCallback, TestObjV8Internal::treatNullAsNullStringStringAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"treatNullAsNullStringTreatUndefinedAsNullStringStringAttr", TestObjV8Internal::treatNullAsNullStringTreatUndefinedAsNullStringStringAttrAttributeGetterCallback, TestObjV8Internal::treatNullAsNullStringTreatUndefinedAsNullStringStringAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"eventHandlerAttr", TestObjV8Internal::eventHandlerAttrAttributeGetterCallback, TestObjV8Internal::eventHandlerAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"testObjAttr", TestObjV8Internal::testObjAttrAttributeGetterCallback, TestObjV8Internal::testObjAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"XMLObjAttr", TestObjV8Internal::XMLObjAttrAttributeGetterCallback, TestObjV8Internal::XMLObjAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"create", TestObjV8Internal::createAttributeGetterCallback, TestObjV8Internal::createAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"reflectedStringAttr", TestObjV8Internal::reflectedStringAttrAttributeGetterCallback, TestObjV8Internal::reflectedStringAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"reflectedTreatNullAsNullStringStringAttr", TestObjV8Internal::reflectedTreatNullAsNullStringStringAttrAttributeGetterCallback, TestObjV8Internal::reflectedTreatNullAsNullStringStringAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"reflectedTreatNullAsNullStringTreatUndefinedAsNullStringStringAttr", TestObjV8Internal::reflectedTreatNullAsNullStringTreatUndefinedAsNullStringStringAttrAttributeGetterCallback, TestObjV8Internal::reflectedTreatNullAsNullStringTreatUndefinedAsNullStringStringAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"reflectedIntegralAttr", TestObjV8Internal::reflectedIntegralAttrAttributeGetterCallback, TestObjV8Internal::reflectedIntegralAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"reflectedUnsignedIntegralAttr", TestObjV8Internal::reflectedUnsignedIntegralAttrAttributeGetterCallback, TestObjV8Internal::reflectedUnsignedIntegralAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"reflectedBooleanAttr", TestObjV8Internal::reflectedBooleanAttrAttributeGetterCallback, TestObjV8Internal::reflectedBooleanAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"reflectedURLAttr", TestObjV8Internal::reflectedURLAttrAttributeGetterCallback, TestObjV8Internal::reflectedURLAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"reflectedStringAttr", TestObjV8Internal::reflectedStringAttrAttributeGetterCallback, TestObjV8Internal::reflectedStringAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"reflectedTreatNullAsNullStringURLAttr", TestObjV8Internal::reflectedTreatNullAsNullStringURLAttrAttributeGetterCallback, TestObjV8Internal::reflectedTreatNullAsNullStringURLAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"reflectedTreatNullAsNullStringTreatUndefinedAsNullStringURLAttr", TestObjV8Internal::reflectedTreatNullAsNullStringTreatUndefinedAsNullStringURLAttrAttributeGetterCallback, TestObjV8Internal::reflectedTreatNullAsNullStringTreatUndefinedAsNullStringURLAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"reflectedCustomStringAttr", TestObjV8Internal::reflectedCustomStringAttrAttributeGetterCallback, TestObjV8Internal::reflectedCustomStringAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"reflectedTreatNullAsNullStringCustomStringAttr", TestObjV8Internal::reflectedTreatNullAsNullStringCustomStringAttrAttributeGetterCallback, TestObjV8Internal::reflectedTreatNullAsNullStringCustomStringAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"reflectedTreatNullAsNullStringTreatUndefinedAsNullStringCustomStringAttr", TestObjV8Internal::reflectedTreatNullAsNullStringTreatUndefinedAsNullStringCustomStringAttrAttributeGetterCallback, TestObjV8Internal::reflectedTreatNullAsNullStringTreatUndefinedAsNullStringCustomStringAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"reflectedCustomIntegralAttr", TestObjV8Internal::reflectedCustomIntegralAttrAttributeGetterCallback, TestObjV8Internal::reflectedCustomIntegralAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"reflectedCustomBooleanAttr", TestObjV8Internal::reflectedCustomBooleanAttrAttributeGetterCallback, TestObjV8Internal::reflectedCustomBooleanAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"reflectedCustomURLAttr", TestObjV8Internal::reflectedCustomURLAttrAttributeGetterCallback, TestObjV8Internal::reflectedCustomURLAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"reflectedTreatNullAsNullStringCustomURLAttr", TestObjV8Internal::reflectedTreatNullAsNullStringCustomURLAttrAttributeGetterCallback, TestObjV8Internal::reflectedTreatNullAsNullStringCustomURLAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"reflectedTreatNullAsNullStringTreatUndefinedAsNullStringCustomURLAttr", TestObjV8Internal::reflectedTreatNullAsNullStringTreatUndefinedAsNullStringCustomURLAttrAttributeGetterCallback, TestObjV8Internal::reflectedTreatNullAsNullStringTreatUndefinedAsNullStringCustomURLAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"limitedToOnlyOneAttribute", TestObjV8Internal::limitedToOnlyOneAttributeAttributeGetterCallback, TestObjV8Internal::limitedToOnlyOneAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"limitedToOnlyAttribute", TestObjV8Internal::limitedToOnlyAttributeAttributeGetterCallback, TestObjV8Internal::limitedToOnlyAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"limitedToOnlyOtherAttribute", TestObjV8Internal::limitedToOnlyOtherAttributeAttributeGetterCallback, TestObjV8Internal::limitedToOnlyOtherAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
