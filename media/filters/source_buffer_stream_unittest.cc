@@ -86,27 +86,32 @@ class SourceBufferStreamTest : public testing::Test {
   }
 
   void NewSegmentAppend(const std::string& buffers_to_append) {
-    AppendBuffers(buffers_to_append, true, false, true);
+    AppendBuffers(buffers_to_append, true, kNoTimestamp(), false, true);
+  }
+
+  void NewSegmentAppend(base::TimeDelta start_timestamp,
+                        const std::string& buffers_to_append) {
+    AppendBuffers(buffers_to_append, true, start_timestamp, false, true);
   }
 
   void AppendBuffers(const std::string& buffers_to_append) {
-    AppendBuffers(buffers_to_append, false, false, true);
+    AppendBuffers(buffers_to_append, false, kNoTimestamp(), false, true);
   }
 
   void NewSegmentAppendOneByOne(const std::string& buffers_to_append) {
-    AppendBuffers(buffers_to_append, true, true, true);
+    AppendBuffers(buffers_to_append, true, kNoTimestamp(), true, true);
   }
 
   void AppendBuffersOneByOne(const std::string& buffers_to_append) {
-    AppendBuffers(buffers_to_append, false, true, true);
+    AppendBuffers(buffers_to_append, false, kNoTimestamp(), true, true);
   }
 
   void NewSegmentAppend_ExpectFailure(const std::string& buffers_to_append) {
-    AppendBuffers(buffers_to_append, true, false, false);
+    AppendBuffers(buffers_to_append, true, kNoTimestamp(), false, false);
   }
 
   void AppendBuffers_ExpectFailure(const std::string& buffers_to_append) {
-    AppendBuffers(buffers_to_append, false, false, false);
+    AppendBuffers(buffers_to_append, false, kNoTimestamp(), false, false);
   }
 
   void Seek(int position) {
@@ -313,9 +318,8 @@ class SourceBufferStreamTest : public testing::Test {
       EXPECT_EQ(expect_success, stream_->Append(queue));
   }
 
-  void AppendBuffers(const std::string& buffers_to_append,
-                     bool start_new_segment, bool one_by_one,
-                     bool expect_success) {
+  SourceBufferStream::BufferQueue StringToBufferQueue(
+      const std::string& buffers_to_append) {
     std::vector<std::string> timestamps;
     base::SplitString(buffers_to_append, ' ', &timestamps);
 
@@ -337,12 +341,30 @@ class SourceBufferStreamTest : public testing::Test {
           StreamParserBuffer::CopyFrom(&kDataA, kDataSize, is_keyframe);
       base::TimeDelta timestamp =
           base::TimeDelta::FromMilliseconds(time_in_ms);
+      buffer->set_timestamp(timestamp);
       buffer->SetDecodeTimestamp(timestamp);
 
-      if (i == 0u && start_new_segment)
-        stream_->OnNewMediaSegment(timestamp);
-
       buffers.push_back(buffer);
+    }
+    return buffers;
+  }
+
+  void AppendBuffers(const std::string& buffers_to_append,
+                     bool start_new_segment,
+                     base::TimeDelta segment_start_timestamp,
+                     bool one_by_one,
+                     bool expect_success) {
+    SourceBufferStream::BufferQueue buffers =
+        StringToBufferQueue(buffers_to_append);
+
+    if (start_new_segment) {
+      base::TimeDelta start_timestamp = segment_start_timestamp;
+      if (start_timestamp == kNoTimestamp())
+        start_timestamp = buffers[0]->GetDecodeTimestamp();
+
+      ASSERT_TRUE(start_timestamp <= buffers[0]->GetDecodeTimestamp());
+
+      stream_->OnNewMediaSegment(start_timestamp);
     }
 
     if (!one_by_one) {
@@ -469,6 +491,27 @@ TEST_F(SourceBufferStreamTest, Complete_Overlap) {
   // Check buffers in range.
   Seek(0);
   CheckExpectedBuffers(0, 14);
+}
+
+TEST_F(SourceBufferStreamTest,
+       Complete_Overlap_AfterSegmentTimestampAndBeforeFirstBufferTimestamp) {
+  // Append a segment with a start timestamp of 0, but the first
+  // buffer starts at 30ms. This can happen in muxed content where the
+  // audio starts before the first frame.
+  NewSegmentAppend(base::TimeDelta::FromMilliseconds(0), "30K 60K 90K 120K");
+
+  CheckExpectedRangesByTimestamp("{ [0,150) }");
+
+  // Completely overlap the old buffers, with a segment that starts
+  // after the old segment start timestamp, but before the timestamp
+  // of the first buffer in the segment.
+  NewSegmentAppend("20K 50K 80K 110K");
+
+  // Verify that the buffered ranges are updated properly and we don't crash.
+  CheckExpectedRangesByTimestamp("{ [20,150) }");
+
+  SeekToTimestamp(base::TimeDelta::FromMilliseconds(20));
+  CheckExpectedBuffers("20K 50K 80K 110K 120K");
 }
 
 TEST_F(SourceBufferStreamTest, Complete_Overlap_EdgeCase) {
@@ -2896,6 +2939,27 @@ TEST_F(SourceBufferStreamTest, SetExplicitDuration_UpdateSelectedRange) {
   NewSegmentAppend("120K 150");
 
   CheckExpectedRangesByTimestamp("{ [0,60) [120,180) }");
+}
+
+TEST_F(SourceBufferStreamTest,
+       SetExplicitDuration_AfterSegmentTimestampAndBeforeFirstBufferTimestamp) {
+
+  NewSegmentAppend("0K 30K 60K");
+
+  // Append a segment with a start timestamp of 200, but the first
+  // buffer starts at 230ms. This can happen in muxed content where the
+  // audio starts before the first frame.
+  NewSegmentAppend(base::TimeDelta::FromMilliseconds(200),
+                   "230K 260K 290K 320K");
+
+  NewSegmentAppend("400K 430K 460K");
+
+  CheckExpectedRangesByTimestamp("{ [0,90) [200,350) [400,490) }");
+
+  stream_->OnSetDuration(base::TimeDelta::FromMilliseconds(120));
+
+  // Verify that the buffered ranges are updated properly and we don't crash.
+  CheckExpectedRangesByTimestamp("{ [0,90) }");
 }
 
 // Test the case were the current playback position is at the end of the

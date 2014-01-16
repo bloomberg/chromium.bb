@@ -95,7 +95,9 @@ class SourceBufferRange {
   // were removed.
   // |deleted_buffers| contains the buffers that were deleted from this range,
   // starting at the buffer that had been at |next_buffer_index_|.
-  void TruncateAt(base::TimeDelta timestamp,
+  // Returns true if everything in the range was deleted. Otherwise
+  // returns false.
+  bool TruncateAt(base::TimeDelta timestamp,
                   BufferQueue* deleted_buffers, bool is_exclusive);
   // Deletes all buffers in range.
   void DeleteAll(BufferQueue* deleted_buffers);
@@ -214,7 +216,9 @@ class SourceBufferRange {
 
   // Helper method to delete buffers in |buffers_| starting at
   // |starting_point|, an iterator in |buffers_|.
-  void TruncateAt(const BufferQueue::iterator& starting_point,
+  // Returns true if everything in the range was removed. Returns
+  // false if the range still contains buffers.
+  bool TruncateAt(const BufferQueue::iterator& starting_point,
                   BufferQueue* deleted_buffers);
 
   // Frees the buffers in |buffers_| from [|start_point|,|ending_point|) and
@@ -610,15 +614,10 @@ void SourceBufferStream::RemoveInternal(
         SetSelectedRange(new_range);
     }
 
-    // If the current range now is completely covered by the removal
-    // range then we want to delete it.
-    bool delete_range = start < range->GetStartTimestamp() ||
-        (!is_exclusive && start == range->GetStartTimestamp());
-
     // Truncate the current range so that it only contains data before
     // the removal range.
     BufferQueue saved_buffers;
-    range->TruncateAt(start, &saved_buffers, is_exclusive);
+    bool delete_range = range->TruncateAt(start, &saved_buffers, is_exclusive);
 
     // Check to see if the current playback position was removed and
     // update the selected range appropriately.
@@ -1075,10 +1074,15 @@ void SourceBufferStream::OnSetDuration(base::TimeDelta duration) {
 
   // Need to partially truncate this range.
   if ((*itr)->GetStartTimestamp() < duration) {
-    (*itr)->TruncateAt(duration, NULL, false);
+    bool delete_range = (*itr)->TruncateAt(duration, NULL, false);
     if ((*itr == selected_range_) && !selected_range_->HasNextBufferPosition())
       SetSelectedRange(NULL);
-    ++itr;
+
+    if (delete_range) {
+      DeleteAndRemoveRange(&itr);
+    } else {
+      ++itr;
+    }
   }
 
   // Delete all ranges that begin after |duration|.
@@ -1658,13 +1662,13 @@ void SourceBufferRange::DeleteAll(BufferQueue* removed_buffers) {
   TruncateAt(buffers_.begin(), removed_buffers);
 }
 
-void SourceBufferRange::TruncateAt(
+bool SourceBufferRange::TruncateAt(
     base::TimeDelta timestamp, BufferQueue* removed_buffers,
     bool is_exclusive) {
   // Find the place in |buffers_| where we will begin deleting data.
   BufferQueue::iterator starting_point =
       GetBufferItrAt(timestamp, is_exclusive);
-  TruncateAt(starting_point, removed_buffers);
+  return TruncateAt(starting_point, removed_buffers);
 }
 
 int SourceBufferRange::DeleteGOPFromFront(BufferQueue* deleted_buffers) {
@@ -1820,13 +1824,13 @@ void SourceBufferRange::FreeBufferRange(
   buffers_.erase(starting_point, ending_point);
 }
 
-void SourceBufferRange::TruncateAt(
+bool SourceBufferRange::TruncateAt(
     const BufferQueue::iterator& starting_point, BufferQueue* removed_buffers) {
   DCHECK(!removed_buffers || removed_buffers->empty());
 
   // Return if we're not deleting anything.
   if (starting_point == buffers_.end())
-    return;
+    return false;
 
   // Reset the next buffer index if we will be deleting the buffer that's next
   // in sequence.
@@ -1852,6 +1856,7 @@ void SourceBufferRange::TruncateAt(
 
   // Remove everything from |starting_point| onward.
   FreeBufferRange(starting_point, buffers_.end());
+  return buffers_.empty();
 }
 
 bool SourceBufferRange::GetNextBuffer(
