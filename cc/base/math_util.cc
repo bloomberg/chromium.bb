@@ -514,7 +514,7 @@ scoped_ptr<base::Value> MathUtil::AsValue(gfx::Size s) {
   return res.PassAs<base::Value>();
 }
 
-scoped_ptr<base::Value> MathUtil::AsValue(gfx::SizeF s) {
+scoped_ptr<base::Value> MathUtil::AsValue(const gfx::SizeF& s) {
   scoped_ptr<base::DictionaryValue> res(new base::DictionaryValue());
   res->SetDouble("width", s.width());
   res->SetDouble("height", s.height());

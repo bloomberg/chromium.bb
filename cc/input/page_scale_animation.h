@@ -27,8 +27,8 @@ class PageScaleAnimation {
   static scoped_ptr<PageScaleAnimation> Create(
       gfx::Vector2dF start_scroll_offset,
       float start_page_scale_factor,
-      gfx::SizeF viewport_size,
-      gfx::SizeF root_layer_size,
+      const gfx::SizeF& viewport_size,
+      const gfx::SizeF& root_layer_size,
       scoped_ptr<TimingFunction> timing_function);
 
   ~PageScaleAnimation();
@@ -71,8 +71,8 @@ class PageScaleAnimation {
  protected:
   PageScaleAnimation(gfx::Vector2dF start_scroll_offset,
                      float start_page_scale_factor,
-                     gfx::SizeF viewport_size,
-                     gfx::SizeF root_layer_size,
+                     const gfx::SizeF& viewport_size,
+                     const gfx::SizeF& root_layer_size,
                      scoped_ptr<TimingFunction> timing_function);
 
  private:

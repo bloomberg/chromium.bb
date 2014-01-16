@@ -160,7 +160,7 @@ skia::RefPtr<SkImageFilter> CreateMatrixImageFilter(
 
 skia::RefPtr<SkImageFilter> RenderSurfaceFilters::BuildImageFilter(
     const FilterOperations& filters,
-    gfx::SizeF size) {
+    const gfx::SizeF& size) {
   skia::RefPtr<SkImageFilter> image_filter;
   SkScalar matrix[20];
   for (size_t i = 0; i < filters.size(); ++i) {

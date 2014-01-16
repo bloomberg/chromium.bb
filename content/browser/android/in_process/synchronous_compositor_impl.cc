@@ -238,7 +238,8 @@ void SynchronousCompositorImpl::SetTotalPageScaleFactor(
     compositor_client_->SetRootLayerPageScaleFactor(page_scale_factor);
 }
 
-void SynchronousCompositorImpl::SetScrollableSize(gfx::SizeF scrollable_size) {
+void SynchronousCompositorImpl::SetScrollableSize(
+    const gfx::SizeF& scrollable_size) {
   DCHECK(CalledOnValidThread());
   if (compositor_client_)
     compositor_client_->SetRootLayerScrollableSize(scrollable_size);

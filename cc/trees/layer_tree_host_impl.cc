@@ -600,7 +600,7 @@ static void AppendQuadsForRenderSurfaceLayer(
 
 static void AppendQuadsToFillScreen(
     ResourceProvider::ResourceId overhang_resource_id,
-    gfx::SizeF overhang_resource_scaled_size,
+    const gfx::SizeF& overhang_resource_scaled_size,
     const gfx::Rect& root_scroll_layer_rect,
     RenderPass* target_render_pass,
     LayerImpl* root_layer,

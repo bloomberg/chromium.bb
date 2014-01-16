@@ -44,7 +44,7 @@ class LayerScrollOffsetDelegate {
 
   // This is called by the compositor to notify the delegate what is the layer's
   // scrollable size is.
-  virtual void SetScrollableSize(gfx::SizeF scrollable_size) = 0;
+  virtual void SetScrollableSize(const gfx::SizeF& scrollable_size) = 0;
 
  protected:
   LayerScrollOffsetDelegate() {}

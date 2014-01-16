@@ -2477,7 +2477,7 @@ class TestScrollOffsetDelegate : public LayerScrollOffsetDelegate {
     page_scale_factor_ = page_scale_factor;
   }
 
-  virtual void SetScrollableSize(gfx::SizeF scrollable_size) OVERRIDE {
+  virtual void SetScrollableSize(const gfx::SizeF& scrollable_size) OVERRIDE {
     scrollable_size_ = scrollable_size;
   }
 

@@ -17,14 +17,14 @@ namespace {
 // This takes a viewport-relative vector and returns a vector whose values are
 // between 0 and 1, representing the percentage position within the viewport.
 gfx::Vector2dF NormalizeFromViewport(gfx::Vector2dF denormalized,
-                                     gfx::SizeF viewport_size) {
+                                     const gfx::SizeF& viewport_size) {
   return gfx::ScaleVector2d(denormalized,
                             1.f / viewport_size.width(),
                             1.f / viewport_size.height());
 }
 
 gfx::Vector2dF DenormalizeToViewport(gfx::Vector2dF normalized,
-                                     gfx::SizeF viewport_size) {
+                                     const gfx::SizeF& viewport_size) {
   return gfx::ScaleVector2d(normalized,
                             viewport_size.width(),
                             viewport_size.height());
@@ -43,8 +43,8 @@ namespace cc {
 scoped_ptr<PageScaleAnimation> PageScaleAnimation::Create(
     gfx::Vector2dF start_scroll_offset,
     float start_page_scale_factor,
-    gfx::SizeF viewport_size,
-    gfx::SizeF root_layer_size,
+    const gfx::SizeF& viewport_size,
+    const gfx::SizeF& root_layer_size,
     scoped_ptr<TimingFunction> timing_function) {
   return make_scoped_ptr(new PageScaleAnimation(start_scroll_offset,
                                                 start_page_scale_factor,
@@ -56,8 +56,8 @@ scoped_ptr<PageScaleAnimation> PageScaleAnimation::Create(
 PageScaleAnimation::PageScaleAnimation(
     gfx::Vector2dF start_scroll_offset,
     float start_page_scale_factor,
-    gfx::SizeF viewport_size,
-    gfx::SizeF root_layer_size,
+    const gfx::SizeF& viewport_size,
+    const gfx::SizeF& root_layer_size,
     scoped_ptr<TimingFunction> timing_function)
     : start_page_scale_factor_(start_page_scale_factor),
       target_page_scale_factor_(0.f),

@@ -166,7 +166,7 @@ class CC_EXPORT MathUtil {
 
   // Conversion to value.
   static scoped_ptr<base::Value> AsValue(gfx::Size s);
-  static scoped_ptr<base::Value> AsValue(gfx::SizeF s);
+  static scoped_ptr<base::Value> AsValue(const gfx::SizeF& s);
   static scoped_ptr<base::Value> AsValue(const gfx::Rect& r);
   static bool FromValue(const base::Value*, gfx::Rect* out_rect);
   static scoped_ptr<base::Value> AsValue(gfx::PointF q);
