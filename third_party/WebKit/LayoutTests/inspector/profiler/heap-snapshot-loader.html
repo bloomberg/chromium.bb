@@ -95,7 +95,7 @@ function test()
                     InspectorFrontendHost.append = oldAppend;
                     next();
                 }
-                InspectorTest.override(InspectorFrontendHost, "close", closeMock);
+                InspectorTest.override(WebInspector.FileManager.prototype, "close", closeMock);
                 profileHeader.saveToFile();
             }
 
