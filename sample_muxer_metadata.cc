@@ -1,3 +1,14 @@
+// Copyright (c) 2012 The WebM project authors. All Rights Reserved.
+//
+// Use of this source code is governed by a BSD-style license
+// that can be found in the LICENSE file in the root of the source
+// tree. An additional intellectual property rights grant can be found
+// in the file PATENTS.  All contributing project authors may
+// be found in the AUTHORS file in the root of the source tree.
+//
+// This sample application demonstrates how to use the matroska parser
+// library, which allows clients to handle a matroska format file.
+
 #include "sample_muxer_metadata.h"
 #include <string>
 #include "vttreader.h"
