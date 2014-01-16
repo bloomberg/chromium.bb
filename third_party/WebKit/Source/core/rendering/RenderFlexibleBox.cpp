@@ -226,7 +226,7 @@ void RenderFlexibleBox::styleDidChange(StyleDifference diff, const RenderStyle* 
     }
 }
 
-void RenderFlexibleBox::layoutBlock(bool relayoutChildren, LayoutUnit)
+void RenderFlexibleBox::layoutBlock(bool relayoutChildren)
 {
     ASSERT(needsLayout());
 

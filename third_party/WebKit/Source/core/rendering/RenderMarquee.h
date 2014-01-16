@@ -89,7 +89,7 @@ private:
 
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
 
-    virtual void layoutBlock(bool relayoutChildren, LayoutUnit pageLogicalHeight = 0) OVERRIDE;
+    virtual void layoutBlock(bool relayoutChildren) OVERRIDE;
 
     virtual bool supportsPartialLayout() const OVERRIDE { return false; }
 

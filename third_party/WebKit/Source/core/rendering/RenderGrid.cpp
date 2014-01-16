@@ -248,7 +248,7 @@ bool RenderGrid::namedGridLinesDefinitionDidChange(const RenderStyle* oldStyle) 
         || oldStyle->namedGridColumnLines() != style()->namedGridColumnLines();
 }
 
-void RenderGrid::layoutBlock(bool relayoutChildren, LayoutUnit)
+void RenderGrid::layoutBlock(bool relayoutChildren)
 {
     ASSERT(needsLayout());
 

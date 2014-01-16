@@ -225,7 +225,7 @@ bool RenderBlockFlow::relayoutForPagination(bool hasSpecifiedPageLogicalHeight, 
         if (columnHeight && columnHeight != pageLogicalHeight) {
             statePusher.pop();
             setEverHadLayout(true);
-            layoutBlock(false, columnHeight);
+            layoutBlockFlow(false, columnHeight);
             return true;
         }
     }
@@ -249,7 +249,12 @@ bool RenderBlockFlow::isSelfCollapsingBlock() const
     return m_hasOnlySelfCollapsingChildren;
 }
 
-void RenderBlockFlow::layoutBlock(bool relayoutChildren, LayoutUnit pageLogicalHeight)
+void RenderBlockFlow::layoutBlock(bool relayoutChildren)
+{
+    layoutBlockFlow(relayoutChildren);
+}
+
+void RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit pageLogicalHeight)
 {
     ASSERT(needsLayout());
     ASSERT(isInlineBlockOrInlineTable() || !isInline());

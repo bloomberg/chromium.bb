@@ -1530,7 +1530,7 @@ void RenderBlock::checkForPaginationLogicalHeightChange(LayoutUnit& pageLogicalH
     }
 }
 
-void RenderBlock::layoutBlock(bool, LayoutUnit)
+void RenderBlock::layoutBlock(bool)
 {
     ASSERT_NOT_REACHED();
     clearNeedsLayout();

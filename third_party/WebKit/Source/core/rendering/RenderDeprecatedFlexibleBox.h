@@ -40,7 +40,7 @@ public:
 
     virtual void styleWillChange(StyleDifference, const RenderStyle* newStyle) OVERRIDE;
 
-    virtual void layoutBlock(bool relayoutChildren, LayoutUnit pageHeight = 0) OVERRIDE;
+    virtual void layoutBlock(bool relayoutChildren) OVERRIDE;
     void layoutHorizontalBox(bool relayoutChildren);
     void layoutVerticalBox(bool relayoutChildren);
 

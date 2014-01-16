@@ -57,7 +57,8 @@ public:
 
     virtual bool isRenderBlockFlow() const OVERRIDE FINAL { return true; }
 
-    virtual void layoutBlock(bool relayoutChildren, LayoutUnit pageLogicalHeight = 0) OVERRIDE;
+    virtual void layoutBlock(bool relayoutChildren) OVERRIDE;
+    void layoutBlockFlow(bool relayoutChildren, LayoutUnit pageLogicalHeight = 0);
 
     virtual void computeOverflow(LayoutUnit oldClientAfterEdge, bool recomputeFloats = false) OVERRIDE;
     virtual void deleteLineBoxTree() OVERRIDE FINAL;

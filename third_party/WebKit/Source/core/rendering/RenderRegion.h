@@ -165,7 +165,7 @@ private:
     virtual void insertedIntoTree() OVERRIDE FINAL;
     virtual void willBeRemovedFromTree() OVERRIDE FINAL;
 
-    virtual void layoutBlock(bool relayoutChildren, LayoutUnit pageLogicalHeight = 0) OVERRIDE FINAL;
+    virtual void layoutBlock(bool relayoutChildren) OVERRIDE FINAL;
     virtual bool supportsPartialLayout() const OVERRIDE FINAL { return false; }
     virtual void paintObject(PaintInfo&, const LayoutPoint&) OVERRIDE;
 

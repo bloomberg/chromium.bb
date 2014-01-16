@@ -260,9 +260,9 @@ void RenderMarquee::styleDidChange(StyleDifference difference, const RenderStyle
         m_timer.stop();
 }
 
-void RenderMarquee::layoutBlock(bool relayoutChildren, LayoutUnit pageLogicalHeight)
+void RenderMarquee::layoutBlock(bool relayoutChildren)
 {
-    RenderBlockFlow::layoutBlock(relayoutChildren, pageLogicalHeight);
+    RenderBlockFlow::layoutBlock(relayoutChildren);
 
     updateMarqueePosition();
 }

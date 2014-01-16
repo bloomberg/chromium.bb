@@ -285,7 +285,7 @@ void RenderRegion::styleDidChange(StyleDifference diff, const RenderStyle* oldSt
         m_flowThread->regionChangedWritingMode(this);
 }
 
-void RenderRegion::layoutBlock(bool relayoutChildren, LayoutUnit)
+void RenderRegion::layoutBlock(bool relayoutChildren)
 {
     RenderBlockFlow::layoutBlock(relayoutChildren);
 

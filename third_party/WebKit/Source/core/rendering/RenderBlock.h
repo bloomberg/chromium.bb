@@ -107,7 +107,7 @@ public:
     virtual void addChild(RenderObject* newChild, RenderObject* beforeChild = 0) OVERRIDE;
     virtual void removeChild(RenderObject*) OVERRIDE;
 
-    virtual void layoutBlock(bool relayoutChildren, LayoutUnit pageLogicalHeight = 0);
+    virtual void layoutBlock(bool relayoutChildren);
 
     void insertPositionedObject(RenderBox*);
     static void removePositionedObject(RenderBox*);
