@@ -317,11 +317,11 @@ void RecordDangerousDownloadDiscard(DownloadDiscardReason reason,
     case DOWNLOAD_DISCARD_DUE_TO_SHUTDOWN:
       UMA_HISTOGRAM_ENUMERATION(
           "Download.Discard", danger_type, DOWNLOAD_DANGER_TYPE_MAX);
-      break;
       if (danger_type == DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE) {
         UMA_HISTOGRAM_SPARSE_SLOWLY("Download.DangerousFile.Discard",
                                     GetDangerousFileType(file_path));
       }
+      break;
     default:
       NOTREACHED();
   }
