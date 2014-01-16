@@ -88,8 +88,6 @@ public:
     GraphicsLayerClient* client() const { return m_client; }
 
     // blink::WebLayerClient implementation.
-    virtual blink::WebString debugName(blink::WebLayer*) OVERRIDE;
-    virtual blink::WebGraphicsLayerDebugInfo* takeDebugInfo() OVERRIDE;
     virtual blink::WebGraphicsLayerDebugInfo* takeDebugInfoFor(blink::WebLayer*) OVERRIDE;
 
     GraphicsLayerDebugInfo& debugInfo();
@@ -269,6 +267,7 @@ public:
     // Return a string with a human readable form of the layer tree, If debug is true
     // pointers for the layers and timing data will be included in the returned string.
     String layerTreeAsText(LayerTreeFlags = LayerTreeNormal) const;
+    String debugName(blink::WebLayer*) const;
 
     // Return an estimate of the backing store memory cost (in bytes). May be incorrect for tiled layers.
     double backingStoreMemoryEstimate() const;

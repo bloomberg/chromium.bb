@@ -507,11 +507,6 @@ GraphicsLayerDebugInfo& GraphicsLayer::debugInfo()
     return m_debugInfo;
 }
 
-blink::WebGraphicsLayerDebugInfo* GraphicsLayer::takeDebugInfo()
-{
-    return m_debugInfo.clone();
-}
-
 blink::WebGraphicsLayerDebugInfo* GraphicsLayer::takeDebugInfoFor(WebLayer* layer)
 {
     GraphicsLayerDebugInfo* clone = m_debugInfo.clone();
@@ -776,7 +771,7 @@ String GraphicsLayer::layerTreeAsText(LayerTreeFlags flags) const
     return ts.release();
 }
 
-blink::WebString GraphicsLayer::debugName(blink::WebLayer* webLayer)
+String GraphicsLayer::debugName(blink::WebLayer* webLayer) const
 {
     String name;
     if (!m_client)
