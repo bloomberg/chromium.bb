@@ -680,6 +680,7 @@
           ],
           'sources!': [
             'browser/plugin_loader_posix_unittest.cc',
+            'renderer/media/media_stream_video_source_unittest.cc',
             'renderer/media/video_destination_handler_unittest.cc',
           ],
         }],
@@ -713,6 +714,7 @@
           ]
         }, {
           'sources!': [
+            'renderer/media/media_stream_video_source_unittest.cc',
             'renderer/media/video_destination_handler_unittest.cc',
           ],
         }],
