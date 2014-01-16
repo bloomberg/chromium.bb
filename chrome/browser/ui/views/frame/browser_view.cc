@@ -2248,12 +2248,10 @@ bool BrowserView::ShouldUseImmersiveFullscreenForUrl(const GURL& url) const {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode))
     return false;
   bool is_browser_fullscreen = url.is_empty();
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          ash::switches::kAshEnableImmersiveFullscreenForAllWindows)) {
+  if (ash::switches::UseImmersiveFullscreenForAllWindows())
     return is_browser_fullscreen;
-  } else {
+  else
     return is_browser_fullscreen && IsBrowserTypeNormal();
-  }
 #else
   return false;
 #endif

@@ -43,8 +43,8 @@ const gfx::Font& GetTitleFont() {
 // CustomFrameViewAshWindowStateDelegate
 
 // Handles a user's fullscreen request (Shift+F4/F4). Puts the window into
-// immersive fullscreen if the kAshEnableImmersiveFullscreenForAllWindows
-// flag is set.
+// immersive fullscreen if immersive fullscreen is enabled for non-browser
+// windows.
 class CustomFrameViewAshWindowStateDelegate
     : public ash::wm::WindowStateDelegate,
       public ash::wm::WindowStateObserver,
@@ -57,8 +57,7 @@ class CustomFrameViewAshWindowStateDelegate
 #if defined(OS_CHROMEOS)
     // TODO(pkotwicz): Investigate if immersive fullscreen can be enabled for
     // Windows Ash.
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            ash::switches::kAshEnableImmersiveFullscreenForAllWindows)) {
+    if (ash::switches::UseImmersiveFullscreenForAllWindows()) {
       immersive_fullscreen_controller_.reset(
           new ash::ImmersiveFullscreenController);
       custom_frame_view->InitImmersiveFullscreenControllerForView(

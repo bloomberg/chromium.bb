@@ -108,6 +108,11 @@ const char kAshEnableBrightnessControl[] = "ash-enable-brightness-control";
 const char kAshEnableImmersiveFullscreenForAllWindows[] =
     "ash-enable-immersive-all-windows";
 
+// Enables putting only browser windows into immersive fullscreen via <F4>.
+// <F4> puts all other windows into non-immersive fullscreen.
+const char kAshEnableImmersiveFullscreenForBrowserOnly[] =
+    "ash-enable-immersive-browser-only";
+
 #if defined(OS_CHROMEOS)
 // Enables the "full multi profile mode" - as it was in M-31.
 const char kAshEnableFullMultiProfileMode[] =
@@ -223,6 +228,11 @@ bool UseAlternateShelfLayout() {
 bool UseDragOffShelf() {
   return !CommandLine::ForCurrentProcess()->
       HasSwitch(kAshDisableDragOffShelf);
+}
+
+bool UseImmersiveFullscreenForAllWindows() {
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+      kAshEnableImmersiveFullscreenForBrowserOnly);
 }
 
 bool ShowShelfAlignmentMenu() {

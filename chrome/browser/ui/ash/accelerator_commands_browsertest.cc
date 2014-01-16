@@ -114,6 +114,9 @@ class AcceleratorCommandsFullscreenBrowserTest
     if (put_all_windows_in_immersive_) {
       CommandLine::ForCurrentProcess()->AppendSwitch(
           ash::switches::kAshEnableImmersiveFullscreenForAllWindows);
+    } else {
+      CommandLine::ForCurrentProcess()->AppendSwitch(
+          ash::switches::kAshEnableImmersiveFullscreenForBrowserOnly);
     }
   }
 
@@ -303,6 +306,9 @@ class AcceleratorCommandsPlatformAppFullscreenBrowserTest
     if (put_all_windows_in_immersive_) {
       CommandLine::ForCurrentProcess()->AppendSwitch(
           ash::switches::kAshEnableImmersiveFullscreenForAllWindows);
+    } else {
+      CommandLine::ForCurrentProcess()->AppendSwitch(
+          ash::switches::kAshEnableImmersiveFullscreenForBrowserOnly);
     }
     extensions::PlatformAppBrowserTest::SetUpCommandLine(command_line);
   }

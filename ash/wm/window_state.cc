@@ -43,12 +43,11 @@ WindowState::WindowState(aura::Window* window)
 
 #if defined(OS_CHROMEOS)
   // NOTE(pkotwicz): Animating to immersive fullscreen does not look good. When
-  // the kAshEnableImmersiveFullscreenForAllWindows flag is set most windows
+  // switches::UseImmersiveFullscreenForAllWindows() returns true, most windows
   // can be put into immersive fullscreen. It is not worth the added complexity
   // to only animate to fullscreen if the window is put into immersive
   // fullscreen.
-  animate_to_fullscreen_ = !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kAshEnableImmersiveFullscreenForAllWindows);
+  animate_to_fullscreen_ = !switches::UseImmersiveFullscreenForAllWindows();
 #endif
 }
 

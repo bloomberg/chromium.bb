@@ -73,8 +73,8 @@ BrowserFrameAsh::BrowserFrameAsh(BrowserFrame* browser_frame,
     // Animating to immersive fullscreen does not look good. Immersive
     // fullscreen is the default fullscreen type on ChromeOS for tabbed browser
     // windows. The WindowState constructor disables animating to fullscreen
-    // completely when the kAshEnableImmersiveFullscreenForAllWindows command
-    // line flag is set.
+    // completely when switches::UseImmersiveFullscreenForAllWindows() returns
+    // true.
     window_state->set_animate_to_fullscreen(false);
   }
 

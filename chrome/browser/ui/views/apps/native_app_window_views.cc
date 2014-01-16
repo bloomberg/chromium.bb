@@ -728,8 +728,7 @@ views::NonClientFrameView* NativeAppWindowViews::CreateNonClientFrameView(
       // Non-frameless app windows can be put into immersive fullscreen.
       // TODO(pkotwicz): Investigate if immersive fullscreen can be enabled for
       // Windows Ash.
-      if (CommandLine::ForCurrentProcess()->HasSwitch(
-              ash::switches::kAshEnableImmersiveFullscreenForAllWindows)) {
+      if (ash::switches::UseImmersiveFullscreenForAllWindows()) {
         immersive_fullscreen_controller_.reset(
             new ash::ImmersiveFullscreenController());
         custom_frame_view->InitImmersiveFullscreenControllerForView(

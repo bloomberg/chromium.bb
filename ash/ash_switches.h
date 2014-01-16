@@ -44,6 +44,7 @@ ASH_EXPORT extern const char kAshEnableAdvancedGestures[];
 ASH_EXPORT extern const char kAshEnableAlternateFrameCaptionButtonStyle[];
 ASH_EXPORT extern const char kAshEnableBrightnessControl[];
 ASH_EXPORT extern const char kAshEnableImmersiveFullscreenForAllWindows[];
+ASH_EXPORT extern const char kAshEnableImmersiveFullscreenForBrowserOnly[];
 #if defined(OS_CHROMEOS)
 ASH_EXPORT extern const char kAshEnableFullMultiProfileMode[];
 #endif
@@ -85,6 +86,10 @@ ASH_EXPORT bool UseAlternateShelfLayout();
 
 // Returns true if items can be dragged off the shelf to unpin.
 ASH_EXPORT bool UseDragOffShelf();
+
+// Returns true if all windows (barring frameless apps) can be put into
+// immersive fullscreen via <F4>.
+ASH_EXPORT bool UseImmersiveFullscreenForAllWindows();
 
 // Returns true if side shelf alignment is enabled.
 ASH_EXPORT bool ShowShelfAlignmentMenu();

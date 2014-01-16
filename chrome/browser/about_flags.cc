@@ -1017,11 +1017,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(ash::switches::kAshDisableDockedWindows)
   },
   {
-    "ash-enable-immersive-fullscreen-all-windows",
+    "ash-enable-immersive-fullscreen-all-windows2",
     IDS_FLAGS_IMMERSIVE_FULLSCREEN_FOR_ALL_WINDOWS_NAME,
     IDS_FLAGS_IMMERSIVE_FULLSCREEN_FOR_ALL_WINDOWS_DESCRIPTION,
     kOsCrOS,
-    SINGLE_VALUE_TYPE(ash::switches::kAshEnableImmersiveFullscreenForAllWindows)
+    ENABLE_DISABLE_VALUE_TYPE(
+        ash::switches::kAshEnableImmersiveFullscreenForAllWindows,
+        ash::switches::kAshEnableImmersiveFullscreenForBrowserOnly)
   },
 #endif
   {
