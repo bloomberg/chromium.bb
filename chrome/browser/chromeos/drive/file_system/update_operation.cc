@@ -95,7 +95,9 @@ FileError UpdateFileLocalState(
   if (drive_file_path->empty())
     return FILE_ERROR_NOT_FOUND;
 
-  // Clear the dirty bit if we have updated an existing file.
+  // Do not clear the dirty bit if someone is writing to the file.
+  if (cache->IsOpenedForWrite(local_id))
+    return FILE_ERROR_OK;
   return cache->ClearDirty(local_id, entry.file_specific_info().md5());
 }
 
