@@ -11,6 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/local_discovery/privet_constants.h"
 #include "net/base/url_util.h"
 #include "url/gurl.h"
@@ -31,6 +32,9 @@ const char kPrivetContentTypePDF[] = "application/pdf";
 const char kPrivetContentTypePWGRaster[] = "image/pwg-raster";
 const char kPrivetContentTypeAny[] = "*/*";
 const char kPrivetContentTypeCJT[] = "application/json";
+
+const char kPrivetStorageListPath[] = "/privet/storage/list";
+const char kPrivetStorageParamPathFormat[] = "path=%s";
 
 const char kPrivetCDDKeySupportedContentTypes[] =
     "printer.supported_content_type";
@@ -57,6 +61,17 @@ GURL CreatePrivetRegisterURL(const std::string& action,
   GURL url = CreatePrivetURL(kPrivetRegisterPath);
   url = net::AppendQueryParameter(url, kPrivetRegisterActionArgName, action);
   return net::AppendQueryParameter(url, kPrivetRegisterUserArgName, user);
+}
+
+GURL CreatePrivetParamURL(const std::string& path,
+                          const std::string& query_params) {
+  GURL url(kUrlPlaceHolder);
+  GURL::Replacements replacements;
+  replacements.SetPathStr(path);
+  if (!query_params.empty()) {
+    replacements.SetQueryStr(query_params);
+  }
+  return url.ReplaceComponents(replacements);
 }
 
 }  // namespace
@@ -324,8 +339,10 @@ void PrivetRegisterOperationImpl::Cancelation::Cleanup() {
 PrivetJSONOperationImpl::PrivetJSONOperationImpl(
     PrivetHTTPClientImpl* privet_client,
     const std::string& path,
+    const std::string& query_params,
     const PrivetJSONOperation::ResultCallback& callback)
-    : privet_client_(privet_client), path_(path), callback_(callback) {
+    : privet_client_(privet_client), path_(path), query_params_(query_params),
+      callback_(callback) {
 }
 
 PrivetJSONOperationImpl::~PrivetJSONOperationImpl() {
@@ -333,7 +350,7 @@ PrivetJSONOperationImpl::~PrivetJSONOperationImpl() {
 
 void PrivetJSONOperationImpl::Start() {
   url_fetcher_ = privet_client_->CreateURLFetcher(
-      CreatePrivetURL(path_), net::URLFetcher::GET, this);
+      CreatePrivetParamURL(path_, query_params_), net::URLFetcher::GET, this);
   url_fetcher_->DoNotRetryOnTransientError();
   url_fetcher_->Start();
 }
@@ -717,7 +734,7 @@ scoped_ptr<PrivetJSONOperation>
 PrivetHTTPClientImpl::CreateCapabilitiesOperation(
     const PrivetJSONOperation::ResultCallback& callback) {
   return scoped_ptr<PrivetJSONOperation>(
-      new PrivetJSONOperationImpl(this, kPrivetCapabilitiesPath, callback));
+      new PrivetJSONOperationImpl(this, kPrivetCapabilitiesPath, "", callback));
 }
 
 scoped_ptr<PrivetLocalPrintOperation>
@@ -725,6 +742,17 @@ PrivetHTTPClientImpl::CreateLocalPrintOperation(
     PrivetLocalPrintOperation::Delegate* delegate) {
   return scoped_ptr<PrivetLocalPrintOperation>(
       new PrivetLocalPrintOperationImpl(this, delegate));
+}
+
+scoped_ptr<PrivetJSONOperation>
+PrivetHTTPClientImpl::CreateStorageListOperation(
+      const std::string& path,
+      const PrivetJSONOperation::ResultCallback& callback) {
+  std::string url_param = base::StringPrintf(kPrivetStorageParamPathFormat,
+                                            path.c_str());
+  return scoped_ptr<PrivetJSONOperation>(
+      new PrivetJSONOperationImpl(this, kPrivetStorageListPath, url_param,
+                                  callback));
 }
 
 const std::string& PrivetHTTPClientImpl::GetName() {

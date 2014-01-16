@@ -183,6 +183,8 @@ const char kSampleInvalidDocumentTypeResponse[] = "{"
 
 const char kSampleCreatejobResponse[] = "{ \"job_id\": \"1234\" }";
 
+const char kSampleEmptyJSONResponse[] = "{}";
+
 class MockTestURLFetcherFactoryDelegate
     : public net::TestURLFetcher::DelegateForTests {
  public:
@@ -391,6 +393,23 @@ class FakePWGRasterConverter : public PWGRasterConverter {
   }
 };
 
+TEST_F(PrivetHTTPTest, CreatePrivetStorageList) {
+  MockJSONCallback mock_callback;
+  scoped_ptr<PrivetJSONOperation> storage_list_operation =
+      privet_client_->CreateStorageListOperation(
+          "/path/to/nothing",
+          mock_callback.callback());
+  storage_list_operation->Start();
+
+  EXPECT_TRUE(SuccessfulResponseToURL(GURL("http://10.0.0.8:6006/privet/info"),
+                                      kSampleInfoResponse));
+
+  EXPECT_CALL(mock_callback, OnPrivetJSONDoneInternal());
+
+  EXPECT_TRUE(SuccessfulResponseToURL(
+      GURL("http://10.0.0.8:6006/privet/storage/list?path=/path/to/nothing"),
+      kSampleEmptyJSONResponse));
+}
 
 class PrivetInfoTest : public PrivetHTTPTest {
  public:

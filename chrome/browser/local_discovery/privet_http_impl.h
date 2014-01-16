@@ -121,6 +121,7 @@ class PrivetJSONOperationImpl : public PrivetJSONOperation,
   PrivetJSONOperationImpl(
       PrivetHTTPClientImpl* privet_client,
       const std::string& path,
+      const std::string& query_params,
       const PrivetJSONOperation::ResultCallback& callback);
   virtual ~PrivetJSONOperationImpl();
   virtual void Start() OVERRIDE;
@@ -139,6 +140,7 @@ class PrivetJSONOperationImpl : public PrivetJSONOperation,
  private:
   PrivetHTTPClientImpl* privet_client_;
   std::string path_;
+  std::string query_params_;
   PrivetJSONOperation::ResultCallback callback_;
 
   scoped_ptr<PrivetURLFetcher> url_fetcher_;
@@ -255,6 +257,10 @@ class PrivetHTTPClientImpl : public PrivetHTTPClient {
 
   virtual scoped_ptr<PrivetLocalPrintOperation> CreateLocalPrintOperation(
       PrivetLocalPrintOperation::Delegate* delegate) OVERRIDE;
+
+  virtual scoped_ptr<PrivetJSONOperation> CreateStorageListOperation(
+      const std::string& path,
+      const PrivetJSONOperation::ResultCallback& callback) OVERRIDE;
 
   virtual const std::string& GetName() OVERRIDE;
 

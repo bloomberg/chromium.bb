@@ -148,6 +148,9 @@ class PrivetHTTPClient {
       const PrivetJSONOperation::ResultCallback& callback) = 0;
   virtual scoped_ptr<PrivetLocalPrintOperation> CreateLocalPrintOperation(
       PrivetLocalPrintOperation::Delegate* delegate) = 0;
+  virtual scoped_ptr<PrivetJSONOperation> CreateStorageListOperation(
+      const std::string& path,
+      const PrivetJSONOperation::ResultCallback& callback) = 0;
 
   // A name for the HTTP client, e.g. the device name for the privet device.
   virtual const std::string& GetName() = 0;
