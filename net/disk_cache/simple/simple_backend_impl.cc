@@ -565,13 +565,13 @@ int SimpleBackendImpl::DoomEntryFromHash(uint64 entry_hash,
   Entry** entry = new Entry*();
   scoped_ptr<Entry*> scoped_entry(entry);
 
-  base::hash_map<uint64, std::vector<Closure> >::iterator it =
+  base::hash_map<uint64, std::vector<Closure> >::iterator pending_it =
       entries_pending_doom_.find(entry_hash);
-  if (it != entries_pending_doom_.end()) {
+  if (pending_it != entries_pending_doom_.end()) {
     Callback<int(const net::CompletionCallback&)> operation =
         base::Bind(&SimpleBackendImpl::DoomEntryFromHash,
                    base::Unretained(this), entry_hash);
-    it->second.push_back(base::Bind(&RunOperationAndCallback,
+    pending_it->second.push_back(base::Bind(&RunOperationAndCallback,
                                     operation, callback));
     return net::ERR_IO_PENDING;
   }
