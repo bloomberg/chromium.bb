@@ -179,8 +179,8 @@ size_t SpdyFramer::GetSynStreamMinimumSize() const {
     return GetControlFrameHeaderSize() + 10;
   } else {
     // Calculated as:
-    // frame prefix + 4 (associated stream ID) + 1 (priority) + 1 (slot)
-    return GetControlFrameHeaderSize() + 6;
+    // frame prefix + 4 (priority)
+    return GetControlFrameHeaderSize() + 4;
   }
 }
 
@@ -683,6 +683,7 @@ void SpdyFramer::ProcessControlFrameHeader(uint16 control_frame_type_field) {
   // Do some sanity checking on the control frame sizes and flags.
   switch (current_frame_type_) {
     case SYN_STREAM:
+      DCHECK_GT(4, spdy_version_);
       if (current_frame_length_ < GetSynStreamMinimumSize()) {
         set_error(SPDY_INVALID_CONTROL_FRAME);
       } else if (current_frame_flags_ &
@@ -734,10 +735,21 @@ void SpdyFramer::ProcessControlFrameHeader(uint16 control_frame_type_field) {
         break;
       }
     case HEADERS:
-      if (current_frame_length_ < GetHeadersMinimumSize()) {
-        set_error(SPDY_INVALID_CONTROL_FRAME);
-      } else if (current_frame_flags_ & ~CONTROL_FLAG_FIN) {
-        set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
+      {
+        size_t min_size = GetHeadersMinimumSize();
+        if (spdy_version_ > 3 &&
+            (current_frame_flags_ & HEADERS_FLAG_PRIORITY)) {
+          min_size += 4;
+        }
+        if (current_frame_length_ < min_size) {
+          set_error(SPDY_INVALID_CONTROL_FRAME);
+        } else if (spdy_version_ < 4 &&
+                   current_frame_flags_ & ~CONTROL_FLAG_FIN) {
+          set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
+        } else if (spdy_version_ > 3 && current_frame_flags_ &
+                   ~(CONTROL_FLAG_FIN | HEADERS_FLAG_PRIORITY)) {
+          set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
+        }
       }
       break;
     case WINDOW_UPDATE:
@@ -815,6 +827,9 @@ void SpdyFramer::ProcessControlFrameHeader(uint16 control_frame_type_field) {
       break;
     case HEADERS:
       frame_size_without_variable_data = GetHeadersMinimumSize();
+      if (spdy_version_ > 3 && current_frame_flags_ & HEADERS_FLAG_PRIORITY) {
+        frame_size_without_variable_data += 4;  // priority
+      }
       break;
     case PUSH_PROMISE:
       frame_size_without_variable_data = GetPushPromiseMinimumSize();
@@ -1077,7 +1092,7 @@ void SpdyFramer::WriteHeaderBlockToZ(const SpdyHeaderBlock* headers,
 size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
                                                         size_t len) {
   DCHECK_EQ(SPDY_CONTROL_FRAME_BEFORE_HEADER_BLOCK, state_);
-  size_t original_len = len;
+  const size_t original_len = len;
 
   if (remaining_control_header_ > 0) {
     size_t bytes_read = UpdateCurrentFrameBuffer(&data, &len,
@@ -1094,6 +1109,7 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
     switch (current_frame_type_) {
       case SYN_STREAM:
         {
+          DCHECK_GT(4, spdy_version_);
           bool successful_read = true;
           if (spdy_version_ < 4) {
             successful_read = reader.ReadUInt31(&current_frame_stream_id_);
@@ -1152,6 +1168,9 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
       case HEADERS:
         // SYN_REPLY and HEADERS are the same, save for the visitor call.
         {
+          if (spdy_version_ > 3) {
+            DCHECK_EQ(HEADERS, current_frame_type_);
+          }
           bool successful_read = true;
           if (spdy_version_ < 4) {
             successful_read = reader.ReadUInt31(&current_frame_stream_id_);
@@ -1165,17 +1184,40 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
             // SPDY 2 had two unused bytes here. Seek past them.
             reader.Seek(2);
           }
+          const bool has_priority =
+              (current_frame_flags_ & HEADERS_FLAG_PRIORITY) != 0;
+          uint32 priority = 0;
+          if (protocol_version() > 3 && has_priority) {
+            successful_read = reader.ReadUInt31(&priority);
+            DCHECK(successful_read);
+          }
           DCHECK(reader.IsDoneReading());
           if (debug_visitor_) {
+            // SPDY 4 reports HEADERS with PRIORITY as SYN_STREAM.
+            SpdyFrameType reported_type = current_frame_type_;
+            if (protocol_version() > 3 && has_priority) {
+              reported_type = SYN_STREAM;
+            }
             debug_visitor_->OnReceiveCompressedFrame(
                 current_frame_stream_id_,
-                current_frame_type_,
+                reported_type,
                 current_frame_length_);
           }
           if (current_frame_type_ == SYN_REPLY) {
             visitor_->OnSynReply(
                 current_frame_stream_id_,
                 (current_frame_flags_ & CONTROL_FLAG_FIN) != 0);
+          } else if (spdy_version_ > 3 &&
+              current_frame_flags_ & HEADERS_FLAG_PRIORITY) {
+            // SPDY 4+ is missing SYN_STREAM. Simulate it so that API changes
+            // can be made independent of wire changes.
+            visitor_->OnSynStream(
+                current_frame_stream_id_,
+                0,  // associated_to_stream_id
+                priority,
+                0,  // TODO(hkhalil): handle slot for SPDY 4+?
+                current_frame_flags_ & CONTROL_FLAG_FIN,
+                false);  // unidirectional
           } else {
             visitor_->OnHeaders(
                 current_frame_stream_id_,
@@ -1663,7 +1705,18 @@ SpdySerializedFrame* SpdyFramer::SerializeSynStream(
     flags |= CONTROL_FLAG_FIN;
   }
   if (syn_stream.unidirectional()) {
+    // TODO(hkhalil): invalid for HTTP2.
     flags |= CONTROL_FLAG_UNIDIRECTIONAL;
+  }
+  if (spdy_version_ >= 4) {
+    flags |= HEADERS_FLAG_PRIORITY;
+  }
+
+  // Sanitize priority.
+  uint8 priority = syn_stream.priority();
+  if (priority > GetLowestPriority()) {
+    DLOG(DFATAL) << "Priority out-of-bounds.";
+    priority = GetLowestPriority();
   }
 
   // The size of this frame, including variable-length name-value block.
@@ -1674,26 +1727,23 @@ SpdySerializedFrame* SpdyFramer::SerializeSynStream(
   if (spdy_version_ < 4) {
     builder.WriteControlFrameHeader(*this, SYN_STREAM, flags);
     builder.WriteUInt32(syn_stream.stream_id());
+    builder.WriteUInt32(syn_stream.associated_to_stream_id());
+    builder.WriteUInt8(priority << ((spdy_version_ < 3) ? 6 : 5));
+    builder.WriteUInt8(syn_stream.slot());
   } else {
     builder.WriteFramePrefix(*this,
-                             SYN_STREAM,
+                             HEADERS,
                              flags,
                              syn_stream.stream_id());
+    builder.WriteUInt32(priority);
   }
-  builder.WriteUInt32(syn_stream.associated_to_stream_id());
-  uint8 priority = syn_stream.priority();
-  if (priority > GetLowestPriority()) {
-    DLOG(DFATAL) << "Priority out-of-bounds.";
-    priority = GetLowestPriority();
-  }
-  builder.WriteUInt8(priority << ((spdy_version_ < 3) ? 6 : 5));
-  builder.WriteUInt8(syn_stream.slot());
   DCHECK_EQ(GetSynStreamMinimumSize(), builder.length());
   SerializeNameValueBlock(&builder, syn_stream);
 
   if (debug_visitor_) {
     const size_t payload_len = GetSerializedLength(
         protocol_version(), &(syn_stream.name_value_block()));
+    // SPDY 4 reports this compression as a SYN_STREAM compression.
     debug_visitor_->OnSendCompressedFrame(syn_stream.stream_id(),
                                           SYN_STREAM,
                                           payload_len,
@@ -1734,7 +1784,7 @@ SpdySerializedFrame* SpdyFramer::SerializeSynReply(
     builder.WriteUInt32(syn_reply.stream_id());
   } else {
     builder.WriteFramePrefix(*this,
-                             SYN_REPLY,
+                             HEADERS,
                              flags,
                              syn_reply.stream_id());
   }

@@ -257,8 +257,13 @@ TEST_P(BufferedSpdyFramerTest, ReadSynReplyHeaderBlock) {
       control_frame.get()->size());
   EXPECT_EQ(0, visitor.error_count_);
   EXPECT_EQ(0, visitor.syn_frame_count_);
-  EXPECT_EQ(1, visitor.syn_reply_frame_count_);
-  EXPECT_EQ(0, visitor.headers_frame_count_);
+  if(spdy_version() < SPDY4) {
+    EXPECT_EQ(1, visitor.syn_reply_frame_count_);
+    EXPECT_EQ(0, visitor.headers_frame_count_);
+  } else {
+    EXPECT_EQ(0, visitor.syn_reply_frame_count_);
+    EXPECT_EQ(1, visitor.headers_frame_count_);
+  }
   EXPECT_TRUE(CompareHeaderBlocks(&headers, &visitor.headers_));
 }
 

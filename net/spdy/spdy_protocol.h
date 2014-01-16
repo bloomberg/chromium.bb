@@ -301,6 +301,10 @@ enum SpdyControlFlags {
   CONTROL_FLAG_UNIDIRECTIONAL = 2
 };
 
+enum SpdyHeadersFlags {
+  HEADERS_FLAG_PRIORITY = 0x08
+};
+
 // Flags on the SETTINGS control frame.
 enum SpdySettingsControlFlags {
   SETTINGS_FLAG_CLEAR_PREVIOUSLY_PERSISTED_SETTINGS = 0x1

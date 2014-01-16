@@ -1985,7 +1985,11 @@ TEST_P(SpdyNetworkTransactionTest, NullPost) {
   scoped_ptr<SpdyFrame> req(
       spdy_util_.ConstructSpdyPost(kRequestUrl, 1, 0, LOWEST, NULL, 0));
   // Set the FIN bit since there will be no body.
-  test::SetFrameFlags(req.get(), CONTROL_FLAG_FIN, spdy_util_.spdy_version());
+  int flags = CONTROL_FLAG_FIN;
+  if (spdy_util_.spdy_version() >= SPDY4) {
+    flags |= HEADERS_FLAG_PRIORITY;
+  }
+  test::SetFrameFlags(req.get(), flags, spdy_util_.spdy_version());
   MockWrite writes[] = {
     CreateMockWrite(*req),
   };
@@ -2027,7 +2031,11 @@ TEST_P(SpdyNetworkTransactionTest, EmptyPost) {
       spdy_util_.ConstructSpdyPost(
           kRequestUrl, 1, kContentLength, LOWEST, NULL, 0));
   // Set the FIN bit since there will be no body.
-  test::SetFrameFlags(req.get(), CONTROL_FLAG_FIN, spdy_util_.spdy_version());
+  int flags = CONTROL_FLAG_FIN;
+  if (spdy_util_.spdy_version() >= SPDY4) {
+    flags |= HEADERS_FLAG_PRIORITY;
+  }
+  test::SetFrameFlags(req.get(), flags, spdy_util_.spdy_version());
   MockWrite writes[] = {
     CreateMockWrite(*req),
   };
@@ -2169,7 +2177,7 @@ TEST_P(SpdyNetworkTransactionTest, ResponseWithTwoSynReplies) {
   scoped_ptr<SpdyFrame> req(
       spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
   scoped_ptr<SpdyFrame> rst(
-      spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_STREAM_IN_USE));
+      spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_PROTOCOL_ERROR));
   MockWrite writes[] = {
     CreateMockWrite(*req),
     CreateMockWrite(*rst),
@@ -3049,6 +3057,11 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushMultipleDataFrameInterrupted) {
 }
 
 TEST_P(SpdyNetworkTransactionTest, ServerPushInvalidAssociatedStreamID0) {
+  if (spdy_util_.spdy_version() == SPDY4) {
+    // TODO(jgraettinger): We don't support associated stream
+    // checks in SPDY4 yet.
+    return;
+  }
   scoped_ptr<SpdyFrame> stream1_syn(
       spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
   scoped_ptr<SpdyFrame> stream1_body(
@@ -3110,6 +3123,11 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushInvalidAssociatedStreamID0) {
 }
 
 TEST_P(SpdyNetworkTransactionTest, ServerPushInvalidAssociatedStreamID9) {
+  if (spdy_util_.spdy_version() == SPDY4) {
+    // TODO(jgraettinger): We don't support associated stream
+    // checks in SPDY4 yet.
+    return;
+  }
   scoped_ptr<SpdyFrame> stream1_syn(
       spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
   scoped_ptr<SpdyFrame> stream1_body(
@@ -5595,6 +5613,11 @@ TEST_P(SpdyNetworkTransactionTest, SynReplyWithLateHeaders) {
 }
 
 TEST_P(SpdyNetworkTransactionTest, ServerPushCrossOriginCorrectness) {
+  if (spdy_util_.spdy_version() == SPDY4) {
+    // TODO(jgraettinger): We don't support associated stream
+    // checks in SPDY4 yet.
+    return;
+  }
   // In this test we want to verify that we can't accidentally push content
   // which can't be pushed by this content server.
   // This test assumes that:

@@ -2016,7 +2016,10 @@ void SpdySession::OnSynStream(SpdyStreamId stream_id,
     return;
   }
 
-  if (associated_stream_id == 0) {
+  // TODO(jgraettinger): SpdyFramer simulates OnSynStream() from HEADERS
+  // frames, which don't convey associated stream ID. Disable this check
+  // for now, and re-enable when PUSH_PROMISE is implemented properly.
+  if (associated_stream_id == 0 && GetProtocolVersion() < SPDY4) {
     std::string description = base::StringPrintf(
         "Received invalid OnSyn associated stream id %d for stream %d",
         associated_stream_id, stream_id);
@@ -2041,7 +2044,8 @@ void SpdySession::OnSynStream(SpdyStreamId stream_id,
   // Verify we have a valid stream association.
   ActiveStreamMap::iterator associated_it =
       active_streams_.find(associated_stream_id);
-  if (associated_it == active_streams_.end()) {
+  // TODO(jgraettinger): (See PUSH_PROMISE comment above).
+  if (GetProtocolVersion() < SPDY4 && associated_it == active_streams_.end()) {
     EnqueueResetStreamFrame(
         stream_id, request_priority, RST_STREAM_INVALID_STREAM,
         base::StringPrintf(
@@ -2062,7 +2066,8 @@ void SpdySession::OnSynStream(SpdyStreamId stream_id,
               "Rejected push of Cross Origin HTTPS content %d",
               associated_stream_id));
     }
-  } else {
+  } else if (GetProtocolVersion() < SPDY4) {
+    // TODO(jgraettinger): (See PUSH_PROMISE comment above).
     GURL associated_url(associated_it->second.stream->GetUrlFromHeaders());
     if (associated_url.GetOrigin() != gurl.GetOrigin()) {
       EnqueueResetStreamFrame(
@@ -2186,11 +2191,18 @@ void SpdySession::OnSynReply(SpdyStreamId stream_id,
   stream->IncrementRawReceivedBytes(last_compressed_frame_len_);
   last_compressed_frame_len_ = 0;
 
+  if (GetProtocolVersion() >= SPDY4) {
+    const std::string& error =
+        "SPDY4 wasn't expecting SYN_REPLY.";
+    stream->LogStreamError(ERR_SPDY_PROTOCOL_ERROR, error);
+    ResetStreamIterator(it, RST_STREAM_PROTOCOL_ERROR, error);
+    return;
+  }
   if (!it->second.waiting_for_syn_reply) {
     const std::string& error =
         "Received duplicate SYN_REPLY for stream.";
     stream->LogStreamError(ERR_SPDY_PROTOCOL_ERROR, error);
-    ResetStreamIterator(it, RST_STREAM_STREAM_IN_USE, error);
+    ResetStreamIterator(it, RST_STREAM_PROTOCOL_ERROR, error);
     return;
   }
   it->second.waiting_for_syn_reply = false;
@@ -2227,10 +2239,26 @@ void SpdySession::OnHeaders(SpdyStreamId stream_id,
   stream->IncrementRawReceivedBytes(last_compressed_frame_len_);
   last_compressed_frame_len_ = 0;
 
-  int rv = stream->OnAdditionalResponseHeadersReceived(headers);
-  if (rv < 0) {
-    DCHECK_NE(rv, ERR_IO_PENDING);
-    DCHECK(active_streams_.find(stream_id) == active_streams_.end());
+  if (it->second.waiting_for_syn_reply) {
+    if (GetProtocolVersion() < SPDY4) {
+      const std::string& error =
+          "Was expecting SYN_REPLY, not HEADERS.";
+      stream->LogStreamError(ERR_SPDY_PROTOCOL_ERROR, error);
+      ResetStreamIterator(it, RST_STREAM_PROTOCOL_ERROR, error);
+      return;
+    }
+    base::Time response_time = base::Time::Now();
+    base::TimeTicks recv_first_byte_time = time_func_();
+
+    it->second.waiting_for_syn_reply = false;
+    ignore_result(OnInitialResponseHeadersReceived(
+        headers, response_time, recv_first_byte_time, stream));
+  } else {
+    int rv = stream->OnAdditionalResponseHeadersReceived(headers);
+    if (rv < 0) {
+      DCHECK_NE(rv, ERR_IO_PENDING);
+      DCHECK(active_streams_.find(stream_id) == active_streams_.end());
+    }
   }
 }
 
