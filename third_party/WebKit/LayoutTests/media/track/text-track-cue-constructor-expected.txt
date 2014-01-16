@@ -1,3 +1,4 @@
+CONSOLE WARNING: The 'TextTrackCue' constructor is deprecated. Please use 'VTTCue' instead.
 This is a testharness.js-based test.
 PASS TextTrackCue and VTTCue are separate interfaces 
 PASS TextTrackCue constructor returns a VTTCue 

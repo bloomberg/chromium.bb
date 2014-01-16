@@ -688,6 +688,9 @@ String UseCounter::deprecationMessage(Feature feature)
     case SVGElementGetPresentationAttribute:
         return "CSSValue and SVGElement.getPresentationAttribute are deprecated. Please use getPropertyValue and parse the return value instead.";
 
+    case TextTrackCueConstructor:
+        return "The 'TextTrackCue' constructor is deprecated. Please use 'VTTCue' instead.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();
