@@ -1242,17 +1242,25 @@ void OneClickSigninHelper::DidStopLoading(
 
   // When Gaia finally redirects to the continue URL, Gaia will add some
   // extra query parameters.  So ignore the parameters when checking to see
-  // if the user has continued.
+  // if the user has continued.  Sometimes locales will redirect to a country-
+  // specific TLD so just make sure it's a valid domain instead of comparing
+  // for an exact match.
   GURL::Replacements replacements;
   replacements.ClearQuery();
   const bool continue_url_match = (
-      continue_url_.is_valid() &&
-      url.ReplaceComponents(replacements) ==
-        continue_url_.ReplaceComponents(replacements));
+      google_util::IsGoogleDomainUrl(
+          continue_url_,
+          google_util::ALLOW_SUBDOMAIN,
+          google_util::DISALLOW_NON_STANDARD_PORTS) &&
+      url.ReplaceComponents(replacements).path() ==
+        continue_url_.ReplaceComponents(replacements).path());
   const bool original_continue_url_match = (
-      original_continue_url_.is_valid() &&
-      url.ReplaceComponents(replacements) ==
-        original_continue_url_.ReplaceComponents(replacements));
+      google_util::IsGoogleDomainUrl(
+          original_continue_url_,
+          google_util::ALLOW_SUBDOMAIN,
+          google_util::DISALLOW_NON_STANDARD_PORTS) &&
+      url.ReplaceComponents(replacements).path() ==
+        original_continue_url_.ReplaceComponents(replacements).path());
 
   if (continue_url_match)
     RemoveSigninRedirectURLHistoryItem(contents);
