@@ -1221,10 +1221,10 @@ class ValidationPool(object):
     method.
 
     Args:
-      overlays:  One of constants.VALID_OVERLAYS.
+      overlays: One of constants.VALID_OVERLAYS.
       build_root: Build root directory.
-      build_number:  Build number for this validation attempt.
-      builder_name:  Builder name on buildbot dashboard.
+      build_number: Build number for this validation attempt.
+      builder_name: Builder name on buildbot dashboard.
       is_master: True if this is the master builder for the Commit Queue.
       dryrun: If set to True, do not submit anything to Gerrit.
     Optional Args:
@@ -1398,11 +1398,11 @@ class ValidationPool(object):
     Should only be called from master builders.
 
     Args:
-      overlays:  One of constants.VALID_OVERLAYS.
+      overlays: One of constants.VALID_OVERLAYS.
       repo: The repo used to sync, to filter projects, and to apply patches
         against.
       build_number: Corresponding build number for the build.
-      builder_name:  Builder name on buildbot dashboard.
+      builder_name: Builder name on buildbot dashboard.
       dryrun: Don't submit anything to gerrit.
       changes_query: The gerrit query to use to identify changes; if None,
         uses the internal defaults.
@@ -1500,10 +1500,10 @@ class ValidationPool(object):
 
     Args:
       manifest: path to the manifest where the pool resides.
-      overlays:  One of constants.VALID_OVERLAYS.
+      overlays: One of constants.VALID_OVERLAYS.
       repo: The repo used to filter projects and to apply patches against.
       build_number: Corresponding build number for the build.
-      builder_name:  Builder name on buildbot dashboard.
+      builder_name: Builder name on buildbot dashboard.
       is_master: Boolean that indicates whether this is a pool for a master.
         config or not.
       dryrun: Don't submit anything to gerrit.
@@ -1553,7 +1553,7 @@ class ValidationPool(object):
     repo-managed checkout.
 
     Args:
-      changes:  List of GerritPatch objects.
+      changes: List of GerritPatch objects.
       manifest: The manifest to check projects/branches against.
 
     Returns:
