@@ -125,9 +125,6 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
   // Make this decoder's GL context current.
   virtual bool MakeCurrent() = 0;
 
-  // Have the decoder release the context.
-  virtual void ReleaseCurrent() = 0;
-
   // Gets the GLES2 Util which holds info.
   virtual GLES2Util* GetGLES2Util() = 0;
 
@@ -150,7 +147,6 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
   virtual void RestoreFramebufferBindings() const = 0;
   virtual void RestoreGlobalState() const = 0;
   virtual void RestoreProgramBindings() const = 0;
-  virtual void RestoreRenderbufferBindings() const = 0;
   virtual void RestoreTextureState(unsigned service_id) const = 0;
   virtual void RestoreTextureUnitBindings(unsigned unit) const = 0;
 

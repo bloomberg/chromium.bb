@@ -386,10 +386,6 @@ class BackTexture {
     return size_;
   }
 
-  size_t estimated_size() const {
-    return memory_tracker_.GetMemRepresented();
-  }
-
  private:
   MemoryTypeTracker memory_tracker_;
   ContextState* state_;
@@ -427,10 +423,6 @@ class BackRenderbuffer {
 
   GLuint id() const {
     return id_;
-  }
-
-  size_t estimated_size() const {
-    return memory_tracker_.GetMemRepresented();
   }
 
  private:
@@ -483,9 +475,6 @@ struct FenceCallback {
   explicit FenceCallback()
       : fence(gfx::GLFence::Create()) {
     DCHECK(fence);
-  }
-  void AddCallback(base::Closure cb) {
-    callbacks.push_back(cb);
   }
   std::vector<base::Closure> callbacks;
   scoped_ptr<gfx::GLFence> fence;
@@ -547,7 +536,6 @@ class GLES2DecoderImpl : public GLES2Decoder,
   virtual bool ResizeOffscreenFrameBuffer(const gfx::Size& size) OVERRIDE;
   void UpdateParentTextureInfo();
   virtual bool MakeCurrent() OVERRIDE;
-  virtual void ReleaseCurrent() OVERRIDE;
   virtual GLES2Util* GetGLES2Util() OVERRIDE { return &util_; }
   virtual gfx::GLContext* GetGLContext() OVERRIDE { return context_.get(); }
   virtual ContextGroup* GetContextGroup() OVERRIDE { return group_.get(); }
@@ -571,9 +559,6 @@ class GLES2DecoderImpl : public GLES2Decoder,
   }
   virtual void RestoreProgramBindings() const OVERRIDE {
     state_.RestoreProgramBindings();
-  }
-  virtual void RestoreRenderbufferBindings() const OVERRIDE {
-    state_.RestoreRenderbufferBindings();
   }
   virtual void RestoreTextureUnitBindings(unsigned unit) const OVERRIDE {
     state_.RestoreTextureUnitBindings(unit);
@@ -1071,10 +1056,6 @@ class GLES2DecoderImpl : public GLES2Decoder,
   // Clear any textures used by the current program.
   bool ClearUnclearedTextures();
 
-  // Clear any uncleared level in texture.
-  // Returns false if there was a generated GL error.
-  bool ClearTexture(Texture* texture);
-
   // Clears any uncleared attachments attached to the given frame buffer.
   // Returns false if there was a generated GL error.
   void ClearUnclearedAttachments(GLenum target, Framebuffer* framebuffer);
@@ -1495,10 +1476,6 @@ class GLES2DecoderImpl : public GLES2Decoder,
       error::Error* error, GLint* real_location, GLuint* service_id,
       void** result, GLenum* result_type);
 
-  // Computes the estimated memory used for the backbuffer and passes it to
-  // the tracing system.
-  size_t GetBackbufferMemoryTotal();
-
   virtual bool WasContextLost() OVERRIDE;
   virtual bool WasContextLostByRobustnessExtension() OVERRIDE;
   virtual void LoseContext(uint32 reset_status) OVERRIDE;
@@ -1506,13 +1483,6 @@ class GLES2DecoderImpl : public GLES2Decoder,
 #if defined(OS_MACOSX)
   void ReleaseIOSurfaceForTexture(GLuint texture_id);
 #endif
-
-  // Validates the combination of texture parameters. For example validates that
-  // for a given format the specific type, level and targets are valid.
-  // Synthesizes the correct GL error if invalid. Returns true if valid.
-  bool ValidateTextureParameters(
-      const char* function_name,
-      GLenum target, GLenum format, GLenum type, GLint level);
 
   bool ValidateCompressedTexDimensions(
       const char* function_name,
@@ -2918,11 +2888,6 @@ void GLES2DecoderImpl::ProcessFinishedAsyncTransfers() {
   async_pixel_transfer_manager_->BindCompletedAsyncTransfers();
 }
 
-void GLES2DecoderImpl::ReleaseCurrent() {
-  if (context_.get())
-    context_->ReleaseCurrent(surface_.get());
-}
-
 static void RebindCurrentFramebuffer(
     GLenum target,
     Framebuffer* framebuffer,
@@ -3373,35 +3338,6 @@ bool GLES2DecoderImpl::ProduceFrontBuffer(const Mailbox& mailbox) {
   memcpy(name.key, mailbox.name, sizeof(mailbox.name));
   return mailbox_manager()->ProduceTexture(
       GL_TEXTURE_2D, name, offscreen_saved_color_texture_info_->texture());
-}
-
-size_t GLES2DecoderImpl::GetBackbufferMemoryTotal() {
-  size_t total = 0;
-  if (offscreen_target_frame_buffer_.get()) {
-    if (offscreen_target_color_texture_.get()) {
-        total += offscreen_target_color_texture_->estimated_size();
-    }
-    if (offscreen_target_color_render_buffer_.get()) {
-        total += offscreen_target_color_render_buffer_->estimated_size();
-    }
-    if (offscreen_target_depth_render_buffer_.get()) {
-        total += offscreen_target_depth_render_buffer_->estimated_size();
-    }
-    if (offscreen_target_stencil_render_buffer_.get()) {
-        total += offscreen_target_stencil_render_buffer_->estimated_size();
-    }
-    if (offscreen_saved_color_texture_.get()) {
-        total += offscreen_saved_color_texture_->estimated_size();
-    }
-    if (offscreen_resolved_color_texture_.get()) {
-        total += offscreen_resolved_color_texture_->estimated_size();
-    }
-  } else {
-    gfx::Size size = surface_->GetSize();
-    total += size.width() * size.height() *
-        GLES2Util::RenderbufferBytesPerPixel(back_buffer_color_format_);
-  }
-  return total;
 }
 
 bool GLES2DecoderImpl::ResizeOffscreenFrameBuffer(const gfx::Size& size) {
