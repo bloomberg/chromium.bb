@@ -504,6 +504,9 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
 
   base::MessageLoopForIO message_loop;
 
+  // Allow the |launcher_delegate| to modify |default_jobs|.
+  launcher_delegate->AdjustDefaultParallelJobs(&default_jobs);
+
   WrapperTestLauncherDelegate delegate(launcher_delegate);
   base::TestLauncher launcher(&delegate, default_jobs);
   bool success = launcher.Run(argc, argv);

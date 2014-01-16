@@ -39,6 +39,10 @@ class TestLauncherDelegate {
   virtual void PostRunMessageLoop() {}
   virtual ContentMainDelegate* CreateContentMainDelegate() = 0;
 
+  // Allows a TestLauncherDelegate to adjust the number of |default_jobs| used
+  // when --test-launcher-jobs isn't specified on the command-line.
+  virtual void AdjustDefaultParallelJobs(int* default_jobs) {}
+
  protected:
   virtual ~TestLauncherDelegate();
 };

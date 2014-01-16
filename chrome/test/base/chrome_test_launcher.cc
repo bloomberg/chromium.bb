@@ -20,6 +20,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/chrome_test_suite.h"
+#include "chrome/test/base/test_switches.h"
 #include "content/public/app/content_main.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
@@ -117,6 +118,18 @@ class ChromeTestLauncherDelegate : public content::TestLauncherDelegate {
     NOTREACHED();
     return NULL;
 #endif
+  }
+
+  virtual void AdjustDefaultParallelJobs(int* default_jobs) OVERRIDE {
+#if defined(OS_WIN) && defined(USE_AURA)
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kAshBrowserTests)) {
+      *default_jobs = 1;
+      fprintf(stdout,
+              "Disabling test parallelization for --ash-browsertests.\n");
+      fflush(stdout);
+    }
+#endif  // defined(OS_WIN) && defined(USE_AURA)
   }
 
  private:
