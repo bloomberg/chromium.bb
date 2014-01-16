@@ -32,7 +32,6 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_UNDERLINE_HOVER" file="common/launcher/launcher_underline_bottom_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_UNDERLINE_RUNNING" file="common/launcher/launcher_underline_bottom_running.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_UNDERLINE_RUNNING_ALTERNATE" file="common/alt_launcher/launcher_underline_running.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_ICON_TASK_MANAGER" file="common/launcher/task_manager.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_MULTI_WINDOW_RESIZE_H" file="common/multi_window_resize_horizontal.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_MULTI_WINDOW_RESIZE_V" file="common/multi_window_resize_vertical.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_BACKGROUND_NORMAL" file="common/alt_launcher/status_icon_background_normal.png" />
@@ -111,7 +110,6 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOCKSCREEN" file="cros/status/status_lockscreen.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOCKSCREEN_HOVER" file="cros/status/status_lockscreen_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_GUEST_ICON" file="cros/status/status_guest_icon.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_GUEST_ICON_LARGE" file="common/alt_launcher/status_guest_icon.png" />
 
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_PUSHED_BOTTOM" file="cros/status/status_logout_button_pushed_bottom.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_PUSHED_BOTTOM_LEFT" file="cros/status/status_logout_button_pushed_bottom_left.png" />
@@ -133,7 +131,7 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_NORMAL_TOP_RIGHT" file="cros/status/status_logout_button_normal_top_right.png" />
 
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_ADD_MULTIPROFILE_USER" file="cros/status/multiprofiles_add.png" />
-      
+
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_MORE" file="cros/status/status_more.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_CELLULAR_NETWORK_FAILED" file="cros/network/status_cellular_failed.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_FAILED" file="cros/network/status_network_failed.png" />
@@ -205,7 +203,7 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_AUDIO_USB" file="cros/status/status_audio_device_usb.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_AUDIO_BLUETOOTH" file="cros/status/status_audio_device_bluetooth.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_AUDIO_HDMI" file="cros/status/status_audio_device_hdmi.png" />
-      
+
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_WIFI_DISABLED" file="cros/network/status_wifi_disabled.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_WIFI_DISABLED_HOVER" file="cros/network/status_wifi_disabled_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_WIFI_ENABLED" file="cros/network/status_wifi_enabled.png" />
@@ -234,7 +232,7 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE2" file="common/window_close_short_black_normal.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE2_H" file="common/window_close_short_black_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE2_P" file="common/window_close_short_black_pressed.png" />
-        
+
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZE" file="common/window_size_tall_normal.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZE_H" file="common/window_size_tall_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZE_P" file="common/window_size_tall_pressed.png" />
