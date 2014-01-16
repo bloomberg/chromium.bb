@@ -119,11 +119,11 @@ PassRefPtr<RTCPeerConnection> RTCPeerConnection::create(ExecutionContext* contex
     if (exceptionState.hadException())
         return 0;
 
-    RefPtr<MediaConstraints> constraints = MediaConstraintsImpl::create(mediaConstraints, exceptionState);
+    blink::WebMediaConstraints constraints = MediaConstraintsImpl::create(mediaConstraints, exceptionState);
     if (exceptionState.hadException())
         return 0;
 
-    RefPtr<RTCPeerConnection> peerConnection = adoptRef(new RTCPeerConnection(context, configuration.release(), constraints.release(), exceptionState));
+    RefPtr<RTCPeerConnection> peerConnection = adoptRef(new RTCPeerConnection(context, configuration.release(), constraints, exceptionState));
     peerConnection->suspendIfNeeded();
     if (exceptionState.hadException())
         return 0;
@@ -131,7 +131,7 @@ PassRefPtr<RTCPeerConnection> RTCPeerConnection::create(ExecutionContext* contex
     return peerConnection.release();
 }
 
-RTCPeerConnection::RTCPeerConnection(ExecutionContext* context, PassRefPtr<RTCConfiguration> configuration, PassRefPtr<MediaConstraints> constraints, ExceptionState& exceptionState)
+RTCPeerConnection::RTCPeerConnection(ExecutionContext* context, PassRefPtr<RTCConfiguration> configuration, blink::WebMediaConstraints constraints, ExceptionState& exceptionState)
     : ActiveDOMObject(context)
     , m_signalingState(SignalingStateStable)
     , m_iceGatheringState(IceGatheringStateNew)
@@ -178,7 +178,7 @@ void RTCPeerConnection::createOffer(PassOwnPtr<RTCSessionDescriptionCallback> su
         return;
     }
 
-    RefPtr<MediaConstraints> constraints = MediaConstraintsImpl::create(mediaConstraints, exceptionState);
+    blink::WebMediaConstraints constraints = MediaConstraintsImpl::create(mediaConstraints, exceptionState);
     if (exceptionState.hadException())
         return;
 
@@ -198,12 +198,12 @@ void RTCPeerConnection::createAnswer(PassOwnPtr<RTCSessionDescriptionCallback> s
         return;
     }
 
-    RefPtr<MediaConstraints> constraints = MediaConstraintsImpl::create(mediaConstraints, exceptionState);
+    blink::WebMediaConstraints constraints = MediaConstraintsImpl::create(mediaConstraints, exceptionState);
     if (exceptionState.hadException())
         return;
 
     RefPtr<RTCSessionDescriptionRequestImpl> request = RTCSessionDescriptionRequestImpl::create(executionContext(), successCallback, errorCallback);
-    m_peerHandler->createAnswer(request.release(), constraints.release());
+    m_peerHandler->createAnswer(request.release(), constraints);
 }
 
 void RTCPeerConnection::setLocalDescription(PassRefPtr<RTCSessionDescription> prpSessionDescription, PassOwnPtr<VoidCallback> successCallback, PassOwnPtr<RTCErrorCallback> errorCallback, ExceptionState& exceptionState)
@@ -271,7 +271,7 @@ void RTCPeerConnection::updateIce(const Dictionary& rtcConfiguration, const Dict
     if (exceptionState.hadException())
         return;
 
-    RefPtr<MediaConstraints> constraints = MediaConstraintsImpl::create(mediaConstraints, exceptionState);
+    blink::WebMediaConstraints constraints = MediaConstraintsImpl::create(mediaConstraints, exceptionState);
     if (exceptionState.hadException())
         return;
 
@@ -391,7 +391,7 @@ void RTCPeerConnection::addStream(PassRefPtr<MediaStream> prpStream, const Dicti
     if (m_localStreams.contains(stream))
         return;
 
-    RefPtr<MediaConstraints> constraints = MediaConstraintsImpl::create(mediaConstraints, exceptionState);
+    blink::WebMediaConstraints constraints = MediaConstraintsImpl::create(mediaConstraints, exceptionState);
     if (exceptionState.hadException())
         return;
 

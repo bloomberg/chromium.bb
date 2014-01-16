@@ -35,6 +35,7 @@
 #include "modules/mediastream/NavigatorUserMediaErrorCallback.h"
 #include "modules/mediastream/NavigatorUserMediaSuccessCallback.h"
 #include "platform/mediastream/MediaStreamSource.h"
+#include "public/platform/WebMediaConstraints.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
@@ -44,8 +45,6 @@ namespace WebCore {
 class Dictionary;
 class Document;
 class ExceptionState;
-class MediaConstraints;
-class MediaConstraintsImpl;
 class MediaStreamDescriptor;
 class UserMediaController;
 
@@ -66,17 +65,17 @@ public:
 
     bool audio() const;
     bool video() const;
-    MediaConstraints* audioConstraints() const;
-    MediaConstraints* videoConstraints() const;
+    blink::WebMediaConstraints audioConstraints() const;
+    blink::WebMediaConstraints videoConstraints() const;
 
     // ContextLifecycleObserver
     virtual void contextDestroyed() OVERRIDE;
 
 private:
-    UserMediaRequest(ExecutionContext*, UserMediaController*, PassRefPtr<MediaConstraintsImpl> audio, PassRefPtr<MediaConstraintsImpl> video, PassOwnPtr<NavigatorUserMediaSuccessCallback>, PassOwnPtr<NavigatorUserMediaErrorCallback>);
+    UserMediaRequest(ExecutionContext*, UserMediaController*, blink::WebMediaConstraints audio, blink::WebMediaConstraints video, PassOwnPtr<NavigatorUserMediaSuccessCallback>, PassOwnPtr<NavigatorUserMediaErrorCallback>);
 
-    RefPtr<MediaConstraintsImpl> m_audio;
-    RefPtr<MediaConstraintsImpl> m_video;
+    blink::WebMediaConstraints m_audio;
+    blink::WebMediaConstraints m_video;
 
     UserMediaController* m_controller;
 

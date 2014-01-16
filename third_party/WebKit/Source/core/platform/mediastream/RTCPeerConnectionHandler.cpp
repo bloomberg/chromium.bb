@@ -34,7 +34,6 @@
 #include "core/platform/mediastream/RTCDataChannelHandler.h"
 #include "core/platform/mediastream/RTCPeerConnectionHandlerClient.h"
 #include "core/platform/mediastream/RTCStatsRequest.h"
-#include "platform/mediastream/MediaConstraints.h"
 #include "platform/mediastream/MediaStreamComponent.h"
 #include "platform/mediastream/RTCConfiguration.h"
 #include "platform/mediastream/RTCDTMFSenderHandler.h"
@@ -87,17 +86,17 @@ bool RTCPeerConnectionHandler::createWebHandler()
     return m_webHandler;
 }
 
-bool RTCPeerConnectionHandler::initialize(PassRefPtr<RTCConfiguration> configuration, PassRefPtr<MediaConstraints> constraints)
+bool RTCPeerConnectionHandler::initialize(PassRefPtr<RTCConfiguration> configuration, blink::WebMediaConstraints constraints)
 {
     return m_webHandler->initialize(configuration, constraints);
 }
 
-void RTCPeerConnectionHandler::createOffer(PassRefPtr<RTCSessionDescriptionRequest> request, PassRefPtr<MediaConstraints> constraints)
+void RTCPeerConnectionHandler::createOffer(PassRefPtr<RTCSessionDescriptionRequest> request, blink::WebMediaConstraints constraints)
 {
     m_webHandler->createOffer(request, constraints);
 }
 
-void RTCPeerConnectionHandler::createAnswer(PassRefPtr<RTCSessionDescriptionRequest> request, PassRefPtr<MediaConstraints> constraints)
+void RTCPeerConnectionHandler::createAnswer(PassRefPtr<RTCSessionDescriptionRequest> request, blink::WebMediaConstraints constraints)
 {
     m_webHandler->createAnswer(request, constraints);
 }
@@ -112,7 +111,7 @@ void RTCPeerConnectionHandler::setRemoteDescription(PassRefPtr<RTCVoidRequest> r
     m_webHandler->setRemoteDescription(request, sessionDescription);
 }
 
-bool RTCPeerConnectionHandler::updateIce(PassRefPtr<RTCConfiguration> configuration, PassRefPtr<MediaConstraints> constraints)
+bool RTCPeerConnectionHandler::updateIce(PassRefPtr<RTCConfiguration> configuration, blink::WebMediaConstraints constraints)
 {
     return m_webHandler->updateICE(configuration, constraints);
 }
@@ -137,7 +136,7 @@ blink::WebRTCSessionDescription RTCPeerConnectionHandler::remoteDescription()
     return m_webHandler->remoteDescription();
 }
 
-bool RTCPeerConnectionHandler::addStream(PassRefPtr<MediaStreamDescriptor> mediaStream, PassRefPtr<MediaConstraints> constraints)
+bool RTCPeerConnectionHandler::addStream(PassRefPtr<MediaStreamDescriptor> mediaStream, blink::WebMediaConstraints constraints)
 {
     return m_webHandler->addStream(mediaStream, constraints);
 }

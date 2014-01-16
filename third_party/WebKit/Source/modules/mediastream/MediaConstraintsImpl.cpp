@@ -36,55 +36,50 @@
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
+#include "wtf/HashMap.h"
+#include "wtf/Vector.h"
 #include "wtf/text/StringHash.h"
 
 namespace WebCore {
+namespace MediaConstraintsImpl {
 
-PassRefPtr<MediaConstraintsImpl> MediaConstraintsImpl::create(const Dictionary& constraints, ExceptionState& exceptionState)
+static bool parse(const Dictionary& constraintsDictionary, blink::WebVector<blink::WebMediaConstraint>& optional, blink::WebVector<blink::WebMediaConstraint>& mandatory)
 {
-    RefPtr<MediaConstraintsImpl> object = adoptRef(new MediaConstraintsImpl());
-    if (!object->initialize(constraints)) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
-        return 0;
-    }
-    return object.release();
-}
-
-PassRefPtr<MediaConstraintsImpl> MediaConstraintsImpl::create()
-{
-    return adoptRef(new MediaConstraintsImpl());
-}
-
-bool MediaConstraintsImpl::initialize(const Dictionary& constraints)
-{
-    if (constraints.isUndefinedOrNull())
+    if (constraintsDictionary.isUndefinedOrNull())
         return true;
 
     Vector<String> names;
-    constraints.getOwnPropertyNames(names);
+    constraintsDictionary.getOwnPropertyNames(names);
 
-    String mandatory("mandatory");
-    String optional("optional");
+    String mandatoryName("mandatory");
+    String optionalName("optional");
 
     for (Vector<String>::iterator it = names.begin(); it != names.end(); ++it) {
-        if (*it != mandatory && *it != optional)
+        if (*it != mandatoryName && *it != optionalName)
             return false;
     }
 
-    if (names.contains(mandatory)) {
-        Dictionary mandatoryConstraints;
-        bool ok = constraints.get(mandatory, mandatoryConstraints);
-        if (!ok || mandatoryConstraints.isUndefinedOrNull())
+    Vector<blink::WebMediaConstraint> mandatoryConstraintsVector;
+    if (names.contains(mandatoryName)) {
+        Dictionary mandatoryConstraintsDictionary;
+        bool ok = constraintsDictionary.get(mandatoryName, mandatoryConstraintsDictionary);
+        if (!ok || mandatoryConstraintsDictionary.isUndefinedOrNull())
             return false;
 
-        ok = mandatoryConstraints.getOwnPropertiesAsStringHashMap(m_mandatoryConstraints);
+        HashMap<String, String> mandatoryConstraintsHashMap;
+        ok = mandatoryConstraintsDictionary.getOwnPropertiesAsStringHashMap(mandatoryConstraintsHashMap);
         if (!ok)
             return false;
+
+        HashMap<String, String>::const_iterator iter = mandatoryConstraintsHashMap.begin();
+        for (; iter != mandatoryConstraintsHashMap.end(); ++iter)
+            mandatoryConstraintsVector.append(blink::WebMediaConstraint(iter->key, iter->value));
     }
 
-    if (names.contains(optional)) {
+    Vector<blink::WebMediaConstraint> optionalConstraintsVector;
+    if (names.contains(optionalName)) {
         ArrayValue optionalConstraints;
-        bool ok = constraints.get(optional, optionalConstraints);
+        bool ok = constraintsDictionary.get(optionalName, optionalConstraints);
         if (!ok || optionalConstraints.isUndefinedOrNull())
             return false;
 
@@ -107,52 +102,36 @@ bool MediaConstraintsImpl::initialize(const Dictionary& constraints)
             ok = constraint.get(key, value);
             if (!ok)
                 return false;
-            m_optionalConstraints.append(MediaConstraint(key, value));
+            optionalConstraintsVector.append(blink::WebMediaConstraint(key, value));
         }
     }
 
+    optional.assign(optionalConstraintsVector);
+    mandatory.assign(mandatoryConstraintsVector);
     return true;
 }
 
-MediaConstraintsImpl::~MediaConstraintsImpl()
-{
-}
 
-void MediaConstraintsImpl::getMandatoryConstraints(Vector<MediaConstraint>& constraints) const
+blink::WebMediaConstraints create(const Dictionary& constraintsDictionary, ExceptionState& exceptionState)
 {
-    constraints.clear();
-    HashMap<String, String>::const_iterator i = m_mandatoryConstraints.begin();
-    for (; i != m_mandatoryConstraints.end(); ++i)
-        constraints.append(MediaConstraint(i->key, i->value));
-}
-
-void MediaConstraintsImpl::getOptionalConstraints(Vector<MediaConstraint>& constraints) const
-{
-    constraints.clear();
-    constraints.append(m_optionalConstraints);
-}
-
-bool MediaConstraintsImpl::getMandatoryConstraintValue(const String& name, String& value) const
-{
-    HashMap<String, String>::const_iterator i = m_mandatoryConstraints.find(name);
-    if (i == m_mandatoryConstraints.end())
-        return false;
-
-    value = i->value;
-    return true;
-}
-
-bool MediaConstraintsImpl::getOptionalConstraintValue(const String& name, String& value) const
-{
-    Vector<MediaConstraint>::const_iterator i = m_optionalConstraints.begin();
-    for (; i != m_optionalConstraints.end(); ++i) {
-        if (i->m_name == name) {
-            value = i->m_value;
-            return true;
-        }
+    blink::WebVector<blink::WebMediaConstraint> optional;
+    blink::WebVector<blink::WebMediaConstraint> mandatory;
+    if (!parse(constraintsDictionary, optional, mandatory)) {
+        exceptionState.throwTypeError("Malformed constraints object.");
+        return blink::WebMediaConstraints();
     }
 
-    return false;
+    blink::WebMediaConstraints constraints;
+    constraints.initialize(optional, mandatory);
+    return constraints;
 }
 
+blink::WebMediaConstraints create()
+{
+    blink::WebMediaConstraints constraints;
+    constraints.initialize();
+    return constraints;
+}
+
+} // namespace MediaConstraintsImpl
 } // namespace WebCore

@@ -31,35 +31,19 @@
 #ifndef MediaConstraintsImpl_h
 #define MediaConstraintsImpl_h
 
-#include "platform/mediastream/MediaConstraints.h"
-#include "wtf/HashMap.h"
-#include "wtf/Vector.h"
+#include "public/platform/WebMediaConstraints.h"
 
 namespace WebCore {
 
 class Dictionary;
-
 class ExceptionState;
 
-class MediaConstraintsImpl FINAL : public MediaConstraints {
-public:
-    static PassRefPtr<MediaConstraintsImpl> create();
-    static PassRefPtr<MediaConstraintsImpl> create(const Dictionary&, ExceptionState&);
-    virtual ~MediaConstraintsImpl();
+namespace MediaConstraintsImpl {
 
-    virtual void getMandatoryConstraints(Vector<MediaConstraint>&) const OVERRIDE;
-    virtual void getOptionalConstraints(Vector<MediaConstraint>&) const OVERRIDE;
+blink::WebMediaConstraints create();
+blink::WebMediaConstraints create(const Dictionary&, ExceptionState&);
 
-    virtual bool getMandatoryConstraintValue(const String& name, String& value) const OVERRIDE;
-    virtual bool getOptionalConstraintValue(const String& name, String& value) const OVERRIDE;
-
-private:
-    MediaConstraintsImpl() { }
-    bool initialize(const Dictionary&);
-
-    HashMap<String, String> m_mandatoryConstraints;
-    Vector<MediaConstraint> m_optionalConstraints;
-};
+}
 
 } // namespace WebCore
 

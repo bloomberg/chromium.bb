@@ -40,12 +40,12 @@
 #include "modules/mediastream/MediaStream.h"
 #include "modules/mediastream/RTCIceCandidate.h"
 #include "platform/AsyncMethodRunner.h"
+#include "public/platform/WebMediaConstraints.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
 
 class ExceptionState;
-class MediaConstraints;
 class MediaStreamTrack;
 class RTCConfiguration;
 class RTCDTMFSender;
@@ -132,7 +132,7 @@ public:
     virtual bool hasPendingActivity() const OVERRIDE { return !m_stopped; }
 
 private:
-    RTCPeerConnection(ExecutionContext*, PassRefPtr<RTCConfiguration>, PassRefPtr<MediaConstraints>, ExceptionState&);
+    RTCPeerConnection(ExecutionContext*, PassRefPtr<RTCConfiguration>, blink::WebMediaConstraints, ExceptionState&);
 
     static PassRefPtr<RTCConfiguration> parseConfiguration(const Dictionary& configuration, ExceptionState&);
     void scheduleDispatchEvent(PassRefPtr<Event>);

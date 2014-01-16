@@ -46,7 +46,6 @@ struct WebRTCDataChannelInit;
 
 namespace WebCore {
 
-class MediaConstraints;
 class MediaStreamComponent;
 class RTCConfiguration;
 class RTCDTMFSenderHandler;
@@ -63,21 +62,21 @@ public:
 
     bool createWebHandler();
 
-    bool initialize(PassRefPtr<RTCConfiguration>, PassRefPtr<MediaConstraints>);
+    bool initialize(PassRefPtr<RTCConfiguration>, blink::WebMediaConstraints);
 
-    void createOffer(PassRefPtr<RTCSessionDescriptionRequest>, PassRefPtr<MediaConstraints>);
-    void createAnswer(PassRefPtr<RTCSessionDescriptionRequest>, PassRefPtr<MediaConstraints>);
+    void createOffer(PassRefPtr<RTCSessionDescriptionRequest>, blink::WebMediaConstraints);
+    void createAnswer(PassRefPtr<RTCSessionDescriptionRequest>, blink::WebMediaConstraints);
     void setLocalDescription(PassRefPtr<RTCVoidRequest>, blink::WebRTCSessionDescription);
     void setRemoteDescription(PassRefPtr<RTCVoidRequest>, blink::WebRTCSessionDescription);
     blink::WebRTCSessionDescription localDescription();
     blink::WebRTCSessionDescription remoteDescription();
-    bool updateIce(PassRefPtr<RTCConfiguration>, PassRefPtr<MediaConstraints>);
+    bool updateIce(PassRefPtr<RTCConfiguration>, blink::WebMediaConstraints);
 
     // DEPRECATED
     bool addIceCandidate(blink::WebRTCICECandidate);
 
     bool addIceCandidate(PassRefPtr<RTCVoidRequest>, blink::WebRTCICECandidate);
-    bool addStream(PassRefPtr<MediaStreamDescriptor>, PassRefPtr<MediaConstraints>);
+    bool addStream(PassRefPtr<MediaStreamDescriptor>, blink::WebMediaConstraints);
     void removeStream(PassRefPtr<MediaStreamDescriptor>);
     void getStats(PassRefPtr<RTCStatsRequest>);
     PassOwnPtr<RTCDataChannelHandler> createDataChannel(const String& label, const blink::WebRTCDataChannelInit&);

@@ -43,7 +43,6 @@
 #include "core/dom/Document.h"
 #include "core/platform/mediastream/MediaStreamDescriptor.h"
 #include "modules/mediastream/UserMediaRequest.h"
-#include "platform/mediastream/MediaConstraints.h"
 #include "platform/mediastream/MediaStreamSource.h"
 #include "platform/weborigin/SecurityOrigin.h"
 

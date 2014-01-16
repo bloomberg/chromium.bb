@@ -34,7 +34,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/audio/AudioDestinationConsumer.h"
-#include "platform/mediastream/MediaConstraints.h"
+#include "public/platform/WebMediaConstraints.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
@@ -83,8 +83,8 @@ public:
     ExtraData* extraData() const { return m_extraData.get(); }
     void setExtraData(PassOwnPtr<ExtraData> extraData) { m_extraData = extraData; }
 
-    void setConstraints(PassRefPtr<MediaConstraints> constraints) { m_constraints = constraints; }
-    MediaConstraints* constraints() { return m_constraints.get(); }
+    void setConstraints(blink::WebMediaConstraints constraints) { m_constraints = constraints; }
+    blink::WebMediaConstraints constraints() { return m_constraints; }
 
     void setAudioFormat(size_t numberOfChannels, float sampleRate);
     void consumeAudio(AudioBus*, size_t numberOfFrames);
@@ -106,7 +106,7 @@ private:
     Mutex m_audioConsumersLock;
     Vector<RefPtr<AudioDestinationConsumer> > m_audioConsumers;
     OwnPtr<ExtraData> m_extraData;
-    RefPtr<MediaConstraints> m_constraints;
+    blink::WebMediaConstraints m_constraints;
 };
 
 typedef Vector<RefPtr<MediaStreamSource> > MediaStreamSourceVector;
