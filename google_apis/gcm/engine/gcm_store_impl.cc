@@ -169,8 +169,10 @@ void GCMStoreImpl::Backend::Load(const LoadCallback& callback) {
                              &result.device_security_token) ||
       !LoadIncomingMessages(&result.incoming_messages) ||
       !LoadOutgoingMessages(&result.outgoing_messages) ||
-      !LoadNextSerialNumber(&result.next_serial_number) ||
-      !LoadUserSerialNumberMap(&result.user_serial_numbers)) {
+      !LoadNextSerialNumber(
+           &result.serial_number_mappings.next_serial_number) ||
+      !LoadUserSerialNumberMap(
+           &result.serial_number_mappings.user_serial_numbers)) {
     result.device_android_id = 0;
     result.device_security_token = 0;
     result.incoming_messages.clear();
@@ -192,9 +194,10 @@ void GCMStoreImpl::Backend::Load(const LoadCallback& callback) {
                          result.outgoing_messages.size());
     UMA_HISTOGRAM_COUNTS("GCM.RestoredIncomingMessages",
                          result.incoming_messages.size());
-    UMA_HISTOGRAM_COUNTS("GCM.NumUsers", result.user_serial_numbers.size());
+    UMA_HISTOGRAM_COUNTS(
+        "GCM.NumUsers",
+        result.serial_number_mappings.user_serial_numbers.size());
   }
-
 
   DVLOG(1) << "Succeeded in loading " << result.incoming_messages.size()
            << " unacknowledged incoming messages and "

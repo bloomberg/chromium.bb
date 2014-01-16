@@ -6,14 +6,28 @@
 #define GOOGLE_APIS_GCM_GCM_CLIENT_IMPL_H_
 
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "google_apis/gcm/gcm_client.h"
 
+namespace base {
+class FilePath;
+class SequencedTaskRunner;
+}  // namespace base
+
 namespace gcm {
+
+class GCMStore;
+class UserList;
 
 class GCMClientImpl : public GCMClient {
  public:
   GCMClientImpl();
   virtual ~GCMClientImpl();
+
+  void Initialize(
+      const base::FilePath& path,
+      scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
 
   // Overridden from GCMClient:
   virtual void SetUserDelegate(const std::string& username,
@@ -32,6 +46,9 @@ class GCMClientImpl : public GCMClient {
   virtual bool IsLoading() const OVERRIDE;
 
  private:
+  scoped_ptr<GCMStore> gcm_store_;
+  scoped_ptr<UserList> user_list_;
+
   DISALLOW_COPY_AND_ASSIGN(GCMClientImpl);
 };
 

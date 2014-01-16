@@ -4,12 +4,25 @@
 
 #include "google_apis/gcm/gcm_client_impl.h"
 
+#include "base/files/file_path.h"
+#include "base/sequenced_task_runner.h"
+#include "google_apis/gcm/engine/gcm_store.h"
+#include "google_apis/gcm/engine/gcm_store_impl.h"
+#include "google_apis/gcm/engine/user_list.h"
+
 namespace gcm {
 
 GCMClientImpl::GCMClientImpl() {
 }
 
 GCMClientImpl::~GCMClientImpl() {
+}
+
+void GCMClientImpl::Initialize(
+    const base::FilePath& path,
+    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner) {
+  gcm_store_.reset(new GCMStoreImpl(path, blocking_task_runner));
+  user_list_.reset(new UserList(gcm_store_.get()));
 }
 
 void GCMClientImpl::SetUserDelegate(const std::string& username,

@@ -28,6 +28,15 @@ class MCSMessage;
 // as well as store device and user checkin information.
 class GCM_EXPORT GCMStore {
  public:
+  // Part of load results storing user serial number mapping related values.
+  struct GCM_EXPORT SerialNumberMappings {
+    SerialNumberMappings();
+    ~SerialNumberMappings();
+
+    int64 next_serial_number;
+    std::map<std::string, int64> user_serial_numbers;
+  };
+
   // Container for Load(..) results.
   struct GCM_EXPORT LoadResult {
     LoadResult();
@@ -38,8 +47,7 @@ class GCM_EXPORT GCMStore {
     uint64 device_security_token;
     std::vector<std::string> incoming_messages;
     std::map<std::string, google::protobuf::MessageLite*> outgoing_messages;
-    int64 next_serial_number;
-    std::map<std::string, int64> user_serial_numbers;
+    SerialNumberMappings serial_number_mappings;
   };
 
   typedef std::vector<std::string> PersistentIdList;

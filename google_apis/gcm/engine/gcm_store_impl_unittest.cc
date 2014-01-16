@@ -109,8 +109,8 @@ TEST_F(GCMStoreImplTest, LoadNew) {
   EXPECT_EQ(0U, load_result.device_security_token);
   EXPECT_TRUE(load_result.incoming_messages.empty());
   EXPECT_TRUE(load_result.outgoing_messages.empty());
-  EXPECT_EQ(1LL, load_result.next_serial_number);
-  EXPECT_TRUE(load_result.user_serial_numbers.empty());
+  EXPECT_EQ(1LL, load_result.serial_number_mappings.next_serial_number);
+  EXPECT_TRUE(load_result.serial_number_mappings.user_serial_numbers.empty());
 }
 
 TEST_F(GCMStoreImplTest, DeviceCredentials) {
@@ -314,7 +314,8 @@ TEST_F(GCMStoreImplTest, NextSerialNumber) {
       &GCMStoreImplTest::LoadCallback, base::Unretained(this), &load_result));
   PumpLoop();
 
-  EXPECT_EQ(kNextSerialNumber, load_result.next_serial_number);
+  EXPECT_EQ(kNextSerialNumber,
+            load_result.serial_number_mappings.next_serial_number);
 }
 
 // Verify that user serial number mappings are persisted properly.
@@ -345,13 +346,17 @@ TEST_F(GCMStoreImplTest, UserSerialNumberMappings) {
       &GCMStoreImplTest::LoadCallback, base::Unretained(this), &load_result));
   PumpLoop();
 
-  ASSERT_EQ(2u, load_result.user_serial_numbers.size());
-  ASSERT_NE(load_result.user_serial_numbers.end(),
-            load_result.user_serial_numbers.find(username1));
-  EXPECT_EQ(serial_number1, load_result.user_serial_numbers[username1]);
-  ASSERT_NE(load_result.user_serial_numbers.end(),
-            load_result.user_serial_numbers.find(username2));
-  EXPECT_EQ(serial_number2, load_result.user_serial_numbers[username2]);
+  ASSERT_EQ(2u, load_result.serial_number_mappings.user_serial_numbers.size());
+  ASSERT_NE(
+      load_result.serial_number_mappings.user_serial_numbers.end(),
+      load_result.serial_number_mappings.user_serial_numbers.find(username1));
+  EXPECT_EQ(serial_number1,
+            load_result.serial_number_mappings.user_serial_numbers[username1]);
+  ASSERT_NE(
+      load_result.serial_number_mappings.user_serial_numbers.end(),
+      load_result.serial_number_mappings.user_serial_numbers.find(username2));
+  EXPECT_EQ(serial_number2,
+            load_result.serial_number_mappings.user_serial_numbers[username2]);
 }
 
 // Test that per-app message limits are enforced, persisted across restarts,
