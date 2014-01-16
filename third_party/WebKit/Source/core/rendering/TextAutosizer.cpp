@@ -36,7 +36,6 @@
 #include "platform/TraceEvent.h"
 #include "platform/geometry/IntSize.h"
 #include "wtf/StdLibExtras.h"
-#include "wtf/Vector.h"
 
 namespace WebCore {
 
@@ -45,27 +44,6 @@ using namespace HTMLNames;
 struct TextAutosizingWindowInfo {
     IntSize windowSize;
     IntSize minLayoutSize;
-};
-
-// Represents cluster related data. Instances should not persist between calls to processSubtree.
-struct TextAutosizingClusterInfo {
-    explicit TextAutosizingClusterInfo(RenderBlock* root)
-        : root(root)
-        , blockContainingAllText(0)
-        , maxAllowedDifferenceFromTextWidth(150)
-    {
-    }
-
-    RenderBlock* root;
-    const RenderBlock* blockContainingAllText;
-
-    // Upper limit on the difference between the width of the cluster's block containing all
-    // text and that of a narrow child before the child becomes a separate cluster.
-    float maxAllowedDifferenceFromTextWidth;
-
-    // Descendants of the cluster that are narrower than the block containing all text and must be
-    // processed together.
-    Vector<TextAutosizingClusterInfo> narrowDescendants;
 };
 
 // Represents a POD of a selection of fields for hashing. The fields are selected to detect similar
@@ -157,6 +135,8 @@ static unsigned computeLocalHash(const RenderObject* renderer)
         podForHash.packedStyleProperties |= (style->width().type() << 11);
         // packedStyleProperties effectively using 15 bits now.
 
+        // consider for adding: writing mode, padding.
+
         podForHash.width = style->width().getFloatValue();
     }
 
@@ -238,14 +218,12 @@ bool TextAutosizer::processSubtree(RenderObject* layoutRoot)
     processCluster(clusterInfo, container, layoutRoot, windowInfo);
 
 #ifdef AUTOSIZING_CLUSTER_HASH
-    // Second pass to fix the non-autosized clusters which should be autosized for consistency.
-    // FIXME: think of something to make this efficient, e.g.
-    //  - introduce a HashMap: hash -> multiplier
-    //  - post-autosize non-autosized blocks of text using the above hashmap
-    TextAutosizingClusterInfo clusterInfo2(cluster);
-    processCluster(clusterInfo2, container, layoutRoot, windowInfo);
+    // Second pass to autosize stale non-autosized clusters for consistency.
+    secondPassProcessStaleNonAutosizedClusters();
     m_hashCache.clear();
-    m_autosizedClusterHashes.clear();
+    m_hashToMultiplier.clear();
+    m_hashesToAutosizeSecondPass.clear();
+    m_nonAutosizedClusters.clear();
 #endif
     InspectorInstrumentation::didAutosizeText(layoutRoot);
     return true;
@@ -291,6 +269,16 @@ unsigned TextAutosizer::computeCompositeClusterHash(Vector<TextAutosizingCluster
     return 0;
 }
 
+void TextAutosizer::addNonAutosizedCluster(unsigned key, TextAutosizingClusterInfo& value)
+{
+    HashMap<unsigned, OwnPtr<Vector<TextAutosizingClusterInfo> > >::const_iterator it = m_nonAutosizedClusters.find(key);
+    if (it == m_nonAutosizedClusters.end()) {
+        m_nonAutosizedClusters.add(key, adoptPtr(new Vector<TextAutosizingClusterInfo>(1, value)));
+        return;
+    }
+    it->value->append(value);
+}
+
 float TextAutosizer::computeMultiplier(Vector<TextAutosizingClusterInfo>& clusterInfos, const TextAutosizingWindowInfo& windowInfo, float textWidth)
 {
 #ifdef AUTOSIZING_CLUSTER_HASH
@@ -302,14 +290,24 @@ float TextAutosizer::computeMultiplier(Vector<TextAutosizingClusterInfo>& cluste
     unsigned clusterHash = 0;
 #endif
 
-    if (clusterHash && m_autosizedClusterHashes.contains(clusterHash))
-        return clusterMultiplier(clusterInfos[0].root->style()->writingMode(), windowInfo, textWidth);
+    if (clusterHash) {
+        HashMap<unsigned, float>::iterator it = m_hashToMultiplier.find(clusterHash);
+        if (it != m_hashToMultiplier.end())
+            return it->value;
+    }
 
     if (compositeClusterShouldBeAutosized(clusterInfos, textWidth)) {
-        if (clusterHash)
-            m_autosizedClusterHashes.add(clusterHash);
-        return clusterMultiplier(clusterInfos[0].root->style()->writingMode(), windowInfo, textWidth);
+        float multiplier = clusterMultiplier(clusterInfos[0].root->style()->writingMode(), windowInfo, textWidth);
+        if (clusterHash) {
+            if (multiplier > 1 && m_nonAutosizedClusters.contains(clusterHash))
+                m_hashesToAutosizeSecondPass.append(clusterHash);
+            m_hashToMultiplier.add(clusterHash, multiplier);
+        }
+        return multiplier;
     }
+
+    if (clusterHash)
+        addNonAutosizedCluster(clusterHash, clusterInfos[0]);
 
     return 1.0f;
 }
@@ -345,6 +343,37 @@ void TextAutosizer::processCompositeCluster(Vector<TextAutosizingClusterInfo>& c
     for (size_t i = 0; i < clusterInfos.size(); ++i) {
         ASSERT(clusterInfos[i].root->style()->writingMode() == clusterInfos[0].root->style()->writingMode());
         processClusterInternal(clusterInfos[i], clusterInfos[i].root, clusterInfos[i].root, windowInfo, multiplier);
+    }
+}
+
+void TextAutosizer::secondPassProcessStaleNonAutosizedClusters()
+{
+    for (size_t i = 0; i < m_hashesToAutosizeSecondPass.size(); ++i) {
+        unsigned hash = m_hashesToAutosizeSecondPass[i];
+        float multiplier = m_hashToMultiplier.get(hash);
+        Vector<TextAutosizingClusterInfo>* val = m_nonAutosizedClusters.get(hash);
+        for (Vector<TextAutosizingClusterInfo>::iterator it2 = val->begin(); it2 != val->end(); ++it2)
+            setMultiplierForCluster(multiplier, (*it2).root, *it2);
+    }
+}
+
+void TextAutosizer::setMultiplierForCluster(float localMultiplier, RenderObject* cluster, TextAutosizingClusterInfo& clusterInfo)
+{
+    // This method is different from processContainer() mainly in that it does not recurse into sub-clusters.
+    // Multiplier updates are restricted to the specified cluster only.
+    RenderObject* descendant = nextInPreOrderSkippingDescendantsOfContainers(cluster, cluster);
+    while (descendant) {
+        if (descendant->isText()) {
+            if (localMultiplier != 1 && descendant->style()->textAutosizingMultiplier() == 1) {
+                setMultiplier(descendant, localMultiplier);
+                setMultiplier(descendant->parent(), localMultiplier); // Parent does line spacing.
+            }
+        } else if (isAutosizingContainer(descendant)) {
+            RenderBlock* descendantBlock = toRenderBlock(descendant);
+            if (!isAutosizingCluster(descendantBlock, clusterInfo))
+                setMultiplierForCluster(localMultiplier, descendantBlock, clusterInfo);
+        }
+        descendant = nextInPreOrderSkippingDescendantsOfContainers(descendant, cluster);
     }
 }
 
