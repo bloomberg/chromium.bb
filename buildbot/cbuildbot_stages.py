@@ -2982,7 +2982,6 @@ class ArchiveStage(ArchivingStage):
     # move to use self._run.attrs.release_tag directly.
     self.release_tag = getattr(self._run.attrs, 'release_tag', None)
 
-    self._debug_tarball_queue = multiprocessing.Queue()
     self._breakpad_symbols_queue = multiprocessing.Queue()
     self._recovery_image_status_queue = multiprocessing.Queue()
     self._release_upload_queue = multiprocessing.Queue()
@@ -3004,32 +3003,6 @@ class ArchiveStage(ArchivingStage):
     self._recovery_image_status_queue.put(status)
     return status
 
-  def DebugTarballGenerated(self, success):
-    """Signal that the debug tarball has been generated.
-
-    Args:
-      success: True to indicate the tarball was generated, else False.
-    """
-    self._debug_tarball_queue.put(success)
-
-  def WaitForDebugTarball(self):
-    """Wait for the debug tarball to be generated.
-
-    Returns:
-      True if the tarball was generated.
-      False if the tarball was not generated within 20 mins.
-    """
-    success = False
-    cros_build_lib.Info('Waiting for debug tarball...')
-    try:
-      # TODO: Clean this up so that we no longer rely on a timeout
-      success = self._breakpad_symbols_queue.get(
-          True, DebugSymbolsStage.TIMEOUT_DEBUG_TARBALL)
-    except Queue.Empty:
-      cros_build_lib.Warning(
-          'Debug tarball was not generated within timeout period.')
-    return success
-
   def BreakpadSymbolsGenerated(self, success):
     """Signal that breakpad symbols have been generated.
 
@@ -3049,8 +3022,7 @@ class ArchiveStage(ArchivingStage):
     cros_build_lib.Info('Waiting for breakpad symbols...')
     try:
       # TODO: Clean this up so that we no longer rely on a timeout
-      success = self._breakpad_symbols_queue.get(
-          True, DebugSymbolsStage.TIMEOUT_BREAKPAD_SYMS)
+      success = self._breakpad_symbols_queue.get(True, 1200)
     except Queue.Empty:
       cros_build_lib.Warning(
           'Breakpad symbols were not generated within timeout period.')
@@ -3266,8 +3238,6 @@ class ArchiveStage(ArchivingStage):
       if not config['internal']:
         return
 
-      self.WaitForDebugTarball()
-
       # Now that all data has been generated, we can upload the final result to
       # the image server.
       # TODO: When we support branches fully, the friendly name of the branch
@@ -3332,15 +3302,6 @@ class ArchiveStage(ArchivingStage):
 class DebugSymbolsStage(ArchivingStage):
   """Handles generation & upload of debug symbols."""
 
-  # How long to generate all breakpad symbols.  Currently, it's about 10
-  # minutes, so wait twice that.
-  TIMEOUT_BREAKPAD_SYMS = (10 * 60 * 2)
-
-  # How long before the debug tarball is available.  Currently, we build
-  # that after generating breakpad symbols and uploading them.  All told,
-  # that's currently like 1 hr, so wait twice that.
-  TIMEOUT_DEBUG_TARBALL = (60 * 60 * 2)
-
   def PerformStage(self):
     """Generate debug symbols and upload debug.tgz."""
     buildroot = self._build_root
@@ -3349,27 +3310,21 @@ class DebugSymbolsStage(ArchivingStage):
     debug = self.debug
     archive_path = self.archive_path
 
-    try:
-      debug_tarball_generated = False
+    if config['archive_build_debug'] or config['vm_tests']:
+      self._GenerateBreakpadSymbols(buildroot, board, debug)
 
-      if config['archive_build_debug'] or config['vm_tests']:
-        self._GenerateBreakpadSymbols(buildroot, board, debug)
+      # Kick off the symbol upload process in the background.
+      if config['upload_symbols']:
+        self.UploadSymbols(buildroot, board)
 
-        # Kick off the symbol upload process in the background.
-        if config['upload_symbols']:
-          self.UploadSymbols(buildroot, board)
-
-        # Generate and upload tarball.
-        with self.ArtifactUploader(archive=False) as queue:
-          filename = commands.GenerateDebugTarball(
-              buildroot, board, archive_path,
-              config['archive_build_debug'])
-          queue.put([filename])
-          debug_tarball_generated = True
-      else:
-        self.archive_stage.BreakpadSymbolsGenerated(False)
-    finally:
-      self.archive_stage.DebugTarballGenerated(debug_tarball_generated)
+      # Generate and upload tarball.
+      with self.ArtifactUploader(archive=False) as queue:
+        filename = commands.GenerateDebugTarball(
+            buildroot, board, archive_path,
+            config['archive_build_debug'])
+        queue.put([filename])
+    else:
+      self.archive_stage.BreakpadSymbolsGenerated(False)
 
   def UploadSymbols(self, buildroot, board):
     """Upload generated debug symbols."""
