@@ -410,10 +410,10 @@ class VIEWS_EXPORT Textfield : public View,
 
   // The text editing cursor repaint timer and visibility.
   base::RepeatingTimer<Textfield> cursor_repaint_timer_;
-  bool is_cursor_visible_;
+  bool cursor_visible_;
 
   // The drop cursor is a visual cue for where dragged text will be dropped.
-  bool is_drop_cursor_visible_;
+  bool drop_cursor_visible_;
   gfx::SelectionModel drop_cursor_position_;
 
   // Is the user potentially dragging and dropping from this view?

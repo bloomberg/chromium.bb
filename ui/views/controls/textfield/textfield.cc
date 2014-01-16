@@ -85,8 +85,8 @@ Textfield::Textfield()
       placeholder_text_color_(kDefaultPlaceholderTextColor),
       text_input_type_(ui::TEXT_INPUT_TYPE_TEXT),
       skip_input_method_cancel_composition_(false),
-      is_cursor_visible_(false),
-      is_drop_cursor_visible_(false),
+      cursor_visible_(false),
+      drop_cursor_visible_(false),
       initiating_drag_(false),
       aggregated_clicks_(0),
       weak_ptr_factory_(this) {
@@ -117,8 +117,8 @@ Textfield::Textfield(StyleFlags style)
       placeholder_text_color_(kDefaultPlaceholderTextColor),
       text_input_type_(ui::TEXT_INPUT_TYPE_TEXT),
       skip_input_method_cancel_composition_(false),
-      is_cursor_visible_(false),
-      is_drop_cursor_visible_(false),
+      cursor_visible_(false),
+      drop_cursor_visible_(false),
       initiating_drag_(false),
       aggregated_clicks_(0),
       weak_ptr_factory_(this) {
@@ -606,7 +606,7 @@ void Textfield::OnMouseReleased(const ui::MouseEvent& event) {
 
 void Textfield::OnFocus() {
   GetRenderText()->set_focused(true);
-  is_cursor_visible_ = true;
+  cursor_visible_ = true;
   SchedulePaint();
   GetInputMethod()->OnFocus();
   OnCaretBoundsChanged();
@@ -626,8 +626,8 @@ void Textfield::OnBlur() {
   GetRenderText()->set_focused(false);
   GetInputMethod()->OnBlur();
   cursor_repaint_timer_.Stop();
-  if (is_cursor_visible_) {
-    is_cursor_visible_ = false;
+  if (cursor_visible_) {
+    cursor_visible_ = false;
     RepaintCursor();
   }
 
@@ -802,7 +802,7 @@ int Textfield::OnDragUpdated(const ui::DropTargetEvent& event) {
   drop_cursor_position_ = render_text->FindCursorPosition(event.location());
   bool in_selection = !selection.is_empty() &&
       selection.Contains(gfx::Range(drop_cursor_position_.caret_pos()));
-  is_drop_cursor_visible_ = !in_selection;
+  drop_cursor_visible_ = !in_selection;
   // TODO(msw): Pan over text when the user drags to the visible text edge.
   OnCaretBoundsChanged();
   SchedulePaint();
@@ -817,13 +817,13 @@ int Textfield::OnDragUpdated(const ui::DropTargetEvent& event) {
 }
 
 void Textfield::OnDragExited() {
-  is_drop_cursor_visible_ = false;
+  drop_cursor_visible_ = false;
   SchedulePaint();
 }
 
 int Textfield::OnPerformDrop(const ui::DropTargetEvent& event) {
   DCHECK(CanDrop(event.data()));
-  is_drop_cursor_visible_ = false;
+  drop_cursor_visible_ = false;
 
   if (controller_) {
     int drag_operation = controller_->OnDrop(event.data());
@@ -864,7 +864,7 @@ int Textfield::OnPerformDrop(const ui::DropTargetEvent& event) {
 
 void Textfield::OnDragDone() {
   initiating_drag_ = false;
-  is_drop_cursor_visible_ = false;
+  drop_cursor_visible_ = false;
 }
 
 void Textfield::OnBoundsChanged(const gfx::Rect& previous_bounds) {
@@ -1371,7 +1371,7 @@ void Textfield::UpdateAfterChange(bool text_changed, bool cursor_changed) {
     NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_TEXT_CHANGED, true);
   }
   if (cursor_changed) {
-    is_cursor_visible_ = true;
+    cursor_visible_ = true;
     RepaintCursor();
     if (cursor_repaint_timer_.IsRunning())
     cursor_repaint_timer_.Reset();
@@ -1390,7 +1390,7 @@ void Textfield::UpdateAfterChange(bool text_changed, bool cursor_changed) {
 
 void Textfield::UpdateCursor() {
   const size_t caret_blink_ms = Textfield::GetCaretBlinkMs();
-  is_cursor_visible_ = !is_cursor_visible_ || (caret_blink_ms == 0);
+  cursor_visible_ = !cursor_visible_ || (caret_blink_ms == 0);
   RepaintCursor();
 }
 
@@ -1403,21 +1403,23 @@ void Textfield::RepaintCursor() {
 void Textfield::PaintTextAndCursor(gfx::Canvas* canvas) {
   TRACE_EVENT0("views", "Textfield::PaintTextAndCursor");
   canvas->Save();
-  gfx::RenderText* render_text = GetRenderText();
-  render_text->set_cursor_visible(!is_drop_cursor_visible_ &&
-      is_cursor_visible_ && !model_->HasSelection());
-  // Draw the text, cursor, and selection.
-  render_text->Draw(canvas);
-
-  // Draw the detached drop cursor that marks where the text will be dropped.
-  if (is_drop_cursor_visible_)
-    render_text->DrawCursor(canvas, drop_cursor_position_);
 
   // Draw placeholder text if needed.
+  gfx::RenderText* render_text = GetRenderText();
   if (text().empty() && !GetPlaceholderText().empty()) {
     canvas->DrawStringRect(GetPlaceholderText(), GetFontList(),
         placeholder_text_color(), render_text->display_rect());
   }
+
+  // Draw the text, cursor, and selection.
+  render_text->set_cursor_visible(cursor_visible_ && !drop_cursor_visible_ &&
+                                  !HasSelection());
+  render_text->Draw(canvas);
+
+  // Draw the detached drop cursor that marks where the text will be dropped.
+  if (drop_cursor_visible_)
+    render_text->DrawCursor(canvas, drop_cursor_position_);
+
   canvas->Restore();
 }
 
