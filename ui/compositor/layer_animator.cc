@@ -55,7 +55,6 @@ gfx::AnimationContainer* GetAnimationContainer() {
 LayerAnimator::LayerAnimator(base::TimeDelta transition_duration)
     : delegate_(NULL),
       preemption_strategy_(IMMEDIATELY_SET_NEW_TARGET),
-      is_transition_duration_locked_(false),
       transition_duration_(transition_duration),
       tween_type_(gfx::Tween::LINEAR),
       is_started_(false),
@@ -118,10 +117,6 @@ ANIMATED_PROPERTY(bool, VISIBILITY, Visibility, bool, visibility);
 ANIMATED_PROPERTY(float, BRIGHTNESS, Brightness, float, brightness);
 ANIMATED_PROPERTY(float, GRAYSCALE, Grayscale, float, grayscale);
 ANIMATED_PROPERTY(SkColor, COLOR, Color, SkColor, color);
-
-base::TimeDelta LayerAnimator::GetTransitionDuration() const {
-  return transition_duration_;
-}
 
 void LayerAnimator::SetDelegate(LayerAnimationDelegate* delegate) {
   delegate_ = delegate;
@@ -803,10 +798,8 @@ void LayerAnimator::OnScheduled(LayerAnimationSequence* sequence) {
   sequence->OnScheduled();
 }
 
-void LayerAnimator::SetTransitionDuration(base::TimeDelta duration) {
-  if (is_transition_duration_locked_)
-    return;
-  transition_duration_ = duration;
+base::TimeDelta LayerAnimator::GetTransitionDuration() const {
+  return transition_duration_;
 }
 
 void LayerAnimator::ClearAnimationsInternal() {

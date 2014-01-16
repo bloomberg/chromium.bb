@@ -36,37 +36,6 @@ class WindowAnimationsTest : public ash::test::AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(WindowAnimationsTest);
 };
 
-// Listens to animation scheduled notifications. Remembers the transition
-// duration of the first sequence.
-class MinimizeAnimationObserver : public ui::LayerAnimationObserver {
- public:
-  explicit MinimizeAnimationObserver(ui::LayerAnimator* animator)
-      : animator_(animator) {
-    animator_->AddObserver(this);
-    // RemoveObserver is called when the first animation is scheduled and so
-    // there should be no need for now to remove it in destructor.
-  };
-  base::TimeDelta duration() { return duration_; }
-
- protected:
-  // ui::LayerAnimationObserver:
-  virtual void OnLayerAnimationScheduled(
-      ui::LayerAnimationSequence* sequence) OVERRIDE {
-    duration_ = animator_->GetTransitionDuration();
-    animator_->RemoveObserver(this);
-  }
-  virtual void OnLayerAnimationEnded(
-      ui::LayerAnimationSequence* sequence) OVERRIDE {}
-  virtual void OnLayerAnimationAborted(
-      ui::LayerAnimationSequence* sequence) OVERRIDE {}
-
- private:
-  ui::LayerAnimator* animator_;
-  base::TimeDelta duration_;
-
-  DISALLOW_COPY_AND_ASSIGN(MinimizeAnimationObserver);
-};
-
 TEST_F(WindowAnimationsTest, HideShowBrightnessGrayscaleAnimation) {
   scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
   window->Show();
@@ -165,78 +134,6 @@ TEST_F(WindowAnimationsTest, CrossFadeToBounds) {
       base::TimeTicks::Now() + base::TimeDelta::FromSeconds(1));
   static_cast<gfx::AnimationContainerElement*>(window->layer()->GetAnimator())->
       Step(base::TimeTicks::Now() + base::TimeDelta::FromSeconds(1));
-}
-
-TEST_F(WindowAnimationsTest, LockAnimationDuration) {
-  ui::ScopedAnimationDurationScaleMode normal_duration_mode(
-      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
-
-  scoped_ptr<Window> window(CreateTestWindowInShellWithId(0));
-  Layer* layer = window->layer();
-  window->SetBounds(gfx::Rect(5, 10, 320, 240));
-  window->Show();
-
-  // Test that it is possible to override transition duration when it is not
-  // locked.
-  {
-    ui::ScopedLayerAnimationSettings settings1(layer->GetAnimator());
-    settings1.SetTransitionDuration(base::TimeDelta::FromMilliseconds(1000));
-    {
-      ui::ScopedLayerAnimationSettings settings2(layer->GetAnimator());
-      // Duration is not locked so it gets overridden.
-      settings2.SetTransitionDuration(base::TimeDelta::FromMilliseconds(50));
-      wm::GetWindowState(window.get())->Minimize();
-      EXPECT_TRUE(layer->GetAnimator()->is_animating());
-      // Expect duration from the inner scope
-      EXPECT_EQ(50,
-                layer->GetAnimator()->GetTransitionDuration().InMilliseconds());
-    }
-    window->Show();
-    layer->GetAnimator()->StopAnimating();
-  }
-
-  // Test that it is possible to lock transition duration
-  {
-    ui::ScopedLayerAnimationSettings settings1(layer->GetAnimator());
-    settings1.SetTransitionDuration(base::TimeDelta::FromMilliseconds(1000));
-    // Duration is locked in outer scope.
-    settings1.LockTransitionDuration();
-    {
-      ui::ScopedLayerAnimationSettings settings2(layer->GetAnimator());
-      // Transition duration setting is ignored.
-      settings2.SetTransitionDuration(base::TimeDelta::FromMilliseconds(50));
-      wm::GetWindowState(window.get())->Minimize();
-      EXPECT_TRUE(layer->GetAnimator()->is_animating());
-      // Expect duration from the outer scope
-      EXPECT_EQ(1000,
-                layer->GetAnimator()->GetTransitionDuration().InMilliseconds());
-    }
-    window->Show();
-    layer->GetAnimator()->StopAnimating();
-  }
-
-  // Test that duration respects default.
-  {
-    // Query default duration.
-    MinimizeAnimationObserver observer(layer->GetAnimator());
-    wm::GetWindowState(window.get())->Minimize();
-    EXPECT_TRUE(layer->GetAnimator()->is_animating());
-    base::TimeDelta default_duration(observer.duration());
-    window->Show();
-    layer->GetAnimator()->StopAnimating();
-
-    ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
-    settings.LockTransitionDuration();
-    // Setting transition duration is ignored since duration is locked
-    settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(1000));
-    wm::GetWindowState(window.get())->Minimize();
-    EXPECT_TRUE(layer->GetAnimator()->is_animating());
-    // Expect default duration (200ms for stock ash minimizing animation).
-    EXPECT_EQ(default_duration.InMilliseconds(),
-              layer->GetAnimator()->GetTransitionDuration().InMilliseconds());
-    window->Show();
-    layer->GetAnimator()->StopAnimating();
-  }
 }
 
 }  // namespace internal

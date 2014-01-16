@@ -501,7 +501,7 @@ void TrayBackgroundView::InitializeBubbleAnimations(
   views::corewm::SetWindowVisibilityAnimationTransition(
       bubble_widget->GetNativeWindow(),
       views::corewm::ANIMATE_HIDE);
-  views::corewm::SetWindowVisibilityAnimationDuration(
+  views::corewm::SetWindowHideAnimationDuration(
       bubble_widget->GetNativeWindow(),
       base::TimeDelta::FromMilliseconds(kAnimationDurationForPopupMS));
 }

@@ -166,8 +166,6 @@ class ASH_EXPORT DockedWindowLayoutManager
   virtual void OnWindowBoundsChanged(aura::Window* window,
                                      const gfx::Rect& old_bounds,
                                      const gfx::Rect& new_bounds) OVERRIDE;
-  virtual void OnWindowVisibilityChanging(aura::Window* window,
-                                          bool visible) OVERRIDE;
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
 
   // aura::client::ActivationChangeObserver:
