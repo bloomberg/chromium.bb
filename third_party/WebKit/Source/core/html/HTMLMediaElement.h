@@ -114,7 +114,7 @@ public:
 
     virtual PassRefPtr<TimeRanges> buffered() const OVERRIDE FINAL;
     void load();
-    String canPlayType(const String& mimeType, const String& keySystem = String(), const KURL& = KURL()) const;
+    String canPlayType(const String& mimeType, const String& keySystem = String()) const;
 
     // ready state
     virtual ReadyState readyState() const OVERRIDE FINAL;

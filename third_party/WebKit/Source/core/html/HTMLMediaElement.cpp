@@ -583,7 +583,7 @@ HTMLMediaElement::NetworkState HTMLMediaElement::networkState() const
     return m_networkState;
 }
 
-String HTMLMediaElement::canPlayType(const String& mimeType, const String& keySystem, const KURL& url) const
+String HTMLMediaElement::canPlayType(const String& mimeType, const String& keySystem) const
 {
     WebMimeRegistry::SupportsType support = supportsType(ContentType(mimeType), keySystem);
     String canPlay;
@@ -602,7 +602,7 @@ String HTMLMediaElement::canPlayType(const String& mimeType, const String& keySy
             break;
     }
 
-    WTF_LOG(Media, "HTMLMediaElement::canPlayType(%s, %s, %s) -> %s", mimeType.utf8().data(), keySystem.utf8().data(), url.elidedString().utf8().data(), canPlay.utf8().data());
+    WTF_LOG(Media, "HTMLMediaElement::canPlayType(%s, %s) -> %s", mimeType.utf8().data(), keySystem.utf8().data(), canPlay.utf8().data());
 
     return canPlay;
 }
