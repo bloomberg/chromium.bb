@@ -1122,6 +1122,7 @@
         'browser/extensions/api/feedback_private/feedback_private_apitest.cc',
         'browser/extensions/api/feedback_private/feedback_browsertest.cc',
         'browser/extensions/api/file_system/file_system_apitest.cc',
+        'browser/extensions/api/file_system/file_system_apitest_chromeos.cc',
         'browser/extensions/api/font_settings/font_settings_apitest.cc',
         'browser/extensions/api/gcm/gcm_apitest.cc',
         'browser/extensions/api/history/history_apitest.cc',
