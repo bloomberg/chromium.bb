@@ -18,7 +18,6 @@ AllJsLoadTest.prototype = {
     'browser_globals.gtestjs',
     // All of our Javascript files should be listed here unless they are
     // only used by JSCompiler
-    'client_plugin_async.js',
     'client_plugin.js',
     'client_screen.js',
     'client_session.js',

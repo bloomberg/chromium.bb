@@ -322,7 +322,7 @@ remoting.ClientSession.prototype.createClientPlugin_ = function(container, id) {
   plugin.tabIndex = 0;  // Required, otherwise focus() doesn't work.
   container.appendChild(plugin);
 
-  return new remoting.ClientPluginAsync(plugin);
+  return new remoting.ClientPlugin(plugin);
 };
 
 /**

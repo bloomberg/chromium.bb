@@ -145,7 +145,6 @@
     'remoting_webapp_js_files': [
       'webapp/butter_bar.js',
       'webapp/client_plugin.js',
-      'webapp/client_plugin_async.js',
       'webapp/client_screen.js',
       'webapp/client_session.js',
       'webapp/clipboard.js',
