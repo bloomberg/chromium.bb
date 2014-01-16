@@ -72,18 +72,17 @@ void WebContentDecryptionModuleSessionImpl::OnSessionCreated(
 void WebContentDecryptionModuleSessionImpl::OnSessionMessage(
     const std::vector<uint8>& message,
     const std::string& destination_url) {
-  client_->keyMessage(message.empty() ? NULL : &message[0],
-                      message.size(),
-                      GURL(destination_url));
+  client_->message(message.empty() ? NULL : &message[0],
+                   message.size(),
+                   GURL(destination_url));
 }
 
 void WebContentDecryptionModuleSessionImpl::OnSessionReady() {
-  // TODO(jrummell): Blink APIs need to be updated to the new EME API. For now,
-  // convert the response to the old v0.1b API.
-  client_->keyAdded();
+  client_->ready();
 }
 
 void WebContentDecryptionModuleSessionImpl::OnSessionClosed() {
+  client_->close();
   if (!session_closed_cb_.is_null())
     base::ResetAndReturn(&session_closed_cb_).Run(session_id_);
 }
@@ -91,8 +90,8 @@ void WebContentDecryptionModuleSessionImpl::OnSessionClosed() {
 void WebContentDecryptionModuleSessionImpl::OnSessionError(
     media::MediaKeys::KeyError error_code,
     int system_code) {
-  client_->keyError(static_cast<Client::MediaKeyErrorCode>(error_code),
-                    system_code);
+  client_->error(static_cast<Client::MediaKeyErrorCode>(error_code),
+                 system_code);
 }
 
 }  // namespace content
