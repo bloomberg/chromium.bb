@@ -137,9 +137,6 @@ class GFX_EXPORT SurfaceFactoryOzone {
   // caller. desired_list contains list of desired EGL properties and values.
   virtual const int32* GetEGLSurfaceProperties(const int32* desired_list);
 
-  // Create a default SufaceFactoryOzone implementation useful for tests.
-  static SurfaceFactoryOzone* CreateTestHelper();
-
  private:
   static SurfaceFactoryOzone* impl_; // not owned
 };

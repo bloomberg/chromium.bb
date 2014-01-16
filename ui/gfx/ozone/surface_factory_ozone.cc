@@ -14,34 +14,6 @@ namespace gfx {
 // static
 SurfaceFactoryOzone* SurfaceFactoryOzone::impl_ = NULL;
 
-class SurfaceFactoryOzoneStub : public SurfaceFactoryOzone {
- public:
-  SurfaceFactoryOzoneStub() {}
-  virtual ~SurfaceFactoryOzoneStub() {}
-
-  virtual HardwareState InitializeHardware() OVERRIDE { return INITIALIZED; }
-  virtual void ShutdownHardware() OVERRIDE {}
-  virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE { return 0; }
-  virtual gfx::AcceleratedWidget RealizeAcceleratedWidget(
-      gfx::AcceleratedWidget w) OVERRIDE {
-    return 0;
-  }
-  virtual bool LoadEGLGLES2Bindings(
-      AddGLLibraryCallback add_gl_library,
-      SetGLGetProcAddressProcCallback set_gl_get_proc_address) OVERRIDE {
-    return true;
-  }
-  virtual bool AttemptToResizeAcceleratedWidget(
-      gfx::AcceleratedWidget w,
-      const gfx::Rect& bounds) OVERRIDE {
-    return false;
-  }
-  virtual scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider(
-      gfx::AcceleratedWidget w) OVERRIDE {
-    return scoped_ptr<VSyncProvider>();
-  }
-};
-
 SurfaceFactoryOzone::SurfaceFactoryOzone() {
 }
 
@@ -83,11 +55,6 @@ SkCanvas* SurfaceFactoryOzone::GetCanvasForWidget(gfx::AcceleratedWidget w) {
 const int32* SurfaceFactoryOzone::GetEGLSurfaceProperties(
     const int32* desired_attributes) {
   return desired_attributes;
-}
-
-// static
-SurfaceFactoryOzone* SurfaceFactoryOzone::CreateTestHelper() {
-  return new SurfaceFactoryOzoneStub;
 }
 
 }  // namespace gfx

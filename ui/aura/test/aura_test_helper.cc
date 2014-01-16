@@ -30,10 +30,6 @@
 #include "ui/base/x/x11_util.h"
 #endif
 
-#if defined(USE_OZONE)
-#include "ui/gfx/ozone/surface_factory_ozone.h"
-#endif
-
 namespace aura {
 namespace test {
 
@@ -48,10 +44,6 @@ AuraTestHelper::AuraTestHelper(base::MessageLoopForUI* message_loop)
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
 #if defined(USE_X11)
   test::SetUseOverrideRedirectWindowByDefault(true);
-#endif
-#if defined(USE_OZONE)
-  surface_factory_.reset(gfx::SurfaceFactoryOzone::CreateTestHelper());
-  gfx::SurfaceFactoryOzone::SetInstance(surface_factory_.get());
 #endif
 }
 
