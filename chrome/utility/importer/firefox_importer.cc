@@ -383,6 +383,9 @@ void FirefoxImporter::ImportHomepage() {
 
 void FirefoxImporter::GetSearchEnginesXMLData(
     std::vector<std::string>* search_engine_data) {
+  // TODO(mpawlowski): This may no longer work, search engines are stored in
+  // search.json since Firefox 3.5, not in search.sqlite. XML definitions are
+  // still necessary. http://crbug.com/329175
   base::FilePath file = source_path_.AppendASCII("search.sqlite");
   if (!base::PathExists(file))
     return;
@@ -401,8 +404,21 @@ void FirefoxImporter::GetSearchEnginesXMLData(
   if (!s.is_valid())
     return;
 
-  base::FilePath app_path = app_path_.AppendASCII("searchplugins");
-  base::FilePath profile_path = source_path_.AppendASCII("searchplugins");
+  const base::FilePath searchplugins_path(FILE_PATH_LITERAL("searchplugins"));
+  // Search engine definitions are XMLs stored in two directories. Default
+  // engines are in the app directory (app_path_) and custom engines are
+  // in the profile directory (source_path_).
+
+  // Since Firefox 21, app_path_ engines are in 'browser' subdirectory:
+  base::FilePath app_path =
+      app_path_.AppendASCII("browser").Append(searchplugins_path);
+  if (!base::PathExists(app_path)) {
+    // This might be an older Firefox, try old location without the 'browser'
+    // path component:
+    app_path = app_path_.Append(searchplugins_path);
+  }
+
+  base::FilePath profile_path = source_path_.Append(searchplugins_path);
 
   // Firefox doesn't store a search engine in its sqlite database unless the
   // user has added a engine. So we get search engines from sqlite db as well
