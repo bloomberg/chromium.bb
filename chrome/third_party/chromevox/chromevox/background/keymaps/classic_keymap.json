@@ -30,6 +30,11 @@
                "platformFilter": 10
               }},
 
+ {"command": "passThroughMode",
+  "sequence": {"cvoxModifier": true,
+               "keys": {"keyCode": [27]}
+              }},
+
  {"command": "performDefaultAction",
   "sequence": {
                "keys": {"keyCode": [13]}
