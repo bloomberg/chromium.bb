@@ -542,11 +542,8 @@ class VIEWS_EXPORT HWNDMessageHandler :
   // Generates touch-ids for touch-events.
   ui::SequentialIDGenerator id_generator_;
 
-  // Indicates if the window needs the WS_VSCROLL and WS_HSCROLL styles.
-  bool needs_scroll_styles_;
-
-  // Set to true if we are in the context of a sizing or moving operation.
-  bool in_size_move_loop_;
+  // Indicates if the window has the WS_VSCROLL and WS_HSCROLL styles set.
+  bool scroll_styles_set_;
 
   DISALLOW_COPY_AND_ASSIGN(HWNDMessageHandler);
 };
