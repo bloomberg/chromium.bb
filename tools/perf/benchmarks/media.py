@@ -13,8 +13,8 @@ from measurements import media
 class MSEMeasurement(page_measurement.PageMeasurement):
   def MeasurePage(self, page, tab, results):
     media_metric = tab.EvaluateJavaScript('window.__testMetrics')
-    trace = media_metric['id']
-    metrics = media_metric['metrics']
+    trace = media_metric['id'] if 'id' in media_metric else None
+    metrics = media_metric['metrics'] if 'metrics' in media_metric else []
     for m in metrics:
       if isinstance(metrics[m], list):
         values = [float(v) for v in metrics[m]]
@@ -70,12 +70,11 @@ class MediaSourceExtensions(test.Test):
   test = media.Media
   # Disable MSE media-tests on Android and linux: crbug/329691
   # Disable MSE tests on windows 8 crbug.com/330910
-  enabled = (not sys.platform.startswith('linux') and
-             not sys.platform.startswith('win'))
   test = MSEMeasurement
   page_set = 'page_sets/mse_cases.json'
 
   def CustomizeBrowserOptions(self, options):
     # Needed to allow XHR requests to return stream objects.
     options.AppendExtraBrowserArgs(
-        '--enable-experimental-web-platform-features')
+        ['--enable-experimental-web-platform-features',
+         '--disable-gesture-requirement-for-media-playback'])

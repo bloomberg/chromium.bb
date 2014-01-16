@@ -35,13 +35,17 @@
     testParams = {};
     testParams.testType = queryParameters["testType"] || "AV";
     testParams.useAppendStream = (queryParameters["useAppendStream"] == "true");
-    testParams.doNotWaitForBodyOnLoad = (queryParameters["doNotWaitForBodyOnLoad"] == "true");
+    testParams.doNotWaitForBodyOnLoad =
+        (queryParameters["doNotWaitForBodyOnLoad"] == "true");
     testParams.startOffset = 0;
     testParams.appendSize = parseInt(queryParameters["appendSize"] || "65536");
-    testParams.graphDuration = parseInt(queryParameters["graphDuration"] || "1000");
+    testParams.graphDuration =
+        parseInt(queryParameters["graphDuration"] || "1000");
   }
 
   function plotTimestamps(timestamps, graphDuration, element) {
+    if (!timestamps)
+      return;
     var c = document.getElementById('c');
     var ctx = c.getContext('2d');
 
@@ -80,7 +84,11 @@
       }
     }
 
-    bars.push({label: 'Post Append Delay', start: maxAppendEndTime, end: timestamps.testEndTime, color: '#B0B0B0' });
+    bars.push({
+        label: 'Post Append Delay',
+        start: maxAppendEndTime,
+        end: timestamps.testEndTime,
+        color: '#B0B0B0' });
 
     var minTimestamp = Number.MAX_VALUE;
     for (var i = 0; i < bars.length; ++i) {
@@ -120,7 +128,8 @@
 
     var statsMarkup = "Test passed<br><table>";
     for (var i in stats) {
-      statsMarkup += "<tr><td style=\"text-align:right\">" + i + ":</td><td>" + stats[i].toFixed(3) + " ms</td>";
+      statsMarkup += "<tr><td style=\"text-align:right\">" + i + ":</td><td>" +
+                     stats[i].toFixed(3) + " ms</td>";
     }
     statsMarkup += "</table>";
     statsDiv.innerHTML = statsMarkup;
@@ -156,8 +165,10 @@
       }
     }
 
-    document.getElementById("useAppendStream").checked = testParams.useAppendStream;
-    document.getElementById("doNotWaitForBodyOnLoad").checked = testParams.doNotWaitForBodyOnLoad;
+    document.getElementById("useAppendStream").checked =
+        testParams.useAppendStream;
+    document.getElementById("doNotWaitForBodyOnLoad").checked =
+        testParams.doNotWaitForBodyOnLoad;
     document.getElementById("appendSize").value = testParams.appendSize;
     document.getElementById("graphDuration").value = testParams.graphDuration;
   }
@@ -255,7 +266,7 @@
                               (this.startOffset + this.appendSize - 1));
     this.xhr.responseType = 'stream';
     if (this.xhr.responseType != 'stream') {
-      throw "XHR does not support 'stream' responses.";
+      EndTest("XHR does not support 'stream' responses.");
     }
     this.xhr.send();
 
@@ -421,12 +432,12 @@
       if (testDone)
         return;
 
-      console.log('Test timed out.');
       testDone = true;
       window.clearInterval(listener);
 
       mediaElement.pause();
       doneCallback(null);
+      EndTest("Test timed out.");
     }, 10000);
 
     mediaSourceOpenStartTime = getPerfTimestamp();
@@ -446,31 +457,50 @@
 
     var appenders = [];
 
-    if (useAppendStream && !window.MediaSource)
-      throw "Can't use appendStream() because the unprefixed MediaSource object is not present.";
+    if (testParams.useAppendStream && !window.MediaSource)
+      EndTest("Can't use appendStream() because the unprefixed MediaSource " +
+              "object is not present.");
 
     var Appender = testParams.useAppendStream ? StreamAppender : BufferAppender;
 
     if (testParams.testType.indexOf("A") != -1) {
-      appenders.push(new Appender("audio/mp4; codecs=\"mp4a.40.2\"", "audio.mp4", "a", testParams.startOffset, testParams.appendSize));
+      appenders.push(
+          new Appender("audio/mp4; codecs=\"mp4a.40.2\"",
+                       "audio.mp4",
+                       "a",
+                       testParams.startOffset,
+                       testParams.appendSize));
     }
 
     if (testParams.testType.indexOf("V") != -1) {
-      appenders.push(new Appender("video/mp4; codecs=\"avc1.640028\"", "video.mp4", "v", testParams.startOffset, testParams.appendSize));
+      appenders.push(
+          new Appender("video/mp4; codecs=\"avc1.640028\"",
+                       "video.mp4",
+                       "v",
+                       testParams.startOffset,
+                       testParams.appendSize));
     }
 
-    var video = document.getElementById('v');
+    var video = document.getElementById("v");
+    video.addEventListener("error", function(e) {
+      console.log("video error!");
+      EndTest("Video error: " + video.error);
+    });
+
     video.id = getTestID();
     runAppendTest(video, appenders, function(stats, timestamps) {
       displayResults(stats);
       plotTimestamps(timestamps, testParams.graphDuration, video);
-      window.__testDone = true;
+      EndTest("Call back call done.");
     });
   }
 
+  function EndTest(msg) {
+    console.log("Ending test: " + msg);
+    window.__testDone = true;
+  }
+
   function getTestID() {
-    console.log("setting test ID")
-    console.log(testParams.doNotWaitForBodyOnLoad)
     var id = testParams.testType;
     if (testParams.useAppendStream)
       id += "_stream"
@@ -494,5 +524,5 @@
 
   window["setupTest"] = setupTest;
   window.__testDone = false;
-  window.__testMetrics = null;
+  window.__testMetrics = {};
 })();
