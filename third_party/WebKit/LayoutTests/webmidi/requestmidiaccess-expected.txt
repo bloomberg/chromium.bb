@@ -9,8 +9,10 @@ PASS access.inputs().length is 1
 PASS access.outputs().length is 1
 PASS input attributes are correct
 PASS output attributes are correct
-PASS output.send([0xf1, 0x45, 0x7f]) threw exception SecurityError: Failed to execute 'send' on 'MIDIOutput': permission to send system exclusive messages is denied..
-PASS output.send([0xfff, 0x45, 0x7f]) threw exception InvalidStateError: Failed to execute 'send' on 'MIDIOutput': The value at index 0 (4095) is greater than 0xFF..
+PASS a note on message is sent without timestamp
+PASS a note on message is sent with timestamp
+PASS output.send([0xfff, 0x45, 0x7f]) threw exception TypeError: Failed to execute 'send' on 'MIDIOutput': The value at index 0 (4095) is greater than 0xFF..
+PASS output.send([0xf0, 0x45, 0xf7]) threw exception InvalidAccessError: Failed to execute 'send' on 'MIDIOutput': System exclusive message is not allowed at index 0 (240)..
 PASS requestMIDIAccess() was correctly blocked for System Exclusive access with error [object DOMError].
 PASS successfullyParsed is true
 

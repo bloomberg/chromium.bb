@@ -48,13 +48,18 @@ function successCallback1(a) {
 
     // Test sending of MIDI data with a regular Array.
     output.send([0x90, 0x45, 0x7f]);
+    testPassed("a note on message is sent without timestamp");
 
     // Test sending of MIDI data with a regular Array giving an explicit timestamp.
     output.send([0x90, 0x45, 0x7f], performance.now());
+    testPassed("a note on message is sent with timestamp");
+
+    // Test sending of invalid MIDI data.
+    shouldThrow('output.send([0xfff, 0x45, 0x7f])');
 
     // Test sending system exclusive messages. These should throw, since we don't have sysex access.
-    shouldThrow('output.send([0xf1, 0x45, 0x7f])', '"SecurityError: Failed to execute \'send\' on \'MIDIOutput\': permission to send system exclusive messages is denied."');
-    shouldThrow('output.send([0xfff, 0x45, 0x7f])');
+    shouldThrow('output.send([0xf0, 0x45, 0xf7])');
+
     // Now test System Exclusive access - our test mock should not allow this type of access.
     shouldNotThrow("navigator.requestMIDIAccess({sysex: true}).then(successCallback2, errorCallback2)");
 }

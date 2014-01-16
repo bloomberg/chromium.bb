@@ -121,7 +121,7 @@ void MIDIAccess::didReceiveMIDIData(unsigned portIndex, const unsigned char* dat
 
 void MIDIAccess::sendMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStampInMilliseconds)
 {
-    if (m_hasAccess && portIndex < m_outputs.size() && data && length > 1) {
+    if (m_hasAccess && portIndex < m_outputs.size() && data && length > 0) {
         // Convert from a time in milliseconds (a DOMHighResTimeStamp) according to the same time coordinate system as performance.now()
         // into a time in seconds which is based on the time coordinate system of monotonicallyIncreasingTime().
         double timeStamp;
