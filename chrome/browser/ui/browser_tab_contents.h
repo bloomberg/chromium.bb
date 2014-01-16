@@ -42,14 +42,6 @@ class BrowserTabContents {
   // helpers.
   friend class BrowserNavigatorWebContentsAdoption;
 
-  // ChromeFrame is defined as a complete tab of Chrome inside of an IE
-  // window, so it need to have the full complement of tab helpers that it
-  // would have if it were in a Browser.
-  // TODO(avi): It's still probably a good idea for Chrome Frame to more
-  // explicitly control which tab helpers get created for its WebContentses.
-  // http://crbug.com/157590
-  friend class ExternalTabContainerWin;
-
   // Prerendering loads pages that have arbitrary external content; it needs
   // the full set of tab helpers to deal with it.
   friend class prerender::PrerenderContents;
