@@ -29,13 +29,39 @@
 import webkitpy.thirdparty.unittest2 as unittest
 
 from webkitpy.common.checkout.baselineoptimizer import BaselineOptimizer
+from webkitpy.common.checkout.scm.scm_mock import MockSCM
 from webkitpy.common.host_mock import MockHost
 from webkitpy.common.webkit_finder import WebKitFinder
 
 
+class ExcludingMockSCM(MockSCM):
+    def __init__(self, exclusion_list, filesystem=None, executive=None):
+        MockSCM.__init__(self, filesystem, executive)
+        self._exclusion_list = exclusion_list
+
+    def exists(self, path):
+        if path in self._exclusion_list:
+            return False
+        return MockSCM.exists(self, path)
+
+    def delete(self, path):
+        return self.delete_list([path])
+
+    def delete_list(self, paths):
+        for path in paths:
+            if path in self._exclusion_list:
+                raise Exception("File is not SCM managed: " + path)
+        return MockSCM.delete_list(self, paths)
+
+    def move(self, origin, destination):
+        if origin in self._exclusion_list:
+            raise Exception("File is not SCM managed: " + origin)
+        return MockSCM.move(self, origin, destination)
+
+
 class BaselineOptimizerTest(unittest.TestCase):
     def test_move_baselines(self):
-        host = MockHost()
+        host = MockHost(scm=ExcludingMockSCM(['/mock-checkout/third_party/WebKit/LayoutTests/platform/mac/another/test-expected.txt']))
         host.filesystem.write_binary_file('/mock-checkout/third_party/WebKit/LayoutTests/platform/win/another/test-expected.txt', 'result A')
         host.filesystem.write_binary_file('/mock-checkout/third_party/WebKit/LayoutTests/platform/mac/another/test-expected.txt', 'result A')
         host.filesystem.write_binary_file('/mock-checkout/third_party/WebKit/LayoutTests/another/test-expected.txt', 'result B')

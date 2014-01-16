@@ -209,15 +209,28 @@ class BaselineOptimizer(object):
                 source = self._join_directory(directory, baseline_name)
                 data_for_result[result] = self._filesystem.read_binary_file(source)
 
-        file_names = []
+        scm_files = []
+        fs_files = []
         for directory, result in results_by_directory.items():
             if new_results_by_directory.get(directory) != result:
-                file_names.append(self._join_directory(directory, baseline_name))
-        if file_names:
-            _log.debug("    Deleting:")
-            for platform_dir in sorted(self._platform(filename) for filename in file_names):
-                _log.debug("      " + platform_dir)
-            self._scm.delete_list(file_names)
+                file_name = self._join_directory(directory, baseline_name)
+                if self._scm.exists(file_name):
+                    scm_files.append(file_name)
+                else:
+                    fs_files.append(file_name)
+
+        if scm_files or fs_files:
+            if scm_files:
+                _log.debug("    Deleting (SCM):")
+                for platform_dir in sorted(self._platform(filename) for filename in scm_files):
+                    _log.debug("      " + platform_dir)
+                self._scm.delete_list(scm_files)
+            if fs_files:
+                _log.debug("    Deleting (file system):")
+                for platform_dir in sorted(self._platform(filename) for filename in fs_files):
+                    _log.debug("      " + platform_dir)
+                for filename in fs_files:
+                    self._filesystem.remove(filename)
         else:
             _log.debug("    (Nothing to delete)")
 

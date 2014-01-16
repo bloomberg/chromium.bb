@@ -37,12 +37,12 @@ from webkitpy.layout_tests.port.test import add_unit_tests_to_mock_filesystem
 
 
 class MockHost(MockSystemHost):
-    def __init__(self, log_executive=False, executive_throws_when_run=None, initialize_scm_by_default=True, web=None):
+    def __init__(self, log_executive=False, executive_throws_when_run=None, initialize_scm_by_default=True, web=None, scm=None):
         MockSystemHost.__init__(self, log_executive, executive_throws_when_run)
         add_unit_tests_to_mock_filesystem(self.filesystem)
         self.web = web or MockWeb()
 
-        self._scm = None
+        self._scm = scm
         # FIXME: we should never initialize the SCM by default, since the real
         # object doesn't either. This has caused at least one bug (see bug 89498).
         if initialize_scm_by_default:
@@ -55,7 +55,8 @@ class MockHost(MockSystemHost):
         self.port_factory = PortFactory(self)
 
     def initialize_scm(self, patch_directories=None):
-        self._scm = MockSCM(filesystem=self.filesystem, executive=self.executive)
+        if not self._scm:
+            self._scm = MockSCM(filesystem=self.filesystem, executive=self.executive)
         # Various pieces of code (wrongly) call filesystem.chdir(checkout_root).
         # Making the checkout_root exist in the mock filesystem makes that chdir not raise.
         self.filesystem.maybe_make_directory(self._scm.checkout_root)
