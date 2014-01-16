@@ -196,6 +196,7 @@
                 'nacl/loader/nonsfi/elf_loader.h',
                 'nacl/loader/nonsfi/irt_basic.cc',
                 'nacl/loader/nonsfi/irt_fdio.cc',
+                'nacl/loader/nonsfi/irt_futex.cc',
                 'nacl/loader/nonsfi/irt_interfaces.cc',
                 'nacl/loader/nonsfi/irt_interfaces.h',
                 'nacl/loader/nonsfi/irt_thread.cc',
