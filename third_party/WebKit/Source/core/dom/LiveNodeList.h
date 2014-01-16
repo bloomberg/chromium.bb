@@ -57,7 +57,6 @@ public:
         , m_rootType(rootType)
         , m_invalidationType(invalidationType)
         , m_shouldOnlyIncludeDirectChildren(shouldOnlyIncludeDirectChildren)
-        , m_isNameCacheValid(false)
         , m_collectionType(collectionType)
         , m_overridesItemAfter(itemAfterOverrideType == OverridesItemAfter)
     {
@@ -121,10 +120,6 @@ protected:
     }
 
     ALWAYS_INLINE NodeListRootType rootType() const { return static_cast<NodeListRootType>(m_rootType); }
-
-    bool hasNameCache() const { return m_isNameCacheValid; }
-    void setHasNameCache() const { m_isNameCacheValid = true; }
-
     bool shouldOnlyIncludeDirectChildren() const { return m_shouldOnlyIncludeDirectChildren; }
 
 private:
@@ -144,10 +139,9 @@ private:
     const unsigned m_rootType : 2;
     const unsigned m_invalidationType : 4;
     const unsigned m_shouldOnlyIncludeDirectChildren : 1;
+    const unsigned m_collectionType : 5;
 
     // From HTMLCollection
-    mutable unsigned m_isNameCacheValid : 1;
-    const unsigned m_collectionType : 5;
     const unsigned m_overridesItemAfter : 1;
 };
 

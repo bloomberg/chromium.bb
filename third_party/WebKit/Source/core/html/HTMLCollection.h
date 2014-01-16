@@ -68,6 +68,8 @@ protected:
     HTMLCollection(Node* base, CollectionType, ItemAfterOverrideType);
 
     virtual void updateNameCache() const;
+    bool hasNameCache() const { return m_isNameCacheValid; }
+    void setHasNameCache() const { m_isNameCacheValid = true; }
 
     typedef HashMap<StringImpl*, OwnPtr<Vector<Element*> > > NodeCacheMap;
     Vector<Element*>* idCache(const AtomicString& name) const { return m_idCache.get(name.impl()); }
@@ -84,8 +86,10 @@ private:
     {
         m_idCache.clear();
         m_nameCache.clear();
+        m_isNameCacheValid = false;
     }
 
+    mutable unsigned m_isNameCacheValid : 1;
     mutable NodeCacheMap m_idCache;
     mutable NodeCacheMap m_nameCache;
 

@@ -163,6 +163,7 @@ static NodeListInvalidationType invalidationTypeExcludingIdAndNameAttributes(Col
 HTMLCollection::HTMLCollection(Node* ownerNode, CollectionType type, ItemAfterOverrideType itemAfterOverrideType)
     : LiveNodeListBase(ownerNode, rootTypeFromCollectionType(type), invalidationTypeExcludingIdAndNameAttributes(type),
         WebCore::shouldOnlyIncludeDirectChildren(type), type, itemAfterOverrideType)
+    , m_isNameCacheValid(false)
 {
     ScriptWrappable::init(this);
 }
