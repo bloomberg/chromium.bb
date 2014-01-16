@@ -331,8 +331,10 @@ void DataReductionProxySettings::SetDataReductionProxyEnabled(bool enabled) {
   if (!IsDataReductionProxyAllowed())
     return;
 
-  spdy_proxy_auth_enabled_.SetValue(enabled);
-  OnProxyEnabledPrefChange();
+  if (spdy_proxy_auth_enabled_.GetValue() != enabled) {
+    spdy_proxy_auth_enabled_.SetValue(enabled);
+    OnProxyEnabledPrefChange();
+  }
 }
 
 int64 DataReductionProxySettings::GetDataReductionLastUpdateTime() {
