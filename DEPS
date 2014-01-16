@@ -509,7 +509,7 @@ deps_os = {
       "/trunk/deps/third_party/apache-mime4j@170888",
 
     "src/third_party/findbugs":
-      "/trunk/deps/third_party/findbugs@163586",
+      "/trunk/deps/third_party/findbugs@245039",
 
     "src/third_party/freetype":
       Var("chromium_git") + "/chromium/src/third_party/freetype.git" +
