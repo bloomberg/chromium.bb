@@ -88,6 +88,11 @@ def GenerateXbuddyRequest(path, static_dir, board=None):
     if not os.path.exists(path):
       raise ValueError('Image path does not exist: %s' % path)
 
+    # We have a list of known image names that are recognized by
+    # devserver. User cannot arbitrarily rename their images.
+    if os.path.basename(path) not in IMAGE_NAME_TO_TYPE:
+      raise ValueError('Unknown image name %s' % os.path.basename(path))
+
     chroot_path = ds_wrapper.ToChrootPath(path)
     # Create and link static_dir/DEVSERVER_LOCAL_IMAGE_SYMLINK_DIR/hashed_path
     # to the image folder, so that xbuddy/devserver can understand the path.
@@ -129,12 +134,17 @@ class FlashCommand(cros.CrosCommand):
   EPILOG = """
 To update the device with the latest locally built image:
   cros flash device latest
+  cros flash device
+
+To update the device with a local image path:
+  cros flash device path_to_image
 
 To update the device with an xbuddy path:
   cros flash device xbuddy://{local|remote}/board/version
 
-  Common xbuddy version aliases are latest, latest-{dev|beta|stable}, and
-  latest-official, where 'latest' is a short version of latest-stable.
+  Common xbuddy version aliases are latest,
+  latest-{dev|beta|stable|canary}, and latest-official, where 'latest'
+  is a short version of latest-stable.
 
   For more information about xbuddy paths, please see
   http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/\
@@ -170,21 +180,39 @@ following three options.
   DEVICE_WORK_DIR = '/mnt/stateful_partition/cros-flash'
 
   @classmethod
-  def GetUpdateStatus(cls, device):
-    """Returns the status of the update engine on the |device|."""
+  def GetUpdateStatus(cls, device, keys=None):
+    """Returns the status of the update engine on the |device|.
+
+    Retrieves the status from update engine and confirms all keys are
+    in the status.
+
+    Args:
+      device: A RemoteDevice object.
+      keys: the keys to look for in the status result (defaults to
+        ['CURRENT_OP']).
+
+    Returns:
+      A list of values in the order of |keys|.
+    """
+    keys = ['CURRENT_OP'] if not keys else keys
     result = device.RunCommand([cls.UPDATE_ENGINE_BIN, '--status'])
     if not result.output:
-      logging.error('Cannot get update status')
-      return None
+      raise Exception('Cannot get update status')
 
     try:
       status = cros_build_lib.LoadKeyValueFile(
           cStringIO.StringIO(result.output))
     except ValueError:
-      logging.error('Cannot parse update status')
-      return None
+      raise ValueError('Cannot parse update status')
 
-    return status.get('CURRENT_OP', None)
+    values = []
+    for key in keys:
+      if key not in status:
+        raise ValueError('Missing %s in the update engine status')
+
+      values.append(status.get(key))
+
+    return values
 
   def UpdateStateful(self, device, payload):
     """Update the stateful partition of the device.
@@ -239,11 +267,11 @@ following three options.
         device, devserver_bin, static_dir=static_dir, log_dir=device.work_dir)
 
     logging.info('Checking if update engine is idle...')
-    status = self.GetUpdateStatus(device)
+    status, = self.GetUpdateStatus(device)
     if status == 'UPDATE_STATUS_UPDATED_NEED_REBOOT':
       logging.info('Device needs to reboot before updating...')
       device.Reboot()
-      status = self.GetUpdateStatus(device)
+      status, = self.GetUpdateStatus(device)
 
     if status != 'UPDATE_STATUS_IDLE':
       raise DeviceUpdateError('Update engine is not idle. Status: %s' % status)
@@ -259,18 +287,21 @@ following three options.
       device.RunCommand(cmd)
 
       def _CheckUpdateStatus(status):
-        logging.info('Waiting for rootfs update...status is %s', status)
-        if status == 'UPDATE_STATUS_UPDATED_NEED_REBOOT':
+        op, progress = status
+        logging.info('Waiting for update...status: %s at progress %s',
+                     op, progress)
+        if op == 'UPDATE_STATUS_UPDATED_NEED_REBOOT':
           return False
-        elif status == 'UPDATE_STATUS_IDLE':
+        elif op == 'UPDATE_STATUS_IDLE':
           raise DeviceUpdateError(
               'Update failed with unexpected update status: %s' % status)
 
         return True
 
-      timeout_util.WaitForSuccess(_CheckUpdateStatus, self.GetUpdateStatus,
-                                  timeout=self.UPDATE_ENGINE_TIMEOUT, period=5,
-                                  func_args=[device])
+      timeout_util.WaitForSuccess(
+          _CheckUpdateStatus, self.GetUpdateStatus,
+          timeout=self.UPDATE_ENGINE_TIMEOUT, period=15,
+          func_args=[device], func_kwargs={'keys': ['CURRENT_OP', 'PROGRESS']})
 
     except timeout_util.TimeoutError:
       raise DeviceUpdateError('Timed out updating rootfs.')
@@ -322,10 +353,12 @@ following three options.
     parser.add_argument(
         'device', help='The hostname/IP address of the device.')
     parser.add_argument(
-        'image', help="Image to install; can be a local path, a "
-        "xbuddy path (xbuddy://{local|remote}/board/version), or simply "
+        'image', nargs='?', default='latest', help="Image to install; "
+        "can be a local path, a xbuddy path "
+        "(xbuddy://{local|remote}/board/version), or simply "
         "'latest' for latest local build. You Can also specify a "
-        "directory path with pre-generated payloads.")
+        "directory path with pre-generated payloads (defaults to "
+        "'latest')")
     parser.add_argument(
         '--no-reboot', action='store_false', dest='reboot', default=True,
         help='Do not reboot after update. Default is always reboot.')
@@ -338,7 +371,7 @@ following three options.
         'Default is always update.')
     parser.add_argument(
         '--no-rootfs-update', action='store_false', dest='rootfs_update',
-        help='Do not update the rootfs partition on the device.'
+        help='Do not update the rootfs partition on the device. '
         'Default is always update.')
     parser.add_argument(
         '--src-image', type='path',

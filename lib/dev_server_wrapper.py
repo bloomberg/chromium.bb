@@ -57,7 +57,10 @@ def ToChrootPath(path):
   if cros_build_lib.IsInsideChroot():
     return full_path
 
-  return git.ReinterpretPathForChroot(full_path)
+  try:
+    return git.ReinterpretPathForChroot(full_path)
+  except Exception:
+    raise ValueError('path %s is outside of your source tree' % path)
 
 
 def FromChrootPath(path):
