@@ -108,6 +108,10 @@ class ServiceWatcherImpl : public ServiceWatcher,
   void DeliverDeferredUpdate(ServiceWatcher::UpdateType update_type,
                              const std::string& service_name);
 
+  void ScheduleQuery(int timeout_seconds);
+
+  void SendQuery(int next_timeout_seconds, bool force_update);
+
   std::string service_type_;
   ServiceListenersMap services_;
   scoped_ptr<net::MDnsTransaction> transaction_network_;

@@ -18,6 +18,9 @@ namespace {
 // TODO(noamsml): Make this configurable through the LocalDomainResolver
 // interface.
 const int kLocalDomainSecondAddressTimeoutMs = 100;
+
+const int kInitialRequeryTimeSeconds = 1;
+const int kMaxRequeryTimeSeconds = 2; // Time for last requery
 }
 
 ServiceDiscoveryClientImpl::ServiceDiscoveryClientImpl(
@@ -74,8 +77,7 @@ void ServiceWatcherImpl::DiscoverNewServices(bool force_update) {
   DCHECK(started_);
   if (force_update)
     services_.clear();
-  CreateTransaction(true /*network*/, false /*cache*/, force_update,
-                    &transaction_network_);
+  SendQuery(kInitialRequeryTimeSeconds, force_update);
 }
 
 void ServiceWatcherImpl::ReadCachedServices() {
@@ -232,6 +234,25 @@ void ServiceWatcherImpl::OnNsecRecord(const std::string& name,
                                       unsigned rrtype) {
   // Do nothing. It is an error for hosts to broadcast an NSEC record for PTR
   // on any name.
+}
+
+void ServiceWatcherImpl::ScheduleQuery(int timeout_seconds) {
+  if (timeout_seconds <= kMaxRequeryTimeSeconds) {
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&ServiceWatcherImpl::SendQuery,
+                   AsWeakPtr(),
+                   timeout_seconds * 2 /*next_timeout_seconds*/,
+                   false /*force_update*/),
+        base::TimeDelta::FromSeconds(timeout_seconds));
+  }
+}
+
+void ServiceWatcherImpl::SendQuery(int next_timeout_seconds,
+                                   bool force_update) {
+  CreateTransaction(true /*network*/, false /*cache*/, force_update,
+                    &transaction_network_);
+  ScheduleQuery(next_timeout_seconds);
 }
 
 ServiceResolverImpl::ServiceResolverImpl(

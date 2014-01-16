@@ -245,6 +245,10 @@ TEST_F(ServiceDiscoveryTest, DiscoverNewServices) {
   EXPECT_CALL(socket_factory_, OnSendTo(_)).Times(2);
 
   watcher->DiscoverNewServices(false);
+
+  EXPECT_CALL(socket_factory_, OnSendTo(_)).Times(2);
+
+  RunFor(base::TimeDelta::FromSeconds(2));
 };
 
 TEST_F(ServiceDiscoveryTest, ReadCachedServices) {
