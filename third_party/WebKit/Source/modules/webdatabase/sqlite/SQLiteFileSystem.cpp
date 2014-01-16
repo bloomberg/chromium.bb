@@ -32,7 +32,6 @@
 #include "modules/webdatabase/sqlite/SQLiteFileSystem.h"
 
 #include <sqlite3.h>
-#include "public/platform/Platform.h"
 #include "wtf/text/CString.h"
 
 // SQLiteFileSystem::registerSQLiteVFS() is implemented in the
@@ -49,52 +48,6 @@ int SQLiteFileSystem::openDatabase(const String& filename, sqlite3** database, b
         return sqlite3_open(filename.utf8().data(), database);
 
     return sqlite3_open_v2(filename.utf8().data(), database, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, "chromium_vfs");
-}
-
-String SQLiteFileSystem::getFileNameForNewDatabase(
-  const String&, const String& dbName, const String &originIdentifier, SQLiteDatabase*)
-{
-    // Not used by Chromium's DatabaseTracker implementation
-    ASSERT_NOT_REACHED();
-    return String();
-}
-
-String SQLiteFileSystem::appendDatabaseFileNameToPath(const String&, const String& fileName)
-{
-    // Not used by Chromium's DatabaseTracker implementation
-    ASSERT_NOT_REACHED();
-    return String();
-}
-
-bool SQLiteFileSystem::ensureDatabaseDirectoryExists(const String&)
-{
-    // Not used by Chromium's DatabaseTracker implementation
-    ASSERT_NOT_REACHED();
-    return false;
-}
-
-bool SQLiteFileSystem::ensureDatabaseFileExists(const String&, bool)
-{
-    // Not used by Chromium's DatabaseTracker implementation
-    ASSERT_NOT_REACHED();
-    return false;
-}
-
-bool SQLiteFileSystem::deleteEmptyDatabaseDirectory(const String&)
-{
-    // Not used by Chromium's DatabaseTracker implementation
-    ASSERT_NOT_REACHED();
-    return false;
-}
-
-bool SQLiteFileSystem::deleteDatabaseFile(const String& fileName)
-{
-    return (blink::Platform::current()->databaseDeleteFile(fileName, false) == SQLITE_OK);
-}
-
-long long SQLiteFileSystem::getDatabaseFileSize(const String& fileName)
-{
-    return blink::Platform::current()->databaseGetFileSize(fileName);
 }
 
 } // namespace WebCore

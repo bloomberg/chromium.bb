@@ -34,7 +34,6 @@
 namespace WebCore {
 
 const int SQLAuthAllow = SQLITE_OK;
-const int SQLAuthIgnore = SQLITE_IGNORE;
 const int SQLAuthDeny = SQLITE_DENY;
 
 } // namespace WebCore

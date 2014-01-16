@@ -69,10 +69,8 @@ public:
     void updateLastChangesCount();
 
     bool executeCommand(const String&);
-    bool returnsAtLeastOneResult(const String&);
 
     bool tableExists(const String&);
-    void clearAllTables();
     int runVacuumCommand();
     int runIncrementalVacuumCommand();
 
@@ -82,27 +80,16 @@ public:
     int lastChanges();
 
     void setBusyTimeout(int ms);
-    void setBusyHandler(int(*)(void*, int));
 
-    void setFullsync(bool);
-
-    // Gets/sets the maximum size in bytes
+    // Sets the maximum size in bytes
     // Depending on per-database attributes, the size will only be settable in units that are the page size of the database, which is established at creation
     // These chunks will never be anything other than 512, 1024, 2048, 4096, 8192, 16384, or 32768 bytes in size.
     // setMaximumSize() will round the size down to the next smallest chunk if the passed size doesn't align.
-    int64_t maximumSize();
     void setMaximumSize(int64_t);
 
     // Gets the number of unused bytes in the database file.
     int64_t freeSpaceSize();
     int64_t totalSize();
-
-    // The SQLite SYNCHRONOUS pragma can be either FULL, NORMAL, or OFF
-    // FULL - Any writing calls to the DB block until the data is actually on the disk surface
-    // NORMAL - SQLite pauses at some critical moments when writing, but much less than FULL
-    // OFF - Calls return immediately after the data has been passed to disk
-    enum SynchronousPragma { SyncOff = 0, SyncNormal = 1, SyncFull = 2 };
-    void setSynchronous(SynchronousPragma);
 
     int lastError();
     const char* lastErrorMsg();
@@ -128,14 +115,6 @@ public:
     //               is called.
     enum AutoVacuumPragma { AutoVacuumNone = 0, AutoVacuumFull = 1, AutoVacuumIncremental = 2 };
     bool turnOnIncrementalAutoVacuum();
-
-    // Set this flag to allow access from multiple threads.  Not all multi-threaded accesses are safe!
-    // See http://www.sqlite.org/cvstrac/wiki?p=MultiThreading for more info.
-#ifndef NDEBUG
-    void disableThreadingChecks();
-#else
-    void disableThreadingChecks() {}
-#endif
 
 private:
     static int authorizerFunction(void*, int, const char*, const char*, const char*, const char*);

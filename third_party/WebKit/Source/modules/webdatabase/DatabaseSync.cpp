@@ -67,11 +67,6 @@ DatabaseSync::~DatabaseSync()
     ASSERT(m_executionContext->isContextThread());
 }
 
-PassRefPtr<DatabaseBackendSync> DatabaseSync::backend()
-{
-    return this;
-}
-
 void DatabaseSync::changeVersion(const String& oldVersion, const String& newVersion, PassOwnPtr<SQLTransactionSyncCallback> changeVersionCallback, ExceptionState& exceptionState)
 {
     ASSERT(m_executionContext->isContextThread());

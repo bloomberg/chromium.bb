@@ -34,7 +34,6 @@
 namespace WebCore {
 
 const char SQLError::quotaExceededErrorMessage[] = "Quota was exceeded.";
-const char SQLError::syntaxErrorMessage[] = "Invalid or unauthorized statement; or the number of arguments did not match the number of ? placeholders.";
 const char SQLError::unknownErrorMessage[] = "The operation failed for reasons unrelated to the database.";
 const char SQLError::versionErrorMessage[] = "The actual database version did not match the expected version.";
 

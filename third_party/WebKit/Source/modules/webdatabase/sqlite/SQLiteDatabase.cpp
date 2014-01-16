@@ -136,29 +136,6 @@ bool SQLiteDatabase::isInterrupted()
     return m_interrupted;
 }
 
-void SQLiteDatabase::setFullsync(bool fsync)
-{
-    if (fsync)
-        executeCommand("PRAGMA fullfsync = 1;");
-    else
-        executeCommand("PRAGMA fullfsync = 0;");
-}
-
-int64_t SQLiteDatabase::maximumSize()
-{
-    int64_t maxPageCount = 0;
-
-    {
-        MutexLocker locker(m_authorizerLock);
-        enableAuthorizer(false);
-        SQLiteStatement statement(*this, "PRAGMA max_page_count");
-        maxPageCount = statement.getColumnInt64(0);
-        enableAuthorizer(true);
-    }
-
-    return maxPageCount * pageSize();
-}
-
 void SQLiteDatabase::setMaximumSize(int64_t size)
 {
     if (size < 0)
@@ -233,11 +210,6 @@ int64_t SQLiteDatabase::totalSize()
     return pageCount * pageSize();
 }
 
-void SQLiteDatabase::setSynchronous(SynchronousPragma sync)
-{
-    executeCommand("PRAGMA synchronous = " + String::number(sync));
-}
-
 void SQLiteDatabase::setBusyTimeout(int ms)
 {
     if (m_db)
@@ -246,22 +218,9 @@ void SQLiteDatabase::setBusyTimeout(int ms)
         WTF_LOG(SQLDatabase, "BusyTimeout set on non-open database");
 }
 
-void SQLiteDatabase::setBusyHandler(int(*handler)(void*, int))
-{
-    if (m_db)
-        sqlite3_busy_handler(m_db, handler, NULL);
-    else
-        WTF_LOG(SQLDatabase, "Busy handler set on non-open database");
-}
-
 bool SQLiteDatabase::executeCommand(const String& sql)
 {
     return SQLiteStatement(*this, sql).executeCommand();
-}
-
-bool SQLiteDatabase::returnsAtLeastOneResult(const String& sql)
-{
-    return SQLiteStatement(*this, sql).returnsAtLeastOneResult();
 }
 
 bool SQLiteDatabase::tableExists(const String& tablename)
@@ -274,23 +233,6 @@ bool SQLiteDatabase::tableExists(const String& tablename)
     SQLiteStatement sql(*this, statement);
     sql.prepare();
     return sql.step() == SQLITE_ROW;
-}
-
-void SQLiteDatabase::clearAllTables()
-{
-    String query = "SELECT name FROM sqlite_master WHERE type='table';";
-    Vector<String> tables;
-    if (!SQLiteStatement(*this, query).returnTextResults(0, tables)) {
-        WTF_LOG(SQLDatabase, "Unable to retrieve list of tables from database");
-        return;
-    }
-
-    for (Vector<String>::iterator table = tables.begin(); table != tables.end(); ++table ) {
-        if (*table == "sqlite_sequence")
-            continue;
-        if (!executeCommand("DROP TABLE " + *table))
-            WTF_LOG(SQLDatabase, "Unable to drop table %s", (*table).ascii().data());
-    }
 }
 
 int SQLiteDatabase::runVacuumCommand()
@@ -346,18 +288,6 @@ const char* SQLiteDatabase::lastErrorMsg()
         return sqlite3_errmsg(m_db);
     return m_openErrorMessage.isNull() ? notOpenErrorMessage : m_openErrorMessage.data();
 }
-
-#ifndef NDEBUG
-void SQLiteDatabase::disableThreadingChecks()
-{
-    // This doesn't guarantee that SQList was compiled with -DTHREADSAFE, or that you haven't turned off the mutexes.
-#if SQLITE_VERSION_NUMBER >= 3003001
-    m_sharable = true;
-#else
-    ASSERT(0); // Your SQLite doesn't support sharing handles across threads.
-#endif
-}
-#endif
 
 int SQLiteDatabase::authorizerFunction(void* userData, int actionCode, const char* parameter1, const char* parameter2, const char* /*databaseName*/, const char* /*trigger_or_view*/)
 {

@@ -37,7 +37,6 @@
 namespace WebCore {
 
 extern const int SQLAuthAllow;
-extern const int SQLAuthIgnore;
 extern const int SQLAuthDeny;
 
 class DatabaseAuthorizer : public ThreadSafeRefCounted<DatabaseAuthorizer> {

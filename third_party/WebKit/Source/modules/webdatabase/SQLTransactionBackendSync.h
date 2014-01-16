@@ -56,7 +56,6 @@ public:
     PassRefPtr<SQLResultSet> executeSQL(const String& sqlStatement, const Vector<SQLValue>& arguments, ExceptionState&);
 
     DatabaseSync* database() { return m_database.get(); }
-    bool isReadOnly() const { return m_readOnly; }
 
     void begin(ExceptionState&);
     void execute(ExceptionState&);

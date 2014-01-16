@@ -41,11 +41,7 @@ public:
     ~SQLiteStatement();
 
     int prepare();
-    int bindBlob(int index, const void* blob, int size);
-    int bindBlob(int index, const String&);
     int bindText(int index, const String&);
-    int bindInt(int index, int);
-    int bindInt64(int index, int64_t);
     int bindDouble(int index, double);
     int bindNull(int index);
     int bindValue(int index, const SQLValue&);
@@ -53,7 +49,6 @@ public:
 
     int step();
     int finalize();
-    int reset();
 
     int prepareAndStep() { if (int error = prepare()) return error; return step(); }
 
@@ -62,37 +57,18 @@ public:
     // returns false otherwise
     bool executeCommand();
 
-    // prepares, steps, and finalizes.
-    // returns true is step() returns SQLITE_ROW
-    // returns false otherwise
-    bool returnsAtLeastOneResult();
-
-    bool isExpired();
-
     // Returns -1 on last-step failing.  Otherwise, returns number of rows
     // returned in the last step()
     int columnCount();
 
-    bool isColumnNull(int col);
-    bool isColumnDeclaredAsBlob(int col);
     String getColumnName(int col);
     SQLValue getColumnValue(int col);
     String getColumnText(int col);
     double getColumnDouble(int col);
     int getColumnInt(int col);
     int64_t getColumnInt64(int col);
-    const void* getColumnBlob(int col, int& size);
-    String getColumnBlobAsString(int col);
-    void getColumnBlobAsVector(int col, Vector<char>&);
 
     bool returnTextResults(int col, Vector<String>&);
-    bool returnIntResults(int col, Vector<int>&);
-    bool returnInt64Results(int col, Vector<int64_t>&);
-    bool returnDoubleResults(int col, Vector<double>&);
-
-    SQLiteDatabase* database() { return &m_database; }
-
-    const String& query() const { return m_query; }
 
 private:
     SQLiteDatabase& m_database;

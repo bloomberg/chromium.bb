@@ -59,7 +59,6 @@ public:
 
     void addOpenDatabase(DatabaseBackendBase*);
     void removeOpenDatabase(DatabaseBackendBase*);
-    void getOpenDatabases(SecurityOrigin*, const String& name, HashSet<RefPtr<DatabaseBackendBase> >* databases);
 
     unsigned long long getMaxSizeForDatabase(const DatabaseBackendBase*);
 

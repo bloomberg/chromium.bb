@@ -40,7 +40,6 @@
 #include "modules/webdatabase/DatabaseBackendSync.h"
 #include "modules/webdatabase/DatabaseCallback.h"
 #include "modules/webdatabase/DatabaseContext.h"
-#include "modules/webdatabase/DatabaseDetails.h"
 #include "modules/webdatabase/DatabaseServer.h"
 #include "modules/webdatabase/DatabaseSync.h"
 #include "modules/webdatabase/DatabaseTask.h"
