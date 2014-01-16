@@ -93,7 +93,18 @@ bool GetAccessToken(const HttpRequest& request,
   return false;
 }
 
+void SetCookies(BasicHttpResponse* http_response,
+                const std::string& sid_cookie,
+                const std::string& lsid_cookie) {
+  http_response->AddCustomHeader(
+      "Set-Cookie",
+      base::StringPrintf("SID=%s; Path=/; HttpOnly;", sid_cookie.c_str()));
+  http_response->AddCustomHeader(
+      "Set-Cookie",
+      base::StringPrintf("LSID=%s; Path=/; HttpOnly;", lsid_cookie.c_str()));
 }
+
+}  // namespace
 
 FakeGaia::AccessTokenInfo::AccessTokenInfo()
   : expires_in(3600) {}
@@ -123,40 +134,118 @@ void FakeGaia::SetMergeSessionParams(
 
 void FakeGaia::Initialize() {
   GaiaUrls* gaia_urls = GaiaUrls::GetInstance();
-  // Handles /ServiceLogin GAIA call.
+  // Handles /MergeSession GAIA call.
   REGISTER_RESPONSE_HANDLER(
-      gaia_urls->service_login_url(), HandleServiceLogin);
-
-  // Handles /ServiceLoginAuth GAIA call.
-  REGISTER_RESPONSE_HANDLER(
-      gaia_urls->service_login_auth_url(), HandleServiceLoginAuth);
+      gaia_urls->merge_session_url(), HandleMergeSession);
 
   // Handles /o/oauth2/programmatic_auth GAIA call.
   REGISTER_RESPONSE_HANDLER(
       gaia_urls->client_login_to_oauth2_url(), HandleProgramaticAuth);
 
-  // Handles /o/oauth2/token GAIA call.
+  // Handles /ServiceLogin GAIA call.
   REGISTER_RESPONSE_HANDLER(
-      gaia_urls->oauth2_token_url(), HandleAuthToken);
+      gaia_urls->service_login_url(), HandleServiceLogin);
 
   // Handles /OAuthLogin GAIA call.
   REGISTER_RESPONSE_HANDLER(
       gaia_urls->oauth1_login_url(), HandleOAuthLogin);
 
-  // Handles /MergeSession GAIA call.
+  // Handles /ServiceLoginAuth GAIA call.
   REGISTER_RESPONSE_HANDLER(
-      gaia_urls->merge_session_url(), HandleMergeSession);
+      gaia_urls->service_login_auth_url(), HandleServiceLoginAuth);
 
-  // Handles /oauth2/v2/IssueToken GAIA call.
+  // Handles /SSO GAIA call (not GAIA, made up for SAML tests).
+  REGISTER_PATH_RESPONSE_HANDLER("/SSO", HandleSSO);
+
+  // Handles /o/oauth2/token GAIA call.
   REGISTER_RESPONSE_HANDLER(
-      gaia_urls->oauth2_issue_token_url(), HandleIssueToken);
+      gaia_urls->oauth2_token_url(), HandleAuthToken);
 
   // Handles /oauth2/v2/tokeninfo GAIA call.
   REGISTER_RESPONSE_HANDLER(
       gaia_urls->oauth2_token_info_url(), HandleTokenInfo);
 
-  // Handles /SSO GAIA call (not GAIA, made up for SAML tests).
-  REGISTER_PATH_RESPONSE_HANDLER("/SSO", HandleSSO);
+  // Handles /oauth2/v2/IssueToken GAIA call.
+  REGISTER_RESPONSE_HANDLER(
+      gaia_urls->oauth2_issue_token_url(), HandleIssueToken);
+
+  // Handles /GetUserInfo GAIA call.
+  REGISTER_RESPONSE_HANDLER(
+      gaia_urls->get_user_info_url(), HandleGetUserInfo);
+}
+
+scoped_ptr<HttpResponse> FakeGaia::HandleRequest(const HttpRequest& request) {
+  // The scheme and host of the URL is actually not important but required to
+  // get a valid GURL in order to parse |request.relative_url|.
+  GURL request_url = GURL("http://localhost").Resolve(request.relative_url);
+  std::string request_path = request_url.path();
+  scoped_ptr<BasicHttpResponse> http_response(new BasicHttpResponse());
+  RequestHandlerMap::iterator iter = request_handlers_.find(request_path);
+  if (iter != request_handlers_.end()) {
+    LOG(WARNING) << "Serving request " << request_path;
+    iter->second.Run(request, http_response.get());
+  } else {
+    LOG(ERROR) << "Unhandled request " << request_path;
+    return scoped_ptr<HttpResponse>();      // Request not understood.
+  }
+
+  return http_response.PassAs<HttpResponse>();
+}
+
+void FakeGaia::IssueOAuthToken(const std::string& auth_token,
+                               const AccessTokenInfo& token_info) {
+  access_token_info_map_.insert(std::make_pair(auth_token, token_info));
+}
+
+void FakeGaia::RegisterSamlUser(const std::string& account_id,
+                                const GURL& saml_idp) {
+  saml_account_idp_map_[account_id] = saml_idp;
+}
+
+// static
+bool FakeGaia::GetQueryParameter(const std::string& query,
+                                 const std::string& key,
+                                 std::string* value) {
+  // Name and scheme actually don't matter, but are required to get a valid URL
+  // for parsing.
+  GURL query_url("http://localhost?" + query);
+  return net::GetValueForKeyInQuery(query_url, key, value);
+}
+
+void FakeGaia::HandleMergeSession(const HttpRequest& request,
+                                  BasicHttpResponse* http_response) {
+  http_response->set_code(net::HTTP_UNAUTHORIZED);
+  if (merge_session_params_.session_sid_cookie.empty() ||
+      merge_session_params_.session_lsid_cookie.empty()) {
+    http_response->set_code(net::HTTP_BAD_REQUEST);
+    return;
+  }
+
+  std::string uber_token;
+  if (!GetQueryParameter(request.content, "uberauth", &uber_token) ||
+      uber_token != merge_session_params_.gaia_uber_token) {
+    LOG(ERROR) << "Missing or invalid 'uberauth' param in /MergeSession call";
+    return;
+  }
+
+  std::string continue_url;
+  if (!GetQueryParameter(request.content, "continue", &continue_url)) {
+    LOG(ERROR) << "Missing or invalid 'continue' param in /MergeSession call";
+    return;
+  }
+
+  std::string source;
+  if (!GetQueryParameter(request.content, "source", &source)) {
+    LOG(ERROR) << "Missing or invalid 'source' param in /MergeSession call";
+    return;
+  }
+
+  SetCookies(http_response,
+             merge_session_params_.session_sid_cookie,
+             merge_session_params_.session_lsid_cookie);
+  // TODO(zelidrag): Not used now.
+  http_response->set_content("OK");
+  http_response->set_code(net::HTTP_OK);
 }
 
 void FakeGaia::HandleProgramaticAuth(
@@ -204,6 +293,38 @@ void FakeGaia::HandleProgramaticAuth(
   http_response->set_content_type("text/html");
 }
 
+void FakeGaia::FormatJSONResponse(const base::DictionaryValue& response_dict,
+                                  BasicHttpResponse* http_response) {
+  std::string response_json;
+  base::JSONWriter::Write(&response_dict, &response_json);
+  http_response->set_content(response_json);
+  http_response->set_code(net::HTTP_OK);
+}
+
+const FakeGaia::AccessTokenInfo* FakeGaia::FindAccessTokenInfo(
+    const std::string& auth_token,
+    const std::string& client_id,
+    const std::string& scope_string) const {
+  if (auth_token.empty() || client_id.empty())
+    return NULL;
+
+  std::vector<std::string> scope_list;
+  base::SplitString(scope_string, ' ', &scope_list);
+  ScopeSet scopes(scope_list.begin(), scope_list.end());
+
+  for (AccessTokenInfoMap::const_iterator entry(
+           access_token_info_map_.lower_bound(auth_token));
+       entry != access_token_info_map_.upper_bound(auth_token);
+       ++entry) {
+    if (entry->second.audience == client_id &&
+        (scope_string.empty() || entry->second.scopes == scopes)) {
+      return &(entry->second);
+    }
+  }
+
+  return NULL;
+}
+
 void FakeGaia::HandleServiceLogin(const HttpRequest& request,
                                   BasicHttpResponse* http_response) {
   http_response->set_code(net::HTTP_OK);
@@ -245,50 +366,6 @@ void FakeGaia::HandleOAuthLogin(const HttpRequest& request,
   }
 }
 
-void FakeGaia::HandleMergeSession(const HttpRequest& request,
-                                  BasicHttpResponse* http_response) {
-  http_response->set_code(net::HTTP_UNAUTHORIZED);
-  if (merge_session_params_.session_sid_cookie.empty() ||
-      merge_session_params_.session_lsid_cookie.empty()) {
-    http_response->set_code(net::HTTP_BAD_REQUEST);
-    return;
-  }
-
-  std::string uber_token;
-  if (!GetQueryParameter(request.content, "uberauth", &uber_token) ||
-      uber_token != merge_session_params_.gaia_uber_token) {
-    LOG(ERROR) << "Missing or invalid 'uberauth' param in /MergeSession call";
-    return;
-  }
-
-  std::string continue_url;
-  if (!GetQueryParameter(request.content, "continue", &continue_url)) {
-    LOG(ERROR) << "Missing or invalid 'continue' param in /MergeSession call";
-    return;
-  }
-
-  std::string source;
-  if (!GetQueryParameter(request.content, "source", &source)) {
-    LOG(ERROR) << "Missing or invalid 'source' param in /MergeSession call";
-    return;
-  }
-
-  http_response->AddCustomHeader(
-      "Set-Cookie",
-      base::StringPrintf(
-          "SID=%s; Path=/; HttpOnly;",
-          merge_session_params_.session_sid_cookie.c_str()));
-  http_response->AddCustomHeader(
-      "Set-Cookie",
-      base::StringPrintf(
-          "LSID=%s; Path=/; HttpOnly;",
-          merge_session_params_.session_lsid_cookie.c_str()));
-  // TODO(zelidrag): Not used now.
-  http_response->set_content("OK");
-  http_response->set_code(net::HTTP_OK);
-}
-
-
 void FakeGaia::HandleServiceLoginAuth(const HttpRequest& request,
                                       BasicHttpResponse* http_response) {
   std::string continue_url =
@@ -304,20 +381,11 @@ void FakeGaia::HandleServiceLoginAuth(const HttpRequest& request,
     url = net::AppendQueryParameter(url, "SAMLRequest", "fake_request");
     url = net::AppendQueryParameter(url, "RelayState", continue_url);
     redirect_url = url.spec();
-  }
-
-  if (!merge_session_params_.auth_sid_cookie.empty() &&
-      !merge_session_params_.auth_lsid_cookie.empty()) {
-    http_response->AddCustomHeader(
-        "Set-Cookie",
-        base::StringPrintf(
-            "SID=%s; Path=/; HttpOnly;",
-            merge_session_params_.auth_sid_cookie.c_str()));
-    http_response->AddCustomHeader(
-        "Set-Cookie",
-        base::StringPrintf(
-            "LSID=%s; Path=/; HttpOnly;",
-            merge_session_params_.auth_lsid_cookie.c_str()));
+  } else if (!merge_session_params_.auth_sid_cookie.empty() &&
+             !merge_session_params_.auth_lsid_cookie.empty()) {
+    SetCookies(http_response,
+               merge_session_params_.auth_sid_cookie,
+               merge_session_params_.auth_lsid_cookie);
   }
 
   http_response->set_code(net::HTTP_TEMPORARY_REDIRECT);
@@ -326,6 +394,12 @@ void FakeGaia::HandleServiceLoginAuth(const HttpRequest& request,
 
 void FakeGaia::HandleSSO(const HttpRequest& request,
                          BasicHttpResponse* http_response) {
+  if (!merge_session_params_.auth_sid_cookie.empty() &&
+      !merge_session_params_.auth_lsid_cookie.empty()) {
+    SetCookies(http_response,
+               merge_session_params_.auth_sid_cookie,
+               merge_session_params_.auth_lsid_cookie);
+  }
   std::string relay_state;
   GetQueryParameter(request.content, "RelayState", &relay_state);
   std::string redirect_url = relay_state;
@@ -445,72 +519,20 @@ void FakeGaia::HandleIssueToken(const HttpRequest& request,
   }
 }
 
-scoped_ptr<HttpResponse> FakeGaia::HandleRequest(const HttpRequest& request) {
-  // The scheme and host of the URL is actually not important but required to
-  // get a valid GURL in order to parse |request.relative_url|.
-  GURL request_url = GURL("http://localhost").Resolve(request.relative_url);
-  std::string request_path = request_url.path();
-  scoped_ptr<BasicHttpResponse> http_response(new BasicHttpResponse());
-  RequestHandlerMap::iterator iter = request_handlers_.find(request_path);
-  if (iter != request_handlers_.end()) {
-    LOG(WARNING) << "Serving request " << request_path;
-    iter->second.Run(request, http_response.get());
-  } else {
-    LOG(ERROR) << "Unhandled request " << request_path;
-    return scoped_ptr<HttpResponse>();      // Request not understood.
+void FakeGaia::HandleGetUserInfo(const HttpRequest& request,
+                                 BasicHttpResponse* http_response) {
+  std::string lsid;
+  if (!GetQueryParameter(request.content, "LSID", &lsid)) {
+    http_response->set_code(net::HTTP_BAD_REQUEST);
+    LOG(ERROR) << "/GetUserInfo missing LSID";
+    return;
   }
-
-  return http_response.PassAs<HttpResponse>();
-}
-
-void FakeGaia::IssueOAuthToken(const std::string& auth_token,
-                               const AccessTokenInfo& token_info) {
-  access_token_info_map_.insert(std::make_pair(auth_token, token_info));
-}
-
-void FakeGaia::RegisterSamlUser(const std::string& account_id,
-                                const GURL& saml_idp) {
-  saml_account_idp_map_[account_id] = saml_idp;
-}
-
-void FakeGaia::FormatJSONResponse(const base::DictionaryValue& response_dict,
-                                  BasicHttpResponse* http_response) {
-  std::string response_json;
-  base::JSONWriter::Write(&response_dict, &response_json);
-  http_response->set_content(response_json);
+  if (lsid != merge_session_params_.auth_lsid_cookie) {
+    http_response->set_code(net::HTTP_BAD_REQUEST);
+    LOG(ERROR) << "/GetUserInfo contains unknown LSID";
+    return;
+  }
+  http_response->set_content(base::StringPrintf(
+      "email=%s", merge_session_params_.email.c_str()));
   http_response->set_code(net::HTTP_OK);
-}
-
-const FakeGaia::AccessTokenInfo* FakeGaia::FindAccessTokenInfo(
-    const std::string& auth_token,
-    const std::string& client_id,
-    const std::string& scope_string) const {
-  if (auth_token.empty() || client_id.empty())
-    return NULL;
-
-  std::vector<std::string> scope_list;
-  base::SplitString(scope_string, ' ', &scope_list);
-  ScopeSet scopes(scope_list.begin(), scope_list.end());
-
-  for (AccessTokenInfoMap::const_iterator entry(
-           access_token_info_map_.lower_bound(auth_token));
-       entry != access_token_info_map_.upper_bound(auth_token);
-       ++entry) {
-    if (entry->second.audience == client_id &&
-        (scope_string.empty() || entry->second.scopes == scopes)) {
-      return &(entry->second);
-    }
-  }
-
-  return NULL;
-}
-
-// static
-bool FakeGaia::GetQueryParameter(const std::string& query,
-                                 const std::string& key,
-                                 std::string* value) {
-  // Name and scheme actually don't matter, but are required to get a valid URL
-  // for parsing.
-  GURL query_url("http://localhost?" + query);
-  return net::GetValueForKeyInQuery(query_url, key, value);
 }

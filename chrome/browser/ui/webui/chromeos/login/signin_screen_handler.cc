@@ -4,11 +4,12 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 
-#include "base/callback.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
@@ -38,6 +39,7 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/chromeos/login/authenticated_user_email_retriever.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/native_window_delegate.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
@@ -52,11 +54,13 @@
 #include "chromeos/ime/xkeyboard.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 #if defined(USE_AURA)
@@ -729,6 +733,8 @@ void SigninScreenHandler::RegisterMessages() {
   AddCallback("focusPod", &SigninScreenHandler::HandleFocusPod);
   AddCallback("customButtonClicked",
               &SigninScreenHandler::HandleCustomButtonClicked);
+  AddCallback("retrieveAuthenticatedUserEmail",
+              &SigninScreenHandler::HandleRetrieveAuthenticatedUserEmail);
 
   // This message is sent by the kiosk app menu, but is handled here
   // so we can tell the delegate to launch the app.
@@ -1443,6 +1449,16 @@ void SigninScreenHandler::HandleCustomButtonClicked(
     return;
   }
   user_pod_button_callback_map_[username].Run();
+}
+
+void SigninScreenHandler::HandleRetrieveAuthenticatedUserEmail(
+    double attempt_token) {
+  email_retriever_.reset(new AuthenticatedUserEmailRetriever(
+      base::Bind(&SigninScreenHandler::CallJS<double, std::string>,
+                 base::Unretained(this),
+                 "login.GaiaSigninScreen.setAuthenticatedUserEmail",
+                 attempt_token),
+      Profile::FromWebUI(web_ui())->GetRequestContext()));
 }
 
 void SigninScreenHandler::HandleLaunchKioskApp(const std::string& app_id) {

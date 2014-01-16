@@ -214,9 +214,14 @@ Authenticator.prototype = {
   onAuthPageLoaded_: function(msg) {
     var isSAMLPage = msg.url.indexOf(this.gaiaUrl_) != 0;
 
-    // Set isSAMLFlow_ flag when a SAML page is loaded. The flag is sticky.
-    if (isSAMLPage)
+    if (isSAMLPage && !this.isSAMLFlow_) {
+      // GAIA redirected to a SAML login page. The credentials provided to this
+      // page will determine what user gets logged in. The credentials obtained
+      // from the GAIA login from are no longer relevant and can be discarded.
       this.isSAMLFlow_ = true;
+      this.email_ = null;
+      this.password_ = null;
+    }
 
     window.parent.postMessage({
       'method': 'authPageLoaded',
@@ -248,6 +253,11 @@ Authenticator.prototype = {
       return;
     }
 
+    // Retrieve the e-mail address of the user who just authenticated from GAIA.
+    window.parent.postMessage({method: 'retrieveAuthenticatedUserEmail',
+                               attemptToken: this.attemptToken_},
+                              this.parentPage_);
+
     this.samlSupportChannel_.sendWithCallback(
         {name: 'getScrapedPasswords'},
         function(passwords) {
@@ -263,13 +273,21 @@ Authenticator.prototype = {
         }.bind(this));
   },
 
+  maybeCompleteSAMLLogin_: function() {
+    // SAML login is complete when the user's e-mail address has been retrieved
+    // from GAIA and the user has successfully confirmed the password.
+    if (this.email_ !== null && this.password_ !== null)
+      this.completeLogin(this.email_, this.password_);
+  },
+
   onVerifyConfirmedPassword_: function(password) {
     this.samlSupportChannel_.sendWithCallback(
         {name: 'getScrapedPasswords'},
         function(passwords) {
           for (var i = 0; i < passwords.length; ++i) {
             if (passwords[i] == password) {
-              this.completeLogin(this.email_, passwords[i]);
+              this.password_ = passwords[i];
+              this.maybeCompleteSAMLLogin_();
               return;
             }
           }
@@ -296,6 +314,12 @@ Authenticator.prototype = {
       this.onLoginUILoaded();
       if (this.samlSupportChannel_)
         this.samlSupportChannel_.send({name: 'resetAuth'});
+    } else if (msg.method == 'setAuthenticatedUserEmail' &&
+               this.isParentMessage_(e)) {
+      if (this.attemptToken_ == msg.attemptToken) {
+        this.email_ = msg.email;
+        this.maybeCompleteSAMLLogin_();
+      }
     } else if (msg.method == 'confirmLogin' && this.isInternalMessage_(e)) {
       if (this.attemptToken_ == msg.attemptToken)
         this.onConfirmLogin_();

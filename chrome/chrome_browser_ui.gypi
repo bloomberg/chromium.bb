@@ -2208,6 +2208,8 @@
         'browser/ui/webui/chromeos/keyboard_overlay_ui.h',
         'browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.cc',
         'browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h',
+        'browser/ui/webui/chromeos/login/authenticated_user_email_retriever.cc',
+        'browser/ui/webui/chromeos/login/authenticated_user_email_retriever.h',
         'browser/ui/webui/chromeos/login/base_screen_handler.cc',
         'browser/ui/webui/chromeos/login/base_screen_handler.h',
         'browser/ui/webui/chromeos/login/base_screen_handler_utils.h',

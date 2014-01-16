@@ -9,6 +9,8 @@
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/chromeos/login/user.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -44,6 +46,9 @@ const char kTestAuthLoginAccessToken[] = "fake-access-token";
 const char kTestRefreshToken[] = "fake-refresh-token";
 const char kTestSessionSIDCookie[] = "fake-session-SID-cookie";
 const char kTestSessionLSIDCookie[] = "fake-session-LSID-cookie";
+
+const char kAnotherUserEmail[] = "alice@example.com";
+const char kUserEmail[] = "bob@example.com";
 
 const char kRelayState[] = "RelayState";
 
@@ -173,7 +178,8 @@ class SamlTest : public InProcessBrowserTest {
     saml_idp_url = saml_idp_url.Resolve("/SAML/SSO");
 
     fake_saml_idp_.SetUp(saml_idp_url.path(), gaia_url_);
-    fake_gaia_.RegisterSamlUser("saml_user", saml_idp_url);
+    fake_gaia_.RegisterSamlUser(kAnotherUserEmail, saml_idp_url);
+    fake_gaia_.RegisterSamlUser(kUserEmail, saml_idp_url);
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
@@ -186,6 +192,7 @@ class SamlTest : public InProcessBrowserTest {
     params.gaia_uber_token = kTestGaiaUberToken;
     params.session_sid_cookie = kTestSessionSIDCookie;
     params.session_lsid_cookie = kTestSessionLSIDCookie;
+    params.email = kUserEmail;
     fake_gaia_.SetMergeSessionParams(params);
 
     embedded_test_server()->RegisterRequestHandler(
@@ -225,7 +232,7 @@ class SamlTest : public InProcessBrowserTest {
       content::NotificationService::AllSources()).Wait();
   }
 
-  void StartSamlAndWaitForIdpPageLoad() {
+  void StartSamlAndWaitForIdpPageLoad(const std::string& gaia_email) {
     WaitForSigninScreen();
 
     if (!saml_load_injected_) {
@@ -242,7 +249,7 @@ class SamlTest : public InProcessBrowserTest {
     }
 
     content::DOMMessageQueue message_queue;  // Start observe before SAML.
-    GetLoginDisplay()->ShowSigninScreenForCreds("saml_user", "");
+    GetLoginDisplay()->ShowSigninScreenForCreds(gaia_email, "");
 
     std::string message;
     ASSERT_TRUE(message_queue.WaitForMessage(&message));
@@ -308,7 +315,7 @@ class SamlTest : public InProcessBrowserTest {
 // visible when SAML IdP page is loaded. And 'cancel' button goes back to
 // gaia on clicking.
 IN_PROC_BROWSER_TEST_F(SamlTest, SamlUI) {
-  StartSamlAndWaitForIdpPageLoad();
+  StartSamlAndWaitForIdpPageLoad(kUserEmail);
 
   // Saml flow UI expectations.
   JsExpect("$('gaia-signin').classList.contains('saml')");
@@ -332,7 +339,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, SamlUI) {
 
 // Tests the single password scraped flow.
 IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedSingle) {
-  StartSamlAndWaitForIdpPageLoad();
+  StartSamlAndWaitForIdpPageLoad(kUserEmail);
 
   // Fill-in the SAML IdP form and submit.
   SetSignFormField("Email", "fake_user");
@@ -364,7 +371,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedMultiple) {
       "<input id=Submit type=submit>"
     "</form>");
 
-  StartSamlAndWaitForIdpPageLoad();
+  StartSamlAndWaitForIdpPageLoad(kUserEmail);
 
   SetSignFormField("Email", "fake_user");
   SetSignFormField("Password", "fake_password");
@@ -389,7 +396,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedNone) {
       "<input id=Submit type=submit>"
     "</form>");
 
-  StartSamlAndWaitForIdpPageLoad();
+  StartSamlAndWaitForIdpPageLoad(kUserEmail);
 
   SetSignFormField("Email", "fake_user");
   ExecuteJsInSigninFrame("document.getElementById('IdPForm').submit();");
@@ -399,5 +406,31 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedNone) {
       "$('message-box-title').textContent == "
       "loadTimeData.getString('noPasswordWarningTitle')");
 }
+
+// Types |alice@example.com| into the GAIA login form but then authenticates as
+// |bob@example.com| via SAML. Verifies that the logged-in user is correctly
+// identified as Bob.
+IN_PROC_BROWSER_TEST_F(SamlTest, UseAutenticatedUserEmailAddress) {
+  // Type |alice@example.com| into the GAIA login form.
+  StartSamlAndWaitForIdpPageLoad(kAnotherUserEmail);
+
+  // Authenticate as bob@example.com via SAML (the |Email| provided here is
+  // irrelevant - the authenticated user's e-mail address that FakeGAIA
+  // reports was set via SetMergeSessionParams()).
+  SetSignFormField("Email", "fake_user");
+  SetSignFormField("Password", "fake_password");
+  ExecuteJsInSigninFrame("document.getElementById('IdPForm').submit();");
+
+  OobeScreenWaiter(OobeDisplay::SCREEN_CONFIRM_PASSWORD).Wait();
+
+  SendConfirmPassword("fake_password");
+  content::WindowedNotificationObserver(
+      chrome::NOTIFICATION_SESSION_STARTED,
+      content::NotificationService::AllSources()).Wait();
+  const User* user = UserManager::Get()->GetActiveUser();
+  ASSERT_TRUE(user);
+  EXPECT_EQ(kUserEmail, user->email());
+}
+
 
 }  // namespace chromeos

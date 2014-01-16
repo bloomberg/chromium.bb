@@ -22,6 +22,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     EXTERNAL_API: [
       'loadAuthExtension',
       'updateAuthExtension',
+      'setAuthenticatedUserEmail',
       'doReload',
       'onFrameError'
     ],
@@ -72,6 +73,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       this.gaiaAuthHost_ = new cr.login.GaiaAuthHost($('signin-frame'));
       this.gaiaAuthHost_.addEventListener(
           'ready', this.onAuthReady_.bind(this));
+      this.gaiaAuthHost_.retrieveAuthenticatedUserEmailCallback =
+          this.onRetrieveAuthenticatedUserEmail_.bind(this);
       this.gaiaAuthHost_.confirmPasswordCallback =
           this.onAuthConfirmPassword_.bind(this);
       this.gaiaAuthHost_.noPasswordCallback =
@@ -296,6 +299,16 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     },
 
     /**
+     * Sends the authenticated user's e-mail address to the auth extension.
+     * @param {number} attemptToken The opaque token provided to
+     *     onRetrieveAuthenticatedUserEmail_.
+     * @param {string} email The authenticated user's e-mail address.
+     */
+    setAuthenticatedUserEmail: function(attemptToken, email) {
+      this.gaiaAuthHost_.setAuthenticatedUserEmail(attemptToken, email);
+    },
+
+    /**
      * Whether the current auth flow is SAML.
      */
     isSAML: function() {
@@ -344,6 +357,17 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
 
       // Warm up the user images screen.
       Oobe.getInstance().preloadScreen({id: SCREEN_USER_IMAGE_PICKER});
+    },
+
+    /**
+     * Invoked when the auth host needs the authenticated user's e-mail to be
+     * retrieved.
+     * @param {number} attemptToken Opaque token to be passed to
+     *     setAuthenticatedUserEmail along with the e-mail address.
+     * @private
+     */
+    onRetrieveAuthenticatedUserEmail_: function(attemptToken) {
+      chrome.send('retrieveAuthenticatedUserEmail', [attemptToken]);
     },
 
     /**

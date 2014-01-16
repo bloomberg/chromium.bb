@@ -52,7 +52,8 @@ class FakeGaia {
     MergeSessionParams();
     ~MergeSessionParams();
 
-    // Values of SID and LSID cookie that are set by
+    // Values of SID and LSID cookie that are set by /ServiceLoginAuth or its
+    // equivalent at the end of the SAML login flow.
     std::string auth_sid_cookie;
     std::string auth_lsid_cookie;
 
@@ -70,6 +71,9 @@ class FakeGaia {
     // Values of SID and LSID cookie generated from /MergeSession call.
     std::string session_sid_cookie;
     std::string session_lsid_cookie;
+
+    // The e-mail address returned by /GetUserInfo.
+    std::string email;
   };
 
   FakeGaia();
@@ -133,17 +137,19 @@ class FakeGaia {
                           net::test_server::BasicHttpResponse* http_response);
   void HandleOAuthLogin(const net::test_server::HttpRequest& request,
                         net::test_server::BasicHttpResponse* http_response);
-  void HandleSSO(const net::test_server::HttpRequest& request,
-                 net::test_server::BasicHttpResponse* http_response);
   void HandleServiceLoginAuth(
       const net::test_server::HttpRequest& request,
       net::test_server::BasicHttpResponse* http_response);
+  void HandleSSO(const net::test_server::HttpRequest& request,
+                 net::test_server::BasicHttpResponse* http_response);
   void HandleAuthToken(const net::test_server::HttpRequest& request,
                        net::test_server::BasicHttpResponse* http_response);
   void HandleTokenInfo(const net::test_server::HttpRequest& request,
                        net::test_server::BasicHttpResponse* http_response);
   void HandleIssueToken(const net::test_server::HttpRequest& request,
                         net::test_server::BasicHttpResponse* http_response);
+  void HandleGetUserInfo(const net::test_server::HttpRequest& request,
+                         net::test_server::BasicHttpResponse* http_response);
 
   // Returns the access token associated with |auth_token| that matches the
   // given |client_id| and |scope_string|. If |scope_string| is empty, the first

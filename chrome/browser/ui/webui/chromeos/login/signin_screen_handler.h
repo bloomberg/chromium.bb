@@ -8,7 +8,9 @@
 #include <set>
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -37,6 +39,7 @@ class ListValue;
 
 namespace chromeos {
 
+class AuthenticatedUserEmailRetriever;
 class CaptivePortalWindowProxy;
 class CoreOobeActor;
 class LocallyManagedUserCreationScreenHandler;
@@ -363,6 +366,7 @@ class SigninScreenHandler
   void HandleFocusPod(const std::string& user_id);
   void HandleLaunchKioskApp(const std::string& app_id);
   void HandleCustomButtonClicked(const std::string& username);
+  void HandleRetrieveAuthenticatedUserEmail(double attempt_token);
 
   // Fills |user_dict| with information about |user|.
   static void FillUserDictionary(User* user,
@@ -518,6 +522,9 @@ class SigninScreenHandler
   // Non-owning ptr.
   // TODO (ygorshenin@): remove this dependency.
   GaiaScreenHandler* gaia_screen_handler_;
+
+  // Helper that retrieves the authenticated user's e-mail address.
+  scoped_ptr<AuthenticatedUserEmailRetriever> email_retriever_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninScreenHandler);
 };

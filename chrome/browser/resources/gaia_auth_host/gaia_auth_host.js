@@ -150,6 +150,18 @@ cr.define('cr.login', function() {
     successCallback_: null,
 
     /**
+     * Invoked when GAIA indicates login success and SAML was used. At this
+     * point, GAIA cookies are present but the identity of the authenticated
+     * user is not known. The embedder of GaiaAuthHost should extract the GAIA
+     * cookies from the cookie jar, query GAIA for the authenticated user's
+     * e-mail address and invoke GaiaAuthHost.setAuthenticatedUserEmail with the
+     * result. The argument is an opaque token that should be passed back to
+     * GaiaAuthHost.setAuthenticatedUserEmail.
+     * @type {function(number)}
+     */
+    retrieveAuthenticatedUserEmailCallback_: null,
+
+    /**
      * Invoked when the auth flow needs a user to confirm his/her passwords.
      * This could happen when there are more than one passwords scraped during
      * SAML flow. The embedder of GaiaAuthHost should show an UI to collect a
@@ -175,6 +187,14 @@ cr.define('cr.login', function() {
      */
     get frame() {
       return this.frame_;
+    },
+
+    /**
+     * Sets retrieveAuthenticatedUserEmailCallback_.
+     * @type {function()}
+     */
+    set retrieveAuthenticatedUserEmailCallback(callback) {
+      this.retrieveAuthenticatedUserEmailCallback_ = callback;
     },
 
     /**
@@ -262,6 +282,21 @@ cr.define('cr.login', function() {
     },
 
     /**
+     * Sends the authenticated user's e-mail address to the auth extension.
+     * @param {number} attemptToken The opaque token provided to the
+     *     retrieveAuthenticatedUserEmailCallback_.
+     * @param {string} email The authenticated user's e-mail address.
+     */
+    setAuthenticatedUserEmail: function(attemptToken, email) {
+      var msg = {
+        method: 'setAuthenticatedUserEmail',
+        attemptToken: attemptToken,
+        email: email
+      };
+      this.frame_.contentWindow.postMessage(msg, AUTH_URL_BASE);
+    },
+
+    /**
      * Invoked to process authentication success.
      * @param {Object} credentials Credential object to pass to success
      *     callback.
@@ -322,6 +357,16 @@ cr.define('cr.login', function() {
                              useOffline: msg.method == 'offlineLogin',
                              chooseWhatToSync: this.chooseWhatToSync_,
                              skipForNow: msg.skipForNow || false });
+        return;
+      }
+
+      if (msg.method == 'retrieveAuthenticatedUserEmail') {
+        if (this.retrieveAuthenticatedUserEmailCallback_) {
+          this.retrieveAuthenticatedUserEmailCallback_(msg.attemptToken);
+        } else {
+          console.error(
+              'GaiaAuthHost: Invalid retrieveAuthenticatedUserEmailCallback_.');
+        }
         return;
       }
 
