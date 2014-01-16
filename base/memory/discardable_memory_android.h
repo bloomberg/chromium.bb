@@ -15,9 +15,6 @@
 namespace base {
 namespace internal {
 
-// Returns 0 if the provided size is too high to be aligned.
-size_t AlignToNextPage(size_t size);
-
 bool CreateAshmemRegion(const char* name, size_t size, int* fd, void** address);
 
 bool CloseAshmemRegion(int fd, size_t size, void* address);

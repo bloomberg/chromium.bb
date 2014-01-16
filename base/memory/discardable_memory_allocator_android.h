@@ -44,16 +44,21 @@ class BASE_EXPORT_PRIVATE DiscardableMemoryAllocator {
   // instance.
   scoped_ptr<DiscardableMemory> Allocate(size_t size);
 
+  // Returns the size of the last ashmem region which was created. This is used
+  // for testing only.
+  size_t last_ashmem_region_size() const;
+
  private:
   class AshmemRegion;
   class DiscardableAshmemChunk;
 
   void DeleteAshmemRegion_Locked(AshmemRegion* region);
 
-  base::ThreadChecker thread_checker_;
+  ThreadChecker thread_checker_;
   const std::string name_;
   const size_t ashmem_region_size_;
-  base::Lock lock_;
+  mutable Lock lock_;
+  size_t last_ashmem_region_size_;
   ScopedVector<AshmemRegion> ashmem_regions_;
 
   DISALLOW_COPY_AND_ASSIGN(DiscardableMemoryAllocator);

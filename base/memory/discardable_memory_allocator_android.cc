@@ -46,6 +46,16 @@ const size_t kMaxChunkFragmentationBytes = 4096 - 1;
 
 const size_t kMinAshmemRegionSize = 32 * 1024 * 1024;
 
+// Returns 0 if the provided size is too high to be aligned.
+size_t AlignToNextPage(size_t size) {
+  const size_t kPageSize = 4096;
+  DCHECK_EQ(static_cast<int>(kPageSize), getpagesize());
+  if (size > std::numeric_limits<size_t>::max() - kPageSize + 1)
+    return 0;
+  const size_t mask = ~(kPageSize - 1);
+  return (size + kPageSize - 1) & mask;
+}
+
 }  // namespace
 
 namespace internal {
@@ -106,7 +116,7 @@ class DiscardableMemoryAllocator::AshmemRegion {
       size_t size,
       const std::string& name,
       DiscardableMemoryAllocator* allocator) {
-    DCHECK_EQ(size, internal::AlignToNextPage(size));
+    DCHECK_EQ(size, AlignToNextPage(size));
     int fd;
     void* base;
     if (!internal::CreateAshmemRegion(name.c_str(), size, &fd, &base))
@@ -371,7 +381,9 @@ DiscardableMemoryAllocator::DiscardableMemoryAllocator(
     const std::string& name,
     size_t ashmem_region_size)
     : name_(name),
-      ashmem_region_size_(std::max(kMinAshmemRegionSize, ashmem_region_size)) {
+      ashmem_region_size_(
+          std::max(kMinAshmemRegionSize, AlignToNextPage(ashmem_region_size))),
+      last_ashmem_region_size_(0) {
   DCHECK_GE(ashmem_region_size_, kMinAshmemRegionSize);
 }
 
@@ -382,7 +394,7 @@ DiscardableMemoryAllocator::~DiscardableMemoryAllocator() {
 
 scoped_ptr<DiscardableMemory> DiscardableMemoryAllocator::Allocate(
     size_t size) {
-  const size_t aligned_size = internal::AlignToNextPage(size);
+  const size_t aligned_size = AlignToNextPage(size);
   if (!aligned_size)
     return scoped_ptr<DiscardableMemory>();
   // TODO(pliard): make this function less naive by e.g. moving the free chunks
@@ -403,16 +415,23 @@ scoped_ptr<DiscardableMemory> DiscardableMemoryAllocator::Allocate(
   // repetitively dividing the size by 2.
   const size_t min_region_size = std::max(kMinAshmemRegionSize, aligned_size);
   for (size_t region_size = std::max(ashmem_region_size_, aligned_size);
-       region_size >= min_region_size; region_size /= 2) {
+       region_size >= min_region_size;
+       region_size = AlignToNextPage(region_size / 2)) {
     scoped_ptr<AshmemRegion> new_region(
         AshmemRegion::Create(region_size, name_.c_str(), this));
     if (!new_region)
       continue;
+    last_ashmem_region_size_ = region_size;
     ashmem_regions_.push_back(new_region.release());
     return ashmem_regions_.back()->Allocate_Locked(size, aligned_size);
   }
   // TODO(pliard): consider adding an histogram to see how often this happens.
   return scoped_ptr<DiscardableMemory>();
+}
+
+size_t DiscardableMemoryAllocator::last_ashmem_region_size() const {
+  AutoLock auto_lock(lock_);
+  return last_ashmem_region_size_;
 }
 
 void DiscardableMemoryAllocator::DeleteAshmemRegion_Locked(

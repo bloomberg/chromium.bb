@@ -37,8 +37,7 @@ struct DiscardableMemoryAllocatorWrapper {
   static size_t GetOptimalAshmemRegionSizeForAllocator() {
     // Note that this may do some I/O (without hitting the disk though) so it
     // should not be called on the critical path.
-    return internal::AlignToNextPage(
-        base::android::SysUtils::AmountOfPhysicalMemoryKB() * 1024 / 8);
+    return base::android::SysUtils::AmountOfPhysicalMemoryKB() * 1024 / 8;
   }
 };
 
@@ -48,15 +47,6 @@ LazyInstance<DiscardableMemoryAllocatorWrapper>::Leaky g_context =
 }  // namespace
 
 namespace internal {
-
-size_t AlignToNextPage(size_t size) {
-  const size_t kPageSize = 4096;
-  DCHECK_EQ(static_cast<int>(kPageSize), getpagesize());
-  if (size > std::numeric_limits<size_t>::max() - kPageSize + 1)
-    return 0;
-  const size_t mask = ~(kPageSize - 1);
-  return (size + kPageSize - 1) & mask;
-}
 
 bool CreateAshmemRegion(const char* name,
                         size_t size,

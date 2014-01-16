@@ -23,6 +23,9 @@ const char kAllocatorName[] = "allocator-for-testing";
 const size_t kAshmemRegionSizeForTesting = 32 * 1024 * 1024;
 const size_t kPageSize = 4096;
 
+const size_t kMaxAllowedAllocationSize =
+    std::numeric_limits<size_t>::max() - kPageSize + 1;
+
 class DiscardableMemoryAllocatorTest : public testing::Test {
  protected:
   DiscardableMemoryAllocatorTest()
@@ -52,10 +55,8 @@ TEST_F(DiscardableMemoryAllocatorTest, ZeroAllocationIsNotSupported) {
 }
 
 TEST_F(DiscardableMemoryAllocatorTest, TooLargeAllocationFails) {
-  const size_t max_allowed_allocation_size =
-      std::numeric_limits<size_t>::max() - kPageSize + 1;
   scoped_ptr<DiscardableMemory> memory(
-      allocator_.Allocate(max_allowed_allocation_size + 1));
+      allocator_.Allocate(kMaxAllowedAllocationSize + 1));
   // Page-alignment would have caused an overflow resulting in a small
   // allocation if the input size wasn't checked correctly.
   ASSERT_FALSE(memory);
@@ -63,15 +64,26 @@ TEST_F(DiscardableMemoryAllocatorTest, TooLargeAllocationFails) {
 
 TEST_F(DiscardableMemoryAllocatorTest,
        AshmemRegionsAreNotSmallerThanRequestedSize) {
-  const size_t size = std::numeric_limits<size_t>::max() - kPageSize + 1;
   // The creation of the underlying ashmem region is expected to fail since
   // there should not be enough room in the address space. When ashmem creation
   // fails, the allocator repetitively retries by dividing the size by 2. This
   // size should not be smaller than the size the user requested so the
   // allocation here should just fail (and not succeed with the minimum ashmem
   // region size).
-  scoped_ptr<DiscardableMemory> memory(allocator_.Allocate(size));
+  scoped_ptr<DiscardableMemory> memory(
+      allocator_.Allocate(kMaxAllowedAllocationSize));
   ASSERT_FALSE(memory);
+}
+
+TEST_F(DiscardableMemoryAllocatorTest, AshmemRegionsAreAlwaysPageAligned) {
+  // Use a separate allocator here so that we can override the ashmem region
+  // size.
+  DiscardableMemoryAllocator allocator(
+      kAllocatorName, kMaxAllowedAllocationSize);
+  scoped_ptr<DiscardableMemory> memory(allocator.Allocate(kPageSize));
+  ASSERT_TRUE(memory);
+  EXPECT_GT(kMaxAllowedAllocationSize, allocator.last_ashmem_region_size());
+  ASSERT_TRUE(allocator.last_ashmem_region_size() % kPageSize == 0);
 }
 
 TEST_F(DiscardableMemoryAllocatorTest, LargeAllocation) {
