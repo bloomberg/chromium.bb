@@ -30,8 +30,8 @@ QuicSpdyClientStream::~QuicSpdyClientStream() {
 
 bool QuicSpdyClientStream::OnStreamFrame(const QuicStreamFrame& frame) {
   if (!write_side_closed()) {
-    DLOG(INFO) << "Got a response before the request was complete.  "
-               << "Aborting request.";
+    DVLOG(1) << "Got a response before the request was complete.  "
+             << "Aborting request.";
     CloseWriteSide();
   }
   return QuicDataStream::OnStreamFrame(frame);

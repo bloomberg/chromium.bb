@@ -242,7 +242,7 @@ void QuicClient::OnEvent(int fd, EpollEvent* event) {
     session_->connection()->OnCanWrite();
   }
   if (event->in_events & EPOLLERR) {
-    DLOG(INFO) << "Epollerr";
+    DVLOG(1) << "Epollerr";
   }
 }
 

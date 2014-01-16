@@ -54,7 +54,7 @@ class QuicDispatcher::QuicFramerVisitor : public QuicFramerVisitorInterface {
     return false;
   }
   virtual void OnError(QuicFramer* framer) OVERRIDE {
-    DLOG(INFO) << QuicUtils::ErrorToString(framer->error());
+    DVLOG(1) << QuicUtils::ErrorToString(framer->error());
   }
 
   // The following methods should never get called because we always return
@@ -220,7 +220,7 @@ bool QuicDispatcher::OnUnauthenticatedPublicHeader(
     }
 
     if (session == NULL) {
-      DLOG(INFO) << "Failed to create session for " << guid;
+      DVLOG(1) << "Failed to create session for " << guid;
       // Add this guid fo the time-wait state, to safely reject future packets.
 
       if (header.version_flag &&
@@ -236,7 +236,7 @@ bool QuicDispatcher::OnUnauthenticatedPublicHeader(
       DCHECK(time_wait_list_manager_->IsGuidInTimeWait(guid));
       return HandlePacketForTimeWait(header);
     }
-    DLOG(INFO) << "Created new session for " << guid;
+    DVLOG(1) << "Created new session for " << guid;
     session_map_.insert(make_pair(guid, session));
   } else {
     session = it->second;

@@ -27,17 +27,17 @@ QuicClientSession::~QuicClientSession() {
 
 QuicSpdyClientStream* QuicClientSession::CreateOutgoingDataStream() {
   if (!crypto_stream_.encryption_established()) {
-    DLOG(INFO) << "Encryption not active so no outgoing stream created.";
+    DVLOG(1) << "Encryption not active so no outgoing stream created.";
     return NULL;
   }
   if (GetNumOpenStreams() >= get_max_open_streams()) {
-    DLOG(INFO) << "Failed to create a new outgoing stream. "
-               << "Already " << GetNumOpenStreams() << " open.";
+    DVLOG(1) << "Failed to create a new outgoing stream. "
+             << "Already " << GetNumOpenStreams() << " open.";
     return NULL;
   }
   if (goaway_received()) {
-    DLOG(INFO) << "Failed to create a new outgoing stream. "
-               << "Already received goaway.";
+    DVLOG(1) << "Failed to create a new outgoing stream. "
+             << "Already received goaway.";
     return NULL;
   }
   QuicSpdyClientStream* stream

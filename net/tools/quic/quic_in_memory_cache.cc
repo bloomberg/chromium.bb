@@ -99,7 +99,7 @@ void QuicInMemoryCache::AddSimpleResponse(StringPiece method,
 void QuicInMemoryCache::AddResponse(const BalsaHeaders& request_headers,
                                     const BalsaHeaders& response_headers,
                                     StringPiece response_body) {
-  LOG(INFO) << "Adding response for: " << GetKey(request_headers);
+  VLOG(1) << "Adding response for: " << GetKey(request_headers);
   if (ContainsKey(responses_, GetKey(request_headers))) {
     LOG(DFATAL) << "Response for given request already exists!";
     return;
@@ -122,11 +122,11 @@ void QuicInMemoryCache::ResetForTests() {
 void QuicInMemoryCache::Initialize() {
   // If there's no defined cache dir, we have no initialization to do.
   if (FLAGS_quic_in_memory_cache_dir.empty()) {
-    LOG(WARNING) << "No cache directory found. Skipping initialization.";
+    VLOG(1) << "No cache directory found. Skipping initialization.";
     return;
   }
-  LOG(INFO) << "Attempting to initialize QuicInMemoryCache from directory: "
-            << FLAGS_quic_in_memory_cache_dir;
+  VLOG(1) << "Attempting to initialize QuicInMemoryCache from directory: "
+          << FLAGS_quic_in_memory_cache_dir;
 
   FilePath directory(FLAGS_quic_in_memory_cache_dir);
   base::FileEnumerator file_list(directory,
@@ -199,8 +199,8 @@ void QuicInMemoryCache::Initialize() {
                                                         "HTTP/1.1");
     request_headers.ReplaceOrAppendHeader("host", host);
 
-    LOG(INFO) << "Inserting 'http://" << GetKey(request_headers)
-              << "' into QuicInMemoryCache.";
+    VLOG(1) << "Inserting 'http://" << GetKey(request_headers)
+            << "' into QuicInMemoryCache.";
 
     AddResponse(request_headers, response_headers, caching_visitor.body());
 

@@ -60,7 +60,7 @@ PacketDroppingTestWriter::PacketDroppingTestWriter()
       fake_bandwidth_(QuicBandwidth::Zero()),
       buffer_size_(0) {
   uint32 seed = base::RandInt(0, std::numeric_limits<int32>::max());
-  LOG(INFO) << "Seeding packet loss with " << seed;
+  VLOG(1) << "Seeding packet loss with " << seed;
   simple_random_.set_seed(seed);
 }
 
@@ -86,13 +86,13 @@ WriteResult PacketDroppingTestWriter::WritePacket(
   if (fake_packet_loss_percentage_ > 0 &&
       simple_random_.RandUint64() % 100 <
           static_cast<uint64>(fake_packet_loss_percentage_)) {
-    DLOG(INFO) << "Dropping packet.";
+    DVLOG(1) << "Dropping packet.";
     return WriteResult(WRITE_STATUS_OK, buf_len);
   }
   if (fake_blocked_socket_percentage_ > 0 &&
       simple_random_.RandUint64() % 100 <
           static_cast<uint64>(fake_blocked_socket_percentage_)) {
-    DLOG(INFO) << "Blocking socket.";
+    DVLOG(1) << "Blocking socket.";
     if (!write_unblocked_alarm_->IsSet()) {
       blocked_writer_ = blocked_writer;
       // Set the alarm for 1ms in the future.
@@ -106,7 +106,7 @@ WriteResult PacketDroppingTestWriter::WritePacket(
   if (!fake_packet_delay_.IsZero() || !fake_bandwidth_.IsZero()) {
     if (buffer_size_ > 0 && buf_len + cur_buffer_size_ > buffer_size_) {
       // Drop packets which do not fit into the buffer.
-      DLOG(INFO) << "Dropping packet because the buffer is full.";
+      DVLOG(1) << "Dropping packet because the buffer is full.";
       return WriteResult(WRITE_STATUS_OK, buf_len);
     }
 
@@ -151,14 +151,14 @@ QuicTime PacketDroppingTestWriter::ReleaseNextPacket() {
   if (delayed_packets_.size() > 1 && fake_packet_reorder_percentage_ > 0 &&
       simple_random_.RandUint64() % 100 <
           static_cast<uint64>(fake_packet_reorder_percentage_)) {
-    DLOG(INFO) << "Reordering packets.";
+    DVLOG(1) << "Reordering packets.";
     ++iter;
     // Swap the send times when re-ordering packets.
     delayed_packets_.begin()->send_time = iter->send_time;
   }
 
-  DLOG(INFO) << "Releasing packet.  " << (delayed_packets_.size() - 1)
-             << " remaining.";
+  DVLOG(1) << "Releasing packet.  " << (delayed_packets_.size() - 1)
+           << " remaining.";
   // Grab the next one off the queue and send it.
   writer()->WritePacket(iter->buffer.data(), iter->buffer.length(),
                         iter->self_address, iter->peer_address, NULL);

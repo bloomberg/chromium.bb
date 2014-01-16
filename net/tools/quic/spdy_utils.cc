@@ -38,8 +38,8 @@ void PopulateSpdyHeaderBlock(const BalsaHeaders& headers,
        hi != headers.header_lines_end();
        ++hi) {
     if ((hi->second.length() == 0) && !allow_empty_values) {
-      DLOG(INFO) << "Dropping empty header " << hi->first.as_string()
-                 << " from headers";
+      DVLOG(1) << "Dropping empty header " << hi->first.as_string()
+               << " from headers";
       continue;
     }
 

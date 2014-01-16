@@ -133,7 +133,7 @@ bool QuicServer::Listen(const IPEndPoint& address) {
     return false;
   }
 
-  LOG(INFO) << "Listening on " << address.ToString();
+  DVLOG(1) << "Listening on " << address.ToString();
   if (port_ == 0) {
     SockaddrStorage storage;
     IPEndPoint server_address;
@@ -143,7 +143,7 @@ bool QuicServer::Listen(const IPEndPoint& address) {
       return false;
     }
     port_ = server_address.port();
-    LOG(INFO) << "Kernel assigned port is " << port_;
+    DVLOG(1) << "Kernel assigned port is " << port_;
   }
 
   epoll_server_.RegisterFD(fd_, this, kEpollFlags);
@@ -172,7 +172,7 @@ void QuicServer::OnEvent(int fd, EpollEvent* event) {
   event->out_ready_mask = 0;
 
   if (event->in_events & EPOLLIN) {
-    LOG(ERROR) << "EPOLLIN";
+    DVLOG(1) << "EPOLLIN";
     bool read = true;
     while (read) {
         read = ReadAndDispatchSinglePacket(
