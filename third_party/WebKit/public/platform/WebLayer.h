@@ -32,6 +32,7 @@
 #include "WebCommon.h"
 #include "WebPoint.h"
 #include "WebRect.h"
+#include "WebSize.h"
 #include "WebString.h"
 #include "WebVector.h"
 
@@ -46,7 +47,6 @@ class WebLayerScrollClient;
 struct WebFloatPoint;
 struct WebFloatRect;
 struct WebLayerPositionConstraint;
-struct WebSize;
 
 class WebLayer {
 public:
@@ -170,12 +170,8 @@ public:
     virtual void setScrollPosition(WebPoint) = 0;
     virtual WebPoint scrollPosition() const = 0;
 
-    // TODO(wjmaclean) Remove next line once https://codereview.chromium.org/23983047 lands.
-    virtual void setMaxScrollPosition(WebSize) = 0;
     virtual WebSize maxScrollPosition() const = 0;
 
-    // TODO(wjmaclean) Remove next line once https://codereview.chromium.org/23983047 lands.
-    virtual void setScrollable(bool) = 0;
     // To set a WebLayer as scrollable we must specify the corresponding clip layer.
     // TODO(wjmaclean) Make this pure virtual once https://codereview.chromium.org/23983047 lands.
     virtual void setScrollClipLayer(WebLayer*) { }
@@ -220,6 +216,10 @@ public:
     virtual bool isOrphan() const = 0;
 
     virtual void setWebLayerClient(WebLayerClient*) = 0;
+
+    // TODO(wjmaclean) Remove next two lines once https://codereview.chromium.org/23983047 lands.
+    virtual void setMaxScrollPosition(WebSize) { }
+    virtual void setScrollable(bool) { }
 };
 
 } // namespace blink
