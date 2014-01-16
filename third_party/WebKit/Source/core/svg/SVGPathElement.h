@@ -98,7 +98,6 @@ public:
 private:
     explicit SVGPathElement(Document&);
 
-    virtual bool isValid() const OVERRIDE { return SVGTests::isValid(); }
     virtual bool supportsFocus() const OVERRIDE { return hasFocusEventListeners(); }
 
     bool isSupportedAttribute(const QualifiedName&);

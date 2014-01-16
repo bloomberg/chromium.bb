@@ -56,7 +56,6 @@ public:
 private:
     SVGUseElement(Document&, bool wasInsertedByParser);
 
-    virtual bool isValid() const OVERRIDE { return SVGTests::isValid(); }
     virtual bool isStructurallyExternal() const OVERRIDE { return isExternalURIReference(hrefCurrentValue(), document()); }
     virtual bool supportsFocus() const OVERRIDE { return hasFocusEventListeners(); }
 

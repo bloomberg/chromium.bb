@@ -38,7 +38,6 @@ public:
 private:
     explicit SVGClipPathElement(Document&);
 
-    virtual bool isValid() const OVERRIDE { return SVGTests::isValid(); }
     virtual bool needsPendingResourceHandling() const OVERRIDE { return false; }
 
     bool isSupportedAttribute(const QualifiedName&);

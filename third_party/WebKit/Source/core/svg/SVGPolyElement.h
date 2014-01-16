@@ -41,7 +41,6 @@ protected:
     SVGPolyElement(const QualifiedName&, Document&);
 
 private:
-    virtual bool isValid() const OVERRIDE FINAL { return SVGTests::isValid(); }
     virtual bool supportsFocus() const OVERRIDE FINAL { return hasFocusEventListeners(); }
 
     bool isSupportedAttribute(const QualifiedName&);

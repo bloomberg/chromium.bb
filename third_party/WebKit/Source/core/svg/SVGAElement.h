@@ -36,8 +36,6 @@ public:
 private:
     explicit SVGAElement(Document&);
 
-    virtual bool isValid() const OVERRIDE { return SVGTests::isValid(); }
-
     virtual String title() const OVERRIDE;
 
     bool isSupportedAttribute(const QualifiedName&);

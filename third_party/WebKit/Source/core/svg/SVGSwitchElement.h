@@ -33,7 +33,6 @@ public:
 private:
     explicit SVGSwitchElement(Document&);
 
-    virtual bool isValid() const OVERRIDE { return SVGTests::isValid(); }
     virtual bool supportsFocus() const OVERRIDE { return hasFocusEventListeners(); }
 
     virtual bool childShouldCreateRenderer(const Node& child) const OVERRIDE;

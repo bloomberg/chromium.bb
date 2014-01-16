@@ -53,6 +53,8 @@ public:
     virtual void toClipPath(Path&);
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
 
+    virtual bool isValid() const OVERRIDE FINAL { return SVGTests::isValid(); }
+
 protected:
     SVGGraphicsElement(const QualifiedName&, Document&, ConstructionType = CreateSVGElement);
 

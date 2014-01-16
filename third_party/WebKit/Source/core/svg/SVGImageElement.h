@@ -46,7 +46,6 @@ public:
 private:
     explicit SVGImageElement(Document&);
 
-    virtual bool isValid() const OVERRIDE { return SVGTests::isValid(); }
     virtual bool isStructurallyExternal() const OVERRIDE { return !hrefCurrentValue().isNull(); }
     virtual bool supportsFocus() const OVERRIDE { return hasFocusEventListeners(); }
 

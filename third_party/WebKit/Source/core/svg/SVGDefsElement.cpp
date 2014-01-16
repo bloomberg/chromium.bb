@@ -45,11 +45,6 @@ PassRefPtr<SVGDefsElement> SVGDefsElement::create(Document& document)
     return adoptRef(new SVGDefsElement(document));
 }
 
-bool SVGDefsElement::isValid() const
-{
-    return SVGTests::isValid();
-}
-
 RenderObject* SVGDefsElement::createRenderer(RenderStyle*)
 {
     return new RenderSVGHiddenContainer(this);
