@@ -43,20 +43,18 @@ setTimeout(function() {
     debug('');
 
 
-    debug('Adds a div as fallback content');
+    debug('Adds a div as fallback content, which should not be used.');
     anotherAddedDiv = document.createElement('div');
     shadow1.appendChild(anotherAddedDiv);
-    shouldBe('content.getDistributedNodes().length', '3');
+    shouldBe('content.getDistributedNodes().length', '2');
     shouldBe('content.getDistributedNodes().item(0)', 'div1');
-    shouldBe('content.getDistributedNodes().item(1)', 'anotherAddedDiv');
-    shouldBe('content.getDistributedNodes().item(2)', 'addedDiv');
+    shouldBe('content.getDistributedNodes().item(1)', 'addedDiv');
     debug('');
 
     debug('Removes the first added div');
     addedDiv.remove();
-    shouldBe('content.getDistributedNodes().length', '2');
+    shouldBe('content.getDistributedNodes().length', '1');
     shouldBe('content.getDistributedNodes().item(0)', 'div1');
-    shouldBe('content.getDistributedNodes().item(1)', 'anotherAddedDiv');
     debug('');
 
     debug('Removes the second added div');

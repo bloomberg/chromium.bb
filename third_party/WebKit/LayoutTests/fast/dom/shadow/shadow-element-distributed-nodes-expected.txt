@@ -11,9 +11,8 @@ PASS distributedNodes.length is expectedDistributedNodes.length
 getDistributedNodes() for "host/shadow" should return []
 PASS distributedNodes.length is expectedDistributedNodes.length
 
-getDistributedNodes() for "host/shadow" should return [host/shadow-child]
+getDistributedNodes() for "host/shadow" should return []
 PASS distributedNodes.length is expectedDistributedNodes.length
-PASS distributedNodes.item(0) is getNodeInTreeOfTrees(expectedDistributedNodes[0])
 
 getDistributedNodes() for "host/shadow" should return [host-child]
 PASS distributedNodes.length is expectedDistributedNodes.length

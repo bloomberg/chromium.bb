@@ -842,3 +842,5 @@ crbug.com/330242 [ Debug ] fast/block/float/float-selection-delete-crash.html [ 
 crbug.com/334242 [ Win ] inspector-protocol/stylesheet-tracking-restart.html [ Pass Failure ]
 
 crbug.com/248894 fast/css3-text/css3-text-justify/text-justify-8bits.html [ NeedsRebaseline ]
+
+crbug.com/334152 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/the-shadow-html-element/test-001.html [ Failure ]

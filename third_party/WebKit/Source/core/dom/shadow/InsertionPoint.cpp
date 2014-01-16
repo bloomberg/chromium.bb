@@ -134,16 +134,9 @@ bool InsertionPoint::canBeActive() const
 {
     if (!isInShadowTree())
         return false;
-    bool foundShadowElementInAncestors = false;
-    bool thisIsContentHTMLElement = hasTagName(contentTag);
     for (Node* node = parentNode(); node; node = node->parentNode()) {
-        if (node->isInsertionPoint()) {
-            // For HTMLContentElement, at most one HTMLShadowElement may appear in its ancestors.
-            if (thisIsContentHTMLElement && node->hasTagName(shadowTag) && !foundShadowElementInAncestors)
-                foundShadowElementInAncestors = true;
-            else
-                return false;
-        }
+        if (node->isInsertionPoint())
+            return false;
     }
     return true;
 }

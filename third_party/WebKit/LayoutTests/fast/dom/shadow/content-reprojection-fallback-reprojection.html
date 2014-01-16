@@ -2,7 +2,7 @@
 
 <html>
 
-<p>Fallback elements should be rendered if it's distributed</p>
+<p>Fallback elements for content insertion points should be rendered</p>
 
 <div id="host1"></div>
 
@@ -19,8 +19,8 @@ var host2 = shadowRoot1.getElementById('host2');
 var shadowRoot2 = host2.createShadowRoot();
 shadowRoot2.innerHTML =
     '<div id="host3">' +
-        '<content select="div"></content>' + 
-        '<content select="span"><div>content fallback element</div></content>' + 
+        '<content select="div"></content>' +
+        '<content select="span"><div>content fallback element</div></content>' +
         '<div>This also should be selected.</div>'
     '</div>';
 
@@ -32,5 +32,3 @@ shadowRoot3.innerHTML =
 </script>
 
 </html>
-
-

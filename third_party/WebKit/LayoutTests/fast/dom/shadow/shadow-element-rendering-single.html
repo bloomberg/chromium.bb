@@ -32,7 +32,6 @@ testFuncs.push(function renderingShadowElementDynamicallyAdded(callIfDone) {
 
     var f = (function(callIfDone, root, sr) { return function() {
         var shadow = document.createElement('shadow');
-        shadow.appendChild(document.createElement('content'));
         sr.appendChild(shadow);
         callIfDone();
     }})(callIfDone, root, sr);
@@ -48,7 +47,6 @@ testFuncs.push(function renderingShadowElementDynamicallyRemoved(callIfDone) {
     root.appendChild(createSpanWithText('SHOULD NOT BE RENDERED'));
 
     var shadow = document.createElement('shadow');
-    shadow.appendChild(document.createElement('content'));
 
     var sr = root.createShadowRoot();
     sr.appendChild(createSpanWithText('BEFORE'));
@@ -74,7 +72,6 @@ testFuncs.push(function renderingLightChildrenDynamicallyAdded(callIfDone) {
     var sr = root.createShadowRoot();
     sr.appendChild(createSpanWithText('BEFORE'));
     var shadow = document.createElement('shadow');
-    shadow.appendChild(document.createElement('content'));
     sr.appendChild(shadow);
     sr.appendChild(createSpanWithText('AFTER'));
 
@@ -90,15 +87,12 @@ testFuncs.push(function renderingLightChildrenDynamicallyAdded(callIfDone) {
 
 testFuncs.push(function renderingLightChildrenDynamicallyRemoved(callIfDone) {
     document.getElementById('expect-container').innerHTML =
-        "<div><span>BEFORE</span><span>MID</span><span>AFTER</span></div>"
+        "<div><span>BEFORE</span><span>AFTER</span></div>"
 
     var root = document.createElement('div');
     root.appendChild(createSpanWithText('SHOULD NOT BE RENDERED'));
 
     var shadow = document.createElement('shadow');
-    var content = document.createElement('content');
-    content.appendChild(createSpanWithText('MID'));
-    shadow.appendChild(content);
 
     var sr = root.createShadowRoot();
     sr.appendChild(createSpanWithText('BEFORE'));

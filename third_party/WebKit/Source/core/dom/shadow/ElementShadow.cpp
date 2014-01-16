@@ -276,20 +276,14 @@ void ElementShadow::distribute()
             if (!point->isActive())
                 continue;
             if (point->hasTagName(HTMLNames::shadowTag)) {
-                if (!shadowInsertionPoint)
-                    shadowInsertionPoint = toHTMLShadowElement(point);
+                ASSERT(!shadowInsertionPoint);
+                shadowInsertionPoint = toHTMLShadowElement(point);
+                shadowInsertionPoints.append(shadowInsertionPoint);
             } else {
                 pool.distributeTo(point, this);
                 if (ElementShadow* shadow = shadowWhereNodeCanBeDistributed(*point))
                     shadow->setNeedsDistributionRecalc();
             }
-        }
-        if (shadowInsertionPoint) {
-            shadowInsertionPoints.append(shadowInsertionPoint);
-            if (shadowInsertionPoint->hasChildNodes())
-                pool.populateChildren(*shadowInsertionPoint);
-        } else {
-            pool.clear();
         }
     }
 

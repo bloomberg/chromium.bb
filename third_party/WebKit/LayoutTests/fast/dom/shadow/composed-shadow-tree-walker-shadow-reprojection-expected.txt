@@ -99,13 +99,13 @@ Traverse in backward.
 #d
 #a
 
-shadow fallback element reprojection
+Ignore shadow fallback elements
 Composed Shadow Tree:
 #a
 	#i
 		#k
 		#c
-		#e
+		#b
 		#f
 			#g
 		#h
@@ -116,7 +116,7 @@ Traverse in forward.
 #i
 #k
 #c
-#e
+#b
 #f
 #g
 #h
@@ -126,7 +126,7 @@ Traverse in backward.
 #h
 #g
 #f
-#e
+#b
 #c
 #k
 #i
@@ -145,8 +145,6 @@ Composed Shadow Tree:
 		#l
 		#m
 		#n
-		#q
-		#r
 		#w
 
 Traverse in forward.
@@ -161,13 +159,9 @@ Traverse in forward.
 #l
 #m
 #n
-#q
-#r
 #w
 Traverse in backward.
 #w
-#r
-#q
 #n
 #m
 #l

@@ -6,75 +6,74 @@
 <body>
 <script>
 function description(text) {
-    return createDOM("h1", {},
+    return createDOM("div", {},
                      document.createTextNode(text));
 }
 
-function createDivWithText(text) {
-    return createDOM("div", {},
-                     document.createTextNode(text));
+function createSpanWithText(text) {
+    return createDOM("span", {},
+                     document.createTextNode(text + " "));
 }
 
 var testcases = [
     description('A shadow element with a content element'),
     createDOM('div', {},
-              createDivWithText("host-child"),
+              createSpanWithText("host-child"),
               createShadowRoot(
-                  createDivWithText("before"),
+                  createSpanWithText("before"),
                   createDOM("shadow", {},
                             createDOM("content", {})),
-                  createDivWithText("after"))),
+                  createSpanWithText("after"))),
 
     description('A shadow element without a content element'),
     createDOM('div', {},
-              createDivWithText("host-child"),
+              createSpanWithText("host-child"),
               createShadowRoot(
-                  createDivWithText("before"),
+                  createSpanWithText("before"),
                   createDOM("shadow", {}),
-                  createDivWithText("after"))),
+                  createSpanWithText("after"))),
 
     description('A shadow element with a parameter'),
     createDOM('div', {},
-              createDivWithText("host-child"),
+              createSpanWithText("host-child"),
               createShadowRoot(
-                  createDivWithText("before"),
+                  createSpanWithText("before"),
                   createDOM("shadow", {},
-                            createDivWithText("shadow-child")),
-                  createDivWithText("after"))),
+                            createSpanWithText("shadow-child")),
+                  createSpanWithText("after"))),
 
     description('An inactive shadow element'),
     createDOM('div', {},
-              createDivWithText("host-child"),
+              createSpanWithText("host-child"),
               createShadowRoot(
-                  createDivWithText("before"),
+                  createSpanWithText("before"),
                   createDOM("shadow", {},
                             createDOM("content", {})),
-                  createDivWithText("middle"),
+                  createSpanWithText("middle"),
                   createDOM("shadow", {},
-                            createDivWithText("shadow-child")),
-                  createDivWithText("after"))),
+                            createSpanWithText("shadow-child")),
+                  createSpanWithText("after"))),
 
     description('A shadow element comes before a content element'),
     createDOM('div', {},
-              createDivWithText("host-child"),
+              createSpanWithText("host-child"),
               createShadowRoot(
-                  createDivWithText("before"),
-                  createDOM("shadow", {},
-                            createDOM("content", {})),
-                  createDivWithText("middle"),
+                  createSpanWithText("before"),
+                  createDOM("shadow", {}),
+                  createSpanWithText("middle"),
                   createDOM("content", {}),
-                  createDivWithText("after"))),
+                  createSpanWithText("after"))),
 
     description('A shadow element comes after a content element'),
     createDOM('div', {},
-              createDivWithText("host-child"),
+              createSpanWithText("host-child"),
               createShadowRoot(
-                  createDivWithText("before"),
+                  createSpanWithText("before"),
                   createDOM("content", {}),
-                  createDivWithText("middle"),
+                  createSpanWithText("middle"),
                   createDOM("shadow", {},
                             createDOM("content", {})),
-                  createDivWithText("after"))),
+                  createSpanWithText("after"))),
 ];
 
 testcases.forEach(function(element) {

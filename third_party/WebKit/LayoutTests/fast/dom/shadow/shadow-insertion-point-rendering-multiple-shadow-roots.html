@@ -16,20 +16,7 @@ function createSpanWithText(text) {
 }
 
 var testcases = [
-    description('A shadow element with a content element'),
-    createDOM('div', {},
-              createSpanWithText("host-child"),
-              createShadowRoot(
-                  createSpanWithText("before0"),
-                  createDOM("content", {}),
-                  createSpanWithText("after0")),
-              createShadowRoot(
-                  createSpanWithText("before1"),
-                  createDOM("shadow", {},
-                            createDOM("content", {})),
-                  createSpanWithText("after1"))),
-
-    description('A shadow element without a content element'),
+    description('A shadow element without an element'),
     createDOM('div', {},
               createSpanWithText("host-child"),
               createShadowRoot(
@@ -41,7 +28,7 @@ var testcases = [
                   createDOM("shadow", {}),
                   createSpanWithText("after1"))),
 
-    description('A shadow element with a parameter'),
+    description('A shadow element with an element'),
     createDOM('div', {},
               createSpanWithText("host-child"),
               createShadowRoot(
@@ -54,7 +41,7 @@ var testcases = [
                             createSpanWithText("shadow-child")),
                   createSpanWithText("after1"))),
 
-    description('A shadow element with a content element and a parameter'),
+    description('A shadow element with a content element and an element'),
     createDOM('div', {},
               createSpanWithText("host-child"),
               createShadowRoot(

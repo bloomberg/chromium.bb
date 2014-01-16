@@ -5,29 +5,23 @@ event.path on node #C
 event.path on node #B
 #C, #B, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 7
 
-event.path on node #J
-#C, #B, #J, #I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 11
-
-event.path on node #F
-#C, #B, #F, #X, #E, #D, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 11
-
 event.path on node #X
-#C, #B, #F, #X, #E, #D, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 11
+#C, #B, #X, #E, #D, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 10
 
 event.path on node #E
-#C, #B, #F, #X, #E, #D, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 11
+#C, #B, #X, #E, #D, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 10
 
 event.path on node #D
-#C, #B, #F, #X, #E, #D, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 11
+#C, #B, #X, #E, #D, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 10
 
 event.path on node #I
-#C, #B, #J, #I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 11
+#C, #B, #I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 10
 
 event.path on node #H
-#C, #B, #J, #I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 11
+#C, #B, #I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 10
 
 event.path on node #G
-#C, #B, #J, #I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 11
+#C, #B, #I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 10
 
 event.path on node #A
 #C, #B, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], length: 7
