@@ -132,7 +132,7 @@
             },
           ],
           'dependencies': [
-            '../../../third_party/liblouis/liblouis_untrusted.gyp:liblouis_nacl_wrapper_untrusted',
+            '../../../third_party/liblouis/liblouis_nacl.gyp:liblouis_nacl_wrapper_nacl',
           ],
         },
       ],

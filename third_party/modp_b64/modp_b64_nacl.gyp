@@ -1,4 +1,4 @@
-# Copyright 2013 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -8,10 +8,10 @@
   ],
   'targets': [
     {
-      'target_name': 'modp_b64_untrusted',
+      'target_name': 'modp_b64_nacl',
       'type': 'none',
       'variables': {
-        'nlib_target': 'libmodp_b64_untrusted.a',
+        'nlib_target': 'libmodp_b64_nacl.a',
         'build_glibc': 0,
         'build_newlib': 1,
         'build_pnacl_newlib': 1,
@@ -19,7 +19,6 @@
       'dependencies': [
         '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
       ],
-      'toolsets': ['host', 'target'],
       'sources': [
         'modp_b64.cc',
         'modp_b64.h',

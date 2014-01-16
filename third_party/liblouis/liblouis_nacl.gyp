@@ -1,4 +1,4 @@
-# Copyright 2013 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -33,11 +33,11 @@
     ['disable_nacl==0 and disable_nacl_untrusted==0', {
       'targets': [
         {
-          'target_name': 'liblouis_untrusted',
+          'target_name': 'liblouis_nacl',
           'type': 'none',
           'variables': {
             'nacl_untrusted_build': 1,
-            'nlib_target': 'liblouis_untrusted.a',
+            'nlib_target': 'liblouis_nacl.a',
             'build_newlib': 1,
           },
           'compile_flags': [
@@ -68,7 +68,7 @@
           ],
         },
         {
-          'target_name': 'liblouis_nacl_wrapper_untrusted',
+          'target_name': 'liblouis_nacl_wrapper_nacl',
           'type': 'none',
           'variables': {
             'nacl_untrusted_build': 1,
@@ -106,8 +106,8 @@
           'link_flags': [
             '-lppapi',
             '-lppapi_cpp',
-            '-llouis_untrusted',
-            '-ljsoncpp_untrusted',
+            '-llouis_nacl',
+            '-ljsoncpp_nacl',
             '-lpthread',
             '-lnacl_io',
           ],
@@ -117,8 +117,8 @@
             '../../native_client_sdk/native_client_sdk_untrusted.gyp:nacl_io_untrusted',
             '../../ppapi/native_client/native_client.gyp:ppapi_lib',
             '../../ppapi/ppapi_untrusted.gyp:ppapi_cpp_lib',
-            '../jsoncpp/jsoncpp_untrusted.gyp:jsoncpp_untrusted',
-            'liblouis_untrusted',
+            '../jsoncpp/jsoncpp_nacl.gyp:jsoncpp_nacl',
+            'liblouis_nacl',
           ],
           'actions': [
             {
@@ -161,7 +161,7 @@
             'test_extension_dir': '<(DEPTH)/chrome/test/data/chromeos/liblouis_nacl',
           },
           'dependencies': [
-            'liblouis_nacl_wrapper_untrusted',
+            'liblouis_nacl_wrapper_nacl',
           ],
           'copies': [
             {

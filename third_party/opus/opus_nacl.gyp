@@ -1,4 +1,4 @@
-# Copyright 2013 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -11,10 +11,10 @@
   ],
   'targets': [
     {
-      'target_name': 'opus_untrusted',
+      'target_name': 'opus_nacl',
       'type': 'none',
       'variables': {
-        'nlib_target': 'libopus_untrusted.a',
+        'nlib_target': 'libopus_nacl.a',
         'build_glibc': 0,
         'build_newlib': 0,
         'build_pnacl_newlib': 1,
@@ -39,6 +39,6 @@
       'sources/': [
         ['exclude', '/fixed/[^/]*_FIX.(h|c)$'],
       ],
-    },  # end of target 'opus_untrusted'
+    },  # end of target 'opus_nacl'
   ],
 }

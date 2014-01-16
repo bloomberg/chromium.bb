@@ -1690,7 +1690,7 @@
                     '../third_party/liblouis/nacl_wrapper/liblouis_wrapper_browsertest.cc',
                   ],
                   'dependencies': [
-                    '../third_party/liblouis/liblouis_untrusted.gyp:liblouis_test_data',
+                    '../third_party/liblouis/liblouis_nacl.gyp:liblouis_test_data',
                   ],
                 }],
               ],
