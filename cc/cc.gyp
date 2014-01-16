@@ -21,6 +21,9 @@
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry',
         '<(DEPTH)/ui/gl/gl.gyp:gl',
       ],
+      'export_dependent_settings': [
+        '<(DEPTH)/skia/skia.gyp:skia',
+      ],
       'defines': [
         'CC_IMPLEMENTATION=1',
       ],
@@ -441,6 +444,27 @@
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
+    },
+    {
+      'target_name': 'cc_surfaces',
+      'type': '<(component)',
+      'dependencies': [
+        'cc',
+        '<(DEPTH)/base/base.gyp:base',
+        '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+        '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
+        '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry',
+      ],
+      'defines': [
+        'CC_SURFACES_IMPLEMENTATION=1',
+      ],
+      'sources': [
+        'surfaces/surface.cc',
+        'surfaces/surface.h',
+        'surfaces/surface_manager.cc',
+        'surfaces/surface_manager.h',
+        'surfaces/surfaces_export.h',
+      ],
     },
   ],
 }

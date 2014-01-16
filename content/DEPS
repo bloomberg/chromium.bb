@@ -17,6 +17,7 @@ include_rules = [
   "-base/prefs",
 
   "+cc",
+  "-cc/surfaces",
   # If you want to use any of these files, move them to src/base first.
   "-cc/base/scoped_ptr_algorithm.h",
   "-cc/base/scoped_ptr_deque.h",

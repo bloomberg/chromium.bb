@@ -1,4 +1,5 @@
 include_rules = [
+  "-cc/surfaces", # cc shouldn't depend directly on the surface implementation
   "+gpu/GLES2",
   "+gpu/command_buffer/client/context_support.h",
   "+gpu/command_buffer/client/gles2_interface.h",

@@ -1,5 +1,4 @@
 include_rules = [
-  "+cc",
   "+media/audio",
   "+media/base",
   "-webkit/browser",
