@@ -102,7 +102,9 @@ void SVGTextMetricsBuilder::initializeMeasurementWithTextRenderer(RenderSVGInlin
 
     const Font& scaledFont = text->scaledFont();
     m_run = SVGTextMetrics::constructTextRun(text, 0, text->textLength());
-    m_isComplexText = scaledFont.codePath(m_run) == ComplexPath;
+    CodePath codePath = scaledFont.codePath(m_run);
+    m_isComplexText = codePath == ComplexPath;
+    m_run.setCharacterScanForCodePath(!m_isComplexText);
 
     if (m_isComplexText)
         m_simpleWidthIterator.clear();
