@@ -9,7 +9,7 @@
 // Get rid of a macro from Xlib.h that conflicts with Aura's RootWindow class.
 #undef RootWindow
 
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_dispatcher.h"
 #include "ui/aura/env_observer.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_types.h"
@@ -22,7 +22,7 @@ namespace views {
 // A singleton that owns global objects related to the desktop and listens for
 // X11 events on the X11 root window. Destroys itself when aura::Env is
 // deleted.
-class VIEWS_EXPORT X11DesktopHandler : public base::MessageLoop::Dispatcher,
+class VIEWS_EXPORT X11DesktopHandler : public base::MessagePumpDispatcher,
                                        public aura::EnvObserver {
  public:
   // Returns the singleton handler.
@@ -39,7 +39,7 @@ class VIEWS_EXPORT X11DesktopHandler : public base::MessageLoop::Dispatcher,
   // dispatcher. The window dispatcher sends these events to here.
   void ProcessXEvent(const base::NativeEvent& event);
 
-  // Overridden from MessageLoop::Dispatcher:
+  // Overridden from MessagePumpDispatcher:
   virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
 
   // Overridden from aura::EnvObserver:

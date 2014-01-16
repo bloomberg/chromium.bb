@@ -1196,7 +1196,7 @@ std::list<XID>& DesktopWindowTreeHostX11::open_windows() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopWindowTreeHostX11, MessageLoop::Dispatcher implementation:
+// DesktopWindowTreeHostX11, MessagePumpDispatcher implementation:
 
 bool DesktopWindowTreeHostX11::Dispatch(const base::NativeEvent& event) {
   XEvent* xev = event;

@@ -28,7 +28,7 @@ namespace test {
 
 namespace {
 
-class MockDispatcher : public base::MessageLoop::Dispatcher {
+class MockDispatcher : public base::MessagePumpDispatcher {
  public:
   MockDispatcher() : num_key_events_dispatched_(0) {
   }

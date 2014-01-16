@@ -37,7 +37,7 @@ class X11WindowEventFilter;
 class VIEWS_EXPORT DesktopWindowTreeHostX11 :
     public DesktopWindowTreeHost,
     public aura::WindowTreeHost,
-    public base::MessageLoop::Dispatcher {
+    public base::MessagePumpDispatcher {
  public:
   DesktopWindowTreeHostX11(
       internal::NativeWidgetDelegate* native_widget_delegate,

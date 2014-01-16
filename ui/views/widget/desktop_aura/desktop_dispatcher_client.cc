@@ -13,7 +13,7 @@ DesktopDispatcherClient::DesktopDispatcherClient() {}
 DesktopDispatcherClient::~DesktopDispatcherClient() {}
 
 void DesktopDispatcherClient::RunWithDispatcher(
-    base::MessageLoop::Dispatcher* nested_dispatcher,
+    base::MessagePumpDispatcher* nested_dispatcher,
     aura::Window* associated_window,
     bool nestable_tasks_allowed) {
   // TODO(erg): This class has been copypastad from

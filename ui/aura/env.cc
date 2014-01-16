@@ -76,7 +76,7 @@ bool Env::IsMouseButtonDown() const {
       mouse_button_flags_ != 0;
 }
 
-base::MessageLoop::Dispatcher* Env::GetDispatcher() {
+base::MessagePumpDispatcher* Env::GetDispatcher() {
 #if defined(USE_X11)
   return base::MessagePumpX11::Current();
 #else

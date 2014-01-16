@@ -9,6 +9,7 @@
 #include "base/event_types.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_dispatcher.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/aura/root_window.h"
@@ -138,7 +139,7 @@ void FindWindowFor(const gfx::Point& screen_point,
 namespace views {
 
 class DesktopDragDropClientAuraX11::X11DragContext :
-    public base::MessageLoop::Dispatcher {
+    public base::MessagePumpDispatcher {
  public:
   X11DragContext(ui::X11AtomCache* atom_cache,
                  ::Window local_window,
@@ -173,7 +174,7 @@ class DesktopDragDropClientAuraX11::X11DragContext :
   int GetDragOperation() const;
 
  private:
-  // Overridden from MessageLoop::Dispatcher:
+  // Overridden from MessagePumpDispatcher:
   virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
 
   // The atom cache owned by our parent.

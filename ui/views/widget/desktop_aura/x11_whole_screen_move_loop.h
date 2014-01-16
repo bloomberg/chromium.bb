@@ -5,8 +5,9 @@
 #ifndef UI_VIEWS_WIDGET_DESKTOP_AURA_X11_WHOLE_SCREEN_MOVE_LOOP_H_
 #define UI_VIEWS_WIDGET_DESKTOP_AURA_X11_WHOLE_SCREEN_MOVE_LOOP_H_
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_dispatcher.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/vector2d_f.h"
@@ -24,12 +25,12 @@ class Widget;
 
 // Runs a nested message loop and grabs the mouse. This is used to implement
 // dragging.
-class X11WholeScreenMoveLoop : public base::MessageLoop::Dispatcher {
+class X11WholeScreenMoveLoop : public base::MessagePumpDispatcher {
  public:
   explicit X11WholeScreenMoveLoop(X11WholeScreenMoveLoopDelegate* delegate);
   virtual ~X11WholeScreenMoveLoop();
 
-  // Overridden from base::MessageLoop::Dispatcher:
+  // Overridden from base::MessagePumpDispatcher:
   virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
 
   // Runs the nested message loop. While the mouse is grabbed, use |cursor| as

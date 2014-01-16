@@ -57,7 +57,7 @@ X11WholeScreenMoveLoop::X11WholeScreenMoveLoop(
 X11WholeScreenMoveLoop::~X11WholeScreenMoveLoop() {}
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopWindowTreeHostLinux, MessageLoop::Dispatcher implementation:
+// DesktopWindowTreeHostLinux, MessagePumpDispatcher implementation:
 
 bool X11WholeScreenMoveLoop::Dispatch(const base::NativeEvent& event) {
   XEvent* xev = event;
