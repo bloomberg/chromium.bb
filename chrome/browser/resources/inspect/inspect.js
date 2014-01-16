@@ -708,7 +708,7 @@ function validatePort(input) {
   if (!match)
     return false;
   var port = parseInt(match[1]);
-  if (port < 1024 || 10000 < port)
+  if (port < 1024 || 65535 < port)
     return false;
 
   var inputs = document.querySelectorAll('input.port:not(.invalid)');
@@ -726,7 +726,7 @@ function validateLocation(input) {
   if (!match)
     return false;
   var port = parseInt(match[2]);
-  return port <= 10000;
+  return port <= 65535;
 }
 
 function createEmptyConfigLine() {
