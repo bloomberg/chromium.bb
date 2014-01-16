@@ -41,7 +41,6 @@ using namespace WTF;
 using namespace Unicode;
 using namespace XPath;
 
-extern int xpathyyparse(WebCore::XPath::Parser*);
 #include "XPathGrammar.h"
 
 Parser* Parser::currentParser = 0;

@@ -31,6 +31,13 @@
 #include "core/xml/XPathStep.h"
 
 namespace WebCore {
+namespace XPath {
+class Parser;
+}
+}
+int xpathyyparse(WebCore::XPath::Parser*);
+
+namespace WebCore {
 
 class ExceptionState;
 class XPathNSResolver;
