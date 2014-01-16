@@ -266,6 +266,7 @@
     },
     {
       "url": "http://forecast.io?tap",
+      "disabled": "Synthetic swipe not supported on reference builds. Can be re-enabled after reference build roll",
       "navigate_steps" : [
         { "action": "navigate" },
         { "action": "wait", "javascript": "document.getElementById('forecast').style['display'] != 'none'" },
