@@ -14,9 +14,6 @@
 
 namespace content {
 
-class DeviceMotionEventPumpTest : public testing::Test {
-};
-
 class MockDeviceMotionListener : public blink::WebDeviceMotionListener {
  public:
   MockDeviceMotionListener();
@@ -48,6 +45,45 @@ class DeviceMotionEventPumpForTesting : public DeviceMotionEventPump {
   }
   virtual bool SendStartMessage() OVERRIDE { return true; }
   virtual bool SendStopMessage() OVERRIDE { return true; }
+  virtual void FireEvent() OVERRIDE {
+    DeviceMotionEventPump::FireEvent();
+    Stop();
+    base::MessageLoop::current()->QuitWhenIdle();
+  }
+};
+
+class DeviceMotionEventPumpTest : public testing::Test {
+ public:
+  DeviceMotionEventPumpTest() {
+    EXPECT_TRUE(shared_memory_.CreateAndMapAnonymous(
+        sizeof(DeviceMotionHardwareBuffer)));
+  }
+
+ protected:
+  virtual void SetUp() OVERRIDE {
+    listener_.reset(new MockDeviceMotionListener);
+    motion_pump_.reset(new DeviceMotionEventPumpForTesting);
+    buffer_ = static_cast<DeviceMotionHardwareBuffer*>(shared_memory_.memory());
+    memset(buffer_, 0, sizeof(DeviceMotionHardwareBuffer));
+    shared_memory_.ShareToProcess(base::kNullProcessHandle, &handle_);
+  }
+
+  void InitBuffer(bool allAvailableSensorsActive) {
+    blink::WebDeviceMotionData& data = buffer_->data;
+    data.accelerationX = 1;
+    data.hasAccelerationX = true;
+    data.accelerationY = 2;
+    data.hasAccelerationY = true;
+    data.accelerationZ = 3;
+    data.hasAccelerationZ = true;
+    data.allAvailableSensorsAreActive = allAvailableSensorsActive;
+  }
+
+  scoped_ptr<MockDeviceMotionListener> listener_;
+  scoped_ptr<DeviceMotionEventPumpForTesting> motion_pump_;
+  base::SharedMemoryHandle handle_;
+  base::SharedMemory shared_memory_;
+  DeviceMotionHardwareBuffer* buffer_;
 };
 
 // Always failing in the win try bot. See http://crbug.com/256782.
@@ -58,37 +94,16 @@ class DeviceMotionEventPumpForTesting : public DeviceMotionEventPump {
 #endif
 TEST_F(DeviceMotionEventPumpTest, MAYBE_DidStartPolling) {
   base::MessageLoopForUI loop;
-  scoped_ptr<MockDeviceMotionListener> listener(new MockDeviceMotionListener);
-  scoped_ptr<DeviceMotionEventPumpForTesting> motion_pump(
-      new DeviceMotionEventPumpForTesting);
 
-  base::SharedMemoryHandle handle;
-  base::SharedMemory shared_memory;
-  EXPECT_TRUE(shared_memory.CreateAndMapAnonymous(
-      sizeof(DeviceMotionHardwareBuffer)));
-  DeviceMotionHardwareBuffer* buffer =
-      static_cast<DeviceMotionHardwareBuffer*>(shared_memory.memory());
-  memset(buffer, 0, sizeof(DeviceMotionHardwareBuffer));
-  shared_memory.ShareToProcess(base::kNullProcessHandle, &handle);
+  InitBuffer(true);
 
-  blink::WebDeviceMotionData& data = buffer->data;
-  data.accelerationX = 1;
-  data.hasAccelerationX = true;
-  data.accelerationY = 2;
-  data.hasAccelerationY = true;
-  data.accelerationZ = 3;
-  data.hasAccelerationZ = true;
-  data.allAvailableSensorsAreActive = true;
+  motion_pump_->SetListener(listener_.get());
+  motion_pump_->OnDidStart(handle_);
 
-  motion_pump->SetListener(listener.get());
-  motion_pump->OnDidStart(handle);
-  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(
-      motion_pump->GetDelayMillis() * 2));
-  RunAllPendingInMessageLoop();
-  motion_pump->SetListener(0);
+  base::MessageLoop::current()->Run();
 
-  blink::WebDeviceMotionData& received_data = listener->data_;
-  EXPECT_TRUE(listener->did_change_device_motion_);
+  blink::WebDeviceMotionData& received_data = listener_->data_;
+  EXPECT_TRUE(listener_->did_change_device_motion_);
   EXPECT_TRUE(received_data.hasAccelerationX);
   EXPECT_EQ(1, (double)received_data.accelerationX);
   EXPECT_TRUE(received_data.hasAccelerationX);
@@ -115,38 +130,17 @@ TEST_F(DeviceMotionEventPumpTest, MAYBE_DidStartPolling) {
 #endif
 TEST_F(DeviceMotionEventPumpTest, MAYBE_DidStartPollingNotAllSensorsActive) {
   base::MessageLoopForUI loop;
-  scoped_ptr<MockDeviceMotionListener> listener(new MockDeviceMotionListener);
-  scoped_ptr<DeviceMotionEventPumpForTesting> motion_pump(
-      new DeviceMotionEventPumpForTesting);
 
-  base::SharedMemoryHandle handle;
-  base::SharedMemory shared_memory;
-  EXPECT_TRUE(shared_memory.CreateAndMapAnonymous(
-      sizeof(DeviceMotionHardwareBuffer)));
-  DeviceMotionHardwareBuffer* buffer =
-      static_cast<DeviceMotionHardwareBuffer*>(shared_memory.memory());
-  memset(buffer, 0, sizeof(DeviceMotionHardwareBuffer));
-  shared_memory.ShareToProcess(base::kNullProcessHandle, &handle);
+  InitBuffer(false);
 
-  blink::WebDeviceMotionData& data = buffer->data;
-  data.accelerationX = 1;
-  data.hasAccelerationX = true;
-  data.accelerationY = 2;
-  data.hasAccelerationY = true;
-  data.accelerationZ = 3;
-  data.hasAccelerationZ = true;
-  data.allAvailableSensorsAreActive = false;
+  motion_pump_->SetListener(listener_.get());
+  motion_pump_->OnDidStart(handle_);
 
-  motion_pump->SetListener(listener.get());
-  motion_pump->OnDidStart(handle);
-  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(
-      motion_pump->GetDelayMillis() * 2));
-  RunAllPendingInMessageLoop();
-  motion_pump->SetListener(0);
+  base::MessageLoop::current()->Run();
 
-  blink::WebDeviceMotionData& received_data = listener->data_;
+  blink::WebDeviceMotionData& received_data = listener_->data_;
   // No change in device motion because allAvailableSensorsAreActive is false.
-  EXPECT_FALSE(listener->did_change_device_motion_);
+  EXPECT_FALSE(listener_->did_change_device_motion_);
   EXPECT_FALSE(received_data.hasAccelerationX);
   EXPECT_FALSE(received_data.hasAccelerationX);
   EXPECT_FALSE(received_data.hasAccelerationY);
