@@ -285,6 +285,8 @@ ui::Layer* Window::RecreateLayer() {
   if (!old_layer)
     return NULL;
 
+  bounds_.SetRect(0, 0, 0, 0);
+
   old_layer->set_delegate(NULL);
 
   layer_ = new ui::Layer(old_layer->type());
