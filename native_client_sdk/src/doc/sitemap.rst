@@ -44,7 +44,12 @@ Contents:
    community/security-contest/contest-announcement.rst
    community/security-contest/contest-terms.rst
    community/security-contest/contest-faq.rst
-   peppercpp/index.rst
+   pepper_stable/c/index.rst
+   pepper_stable/cpp/index.rst
+   pepper_beta/c/index.rst
+   pepper_beta/cpp/index.rst
+   pepper_dev/c/index.rst
+   pepper_dev/cpp/index.rst
    reference/index.rst
    reference/pnacl-bitcode-abi.rst
    reference/pnacl-c-cpp-language-support.rst

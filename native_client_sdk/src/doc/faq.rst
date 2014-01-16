@@ -252,7 +252,7 @@ eager to collaborate with developers from other browsers.
 What's the difference between NPAPI and Pepper?
 -----------------------------------------------
 
-:doc:`Pepper <peppercpp/index>` (also known as PPAPI) is a new API that
+:doc:`Pepper <pepper_stable/index>` (also known as PPAPI) is a new API that
 lets Native Client modules communicate with the browser. Pepper supports
 various features that don't have robust support in NPAPI, such as event
 handling, out-of-process plugins, and asynchronous interfaces. Native

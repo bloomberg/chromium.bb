@@ -775,39 +775,35 @@
           },
           {
             "title": "Pepper API Reference",
-            "href": "/native-client/index.html",
+            "href": "/native-client/pepper_stable/index.html",
             "items": [
               {
-                "title": "Structures",
-                "href": "/native-client/index.html"
+                "title": "Pepper C Interfaces",
+                "href": "/native-client/pepper_stable/c/group___interfaces.html"
               },
               {
-                "title": "Functions",
-                "href": "/native-client/index.html"
+                "title": "Pepper C Structures",
+                "href": "/native-client/pepper_stable/c/group___structs.html"
               },
               {
-                "title": "Enums",
-                "href": "/native-client/index.html"
+                "title": "Pepper C Functions",
+                "href": "/native-client/pepper_stable/c/group___functions.html"
               },
               {
-                "title": "Typedefs",
-                "href": "/native-client/index.html"
+                "title": "Pepper C Enums",
+                "href": "/native-client/pepper_stable/c/group___enums.html"
               },
               {
-                "title": "Macros",
-                "href": "/native-client/index.html"
+                "title": "Pepper C Typedefs",
+                "href": "/native-client/pepper_stable/c/group___typedefs.html"
               },
               {
-                "title": "Files",
-                "href": "/native-client/index.html"
+                "title": "Pepper C Macros",
+                "href": "/native-client/pepper_stable/c/global_defs.html"
               },
               {
                 "title": "Pepper C++ Classes",
-                "href": "/native-client/index.html"
-              },
-              {
-                "title": "Pepper C++ Files",
-                "href": "/native-client/index.html"
+                "href": "/native-client/pepper_stable/cpp/inherits.html"
               }
             ]
           },
