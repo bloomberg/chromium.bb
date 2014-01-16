@@ -62,6 +62,7 @@ public:
     virtual void wasDetachedFromDocument() OVERRIDE;
     virtual void didFinishParsing() OVERRIDE;
     virtual bool isDone() const OVERRIDE;
+    virtual bool hasLoader() const OVERRIDE;
 
     // HTMLImportRoot
     virtual void blockerGone() OVERRIDE;

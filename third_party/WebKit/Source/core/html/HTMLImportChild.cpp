@@ -69,8 +69,8 @@ void HTMLImportChild::wasAlreadyLoaded()
     ASSERT(!m_loader);
     ASSERT(m_clients.size());
 
-    loaderWasResolved();
     ensureLoader();
+    loaderWasResolved();
 }
 
 void HTMLImportChild::startLoading(const ResourcePtr<RawResource>& resource)
@@ -161,7 +161,6 @@ void HTMLImportChild::didFinishParsing()
 void HTMLImportChild::didUnblockFromCreatingDocument()
 {
     HTMLImport::didUnblockFromCreatingDocument();
-    ASSERT(!m_loader || !m_loader->isOwnedBy(this));
     ensureLoader();
 }
 
@@ -202,6 +201,11 @@ void HTMLImportChild::shareLoader(HTMLImportChild* loader)
 bool HTMLImportChild::isDone() const
 {
     return m_loader && m_loader->isDone();
+}
+
+bool HTMLImportChild::hasLoader() const
+{
+    return m_loader;
 }
 
 bool HTMLImportChild::ownsLoader() const

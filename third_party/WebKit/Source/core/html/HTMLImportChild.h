@@ -70,6 +70,7 @@ public:
     virtual void wasDetachedFromDocument() OVERRIDE;
     virtual void didFinishParsing() OVERRIDE;
     virtual bool isDone() const OVERRIDE;
+    virtual bool hasLoader() const OVERRIDE;
     virtual bool ownsLoader() const OVERRIDE;
     virtual void didUnblockFromCreatingDocument() OVERRIDE;
     virtual void didBecomeReady() OVERRIDE;

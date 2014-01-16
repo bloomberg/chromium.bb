@@ -54,18 +54,16 @@ void HTMLImport::appendChild(HTMLImport* child)
 {
     if (isBlockedFromRunningScript())
         child->blockFromRunningScript();
-    if (lastChild() && lastChild()->isBlockingFollowersFromCreatingDocument())
-        child->blockFromCreatingDocument();
     TreeNode<HTMLImport>::appendChild(child);
     if (child->isCreatedByParser())
         blockPredecessorsOf(child);
 }
 
-inline bool HTMLImport::isBlockedFromCreatingDocumentByPredecessors() const
+bool HTMLImport::isBlockedFromCreatingDocument() const
 {
-    ASSERT(isBlockedFromCreatingDocument());
-    HTMLImport* elder = previous();
-    return (elder && !elder->isDone());
+    if (hasLoader())
+        return false;
+    return previous() && previous()->isBlockingFollowersFromCreatingDocument();
 }
 
 bool HTMLImport::isBlockedFromRunningScriptByPredecessors() const
@@ -96,12 +94,6 @@ void HTMLImport::blockFromRunningScript()
         m_state = BlockedFromRunningScript;
 }
 
-void HTMLImport::blockFromCreatingDocument()
-{
-    if (BlockedFromCreatingDocument < m_state)
-        m_state = BlockedFromCreatingDocument;
-}
-
 void HTMLImport::becomeReady()
 {
     if (!isBlocked())
@@ -116,14 +108,6 @@ void HTMLImport::unblockFromRunningScript()
         return;
     m_state = WaitingLoaderOrChildren;
     didUnblockFromRunningScript();
-}
-
-void HTMLImport::unblockFromCreatingDocument()
-{
-    if (!isBlockedFromCreatingDocument())
-        return;
-    m_state = BlockedFromRunningScript;
-    didUnblockFromCreatingDocument();
 }
 
 void HTMLImport::didUnblockFromRunningScript()
@@ -146,7 +130,6 @@ void HTMLImport::didUnblockFromCreatingDocument()
 
 void HTMLImport::loaderWasResolved()
 {
-    unblockFromCreatingDocument();
     unblockFromRunningScript();
 }
 
@@ -179,9 +162,9 @@ bool HTMLImport::unblock(HTMLImport* import)
 {
     ASSERT(!import->isBlockedFromRunningScriptByPredecessors());
 
-    if (import->isBlockedFromCreatingDocument() && import->isBlockedFromCreatingDocumentByPredecessors())
+    if (import->isBlockedFromCreatingDocument())
         return false;
-    import->unblockFromCreatingDocument();
+    import->didUnblockFromCreatingDocument();
 
     for (HTMLImport* child = import->firstChild(); child; child = child->next()) {
         if (!unblock(child))

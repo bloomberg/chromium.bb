@@ -141,8 +141,9 @@ public:
 
     bool isCreatedByParser() const { return m_createdByParser; }
     bool isBlockedFromRunningScript() const { return m_state <= BlockedFromRunningScript; }
-    bool isBlockedFromCreatingDocument() const { return m_state <= BlockedFromCreatingDocument; }
     bool isBlocked() const { return m_state < Ready; }
+
+    bool isBlockedFromCreatingDocument() const;
 
     void appendChild(HTMLImport*);
 
@@ -151,12 +152,12 @@ public:
     virtual void wasDetachedFromDocument() = 0;
     virtual void didFinishParsing() = 0;
     virtual bool isDone() const = 0; // FIXME: Should be renamed to haveFinishedLoading()
+    virtual bool hasLoader() const = 0;
     virtual bool ownsLoader() const { return false; }
     virtual CustomElementMicrotaskImportStep* customElementMicrotaskStep() const { return 0; }
 
 protected:
     enum State {
-        BlockedFromCreatingDocument,
         BlockedFromRunningScript,
         WaitingLoaderOrChildren,
         Ready
@@ -179,13 +180,10 @@ private:
 
     void blockPredecessorsOf(HTMLImport* child);
     void blockFromRunningScript();
-    void blockFromCreatingDocument();
     void waitLoaderOrChildren();
     void unblockFromRunningScript();
-    void unblockFromCreatingDocument();
     void becomeReady();
 
-    bool isBlockedFromCreatingDocumentByPredecessors() const;
     bool isBlockedFromRunningScriptByPredecessors() const;
     bool isBlockingFollowersFromRunningScript() const;
     bool isBlockingFollowersFromCreatingDocument() const;

@@ -143,6 +143,11 @@ void HTMLImportsController::didFinishParsing()
 {
 }
 
+bool HTMLImportsController::hasLoader() const
+{
+    return true;
+}
+
 bool HTMLImportsController::isDone() const
 {
     return !m_master->parsing();
