@@ -1410,9 +1410,20 @@ def _PostParseCheck(parser, options, args):
   # Ensure that all args are legitimate config targets.
   invalid_target = False
   for arg in args:
-    if not _GetConfig(arg):
+    build_config = _GetConfig(arg)
+    if not build_config:
       cros_build_lib.Error('No such configuraton target: "%s".', arg)
       invalid_target = True
+
+    # The --version option is not compatible with an external target unless the
+    # --buildbot option is specified.  More correctly, only "paladin versions"
+    # will work with external targets, and those are only used with --buildbot.
+    # If --buildbot is specified, then user should know what they are doing and
+    # only specify a version that will work.  See crbug.com/311648.
+    elif options.force_version and not options.buildbot:
+      if not build_config.internal:
+        cros_build_lib.Die('Cannot specify --version without --buildbot for an'
+                           ' external target (%s).' % arg)
 
   if invalid_target:
     print 'Please specify one of:'

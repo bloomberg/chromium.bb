@@ -256,7 +256,6 @@ class RepoRepository(object):
     on disk, and needs to be invoked after the sync has completed to rewrite
     any new project's abspath to relative.
     """
-
     if not self._referenced_repo:
       return
 
