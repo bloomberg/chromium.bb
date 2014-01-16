@@ -468,6 +468,9 @@ void DesktopWindowTreeHostX11::SetShape(gfx::NativeRegion native_region) {
 }
 
 void DesktopWindowTreeHostX11::Activate() {
+  if (!window_mapped_)
+    return;
+
   X11DesktopHandler::get()->ActivateWindow(xwindow_);
   native_widget_delegate_->AsWidget()->SetInitialFocus();
 }

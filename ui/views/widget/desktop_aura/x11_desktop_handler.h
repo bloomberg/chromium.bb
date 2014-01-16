@@ -29,6 +29,7 @@ class VIEWS_EXPORT X11DesktopHandler : public base::MessagePumpDispatcher,
   static X11DesktopHandler* get();
 
   // Sends a request to the window manager to activate |window|.
+  // This method should only be called if the window is already mapped.
   void ActivateWindow(::Window window);
 
   // Checks if the current active window is |window|.

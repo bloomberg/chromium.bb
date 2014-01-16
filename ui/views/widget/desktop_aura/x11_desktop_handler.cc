@@ -94,6 +94,12 @@ void X11DesktopHandler::ActivateWindow(::Window window) {
                &xclient);
   } else {
     XRaiseWindow(xdisplay_, window);
+
+    // XRaiseWindow will not give input focus to the window. We now need to ask
+    // the X server to do that. Note that the call will raise an X error if the
+    // window is not mapped.
+    XSetInputFocus(xdisplay_, window, RevertToParent, CurrentTime);
+
     OnActiveWindowChanged(window);
   }
 }
