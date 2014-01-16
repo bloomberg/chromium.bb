@@ -240,14 +240,6 @@ UploadDataStream* CreateSimpleUploadData(const char* data) {
 
 // Verify that the SSLInfo of a successful SSL connection has valid values.
 void CheckSSLInfo(const SSLInfo& ssl_info) {
-  // Allow ChromeFrame fake SSLInfo to get through.
-  if (ssl_info.cert.get() &&
-      ssl_info.cert.get()->issuer().GetDisplayName() == "Chrome Internal") {
-    // -1 means unknown.
-    EXPECT_EQ(ssl_info.security_bits, -1);
-    return;
-  }
-
   // -1 means unknown.  0 means no encryption.
   EXPECT_GT(ssl_info.security_bits, 0);
 
@@ -1965,6 +1957,7 @@ TEST_F(URLRequestTest, PriorityIgnoreLimits) {
 // A subclass of SpawnedTestServer that uses a statically-configured hostname.
 // This is to work around mysterious failures in chrome_frame_net_tests. See:
 // http://crbug.com/114369
+// TODO(erikwright): remove or update as needed; see http://crbug.com/334634.
 class LocalHttpTestServer : public SpawnedTestServer {
  public:
   explicit LocalHttpTestServer(const base::FilePath& document_root)
@@ -2690,10 +2683,7 @@ class URLRequestTestHTTP : public URLRequestTest {
     bool is_success = r.status().is_success();
 
     if (!is_success) {
-      // Requests handled by ChromeFrame send a less precise error message,
-      // ERR_CONNECTION_ABORTED.
-      EXPECT_TRUE(r.status().error() == ERR_RESPONSE_HEADERS_TOO_BIG ||
-                  r.status().error() == ERR_CONNECTION_ABORTED);
+      EXPECT_TRUE(r.status().error() == ERR_RESPONSE_HEADERS_TOO_BIG);
       // The test server appears to be unable to handle subsequent requests
       // after this error is triggered. Force it to restart.
       EXPECT_TRUE(test_server_.Stop());
@@ -4812,21 +4802,11 @@ TEST_F(URLRequestTestHTTP, PostUnreadableFileTest) {
 
     base::RunLoop().Run();
 
-    // TODO(tzik): Remove this #if after we stop supporting Chrome Frame.
-    // http://crbug.com/317432
-#if defined(CHROME_FRAME_NET_TESTS)
-    EXPECT_FALSE(d.request_failed());
-    EXPECT_FALSE(d.received_data_before_response());
-    EXPECT_EQ(0, d.bytes_received());
-    EXPECT_EQ(URLRequestStatus::SUCCESS, r.status().status());
-    EXPECT_EQ(OK, r.status().error());
-#else
     EXPECT_TRUE(d.request_failed());
     EXPECT_FALSE(d.received_data_before_response());
     EXPECT_EQ(0, d.bytes_received());
     EXPECT_EQ(URLRequestStatus::FAILED, r.status().status());
     EXPECT_EQ(ERR_FILE_NOT_FOUND, r.status().error());
-#endif  // defined(CHROME_FRAME_NET_TESTS)
   }
 }
 
@@ -5962,10 +5942,7 @@ TEST_F(URLRequestTestHTTP, OverrideUserAgent) {
   req.SetExtraRequestHeaders(headers);
   req.Start();
   base::RunLoop().Run();
-  // If the net tests are being run with ChromeFrame then we need to allow for
-  // the 'chromeframe' suffix which is added to the user agent before the
-  // closing parentheses.
-  EXPECT_TRUE(StartsWithASCII(d.data_received(), "Lynx (textmode", true));
+  EXPECT_EQ(std::string("Lynx (textmode)"), d.data_received());
 }
 
 // Check that a NULL HttpUserAgentSettings causes the corresponding empty
