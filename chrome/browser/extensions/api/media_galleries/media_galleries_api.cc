@@ -66,20 +66,24 @@ const char kIsMediaDeviceKey[] = "isMediaDevice";
 const char kIsRemovableKey[] = "isRemovable";
 const char kNameKey[] = "name";
 
+MediaFileSystemRegistry* media_file_system_registry() {
+  return g_browser_process->media_file_system_registry();
+}
+
 // Checks whether the MediaGalleries API is currently accessible (it may be
-// disallowed even if an extension has the requisite permission).
-bool ApiIsAccessible(std::string* error) {
+// disallowed even if an extension has the requisite permission). Then
+// initializes the MediaGalleriesPreferences
+bool Setup(Profile* profile, std::string* error, base::Closure callback) {
   if (!ChromeSelectFilePolicy::FileSelectDialogsAllowed()) {
     *error = std::string(kDisallowedByPolicy) +
         prefs::kAllowFileSelectionDialogs;
     return false;
   }
 
+  MediaGalleriesPreferences* preferences =
+      media_file_system_registry()->GetPreferences(profile);
+  preferences->EnsureInitialized(callback);
   return true;
-}
-
-MediaFileSystemRegistry* media_file_system_registry() {
-  return g_browser_process->media_file_system_registry();
 }
 
 WebContents* GetWebContents(content::RenderViewHost* rvh,
@@ -228,9 +232,6 @@ MediaGalleriesGetMediaFileSystemsFunction::
     ~MediaGalleriesGetMediaFileSystemsFunction() {}
 
 bool MediaGalleriesGetMediaFileSystemsFunction::RunImpl() {
-  if (!ApiIsAccessible(&error_))
-    return false;
-
   media_galleries::UsageCount(media_galleries::GET_MEDIA_FILE_SYSTEMS);
   scoped_ptr<GetMediaFileSystems::Params> params(
       GetMediaFileSystems::Params::Create(*args_));
@@ -242,13 +243,9 @@ bool MediaGalleriesGetMediaFileSystemsFunction::RunImpl() {
     interactive = params->details->interactive;
   }
 
-  MediaGalleriesPreferences* preferences =
-      media_file_system_registry()->GetPreferences(GetProfile());
-  preferences->EnsureInitialized(base::Bind(
-      &MediaGalleriesGetMediaFileSystemsFunction::OnPreferencesInit,
-      this,
+  return Setup(GetProfile(), &error_, base::Bind(
+      &MediaGalleriesGetMediaFileSystemsFunction::OnPreferencesInit, this,
       interactive));
-  return true;
 }
 
 void MediaGalleriesGetMediaFileSystemsFunction::OnPreferencesInit(
@@ -343,17 +340,11 @@ MediaGalleriesGetAllMediaFileSystemMetadataFunction::
     ~MediaGalleriesGetAllMediaFileSystemMetadataFunction() {}
 
 bool MediaGalleriesGetAllMediaFileSystemMetadataFunction::RunImpl() {
-  if (!ApiIsAccessible(&error_))
-    return false;
-
   media_galleries::UsageCount(
       media_galleries::GET_ALL_MEDIA_FILE_SYSTEM_METADATA);
-  MediaGalleriesPreferences* preferences =
-      media_file_system_registry()->GetPreferences(GetProfile());
-  preferences->EnsureInitialized(base::Bind(
+  return Setup(GetProfile(), &error_, base::Bind(
       &MediaGalleriesGetAllMediaFileSystemMetadataFunction::OnPreferencesInit,
       this));
-  return true;
 }
 
 void MediaGalleriesGetAllMediaFileSystemMetadataFunction::OnPreferencesInit() {
@@ -411,16 +402,9 @@ MediaGalleriesAddUserSelectedFolderFunction::
     ~MediaGalleriesAddUserSelectedFolderFunction() {}
 
 bool MediaGalleriesAddUserSelectedFolderFunction::RunImpl() {
-  if (!ApiIsAccessible(&error_))
-    return false;
-
   media_galleries::UsageCount(media_galleries::ADD_USER_SELECTED_FOLDER);
-  MediaGalleriesPreferences* preferences =
-      media_file_system_registry()->GetPreferences(GetProfile());
-  preferences->EnsureInitialized(base::Bind(
-      &MediaGalleriesAddUserSelectedFolderFunction::OnPreferencesInit,
-      this));
-  return true;
+  return Setup(GetProfile(), &error_, base::Bind(
+      &MediaGalleriesAddUserSelectedFolderFunction::OnPreferencesInit, this));
 }
 
 void MediaGalleriesAddUserSelectedFolderFunction::OnPreferencesInit() {
@@ -518,9 +502,6 @@ MediaGalleriesAddUserSelectedFolderFunction::GetMediaFileSystemsForExtension(
 MediaGalleriesGetMetadataFunction::~MediaGalleriesGetMetadataFunction() {}
 
 bool MediaGalleriesGetMetadataFunction::RunImpl() {
-  if (!ApiIsAccessible(&error_))
-    return false;
-
   std::string blob_uuid;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &blob_uuid));
 
@@ -532,20 +513,16 @@ bool MediaGalleriesGetMetadataFunction::RunImpl() {
   if (!options)
     return false;
 
-  MediaGalleriesPreferences* preferences =
-      media_file_system_registry()->GetPreferences(GetProfile());
   bool mime_type_only = options->metadata_type ==
       MediaGalleries::GET_METADATA_TYPE_MIMETYPEONLY;
-  preferences->EnsureInitialized(base::Bind(
-      &MediaGalleriesGetMetadataFunction::OnPreferencesInit,
-      this, mime_type_only, blob_uuid));
 
-  return true;
+  return Setup(GetProfile(), &error_, base::Bind(
+      &MediaGalleriesGetMetadataFunction::OnPreferencesInit, this,
+      mime_type_only, blob_uuid));
 }
 
 void MediaGalleriesGetMetadataFunction::OnPreferencesInit(
-    bool mime_type_only,
-    const std::string& blob_uuid) {
+    bool mime_type_only, const std::string& blob_uuid) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   // BlobReader is self-deleting.

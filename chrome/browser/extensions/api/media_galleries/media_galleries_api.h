@@ -34,7 +34,7 @@ class MediaGalleriesGetMediaFileSystemsFunction
  private:
   // Bottom half for RunImpl, invoked after the preferences is initialized.
   void OnPreferencesInit(
-    MediaGalleries::GetMediaFileSystemsInteractivity interactive);
+      MediaGalleries::GetMediaFileSystemsInteractivity interactive);
 
   // Always show the dialog.
   void AlwaysShowDialog(const std::vector<MediaFileSystemInfo>& filesystems);
