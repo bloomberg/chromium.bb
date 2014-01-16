@@ -1011,6 +1011,7 @@ void ThreadProxy::BeginMainFrameAbortedOnImplThread(bool did_handle) {
 void ThreadProxy::ScheduledActionCommit() {
   TRACE_EVENT0("cc", "ThreadProxy::ScheduledActionCommit");
   DCHECK(IsImplThread());
+  DCHECK(IsMainThreadBlocked());
   DCHECK(commit_completion_event_on_impl_thread_);
   DCHECK(current_resource_update_controller_on_impl_thread_);
 
@@ -1031,8 +1032,11 @@ void ThreadProxy::ScheduledActionCommit() {
 
   next_frame_is_newly_committed_frame_on_impl_thread_ = true;
 
-  if (layer_tree_host()->settings().impl_side_painting &&
-      commit_waits_for_activation_) {
+  bool hold_commit = layer_tree_host()->settings().impl_side_painting &&
+                     commit_waits_for_activation_;
+  commit_waits_for_activation_ = false;
+
+  if (hold_commit) {
     // For some layer types in impl-side painting, the commit is held until
     // the pending tree is activated.  It's also possible that the
     // pending tree has already activated if there was no work to be done.
@@ -1044,8 +1048,6 @@ void ThreadProxy::ScheduledActionCommit() {
     commit_completion_event_on_impl_thread_->Signal();
     commit_completion_event_on_impl_thread_ = NULL;
   }
-
-  commit_waits_for_activation_ = false;
 
   commit_complete_time_ = base::TimeTicks::HighResNow();
   begin_main_frame_to_commit_duration_history_.InsertSample(
