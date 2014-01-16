@@ -335,13 +335,15 @@ aura::WindowTreeHost* DesktopWindowTreeHostX11::AsWindowTreeHost() {
 
 void DesktopWindowTreeHostX11::ShowWindowWithState(
     ui::WindowShowState show_state) {
-  if (show_state != ui::SHOW_STATE_DEFAULT &&
-      show_state != ui::SHOW_STATE_NORMAL) {
-    // Only forwarding to Show().
-    NOTIMPLEMENTED();
+  if (!window_mapped_)
+    MapWindow(show_state);
+
+  if (show_state == ui::SHOW_STATE_NORMAL ||
+      show_state == ui::SHOW_STATE_MAXIMIZED) {
+    Activate();
   }
 
-  Show();
+  native_widget_delegate_->AsWidget()->SetInitialFocus();
 }
 
 void DesktopWindowTreeHostX11::ShowMaximizedWithBounds(
@@ -729,25 +731,7 @@ gfx::AcceleratedWidget DesktopWindowTreeHostX11::GetAcceleratedWidget() {
 }
 
 void DesktopWindowTreeHostX11::Show() {
-  if (!window_mapped_) {
-    // Before we map the window, set size hints. Otherwise, some window managers
-    // will ignore toplevel XMoveWindow commands.
-    XSizeHints size_hints;
-    size_hints.flags = PPosition;
-    size_hints.x = bounds_.x();
-    size_hints.y = bounds_.y();
-    XSetWMNormalHints(xdisplay_, xwindow_, &size_hints);
-
-    XMapWindow(xdisplay_, xwindow_);
-
-    // We now block until our window is mapped. Some X11 APIs will crash and
-    // burn if passed |xwindow_| before the window is mapped, and XMapWindow is
-    // asynchronous.
-    base::MessagePumpX11::Current()->BlockUntilWindowMapped(xwindow_);
-    window_mapped_ = true;
-  }
-
-  native_widget_delegate_->AsWidget()->SetInitialFocus();
+  ShowWindowWithState(ui::SHOW_STATE_NORMAL);
 }
 
 void DesktopWindowTreeHostX11::Hide() {
@@ -1196,6 +1180,48 @@ std::list<XID>& DesktopWindowTreeHostX11::open_windows() {
   if (!open_windows_)
     open_windows_ = new std::list<XID>();
   return *open_windows_;
+}
+
+void DesktopWindowTreeHostX11::MapWindow(ui::WindowShowState show_state) {
+  if (show_state != ui::SHOW_STATE_DEFAULT &&
+      show_state != ui::SHOW_STATE_NORMAL &&
+      show_state != ui::SHOW_STATE_INACTIVE) {
+    // It will behave like SHOW_STATE_NORMAL.
+    NOTIMPLEMENTED();
+  }
+
+  // Before we map the window, set size hints. Otherwise, some window managers
+  // will ignore toplevel XMoveWindow commands.
+  XSizeHints size_hints;
+  size_hints.flags = PPosition;
+  size_hints.x = bounds_.x();
+  size_hints.y = bounds_.y();
+  XSetWMNormalHints(xdisplay_, xwindow_, &size_hints);
+
+  XWMHints wm_hints;
+  wm_hints.flags = InputHint | StateHint;
+  // If SHOW_STATE_INACTIVE, tell the window manager that the window is not
+  // focusable. This will make the window inactive upon creation.
+  wm_hints.input = show_state != ui::SHOW_STATE_INACTIVE;
+  wm_hints.initial_state = NormalState;
+  XSetWMHints(xdisplay_, xwindow_, &wm_hints);
+
+  XMapWindow(xdisplay_, xwindow_);
+
+  // We now block until our window is mapped. Some X11 APIs will crash and
+  // burn if passed |xwindow_| before the window is mapped, and XMapWindow is
+  // asynchronous.
+  base::MessagePumpX11::Current()->BlockUntilWindowMapped(xwindow_);
+  window_mapped_ = true;
+
+  // The window has been created and mapped. It should now accept input.
+  if (show_state == ui::SHOW_STATE_INACTIVE) {
+    XWMHints wm_hints;
+    wm_hints.flags = InputHint;
+    wm_hints.input = true;
+    // Tell the window manager that the window is now focusable.
+    XSetWMHints(xdisplay_, xwindow_, &wm_hints);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

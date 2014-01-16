@@ -198,6 +198,9 @@ private:
   // See comment for variable open_windows_.
   static std::list<XID>& open_windows();
 
+  // Map the window (shows it) taking into account the given |show_state|.
+  void MapWindow(ui::WindowShowState show_state);
+
   // Overridden from Dispatcher:
   virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
 
