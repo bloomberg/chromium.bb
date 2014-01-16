@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/pickle.h"
+#include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -716,6 +717,34 @@ TEST_F(ClipboardTest, WriteEverything) {
 
   // Passes if we don't crash.
 }
+
+// TODO(dcheng): Fix this test for Android. It's rather involved, since the
+// clipboard change listener is posted to the Java message loop, and spinning
+// that loop from C++ to trigger the callback in the test requires a non-trivial
+// amount of additional work.
+#if !defined(OS_ANDROID)
+// Simple test that the sequence number appears to change when the clipboard is
+// written to.
+// TODO(dcheng): Add a version to test CLIPBOARD_TYPE_SELECTION.
+TEST_F(ClipboardTest, GetSequenceNumber) {
+  const uint64 first_sequence_number =
+      clipboard().GetSequenceNumber(CLIPBOARD_TYPE_COPY_PASTE);
+
+  {
+    ScopedClipboardWriter writer(&clipboard(), CLIPBOARD_TYPE_COPY_PASTE);
+    writer.WriteText(UTF8ToUTF16("World"));
+  }
+
+  // On some platforms, the sequence number is updated by a UI callback so pump
+  // the message loop to make sure we get the notification.
+  base::RunLoop().RunUntilIdle();
+
+  const uint64 second_sequence_number =
+      clipboard().GetSequenceNumber(CLIPBOARD_TYPE_COPY_PASTE);
+
+  EXPECT_NE(first_sequence_number, second_sequence_number);
+}
+#endif
 
 #if defined(OS_ANDROID)
 
