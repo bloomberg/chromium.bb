@@ -810,6 +810,7 @@ paladin = _config(
   manifest_version=True,
   trybot_list=True,
   description='Commit Queue',
+  upload_standalone_images=False,
 )
 
 # Used for paladin builders that build from source.
