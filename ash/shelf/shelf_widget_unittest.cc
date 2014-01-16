@@ -39,22 +39,6 @@ internal::ShelfLayoutManager* GetShelfLayoutManager() {
 
 typedef test::AshTestBase ShelfWidgetTest;
 
-// Shelf can't be activated on mouse click, but it is activable from
-// the focus cycler or as fallback.
-// TODO(mtomasz): make this test work with the FocusController.
-// crbug.com/285364.
-TEST_F(ShelfWidgetTest, DISABLED_ActivateAsFallback) {
-  Shelf* shelf = Shelf::ForPrimaryDisplay();
-  ShelfWidget* shelf_widget = shelf->shelf_widget();
-  EXPECT_FALSE(shelf_widget->CanActivate());
-
-  shelf_widget->WillActivateAsFallback();
-  EXPECT_TRUE(shelf_widget->CanActivate());
-
-  wm::ActivateWindow(shelf_widget->GetNativeWindow());
-  EXPECT_FALSE(shelf_widget->CanActivate());
-}
-
 void TestLauncherAlignment(aura::Window* root,
                            ShelfAlignment alignment,
                            const std::string& expected) {
