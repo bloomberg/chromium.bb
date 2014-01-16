@@ -43,20 +43,9 @@ public:
 
     virtual bool makeContextCurrent() { return true; }
 
-    virtual void prepareTexture() { }
-
-    virtual void postSubBufferCHROMIUM(int x, int y, int width, int height) { }
-
     virtual void synthesizeGLError(WGC3Denum) { }
 
     virtual bool isContextLost() { return false; }
-
-    virtual void* mapBufferSubDataCHROMIUM(WGC3Denum target, WGC3Dintptr offset, WGC3Dsizeiptr size, WGC3Denum access) { return 0; }
-    virtual void unmapBufferSubDataCHROMIUM(const void*) { }
-    virtual void* mapTexSubImage2DCHROMIUM(WGC3Denum target, WGC3Dint level, WGC3Dint xoffset, WGC3Dint yoffset, WGC3Dsizei width, WGC3Dsizei height, WGC3Denum format, WGC3Denum type, WGC3Denum access) { return 0; }
-    virtual void unmapTexSubImage2DCHROMIUM(const void*) { }
-
-    virtual void setVisibilityCHROMIUM(bool visible) { }
 
     virtual void discardFramebufferEXT(WGC3Denum target, WGC3Dsizei numAttachments, const WGC3Denum* attachments) { }
     virtual void ensureFramebufferCHROMIUM() { }
@@ -274,16 +263,6 @@ public:
 
     virtual void deleteProgram(WebGLId) { }
     virtual void deleteShader(WebGLId) { }
-
-    virtual void texStorage2DEXT(WGC3Denum target, WGC3Dint levels, WGC3Duint internalformat, WGC3Dint width, WGC3Dint height) { }
-
-    virtual WebGLId createQueryEXT() { return 1; }
-    virtual void deleteQueryEXT(WebGLId) { }
-    virtual GLboolean isQueryEXT(WebGLId) { return true; }
-    virtual void beginQueryEXT(GLenum, WebGLId) { }
-    virtual void endQueryEXT(GLenum) { }
-    virtual void getQueryivEXT(GLenum, GLenum, GLint*) { }
-    virtual void getQueryObjectuivEXT(WebGLId, GLenum, GLuint*) { }
 
 protected:
     unsigned m_nextTextureId;
