@@ -19,7 +19,7 @@ TrayStep::TrayStep(ash::FirstRunHelper* shell_helper, FirstRunActor* actor)
     : Step(kTrayStep, shell_helper, actor) {
 }
 
-void TrayStep::Show() {
+void TrayStep::DoShow() {
   if (!shell_helper()->IsTrayBubbleOpened())
     shell_helper()->OpenTrayBubble();
   gfx::Rect bounds = shell_helper()->GetTrayBubbleBounds();

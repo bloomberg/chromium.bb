@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/time/time.h"
 
 namespace ash {
 class FirstRunHelper;
@@ -31,28 +32,40 @@ class Step {
   virtual ~Step();
 
   // Step shows its content.
-  virtual void Show() = 0;
+  void Show();
 
-  // Called before hiding step. Default implementation removes holes from
-  // background.
-  virtual void OnBeforeHide();
+  // Called before hiding step.
+  void OnBeforeHide();
 
   // Called after step has been hidden.
-  virtual void OnAfterHide();
-
-  // Returns size of overlay window.
-  gfx::Size GetOverlaySize() const;
+  void OnAfterHide();
 
   const std::string& name() const { return name_; }
 
  protected:
   ash::FirstRunHelper* shell_helper() const { return shell_helper_; }
   FirstRunActor* actor() const { return actor_; }
+  gfx::Size GetOverlaySize() const;
+
+  // Called from Show method.
+  virtual void DoShow() = 0;
+
+  // Called from OnBeforeHide. Step implementation could override this method to
+  // react on corresponding event.
+  virtual void DoOnBeforeHide() {}
+
+  // Called from OnAfterHide. Step implementation could override this method to
+  // react on event.
+  virtual void DoOnAfterHide() {}
 
  private:
+  // Records time spent on step to UMA.
+  void RecordCompletion();
+
   std::string name_;
   ash::FirstRunHelper* shell_helper_;
   FirstRunActor* actor_;
+  base::Time show_time_;
 
   DISALLOW_COPY_AND_ASSIGN(Step);
 };

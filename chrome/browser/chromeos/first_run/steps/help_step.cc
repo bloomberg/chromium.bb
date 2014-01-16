@@ -22,7 +22,7 @@ HelpStep::HelpStep(ash::FirstRunHelper* shell_helper, FirstRunActor* actor)
     : Step(kHelpStep, shell_helper, actor) {
 }
 
-void HelpStep::Show() {
+void HelpStep::DoShow() {
   if (!shell_helper()->IsTrayBubbleOpened())
     shell_helper()->OpenTrayBubble();
   gfx::Rect button_bounds = shell_helper()->GetHelpButtonBounds();
@@ -31,7 +31,7 @@ void HelpStep::Show() {
   actor()->ShowStepPointingTo(name(), center.x(), center.y(), kCircleRadius);
 }
 
-void HelpStep::OnAfterHide() {
+void HelpStep::DoOnAfterHide() {
   shell_helper()->CloseTrayBubble();
 }
 

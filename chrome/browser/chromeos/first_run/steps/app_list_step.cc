@@ -23,7 +23,7 @@ AppListStep::AppListStep(ash::FirstRunHelper* shell_helper,
     : Step(kAppListStep, shell_helper, actor) {
 }
 
-void AppListStep::Show() {
+void AppListStep::DoShow() {
   gfx::Rect button_bounds = shell_helper()->GetAppListButtonBounds();
   gfx::Point center = button_bounds.CenterPoint();
   actor()->AddRoundHole(center.x(), center.y(), kCircleRadius);

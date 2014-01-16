@@ -1727,6 +1727,39 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="CrosFirstRun.DialogShown">
+  <summary>
+    Records the number of times when first-run dialog was shown.
+  </summary>
+</histogram>
+
+<histogram name="CrosFirstRun.FurthestStep">
+  <summary>
+    Index of furthest step that was reached during tutorial. Since order of
+    steps could change eventially and new steps could apear we use index here
+    instead of step name.
+  </summary>
+</histogram>
+
+<histogram name="CrosFirstRun.TimeSpent" units="ms">
+  <summary>The total time that user spent on first-run tutorial.</summary>
+</histogram>
+
+<histogram name="CrosFirstRun.TimeSpentOnStep" units="ms">
+  <summary>The time that user spent on some step of tutorial.</summary>
+</histogram>
+
+<histogram name="CrosFirstRun.TutorialCompletion"
+    enum="CrosFirstRunTutorialCompletionType">
+  <summary>Tracks the way how user left tutorial.</summary>
+</histogram>
+
+<histogram name="CrosFirstRun.TutorialLaunched">
+  <summary>
+    Records the number of times when first-run tutorial has been launched.
+  </summary>
+</histogram>
+
 <histogram name="DataReductionProxy.BypassInfoFallback"
     enum="DataReductionProxyBypassEventType">
   <summary>
@@ -22829,6 +22862,12 @@ other types of suffix sets.
   <int value="0" label="ModemManagerCommandSendFailure"/>
 </enum>
 
+<enum name="CrosFirstRunTutorialCompletionType" type="int">
+  <int value="0" label="Was not finished"/>
+  <int value="1" label="Finished with &quot;Got It&quot; button"/>
+  <int value="2" label="Finished with &quot;Keep Exploring&quot; button"/>
+</enum>
+
 <enum name="CrosShelfClickTarget" type="int">
   <obsolete>
     Deprecated as of 12/2013. Default pinned apps trial is finished.
@@ -31688,6 +31727,13 @@ other types of suffix sets.
   <affected-histogram name="PLT.BeginToFinish_LinkLoadReload"/>
   <affected-histogram name="PLT.BeginToFinish_NormalLoad"/>
   <affected-histogram name="PLT.LoadType"/>
+</fieldtrial>
+
+<fieldtrial name="CrosFirstRunStep" separator="">
+  <group name="AppList"/>
+  <group name="Tray"/>
+  <group name="Help"/>
+  <affected-histogram name="CrosFirstRun.TimeSpentOnStep"/>
 </fieldtrial>
 
 <fieldtrial name="DataReductionProxy">

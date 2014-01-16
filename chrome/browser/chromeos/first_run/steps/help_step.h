@@ -15,9 +15,12 @@ class HelpStep : public Step {
  public:
   HelpStep(ash::FirstRunHelper* shell_helper, FirstRunActor* actor);
 
+ private:
   // Overriden from Step.
-  virtual void Show() OVERRIDE;
-  virtual void OnAfterHide() OVERRIDE;
+  virtual void DoShow() OVERRIDE;
+  virtual void DoOnAfterHide() OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(HelpStep);
 };
 
 }  // namespace first_run

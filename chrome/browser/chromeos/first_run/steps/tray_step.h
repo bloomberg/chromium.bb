@@ -15,8 +15,11 @@ class TrayStep : public Step {
  public:
   TrayStep(ash::FirstRunHelper* shell_helper, FirstRunActor* actor);
 
+ private:
   // Overriden from Step.
-  virtual void Show() OVERRIDE;
+  virtual void DoShow() OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(TrayStep);
 };
 
 }  // namespace first_run

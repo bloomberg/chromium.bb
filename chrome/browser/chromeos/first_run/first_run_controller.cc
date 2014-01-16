@@ -7,7 +7,9 @@
 #include "ash/shell.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "chrome/browser/chromeos/first_run/first_run_view.h"
+#include "chrome/browser/chromeos/first_run/metrics.h"
 #include "chrome/browser/chromeos/first_run/steps/app_list_step.h"
 #include "chrome/browser/chromeos/first_run/steps/help_step.h"
 #include "chrome/browser/chromeos/first_run/steps/tray_step.h"
@@ -22,6 +24,12 @@ size_t NONE_STEP_INDEX = std::numeric_limits<size_t>::max();
 // Instance of currently running controller, or NULL if controller is not
 // running now.
 chromeos::FirstRunController* g_instance;
+
+void RecordCompletion(chromeos::first_run::TutorialCompletion type) {
+  UMA_HISTOGRAM_ENUMERATION("CrosFirstRun.TutorialCompletion",
+                            type,
+                            chromeos::first_run::kTutorialCompletionSize);
+}
 
 }  // namespace
 
@@ -61,6 +69,7 @@ FirstRunController::FirstRunController()
 }
 
 void FirstRunController::Init() {
+  start_time_ = base::Time::Now();
   UserManager* user_manager = UserManager::Get();
   user_profile_ = user_manager->GetProfileByUser(user_manager->GetActiveUser());
 
@@ -81,6 +90,14 @@ void FirstRunController::Init() {
 }
 
 void FirstRunController::Finalize() {
+  int furthest_step = current_step_index_ == NONE_STEP_INDEX
+                          ? steps_.size() - 1
+                          : current_step_index_;
+  UMA_HISTOGRAM_ENUMERATION("CrosFirstRun.FurthestStep",
+                            furthest_step,
+                            steps_.size());
+  UMA_HISTOGRAM_MEDIUM_TIMES("CrosFirstRun.TimeSpent",
+                             base::Time::Now() - start_time_);
   if (GetCurrentStep())
     GetCurrentStep()->OnBeforeHide();
   steps_.clear();
@@ -103,6 +120,7 @@ void FirstRunController::OnNextButtonClicked(const std::string& step_name) {
 }
 
 void FirstRunController::OnHelpButtonClicked() {
+  RecordCompletion(first_run::kTutorialCompletedWithKeepExploring);
   on_actor_finalized_ = base::Bind(chrome::ShowHelpForProfile,
                                    user_profile_,
                                    chrome::HOST_DESKTOP_TYPE_ASH,
@@ -135,6 +153,7 @@ void FirstRunController::OnActorDestroyed() {
 }
 
 void FirstRunController::OnCancelled() {
+  RecordCompletion(first_run::kTutorialNotFinished);
   Stop();
 }
 
@@ -149,10 +168,12 @@ void FirstRunController::RegisterSteps() {
 
 void FirstRunController::ShowNextStep() {
   AdvanceStep();
-  if (GetCurrentStep())
-    GetCurrentStep()->Show();
-  else
+  if (!GetCurrentStep()) {
     actor_->Finalize();
+    RecordCompletion(first_run::kTutorialCompletedWithGotIt);
+    return;
+  }
+  GetCurrentStep()->Show();
 }
 
 void FirstRunController::AdvanceStep() {

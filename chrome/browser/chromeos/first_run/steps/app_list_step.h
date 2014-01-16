@@ -15,8 +15,11 @@ class AppListStep : public Step {
  public:
   AppListStep(ash::FirstRunHelper* shell_helper, FirstRunActor* actor);
 
+ private:
   // Overriden from Step.
-  virtual void Show() OVERRIDE;
+  virtual void DoShow() OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(AppListStep);
 };
 
 }  // namespace first_run

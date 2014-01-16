@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/extensions/first_run_private_api.h"
 
+#include "base/metrics/histogram.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/first_run/first_run.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -13,6 +14,7 @@
 #include "ui/base/webui/web_ui_util.h"
 
 bool FirstRunPrivateGetLocalizedStringsFunction::RunImpl() {
+  UMA_HISTOGRAM_COUNTS("CrosFirstRun.DialogShown", 1);
   base::DictionaryValue* localized_strings = new base::DictionaryValue();
   chromeos::User* user =
       chromeos::UserManager::Get()->GetUserByProfile(GetProfile());

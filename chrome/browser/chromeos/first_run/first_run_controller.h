@@ -14,6 +14,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time/time.h"
 #include "chrome/browser/ui/webui/chromeos/first_run/first_run_actor.h"
 
 class Profile;
@@ -93,6 +94,9 @@ class FirstRunController : public FirstRunActor::Delegate,
 
   // Web contents of WebUI.
   content::WebContents* web_contents_for_tests_;
+
+  // Time when tutorial was started.
+  base::Time start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(FirstRunController);
 };

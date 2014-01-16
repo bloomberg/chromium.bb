@@ -7,6 +7,11 @@
 namespace chromeos {
 namespace first_run {
 
+// This values should be synced with ids of corresponding steps in HTML-side.
+// Also there are metric recording how much time user spent on every step.
+// Metric's name has format "CrosFirstRun.TimeSpentOnStep[StepName]", where
+// |StepName| is camel-cased version of |step-name|. Corresponding record
+// should be added to "histograms.xml" file for every step listed here.
 const char kAppListStep[] = "app-list";
 const char kTrayStep[] = "tray";
 const char kHelpStep[] = "help";
