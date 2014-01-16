@@ -99,10 +99,10 @@ class MediaResourceGetter {
                 String path = file.getAbsolutePath();
                 if (file.exists() && (path.startsWith("/mnt/sdcard/") ||
                         path.startsWith("/sdcard/") ||
-                        path.startsWith(PathUtils.getExternalStorageDirectory()))) {
+                        path.startsWith(PathUtils.getExternalStorageDirectory()) ||
+                        path.startsWith(context.getCacheDir().getAbsolutePath()))) {
                     retriever.setDataSource(path);
                 } else {
-                    Log.e(TAG, "Unable to read file: " + url);
                     return new MediaMetadata(durationInMilliseconds, width, height, success);
                 }
             } else {

@@ -30,8 +30,8 @@ class MEDIA_EXPORT MediaResourceGetter {
                           const GURL& first_party_for_cookies,
                           const GetCookieCB& callback) = 0;
 
-  // Method for getting the platform path from a file system URL.
-  virtual void GetPlatformPathFromFileSystemURL(
+  // Method for getting the platform path from a file system or blob URL.
+  virtual void GetPlatformPathFromURL(
       const GURL& url,
       const GetPlatformPathCB& callback) = 0;
 

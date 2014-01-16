@@ -11,16 +11,20 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/fileapi/browser_file_system_helper.h"
+#include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/url_constants.h"
 #include "jni/MediaResourceGetter_jni.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
+#include "webkit/browser/blob/blob_data_handle.h"
+#include "webkit/browser/blob/blob_storage_context.h"
 
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ScopedJavaLocalRef;
@@ -32,6 +36,43 @@ static void ReturnResultOnUIThread(
     const std::string& result) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE, base::Bind(callback, result));
+}
+
+static void RequestPlatformPathFromBlobURL(
+    const GURL& url,
+    BrowserContext* browser_context,
+    const base::Callback<void(const std::string&)>& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  ChromeBlobStorageContext* context =
+      ChromeBlobStorageContext::GetFor(browser_context);
+  scoped_ptr<webkit_blob::BlobDataHandle> handle =
+      context->context()->GetBlobDataFromPublicURL(url);
+  const std::vector<webkit_blob::BlobData::Item> items =
+      handle->data()->items();
+
+  // TODO(qinmin): handle the case when the blob data is not a single file.
+  DLOG_IF(WARNING, items.size() != 1u)
+      << "More than one blob data are present: " << items.size();
+  ReturnResultOnUIThread(callback, items[0].path().value());
+}
+
+static void RequestPlaformPathFromFileSystemURL(
+    const GURL& url,
+    int renderer_id,
+    scoped_refptr<fileapi::FileSystemContext> file_system_context,
+    const base::Callback<void(const std::string&)>& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  base::FilePath platform_path;
+  SyncGetPlatformPath(file_system_context.get(),
+                      renderer_id,
+                      url,
+                      &platform_path);
+  base::FilePath data_storage_path;
+  PathService::Get(base::DIR_ANDROID_APP_DATA, &data_storage_path);
+  if (data_storage_path.IsParent(platform_path))
+    ReturnResultOnUIThread(callback, platform_path.value());
+  else
+    ReturnResultOnUIThread(callback, std::string());
 }
 
 // Get the metadata from a media URL. When finished, a task is posted to the UI
@@ -156,57 +197,6 @@ void CookieGetterTask::CheckPolicyForCookies(
   }
 }
 
-// The task object that retrieves platform path on the FILE thread.
-class PlatformPathGetterTask
-    : public base::RefCountedThreadSafe<PlatformPathGetterTask> {
- public:
-  PlatformPathGetterTask(fileapi::FileSystemContext* file_system_context,
-                         int renderer_id);
-
-  // Called by MediaResourceGetterImpl to get the platform path from a file
-  // system URL.
-  void RequestPlaformPath(
-      const GURL& url,
-      const media::MediaResourceGetter::GetPlatformPathCB& callback);
-
- private:
-  friend class base::RefCountedThreadSafe<PlatformPathGetterTask>;
-  virtual ~PlatformPathGetterTask();
-
-  // File system context for getting the platform path.
-  fileapi::FileSystemContext* file_system_context_;
-
-  // Render process id, used to check whether the process can access the URL.
-  int renderer_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(PlatformPathGetterTask);
-};
-
-PlatformPathGetterTask::PlatformPathGetterTask(
-    fileapi::FileSystemContext* file_system_context, int renderer_id)
-    : file_system_context_(file_system_context),
-      renderer_id_(renderer_id) {
-}
-
-PlatformPathGetterTask::~PlatformPathGetterTask() {}
-
-void PlatformPathGetterTask::RequestPlaformPath(
-    const GURL& url,
-    const media::MediaResourceGetter::GetPlatformPathCB& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  base::FilePath platform_path;
-  SyncGetPlatformPath(file_system_context_,
-                      renderer_id_,
-                      url,
-                      &platform_path);
-  base::FilePath data_storage_path;
-  PathService::Get(base::DIR_ANDROID_APP_DATA, &data_storage_path);
-  if (data_storage_path.IsParent(platform_path))
-    callback.Run(platform_path.value());
-  else
-    callback.Run(std::string());
-}
-
 MediaResourceGetterImpl::MediaResourceGetterImpl(
     BrowserContext* browser_context,
     fileapi::FileSystemContext* file_system_context,
@@ -243,21 +233,29 @@ void MediaResourceGetterImpl::GetCookiesCallback(
   callback.Run(cookies);
 }
 
-void MediaResourceGetterImpl::GetPlatformPathFromFileSystemURL(
-      const GURL& url, const GetPlatformPathCB& callback) {
+void MediaResourceGetterImpl::GetPlatformPathFromURL(
+    const GURL& url, const GetPlatformPathCB& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  scoped_refptr<PlatformPathGetterTask> task = new PlatformPathGetterTask(
-      file_system_context_, renderer_id_);
+  DCHECK(url.SchemeIsFileSystem() || url.SchemeIs(chrome::kBlobScheme));
 
   GetPlatformPathCB cb = base::Bind(
       &MediaResourceGetterImpl::GetPlatformPathCallback,
       weak_this_.GetWeakPtr(), callback);
+
+  if (url.SchemeIs(chrome::kBlobScheme)) {
+    BrowserThread::PostTask(
+        BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(&RequestPlatformPathFromBlobURL, url, browser_context_, cb));
+    return;
+  }
+
+  scoped_refptr<fileapi::FileSystemContext> context(file_system_context_);
   BrowserThread::PostTask(
       BrowserThread::FILE,
       FROM_HERE,
-      base::Bind(&PlatformPathGetterTask::RequestPlaformPath,
-                 task, url,
-                 base::Bind(&ReturnResultOnUIThread, cb)));
+      base::Bind(&RequestPlaformPathFromFileSystemURL, url, renderer_id_,
+                 context, cb));
 }
 
 void MediaResourceGetterImpl::GetPlatformPathCallback(

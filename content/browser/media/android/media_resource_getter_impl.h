@@ -44,7 +44,7 @@ class MediaResourceGetterImpl : public media::MediaResourceGetter {
   virtual void GetCookies(const GURL& url,
                           const GURL& first_party_for_cookies,
                           const GetCookieCB& callback) OVERRIDE;
-  virtual void GetPlatformPathFromFileSystemURL(
+  virtual void GetPlatformPathFromURL(
       const GURL& url,
       const GetPlatformPathCB& callback) OVERRIDE;
   virtual void ExtractMediaMetadata(

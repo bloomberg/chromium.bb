@@ -18,7 +18,10 @@ using base::android::ConvertUTF8ToJavaString;
 using base::android::ScopedJavaLocalRef;
 
 // Time update happens every 250ms.
-static const int kTimeUpdateInterval = 250;
+const int kTimeUpdateInterval = 250;
+
+// blob url scheme.
+const char kBlobScheme[] = "blob";
 
 namespace media {
 
@@ -56,17 +59,16 @@ MediaPlayerBridge::~MediaPlayerBridge() {
 }
 
 void MediaPlayerBridge::Initialize() {
+  cookies_.clear();
   if (url_.SchemeIsFile()) {
-    cookies_.clear();
     ExtractMediaMetadata(url_.spec());
     return;
   }
 
   media::MediaResourceGetter* resource_getter =
       manager()->GetMediaResourceGetter();
-  if (url_.SchemeIsFileSystem()) {
-    cookies_.clear();
-    resource_getter->GetPlatformPathFromFileSystemURL(url_, base::Bind(
+  if (url_.SchemeIsFileSystem() || url_.SchemeIs(kBlobScheme)) {
+    resource_getter->GetPlatformPathFromURL(url_, base::Bind(
         &MediaPlayerBridge::ExtractMediaMetadata, weak_this_.GetWeakPtr()));
     return;
   }
@@ -128,13 +130,14 @@ void MediaPlayerBridge::SetVideoSurface(gfx::ScopedJavaSurface surface) {
 void MediaPlayerBridge::Prepare() {
   DCHECK(j_media_player_bridge_.is_null());
   CreateJavaMediaPlayerBridge();
-  if (url_.SchemeIsFileSystem()) {
-    manager()->GetMediaResourceGetter()->GetPlatformPathFromFileSystemURL(
-            url_, base::Bind(&MediaPlayerBridge::SetDataSource,
-                             weak_this_.GetWeakPtr()));
-  } else {
-    SetDataSource(url_.spec());
+  if (url_.SchemeIsFileSystem() || url_.SchemeIs(kBlobScheme)) {
+    manager()->GetMediaResourceGetter()->GetPlatformPathFromURL(
+        url_, base::Bind(&MediaPlayerBridge::SetDataSource,
+                         weak_this_.GetWeakPtr()));
+    return;
   }
+
+  SetDataSource(url_.spec());
 }
 
 void MediaPlayerBridge::SetDataSource(const std::string& url) {
