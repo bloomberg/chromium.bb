@@ -15,7 +15,6 @@
 
 namespace chrome {
 
-// TODO(msw): Resolve chrome_frame dependency on these constants.
 extern const char kAboutComponentsURL[];
 extern const char kAboutPluginsURL[];
 extern const char kAboutVersionURL[];
