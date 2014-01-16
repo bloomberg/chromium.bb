@@ -205,6 +205,27 @@ Status ExecuteGetCurrentWindowHandle(
   return Status(kOk);
 }
 
+Status ExecuteLaunchApp(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  std::string id;
+  if (!params.GetString("id", &id))
+    return Status(kUnknownError, "'id' must be a string");
+
+  if (!session->chrome->GetAsDesktop())
+    return Status(kUnknownError,
+                  "apps can only be launched on desktop platforms");
+
+  AutomationExtension* extension = NULL;
+  Status status =
+      session->chrome->GetAsDesktop()->GetAutomationExtension(&extension);
+  if (status.IsError())
+    return status;
+
+  return extension->LaunchApp(id);
+}
+
 Status ExecuteClose(
     Session* session,
     const base::DictionaryValue& params,

@@ -108,6 +108,11 @@ Status ExecuteIsLoading(
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value);
 
+Status ExecuteLaunchApp(
+    Session* session,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value);
+
 Status ExecuteGetLocation(
     Session* session,
     const base::DictionaryValue& params,

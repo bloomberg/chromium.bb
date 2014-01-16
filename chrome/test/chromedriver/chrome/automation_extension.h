@@ -27,6 +27,9 @@ class AutomationExtension {
   // Returns |kForbidden| for security restricted pages.
   Status CaptureScreenshot(std::string* screenshot);
 
+  // Launches an app with the specified id.
+  Status LaunchApp(std::string id);
+
   // Gets the position of the current window.
   Status GetWindowPosition(int* x, int* y);
 

@@ -8,6 +8,6 @@
     "scripts": ["background.js"]
   },
   "permissions": [
-     "tabs", "<all_urls>"
+     "tabs", "management", "<all_urls>"
   ]
 }

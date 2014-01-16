@@ -71,3 +71,18 @@ function updateWindow(updateInfo, callback, errCallback) {
     });
   });
 }
+
+/**
+ * Launches an app with the specified id.
+ *
+ * @param {string} id The ID of the app to launch.
+ * @param {function()} callback Invoked when the launch event is complete.
+ * @param {function(!Error)} errCallback The callback to invoke for error
+ *     reporting.
+ */
+function launchApp(id, callback, errCallback) {
+  chrome.management.launchApp(id, function() {
+    checkForExtensionError(errCallback);
+    callback();
+  });
+}

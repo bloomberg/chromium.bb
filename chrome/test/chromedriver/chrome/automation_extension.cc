@@ -103,3 +103,14 @@ Status AutomationExtension::UpdateWindow(
                                       base::TimeDelta::FromSeconds(10),
                                       &result);
 }
+
+Status AutomationExtension::LaunchApp(std::string id) {
+  base::ListValue args;
+  args.AppendString(id);
+  scoped_ptr<base::Value> result;
+  return web_view_->CallAsyncFunction(std::string(),
+                                      "launchApp",
+                                      args,
+                                      base::TimeDelta::FromSeconds(10),
+                                      &result);
+}
