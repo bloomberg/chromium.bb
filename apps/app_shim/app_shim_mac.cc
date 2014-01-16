@@ -10,8 +10,10 @@
 namespace apps {
 
 bool IsAppShimsEnabled() {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableAppShims);
+  // Disable app shims in tests because shims created in ~/Applications will not
+  // be cleaned up.
+  return !(CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType) ||
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableAppShims));
 }
 
 }  // namespace apps
