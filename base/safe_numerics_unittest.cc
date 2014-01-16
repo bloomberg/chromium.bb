@@ -2,149 +2,277 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <gtest/gtest.h>
-
-#include <sstream>
-#include <vector>
-
 #include "base/safe_numerics.h"
+
+#include <stdint.h>
+
+#include <limits>
+
+#include "base/compiler_specific.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
 namespace internal {
 
-// This is far (far, far) too slow to run normally, but if you're refactoring
-// it might be useful.
-// #define RUN_EXHAUSTIVE_TEST
+// Enumerates the five different conversions types we need to test.
+enum NumericConversionType {
+  SIGN_PRESERVING_VALUE_PRESERVING,
+  SIGN_PRESERVING_NARROW,
+  SIGN_TO_UNSIGN_WIDEN_OR_EQUAL,
+  SIGN_TO_UNSIGN_NARROW,
+  UNSIGN_TO_SIGN_NARROW_OR_EQUAL,
+};
 
-#ifdef RUN_EXHAUSTIVE_TEST
+// Template covering the different conversion tests.
+template <typename Dst, typename Src, NumericConversionType conversion>
+struct TestNumericConversion {};
 
-template <class From, class To> void ExhaustiveCheckFromTo() {
-  fprintf(stderr, ".");
-  From i = std::numeric_limits<From>::min();
-  for (;;) {
-    std::ostringstream str_from, str_to;
-    str_from << i;
-    To to = static_cast<To>(i);
-    str_to << to;
-    bool strings_equal = str_from.str() == str_to.str();
-    EXPECT_EQ(IsValidNumericCast<To>(i), strings_equal);
-    fprintf(stderr, "\r%s vs %s\x1B[K",
-        str_from.str().c_str(), str_to.str().c_str());
-    ++i;
-    // If we wrap, then we've tested everything.
-    if (i == std::numeric_limits<From>::min())
-      break;
+// EXPECT_EQ wrapper providing specific detail on test failures.
+#define TEST_EXPECTED_RANGE(expected, actual) \
+  EXPECT_EQ(expected, RangeCheck<Dst>(actual)) << \
+  "Conversion test: " << src << " value " << actual << \
+  " to " << dst << " on line " << line;
+
+template <typename Dst, typename Src>
+struct TestNumericConversion<Dst, Src, SIGN_PRESERVING_VALUE_PRESERVING> {
+  static void Test(const char *dst, const char *src, int line) {
+    typedef std::numeric_limits<Src> SrcLimits;
+    typedef std::numeric_limits<Dst> DstLimits;
+                   // Integral to floating.
+    COMPILE_ASSERT((DstLimits::is_iec559 && SrcLimits::is_integer) ||
+                   // Not floating to integral and...
+                   (!(DstLimits::is_integer && SrcLimits::is_iec559) &&
+                    // Same sign, same numeric, source is narrower or same.
+                    ((SrcLimits::is_signed == DstLimits::is_signed &&
+                     sizeof(Dst) >= sizeof(Src)) ||
+                    // Or signed destination and source is smaller
+                     (DstLimits::is_signed && sizeof(Dst) > sizeof(Src)))),
+                   comparison_must_be_sign_preserving_and_value_preserving);
+
+    TEST_EXPECTED_RANGE(TYPE_VALID, SrcLimits::max());
+    TEST_EXPECTED_RANGE(TYPE_VALID, static_cast<Src>(1));
+    if (SrcLimits::is_iec559) {
+      TEST_EXPECTED_RANGE(TYPE_VALID, SrcLimits::max() * static_cast<Src>(-1));
+      TEST_EXPECTED_RANGE(TYPE_OVERFLOW, SrcLimits::infinity());
+      TEST_EXPECTED_RANGE(TYPE_UNDERFLOW, SrcLimits::infinity() * -1);
+      TEST_EXPECTED_RANGE(TYPE_INVALID, SrcLimits::quiet_NaN());
+    } else if (std::numeric_limits<Src>::is_signed) {
+      TEST_EXPECTED_RANGE(TYPE_VALID, static_cast<Src>(-1));
+      TEST_EXPECTED_RANGE(TYPE_VALID, SrcLimits::min());
+    }
   }
+};
+
+template <typename Dst, typename Src>
+struct TestNumericConversion<Dst, Src, SIGN_PRESERVING_NARROW> {
+  static void Test(const char *dst, const char *src, int line) {
+    typedef std::numeric_limits<Src> SrcLimits;
+    typedef std::numeric_limits<Dst> DstLimits;
+    COMPILE_ASSERT(SrcLimits::is_signed == DstLimits::is_signed,
+                   destination_and_source_sign_must_be_the_same);
+    COMPILE_ASSERT(sizeof(Dst) < sizeof(Src) ||
+                   (DstLimits::is_integer && SrcLimits::is_iec559),
+                   destination_must_be_narrower_than_source);
+
+    TEST_EXPECTED_RANGE(TYPE_OVERFLOW, SrcLimits::max());
+    TEST_EXPECTED_RANGE(TYPE_VALID, static_cast<Src>(1));
+    if (SrcLimits::is_iec559) {
+      TEST_EXPECTED_RANGE(TYPE_UNDERFLOW, SrcLimits::max() * -1);
+      TEST_EXPECTED_RANGE(TYPE_VALID, static_cast<Src>(-1));
+      TEST_EXPECTED_RANGE(TYPE_OVERFLOW, SrcLimits::infinity());
+      TEST_EXPECTED_RANGE(TYPE_UNDERFLOW, SrcLimits::infinity() * -1);
+      TEST_EXPECTED_RANGE(TYPE_INVALID, SrcLimits::quiet_NaN());
+    } else if (SrcLimits::is_signed) {
+      TEST_EXPECTED_RANGE(TYPE_UNDERFLOW, SrcLimits::min());
+      TEST_EXPECTED_RANGE(TYPE_VALID, static_cast<Src>(-1));
+    } else {
+      TEST_EXPECTED_RANGE(TYPE_VALID, SrcLimits::min());
+    }
+  }
+};
+
+template <typename Dst, typename Src>
+struct TestNumericConversion<Dst, Src, SIGN_TO_UNSIGN_WIDEN_OR_EQUAL> {
+  static void Test(const char *dst, const char *src, int line) {
+    typedef std::numeric_limits<Src> SrcLimits;
+    typedef std::numeric_limits<Dst> DstLimits;
+    COMPILE_ASSERT(sizeof(Dst) >= sizeof(Src),
+                   destination_must_be_equal_or_wider_than_source);
+    COMPILE_ASSERT(SrcLimits::is_signed, source_must_be_signed);
+    COMPILE_ASSERT(!DstLimits::is_signed, destination_must_be_unsigned);
+
+    TEST_EXPECTED_RANGE(TYPE_UNDERFLOW, SrcLimits::min());
+    TEST_EXPECTED_RANGE(TYPE_VALID, SrcLimits::max());
+    TEST_EXPECTED_RANGE(TYPE_VALID, static_cast<Src>(1));
+    TEST_EXPECTED_RANGE(TYPE_UNDERFLOW, static_cast<Src>(-1));
+  }
+};
+
+template <typename Dst, typename Src>
+struct TestNumericConversion<Dst, Src, SIGN_TO_UNSIGN_NARROW> {
+  static void Test(const char *dst, const char *src, int line) {
+    typedef std::numeric_limits<Src> SrcLimits;
+    typedef std::numeric_limits<Dst> DstLimits;
+    COMPILE_ASSERT((DstLimits::is_integer && SrcLimits::is_iec559) ||
+                   (sizeof(Dst) < sizeof(Src)),
+      destination_must_be_narrower_than_source);
+    COMPILE_ASSERT(SrcLimits::is_signed, source_must_be_signed);
+    COMPILE_ASSERT(!DstLimits::is_signed, destination_must_be_unsigned);
+
+    TEST_EXPECTED_RANGE(TYPE_OVERFLOW, SrcLimits::max());
+    TEST_EXPECTED_RANGE(TYPE_VALID, static_cast<Src>(1));
+    TEST_EXPECTED_RANGE(TYPE_UNDERFLOW, static_cast<Src>(-1));
+    if (SrcLimits::is_iec559) {
+      TEST_EXPECTED_RANGE(TYPE_UNDERFLOW, SrcLimits::max() * -1);
+      TEST_EXPECTED_RANGE(TYPE_OVERFLOW, SrcLimits::infinity());
+      TEST_EXPECTED_RANGE(TYPE_UNDERFLOW, SrcLimits::infinity() * -1);
+      TEST_EXPECTED_RANGE(TYPE_INVALID, SrcLimits::quiet_NaN());
+    } else {
+      TEST_EXPECTED_RANGE(TYPE_UNDERFLOW, SrcLimits::min());
+    }
+  }
+};
+
+template <typename Dst, typename Src>
+struct TestNumericConversion<Dst, Src, UNSIGN_TO_SIGN_NARROW_OR_EQUAL> {
+  static void Test(const char *dst, const char *src, int line) {
+    typedef std::numeric_limits<Src> SrcLimits;
+    typedef std::numeric_limits<Dst> DstLimits;
+    COMPILE_ASSERT(sizeof(Dst) <= sizeof(Src),
+                   destination_must_be_narrower_or_equal_to_source);
+    COMPILE_ASSERT(!SrcLimits::is_signed, source_must_be_unsigned);
+    COMPILE_ASSERT(DstLimits::is_signed, destination_must_be_signed);
+
+    TEST_EXPECTED_RANGE(TYPE_VALID, SrcLimits::min());
+    TEST_EXPECTED_RANGE(TYPE_OVERFLOW, SrcLimits::max());
+    TEST_EXPECTED_RANGE(TYPE_VALID, static_cast<Src>(1));
+  }
+};
+
+// Helper macro to wrap displaying the conversion types and line numbers
+#define TEST_NUMERIC_CONVERSION(d, s, t) \
+  TestNumericConversion<d, s, t>::Test(#d, #s, __LINE__)
+
+TEST(SafeNumerics, IntMinConversions) {
+  TEST_NUMERIC_CONVERSION(int8_t, int8_t, SIGN_PRESERVING_VALUE_PRESERVING);
+  TEST_NUMERIC_CONVERSION(uint8_t, uint8_t, SIGN_PRESERVING_VALUE_PRESERVING);
+
+  TEST_NUMERIC_CONVERSION(int8_t, int, SIGN_PRESERVING_NARROW);
+  TEST_NUMERIC_CONVERSION(uint8_t, unsigned int, SIGN_PRESERVING_NARROW);
+  TEST_NUMERIC_CONVERSION(int8_t, float, SIGN_PRESERVING_NARROW);
+
+  TEST_NUMERIC_CONVERSION(uint8_t, int8_t, SIGN_TO_UNSIGN_WIDEN_OR_EQUAL);
+
+  TEST_NUMERIC_CONVERSION(uint8_t, int, SIGN_TO_UNSIGN_NARROW);
+  TEST_NUMERIC_CONVERSION(uint8_t, intmax_t, SIGN_TO_UNSIGN_NARROW);
+  TEST_NUMERIC_CONVERSION(uint8_t, float, SIGN_TO_UNSIGN_NARROW);
+
+  TEST_NUMERIC_CONVERSION(int8_t, unsigned int, UNSIGN_TO_SIGN_NARROW_OR_EQUAL);
+  TEST_NUMERIC_CONVERSION(int8_t, uintmax_t, UNSIGN_TO_SIGN_NARROW_OR_EQUAL);
 }
 
-template <class From> void ExhaustiveCheckFrom() {
-  ExhaustiveCheckFromTo<From, short>();
-  ExhaustiveCheckFromTo<From, unsigned short>();
-  ExhaustiveCheckFromTo<From, int>();
-  ExhaustiveCheckFromTo<From, unsigned int>();
-  ExhaustiveCheckFromTo<From, long long>();
-  ExhaustiveCheckFromTo<From, unsigned long long>();
-  ExhaustiveCheckFromTo<From, size_t>();
-  fprintf(stderr, "\n");
+TEST(SafeNumerics, IntConversions) {
+  TEST_NUMERIC_CONVERSION(int, int, SIGN_PRESERVING_VALUE_PRESERVING);
+  TEST_NUMERIC_CONVERSION(unsigned int, unsigned int,
+                          SIGN_PRESERVING_VALUE_PRESERVING);
+  TEST_NUMERIC_CONVERSION(int, int8_t, SIGN_PRESERVING_VALUE_PRESERVING);
+  TEST_NUMERIC_CONVERSION(unsigned int, uint8_t,
+                          SIGN_PRESERVING_VALUE_PRESERVING);
+  TEST_NUMERIC_CONVERSION(int, uint8_t, SIGN_PRESERVING_VALUE_PRESERVING);
+
+  TEST_NUMERIC_CONVERSION(int, intmax_t, SIGN_PRESERVING_NARROW);
+  TEST_NUMERIC_CONVERSION(unsigned int, uintmax_t, SIGN_PRESERVING_NARROW);
+  TEST_NUMERIC_CONVERSION(int, float, SIGN_PRESERVING_NARROW);
+  TEST_NUMERIC_CONVERSION(int, double, SIGN_PRESERVING_NARROW);
+
+  TEST_NUMERIC_CONVERSION(unsigned int, int, SIGN_TO_UNSIGN_WIDEN_OR_EQUAL);
+  TEST_NUMERIC_CONVERSION(unsigned int, int8_t, SIGN_TO_UNSIGN_WIDEN_OR_EQUAL);
+
+  TEST_NUMERIC_CONVERSION(unsigned int, intmax_t, SIGN_TO_UNSIGN_NARROW);
+  TEST_NUMERIC_CONVERSION(unsigned int, float, SIGN_TO_UNSIGN_NARROW);
+  TEST_NUMERIC_CONVERSION(unsigned int, double, SIGN_TO_UNSIGN_NARROW);
+
+  TEST_NUMERIC_CONVERSION(int, unsigned int, UNSIGN_TO_SIGN_NARROW_OR_EQUAL);
+  TEST_NUMERIC_CONVERSION(int, uintmax_t, UNSIGN_TO_SIGN_NARROW_OR_EQUAL);
 }
 
+TEST(SafeNumerics, IntMaxConversions) {
+  TEST_NUMERIC_CONVERSION(intmax_t, intmax_t, SIGN_PRESERVING_VALUE_PRESERVING);
+  TEST_NUMERIC_CONVERSION(uintmax_t, uintmax_t,
+                          SIGN_PRESERVING_VALUE_PRESERVING);
+  TEST_NUMERIC_CONVERSION(intmax_t, int, SIGN_PRESERVING_VALUE_PRESERVING);
+  TEST_NUMERIC_CONVERSION(uintmax_t, unsigned int,
+                          SIGN_PRESERVING_VALUE_PRESERVING);
+  TEST_NUMERIC_CONVERSION(intmax_t, unsigned int,
+                          SIGN_PRESERVING_VALUE_PRESERVING);
+  TEST_NUMERIC_CONVERSION(intmax_t, uint8_t, SIGN_PRESERVING_VALUE_PRESERVING);
+
+  TEST_NUMERIC_CONVERSION(intmax_t, float, SIGN_PRESERVING_NARROW);
+  TEST_NUMERIC_CONVERSION(intmax_t, double, SIGN_PRESERVING_NARROW);
+
+  TEST_NUMERIC_CONVERSION(uintmax_t, int, SIGN_TO_UNSIGN_WIDEN_OR_EQUAL);
+  TEST_NUMERIC_CONVERSION(uintmax_t, int8_t, SIGN_TO_UNSIGN_WIDEN_OR_EQUAL);
+
+  TEST_NUMERIC_CONVERSION(uintmax_t, float, SIGN_TO_UNSIGN_NARROW);
+  TEST_NUMERIC_CONVERSION(uintmax_t, double, SIGN_TO_UNSIGN_NARROW);
+
+  TEST_NUMERIC_CONVERSION(intmax_t, uintmax_t, UNSIGN_TO_SIGN_NARROW_OR_EQUAL);
+}
+
+TEST(SafeNumerics, FloatConversions) {
+  TEST_NUMERIC_CONVERSION(float, intmax_t, SIGN_PRESERVING_VALUE_PRESERVING);
+  TEST_NUMERIC_CONVERSION(float, uintmax_t,
+                          SIGN_PRESERVING_VALUE_PRESERVING);
+  TEST_NUMERIC_CONVERSION(float, int, SIGN_PRESERVING_VALUE_PRESERVING);
+  TEST_NUMERIC_CONVERSION(float, unsigned int,
+                          SIGN_PRESERVING_VALUE_PRESERVING);
+
+  TEST_NUMERIC_CONVERSION(float, double, SIGN_PRESERVING_NARROW);
+}
+
+TEST(SafeNumerics, DoubleConversions) {
+  TEST_NUMERIC_CONVERSION(double, intmax_t, SIGN_PRESERVING_VALUE_PRESERVING);
+  TEST_NUMERIC_CONVERSION(double, uintmax_t,
+                          SIGN_PRESERVING_VALUE_PRESERVING);
+  TEST_NUMERIC_CONVERSION(double, int, SIGN_PRESERVING_VALUE_PRESERVING);
+  TEST_NUMERIC_CONVERSION(double, unsigned int,
+                          SIGN_PRESERVING_VALUE_PRESERVING);
+}
+
+TEST(SafeNumerics, SizeTConversions) {
+  TEST_NUMERIC_CONVERSION(size_t, int, SIGN_TO_UNSIGN_WIDEN_OR_EQUAL);
+  TEST_NUMERIC_CONVERSION(int, size_t, UNSIGN_TO_SIGN_NARROW_OR_EQUAL);
+}
+
+TEST(SafeNumerics, CastTests) {
+// MSVC catches and warns that we're forcing saturation in these tests.
+// Since that's intentional, we need to shut this warning off.
+#if defined(COMPILER_MSVC)
+#pragma warning(disable : 4756)
 #endif
 
-
-TEST(SafeNumerics, NumericCast) {
   int small_positive = 1;
   int small_negative = -1;
-  int large_positive = INT_MAX;
-  int large_negative = INT_MIN;
-  size_t size_t_small = 1;
-  size_t size_t_large = UINT_MAX;
+  double double_small = 1.0;
+  double double_large = std::numeric_limits<double>::max();
+  double double_infinity = std::numeric_limits<float>::infinity();
 
-  // Narrow signed destination.
-  EXPECT_TRUE(IsValidNumericCast<signed char>(small_positive));
-  EXPECT_TRUE(IsValidNumericCast<signed char>(small_negative));
-  EXPECT_FALSE(IsValidNumericCast<signed char>(large_positive));
-  EXPECT_FALSE(IsValidNumericCast<signed char>(large_negative));
-  EXPECT_TRUE(IsValidNumericCast<signed short>(small_positive));
-  EXPECT_TRUE(IsValidNumericCast<signed short>(small_negative));
+  // Just test that the cast compiles, since the other tests cover logic.
+  EXPECT_EQ(0, base::checked_numeric_cast<int>(static_cast<size_t>(0)));
 
-  // Narrow unsigned destination.
-  EXPECT_TRUE(IsValidNumericCast<unsigned char>(small_positive));
-  EXPECT_FALSE(IsValidNumericCast<unsigned char>(small_negative));
-  EXPECT_FALSE(IsValidNumericCast<unsigned char>(large_positive));
-  EXPECT_FALSE(IsValidNumericCast<unsigned char>(large_negative));
-  EXPECT_FALSE(IsValidNumericCast<unsigned short>(small_negative));
-  EXPECT_FALSE(IsValidNumericCast<unsigned short>(large_negative));
-
-  // Same width signed destination.
-  EXPECT_TRUE(IsValidNumericCast<signed int>(small_positive));
-  EXPECT_TRUE(IsValidNumericCast<signed int>(small_negative));
-  EXPECT_TRUE(IsValidNumericCast<signed int>(large_positive));
-  EXPECT_TRUE(IsValidNumericCast<signed int>(large_negative));
-
-  // Same width unsigned destination.
-  EXPECT_TRUE(IsValidNumericCast<unsigned int>(small_positive));
-  EXPECT_FALSE(IsValidNumericCast<unsigned int>(small_negative));
-  EXPECT_TRUE(IsValidNumericCast<unsigned int>(large_positive));
-  EXPECT_FALSE(IsValidNumericCast<unsigned int>(large_negative));
-
-  // Wider signed destination.
-  EXPECT_TRUE(IsValidNumericCast<long long>(small_positive));
-  EXPECT_TRUE(IsValidNumericCast<long long>(large_negative));
-  EXPECT_TRUE(IsValidNumericCast<long long>(small_positive));
-  EXPECT_TRUE(IsValidNumericCast<long long>(large_negative));
-
-  // Wider unsigned destination.
-  EXPECT_TRUE(IsValidNumericCast<unsigned long long>(small_positive));
-  EXPECT_FALSE(IsValidNumericCast<unsigned long long>(small_negative));
-  EXPECT_TRUE(IsValidNumericCast<unsigned long long>(large_positive));
-  EXPECT_FALSE(IsValidNumericCast<unsigned long long>(large_negative));
-
-  // Negative to size_t.
-  EXPECT_FALSE(IsValidNumericCast<size_t>(small_negative));
-  EXPECT_FALSE(IsValidNumericCast<size_t>(large_negative));
-
-  // From unsigned.
-  // Small.
-  EXPECT_TRUE(IsValidNumericCast<signed char>(size_t_small));
-  EXPECT_TRUE(IsValidNumericCast<unsigned char>(size_t_small));
-  EXPECT_TRUE(IsValidNumericCast<short>(size_t_small));
-  EXPECT_TRUE(IsValidNumericCast<unsigned short>(size_t_small));
-  EXPECT_TRUE(IsValidNumericCast<int>(size_t_small));
-  EXPECT_TRUE(IsValidNumericCast<unsigned int>(size_t_small));
-  EXPECT_TRUE(IsValidNumericCast<long long>(size_t_small));
-  EXPECT_TRUE(IsValidNumericCast<unsigned long long>(size_t_small));
-
-  // Large.
-  EXPECT_FALSE(IsValidNumericCast<signed char>(size_t_large));
-  EXPECT_FALSE(IsValidNumericCast<unsigned char>(size_t_large));
-  EXPECT_FALSE(IsValidNumericCast<short>(size_t_large));
-  EXPECT_FALSE(IsValidNumericCast<unsigned short>(size_t_large));
-  EXPECT_FALSE(IsValidNumericCast<int>(size_t_large));
-  EXPECT_TRUE(IsValidNumericCast<unsigned int>(size_t_large));
-  EXPECT_TRUE(IsValidNumericCast<long long>(size_t_large));
-  EXPECT_TRUE(IsValidNumericCast<unsigned long long>(size_t_large));
-
-  // Various edge cases.
-  EXPECT_TRUE(IsValidNumericCast<int>(static_cast<short>(SHRT_MIN)));
-  EXPECT_FALSE(
-      IsValidNumericCast<unsigned short>(static_cast<short>(SHRT_MIN)));
-  EXPECT_FALSE(IsValidNumericCast<unsigned short>(SHRT_MIN));
-
-  // Confirm that checked_numeric_cast<> actually compiles.
-  std::vector<int> v;
-  unsigned int checked_size =
-      base::checked_numeric_cast<unsigned int>(v.size());
-  EXPECT_EQ(0u, checked_size);
-
-#ifdef RUN_EXHAUSTIVE_TEST
-  ExhaustiveCheckFrom<short>();
-  ExhaustiveCheckFrom<unsigned short>();
-  ExhaustiveCheckFrom<int>();
-  ExhaustiveCheckFrom<unsigned int>();
-  ExhaustiveCheckFrom<long long>();
-  ExhaustiveCheckFrom<unsigned long long>();
-  ExhaustiveCheckFrom<size_t>();
-#endif
+  // Test various saturation corner cases.
+  EXPECT_EQ(saturated_cast<int>(small_negative),
+            static_cast<int>(small_negative));
+  EXPECT_EQ(saturated_cast<int>(small_positive),
+            static_cast<int>(small_positive));
+  EXPECT_EQ(saturated_cast<unsigned>(small_negative),
+            static_cast<unsigned>(0));
+  EXPECT_EQ(saturated_cast<int>(double_small),
+            static_cast<int>(double_small));
+  EXPECT_EQ(saturated_cast<int>(double_large),
+            std::numeric_limits<int>::max());
+  EXPECT_EQ(saturated_cast<float>(double_large), double_infinity);
+  EXPECT_EQ(saturated_cast<float>(-double_large), -double_infinity);
 }
 
 }  // namespace internal

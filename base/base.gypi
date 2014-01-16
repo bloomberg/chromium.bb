@@ -489,6 +489,7 @@
           'run_loop.cc',
           'run_loop.h',
           'safe_numerics.h',
+          'safe_numerics_impl.h',
           'safe_strerror_posix.cc',
           'safe_strerror_posix.h',
           'scoped_native_library.cc',
