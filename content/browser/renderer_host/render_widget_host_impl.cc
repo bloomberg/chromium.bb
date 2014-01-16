@@ -101,6 +101,22 @@ typedef base::hash_map<RenderWidgetHostID, RenderWidgetHostImpl*>
 base::LazyInstance<RoutingIDWidgetMap> g_routing_id_widget_map =
     LAZY_INSTANCE_INITIALIZER;
 
+int GetInputRouterViewFlagsFromCompositorFrameMetadata(
+    const cc::CompositorFrameMetadata metadata) {
+  int view_flags = InputRouter::VIEW_FLAGS_NONE;
+
+  if (metadata.min_page_scale_factor == metadata.max_page_scale_factor)
+    view_flags |= InputRouter::FIXED_PAGE_SCALE;
+
+  const float window_width_dip =
+      std::ceil(metadata.page_scale_factor * metadata.viewport_size.width());
+  const float content_width_css = metadata.root_layer_size.width();
+  if (content_width_css <= window_width_dip)
+    view_flags |= InputRouter::MOBILE_VIEWPORT;
+
+  return view_flags;
+}
+
 // Implements the RenderWidgetHostIterator interface. It keeps a list of
 // RenderWidgetHosts, and makes sure it returns a live RenderWidgetHost at each
 // iteration (or NULL if there isn't any left).
@@ -1493,12 +1509,8 @@ bool RenderWidgetHostImpl::OnSwapCompositorFrame(
   uint32 output_surface_id = param.a;
   param.b.AssignTo(frame.get());
 
-  bool fixed_page_scale =
-      frame->metadata.min_page_scale_factor ==
-          frame->metadata.max_page_scale_factor;
-  int updated_view_flags = fixed_page_scale ? InputRouter::FIXED_PAGE_SCALE
-                                            : InputRouter::VIEW_FLAGS_NONE;
-  input_router_->OnViewUpdated(updated_view_flags);
+  input_router_->OnViewUpdated(
+      GetInputRouterViewFlagsFromCompositorFrameMetadata(frame->metadata));
 
   if (view_) {
     view_->OnSwapCompositorFrame(output_surface_id, frame.Pass());
