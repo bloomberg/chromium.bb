@@ -72,7 +72,7 @@ private:
     virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) OVERRIDE;
     virtual bool isVideo() const OVERRIDE { return true; }
     virtual bool hasVideo() const OVERRIDE { return player() && player()->hasVideo(); }
-    virtual bool supportsFullscreen() const OVERRIDE;
+    bool supportsFullscreen() const;
     virtual bool isURLAttribute(const Attribute&) const OVERRIDE;
     virtual const AtomicString imageSourceURL() const OVERRIDE;
 

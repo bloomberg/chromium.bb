@@ -83,9 +83,6 @@ public:
     virtual bool hasVideo() const OVERRIDE { return false; }
     virtual bool hasAudio() const OVERRIDE FINAL;
 
-    // Eventually overloaded in HTMLVideoElement
-    virtual bool supportsFullscreen() const OVERRIDE { return false; }
-
     bool supportsSave() const;
 
     blink::WebLayer* platformLayer() const;

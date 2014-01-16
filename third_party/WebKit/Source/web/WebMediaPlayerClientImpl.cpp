@@ -385,13 +385,6 @@ bool WebMediaPlayerClientImpl::paused() const
     return false;
 }
 
-bool WebMediaPlayerClientImpl::supportsFullscreen() const
-{
-    if (m_webMediaPlayer)
-        return m_webMediaPlayer->supportsFullscreen();
-    return false;
-}
-
 bool WebMediaPlayerClientImpl::supportsSave() const
 {
     if (m_webMediaPlayer)

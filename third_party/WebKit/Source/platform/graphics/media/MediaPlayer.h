@@ -125,7 +125,6 @@ public:
     virtual void play() = 0;
     virtual void pause() = 0;
 
-    virtual bool supportsFullscreen() const = 0;
     virtual bool supportsSave() const = 0;
     virtual IntSize naturalSize() const = 0;
 

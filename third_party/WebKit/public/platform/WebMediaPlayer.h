@@ -102,7 +102,6 @@ public:
     // Playback controls.
     virtual void play() = 0;
     virtual void pause() = 0;
-    virtual bool supportsFullscreen() const = 0;
     virtual bool supportsSave() const = 0;
     virtual void seek(double seconds) = 0;
     virtual void setRate(double) = 0;

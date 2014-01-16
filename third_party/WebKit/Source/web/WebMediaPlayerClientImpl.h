@@ -99,7 +99,6 @@ public:
     virtual void play() OVERRIDE;
     virtual void pause() OVERRIDE;
     virtual void prepareToPlay() OVERRIDE;
-    virtual bool supportsFullscreen() const OVERRIDE;
     virtual bool supportsSave() const OVERRIDE;
     virtual WebCore::IntSize naturalSize() const OVERRIDE;
     virtual bool hasVideo() const OVERRIDE;
