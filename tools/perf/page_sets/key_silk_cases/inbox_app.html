@@ -105,7 +105,7 @@ function Animator(delegate) {
     this.request_ = null;
 };
 
-Animator.prototype.scheduleAnimation_ = function() {
+Animator.prototype.scheduleAnimation = function() {
     if (this.request_)
         return;
     this.request_ = requestAnimationFrame(this.onAnimation_.bind(this));
@@ -113,7 +113,7 @@ Animator.prototype.scheduleAnimation_ = function() {
 
 Animator.prototype.startAnimation = function() {
     this.startTimeStamp = 0;
-    this.scheduleAnimation_();
+    this.scheduleAnimation();
 };
 
 Animator.prototype.stopAnimation = function() {
@@ -127,7 +127,7 @@ Animator.prototype.onAnimation_ = function(timeStamp) {
     if (!this.startTimeStamp)
         this.startTimeStamp = timeStamp;
     if (this.delegate.onAnimation(timeStamp))
-        this.scheduleAnimation_();
+        this.scheduleAnimation();
 };
 
 function VelocityTracker() {
@@ -320,7 +320,7 @@ DrawerController.prototype.onTouchMove = function(e) {
     e.preventDefault();
     var touchDeltaX = e.changedTouches[0].clientX - this.touchBaseX;
     this.position = this.restrictToBounds(this.startPosition + touchDeltaX);
-    this.animateCallback.call(this.target, this.position);
+    this.animator.scheduleAnimation();
 };
 
 DrawerController.prototype.onTouchEnd = function(e) {
@@ -370,14 +370,14 @@ DrawerController.prototype.open = function() {
         this.willOpenCallback.call(this.target);
 
     this.animator.stopAnimation();
-    this.animationDuration = DrawerController.kMaxSettleDurationMS;
+    this.animationDuration = 400;
     this.state = DrawerController.kOpening;
     this.animate();
 };
 
 DrawerController.prototype.close = function() {
     this.animator.stopAnimation();
-    this.animationDuration = DrawerController.kMaxSettleDurationMS;
+    this.animationDuration = 400;
     this.state = DrawerController.kClosing;
     this.animate();
 };
@@ -404,6 +404,11 @@ DrawerController.prototype.targetPosition = function(deltaT) {
 };
 
 DrawerController.prototype.onAnimation = function(timeStamp) {
+    if (this.state == DrawerController.kDragging) {
+        this.animateCallback.call(this.target, this.position);
+        return false;
+    }
+
     var deltaT = timeStamp - this.animator.startTimeStamp;
     var targetPosition = this.targetPosition(deltaT);
     this.position = this.restrictToBounds(targetPosition);
@@ -463,9 +468,6 @@ DismissController.prototype.onTouchStart = function(e) {
 DismissController.prototype.onTouchMove = function(e) {
     this.velocityTracker.onTouchMove(e);
 
-    if (this.state == DismissController.kScrolling)
-        return;
-
     if (this.state == DismissController.kInitial) {
         var deltaX = e.changedTouches[0].clientX - this.startX;
         var deltaY = e.changedTouches[0].clientY - this.startY;
@@ -476,7 +478,7 @@ DismissController.prototype.onTouchMove = function(e) {
         }
 
         if (Math.abs(deltaY) > Math.abs(deltaX)) {
-            this.state = DismissController.kScrolling;
+            this.settleToClosestPosition();
             return;
         }
 
@@ -484,10 +486,12 @@ DismissController.prototype.onTouchMove = function(e) {
         this.width = this.target.offsetWidth;
     }
 
-    e.preventDefault();
-    var deltaX = e.changedTouches[0].clientX - this.startX;
-    this.position = this.startPosition + deltaX;
-    this.moveCallback.call(this.target, this.position);
+    if (this.state == DismissController.kDragging) {
+        e.preventDefault();
+        var deltaX = e.changedTouches[0].clientX - this.startX;
+        this.position = this.startPosition + deltaX;
+        this.animator.scheduleAnimation();
+    }
 };
 
 DismissController.prototype.onTouchEnd = function(e) {
@@ -499,15 +503,18 @@ DismissController.prototype.onTouchEnd = function(e) {
             this.fling(velocityX);
             return;
         }
-
-        var fraction = this.position / this.width;
-        if (fraction > 0.5)
-            this.settle(this.width);
-        else if (fraction < -0.5)
-            this.settle(-this.width);
-        else
-            this.settle(0)
+        this.settleToClosestPosition();
     }
+};
+
+DismissController.prototype.settleToClosestPosition = function() {
+    var fraction = this.position / this.width;
+    if (fraction > 0.5)
+        this.settle(this.width);
+    else if (fraction < -0.5)
+        this.settle(-this.width);
+    else
+        this.settle(0)
 };
 
 DismissController.prototype.fling = function(velocityX) {
@@ -553,6 +560,11 @@ DismissController.prototype.computeTargetPosition = function(deltaT) {
 };
 
 DismissController.prototype.onAnimation = function(timeStamp) {
+    if (this.state == DismissController.kDragging) {
+        this.moveCallback.call(this.target, this.position);
+        return false;
+    }
+
     var deltaT = timeStamp - this.animator.startTimeStamp;
 
     this.position = this.computeTargetPosition(deltaT);
@@ -572,6 +584,8 @@ DismissController.prototype.onAnimation = function(timeStamp) {
 };
 
 function ScrollAreaToolbarController(options) {
+    this.animator = new Animator(this);
+
     this.moveCallback = options.onMove;
     this.target = options.target;
     this.scrollArea = options.scrollArea;
@@ -593,12 +607,17 @@ ScrollAreaToolbarController.prototype.onScroll = function(e) {
     var scrollDelta = scrollTop - this.scrollBase;
     var scrollDeltaFromPrevious = scrollTop - this.previousScrollTop;
     this.previousScrollTop = scrollTop;
-    var position = this.restrictToBounds(scrollDelta, 0);
+    this.position = this.restrictToBounds(scrollDelta, 0);
 
     if (sign(scrollDelta) != sign(scrollDeltaFromPrevious))
-        this.scrollBase = scrollTop - position;
+        this.scrollBase = scrollTop - this.position;
 
-    this.moveCallback.call(this.target, position);
+    this.animator.scheduleAnimation();
+};
+
+ScrollAreaToolbarController.prototype.onAnimation = function(timeStamp) {
+    this.moveCallback.call(this.target, this.position);
+    return false;
 };
 
 exports.DrawerController = DrawerController;
