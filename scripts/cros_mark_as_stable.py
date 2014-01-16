@@ -54,11 +54,12 @@ def CleanStalePackages(boards, package_atoms):
 
     emerge, eclean = 'emerge' + suffix, 'eclean' + suffix
     if not osutils.FindMissingBinaries([emerge, eclean]):
-      # If nothing was found to be unmerged, emerge will exit(1).
-      result = runcmd([emerge, '-q', '--unmerge'] + package_atoms,
-                      extra_env={'CLEAN_DELAY': '0'}, error_code_ok=True)
-      if not result.returncode in (0, 1):
-        raise cros_build_lib.RunCommandError('unexpected error', result)
+      if package_atoms:
+        # If nothing was found to be unmerged, emerge will exit(1).
+        result = runcmd([emerge, '-q', '--unmerge'] + package_atoms,
+                        extra_env={'CLEAN_DELAY': '0'}, error_code_ok=True)
+        if not result.returncode in (0, 1):
+          raise cros_build_lib.RunCommandError('unexpected error', result)
       runcmd([eclean, '-d', 'packages'],
              redirect_stdout=True, redirect_stderr=True)
 
