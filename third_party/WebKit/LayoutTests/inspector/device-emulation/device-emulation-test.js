@@ -179,12 +179,11 @@ InspectorTest.applyEmulationAndReload = function(width, height, deviceScaleFacto
 {
     width *= deviceScaleFactor;
     height *= deviceScaleFactor;
-    WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.OverridesWarningUpdated, emulateCallback, null);
+    InspectorTest.addSniffer(WebInspector.overridesSupport, "_deviceMetricsOverrideAppliedForTest", emulateCallback);
     WebInspector.overridesSupport.emulateDevice(width + "x" + height + "x" + deviceScaleFactor + "x0x0", "");
 
     function emulateCallback()
     {
-        WebInspector.overridesSupport.removeEventListener(WebInspector.OverridesSupport.Events.OverridesWarningUpdated, emulateCallback, null);
         var warning = WebInspector.overridesSupport.warningMessage();
         if (warning)
             InspectorTest._deviceEmulationResults.push("Emulation warning: " + warning);
