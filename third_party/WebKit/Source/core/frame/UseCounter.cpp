@@ -653,7 +653,7 @@ String UseCounter::deprecationMessage(Feature feature)
 
     // Keyboard Event (DOM Level 3)
     case KeyboardEventKeyLocation:
-        return "'KeyboardEvent.keyLocation'' is deprecated. Please use 'KeyboardEvent.location' instead.";
+        return "'KeyboardEvent.keyLocation' is deprecated. Please use 'KeyboardEvent.location' instead.";
 
     case CaptureEvents:
         return "captureEvents() is deprecated. This method doesn't do anything.";
