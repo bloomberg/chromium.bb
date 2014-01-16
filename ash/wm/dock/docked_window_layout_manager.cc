@@ -986,16 +986,24 @@ void DockedWindowLayoutManager::OnDraggedWindowDocked(aura::Window* window) {
   DCHECK(!is_dragged_window_docked_);
   is_dragged_window_docked_ = true;
 
-  // If there are no other docked windows update alignment.
-  if (!IsAnyWindowDocked())
+  // If there are no other docked windows update alignment when the window is
+  // moved.
+  if (!IsAnyWindowDocked() &&
+      wm::GetWindowState(dragged_window_)->drag_details() &&
+      !(wm::GetWindowState(dragged_window_)->drag_details()->bounds_change &
+          WindowResizer::kBoundsChange_Resizes)) {
     alignment_ = DOCKED_ALIGNMENT_NONE;
+  }
 }
 
 void DockedWindowLayoutManager::OnDraggedWindowUndocked() {
-  // If this is the first window getting docked - update alignment.
-  if (!IsAnyWindowDocked())
+  // If this is the first window getting docked by moving it - update alignment.
+  if (!IsAnyWindowDocked() &&
+      wm::GetWindowState(dragged_window_)->drag_details() &&
+      !(wm::GetWindowState(dragged_window_)->drag_details()->bounds_change &
+          WindowResizer::kBoundsChange_Resizes)) {
     alignment_ = GetAlignmentOfWindow(dragged_window_);
-
+  }
   DCHECK (is_dragged_window_docked_);
   is_dragged_window_docked_ = false;
 }
