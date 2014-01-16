@@ -255,8 +255,6 @@ class GitWrapper(SCMWrapper):
 
   def UpdateSubmoduleConfig(self):
     submod_cmd = ['git', 'config', '-f', '$toplevel/.git/config',
-                  'submodule.$name.ignore', '||',
-                  'git', 'config', '-f', '$toplevel/.git/config',
                   'submodule.$name.ignore', 'all']
     cmd = ['git', 'submodule', '--quiet', 'foreach', ' '.join(submod_cmd)]
     cmd2 = ['git', 'config', 'diff.ignoreSubmodules', 'all']
