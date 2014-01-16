@@ -173,7 +173,6 @@ FrameView::FrameView(Frame* frame)
     , m_safeToPropagateScrollToParent(true)
     , m_deferredRepaintTimer(this, &FrameView::deferredRepaintTimerFired)
     , m_isTrackingRepaints(false)
-    , m_shouldUpdateWhileOffscreen(true)
     , m_scrollCorner(0)
     , m_shouldAutoSize(false)
     , m_inAutoSize(false)
@@ -1805,9 +1804,6 @@ void FrameView::repaintContentRectangle(const IntRect& r)
         return;
     }
 
-    if (!shouldUpdate())
-        return;
-
     ScrollView::repaintContentRectangle(r);
 }
 
@@ -1873,11 +1869,6 @@ void FrameView::flushDeferredRepaints()
 
 void FrameView::doDeferredRepaints()
 {
-    if (!shouldUpdate()) {
-        m_repaintRects.clear();
-        m_repaintCount = 0;
-        return;
-    }
     unsigned size = m_repaintRects.size();
     for (unsigned i = 0; i < size; i++) {
         ScrollView::repaintContentRectangle(pixelSnappedIntRect(m_repaintRects[i]));
@@ -2118,23 +2109,6 @@ void FrameView::updateBackgroundRecursively(const Color& backgroundColor, bool t
             view->setBaseBackgroundColor(backgroundColor);
         }
     }
-}
-
-bool FrameView::shouldUpdateWhileOffscreen() const
-{
-    return m_shouldUpdateWhileOffscreen;
-}
-
-void FrameView::setShouldUpdateWhileOffscreen(bool shouldUpdateWhileOffscreen)
-{
-    m_shouldUpdateWhileOffscreen = shouldUpdateWhileOffscreen;
-}
-
-bool FrameView::shouldUpdate() const
-{
-    if (isOffscreen() && !shouldUpdateWhileOffscreen())
-        return false;
-    return true;
 }
 
 void FrameView::scrollToAnchor()

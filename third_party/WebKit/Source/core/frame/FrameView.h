@@ -141,10 +141,6 @@ public:
     void setBaseBackgroundColor(const Color&);
     void updateBackgroundRecursively(const Color&, bool);
 
-    bool shouldUpdateWhileOffscreen() const;
-    void setShouldUpdateWhileOffscreen(bool);
-    bool shouldUpdate() const;
-
     void adjustViewSize();
 
     virtual IntRect windowClipRect(bool clipToContents = true) const OVERRIDE;
@@ -506,8 +502,6 @@ private:
 
     bool m_isTrackingRepaints; // Used for testing.
     Vector<IntRect> m_trackedRepaintRects;
-
-    bool m_shouldUpdateWhileOffscreen;
 
     RefPtr<Node> m_nodeToDraw;
     PaintBehavior m_paintBehavior;
