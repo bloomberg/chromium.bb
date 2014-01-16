@@ -367,13 +367,22 @@ void npObjectPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info,
         uint32_t count;
         NPIdentifier* identifiers;
         if (npObject->_class->enumerate(npObject, &identifiers, &count)) {
-            v8::Handle<v8::Array> properties = v8::Array::New(info.GetIsolate(), count);
+            uint32_t propertiesCount = 0;
             for (uint32_t i = 0; i < count; ++i) {
                 IdentifierRep* identifier = static_cast<IdentifierRep*>(identifiers[i]);
-                if (namedProperty)
-                    properties->Set(v8::Integer::New(info.GetIsolate(), i), v8AtomicString(info.GetIsolate(), identifier->string()));
-                else
-                    properties->Set(v8::Integer::New(info.GetIsolate(), i), v8::Integer::New(info.GetIsolate(), identifier->number()));
+                if (namedProperty == identifier->m_isString)
+                    ++propertiesCount;
+            }
+            v8::Handle<v8::Array> properties = v8::Array::New(info.GetIsolate(), propertiesCount);
+            for (uint32_t i = 0, propertyIndex = 0; i < count; ++i) {
+                IdentifierRep* identifier = static_cast<IdentifierRep*>(identifiers[i]);
+                if (namedProperty == identifier->m_isString) {
+                    ASSERT(propertyIndex < propertiesCount);
+                    if (namedProperty)
+                        properties->Set(v8::Integer::New(info.GetIsolate(), propertyIndex++), v8AtomicString(info.GetIsolate(), identifier->string()));
+                    else
+                        properties->Set(v8::Integer::New(info.GetIsolate(), propertyIndex++), v8::Integer::New(info.GetIsolate(), identifier->number()));
+                }
             }
 
             v8SetReturnValue(info, properties);
