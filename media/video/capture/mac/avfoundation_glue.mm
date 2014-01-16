@@ -28,13 +28,88 @@ class AVFoundationInternal {
     CHECK(path);
     library_handle_ = dlopen(path, RTLD_LAZY | RTLD_LOCAL);
     CHECK(library_handle_) << dlerror();
+
+    struct {
+      NSString** loaded_string;
+      const char* symbol;
+    } av_strings[] = {
+        {&AVCaptureDeviceWasConnectedNotification_,
+         "AVCaptureDeviceWasConnectedNotification"},
+        {&AVCaptureDeviceWasDisconnectedNotification_,
+         "AVCaptureDeviceWasDisconnectedNotification"},
+        {&AVMediaTypeVideo_, "AVMediaTypeVideo"},
+        {&AVMediaTypeAudio_, "AVMediaTypeAudio"},
+        {&AVMediaTypeMuxed_, "AVMediaTypeMuxed"},
+        {&AVCaptureSessionRuntimeErrorNotification_,
+         "AVCaptureSessionRuntimeErrorNotification"},
+        {&AVCaptureSessionDidStopRunningNotification_,
+         "AVCaptureSessionDidStopRunningNotification"},
+        {&AVCaptureSessionErrorKey_, "AVCaptureSessionErrorKey"},
+        {&AVCaptureSessionPreset320x240_, "AVCaptureSessionPreset320x240"},
+        {&AVCaptureSessionPreset640x480_, "AVCaptureSessionPreset640x480"},
+        {&AVCaptureSessionPreset1280x720_, "AVCaptureSessionPreset1280x720"},
+        {&AVVideoScalingModeKey_, "AVVideoScalingModeKey"},
+        {&AVVideoScalingModeResizeAspect_, "AVVideoScalingModeResizeAspect"},
+    };
+    for (size_t i = 0; i < arraysize(av_strings); ++i) {
+      *av_strings[i].loaded_string = *reinterpret_cast<NSString**>(
+          dlsym(library_handle_, av_strings[i].symbol));
+      DCHECK(*av_strings[i].loaded_string) << dlerror();
+    }
   }
+
   NSBundle* bundle() const { return bundle_; }
   void* library_handle() const { return library_handle_; }
+
+  NSString* AVCaptureDeviceWasConnectedNotification() const {
+    return AVCaptureDeviceWasConnectedNotification_;
+  }
+  NSString* AVCaptureDeviceWasDisconnectedNotification() const {
+    return AVCaptureDeviceWasDisconnectedNotification_;
+  }
+  NSString* AVMediaTypeVideo() const { return AVMediaTypeVideo_; }
+  NSString* AVMediaTypeAudio() const { return AVMediaTypeAudio_; }
+  NSString* AVMediaTypeMuxed() const { return AVMediaTypeMuxed_; }
+  NSString* AVCaptureSessionRuntimeErrorNotification() const {
+    return AVCaptureSessionRuntimeErrorNotification_;
+  }
+  NSString* AVCaptureSessionDidStopRunningNotification() const {
+    return AVCaptureSessionDidStopRunningNotification_;
+  }
+  NSString* AVCaptureSessionErrorKey() const {
+    return AVCaptureSessionErrorKey_;
+  }
+  NSString* AVCaptureSessionPreset320x240() const {
+    return AVCaptureSessionPreset320x240_;
+  }
+  NSString* AVCaptureSessionPreset640x480() const {
+    return AVCaptureSessionPreset640x480_;
+  }
+  NSString* AVCaptureSessionPreset1280x720() const {
+    return AVCaptureSessionPreset1280x720_;
+  }
+  NSString* AVVideoScalingModeKey() const { return AVVideoScalingModeKey_; }
+  NSString* AVVideoScalingModeResizeAspect() const {
+    return AVVideoScalingModeResizeAspect_;
+  }
 
  private:
   NSBundle* bundle_;
   void* library_handle_;
+  // The following members are replicas of the respectives in AVFoundation.
+  NSString* AVCaptureDeviceWasConnectedNotification_;
+  NSString* AVCaptureDeviceWasDisconnectedNotification_;
+  NSString* AVMediaTypeVideo_;
+  NSString* AVMediaTypeAudio_;
+  NSString* AVMediaTypeMuxed_;
+  NSString* AVCaptureSessionRuntimeErrorNotification_;
+  NSString* AVCaptureSessionDidStopRunningNotification_;
+  NSString* AVCaptureSessionErrorKey_;
+  NSString* AVCaptureSessionPreset320x240_;
+  NSString* AVCaptureSessionPreset640x480_;
+  NSString* AVCaptureSessionPreset1280x720_;
+  NSString* AVVideoScalingModeKey_;
+  NSString* AVVideoScalingModeResizeAspect_;
 
   DISALLOW_COPY_AND_ASSIGN(AVFoundationInternal);
 };
@@ -43,18 +118,6 @@ class AVFoundationInternal {
 
 static base::LazyInstance<AVFoundationInternal> g_avfoundation_handle =
     LAZY_INSTANCE_INITIALIZER;
-
-namespace media {
-
-// TODO(mcasas):http://crbug.com/323536 cache the string pointers.
-static NSString* ReadNSStringPtr(const char* symbol) {
-  NSString** string_pointer = reinterpret_cast<NSString**>(
-      dlsym(AVFoundationGlue::AVFoundationLibraryHandle(), symbol));
-  DCHECK(string_pointer) << dlerror();
-  return *string_pointer;
-}
-
-}  // namespace media
 
 bool AVFoundationGlue::IsAVFoundationSupported() {
   if (!base::mac::IsOSLionOrLater())
@@ -75,55 +138,57 @@ void* AVFoundationGlue::AVFoundationLibraryHandle() {
 }
 
 NSString* AVFoundationGlue::AVCaptureDeviceWasConnectedNotification() {
-  return media::ReadNSStringPtr("AVCaptureDeviceWasConnectedNotification");
+  return g_avfoundation_handle.Get().AVCaptureDeviceWasConnectedNotification();
 }
 
 NSString* AVFoundationGlue::AVCaptureDeviceWasDisconnectedNotification() {
-  return media::ReadNSStringPtr("AVCaptureDeviceWasDisconnectedNotification");
+  return
+      g_avfoundation_handle.Get().AVCaptureDeviceWasDisconnectedNotification();
 }
 
 NSString* AVFoundationGlue::AVMediaTypeVideo() {
-  return media::ReadNSStringPtr("AVMediaTypeVideo");
+  return g_avfoundation_handle.Get().AVMediaTypeVideo();
 }
 
 NSString* AVFoundationGlue::AVMediaTypeAudio() {
-  return media::ReadNSStringPtr("AVMediaTypeAudio");
+  return g_avfoundation_handle.Get().AVMediaTypeAudio();
 }
 
 NSString* AVFoundationGlue::AVMediaTypeMuxed() {
-  return media::ReadNSStringPtr("AVMediaTypeMuxed");
+  return g_avfoundation_handle.Get().AVMediaTypeMuxed();
 }
 
 NSString* AVFoundationGlue::AVCaptureSessionRuntimeErrorNotification() {
-  return media::ReadNSStringPtr("AVCaptureSessionRuntimeErrorNotification");
+  return g_avfoundation_handle.Get().AVCaptureSessionRuntimeErrorNotification();
 }
 
 NSString* AVFoundationGlue::AVCaptureSessionDidStopRunningNotification() {
-  return media::ReadNSStringPtr("AVCaptureSessionDidStopRunningNotification");
+  return
+      g_avfoundation_handle.Get().AVCaptureSessionDidStopRunningNotification();
 }
 
 NSString* AVFoundationGlue::AVCaptureSessionErrorKey() {
-  return media::ReadNSStringPtr("AVCaptureSessionErrorKey");
+  return g_avfoundation_handle.Get().AVCaptureSessionErrorKey();
 }
 
 NSString* AVFoundationGlue::AVCaptureSessionPreset320x240() {
-  return media::ReadNSStringPtr("AVCaptureSessionPreset320x240");
+  return g_avfoundation_handle.Get().AVCaptureSessionPreset320x240();
 }
 
 NSString* AVFoundationGlue::AVCaptureSessionPreset640x480() {
-  return media::ReadNSStringPtr("AVCaptureSessionPreset640x480");
+  return g_avfoundation_handle.Get().AVCaptureSessionPreset640x480();
 }
 
 NSString* AVFoundationGlue::AVCaptureSessionPreset1280x720() {
-  return media::ReadNSStringPtr("AVCaptureSessionPreset1280x720");
+  return g_avfoundation_handle.Get().AVCaptureSessionPreset1280x720();
 }
 
 NSString* AVFoundationGlue::AVVideoScalingModeKey() {
-  return media::ReadNSStringPtr("AVVideoScalingModeKey");
+  return g_avfoundation_handle.Get().AVVideoScalingModeKey();
 }
 
 NSString* AVFoundationGlue::AVVideoScalingModeResizeAspect() {
-  return media::ReadNSStringPtr("AVVideoScalingModeResizeAspect");
+  return g_avfoundation_handle.Get().AVVideoScalingModeResizeAspect();
 }
 
 Class AVFoundationGlue::AVCaptureSessionClass() {
