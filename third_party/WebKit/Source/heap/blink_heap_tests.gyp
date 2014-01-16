@@ -32,42 +32,26 @@
     '../build/win/precompile.gypi',
     'blink_heap.gypi',
   ],
-  'targets': [
-    {
-      'target_name': 'blink_heap_unittests',
-      'type': 'executable',
-      'dependencies': [
-        'blink_heap_run_all_tests',
-        '../config.gyp:unittest_config',
-        '../wtf/wtf.gyp:wtf',
-        '../wtf/wtf_tests.gyp:wtf_unittest_helpers',
-        'blink_heap.gyp:blink_heap',
-      ],
-      'sources': [
-        '<@(heap_test_files)',
-      ],
-      'conditions': [
-        ['os_posix==1 and OS!="mac" and OS!="android" and OS!="ios" and linux_use_tcmalloc==1', {
-          'dependencies': [
-            '<(DEPTH)/base/base.gyp:base',
-            '<(DEPTH)/base/allocator/allocator.gyp:allocator',
-          ]
-        }],
-      ]
-    },
-    {
-      'target_name': 'blink_heap_run_all_tests',
-      'type': 'static_library',
-      'dependencies': [
-        '../config.gyp:unittest_config',
-        '<(DEPTH)/base/base.gyp:test_support_base',
-      ],
-      'export_dependent_settings': [
-        '<(DEPTH)/base/base.gyp:test_support_base',
-      ],
-      'sources': [
-        'RunAllTests.cpp',
-      ]
-    },
-  ],
+  'targets': [{
+    'target_name': 'blink_heap_unittests',
+    'type': 'executable',
+    'dependencies': [
+      '../config.gyp:unittest_config',
+      '../wtf/wtf.gyp:wtf',
+      '../wtf/wtf_tests.gyp:run_all_tests',
+      '../wtf/wtf_tests.gyp:wtf_unittest_helpers',
+      'blink_heap.gyp:blink_heap',
+    ],
+    'sources': [
+      '<@(heap_test_files)',
+    ],
+    'conditions': [
+      ['os_posix==1 and OS!="mac" and OS!="android" and OS!="ios" and linux_use_tcmalloc==1', {
+        'dependencies': [
+          '<(DEPTH)/base/base.gyp:base',
+          '<(DEPTH)/base/allocator/allocator.gyp:allocator',
+        ]
+      }],
+    ]
+  }],
 }
