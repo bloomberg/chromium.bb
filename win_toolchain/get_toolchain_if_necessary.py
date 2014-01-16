@@ -141,6 +141,8 @@ def main():
   current_hash = CalculateHash(target_dir)
   if current_hash != desired_hash:
     print 'Windows toolchain out of date or doesn\'t exist, updating...'
+    # This stays resident and will make the rmdir below fail.
+    subprocess.call(['taskkill', '/f', '/im', 'mspdbsrv.exe'])
     if os.path.isdir(target_dir):
       subprocess.check_call('rmdir /s/q "%s"' % target_dir, shell=True)
     subprocess.check_call([
