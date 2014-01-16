@@ -266,7 +266,7 @@ void NotificationOptionsMenuModel::ExecuteCommand(int command_id,
           balloon_->profile(), active_desktop);
       if (!browser) {
         // It is possible that there is no browser window (e.g. when there are
-        // background pages, or for a chrome frame process on windows).
+        // background pages).
         browser = new Browser(Browser::CreateParams(balloon_->profile(),
                                                     active_desktop));
       }
