@@ -8,7 +8,7 @@
 #include "base/timer/timer.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
-#include "content/browser/compositor/image_transport_factory.h"
+#include "content/browser/aura/image_transport_factory.h"
 #include "content/browser/renderer_host/media/video_capture_device_impl.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/public/browser/browser_thread.h"

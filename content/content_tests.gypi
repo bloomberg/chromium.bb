@@ -277,12 +277,8 @@
         ['use_aura==1', {
           'dependencies': [
             '../ui/aura/aura.gyp:aura_test_support',
-            '../ui/resources/ui_resources.gyp:ui_test_pak',
-          ],
-        }],
-        ['use_aura==1 or OS=="mac"', {
-          'dependencies': [
             '../ui/compositor/compositor.gyp:compositor',
+            '../ui/resources/ui_resources.gyp:ui_test_pak',
           ],
         }],
         ['OS=="win"', {
@@ -334,12 +330,12 @@
         'browser/accessibility/browser_accessibility_manager_unittest.cc',
         'browser/accessibility/browser_accessibility_win_unittest.cc',
         'browser/appcache/chrome_appcache_service_unittest.cc',
+        'browser/aura/software_browser_compositor_output_surface_unittest.cc',
+        'browser/aura/software_output_device_ozone_unittest.cc',
         'browser/browser_thread_unittest.cc',
         'browser/browser_url_handler_impl_unittest.cc',
         'browser/byte_stream_unittest.cc',
         'browser/child_process_security_policy_unittest.cc',
-        'browser/compositor/software_browser_compositor_output_surface_unittest.cc',
-        'browser/compositor/software_output_device_ozone_unittest.cc',
         'browser/device_orientation/data_fetcher_impl_android_unittest.cc',
         'browser/device_orientation/data_fetcher_shared_memory_base_unittest.cc',
         'browser/devtools/devtools_http_handler_unittest.cc',
@@ -788,11 +784,6 @@
             '../ui/events/events.gyp:events_test_support',
           ],
         }],
-        ['use_aura!=1 and OS!="mac"', {
-          'sources/': [
-            ['exclude', '^browser/compositor/'],
-          ],
-        }],
         ['OS == "android"', {
           'sources': [
             'browser/renderer_host/java/jni_helper_unittest.cc',
@@ -948,7 +939,7 @@
             'browser/accessibility/accessibility_win_browsertest.cc',
             'browser/accessibility/cross_platform_accessibility_browsertest.cc',
             'browser/accessibility/dump_accessibility_tree_browsertest.cc',
-            'browser/compositor/image_transport_factory_browsertest.cc',
+            'browser/aura/image_transport_factory_browsertest.cc',
             'browser/bookmarklet_browsertest.cc',
             'browser/browser_plugin/browser_plugin_host_browsertest.cc',
             'browser/browser_plugin/test_browser_plugin_embedder.cc',
@@ -1105,6 +1096,10 @@
               'sources!': [
                 'browser/accessibility/accessibility_win_browsertest.cc',
               ],
+            }, {
+              'sources/': [
+                ['exclude', '^browser/aura/'],
+              ],
             }],
             ['use_aura==1 and OS!="win"', {
               'sources!': [
@@ -1114,11 +1109,6 @@
             ['use_aura==1 or toolkit_views==1', {
               'dependencies': [
                 '../ui/events/events.gyp:events_test_support',
-              ],
-            }],
-            ['use_aura!=1 and OS!="mac"', {
-              'sources/': [
-                ['exclude', '^browser/compositor/'],
               ],
             }],
             ['OS!="android" and OS!="ios"', {
