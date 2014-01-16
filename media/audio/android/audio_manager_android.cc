@@ -210,7 +210,7 @@ AudioInputStream* AudioManagerAndroid::MakeLowLatencyInputStream(
   // Note that the input device is always associated with a certain output
   // device, i.e., this selection does also switch the output device.
   // All input and output streams will be affected by the device selection.
-    if (!SetAudioDevice(device_id)) {
+  if (!SetAudioDevice(device_id)) {
     LOG(ERROR) << "Unable to select audio device!";
     return NULL;
   }

@@ -825,9 +825,12 @@ TEST_P(AudioAndroidInputTest,
   // audio on Android.
   AudioParameters io_params(default_input_params.format(),
                             default_input_params.channel_layout(),
+                            ChannelLayoutToChannelCount(
+                                default_input_params.channel_layout()),
                             default_input_params.sample_rate(),
                             default_input_params.bits_per_sample(),
-                            default_input_params.sample_rate() / 100);
+                            default_input_params.sample_rate() / 100,
+                            default_input_params.effects());
   VLOG(1) << io_params;
 
   // Create input and output streams using the common audio parameters.
