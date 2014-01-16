@@ -62,7 +62,7 @@ void WebRtcLoggingMessageFilter::AddLogMessage(const std::string& message) {
 }
 
 void WebRtcLoggingMessageFilter::LoggingStopped() {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(!io_message_loop_ || io_message_loop_->BelongsToCurrentThread());
   Send(new WebRtcLoggingMsg_LoggingStopped());
 }
 
@@ -78,7 +78,7 @@ void WebRtcLoggingMessageFilter::OnStartLogging() {
 }
 
 void WebRtcLoggingMessageFilter::OnStopLogging() {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(!io_message_loop_ || io_message_loop_->BelongsToCurrentThread());
   log_message_delegate_->OnStopLogging();
 }
 

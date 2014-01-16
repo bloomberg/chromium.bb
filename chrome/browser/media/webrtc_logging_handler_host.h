@@ -17,6 +17,8 @@ class PartialCircularBuffer;
 class Profile;
 class RenderProcessHost;
 
+typedef std::map<std::string, std::string> MetaDataMap;
+
 // WebRtcLoggingHandlerHost handles operations regarding the WebRTC logging:
 // - Opens a shared memory buffer that the handler in the render process
 //   writes to.
@@ -37,7 +39,7 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
   // Sets meta data that will be uploaded along with the log and also written
   // in the beginning of the log. Must be called on the IO thread before calling
   // StartLogging.
-  void SetMetaData(const std::map<std::string, std::string>& meta_data,
+  void SetMetaData(const MetaDataMap& meta_data,
                    const GenericDoneCallback& callback);
 
   // Opens a log and starts logging. Must be called on the IO thread.
@@ -105,6 +107,9 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
   void LogMachineInfo();
   void NotifyLoggingStarted();
 
+  // Writes a formatted log |message| to the |circular_buffer_|.
+  void LogToCircularBuffer(const std::string& message);
+
   void TriggerUploadLog();
 
   void FireGenericDoneCallback(GenericDoneCallback* callback,
@@ -122,7 +127,7 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
   // These are only accessed on the IO thread, except when in STARTING state. In
   // this state we are protected since entering any function that alters the
   // state is not allowed.
-  std::map<std::string, std::string> meta_data_;
+  MetaDataMap meta_data_;
 
   // These are only accessed on the IO thread.
   GenericDoneCallback start_callback_;

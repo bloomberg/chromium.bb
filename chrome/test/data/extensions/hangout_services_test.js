@@ -133,6 +133,7 @@ function isExtensionEnabled(callback) {
 var TESTS = [
   testCpuGetInfo,
   testLogging,
+  testLoggingSetMetaDataAfterStart,
   testDisabledLogging,
   testDisabledLoggingButUpload,
   testDisabledLoggingWithStopAndUpload,
@@ -232,6 +233,19 @@ function testCpuGetInfo(callback) {
 function testLogging(callback) {
   loggingSetMetadata([{'bingo': 'bongo', 'smurf': 'geburf'}], function() {
       loggingStart(function() {
+          loggingUploadOnRenderClose();
+          loggingStop(function() {
+              callback('');
+            });
+        });
+    });
+}
+
+// Tests starting the log, setting metadata, turning on upload, and then
+// stopping the log.
+function testLoggingSetMetaDataAfterStart(callback) {
+  loggingStart(function() {
+      loggingSetMetadata([{'bingo': 'bongo', 'smurf': 'geburf'}], function() {
           loggingUploadOnRenderClose();
           loggingStop(function() {
               callback('');
