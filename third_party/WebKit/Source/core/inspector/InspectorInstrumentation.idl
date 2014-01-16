@@ -202,6 +202,15 @@ interface InspectorInstrumentation {
     [Debugger, Inline=FastReturn]
     void didDeliverMutationRecords(ExecutionContext*);
 
+    [Debugger, Inline=FastReturn]
+    void didPostPromiseTask([Keep] ExecutionContext*, ExecutionContextTask*, bool isResolved);
+
+    [Debugger, Inline=FastReturn]
+    InspectorInstrumentationCookie willPerformPromiseTask([Keep] ExecutionContext*, ExecutionContextTask*);
+
+    [Debugger, Inline=FastReturn]
+    void didPerformPromiseTask(const InspectorInstrumentationCookie&);
+
     [Timeline, Inline=FastReturn]
     InspectorInstrumentationCookie willEvaluateScript([Keep] Frame*, const String& url, int lineNumber);
 

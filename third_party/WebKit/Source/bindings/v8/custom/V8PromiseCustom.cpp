@@ -45,6 +45,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContextTask.h"
 #include "core/frame/DOMWindow.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/Task.h"
 #include "wtf/Deque.h"
@@ -190,9 +191,25 @@ void addToDerived(v8::Handle<v8::Object> internal, v8::Handle<v8::Object> derive
     ASSERT(fulfillCallbacks->Length() == rejectCallbacks->Length() && rejectCallbacks->Length() == derivedPromises->Length());
 }
 
+class TaskPerformScopeForInstrumentation {
+public:
+    TaskPerformScopeForInstrumentation(ExecutionContext* context, ExecutionContextTask* task)
+        : m_cookie(InspectorInstrumentation::willPerformPromiseTask(context, task))
+    {
+    }
+
+    ~TaskPerformScopeForInstrumentation()
+    {
+        InspectorInstrumentation::didPerformPromiseTask(m_cookie);
+    }
+
+private:
+    InspectorInstrumentationCookie m_cookie;
+};
+
 class CallHandlerTask FINAL : public ExecutionContextTask {
 public:
-    CallHandlerTask(v8::Handle<v8::Object> promise, v8::Handle<v8::Function> handler, v8::Handle<v8::Value> argument, v8::Isolate* isolate, ExecutionContext* context)
+    CallHandlerTask(v8::Handle<v8::Object> promise, v8::Handle<v8::Function> handler, v8::Handle<v8::Value> argument, V8PromiseCustom::PromiseState originatorState, v8::Isolate* isolate, ExecutionContext* context)
         : m_promise(isolate, promise)
         , m_handler(isolate, handler)
         , m_argument(isolate, argument)
@@ -201,6 +218,7 @@ public:
         ASSERT(!m_promise.isEmpty());
         ASSERT(!m_handler.isEmpty());
         ASSERT(!m_argument.isEmpty());
+        InspectorInstrumentation::didPostPromiseTask(context, this, originatorState == V8PromiseCustom::Fulfilled);
     }
     virtual ~CallHandlerTask() { }
 
@@ -215,6 +233,8 @@ private:
 
 void CallHandlerTask::performTask(ExecutionContext* context)
 {
+    TaskPerformScopeForInstrumentation performTaskScope(context, this);
+
     ASSERT(context);
     if (context->activeDOMObjectsAreStopped())
         return;
@@ -242,6 +262,7 @@ public:
     {
         ASSERT(!m_promise.isEmpty());
         ASSERT(!m_originatorValueObject.isEmpty());
+        InspectorInstrumentation::didPostPromiseTask(context, this, true);
     }
     virtual ~UpdateDerivedTask() { }
 
@@ -257,6 +278,8 @@ private:
 
 void UpdateDerivedTask::performTask(ExecutionContext* context)
 {
+    TaskPerformScopeForInstrumentation performTaskScope(context, this);
+
     ASSERT(context);
     if (context->activeDOMObjectsAreStopped())
         return;
@@ -413,7 +436,7 @@ void PromisePropagator::propagateToDerived(v8::Handle<v8::Object> promise, v8::I
 void PromisePropagator::updateDerivedFromValue(v8::Handle<v8::Object> derivedPromise, v8::Handle<v8::Function> onFulfilled, v8::Handle<v8::Value> value, v8::Isolate* isolate)
 {
     if (!onFulfilled.IsEmpty()) {
-        V8PromiseCustom::callHandler(derivedPromise, onFulfilled, value, isolate);
+        V8PromiseCustom::callHandler(derivedPromise, onFulfilled, value, V8PromiseCustom::Fulfilled, isolate);
     } else {
         setValue(derivedPromise, value, isolate);
     }
@@ -422,7 +445,7 @@ void PromisePropagator::updateDerivedFromValue(v8::Handle<v8::Object> derivedPro
 void PromisePropagator::updateDerivedFromReason(v8::Handle<v8::Object> derivedPromise, v8::Handle<v8::Function> onRejected, v8::Handle<v8::Value> reason, v8::Isolate* isolate)
 {
     if (!onRejected.IsEmpty()) {
-        V8PromiseCustom::callHandler(derivedPromise, onRejected, reason, isolate);
+        V8PromiseCustom::callHandler(derivedPromise, onRejected, reason, V8PromiseCustom::Rejected, isolate);
     } else {
         setReason(derivedPromise, reason, isolate);
     }
@@ -783,11 +806,12 @@ v8::Local<v8::Object> V8PromiseCustom::coerceThenable(v8::Handle<v8::Object> the
     return promise;
 }
 
-void V8PromiseCustom::callHandler(v8::Handle<v8::Object> promise, v8::Handle<v8::Function> handler, v8::Handle<v8::Value> argument, v8::Isolate* isolate)
+void V8PromiseCustom::callHandler(v8::Handle<v8::Object> promise, v8::Handle<v8::Function> handler, v8::Handle<v8::Value> argument, PromiseState originatorState, v8::Isolate* isolate)
 {
+    ASSERT(originatorState == Fulfilled || originatorState == Rejected);
     ExecutionContext* executionContext = getExecutionContext();
     ASSERT(executionContext && executionContext->isContextThread());
-    executionContext->postTask(adoptPtr(new CallHandlerTask(promise, handler, argument, isolate, executionContext)));
+    executionContext->postTask(adoptPtr(new CallHandlerTask(promise, handler, argument, originatorState, isolate, executionContext)));
 }
 
 } // namespace WebCore

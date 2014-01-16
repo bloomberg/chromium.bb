@@ -128,7 +128,7 @@ public:
     // |promise| must be a Promise instance.
     // Applies a transformation to an argument and use it to update derived
     // promies.
-    static void callHandler(v8::Handle<v8::Object> promise, v8::Handle<v8::Function> handler, v8::Handle<v8::Value> argument, v8::Isolate*);
+    static void callHandler(v8::Handle<v8::Object> promise, v8::Handle<v8::Function> handler, v8::Handle<v8::Value> argument, PromiseState originatorState, v8::Isolate*);
 };
 
 } // namespace WebCore

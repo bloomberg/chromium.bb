@@ -50,6 +50,7 @@ namespace WebCore {
 class Document;
 class EventListener;
 class EventTarget;
+class ExecutionContextTask;
 class FormData;
 class HTTPHeaderMap;
 class InjectedScriptManager;
@@ -156,6 +157,9 @@ public:
     void didClearAllMutationRecords(ExecutionContext*, MutationObserver*);
     void willDeliverMutationRecords(ExecutionContext*, MutationObserver*);
     void didDeliverMutationRecords();
+    void didPostPromiseTask(ExecutionContext*, ExecutionContextTask*, bool isResolved);
+    void willPerformPromiseTask(ExecutionContext*, ExecutionContextTask*);
+    void didPerformPromiseTask();
     bool canBreakProgram();
     void breakProgram(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data);
     void scriptExecutionBlockedByCSP(const String& directiveText);

@@ -48,6 +48,8 @@ static const char setIntervalName[] = "setInterval";
 static const char requestAnimationFrameName[] = "requestAnimationFrame";
 static const char xhrSendName[] = "XMLHttpRequest.send";
 static const char enqueueMutationRecordName[] = "Mutation";
+static const char promiseResolved[] = "Promise.resolve";
+static const char promiseRejected[] = "Promise.reject";
 
 }
 
@@ -127,6 +129,7 @@ public:
     HashMap<EventTarget*, EventListenerAsyncCallChainVectorHashMap> m_eventTargetCallChains;
     HashMap<EventTarget*, RefPtr<AsyncCallChain> > m_xhrCallChains;
     HashMap<MutationObserver*, RefPtr<AsyncCallChain> > m_mutationObserverCallChains;
+    HashMap<ExecutionContextTask*, RefPtr<AsyncCallChain> > m_promiseTaskCallChains;
 };
 
 static XMLHttpRequest* toXmlHttpRequest(EventTarget* eventTarget)
@@ -358,6 +361,30 @@ void AsyncCallStackTracker::willDeliverMutationRecords(ExecutionContext* context
     ASSERT(isEnabled());
     if (ExecutionContextData* data = m_executionContextDataMap.get(context))
         setCurrentAsyncCallChain(data->m_mutationObserverCallChains.take(observer));
+    else
+        setCurrentAsyncCallChain(0);
+}
+
+void AsyncCallStackTracker::didPostPromiseTask(ExecutionContext* context, ExecutionContextTask* task, bool isResolved, const ScriptValue& callFrames)
+{
+    ASSERT(context);
+    ASSERT(isEnabled());
+    if (validateCallFrames(callFrames)) {
+        ExecutionContextData* data = createContextDataIfNeeded(context);
+        data->m_promiseTaskCallChains.set(task, createAsyncCallChain(isResolved ? promiseResolved : promiseRejected, callFrames));
+    } else if (m_currentAsyncCallChain) {
+        // Propagate async call stack to the re-posted task to update a derived Promise.
+        ExecutionContextData* data = createContextDataIfNeeded(context);
+        data->m_promiseTaskCallChains.set(task, m_currentAsyncCallChain);
+    }
+}
+
+void AsyncCallStackTracker::willPerformPromiseTask(ExecutionContext* context, ExecutionContextTask* task)
+{
+    ASSERT(context);
+    ASSERT(isEnabled());
+    if (ExecutionContextData* data = m_executionContextDataMap.get(context))
+        setCurrentAsyncCallChain(data->m_promiseTaskCallChains.take(task));
     else
         setCurrentAsyncCallChain(0);
 }
