@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
@@ -159,20 +160,19 @@ void Tab::SetState(TabState tab_state) {
     return;
   tab_state_ = tab_state;
 
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   switch (tab_state) {
     case TAB_INACTIVE:
       title_->SetEnabledColor(kTabTitleColor_Inactive);
-      title_->SetFontList(gfx::FontList());
+      title_->SetFontList(rb.GetFontList(ui::ResourceBundle::BaseFont));
       break;
     case TAB_ACTIVE:
       title_->SetEnabledColor(kTabTitleColor_Active);
-      title_->SetFontList(
-          gfx::FontList().DeriveFontListWithSizeDeltaAndStyle(
-              0, gfx::Font::BOLD));
+      title_->SetFontList(rb.GetFontList(ui::ResourceBundle::BoldFont));
       break;
     case TAB_HOVERED:
       title_->SetEnabledColor(kTabTitleColor_Hovered);
-      title_->SetFontList(gfx::FontList());
+      title_->SetFontList(rb.GetFontList(ui::ResourceBundle::BaseFont));
       break;
   }
   SchedulePaint();
