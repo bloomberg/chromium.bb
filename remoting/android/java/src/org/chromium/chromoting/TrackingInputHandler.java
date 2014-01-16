@@ -302,7 +302,7 @@ public class TrackingInputHandler implements TouchInputHandler {
         }
         int deltaX = mFlingScroller.getCurrX() - previousX;
         int deltaY = mFlingScroller.getCurrY() - previousY;
-        float delta[] = {(float)deltaX, (float)deltaY};
+        float[] delta = {(float)deltaX, (float)deltaY};
         synchronized (mRenderData) {
             Matrix canvasToImage = new Matrix();
             mRenderData.transform.invert(canvasToImage);
