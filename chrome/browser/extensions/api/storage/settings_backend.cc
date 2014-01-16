@@ -66,7 +66,9 @@ SyncableSettingsStorage* SettingsBackend::GetOrCreateStorageWithSyncData(
       new SyncableSettingsStorage(
           observers_,
           extension_id,
-          storage));
+          storage,
+          sync_type_,
+          flare_));
   storage_objs_[extension_id] = syncable_storage;
 
   if (sync_processor_.get()) {
@@ -76,13 +78,7 @@ SyncableSettingsStorage* SettingsBackend::GetOrCreateStorageWithSyncData(
             CreateSettingsSyncProcessor(extension_id).Pass());
     if (error.IsSet())
       syncable_storage.get()->StopSyncing();
-  } else {
-    // Tell sync to try and start soon, because syncable changes to sync_type_
-    // have started happening. This will cause sync to call us back
-    // asynchronously via MergeDataAndStartSyncing as soon as possible.
-    flare_.Run(sync_type_);
   }
-
   return syncable_storage.get();
 }
 

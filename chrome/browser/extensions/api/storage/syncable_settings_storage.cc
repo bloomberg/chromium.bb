@@ -20,10 +20,14 @@ SyncableSettingsStorage::SyncableSettingsStorage(
     const scoped_refptr<ObserverListThreadSafe<SettingsObserver> >&
         observers,
     const std::string& extension_id,
-    ValueStore* delegate)
+    ValueStore* delegate,
+    syncer::ModelType sync_type,
+    const syncer::SyncableService::StartSyncFlare& flare)
     : observers_(observers),
       extension_id_(extension_id),
-      delegate_(delegate) {
+      delegate_(delegate),
+      sync_type_(sync_type),
+      flare_(flare) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 }
 
@@ -120,10 +124,18 @@ ValueStore::WriteResult SyncableSettingsStorage::Clear() {
 
 void SyncableSettingsStorage::SyncResultIfEnabled(
     const ValueStore::WriteResult& result) {
-  if (sync_processor_.get() && !result->changes().empty()) {
+  if (result->changes().empty())
+    return;
+
+  if (sync_processor_.get()) {
     syncer::SyncError error = sync_processor_->SendChanges(result->changes());
     if (error.IsSet())
       StopSyncing();
+  } else {
+    // Tell sync to try and start soon, because syncable changes to sync_type_
+    // have started happening. This will cause sync to call us back
+    // asynchronously via StartSyncing(...) as soon as possible.
+    flare_.Run(sync_type_);
   }
 }
 

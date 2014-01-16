@@ -27,7 +27,9 @@ class SyncableSettingsStorage : public ValueStore {
       const scoped_refptr<SettingsObserverList>& observers,
       const std::string& extension_id,
       // Ownership taken.
-      ValueStore* delegate);
+      ValueStore* delegate,
+      syncer::ModelType sync_type,
+      const syncer::SyncableService::StartSyncFlare& flare);
 
   virtual ~SyncableSettingsStorage();
 
@@ -103,6 +105,9 @@ class SyncableSettingsStorage : public ValueStore {
 
   // Object which sends changes to sync.
   scoped_ptr<SettingsSyncProcessor> sync_processor_;
+
+  const syncer::ModelType sync_type_;
+  const syncer::SyncableService::StartSyncFlare flare_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncableSettingsStorage);
 };
