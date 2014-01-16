@@ -89,11 +89,12 @@ v8::Local<v8::Value> V8WorkerGlobalScopeEventListener::callListenerFunction(Exec
     if (InspectorInstrumentation::timelineAgentEnabled(context)) {
         String resourceName("undefined");
         int lineNumber = 1;
-        v8::ScriptOrigin origin = handlerFunction->GetScriptOrigin();
+        v8::Handle<v8::Function> originalFunction = getBoundFunction(handlerFunction);
+        v8::ScriptOrigin origin = originalFunction->GetScriptOrigin();
         if (!origin.ResourceName().IsEmpty()) {
             V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<>, stringResourceName, origin.ResourceName(), v8::Local<v8::Value>());
             resourceName = stringResourceName;
-            lineNumber = handlerFunction->GetScriptLineNumber() + 1;
+            lineNumber = originalFunction->GetScriptLineNumber() + 1;
         }
         cookie = InspectorInstrumentation::willCallFunction(context, resourceName, lineNumber);
     }
