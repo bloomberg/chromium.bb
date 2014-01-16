@@ -431,6 +431,7 @@ MockMediaStreamDependencyFactory::CreateVideoSource(
     cricket::VideoCapturer* capturer,
     const webrtc::MediaConstraintsInterface* constraints) {
   last_video_source_ = new talk_base::RefCountedObject<MockVideoSource>();
+  last_video_source_->SetVideoCapturer(capturer);
   return last_video_source_;
 }
 
