@@ -126,7 +126,8 @@ class FirstRunUIBrowserTest : public InProcessBrowserTest,
   test::JSChecker js_;
 };
 
-IN_PROC_BROWSER_TEST_F(FirstRunUIBrowserTest, FirstRunFlow) {
+// Disabled due to flakiness, see http://crbug.com/335280
+IN_PROC_BROWSER_TEST_F(FirstRunUIBrowserTest, DISABLED_FirstRunFlow) {
   LaunchTutorial();
   WaitForInitialization();
   WaitForStep(first_run::kAppListStep);
