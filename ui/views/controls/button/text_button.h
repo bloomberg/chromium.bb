@@ -145,9 +145,6 @@ class VIEWS_EXPORT TextButtonBase : public CustomButton,
   void set_max_width(int max_width) { max_width_ = max_width; }
   const gfx::FontList& font_list() const { return font_list_; }
   void SetFontList(const gfx::FontList& font_list);
-  // Obsolete versions.
-  const gfx::Font& font() const;
-  void SetFont(const gfx::Font& font);
 
   void SetEnabledColor(SkColor color);
   void SetDisabledColor(SkColor color);
@@ -253,7 +250,7 @@ class VIEWS_EXPORT TextButtonBase : public CustomButton,
   // The alignment of the text string within the button.
   TextAlignment alignment_;
 
-  // The font used to paint the text.
+  // The font list used to paint the text.
   gfx::FontList font_list_;
 
   // Flag indicating if a shadow should be drawn behind the text.

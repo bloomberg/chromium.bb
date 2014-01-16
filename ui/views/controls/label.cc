@@ -29,11 +29,6 @@ namespace {
 
 const int kCachedSizeLimit = 10;
 
-gfx::FontList GetDefaultFontList() {
-  return ui::ResourceBundle::GetSharedInstance().GetFontList(
-      ui::ResourceBundle::BaseFont);
-}
-
 }  // namespace
 
 namespace views {
@@ -43,19 +38,15 @@ const char Label::kViewClassName[] = "Label";
 const int Label::kFocusBorderPadding = 1;
 
 Label::Label() {
-  Init(base::string16(), GetDefaultFontList());
+  Init(base::string16(), gfx::FontList());
 }
 
 Label::Label(const base::string16& text) {
-  Init(text, GetDefaultFontList());
+  Init(text, gfx::FontList());
 }
 
 Label::Label(const base::string16& text, const gfx::FontList& font_list) {
   Init(text, font_list);
-}
-
-Label::Label(const base::string16& text, const gfx::Font& font) {
-  Init(text, gfx::FontList(font));
 }
 
 Label::~Label() {
@@ -66,14 +57,6 @@ void Label::SetFontList(const gfx::FontList& font_list) {
   ResetCachedSize();
   PreferredSizeChanged();
   SchedulePaint();
-}
-
-const gfx::Font& Label::font() const {
-  return font_list_.GetPrimaryFont();
-}
-
-void Label::SetFont(const gfx::Font& font) {
-  SetFontList(gfx::FontList(font));
 }
 
 void Label::SetText(const base::string16& text) {

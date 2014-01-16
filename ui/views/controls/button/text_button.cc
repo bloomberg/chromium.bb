@@ -251,14 +251,6 @@ void TextButtonBase::SetFontList(const gfx::FontList& font_list) {
   UpdateTextSize();
 }
 
-const gfx::Font& TextButtonBase::font() const {
-  return font_list_.GetPrimaryFont();
-}
-
-void TextButtonBase::SetFont(const gfx::Font& font) {
-  SetFontList(gfx::FontList(font));
-}
-
 void TextButtonBase::SetEnabledColor(SkColor color) {
   color_enabled_ = color;
   use_enabled_color_from_theme_ = false;

@@ -108,14 +108,6 @@ void LabelButton::SetFontList(const gfx::FontList& font_list) {
   label_->SetFontList(font_list);
 }
 
-const gfx::Font& LabelButton::GetFont() const {
-  return label_->font();
-}
-
-void LabelButton::SetFont(const gfx::Font& font) {
-  label_->SetFont(font);
-}
-
 void LabelButton::SetElideBehavior(Label::ElideBehavior elide_behavior) {
   label_->SetElideBehavior(elide_behavior);
 }

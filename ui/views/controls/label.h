@@ -58,15 +58,11 @@ class VIEWS_EXPORT Label : public View {
   Label();
   explicit Label(const base::string16& text);
   Label(const base::string16& text, const gfx::FontList& font_list);
-  Label(const base::string16& text, const gfx::Font& font);  // OBSOLETE
   virtual ~Label();
 
   // Gets or sets the fonts used by this label.
   const gfx::FontList& font_list() const { return font_list_; }
   virtual void SetFontList(const gfx::FontList& font_list);
-  // Obsolete gfx::Font version.  Should use gfx::FontList version instead.
-  const gfx::Font& font() const;  // OBSOLETE
-  virtual void SetFont(const gfx::Font& font);  // OBSOLETE
 
   // Get or set the label text.
   const base::string16& text() const { return text_; }
