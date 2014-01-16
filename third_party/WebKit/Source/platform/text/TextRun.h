@@ -76,6 +76,7 @@ public:
         , m_applyRunRounding((roundingHacks & RunRounding) && s_allowsRoundingHacks)
         , m_applyWordRounding((roundingHacks & WordRounding) && s_allowsRoundingHacks)
         , m_disableSpacing(false)
+        , m_distributeJustification(false)
         , m_tabSize(0)
     {
         m_data.characters8 = c;
@@ -96,6 +97,7 @@ public:
         , m_applyRunRounding((roundingHacks & RunRounding) && s_allowsRoundingHacks)
         , m_applyWordRounding((roundingHacks & WordRounding) && s_allowsRoundingHacks)
         , m_disableSpacing(false)
+        , m_distributeJustification(false)
         , m_tabSize(0)
     {
         m_data.characters16 = c;
@@ -115,6 +117,7 @@ public:
         , m_applyRunRounding((roundingHacks & RunRounding) && s_allowsRoundingHacks)
         , m_applyWordRounding((roundingHacks & WordRounding) && s_allowsRoundingHacks)
         , m_disableSpacing(false)
+        , m_distributeJustification(false)
         , m_tabSize(0)
     {
         if (!m_charactersLength) {
@@ -143,6 +146,7 @@ public:
         , m_applyRunRounding((roundingHacks & RunRounding) && s_allowsRoundingHacks)
         , m_applyWordRounding((roundingHacks & WordRounding) && s_allowsRoundingHacks)
         , m_disableSpacing(false)
+        , m_distributeJustification(false)
         , m_tabSize(0)
     {
         if (!m_charactersLength) {
@@ -197,6 +201,8 @@ public:
     float xPos() const { return m_xpos; }
     void setXPos(float xPos) { m_xpos = xPos; }
     float expansion() const { return m_expansion; }
+    bool isDistributeJustification() const { return m_distributeJustification; }
+    void setDistributeJustification(bool distributeJustification) { m_distributeJustification = distributeJustification; }
     bool allowsLeadingExpansion() const { return m_expansionBehavior & AllowLeadingExpansion; }
     bool allowsTrailingExpansion() const { return m_expansionBehavior & AllowTrailingExpansion; }
     TextDirection direction() const { return static_cast<TextDirection>(m_direction); }
@@ -255,6 +261,7 @@ private:
     unsigned m_applyRunRounding : 1;
     unsigned m_applyWordRounding : 1;
     unsigned m_disableSpacing : 1;
+    unsigned m_distributeJustification : 1;
     unsigned m_tabSize;
     RefPtr<RenderingContext> m_renderingContext;
 };

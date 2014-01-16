@@ -538,30 +538,33 @@ bool Font::isCJKIdeographOrSymbol(UChar32 c)
     return valueInIntervalList(cjkSymbolRanges, c);
 }
 
-unsigned Font::expansionOpportunityCount(const LChar* characters, size_t length, TextDirection direction, bool& isAfterExpansion)
+unsigned Font::expansionOpportunityCount(const LChar* characters, size_t length, TextDirection direction, bool& isAfterExpansion, bool distributeJustification)
 {
     unsigned count = 0;
     if (direction == LTR) {
         for (size_t i = 0; i < length; ++i) {
-            if (treatAsSpace(characters[i])) {
+            if (treatAsSpace(characters[i]) || distributeJustification)
                 count++;
-                isAfterExpansion = true;
-            } else
-                isAfterExpansion = false;
         }
+        if (treatAsSpace(characters[length - 1]))
+            isAfterExpansion = true;
+        else
+            isAfterExpansion = false;
     } else {
         for (size_t i = length; i > 0; --i) {
-            if (treatAsSpace(characters[i - 1])) {
+            if (treatAsSpace(characters[i - 1]) || distributeJustification)
                 count++;
-                isAfterExpansion = true;
-            } else
-                isAfterExpansion = false;
         }
+        if (treatAsSpace(characters[0]))
+            isAfterExpansion = true;
+        else
+            isAfterExpansion = false;
     }
     return count;
 }
 
-unsigned Font::expansionOpportunityCount(const UChar* characters, size_t length, TextDirection direction, bool& isAfterExpansion)
+// FIXME: need to take care of text-justify:distribute case
+unsigned Font::expansionOpportunityCount(const UChar* characters, size_t length, TextDirection direction, bool& isAfterExpansion, bool distributeJustification)
 {
     static bool expandAroundIdeographs = canExpandAroundIdeographsInComplexText();
     unsigned count = 0;
