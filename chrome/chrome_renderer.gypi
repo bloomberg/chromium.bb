@@ -29,7 +29,7 @@
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/npapi/npapi.gyp:npapi',
-        '../out/gn_gyp/third_party/re2/re2.gyp:re2',
+        '../third_party/re2/re2.gyp:re2',
         '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
         '../ui/surface/surface.gyp:surface',
         '../webkit/child/webkit_child.gyp:webkit_child',

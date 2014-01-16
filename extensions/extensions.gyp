@@ -20,7 +20,7 @@
         '../chrome/common/extensions/api/api.gyp:api',
         '../components/components.gyp:url_matcher',
         '../content/content.gyp:content_common',
-        '../out/gn_gyp/third_party/re2/re2.gyp:re2',
+        '../third_party/re2/re2.gyp:re2',
       ],
       'include_dirs': [
         '..',
