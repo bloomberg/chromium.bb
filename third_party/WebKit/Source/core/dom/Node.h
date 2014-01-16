@@ -159,7 +159,6 @@ public:
     void* operator new(size_t);
     void operator delete(void*);
 
-    static bool isSupported(const String& feature, const String& version);
     static void dumpStatistics();
 
     virtual ~Node();

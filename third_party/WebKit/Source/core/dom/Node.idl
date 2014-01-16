@@ -60,9 +60,6 @@
     [CustomElementCallbacks] void normalize();
 
     // Introduced in DOM Level 2:
-    [MeasureAs=NodeIsSupported] boolean isSupported([Default=Undefined] optional DOMString feature,
-                                                    [TreatNullAs=NullString,Default=Undefined] optional DOMString version); // Removed in DOM4.
-
     [TreatReturnedNullStringAs=Null, PerWorldBindings, MeasureAs=NodeNamespaceURI] readonly attribute DOMString namespaceURI; // Moved to Element and Attr in DOM4.
     [TreatReturnedNullStringAs=Null, PerWorldBindings, MeasureAs=NodeLocalName] readonly attribute DOMString localName; // Moved to Element and Attr in DOM4.
 

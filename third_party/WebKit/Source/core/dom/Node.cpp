@@ -114,11 +114,6 @@ void Node::operator delete(void* ptr)
     partitionFree(ptr);
 }
 
-bool Node::isSupported(const String& feature, const String& version)
-{
-    return DOMImplementation::hasFeature(feature, version);
-}
-
 #if DUMP_NODE_STATISTICS
 static HashSet<Node*> liveNodeSet;
 #endif
