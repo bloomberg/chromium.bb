@@ -67,6 +67,9 @@ function getFields(node) {
       var version = node['BASE_VERSION'];
       fieldVal = versionToDateString(version);
     } else if ((field == 'SERVER_SPECIFICS' || field == 'SPECIFICS') &&
+            (!$('include-specifics').checked)) {
+      fieldVal = 'REDACTED';
+    } else if ((field == 'SERVER_SPECIFICS' || field == 'SPECIFICS') &&
             $('include-specifics').checked) {
       fieldVal = JSON.stringify(node[field]);
     } else {
