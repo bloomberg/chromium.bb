@@ -16,18 +16,22 @@ namespace media {
 TEST(WavAudioHandlerTest, SampleDataTest) {
   WavAudioHandler handler(base::StringPiece(kTestAudioData,
                                             arraysize(kTestAudioData)));
-  ASSERT_EQ(static_cast<uint16>(2), handler.num_channels());
-  ASSERT_EQ(static_cast<uint16>(16), handler.bits_per_sample());
-  ASSERT_EQ(static_cast<uint32>(48000), handler.sample_rate());
-  ASSERT_EQ(static_cast<uint32>(96000), handler.byte_rate());
+  const AudioParameters& params = handler.params();
+  ASSERT_EQ(2, params.channels());
+  ASSERT_EQ(16, params.bits_per_sample());
+  ASSERT_EQ(48000, params.sample_rate());
+  ASSERT_EQ(192000, params.GetBytesPerSecond());
 
-  ASSERT_EQ(4, handler.size());
+  ASSERT_EQ(4U, handler.data().size());
+  const char kData[] = "\x01\x00\x01\x00";
+  ASSERT_EQ(base::StringPiece(kData, arraysize(kData) - 1), handler.data());
+
   scoped_ptr<AudioBus> bus = AudioBus::Create(
-      handler.num_channels(),
-      handler.size() / handler.num_channels());
+      params.channels(), handler.data().size() / params.channels());
+
   size_t bytes_written;
   ASSERT_TRUE(handler.CopyTo(bus.get(), 0, &bytes_written));
-  ASSERT_EQ(static_cast<size_t>(handler.size()), bytes_written);
+  ASSERT_EQ(static_cast<size_t>(handler.data().size()), bytes_written);
 }
 
 }  // namespace media

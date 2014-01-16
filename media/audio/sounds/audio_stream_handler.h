@@ -42,10 +42,12 @@ class MEDIA_EXPORT AudioStreamHandler : public base::NonThreadSafe {
   // Returns true iff AudioStreamHandler is correctly initialized;
   bool IsInitialized() const;
 
-  // Stops any previous playback if it's still not completed and
-  // starts new playback. Volume level will be set according to
-  // current settings and won't be changed during playback. Returns
-  // true iff new playback was successfully started.
+  // Plays sound.  Volume level will be set according to current settings
+  // and won't be changed during playback. Returns true iff new playback
+  // was successfully started.
+  //
+  // NOTE: if current playback isn't at end of stream, playback request
+  // is dropped, but true is returned.
   bool Play();
 
   // Stops current playback.

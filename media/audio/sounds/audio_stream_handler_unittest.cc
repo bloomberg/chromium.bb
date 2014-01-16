@@ -74,7 +74,7 @@ TEST_F(AudioStreamHandlerTest, Play) {
   ASSERT_EQ(4, observer.cursor());
 }
 
-TEST_F(AudioStreamHandlerTest, Rewind) {
+TEST_F(AudioStreamHandlerTest, ConsecutivePlayRequests) {
   base::RunLoop run_loop;
   TestObserver observer(run_loop.QuitClosure());
   SineWaveAudioSource source(CHANNEL_LAYOUT_STEREO, 200.0, 8000);
@@ -89,19 +89,19 @@ TEST_F(AudioStreamHandlerTest, Rewind) {
       FROM_HERE,
       base::Bind(base::IgnoreResult(&AudioStreamHandler::Play),
                  base::Unretained(audio_stream_handler())),
-      base::TimeDelta::FromSeconds(3));
+      base::TimeDelta::FromSeconds(1));
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&AudioStreamHandler::Stop,
                  base::Unretained(audio_stream_handler())),
-      base::TimeDelta::FromSeconds(6));
+      base::TimeDelta::FromSeconds(2));
 
   run_loop.Run();
 
   SetObserverForTesting(NULL);
   SetAudioSourceForTesting(NULL);
 
-  ASSERT_EQ(2, observer.num_play_requests());
+  ASSERT_EQ(1, observer.num_play_requests());
   ASSERT_EQ(1, observer.num_stop_requests());
 }
 

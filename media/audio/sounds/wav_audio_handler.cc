@@ -33,14 +33,14 @@ const size_t kFmtChunkMinimumSize = 16;
 const size_t kAudioFormatOffset = 0;
 const size_t kChannelOffset = 2;
 const size_t kSampleRateOffset = 4;
-const size_t kByteRateOffset = 8;
 const size_t kBitsPerSampleOffset = 14;
 
 // Some constants for audio format.
 const int kAudioFormatPCM = 1;
 
 // Reads an integer from |data| with |offset|.
-template<typename T> T ReadInt(const base::StringPiece& data, size_t offset) {
+template <typename T>
+T ReadInt(const base::StringPiece& data, size_t offset) {
   CHECK_LE(offset + sizeof(T), data.size());
   T result;
   memcpy(&result, data.data() + offset, sizeof(T));
@@ -57,7 +57,6 @@ namespace media {
 WavAudioHandler::WavAudioHandler(const base::StringPiece& wav_data)
     : num_channels_(0),
       sample_rate_(0),
-      byte_rate_(0),
       bits_per_sample_(0) {
   CHECK_LE(kWavFileHeaderSize, wav_data.size()) << "wav data is too small";
   CHECK(wav_data.starts_with(kChunkId) &&
@@ -72,10 +71,16 @@ WavAudioHandler::WavAudioHandler(const base::StringPiece& wav_data)
     CHECK_LE(0, length) << "can't parse wav sub-chunk";
     offset += length;
   }
+
+  const int frame_count = data_.size() * 8 / num_channels_ / bits_per_sample_;
+  params_ = AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                            GuessChannelLayout(num_channels_),
+                            sample_rate_,
+                            bits_per_sample_,
+                            frame_count);
 }
 
-WavAudioHandler::~WavAudioHandler() {
-}
+WavAudioHandler::~WavAudioHandler() {}
 
 bool WavAudioHandler::AtEnd(size_t cursor) const {
   return data_.size() <= cursor;
@@ -86,18 +91,20 @@ bool WavAudioHandler::CopyTo(AudioBus* bus,
                              size_t* bytes_written) const {
   if (!bus)
     return false;
-  if (bus->channels() != num_channels_) {
-    DLOG(ERROR) << "Number of channel mismatch.";
+  if (bus->channels() != params_.channels()) {
+    DVLOG(1) << "Number of channel mismatch.";
     return false;
   }
   if (AtEnd(cursor)) {
     bus->Zero();
     return true;
   }
-  const int remaining_frames = (data_.size() - cursor) / bytes_per_frame_;
+  const int remaining_frames =
+      (data_.size() - cursor) / params_.GetBytesPerFrame();
   const int frames = std::min(bus->frames(), remaining_frames);
-  bus->FromInterleaved(data_.data() + cursor, frames, bytes_per_sample_);
-  *bytes_written = frames * bytes_per_frame_;
+  bus->FromInterleaved(data_.data() + cursor, frames,
+                       params_.bits_per_sample() / 8);
+  *bytes_written = frames * params_.GetBytesPerFrame();
   bus->ZeroFramesPartial(frames, bus->frames() - frames);
   return true;
 }
@@ -126,10 +133,7 @@ bool WavAudioHandler::ParseFmtChunk(const base::StringPiece& data) {
   DCHECK_EQ(ReadInt<uint16>(data, kAudioFormatOffset), kAudioFormatPCM);
   num_channels_ = ReadInt<uint16>(data, kChannelOffset);
   sample_rate_ = ReadInt<uint32>(data, kSampleRateOffset);
-  byte_rate_ = ReadInt<uint32>(data, kByteRateOffset);
   bits_per_sample_ = ReadInt<uint16>(data, kBitsPerSampleOffset);
-  bytes_per_sample_ = bits_per_sample_ >> 3;
-  bytes_per_frame_ = num_channels_ * bytes_per_sample_;
   return true;
 }
 

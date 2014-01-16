@@ -75,9 +75,7 @@ base::TimeDelta SoundsManagerImpl::GetDuration(SoundKey key) {
     return base::TimeDelta();
   }
   const WavAudioHandler& wav_audio = handlers_[key]->wav_audio_handler();
-  const int64 size = wav_audio.size();
-  const int64 rate = wav_audio.byte_rate();
-  return base::TimeDelta::FromMicroseconds(size * 1000000 / rate);
+  return wav_audio.params().GetBufferDuration();
 }
 
 // SoundsManagerStub ---------------------------------------------------

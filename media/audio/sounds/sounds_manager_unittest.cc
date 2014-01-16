@@ -54,7 +54,7 @@ TEST_F(SoundsManagerTest, Play) {
   ASSERT_TRUE(SoundsManager::Get()->Initialize(
       kTestAudioKey,
       base::StringPiece(kTestAudioData, arraysize(kTestAudioData))));
-  ASSERT_EQ(41,
+  ASSERT_EQ(20,
             SoundsManager::Get()->GetDuration(kTestAudioKey).InMicroseconds());
   ASSERT_TRUE(SoundsManager::Get()->Play(kTestAudioKey));
   run_loop.Run();

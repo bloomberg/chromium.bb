@@ -46,6 +46,7 @@ CHROMEOS_EXPORT extern const char kEnableRequestTabletSite[];
 CHROMEOS_EXPORT extern const char kEnableStubInteractive[];
 CHROMEOS_EXPORT extern const char kEnableStubPortalledWifi[];
 CHROMEOS_EXPORT extern const char kEnableTouchpadThreeFingerClick[];
+CHROMEOS_EXPORT extern const char kEnableVolumeAdjustSound[];
 CHROMEOS_EXPORT extern const char kEnabledStubNetworkTypes[];
 CHROMEOS_EXPORT extern const char kEnterpriseEnrollmentInitialModulus[];
 CHROMEOS_EXPORT extern const char kEnterpriseEnrollmentModulusLimit[];
