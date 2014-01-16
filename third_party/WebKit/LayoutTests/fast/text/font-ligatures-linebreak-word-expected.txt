@@ -1,0 +1,5 @@
+CACA
+This is a testharness.js-based test.
+PASS Word expected to be laid out in one line. 
+Harness: the test ran to completion.
+

@@ -1,0 +1,5 @@
+CACACACA CACACACA
+This is a testharness.js-based test.
+PASS Words expected to be laid out in one line. 
+Harness: the test ran to completion.
+
