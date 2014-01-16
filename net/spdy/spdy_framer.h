@@ -440,10 +440,11 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   SpdySerializedFrame* SerializeCredential(
       const SpdyCredentialIR& credential) const;
 
-  // Serializes a BLOCKED frame. The BLOCKED frame is used to indicate to the
-  // remote endpoint that this endpoint believes itself to be flow-control
-  // blocked but otherwise ready to send data. The BLOCKED frame is purely
-  // advisory and optional.
+  // Creates and serializes a BLOCKED frame. The BLOCKED frame is used to
+  // indicate to the remote endpoint that this endpoint believes itself to be
+  // flow-control blocked but otherwise ready to send data. The BLOCKED frame
+  // is purely advisory and optional.
+  SpdyFrame* CreateBlocked(SpdyStreamId stream_id);
   SpdySerializedFrame* SerializeBlocked(const SpdyBlockedIR& blocked) const;
 
   // Creates and serializes a PUSH_PROMISE frame. The PUSH_PROMISE frame is used

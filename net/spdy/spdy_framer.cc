@@ -1882,6 +1882,11 @@ SpdySerializedFrame* SpdyFramer::SerializeSettings(
   return builder.take();
 }
 
+SpdyFrame* SpdyFramer::CreateBlocked(SpdyStreamId stream_id) {
+  SpdyBlockedIR blocked_ir(stream_id);
+  return SerializeBlocked(blocked_ir);
+}
+
 SpdyFrame* SpdyFramer::SerializeBlocked(const SpdyBlockedIR& blocked) const {
   DCHECK_LE(4, protocol_version());
   SpdyFrameBuilder builder(GetBlockedSize());

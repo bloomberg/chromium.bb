@@ -3031,7 +3031,25 @@ TEST_P(SpdyFramerTest, SerializeBlocked) {
   SpdyBlockedIR blocked_ir(0);
   scoped_ptr<SpdySerializedFrame> frame(framer.SerializeFrame(blocked_ir));
   CompareFrame(kDescription, *frame, kFrameData, arraysize(kFrameData));
+}
 
+TEST_P(SpdyFramerTest, CreateBlocked) {
+  if (spdy_version_ < SPDY4) {
+    return;
+  }
+
+  SpdyFramer framer(spdy_version_);
+
+  const char kDescription[] = "BLOCKED frame";
+  const SpdyStreamId kStreamId = 3;
+
+  scoped_ptr<SpdySerializedFrame> frame_serialized(
+                                    framer.CreateBlocked(kStreamId));
+  SpdyBlockedIR blocked_ir(kStreamId);
+  scoped_ptr<SpdySerializedFrame> frame_created(
+                                    framer.SerializeFrame(blocked_ir));
+
+  CompareFrames(kDescription, *frame_serialized, *frame_created);
 }
 
 TEST_P(SpdyFramerTest, CreatePushPromiseUncompressed) {
