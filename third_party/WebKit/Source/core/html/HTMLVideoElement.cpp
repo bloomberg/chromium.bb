@@ -267,7 +267,7 @@ KURL HTMLVideoElement::posterImageURL() const
     String url = stripLeadingAndTrailingHTMLSpaces(imageSourceURL());
     if (url.isEmpty())
         return KURL();
-    return treeScope().completeURL(url);
+    return document().completeURL(url);
 }
 
 }

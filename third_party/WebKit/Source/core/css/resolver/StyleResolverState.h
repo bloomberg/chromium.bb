@@ -31,9 +31,7 @@
 #include "core/css/resolver/ElementResolveContext.h"
 #include "core/css/resolver/ElementStyleResources.h"
 #include "core/css/resolver/FontBuilder.h"
-#include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "core/dom/TreeScope.h"
 #include "core/rendering/style/CachedUAStyle.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/StyleInheritedData.h"
@@ -47,12 +45,11 @@ class StyleRule;
 class StyleResolverState {
 WTF_MAKE_NONCOPYABLE(StyleResolverState);
 public:
-    StyleResolverState(TreeScope&, Element*, RenderStyle* parentStyle = 0, RenderRegion* regionForStyling = 0);
+    StyleResolverState(Document&, Element*, RenderStyle* parentStyle = 0, RenderRegion* regionForStyling = 0);
 
     // In FontFaceSet and CanvasRenderingContext2D, we don't have an element to grab the document from.
     // This is why we have to store the document separately.
-    Document& document() const { return m_treeScope.document(); }
-    TreeScope& treeScope() const { return m_treeScope; }
+    Document& document() const { return m_document; }
     // These are all just pass-through methods to ElementResolveContext.
     Element* element() const { return m_elementContext.element(); }
     const ContainerNode* parentNode() const { return m_elementContext.parentNode(); }
@@ -139,7 +136,7 @@ private:
     friend class StyleResolveScope;
 
     ElementResolveContext m_elementContext;
-    TreeScope& m_treeScope;
+    Document& m_document;
 
     // m_style is the primary output for each element's style resolve.
     RefPtr<RenderStyle> m_style;

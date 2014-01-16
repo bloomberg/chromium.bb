@@ -28,7 +28,6 @@
 #define TreeScope_h
 
 #include "core/dom/DocumentOrderedMap.h"
-#include "platform/weborigin/KURL.h"
 #include "wtf/Forward.h"
 #include "wtf/text/AtomicString.h"
 
@@ -125,9 +124,6 @@ public:
     unsigned short comparePosition(const TreeScope&) const;
 
     Element* getElementByAccessKey(const String& key) const;
-
-    virtual const KURL& baseURL() const = 0;
-    KURL completeURL(const String&) const;
 
 protected:
     TreeScope(ContainerNode*, Document*);

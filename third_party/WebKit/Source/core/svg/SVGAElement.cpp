@@ -175,7 +175,7 @@ void SVGAElement::defaultEventHandler(Event* event)
             Frame* frame = document().frame();
             if (!frame)
                 return;
-            FrameLoadRequest frameRequest(&document(), ResourceRequest(treeScope().completeURL(url)), target);
+            FrameLoadRequest frameRequest(&document(), ResourceRequest(document().completeURL(url)), target);
             frameRequest.setTriggeringEvent(event);
             frame->loader().load(frameRequest);
             return;

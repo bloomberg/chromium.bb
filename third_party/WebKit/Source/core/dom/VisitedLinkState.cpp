@@ -51,7 +51,7 @@ static inline LinkHash linkHashForElement(const Element& element, const AtomicSt
     ASSERT(attribute.isNull() || linkAttribute(element) == attribute);
     if (element.hasTagName(HTMLNames::aTag))
         return toHTMLAnchorElement(element).visitedLinkHash();
-    return visitedLinkHash(element.treeScope().baseURL(), attribute.isNull() ? linkAttribute(element) : attribute);
+    return visitedLinkHash(element.document().baseURL(), attribute.isNull() ? linkAttribute(element) : attribute);
 }
 
 VisitedLinkState::VisitedLinkState(const Document& document)

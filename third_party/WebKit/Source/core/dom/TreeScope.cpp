@@ -495,9 +495,4 @@ void TreeScope::setNeedsStyleRecalcForViewportUnits()
     }
 }
 
-KURL TreeScope::completeURL(const String& url) const
-{
-    return document().completeURLWithOverride(url, baseURL());
-}
-
 } // namespace WebCore

@@ -353,7 +353,7 @@ bool HTMLPlugInElement::isImageType()
         m_serviceType = mimeTypeFromDataURL(m_url);
 
     if (Frame* frame = document().frame()) {
-        KURL completedURL = treeScope().completeURL(m_url);
+        KURL completedURL = document().completeURL(m_url);
         return frame->loader().client()->objectContentType(completedURL, m_serviceType, shouldPreferPlugInsForImages()) == ObjectContentImage;
     }
 
@@ -381,7 +381,7 @@ RenderEmbeddedObject* HTMLPlugInElement::renderEmbeddedObject() const
 // depending on <param> values.
 bool HTMLPlugInElement::allowedToLoadFrameURL(const String& url)
 {
-    KURL completeURL = treeScope().completeURL(url);
+    KURL completeURL = document().completeURL(url);
     if (contentFrame() && protocolIsJavaScript(completeURL)
         && !document().securityOrigin()->canAccess(contentDocument()->securityOrigin()))
         return false;
@@ -395,7 +395,7 @@ bool HTMLPlugInElement::wouldLoadAsNetscapePlugin(const String& url, const Strin
     ASSERT(document().frame());
     KURL completedURL;
     if (!url.isEmpty())
-        completedURL = treeScope().completeURL(url);
+        completedURL = document().completeURL(url);
     return document().frame()->loader().client()->objectContentType(completedURL, serviceType, shouldPreferPlugInsForImages()) == ObjectContentNetscapePlugin;
 }
 
@@ -410,7 +410,7 @@ bool HTMLPlugInElement::requestObject(const String& url, const String& mimeType,
     if (!renderer)
         return false;
 
-    KURL completedURL = treeScope().completeURL(url);
+    KURL completedURL = document().completeURL(url);
     if (!pluginIsLoadable(completedURL, mimeType))
         return false;
 

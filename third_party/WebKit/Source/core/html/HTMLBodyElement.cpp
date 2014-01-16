@@ -68,7 +68,7 @@ void HTMLBodyElement::collectStyleForPresentationAttribute(const QualifiedName& 
     if (name == backgroundAttr) {
         String url = stripLeadingAndTrailingHTMLSpaces(value);
         if (!url.isEmpty()) {
-            RefPtr<CSSImageValue> imageValue = CSSImageValue::create(treeScope().completeURL(url));
+            RefPtr<CSSImageValue> imageValue = CSSImageValue::create(document().completeURL(url));
             imageValue->setInitiator(localName());
             style->setProperty(CSSProperty(CSSPropertyBackgroundImage, imageValue.release()));
         }

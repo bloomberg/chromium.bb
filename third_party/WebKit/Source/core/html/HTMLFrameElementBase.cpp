@@ -55,7 +55,7 @@ bool HTMLFrameElementBase::isURLAllowed() const
     if (m_URL.isEmpty())
         return true;
 
-    const KURL& completeURL = treeScope().completeURL(m_URL);
+    const KURL& completeURL = document().completeURL(m_URL);
 
     if (protocolIsJavaScript(completeURL)) {
         Document* contentDoc = this->contentDocument();
@@ -84,7 +84,7 @@ void HTMLFrameElementBase::openURL(bool lockBackForwardList)
 
     // Support for <frame src="javascript:string">
     KURL scriptURL;
-    KURL url = treeScope().completeURL(m_URL);
+    KURL url = document().completeURL(m_URL);
     if (protocolIsJavaScript(m_URL)) {
         scriptURL = url;
         url = blankURL();
@@ -173,7 +173,7 @@ KURL HTMLFrameElementBase::location() const
 {
     if (fastHasAttribute(srcdocAttr))
         return KURL(ParsedURLString, "about:srcdoc");
-    return treeScope().completeURL(getAttribute(srcAttr));
+    return document().completeURL(getAttribute(srcAttr));
 }
 
 void HTMLFrameElementBase::setLocation(const String& str)

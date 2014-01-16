@@ -28,11 +28,11 @@
 
 namespace WebCore {
 
-StyleResolverState::StyleResolverState(TreeScope& treeScope, Element* element, RenderStyle* parentStyle, RenderRegion* regionForStyling)
+StyleResolverState::StyleResolverState(Document& document, Element* element, RenderStyle* parentStyle, RenderRegion* regionForStyling)
     : m_elementContext(element ? ElementResolveContext(*element) : ElementResolveContext())
-    , m_treeScope(treeScope)
+    , m_document(document)
     , m_style(0)
-    , m_cssToLengthConversionData(0, rootElementStyle(), treeScope.document().renderView())
+    , m_cssToLengthConversionData(0, rootElementStyle(), document.renderView())
     , m_parentStyle(parentStyle)
     , m_regionForStyling(regionForStyling)
     , m_applyPropertyToRegularStyle(true)
@@ -49,9 +49,9 @@ StyleResolverState::StyleResolverState(TreeScope& treeScope, Element* element, R
     // FIXME: Animation unitests will start animations on non-active documents!
     // http://crbug.com/330095
     // ASSERT(document.isActive());
-    if (!document().isActive())
+    if (!document.isActive())
         return;
-    m_elementStyleResources.setDeviceScaleFactor(document().frameHost()->deviceScaleFactor());
+    m_elementStyleResources.setDeviceScaleFactor(document.frameHost()->deviceScaleFactor());
 }
 
 } // namespace WebCore

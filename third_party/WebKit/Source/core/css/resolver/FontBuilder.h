@@ -31,7 +31,6 @@
 namespace WebCore {
 
 class CSSValue;
-class Document;
 class FontSelector;
 class RenderStyle;
 

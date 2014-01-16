@@ -4006,6 +4006,11 @@ void Document::setEncodingData(const DocumentEncodingData& newData)
     m_encodingData = newData;
 }
 
+KURL Document::completeURL(const String& url) const
+{
+    return completeURLWithOverride(url, m_baseURL);
+}
+
 KURL Document::completeURLWithOverride(const String& url, const KURL& baseURLOverride) const
 {
     // Always return a null URL when passed a null string.

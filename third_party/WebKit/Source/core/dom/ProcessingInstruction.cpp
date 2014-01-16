@@ -121,12 +121,12 @@ void ProcessingInstruction::checkStyleSheet()
         } else {
             clearResource();
 
-            String url = treeScope().completeURL(href).string();
+            String url = document().completeURL(href).string();
             if (!dispatchBeforeLoadEvent(url))
                 return;
 
             ResourcePtr<StyleSheetResource> resource;
-            FetchRequest request(ResourceRequest(treeScope().completeURL(href)), FetchInitiatorTypeNames::processinginstruction);
+            FetchRequest request(ResourceRequest(document().completeURL(href)), FetchInitiatorTypeNames::processinginstruction);
             if (m_isXSL) {
                 resource = document().fetcher()->fetchXSLStyleSheet(request);
             } else {

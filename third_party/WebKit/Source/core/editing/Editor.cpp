@@ -446,7 +446,7 @@ static void writeImageNodeToPasteboard(Pasteboard* pasteboard, Node* node, const
         urlString = toElement(node)->getAttribute(XLinkNames::hrefAttr);
     else if (node->hasTagName(embedTag) || node->hasTagName(objectTag))
         urlString = toElement(node)->imageSourceURL();
-    KURL url = urlString.isEmpty() ? KURL() : node->treeScope().completeURL(stripLeadingAndTrailingHTMLSpaces(urlString));
+    KURL url = urlString.isEmpty() ? KURL() : node->document().completeURL(stripLeadingAndTrailingHTMLSpaces(urlString));
 
     pasteboard->writeImage(image, url, title);
 }

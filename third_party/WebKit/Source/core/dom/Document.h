@@ -533,14 +533,14 @@ public:
 
     // To understand how these concepts relate to one another, please see the
     // comments surrounding their declaration.
-    virtual const KURL& baseURL() const OVERRIDE FINAL { return m_baseURL; }
+    const KURL& baseURL() const { return m_baseURL; }
     void setBaseURLOverride(const KURL&);
     const KURL& baseURLOverride() const { return m_baseURLOverride; }
     const KURL& baseElementURL() const { return m_baseElementURL; }
     const AtomicString& baseTarget() const { return m_baseTarget; }
     void processBaseElement();
 
-    using TreeScope::completeURL; // Disambiguate between ExecutionContext and TreeScope methods.
+    KURL completeURL(const String&) const;
     KURL completeURLWithOverride(const String&, const KURL& baseURLOverride) const;
 
     virtual String userAgent(const KURL&) const OVERRIDE FINAL;

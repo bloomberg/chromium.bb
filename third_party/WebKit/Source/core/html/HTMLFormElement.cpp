@@ -90,7 +90,7 @@ HTMLFormElement::~HTMLFormElement()
 
 bool HTMLFormElement::formWouldHaveSecureSubmission(const String& url)
 {
-    return treeScope().completeURL(url).protocolIs("https");
+    return document().completeURL(url).protocolIs("https");
 }
 
 bool HTMLFormElement::rendererIsNeeded(const RenderStyle& style)

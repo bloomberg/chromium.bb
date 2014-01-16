@@ -1175,10 +1175,10 @@ void RenderObject::addPDFURLRect(GraphicsContext* context, const LayoutRect& rec
     const AtomicString& href = toElement(n)->getAttribute(hrefAttr);
     if (href.isNull())
         return;
-    KURL url = n->treeScope().completeURL(href);
+    KURL url = n->document().completeURL(href);
     if (!url.isValid())
         return;
-    if (context->supportsURLFragments() && url.hasFragmentIdentifier() && equalIgnoringFragmentIdentifier(url, n->treeScope().baseURL())) {
+    if (context->supportsURLFragments() && url.hasFragmentIdentifier() && equalIgnoringFragmentIdentifier(url, n->document().baseURL())) {
         String name = url.fragmentIdentifier();
         if (document().findAnchor(name))
             context->setURLFragmentForRect(name, pixelSnappedIntRect(rect));
