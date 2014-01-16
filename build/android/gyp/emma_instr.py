@@ -152,6 +152,8 @@ def _RunInstrumentCommand(command, options, args, option_parser):
                                options.coverage_file)
   sources_file = os.path.join(os.path.dirname(options.output_path),
                               options.sources_file)
+  if os.path.exists(coverage_file):
+    os.remove(coverage_file)
   temp_dir = tempfile.mkdtemp()
   try:
     cmd = ['java', '-cp', options.emma_jar,
