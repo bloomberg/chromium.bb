@@ -1,0 +1,11 @@
+[SVN] svn://svn-mirror.golo.chromium.org/native_client/trunk/src/native_client: 12345
+[GIT] http://git.chromium.org/native_client/nacl-binutils.git: 88579f0c4be199a0eb9b7c1055c666d968834b6d
+[GIT] http://git.chromium.org/native_client/pnacl-clang.git: a963b803407c9d1cac644cc425004e0ccd28fa45
+[GIT] http://git.chromium.org/native_client/pnacl-compiler-rt.git: 8fc63ab2a0e0ccca85b9c3cc515fd291cbbb96e9
+[SVN] http://src.chromium.org/native_client/trunk/src/native_client/pnacl/dummydir: 12319
+[GIT] http://git.chromium.org/native_client/pnacl-gcc.git: 574429118e460375c377728420c43aad4a3103dc
+[GIT] http://git.chromium.org/native_client/pnacl-libcxx.git: 611cf8f8011c77f2f840858e8c9c1d804ad15fd9
+[GIT] http://git.chromium.org/native_client/pnacl-libcxxabi.git: bf2aa59aa2f9656abfb74f1996297599355f1aef
+[GIT] http://git.chromium.org/native_client/pnacl-llvm.git: 45dcfc69544019893a4c7c01da98e8ab515b99b2
+[GIT] http://git.chromium.org/native_client/pnacl-llvm-testsuite.git: 4937c9ab297198c9450fd6bb77763299a62627e7
+[GIT] http://git.chromium.org/native_client/nacl-newlib.git: 07af971728e84f28114c3492854ee8e68764051c

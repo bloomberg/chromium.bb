@@ -448,6 +448,24 @@ def DriverOutputTypes(driver_flag, compiling_to_native):
   }
   return output_type_map[(driver_flag, compiling_to_native)]
 
+
+def ReadDriverRevision():
+  nacl_version = 'unknown'
+  rev_file = env.getone('DRIVER_REV_FILE')
+  # Might be an SVN version or a GIT hash (depending on the NaCl src client)
+  nacl_ver = DriverOpen(rev_file, 'rb').readlines()[0]
+  m = re.search(r'\[SVN\].*/native_client:\s*(\d+)', nacl_ver)
+  if m:
+    return m.group(1)
+  m = re.search(r'\[GIT\].*/native_client.git:\s*(\w+)', nacl_ver)
+  if m:
+    return m.group(1)
+  # fail-fast: if the REV file exists but regex search failed,
+  # we need to fix the regex to get nacl-version.
+  if not m:
+    Log.Fatal('Failed to parse REV file to get nacl-version.')
+
+
 def main(argv):
   env.update(EXTRA_ENV)
   CheckSetup()
@@ -462,19 +480,7 @@ def main(argv):
       code, stdout, stderr = Run(env.get('CC') + env.get('CC_FLAGS'),
                                  redirect_stdout=subprocess.PIPE)
       out = stdout.split('\n')
-      nacl_version = 'unknown'
-      try:
-        rev_file = pathtools.join(env.getone('BASE'), 'REV')
-        svn_ver = open(rev_file).readlines()[0]
-        m = re.search(r'\[SVN\].*/native_client:\s*(\d+)', svn_ver)
-        if m:
-          nacl_version = m.group(1)
-        # fail-fast: if the REV file exists but regex search failed,
-        # we need to fix the regex to get nacl-version.
-        if not m and env.getone('BUILD_OS') != 'windows':
-          Log.Fatal('Failed to parse REV file to get nacl-version.')
-      except IOError:
-        pass
+      nacl_version = ReadDriverRevision()
       out[0] += ' nacl-version=%s' % nacl_version
       stdout = '\n'.join(out)
       print stdout,

@@ -820,13 +820,6 @@ tarball() {
   fi
   local tarball="$(ArgumentToAbsolutePath "$1")"
   StepBanner "TARBALL" "Creating tar ball ${tarball}"
-  # TODO(robertm): remove this hack
-  # http://code.google.com/p/nativeclient/issues/detail?id=2918
-  if ! ${BUILD_PLATFORM_WIN} ; then
-    DumpAllRevisions > "${INSTALL_ROOT}/REV"
-  else
-    echo "No rev info for windows yet" > "${INSTALL_ROOT}/REV"
-  fi
   tar zcf "${tarball}" -C "${INSTALL_ROOT}" .
   ls -l ${tarball}
 }
@@ -2817,6 +2810,10 @@ HOST_ARCH=${HOST_ARCH}""" > "${destdir}"/driver.conf
     done
   fi
 
+  # Install a REV file so that "pnacl-clang --version" knows the version
+  # of the drivers themselves.
+  DumpAllRevisions > "${destdir}/REV"
+
   feature-version-file-install
 }
 
@@ -3171,6 +3168,8 @@ show-config() {
   env | grep PNACL
   Banner "uname info for builder:"
   uname -a
+  Banner "Revisions:"
+  DumpAllRevisions
 }
 
 #@ help                  - Usage information.

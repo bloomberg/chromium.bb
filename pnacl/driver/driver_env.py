@@ -23,6 +23,7 @@ INITIAL_ENV = {
   # Set by DriverMain
   'DRIVER_PATH'     : '', # Absolute path to this driver invocation
   'DRIVER_BIN'      : '', # PNaCl driver bin/ directory
+  'DRIVER_REV_FILE' : '${DRIVER_BIN}/REV',
 
   'BASE_NACL'       : '${@FindBaseNaCl}',      # Absolute path of native_client/
   'BASE_TOOLCHAIN'  : '${@FindBaseToolchain}', # Absolute path to toolchain/
@@ -89,7 +90,7 @@ INITIAL_ENV = {
   'LOG_FILENAME'       : '${BASE}/driver.log',
   'LOG_FILE_SIZE_LIMIT': str(20 * 1024 * 1024),
 
-   # Conventions
+  # Conventions
   'SO_EXT'          : '${SO_EXT_%BUILD_OS%}',
   'SO_EXT_darwin'   : '.dylib',
   'SO_EXT_linux'    : '.so',

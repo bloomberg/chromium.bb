@@ -139,11 +139,10 @@ if [ "${BUILD_ARCH}" != "${HOST_ARCH}" ]; then
 fi
 
 if ${BUILD_PLATFORM_WIN}; then
-   # TODO(robertm): switch this to svn.bat, hg.bat, git.bat,  gclient.bat
-   readonly GCLIENT="gclient"
-   readonly GIT="git"
-   readonly HG="hg"
-   readonly SVN="svn"
+   readonly GCLIENT="gclient.bat"
+   readonly GIT="git.bat"
+   readonly HG="hg.bat"
+   readonly SVN="svn.bat"
 else
    readonly GCLIENT="gclient"
    readonly GIT="git"

@@ -102,12 +102,16 @@ buildbot_shell = os.path.join(NACL_DIR, 'buildbot', 'buildbot_pnacl.sh')
 
 # Because patching mangles the shell script on the trybots, fix it up here
 # so we can have working windows trybots.
-if host_os == 'win':
-  with open(buildbot_shell, 'rb') as script:
-    data = script.read()
-  data = data.replace('\r\n', '\n')
-  with open(buildbot_shell, 'wb') as script:
+def FixCRLF(f):
+  with open(f, 'rb') as script:
+    data = script.read().replace('\r\n', '\n')
+  with open(f, 'wb') as script:
     script.write(data)
+
+if host_os == 'win':
+  FixCRLF(buildbot_shell)
+  FixCRLF(os.path.join(NACL_DIR, 'pnacl', 'build.sh'))
+  FixCRLF(os.path.join(NACL_DIR, 'pnacl', 'scripts', 'common-tools.sh'))
 
 # Generate flags for buildbot_pnacl.sh
 if host_os == 'linux':

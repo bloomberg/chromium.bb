@@ -71,7 +71,7 @@ def SetupHostDir(env):
 
 # One thing is we prevent having to read a driver.conf file,
 # so instead we have a base group of variables set for testing.
-def TestEnvReset(self):
+def TestEnvReset(self, more_overrides={}):
   # Call to "super" class method (assumed to be driver_env.Environment).
   # TODO(jvoung): We may want a different way of overriding things.
   driver_env.Environment.reset(self)
@@ -80,11 +80,14 @@ def TestEnvReset(self):
   SetupNaClDir(self)
   SetupToolchainDir(self)
   SetupHostDir(self)
+  for k, v in more_overrides.iteritems():
+    self.set(k, v)
 
-def ApplyTestEnvOverrides(env):
+def ApplyTestEnvOverrides(env, more_overrides={}):
   """Register all the override methods and reset the env to a testable state.
   """
-  driver_env.override_env('reset', TestEnvReset)
+  resetter = lambda self: TestEnvReset(self, more_overrides)
+  driver_env.override_env('reset', resetter)
   env.reset()
 
 # Utils to prevent driver exit.

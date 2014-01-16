@@ -15,6 +15,7 @@ from driver_env import env
 import driver_log
 import driver_test_utils
 import driver_tools
+pnacl_driver = __import__('pnacl-driver')
 
 
 def exists(substring, list_of_strings):
@@ -27,7 +28,10 @@ class TestDiagnosticFlags(unittest.TestCase):
 
   def setUp(self):
     super(TestDiagnosticFlags, self).setUp()
-    driver_test_utils.ApplyTestEnvOverrides(env)
+    p = os.path.join(os.path.abspath(os.path.dirname(__file__)),
+                     'TEST_REV_SVN')
+    more_overrides = {'DRIVER_REV_FILE': p}
+    driver_test_utils.ApplyTestEnvOverrides(env, more_overrides)
 
   def check_flags(self, flags, pnacl_flag):
     """ Check that pnacl_flag doesn't get passed to clang.
@@ -61,6 +65,7 @@ class TestDiagnosticFlags(unittest.TestCase):
     # has a side-effect that isn't cleared by the env.pop() of RunDriver().
     pnacl_flag = '--pnacl-disable-abi-check'
     self.check_flags(['--version'], pnacl_flag)
+    self.assertTrue('12345' == pnacl_driver.ReadDriverRevision())
     self.check_flags(['-v'], pnacl_flag)
     self.check_flags(['-v', '-E', '-xc', os.devnull], pnacl_flag)
     self.check_flags(['-print-file-name=libc'], pnacl_flag)
