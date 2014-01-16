@@ -140,6 +140,12 @@
         'system/waiter.h',
         'system/waiter_list.cc',
         'system/waiter_list.h',
+        # Test-only code:
+        # TODO(vtl): It's a little unfortunate that these end up in the same
+        # component as non-test-only code. In the static build, this code should
+        # hopefully be dead-stripped.
+        'system/embedder/test_embedder.cc',
+        'system/embedder/test_embedder.h',
       ],
     },
     {
@@ -166,10 +172,6 @@
         'system/raw_channel_posix_unittest.cc',
         'system/remote_message_pipe_posix_unittest.cc',
         'system/simple_dispatcher_unittest.cc',
-        # TODO(vtl): Move this to mojo_system_impl (and mojo_system_impl's
-        # exports).
-        'system/embedder/test_embedder.cc',
-        'system/embedder/test_embedder.h',
         'system/test_utils.cc',
         'system/test_utils.h',
         'system/waiter_list_unittest.cc',

@@ -5,6 +5,8 @@
 #ifndef MOJO_SYSTEM_EMBEDDER_TEST_EMBEDDER_H_
 #define MOJO_SYSTEM_EMBEDDER_TEST_EMBEDDER_H_
 
+#include "mojo/system/system_impl_export.h"
+
 namespace mojo {
 namespace embedder {
 namespace test {
@@ -12,9 +14,7 @@ namespace test {
 // This shuts down the global, singleton instance. (Note: "Real" embedders are
 // not expected to ever shut down this instance. This |Shutdown()| function will
 // do more work to ensure that tests don't leak, etc.)
-// TODO(vtl): Figure out the library/component/DLL/export situation for test
-// embedder stuff. For now, it's linked directly into the unit test binary.
-void Shutdown();
+MOJO_SYSTEM_IMPL_EXPORT void Shutdown();
 
 }  // namespace test
 }  // namespace embedder
