@@ -1664,7 +1664,6 @@
         'browser/ui/omnibox/omnibox_controller_unittest.cc',
         'browser/ui/omnibox/omnibox_edit_unittest.cc',
         'browser/ui/omnibox/omnibox_view_unittest.cc',
-        'browser/ui/panels/display_settings_provider_win_unittest.cc',
         'browser/ui/panels/panel_mouse_watcher_unittest.cc',
         'browser/ui/passwords/password_manager_presenter_unittest.cc',
         'browser/ui/search_engines/keyword_editor_controller_unittest.cc',
@@ -2154,7 +2153,6 @@
           ],
           'sources/': [
             ['exclude', '^browser/ui/views/extensions/browser_action_drag_data_unittest.cc'],
-            ['exclude', '^browser/ui/panels/display_settings_provider_win_unittest.cc'],
           ],
         }],
         ['use_aura==1 and use_ash==0 and use_ozone==0 and OS=="linux"', {

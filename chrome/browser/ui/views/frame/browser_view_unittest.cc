@@ -14,13 +14,11 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/url_constants.h"
+#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/single_split_view.h"
 #include "ui/views/controls/webview/webview.h"
-
-#if defined(OS_WIN)
-#include "chrome/browser/ui/views/frame/browser_frame_win.h"
-#endif
 
 namespace {
 
@@ -166,7 +164,7 @@ TEST_F(BrowserViewTest, BrowserViewLayout) {
   BookmarkBarView::DisableAnimationsForTesting(false);
 }
 
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
 
 // This class provides functionality to test the incognito window/normal window
 // switcher button which is added to Windows 8 metro Chrome.
@@ -223,8 +221,22 @@ class BrowserViewIncognitoSwitcherTest : public TestWithBrowserView {
     GetProfile()->SetOffTheRecordProfile(builder.Build());
 
     browser_view_ = new TestBrowserView();
-    browser_view_->SetWindowSwitcherButton(
-        MakeWindowSwitcherButton(NULL, false));
+
+    views::ImageButton* switcher_button = new views::ImageButton(NULL);
+    // The button in the incognito window has the hot-cold images inverted
+    // with respect to the regular browser window.
+    switcher_button->SetImage(
+        views::ImageButton::STATE_NORMAL,
+        ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+            IDR_INCOGNITO_SWITCH_OFF));
+    switcher_button->SetImage(
+        views::ImageButton::STATE_HOVERED,
+        ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+            IDR_INCOGNITO_SWITCH_ON));
+    switcher_button->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
+                                        views::ImageButton::ALIGN_MIDDLE);
+
+    browser_view_->SetWindowSwitcherButton(switcher_button);
     return browser_view_;
   }
 
@@ -242,7 +254,6 @@ class BrowserViewIncognitoSwitcherTest : public TestWithBrowserView {
 TEST_F(BrowserViewIncognitoSwitcherTest,
        BrowserViewIncognitoSwitcherEventHandlerTest) {
   // |browser_view_| owns the Browser, not the test class.
-  EXPECT_FALSE(browser());
   EXPECT_TRUE(browser_view()->browser());
   // Test initial state.
   EXPECT_TRUE(browser_view()->IsTabStripVisible());

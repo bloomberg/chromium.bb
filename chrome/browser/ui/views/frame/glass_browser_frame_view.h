@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_VIEWS_FRAME_GLASS_BROWSER_FRAME_VIEW_H_
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/ui/views/frame/browser_frame_win.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"

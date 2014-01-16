@@ -72,9 +72,6 @@
 #include "chrome/browser/enumerate_modules_model_win.h"
 #include "chrome/browser/ui/views/conflicting_module_view_win.h"
 #include "chrome/browser/ui/views/critical_notification_bubble_view.h"
-#if !defined(USE_AURA)
-#include "chrome/browser/ui/views/app_menu_button_win.h"
-#endif
 #endif
 
 #if defined(USE_AURA)

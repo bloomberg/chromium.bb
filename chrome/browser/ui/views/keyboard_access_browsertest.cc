@@ -364,13 +364,11 @@ IN_PROC_BROWSER_TEST_F(KeyboardAccessTest,
 }
 
 #if defined(OS_WIN)
-// TODO(pauljensen): This used to be only for non-Aura, consider removing.
 IN_PROC_BROWSER_TEST_F(KeyboardAccessTest,
                        DISABLED_TestAltMenuKeyboardAccessFocusOmnibox) {
   TestMenuKeyboardAccess(true, false, true);
 }
 
-// TODO(pauljensen): This used to be only for non-Aura, consider removing.
 IN_PROC_BROWSER_TEST_F(KeyboardAccessTest,
                        DISABLED_TestSystemMenuWithKeyboard) {
   TestSystemMenuWithKeyboard();
