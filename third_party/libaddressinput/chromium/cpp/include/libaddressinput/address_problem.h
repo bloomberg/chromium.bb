@@ -18,7 +18,6 @@
 #include <libaddressinput/address_field.h>
 
 #include <iosfwd>
-#include <string>
 
 namespace i18n {
 namespace addressinput {
@@ -59,7 +58,7 @@ struct AddressProblem {
     MISMATCHING_VALUE
   };
 
-  AddressProblem(AddressField field, Type type, const std::string& description);
+  AddressProblem(AddressField field, Type type, int description_id);
   ~AddressProblem();
 
   // The address field that has the problem.
@@ -68,8 +67,9 @@ struct AddressProblem {
   // The type of problem.
   Type type;
 
-  // The human readable description of the problem.
-  std::string description;
+  // The ID for the string that is the human readable description of the
+  // problem.
+  int description_id;
 };
 
 // Produces human-readable output in logging, for example in unit tests.

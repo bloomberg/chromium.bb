@@ -22,8 +22,8 @@ namespace addressinput {
 
 AddressProblem::AddressProblem(AddressField field,
                                Type type,
-                               const std::string& description)
-    : field(field), type(type), description(description) {}
+                               int description_id)
+    : field(field), type(type), description_id(description_id) {}
 
 AddressProblem::~AddressProblem() {}
 
@@ -51,7 +51,7 @@ std::ostream& operator<<(std::ostream& o, AddressProblem::Type problem_type) {
 std::ostream& operator<<(std::ostream& o, const AddressProblem& problem) {
   o << "[" << problem.field << ", "
            << problem.type << ", \""
-           << problem.description << "\"]";
+           << problem.description_id << "\"]";
   return o;
 }
 

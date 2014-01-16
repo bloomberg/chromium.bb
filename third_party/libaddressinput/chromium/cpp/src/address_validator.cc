@@ -17,7 +17,6 @@
 #include <libaddressinput/address_data.h>
 #include <libaddressinput/downloader.h>
 #include <libaddressinput/load_rules_delegate.h>
-#include <libaddressinput/localization.h>
 #include <libaddressinput/storage.h>
 #include <libaddressinput/util/basictypes.h>
 #include <libaddressinput/util/scoped_ptr.h>
@@ -32,7 +31,7 @@
 #include <re2/re2.h>
 
 #include "country_rules_aggregator.h"
-#include "messages.h"
+#include "grit/libaddressinput_strings.h"
 #include "retriever.h"
 #include "rule.h"
 #include "ruleset.h"
@@ -97,7 +96,6 @@ class AddressValidatorImpl : public AddressValidator {
   virtual Status ValidateAddress(
       const AddressData& address,
       const AddressProblemFilter& filter,
-      const Localization& localization,
       AddressProblems* problems) const {
     std::map<std::string, const Ruleset*>::const_iterator ruleset_it =
         rules_.find(address.country_code);
@@ -123,8 +121,7 @@ class AddressValidatorImpl : public AddressValidator {
         problems->push_back(AddressProblem(
             *field_it,
             AddressProblem::MISSING_REQUIRED_FIELD,
-            localization.GetString(
-                IDS_LIBADDRESSINPUT_I18N_MISSING_REQUIRED_FIELD)));
+            IDS_LIBADDRESSINPUT_I18N_MISSING_REQUIRED_FIELD));
       }
     }
 
@@ -140,8 +137,7 @@ class AddressValidatorImpl : public AddressValidator {
       problems->push_back(AddressProblem(
           POSTAL_CODE,
           AddressProblem::UNRECOGNIZED_FORMAT,
-          localization.GetString(
-              country_rule.GetInvalidPostalCodeMessageId())));
+          country_rule.GetInvalidPostalCodeMessageId()));
     }
 
     while (ruleset != NULL) {
@@ -160,8 +156,7 @@ class AddressValidatorImpl : public AddressValidator {
         problems->push_back(AddressProblem(
             sub_field_type,
             AddressProblem::UNKNOWN_VALUE,
-            localization.GetString(
-                country_rule.GetInvalidFieldMessageId(sub_field_type))));
+            country_rule.GetInvalidFieldMessageId(sub_field_type)));
       }
 
       // Validate sub-region specific postal code format. A sub-region specifies
@@ -180,8 +175,7 @@ class AddressValidatorImpl : public AddressValidator {
         problems->push_back(AddressProblem(
             POSTAL_CODE,
             AddressProblem::MISMATCHING_VALUE,
-            localization.GetString(
-                country_rule.GetInvalidPostalCodeMessageId())));
+            country_rule.GetInvalidPostalCodeMessageId()));
       }
 
       ruleset = ruleset->GetSubRegionRuleset(sub_field);

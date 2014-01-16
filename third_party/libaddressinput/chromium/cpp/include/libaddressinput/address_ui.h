@@ -21,17 +21,14 @@
 namespace i18n {
 namespace addressinput {
 
-class Localization;
 struct AddressUiComponent;
 
 // Returns the list of supported CLDR region codes.
 const std::vector<std::string>& GetRegionCodes();
 
-// Returns the UI components for the CLDR |region_code|. Uses the strings from
-// |localization|. Returns an empty vector on error.
-std::vector<AddressUiComponent> BuildComponents(
-    const std::string& region_code,
-    const Localization& localization);
+// Returns the UI components for the CLDR |region_code|. Returns an empty vector
+// on error.
+std::vector<AddressUiComponent> BuildComponents(const std::string& region_code);
 
 }  // namespace addressinput
 }  // namespace i18n

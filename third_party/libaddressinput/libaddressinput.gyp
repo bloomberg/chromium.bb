@@ -21,14 +21,14 @@
   },
   'targets': [
     {
-      'target_name': 'generated_messages',
+      'target_name': 'libaddressinput_strings',
       'type': 'none',
       'variables': {
-        'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/libaddressinput/',
+        'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/third_party/libaddressinput/',
       },
       'actions': [
         {
-          'action_name': 'generate_messages',
+          'action_name': 'libaddressinput_strings',
           'variables': {
             'grit_grd_file': '<(libaddressinput_dir)/cpp/res/messages.grd',
           },
@@ -61,7 +61,6 @@
         '<(libaddressinput_dir)/cpp/include/libaddressinput/address_ui.h',
         '<(libaddressinput_dir)/cpp/include/libaddressinput/address_validator.h',
         '<(libaddressinput_dir)/cpp/include/libaddressinput/load_rules_delegate.h',
-        '<(libaddressinput_dir)/cpp/include/libaddressinput/localization.h',
         '<(libaddressinput_dir)/cpp/include/libaddressinput/util/basictypes.h',
         '<(libaddressinput_dir)/cpp/include/libaddressinput/util/internal/basictypes.h',
         '<(libaddressinput_dir)/cpp/include/libaddressinput/util/internal/move.h',
@@ -76,7 +75,6 @@
         '<(libaddressinput_dir)/cpp/src/country_rules_aggregator.cc',
         '<(libaddressinput_dir)/cpp/src/country_rules_aggregator.h',
         '<(libaddressinput_dir)/cpp/src/grit.h',
-        '<(libaddressinput_dir)/cpp/src/localization.cc',
         '<(libaddressinput_dir)/cpp/src/region_data_constants.cc',
         '<(libaddressinput_dir)/cpp/src/region_data_constants.h',
         '<(libaddressinput_dir)/cpp/src/retriever.cc',
@@ -98,7 +96,7 @@
         'VALIDATION_DATA_URL="https://i18napis.appspot.com/ssl-address/"',
       ],
       'dependencies': [
-        'generated_messages',
+        'libaddressinput_strings',
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/third_party/re2/re2.gyp:re2',
       ],
@@ -127,7 +125,6 @@
         '<(libaddressinput_dir)/cpp/test/fake_storage.cc',
         '<(libaddressinput_dir)/cpp/test/fake_storage.h',
         '<(libaddressinput_dir)/cpp/test/fake_storage_test.cc',
-        '<(libaddressinput_dir)/cpp/test/localization_test.cc',
         '<(libaddressinput_dir)/cpp/test/region_data_constants_test.cc',
         '<(libaddressinput_dir)/cpp/test/retriever_test.cc',
         '<(libaddressinput_dir)/cpp/test/rule_test.cc',
@@ -145,6 +142,7 @@
       ],
       'dependencies': [
         'libaddressinput',
+        'libaddressinput_strings',
         '<(DEPTH)/base/base.gyp:base_prefs',
         '<(DEPTH)/base/base.gyp:run_all_unittests',
         '<(DEPTH)/net/net.gyp:net_test_support',

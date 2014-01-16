@@ -28,7 +28,6 @@ namespace addressinput {
 
 class Downloader;
 class LoadRulesDelegate;
-class Localization;
 class Storage;
 struct AddressData;
 
@@ -116,7 +115,6 @@ class AddressValidator {
   // rules are available, but does not validate the |address|.
   virtual Status ValidateAddress(const AddressData& address,
                                  const AddressProblemFilter& filter,
-                                 const Localization& localization,
                                  AddressProblems* problems) const = 0;
 };
 

@@ -16,22 +16,18 @@
 
 #include <libaddressinput/address_field.h>
 #include <libaddressinput/address_ui_component.h>
-#include <libaddressinput/localization.h>
 
 #include <string>
 #include <vector>
 
 #include <gtest/gtest.h>
 
-namespace {
+#include "grit.h"
 
-using i18n::addressinput::AddressField;
-using i18n::addressinput::AddressUiComponent;
-using i18n::addressinput::BuildComponents;
-using i18n::addressinput::COUNTRY;
-using i18n::addressinput::GetRegionCodes;
-using i18n::addressinput::Localization;
-using i18n::addressinput::RECIPIENT;
+namespace i18n {
+namespace addressinput {
+
+namespace {
 
 // Returns testing::AssertionSuccess if the |components| are valid. Uses
 // |region_code| in test failure messages.
@@ -52,8 +48,8 @@ testing::AssertionResult ComponentsAreValid(
                                          << component_it->field;
     }
 
-    if (component_it->name.empty()) {
-      return testing::AssertionFailure() << "empty field name for field "
+    if (component_it->name_id == INVALID_MESSAGE_ID) {
+      return testing::AssertionFailure() << "invalid field name_id for field "
                                          << component_it->field;
     }
   }
@@ -62,10 +58,7 @@ testing::AssertionResult ComponentsAreValid(
 }
 
 // Tests for address UI functions.
-class AddressUiTest : public testing::TestWithParam<std::string> {
- protected:
-  Localization localization_;
-};
+class AddressUiTest : public testing::TestWithParam<std::string> {};
 
 // Verifies that a region code consists of two characters, for example "TW".
 TEST_P(AddressUiTest, RegionCodeHasTwoCharacters) {
@@ -75,7 +68,7 @@ TEST_P(AddressUiTest, RegionCodeHasTwoCharacters) {
 // Verifies that BuildComponents() returns valid UI components for a region
 // code.
 TEST_P(AddressUiTest, ComponentsAreValid) {
-  EXPECT_TRUE(ComponentsAreValid(BuildComponents(GetParam(), localization_)));
+  EXPECT_TRUE(ComponentsAreValid(BuildComponents(GetParam())));
 }
 
 // Test all regions codes.
@@ -86,7 +79,10 @@ INSTANTIATE_TEST_CASE_P(
 // Verifies that BuildComponents() returns an empty vector for an invalid region
 // code.
 TEST_F(AddressUiTest, InvalidRegionCodeReturnsEmptyVector) {
-  EXPECT_TRUE(BuildComponents("INVALID-REGION-CODE", localization_).empty());
+  EXPECT_TRUE(BuildComponents("INVALID-REGION-CODE").empty());
 }
 
 }  // namespace
+
+}  // namespace addressinput
+}  // namespace i18n

@@ -23,7 +23,7 @@
 #include <vector>
 
 #include "grit.h"
-#include "messages.h"
+#include "grit/libaddressinput_strings.h"
 #include "region_data_constants.h"
 #include "util/json.h"
 #include "util/string_split.h"

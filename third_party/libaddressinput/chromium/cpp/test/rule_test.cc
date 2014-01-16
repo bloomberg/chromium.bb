@@ -22,7 +22,7 @@
 
 #include <gtest/gtest.h>
 
-#include "messages.h"
+#include "grit/libaddressinput_strings.h"
 #include "region_data_constants.h"
 
 namespace {

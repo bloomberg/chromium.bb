@@ -99,6 +99,13 @@ def calc_inputs(locale):
     inputs.append(os.path.join(SHARE_INT_DIR, 'ui', 'app_locale_settings',
                   'app_locale_settings_%s.pak' % locale))
 
+
+  if OS != 'ios' and OS != 'android':
+    #e.g. '<(SHARED_INTERMEDIATE_DIR)/third_party/libaddressinput/
+    # libaddressinput_strings_da.pak',
+    inputs.append(os.path.join(SHARE_INT_DIR, 'third_party', 'libaddressinput',
+                               'libaddressinput_strings_%s.pak' % locale))
+
   #e.g. '<(grit_out_dir)/google_chrome_strings_da.pak'
   #     or
   #     '<(grit_out_dir)/chromium_strings_da.pak'

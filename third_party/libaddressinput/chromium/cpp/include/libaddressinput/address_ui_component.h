@@ -17,8 +17,6 @@
 
 #include <libaddressinput/address_field.h>
 
-#include <string>
-
 namespace i18n {
 namespace addressinput {
 
@@ -35,8 +33,9 @@ struct AddressUiComponent {
   // The address field type for this UI component, for example LOCALITY.
   AddressField field;
 
-  // The name of the field, for example "City".
-  std::string name;
+  // The ID of the string for the name of the field, for example
+  // IDS_LIBADDRESSINPUT_I18N_LOCALITY_LABEL.
+  int name_id;
 
   // The hint for how large the input field should be in a multiline address
   // form.

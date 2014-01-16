@@ -9,10 +9,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "grit/component_strings.h"
-#include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_field.h"
-#include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_ui.h"
-#include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_ui_component.h"
-#include "third_party/libaddressinput/src/cpp/include/libaddressinput/localization.h"
+#include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_field.h"
+#include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_ui.h"
+#include "third_party/libaddressinput/chromium/cpp/include/libaddressinput/address_ui_component.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace autofill {
@@ -66,11 +65,8 @@ bool Enabled() {
 void BuildAddressInputs(common::AddressType address_type,
                         const std::string& country_code,
                         DetailInputs* inputs) {
-  i18n::addressinput::Localization localization;
-  // TODO(dbeam): figure out how to include libaddressinput's translations into
-  // some .pak file so I can call |SetGetter(&l10n_util::GetStringUTF8)| here.
   std::vector<AddressUiComponent> components(
-      i18n::addressinput::BuildComponents(country_code, localization));
+      i18n::addressinput::BuildComponents(country_code));
 
   const bool billing = address_type == common::ADDRESS_TYPE_BILLING;
 
@@ -83,7 +79,7 @@ void BuildAddressInputs(common::AddressType address_type,
 
     ServerFieldType server_type = GetServerType(component.field, billing);
     DetailInput::Length length = LengthFromHint(component.length_hint);
-    base::string16 placeholder = base::UTF8ToUTF16(component.name);
+    base::string16 placeholder = l10n_util::GetStringUTF16(component.name_id);
     DetailInput input = { length, server_type, placeholder };
     inputs->push_back(input);
 
@@ -92,7 +88,7 @@ void BuildAddressInputs(common::AddressType address_type,
       // TODO(dbeam): support more than 2 address lines. http://crbug.com/324889
       ServerFieldType server_type =
           billing ? ADDRESS_BILLING_LINE2 : ADDRESS_HOME_LINE2;
-      base::string16 placeholder = base::UTF8ToUTF16(component.name);
+      base::string16 placeholder = l10n_util::GetStringUTF16(component.name_id);
       DetailInput input = { length, server_type, placeholder };
       inputs->push_back(input);
     }

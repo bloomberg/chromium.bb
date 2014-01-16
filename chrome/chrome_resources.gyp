@@ -394,6 +394,11 @@
              '<(DEPTH)/ash/ash.gyp:ash_resources',
           ],
         }],
+        ['enable_autofill_dialog==1 and OS!="android"', {
+          'dependencies': [
+            '<(DEPTH)/third_party/libaddressinput/libaddressinput.gyp:libaddressinput_strings',
+          ],
+        }],
         ['OS != "mac" and OS != "ios"', {
           # Copy pak files to the product directory. These files will be picked
           # up by the following installer scripts:

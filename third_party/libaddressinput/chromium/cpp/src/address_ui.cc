@@ -16,13 +16,12 @@
 
 #include <libaddressinput/address_field.h>
 #include <libaddressinput/address_ui_component.h>
-#include <libaddressinput/localization.h>
 
 #include <string>
 #include <vector>
 
 #include "grit.h"
-#include "messages.h"
+#include "grit/libaddressinput_strings.h"
 #include "region_data_constants.h"
 #include "rule.h"
 
@@ -65,8 +64,7 @@ const std::vector<std::string>& GetRegionCodes() {
 }
 
 std::vector<AddressUiComponent> BuildComponents(
-    const std::string& region_code,
-    const Localization& localization) {
+    const std::string& region_code) {
   std::vector<AddressUiComponent> result;
 
   Rule rule;
@@ -87,9 +85,10 @@ std::vector<AddressUiComponent> BuildComponents(
           line_it->size() == 1 ? AddressUiComponent::HINT_LONG
                                : AddressUiComponent::HINT_SHORT;
       component.field = *field_it;
-      component.name = localization.GetString(
-          GetMessageIdForField(*field_it, rule.GetAdminAreaNameMessageId(),
-                              rule.GetPostalCodeNameMessageId()));
+      component.name_id =
+          GetMessageIdForField(*field_it,
+                               rule.GetAdminAreaNameMessageId(),
+                               rule.GetPostalCodeNameMessageId());
       result.push_back(component);
     }
   }

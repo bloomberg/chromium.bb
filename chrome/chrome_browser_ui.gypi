@@ -3338,6 +3338,7 @@
         ['enable_autofill_dialog==1 and OS!="android"', {
           'dependencies': [
             '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput',
+            '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput_strings',
           ],
         }, { # enable_autofill_dialog!=1 or OS=="android"
           'sources!': [
