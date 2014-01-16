@@ -1970,7 +1970,16 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_EMBED_FLASH_FULLSCREEN_DESCRIPTION,
     kOsDesktop,
     SINGLE_VALUE_TYPE(switches::kEmbedFlashFullscreen)
+  },
+#if defined(USE_ASH) && defined(OS_CHROMEOS)
+  {
+    "enable-system-sounds",
+    IDS_FLAGS_ENABLE_SYSTEM_SOUNDS_NAME,
+    IDS_FLAGS_ENABLE_SYSTEM_SOUNDS_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(ash::switches::kAshEnableSystemSounds)
   }
+#endif
 };
 
 const Experiment* experiments = kExperiments;
