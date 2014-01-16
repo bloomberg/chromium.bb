@@ -279,8 +279,14 @@ void KeyboardController::OnTextInputStateChanged(
         keyboard::LogKeyboardControlEvent(keyboard::KEYBOARD_CONTROL_SHOW);
 
       weak_factory_.InvalidateWeakPtrs();
-      if (container_->IsVisible())
+      // If |container_| has hide animation, its visibility is set to false when
+      // hide animation finished. So even if the container is visible at this
+      // point, it may in the process of hiding. We still need to show keyboard
+      // container in this case.
+      if (container_->IsVisible() &&
+          !container_->layer()->GetAnimator()->is_animating()) {
         return;
+      }
 
       NotifyKeyboardBoundsChanging(container_->children()[0]->bounds());
 

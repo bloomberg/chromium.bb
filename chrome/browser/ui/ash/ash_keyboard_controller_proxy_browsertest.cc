@@ -133,7 +133,7 @@ TEST_F(AshKeyboardControllerProxyTest, VirtualKeyboardContainerAnimation) {
   // animation starts.
   EXPECT_TRUE(keyboard_container->IsVisible());
   EXPECT_TRUE(proxy()->GetKeyboardWindow()->IsVisible());
-  EXPECT_EQ(0.0, layer->opacity());
+  float show_start_opacity = layer->opacity();
   gfx::Transform transform;
   transform.Translate(0, proxy()->GetKeyboardWindow()->bounds().height());
   EXPECT_EQ(transform, layer->transform());
@@ -141,18 +141,45 @@ TEST_F(AshKeyboardControllerProxyTest, VirtualKeyboardContainerAnimation) {
   RunAnimationForLayer(layer);
   EXPECT_TRUE(keyboard_container->IsVisible());
   EXPECT_TRUE(proxy()->GetKeyboardWindow()->IsVisible());
-  EXPECT_EQ(1.0, layer->opacity());
+  float show_end_opacity = layer->opacity();
+  EXPECT_LT(show_start_opacity, show_end_opacity);
   EXPECT_EQ(gfx::Transform(), layer->transform());
 
   HideKeyboard(keyboard_container);
-  // Keyboard container and window should be visible before hide animation
-  // finishes.
   EXPECT_TRUE(keyboard_container->IsVisible());
+  EXPECT_TRUE(keyboard_container->layer()->visible());
   EXPECT_TRUE(proxy()->GetKeyboardWindow()->IsVisible());
+  float hide_start_opacity = layer->opacity();
 
   RunAnimationForLayer(layer);
   EXPECT_FALSE(keyboard_container->IsVisible());
+  EXPECT_FALSE(keyboard_container->layer()->visible());
   EXPECT_FALSE(proxy()->GetKeyboardWindow()->IsVisible());
-  EXPECT_EQ(0.0, layer->opacity());
+  float hide_end_opacity = layer->opacity();
+  EXPECT_GT(hide_start_opacity, hide_end_opacity);
   EXPECT_EQ(transform, layer->transform());
+}
+
+// Test for crbug.com/333284.
+TEST_F(AshKeyboardControllerProxyTest, VirtualKeyboardContainerShowWhileHide) {
+  // We cannot short-circuit animations for this test.
+  ui::ScopedAnimationDurationScaleMode normal_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+
+  aura::Window* keyboard_container(controller()->GetContainerWindow());
+  ui::Layer* layer = keyboard_container->layer();
+
+  EXPECT_FALSE(keyboard_container->IsVisible());
+  ShowKeyboard(keyboard_container);
+  RunAnimationForLayer(layer);
+
+  HideKeyboard(keyboard_container);
+  // Before hide animation finishes, show keyboard again.
+  ShowKeyboard(keyboard_container);
+
+  RunAnimationForLayer(layer);
+  EXPECT_TRUE(keyboard_container->IsVisible());
+  EXPECT_TRUE(proxy()->GetKeyboardWindow()->IsVisible());
+  EXPECT_EQ(1.0, layer->opacity());
+  EXPECT_EQ(gfx::Transform(), layer->transform());
 }

@@ -41,6 +41,10 @@ const char* kVirtualKeyboardExtensionID = "mppnpdlheglhdfmldimlhpnegondlapf";
 // The virtual keyboard show/hide animation duration.
 const int kAnimationDurationMs = 200;
 
+// The opacity of virtual keyboard container when show animation starts or
+// hide animation finishes.
+const float kAnimationStartOrAfterHideOpacity = 0.2f;
+
 Context::Type TextInputTypeToGeneratedInputTypeEnum(ui::TextInputType type) {
   switch (type) {
     case ui::TEXT_INPUT_TYPE_NONE:
@@ -158,8 +162,11 @@ void AshKeyboardControllerProxy::ShowKeyboardContainer(
     gfx::Transform transform;
     transform.Translate(0, GetKeyboardWindow()->bounds().height());
     container->SetTransform(transform);
-    container->layer()->SetOpacity(0.0);
+    container->layer()->SetOpacity(kAnimationStartOrAfterHideOpacity);
   }
+
+  container_animator->set_preemption_strategy(
+      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
 
   {
     // Scope the following animation settings as we don't want to animate
@@ -167,8 +174,6 @@ void AshKeyboardControllerProxy::ShowKeyboardContainer(
     // ShowKeyboardContainer with these settings. The container should become
     // visible immediately.
     ui::ScopedLayerAnimationSettings settings(container_animator);
-    settings.SetPreemptionStrategy(
-      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
     settings.SetTweenType(gfx::Tween::EASE_IN);
     settings.SetTransitionDuration(
         base::TimeDelta::FromMilliseconds(kAnimationDurationMs));
@@ -197,15 +202,13 @@ void AshKeyboardControllerProxy::HideKeyboardContainer(
   container_animator->AddObserver(this);
   animation_window_ = container;
   ui::ScopedLayerAnimationSettings settings(container_animator);
-  settings.SetPreemptionStrategy(
-      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
   settings.SetTweenType(gfx::Tween::EASE_OUT);
   settings.SetTransitionDuration(
       base::TimeDelta::FromMilliseconds(kAnimationDurationMs));
   gfx::Transform transform;
   transform.Translate(0, GetKeyboardWindow()->bounds().height());
   container->SetTransform(transform);
-  container->layer()->SetOpacity(0.0);
+  container->layer()->SetOpacity(kAnimationStartOrAfterHideOpacity);
 }
 
 void AshKeyboardControllerProxy::OnLayerAnimationEnded(
@@ -213,7 +216,7 @@ void AshKeyboardControllerProxy::OnLayerAnimationEnded(
   if (!animation_window_)
     return;
   ui::LayerAnimator* animator = animation_window_->layer()->GetAnimator();
-  if (animator && !animator->is_animating()) {
+  if (!animator->is_animating()) {
     KeyboardControllerProxy::HideKeyboardContainer(animation_window_);
     animator->RemoveObserver(this);
     animation_window_ = NULL;
@@ -224,10 +227,7 @@ void AshKeyboardControllerProxy::OnLayerAnimationAborted(
     ui::LayerAnimationSequence* sequence) {
   if (!animation_window_)
     return;
-  ui::LayerAnimator* animator = animation_window_->layer()->GetAnimator();
-  if (animator) {
-    animator->RemoveObserver(this);
-  }
+  animation_window_->layer()->GetAnimator()->RemoveObserver(this);
   animation_window_ = NULL;
 };
 
