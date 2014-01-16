@@ -66,12 +66,14 @@ public:
 
 private:
     struct Cluster {
-        explicit Cluster(RenderBlock* root, float multiplier)
+        explicit Cluster(RenderBlock* root, bool autosize, float multiplier)
             : m_root(root)
+            , m_autosize(autosize)
             , m_multiplier(multiplier)
         {
         }
         RenderBlock* m_root;
+        bool m_autosize;
         float m_multiplier;
     };
 
@@ -100,11 +102,10 @@ private:
     void inflate(RenderBlock*);
     bool enabled();
     void prepareRenderViewInfo(RenderView*);
-    bool shouldBeClusterRoot(RenderBlock*);
+    bool isFingerprintingCandidate(RenderBlock*);
     bool clusterWantsAutosizing(RenderBlock*);
     AtomicString computeFingerprint(RenderBlock*);
-    Cluster* getOrCreateCluster(RenderBlock*);
-    Cluster* createCluster(RenderBlock*);
+    Cluster* maybeGetOrCreateCluster(RenderBlock*);
     Cluster* addSupercluster(AtomicString, RenderBlock*);
     RenderBlock* deepestCommonAncestor(BlockSet&);
     float computeMultiplier(RenderBlock*);

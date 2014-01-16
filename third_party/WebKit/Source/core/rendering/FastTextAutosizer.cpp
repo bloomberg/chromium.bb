@@ -58,7 +58,7 @@ void FastTextAutosizer::record(RenderBlock* block)
     if (!enabled())
         return;
 
-    if (!shouldBeClusterRoot(block))
+    if (!isFingerprintingCandidate(block))
         return;
 
     AtomicString fingerprint = computeFingerprint(block);
@@ -81,8 +81,8 @@ void FastTextAutosizer::beginLayout(RenderBlock* block)
     if (block->isRenderView())
         prepareRenderViewInfo(toRenderView(block));
 
-    if (shouldBeClusterRoot(block))
-        m_clusterStack.append(getOrCreateCluster(block));
+    if (Cluster* cluster = maybeGetOrCreateCluster(block))
+        m_clusterStack.append(cluster);
 
     if (block->childrenInline())
         inflate(block);
@@ -103,14 +103,13 @@ void FastTextAutosizer::inflate(RenderBlock* block)
         return;
     Cluster* cluster = m_clusterStack.last();
 
-    // localMultiplier is used to prevent inflation of some containers such as a row of links.
-    float localMultiplier = TextAutosizer::containerShouldBeAutosized(block) ? cluster->m_multiplier : 1;
+    float multiplier = cluster->m_autosize ? cluster->m_multiplier : 1.0f;
 
     for (InlineWalker walker(block); !walker.atEnd(); walker.advance()) {
         RenderObject* inlineObj = walker.current();
         if (inlineObj->isText()) {
-            applyMultiplier(inlineObj, localMultiplier);
-            applyMultiplier(inlineObj->parent(), localMultiplier); // Parent handles line spacing.
+            applyMultiplier(inlineObj, multiplier);
+            applyMultiplier(inlineObj->parent(), multiplier); // Parent handles line spacing.
         }
     }
 }
@@ -147,7 +146,7 @@ void FastTextAutosizer::prepareRenderViewInfo(RenderView* renderView)
 #endif
 }
 
-bool FastTextAutosizer::shouldBeClusterRoot(RenderBlock* block)
+bool FastTextAutosizer::isFingerprintingCandidate(RenderBlock* block)
 {
     // FIXME: move the logic out of TextAutosizer.cpp into this class.
     return block->isRenderView()
@@ -157,8 +156,8 @@ bool FastTextAutosizer::shouldBeClusterRoot(RenderBlock* block)
 
 bool FastTextAutosizer::clusterWantsAutosizing(RenderBlock* root)
 {
-    // FIXME: this should be slightly different.
-    return TextAutosizer::containerShouldBeAutosized(root);
+    // FIXME: this should call (or re-implement) TextAutosizer::clusterShouldBeAutosized.
+    return true;
 }
 
 AtomicString FastTextAutosizer::computeFingerprint(RenderBlock* block)
@@ -167,24 +166,36 @@ AtomicString FastTextAutosizer::computeFingerprint(RenderBlock* block)
     return nullAtom;
 }
 
-FastTextAutosizer::Cluster* FastTextAutosizer::getOrCreateCluster(RenderBlock* block)
+FastTextAutosizer::Cluster* FastTextAutosizer::maybeGetOrCreateCluster(RenderBlock* block)
 {
+    if (!TextAutosizer::isAutosizingContainer(block))
+        return 0;
+
+    bool isIndependentDescendant = TextAutosizer::isIndependentDescendant(block);
+
+    // Create clusters to suppress / unsuppress autosizing based on containerShouldBeAutosized.
+    bool containerCanAutosize = TextAutosizer::containerShouldBeAutosized(block);
+    bool parentClusterCanAutosize = !m_clusterStack.isEmpty() && m_clusterStack.last()->m_autosize;
+
+    // If the container would not alter the m_autosize bit, it doesn't need to be a cluster.
+    if (!isIndependentDescendant && containerCanAutosize == parentClusterCanAutosize)
+        return 0;
+
     ClusterMap::AddResult addResult = m_clusters.add(block, PassOwnPtr<Cluster>());
     if (!addResult.isNewEntry)
         return addResult.iterator->value.get();
 
     AtomicString fingerprint = m_fingerprintMapper.get(block);
     if (fingerprint.isNull()) {
-        addResult.iterator->value = adoptPtr(createCluster(block));
+        float multiplier;
+        if (isIndependentDescendant)
+            multiplier = clusterWantsAutosizing(block) ? computeMultiplier(block) : 1.0f;
+        else
+            multiplier = m_clusterStack.last()->m_multiplier;
+        addResult.iterator->value = adoptPtr(new Cluster(block, containerCanAutosize, multiplier));
         return addResult.iterator->value.get();
     }
     return addSupercluster(fingerprint, block);
-}
-
-FastTextAutosizer::Cluster* FastTextAutosizer::createCluster(RenderBlock* block)
-{
-    float multiplier = clusterWantsAutosizing(block) ? computeMultiplier(block) : 1.0f;
-    return new Cluster(block, multiplier);
 }
 
 FastTextAutosizer::Cluster* FastTextAutosizer::addSupercluster(AtomicString fingerprint, RenderBlock* returnFor)
@@ -200,7 +211,7 @@ FastTextAutosizer::Cluster* FastTextAutosizer::addSupercluster(AtomicString fing
 
     Cluster* result = 0;
     for (BlockSet::iterator it = roots.begin(); it != roots.end(); ++it) {
-        Cluster* cluster = new Cluster(*it, multiplier);
+        Cluster* cluster = new Cluster(*it, TextAutosizer::containerShouldBeAutosized(*it), multiplier);
         m_clusters.set(*it, adoptPtr(cluster));
 
         if (*it == returnFor)

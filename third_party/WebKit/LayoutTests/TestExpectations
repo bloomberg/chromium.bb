@@ -793,8 +793,6 @@ crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/wide-child.html
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/wide-in-narrow-overflow-scroll.html [ ImageOnlyFailure ]
 crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/cluster-with-narrow-lca-and-cluster.html [ ImageOnlyFailure ]
 crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/cluster-with-narrow-lca.html [ ImageOnlyFailure ]
-crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/form-controls-autosizing-button-input-elements.html [ ImageOnlyFailure ]
-crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/positioned-out-of-flow.html [ ImageOnlyFailure ]
 crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/resize-window.html [ Failure ]
 
 # FIXME(crbug.com/329904): Remove these when hash-based autosizer is deemed fast enough, aka second pass optimization.
