@@ -78,7 +78,6 @@ public:
     RenderView* renderView() const;
 
     virtual void setCanHaveScrollbars(bool) OVERRIDE;
-    void updateCanHaveScrollbars();
 
     virtual PassRefPtr<Scrollbar> createScrollbar(ScrollbarOrientation) OVERRIDE;
 
@@ -173,7 +172,6 @@ public:
     void setCannotBlitToWindow();
     void setIsOverlapped(bool);
     bool isOverlapped() const { return m_isOverlapped; }
-    bool isOverlappedIncludingAncestors() const;
     void setContentIsOpaque(bool);
 
     void addSlowRepaintObject();
@@ -214,7 +212,6 @@ public:
     PaintBehavior paintBehavior() const;
     bool isPainting() const;
     bool hasEverPainted() const { return m_lastPaintTime; }
-    void setLastPaintTime(double lastPaintTime) { m_lastPaintTime = lastPaintTime; }
     void setNodeToDraw(Node*);
 
     virtual void paintOverhangAreas(GraphicsContext*, const IntRect& horizontalOverhangArea, const IntRect& verticalOverhangArea, const IntRect& dirtyRect) OVERRIDE;
@@ -230,7 +227,6 @@ public:
     void incrementVisuallyNonEmptyCharacterCount(unsigned);
     void incrementVisuallyNonEmptyPixelCount(const IntSize&);
     void setIsVisuallyNonEmpty() { m_isVisuallyNonEmpty = true; }
-    bool isVisuallyNonEmpty() const { return m_isVisuallyNonEmpty; }
     void enableAutoSizeMode(bool enable, const IntSize& minSize, const IntSize& maxSize);
 
     void forceLayout(bool allowSubtree = false);
@@ -254,15 +250,6 @@ public:
     enum ScrollbarModesCalculationStrategy { RulesFromWebContentOnly, AnyRule };
     void calculateScrollbarModesForLayout(ScrollbarMode& hMode, ScrollbarMode& vMode, ScrollbarModesCalculationStrategy = AnyRule);
 
-    // Normal delay
-    static void setRepaintThrottlingDeferredRepaintDelay(double);
-    // Negative value would mean that first few repaints happen without a delay
-    static void setRepaintThrottlingnInitialDeferredRepaintDelayDuringLoading(double);
-    // The delay grows on each repaint to this maximum value
-    static void setRepaintThrottlingMaxDeferredRepaintDelayDuringLoading(double);
-    // On each repaint the delay increses by this amount
-    static void setRepaintThrottlingDeferredRepaintDelayIncrementDuringLoading(double);
-
     virtual IntPoint lastKnownMousePosition() const OVERRIDE;
     bool shouldSetCursor() const;
 
@@ -276,14 +263,11 @@ public:
     virtual bool shouldSuspendScrollAnimations() const OVERRIDE;
     virtual void scrollbarStyleChanged(int newStyle, bool forceUpdate) OVERRIDE;
 
-    void setAnimatorsAreActive();
-
     RenderBox* embeddedContentBox() const;
 
     void setTracksRepaints(bool);
     bool isTrackingRepaints() const { return m_isTrackingRepaints; }
     void resetTrackedRepaints();
-    const Vector<IntRect>& trackedRepaintRects() const { return m_trackedRepaintRects; }
     String trackedRepaintRectsAsText() const;
 
     typedef HashSet<ScrollableArea*> ScrollableAreaSet;
@@ -345,8 +329,6 @@ protected:
 private:
     explicit FrameView(Frame*);
 
-    void beginDeferredRepaints();
-    void endDeferredRepaints();
     void flushDeferredRepaints();
     void startDeferredRepaintTimer(double delay);
 
@@ -457,8 +439,6 @@ private:
     bool m_isOverlapped;
     bool m_contentIsOpaque;
     unsigned m_slowRepaintObjectCount;
-    int m_borderX;
-    int m_borderY;
 
     Timer<FrameView> m_layoutTimer;
     bool m_delayedLayout;
@@ -530,11 +510,6 @@ private:
     OwnPtr<ScrollableAreaSet> m_scrollableAreas;
     OwnPtr<ResizerAreaSet> m_resizerAreas;
     OwnPtr<ViewportConstrainedObjectSet> m_viewportConstrainedObjects;
-
-    static double s_normalDeferredRepaintDelay;
-    static double s_initialDeferredRepaintDelayDuringLoading;
-    static double s_maxDeferredRepaintDelayDuringLoading;
-    static double s_deferredRepaintDelayIncrementDuringLoading;
 
     bool m_hasSoftwareFilters;
 

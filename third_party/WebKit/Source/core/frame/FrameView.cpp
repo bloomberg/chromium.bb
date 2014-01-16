@@ -94,21 +94,21 @@ bool FrameView::s_inPaintContents = false;
 // Should be removed when applications start using runtime configuration.
 #if ENABLE(REPAINT_THROTTLING)
 // Normal delay
-double FrameView::s_normalDeferredRepaintDelay = 0.016;
+static const double s_normalDeferredRepaintDelay = 0.016;
 // Negative value would mean that first few repaints happen without a delay
-double FrameView::s_initialDeferredRepaintDelayDuringLoading = 0;
+static const double s_initialDeferredRepaintDelayDuringLoading = 0;
 // The delay grows on each repaint to this maximum value
-double FrameView::s_maxDeferredRepaintDelayDuringLoading = 2.5;
+static const double s_maxDeferredRepaintDelayDuringLoading = 2.5;
 // On each repaint the delay increses by this amount
-double FrameView::s_deferredRepaintDelayIncrementDuringLoading = 0.5;
+static const double s_deferredRepaintDelayIncrementDuringLoading = 0.5;
 #else
 // FIXME: Repaint throttling could be good to have on all platform.
 // The balance between CPU use and repaint frequency will need some tuning for desktop.
 // More hooks may be needed to reset the delay on things like GIF and CSS animations.
-double FrameView::s_normalDeferredRepaintDelay = 0;
-double FrameView::s_initialDeferredRepaintDelayDuringLoading = 0;
-double FrameView::s_maxDeferredRepaintDelayDuringLoading = 0;
-double FrameView::s_deferredRepaintDelayIncrementDuringLoading = 0;
+static const double s_normalDeferredRepaintDelay = 0;
+static const double s_initialDeferredRepaintDelayDuringLoading = 0;
+static const double s_maxDeferredRepaintDelayDuringLoading = 0;
+static const double s_deferredRepaintDelayIncrementDuringLoading = 0;
 #endif
 
 // The maximum number of updateWidgets iterations that should be done before returning.
@@ -239,8 +239,6 @@ void FrameView::reset()
     m_cannotBlitToWindow = false;
     m_isOverlapped = false;
     m_contentIsOpaque = false;
-    m_borderX = 30;
-    m_borderY = 30;
     m_layoutTimer.stop();
     m_layoutRoot = 0;
     m_delayedLayout = false;
@@ -442,17 +440,6 @@ void FrameView::setCanHaveScrollbars(bool canHaveScrollbars)
 {
     m_canHaveScrollbars = canHaveScrollbars;
     ScrollView::setCanHaveScrollbars(canHaveScrollbars);
-}
-
-void FrameView::updateCanHaveScrollbars()
-{
-    ScrollbarMode hMode;
-    ScrollbarMode vMode;
-    scrollbarModes(hMode, vMode);
-    if (hMode == ScrollbarAlwaysOff && vMode == ScrollbarAlwaysOff)
-        setCanHaveScrollbars(false);
-    else
-        setCanHaveScrollbars(true);
 }
 
 bool FrameView::shouldUseCustomScrollbars(Element*& customScrollbarElement, Frame*& customScrollbarFrame)
@@ -1539,19 +1526,6 @@ void FrameView::setIsOverlapped(bool isOverlapped)
     updateCanBlitOnScrollRecursively();
 }
 
-bool FrameView::isOverlappedIncludingAncestors() const
-{
-    if (isOverlapped())
-        return true;
-
-    if (FrameView* parentView = parentFrameView()) {
-        if (parentView->isOverlapped())
-            return true;
-    }
-
-    return false;
-}
-
 void FrameView::setContentIsOpaque(bool contentIsOpaque)
 {
     if (contentIsOpaque == m_contentIsOpaque)
@@ -2609,26 +2583,6 @@ void FrameView::scrollbarStyleChanged(int newStyle, bool forceUpdate)
         ScrollView::scrollbarStyleChanged(newStyle, forceUpdate);
 }
 
-void FrameView::setAnimatorsAreActive()
-{
-    Page* page = m_frame->page();
-    if (!page)
-        return;
-
-    if (ScrollAnimator* scrollAnimator = existingScrollAnimator())
-        scrollAnimator->setIsActive();
-
-    if (!m_scrollableAreas)
-        return;
-
-    for (HashSet<ScrollableArea*>::const_iterator it = m_scrollableAreas->begin(), end = m_scrollableAreas->end(); it != end; ++it) {
-        ScrollableArea* scrollableArea = *it;
-
-        ASSERT(scrollableArea->scrollbarsCanBeActive());
-        scrollableArea->scrollAnimator()->setIsActive();
-    }
-}
-
 void FrameView::notifyPageThatContentAreaWillPaint() const
 {
     Page* page = m_frame->page();
@@ -3236,30 +3190,6 @@ IntPoint FrameView::convertFromContainingView(const IntPoint& parentPoint) const
     }
 
     return parentPoint;
-}
-
-// Normal delay
-void FrameView::setRepaintThrottlingDeferredRepaintDelay(double p)
-{
-    s_normalDeferredRepaintDelay = p;
-}
-
-// Negative value would mean that first few repaints happen without a delay
-void FrameView::setRepaintThrottlingnInitialDeferredRepaintDelayDuringLoading(double p)
-{
-    s_initialDeferredRepaintDelayDuringLoading = p;
-}
-
-// The delay grows on each repaint to this maximum value
-void FrameView::setRepaintThrottlingMaxDeferredRepaintDelayDuringLoading(double p)
-{
-    s_maxDeferredRepaintDelayDuringLoading = p;
-}
-
-// On each repaint the delay increases by this amount
-void FrameView::setRepaintThrottlingDeferredRepaintDelayIncrementDuringLoading(double p)
-{
-    s_deferredRepaintDelayIncrementDuringLoading = p;
 }
 
 void FrameView::setTracksRepaints(bool trackRepaints)
