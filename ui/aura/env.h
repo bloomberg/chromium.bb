@@ -6,7 +6,7 @@
 #define UI_AURA_ENV_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_pump_dispatcher.h"
+#include "base/message_loop/message_loop.h"
 #include "base/observer_list.h"
 #include "ui/aura/aura_export.h"
 #include "ui/events/event_handler.h"
@@ -29,7 +29,7 @@ class RootWindow;
 class Window;
 
 // Creates a platform-specific native event dispatcher.
-base::MessagePumpDispatcher* CreateDispatcher();
+base::MessageLoop::Dispatcher* CreateDispatcher();
 
 // A singleton object that tracks general state within Aura.
 // TODO(beng): manage RootWindows.
@@ -66,7 +66,7 @@ class AURA_EXPORT Env : public ui::EventTarget {
   // Returns the native event dispatcher. The result should only be passed to
   // base::RunLoop(dispatcher), or used to dispatch an event by
   // |Dispatch(const NativeEvent&)| on it. It must never be stored.
-  base::MessagePumpDispatcher* GetDispatcher();
+  base::MessageLoop::Dispatcher* GetDispatcher();
 
   // Invoked by RootWindow when its host is activated.
   void RootWindowActivated(RootWindow* root_window);
@@ -91,7 +91,7 @@ class AURA_EXPORT Env : public ui::EventTarget {
   virtual ui::EventTargeter* GetEventTargeter() OVERRIDE;
 
   ObserverList<EnvObserver> observers_;
-  scoped_ptr<base::MessagePumpDispatcher> dispatcher_;
+  scoped_ptr<base::MessageLoop::Dispatcher> dispatcher_;
 
   static Env* instance_;
   int mouse_button_flags_;

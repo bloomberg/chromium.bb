@@ -13,7 +13,6 @@
 #include "base/event_types.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_pump_dispatcher.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "chromeos/chromeos_export.h"
@@ -65,7 +64,7 @@ enum HDCPState {
 // This class interacts directly with the underlying Xrandr API to manipulate
 // CTRCs and Outputs.
 class CHROMEOS_EXPORT OutputConfigurator
-    : public base::MessagePumpDispatcher,
+    : public base::MessageLoop::Dispatcher,
       public base::MessagePumpObserver {
  public:
   typedef uint64_t OutputProtectionClientId;

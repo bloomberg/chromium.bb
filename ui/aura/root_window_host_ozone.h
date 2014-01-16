@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_pump_dispatcher.h"
+#include "base/message_loop/message_loop.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/rect.h"
@@ -16,7 +16,7 @@
 namespace aura {
 
 class WindowTreeHostOzone : public WindowTreeHost,
-                            public base::MessagePumpDispatcher {
+                            public base::MessageLoop::Dispatcher {
  public:
   explicit WindowTreeHostOzone(const gfx::Rect& bounds);
   virtual ~WindowTreeHostOzone();

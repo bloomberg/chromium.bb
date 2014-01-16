@@ -15,10 +15,6 @@ namespace base {
 class MessagePumpForUI;
 #endif
 
-#if defined(USE_AURA)
-class MessagePumpDispatcher;
-#endif
-
 #if defined(OS_IOS)
 class MessagePumpUIApplication;
 #endif
@@ -32,12 +28,12 @@ class BASE_EXPORT RunLoop {
  public:
   RunLoop();
 #if defined(USE_AURA)
-  explicit RunLoop(MessagePumpDispatcher* dispatcher);
+  explicit RunLoop(MessageLoop::Dispatcher* dispatcher);
 #endif
   ~RunLoop();
 
 #if defined(USE_AURA)
-  void set_dispatcher(MessagePumpDispatcher* dispatcher) {
+  void set_dispatcher(MessageLoop::Dispatcher* dispatcher) {
     dispatcher_ = dispatcher;
   }
 #endif
@@ -100,7 +96,7 @@ class BASE_EXPORT RunLoop {
   RunLoop* previous_run_loop_;
 
 #if defined(USE_AURA)
-  MessagePumpDispatcher* dispatcher_;
+  MessageLoop::Dispatcher* dispatcher_;
 #endif
 
   // Used to count how many nested Run() invocations are on the stack.

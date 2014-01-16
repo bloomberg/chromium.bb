@@ -2295,7 +2295,7 @@ View* MenuController::GetActiveMouseView() {
 void MenuController::SetExitType(ExitType type) {
   exit_type_ = type;
   // Exit nested message loops as soon as possible. We do this as
-  // MessagePumpDispatcher is only invoked before native events, which means
+  // MessageLoop::Dispatcher is only invoked before native events, which means
   // its entirely possible for a Widget::CloseNow() task to be processed before
   // the next native message. By using QuitNow() we ensures the nested message
   // loop returns as soon as possible and avoids having deleted views classes

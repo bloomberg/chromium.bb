@@ -8,7 +8,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_pump_dispatcher.h"
 #include "base/run_loop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
@@ -38,7 +37,7 @@ namespace {
 // destroyed before a box in an outer-loop. So to avoid this, ref-counting is
 // used so that the SimpleMessageBoxViews gets deleted at the right time.
 class SimpleMessageBoxViews : public views::DialogDelegate,
-                              public base::MessagePumpDispatcher,
+                              public base::MessageLoop::Dispatcher,
                               public base::RefCounted<SimpleMessageBoxViews> {
  public:
   SimpleMessageBoxViews(const base::string16& title,
@@ -64,7 +63,7 @@ class SimpleMessageBoxViews : public views::DialogDelegate,
   virtual views::Widget* GetWidget() OVERRIDE;
   virtual const views::Widget* GetWidget() const OVERRIDE;
 
-  // Overridden from MessagePumpDispatcher:
+  // Overridden from MessageLoop::Dispatcher:
   virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
 
  private:

@@ -11,7 +11,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "base/message_loop/message_pump_dispatcher.h"
+#include "base/message_loop/message_loop.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
@@ -33,7 +33,7 @@ static int SetNonBlocking(int fd) {
 namespace ui {
 
 class MockTouchEventConverterEvdev : public TouchEventConverterEvdev,
-                                     public base::MessagePumpDispatcher {
+                                     public base::MessageLoop::Dispatcher {
  public:
   MockTouchEventConverterEvdev(int a, int b);
   virtual ~MockTouchEventConverterEvdev() {};

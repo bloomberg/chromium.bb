@@ -13,7 +13,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_pump_dispatcher.h"
+#include "base/message_loop/message_loop.h"
 #include "base/timer/timer.h"
 #include "ui/events/event_constants.h"
 #include "ui/views/controls/menu/menu_delegate.h"
@@ -45,7 +45,7 @@ class MenuRunnerImpl;
 // MenuController is used internally by the various menu classes to manage
 // showing, selecting and drag/drop for menus. All relevant events are
 // forwarded to the MenuController from SubmenuView and MenuHost.
-class VIEWS_EXPORT MenuController : public base::MessagePumpDispatcher,
+class VIEWS_EXPORT MenuController : public base::MessageLoop::Dispatcher,
                                     public WidgetObserver {
  public:
   // Enumeration of how the menu should exit.

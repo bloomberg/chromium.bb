@@ -5,7 +5,7 @@
 #ifndef UI_AURA_CLIENT_DISPATCHER_CLIENT_H_
 #define UI_AURA_CLIENT_DISPATCHER_CLIENT_H_
 
-#include "base/message_loop/message_pump_dispatcher.h"
+#include "base/message_loop/message_loop.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/window.h"
 
@@ -16,7 +16,7 @@ namespace client {
 // An interface implemented by an object which handles nested dispatchers.
 class AURA_EXPORT DispatcherClient {
  public:
-  virtual void RunWithDispatcher(base::MessagePumpDispatcher* dispatcher,
+  virtual void RunWithDispatcher(base::MessageLoop::Dispatcher* dispatcher,
                                  aura::Window* associated_window,
                                  bool nestable_tasks_allowed) = 0;
 };

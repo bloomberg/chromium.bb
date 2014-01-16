@@ -10,9 +10,8 @@
 #include <set>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/message_loop/message_pump_dispatcher.h"
+#include "base/message_loop/message_loop.h"
 #include "ui/views/views_export.h"
 
 namespace views {
@@ -25,7 +24,7 @@ bool VIEWS_EXPORT DispatchXEvent(XEvent* xevent);
 
 // This class delegates the key messages to the associated FocusManager class
 // for the window that is receiving these messages for accelerator processing.
-class VIEWS_EXPORT AcceleratorHandler : public base::MessagePumpDispatcher {
+class VIEWS_EXPORT AcceleratorHandler : public base::MessageLoop::Dispatcher {
  public:
   AcceleratorHandler();
 

@@ -4,16 +4,16 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/message_loop/message_pump_dispatcher.h"
+#include "base/message_loop/message_loop.h"
 
 namespace aura {
 
-class DispatcherWin : public base::MessagePumpDispatcher {
+class DispatcherWin : public base::MessageLoop::Dispatcher {
  public:
   DispatcherWin() {}
   virtual ~DispatcherWin() {}
 
-  // Overridden from MessagePumpDispatcher:
+  // Overridden from MessageLoop::Dispatcher:
   virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
 
  private:
@@ -26,7 +26,7 @@ bool DispatcherWin::Dispatch(const base::NativeEvent& msg) {
   return true;
 }
 
-base::MessagePumpDispatcher* CreateDispatcher() {
+base::MessageLoop::Dispatcher* CreateDispatcher() {
   return new DispatcherWin;
 }
 
