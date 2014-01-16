@@ -936,8 +936,6 @@
             'editing/SpellCheckRequester.h',
             'editing/SpellChecker.cpp',
             'editing/SpellChecker.h',
-            'editing/SpellingCorrectionCommand.cpp',
-            'editing/SpellingCorrectionCommand.h',
             'editing/SplitElementCommand.cpp',
             'editing/SplitElementCommand.h',
             'editing/SplitTextNodeCommand.cpp',
