@@ -64,10 +64,10 @@ function fadeOutElement(el) {
   el.style.height = 'auto';
   var height = el.offsetHeight;
   el.style.height = height + 'px';
-  var animName = addAnimation('');
+  el.offsetHeight;  // Should force an update of the computed style.
   var eventTracker = new EventTracker();
   eventTracker.add(el, 'webkitTransitionEnd',
-                   onFadeOutTransitionEnd.bind(el, animName, eventTracker),
+                   onFadeOutTransitionEnd.bind(el, eventTracker),
                    false);
   el.classList.add('closing');
   el.classList.remove('visible');
@@ -75,16 +75,14 @@ function fadeOutElement(el) {
 
 /**
  * Executes when a fade out animation ends.
- * @param {string} animationName The name of the animation to be removed.
  * @param {EventTracker} eventTracker The |EventTracker| object that was used
  *     for adding this listener.
  * @param {WebkitTransitionEvent} event The event that triggered this listener.
  * @this {HTMLElement} The element where the transition occurred.
  */
-function onFadeOutTransitionEnd(animationName, eventTracker, event) {
+function onFadeOutTransitionEnd(eventTracker, event) {
   if (event.propertyName != 'height')
     return;
-  fadeInOutCleanup(animationName);
   eventTracker.remove(this, 'webkitTransitionEnd');
   this.hidden = true;
 }
