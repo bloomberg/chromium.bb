@@ -1468,34 +1468,6 @@ experimental_devtools_resources.html</a>
 
 </tr>
 
-<tr class="vc_row_even">
-<td colspan="2">
-
-<a name="experimental_discovery.html" href="/viewvc/chrome/trunk/src/chrome/common/extensions/docs/templates/public/extensions/experimental_discovery.html?view=log&amp;pathrev=214898" title="View file revision log">
-
-<img src="/viewvc/*docroot*/images/text.png" alt="" class="vc_icon" />
-experimental_discovery.html</a>
-
-</td>
-
-
-
-
-<td style="white-space: nowrap;">&nbsp;<a href="/viewvc/chrome/trunk/src/chrome/common/extensions/docs/templates/public/extensions/experimental_discovery.html?revision=157264&amp;pathrev=214898" title="View file contents"><strong>157264</strong></a>
-
-</td>
-
-<td>&nbsp;10 months</td>
-<td>&nbsp;kalman@chromium.org</td>
-
-
-<td>&nbsp;Copy the extension docs content from chrome/common/extensions/docs/server2 into
-&hellip;</td>
-
-
-
-</tr>
-
 <tr class="vc_row_odd">
 <td colspan="2">
 

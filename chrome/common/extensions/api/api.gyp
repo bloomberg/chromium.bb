@@ -63,7 +63,6 @@
               'enterprise_platform_keys_private.json',
               'events.json',
               'experimental_accessibility.json',
-              'experimental_discovery.idl',
               'feedback_private.idl',
               'file_browser_private.idl',
               'file_system.idl',

@@ -30,7 +30,7 @@ void SuggestionsInternalsUIHandler::OnSuggestionsReady() {
 
 void SuggestionsInternalsUIHandler::RegisterMessages() {
   // Setup the suggestions sources.
-  suggestions_combiner_.reset(SuggestionsCombiner::Create(this, profile_));
+  suggestions_combiner_.reset(new SuggestionsCombiner(this, profile_));
   suggestions_combiner_->SetSuggestionsCount(kSuggestionsCount);
   suggestions_combiner_->EnableDebug(true);
 

@@ -60,11 +60,6 @@ class SuggestionsCombiner {
 
   void SetSuggestionsCount(size_t suggestions_count);
 
-  // Creates a new instance of the SuggestionsCombiner (owned by the callee),
-  // and sets up the default sources.
-  static SuggestionsCombiner* Create(SuggestionsCombiner::Delegate* delegate,
-                                     Profile* profile);
-
  private:
   friend class SuggestionsCombinerTest;
 

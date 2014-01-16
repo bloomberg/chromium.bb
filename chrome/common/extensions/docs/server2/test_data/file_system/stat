@@ -916,36 +916,6 @@ TEST=Covered by ...</td>
 
 </tr>
 
-<tr class="vc_row_odd">
-<td colspan="2">
-
-<a name="experimental_discovery.idl" href="/viewvc/chrome/trunk/src/chrome/common/extensions/api/experimental_discovery.idl?view=log" title="View file revision log">
-
-<img src="/viewvc/*docroot*/images/text.png" alt="" width="16" height="16" />
-experimental_discovery.idl</a>
-
-</td>
-
-
-
-<td>&nbsp;<a href="/viewvc/chrome/trunk/src/chrome/common/extensions/api/experimental_discovery.idl?revision=149243&amp;view=markup" title="View file contents"><strong>149243</strong></a></td>
-
-<td>&nbsp;10 days</td>
-<td>&nbsp;beaudoin@chromium.org</td>
-
-
-<td>&nbsp;Discovery API supports specifying a tile in a URL.
-
-BUG=none
-TEST=none
-
-
-Review ...</td>
-
-
-
-</tr>
-
 <tr class="vc_row_even">
 <td colspan="2">
 

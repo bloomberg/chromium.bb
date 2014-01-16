@@ -261,10 +261,6 @@
     "extension_types": ["platform_app"],
     "contexts": ["blessed_extension"]
   },
-  "experimental.discovery": {
-    "dependencies": ["permission:experimental"],
-    "contexts": ["blessed_extension"]
-  },
   "extension": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"],

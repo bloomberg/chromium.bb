@@ -7,15 +7,12 @@
 #include <algorithm>
 
 #include "base/values.h"
-#include "chrome/browser/extensions/api/discovery/suggested_links_registry.h"
-#include "chrome/browser/extensions/api/discovery/suggested_links_registry_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/ntp/suggestions_page_handler.h"
 #include "chrome/browser/ui/webui/ntp/suggestions_source.h"
-#include "chrome/browser/ui/webui/ntp/suggestions_source_discovery.h"
 #include "content/public/browser/web_contents.h"
 
 namespace {
@@ -73,21 +70,6 @@ void SuggestionsCombiner::OnItemsReady() {
 
 void SuggestionsCombiner::SetSuggestionsCount(size_t suggestions_count) {
   suggestions_count_ = suggestions_count;
-}
-
-// static
-SuggestionsCombiner* SuggestionsCombiner::Create(
-    SuggestionsCombiner::Delegate* delegate, Profile* profile) {
-  SuggestionsCombiner* combiner = new SuggestionsCombiner(delegate, profile);
-  extensions::SuggestedLinksRegistry* registry =
-      extensions::SuggestedLinksRegistryFactory::GetForProfile(profile);
-  scoped_ptr<std::vector<std::string> > list = registry->GetExtensionIds();
-  for (std::vector<std::string>::iterator it = list->begin();
-      it != list->end(); ++it) {
-    combiner->AddSource(new SuggestionsSourceDiscovery(*it));
-  }
-
-  return combiner;
 }
 
 void SuggestionsCombiner::FillPageValues() {

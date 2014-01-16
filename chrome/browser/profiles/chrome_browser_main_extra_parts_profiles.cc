@@ -66,7 +66,6 @@
 #include "chrome/browser/extensions/api/cookies/cookies_api.h"
 #include "chrome/browser/extensions/api/developer_private/developer_private_api_factory.h"
 #include "chrome/browser/extensions/api/dial/dial_api_factory.h"
-#include "chrome/browser/extensions/api/discovery/suggested_links_registry_factory.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/api/feedback_private/feedback_private_api.h"
 #include "chrome/browser/extensions/api/font_settings/font_settings_api.h"
@@ -300,7 +299,6 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #endif
   extensions::StreamsPrivateAPI::GetFactoryInstance();
   extensions::SystemInfoAPI::GetFactoryInstance();
-  extensions::SuggestedLinksRegistryFactory::GetInstance();
   extensions::TabCaptureRegistry::GetFactoryInstance();
   extensions::TabsWindowsAPI::GetFactoryInstance();
   extensions::TtsAPI::GetFactoryInstance();
