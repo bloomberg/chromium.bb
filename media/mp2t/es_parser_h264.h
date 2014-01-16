@@ -55,7 +55,8 @@ class EsParserH264 : public EsParser {
   bool ParseInternal();
 
   // Emit a frame if a frame has been started earlier.
-  void EmitFrameIfNeeded(int next_aud_pos);
+  // Returns true if successful, false if no PTS is available for the frame.
+  bool EmitFrameIfNeeded(int next_aud_pos);
 
   // Start a new frame.
   // Note: if aud_pos < 0, clear the current frame.

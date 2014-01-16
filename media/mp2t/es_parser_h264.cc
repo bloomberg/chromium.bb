@@ -216,7 +216,7 @@ bool EsParserH264::ParseInternal() {
 
     // Emit a frame if needed.
     if (nal_unit_type == kNalUnitTypeAUD)
-      EmitFrameIfNeeded(es_pos_);
+      RCHECK(EmitFrameIfNeeded(es_pos_));
 
     // Skip the syncword.
     es_pos_ += syncword_length;
@@ -225,20 +225,23 @@ bool EsParserH264::ParseInternal() {
   return true;
 }
 
-void EsParserH264::EmitFrameIfNeeded(int next_aud_pos) {
+bool EsParserH264::EmitFrameIfNeeded(int next_aud_pos) {
   // There is no current frame: start a new frame.
   if (current_access_unit_pos_ < 0) {
     StartFrame(next_aud_pos);
-    return;
+    return true;
   }
 
   // Get the access unit timing info.
-  TimingDesc current_timing_desc;
+  TimingDesc current_timing_desc = {kNoTimestamp(), kNoTimestamp()};
   while (!timing_desc_list_.empty() &&
          timing_desc_list_.front().first <= current_access_unit_pos_) {
     current_timing_desc = timing_desc_list_.front().second;
     timing_desc_list_.pop_front();
   }
+
+  if (current_timing_desc.pts == kNoTimestamp())
+    return false;
 
   // Emit a frame.
   int raw_es_size;
@@ -256,6 +259,7 @@ void EsParserH264::EmitFrameIfNeeded(int next_aud_pos) {
 
   // Set the current frame position to the next AUD position.
   StartFrame(next_aud_pos);
+  return true;
 }
 
 void EsParserH264::StartFrame(int aud_pos) {
